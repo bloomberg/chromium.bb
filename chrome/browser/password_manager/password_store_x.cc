@@ -12,17 +12,16 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/password_store_change.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 
 using autofill::PasswordForm;
-using content::BrowserThread;
 using password_manager::PasswordStoreChange;
 using password_manager::PasswordStoreChangeList;
 using password_manager::PasswordStoreDefault;
@@ -58,15 +57,29 @@ bool RemoveLoginsByURLAndTimeFromBackend(
   return true;
 }
 
+// Only meant to be called once, during the construction of PasswordStoreX.
+// Multiple calls would potentially return different task runners.
+scoped_refptr<base::SequencedTaskRunner> GetBackgroundTaskRunnerForBackend(
+    PasswordStoreX::NativeBackend* backend) {
+  scoped_refptr<base::SequencedTaskRunner> result;
+  if (backend)
+    result = backend->GetBackgroundTaskRunner();
+  if (result)
+    return result;
+  // Using USER_VISIBLE priority, because the passwords obtained through tasks
+  // on the background runner influence what the user sees.
+  return base::CreateSequencedTaskRunnerWithTraits(
+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
+}
+
 }  // namespace
 
 PasswordStoreX::PasswordStoreX(
     scoped_refptr<base::SequencedTaskRunner> main_thread_runner,
-    scoped_refptr<base::SequencedTaskRunner> db_thread_runner,
     std::unique_ptr<password_manager::LoginDatabase> login_db,
     NativeBackend* backend)
     : PasswordStoreDefault(main_thread_runner,
-                           db_thread_runner,
+                           GetBackgroundTaskRunnerForBackend(backend),
                            std::move(login_db)),
       backend_(backend),
       migration_checked_(!backend),
@@ -245,7 +258,7 @@ bool PasswordStoreX::FillBlacklistLogins(
 }
 
 void PasswordStoreX::CheckMigration() {
-  DCHECK_CURRENTLY_ON(BrowserThread::DB);
+  DCHECK(GetBackgroundTaskRunner()->RunsTasksInCurrentSequence());
   if (migration_checked_ || !backend_.get())
     return;
   migration_checked_ = true;

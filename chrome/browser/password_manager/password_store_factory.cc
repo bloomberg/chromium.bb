@@ -263,8 +263,8 @@ PasswordStoreFactory::BuildServiceInstanceFor(
         " for more information about password storage options.";
   }
 
-  ps = new PasswordStoreX(main_thread_runner, db_thread_runner,
-                          std::move(login_db), backend.release());
+  ps = new PasswordStoreX(main_thread_runner, std::move(login_db),
+                          backend.release());
   RecordBackendStatistics(desktop_env, store_type, used_backend);
 #elif defined(USE_OZONE)
   ps = new password_manager::PasswordStoreDefault(

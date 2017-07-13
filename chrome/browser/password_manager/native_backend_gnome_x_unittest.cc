@@ -15,6 +15,8 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_runner_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
 #include "chrome/browser/password_manager/native_backend_gnome_x.h"
 #include "chrome/test/base/testing_profile.h"
@@ -22,7 +24,6 @@
 #include "components/password_manager/core/browser/psl_matching_helper.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -31,7 +32,6 @@
 using autofill::PasswordForm;
 using base::UTF8ToUTF16;
 using base::UTF16ToUTF8;
-using content::BrowserThread;
 using password_manager::PasswordStore;
 using password_manager::PasswordStoreChange;
 using password_manager::PasswordStoreChangeList;
@@ -359,8 +359,8 @@ class NativeBackendGnomeTest : public testing::Test {
   };
 
   NativeBackendGnomeTest()
-      : test_browser_thread_bundle_(
-            content::TestBrowserThreadBundle::REAL_DB_THREAD) {}
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
 
   void SetUp() override {
     ASSERT_TRUE(MockGnomeKeyringLoader::LoadMockGnomeKeyring());
@@ -500,8 +500,8 @@ class NativeBackendGnomeTest : public testing::Test {
     NativeBackendGnome backend(321);
     backend.Init();
 
-    BrowserThread::PostTask(
-        BrowserThread::DB, FROM_HERE,
+    backend.GetBackgroundTaskRunner()->PostTask(
+        FROM_HERE,
         base::BindOnce(base::IgnoreResult(&NativeBackendGnome::AddLogin),
                        base::Unretained(&backend), credentials));
 
@@ -513,16 +513,13 @@ class NativeBackendGnomeTest : public testing::Test {
       target_form.signon_realm.append("Realm");
     }
     std::vector<std::unique_ptr<PasswordForm>> form_list;
-    BrowserThread::PostTaskAndReplyWithResult(
-        BrowserThread::DB,
-        FROM_HERE,
-        base::Bind(&NativeBackendGnome::GetLogins,
-                   base::Unretained(&backend),
-                   target_form,
-                   &form_list),
+    base::PostTaskAndReplyWithResult(
+        backend.GetBackgroundTaskRunner().get(), FROM_HERE,
+        base::Bind(&NativeBackendGnome::GetLogins, base::Unretained(&backend),
+                   target_form, &form_list),
         base::Bind(&CheckTrue));
 
-    content::RunAllPendingInMessageLoop(BrowserThread::DB);
+    scoped_task_environment_.RunUntilIdle();
 
     EXPECT_EQ(1u, mock_keyring_items.size());
     if (mock_keyring_items.size() > 0)
@@ -547,30 +544,28 @@ class NativeBackendGnomeTest : public testing::Test {
     backend.Init();
 
     // Add |form_facebook_| to saved logins.
-    BrowserThread::PostTaskAndReplyWithResult(
-        BrowserThread::DB,
-        FROM_HERE,
-        base::Bind(&NativeBackendGnome::AddLogin,
-                   base::Unretained(&backend),
+    base::PostTaskAndReplyWithResult(
+        backend.GetBackgroundTaskRunner().get(), FROM_HERE,
+        base::Bind(&NativeBackendGnome::AddLogin, base::Unretained(&backend),
                    form_facebook_),
         base::Bind(&CheckPasswordChanges,
-                   PasswordStoreChangeList(1, PasswordStoreChange(
-                       PasswordStoreChange::ADD, form_facebook_))));
+                   PasswordStoreChangeList(
+                       1, PasswordStoreChange(PasswordStoreChange::ADD,
+                                              form_facebook_))));
 
     // Get the PSL-matched copy of the saved login for m.facebook.
     const GURL kMobileURL("http://m.facebook.com/");
     PasswordStore::FormDigest m_facebook_lookup = {
         PasswordForm::SCHEME_HTML, kMobileURL.spec(), kMobileURL};
     std::vector<std::unique_ptr<PasswordForm>> form_list;
-    BrowserThread::PostTaskAndReplyWithResult(
-        BrowserThread::DB,
-        FROM_HERE,
-        base::Bind(&NativeBackendGnome::GetLogins,
-                   base::Unretained(&backend),
-                   m_facebook_lookup,
-                   &form_list),
+    base::PostTaskAndReplyWithResult(
+        backend.GetBackgroundTaskRunner().get(), FROM_HERE,
+        base::Bind(&NativeBackendGnome::GetLogins, base::Unretained(&backend),
+                   m_facebook_lookup, &form_list),
         base::Bind(&CheckTrue));
-    content::RunAllPendingInMessageLoop(BrowserThread::DB);
+
+    scoped_task_environment_.RunUntilIdle();
+
     EXPECT_EQ(1u, mock_keyring_items.size());
     EXPECT_EQ(1u, form_list.size());
     PasswordForm m_facebook = *form_list[0];
@@ -579,11 +574,13 @@ class NativeBackendGnomeTest : public testing::Test {
     m_facebook.signon_realm = kMobileURL.spec();
 
     // Add the PSL-matched copy to saved logins.
-    BrowserThread::PostTask(
-        BrowserThread::DB, FROM_HERE,
+    backend.GetBackgroundTaskRunner()->PostTask(
+        FROM_HERE,
         base::BindOnce(base::IgnoreResult(&NativeBackendGnome::AddLogin),
                        base::Unretained(&backend), m_facebook));
-    content::RunAllPendingInMessageLoop(BrowserThread::DB);
+
+    scoped_task_environment_.RunUntilIdle();
+
     EXPECT_EQ(2u, mock_keyring_items.size());
 
     // Update www.facebook.com login.
@@ -598,44 +595,39 @@ class NativeBackendGnomeTest : public testing::Test {
       case UPDATE_BY_UPDATELOGIN:
         expected_changes.push_back(
             PasswordStoreChange(PasswordStoreChange::UPDATE, new_facebook));
-        BrowserThread::PostTaskAndReplyWithResult(
-            BrowserThread::DB,
-            FROM_HERE,
+        base::PostTaskAndReplyWithResult(
+            backend.GetBackgroundTaskRunner().get(), FROM_HERE,
             base::Bind(&NativeBackendGnome::UpdateLogin,
-                       base::Unretained(&backend),
-                       new_facebook,
-                       &changes),
-            base::Bind(&CheckPasswordChangesWithResult,
-                       &expected_changes, &changes));
+                       base::Unretained(&backend), new_facebook, &changes),
+            base::Bind(&CheckPasswordChangesWithResult, &expected_changes,
+                       &changes));
         break;
       case UPDATE_BY_ADDLOGIN:
         expected_changes.push_back(
             PasswordStoreChange(PasswordStoreChange::REMOVE, form_facebook_));
         expected_changes.push_back(
             PasswordStoreChange(PasswordStoreChange::ADD, new_facebook));
-        BrowserThread::PostTaskAndReplyWithResult(
-            BrowserThread::DB,
-            FROM_HERE,
+        base::PostTaskAndReplyWithResult(
+            backend.GetBackgroundTaskRunner().get(), FROM_HERE,
             base::Bind(&NativeBackendGnome::AddLogin,
-                       base::Unretained(&backend),
-                       new_facebook),
+                       base::Unretained(&backend), new_facebook),
             base::Bind(&CheckPasswordChanges, expected_changes));
         break;
     }
 
-    content::RunAllPendingInMessageLoop(BrowserThread::DB);
+    scoped_task_environment_.RunUntilIdle();
+
     EXPECT_EQ(2u, mock_keyring_items.size());
 
     // Check that m.facebook.com login was not modified by the update.
-    BrowserThread::PostTaskAndReplyWithResult(
-        BrowserThread::DB,
-        FROM_HERE,
-        base::Bind(&NativeBackendGnome::GetLogins,
-                   base::Unretained(&backend),
-                   m_facebook_lookup,
-                   &form_list),
+    base::PostTaskAndReplyWithResult(
+        backend.GetBackgroundTaskRunner().get(), FROM_HERE,
+        base::Bind(&NativeBackendGnome::GetLogins, base::Unretained(&backend),
+                   m_facebook_lookup, &form_list),
         base::Bind(&CheckTrue));
-    content::RunAllPendingInMessageLoop(BrowserThread::DB);
+
+    scoped_task_environment_.RunUntilIdle();
+
     // There should be two results -- the exact one, and the PSL-matched one.
     EXPECT_EQ(2u, form_list.size());
     size_t index_non_psl = 0;
@@ -647,12 +639,14 @@ class NativeBackendGnomeTest : public testing::Test {
     form_list.clear();
 
     // Check that www.facebook.com login was modified by the update.
-    BrowserThread::PostTaskAndReplyWithResult(
-        BrowserThread::DB, FROM_HERE,
+    base::PostTaskAndReplyWithResult(
+        backend.GetBackgroundTaskRunner().get(), FROM_HERE,
         base::Bind(&NativeBackendGnome::GetLogins, base::Unretained(&backend),
                    PasswordStore::FormDigest(form_facebook_), &form_list),
         base::Bind(&CheckTrue));
-    content::RunAllPendingInMessageLoop(BrowserThread::DB);
+
+    scoped_task_environment_.RunUntilIdle();
+
     // There should be two results -- the exact one, and the PSL-matched one.
     EXPECT_EQ(2u, form_list.size());
     index_non_psl = 0;
@@ -700,12 +694,12 @@ class NativeBackendGnomeTest : public testing::Test {
       form_isc_.date_synced = next_day;
     }
 
-    BrowserThread::PostTask(
-        BrowserThread::DB, FROM_HERE,
+    backend.GetBackgroundTaskRunner()->PostTask(
+        FROM_HERE,
         base::BindOnce(base::IgnoreResult(&NativeBackendGnome::AddLogin),
                        base::Unretained(&backend), form_google_));
-    BrowserThread::PostTask(
-        BrowserThread::DB, FROM_HERE,
+    backend.GetBackgroundTaskRunner()->PostTask(
+        FROM_HERE,
         base::BindOnce(base::IgnoreResult(&NativeBackendGnome::AddLogin),
                        base::Unretained(&backend), form_isc_));
 
@@ -718,17 +712,14 @@ class NativeBackendGnomeTest : public testing::Test {
         date_to_test == CREATED
             ? &NativeBackendGnome::RemoveLoginsCreatedBetween
             : &NativeBackendGnome::RemoveLoginsSyncedBetween;
-    BrowserThread::PostTaskAndReplyWithResult(
-        BrowserThread::DB,
-        FROM_HERE,
-        base::Bind(method,
-                   base::Unretained(&backend),
-                   base::Time(),
-                   next_day,
+    base::PostTaskAndReplyWithResult(
+        backend.GetBackgroundTaskRunner().get(), FROM_HERE,
+        base::Bind(method, base::Unretained(&backend), base::Time(), next_day,
                    &changes),
-        base::Bind(
-            &CheckPasswordChangesWithResult, &expected_changes, &changes));
-    content::RunAllPendingInMessageLoop(BrowserThread::DB);
+        base::Bind(&CheckPasswordChangesWithResult, &expected_changes,
+                   &changes));
+
+    scoped_task_environment_.RunUntilIdle();
 
     EXPECT_EQ(1u, mock_keyring_items.size());
     if (mock_keyring_items.size() > 0)
@@ -738,21 +729,25 @@ class NativeBackendGnomeTest : public testing::Test {
     expected_changes.clear();
     expected_changes.push_back(
         PasswordStoreChange(PasswordStoreChange::REMOVE, form_isc_));
-    BrowserThread::PostTaskAndReplyWithResult(
-        BrowserThread::DB,
-        FROM_HERE,
-        base::Bind(method,
-                   base::Unretained(&backend),
-                   next_day,
-                   base::Time(),
+    base::PostTaskAndReplyWithResult(
+        backend.GetBackgroundTaskRunner().get(), FROM_HERE,
+        base::Bind(method, base::Unretained(&backend), next_day, base::Time(),
                    &changes),
-        base::Bind(
-            &CheckPasswordChangesWithResult, &expected_changes, &changes));
-    content::RunAllPendingInMessageLoop(BrowserThread::DB);
+        base::Bind(&CheckPasswordChangesWithResult, &expected_changes,
+                   &changes));
+
+    scoped_task_environment_.RunUntilIdle();
 
     EXPECT_EQ(0u, mock_keyring_items.size());
   }
 
+  // Create the ScopedTaskEnvirnment first to ensure that
+  // CreateSequencedTaskRunnerWithTraits will work correctly. Then create also
+  // TestBrowserThreadBundle so that BrowserThread::UI has an associated
+  // TaskRunner. The order is important because the bundle can detect that the
+  // MessageLoop used by the environment exists and reuse it, but not vice
+  // versa.
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
 
   // Provide some test forms to avoid having to set them up in each test.
@@ -766,15 +761,16 @@ TEST_F(NativeBackendGnomeTest, BasicAddLogin) {
   NativeBackendGnome backend(42);
   backend.Init();
 
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::DB, FROM_HERE,
-      base::Bind(&NativeBackendGnome::AddLogin,
-                 base::Unretained(&backend), form_google_),
-      base::Bind(&CheckPasswordChanges,
-                 PasswordStoreChangeList(1, PasswordStoreChange(
-                     PasswordStoreChange::ADD, form_google_))));
+  base::PostTaskAndReplyWithResult(
+      backend.GetBackgroundTaskRunner().get(), FROM_HERE,
+      base::Bind(&NativeBackendGnome::AddLogin, base::Unretained(&backend),
+                 form_google_),
+      base::Bind(
+          &CheckPasswordChanges,
+          PasswordStoreChangeList(
+              1, PasswordStoreChange(PasswordStoreChange::ADD, form_google_))));
 
-  content::RunAllPendingInMessageLoop(BrowserThread::DB);
+  scoped_task_environment_.RunUntilIdle();
 
   EXPECT_EQ(1u, mock_keyring_items.size());
   if (mock_keyring_items.size() > 0)
@@ -785,19 +781,19 @@ TEST_F(NativeBackendGnomeTest, BasicListLogins) {
   NativeBackendGnome backend(42);
   backend.Init();
 
-  BrowserThread::PostTask(
-      BrowserThread::DB, FROM_HERE,
+  backend.GetBackgroundTaskRunner()->PostTask(
+      FROM_HERE,
       base::BindOnce(base::IgnoreResult(&NativeBackendGnome::AddLogin),
                      base::Unretained(&backend), form_google_));
 
   std::vector<std::unique_ptr<PasswordForm>> form_list;
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::DB, FROM_HERE,
+  base::PostTaskAndReplyWithResult(
+      backend.GetBackgroundTaskRunner().get(), FROM_HERE,
       base::Bind(&NativeBackendGnome::GetAutofillableLogins,
                  base::Unretained(&backend), &form_list),
       base::Bind(&CheckTrue));
 
-  content::RunAllPendingInMessageLoop(BrowserThread::DB);
+  scoped_task_environment_.RunUntilIdle();
 
   // Quick check that we got something back.
   EXPECT_EQ(1u, form_list.size());
@@ -899,12 +895,12 @@ TEST_F(NativeBackendGnomeTest, BasicUpdateLogin) {
   backend.Init();
 
   // First add google login.
-  BrowserThread::PostTask(
-      BrowserThread::DB, FROM_HERE,
+  backend.GetBackgroundTaskRunner()->PostTask(
+      FROM_HERE,
       base::BindOnce(base::IgnoreResult(&NativeBackendGnome::AddLogin),
                      base::Unretained(&backend), form_google_));
 
-  content::RunAllPendingInMessageLoop(BrowserThread::DB);
+  scoped_task_environment_.RunUntilIdle();
 
   PasswordForm new_form_google(form_google_);
   new_form_google.times_used = 1;
@@ -918,14 +914,13 @@ TEST_F(NativeBackendGnomeTest, BasicUpdateLogin) {
   PasswordStoreChangeList changes;
   PasswordStoreChangeList expected_changes(
       1, PasswordStoreChange(PasswordStoreChange::UPDATE, new_form_google));
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::DB, FROM_HERE,
-      base::Bind(&NativeBackendGnome::UpdateLogin,
-                 base::Unretained(&backend),
-                 new_form_google,
-                 &changes),
+  base::PostTaskAndReplyWithResult(
+      backend.GetBackgroundTaskRunner().get(), FROM_HERE,
+      base::Bind(&NativeBackendGnome::UpdateLogin, base::Unretained(&backend),
+                 new_form_google, &changes),
       base::Bind(&CheckPasswordChangesWithResult, &expected_changes, &changes));
-  content::RunAllPendingInMessageLoop(BrowserThread::DB);
+
+  scoped_task_environment_.RunUntilIdle();
 
   EXPECT_EQ(1u, mock_keyring_items.size());
   if (mock_keyring_items.size() > 0)
@@ -936,12 +931,12 @@ TEST_F(NativeBackendGnomeTest, BasicRemoveLogin) {
   NativeBackendGnome backend(42);
   backend.Init();
 
-  BrowserThread::PostTask(
-      BrowserThread::DB, FROM_HERE,
+  backend.GetBackgroundTaskRunner()->PostTask(
+      FROM_HERE,
       base::BindOnce(base::IgnoreResult(&NativeBackendGnome::AddLogin),
                      base::Unretained(&backend), form_google_));
 
-  content::RunAllPendingInMessageLoop(BrowserThread::DB);
+  scoped_task_environment_.RunUntilIdle();
 
   EXPECT_EQ(1u, mock_keyring_items.size());
   if (mock_keyring_items.size() > 0)
@@ -950,13 +945,13 @@ TEST_F(NativeBackendGnomeTest, BasicRemoveLogin) {
   PasswordStoreChangeList changes;
   PasswordStoreChangeList expected_changes(
       1, PasswordStoreChange(PasswordStoreChange::REMOVE, form_google_));
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::DB, FROM_HERE,
-      base::Bind(&NativeBackendGnome::RemoveLogin,
-                 base::Unretained(&backend), form_google_, &changes),
+  base::PostTaskAndReplyWithResult(
+      backend.GetBackgroundTaskRunner().get(), FROM_HERE,
+      base::Bind(&NativeBackendGnome::RemoveLogin, base::Unretained(&backend),
+                 form_google_, &changes),
       base::Bind(&CheckPasswordChangesWithResult, &expected_changes, &changes));
 
-  content::RunAllPendingInMessageLoop(BrowserThread::DB);
+  scoped_task_environment_.RunUntilIdle();
 
   EXPECT_EQ(0u, mock_keyring_items.size());
 }
@@ -966,12 +961,12 @@ TEST_F(NativeBackendGnomeTest, RemoveLoginActionMismatch) {
   NativeBackendGnome backend(42);
   backend.Init();
 
-  BrowserThread::PostTask(
-      BrowserThread::DB, FROM_HERE,
+  backend.GetBackgroundTaskRunner()->PostTask(
+      FROM_HERE,
       base::BindOnce(base::IgnoreResult(&NativeBackendGnome::AddLogin),
                      base::Unretained(&backend), form_google_));
 
-  content::RunAllPendingInMessageLoop(BrowserThread::DB);
+  scoped_task_environment_.RunUntilIdle();
 
   EXPECT_EQ(1u, mock_keyring_items.size());
   if (mock_keyring_items.size() > 0)
@@ -983,13 +978,13 @@ TEST_F(NativeBackendGnomeTest, RemoveLoginActionMismatch) {
   PasswordStoreChangeList changes;
   PasswordStoreChangeList expected_changes(
       1, PasswordStoreChange(PasswordStoreChange::REMOVE, form_google_));
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::DB, FROM_HERE,
-      base::Bind(&NativeBackendGnome::RemoveLogin,
-                 base::Unretained(&backend), form_google_, &changes),
+  base::PostTaskAndReplyWithResult(
+      backend.GetBackgroundTaskRunner().get(), FROM_HERE,
+      base::Bind(&NativeBackendGnome::RemoveLogin, base::Unretained(&backend),
+                 form_google_, &changes),
       base::Bind(&CheckPasswordChangesWithResult, &expected_changes, &changes));
 
-  content::RunAllPendingInMessageLoop(BrowserThread::DB);
+  scoped_task_environment_.RunUntilIdle();
 
   EXPECT_EQ(0u, mock_keyring_items.size());
 }
@@ -999,12 +994,12 @@ TEST_F(NativeBackendGnomeTest, RemoveNonexistentLogin) {
   backend.Init();
 
   // First add an unrelated login.
-  BrowserThread::PostTask(
-      BrowserThread::DB, FROM_HERE,
+  backend.GetBackgroundTaskRunner()->PostTask(
+      FROM_HERE,
       base::BindOnce(base::IgnoreResult(&NativeBackendGnome::AddLogin),
                      base::Unretained(&backend), form_google_));
 
-  content::RunAllPendingInMessageLoop(BrowserThread::DB);
+  scoped_task_environment_.RunUntilIdle();
 
   EXPECT_EQ(1u, mock_keyring_items.size());
   if (mock_keyring_items.size() > 0)
@@ -1012,22 +1007,22 @@ TEST_F(NativeBackendGnomeTest, RemoveNonexistentLogin) {
 
   // Attempt to remove a login that doesn't exist.
   PasswordStoreChangeList changes;
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::DB, FROM_HERE,
-      base::Bind(&NativeBackendGnome::RemoveLogin,
-                 base::Unretained(&backend), form_isc_, &changes),
+  base::PostTaskAndReplyWithResult(
+      backend.GetBackgroundTaskRunner().get(), FROM_HERE,
+      base::Bind(&NativeBackendGnome::RemoveLogin, base::Unretained(&backend),
+                 form_isc_, &changes),
       base::Bind(&CheckPasswordChangesWithResult,
                  base::Owned(new PasswordStoreChangeList), &changes));
 
   // Make sure we can still get the first form back.
   std::vector<std::unique_ptr<PasswordForm>> form_list;
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::DB, FROM_HERE,
+  base::PostTaskAndReplyWithResult(
+      backend.GetBackgroundTaskRunner().get(), FROM_HERE,
       base::Bind(&NativeBackendGnome::GetAutofillableLogins,
                  base::Unretained(&backend), &form_list),
       base::Bind(&CheckTrue));
 
-  content::RunAllPendingInMessageLoop(BrowserThread::DB);
+  scoped_task_environment_.RunUntilIdle();
 
   // Quick check that we got something back.
   EXPECT_EQ(1u, form_list.size());
@@ -1042,12 +1037,12 @@ TEST_F(NativeBackendGnomeTest, UpdateNonexistentLogin) {
   backend.Init();
 
   // First add an unrelated login.
-  BrowserThread::PostTask(
-      BrowserThread::DB, FROM_HERE,
+  backend.GetBackgroundTaskRunner()->PostTask(
+      FROM_HERE,
       base::BindOnce(base::IgnoreResult(&NativeBackendGnome::AddLogin),
                      base::Unretained(&backend), form_google_));
 
-  content::RunAllPendingInMessageLoop(BrowserThread::DB);
+  scoped_task_environment_.RunUntilIdle();
 
   EXPECT_EQ(1u, mock_keyring_items.size());
   if (mock_keyring_items.size() > 0)
@@ -1055,15 +1050,14 @@ TEST_F(NativeBackendGnomeTest, UpdateNonexistentLogin) {
 
   // Attempt to update a login that doesn't exist.
   PasswordStoreChangeList changes;
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::DB, FROM_HERE,
-      base::Bind(&NativeBackendGnome::UpdateLogin,
-                 base::Unretained(&backend),
-                 form_isc_,
-                 &changes),
+  base::PostTaskAndReplyWithResult(
+      backend.GetBackgroundTaskRunner().get(), FROM_HERE,
+      base::Bind(&NativeBackendGnome::UpdateLogin, base::Unretained(&backend),
+                 form_isc_, &changes),
       base::Bind(&CheckPasswordChangesWithResult,
                  base::Owned(new PasswordStoreChangeList), &changes));
-  content::RunAllPendingInMessageLoop(BrowserThread::DB);
+
+  scoped_task_environment_.RunUntilIdle();
 
   EXPECT_EQ(1u, mock_keyring_items.size());
   if (mock_keyring_items.size() > 0)
@@ -1075,11 +1069,12 @@ TEST_F(NativeBackendGnomeTest, UpdateSameLogin) {
   backend.Init();
 
   // First add an unrelated login.
-  BrowserThread::PostTask(
-      BrowserThread::DB, FROM_HERE,
+  backend.GetBackgroundTaskRunner()->PostTask(
+      FROM_HERE,
       base::BindOnce(base::IgnoreResult(&NativeBackendGnome::AddLogin),
                      base::Unretained(&backend), form_google_));
-  content::RunAllPendingInMessageLoop(BrowserThread::DB);
+
+  scoped_task_environment_.RunUntilIdle();
 
   EXPECT_EQ(1u, mock_keyring_items.size());
   if (mock_keyring_items.size() > 0)
@@ -1088,14 +1083,13 @@ TEST_F(NativeBackendGnomeTest, UpdateSameLogin) {
   // Attempt to update the same login without changing anything.
   PasswordStoreChangeList changes;
   PasswordStoreChangeList expected_changes;
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::DB, FROM_HERE,
-      base::Bind(&NativeBackendGnome::UpdateLogin,
-                 base::Unretained(&backend),
-                 form_google_,
-                 &changes),
+  base::PostTaskAndReplyWithResult(
+      backend.GetBackgroundTaskRunner().get(), FROM_HERE,
+      base::Bind(&NativeBackendGnome::UpdateLogin, base::Unretained(&backend),
+                 form_google_, &changes),
       base::Bind(&CheckPasswordChangesWithResult, &expected_changes, &changes));
-  content::RunAllPendingInMessageLoop(BrowserThread::DB);
+
+  scoped_task_environment_.RunUntilIdle();
 
   EXPECT_EQ(1u, mock_keyring_items.size());
   if (mock_keyring_items.size() > 0)
@@ -1109,10 +1103,10 @@ TEST_F(NativeBackendGnomeTest, AddDuplicateLogin) {
   PasswordStoreChangeList changes;
   changes.push_back(PasswordStoreChange(PasswordStoreChange::ADD,
                                         form_google_));
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::DB, FROM_HERE,
-      base::Bind(&NativeBackendGnome::AddLogin,
-                 base::Unretained(&backend), form_google_),
+  base::PostTaskAndReplyWithResult(
+      backend.GetBackgroundTaskRunner().get(), FROM_HERE,
+      base::Bind(&NativeBackendGnome::AddLogin, base::Unretained(&backend),
+                 form_google_),
       base::Bind(&CheckPasswordChanges, changes));
 
   changes.clear();
@@ -1123,13 +1117,13 @@ TEST_F(NativeBackendGnomeTest, AddDuplicateLogin) {
   changes.push_back(PasswordStoreChange(PasswordStoreChange::ADD,
                                         form_google_));
 
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::DB, FROM_HERE,
-      base::Bind(&NativeBackendGnome::AddLogin,
-                 base::Unretained(&backend), form_google_),
+  base::PostTaskAndReplyWithResult(
+      backend.GetBackgroundTaskRunner().get(), FROM_HERE,
+      base::Bind(&NativeBackendGnome::AddLogin, base::Unretained(&backend),
+                 form_google_),
       base::Bind(&CheckPasswordChanges, changes));
 
-  content::RunAllPendingInMessageLoop(BrowserThread::DB);
+  scoped_task_environment_.RunUntilIdle();
 
   EXPECT_EQ(1u, mock_keyring_items.size());
   if (mock_keyring_items.size() > 0)
@@ -1149,23 +1143,23 @@ TEST_F(NativeBackendGnomeTest, AndroidCredentials) {
   saved_android_form.date_created = base::Time::Now();
 
   PasswordStore::FormDigest observed_android_form(saved_android_form);
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::DB, FROM_HERE,
-      base::Bind(&NativeBackendGnome::AddLogin,
-                 base::Unretained(&backend), saved_android_form),
+  base::PostTaskAndReplyWithResult(
+      backend.GetBackgroundTaskRunner().get(), FROM_HERE,
+      base::Bind(&NativeBackendGnome::AddLogin, base::Unretained(&backend),
+                 saved_android_form),
       base::Bind(&CheckPasswordChanges,
-                 PasswordStoreChangeList(1, PasswordStoreChange(
-                     PasswordStoreChange::ADD, saved_android_form))));
+                 PasswordStoreChangeList(
+                     1, PasswordStoreChange(PasswordStoreChange::ADD,
+                                            saved_android_form))));
 
   std::vector<std::unique_ptr<PasswordForm>> form_list;
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::DB, FROM_HERE,
-      base::Bind(&NativeBackendGnome::GetLogins,
-                 base::Unretained(&backend), observed_android_form,
-                 &form_list),
+  base::PostTaskAndReplyWithResult(
+      backend.GetBackgroundTaskRunner().get(), FROM_HERE,
+      base::Bind(&NativeBackendGnome::GetLogins, base::Unretained(&backend),
+                 observed_android_form, &form_list),
       base::Bind(&CheckTrue));
 
-  content::RunAllPendingInMessageLoop(BrowserThread::DB);
+  scoped_task_environment_.RunUntilIdle();
 
   EXPECT_EQ(1u, form_list.size());
   EXPECT_EQ(saved_android_form, *form_list[0]);
@@ -1185,16 +1179,16 @@ TEST_F(NativeBackendGnomeTest, DisableAutoSignInForOrigins) {
   form_google_.skip_zero_click = false;
   form_facebook_.skip_zero_click = false;
 
-  BrowserThread::PostTask(
-      BrowserThread::DB, FROM_HERE,
+  backend.GetBackgroundTaskRunner()->PostTask(
+      FROM_HERE,
       base::BindOnce(base::IgnoreResult(&NativeBackendGnome::AddLogin),
                      base::Unretained(&backend), form_google_));
-  BrowserThread::PostTask(
-      BrowserThread::DB, FROM_HERE,
+  backend.GetBackgroundTaskRunner()->PostTask(
+      FROM_HERE,
       base::BindOnce(base::IgnoreResult(&NativeBackendGnome::AddLogin),
                      base::Unretained(&backend), form_facebook_));
 
-  content::RunAllPendingInMessageLoop(BrowserThread::DB);
+  scoped_task_environment_.RunUntilIdle();
 
   EXPECT_EQ(2u, mock_keyring_items.size());
   for (const auto& item : mock_keyring_items)
@@ -1208,8 +1202,8 @@ TEST_F(NativeBackendGnomeTest, DisableAutoSignInForOrigins) {
       PasswordStoreChange(PasswordStoreChange::UPDATE, form_facebook_));
 
   PasswordStoreChangeList changes;
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::DB, FROM_HERE,
+  base::PostTaskAndReplyWithResult(
+      backend.GetBackgroundTaskRunner().get(), FROM_HERE,
       base::Bind(
           &NativeBackendGnome::DisableAutoSignInForOrigins,
           base::Unretained(&backend),
@@ -1218,7 +1212,8 @@ TEST_F(NativeBackendGnomeTest, DisableAutoSignInForOrigins) {
               form_facebook_.origin),
           &changes),
       base::Bind(&CheckPasswordChangesWithResult, &expected_changes, &changes));
-  content::RunAllPendingInMessageLoop(BrowserThread::DB);
+
+  scoped_task_environment_.RunUntilIdle();
 
   EXPECT_EQ(2u, mock_keyring_items.size());
   CheckStringAttribute(
@@ -1238,17 +1233,18 @@ TEST_F(NativeBackendGnomeTest, ReadDuplicateForms) {
   const char unique_string_replacement[] = "uniKue_unique_string";
   form_google_.origin =
       GURL(std::string("http://www.google.com/") + unique_string);
-  BrowserThread::PostTask(
-      BrowserThread::DB, FROM_HERE,
+  backend.GetBackgroundTaskRunner()->PostTask(
+      FROM_HERE,
       base::BindOnce(base::IgnoreResult(&NativeBackendGnome::AddLogin),
                      base::Unretained(&backend), form_google_));
   form_google_.origin =
       GURL(std::string("http://www.google.com/") + unique_string_replacement);
-  BrowserThread::PostTask(
-      BrowserThread::DB, FROM_HERE,
+  backend.GetBackgroundTaskRunner()->PostTask(
+      FROM_HERE,
       base::BindOnce(base::IgnoreResult(&NativeBackendGnome::AddLogin),
                      base::Unretained(&backend), form_google_));
-  content::RunAllPendingInMessageLoop(BrowserThread::DB);
+
+  scoped_task_environment_.RunUntilIdle();
 
   // Read the raw value back. Change the |unique_string| to
   // |unique_string_replacement| so the forms become unique.
@@ -1264,12 +1260,13 @@ TEST_F(NativeBackendGnomeTest, ReadDuplicateForms) {
 
   // Now test that GetAutofillableLogins returns only one form.
   std::vector<std::unique_ptr<PasswordForm>> form_list;
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::DB, FROM_HERE,
+  base::PostTaskAndReplyWithResult(
+      backend.GetBackgroundTaskRunner().get(), FROM_HERE,
       base::Bind(&NativeBackendGnome::GetAutofillableLogins,
                  base::Unretained(&backend), &form_list),
       base::Bind(&CheckTrue));
-  content::RunAllPendingInMessageLoop(BrowserThread::DB);
+
+  scoped_task_environment_.RunUntilIdle();
 
   EXPECT_EQ(1u, form_list.size());
   EXPECT_EQ(form_google_, *form_list[0]);
@@ -1283,24 +1280,24 @@ TEST_F(NativeBackendGnomeTest, GetAllLogins) {
   NativeBackendGnome backend(42);
   backend.Init();
 
-  BrowserThread::PostTask(
-      BrowserThread::DB, FROM_HERE,
+  backend.GetBackgroundTaskRunner()->PostTask(
+      FROM_HERE,
       base::BindOnce(base::IgnoreResult(&NativeBackendGnome::AddLogin),
                      base::Unretained(&backend), form_google_));
 
-  BrowserThread::PostTask(
-      BrowserThread::DB, FROM_HERE,
+  backend.GetBackgroundTaskRunner()->PostTask(
+      FROM_HERE,
       base::BindOnce(base::IgnoreResult(&NativeBackendGnome::AddLogin),
                      base::Unretained(&backend), form_facebook_));
 
   std::vector<std::unique_ptr<PasswordForm>> form_list;
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::DB, FROM_HERE,
+  base::PostTaskAndReplyWithResult(
+      backend.GetBackgroundTaskRunner().get(), FROM_HERE,
       base::Bind(&NativeBackendGnome::GetAllLogins, base::Unretained(&backend),
                  &form_list),
       base::Bind(&CheckTrue));
 
-  content::RunAllPendingInMessageLoop(BrowserThread::DB);
+  scoped_task_environment_.RunUntilIdle();
 
   EXPECT_EQ(2u, form_list.size());
   EXPECT_THAT(form_list, UnorderedElementsAre(Pointee(form_google_),
