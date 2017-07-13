@@ -670,9 +670,9 @@ bool Channel::OnReadComplete(size_t bytes_read, size_t *next_read_size_hint) {
   return true;
 }
 
-void Channel::OnError() {
+void Channel::OnError(Error error) {
   if (delegate_)
-    delegate_->OnChannelError();
+    delegate_->OnChannelError(error);
 }
 
 bool Channel::OnControlMessage(Message::MessageType message_type,

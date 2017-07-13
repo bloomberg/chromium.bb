@@ -11,6 +11,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string_piece.h"
+#include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/platform_handle_vector.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/channel.h"
@@ -23,7 +24,9 @@ namespace edk {
 class BrokerHost : public Channel::Delegate,
                    public base::MessageLoop::DestructionObserver {
  public:
-  BrokerHost(base::ProcessHandle client_process, ScopedPlatformHandle handle);
+  BrokerHost(base::ProcessHandle client_process,
+             ScopedPlatformHandle handle,
+             const ProcessErrorCallback& process_error_callback);
 
   // Send |handle| to the child, to be used to establish a NodeChannel to us.
   bool SendChannel(ScopedPlatformHandle handle);
@@ -42,12 +45,14 @@ class BrokerHost : public Channel::Delegate,
   void OnChannelMessage(const void* payload,
                         size_t payload_size,
                         ScopedPlatformHandleVectorPtr handles) override;
-  void OnChannelError() override;
+  void OnChannelError(Channel::Error error) override;
 
   // base::MessageLoop::DestructionObserver:
   void WillDestroyCurrentMessageLoop() override;
 
   void OnBufferRequest(uint32_t num_bytes);
+
+  const ProcessErrorCallback process_error_callback_;
 
 #if defined(OS_WIN)
   base::ProcessHandle client_process_;

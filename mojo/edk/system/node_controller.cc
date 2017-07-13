@@ -366,7 +366,8 @@ void NodeController::SendBrokerClientInvitationOnIOThread(
   ScopedPlatformHandle server_handle = node_channel.PassServerHandle();
   // BrokerHost owns itself.
   BrokerHost* broker_host =
-      new BrokerHost(target_process, connection_params.TakeChannelHandle());
+      new BrokerHost(target_process, connection_params.TakeChannelHandle(),
+                     process_error_callback);
   bool channel_ok = broker_host->SendChannel(node_channel.PassClientHandle());
 
 #if defined(OS_WIN)

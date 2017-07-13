@@ -191,6 +191,21 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
     DISALLOW_COPY_AND_ASSIGN(Message);
   };
 
+  // Error types which may be reported by a Channel instance to its delegate.
+  enum class Error {
+    // The remote end of the channel has been closed, either explicitly or
+    // because the process which hosted it is gone.
+    kDisconnected,
+
+    // For connection-oriented channels (e.g. named pipes), an unexpected error
+    // occurred during channel connection.
+    kConnectionFailed,
+
+    // Some incoming data failed validation, implying either a buggy or
+    // compromised sender.
+    kReceivedMalformedData,
+  };
+
   // Delegate methods are called from the I/O task runner with which the Channel
   // was created (see Channel::Create).
   class Delegate {
@@ -205,7 +220,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
                                   ScopedPlatformHandleVectorPtr handles) = 0;
 
     // Notify that an error has occured and the Channel will cease operation.
-    virtual void OnChannelError() = 0;
+    virtual void OnChannelError(Error error) = 0;
   };
 
   // Creates a new Channel around a |platform_handle|, taking ownership of the
@@ -260,7 +275,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
 
   // Called by the implementation when something goes horribly wrong. It is NOT
   // OK to call this synchronously from any public interface methods.
-  void OnError();
+  void OnError(Error error);
 
   // Retrieves the set of platform handles read for a given message.
   // |extra_header| and |extra_header_size| correspond to the extra header data.
