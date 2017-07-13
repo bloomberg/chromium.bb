@@ -70,7 +70,12 @@ public class DialogOverlayImpl implements AndroidOverlay, DialogOverlayCore.Host
         // Register to get token updates.  Note that this may not call us back directly, since
         // |mDialogCore| hasn't been initialized yet.
         mNativeHandle = nativeInit(config.routingToken.high, config.routingToken.low);
-        assert mNativeHandle != 0;
+
+        if (mNativeHandle == 0) {
+            mClient.onDestroyed();
+            cleanup();
+            return;
+        }
 
         // Post init to the overlay thread.
         final DialogOverlayCore dialogCore = mDialogCore;
@@ -206,13 +211,15 @@ public class DialogOverlayImpl implements AndroidOverlay, DialogOverlayCore.Host
     private void sendWindowTokenToCore(final IBinder token) {
         ThreadUtils.assertOnUiThread();
 
-        final DialogOverlayCore dialogCore = mDialogCore;
-        mOverlayHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                dialogCore.onWindowToken(token);
-            }
-        });
+        if (mDialogCore != null) {
+            final DialogOverlayCore dialogCore = mDialogCore;
+            mOverlayHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    dialogCore.onWindowToken(token);
+                }
+            });
+        }
     }
 
     /**
