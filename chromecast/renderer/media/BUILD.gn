@@ -12,6 +12,7 @@ source_set("media") {
 
   deps = [
     "//base",
+    "//chromecast:chromecast_features",
     "//chromecast/common/media:interfaces",
     "//chromecast/media",
     "//chromecast/media/cdm",
