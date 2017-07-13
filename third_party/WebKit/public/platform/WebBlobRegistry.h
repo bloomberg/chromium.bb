@@ -95,33 +95,6 @@ class WebBlobRegistry {
   virtual void RemoveBlobDataRef(const WebString& uuid) {}
   virtual void RegisterPublicBlobURL(const WebURL&, const WebString& uuid) {}
   virtual void RevokePublicBlobURL(const WebURL&) {}
-
-  // Registers a stream URL referring to a stream with the specified media
-  // type.
-  virtual void RegisterStreamURL(const WebURL&, const WebString&) = 0;
-
-  // Registers a stream URL referring to the stream identified by the
-  // specified srcURL.
-  virtual void RegisterStreamURL(const WebURL&, const WebURL& src_url) = 0;
-
-  // Add data to the stream referred by the URL.
-  virtual void AddDataToStream(const WebURL&,
-                               const char* data,
-                               size_t length) = 0;
-
-  // Flush contents buffered in the stream to the corresponding reader.
-  virtual void FlushStream(const WebURL&) = 0;
-
-  // Tell the registry that construction of this stream has completed
-  // successfully and so it won't receive any more data.
-  virtual void FinalizeStream(const WebURL&) = 0;
-
-  // Tell the registry that construction of this stream has been aborted and
-  // so it won't receive any more data.
-  virtual void AbortStream(const WebURL&) = 0;
-
-  // Unregisters a stream referred by the URL.
-  virtual void UnregisterStreamURL(const WebURL&) = 0;
 };
 
 }  // namespace blink

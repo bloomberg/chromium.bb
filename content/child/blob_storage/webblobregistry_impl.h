@@ -47,19 +47,6 @@ class WebBlobRegistryImpl : public blink::WebBlobRegistry {
                              const blink::WebString& uuid) override;
   void RevokePublicBlobURL(const blink::WebURL&) override;
 
-  // Additional support for Streams.
-  void RegisterStreamURL(const blink::WebURL& url,
-                         const blink::WebString& content_type) override;
-  void RegisterStreamURL(const blink::WebURL& url,
-                         const blink::WebURL& src_url) override;
-  void AddDataToStream(const blink::WebURL& url,
-                       const char* data,
-                       size_t length) override;
-  void FlushStream(const blink::WebURL& url) override;
-  void FinalizeStream(const blink::WebURL& url) override;
-  void AbortStream(const blink::WebURL& url) override;
-  void UnregisterStreamURL(const blink::WebURL& url) override;
-
  private:
   // Handles all of the IPCs sent for building a blob.
   class BuilderImpl : public blink::WebBlobRegistry::Builder {

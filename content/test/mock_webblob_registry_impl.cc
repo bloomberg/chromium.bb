@@ -39,23 +39,4 @@ void MockWebBlobRegistryImpl::RegisterPublicBlobURL(const WebURL& url,
 
 void MockWebBlobRegistryImpl::RevokePublicBlobURL(const WebURL& url) {}
 
-void MockWebBlobRegistryImpl::RegisterStreamURL(const WebURL& url,
-                                                const WebString& content_type) {
-}
-
-void MockWebBlobRegistryImpl::RegisterStreamURL(const WebURL& url,
-                                                const blink::WebURL& src_url) {}
-
-void MockWebBlobRegistryImpl::AddDataToStream(const WebURL& url,
-                                              const char* data,
-                                              size_t length) {}
-
-void MockWebBlobRegistryImpl::FlushStream(const WebURL& url) {}
-
-void MockWebBlobRegistryImpl::FinalizeStream(const WebURL& url) {}
-
-void MockWebBlobRegistryImpl::AbortStream(const WebURL& url) {}
-
-void MockWebBlobRegistryImpl::UnregisterStreamURL(const WebURL& url) {}
-
 }  // namespace content

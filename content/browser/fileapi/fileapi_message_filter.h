@@ -48,7 +48,6 @@ class URLRequestContextGetter;
 
 namespace storage {
 class ShareableFileReference;
-class DataElement;
 }
 
 namespace content {
@@ -63,14 +62,12 @@ class CONTENT_EXPORT FileAPIMessageFilter : public BrowserMessageFilter {
   FileAPIMessageFilter(int process_id,
                        net::URLRequestContextGetter* request_context_getter,
                        storage::FileSystemContext* file_system_context,
-                       ChromeBlobStorageContext* blob_storage_context,
-                       StreamContext* stream_context);
+                       ChromeBlobStorageContext* blob_storage_context);
   // Used by the worker process host on the IO thread.
   FileAPIMessageFilter(int process_id,
                        net::URLRequestContext* request_context,
                        storage::FileSystemContext* file_system_context,
-                       ChromeBlobStorageContext* blob_storage_context,
-                       StreamContext* stream_context);
+                       ChromeBlobStorageContext* blob_storage_context);
 
   // BrowserMessageFilter implementation.
   void OnChannelConnected(int32_t peer_pid) override;
@@ -121,25 +118,6 @@ class CONTENT_EXPORT FileAPIMessageFilter : public BrowserMessageFilter {
                             const GURL& path);
   void OnDidReceiveSnapshotFile(int request_id);
 
-  // Handlers for StreamHostMsg_ family messages.
-  //
-  // TODO(tyoshino): Consider renaming BlobData to more generic one as it's now
-  // used for Stream.
-
-  // Currently |content_type| is ignored.
-  //
-  // TODO(tyoshino): Set |content_type| to the stream.
-  void OnStartBuildingStream(const GURL& url, const std::string& content_type);
-  void OnAppendBlobDataItemToStream(const GURL& url,
-                                    const storage::DataElement& item);
-  void OnAppendSharedMemoryToStream(
-      const GURL& url, base::SharedMemoryHandle handle, uint32_t buffer_size);
-  void OnFlushStream(const GURL& url);
-  void OnFinishBuildingStream(const GURL& url);
-  void OnAbortBuildingStream(const GURL& url);
-  void OnCloneStream(const GURL& url, const GURL& src_url);
-  void OnRemoveStream(const GURL& url);
-
   // Callback functions to be used when each file operation is finished.
   void DidFinish(int request_id, base::File::Error result);
   void DidGetMetadata(int request_id,
@@ -176,11 +154,6 @@ class CONTENT_EXPORT FileAPIMessageFilter : public BrowserMessageFilter {
   // Sends a FileSystemMsg_DidFail and returns false if |url| is invalid.
   bool ValidateFileSystemURL(int request_id, const storage::FileSystemURL& url);
 
-  // Retrieves the Stream object for |url| from |stream_context_|. Returns unset
-  // scoped_refptr when there's no Stream instance for the given |url|
-  // registered with stream_context_->registry().
-  scoped_refptr<Stream> GetStreamForURL(const GURL& url);
-
   storage::FileSystemOperationRunner* operation_runner() {
     return operation_runner_.get();
   }
@@ -201,7 +174,6 @@ class CONTENT_EXPORT FileAPIMessageFilter : public BrowserMessageFilter {
   net::URLRequestContext* request_context_;
 
   scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
-  scoped_refptr<StreamContext> stream_context_;
 
   std::unique_ptr<storage::FileSystemOperationRunner> operation_runner_;
 
