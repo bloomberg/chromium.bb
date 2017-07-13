@@ -11,6 +11,7 @@
 #include <unordered_map>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
 #include "cc/ipc/frame_sink_manager.mojom.h"
 #include "cc/surfaces/frame_sink_manager.h"
@@ -20,6 +21,10 @@
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "mojo/public/cpp/bindings/binding.h"
+
+namespace base {
+class SequencedTaskRunner;
+}
 
 namespace viz {
 
@@ -44,10 +49,12 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
 
   cc::FrameSinkManager* frame_sink_manager() { return &manager_; }
 
-  // Binds |this| as a FrameSinkManager for a given |request|. This may
-  // only be called once.
-  void BindPtrAndSetClient(cc::mojom::FrameSinkManagerRequest request,
-                           cc::mojom::FrameSinkManagerClientPtr client);
+  // Binds |this| as a FrameSinkManager for |request| on |task_runner|. On Mac
+  // |task_runner| will be the resize helper task runner. May only be called
+  // once.
+  void BindAndSetClient(cc::mojom::FrameSinkManagerRequest request,
+                        scoped_refptr<base::SequencedTaskRunner> task_runner,
+                        cc::mojom::FrameSinkManagerClientPtr client);
 
   // cc::mojom::FrameSinkManager implementation:
   void CreateRootCompositorFrameSink(

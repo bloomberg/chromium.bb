@@ -23,6 +23,10 @@
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "ui/compositor/compositor.h"
 
+namespace base {
+class SingleThreadTaskRunner;
+}
+
 namespace cc {
 class ResourceSettings;
 class SingleThreadTaskGraphRunner;
@@ -42,7 +46,8 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
                                    public ui::ContextFactoryPrivate,
                                    public ImageTransportFactory {
  public:
-  GpuProcessTransportFactory();
+  explicit GpuProcessTransportFactory(
+      scoped_refptr<base::SingleThreadTaskRunner> resize_task_runner);
 
   ~GpuProcessTransportFactory() override;
 
@@ -123,6 +128,7 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
   scoped_refptr<ui::ContextProviderCommandBuffer> shared_main_thread_contexts_;
   std::unique_ptr<viz::GLHelper> gl_helper_;
   base::ObserverList<ui::ContextFactoryObserver> observer_list_;
+  scoped_refptr<base::SingleThreadTaskRunner> resize_task_runner_;
   std::unique_ptr<cc::SingleThreadTaskGraphRunner> task_graph_runner_;
   scoped_refptr<ui::ContextProviderCommandBuffer>
       shared_worker_context_provider_;
