@@ -162,9 +162,7 @@ ScriptValue CryptoKey::usages(ScriptState* script_state) {
       result.push_back(KeyUsageToString(usage));
   }
 
-  return ScriptValue(script_state,
-                     ToV8(result, script_state->GetContext()->Global(),
-                          script_state->GetIsolate()));
+  return ScriptValue(script_state, ToV8(result, script_state));
 }
 
 bool CryptoKey::CanBeUsedForAlgorithm(const WebCryptoAlgorithm& algorithm,
