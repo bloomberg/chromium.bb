@@ -4190,6 +4190,14 @@ if (is_android) {
       "android/proto/delta_file.proto",
     ]
   }
+
+  if (is_win) {
+    proto_library("conflicts_module_list_proto") {
+      sources = [
+        "conflicts/proto/module_list.proto",
+      ]
+    }
+  }
 }
 
 if (is_win) {
