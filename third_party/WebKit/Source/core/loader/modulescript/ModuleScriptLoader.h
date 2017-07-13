@@ -77,8 +77,6 @@ class CORE_EXPORT ModuleScriptLoader final
   void NotifyFinished(Resource*) override;
   String DebugName() const override { return "ModuleScriptLoader"; }
 
-  static bool WasModuleLoadSuccessful(Resource*);
-
   Member<Modulator> modulator_;
   State state_ = State::kInitial;
   String nonce_;
