@@ -33,6 +33,7 @@ class EVENTS_EXPORT PlatformEventSource {
  public:
   virtual ~PlatformEventSource();
 
+  // Returns the thread-local singleton.
   static PlatformEventSource* GetInstance();
 
   // Adds a dispatcher to the dispatcher list. If a dispatcher is added during
@@ -64,6 +65,7 @@ class EVENTS_EXPORT PlatformEventSource {
   void AddPlatformEventObserver(PlatformEventObserver* observer);
   void RemovePlatformEventObserver(PlatformEventObserver* observer);
 
+  // Creates PlatformEventSource and sets it as a thread-local singleton.
   static std::unique_ptr<PlatformEventSource> CreateDefault();
 
  protected:
@@ -79,8 +81,6 @@ class EVENTS_EXPORT PlatformEventSource {
  private:
   friend class ScopedEventDispatcher;
   friend class test::PlatformEventSourceTestAPI;
-
-  static PlatformEventSource* instance_;
 
   // This is invoked when the list of dispatchers changes (i.e. a new dispatcher
   // is added, or a dispatcher is removed).

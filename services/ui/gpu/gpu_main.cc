@@ -51,8 +51,15 @@ namespace ui {
 GpuMain::GpuMain(mojom::GpuMainRequest request)
     : gpu_thread_("GpuThread"),
       io_thread_("GpuIOThread"),
-      power_monitor_(base::MakeUnique<base::PowerMonitorDeviceSource>()),
       binding_(this) {
+  // TODO: crbug.com/609317: Remove this when Mus Window Server and GPU are
+  // split into separate processes. Until then this is necessary to be able to
+  // run Mushrome (chrome --mus) with Mus running in the browser process.
+  if (!base::PowerMonitor::Get()) {
+    power_monitor_ = base::MakeUnique<base::PowerMonitor>(
+        base::MakeUnique<base::PowerMonitorDeviceSource>());
+  }
+
   base::Thread::Options thread_options;
 
 #if defined(OS_WIN)
