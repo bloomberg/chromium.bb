@@ -345,7 +345,7 @@
     "platforms": ["chromeos"],
     "session_types": ["kiosk.autolaunched"]
   }, {
-    "channel": "dev",
+    "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
     "platforms": ["chromeos", "mac", "win", "linux"],
     "whitelist": [
