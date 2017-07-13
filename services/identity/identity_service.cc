@@ -17,9 +17,14 @@ IdentityService::IdentityService(AccountTrackerService* account_tracker,
       token_service_(token_service) {
   registry_.AddInterface<mojom::IdentityManager>(
       base::Bind(&IdentityService::Create, base::Unretained(this)));
+  signin_manager_shutdown_subscription_ =
+      signin_manager_->RegisterOnShutdownCallback(
+          base::Bind(&IdentityService::ShutDown, base::Unretained(this)));
 }
 
-IdentityService::~IdentityService() {}
+IdentityService::~IdentityService() {
+  ShutDown();
+}
 
 void IdentityService::OnStart() {}
 
@@ -31,8 +36,26 @@ void IdentityService::OnBindInterface(
                           std::move(interface_pipe));
 }
 
+void IdentityService::ShutDown() {
+  if (IsShutDown())
+    return;
+
+  signin_manager_ = nullptr;
+  signin_manager_shutdown_subscription_.reset();
+  token_service_ = nullptr;
+  account_tracker_ = nullptr;
+}
+
+bool IdentityService::IsShutDown() {
+  return (signin_manager_ == nullptr);
+}
+
 void IdentityService::Create(const service_manager::BindSourceInfo& source_info,
                              mojom::IdentityManagerRequest request) {
+  // This instance cannot service requests if it has already been shut down.
+  if (IsShutDown())
+    return;
+
   IdentityManager::Create(std::move(request), account_tracker_, signin_manager_,
                           token_service_);
 }

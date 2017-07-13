@@ -148,10 +148,24 @@ class IdentityManagerTest : public service_manager::test::ServiceTest {
   }
 
  protected:
-  void SetUp() override {
-    ServiceTest::SetUp();
+  void SetUp() override { ServiceTest::SetUp(); }
 
-    connector()->BindInterface(mojom::kServiceName, &identity_manager_);
+  mojom::IdentityManager* GetIdentityManager() {
+    if (!identity_manager_)
+      connector()->BindInterface(mojom::kServiceName, &identity_manager_);
+    return identity_manager_.get();
+  }
+
+  void ResetIdentityManager() { identity_manager_.reset(); }
+
+  void FlushIdentityManagerForTesting() {
+    GetIdentityManager();
+    identity_manager_.FlushForTesting();
+  }
+
+  void SetIdentityManagerConnectionErrorHandler(base::Closure handler) {
+    GetIdentityManager();
+    identity_manager_.set_connection_error_handler(handler);
   }
 
   // service_manager::test::ServiceTest:
@@ -182,15 +196,46 @@ class IdentityManagerTest : public service_manager::test::ServiceTest {
   DISALLOW_COPY_AND_ASSIGN(IdentityManagerTest);
 };
 
-// Tests that the Identity Manager destroys itself on SigninManager shutdown.
-TEST_F(IdentityManagerTest, SigninManagerShutdown) {
+// Tests that it is not possible to connect to the Identity Manager if
+// initiated after SigninManager shutdown.
+TEST_F(IdentityManagerTest, SigninManagerShutdownBeforeConnection) {
+  AccountInfo sentinel;
+  sentinel.account_id = "sentinel";
+  primary_account_info_ = sentinel;
+
+  // Ensure that the Identity Service has actually been created before
+  // invoking SigninManagerBase::Shutdown(), since otherwise this test will
+  // spin forever. Then reset the Identity Manager so that the next request
+  // makes a fresh connection.
+  FlushIdentityManagerForTesting();
+  ResetIdentityManager();
+
+  // Make a call to connect to the IdentityManager *after* SigninManager
+  // shutdown; it should get notified of an error when the Identity Service
+  // drops the connection.
+  signin_manager()->Shutdown();
   base::RunLoop run_loop;
-  identity_manager_.set_connection_error_handler(run_loop.QuitClosure());
+  SetIdentityManagerConnectionErrorHandler(run_loop.QuitClosure());
+
+  GetIdentityManager()->GetPrimaryAccountInfo(
+      base::Bind(&IdentityManagerTest::OnReceivedPrimaryAccountInfo,
+                 base::Unretained(this), run_loop.QuitClosure()));
+  run_loop.Run();
+
+  // Verify that the callback to GetPrimaryAccountInfo() was not invoked.
+  EXPECT_TRUE(primary_account_info_);
+  EXPECT_EQ("sentinel", primary_account_info_->account_id);
+}
+
+// Tests that the Identity Manager destroys itself on SigninManager shutdown.
+TEST_F(IdentityManagerTest, SigninManagerShutdownAfterConnection) {
+  base::RunLoop run_loop;
+  SetIdentityManagerConnectionErrorHandler(run_loop.QuitClosure());
 
   // Ensure that the IdentityManager instance has actually been created before
   // invoking SigninManagerBase::Shutdown(), since otherwise this test will
   // spin forever.
-  identity_manager_.FlushForTesting();
+  FlushIdentityManagerForTesting();
   signin_manager()->Shutdown();
   run_loop.Run();
 }
@@ -198,7 +243,7 @@ TEST_F(IdentityManagerTest, SigninManagerShutdown) {
 // Check that the primary account info is null if not signed in.
 TEST_F(IdentityManagerTest, GetPrimaryAccountInfoNotSignedIn) {
   base::RunLoop run_loop;
-  identity_manager_->GetPrimaryAccountInfo(
+  GetIdentityManager()->GetPrimaryAccountInfo(
       base::Bind(&IdentityManagerTest::OnReceivedPrimaryAccountInfo,
                  base::Unretained(this), run_loop.QuitClosure()));
   run_loop.Run();
@@ -210,7 +255,7 @@ TEST_F(IdentityManagerTest, GetPrimaryAccountInfoNotSignedIn) {
 TEST_F(IdentityManagerTest, GetPrimaryAccountInfoSignedInNoRefreshToken) {
   signin_manager()->SetAuthenticatedAccountInfo(kTestGaiaId, kTestEmail);
   base::RunLoop run_loop;
-  identity_manager_->GetPrimaryAccountInfo(
+  GetIdentityManager()->GetPrimaryAccountInfo(
       base::Bind(&IdentityManagerTest::OnReceivedPrimaryAccountInfo,
                  base::Unretained(this), run_loop.QuitClosure()));
   run_loop.Run();
@@ -230,7 +275,7 @@ TEST_F(IdentityManagerTest, GetPrimaryAccountInfoSignedInRefreshToken) {
   token_service()->UpdateCredentials(
       signin_manager()->GetAuthenticatedAccountId(), kTestRefreshToken);
   base::RunLoop run_loop;
-  identity_manager_->GetPrimaryAccountInfo(
+  GetIdentityManager()->GetPrimaryAccountInfo(
       base::Bind(&IdentityManagerTest::OnReceivedPrimaryAccountInfo,
                  base::Unretained(this), run_loop.QuitClosure()));
   run_loop.Run();
@@ -253,7 +298,7 @@ TEST_F(IdentityManagerTest, GetPrimaryAccountWhenAvailableSignedIn) {
   AccountInfo account_info;
   AccountState account_state;
   base::RunLoop run_loop;
-  identity_manager_->GetPrimaryAccountWhenAvailable(base::Bind(
+  GetIdentityManager()->GetPrimaryAccountWhenAvailable(base::Bind(
       &IdentityManagerTest::OnPrimaryAccountAvailable, base::Unretained(this),
       run_loop.QuitClosure(), base::Unretained(&account_info),
       base::Unretained(&account_state)));
@@ -275,7 +320,7 @@ TEST_F(IdentityManagerTest, GetPrimaryAccountWhenAvailableSignInLater) {
   AccountState account_state;
 
   base::RunLoop run_loop;
-  identity_manager_->GetPrimaryAccountWhenAvailable(base::Bind(
+  GetIdentityManager()->GetPrimaryAccountWhenAvailable(base::Bind(
       &IdentityManagerTest::OnPrimaryAccountAvailable, base::Unretained(this),
       run_loop.QuitClosure(), base::Unretained(&account_info),
       base::Unretained(&account_state)));
@@ -284,7 +329,7 @@ TEST_F(IdentityManagerTest, GetPrimaryAccountWhenAvailableSignInLater) {
   // serves to ensure that the preceding call has been received by the Identity
   // Manager before proceeding).
   base::RunLoop run_loop2;
-  identity_manager_->GetPrimaryAccountInfo(
+  GetIdentityManager()->GetPrimaryAccountInfo(
       base::Bind(&IdentityManagerTest::OnReceivedPrimaryAccountInfo,
                  base::Unretained(this), run_loop2.QuitClosure()));
   run_loop2.Run();
@@ -315,7 +360,7 @@ TEST_F(IdentityManagerTest, GetPrimaryAccountWhenAvailableTokenAvailableLater) {
   // Sign in, but don't set the refresh token yet.
   signin_manager()->SetAuthenticatedAccountInfo(kTestGaiaId, kTestEmail);
   base::RunLoop run_loop;
-  identity_manager_->GetPrimaryAccountWhenAvailable(base::Bind(
+  GetIdentityManager()->GetPrimaryAccountWhenAvailable(base::Bind(
       &IdentityManagerTest::OnPrimaryAccountAvailable, base::Unretained(this),
       run_loop.QuitClosure(), base::Unretained(&account_info),
       base::Unretained(&account_state)));
@@ -325,7 +370,7 @@ TEST_F(IdentityManagerTest, GetPrimaryAccountWhenAvailableTokenAvailableLater) {
   // serves to ensure that the preceding call has been received by the Identity
   // Manager before proceeding).
   base::RunLoop run_loop2;
-  identity_manager_->GetPrimaryAccountInfo(
+  GetIdentityManager()->GetPrimaryAccountInfo(
       base::Bind(&IdentityManagerTest::OnReceivedPrimaryAccountInfo,
                  base::Unretained(this), run_loop2.QuitClosure()));
   run_loop2.Run();
@@ -365,7 +410,7 @@ TEST_F(IdentityManagerTest,
       account_tracker()->SeedAccountInfo(kTestGaiaId, kTestEmail);
   token_service()->UpdateCredentials(account_id_to_use, kTestRefreshToken);
   base::RunLoop run_loop;
-  identity_manager_->GetPrimaryAccountWhenAvailable(base::Bind(
+  GetIdentityManager()->GetPrimaryAccountWhenAvailable(base::Bind(
       &IdentityManagerTest::OnPrimaryAccountAvailable, base::Unretained(this),
       run_loop.QuitClosure(), base::Unretained(&account_info),
       base::Unretained(&account_state)));
@@ -375,7 +420,7 @@ TEST_F(IdentityManagerTest,
   // that the preceding call has been received by the Identity Manager before
   // proceeding).
   base::RunLoop run_loop2;
-  identity_manager_->GetAccountInfoFromGaiaId(
+  GetIdentityManager()->GetAccountInfoFromGaiaId(
       kTestGaiaId,
       base::Bind(&IdentityManagerTest::OnReceivedAccountInfoFromGaiaId,
                  base::Unretained(this), run_loop2.QuitClosure()));
@@ -415,7 +460,7 @@ TEST_F(IdentityManagerTest, GetPrimaryAccountWhenAvailableOverlappingCalls) {
   AccountInfo account_info1;
   AccountState account_state1;
   base::RunLoop run_loop;
-  identity_manager_->GetPrimaryAccountWhenAvailable(base::Bind(
+  GetIdentityManager()->GetPrimaryAccountWhenAvailable(base::Bind(
       &IdentityManagerTest::OnPrimaryAccountAvailable, base::Unretained(this),
       run_loop.QuitClosure(), base::Unretained(&account_info1),
       base::Unretained(&account_state1)));
@@ -423,7 +468,7 @@ TEST_F(IdentityManagerTest, GetPrimaryAccountWhenAvailableOverlappingCalls) {
   AccountInfo account_info2;
   AccountState account_state2;
   base::RunLoop run_loop2;
-  identity_manager_->GetPrimaryAccountWhenAvailable(base::Bind(
+  GetIdentityManager()->GetPrimaryAccountWhenAvailable(base::Bind(
       &IdentityManagerTest::OnPrimaryAccountAvailable, base::Unretained(this),
       run_loop2.QuitClosure(), base::Unretained(&account_info2),
       base::Unretained(&account_state2)));
@@ -432,7 +477,7 @@ TEST_F(IdentityManagerTest, GetPrimaryAccountWhenAvailableOverlappingCalls) {
   // serves to ensure that the preceding call has been received by the Identity
   // Manager before proceeding).
   base::RunLoop run_loop3;
-  identity_manager_->GetPrimaryAccountInfo(
+  GetIdentityManager()->GetPrimaryAccountInfo(
       base::Bind(&IdentityManagerTest::OnReceivedPrimaryAccountInfo,
                  base::Unretained(this), run_loop3.QuitClosure()));
   run_loop3.Run();
@@ -465,7 +510,7 @@ TEST_F(IdentityManagerTest, GetPrimaryAccountWhenAvailableOverlappingCalls) {
 // unknown.
 TEST_F(IdentityManagerTest, GetAccountInfoForUnknownGaiaID) {
   base::RunLoop run_loop;
-  identity_manager_->GetAccountInfoFromGaiaId(
+  GetIdentityManager()->GetAccountInfoFromGaiaId(
       kTestGaiaId,
       base::Bind(&IdentityManagerTest::OnReceivedAccountInfoFromGaiaId,
                  base::Unretained(this), run_loop.QuitClosure()));
@@ -479,7 +524,7 @@ TEST_F(IdentityManagerTest, GetAccountInfoForKnownGaiaIdNoRefreshToken) {
   std::string account_id =
       account_tracker()->SeedAccountInfo(kTestGaiaId, kTestEmail);
   base::RunLoop run_loop;
-  identity_manager_->GetAccountInfoFromGaiaId(
+  GetIdentityManager()->GetAccountInfoFromGaiaId(
       kTestGaiaId,
       base::Bind(&IdentityManagerTest::OnReceivedAccountInfoFromGaiaId,
                  base::Unretained(this), run_loop.QuitClosure()));
@@ -499,7 +544,7 @@ TEST_F(IdentityManagerTest, GetAccountInfoForKnownGaiaIdRefreshToken) {
       account_tracker()->SeedAccountInfo(kTestGaiaId, kTestEmail);
   token_service()->UpdateCredentials(account_id, kTestRefreshToken);
   base::RunLoop run_loop;
-  identity_manager_->GetAccountInfoFromGaiaId(
+  GetIdentityManager()->GetAccountInfoFromGaiaId(
       kTestGaiaId,
       base::Bind(&IdentityManagerTest::OnReceivedAccountInfoFromGaiaId,
                  base::Unretained(this), run_loop.QuitClosure()));
@@ -516,7 +561,7 @@ TEST_F(IdentityManagerTest, GetAccountInfoForKnownGaiaIdRefreshToken) {
 // not signed in.
 TEST_F(IdentityManagerTest, GetAccessTokenNotSignedIn) {
   base::RunLoop run_loop;
-  identity_manager_->GetAccessToken(
+  GetIdentityManager()->GetAccessToken(
       kTestGaiaId, ScopeSet(), "dummy_consumer",
       base::Bind(&IdentityManagerTest::OnReceivedAccessToken,
                  base::Unretained(this), run_loop.QuitClosure()));
@@ -535,7 +580,7 @@ TEST_F(IdentityManagerTest, GetAccessTokenSignedIn) {
   token_service()->set_auto_post_fetch_response_on_message_loop(true);
   base::RunLoop run_loop;
 
-  identity_manager_->GetAccessToken(
+  GetIdentityManager()->GetAccessToken(
       account_id, ScopeSet(), "dummy_consumer",
       base::Bind(&IdentityManagerTest::OnReceivedAccessToken,
                  base::Unretained(this), run_loop.QuitClosure()));
