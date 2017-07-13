@@ -56,6 +56,7 @@ class NativeBackendLibsecret : public PasswordStoreX::NativeBackend {
       std::vector<std::unique_ptr<autofill::PasswordForm>>* forms) override;
   bool GetAllLogins(
       std::vector<std::unique_ptr<autofill::PasswordForm>>* forms) override;
+  scoped_refptr<base::SequencedTaskRunner> GetBackgroundTaskRunner() override;
 
  private:
   enum TimestampToCompare {

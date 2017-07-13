@@ -410,6 +410,11 @@ bool NativeBackendLibsecret::GetAllLogins(
   return GetLoginsList(nullptr, ALL_LOGINS, forms);
 }
 
+scoped_refptr<base::SequencedTaskRunner>
+NativeBackendLibsecret::GetBackgroundTaskRunner() {
+  return nullptr;
+}
+
 bool NativeBackendLibsecret::GetLoginsList(
     const PasswordStore::FormDigest* lookup_form,
     GetLoginsListOptions options,
