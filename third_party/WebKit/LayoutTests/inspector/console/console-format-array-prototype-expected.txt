@@ -15,23 +15,23 @@ a0
 []
 console-format-array-prototype.html:4 []
 a1
-[undefined × 1]
-console-format-array-prototype.html:4 [undefined × 1]
+[empty × 1]
+console-format-array-prototype.html:4 [empty × 1]
 a2
-(5) [undefined × 5]
-console-format-array-prototype.html:4 (5) [undefined × 5]
+(5) [empty × 5]
+console-format-array-prototype.html:4 (5) [empty × 5]
 a3
-(3) [undefined × 1, 2, 3]
-console-format-array-prototype.html:4 (3) [undefined × 1, 2, 3]
+(3) [empty × 1, 2, 3]
+console-format-array-prototype.html:4 (3) [empty × 1, 2, 3]
 a4
-(15) [undefined × 15]
-console-format-array-prototype.html:4 (15) [undefined × 15]
+(15) [empty × 15]
+console-format-array-prototype.html:4 (15) [empty × 15]
 a5
-(15) [undefined × 8, 8, undefined × 6]
-console-format-array-prototype.html:4 (15) [undefined × 8, 8, undefined × 6]
+(15) [empty × 8, 8, empty × 6]
+console-format-array-prototype.html:4 (15) [empty × 8, 8, empty × 6]
 a6
-(15) [0, undefined × 9, 10, undefined × 4]
-console-format-array-prototype.html:4 (15) [0, undefined × 9, 10, undefined × 4]
+(15) [0, empty × 9, 10, empty × 4]
+console-format-array-prototype.html:4 (15) [0, empty × 9, 10, empty × 4]
 a7
 (15) [3: 4, index0: 0, index1: 1, index2: 2, index3: 3, index4: 4, …]
 console-format-array-prototype.html:4 (15) [3: 4, index0: 0, index1: 1, index2: 2, index3: 3, index4: 4, …]
@@ -39,8 +39,8 @@ a8
 (10) [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 console-format-array-prototype.html:4 (10) [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 a9
-(11) [undefined × 1, 1, 2, 3, 4, undefined × 1, 6, 7, 8, 9, undefined × 1, foo: "bar"]
-console-format-array-prototype.html:4 (11) [undefined × 1, 1, 2, 3, 4, undefined × 1, 6, 7, 8, 9, undefined × 1, foo: "bar"]
+(11) [empty × 1, 1, 2, 3, 4, empty × 1, 6, 7, 8, 9, empty × 1, foo: "bar"]
+console-format-array-prototype.html:4 (11) [empty × 1, 1, 2, 3, 4, empty × 1, 6, 7, 8, 9, empty × 1, foo: "bar"]
 a10
 Array {}
 console-format-array-prototype.html:4 Array {}
