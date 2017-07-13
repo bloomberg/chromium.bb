@@ -43,6 +43,43 @@ TEST(NGGeometryUnitsTest, ConvertPhysicalStrutToLogical) {
   EXPECT_EQ(right, logical.block_start);
 }
 
+TEST(NGGeometryUnitsTest, ConvertLogicalStrutToPhysical) {
+  LayoutUnit left{5}, right{10}, top{15}, bottom{20};
+  NGBoxStrut logical(left, right, top, bottom);
+  NGBoxStrut converted =
+      logical.ConvertToPhysical(kHorizontalTopBottom, TextDirection::kLtr)
+          .ConvertToLogical(kHorizontalTopBottom, TextDirection::kLtr);
+  EXPECT_EQ(logical, converted);
+  converted =
+      logical.ConvertToPhysical(kHorizontalTopBottom, TextDirection::kRtl)
+          .ConvertToLogical(kHorizontalTopBottom, TextDirection::kRtl);
+  EXPECT_EQ(logical, converted);
+  converted = logical.ConvertToPhysical(kVerticalLeftRight, TextDirection::kLtr)
+                  .ConvertToLogical(kVerticalLeftRight, TextDirection::kLtr);
+  EXPECT_EQ(logical, converted);
+  converted = logical.ConvertToPhysical(kVerticalLeftRight, TextDirection::kRtl)
+                  .ConvertToLogical(kVerticalLeftRight, TextDirection::kRtl);
+  EXPECT_EQ(logical, converted);
+  converted = logical.ConvertToPhysical(kVerticalRightLeft, TextDirection::kLtr)
+                  .ConvertToLogical(kVerticalRightLeft, TextDirection::kLtr);
+  EXPECT_EQ(logical, converted);
+  converted = logical.ConvertToPhysical(kVerticalRightLeft, TextDirection::kRtl)
+                  .ConvertToLogical(kVerticalRightLeft, TextDirection::kRtl);
+  EXPECT_EQ(logical, converted);
+  converted = logical.ConvertToPhysical(kSidewaysRightLeft, TextDirection::kLtr)
+                  .ConvertToLogical(kSidewaysRightLeft, TextDirection::kLtr);
+  EXPECT_EQ(logical, converted);
+  converted = logical.ConvertToPhysical(kSidewaysRightLeft, TextDirection::kRtl)
+                  .ConvertToLogical(kSidewaysRightLeft, TextDirection::kRtl);
+  EXPECT_EQ(logical, converted);
+  converted = logical.ConvertToPhysical(kSidewaysLeftRight, TextDirection::kLtr)
+                  .ConvertToLogical(kSidewaysLeftRight, TextDirection::kLtr);
+  EXPECT_EQ(logical, converted);
+  converted = logical.ConvertToPhysical(kSidewaysLeftRight, TextDirection::kRtl)
+                  .ConvertToLogical(kSidewaysLeftRight, TextDirection::kRtl);
+  EXPECT_EQ(logical, converted);
+}
+
 }  // namespace
 
 }  // namespace blink
