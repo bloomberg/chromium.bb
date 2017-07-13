@@ -61,6 +61,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/login/auth/user_context.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/signin/core/account_id/account_id.h"
 #endif
@@ -844,6 +845,9 @@ void EasyUnlockService::OnCryptohomeKeysFetchedForChecking(
                         : EasyUnlockScreenlockStateHandler::PAIRING_CHANGED);
   }
 }
+
+void EasyUnlockService::HandleUserReauth(
+    const chromeos::UserContext& user_context) {}
 #endif
 
 void EasyUnlockService::PrepareForSuspend() {
