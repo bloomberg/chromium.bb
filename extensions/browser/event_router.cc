@@ -64,7 +64,7 @@ void NotifyEventDispatched(void* browser_context_id,
 }
 
 // A global identifier used to distinguish extension events.
-base::StaticAtomicSequenceNumber g_extension_event_id;
+base::AtomicSequenceNumber g_extension_event_id;
 
 }  // namespace
 
