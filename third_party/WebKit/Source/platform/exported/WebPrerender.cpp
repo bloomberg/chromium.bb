@@ -39,19 +39,19 @@ namespace blink {
 
 namespace {
 
-class ExtraDataContainer : public Prerender::ExtraData {
+class PrerenderExtraDataContainer : public Prerender::ExtraData {
  public:
-  static PassRefPtr<ExtraDataContainer> Create(
+  static PassRefPtr<PrerenderExtraDataContainer> Create(
       WebPrerender::ExtraData* extra_data) {
-    return AdoptRef(new ExtraDataContainer(extra_data));
+    return AdoptRef(new PrerenderExtraDataContainer(extra_data));
   }
 
-  ~ExtraDataContainer() override {}
+  ~PrerenderExtraDataContainer() override {}
 
   WebPrerender::ExtraData* GetExtraData() const { return extra_data_.get(); }
 
  private:
-  explicit ExtraDataContainer(WebPrerender::ExtraData* extra_data)
+  explicit PrerenderExtraDataContainer(WebPrerender::ExtraData* extra_data)
       : extra_data_(WTF::WrapUnique(extra_data)) {}
 
   std::unique_ptr<WebPrerender::ExtraData> extra_data_;
@@ -94,14 +94,14 @@ WebReferrerPolicy WebPrerender::GetReferrerPolicy() const {
 }
 
 void WebPrerender::SetExtraData(WebPrerender::ExtraData* extra_data) {
-  private_->SetExtraData(ExtraDataContainer::Create(extra_data));
+  private_->SetExtraData(PrerenderExtraDataContainer::Create(extra_data));
 }
 
 const WebPrerender::ExtraData* WebPrerender::GetExtraData() const {
   RefPtr<Prerender::ExtraData> webcore_extra_data = private_->GetExtraData();
   if (!webcore_extra_data)
     return 0;
-  return static_cast<ExtraDataContainer*>(webcore_extra_data.Get())
+  return static_cast<PrerenderExtraDataContainer*>(webcore_extra_data.Get())
       ->GetExtraData();
 }
 

@@ -40,9 +40,10 @@ namespace blink {
 
 namespace {
 
-class ExtraDataContainer : public MediaStreamDescriptor::ExtraData {
+class MediaStreamExtraDataContainer : public MediaStreamDescriptor::ExtraData {
  public:
-  ExtraDataContainer(std::unique_ptr<WebMediaStream::ExtraData> extra_data)
+  MediaStreamExtraDataContainer(
+      std::unique_ptr<WebMediaStream::ExtraData> extra_data)
       : extra_data_(std::move(extra_data)) {}
 
   WebMediaStream::ExtraData* GetExtraData() { return extra_data_.get(); }
@@ -68,12 +69,12 @@ WebMediaStream::ExtraData* WebMediaStream::GetExtraData() const {
   MediaStreamDescriptor::ExtraData* data = private_->GetExtraData();
   if (!data)
     return 0;
-  return static_cast<ExtraDataContainer*>(data)->GetExtraData();
+  return static_cast<MediaStreamExtraDataContainer*>(data)->GetExtraData();
 }
 
 void WebMediaStream::SetExtraData(ExtraData* extra_data) {
-  private_->SetExtraData(
-      WTF::WrapUnique(new ExtraDataContainer(WTF::WrapUnique(extra_data))));
+  private_->SetExtraData(WTF::WrapUnique(
+      new MediaStreamExtraDataContainer(WTF::WrapUnique(extra_data))));
 }
 
 void WebMediaStream::AudioTracks(
