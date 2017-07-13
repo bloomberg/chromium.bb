@@ -247,60 +247,37 @@ void BoxPainter::PaintFillLayers(const PaintInfo& paint_info,
 
 namespace {
 
-class ImagePaintContext {
+class InterpolationQualityContext {
  public:
-  ImagePaintContext(const ImageResourceObserver& image_client,
-                    const Document& document,
-                    const ComputedStyle& style,
-                    GraphicsContext& context,
-                    const FillLayer& layer,
-                    const StyleImage& style_image,
-                    SkBlendMode op,
-                    const LayoutSize& container_size)
+  InterpolationQualityContext(const ComputedStyle& style,
+                              GraphicsContext& context)
       : context_(context),
         previous_interpolation_quality_(context.ImageInterpolationQuality()) {
-    SkBlendMode bg_op =
-        WebCoreCompositeToSkiaComposite(layer.Composite(), layer.BlendMode());
-    // if op != SkBlendMode::kSrcOver, a mask is being painted.
-    composite_op_ = (op == SkBlendMode::kSrcOver) ? bg_op : op;
-
-    image_ = style_image.GetImage(image_client, document, style,
-                                  FlooredIntSize(container_size));
     interpolation_quality_ = style.GetInterpolationQuality();
     if (interpolation_quality_ != previous_interpolation_quality_)
       context.SetImageInterpolationQuality(interpolation_quality_);
-
-    if (layer.MaskSourceType() == kMaskLuminance)
-      context.SetColorFilter(kColorFilterLuminanceToAlpha);
   }
 
-  ~ImagePaintContext() {
+  ~InterpolationQualityContext() {
     if (interpolation_quality_ != previous_interpolation_quality_)
       context_.SetImageInterpolationQuality(previous_interpolation_quality_);
   }
 
-  Image* GetImage() const { return image_.Get(); }
-
-  SkBlendMode CompositeOp() const { return composite_op_; }
-
  private:
-  RefPtr<Image> image_;
   GraphicsContext& context_;
-  SkBlendMode composite_op_;
   InterpolationQuality interpolation_quality_;
   InterpolationQuality previous_interpolation_quality_;
 };
 
-inline bool PaintFastBottomLayer(const LayoutBoxModelObject& obj,
+inline bool PaintFastBottomLayer(const DisplayItemClient& image_client,
+                                 Node* node,
                                  const PaintInfo& paint_info,
                                  const BoxPainterBase::FillLayerInfo& info,
                                  const LayoutRect& rect,
-                                 BackgroundBleedAvoidance bleed_avoidance,
-                                 const LayoutSize& box_size,
-                                 SkBlendMode op,
+                                 const FloatRoundedRect& border_rect,
                                  BackgroundImageGeometry& geometry,
-                                 Optional<ImagePaintContext>& image_context,
-                                 bool has_line_box_sibling) {
+                                 Image* image,
+                                 SkBlendMode composite_op) {
   // Painting a background image from an ancestor onto a cell is a complex case.
   if (geometry.CellUsingContainerBackground())
     return false;
@@ -342,19 +319,15 @@ inline bool PaintFastBottomLayer(const LayoutBoxModelObject& obj,
   // fits within a single tile, and we can paint it using direct draw(R)Rect()
   // calls.
   GraphicsContext& context = paint_info.context;
-  FloatRoundedRect border =
-      info.is_rounded_fill
-          ? BoxPainterBase::BackgroundRoundedRectAdjustedForBleedAvoidance(
-                obj.StyleRef(), rect, bleed_avoidance, has_line_box_sibling,
-                box_size, info.include_left_edge, info.include_right_edge)
-          : FloatRoundedRect(PixelSnappedIntRect(rect));
-
+  FloatRoundedRect border = info.is_rounded_fill
+                                ? border_rect
+                                : FloatRoundedRect(PixelSnappedIntRect(rect));
   Optional<RoundedInnerRectClipper> clipper;
   if (info.is_rounded_fill && !border.IsRenderable()) {
     // When the rrect is not renderable, we resort to clipping.
     // RoundedInnerRectClipper handles this case via discrete, corner-wise
     // clipping.
-    clipper.emplace(obj, paint_info, rect, border, kApplyToContext);
+    clipper.emplace(image_client, paint_info, rect, border, kApplyToContext);
     border.SetRadii(FloatRoundedRect::Radii());
   }
 
@@ -366,22 +339,96 @@ inline bool PaintFastBottomLayer(const LayoutBoxModelObject& obj,
   if (!info.should_paint_image || image_tile.IsEmpty())
     return true;
 
-  if (!image_context || !image_context->GetImage())
+  if (!image)
     return true;
 
   const FloatSize intrinsic_tile_size =
-      image_context->GetImage()->HasRelativeSize()
-          ? image_tile.Size()
-          : FloatSize(image_context->GetImage()->Size());
+      image->HasRelativeSize() ? image_tile.Size() : FloatSize(image->Size());
   const FloatRect src_rect = Image::ComputeSubsetForTile(
       image_tile, border.Rect(), intrinsic_tile_size);
 
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage",
-               "data", InspectorPaintImageEvent::Data(obj, *info.image));
-  context.DrawImageRRect(image_context->GetImage(), border, src_rect,
-                         image_context->CompositeOp());
+               "data", InspectorPaintImageEvent::Data(node, *info.image));
+  context.DrawImageRRect(image, border, src_rect, composite_op);
 
   return true;
+}
+
+void PaintFillLayerBackground(GraphicsContext& context,
+                              const BoxPainterBase::FillLayerInfo& info,
+                              Image* image,
+                              SkBlendMode composite_op,
+                              const BackgroundImageGeometry& geometry,
+                              Node* node,
+                              LayoutRect scrolled_paint_rect) {
+  // Paint the color first underneath all images, culled if background image
+  // occludes it.
+  // TODO(trchen): In the !bgLayer.hasRepeatXY() case, we could improve the
+  // culling test by verifying whether the background image covers the entire
+  // painting area.
+  if (info.is_bottom_layer && info.color.Alpha() && info.should_paint_color) {
+    IntRect background_rect(PixelSnappedIntRect(scrolled_paint_rect));
+    context.FillRect(background_rect, info.color);
+  }
+
+  // No progressive loading of the background image.
+  if (info.should_paint_image && !geometry.DestRect().IsEmpty()) {
+    TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage",
+                 "data", InspectorPaintImageEvent::Data(node, *info.image));
+    context.DrawTiledImage(image, FloatRect(geometry.DestRect()),
+                           FloatPoint(geometry.Phase()),
+                           FloatSize(geometry.TileSize()), composite_op,
+                           FloatSize(geometry.SpaceSize()));
+  }
+}
+
+void PaintFillLayerTextFillBox(GraphicsContext& context,
+                               const BoxPainterBase::FillLayerInfo& info,
+                               Image* image,
+                               SkBlendMode composite_op,
+                               const BackgroundImageGeometry& geometry,
+                               Node* node,
+                               const LayoutRect& rect,
+                               LayoutRect scrolled_paint_rect,
+                               const LayoutBoxModelObject& obj,
+                               const InlineFlowBox* box) {
+  // First figure out how big the mask has to be. It should be no bigger
+  // than what we need to actually render, so we should intersect the dirty
+  // rect with the border box of the background.
+  IntRect mask_rect = PixelSnappedIntRect(rect);
+
+  // We draw the background into a separate layer, to be later masked with
+  // yet another layer holding the text content.
+  GraphicsContextStateSaver background_clip_state_saver(context, false);
+  background_clip_state_saver.Save();
+  context.Clip(mask_rect);
+  context.BeginLayer();
+
+  PaintFillLayerBackground(context, info, image, composite_op, geometry,
+                           obj.GeneratingNode(), scrolled_paint_rect);
+
+  // Create the text mask layer and draw the text into the mask. We do this by
+  // painting using a special paint phase that signals to InlineTextBoxes that
+  // they should just add their contents to the clip.
+  context.BeginLayer(1, SkBlendMode::kDstIn);
+  PaintInfo paint_info(context, mask_rect, kPaintPhaseTextClip,
+                       kGlobalPaintNormalPhase, 0);
+  if (box) {
+    const RootInlineBox& root = box->Root();
+    box->Paint(paint_info,
+               LayoutPoint(scrolled_paint_rect.X() - box->X(),
+                           scrolled_paint_rect.Y() - box->Y()),
+               root.LineTop(), root.LineBottom());
+  } else {
+    // FIXME: this should only have an effect for the line box list within
+    // |obj|. Change this to create a LineBoxListPainter directly.
+    LayoutSize local_offset =
+        obj.IsBox() ? ToLayoutBox(&obj)->LocationOffset() : LayoutSize();
+    obj.Paint(paint_info, scrolled_paint_rect.Location() - local_offset);
+  }
+
+  context.EndLayer();  // Text mask layer.
+  context.EndLayer();  // Background layer.
 }
 
 }  // anonymous namespace
@@ -434,34 +481,52 @@ void BoxPainter::PaintFillLayer(const LayoutBoxModelObject& obj,
                                   this_box.BorderBottom());
   }
 
-  Optional<ImagePaintContext> image_context;
+  RefPtr<Image> image;
+  SkBlendMode composite_op = op;
+  Optional<InterpolationQualityContext> interpolation_quality_context;
   if (info.should_paint_image) {
     geometry.Calculate(paint_info.PaintContainer(),
                        paint_info.GetGlobalPaintFlags(), bg_layer,
                        scrolled_paint_rect);
-    image_context.emplace(geometry.ImageClient(), geometry.ImageDocument(),
-                          geometry.ImageStyle(), context, bg_layer, *info.image,
-                          op, geometry.TileSize());
+    image = info.image->GetImage(
+        geometry.ImageClient(), geometry.ImageDocument(), geometry.ImageStyle(),
+        FlooredIntSize(geometry.TileSize()));
+    interpolation_quality_context.emplace(geometry.ImageStyle(), context);
+
+    if (bg_layer.MaskSourceType() == kMaskLuminance)
+      context.SetColorFilter(kColorFilterLuminanceToAlpha);
+
+    // If op != SkBlendMode::kSrcOver, a mask is being painted.
+    SkBlendMode bg_op = WebCoreCompositeToSkiaComposite(bg_layer.Composite(),
+                                                        bg_layer.BlendMode());
+    composite_op = (op == SkBlendMode::kSrcOver) ? bg_op : op;
   }
 
+  FloatRoundedRect border_rect =
+      info.is_rounded_fill
+          ? RoundedBorderRectForClip(obj.StyleRef(), info, bg_layer, rect,
+                                     bleed_avoidance, has_line_box_sibling,
+                                     box_size, obj.BorderPaddingInsets())
+          : FloatRoundedRect();
+
   // Fast path for drawing simple color backgrounds.
-  if (PaintFastBottomLayer(obj, paint_info, info, rect, bleed_avoidance,
-                           box_size, op, geometry, image_context,
-                           has_line_box_sibling)) {
+  if (PaintFastBottomLayer(obj, obj.GeneratingNode(), paint_info, info, rect,
+                           border_rect, geometry, image.Get(), composite_op)) {
     return;
   }
 
   Optional<RoundedInnerRectClipper> clip_to_border;
-  if (info.is_rounded_fill) {
-    FloatRoundedRect border = RoundedBorderRectForClip(
-        obj.StyleRef(), info, bg_layer, rect, bleed_avoidance,
-        has_line_box_sibling, box_size, obj.BorderPaddingInsets());
-    clip_to_border.emplace(obj, paint_info, rect, border, kApplyToContext);
+  if (info.is_rounded_fill)
+    clip_to_border.emplace(obj, paint_info, rect, border_rect, kApplyToContext);
+
+  if (bg_layer.Clip() == kTextFillBox) {
+    PaintFillLayerTextFillBox(context, info, image.Get(), composite_op,
+                              geometry, obj.GeneratingNode(), rect,
+                              scrolled_paint_rect, obj, box);
+    return;
   }
 
   GraphicsContextStateSaver background_clip_state_saver(context, false);
-  IntRect mask_rect;
-
   switch (bg_layer.Clip()) {
     case kPaddingFillBox:
     case kContentFillBox: {
@@ -482,76 +547,18 @@ void BoxPainter::PaintFillLayer(const LayoutBoxModelObject& obj,
       background_clip_state_saver.Save();
       // TODO(chrishtr): this should be pixel-snapped.
       context.Clip(FloatRect(clip_rect));
-
-      break;
-    }
-    case kTextFillBox: {
-      // First figure out how big the mask has to be. It should be no bigger
-      // than what we need to actually render, so we should intersect the dirty
-      // rect with the border box of the background.
-      mask_rect = PixelSnappedIntRect(rect);
-
-      // We draw the background into a separate layer, to be later masked with
-      // yet another layer holding the text content.
-      background_clip_state_saver.Save();
-      context.Clip(mask_rect);
-      context.BeginLayer();
-
       break;
     }
     case kBorderFillBox:
       break;
+    case kTextFillBox:  // fall through
     default:
       NOTREACHED();
       break;
   }
 
-  // Paint the color first underneath all images, culled if background image
-  // occludes it.
-  // TODO(trchen): In the !bgLayer.hasRepeatXY() case, we could improve the
-  // culling test by verifying whether the background image covers the entire
-  // painting area.
-  if (info.is_bottom_layer && info.color.Alpha() && info.should_paint_color) {
-    IntRect background_rect(PixelSnappedIntRect(scrolled_paint_rect));
-    context.FillRect(background_rect, info.color);
-  }
-
-  // no progressive loading of the background image
-  if (info.should_paint_image && !geometry.DestRect().IsEmpty()) {
-    TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage",
-                 "data", InspectorPaintImageEvent::Data(obj, *info.image));
-    context.DrawTiledImage(
-        image_context->GetImage(), FloatRect(geometry.DestRect()),
-        FloatPoint(geometry.Phase()), FloatSize(geometry.TileSize()),
-        image_context->CompositeOp(), FloatSize(geometry.SpaceSize()));
-  }
-
-  if (bg_layer.Clip() == kTextFillBox) {
-    // Create the text mask layer.
-    context.BeginLayer(1, SkBlendMode::kDstIn);
-
-    // Now draw the text into the mask. We do this by painting using a special
-    // paint phase that signals to
-    // InlineTextBoxes that they should just add their contents to the clip.
-    PaintInfo info(context, mask_rect, kPaintPhaseTextClip,
-                   kGlobalPaintNormalPhase, 0);
-    if (box) {
-      const RootInlineBox& root = box->Root();
-      box->Paint(info,
-                 LayoutPoint(scrolled_paint_rect.X() - box->X(),
-                             scrolled_paint_rect.Y() - box->Y()),
-                 root.LineTop(), root.LineBottom());
-    } else {
-      // FIXME: this should only have an effect for the line box list within
-      // |obj|. Change this to create a LineBoxListPainter directly.
-      LayoutSize local_offset =
-          obj.IsBox() ? ToLayoutBox(&obj)->LocationOffset() : LayoutSize();
-      obj.Paint(info, scrolled_paint_rect.Location() - local_offset);
-    }
-
-    context.EndLayer();
-    context.EndLayer();
-  }
+  PaintFillLayerBackground(context, info, image.Get(), composite_op, geometry,
+                           obj.GeneratingNode(), scrolled_paint_rect);
 }
 
 void BoxPainter::PaintMask(const PaintInfo& paint_info,
