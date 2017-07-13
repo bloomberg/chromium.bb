@@ -102,7 +102,7 @@ TEST(Switches, Unparsed) {
 TEST(ParseCapabilities, WithAndroidPackage) {
   Capabilities capabilities;
   base::DictionaryValue caps;
-  caps.SetString("chromeOptions.androidPackage", "abc");
+  caps.SetString("goog:chromeOptions.androidPackage", "abc");
   Status status = capabilities.Parse(caps);
   ASSERT_TRUE(status.IsOk());
   ASSERT_TRUE(capabilities.IsAndroid());
@@ -112,7 +112,7 @@ TEST(ParseCapabilities, WithAndroidPackage) {
 TEST(ParseCapabilities, EmptyAndroidPackage) {
   Capabilities capabilities;
   base::DictionaryValue caps;
-  caps.SetString("chromeOptions.androidPackage", std::string());
+  caps.SetString("goog:chromeOptions.androidPackage", std::string());
   Status status = capabilities.Parse(caps);
   ASSERT_FALSE(status.IsOk());
 }
@@ -120,7 +120,7 @@ TEST(ParseCapabilities, EmptyAndroidPackage) {
 TEST(ParseCapabilities, IllegalAndroidPackage) {
   Capabilities capabilities;
   base::DictionaryValue caps;
-  caps.SetInteger("chromeOptions.androidPackage", 123);
+  caps.SetInteger("goog:chromeOptions.androidPackage", 123);
   Status status = capabilities.Parse(caps);
   ASSERT_FALSE(status.IsOk());
 }
@@ -128,7 +128,7 @@ TEST(ParseCapabilities, IllegalAndroidPackage) {
 TEST(ParseCapabilities, LogPath) {
   Capabilities capabilities;
   base::DictionaryValue caps;
-  caps.SetString("chromeOptions.logPath", "path/to/logfile");
+  caps.SetString("goog:chromeOptions.logPath", "path/to/logfile");
   Status status = capabilities.Parse(caps);
   ASSERT_TRUE(status.IsOk());
   ASSERT_STREQ("path/to/logfile", capabilities.log_path.c_str());
@@ -140,7 +140,7 @@ TEST(ParseCapabilities, Args) {
   args.AppendString("arg1");
   args.AppendString("arg2=val");
   base::DictionaryValue caps;
-  caps.Set("chromeOptions.args", base::MakeUnique<base::Value>(args));
+  caps.Set("goog:chromeOptions.args", base::MakeUnique<base::Value>(args));
 
   Status status = capabilities.Parse(caps);
   ASSERT_TRUE(status.IsOk());
@@ -158,7 +158,7 @@ TEST(ParseCapabilities, Prefs) {
   prefs.SetString("key1", "value1");
   prefs.SetString("key2.k", "value2");
   base::DictionaryValue caps;
-  caps.Set("chromeOptions.prefs", base::MakeUnique<base::Value>(prefs));
+  caps.Set("goog:chromeOptions.prefs", base::MakeUnique<base::Value>(prefs));
   Status status = capabilities.Parse(caps);
   ASSERT_TRUE(status.IsOk());
   ASSERT_TRUE(capabilities.prefs->Equals(&prefs));
@@ -170,7 +170,7 @@ TEST(ParseCapabilities, LocalState) {
   local_state.SetString("s1", "v1");
   local_state.SetString("s2.s", "v2");
   base::DictionaryValue caps;
-  caps.Set("chromeOptions.localState",
+  caps.Set("goog:chromeOptions.localState",
            base::MakeUnique<base::Value>(local_state));
   Status status = capabilities.Parse(caps);
   ASSERT_TRUE(status.IsOk());
@@ -183,7 +183,7 @@ TEST(ParseCapabilities, Extensions) {
   extensions.AppendString("ext1");
   extensions.AppendString("ext2");
   base::DictionaryValue caps;
-  caps.Set("chromeOptions.extensions",
+  caps.Set("goog:chromeOptions.extensions",
            base::MakeUnique<base::Value>(extensions));
   Status status = capabilities.Parse(caps);
   ASSERT_TRUE(status.IsOk());
@@ -357,7 +357,7 @@ TEST(ParseCapabilities, PerfLoggingPrefsInspectorDomainStatus) {
   base::DictionaryValue perf_logging_prefs;
   perf_logging_prefs.SetBoolean("enableNetwork", true);
   perf_logging_prefs.SetBoolean("enablePage", false);
-  desired_caps.Set("chromeOptions.perfLoggingPrefs",
+  desired_caps.Set("goog:chromeOptions.perfLoggingPrefs",
                    base::MakeUnique<base::Value>(perf_logging_prefs));
   Status status = capabilities.Parse(desired_caps);
   ASSERT_TRUE(status.IsOk());
@@ -381,7 +381,7 @@ TEST(ParseCapabilities, PerfLoggingPrefsTracing) {
   base::DictionaryValue perf_logging_prefs;
   perf_logging_prefs.SetString("traceCategories", "benchmark,blink.console");
   perf_logging_prefs.SetInteger("bufferUsageReportingInterval", 1234);
-  desired_caps.Set("chromeOptions.perfLoggingPrefs",
+  desired_caps.Set("goog:chromeOptions.perfLoggingPrefs",
                    base::MakeUnique<base::Value>(perf_logging_prefs));
   Status status = capabilities.Parse(desired_caps);
   ASSERT_TRUE(status.IsOk());
@@ -402,7 +402,7 @@ TEST(ParseCapabilities, PerfLoggingPrefsInvalidInterval) {
   base::DictionaryValue perf_logging_prefs;
   // A bufferUsageReportingInterval interval <= 0 will cause DevTools errors.
   perf_logging_prefs.SetInteger("bufferUsageReportingInterval", 0);
-  desired_caps.Set("chromeOptions.perfLoggingPrefs",
+  desired_caps.Set("goog:chromeOptions.perfLoggingPrefs",
                    base::MakeUnique<base::Value>(perf_logging_prefs));
   Status status = capabilities.Parse(desired_caps);
   ASSERT_FALSE(status.IsOk());
@@ -416,7 +416,8 @@ TEST(ParseCapabilities, PerfLoggingPrefsNotDict) {
   base::DictionaryValue desired_caps;
   desired_caps.Set("loggingPrefs",
                    base::MakeUnique<base::Value>(logging_prefs));
-  desired_caps.SetString("chromeOptions.perfLoggingPrefs", "traceCategories");
+  desired_caps.SetString("goog:chromeOptions.perfLoggingPrefs",
+                         "traceCategories");
   Status status = capabilities.Parse(desired_caps);
   ASSERT_FALSE(status.IsOk());
 }
@@ -426,7 +427,7 @@ TEST(ParseCapabilities, PerfLoggingPrefsNoPerfLogLevel) {
   base::DictionaryValue desired_caps;
   base::DictionaryValue perf_logging_prefs;
   perf_logging_prefs.SetBoolean("enableNetwork", true);
-  desired_caps.Set("chromeOptions.perfLoggingPrefs",
+  desired_caps.Set("goog:chromeOptions.perfLoggingPrefs",
                    base::MakeUnique<base::Value>(perf_logging_prefs));
   // Should fail because perf log must be enabled if perf log prefs specified.
   Status status = capabilities.Parse(desired_caps);
@@ -443,7 +444,7 @@ TEST(ParseCapabilities, PerfLoggingPrefsPerfLogOff) {
                    base::MakeUnique<base::Value>(logging_prefs));
   base::DictionaryValue perf_logging_prefs;
   perf_logging_prefs.SetBoolean("enableNetwork", true);
-  desired_caps.Set("chromeOptions.perfLoggingPrefs",
+  desired_caps.Set("goog:chromeOptions.perfLoggingPrefs",
                    base::MakeUnique<base::Value>(perf_logging_prefs));
   // Should fail because perf log must be enabled if perf log prefs specified.
   Status status = capabilities.Parse(desired_caps);
@@ -456,7 +457,7 @@ TEST(ParseCapabilities, ExcludeSwitches) {
   exclude_switches.AppendString("switch1");
   exclude_switches.AppendString("switch2");
   base::DictionaryValue caps;
-  caps.Set("chromeOptions.excludeSwitches",
+  caps.Set("goog:chromeOptions.excludeSwitches",
            base::MakeUnique<base::Value>(exclude_switches));
   Status status = capabilities.Parse(caps);
   ASSERT_TRUE(status.IsOk());
@@ -469,7 +470,7 @@ TEST(ParseCapabilities, ExcludeSwitches) {
 TEST(ParseCapabilities, UseRemoteBrowser) {
   Capabilities capabilities;
   base::DictionaryValue caps;
-  caps.SetString("chromeOptions.debuggerAddress", "abc:123");
+  caps.SetString("goog:chromeOptions.debuggerAddress", "abc:123");
   Status status = capabilities.Parse(caps);
   ASSERT_TRUE(status.IsOk());
   ASSERT_TRUE(capabilities.IsRemoteBrowser());
@@ -482,7 +483,7 @@ TEST(ParseCapabilities, MobileEmulationUserAgent) {
   base::DictionaryValue mobile_emulation;
   mobile_emulation.SetString("userAgent", "Agent Smith");
   base::DictionaryValue caps;
-  caps.Set("chromeOptions.mobileEmulation",
+  caps.Set("goog:chromeOptions.mobileEmulation",
            base::MakeUnique<base::Value>(mobile_emulation));
   Status status = capabilities.Parse(caps);
   ASSERT_TRUE(status.IsOk());
@@ -499,7 +500,7 @@ TEST(ParseCapabilities, MobileEmulationDeviceMetrics) {
   mobile_emulation.SetInteger("deviceMetrics.height", 640);
   mobile_emulation.SetDouble("deviceMetrics.pixelRatio", 3.0);
   base::DictionaryValue caps;
-  caps.Set("chromeOptions.mobileEmulation",
+  caps.Set("goog:chromeOptions.mobileEmulation",
            base::MakeUnique<base::Value>(mobile_emulation));
   Status status = capabilities.Parse(caps);
   ASSERT_TRUE(status.IsOk());
@@ -514,7 +515,7 @@ TEST(ParseCapabilities, MobileEmulationDeviceName) {
   base::DictionaryValue mobile_emulation;
   mobile_emulation.SetString("deviceName", "Nexus 5");
   base::DictionaryValue caps;
-  caps.Set("chromeOptions.mobileEmulation",
+  caps.Set("goog:chromeOptions.mobileEmulation",
            base::MakeUnique<base::Value>(mobile_emulation));
   Status status = capabilities.Parse(caps);
   ASSERT_TRUE(status.IsOk());
@@ -535,7 +536,7 @@ TEST(ParseCapabilities, MobileEmulationDeviceName) {
 TEST(ParseCapabilities, MobileEmulationNotDict) {
   Capabilities capabilities;
   base::DictionaryValue caps;
-  caps.SetString("chromeOptions.mobileEmulation", "Google Nexus 5");
+  caps.SetString("goog:chromeOptions.mobileEmulation", "Google Nexus 5");
   Status status = capabilities.Parse(caps);
   ASSERT_FALSE(status.IsOk());
 }
@@ -545,7 +546,7 @@ TEST(ParseCapabilities, MobileEmulationDeviceMetricsNotDict) {
   base::DictionaryValue mobile_emulation;
   mobile_emulation.SetInteger("deviceMetrics", 360);
   base::DictionaryValue caps;
-  caps.Set("chromeOptions.mobileEmulation",
+  caps.Set("goog:chromeOptions.mobileEmulation",
            base::MakeUnique<base::Value>(mobile_emulation));
   Status status = capabilities.Parse(caps);
   ASSERT_FALSE(status.IsOk());
@@ -558,7 +559,7 @@ TEST(ParseCapabilities, MobileEmulationDeviceMetricsNotNumbers) {
   mobile_emulation.SetString("deviceMetrics.height", "640");
   mobile_emulation.SetString("deviceMetrics.pixelRatio", "3.0");
   base::DictionaryValue caps;
-  caps.Set("chromeOptions.mobileEmulation",
+  caps.Set("goog:chromeOptions.mobileEmulation",
            base::MakeUnique<base::Value>(mobile_emulation));
   Status status = capabilities.Parse(caps);
   ASSERT_FALSE(status.IsOk());
@@ -572,7 +573,7 @@ TEST(ParseCapabilities, MobileEmulationBadDict) {
   mobile_emulation.SetInteger("deviceMetrics.height", 640);
   mobile_emulation.SetDouble("deviceMetrics.pixelRatio", 3.0);
   base::DictionaryValue caps;
-  caps.Set("chromeOptions.mobileEmulation",
+  caps.Set("goog:chromeOptions.mobileEmulation",
            base::MakeUnique<base::Value>(mobile_emulation));
   Status status = capabilities.Parse(caps);
   ASSERT_FALSE(status.IsOk());
