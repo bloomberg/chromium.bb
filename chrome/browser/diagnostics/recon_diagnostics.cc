@@ -30,7 +30,6 @@
 #include "components/version_info/version_info.h"
 
 #if defined(OS_WIN)
-#include "base/win/windows_version.h"
 #include "chrome/browser/win/enumerate_modules_model.h"
 #include "chrome/installer/util/install_util.h"
 #endif
@@ -188,22 +187,10 @@ class OperatingSystemTest : public DiagnosticsTest {
       : DiagnosticsTest(DIAGNOSTICS_OPERATING_SYSTEM_TEST) {}
 
   bool ExecuteImpl(DiagnosticsModel::Observer* observer) override {
-#if defined(OS_WIN)
-    base::win::Version version = base::win::GetVersion();
-    if ((version < base::win::VERSION_XP) ||
-        ((version == base::win::VERSION_XP) &&
-         (base::win::OSInfo::GetInstance()->service_pack().major < 2))) {
-      RecordFailure(DIAG_RECON_PRE_WINDOW_XP_SP2,
-                    "Must have Windows XP SP2 or later");
-      return false;
-    }
-#else
-// TODO(port): define the OS criteria for Linux and Mac.
-#endif  // defined(OS_WIN)
-    RecordSuccess(
-        base::StringPrintf("%s %s",
-                           base::SysInfo::OperatingSystemName().c_str(),
-                           base::SysInfo::OperatingSystemVersion().c_str()));
+    // TODO(port): define the OS criteria for Linux and Mac.
+    RecordSuccess(base::StringPrintf(
+        "%s %s", base::SysInfo::OperatingSystemName().c_str(),
+        base::SysInfo::OperatingSystemVersion().c_str()));
     return true;
   }
 

@@ -301,12 +301,6 @@ chromium_strings.grd. -->
           Google Chrome OS can't open this page.
         </message>
       </if>
-      <!-- Strings used to warn that an OS is not supported -->
-      <if expr="is_win">
-        <message name="IDS_UNSUPPORTED_OS_PRE_WIN_XP" desc="The text used to warn the user that Windows pre-XP is not supported">
-          Google Chrome requires Windows XP or later. Some features may not work.
-        </message>
-      </if>
       <if expr="not chromeos">
         <message name="IDS_OPTIONS_RELAUNCH_REQUIRED" desc="The message displayed for an option that requires a relaunch to take effect. This appears in a message box if an option is changed that requires a relaunch.">
           Please close all Google Chrome windows and relaunch it for this change to take effect.

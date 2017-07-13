@@ -7,7 +7,6 @@
 
 #include "base/macros.h"
 #include "base/win/scoped_com_initializer.h"
-#include "base/win/windows_version.h"
 #include "chrome/browser/status_icons/status_icon.h"
 #include "chrome/browser/ui/views/status_icons/status_icon_win.h"
 #include "chrome/browser/ui/views/status_icons/status_tray_state_changer_win.h"
@@ -125,12 +124,6 @@ TEST_F(StatusTrayStateChangerWinTest, DISABLED_ComApiTest) {
 // Test is disabled due to multiple COM initialization errors.  See
 // http//crbug.com/367199 for details.
 TEST_F(StatusTrayStateChangerWinTest, DISABLED_TraySizeApiTest) {
-
-  // The tray does not auto-hide icons immediately on Vista so this test does
-  // not detect a size change.
-  if (base::win::GetVersion() <= base::win::VERSION_VISTA)
-    return;
-
   // Used to reset operating system state afterwards.
   std::unique_ptr<NOTIFYITEM> notify_item = SetupAndGetCurrentNotifyItem();
   // We can't actually run this test if we're already showing the icon.

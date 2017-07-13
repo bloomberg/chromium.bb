@@ -31,7 +31,6 @@
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_propvariant.h"
-#include "base/win/windows_version.h"
 #include "chrome/common/importer/edge_importer_utils_win.h"
 #include "chrome/common/importer/ie_importer_utils_win.h"
 #include "chrome/common/importer/imported_bookmark_entry.h"
@@ -53,8 +52,6 @@ const base::char16 kSearchScopePath[] =
   L"Software\\Microsoft\\Internet Explorer\\SearchScopes";
 const base::char16 kIEVersionKey[] =
   L"Software\\Microsoft\\Internet Explorer";
-const base::char16 kIEToolbarKey[] =
-  L"Software\\Microsoft\\Internet Explorer\\Toolbar";
 
 // NTFS stream name of favicon image data.
 const base::char16 kFaviconStreamName[] = L":favicon:$DATA";
@@ -801,26 +798,17 @@ bool IEImporter::GetFavoritesInfo(IEImporter::FavoritesInfo* info) {
 
   // IE stores the favorites in the Favorites under user profile's folder.
   wchar_t buffer[MAX_PATH];
-  if (FAILED(SHGetFolderPath(NULL, CSIDL_FAVORITES, NULL,
-                             SHGFP_TYPE_CURRENT, buffer)))
+  if (FAILED(SHGetFolderPath(NULL, CSIDL_FAVORITES, NULL, SHGFP_TYPE_CURRENT,
+                             buffer))) {
     return false;
-  info->path = base::FilePath(buffer);
-
-  // There is a Links folder under Favorites folder in Windows Vista, but it
-  // is not recording in Vista's registry. So in Vista, we assume the Links
-  // folder is under Favorites folder since it looks like there is not name
-  // different in every language version of Windows Vista.
-  if (base::win::GetVersion() < base::win::VERSION_VISTA) {
-    // The Link folder name is stored in the registry.
-    DWORD buffer_length = sizeof(buffer);
-    base::win::RegKey reg_key(HKEY_CURRENT_USER, kIEToolbarKey, KEY_READ);
-    if (reg_key.ReadValue(L"LinksFolderName", buffer,
-                          &buffer_length, NULL) != ERROR_SUCCESS)
-      return false;
-    info->links_folder = buffer;
-  } else {
-    info->links_folder = L"Links";
   }
+
+  // There is a Links folder under Favorites folder since Windows Vista, but it
+  // is not recording in Vista's registry. So we assume the Links folder is
+  // under Favorites folder since it looks like there is not name different in
+  // every language version of Windows.
+  info->path = base::FilePath(buffer);
+  info->links_folder = L"Links";
 
   return true;
 }

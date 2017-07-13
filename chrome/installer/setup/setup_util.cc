@@ -36,7 +36,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
 #include "base/win/registry.h"
-#include "base/win/windows_version.h"
 #include "chrome/install_static/install_details.h"
 #include "chrome/install_static/install_modes.h"
 #include "chrome/install_static/install_util.h"
@@ -440,18 +439,18 @@ bool DeleteFileFromTempProcess(const base::FilePath& path,
 }
 
 bool AdjustProcessPriority() {
-  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
-    DWORD priority_class = ::GetPriorityClass(::GetCurrentProcess());
-    if (priority_class == 0) {
-      PLOG(WARNING) << "Failed to get the process's priority class.";
-    } else if (priority_class == BELOW_NORMAL_PRIORITY_CLASS ||
-               priority_class == IDLE_PRIORITY_CLASS) {
-      BOOL result = ::SetPriorityClass(::GetCurrentProcess(),
-                                       PROCESS_MODE_BACKGROUND_BEGIN);
-      PLOG_IF(WARNING, !result) << "Failed to enter background mode.";
-      return !!result;
-    }
+  DWORD priority_class = ::GetPriorityClass(::GetCurrentProcess());
+  if (priority_class == BELOW_NORMAL_PRIORITY_CLASS ||
+      priority_class == IDLE_PRIORITY_CLASS) {
+    BOOL result = ::SetPriorityClass(::GetCurrentProcess(),
+                                     PROCESS_MODE_BACKGROUND_BEGIN);
+    PLOG_IF(WARNING, !result) << "Failed to enter background mode.";
+    return !!result;
   }
+
+  if (priority_class == 0)
+    PLOG(WARNING) << "Failed to get the process's priority class.";
+
   return false;
 }
 

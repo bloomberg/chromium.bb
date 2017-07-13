@@ -8,7 +8,6 @@
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/win/win_util.h"
-#include "base/win/windows_version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/first_run/upgrade_util.h"
 #include "chrome/grit/generated_resources.h"
@@ -31,17 +30,8 @@ void VersionUpdaterWin::CheckForUpdate(const StatusCallback& callback,
   // There is no supported integration with Google Update for Chromium.
   callback_ = callback;
 
-  // On-demand updates for Chrome don't work in Vista RTM when UAC is turned
-  // off. So, in this case, the version updater must not mention
-  // on-demand updates. Silent updates (in the background) should still
-  // work as before - enabling UAC or installing the latest service pack
-  // for Vista is another option.
-  if (!(base::win::GetVersion() == base::win::VERSION_VISTA &&
-        (base::win::OSInfo::GetInstance()->service_pack().major == 0) &&
-        !base::win::UserAccountControlIsEnabled())) {
-    callback_.Run(CHECKING, 0, std::string(), 0, base::string16());
-    BeginUpdateCheckOnFileThread(false /* !install_update_if_possible */);
-  }
+  callback_.Run(CHECKING, 0, std::string(), 0, base::string16());
+  BeginUpdateCheckOnFileThread(false /* !install_update_if_possible */);
 }
 
 void VersionUpdaterWin::OnUpdateCheckComplete(

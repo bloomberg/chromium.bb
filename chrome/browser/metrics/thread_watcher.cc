@@ -29,10 +29,6 @@
 #include "components/version_info/version_info.h"
 #include "content/public/browser/notification_service.h"
 
-#if defined(OS_WIN)
-#include "base/win/windows_version.h"
-#endif
-
 using content::BrowserThread;
 
 // ThreadWatcher methods and members.
@@ -453,14 +449,6 @@ void ThreadWatcherList::ParseCommandLine(
   } else if (channel == version_info::Channel::BETA) {
     *unresponsive_threshold *= 2;
   }
-
-#if defined(OS_WIN)
-  // For Windows XP (old systems), double the unresponsive_threshold to give
-  // the OS a chance to schedule UI/IO threads a time slice to respond with a
-  // pong message (to get around limitations with the OS).
-  if (base::win::GetVersion() <= base::win::VERSION_XP)
-    *unresponsive_threshold *= 2;
-#endif
 
   uint32_t crash_seconds = *unresponsive_threshold * kUnresponsiveSeconds;
   std::string crash_on_hang_thread_names;
@@ -948,12 +936,6 @@ void ShutdownWatcherHelper::Arm(const base::TimeDelta& duration) {
   } else {
     actual_duration *= 2;
   }
-
-#if defined(OS_WIN)
-  // On Windows XP, give twice the time for shutdown.
-  if (base::win::GetVersion() <= base::win::VERSION_XP)
-    actual_duration *= 2;
-#endif
 
   shutdown_watchdog_ = new ShutdownWatchDogThread(actual_duration);
   shutdown_watchdog_->Arm();

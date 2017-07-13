@@ -609,25 +609,11 @@ DefaultWebClientState GetDefaultBrowser() {
 // error (or if Firefox is not found)it returns the default value which
 // is false.
 bool IsFirefoxDefaultBrowser() {
-  bool ff_default = false;
-  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
-    base::string16 app_cmd;
-    base::win::RegKey key(HKEY_CURRENT_USER,
-                          ShellUtil::kRegVistaUrlPrefs, KEY_READ);
-    if (key.Valid() && (key.ReadValue(L"Progid", &app_cmd) == ERROR_SUCCESS) &&
-        app_cmd == L"FirefoxURL")
-      ff_default = true;
-  } else {
-    base::string16 key_path(L"http");
-    key_path.append(ShellUtil::kRegShellOpen);
-    base::win::RegKey key(HKEY_CLASSES_ROOT, key_path.c_str(), KEY_READ);
-    base::string16 app_cmd;
-    if (key.Valid() && (key.ReadValue(L"", &app_cmd) == ERROR_SUCCESS) &&
-        base::string16::npos !=
-        base::ToLowerASCII(app_cmd).find(L"firefox"))
-      ff_default = true;
-  }
-  return ff_default;
+  base::string16 app_cmd;
+  base::win::RegKey key(HKEY_CURRENT_USER, ShellUtil::kRegVistaUrlPrefs,
+                        KEY_READ);
+  return key.Valid() && key.ReadValue(L"Progid", &app_cmd) == ERROR_SUCCESS &&
+         app_cmd == L"FirefoxURL";
 }
 
 DefaultWebClientState IsDefaultProtocolClient(const std::string& protocol) {

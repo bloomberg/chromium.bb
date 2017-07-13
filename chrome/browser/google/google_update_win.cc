@@ -31,7 +31,6 @@
 #include "base/time/time.h"
 #include "base/version.h"
 #include "base/win/scoped_bstr.h"
-#include "base/win/windows_version.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/install_static/install_util.h"
@@ -122,9 +121,8 @@ void ConfigureProxyBlanket(IUnknown* interface_pointer) {
                       EOAC_DYNAMIC_CLOAKING);
 }
 
-// Creates a class factory for a COM Local Server class using either plain
-// vanilla CoGetClassObject, or using the Elevation moniker if running on
-// Vista+. |hwnd| must refer to a foregound window in order to get the UAC
+// Creates a class factory for a COM Local Server class using the Elevation
+// moniker. |hwnd| must refer to a foregound window in order to get the UAC
 // prompt to appear in the foreground if running on Vista+. It can also be NULL
 // if background UAC prompts are desired.
 HRESULT CoGetClassObjectAsAdmin(gfx::AcceleratedWidget hwnd,
@@ -136,28 +134,22 @@ HRESULT CoGetClassObjectAsAdmin(gfx::AcceleratedWidget hwnd,
 
   // For Vista+, need to instantiate the class factory via the elevation
   // moniker. This ensures that the UAC dialog shows up.
-  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
-    wchar_t class_id_as_string[MAX_PATH] = {};
-    StringFromGUID2(class_id, class_id_as_string,
-                    arraysize(class_id_as_string));
+  wchar_t class_id_as_string[MAX_PATH] = {};
+  StringFromGUID2(class_id, class_id_as_string, arraysize(class_id_as_string));
 
-    base::string16 elevation_moniker_name = base::StringPrintf(
-        L"Elevation:Administrator!clsid:%ls", class_id_as_string);
+  base::string16 elevation_moniker_name = base::StringPrintf(
+      L"Elevation:Administrator!clsid:%ls", class_id_as_string);
 
-    BIND_OPTS3 bind_opts;
-    // An explicit memset is needed rather than relying on value initialization
-    // since BIND_OPTS3 is not an aggregate (it is a derived type).
-    memset(&bind_opts, 0, sizeof(bind_opts));
-    bind_opts.cbStruct = sizeof(bind_opts);
-    bind_opts.dwClassContext = CLSCTX_LOCAL_SERVER;
-    bind_opts.hwnd = hwnd;
+  BIND_OPTS3 bind_opts;
+  // An explicit memset is needed rather than relying on value initialization
+  // since BIND_OPTS3 is not an aggregate (it is a derived type).
+  memset(&bind_opts, 0, sizeof(bind_opts));
+  bind_opts.cbStruct = sizeof(bind_opts);
+  bind_opts.dwClassContext = CLSCTX_LOCAL_SERVER;
+  bind_opts.hwnd = hwnd;
 
-    return ::CoGetObject(elevation_moniker_name.c_str(), &bind_opts,
-                         interface_id, interface_ptr);
-  }
-
-  return ::CoGetClassObject(class_id, CLSCTX_LOCAL_SERVER, nullptr,
-                            interface_id, interface_ptr);
+  return ::CoGetObject(elevation_moniker_name.c_str(), &bind_opts, interface_id,
+                       interface_ptr);
 }
 
 HRESULT CreateGoogleUpdate3WebClass(
