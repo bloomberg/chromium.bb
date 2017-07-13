@@ -100,7 +100,7 @@ def package_ios_framework_using_gn(out_dir='out/Framework', extra_options=''):
                 'is_cronet_build=true is_component_build=false ' \
                 'disable_file_support=true disable_ftp_support=true ' \
                 'use_platform_icu_alternatives=true ' \
-                'disable_brotli_filter=true enable_dsyms=true ' \
+                'disable_brotli_filter=false enable_dsyms=true ' \
                 'target_cpu="%s" additional_target_cpus = ["%s"] %s' % \
                 (target_cpu, additional_cpu, gn_extra_args)
 
@@ -177,7 +177,7 @@ def main():
 
   gyp_defines = 'GYP_DEFINES="OS=ios enable_websockets=0 '+ \
       'disable_file_support=1 disable_ftp_support=1 '+ \
-      'enable_errorprone=1 disable_brotli_filter=1 chromium_ios_signing=0 ' + \
+      'enable_errorprone=1 disable_brotli_filter=0 chromium_ios_signing=0 ' + \
       'target_subarch=both ' + use_platform_icu_alternatives + '"'
 
   if not options.gn:
