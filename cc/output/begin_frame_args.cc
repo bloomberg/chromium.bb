@@ -109,16 +109,13 @@ base::TimeDelta BeginFrameArgs::DefaultInterval() {
 
 BeginFrameAck::BeginFrameAck()
     : sequence_number(BeginFrameArgs::kInvalidFrameNumber),
-      latest_confirmed_sequence_number(BeginFrameArgs::kInvalidFrameNumber),
       source_id(0),
       has_damage(false) {}
 
 BeginFrameAck::BeginFrameAck(uint32_t source_id,
                              uint64_t sequence_number,
-                             uint64_t latest_confirmed_sequence_number,
                              bool has_damage)
     : sequence_number(sequence_number),
-      latest_confirmed_sequence_number(latest_confirmed_sequence_number),
       source_id(source_id),
       has_damage(has_damage) {
   DCHECK_LT(BeginFrameArgs::kInvalidFrameNumber, sequence_number);
@@ -127,8 +124,7 @@ BeginFrameAck::BeginFrameAck(uint32_t source_id,
 // static
 BeginFrameAck BeginFrameAck::CreateManualAckWithDamage() {
   return BeginFrameAck(BeginFrameArgs::kManualSourceId,
-                       BeginFrameArgs::kStartingFrameNumber,
-                       BeginFrameArgs::kInvalidFrameNumber, true);
+                       BeginFrameArgs::kStartingFrameNumber, true);
 }
 
 }  // namespace cc

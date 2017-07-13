@@ -633,8 +633,8 @@ void Surface::UpdateNeedsBeginFrame() {
 }
 
 bool Surface::OnBeginFrameDerivedImpl(const cc::BeginFrameArgs& args) {
-  current_begin_frame_ack_ = cc::BeginFrameAck(
-      args.source_id, args.sequence_number, args.sequence_number, false);
+  current_begin_frame_ack_ =
+      cc::BeginFrameAck(args.source_id, args.sequence_number, false);
   while (!active_frame_callbacks_.empty()) {
     active_frame_callbacks_.front().Run(args.frame_time);
     active_frame_callbacks_.pop_front();

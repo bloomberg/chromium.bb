@@ -446,9 +446,6 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
     ContentViewCoreImpl* content_view_core)
     : host_(widget_host),
       begin_frame_source_(nullptr),
-      latest_confirmed_begin_frame_source_id_(0),
-      latest_confirmed_begin_frame_sequence_number_(
-          cc::BeginFrameArgs::kInvalidFrameNumber),
       outstanding_begin_frame_requests_(0),
       is_showing_(!widget_host->is_hidden()),
       is_window_visible_(true),
@@ -1288,9 +1285,6 @@ void RenderWidgetHostViewAndroid::OnDidNotProduceFrame(
 
 void RenderWidgetHostViewAndroid::AcknowledgeBeginFrame(
     const cc::BeginFrameAck& ack) {
-  latest_confirmed_begin_frame_source_id_ = ack.source_id;
-  latest_confirmed_begin_frame_sequence_number_ =
-      ack.latest_confirmed_sequence_number;
   if (begin_frame_source_)
     begin_frame_source_->DidFinishFrame(this);
 }
@@ -2217,8 +2211,7 @@ void RenderWidgetHostViewAndroid::OnBeginFrame(const cc::BeginFrameArgs& args) {
   TRACE_EVENT0("cc,benchmark", "RenderWidgetHostViewAndroid::OnBeginFrame");
   if (!host_) {
     OnDidNotProduceFrame(
-        cc::BeginFrameAck(args.source_id, args.sequence_number,
-                          cc::BeginFrameArgs::kInvalidFrameNumber, false));
+        cc::BeginFrameAck(args.source_id, args.sequence_number, false));
     return;
   }
 
@@ -2226,11 +2219,8 @@ void RenderWidgetHostViewAndroid::OnBeginFrame(const cc::BeginFrameArgs& args) {
   // SynchronousCompositorBrowserFilter::SyncStateAfterVSync will be called
   // during WindowAndroid::WindowBeginFrameSource::OnVSync() observer iteration.
   if (sync_compositor_ && args.type == cc::BeginFrameArgs::MISSED) {
-    uint64_t confirmed = cc::BeginFrameArgs::kInvalidFrameNumber;
-    if (args.source_id == latest_confirmed_begin_frame_source_id_)
-      confirmed = latest_confirmed_begin_frame_sequence_number_;
-    OnDidNotProduceFrame(cc::BeginFrameAck(args.source_id, args.sequence_number,
-                                           confirmed, false));
+    OnDidNotProduceFrame(
+        cc::BeginFrameAck(args.source_id, args.sequence_number, false));
     return;
   }
 
@@ -2244,8 +2234,8 @@ void RenderWidgetHostViewAndroid::OnBeginFrame(const cc::BeginFrameArgs& args) {
     ClearBeginFrameRequest(BEGIN_FRAME);
     SendBeginFrame(args);
   } else {
-    OnDidNotProduceFrame(cc::BeginFrameAck(args.source_id, args.sequence_number,
-                                           args.sequence_number, false));
+    OnDidNotProduceFrame(
+        cc::BeginFrameAck(args.source_id, args.sequence_number, false));
   }
 }
 

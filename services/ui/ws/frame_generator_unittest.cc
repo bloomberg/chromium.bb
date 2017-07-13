@@ -196,7 +196,7 @@ TEST_F(FrameGeneratorTest, OnSurfaceCreated) {
   EXPECT_EQ(1lu, referenced_surfaces.size());
   EXPECT_EQ(kArbitrarySurfaceId, referenced_surfaces.front());
 
-  cc::BeginFrameAck expected_ack(0, 2, 2, true);
+  cc::BeginFrameAck expected_ack(0, 2, true);
   EXPECT_EQ(expected_ack, LastBeginFrameAck());
   EXPECT_EQ(expected_ack, last_metadata.begin_frame_ack);
 

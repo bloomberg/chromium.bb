@@ -33,8 +33,6 @@ bool StructTraits<cc::mojom::BeginFrameAckDataView, cc::BeginFrameAck>::Read(
     return false;
   out->source_id = data.source_id();
   out->sequence_number = data.sequence_number();
-  out->latest_confirmed_sequence_number =
-      data.latest_confirmed_sequence_number();
   return true;
 }
 

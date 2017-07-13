@@ -352,10 +352,6 @@ void Scheduler::BeginImplFrameWithDeadline(const BeginFrameArgs& args) {
     // We may not need begin frames any longer.
     if (!observing_begin_frame_source_) {
       // We need to confirm the ignored BeginFrame, since we don't have updates.
-      // To persist the confirmation for future BeginFrameAcks, we let the state
-      // machine know about the BeginFrame.
-      state_machine_.OnBeginFrameDroppedNotObserving(args.source_id,
-                                                     args.sequence_number);
       SendBeginFrameAck(adjusted_args, kBeginFrameSkipped);
       return;
     }
@@ -456,17 +452,8 @@ void Scheduler::SendBeginFrameAck(const BeginFrameArgs& args,
     did_submit = state_machine_.did_submit_in_last_frame();
 
   if (!did_submit) {
-    uint64_t latest_confirmed_sequence_number =
-        BeginFrameArgs::kInvalidFrameNumber;
-    if (args.source_id == state_machine_.begin_frame_source_id()) {
-      latest_confirmed_sequence_number =
-          state_machine_
-              .last_begin_frame_sequence_number_compositor_frame_was_fresh();
-    }
-
     client_->DidNotProduceFrame(
-        BeginFrameAck(args.source_id, args.sequence_number,
-                      latest_confirmed_sequence_number, did_submit));
+        BeginFrameAck(args.source_id, args.sequence_number, did_submit));
   }
 
   if (begin_frame_source_)
@@ -860,10 +847,8 @@ bool Scheduler::IsBeginMainFrameSentOrStarted() const {
 }
 
 BeginFrameAck Scheduler::CurrentBeginFrameAckForActiveTree() const {
-  return BeginFrameAck(
-      begin_main_frame_args_.source_id, begin_main_frame_args_.sequence_number,
-      state_machine_.last_begin_frame_sequence_number_active_tree_was_fresh(),
-      true);
+  return BeginFrameAck(begin_main_frame_args_.source_id,
+                       begin_main_frame_args_.sequence_number, true);
 }
 
 }  // namespace cc

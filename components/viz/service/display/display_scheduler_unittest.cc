@@ -155,7 +155,6 @@ class DisplaySchedulerTest : public testing::Test {
   cc::BeginFrameAck AckForCurrentBeginFrame() {
     DCHECK(last_begin_frame_args_.IsValid());
     return cc::BeginFrameAck(last_begin_frame_args_.source_id,
-                             last_begin_frame_args_.sequence_number,
                              last_begin_frame_args_.sequence_number, true);
   }
 

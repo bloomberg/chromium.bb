@@ -374,8 +374,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   // The begin frame source being observed.  Null if none.
   cc::BeginFrameSource* begin_frame_source_;
   cc::BeginFrameArgs last_begin_frame_args_;
-  uint32_t latest_confirmed_begin_frame_source_id_;
-  uint64_t latest_confirmed_begin_frame_sequence_number_;
 
   // Indicates whether and for what reason a request for begin frames has been
   // issued. Used to control action dispatch at the next |OnBeginFrame()| call.

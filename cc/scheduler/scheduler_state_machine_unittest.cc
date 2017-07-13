@@ -23,19 +23,6 @@
   EXPECT_STREQ(SchedulerStateMachine::enum_tostring(expected), \
                SchedulerStateMachine::enum_tostring(actual))
 
-#define EXPECT_SEQUENCE_NUMBERS(current, main_frame, pending_tree,            \
-                                active_tree, compositor_frame)                \
-  EXPECT_EQ(current, state.begin_frame_sequence_number());                    \
-  EXPECT_EQ(main_frame,                                                       \
-            state.last_begin_frame_sequence_number_begin_main_frame_sent());  \
-  EXPECT_EQ(pending_tree,                                                     \
-            state.last_begin_frame_sequence_number_pending_tree_was_fresh()); \
-  EXPECT_EQ(active_tree,                                                      \
-            state.last_begin_frame_sequence_number_active_tree_was_fresh());  \
-  EXPECT_EQ(                                                                  \
-      compositor_frame,                                                       \
-      state.last_begin_frame_sequence_number_compositor_frame_was_fresh())
-
 #define EXPECT_IMPL_FRAME_STATE(expected)               \
   EXPECT_ENUM_EQ(BeginImplFrameStateToString, expected, \
                  state.begin_impl_frame_state())        \
@@ -170,16 +157,6 @@ class StateMachine : public SchedulerStateMachine {
 
   bool needs_impl_side_invalidation() const {
     return needs_impl_side_invalidation_;
-  }
-
-  uint64_t begin_frame_sequence_number() const {
-    return begin_frame_sequence_number_;
-  }
-  uint64_t last_begin_frame_sequence_number_begin_main_frame_sent() const {
-    return last_begin_frame_sequence_number_begin_main_frame_sent_;
-  }
-  uint64_t last_begin_frame_sequence_number_pending_tree_was_fresh() const {
-    return last_begin_frame_sequence_number_pending_tree_was_fresh_;
   }
 
   using SchedulerStateMachine::ShouldTriggerBeginImplFrameDeadlineImmediately;
@@ -1066,26 +1043,17 @@ TEST(SchedulerStateMachineTest, DontCommitWithoutDrawWithoutPendingTree) {
   state.OnBeginImplFrame(0, 10);
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
-  EXPECT_SEQUENCE_NUMBERS(10u, 10u, BeginFrameArgs::kInvalidFrameNumber,
-                          BeginFrameArgs::kInvalidFrameNumber,
-                          BeginFrameArgs::kInvalidFrameNumber);
   state.NotifyBeginMainFrameStarted();
   state.NotifyReadyToCommit();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_COMMIT);
-  EXPECT_SEQUENCE_NUMBERS(10u, 10u, 10u, BeginFrameArgs::kInvalidFrameNumber,
-                          BeginFrameArgs::kInvalidFrameNumber);
   state.NotifyReadyToActivate();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ACTIVATE_SYNC_TREE);
-  EXPECT_SEQUENCE_NUMBERS(10u, 10u, 10u, 10u,
-                          BeginFrameArgs::kInvalidFrameNumber);
 
   // Try to make a new main frame before drawing, but since we would clobber the
   // active tree, we will not do so.
   state.SetNeedsBeginMainFrame();
   state.OnBeginImplFrame(0, 11);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  EXPECT_SEQUENCE_NUMBERS(11u, 10u, 10u, 10u,
-                          BeginFrameArgs::kInvalidFrameNumber);
 }
 
 TEST(SchedulerStateMachineTest, AbortedMainFrameDoesNotResetPendingTree) {
@@ -1160,9 +1128,6 @@ TEST(SchedulerStateMachineTest, TestFullCycleWithCommitToActive) {
   EXPECT_MAIN_FRAME_STATE(SchedulerStateMachine::BEGIN_MAIN_FRAME_STATE_SENT);
   EXPECT_FALSE(state.NeedsCommit());
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  EXPECT_SEQUENCE_NUMBERS(10u, 10u, BeginFrameArgs::kInvalidFrameNumber,
-                          BeginFrameArgs::kInvalidFrameNumber,
-                          BeginFrameArgs::kInvalidFrameNumber);
 
   // Tell the scheduler the frame finished.
   state.NotifyBeginMainFrameStarted();
@@ -1171,36 +1136,27 @@ TEST(SchedulerStateMachineTest, TestFullCycleWithCommitToActive) {
       SchedulerStateMachine::BEGIN_MAIN_FRAME_STATE_READY_TO_COMMIT);
   // Commit.
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_COMMIT);
-  EXPECT_SEQUENCE_NUMBERS(10u, 10u, 10u, BeginFrameArgs::kInvalidFrameNumber,
-                          BeginFrameArgs::kInvalidFrameNumber);
   // Commit always calls NotifyReadyToActivate in this mode.
   state.NotifyReadyToActivate();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ACTIVATE_SYNC_TREE);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  EXPECT_SEQUENCE_NUMBERS(10u, 10u, 10u, 10u,
-                          BeginFrameArgs::kInvalidFrameNumber);
 
   // No draw because we haven't received NotifyReadyToDraw yet.
   state.OnBeginImplFrameDeadline();
   EXPECT_TRUE(state.active_tree_needs_first_draw());
   EXPECT_TRUE(state.needs_redraw());
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  EXPECT_SEQUENCE_NUMBERS(10u, 10u, 10u, 10u,
-                          BeginFrameArgs::kInvalidFrameNumber);
 
   // Can't BeginMainFrame yet since last commit hasn't been drawn yet.
   state.SetNeedsBeginMainFrame();
   state.OnBeginImplFrame(0, 11);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  EXPECT_SEQUENCE_NUMBERS(11u, 10u, 10u, 10u,
-                          BeginFrameArgs::kInvalidFrameNumber);
 
   // Now call ready to draw which will allow the draw to happen and
   // BeginMainFrame to be sent.
   state.NotifyReadyToDraw();
   state.OnBeginImplFrameDeadline();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE);
-  EXPECT_SEQUENCE_NUMBERS(11u, 10u, 10u, 10u, 10u);
   // Submit throttled from this point.
   state.DidSubmitCompositorFrame();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
@@ -1208,28 +1164,23 @@ TEST(SchedulerStateMachineTest, TestFullCycleWithCommitToActive) {
   // Can't BeginMainFrame yet since we're submit-frame throttled.
   state.OnBeginImplFrame(0, 12);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  EXPECT_SEQUENCE_NUMBERS(12u, 10u, 10u, 10u, 10u);
 
   // CompositorFrameAck unblocks BeginMainFrame.
   state.DidReceiveCompositorFrameAck();
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
-  EXPECT_SEQUENCE_NUMBERS(12u, 12u, 10u, 10u, 10u);
   state.NotifyBeginMainFrameStarted();
   state.NotifyReadyToCommit();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_COMMIT);
-  EXPECT_SEQUENCE_NUMBERS(12u, 12u, 12u, 10u, 10u);
   state.NotifyReadyToActivate();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ACTIVATE_SYNC_TREE);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  EXPECT_SEQUENCE_NUMBERS(12u, 12u, 12u, 12u, 10u);
 
   // Draw the newly activated tree.
   state.NotifyReadyToDraw();
   state.OnBeginImplFrameDeadline();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  EXPECT_SEQUENCE_NUMBERS(12u, 12u, 12u, 12u, 12u);
 }
 
 TEST(SchedulerStateMachineTest, TestFullCycleWithCommitRequestInbetween) {
@@ -1622,9 +1573,6 @@ TEST(SchedulerStateMachineTest, TestContextLostWhileCommitInProgress) {
   state.DidSubmitCompositorFrame();
   state.DidReceiveCompositorFrameAck();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  EXPECT_SEQUENCE_NUMBERS(10u, 10u, BeginFrameArgs::kInvalidFrameNumber,
-                          BeginFrameArgs::kInvalidFrameNumber,
-                          BeginFrameArgs::kInvalidFrameNumber);
 
   // Cause a lost context while the BeginMainFrame is in flight.
   state.DidLoseLayerTreeFrameSink();
@@ -1638,19 +1586,13 @@ TEST(SchedulerStateMachineTest, TestContextLostWhileCommitInProgress) {
   state.NotifyBeginMainFrameStarted();
   state.NotifyReadyToCommit();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_COMMIT);
-  EXPECT_SEQUENCE_NUMBERS(10u, 10u, 10u, BeginFrameArgs::kInvalidFrameNumber,
-                          BeginFrameArgs::kInvalidFrameNumber);
   state.NotifyReadyToActivate();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ACTIVATE_SYNC_TREE);
-  EXPECT_SEQUENCE_NUMBERS(10u, 10u, 10u, 10u,
-                          BeginFrameArgs::kInvalidFrameNumber);
 
   // We will abort the draw when the LayerTreeFrameSink is lost if we are
   // waiting for the first draw to unblock the main thread.
   EXPECT_TRUE(state.active_tree_needs_first_draw());
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_DRAW_ABORT);
-  EXPECT_SEQUENCE_NUMBERS(10u, 10u, 10u, 10u,
-                          BeginFrameArgs::kInvalidFrameNumber);
 
   // Expect to begin context recreation only in BEGIN_IMPL_FRAME_STATE_IDLE
   EXPECT_IMPL_FRAME_STATE(SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_IDLE);
@@ -1661,14 +1603,11 @@ TEST(SchedulerStateMachineTest, TestContextLostWhileCommitInProgress) {
   EXPECT_IMPL_FRAME_STATE(
       SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_INSIDE_BEGIN_FRAME);
   EXPECT_ACTION(SchedulerStateMachine::ACTION_NONE);
-  EXPECT_SEQUENCE_NUMBERS(11u, 10u, 10u, 10u,
-                          BeginFrameArgs::kInvalidFrameNumber);
 
   state.OnBeginImplFrameDeadline();
   EXPECT_IMPL_FRAME_STATE(
       SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_INSIDE_DEADLINE);
   EXPECT_ACTION(SchedulerStateMachine::ACTION_NONE);
-  EXPECT_SEQUENCE_NUMBERS(11u, 10u, 10u, 11u, 11u);
 }
 
 TEST(SchedulerStateMachineTest,
@@ -2471,288 +2410,6 @@ TEST(SchedulerStateMachineTest, PrepareTilesWaitForImplSideInvalidation) {
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_PERFORM_IMPL_SIDE_INVALIDATION);
   state.DidPrepareTiles();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-}
-
-TEST(SchedulerStateMachineTest, TestBeginFrameFreshnessInitialState) {
-  SchedulerSettings default_scheduler_settings;
-  StateMachine state(default_scheduler_settings);
-  SET_UP_STATE(state)
-
-  // Initially, we report invalid frame numbers.
-  EXPECT_SEQUENCE_NUMBERS(
-      BeginFrameArgs::kInvalidFrameNumber, BeginFrameArgs::kInvalidFrameNumber,
-      BeginFrameArgs::kInvalidFrameNumber, BeginFrameArgs::kInvalidFrameNumber,
-      BeginFrameArgs::kInvalidFrameNumber);
-}
-
-TEST(SchedulerStateMachineTest, TestBeginFrameFreshnessWithoutUpdates) {
-  // Setup without any requested updates.
-  SchedulerSettings default_scheduler_settings;
-  StateMachine state(default_scheduler_settings);
-  SET_UP_STATE(state)
-  state.SetNeedsRedraw(false);
-  EXPECT_FALSE(state.RedrawPending());
-  EXPECT_FALSE(state.NeedsCommit());
-
-  // OnBeginImplFrame() updates the sequence number.
-  state.OnBeginImplFrame(0, 10);
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  EXPECT_SEQUENCE_NUMBERS(10u, BeginFrameArgs::kInvalidFrameNumber,
-                          BeginFrameArgs::kInvalidFrameNumber,
-                          BeginFrameArgs::kInvalidFrameNumber,
-                          BeginFrameArgs::kInvalidFrameNumber);
-
-  // When no updates are required, OnBeginImplFrameDeadline() updates active
-  // tree and compositor frame freshness.
-  state.OnBeginImplFrameDeadline();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  EXPECT_SEQUENCE_NUMBERS(10u, BeginFrameArgs::kInvalidFrameNumber,
-                          BeginFrameArgs::kInvalidFrameNumber, 10u, 10u);
-  state.OnBeginImplFrameIdle();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-}
-
-TEST(SchedulerStateMachineTest, TestBeginFrameFreshnessWithImplFrameUpdates) {
-  // Setup with an impl-thread draw requested.
-  SchedulerSettings default_scheduler_settings;
-  StateMachine state(default_scheduler_settings);
-  SET_UP_STATE(state)
-  state.SetNeedsRedraw(true);
-  EXPECT_TRUE(state.RedrawPending());
-  EXPECT_FALSE(state.NeedsCommit());
-
-  // OnBeginImplFrame() updates the sequence number.
-  state.OnBeginImplFrame(0, 10);
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  EXPECT_SEQUENCE_NUMBERS(10u, BeginFrameArgs::kInvalidFrameNumber,
-                          BeginFrameArgs::kInvalidFrameNumber,
-                          BeginFrameArgs::kInvalidFrameNumber,
-                          BeginFrameArgs::kInvalidFrameNumber);
-
-  // With only an impl-thread draw requested, OnBeginImplFrameDeadline()
-  // updates the active tree freshness.
-  state.OnBeginImplFrameDeadline();
-  EXPECT_SEQUENCE_NUMBERS(10u, BeginFrameArgs::kInvalidFrameNumber,
-                          BeginFrameArgs::kInvalidFrameNumber, 10u,
-                          BeginFrameArgs::kInvalidFrameNumber);
-
-  // Compositor frame freshness is updated when active tree is drawn.
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE);
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  EXPECT_FALSE(state.RedrawPending());
-  state.DidSubmitCompositorFrame();
-  state.DidReceiveCompositorFrameAck();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  EXPECT_SEQUENCE_NUMBERS(10u, BeginFrameArgs::kInvalidFrameNumber,
-                          BeginFrameArgs::kInvalidFrameNumber, 10u, 10u);
-  state.OnBeginImplFrameIdle();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-}
-
-TEST(SchedulerStateMachineTest, TestBeginFrameFreshnessWithMainFrameUpdates) {
-  // Setup with a BeginMainFrame requested.
-  SchedulerSettings default_scheduler_settings;
-  StateMachine state(default_scheduler_settings);
-  SET_UP_STATE(state)
-  state.SetNeedsRedraw(false);
-  state.SetNeedsBeginMainFrameForTest(true);
-  EXPECT_FALSE(state.RedrawPending());
-  EXPECT_TRUE(state.NeedsCommit());
-
-  // OnBeginImplFrame() updates the sequence number, WillSendBeginMainFrame()
-  // updates begin_main_frame_sent sequence number.
-  state.OnBeginImplFrame(0, 10);
-  EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  EXPECT_FALSE(state.NeedsCommit());
-  EXPECT_TRUE(state.CommitPending());
-  EXPECT_SEQUENCE_NUMBERS(10u, 10u, BeginFrameArgs::kInvalidFrameNumber,
-                          BeginFrameArgs::kInvalidFrameNumber,
-                          BeginFrameArgs::kInvalidFrameNumber);
-
-  // When a BeginMainFrame is needed, OnBeginImplFrameDeadline() updates no
-  // freshness numbers.
-  state.OnBeginImplFrameDeadline();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  EXPECT_SEQUENCE_NUMBERS(10u, 10u, BeginFrameArgs::kInvalidFrameNumber,
-                          BeginFrameArgs::kInvalidFrameNumber,
-                          BeginFrameArgs::kInvalidFrameNumber);
-  state.OnBeginImplFrameIdle();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-
-  // When a main frame is in progress, OnBeginImplFrameDeadline() updates no
-  // freshness numbers.
-  state.NotifyBeginMainFrameStarted();
-  state.OnBeginImplFrame(0, 11);
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  state.OnBeginImplFrameDeadline();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  EXPECT_SEQUENCE_NUMBERS(11u, 10u, BeginFrameArgs::kInvalidFrameNumber,
-                          BeginFrameArgs::kInvalidFrameNumber,
-                          BeginFrameArgs::kInvalidFrameNumber);
-  state.OnBeginImplFrameIdle();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-
-  // Pending tree freshness is updated when the new pending tree is committed.
-  state.NotifyReadyToCommit();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_COMMIT);
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  EXPECT_FALSE(state.CommitPending());
-  EXPECT_TRUE(state.has_pending_tree());
-  EXPECT_SEQUENCE_NUMBERS(11u, 10u, 10u, BeginFrameArgs::kInvalidFrameNumber,
-                          BeginFrameArgs::kInvalidFrameNumber);
-
-  // If no further BeginMainFrame is needed, OnBeginFrameImplDeadline()
-  // updates the pending tree's frame number.
-  state.OnBeginImplFrame(0, 12);
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  EXPECT_SEQUENCE_NUMBERS(12u, 10u, 10u, BeginFrameArgs::kInvalidFrameNumber,
-                          BeginFrameArgs::kInvalidFrameNumber);
-  state.OnBeginImplFrameDeadline();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  EXPECT_SEQUENCE_NUMBERS(12u, 10u, 12u, BeginFrameArgs::kInvalidFrameNumber,
-                          BeginFrameArgs::kInvalidFrameNumber);
-  state.OnBeginImplFrameIdle();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-
-  // If a further BeginMainFrame is needed, OnBeginFrameImplDeadline()
-  // updates no freshness numbers.
-  state.SetNeedsBeginMainFrameForTest(true);
-  EXPECT_TRUE(state.NeedsCommit());
-  state.OnBeginImplFrame(0, 13);
-  // BMF will be sent only after pending_tree activation.
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  state.OnBeginImplFrameDeadline();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  EXPECT_SEQUENCE_NUMBERS(13u, 10u, 12u, BeginFrameArgs::kInvalidFrameNumber,
-                          BeginFrameArgs::kInvalidFrameNumber);
-  state.OnBeginImplFrameIdle();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-
-  // Active tree freshness is updated when pending frame is activated.
-  state.NotifyReadyToActivate();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ACTIVATE_SYNC_TREE);
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  EXPECT_FALSE(state.has_pending_tree());
-  EXPECT_SEQUENCE_NUMBERS(13u, 10u, 12u, 12u,
-                          BeginFrameArgs::kInvalidFrameNumber);
-  EXPECT_TRUE(state.RedrawPending());
-
-  // BMF requested above will be sent after activation.
-  state.OnBeginImplFrame(0, 14);
-  EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-
-  // Active tree freshness is updated when commit didn't have updates, but
-  // compositor frame freshness is not updated.
-  state.NotifyBeginMainFrameStarted();
-  state.BeginMainFrameAborted(CommitEarlyOutReason::FINISHED_NO_UPDATES);
-  EXPECT_SEQUENCE_NUMBERS(14u, 14u, 12u, 14u,
-                          BeginFrameArgs::kInvalidFrameNumber);
-
-  // Compositor frame freshness is updated when active tree is drawn.
-  state.OnBeginImplFrameDeadline();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE);
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  EXPECT_FALSE(state.RedrawPending());
-  state.DidSubmitCompositorFrame();
-  state.DidReceiveCompositorFrameAck();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  EXPECT_SEQUENCE_NUMBERS(14u, 14u, 12u, 14u, 14u);
-  state.OnBeginImplFrameIdle();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-
-  // When no updates are required, OnBeginImplFrameDeadline() updates active
-  // tree and compositor frame freshness.
-  state.OnBeginImplFrame(0, 15);
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  state.OnBeginImplFrameDeadline();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  EXPECT_SEQUENCE_NUMBERS(15u, 14u, 12u, 15u, 15u);
-  state.OnBeginImplFrameIdle();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-
-  // Active tree and compositor frame freshness are updated when commit doesn't
-  // have updates and compositor frame was fresh before.
-  state.SetNeedsBeginMainFrameForTest(true);
-  EXPECT_TRUE(state.NeedsCommit());
-  state.OnBeginImplFrame(0, 16);
-  EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  EXPECT_FALSE(state.NeedsCommit());
-  EXPECT_TRUE(state.CommitPending());
-  state.NotifyBeginMainFrameStarted();
-  state.BeginMainFrameAborted(CommitEarlyOutReason::FINISHED_NO_UPDATES);
-  EXPECT_SEQUENCE_NUMBERS(16u, 16u, 12u, 16u, 16u);
-  state.OnBeginImplFrameDeadline();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  EXPECT_SEQUENCE_NUMBERS(16u, 16u, 12u, 16u, 16u);
-  state.OnBeginImplFrameIdle();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-
-  // When the source changes, the current frame number is updated and frame
-  // numbers for freshness are reset to invalid numbers.
-  state.OnBeginImplFrame(1, 5);
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  EXPECT_SEQUENCE_NUMBERS(5u, BeginFrameArgs::kInvalidFrameNumber,
-                          BeginFrameArgs::kInvalidFrameNumber,
-                          BeginFrameArgs::kInvalidFrameNumber,
-                          BeginFrameArgs::kInvalidFrameNumber);
-
-  // When no updates are required, OnBeginImplFrameDeadline() updates active
-  // tree and compositor frame freshness.
-  state.OnBeginImplFrameDeadline();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  EXPECT_SEQUENCE_NUMBERS(5u, BeginFrameArgs::kInvalidFrameNumber,
-                          BeginFrameArgs::kInvalidFrameNumber, 5u, 5u);
-  state.OnBeginImplFrameIdle();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-}
-
-TEST(SchedulerStateMachineTest,
-     TestBeginFrameFreshnessWithNoUpdatesCommitAndPendingTree) {
-  // Setup with main_frame_before_activation_enabled, a pending tree, and a
-  // new BeginMainFrame requested.
-  SchedulerSettings settings;
-  settings.main_frame_before_activation_enabled = true;
-  StateMachine state(settings);
-  SET_UP_STATE(state)
-  state.SetHasPendingTree(true);
-  state.SetNeedsRedraw(false);
-  state.SetNeedsBeginMainFrameForTest(true);
-  EXPECT_FALSE(state.RedrawPending());
-  EXPECT_TRUE(state.NeedsCommit());
-
-  // OnBeginImplFrame() updates the sequence number, WillSendBeginMainFrame()
-  // updates begin_main_frame_sent sequence number.
-  state.OnBeginImplFrame(0, 10);
-  EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  EXPECT_FALSE(state.NeedsCommit());
-  EXPECT_TRUE(state.CommitPending());
-  EXPECT_SEQUENCE_NUMBERS(10u, 10u, BeginFrameArgs::kInvalidFrameNumber,
-                          BeginFrameArgs::kInvalidFrameNumber,
-                          BeginFrameArgs::kInvalidFrameNumber);
-
-  // Pending tree freshness is updated when commit didn't have updates, but an
-  // older pending tree is still pending.
-  state.NotifyBeginMainFrameStarted();
-  state.BeginMainFrameAborted(CommitEarlyOutReason::FINISHED_NO_UPDATES);
-  EXPECT_SEQUENCE_NUMBERS(10u, 10u, 10u, BeginFrameArgs::kInvalidFrameNumber,
-                          BeginFrameArgs::kInvalidFrameNumber);
-
-  // As no further BeginMainFrame is needed, OnBeginFrameImplDeadline()
-  // updates the pending tree's frame number, but without any visible change.
-  state.OnBeginImplFrameDeadline();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  EXPECT_SEQUENCE_NUMBERS(10u, 10u, 10u, BeginFrameArgs::kInvalidFrameNumber,
-                          BeginFrameArgs::kInvalidFrameNumber);
-  state.OnBeginImplFrameIdle();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 }
 

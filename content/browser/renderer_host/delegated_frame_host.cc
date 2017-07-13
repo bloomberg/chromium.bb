@@ -222,19 +222,8 @@ void DelegatedFrameHost::SetNeedsBeginFrames(bool needs_begin_frames) {
 }
 
 void DelegatedFrameHost::DidNotProduceFrame(const cc::BeginFrameAck& ack) {
-  DidFinishFrame(ack);
-
-  cc::BeginFrameAck modified_ack = ack;
-  if (skipped_frames_) {
-    // If we skipped the last frame(s), we didn't incorporate the last
-    // CompositorFrame's damage, so need to wait for the next one before
-    // confirming newer sequence numbers.
-    modified_ack.has_damage = false;
-    modified_ack.latest_confirmed_sequence_number =
-        latest_confirmed_begin_frame_sequence_number_;
-  }
-
-  support_->DidNotProduceFrame(modified_ack);
+  DCHECK(!ack.has_damage);
+  support_->DidNotProduceFrame(ack);
 }
 
 bool DelegatedFrameHost::ShouldSkipFrame(const gfx::Size& size_in_dip) {
@@ -423,6 +412,7 @@ void DelegatedFrameHost::SubmitCompositorFrame(
     renderer_compositor_frame_sink_->DidReceiveCompositorFrameAck(resources);
 
     skipped_frames_ = true;
+    ack.has_damage = false;
     DidNotProduceFrame(ack);
     return;
   }
@@ -493,8 +483,6 @@ void DelegatedFrameHost::SubmitCompositorFrame(
     frame_evictor_->SwappedFrame(client_->DelegatedFrameHostIsVisible());
   }
   // Note: the frame may have been evicted immediately.
-
-  DidFinishFrame(ack);
 }
 
 void DelegatedFrameHost::ClearDelegatedFrame() {
@@ -859,20 +847,6 @@ void DelegatedFrameHost::ResetCompositorFrameSinkSupport() {
   if (compositor_)
     compositor_->RemoveFrameSink(frame_sink_id_);
   support_.reset();
-}
-
-void DelegatedFrameHost::DidFinishFrame(const cc::BeginFrameAck& ack) {
-  if (ack.source_id != latest_confirmed_begin_frame_source_id_) {
-    // Source changed, we don't know our freshness anymore.
-    latest_confirmed_begin_frame_sequence_number_ =
-        cc::BeginFrameArgs::kInvalidFrameNumber;
-  }
-
-  if (!skipped_frames_) {
-    latest_confirmed_begin_frame_source_id_ = ack.source_id;
-    latest_confirmed_begin_frame_sequence_number_ =
-        ack.latest_confirmed_sequence_number;
-  }
 }
 
 }  // namespace content

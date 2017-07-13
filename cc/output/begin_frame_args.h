@@ -121,7 +121,6 @@ struct CC_EXPORT BeginFrameAck {
   BeginFrameAck();
   BeginFrameAck(uint32_t source_id,
                 uint64_t sequence_number,
-                uint64_t latest_confirmed_sequence_number,
                 bool has_damage);
 
   // Creates a BeginFrameAck for a manual BeginFrame. Used when clients produce
@@ -130,35 +129,6 @@ struct CC_EXPORT BeginFrameAck {
 
   // Sequence number of the BeginFrame that is acknowledged.
   uint64_t sequence_number;
-
-  // Sequence number of the latest BeginFrame that was positively acknowledged
-  // (confirmed) by the observer.
-  //
-  // There are two scenarios for a positive acknowledgment:
-  //  a) All of the observer's pending updates led to successful damage (e.g. a
-  //     CompositorFrame or a damaged surface).
-  //  b) The observer did not have any updates and thus did not need to
-  //     produce damage.
-  // A negative acknowledgment, in contrast, describes a situation in which the
-  // observer had pending updates, but was unable to successfully produce
-  // corresponding damage for all its updates in time.
-  //
-  // As a result, |latest_confirmed_sequence_number| describes the "staleness"
-  // of the last damage that was produced by the observer. Note that even if
-  // |has_damage == true|, the damage produced as a result of the acknowledged
-  // BeginFrame may be stale
-  // (|latest_confirmed_sequence_number < sequence_number|). In such a case, the
-  // damage that was produced may contain updates from previous BeginFrames or
-  // only part of this BeginFrame's updates.
-  //
-  // Observers aggregate the |latest_confirmed_sequence_number| of their
-  // children: The compositor Scheduler indicates the latest BeginFrame that
-  // both impl and main thread confirmed. Likewise, the DisplayScheduler
-  // indicates the minimum |latest_confirmed_sequence_number| that all its
-  // BeginFrameObservers acknowledged.
-  // TODO(eseckler): Set this in Scheduler / DisplayScheduler and other
-  // observers according to above comment.
-  uint64_t latest_confirmed_sequence_number;
 
   // Source identifier of the BeginFrame that is acknowledged. The
   // BeginFrameSource that receives the acknowledgment uses this to discard
