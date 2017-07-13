@@ -507,6 +507,10 @@ class PLATFORM_EXPORT RendererSchedulerImpl
                          base::TimeTicks start_time,
                          base::TimeTicks end_time);
 
+  void RecordMainThreadTaskLoad(base::TimeTicks time, double load);
+  void RecordForegroundMainThreadTaskLoad(base::TimeTicks time, double load);
+  void RecordBackgroundMainThreadTaskLoad(base::TimeTicks time, double load);
+
   MainThreadSchedulerHelper helper_;
   IdleHelper idle_helper_;
   IdleCanceledDelayedTaskSweeper idle_canceled_delayed_task_sweeper_;
@@ -555,6 +559,7 @@ class PLATFORM_EXPORT RendererSchedulerImpl
     TaskCostEstimator loading_task_cost_estimator;
     TaskCostEstimator timer_task_cost_estimator;
     IdleTimeEstimator idle_time_estimator;
+    ThreadLoadTracker main_thread_load_tracker;
     ThreadLoadTracker background_main_thread_load_tracker;
     ThreadLoadTracker foreground_main_thread_load_tracker;
     UseCase current_use_case;
@@ -596,6 +601,7 @@ class PLATFORM_EXPORT RendererSchedulerImpl
     std::set<WebViewSchedulerImpl*> web_view_schedulers;  // Not owned.
     RAILModeObserver* rail_mode_observer;                 // Not owned.
     WakeUpBudgetPool* wake_up_budget_pool;                // Not owned.
+    base::Optional<base::TimeTicks> last_reported_task;
     TaskDurationMetricReporter task_duration_reporter;
     TaskDurationMetricReporter foreground_task_duration_reporter;
     TaskDurationMetricReporter foreground_first_minute_task_duration_reporter;

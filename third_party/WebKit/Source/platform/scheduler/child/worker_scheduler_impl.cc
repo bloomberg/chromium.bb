@@ -23,9 +23,6 @@ namespace {
 // the renderer thread.
 constexpr base::TimeDelta kWorkerThreadLoadTrackerReportingInterval =
     base::TimeDelta::FromSeconds(1);
-// Start reporting the load right away.
-constexpr base::TimeDelta kWorkerThreadLoadTrackerWaitingPeriodBeforeReporting =
-    base::TimeDelta::FromSeconds(0);
 
 void ReportWorkerTaskLoad(base::TimeTicks time, double load) {
   int load_percentage = static_cast<int>(load * 100);
@@ -49,8 +46,7 @@ WorkerSchedulerImpl::WorkerSchedulerImpl(
                                           idle_helper_.IdleTaskRunner()),
       load_tracker_(helper_->scheduler_tqm_delegate()->NowTicks(),
                     base::Bind(&ReportWorkerTaskLoad),
-                    kWorkerThreadLoadTrackerReportingInterval,
-                    kWorkerThreadLoadTrackerWaitingPeriodBeforeReporting) {
+                    kWorkerThreadLoadTrackerReportingInterval) {
   initialized_ = false;
   thread_start_time_ = helper_->scheduler_tqm_delegate()->NowTicks();
   load_tracker_.Resume(thread_start_time_);

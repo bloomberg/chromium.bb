@@ -11,15 +11,13 @@ namespace scheduler {
 
 ThreadLoadTracker::ThreadLoadTracker(base::TimeTicks now,
                                      const Callback& callback,
-                                     base::TimeDelta reporting_interval,
-                                     base::TimeDelta waiting_period)
+                                     base::TimeDelta reporting_interval)
     : time_(now),
       thread_state_(ThreadState::PAUSED),
       last_state_change_time_(now),
-      waiting_period_(waiting_period),
       reporting_interval_(reporting_interval),
       callback_(callback) {
-  next_reporting_time_ = now + waiting_period_;
+  next_reporting_time_ = now + reporting_interval_;
 }
 
 ThreadLoadTracker::~ThreadLoadTracker() {}
@@ -27,14 +25,19 @@ ThreadLoadTracker::~ThreadLoadTracker() {}
 void ThreadLoadTracker::Pause(base::TimeTicks now) {
   Advance(now, TaskState::IDLE);
   thread_state_ = ThreadState::PAUSED;
-  last_state_change_time_ = now;
+
+  Reset(now);
 }
 
 void ThreadLoadTracker::Resume(base::TimeTicks now) {
   Advance(now, TaskState::IDLE);
   thread_state_ = ThreadState::ACTIVE;
-  last_state_change_time_ = now;
 
+  Reset(now);
+}
+
+void ThreadLoadTracker::Reset(base::TimeTicks now) {
+  last_state_change_time_ = now;
   next_reporting_time_ = now + reporting_interval_;
   run_time_inside_window_ = base::TimeDelta();
 }
@@ -93,7 +96,6 @@ void ThreadLoadTracker::Advance(base::TimeTicks now, TaskState task_state) {
 
     // Keep a running total of the time spent running tasks within the window
     // and the total time.
-    total_active_time_ += delta;
     if (task_state == TaskState::TASK_RUNNING) {
       run_time_inside_window_ +=
           Intersection(next_reporting_time_ - reporting_interval_,
@@ -104,8 +106,7 @@ void ThreadLoadTracker::Advance(base::TimeTicks now, TaskState task_state) {
 
     if (time_ == next_reporting_time_) {
       // Call |callback_| if need and update next callback time.
-      if (thread_state_ == ThreadState::ACTIVE &&
-          total_active_time_ >= waiting_period_) {
+      if (thread_state_ == ThreadState::ACTIVE) {
         callback_.Run(time_, Load());
         DCHECK_EQ(thread_state_, ThreadState::ACTIVE);
       }

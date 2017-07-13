@@ -46,8 +46,6 @@ const double kShortIdlePeriodDurationPercentile = 50;
 const double kFastCompositingIdleTimeThreshold = .2;
 constexpr base::TimeDelta kThreadLoadTrackerReportingInterval =
     base::TimeDelta::FromMinutes(1);
-constexpr base::TimeDelta kThreadLoadTrackerWaitingPeriodBeforeReporting =
-    base::TimeDelta::FromMinutes(2);
 // We do not throttle anything while audio is played and shortly after that.
 constexpr base::TimeDelta kThrottlingDelayAfterAudioIsPlayed =
     base::TimeDelta::FromSeconds(5);
@@ -58,32 +56,8 @@ constexpr base::TimeDelta kQueueingTimeWindowDuration =
 // of the task).
 constexpr base::TimeDelta kLongTaskDiscardingThreshold =
     base::TimeDelta::FromSeconds(30);
-
-void ReportForegroundRendererTaskLoad(base::TimeTicks time, double load) {
-  if (!blink::RuntimeEnabledFeatures::TimerThrottlingForBackgroundTabsEnabled())
-    return;
-
-  int load_percentage = static_cast<int>(load * 100);
-  DCHECK_LE(load_percentage, 100);
-
-  UMA_HISTOGRAM_PERCENTAGE(
-      "RendererScheduler.ForegroundRendererMainThreadLoad2", load_percentage);
-  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
-                 "RendererScheduler.ForegroundRendererLoad", load_percentage);
-}
-
-void ReportBackgroundRendererTaskLoad(base::TimeTicks time, double load) {
-  if (!blink::RuntimeEnabledFeatures::TimerThrottlingForBackgroundTabsEnabled())
-    return;
-
-  int load_percentage = static_cast<int>(load * 100);
-  DCHECK_LE(load_percentage, 100);
-
-  UMA_HISTOGRAM_PERCENTAGE(
-      "RendererScheduler.BackgroundRendererMainThreadLoad2", load_percentage);
-  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
-                 "RendererScheduler.BackgroundRendererLoad", load_percentage);
-}
+constexpr base::TimeDelta kLongIdlePeriodDiscardingThreshold =
+    base::TimeDelta::FromMinutes(3);
 
 }  // namespace
 
@@ -206,16 +180,21 @@ RendererSchedulerImpl::MainThreadOnly::MainThreadOnly(
                           time_source,
                           kShortIdlePeriodDurationSampleCount,
                           kShortIdlePeriodDurationPercentile),
+      main_thread_load_tracker(
+          now,
+          base::Bind(&RendererSchedulerImpl::RecordMainThreadTaskLoad,
+                     base::Unretained(renderer_scheduler_impl)),
+          kThreadLoadTrackerReportingInterval),
       background_main_thread_load_tracker(
           now,
-          base::Bind(&ReportBackgroundRendererTaskLoad),
-          kThreadLoadTrackerReportingInterval,
-          kThreadLoadTrackerWaitingPeriodBeforeReporting),
+          base::Bind(&RendererSchedulerImpl::RecordBackgroundMainThreadTaskLoad,
+                     base::Unretained(renderer_scheduler_impl)),
+          kThreadLoadTrackerReportingInterval),
       foreground_main_thread_load_tracker(
           now,
-          base::Bind(&ReportForegroundRendererTaskLoad),
-          kThreadLoadTrackerReportingInterval,
-          kThreadLoadTrackerWaitingPeriodBeforeReporting),
+          base::Bind(&RendererSchedulerImpl::RecordForegroundMainThreadTaskLoad,
+                     base::Unretained(renderer_scheduler_impl)),
+          kThreadLoadTrackerReportingInterval),
       current_use_case(UseCase::NONE),
       timer_queue_suspend_count(0),
       navigation_task_expected_count(0),
@@ -272,6 +251,7 @@ RendererSchedulerImpl::MainThreadOnly::MainThreadOnly(
       visible_task_duration_reporter(TASK_DURATION_METRIC_NAME ".Visible"),
       hidden_music_task_duration_reporter(TASK_DURATION_METRIC_NAME
                                           ".HiddenMusic") {
+  main_thread_load_tracker.Resume(now);
   foreground_main_thread_load_tracker.Resume(now);
 }
 
@@ -2010,11 +1990,25 @@ void RendererSchedulerImpl::RecordTaskMetrics(
   if (duration > kLongTaskDiscardingThreshold)
     return;
 
+  // Discard anomalously long idle periods.
+  if (GetMainThreadOnly().last_reported_task &&
+      start_time - GetMainThreadOnly().last_reported_task.value() >
+          kLongIdlePeriodDiscardingThreshold) {
+    GetMainThreadOnly().main_thread_load_tracker.Reset(end_time);
+    GetMainThreadOnly().foreground_main_thread_load_tracker.Reset(end_time);
+    GetMainThreadOnly().background_main_thread_load_tracker.Reset(end_time);
+    return;
+  }
+
+  GetMainThreadOnly().last_reported_task = end_time;
+
   UMA_HISTOGRAM_CUSTOM_COUNTS("RendererScheduler.TaskTime2",
                               duration.InMicroseconds(), 1, 1000 * 1000, 50);
 
   // We want to measure thread time here, but for efficiency reasons
   // we stick with wall time.
+  GetMainThreadOnly().main_thread_load_tracker.RecordTaskTime(start_time,
+                                                              end_time);
   GetMainThreadOnly().foreground_main_thread_load_tracker.RecordTaskTime(
       start_time, end_time);
   GetMainThreadOnly().background_main_thread_load_tracker.RecordTaskTime(
@@ -2131,6 +2125,59 @@ void RendererSchedulerImpl::RecordTaskMetrics(
     GetMainThreadOnly().visible_task_duration_reporter.RecordTask(queue_type,
                                                                   duration);
   }
+}
+
+void RendererSchedulerImpl::RecordMainThreadTaskLoad(base::TimeTicks time,
+                                                     double load) {
+  int load_percentage = static_cast<int>(load * 100);
+  DCHECK_LE(load_percentage, 100);
+
+  UMA_HISTOGRAM_PERCENTAGE("RendererScheduler.RendererMainThreadLoad3",
+                           load_percentage);
+  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+                 "RendererScheduler.RendererMainThreadLoad", load_percentage);
+}
+
+void RendererSchedulerImpl::RecordForegroundMainThreadTaskLoad(
+    base::TimeTicks time,
+    double load) {
+  int load_percentage = static_cast<int>(load * 100);
+  DCHECK_LE(load_percentage, 100);
+
+  UMA_HISTOGRAM_PERCENTAGE(
+      "RendererScheduler.RendererMainThreadLoad3.Foreground", load_percentage);
+
+  if (time - GetMainThreadOnly().background_status_changed_at >
+      base::TimeDelta::FromMinutes(1)) {
+    UMA_HISTOGRAM_PERCENTAGE(
+        "RendererScheduler.RendererMainThreadLoad3.Foreground.AfterFirstMinute",
+        load_percentage);
+  }
+
+  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+                 "RendererScheduler.RendererMainThreadLoad.Foreground",
+                 load_percentage);
+}
+
+void RendererSchedulerImpl::RecordBackgroundMainThreadTaskLoad(
+    base::TimeTicks time,
+    double load) {
+  int load_percentage = static_cast<int>(load * 100);
+  DCHECK_LE(load_percentage, 100);
+
+  UMA_HISTOGRAM_PERCENTAGE(
+      "RendererScheduler.RendererMainThreadLoad3.Background", load_percentage);
+
+  if (time - GetMainThreadOnly().background_status_changed_at >
+      base::TimeDelta::FromMinutes(1)) {
+    UMA_HISTOGRAM_PERCENTAGE(
+        "RendererScheduler.RendererMainThreadLoad3.Background.AfterFirstMinute",
+        load_percentage);
+  }
+
+  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+                 "RendererScheduler.RendererMainThreadLoad.Background",
+                 load_percentage);
 }
 
 void RendererSchedulerImpl::OnBeginNestedRunLoop() {
