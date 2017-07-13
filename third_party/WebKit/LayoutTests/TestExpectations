@@ -837,6 +837,9 @@ crbug.com/487281 [ Mac ] fast/forms/select/menulist-narrow-width.html [ Failure 
 crbug.com/739091 fast/forms/validation-bubble-appearance-edge.html [ Failure ]
 crbug.com/739091 fast/forms/validation-bubble-appearance-iframe.html [ Failure ]
 crbug.com/739091 fast/forms/validation-bubble-appearance-rtl-ui.html [ Failure ]
+crbug.com/739091 virtual/scalefactor150/fast/hidpi/static/validation-bubble-appearance-hidpi.html [ Failure ]
+crbug.com/739091 virtual/scalefactor200/fast/hidpi/static/validation-bubble-appearance-hidpi.html [ Failure ]
+crbug.com/739091 virtual/scalefactor200withzoom/fast/hidpi/static/validation-bubble-appearance-hidpi.html [ Failure ]
 
 crbug.com/543110 [ Mac ] fast/text/international/text-shaping-arabic.html [ Failure ]
 
