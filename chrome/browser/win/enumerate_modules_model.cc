@@ -37,7 +37,7 @@
 #include "base/version.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
-#include "chrome/browser/conflicts/shell_extension_enumerator_win.h"
+#include "chrome/browser/conflicts/enumerate_shell_extensions_win.h"
 #include "chrome/browser/net/service_providers_win.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/crash_keys.h"
@@ -308,7 +308,7 @@ void ModuleEnumerator::EnumerateLoadedModules() {
 void ModuleEnumerator::EnumerateShellExtensions() {
   // The callback is executed synchronously, so the use of base::Unretained is
   // safe.
-  ShellExtensionEnumerator::EnumerateShellExtensionPaths(base::Bind(
+  EnumerateShellExtensionPaths(base::BindRepeating(
       &ModuleEnumerator::OnShellExtensionEnumerated, base::Unretained(this)));
 }
 
