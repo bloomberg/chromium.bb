@@ -49,6 +49,11 @@ namespace blink {
 
 class WorkerClients;
 
+// A WorkerThreadStartupData carries parameters for starting a worker thread and
+// a global scope.
+// TODO(nhiroki): Separate this class into WorkerThreadStartupData used for
+// initializing WorkerBackingThread, and GlobalScopeStartupData used for
+// creating a global scope (https://crbug.com/710364)
 class CORE_EXPORT WorkerThreadStartupData final {
   WTF_MAKE_NONCOPYABLE(WorkerThreadStartupData);
   USING_FAST_MALLOC(WorkerThreadStartupData);

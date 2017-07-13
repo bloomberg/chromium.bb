@@ -9,6 +9,7 @@
 #include "bindings/core/v8/V8GCController.h"
 #include "bindings/core/v8/V8IdleTaskRunner.h"
 #include "bindings/core/v8/V8Initializer.h"
+#include "bindings/core/v8/WorkerV8Settings.h"
 #include "core/inspector/WorkerThreadDebugger.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -57,7 +58,7 @@ WorkerBackingThread::WorkerBackingThread(WebThread* thread,
 
 WorkerBackingThread::~WorkerBackingThread() {}
 
-void WorkerBackingThread::Initialize() {
+void WorkerBackingThread::Initialize(const WorkerV8Settings& settings) {
   DCHECK(!isolate_);
   backing_thread_->Initialize();
   isolate_ = V8PerIsolateData::Initialize(
@@ -78,6 +79,16 @@ void WorkerBackingThread::Initialize() {
 
   V8PerIsolateData::From(isolate_)->SetThreadDebugger(
       WTF::MakeUnique<WorkerThreadDebugger>(isolate_));
+
+  // Optimize for memory usage instead of latency for the worker isolate.
+  isolate_->IsolateInBackgroundNotification();
+
+  if (settings.heap_limit_mode_ ==
+      WorkerV8Settings::HeapLimitMode::kIncreasedForDebugging) {
+    isolate_->IncreaseHeapLimitForDebugging();
+  }
+  isolate_->SetAllowAtomicsWait(settings.atomics_wait_mode_ ==
+                                WorkerV8Settings::AtomicsWaitMode::kAllow);
 }
 
 void WorkerBackingThread::Shutdown() {

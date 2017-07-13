@@ -6,6 +6,7 @@
 
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "bindings/core/v8/V8Initializer.h"
+#include "bindings/core/v8/WorkerV8Settings.h"
 #include "core/workers/WorkerBackingThread.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/WebTaskRunner.h"
@@ -52,7 +53,7 @@ Vector<RefPtr<DOMWrapperWorld>> CreateWorlds(v8::Isolate* isolate) {
 
 void WorkerThreadFunc(WorkerBackingThread* thread,
                       RefPtr<WebTaskRunner> main_thread_task_runner) {
-  thread->Initialize();
+  thread->Initialize(WorkerV8Settings::Default());
 
   // Worlds on the main thread should not be visible from the worker thread.
   Vector<RefPtr<DOMWrapperWorld>> retrieved_worlds;
