@@ -336,6 +336,7 @@
     <dimen name="ntp_suggestions_footer_padding_bottom">18dp</dimen>
     <dimen name="chrome_home_suggestions_footer_padding_top">24dp</dimen>
     <dimen name="chrome_home_suggestions_footer_padding_bottom">24dp</dimen>
+    <dimen name="content_suggestions_card_modern_margin">16dp</dimen>
 
     <!-- Recent tabs page -->
     <dimen name="recent_tabs_visible_separator_padding">8dp</dimen>

@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.ntp.snippets;
 
+import android.support.annotation.LayoutRes;
 import android.text.TextUtils;
 
 import org.chromium.chrome.R;
@@ -15,6 +16,7 @@ import org.chromium.chrome.browser.ntp.cards.ImpressionTracker;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
 import org.chromium.chrome.browser.ntp.cards.SuggestionsCategoryInfo;
 import org.chromium.chrome.browser.suggestions.SuggestionsBinder;
+import org.chromium.chrome.browser.suggestions.SuggestionsConfig;
 import org.chromium.chrome.browser.suggestions.SuggestionsMetrics;
 import org.chromium.chrome.browser.suggestions.SuggestionsRecyclerView;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
@@ -53,10 +55,7 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
     public SnippetArticleViewHolder(SuggestionsRecyclerView parent,
             ContextMenuManager contextMenuManager, SuggestionsUiDelegate uiDelegate,
             UiConfig uiConfig) {
-        super(ChromeFeatureList.isEnabled(ChromeFeatureList.CONTENT_SUGGESTIONS_LARGE_THUMBNAIL)
-                        ? R.layout.new_tab_page_snippets_card_large_thumbnail
-                        : R.layout.new_tab_page_snippets_card,
-                parent, uiConfig, contextMenuManager);
+        super(getLayout(), parent, uiConfig, contextMenuManager);
 
         mUiDelegate = uiDelegate;
         mUiConfig = uiConfig;
@@ -195,6 +194,18 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
     private void refreshOfflineBadgeVisibility() {
         boolean visible = mArticle.getOfflinePageOfflineId() != null || mArticle.isAssetDownload();
         mSuggestionsBinder.updateOfflineBadgeVisibility(visible);
+    }
+
+    /**
+     * @return The layout resource reference for this card.
+     */
+    @LayoutRes
+    private static int getLayout() {
+        if (SuggestionsConfig.useModern()) return R.layout.content_suggestions_card_modern;
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CONTENT_SUGGESTIONS_LARGE_THUMBNAIL)) {
+            return R.layout.new_tab_page_snippets_card_large_thumbnail;
+        }
+        return R.layout.new_tab_page_snippets_card;
     }
 
     /**

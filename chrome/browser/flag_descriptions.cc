@@ -370,6 +370,11 @@ const char kEnablePictureInPictureName[] = "Enable picture in picture.";
 const char kEnablePictureInPictureDescription[] =
     "Enable the picture in picture feature for videos.";
 
+const char kEnableSuggestionsHomeModernLayoutName[] =
+    "Enable modern layout for suggestions.";
+const char kEnableSuggestionsHomeModernLayoutDescription[] =
+    "Enable modern layout for suggestions in Chrome Home.";
+
 const char kEnableTokenBindingName[] = "Token Binding.";
 const char kEnableTokenBindingDescription[] = "Enable Token Binding support.";
 

@@ -22543,6 +22543,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="-1616855537" label="enable-manual-password-generation:disabled"/>
   <int value="-1614912400" label="enable-link-disambiguation-popup"/>
   <int value="-1611305202" label="KeepPrefetchedContentSuggestions:disabled"/>
+  <int value="-1608108774" label="SuggestionsHomeModernLayout:enabled"/>
   <int value="-1605567628" label="disable-overlay-scrollbar"/>
   <int value="-1604051051" label="SpecialLocale:disabled"/>
   <int value="-1599538279" label="enable-md-policy-page"/>
@@ -23024,6 +23025,7 @@ from previous Chrome versions.
   <int value="7533886" label="disable-offer-store-unmasked-wallet-cards"/>
   <int value="10458238" label="disable-print-preview-simplify"/>
   <int value="11698808" label="enable-dom-distiller-button-animation"/>
+  <int value="21963384" label="SuggestionsHomeModernLayout:disabled"/>
   <int value="27507364" label="apps-keep-chrome-alive"/>
   <int value="31848187" label="ViewsTaskManager:disabled"/>
   <int value="33778663" label="OriginTrials:enabled"/>
