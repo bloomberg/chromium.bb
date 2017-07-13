@@ -216,13 +216,13 @@ void CheckResponseStream(ScriptState* script_state,
 }
 
 BodyStreamBuffer* CreateHelloWorldBuffer(ScriptState* script_state) {
-  using Command = BytesConsumerTestUtil::Command;
+  using BytesConsumerCommand = BytesConsumerTestUtil::Command;
   BytesConsumerTestUtil::ReplayingBytesConsumer* src =
       new BytesConsumerTestUtil::ReplayingBytesConsumer(
           ExecutionContext::From(script_state));
-  src->Add(Command(Command::kData, "Hello, "));
-  src->Add(Command(Command::kData, "world"));
-  src->Add(Command(Command::kDone));
+  src->Add(BytesConsumerCommand(BytesConsumerCommand::kData, "Hello, "));
+  src->Add(BytesConsumerCommand(BytesConsumerCommand::kData, "world"));
+  src->Add(BytesConsumerCommand(BytesConsumerCommand::kDone));
   return new BodyStreamBuffer(script_state, src);
 }
 

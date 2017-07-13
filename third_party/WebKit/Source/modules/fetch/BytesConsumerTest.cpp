@@ -15,7 +15,7 @@ namespace blink {
 
 namespace {
 
-using Command = BytesConsumerTestUtil::Command;
+using BytesConsumerCommand = BytesConsumerTestUtil::Command;
 using Result = BytesConsumer::Result;
 using ReplayingBytesConsumer = BytesConsumerTestUtil::ReplayingBytesConsumer;
 
@@ -90,7 +90,7 @@ class FakeBlobBytesConsumer : public BytesConsumer {
 
 TEST_F(BytesConsumerTeeTest, CreateDone) {
   ReplayingBytesConsumer* src = new ReplayingBytesConsumer(GetDocument());
-  src->Add(Command(Command::kDone));
+  src->Add(BytesConsumerCommand(BytesConsumerCommand::kDone));
   EXPECT_FALSE(src->IsCancelled());
 
   BytesConsumer* dest1 = nullptr;
@@ -119,13 +119,13 @@ TEST_F(BytesConsumerTeeTest, CreateDone) {
 TEST_F(BytesConsumerTeeTest, TwoPhaseRead) {
   ReplayingBytesConsumer* src = new ReplayingBytesConsumer(GetDocument());
 
-  src->Add(Command(Command::kWait));
-  src->Add(Command(Command::kData, "hello, "));
-  src->Add(Command(Command::kWait));
-  src->Add(Command(Command::kData, "world"));
-  src->Add(Command(Command::kWait));
-  src->Add(Command(Command::kWait));
-  src->Add(Command(Command::kDone));
+  src->Add(BytesConsumerCommand(BytesConsumerCommand::kWait));
+  src->Add(BytesConsumerCommand(BytesConsumerCommand::kData, "hello, "));
+  src->Add(BytesConsumerCommand(BytesConsumerCommand::kWait));
+  src->Add(BytesConsumerCommand(BytesConsumerCommand::kData, "world"));
+  src->Add(BytesConsumerCommand(BytesConsumerCommand::kWait));
+  src->Add(BytesConsumerCommand(BytesConsumerCommand::kWait));
+  src->Add(BytesConsumerCommand(BytesConsumerCommand::kDone));
 
   BytesConsumer* dest1 = nullptr;
   BytesConsumer* dest2 = nullptr;
@@ -151,9 +151,9 @@ TEST_F(BytesConsumerTeeTest, TwoPhaseRead) {
 TEST_F(BytesConsumerTeeTest, Error) {
   ReplayingBytesConsumer* src = new ReplayingBytesConsumer(GetDocument());
 
-  src->Add(Command(Command::kData, "hello, "));
-  src->Add(Command(Command::kData, "world"));
-  src->Add(Command(Command::kError));
+  src->Add(BytesConsumerCommand(BytesConsumerCommand::kData, "hello, "));
+  src->Add(BytesConsumerCommand(BytesConsumerCommand::kData, "world"));
+  src->Add(BytesConsumerCommand(BytesConsumerCommand::kError));
 
   BytesConsumer* dest1 = nullptr;
   BytesConsumer* dest2 = nullptr;
@@ -184,8 +184,8 @@ TEST_F(BytesConsumerTeeTest, Error) {
 TEST_F(BytesConsumerTeeTest, Cancel) {
   ReplayingBytesConsumer* src = new ReplayingBytesConsumer(GetDocument());
 
-  src->Add(Command(Command::kData, "hello, "));
-  src->Add(Command(Command::kWait));
+  src->Add(BytesConsumerCommand(BytesConsumerCommand::kData, "hello, "));
+  src->Add(BytesConsumerCommand(BytesConsumerCommand::kWait));
 
   BytesConsumer* dest1 = nullptr;
   BytesConsumer* dest2 = nullptr;
@@ -211,10 +211,10 @@ TEST_F(BytesConsumerTeeTest, Cancel) {
 TEST_F(BytesConsumerTeeTest, CancelShouldNotAffectTheOtherDestination) {
   ReplayingBytesConsumer* src = new ReplayingBytesConsumer(GetDocument());
 
-  src->Add(Command(Command::kData, "hello, "));
-  src->Add(Command(Command::kWait));
-  src->Add(Command(Command::kData, "world"));
-  src->Add(Command(Command::kDone));
+  src->Add(BytesConsumerCommand(BytesConsumerCommand::kData, "hello, "));
+  src->Add(BytesConsumerCommand(BytesConsumerCommand::kWait));
+  src->Add(BytesConsumerCommand(BytesConsumerCommand::kData, "world"));
+  src->Add(BytesConsumerCommand(BytesConsumerCommand::kDone));
 
   BytesConsumer* dest1 = nullptr;
   BytesConsumer* dest2 = nullptr;
@@ -244,10 +244,10 @@ TEST_F(BytesConsumerTeeTest, CancelShouldNotAffectTheOtherDestination) {
 TEST_F(BytesConsumerTeeTest, CancelShouldNotAffectTheOtherDestination2) {
   ReplayingBytesConsumer* src = new ReplayingBytesConsumer(GetDocument());
 
-  src->Add(Command(Command::kData, "hello, "));
-  src->Add(Command(Command::kWait));
-  src->Add(Command(Command::kData, "world"));
-  src->Add(Command(Command::kError));
+  src->Add(BytesConsumerCommand(BytesConsumerCommand::kData, "hello, "));
+  src->Add(BytesConsumerCommand(BytesConsumerCommand::kWait));
+  src->Add(BytesConsumerCommand(BytesConsumerCommand::kData, "world"));
+  src->Add(BytesConsumerCommand(BytesConsumerCommand::kError));
 
   BytesConsumer* dest1 = nullptr;
   BytesConsumer* dest2 = nullptr;
@@ -312,9 +312,9 @@ TEST_F(BytesConsumerTeeTest, BlobHandleWithInvalidSize) {
 
 TEST_F(BytesConsumerTeeTest, ConsumerCanBeErroredInTwoPhaseRead) {
   ReplayingBytesConsumer* src = new ReplayingBytesConsumer(GetDocument());
-  src->Add(Command(Command::kData, "a"));
-  src->Add(Command(Command::kWait));
-  src->Add(Command(Command::kError));
+  src->Add(BytesConsumerCommand(BytesConsumerCommand::kData, "a"));
+  src->Add(BytesConsumerCommand(BytesConsumerCommand::kWait));
+  src->Add(BytesConsumerCommand(BytesConsumerCommand::kError));
 
   BytesConsumer* dest1 = nullptr;
   BytesConsumer* dest2 = nullptr;
@@ -341,9 +341,9 @@ TEST_F(BytesConsumerTeeTest, ConsumerCanBeErroredInTwoPhaseRead) {
 TEST_F(BytesConsumerTeeTest,
        AsyncNotificationShouldBeDispatchedWhenAllDataIsConsumed) {
   ReplayingBytesConsumer* src = new ReplayingBytesConsumer(GetDocument());
-  src->Add(Command(Command::kData, "a"));
-  src->Add(Command(Command::kWait));
-  src->Add(Command(Command::kDone));
+  src->Add(BytesConsumerCommand(BytesConsumerCommand::kData, "a"));
+  src->Add(BytesConsumerCommand(BytesConsumerCommand::kWait));
+  src->Add(BytesConsumerCommand(BytesConsumerCommand::kDone));
   TestClient* client = new TestClient();
 
   BytesConsumer* dest1 = nullptr;
@@ -377,8 +377,8 @@ TEST_F(BytesConsumerTeeTest,
 TEST_F(BytesConsumerTeeTest,
        AsyncCloseNotificationShouldBeCancelledBySubsequentReadCall) {
   ReplayingBytesConsumer* src = new ReplayingBytesConsumer(GetDocument());
-  src->Add(Command(Command::kData, "a"));
-  src->Add(Command(Command::kDone));
+  src->Add(BytesConsumerCommand(BytesConsumerCommand::kData, "a"));
+  src->Add(BytesConsumerCommand(BytesConsumerCommand::kDone));
   TestClient* client = new TestClient();
 
   BytesConsumer* dest1 = nullptr;

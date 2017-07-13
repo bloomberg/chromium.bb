@@ -15,7 +15,7 @@ namespace blink {
 
 namespace {
 
-using Command = DataConsumerHandleTestUtil::Command;
+using DataConsumerCommand = DataConsumerHandleTestUtil::Command;
 using Checkpoint = ::testing::StrictMock<::testing::MockFunction<void(int)>>;
 using ReplayingHandle = DataConsumerHandleTestUtil::ReplayingHandle;
 using Result = BytesConsumer::Result;
@@ -92,8 +92,8 @@ class MockDataConsumerHandle final : public WebDataConsumerHandle {
 
 TEST_F(BytesConsumerForDataConsumerHandleTest, Create) {
   std::unique_ptr<ReplayingHandle> handle = ReplayingHandle::Create();
-  handle->Add(Command(Command::kData, "hello"));
-  handle->Add(Command(Command::kDone));
+  handle->Add(DataConsumerCommand(DataConsumerCommand::kData, "hello"));
+  handle->Add(DataConsumerCommand(DataConsumerCommand::kDone));
   Persistent<BytesConsumer> consumer =
       new BytesConsumerForDataConsumerHandle(GetDocument(), std::move(handle));
 }
@@ -108,7 +108,7 @@ TEST_F(BytesConsumerForDataConsumerHandleTest, BecomeReadable) {
   EXPECT_CALL(checkpoint, Call(2));
 
   std::unique_ptr<ReplayingHandle> handle = ReplayingHandle::Create();
-  handle->Add(Command(Command::kData, "hello"));
+  handle->Add(DataConsumerCommand(DataConsumerCommand::kData, "hello"));
   Persistent<BytesConsumer> consumer =
       new BytesConsumerForDataConsumerHandle(GetDocument(), std::move(handle));
   consumer->SetClient(client);
@@ -132,7 +132,7 @@ TEST_F(BytesConsumerForDataConsumerHandleTest, BecomeClosed) {
   EXPECT_CALL(checkpoint, Call(2));
 
   std::unique_ptr<ReplayingHandle> handle = ReplayingHandle::Create();
-  handle->Add(Command(Command::kDone));
+  handle->Add(DataConsumerCommand(DataConsumerCommand::kDone));
   Persistent<BytesConsumer> consumer =
       new BytesConsumerForDataConsumerHandle(GetDocument(), std::move(handle));
   consumer->SetClient(client);
@@ -155,7 +155,7 @@ TEST_F(BytesConsumerForDataConsumerHandleTest, BecomeErrored) {
   EXPECT_CALL(checkpoint, Call(2));
 
   std::unique_ptr<ReplayingHandle> handle = ReplayingHandle::Create();
-  handle->Add(Command(Command::kError));
+  handle->Add(DataConsumerCommand(DataConsumerCommand::kError));
   Persistent<BytesConsumer> consumer =
       new BytesConsumerForDataConsumerHandle(GetDocument(), std::move(handle));
   consumer->SetClient(client);
@@ -177,7 +177,7 @@ TEST_F(BytesConsumerForDataConsumerHandleTest, ClearClient) {
   EXPECT_CALL(checkpoint, Call(2));
 
   std::unique_ptr<ReplayingHandle> handle = ReplayingHandle::Create();
-  handle->Add(Command(Command::kError));
+  handle->Add(DataConsumerCommand(DataConsumerCommand::kError));
   Persistent<BytesConsumer> consumer =
       new BytesConsumerForDataConsumerHandle(GetDocument(), std::move(handle));
   consumer->SetClient(client);
@@ -190,7 +190,7 @@ TEST_F(BytesConsumerForDataConsumerHandleTest, ClearClient) {
 
 TEST_F(BytesConsumerForDataConsumerHandleTest, TwoPhaseReadWhenReadable) {
   std::unique_ptr<ReplayingHandle> handle = ReplayingHandle::Create();
-  handle->Add(Command(Command::kData, "hello"));
+  handle->Add(DataConsumerCommand(DataConsumerCommand::kData, "hello"));
   Persistent<BytesConsumer> consumer =
       new BytesConsumerForDataConsumerHandle(GetDocument(), std::move(handle));
   consumer->SetClient(MockClient::Create());
@@ -220,7 +220,7 @@ TEST_F(BytesConsumerForDataConsumerHandleTest, TwoPhaseReadWhenWaiting) {
 
 TEST_F(BytesConsumerForDataConsumerHandleTest, TwoPhaseReadWhenClosed) {
   std::unique_ptr<ReplayingHandle> handle = ReplayingHandle::Create();
-  handle->Add(Command(Command::kDone));
+  handle->Add(DataConsumerCommand(DataConsumerCommand::kDone));
   Persistent<BytesConsumer> consumer =
       new BytesConsumerForDataConsumerHandle(GetDocument(), std::move(handle));
   consumer->SetClient(MockClient::Create());
@@ -231,7 +231,7 @@ TEST_F(BytesConsumerForDataConsumerHandleTest, TwoPhaseReadWhenClosed) {
 
 TEST_F(BytesConsumerForDataConsumerHandleTest, TwoPhaseReadWhenErrored) {
   std::unique_ptr<ReplayingHandle> handle = ReplayingHandle::Create();
-  handle->Add(Command(Command::kError));
+  handle->Add(DataConsumerCommand(DataConsumerCommand::kError));
   Persistent<BytesConsumer> consumer =
       new BytesConsumerForDataConsumerHandle(GetDocument(), std::move(handle));
   consumer->SetClient(MockClient::Create());
