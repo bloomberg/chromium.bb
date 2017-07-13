@@ -418,14 +418,13 @@ base::string16 FormatUrl(const GURL& url,
                          url::Parsed* new_parsed,
                          size_t* prefix_end,
                          size_t* offset_for_adjustment) {
-  std::vector<size_t> offsets;
-  if (offset_for_adjustment)
-    offsets.push_back(*offset_for_adjustment);
-  base::string16 result =
-      FormatUrlWithOffsets(url, format_types, unescape_rules, new_parsed,
-                           prefix_end, &offsets);
-  if (offset_for_adjustment)
-    *offset_for_adjustment = offsets[0];
+  base::OffsetAdjuster::Adjustments adjustments;
+  base::string16 result = FormatUrlWithAdjustments(
+      url, format_types, unescape_rules, new_parsed, prefix_end, &adjustments);
+  if (offset_for_adjustment) {
+    base::OffsetAdjuster::AdjustOffset(adjustments, offset_for_adjustment,
+                                       result.length());
+  }
   return result;
 }
 
@@ -437,16 +436,11 @@ base::string16 FormatUrlWithOffsets(
     size_t* prefix_end,
     std::vector<size_t>* offsets_for_adjustment) {
   base::OffsetAdjuster::Adjustments adjustments;
-  const base::string16& format_url_return_value =
-      FormatUrlWithAdjustments(url, format_types, unescape_rules, new_parsed,
-                               prefix_end, &adjustments);
-  base::OffsetAdjuster::AdjustOffsets(adjustments, offsets_for_adjustment);
-  if (offsets_for_adjustment) {
-    std::for_each(
-        offsets_for_adjustment->begin(), offsets_for_adjustment->end(),
-        base::LimitOffset<std::string>(format_url_return_value.length()));
-  }
-  return format_url_return_value;
+  const base::string16& result = FormatUrlWithAdjustments(
+      url, format_types, unescape_rules, new_parsed, prefix_end, &adjustments);
+  base::OffsetAdjuster::AdjustOffsets(adjustments, offsets_for_adjustment,
+                                      result.length());
+  return result;
 }
 
 base::string16 FormatUrlWithAdjustments(
@@ -456,7 +450,7 @@ base::string16 FormatUrlWithAdjustments(
     url::Parsed* new_parsed,
     size_t* prefix_end,
     base::OffsetAdjuster::Adjustments* adjustments) {
-  DCHECK(adjustments != NULL);
+  DCHECK(adjustments);
   adjustments->clear();
   url::Parsed parsed_temp;
   if (!new_parsed)
