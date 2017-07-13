@@ -100,10 +100,8 @@ def AddToManifest(manifest_file, target_name, source, mapper):
     raise Exception('%s does not exist' % source)
 
 
-def BuildBootfs(output_directory, runtime_deps_path, test_name, gtest_filter,
-                gtest_repeat, test_launcher_batch_limit,
-                test_launcher_filter_file, test_launcher_jobs,
-                single_process_tests, dry_run):
+def BuildBootfs(output_directory, runtime_deps_path, test_name, child_args,
+                test_launcher_filter_file, dry_run):
   with open(runtime_deps_path) as f:
     lines = f.readlines()
 
@@ -129,39 +127,25 @@ def BuildBootfs(output_directory, runtime_deps_path, test_name, gtest_filter,
     target_source_pairs.append(
         ('lib/' + lib, os.path.join(sysroot_lib_path, lib)))
 
-  # Generate a little script that runs the test binaries and then shuts down
-  # QEMU.
-  autorun_file = tempfile.NamedTemporaryFile()
-  autorun_file.write('#!/bin/sh\n')
-  autorun_file.write('/system/' + os.path.basename(test_name))
-  autorun_file.write(' --test-launcher-retry-limit=0')
-
-  if int(os.environ.get('CHROME_HEADLESS', 0)) != 0:
-    # When running on bots (without KVM) execution is quite slow. The test
-    # launcher times out a subprocess after 45s which can be too short. Make the
-    # timeout twice as long.
-    autorun_file.write(' --test-launcher-timeout=90000')
-  if single_process_tests:
-    autorun_file.write(' --single-process-tests')
   if test_launcher_filter_file:
     test_launcher_filter_file = os.path.normpath(
             os.path.join(output_directory, test_launcher_filter_file))
     filter_file_on_device = MakeTargetImageName(
           common_prefix, output_directory, test_launcher_filter_file)
-    autorun_file.write(' --test-launcher-filter-file=/system/' +
+    child_args.append('--test-launcher-filter-file=/system/' +
                        filter_file_on_device)
     target_source_pairs.append(
         [filter_file_on_device, test_launcher_filter_file])
-  if test_launcher_batch_limit:
-    autorun_file.write(' --test-launcher-batch-limit=%d' %
-                       test_launcher_batch_limit)
-  if test_launcher_jobs:
-    autorun_file.write(' --test-launcher-jobs=%d' %
-                       test_launcher_jobs)
-  if gtest_filter:
-    autorun_file.write(' --gtest_filter=' + gtest_filter)
-  if gtest_repeat:
-    autorun_file.write(' --gtest_repeat=' + gtest_repeat)
+
+  # Generate a little script that runs the test binaries and then shuts down
+  # QEMU.
+  autorun_file = tempfile.NamedTemporaryFile()
+  autorun_file.write('#!/bin/sh\n')
+  autorun_file.write('/system/' + os.path.basename(test_name))
+
+  for arg in child_args:
+    autorun_file.write(' "%s"' % arg);
+
   autorun_file.write('\n')
   # If shutdown happens too soon after the test completion, log statements from
   # the end of the run will be lost, so sleep for a bit before shutting down.
@@ -241,13 +225,37 @@ def main():
                       help='Sets the number of parallel test jobs.')
   parser.add_argument('--test_launcher_summary_output',
                       help='Currently ignored for 2-sided roll.')
+  parser.add_argument('child_args', nargs='*',
+                      help='Arguments for the test process.')
   args = parser.parse_args()
 
+  child_args = ['--test-launcher-retry-limit=0']
+
+  if int(os.environ.get('CHROME_HEADLESS', 0)) != 0:
+    # When running on bots (without KVM) execution is quite slow. The test
+    # launcher times out a subprocess after 45s which can be too short. Make the
+    # timeout twice as long.
+    child_args.append('--test-launcher-timeout=90000')
+
+  if args.single_process_tests:
+    child_args.append('--single-process-tests')
+
+  if args.test_launcher_batch_limit:
+    child_args.append('--test-launcher-batch-limit=%d' %
+                       args.test_launcher_batch_limit)
+  if args.test_launcher_jobs:
+    child_args.append('--test-launcher-jobs=%d' %
+                       args.test_launcher_jobs)
+  if args.gtest_filter:
+    child_args.append('--gtest_filter=' + args.gtest_filter)
+  if args.gtest_repeat:
+    child_args.append('--gtest_repeat=' + args.gtest_repeat)
+  if args.child_args:
+    child_args.extend(args.child_args)
+
   bootfs = BuildBootfs(args.output_directory, args.runtime_deps_path,
-                       args.test_name, args.gtest_filter, args.gtest_repeat,
-                       args.test_launcher_batch_limit,
-                       args.test_launcher_filter_file, args.test_launcher_jobs,
-                       args.single_process_tests, args.dry_run)
+                       args.test_name, child_args,
+                       args.test_launcher_filter_file, args.dry_run)
 
   qemu_path = os.path.join(SDK_ROOT, 'qemu', 'bin', 'qemu-system-x86_64')
 
