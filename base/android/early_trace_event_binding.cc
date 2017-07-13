@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/android/early_trace_event_binding.h"
-
 #include <stdint.h>
 
 #include "base/android/jni_string.h"
@@ -34,10 +32,6 @@ static void RecordEarlyEvent(JNIEnv* env,
       TRACE_EVENT_PHASE_END, kEarlyJavaCategory, name.c_str(),
       trace_event_internal::kNoId, thread_id,
       TimeTicks::FromInternalValue(end_us), TRACE_EVENT_FLAG_COPY);
-}
-
-bool RegisterEarlyTraceEvent(JNIEnv* env) {
-  return RegisterNativesImpl(env);
 }
 
 }  // namespace android

@@ -6,7 +6,6 @@
 
 #include <jni.h>
 
-#include "base/android/base_jni_registrar.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
 #include "base/bind.h"

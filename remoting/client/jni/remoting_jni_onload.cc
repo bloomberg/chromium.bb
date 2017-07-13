@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/android/base_jni_onload.h"
-#include "base/android/base_jni_registrar.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
 #include "base/android/jni_utils.h"
@@ -17,7 +16,6 @@
 namespace {
 
 base::android::RegistrationMethod kRemotingRegisteredMethods[] = {
-  {"base", base::android::RegisterJni},
   {"gfx", gfx::android::RegisterJni},
   {"net", net::android::RegisterJni},
   {"remoting", remoting::RegisterJni},

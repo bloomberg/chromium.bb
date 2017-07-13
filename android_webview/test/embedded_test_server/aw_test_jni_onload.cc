@@ -6,7 +6,6 @@
 
 #include "android_webview/test/embedded_test_server/aw_embedded_test_server.h"
 #include "base/android/base_jni_onload.h"
-#include "base/android/base_jni_registrar.h"
 #include "base/android/jni_android.h"
 #include "base/bind.h"
 #include "net/test/android/net_test_jni_onload.h"
