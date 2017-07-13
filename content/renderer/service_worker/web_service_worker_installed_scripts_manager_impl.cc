@@ -4,13 +4,109 @@
 
 #include "content/renderer/service_worker/web_service_worker_installed_scripts_manager_impl.h"
 
+#include "base/barrier_closure.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
+#include "base/threading/thread_checker.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace content {
 
 namespace {
+
+// Receiver is a class to read a Mojo data pipe. Received data are stored in
+// chunks. Lives on the IO thread. Receiver is owned by Internal via
+// BundledReceivers. It is created to read the script body or metadata from a
+// data pipe, and is destroyed when the read finishes.
+class Receiver {
+ public:
+  using BytesChunk = blink::WebVector<char>;
+
+  explicit Receiver(mojo::ScopedDataPipeConsumerHandle handle)
+      : handle_(std::move(handle)),
+        watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL) {}
+
+  void Start(base::OnceClosure callback) {
+    callback_ = std::move(callback);
+    // base::Unretained is safe because |watcher_| is owned by |this|.
+    watcher_.Watch(handle_.get(), MOJO_HANDLE_SIGNAL_READABLE,
+                   base::Bind(&Receiver::OnReadable, base::Unretained(this)));
+    watcher_.ArmOrNotify();
+  }
+
+  void OnReadable(MojoResult /* unused */) {
+    const void* buffer = nullptr;
+    uint32_t bytes_read = 0;
+    MojoResult rv = mojo::BeginReadDataRaw(handle_.get(), &buffer, &bytes_read,
+                                           MOJO_READ_DATA_FLAG_NONE);
+    switch (rv) {
+      case MOJO_RESULT_BUSY:
+      case MOJO_RESULT_INVALID_ARGUMENT:
+        NOTREACHED();
+        return;
+      case MOJO_RESULT_FAILED_PRECONDITION:
+        // Closed by peer.
+        watcher_.Cancel();
+        handle_.reset();
+        DCHECK(callback_);
+        std::move(callback_).Run();
+        return;
+      case MOJO_RESULT_SHOULD_WAIT:
+        watcher_.ArmOrNotify();
+        return;
+      case MOJO_RESULT_OK:
+        break;
+    }
+
+    if (bytes_read > 0)
+      chunks_.emplace_back(static_cast<const char*>(buffer), bytes_read);
+
+    rv = mojo::EndReadDataRaw(handle_.get(), bytes_read);
+    DCHECK_EQ(rv, MOJO_RESULT_OK);
+    watcher_.ArmOrNotify();
+  }
+
+  bool is_running() const { return handle_.is_valid(); }
+
+  blink::WebVector<BytesChunk> TakeChunks() {
+    DCHECK(!is_running());
+    return blink::WebVector<BytesChunk>(std::move(chunks_));
+  }
+
+ private:
+  base::OnceClosure callback_;
+  mojo::ScopedDataPipeConsumerHandle handle_;
+  mojo::SimpleWatcher watcher_;
+
+  // std::vector is internally used because blink::WebVector is immutable and
+  // cannot append data.
+  std::vector<BytesChunk> chunks_;
+};
+
+// BundledReceivers is a helper class to wait for the end of reading body and
+// meta data. Lives on the IO thread.
+class BundledReceivers {
+ public:
+  BundledReceivers(mojo::ScopedDataPipeConsumerHandle meta_data_handle,
+                   mojo::ScopedDataPipeConsumerHandle body_handle)
+      : meta_data_(std::move(meta_data_handle)),
+        body_(std::move(body_handle)) {}
+
+  // Starts reading the pipes and invokes |callback| when both are finished.
+  void Start(base::OnceClosure callback) {
+    base::RepeatingClosure wait_all_closure =
+        base::BarrierClosure(2, std::move(callback));
+    meta_data_.Start(wait_all_closure);
+    body_.Start(wait_all_closure);
+  }
+
+  Receiver* meta_data() { return &meta_data_; }
+  Receiver* body() { return &body_; }
+
+ private:
+  Receiver meta_data_;
+  Receiver body_;
+};
 
 // Internal lives on the IO thread. This receives mojom::ServiceWorkerScriptInfo
 // for all installed scripts and then starts reading the body and meta data from
@@ -21,14 +117,66 @@ class Internal : public mojom::ServiceWorkerInstalledScriptsManager {
   // Called on the IO thread.
   // Creates and binds a new Internal instance to |request|.
   static void Create(
+      scoped_refptr<ThreadSafeScriptContainer> script_container,
       mojom::ServiceWorkerInstalledScriptsManagerRequest request) {
-    mojo::MakeStrongBinding(base::MakeUnique<Internal>(), std::move(request));
+    mojo::MakeStrongBinding(
+        base::MakeUnique<Internal>(std::move(script_container)),
+        std::move(request));
+  }
+
+  Internal(scoped_refptr<ThreadSafeScriptContainer> script_container)
+      : script_container_(std::move(script_container)), weak_factory_(this) {}
+
+  ~Internal() override {
+    DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
+    // Wake up a waiting thread so it does not wait forever. If the script has
+    // not been added yet, that means something went wrong. From here,
+    // script_container_->Wait() will return false if the script hasn't been
+    // added yet.
+    script_container_->OnAllDataAddedOnIOThread();
   }
 
   // Implements mojom::ServiceWorkerInstalledScriptsManager.
   // Called on the IO thread.
   void TransferInstalledScript(
-      mojom::ServiceWorkerScriptInfoPtr script_info) override {}
+      mojom::ServiceWorkerScriptInfoPtr script_info) override {
+    DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
+    GURL script_url = script_info->script_url;
+    auto receivers = base::MakeUnique<BundledReceivers>(
+        std::move(script_info->meta_data), std::move(script_info->body));
+    receivers->Start(base::BindOnce(&Internal::OnScriptReceived,
+                                    weak_factory_.GetWeakPtr(),
+                                    base::Passed(&script_info)));
+    DCHECK(!base::ContainsKey(running_receivers_, script_url));
+    running_receivers_[script_url] = std::move(receivers);
+  }
+
+  // Called on the IO thread.
+  void OnScriptReceived(mojom::ServiceWorkerScriptInfoPtr script_info) {
+    DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
+    const GURL& script_url = script_info->script_url;
+    auto iter = running_receivers_.find(script_url);
+    DCHECK(iter != running_receivers_.end());
+    std::unique_ptr<BundledReceivers> receivers = std::move(iter->second);
+    DCHECK(receivers);
+    auto script_data =
+        blink::WebServiceWorkerInstalledScriptsManager::RawScriptData::Create(
+            blink::WebString::FromUTF8(script_info->encoding),
+            receivers->body()->TakeChunks(),
+            receivers->meta_data()->TakeChunks());
+    for (const auto& entry : script_info->headers) {
+      script_data->AddHeader(blink::WebString::FromUTF8(entry.first),
+                             blink::WebString::FromUTF8(entry.second));
+    }
+    script_container_->AddOnIOThread(script_url, std::move(script_data));
+    running_receivers_.erase(iter);
+  }
+
+ private:
+  THREAD_CHECKER(io_thread_checker_);
+  std::map<GURL, std::unique_ptr<BundledReceivers>> running_receivers_;
+  scoped_refptr<ThreadSafeScriptContainer> script_container_;
+  base::WeakPtrFactory<Internal> weak_factory_;
 };
 
 }  // namespace
@@ -38,39 +186,57 @@ std::unique_ptr<blink::WebServiceWorkerInstalledScriptsManager>
 WebServiceWorkerInstalledScriptsManagerImpl::Create(
     mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner) {
+  auto script_container = base::MakeRefCounted<ThreadSafeScriptContainer>();
   auto installed_scripts_manager =
       base::WrapUnique<WebServiceWorkerInstalledScriptsManagerImpl>(
           new WebServiceWorkerInstalledScriptsManagerImpl(
-              std::move(installed_scripts_info->installed_urls)));
-  // TODO(shimazu): Implement a container class which is shared among
-  // WebServiceWorkerInstalledScriptsManagerImpl and Internal to pass the data
-  // between the IO thread and the worker thread.
+              std::move(installed_scripts_info->installed_urls),
+              script_container));
   io_task_runner->PostTask(
       FROM_HERE,
-      base::BindOnce(&Internal::Create,
+      base::BindOnce(&Internal::Create, script_container,
                      std::move(installed_scripts_info->manager_request)));
   return installed_scripts_manager;
 }
 
 WebServiceWorkerInstalledScriptsManagerImpl::
     WebServiceWorkerInstalledScriptsManagerImpl(
-        std::vector<GURL>&& installed_urls)
-    : installed_urls_(installed_urls.begin(), installed_urls.end()) {}
+        std::vector<GURL>&& installed_urls,
+        scoped_refptr<ThreadSafeScriptContainer> script_container)
+    : installed_urls_(installed_urls.begin(), installed_urls.end()),
+      script_container_(std::move(script_container)) {}
 
 WebServiceWorkerInstalledScriptsManagerImpl::
     ~WebServiceWorkerInstalledScriptsManagerImpl() = default;
 
 bool WebServiceWorkerInstalledScriptsManagerImpl::IsScriptInstalled(
-    const blink::WebURL& web_script_url) const {
-  return base::ContainsKey(installed_urls_, web_script_url);
+    const blink::WebURL& script_url) const {
+  return base::ContainsKey(installed_urls_, script_url);
 }
 
 std::unique_ptr<blink::WebServiceWorkerInstalledScriptsManager::RawScriptData>
 WebServiceWorkerInstalledScriptsManagerImpl::GetRawScriptData(
-    const blink::WebURL& web_script_url) {
-  // TODO(shimazu): Implement here.
-  NOTIMPLEMENTED();
-  return nullptr;
+    const blink::WebURL& script_url) {
+  if (!IsScriptInstalled(script_url))
+    return nullptr;
+
+  if (!script_container_->ExistsOnWorkerThread(script_url)) {
+    // Wait for arrival of the script.
+    const bool success = script_container_->WaitOnIOThread(script_url);
+    // It can fail due to an error on Mojo pipes.
+    if (!success)
+      return nullptr;
+    DCHECK(script_container_->ExistsOnWorkerThread(script_url));
+  }
+  std::unique_ptr<RawScriptData> data =
+      script_container_->TakeOnWorkerThread(script_url);
+  // |data| is possible to be null when the script data has already been taken.
+  if (!data) {
+    // TODO(shimazu): Ask the browser process when the script has already been
+    // served.
+    return nullptr;
+  }
+  return data;
 }
 
 }  // namespace content

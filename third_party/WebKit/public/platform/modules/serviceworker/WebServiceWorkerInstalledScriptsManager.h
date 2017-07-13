@@ -26,12 +26,17 @@ class WebServiceWorkerInstalledScriptsManager {
   // cross-thread-transfer-safe.
   class BLINK_PLATFORM_EXPORT RawScriptData {
    public:
-    RawScriptData(WebString encoding,
-                  WebVector<BytesChunk> script_text,
-                  WebVector<BytesChunk> meta_data);
+    static std::unique_ptr<RawScriptData> Create(
+        WebString encoding,
+        WebVector<BytesChunk> script_text,
+        WebVector<BytesChunk> meta_data);
+
+    // Implementation of the destructor should be in the Blink side because only
+    // Blink can know all of members.
+    ~RawScriptData();
+
     void AddHeader(const WebString& key, const WebString& value);
 
-#if INSIDE_BLINK
     // The encoding of the script text.
     const WebString& Encoding() const { return encoding_; }
     // An array of raw byte chunks of the script text.
@@ -41,15 +46,24 @@ class WebServiceWorkerInstalledScriptsManager {
     // An array of raw byte chunks of the scripts's meta data from the script's
     // V8 code cache.
     const WebVector<BytesChunk>& MetaDataChunks() const { return meta_data_; }
+
+#if INSIDE_BLINK
     // The HTTP headers of the script.
     std::unique_ptr<CrossThreadHTTPHeaderMapData> TakeHeaders() {
       return std::move(headers_);
     }
+#endif  // INSIDE_BLINK
 
    private:
+    // This instance must be created on the Blink side because only Blink can
+    // know the exact size of this instance.
+    RawScriptData(WebString encoding,
+                  WebVector<BytesChunk> script_text,
+                  WebVector<BytesChunk> meta_data);
     WebString encoding_;
     WebVector<BytesChunk> script_text_;
     WebVector<BytesChunk> meta_data_;
+#if INSIDE_BLINK
     std::unique_ptr<CrossThreadHTTPHeaderMapData> headers_;
 #endif  // INSIDE_BLINK
   };
