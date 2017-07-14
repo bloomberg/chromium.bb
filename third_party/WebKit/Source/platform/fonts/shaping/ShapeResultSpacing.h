@@ -65,6 +65,11 @@ class PLATFORM_EXPORT ShapeResultSpacing final {
   bool is_vertical_offset_;
 };
 
+// Forward declare so no implicit instantiations happen before the
+// first explicit instantiation (which would be a C++ violation).
+template <>
+void ShapeResultSpacing<TextRun>::SetSpacingAndExpansion(
+    const FontDescription&);
 }  // namespace blink
 
 #endif
