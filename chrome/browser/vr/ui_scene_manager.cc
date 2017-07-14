@@ -142,8 +142,8 @@ UiSceneManager::UiSceneManager(UiBrowserInterface* browser,
       scene_(scene),
       in_cct_(in_cct),
       web_vr_mode_(in_web_vr),
-      web_vr_autopresentation_(web_vr_autopresentation_expected),
-      web_vr_autopresentation_expected_(web_vr_autopresentation_expected),
+      started_for_autopresentation_(web_vr_autopresentation_expected),
+      waiting_for_first_web_vr_frame_(web_vr_autopresentation_expected),
       weak_ptr_factory_(this) {
   CreateSplashScreen();
   CreateBackground();
@@ -489,11 +489,11 @@ void UiSceneManager::SetWebVrMode(bool web_vr, bool show_toast) {
   }
 
   web_vr_mode_ = web_vr;
-  web_vr_autopresentation_expected_ = false;
   web_vr_show_toast_ = show_toast;
-  if (!web_vr_mode_)
-    web_vr_autopresentation_ = false;
-  scene_->set_showing_splash_screen(false);
+  if (!web_vr_mode_) {
+    waiting_for_first_web_vr_frame_ = false;
+    started_for_autopresentation_ = false;
+  }
   ConfigureScene();
 
   // Because we may be transitioning from and to fullscreen, where the toast is
@@ -505,10 +505,22 @@ void UiSceneManager::SetWebVrMode(bool web_vr, bool show_toast) {
   }
 }
 
+void UiSceneManager::OnWebVrFrameAvailable() {
+  if (!waiting_for_first_web_vr_frame_)
+    return;
+  waiting_for_first_web_vr_frame_ = false;
+  ConfigureScene();
+}
+
 void UiSceneManager::ConfigureScene() {
+  // We disable WebVR rendering if we're expecting to auto present so that we
+  // can continue to show the 2D splash screen while the site submits the first
+  // WebVR frame.
+  scene_->SetWebVrRenderingEnabled(web_vr_mode_ &&
+                                   !waiting_for_first_web_vr_frame_);
   // Splash screen.
-  scene_->set_showing_splash_screen(web_vr_autopresentation_expected_);
-  splash_screen_icon_->SetEnabled(web_vr_autopresentation_expected_);
+  scene_->set_showing_splash_screen(waiting_for_first_web_vr_frame_);
+  splash_screen_icon_->SetEnabled(waiting_for_first_web_vr_frame_);
 
   // Exit warning.
   exit_warning_->SetEnabled(scene_->is_exiting());
@@ -578,7 +590,7 @@ void UiSceneManager::ConfigureScene() {
       -kBackgroundDistanceMultiplier);
   UpdateBackgroundColor();
 
-  transient_url_bar_->SetEnabled(web_vr_autopresentation_ &&
+  transient_url_bar_->SetEnabled(started_for_autopresentation_ &&
                                  !scene_->showing_splash_screen());
 
   ConfigureExclusiveScreenToast();

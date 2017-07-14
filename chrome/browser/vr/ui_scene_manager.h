@@ -58,6 +58,7 @@ class UiSceneManager {
   void OnGLInitialized();
   void OnAppButtonClicked();
   void OnAppButtonGesturePerformed(UiInterface::Direction direction);
+  void OnWebVrFrameAvailable();
 
   void OnSecurityIconClickedForTesting();
   void OnExitPromptPrimaryButtonClickedForTesting();
@@ -122,8 +123,11 @@ class UiSceneManager {
   bool in_cct_;
   bool web_vr_mode_;
   bool web_vr_show_toast_ = false;
-  bool web_vr_autopresentation_ = false;
-  bool web_vr_autopresentation_expected_ = false;
+  bool started_for_autopresentation_ = false;
+  // Flag to indicate that we're waiting for the first WebVR frame to show up
+  // before we hide the splash screen. This is used in the case of WebVR
+  // auto-presentation.
+  bool waiting_for_first_web_vr_frame_ = false;
   bool secure_origin_ = false;
   bool fullscreen_ = false;
   bool incognito_ = false;
