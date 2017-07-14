@@ -19,7 +19,7 @@ enum PaymentComplete {
 
     readonly attribute DOMString requestId;
     readonly attribute DOMString methodName;
-    [RuntimeEnabled=PaymentRequestPayerName] readonly attribute DOMString? payerName;
+    readonly attribute DOMString? payerName;
     readonly attribute DOMString? payerEmail;
     readonly attribute DOMString? payerPhone;
     [CallWith=ScriptState, RaisesException] readonly attribute object details;
