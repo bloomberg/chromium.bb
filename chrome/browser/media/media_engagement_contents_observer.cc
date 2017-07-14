@@ -4,6 +4,7 @@
 
 #include "chrome/browser/media/media_engagement_contents_observer.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/media/media_engagement_service.h"
 #include "content/public/browser/navigation_handle.h"
@@ -20,6 +21,9 @@ constexpr base::TimeDelta kSignificantMediaPlaybackTime =
 // element has to be in order to be determined significant.
 const gfx::Size MediaEngagementContentsObserver::kSignificantSize =
     gfx::Size(200, 140);
+
+const char* MediaEngagementContentsObserver::kHistogramScoreAtPlaybackName =
+    "Media.Engagement.ScoreAtPlayback";
 
 MediaEngagementContentsObserver::MediaEngagementContentsObserver(
     content::WebContents* web_contents,
@@ -92,12 +96,31 @@ MediaEngagementContentsObserver::GetPlayerState(const MediaPlayerId& id) {
 void MediaEngagementContentsObserver::MediaStartedPlaying(
     const MediaPlayerInfo& media_player_info,
     const MediaPlayerId& media_player_id) {
-  if (!media_player_info.has_audio)
-    return;
+  PlayerState* state = GetPlayerState(media_player_id);
+  state->playing = true;
+  state->has_audio = media_player_info.has_audio;
 
-  GetPlayerState(media_player_id)->playing = true;
   MaybeInsertSignificantPlayer(media_player_id);
   UpdateTimer();
+  RecordEngagementScoreToHistogramAtPlayback(media_player_id);
+}
+
+void MediaEngagementContentsObserver::
+    RecordEngagementScoreToHistogramAtPlayback(const MediaPlayerId& id) {
+  GURL url = committed_origin_.GetURL();
+  if (!service_->ShouldRecordEngagement(url))
+    return;
+
+  PlayerState* state = GetPlayerState(id);
+  if (!state->playing || state->muted || !state->has_audio ||
+      state->score_recorded)
+    return;
+
+  int percentage = round(service_->GetEngagementScore(url) * 100);
+  UMA_HISTOGRAM_PERCENTAGE(
+      MediaEngagementContentsObserver::kHistogramScoreAtPlaybackName,
+      percentage);
+  state->score_recorded = true;
 }
 
 void MediaEngagementContentsObserver::MediaMutedStatusChanged(
@@ -111,6 +134,7 @@ void MediaEngagementContentsObserver::MediaMutedStatusChanged(
     MaybeInsertSignificantPlayer(id);
 
   UpdateTimer();
+  RecordEngagementScoreToHistogramAtPlayback(id);
 }
 
 void MediaEngagementContentsObserver::MediaResized(const gfx::Size& size,
