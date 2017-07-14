@@ -35,7 +35,6 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import git
 from chromite.lib import gob_util
-from chromite.lib import graphite
 from chromite.lib import operation
 from chromite.lib import osutils
 from chromite.lib import parallel
@@ -52,10 +51,6 @@ site_config = config_lib.GetConfig()
 # of the cidb. This call ensures that they will not accidentally
 # do so through the normal cidb SetUp / GetConnectionForBuilder factory.
 cidb.CIDBConnectionFactory.SetupMockCidb()
-
-# Likewise for statsd and elastic search.
-graphite.ESMetadataFactory.SetupReadOnly()
-graphite.StatsFactory.SetupMock()
 
 
 Directory = collections.namedtuple('Directory', ['name', 'contents'])

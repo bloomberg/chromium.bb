@@ -16,22 +16,12 @@ import collections
 
 BUILDBUCKET_HOST_KEY = '/buildbucket/host'
 DATASTORE_WRITER_CREDS_KEY = '/datastore/creds_file'
-STATSD_HOST_KEY = '/statsd/host'
-STATSD_PORT_KEY = '/statsd/port'
-ELASTIC_SEARCH_HOST_KEY = '/statsd/es_host'
-ELASTIC_SEARCH_PORT_KEY = '/statsd/es_port'
-ELASTIC_SEARCH_UDP_PORT_KEY = '/statsd/es_udp_port'
 SWARMING_PROXY_HOST_KEY = '/swarming_proxy/host'
 LUCI_LOGDOG_HOST_KEY = '/luci-logdog/host'
 LUCI_MILO_HOST_KEY = '/luci-milo/host'
 SHERIFFOMATIC_HOST_KEY = '/sheriffomatic/host'
 
 TOPOLOGY_DEFAULTS = {
-    STATSD_HOST_KEY : '146.148.70.158',
-    STATSD_PORT_KEY : '8125',
-    ELASTIC_SEARCH_HOST_KEY : '146.148.70.158',
-    ELASTIC_SEARCH_PORT_KEY : '9200',
-    ELASTIC_SEARCH_UDP_PORT_KEY : '9700',
     SWARMING_PROXY_HOST_KEY: 'fake_swarming_server',
     LUCI_LOGDOG_HOST_KEY: 'luci-logdog.appspot.com',
     LUCI_MILO_HOST_KEY: 'luci-milo.appspot.com',

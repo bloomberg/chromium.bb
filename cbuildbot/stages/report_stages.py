@@ -26,7 +26,6 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import failures_lib
 from chromite.lib import git
-from chromite.lib import graphite
 from chromite.lib import gs
 from chromite.lib import metadata_lib
 from chromite.lib import metrics
@@ -252,9 +251,6 @@ class BuildStartStage(generic_stages.BuilderStage):
       logging.info('Already have build_id %s, not inserting an entry.',
                    d['build_id'])
       return
-
-    graphite.StatsFactory.GetInstance().Counter('build_started').increment(
-        self._run.config['name'] or 'NO_CONFIG')
 
     # Note: In other build stages we use self._run.GetCIDBHandle to fetch
     # a cidb handle. However, since we don't yet have a build_id, we can't

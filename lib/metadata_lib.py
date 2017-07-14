@@ -361,9 +361,6 @@ class CBuildbotMetadata(object):
     return metadata
 
 
-# The graphite graphs use seconds since epoch start as time value.
-EPOCH_START = datetime.datetime(1970, 1, 1)
-
 # Formats we like for output.
 NICE_DATE_FORMAT = '%Y/%m/%d'
 NICE_TIME_FORMAT = '%H:%M:%S'

@@ -38,7 +38,6 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import failures_lib
 from chromite.lib import git
-from chromite.lib import graphite
 from chromite.lib import gob_util
 from chromite.lib import osutils
 from chromite.lib import parallel
@@ -1043,7 +1042,7 @@ def _GetRunEnvironment(options, build_config):
 
 
 def _SetupConnections(options, build_config):
-  """Set up CIDB and graphite connections using the appropriate Setup call.
+  """Set up CIDB connections using the appropriate Setup call.
 
   Args:
     options: Command line options structure.
@@ -1071,16 +1070,6 @@ def _SetupConnections(options, build_config):
 
   db = cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder()
   topology.FetchTopologyFromCIDB(db)
-
-  if run_type == _ENVIRONMENT_PROD:
-    graphite.ESMetadataFactory.SetupProd()
-    graphite.StatsFactory.SetupProd()
-  elif run_type == _ENVIRONMENT_DEBUG:
-    graphite.ESMetadataFactory.SetupReadOnly()
-    graphite.StatsFactory.SetupDebug()
-  else:
-    graphite.ESMetadataFactory.SetupReadOnly()
-    graphite.StatsFactory.SetupMock()
 
   return context
 
