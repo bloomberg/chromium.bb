@@ -37,9 +37,19 @@ void FrameSinkManagerImpl::BindAndSetClient(
     cc::mojom::FrameSinkManagerRequest request,
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     cc::mojom::FrameSinkManagerClientPtr client) {
+  DCHECK(!client_);
   DCHECK(!binding_.is_bound());
   binding_.Bind(std::move(request), std::move(task_runner));
-  client_ = std::move(client);
+  client_ptr_ = std::move(client);
+
+  client_ = client_ptr_.get();
+}
+
+void FrameSinkManagerImpl::SetLocalClient(
+    cc::mojom::FrameSinkManagerClient* client) {
+  DCHECK(!client_ptr_);
+
+  client_ = client;
 }
 
 void FrameSinkManagerImpl::CreateRootCompositorFrameSink(

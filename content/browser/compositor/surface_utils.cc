@@ -169,7 +169,7 @@ viz::FrameSinkManager* GetFrameSinkManager() {
   return CompositorImpl::GetFrameSinkManager();
 #else
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-  if (factory == NULL)
+  if (!factory)
     return nullptr;
   return factory->GetContextFactoryPrivate()->GetFrameSinkManager();
 #endif
@@ -179,7 +179,10 @@ viz::HostFrameSinkManager* GetHostFrameSinkManager() {
 #if defined(OS_ANDROID)
   return CompositorImpl::GetHostFrameSinkManager();
 #else
-  return BrowserMainLoop::GetInstance()->host_frame_sink_manager();
+  ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
+  if (!factory)
+    return nullptr;
+  return factory->GetContextFactoryPrivate()->GetHostFrameSinkManager();
 #endif
 }
 
@@ -235,6 +238,13 @@ void ConnectWithInProcessFrameSinkManager(
   // Sets |host_mojo| which was given to the |manager|.
   host->BindAndSetManager(std::move(host_mojo_request), task_runner,
                           std::move(manager_mojo));
+}
+
+void ConnectWithLocalFrameSinkManager(
+    viz::HostFrameSinkManager* host_frame_sink_manager,
+    viz::FrameSinkManagerImpl* frame_sink_manager_impl) {
+  host_frame_sink_manager->SetLocalManager(frame_sink_manager_impl);
+  frame_sink_manager_impl->SetLocalClient(host_frame_sink_manager);
 }
 
 }  // namespace surface_utils

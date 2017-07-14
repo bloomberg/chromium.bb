@@ -21,6 +21,7 @@
 #include "cc/surfaces/surface_hittest.h"
 #include "components/viz/common/gl_helper.h"
 #include "components/viz/common/quads/texture_mailbox.h"
+#include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager.h"
 #include "content/browser/compositor/surface_utils.h"
@@ -831,10 +832,11 @@ void DelegatedFrameHost::CreateCompositorFrameSinkSupport() {
   constexpr bool handles_frame_sink_id_invalidation = false;
   constexpr bool needs_sync_points = true;
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-  support_ = viz::CompositorFrameSinkSupport::Create(
-      this, factory->GetContextFactoryPrivate()->GetFrameSinkManager(),
-      frame_sink_id_, is_root, handles_frame_sink_id_invalidation,
-      needs_sync_points);
+  support_ = factory->GetContextFactoryPrivate()
+                 ->GetHostFrameSinkManager()
+                 ->CreateCompositorFrameSinkSupport(
+                     this, frame_sink_id_, is_root,
+                     handles_frame_sink_id_invalidation, needs_sync_points);
   if (compositor_)
     compositor_->AddFrameSink(frame_sink_id_);
   if (needs_begin_frame_)

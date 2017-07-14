@@ -56,6 +56,9 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
                         scoped_refptr<base::SequencedTaskRunner> task_runner,
                         cc::mojom::FrameSinkManagerClientPtr client);
 
+  // Sets up a direction connection to |client| without using Mojo.
+  void SetLocalClient(cc::mojom::FrameSinkManagerClient* client);
+
   // cc::mojom::FrameSinkManager implementation:
   void CreateRootCompositorFrameSink(
       const FrameSinkId& frame_sink_id,
@@ -115,7 +118,11 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
 
   THREAD_CHECKER(thread_checker_);
 
-  cc::mojom::FrameSinkManagerClientPtr client_;
+  // This will point to |client_ptr_| if using Mojo or a provided client if
+  // directly connected. Use this to make function calls.
+  cc::mojom::FrameSinkManagerClient* client_ = nullptr;
+
+  cc::mojom::FrameSinkManagerClientPtr client_ptr_;
   mojo::Binding<cc::mojom::FrameSinkManager> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameSinkManagerImpl);

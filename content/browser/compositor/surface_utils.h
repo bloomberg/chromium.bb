@@ -44,9 +44,15 @@ void CopyFromCompositingSurfaceHasResult(
 
 namespace surface_utils {
 
+// Directly connects HostFrameSinkManager to FrameSinkManagerImpl without Mojo.
+CONTENT_EXPORT void ConnectWithLocalFrameSinkManager(
+    viz::HostFrameSinkManager* host_frame_sink_manager,
+    viz::FrameSinkManagerImpl* frame_sink_manager_impl);
+
+// Connects HostFrameSinkManager to FrameSinkManagerImpl using in process Mojo.
 CONTENT_EXPORT void ConnectWithInProcessFrameSinkManager(
-    viz::HostFrameSinkManager* host,
-    viz::FrameSinkManagerImpl* manager,
+    viz::HostFrameSinkManager* host_frame_sink_manager,
+    viz::FrameSinkManagerImpl* frame_sink_manager_impl,
     scoped_refptr<base::SequencedTaskRunner> task_runner);
 
 }  // namespace surface_utils

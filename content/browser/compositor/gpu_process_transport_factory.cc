@@ -619,13 +619,13 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
   auto layer_tree_frame_sink =
       vulkan_context_provider
           ? base::MakeUnique<viz::DirectLayerTreeFrameSink>(
-                compositor->frame_sink_id(), GetFrameSinkManager(),
-                data->display.get(),
+                compositor->frame_sink_id(), GetHostFrameSinkManager(),
+                GetFrameSinkManager(), data->display.get(),
                 static_cast<scoped_refptr<cc::VulkanContextProvider>>(
                     vulkan_context_provider))
           : base::MakeUnique<viz::DirectLayerTreeFrameSink>(
-                compositor->frame_sink_id(), GetFrameSinkManager(),
-                data->display.get(), context_provider,
+                compositor->frame_sink_id(), GetHostFrameSinkManager(),
+                GetFrameSinkManager(), data->display.get(), context_provider,
                 shared_worker_context_provider_, GetGpuMemoryBufferManager(),
                 viz::ServerSharedBitmapManager::current());
   data->display->Resize(compositor->size());

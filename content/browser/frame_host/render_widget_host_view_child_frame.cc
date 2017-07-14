@@ -823,7 +823,7 @@ bool RenderWidgetHostViewChildFrame::IsChildFrameForTesting() const {
 
 viz::SurfaceId RenderWidgetHostViewChildFrame::SurfaceIdForTesting() const {
   return viz::SurfaceId(frame_sink_id_, local_surface_id_);
-};
+}
 
 void RenderWidgetHostViewChildFrame::CreateCompositorFrameSinkSupport() {
   if (service_manager::ServiceManagerIsRemote())
@@ -833,9 +833,9 @@ void RenderWidgetHostViewChildFrame::CreateCompositorFrameSinkSupport() {
   constexpr bool is_root = false;
   constexpr bool handles_frame_sink_id_invalidation = false;
   constexpr bool needs_sync_points = true;
-  support_ = viz::CompositorFrameSinkSupport::Create(
-      this, GetFrameSinkManager(), frame_sink_id_, is_root,
-      handles_frame_sink_id_invalidation, needs_sync_points);
+  support_ = GetHostFrameSinkManager()->CreateCompositorFrameSinkSupport(
+      this, frame_sink_id_, is_root, handles_frame_sink_id_invalidation,
+      needs_sync_points);
   if (parent_frame_sink_id_.is_valid()) {
     GetFrameSinkManager()->RegisterFrameSinkHierarchy(parent_frame_sink_id_,
                                                       frame_sink_id_);

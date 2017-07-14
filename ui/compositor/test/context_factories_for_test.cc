@@ -6,9 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/sys_info.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/viz/host/host_frame_sink_manager.h"
-#include "components/viz/service/frame_sinks/frame_sink_manager.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_switches.h"
@@ -24,21 +22,9 @@ static gl::DisableNullDrawGLBindings* g_disable_null_draw = nullptr;
 
 // Connect HostFrameSinkManager to FrameSinkManagerImpl.
 void ConnectFrameSinkManager() {
-  // Interfaces and requests to bind to each of the interfaces.
-  cc::mojom::FrameSinkManagerClientPtr host_mojo;
-  cc::mojom::FrameSinkManagerPtr manager_mojo;
-  cc::mojom::FrameSinkManagerClientRequest host_mojo_request =
-      mojo::MakeRequest(&host_mojo);
-  cc::mojom::FrameSinkManagerRequest manager_mojo_request =
-      mojo::MakeRequest(&manager_mojo);
-
-  // Make the Mojo connections on both ends.
-  g_frame_sink_manager_impl->BindAndSetClient(
-      std::move(manager_mojo_request), base::SequencedTaskRunnerHandle::Get(),
-      std::move(host_mojo));
-  g_host_frame_sink_manager->BindAndSetManager(
-      std::move(host_mojo_request), base::SequencedTaskRunnerHandle::Get(),
-      std::move(manager_mojo));
+  // Directly connect without using Mojo.
+  g_frame_sink_manager_impl->SetLocalClient(g_host_frame_sink_manager);
+  g_host_frame_sink_manager->SetLocalManager(g_frame_sink_manager_impl);
 }
 
 }  // namespace

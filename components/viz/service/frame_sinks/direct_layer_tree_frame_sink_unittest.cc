@@ -23,6 +23,7 @@
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display/display_scheduler.h"
+#include "components/viz/service/frame_sinks/compositor_frame_sink_support_manager.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -38,6 +39,31 @@ class TestDirectLayerTreeFrameSink : public DirectLayerTreeFrameSink {
   CompositorFrameSinkSupport* support() const { return support_.get(); }
 };
 
+class TestCompositorFrameSinkSupportManager
+    : public CompositorFrameSinkSupportManager {
+ public:
+  explicit TestCompositorFrameSinkSupportManager(
+      FrameSinkManager* frame_sink_manager)
+      : frame_sink_manager_(frame_sink_manager) {}
+  ~TestCompositorFrameSinkSupportManager() override = default;
+
+  std::unique_ptr<CompositorFrameSinkSupport> CreateCompositorFrameSinkSupport(
+      CompositorFrameSinkSupportClient* client,
+      const FrameSinkId& frame_sink_id,
+      bool is_root,
+      bool handles_frame_sink_id_invalidation,
+      bool needs_sync_points) override {
+    return CompositorFrameSinkSupport::Create(
+        client, frame_sink_manager_, frame_sink_id, is_root,
+        handles_frame_sink_id_invalidation, needs_sync_points);
+  }
+
+ private:
+  FrameSinkManager* const frame_sink_manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestCompositorFrameSinkSupportManager);
+};
+
 class DirectLayerTreeFrameSinkTest : public testing::Test {
  public:
   DirectLayerTreeFrameSinkTest()
@@ -45,6 +71,7 @@ class DirectLayerTreeFrameSinkTest : public testing::Test {
         task_runner_(new cc::OrderedSimpleTaskRunner(now_src_.get(), true)),
         display_size_(1920, 1080),
         display_rect_(display_size_),
+        support_manager_(&frame_sink_manager_),
         context_provider_(cc::TestContextProvider::Create()) {
     frame_sink_manager_.RegisterFrameSinkId(kArbitraryFrameSinkId);
 
@@ -64,8 +91,8 @@ class DirectLayerTreeFrameSinkTest : public testing::Test {
         std::move(scheduler),
         base::MakeUnique<cc::TextureMailboxDeleter>(task_runner_.get())));
     layer_tree_frame_sink_ = base::MakeUnique<TestDirectLayerTreeFrameSink>(
-        kArbitraryFrameSinkId, &frame_sink_manager_, display_.get(),
-        context_provider_, nullptr, &gpu_memory_buffer_manager_,
+        kArbitraryFrameSinkId, &support_manager_, &frame_sink_manager_,
+        display_.get(), context_provider_, nullptr, &gpu_memory_buffer_manager_,
         &bitmap_manager_);
 
     layer_tree_frame_sink_->BindToClient(&layer_tree_frame_sink_client_);
@@ -107,6 +134,7 @@ class DirectLayerTreeFrameSinkTest : public testing::Test {
   const gfx::Size display_size_;
   const gfx::Rect display_rect_;
   FrameSinkManager frame_sink_manager_;
+  TestCompositorFrameSinkSupportManager support_manager_;
   cc::TestSharedBitmapManager bitmap_manager_;
   cc::TestGpuMemoryBufferManager gpu_memory_buffer_manager_;
 

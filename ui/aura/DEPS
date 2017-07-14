@@ -3,6 +3,7 @@ include_rules = [
   "+cc/output",
   "+cc/surfaces",
   "+components/viz/common",
+  "+components/viz/host",
   "+mojo/common",
   "+mojo/public/cpp/bindings",
   "+net/base/filename_util.h",

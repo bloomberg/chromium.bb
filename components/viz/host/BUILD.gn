@@ -23,6 +23,10 @@ viz_component("host") {
     "//gpu/ipc/client",
     "//gpu/ipc/common",
     "//services/ui/gpu/interfaces",
+
+    # TODO(kylechar): This is temporary and will be removed when all host to
+    # service communication is over Mojo.
+    "//components/viz/service",
   ]
 
   public_deps = [
@@ -50,5 +54,9 @@ viz_source_set("unit_tests") {
     "//services/ui/gpu/interfaces",
     "//testing/gmock",
     "//testing/gtest",
+
+    # TODO(kylechar): This is temporary and will be removed when all host to
+    # service communication is over Mojo.
+    "//components/viz/service",
   ]
 }

@@ -478,7 +478,8 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
     viz::FrameSinkId frame_sink_id =
         host_->AllocateFrameSinkId(false /* is_guest_view_hack */);
     delegated_frame_host_.reset(new ui::DelegatedFrameHostAndroid(
-        &view_, CompositorImpl::GetFrameSinkManager(), this, frame_sink_id));
+        &view_, CompositorImpl::GetHostFrameSinkManager(),
+        CompositorImpl::GetFrameSinkManager(), this, frame_sink_id));
 
     // Let the page-level input event router know about our frame sink ID
     // for surface-based hit testing.

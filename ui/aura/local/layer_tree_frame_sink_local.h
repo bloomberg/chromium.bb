@@ -16,8 +16,8 @@
 #include "ui/base/property_data.h"
 
 namespace viz {
-class FrameSinkManager;
 class CompositorFrameSinkSupport;
+class HostFrameSinkManager;
 }
 
 namespace aura {
@@ -31,7 +31,7 @@ class LayerTreeFrameSinkLocal : public cc::LayerTreeFrameSink,
                                 public cc::ExternalBeginFrameSourceClient {
  public:
   LayerTreeFrameSinkLocal(const viz::FrameSinkId& frame_sink_id,
-                          viz::FrameSinkManager* frame_sink_manager);
+                          viz::HostFrameSinkManager* host_frame_sink_manager);
   ~LayerTreeFrameSinkLocal() override;
 
   using SurfaceChangedCallback =
@@ -59,7 +59,7 @@ class LayerTreeFrameSinkLocal : public cc::LayerTreeFrameSink,
 
  private:
   const viz::FrameSinkId frame_sink_id_;
-  viz::FrameSinkManager* const frame_sink_manager_;
+  viz::HostFrameSinkManager* const host_frame_sink_manager_;
   std::unique_ptr<viz::CompositorFrameSinkSupport> support_;
   gfx::Size surface_size_;
   float device_scale_factor_ = 0;
