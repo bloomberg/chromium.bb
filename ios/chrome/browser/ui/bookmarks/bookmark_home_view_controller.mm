@@ -13,6 +13,7 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_folder_editor_view_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_folder_view_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_primary_view.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmark_home_view_controller_protected.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_waiting_view.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_menu_item.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_menu_view.h"
@@ -36,19 +37,6 @@ const CGFloat kMenuWidth = 264;
     BookmarkFolderEditorViewControllerDelegate,
     BookmarkFolderViewControllerDelegate,
     BookmarkPromoControllerDelegate>
-// Read / write declaration of read only properties.
-@property(nonatomic, strong) BookmarkPromoController* bookmarkPromoController;
-@property(nonatomic, assign) bookmarks::BookmarkModel* bookmarks;
-@property(nonatomic, assign) ios::ChromeBrowserState* browserState;
-@property(nonatomic, strong) BookmarkEditViewController* editViewController;
-@property(nonatomic, strong) BookmarkFolderEditorViewController* folderEditor;
-@property(nonatomic, strong) BookmarkFolderViewController* folderSelector;
-@property(nonatomic, strong) BookmarkCollectionView* folderView;
-@property(nonatomic, weak) id<UrlLoader> loader;
-@property(nonatomic, strong) BookmarkMenuView* menuView;
-@property(nonatomic, strong) BookmarkNavigationBar* navigationBar;
-@property(nonatomic, strong) BookmarkPanelView* panelView;
-@property(nonatomic, strong) BookmarkMenuItem* primaryMenuItem;
 
 @end
 
@@ -109,7 +97,7 @@ const CGFloat kMenuWidth = 264;
 
   // Create menu view.
   self.menuView = [[BookmarkMenuView alloc]
-      initWithBrowserState:_browserState
+      initWithBrowserState:self.browserState
                      frame:LayoutRectGetRect(menuLayout)];
   self.menuView.autoresizingMask =
       UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
