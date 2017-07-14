@@ -34,9 +34,11 @@ class CORE_EXPORT CSSTranslation final : public CSSTransformComponent {
                                 ExceptionState&);
 
   // Blink-internal ways of creating CSSTranslations.
-  static CSSTranslation* FromCSSValue(const CSSFunctionValue& value) {
-    return nullptr;
-  }
+  static CSSTranslation* Create(CSSNumericValue* x, CSSNumericValue* y);
+  static CSSTranslation* Create(CSSNumericValue* x,
+                                CSSNumericValue* y,
+                                CSSNumericValue* z);
+  static CSSTranslation* FromCSSValue(const CSSFunctionValue&);
 
   // Getters and setters for attributes defined in the IDL.
   CSSNumericValue* x() const { return x_; }
@@ -48,8 +50,7 @@ class CORE_EXPORT CSSTranslation final : public CSSTransformComponent {
 
   // Internal methods - from CSSTransformComponent.
   TransformComponentType GetType() const final { return kTranslationType; }
-  // TODO: Implement AsMatrix for CSSTranslation.
-  DOMMatrix* AsMatrix() const final { return nullptr; }
+  DOMMatrix* AsMatrix() const final;
   CSSFunctionValue* ToCSSValue() const final;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
