@@ -27,7 +27,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
 
     # Controls if we query Gerrit for the destination branch of a change.
     # TODO(machenbach): Deprecate when default is True.
-    self._enable_destination_branch_check = False
+    self._enable_destination_branch_check = True
 
     self._last_returned_properties = {}
     super(BotUpdateApi, self).__init__(*args, **kwargs)
