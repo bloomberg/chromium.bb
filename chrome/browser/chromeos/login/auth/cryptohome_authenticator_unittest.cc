@@ -34,7 +34,6 @@
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/cryptohome/homedir_methods.h"
 #include "chromeos/cryptohome/mock_async_method_caller.h"
-#include "chromeos/cryptohome/mock_homedir_methods.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
@@ -129,6 +128,54 @@ bool CreateOwnerKeyInSlot(PK11SlotInfo* slot) {
              slot, key, true /* permanent */) != nullptr;
 }
 
+// Fake CryptohomeClient implementation for this test.
+class TestCryptohomeClient : public ::chromeos::FakeCryptohomeClient {
+ public:
+  TestCryptohomeClient() = default;
+  ~TestCryptohomeClient() override = default;
+
+  void set_expected_id(const cryptohome::Identification& id) {
+    expected_id_ = id;
+  }
+
+  void set_expected_authorization_secret(const std::string& secret) {
+    expected_authorization_secret_ = secret;
+  }
+
+  void set_is_create_attempt_expected(bool expected) {
+    is_create_attempt_expected_ = expected;
+  }
+
+  void MountEx(const cryptohome::Identification& cryptohome_id,
+               const cryptohome::AuthorizationRequest& auth,
+               const cryptohome::MountRequest& request,
+               const ProtobufMethodCallback& callback) override {
+    EXPECT_EQ(is_create_attempt_expected_, request.has_create());
+    if (is_create_attempt_expected_) {
+      EXPECT_EQ(expected_authorization_secret_,
+                request.create().keys(0).secret());
+      EXPECT_EQ(kCryptohomeGAIAKeyLabel,
+                request.create().keys(0).data().label());
+    }
+    EXPECT_EQ(expected_id_, cryptohome_id);
+    EXPECT_EQ(expected_authorization_secret_, auth.key().secret());
+
+    cryptohome::BaseReply reply;
+    reply.MutableExtension(cryptohome::MountReply::reply)
+        ->set_sanitized_username(
+            cryptohome::MockAsyncMethodCaller::kFakeSanitizedUsername);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, true, reply));
+  }
+
+ private:
+  cryptohome::Identification expected_id_;
+  std::string expected_authorization_secret_;
+  bool is_create_attempt_expected_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(TestCryptohomeClient);
+};
+
 }  // namespace
 
 class CryptohomeAuthenticatorTest : public testing::Test {
@@ -138,7 +185,6 @@ class CryptohomeAuthenticatorTest : public testing::Test {
         user_manager_(new chromeos::FakeChromeUserManager()),
         user_manager_enabler_(user_manager_),
         mock_caller_(NULL),
-        mock_homedir_methods_(NULL),
         owner_key_util_(new ownership::MockOwnerKeyUtil()) {
     // Testing profile must be initialized after user_manager_ +
     // user_manager_enabler_, because it will create another UserManager
@@ -168,11 +214,9 @@ class CryptohomeAuthenticatorTest : public testing::Test {
 
     mock_caller_ = new cryptohome::MockAsyncMethodCaller;
     cryptohome::AsyncMethodCaller::InitializeForTesting(mock_caller_);
-    mock_homedir_methods_ = new cryptohome::MockHomedirMethods;
-    mock_homedir_methods_->SetUp(true, cryptohome::MOUNT_ERROR_NONE);
-    cryptohome::HomedirMethods::InitializeForTesting(mock_homedir_methods_);
+    cryptohome::HomedirMethods::Initialize();
 
-    fake_cryptohome_client_ = new FakeCryptohomeClient;
+    fake_cryptohome_client_ = new TestCryptohomeClient;
     chromeos::DBusThreadManager::GetSetterForTesting()->SetCryptohomeClient(
         std::unique_ptr<CryptohomeClient>(fake_cryptohome_client_));
 
@@ -190,7 +234,6 @@ class CryptohomeAuthenticatorTest : public testing::Test {
     cryptohome::AsyncMethodCaller::Shutdown();
     mock_caller_ = NULL;
     cryptohome::HomedirMethods::Shutdown();
-    mock_homedir_methods_ = NULL;
   }
 
   void CreateTransformedKey(Key::KeyType type, const std::string& salt) {
@@ -255,12 +298,9 @@ class CryptohomeAuthenticatorTest : public testing::Test {
 
   void ExpectGetKeyDataExCall(std::unique_ptr<int64_t> key_type,
                               std::unique_ptr<std::string> salt) {
-    key_definitions_.clear();
-    key_definitions_.push_back(cryptohome::KeyDefinition(
-        std::string() /* secret */,
-        kCryptohomeGAIAKeyLabel,
-        cryptohome::PRIV_DEFAULT));
-    cryptohome::KeyDefinition& key_definition = key_definitions_.back();
+    cryptohome::KeyDefinition key_definition(std::string() /* secret */,
+                                             kCryptohomeGAIAKeyLabel,
+                                             cryptohome::PRIV_DEFAULT);
     key_definition.revision = 1;
     if (key_type) {
       key_definition.provider_data.push_back(
@@ -272,31 +312,26 @@ class CryptohomeAuthenticatorTest : public testing::Test {
           cryptohome::KeyDefinition::ProviderData("salt"));
       key_definition.provider_data.back().bytes = std::move(salt);
     }
-    EXPECT_CALL(
-        *mock_homedir_methods_,
-        GetKeyDataEx(cryptohome::Identification(user_context_.GetAccountId()),
-                     kCryptohomeGAIAKeyLabel, _))
-        .WillOnce(WithArg<2>(Invoke(
-            this, &CryptohomeAuthenticatorTest::InvokeGetDataExCallback)));
+
+    // Add the key to the fake.
+    cryptohome::AddKeyRequest request;
+    KeyDefinitionToKey(key_definition, request.mutable_key());
+    fake_cryptohome_client_->AddKeyEx(
+        cryptohome::Identification(user_context_.GetAccountId()),
+        cryptohome::AuthorizationRequest(), request,
+        base::Bind(
+            [](DBusMethodCallStatus call_status, bool result,
+               const cryptohome::BaseReply& reply) { EXPECT_TRUE(result); }));
+    base::RunLoop().RunUntilIdle();
   }
 
   void ExpectMountExCall(bool expect_create_attempt) {
-    const cryptohome::KeyDefinition auth_key(transformed_key_.GetSecret(),
-                                             std::string(),
-                                             cryptohome::PRIV_DEFAULT);
-    cryptohome::MountParameters mount(false /* ephemeral */);
-    if (expect_create_attempt) {
-      mount.create_keys.push_back(cryptohome::KeyDefinition(
-          transformed_key_.GetSecret(),
-          kCryptohomeGAIAKeyLabel,
-          cryptohome::PRIV_DEFAULT));
-    }
-    EXPECT_CALL(
-        *mock_homedir_methods_,
-        MountEx(cryptohome::Identification(user_context_.GetAccountId()),
-                cryptohome::Authorization(auth_key), mount, _))
-        .Times(1)
-        .RetiresOnSaturation();
+    fake_cryptohome_client_->set_expected_id(
+        cryptohome::Identification(user_context_.GetAccountId()));
+    fake_cryptohome_client_->set_expected_authorization_secret(
+        transformed_key_.GetSecret());
+    fake_cryptohome_client_->set_is_create_attempt_expected(
+        expect_create_attempt);
   }
 
   void RunResolve(CryptohomeAuthenticator* auth) {
@@ -325,8 +360,6 @@ class CryptohomeAuthenticatorTest : public testing::Test {
   UserContext user_context_with_transformed_key_;
   Key transformed_key_;
 
-  std::vector<cryptohome::KeyDefinition> key_definitions_;
-
   ScopedDeviceSettingsTestHelper device_settings_test_helper_;
   ScopedTestCrosSettings test_cros_settings_;
 
@@ -336,23 +369,14 @@ class CryptohomeAuthenticatorTest : public testing::Test {
   ScopedUserManagerEnabler user_manager_enabler_;
 
   cryptohome::MockAsyncMethodCaller* mock_caller_;
-  cryptohome::MockHomedirMethods* mock_homedir_methods_;
 
   MockAuthStatusConsumer consumer_;
 
   scoped_refptr<CryptohomeAuthenticator> auth_;
   std::unique_ptr<TestAttemptState> state_;
-  FakeCryptohomeClient* fake_cryptohome_client_;
+  TestCryptohomeClient* fake_cryptohome_client_;
 
   scoped_refptr<ownership::MockOwnerKeyUtil> owner_key_util_;
-
- private:
-  void InvokeGetDataExCallback(
-      const cryptohome::HomedirMethods::GetKeyDataCallback& callback) {
-    callback.Run(true /* success */,
-                 cryptohome::MOUNT_ERROR_NONE,
-                 key_definitions_);
-  }
 };
 
 TEST_F(CryptohomeAuthenticatorTest, OnAuthSuccess) {
