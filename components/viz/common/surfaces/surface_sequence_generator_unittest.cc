@@ -7,18 +7,18 @@
 #include "components/viz/common/surfaces/surface_sequence.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace cc {
+namespace viz {
 namespace {
 
-static constexpr viz::FrameSinkId kArbitraryFrameSinkId(1, 1);
+static constexpr FrameSinkId kArbitraryFrameSinkId(1, 1);
 
 TEST(SurfaceSequenceGeneratorTest, Basic) {
-  viz::SurfaceSequenceGenerator generator;
+  SurfaceSequenceGenerator generator;
   generator.set_frame_sink_id(kArbitraryFrameSinkId);
-  viz::SurfaceSequence sequence1 = generator.CreateSurfaceSequence();
-  viz::SurfaceSequence sequence2 = generator.CreateSurfaceSequence();
+  SurfaceSequence sequence1 = generator.CreateSurfaceSequence();
+  SurfaceSequence sequence2 = generator.CreateSurfaceSequence();
   EXPECT_NE(sequence1, sequence2);
 }
 
 }  // namespace
-}  // namespace cc
+}  // namespace viz
