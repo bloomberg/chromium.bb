@@ -6,7 +6,9 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
+#include <utility>
 
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -134,7 +136,7 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui, const GURL& url)
 #if defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS)
   AddSettingsPageUIHandler(base::MakeUnique<MetricsReportingHandler>());
 #endif
-  AddSettingsPageUIHandler(base::MakeUnique<OnStartupHandler>());
+  AddSettingsPageUIHandler(base::MakeUnique<OnStartupHandler>(profile));
   AddSettingsPageUIHandler(base::MakeUnique<PeopleHandler>(profile));
   AddSettingsPageUIHandler(base::MakeUnique<ProfileInfoHandler>(profile));
   AddSettingsPageUIHandler(base::MakeUnique<ProtocolHandlersHandler>());
