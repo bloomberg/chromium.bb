@@ -1,3 +1,4 @@
+AllDownloadItemNotifierTest.*
 DeviceStatusListenerTest.*
 DownloadDriverImplTest.*
 DownloadSchedulerImplTest.*

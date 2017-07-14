@@ -9,13 +9,14 @@
 #include <set>
 
 #include "base/macros.h"
-#include "content/public/browser/all_download_item_notifier.h"
+#include "components/download/content/public/all_download_item_notifier.h"
 
 // This class handles the task of observing a single DownloadManager for
 // notifying the UI when a new download should be displayed in the UI.
 // It invokes the OnNewDownloadReady() method of hte Delegate when the
 // target path is available for a new download.
-class DownloadUIController : public content::AllDownloadItemNotifier::Observer {
+class DownloadUIController
+    : public download::AllDownloadItemNotifier::Observer {
  public:
   // The delegate is responsible for figuring out how to notify the UI.
   class Delegate {
@@ -45,7 +46,7 @@ class DownloadUIController : public content::AllDownloadItemNotifier::Observer {
   void OnDownloadUpdated(content::DownloadManager* manager,
                          content::DownloadItem* item) override;
 
-  content::AllDownloadItemNotifier download_notifier_;
+  download::AllDownloadItemNotifier download_notifier_;
 
   std::unique_ptr<Delegate> delegate_;
 

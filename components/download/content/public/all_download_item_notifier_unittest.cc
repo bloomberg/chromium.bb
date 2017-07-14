@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/browser/all_download_item_notifier.h"
+#include "components/download/content/public/all_download_item_notifier.h"
 
 #include "base/macros.h"
 #include "content/public/test/mock_download_item.h"
@@ -14,7 +14,7 @@ using testing::NiceMock;
 using testing::SetArgPointee;
 using testing::_;
 
-namespace content {
+namespace download {
 namespace {
 
 class MockNotifierObserver : public AllDownloadItemNotifier::Observer {
@@ -111,4 +111,4 @@ TEST_F(AllDownloadItemNotifierTest, AllDownloadItemNotifierTest_1) {
   ClearNotifier();
 }
 
-}  // namespace content
+}  // namespace download
