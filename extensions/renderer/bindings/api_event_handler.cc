@@ -109,10 +109,12 @@ void DispatchEvent(const v8::FunctionCallbackInfo<v8::Value>& info) {
 APIEventHandler::APIEventHandler(
     const binding::RunJSFunction& call_js,
     const binding::RunJSFunctionSync& call_js_sync,
-    const EventListenersChangedMethod& listeners_changed)
+    const EventListenersChangedMethod& listeners_changed,
+    ExceptionHandler* exception_handler)
     : call_js_(call_js),
       call_js_sync_(call_js_sync),
-      listeners_changed_(listeners_changed) {}
+      listeners_changed_(listeners_changed),
+      exception_handler_(exception_handler) {}
 APIEventHandler::~APIEventHandler() {}
 
 v8::Local<v8::Object> APIEventHandler::CreateEventInstance(
@@ -142,10 +144,10 @@ v8::Local<v8::Object> APIEventHandler::CreateEventInstance(
         base::MakeUnique<UnfilteredEventListeners>(updated, max_listeners);
   }
 
-  gin::Handle<EventEmitter> emitter_handle =
-      gin::CreateHandle(context->GetIsolate(),
-                        new EventEmitter(supports_filters, std::move(listeners),
-                                         call_js_, call_js_sync_));
+  gin::Handle<EventEmitter> emitter_handle = gin::CreateHandle(
+      context->GetIsolate(),
+      new EventEmitter(supports_filters, std::move(listeners), call_js_,
+                       call_js_sync_, exception_handler_));
   CHECK(!emitter_handle.IsEmpty());
   v8::Local<v8::Value> emitter_value = emitter_handle.ToV8();
   CHECK(emitter_value->IsObject());
@@ -165,10 +167,10 @@ v8::Local<v8::Object> APIEventHandler::CreateAnonymousEventInstance(
   std::unique_ptr<APIEventListeners> listeners =
       base::MakeUnique<UnfilteredEventListeners>(
           base::Bind(&DoNothingOnListenersChanged), binding::kNoListenerMax);
-  gin::Handle<EventEmitter> emitter_handle =
-      gin::CreateHandle(context->GetIsolate(),
-                        new EventEmitter(supports_filters, std::move(listeners),
-                                         call_js_, call_js_sync_));
+  gin::Handle<EventEmitter> emitter_handle = gin::CreateHandle(
+      context->GetIsolate(),
+      new EventEmitter(supports_filters, std::move(listeners), call_js_,
+                       call_js_sync_, exception_handler_));
   CHECK(!emitter_handle.IsEmpty());
   v8::Local<v8::Object> emitter_object = emitter_handle.ToV8().As<v8::Object>();
   data->anonymous_emitters.push_back(
