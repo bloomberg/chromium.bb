@@ -62,9 +62,6 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
       std::unique_ptr<DownloadRequestHandleInterface> request_handle,
       const DownloadItemImplCreated& item_created);
 
-  // Notifies DownloadManager about a successful completion of |download_item|.
-  void OnSavePackageSuccessfullyFinished(DownloadItem* download_item);
-
   // DownloadManager functions.
   void SetDelegate(DownloadManagerDelegate* delegate) override;
   DownloadManagerDelegate* GetDelegate() const override;

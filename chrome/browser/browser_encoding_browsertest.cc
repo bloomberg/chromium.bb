@@ -25,6 +25,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/download_test_observer.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
 
@@ -68,37 +69,6 @@ const EncodingTestData kEncodingTestDatas[] = {
   { "windows-1258.html", "windows-1258" }
 };
 
-class SavePackageFinishedObserver : public content::DownloadManager::Observer {
- public:
-  SavePackageFinishedObserver(content::DownloadManager* manager,
-                              const base::Closure& callback)
-      : download_manager_(manager),
-        callback_(callback) {
-    download_manager_->AddObserver(this);
-  }
-
-  ~SavePackageFinishedObserver() override {
-    if (download_manager_)
-      download_manager_->RemoveObserver(this);
-  }
-
-  // DownloadManager::Observer:
-  void OnSavePackageSuccessfullyFinished(content::DownloadManager* manager,
-                                         content::DownloadItem* item) override {
-    callback_.Run();
-  }
-  void ManagerGoingDown(content::DownloadManager* manager) override {
-    download_manager_->RemoveObserver(this);
-    download_manager_ = NULL;
-  }
-
- private:
-  content::DownloadManager* download_manager_;
-  base::Closure callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(SavePackageFinishedObserver);
-};
-
 }  // namespace
 
 using content::BrowserThread;
@@ -124,7 +94,7 @@ class BrowserEncodingTest
     // sub resources, but the directory name is still required.
     scoped_refptr<content::MessageLoopRunner> loop_runner(
         new content::MessageLoopRunner);
-    SavePackageFinishedObserver observer(
+    content::SavePackageFinishedObserver observer(
         content::BrowserContext::GetDownloadManager(browser()->profile()),
         loop_runner->QuitClosure());
     browser()->tab_strip_model()->GetActiveWebContents()->SavePage(

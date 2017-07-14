@@ -491,12 +491,6 @@ void DownloadManagerImpl::CreateSavePackageDownloadItemWithId(
     item_created.Run(download_item);
 }
 
-void DownloadManagerImpl::OnSavePackageSuccessfullyFinished(
-    DownloadItem* download_item) {
-  for (auto& observer : observers_)
-    observer.OnSavePackageSuccessfullyFinished(this, download_item);
-}
-
 // Resume a download of a specific URL. We send the request to the
 // ResourceDispatcherHost, and let it send us responses like a regular
 // download.

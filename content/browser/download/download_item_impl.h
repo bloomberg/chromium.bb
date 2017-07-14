@@ -748,7 +748,7 @@ class CONTENT_EXPORT DownloadItemImpl
 
   // Value of |received_bytes_| at the time the download was interrupted with
   // CONTENT_LENGTH_MISMATCH.
-  int64_t received_bytes_at_length_mismatch = -1;
+  int64_t received_bytes_at_length_mismatch_ = -1;
 
   base::WeakPtrFactory<DownloadItemImpl> weak_ptr_factory_;
 

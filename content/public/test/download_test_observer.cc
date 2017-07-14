@@ -452,4 +452,44 @@ const DownloadUrlParameters::OnStartedCallback
       &DownloadTestItemCreationObserver::DownloadItemCreationCallback, this);
 }
 
+SavePackageFinishedObserver::SavePackageFinishedObserver(
+    DownloadManager* manager,
+    const base::Closure& callback)
+    : download_manager_(manager), download_(nullptr), callback_(callback) {
+  download_manager_->AddObserver(this);
+}
+
+SavePackageFinishedObserver::~SavePackageFinishedObserver() {
+  if (download_manager_)
+    download_manager_->RemoveObserver(this);
+
+  if (download_)
+    download_->RemoveObserver(this);
+}
+
+void SavePackageFinishedObserver::OnDownloadUpdated(DownloadItem* download) {
+  if (download->GetState() == DownloadItem::COMPLETE ||
+      download->GetState() == DownloadItem::CANCELLED) {
+    callback_.Run();
+  }
+}
+
+void SavePackageFinishedObserver::OnDownloadDestroyed(DownloadItem* download) {
+  download_->RemoveObserver(this);
+  download_ = NULL;
+}
+
+void SavePackageFinishedObserver::OnDownloadCreated(DownloadManager* manager,
+                                                    DownloadItem* download) {
+  download_ = download;
+  download->AddObserver(this);
+}
+
+void SavePackageFinishedObserver::ManagerGoingDown(DownloadManager* manager) {
+  download_->RemoveObserver(this);
+  download_ = NULL;
+  download_manager_->RemoveObserver(this);
+  download_manager_ = NULL;
+}
+
 }  // namespace content
