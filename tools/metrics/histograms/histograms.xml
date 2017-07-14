@@ -68709,6 +68709,36 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Search.ContextualSearchTapDurationNotSeen" units="ms">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    The duration of a tap that triggered a Contextual Search when the user does
+    not open the panel. Implemented for Android.  Logged when the panel closes
+    after being triggered by a tap.
+  </summary>
+</histogram>
+
+<histogram name="Search.ContextualSearchTapDurationSeen" units="ms">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    The duration of a tap that triggered a Contextual Search when the user does
+    open the panel. Implemented for Android.  Logged when the panel closes after
+    being triggered by a tap and subsequently opened.
+  </summary>
+</histogram>
+
+<histogram name="Search.ContextualSearchTapLongDurationSeen"
+    enum="ContextualSearchResultsSeen">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    Whether results were seen for a Tap that was of long duration. Recorded when
+    the UX is hidden. Implemented for Android.
+  </summary>
+</histogram>
+
 <histogram name="Search.ContextualSearchTapLongWordSeen"
     enum="ContextualSearchResultsSeen">
   <owner>donnd@chromium.org</owner>
@@ -68716,6 +68746,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Whether results were seen for a Tap that was on a word considered long.
     Recorded when the UX is hidden. Implemented for Android.
+  </summary>
+</histogram>
+
+<histogram name="Search.ContextualSearchTapShortDurationSeen"
+    enum="ContextualSearchResultsSeen">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    Whether results were seen for a Tap that was of short duration. Recorded
+    when the UX is hidden. Implemented for Android.
   </summary>
 </histogram>
 

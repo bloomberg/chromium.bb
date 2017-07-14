@@ -803,6 +803,44 @@ public class ContextualSearchUma {
     }
 
     /**
+     * Logs whether results were seen based on the duration of the Tap, for both short and long
+     * durations.
+     * @param wasSearchContentViewSeen If the panel was opened.
+     * @param isTapShort Whether this tap was "short" in duration.
+     */
+    public static void logTapDurationSeen(boolean wasSearchContentViewSeen, boolean isTapShort) {
+        if (isTapShort) {
+            RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchTapShortDurationSeen",
+                    wasSearchContentViewSeen ? RESULTS_SEEN : RESULTS_NOT_SEEN,
+                    RESULTS_SEEN_BOUNDARY);
+        } else {
+            RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchTapLongDurationSeen",
+                    wasSearchContentViewSeen ? RESULTS_SEEN : RESULTS_NOT_SEEN,
+                    RESULTS_SEEN_BOUNDARY);
+        }
+    }
+
+    /**
+     * Logs the duration of a Tap in ms into custom histograms to profile the duration of seen
+     * and not seen taps.
+     * @param wasPanelSeen Whether the panel was seen.
+     * @param durationMs The duration of the tap gesture.
+     */
+    public static void logTapDuration(boolean wasPanelSeen, int durationMs) {
+        int min = 1;
+        int max = 1000;
+        int numBuckets = 100;
+
+        if (wasPanelSeen) {
+            RecordHistogram.recordCustomCountHistogram(
+                    "Search.ContextualSearchTapDurationSeen", durationMs, min, max, numBuckets);
+        } else {
+            RecordHistogram.recordCustomCountHistogram(
+                    "Search.ContextualSearchTapDurationNotSeen", durationMs, min, max, numBuckets);
+        }
+    }
+
+    /**
      * Log whether results were seen due to a Tap on a short word.
      * @param wasSearchContentViewSeen If the panel was opened.
      * @param isTapOnShortWord Whether this tap was on a "short" word.

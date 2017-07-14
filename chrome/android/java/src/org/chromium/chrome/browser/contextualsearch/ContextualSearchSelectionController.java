@@ -46,6 +46,8 @@ public class ContextualSearchSelectionController {
     // Max selection length must be limited or the entire request URL can go past the 2K limit.
     private static final int MAX_SELECTION_LENGTH = 100;
 
+    private static final int INVALID_DURATION = -1;
+
     private final ChromeActivity mActivity;
     private final ContextualSearchSelectionHandler mHandler;
     private final float mPxToDp;
@@ -71,6 +73,9 @@ public class ContextualSearchSelectionController {
     // When the last tap gesture happened.
     private long mTapTimeNanoseconds;
 
+    // The duration of the last tap gesture in milliseconds, or 0 if not set.
+    private int mTapDurationMs = INVALID_DURATION;
+
     private class ContextualSearchGestureStateListener extends GestureStateListener {
         @Override
         public void onScrollStarted(int scrollOffsetY, int scrollExtentY) {
@@ -89,13 +94,9 @@ public class ContextualSearchSelectionController {
             mLastScrollTimeNs = System.nanoTime();
         }
 
-        // TODO(donnd): Remove this once we get notification of the selection changing
-        // after a tap-select gets a subsequent tap nearby.  Currently there's no
-        // notification in this case.
-        // See crbug.com/444114.
         @Override
-        public void onSingleTap(boolean consumed) {
-            // TODO(donnd): remove completely!
+        public void onTouchDown() {
+            mTapTimeNanoseconds = System.nanoTime();
         }
     }
 
@@ -292,6 +293,7 @@ public class ContextualSearchSelectionController {
         mLastTapState = null;
         mLastScrollTimeNs = 0;
         mTapTimeNanoseconds = 0;
+        mTapDurationMs = INVALID_DURATION;
         mDidExpandSelection = false;
     }
 
@@ -322,9 +324,11 @@ public class ContextualSearchSelectionController {
         mWasTapGestureDetected = false;
         // TODO(donnd): refactor to avoid needing a new handler API method as suggested by Pedro.
         if (mSelectionType != SelectionType.LONG_PRESS) {
+            assert mTapTimeNanoseconds != 0 : "mTapTimeNanoseconds not set!";
+            mTapDurationMs = (int) ((System.nanoTime() - mTapTimeNanoseconds)
+                    / ContextualSearchHeuristic.NANOSECONDS_IN_A_MILLISECOND);
             mWasTapGestureDetected = true;
             mSelectionType = SelectionType.TAP;
-            mTapTimeNanoseconds = System.nanoTime();
             mX = x;
             mY = y;
             mHandler.handleValidTap();
@@ -353,8 +357,9 @@ public class ContextualSearchSelectionController {
         ChromePreferenceManager prefs = ChromePreferenceManager.getInstance();
         int adjustedTapsSinceOpen = prefs.getContextualSearchTapCount()
                 - prefs.getContextualSearchTapQuickAnswerCount();
-        TapSuppressionHeuristics tapHeuristics = new TapSuppressionHeuristics(
-                this, mLastTapState, x, y, adjustedTapsSinceOpen, contextualSearchContext);
+        assert mTapDurationMs != INVALID_DURATION : "mTapDurationMs not set!";
+        TapSuppressionHeuristics tapHeuristics = new TapSuppressionHeuristics(this, mLastTapState,
+                x, y, adjustedTapsSinceOpen, contextualSearchContext, mTapDurationMs);
         // TODO(donnd): Move to be called when the panel closes to work with states that change.
         tapHeuristics.logConditionState();
 
