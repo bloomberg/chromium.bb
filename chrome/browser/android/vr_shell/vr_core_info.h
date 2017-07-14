@@ -31,8 +31,6 @@ struct VrCoreInfo {
              VrCoreCompatibility compatibility);
 };
 
-bool RegisterVrCoreInfo(JNIEnv* env);
-
 }  // namespace vr_shell
 
 #endif  // CHROME_BROWSER_ANDROID_VR_SHELL_VR_CORE_INFO_H_
