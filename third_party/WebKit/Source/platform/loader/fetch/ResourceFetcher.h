@@ -155,6 +155,8 @@ class PLATFORM_EXPORT ResourceFetcher
 
   void RemovePreload(Resource*);
 
+  void OnNetworkQuiet() { scheduler_->OnNetworkQuiet(); }
+
   // Workaround for https://crbug.com/666214.
   // TODO(hiroshige): Remove this hack.
   void EmulateLoadStartedForInspector(Resource*,

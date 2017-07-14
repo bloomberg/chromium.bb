@@ -69,7 +69,6 @@
 #include "core/timing/PerformanceBase.h"
 #include "platform/WebFrameScheduler.h"
 #include "platform/exported/WrappedResourceRequest.h"
-#include "platform/instrumentation/resource_coordinator/FrameResourceCoordinator.h"
 #include "platform/instrumentation/tracing/TracedValue.h"
 #include "platform/loader/fetch/ClientHintsPreferences.h"
 #include "platform/loader/fetch/FetchInitiatorTypeNames.h"
@@ -606,9 +605,8 @@ void FrameFetchContext::DidLoadResource(Resource* resource) {
   if (!document_)
     return;
   FirstMeaningfulPaintDetector::From(*document_).CheckNetworkStable();
-  if (FrameResourceCoordinator::IsEnabled()) {
-    NetworkQuietDetector::From(*document_).CheckNetworkStable();
-  }
+  NetworkQuietDetector::From(*document_).CheckNetworkStable();
+
   if (resource->IsLoadEventBlockingResourceType())
     document_->CheckCompleted();
 }
