@@ -116,6 +116,9 @@
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
+#include "services/device/public/cpp/device_features.h"
+#include "services/device/public/interfaces/constants.mojom.h"
+#include "services/device/public/interfaces/sensor_provider.mojom.h"
 #include "services/device/public/interfaces/wake_lock.mojom.h"
 #include "services/device/public/interfaces/wake_lock_context.mojom.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_interface.h"
@@ -348,16 +351,15 @@ void LookupRenderFrameHostOrProxy(int process_id,
     *rfph = RenderFrameProxyHost::FromID(process_id, routing_id);
 }
 
-// Forwards service requests to Service Manager since the renderer cannot launch
-// out-of-process services on its own.
-template <typename R>
-void ForwardShapeDetectionRequest(const service_manager::BindSourceInfo&,
-                                  R request) {
+// Forwards service requests to Service Manager.
+template <typename Interface>
+void ForwardRequest(const char* service_name,
+                    const service_manager::BindSourceInfo&,
+                    mojo::InterfaceRequest<Interface> request) {
   // TODO(beng): This should really be using the per-profile connector.
   service_manager::Connector* connector =
       ServiceManagerConnection::GetForProcess()->GetConnector();
-  connector->BindInterface(shape_detection::mojom::kServiceName,
-                           std::move(request));
+  connector->BindInterface(service_name, std::move(request));
 }
 
 void CreatePaymentManager(RenderFrameHostImpl* rfh,
@@ -2944,14 +2946,14 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   GetInterfaceRegistry()->AddInterface(base::Bind(&ImageCaptureImpl::Create));
 
   GetInterfaceRegistry()->AddInterface(
-      base::Bind(&ForwardShapeDetectionRequest<
-                 shape_detection::mojom::BarcodeDetectionRequest>));
+      base::Bind(&ForwardRequest<shape_detection::mojom::BarcodeDetection>,
+                 shape_detection::mojom::kServiceName));
   GetInterfaceRegistry()->AddInterface(
-      base::Bind(&ForwardShapeDetectionRequest<
-                 shape_detection::mojom::FaceDetectionProviderRequest>));
+      base::Bind(&ForwardRequest<shape_detection::mojom::FaceDetectionProvider>,
+                 shape_detection::mojom::kServiceName));
   GetInterfaceRegistry()->AddInterface(
-      base::Bind(&ForwardShapeDetectionRequest<
-                 shape_detection::mojom::TextDetectionRequest>));
+      base::Bind(&ForwardRequest<shape_detection::mojom::TextDetection>,
+                 shape_detection::mojom::kServiceName));
 
   GetInterfaceRegistry()->AddInterface(
       base::Bind(&CreatePaymentManager, base::Unretained(this)));
@@ -2959,6 +2961,12 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   if (base::FeatureList::IsEnabled(features::kWebAuth)) {
     GetInterfaceRegistry()->AddInterface(
         base::Bind(&AuthenticatorImpl::Create, base::Unretained(this)));
+  }
+
+  if (base::FeatureList::IsEnabled(features::kGenericSensor)) {
+    GetInterfaceRegistry()->AddInterface(
+        base::Bind(&ForwardRequest<device::mojom::SensorProvider>,
+                   device::mojom::kServiceName));
   }
 }
 

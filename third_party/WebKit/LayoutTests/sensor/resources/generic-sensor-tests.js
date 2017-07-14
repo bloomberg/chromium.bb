@@ -54,7 +54,7 @@ function runGenericSensorTests(sensorType, updateReading, verifyReading) {
           .then(mockSensor => {
             return new Promise((resolve, reject) => {
               let wrapper = new CallbackWrapper(() => {
-                let configuration = mockSensor.active_sensor_configurations_[0];
+                let configuration = mockSensor.activeSensorConfigurations_[0];
                 assert_equals(configuration.frequency, 60);
                 sensorObject.stop();
                 assert_false(sensorObject.activated);
@@ -102,7 +102,7 @@ function runGenericSensorTests(sensorType, updateReading, verifyReading) {
         .then(mockSensor => {
           return new Promise((resolve, reject) => {
             let wrapper = new CallbackWrapper(() => {
-              let configuration = mockSensor.active_sensor_configurations_[0];
+              let configuration = mockSensor.activeSensorConfigurations_[0];
               assert_equals(configuration.frequency, maxSupportedFrequency);
               sensorObject.stop();
               assert_false(sensorObject.activated);
@@ -126,7 +126,7 @@ function runGenericSensorTests(sensorType, updateReading, verifyReading) {
         .then(mockSensor => {
           return new Promise((resolve, reject) => {
             let wrapper = new CallbackWrapper(() => {
-              let configuration = mockSensor.active_sensor_configurations_[0];
+              let configuration = mockSensor.activeSensorConfigurations_[0];
               assert_equals(configuration.frequency, minSupportedFrequency);
               sensorObject.stop();
               assert_false(sensorObject.activated);
@@ -379,12 +379,12 @@ function runGenericSensorTests(sensorType, updateReading, verifyReading) {
               slowSensorNotifiedCounter++;
               if (slowSensorNotifiedCounter == 1) {
                   fastSensor.start();
-                  readingUpdatesCounter = mockSensor.reading_updates_count();
+                  readingUpdatesCounter = mockSensor.readingUpdatesCount();
               } else if (slowSensorNotifiedCounter == 2) {
                 // By the moment slow sensor (9 Hz) is notified for the
                 // next time, the fast sensor (30 Hz) has been notified
                 // for int(30/9) = 3 times.
-                let elapsedUpdates = mockSensor.reading_updates_count() - readingUpdatesCounter;
+                let elapsedUpdates = mockSensor.readingUpdatesCount() - readingUpdatesCounter;
                 // Approximation because 'slowSensor.onreading' is sometimes
                 // called before 'fastSensor.onreading', in this case
                 // 'fastSensorNotifiedCounter == elapsedUpdates - 1'.
