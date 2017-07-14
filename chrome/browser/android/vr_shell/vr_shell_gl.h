@@ -25,6 +25,7 @@
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
 #include "ui/gfx/geometry/quaternion.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace blink {
@@ -245,7 +246,7 @@ class VrShellGl : public device::mojom::VRPresentationProvider,
 
   std::vector<base::TimeTicks> webvr_time_pose_;
   std::vector<base::TimeTicks> webvr_time_js_submit_;
-
+  std::vector<bool> webvr_frame_oustanding_;
   std::vector<gfx::Transform> webvr_head_pose_;
 
   bool web_vr_mode_;
