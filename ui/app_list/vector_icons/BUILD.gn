@@ -16,6 +16,8 @@ aggregate_vector_icons("app_list_vector_icons") {
     "ic_badge_play.icon",
     "ic_badge_rating.1x.icon",
     "ic_badge_rating.icon",
+    "ic_close.1x.icon",
+    "ic_close.icon",
     "ic_google_black.1x.icon",
     "ic_google_black.icon",
     "ic_mic_black.1x.icon",
