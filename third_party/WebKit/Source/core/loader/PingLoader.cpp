@@ -294,6 +294,7 @@ void PingLoader::SendViolationReport(LocalFrame* frame,
       request.SetHTTPContentType("application/xss-auditor-report");
       break;
   }
+  request.SetKeepalive(true);
   request.SetHTTPBody(std::move(report));
   request.SetFetchCredentialsMode(
       WebURLRequest::kFetchCredentialsModeSameOrigin);
