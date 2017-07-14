@@ -104,13 +104,11 @@ class CORE_EXPORT PaintLayerPainter {
   void PaintBackgroundForFragments(
       const PaintLayerFragments&,
       GraphicsContext&,
-      const LayoutRect& transparency_paint_dirty_rect,
       const PaintLayerPaintingInfo&,
       PaintLayerFlags);
   void PaintForegroundForFragments(
       const PaintLayerFragments&,
       GraphicsContext&,
-      const LayoutRect& transparency_paint_dirty_rect,
       const PaintLayerPaintingInfo&,
       bool selection_only,
       PaintLayerFlags);

@@ -429,7 +429,9 @@ TEST_F(PaintLayerClipperTest, Filter) {
       .CalculateRects(context, infinite_rect, layer_bounds, background_rect,
                       foreground_rect);
 
-  EXPECT_EQ(LayoutRect(-12, -9, 124, 224), background_rect.Rect());
+  // The foreground and background should both be 100x200, since the filter
+  // applies after clip.
+  EXPECT_EQ(LayoutRect(0, 0, 100, 200), background_rect.Rect());
   EXPECT_EQ(LayoutRect(0, 0, 100, 200), foreground_rect.Rect());
 }
 

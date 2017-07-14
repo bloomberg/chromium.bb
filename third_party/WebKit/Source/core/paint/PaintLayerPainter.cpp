@@ -400,18 +400,22 @@ PaintResult PaintLayerPainter::PaintLayerContents(
   PaintLayerPaintingInfo local_painting_info(painting_info);
   local_painting_info.sub_pixel_accumulation = subpixel_accumulation;
 
+  sk_sp<SkImageFilter> image_filter =
+      FilterPainter::GetImageFilter(paint_layer_);
+
   bool should_paint_content = paint_layer_.HasVisibleContent() &&
                               is_self_painting_layer &&
                               !is_painting_overlay_scrollbars;
 
   PaintLayerFragments layer_fragments;
+  ClipRectsCacheSlot cache_slot = (paint_flags & kPaintLayerUncachedClipRects)
+                                      ? kUncachedClipRects
+                                      : kPaintingClipRects;
+
   if (should_paint_content || should_paint_self_outline ||
       is_painting_overlay_scrollbars) {
     // Collect the fragments. This will compute the clip rectangles and paint
     // offsets for each layer fragment.
-    ClipRectsCacheSlot cache_slot = (paint_flags & kPaintLayerUncachedClipRects)
-                                        ? kUncachedClipRects
-                                        : kPaintingClipRects;
     LayoutPoint offset_to_clipper;
     const PaintLayer* paint_layer_for_fragments = &paint_layer_;
     if (paint_flags & kPaintLayerPaintingAncestorClippingMaskPhase) {
@@ -452,6 +456,31 @@ PaintResult PaintLayerPainter::PaintLayerContents(
           local_painting_info.sub_pixel_accumulation);
       RepeatFixedPositionObjectInPages(single_fragment[0], painting_info,
                                        layer_fragments);
+    } else if (image_filter && !paint_layer_.EnclosingPaginationLayer()) {
+      // Clipping in the presence of filters needs to happen in two phases.
+      // It proceeds like this:
+      // 1. Apply clips inside the filter (including any clips on
+      //  paint_layer_), not including the dirty rect.
+      // 2. Paint the filter.
+      // 3. Apply clips outside the filter.
+      //
+      // It is critical to avoid clipping to the dirty rect or any clips
+      // above the filter before applying the filter, because content which
+      // appears to be clipped may affect visual output if the filter moves
+      // pixels.
+      //
+      // #1 is applied in the lines below.  #3 is applied in FilterPainter,
+      // and computed just before construction of the FilterPainter.
+      paint_layer_.AppendSingleFragmentIgnoringPagination(
+          layer_fragments, &paint_layer_,
+          LayoutRect(LayoutRect::InfiniteIntRect()), cache_slot,
+          PaintLayer::kUseGeometryMapper, kIgnorePlatformOverlayScrollbarSize,
+          kRespectOverflowClip, nullptr,
+          local_painting_info.sub_pixel_accumulation);
+
+      layer_fragments[0].layer_bounds.MoveBy(offset_from_root);
+      layer_fragments[0].background_rect.MoveBy(offset_from_root);
+      layer_fragments[0].foreground_rect.MoveBy(offset_from_root);
     } else {
       paint_layer_for_fragments->CollectFragments(
           layer_fragments, local_painting_info.root_layer,
@@ -459,6 +488,7 @@ PaintResult PaintLayerPainter::PaintLayerContents(
           PaintLayer::kUseGeometryMapper, kIgnorePlatformOverlayScrollbarSize,
           respect_overflow_clip, &offset_from_root,
           local_painting_info.sub_pixel_accumulation);
+
       // PaintLayer::collectFragments depends on the paint dirty rect in
       // complicated ways. For now, always assume a partially painted output
       // for fragmented content.
@@ -513,11 +543,23 @@ PaintResult PaintLayerPainter::PaintLayerContents(
   bool selection_only =
       local_painting_info.GetGlobalPaintFlags() & kGlobalPaintSelectionOnly;
   {  // Begin block for the lifetime of any filter.
-    FilterPainter filter_painter(paint_layer_, context, offset_from_root,
-                                 layer_fragments.IsEmpty()
-                                     ? ClipRect()
-                                     : layer_fragments[0].background_rect,
-                                 local_painting_info, paint_flags);
+    Optional<FilterPainter> filter_painter;
+    if (image_filter) {
+      // Compute clips outside the filter (#3, see above for discussion).
+      PaintLayerFragments filter_fragments;
+      paint_layer_.AppendSingleFragmentIgnoringPagination(
+          filter_fragments, local_painting_info.root_layer,
+          local_painting_info.paint_dirty_rect, cache_slot,
+          PaintLayer::kUseGeometryMapper, kIgnorePlatformOverlayScrollbarSize,
+          respect_overflow_clip, &offset_from_root,
+          local_painting_info.sub_pixel_accumulation);
+
+      filter_painter.emplace(paint_layer_, context, offset_from_root,
+                             filter_fragments.IsEmpty()
+                                 ? ClipRect()
+                                 : filter_fragments[0].background_rect,
+                             local_painting_info, paint_flags);
+    }
 
     bool is_painting_root_layer = (&paint_layer_) == painting_info.root_layer;
     bool should_paint_background =
@@ -536,7 +578,6 @@ PaintResult PaintLayerPainter::PaintLayerContents(
 
     if (should_paint_background) {
       PaintBackgroundForFragments(layer_fragments, context,
-                                  painting_info.paint_dirty_rect,
                                   local_painting_info, paint_flags);
     }
 
@@ -547,9 +588,8 @@ PaintResult PaintLayerPainter::PaintLayerContents(
     }
 
     if (should_paint_own_contents) {
-      PaintForegroundForFragments(
-          layer_fragments, context, painting_info.paint_dirty_rect,
-          local_painting_info, selection_only, paint_flags);
+      PaintForegroundForFragments(layer_fragments, context, local_painting_info,
+                                  selection_only, paint_flags);
     }
 
     if (should_paint_self_outline)
@@ -964,7 +1004,7 @@ void PaintLayerPainter::PaintFragmentWithPhase(
 
   DisplayItemClient* client = &paint_layer_.GetLayoutObject();
   Optional<LayerClipRecorder> clip_recorder;
-  if (clip_state != kHasClipped && painting_info.clip_to_dirty_rect &&
+  if (clip_state != kHasClipped &&
       (NeedsToClip(painting_info, clip_rect, paint_flags) ||
        paint_flags & kPaintLayerPaintingAncestorClippingMaskPhase)) {
     DisplayItem::Type clip_type =
@@ -1039,7 +1079,6 @@ void PaintLayerPainter::PaintFragmentWithPhase(
 void PaintLayerPainter::PaintBackgroundForFragments(
     const PaintLayerFragments& layer_fragments,
     GraphicsContext& context,
-    const LayoutRect& transparency_paint_dirty_rect,
     const PaintLayerPaintingInfo& local_painting_info,
     PaintLayerFlags paint_flags) {
   Optional<DisplayItemCacheSkipper> cache_skipper;
@@ -1055,15 +1094,13 @@ void PaintLayerPainter::PaintBackgroundForFragments(
 void PaintLayerPainter::PaintForegroundForFragments(
     const PaintLayerFragments& layer_fragments,
     GraphicsContext& context,
-    const LayoutRect& transparency_paint_dirty_rect,
     const PaintLayerPaintingInfo& local_painting_info,
     bool selection_only,
     PaintLayerFlags paint_flags) {
   DCHECK(!(paint_flags & kPaintLayerPaintingRootBackgroundOnly));
 
   // Optimize clipping for the single fragment case.
-  bool should_clip = local_painting_info.clip_to_dirty_rect &&
-                     layer_fragments.size() == 1 &&
+  bool should_clip = layer_fragments.size() == 1 &&
                      !layer_fragments[0].foreground_rect.IsEmpty();
   ClipState clip_state = kHasNotClipped;
   Optional<LayerClipRecorder> clip_recorder;
