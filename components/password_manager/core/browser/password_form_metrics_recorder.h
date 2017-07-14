@@ -23,48 +23,48 @@ namespace password_manager {
 
 // This metric records whether a submission of a password form has been
 // observed. The values 0 and 1 correspond to false and true respectively.
-constexpr char kUkmSubmissionObserved[] = "Submission.Observed";
+extern const char kUkmSubmissionObserved[];
 
 // This metric records the outcome of a password form submission. The values are
 // numbered according to PasswordFormMetricsRecorder::SubmitResult.
 // Note that no metric is recorded for kSubmitResultNotSubmitted.
-constexpr char kUkmSubmissionResult[] = "Submission.SubmissionResult";
+extern const char kUkmSubmissionResult[];
 
 // This metric records the classification of a form at submission time. The
 // values correspond to PasswordFormMetricsRecorder::SubmittedFormType.
 // Note that no metric is recorded for kSubmittedFormTypeUnspecified.
-constexpr char kUkmSubmissionFormType[] = "Submission.SubmittedFormType";
+extern const char kUkmSubmissionFormType[];
 
 // This metric records the boolean value indicating whether a password update
 // prompt was shown, which asked the user for permission to update a password.
-constexpr char kUkmUpdatingPromptShown[] = "Updating.Prompt.Shown";
+extern const char kUkmUpdatingPromptShown[];
 
 // This metric records the reason why a password update prompt was shown to ask
 // the user for permission to update a password. The values correspond to
 // PasswordFormMetricsRecorder::BubbleTrigger.
-constexpr char kUkmUpdatingPromptTrigger[] = "Updating.Prompt.Trigger";
+extern const char kUkmUpdatingPromptTrigger[];
 
 // This metric records how a user interacted with an updating prompt. The values
 // correspond to PasswordFormMetricsRecorder::BubbleDismissalReason.
-constexpr char kUkmUpdatingPromptInteraction[] = "Updating.Prompt.Interaction";
+extern const char kUkmUpdatingPromptInteraction[];
 
 // This metric records the boolean value indicating whether a password save
 // prompt was shown, which asked the user for permission to save a new
 // credential.
-constexpr char kUkmSavingPromptShown[] = "Saving.Prompt.Shown";
+extern const char kUkmSavingPromptShown[];
 
 // This metric records the reason why a password save prompt was shown to ask
 // the user for permission to save a new credential. The values correspond to
 // PasswordFormMetricsRecorder::BubbleTrigger.
-constexpr char kUkmSavingPromptTrigger[] = "Saving.Prompt.Trigger";
+extern const char kUkmSavingPromptTrigger[];
 
 // This metric records how a user interacted with a saving prompt. The values
 // correspond to PasswordFormMetricsRecorder::BubbleDismissalReason.
-constexpr char kUkmSavingPromptInteraction[] = "Saving.Prompt.Interaction";
+extern const char kUkmSavingPromptInteraction[];
 
 // This metric records attempts to fill a password form. Values correspond to
 // PasswordFormMetricsRecorder::ManagerFillEvent.
-constexpr char kUkmManagerFillEvent[] = "ManagerFill.Action";
+extern const char kUkmManagerFillEvent[];
 
 class FormFetcher;
 

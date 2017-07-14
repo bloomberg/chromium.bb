@@ -17,6 +17,17 @@ using autofill::PasswordForm;
 
 namespace password_manager {
 
+const char kUkmSubmissionObserved[] = "Submission.Observed";
+const char kUkmSubmissionResult[] = "Submission.SubmissionResult";
+const char kUkmSubmissionFormType[] = "Submission.SubmittedFormType";
+const char kUkmUpdatingPromptShown[] = "Updating.Prompt.Shown";
+const char kUkmUpdatingPromptTrigger[] = "Updating.Prompt.Trigger";
+const char kUkmUpdatingPromptInteraction[] = "Updating.Prompt.Interaction";
+const char kUkmSavingPromptShown[] = "Saving.Prompt.Shown";
+const char kUkmSavingPromptTrigger[] = "Saving.Prompt.Trigger";
+const char kUkmSavingPromptInteraction[] = "Saving.Prompt.Interaction";
+const char kUkmManagerFillEvent[] = "ManagerFill.Action";
+
 PasswordFormMetricsRecorder::PasswordFormMetricsRecorder(
     bool is_main_frame_secure,
     std::unique_ptr<ukm::UkmEntryBuilder> ukm_entry_builder)
