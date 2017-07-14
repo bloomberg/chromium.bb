@@ -74169,6 +74169,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="sri.resource_integrity_mismatch_event"
     enum="SRIResourceIntegrityMismatchEvent">
+  <obsolete>
+    Removed 07/2017. Reference: crbug.com/708041
+  </obsolete>
   <owner>jww@chromium.org</owner>
   <summary>
     When resources are checked for mismatching integrity and whether the
