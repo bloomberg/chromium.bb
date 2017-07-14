@@ -483,9 +483,7 @@ TEST_F(IndexedDBDispatcherHostTest, CompactDatabaseWithConnection) {
   EXPECT_EQ(::indexed_db::mojom::Status::OK, callback_result);
 }
 
-// Flaky: crbug.com/742503
-TEST_F(IndexedDBDispatcherHostTest,
-       DISABLED_CompactDatabaseWhileDoingTransaction) {
+TEST_F(IndexedDBDispatcherHostTest, CompactDatabaseWhileDoingTransaction) {
   const int64_t kDBVersion = 1;
   const int64_t kTransactionId = 1;
   const int64_t kObjectStoreId = 10;
@@ -524,7 +522,7 @@ TEST_F(IndexedDBDispatcherHostTest,
   {
     ::testing::InSequence dummy;
     base::RunLoop loop;
-    base::Closure quit_closure = base::BarrierClosure(3, loop.QuitClosure());
+    base::Closure quit_closure = base::BarrierClosure(4, loop.QuitClosure());
     const url::Origin origin = url::Origin(GURL(kOrigin));
 
     EXPECT_CALL(
@@ -534,6 +532,9 @@ TEST_F(IndexedDBDispatcherHostTest,
         .WillOnce(RunClosure(quit_closure));
     EXPECT_CALL(*connection.open_callbacks,
                 Error(blink::kWebIDBDatabaseExceptionAbortError, _))
+        .Times(1)
+        .WillOnce(RunClosure(quit_closure));
+    EXPECT_CALL(*connection.connection_callbacks, ForcedClose())
         .Times(1)
         .WillOnce(RunClosure(quit_closure));
 
@@ -550,8 +551,7 @@ TEST_F(IndexedDBDispatcherHostTest,
   EXPECT_EQ(::indexed_db::mojom::Status::OK, callback_result);
 }
 
-// Flaky: crbug.com/742503
-TEST_F(IndexedDBDispatcherHostTest, DISABLED_CompactDatabaseWhileUpgrading) {
+TEST_F(IndexedDBDispatcherHostTest, CompactDatabaseWhileUpgrading) {
   const int64_t kDBVersion = 1;
   const int64_t kTransactionId = 1;
 
@@ -588,7 +588,7 @@ TEST_F(IndexedDBDispatcherHostTest, DISABLED_CompactDatabaseWhileUpgrading) {
   {
     ::testing::InSequence dummy;
     base::RunLoop loop;
-    base::Closure quit_closure = base::BarrierClosure(3, loop.QuitClosure());
+    base::Closure quit_closure = base::BarrierClosure(4, loop.QuitClosure());
     const url::Origin origin = url::Origin(GURL(kOrigin));
 
     EXPECT_CALL(
@@ -598,6 +598,9 @@ TEST_F(IndexedDBDispatcherHostTest, DISABLED_CompactDatabaseWhileUpgrading) {
         .WillOnce(RunClosure(quit_closure));
     EXPECT_CALL(*connection.open_callbacks,
                 Error(blink::kWebIDBDatabaseExceptionAbortError, _))
+        .Times(1)
+        .WillOnce(RunClosure(quit_closure));
+    EXPECT_CALL(*connection.connection_callbacks, ForcedClose())
         .Times(1)
         .WillOnce(RunClosure(quit_closure));
 
@@ -649,7 +652,7 @@ TEST_F(IndexedDBDispatcherHostTest,
   {
     ::testing::InSequence dummy;
     base::RunLoop loop;
-    base::Closure quit_closure = base::BarrierClosure(3, loop.QuitClosure());
+    base::Closure quit_closure = base::BarrierClosure(4, loop.QuitClosure());
     const url::Origin origin = url::Origin(GURL(kOrigin));
 
     EXPECT_CALL(*connection.connection_callbacks, Complete(kTransactionId))
@@ -658,6 +661,9 @@ TEST_F(IndexedDBDispatcherHostTest,
     EXPECT_CALL(
         *connection.open_callbacks,
         MockedSuccessDatabase(IsAssociatedInterfacePtrInfoValid(false), _))
+        .Times(1)
+        .WillOnce(RunClosure(quit_closure));
+    EXPECT_CALL(*connection.connection_callbacks, ForcedClose())
         .Times(1)
         .WillOnce(RunClosure(quit_closure));
 
@@ -671,9 +677,7 @@ TEST_F(IndexedDBDispatcherHostTest,
   EXPECT_EQ(::indexed_db::mojom::Status::OK, callback_result);
 }
 
-// Flaky: crbug.com/742503
-TEST_F(IndexedDBDispatcherHostTest,
-       DISABLED_AbortTransactionsWhileDoingTransaction) {
+TEST_F(IndexedDBDispatcherHostTest, AbortTransactionsWhileDoingTransaction) {
   const int64_t kDBVersion = 1;
   const int64_t kTransactionId = 1;
   const int64_t kObjectStoreId = 10;
@@ -712,7 +716,7 @@ TEST_F(IndexedDBDispatcherHostTest,
   {
     ::testing::InSequence dummy;
     base::RunLoop loop;
-    base::Closure quit_closure = base::BarrierClosure(3, loop.QuitClosure());
+    base::Closure quit_closure = base::BarrierClosure(4, loop.QuitClosure());
     const url::Origin origin = url::Origin(GURL(kOrigin));
 
     EXPECT_CALL(
@@ -722,6 +726,9 @@ TEST_F(IndexedDBDispatcherHostTest,
         .WillOnce(RunClosure(quit_closure));
     EXPECT_CALL(*connection.open_callbacks,
                 Error(blink::kWebIDBDatabaseExceptionAbortError, _))
+        .Times(1)
+        .WillOnce(RunClosure(quit_closure));
+    EXPECT_CALL(*connection.connection_callbacks, ForcedClose())
         .Times(1)
         .WillOnce(RunClosure(quit_closure));
 
@@ -738,8 +745,7 @@ TEST_F(IndexedDBDispatcherHostTest,
   EXPECT_EQ(::indexed_db::mojom::Status::OK, callback_result);
 }
 
-// Flaky: crbug.com/742503
-TEST_F(IndexedDBDispatcherHostTest, DISABLED_AbortTransactionsWhileUpgrading) {
+TEST_F(IndexedDBDispatcherHostTest, AbortTransactionsWhileUpgrading) {
   const int64_t kDBVersion = 1;
   const int64_t kTransactionId = 1;
 
@@ -776,7 +782,7 @@ TEST_F(IndexedDBDispatcherHostTest, DISABLED_AbortTransactionsWhileUpgrading) {
   {
     ::testing::InSequence dummy;
     base::RunLoop loop;
-    base::Closure quit_closure = base::BarrierClosure(3, loop.QuitClosure());
+    base::Closure quit_closure = base::BarrierClosure(4, loop.QuitClosure());
     const url::Origin origin = url::Origin(GURL(kOrigin));
 
     EXPECT_CALL(
@@ -786,6 +792,9 @@ TEST_F(IndexedDBDispatcherHostTest, DISABLED_AbortTransactionsWhileUpgrading) {
         .WillOnce(RunClosure(quit_closure));
     EXPECT_CALL(*connection.open_callbacks,
                 Error(blink::kWebIDBDatabaseExceptionAbortError, _))
+        .Times(1)
+        .WillOnce(RunClosure(quit_closure));
+    EXPECT_CALL(*connection.connection_callbacks, ForcedClose())
         .Times(1)
         .WillOnce(RunClosure(quit_closure));
 
