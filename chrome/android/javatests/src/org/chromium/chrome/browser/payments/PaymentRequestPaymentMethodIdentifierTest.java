@@ -18,11 +18,11 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /**
- * A payment integration test for "basic-card" payment method.
+ * A payment integration test for supported payment methods.
  */
-public class PaymentRequestBasicCardTest extends PaymentRequestTestBase {
-    public PaymentRequestBasicCardTest() {
-        super("payment_request_basic_card_test.html");
+public class PaymentRequestPaymentMethodIdentifierTest extends PaymentRequestTestBase {
+    public PaymentRequestPaymentMethodIdentifierTest() {
+        super("payment_request_payment_method_identifier_test.html");
         PaymentRequestImpl.setIsLocalCanMakePaymentQueryQuotaEnforcedForTest();
     }
 
