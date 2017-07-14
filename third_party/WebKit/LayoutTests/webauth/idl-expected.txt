@@ -1,0 +1,42 @@
+This is a testharness.js-based test.
+FAIL PublicKeyCredential interface: existence and properties of interface object Cannot read property 'has_extended_attribute' of undefined
+PASS PublicKeyCredential interface object length 
+PASS PublicKeyCredential interface object name 
+FAIL PublicKeyCredential interface: existence and properties of interface prototype object Cannot read property 'has_extended_attribute' of undefined
+PASS PublicKeyCredential interface: existence and properties of interface prototype object's "constructor" property 
+PASS PublicKeyCredential interface: attribute rawId 
+PASS PublicKeyCredential interface: attribute response 
+PASS AuthenticatorResponse interface: existence and properties of interface object 
+PASS AuthenticatorResponse interface object length 
+PASS AuthenticatorResponse interface object name 
+PASS AuthenticatorResponse interface: existence and properties of interface prototype object 
+PASS AuthenticatorResponse interface: existence and properties of interface prototype object's "constructor" property 
+PASS AuthenticatorResponse interface: attribute clientDataJSON 
+PASS AuthenticatorAttestationResponse interface: existence and properties of interface object 
+PASS AuthenticatorAttestationResponse interface object length 
+PASS AuthenticatorAttestationResponse interface object name 
+PASS AuthenticatorAttestationResponse interface: existence and properties of interface prototype object 
+PASS AuthenticatorAttestationResponse interface: existence and properties of interface prototype object's "constructor" property 
+PASS AuthenticatorAttestationResponse interface: attribute attestationObject 
+PASS AuthenticatorAssertionResponse interface: existence and properties of interface object 
+PASS AuthenticatorAssertionResponse interface object length 
+PASS AuthenticatorAssertionResponse interface object name 
+PASS AuthenticatorAssertionResponse interface: existence and properties of interface prototype object 
+PASS AuthenticatorAssertionResponse interface: existence and properties of interface prototype object's "constructor" property 
+PASS AuthenticatorAssertionResponse interface: attribute authenticatorData 
+PASS AuthenticatorAssertionResponse interface: attribute signature 
+PASS WebAuthentication interface: existence and properties of interface object 
+PASS WebAuthentication interface object length 
+PASS WebAuthentication interface object name 
+PASS WebAuthentication interface: existence and properties of interface prototype object 
+PASS WebAuthentication interface: existence and properties of interface prototype object's "constructor" property 
+PASS WebAuthentication interface: operation makeCredential(MakeCredentialOptions) 
+PASS WebAuthentication interface: operation getAssertion(PublicKeyCredentialRequestOptions) 
+PASS WebAuthentication must be primary interface of navigator.authentication 
+PASS Stringification of navigator.authentication 
+PASS WebAuthentication interface: navigator.authentication must inherit property "makeCredential" with the proper type (0) 
+PASS WebAuthentication interface: calling makeCredential(MakeCredentialOptions) on navigator.authentication with too few arguments must throw TypeError 
+PASS WebAuthentication interface: navigator.authentication must inherit property "getAssertion" with the proper type (1) 
+PASS WebAuthentication interface: calling getAssertion(PublicKeyCredentialRequestOptions) on navigator.authentication with too few arguments must throw TypeError 
+Harness: the test ran to completion.
+

@@ -40,12 +40,8 @@ class CONTENT_EXPORT AuthenticatorImpl
   explicit AuthenticatorImpl(RenderFrameHost* render_frame_host);
 
   // mojom:Authenticator
-  void MakeCredential(
-      webauth::mojom::RelyingPartyAccountPtr account,
-      std::vector<webauth::mojom::ScopedCredentialParametersPtr> parameters,
-      const std::vector<uint8_t>& challenge,
-      webauth::mojom::ScopedCredentialOptionsPtr options,
-      MakeCredentialCallback callback) override;
+  void MakeCredential(webauth::mojom::MakeCredentialOptionsPtr options,
+                      MakeCredentialCallback callback) override;
 
   base::Closure connection_error_handler_;
   base::CancelableClosure timeout_callback_;

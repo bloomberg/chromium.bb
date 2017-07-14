@@ -23,15 +23,15 @@ namespace content {
 
 using ::testing::_;
 
-using webauth::mojom::RelyingPartyAccount;
-using webauth::mojom::ScopedCredentialOptions;
-using webauth::mojom::ScopedCredentialParameters;
 using webauth::mojom::AuthenticatorPtr;
 using webauth::mojom::AuthenticatorStatus;
-using webauth::mojom::RelyingPartyAccountPtr;
-using webauth::mojom::ScopedCredentialInfoPtr;
-using webauth::mojom::ScopedCredentialOptionsPtr;
-using webauth::mojom::ScopedCredentialParametersPtr;
+using webauth::mojom::MakeCredentialOptions;
+using webauth::mojom::MakeCredentialOptionsPtr;
+using webauth::mojom::PublicKeyCredentialEntity;
+using webauth::mojom::PublicKeyCredentialEntityPtr;
+using webauth::mojom::PublicKeyCredentialInfoPtr;
+using webauth::mojom::PublicKeyCredentialParameters;
+using webauth::mojom::PublicKeyCredentialParametersPtr;
 
 const char* kOrigin1 = "https://google.com";
 
@@ -64,54 +64,66 @@ class TestMakeCredentialCallback {
   ~TestMakeCredentialCallback() {}
 
   void ReceivedCallback(AuthenticatorStatus status,
-                        ScopedCredentialInfoPtr credential) {
+                        PublicKeyCredentialInfoPtr credential) {
     response_ = std::make_pair(status, std::move(credential));
     closure_.Run();
   }
 
-  std::pair<AuthenticatorStatus, ScopedCredentialInfoPtr>& WaitForCallback() {
+  std::pair<AuthenticatorStatus, PublicKeyCredentialInfoPtr>&
+  WaitForCallback() {
     closure_ = run_loop_.QuitClosure();
     run_loop_.Run();
     return response_;
   }
 
   const base::Callback<void(AuthenticatorStatus status,
-                            ScopedCredentialInfoPtr credential)>&
+                            PublicKeyCredentialInfoPtr credential)>&
   callback() {
     return callback_;
   }
 
  private:
-  std::pair<AuthenticatorStatus, ScopedCredentialInfoPtr> response_;
+  std::pair<AuthenticatorStatus, PublicKeyCredentialInfoPtr> response_;
   base::Closure closure_;
   base::Callback<void(AuthenticatorStatus status,
-                      ScopedCredentialInfoPtr credential)>
+                      PublicKeyCredentialInfoPtr credential)>
       callback_;
   base::RunLoop run_loop_;
 };
 
-RelyingPartyAccountPtr GetTestRelyingPartyAccount() {
-  RelyingPartyAccountPtr account = RelyingPartyAccount::New();
-  account->relying_party_display_name = std::string("TestRP");
-  account->display_name = std::string("Test A. Name");
-  account->id = std::string("1098237235409872");
-  account->name = std::string("Testname@example.com");
-  account->image_url = std::string("fakeurl.png");
-  return account;
+PublicKeyCredentialEntityPtr GetTestPublicKeyCredentialRPEntity() {
+  auto entity = PublicKeyCredentialEntity::New();
+  entity->id = std::string("localhost");
+  entity->name = std::string("TestRP@example.com");
+  return entity;
 }
 
-std::vector<ScopedCredentialParametersPtr> GetTestScopedCredentialParameters() {
-  std::vector<ScopedCredentialParametersPtr> parameters;
-  auto fake_parameter = ScopedCredentialParameters::New();
-  fake_parameter->type = webauth::mojom::ScopedCredentialType::SCOPEDCRED;
+PublicKeyCredentialEntityPtr GetTestPublicKeyCredentialUserEntity() {
+  auto entity = PublicKeyCredentialEntity::New();
+  entity->display_name = std::string("User A. Name");
+  entity->id = std::string("1098237235409872");
+  entity->name = std::string("TestRP@example.com");
+  entity->icon = GURL("fakeurl2.png");
+  return entity;
+}
+
+std::vector<PublicKeyCredentialParametersPtr>
+GetTestPublicKeyCredentialParameters() {
+  std::vector<PublicKeyCredentialParametersPtr> parameters;
+  auto fake_parameter = PublicKeyCredentialParameters::New();
+  fake_parameter->type = webauth::mojom::PublicKeyCredentialType::PUBLIC_KEY;
   parameters.push_back(std::move(fake_parameter));
   return parameters;
 }
 
-ScopedCredentialOptionsPtr GetTestScopedCredentialOptions() {
-  ScopedCredentialOptionsPtr opts = ScopedCredentialOptions::New();
-  opts->adjusted_timeout = 60;
-  opts->relying_party_id = std::string("localhost");
+MakeCredentialOptionsPtr GetTestMakeCredentialOptions() {
+  auto opts = MakeCredentialOptions::New();
+  std::vector<uint8_t> buffer(32, 0x0A);
+  opts->relying_party = GetTestPublicKeyCredentialRPEntity();
+  opts->user = GetTestPublicKeyCredentialUserEntity();
+  opts->crypto_parameters = GetTestPublicKeyCredentialParameters();
+  opts->challenge = std::move(buffer);
+  opts->adjusted_timeout = base::TimeDelta::FromMinutes(1);
   return opts;
 }
 
@@ -119,20 +131,12 @@ ScopedCredentialOptionsPtr GetTestScopedCredentialOptions() {
 TEST_F(AuthenticatorImplTest, MakeCredentialNotImplemented) {
   SimulateNavigation(GURL(kOrigin1));
   AuthenticatorPtr authenticator = ConnectToAuthenticator();
-
-  RelyingPartyAccountPtr account = GetTestRelyingPartyAccount();
-
-  std::vector<ScopedCredentialParametersPtr> parameters =
-      GetTestScopedCredentialParameters();
-
-  std::vector<uint8_t> buffer(32, 0x0A);
-  ScopedCredentialOptionsPtr opts = GetTestScopedCredentialOptions();
+  MakeCredentialOptionsPtr opts = GetTestMakeCredentialOptions();
 
   TestMakeCredentialCallback cb;
-  authenticator->MakeCredential(std::move(account), std::move(parameters),
-                                buffer, std::move(opts), cb.callback());
+  authenticator->MakeCredential(std::move(opts), cb.callback());
   std::pair<webauth::mojom::AuthenticatorStatus,
-            webauth::mojom::ScopedCredentialInfoPtr>& response =
+            webauth::mojom::PublicKeyCredentialInfoPtr>& response =
       cb.WaitForCallback();
   EXPECT_EQ(webauth::mojom::AuthenticatorStatus::NOT_IMPLEMENTED,
             response.first);
@@ -143,19 +147,13 @@ TEST_F(AuthenticatorImplTest, MakeCredentialNotImplemented) {
 TEST_F(AuthenticatorImplTest, MakeCredentialOpaqueOrigin) {
   NavigateAndCommit(GURL("data:text/html,opaque"));
   AuthenticatorPtr authenticator = ConnectToAuthenticator();
-  RelyingPartyAccountPtr account = GetTestRelyingPartyAccount();
 
-  std::vector<ScopedCredentialParametersPtr> parameters =
-      GetTestScopedCredentialParameters();
-
-  std::vector<uint8_t> buffer(32, 0x0A);
-  ScopedCredentialOptionsPtr opts = GetTestScopedCredentialOptions();
+  MakeCredentialOptionsPtr opts = GetTestMakeCredentialOptions();
 
   TestMakeCredentialCallback cb;
-  authenticator->MakeCredential(std::move(account), std::move(parameters),
-                                buffer, std::move(opts), cb.callback());
+  authenticator->MakeCredential(std::move(opts), cb.callback());
   std::pair<webauth::mojom::AuthenticatorStatus,
-            webauth::mojom::ScopedCredentialInfoPtr>& response =
+            webauth::mojom::PublicKeyCredentialInfoPtr>& response =
       cb.WaitForCallback();
   EXPECT_EQ(webauth::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR,
             response.first);

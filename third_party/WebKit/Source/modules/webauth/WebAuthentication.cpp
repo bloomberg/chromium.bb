@@ -4,38 +4,37 @@
 
 #include "modules/webauth/WebAuthentication.h"
 
-#include <stdint.h>
-
+#include "bindings/core/v8/ArrayBufferOrArrayBufferView.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
+#include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/frame/LocalFrame.h"
-#include "modules/webauth/RelyingPartyAccount.h"
-#include "modules/webauth/ScopedCredential.h"
-#include "modules/webauth/ScopedCredentialOptions.h"
-#include "modules/webauth/ScopedCredentialParameters.h"
+#include "modules/webauth/AuthenticatorAttestationResponse.h"
+#include "modules/webauth/MakeCredentialOptions.h"
+#include "public/platform/InterfaceProvider.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
+namespace blink {
+typedef ArrayBufferOrArrayBufferView BufferSource;
+}  // namespace blink
+
 namespace {
-const char kNoAuthenticatorError[] = "Authenticator unavailable.";
+constexpr char kNoAuthenticatorError[] = "Authenticator unavailable.";
 // Time to wait for an authenticator to successfully complete an operation.
-const int kAdjustedTimeoutLowerInSeconds = 60;
-const int kAdjustedTimeoutUpperInSeconds = 120;
+constexpr WTF::TimeDelta kAdjustedTimeoutLower = WTF::TimeDelta::FromMinutes(1);
+constexpr WTF::TimeDelta kAdjustedTimeoutUpper = WTF::TimeDelta::FromMinutes(2);
 }  // anonymous namespace
 
 namespace mojo {
-using webauth::mojom::blink::RelyingPartyAccount;
-using webauth::mojom::blink::RelyingPartyAccountPtr;
 using webauth::mojom::blink::AuthenticatorStatus;
-using webauth::mojom::blink::ScopedCredentialDescriptor;
-using webauth::mojom::blink::ScopedCredentialOptions;
-using webauth::mojom::blink::ScopedCredentialOptionsPtr;
-using webauth::mojom::blink::ScopedCredentialParameters;
-using webauth::mojom::blink::ScopedCredentialParametersPtr;
-using webauth::mojom::blink::ScopedCredentialType;
-using webauth::mojom::blink::Transport;
+using webauth::mojom::blink::MakeCredentialOptionsPtr;
+using webauth::mojom::blink::PublicKeyCredentialEntityPtr;
+using webauth::mojom::blink::PublicKeyCredentialParametersPtr;
+using webauth::mojom::blink::PublicKeyCredentialType;
+using webauth::mojom::blink::AuthenticatorTransport;
 
 // TODO(kpaulhamus): Make this a TypeConverter
 Vector<uint8_t> ConvertBufferSource(const blink::BufferSource& buffer) {
@@ -45,6 +44,7 @@ Vector<uint8_t> ConvertBufferSource(const blink::BufferSource& buffer) {
     vector.Append(static_cast<uint8_t*>(buffer.getAsArrayBuffer()->Data()),
                   buffer.getAsArrayBuffer()->ByteLength());
   } else {
+    DCHECK(buffer.isArrayBufferView());
     vector.Append(static_cast<uint8_t*>(
                       buffer.getAsArrayBufferView().View()->BaseAddress()),
                   buffer.getAsArrayBufferView().View()->byteLength());
@@ -53,84 +53,99 @@ Vector<uint8_t> ConvertBufferSource(const blink::BufferSource& buffer) {
 }
 
 // TODO(kpaulhamus): Make this a TypeConverter
-ScopedCredentialType ConvertScopedCredentialType(const String& cred_type) {
-  if (cred_type == "ScopedCred")
-    return ScopedCredentialType::SCOPEDCRED;
+PublicKeyCredentialType ConvertPublicKeyCredentialType(const String& type) {
+  if (type == "public-key")
+    return PublicKeyCredentialType::PUBLIC_KEY;
   NOTREACHED();
-  return ScopedCredentialType::SCOPEDCRED;
+  return PublicKeyCredentialType::PUBLIC_KEY;
 }
 
 // TODO(kpaulhamus): Make this a TypeConverter
-Transport ConvertTransport(const String& transport) {
+AuthenticatorTransport ConvertTransport(const String& transport) {
   if (transport == "usb")
-    return Transport::USB;
+    return AuthenticatorTransport::USB;
   if (transport == "nfc")
-    return Transport::NFC;
+    return AuthenticatorTransport::NFC;
   if (transport == "ble")
-    return Transport::BLE;
+    return AuthenticatorTransport::BLE;
   NOTREACHED();
-  return Transport::USB;
+  return AuthenticatorTransport::USB;
 }
 
 // TODO(kpaulhamus): Make this a TypeConverter
-RelyingPartyAccountPtr ConvertRelyingPartyAccount(
-    const blink::RelyingPartyAccount& account_information,
-    blink::ScriptPromiseResolver* resolver) {
-  auto mojo_account = RelyingPartyAccount::New();
-
-  mojo_account->relying_party_display_name =
-      account_information.rpDisplayName();
-  mojo_account->display_name = account_information.displayName();
-  mojo_account->id = account_information.id();
-  mojo_account->name = account_information.name();
-  mojo_account->image_url = account_information.imageURL();
-  return mojo_account;
-}
-
-// TODO(kpaulhamus): Make this a TypeConverter
-ScopedCredentialOptionsPtr ConvertScopedCredentialOptions(
-    const blink::ScopedCredentialOptions options,
-    blink::ScriptPromiseResolver* resolver) {
-  auto mojo_options = ScopedCredentialOptions::New();
-  if (options.hasRpId()) {
-    // if rpID is missing, it will later be set to the origin of the page
-    // in the secure browser process.
-    mojo_options->relying_party_id = options.rpId();
+PublicKeyCredentialEntityPtr ConvertPublicKeyCredentialUserEntity(
+    const blink::PublicKeyCredentialUserEntity& user) {
+  auto entity = webauth::mojom::blink::PublicKeyCredentialEntity::New();
+  entity->id = user.id();
+  entity->name = user.name();
+  if (user.hasIcon()) {
+    entity->icon = blink::KURL(blink::KURL(), user.icon());
   }
+  entity->display_name = user.displayName();
+  return entity;
+}
+
+// TODO(kpaulhamus): Make this a TypeConverter
+PublicKeyCredentialEntityPtr ConvertPublicKeyCredentialEntity(
+    const blink::PublicKeyCredentialEntity& rp) {
+  auto entity = webauth::mojom::blink::PublicKeyCredentialEntity::New();
+  entity->id = rp.id();
+  entity->name = rp.name();
+  if (rp.hasIcon()) {
+    entity->icon = blink::KURL(blink::KURL(), rp.icon());
+  }
+  return entity;
+}
+
+// TODO(kpaulhamus): Make this a TypeConverter
+PublicKeyCredentialParametersPtr ConvertPublicKeyCredentialParameters(
+    const blink::PublicKeyCredentialParameters parameter) {
+  auto mojo_parameter =
+      webauth::mojom::blink::PublicKeyCredentialParameters::New();
+  mojo_parameter->type = ConvertPublicKeyCredentialType(parameter.type());
+  // TODO(kpaulhamus): add AlgorithmIdentifier
+  return mojo_parameter;
+}
+
+// TODO(kpaulhamus): Make this a TypeConverter
+MakeCredentialOptionsPtr ConvertMakeCredentialOptions(
+    const blink::MakeCredentialOptions options) {
+  auto mojo_options = webauth::mojom::blink::MakeCredentialOptions::New();
+  mojo_options->relying_party = ConvertPublicKeyCredentialEntity(options.rp());
+  mojo_options->user = ConvertPublicKeyCredentialUserEntity(options.user());
+  mojo_options->challenge = ConvertBufferSource(options.challenge());
+
+  Vector<webauth::mojom::blink::PublicKeyCredentialParametersPtr> parameters;
+  for (const auto& parameter : options.parameters()) {
+    parameters.push_back(ConvertPublicKeyCredentialParameters(parameter));
+  }
+  mojo_options->crypto_parameters = std::move(parameters);
 
   // Step 4 of https://w3c.github.io/webauthn/#createCredential
-  int predicted_timeout = kAdjustedTimeoutLowerInSeconds;
-  if (options.hasTimeoutSeconds()) {
-    predicted_timeout = static_cast<int>(options.timeoutSeconds());
+  WTF::TimeDelta adjusted_timeout;
+  if (options.hasTimeout()) {
+    adjusted_timeout = WTF::TimeDelta::FromMilliseconds(options.timeout());
+  } else {
+    adjusted_timeout = kAdjustedTimeoutLower;
   }
 
-  mojo_options->adjusted_timeout = static_cast<double>(
-      std::max(kAdjustedTimeoutLowerInSeconds,
-               std::min(kAdjustedTimeoutUpperInSeconds, predicted_timeout)));
+  mojo_options->adjusted_timeout = std::max(
+      kAdjustedTimeoutLower, std::min(kAdjustedTimeoutUpper, adjusted_timeout));
 
-  if (options.hasExcludeList()) {
-    // Adds the excludeList members (which are ScopedCredentialDescriptors)
-    for (const auto& descriptor : options.excludeList()) {
-      auto mojo_descriptor = ScopedCredentialDescriptor::New();
-      mojo_descriptor->type = ConvertScopedCredentialType(descriptor.type());
+  if (options.hasExcludeCredentials()) {
+    // Adds the excludeCredentials members
+    // (which are PublicKeyCredentialDescriptors)
+    for (const auto& descriptor : options.excludeCredentials()) {
+      auto mojo_descriptor =
+          webauth::mojom::blink::PublicKeyCredentialDescriptor::New();
+      mojo_descriptor->type = ConvertPublicKeyCredentialType(descriptor.type());
       mojo_descriptor->id = ConvertBufferSource(descriptor.id());
       for (const auto& transport : descriptor.transports())
         mojo_descriptor->transports.push_back(ConvertTransport(transport));
-      mojo_options->exclude_list.push_back(std::move(mojo_descriptor));
+      mojo_options->exclude_credentials.push_back(std::move(mojo_descriptor));
     }
   }
-  // TODO(kpaulhamus): add AuthenticationExtensions;
   return mojo_options;
-}
-
-// TODO(kpaulhamus): Make this a TypeConverter
-ScopedCredentialParametersPtr ConvertScopedCredentialParameter(
-    const blink::ScopedCredentialParameters parameter,
-    blink::ScriptPromiseResolver* resolver) {
-  auto mojo_parameter = ScopedCredentialParameters::New();
-  mojo_parameter->type = ConvertScopedCredentialType(parameter.type());
-  // TODO(kpaulhamus): add AlgorithmIdentifier
-  return mojo_parameter;
 }
 
 blink::DOMException* CreateExceptionFromStatus(AuthenticatorStatus status) {
@@ -161,11 +176,18 @@ blink::DOMException* CreateExceptionFromStatus(AuthenticatorStatus status) {
       return nullptr;
   }
 }
+
 }  // namespace mojo
 
 namespace blink {
+
 WebAuthentication::WebAuthentication(LocalFrame& frame)
-    : ContextLifecycleObserver(frame.GetDocument()) {}
+    : ContextLifecycleObserver(frame.GetDocument()) {
+  frame.GetInterfaceProvider().GetInterface(mojo::MakeRequest(&authenticator_));
+  authenticator_.set_connection_error_handler(ConvertToBaseCallback(
+      WTF::Bind(&WebAuthentication::OnAuthenticatorConnectionError,
+                WrapWeakPersistent(this))));
+}
 
 WebAuthentication::~WebAuthentication() {
   // |authenticator_| may still be valid but there should be no more
@@ -175,40 +197,25 @@ WebAuthentication::~WebAuthentication() {
 
 ScriptPromise WebAuthentication::makeCredential(
     ScriptState* script_state,
-    const RelyingPartyAccount& account_information,
-    const HeapVector<ScopedCredentialParameters> crypto_parameters,
-    const BufferSource& attestation_challenge,
-    ScopedCredentialOptions& options) {
+    const MakeCredentialOptions& publicKey) {
   ScriptPromise promise = RejectIfNotSupported(script_state);
   if (!promise.IsEmpty())
     return promise;
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
 
-  Vector<uint8_t> buffer = mojo::ConvertBufferSource(attestation_challenge);
-  auto opts = mojo::ConvertScopedCredentialOptions(options, resolver);
-  Vector<webauth::mojom::blink::ScopedCredentialParametersPtr> parameters;
-  for (const auto& parameter : crypto_parameters) {
-    if (parameter.hasType()) {
-      parameters.push_back(
-          mojo::ConvertScopedCredentialParameter(parameter, resolver));
-    }
-  }
-  auto account =
-      mojo::ConvertRelyingPartyAccount(account_information, resolver);
+  auto options = mojo::ConvertMakeCredentialOptions(publicKey);
   authenticator_requests_.insert(resolver);
   authenticator_->MakeCredential(
-      std::move(account), std::move(parameters), buffer, std::move(opts),
-      ConvertToBaseCallback(WTF::Bind(&WebAuthentication::OnMakeCredential,
-                                      WrapPersistent(this),
-                                      WrapPersistent(resolver))));
+      std::move(options), ConvertToBaseCallback(WTF::Bind(
+                              &WebAuthentication::OnMakeCredential,
+                              WrapPersistent(this), WrapPersistent(resolver))));
   return resolver->Promise();
 }
 
 ScriptPromise WebAuthentication::getAssertion(
     ScriptState* script_state,
-    const BufferSource& assertion_challenge,
-    const AuthenticationAssertionOptions& options) {
+    const PublicKeyCredentialRequestOptions& publicKey) {
   NOTREACHED();
   return ScriptPromise();
 }
@@ -220,7 +227,7 @@ void WebAuthentication::ContextDestroyed(ExecutionContext*) {
 void WebAuthentication::OnMakeCredential(
     ScriptPromiseResolver* resolver,
     webauth::mojom::blink::AuthenticatorStatus status,
-    webauth::mojom::blink::ScopedCredentialInfoPtr credential) {
+    webauth::mojom::blink::PublicKeyCredentialInfoPtr credential) {
   if (!MarkRequestComplete(resolver))
     return;
 
@@ -232,33 +239,37 @@ void WebAuthentication::OnMakeCredential(
     return;
   }
 
-  if (credential->client_data.IsEmpty() || credential->attestation.IsEmpty()) {
+  if (credential->client_data_json.IsEmpty() ||
+      credential->response->attestation_object.IsEmpty()) {
     resolver->Reject(
-        DOMException::Create(kNotFoundError, "No credential returned."));
-    return;
+        DOMException::Create(kNotFoundError, "No credentials returned."));
   }
 
-  DOMArrayBuffer* clientDataBuffer = DOMArrayBuffer::Create(
-      static_cast<void*>(&credential->client_data.front()),
-      credential->client_data.size());
+  DOMArrayBuffer* client_data_buffer = DOMArrayBuffer::Create(
+      static_cast<void*>(&credential->client_data_json.front()),
+      credential->client_data_json.size());
 
-  DOMArrayBuffer* attestationBuffer = DOMArrayBuffer::Create(
-      static_cast<void*>(&credential->attestation.front()),
-      credential->attestation.size());
+  // Return AuthenticatorAttestationResponse
+  DOMArrayBuffer* attestation_buffer = DOMArrayBuffer::Create(
+      static_cast<void*>(&credential->response->attestation_object.front()),
+      credential->response->attestation_object.size());
 
-  ScopedCredentialInfo* scopedCredential =
-      ScopedCredentialInfo::Create(clientDataBuffer, attestationBuffer);
-  resolver->Resolve(scopedCredential);
+  AuthenticatorAttestationResponse* attestation_response =
+      AuthenticatorAttestationResponse::Create(client_data_buffer,
+                                               attestation_buffer);
+  resolver->Resolve(attestation_response);
 }
 
 ScriptPromise WebAuthentication::RejectIfNotSupported(
     ScriptState* script_state) {
+  LocalFrame* frame =
+      ToDocument(ExecutionContext::From(script_state))->GetFrame();
   if (!authenticator_) {
-    if (!GetFrame()) {
+    if (!frame) {
       return ScriptPromise::RejectWithDOMException(
           script_state, DOMException::Create(kNotSupportedError));
     }
-    GetFrame()->GetInterfaceProvider().GetInterface(
+    frame->GetInterfaceProvider().GetInterface(
         mojo::MakeRequest(&authenticator_));
 
     authenticator_.set_connection_error_handler(ConvertToBaseCallback(
