@@ -30,7 +30,6 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/Navigator.h"
 #include "core/frame/PlatformEventController.h"
-#include "device/gamepad/public/cpp/gamepads.h"
 #include "modules/ModulesExport.h"
 #include "platform/AsyncMethodRunner.h"
 #include "platform/Supplementable.h"
@@ -60,10 +59,6 @@ class MODULES_EXPORT NavigatorGamepad final
   GamepadList* Gamepads();
 
   DECLARE_VIRTUAL_TRACE();
-
-  void DidConnectOrDisconnectGamepad(unsigned index,
-                                     const device::Gamepad&,
-                                     bool connected);
 
  private:
   explicit NavigatorGamepad(Navigator&);
