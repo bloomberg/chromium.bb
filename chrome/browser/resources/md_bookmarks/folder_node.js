@@ -282,7 +282,7 @@ Polymer({
     e.preventDefault();
     this.selectFolder_();
     bookmarks.CommandManager.getInstance().openCommandMenuAtPosition(
-        e.clientX, e.clientY, new Set([this.itemId]));
+        e.clientX, e.clientY, MenuSource.TREE, new Set([this.itemId]));
   },
 
   /**

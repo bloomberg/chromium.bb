@@ -77,6 +77,7 @@ Polymer({
     this.fire('open-item-menu', {
       x: e.clientX,
       y: e.clientY,
+      source: MenuSource.LIST,
     });
   },
 
@@ -90,6 +91,7 @@ Polymer({
     this.selectThisItem_();
     this.fire('open-item-menu', {
       targetElement: e.target,
+      source: MenuSource.LIST,
     });
   },
 

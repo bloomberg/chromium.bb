@@ -80,6 +80,8 @@ content::WebUIDataSource* CreateMdBookmarksUIHTMLSource(Profile* profile) {
   AddLocalizedString(source, "menuOpenIncognito",
                      IDS_BOOKMARK_BAR_OPEN_INCOGNITO);
   AddLocalizedString(source, "menuRename", IDS_MD_BOOKMARK_MANAGER_MENU_RENAME);
+  AddLocalizedString(source, "menuShowInFolder",
+                     IDS_BOOKMARK_MANAGER_SHOW_IN_FOLDER);
   AddLocalizedString(source, "menuSort", IDS_MD_BOOKMARK_MANAGER_MENU_SORT);
   AddLocalizedString(source, "moreActionsButtonTitle",
                      IDS_MD_BOOKMARK_MANAGER_MORE_ACTIONS);
