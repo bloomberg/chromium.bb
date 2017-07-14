@@ -85,14 +85,23 @@ static_library("vr_common") {
     "toolbar_state.cc",
     "toolbar_state.h",
     "ui_browser_interface.h",
+    "ui_element_renderer.h",
     "ui_input_manager.cc",
     "ui_input_manager.h",
     "ui_interface.h",
+    "ui_renderer.cc",
+    "ui_renderer.h",
     "ui_scene.cc",
     "ui_scene.h",
     "ui_scene_manager.cc",
     "ui_scene_manager.h",
     "ui_unsupported_mode.h",
+    "vr_controller_model.cc",
+    "vr_controller_model.h",
+    "vr_gl_util.cc",
+    "vr_gl_util.h",
+    "vr_shell_renderer.cc",
+    "vr_shell_renderer.h",
   ]
 
   deps = [

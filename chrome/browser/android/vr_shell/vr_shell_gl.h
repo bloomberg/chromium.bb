@@ -17,7 +17,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "chrome/browser/android/vr_shell/vr_controller.h"
-#include "chrome/browser/android/vr_shell/vr_controller_model.h"
+#include "chrome/browser/vr/ui_renderer.h"
+#include "chrome/browser/vr/vr_controller_model.h"
 #include "device/vr/vr_service.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
@@ -47,8 +48,8 @@ struct MailboxHolder;
 namespace vr {
 class FPSMeter;
 class SlidingAverage;
-class UiElement;
 class UiScene;
+class VrShellRenderer;
 }  // namespace vr
 
 namespace vr_shell {
@@ -57,7 +58,6 @@ class MailboxToSurfaceBridge;
 class GlBrowserInterface;
 class VrController;
 class VrShell;
-class VrShellRenderer;
 
 struct WebVrBounds {
   WebVrBounds(const gfx::RectF& left,
@@ -102,7 +102,7 @@ class VrShellGl : public device::mojom::VRPresentationProvider,
   void UIPhysicalBoundsChanged(int width, int height);
   base::WeakPtr<VrShellGl> GetWeakPtr();
 
-  void SetControllerModel(std::unique_ptr<VrControllerModel> model);
+  void SetControllerModel(std::unique_ptr<vr::VrControllerModel> model);
 
   void UpdateVSyncInterval(base::TimeTicks vsync_timebase,
                            base::TimeDelta vsync_interval);
@@ -122,25 +122,6 @@ class VrShellGl : public device::mojom::VRPresentationProvider,
                                 gvr_frame* frame_ptr,
                                 const gfx::Transform& head_pose,
                                 std::unique_ptr<gl::GLFence> fence);
-  void DrawWorldElements(const gfx::Transform& head_pose);
-  void DrawOverlayElements(const gfx::Transform& head_pose);
-  void DrawHeadLockedElements();
-  void DrawUiView(const gfx::Transform& head_pose,
-                  const std::vector<const vr::UiElement*>& elements,
-                  const gfx::Size& render_size,
-                  int viewport_offset,
-                  bool draw_cursor);
-  void DrawElements(const gfx::Transform& view_proj_matrix,
-                    const std::vector<const vr::UiElement*>& elements,
-                    bool draw_cursor);
-  void DrawElement(const gfx::Transform& view_proj_matrix,
-                   const vr::UiElement& element);
-  std::vector<const vr::UiElement*> GetElementsInDrawOrder(
-      const gfx::Transform& view_matrix,
-      const std::vector<const vr::UiElement*>& elements);
-  void DrawReticle(const gfx::Transform& view_proj_matrix);
-  void DrawLaser(const gfx::Transform& view_proj_matrix);
-  void DrawController(const gfx::Transform& view_proj_matrix);
   bool ShouldDrawWebVr();
   void DrawWebVr();
   bool WebVrPoseByteIsValid(int pose_index_byte);
@@ -181,6 +162,11 @@ class VrShellGl : public device::mojom::VRPresentationProvider,
   int64_t GetPredictedFrameTimeNanos();
 
   void OnVSync();
+
+  void UpdateEyeInfos(const gfx::Transform& head_pose,
+                      int viewport_offset,
+                      const gfx::Size& render_size,
+                      vr::RenderInfo* out_render_info);
 
   // VRPresentationProvider
   void GetVSync(GetVSyncCallback callback) override;
@@ -230,14 +216,11 @@ class VrShellGl : public device::mojom::VRPresentationProvider,
   // can be restored after exiting WebVR mode.
   gfx::Size render_size_vrshell_;
 
-  std::unique_ptr<VrShellRenderer> vr_shell_renderer_;
+  std::unique_ptr<vr::VrShellRenderer> vr_shell_renderer_;
 
   bool cardboard_ = false;
   bool touch_pending_ = false;
   gfx::Quaternion controller_quat_;
-
-  gfx::Point3F target_point_;
-  vr::UiElement* reticle_render_target_ = nullptr;
 
   int content_tex_css_width_ = 0;
   int content_tex_css_height_ = 0;
@@ -286,6 +269,11 @@ class VrShellGl : public device::mojom::VRPresentationProvider,
   gfx::Point3F pointer_start_;
 
   std::unique_ptr<vr::UiInputManager> input_manager_;
+  std::unique_ptr<vr::UiRenderer> ui_renderer_;
+
+  vr::ControllerInfo controller_info_;
+  vr::RenderInfo render_info_primary_;
+  vr::RenderInfo render_info_headlocked_;
 
   base::WeakPtrFactory<VrShellGl> weak_ptr_factory_;
 

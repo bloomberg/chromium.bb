@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/vr_shell/vr_gl_util.h"
+#include "chrome/browser/vr/vr_gl_util.h"
 
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/transform.h"
 
-namespace vr_shell {
+namespace vr {
 
 // This code is adapted from the GVR Treasure Hunt demo source.
 std::array<float, 16> MatrixToGLArray(const gfx::Transform& transform) {
@@ -92,4 +92,4 @@ GLuint CreateAndLinkProgram(GLuint vertext_shader_handle,
   return program_handle;
 }
 
-}  // namespace vr_shell
+}  // namespace vr

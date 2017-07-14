@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/vr_shell/vr_shell_renderer.h"
+#include "chrome/browser/vr/vr_shell_renderer.h"
 
 #include <math.h>
 #include <algorithm>
@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
-#include "chrome/browser/android/vr_shell/vr_gl_util.h"
+#include "chrome/browser/vr/vr_gl_util.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/vector3d_f.h"
@@ -162,11 +162,11 @@ static const unsigned char kLaserData[] =
 #define OEIE_SHADER(Src) "#extension GL_OES_EGL_image_external : require\n" #Src
 #define VOID_OFFSET(x) reinterpret_cast<void*>(x)
 
-const char* GetShaderSource(vr_shell::ShaderID shader) {
+const char* GetShaderSource(vr::ShaderID shader) {
   switch (shader) {
-    case vr_shell::ShaderID::RETICLE_VERTEX_SHADER:
-    case vr_shell::ShaderID::LASER_VERTEX_SHADER:
-    case vr_shell::ShaderID::TEXTURED_QUAD_VERTEX_SHADER:
+    case vr::ShaderID::RETICLE_VERTEX_SHADER:
+    case vr::ShaderID::LASER_VERTEX_SHADER:
+    case vr::ShaderID::TEXTURED_QUAD_VERTEX_SHADER:
       return SHADER(
           /* clang-format off */
           precision mediump float;
@@ -179,7 +179,7 @@ const char* GetShaderSource(vr_shell::ShaderID shader) {
             gl_Position = u_ModelViewProjMatrix * a_Position;
           }
           /* clang-format on */);
-    case vr_shell::ShaderID::CONTROLLER_VERTEX_SHADER:
+    case vr::ShaderID::CONTROLLER_VERTEX_SHADER:
       return SHADER(
           /* clang-format off */
           precision mediump float;
@@ -193,8 +193,8 @@ const char* GetShaderSource(vr_shell::ShaderID shader) {
             gl_Position = u_ModelViewProjMatrix * a_Position;
           }
           /* clang-format on */);
-    case vr_shell::ShaderID::GRADIENT_QUAD_VERTEX_SHADER:
-    case vr_shell::ShaderID::GRADIENT_GRID_VERTEX_SHADER:
+    case vr::ShaderID::GRADIENT_QUAD_VERTEX_SHADER:
+    case vr::ShaderID::GRADIENT_GRID_VERTEX_SHADER:
       return SHADER(
           /* clang-format off */
           precision mediump float;
@@ -208,7 +208,7 @@ const char* GetShaderSource(vr_shell::ShaderID shader) {
             gl_Position = u_ModelViewProjMatrix * a_Position;
           }
           /* clang-format on */);
-    case vr_shell::ShaderID::EXTERNAL_TEXTURED_QUAD_VERTEX_SHADER:
+    case vr::ShaderID::EXTERNAL_TEXTURED_QUAD_VERTEX_SHADER:
       return SHADER(
           /* clang-format off */
           precision mediump float;
@@ -231,7 +231,7 @@ const char* GetShaderSource(vr_shell::ShaderID shader) {
             gl_Position = u_ModelViewProjMatrix * position;
           }
           /* clang-format on */);
-    case vr_shell::ShaderID::EXTERNAL_TEXTURED_QUAD_FRAGMENT_SHADER:
+    case vr::ShaderID::EXTERNAL_TEXTURED_QUAD_FRAGMENT_SHADER:
       return OEIE_SHADER(
           /* clang-format off */
           precision highp float;
@@ -249,7 +249,7 @@ const char* GetShaderSource(vr_shell::ShaderID shader) {
             gl_FragColor = color * u_Opacity * mask;
           }
           /* clang-format on */);
-    case vr_shell::ShaderID::TEXTURED_QUAD_FRAGMENT_SHADER:
+    case vr::ShaderID::TEXTURED_QUAD_FRAGMENT_SHADER:
       return SHADER(
           /* clang-format off */
           precision highp float;
@@ -267,7 +267,7 @@ const char* GetShaderSource(vr_shell::ShaderID shader) {
             gl_FragColor = color * opacity;
           }
           /* clang-format on */);
-    case vr_shell::ShaderID::WEBVR_VERTEX_SHADER:
+    case vr::ShaderID::WEBVR_VERTEX_SHADER:
       return SHADER(
           /* clang-format off */
           precision mediump float;
@@ -279,7 +279,7 @@ const char* GetShaderSource(vr_shell::ShaderID shader) {
             gl_Position = vec4(a_Position.xyz * 2.0, 1.0);
           }
           /* clang-format on */);
-    case vr_shell::ShaderID::WEBVR_FRAGMENT_SHADER:
+    case vr::ShaderID::WEBVR_FRAGMENT_SHADER:
       return OEIE_SHADER(
           /* clang-format off */
           precision highp float;
@@ -290,7 +290,7 @@ const char* GetShaderSource(vr_shell::ShaderID shader) {
             gl_FragColor = texture2D(u_Texture, v_TexCoordinate);
           }
           /* clang-format on */);
-    case vr_shell::ShaderID::RETICLE_FRAGMENT_SHADER:
+    case vr::ShaderID::RETICLE_FRAGMENT_SHADER:
       return SHADER(
           /* clang-format off */
           precision mediump float;
@@ -326,7 +326,7 @@ const char* GetShaderSource(vr_shell::ShaderID shader) {
             gl_FragColor = vec4(color_rgb * color.w * alpha, color.w * alpha);
           }
           /* clang-format on */);
-    case vr_shell::ShaderID::LASER_FRAGMENT_SHADER:
+    case vr::ShaderID::LASER_FRAGMENT_SHADER:
       return SHADER(
           /* clang-format off */
           varying mediump vec2 v_TexCoordinate;
@@ -349,7 +349,7 @@ const char* GetShaderSource(vr_shell::ShaderID shader) {
             gl_FragColor = vec4(final_color.xyz * final_opacity, final_opacity);
           }
           /* clang-format on */);
-    case vr_shell::ShaderID::GRADIENT_QUAD_FRAGMENT_SHADER:
+    case vr::ShaderID::GRADIENT_QUAD_FRAGMENT_SHADER:
       return SHADER(
           /* clang-format off */
           precision lowp float;
@@ -367,7 +367,7 @@ const char* GetShaderSource(vr_shell::ShaderID shader) {
                                 color.w * u_Opacity);
           }
           /* clang-format on */);
-    case vr_shell::ShaderID::GRADIENT_GRID_FRAGMENT_SHADER:
+    case vr::ShaderID::GRADIENT_GRID_FRAGMENT_SHADER:
       return SHADER(
           /* clang-format off */
           precision lowp float;
@@ -402,7 +402,7 @@ const char* GetShaderSource(vr_shell::ShaderID shader) {
             }
           }
           /* clang-format on */);
-    case vr_shell::ShaderID::CONTROLLER_FRAGMENT_SHADER:
+    case vr::ShaderID::CONTROLLER_FRAGMENT_SHADER:
       return SHADER(
           /* clang-format off */
           precision mediump float;
@@ -428,7 +428,7 @@ void SetColorUniform(GLuint handle, SkColor c) {
 
 }  // namespace
 
-namespace vr_shell {
+namespace vr {
 
 BaseRenderer::BaseRenderer(ShaderID vertex_id, ShaderID fragment_id) {
   std::string error;
@@ -1057,4 +1057,4 @@ void VrShellRenderer::Flush() {
   textured_quad_renderer_->Flush();
 }
 
-}  // namespace vr_shell
+}  // namespace vr

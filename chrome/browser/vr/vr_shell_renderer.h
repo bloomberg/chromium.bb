@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ANDROID_VR_SHELL_VR_SHELL_RENDERER_H_
-#define CHROME_BROWSER_ANDROID_VR_SHELL_VR_SHELL_RENDERER_H_
+#ifndef CHROME_BROWSER_VR_VR_SHELL_RENDERER_H_
+#define CHROME_BROWSER_VR_VR_SHELL_RENDERER_H_
 
 #include <memory>
 #include <queue>
 #include <vector>
 
 #include "base/macros.h"
-#include "chrome/browser/android/vr_shell/vr_controller_model.h"
 #include "chrome/browser/vr/ui_element_renderer.h"
+#include "chrome/browser/vr/vr_controller_model.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/transform.h"
 #include "ui/gl/gl_bindings.h"
 
-namespace vr_shell {
+namespace vr {
 
 constexpr float kFogBrightness = 0.57f;
 
@@ -327,6 +327,6 @@ class VrShellRenderer : public vr::UiElementRenderer {
   DISALLOW_COPY_AND_ASSIGN(VrShellRenderer);
 };
 
-}  // namespace vr_shell
+}  // namespace vr
 
-#endif  // CHROME_BROWSER_ANDROID_VR_SHELL_VR_SHELL_RENDERER_H_
+#endif  // CHROME_BROWSER_VR_VR_SHELL_RENDERER_H_

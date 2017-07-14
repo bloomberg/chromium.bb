@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ANDROID_VR_SHELL_VR_CONTROLLER_MODEL_H_
-#define CHROME_BROWSER_ANDROID_VR_SHELL_VR_CONTROLLER_MODEL_H_
+#ifndef CHROME_BROWSER_VR_VR_CONTROLLER_MODEL_H_
+#define CHROME_BROWSER_VR_VR_CONTROLLER_MODEL_H_
 
 #include <memory>
 
@@ -12,7 +12,7 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gl/gl_bindings.h"
 
-namespace vr_shell {
+namespace vr {
 
 class VrControllerModel {
  public:
@@ -54,6 +54,6 @@ class VrControllerModel {
   const vr::gltf::Accessor* Accessor(const std::string& key) const;
 };
 
-}  // namespace vr_shell
+}  // namespace vr
 
-#endif  // CHROME_BROWSER_ANDROID_VR_SHELL_VR_CONTROLLER_MODEL_H_
+#endif  // CHROME_BROWSER_VR_VR_CONTROLLER_MODEL_H_
