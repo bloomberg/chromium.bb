@@ -58,8 +58,7 @@ TEST(PasswordManagerMetricsRecorder, UserModifiedPasswordField) {
         CreateUkmEntryBuilder(&test_ukm_recorder));
     recorder.RecordUserModifiedPasswordField();
   }
-  ExpectUkmValueCount(&test_ukm_recorder,
-                      internal::kUkmUserModifiedPasswordField, 1, 1);
+  ExpectUkmValueCount(&test_ukm_recorder, kUkmUserModifiedPasswordField, 1, 1);
 }
 
 TEST(PasswordManagerMetricsRecorder, UserModifiedPasswordFieldMultipleTimes) {
@@ -71,8 +70,7 @@ TEST(PasswordManagerMetricsRecorder, UserModifiedPasswordFieldMultipleTimes) {
     recorder.RecordUserModifiedPasswordField();
     recorder.RecordUserModifiedPasswordField();
   }
-  ExpectUkmValueCount(&test_ukm_recorder,
-                      internal::kUkmUserModifiedPasswordField, 1, 1);
+  ExpectUkmValueCount(&test_ukm_recorder, kUkmUserModifiedPasswordField, 1, 1);
 }
 
 TEST(PasswordManagerMetricsRecorder, UserModifiedPasswordFieldNotCalled) {
@@ -81,8 +79,7 @@ TEST(PasswordManagerMetricsRecorder, UserModifiedPasswordFieldNotCalled) {
     PasswordManagerMetricsRecorder recorder(
         CreateUkmEntryBuilder(&test_ukm_recorder));
   }
-  ExpectUkmValueCount(&test_ukm_recorder,
-                      internal::kUkmUserModifiedPasswordField, 1, 0);
+  ExpectUkmValueCount(&test_ukm_recorder, kUkmUserModifiedPasswordField, 1, 0);
 }
 
 }  // namespace password_manager

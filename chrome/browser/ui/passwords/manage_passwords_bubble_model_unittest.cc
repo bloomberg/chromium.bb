@@ -574,21 +574,21 @@ TEST_F(ManagePasswordsBubbleModelTest, RecordUKMs) {
         ASSERT_TRUE(source);
         test_ukm_recorder.ExpectMetric(
             *source, "PasswordForm",
-            update ? password_manager::internal::kUkmUpdatingPromptShown
-                   : password_manager::internal::kUkmSavingPromptShown,
+            update ? password_manager::kUkmUpdatingPromptShown
+                   : password_manager::kUkmSavingPromptShown,
             1);
         test_ukm_recorder.ExpectMetric(
             *source, "PasswordForm",
-            update ? password_manager::internal::kUkmUpdatingPromptTrigger
-                   : password_manager::internal::kUkmSavingPromptTrigger,
+            update ? password_manager::kUkmUpdatingPromptTrigger
+                   : password_manager::kUkmSavingPromptTrigger,
             static_cast<int64_t>(
                 credential_management_api
                     ? BubbleTrigger::kCredentialManagementAPIAutomatic
                     : BubbleTrigger::kPasswordManagerSuggestionAutomatic));
         test_ukm_recorder.ExpectMetric(
             *source, "PasswordForm",
-            update ? password_manager::internal::kUkmUpdatingPromptInteraction
-                   : password_manager::internal::kUkmSavingPromptInteraction,
+            update ? password_manager::kUkmUpdatingPromptInteraction
+                   : password_manager::kUkmSavingPromptInteraction,
             static_cast<int64_t>(interaction));
       }
     }

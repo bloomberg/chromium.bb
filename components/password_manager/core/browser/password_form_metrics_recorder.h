@@ -19,10 +19,7 @@
 
 namespace password_manager {
 
-// Internal namespace is intended for component wide access and unit testing
-// only.
-namespace internal {
-// UKM Metric names. Exposed in internal namespace for unittesting.
+// URL Keyed Metrics.
 
 // This metric records whether a submission of a password form has been
 // observed. The values 0 and 1 correspond to false and true respectively.
@@ -68,7 +65,6 @@ constexpr char kUkmSavingPromptInteraction[] = "Saving.Prompt.Interaction";
 // This metric records attempts to fill a password form. Values correspond to
 // PasswordFormMetricsRecorder::ManagerFillEvent.
 constexpr char kUkmManagerFillEvent[] = "ManagerFill.Action";
-}  // namespace internal
 
 class FormFetcher;
 
