@@ -1020,6 +1020,8 @@ split_static_library("browser") {
     "prefs/chrome_pref_model_associator_client.h",
     "prefs/chrome_pref_service_factory.cc",
     "prefs/chrome_pref_service_factory.h",
+    "prefs/in_process_service_factory_factory.cc",
+    "prefs/in_process_service_factory_factory.h",
     "prefs/incognito_mode_prefs.cc",
     "prefs/incognito_mode_prefs.h",
     "prefs/origin_trial_prefs.cc",

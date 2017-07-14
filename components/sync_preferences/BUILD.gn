@@ -25,6 +25,7 @@ static_library("sync_preferences") {
     "//components/prefs",
     "//components/sync",
     "//services/preferences/public/cpp",
+    "//services/preferences/public/cpp:service_main",
   ]
 
   if (!is_ios) {

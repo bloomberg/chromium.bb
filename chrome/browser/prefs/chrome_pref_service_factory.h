@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/memory/ref_counted.h"
+#include "components/prefs/pref_value_store.h"
 #include "services/preferences/public/interfaces/tracked_preference_validation_delegate.mojom.h"
 
 namespace base {
@@ -19,10 +20,6 @@ class Time;
 
 namespace policy {
 class PolicyService;
-}
-
-namespace service_manager {
-class Connector;
 }
 
 namespace sync_preferences {
@@ -82,7 +79,8 @@ std::unique_ptr<sync_preferences::PrefServiceSyncable> CreateProfilePrefs(
     const scoped_refptr<PrefStore>& extension_prefs,
     const scoped_refptr<user_prefs::PrefRegistrySyncable>& pref_registry,
     bool async,
-    service_manager::Connector* connector);
+    scoped_refptr<base::SequencedTaskRunner> io_task_runner,
+    std::unique_ptr<PrefValueStore::Delegate> delegate);
 
 // Call before startup tasks kick in to ignore the presence of a domain when
 // determining the active SettingsEnforcement group. For testing only.

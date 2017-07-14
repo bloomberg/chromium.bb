@@ -139,7 +139,7 @@ const size_t kReportingIdCount = 3u;
 
 }  // namespace
 
-class ProfilePrefStoreManagerTest : public testing::TestWithParam<bool>,
+class ProfilePrefStoreManagerTest : public testing::Test,
                                     public prefs::mojom::ResetOnLoadObserver {
  public:
   ProfilePrefStoreManagerTest()
@@ -150,32 +150,6 @@ class ProfilePrefStoreManagerTest : public testing::TestWithParam<bool>,
         reset_recorded_(false) {}
 
   void SetUp() override {
-    worker_pool_ = base::MakeUnique<base::SequencedWorkerPoolOwner>(
-        2, "ProfilePrefStoreManagerTest");
-    if (GetParam()) {
-      feature_list_.InitAndEnableFeature(features::kPrefService);
-      service_manager::mojom::ServicePtr service_ptr;
-      pref_service_context_ = base::MakeUnique<service_manager::ServiceContext>(
-          prefs::CreatePrefService(
-              std::set<PrefValueStore::PrefStoreType>(
-                  {PrefValueStore::USER_STORE, PrefValueStore::DEFAULT_STORE}),
-              worker_pool_->pool()),
-          mojo::MakeRequest(&service_ptr));
-      connector_ = service_manager::Connector::Create(&connector_request_);
-      service_manager::Connector::TestApi test_api(connector_.get());
-      test_api.OverrideBinderForTesting(
-          prefs::mojom::kServiceName, prefs::mojom::PrefStoreConnector::Name_,
-          base::Bind(&ProfilePrefStoreManagerTest::BindInterface,
-                     base::Unretained(this),
-                     prefs::mojom::PrefStoreConnector::Name_));
-      test_api.OverrideBinderForTesting(
-          prefs::mojom::kServiceName, prefs::mojom::PrefServiceControl::Name_,
-          base::Bind(&ProfilePrefStoreManagerTest::BindInterface,
-                     base::Unretained(this),
-                     prefs::mojom::PrefServiceControl::Name_));
-    } else {
-      feature_list_.InitAndDisableFeature(features::kPrefService);
-    }
     mock_validation_delegate_record_ = new MockValidationDelegateRecord;
     mock_validation_delegate_ = base::MakeUnique<MockValidationDelegate>(
         mock_validation_delegate_record_);
@@ -208,34 +182,15 @@ class ProfilePrefStoreManagerTest : public testing::TestWithParam<bool>,
   }
 
   void ReloadConfiguration() {
-    RelaunchPrefService();
     manager_.reset(new ProfilePrefStoreManager(profile_dir_.GetPath(), seed_,
                                                "device_id"));
   }
 
   void TearDown() override {
     DestroyPrefStore();
-    if (GetParam()) {
-      connector_.reset();
-      pref_service_context_.reset();
-    }
-    worker_pool_.reset();
   }
 
  protected:
-  void RelaunchPrefService() {
-    if (!GetParam())
-      return;
-
-    service_manager::mojom::ServicePtr service_ptr;
-    pref_service_context_ = base::MakeUnique<service_manager::ServiceContext>(
-        prefs::CreatePrefService(
-            std::set<PrefValueStore::PrefStoreType>(
-                {PrefValueStore::USER_STORE, PrefValueStore::DEFAULT_STORE}),
-            worker_pool_->pool()),
-        mojo::MakeRequest(&service_ptr));
-  }
-
   // Verifies whether a reset was reported via the OnResetOnLoad() hook. Also
   // verifies that GetResetTime() was set (or not) accordingly.
   void VerifyResetRecorded(bool reset_expected) {
@@ -278,15 +233,11 @@ class ProfilePrefStoreManagerTest : public testing::TestWithParam<bool>,
     scoped_refptr<PersistentPrefStore> pref_store =
         manager_->CreateProfilePrefStore(
             prefs::CloneTrackedConfiguration(configuration_), kReportingIdCount,
-            worker_pool_->pool().get(), std::move(observer),
-            std::move(validation_delegate), connector_.get(),
-            profile_pref_registry_);
+            base::ThreadTaskRunnerHandle::Get(), std::move(observer),
+            std::move(validation_delegate));
     InitializePrefStore(pref_store.get());
     pref_store = nullptr;
     pref_service_context_.reset();
-    worker_pool_ = base::MakeUnique<base::SequencedWorkerPoolOwner>(
-        2, "ProfilePrefStoreManagerTest");
-    RelaunchPrefService();
   }
 
   void DestroyPrefStore() {
@@ -297,10 +248,8 @@ class ProfilePrefStoreManagerTest : public testing::TestWithParam<bool>,
       pref_store_->CommitPendingWrite();
       base::RunLoop().RunUntilIdle();
       base::RunLoop run_loop;
-      JsonPrefStore::GetTaskRunnerForFile(profile_dir_.GetPath(),
-                                          worker_pool_->pool().get())
-          ->PostTaskAndReply(FROM_HERE, base::BindOnce(&base::DoNothing),
-                             run_loop.QuitClosure());
+      base::ThreadTaskRunnerHandle::Get()->PostTaskAndReply(
+          FROM_HERE, base::BindOnce(&base::DoNothing), run_loop.QuitClosure());
       run_loop.Run();
 
       pref_store_->RemoveObserver(&registry_verifier_);
@@ -310,9 +259,6 @@ class ProfilePrefStoreManagerTest : public testing::TestWithParam<bool>,
       base::RunLoop().RunUntilIdle();
     }
     pref_service_context_.reset();
-    worker_pool_ = base::MakeUnique<base::SequencedWorkerPoolOwner>(
-        2, "ProfilePrefStoreManagerTest");
-    RelaunchPrefService();
   }
 
   void InitializePrefStore(PersistentPrefStore* pref_store) {
@@ -332,10 +278,8 @@ class ProfilePrefStoreManagerTest : public testing::TestWithParam<bool>,
     pref_store->CommitPendingWrite();
     base::RunLoop().RunUntilIdle();
     base::RunLoop run_loop;
-    JsonPrefStore::GetTaskRunnerForFile(profile_dir_.GetPath(),
-                                        worker_pool_->pool().get())
-        ->PostTaskAndReply(FROM_HERE, base::BindOnce(&base::DoNothing),
-                           run_loop.QuitClosure());
+    base::ThreadTaskRunnerHandle::Get()->PostTaskAndReply(
+        FROM_HERE, base::BindOnce(&base::DoNothing), run_loop.QuitClosure());
     run_loop.Run();
   }
 
@@ -350,9 +294,8 @@ class ProfilePrefStoreManagerTest : public testing::TestWithParam<bool>,
         mojo::MakeRequest(&validation_delegate));
     pref_store_ = manager_->CreateProfilePrefStore(
         prefs::CloneTrackedConfiguration(configuration_), kReportingIdCount,
-        worker_pool_->pool().get(), std::move(observer),
-        std::move(validation_delegate), connector_.get(),
-        profile_pref_registry_);
+        base::ThreadTaskRunnerHandle::Get(), std::move(observer),
+        std::move(validation_delegate));
     pref_store_->AddObserver(&registry_verifier_);
     PrefStoreReadObserver read_observer(pref_store_);
     read_observer.Read();
@@ -431,15 +374,13 @@ class ProfilePrefStoreManagerTest : public testing::TestWithParam<bool>,
 
   base::test::ScopedFeatureList feature_list_;
   bool reset_recorded_;
-  std::unique_ptr<base::SequencedWorkerPoolOwner> worker_pool_;
   std::unique_ptr<service_manager::ServiceContext> pref_service_context_;
-  std::unique_ptr<service_manager::Connector> connector_;
   service_manager::mojom::ConnectorRequest connector_request_;
   mojo::BindingSet<prefs::mojom::ResetOnLoadObserver>
       reset_on_load_observer_bindings_;
 };
 
-TEST_P(ProfilePrefStoreManagerTest, StoreValues) {
+TEST_F(ProfilePrefStoreManagerTest, StoreValues) {
   InitializePrefs();
 
   LoadExistingPrefs();
@@ -451,7 +392,7 @@ TEST_P(ProfilePrefStoreManagerTest, StoreValues) {
   ExpectValidationObserved(kProtectedAtomic);
 }
 
-TEST_P(ProfilePrefStoreManagerTest, ProtectValues) {
+TEST_F(ProfilePrefStoreManagerTest, ProtectValues) {
   InitializePrefs();
 
   ReplaceStringInPrefs(kFoobar, kBarfoo);
@@ -474,7 +415,7 @@ TEST_P(ProfilePrefStoreManagerTest, ProtectValues) {
   ExpectValidationObserved(kProtectedAtomic);
 }
 
-TEST_P(ProfilePrefStoreManagerTest, InitializePrefsFromMasterPrefs) {
+TEST_F(ProfilePrefStoreManagerTest, InitializePrefsFromMasterPrefs) {
   auto master_prefs = base::MakeUnique<base::DictionaryValue>();
   master_prefs->Set(kTrackedAtomic, base::MakeUnique<base::Value>(kFoobar));
   master_prefs->Set(kProtectedAtomic,
@@ -492,7 +433,7 @@ TEST_P(ProfilePrefStoreManagerTest, InitializePrefsFromMasterPrefs) {
   VerifyResetRecorded(false);
 }
 
-TEST_P(ProfilePrefStoreManagerTest, UnprotectedToProtected) {
+TEST_F(ProfilePrefStoreManagerTest, UnprotectedToProtected) {
   InitializePrefs();
 
   ExpectValidationObserved(kTrackedAtomic);
@@ -538,7 +479,7 @@ TEST_P(ProfilePrefStoreManagerTest, UnprotectedToProtected) {
       ProfilePrefStoreManager::kPlatformSupportsPreferenceTracking);
 }
 
-TEST_P(ProfilePrefStoreManagerTest, NewPrefWhenFirstProtecting) {
+TEST_F(ProfilePrefStoreManagerTest, NewPrefWhenFirstProtecting) {
   std::vector<prefs::mojom::TrackedPreferenceMetadataPtr>
       original_configuration = prefs::CloneTrackedConfiguration(configuration_);
   for (const auto& metadata : configuration_) {
@@ -574,7 +515,7 @@ TEST_P(ProfilePrefStoreManagerTest, NewPrefWhenFirstProtecting) {
   VerifyResetRecorded(false);
 }
 
-TEST_P(ProfilePrefStoreManagerTest, UnprotectedToProtectedWithoutTrust) {
+TEST_F(ProfilePrefStoreManagerTest, UnprotectedToProtectedWithoutTrust) {
   InitializePrefs();
 
   ExpectValidationObserved(kTrackedAtomic);
@@ -601,7 +542,7 @@ TEST_P(ProfilePrefStoreManagerTest, UnprotectedToProtectedWithoutTrust) {
 
 // This test verifies that preference values are correctly maintained when a
 // preference's protection state changes from protected to unprotected.
-TEST_P(ProfilePrefStoreManagerTest, ProtectedToUnprotected) {
+TEST_F(ProfilePrefStoreManagerTest, ProtectedToUnprotected) {
   InitializePrefs();
 
   ExpectValidationObserved(kTrackedAtomic);
@@ -640,9 +581,3 @@ TEST_P(ProfilePrefStoreManagerTest, ProtectedToUnprotected) {
   ExpectStringValueEquals(kProtectedAtomic, kGoodbyeWorld);
   VerifyResetRecorded(false);
 }
-
-// The parameter controls whether the user pref store is created within a
-// service.
-INSTANTIATE_TEST_CASE_P(ProfilePrefStoreManagerTest,
-                        ProfilePrefStoreManagerTest,
-                        testing::Bool());

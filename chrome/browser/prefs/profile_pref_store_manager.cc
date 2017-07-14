@@ -16,7 +16,6 @@
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
-#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/persistent_pref_store.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -89,35 +88,18 @@ PersistentPrefStore* ProfilePrefStoreManager::CreateProfilePrefStore(
     std::vector<prefs::mojom::TrackedPreferenceMetadataPtr>
         tracking_configuration,
     size_t reporting_ids_count,
-    base::SequencedWorkerPool* worker_pool,
+    scoped_refptr<base::SequencedTaskRunner> io_task_runner,
     prefs::mojom::ResetOnLoadObserverPtr reset_on_load_observer,
-    prefs::mojom::TrackedPreferenceValidationDelegatePtr validation_delegate,
-    service_manager::Connector* connector,
-    scoped_refptr<PrefRegistry> pref_registry) {
-  if (features::PrefServiceEnabled()) {
-    ConfigurePrefService(std::move(tracking_configuration), reporting_ids_count,
-                         std::move(reset_on_load_observer),
-                         std::move(validation_delegate), connector);
-    prefs::mojom::PrefStoreConnectorPtr pref_connector;
-    connector->BindInterface(prefs::mojom::kServiceName, &pref_connector);
-    auto in_process_types_set = chrome::InProcessPrefStores();
-    std::vector<PrefValueStore::PrefStoreType> in_process_types(
-        in_process_types_set.begin(), in_process_types_set.end());
-    return new prefs::PersistentPrefStoreClient(std::move(pref_connector),
-                                                std::move(pref_registry),
-                                                std::move(in_process_types));
-  }
+    prefs::mojom::TrackedPreferenceValidationDelegatePtr validation_delegate) {
   if (!kPlatformSupportsPreferenceTracking) {
-    return new JsonPrefStore(
-        profile_path_.Append(chrome::kPreferencesFilename),
-        JsonPrefStore::GetTaskRunnerForFile(profile_path_, worker_pool),
-        nullptr);
+    return new JsonPrefStore(profile_path_.Append(chrome::kPreferencesFilename),
+                             io_task_runner, nullptr);
   }
   return CreateTrackedPersistentPrefStore(
       CreateTrackedPrefStoreConfiguration(
           std::move(tracking_configuration), reporting_ids_count,
           std::move(reset_on_load_observer), std::move(validation_delegate)),
-      worker_pool);
+      io_task_runner);
 }
 
 bool ProfilePrefStoreManager::InitializePrefsFromMasterPrefs(
@@ -151,28 +133,6 @@ bool ProfilePrefStoreManager::InitializePrefsFromMasterPrefs(
 
   UMA_HISTOGRAM_BOOLEAN("Settings.InitializedFromMasterPrefs", success);
   return success;
-}
-
-void ProfilePrefStoreManager::ConfigurePrefService(
-    std::vector<prefs::mojom::TrackedPreferenceMetadataPtr>
-        tracking_configuration,
-    size_t reporting_ids_count,
-    prefs::mojom::ResetOnLoadObserverPtr reset_on_load_observer,
-    prefs::mojom::TrackedPreferenceValidationDelegatePtr validation_delegate,
-    service_manager::Connector* connector) {
-  auto config = prefs::mojom::PersistentPrefStoreConfiguration::New();
-  if (!kPlatformSupportsPreferenceTracking) {
-    config->set_simple_configuration(
-        prefs::mojom::SimplePersistentPrefStoreConfiguration::New(
-            profile_path_.Append(chrome::kPreferencesFilename)));
-  } else {
-    config->set_tracked_configuration(CreateTrackedPrefStoreConfiguration(
-        std::move(tracking_configuration), reporting_ids_count,
-        std::move(reset_on_load_observer), std::move(validation_delegate)));
-  }
-  prefs::mojom::PrefServiceControlPtr control;
-  connector->BindInterface(prefs::mojom::kServiceName, &control);
-  control->Init(std::move(config));
 }
 
 prefs::mojom::TrackedPersistentPrefStoreConfigurationPtr

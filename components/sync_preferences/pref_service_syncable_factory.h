@@ -9,14 +9,11 @@
 
 #include "base/macros.h"
 #include "components/prefs/pref_service_factory.h"
+#include "components/prefs/pref_value_store.h"
 
 namespace policy {
 class BrowserPolicyConnector;
 class PolicyService;
-}
-
-namespace service_manager {
-class Connector;
 }
 
 namespace user_prefs {
@@ -46,11 +43,11 @@ class PrefServiceSyncableFactory : public PrefServiceFactory {
   void SetPrefModelAssociatorClient(
       PrefModelAssociatorClient* pref_model_associator_client);
 
-  // |connector| might be null during test or if we're not using the Mojo pref
-  // |service.
+  // |delegate| might be null during test or if we're not using the Mojo pref
+  // service.
   std::unique_ptr<PrefServiceSyncable> CreateSyncable(
       user_prefs::PrefRegistrySyncable* registry,
-      service_manager::Connector* connector = nullptr);
+      std::unique_ptr<PrefValueStore::Delegate> delegate = nullptr);
 
  private:
   PrefModelAssociatorClient* pref_model_associator_client_;

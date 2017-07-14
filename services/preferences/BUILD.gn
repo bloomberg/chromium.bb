@@ -25,10 +25,10 @@ source_set("preferences") {
     "//services/service_manager/public/cpp",
   ]
   sources = [
-    "persistent_pref_store_factory.cc",
-    "persistent_pref_store_factory.h",
     "persistent_pref_store_impl.cc",
     "persistent_pref_store_impl.h",
+    "pref_store_impl.cc",
+    "pref_store_impl.h",
     "pref_store_manager_impl.cc",
     "pref_store_manager_impl.h",
     "scoped_pref_connection_builder.cc",
@@ -58,6 +58,7 @@ source_set("tests") {
   sources = [
     "persistent_pref_store_impl_unittest.cc",
     "pref_store_consistency_unittest.cc",
+    "pref_store_impl_unittest.cc",
   ]
   if (!is_ios) {
     sources += [ "pref_service_factory_unittest.cc" ]

@@ -77,49 +77,22 @@ struct PersistentPrefStoreConnection {
   bool read_only;
 };
 
-// Manages actual read of preference data. Accepts observers who subscribe to
-// preferences, notifying them of changes.
-interface PrefStore {
-  // Add an observer of changes to prefs contained in |prefs_to_observe|. This
-  // current values of all prefs will not be communicated through a call to
-  // |observer| but instead be returned in |initial_prefs|.
-  AddObserver(array<string> prefs_to_observe) => (
-      PrefStoreConnection connection);
-};
-
-// Manages a registry of all pref stores. Registered pref stores can be
-// connected to through the |PrefStoreConnector| interface.
-interface PrefStoreRegistry {
-  // Register a pref store.
-  Register(PrefStoreType type, PrefStore pref_store);
-};
-
 // Allows connections to pref stores registered with |PrefStoreRegistry|.
 interface PrefStoreConnector {
   // Connect to all registered pref stores, retrieving the current values of all
   // prefs in each store and an |observer| interfaces through which updates can
-  // be received. The client asserts that it is already connected to the
-  // |already_connected_types| pref stores through some other means, so the
-  // Connect call will not connect to those.
+  // be received.
   //
   // The returned |connection| is the connection to the main writable user pref
-  // store. If a |underlay| is returned any writes or reads not serviced by
-  // |connection| should be serviced by |underlay| instead (e.g. by using an
-  // |OverlayUserPrefStore|).
+  // store.
   //
   // Calls to |Connect| before |Init| are allowed and will cause the calls to
   // queue and connect once |Init| has been called.
-  [Sync]
-  Connect(PrefRegistry pref_registry,
-          array<PrefStoreType> already_connected_types) =>
+  Connect(PrefRegistry pref_registry) =>
       (PersistentPrefStoreConnection connection,
        PersistentPrefStoreConnection? underlay,
        array<PrefRegistration> remote_defaults,
        map<PrefStoreType, PrefStoreConnection> connections);
-
-  // Connect to the user pref store. Used for incognito.
-  ConnectToUserPrefStore(array<string> prefs_to_observe) =>
-      (PersistentPrefStoreConnection connection);
 };
 
 // An update to a subcomponent of a pref.
@@ -191,24 +164,8 @@ struct PrefRegistration {
   uint32 flags;
 };
 
-interface PrefServiceControl {
-  // Initializes the pref service. This must be called before the service can
-  // be used.
-  Init(PersistentPrefStoreConfiguration configuration);
-};
-
 // ---------------------------------------------------------------------
 // Service Configuration
-
-union PersistentPrefStoreConfiguration {
-  SimplePersistentPrefStoreConfiguration simple_configuration;
-  TrackedPersistentPrefStoreConfiguration tracked_configuration;
-  IncognitoPersistentPrefStoreConfiguration incognito_configuration;
-};
-
-struct SimplePersistentPrefStoreConfiguration {
-  mojo.common.mojom.FilePath pref_filename;
-};
 
 // These parameters are passed to prefs::CreateTrackedPersistentPrefStore() in
 // services/preferences/persistent_pref_store_factory.cc.
@@ -252,9 +209,4 @@ struct TrackedPreferenceMetadata {
 
 interface ResetOnLoadObserver {
   OnResetOnLoad();
-};
-
-struct IncognitoPersistentPrefStoreConfiguration {
-  // A connector for the underlying profile's prefs.
-  PrefStoreConnector connector;
 };

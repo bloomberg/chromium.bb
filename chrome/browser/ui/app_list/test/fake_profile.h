@@ -94,7 +94,6 @@ class FakeProfile : public Profile {
   bool WasCreatedByVersionOrLater(const std::string& version) override;
   void SetExitType(ExitType exit_type) override;
   ExitType GetLastSessionExitType() override;
-  scoped_refptr<base::SequencedTaskRunner> GetPrefServiceTaskRunner() override;
 
  private:
   std::string name_;

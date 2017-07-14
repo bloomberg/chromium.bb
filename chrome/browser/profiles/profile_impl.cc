@@ -62,6 +62,7 @@
 #include "chrome/browser/policy/schema_registry_service_factory.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/chrome_pref_service_factory.h"
+#include "chrome/browser/prefs/in_process_service_factory_factory.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/bookmark_model_loaded_observer.h"
@@ -126,7 +127,7 @@
 #include "printing/features/features.h"
 #include "services/identity/identity_service.h"
 #include "services/identity/public/interfaces/constants.mojom.h"
-#include "services/preferences/public/cpp/pref_service_main.h"
+#include "services/preferences/public/cpp/in_process_service_factory.h"
 #include "services/preferences/public/interfaces/preferences.mojom.h"
 #include "services/preferences/public/interfaces/tracked_preference_validation_delegate.mojom.h"
 #include "services/service_manager/public/cpp/service.h"
@@ -420,11 +421,10 @@ void ProfileImpl::RegisterProfilePrefs(
   registry->RegisterIntegerPref(prefs::kMediaCacheSize, 0);
 }
 
-ProfileImpl::ProfileImpl(
-    const base::FilePath& path,
-    Delegate* delegate,
-    CreateMode create_mode,
-    base::SequencedTaskRunner* sequenced_task_runner)
+ProfileImpl::ProfileImpl(const base::FilePath& path,
+                         Delegate* delegate,
+                         CreateMode create_mode,
+                         base::SequencedTaskRunner* sequenced_task_runner)
     : path_(path),
       pref_registry_(new user_prefs::PrefRegistrySyncable),
       io_data_(this),
@@ -529,15 +529,15 @@ ProfileImpl::ProfileImpl(
   content::BrowserContext::Initialize(this, path_);
 
   {
-    service_manager::Connector* connector = nullptr;
-    if (features::PrefServiceEnabled()) {
-      connector = content::BrowserContext::GetConnectorFor(this);
-    }
+    auto delegate =
+        InProcessPrefServiceFactoryFactory::GetInstanceForContext(this)
+            ->CreateDelegate();
+    delegate->InitPrefRegistry(pref_registry_.get());
     prefs_ = chrome_prefs::CreateProfilePrefs(
         path_, std::move(pref_validation_delegate),
         profile_policy_connector_->policy_service(), supervised_user_settings,
         CreateExtensionPrefStore(this, false), pref_registry_, async_prefs,
-        connector);
+        GetIOTaskRunner(), std::move(delegate));
     // Register on BrowserContext.
     user_prefs::UserPrefs::Set(this, prefs_.get());
   }
@@ -988,11 +988,6 @@ Profile::ExitType ProfileImpl::GetLastSessionExitType() {
   return last_session_exit_type_;
 }
 
-scoped_refptr<base::SequencedTaskRunner>
-ProfileImpl::GetPrefServiceTaskRunner() {
-  return pref_service_task_runner_;
-}
-
 PrefService* ProfileImpl::GetPrefs() {
   return const_cast<PrefService*>(
       static_cast<const ProfileImpl*>(this)->GetPrefs());
@@ -1028,8 +1023,7 @@ PrefService* ProfileImpl::GetOffTheRecordPrefs() {
 PrefService* ProfileImpl::GetReadOnlyOffTheRecordPrefs() {
   if (!dummy_otr_prefs_) {
     dummy_otr_prefs_.reset(CreateIncognitoPrefServiceSyncable(
-        prefs_.get(), CreateExtensionPrefStore(this, true),
-        std::set<PrefValueStore::PrefStoreType>(), nullptr, nullptr));
+        prefs_.get(), CreateExtensionPrefStore(this, true), nullptr));
   }
   return dummy_otr_prefs_.get();
 }
@@ -1135,15 +1129,13 @@ ProfileImpl::CreateMediaRequestContextForStoragePartition(
 }
 
 void ProfileImpl::RegisterInProcessServices(StaticServiceMap* services) {
-  if (features::PrefServiceEnabled()) {
+  {
     service_manager::EmbeddedServiceInfo info;
-    info.factory = base::Bind(
-        &prefs::CreatePrefService, chrome::ExpectedPrefStores(),
-        make_scoped_refptr(content::BrowserThread::GetBlockingPool()));
-    info.task_runner = base::CreateSequencedTaskRunnerWithTraits(
-        {base::TaskShutdownBehavior::BLOCK_SHUTDOWN,
-         base::TaskPriority::USER_VISIBLE});
-    pref_service_task_runner_ = info.task_runner;
+    info.factory =
+        InProcessPrefServiceFactoryFactory::GetInstanceForContext(this)
+            ->CreatePrefServiceFactory();
+    info.task_runner = content::BrowserThread::GetTaskRunnerForThread(
+        content::BrowserThread::UI);
     services->insert(std::make_pair(prefs::mojom::kServiceName, info));
   }
 

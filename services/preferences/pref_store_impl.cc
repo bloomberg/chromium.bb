@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/preferences/public/cpp/pref_store_impl.h"
+#include "services/preferences/pref_store_impl.h"
 
 #include <memory>
 #include <set>
@@ -51,11 +51,9 @@ class PrefStoreImpl::Observer {
   DISALLOW_COPY_AND_ASSIGN(Observer);
 };
 
-PrefStoreImpl::PrefStoreImpl(scoped_refptr<::PrefStore> pref_store,
-                             mojom::PrefStoreRequest request)
+PrefStoreImpl::PrefStoreImpl(scoped_refptr<::PrefStore> pref_store)
     : backing_pref_store_(std::move(pref_store)),
-      backing_pref_store_initialized_(false),
-      binding_(this, std::move(request)) {
+      backing_pref_store_initialized_(false) {
   DCHECK(backing_pref_store_);
   if (backing_pref_store_->IsInitializationComplete())
     OnInitializationCompleted(true);
@@ -64,18 +62,6 @@ PrefStoreImpl::PrefStoreImpl(scoped_refptr<::PrefStore> pref_store,
 
 PrefStoreImpl::~PrefStoreImpl() {
   backing_pref_store_->RemoveObserver(this);
-}
-
-// static
-std::unique_ptr<PrefStoreImpl> PrefStoreImpl::Create(
-    mojom::PrefStoreRegistry* registry_ptr,
-    scoped_refptr<::PrefStore> pref_store,
-    PrefValueStore::PrefStoreType type) {
-  mojom::PrefStorePtr ptr;
-  auto impl = base::MakeUnique<PrefStoreImpl>(std::move(pref_store),
-                                              mojo::MakeRequest(&ptr));
-  registry_ptr->Register(type, std::move(ptr));
-  return impl;
 }
 
 void PrefStoreImpl::OnPrefValueChanged(const std::string& key) {
@@ -100,19 +86,19 @@ void PrefStoreImpl::OnInitializationCompleted(bool succeeded) {
     observer->OnInitializationCompleted(succeeded);
 }
 
-void PrefStoreImpl::AddObserver(
-    const std::vector<std::string>& prefs_to_observe,
-    AddObserverCallback callback) {
+mojom::PrefStoreConnectionPtr PrefStoreImpl::AddObserver(
+    const std::vector<std::string>& prefs_to_observe) {
   mojom::PrefStoreObserverPtr observer_ptr;
   auto request = mojo::MakeRequest(&observer_ptr);
   std::set<std::string> observed_prefs(prefs_to_observe.begin(),
                                        prefs_to_observe.end());
-  std::move(callback).Run(mojom::PrefStoreConnection::New(
+  auto result = mojom::PrefStoreConnection::New(
       std::move(request),
       FilterPrefs(backing_pref_store_->GetValues(), observed_prefs),
-      backing_pref_store_->IsInitializationComplete()));
+      backing_pref_store_->IsInitializationComplete());
   observers_.push_back(base::MakeUnique<Observer>(std::move(observer_ptr),
                                                   std::move(observed_prefs)));
+  return result;
 }
 
 }  // namespace prefs

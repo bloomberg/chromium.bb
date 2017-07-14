@@ -12,10 +12,6 @@
 class PrefStore;
 class Profile;
 
-namespace service_manager {
-class Connector;
-}
-
 namespace sync_preferences {
 class PrefServiceSyncable;
 }
@@ -40,14 +36,10 @@ sync_preferences::PrefServiceSyncable* PrefServiceSyncableIncognitoFromProfile(
 // windows).
 //
 // If the Mojo pref service is in use |incognito_connector| and |user_connector|
-// must be non-null and |already_connected_types| should be the set of
-// |PrefStore|s that are running in the current service and thus don't need to
-// be connected to.
+// must be non-null.
 sync_preferences::PrefServiceSyncable* CreateIncognitoPrefServiceSyncable(
     sync_preferences::PrefServiceSyncable* pref_service,
     PrefStore* incognito_extension_pref_store,
-    std::set<PrefValueStore::PrefStoreType> already_connected_types,
-    service_manager::Connector* incognito_connector,
-    service_manager::Connector* user_connector);
+    std::unique_ptr<PrefValueStore::Delegate> delegate);
 
 #endif  // CHROME_BROWSER_PREFS_PREF_SERVICE_SYNCABLE_UTIL_H_

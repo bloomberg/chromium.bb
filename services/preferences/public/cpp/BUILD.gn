@@ -16,10 +16,6 @@ source_set("cpp") {
     "pref_store_client.h",
     "pref_store_client_mixin.cc",
     "pref_store_client_mixin.h",
-    "pref_store_impl.cc",
-    "pref_store_impl.h",
-    "registering_delegate.cc",
-    "registering_delegate.h",
     "scoped_pref_update.cc",
     "scoped_pref_update.h",
   ]
@@ -40,11 +36,14 @@ source_set("cpp") {
 source_set("service_main") {
   deps = [
     "//base",
+    "//components/keyed_service/core",
     "//components/prefs",
     "//services/preferences",
     "//services/service_manager/public/cpp",
   ]
   sources = [
+    "in_process_service_factory.cc",
+    "in_process_service_factory.h",
     "pref_service_main.cc",
     "pref_service_main.h",
   ]

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/preferences/public/cpp/pref_store_impl.h"
+#include "services/preferences/pref_store_impl.h"
 
 #include <utility>
 
@@ -104,8 +104,6 @@ class PrefStoreImplTest : public testing::Test {
   void TearDown() override {
     pref_store_ = nullptr;
     base::RunLoop().RunUntilIdle();
-    pref_store_ptr_.reset();
-    base::RunLoop().RunUntilIdle();
     impl_.reset();
     base::RunLoop().RunUntilIdle();
   }
@@ -113,29 +111,12 @@ class PrefStoreImplTest : public testing::Test {
   void CreateImpl(
       scoped_refptr<PrefStore> backing_pref_store,
       std::vector<std::string> observed_prefs = std::vector<std::string>()) {
-    impl_ = base::MakeUnique<PrefStoreImpl>(
-        std::move(backing_pref_store), mojo::MakeRequest(&pref_store_ptr_));
+    impl_ = base::MakeUnique<PrefStoreImpl>(std::move(backing_pref_store));
 
     if (observed_prefs.empty())
       observed_prefs.insert(observed_prefs.end(), {kKey, kOtherKey});
-    pref_store_ = CreateConnection(std::move(observed_prefs));
-  }
-
-  scoped_refptr<PrefStore> CreateConnection(
-      std::vector<std::string> observed_prefs) {
-    base::RunLoop run_loop;
-    mojom::PrefStoreConnectionPtr connection;
-    pref_store_ptr_->AddObserver(
-        observed_prefs,
-        base::Bind(
-            [](mojom::PrefStoreConnectionPtr* output, base::OnceClosure quit,
-               mojom::PrefStoreConnectionPtr connection) {
-              std::move(quit).Run();
-              *output = std::move(connection);
-            },
-            &connection, run_loop.QuitClosure()));
-    run_loop.Run();
-    return make_scoped_refptr(new PrefStoreClient(std::move(connection)));
+    pref_store_ = make_scoped_refptr(
+        new PrefStoreClient(impl_->AddObserver(observed_prefs)));
   }
 
   PrefStore* pref_store() { return pref_store_.get(); }
@@ -144,7 +125,6 @@ class PrefStoreImplTest : public testing::Test {
   base::MessageLoop message_loop_;
 
   std::unique_ptr<PrefStoreImpl> impl_;
-  mojom::PrefStorePtr pref_store_ptr_;
 
   scoped_refptr<PrefStore> pref_store_;
 

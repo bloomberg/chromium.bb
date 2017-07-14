@@ -19,17 +19,9 @@ ActiveProfilePrefService::~ActiveProfilePrefService() = default;
 
 void ActiveProfilePrefService::Connect(
     prefs::mojom::PrefRegistryPtr pref_registry,
-    const std::vector<PrefValueStore::PrefStoreType>& already_connected_types,
     ConnectCallback callback) {
   GetPrefStoreConnector().Connect(std::move(pref_registry),
-                                  already_connected_types, std::move(callback));
-}
-
-void ActiveProfilePrefService::ConnectToUserPrefStore(
-    const std::vector<std::string>& prefs_to_observe,
-    ConnectToUserPrefStoreCallback callback) {
-  GetPrefStoreConnector().ConnectToUserPrefStore(prefs_to_observe,
-                                                 std::move(callback));
+                                  std::move(callback));
 }
 
 void ActiveProfilePrefService::Create(

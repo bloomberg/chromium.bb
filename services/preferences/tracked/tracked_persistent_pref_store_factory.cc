@@ -65,10 +65,7 @@ GetExternalVerificationPrefHashStorePair(
 
 PersistentPrefStore* CreateTrackedPersistentPrefStore(
     prefs::mojom::TrackedPersistentPrefStoreConfigurationPtr config,
-    base::SequencedWorkerPool* worker_pool) {
-  auto io_task_runner = JsonPrefStore::GetTaskRunnerForFile(
-      config->unprotected_pref_filename.DirName(), worker_pool);
-
+    scoped_refptr<base::SequencedTaskRunner> io_task_runner) {
   std::vector<prefs::mojom::TrackedPreferenceMetadataPtr>
       unprotected_configuration;
   std::vector<prefs::mojom::TrackedPreferenceMetadataPtr>

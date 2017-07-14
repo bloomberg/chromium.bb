@@ -16,32 +16,13 @@
 #include "components/prefs/pref_registry.h"
 #include "components/sync_preferences/pref_model_associator.h"
 #include "components/sync_preferences/pref_service_syncable_observer.h"
+#include "services/preferences/public/cpp/in_process_service_factory.h"
 #include "services/preferences/public/cpp/persistent_pref_store_client.h"
 #include "services/preferences/public/cpp/pref_registry_serializer.h"
-#include "services/preferences/public/cpp/pref_store_impl.h"
-#include "services/preferences/public/cpp/registering_delegate.h"
 #include "services/preferences/public/interfaces/preferences.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace sync_preferences {
-
-namespace {
-
-// This only needs to be called once per incognito profile.
-void InitIncognitoService(service_manager::Connector* incognito_connector,
-                          service_manager::Connector* user_connector) {
-  prefs::mojom::PrefStoreConnectorPtr connector;
-  user_connector->BindInterface(prefs::mojom::kServiceName, &connector);
-  auto config = prefs::mojom::PersistentPrefStoreConfiguration::New();
-  config->set_incognito_configuration(
-      prefs::mojom::IncognitoPersistentPrefStoreConfiguration::New(
-          std::move(connector)));
-  prefs::mojom::PrefServiceControlPtr control;
-  incognito_connector->BindInterface(prefs::mojom::kServiceName, &control);
-  control->Init(std::move(config));
-}
-
-}  // namespace
 
 PrefServiceSyncable::PrefServiceSyncable(
     PrefNotifierImpl* pref_notifier,
@@ -94,9 +75,7 @@ PrefServiceSyncable::~PrefServiceSyncable() {
 PrefServiceSyncable* PrefServiceSyncable::CreateIncognitoPrefService(
     PrefStore* incognito_extension_pref_store,
     const std::vector<const char*>& overlay_pref_names,
-    std::set<PrefValueStore::PrefStoreType> already_connected_types,
-    service_manager::Connector* incognito_connector,
-    service_manager::Connector* user_connector) {
+    std::unique_ptr<PrefValueStore::Delegate> delegate) {
   pref_service_forked_ = true;
   PrefNotifierImpl* pref_notifier = new PrefNotifierImpl();
 
@@ -104,19 +83,12 @@ PrefServiceSyncable* PrefServiceSyncable::CreateIncognitoPrefService(
       static_cast<user_prefs::PrefRegistrySyncable*>(pref_registry_.get())
           ->ForkForIncognito();
 
-  scoped_refptr<OverlayUserPrefStore> incognito_pref_store;
-  std::unique_ptr<RegisteringDelegate> delegate;
-  if (incognito_connector) {
-    DCHECK(user_connector);
-    incognito_pref_store = CreateOverlayUsingPrefService(
-        forked_registry.get(), std::move(already_connected_types),
-        incognito_connector, user_connector);
-    prefs::mojom::PrefStoreRegistryPtr registry;
-    incognito_connector->BindInterface(prefs::mojom::kServiceName, &registry);
-    delegate = base::MakeUnique<RegisteringDelegate>(std::move(registry));
-  } else {
-    incognito_pref_store = new OverlayUserPrefStore(user_pref_store_.get());
+  if (delegate) {
+    delegate->InitIncognitoUnderlay(user_pref_store_.get());
+    delegate->InitPrefRegistry(forked_registry.get());
   }
+  auto incognito_pref_store =
+      base::MakeRefCounted<OverlayUserPrefStore>(user_pref_store_.get());
 
   for (const char* overlay_pref_name : overlay_pref_names)
     incognito_pref_store->RegisterOverlayPref(overlay_pref_name);
@@ -224,37 +196,6 @@ void PrefServiceSyncable::OnIsSyncingChanged() {
 void PrefServiceSyncable::ProcessPrefChange(const std::string& name) {
   pref_sync_associator_.ProcessPrefChange(name);
   priority_pref_sync_associator_.ProcessPrefChange(name);
-}
-
-OverlayUserPrefStore* PrefServiceSyncable::CreateOverlayUsingPrefService(
-    user_prefs::PrefRegistrySyncable* pref_registry,
-    std::set<PrefValueStore::PrefStoreType> already_connected_types,
-    service_manager::Connector* incognito_connector,
-    service_manager::Connector* user_connector) const {
-  InitIncognitoService(incognito_connector, user_connector);
-
-  prefs::mojom::PrefStoreConnectorPtr pref_connector;
-  incognito_connector->BindInterface(prefs::mojom::kServiceName,
-                                     &pref_connector);
-  std::vector<PrefValueStore::PrefStoreType> in_process_types(
-      already_connected_types.begin(), already_connected_types.end());
-
-  // Connect to the writable, in-memory incognito pref store.
-  prefs::mojom::PersistentPrefStoreConnectionPtr connection;
-  prefs::mojom::PersistentPrefStoreConnectionPtr incognito_connection;
-  std::vector<prefs::mojom::PrefRegistrationPtr> remote_defaults;
-  std::unordered_map<PrefValueStore::PrefStoreType,
-                     prefs::mojom::PrefStoreConnectionPtr>
-      other_pref_stores;
-  mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_calls;
-  bool success = pref_connector->Connect(
-      prefs::SerializePrefRegistry(*pref_registry), in_process_types,
-      &incognito_connection, &connection, &remote_defaults, &other_pref_stores);
-  DCHECK(success);
-
-  return new OverlayUserPrefStore(
-      new prefs::PersistentPrefStoreClient(std::move(incognito_connection)),
-      user_pref_store_.get());
 }
 
 }  // namespace sync_preferences

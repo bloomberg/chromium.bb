@@ -10,11 +10,21 @@
 
 namespace prefs {
 
-std::unique_ptr<service_manager::Service> CreatePrefService(
-    std::set<PrefValueStore::PrefStoreType> expected_pref_stores,
-    scoped_refptr<base::SequencedWorkerPool> worker_pool) {
-  return base::MakeUnique<PrefStoreManagerImpl>(expected_pref_stores,
-                                                std::move(worker_pool));
+std::pair<std::unique_ptr<service_manager::Service>, base::OnceClosure>
+CreatePrefService(PrefStore* managed_prefs,
+                  PrefStore* supervised_user_prefs,
+                  PrefStore* extension_prefs,
+                  PrefStore* command_line_prefs,
+                  PersistentPrefStore* user_prefs,
+                  PersistentPrefStore* incognito_user_prefs_underlay,
+                  PrefStore* recommended_prefs,
+                  PrefRegistry* pref_registry) {
+  auto service = base::MakeUnique<PrefStoreManagerImpl>(
+      managed_prefs, supervised_user_prefs, extension_prefs, command_line_prefs,
+      user_prefs, incognito_user_prefs_underlay, recommended_prefs,
+      pref_registry);
+  auto quit_closure = service->ShutDownClosure();
+  return std::make_pair(std::move(service), std::move(quit_closure));
 }
 
 }  // namespace prefs
