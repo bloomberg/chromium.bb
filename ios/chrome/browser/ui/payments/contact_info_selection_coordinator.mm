@@ -63,8 +63,6 @@ const int64_t kDelegateNotificationDelayInNanoSeconds = 0.2 * NSEC_PER_SEC;
       initWithPaymentRequest:self.paymentRequest];
 
   self.viewController = [[PaymentRequestSelectorViewController alloc] init];
-  self.viewController.title =
-      l10n_util::GetNSString(IDS_PAYMENT_REQUEST_CONTACT_INFO_SECTION_NAME);
   self.viewController.delegate = self;
   self.viewController.dataSource = self.mediator;
   [self.viewController loadModel];

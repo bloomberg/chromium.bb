@@ -69,6 +69,10 @@ using ::payment_request_util::
   return YES;
 }
 
+- (NSString*)title {
+  return l10n_util::GetNSString(IDS_PAYMENTS_METHOD_OF_PAYMENT_LABEL);
+}
+
 - (CollectionViewItem*)headerItem {
   base::string16 headerText = payments::GetCardTypesAreAcceptedText(
       _paymentRequest->supported_card_types_set());

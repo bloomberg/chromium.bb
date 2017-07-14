@@ -111,6 +111,13 @@
 
 #pragma mark - CreditCardEditViewControllerDataSource
 
+- (NSString*)title {
+  // TODO(crbug.com/602666): Title varies depending on what field is missing.
+  // e.g., Add Email vs. Add Phone Number.
+  return self.address ? l10n_util::GetNSString(IDS_PAYMENTS_EDIT_ADDRESS)
+                      : l10n_util::GetNSString(IDS_PAYMENTS_ADD_ADDRESS);
+}
+
 - (CollectionViewItem*)headerItem {
   return nil;
 }

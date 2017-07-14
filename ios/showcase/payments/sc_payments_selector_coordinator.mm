@@ -74,6 +74,10 @@
   return NO;
 }
 
+- (NSString*)title {
+  return @"Title";
+}
+
 - (CollectionViewItem*)headerItem {
   return [self createItemWithText:@"Header item"];
 }

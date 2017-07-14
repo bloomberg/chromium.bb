@@ -103,6 +103,12 @@ using ::payment_request_util::GetBillingAddressLabelFromAutofillProfile;
 
 #pragma mark - PaymentRequestEditViewControllerDataSource
 
+- (NSString*)title {
+  // TODO(crbug.com/602666): Title varies depending on the missing fields.
+  return _creditCard ? l10n_util::GetNSString(IDS_PAYMENTS_EDIT_CARD)
+                     : l10n_util::GetNSString(IDS_PAYMENTS_ADD_CARD_LABEL);
+}
+
 - (CollectionViewItem*)headerItem {
   if (_creditCard && !autofill::IsCreditCardLocal(*_creditCard)) {
     // Return an item that identifies the server card being edited.
