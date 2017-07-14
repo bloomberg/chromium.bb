@@ -12,15 +12,11 @@
 #include "base/base_export.h"
 #include "base/files/file_path.h"
 #include "base/files/file_tracing.h"
+#include "base/files/platform_file.h"
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-
-#if defined(OS_WIN)
-#include <windows.h>
-#include "base/win/scoped_handle.h"
-#endif
 
 #if defined(OS_POSIX)
 #include <sys/stat.h>
@@ -28,20 +24,11 @@
 
 namespace base {
 
-#if defined(OS_WIN)
-using PlatformFile = HANDLE;
-
-const PlatformFile kInvalidPlatformFile = INVALID_HANDLE_VALUE;
-#elif defined(OS_POSIX)
-using PlatformFile = int;
-
-const PlatformFile kInvalidPlatformFile = -1;
 #if defined(OS_BSD) || defined(OS_MACOSX) || defined(OS_NACL)
 typedef struct stat stat_wrapper_t;
-#else
+#elif defined(OS_POSIX)
 typedef struct stat64 stat_wrapper_t;
 #endif
-#endif  // defined(OS_POSIX)
 
 // Thin wrapper around an OS-level file.
 // Note that this class does not provide any support for asynchronous IO, other
@@ -355,11 +342,7 @@ class BASE_EXPORT File {
 
   void SetPlatformFile(PlatformFile file);
 
-#if defined(OS_WIN)
-  win::ScopedHandle file_;
-#elif defined(OS_POSIX)
-  ScopedFD file_;
-#endif
+  ScopedPlatformFile file_;
 
   // A path to use for tracing purposes. Set if file tracing is enabled during
   // |Initialize()|.
