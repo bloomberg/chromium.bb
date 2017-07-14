@@ -1380,7 +1380,7 @@ class LocalPatch(GitRepoPatch):
     hash_fields = [('tree_hash', '%T'), ('parent_hash', '%P')]
     transfer_fields = [('GIT_AUTHOR_NAME', '%an'),
                        ('GIT_AUTHOR_EMAIL', '%ae'),
-                       ('GIT_AUTHOR_DATE', '%ad'),
+                       ('GIT_AUTHOR_DATE', '%aD'),
                        ('GIT_COMMITTER_NAME', '%cn'),
                        ('GIT_COMMITTER_EMAIL', '%ce'),
                        ('GIT_COMMITER_DATE', '%ct')]
