@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_DOWNLOAD_INTERNAL_DOWNLOAD_SERVICE_IMPL_H_
 #define COMPONENTS_DOWNLOAD_INTERNAL_DOWNLOAD_SERVICE_IMPL_H_
 
+#include <deque>
+#include <map>
 #include <memory>
 #include <string>
 
@@ -40,12 +42,18 @@ class DownloadServiceImpl : public DownloadService {
                               const SchedulingParams& params) override;
 
  private:
+  void OnControllerInitialized();
+
   // config_ needs to be destructed after controller_ and service_config_ which
   // hold onto references to it.
   std::unique_ptr<Configuration> config_;
 
   std::unique_ptr<Controller> controller_;
   ServiceConfigImpl service_config_;
+
+  std::deque<base::Closure> pending_actions_;
+  std::map<DownloadTaskType, base::Closure> pending_tasks_;
+  bool startup_completed_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadServiceImpl);
 };

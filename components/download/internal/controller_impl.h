@@ -55,7 +55,7 @@ class ControllerImpl : public Controller,
   ~ControllerImpl() override;
 
   // Controller implementation.
-  void Initialize() override;
+  void Initialize(const base::Closure& callback) override;
   const StartupStatus* GetStartupStatus() override;
   void StartDownload(const DownloadParams& params) override;
   void PauseDownload(const std::string& guid) override;
@@ -127,6 +127,10 @@ class ControllerImpl : public Controller,
   // DownloadClient.
   void NotifyClientsOfStartup();
 
+  // Notifies the service that the startup has completed so that it can start
+  // processing any pending requests.
+  void NotifyServiceOfStartup();
+
   void HandleStartDownloadResponse(DownloadClient client,
                                    const std::string& guid,
                                    DownloadParams::StartResult result);
@@ -136,19 +140,19 @@ class ControllerImpl : public Controller,
       DownloadParams::StartResult result,
       const DownloadParams::StartCallback& callback);
 
-  // Entry point for a scheduled task after the task is fired.
-  void ProcessScheduledTasks();
-
   // Handles and clears any pending task finished callbacks.
   void HandleTaskFinished(DownloadTaskType task_type,
                           bool needs_reschedule,
                           stats::ScheduledTaskStatus status);
+  void OnCompleteCleanupTask();
 
   void HandleCompleteDownload(CompletionType type, const std::string& guid);
 
   // Find more available entries to download, until the number of active entries
   // reached maximum.
   void ActivateMoreDownloads();
+
+  void RemoveCleanupEligibleDownloads();
 
   void HandleExternalDownload(const std::string& guid, bool active);
 
@@ -199,6 +203,7 @@ class ControllerImpl : public Controller,
   // is complete *and* all internal structures are set up.  This is to prevent
   // outside signals from triggering state updates before we are ready.
   bool initializing_internals_;
+  base::Closure init_callback_;
   StartupStatus startup_status_;
   std::set<std::string> externally_active_downloads_;
   std::map<std::string, DownloadParams::StartCallback> start_callbacks_;
