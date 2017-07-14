@@ -57,6 +57,7 @@ class InputHandlerWrapper : public ui::InputHandlerProxyClient {
   void DidAnimateForInput() override;
   void GenerateScrollBeginAndSendToMainThread(
       const blink::WebGestureEvent& update_event) override;
+  void SetWhiteListedTouchAction(cc::TouchAction touch_action) override;
 
  private:
   InputHandlerManager* input_handler_manager_;

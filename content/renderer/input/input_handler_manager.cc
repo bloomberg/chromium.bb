@@ -282,4 +282,10 @@ void InputHandlerManager::DispatchNonBlockingEventToMainThread(
                                                 latency_info);
 }
 
+void InputHandlerManager::SetWhiteListedTouchAction(
+    int routing_id,
+    cc::TouchAction touch_action) {
+  client_->SetWhiteListedTouchAction(routing_id, touch_action);
+}
+
 }  // namespace content

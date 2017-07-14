@@ -39,6 +39,10 @@ class CONTENT_EXPORT TouchActionFilter {
   // renderer. It may be called multiple times during this interval.
   void ResetTouchAction();
 
+  // Called when a set-white-listed-touch-action message is received from the
+  // renderer for a touch start event that is currently in flight.
+  void OnSetWhiteListedTouchAction(cc::TouchAction white_listed_touch_action);
+
   cc::TouchAction allowed_touch_action() const { return allowed_touch_action_; }
 
  private:
@@ -60,6 +64,9 @@ class CONTENT_EXPORT TouchActionFilter {
 
   // What touch actions are currently permitted.
   cc::TouchAction allowed_touch_action_;
+
+  // Whitelisted touch action received from the compositor.
+  cc::TouchAction white_listed_touch_action_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchActionFilter);
 };

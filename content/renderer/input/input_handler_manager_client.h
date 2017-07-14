@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "cc/input/touch_action.h"
 #include "content/common/content_export.h"
 #include "content/common/input/input_event_ack_state.h"
 #include "third_party/WebKit/public/platform/WebInputEventResult.h"
@@ -53,6 +54,8 @@ class CONTENT_EXPORT InputHandlerManagerClient {
       int routing_id,
       ui::WebScopedInputEvent event,
       const ui::LatencyInfo& latency_info) = 0;
+  virtual void SetWhiteListedTouchAction(int routing_id,
+                                         cc::TouchAction touch_action) = 0;
 
  protected:
   InputHandlerManagerClient() {}
