@@ -29,7 +29,9 @@ executable("zucchini") {
     "zucchini_main.cc",
   ]
 
-  deps = []
+  deps = [
+    "//build/config:exe_and_shlib_deps",
+  ]
 
   if (is_win) {
     deps += [ ":zucchini_exe_version" ]
