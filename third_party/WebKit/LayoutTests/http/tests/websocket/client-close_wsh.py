@@ -14,8 +14,8 @@ def web_socket_transfer_data(request):
 
     msgutil.send_message(request, 'Client should ignore this message')
 
-    # Send only first two bytes of the received frame. The remaining four bytes are
-    # "masking key", which changes every time the test runs.
+    # Send only first two bytes of the received frame. The remaining four bytes
+    # are "masking key", which changes every time the test runs.
     data = struct.pack('!H', 1000) + 'close_frame[:2]=%r' % close_frame[:2]
     request.connection.write(stream.create_close_frame(data))
 

@@ -2,7 +2,6 @@ import cgi
 import time
 import threading
 
-
 lock = threading.Lock()
 connections = set()
 next_test_id = 0
@@ -13,10 +12,10 @@ def web_socket_do_extra_handshake(request):
     if len(query_string) == 1:
         return
     params = cgi.parse_qs(query_string[1])
-    mode = params["mode"][0]
-    if mode == "new_test":
+    mode = params['mode'][0]
+    if mode == 'new_test':
         new_test(request)
-    elif mode == "do_test":
+    elif mode == 'do_test':
         do_test(request, params)
 
 
@@ -31,16 +30,16 @@ def new_test(request):
 def do_test(request, params):
     """Check that no other connection is happening at the same time."""
     global lock, connections
-    id = params["id"][0]
+    id = params['id'][0]
     with lock:
         if id in connections:
-            request.response = "FAIL"
+            request.response = 'FAIL'
             return
         connections.add(id)
     time.sleep(0.05)
     with lock:
         connections.remove(id)
-    request.response = "PASS"
+    request.response = 'PASS'
 
 
 def web_socket_transfer_data(request):

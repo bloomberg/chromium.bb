@@ -17,11 +17,16 @@ def web_socket_transfer_data(request):
 
     msgutil.send_ping(request, send_payload)
 
-    # We need to use an internal function to detect a pong frame from the client.
-    opcode, recv_payload, final, reserved1, reserved2, reserved3 = request.ws_stream._receive_frame()
-    if opcode == common.OPCODE_PONG and recv_payload == send_payload and final and not reserved1 and not reserved2 and not reserved3:
+    # We need to use an internal function to detect a pong frame from the
+    # client.
+    opcode, recv_payload, final, reserved1, reserved2, reserved3 = \
+        request.ws_stream._receive_frame()
+    if (opcode == common.OPCODE_PONG and recv_payload == send_payload and
+            final and not reserved1 and not reserved2 and not reserved3):
         msgutil.send_message(request, 'PASS')
     else:
-        msgutil.send_message(request,
-                             'FAIL: Received unexpected frame: opcode = %r, payload = %r, final = %r, reserved1 = %r, reserved2 = %r, reserved3 = %r' %
-                             (opcode, recv_payload, final, reserved1, reserved2, reserved3))
+        msgutil.send_message(
+            request,
+            'FAIL: Received unexpected frame: opcode = %r, payload = %r, '
+            'final = %r, reserved1 = %r, reserved2 = %r, reserved3 = %r'
+            % (opcode, recv_payload, final, reserved1, reserved2, reserved3))

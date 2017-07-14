@@ -6,7 +6,8 @@ def web_socket_do_extra_handshake(request):
     msg = 'HTTP/1.1 101 Switching Protocols\r\n'
     msg += 'Upgrade: websocket\r\n'
     msg += 'Connection: Upgrade\r\n'
-    msg += 'Sec-WebSocket-Accept: %s\r\n' % compute_accept(request.headers_in['Sec-WebSocket-Key'])[0]
+    msg += 'Sec-WebSocket-Accept: %s\r\n' % compute_accept(
+        request.headers_in['Sec-WebSocket-Key'])[0]
     msg += '\xa5:\r\n'
     msg += '\r\n'
     request.connection.write(msg)

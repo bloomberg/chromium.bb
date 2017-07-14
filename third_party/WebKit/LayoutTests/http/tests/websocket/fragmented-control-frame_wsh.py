@@ -8,5 +8,9 @@ def web_socket_do_extra_handshake(request):
 
 
 def web_socket_transfer_data(request):
-    # Fragmented control frame is prohibited. The client must abort the connection.
-    request.connection.write(stream.create_text_frame('This message should be ignored.', opcode=common.OPCODE_PING, fin=0))
+    # Fragmented control frame is prohibited. The client must abort the
+    # connection.
+    request.connection.write(
+        stream.create_text_frame(
+            'This message should be ignored.', opcode=common.OPCODE_PING,
+            fin=0))
