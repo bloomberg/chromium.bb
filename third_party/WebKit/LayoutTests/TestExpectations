@@ -1246,6 +1246,8 @@ crbug.com/528062 [ Win ] virtual/mojo-loading/http/tests/security/xssAuditor/chu
 
 crbug.com/392706 virtual/threaded/animations/play-state-initially-paused.html [ Failure ]
 
+crbug.com/743009 [ Win ] virtual/threaded/animations/responsive/zoom-responsive-transform-animation.html [ Pass Timeout ]
+
 # Part of a larger issue referenced in the bug. This specific issue will be fixed shortly.
 crbug.com/408159 accessibility/is-ignored-change-sends-notification.html [ Timeout ]
 
