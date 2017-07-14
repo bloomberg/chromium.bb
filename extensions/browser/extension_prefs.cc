@@ -14,6 +14,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -214,8 +215,8 @@ class ScopedExtensionPrefUpdate : public prefs::ScopedDictionaryPrefUpdate {
   DISALLOW_COPY_AND_ASSIGN(ScopedExtensionPrefUpdate);
 };
 
-std::string JoinPrefs(const std::string& parent, const char* child) {
-  return parent + "." + child;
+std::string JoinPrefs(base::StringPiece parent, base::StringPiece child) {
+  return base::JoinString({parent, child}, ".");
 }
 
 // Checks if kPrefBlacklist is set to true in the base::DictionaryValue.
@@ -435,7 +436,7 @@ const base::DictionaryValue* ExtensionPrefs::GetExtensionPref(
 
 void ExtensionPrefs::UpdateExtensionPref(
     const std::string& extension_id,
-    const std::string& key,
+    base::StringPiece key,
     std::unique_ptr<base::Value> data_value) {
   if (!crx_file::id_util::IdIsValid(extension_id)) {
     NOTREACHED() << "Invalid extension_id " << extension_id;
@@ -457,7 +458,7 @@ void ExtensionPrefs::DeleteExtensionPrefs(const std::string& extension_id) {
 }
 
 bool ExtensionPrefs::ReadPrefAsBoolean(const std::string& extension_id,
-                                       const std::string& pref_key,
+                                       base::StringPiece pref_key,
                                        bool* out_value) const {
   const base::DictionaryValue* ext = GetExtensionPref(extension_id);
   if (!ext || !ext->GetBoolean(pref_key, out_value))
@@ -467,7 +468,7 @@ bool ExtensionPrefs::ReadPrefAsBoolean(const std::string& extension_id,
 }
 
 bool ExtensionPrefs::ReadPrefAsInteger(const std::string& extension_id,
-                                       const std::string& pref_key,
+                                       base::StringPiece pref_key,
                                        int* out_value) const {
   const base::DictionaryValue* ext = GetExtensionPref(extension_id);
   if (!ext || !ext->GetInteger(pref_key, out_value))
@@ -477,7 +478,7 @@ bool ExtensionPrefs::ReadPrefAsInteger(const std::string& extension_id,
 }
 
 bool ExtensionPrefs::ReadPrefAsString(const std::string& extension_id,
-                                      const std::string& pref_key,
+                                      base::StringPiece pref_key,
                                       std::string* out_value) const {
   const base::DictionaryValue* ext = GetExtensionPref(extension_id);
   if (!ext || !ext->GetString(pref_key, out_value))
@@ -487,7 +488,7 @@ bool ExtensionPrefs::ReadPrefAsString(const std::string& extension_id,
 }
 
 bool ExtensionPrefs::ReadPrefAsList(const std::string& extension_id,
-                                    const std::string& pref_key,
+                                    base::StringPiece pref_key,
                                     const base::ListValue** out_value) const {
   const base::DictionaryValue* ext = GetExtensionPref(extension_id);
   const base::ListValue* out = NULL;
@@ -501,7 +502,7 @@ bool ExtensionPrefs::ReadPrefAsList(const std::string& extension_id,
 
 bool ExtensionPrefs::ReadPrefAsDictionary(
     const std::string& extension_id,
-    const std::string& pref_key,
+    base::StringPiece pref_key,
     const base::DictionaryValue** out_value) const {
   const base::DictionaryValue* ext = GetExtensionPref(extension_id);
   const base::DictionaryValue* out = NULL;
@@ -519,7 +520,7 @@ bool ExtensionPrefs::HasPrefForExtension(
 }
 
 bool ExtensionPrefs::ReadPrefAsURLPatternSet(const std::string& extension_id,
-                                             const std::string& pref_key,
+                                             base::StringPiece pref_key,
                                              URLPatternSet* result,
                                              int valid_schemes) const {
   const base::ListValue* value = NULL;
@@ -540,21 +541,21 @@ bool ExtensionPrefs::ReadPrefAsURLPatternSet(const std::string& extension_id,
 
 void ExtensionPrefs::SetExtensionPrefURLPatternSet(
     const std::string& extension_id,
-    const std::string& pref_key,
+    base::StringPiece pref_key,
     const URLPatternSet& new_value) {
   UpdateExtensionPref(extension_id, pref_key, new_value.ToValue());
 }
 
 bool ExtensionPrefs::ReadPrefAsBooleanAndReturn(
     const std::string& extension_id,
-    const std::string& pref_key) const {
+    base::StringPiece pref_key) const {
   bool out_value = false;
   return ReadPrefAsBoolean(extension_id, pref_key, &out_value) && out_value;
 }
 
 std::unique_ptr<const PermissionSet> ExtensionPrefs::ReadPrefAsPermissionSet(
     const std::string& extension_id,
-    const std::string& pref_key) const {
+    base::StringPiece pref_key) const {
   if (!GetExtensionPref(extension_id))
     return nullptr;
 
@@ -625,7 +626,7 @@ static std::unique_ptr<base::ListValue> CreatePermissionList(
 
 void ExtensionPrefs::SetExtensionPrefPermissionSet(
     const std::string& extension_id,
-    const std::string& pref_key,
+    base::StringPiece pref_key,
     const PermissionSet& new_value) {
   std::string api_pref = JoinPrefs(pref_key, kPrefAPIs);
   UpdateExtensionPref(extension_id, api_pref,
