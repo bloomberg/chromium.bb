@@ -44,6 +44,7 @@ void SendProcessKeyEvent(ui::EventType type,
   CHECK(!details.dispatcher_destroyed);
 }
 
+bool g_keyboard_load_time_logged = false;
 base::LazyInstance<base::Time>::DestructorAtExit g_keyboard_load_time_start =
     LAZY_INSTANCE_INITIALIZER;
 
@@ -282,7 +283,7 @@ bool SendKeyEvent(const std::string type,
 }
 
 void MarkKeyboardLoadStarted() {
-  if (g_keyboard_load_time_start.Get().is_null())
+  if (!g_keyboard_load_time_logged)
     g_keyboard_load_time_start.Get() = base::Time::Now();
 }
 
@@ -292,13 +293,12 @@ void MarkKeyboardLoadFinished() {
   if (g_keyboard_load_time_start.Get().is_null())
     return;
 
-  static bool logged = false;
-  if (!logged) {
+  if (!g_keyboard_load_time_logged) {
     // Log the delta only once.
     UMA_HISTOGRAM_TIMES(
         "VirtualKeyboard.InitLatency.FirstLoad",
         base::Time::Now() - g_keyboard_load_time_start.Get());
-    logged = true;
+    g_keyboard_load_time_logged = true;
   }
 }
 
