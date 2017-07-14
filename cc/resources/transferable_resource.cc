@@ -14,6 +14,7 @@ TransferableResource::TransferableResource()
       filter(0),
       read_lock_fences_enabled(false),
       is_software(false),
+      shared_bitmap_sequence_number(0),
 #if defined(OS_ANDROID)
       is_backed_by_surface_texture(false),
       wants_promotion_hint(false),

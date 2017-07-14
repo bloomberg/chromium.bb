@@ -50,6 +50,11 @@ struct StructTraits<cc::mojom::TransferableResourceDataView,
     return resource.is_software;
   }
 
+  static uint32_t shared_bitmap_sequence_number(
+      const cc::TransferableResource& resource) {
+    return resource.shared_bitmap_sequence_number;
+  }
+
   static bool is_overlay_candidate(const cc::TransferableResource& resource) {
     return resource.is_overlay_candidate;
   }

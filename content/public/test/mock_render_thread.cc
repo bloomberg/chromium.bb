@@ -61,12 +61,6 @@ class MockRenderMessageFilterImpl : public mojom::RenderMessageFilter {
     NOTREACHED();
   }
 
-  void GetSharedBitmapAllocationNotifier(
-      cc::mojom::SharedBitmapAllocationNotifierAssociatedRequest request)
-      override {
-    NOTREACHED();
-  }
-
  private:
   MockRenderThread* const thread_;
 };

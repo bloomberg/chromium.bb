@@ -32,13 +32,19 @@ base::trace_event::MemoryAllocatorDumpGuid GetSharedBitmapGUIDForTracing(
 
 class SharedBitmap {
  public:
-  SharedBitmap(uint8_t* pixels, const SharedBitmapId& id);
+  SharedBitmap(uint8_t* pixels,
+               const SharedBitmapId& id,
+               uint32_t sequence_number);
 
   virtual ~SharedBitmap();
 
   uint8_t* pixels() { return pixels_; }
 
   const SharedBitmapId& id() { return id_; }
+
+  // The sequence number that ClientSharedBitmapManager assigned to this
+  // SharedBitmap.
+  uint32_t sequence_number() const { return sequence_number_; }
 
   // Returns the shared memory's handle when the back end is base::SharedMemory.
   // Otherwise, this returns an invalid handle.
@@ -60,6 +66,7 @@ class SharedBitmap {
  private:
   uint8_t* pixels_;
   SharedBitmapId id_;
+  const uint32_t sequence_number_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedBitmap);
 };

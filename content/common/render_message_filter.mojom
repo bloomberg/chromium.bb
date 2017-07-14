@@ -21,7 +21,4 @@ interface RenderMessageFilter {
   // Similar to CreateWidget except the widget is a full screen window.
   [Sync] CreateFullscreenWidget(int32 opener_id, Widget widget)
       => (int32 route_id);
-
-  GetSharedBitmapAllocationNotifier(
-      associated cc.mojom.SharedBitmapAllocationNotifier& notifier);
 };

@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory.h"
+#include "base/synchronization/lock.h"
 #include "cc/ipc/shared_bitmap_allocation_notifier.mojom.h"
 #include "components/viz/common/resources/shared_bitmap_manager.h"
 #include "mojo/public/cpp/bindings/thread_safe_interface_ptr.h"
@@ -24,8 +25,7 @@ namespace viz {
 class ClientSharedBitmapManager : public SharedBitmapManager {
  public:
   explicit ClientSharedBitmapManager(
-      scoped_refptr<
-          cc::mojom::ThreadSafeSharedBitmapAllocationNotifierAssociatedPtr>
+      scoped_refptr<cc::mojom::ThreadSafeSharedBitmapAllocationNotifierPtr>
           shared_bitmap_allocation_notifier);
   ~ClientSharedBitmapManager() override;
 
@@ -40,12 +40,17 @@ class ClientSharedBitmapManager : public SharedBitmapManager {
       base::SharedMemory* mem);
 
  private:
-  void NotifyAllocatedSharedBitmap(base::SharedMemory* memory,
-                                   const SharedBitmapId& id);
+  uint32_t NotifyAllocatedSharedBitmap(base::SharedMemory* memory,
+                                       const SharedBitmapId& id);
 
-  scoped_refptr<
-      cc::mojom::ThreadSafeSharedBitmapAllocationNotifierAssociatedPtr>
+  scoped_refptr<cc::mojom::ThreadSafeSharedBitmapAllocationNotifierPtr>
       shared_bitmap_allocation_notifier_;
+
+  base::Lock lock_;
+
+  // Each SharedBitmap allocated by this class is assigned a unique sequence
+  // number that is incremental.
+  uint32_t last_sequence_number_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(ClientSharedBitmapManager);
 };
