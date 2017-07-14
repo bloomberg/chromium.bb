@@ -34,6 +34,7 @@ class PLATFORM_EXPORT RuntimeEnabledFeatures {
   {% for feature_set in feature_sets %}
   static void Set{{feature_set|capitalize}}FeaturesEnabled(bool);
   {% endfor %}
+  static void SetOriginTrialControlledFeaturesEnabled(bool);
 
   static void SetFeatureEnabledFromString(const std::string& name, bool isEnabled);
 
