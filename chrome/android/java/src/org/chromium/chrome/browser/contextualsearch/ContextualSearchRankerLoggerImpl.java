@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.contextualsearch;
 
-import org.chromium.chrome.browser.contextualsearch.ContextualSearchRankerLogger.Feature;
-
 import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
