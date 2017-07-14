@@ -239,7 +239,7 @@ TEST(ImageDecoderTest, clearCacheExceptFrameAll) {
   decoder->ClearCacheExceptFrame(kNotFound);
 
   for (size_t i = 0; i < kNumFrames; ++i) {
-    SCOPED_TRACE(testing::Message() << i);
+    SCOPED_TRACE(::testing::Message() << i);
     EXPECT_EQ(ImageFrame::kFrameEmpty, frame_buffers[i].GetStatus());
   }
 }
@@ -256,7 +256,7 @@ TEST(ImageDecoderTest, clearCacheExceptFramePreverveClearExceptFrame) {
   decoder->ResetRequiredPreviousFrames();
   decoder->ClearCacheExceptFrame(5);
   for (size_t i = 0; i < kNumFrames; ++i) {
-    SCOPED_TRACE(testing::Message() << i);
+    SCOPED_TRACE(::testing::Message() << i);
     if (i == 5)
       EXPECT_EQ(ImageFrame::kFrameComplete, frame_buffers[i].GetStatus());
     else
