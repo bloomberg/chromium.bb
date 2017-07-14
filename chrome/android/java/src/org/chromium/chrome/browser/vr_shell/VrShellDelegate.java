@@ -487,41 +487,39 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         private static final long NANOS_PER_SECOND = 1000000000;
 
         private static final long VSYNC_TIMEBASE_UPDATE_DELTA = 1 * NANOS_PER_SECOND;
-        private static final double VSYNC_DRIFT_THRESHOLD = 1.2;
+        private static final double MIN_VSYNC_INTERVAL_THRESHOLD = 1.2;
 
         // Estimates based on too few frames are unstable, probably anything above 2 is reasonable.
         // Higher numbers will reduce how frequently we update the native vsync base/interval.
         private static final int MIN_FRAME_COUNT = 5;
 
         private final long mReportedVSyncNanos;
-        private final long mMaxVSyncIntervalNanos;
         private final long mMinVSyncIntervalNanos;
 
         private long mVSyncTimebaseNanos;
         private long mVSyncIntervalNanos;
         private long mVSyncIntervalMicros;
 
+        private int mVSyncCount;
+
         private final FrameCallback mCallback = new FrameCallback() {
             @Override
             public void doFrame(long frameTimeNanos) {
                 if (mNativeVrShellDelegate == 0) return;
                 Choreographer.getInstance().postFrameCallback(this);
+                ++mVSyncCount;
                 if (mVSyncTimebaseNanos == 0) {
                     updateVSyncInterval(frameTimeNanos, mVSyncIntervalNanos);
                     return;
                 }
+                if (mVSyncCount < MIN_FRAME_COUNT) return;
                 long elapsed = frameTimeNanos - mVSyncTimebaseNanos;
                 // If you're hitting the assert below, you probably added the callback twice.
                 assert elapsed != 0;
-                long count = Math.round(elapsed / (double) mVSyncIntervalNanos);
-                if (count < MIN_FRAME_COUNT) return;
-                long vSyncIntervalNanos = elapsed / count;
-                if (vSyncIntervalNanos > mMaxVSyncIntervalNanos
-                        || vSyncIntervalNanos < mMinVSyncIntervalNanos) {
-                    // This algorithm for computing VSync becomes unstable if it drifts too far from
-                    // the real VSync, which shouldn't happen in practice. If this assert is getting
-                    // hit, something has gone very wrong, but we should probably do something
-                    // reasonable for release builds.
+                long vSyncIntervalNanos = elapsed / mVSyncCount;
+                if (vSyncIntervalNanos < mMinVSyncIntervalNanos) {
+                    // We may run slow, but we should never run fast. If the VSync interval is too
+                    // low, something is very wrong.
                     Log.v(TAG, "Error computing VSync interval. Resetting.");
                     assert false;
                     vSyncIntervalNanos = mReportedVSyncNanos;
@@ -535,8 +533,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
                                       .getDefaultDisplay();
             mReportedVSyncNanos = (long) ((1.0d / display.getRefreshRate()) * NANOS_PER_SECOND);
             mVSyncIntervalNanos = mReportedVSyncNanos;
-            mMaxVSyncIntervalNanos = (long) (VSYNC_DRIFT_THRESHOLD * mReportedVSyncNanos);
-            mMinVSyncIntervalNanos = (long) (mReportedVSyncNanos / VSYNC_DRIFT_THRESHOLD);
+            mMinVSyncIntervalNanos = (long) (mReportedVSyncNanos / MIN_VSYNC_INTERVAL_THRESHOLD);
         }
 
         void updateVSyncInterval(long frameTimeNanos, long vSyncIntervalNanos) {
@@ -548,6 +545,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
             }
             mVSyncIntervalMicros = vSyncIntervalMicros;
             mVSyncTimebaseNanos = frameTimeNanos;
+            mVSyncCount = 0;
 
             nativeUpdateVSyncInterval(
                     mNativeVrShellDelegate, mVSyncTimebaseNanos, mVSyncIntervalMicros);
@@ -558,6 +556,8 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         }
 
         public void resume() {
+            mVSyncTimebaseNanos = 0;
+            mVSyncCount = 0;
             Choreographer.getInstance().postFrameCallback(mCallback);
         }
     }
