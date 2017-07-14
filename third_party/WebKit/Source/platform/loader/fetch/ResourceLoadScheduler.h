@@ -83,6 +83,8 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
   // Sets outstanding limit for testing.
   void SetOutstandingLimitForTesting(size_t limit);
 
+  void OnNetworkQuiet();
+
   // WebFrameScheduler::Observer overrides:
   void OnThrottlingStateChanged(WebFrameScheduler::ThrottlingState) override;
 
@@ -121,6 +123,17 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
 
   // Holds clients that were granted and are running.
   HashSet<ClientId> running_requests_;
+
+  // Largest number of running requests seen so far.
+  unsigned maximum_running_requests_seen_ = 0;
+
+  enum class ThrottlingHistory {
+    kInitial,
+    kThrottled,
+    kNotThrottled,
+    kPartiallyThrottled
+  };
+  ThrottlingHistory throttling_history_ = ThrottlingHistory::kInitial;
 
   // Holds clients that haven't been granted, and are waiting for a grant.
   HeapHashMap<ClientId, Member<ResourceLoadSchedulerClient>>
