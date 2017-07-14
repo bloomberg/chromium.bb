@@ -5,10 +5,14 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_TABS_NEW_TAB_BUTTON_H_
 #define CHROME_BROWSER_UI_VIEWS_TABS_NEW_TAB_BUTTON_H_
 
+#include "base/scoped_observer.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/view.h"
+#include "ui/views/widget/widget_observer.h"
+
+class NewTabPromo;
 
 ///////////////////////////////////////////////////////////////////////////////
 // NewTabButton
@@ -18,7 +22,8 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 class NewTabButton : public views::ImageButton,
-                     public views::MaskedTargeterDelegate {
+                     public views::MaskedTargeterDelegate,
+                     public views::WidgetObserver {
  public:
   NewTabButton(TabStrip* tab_strip, views::ButtonListener* listener);
   ~NewTabButton() override;
@@ -33,6 +38,9 @@ class NewTabButton : public views::ImageButton,
   // button's visible region begins.
   static int GetTopOffset();
 
+  // Shows the NewTabPromo when the NewTabFeatureEngagementTracker calls for it.
+  void ShowPromo();
+
  private:
 // views::ImageButton:
 #if defined(OS_WIN)
@@ -43,6 +51,15 @@ class NewTabButton : public views::ImageButton,
 
   // views::MaskedTargeterDelegate:
   bool GetHitTestMask(gfx::Path* mask) const override;
+
+  // views::WidgetObserver:
+  void OnWidgetDestroying(views::Widget* widget) override;
+
+  // Returns the gfx::Rect around the visible portion of the New Tab Button.
+  // Note: This is different than the rect around the entire New Tab Button as
+  // it extends to the top of the tabstrip for Fitts' Law interaction in a
+  // maximized window. Used for anchoring the NewTabPromo.
+  gfx::Rect GetVisibleBounds();
 
   // Computes a path corresponding to the button's outer border for a given
   // |scale| and stores it in |path|.  |button_y| is used as the y-coordinate
@@ -69,6 +86,10 @@ class NewTabButton : public views::ImageButton,
 
   // were we destroyed?
   bool* destroyed_;
+
+  // Observes the NewTabPromo's Widget.  Used to tell whether the promo is
+  // open and get called back when it closes.
+  ScopedObserver<views::Widget, WidgetObserver> new_tab_promo_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(NewTabButton);
 };

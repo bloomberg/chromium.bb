@@ -136,10 +136,13 @@ class TabStrip : public views::View,
 
   // Max x-coordinate the tabstrip draws at, which is the right edge of the new
   // tab button.
-  int max_x() const { return newtab_button_bounds_.right(); }
+  int max_x() const { return new_tab_button_bounds_.right(); }
 
   // Returns the Tab at |index|.
   Tab* tab_at(int index) const { return tabs_.view_at(index); }
+
+  // Returns the NewTabButton.
+  NewTabButton* new_tab_button() { return new_tab_button_; }
 
   // Returns the index of the specified tab in the model coordinate system, or
   // -1 if tab is closing or not valid.
@@ -572,10 +575,10 @@ class TabStrip : public views::View,
   std::unique_ptr<TabStripController> controller_;
 
   // The "New Tab" button.
-  NewTabButton* newtab_button_;
+  NewTabButton* new_tab_button_;
 
   // Ideal bounds of the new tab button.
-  gfx::Rect newtab_button_bounds_;
+  gfx::Rect new_tab_button_bounds_;
 
   // Returns the current widths of each type of tab.  If the tabstrip width is
   // not evenly divisible into these widths, the initial tabs in the strip will
