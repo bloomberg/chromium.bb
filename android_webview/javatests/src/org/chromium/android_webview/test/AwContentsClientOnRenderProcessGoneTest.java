@@ -14,7 +14,7 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.parameter.ParameterizedTest;
+import org.chromium.base.test.util.parameter.SkipCommandLineParameterization;
 
 import java.util.concurrent.TimeUnit;
 
@@ -56,12 +56,11 @@ public class AwContentsClientOnRenderProcessGoneTest extends AwTestBase {
         }
     }
 
-    @DisabledTest  // http://crbug.com/689292
+    @DisabledTest // http://crbug.com/689292
     @Feature({"AndroidWebView"})
     @SmallTest
-    @CommandLineFlags
-            .Add(AwSwitches.WEBVIEW_SANDBOXED_RENDERER)
-            @ParameterizedTest.Set
+    @CommandLineFlags.Add(AwSwitches.WEBVIEW_SANDBOXED_RENDERER)
+    @SkipCommandLineParameterization
     public void testOnRenderProcessCrash() throws Throwable {
         RenderProcessGoneTestAwContentsClient contentsClient =
                 new RenderProcessGoneTestAwContentsClient();
@@ -80,9 +79,8 @@ public class AwContentsClientOnRenderProcessGoneTest extends AwTestBase {
 
     @Feature({"AndroidWebView"})
     @SmallTest
-    @CommandLineFlags
-            .Add(AwSwitches.WEBVIEW_SANDBOXED_RENDERER)
-            @ParameterizedTest.Set
+    @CommandLineFlags.Add(AwSwitches.WEBVIEW_SANDBOXED_RENDERER)
+    @SkipCommandLineParameterization
     public void testOnRenderProcessKill() throws Throwable {
         RenderProcessGoneTestAwContentsClient contentsClient =
                 new RenderProcessGoneTestAwContentsClient();

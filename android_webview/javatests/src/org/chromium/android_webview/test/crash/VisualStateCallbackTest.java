@@ -27,7 +27,7 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
-import org.chromium.base.test.util.parameter.ParameterizedTest;
+import org.chromium.base.test.util.parameter.SkipCommandLineParameterization;
 import org.chromium.content_public.common.ContentUrlConstants;
 
 import java.util.concurrent.TimeUnit;
@@ -152,9 +152,8 @@ public class VisualStateCallbackTest extends AwTestBase {
     // process gone, but before the AwContentsClient knows about it.
     @Feature({"AndroidWebView"})
     @SmallTest
-    @CommandLineFlags
-            .Add(AwSwitches.WEBVIEW_SANDBOXED_RENDERER)
-    @ParameterizedTest.Set
+    @CommandLineFlags.Add(AwSwitches.WEBVIEW_SANDBOXED_RENDERER)
+    @SkipCommandLineParameterization
     public void testAddVisualStateCallbackAfterRendererGone() throws Throwable {
         final VisualStateCallbackImpl vsImpl = new VisualStateCallbackImpl();
         mHelper.setOnRenderProcessGoneTask(new Runnable() {
@@ -177,11 +176,9 @@ public class VisualStateCallbackTest extends AwTestBase {
     @Feature({"AndroidWebView"})
     @SmallTest
     @RetryOnFailure
-    @CommandLineFlags
-            .Add(AwSwitches.WEBVIEW_SANDBOXED_RENDERER)
-    @ParameterizedTest.Set
+    @CommandLineFlags.Add(AwSwitches.WEBVIEW_SANDBOXED_RENDERER)
+    @SkipCommandLineParameterization
     public void testVisualStateCallbackNotCalledAfterRendererGone() throws Throwable {
-
         VisualStateCallbackImpl vsImpl = new VisualStateCallbackImpl();
         insertVisualStateCallbackOnUIThread(mAwContents, vsImpl.requestId(), vsImpl);
         VisualStateCallbackHelper vsCallbackHelper = mAwContents.getVisualStateCallbackHelper();

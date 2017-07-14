@@ -19,7 +19,7 @@ import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
-import org.chromium.base.test.util.parameter.ParameterizedTest;
+import org.chromium.base.test.util.parameter.SkipCommandLineParameterization;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.net.test.util.TestWebServer;
 import org.chromium.ui.display.DisplayAndroid;
@@ -442,7 +442,7 @@ public class AndroidScrollIntegrationTest extends AwTestBase {
 
     @SmallTest
     @Feature({"AndroidWebView"})
-    @ParameterizedTest.Set  // crbug.com/616505
+    @SkipCommandLineParameterization // crbug.com/616505
     @RetryOnFailure
     public void testTouchScrollCanBeAlteredByUi() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();

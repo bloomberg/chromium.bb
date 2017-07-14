@@ -35,8 +35,7 @@ import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.ScalableTimeout;
-import org.chromium.base.test.util.parameter.Parameter;
-import org.chromium.base.test.util.parameter.ParameterizedTest;
+import org.chromium.base.test.util.parameter.CommandLineParameter;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -69,23 +68,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Tests of the Omnibox.
+ *
+ * TODO(yolandyan): Replace the CommandLineParameter with new JUnit4 parameterized
+ * framework once it supports Test Rule Parameterization
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
         ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
-@ParameterizedTest.Set(tests = {
-        @ParameterizedTest(parameters = {
-                @Parameter(
-                        tag = CommandLineFlags.Parameter.PARAMETER_TAG)}),
-        @ParameterizedTest(parameters = {
-                @Parameter(
-                        tag = CommandLineFlags.Parameter.PARAMETER_TAG,
-                        arguments = {
-                                @Parameter.Argument(
-                                        name = CommandLineFlags.Parameter.ADD_ARG,
-                                        stringArray = {"enable-features="
-                                                + ChromeFeatureList.SPANNABLE_INLINE_AUTOCOMPLETE})
-        })})})
+@CommandLineParameter({"", "enable-features=" + ChromeFeatureList.SPANNABLE_INLINE_AUTOCOMPLETE})
 public class OmniboxTest {
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
