@@ -23,7 +23,6 @@ import org.chromium.base.library_loader.Linker;
 import org.chromium.base.process_launcher.ChildConnectionAllocator;
 import org.chromium.base.process_launcher.ChildProcessConnection;
 import org.chromium.base.process_launcher.ChildProcessConstants;
-import org.chromium.base.process_launcher.ChildProcessCreationParams;
 import org.chromium.base.process_launcher.ChildProcessLauncher;
 import org.chromium.base.process_launcher.FileDescriptorInfo;
 import org.chromium.content.app.ChromiumLinkerParams;
@@ -231,6 +230,11 @@ public class ChildProcessLauncherHelper {
         return sandboxed && params != null && params.getIsSandboxedServiceExternal();
     }
 
+    public static boolean isServiceBoundToCallerFromCreationParams(
+            ChildProcessCreationParams params) {
+        return params == null ? false : params.getBindToCallerCheck();
+    }
+
     /**
      * Starts the moderate binding management that adjust a process priority in response to various
      * signals (app sent to background/foreground for example).
@@ -311,15 +315,16 @@ public class ChildProcessLauncherHelper {
         assert LauncherThread.runningOnLauncherThread();
         final String packageName =
                 getPackageNameFromCreationParams(context, creationParams, sandboxed);
+        boolean bindToCaller = isServiceBoundToCallerFromCreationParams(creationParams);
         boolean bindAsExternalService =
                 isServiceExternalFromCreationParams(creationParams, sandboxed);
 
         if (!sandboxed) {
             if (sPrivilegedChildConnectionAllocator == null) {
                 sPrivilegedChildConnectionAllocator = ChildConnectionAllocator.create(context,
-                        LauncherThread.getHandler(), creationParams, packageName,
-                        PRIVILEGED_SERVICES_NAME_KEY, NUM_PRIVILEGED_SERVICES_KEY,
-                        bindAsExternalService, true /* useStrongBinding */);
+                        LauncherThread.getHandler(), packageName, PRIVILEGED_SERVICES_NAME_KEY,
+                        NUM_PRIVILEGED_SERVICES_KEY, bindToCaller, bindAsExternalService,
+                        true /* useStrongBinding */);
             }
             return sPrivilegedChildConnectionAllocator;
         }
@@ -335,14 +340,14 @@ public class ChildProcessLauncherHelper {
                 String serviceName = !TextUtils.isEmpty(sSandboxedServicesNameForTesting)
                         ? sSandboxedServicesNameForTesting
                         : SandboxedProcessService.class.getName();
-                connectionAllocator = ChildConnectionAllocator.createForTest(creationParams,
-                        packageName, serviceName, sSandboxedServicesCountForTesting,
+                connectionAllocator = ChildConnectionAllocator.createForTest(packageName,
+                        serviceName, sSandboxedServicesCountForTesting, bindToCaller,
                         bindAsExternalService, false /* useStrongBinding */);
             } else {
                 connectionAllocator = ChildConnectionAllocator.create(context,
-                        LauncherThread.getHandler(), creationParams, packageName,
-                        SANDBOXED_SERVICES_NAME_KEY, NUM_SANDBOXED_SERVICES_KEY,
-                        bindAsExternalService, false /* useStrongBinding */);
+                        LauncherThread.getHandler(), packageName, SANDBOXED_SERVICES_NAME_KEY,
+                        NUM_SANDBOXED_SERVICES_KEY, bindToCaller, bindAsExternalService,
+                        false /* useStrongBinding */);
             }
             if (sSandboxedServiceFactoryForTesting != null) {
                 connectionAllocator.setConnectionFactoryForTesting(
@@ -518,8 +523,11 @@ public class ChildProcessLauncherHelper {
 
     private static Bundle populateServiceBundle(
             Bundle bundle, ChildProcessCreationParams creationParams) {
-        boolean bindToCallerCheck =
-                creationParams == null ? false : creationParams.getBindToCallerCheck();
+        boolean bindToCallerCheck = false;
+        if (creationParams != null) {
+            bindToCallerCheck = creationParams.getBindToCallerCheck();
+            creationParams.addIntentExtras(bundle);
+        }
         bundle.putBoolean(ChildProcessConstants.EXTRA_BIND_TO_CALLER, bindToCallerCheck);
         ChromiumLinkerParams linkerParams = getLinkerParamsForNewConnection();
         if (linkerParams != null) linkerParams.populateBundle(bundle);

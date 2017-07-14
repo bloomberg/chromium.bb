@@ -23,7 +23,6 @@ import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLooper;
 
 import org.chromium.base.process_launcher.ChildProcessConnection;
-import org.chromium.base.process_launcher.ChildProcessCreationParams;
 import org.chromium.base.test.util.Feature;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
@@ -42,13 +41,10 @@ public class BindingManagerImplTest {
     // Creates a mocked ChildProcessConnection that is optionally added to a BindingManager.
     private static ChildProcessConnection createTestChildProcessConnection(
             int pid, BindingManager manager) {
-        String packageName = "org.chromium.test";
-        ChildProcessCreationParams creationParams =
-                new ChildProcessCreationParams(packageName, false /* isExternalService */,
-                        0 /* libraryProcessType */, false /* bindToCallerCheck */);
         TestChildProcessConnection connection = new TestChildProcessConnection(
-                new ComponentName(packageName, "TestService"), false /* bindAsExternalService */,
-                null /* serviceBundle */, creationParams);
+                new ComponentName("org.chromium.test", "TestService"),
+                false /* bindToCallerCheck */, false /* bindAsExternalService */,
+                null /* serviceBundle */);
         connection.setPid(pid);
         connection.start(false /* useStrongBinding */, null /* serviceCallback */,
                 false /* retryOnTimeout */);

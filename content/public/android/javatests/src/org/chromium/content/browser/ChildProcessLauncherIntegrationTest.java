@@ -17,7 +17,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.process_launcher.ChildConnectionAllocator;
 import org.chromium.base.process_launcher.ChildProcessConnection;
-import org.chromium.base.process_launcher.ChildProcessCreationParams;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
@@ -46,10 +45,9 @@ public class ChildProcessLauncherIntegrationTest {
 
         @Override
         public ChildProcessConnection createConnection(Context context, ComponentName serviceName,
-                boolean bindAsExternalService, Bundle serviceBundle,
-                ChildProcessCreationParams creationParams) {
+                boolean bindToCaller, boolean bindAsExternalService, Bundle serviceBundle) {
             TestChildProcessConnection connection = new TestChildProcessConnection(
-                    context, serviceName, bindAsExternalService, serviceBundle, creationParams);
+                    context, serviceName, bindToCaller, bindAsExternalService, serviceBundle);
             mConnections.add(connection);
             return connection;
         }
@@ -63,10 +61,10 @@ public class ChildProcessLauncherIntegrationTest {
         private RuntimeException mRemovedBothInitialAndStrongBinding;
 
         public TestChildProcessConnection(Context context, ComponentName serviceName,
-                boolean bindAsExternalService, Bundle childProcessCommonParameters,
-                ChildProcessCreationParams creationParams) {
-            super(context, serviceName, bindAsExternalService, childProcessCommonParameters,
-                    creationParams);
+                boolean bindToCaller, boolean bindAsExternalService,
+                Bundle childProcessCommonParameters) {
+            super(context, serviceName, bindToCaller, bindAsExternalService,
+                    childProcessCommonParameters);
         }
 
         @Override

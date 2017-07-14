@@ -8,7 +8,7 @@ import com.android.webview.chromium.MonochromeLibraryPreloader;
 
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
-import org.chromium.base.process_launcher.ChildProcessCreationParams;
+import org.chromium.content.browser.ChildProcessCreationParams;
 
 /**
  * This is Application class for Monochrome.

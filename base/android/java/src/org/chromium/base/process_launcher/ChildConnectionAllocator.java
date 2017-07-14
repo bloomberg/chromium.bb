@@ -42,18 +42,16 @@ public class ChildConnectionAllocator {
     @VisibleForTesting
     public interface ConnectionFactory {
         ChildProcessConnection createConnection(Context context, ComponentName serviceName,
-                boolean bindAsExternalService, Bundle serviceBundle,
-                ChildProcessCreationParams creationParams);
+                boolean bindToCaller, boolean bindAsExternalService, Bundle serviceBundle);
     }
 
     /** Default implementation of the ConnectionFactory that creates actual connections. */
     private static class ConnectionFactoryImpl implements ConnectionFactory {
         @Override
         public ChildProcessConnection createConnection(Context context, ComponentName serviceName,
-                boolean bindAsExternalService, Bundle serviceBundle,
-                ChildProcessCreationParams creationParams) {
+                boolean bindToCaller, boolean bindAsExternalService, Bundle serviceBundle) {
             return new ChildProcessConnection(
-                    context, serviceName, bindAsExternalService, serviceBundle, creationParams);
+                    context, serviceName, bindToCaller, bindAsExternalService, serviceBundle);
         }
     }
 
@@ -68,9 +66,9 @@ public class ChildConnectionAllocator {
 
     private final String mPackageName;
     private final String mServiceClassName;
+    private final boolean mBindToCaller;
     private final boolean mBindAsExternalService;
     private final boolean mUseStrongBinding;
-    private final ChildProcessCreationParams mCreationParams;
 
     // The list of free (not bound) service indices.
     private final ArrayList<Integer> mFreeConnectionIndices;
@@ -84,9 +82,9 @@ public class ChildConnectionAllocator {
      * AndroidManifest.xml.
      */
     public static ChildConnectionAllocator create(Context context, Handler launcherHandler,
-            ChildProcessCreationParams creationParams, String packageName,
-            String serviceClassNameManifestKey, String numChildServicesManifestKey,
-            boolean bindAsExternalService, boolean useStrongBinding) {
+            String packageName, String serviceClassNameManifestKey,
+            String numChildServicesManifestKey, boolean bindToCaller, boolean bindAsExternalService,
+            boolean useStrongBinding) {
         String serviceClassName = null;
         int numServices = -1;
         PackageManager packageManager = context.getPackageManager();
@@ -114,8 +112,8 @@ public class ChildConnectionAllocator {
             throw new RuntimeException("Illegal meta data value: the child service doesn't exist");
         }
 
-        return new ChildConnectionAllocator(launcherHandler, creationParams, packageName,
-                serviceClassName, bindAsExternalService, useStrongBinding, numServices);
+        return new ChildConnectionAllocator(launcherHandler, packageName, serviceClassName,
+                bindToCaller, bindAsExternalService, useStrongBinding, numServices);
     }
 
     // TODO(jcivelli): remove this method once crbug.com/693484 has been addressed.
@@ -143,21 +141,21 @@ public class ChildConnectionAllocator {
      * instead of being retrieved from the AndroidManifest.xml.
      */
     @VisibleForTesting
-    public static ChildConnectionAllocator createForTest(ChildProcessCreationParams creationParams,
-            String packageName, String serviceClassName, int serviceCount,
+    public static ChildConnectionAllocator createForTest(String packageName,
+            String serviceClassName, int serviceCount, boolean bindToCaller,
             boolean bindAsExternalService, boolean useStrongBinding) {
-        return new ChildConnectionAllocator(new Handler(), creationParams, packageName,
-                serviceClassName, bindAsExternalService, useStrongBinding, serviceCount);
+        return new ChildConnectionAllocator(new Handler(), packageName, serviceClassName,
+                bindToCaller, bindAsExternalService, useStrongBinding, serviceCount);
     }
 
-    private ChildConnectionAllocator(Handler launcherHandler,
-            ChildProcessCreationParams creationParams, String packageName, String serviceClassName,
-            boolean bindAsExternalService, boolean useStrongBinding, int numChildServices) {
+    private ChildConnectionAllocator(Handler launcherHandler, String packageName,
+            String serviceClassName, boolean bindToCaller, boolean bindAsExternalService,
+            boolean useStrongBinding, int numChildServices) {
         mLauncherHandler = launcherHandler;
         assert isRunningOnLauncherThread();
-        mCreationParams = creationParams;
         mPackageName = packageName;
         mServiceClassName = serviceClassName;
+        mBindToCaller = bindToCaller;
         mBindAsExternalService = bindAsExternalService;
         mUseStrongBinding = useStrongBinding;
         mChildProcessConnections = new ChildProcessConnection[numChildServices];
@@ -240,7 +238,7 @@ public class ChildConnectionAllocator {
                 };
 
         ChildProcessConnection connection = mConnectionFactory.createConnection(
-                context, serviceName, mBindAsExternalService, serviceBundle, mCreationParams);
+                context, serviceName, mBindToCaller, mBindAsExternalService, serviceBundle);
         mChildProcessConnections[slot] = connection;
 
         for (Listener listener : mListeners) {

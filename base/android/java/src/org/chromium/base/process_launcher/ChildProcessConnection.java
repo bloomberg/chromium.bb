@@ -84,15 +84,6 @@ public class ChildProcessConnection {
         private final int mBindFlags;
         private boolean mBound;
 
-        private Intent createServiceBindIntent() {
-            Intent intent = new Intent();
-            if (mCreationParams != null) {
-                mCreationParams.addIntentExtras(intent);
-            }
-            intent.setComponent(mServiceName);
-            return intent;
-        }
-
         private ChildServiceConnectionImpl(int bindFlags) {
             mBindFlags = bindFlags;
         }
@@ -102,7 +93,8 @@ public class ChildProcessConnection {
             if (!mBound) {
                 try {
                     TraceEvent.begin("ChildProcessConnection.ChildServiceConnectionImpl.bind");
-                    Intent intent = createServiceBindIntent();
+                    Intent intent = new Intent();
+                    intent.setComponent(mServiceName);
                     if (mServiceBundle != null) {
                         intent.putExtras(mServiceBundle);
                     }
@@ -168,7 +160,9 @@ public class ChildProcessConnection {
     // should be common to all processes of that type.
     private final Bundle mServiceBundle;
 
-    private final ChildProcessCreationParams mCreationParams;
+    // Whether bindToCaller should be called on the service after setup to check that only one
+    // process is bound to the service.
+    private final boolean mBindToCaller;
 
     private static class ConnectionParams {
         final Bundle mConnectionBundle;
@@ -241,35 +235,21 @@ public class ChildProcessConnection {
     // Timestamp when watchdog was last reset, which is equivalent to when start was called.
     private long mLastWatchdogResetTimestamp;
 
-    public ChildProcessConnection(Context context, ComponentName serviceName,
-            boolean bindAsExternalService, Bundle serviceBundle,
-            ChildProcessCreationParams creationParams) {
-        this(context, serviceName, bindAsExternalService, serviceBundle, creationParams,
-                true /* doBind */);
-    }
-
-    private ChildProcessConnection(Context context, ComponentName serviceName,
-            boolean bindAsExternalService, Bundle serviceBundle,
-            ChildProcessCreationParams creationParams, boolean doBind) {
+    public ChildProcessConnection(Context context, ComponentName serviceName, boolean bindToCaller,
+            boolean bindAsExternalService, Bundle serviceBundle) {
         mLauncherHandler = new Handler();
         mContext = context;
-        mCreationParams = creationParams;
         mServiceName = serviceName;
-        mServiceBundle = serviceBundle;
+        mServiceBundle = serviceBundle != null ? serviceBundle : new Bundle();
+        mServiceBundle.putBoolean(ChildProcessConstants.EXTRA_BIND_TO_CALLER, bindToCaller);
+        mBindToCaller = bindToCaller;
 
-        if (doBind) {
-            int defaultFlags = Context.BIND_AUTO_CREATE
-                    | (bindAsExternalService ? Context.BIND_EXTERNAL_SERVICE : 0);
-            mInitialBinding = createServiceConnection(defaultFlags);
-            mModerateBinding = createServiceConnection(defaultFlags);
-            mStrongBinding = createServiceConnection(defaultFlags | Context.BIND_IMPORTANT);
-            mWaivedBinding = createServiceConnection(defaultFlags | Context.BIND_WAIVE_PRIORITY);
-        } else {
-            mInitialBinding = null;
-            mModerateBinding = null;
-            mStrongBinding = null;
-            mWaivedBinding = null;
-        }
+        int defaultFlags = Context.BIND_AUTO_CREATE
+                | (bindAsExternalService ? Context.BIND_EXTERNAL_SERVICE : 0);
+        mInitialBinding = createServiceConnection(defaultFlags);
+        mModerateBinding = createServiceConnection(defaultFlags);
+        mStrongBinding = createServiceConnection(defaultFlags | Context.BIND_IMPORTANT);
+        mWaivedBinding = createServiceConnection(defaultFlags | Context.BIND_WAIVE_PRIORITY);
     }
 
     public final Context getContext() {
@@ -400,28 +380,24 @@ public class ChildProcessConnection {
             mDidOnServiceConnected = true;
             mService = IChildProcessService.Stub.asInterface(service);
 
-            boolean boundToUs = false;
-            try {
-                boolean bindCheck =
-                        mCreationParams != null && mCreationParams.getBindToCallerCheck();
-                boundToUs = bindCheck ? mService.bindToCaller() : true;
-            } catch (RemoteException ex) {
-                // Do not trigger the StartCallback here, since the service is already
-                // dead and the onChildStopped callback will run from onServiceDisconnected().
-                Log.e(TAG, "Failed to bind service to connection.", ex);
-                return;
-            }
-
-            if (mServiceCallback != null) {
-                if (boundToUs) {
-                    mServiceCallback.onChildStarted();
-                } else {
-                    mServiceCallback.onChildStartFailed();
+            if (mBindToCaller) {
+                try {
+                    if (!mService.bindToCaller()) {
+                        if (mServiceCallback != null) {
+                            mServiceCallback.onChildStartFailed();
+                        }
+                        return;
+                    }
+                } catch (RemoteException ex) {
+                    // Do not trigger the StartCallback here, since the service is already
+                    // dead and the onChildStopped callback will run from onServiceDisconnected().
+                    Log.e(TAG, "Failed to bind service to connection.", ex);
+                    return;
                 }
             }
 
-            if (!boundToUs) {
-                return;
+            if (mServiceCallback != null) {
+                mServiceCallback.onChildStarted();
             }
 
             mServiceConnectComplete = true;
@@ -682,15 +658,6 @@ public class ChildProcessConnection {
     @VisibleForTesting
     public void crashServiceForTesting() throws RemoteException {
         mService.crashIntentionallyForTesting();
-    }
-
-    /** Creates a connection with no service bindings. */
-    @VisibleForTesting
-    static ChildProcessConnection createUnboundConnectionForTesting(Context context,
-            ComponentName serviceName, boolean bindAsExternalService, Bundle serviceBundle,
-            ChildProcessCreationParams creationParams) {
-        return new ChildProcessConnection(context, serviceName, bindAsExternalService,
-                serviceBundle, creationParams, false /* doBind */);
     }
 
     @VisibleForTesting
