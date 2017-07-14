@@ -37,7 +37,7 @@ namespace {
 
 const char kMinStalenessParamName[] = "min_staleness_in_minutes";
 const char kMaxStalenessParamName[] = "max_staleness_in_minutes";
-const int kMinStalenessParamDefaultValue = 2;
+const int kMinStalenessParamDefaultValue = 5;
 const int kMaxStalenessParamDefaultValue = 1440;
 
 void RecordPreviewsInfoBarAction(
