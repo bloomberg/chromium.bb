@@ -43,7 +43,7 @@ public class SectionList
 
     public SectionList(SuggestionsUiDelegate uiDelegate, OfflinePageBridge offlinePageBridge) {
         mUiDelegate = uiDelegate;
-        mUiDelegate.getSuggestionsSource().setObserver(this);
+        mUiDelegate.getSuggestionsSource().addObserver(this);
         mOfflinePageBridge = offlinePageBridge;
 
         mUiDelegate.addDestructionObserver(new DestructionObserver() {
