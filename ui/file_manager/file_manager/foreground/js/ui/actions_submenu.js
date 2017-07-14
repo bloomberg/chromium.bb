@@ -62,6 +62,7 @@ ActionsSubmenu.prototype.setActionsModel = function(actionsModel) {
   if (shareAction) {
     var menuItem = this.addMenuItem_({});
     menuItem.command = '#share';
+    menuItem.classList.toggle('hide-on-toolbar', true);
     delete remainingActions[ActionsModel.CommonActionId.SHARE];
   }
   util.queryDecoratedElement('#share', cr.ui.Command).canExecuteChange();

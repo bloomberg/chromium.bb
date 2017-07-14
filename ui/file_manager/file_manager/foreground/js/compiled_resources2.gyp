@@ -189,6 +189,7 @@
         'quick_view_uma',
         'scan_controller',
         'search_controller',
+        'selection_menu_controller',
         'sort_menu_controller',
         'spinner_controller',
         'task_controller',
@@ -500,6 +501,15 @@
         'task_controller',
         'ui/compiled_resources2.gyp:location_line',
         'ui/compiled_resources2.gyp:search_box',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
+    {
+      'target_name': 'selection_menu_controller',
+      'dependencies': [
+        '../elements/compiled_resources2.gyp:files_toggle_ripple',
+        'directory_model',
+        'file_manager_commands',
       ],
       'includes': ['../../../compile_js2.gypi'],
     },

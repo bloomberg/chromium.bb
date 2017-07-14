@@ -217,6 +217,14 @@ function FileManager() {
   this.gearMenuController_ = null;
 
   /**
+   * Controller for the context menu opened by the action bar button in the
+   * check-select mode.
+   * @type {SelectionMenuController}
+   * @private
+   */
+  this.selectionMenuController_ = null;
+
+  /**
    * Toolbar controller.
    * @type {ToolbarController}
    * @private
@@ -554,6 +562,9 @@ FileManager.prototype = /** @struct */ {
         this.ui_.gearMenu,
         this.directoryModel_,
         this.commandHandler_);
+    this.selectionMenuController_ = new SelectionMenuController(
+        this.ui_.selectionMenuButton,
+        util.queryDecoratedElement('#file-context-menu', cr.ui.Menu));
     this.toolbarController_ = new ToolbarController(
         this.ui_.toolbar,
         this.ui_.dialogNavigationList,

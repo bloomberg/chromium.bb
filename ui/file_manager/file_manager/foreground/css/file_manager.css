@@ -433,6 +433,16 @@ body.check-select #gear-button {
   display: none;
 }
 
+#selection-menu-button > .icon {
+  background-image: -webkit-image-set(
+      url(../images/files/ui/menu.png) 1x,
+      url(../images/files/ui/2x/menu.png) 2x);
+}
+
+body:not(.check-select) #selection-menu-button {
+  display: none;
+}
+
 .cloud-import-combo-button {
   height: 32px;
   margin: 8px;
@@ -1721,6 +1731,10 @@ cr-menu#file-context-menu {
 
 cr-menu#file-context-menu > :not(hr) {
   -webkit-padding-end: 8px;
+}
+
+cr-menu#file-context-menu.toolbar-menu > .hide-on-toolbar {
+  display: none;
 }
 
 cr-menu.chrome-menu hr {
