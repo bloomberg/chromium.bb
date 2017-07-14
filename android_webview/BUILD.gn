@@ -180,8 +180,6 @@ repack("repack_100_percent") {
   }
 }
 
-webview_license_path = "$target_gen_dir/webview_licenses.notice"
-
 android_assets("pak_file_assets") {
   sources = [
     "$target_gen_dir/chrome_100_percent.pak",
@@ -222,28 +220,10 @@ java_group("stub_assets") {
 }
 
 android_assets("license_assets") {
-  sources = [
-    webview_license_path,
-  ]
+  renaming_sources = [ "$root_gen_dir/components/resources/about_credits.html" ]
+  renaming_destinations = [ "webview_licenses.notice" ]
   deps = [
-    ":generate_webview_license_notice",
-  ]
-}
-
-action("generate_webview_license_notice") {
-  script = "tools/webview_licenses.py"
-  depfile = "$target_gen_dir/$target_name.d"
-  inputs = [
-    "tools/licenses_notice.tmpl",
-  ]
-  outputs = [
-    webview_license_path,
-  ]
-  args = [
-    "notice",
-    rebase_path(webview_license_path, root_build_dir),
-    "--depfile",
-    rebase_path(depfile, root_build_dir),
+    "//components/resources:about_credits",
   ]
 }
 

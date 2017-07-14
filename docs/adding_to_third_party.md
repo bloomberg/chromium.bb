@@ -67,10 +67,6 @@ Run the following scripts:
   about:credits page in Google Chrome builds.
 * `src/tools/checklicenses/checklicenses.py` - See below for info on how to
   handle possible failures.
-* If you are adding code that will be present in the content layer, please make
-  sure that the license used is compliant with Android tree requirements because
-  this code will also be used in Android WebView. You need to run
-  `src/android_webview/tools/webview_licenses.py scan`
 
 See the ["Odds n' Ends"](adding_to_third_party.md#Odds-n_Ends) Section below if
 you run into any failures running these.
@@ -187,16 +183,3 @@ __If the failure looks like ...   ... the right action is to ... __
       resulting binaries can't use GPL code. Ideally we just shouldn't have
       those files at all in the tree. If in doubt, please ask mal@chromium.org
 
-### Handling `webview_licenses.py` failures
-
-__If the failure looks like ...   ... the right action is to ... __
-
-* Missing license file
-    * Make sure that the license file is present. It should be called 'LICENSE',
-      or otherwise README.chromium file must point to it explicitly.
-* The following files contain a third-party license but are not in a listed
-  third-party directory...
-    * Check if it's a false positive (e.g. 'copyright' word used in a string
-      literal), if so, update
-      [src/tools/copyright_scanner/third_party_files_whitelist.txt](https://code.google.com/p/chromium/codesearch#chromium/src/tools/copyright_scanner/third_party_files_whitelist.txt)
-      file. Otherwise, please move the code into third_party.
