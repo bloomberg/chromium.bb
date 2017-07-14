@@ -313,6 +313,7 @@ const struct DomKeyToKeyboardCodeEntry {
     {DomKey::BRIGHTNESS_DOWN, VKEY_BRIGHTNESS_DOWN},
     {DomKey::BRIGHTNESS_UP, VKEY_BRIGHTNESS_UP},
     {DomKey::POWER, VKEY_POWER},
+    {DomKey::SETTINGS, VKEY_SETTINGS},
 #endif
     {DomKey::PRINT_SCREEN, VKEY_SNAPSHOT},
 // IME and Composition Keys
@@ -600,6 +601,10 @@ const struct DomCodeToKeyboardCodeEntry {
      VKEY_MEDIA_LAUNCH_APP2},                   // 0x0C0192 LaunchApp2
     {DomCode::LAUNCH_APP1,
      VKEY_MEDIA_LAUNCH_APP1},                   // 0x0C0194 LaunchApp1
+#if defined(OS_POSIX)
+    {DomCode::LAUNCH_CONTROL_PANEL,
+     VKEY_SETTINGS},                            // 0x0C019F Launch Assistant
+#endif
     {DomCode::BROWSER_SEARCH,
      VKEY_BROWSER_SEARCH},                      // 0x0C0221 BrowserSearch
     {DomCode::BROWSER_HOME, VKEY_BROWSER_HOME}, // 0x0C0223 BrowserHome
