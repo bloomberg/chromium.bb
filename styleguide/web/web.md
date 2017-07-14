@@ -21,8 +21,8 @@ styleguide](../c++/c++.md).
 
 This guide follows and builds on:
 
-* [Google HTML/CSS Style Guide](https://google.github.io/styleguide/htmlcssguide.xml)
-* [Google JavaScript Style Guide](https://google.github.io/styleguide/javascriptguide.xml)
+* [Google HTML/CSS Style Guide](https://google.github.io/styleguide/htmlcssguide.html)
+* [Google JavaScript Style Guide](https://google.github.io/styleguide/jsguide.html)
 * [Google Polymer Style Guide](http://go/polymer-style)
 
 <div class="note">
@@ -85,7 +85,7 @@ use <code>on-event</code>-style event listener wiring and
 ## HTML
 
 See the [Google HTML/CSS Style
-guide](https://google.github.io/styleguide/htmlcssguide.xml).
+guide](https://google.github.io/styleguide/htmlcssguide.html).
 
 ### Head
 
@@ -178,7 +178,7 @@ All <code>&lt;custom-elements&gt;</code> and some HTML elements like
 ## CSS
 
 See the [Google HTML/CSS style
-guide](https://google.github.io/styleguide/htmlcssguide.xml) (and again, browser
+guide](https://google.github.io/styleguide/htmlcssguide.html) (and again, browser
 compatibility issues are less relevant for Chrome-only code).
 
 ```css
@@ -306,7 +306,7 @@ For properties that don't have an RTL-friendly alternatives, use
 ### Style
 
 See the [Google JavaScript Style
-Guide](https://google.github.io/styleguide/javascriptguide.xml).
+Guide](https://google.github.io/styleguide/jsguide.html).
 
 * Use `$('element-id')` instead of `document.getElementById`
 
