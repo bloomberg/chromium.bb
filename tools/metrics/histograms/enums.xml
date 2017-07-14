@@ -33506,6 +33506,15 @@ from previous Chrome versions.
   <int value="6" label="Google Docs and Drive"/>
 </enum>
 
+<enum name="ServiceWorkerStartForNavigationHintResult">
+  <int value="0" label="STARTED"/>
+  <int value="1" label="ALREADY_RUNNING"/>
+  <int value="2" label="NO_SERVICE_WORKER_REGISTRATION"/>
+  <int value="3" label="NO_ACTIVE_SERVICE_WORKER_VERSION"/>
+  <int value="4" label="NO_FETCH_HANDLER"/>
+  <int value="5" label="FAILED"/>
+</enum>
+
 <enum name="ServiceWorkerStatusCode">
   <int value="0" label="SERVICE_WORKER_OK"/>
   <int value="1" label="SERVICE_WORKER_ERROR_FAILED"/>
