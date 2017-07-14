@@ -222,6 +222,27 @@ class PasswordProtectionServiceTest : public testing::Test {
                                                verdict_received_time);
   }
 
+  void CacheInvalidVerdict() {
+    GURL invalid_hostname("http://invalid.com");
+    std::unique_ptr<base::DictionaryValue> verdict_dictionary =
+        base::DictionaryValue::From(content_setting_map_->GetWebsiteSetting(
+            invalid_hostname, GURL(), CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION,
+            std::string(), nullptr));
+
+    if (!verdict_dictionary.get())
+      verdict_dictionary = base::MakeUnique<base::DictionaryValue>();
+
+    std::unique_ptr<base::DictionaryValue> invalid_verdict_entry =
+        base::MakeUnique<base::DictionaryValue>();
+    invalid_verdict_entry->SetString("invalid", "invalid_string");
+
+    verdict_dictionary->SetWithoutPathExpansion(
+        "invalid_cache_expression", std::move(invalid_verdict_entry));
+    content_setting_map_->SetWebsiteSettingDefaultScope(
+        invalid_hostname, GURL(), CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION,
+        std::string(), std::move(verdict_dictionary));
+  }
+
   size_t GetStoredVerdictCount(LoginReputationClientRequest::TriggerType type) {
     return password_protection_service_->GetStoredVerdictCount(type);
   }
@@ -813,6 +834,23 @@ TEST_F(PasswordProtectionServiceTest, TestCleanUpExpiredVerdict) {
                 GURL("https://bar.com/xyz/index.jsp"),
                 LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
                 &actual_verdict));
+}
+
+TEST_F(PasswordProtectionServiceTest,
+       TestCleanUpExpiredVerdictWithInvalidEntry) {
+  CacheInvalidVerdict();
+  ContentSettingsForOneType password_protection_settings;
+  content_setting_map_->GetSettingsForOneType(
+      CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION, std::string(),
+      &password_protection_settings);
+  ASSERT_FALSE(password_protection_settings.empty());
+
+  password_protection_service_->CleanUpExpiredVerdicts();
+
+  content_setting_map_->GetSettingsForOneType(
+      CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION, std::string(),
+      &password_protection_settings);
+  EXPECT_TRUE(password_protection_settings.empty());
 }
 
 TEST_F(PasswordProtectionServiceTest, VerifyPasswordOnFocusRequestProto) {
