@@ -12,6 +12,7 @@ function test()
         InspectorTest.addResult("Parsing url: " + url);
         InspectorTest.addResult("  isValid: " + parsedURL.isValid);
         InspectorTest.addResult("  scheme: " + parsedURL.scheme);
+        InspectorTest.addResult("  user: " + parsedURL.user);
         InspectorTest.addResult("  host: " + parsedURL.host);
         InspectorTest.addResult("  port: " + parsedURL.port);
         InspectorTest.addResult("  path: " + parsedURL.path);
@@ -22,9 +23,9 @@ function test()
     }
 
     parseAndDumpURL("http://example.com/?queryParam1=value1&queryParam2=value2#fragmentWith/Many//Slashes");
-    parseAndDumpURL("http://example.com/foo.html?queryParam1=value1&queryParam2=value2#fragmentWith/Many//Slashes");
-    parseAndDumpURL("http://example.com/foo/bar.html?queryParam1=value1&queryParam2=value2#fragmentWith/Many//Slashes");
-    parseAndDumpURL("http://example.com/foo/bar/baz.html?queryParam1=value1&queryParam2=value2#fragmentWith/Many//Slashes");
+    parseAndDumpURL("http://example.com/foo.html?queryParam1=value1@&queryParam2=value2#fragmentWith/Many//Slashes");
+    parseAndDumpURL("http://user42:Alina-!$&@example.com/foo/bar.html?queryParam1=value1&queryParam2=value2#fragmentWith/Many//Slashes");
+    parseAndDumpURL("http://foo@example.com/foo/bar/baz.html?queryParam1=value1&queryParam2=value2#fragmentWith/Many//Slashes");
 
     // Test how double (and more than double) slashes are parsed.
     parseAndDumpURL("http://example.com//?queryParam1=value1");
