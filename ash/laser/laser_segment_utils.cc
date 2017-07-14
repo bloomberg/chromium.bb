@@ -4,6 +4,7 @@
 
 #include "ash/laser/laser_segment_utils.h"
 
+#include <cmath>
 #include <limits>
 
 #include "base/logging.h"
@@ -67,8 +68,8 @@ void ComputeProjectedPoints(const gfx::PointF& point,
                             gfx::PointF* second_projection) {
   // If the slope is NaN, the y-intercept should be NaN too. The line is thus
   // vertical and projections will be projected straight up/down from |point|.
-  if (isnan(line_slope)) {
-    DCHECK(isnan(line_y_intercept));
+  if (std::isnan(line_slope)) {
+    DCHECK(std::isnan(line_y_intercept));
 
     *first_projection =
         gfx::PointF(point.x(), point.y() + round(projection_distance));
