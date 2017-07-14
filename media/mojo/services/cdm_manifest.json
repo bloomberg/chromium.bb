@@ -1,0 +1,14 @@
+{
+  "name": "cdm",
+  "display_name": "Content Decryption Module Service",
+  "interface_provider_specs": {
+    "service_manager:connector": {
+      "provides": {
+        "media:cdm": [ "media::mojom::MediaService" ]
+      },
+      "requires": {
+        "*": [ "app" ]
+      }
+    }
+  }
+}
