@@ -128,7 +128,7 @@
 
     <div id="labelWrapper">
       <span id="label" hidden$="[[!label]]">[[label]]</span>
-      <content></content>
+      <slot></slot>
     </div>
 
     <template is="dom-if" if="[[showIndicator_(controlled_, name, pref.*)]]">
