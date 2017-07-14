@@ -444,11 +444,9 @@ class BluetoothDeviceClientImpl : public BluetoothDeviceClient,
       return;
     }
 
-    // TODO(crbug.com/725367): Use constants in cros_system_api once it is
-    // rolled.
     dbus::MethodCall method_call(
         bluetooth_plugin_device::kBluetoothPluginInterface,
-        "SetLEConnectionParameters");
+        bluetooth_plugin_device::kSetLEConnectionParameters);
 
     dbus::MessageWriter writer(&method_call);
     dbus::MessageWriter dict_writer(nullptr);
@@ -457,7 +455,9 @@ class BluetoothDeviceClientImpl : public BluetoothDeviceClient,
     {
       dbus::MessageWriter dict_entry_writer(nullptr);
       dict_writer.OpenDictEntry(&dict_entry_writer);
-      dict_entry_writer.AppendString("MinimumConnectionInterval");
+      dict_entry_writer.AppendString(
+          bluetooth_plugin_device::
+              kLEConnectionParameterMinimumConnectionInterval);
       dict_entry_writer.AppendUint16(conn_params.min_connection_interval);
       dict_writer.CloseContainer(&dict_entry_writer);
     }
@@ -465,7 +465,9 @@ class BluetoothDeviceClientImpl : public BluetoothDeviceClient,
     {
       dbus::MessageWriter dict_entry_writer(nullptr);
       dict_writer.OpenDictEntry(&dict_entry_writer);
-      dict_entry_writer.AppendString("MaximumConnectionInterval");
+      dict_entry_writer.AppendString(
+          bluetooth_plugin_device::
+              kLEConnectionParameterMaximumConnectionInterval);
       dict_entry_writer.AppendUint16(conn_params.max_connection_interval);
       dict_writer.CloseContainer(&dict_entry_writer);
     }
