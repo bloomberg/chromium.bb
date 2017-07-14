@@ -678,9 +678,9 @@ void WallpaperManager::SetCustomWallpaper(
     // Block shutdown on this task. Otherwise, we may lose the custom wallpaper
     // that the user selected.
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner =
-        BrowserThread::GetBlockingPool()
-            ->GetSequencedTaskRunnerWithShutdownBehavior(
-                sequence_token_, base::SequencedWorkerPool::BLOCK_SHUTDOWN);
+        base::CreateSequencedTaskRunnerWithTraits(
+            {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
+             base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
     // TODO(bshe): This may break if RawImage becomes RefCountedMemory.
     blocking_task_runner->PostTask(
         FROM_HERE, base::BindOnce(&WallpaperManager::SaveCustomWallpaper,
@@ -982,12 +982,9 @@ WallpaperManager::WallpaperManager()
                  content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_WALLPAPER_ANIMATION_FINISHED,
                  content::NotificationService::AllSources());
-  sequence_token_ = BrowserThread::GetBlockingPool()->GetNamedSequenceToken(
-      wallpaper::kWallpaperSequenceTokenName);
-  task_runner_ =
-      BrowserThread::GetBlockingPool()
-          ->GetSequencedTaskRunnerWithShutdownBehavior(
-              sequence_token_, base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
+  task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
+      {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
 
   user_manager::UserManager::Get()->AddSessionStateObserver(this);
 

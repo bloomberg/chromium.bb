@@ -594,9 +594,6 @@ class WALLPAPER_EXPORT WallpaperManagerBase {
 
   base::ThreadChecker thread_checker_;
 
-  // Sequence token associated with wallpaper operations.
-  base::SequencedWorkerPool::SequenceToken sequence_token_;
-
   // Wallpaper sequenced task runner.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
