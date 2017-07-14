@@ -7,45 +7,5 @@ source_set("native_app_launcher") {
   sources = [
     "ios_appstore_ids.h",
     "ios_appstore_ids.mm",
-    "native_app_infobar_controller.h",
-    "native_app_infobar_controller.mm",
-    "native_app_infobar_delegate.h",
-    "native_app_infobar_delegate.mm",
-    "native_app_navigation_controller_protocol.h",
-  ]
-  deps = [
-    "//base",
-    "//components/infobars/core",
-    "//ios/chrome/app/strings",
-    "//ios/chrome/browser/infobars",
-    "//ios/chrome/browser/ui/infobars",
-    "//ios/public/provider/chrome/browser/native_app_launcher",
-    "//ui/base",
-    "//url",
-  ]
-}
-
-source_set("unit_tests") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  testonly = true
-  sources = [
-    "native_app_infobar_controller_unittest.mm",
-    "native_app_infobar_delegate_unittest.mm",
-  ]
-  deps = [
-    ":native_app_launcher",
-    "//base",
-    "//base/test:test_support",
-    "//components/infobars/core",
-    "//ios/chrome/browser",
-    "//ios/chrome/test:test_support",
-    "//ios/public/provider/chrome/browser",
-    "//ios/public/provider/chrome/browser:test_support",
-    "//ios/public/provider/chrome/browser/native_app_launcher",
-    "//ios/web",
-    "//net:test_support",
-    "//testing/gmock",
-    "//testing/gtest",
-    "//url",
   ]
 }

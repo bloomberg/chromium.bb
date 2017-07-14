@@ -35,13 +35,6 @@ class InfoBarViewDelegate;
 // Adds icon subview.
 - (void)addLeftIcon:(UIImage*)image;
 
-// Adds transparent icon of size |imageSize| as placeholder during the time when
-// the icon is being downloaded.
-- (void)addPlaceholderTransparentIcon:(CGSize const&)imageSize;
-
-// Adds an icon subview with rounded corners and a shadow.
-- (void)addLeftIconWithRoundedCornersAndShadow:(UIImage*)image;
-
 // Creates a new string from |string| that is interpreted as a link by
 // |addLabel:|. |tag| must not be 0.
 + (NSString*)stringAsLink:(NSString*)string tag:(NSUInteger)tag;
