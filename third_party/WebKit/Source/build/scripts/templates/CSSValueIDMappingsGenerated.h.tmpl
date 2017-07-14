@@ -27,6 +27,7 @@ template <class T>
 T cssValueIDToPlatformEnumGenerated(CSSValueID);
 
 {% for enum_name, mapping in mappings.items() %}
+{% if 'segment' not in mapping %}
 template <>
 inline {{enum_name}} cssValueIDToPlatformEnumGenerated(CSSValueID v) {
   switch (v) {
@@ -51,7 +52,41 @@ inline CSSValueID platformEnumToCSSValueIDGenerated({{enum_name}} v) {
       return CSSValueNone;
   }
 }
+{% else %}
 
+template <>
+inline {{enum_name}} cssValueIDToPlatformEnumGenerated(CSSValueID v) {
+  {% if mapping['mapping'] | length > mapping.longest_segment_length %}
+  switch (v) {
+  {% for cs_value, cs_num, css_value, css_num in mapping['mapping']: %}
+  {% if css_num < mapping.start_segment[3] or css_num > mapping.end_segment[3] %}
+    case {{css_value}}:
+      return {{enum_name}}::{{cs_value}};
+  {% endif %}
+  {% endfor %}
+    default:
+      DCHECK(v >= {{mapping.start_segment[2]}} && v <= {{mapping.end_segment[2]}}) ;
+      return static_cast<{{enum_name}}>(v - {{mapping.start_segment[2]}} + static_cast<int>({{enum_name}}::{{mapping.start_segment[0]}}));
+  }
+  {% else %}
+  DCHECK(v >= {{mapping.start_segment[2]}} && v <= {{mapping.end_segment[2]}}) ;
+  return static_cast<{{enum_name}}>(v - {{mapping.start_segment[2]}} + static_cast<int>({{enum_name}}::{{mapping.start_segment[0]}}));
+  {% endif %}
+}
+
+inline CSSValueID platformEnumToCSSValueIDGenerated({{enum_name}} v) {
+  switch (v) {
+  {% for cs_value, cs_num, css_value, css_num in mapping['mapping']: %}
+    case {{enum_name}}::{{cs_value}}:
+      return {{css_value}};
+  {% endfor %}
+    default:
+      NOTREACHED();
+      return CSSValueNone;
+  }
+}
+
+{% endif %}
 {% endfor %}
 } // namespace detail
 

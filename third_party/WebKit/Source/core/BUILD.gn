@@ -442,8 +442,12 @@ css_properties("make_core_generated_computed_style_base") {
 
 css_properties("make_core_generated_css_value_id_mappings") {
   script = "../build/scripts/make_css_value_id_mappings.py"
-  other_inputs =
-      [ "../build/scripts/templates/CSSValueIDMappingsGenerated.h.tmpl" ]
+  in_files = [
+        "css/CSSValueKeywords.json5"
+  ]
+  other_inputs = [
+        "../build/scripts/templates/CSSValueIDMappingsGenerated.h.tmpl",
+  ]
   outputs = [
     "$blink_core_output_dir/CSSValueIDMappingsGenerated.h",
   ]
