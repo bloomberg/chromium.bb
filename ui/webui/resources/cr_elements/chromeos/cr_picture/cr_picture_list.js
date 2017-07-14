@@ -199,6 +199,9 @@ Polymer({
    * @private
    */
   onIronActivate_: function(event) {
-    this.selectImage_(event.detail.item, true /* activate */);
+    var type = event.detail.item.dataset.type;
+    // When clicking on the 'old' (current) image, do not activate (discard) it.
+    var activate = type != CrPicture.SelectionTypes.OLD;
+    this.selectImage_(event.detail.item, activate);
   },
 });
