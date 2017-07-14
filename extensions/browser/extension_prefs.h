@@ -12,6 +12,7 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/strings/string_piece_forward.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -247,30 +248,30 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
 
   // ExtensionScopedPrefs methods:
   void UpdateExtensionPref(const std::string& id,
-                           const std::string& key,
+                           base::StringPiece key,
                            std::unique_ptr<base::Value> value) override;
 
   void DeleteExtensionPrefs(const std::string& id) override;
 
   bool ReadPrefAsBoolean(const std::string& extension_id,
-                         const std::string& pref_key,
+                         base::StringPiece pref_key,
                          bool* out_value) const override;
 
   bool ReadPrefAsInteger(const std::string& extension_id,
-                         const std::string& pref_key,
+                         base::StringPiece pref_key,
                          int* out_value) const override;
 
   bool ReadPrefAsString(const std::string& extension_id,
-                        const std::string& pref_key,
+                        base::StringPiece pref_key,
                         std::string* out_value) const override;
 
   bool ReadPrefAsList(const std::string& extension_id,
-                      const std::string& pref_key,
+                      base::StringPiece pref_key,
                       const base::ListValue** out_value) const override;
 
   bool ReadPrefAsDictionary(
       const std::string& extension_id,
-      const std::string& pref_key,
+      base::StringPiece pref_key,
       const base::DictionaryValue** out_value) const override;
 
   bool HasPrefForExtension(const std::string& extension_id) const override;
@@ -601,7 +602,7 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
   // Interprets the list pref, |pref_key| in |extension_id|'s preferences, as a
   // URLPatternSet. The |valid_schemes| specify how to parse the URLPatterns.
   bool ReadPrefAsURLPatternSet(const std::string& extension_id,
-                               const std::string& pref_key,
+                               base::StringPiece pref_key,
                                URLPatternSet* result,
                                int valid_schemes) const;
 
@@ -614,24 +615,24 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
   // Converts |new_value| to a list of strings and sets the |pref_key| pref
   // belonging to |extension_id|.
   void SetExtensionPrefURLPatternSet(const std::string& extension_id,
-                                     const std::string& pref_key,
+                                     base::StringPiece pref_key,
                                      const URLPatternSet& new_value);
 
   // Read the boolean preference entry and return true if the preference exists
   // and the preference's value is true; false otherwise.
   bool ReadPrefAsBooleanAndReturn(const std::string& extension_id,
-                                  const std::string& key) const;
+                                  base::StringPiece pref_key) const;
 
   // Interprets |pref_key| in |extension_id|'s preferences as an
   // PermissionSet, and passes ownership of the set to the caller.
   std::unique_ptr<const PermissionSet> ReadPrefAsPermissionSet(
       const std::string& extension_id,
-      const std::string& pref_key) const;
+      base::StringPiece pref_key) const;
 
   // Converts the |new_value| to its value and sets the |pref_key| pref
   // belonging to |extension_id|.
   void SetExtensionPrefPermissionSet(const std::string& extension_id,
-                                     const std::string& pref_key,
+                                     base::StringPiece pref_key,
                                      const PermissionSet& new_value);
 
   // Returns an immutable dictionary for extension |id|'s prefs, or NULL if it
