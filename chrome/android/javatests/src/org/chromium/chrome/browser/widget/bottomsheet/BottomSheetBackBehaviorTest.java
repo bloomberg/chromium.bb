@@ -275,7 +275,7 @@ public class BottomSheetBackBehaviorTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mBottomSheet.endAnimationsForTests();
+                mBottomSheet.endAnimations();
             }
         });
     }

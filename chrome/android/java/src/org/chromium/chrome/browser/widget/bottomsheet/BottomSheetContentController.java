@@ -34,6 +34,7 @@ import org.chromium.chrome.browser.suggestions.SuggestionsBottomSheetContent;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
 
@@ -103,7 +104,7 @@ public class BottomSheetContentController extends BottomNavigationView
             if (mSelectedItemId != 0 && mSelectedItemId != R.id.action_home) {
                 showBottomSheetContent(R.id.action_home);
             } else {
-                clearBottomSheetContents();
+                clearBottomSheetContents(false);
             }
             // TODO(twellington): determine a policy for destroying the
             //                    SuggestionsBottomSheetContent.
@@ -122,7 +123,7 @@ public class BottomSheetContentController extends BottomNavigationView
             }
 
             if (mBottomSheet.getSheetState() == BottomSheet.SHEET_STATE_PEEK) {
-                clearBottomSheetContents();
+                clearBottomSheetContents(false);
             }
         }
 
@@ -142,11 +143,25 @@ public class BottomSheetContentController extends BottomNavigationView
     private boolean mShouldOpenSheetOnNextContentChange;
     private PlaceholderSheetContent mPlaceholderContent;
     private boolean mOmniboxHasFocus;
+    private TabModelSelectorObserver mTabModelSelectorObserver;
 
     public BottomSheetContentController(Context context, AttributeSet atts) {
         super(context, atts);
 
         mPlaceholderContent = new PlaceholderSheetContent(context);
+    }
+
+    /** Called when the activity containing the bottom sheet is destroyed. */
+    public void destroy() {
+        clearBottomSheetContents(true);
+        if (mPlaceholderContent != null) {
+            mPlaceholderContent.destroy();
+            mPlaceholderContent = null;
+        }
+        if (mTabModelSelector != null) {
+            mTabModelSelector.removeObserver(mTabModelSelectorObserver);
+            mTabModelSelector = null;
+        }
     }
 
     /**
@@ -162,7 +177,7 @@ public class BottomSheetContentController extends BottomNavigationView
         mBottomSheet.addObserver(mBottomSheetObserver);
         mActivity = activity;
         mTabModelSelector = tabModelSelector;
-        mTabModelSelector.addObserver(new EmptyTabModelSelectorObserver() {
+        mTabModelSelectorObserver = new EmptyTabModelSelectorObserver() {
             @Override
             public void onTabModelSelected(TabModel newModel, TabModel oldModel) {
                 updateVisuals(newModel.isIncognito());
@@ -176,7 +191,8 @@ public class BottomSheetContentController extends BottomNavigationView
                     mBottomSheetContents.remove(INCOGNITO_HOME_ID);
                 }
             }
-        });
+        };
+        mTabModelSelector.addObserver(mTabModelSelectorObserver);
 
         Resources res = getContext().getResources();
         mDistanceBelowToolbarPx = controlContainerHeight
@@ -349,12 +365,14 @@ public class BottomSheetContentController extends BottomNavigationView
         return mSelectedItemId;
     }
 
-    public void clearBottomSheetContents() {
+    private void clearBottomSheetContents(boolean destroyHomeContent) {
         Iterator<Entry<Integer, BottomSheetContent>> contentIterator =
                 mBottomSheetContents.entrySet().iterator();
         while (contentIterator.hasNext()) {
             Entry<Integer, BottomSheetContent> entry = contentIterator.next();
-            if (entry.getKey() == R.id.action_home || entry.getKey() == INCOGNITO_HOME_ID) {
+            if (!destroyHomeContent
+                    && (entry.getKey() == R.id.action_home
+                               || entry.getKey() == INCOGNITO_HOME_ID)) {
                 continue;
             }
 
