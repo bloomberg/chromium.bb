@@ -31,7 +31,8 @@ TouchActionFilter::TouchActionFilter()
     : suppress_manipulation_events_(false),
       drop_current_tap_ending_event_(false),
       allow_current_double_tap_event_(true),
-      allowed_touch_action_(cc::kTouchActionAuto) {}
+      allowed_touch_action_(cc::kTouchActionAuto),
+      white_listed_touch_action_(cc::kTouchActionAuto) {}
 
 bool TouchActionFilter::FilterGestureEvent(WebGestureEvent* gesture_event) {
   if (gesture_event->source_device != blink::kWebGestureDeviceTouchscreen)
@@ -167,6 +168,22 @@ void TouchActionFilter::ResetTouchAction() {
   // Note that resetting the action mid-sequence is tolerated. Gestures that had
   // their begin event(s) suppressed will be suppressed until the next sequence.
   allowed_touch_action_ = cc::kTouchActionAuto;
+  white_listed_touch_action_ = cc::kTouchActionAuto;
+}
+
+void TouchActionFilter::OnSetWhiteListedTouchAction(
+    cc::TouchAction white_listed_touch_action) {
+  // For multiple fingers, we take the intersection of the touch actions for all
+  // fingers that have gone down during this action.  In the majority of
+  // real-world scenarios the touch action for all fingers will be the same.
+  // This is left as implementation because of the relationship of gestures
+  // (which are off limits for the spec).  We believe the following are
+  // desirable properties of this choice:
+  // 1. Not sensitive to finger touch order.  Behavior of putting two fingers
+  //    down "at once" will be deterministic.
+  // 2. Only subtractive - eg. can't trigger scrolling on an element that
+  //    otherwise has scrolling disabling by the addition of a finger.
+  white_listed_touch_action_ &= white_listed_touch_action;
 }
 
 bool TouchActionFilter::ShouldSuppressManipulation(

@@ -697,6 +697,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void OnHasTouchEventHandlers(bool has_handlers) override;
   void DidOverscroll(const ui::DidOverscrollParams& params) override;
   void DidStopFlinging() override;
+  void OnSetWhiteListedTouchAction(
+      cc::TouchAction white_listed_touch_action) override {}
 
   // Dispatch input events with latency information
   void DispatchInputEventWithLatencyInfo(const blink::WebInputEvent& event,

@@ -414,6 +414,11 @@ class LegacyInputRouterImplTest : public testing::Test {
         InputHostMsg_SetTouchAction(0, touch_action));
   }
 
+  void OnSetWhiteListedTouchAction(cc::TouchAction white_listed_touch_action) {
+    input_router_->OnMessageReceived(
+        InputHostMsg_SetWhiteListedTouchAction(0, white_listed_touch_action));
+  }
+
   size_t GetSentMessageCountAndResetSink() {
     size_t count = process_->sink().message_count();
     process_->sink().ClearMessages();
@@ -2048,6 +2053,17 @@ TEST_F(LegacyInputRouterImplWheelScrollLatchingDisabledTest,
 }
 TEST_F(LegacyInputRouterImplAsyncWheelEventEnabledTest, OverscrollDispatch) {
   OverscrollDispatch();
+}
+
+// Test proper routing of whitelisted touch action notifications received from
+// |SetWhiteListedTouchAction| IPC messages.
+TEST_F(LegacyInputRouterImplTest, OnSetWhiteListedTouchAction) {
+  cc::TouchAction touch_action = cc::kTouchActionPanY;
+  input_router_->OnMessageReceived(
+      InputHostMsg_SetWhiteListedTouchAction(0, touch_action));
+  cc::TouchAction white_listed_touch_action =
+      client_->GetAndResetWhiteListedTouchAction();
+  EXPECT_EQ(touch_action, white_listed_touch_action);
 }
 
 // Tests that touch event stream validation passes when events are filtered

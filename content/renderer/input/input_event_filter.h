@@ -77,6 +77,8 @@ class CONTENT_EXPORT InputEventFilter : public InputHandlerManagerClient,
       int routing_id,
       ui::WebScopedInputEvent event,
       const ui::LatencyInfo& latency_info) override;
+  void SetWhiteListedTouchAction(int routing_id,
+                                 cc::TouchAction touch_action) override;
 
   // IPC::MessageFilter methods:
   void OnFilterAdded(IPC::Channel* channel) override;

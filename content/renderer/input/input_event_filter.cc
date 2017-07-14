@@ -130,6 +130,12 @@ void InputEventFilter::DispatchNonBlockingEventToMainThread(
   }
 }
 
+void InputEventFilter::SetWhiteListedTouchAction(int routing_id,
+                                                 cc::TouchAction touch_action) {
+  SendMessage(base::MakeUnique<InputHostMsg_SetWhiteListedTouchAction>(
+      routing_id, touch_action));
+}
+
 void InputEventFilter::OnFilterAdded(IPC::Channel* channel) {
   io_task_runner_ = base::ThreadTaskRunnerHandle::Get();
   sender_ = channel;

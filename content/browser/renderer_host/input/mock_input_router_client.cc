@@ -23,7 +23,8 @@ MockInputRouterClient::MockInputRouterClient()
       in_flight_event_count_(0),
       has_touch_handler_(false),
       filter_state_(INPUT_EVENT_ACK_STATE_NOT_CONSUMED),
-      filter_input_event_called_(false) {}
+      filter_input_event_called_(false),
+      white_listed_touch_action_(cc::kTouchActionAuto) {}
 
 MockInputRouterClient::~MockInputRouterClient() {}
 
@@ -55,6 +56,11 @@ void MockInputRouterClient::DidOverscroll(
   overscroll_ = params;
 }
 
+void MockInputRouterClient::OnSetWhiteListedTouchAction(
+    cc::TouchAction white_listed_touch_action) {
+  white_listed_touch_action_ = white_listed_touch_action;
+}
+
 void MockInputRouterClient::DidStopFlinging() {
 }
 
@@ -76,6 +82,12 @@ ui::DidOverscrollParams MockInputRouterClient::GetAndResetOverscroll() {
   ui::DidOverscrollParams overscroll;
   std::swap(overscroll_, overscroll);
   return overscroll;
+}
+
+cc::TouchAction MockInputRouterClient::GetAndResetWhiteListedTouchAction() {
+  cc::TouchAction white_listed_touch_action = white_listed_touch_action_;
+  white_listed_touch_action_ = cc::kTouchActionAuto;
+  return white_listed_touch_action;
 }
 
 }  // namespace content

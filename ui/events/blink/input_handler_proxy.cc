@@ -1097,7 +1097,7 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HitTestTouchEvent(
   *is_touching_scrolling_layer = false;
   EventDisposition result = DROP_EVENT;
   for (size_t i = 0; i < touch_event.touches_length; ++i) {
-    if (touch_event.GetType() == WebInputEvent::kTouchStart)
+    if (touch_event.touch_start_or_first_touch_move)
       DCHECK(white_listed_touch_action);
     else
       DCHECK(!white_listed_touch_action);
@@ -1169,7 +1169,7 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleTouchStart(
   cc::TouchAction white_listed_touch_action = cc::kTouchActionAuto;
   EventDisposition result = HitTestTouchEvent(
       touch_event, &is_touching_scrolling_layer, &white_listed_touch_action);
-  // TODO(hayleyferr) : Send |white_listed_touch_action| to browser.
+  client_->SetWhiteListedTouchAction(white_listed_touch_action);
 
   // If |result| is still DROP_EVENT look at the touch end handler as
   // we may not want to discard the entire touch sequence. Note this
@@ -1197,8 +1197,11 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleTouchMove(
   if (touch_result_ == kEventDispositionUndefined ||
       touch_event.touch_start_or_first_touch_move) {
     bool is_touching_scrolling_layer;
-    return HitTestTouchEvent(touch_event, &is_touching_scrolling_layer,
-                             nullptr);
+    cc::TouchAction white_listed_touch_action = cc::kTouchActionAuto;
+    EventDisposition result = HitTestTouchEvent(
+        touch_event, &is_touching_scrolling_layer, &white_listed_touch_action);
+    client_->SetWhiteListedTouchAction(white_listed_touch_action);
+    return result;
   }
   return static_cast<EventDisposition>(touch_result_);
 }

@@ -112,6 +112,9 @@ class CONTENT_EXPORT InputHandlerManager {
       ui::WebScopedInputEvent event,
       const ui::LatencyInfo& latency_info);
 
+  // Called from the compositor's thread.
+  void SetWhiteListedTouchAction(int routing_id, cc::TouchAction touch_action);
+
  private:
   // Called from the compositor's thread.
   void AddInputHandlerOnCompositorThread(
