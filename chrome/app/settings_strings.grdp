@@ -1357,6 +1357,9 @@
     <message name="IDS_SETTINGS_INTERNET_TETHER_CONNECTION_DIALOG_TITLE" desc="Settings > Internet > Tether Connection Dialog > Title asking the user to create a new hotspot.">
       Connect to new hotspot?
     </message>
+    <message name="IDS_SETTINGS_INTERNET_TETHER_CONNECTION_AVAILABLE_DEVICE_TITLE" desc="Settings > Internet > Tether Connection Dialog > Label for explaining that the device following the colon is available for tethering.">
+      Available device:
+    </message>
     <message name="IDS_SETTINGS_INTERNET_TETHER_CONNECTION_BATTERY_PERCENTAGE" desc="Settings > Internet > Tether Connection Dialog > Description of how much battery a device has.">
       <ph name="BATTERY_PERCENTAGE">$1<ex>100</ex></ph>% Battery
     </message>

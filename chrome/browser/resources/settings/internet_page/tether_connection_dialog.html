@@ -1,8 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
-
 <link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_network_icon.html">
 <link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_onc_types.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="../icons.html">
 <link rel="import" href="../route.html">
@@ -11,15 +10,45 @@
 <dom-module id="tether-connection-dialog">
   <template>
     <style include="settings-shared">
-      .body,
+      /*
+        Add extra properties to the .title class originally part of cr-dialog
+      */
+      .title {
+        margin-top: 9px;
+      }
+
+      /*
+        Add extra properties to the .body class originally part of cr-dialog
+      */
+      .body {
+        border-top: solid 2px rgba(0, 0, 0, .14);
+      }
+
+      .body > * {
+        margin-left: 5px;
+      }
+
+      iron-icon {
+        --iron-icon-fill-color: #4285F4;
+      }
+
       #host-device-text-container {
         display: flex;
         flex-direction: column;
+        margin-left: 18px;
+      }
+
+      #availability-title {
+        color: black;
+        margin-top: 5px;
+        opacity: 0.54;
       }
 
       #host-device-container {
         align-items: center;
         display: flex;
+        margin-top: 12px;
+        min-height: 46px;
       }
 
       #tether-explanation,
@@ -27,14 +56,26 @@
       #tether-description-title {
         margin-top: var(--settings-page-vertical-margin);
       }
+
+      #tether-carrier-warning {
+        font-weight: 600;
+      }
+
+      #tether-description-list {
+        padding-left: 16px;
+      }
     </style>
     <dialog is="cr-dialog" id="dialog" on-cancel="onDialogCanceled_"
         close-text="$i18n{close}" on-closed="onDialogCanceled_">
       <div class="title">$i18n{tetherConnectionDialogTitle}</div>
       <div class="body">
+        <span id="availability-title">
+          $i18n{tetherConnectionAvailableDeviceTitle}
+        </span>
         <div id="host-device-container">
-          <cr-network-icon network-state="[[networkProperties]]">
-          </cr-network-icon>
+          <!-- TODO(hsuregan): Add an a11y label. -->
+          <iron-icon icon="[[getSignalStrengthIconName_(networkProperties)]]">
+          </iron-icon>
           <div id="host-device-text-container">
             <span id="host-device-text-name">
               [[getDeviceName_(networkProperties)]]
@@ -53,7 +94,7 @@
         <div id="tether-description-title">
           [[getDescriptionTitle_(networkProperties)]]
         </div>
-        <ul>
+        <ul id="tether-description-list">
           <li>$i18n{tetherConnectionDescriptionCellData}</li>
           <li>[[getBatteryDescription_(networkProperties)]]</li>
           <li hidden$="[[!shouldShowDisconnectFromWifi_(networkProperties)]]">

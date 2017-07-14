@@ -1057,6 +1057,8 @@ void AddInternetStrings(content::WebUIDataSource* html_source) {
       {"networkVpnBuiltin", IDS_NETWORK_TYPE_VPN_BUILTIN},
       {"tetherConnectionDialogTitle",
        IDS_SETTINGS_INTERNET_TETHER_CONNECTION_DIALOG_TITLE},
+      {"tetherConnectionAvailableDeviceTitle",
+       IDS_SETTINGS_INTERNET_TETHER_CONNECTION_AVAILABLE_DEVICE_TITLE},
       {"tetherConnectionBatteryPercentage",
        IDS_SETTINGS_INTERNET_TETHER_CONNECTION_BATTERY_PERCENTAGE},
       {"tetherConnectionExplanation",
