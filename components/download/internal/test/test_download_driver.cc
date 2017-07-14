@@ -22,6 +22,11 @@ void TestDownloadDriver::MakeReady() {
     client_->OnDriverReady(is_ready_);
 }
 
+void TestDownloadDriver::TriggerHardRecoverComplete(bool success) {
+  if (client_)
+    client_->OnDriverHardRecoverComplete(success);
+}
+
 void TestDownloadDriver::AddTestData(const std::vector<DriverEntry>& entries) {
   for (const auto& entry : entries) {
     DCHECK(entries_.find(entry.guid) == entries_.end()) << "Existing guid.";
@@ -55,6 +60,8 @@ void TestDownloadDriver::Initialize(DownloadDriver::Client* client) {
   DCHECK(!client_);
   client_ = client;
 }
+
+void TestDownloadDriver::HardRecover() {}
 
 bool TestDownloadDriver::IsReady() const {
   return is_ready_;

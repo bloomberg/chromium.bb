@@ -108,6 +108,13 @@ void DownloadDriverImpl::Initialize(DownloadDriver::Client* client) {
     client_->OnDriverReady(true);
 }
 
+void DownloadDriverImpl::HardRecover() {
+  // TODO(dtrainor, xingliu): Implement recovery for the DownloadManager.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&DownloadDriverImpl::OnHardRecoverComplete,
+                            weak_ptr_factory_.GetWeakPtr(), true));
+}
+
 bool DownloadDriverImpl::IsReady() const {
   return client_ && download_manager_ &&
          download_manager_->IsManagerInitialized();
@@ -257,6 +264,10 @@ void DownloadDriverImpl::OnManagerInitialized() {
 void DownloadDriverImpl::ManagerGoingDown(content::DownloadManager* manager) {
   DCHECK_EQ(download_manager_, manager);
   download_manager_ = nullptr;
+}
+
+void DownloadDriverImpl::OnHardRecoverComplete(bool success) {
+  client_->OnDriverHardRecoverComplete(success);
 }
 
 }  // namespace download

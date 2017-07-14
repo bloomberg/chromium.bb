@@ -308,6 +308,8 @@ void ControllerImpl::OnDriverReady(bool success) {
   AttemptToFinalizeSetup();
 }
 
+void ControllerImpl::OnDriverHardRecoverComplete(bool success) {}
+
 void ControllerImpl::OnDownloadCreated(const DriverEntry& download) {
   if (initializing_internals_)
     return;

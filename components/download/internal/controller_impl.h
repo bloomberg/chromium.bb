@@ -71,6 +71,7 @@ class ControllerImpl : public Controller,
  private:
   // DownloadDriver::Client implementation.
   void OnDriverReady(bool success) override;
+  void OnDriverHardRecoverComplete(bool success) override;
   void OnDownloadCreated(const DriverEntry& download) override;
   void OnDownloadFailed(const DriverEntry& download,
                         FailureType failure_type) override;

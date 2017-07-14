@@ -24,6 +24,7 @@ class TestDownloadDriver : public DownloadDriver {
   // Marks download driver as ready, used to test logic that depends on
   // data initialization.
   void MakeReady();
+  void TriggerHardRecoverComplete(bool success);
 
   // Adds driver entries data that will be returned
   void AddTestData(const std::vector<DriverEntry>& entries);
@@ -35,6 +36,7 @@ class TestDownloadDriver : public DownloadDriver {
 
   // DownloadDriver implementation.
   void Initialize(DownloadDriver::Client* client) override;
+  void HardRecover() override;
   bool IsReady() const override;
   void Start(
       const RequestParams& params,
