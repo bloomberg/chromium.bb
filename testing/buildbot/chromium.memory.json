@@ -707,18 +707,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "ash_content_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "ash_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "aura_unittests"
       },
       {
@@ -726,13 +714,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "base_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 10
-        },
-        "test": "browser_tests"
       },
       {
         "swarming": {
@@ -841,13 +822,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "gpu_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 2
-        },
-        "test": "interactive_ui_tests"
       },
       {
         "swarming": {
@@ -975,13 +949,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "ui_touch_selection_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 2
-        },
-        "test": "unit_tests"
       },
       {
         "swarming": {
