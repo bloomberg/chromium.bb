@@ -206,17 +206,6 @@ ShapeCache* FontCache::GetShapeCache(const FallbackListCompositeKey& key) {
   return result;
 }
 
-typedef HashMap<FontCache::FontFileKey,
-                RefPtr<OpenTypeVerticalData>,
-                IntHash<FontCache::FontFileKey>,
-                UnsignedWithZeroKeyHashTraits<FontCache::FontFileKey>>
-    FontVerticalDataCache;
-
-FontVerticalDataCache& FontVerticalDataCacheInstance() {
-  DEFINE_STATIC_LOCAL(FontVerticalDataCache, font_vertical_data_cache, ());
-  return font_vertical_data_cache;
-}
-
 void FontCache::SetFontManager(sk_sp<SkFontMgr> font_manager) {
   DCHECK(!static_font_manager_);
   static_font_manager_ = font_manager.release();
@@ -226,7 +215,7 @@ PassRefPtr<OpenTypeVerticalData> FontCache::GetVerticalData(
     const FontFileKey& key,
     const FontPlatformData& platform_data) {
   FontVerticalDataCache& font_vertical_data_cache =
-      FontVerticalDataCacheInstance();
+      FontGlobalContext::GetFontVerticalDataCache();
   FontVerticalDataCache::iterator result = font_vertical_data_cache.find(key);
   if (result != font_vertical_data_cache.end())
     return result.Get()->value;
@@ -330,7 +319,7 @@ void FontCache::PurgePlatformFontDataCache() {
 
 void FontCache::PurgeFontVerticalDataCache() {
   FontVerticalDataCache& font_vertical_data_cache =
-      FontVerticalDataCacheInstance();
+      FontGlobalContext::GetFontVerticalDataCache();
   if (!font_vertical_data_cache.IsEmpty()) {
     // Mark & sweep unused verticalData
     FontVerticalDataCache::iterator vertical_data_end =

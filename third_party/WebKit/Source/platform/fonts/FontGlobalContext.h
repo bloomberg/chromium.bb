@@ -23,6 +23,12 @@ class FontCache;
 using LayoutLocaleMap =
     HashMap<AtomicString, RefPtr<LayoutLocale>, CaseFoldingHash>;
 
+typedef HashMap<FontCache::FontFileKey,
+                RefPtr<OpenTypeVerticalData>,
+                IntHash<FontCache::FontFileKey>,
+                WTF::UnsignedWithZeroKeyHashTraits<FontCache::FontFileKey>>
+    FontVerticalDataCache;
+
 enum CreateIfNeeded { kDoNotCreate, kCreate };
 
 // FontGlobalContext contains non-thread-safe, thread-specific data used for
@@ -83,6 +89,14 @@ class PLATFORM_EXPORT FontGlobalContext {
     return Get()->has_default_locale_for_han_;
   }
 
+  static inline String& CurrentAcceptLanguages() {
+    return Get()->current_accept_languages_;
+  }
+
+  static inline FontVerticalDataCache& GetFontVerticalDataCache() {
+    return Get()->font_vertical_data_cache_;
+  }
+
   // Called by MemoryCoordinator to clear memory.
   static void ClearMemory();
 
@@ -105,6 +119,10 @@ class PLATFORM_EXPORT FontGlobalContext {
   const LayoutLocale* system_locale_;
   const LayoutLocale* default_locale_for_han_;
   bool has_default_locale_for_han_;
+
+  String current_accept_languages_;
+
+  FontVerticalDataCache font_vertical_data_cache_;
 };
 
 }  // namespace blink

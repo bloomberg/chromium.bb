@@ -31,6 +31,7 @@
 
 #import <AppKit/AppKit.h>
 #include <memory>
+#include "platform/FontFamilyNames.h"
 #include "platform/LayoutTestSupport.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/WebTaskRunner.h"
@@ -63,9 +64,7 @@ const char kColorEmojiFontMac[] = "Apple Color Emoji";
 
 // static
 const AtomicString& FontCache::LegacySystemFontFamily() {
-  DEFINE_STATIC_LOCAL(AtomicString, legacy_system_font_family,
-                      ("BlinkMacSystemFont"));
-  return legacy_system_font_family;
+  return FontFamilyNames::BlinkMacSystemFont;
 }
 
 static void InvalidateFontCache() {
@@ -232,13 +231,11 @@ PassRefPtr<SimpleFontData> FontCache::FallbackFontForCharacter(
 PassRefPtr<SimpleFontData> FontCache::GetLastResortFallbackFont(
     const FontDescription& font_description,
     ShouldRetain should_retain) {
-  DEFINE_STATIC_LOCAL(AtomicString, times_str, ("Times"));
-
   // FIXME: Would be even better to somehow get the user's default font here.
   // For now we'll pick the default that the user would get without changing
   // any prefs.
   RefPtr<SimpleFontData> simple_font_data =
-      GetFontData(font_description, times_str,
+      GetFontData(font_description, FontFamilyNames::Times,
                   AlternateFontName::kAllowAlternate, should_retain);
   if (simple_font_data)
     return simple_font_data;
@@ -247,8 +244,7 @@ PassRefPtr<SimpleFontData> FontCache::GetLastResortFallbackFont(
   // where the user doesn't have it, we fall back on Lucida Grande because
   // that's guaranteed to be there, according to Nathan Taylor. This is good
   // enough to avoid a crash at least.
-  DEFINE_STATIC_LOCAL(AtomicString, lucida_grande_str, ("Lucida Grande"));
-  return GetFontData(font_description, lucida_grande_str,
+  return GetFontData(font_description, FontFamilyNames::Lucida_Grande,
                      AlternateFontName::kAllowAlternate, should_retain);
 }
 
