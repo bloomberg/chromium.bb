@@ -2,24 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/dom/IntersectionObserver.h"
+#include "core/intersection_observer/IntersectionObserver.h"
 
 #include <algorithm>
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/css/parser/CSSParserTokenRange.h"
 #include "core/css/parser/CSSTokenizer.h"
 #include "core/dom/Element.h"
-#include "core/dom/ElementIntersectionObserverData.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/dom/IntersectionObserverCallback.h"
-#include "core/dom/IntersectionObserverController.h"
-#include "core/dom/IntersectionObserverEntry.h"
-#include "core/dom/IntersectionObserverInit.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/inspector/ConsoleMessage.h"
+#include "core/intersection_observer/ElementIntersectionObserverData.h"
+#include "core/intersection_observer/IntersectionObserverCallback.h"
+#include "core/intersection_observer/IntersectionObserverController.h"
+#include "core/intersection_observer/IntersectionObserverEntry.h"
+#include "core/intersection_observer/IntersectionObserverInit.h"
 #include "core/layout/LayoutView.h"
 #include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/Performance.h"

@@ -4,12 +4,12 @@
 
 #include "core/frame/RemoteFrameView.h"
 
-#include "core/dom/IntersectionObserverEntry.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/RemoteFrame.h"
 #include "core/frame/RemoteFrameClient.h"
 #include "core/html/HTMLFrameOwnerElement.h"
+#include "core/intersection_observer/IntersectionObserverEntry.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/api/LayoutEmbeddedContentItem.h"
 

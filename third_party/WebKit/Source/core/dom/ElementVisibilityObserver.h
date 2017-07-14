@@ -8,7 +8,7 @@
 #include <limits>
 
 #include "core/CoreExport.h"
-#include "core/dom/IntersectionObserver.h"
+#include "core/intersection_observer/IntersectionObserver.h"
 #include "platform/heap/Heap.h"
 #include "platform/heap/Member.h"
 

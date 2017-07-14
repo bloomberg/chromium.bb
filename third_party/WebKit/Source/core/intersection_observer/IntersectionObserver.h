@@ -6,8 +6,8 @@
 #define IntersectionObserver_h
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/IntersectionObservation.h"
-#include "core/dom/IntersectionObserverEntry.h"
+#include "core/intersection_observer/IntersectionObservation.h"
+#include "core/intersection_observer/IntersectionObserverEntry.h"
 #include "platform/Length.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"

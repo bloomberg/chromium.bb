@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/dom/IntersectionObserver.h"
+#include "core/intersection_observer/IntersectionObserver.h"
 
-#include "core/dom/IntersectionObserverCallback.h"
-#include "core/dom/IntersectionObserverInit.h"
 #include "core/exported/WebViewBase.h"
 #include "core/frame/LocalFrameView.h"
+#include "core/intersection_observer/IntersectionObserverCallback.h"
+#include "core/intersection_observer/IntersectionObserverInit.h"
 #include "core/testing/sim/SimCompositor.h"
 #include "core/testing/sim/SimDisplayItemList.h"
 #include "core/testing/sim/SimRequest.h"

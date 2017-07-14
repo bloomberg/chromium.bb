@@ -35,9 +35,6 @@
 #include "core/dom/AXObjectCache.h"
 #include "core/dom/DOMNodeIds.h"
 #include "core/dom/ElementVisibilityObserver.h"
-#include "core/dom/IntersectionObserverCallback.h"
-#include "core/dom/IntersectionObserverController.h"
-#include "core/dom/IntersectionObserverInit.h"
 #include "core/dom/ResizeObserverController.h"
 #include "core/dom/StyleChangeReason.h"
 #include "core/dom/TaskRunnerHelper.h"
@@ -64,6 +61,9 @@
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/input/EventHandler.h"
 #include "core/inspector/InspectorTraceEvents.h"
+#include "core/intersection_observer/IntersectionObserverCallback.h"
+#include "core/intersection_observer/IntersectionObserverController.h"
+#include "core/intersection_observer/IntersectionObserverInit.h"
 #include "core/layout/LayoutAnalyzer.h"
 #include "core/layout/LayoutCounter.h"
 #include "core/layout/LayoutEmbeddedContent.h"
@@ -1637,7 +1637,7 @@ void LocalFrameView::ViewportSizeChanged(bool width_changed,
     if (layout_view->UsesCompositing()) {
       if (root_layer_scrolling_enabled) {
         layout_view->Layer()->SetNeedsCompositingInputsUpdate();
-          SetNeedsPaintPropertyUpdate();
+        SetNeedsPaintPropertyUpdate();
       } else {
         layout_view->Compositor()->FrameViewDidChangeSize();
       }

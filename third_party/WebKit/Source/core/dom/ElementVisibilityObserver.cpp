@@ -5,8 +5,8 @@
 #include "core/dom/ElementVisibilityObserver.h"
 
 #include "core/dom/Element.h"
-#include "core/dom/IntersectionObserverEntry.h"
 #include "core/frame/LocalFrame.h"
+#include "core/intersection_observer/IntersectionObserverEntry.h"
 #include "platform/wtf/Functional.h"
 
 namespace blink {

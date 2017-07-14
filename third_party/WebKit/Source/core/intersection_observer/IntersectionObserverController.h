@@ -5,8 +5,8 @@
 #ifndef IntersectionObserverController_h
 #define IntersectionObserverController_h
 
-#include "core/dom/IntersectionObserver.h"
 #include "core/dom/SuspendableObject.h"
+#include "core/intersection_observer/IntersectionObserver.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/HashSet.h"
 

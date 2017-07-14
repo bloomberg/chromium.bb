@@ -7,7 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/dom/IntersectionObserverCallback.h"
+#include "core/intersection_observer/IntersectionObserverCallback.h"
 #include "platform/bindings/DOMWrapperWorld.h"
 #include "platform/bindings/ScopedPersistent.h"
 
