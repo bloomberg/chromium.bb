@@ -15,7 +15,11 @@ using content::BrowserThread;
 
 namespace safe_browsing {
 
-SafeBrowsingDatabaseManager::SafeBrowsingDatabaseManager() : enabled_(false) {}
+SafeBrowsingDatabaseManager::SafeBrowsingDatabaseManager()
+    : base::RefCountedDeleteOnSequence<SafeBrowsingDatabaseManager>(
+          content::BrowserThread::GetTaskRunnerForThread(
+              content::BrowserThread::IO)),
+      enabled_(false) {}
 
 SafeBrowsingDatabaseManager::~SafeBrowsingDatabaseManager() {
   DCHECK(!v4_get_hash_protocol_manager_);

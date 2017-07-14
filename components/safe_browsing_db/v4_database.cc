@@ -9,6 +9,7 @@
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/safe_browsing_db/v4_database.h"
 #include "content/public/browser/browser_thread.h"
@@ -29,6 +30,19 @@ base::LazyInstance<std::unique_ptr<V4DatabaseFactory>>::Leaky g_db_factory =
 // The factory that controls the creation of V4Store objects.
 base::LazyInstance<std::unique_ptr<V4StoreFactory>>::Leaky g_store_factory =
     LAZY_INSTANCE_INITIALIZER;
+
+// Verifies the checksums on a collection of stores.
+// Returns the IDs of stores whose checksums failed to verify.
+std::vector<ListIdentifier> VerifyChecksums(
+    std::vector<std::pair<ListIdentifier, V4Store*>> stores) {
+  std::vector<ListIdentifier> stores_to_reset;
+  for (const auto& store_map_iter : stores) {
+    if (!store_map_iter.second->VerifyChecksum()) {
+      stores_to_reset.push_back(store_map_iter.first);
+    }
+  }
+  return stores_to_reset;
+}
 
 }  // namespace
 
@@ -254,28 +268,19 @@ void V4Database::ResetStores(
 void V4Database::VerifyChecksum(
     DatabaseReadyForUpdatesCallback db_ready_for_updates_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  // TODO(vakh): Consider using PostTaskAndReply instead.
-  const scoped_refptr<base::SingleThreadTaskRunner> callback_task_runner =
-      base::ThreadTaskRunnerHandle::Get();
-  db_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&V4Database::VerifyChecksumOnTaskRunner,
-                 weak_factory_on_io_.GetWeakPtr(), callback_task_runner,
-                 db_ready_for_updates_callback));
-}
 
-void V4Database::VerifyChecksumOnTaskRunner(
-    const scoped_refptr<base::SingleThreadTaskRunner>& callback_task_runner,
-    DatabaseReadyForUpdatesCallback db_ready_for_updates_callback) {
-  std::vector<ListIdentifier> stores_to_reset;
-  for (const auto& store_map_iter : *store_map_) {
-    if (!store_map_iter.second->VerifyChecksum()) {
-      stores_to_reset.push_back(store_map_iter.first);
-    }
+  // Make a threadsafe copy of store_map_ w/raw pointers that we can hand to
+  // the DB thread. The V4Stores ptrs are guaranteed to be valid because their
+  // deletion would be sequenced on the DB thread, after this posted task is
+  // serviced.
+  std::vector<std::pair<ListIdentifier, V4Store*>> stores;
+  for (const auto& next_store : *store_map_) {
+    stores.push_back(std::make_pair(next_store.first, next_store.second.get()));
   }
 
-  callback_task_runner->PostTask(
-      FROM_HERE, base::Bind(db_ready_for_updates_callback, stores_to_reset));
+  base::PostTaskAndReplyWithResult(db_task_runner_.get(), FROM_HERE,
+                                   base::Bind(&VerifyChecksums, stores),
+                                   db_ready_for_updates_callback);
 }
 
 bool V4Database::IsStoreAvailable(const ListIdentifier& identifier) const {
