@@ -1036,4 +1036,11 @@ void ServiceWorkerMetrics::RecordUninstalledScriptImport(const GURL& url) {
                  url));
 }
 
+void ServiceWorkerMetrics::RecordStartServiceWorkerForNavigationHintResult(
+    StartServiceWorkerForNavigationHintResult result) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "ServiceWorker.StartForNavigationHint.Result", result,
+      StartServiceWorkerForNavigationHintResult::NUM_TYPES);
+}
+
 }  // namespace content

@@ -320,6 +320,10 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       const StartServiceWorkerForNavigationHintCallback& callback,
       ServiceWorkerStatusCode code);
 
+  void RecordStartServiceWorkerForNavigationHintResult(
+      const StartServiceWorkerForNavigationHintCallback& callback,
+      StartServiceWorkerForNavigationHintResult result);
+
   // The core context is only for use on the IO thread.
   // Can be null before/during init, during/after shutdown, and after
   // DeleteAndStartOver fails.

@@ -15,6 +15,7 @@
 #include "content/browser/service_worker/service_worker_database.h"
 #include "content/common/service_worker/embedded_worker.mojom.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "content/public/browser/service_worker_context.h"
 #include "content/public/common/service_worker_modes.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerResponseError.h"
 #include "ui/base/page_transition_types.h"
@@ -394,6 +395,10 @@ class ServiceWorkerMetrics {
   // previously installed.
   // TODO(falken): Remove after this is deprecated. https://crbug.com/737044
   static void RecordUninstalledScriptImport(const GURL& url);
+
+  // Records the result of starting service worker for a navigation hint.
+  static void RecordStartServiceWorkerForNavigationHintResult(
+      StartServiceWorkerForNavigationHintResult result);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(ServiceWorkerMetrics);

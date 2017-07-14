@@ -69835,6 +69835,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ServiceWorker.StartForNavigationHint.Result"
+    enum="ServiceWorkerStartForNavigationHintResult">
+  <owner>horo@chromium.org</owner>
+  <summary>
+    The result of starting a service worker for a navigation hint.
+  </summary>
+</histogram>
+
 <histogram name="ServiceWorker.StartHintPrecision" enum="BooleanEnabled">
   <owner>horo@chromium.org</owner>
   <summary>

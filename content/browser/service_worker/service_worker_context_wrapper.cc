@@ -942,7 +942,10 @@ void ServiceWorkerContextWrapper::StartServiceWorkerForNavigationHint(
       BrowserThread::IO, FROM_HERE,
       base::Bind(
           &ServiceWorkerContextWrapper::StartServiceWorkerForNavigationHintOnIO,
-          this, document_url, callback));
+          this, document_url,
+          base::Bind(&ServiceWorkerContextWrapper::
+                         RecordStartServiceWorkerForNavigationHintResult,
+                     this, callback)));
 }
 
 void ServiceWorkerContextWrapper::StartServiceWorkerForNavigationHintOnIO(
@@ -952,10 +955,7 @@ void ServiceWorkerContextWrapper::StartServiceWorkerForNavigationHintOnIO(
                "document_url", document_url.spec());
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!context_core_) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(callback,
-                   StartServiceWorkerForNavigationHintResult::FAILED));
+    callback.Run(StartServiceWorkerForNavigationHintResult::FAILED);
     return;
   }
   context_core_->storage()->FindRegistrationForDocument(
@@ -974,34 +974,23 @@ void ServiceWorkerContextWrapper::DidFindRegistrationForNavigationHint(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!registration) {
     DCHECK_NE(status, SERVICE_WORKER_OK);
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(callback, StartServiceWorkerForNavigationHintResult::
-                                 NO_SERVICE_WORKER_REGISTRATION));
+    callback.Run(StartServiceWorkerForNavigationHintResult::
+                     NO_SERVICE_WORKER_REGISTRATION);
     return;
   }
   if (!registration->active_version()) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(callback, StartServiceWorkerForNavigationHintResult::
-                                 NO_ACTIVE_SERVICE_WORKER_VERSION));
+    callback.Run(StartServiceWorkerForNavigationHintResult::
+                     NO_ACTIVE_SERVICE_WORKER_VERSION);
     return;
   }
   if (registration->active_version()->fetch_handler_existence() ==
       ServiceWorkerVersion::FetchHandlerExistence::DOES_NOT_EXIST) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(
-            callback,
-            StartServiceWorkerForNavigationHintResult::NO_FETCH_HANDLER));
+    callback.Run(StartServiceWorkerForNavigationHintResult::NO_FETCH_HANDLER);
     return;
   }
   if (registration->active_version()->running_status() ==
       EmbeddedWorkerStatus::RUNNING) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(callback,
-                   StartServiceWorkerForNavigationHintResult::ALREADY_RUNNING));
+    callback.Run(StartServiceWorkerForNavigationHintResult::ALREADY_RUNNING);
     return;
   }
 
@@ -1019,13 +1008,19 @@ void ServiceWorkerContextWrapper::DidStartServiceWorkerForNavigationHint(
   TRACE_EVENT2("ServiceWorker", "DidStartServiceWorkerForNavigationHint", "url",
                pattern.spec(), "code", ServiceWorkerStatusToString(code));
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  callback.Run(code == SERVICE_WORKER_OK
+                   ? StartServiceWorkerForNavigationHintResult::STARTED
+                   : StartServiceWorkerForNavigationHintResult::FAILED);
+}
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(callback,
-                 code == SERVICE_WORKER_OK
-                     ? StartServiceWorkerForNavigationHintResult::STARTED
-                     : StartServiceWorkerForNavigationHintResult::FAILED));
+void ServiceWorkerContextWrapper::
+    RecordStartServiceWorkerForNavigationHintResult(
+        const StartServiceWorkerForNavigationHintCallback& callback,
+        StartServiceWorkerForNavigationHintResult result) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  ServiceWorkerMetrics::RecordStartServiceWorkerForNavigationHintResult(result);
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(callback, result));
 }
 
 void ServiceWorkerContextWrapper::BindWorkerFetchContext(

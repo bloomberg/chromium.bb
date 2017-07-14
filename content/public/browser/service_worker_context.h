@@ -22,19 +22,22 @@ enum class ServiceWorkerCapability {
   SERVICE_WORKER_WITH_FETCH_HANDLER,
 };
 
+// Used for UMA. Append only.
 enum class StartServiceWorkerForNavigationHintResult {
   // The service worker started successfully.
-  STARTED,
+  STARTED = 0,
   // The service worker was already running.
-  ALREADY_RUNNING,
+  ALREADY_RUNNING = 1,
   // There was no service worker registration for the given URL.
-  NO_SERVICE_WORKER_REGISTRATION,
+  NO_SERVICE_WORKER_REGISTRATION = 2,
   // There was no active service worker for the given URL.
-  NO_ACTIVE_SERVICE_WORKER_VERSION,
+  NO_ACTIVE_SERVICE_WORKER_VERSION = 3,
   // The service worker for the given URL had no fetch event handler.
-  NO_FETCH_HANDLER,
+  NO_FETCH_HANDLER = 4,
   // Something failed.
-  FAILED,
+  FAILED = 5,
+  // Add new result to record here.
+  NUM_TYPES
 };
 
 // Represents the per-StoragePartition ServiceWorker data.
