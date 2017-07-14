@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/values.h"
@@ -112,6 +113,10 @@ class MediaEngagementServiceTest : public ChromeRenderViewHostTestHarness {
     test_clock_->SetNow(GetReferenceTime());
     service_ = base::WrapUnique(
         new MediaEngagementService(profile(), base::WrapUnique(test_clock_)));
+  }
+
+  void StartNewMediaEngagementService() {
+    MediaEngagementService::Get(profile());
   }
 
   void RecordVisitAndPlaybackAndAdvanceClock(GURL url) {
@@ -461,4 +466,29 @@ TEST_F(MediaEngagementServiceTest, CleanupDataOnSiteDataCleanup_NoTimeSet) {
   ClearDataBetweenTime(today - base::TimeDelta::FromDays(2),
                        today - base::TimeDelta::FromDays(1));
   ExpectScores(origin, 0.0, 1, 0, TimeNotSet());
+}
+
+TEST_F(MediaEngagementServiceTest, LogScoresOnStartupToHistogram) {
+  GURL url1("https://www.google.com");
+  GURL url2("https://www.google.co.uk");
+  GURL url3("https://www.example.com");
+
+  SetScores(url1, 6, 5);
+  SetScores(url2, 6, 3);
+  RecordVisitAndPlaybackAndAdvanceClock(url3);
+  ExpectScores(url1, 5.0 / 6.0, 6, 5, TimeNotSet());
+  ExpectScores(url2, 0.5, 6, 3, TimeNotSet());
+  ExpectScores(url3, 0.0, 1, 1, Now());
+
+  base::HistogramTester histogram_tester;
+  StartNewMediaEngagementService();
+
+  histogram_tester.ExpectTotalCount(
+      MediaEngagementService::kHistogramScoreAtStartupName, 3);
+  histogram_tester.ExpectBucketCount(
+      MediaEngagementService::kHistogramScoreAtStartupName, 0, 1);
+  histogram_tester.ExpectBucketCount(
+      MediaEngagementService::kHistogramScoreAtStartupName, 50, 1);
+  histogram_tester.ExpectBucketCount(
+      MediaEngagementService::kHistogramScoreAtStartupName, 83, 1);
 }
