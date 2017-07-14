@@ -571,10 +571,18 @@ cc::ManagedMemoryPolicy RenderWidgetCompositor::GetGpuMemoryPolicy(
   size_t dalvik_mb = base::SysInfo::DalvikHeapSizeMB();
   size_t physical_mb = base::SysInfo::AmountOfPhysicalMemoryMB();
   size_t physical_memory_mb = 0;
-  if (dalvik_mb >= 256)
+  if (base::SysInfo::IsLowEndDevice()) {
+    // TODO(crbug.com/742534): The code below appears to no longer work.
+    // |dalvik_mb| no longer follows the expected heuristic pattern, causing us
+    // to over-estimate memory on low-end devices. This entire section probably
+    // needs to be re-written, but for now we can address the low-end Android
+    // issues by ignoring |dalvik_mb|.
+    physical_memory_mb = physical_mb;
+  } else if (dalvik_mb >= 256) {
     physical_memory_mb = dalvik_mb * 4;
-  else
+  } else {
     physical_memory_mb = std::max(dalvik_mb * 4, (physical_mb * 4) / 3);
+  }
 
   // Now we take a default of 1/8th of memory on high-memory devices,
   // and gradually scale that back for low-memory devices (to be nicer
