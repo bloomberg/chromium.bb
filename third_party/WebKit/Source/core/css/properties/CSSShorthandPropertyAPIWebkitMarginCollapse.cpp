@@ -15,7 +15,7 @@ bool CSSShorthandPropertyAPIWebkitMarginCollapse::parseShorthand(
     bool important,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    const CSSParserLocalContext&,
+    bool,
     HeapVector<CSSProperty, 256>& properties) {
   CSSValueID id = range.ConsumeIncludingWhitespace().Id();
   if (!CSSParserFastPaths::IsValidKeywordPropertyAndValue(

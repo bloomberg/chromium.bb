@@ -35,7 +35,7 @@
     {
       name: "parseShorthand",
       return_type: "bool",
-      parameters: "(bool, CSSParserTokenRange&, const CSSParserContext&, const CSSParserLocalContext&, HeapVector<CSSProperty, 256>&)",
+      parameters: "(bool, CSSParserTokenRange&, const CSSParserContext&, bool, HeapVector<CSSProperty, 256>&)",
       description: "Returns true if the property can be parsed as a shorthand.",
     },
   ]

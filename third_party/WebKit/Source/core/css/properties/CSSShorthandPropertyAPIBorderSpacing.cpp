@@ -13,7 +13,7 @@ bool CSSShorthandPropertyAPIBorderSpacing::parseShorthand(
     bool important,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    const CSSParserLocalContext&,
+    bool,
     HeapVector<CSSProperty, 256>& properties) {
   CSSValue* horizontal_spacing =
       ConsumeLength(range, context.Mode(), kValueRangeNonNegative,
