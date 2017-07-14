@@ -3040,7 +3040,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
         refspec_opts.append('notify=NONE')
 
     # TODO(tandrii): options.message should be posted as a comment
-    # if --send-email is set on non-initial upload as Rietveld used to do it.
+    # if --send-mail is set on non-initial upload as Rietveld used to do it.
 
     if title:
       if not re.match(r'^[\w ]+$', title):
