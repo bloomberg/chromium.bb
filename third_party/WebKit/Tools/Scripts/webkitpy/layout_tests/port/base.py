@@ -175,7 +175,15 @@ class Port(object):
 
     def additional_driver_flag(self):
         if self.driver_name() == self.CONTENT_SHELL_NAME:
-            return ['--run-layout-test']
+            # This is the fingerprint of wpt's certificate found in thirdparty/wpt/certs. Use
+            #
+            #   openssl x509 -noout -pubkey -in 127.0.0.1.pem |
+            #   openssl pkey -pubin -outform der |
+            #   openssl dgst -sha256 -binary |
+            #   base64
+            #
+            # to regenerate.
+            return ['--run-layout-test', '--ignore-certificate-errors-spki-list=Nxvaj3+bY3oVrTc+Jp7m3E3sB1n3lXtnMDCyBsqEXiY=']
         return []
 
     def supports_per_test_timeout(self):

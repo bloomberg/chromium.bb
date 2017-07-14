@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ssl/ignore_errors_cert_verifier.h"
+#include "content/public/browser/ignore_errors_cert_verifier.h"
 
 #include "base/base64.h"
 #include "base/files/file_path.h"
@@ -10,8 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/io_thread.h"
-#include "chrome/common/chrome_switches.h"
+#include "content/public/common/content_switches.h"
 #include "crypto/sha2.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
@@ -42,6 +41,10 @@ using net::OK;
 
 using net::test::IsError;
 using net::test::IsOk;
+
+namespace content {
+
+static const char kTestUserDataDirSwitch[] = "test-user-data-dir";
 
 static std::vector<std::string> MakeWhitelist() {
   base::FilePath certs_dir = net::GetTestCertsDirectory();
@@ -157,7 +160,7 @@ class IgnoreCertificateErrorsSPKIListFlagTest
   IgnoreCertificateErrorsSPKIListFlagTest() {
     base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
     if (GetParam()) {
-      command_line.AppendSwitchASCII(switches::kUserDataDir, "/foo/bar/baz");
+      command_line.AppendSwitchASCII(kTestUserDataDirSwitch, "/foo/bar/baz");
     }
     command_line.AppendSwitchASCII(switches::kIgnoreCertificateErrorsSPKIList,
                                    base::JoinString(MakeWhitelist(), ","));
@@ -165,7 +168,7 @@ class IgnoreCertificateErrorsSPKIListFlagTest
     auto mock_verifier = base::MakeUnique<MockCertVerifier>();
     mock_verifier->set_default_result(ERR_CERT_INVALID);
     verifier_ = IgnoreErrorsCertVerifier::MaybeWrapCertVerifier(
-        command_line, std::move(mock_verifier));
+        command_line, kTestUserDataDirSwitch, std::move(mock_verifier));
   }
   ~IgnoreCertificateErrorsSPKIListFlagTest() override {}
 
@@ -198,3 +201,5 @@ TEST_P(IgnoreCertificateErrorsSPKIListFlagTest, TestUserDataDirSwitchRequired) {
 INSTANTIATE_TEST_CASE_P(WithUserDataDirSwitchPresent,
                         IgnoreCertificateErrorsSPKIListFlagTest,
                         ::testing::Bool());
+
+}  // namespace content
