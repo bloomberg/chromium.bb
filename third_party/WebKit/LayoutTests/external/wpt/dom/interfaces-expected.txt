@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 1618 tests; 1610 PASS, 8 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 1646 tests; 1610 PASS, 36 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Test driver 
 PASS Event interface: existence and properties of interface object 
 PASS Event interface object length 
@@ -116,6 +116,34 @@ PASS EventListener interface: existence and properties of interface object
 PASS EventListener interface: existence and properties of interface prototype object 
 PASS EventListener interface: existence and properties of interface prototype object's "constructor" property 
 PASS EventListener interface: operation handleEvent(Event) 
+FAIL AbortController interface: existence and properties of interface object assert_own_property: self does not have own property "AbortController" expected property "AbortController" missing
+FAIL AbortController interface object length assert_own_property: self does not have own property "AbortController" expected property "AbortController" missing
+FAIL AbortController interface object name assert_own_property: self does not have own property "AbortController" expected property "AbortController" missing
+FAIL AbortController interface: existence and properties of interface prototype object assert_own_property: self does not have own property "AbortController" expected property "AbortController" missing
+FAIL AbortController interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "AbortController" expected property "AbortController" missing
+FAIL AbortController interface: attribute signal assert_own_property: self does not have own property "AbortController" expected property "AbortController" missing
+FAIL AbortController interface: operation abort() assert_own_property: self does not have own property "AbortController" expected property "AbortController" missing
+FAIL AbortController must be primary interface of new AbortController() assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: AbortController is not defined"
+FAIL Stringification of new AbortController() assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: AbortController is not defined"
+FAIL AbortController interface: new AbortController() must inherit property "signal" with the proper type (0) assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: AbortController is not defined"
+FAIL AbortController interface: new AbortController() must inherit property "abort" with the proper type (1) assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: AbortController is not defined"
+FAIL AbortSignal interface: existence and properties of interface object assert_own_property: self does not have own property "AbortSignal" expected property "AbortSignal" missing
+FAIL AbortSignal interface object length assert_own_property: self does not have own property "AbortSignal" expected property "AbortSignal" missing
+FAIL AbortSignal interface object name assert_own_property: self does not have own property "AbortSignal" expected property "AbortSignal" missing
+FAIL AbortSignal interface: existence and properties of interface prototype object assert_own_property: self does not have own property "AbortSignal" expected property "AbortSignal" missing
+FAIL AbortSignal interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "AbortSignal" expected property "AbortSignal" missing
+FAIL AbortSignal interface: attribute aborted assert_own_property: self does not have own property "AbortSignal" expected property "AbortSignal" missing
+FAIL AbortSignal interface: attribute onabort assert_own_property: self does not have own property "AbortSignal" expected property "AbortSignal" missing
+FAIL AbortSignal must be primary interface of new AbortController().signal assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: AbortController is not defined"
+FAIL Stringification of new AbortController().signal assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: AbortController is not defined"
+FAIL AbortSignal interface: new AbortController().signal must inherit property "aborted" with the proper type (0) assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: AbortController is not defined"
+FAIL AbortSignal interface: new AbortController().signal must inherit property "onabort" with the proper type (1) assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: AbortController is not defined"
+FAIL EventTarget interface: new AbortController().signal must inherit property "addEventListener" with the proper type (0) assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: AbortController is not defined"
+FAIL EventTarget interface: calling addEventListener(DOMString,EventListener,[object Object],[object Object]) on new AbortController().signal with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: AbortController is not defined"
+FAIL EventTarget interface: new AbortController().signal must inherit property "removeEventListener" with the proper type (1) assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: AbortController is not defined"
+FAIL EventTarget interface: calling removeEventListener(DOMString,EventListener,[object Object],[object Object]) on new AbortController().signal with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: AbortController is not defined"
+FAIL EventTarget interface: new AbortController().signal must inherit property "dispatchEvent" with the proper type (2) assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: AbortController is not defined"
+FAIL EventTarget interface: calling dispatchEvent(Event) on new AbortController().signal with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: AbortController is not defined"
 PASS NodeList interface: existence and properties of interface object 
 PASS NodeList interface object length 
 PASS NodeList interface object name 
