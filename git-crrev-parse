@@ -39,6 +39,7 @@ while [ -n "$1" ]; do
   fi
   remote_ref="${ref/refs\/heads/refs\/remotes\/origin}"
   remote_ref="${remote_ref/refs\/branch-heads/refs\/remotes\/branch-heads}"
+  remote_ref="${remote_ref//\\}"
   num="${commit_pos#*@\{\#}"
   num="${num%\}}"
   if [ -z "$ref" -o -z "$num" ]; then
