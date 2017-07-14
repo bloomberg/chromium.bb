@@ -709,6 +709,14 @@ public class BottomToolbarPhone extends ToolbarPhone {
                 mToolbarButtonsContainer.setVisibility(View.VISIBLE);
                 mToolbarButtonsContainer.setTranslationX(0);
 
+                mToggleTabStackButton.setAlpha(1.f);
+                mToggleTabStackButton.setVisibility(View.VISIBLE);
+
+                if (!mUseToolbarHandle) {
+                    if (mTabSwitcherState != ENTERING_TAB_SWITCHER) mExpandButton.setAlpha(1.f);
+                    mExpandButton.setVisibility(View.VISIBLE);
+                }
+
                 requestLayout();
             } else {
                 mToolbarButtonVisibilityPercent = 0.f;
