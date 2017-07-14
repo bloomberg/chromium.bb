@@ -9,6 +9,8 @@
 
 #include "base/guid.h"
 #include "base/memory/ptr_util.h"
+#include "base/test/test_simple_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/public/test/fake_download_item.h"
 #include "content/public/test/mock_download_manager.h"
 #include "net/http/http_response_headers.h"
@@ -44,6 +46,7 @@ MATCHER_P(DriverEntryEqual, entry, "") {
 class MockDriverClient : public DownloadDriver::Client {
  public:
   MOCK_METHOD1(OnDriverReady, void(bool));
+  MOCK_METHOD1(OnDriverHardRecoverComplete, void(bool));
   MOCK_METHOD1(OnDownloadCreated, void(const DriverEntry&));
   MOCK_METHOD2(OnDownloadFailed, void(const DriverEntry&, FailureType));
   MOCK_METHOD1(OnDownloadSucceeded, void(const DriverEntry&));
@@ -52,7 +55,9 @@ class MockDriverClient : public DownloadDriver::Client {
 
 class DownloadDriverImplTest : public testing::Test {
  public:
-  DownloadDriverImplTest() = default;
+  DownloadDriverImplTest()
+      : task_runner_(new base::TestSimpleTaskRunner), handle_(task_runner_) {}
+
   ~DownloadDriverImplTest() override = default;
 
   void SetUp() override {
@@ -63,6 +68,10 @@ class DownloadDriverImplTest : public testing::Test {
   NiceMock<content::MockDownloadManager> mock_manager_;
   MockDriverClient mock_client_;
   std::unique_ptr<DownloadDriverImpl> driver_;
+
+ protected:
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
+  base::ThreadTaskRunnerHandle handle_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DownloadDriverImplTest);
@@ -78,6 +87,17 @@ TEST_F(DownloadDriverImplTest, ManagerLateInitialization) {
   EXPECT_CALL(mock_client_, OnDriverReady(true));
   static_cast<content::DownloadManager::Observer*>(driver_.get())
       ->OnManagerInitialized();
+}
+
+TEST_F(DownloadDriverImplTest, TestHardRecover) {
+  EXPECT_CALL(mock_manager_, IsManagerInitialized())
+      .Times(1)
+      .WillOnce(Return(false));
+  driver_->Initialize(&mock_client_);
+
+  EXPECT_CALL(mock_client_, OnDriverHardRecoverComplete(true)).Times(1);
+  driver_->HardRecover();
+  task_runner_->RunUntilIdle();
 }
 
 // Ensures download updates from download items are propagated correctly.

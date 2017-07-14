@@ -42,6 +42,10 @@ class DownloadDriver {
     // when the low level download library is ready.
     virtual void OnDriverReady(bool success) = 0;
 
+    // Called asynchronously in response to a DownloadDriver::HardRecover call.
+    // If |success| is |false|, recovery of the DownloadDriver failed.
+    virtual void OnDriverHardRecoverComplete(bool success) = 0;
+
     // Called when any download is created.
     virtual void OnDownloadCreated(const DriverEntry& download) = 0;
 
@@ -61,6 +65,10 @@ class DownloadDriver {
 
   // Initialize the driver to receive download updates.
   virtual void Initialize(Client* client) = 0;
+
+  // Attempts to clean up and reset the DownloadDriver.  It should remove all
+  // state relevant to the DownloadService.
+  virtual void HardRecover() = 0;
 
   // Returns if the driver is ready after the low level library has loaded all
   // the data. Returns false when the driver is not initialized by the client,

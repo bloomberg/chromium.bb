@@ -35,6 +35,7 @@ class DownloadDriverImpl : public DownloadDriver,
 
   // DownloadDriver implementation.
   void Initialize(DownloadDriver::Client* client) override;
+  void HardRecover() override;
   bool IsReady() const override;
   void Start(
       const RequestParams& request_params,
@@ -57,6 +58,8 @@ class DownloadDriverImpl : public DownloadDriver,
                          content::DownloadItem* item) override;
   void OnManagerInitialized() override;
   void ManagerGoingDown(content::DownloadManager* manager) override;
+
+  void OnHardRecoverComplete(bool success);
 
   // Remove the download, used to be posted to the task queue.
   void DoRemoveDownload(const std::string& guid);
