@@ -260,6 +260,8 @@ class BASE_EXPORT File {
   // Returns some basic information for the given file.
   bool GetInfo(Info* info);
 
+#if !defined(OS_FUCHSIA)  // Fuchsia's POSIX API does not support file locking.
+
   // Attempts to take an exclusive write lock on the file. Returns immediately
   // (i.e. does not wait for another process to unlock the file). If the lock
   // was obtained, the result will be FILE_OK. A lock only guarantees
@@ -284,6 +286,8 @@ class BASE_EXPORT File {
 
   // Unlock a file previously locked.
   Error Unlock();
+
+#endif  // !defined(OS_FUCHSIA)
 
   // Returns a new object referencing this file for use within the current
   // process. Handling of FLAG_DELETE_ON_CLOSE varies by OS. On POSIX, the File
