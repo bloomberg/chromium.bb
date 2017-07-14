@@ -1108,10 +1108,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   FilterOperations AddReflectionToFilterOperations(const ComputedStyle&) const;
 
-  // FIXME: We could lazily allocate our ScrollableArea based on style
-  // properties ('overflow', ...) but for now, we are always allocating it for
-  // LayoutBox as it's safer.  crbug.com/467721.
-  bool RequiresScrollableArea() const { return GetLayoutBox(); }
+  bool RequiresScrollableArea() const;
   void UpdateScrollableArea();
 
   void MarkAncestorChainForDescendantDependentFlagsUpdate();

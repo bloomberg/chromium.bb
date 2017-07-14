@@ -2319,6 +2319,8 @@ bool CompositedLayerMapping::UpdateScrollingLayers(
   ScrollingCoordinator* scrolling_coordinator =
       owning_layer_.GetScrollingCoordinator();
 
+  auto* scrollable_area = owning_layer_.GetScrollableArea();
+
   bool layer_changed = false;
   if (needs_scrolling_layers) {
     if (scrolling_layer_) {
@@ -2346,9 +2348,9 @@ bool CompositedLayerMapping::UpdateScrollingLayers(
       scrolling_layer_->AddChild(scrolling_contents_layer_.get());
 
       layer_changed = true;
-      if (scrolling_coordinator) {
+      if (scrolling_coordinator && scrollable_area) {
         scrolling_coordinator->ScrollableAreaScrollLayerDidChange(
-            owning_layer_.GetScrollableArea());
+            scrollable_area);
         scrolling_coordinator->ScrollableAreasDidChange();
       }
     }
@@ -2356,9 +2358,9 @@ bool CompositedLayerMapping::UpdateScrollingLayers(
     scrolling_layer_ = nullptr;
     scrolling_contents_layer_ = nullptr;
     layer_changed = true;
-    if (scrolling_coordinator) {
+    if (scrolling_coordinator && scrollable_area) {
       scrolling_coordinator->ScrollableAreaScrollLayerDidChange(
-          owning_layer_.GetScrollableArea());
+          scrollable_area);
       scrolling_coordinator->ScrollableAreasDidChange();
     }
   }
