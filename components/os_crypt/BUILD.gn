@@ -72,6 +72,8 @@ static_library("os_crypt") {
   if (is_desktop_linux) {
     sources -= [ "os_crypt_posix.cc" ]
     sources += [
+      "key_storage_config_linux.cc",
+      "key_storage_config_linux.h",
       "key_storage_linux.cc",
       "key_storage_linux.h",
       "key_storage_util_linux.cc",

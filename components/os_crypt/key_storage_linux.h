@@ -9,12 +9,10 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 
-namespace base {
-class FilePath;
-class SingleThreadTaskRunner;
-}  // namespace base
+namespace os_crypt {
+struct Config;
+}
 
 // An API for retrieving OSCrypt's password from the system's password storage
 // service.
@@ -23,26 +21,9 @@ class KeyStorageLinux {
   KeyStorageLinux() = default;
   virtual ~KeyStorageLinux() = default;
 
-  // Force OSCrypt to use a specific linux password store.
-  static void SetStore(const std::string& store_type);
-
-  // The product name to use for permission prompts.
-  static void SetProductName(const std::string& product_name);
-
-  // A runner on the main thread for gnome-keyring to be called from.
-  // TODO(crbug/466975): Libsecret and KWallet don't need this. We can remove
-  // this when we stop supporting keyring.
-  static void SetMainThreadRunner(
-      scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner);
-
-  // Controls whether preference on using or ignoring backends is used.
-  static void ShouldUsePreference(bool should_use_preference);
-
-  // Preferences are stored in a separate file in the user data directory.
-  static void SetUserDataPath(const base::FilePath& path);
-
   // Tries to load the appropriate key storage. Returns null if none succeed.
-  static std::unique_ptr<KeyStorageLinux> CreateService();
+  static std::unique_ptr<KeyStorageLinux> CreateService(
+      const os_crypt::Config& config);
 
   // Gets the encryption key from the OS password-managing library. If a key is
   // not found, a new key will be generated, stored and returned.
