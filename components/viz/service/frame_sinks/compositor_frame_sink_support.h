@@ -9,6 +9,7 @@
 #include <unordered_set>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "cc/output/compositor_frame.h"
@@ -51,6 +52,8 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
 
   FrameSinkManager* frame_sink_manager() { return frame_sink_manager_; }
   cc::SurfaceManager* surface_manager() { return surface_manager_; }
+
+  void SetDestructionCallback(base::OnceCallback<void()> callback);
 
   // SurfaceClient implementation.
   void OnSurfaceActivated(cc::Surface* surface) override;
@@ -156,6 +159,9 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   // is established. Once we switch to SurfaceReferences, this ordering concern
   // goes away and we can remove this bool.
   const bool handles_frame_sink_id_invalidation_;
+
+  // A callback that will be run at the start of the destructor if set.
+  base::OnceCallback<void()> destruction_callback_;
 
   base::WeakPtrFactory<CompositorFrameSinkSupport> weak_factory_;
 

@@ -13,6 +13,7 @@
 #include "cc/output/copy_output_result.h"
 #include "cc/surfaces/surface.h"
 #include "components/viz/common/surfaces/surface_id.h"
+#include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android_compositor.h"
@@ -51,11 +52,13 @@ void CopyOutputRequestCallback(
 
 DelegatedFrameHostAndroid::DelegatedFrameHostAndroid(
     ui::ViewAndroid* view,
+    viz::HostFrameSinkManager* host_frame_sink_manager,
     viz::FrameSinkManager* frame_sink_manager,
     Client* client,
     const viz::FrameSinkId& frame_sink_id)
     : frame_sink_id_(frame_sink_id),
       view_(view),
+      host_frame_sink_manager_(host_frame_sink_manager),
       frame_sink_manager_(frame_sink_manager),
       client_(client),
       begin_frame_source_(this) {
@@ -199,9 +202,9 @@ void DelegatedFrameHostAndroid::CreateNewCompositorFrameSinkSupport() {
   constexpr bool handles_frame_sink_id_invalidation = false;
   constexpr bool needs_sync_points = true;
   support_.reset();
-  support_ = viz::CompositorFrameSinkSupport::Create(
-      this, frame_sink_manager_, frame_sink_id_, is_root,
-      handles_frame_sink_id_invalidation, needs_sync_points);
+  support_ = host_frame_sink_manager_->CreateCompositorFrameSinkSupport(
+      this, frame_sink_id_, is_root, handles_frame_sink_id_invalidation,
+      needs_sync_points);
 }
 
 viz::SurfaceId DelegatedFrameHostAndroid::SurfaceId() const {

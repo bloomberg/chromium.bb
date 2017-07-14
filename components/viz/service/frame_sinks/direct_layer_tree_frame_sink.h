@@ -21,6 +21,7 @@ class FrameSinkManager;
 }  // namespace cc
 
 namespace viz {
+class CompositorFrameSinkSupportManager;
 class Display;
 
 // This class submits compositor frames to an in-process Display, with the
@@ -35,6 +36,7 @@ class VIZ_SERVICE_EXPORT DirectLayerTreeFrameSink
   // outlive this class.
   DirectLayerTreeFrameSink(
       const FrameSinkId& frame_sink_id,
+      CompositorFrameSinkSupportManager* support_manager,
       FrameSinkManager* frame_sink_manager,
       Display* display,
       scoped_refptr<cc::ContextProvider> context_provider,
@@ -43,6 +45,7 @@ class VIZ_SERVICE_EXPORT DirectLayerTreeFrameSink
       SharedBitmapManager* shared_bitmap_manager);
   DirectLayerTreeFrameSink(
       const FrameSinkId& frame_sink_id,
+      CompositorFrameSinkSupportManager* support_manager,
       FrameSinkManager* frame_sink_manager,
       Display* display,
       scoped_refptr<cc::VulkanContextProvider> vulkan_context_provider);
@@ -81,6 +84,7 @@ class VIZ_SERVICE_EXPORT DirectLayerTreeFrameSink
 
   const FrameSinkId frame_sink_id_;
   LocalSurfaceId local_surface_id_;
+  CompositorFrameSinkSupportManager* const support_manager_;
   FrameSinkManager* frame_sink_manager_;
   LocalSurfaceIdAllocator local_surface_id_allocator_;
   Display* display_;

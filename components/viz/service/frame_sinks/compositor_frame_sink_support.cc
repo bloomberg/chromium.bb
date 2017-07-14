@@ -35,6 +35,9 @@ std::unique_ptr<CompositorFrameSinkSupport> CompositorFrameSinkSupport::Create(
 }
 
 CompositorFrameSinkSupport::~CompositorFrameSinkSupport() {
+  if (!destruction_callback_.is_null())
+    std::move(destruction_callback_).Run();
+
   // Unregister |this| as a cc::BeginFrameObserver so that the
   // cc::BeginFrameSource does not call into |this| after it's deleted.
   SetNeedsBeginFrame(false);
@@ -51,6 +54,11 @@ CompositorFrameSinkSupport::~CompositorFrameSinkSupport() {
   frame_sink_manager_->UnregisterFrameSinkManagerClient(frame_sink_id_);
   if (handles_frame_sink_id_invalidation_)
     frame_sink_manager_->InvalidateFrameSinkId(frame_sink_id_);
+}
+
+void CompositorFrameSinkSupport::SetDestructionCallback(
+    base::OnceCallback<void()> callback) {
+  destruction_callback_ = std::move(callback);
 }
 
 void CompositorFrameSinkSupport::OnSurfaceActivated(cc::Surface* surface) {

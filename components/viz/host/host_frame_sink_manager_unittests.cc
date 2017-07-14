@@ -12,6 +12,8 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "cc/ipc/frame_sink_manager.mojom.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
+#include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
+#include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -20,7 +22,7 @@ namespace test {
 namespace {
 
 constexpr FrameSinkId kFrameSinkId1(1, 1);
-constexpr FrameSinkId kFrameSinkId2(1, 1);
+constexpr FrameSinkId kFrameSinkId2(2, 1);
 
 ACTION_P(InvokeClosure, closure) {
   closure.Run();
@@ -53,42 +55,21 @@ class StubCompositorFrameSinkClient
 };
 
 // A mock implementation of mojom::FrameSinkManager.
-class MockFrameSinkManagerImpl : public cc::mojom::FrameSinkManager {
+class MockFrameSinkManagerImpl : public FrameSinkManagerImpl {
  public:
-  MockFrameSinkManagerImpl() : binding_(this) {}
+  MockFrameSinkManagerImpl() : FrameSinkManagerImpl(false, nullptr) {}
   ~MockFrameSinkManagerImpl() override = default;
 
-  void BindAndSetClient(cc::mojom::FrameSinkManagerRequest request,
-                        cc::mojom::FrameSinkManagerClientPtr client) {
-    binding_.Bind(std::move(request));
-    client_ = std::move(client);
-  }
-
   // cc::mojom::FrameSinkManager:
-  // TODO(kylechar): See if we can mock functions with InterfacePtrs parameters.
-  void CreateRootCompositorFrameSink(
-      const FrameSinkId& frame_sink_id,
-      gpu::SurfaceHandle surface_handle,
-      cc::mojom::CompositorFrameSinkAssociatedRequest request,
-      cc::mojom::CompositorFrameSinkPrivateRequest private_request,
-      cc::mojom::CompositorFrameSinkClientPtr client,
-      cc::mojom::DisplayPrivateAssociatedRequest display_private_request)
-      override {}
-  void CreateCompositorFrameSink(
-      const FrameSinkId& frame_sink_id,
-      cc::mojom::CompositorFrameSinkRequest request,
-      cc::mojom::CompositorFrameSinkPrivateRequest private_request,
-      cc::mojom::CompositorFrameSinkClientPtr client) override {}
   MOCK_METHOD2(RegisterFrameSinkHierarchy,
                void(const FrameSinkId& parent, const FrameSinkId& child));
   MOCK_METHOD2(UnregisterFrameSinkHierarchy,
                void(const FrameSinkId& parent, const FrameSinkId& child));
   MOCK_METHOD1(DropTemporaryReference, void(const SurfaceId& surface_id));
 
- private:
-  mojo::Binding<cc::mojom::FrameSinkManager> binding_;
-  cc::mojom::FrameSinkManagerClientPtr client_;
+  // TODO(kylechar): See if we can mock functions with InterfacePtr parameters.
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(MockFrameSinkManagerImpl);
 };
 
@@ -103,23 +84,17 @@ class HostFrameSinkManagerTest : public testing::Test {
 
   MockFrameSinkManagerImpl& manager_impl() { return *manager_impl_; }
 
+  bool FrameSinkIdExists(const FrameSinkId& frame_sink_id) {
+    return host_manager_->frame_sink_data_map_.count(frame_sink_id) > 0;
+  }
+
   // testing::Test:
   void SetUp() override {
     manager_impl_ = base::MakeUnique<MockFrameSinkManagerImpl>();
     host_manager_ = base::MakeUnique<HostFrameSinkManager>();
 
-    // Connect HostFrameSinkManager and FrameSinkManagerImpl.
-    cc::mojom::FrameSinkManagerClientPtr host_mojo;
-    cc::mojom::FrameSinkManagerClientRequest host_mojo_request =
-        mojo::MakeRequest(&host_mojo);
-    cc::mojom::FrameSinkManagerPtr manager_mojo;
-    cc::mojom::FrameSinkManagerRequest manager_impl_request =
-        mojo::MakeRequest(&manager_mojo);
-    manager_impl_->BindAndSetClient(std::move(manager_impl_request),
-                                    std::move(host_mojo));
-    host_manager_->BindAndSetManager(std::move(host_mojo_request),
-                                     base::SequencedTaskRunnerHandle::Get(),
-                                     std::move(manager_mojo));
+    manager_impl_->SetLocalClient(host_manager_.get());
+    host_manager_->SetLocalManager(manager_impl_.get());
   }
 
  private:
@@ -132,7 +107,13 @@ class HostFrameSinkManagerTest : public testing::Test {
 // Verify that when destroying a CompositorFrameSink with registered FrameSink
 // hierarchy, the hierarchy is automatically unregistered.
 TEST_F(HostFrameSinkManagerTest, UnregisterHierarchyOnDestroy) {
-  base::RunLoop run_loop;
+  // Register is called explicitly.
+  EXPECT_CALL(manager_impl(),
+              RegisterFrameSinkHierarchy(kFrameSinkId2, kFrameSinkId1));
+
+  // Unregister should be called when DestroyCompositorFrameSink() is called.
+  EXPECT_CALL(manager_impl(),
+              UnregisterFrameSinkHierarchy(kFrameSinkId2, kFrameSinkId1));
 
   cc::mojom::CompositorFrameSinkPtr frame_sink;
   StubCompositorFrameSinkClient frame_sink_client;
@@ -141,17 +122,19 @@ TEST_F(HostFrameSinkManagerTest, UnregisterHierarchyOnDestroy) {
                                            frame_sink_client.GetInterfacePtr());
   host_manager().RegisterFrameSinkHierarchy(kFrameSinkId2, kFrameSinkId1);
   host_manager().DestroyCompositorFrameSink(kFrameSinkId1);
+}
 
-  // Register is called explicitly.
-  EXPECT_CALL(manager_impl(),
-              RegisterFrameSinkHierarchy(kFrameSinkId2, kFrameSinkId1));
+// Checks that creating a CompositorFrameSinkSupport registers it and destroying
+// the CompositorFrameSinkSupport unregisters it.
+TEST_F(HostFrameSinkManagerTest, CreateDestroyCompositorFrameSinkSupport) {
+  auto support = host_manager().CreateCompositorFrameSinkSupport(
+      nullptr /* client */, kFrameSinkId1, true /* is_root */,
+      true /* handles_frame_sink_id_invalidation */,
+      false /* needs_sync_points */);
+  EXPECT_TRUE(FrameSinkIdExists(support->frame_sink_id()));
 
-  // Unregister should be called when DestroyCompositorFrameSink() is called.
-  EXPECT_CALL(manager_impl(),
-              UnregisterFrameSinkHierarchy(kFrameSinkId2, kFrameSinkId1))
-      .WillOnce(InvokeClosure(run_loop.QuitClosure()));
-
-  run_loop.Run();
+  support.reset();
+  EXPECT_FALSE(FrameSinkIdExists(support->frame_sink_id()));
 }
 
 }  // namespace test

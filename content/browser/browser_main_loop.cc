@@ -1471,9 +1471,8 @@ int BrowserMainLoop::BrowserThreadsStarted() {
 
     // TODO(danakj): Don't make a FrameSinkManagerImpl when display is in the
     // Gpu process, instead get the mojo pointer from the Gpu process.
-    surface_utils::ConnectWithInProcessFrameSinkManager(
-        host_frame_sink_manager_.get(), frame_sink_manager_impl_.get(),
-        GetResizeTaskRunner());
+    surface_utils::ConnectWithLocalFrameSinkManager(
+        host_frame_sink_manager_.get(), frame_sink_manager_impl_.get());
   }
 #endif
 

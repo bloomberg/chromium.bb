@@ -11,12 +11,14 @@
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "components/viz/service/display/display.h"
+#include "components/viz/service/frame_sinks/compositor_frame_sink_support_manager.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager.h"
 
 namespace viz {
 
 DirectLayerTreeFrameSink::DirectLayerTreeFrameSink(
     const FrameSinkId& frame_sink_id,
+    CompositorFrameSinkSupportManager* support_manager,
     FrameSinkManager* frame_sink_manager,
     Display* display,
     scoped_refptr<cc::ContextProvider> context_provider,
@@ -28,6 +30,7 @@ DirectLayerTreeFrameSink::DirectLayerTreeFrameSink(
                          gpu_memory_buffer_manager,
                          shared_bitmap_manager),
       frame_sink_id_(frame_sink_id),
+      support_manager_(support_manager),
       frame_sink_manager_(frame_sink_manager),
       display_(display) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -39,11 +42,13 @@ DirectLayerTreeFrameSink::DirectLayerTreeFrameSink(
 
 DirectLayerTreeFrameSink::DirectLayerTreeFrameSink(
     const FrameSinkId& frame_sink_id,
+    CompositorFrameSinkSupportManager* support_manager,
     FrameSinkManager* frame_sink_manager,
     Display* display,
     scoped_refptr<cc::VulkanContextProvider> vulkan_context_provider)
     : LayerTreeFrameSink(std::move(vulkan_context_provider)),
       frame_sink_id_(frame_sink_id),
+      support_manager_(support_manager),
       frame_sink_manager_(frame_sink_manager),
       display_(display) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -69,9 +74,8 @@ bool DirectLayerTreeFrameSink::BindToClient(
 
   constexpr bool is_root = true;
   constexpr bool handles_frame_sink_id_invalidation = false;
-  support_ = CompositorFrameSinkSupport::Create(
-      this, frame_sink_manager_, frame_sink_id_, is_root,
-      handles_frame_sink_id_invalidation,
+  support_ = support_manager_->CreateCompositorFrameSinkSupport(
+      this, frame_sink_id_, is_root, handles_frame_sink_id_invalidation,
       capabilities_.delegated_sync_points_required);
   begin_frame_source_ = base::MakeUnique<cc::ExternalBeginFrameSource>(this);
   client_->SetBeginFrameSource(begin_frame_source_.get());

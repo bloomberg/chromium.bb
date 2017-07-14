@@ -9,12 +9,14 @@
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "cc/ipc/frame_sink_manager.mojom.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/host/frame_sink_observer.h"
 #include "components/viz/host/viz_host_export.h"
+#include "components/viz/service/frame_sinks/compositor_frame_sink_support_manager.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace base {
@@ -23,18 +25,29 @@ class SequencedTaskRunner;
 
 namespace cc {
 class SurfaceInfo;
-class SurfaceManager;
 }  // namespace cc
 
 namespace viz {
 
+class CompositorFrameSinkSupport;
+class CompositorFrameSinkSupportClient;
+class FrameSinkManagerImpl;
+
+namespace test {
+class HostFrameSinkManagerTest;
+}
+
 // Browser side wrapper of mojom::FrameSinkManager, to be used from the
 // UI thread. Manages frame sinks and is intended to replace SurfaceManager.
 class VIZ_HOST_EXPORT HostFrameSinkManager
-    : NON_EXPORTED_BASE(cc::mojom::FrameSinkManagerClient) {
+    : public NON_EXPORTED_BASE(cc::mojom::FrameSinkManagerClient),
+      public NON_EXPORTED_BASE(CompositorFrameSinkSupportManager) {
  public:
   HostFrameSinkManager();
   ~HostFrameSinkManager() override;
+
+  // Sets a local FrameSinkManagerImpl instance and connects directly to it.
+  void SetLocalManager(FrameSinkManagerImpl* frame_sink_manager_impl);
 
   // Binds |this| as a FrameSinkManagerClient for |request| on |task_runner|. On
   // Mac |task_runner| will be the resize helper task runner. May only be called
@@ -70,20 +83,37 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
   void UnregisterFrameSinkHierarchy(const FrameSinkId& parent_frame_sink_id,
                                     const FrameSinkId& child_frame_sink_id);
 
+  // CompositorFrameSinkSupportManager:
+  std::unique_ptr<CompositorFrameSinkSupport> CreateCompositorFrameSinkSupport(
+      CompositorFrameSinkSupportClient* client,
+      const FrameSinkId& frame_sink_id,
+      bool is_root,
+      bool handles_frame_sink_id_invalidation,
+      bool needs_sync_points) override;
+
  private:
+  friend class test::HostFrameSinkManagerTest;
+
   struct FrameSinkData {
     FrameSinkData();
     FrameSinkData(FrameSinkData&& other);
     ~FrameSinkData();
     FrameSinkData& operator=(FrameSinkData&& other);
 
+    // If the frame sink is a root that corresponds to a Display.
+    bool is_root = false;
+
     // The FrameSinkId registered as the parent in the BeginFrame hierarchy.
     // This mirrors state in viz.
     base::Optional<FrameSinkId> parent;
 
     // The private interface that gives the host control over the
-    // CompositorFrameSink connection between the client and viz.
+    // CompositorFrameSink connection between the client and viz. This will be
+    // unbound if not using Mojo.
     cc::mojom::CompositorFrameSinkPrivatePtr private_interface;
+
+    // This will be null if using Mojo.
+    CompositorFrameSinkSupport* support = nullptr;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(FrameSinkData);
@@ -93,17 +123,30 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
   void OnSurfaceCreated(const SurfaceInfo& surface_info) override;
   void OnClientConnectionClosed(const FrameSinkId& frame_sink_id) override;
 
-  // Mojo connection to the FrameSinkManager.
+  // This will point to |frame_sink_manager_ptr_| if using Mojo or
+  // |frame_sink_manager_impl_| if directly connected. Use this to make function
+  // calls.
+  cc::mojom::FrameSinkManager* frame_sink_manager_ = nullptr;
+
+  // Mojo connection to the FrameSinkManager. If this is bound then
+  // |frame_sink_manager_impl_| must be null.
   cc::mojom::FrameSinkManagerPtr frame_sink_manager_ptr_;
 
   // Mojo connection back from the FrameSinkManager.
   mojo::Binding<cc::mojom::FrameSinkManagerClient> binding_;
+
+  // A direct connection to FrameSinkManagerImpl. If this is set then
+  // |frame_sink_manager_ptr_| must be unbound. For use in browser process only,
+  // viz process should not set this.
+  FrameSinkManagerImpl* frame_sink_manager_impl_ = nullptr;
 
   // Per CompositorFrameSink data.
   base::flat_map<FrameSinkId, FrameSinkData> frame_sink_data_map_;
 
   // Local observers to that receive OnSurfaceCreated() messages from IPC.
   base::ObserverList<FrameSinkObserver> observers_;
+
+  base::WeakPtrFactory<HostFrameSinkManager> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HostFrameSinkManager);
 };
