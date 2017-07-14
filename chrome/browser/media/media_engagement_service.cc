@@ -4,6 +4,7 @@
 
 #include "chrome/browser/media/media_engagement_service.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
@@ -61,6 +62,9 @@ bool MediaEngagementTimeFilterAdapter(
 
 }  // namespace
 
+const char* MediaEngagementService::kHistogramScoreAtStartupName =
+    "Media.Engagement.ScoreAtStartup";
+
 // static
 bool MediaEngagementService::IsEnabled() {
   return base::FeatureList::IsEnabled(media::kMediaEngagement);
@@ -98,6 +102,9 @@ MediaEngagementService::MediaEngagementService(
       profile, ServiceAccessType::IMPLICIT_ACCESS);
   if (history)
     history->AddObserver(this);
+
+  // Record the stored scores to a histogram.
+  RecordStoredScoresToHistogram();
 }
 
 MediaEngagementService::~MediaEngagementService() = default;
@@ -117,6 +124,17 @@ void MediaEngagementService::Shutdown() {
       profile_, ServiceAccessType::IMPLICIT_ACCESS);
   if (history)
     history->RemoveObserver(this);
+}
+
+void MediaEngagementService::RecordStoredScoresToHistogram() {
+  for (const GURL& url : GetEngagementOriginsFromContentSettings(profile_)) {
+    if (!url.is_valid())
+      continue;
+
+    int percentage = round(GetEngagementScore(url) * 100);
+    UMA_HISTOGRAM_PERCENTAGE(
+        MediaEngagementService::kHistogramScoreAtStartupName, percentage);
+  }
 }
 
 void MediaEngagementService::OnURLsDeleted(

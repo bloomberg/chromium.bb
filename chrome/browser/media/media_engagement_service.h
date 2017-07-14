@@ -82,6 +82,9 @@ class MediaEngagementService : public KeyedService,
   // Retrieves the MediaEngagementScore for |url|.
   MediaEngagementScore* CreateEngagementScore(const GURL& url) const;
 
+  // The name of the histogram that scores are logged to on startup.
+  static const char* kHistogramScoreAtStartupName;
+
  private:
   friend class MediaEngagementServiceTest;
   friend class MediaEngagementContentsObserverTest;
@@ -102,6 +105,9 @@ class MediaEngagementService : public KeyedService,
 
   // An internal clock for testing.
   std::unique_ptr<base::Clock> clock_;
+
+  // Records all the stored scores to a histogram.
+  void RecordStoredScoresToHistogram();
 
   DISALLOW_COPY_AND_ASSIGN(MediaEngagementService);
 };
