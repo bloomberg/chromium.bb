@@ -9,6 +9,7 @@
 #include "build/build_config.h"
 #include "platform/fonts/Font.h"
 #include "platform/fonts/FontCache.h"
+#include "platform/fonts/FontTestUtilities.h"
 #include "platform/fonts/shaping/ShapeResultInlineHeaders.h"
 #include "platform/fonts/shaping/ShapeResultTestInfo.h"
 #include "platform/text/TextBreakIterator.h"
@@ -39,11 +40,6 @@ class HarfBuzzShaperTest : public ::testing::Test {
 
 static inline ShapeResultTestInfo* TestInfo(RefPtr<ShapeResult>& result) {
   return static_cast<ShapeResultTestInfo*>(result.Get());
-}
-
-static inline String To16Bit(const char* text, unsigned length) {
-  return String::Make16BitFrom8BitSource(reinterpret_cast<const LChar*>(text),
-                                         length);
 }
 
 TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsLatin) {
