@@ -7,12 +7,6 @@
 
 <script>
 
-let zeroAngle = new CSSUnitValue(0, 'deg');
-
-function angleValue(value, unit) {
-  return new CSSUnitValue(value, unit);
-}
-
 function cssTransformWithRotate(angleValue) {
   return new CSSTransformValue([
       new CSSRotation(angleValue)]);
@@ -30,27 +24,32 @@ runInlineStylePropertyMapTests( {
   ],
   validObjects: [
     // Translations
-    // TODO(meade)
+    new CSSTransformValue([new CSSTranslation(CSS.px(1), CSS.px(2))]),
+    new CSSTransformValue(
+        [new CSSTranslation(CSS.px(1), CSS.px(2), CSS.px(3))]),
+    new CSSTransformValue([new CSSTranslation(CSS.px(-10), CSS.px(-20))]),
+    new CSSTransformValue(
+        [new CSSTranslation(CSS.px(-10), CSS.px(-20), CSS.px(-30))]),
     // Scales
     // TODO(meade)
     // Skews
-    new CSSTransformValue([new CSSSkew(angleValue(30, 'deg'), zeroAngle)]),
-    new CSSTransformValue([new CSSSkew(angleValue(10, 'rad'), zeroAngle)]),
-    new CSSTransformValue([new CSSSkew(angleValue(2, 'grad'), zeroAngle)]),
-    new CSSTransformValue([new CSSSkew(angleValue(0.2, 'turn'), zeroAngle)]),
-    new CSSTransformValue([new CSSSkew(zeroAngle, angleValue(30, 'deg'))]),
-    new CSSTransformValue([new CSSSkew(zeroAngle, angleValue(10, 'rad'))]),
-    new CSSTransformValue([new CSSSkew(zeroAngle, angleValue(2, 'grad'))]),
-    new CSSTransformValue([new CSSSkew(zeroAngle, angleValue(0.2, 'turn'))]),
+    new CSSTransformValue([new CSSSkew(CSS.deg(30), CSS.deg(0))]),
+    new CSSTransformValue([new CSSSkew(CSS.rad(10), CSS.deg(0))]),
+    new CSSTransformValue([new CSSSkew(CSS.grad(2), CSS.deg(0))]),
+    new CSSTransformValue([new CSSSkew(CSS.turn(0.2), CSS.deg(0))]),
+    new CSSTransformValue([new CSSSkew(CSS.deg(0), CSS.deg(30))]),
+    new CSSTransformValue([new CSSSkew(CSS.deg(0), CSS.rad(10))]),
+    new CSSTransformValue([new CSSSkew(CSS.deg(0), CSS.grad(2))]),
+    new CSSTransformValue([new CSSSkew(CSS.deg(0), CSS.turn(0.2))]),
     // Rotations
-    cssTransformWithRotate(angleValue(30, 'deg')),
-    cssTransformWithRotate(angleValue(10, 'rad')),
-    cssTransformWithRotate(angleValue(2, 'grad')),
-    cssTransformWithRotate(angleValue(0.2, 'turn')),
-    cssTransformWithRotate3D(1, 2, 3, angleValue(30, 'deg')),
-    cssTransformWithRotate3D(1, 2, 3, angleValue(10, 'rad')),
-    cssTransformWithRotate3D(1, 2, 3, angleValue(2, 'grad')),
-    cssTransformWithRotate3D(1, 2, 3, angleValue(0.2, 'turn')),
+    cssTransformWithRotate(CSS.deg(30)),
+    cssTransformWithRotate(CSS.rad(10)),
+    cssTransformWithRotate(CSS.grad(2)),
+    cssTransformWithRotate(CSS.turn(0.2)),
+    cssTransformWithRotate3D(1, 2, 3, CSS.deg(30)),
+    cssTransformWithRotate3D(1, 2, 3, CSS.rad(10)),
+    cssTransformWithRotate3D(1, 2, 3, CSS.grad(2)),
+    cssTransformWithRotate3D(1, 2, 3, CSS.turn(0.2)),
     // Perspectives
     new CSSTransformValue([new CSSPerspective(CSS.px(10))]),
     new CSSTransformValue([new CSSPerspective(CSS.em(5))]),
@@ -58,53 +57,54 @@ runInlineStylePropertyMapTests( {
   // Values with these strings aren't used in Typed OM, but can also be
   // represented by the specified values.
   validStringMappings: {
+    // Translations
+    'translate(10px)':
+      new CSSTransformValue([new CSSTranslation(CSS.px(10), CSS.px(0))]),
+    'translateX(10em)':
+      new CSSTransformValue([new CSSTranslation(CSS.em(10), CSS.px(0))]),
+    'translateY(20pc)':
+      new CSSTransformValue([new CSSTranslation(CSS.px(0), CSS.pc(20))]),
+    'translateZ(30in)':
+      new CSSTransformValue(
+          [new CSSTranslation(CSS.px(0), CSS.px(0), CSS.in(30))]),
     // Skews
     'skew(45deg)':
-      new CSSTransformValue([new CSSSkew(angleValue(45, 'deg'), zeroAngle)]),
-    'skew(1rad)':
-      new CSSTransformValue([new CSSSkew(angleValue(1, 'rad'), zeroAngle)]),
+      new CSSTransformValue([new CSSSkew(CSS.deg(45), CSS.deg(0))]),
+    'skew(1rad)': new CSSTransformValue([new CSSSkew(CSS.rad(1), CSS.deg(0))]),
     'skew(6.2grad)':
-      new CSSTransformValue([new CSSSkew(angleValue(6.2, 'grad'), zeroAngle)]),
+      new CSSTransformValue([new CSSSkew(CSS.grad(6.2), CSS.deg(0))]),
     'skew(0.31turn)':
-      new CSSTransformValue([new CSSSkew(angleValue(0.31, 'turn'), zeroAngle)]),
+      new CSSTransformValue([new CSSSkew(CSS.turn(0.31), CSS.deg(0))]),
     'skewX(45deg)':
-      new CSSTransformValue([new CSSSkew(angleValue(45, 'deg'), zeroAngle)]),
-    'skewX(1rad)':
-      new CSSTransformValue([new CSSSkew(angleValue(1, 'rad'), zeroAngle)]),
+      new CSSTransformValue([new CSSSkew(CSS.deg(45), CSS.deg(0))]),
+    'skewX(1rad)': new CSSTransformValue([new CSSSkew(CSS.rad(1), CSS.deg(0))]),
     'skewX(6.2grad)':
-      new CSSTransformValue([new CSSSkew(angleValue(6.2, 'grad'), zeroAngle)]),
+      new CSSTransformValue([new CSSSkew(CSS.grad(6.2), CSS.deg(0))]),
     'skewX(0.31turn)':
-      new CSSTransformValue([new CSSSkew(angleValue(0.31, 'turn'), zeroAngle)]),
+      new CSSTransformValue([new CSSSkew(CSS.turn(0.31), CSS.deg(0))]),
     'skewY(45deg)':
-      new CSSTransformValue([new CSSSkew(zeroAngle, angleValue(45, 'deg'))]),
-    'skewY(1rad)':
-      new CSSTransformValue([new CSSSkew(zeroAngle, angleValue(1, 'rad'))]),
+      new CSSTransformValue([new CSSSkew(CSS.deg(0), CSS.deg(45))]),
+    'skewY(1rad)': new CSSTransformValue([new CSSSkew(CSS.deg(0), CSS.rad(1))]),
     'skewY(6.2grad)':
-      new CSSTransformValue([new CSSSkew(zeroAngle, angleValue(6.2, 'grad'))]),
+      new CSSTransformValue([new CSSSkew(CSS.deg(0), CSS.grad(6.2))]),
     'skewY(0.31turn)':
-      new CSSTransformValue([new CSSSkew(zeroAngle, angleValue(0.31, 'turn'))]),
+      new CSSTransformValue([new CSSSkew(CSS.deg(0), CSS.turn(0.31))]),
     // Rotations
-    'rotateX(45deg)': cssTransformWithRotate3D(1, 0, 0, angleValue(45, 'deg')),
-    'rotateX(1rad)': cssTransformWithRotate3D(1, 0, 0, angleValue(1, 'rad')),
-    'rotateX(6.2grad)':
-      cssTransformWithRotate3D(1, 0, 0, angleValue(6.2, 'grad')),
-    'rotateX(0.31turn)':
-      cssTransformWithRotate3D(1, 0, 0, angleValue(0.31, 'turn')),
-    'rotateY(45deg)': cssTransformWithRotate3D(0, 1, 0, angleValue(45, 'deg')),
-    'rotateY(1rad)': cssTransformWithRotate3D(0, 1, 0, angleValue(1, 'rad')),
-    'rotateY(6.2grad)':
-      cssTransformWithRotate3D(0, 1, 0, angleValue(6.2, 'grad')),
-    'rotateY(0.31turn)':
-      cssTransformWithRotate3D(0, 1, 0, angleValue(0.31, 'turn')),
-    'rotateZ(45deg)': cssTransformWithRotate3D(0, 0, 1, angleValue(45, 'deg')),
-    'rotateZ(1rad)': cssTransformWithRotate3D(0, 0, 1, angleValue(1, 'rad')),
-    'rotateZ(6.2grad)':
-      cssTransformWithRotate3D(0, 0, 1, angleValue(6.2, 'grad')),
-    'rotateZ(0.31turn)':
-      cssTransformWithRotate3D(0, 0, 1, angleValue(0.31, 'turn')),
+    'rotateX(45deg)': cssTransformWithRotate3D(1, 0, 0, CSS.deg(45)),
+    'rotateX(1rad)': cssTransformWithRotate3D(1, 0, 0, CSS.rad(1)),
+    'rotateX(6.2grad)': cssTransformWithRotate3D(1, 0, 0, CSS.grad(6.2)),
+    'rotateX(0.31turn)': cssTransformWithRotate3D(1, 0, 0, CSS.turn(0.31)),
+    'rotateY(45deg)': cssTransformWithRotate3D(0, 1, 0, CSS.deg(45)),
+    'rotateY(1rad)': cssTransformWithRotate3D(0, 1, 0, CSS.rad(1)),
+    'rotateY(6.2grad)': cssTransformWithRotate3D(0, 1, 0, CSS.grad(6.2)),
+    'rotateY(0.31turn)': cssTransformWithRotate3D(0, 1, 0, CSS.turn(0.31)),
+    'rotateZ(45deg)': cssTransformWithRotate3D(0, 0, 1, CSS.deg(45)),
+    'rotateZ(1rad)': cssTransformWithRotate3D(0, 0, 1, CSS.rad(1)),
+    'rotateZ(6.2grad)': cssTransformWithRotate3D(0, 0, 1, CSS.grad(6.2)),
+    'rotateZ(0.31turn)': cssTransformWithRotate3D(0, 0, 1, CSS.turn(0.31)),
   },
   supportsMultiple: false,
-  invalidObjects: [new CSSUnitValue(4, 'px')]
+  invalidObjects: [CSS.px(4)]
 });
 
 let crashTestStrings = {

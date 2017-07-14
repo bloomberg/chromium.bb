@@ -14,5 +14,5 @@
 ] interface CSSTranslation : CSSTransformComponent {
     [RaisesException=Setter] attribute CSSNumericValue x;
     [RaisesException=Setter] attribute CSSNumericValue y;
-    [RaisesException=Setter] attribute CSSNumericValue? z;
+    [RaisesException=Setter] attribute CSSNumericValue z;
 };
