@@ -173,10 +173,10 @@
     <cr-menu id="file-context-menu" class="chrome-menu files-menu"
              menu-item-selector="cr-menu-item,hr" showShortcuts>
       <cr-menu-item id="default-task-menu-item" command="#default-task"
-                visibleif="full-page" hidden></cr-menu-item>
+                visibleif="full-page" class="hide-on-toolbar" hidden></cr-menu-item>
       <cr-menu-item command="#open-with"
-                visibleif="full-page" hidden></cr-menu-item>
-      <hr id="tasks-separator" visibleif="full-page" hidden>
+                visibleif="full-page" class="hide-on-toolbar" hidden></cr-menu-item>
+      <hr id="tasks-separator" visibleif="full-page" class="hide-on-toolbar" hidden>
       <hr id="actions-separator" hidden>
       <cr-menu-item command="#cut" visibleif="full-page"></cr-menu-item>
       <cr-menu-item command="#copy" visibleif="full-page"></cr-menu-item>
@@ -185,12 +185,13 @@
       <hr visibleif="full-page">
       <cr-menu-item command="#get-info"></cr-menu-item>
       <cr-menu-item command="#rename"></cr-menu-item>
-      <cr-menu-item command="#delete" i18n-content="DELETE_BUTTON_LABEL"></cr-menu-item>
+      <cr-menu-item command="#delete" i18n-content="DELETE_BUTTON_LABEL"
+                class="hide-on-toolbar"></cr-menu-item>
       <cr-menu-item command="#zip-selection"></cr-menu-item>
       <cr-menu-item command="#set-wallpaper"></cr-menu-item>
-      <hr visibleif="saveas-file full-page">
-      <cr-menu-item command="#new-folder"
-                visibleif="saveas-file full-page"></cr-menu-item>
+      <hr visibleif="saveas-file full-page" class="hide-on-toolbar">
+      <cr-menu-item command="#new-folder" visibleif="saveas-file full-page"
+                class="hide-on-toolbar"></cr-menu-item>
     </cr-menu>
 
     <cr-menu id="roots-context-menu" class="chrome-menu files-menu"
@@ -377,6 +378,12 @@
               i18n-values="aria-label:GEAR_BUTTON_TOOLTIP"
               aria-activedescendant="gear-menu"
               has-tooltip>
+        <files-toggle-ripple></files-toggle-ripple>
+        <div class="icon"></div>
+      </button>
+      <!-- TODO(yamaguchi): Set a proper tooltip. -->
+      <button id="selection-menu-button" class="icon-button" tabindex="19"
+              menu="#file-context-menu" aria-activedescendant="file-context-menu">
         <files-toggle-ripple></files-toggle-ripple>
         <div class="icon"></div>
       </button>

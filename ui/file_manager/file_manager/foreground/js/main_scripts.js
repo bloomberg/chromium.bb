@@ -145,6 +145,7 @@
 // <include src="quick_view_uma.js">
 // <include src="scan_controller.js">
 // <include src="search_controller.js">
+// <include src="selection_menu_controller.js">
 // <include src="share_client.js">
 // <include src="spinner_controller.js">
 // <include src="task_controller.js">
