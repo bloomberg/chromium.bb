@@ -9,6 +9,7 @@ import static org.chromium.chrome.test.util.browser.suggestions.ContentSuggestio
 import android.graphics.Bitmap;
 
 import org.chromium.base.Callback;
+import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.ntp.cards.SuggestionsCategoryInfo;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
@@ -28,7 +29,7 @@ import java.util.Map;
  * A fake Suggestions source for use in unit and instrumentation tests.
  */
 public class FakeSuggestionsSource implements SuggestionsSource {
-    private SuggestionsSource.Observer mObserver;
+    private ObserverList<Observer> mObserverList = new ObserverList<>();
     private final List<Integer> mCategories = new ArrayList<>();
     private final Map<Integer, List<SnippetArticle>> mSuggestions = new HashMap<>();
     private final Map<Integer, Integer> mCategoryStatus = new LinkedHashMap<>();
@@ -45,6 +46,9 @@ public class FakeSuggestionsSource implements SuggestionsSource {
             new HashMap<>();
     private final Map<Integer, Integer> mDismissedCategoryStatus = new LinkedHashMap<>();
     private final Map<Integer, SuggestionsCategoryInfo> mDismissedCategoryInfo = new HashMap<>();
+
+    private boolean mRemoteSuggestionsEnabled = true;
+
     /**
      * Sets the status to be returned for a given category.
      */
@@ -55,7 +59,7 @@ public class FakeSuggestionsSource implements SuggestionsSource {
         } else if (!mCategories.contains(category)) {
             mCategories.add(category);
         }
-        if (mObserver != null) mObserver.onCategoryStatusChanged(category, status);
+        for (Observer observer : mObserverList) observer.onCategoryStatusChanged(category, status);
     }
 
     /**
@@ -65,7 +69,7 @@ public class FakeSuggestionsSource implements SuggestionsSource {
             @CategoryInt int category, List<SnippetArticle> suggestions) {
         // Copy the suggestions list so that it can't be modified anymore.
         mSuggestions.put(category, new ArrayList<>(suggestions));
-        if (mObserver != null) mObserver.onNewSuggestions(category);
+        for (Observer observer : mObserverList) observer.onNewSuggestions(category);
     }
 
     /**
@@ -136,14 +140,16 @@ public class FakeSuggestionsSource implements SuggestionsSource {
                 break;
             }
         }
-        mObserver.onSuggestionInvalidated(category, idWithinCategory);
+        for (Observer observer : mObserverList) {
+            observer.onSuggestionInvalidated(category, idWithinCategory);
+        }
     }
 
     /**
      * Notifies the observer that a full refresh is required.
      */
     public void fireFullRefreshRequired() {
-        mObserver.onFullRefreshRequired();
+        for (Observer observer : mObserverList) observer.onFullRefreshRequired();
     }
 
     /**
@@ -158,6 +164,15 @@ public class FakeSuggestionsSource implements SuggestionsSource {
 
     @Override
     public void fetchRemoteSuggestions() {}
+
+    @Override
+    public boolean areRemoteSuggestionsEnabled() {
+        return mRemoteSuggestionsEnabled;
+    }
+
+    public void setRemoteSuggestionsEnabled(boolean enabled) {
+        mRemoteSuggestionsEnabled = enabled;
+    }
 
     @Override
     public void dismissSuggestion(SnippetArticle suggestion) {
@@ -229,8 +244,13 @@ public class FakeSuggestionsSource implements SuggestionsSource {
     }
 
     @Override
-    public void setObserver(Observer observer) {
-        mObserver = observer;
+    public void addObserver(Observer observer) {
+        mObserverList.addObserver(observer);
+    }
+
+    @Override
+    public void removeObserver(Observer observer) {
+        mObserverList.removeObserver(observer);
     }
 
     @Override

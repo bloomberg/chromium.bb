@@ -53,6 +53,10 @@ class NTPSnippetsBridge
       const base::android::JavaParamRef<jobject>& obj,
       jint j_category_id);
 
+  jboolean AreRemoteSuggestionsEnabled(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+
   void FetchSuggestionImage(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
