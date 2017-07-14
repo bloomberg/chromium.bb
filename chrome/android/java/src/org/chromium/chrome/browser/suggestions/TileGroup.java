@@ -224,10 +224,18 @@ public class TileGroup implements MostVisitedSites.Observer {
         mMinIconSize = Math.min(mDesiredIconSize, ICON_MIN_SIZE_PX);
         int desiredIconSizeDp =
                 Math.round(mDesiredIconSize / resources.getDisplayMetrics().density);
+
+        int cornerRadiusDp;
+        if (SuggestionsConfig.useModern()) {
+            cornerRadiusDp = desiredIconSizeDp / 2;
+        } else {
+            cornerRadiusDp = ICON_CORNER_RADIUS_DP;
+        }
+
         int iconColor =
                 ApiCompatibilityUtils.getColor(resources, R.color.default_favicon_background_color);
         mIconGenerator = new RoundedIconGenerator(mContext, desiredIconSizeDp, desiredIconSizeDp,
-                ICON_CORNER_RADIUS_DP, iconColor, ICON_TEXT_SIZE_DP);
+                cornerRadiusDp, iconColor, ICON_TEXT_SIZE_DP);
 
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_OFFLINE_PAGES_FEATURE_NAME)) {
             mOfflineModelObserver = new OfflineModelObserver(offlinePageBridge);
