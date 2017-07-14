@@ -531,7 +531,6 @@ html[subframe] body {
   left: 0;
   margin: auto;
   right: 0;
-  top: 0;
   transform-origin: top center;
   transition: transform 250ms cubic-bezier(0.4, 0.0, 1, 1) .4s;
   z-index: 2;
