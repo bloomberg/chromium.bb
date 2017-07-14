@@ -21,7 +21,6 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/installation_notifier.h"
-#include "ios/chrome/browser/native_app_launcher/ios_appstore_ids.h"
 #import "ios/chrome/browser/store_kit/store_kit_tab_helper.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
@@ -29,9 +28,6 @@
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
-#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
-#import "ios/public/provider/chrome/browser/native_app_launcher/native_app_metadata.h"
-#import "ios/public/provider/chrome/browser/native_app_launcher/native_app_whitelist_manager.h"
 #import "ios/third_party/material_components_ios/src/components/ActivityIndicator/src/MaterialActivityIndicator.h"
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
@@ -210,6 +206,8 @@ using net::URLRequestStatus;
 
 namespace {
 
+NSString* kGoogleDriveAppStoreId = @"507874739";
+NSString* kGoogleDriveURL = @"googledrive://";
 NSString* kGoogleDriveBundleId = @"com.google.Drive";
 
 // Key of the UMA Download.IOSDownloadFileResult histogram.
@@ -489,10 +487,6 @@ class DownloadContentDelegate : public URLFetcherDelegate {
 // downloaded.
 @property(nonatomic) double fractionDownloaded;
 
-// Used to get a URL scheme that Drive responds to, to register with the
-// InstallationNotifier.
-@property(nonatomic, strong) id<NativeAppMetadata> googleDriveMetadata;
-
 @end
 
 @implementation DownloadManagerController
@@ -523,7 +517,6 @@ class DownloadContentDelegate : public URLFetcherDelegate {
 @synthesize fileTypeLabelCentered = _fileTypeLabelCentered;
 @synthesize downloadStartedTime = _downloadStartedTime;
 @synthesize fractionDownloaded = _fractionDownloaded;
-@synthesize googleDriveMetadata = _googleDriveMetadata;
 
 - (instancetype)initWithWebState:(web::WebState*)webState
                      downloadURL:(const GURL&)url {
@@ -1055,11 +1048,8 @@ class DownloadContentDelegate : public URLFetcherDelegate {
                                                      title:title
                                                    message:message];
 
-  // |googleDriveMetadata| contains the information necessary to either launch
-  // the Google Drive app or navigate to its StoreKit page.  If the metadata is
-  // not present, do not show the upload button at all.
   StoreKitTabHelper* tabHelper = StoreKitTabHelper::FromWebState(_webState);
-  if (self.googleDriveMetadata && tabHelper) {
+  if (tabHelper) {
     NSString* googleDriveButtonTitle =
         l10n_util::GetNSString(IDS_IOS_DOWNLOAD_MANAGER_UPLOAD_TO_GOOGLE_DRIVE);
     __weak DownloadManagerController* weakSelf = self;
@@ -1314,25 +1304,6 @@ class DownloadContentDelegate : public URLFetcherDelegate {
   [_documentContainer
       setBackgroundColor:UIColorFromRGB(kDownloadedDocumentColor)];
 
-  // If Google Drive is not installed and the metadata is present that knows how
-  // to install it, display the "Install Google Drive" button.
-  NSString* driveAppId = base::SysUTF8ToNSString(kIOSAppStoreGoogleDrive);
-  NSArray* matchingApps =
-      [ios::GetChromeBrowserProvider()->GetNativeAppWhitelistManager()
-          filteredAppsUsingBlock:^BOOL(const id<NativeAppMetadata> app,
-                                       BOOL* stop) {
-            if ([[app appId] isEqualToString:driveAppId]) {
-              *stop = YES;
-              return YES;
-            }
-            return NO;
-          }];
-  BOOL showGoogleDriveButton = NO;
-  if (matchingApps.count == 1U) {
-    self.googleDriveMetadata = matchingApps[0];
-    showGoogleDriveButton = ![self.googleDriveMetadata isInstalled];
-  }
-
   CAKeyframeAnimation* animation =
       [CAKeyframeAnimation animationWithKeyPath:@"transform"];
   NSArray* vals = @[
@@ -1348,6 +1319,10 @@ class DownloadContentDelegate : public URLFetcherDelegate {
   [_documentContainer.layer addAnimation:animation
                                   forKey:kDocumentPopAnimationKey];
 
+  // Displays the "Install Google Drive" button if it is not installed.
+  NSURL* googleDriveURL = [NSURL URLWithString:kGoogleDriveURL];
+  BOOL showGoogleDriveButton =
+      ![[UIApplication sharedApplication] canOpenURL:googleDriveURL];
   __weak UIImageView* weakFoldIcon = _foldIcon;
   [UIView transitionWithView:_foldIcon
       duration:kDownloadCompleteAnimationDuration
@@ -1569,11 +1544,12 @@ class DownloadContentDelegate : public URLFetcherDelegate {
 - (void)openGoogleDriveInAppStore {
   StoreKitTabHelper* helper = StoreKitTabHelper::FromWebState(_webState);
   if (helper) {
+    NSString* scheme = [[NSURL URLWithString:kGoogleDriveURL] scheme];
     [[InstallationNotifier sharedInstance]
         registerForInstallationNotifications:self
                                 withSelector:@selector(hideGoogleDriveButton)
-                                   forScheme:[_googleDriveMetadata anyScheme]];
-    helper->OpenAppStore([_googleDriveMetadata appId]);
+                                   forScheme:scheme];
+    helper->OpenAppStore(kGoogleDriveAppStoreId);
   }
 }
 
