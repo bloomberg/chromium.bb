@@ -37,10 +37,6 @@ public class Footer extends OptionalLeaf {
         visitor.visitFooter();
     }
 
-    public void setVisible(boolean visible) {
-        setVisibilityInternal(visible);
-    }
-
     /**
      * The {@code ViewHolder} for the {@link Footer}.
      */

@@ -63,8 +63,4 @@ public abstract class StatusItem extends OptionalLeaf implements StatusCardViewH
         assert holder instanceof StatusCardViewHolder;
         ((StatusCardViewHolder) holder).onBindViewHolder(this);
     }
-
-    public void setVisible(boolean visible) {
-        setVisibilityInternal(visible);
-    }
 }

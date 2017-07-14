@@ -32,8 +32,7 @@ public class ActionItem extends OptionalLeaf {
         mCategoryInfo = section.getCategoryInfo();
         mParentSection = section;
         mSuggestionsRanker = ranker;
-        setVisibilityInternal(
-                mCategoryInfo.getAdditionalAction() != ContentSuggestionsAdditionalAction.NONE);
+        setVisible(mCategoryInfo.getAdditionalAction() != ContentSuggestionsAdditionalAction.NONE);
     }
 
     @Override

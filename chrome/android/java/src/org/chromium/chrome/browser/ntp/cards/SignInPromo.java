@@ -15,10 +15,6 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
-import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
-import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
-import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
-import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.signin.AccountSigninActivity;
 import org.chromium.chrome.browser.signin.SigninAccessPoint;
@@ -43,37 +39,23 @@ public class SignInPromo extends OptionalLeaf
      */
     private boolean mDismissed;
 
-    /**
-     * Whether the signin status means that the user has the possibility to sign in.
-     */
-    private boolean mCanSignIn;
-
-    /**
-     * Whether personalized suggestions can be shown. If it's not the case, we have no reason to
-     * offer the user to sign in.
-     */
-    private boolean mCanShowPersonalizedSuggestions;
-
     private final ImpressionTracker mImpressionTracker = new ImpressionTracker(null, this);
 
     @Nullable
-    private final SigninObserver mSigninObserver;
+    private final SigninObserver mObserver;
 
     public SignInPromo(SuggestionsUiDelegate uiDelegate) {
         mDismissed = ChromePreferenceManager.getInstance().getNewTabPageSigninPromoDismissed();
 
-        SuggestionsSource suggestionsSource = uiDelegate.getSuggestionsSource();
         SigninManager signinManager = SigninManager.get(ContextUtils.getApplicationContext());
         if (mDismissed) {
-            mSigninObserver = null;
+            mObserver = null;
         } else {
-            mSigninObserver = new SigninObserver(signinManager, suggestionsSource);
-            uiDelegate.addDestructionObserver(mSigninObserver);
+            mObserver = new SigninObserver(signinManager);
+            uiDelegate.addDestructionObserver(mObserver);
         }
 
-        mCanSignIn = signinManager.isSignInAllowed() && !signinManager.isSignedInOnNative();
-        mCanShowPersonalizedSuggestions = suggestionsSource.areRemoteSuggestionsEnabled();
-        updateVisibility();
+        setVisible(signinManager.isSignInAllowed() && !signinManager.isSignedInOnNative());
     }
 
     @Override
@@ -88,7 +70,7 @@ public class SignInPromo extends OptionalLeaf
      */
     @Nullable
     public DestructionObserver getObserver() {
-        return mSigninObserver;
+        return mObserver;
     }
 
     @Override
@@ -132,8 +114,9 @@ public class SignInPromo extends OptionalLeaf
         mImpressionTracker.reset(null);
     }
 
-    private void updateVisibility() {
-        setVisibilityInternal(!mDismissed && mCanSignIn && mCanShowPersonalizedSuggestions);
+    @Override
+    public void setVisible(boolean visible) {
+        super.setVisible(!mDismissed && visible);
     }
 
     @Override
@@ -144,31 +127,26 @@ public class SignInPromo extends OptionalLeaf
     /** Hides the sign in promo and sets a preference to make sure it is not shown again. */
     @Override
     public void dismiss(Callback<String> itemRemovedCallback) {
-        assert mSigninObserver != null;
         mDismissed = true;
-        updateVisibility();
+        setVisible(false);
 
         ChromePreferenceManager.getInstance().setNewTabPageSigninPromoDismissed(true);
-        mSigninObserver.unregister();
+        mObserver.unregister();
         itemRemovedCallback.onResult(ContextUtils.getApplicationContext().getString(getHeader()));
     }
 
     @VisibleForTesting
-    class SigninObserver extends SuggestionsSource.EmptyObserver
+    class SigninObserver
             implements SignInStateObserver, SignInAllowedObserver, DestructionObserver {
         private final SigninManager mSigninManager;
-        private final SuggestionsSource mSuggestionsSource;
 
         /** Guards {@link #unregister()}, which can be called multiple times. */
         private boolean mUnregistered;
 
-        private SigninObserver(SigninManager signinManager, SuggestionsSource suggestionsSource) {
+        private SigninObserver(SigninManager signinManager) {
             mSigninManager = signinManager;
             mSigninManager.addSignInAllowedObserver(this);
             mSigninManager.addSignInStateObserver(this);
-
-            mSuggestionsSource = suggestionsSource;
-            mSuggestionsSource.addObserver(this);
         }
 
         private void unregister() {
@@ -177,8 +155,6 @@ public class SignInPromo extends OptionalLeaf
 
             mSigninManager.removeSignInAllowedObserver(this);
             mSigninManager.removeSignInStateObserver(this);
-
-            mSuggestionsSource.removeObserver(this);
         }
 
         @Override
@@ -191,31 +167,17 @@ public class SignInPromo extends OptionalLeaf
             // Listening to onSignInAllowedChanged is important for the FRE. Sign in is not allowed
             // until it is completed, but the NTP is initialised before the FRE is even shown. By
             // implementing this we can show the promo if the user did not sign in during the FRE.
-            mCanSignIn = mSigninManager.isSignInAllowed();
-            updateVisibility();
+            setVisible(mSigninManager.isSignInAllowed());
         }
 
         @Override
         public void onSignedIn() {
-            mCanSignIn = false;
-            updateVisibility();
+            setVisible(false);
         }
 
         @Override
         public void onSignedOut() {
-            mCanSignIn = mSigninManager.isSignInAllowed();
-            updateVisibility();
-        }
-
-        @Override
-        public void onCategoryStatusChanged(
-                @CategoryInt int category, @CategoryStatus int newStatus) {
-            if (!SnippetsBridge.isCategoryRemote(category)) return;
-
-            // Checks whether the category is enabled first to avoid unnecessary calls across JNI.
-            mCanShowPersonalizedSuggestions = SnippetsBridge.isCategoryEnabled(category)
-                    || mSuggestionsSource.areRemoteSuggestionsEnabled();
-            updateVisibility();
+            setVisible(true);
         }
     }
 

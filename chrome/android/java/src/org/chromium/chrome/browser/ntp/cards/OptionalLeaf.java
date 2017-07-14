@@ -67,7 +67,7 @@ public abstract class OptionalLeaf extends ChildNode {
      * initially considered hidden.
      */
     @CallSuper
-    protected void setVisibilityInternal(boolean visible) {
+    public void setVisible(boolean visible) {
         if (mVisible == visible) return;
         mVisible = visible;
 

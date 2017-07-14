@@ -23,9 +23,7 @@ import org.chromium.chrome.browser.ntp.ContentSuggestionsNotificationHelper;
 import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsNotificationAction;
 import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsNotificationOptOut;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
-import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.suggestions.SuggestionsDependencyFactory;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -76,12 +74,7 @@ public class ContentSuggestionsPreferences extends PreferenceFragment {
         setHasOptionsMenu(true);
         finishSwitchInitialisation();
 
-        SuggestionsSource suggestionsSource =
-                SuggestionsDependencyFactory.getInstance().createSuggestionSource(
-                        Profile.getLastUsedProfile());
-        boolean isEnabled = suggestionsSource.areRemoteSuggestionsEnabled();
-        suggestionsSource.onDestroy();
-
+        boolean isEnabled = SnippetsBridge.areRemoteSuggestionsEnabled();
         mIsEnabled = !isEnabled; // Opposite so that we trigger side effects below.
         updatePreferences(isEnabled);
 

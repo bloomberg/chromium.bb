@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.ntp.snippets;
 import android.graphics.Bitmap;
 
 import org.chromium.base.Callback;
-import org.chromium.base.ObserverList;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.ntp.cards.SuggestionsCategoryInfo;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -23,15 +22,11 @@ public class SnippetsBridge implements SuggestionsSource {
     private static final String TAG = "SnippetsBridge";
 
     private long mNativeSnippetsBridge;
-    private final ObserverList<Observer> mObserverList = new ObserverList<>();
+    private SuggestionsSource.Observer mObserver;
 
     public static boolean isCategoryStatusAvailable(@CategoryStatus int status) {
-        // Note: This code is duplicated in category_status.cc.
+        // Note: This code is duplicated in content_suggestions_category_status.cc.
         return status == CategoryStatus.AVAILABLE_LOADING || status == CategoryStatus.AVAILABLE;
-    }
-
-    public static boolean isCategoryRemote(@CategoryInt int category) {
-        return category > KnownCategories.REMOTE_CATEGORIES_OFFSET;
     }
 
     /** Returns whether the category is considered "enabled", and can show content suggestions. */
@@ -67,7 +62,7 @@ public class SnippetsBridge implements SuggestionsSource {
         assert mNativeSnippetsBridge != 0;
         nativeDestroy(mNativeSnippetsBridge);
         mNativeSnippetsBridge = 0;
-        mObserverList.clear();
+        mObserver = null;
     }
 
     /**
@@ -88,9 +83,8 @@ public class SnippetsBridge implements SuggestionsSource {
         nativeSetRemoteSuggestionsEnabled(enabled);
     }
 
-    @Override
-    public boolean areRemoteSuggestionsEnabled() {
-        return nativeAreRemoteSuggestionsEnabled(mNativeSnippetsBridge);
+    public static boolean areRemoteSuggestionsEnabled() {
+        return nativeAreRemoteSuggestionsEnabled();
     }
 
     public static boolean areRemoteSuggestionsManaged() {
@@ -180,14 +174,9 @@ public class SnippetsBridge implements SuggestionsSource {
     }
 
     @Override
-    public void addObserver(Observer observer) {
+    public void setObserver(Observer observer) {
         assert observer != null;
-        mObserverList.addObserver(observer);
-    }
-
-    @Override
-    public void removeObserver(Observer observer) {
-        mObserverList.removeObserver(observer);
+        mObserver = observer;
     }
 
     @Override
@@ -240,26 +229,22 @@ public class SnippetsBridge implements SuggestionsSource {
 
     @CalledByNative
     private void onNewSuggestions(@CategoryInt int category) {
-        for (Observer observer : mObserverList) observer.onNewSuggestions(category);
+        if (mObserver != null) mObserver.onNewSuggestions(category);
     }
 
     @CalledByNative
     private void onCategoryStatusChanged(@CategoryInt int category, @CategoryStatus int newStatus) {
-        for (Observer observer : mObserverList) {
-            observer.onCategoryStatusChanged(category, newStatus);
-        }
+        if (mObserver != null) mObserver.onCategoryStatusChanged(category, newStatus);
     }
 
     @CalledByNative
     private void onSuggestionInvalidated(@CategoryInt int category, String idWithinCategory) {
-        for (Observer observer : mObserverList) {
-            observer.onSuggestionInvalidated(category, idWithinCategory);
-        }
+        if (mObserver != null) mObserver.onSuggestionInvalidated(category, idWithinCategory);
     }
 
     @CalledByNative
     private void onFullRefreshRequired() {
-        for (Observer observer : mObserverList) observer.onFullRefreshRequired();
+        if (mObserver != null) mObserver.onFullRefreshRequired();
     }
 
     private native long nativeInit(Profile profile);
@@ -268,7 +253,7 @@ public class SnippetsBridge implements SuggestionsSource {
     private static native void nativeRemoteSuggestionsSchedulerOnPersistentSchedulerWakeUp();
     private static native void nativeRemoteSuggestionsSchedulerOnBrowserUpgraded();
     private static native void nativeSetRemoteSuggestionsEnabled(boolean enabled);
-    private native boolean nativeAreRemoteSuggestionsEnabled(long nativeNTPSnippetsBridge);
+    private static native boolean nativeAreRemoteSuggestionsEnabled();
     private static native boolean nativeAreRemoteSuggestionsManaged();
     private static native boolean nativeAreRemoteSuggestionsManagedByCustodian();
     private static native void nativeSetContentSuggestionsNotificationsEnabled(boolean enabled);
