@@ -9,7 +9,7 @@
 
 namespace {
 
-const char kDefaultTestUrl[] = "https://google.com";
+const char kDefaultTestUrl[] = "https://google.com/";
 const char kInboxTestUrl[] = "https://inbox.google.com/test";
 const char kSearchTestUrl[] = "https://www.google.com/search?q=test";
 
@@ -135,6 +135,7 @@ TEST_F(ServiceWorkerPageLoadMetricsObserverTest, NoMetrics) {
   AssertNoInboxHistogramsLogged();
   AssertNoSearchHistogramsLogged();
   AssertNoSearchNoSWHistogramsLogged();
+  EXPECT_EQ(0ul, test_ukm_recorder().entries_count());
 }
 
 TEST_F(ServiceWorkerPageLoadMetricsObserverTest, NoServiceWorker) {
@@ -148,6 +149,7 @@ TEST_F(ServiceWorkerPageLoadMetricsObserverTest, NoServiceWorker) {
   AssertNoInboxHistogramsLogged();
   AssertNoSearchHistogramsLogged();
   AssertNoSearchNoSWHistogramsLogged();
+  EXPECT_EQ(0ul, test_ukm_recorder().entries_count());
 }
 
 TEST_F(ServiceWorkerPageLoadMetricsObserverTest, WithServiceWorker) {
@@ -201,6 +203,12 @@ TEST_F(ServiceWorkerPageLoadMetricsObserverTest, WithServiceWorker) {
   histogram_tester().ExpectTotalCount(
       internal::kHistogramServiceWorkerParseStartForwardBackNoStore, 0);
 
+  EXPECT_EQ(1ul, test_ukm_recorder().entries_count());
+  const ukm::UkmSource* source =
+      test_ukm_recorder().GetSourceForUrl(kDefaultTestUrl);
+  EXPECT_TRUE(
+      test_ukm_recorder().HasEntry(*source, internal::kUkmServiceWorkerName));
+
   AssertNoInboxHistogramsLogged();
   AssertNoSearchHistogramsLogged();
   AssertNoSearchNoSWHistogramsLogged();
@@ -245,6 +253,12 @@ TEST_F(ServiceWorkerPageLoadMetricsObserverTest, WithServiceWorkerBackground) {
   // (dbg)(1) builder, so is disabled for the time being.
   // histogram_tester().ExpectTotalCount(
   //     internal::kBackgroundHistogramServiceWorkerParseStart, 1);
+
+  EXPECT_EQ(1ul, test_ukm_recorder().entries_count());
+  const ukm::UkmSource* source =
+      test_ukm_recorder().GetSourceForUrl(kDefaultTestUrl);
+  EXPECT_TRUE(
+      test_ukm_recorder().HasEntry(*source, internal::kUkmServiceWorkerName));
 
   AssertNoInboxHistogramsLogged();
   AssertNoSearchHistogramsLogged();

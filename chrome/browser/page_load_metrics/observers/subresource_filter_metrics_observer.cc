@@ -4,10 +4,13 @@
 
 #include "chrome/browser/page_load_metrics/observers/subresource_filter_metrics_observer.h"
 
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_driver_factory.h"
 #include "components/subresource_filter/content/browser/subresource_filter_safe_browsing_activation_throttle.h"
 #include "components/subresource_filter/core/common/activation_decision.h"
+#include "services/metrics/public/cpp/ukm_entry_builder.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/WebKit/public/platform/WebLoadingBehaviorFlag.h"
 
 using subresource_filter::ContentSubresourceFilterDriverFactory;
@@ -113,6 +116,10 @@ const char kHistogramSubresourceFilterActivationDecision[] =
 const char kHistogramSubresourceFilterActivationDecisionReload[] =
     "PageLoad.Clients.SubresourceFilter.ActivationDecision.LoadType.Reload";
 
+const char kUkmSubresourceFilterName[] = "SubresourceFilter";
+const char kUkmSubresourceFilterActivationDecision[] = "ActivationDecision";
+const char kUkmSubresourceFilterDryRun[] = "DryRun";
+
 }  // namespace internal
 
 namespace {
@@ -185,6 +192,21 @@ SubresourceFilterMetricsObserver::OnCommit(
   DCHECK(scoped_observer_.IsObservingSources());
   LogActivationDecisionMetrics(navigation_handle, *activation_decision_);
   scoped_observer_.RemoveAll();
+
+  ukm::UkmRecorder* ukm_recorder = g_browser_process->ukm_recorder();
+  if (ukm_recorder) {
+    std::unique_ptr<ukm::UkmEntryBuilder> builder =
+        ukm_recorder->GetEntryBuilder(source_id,
+                                      internal::kUkmSubresourceFilterName);
+    builder->AddMetric(internal::kUkmSubresourceFilterActivationDecision,
+                       static_cast<int64_t>(*activation_decision_));
+    if (*activation_level_ == subresource_filter::ActivationLevel::DRYRUN) {
+      DCHECK_EQ(subresource_filter::ActivationDecision::ACTIVATED,
+                *activation_decision_);
+      builder->AddMetric(internal::kUkmSubresourceFilterDryRun, true);
+    }
+  }
+
   return CONTINUE_OBSERVING;
 }
 
@@ -339,6 +361,9 @@ void SubresourceFilterMetricsObserver::OnPageActivationComputed(
   DCHECK(!did_commit_);
   DCHECK(!activation_decision_);
   activation_decision_ = activation_decision;
+
+  DCHECK(!activation_level_);
+  activation_level_ = activation_state.activation_level;
 }
 
 void SubresourceFilterMetricsObserver::OnGoingAway(
