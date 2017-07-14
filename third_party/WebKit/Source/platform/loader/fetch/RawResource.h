@@ -52,14 +52,13 @@ class PLATFORM_EXPORT RawResource final : public Resource {
   static RawResource* FetchManifest(FetchParameters&, ResourceFetcher*);
 
   // Exposed for testing
-  static RawResource* Create(ResourceRequest request, Type type) {
-    request.SetFetchCredentialsMode(WebURLRequest::kFetchCredentialsModeOmit);
+  static RawResource* CreateForTest(ResourceRequest request, Type type) {
     ResourceLoaderOptions options;
     return new RawResource(request, type, options);
   }
   static RawResource* CreateForTest(const KURL& url, Type type) {
     ResourceRequest request(url);
-    return Create(request, type);
+    return CreateForTest(request, type);
   }
   static RawResource* CreateForTest(const char* url, Type type) {
     return CreateForTest(KURL(kParsedURLString, url), type);

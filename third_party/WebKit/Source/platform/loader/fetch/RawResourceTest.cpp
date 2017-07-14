@@ -111,7 +111,8 @@ TEST_F(RawResourceTest, DontIgnoreAcceptForCacheReuse) {
   ResourceRequest jpeg_request;
   jpeg_request.SetHTTPAccept("image/jpeg");
 
-  RawResource* jpeg_resource(RawResource::Create(jpeg_request, Resource::kRaw));
+  RawResource* jpeg_resource(
+      RawResource::CreateForTest(jpeg_request, Resource::kRaw));
 
   ResourceRequest png_request;
   png_request.SetHTTPAccept("image/png");
@@ -579,7 +580,7 @@ TEST_F(RawResourceTest,
   ResourceRequest request("data:text/html,");
   request.SetHTTPHeaderField(
       HTTPNames::X_DevTools_Emulate_Network_Conditions_Client_Id, "Foo");
-  Resource* raw = RawResource::Create(request, Resource::kRaw);
+  Resource* raw = RawResource::CreateForTest(request, Resource::kRaw);
   EXPECT_TRUE(
       raw->CanReuse(FetchParameters(ResourceRequest("data:text/html,"))));
 }

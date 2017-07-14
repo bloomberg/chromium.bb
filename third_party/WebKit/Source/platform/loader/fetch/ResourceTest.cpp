@@ -125,7 +125,7 @@ TEST(ResourceTest, Vary) {
   ResourceRequest old_request(url);
   old_request.SetHTTPHeaderField(HTTPNames::User_Agent, "something");
   old_request.SetHTTPHeaderField(HTTPNames::Referer, "http://foo.com");
-  resource = RawResource::Create(old_request, Resource::kRaw);
+  resource = RawResource::CreateForTest(old_request, Resource::kRaw);
   resource->ResponseReceived(response, nullptr);
   resource->Finish();
 
