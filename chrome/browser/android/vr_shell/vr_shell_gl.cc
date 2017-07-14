@@ -417,6 +417,8 @@ void VrShellGl::OnWebVRFrameAvailable() {
   TRACE_EVENT1("gpu", "VrShellGl::OnWebVRFrameAvailable", "frame", frame_index);
   pending_frames_.pop();
 
+  browser_->OnWebVrFrameAvailable();
+
   DrawFrame(frame_index);
 }
 

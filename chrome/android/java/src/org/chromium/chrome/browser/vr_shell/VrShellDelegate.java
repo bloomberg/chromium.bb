@@ -882,7 +882,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         mRequestedWebVr = true;
         switch (enterVrInternal()) {
             case ENTER_VR_NOT_NECESSARY:
-                mVrShell.setWebVrModeEnabled(true, true);
+                mVrShell.setWebVrModeEnabled(true, !mAutopresentWebVr);
                 maybeSetPresentResult(true, true);
                 break;
             case ENTER_VR_CANCELLED:
