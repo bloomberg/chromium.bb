@@ -13,21 +13,19 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/common/host_id.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using content::BrowserThread;
 using extensions::URLPatternSet;
 
 namespace {
@@ -42,7 +40,6 @@ namespace extensions {
 
 // Test bringing up a script loader on a specific directory, putting a script
 // in there, etc.
-
 class ExtensionUserScriptLoaderTest : public testing::Test,
                                       public content::NotificationObserver {
  public:
@@ -55,18 +52,6 @@ class ExtensionUserScriptLoaderTest : public testing::Test,
     registrar_.Add(this,
                    extensions::NOTIFICATION_USER_SCRIPTS_UPDATED,
                    content::NotificationService::AllSources());
-
-    // ExtensionUserScriptLoader posts tasks to the file thread so make the
-    // current thread look like one.
-    file_thread_.reset(new content::TestBrowserThread(
-        BrowserThread::FILE, base::MessageLoop::current()));
-    ui_thread_.reset(new content::TestBrowserThread(
-        BrowserThread::UI, base::MessageLoop::current()));
-  }
-
-  void TearDown() override {
-    file_thread_.reset();
-    ui_thread_.reset();
   }
 
   void Observe(int type,
@@ -75,23 +60,19 @@ class ExtensionUserScriptLoaderTest : public testing::Test,
     DCHECK(type == extensions::NOTIFICATION_USER_SCRIPTS_UPDATED);
 
     shared_memory_ = content::Details<base::SharedMemory>(details).ptr();
-    if (base::MessageLoop::current() == &message_loop_)
-      base::MessageLoop::current()->QuitWhenIdle();
   }
 
   // Directory containing user scripts.
   base::ScopedTempDir temp_dir_;
 
-  content::NotificationRegistrar registrar_;
-
-  // MessageLoop used in tests.
-  base::MessageLoopForUI message_loop_;
-
-  std::unique_ptr<content::TestBrowserThread> file_thread_;
-  std::unique_ptr<content::TestBrowserThread> ui_thread_;
-
   // Updated to the script shared memory when we get notified.
   base::SharedMemory* shared_memory_;
+
+ private:
+  content::TestBrowserThreadBundle thread_bundle_;
+  content::NotificationRegistrar registrar_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionUserScriptLoaderTest);
 };
 
 // Test that we get notified even when there are no scripts.
