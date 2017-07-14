@@ -63,20 +63,38 @@ can fix it manually.
 
 ### Automatic export process
 
-If a commit to Chromium master changes any files in the
-[third_party/WebKit/LayoutTests/external/wpt](../../third_party/WebKit/LayoutTests/external/wpt)
-directory, the WPT Exporter will create a Pull Request on GitHub for it.
-All PRs use the `chromium-export` label: see
-[all of them here](https://github.com/w3c/web-platform-tests/pulls?utf8=%E2%9C%93&q=is%3Apr%20label%3Achromium-export).
-The exporter runs continuously under the chromium.infra.cron master:
-see [all recent builds](https://build.chromium.org/p/chromium.infra.cron/builders/wpt-exporter).
-The source for the exporter lives in
-[third_party/WebKit/Tools/Scripts/wpt-exporter](../../third_party/WebKit/Tools/Scripts/wpt-exporter).
+If you upload a CL with any changes in
+[third_party/WebKit/LayoutTests/external/wpt](../../third_party/WebKit/LayoutTests/external/wpt),
+once you add reviewers the exporter will create a provisional pull request with
+those changes in the [upstream WPT GitHub repository](https://github.com/w3c/web-platform-tests/).
 
-In the unlikely event that the exporter starts misbehaving -- for example,
-creating the same PR over and over again -- **all you need to do to disable the
-exporter is [land this CL](https://chromium-review.googlesource.com/c/462381/)**,
-which will put it in "dry run" mode.
+Once you're ready to land your CL, please check the Travis CI status on the
+upstream PR (link at the bottom of the page). If it's green, go ahead and land your CL
+and the exporter will automatically remove the "do not merge yet" label and merge the PR.
+
+If Travis CI is red on the upstream PR, please try to resolve the failures before
+merging. If you run into Travis CI issues, or if you have a CL with WPT changes that
+the exporter did not pick up, please reach out to ecosystem-infra@chromium.org.
+
+Additional things to note:
+
+-   CLs that change over 1000 files will not be exported.
+-   All PRs use the
+    [`chromium-export`](https://github.com/w3c/web-platform-tests/pulls?utf8=%E2%9C%93&q=is%3Apr%20label%3Achromium-export) label.
+-   All PRs for CLs that haven't yet been landed in Chromium also use the
+    [`do not merge yet`](https://github.com/w3c/web-platform-tests/pulls?q=is%3Apr+is%3Aopen+label%3A%22do+not+merge+yet%22) label.
+-   The exporter cannot create upstream PRs for in-flight CLs with binary files (e.g. webm files).
+    An export PR will still be made after the CL lands.
+
+For maintainers:
+
+-   The exporter runs continuously under the
+    [chromium.infra.cron master](https://build.chromium.org/p/chromium.infra.cron/builders/wpt-exporter).
+-   The source lives in
+    [third_party/WebKit/Tools/Scripts/wpt-exporter](../../third_party/WebKit/Tools/Scripts/wpt-exporter).
+-   If the exporter starts misbehaving
+    (for example, creating the same PR over and over again)
+    put it in "dry run" mode by landing [this CL](https://crrev.com/c/462381/).
 
 ### Skipped tests
 

@@ -238,7 +238,10 @@ class TestExporter(object):
                 'the WPT Importer is blocked from operating.\n\n'
                 '(There is ongoing work to 1. prevent CLs with red upstream PRs from landing '
                 '(https://crbug.com/711447) and 2. prevent the importer from being blocked on '
-                'stuck exportable changes (https://crbug.com/734121))'
+                'stuck exportable changes (https://crbug.com/734121))\n\n'
+                'WPT Export docs:\n'
+                'https://chromium.googlesource.com/chromium/src/+/master'
+                '/docs/testing/web_platform_tests.md#Automatic-export-process'
             ).format(
                 pr_url='%spull/%d' % (WPT_GH_URL, response_data['number'])
             ))
