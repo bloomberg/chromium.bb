@@ -4622,14 +4622,14 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
   EXPECT_TRUE(base::PathExists(lso_file_path));
 
   // Create indexed db. Similarly, it is enough to only simulate this by
-  // creating the directory on the disk.
+  // creating the directory on the disk, and resetting the caches of
+  // "known" origins.
   IndexedDBContext* idb_context = BrowserContext::GetDefaultStoragePartition(
                                       profile())->GetIndexedDBContext();
-  idb_context->SetTaskRunnerForTesting(
-      base::ThreadTaskRunnerHandle::Get().get());
   base::FilePath idb_path = idb_context->GetFilePathForTesting(ext_url);
   EXPECT_TRUE(base::CreateDirectory(idb_path));
   EXPECT_TRUE(base::DirectoryExists(idb_path));
+  idb_context->ResetCachesForTesting();
 
   // Uninstall the extension.
   base::RunLoop run_loop;
@@ -4743,14 +4743,14 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
   EXPECT_TRUE(base::PathExists(lso_file_path));
 
   // Create indexed db. Similarly, it is enough to only simulate this by
-  // creating the directory on the disk.
+  // creating the directory on the disk, and resetting the caches of
+  // "known" origins.
   IndexedDBContext* idb_context = BrowserContext::GetDefaultStoragePartition(
                                       profile())->GetIndexedDBContext();
-  idb_context->SetTaskRunnerForTesting(
-      base::ThreadTaskRunnerHandle::Get().get());
   base::FilePath idb_path = idb_context->GetFilePathForTesting(origin1);
   EXPECT_TRUE(base::CreateDirectory(idb_path));
   EXPECT_TRUE(base::DirectoryExists(idb_path));
+  idb_context->ResetCachesForTesting();
 
   // Uninstall one of them, unlimited storage should still be granted
   // to the origin.

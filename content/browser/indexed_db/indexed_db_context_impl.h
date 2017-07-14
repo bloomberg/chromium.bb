@@ -21,6 +21,8 @@
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/indexed_db/indexed_db_factory.h"
 #include "content/public/browser/indexed_db_context.h"
+#include "storage/browser/quota/quota_manager_proxy.h"
+#include "storage/browser/quota/special_storage_policy.h"
 #include "storage/common/quota/quota_types.h"
 #include "url/gurl.h"
 
@@ -28,11 +30,6 @@ namespace base {
 class ListValue;
 class FilePath;
 class SequencedTaskRunner;
-}
-
-namespace storage {
-class QuotaManagerProxy;
-class SpecialStoragePolicy;
 }
 
 namespace url {
@@ -59,10 +56,10 @@ class CONTENT_EXPORT IndexedDBContextImpl
   static const base::FilePath::CharType kIndexedDBDirectory[];
 
   // If |data_path| is empty, nothing will be saved to disk.
-  IndexedDBContextImpl(const base::FilePath& data_path,
-                       storage::SpecialStoragePolicy* special_storage_policy,
-                       storage::QuotaManagerProxy* quota_manager_proxy,
-                       scoped_refptr<base::SequencedTaskRunner> task_runner);
+  IndexedDBContextImpl(
+      const base::FilePath& data_path,
+      scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy,
+      scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy);
 
   IndexedDBFactory* GetIDBFactory();
 
@@ -77,7 +74,7 @@ class CONTENT_EXPORT IndexedDBContextImpl
   void CopyOriginData(const GURL& origin_url,
                       IndexedDBContext* dest_context) override;
   base::FilePath GetFilePathForTesting(const GURL& origin_url) const override;
-  void SetTaskRunnerForTesting(base::SequencedTaskRunner* task_runner) override;
+  void ResetCachesForTesting() override;
 
   // TODO(jsbell): Replace IndexedDBContext members with these.
   int64_t GetOriginDiskUsage(const url::Origin& origin);
@@ -118,6 +115,10 @@ class CONTENT_EXPORT IndexedDBContextImpl
   size_t GetConnectionCount(const url::Origin& origin);
   int GetOriginBlobFileCount(const url::Origin& origin);
 
+  // TODO(jsbell): Update tests to eliminate the need for this.
+  void SetTaskRunnerForTesting(
+      scoped_refptr<base::SequencedTaskRunner> task_runner);
+
   // For unit tests allow to override the |data_path_|.
   void set_data_path_for_testing(const base::FilePath& data_path) {
     data_path_ = data_path;
@@ -152,9 +153,6 @@ class CONTENT_EXPORT IndexedDBContextImpl
   void RemoveFromOriginSet(const url::Origin& origin) {
     GetOriginSet()->erase(origin);
   }
-
-  // Only for testing.
-  void ResetCaches();
 
   scoped_refptr<IndexedDBFactory> factory_;
   base::FilePath data_path_;

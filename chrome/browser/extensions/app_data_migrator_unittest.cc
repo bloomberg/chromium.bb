@@ -53,8 +53,6 @@ class AppDataMigratorTest : public testing::Test {
         content::BrowserContext::GetDefaultStoragePartition(profile_.get());
 
     idb_context_ = default_partition_->GetIndexedDBContext();
-    idb_context_->SetTaskRunnerForTesting(
-        base::ThreadTaskRunnerHandle::Get().get());
 
     default_fs_context_ = default_partition_->GetFileSystemContext();
 

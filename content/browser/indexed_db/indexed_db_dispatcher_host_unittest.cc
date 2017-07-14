@@ -25,6 +25,7 @@
 #include "content/common/indexed_db/indexed_db.mojom.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_utils.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "net/url_request/url_request_test_util.h"
@@ -83,7 +84,6 @@ static const char kDatabaseName[] = "db";
 static const char kOrigin[] = "https://www.example.com";
 static const int kFakeProcessId = 2;
 static const int64_t kTemporaryQuota = 50 * 1024 * 1024;
-static const int64_t kPersistantQuota = 50 * 1024 * 1024;
 
 base::FilePath CreateAndReturnTempDir(base::ScopedTempDir* temp_dir) {
   CHECK(temp_dir->CreateUniqueTempDir());
@@ -138,57 +138,38 @@ class IndexedDBDispatcherHostTest : public testing::Test {
  public:
   IndexedDBDispatcherHostTest()
       : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
-        idb_thread_(new base::Thread("IndexedDB")),
-        io_task_runner_(
-            BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)),
-        idb_task_runner_(idb_thread_->Start() ? idb_thread_->task_runner()
-                                              : nullptr),
-        request_context_getter_(
-            new net::TestURLRequestContextGetter(io_task_runner_)),
-        special_storage_policy_(new MockSpecialStoragePolicy()),
-        quota_manager_(new MockQuotaManager(false,
-                                            browser_context_.GetPath(),
-                                            io_task_runner_,
-                                            idb_task_runner_,
-                                            special_storage_policy_)),
-        quota_manager_proxy_(quota_manager_->proxy()),
-        context_impl_(
-            new IndexedDBContextImpl(CreateAndReturnTempDir(&temp_dir_),
-                                     special_storage_policy_.get(),
-                                     quota_manager_proxy_.get(),
-                                     idb_task_runner_.get())),
-        blob_storage_(ChromeBlobStorageContext::GetFor(&browser_context_)),
-        host_(new IndexedDBDispatcherHost(kFakeProcessId,
-                                          request_context_getter_.get(),
-                                          context_impl_.get(),
-                                          blob_storage_.get())) {
-    quota_manager_->SetQuota(GURL(kOrigin), storage::kStorageTypePersistent,
-                             kTemporaryQuota);
+        special_storage_policy_(
+            base::MakeRefCounted<MockSpecialStoragePolicy>()),
+        quota_manager_(base::MakeRefCounted<MockQuotaManager>(
+            false /*is_incognito*/,
+            browser_context_.GetPath(),
+            BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
+            base::ThreadTaskRunnerHandle::Get().get(),
+            special_storage_policy_)),
+        context_impl_(base::MakeRefCounted<IndexedDBContextImpl>(
+            CreateAndReturnTempDir(&temp_dir_),
+            special_storage_policy_,
+            quota_manager_->proxy())),
+        host_(new IndexedDBDispatcherHost(
+            kFakeProcessId,
+            base::MakeRefCounted<net::TestURLRequestContextGetter>(
+                BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)),
+            context_impl_,
+            ChromeBlobStorageContext::GetFor(&browser_context_))) {
     quota_manager_->SetQuota(GURL(kOrigin), storage::kStorageTypeTemporary,
-                             kPersistantQuota);
+                             kTemporaryQuota);
   }
 
   void TearDown() override {
     host_.reset();
-    // In order for idb_thread_.Stop() to not cause thread/taskrunner checking
-    // errors, the handles must be deref'd before we join threads. This ensures
-    // classes that require destruction on the idb thread can be destructed
-    // correctly before scheduling on the the idb thread task runner turns into
-    // a no-op after thread join.
-    blob_storage_ = nullptr;
     context_impl_ = nullptr;
-    quota_manager_proxy_ = nullptr;
     quota_manager_ = nullptr;
-    special_storage_policy_ = nullptr;
-    request_context_getter_ = nullptr;
-    // This will run the idb task runner until idle, then join the threads.
-    idb_thread_->Stop();
+    RunAllBlockingPoolTasksUntilIdle();
     // File are leaked if this doesn't return true.
     ASSERT_TRUE(temp_dir_.Delete());
   }
 
   void SetUp() override {
-    ASSERT_TRUE(idb_task_runner_);
     FactoryAssociatedRequest request =
         ::mojo::MakeIsolatedRequest(&idb_mojo_factory_);
     host_->AddBinding(std::move(request));
@@ -199,15 +180,9 @@ class IndexedDBDispatcherHostTest : public testing::Test {
   TestBrowserContext browser_context_;
 
   base::ScopedTempDir temp_dir_;
-  std::unique_ptr<base::Thread> idb_thread_;
-  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> idb_task_runner_;
-  scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
   scoped_refptr<MockSpecialStoragePolicy> special_storage_policy_;
   scoped_refptr<MockQuotaManager> quota_manager_;
-  scoped_refptr<QuotaManagerProxy> quota_manager_proxy_;
   scoped_refptr<IndexedDBContextImpl> context_impl_;
-  scoped_refptr<ChromeBlobStorageContext> blob_storage_;
   std::unique_ptr<IndexedDBDispatcherHost, BrowserThread::DeleteOnIOThread>
       host_;
   FactoryAssociatedPtr idb_mojo_factory_;

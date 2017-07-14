@@ -16,7 +16,6 @@
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task_scheduler/post_task.h"
 #include "content/browser/blob_storage/blob_registry_wrapper.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/browser_main_loop.h"
@@ -472,25 +471,9 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
       in_memory ? base::FilePath() : context->GetPath(),
       relative_partition_path, context->GetSpecialStoragePolicy());
 
-  // BrowserMainLoop may not be initialized in unit tests. Tests will
-  // need to inject their own task runner into the IndexedDBContext.
-  // TODO(jsbell): This is no longer true, update tests to provide use a
-  // base::test::ScopedTaskEnvironment instead of injecting a test task
-  // runner.
-  scoped_refptr<base::SequencedTaskRunner> idb_task_runner =
-      BrowserThread::CurrentlyOn(BrowserThread::UI) &&
-              BrowserMainLoop::GetInstance()
-          ? base::CreateSequencedTaskRunnerWithTraits({
-                base::MayBlock(), base::WithBaseSyncPrimitives(),
-                base::TaskPriority::USER_VISIBLE,
-                base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
-            })
-          : nullptr;
-
   base::FilePath path = in_memory ? base::FilePath() : partition_path;
-  partition->indexed_db_context_ =
-      new IndexedDBContextImpl(path, context->GetSpecialStoragePolicy(),
-                               quota_manager_proxy.get(), idb_task_runner);
+  partition->indexed_db_context_ = new IndexedDBContextImpl(
+      path, context->GetSpecialStoragePolicy(), quota_manager_proxy);
 
   partition->cache_storage_context_ = new CacheStorageContextImpl(context);
   partition->cache_storage_context_->Init(path, quota_manager_proxy);

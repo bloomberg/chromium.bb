@@ -115,9 +115,10 @@ class CONTENT_EXPORT IndexedDBDispatcherHost
 
   void InvalidateWeakPtrsAndClearBindings();
 
+  base::SequencedTaskRunner* IDBTaskRunner() const;
+
   scoped_refptr<IndexedDBContextImpl> indexed_db_context_;
   scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
-  scoped_refptr<base::SequencedTaskRunner> idb_runner_;
 
   // Maps blob uuid to a pair (handle, ref count). Entry is added and/or count
   // is incremented in HoldBlobData(), and count is decremented and/or entry
