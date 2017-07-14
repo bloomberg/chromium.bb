@@ -94,7 +94,7 @@ class ModuleDatabaseTest : public testing::Test {
     mock_time_task_runner_->RunUntilIdle();
   }
 
-  void FastForwardToModuleDatabaseIdle() {
+  void FastForwardToIdleTimer() {
     RunSchedulerUntilIdle();
     mock_time_task_runner_->FastForwardBy(ModuleDatabase::kIdleTimeout);
   }
@@ -552,6 +552,10 @@ class DummyObserver : public ModuleDatabaseObserver {
 };
 
 TEST_F(ModuleDatabaseTest, Observers) {
+  // Assume there is no shell extensions or IMEs.
+  module_database()->OnShellExtensionEnumerationFinished();
+  module_database()->OnImeEnumerationFinished();
+
   module_database()->OnProcessStarted(kPid1, kCreateTime1,
                                       content::PROCESS_TYPE_BROWSER);
 
@@ -580,6 +584,10 @@ TEST_F(ModuleDatabaseTest, Observers) {
 
 // Tests the idle cycle of the ModuleDatabase.
 TEST_F(ModuleDatabaseTest, IsIdle) {
+  // Assume there is no shell extensions or IMEs.
+  module_database()->OnShellExtensionEnumerationFinished();
+  module_database()->OnImeEnumerationFinished();
+
   module_database()->OnProcessStarted(kPid1, kCreateTime1,
                                       content::PROCESS_TYPE_BROWSER);
 
@@ -587,7 +595,7 @@ TEST_F(ModuleDatabaseTest, IsIdle) {
   EXPECT_FALSE(module_database()->IsIdle());
 
   // Can't fast forward to idle because a module load event is needed.
-  FastForwardToModuleDatabaseIdle();
+  FastForwardToIdleTimer();
   EXPECT_FALSE(module_database()->IsIdle());
 
   // A load module event starts the timer.
@@ -595,14 +603,14 @@ TEST_F(ModuleDatabaseTest, IsIdle) {
                                   kGoodAddress1);
   EXPECT_FALSE(module_database()->IsIdle());
 
-  FastForwardToModuleDatabaseIdle();
+  FastForwardToIdleTimer();
   EXPECT_TRUE(module_database()->IsIdle());
 
   // A new shell extension resets the timer.
   module_database()->OnShellExtensionEnumerated(dll1_, kSize1, kTime1);
   EXPECT_FALSE(module_database()->IsIdle());
 
-  FastForwardToModuleDatabaseIdle();
+  FastForwardToIdleTimer();
   EXPECT_TRUE(module_database()->IsIdle());
 
   // Adding an observer while idle immediately calls OnModuleDatabaseIdle().
@@ -623,9 +631,48 @@ TEST_F(ModuleDatabaseTest, IsIdle) {
   EXPECT_FALSE(is_busy_observer.on_module_database_idle_called());
 
   // Fast forward will call OnModuleDatabaseIdle().
-  FastForwardToModuleDatabaseIdle();
+  FastForwardToIdleTimer();
   EXPECT_TRUE(module_database()->IsIdle());
   EXPECT_TRUE(is_busy_observer.on_module_database_idle_called());
 
   module_database()->RemoveObserver(&is_busy_observer);
+}
+
+// The ModuleDatabase waits until shell extensions and IMEs are enumerated
+// before notifying observers or going idle.
+TEST_F(ModuleDatabaseTest, WaitUntilRegisteredModulesEnumerated) {
+  module_database()->OnProcessStarted(kPid1, kCreateTime1,
+                                      content::PROCESS_TYPE_BROWSER);
+
+  // This observer is added before the first loaded module.
+  DummyObserver before_load_observer;
+  module_database()->AddObserver(&before_load_observer);
+  EXPECT_EQ(0, before_load_observer.new_module_count());
+
+  module_database()->OnModuleLoad(kPid1, kCreateTime1, dll1_, kSize1, kTime1,
+                                  kGoodAddress1);
+  FastForwardToIdleTimer();
+
+  // Idle state is prevented.
+  EXPECT_FALSE(module_database()->IsIdle());
+  EXPECT_EQ(0, before_load_observer.new_module_count());
+  EXPECT_FALSE(before_load_observer.on_module_database_idle_called());
+
+  // This observer is added after the first loaded module.
+  DummyObserver after_load_observer;
+  module_database()->AddObserver(&after_load_observer);
+  EXPECT_EQ(0, after_load_observer.new_module_count());
+  EXPECT_FALSE(after_load_observer.on_module_database_idle_called());
+
+  // Simulate the enumerations ending.
+  module_database()->OnImeEnumerationFinished();
+  module_database()->OnShellExtensionEnumerationFinished();
+
+  EXPECT_EQ(1, before_load_observer.new_module_count());
+  EXPECT_TRUE(before_load_observer.on_module_database_idle_called());
+  EXPECT_EQ(1, after_load_observer.new_module_count());
+  EXPECT_TRUE(after_load_observer.on_module_database_idle_called());
+
+  module_database()->RemoveObserver(&after_load_observer);
+  module_database()->RemoveObserver(&before_load_observer);
 }

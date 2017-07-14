@@ -84,11 +84,17 @@ class ModuleDatabase {
                                   uint32_t size_of_image,
                                   uint32_t time_date_stamp);
 
+  // Indicates that all shell extensions have been enumerated.
+  void OnShellExtensionEnumerationFinished();
+
   // Indicates that a new registered input method editor was found. Must be
   // called in the same sequence as |task_runner_|.
   void OnImeEnumerated(const base::FilePath& path,
                        uint32_t size_of_image,
                        uint32_t time_date_stamp);
+
+  // Indicates that all input method editors have been enumerated.
+  void OnImeEnumerationFinished();
 
   // Indicates that a module has been loaded. The data passed to this function
   // is taken as gospel, so if it originates from a remote process it should be
@@ -185,6 +191,20 @@ class ModuleDatabase {
   // Deletes a process info entry.
   void DeleteProcessInfo(uint32_t process_id, uint64_t creation_time);
 
+  // Returns true if the enumeration of the IMEs and the shell extensions is
+  // finished.
+  //
+  // To avoid sending an improperly tagged module to an observer (in case a race
+  // condition happens and the module is loaded before the enumeration is done),
+  // it's important that this function returns true before any calls to
+  // OnNewModuleFound() is made.
+  bool RegisteredModulesEnumerated();
+
+  // Called when RegisteredModulesEnumerated() becomes true. Notifies the
+  // observers of each already inspected modules and checks if the idle state
+  // should be entered.
+  void OnRegisteredModulesEnumerated();
+
   // Callback for ModuleInspector.
   void OnModuleInspected(
       const ModuleInfoKey& module_key,
@@ -196,11 +216,21 @@ class ModuleDatabase {
   // Notifies the observers that ModuleDatabase is now idle.
   void EnterIdleState();
 
+  // Notifies the |observer| of already found and inspected modules via
+  // OnNewModuleFound().
+  void NotifyLoadedModules(ModuleDatabaseObserver* observer);
+
   // The task runner to which this object is bound.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   // A map of all known modules.
   ModuleMap modules_;
+
+  // Indicates if all shell extensions have been enumerated.
+  bool shell_extensions_enumerated_;
+
+  // Indicates if all input method editors have been enumerated.
+  bool ime_enumerated_;
 
   // Inspects new modules on a blocking task runner.
   ModuleInspector module_inspector_;
