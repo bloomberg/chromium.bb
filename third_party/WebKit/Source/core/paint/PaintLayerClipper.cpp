@@ -527,10 +527,6 @@ LayoutRect PaintLayerClipper::LocalVisualRect() const {
           // PaintLayer are in physical coordinates, so the overflow has to be
           // flipped.
           layer_bounds_with_visual_overflow);
-  if (layer_.PaintsWithFilters()) {
-    layer_bounds_with_visual_overflow =
-        layer_.MapLayoutRectForFilter(layer_bounds_with_visual_overflow);
-  }
   return layer_bounds_with_visual_overflow;
 }
 
