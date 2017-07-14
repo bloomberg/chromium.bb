@@ -13,8 +13,8 @@
 #include "base/memory/ptr_util.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_switches.h"
+#include "ui/keyboard/keyboard_test_util.h"
 #include "ui/keyboard/keyboard_ui.h"
-#include "ui/keyboard/keyboard_util.h"
 
 namespace ash {
 namespace test {

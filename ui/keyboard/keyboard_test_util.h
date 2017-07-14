@@ -7,6 +7,10 @@
 
 #include "ui/keyboard/keyboard_controller.h"
 
+namespace gfx {
+class Rect;
+}
+
 namespace keyboard {
 
 // Waits until the keyboard is shown. Return false if there is no keyboard
@@ -19,6 +23,12 @@ bool WaitUntilHidden();
 
 // Waits until the keyboard state is changed to the given state.
 void WaitControllerStateChangesTo(const KeyboardControllerState state);
+
+// Gets the calculated keyboard bounds from |root_bounds|. The keyboard height
+// is specified by |keyboard_height|. This should be only called when keyboard
+// is in FULL_WDITH mode.
+gfx::Rect FullWidthKeyboardBoundsFromRootBounds(const gfx::Rect& root_bounds,
+                                                int keyboard_height);
 
 }  // namespace keyboard
 
