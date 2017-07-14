@@ -14,12 +14,10 @@ assert(enable_vr)
 
 static_library("vr_common") {
   sources = [
-    "animation.cc",
-    "animation.h",
+    "animation_player.cc",
+    "animation_player.h",
     "color_scheme.cc",
     "color_scheme.h",
-    "easing.cc",
-    "easing.h",
     "elements/button.cc",
     "elements/button.h",
     "elements/button_texture.cc",
@@ -99,6 +97,7 @@ static_library("vr_common") {
 
   deps = [
     "//base",
+    "//cc/animation",
     "//cc/paint",
     "//chrome/app:generated_resources",
     "//components/security_state/core",
@@ -117,6 +116,7 @@ static_library("vr_common") {
 
 test("vr_common_unittests") {
   sources = [
+    "animation_player_unittest.cc",
     "elements/close_button_texture_unittest.cc",
     "elements/exit_prompt_unittest.cc",
     "elements/transience_manager_unittest.cc",
@@ -125,6 +125,8 @@ test("vr_common_unittests") {
     "fps_meter_unittest.cc",
     "gltf_parser_unittest.cc",
     "run_all_unittests.cc",
+    "test/animation_utils.cc",
+    "test/animation_utils.h",
     "test/paths.cc",
     "test/paths.h",
     "ui_scene_manager_unittest.cc",
