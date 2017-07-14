@@ -1050,13 +1050,15 @@ public class NewTabPageAdapterTest {
         // Idx | Item
         // ----|--------------------
         // 0   | Above-the-fold
-        // 1   | Footer
-        // 2   | Spacer
-        assertEquals(ItemViewType.FOOTER, mAdapter.getItemViewType(1));
+        assertEquals(
+                RecyclerView.NO_POSITION, mAdapter.getFirstPositionForType(ItemViewType.FOOTER));
+        assertEquals(
+                RecyclerView.NO_POSITION, mAdapter.getFirstPositionForType(ItemViewType.SPACING));
         assertEquals(RecyclerView.NO_POSITION,
                 mAdapter.getFirstPositionForType(ItemViewType.ALL_DISMISSED));
         assertEquals(
                 RecyclerView.NO_POSITION, mAdapter.getFirstPositionForType(ItemViewType.PROMO));
+        assertEquals(1, mAdapter.getItemCount());
 
         // Prepare some suggestions. They should not load because the category is dismissed on
         // the current NTP.
