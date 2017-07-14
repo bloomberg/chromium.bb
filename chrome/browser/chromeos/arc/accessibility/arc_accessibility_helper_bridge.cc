@@ -7,10 +7,13 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/memory/singleton.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs_factory.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/arc/arc_bridge_service.h"
+#include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/exo/shell_surface.h"
 #include "components/exo/surface.h"
@@ -96,10 +99,47 @@ arc::mojom::AccessibilityFilterType GetFilterTypeForProfile(Profile* profile) {
 
 namespace arc {
 
+namespace {
+
+// Singleton factory for ArcAccessibilityHelperBridge.
+class ArcAccessibilityHelperBridgeFactory
+    : public internal::ArcBrowserContextKeyedServiceFactoryBase<
+          ArcAccessibilityHelperBridge,
+          ArcAccessibilityHelperBridgeFactory> {
+ public:
+  // Factory name used by ArcBrowserContextKeyedServiceFactoryBase.
+  static constexpr const char* kName = "ArcAccessibilityHelperBridgeFactory";
+
+  static ArcAccessibilityHelperBridgeFactory* GetInstance() {
+    return base::Singleton<ArcAccessibilityHelperBridgeFactory>::get();
+  }
+
+ private:
+  friend struct base::DefaultSingletonTraits<
+      ArcAccessibilityHelperBridgeFactory>;
+
+  ArcAccessibilityHelperBridgeFactory() {
+    // ArcAccessibilityHelperBridge needs to track task creation and
+    // destruction in the container, which are notified to ArcAppListPrefs
+    // via Mojo.
+    DependsOn(ArcAppListPrefsFactory::GetInstance());
+  }
+  ~ArcAccessibilityHelperBridgeFactory() override = default;
+};
+
+}  // namespace
+
+// static
+ArcAccessibilityHelperBridge*
+ArcAccessibilityHelperBridge::GetForBrowserContext(
+    content::BrowserContext* context) {
+  return ArcAccessibilityHelperBridgeFactory::GetForBrowserContext(context);
+}
+
 ArcAccessibilityHelperBridge::ArcAccessibilityHelperBridge(
-    Profile* profile,
+    content::BrowserContext* browser_context,
     ArcBridgeService* arc_bridge_service)
-    : profile_(profile),
+    : profile_(Profile::FromBrowserContext(browser_context)),
       arc_bridge_service_(arc_bridge_service),
       binding_(this),
       current_task_id_(kNoTaskId) {
