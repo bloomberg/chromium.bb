@@ -1842,6 +1842,7 @@ test("blink_platform_unittests") {
     "fonts/FontDescriptionTest.cpp",
     "fonts/FontPlatformDataTest.cpp",
     "fonts/FontTest.cpp",
+    "fonts/FontTestUtilities.cpp",
     "fonts/GenericFontFamilySettingsTest.cpp",
     "fonts/OrientationIteratorTest.cpp",
     "fonts/ScriptRunIteratorTest.cpp",
