@@ -39,7 +39,7 @@
       <paper-checkbox id="checkbox" checked="{{checked}}"
           on-change="notifyChangedByUserInteraction"
           disabled="[[controlDisabled_(disabled, pref.*)]]">
-        <div class="label">[[label]] <content></content></div>
+        <div class="label">[[label]] <slot></slot></div>
         <div class="secondary label">[[subLabel]]</div>
       </paper-checkbox>
       <template is="dom-if" if="[[pref.controlledBy]]">
