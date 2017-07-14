@@ -259,8 +259,7 @@ std::unique_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
 RenderWidgetCompositor::RenderWidgetCompositor(
     RenderWidgetCompositorDelegate* delegate,
     CompositorDependencies* compositor_deps)
-    : num_failed_recreate_attempts_(0),
-      delegate_(delegate),
+    : delegate_(delegate),
       compositor_deps_(compositor_deps),
       threaded_(!!compositor_deps_->GetCompositorImplThreadTaskRunner()),
       never_visible_(false),
@@ -1154,30 +1153,26 @@ void RenderWidgetCompositor::RequestNewLayerTreeFrameSink() {
   if (delegate_->IsClosing())
     return;
 
-  bool fallback = num_failed_recreate_attempts_ >=
-                  LAYER_TREE_FRAME_SINK_RETRIES_BEFORE_FALLBACK;
-
 #ifdef OS_ANDROID
-  LOG_IF(FATAL, fallback) << "Android does not support fallback frame sinks.";
+  LOG_IF(FATAL, attempt_software_fallback_)
+      << "Android does not support fallback frame sinks.";
 #endif
 
   delegate_->RequestNewLayerTreeFrameSink(
-      fallback, base::Bind(&RenderWidgetCompositor::SetLayerTreeFrameSink,
-                           weak_factory_.GetWeakPtr()));
+      attempt_software_fallback_,
+      base::Bind(&RenderWidgetCompositor::SetLayerTreeFrameSink,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void RenderWidgetCompositor::DidInitializeLayerTreeFrameSink() {
-  num_failed_recreate_attempts_ = 0;
+  attempt_software_fallback_ = false;
 }
 
 void RenderWidgetCompositor::DidFailToInitializeLayerTreeFrameSink() {
-  ++num_failed_recreate_attempts_;
-  // Tolerate a certain number of recreation failures to work around races
-  // in the output-surface-lost machinery.
-  LOG_IF(FATAL,
-         (num_failed_recreate_attempts_ >= MAX_LAYER_TREE_FRAME_SINK_RETRIES))
+  LOG_IF(FATAL, attempt_software_fallback_)
       << "Failed to create a fallback LayerTreeFrameSink.";
 
+  attempt_software_fallback_ = true;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&RenderWidgetCompositor::RequestNewLayerTreeFrameSink,

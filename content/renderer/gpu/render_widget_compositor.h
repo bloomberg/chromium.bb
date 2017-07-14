@@ -210,11 +210,6 @@ class CONTENT_EXPORT RenderWidgetCompositor
   void DidLoseLayerTreeFrameSink() override;
   void RequestBeginMainFrameNotExpected(bool new_state) override;
 
-  enum {
-    LAYER_TREE_FRAME_SINK_RETRIES_BEFORE_FALLBACK = 4,
-    MAX_LAYER_TREE_FRAME_SINK_RETRIES = 5,
-  };
-
  protected:
   friend class RenderViewImplScaleFactorTest;
 
@@ -231,7 +226,7 @@ class CONTENT_EXPORT RenderWidgetCompositor
   bool CompositeIsSynchronous() const;
   void SynchronouslyComposite();
 
-  int num_failed_recreate_attempts_;
+  bool attempt_software_fallback_ = false;
   RenderWidgetCompositorDelegate* const delegate_;
   CompositorDependencies* const compositor_deps_;
   const bool threaded_;
