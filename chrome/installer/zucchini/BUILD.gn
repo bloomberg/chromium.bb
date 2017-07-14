@@ -15,6 +15,8 @@ static_library("zucchini_lib") {
     "image_utils.h",
     "io_utils.cc",
     "io_utils.h",
+    "main_utils.cc",
+    "main_utils.h",
     "suffix_array.h",
     "typed_value.h",
   ]
@@ -30,6 +32,8 @@ executable("zucchini") {
   ]
 
   deps = [
+    ":zucchini_lib",
+    "//base",
     "//build/config:exe_and_shlib_deps",
   ]
 
