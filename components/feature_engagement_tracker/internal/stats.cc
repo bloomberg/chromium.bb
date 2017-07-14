@@ -20,11 +20,19 @@ namespace {
 const char kEventStoreSuffix[] = "EventStore";
 const char kAvailabilityStoreSuffix[] = "AvailabilityStore";
 
+// A shadow histogram across all features. Also the base name for the suffix
+// based feature specific histograms; for example for IPH_MyFun, it would be:
+// InProductHelp.ShouldTriggerHelpUI.IPH_MyFun.
+const char kShouldTriggerHelpUIHistogram[] =
+    "InProductHelp.ShouldTriggerHelpUI";
+
 // Helper function to log a TriggerHelpUIResult.
 void LogTriggerHelpUIResult(const std::string& name,
                             TriggerHelpUIResult result) {
   // Must not use histograms macros here because we pass in the histogram name.
   base::UmaHistogramEnumeration(name, result, TriggerHelpUIResult::COUNT);
+  base::UmaHistogramEnumeration(kShouldTriggerHelpUIHistogram, result,
+                                TriggerHelpUIResult::COUNT);
 }
 
 }  // namespace
@@ -93,8 +101,9 @@ void RecordNotifyEvent(const std::string& event_name,
 void RecordShouldTriggerHelpUI(const base::Feature& feature,
                                const ConditionValidator::Result& result) {
   // Records the user action.
-  std::string name = "InProductHelp.ShouldTriggerHelpUI.";
-  name.append(feature.name);
+  std::string name = std::string(kShouldTriggerHelpUIHistogram)
+                         .append(".")
+                         .append(feature.name);
   base::RecordComputedAction(name);
 
   // Total count histogram, used to compute the percentage of each failure type,

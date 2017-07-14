@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/user_action_tester.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/feature_engagement_tracker/internal/availability_model_impl.h"
@@ -195,6 +196,54 @@ class FeatureEngagementTrackerImplTest : public ::testing::Test {
     EXPECT_EQ(count, trigger_event.events(0).count());
   }
 
+  void VerifyHistogramsForFeature(const std::string& histogram_name,
+                                  bool check,
+                                  int expected_success_count,
+                                  int expected_failure_count) {
+    if (!check)
+      return;
+
+    histogram_tester_.ExpectBucketCount(
+        histogram_name, static_cast<int>(stats::TriggerHelpUIResult::SUCCESS),
+        expected_success_count);
+    histogram_tester_.ExpectBucketCount(
+        histogram_name, static_cast<int>(stats::TriggerHelpUIResult::FAILURE),
+        expected_failure_count);
+  }
+
+  // Histogram values are checked only if their respective |check_...| is true,
+  // since inspecting a bucket count for a histogram that has not been recorded
+  // yet leads to an error.
+  void VerifyHistograms(bool check_foo,
+                        int expected_foo_success_count,
+                        int expected_foo_failure_count,
+                        bool check_bar,
+                        int expected_bar_success_count,
+                        int expected_bar_failure_count,
+                        bool check_qux,
+                        int expected_qux_success_count,
+                        int expected_qux_failure_count) {
+    VerifyHistogramsForFeature("InProductHelp.ShouldTriggerHelpUI.test_foo",
+                               check_foo, expected_foo_success_count,
+                               expected_foo_failure_count);
+    VerifyHistogramsForFeature("InProductHelp.ShouldTriggerHelpUI.test_bar",
+                               check_bar, expected_bar_success_count,
+                               expected_bar_failure_count);
+    VerifyHistogramsForFeature("InProductHelp.ShouldTriggerHelpUI.test_qux",
+                               check_qux, expected_qux_success_count,
+                               expected_qux_failure_count);
+
+    int expected_total_successes = expected_foo_success_count +
+                                   expected_bar_success_count +
+                                   expected_qux_success_count;
+    int expected_total_failures = expected_foo_failure_count +
+                                  expected_bar_failure_count +
+                                  expected_qux_failure_count;
+    VerifyHistogramsForFeature("InProductHelp.ShouldTriggerHelpUI", true,
+                               expected_total_successes,
+                               expected_total_failures);
+  }
+
   void VerifyUserActionsTriggerChecks(
       const base::UserActionTester& user_action_tester,
       int expected_foo_count,
@@ -269,6 +318,7 @@ class FeatureEngagementTrackerImplTest : public ::testing::Test {
   TestInMemoryStore* store_;
   TestAvailabilityModel* availability_model_;
   Configuration* configuration_;
+  base::HistogramTester histogram_tester_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FeatureEngagementTrackerImplTest);
@@ -473,6 +523,7 @@ TEST_F(FeatureEngagementTrackerImplTest, TestTriggering) {
   VerifyUserActionsTriggered(user_action_tester, 1, 0, 0);
   VerifyUserActionsNotTriggered(user_action_tester, 1, 0, 1);
   VerifyUserActionsDismissed(user_action_tester, 0);
+  VerifyHistograms(true, 1, 1, false, 0, 0, true, 0, 1);
 
   // While in-product help is currently showing, no other features should be
   // shown.
@@ -484,6 +535,7 @@ TEST_F(FeatureEngagementTrackerImplTest, TestTriggering) {
   VerifyUserActionsTriggered(user_action_tester, 1, 0, 0);
   VerifyUserActionsNotTriggered(user_action_tester, 1, 1, 2);
   VerifyUserActionsDismissed(user_action_tester, 0);
+  VerifyHistograms(true, 1, 1, true, 0, 1, true, 0, 2);
 
   // After dismissing the current in-product help, that feature can not be shown
   // again, but a different feature should.
@@ -498,6 +550,7 @@ TEST_F(FeatureEngagementTrackerImplTest, TestTriggering) {
   VerifyUserActionsTriggered(user_action_tester, 1, 1, 0);
   VerifyUserActionsNotTriggered(user_action_tester, 2, 1, 3);
   VerifyUserActionsDismissed(user_action_tester, 1);
+  VerifyHistograms(true, 1, 2, true, 1, 1, true, 0, 3);
 
   // After dismissing the second registered feature, no more in-product help
   // should be shown, since kTestFeatureQux is invalid.
@@ -512,6 +565,7 @@ TEST_F(FeatureEngagementTrackerImplTest, TestTriggering) {
   VerifyUserActionsTriggered(user_action_tester, 1, 1, 0);
   VerifyUserActionsNotTriggered(user_action_tester, 3, 2, 4);
   VerifyUserActionsDismissed(user_action_tester, 2);
+  VerifyHistograms(true, 1, 3, true, 1, 2, true, 0, 4);
 }
 
 TEST_F(FeatureEngagementTrackerImplTest, TestNotifyEvent) {

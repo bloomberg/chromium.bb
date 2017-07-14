@@ -25844,15 +25844,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram base="true" name="InProductHelp.ShouldTriggerHelpUI"
-    enum="TriggerHelpUIResult">
+<histogram name="InProductHelp.ShouldTriggerHelpUI" enum="TriggerHelpUIResult">
   <owner>nyquist@chromium.org</owner>
   <owner>xingliu@chromium.org</owner>
 <!-- Name completed by histogram_suffixes name="IPHFeatures" -->
 
   <summary>
     Records if in-product help is shown to the user, and the failure reasons if
-    in-product help is not shown.
+    in-product help is not shown. Recorded on its own across all in-product help
+    features, in addition to being a base name for feature-specific histograms.
   </summary>
 </histogram>
 
