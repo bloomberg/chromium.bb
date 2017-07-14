@@ -137,9 +137,11 @@ const AtomicString& SVGScriptElement::GetNonceForElement() const {
 bool SVGScriptElement::AllowInlineScriptForCSP(
     const AtomicString& nonce,
     const WTF::OrdinalNumber& context_line,
-    const String& script_content) {
+    const String& script_content,
+    ContentSecurityPolicy::InlineType inline_type) {
   return GetDocument().GetContentSecurityPolicy()->AllowInlineScript(
-      this, GetDocument().Url(), nonce, context_line, script_content);
+      this, GetDocument().Url(), nonce, context_line, script_content,
+      inline_type);
 }
 
 AtomicString SVGScriptElement::InitiatorName() const {

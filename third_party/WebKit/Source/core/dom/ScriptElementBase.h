@@ -22,6 +22,7 @@
 #define ScriptElementBase_h
 
 #include "core/CoreExport.h"
+#include "core/frame/csp/ContentSecurityPolicy.h"
 #include "platform/heap/Handle.h"
 #include "platform/heap/Heap.h"
 #include "platform/wtf/text/AtomicString.h"
@@ -59,7 +60,8 @@ class CORE_EXPORT ScriptElementBase : public GarbageCollectedMixin {
 
   virtual bool AllowInlineScriptForCSP(const AtomicString& nonce,
                                        const WTF::OrdinalNumber&,
-                                       const String& script_content) = 0;
+                                       const String& script_content,
+                                       ContentSecurityPolicy::InlineType) = 0;
   virtual Document& GetDocument() const = 0;
   virtual void SetScriptElementForBinding(
       HTMLScriptElementOrSVGScriptElement&) = 0;

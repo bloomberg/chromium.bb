@@ -94,7 +94,8 @@ class CORE_EXPORT HTMLScriptElement final : public HTMLElement,
   const AtomicString& GetNonceForElement() const override;
   bool AllowInlineScriptForCSP(const AtomicString& nonce,
                                const WTF::OrdinalNumber&,
-                               const String& script_content) override;
+                               const String& script_content,
+                               ContentSecurityPolicy::InlineType) override;
   AtomicString InitiatorName() const override;
   void DispatchLoadEvent() override;
   void DispatchErrorEvent() override;

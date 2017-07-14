@@ -822,17 +822,14 @@ ScriptLoader::ExecuteScriptResult ScriptLoader::DoExecuteScript(
     return ExecuteScriptResult::kShouldFireNone;
 
   if (!is_external_script_) {
-    const ContentSecurityPolicy* csp =
-        element_document->GetContentSecurityPolicy();
     bool should_bypass_main_world_csp =
-        (frame->GetScriptController().ShouldBypassMainWorldCSP()) ||
-        csp->AllowScriptWithHash(script->InlineSourceTextForCSP(),
-                                 ContentSecurityPolicy::InlineType::kBlock);
+        (frame->GetScriptController().ShouldBypassMainWorldCSP());
 
     AtomicString nonce = element_->GetNonceForElement();
     if (!should_bypass_main_world_csp &&
-        !element_->AllowInlineScriptForCSP(nonce, start_line_number_,
-                                           script->InlineSourceTextForCSP())) {
+        !element_->AllowInlineScriptForCSP(
+            nonce, start_line_number_, script->InlineSourceTextForCSP(),
+            ContentSecurityPolicy::InlineType::kBlock)) {
       return ExecuteScriptResult::kShouldFireErrorEvent;
     }
   }

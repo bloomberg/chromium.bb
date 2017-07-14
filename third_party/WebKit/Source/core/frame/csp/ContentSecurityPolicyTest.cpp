@@ -737,9 +737,10 @@ TEST_F(ContentSecurityPolicyTest, NonceInline) {
     policy->DidReceiveHeader(String("script-src ") + test.policy,
                              kContentSecurityPolicyHeaderTypeEnforce,
                              kContentSecurityPolicyHeaderSourceHTTP);
-    EXPECT_EQ(test.allowed, policy->AllowInlineScript(element, context_url,
-                                                      String(test.nonce),
-                                                      context_line, content));
+    EXPECT_EQ(test.allowed,
+              policy->AllowInlineScript(
+                  element, context_url, String(test.nonce), context_line,
+                  content, ContentSecurityPolicy::InlineType::kBlock));
     EXPECT_EQ(expected_reports, policy->violation_reports_sent_.size());
 
     // Enforce 'style-src'
@@ -749,8 +750,9 @@ TEST_F(ContentSecurityPolicyTest, NonceInline) {
                              kContentSecurityPolicyHeaderTypeEnforce,
                              kContentSecurityPolicyHeaderSourceHTTP);
     EXPECT_EQ(test.allowed,
-              policy->AllowInlineStyle(element, context_url, String(test.nonce),
-                                       context_line, content));
+              policy->AllowInlineStyle(
+                  element, context_url, String(test.nonce), context_line,
+                  content, ContentSecurityPolicy::InlineType::kBlock));
     EXPECT_EQ(expected_reports, policy->violation_reports_sent_.size());
 
     // Report 'script-src'
@@ -760,7 +762,8 @@ TEST_F(ContentSecurityPolicyTest, NonceInline) {
                              kContentSecurityPolicyHeaderTypeReport,
                              kContentSecurityPolicyHeaderSourceHTTP);
     EXPECT_TRUE(policy->AllowInlineScript(
-        element, context_url, String(test.nonce), context_line, content));
+        element, context_url, String(test.nonce), context_line, content,
+        ContentSecurityPolicy::InlineType::kBlock));
     EXPECT_EQ(expected_reports, policy->violation_reports_sent_.size());
 
     // Report 'style-src'
@@ -770,7 +773,8 @@ TEST_F(ContentSecurityPolicyTest, NonceInline) {
                              kContentSecurityPolicyHeaderTypeReport,
                              kContentSecurityPolicyHeaderSourceHTTP);
     EXPECT_TRUE(policy->AllowInlineStyle(
-        element, context_url, String(test.nonce), context_line, content));
+        element, context_url, String(test.nonce), context_line, content,
+        ContentSecurityPolicy::InlineType::kBlock));
     EXPECT_EQ(expected_reports, policy->violation_reports_sent_.size());
   }
 }

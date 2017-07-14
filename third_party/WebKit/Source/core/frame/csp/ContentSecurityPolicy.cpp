@@ -420,185 +420,11 @@ std::unique_ptr<Vector<CSPHeaderAndType>> ContentSecurityPolicy::Headers()
   return headers;
 }
 
-template <
-    bool (CSPDirectiveList::*allowed)(ScriptState* script_state,
-                                      SecurityViolationReportingPolicy,
-                                      ContentSecurityPolicy::ExceptionStatus,
-                                      const String& script_content) const>
-bool IsAllowedByAll(const CSPDirectiveListVector& policies,
-                    ScriptState* script_state,
-                    SecurityViolationReportingPolicy reporting_policy,
-                    ContentSecurityPolicy::ExceptionStatus exception_status,
-                    const String& script_content) {
-  bool is_allowed = true;
-  for (const auto& policy : policies) {
-    is_allowed &= (policy.Get()->*allowed)(script_state, reporting_policy,
-                                           exception_status, script_content);
-  }
-  return is_allowed;
-}
-
-template <bool (CSPDirectiveList::*allowed)(Element*,
-                                            const String&,
-                                            const String&,
-                                            const WTF::OrdinalNumber&,
-                                            SecurityViolationReportingPolicy)
-              const>
-bool IsAllowedByAll(const CSPDirectiveListVector& policies,
-                    Element* element,
-                    const String& source,
-                    const String& context_url,
-                    const WTF::OrdinalNumber& context_line,
-                    SecurityViolationReportingPolicy reporting_policy) {
-  bool is_allowed = true;
-  for (const auto& policy : policies) {
-    is_allowed &= (policy.Get()->*allowed)(element, source, context_url,
-                                           context_line, reporting_policy);
-  }
-  return is_allowed;
-}
-
-template <bool (CSPDirectiveList::*allowed)(Element*,
-                                            const String&,
-                                            const String&,
-                                            const WTF::OrdinalNumber&,
-                                            SecurityViolationReportingPolicy,
-                                            const String& content) const>
-bool IsAllowedByAll(const CSPDirectiveListVector& policies,
-                    Element* element,
-                    const String& context_url,
-                    const String& nonce,
-                    const WTF::OrdinalNumber& context_line,
-                    SecurityViolationReportingPolicy reporting_policy,
-                    const String& content) {
-  bool is_allowed = true;
-  for (const auto& policy : policies) {
-    is_allowed &= (policy.Get()->*allowed)(
-        element, context_url, nonce, context_line, reporting_policy, content);
-  }
-  return is_allowed;
-}
-
-template <bool (CSPDirectiveList::*allowed)(const CSPHashValue&,
-                                            ContentSecurityPolicy::InlineType)
-              const>
-bool IsAllowedByAll(const CSPDirectiveListVector& policies,
-                    const CSPHashValue& hash_value,
-                    ContentSecurityPolicy::InlineType type) {
-  bool is_allowed = true;
-  for (const auto& policy : policies)
-    is_allowed &= (policy.Get()->*allowed)(hash_value, type);
-  return is_allowed;
-}
-
-template <bool (CSPDirectiveList::*allowFromURL)(
-    const KURL&,
-    RedirectStatus,
-    SecurityViolationReportingPolicy) const>
-bool IsAllowedByAll(const CSPDirectiveListVector& policies,
-                    const KURL& url,
-                    RedirectStatus redirect_status,
-                    SecurityViolationReportingPolicy reporting_policy,
-                    ContentSecurityPolicy::CheckHeaderType check_header_type) {
-  if (ContentSecurityPolicy::ShouldBypassContentSecurityPolicy(url))
-    return true;
-
-  bool is_allowed = true;
-  for (const auto& policy : policies) {
-    if (!CheckHeaderTypeMatches(check_header_type, policy->HeaderType()))
-      continue;
-    is_allowed &=
-        (policy.Get()->*allowFromURL)(url, redirect_status, reporting_policy);
-  }
-
-  return is_allowed;
-}
-
-template <bool (CSPDirectiveList::*allowFromURLWithNonce)(
-    const KURL&,
-    const String& nonce,
-    RedirectStatus,
-    SecurityViolationReportingPolicy) const>
-bool IsAllowedByAll(const CSPDirectiveListVector& policies,
-                    const KURL& url,
-                    const String& nonce,
-                    RedirectStatus redirect_status,
-                    SecurityViolationReportingPolicy reporting_policy,
-                    ContentSecurityPolicy::CheckHeaderType check_header_type) {
-  if (ContentSecurityPolicy::ShouldBypassContentSecurityPolicy(url))
-    return true;
-
-  bool is_allowed = true;
-  for (const auto& policy : policies) {
-    if (!CheckHeaderTypeMatches(check_header_type, policy->HeaderType()))
-      continue;
-    is_allowed &= (policy.Get()->*allowFromURLWithNonce)(
-        url, nonce, redirect_status, reporting_policy);
-  }
-  return is_allowed;
-}
-
-template <bool (CSPDirectiveList::*allowFromURLWithNonceAndParser)(
-    const KURL&,
-    const String& nonce,
-    const IntegrityMetadataSet& hashes,
-    ParserDisposition parser_disposition,
-    RedirectStatus,
-    SecurityViolationReportingPolicy) const>
-bool IsAllowedByAll(const CSPDirectiveListVector& policies,
-                    const KURL& url,
-                    const String& nonce,
-                    const IntegrityMetadataSet& hashes,
-                    ParserDisposition parser_disposition,
-                    RedirectStatus redirect_status,
-                    SecurityViolationReportingPolicy reporting_policy,
-                    ContentSecurityPolicy::CheckHeaderType check_header_type) {
-  if (ContentSecurityPolicy::ShouldBypassContentSecurityPolicy(url)) {
-    // If we're running experimental features, bypass CSP only for
-    // non-parser-inserted resources whose scheme otherwise bypasses CSP. If
-    // we're not running experimental features, bypass CSP for all resources
-    // regardless of parser state. Once we have more data via the
-    // 'ScriptWithCSPBypassingScheme*' metrics, make a decision about what
-    // behavior to ship. https://crbug.com/653521
-    if (parser_disposition == kNotParserInserted ||
-        !RuntimeEnabledFeatures::
-            ExperimentalContentSecurityPolicyFeaturesEnabled()) {
-      return true;
-    }
-  }
-
-  bool is_allowed = true;
-  for (const auto& policy : policies) {
-    if (!CheckHeaderTypeMatches(check_header_type, policy->HeaderType()))
-      continue;
-    is_allowed &= (policy.Get()->*allowFromURLWithNonceAndParser)(
-        url, nonce, hashes, parser_disposition, redirect_status,
-        reporting_policy);
-  }
-  return is_allowed;
-}
-
-template <bool (CSPDirectiveList::*allowed)(LocalFrame*,
-                                            const KURL&,
-                                            SecurityViolationReportingPolicy)
-              const>
-bool IsAllowedByAll(const CSPDirectiveListVector& policies,
-                    LocalFrame* frame,
-                    const KURL& url,
-                    SecurityViolationReportingPolicy reporting_policy) {
-  bool is_allowed = true;
-  for (const auto& policy : policies)
-    is_allowed &= (policy.Get()->*allowed)(frame, url, reporting_policy);
-  return is_allowed;
-}
-
-template <bool (CSPDirectiveList::*allowed)(const CSPHashValue&,
-                                            ContentSecurityPolicy::InlineType)
-              const>
-bool CheckDigest(const String& source,
-                 ContentSecurityPolicy::InlineType type,
-                 uint8_t hash_algorithms_used,
-                 const CSPDirectiveListVector& policies) {
+// static
+void ContentSecurityPolicy::FillInCSPHashValues(
+    const String& source,
+    uint8_t hash_algorithms_used,
+    Vector<CSPHashValue>& csp_hash_values) {
   // Any additions or subtractions from this struct should also modify the
   // respective entries in the kSupportedPrefixes array in
   // SourceListDirective::parseHash().
@@ -614,7 +440,7 @@ bool CheckDigest(const String& source,
   // Only bother normalizing the source/computing digests if there are any
   // checks to be done.
   if (hash_algorithms_used == kContentSecurityPolicyHashAlgorithmNone)
-    return false;
+    return;
 
   StringUTF8Adaptor utf8_source(source);
 
@@ -624,14 +450,37 @@ bool CheckDigest(const String& source,
       bool digest_success =
           ComputeDigest(algorithm_map.algorithm, utf8_source.Data(),
                         utf8_source.length(), digest);
-      if (digest_success &&
-          IsAllowedByAll<allowed>(
-              policies, CSPHashValue(algorithm_map.csp_hash_algorithm, digest),
-              type))
-        return true;
+      if (digest_success) {
+        csp_hash_values.push_back(
+            CSPHashValue(algorithm_map.csp_hash_algorithm, digest));
+      }
     }
   }
+}
 
+// static
+bool ContentSecurityPolicy::CheckScriptHashAgainstPolicy(
+    Vector<CSPHashValue>& csp_hash_values,
+    const Member<CSPDirectiveList>& policy,
+    InlineType inline_type) {
+  for (const auto& csp_hash_value : csp_hash_values) {
+    if (policy->AllowScriptHash(csp_hash_value, inline_type)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+// static
+bool ContentSecurityPolicy::CheckStyleHashAgainstPolicy(
+    Vector<CSPHashValue>& csp_hash_values,
+    const Member<CSPDirectiveList>& policy,
+    InlineType inline_type) {
+  for (const auto& csp_hash_value : csp_hash_values) {
+    if (policy->AllowStyleHash(csp_hash_value, inline_type)) {
+      return true;
+    }
+  }
   return false;
 }
 
@@ -641,8 +490,12 @@ bool ContentSecurityPolicy::AllowJavaScriptURLs(
     const String& context_url,
     const WTF::OrdinalNumber& context_line,
     SecurityViolationReportingPolicy reporting_policy) const {
-  return IsAllowedByAll<&CSPDirectiveList::AllowJavaScriptURLs>(
-      policies_, element, source, context_url, context_line, reporting_policy);
+  bool is_allowed = true;
+  for (const auto& policy : policies_) {
+    is_allowed &= policy->AllowJavaScriptURLs(element, source, context_url,
+                                              context_line, reporting_policy);
+  }
+  return is_allowed;
 }
 
 bool ContentSecurityPolicy::AllowInlineEventHandler(
@@ -653,14 +506,20 @@ bool ContentSecurityPolicy::AllowInlineEventHandler(
     SecurityViolationReportingPolicy reporting_policy) const {
   // Inline event handlers may be whitelisted by hash, if
   // 'unsafe-hash-attributes' is present in a policy. Check against the digest
-  // of the |source| first before proceeding on to checking whether inline
-  // script is allowed.
-  if (CheckDigest<&CSPDirectiveList::AllowScriptHash>(
-          source, InlineType::kAttribute, script_hash_algorithms_used_,
-          policies_))
-    return true;
-  return IsAllowedByAll<&CSPDirectiveList::AllowInlineEventHandlers>(
-      policies_, element, source, context_url, context_line, reporting_policy);
+  // of the |source| and also check whether inline script is allowed.
+  Vector<CSPHashValue> csp_hash_values;
+  FillInCSPHashValues(source, script_hash_algorithms_used_, csp_hash_values);
+
+  bool is_allowed = true;
+  for (const auto& policy : policies_) {
+    is_allowed &=
+        CheckScriptHashAgainstPolicy(csp_hash_values, policy,
+                                     InlineType::kAttribute) ||
+        policy->AllowInlineEventHandlers(element, source, context_url,
+                                         context_line, reporting_policy);
+  }
+
+  return is_allowed;
 }
 
 bool ContentSecurityPolicy::AllowInlineScript(
@@ -669,11 +528,23 @@ bool ContentSecurityPolicy::AllowInlineScript(
     const String& nonce,
     const WTF::OrdinalNumber& context_line,
     const String& script_content,
+    InlineType inline_type,
     SecurityViolationReportingPolicy reporting_policy) const {
   DCHECK(element);
-  return IsAllowedByAll<&CSPDirectiveList::AllowInlineScript>(
-      policies_, element, context_url, nonce, context_line, reporting_policy,
-      script_content);
+
+  Vector<CSPHashValue> csp_hash_values;
+  FillInCSPHashValues(script_content, script_hash_algorithms_used_,
+                      csp_hash_values);
+
+  bool is_allowed = true;
+  for (const auto& policy : policies_) {
+    is_allowed &=
+        CheckScriptHashAgainstPolicy(csp_hash_values, policy, inline_type) ||
+        policy->AllowInlineScript(element, context_url, nonce, context_line,
+                                  reporting_policy, script_content);
+  }
+
+  return is_allowed;
 }
 
 bool ContentSecurityPolicy::AllowInlineStyle(
@@ -682,13 +553,26 @@ bool ContentSecurityPolicy::AllowInlineStyle(
     const String& nonce,
     const WTF::OrdinalNumber& context_line,
     const String& style_content,
+    InlineType inline_type,
     SecurityViolationReportingPolicy reporting_policy) const {
   DCHECK(element);
+
   if (override_inline_style_allowed_)
     return true;
-  return IsAllowedByAll<&CSPDirectiveList::AllowInlineStyle>(
-      policies_, element, context_url, nonce, context_line, reporting_policy,
-      style_content);
+
+  Vector<CSPHashValue> csp_hash_values;
+  FillInCSPHashValues(style_content, style_hash_algorithms_used_,
+                      csp_hash_values);
+
+  bool is_allowed = true;
+  for (const auto& policy : policies_) {
+    is_allowed &=
+        CheckStyleHashAgainstPolicy(csp_hash_values, policy, inline_type) ||
+        policy->AllowInlineStyle(element, context_url, nonce, context_line,
+                                 reporting_policy, style_content);
+  }
+
+  return is_allowed;
 }
 
 bool ContentSecurityPolicy::AllowEval(
@@ -696,9 +580,12 @@ bool ContentSecurityPolicy::AllowEval(
     SecurityViolationReportingPolicy reporting_policy,
     ContentSecurityPolicy::ExceptionStatus exception_status,
     const String& script_content) const {
-  return IsAllowedByAll<&CSPDirectiveList::AllowEval>(
-      policies_, script_state, reporting_policy, exception_status,
-      script_content);
+  bool is_allowed = true;
+  for (const auto& policy : policies_) {
+    is_allowed &= policy->AllowEval(script_state, reporting_policy,
+                                    exception_status, script_content);
+  }
+  return is_allowed;
 }
 
 String ContentSecurityPolicy::EvalDisabledErrorMessage() const {
@@ -767,22 +654,29 @@ bool ContentSecurityPolicy::AllowScriptFromSource(
         parser_disposition == kParserInserted
             ? WebFeature::kScriptWithCSPBypassingSchemeParserInserted
             : WebFeature::kScriptWithCSPBypassingSchemeNotParserInserted);
+
+    // If we're running experimental features, bypass CSP only for
+    // non-parser-inserted resources whose scheme otherwise bypasses CSP. If
+    // we're not running experimental features, bypass CSP for all resources
+    // regardless of parser state. Once we have more data via the
+    // 'ScriptWithCSPBypassingScheme*' metrics, make a decision about what
+    // behavior to ship. https://crbug.com/653521
+    if (parser_disposition == kNotParserInserted ||
+        !RuntimeEnabledFeatures::
+            ExperimentalContentSecurityPolicyFeaturesEnabled()) {
+      return true;
+    }
   }
-  return IsAllowedByAll<&CSPDirectiveList::AllowScriptFromSource>(
-      policies_, url, nonce, hashes, parser_disposition, redirect_status,
-      reporting_policy, check_header_type);
-}
 
-bool ContentSecurityPolicy::AllowScriptWithHash(const String& source,
-                                                InlineType type) const {
-  return CheckDigest<&CSPDirectiveList::AllowScriptHash>(
-      source, type, script_hash_algorithms_used_, policies_);
-}
-
-bool ContentSecurityPolicy::AllowStyleWithHash(const String& source,
-                                               InlineType type) const {
-  return CheckDigest<&CSPDirectiveList::AllowStyleHash>(
-      source, type, style_hash_algorithms_used_, policies_);
+  bool is_allowed = true;
+  for (const auto& policy : policies_) {
+    if (!CheckHeaderTypeMatches(check_header_type, policy->HeaderType()))
+      continue;
+    is_allowed &=
+        policy->AllowScriptFromSource(url, nonce, hashes, parser_disposition,
+                                      redirect_status, reporting_policy);
+  }
+  return is_allowed;
 }
 
 bool ContentSecurityPolicy::AllowRequestWithoutIntegrity(
@@ -892,8 +786,18 @@ bool ContentSecurityPolicy::AllowObjectFromSource(
     RedirectStatus redirect_status,
     SecurityViolationReportingPolicy reporting_policy,
     CheckHeaderType check_header_type) const {
-  return IsAllowedByAll<&CSPDirectiveList::AllowObjectFromSource>(
-      policies_, url, redirect_status, reporting_policy, check_header_type);
+  if (ShouldBypassContentSecurityPolicy(url))
+    return true;
+
+  bool is_allowed = true;
+  for (const auto& policy : policies_) {
+    if (!CheckHeaderTypeMatches(check_header_type, policy->HeaderType()))
+      continue;
+    is_allowed &=
+        policy->AllowObjectFromSource(url, redirect_status, reporting_policy);
+  }
+
+  return is_allowed;
 }
 
 bool ContentSecurityPolicy::AllowFrameFromSource(
@@ -901,8 +805,18 @@ bool ContentSecurityPolicy::AllowFrameFromSource(
     RedirectStatus redirect_status,
     SecurityViolationReportingPolicy reporting_policy,
     CheckHeaderType check_header_type) const {
-  return IsAllowedByAll<&CSPDirectiveList::AllowFrameFromSource>(
-      policies_, url, redirect_status, reporting_policy, check_header_type);
+  if (ShouldBypassContentSecurityPolicy(url))
+    return true;
+
+  bool is_allowed = true;
+  for (const auto& policy : policies_) {
+    if (!CheckHeaderTypeMatches(check_header_type, policy->HeaderType()))
+      continue;
+    is_allowed &=
+        policy->AllowFrameFromSource(url, redirect_status, reporting_policy);
+  }
+
+  return is_allowed;
 }
 
 bool ContentSecurityPolicy::AllowImageFromSource(
@@ -912,8 +826,16 @@ bool ContentSecurityPolicy::AllowImageFromSource(
     CheckHeaderType check_header_type) const {
   if (ShouldBypassContentSecurityPolicy(url, SchemeRegistry::kPolicyAreaImage))
     return true;
-  return IsAllowedByAll<&CSPDirectiveList::AllowImageFromSource>(
-      policies_, url, redirect_status, reporting_policy, check_header_type);
+
+  bool is_allowed = true;
+  for (const auto& policy : policies_) {
+    if (!CheckHeaderTypeMatches(check_header_type, policy->HeaderType()))
+      continue;
+    is_allowed &=
+        policy->AllowImageFromSource(url, redirect_status, reporting_policy);
+  }
+
+  return is_allowed;
 }
 
 bool ContentSecurityPolicy::AllowStyleFromSource(
@@ -924,9 +846,15 @@ bool ContentSecurityPolicy::AllowStyleFromSource(
     CheckHeaderType check_header_type) const {
   if (ShouldBypassContentSecurityPolicy(url, SchemeRegistry::kPolicyAreaStyle))
     return true;
-  return IsAllowedByAll<&CSPDirectiveList::AllowStyleFromSource>(
-      policies_, url, nonce, redirect_status, reporting_policy,
-      check_header_type);
+
+  bool is_allowed = true;
+  for (const auto& policy : policies_) {
+    if (!CheckHeaderTypeMatches(check_header_type, policy->HeaderType()))
+      continue;
+    is_allowed &= policy->AllowStyleFromSource(url, nonce, redirect_status,
+                                               reporting_policy);
+  }
+  return is_allowed;
 }
 
 bool ContentSecurityPolicy::AllowFontFromSource(
@@ -934,8 +862,18 @@ bool ContentSecurityPolicy::AllowFontFromSource(
     RedirectStatus redirect_status,
     SecurityViolationReportingPolicy reporting_policy,
     CheckHeaderType check_header_type) const {
-  return IsAllowedByAll<&CSPDirectiveList::AllowFontFromSource>(
-      policies_, url, redirect_status, reporting_policy, check_header_type);
+  if (ShouldBypassContentSecurityPolicy(url))
+    return true;
+
+  bool is_allowed = true;
+  for (const auto& policy : policies_) {
+    if (!CheckHeaderTypeMatches(check_header_type, policy->HeaderType()))
+      continue;
+    is_allowed &=
+        policy->AllowFontFromSource(url, redirect_status, reporting_policy);
+  }
+
+  return is_allowed;
 }
 
 bool ContentSecurityPolicy::AllowMediaFromSource(
@@ -943,8 +881,18 @@ bool ContentSecurityPolicy::AllowMediaFromSource(
     RedirectStatus redirect_status,
     SecurityViolationReportingPolicy reporting_policy,
     CheckHeaderType check_header_type) const {
-  return IsAllowedByAll<&CSPDirectiveList::AllowMediaFromSource>(
-      policies_, url, redirect_status, reporting_policy, check_header_type);
+  if (ShouldBypassContentSecurityPolicy(url))
+    return true;
+
+  bool is_allowed = true;
+  for (const auto& policy : policies_) {
+    if (!CheckHeaderTypeMatches(check_header_type, policy->HeaderType()))
+      continue;
+    is_allowed &=
+        policy->AllowMediaFromSource(url, redirect_status, reporting_policy);
+  }
+
+  return is_allowed;
 }
 
 bool ContentSecurityPolicy::AllowConnectToSource(
@@ -952,8 +900,18 @@ bool ContentSecurityPolicy::AllowConnectToSource(
     RedirectStatus redirect_status,
     SecurityViolationReportingPolicy reporting_policy,
     CheckHeaderType check_header_type) const {
-  return IsAllowedByAll<&CSPDirectiveList::AllowConnectToSource>(
-      policies_, url, redirect_status, reporting_policy, check_header_type);
+  if (ShouldBypassContentSecurityPolicy(url))
+    return true;
+
+  bool is_allowed = true;
+  for (const auto& policy : policies_) {
+    if (!CheckHeaderTypeMatches(check_header_type, policy->HeaderType()))
+      continue;
+    is_allowed &=
+        policy->AllowConnectToSource(url, redirect_status, reporting_policy);
+  }
+
+  return is_allowed;
 }
 
 bool ContentSecurityPolicy::AllowFormAction(
@@ -961,8 +919,18 @@ bool ContentSecurityPolicy::AllowFormAction(
     RedirectStatus redirect_status,
     SecurityViolationReportingPolicy reporting_policy,
     CheckHeaderType check_header_type) const {
-  return IsAllowedByAll<&CSPDirectiveList::AllowFormAction>(
-      policies_, url, redirect_status, reporting_policy, check_header_type);
+  if (ShouldBypassContentSecurityPolicy(url))
+    return true;
+
+  bool is_allowed = true;
+  for (const auto& policy : policies_) {
+    if (!CheckHeaderTypeMatches(check_header_type, policy->HeaderType()))
+      continue;
+    is_allowed &=
+        policy->AllowFormAction(url, redirect_status, reporting_policy);
+  }
+
+  return is_allowed;
 }
 
 bool ContentSecurityPolicy::AllowBaseURI(
@@ -971,9 +939,18 @@ bool ContentSecurityPolicy::AllowBaseURI(
     SecurityViolationReportingPolicy reporting_policy) const {
   // `base-uri` isn't affected by 'upgrade-insecure-requests', so we'll check
   // both report-only and enforce headers here.
-  return IsAllowedByAll<&CSPDirectiveList::AllowBaseURI>(
-      policies_, url, redirect_status, reporting_policy,
-      ContentSecurityPolicy::CheckHeaderType::kCheckAll);
+  if (ShouldBypassContentSecurityPolicy(url))
+    return true;
+
+  bool is_allowed = true;
+  for (const auto& policy : policies_) {
+    if (!CheckHeaderTypeMatches(CheckHeaderType::kCheckAll,
+                                policy->HeaderType()))
+      continue;
+    is_allowed &= policy->AllowBaseURI(url, redirect_status, reporting_policy);
+  }
+
+  return is_allowed;
 }
 
 bool ContentSecurityPolicy::AllowWorkerContextFromSource(
@@ -986,22 +963,48 @@ bool ContentSecurityPolicy::AllowWorkerContextFromSource(
   // TODO(mkwst): We reverted this.
   if (Document* document = this->GetDocument()) {
     UseCounter::Count(*document, WebFeature::kWorkerSubjectToCSP);
-    if (IsAllowedByAll<&CSPDirectiveList::AllowWorkerFromSource>(
-            policies_, url, redirect_status,
-            SecurityViolationReportingPolicy::kSuppressReporting,
-            check_header_type) &&
-        !IsAllowedByAll<&CSPDirectiveList::AllowScriptFromSource>(
-            policies_, url, AtomicString(), IntegrityMetadataSet(),
-            kNotParserInserted, redirect_status,
-            SecurityViolationReportingPolicy::kSuppressReporting,
-            check_header_type)) {
+    bool is_allowed_worker = true;
+    if (!ShouldBypassContentSecurityPolicy(url)) {
+      for (const auto& policy : policies_) {
+        if (!CheckHeaderTypeMatches(check_header_type, policy->HeaderType()))
+          continue;
+        is_allowed_worker &= policy->AllowWorkerFromSource(
+            url, redirect_status,
+            SecurityViolationReportingPolicy::kSuppressReporting);
+      }
+    }
+
+    bool is_allowed_script = true;
+
+    if (!ShouldBypassContentSecurityPolicy(url)) {
+      for (const auto& policy : policies_) {
+        if (!CheckHeaderTypeMatches(check_header_type, policy->HeaderType()))
+          continue;
+        is_allowed_script &= policy->AllowScriptFromSource(
+            url, AtomicString(), IntegrityMetadataSet(), kNotParserInserted,
+            redirect_status,
+            SecurityViolationReportingPolicy::kSuppressReporting);
+      }
+    }
+
+    if (is_allowed_worker && !is_allowed_script) {
       UseCounter::Count(*document,
                         WebFeature::kWorkerAllowedByChildBlockedByScript);
     }
   }
 
-  return IsAllowedByAll<&CSPDirectiveList::AllowWorkerFromSource>(
-      policies_, url, redirect_status, reporting_policy, check_header_type);
+  if (ShouldBypassContentSecurityPolicy(url))
+    return true;
+
+  bool is_allowed = true;
+  for (const auto& policy : policies_) {
+    if (!CheckHeaderTypeMatches(check_header_type, policy->HeaderType()))
+      continue;
+    is_allowed &=
+        policy->AllowWorkerFromSource(url, redirect_status, reporting_policy);
+  }
+
+  return is_allowed;
 }
 
 bool ContentSecurityPolicy::AllowManifestFromSource(
@@ -1009,16 +1012,28 @@ bool ContentSecurityPolicy::AllowManifestFromSource(
     RedirectStatus redirect_status,
     SecurityViolationReportingPolicy reporting_policy,
     CheckHeaderType check_header_type) const {
-  return IsAllowedByAll<&CSPDirectiveList::AllowManifestFromSource>(
-      policies_, url, redirect_status, reporting_policy, check_header_type);
+  if (ShouldBypassContentSecurityPolicy(url))
+    return true;
+
+  bool is_allowed = true;
+  for (const auto& policy : policies_) {
+    if (!CheckHeaderTypeMatches(check_header_type, policy->HeaderType()))
+      continue;
+    is_allowed &=
+        policy->AllowManifestFromSource(url, redirect_status, reporting_policy);
+  }
+
+  return is_allowed;
 }
 
 bool ContentSecurityPolicy::AllowAncestors(
     LocalFrame* frame,
     const KURL& url,
     SecurityViolationReportingPolicy reporting_policy) const {
-  return IsAllowedByAll<&CSPDirectiveList::AllowAncestors>(
-      policies_, frame, url, reporting_policy);
+  bool is_allowed = true;
+  for (const auto& policy : policies_)
+    is_allowed &= policy->AllowAncestors(frame, url, reporting_policy);
+  return is_allowed;
 }
 
 bool ContentSecurityPolicy::IsFrameAncestorsEnforced() const {
