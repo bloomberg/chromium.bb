@@ -589,6 +589,8 @@ source_set("unit_tests") {
   if (is_chromeos) {
     sources += [
       "api/audio/audio_device_id_calculator_unittest.cc",
+      "api/lock_screen_data/data_item_unittest.cc",
+      "api/lock_screen_data/lock_screen_item_storage_unittest.cc",
       "api/media_perception_private/conversion_utils_unittest.cc",
       "api/media_perception_private/media_perception_api_manager_unittest.cc",
       "api/webcam_private/visca_webcam_unittest.cc",
