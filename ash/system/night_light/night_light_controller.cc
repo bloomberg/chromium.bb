@@ -4,11 +4,14 @@
 
 #include "ash/system/night_light/night_light_controller.h"
 
+#include <cmath>
+
 #include "ash/ash_switches.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -78,6 +81,17 @@ class NightLightControllerDelegateImpl : public NightLightController::Delegate {
   DISALLOW_COPY_AND_ASSIGN(NightLightControllerDelegateImpl);
 };
 
+// Returns the color temperature range bucket in which |temperature| resides.
+// The range buckets are:
+// 0 => Range [0 : 20) (least warm).
+// 1 => Range [20 : 40).
+// 2 => Range [40 : 60).
+// 3 => Range [60 : 80).
+// 4 => Range [80 : 100) (most warm).
+int GetTemperatureRange(float temperature) {
+  return std::floor(5 * temperature);
+}
+
 // Applies the given |layer_temperature| to all the layers of the root windows
 // with the given |animation_duration|.
 // |layer_temperature| is the ui::Layer floating-point value in the range of
@@ -94,6 +108,10 @@ void ApplyColorTemperatureToLayers(float layer_temperature,
 
     layer->SetLayerTemperature(layer_temperature);
   }
+
+  UMA_HISTOGRAM_EXACT_LINEAR(
+      "Ash.NightLight.Temperature", GetTemperatureRange(layer_temperature),
+      5 /* number of buckets defined in GetTemperatureRange() */);
 }
 
 }  // namespace
@@ -337,6 +355,10 @@ void NightLightController::OnScheduleTypePrefChanged() {
   DCHECK(active_user_pref_service_);
   NotifyClientWithScheduleChange();
   Refresh(true /* did_schedule_change */);
+
+  // TODO(https://crbug.com/742517).
+  UMA_HISTOGRAM_ENUMERATION("Ash.NightLight.ScheduleType", GetScheduleType(),
+                            static_cast<int>(ScheduleType::kLast) + 1);
 }
 
 void NightLightController::OnCustomSchedulePrefsChanged() {

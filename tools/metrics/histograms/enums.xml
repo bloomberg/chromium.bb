@@ -1292,6 +1292,24 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="5" label="INSUFFICIENT_RESOURCES"/>
 </enum>
 
+<enum name="AshNightLightScheduleType">
+  <summary>Defines the possible Night Light schedule types</summary>
+  <int value="0" label="None"/>
+  <int value="1" label="Sunset to Sunrise"/>
+  <int value="2" label="Custom Schedule"/>
+</enum>
+
+<enum name="AshNightLightTemperatureRanges">
+  <summary>
+    Defines the ranges in which the value of the color temperature may reside
+  </summary>
+  <int value="0" label="[0 to 20) (coldest)"/>
+  <int value="1" label="[20 to 40)"/>
+  <int value="2" label="[40 to 60)"/>
+  <int value="3" label="[60 to 80)"/>
+  <int value="4" label="[80 to 100) (warmest)"/>
+</enum>
+
 <enum name="AsyncDNSConfigParsePosix">
   <int value="0" label="OK"/>
   <int value="1" label="RES_INIT_FAILED"/>
