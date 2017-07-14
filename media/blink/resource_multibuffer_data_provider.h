@@ -119,6 +119,10 @@ class MEDIA_BLINK_EXPORT ResourceMultiBufferDataProvider
   // When we encounter a redirect, this is the source of the redirect.
   GURL redirects_to_;
 
+  // If the server tries to gives us more bytes than we want, this how
+  // many bytes we need to discard before we get to the right place.
+  uint64_t bytes_to_discard_ = 0;
+
   base::WeakPtrFactory<ResourceMultiBufferDataProvider> weak_factory_;
 };
 

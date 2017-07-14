@@ -287,6 +287,7 @@ void ResourceMultiBufferDataProvider::DidReceiveResponse(
   int64_t content_length = response.ExpectedContentLength();
   bool end_of_file = false;
   bool do_fail = false;
+  bytes_to_discard_ = 0;
 
   // We make a strong assumption that when we reach here we have either
   // received a response from HTTP/HTTPS protocol or the request was
@@ -308,11 +309,12 @@ void ResourceMultiBufferDataProvider::DidReceiveResponse(
     if (partial_response &&
         VerifyPartialResponse(response, destination_url_data)) {
       destination_url_data->set_range_supported();
-    } else if (ok_response && pos_ == 0) {
+    } else if (ok_response) {
       // We accept a 200 response for a Range:0- request, trusting the
       // Accept-Ranges header, because Apache thinks that's a reasonable thing
       // to return.
       destination_url_data->set_length(content_length);
+      bytes_to_discard_ = byte_pos();
     } else if (response.HttpStatusCode() == kHttpRangeNotSatisfiable) {
       // Unsatisfiable range
       // Really, we should never request a range that doesn't exist, but
@@ -385,6 +387,15 @@ void ResourceMultiBufferDataProvider::DidReceiveData(const char* data,
   DCHECK(!Available());
   DCHECK(active_loader_);
   DCHECK_GT(data_length, 0);
+
+  if (bytes_to_discard_) {
+    uint64_t tmp = std::min<uint64_t>(bytes_to_discard_, data_length);
+    data_length -= tmp;
+    data += tmp;
+    bytes_to_discard_ -= tmp;
+    if (data_length == 0)
+      return;
+  }
 
   // When we receive data, we allow more retries.
   retries_ = 0;
@@ -561,9 +572,13 @@ bool ResourceMultiBufferDataProvider::VerifyPartialResponse(
     url_data->set_length(instance_size);
   }
 
-  if (byte_pos() != first_byte_position) {
+  if (first_byte_position > byte_pos()) {
     return false;
   }
+  if (last_byte_position + 1 < byte_pos()) {
+    return false;
+  }
+  bytes_to_discard_ = byte_pos() - first_byte_position;
 
   return true;
 }

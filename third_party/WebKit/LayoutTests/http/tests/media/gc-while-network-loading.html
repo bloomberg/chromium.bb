@@ -11,7 +11,7 @@ async_test(function(t)
     var mediaFile = findMediaFile("video", "../../../media/content/test");
     var type = mimeTypeForExtension(mediaFile.split(".").pop());
     v.src = "http://127.0.0.1:8000/media/video-throttled-load.cgi?name=" + mediaFile + "&throttle=50&type=" + type;
-    v.onloadeddata = t.step_func(function()
+    v.onloadstart = t.step_func(function()
     {
         assert_equals(v.networkState, v.NETWORK_LOADING);
         // The delaying-the-load-event flag is now false.

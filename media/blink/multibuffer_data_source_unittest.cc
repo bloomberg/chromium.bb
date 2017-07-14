@@ -601,14 +601,15 @@ TEST_F(MultibufferDataSourceTest, Range_WrongContentRange) {
 TEST_F(MultibufferDataSourceTest, Range_ServerLied) {
   InitializeWith206Response();
 
-  // Read causing a new request to be made -- we'll expect it to error.
+  // Read causing a new request to be made, we will discard the data that
+  // was already read in the first request.
   ReadAt(kFarReadPosition);
 
   // Return a 200 in response to a range request.
   EXPECT_CALL(*this, ReadCallback(media::DataSource::kReadError));
   Respond(response_generator_->Generate200());
 
-  EXPECT_FALSE(loading());
+  EXPECT_TRUE(loading());
   Stop();
 }
 
