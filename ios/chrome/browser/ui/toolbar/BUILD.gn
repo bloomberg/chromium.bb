@@ -6,6 +6,8 @@ source_set("toolbar") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "keyboard_accessory_view_delegate.h",
+    "keyboard_assist/toolbar_assistive_keyboard_views.h",
+    "keyboard_assist/toolbar_assistive_keyboard_views.mm",
     "new_keyboard_accessory_view.h",
     "new_keyboard_accessory_view.mm",
     "new_tab_button.h",
