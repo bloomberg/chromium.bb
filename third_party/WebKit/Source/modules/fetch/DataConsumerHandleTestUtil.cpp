@@ -57,6 +57,7 @@ DataConsumerHandleTestUtil::Thread::~Thread() {
 }
 
 void DataConsumerHandleTestUtil::Thread::Initialize() {
+  DCHECK(thread_->IsCurrentThread());
   if (initialization_policy_ >= kScriptExecution) {
     isolate_holder_ =
         WTF::MakeUnique<gin::IsolateHolder>(Platform::Current()
@@ -66,7 +67,7 @@ void DataConsumerHandleTestUtil::Thread::Initialize() {
                                                 ->ToSingleThreadTaskRunner());
     GetIsolate()->Enter();
   }
-  thread_->Initialize();
+  thread_->InitializeOnThread();
   if (initialization_policy_ >= kScriptExecution) {
     v8::HandleScope handle_scope(GetIsolate());
     script_state_ = ScriptState::Create(
@@ -81,12 +82,13 @@ void DataConsumerHandleTestUtil::Thread::Initialize() {
 }
 
 void DataConsumerHandleTestUtil::Thread::Shutdown() {
+  DCHECK(thread_->IsCurrentThread());
   execution_context_ = nullptr;
   if (script_state_) {
     script_state_->DisposePerContextData();
   }
   script_state_ = nullptr;
-  thread_->Shutdown();
+  thread_->ShutdownOnThread();
   if (isolate_holder_) {
     GetIsolate()->Exit();
     GetIsolate()->RequestGarbageCollectionForTesting(

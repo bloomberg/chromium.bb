@@ -67,7 +67,8 @@ void DatabaseThread::Start() {
 }
 
 void DatabaseThread::SetupDatabaseThread() {
-  thread_->Initialize();
+  DCHECK(thread_->IsCurrentThread());
+  thread_->InitializeOnThread();
   transaction_coordinator_ = new SQLTransactionCoordinator();
 }
 
@@ -122,7 +123,8 @@ void DatabaseThread::CleanupDatabaseThread() {
 }
 
 void DatabaseThread::CleanupDatabaseThreadCompleted() {
-  thread_->Shutdown();
+  DCHECK(thread_->IsCurrentThread());
+  thread_->ShutdownOnThread();
   if (cleanup_sync_)  // Someone wanted to know when we were done cleaning up.
     cleanup_sync_->Signal();
 }
