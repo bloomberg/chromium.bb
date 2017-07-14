@@ -22,7 +22,6 @@
 #include "components/cast_channel/cast_message_util.h"
 #include "components/cast_channel/cast_socket.h"
 #include "components/cast_channel/cast_socket_service.h"
-#include "components/cast_channel/cast_socket_service_factory.h"
 #include "components/cast_channel/keep_alive_delegate.h"
 #include "components/cast_channel/logger.h"
 #include "components/cast_channel/proto/cast_channel.pb.h"
@@ -137,6 +136,18 @@ void CastChannelAPI::SendEvent(const std::string& extension_id,
   }
 }
 
+cast_channel::CastSocket::Observer* CastChannelAPI::GetObserver(
+    const std::string& extension_id,
+    scoped_refptr<cast_channel::Logger> logger) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!observer_) {
+    observer_.reset(new CastMessageHandler(
+        base::Bind(&CastChannelAPI::SendEvent, this->AsWeakPtr(), extension_id),
+        logger));
+  }
+  return observer_.get();
+}
+
 static base::LazyInstance<
     BrowserContextKeyedAPIFactory<CastChannelAPI>>::DestructorAtExit g_factory =
     LAZY_INSTANCE_INITIALIZER;
@@ -168,9 +179,7 @@ CastChannelAsyncApiFunction::CastChannelAsyncApiFunction()
 CastChannelAsyncApiFunction::~CastChannelAsyncApiFunction() { }
 
 bool CastChannelAsyncApiFunction::PrePrepare() {
-  cast_socket_service_ =
-      cast_channel::CastSocketServiceFactory::GetForBrowserContext(
-          browser_context());
+  cast_socket_service_ = cast_channel::CastSocketService::GetInstance();
   DCHECK(cast_socket_service_);
   return true;
 }
@@ -277,14 +286,8 @@ void CastChannelOpenFunction::AsyncWorkStart() {
   if (test_socket.get())
     cast_socket_service_->SetSocketForTest(std::move(test_socket));
 
-  auto* observer = cast_socket_service_->GetObserver(extension_->id());
-  if (!observer) {
-    observer = cast_socket_service_->AddObserver(
-        extension_->id(), base::MakeUnique<CastMessageHandler>(
-                              base::Bind(&CastChannelAPI::SendEvent,
-                                         api_->AsWeakPtr(), extension_->id()),
-                              cast_socket_service_->GetLogger()));
-  }
+  auto* observer =
+      api_->GetObserver(extension_->id(), cast_socket_service_->GetLogger());
 
   cast_socket_service_->OpenSocket(
       *ip_endpoint_, ExtensionsBrowserClient::Get()->GetNetLog(),
@@ -422,20 +425,23 @@ void CastChannelCloseFunction::OnClose(int result) {
   AsyncWorkCompleted();
 }
 
-CastChannelOpenFunction::CastMessageHandler::CastMessageHandler(
+CastChannelAPI::CastMessageHandler::CastMessageHandler(
     const EventDispatchCallback& ui_dispatch_cb,
     scoped_refptr<Logger> logger)
     : ui_dispatch_cb_(ui_dispatch_cb), logger_(logger) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(logger_);
 }
 
-CastChannelOpenFunction::CastMessageHandler::~CastMessageHandler() {
+CastChannelAPI::CastMessageHandler::~CastMessageHandler() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  cast_channel::CastSocketService::GetInstance()->RemoveObserver(this);
 }
 
-void CastChannelOpenFunction::CastMessageHandler::OnError(
+void CastChannelAPI::CastMessageHandler::OnError(
     const cast_channel::CastSocket& socket,
     ChannelError error_state) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   ChannelInfo channel_info;
   FillChannelInfo(socket, &channel_info);
@@ -453,10 +459,10 @@ void CastChannelOpenFunction::CastMessageHandler::OnError(
       base::Bind(ui_dispatch_cb_, base::Passed(std::move(event))));
 }
 
-void CastChannelOpenFunction::CastMessageHandler::OnMessage(
+void CastChannelAPI::CastMessageHandler::OnMessage(
     const cast_channel::CastSocket& socket,
     const CastMessage& message) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   MessageInfo message_info;
   CastMessageToMessageInfo(message, &message_info);

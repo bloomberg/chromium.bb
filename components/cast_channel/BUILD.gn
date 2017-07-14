@@ -16,8 +16,6 @@ static_library("cast_channel") {
     "cast_socket.h",
     "cast_socket_service.cc",
     "cast_socket_service.h",
-    "cast_socket_service_factory.cc",
-    "cast_socket_service_factory.h",
     "cast_transport.cc",
     "cast_transport.h",
     "keep_alive_delegate.cc",

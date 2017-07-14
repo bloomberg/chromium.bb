@@ -60,10 +60,48 @@ class CastChannelAPI : public BrowserContextKeyedAPI,
   // Sends an event to the extension's EventRouter, if it exists.
   void SendEvent(const std::string& extension_id, std::unique_ptr<Event> event);
 
+  // Registers |extension_id| with |observer_| and returns |observer_|.
+  cast_channel::CastSocket::Observer* GetObserver(
+      const std::string& extension_id,
+      scoped_refptr<cast_channel::Logger> logger);
+
  private:
   friend class BrowserContextKeyedAPIFactory<CastChannelAPI>;
   friend class ::CastChannelAPITest;
   friend class CastTransportDelegate;
+
+  // Defines a callback used to send events to the extension's
+  // EventRouter.
+  //     Parameter #0 is a unique pointer to the event payload.
+  using EventDispatchCallback = base::Callback<void(std::unique_ptr<Event>)>;
+
+  // Receives incoming messages and errors and provides additional API context.
+  class CastMessageHandler : public cast_channel::CastSocket::Observer {
+   public:
+    CastMessageHandler(const EventDispatchCallback& ui_dispatch_cb,
+                       scoped_refptr<cast_channel::Logger> logger);
+    ~CastMessageHandler() override;
+
+    // CastSocket::Observer implementation.
+    void OnError(const cast_channel::CastSocket& socket,
+                 cast_channel::ChannelError error_state) override;
+    void OnMessage(const cast_channel::CastSocket& socket,
+                   const cast_channel::CastMessage& message) override;
+
+    void RegisterExtensionId(const std::string& extension_id);
+
+   private:
+    // Callback for sending events to the extension.
+    // Should be bound to a weak pointer, to prevent any use-after-free
+    // conditions.
+    EventDispatchCallback const ui_dispatch_cb_;
+    // Logger object for reporting error details.
+    scoped_refptr<cast_channel::Logger> logger_;
+
+    THREAD_CHECKER(thread_checker_);
+
+    DISALLOW_COPY_AND_ASSIGN(CastMessageHandler);
+  };
 
   ~CastChannelAPI() override;
 
@@ -72,6 +110,9 @@ class CastChannelAPI : public BrowserContextKeyedAPI,
 
   content::BrowserContext* const browser_context_;
   std::unique_ptr<cast_channel::CastSocket> socket_for_test_;
+  // Created and destroyed on the IO thread.
+  std::unique_ptr<CastMessageHandler, content::BrowserThread::DeleteOnIOThread>
+      observer_;
 
   DISALLOW_COPY_AND_ASSIGN(CastChannelAPI);
 };
@@ -96,8 +137,9 @@ class CastChannelAsyncApiFunction : public AsyncApiFunction {
   void SetResultFromError(int channel_id,
                           api::cast_channel::ChannelError error);
 
-  // Manages creating and removing Cast sockets.
-  scoped_refptr<cast_channel::CastSocketService> cast_socket_service_;
+  // Raw pointer of leaky singleton CastSocketService, which manages creating
+  // and removing Cast sockets.
+  cast_channel::CastSocketService* cast_socket_service_;
 
  private:
   // Sets the function result from |channel_info|.
@@ -119,35 +161,6 @@ class CastChannelOpenFunction : public CastChannelAsyncApiFunction {
 
  private:
   DECLARE_EXTENSION_FUNCTION("cast.channel.open", CAST_CHANNEL_OPEN)
-
-  // Defines a callback used to send events to the extension's
-  // EventRouter.
-  //     Parameter #0 is a scoped pointer to the event payload.
-  using EventDispatchCallback = base::Callback<void(std::unique_ptr<Event>)>;
-
-  // Receives incoming messages and errors and provides additional API context.
-  class CastMessageHandler : public cast_channel::CastSocket::Observer {
-   public:
-    CastMessageHandler(const EventDispatchCallback& ui_dispatch_cb,
-                       scoped_refptr<cast_channel::Logger> logger);
-    ~CastMessageHandler() override;
-
-    // CastSocket::Observer implementation.
-    void OnError(const cast_channel::CastSocket& socket,
-                 cast_channel::ChannelError error_state) override;
-    void OnMessage(const cast_channel::CastSocket& socket,
-                   const cast_channel::CastMessage& message) override;
-
-   private:
-    // Callback for sending events to the extension.
-    // Should be bound to a weak pointer, to prevent any use-after-free
-    // conditions.
-    EventDispatchCallback const ui_dispatch_cb_;
-    // Logger object for reporting error details.
-    scoped_refptr<cast_channel::Logger> logger_;
-
-    DISALLOW_COPY_AND_ASSIGN(CastMessageHandler);
-  };
 
   // Validates that |connect_info| represents a valid IP end point and returns a
   // new IPEndPoint if so.  Otherwise returns nullptr.

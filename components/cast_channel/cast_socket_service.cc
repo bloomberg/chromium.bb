@@ -28,15 +28,17 @@ namespace cast_channel {
 
 int CastSocketService::last_channel_id_ = 0;
 
-CastSocketService::CastSocketService()
-    : RefcountedKeyedService(
-          BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)),
-      logger_(new Logger()) {
+CastSocketService::CastSocketService() : logger_(new Logger()) {
   DETACH_FROM_THREAD(thread_checker_);
 }
 
-CastSocketService::~CastSocketService() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+// This is a leaky singleton and the dtor won't be called.
+CastSocketService::~CastSocketService() = default;
+
+// static
+CastSocketService* CastSocketService::GetInstance() {
+  return base::Singleton<CastSocketService,
+                         base::LeakySingletonTraits<CastSocketService>>::get();
 }
 
 scoped_refptr<Logger> CastSocketService::GetLogger() {
@@ -128,24 +130,14 @@ int CastSocketService::OpenSocket(const net::IPEndPoint& ip_endpoint,
                     observer);
 }
 
-CastSocket::Observer* CastSocketService::GetObserver(const std::string& id) {
-  auto it = socket_observer_map_.find(id);
-  return it == socket_observer_map_.end() ? nullptr : it->second.get();
-}
-
-CastSocket::Observer* CastSocketService::AddObserver(
-    const std::string& id,
-    std::unique_ptr<CastSocket::Observer> observer) {
-  CastSocket::Observer* observer_ptr = observer.get();
-  socket_observer_map_.insert(std::make_pair(id, std::move(observer)));
-  return observer_ptr;
+void CastSocketService::RemoveObserver(CastSocket::Observer* observer) {
+  for (auto& socket_it : sockets_)
+    socket_it.second->RemoveObserver(observer);
 }
 
 void CastSocketService::SetSocketForTest(
     std::unique_ptr<cast_channel::CastSocket> socket_for_test) {
   socket_for_test_ = std::move(socket_for_test);
 }
-
-void CastSocketService::ShutdownOnUIThread() {}
 
 }  // namespace cast_channel
