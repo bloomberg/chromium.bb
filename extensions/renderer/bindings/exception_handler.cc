@@ -63,19 +63,29 @@ void ExceptionHandler::HandleException(v8::Local<v8::Context> context,
           ? base::StringPrintf("%s: %s", message.c_str(),
                                gin::V8ToString(v8_message->Get()).c_str())
           : message;
+  HandleException(context, full_message, try_catch->Exception());
+  try_catch->Reset();  // Reset() to avoid handling the error more than once.
+}
+
+void ExceptionHandler::HandleException(v8::Local<v8::Context> context,
+                                       const std::string& full_message,
+                                       v8::Local<v8::Value> exception_value) {
+  v8::Isolate* isolate = context->GetIsolate();
+  v8::HandleScope handle_scope(isolate);
 
   v8::Local<v8::Function> handler = GetCustomHandler(context);
   if (!handler.IsEmpty()) {
     v8::Local<v8::Value> arguments[] = {
-        gin::StringToV8(isolate, full_message), try_catch->Exception(),
+        gin::StringToV8(isolate, full_message), exception_value,
     };
+    // Hopefully, handling an exception doesn't throw an exception - but it's
+    // possible. Handle this gracefully, and log errors normally.
     v8::TryCatch handler_try_catch(isolate);
+    handler_try_catch.SetVerbose(true);
     run_js_.Run(handler, context, arraysize(arguments), arguments);
   } else {
     add_console_error_.Run(context, full_message);
   }
-
-  try_catch->Reset();  // Reset() to avoid handling the error more than once.
 }
 
 void ExceptionHandler::SetHandlerForContext(v8::Local<v8::Context> context,

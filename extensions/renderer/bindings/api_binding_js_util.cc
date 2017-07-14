@@ -4,12 +4,14 @@
 
 #include "extensions/renderer/bindings/api_binding_js_util.h"
 
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "extensions/renderer/bindings/api_event_handler.h"
 #include "extensions/renderer/bindings/api_request_handler.h"
 #include "extensions/renderer/bindings/api_signature.h"
 #include "extensions/renderer/bindings/api_type_reference_map.h"
 #include "extensions/renderer/bindings/declarative_event.h"
+#include "extensions/renderer/bindings/exception_handler.h"
 #include "gin/converter.h"
 #include "gin/dictionary.h"
 #include "gin/handle.h"
@@ -22,10 +24,12 @@ gin::WrapperInfo APIBindingJSUtil::kWrapperInfo = {gin::kEmbedderNativeGin};
 APIBindingJSUtil::APIBindingJSUtil(APITypeReferenceMap* type_refs,
                                    APIRequestHandler* request_handler,
                                    APIEventHandler* event_handler,
+                                   ExceptionHandler* exception_handler,
                                    const binding::RunJSFunction& run_js)
     : type_refs_(type_refs),
       request_handler_(request_handler),
       event_handler_(event_handler),
+      exception_handler_(exception_handler),
       run_js_(run_js) {}
 
 APIBindingJSUtil::~APIBindingJSUtil() {}
@@ -44,7 +48,9 @@ gin::ObjectTemplateBuilder APIBindingJSUtil::GetObjectTemplateBuilder(
       .SetMethod("clearLastError", &APIBindingJSUtil::ClearLastError)
       .SetMethod("hasLastError", &APIBindingJSUtil::HasLastError)
       .SetMethod("runCallbackWithLastError",
-                 &APIBindingJSUtil::RunCallbackWithLastError);
+                 &APIBindingJSUtil::RunCallbackWithLastError)
+      .SetMethod("handleException", &APIBindingJSUtil::HandleException)
+      .SetMethod("setExceptionHandler", &APIBindingJSUtil::SetExceptionHandler);
 }
 
 void APIBindingJSUtil::SendRequest(
@@ -204,6 +210,37 @@ void APIBindingJSUtil::RunCallbackWithLastError(
 
   bool report_if_unchecked = true;
   request_handler_->last_error()->ClearError(context, report_if_unchecked);
+}
+
+void APIBindingJSUtil::HandleException(gin::Arguments* arguments,
+                                       const std::string& message,
+                                       v8::Local<v8::Value> exception) {
+  v8::Isolate* isolate = arguments->isolate();
+  v8::HandleScope handle_scope(isolate);
+  v8::Local<v8::Context> context = arguments->GetHolderCreationContext();
+
+  std::string full_message;
+  if (!exception->IsUndefined() && !exception->IsNull()) {
+    v8::TryCatch try_catch(isolate);
+    std::string exception_string;
+    v8::Local<v8::String> v8_exception_string;
+    if (exception->ToString(context).ToLocal(&v8_exception_string))
+      exception_string = gin::V8ToString(v8_exception_string);
+    else
+      exception_string = "(failed to get error message)";
+    full_message =
+        base::StringPrintf("%s: %s", message.c_str(), exception_string.c_str());
+  } else {
+    full_message = message;
+  }
+
+  exception_handler_->HandleException(context, full_message, exception);
+}
+
+void APIBindingJSUtil::SetExceptionHandler(gin::Arguments* arguments,
+                                           v8::Local<v8::Function> handler) {
+  exception_handler_->SetHandlerForContext(
+      arguments->GetHolderCreationContext(), handler);
 }
 
 }  // namespace extensions
