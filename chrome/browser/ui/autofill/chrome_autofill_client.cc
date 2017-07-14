@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
+#include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/common/url_constants.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
@@ -403,6 +404,14 @@ void ChromeAutofillClient::ShowHttpNotSecureExplanation() {
       GURL(kSecurityIndicatorHelpCenterUrl), content::Referrer(),
       WindowOpenDisposition::NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_LINK,
       false /* is_renderer_initiated */));
+}
+
+bool ChromeAutofillClient::IsAutofillSupported() {
+  // VR browsing does not support popups at the moment.
+  if (vr::VrTabHelper::IsInVr(web_contents()))
+    return false;
+
+  return true;
 }
 
 }  // namespace autofill

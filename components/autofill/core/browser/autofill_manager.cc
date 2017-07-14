@@ -1165,7 +1165,8 @@ void AutofillManager::OnDidEndTextFieldEditing() {
 }
 
 bool AutofillManager::IsAutofillEnabled() const {
-  return ::autofill::IsAutofillEnabled(client_->GetPrefs());
+  return ::autofill::IsAutofillEnabled(client_->GetPrefs()) &&
+         client_->IsAutofillSupported();
 }
 
 bool AutofillManager::IsCreditCardUploadEnabled() {

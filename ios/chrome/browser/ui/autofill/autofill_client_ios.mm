@@ -226,4 +226,8 @@ void AutofillClientIOS::ShowHttpNotSecureExplanation() {
   NOTIMPLEMENTED();
 }
 
+bool AutofillClientIOS::IsAutofillSupported() {
+  return true;
+}
+
 }  // namespace autofill

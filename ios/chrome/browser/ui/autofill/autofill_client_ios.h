@@ -99,6 +99,7 @@ class AutofillClientIOS : public AutofillClient {
   bool ShouldShowSigninPromo() override;
   void StartSigninFlow() override;
   void ShowHttpNotSecureExplanation() override;
+  bool IsAutofillSupported() override;
 
  private:
   ios::ChromeBrowserState* browser_state_;

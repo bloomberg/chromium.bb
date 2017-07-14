@@ -90,6 +90,7 @@ class ChromeAutofillClient
   bool ShouldShowSigninPromo() override;
   void StartSigninFlow() override;
   void ShowHttpNotSecureExplanation() override;
+  bool IsAutofillSupported() override;
 
   // content::WebContentsObserver implementation.
   void MainFrameWasResized(bool width_changed) override;
