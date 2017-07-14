@@ -1354,6 +1354,492 @@ const char kZeroCopyName[] = "Zero-copy rasterizer";
 const char kZeroCopyDescription[] =
     "Raster threads write directly to GPU memory associated with tiles.";
 
+// Android ---------------------------------------------------------------------
+
+#if defined(OS_ANDROID)
+
+const char kAiaFetchingName[] = "Intermediate Certificate Fetching";
+const char kAiaFetchingDescription[] =
+    "Enable intermediate certificate fetching when a server does not provide "
+    "sufficient certificates to build a chain to a trusted root.";
+
+const char kAccessibilityTabSwitcherName[] = "Accessibility Tab Switcher";
+const char kAccessibilityTabSwitcherDescription[] =
+    "Enable the accessibility tab switcher for Android.";
+
+const char kAndroidAutofillAccessibilityName[] = "Autofill Accessibility";
+const char kAndroidAutofillAccessibilityDescription[] =
+    "Enable accessibility for autofill popup.";
+
+const char kAndroidPaymentAppsName[] = "Android payment apps";
+const char kAndroidPaymentAppsDescription[] =
+    "Enable third party Android apps to integrate as payment apps";
+
+const char kAutofillAccessoryViewName[] =
+    "Autofill suggestions as keyboard accessory view";
+const char kAutofillAccessoryViewDescription[] =
+    "Shows Autofill suggestions on top of the keyboard rather than in a "
+    "dropdown.";
+
+const char kBackgroundLoaderForDownloadsName[] =
+    "Enables background downloading of pages.";
+const char kBackgroundLoaderForDownloadsDescription[] =
+    "Enables downloading pages in the background in case page is not yet "
+    "loaded in current tab.";
+
+const char kChromeHomeExpandButtonName[] = "Chrome Home Expand Button";
+const char kChromeHomeExpandButtonDescription[] =
+    "Enables the expand button for Chrome Home.";
+
+const char kChromeHomeSwipeLogicName[] = "Chrome Home Swipe Logic";
+const char kChromeHomeSwipeLogicDescription[] =
+    "Various swipe logic options for Chrome Home for sheet expansion.";
+const char kChromeHomeSwipeLogicRestrictArea[] = "Restrict swipable area";
+const char kChromeHomeSwipeLogicButtonOnly[] = "Swipe on expand button";
+
+const char kChromeHomeName[] = "Chrome Home";
+const char kChromeHomeDescription[] =
+    "Enables Chrome Home on Android. You must restart the browser"
+    " twice for changes to take effect.";
+
+const char kContentSuggestionsCategoryOrderName[] =
+    "Default content suggestions category order (e.g. on NTP)";
+const char kContentSuggestionsCategoryOrderDescription[] =
+    "Set default order of content suggestion categories (e.g. on the NTP).";
+
+const char kContentSuggestionsCategoryRankerName[] =
+    "Content suggestions category ranker (e.g. on NTP)";
+const char kContentSuggestionsCategoryRankerDescription[] =
+    "Set category ranker to order categories of content suggestions (e.g. on "
+    "the NTP).";
+
+const char kContextualSearchContextualCardsBarIntegration[] =
+    "Contextual Search - Contextual Cards Integration";
+const char kContextualSearchContextualCardsBarIntegrationDescription[] =
+    "Whether or not integration of Contextual Cards data in the Contextual "
+    "Search Bar is enabled.";
+
+const char kContextualSearchSingleActionsName[] =
+    "Contextual Search - Single Actions";
+const char kContextualSearchSingleActionsDescription[] =
+    "Whether or not single actions using Contextual Cards data in the "
+    "Contextual Search Bar is enabled.";
+
+const char kContextualSearchUrlActionsName[] =
+    "Contextual Search - URL Actions";
+const char kContextualSearchUrlActionsDescription[] =
+    "Whether or not URL actions using Contextual Cards data in the Contextual "
+    "Search Bar is enabled.";
+
+const char kContextualSearchName[] = "Contextual Search";
+const char kContextualSearchDescription[] =
+    "Whether or not Contextual Search is enabled.";
+
+const char kEnableAndroidPayIntegrationV1Name[] = "Enable Android Pay v1";
+const char kEnableAndroidPayIntegrationV1Description[] =
+    "Enable integration with Android Pay using the first version of the API";
+
+const char kEnableAndroidPayIntegrationV2Name[] = "Enable Android Pay v2";
+const char kEnableAndroidPayIntegrationV2Description[] =
+    "Enable integration with Android Pay using the second version of the API";
+
+const char kEnableAndroidSpellcheckerDescription[] =
+    "Enables use of the Android spellchecker.";
+const char kEnableAndroidSpellcheckerName[] = "Enable spell checking";
+
+const char kEnableConsistentOmniboxGeolocationName[] =
+    "Have consistent omnibox geolocation access.";
+const char kEnableConsistentOmniboxGeolocationDescription[] =
+    "Have consistent geolocation access between the omnibox and default search "
+    "engine.";
+
+const char kEnableContentSuggestionsNewFaviconServerName[] =
+    "Get favicons for content suggestions from a new server.";
+const char kEnableContentSuggestionsNewFaviconServerDescription[] =
+    "If enabled, the content suggestions (on the NTP) will get favicons from a "
+    "new favicon server.";
+
+const char kEnableContentSuggestionsLargeThumbnailName[] =
+    "Large thumbnails layout for content suggestions cards.";
+const char kEnableContentSuggestionsLargeThumbnailDescription[] =
+    "If enabled, the content suggestions cards will use large thumbnails and "
+    "some related adjustments.";
+
+const char kEnableContentSuggestionsVideoOverlayName[] =
+    "Video icon overlay on thumbnails for content suggestions cards.";
+const char kEnableContentSuggestionsVideoOverlayDescription[] =
+    "If enabled, the content suggestions cards for suggestions with a video "
+    "will show a video play icon overlay on the thumbnail.";
+
+const char kEnableContentSuggestionsSettingsName[] =
+    "Show content suggestions settings.";
+const char kEnableContentSuggestionsSettingsDescription[] =
+    "If enabled, the content suggestions settings will be available from the "
+    "main settings menu.";
+
+const char kEnableContentSuggestionsShowSummaryName[] =
+    "Show content suggestions summaries.";
+const char kEnableContentSuggestionsShowSummaryDescription[] =
+    "If enabled, the content suggestions summaries will be shown.";
+
+const char kEnableCopylessPasteName[] = "App Indexing (Copyless Paste)";
+const char kEnableCopylessPasteDescription[] =
+    "Provide suggestions for text input, based on your recent context. For "
+    "example, if you looked at a restaurant website and switched to the Maps "
+    "app, the keyboard would offer the name of that restaurant as a suggestion "
+    "to enter into the search bar. The data is indexed locally, and never sent "
+    "to the server. It's disabled in incognito mode.";
+
+const char kEnableCustomContextMenuName[] = "Enable custom context menu";
+const char kEnableCustomContextMenuDescription[] =
+    "Enables a new context menu when a link, image, or video is pressed within "
+    "Chrome.";
+
+const char kEnableCustomFeedbackUiName[] = "Enable Custom Feedback UI";
+const char kEnableCustomFeedbackUiDescription[] =
+    "Enables a custom feedback UI when submitting feedback through Google "
+    "Feedback. Works with Google Play Services v10.2+";
+
+const char kEnableDataReductionProxyMainMenuName[] =
+    "Enable Data Saver main menu footer";
+const char kEnableDataReductionProxyMainMenuDescription[] =
+    "Enables the Data Saver footer in the main menu";
+
+const char kEnableDataReductionProxySiteBreakdownName[] =
+    "Data Saver Site Breakdown";
+const char kEnableDataReductionProxySiteBreakdownDescription[] =
+    "Enable the site breakdown on the Data Saver settings page.";
+
+const char kEnableOmniboxClipboardProviderName[] =
+    "Omnibox clipboard URL suggestions";
+const char kEnableOmniboxClipboardProviderDescription[] =
+    "Provide a suggestion of the URL stored in the clipboard (if any) upon "
+    "focus in the omnibox.";
+
+const char kEnableExpandedAutofillCreditCardPopupLayoutName[] =
+    "Use expanded autofill credit card popup layout.";
+const char kEnableExpandedAutofillCreditCardPopupLayoutDescription[] =
+    "If enabled, displays autofill credit card popup using expanded layout.";
+
+const char kEnableFaviconsFromWebManifestName[] =
+    "Load favicons from Web Manifests";
+const char kEnableFaviconsFromWebManifestDescription[] =
+    "Fetch Web Manifests on page load to read favicons from them.";
+
+const char kEnableNtpAssetDownloadSuggestionsName[] =
+    "Show asset downloads on the New Tab page";
+const char kEnableNtpAssetDownloadSuggestionsDescription[] =
+    "If enabled, the list of content suggestions on the New Tab page will "
+    "contain assets (e.g. books, pictures, audio) that the user downloaded for "
+    "later use.";
+
+const char kEnableNtpBookmarkSuggestionsName[] =
+    "Show recently visited bookmarks on the New Tab page";
+const char kEnableNtpBookmarkSuggestionsDescription[] =
+    "If enabled, the list of content suggestions on the New Tab page will "
+    "contain recently visited bookmarks.";
+
+const char kEnableNtpForeignSessionsSuggestionsName[] =
+    "Show recent foreign tabs on the New Tab page";
+const char kEnableNtpForeignSessionsSuggestionsDescription[] =
+    "If enabled, the list of content suggestions on the New Tab page will "
+    "contain recent foreign tabs.";
+
+const char kEnableNtpMostLikelyFaviconsFromServerName[] =
+    "Download favicons for NTP tiles from Google.";
+const char kEnableNtpMostLikelyFaviconsFromServerDescription[] =
+    "If enabled, missing favicons for NTP tiles get downloaded from Google. "
+    "This only applies to tiles that originate from synced history.";
+
+const char kEnableNtpOfflinePageDownloadSuggestionsName[] =
+    "Show offline page downloads on the New Tab page";
+const char kEnableNtpOfflinePageDownloadSuggestionsDescription[] =
+    "If enabled, the list of content suggestions on the New Tab page will "
+    "contain pages that the user downloaded for later use.";
+
+const char kEnableNtpRemoteSuggestionsName[] =
+    "Show server-side suggestions on the New Tab page";
+const char kEnableNtpRemoteSuggestionsDescription[] =
+    "If enabled, the list of content suggestions on the New Tab page will "
+    "contain server-side suggestions (e.g., Articles for you). Furthermore, it "
+    "allows to override the source used to retrieve these server-side "
+    "suggestions.";
+
+const char kEnableNtpSnippetsVisibilityName[] =
+    "Make New Tab Page Snippets more visible.";
+const char kEnableNtpSnippetsVisibilityDescription[] =
+    "If enabled, the NTP snippets will become more discoverable with a larger "
+    "portion of the first card above the fold.";
+
+const char kEnableNtpSuggestionsNotificationsName[] =
+    "Notify about new content suggestions available at the New Tab page";
+const char kEnableNtpSuggestionsNotificationsDescription[] =
+    "If enabled, notifications will inform about new content suggestions on "
+    "the New Tab page.";
+
+const char kEnablePhysicalWebName[] = "Enable the Physical Web.";
+const char kEnablePhysicalWebDescription[] =
+    "Enable scanning for URLs from Physical Web objects.";
+
+const char kEnableOfflinePreviewsName[] = "Offline Page Previews";
+const char kEnableOfflinePreviewsDescription[] =
+    "Enable showing offline page previews on slow networks.";
+
+const char kEnableOskOverscrollName[] = "Enable OSK Overscroll";
+const char kEnableOskOverscrollDescription[] =
+    "Enable OSK overscroll support. With this flag on, the OSK will only "
+    "resize the visual viewport.";
+
+const char kEnableSpecialLocaleName[] =
+    "Enable custom logic for special locales.";
+const char kEnableSpecialLocaleDescription[] =
+    "Enable custom logic for special locales. In this mode, Chrome might "
+    "behave differently in some locales.";
+
+const char kEnableWebapk[] = "Enable improved add to Home screen";
+const char kEnableWebapkDescription[] =
+    R"*(Packages "Progressive Web Apps" so that they can integrate more )*"
+    R"*(deeply with Android. A Chrome server is used to package sites. In )*"
+    R"*(Chrome Canary and Chrome Dev, this requires “Untrusted )*"
+    R"*(sources” to be enabled in Android security settings.)*";
+
+const char kEnableWebNfcName[] = "WebNFC";
+const char kEnableWebNfcDescription[] = "Enable WebNFC support.";
+
+const char kEnableWebPaymentsSingleAppUiSkipName[] =
+    "Enable Web Payments single app UI skip";
+const char kEnableWebPaymentsSingleAppUiSkipDescription[] =
+    "Enable Web Payments to skip showing its UI if the developer specifies a "
+    "single app.";
+
+const char kHerbPrototypeChoicesName[] = "Switch preferred flavor of Herb";
+const char kHerbPrototypeChoicesDescription[] =
+    "Switching this option changes which tab management prototype is being "
+    "tested.";
+const char kHerbPrototypeFlavorElderberry[] =
+    "ELDERBERRY: All View Intents in CCT v2";
+
+const char kKeepPrefetchedContentSuggestionsName[] =
+    "Keep prefetched content suggestions";
+const char kKeepPrefetchedContentSuggestionsDescription[] =
+    "If enabled, some of prefetched content suggestions are not replaced by "
+    "the new fetched suggestions.";
+
+const char kLsdPermissionPromptName[] =
+    "Location Settings Dialog Permission Prompt";
+const char kLsdPermissionPromptDescription[] =
+    "Whether to use the Google Play Services Location Settings Dialog "
+    "permission dialog.";
+
+const char kMediaDocumentDownloadButtonName[] =
+    "Download button when opening a page with media url.";
+const char kMediaDocumentDownloadButtonDescription[] =
+    "Allow a download button to show up when opening a page with media url.";
+
+const char kMediaScreenCaptureName[] = "Experimental ScreenCapture.";
+const char kMediaScreenCaptureDescription[] =
+    "Enable this option for experimental ScreenCapture feature on Android.";
+
+const char kModalPermissionPromptsName[] = "Modal Permission Prompts";
+const char kModalPermissionPromptsDescription[] =
+    "Whether to use permission dialogs in place of permission infobars.";
+
+const char kNewBackgroundLoaderName[] =
+    "Use background loader instead of prerenderer to load pages.";
+const char kNewBackgroundLoaderDescription[] =
+    "Use background loader instead of prerenderer to asynchronously download "
+    "pages.";
+
+const char kNewPhotoPickerName[] = "Enable new Photopicker";
+const char kNewPhotoPickerDescription[] =
+    "Activates the new picker for selecting photos.";
+
+const char kNoCreditCardAbort[] = "No Credit Card Abort";
+const char kNoCreditCardAbortDescription[] =
+    "Whether or not the No Credit Card Abort is enabled.";
+
+const char kNtpCondensedLayoutName[] = "Condensed NTP layout";
+const char kNtpCondensedLayoutDescription[] =
+    "Show a condensed layout on the New Tab Page.";
+
+const char kNtpCondensedTileLayoutName[] = "Condensed NTP tile layout";
+const char kNtpCondensedTileLayoutDescription[] =
+    "Show a condensed tile layout on the New Tab Page.";
+
+const char kNtpGoogleGInOmniboxName[] = "Google G in New Tab Page omnibox";
+const char kNtpGoogleGInOmniboxDescription[] =
+    "Show a Google G in the omnibox on the New Tab Page.";
+
+const char kNtpOfflinePagesName[] = "Enable NTP offline pages";
+const char kNtpOfflinePagesDescription[] =
+    "Enables badging of offline pages on the New Tab page. Only relevant if "
+    "offline pages are enabled.";
+
+const char kNtpPopularSitesName[] = "Show popular sites on the New Tab page";
+const char kNtpPopularSitesDescription[] =
+    "Pre-populate the New Tab page with popular sites.";
+
+const char kNtpSwitchToExistingTabName[] =
+    "Switch to an existing tab for New Tab Page suggestions.";
+const char kNtpSwitchToExistingTabDescription[] =
+    "When opening a suggested webpage from the New Tab Page, if a tab is "
+    "already open for the suggestion, switch to that one instead of loading "
+    "the suggestion in the new tab.";
+const char kNtpSwitchToExistingTabMatchUrl[] = "Match by URL";
+const char kNtpSwitchToExistingTabMatchHost[] = "Match by Hostname";
+
+const char kOfflineBookmarksName[] = "Enable offline bookmarks";
+const char kOfflineBookmarksDescription[] =
+    "Enable saving bookmarked pages for offline viewing.";
+
+const char kOfflinePagesAsyncDownloadName[] =
+    R"*(Enables showing "DOWNLOAD WHEN ONLINE" button in error pages.)*";
+const char kOfflinePagesAsyncDownloadDescription[] =
+    R"*(Enables showing "DOWNLOAD WHEN ONLINE" button in error pages such )*"
+    R"*(that the user can click on it to download the page later.)*";
+
+const char kOfflinePagesCtName[] = "Enable Offline Pages CT features.";
+const char kOfflinePagesCtDescription[] = "Enable Offline Pages CT features.";
+
+const char kOfflinePagesCtV2Name[] = "Enable Offline Pages CT V2 features.";
+const char kOfflinePagesCtV2Description[] =
+    "V2 features include attributing pages to the app that initiated the "
+    "custom tabs, and being able to query for pages by page attribution.";
+
+const char kOfflinePagesLoadSignalCollectingName[] =
+    "Enables collecting load timing data for offline page snapshots.";
+const char kOfflinePagesLoadSignalCollectingDescription[] =
+    "Enables loading completeness data collection while writing an offline "
+    "page.  This data is collected in the snapshotted offline page to allow "
+    "data analysis to improve deciding when to make the offline snapshot.";
+
+const char kOfflinePagesPrefetchingName[] =
+    "Enables suggested offline pages to be prefetched.";
+const char kOfflinePagesPrefetchingDescription[] =
+    "Enables suggested offline pages to be prefetched, so useful content is "
+    "available while offline.";
+
+const char kOfflinePagesSharingName[] = "Enables offline pages to be shared.";
+const char kOfflinePagesSharingDescription[] =
+    "Enables the saved offline pages to be shared via other applications.";
+
+const char kOfflinePagesSvelteConcurrentLoadingName[] =
+    "Enables concurrent background loading on svelte.";
+const char kOfflinePagesSvelteConcurrentLoadingDescription[] =
+    "Enables concurrent background loading (or downloading) of pages on "
+    "Android svelte (512MB RAM) devices. Otherwise, background loading will "
+    "happen when the svelte device is idle.";
+
+const char kOffliningRecentPagesName[] =
+    "Enable offlining of recently visited pages";
+const char kOffliningRecentPagesDescription[] =
+    "Enable storing recently visited pages locally for offline use. Requires "
+    "Offline Pages to be enabled.";
+
+extern const char kPayWithGoogleV1Name[] = "Pay with Google v1";
+extern const char kPayWithGoogleV1Description[] =
+    "Enable Pay with Google integration into Web Payments with API version "
+    "'1'.";
+
+const char kProgressBarAnimationName[] =
+    "Android phone page loading progress bar animation";
+const char kProgressBarAnimationDescription[] =
+    "Configures Android phone page loading progress bar animation.";
+const char kProgressBarAnimationLinear[] = "Linear";
+const char kProgressBarAnimationSmooth[] = "Smooth";
+const char kProgressBarAnimationSmoothIndeterminate[] = "Smooth indeterminate";
+const char kProgressBarAnimationFastStart[] = "Fast start";
+
+const char kProgressBarCompletionName[] =
+    "Android phone page load progress bar completion time.";
+const char kProgressBarCompletionDescription[] =
+    "Configures Android phone page loading progress bar completion time.";
+const char kProgressBarCompletionLoadEvent[] =
+    R"*(Top loading frame's onload event ("everything" is done in the )*"
+    R"*(page, historical behavior).)*";
+const char kProgressBarCompletionResourcesBeforeDcl[] =
+    "Main frame's domContentLoaded and all resources loads started before "
+    "domContentLoaded (iframes ignored).";
+const char kProgressBarCompletionDomContentLoaded[] =
+    "Main frame's domContentLoaded (iframes ignored).";
+const char kProgressBarCompletionResourcesBeforeDclAndSameOriginIframes[] =
+    "domContentLoaded and all resources loads started before domContentLoaded "
+    "(main frame and same origin iframes).";
+
+const char kPullToRefreshEffectName[] = "The pull-to-refresh effect";
+const char kPullToRefreshEffectDescription[] =
+    "Page reloads triggered by vertically overscrolling content.";
+
+const char kReaderModeHeuristicsName[] = "Reader Mode triggering";
+const char kReaderModeHeuristicsDescription[] =
+    "Determines what pages the Reader Mode infobar is shown on.";
+const char kReaderModeHeuristicsMarkup[] = "With article structured markup";
+const char kReaderModeHeuristicsAdaboost[] = "Non-mobile-friendly articles";
+const char kReaderModeHeuristicsAllArticles[] = "All articles";
+const char kReaderModeHeuristicsAlwaysOff[] = "Never";
+const char kReaderModeHeuristicsAlwaysOn[] = "Always";
+
+const char kServiceWorkerPaymentAppsName[] = "Service Worker payment apps";
+const char kServiceWorkerPaymentAppsDescription[] =
+    "Enable Service Worker applications to integrate as payment apps";
+
+const char kSetMarketUrlForTestingName[] = "Set market URL for testing";
+const char kSetMarketUrlForTestingDescription[] =
+    "When enabled, sets the market URL for use in testing the update menu "
+    "item.";
+
+const char kSpannableInlineAutocompleteName[] = "Spannable inline autocomplete";
+const char kSpannableInlineAutocompleteDescription[] =
+    "A new type of inline autocomplete for the omnibox that works with "
+    "keyboards that compose text.";
+
+const char kTabsInCbdName[] = "Enable tabs for the Clear Browsing Data dialog.";
+const char kTabsInCbdDescription[] =
+    "Enables a basic and an advanced tab for the Clear Browsing Data dialog.";
+
+const char kTranslateCompactUIName[] = "New Translate Infobar";
+const char kTranslateCompactUIDescription[] =
+    "Enable the new Translate compact infobar UI.";
+
+const char kUpdateMenuBadgeName[] = "Force show update menu badge";
+const char kUpdateMenuBadgeDescription[] =
+    "When enabled, an update badge will be shown on the app menu button.";
+
+const char kUpdateMenuItemCustomSummaryDescription[] =
+    "When this flag and the force show update menu item flag are enabled, a "
+    "custom summary string will be displayed below the update menu item.";
+const char kUpdateMenuItemCustomSummaryName[] =
+    "Update menu item custom summary";
+
+const char kUpdateMenuItemName[] = "Force show update menu item";
+const char kUpdateMenuItemDescription[] =
+    R"*(When enabled, an "Update Chrome" item will be shown in the app )*"
+    R"*(menu.)*";
+
+const char kUseAndroidMidiApiName[] = "Use Android Midi API";
+const char kUseAndroidMidiApiDescription[] =
+    "Use Android Midi API for WebMIDI (effective only with Android M+ "
+    "devices).";
+
+const char kUseDdljsonApiName[] = "Use new ddljson API for Doodles";
+const char kUseDdljsonApiDescription[] =
+    "Enables the new ddljson API to fetch Doodles for the NTP.";
+
+const char kWebPaymentsModifiersName[] = "Enable web payment modifiers";
+const char kWebPaymentsModifiersDescription[] =
+    "If the website provides modifiers in the payment request, show the custom "
+    "total for each payment instrument, update the shopping cart when "
+    "instruments are switched, and send modified payment method specific data "
+    "to the payment app.";
+
+const char kXGEOVisibleNetworksName[] = "Enable XGEO Visible Networks";
+const char kXGEOVisibleNetworksDescription[] =
+    "If location permissions are granted, include visible networks in the XGEO "
+    "Header for omnibox queries. This will only happen if location is not "
+    "fresh or not available (for example, due to a cold start).";
+
+#endif  // OS_ANDROID
+
 #if !defined(DISABLE_NACL)
 
 const char kNaclName[] = "Native Client";
@@ -1395,70 +1881,12 @@ const char kCloudPrintXpsDescription[] =
 
 #endif  // defined(OS_WIN)
 
-#if defined(OS_ANDROID)
-
-const char kAccessibilityTabSwitcherName[] = "Accessibility Tab Switcher";
-
-const char kAccessibilityTabSwitcherDescription[] =
-    "Enable the accessibility tab switcher for Android.";
-
-const char kAndroidAutofillAccessibilityName[] = "Autofill Accessibility";
-
-const char kAndroidAutofillAccessibilityDescription[] =
-    "Enable accessibility for autofill popup.";
-
-const char kEnablePhysicalWebName[] = "Enable the Physical Web.";
-
-const char kEnablePhysicalWebDescription[] =
-    "Enable scanning for URLs from Physical Web objects.";
-
-#endif  // defined(OS_ANDROID)
-
 const char kDelayReloadStopButtonChangeName[] =
     "Reduce stop/reload button flicker";
 
 const char kDelayReloadStopButtonChangeDescription[] =
     "Delays display of stop button when page is loading such that short "
     "loads won't show the stop button at all.";
-
-#if defined(OS_ANDROID)
-
-const char kContextualSearchName[] = "Contextual Search";
-
-const char kContextualSearchDescription[] =
-    "Whether or not Contextual Search is enabled.";
-
-const char kContextualSearchContextualCardsBarIntegration[] =
-    "Contextual Search - Contextual Cards Integration";
-
-const char kContextualSearchContextualCardsBarIntegrationDescription[] =
-    "Whether or not integration of Contextual Cards data in the Contextual "
-    "Search Bar is enabled.";
-
-const char kContextualSearchSingleActionsName[] =
-    "Contextual Search - Single Actions";
-
-const char kContextualSearchSingleActionsDescription[] =
-    "Whether or not single actions using Contextual Cards data in the "
-    "Contextual Search Bar is enabled.";
-
-const char kContextualSearchUrlActionsName[] =
-    "Contextual Search - URL Actions";
-
-const char kContextualSearchUrlActionsDescription[] =
-    "Whether or not URL actions using Contextual Cards data in the Contextual "
-    "Search Bar is enabled.";
-
-#endif  // defined(OS_ANDROID)
-
-#if defined(OS_ANDROID)
-
-const char kMediaScreenCaptureName[] = "Experimental ScreenCapture.";
-
-const char kMediaScreenCaptureDescription[] =
-    "Enable this option for experimental ScreenCapture feature on Android.";
-
-#endif  // defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_WEBRTC)
 
@@ -1471,25 +1899,6 @@ const char kWebrtcH264WithOpenh264FfmpegDescription[] =
     "this encoder/decoder.";
 
 #endif  // BUILDFLAG(ENABLE_WEBRTC)
-
-#if defined(OS_ANDROID)
-
-const char kNewPhotoPickerName[] = "Enable new Photopicker";
-
-const char kNewPhotoPickerDescription[] =
-    "Activates the new picker for selecting photos.";
-
-#endif  // defined(OS_ANDROID)
-
-#if defined(OS_ANDROID)
-
-const char kEnableOskOverscrollName[] = "Enable OSK Overscroll";
-
-const char kEnableOskOverscrollDescription[] =
-    "Enable OSK overscroll support. With this flag on, the OSK will only "
-    "resize the visual viewport.";
-
-#endif  // defined(OS_ANDROID)
 
 #if defined(USE_ASH)
 
@@ -1560,16 +1969,6 @@ const char kUiShowCompositedLayerBordersAll[] = "All";
 
 #endif  // defined(USE_ASH)
 
-#if defined(OS_ANDROID)
-
-const char kMediaDocumentDownloadButtonName[] =
-    "Download button when opening a page with media url.";
-
-const char kMediaDocumentDownloadButtonDescription[] =
-    "Allow a download button to show up when opening a page with media url.";
-
-#endif  // defined(OS_ANDROID)
-
 const char kForceGpuRasterization[] = "Force-enabled for all layers";
 
 #if defined(OS_CHROMEOS)
@@ -1607,27 +2006,6 @@ const char kTetherDescription[] =
     "phone to share its Internet connection with this device.";
 
 #endif  // defined(OS_CHROMEOS)
-
-#if defined(OS_ANDROID)
-
-const char kEnableDataReductionProxyMainMenuName[] =
-    "Enable Data Saver main menu footer";
-
-const char kEnableDataReductionProxyMainMenuDescription[] =
-    "Enables the Data Saver footer in the main menu";
-
-const char kEnableDataReductionProxySiteBreakdownName[] =
-    "Data Saver Site Breakdown";
-
-const char kEnableDataReductionProxySiteBreakdownDescription[] =
-    "Enable the site breakdown on the Data Saver settings page.";
-
-const char kEnableOfflinePreviewsName[] = "Offline Page Previews";
-
-const char kEnableOfflinePreviewsDescription[] =
-    "Enable showing offline page previews on slow networks.";
-
-#endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
 
@@ -1667,20 +2045,6 @@ const char kTabStripKeyboardFocusDescription[] =
     "Enable keyboard focus for the tabs in the tab strip.";
 
 #endif  // defined(OS_MACOSX)
-
-#if defined(OS_ANDROID)
-
-const char kPullToRefreshEffectName[] = "The pull-to-refresh effect";
-
-const char kPullToRefreshEffectDescription[] =
-    "Page reloads triggered by vertically overscrolling content.";
-
-const char kTranslateCompactUIName[] = "New Translate Infobar";
-
-const char kTranslateCompactUIDescription[] =
-    "Enable the new Translate compact infobar UI.";
-
-#endif  // defined(OS_ANDROID)
 
 #if defined(OS_MACOSX)
 
@@ -1738,51 +2102,6 @@ const char kAcceleratedMjpegDecodeDescription[] =
 
 #endif  // defined(OS_CHROMEOS)
 
-#if defined(OS_ANDROID)
-
-extern const char kPayWithGoogleV1Name[] = "Pay with Google v1";
-
-extern const char kPayWithGoogleV1Description[] =
-    "Enable Pay with Google integration into Web Payments with API version "
-    "'1'.";
-
-const char kProgressBarAnimationName[] =
-    "Android phone page loading progress bar animation";
-
-const char kProgressBarAnimationDescription[] =
-    "Configures Android phone page loading progress bar animation.";
-
-const char kProgressBarAnimationLinear[] = "Linear";
-
-const char kProgressBarAnimationSmooth[] = "Smooth";
-
-const char kProgressBarAnimationSmoothIndeterminate[] = "Smooth indeterminate";
-
-const char kProgressBarAnimationFastStart[] = "Fast start";
-
-const char kProgressBarCompletionName[] =
-    "Android phone page load progress bar completion time.";
-
-const char kProgressBarCompletionDescription[] =
-    "Configures Android phone page loading progress bar completion time.";
-
-const char kProgressBarCompletionLoadEvent[] =
-    R"*(Top loading frame's onload event ("everything" is done in the )*"
-    R"*(page, historical behavior).)*";
-
-const char kProgressBarCompletionResourcesBeforeDcl[] =
-    "Main frame's domContentLoaded and all resources loads started before "
-    "domContentLoaded (iframes ignored).";
-
-const char kProgressBarCompletionDomContentLoaded[] =
-    "Main frame's domContentLoaded (iframes ignored).";
-
-const char kProgressBarCompletionResourcesBeforeDclAndSameOriginIframes[] =
-    "domContentLoaded and all resources loads started before domContentLoaded "
-    "(main frame and same origin iframes).";
-
-#endif  // defined(OS_ANDROID)
-
 #if defined(OS_WIN)
 
 const char kEnableAppcontainerName[] = "Enable AppContainer Lockdown.";
@@ -1822,24 +2141,6 @@ const char kEnableInputImeApiDescription[] =
     "Enable the use of chrome.input.ime API.";
 
 #endif  // defined(OS_WIN) || defined(OS_LINUX)
-
-#if defined(OS_ANDROID)
-
-const char kTabsInCbdName[] = "Enable tabs for the Clear Browsing Data dialog.";
-
-const char kTabsInCbdDescription[] =
-    "Enables a basic and an advanced tab for the Clear Browsing Data dialog.";
-
-#endif  // defined(OS_ANDROID)
-
-#if defined(OS_ANDROID)
-
-const char kEnableAndroidSpellcheckerDescription[] =
-    "Enables use of the Android spellchecker.";
-
-const char kEnableAndroidSpellcheckerName[] = "Enable spell checking";
-
-#endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
 
@@ -1930,64 +2231,6 @@ const char kArcUseAuthEndpointDescription[] =
 
 #endif  // defined(OS_CHROMEOS)
 
-#if defined(OS_ANDROID)
-
-const char kAutofillAccessoryViewName[] =
-    "Autofill suggestions as keyboard accessory view";
-
-const char kAutofillAccessoryViewDescription[] =
-    "Shows Autofill suggestions on top of the keyboard rather than in a "
-    "dropdown.";
-
-#endif  // defined(OS_ANDROID)
-
-//  Reader mode experiment flags
-
-#if defined(OS_ANDROID)
-
-const char kReaderModeHeuristicsName[] = "Reader Mode triggering";
-
-const char kReaderModeHeuristicsDescription[] =
-    "Determines what pages the Reader Mode infobar is shown on.";
-
-const char kReaderModeHeuristicsMarkup[] = "With article structured markup";
-
-const char kReaderModeHeuristicsAdaboost[] = "Non-mobile-friendly articles";
-
-const char kReaderModeHeuristicsAllArticles[] = "All articles";
-
-const char kReaderModeHeuristicsAlwaysOff[] = "Never";
-
-const char kReaderModeHeuristicsAlwaysOn[] = "Always";
-
-#endif  // defined(OS_ANDROID)
-
-//  Chrome home flags
-
-#if defined(OS_ANDROID)
-
-const char kChromeHomeName[] = "Chrome Home";
-
-const char kChromeHomeDescription[] =
-    "Enables Chrome Home on Android. You must restart the browser"
-    " twice for changes to take effect.";
-
-const char kChromeHomeExpandButtonName[] = "Chrome Home Expand Button";
-
-const char kChromeHomeExpandButtonDescription[] =
-    "Enables the expand button for Chrome Home.";
-
-const char kChromeHomeSwipeLogicName[] = "Chrome Home Swipe Logic";
-
-const char kChromeHomeSwipeLogicDescription[] =
-    "Various swipe logic options for Chrome Home for sheet expansion.";
-
-const char kChromeHomeSwipeLogicRestrictArea[] = "Restrict swipable area";
-
-const char kChromeHomeSwipeLogicButtonOnly[] = "Swipe on expand button";
-
-#endif  // defined(OS_ANDROID)
-
 #if defined(OS_WIN) || defined(OS_MACOSX)
 
 //  Tab discarding
@@ -2001,108 +2244,6 @@ const char kAutomaticTabDiscardingDescription[] =
     "chrome://discards.";
 
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
-
-#if defined(OS_ANDROID)
-
-const char kOfflineBookmarksName[] = "Enable offline bookmarks";
-
-const char kOfflineBookmarksDescription[] =
-    "Enable saving bookmarked pages for offline viewing.";
-
-const char kNtpOfflinePagesName[] = "Enable NTP offline pages";
-
-const char kNtpOfflinePagesDescription[] =
-    "Enables badging of offline pages on the New Tab page. Only relevant if "
-    "offline pages are enabled.";
-
-const char kOfflinePagesAsyncDownloadName[] =
-    R"*(Enables showing "DOWNLOAD WHEN ONLINE" button in error pages.)*";
-
-const char kOfflinePagesAsyncDownloadDescription[] =
-    R"*(Enables showing "DOWNLOAD WHEN ONLINE" button in error pages such )*"
-    R"*(that the user can click on it to download the page later.)*";
-
-const char kOfflinePagesSvelteConcurrentLoadingName[] =
-    "Enables concurrent background loading on svelte.";
-
-const char kOfflinePagesSvelteConcurrentLoadingDescription[] =
-    "Enables concurrent background loading (or downloading) of pages on "
-    "Android svelte (512MB RAM) devices. Otherwise, background loading will "
-    "happen when the svelte device is idle.";
-
-const char kOfflinePagesLoadSignalCollectingName[] =
-    "Enables collecting load timing data for offline page snapshots.";
-
-const char kOfflinePagesLoadSignalCollectingDescription[] =
-    "Enables loading completeness data collection while writing an offline "
-    "page.  This data is collected in the snapshotted offline page to allow "
-    "data analysis to improve deciding when to make the offline snapshot.";
-
-const char kOfflinePagesPrefetchingName[] =
-    "Enables suggested offline pages to be prefetched.";
-
-const char kOfflinePagesPrefetchingDescription[] =
-    "Enables suggested offline pages to be prefetched, so useful content is "
-    "available while offline.";
-
-const char kOfflinePagesSharingName[] = "Enables offline pages to be shared.";
-
-const char kOfflinePagesSharingDescription[] =
-    "Enables the saved offline pages to be shared via other applications.";
-
-const char kBackgroundLoaderForDownloadsName[] =
-    "Enables background downloading of pages.";
-
-const char kBackgroundLoaderForDownloadsDescription[] =
-    "Enables downloading pages in the background in case page is not yet "
-    "loaded in current tab.";
-
-const char kNewBackgroundLoaderName[] =
-    "Use background loader instead of prerenderer to load pages.";
-
-const char kNewBackgroundLoaderDescription[] =
-    "Use background loader instead of prerenderer to asynchronously download "
-    "pages.";
-
-const char kNtpPopularSitesName[] = "Show popular sites on the New Tab page";
-
-const char kNtpPopularSitesDescription[] =
-    "Pre-populate the New Tab page with popular sites.";
-
-const char kNtpSwitchToExistingTabName[] =
-    "Switch to an existing tab for New Tab Page suggestions.";
-
-const char kNtpSwitchToExistingTabDescription[] =
-    "When opening a suggested webpage from the New Tab Page, if a tab is "
-    "already open for the suggestion, switch to that one instead of loading "
-    "the suggestion in the new tab.";
-
-const char kNtpSwitchToExistingTabMatchUrl[] = "Match by URL";
-
-const char kNtpSwitchToExistingTabMatchHost[] = "Match by Hostname";
-
-const char kUseAndroidMidiApiName[] = "Use Android Midi API";
-
-const char kUseAndroidMidiApiDescription[] =
-    "Use Android Midi API for WebMIDI (effective only with Android M+ "
-    "devices).";
-
-const char kWebPaymentsModifiersName[] = "Enable web payment modifiers";
-
-const char kWebPaymentsModifiersDescription[] =
-    "If the website provides modifiers in the payment request, show the custom "
-    "total for each payment instrument, update the shopping cart when "
-    "instruments are switched, and send modified payment method specific data "
-    "to the payment app.";
-
-const char kXGEOVisibleNetworksName[] = "Enable XGEO Visible Networks";
-
-const char kXGEOVisibleNetworksDescription[] =
-    "If location permissions are granted, include visible networks in the XGEO "
-    "Header for omnibox queries. This will only happen if location is not "
-    "fresh or not available (for example, due to a cold start).";
-
-#endif  // defined(OS_ANDROID)
 
 #if defined(OS_WIN)
 
@@ -2130,68 +2271,6 @@ const char kUseWinrtMidiApiDescription[] =
     "later).";
 
 #endif  // defined(OS_WIN)
-
-#if defined(OS_ANDROID)
-
-//  Data Use
-
-//  Update Menu Item Flags
-
-const char kUpdateMenuItemName[] = "Force show update menu item";
-
-const char kUpdateMenuItemDescription[] =
-    R"*(When enabled, an "Update Chrome" item will be shown in the app )*"
-    R"*(menu.)*";
-
-const char kUpdateMenuItemCustomSummaryDescription[] =
-    "When this flag and the force show update menu item flag are enabled, a "
-    "custom summary string will be displayed below the update menu item.";
-
-const char kUpdateMenuItemCustomSummaryName[] =
-    "Update menu item custom summary";
-
-const char kUpdateMenuBadgeName[] = "Force show update menu badge";
-
-const char kUpdateMenuBadgeDescription[] =
-    "When enabled, an update badge will be shown on the app menu button.";
-
-const char kSetMarketUrlForTestingName[] = "Set market URL for testing";
-
-const char kSetMarketUrlForTestingDescription[] =
-    "When enabled, sets the market URL for use in testing the update menu "
-    "item.";
-
-#endif  // defined(OS_ANDROID)
-
-#if defined(OS_ANDROID)
-
-const char kHerbPrototypeChoicesName[] = "Switch preferred flavor of Herb";
-
-const char kHerbPrototypeChoicesDescription[] =
-    "Switching this option changes which tab management prototype is being "
-    "tested.";
-
-const char kHerbPrototypeFlavorElderberry[] =
-    "ELDERBERRY: All View Intents in CCT v2";
-
-const char kEnableSpecialLocaleName[] =
-    "Enable custom logic for special locales.";
-
-const char kEnableSpecialLocaleDescription[] =
-    "Enable custom logic for special locales. In this mode, Chrome might "
-    "behave differently in some locales.";
-
-//  WebApks
-
-const char kEnableWebapk[] = "Enable improved add to Home screen";
-
-const char kEnableWebapkDescription[] =
-    R"*(Packages "Progressive Web Apps" so that they can integrate more )*"
-    R"*(deeply with Android. A Chrome server is used to package sites. In )*"
-    R"*(Chrome Canary and Chrome Dev, this requires “Untrusted )*"
-    R"*(sources” to be enabled in Android security settings.)*";
-
-#endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
 
@@ -2223,175 +2302,6 @@ const char kCrOSComponentDescription[] =
     "Enable the use of componentized escpr CUPS filter.";
 
 #endif  // defined(OS_CHROMEOS)
-
-#if defined(OS_ANDROID)
-
-const char kKeepPrefetchedContentSuggestionsName[] =
-    "Keep prefetched content suggestions";
-
-const char kKeepPrefetchedContentSuggestionsDescription[] =
-    "If enabled, some of prefetched content suggestions are not replaced by "
-    "the new fetched suggestions.";
-
-const char kContentSuggestionsCategoryOrderName[] =
-    "Default content suggestions category order (e.g. on NTP)";
-
-const char kContentSuggestionsCategoryOrderDescription[] =
-    "Set default order of content suggestion categories (e.g. on the NTP).";
-
-const char kContentSuggestionsCategoryRankerName[] =
-    "Content suggestions category ranker (e.g. on NTP)";
-
-const char kContentSuggestionsCategoryRankerDescription[] =
-    "Set category ranker to order categories of content suggestions (e.g. on "
-    "the NTP).";
-
-const char kEnableNtpSnippetsVisibilityName[] =
-    "Make New Tab Page Snippets more visible.";
-
-const char kEnableNtpSnippetsVisibilityDescription[] =
-    "If enabled, the NTP snippets will become more discoverable with a larger "
-    "portion of the first card above the fold.";
-
-const char kEnableContentSuggestionsNewFaviconServerName[] =
-    "Get favicons for content suggestions from a new server.";
-
-const char kEnableContentSuggestionsNewFaviconServerDescription[] =
-    "If enabled, the content suggestions (on the NTP) will get favicons from a "
-    "new favicon server.";
-
-const char kEnableFaviconsFromWebManifestName[] =
-    "Load favicons from Web Manifests";
-
-const char kEnableFaviconsFromWebManifestDescription[] =
-    "Fetch Web Manifests on page load to read favicons from them.";
-
-const char kEnableNtpMostLikelyFaviconsFromServerName[] =
-    "Download favicons for NTP tiles from Google.";
-
-const char kEnableNtpMostLikelyFaviconsFromServerDescription[] =
-    "If enabled, missing favicons for NTP tiles get downloaded from Google. "
-    "This only applies to tiles that originate from synced history.";
-
-const char kEnableContentSuggestionsLargeThumbnailName[] =
-    "Large thumbnails layout for content suggestions cards.";
-
-const char kEnableContentSuggestionsLargeThumbnailDescription[] =
-    "If enabled, the content suggestions cards will use large thumbnails and "
-    "some related adjustments.";
-
-const char kEnableContentSuggestionsVideoOverlayName[] =
-    "Video icon overlay on thumbnails for content suggestions cards.";
-
-const char kEnableContentSuggestionsVideoOverlayDescription[] =
-    "If enabled, the content suggestions cards for suggestions with a video "
-    "will show a video play icon overlay on the thumbnail.";
-
-const char kEnableContentSuggestionsSettingsName[] =
-    "Show content suggestions settings.";
-
-const char kEnableContentSuggestionsSettingsDescription[] =
-    "If enabled, the content suggestions settings will be available from the "
-    "main settings menu.";
-
-const char kEnableContentSuggestionsShowSummaryName[] =
-    "Show content suggestions summaries.";
-
-const char kEnableContentSuggestionsShowSummaryDescription[] =
-    "If enabled, the content suggestions summaries will be shown.";
-
-const char kEnableNtpRemoteSuggestionsName[] =
-    "Show server-side suggestions on the New Tab page";
-
-const char kEnableNtpRemoteSuggestionsDescription[] =
-    "If enabled, the list of content suggestions on the New Tab page will "
-    "contain server-side suggestions (e.g., Articles for you). Furthermore, it "
-    "allows to override the source used to retrieve these server-side "
-    "suggestions.";
-
-const char kEnableNtpAssetDownloadSuggestionsName[] =
-    "Show asset downloads on the New Tab page";
-
-const char kEnableNtpAssetDownloadSuggestionsDescription[] =
-    "If enabled, the list of content suggestions on the New Tab page will "
-    "contain assets (e.g. books, pictures, audio) that the user downloaded for "
-    "later use.";
-
-const char kEnableNtpOfflinePageDownloadSuggestionsName[] =
-    "Show offline page downloads on the New Tab page";
-
-const char kEnableNtpOfflinePageDownloadSuggestionsDescription[] =
-    "If enabled, the list of content suggestions on the New Tab page will "
-    "contain pages that the user downloaded for later use.";
-
-const char kEnableNtpBookmarkSuggestionsName[] =
-    "Show recently visited bookmarks on the New Tab page";
-
-const char kEnableNtpBookmarkSuggestionsDescription[] =
-    "If enabled, the list of content suggestions on the New Tab page will "
-    "contain recently visited bookmarks.";
-
-const char kEnableNtpForeignSessionsSuggestionsName[] =
-    "Show recent foreign tabs on the New Tab page";
-
-const char kEnableNtpForeignSessionsSuggestionsDescription[] =
-    "If enabled, the list of content suggestions on the New Tab page will "
-    "contain recent foreign tabs.";
-
-const char kEnableNtpSuggestionsNotificationsName[] =
-    "Notify about new content suggestions available at the New Tab page";
-
-const char kEnableNtpSuggestionsNotificationsDescription[] =
-    "If enabled, notifications will inform about new content suggestions on "
-    "the New Tab page.";
-
-const char kNtpCondensedLayoutName[] = "Condensed NTP layout";
-
-const char kNtpCondensedLayoutDescription[] =
-    "Show a condensed layout on the New Tab Page.";
-
-const char kNtpCondensedTileLayoutName[] = "Condensed NTP tile layout";
-
-const char kNtpCondensedTileLayoutDescription[] =
-    "Show a condensed tile layout on the New Tab Page.";
-
-const char kNtpGoogleGInOmniboxName[] = "Google G in New Tab Page omnibox";
-
-const char kNtpGoogleGInOmniboxDescription[] =
-    "Show a Google G in the omnibox on the New Tab Page.";
-
-#endif  // defined(OS_ANDROID)
-
-#if defined(OS_ANDROID)
-
-const char kOffliningRecentPagesName[] =
-    "Enable offlining of recently visited pages";
-
-const char kOffliningRecentPagesDescription[] =
-    "Enable storing recently visited pages locally for offline use. Requires "
-    "Offline Pages to be enabled.";
-
-const char kOfflinePagesCtName[] = "Enable Offline Pages CT features.";
-
-const char kOfflinePagesCtDescription[] = "Enable Offline Pages CT features.";
-
-const char kOfflinePagesCtV2Name[] = "Enable Offline Pages CT V2 features.";
-
-const char kOfflinePagesCtV2Description[] =
-    "V2 features include attributing pages to the app that initiated the "
-    "custom tabs, and being able to query for pages by page attribution.";
-
-#endif  // defined(OS_ANDROID)
-
-#if defined(OS_ANDROID)
-
-const char kEnableExpandedAutofillCreditCardPopupLayoutName[] =
-    "Use expanded autofill credit card popup layout.";
-
-const char kEnableExpandedAutofillCreditCardPopupLayoutDescription[] =
-    "If enabled, displays autofill credit card popup using expanded layout.";
-
-#endif  // defined(OS_ANDROID)
 
 #if !defined(OS_ANDROID) && defined(GOOGLE_CHROME_BUILD)
 
@@ -2430,37 +2340,6 @@ const char kWebvrExperimentalRenderingDescription[] =
 
 #endif  // BUILDFLAG(ENABLE_VR)
 
-#if defined(OS_ANDROID)
-
-const char kEnableAndroidPayIntegrationV1Name[] = "Enable Android Pay v1";
-
-const char kEnableAndroidPayIntegrationV1Description[] =
-    "Enable integration with Android Pay using the first version of the API";
-
-const char kEnableAndroidPayIntegrationV2Name[] = "Enable Android Pay v2";
-
-const char kEnableAndroidPayIntegrationV2Description[] =
-    "Enable integration with Android Pay using the second version of the API";
-
-const char kEnableWebPaymentsSingleAppUiSkipName[] =
-    "Enable Web Payments single app UI skip";
-
-const char kEnableWebPaymentsSingleAppUiSkipDescription[] =
-    "Enable Web Payments to skip showing its UI if the developer specifies a "
-    "single app.";
-
-const char kAndroidPaymentAppsName[] = "Android payment apps";
-
-const char kAndroidPaymentAppsDescription[] =
-    "Enable third party Android apps to integrate as payment apps";
-
-const char kServiceWorkerPaymentAppsName[] = "Service Worker payment apps";
-
-const char kServiceWorkerPaymentAppsDescription[] =
-    "Enable Service Worker applications to integrate as payment apps";
-
-#endif  // defined(OS_ANDROID)
-
 #if !defined(OS_ANDROID)
 
 const char kEnableAudioFocusName[] = "Manage audio focus across tabs";
@@ -2487,15 +2366,6 @@ const char kGdiTextPrintingDescription[] =
 
 #endif  // defined(OS_WIN)
 
-#if defined(OS_ANDROID)
-
-const char kModalPermissionPromptsName[] = "Modal Permission Prompts";
-
-const char kModalPermissionPromptsDescription[] =
-    "Whether to use permission dialogs in place of permission infobars.";
-
-#endif  // defined(OS_ANDROID)
-
 #if !defined(OS_MACOSX)
 
 const char kPermissionPromptPersistenceToggleName[] =
@@ -2505,41 +2375,6 @@ const char kPermissionPromptPersistenceToggleDescription[] =
     "Whether to display a persistence toggle in permission prompts.";
 
 #endif  // !defined(OS_MACOSX)
-
-#if defined(OS_ANDROID)
-
-const char kNoCreditCardAbort[] = "No Credit Card Abort";
-
-const char kNoCreditCardAbortDescription[] =
-    "Whether or not the No Credit Card Abort is enabled.";
-
-#endif  // defined(OS_ANDROID)
-
-//  Consistent omnibox geolocation
-
-#if defined(OS_ANDROID)
-
-const char kEnableConsistentOmniboxGeolocationName[] =
-    "Have consistent omnibox geolocation access.";
-
-const char kEnableConsistentOmniboxGeolocationDescription[] =
-    "Have consistent geolocation access between the omnibox and default search "
-    "engine.";
-
-#endif  // defined(OS_ANDROID)
-
-//  Play Services LSD permission prompt chrome://flags strings
-
-#if defined(OS_ANDROID)
-
-const char kLsdPermissionPromptName[] =
-    "Location Settings Dialog Permission Prompt";
-
-const char kLsdPermissionPromptDescription[] =
-    "Whether to use the Google Play Services Location Settings Dialog "
-    "permission dialog.";
-
-#endif  // defined(OS_ANDROID)
 
 #if defined(OS_WIN)
 
@@ -2563,16 +2398,6 @@ const char kDisablePostscriptPrintingDescription[] =
 
 #endif  // defined(OS_WIN)
 
-#if defined(OS_ANDROID)
-
-const char kAiaFetchingName[] = "Intermediate Certificate Fetching";
-
-const char kAiaFetchingDescription[] =
-    "Enable intermediate certificate fetching when a server does not provide "
-    "sufficient certificates to build a chain to a trusted root.";
-
-#endif  // defined(OS_ANDROID)
-
 //  Desktop iOS promotion chrome://flags strings
 
 #if defined(OS_WIN)
@@ -2584,16 +2409,6 @@ const char kEnableDesktopIosPromotionsDescription[] =
     "eligible.";
 
 #endif  // defined(OS_WIN)
-
-#if defined(OS_ANDROID)
-
-const char kEnableCustomFeedbackUiName[] = "Enable Custom Feedback UI";
-
-const char kEnableCustomFeedbackUiDescription[] =
-    "Enables a custom feedback UI when submitting feedback through Google "
-    "Feedback. Works with Google Play Services v10.2+";
-
-#endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_MACOSX) || \
     defined(OS_WIN)
@@ -2627,25 +2442,6 @@ const char kEnableChromevoxArcSupportDescription[] =
     "Enable ChromeVox screen reader features in ARC";
 
 #endif  // defined(OS_CHROMEOS)
-
-#if defined(OS_ANDROID)
-
-const char kUseDdljsonApiName[] = "Use new ddljson API for Doodles";
-
-const char kUseDdljsonApiDescription[] =
-    "Enables the new ddljson API to fetch Doodles for the NTP.";
-
-#endif  // defined(OS_ANDROID)
-
-#if defined(OS_ANDROID)
-
-const char kEnableCustomContextMenuName[] = "Enable custom context menu";
-
-const char kEnableCustomContextMenuDescription[] =
-    "Enables a new context menu when a link, image, or video is pressed within "
-    "Chrome.";
-
-#endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
 
@@ -2845,34 +2641,6 @@ const char kSpuriousPowerButtonLidAngleChangeDescription[] =
 
 #endif  // #if defined(OS_CHROMEOS)
 
-#if defined(OS_ANDROID)
-
-const char kEnableCopylessPasteName[] = "App Indexing (Copyless Paste)";
-
-const char kEnableCopylessPasteDescription[] =
-    "Provide suggestions for text input, based on your recent context. For "
-    "example, if you looked at a restaurant website and switched to the Maps "
-    "app, the keyboard would offer the name of that restaurant as a suggestion "
-    "to enter into the search bar. The data is indexed locally, and never sent "
-    "to the server. It's disabled in incognito mode.";
-
-const char kEnableWebNfcName[] = "WebNFC";
-
-const char kEnableWebNfcDescription[] = "Enable WebNFC support.";
-
-#endif  // defined(OS_ANDROID)
-
-#if defined(OS_ANDROID)
-
-const char kEnableOmniboxClipboardProviderName[] =
-    "Omnibox clipboard URL suggestions";
-
-const char kEnableOmniboxClipboardProviderDescription[] =
-    "Provide a suggestion of the URL stored in the clipboard (if any) upon "
-    "focus in the omnibox.";
-
-#endif  // defined(OS_ANDROID)
-
 #if defined(OS_WIN)
 
 // Name and description of the flag that enables D3D v-sync.
@@ -2933,14 +2701,5 @@ const char kMultideviceDescription[] =
     "Enables UI for controlling multidevice features.";
 
 #endif  // defined(OS_CHROMEOS)
-
-#if defined(OS_ANDROID)
-
-const char kSpannableInlineAutocompleteName[] = "Spannable inline autocomplete";
-const char kSpannableInlineAutocompleteDescription[] =
-    "A new type of inline autocomplete for the omnibox that works with "
-    "keyboards that compose text.";
-
-#endif  // defined(OS_ANDROID)
 
 }  // namespace flag_descriptions
