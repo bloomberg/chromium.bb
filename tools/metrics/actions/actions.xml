@@ -15707,6 +15707,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Signin_SigninNewAccount_FromTabSwitcher">
+  <owner>jlebel@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_TAB_SWITCHER, with a new account.
+  </description>
+</action>
+
 <action name="Signin_SigninNotDefault_FromBookmarkManager">
   <owner>jlebel@chromium.org</owner>
   <description>
@@ -15731,6 +15739,15 @@ should be able to be added at any place in this file.
     Recorded on sign in start from access point
     signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS, using another account
     than the default one.
+  </description>
+</action>
+
+<action name="Signin_SigninNotDefault_FromTabSwitcher">
+  <owner>jlebel@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_TAB_SWITCHER, using another
+    account than the default one.
   </description>
 </action>
 
@@ -15767,6 +15784,15 @@ should be able to be added at any place in this file.
   <description>
     Recorded on sign in start from access point
     signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS, using the default
+    account.
+  </description>
+</action>
+
+<action name="Signin_SigninWithDefault_FromTabSwitcher">
+  <owner>jlebel@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_TAB_SWITCHER, using the default
     account.
   </description>
 </action>

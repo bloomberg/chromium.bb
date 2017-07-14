@@ -43,6 +43,10 @@ void RecordSigninUserActionForAccessPoint(
       base::RecordAction(
           base::UserMetricsAction("Signin_Signin_FromRecentTabs"));
       break;
+    case signin_metrics::AccessPoint::ACCESS_POINT_TAB_SWITCHER:
+      base::RecordAction(
+          base::UserMetricsAction("Signin_Signin_FromTabSwitcher"));
+      break;
     default:
       NOTREACHED() << "Unexpected value for access point "
                    << static_cast<int>(access_point);
@@ -60,6 +64,10 @@ void RecordSigninDefaultUserActionForAccessPoint(
     case signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS:
       base::RecordAction(
           base::UserMetricsAction("Signin_SigninWithDefault_FromRecentTabs"));
+      break;
+    case signin_metrics::AccessPoint::ACCESS_POINT_TAB_SWITCHER:
+      base::RecordAction(
+          base::UserMetricsAction("Signin_SigninWithDefault_FromTabSwitcher"));
       break;
     default:
       NOTREACHED() << "Unexpected value for access point "
@@ -79,6 +87,10 @@ void RecordSigninNotDefaultUserActionForAccessPoint(
       base::RecordAction(
           base::UserMetricsAction("Signin_SigninNotDefault_FromRecentTabs"));
       break;
+    case signin_metrics::AccessPoint::ACCESS_POINT_TAB_SWITCHER:
+      base::RecordAction(
+          base::UserMetricsAction("Signin_SigninNotDefault_FromTabSwitcher"));
+      break;
     default:
       NOTREACHED() << "Unexpected value for access point "
                    << static_cast<int>(access_point);
@@ -96,6 +108,10 @@ void RecordSigninNewAccountUserActionForAccessPoint(
     case signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS:
       base::RecordAction(
           base::UserMetricsAction("Signin_SigninNewAccount_FromRecentTabs"));
+      break;
+    case signin_metrics::AccessPoint::ACCESS_POINT_TAB_SWITCHER:
+      base::RecordAction(
+          base::UserMetricsAction("Signin_SigninNewAccount_FromTabSwitcher"));
       break;
     default:
       NOTREACHED() << "Unexpected value for access point "
