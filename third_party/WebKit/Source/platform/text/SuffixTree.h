@@ -26,6 +26,9 @@
 #ifndef SuffixTree_h
 #define SuffixTree_h
 
+#include <algorithm>
+#include <utility>
+
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/Vector.h"
@@ -63,9 +66,10 @@ class SuffixTree {
     Node* current = &root_;
     int limit = std::min(depth_, query.length());
     for (int i = 0; i < limit; ++i) {
-      current = current->at(Codebook::CodeWord(query[i]));
-      if (!current)
+      auto iter = current->Find(Codebook::CodeWord(query[i]));
+      if (iter == current->End())
         return false;
+      current = iter->second;
     }
     return true;
   }
@@ -76,27 +80,39 @@ class SuffixTree {
     WTF_MAKE_NONCOPYABLE(Node);
 
    public:
-    Node(bool is_leaf = false) {
-      children_.resize(Codebook::kCodeSize);
-      children_.Fill(0);
-      is_leaf_ = is_leaf;
-    }
+    Node(bool is_leaf = false) : is_leaf_(is_leaf) {}
 
     ~Node() {
-      for (unsigned i = 0; i < children_.size(); ++i) {
-        Node* child = children_.at(i);
+      for (const auto& pair : children_) {
+        Node* child = pair.second;
         if (child && !child->is_leaf_)
           delete child;
       }
     }
 
-    Node*& at(int code_word) { return children_.at(code_word); }
+    Node*& At(int key) {
+      auto it = Find(key);
+      if (it != children_.end())
+        return it->second;
+      children_.emplace_back(key, nullptr);
+      return children_.back().second;
+    }
+
+    typename Vector<std::pair<int, Node*>>::iterator Find(int key) {
+      return std::find_if(children_.begin(), children_.end(),
+                          [key](const std::pair<int, Node*>& entry) {
+                            return entry.first == key;
+                          });
+    }
+
+    typename Vector<std::pair<int, Node*>>::iterator End() {
+      return children_.end();
+    }
 
    private:
-    typedef Vector<Node*, Codebook::kCodeSize> ChildrenVector;
-
-    ChildrenVector children_;
-    bool is_leaf_;
+    // TODO(tsepez): convert to base::flat_map when allowed in blink.
+    Vector<std::pair<int, Node*>> children_;
+    const bool is_leaf_;
   };
 
   void Build(const String& text) {
@@ -105,7 +121,7 @@ class SuffixTree {
       unsigned limit = std::min(base + depth_, text.length());
       for (unsigned offset = 0; base + offset < limit; ++offset) {
         DCHECK_NE(current, &leaf_);
-        Node*& child = current->at(Codebook::CodeWord(text[base + offset]));
+        Node*& child = current->At(Codebook::CodeWord(text[base + offset]));
         if (!child)
           child = base + offset + 1 == limit ? &leaf_ : new Node();
         current = child;

@@ -1970,6 +1970,7 @@ test("blink_platform_unittests") {
     "text/ICUErrorTest.cpp",
     "text/PlatformLocaleTest.cpp",
     "text/SegmentedStringTest.cpp",
+    "text/SuffixTreeTest.cpp",
     "text/TextBreakIteratorTest.cpp",
     "text/TextEncodingDetectorTest.cpp",
     "text/UnicodeUtilitiesTest.cpp",
