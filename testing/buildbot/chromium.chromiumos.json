@@ -509,6 +509,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "angle_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "app_list_presenter_unittests"
       },
       {
@@ -528,6 +534,30 @@
           "can_use_on_swarming_builders": true
         },
         "test": "ash_content_unittests"
+      },
+      {
+        "args": [
+          "--mash",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/ash_unittests_mash.filter"
+        ],
+        "name": "ash_unittests-mash",
+        "override_isolate_target": "ash_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "ash_unittests"
+      },
+      {
+        "args": [
+          "--mus",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/ash_unittests_mus.filter"
+        ],
+        "name": "ash_unittests-mus",
+        "override_isolate_target": "ash_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "ash_unittests"
       },
       {
         "swarming": {
@@ -688,7 +718,8 @@
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "shards": 3
         },
         "test": "interactive_ui_tests"
       },
@@ -717,10 +748,34 @@
         "test": "latency_unittests"
       },
       {
+        "args": [
+          "--ozone-platform=headless",
+          "--override-use-software-gl-for-tests",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/mash.browser_tests.filter"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "hard_timeout": 900
+        },
+        "test": "mash_browser_tests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "mash_unittests"
+      },
+      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "media_blink_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "media_service_unittests"
       },
       {
         "swarming": {
@@ -739,6 +794,18 @@
           "can_use_on_swarming_builders": true
         },
         "test": "midi_unittests"
+      },
+      {
+        "args": [
+          "--ozone-platform=headless",
+          "--override-use-software-gl-for-tests",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/mus.browser_tests.filter"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "hard_timeout": 900
+        },
+        "test": "mus_browser_tests"
       },
       {
         "swarming": {
@@ -765,6 +832,21 @@
         "test": "net_unittests"
       },
       {
+        "args": [
+          "--ozone-platform=headless"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "ozone_gl_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "ozone_unittests"
+      },
+      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -775,6 +857,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "ppapi_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "printing_unittests"
       },
       {
         "swarming": {
@@ -856,6 +944,18 @@
           "can_use_on_swarming_builders": true
         },
         "test": "url_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "views_mus_interactive_ui_tests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "views_mus_unittests"
       },
       {
         "swarming": {
