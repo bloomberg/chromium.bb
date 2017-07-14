@@ -124,9 +124,12 @@ void AwFormDatabaseService::OnWebDataServiceRequestDone(
     LOG(WARNING) << "Received unexpected callback from web data service";
     return;
   }
+
+  WaitableEvent* completion = it->second.completion;
   *(it->second.result) = has_form_data;
-  it->second.completion->Signal();
   result_map_.erase(h);
+
+  completion->Signal();
 }
 
 }  // namespace android_webview
