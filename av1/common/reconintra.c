@@ -2689,7 +2689,7 @@ static void predict_intra_block_helper(const MACROBLOCKD *xd, int wpx, int hpx,
   assert(txwpx == txhpx);
 #endif  // !(CONFIG_RECT_INTRA_PRED && CONFIG_RECT_TX &&
         // (CONFIG_VAR_TX || CONFIG_EXT_TX))
-#if CONFIG_CB4X4 && !CONFIG_CHROMA_2X2
+#if CONFIG_CB4X4 && !CONFIG_CHROMA_2X2 && !CONFIG_CHROMA_SUB8X8
   const int xr_chr_offset = (pd->subsampling_x && bsize < BLOCK_8X8) ? 2 : 0;
   const int yd_chr_offset = (pd->subsampling_y && bsize < BLOCK_8X8) ? 2 : 0;
 #else
