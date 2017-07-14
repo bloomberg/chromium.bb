@@ -38,11 +38,6 @@ namespace {
 const base::FilePath::CharType kLogRelativePath[] =
     FILE_PATH_LITERAL("net-export/chrome-net-export-log.json");
 
-// Old path used by net-export. Used to delete old files.
-// TODO(mmenke): Should remove at some point. Added in M46.
-const base::FilePath::CharType kOldLogRelativePath[] =
-    FILE_PATH_LITERAL("chrome-net-export-log.json");
-
 // Contains file-related initialization tasks for NetExportFileWriter.
 NetExportFileWriter::DefaultLogPathResults SetUpDefaultLogPath(
     const NetExportFileWriter::DirectoryGetter& default_log_base_dir_getter) {
@@ -53,9 +48,6 @@ NetExportFileWriter::DefaultLogPathResults SetUpDefaultLogPath(
   base::FilePath default_base_dir;
   if (!default_log_base_dir_getter.Run(&default_base_dir))
     return results;
-
-  // Delete log file at old location, if present.
-  base::DeleteFile(default_base_dir.Append(kOldLogRelativePath), false);
 
   results.default_log_path = default_base_dir.Append(kLogRelativePath);
   if (!base::CreateDirectoryAndGetError(results.default_log_path.DirName(),
