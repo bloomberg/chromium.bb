@@ -84,7 +84,7 @@ class ExecuteCodeFunction : public AsyncExtensionFunction {
   // localizes |data|.
   // Localization depends on whether |might_require_localization| was specified.
   // Only CSS file content needs to be localized.
-  void GetFileURLAndMaybeLocalizeOnFileThread(
+  void GetFileURLAndMaybeLocalizeInBackground(
       const std::string& extension_id,
       const base::FilePath& extension_path,
       const std::string& extension_default_locale,
@@ -93,9 +93,10 @@ class ExecuteCodeFunction : public AsyncExtensionFunction {
 
   // Retrieves the file url for the given |extension_path| and optionally
   // localizes |data|.
-  // Similar to GetFileURLAndMaybeLocalizeOnFileThread, but only applies to
-  // component extension resource.
-  void GetFileURLAndLocalizeComponentResourceOnFileThread(
+  // Similar to GetFileURLAndMaybeLocalizeInBackground, but only applies
+  // to component extension resource.
+  std::unique_ptr<std::string>
+  GetFileURLAndLocalizeComponentResourceInBackground(
       std::unique_ptr<std::string> data,
       const std::string& extension_id,
       const base::FilePath& extension_path,
