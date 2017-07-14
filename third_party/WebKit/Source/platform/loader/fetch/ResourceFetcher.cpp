@@ -516,10 +516,8 @@ void ResourceFetcher::RemovePreload(Resource* resource) {
   auto it = preloads_.find(PreloadKey(resource->Url(), resource->GetType()));
   if (it == preloads_.end())
     return;
-  if (it->value == resource) {
-    resource->DecreasePreloadCount();
+  if (it->value == resource)
     preloads_.erase(it);
-  }
 }
 
 ResourceFetcher::PrepareRequestResult ResourceFetcher::PrepareRequest(
@@ -908,7 +906,7 @@ Resource* ResourceFetcher::MatchPreload(const FetchParameters& params,
   if (!IsReusableAlsoForPreloading(params, resource, false))
     return nullptr;
 
-  resource->DecreasePreloadCount();
+  resource->MatchPreload();
   preloads_.erase(it);
   matched_preloads_.push_back(resource);
   return resource;
@@ -927,7 +925,7 @@ void ResourceFetcher::InsertAsPreloadIfNecessary(Resource* resource,
   PreloadKey key(params.Url(), type);
   if (preloads_.find(key) == preloads_.end()) {
     preloads_.insert(key, resource);
-    resource->IncreasePreloadCount();
+    resource->MarkAsPreload();
     if (preloaded_urls_for_test_)
       preloaded_urls_for_test_->insert(resource->Url().GetString());
   }
@@ -994,6 +992,14 @@ ResourceFetcher::DetermineRevalidationPolicy(
   // happen in redirect handling.
   if (existing_resource->Loader() &&
       existing_resource->Loader()->Fetcher() != this) {
+    return kReload;
+  }
+
+  // It's hard to share a not-yet-referenced preloads via MemoryCache correctly.
+  // A not-yet-matched preloads made by a foreign ResourceFetcher and stored in
+  // the memory cache could be used without this block.
+  if ((fetch_params.IsLinkPreload() || fetch_params.IsSpeculativePreload()) &&
+      existing_resource->IsUnusedPreload()) {
     return kReload;
   }
 
@@ -1120,6 +1126,11 @@ ResourceFetcher::DetermineRevalidationPolicy(
   if (request.GetCachePolicy() == WebCachePolicy::kValidatingCacheData ||
       existing_resource->MustRevalidateDueToCacheHeaders() ||
       request.CacheControlContainsNoCache()) {
+    // Revalidation is harmful for non-matched preloads because it may lead to
+    // sharing one preloaded resource among multiple ResourceFetchers.
+    if (existing_resource->IsUnusedPreload())
+      return kReload;
+
     // See if the resource has usable ETag or Last-modified headers. If the page
     // is controlled by the ServiceWorker, we choose the Reload policy because
     // the revalidation headers should not be exposed to the
@@ -1217,9 +1228,7 @@ void ResourceFetcher::ClearPreloads(ClearPreloadsPolicy policy) {
   for (const auto& pair : preloads_) {
     Resource* resource = pair.value;
     if (policy == kClearAllPreloads || !resource->IsLinkPreload()) {
-      resource->DecreasePreloadCount();
-      if (resource->GetPreloadResult() == Resource::kPreloadNotReferenced)
-        GetMemoryCache()->Remove(resource);
+      GetMemoryCache()->Remove(resource);
       keys_to_be_removed.push_back(pair.key);
     }
   }
@@ -1231,8 +1240,7 @@ void ResourceFetcher::ClearPreloads(ClearPreloadsPolicy policy) {
 void ResourceFetcher::WarnUnusedPreloads() {
   for (const auto& pair : preloads_) {
     Resource* resource = pair.value;
-    if (resource && resource->IsLinkPreload() &&
-        resource->GetPreloadResult() == Resource::kPreloadNotReferenced) {
+    if (resource && resource->IsLinkPreload() && resource->IsUnusedPreload()) {
       Context().AddConsoleMessage(
           "The resource " + resource->Url().GetString() +
               " was preloaded using link preload but not used within a few "
@@ -1525,8 +1533,7 @@ void ResourceFetcher::LogPreloadStats(ClearPreloadsPolicy policy) {
         policy == kClearSpeculativeMarkupPreloads) {
       continue;
     }
-    int miss_count =
-        resource->GetPreloadResult() == Resource::kPreloadNotReferenced ? 1 : 0;
+    int miss_count = resource->IsUnusedPreload() ? 1 : 0;
     switch (resource->GetType()) {
       case Resource::kImage:
         images++;

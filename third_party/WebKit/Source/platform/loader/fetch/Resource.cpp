@@ -262,12 +262,10 @@ void Resource::ServiceWorkerResponseCachedMetadataHandler::SendToPlatform() {
 Resource::Resource(const ResourceRequest& request,
                    Type type,
                    const ResourceLoaderOptions& options)
-    : preload_result_(kPreloadNotReferenced),
-      type_(type),
+    : type_(type),
       status_(ResourceStatus::kNotStarted),
       load_finish_time_(0),
       identifier_(0),
-      preload_count_(0),
       preload_discovery_time_(0.0),
       encoded_size_(0),
       encoded_size_memory_usage_(0),
@@ -402,7 +400,7 @@ void Resource::FinishAsError(const ResourceError& error) {
   error_ = error;
   is_revalidating_ = false;
 
-  if ((error_.IsCancellation() || !IsPreloaded()) && IsMainThread())
+  if ((error_.IsCancellation() || !is_unused_preload_) && IsMainThread())
     GetMemoryCache()->Remove(this);
 
   if (!ErrorOccurred())
@@ -526,6 +524,7 @@ const ResourceRequest& Resource::LastResourceRequest() const {
 
 void Resource::SetRevalidatingRequest(const ResourceRequest& request) {
   SECURITY_CHECK(redirect_chain_.IsEmpty());
+  SECURITY_CHECK(!is_unused_preload_);
   DCHECK(!request.IsNull());
   CHECK(!is_revalidation_start_forbidden_);
   is_revalidating_ = true;
@@ -605,13 +604,6 @@ String Resource::ReasonNotDeletable() const {
       builder.Append(' ');
     builder.Append("loader_");
   }
-  if (preload_count_) {
-    if (!builder.IsEmpty())
-      builder.Append(' ');
-    builder.Append("preload_count_(");
-    builder.AppendNumber(preload_count_);
-    builder.Append(')');
-  }
   if (IsMainThread() && GetMemoryCache()->Contains(this)) {
     if (!builder.IsEmpty())
       builder.Append(' ');
@@ -648,28 +640,16 @@ static bool TypeNeedsSynchronousCacheHit(Resource::Type type) {
   return false;
 }
 
-void Resource::WillAddClientOrObserver(PreloadReferencePolicy policy) {
-  if (policy == kMarkAsReferenced && preload_result_ == kPreloadNotReferenced) {
-    preload_result_ = kPreloadReferenced;
-
-    if (preload_discovery_time_) {
-      int time_since_discovery = static_cast<int>(
-          1000 * (MonotonicallyIncreasingTime() - preload_discovery_time_));
-      DEFINE_STATIC_LOCAL(CustomCountHistogram, preload_discovery_histogram,
-                          ("PreloadScanner.ReferenceTime", 0, 10000, 50));
-      preload_discovery_histogram.Count(time_since_discovery);
-    }
-  }
+void Resource::WillAddClientOrObserver() {
   if (!HasClientsOrObservers()) {
     is_alive_ = true;
   }
 }
 
-void Resource::AddClient(ResourceClient* client,
-                         PreloadReferencePolicy policy) {
+void Resource::AddClient(ResourceClient* client) {
   CHECK(!is_add_remove_client_prohibited_);
 
-  WillAddClientOrObserver(policy);
+  WillAddClientOrObserver();
 
   if (is_revalidating_) {
     clients_.insert(client);
@@ -721,12 +701,11 @@ void Resource::RemoveClient(ResourceClient* client) {
   DidRemoveClientOrObserver();
 }
 
-void Resource::AddFinishObserver(ResourceFinishObserver* client,
-                                 PreloadReferencePolicy policy) {
+void Resource::AddFinishObserver(ResourceFinishObserver* client) {
   CHECK(!is_add_remove_client_prohibited_);
   DCHECK(!finish_observers_.Contains(client));
 
-  WillAddClientOrObserver(policy);
+  WillAddClientOrObserver();
   finish_observers_.insert(client);
   if (IsLoaded())
     TriggerNotificationForFinishObservers();
@@ -1023,6 +1002,24 @@ void Resource::RevalidationFailed() {
   cache_handler_.Clear();
   DestroyDecodedDataForFailedRevalidation();
   is_revalidating_ = false;
+}
+
+void Resource::MarkAsPreload() {
+  DCHECK(!is_unused_preload_);
+  is_unused_preload_ = true;
+}
+
+void Resource::MatchPreload() {
+  DCHECK(is_unused_preload_);
+  is_unused_preload_ = false;
+
+  if (preload_discovery_time_) {
+    int time_since_discovery = static_cast<int>(
+        1000 * (MonotonicallyIncreasingTime() - preload_discovery_time_));
+    DEFINE_STATIC_LOCAL(CustomCountHistogram, preload_discovery_histogram,
+                        ("PreloadScanner.ReferenceTime", 0, 10000, 50));
+    preload_discovery_histogram.Count(time_since_discovery);
+  }
 }
 
 bool Resource::CanReuseRedirectChain() const {

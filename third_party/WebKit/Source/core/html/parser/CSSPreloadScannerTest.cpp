@@ -92,7 +92,6 @@ TEST_F(CSSPreloadScannerTest, ScanFromResourceClient) {
   const char* data = "@import url('http://127.0.0.1/preload.css');";
   resource->AppendData(data, strlen(data));
 
-  EXPECT_EQ(Resource::kPreloadNotReferenced, resource->GetPreloadResult());
   EXPECT_EQ(1u, resource_client->preload_urls_.size());
   EXPECT_EQ("http://127.0.0.1/preload.css",
             resource_client->preload_urls_.front());
@@ -212,7 +211,6 @@ TEST_F(CSSPreloadScannerTest, ReferrerPolicyHeader) {
   const char* data = "@import url('http://127.0.0.1/preload.css');";
   resource->AppendData(data, strlen(data));
 
-  EXPECT_EQ(Resource::kPreloadNotReferenced, resource->GetPreloadResult());
   EXPECT_EQ(1u, resource_client->preload_urls_.size());
   EXPECT_EQ("http://127.0.0.1/preload.css",
             resource_client->preload_urls_.front());
