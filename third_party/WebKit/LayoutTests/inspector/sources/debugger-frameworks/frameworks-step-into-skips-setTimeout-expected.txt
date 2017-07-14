@@ -28,7 +28,7 @@ Call stack:
 
 Executing StepInto...
 Call stack:
-    0) callback (frameworks-step-into-skips-setTimeout.html:21)
+    0) callback (frameworks-step-into-skips-setTimeout.html:20)
   * 1) Framework_scheduleUntilDone (framework.js:142)
     [setTimeout]
   * 0) Framework.schedule (framework.js:45)

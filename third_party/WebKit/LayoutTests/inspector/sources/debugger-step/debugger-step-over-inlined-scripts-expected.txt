@@ -7,7 +7,7 @@ Call stack:
 
 Executing StepOver...
 Call stack:
-    0) f1 (debugger-step-over-inlined-scripts.html:8)
+    0) f1 (debugger-step-over-inlined-scripts.html:7)
     1)  (debugger-step-over-inlined-scripts.html:9)
 
 Executing StepOver...

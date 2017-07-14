@@ -7,7 +7,7 @@ Call stack:
 
 Executing StepInto...
 Call stack:
-    0) f1 (debugger-step-into-inlined-scripts.html:8)
+    0) f1 (debugger-step-into-inlined-scripts.html:7)
     1)  (debugger-step-into-inlined-scripts.html:9)
 
 Executing StepInto...
@@ -25,7 +25,7 @@ Call stack:
 
 Executing StepInto...
 Call stack:
-    0) f2 (debugger-step-into-inlined-scripts.html:16)
+    0) f2 (debugger-step-into-inlined-scripts.html:15)
     1)  (debugger-step-into-inlined-scripts.html:17)
 
 Executing StepInto...
