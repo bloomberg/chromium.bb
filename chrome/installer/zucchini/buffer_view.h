@@ -28,7 +28,7 @@ class BufferViewBase {
   using difference_type = std::ptrdiff_t;
 
   static BufferViewBase FromRange(iterator first, iterator last) {
-    DCHECK(last >= first);
+    DCHECK_GE(last, first);
     BufferViewBase ret;
     ret.first_ = first;
     ret.last_ = last;
@@ -39,7 +39,7 @@ class BufferViewBase {
 
   BufferViewBase(iterator first, size_type size)
       : first_(first), last_(first_ + size) {
-    DCHECK(last_ >= first_);
+    DCHECK_GE(last_, first_);
   }
 
   BufferViewBase(const BufferViewBase&) = default;
@@ -57,7 +57,7 @@ class BufferViewBase {
   // Returns the raw value at specified location |pos|.
   // If |pos| is not within the range of the buffer, the process is terminated.
   reference operator[](size_type pos) const {
-    CHECK(first_ + pos < last_);
+    CHECK_LT(first_ + pos, last_);
     return first_[pos];
   }
 
@@ -69,8 +69,14 @@ class BufferViewBase {
   // Modifiers
 
   void shrink(size_type new_size) {
-    DCHECK(first_ + new_size <= last_);
+    DCHECK_LE(first_ + new_size, last_);
     last_ = first_ + new_size;
+  }
+
+  // Moves the start of the view forward by n bytes.
+  void remove_prefix(size_type n) {
+    DCHECK_LE(n, size());
+    first_ += n;
   }
 
  private:
