@@ -135,6 +135,15 @@ static bool StartsOpeningScriptTagAt(const String& string, size_t start) {
                                 script);
 }
 
+static bool StartsClosingScriptTagAt(const String& string, size_t start) {
+  if (start + 7 >= string.length())
+    return false;
+  // TODO(esprehn): StringView should probably have startsWith.
+  StringView script("</script");
+  return EqualIgnoringASCIICase(StringView(string, start, script.length()),
+                                script);
+}
+
 // If other files need this, we should move this to
 // core/html/parser/HTMLParserIdioms.h
 template <size_t inlineCapacity>
@@ -880,7 +889,8 @@ String XSSAuditor::CanonicalizedSnippetForJavaScript(
         break;
 
       if (last_non_space_position != kNotFound &&
-          StartsOpeningScriptTagAt(string, found_position)) {
+          (StartsOpeningScriptTagAt(string, found_position) ||
+           StartsClosingScriptTagAt(string, found_position))) {
         found_position = last_non_space_position + 1;
         break;
       }
