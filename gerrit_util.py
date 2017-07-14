@@ -707,7 +707,7 @@ def RemoveReviewers(host, change, remove=None):
           'from change %s' % (r, change))
 
 
-def SetReview(host, change, msg=None, labels=None, notify=None):
+def SetReview(host, change, msg=None, labels=None, notify=None, ready=None):
   """Set labels and/or add a message to a code review."""
   if not msg and not labels:
     return
@@ -719,6 +719,8 @@ def SetReview(host, change, msg=None, labels=None, notify=None):
     body['labels'] = labels
   if notify:
     body['notify'] = 'ALL' if notify else 'NONE'
+  if ready:
+    body['ready'] = True
   conn = CreateHttpConn(host, path, reqtype='POST', body=body)
   response = ReadHttpJsonResponse(conn)
   if labels:

@@ -1717,8 +1717,8 @@ class Changelist(object):
 
   # Forward methods to codereview specific implementation.
 
-  def AddComment(self, message):
-    return self._codereview_impl.AddComment(message)
+  def AddComment(self, message, publish=None):
+    return self._codereview_impl.AddComment(message, publish=publish)
 
   def GetCommentsSummary(self, readable=True):
     """Returns list of _CommentSummary for each comment.
@@ -1823,7 +1823,7 @@ class _ChangelistCodereviewBase(object):
     """Update the description on codereview site."""
     raise NotImplementedError()
 
-  def AddComment(self, message):
+  def AddComment(self, message, publish=None):
     """Posts a comment to the codereview site."""
     raise NotImplementedError()
 
@@ -2001,7 +2001,7 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
   def GetIssueOwner(self):
     return (self.GetIssueProperties() or {}).get('owner_email')
 
-  def AddComment(self, message):
+  def AddComment(self, message, publish=None):
     return self.RpcServer().add_comment(self.GetIssue(), message)
 
   def GetCommentsSummary(self, _readable=True):
@@ -2593,9 +2593,9 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     gerrit_util.SetCommitMessage(self._GetGerritHost(), self.GetIssue(),
                                  description, notify='NONE')
 
-  def AddComment(self, message):
+  def AddComment(self, message, publish=None):
     gerrit_util.SetReview(self._GetGerritHost(), self.GetIssue(),
-                          msg=message)
+                          msg=message, ready=publish)
 
   def GetCommentsSummary(self, readable=True):
     # DETAILED_ACCOUNTS is to get emails in accounts.
