@@ -1912,6 +1912,8 @@ split_static_library("ui") {
         "views/tabs/browser_tab_strip_controller.h",
         "views/tabs/new_tab_button.cc",
         "views/tabs/new_tab_button.h",
+        "views/tabs/new_tab_promo.cc",
+        "views/tabs/new_tab_promo.h",
         "views/tabs/stacked_tab_strip_layout.cc",
         "views/tabs/stacked_tab_strip_layout.h",
         "views/tabs/tab.cc",

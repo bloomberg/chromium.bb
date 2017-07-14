@@ -5393,6 +5393,11 @@ the Bookmarks menu.">
         Reset to default zoom level
       </message>
 
+      <!-- Feature Enagagement Tracker strings -->
+      <message name="IDS_NEWTAB_PROMO" desc="Text shown on promotional UI appearing next to the New Tab button, which encourages users to use it.">
+        Open a new tab with one click
+      </message>
+
       <!-- Browser Hung Plugin Detector -->
       <if expr="is_win">
         <message name="IDS_BROWSER_HANGMONITOR" desc="A plugin on a page has hung">
