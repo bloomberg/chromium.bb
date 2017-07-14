@@ -50,8 +50,6 @@
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebString.h"
 
-using namespace WTF;
-
 namespace blink {
 
 namespace {
@@ -75,7 +73,7 @@ bool IsWhitespace(UChar chr) {
 // if |matcher| is nullptr, isWhitespace() is used.
 inline bool SkipWhiteSpace(const String& str,
                            unsigned& pos,
-                           CharacterMatchFunctionPtr matcher = nullptr) {
+                           WTF::CharacterMatchFunctionPtr matcher = nullptr) {
   unsigned len = str.length();
 
   if (matcher) {
@@ -251,7 +249,7 @@ bool IsContentDispositionAttachment(const String& content_disposition) {
 }
 
 bool ParseHTTPRefresh(const String& refresh,
-                      CharacterMatchFunctionPtr matcher,
+                      WTF::CharacterMatchFunctionPtr matcher,
                       double& delay,
                       String& url) {
   unsigned len = refresh.length();
