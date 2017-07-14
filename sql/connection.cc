@@ -31,6 +31,7 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
+#include "build/build_config.h"
 #include "sql/connection_memory_dump_provider.h"
 #include "sql/meta_table.h"
 #include "sql/statement.h"
@@ -1726,7 +1727,7 @@ bool Connection::OpenInternal(const std::string& file_name,
   }
 
   // TODO(shess): OS_WIN support?
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) && !defined(OS_FUCHSIA)
   if (restrict_to_user_) {
     DCHECK_NE(file_name, std::string(":memory"));
     base::FilePath file_path(file_name);
@@ -1747,7 +1748,7 @@ bool Connection::OpenInternal(const std::string& file_name,
       base::SetPosixFilePermissions(wal_path, mode);
     }
   }
-#endif  // defined(OS_POSIX)
+#endif  // defined(OS_POSIX) && !defined(OS_FUCHSIA)
 
   // SQLite uses a lookaside buffer to improve performance of small mallocs.
   // Chromium already depends on small mallocs being efficient, so we disable
