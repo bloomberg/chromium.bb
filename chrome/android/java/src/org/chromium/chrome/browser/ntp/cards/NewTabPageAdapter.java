@@ -230,10 +230,14 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
     }
 
     private void updateAllDismissedVisibility() {
-        boolean showAllDismissed = hasAllBeenDismissed()
-                && mUiDelegate.getSuggestionsSource().areRemoteSuggestionsEnabled();
-        mAllDismissed.setVisible(showAllDismissed);
-        mFooter.setVisible(!showAllDismissed);
+        boolean areRemoteSuggestionsEnabled =
+                mUiDelegate.getSuggestionsSource().areRemoteSuggestionsEnabled();
+
+        mAllDismissed.setVisible(areRemoteSuggestionsEnabled && hasAllBeenDismissed());
+        mFooter.setVisible(areRemoteSuggestionsEnabled && !hasAllBeenDismissed());
+        if (mBottomSpacer != null) {
+            mBottomSpacer.setVisible(areRemoteSuggestionsEnabled || !hasAllBeenDismissed());
+        }
     }
 
     @Override
