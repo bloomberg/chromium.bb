@@ -19,6 +19,8 @@ struct SimpleGeoposition {
 
 // Used by a client (e.g. Chrome) to provide the current user's geoposition.
 interface NightLightController {
+  // These values are written to logs. New enum values can be added, but
+  // existing enums must never be renumbered or deleted and reused.
   enum ScheduleType {
     // Automatic toggling of NightLight is turned off.
     kNone = 0,
@@ -30,6 +32,9 @@ interface NightLightController {
     // Toggled automatically based on the custom set start and end times
     // selected by the user from the system settings.
     kCustom = 2,
+
+    // Must be the last item, used for UMA histograms.
+    kLast = kCustom,
   };
 
   // Sets the client that will be notified of changes in the Night Light
