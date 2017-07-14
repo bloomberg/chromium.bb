@@ -231,9 +231,14 @@ void SetupModuleDatabase(std::unique_ptr<ModuleWatcher>* module_watcher) {
   // base::Unretained() here because the ModuleDatabase is never freed.
   EnumerateShellExtensions(
       base::BindRepeating(&ModuleDatabase::OnShellExtensionEnumerated,
-                          base::Unretained(module_database)));
-  EnumerateInputMethodEditors(base::BindRepeating(
-      &ModuleDatabase::OnImeEnumerated, base::Unretained(module_database)));
+                          base::Unretained(module_database)),
+      base::BindOnce(&ModuleDatabase::OnShellExtensionEnumerationFinished,
+                     base::Unretained(module_database)));
+  EnumerateInputMethodEditors(
+      base::BindRepeating(&ModuleDatabase::OnImeEnumerated,
+                          base::Unretained(module_database)),
+      base::BindOnce(&ModuleDatabase::OnImeEnumerationFinished,
+                     base::Unretained(module_database)));
 }
 
 void ShowCloseBrowserFirstMessageBox() {

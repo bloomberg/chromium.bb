@@ -30,6 +30,8 @@ constexpr base::TimeDelta ModuleDatabase::kIdleTimeout;
 ModuleDatabase::ModuleDatabase(
     scoped_refptr<base::SequencedTaskRunner> task_runner)
     : task_runner_(std::move(task_runner)),
+      shell_extensions_enumerated_(false),
+      ime_enumerated_(false),
       // ModuleDatabase owns |module_inspector_|, so it is safe to use
       // base::Unretained().
       module_inspector_(base::Bind(&ModuleDatabase::OnModuleInspected,
@@ -63,8 +65,8 @@ void ModuleDatabase::SetInstance(
 }
 
 bool ModuleDatabase::IsIdle() {
-  return has_started_processing_ && !idle_timer_.IsRunning() &&
-         module_inspector_.IsIdle();
+  return has_started_processing_ && RegisteredModulesEnumerated() &&
+         !idle_timer_.IsRunning() && module_inspector_.IsIdle();
 }
 
 void ModuleDatabase::OnProcessStarted(uint32_t process_id,
@@ -86,6 +88,16 @@ void ModuleDatabase::OnShellExtensionEnumerated(const base::FilePath& path,
   module_info->second.module_types |= ModuleInfoData::kTypeShellExtension;
 }
 
+void ModuleDatabase::OnShellExtensionEnumerationFinished() {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(!shell_extensions_enumerated_);
+
+  shell_extensions_enumerated_ = true;
+
+  if (RegisteredModulesEnumerated())
+    OnRegisteredModulesEnumerated();
+}
+
 void ModuleDatabase::OnImeEnumerated(const base::FilePath& path,
                                      uint32_t size_of_image,
                                      uint32_t time_date_stamp) {
@@ -96,6 +108,16 @@ void ModuleDatabase::OnImeEnumerated(const base::FilePath& path,
   auto* module_info =
       FindOrCreateModuleInfo(path, size_of_image, time_date_stamp);
   module_info->second.module_types |= ModuleInfoData::kTypeIme;
+}
+
+void ModuleDatabase::OnImeEnumerationFinished() {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(!ime_enumerated_);
+
+  ime_enumerated_ = true;
+
+  if (RegisteredModulesEnumerated())
+    OnRegisteredModulesEnumerated();
 }
 
 void ModuleDatabase::OnModuleLoad(uint32_t process_id,
@@ -201,10 +223,13 @@ void ModuleDatabase::OnProcessEnded(uint32_t process_id,
 
 void ModuleDatabase::AddObserver(ModuleDatabaseObserver* observer) {
   observer_list_.AddObserver(observer);
-  for (const auto& module : modules_) {
-    if (module.second.inspection_result)
-      observer->OnNewModuleFound(module.first, module.second);
-  }
+
+  // If the registered modules enumeration is not finished yet, the |observer|
+  // will be notified later in OnRegisteredModulesEnumerated().
+  if (!RegisteredModulesEnumerated())
+    return;
+
+  NotifyLoadedModules(observer);
 
   if (IsIdle())
     observer->OnModuleDatabaseIdle();
@@ -397,6 +422,18 @@ void ModuleDatabase::DeleteProcessInfo(uint32_t process_id,
   processes_.erase(key);
 }
 
+bool ModuleDatabase::RegisteredModulesEnumerated() {
+  return shell_extensions_enumerated_ && ime_enumerated_;
+}
+
+void ModuleDatabase::OnRegisteredModulesEnumerated() {
+  for (auto& observer : observer_list_)
+    NotifyLoadedModules(&observer);
+
+  if (IsIdle())
+    EnterIdleState();
+}
+
 void ModuleDatabase::OnModuleInspected(
     const ModuleInfoKey& module_key,
     std::unique_ptr<ModuleInspectionResult> inspection_result) {
@@ -408,8 +445,9 @@ void ModuleDatabase::OnModuleInspected(
 
   it->second.inspection_result = std::move(inspection_result);
 
-  for (auto& observer : observer_list_)
-    observer.OnNewModuleFound(it->first, it->second);
+  if (RegisteredModulesEnumerated())
+    for (auto& observer : observer_list_)
+      observer.OnNewModuleFound(it->first, it->second);
 
   // Notify the observers if this was the last outstanding module inspection and
   // the delay has already expired.
@@ -426,6 +464,13 @@ void ModuleDatabase::OnDelayExpired() {
 void ModuleDatabase::EnterIdleState() {
   for (auto& observer : observer_list_)
     observer.OnModuleDatabaseIdle();
+}
+
+void ModuleDatabase::NotifyLoadedModules(ModuleDatabaseObserver* observer) {
+  for (const auto& module : modules_) {
+    if (module.second.inspection_result)
+      observer->OnNewModuleFound(module.first, module.second);
+  }
 }
 
 // ModuleDatabase::ProcessInfoKey ----------------------------------------------

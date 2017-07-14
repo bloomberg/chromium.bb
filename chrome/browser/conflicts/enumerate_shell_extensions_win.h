@@ -21,14 +21,15 @@ extern const wchar_t kShellExtensionRegistryKey[];
 // TODO(pmonette): Move this implementation detail to the .cc file when
 //                 enumerate_modules_model.cc gets deleted.
 void EnumerateShellExtensionPaths(
-    const base::Callback<void(const base::FilePath&)>& callback);
+    const base::RepeatingCallback<void(const base::FilePath&)>& callback);
 
 // Finds shell extensions installed on the computer by enumerating the registry.
 // In addition to the file path, the SizeOfImage and TimeDateStamp of the module
-// is returned via the callback.
+// is returned via the |on_shell_extension_enumerated| callback.
 using OnShellExtensionEnumeratedCallback =
-    base::Callback<void(const base::FilePath&, uint32_t, uint32_t)>;
+    base::RepeatingCallback<void(const base::FilePath&, uint32_t, uint32_t)>;
 void EnumerateShellExtensions(
-    OnShellExtensionEnumeratedCallback on_shell_extension_enumerated);
+    OnShellExtensionEnumeratedCallback on_shell_extension_enumerated,
+    base::OnceClosure on_enumeration_finished);
 
 #endif  // CHROME_BROWSER_CONFLICTS_ENUMERATE_SHELL_EXTENSIONS_WIN_H_

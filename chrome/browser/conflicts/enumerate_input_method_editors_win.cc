@@ -74,7 +74,8 @@ base::FilePath GetInprocServerDllPath(const wchar_t* guid) {
 
 void EnumerateImesOnBlockingSequence(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
-    OnImeEnumeratedCallback on_ime_enumerated) {
+    OnImeEnumeratedCallback on_ime_enumerated,
+    base::OnceClosure on_enumeration_finished) {
   int nb_imes = 0;
   for (base::win::RegistryKeyIterator iter(HKEY_LOCAL_MACHINE, kImeRegistryKey);
        iter.Valid(); ++iter) {
@@ -101,6 +102,8 @@ void EnumerateImesOnBlockingSequence(
                                               size_of_image, time_date_stamp));
   }
 
+  task_runner->PostTask(FROM_HERE, std::move(on_enumeration_finished));
+
   base::UmaHistogramCounts100("ThirdPartyModules.InputMethodEditorsCount",
                               nb_imes);
 }
@@ -109,12 +112,14 @@ void EnumerateImesOnBlockingSequence(
 
 const wchar_t kImeRegistryKey[] = L"SOFTWARE\\Microsoft\\CTF\\TIP";
 
-void EnumerateInputMethodEditors(OnImeEnumeratedCallback on_ime_enumerated) {
+void EnumerateInputMethodEditors(OnImeEnumeratedCallback on_ime_enumerated,
+                                 base::OnceClosure on_enumeration_finished) {
   base::PostTaskWithTraits(
       FROM_HERE,
       {base::MayBlock(), base::TaskPriority::BACKGROUND,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&EnumerateImesOnBlockingSequence,
                      base::SequencedTaskRunnerHandle::Get(),
-                     std::move(on_ime_enumerated)));
+                     std::move(on_ime_enumerated),
+                     std::move(on_enumeration_finished)));
 }

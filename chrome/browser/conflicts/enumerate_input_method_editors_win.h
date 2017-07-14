@@ -18,9 +18,10 @@ extern const wchar_t kImeRegistryKey[];
 
 // Finds third-party IMEs (Input Method Editor) installed on the computer by
 // enumerating the registry. In addition to the file path, the SizeOfImage and
-// TimeDateStamp of the module is returned via the callback.
+// TimeDateStamp of the module is returned via the |on_ime_enumerated| callback.
 using OnImeEnumeratedCallback =
     base::RepeatingCallback<void(const base::FilePath&, uint32_t, uint32_t)>;
-void EnumerateInputMethodEditors(OnImeEnumeratedCallback callback);
+void EnumerateInputMethodEditors(OnImeEnumeratedCallback on_ime_enumerated,
+                                 base::OnceClosure on_enumeration_finished);
 
 #endif  // CHROME_BROWSER_CONFLICTS_ENUMERATE_INPUT_METHOD_EDITORS_WIN_H_

@@ -22,7 +22,6 @@ namespace {
 class EnumerateShellExtensionsTest : public testing::Test {
  public:
   EnumerateShellExtensionsTest() = default;
-
   ~EnumerateShellExtensionsTest() override = default;
 
   // Override all registry hives so that real shell extensions don't mess up
@@ -77,6 +76,10 @@ void OnShellExtensionEnumerated(
   shell_extension_paths->push_back(path);
 }
 
+void OnEnumerationFinished(bool* is_enumeration_finished) {
+  *is_enumeration_finished = true;
+}
+
 }  // namespace
 
 // Registers a few fake shell extensions then see if
@@ -116,11 +119,16 @@ TEST_F(EnumerateShellExtensionsTest, EnumerateShellExtensions) {
       HKEY_LOCAL_MACHINE, L"{FAKE_GUID}", file_exe.value().c_str()));
 
   std::vector<base::FilePath> shell_extension_paths;
-  EnumerateShellExtensions(base::BindRepeating(
-      &OnShellExtensionEnumerated, base::Unretained(&shell_extension_paths)));
+  bool is_enumeration_finished = false;
+  EnumerateShellExtensions(
+      base::BindRepeating(&OnShellExtensionEnumerated,
+                          base::Unretained(&shell_extension_paths)),
+      base::BindOnce(&OnEnumerationFinished,
+                     base::Unretained(&is_enumeration_finished)));
 
   RunUntilIdle();
 
+  EXPECT_TRUE(is_enumeration_finished);
   ASSERT_EQ(1u, shell_extension_paths.size());
   EXPECT_EQ(file_exe, shell_extension_paths[0]);
 }

@@ -23,9 +23,8 @@ class EnumerateInputMethodEditorsTest : public testing::Test {
   EnumerateInputMethodEditorsTest() = default;
   ~EnumerateInputMethodEditorsTest() override = default;
 
+  // Override all registry hives so that real IMEs don't mess up the unit tests.
   void SetUp() override {
-    // Override all registry hives so that real IMEs don't mess up the unit
-    // tests.
     ASSERT_NO_FATAL_FAILURE(
         registry_override_manager_.OverrideRegistry(HKEY_CLASSES_ROOT));
     ASSERT_NO_FATAL_FAILURE(
@@ -66,6 +65,10 @@ void OnImeEnumerated(std::vector<base::FilePath>* imes,
   imes->push_back(ime_path);
 }
 
+void OnEnumerationFinished(bool* is_enumeration_finished) {
+  *is_enumeration_finished = true;
+}
+
 }  // namespace
 
 // Registers a few fake IMEs then see if the enumeration finds them.
@@ -78,12 +81,16 @@ TEST_F(EnumerateInputMethodEditorsTest, EnumerateImes) {
 
   // Do the asynchronous enumeration.
   std::vector<base::FilePath> imes;
+  bool is_enumeration_finished = false;
   EnumerateInputMethodEditors(
-      base::Bind(&OnImeEnumerated, base::Unretained(&imes)));
+      base::BindRepeating(&OnImeEnumerated, base::Unretained(&imes)),
+      base::BindOnce(&OnEnumerationFinished,
+                     base::Unretained(&is_enumeration_finished)));
 
   RunUntilIdle();
 
-  EXPECT_EQ(1u, imes.size());
+  EXPECT_TRUE(is_enumeration_finished);
+  ASSERT_EQ(1u, imes.size());
   EXPECT_EQ(file_exe, imes[0]);
 }
 
@@ -97,10 +104,14 @@ TEST_F(EnumerateInputMethodEditorsTest, SkipMicrosoftImes) {
 
   // Do the asynchronous enumeration.
   std::vector<base::FilePath> imes;
+  bool is_enumeration_finished = false;
   EnumerateInputMethodEditors(
-      base::Bind(&OnImeEnumerated, base::Unretained(&imes)));
+      base::BindRepeating(&OnImeEnumerated, base::Unretained(&imes)),
+      base::BindOnce(&OnEnumerationFinished,
+                     base::Unretained(&is_enumeration_finished)));
 
   RunUntilIdle();
 
+  EXPECT_TRUE(is_enumeration_finished);
   EXPECT_TRUE(imes.empty());
 }
