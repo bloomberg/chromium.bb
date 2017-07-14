@@ -10,32 +10,14 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/animation/animation_test_api.h"
 #include "ui/gfx/animation/test_animation_delegate.h"
 
 namespace gfx {
 
-// Class to provide access to SlideAnimation internals for testing.
-class SlideAnimation::TestApi {
- public:
-  explicit TestApi(SlideAnimation* animation) : animation_(animation) {}
-
-  void SetStartTime(base::TimeTicks ticks) {
-    animation_->SetStartTime(ticks);
-  }
-
-  void Step(base::TimeTicks ticks) {
-    animation_->Step(ticks);
-  }
-
- private:
-  SlideAnimation* animation_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestApi);
-};
-
 ////////////////////////////////////////////////////////////////////////////////
 // SlideAnimationTest
-class SlideAnimationTest: public testing::Test {
+class SlideAnimationTest : public testing::Test {
  protected:
   SlideAnimationTest()
       : scoped_task_environment_(
@@ -62,7 +44,7 @@ TEST_F(SlideAnimationTest, InitialState) {
 
 TEST_F(SlideAnimationTest, Basics) {
   SlideAnimation animation(nullptr);
-  SlideAnimation::TestApi test_api(&animation);
+  AnimationTestApi test_api(&animation);
 
   // Use linear tweening to make the math easier below.
   animation.SetTweenType(Tween::LINEAR);

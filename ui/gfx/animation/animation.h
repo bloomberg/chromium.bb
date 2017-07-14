@@ -19,6 +19,7 @@ namespace gfx {
 
 class AnimationContainer;
 class AnimationDelegate;
+class AnimationTestApi;
 
 // Base class used in implementing animations. You only need use this class if
 // you're implementing a new animation type, otherwise you'll likely want one of
@@ -92,6 +93,8 @@ class ANIMATION_EXPORT Animation : public AnimationContainerElement {
   base::TimeDelta GetTimerInterval() const override;
 
  private:
+  friend class AnimationTestApi;
+
   // Interval for the animation.
   const base::TimeDelta timer_interval_;
 

@@ -578,6 +578,8 @@ component("gfx_switches") {
 static_library("test_support") {
   testonly = true
   sources = [
+    "animation/animation_test_api.cc",
+    "animation/animation_test_api.h",
     "animation/test_animation_delegate.h",
     "geometry/test/rect_test_util.cc",
     "geometry/test/rect_test_util.h",
