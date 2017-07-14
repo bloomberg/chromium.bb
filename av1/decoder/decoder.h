@@ -215,6 +215,20 @@ static INLINE int dec_is_ref_frame_buf(AV1Decoder *const pbi,
 }
 #endif  // CONFIG_EXT_REFS
 
+#if CONFIG_EXT_INTRA || CONFIG_FILTER_INTRA || CONFIG_PALETTE
+#define ACCT_STR __func__
+static INLINE int av1_read_uniform(aom_reader *r, int n) {
+  const int l = get_unsigned_bits(n);
+  const int m = (1 << l) - n;
+  const int v = aom_read_literal(r, l - 1, ACCT_STR);
+  assert(l != 0);
+  if (v < m)
+    return v;
+  else
+    return (v << 1) - m + aom_read_literal(r, 1, ACCT_STR);
+}
+#endif  // CONFIG_EXT_INTRA || CONFIG_FILTER_INTRA || CONFIG_PALETTE
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif

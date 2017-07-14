@@ -323,15 +323,12 @@ void av1_tokenize_palette_sb(const AV1_COMP *cpi,
                              const struct ThreadData *const td, int plane,
                              TOKENEXTRA **t, RUN_TYPE dry_run, BLOCK_SIZE bsize,
                              int *rate) {
+  assert(plane == 0 || plane == 1);
   const MACROBLOCK *const x = &td->mb;
   const MACROBLOCKD *const xd = &x->e_mbd;
   const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   const uint8_t *const color_map = xd->plane[plane].color_index_map;
   const PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
-  const int n = pmi->palette_size[plane];
-  int i, j;
-  int this_rate = 0;
-  uint8_t color_order[PALETTE_MAX_SIZE];
 #if CONFIG_NEW_MULTISYMBOL
   aom_cdf_prob(
       *palette_cdf)[PALETTE_COLOR_INDEX_CONTEXTS][CDF_SIZE(PALETTE_COLORS)] =
@@ -347,24 +344,37 @@ void av1_tokenize_palette_sb(const AV1_COMP *cpi,
   int plane_block_width, rows, cols;
   av1_get_block_dimensions(bsize, plane, xd, &plane_block_width, NULL, &rows,
                            &cols);
-  assert(plane == 0 || plane == 1);
 
-#if CONFIG_PALETTE_THROUGHPUT
-  int k;
-  for (k = 1; k < rows + cols - 1; ++k) {
-    for (j = AOMMIN(k, cols - 1); j >= AOMMAX(0, k - rows + 1); --j) {
-      i = k - j;
+  // The first color index does not use context or entropy.
+  (*t)->token = color_map[0];
+#if CONFIG_NEW_MULTISYMBOL
+  (*t)->palette_cdf = NULL;
 #else
-  for (i = 0; i < rows; ++i) {
-    for (j = (i == 0 ? 1 : 0); j < cols; ++j) {
+  (*t)->context_tree = NULL;
+#endif
+  (*t)->skip_eob_node = 0;
+  ++(*t);
+
+  const int n = pmi->palette_size[plane];
+  const int calc_rate = rate && dry_run == DRY_RUN_COSTCOEFFS;
+  int this_rate = 0;
+  uint8_t color_order[PALETTE_MAX_SIZE];
+#if CONFIG_PALETTE_THROUGHPUT
+  for (int k = 1; k < rows + cols - 1; ++k) {
+    for (int j = AOMMIN(k, cols - 1); j >= AOMMAX(0, k - rows + 1); --j) {
+      int i = k - j;
+#else
+  for (int i = 0; i < rows; ++i) {
+    for (int j = (i == 0 ? 1 : 0); j < cols; ++j) {
 #endif  // CONFIG_PALETTE_THROUGHPUT
       int color_new_idx;
       const int color_ctx = av1_get_palette_color_index_context(
           color_map, plane_block_width, i, j, n, color_order, &color_new_idx);
       assert(color_new_idx >= 0 && color_new_idx < n);
-      if (dry_run == DRY_RUN_COSTCOEFFS)
+      if (calc_rate) {
         this_rate += cpi->palette_y_color_cost[n - PALETTE_MIN_SIZE][color_ctx]
                                               [color_new_idx];
+      }
       (*t)->token = color_new_idx;
 #if CONFIG_NEW_MULTISYMBOL
       (*t)->palette_cdf = palette_cdf[n - PALETTE_MIN_SIZE][color_ctx];
