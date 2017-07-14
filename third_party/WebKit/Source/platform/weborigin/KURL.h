@@ -36,6 +36,28 @@
 #include "url/third_party/mozilla/url_parse.h"
 #include "url/url_canon.h"
 
+// KURL is Blink's main URL class, and is the analog to GURL in other Chromium
+// code. It is not thread safe but is generally cheap to copy and compare KURLs
+// to each other.
+//
+// KURL and GURL both share the same underlying URL parser, whose code is
+// located in //url, but KURL is backed by Blink specific WTF::Strings. This
+// means that KURLs are usually cheap to copy due to WTF::Strings being
+// internally ref-counted. However, please don't copy KURLs if you can use a
+// const ref, since the size of the parsed structure and related metadata is
+// non-trivial.
+//
+// In fact, for the majority of KURLs (i.e. those not copied across threads),
+// the backing string is an AtomicString, meaning that it is stored in the
+// thread-local AtomicString table, allowing optimizations like fast comparison.
+// See platform/wtf/text/AtomicString.h for information on the performance
+// characteristics of AtomicStrings.
+//
+// KURL also has a few other optimizations, including:
+//  - Cached bit for whether the KURL is http/https
+//  - Internal reference to the URL protocol (scheme) to avoid String allocation
+//    for the callers that require it. Common protocols like http and https are
+//    stored as static strings which can be shared across threads.
 namespace WTF {
 class TextEncoding;
 }
