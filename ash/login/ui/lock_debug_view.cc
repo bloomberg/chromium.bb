@@ -74,8 +74,13 @@ class LockDebugView::DebugDataDispatcherTransformer
       const ash::mojom::UserInfoPtr& root_user =
           root_users_[i % root_users_.size()];
       users.push_back(root_user->Clone());
+      if (i >= root_users_.size()) {
+        users[i]->account_id = AccountId::FromUserEmailGaiaId(
+            users[i]->account_id.GetUserEmail() + std::to_string(i),
+            users[i]->account_id.GetGaiaId() + std::to_string(i));
+      }
       if (i >= debug_users_.size())
-        debug_users_.push_back(UserMetadata(root_user));
+        debug_users_.push_back(UserMetadata(users[i]));
     }
 
     // Set debug user names. Useful for the stub user, which does not have a
