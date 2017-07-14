@@ -1,0 +1,5 @@
+include_rules = [
+  "+components/viz/common",
+  "+cc/surfaces/surface_observer.h",
+  "+services/viz/hit_test/public/interfaces",
+]
