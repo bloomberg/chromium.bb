@@ -71,6 +71,7 @@ AnswerCardWebContents::AnswerCardWebContents(Profile* profile)
   web_contents_->SetDelegate(this);
   web_view_->set_owned_by_client();
   web_view_->SetWebContents(web_contents_.get());
+  web_view_->SetResizeBackgroundColor(SK_ColorTRANSPARENT);
 
   // Make the webview transparent since it's going to be shown on top of a
   // highlightable button.
