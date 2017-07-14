@@ -28,7 +28,7 @@ class ASH_EXPORT PointerMetricsRecorder : public views::PointerWatcher {
   // views::PointerWatcher:
   void OnPointerEventObserved(const ui::PointerEvent& event,
                               const gfx::Point& location_in_screen,
-                              views::Widget* target) override;
+                              gfx::NativeView target) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PointerMetricsRecorder);

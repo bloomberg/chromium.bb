@@ -45,7 +45,7 @@ class OverflowBubble : public views::PointerWatcher,
   // views::PointerWatcher:
   void OnPointerEventObserved(const ui::PointerEvent& event,
                               const gfx::Point& location_in_screen,
-                              views::Widget* target) override;
+                              gfx::NativeView target) override;
 
   // Overridden from views::WidgetObserver:
   void OnWidgetDestroying(views::Widget* widget) override;

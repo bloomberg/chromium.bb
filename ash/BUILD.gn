@@ -1242,6 +1242,7 @@ source_set("common_unittests") {
     "system/tray/size_range_layout_unittest.cc",
     "system/tray/system_tray_unittest.cc",
     "system/tray/tray_details_view_unittest.cc",
+    "system/tray/tray_event_filter_unittest.cc",
     "system/tray/tri_view_unittest.cc",
     "system/tray_tracing_unittest.cc",
     "system/update/tray_update_unittest.cc",

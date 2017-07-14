@@ -118,13 +118,15 @@ void PointerWatcherEventRouter::OnPointerEventObserved(
   // separately. See http://crbug.com/608547
   gfx::Point location_in_screen = event.root_location();
   for (PointerWatcher& observer : move_watchers_) {
-    observer.OnPointerEventObserved(updated_event, location_in_screen,
-                                    target_widget);
+    observer.OnPointerEventObserved(
+        updated_event, location_in_screen,
+        target_widget ? target_widget->GetNativeWindow() : target);
   }
   if (event.type() != ui::ET_POINTER_MOVED) {
     for (PointerWatcher& observer : non_move_watchers_) {
-      observer.OnPointerEventObserved(updated_event, location_in_screen,
-                                      target_widget);
+      observer.OnPointerEventObserved(
+          updated_event, location_in_screen,
+          target_widget ? target_widget->GetNativeWindow() : target);
     }
   }
 }

@@ -6,6 +6,7 @@
 #define UI_VIEWS_POINTER_WATCHER_H_
 
 #include "base/macros.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/views/views_export.h"
 
 namespace gfx {
@@ -17,7 +18,6 @@ class PointerEvent;
 }
 
 namespace views {
-class Widget;
 
 // When a PointerWatcher is added the types of events desired is specified by
 // way of PointerWatcherEventTypes.
@@ -35,7 +35,7 @@ enum class PointerWatcherEventTypes {
 
 // An interface for read-only observation of pointer events (in particular, the
 // events cannot be marked as handled). Only certain event types are supported.
-// The |target| is the top-level widget that will receive the event, if any.
+// The |target| is the native window that will receive the event, if any.
 // To reduce IPC traffic from the window server, move events are not provided
 // unless the app specifically requests them.
 // NOTE: On mus this allows observation of events outside of windows owned
@@ -43,13 +43,15 @@ enum class PointerWatcherEventTypes {
 // event.target() is always null.
 // NOTE: Mouse capture change events are sent through OnPointerEventObserved and
 // its |target| is always null.
+// NOTE: |target| may or may not have an associated views::Widget that may not
+// be a top-level Widget.
 class VIEWS_EXPORT PointerWatcher {
  public:
   PointerWatcher() {}
 
   virtual void OnPointerEventObserved(const ui::PointerEvent& event,
                                       const gfx::Point& location_in_screen,
-                                      Widget* target) = 0;
+                                      gfx::NativeView target) = 0;
 
  protected:
   virtual ~PointerWatcher() {}

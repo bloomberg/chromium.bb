@@ -52,7 +52,7 @@ class TouchHudUI : public views::WidgetDelegateView,
   // Overridden from views::PointerWatcher:
   void OnPointerEventObserved(const ui::PointerEvent& event,
                               const gfx::Point& location_in_screen,
-                              views::Widget* target) override {
+                              gfx::NativeView target) override {
     if (event.IsTouchPointerEvent())
       touch_hud_renderer_->HandleTouchEvent(event);
   }

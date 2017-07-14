@@ -202,7 +202,7 @@ void ShelfTooltipManager::ShowTooltipWithDelay(views::View* view) {
 void ShelfTooltipManager::OnPointerEventObserved(
     const ui::PointerEvent& event,
     const gfx::Point& location_in_screen,
-    views::Widget* target) {
+    gfx::NativeView target) {
   // Close on any press events inside or outside the tooltip.
   if (event.type() == ui::ET_POINTER_DOWN)
     Close();
