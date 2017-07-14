@@ -129,6 +129,17 @@ static SelectionMode ComputeSelectionMode(
   return SelectionMode::kBlockCursor;
 }
 
+static PositionInFlatTree FindFirstVisiblePosition(
+    const PositionInFlatTree& start) {
+  return MostForwardCaretPosition(
+      CreateVisiblePosition(start).DeepEquivalent());
+}
+
+static PositionInFlatTree FindLastVisiblePosition(
+    const PositionInFlatTree& end) {
+  return MostBackwardCaretPosition(CreateVisiblePosition(end).DeepEquivalent());
+}
+
 static EphemeralRangeInFlatTree CalcSelection(
     const FrameSelection& frame_selection) {
   const SelectionInDOMTree& selection_in_dom =
@@ -138,17 +149,23 @@ static EphemeralRangeInFlatTree CalcSelection(
       return {};
     case SelectionMode::kRange: {
       const PositionInFlatTree& base =
-          CreateVisiblePosition(ToPositionInFlatTree(selection_in_dom.Base()))
-              .DeepEquivalent();
+          ToPositionInFlatTree(selection_in_dom.Base());
       const PositionInFlatTree& extent =
-          CreateVisiblePosition(ToPositionInFlatTree(selection_in_dom.Extent()))
-              .DeepEquivalent();
+          ToPositionInFlatTree(selection_in_dom.Extent());
       if (base.IsNull() || extent.IsNull() || base == extent)
         return {};
       const bool base_is_first = base.CompareTo(extent) <= 0;
       const PositionInFlatTree& start = base_is_first ? base : extent;
       const PositionInFlatTree& end = base_is_first ? extent : base;
-      return {MostForwardCaretPosition(start), MostBackwardCaretPosition(end)};
+      const PositionInFlatTree& visible_start = FindFirstVisiblePosition(start);
+      const PositionInFlatTree& visible_end = FindLastVisiblePosition(end);
+      if (visible_start.IsNull() || visible_end.IsNull())
+        return {};
+      // This case happens if we have
+      // <div>foo<div style="visibility:hidden">^bar|</div>baz</div>.
+      if (visible_start >= visible_end)
+        return {};
+      return {visible_start, visible_end};
     }
     case SelectionMode::kBlockCursor: {
       const PositionInFlatTree& base =
