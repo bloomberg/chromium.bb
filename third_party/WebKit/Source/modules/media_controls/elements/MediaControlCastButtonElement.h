@@ -25,33 +25,20 @@ class MediaControlCastButtonElement final : public MediaControlInputElement {
   void UpdateDisplayType();
 
   // MediaControlInputElement overrides.
-  bool WillRespondToMouseClickEvents() override;
-  WebLocalizedString::Name GetOverflowStringName() const override;
-  bool HasOverflowButton() const override;
+  bool WillRespondToMouseClickEvents() final;
+  WebLocalizedString::Name GetOverflowStringName() const final;
+  bool HasOverflowButton() const final;
+
+ protected:
+  const char* GetNameForHistograms() const final;
 
  private:
-  // This is used for UMA histogram (Cast.Sender.Overlay). New values should
-  // be appended only and must be added before |Count|.
-  enum class CastOverlayMetrics {
-    kCreated = 0,
-    kShown,
-    kClicked,
-    kCount  // Keep last.
-  };
-
-  void DefaultEventHandler(Event*) override;
-  bool KeepEventInNode(Event*) override;
-
-  void RecordMetrics(CastOverlayMetrics);
+  void DefaultEventHandler(Event*) final;
+  bool KeepEventInNode(Event*) final;
 
   bool IsPlayingRemotely() const;
 
   bool is_overlay_button_;
-
-  // UMA related boolean. They are used to prevent counting something twice
-  // for the same media element.
-  bool click_use_counted_ = false;
-  bool show_use_counted_ = false;
 };
 
 }  // namespace blink

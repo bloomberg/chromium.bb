@@ -48,11 +48,20 @@ bool MediaControlVolumeSliderElement::WillRespondToMouseClickEvents() {
   return MediaControlInputElement::WillRespondToMouseClickEvents();
 }
 
+const char* MediaControlVolumeSliderElement::GetNameForHistograms() const {
+  return "VolumeSlider";
+}
+
 void MediaControlVolumeSliderElement::DefaultEventHandler(Event* event) {
   if (!isConnected() || !GetDocument().IsActive())
     return;
 
   MediaControlInputElement::DefaultEventHandler(event);
+
+  if (event->IsMouseEvent() || event->IsKeyboardEvent() ||
+      event->IsGestureEvent() || event->IsPointerEvent()) {
+    MaybeRecordInteracted();
+  }
 
   if (event->type() == EventTypeNames::mousedown) {
     Platform::Current()->RecordAction(

@@ -10,6 +10,12 @@ namespace blink {
 
 void MediaControlDivElement::SetOverflowElementIsWanted(bool) {}
 
+void MediaControlDivElement::MaybeRecordDisplayed() {
+  // No-op. At the moment, usage is only recorded in the context of CTR. It
+  // could be recorded for MediaControlDivElement but there is no need for it at
+  // the moment.
+}
+
 MediaControlDivElement::MediaControlDivElement(
     MediaControlsImpl& media_controls,
     MediaControlElementType display_type)

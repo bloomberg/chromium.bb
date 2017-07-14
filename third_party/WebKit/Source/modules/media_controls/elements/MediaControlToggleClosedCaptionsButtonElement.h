@@ -23,6 +23,9 @@ class MediaControlToggleClosedCaptionsButtonElement final
   WebLocalizedString::Name GetOverflowStringName() const override;
   bool HasOverflowButton() const override;
 
+ protected:
+  const char* GetNameForHistograms() const override;
+
  private:
   void DefaultEventHandler(Event*) override;
 };

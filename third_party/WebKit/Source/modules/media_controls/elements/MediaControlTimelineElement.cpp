@@ -59,6 +59,10 @@ void MediaControlTimelineElement::OnPlaying() {
       MediaElement().IsFullscreen(), TimelineWidth());
 }
 
+const char* MediaControlTimelineElement::GetNameForHistograms() const {
+  return "TimelineSlider";
+}
+
 void MediaControlTimelineElement::DefaultEventHandler(Event* event) {
   if (event->IsMouseEvent() &&
       ToMouseEvent(event)->button() !=
@@ -103,6 +107,11 @@ void MediaControlTimelineElement::DefaultEventHandler(Event* event) {
   }
 
   MediaControlInputElement::DefaultEventHandler(event);
+
+  if (event->IsMouseEvent() || event->IsKeyboardEvent() ||
+      event->IsGestureEvent() || event->IsPointerEvent()) {
+    MaybeRecordInteracted();
+  }
 
   if (event->type() != EventTypeNames::input)
     return;

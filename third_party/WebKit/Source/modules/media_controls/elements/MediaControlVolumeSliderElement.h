@@ -25,6 +25,9 @@ class MediaControlVolumeSliderElement final : public MediaControlInputElement {
 
   void OnMediaKeyboardEvent(Event* event) { DefaultEventHandler(event); }
 
+ protected:
+  const char* GetNameForHistograms() const override;
+
  private:
   void DefaultEventHandler(Event*) override;
   bool KeepEventInNode(Event*) override;

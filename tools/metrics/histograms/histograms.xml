@@ -7236,8 +7236,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Cast.Sender.Overlay" enum="CastOverlayEvents">
+  <obsolete>
+    Deprecated July 2017 in favor of Media.Controls.CTR.CastOverlayButton.
+  </obsolete>
   <owner>avayvod@chromium.org</owner>
   <owner>mlamouri@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
   <summary>
     Records events and user interactions related to the Cast overlay shown on
     video elements.
@@ -29295,9 +29299,31 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.Controls.CTR" enum="MediaControlsCTREvent">
+  <owner>mlamouri@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
+  <summary>
+    Records events related to click through rate (CTR) calculation.
+
+    The CTR can be calculated by computing &quot;Interacted&quot; /
+    &quot;Displayed&quot;. &quot;Interacted&quot;, for buttons, means that they
+    were clicked. For sliders, it will reflect any change in the internal state
+    and includes other events in addition to clicks. &quot;Displayed&quot; means
+    that the control element was meant to be displayed in the controls. It does
+    not mean that the user have seen the element so is not to be confused with
+    visibility. Furthermore, because the controls UI changes while loading,
+    &quot;Displayed&quot; is only computed when metadata are available unless
+    preloading was disabled on the element or the browser.
+  </summary>
+</histogram>
+
 <histogram name="Media.Controls.Download" enum="MediaControlsDownloadReason">
+  <obsolete>
+    Deprecated July 2017 in favor of Media.Controls.CTR.DownloadButton.
+  </obsolete>
   <owner>mlamouri@chromium.org</owner>
   <owner>nyquist@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
   <summary>
     Records events and user interactions related to the download button shown on
     media elements.
@@ -92092,6 +92118,28 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       label="Measures the time taken for DoPlay(). Technically only the
              worker method AudioOutputController::PollAndStartIfDataReady()."/>
   <affected-histogram name="Media.AudioOutputController"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="MediaControlsElements" separator=".">
+  <suffix name="CastButton" label="Cast button"/>
+  <suffix name="CastOverflowButton" label="Cast overflow button"/>
+  <suffix name="CastOverlayButton" label="Cast overlay button"/>
+  <suffix name="ClosedCaptionButton" label="Closed caption button"/>
+  <suffix name="ClosedCaptionOverflowButton"
+      label="Closed caption overflow button"/>
+  <suffix name="DownloadButton" label="Download button"/>
+  <suffix name="DownloadOverflowButton" label="Download overflow button"/>
+  <suffix name="FullscreenButton" label="Fullscreen button"/>
+  <suffix name="FullscreenOverflowButton" label="Fullscreen overflow button"/>
+  <suffix name="MuteButton" label="Mute button"/>
+  <suffix name="MuteOverflowButton" label="Mute overflow button"/>
+  <suffix name="OverflowButton" label="Overflow button"/>
+  <suffix name="PlayOverlayButton" label="Play overlay button"/>
+  <suffix name="PlayPauseButton" label="Play/pause button"/>
+  <suffix name="PlayPauseOverflowButton" label="Play/pause overflow button"/>
+  <suffix name="TimelineSlider" label="Timeline slider"/>
+  <suffix name="VolumeSlider" label="Volume slider"/>
+  <affected-histogram name="Media.Controls.CTR"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="MediaElementConfigurations" separator=".">

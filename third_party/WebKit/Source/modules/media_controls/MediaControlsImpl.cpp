@@ -1171,6 +1171,16 @@ void MediaControlsImpl::ComputeWhichControlsFit() {
                     size_.Height() >= kMinHeightForOverlayPlayButton;
     overlay_play_button_->SetDoesFit(does_fit);
   }
+
+  // Record the display state when needed. It is only recorded when the media
+  // element is in a state that allows it in order to reduce noise in the
+  // metrics.
+  if (MediaControlInputElement::ShouldRecordDisplayStates(MediaElement())) {
+    // Record which controls are used.
+    for (const auto& element : elements)
+      element->MaybeRecordDisplayed();
+    overflow_menu_->MaybeRecordDisplayed();
+  }
 }
 
 void MediaControlsImpl::Invalidate(Element* element) {
