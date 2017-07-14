@@ -2393,6 +2393,11 @@ test("base_unittests") {
     deps += [ "//base/third_party/libevent" ]
   }
 
+  if (is_fuchsia) {
+    # Fuchsia doesn't support file locking.
+    sources -= [ "files/file_locking_unittest.cc" ]
+  }
+
   if (is_android) {
     deps += [ "//testing/android/native_test:native_test_native_code" ]
     set_sources_assignment_filter([])
