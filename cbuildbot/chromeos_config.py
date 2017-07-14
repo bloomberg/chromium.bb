@@ -2249,6 +2249,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'gale',
       'glados',
       'guado',
+      'guado_moblab',
       'kip',
       'lakitu',
       'lakitu-gpu',
@@ -2308,7 +2309,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   _paladin_experimental_boards = _paladin_new_boards | frozenset([
       'cobblepot', # contact:jkoleszar@
       'gonzo', # contact:icoolidge@
-      'guado_moblab', # Known lab flakes are too common - contact:haddowk@
       'lasilla-ground', # contact:jemele@
       'lasilla-sky', # contact:jemele@
       'macchiato-ground', # contact:jemele@
