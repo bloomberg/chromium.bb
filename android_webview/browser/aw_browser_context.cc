@@ -29,6 +29,7 @@
 #include "components/prefs/in_memory_pref_store.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/pref_service_factory.h"
+#include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/triggers/trigger_manager.h"
 #include "components/url_formatter/url_fixer.h"
 #include "components/user_prefs/user_prefs.h"
@@ -200,8 +201,8 @@ void AwBrowserContext::PreMainMessageLoopRun() {
   web_restriction_provider_->SetAuthority(
       user_pref_service_->GetString(prefs::kWebRestrictionsAuthority));
 
-  safe_browsing_ui_manager_ =
-      new AwSafeBrowsingUIManager(GetAwURLRequestContext());
+  safe_browsing_ui_manager_ = new AwSafeBrowsingUIManager(
+      GetAwURLRequestContext(), user_pref_service_.get());
   safe_browsing_db_manager_ =
       new safe_browsing::RemoteSafeBrowsingDatabaseManager();
   safe_browsing_trigger_manager_ =
@@ -251,6 +252,7 @@ void AwBrowserContext::InitUserPrefService() {
                                     std::string());
 
   metrics::MetricsService::RegisterPrefs(pref_registry);
+  safe_browsing::RegisterProfilePrefs(pref_registry);
 
   PrefServiceFactory pref_service_factory;
   pref_service_factory.set_user_prefs(make_scoped_refptr(

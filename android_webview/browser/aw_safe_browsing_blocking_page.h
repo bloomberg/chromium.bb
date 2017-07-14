@@ -8,6 +8,8 @@
 #include "components/safe_browsing/base_blocking_page.h"
 #include "components/security_interstitials/core/base_safe_browsing_error_ui.h"
 
+class PrefService;
+
 namespace security_interstitials {
 struct UnsafeResource;
 }  // namespace security_interstitials
@@ -22,7 +24,7 @@ class AwSafeBrowsingBlockingPage : public safe_browsing::BaseBlockingPage {
 
   static void ShowBlockingPage(AwSafeBrowsingUIManager* ui_manager,
                                const UnsafeResource& unsafe_resource,
-                               bool extended_reporting_allowed);
+                               PrefService* pref_service);
 
  protected:
   // Used to specify which BaseSafeBrowsingErrorUI to instantiate, and

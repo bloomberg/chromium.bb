@@ -119,7 +119,8 @@ class BaseBlockingPage
       security_interstitials::SecurityInterstitialControllerClient>
   CreateControllerClient(content::WebContents* web_contents,
                          const UnsafeResourceList& unsafe_resources,
-                         BaseUIManager* ui_manager);
+                         BaseUIManager* ui_manager,
+                         PrefService* pref_service);
 
   int GetHTMLTemplateId() override;
 
