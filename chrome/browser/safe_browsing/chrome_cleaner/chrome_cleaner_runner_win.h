@@ -54,11 +54,6 @@ class ChromeCleanerRunner
     kDisabled,
   };
 
-  enum class CleanerLogsStatus {
-    kUploadEnabled,
-    kUploadDisabled,
-  };
-
   enum class LaunchStatus {
     // Got an invalid process when attempting to launch the Chrome Cleaner
     // process. As a result, the Mojo pipe was never set up and the
@@ -94,11 +89,11 @@ class ChromeCleanerRunner
   //
   // This function will pass command line flags to the Chrome Cleaner executable
   // as appropriate based on the flags in |reporter_invocation| and the
-  // |metrics_status| and |cleaner_logs_status| parameters. The Cleaner process
-  // will communicate with Chrome via a Mojo IPC interface and any IPC requests
-  // or notifications are passed to the caller via the |on_prompt_user| and
-  // |on_connection_closed| callbacks. Finally, when the Chrome Cleaner process
-  // terminates, a ProcessStatus is passed along to |on_process_done|.
+  // |metrics_status| parameters The Cleaner process will communicate with
+  // Chrome via a Mojo IPC interface and any IPC requests or notifications are
+  // passed to the caller via the |on_prompt_user| and |on_connection_closed|
+  // callbacks. Finally, when the Chrome Cleaner process terminates, a
+  // ProcessStatus is passed along to |on_process_done|.
   //
   // The details of the mojo interface are documented in
   // "components/chrome_cleaner/public/interfaces/chrome_prompt.mojom.h".
@@ -106,7 +101,6 @@ class ChromeCleanerRunner
       const base::FilePath& cleaner_executable_path,
       const SwReporterInvocation& reporter_invocation,
       ChromeMetricsStatus metrics_status,
-      CleanerLogsStatus cleaner_logs_status,
       ChromePromptImpl::OnPromptUser on_prompt_user,
       base::OnceClosure on_connection_closed,
       ChromeCleanerRunner::ProcessDoneCallback on_process_done,
@@ -120,7 +114,6 @@ class ChromeCleanerRunner
   ChromeCleanerRunner(const base::FilePath& cleaner_executable_path,
                       const SwReporterInvocation& reporter_invocation,
                       ChromeMetricsStatus metrics_status,
-                      CleanerLogsStatus cleaner_logs_status,
                       ChromePromptImpl::OnPromptUser on_prompt_user,
                       base::OnceClosure on_connection_closed,
                       ChromeCleanerRunner::ProcessDoneCallback on_process_done,

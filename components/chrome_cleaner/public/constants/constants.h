@@ -33,10 +33,6 @@ extern const char kChromeSystemInstallSwitch[];
 // The Chrome version string.
 extern const char kChromeVersionSwitch[];
 
-// Indicates whether logs upload is enabled in the cleaner process.
-// Takes effect only if execution mode is ExecutionMode::kCleanup.
-extern const char kEnableCleanerLoggingSwitch[];
-
 // Indicates that crash reporting is enabled for the current user.
 extern const char kEnableCrashReportingSwitch[];
 
@@ -116,9 +112,12 @@ enum class ExecutionMode {
   // The cleaner will run in scanning mode. No UI will be shown to the user
   // (UI handled by Chrome) and logs will not be uploaded.
   kScanning = 1,
-  // The cleaner will run in cleanup mode only. No UI will be shown to the
-  // user (UI handled by Chrome) and logs should only be uploaded if
-  // |kEnableCleanerLoggingSwitch| is set.
+  // The cleaner will run in cleaning mode. No UI will be shown to the user
+  // (UI handled by Chrome) and logs will be uploaded if the user did not opt
+  // out of logs collection when it was offered by the Chrome UI.
+  // Chrome should not try to launch the Chrome Cleanup Tool with |kCleanup|.
+  // It should instead communicate through IPC with the cleaner launched with
+  // |kScanning| to ask it to start cleanup.
   kCleanup = 2,
 
   // Auxiliary enumerator for range checking.
