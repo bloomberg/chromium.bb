@@ -191,10 +191,6 @@ group("installer_deps") {
     public_deps += [ ":rpm_packaging_files" ]
   }
 
-  # TODO(thomasanderson): Move this variable into a .gni file
-  # somewhere.  It is currently copied from
-  # buildtools/third_party/libc++/BUILD.gn.
-  libcpp_is_static = !is_component_build && !using_sanitizer
   if (!libcpp_is_static && use_custom_libcxx) {
     public_deps += [ "//buildtools/third_party/libc++:libc++" ]
   }
@@ -244,10 +240,6 @@ template("linux_package") {
     ]
   }
 
-  # TODO(thomasanderson): Move this variable into a .gni file
-  # somewhere.  It is currently copied from
-  # buildtools/third_party/libc++/BUILD.gn.
-  libcpp_is_static = !is_component_build && !using_sanitizer
   if (!libcpp_is_static && use_custom_libcxx) {
     packaging_files_binaries += [ "$root_out_dir/libc++.so" ]
   }
