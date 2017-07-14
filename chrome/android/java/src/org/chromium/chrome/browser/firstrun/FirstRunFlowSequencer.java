@@ -376,17 +376,10 @@ public abstract class FirstRunFlowSequencer  {
                 List<WeakReference<Activity>> activities = ApplicationStatus.getRunningActivities();
                 for (WeakReference<Activity> weakActivity : activities) {
                     Activity activity = weakActivity.get();
-                    if (activity == null) {
-                        continue;
-                    } else if (activity instanceof LightweightFirstRunActivity) {
-                        // A Generic or a new Lightweight First Run Experience will be launched
-                        // below, so finish the old Lightweight First Run Experience.
-                        activity.setResult(Activity.RESULT_CANCELED);
-                        activity.finish();
-                        continue;
-                    } else if (activity instanceof FirstRunActivity) {
+                    if (activity instanceof FirstRunActivity
+                            && !(activity instanceof LightweightFirstRunActivity)) {
                         isGenericFreActive = true;
-                        continue;
+                        break;
                     }
                 }
 
