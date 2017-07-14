@@ -802,10 +802,6 @@
       status: "stable",
     },
     {
-      name: "PaymentRequestPayerName",
-      status: "stable",
-    },
-    {
       name: "PerformanceNavigationTiming2",
       status: "stable",
     },
