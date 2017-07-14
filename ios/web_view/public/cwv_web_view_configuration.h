@@ -9,6 +9,7 @@
 
 #import "cwv_export.h"
 
+@class CWVPreferences;
 @class CWVUserContentController;
 @class CWVWebsiteDataStore;
 
@@ -23,6 +24,9 @@ CWV_EXPORT
 + (instancetype)incognitoConfiguration;
 
 - (instancetype)init NS_UNAVAILABLE;
+
+// The preferences object associated with this web view configuration.
+@property(nonatomic, readonly) CWVPreferences* preferences;
 
 // The user content controller to associate with web views created using this
 // configuration.

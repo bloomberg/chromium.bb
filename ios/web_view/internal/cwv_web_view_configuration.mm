@@ -8,6 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "ios/web_view/internal/app/application_context.h"
+#import "ios/web_view/internal/cwv_preferences_internal.h"
 #import "ios/web_view/internal/cwv_user_content_controller_internal.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
 #include "ios/web_view/internal/web_view_global_state_util.h"
@@ -28,6 +29,7 @@
 
 @implementation CWVWebViewConfiguration
 
+@synthesize preferences = _preferences;
 @synthesize userContentController = _userContentController;
 
 + (instancetype)defaultConfiguration {
@@ -67,6 +69,9 @@
   self = [super init];
   if (self) {
     _browserState = std::move(browserState);
+
+    _preferences =
+        [[CWVPreferences alloc] initWithPrefService:_browserState->GetPrefs()];
 
     _userContentController =
         [[CWVUserContentController alloc] initWithConfiguration:self];
