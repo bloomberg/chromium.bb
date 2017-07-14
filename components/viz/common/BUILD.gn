@@ -67,6 +67,7 @@ viz_source_set("unit_tests") {
     "gl_helper_unittest.cc",
     "resources/buffer_to_texture_target_map_unittest.cc",
     "resources/platform_color_unittest.cc",
+    "surfaces/surface_sequence_generator_unittest.cc",
     "yuv_readback_unittest.cc",
   ]
 

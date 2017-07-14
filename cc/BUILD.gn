@@ -841,7 +841,6 @@ cc_test("cc_unittests") {
     "surfaces/referenced_surface_tracker_unittest.cc",
     "surfaces/surface_hittest_unittest.cc",
     "surfaces/surface_manager_ref_unittest.cc",
-    "surfaces/surface_sequence_generator_unittest.cc",
     "surfaces/surface_synchronization_unittest.cc",
     "surfaces/surface_unittest.cc",
 
