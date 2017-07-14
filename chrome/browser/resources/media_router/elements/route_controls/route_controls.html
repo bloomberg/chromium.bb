@@ -20,7 +20,7 @@
               dir="ltr"
               id="route-time-slider"
               on-change="onSeekComplete_"
-              on-immediate-value-change="onSeekStart_"
+              on-immediate-value-change="onSeekByDragging_"
               min="0" max="[[routeStatus.duration]]" step="1"
               title="[[i18n('seekTitle')]]"
               value="[[displayedCurrentTime_]]"></paper-slider>
@@ -57,7 +57,7 @@
                 hidden="[[!routeStatus.canSetVolume]]"
                 disabled="[[!routeStatus.canSetVolume]]"
                 on-change="onVolumeChangeComplete_"
-                on-immediate-value-change="onVolumeChangeStart_"
+                on-immediate-value-change="onVolumeChangeByDragging_"
                 title="[[i18n('volumeTitle')]]"
                 value="[[displayedVolume_]]"
                 min="0" max="1" step="0.01"></paper-slider>
