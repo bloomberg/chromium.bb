@@ -20,6 +20,7 @@ namespace extensions {
 class APIEventHandler;
 class APIRequestHandler;
 class APITypeReferenceMap;
+class ExceptionHandler;
 
 // An object that exposes utility methods to the existing JS bindings, such as
 // sendRequest and registering event argument massagers. If/when we get rid of
@@ -29,6 +30,7 @@ class APIBindingJSUtil final : public gin::Wrappable<APIBindingJSUtil> {
   APIBindingJSUtil(APITypeReferenceMap* type_refs,
                    APIRequestHandler* request_handler,
                    APIEventHandler* event_handler,
+                   ExceptionHandler* exception_handler,
                    const binding::RunJSFunction& run_js);
   ~APIBindingJSUtil() override;
 
@@ -89,14 +91,27 @@ class APIBindingJSUtil final : public gin::Wrappable<APIBindingJSUtil> {
                                 const std::string& error,
                                 v8::Local<v8::Function> callback);
 
+  // Handles an exception with the given |message| and |exception| value.
+  void HandleException(gin::Arguments* arguments,
+                       const std::string& message,
+                       v8::Local<v8::Value> exception);
+
+  // Sets a custom exception handler to be used when an uncaught exception is
+  // found.
+  void SetExceptionHandler(gin::Arguments* arguments,
+                           v8::Local<v8::Function> handler);
+
   // Type references. Guaranteed to outlive this object.
-  APITypeReferenceMap* type_refs_;
+  APITypeReferenceMap* const type_refs_;
 
   // The request handler. Guaranteed to outlive this object.
-  APIRequestHandler* request_handler_;
+  APIRequestHandler* const request_handler_;
 
   // The event handler. Guaranteed to outlive this object.
-  APIEventHandler* event_handler_;
+  APIEventHandler* const event_handler_;
+
+  // The exception handler. Guaranteed to outlive this object.
+  ExceptionHandler* const exception_handler_;
 
   binding::RunJSFunction run_js_;
 

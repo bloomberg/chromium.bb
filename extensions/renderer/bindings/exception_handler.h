@@ -29,6 +29,11 @@ class ExceptionHandler {
   void HandleException(v8::Local<v8::Context> context,
                        const std::string& message,
                        v8::TryCatch* try_catch);
+  // Same as above, but accepts a v8::Value for the exception rather than
+  // retrieving it from a TryCatch.
+  void HandleException(v8::Local<v8::Context> context,
+                       const std::string& full_message,
+                       v8::Local<v8::Value> exception_value);
 
   // Sets a custom handler for the given context, which will be notified of
   // exceptions thrown. This is only allowed to be called while the context is

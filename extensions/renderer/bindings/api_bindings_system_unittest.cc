@@ -115,6 +115,8 @@ void APIBindingsSystemTest::SetUp() {
     api_schemas_[api.name] = std::move(api_schema);
   }
 
+  binding::AddConsoleError add_console_error(base::Bind(
+      &APIBindingsSystemTest::AddConsoleError, base::Unretained(this)));
   bindings_system_ = base::MakeUnique<APIBindingsSystem>(
       base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
       base::Bind(&RunFunctionOnGlobalAndReturnHandle),
@@ -123,10 +125,10 @@ void APIBindingsSystemTest::SetUp() {
       base::Bind(&APIBindingsSystemTest::OnAPIRequest, base::Unretained(this)),
       base::Bind(&APIBindingsSystemTest::OnEventListenersChanged,
                  base::Unretained(this)),
-      base::Bind(&DoNothingWithSilentRequest), binding::AddConsoleError(),
+      base::Bind(&DoNothingWithSilentRequest), add_console_error,
       APILastError(base::Bind(&APIBindingsSystemTest::GetLastErrorParent,
                               base::Unretained(this)),
-                   binding::AddConsoleError()));
+                   add_console_error));
 }
 
 void APIBindingsSystemTest::TearDown() {
