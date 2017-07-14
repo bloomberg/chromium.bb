@@ -32,4 +32,7 @@ const char Store::kRequiredFilesKey_PlatformValue_Linux[] = "linux";
 const char Store::kRequiredFilesKey_PlatformValue_MacOSX[] = "macosx";
 // static
 const char Store::kRequiredFilesKey_PlatformValue_Android[] = "android";
+// static
+const char Store::kRequiredFilesKey_PlatformValue_Fuchsia[] = "fuchsia";
+
 }  // namespace catalog
