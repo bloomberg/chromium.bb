@@ -12,6 +12,7 @@
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/separator.h"
@@ -28,7 +29,7 @@ constexpr int kSubmitButtonHeightDp = 20;
 
 // Width/height of the password inputfield.
 constexpr int kPasswordInputWidthDp = 184;
-constexpr int kPasswordInputHeightDp = 40;
+constexpr int kPasswordInputHeightDp = 36;
 
 // Total width of the password view.
 constexpr int kPasswordTotalWidthDp = 204;
@@ -78,6 +79,7 @@ LoginPasswordView::LoginPasswordView(const OnPasswordSubmit& on_submit)
   // TODO(jdufault): Real placeholder text.
   textfield_->set_placeholder_text(base::ASCIIToUTF16("Password (FIXME)"));
   textfield_->SetBorder(nullptr);
+  textfield_->SetBackgroundColor(SK_ColorTRANSPARENT);
 
   textfield_sizer->AddChildView(textfield_);
   row->AddChildView(textfield_sizer);
@@ -86,9 +88,9 @@ LoginPasswordView::LoginPasswordView(const OnPasswordSubmit& on_submit)
   auto* submit_icon = new views::ImageView();
   submit_icon->SetPreferredSize(
       gfx::Size(kSubmitButtonWidthDp, kSubmitButtonHeightDp));
-  // TODO(jdufault): Use the real icon.
+  // TODO: Change icon color when enabled/disabled.
   submit_icon->SetImage(
-      gfx::CreateVectorIcon(kSystemMenuArrowRightIcon, SK_ColorBLUE));
+      gfx::CreateVectorIcon(kLockScreenArrowIcon, SK_ColorWHITE));
   submit_button_ = new ash::tray::ButtonFromView(
       submit_icon, this, TrayPopupInkDropStyle::HOST_CENTERED);
   row->AddChildView(submit_button_);
