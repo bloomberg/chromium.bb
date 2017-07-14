@@ -22,6 +22,7 @@ class CC_PAINT_EXPORT SolidColorAnalyzer {
   static base::Optional<SkColor> DetermineIfSolidColor(
       const PaintOpBuffer* buffer,
       const gfx::Rect& rect,
+      int max_ops_to_analyze,
       const std::vector<size_t>* indices = nullptr);
 };
 

@@ -113,7 +113,6 @@ class CC_PAINT_EXPORT DisplayItemList
   // This gives the total number of PaintOps.
   size_t op_count() const { return paint_op_buffer_.size(); }
   size_t BytesUsed() const;
-  bool ShouldBeAnalyzedForSolidColor() const;
 
   void EmitTraceSnapshot() const;
 
@@ -138,7 +137,12 @@ class CC_PAINT_EXPORT DisplayItemList
   // an empty state.
   sk_sp<PaintRecord> ReleaseAsRecord();
 
-  bool GetColorIfSolidInRect(const gfx::Rect& rect, SkColor* color);
+  // If a rectangle is solid color, returns that color. |max_ops_to_analyze|
+  // indicates the maximum number of draw ops we consider when determining if a
+  // rectangle is solid color.
+  bool GetColorIfSolidInRect(const gfx::Rect& rect,
+                             SkColor* color,
+                             int max_ops_to_analyze = 1);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(DisplayItemListTest, AsValueWithNoOps);

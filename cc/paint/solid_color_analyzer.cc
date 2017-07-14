@@ -10,8 +10,6 @@
 
 namespace cc {
 namespace {
-const int kMaxOpsToAnalyze = 1;
-
 bool ActsLikeClear(SkBlendMode mode, unsigned src_alpha) {
   switch (mode) {
     case SkBlendMode::kClear:
@@ -133,6 +131,7 @@ void CheckIfSolidRect(const SkCanvas& canvas,
 base::Optional<SkColor> SolidColorAnalyzer::DetermineIfSolidColor(
     const PaintOpBuffer* buffer,
     const gfx::Rect& rect,
+    int max_ops_to_analyze,
     const std::vector<size_t>* indices) {
   if (buffer->size() == 0 || (indices && indices->empty()))
     return SK_ColorTRANSPARENT;
@@ -212,7 +211,7 @@ base::Optional<SkColor> SolidColorAnalyzer::DetermineIfSolidColor(
         return base::nullopt;
 
       case PaintOpType::DrawRect: {
-        if (++num_ops > kMaxOpsToAnalyze)
+        if (++num_ops > max_ops_to_analyze)
           return base::nullopt;
         const DrawRectOp* rect_op = static_cast<const DrawRectOp*>(op);
         CheckIfSolidRect(canvas, rect_op->rect, rect_op->flags, &is_solid,
@@ -220,7 +219,7 @@ base::Optional<SkColor> SolidColorAnalyzer::DetermineIfSolidColor(
         break;
       }
       case PaintOpType::DrawColor: {
-        if (++num_ops > kMaxOpsToAnalyze)
+        if (++num_ops > max_ops_to_analyze)
           return base::nullopt;
         const DrawColorOp* color_op = static_cast<const DrawColorOp*>(op);
         CheckIfSolidColor(canvas, color_op->color, color_op->mode, &is_solid,
