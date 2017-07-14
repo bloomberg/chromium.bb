@@ -39,6 +39,7 @@
 #include "SkTypes.h"
 
 #include "build/build_config.h"
+#include "platform/FontFamilyNames.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/VDMXParser.h"
 #include "platform/fonts/skia/SkiaTextMetrics.h"
@@ -184,12 +185,10 @@ void SimpleFontData::PlatformInit(bool subpixel_ascent_descent) {
   // web standard. The AppKit adjustment of 20% is too big and is
   // incorrectly added to line spacing, so we use a 15% adjustment instead
   // and add it to the ascent.
-  DEFINE_STATIC_LOCAL(AtomicString, times_name, ("Times"));
-  DEFINE_STATIC_LOCAL(AtomicString, helvetica_name, ("Helvetica"));
-  DEFINE_STATIC_LOCAL(AtomicString, courier_name, ("Courier"));
   String family_name = platform_data_.FontFamilyName();
-  if (family_name == times_name || family_name == helvetica_name ||
-      family_name == courier_name)
+  if (family_name == FontFamilyNames::Times ||
+      family_name == FontFamilyNames::Helvetica ||
+      family_name == FontFamilyNames::Courier)
     ascent += floorf(((ascent + descent) * 0.15f) + 0.5f);
 #endif
 

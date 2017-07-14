@@ -39,7 +39,7 @@ FontCache::FontCache()
     : purge_prevent_count_(0), font_manager_(sk_ref_sp(static_font_manager_)) {}
 
 static AtomicString& MutableSystemFontFamily() {
-  DEFINE_STATIC_LOCAL(AtomicString, system_font_family, ());
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(AtomicString, system_font_family, ());
   return system_font_family;
 }
 

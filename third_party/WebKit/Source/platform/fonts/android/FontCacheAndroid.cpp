@@ -30,10 +30,11 @@
 
 #include "platform/fonts/FontCache.h"
 
+#include "platform/FontFamilyNames.h"
 #include "platform/Language.h"
-#include "platform/fonts/SimpleFontData.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/FontFaceCreationParams.h"
+#include "platform/fonts/SimpleFontData.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "third_party/skia/include/ports/SkFontMgr.h"
 
@@ -55,7 +56,7 @@ static AtomicString DefaultFontFamily(SkFontMgr* font_manager) {
   // do here, use "Arial", the value LayoutTheme uses for CSS system font
   // keywords such as "menu".
   NOTREACHED();
-  return "Arial";
+  return FontFamilyNames::Arial;
 }
 
 static AtomicString DefaultFontFamily() {
@@ -67,7 +68,8 @@ static AtomicString DefaultFontFamily() {
 
 // static
 const AtomicString& FontCache::SystemFontFamily() {
-  DEFINE_STATIC_LOCAL(AtomicString, system_font_family, (DefaultFontFamily()));
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(AtomicString, system_font_family,
+                                  (DefaultFontFamily()));
   return system_font_family;
 }
 
