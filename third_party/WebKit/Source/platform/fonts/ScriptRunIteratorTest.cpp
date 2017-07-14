@@ -12,16 +12,16 @@
 
 namespace blink {
 
-struct TestRun {
+struct ScriptTestRun {
   std::string text;
   UScriptCode code;
 };
 
-struct ExpectedRun {
+struct ScriptExpectedRun {
   unsigned limit;
   UScriptCode code;
 
-  ExpectedRun(unsigned the_limit, UScriptCode the_code)
+  ScriptExpectedRun(unsigned the_limit, UScriptCode the_code)
       : limit(the_limit), code(the_code) {}
 };
 
@@ -286,12 +286,12 @@ const int MockScriptData::kTable[] = {
 
 class ScriptRunIteratorTest : public ::testing::Test {
  protected:
-  void CheckRuns(const Vector<TestRun>& runs) {
+  void CheckRuns(const Vector<ScriptTestRun>& runs) {
     String text(g_empty_string16_bit);
-    Vector<ExpectedRun> expect;
+    Vector<ScriptExpectedRun> expect;
     for (auto& run : runs) {
       text.append(String::FromUTF8(run.text.c_str()));
-      expect.push_back(ExpectedRun(text.length(), run.code));
+      expect.push_back(ScriptExpectedRun(text.length(), run.code));
     }
     ScriptRunIterator script_run_iterator(text.Characters16(), text.length());
     VerifyRuns(&script_run_iterator, expect);
@@ -299,12 +299,12 @@ class ScriptRunIteratorTest : public ::testing::Test {
 
   // FIXME crbug.com/527329 - CheckMockRuns should be replaced by finding
   // suitable equivalent real codepoint sequences instead.
-  void CheckMockRuns(const Vector<TestRun>& runs) {
+  void CheckMockRuns(const Vector<ScriptTestRun>& runs) {
     String text(g_empty_string16_bit);
-    Vector<ExpectedRun> expect;
-    for (const TestRun& run : runs) {
+    Vector<ScriptExpectedRun> expect;
+    for (const ScriptTestRun& run : runs) {
       text.append(MockScriptData::ToTestString(run.text));
-      expect.push_back(ExpectedRun(text.length(), run.code));
+      expect.push_back(ScriptExpectedRun(text.length(), run.code));
     }
 
     ScriptRunIterator script_run_iterator(text.Characters16(), text.length(),
@@ -313,7 +313,7 @@ class ScriptRunIteratorTest : public ::testing::Test {
   }
 
   void VerifyRuns(ScriptRunIterator* script_run_iterator,
-                  const Vector<ExpectedRun>& expect) {
+                  const Vector<ScriptExpectedRun>& expect) {
     unsigned limit;
     UScriptCode code;
     unsigned long run_count = 0;
@@ -338,134 +338,136 @@ TEST_F(ScriptRunIteratorTest, Empty) {
 }
 
 // Some of our compilers cannot initialize a vector from an array yet.
-#define DECLARE_RUNSVECTOR(...)                    \
-  static const TestRun kRunsArray[] = __VA_ARGS__; \
-  Vector<TestRun> runs;                            \
+#define DECLARE_SCRIPT_RUNSVECTOR(...)                   \
+  static const ScriptTestRun kRunsArray[] = __VA_ARGS__; \
+  Vector<ScriptTestRun> runs;                            \
   runs.Append(kRunsArray, sizeof(kRunsArray) / sizeof(*kRunsArray));
 
-#define CHECK_RUNS(...)            \
-  DECLARE_RUNSVECTOR(__VA_ARGS__); \
+#define CHECK_SCRIPT_RUNS(...)            \
+  DECLARE_SCRIPT_RUNSVECTOR(__VA_ARGS__); \
   CheckRuns(runs);
 
-#define CHECK_MOCK_RUNS(...)       \
-  DECLARE_RUNSVECTOR(__VA_ARGS__); \
+#define CHECK_MOCK_SCRIPT_RUNS(...)       \
+  DECLARE_SCRIPT_RUNSVECTOR(__VA_ARGS__); \
   CheckMockRuns(runs);
 
 TEST_F(ScriptRunIteratorTest, Whitespace) {
-  CHECK_RUNS({{" \t ", USCRIPT_COMMON}});
+  CHECK_SCRIPT_RUNS({{" \t ", USCRIPT_COMMON}});
 }
 
 TEST_F(ScriptRunIteratorTest, Common) {
-  CHECK_RUNS({{" ... !?", USCRIPT_COMMON}});
+  CHECK_SCRIPT_RUNS({{" ... !?", USCRIPT_COMMON}});
 }
 
 TEST_F(ScriptRunIteratorTest, CombiningCircle) {
-  CHECK_RUNS({{"◌́◌̀◌̈◌̂◌̄◌̊", USCRIPT_COMMON}});
+  CHECK_SCRIPT_RUNS({{"◌́◌̀◌̈◌̂◌̄◌̊", USCRIPT_COMMON}});
 }
 
 TEST_F(ScriptRunIteratorTest, Latin) {
-  CHECK_RUNS({{"latin", USCRIPT_LATIN}});
+  CHECK_SCRIPT_RUNS({{"latin", USCRIPT_LATIN}});
 }
 
 TEST_F(ScriptRunIteratorTest, Chinese) {
-  CHECK_RUNS({{"萬國碼", USCRIPT_HAN}});
+  CHECK_SCRIPT_RUNS({{"萬國碼", USCRIPT_HAN}});
 }
 
 // Close bracket without matching open is ignored
 TEST_F(ScriptRunIteratorTest, UnbalancedParens1) {
-  CHECK_RUNS({{"(萬", USCRIPT_HAN}, {"a]", USCRIPT_LATIN}, {")", USCRIPT_HAN}});
+  CHECK_SCRIPT_RUNS(
+      {{"(萬", USCRIPT_HAN}, {"a]", USCRIPT_LATIN}, {")", USCRIPT_HAN}});
 }
 
 // Open bracket without matching close is popped when inside
 // matching close brackets, so doesn't match later close.
 TEST_F(ScriptRunIteratorTest, UnbalancedParens2) {
-  CHECK_RUNS(
+  CHECK_SCRIPT_RUNS(
       {{"(萬", USCRIPT_HAN}, {"a[", USCRIPT_LATIN}, {")]", USCRIPT_HAN}});
 }
 
 // space goes with leading script
 TEST_F(ScriptRunIteratorTest, LatinHan) {
-  CHECK_RUNS({{"Unicode ", USCRIPT_LATIN}, {"萬國碼", USCRIPT_HAN}});
+  CHECK_SCRIPT_RUNS({{"Unicode ", USCRIPT_LATIN}, {"萬國碼", USCRIPT_HAN}});
 }
 
 // space goes with leading script
 TEST_F(ScriptRunIteratorTest, HanLatin) {
-  CHECK_RUNS({{"萬國碼 ", USCRIPT_HAN}, {"Unicode", USCRIPT_LATIN}});
+  CHECK_SCRIPT_RUNS({{"萬國碼 ", USCRIPT_HAN}, {"Unicode", USCRIPT_LATIN}});
 }
 
 TEST_F(ScriptRunIteratorTest, ParenEmptyParen) {
-  CHECK_RUNS({{"()", USCRIPT_COMMON}});
+  CHECK_SCRIPT_RUNS({{"()", USCRIPT_COMMON}});
 }
 
 TEST_F(ScriptRunIteratorTest, ParenChineseParen) {
-  CHECK_RUNS({{"(萬國碼)", USCRIPT_HAN}});
+  CHECK_SCRIPT_RUNS({{"(萬國碼)", USCRIPT_HAN}});
 }
 
 TEST_F(ScriptRunIteratorTest, ParenLatinParen) {
-  CHECK_RUNS({{"(Unicode)", USCRIPT_LATIN}});
+  CHECK_SCRIPT_RUNS({{"(Unicode)", USCRIPT_LATIN}});
 }
 
 // open paren gets leading script
 TEST_F(ScriptRunIteratorTest, LatinParenChineseParen) {
-  CHECK_RUNS({{"Unicode (", USCRIPT_LATIN},
-              {"萬國碼", USCRIPT_HAN},
-              {")", USCRIPT_LATIN}});
+  CHECK_SCRIPT_RUNS({{"Unicode (", USCRIPT_LATIN},
+                     {"萬國碼", USCRIPT_HAN},
+                     {")", USCRIPT_LATIN}});
 }
 
 // open paren gets first trailing script if no leading script
 TEST_F(ScriptRunIteratorTest, ParenChineseParenLatin) {
-  CHECK_RUNS({{"(萬國碼) ", USCRIPT_HAN}, {"Unicode", USCRIPT_LATIN}});
+  CHECK_SCRIPT_RUNS({{"(萬國碼) ", USCRIPT_HAN}, {"Unicode", USCRIPT_LATIN}});
 }
 
 // leading common and open paren get first trailing script.
 // TODO(dougfelt): we don't do quote matching, but probably should figure out
 // something better then doing nothing.
 TEST_F(ScriptRunIteratorTest, QuoteParenChineseParenLatinQuote) {
-  CHECK_RUNS({{"\"(萬國碼) ", USCRIPT_HAN}, {"Unicode\"", USCRIPT_LATIN}});
+  CHECK_SCRIPT_RUNS(
+      {{"\"(萬國碼) ", USCRIPT_HAN}, {"Unicode\"", USCRIPT_LATIN}});
 }
 
 // Emojies are resolved to the leading script.
 TEST_F(ScriptRunIteratorTest, EmojiCommon) {
-  CHECK_RUNS({{"百家姓🌱🌲🌳🌴", USCRIPT_HAN}});
+  CHECK_SCRIPT_RUNS({{"百家姓🌱🌲🌳🌴", USCRIPT_HAN}});
 }
 
 // Unmatched close brace gets leading context
 TEST_F(ScriptRunIteratorTest, UnmatchedClose) {
-  CHECK_RUNS({{"Unicode (", USCRIPT_LATIN},
-              {"萬國碼] ", USCRIPT_HAN},
-              {") Unicode\"", USCRIPT_LATIN}});
+  CHECK_SCRIPT_RUNS({{"Unicode (", USCRIPT_LATIN},
+                     {"萬國碼] ", USCRIPT_HAN},
+                     {") Unicode\"", USCRIPT_LATIN}});
 }
 
 // Match up to 32 bracket pairs
 TEST_F(ScriptRunIteratorTest, Match32Brackets) {
-  CHECK_RUNS({{"[萬國碼 ", USCRIPT_HAN},
-              {"Unicode (((((((((((((((((((((((((((((((!"
-               ")))))))))))))))))))))))))))))))",
-               USCRIPT_LATIN},
-              {"]", USCRIPT_HAN}});
+  CHECK_SCRIPT_RUNS({{"[萬國碼 ", USCRIPT_HAN},
+                     {"Unicode (((((((((((((((((((((((((((((((!"
+                      ")))))))))))))))))))))))))))))))",
+                      USCRIPT_LATIN},
+                     {"]", USCRIPT_HAN}});
 }
 
 // Matches 32 most recent bracket pairs. More than that, and we revert to
 // surrounding script.
 TEST_F(ScriptRunIteratorTest, Match32MostRecentBrackets) {
-  CHECK_RUNS({{"((([萬國碼 ", USCRIPT_HAN},
-              {"Unicode (((((((((((((((((((((((((((((((", USCRIPT_LATIN},
-              {"萬國碼!", USCRIPT_HAN},
-              {")))))))))))))))))))))))))))))))", USCRIPT_LATIN},
-              {"]", USCRIPT_HAN},
-              {"But )))", USCRIPT_LATIN}});
+  CHECK_SCRIPT_RUNS({{"((([萬國碼 ", USCRIPT_HAN},
+                     {"Unicode (((((((((((((((((((((((((((((((", USCRIPT_LATIN},
+                     {"萬國碼!", USCRIPT_HAN},
+                     {")))))))))))))))))))))))))))))))", USCRIPT_LATIN},
+                     {"]", USCRIPT_HAN},
+                     {"But )))", USCRIPT_LATIN}});
 }
 
 // A char with multiple scripts that match both leading and trailing context
 // gets the leading context.
 TEST_F(ScriptRunIteratorTest, ExtensionsPreferLeadingContext) {
-  CHECK_MOCK_RUNS({{"h<lh>", USCRIPT_HAN}, {"l", USCRIPT_LATIN}});
+  CHECK_MOCK_SCRIPT_RUNS({{"h<lh>", USCRIPT_HAN}, {"l", USCRIPT_LATIN}});
 }
 
 // A char with multiple scripts that only match trailing context gets the
 // trailing context.
 TEST_F(ScriptRunIteratorTest, ExtensionsMatchTrailingContext) {
-  CHECK_MOCK_RUNS({{"h", USCRIPT_HAN}, {"<gl>l", USCRIPT_LATIN}});
+  CHECK_MOCK_SCRIPT_RUNS({{"h", USCRIPT_HAN}, {"<gl>l", USCRIPT_LATIN}});
 }
 
 // Retain first established priority script.  <lhg><gh> produce the script <gh>
@@ -473,23 +475,23 @@ TEST_F(ScriptRunIteratorTest, ExtensionsMatchTrailingContext) {
 // remains.  Then <gh><hgl> retains g as priority, because of the two priority
 // scripts g and h that remain, g was encountered first.
 TEST_F(ScriptRunIteratorTest, ExtensionsRetainFirstPriorityScript) {
-  CHECK_MOCK_RUNS({{"<lhg><gh><hgl>", USCRIPT_GREEK}});
+  CHECK_MOCK_SCRIPT_RUNS({{"<lhg><gh><hgl>", USCRIPT_GREEK}});
 }
 
 // Parens can have scripts that break script runs.
 TEST_F(ScriptRunIteratorTest, ExtensionsParens) {
-  CHECK_MOCK_RUNS({{"<gl><(lg>", USCRIPT_GREEK},
-                   {"h<[hl>", USCRIPT_HAN},
-                   {"l", USCRIPT_LATIN},
-                   {"<]hl>", USCRIPT_HAN},
-                   {"<)lg>", USCRIPT_GREEK}});
+  CHECK_MOCK_SCRIPT_RUNS({{"<gl><(lg>", USCRIPT_GREEK},
+                          {"h<[hl>", USCRIPT_HAN},
+                          {"l", USCRIPT_LATIN},
+                          {"<]hl>", USCRIPT_HAN},
+                          {"<)lg>", USCRIPT_GREEK}});
 }
 
 // The close paren might be encountered before we've established the open
 // paren's script, but when this is the case the current set is still valid, so
 // this doesn't affect it nor break the run.
 TEST_F(ScriptRunIteratorTest, ExtensionsParens2) {
-  CHECK_MOCK_RUNS({{"<(lhg><gh><)lhg>", USCRIPT_GREEK}});
+  CHECK_MOCK_SCRIPT_RUNS({{"<(lhg><gh><)lhg>", USCRIPT_GREEK}});
 }
 
 // A common script with a single extension should be treated as common, but
@@ -497,15 +499,15 @@ TEST_F(ScriptRunIteratorTest, ExtensionsParens2) {
 // common, that takes priority.  If we encounter other common scripts with a
 // single extension, the current priority remains.
 TEST_F(ScriptRunIteratorTest, CommonWithPriority) {
-  CHECK_MOCK_RUNS({{"<ch>", USCRIPT_HAN}});
+  CHECK_MOCK_SCRIPT_RUNS({{"<ch>", USCRIPT_HAN}});
 }
 
 TEST_F(ScriptRunIteratorTest, CommonWithPriority2) {
-  CHECK_MOCK_RUNS({{"<ch><lh>", USCRIPT_LATIN}});
+  CHECK_MOCK_SCRIPT_RUNS({{"<ch><lh>", USCRIPT_LATIN}});
 }
 
 TEST_F(ScriptRunIteratorTest, CommonWithPriority3) {
-  CHECK_MOCK_RUNS({{"<ch><cl><cg>", USCRIPT_HAN}});
+  CHECK_MOCK_SCRIPT_RUNS({{"<ch><cl><cg>", USCRIPT_HAN}});
 }
 
 // UDatta (\xE0\xA5\x91) is inherited with LATIN, DEVANAGARI, BENGALI and
@@ -513,7 +515,7 @@ TEST_F(ScriptRunIteratorTest, CommonWithPriority3) {
 // dotted circle U+25CC (\xE2\x97\x8C) is COMMON and has adopted the
 // preceding LATIN, it gets the LATIN. This is standard.
 TEST_F(ScriptRunIteratorTest, LatinDottedCircleUdatta) {
-  CHECK_RUNS({{"Latin \xE2\x97\x8C\xE0\xA5\x91", USCRIPT_LATIN}});
+  CHECK_SCRIPT_RUNS({{"Latin \xE2\x97\x8C\xE0\xA5\x91", USCRIPT_LATIN}});
 }
 
 // In this situation, UDatta U+0951 (\xE0\xA5\x91) doesn't share a script
@@ -526,8 +528,8 @@ TEST_F(ScriptRunIteratorTest, LatinDottedCircleUdatta) {
 // Taking into account a Unicode block and returning DEVANAGARI would be
 // slightly better.
 TEST_F(ScriptRunIteratorTest, HanDottedCircleUdatta) {
-  CHECK_RUNS({{"萬國碼 ", USCRIPT_HAN},
-              {"\xE2\x97\x8C\xE0\xA5\x91", USCRIPT_BENGALI}});
+  CHECK_SCRIPT_RUNS({{"萬國碼 ", USCRIPT_HAN},
+                     {"\xE2\x97\x8C\xE0\xA5\x91", USCRIPT_BENGALI}});
 }
 
 // Tatweel is \xD9\x80 Lm, Fathatan is \xD9\x8B Mn. The script of tatweel is
@@ -537,7 +539,8 @@ TEST_F(ScriptRunIteratorTest, HanDottedCircleUdatta) {
 // heuristic. This is exactly analogous to the Udatta tests above, except
 // Tatweel is Lm. But we don't take properties into account, only scripts.
 TEST_F(ScriptRunIteratorTest, LatinTatweelFathatan) {
-  CHECK_RUNS({{"Latin ", USCRIPT_LATIN}, {"\xD9\x80\xD9\x8B", USCRIPT_ARABIC}});
+  CHECK_SCRIPT_RUNS(
+      {{"Latin ", USCRIPT_LATIN}, {"\xD9\x80\xD9\x8B", USCRIPT_ARABIC}});
 }
 
 // Another case where if the mark accepts a script that was inherited by the
@@ -546,26 +549,27 @@ TEST_F(ScriptRunIteratorTest, LatinTatweelFathatan) {
 // ARABIC TATWEEL \xD9\x80
 // ARABIC FATHATAN \xD9\x82
 TEST_F(ScriptRunIteratorTest, SyriacTatweelFathatan) {
-  CHECK_RUNS({{"\xDC\xA2\xD9\x80\xD9\x8B", USCRIPT_SYRIAC}});
+  CHECK_SCRIPT_RUNS({{"\xDC\xA2\xD9\x80\xD9\x8B", USCRIPT_SYRIAC}});
 }
 
 // The Udatta (\xE0\xA5\x91) is inherited, so will share runs with anything that
 // is not common.
 TEST_F(ScriptRunIteratorTest, HanUdatta) {
-  CHECK_RUNS({{"萬國碼\xE0\xA5\x91", USCRIPT_HAN}});
+  CHECK_SCRIPT_RUNS({{"萬國碼\xE0\xA5\x91", USCRIPT_HAN}});
 }
 
 // The Udatta U+0951 (\xE0\xA5\x91) is inherited, and will capture the space
 // and turn it into Bengali because SCRIPT_BENAGLI is 4 and SCRIPT_DEVANAGARI
 // is 10. See TODO comment for |getScripts| and HanDottedCircleUdatta.
 TEST_F(ScriptRunIteratorTest, HanSpaceUdatta) {
-  CHECK_RUNS({{"萬國碼", USCRIPT_HAN}, {" \xE0\xA5\x91", USCRIPT_BENGALI}});
+  CHECK_SCRIPT_RUNS(
+      {{"萬國碼", USCRIPT_HAN}, {" \xE0\xA5\x91", USCRIPT_BENGALI}});
 }
 
 // Corresponds to one test in RunSegmenter, where orientation of the
 // space character is sidesways in vertical.
 TEST_F(ScriptRunIteratorTest, Hangul) {
-  CHECK_RUNS({{"키스의 고유조건은", USCRIPT_HANGUL}});
+  CHECK_SCRIPT_RUNS({{"키스의 고유조건은", USCRIPT_HANGUL}});
 }
 
 // Corresponds to one test in RunSegmenter, which tests that the punctuation
@@ -573,45 +577,45 @@ TEST_F(ScriptRunIteratorTest, Hangul) {
 // should report one run, but the RunSegmenter should report three, with the
 // middle one rotated sideways.
 TEST_F(ScriptRunIteratorTest, HiraganaMixedPunctuation) {
-  CHECK_RUNS({{"いろはに.…¡ほへと", USCRIPT_HIRAGANA}});
+  CHECK_SCRIPT_RUNS({{"いろはに.…¡ほへと", USCRIPT_HIRAGANA}});
 }
 
 // Make sure Mock code works too.
 TEST_F(ScriptRunIteratorTest, MockHanInheritedGL) {
-  CHECK_MOCK_RUNS({{"h<igl>", USCRIPT_HAN}});
+  CHECK_MOCK_SCRIPT_RUNS({{"h<igl>", USCRIPT_HAN}});
 }
 
 TEST_F(ScriptRunIteratorTest, MockHanCommonInheritedGL) {
-  CHECK_MOCK_RUNS({{"h", USCRIPT_HAN}, {"c<igl>", USCRIPT_GREEK}});
+  CHECK_MOCK_SCRIPT_RUNS({{"h", USCRIPT_HAN}, {"c<igl>", USCRIPT_GREEK}});
 }
 
 // Leading inherited just act like common, except there's no preferred script.
 TEST_F(ScriptRunIteratorTest, MockLeadingInherited) {
-  CHECK_MOCK_RUNS({{"<igl>", USCRIPT_COMMON}});
+  CHECK_MOCK_SCRIPT_RUNS({{"<igl>", USCRIPT_COMMON}});
 }
 
 // Leading inherited just act like common, except there's no preferred script.
 TEST_F(ScriptRunIteratorTest, MockLeadingInherited2) {
-  CHECK_MOCK_RUNS({{"<igl><ih>", USCRIPT_COMMON}});
+  CHECK_MOCK_SCRIPT_RUNS({{"<igl><ih>", USCRIPT_COMMON}});
 }
 
 TEST_F(ScriptRunIteratorTest, LeadingInheritedHan) {
   // DEVANAGARI STRESS SIGN UDATTA \xE0\xA5\x91
-  CHECK_RUNS({{"\xE0\xA5\x91萬國碼", USCRIPT_HAN}});
+  CHECK_SCRIPT_RUNS({{"\xE0\xA5\x91萬國碼", USCRIPT_HAN}});
 }
 
 TEST_F(ScriptRunIteratorTest, LeadingInheritedHan2) {
   // DEVANAGARI STRESS SIGN UDATTA \xE0\xA5\x91
   // ARABIC FATHATAN \xD9\x8B
-  CHECK_RUNS({{"\xE0\xA5\x91\xD9\x8B萬國碼", USCRIPT_HAN}});
+  CHECK_SCRIPT_RUNS({{"\xE0\xA5\x91\xD9\x8B萬國碼", USCRIPT_HAN}});
 }
 
 TEST_F(ScriptRunIteratorTest, OddLatinString) {
-  CHECK_RUNS({{"ç̈", USCRIPT_LATIN}});
+  CHECK_SCRIPT_RUNS({{"ç̈", USCRIPT_LATIN}});
 }
 
 TEST_F(ScriptRunIteratorTest, CommonMalayalam) {
-  CHECK_RUNS({{"100-ാം", USCRIPT_MALAYALAM}});
+  CHECK_SCRIPT_RUNS({{"100-ാം", USCRIPT_MALAYALAM}});
 }
 
 class ScriptRunIteratorICUDataTest : public ::testing::Test {
