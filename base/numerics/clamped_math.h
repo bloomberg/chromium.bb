@@ -108,7 +108,7 @@ class ClampedNumeric {
       const U rhs) const {
     using result_type = typename MathWrapper<ClampedMaxOp, T, U>::type;
     return ClampedNumeric<result_type>(
-        ClampedMaxOp<T, U>(value_, Wrapper<U>::value(rhs)));
+        ClampedMaxOp<T, U>::Do(value_, Wrapper<U>::value(rhs)));
   }
 
   template <typename U>
@@ -116,7 +116,7 @@ class ClampedNumeric {
       const U rhs) const {
     using result_type = typename MathWrapper<ClampedMinOp, T, U>::type;
     return ClampedNumeric<result_type>(
-        ClampedMinOp<T, U>(value_, Wrapper<U>::value(rhs)));
+        ClampedMinOp<T, U>::Do(value_, Wrapper<U>::value(rhs)));
   }
 
   // This function is available only for integral types. It returns an unsigned

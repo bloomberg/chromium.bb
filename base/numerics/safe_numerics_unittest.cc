@@ -877,6 +877,20 @@ void TestStrictComparison() {
   EXPECT_EQ(DstLimits::max(), CheckMax(MakeStrictNum(1), MakeCheckedNum(0),
                                        DstLimits::max(), SrcLimits::lowest())
                                   .ValueOrDie());
+
+  EXPECT_EQ(SrcLimits::max(),
+            MakeClampedNum(SrcLimits::max()).Max(DstLimits::lowest()));
+  EXPECT_EQ(DstLimits::max(),
+            MakeClampedNum(SrcLimits::lowest()).Max(DstLimits::max()));
+  EXPECT_EQ(DstLimits::lowest(),
+            MakeClampedNum(SrcLimits::max()).Min(DstLimits::lowest()));
+  EXPECT_EQ(SrcLimits::lowest(),
+            MakeClampedNum(SrcLimits::lowest()).Min(DstLimits::max()));
+  EXPECT_EQ(SrcLimits::lowest(),
+            ClampMin(MakeStrictNum(1), MakeClampedNum(0), DstLimits::max(),
+                     SrcLimits::lowest()));
+  EXPECT_EQ(DstLimits::max(), ClampMax(MakeStrictNum(1), MakeClampedNum(0),
+                                       DstLimits::max(), SrcLimits::lowest()));
 }
 
 template <typename Dst, typename Src>
