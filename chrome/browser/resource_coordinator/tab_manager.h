@@ -72,6 +72,8 @@ class TabManagerDelegate;
 class TabManager : public TabStripModelObserver,
                    public chrome::BrowserListObserver {
  public:
+  // Forward declaration of tab signal observer.
+  class GRCTabSignalObserver;
   // Needs to be public for DEFINE_WEB_CONTENTS_USER_DATA_KEY.
   class WebContentsData;
 
@@ -326,6 +328,9 @@ class TabManager : public TabStripModelObserver,
                      content::WebContents* contents,
                      int index,
                      bool foreground) override;
+  void TabClosingAt(TabStripModel* tab_strip_model,
+                    content::WebContents* contents,
+                    int index) override;
 
   // BrowserListObserver overrides.
   void OnBrowserSetLastActive(Browser* browser) override;
@@ -467,6 +472,9 @@ class TabManager : public TabStripModelObserver,
   // background tab when these tabs have finished loading or a background tab
   // is brought to foreground.
   std::set<content::WebContents*> loading_contents_;
+
+  // GRC tab signal observer, receives tab scoped signal from GRC.
+  std::unique_ptr<GRCTabSignalObserver> grc_tab_signal_observer_;
 
   // Weak pointer factory used for posting delayed tasks.
   base::WeakPtrFactory<TabManager> weak_ptr_factory_;

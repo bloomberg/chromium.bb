@@ -15,6 +15,7 @@ mojom("interfaces_internal") {
     "memory_instrumentation/memory_instrumentation.mojom",
     "service_callbacks.mojom",
     "service_constants.mojom",
+    "tab_signal.mojom",
     "tracing/tracing.mojom",
     "tracing/tracing_constants.mojom",
   ]
