@@ -632,9 +632,12 @@ bool LayoutObject::ScrollRectToVisible(const LayoutRect& rect,
   if (!enclosing_box)
     return false;
 
+  GetDocument().GetPage()->GetSmoothScrollSequencer()->AbortAnimations();
   enclosing_box->ScrollRectToVisible(rect, align_x, align_y, scroll_type,
                                      make_visible_in_visual_viewport,
-                                     scroll_behavior);
+                                     scroll_behavior, true);
+  GetDocument().GetPage()->GetSmoothScrollSequencer()->RunQueuedAnimations();
+
   return true;
 }
 

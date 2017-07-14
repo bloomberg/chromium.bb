@@ -283,6 +283,89 @@ TEST_F(SmoothScrollTest, BlockAndInlineSettings) {
             content->OffsetTop() + content_height - window_height);
 }
 
+TEST_F(SmoothScrollTest, SmoothAndInstantInChain) {
+  v8::HandleScope HandleScope(v8::Isolate::GetCurrent());
+  WebView().Resize(WebSize(800, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(
+      "<div id='space' style='height: 1000px'></div>"
+      "<div id='container' style='height: 600px; overflow: scroll;"
+      "  scroll-behavior: smooth'>"
+      "  <div id='space1' style='height: 1000px'></div>"
+      "  <div id='inner_container' style='height: 1000px; overflow: scroll;'>"
+      "    <div id='space2' style='height: 1000px'></div>"
+      "    <div id='content' style='height: 1000px;'></div>"
+      "  </div>"
+      "</div>");
+
+  Element* container = GetDocument().getElementById("container");
+  Element* inner_container = GetDocument().getElementById("inner_container");
+  Element* content = GetDocument().getElementById("content");
+  ScrollIntoViewOptionsOrBoolean arg;
+  ScrollIntoViewOptions options;
+  options.setBlock("start");
+  arg.setScrollIntoViewOptions(options);
+  Compositor().BeginFrame();
+  ASSERT_EQ(Window().scrollY(), 0);
+  ASSERT_EQ(container->scrollTop(), 0);
+
+  content->scrollIntoView(arg);
+  // Instant scroll of the window should have finished.
+  ASSERT_EQ(Window().scrollY(), container->OffsetTop());
+  // Instant scroll of the inner container should not have started.
+  ASSERT_EQ(container->scrollTop(), 0);
+  // Smooth scroll should not have started.
+  ASSERT_EQ(container->scrollTop(), 0);
+
+  // Scrolling the container
+  Compositor().BeginFrame();  // update run_state_.
+  Compositor().BeginFrame();  // Set start_time = now.
+  Compositor().BeginFrame(0.2);
+  ASSERT_EQ(container->scrollTop(), 299);
+
+  // Finish scrolling the container
+  Compositor().BeginFrame(1);
+  ASSERT_EQ(container->scrollTop(),
+            inner_container->OffsetTop() - container->OffsetTop());
+  // Instant scroll of the inner container should have finished.
+  ASSERT_EQ(inner_container->scrollTop(),
+            content->OffsetTop() - inner_container->OffsetTop());
+}
+
+TEST_F(SmoothScrollTest, SmoothScrollAnchor) {
+  v8::HandleScope HandleScope(v8::Isolate::GetCurrent());
+  WebView().Resize(WebSize(800, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(
+      "<div id='container' style='height: 600px; overflow: scroll;"
+      "  scroll-behavior: smooth'>"
+      "  <div id='space' style='height: 1000px'></div>"
+      "  <div style='height: 1000px'><a name='link' "
+      "id='content'>hello</a></div>"
+      "</div>");
+
+  Element* content = GetDocument().getElementById("content");
+  Element* container = GetDocument().getElementById("container");
+  KURL url(KURL(), "https://test.html/#link");
+  LocalFrameView* frame_view = GetDocument().View();
+  Compositor().BeginFrame();
+  ASSERT_EQ(container->scrollTop(), 0);
+
+  frame_view->ProcessUrlFragment(url);
+  // Scrolling the container
+  Compositor().BeginFrame();  // update run_state_.
+  Compositor().BeginFrame();  // Set start_time = now.
+  Compositor().BeginFrame(0.2);
+  ASSERT_EQ(container->scrollTop(), 299);
+
+  // Finish scrolling the container
+  Compositor().BeginFrame(1);
+  ASSERT_EQ(container->scrollTop(),
+            content->OffsetTop() - container->OffsetTop());
+}
+
 }  // namespace
 
 }  // namespace blink

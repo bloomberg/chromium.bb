@@ -392,14 +392,16 @@ class CORE_EXPORT PaintLayerScrollableArea final
                                      const ScrollAlignment& align_x,
                                      const ScrollAlignment& align_y,
                                      bool is_smooth,
-                                     ScrollType = kProgrammaticScroll);
+                                     ScrollType = kProgrammaticScroll,
+                                     bool is_for_scroll_sequence = false);
   // Returns the new offset, after scrolling, of the given rect in absolute
   // coordinates, clipped by the parent's client rect.
   LayoutRect ScrollIntoView(const LayoutRect&,
                             const ScrollAlignment& align_x,
                             const ScrollAlignment& align_y,
                             bool is_smooth,
-                            ScrollType = kProgrammaticScroll) override;
+                            ScrollType = kProgrammaticScroll,
+                            bool is_for_scroll_sequence = false) override;
 
   // Returns true if scrollable area is in the FrameView's collection of
   // scrollable areas. This can only happen if we're scrollable, visible to hit
