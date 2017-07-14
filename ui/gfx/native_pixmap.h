@@ -50,17 +50,6 @@ class NativePixmap : public base::RefCountedThreadSafe<NativePixmap> {
                                     const gfx::Rect& display_bounds,
                                     const gfx::RectF& crop_rect) = 0;
 
-  // This represents a callback function pointing to processing unit like VPP to
-  // do post-processing operations like scaling and color space conversion on
-  // |source_pixmap| and save processed result to |target_pixmap|.
-  typedef base::Callback<bool(const scoped_refptr<NativePixmap>& source_pixmap,
-                              scoped_refptr<NativePixmap> target_pixmap)>
-      ProcessingCallback;
-
-  // Set callback function for the pixmap used for post processing.
-  virtual void SetProcessingCallback(
-      const ProcessingCallback& processing_callback) = 0;
-
   // Export the buffer for sharing across processes.
   // Any file descriptors in the exported handle are owned by the caller.
   virtual gfx::NativePixmapHandle ExportHandle() = 0;

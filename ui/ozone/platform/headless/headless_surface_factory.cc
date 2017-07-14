@@ -89,8 +89,6 @@ class TestPixmap : public gfx::NativePixmap {
                             const gfx::RectF& crop_rect) override {
     return true;
   }
-  void SetProcessingCallback(
-      const ProcessingCallback& processing_callback) override {}
   gfx::NativePixmapHandle ExportHandle() override {
     return gfx::NativePixmapHandle();
   }

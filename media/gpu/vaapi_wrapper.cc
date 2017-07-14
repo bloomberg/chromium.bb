@@ -666,31 +666,6 @@ scoped_refptr<VASurface> VaapiWrapper::CreateVASurfaceForPixmap(
 
   return va_surface;
 }
-
-bool VaapiWrapper::ProcessPixmap(
-    const scoped_refptr<gfx::NativePixmap>& source_pixmap,
-    scoped_refptr<gfx::NativePixmap> target_pixmap) {
-  scoped_refptr<VASurface> va_surface = CreateVASurfaceForPixmap(source_pixmap);
-  if (!va_surface) {
-    LOG(ERROR) << "Failed creating VA Surface for source_pixmap";
-    return false;
-  }
-
-  scoped_refptr<VASurface> processed_va_surface =
-      CreateVASurfaceForPixmap(target_pixmap);
-  if (!processed_va_surface) {
-    LOG(ERROR) << "Failed creating processed VA Surface for pixmap";
-    return false;
-  }
-
-  if (!BlitSurface(va_surface, processed_va_surface)) {
-    LOG(ERROR) << "Failed scaling NativePixmap";
-    return false;
-  }
-
-  return true;
-}
-
 #endif
 
 void VaapiWrapper::DestroyUnownedSurface(VASurfaceID va_surface_id) {

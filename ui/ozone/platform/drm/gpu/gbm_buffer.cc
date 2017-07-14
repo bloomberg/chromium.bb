@@ -298,12 +298,6 @@ GbmPixmap::GbmPixmap(GbmSurfaceFactory* surface_manager,
                      const scoped_refptr<GbmBuffer>& buffer)
     : surface_manager_(surface_manager), buffer_(buffer) {}
 
-void GbmPixmap::SetProcessingCallback(
-    const ProcessingCallback& processing_callback) {
-  DCHECK(processing_callback_.is_null());
-  processing_callback_ = processing_callback;
-}
-
 gfx::NativePixmapHandle GbmPixmap::ExportHandle() {
   gfx::NativePixmapHandle handle;
   gfx::BufferFormat format =
@@ -373,44 +367,10 @@ bool GbmPixmap::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                                      const gfx::Rect& display_bounds,
                                      const gfx::RectF& crop_rect) {
   DCHECK(buffer_->GetFlags() & GBM_BO_USE_SCANOUT);
-  OverlayPlane::ProcessBufferCallback processing_callback;
-  if (!processing_callback_.is_null())
-    processing_callback = base::Bind(&GbmPixmap::ProcessBuffer, this);
-
-  surface_manager_->GetSurface(widget)->QueueOverlayPlane(
-      OverlayPlane(buffer_, plane_z_order, plane_transform, display_bounds,
-                   crop_rect, processing_callback));
+  surface_manager_->GetSurface(widget)->QueueOverlayPlane(OverlayPlane(
+      buffer_, plane_z_order, plane_transform, display_bounds, crop_rect));
 
   return true;
-}
-
-scoped_refptr<ScanoutBuffer> GbmPixmap::ProcessBuffer(const gfx::Size& size,
-                                                      uint32_t format) {
-  DCHECK(GetBufferSize() != size ||
-         buffer_->GetFramebufferPixelFormat() != format);
-
-  if (!processed_pixmap_ || size != processed_pixmap_->GetBufferSize() ||
-      format != processed_pixmap_->buffer()->GetFramebufferPixelFormat()) {
-    // Release any old processed pixmap.
-    processed_pixmap_ = nullptr;
-    scoped_refptr<GbmBuffer> buffer = GbmBuffer::CreateBuffer(
-        buffer_->drm().get(), format, size, buffer_->GetFlags());
-    if (!buffer)
-      return nullptr;
-
-    // ProcessBuffer is called on DrmThread. We could have used
-    // CreateNativePixmap to initialize the pixmap, however it posts a
-    // synchronous task to DrmThread resulting in a deadlock.
-    processed_pixmap_ = new GbmPixmap(surface_manager_, buffer);
-  }
-
-  DCHECK(!processing_callback_.is_null());
-  if (!processing_callback_.Run(this, processed_pixmap_)) {
-    LOG(ERROR) << "Failed processing NativePixmap";
-    return nullptr;
-  }
-
-  return processed_pixmap_->buffer();
 }
 
 }  // namespace ui
