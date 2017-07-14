@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/singleton.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
@@ -21,6 +22,7 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/arc/arc_bridge_service.h"
+#include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/arc_features.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
@@ -29,7 +31,28 @@
 #include "content/public/browser/browser_thread.h"
 
 namespace arc {
+
 namespace {
+
+// Singleton factory for ArcAuthService.
+class ArcAuthServiceFactory
+    : public internal::ArcBrowserContextKeyedServiceFactoryBase<
+          ArcAuthService,
+          ArcAuthServiceFactory> {
+ public:
+  // Factory name used by ArcBrowserContextKeyedServiceFactoryBase.
+  static constexpr const char* kName = "ArcAuthServiceFactory";
+
+  static ArcAuthServiceFactory* GetInstance() {
+    return base::Singleton<ArcAuthServiceFactory>::get();
+  }
+
+ private:
+  friend struct base::DefaultSingletonTraits<ArcAuthServiceFactory>;
+
+  ArcAuthServiceFactory() = default;
+  ~ArcAuthServiceFactory() override = default;
+};
 
 // Convers mojom::ArcSignInFailureReason into ProvisiningResult.
 ProvisioningResult ConvertArcSignInFailureReasonToProvisioningResult(
@@ -73,6 +96,12 @@ mojom::ChromeAccountType GetAccountType() {
 
 // static
 const char ArcAuthService::kArcServiceName[] = "arc::ArcAuthService";
+
+// static
+ArcAuthService* ArcAuthService::GetForBrowserContext(
+    content::BrowserContext* context) {
+  return ArcAuthServiceFactory::GetForBrowserContext(context);
+}
 
 // TODO(lhchavez): Get rid of this class once we can safely remove all the
 // deprecated interfaces and only need to care about one type of callback.
@@ -135,9 +164,9 @@ class ArcAuthService::AccountInfoNotifier {
   const AccountInfoCallback account_info_callback_;
 };
 
-ArcAuthService::ArcAuthService(Profile* profile,
+ArcAuthService::ArcAuthService(content::BrowserContext* browser_context,
                                ArcBridgeService* arc_bridge_service)
-    : profile_(profile),
+    : profile_(Profile::FromBrowserContext(browser_context)),
       arc_bridge_service_(arc_bridge_service),
       binding_(this),
       weak_ptr_factory_(this) {

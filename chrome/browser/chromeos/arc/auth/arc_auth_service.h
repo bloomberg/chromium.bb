@@ -18,6 +18,10 @@
 
 class Profile;
 
+namespace content {
+class BrowserContext;
+}  // namespace content
+
 namespace arc {
 
 class ArcFetcherBase;
@@ -28,7 +32,12 @@ class ArcAuthService : public KeyedService,
                        public mojom::AuthHost,
                        public InstanceHolder<mojom::AuthInstance>::Observer {
  public:
-  ArcAuthService(Profile* profile, ArcBridgeService* bridge_service);
+  // Returns singleton instance for the given BrowserContext,
+  // or nullptr if the browser |context| is not allowed to use ARC.
+  static ArcAuthService* GetForBrowserContext(content::BrowserContext* context);
+
+  ArcAuthService(content::BrowserContext* profile,
+                 ArcBridgeService* bridge_service);
   ~ArcAuthService() override;
 
   // For supporting ArcServiceManager::GetService<T>().

@@ -16,7 +16,6 @@
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/auth/arc_auth_context.h"
 #include "chrome/browser/chromeos/arc/auth/arc_auth_service.h"
-#include "chrome/browser/chromeos/arc/auth/arc_auth_service_factory.h"
 #include "chrome/browser/chromeos/arc/auth/arc_background_auth_code_fetcher.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
@@ -199,7 +198,7 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, SuccessfulBackgroundFetch) {
 
   FakeAuthInstance auth_instance;
   ArcAuthService* auth_service =
-      ArcAuthServiceFactory::GetForBrowserContext(profile());
+      ArcAuthService::GetForBrowserContext(profile());
   ASSERT_TRUE(auth_service);
 
   ArcBridgeService* arc_bridge_service =
