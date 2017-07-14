@@ -420,7 +420,8 @@ void ReportRequestHeaders(std::map<std::string, std::string>* request_headers,
                           const std::string& headers) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // Ensure that a previous value is not overwritten.
-  EXPECT_FALSE(base::ContainsKey(*request_headers, url));
+  EXPECT_FALSE(base::ContainsKey(*request_headers, url))
+      << "URL: " << url << ", Headers: " << headers;
   (*request_headers)[url] = headers;
 }
 
