@@ -397,26 +397,6 @@ bool FrameSelection::Modify(EAlteration alter,
   return true;
 }
 
-bool FrameSelection::Modify(EAlteration alter,
-                            unsigned vertical_distance,
-                            VerticalDirection direction) {
-  SelectionModifier selection_modifier(*GetFrame(),
-                                       ComputeVisibleSelectionInDOMTree());
-  if (!selection_modifier.ModifyWithPageGranularity(alter, vertical_distance,
-                                                    direction)) {
-    return false;
-  }
-
-  SetSelection(selection_modifier.Selection().AsSelection(),
-               kCloseTyping | kClearTypingStyle | kUserTriggered,
-               alter == kAlterationMove ? CursorAlignOnScroll::kAlways
-                                        : CursorAlignOnScroll::kIfNeeded);
-
-  granularity_ = TextGranularity::kCharacter;
-
-  return true;
-}
-
 void FrameSelection::Clear() {
   granularity_ = TextGranularity::kCharacter;
   if (granularity_strategy_)
