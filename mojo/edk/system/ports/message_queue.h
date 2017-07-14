@@ -18,8 +18,8 @@ namespace mojo {
 namespace edk {
 namespace ports {
 
-const uint64_t kInitialSequenceNum = 1;
-const uint64_t kInvalidSequenceNum = std::numeric_limits<uint64_t>::max();
+constexpr uint64_t kInitialSequenceNum = 1;
+constexpr uint64_t kInvalidSequenceNum = std::numeric_limits<uint64_t>::max();
 
 class MessageFilter;
 
