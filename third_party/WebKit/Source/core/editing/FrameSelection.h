@@ -147,7 +147,6 @@ class CORE_EXPORT FrameSelection final
               TextGranularity,
               EUserTriggered = kNotUserTriggered);
   enum VerticalDirection { kDirectionUp, kDirectionDown };
-  bool Modify(EAlteration, unsigned vertical_distance, VerticalDirection);
 
   // Moves the selection extent based on the selection granularity strategy.
   // This function does not allow the selection to collapse. If the new

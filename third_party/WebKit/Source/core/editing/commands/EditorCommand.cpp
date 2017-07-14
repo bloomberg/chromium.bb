@@ -1224,6 +1224,29 @@ static bool ExecuteMoveLeftAndModifySelection(LocalFrame& frame,
   return true;
 }
 
+// Returns true if selection is modified.
+bool ModifySelectionyWithPageGranularity(
+    LocalFrame& frame,
+    FrameSelection::EAlteration alter,
+    unsigned vertical_distance,
+    FrameSelection::VerticalDirection direction) {
+  SelectionModifier selection_modifier(
+      frame, frame.Selection().ComputeVisibleSelectionInDOMTree());
+  if (!selection_modifier.ModifyWithPageGranularity(alter, vertical_distance,
+                                                    direction)) {
+    return false;
+  }
+
+  frame.Selection().SetSelection(selection_modifier.Selection().AsSelection(),
+                                 FrameSelection::kCloseTyping |
+                                     FrameSelection::kClearTypingStyle |
+                                     kUserTriggered,
+                                 alter == FrameSelection::kAlterationMove
+                                     ? CursorAlignOnScroll::kAlways
+                                     : CursorAlignOnScroll::kIfNeeded);
+  return true;
+}
+
 static bool ExecuteMovePageDown(LocalFrame& frame,
                                 Event*,
                                 EditorCommandSource,
@@ -1231,8 +1254,9 @@ static bool ExecuteMovePageDown(LocalFrame& frame,
   unsigned distance = VerticalScrollDistance(frame);
   if (!distance)
     return false;
-  return frame.Selection().Modify(FrameSelection::kAlterationMove, distance,
-                                  FrameSelection::kDirectionDown);
+  return ModifySelectionyWithPageGranularity(
+      frame, FrameSelection::kAlterationMove, distance,
+      FrameSelection::kDirectionDown);
 }
 
 static bool ExecuteMovePageDownAndModifySelection(LocalFrame& frame,
@@ -1242,8 +1266,9 @@ static bool ExecuteMovePageDownAndModifySelection(LocalFrame& frame,
   unsigned distance = VerticalScrollDistance(frame);
   if (!distance)
     return false;
-  return frame.Selection().Modify(FrameSelection::kAlterationExtend, distance,
-                                  FrameSelection::kDirectionDown);
+  return ModifySelectionyWithPageGranularity(
+      frame, FrameSelection::kAlterationExtend, distance,
+      FrameSelection::kDirectionDown);
 }
 
 static bool ExecuteMovePageUp(LocalFrame& frame,
@@ -1253,8 +1278,9 @@ static bool ExecuteMovePageUp(LocalFrame& frame,
   unsigned distance = VerticalScrollDistance(frame);
   if (!distance)
     return false;
-  return frame.Selection().Modify(FrameSelection::kAlterationMove, distance,
-                                  FrameSelection::kDirectionUp);
+  return ModifySelectionyWithPageGranularity(
+      frame, FrameSelection::kAlterationMove, distance,
+      FrameSelection::kDirectionUp);
 }
 
 static bool ExecuteMovePageUpAndModifySelection(LocalFrame& frame,
@@ -1264,8 +1290,9 @@ static bool ExecuteMovePageUpAndModifySelection(LocalFrame& frame,
   unsigned distance = VerticalScrollDistance(frame);
   if (!distance)
     return false;
-  return frame.Selection().Modify(FrameSelection::kAlterationExtend, distance,
-                                  FrameSelection::kDirectionUp);
+  return ModifySelectionyWithPageGranularity(
+      frame, FrameSelection::kAlterationExtend, distance,
+      FrameSelection::kDirectionUp);
 }
 
 static bool ExecuteMoveRight(LocalFrame& frame,
