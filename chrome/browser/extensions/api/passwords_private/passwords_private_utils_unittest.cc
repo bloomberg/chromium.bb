@@ -4,12 +4,9 @@
 
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_utils.h"
 
-#include "base/strings/utf_string_conversions.h"
-#include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/common/password_form.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
 namespace extensions {
@@ -39,33 +36,30 @@ TEST(CreateUrlCollectionFromFormTest, UrlsFromFederatedForm) {
   EXPECT_EQ(federated_urls.link, "https://example.com/");
 }
 
-TEST(CreateUrlCollectionFromFormTest, UrlsFromAndroidFormWithoutAffiliation) {
+TEST(CreateUrlCollectionFromFormTest, UrlsFromAndroidFormWithoutDisplayName) {
   autofill::PasswordForm android_form;
-  android_form.signon_realm = "android://example_hash@com.example.android";
+  android_form.signon_realm = "android://example@com.example.android";
+  android_form.app_display_name.clear();
 
   api::passwords_private::UrlCollection android_urls =
       CreateUrlCollectionFromForm(android_form);
-  EXPECT_EQ(android_urls.origin, "android://example_hash@com.example.android");
-  EXPECT_THAT(android_urls.shown, testing::StartsWith("android.example.com"));
-  EXPECT_THAT(android_urls.shown, testing::HasSubstr(l10n_util::GetStringUTF8(
-                                      IDS_PASSWORDS_ANDROID_URI_SUFFIX)));
-  EXPECT_EQ(
-      android_urls.link,
-      "https://play.google.com/store/apps/details?id=com.example.android");
+  EXPECT_EQ("android://example@com.example.android", android_urls.origin);
+  EXPECT_EQ("android.example.com", android_urls.shown);
+  EXPECT_EQ("https://play.google.com/store/apps/details?id=com.example.android",
+            android_urls.link);
 }
 
-TEST(CreateUrlCollectionFromFormTest, UrlsFromAndroidFormWithAffiliation) {
+TEST(CreateUrlCollectionFromFormTest, UrlsFromAndroidFormWithAppName) {
   autofill::PasswordForm android_form;
-  android_form.affiliated_web_realm = "https://example.com";
-  android_form.signon_realm = "android://example_hash@com.example.android";
+  android_form.signon_realm = "android://hash@com.example.android";
+  android_form.app_display_name = "Example Android App";
 
   api::passwords_private::UrlCollection android_urls =
       CreateUrlCollectionFromForm(android_form);
-  EXPECT_EQ(android_urls.origin, "android://example_hash@com.example.android");
-  EXPECT_THAT(android_urls.shown, testing::StartsWith("example.com"));
-  EXPECT_THAT(android_urls.shown, testing::HasSubstr(l10n_util::GetStringUTF8(
-                                      IDS_PASSWORDS_ANDROID_URI_SUFFIX)));
-  EXPECT_EQ(android_urls.link, "https://example.com/");
+  EXPECT_EQ(android_urls.origin, "android://hash@com.example.android");
+  EXPECT_EQ("Example Android App", android_urls.shown);
+  EXPECT_EQ("https://play.google.com/store/apps/details?id=com.example.android",
+            android_urls.link);
 }
 
 }  // namespace extensions
