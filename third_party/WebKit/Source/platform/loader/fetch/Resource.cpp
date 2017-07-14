@@ -893,7 +893,9 @@ bool Resource::CanReuse(const FetchParameters& params) const {
   if (existing_was_with_fetcher_cors_suppressed)
     return new_mode != WebURLRequest::kFetchRequestModeCORS;
 
-  return existing_mode == new_mode;
+  return existing_mode == new_mode &&
+         new_request.GetFetchCredentialsMode() ==
+             resource_request_.GetFetchCredentialsMode();
 }
 
 void Resource::Prune() {
