@@ -87,6 +87,8 @@ int TypeNameDeduplicator::Insert(const char* type_name) {
 }
 
 void TypeNameDeduplicator::SerializeIncrementally(TracedValue* traced_value) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("memory-infra"),
+               "TypeNameDeduplicator::SerializeIncrementally");
   for (const auto* name_and_id : new_type_ids_) {
     traced_value->BeginDictionary();
 

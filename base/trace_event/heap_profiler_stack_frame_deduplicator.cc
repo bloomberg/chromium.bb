@@ -13,6 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/heap_profiler_string_deduplicator.h"
 #include "base/trace_event/memory_usage_estimator.h"
+#include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "base/trace_event/trace_event_memory_overhead.h"
 
@@ -80,6 +81,8 @@ int StackFrameDeduplicator::Insert(const StackFrame* beginFrame,
 }
 
 void StackFrameDeduplicator::SerializeIncrementally(TracedValue* traced_value) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("memory-infra"),
+               "StackFrameDeduplicator::SerializeIncrementally");
   std::string stringify_buffer;
 
   for (; last_exported_index_ < frames_.size(); ++last_exported_index_) {
