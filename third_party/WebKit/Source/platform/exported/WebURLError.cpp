@@ -35,6 +35,14 @@
 
 namespace blink {
 
+WebURLError::WebURLError(const WebURL& unreachable_url,
+                         bool stale_copy_in_cache,
+                         int reason) {
+  // This is implemented in ResourceError.h due to a DEPS restriction.
+  ResourceError::InitializeWebURLError(this, unreachable_url,
+                                       stale_copy_in_cache, reason);
+}
+
 WebURLError::WebURLError(const ResourceError& error) {
   *this = error;
 }
