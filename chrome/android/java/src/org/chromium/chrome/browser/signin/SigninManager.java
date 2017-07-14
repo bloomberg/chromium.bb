@@ -540,7 +540,7 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
         if (wipeData) {
             wipeProfileData(wipeDataHooks);
         } else {
-            onSignOutDone();
+            wipeGoogleServiceWorkerCaches(wipeDataHooks);
         }
 
         AccountTrackerService.get().invalidateAccountSeedStatus(true);
@@ -590,6 +590,12 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
         if (hooks != null) hooks.preWipeData();
         // This will call back to onProfileDataWiped().
         nativeWipeProfileData(mNativeSigninManagerAndroid, hooks);
+    }
+
+    private void wipeGoogleServiceWorkerCaches(WipeDataHooks hooks) {
+        if (hooks != null) hooks.preWipeData();
+        // This will call back to onProfileDataWiped().
+        nativeWipeGoogleServiceWorkerCaches(mNativeSigninManagerAndroid, hooks);
     }
 
     /**
@@ -679,6 +685,8 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
     private native void nativeSignOut(long nativeSigninManagerAndroid);
     private native String nativeGetManagementDomain(long nativeSigninManagerAndroid);
     private native void nativeWipeProfileData(long nativeSigninManagerAndroid, WipeDataHooks hooks);
+    private native void nativeWipeGoogleServiceWorkerCaches(
+            long nativeSigninManagerAndroid, WipeDataHooks hooks);
     private native void nativeClearLastSignedInUser(long nativeSigninManagerAndroid);
     private native void nativeLogInSignedInUser(long nativeSigninManagerAndroid);
     private native boolean nativeIsSignedInOnNative(long nativeSigninManagerAndroid);
