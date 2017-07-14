@@ -63,9 +63,6 @@ void vp9_filter_by_weight16x16_c(const uint8_t *src, int src_stride, uint8_t *ds
 void vp9_filter_by_weight8x8_c(const uint8_t *src, int src_stride, uint8_t *dst, int dst_stride, int src_weight);
 #define vp9_filter_by_weight8x8 vp9_filter_by_weight8x8_c
 
-int vp9_full_search_sad_c(const struct macroblock *x, const struct mv *ref_mv, int sad_per_bit, int distance, const struct vp9_variance_vtable *fn_ptr, const struct mv *center_mv, struct mv *best_mv);
-#define vp9_full_search_sad vp9_full_search_sad_c
-
 void vp9_fwht4x4_c(const int16_t *input, tran_low_t *output, int stride);
 #define vp9_fwht4x4 vp9_fwht4x4_c
 

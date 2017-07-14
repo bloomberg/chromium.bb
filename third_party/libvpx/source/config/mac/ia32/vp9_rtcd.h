@@ -71,11 +71,6 @@ void vp9_filter_by_weight8x8_c(const uint8_t *src, int src_stride, uint8_t *dst,
 void vp9_filter_by_weight8x8_sse2(const uint8_t *src, int src_stride, uint8_t *dst, int dst_stride, int src_weight);
 RTCD_EXTERN void (*vp9_filter_by_weight8x8)(const uint8_t *src, int src_stride, uint8_t *dst, int dst_stride, int src_weight);
 
-int vp9_full_search_sad_c(const struct macroblock *x, const struct mv *ref_mv, int sad_per_bit, int distance, const struct vp9_variance_vtable *fn_ptr, const struct mv *center_mv, struct mv *best_mv);
-int vp9_full_search_sadx3(const struct macroblock *x, const struct mv *ref_mv, int sad_per_bit, int distance, const struct vp9_variance_vtable *fn_ptr, const struct mv *center_mv, struct mv *best_mv);
-int vp9_full_search_sadx8(const struct macroblock *x, const struct mv *ref_mv, int sad_per_bit, int distance, const struct vp9_variance_vtable *fn_ptr, const struct mv *center_mv, struct mv *best_mv);
-RTCD_EXTERN int (*vp9_full_search_sad)(const struct macroblock *x, const struct mv *ref_mv, int sad_per_bit, int distance, const struct vp9_variance_vtable *fn_ptr, const struct mv *center_mv, struct mv *best_mv);
-
 void vp9_fwht4x4_c(const int16_t *input, tran_low_t *output, int stride);
 void vp9_fwht4x4_sse2(const int16_t *input, tran_low_t *output, int stride);
 RTCD_EXTERN void (*vp9_fwht4x4)(const int16_t *input, tran_low_t *output, int stride);
@@ -181,9 +176,6 @@ static void setup_rtcd_internal(void)
     if (flags & HAS_SSE2) vp9_filter_by_weight16x16 = vp9_filter_by_weight16x16_sse2;
     vp9_filter_by_weight8x8 = vp9_filter_by_weight8x8_c;
     if (flags & HAS_SSE2) vp9_filter_by_weight8x8 = vp9_filter_by_weight8x8_sse2;
-    vp9_full_search_sad = vp9_full_search_sad_c;
-    if (flags & HAS_SSE3) vp9_full_search_sad = vp9_full_search_sadx3;
-    if (flags & HAS_SSE4_1) vp9_full_search_sad = vp9_full_search_sadx8;
     vp9_fwht4x4 = vp9_fwht4x4_c;
     if (flags & HAS_SSE2) vp9_fwht4x4 = vp9_fwht4x4_sse2;
     vp9_highbd_block_error = vp9_highbd_block_error_c;
