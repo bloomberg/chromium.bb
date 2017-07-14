@@ -32,6 +32,12 @@ void RuntimeEnabledFeatures::Set{{feature_set|capitalize}}FeaturesEnabled(bool e
 
 {% endfor %}
 
+void RuntimeEnabledFeatures::SetOriginTrialControlledFeaturesEnabled(bool enable) {
+  {% for feature in origin_trial_controlled_features %}
+  Set{{feature.name}}Enabled(enable);
+  {% endfor %}
+}
+
 void RuntimeEnabledFeatures::SetFeatureEnabledFromString(
     const std::string& name, bool enable) {
   {% for feature in standard_features %}
