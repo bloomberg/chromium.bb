@@ -108,6 +108,8 @@ SpotlightProvider* ChromeBrowserProvider::GetSpotlightProvider() const {
   return nullptr;
 }
 
+void ChromeBrowserProvider::CheckForFirstPartyApps() const {}
+
 BrandedImageProvider* ChromeBrowserProvider::GetBrandedImageProvider() const {
   return nullptr;
 }

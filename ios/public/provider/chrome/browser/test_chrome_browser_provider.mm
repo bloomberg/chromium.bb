@@ -90,6 +90,8 @@ SpotlightProvider* TestChromeBrowserProvider::GetSpotlightProvider() const {
   return spotlight_provider_.get();
 }
 
+void TestChromeBrowserProvider::CheckForFirstPartyApps() const {}
+
 BrandedImageProvider* TestChromeBrowserProvider::GetBrandedImageProvider()
     const {
   return branded_image_provider_.get();
