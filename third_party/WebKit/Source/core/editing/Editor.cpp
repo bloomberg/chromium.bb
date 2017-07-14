@@ -1753,10 +1753,10 @@ void Editor::SetMarkedTextMatchesAreHighlighted(bool flag) {
       DocumentMarker::kTextMatch);
 }
 
-void Editor::RespondToChangedSelection(
-    const Position& old_selection_start,
-    FrameSelection::SetSelectionOptions options) {
-  GetSpellChecker().RespondToChangedSelection(old_selection_start, options);
+void Editor::RespondToChangedSelection(const Position& old_selection_start,
+                                       TypingContinuation typing_continuation) {
+  GetSpellChecker().RespondToChangedSelection(old_selection_start,
+                                              typing_continuation);
   Client().RespondToChangedSelection(
       &GetFrame(), GetFrame().Selection().GetSelectionInDOMTree().Type());
   SetStartNewKillRingSequence(true);

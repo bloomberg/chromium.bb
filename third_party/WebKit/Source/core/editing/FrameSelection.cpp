@@ -229,7 +229,9 @@ bool FrameSelection::SetSelectionDeprecated(
   // Note: Since, setting focus can modify DOM tree, we should use
   // |oldSelection| before setting focus
   frame_->GetEditor().RespondToChangedSelection(
-      old_selection_in_dom_tree.ComputeStartPosition(), options);
+      old_selection_in_dom_tree.ComputeStartPosition(),
+      options & kCloseTyping ? TypingContinuation::kEnd
+                             : TypingContinuation::kContinue);
   DCHECK_EQ(current_document, GetDocument());
   return true;
 }
