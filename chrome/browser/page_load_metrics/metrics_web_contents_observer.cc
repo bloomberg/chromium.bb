@@ -65,15 +65,14 @@ UserInitiatedInfo CreateUserInitiatedInfo(
 
 MetricsWebContentsObserver::MetricsWebContentsObserver(
     content::WebContents* web_contents,
-    const base::Optional<content::WebContents::CreateParams>& create_params,
     std::unique_ptr<PageLoadMetricsEmbedderInterface> embedder_interface)
     : content::WebContentsObserver(web_contents),
       in_foreground_(web_contents->IsVisible()),
       embedder_interface_(std::move(embedder_interface)),
       has_navigated_(false),
       page_load_metrics_binding_(web_contents, this) {
-  // Prerender's CreateParams erroneously reports that it is not initially
-  // hidden, so we manually override visibility state for prerender.
+  // Prerenders erroneously report that they are initially visible, so we
+  // manually override visibility state for prerender.
   const bool is_prerender =
       prerender::PrerenderContents::FromWebContents(web_contents) != nullptr;
   if (is_prerender)
@@ -85,13 +84,12 @@ MetricsWebContentsObserver::MetricsWebContentsObserver(
 // static
 MetricsWebContentsObserver* MetricsWebContentsObserver::CreateForWebContents(
     content::WebContents* web_contents,
-    const base::Optional<content::WebContents::CreateParams>& create_params,
     std::unique_ptr<PageLoadMetricsEmbedderInterface> embedder_interface) {
   DCHECK(web_contents);
 
   MetricsWebContentsObserver* metrics = FromWebContents(web_contents);
   if (!metrics) {
-    metrics = new MetricsWebContentsObserver(web_contents, create_params,
+    metrics = new MetricsWebContentsObserver(web_contents,
                                              std::move(embedder_interface));
     web_contents->SetUserData(UserDataKey(), base::WrapUnique(metrics));
   }

@@ -288,11 +288,8 @@ void PrerenderContents::StartPrerendering(
 
   prerendering_has_started_ = true;
 
-  content::WebContents::CreateParams create_params =
-      WebContents::CreateParams(profile_);
-  prerender_contents_.reset(
-      CreateWebContents(create_params, session_storage_namespace));
-  TabHelpers::AttachTabHelpers(prerender_contents_.get(), create_params);
+  prerender_contents_.reset(CreateWebContents(session_storage_namespace));
+  TabHelpers::AttachTabHelpers(prerender_contents_.get());
   content::WebContentsObserver::Observe(prerender_contents_.get());
 
   // Tag the prerender contents with the task manager specific prerender tag, so
@@ -451,14 +448,13 @@ void PrerenderContents::OnRenderViewHostCreated(
 }
 
 WebContents* PrerenderContents::CreateWebContents(
-    const content::WebContents::CreateParams& create_params,
     SessionStorageNamespace* session_storage_namespace) {
   // TODO(ajwong): Remove the temporary map once prerendering is aware of
   // multiple session storage namespaces per tab.
   content::SessionStorageNamespaceMap session_storage_namespace_map;
   session_storage_namespace_map[std::string()] = session_storage_namespace;
-  return WebContents::CreateWithSessionStorage(create_params,
-                                               session_storage_namespace_map);
+  return WebContents::CreateWithSessionStorage(
+      WebContents::CreateParams(profile_), session_storage_namespace_map);
 }
 
 void PrerenderContents::NotifyPrerenderStart() {

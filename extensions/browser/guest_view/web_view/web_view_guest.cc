@@ -1339,14 +1339,12 @@ WebContents* WebViewGuest::OpenURLFromTab(
   return nullptr;
 }
 
-void WebViewGuest::WebContentsCreated(
-    WebContents* source_contents,
-    int opener_render_process_id,
-    int opener_render_frame_id,
-    const std::string& frame_name,
-    const GURL& target_url,
-    WebContents* new_contents,
-    const base::Optional<content::WebContents::CreateParams>& create_params) {
+void WebViewGuest::WebContentsCreated(WebContents* source_contents,
+                                      int opener_render_process_id,
+                                      int opener_render_frame_id,
+                                      const std::string& frame_name,
+                                      const GURL& target_url,
+                                      WebContents* new_contents) {
   auto* guest = WebViewGuest::FromWebContents(new_contents);
   CHECK(guest);
   guest->SetOpener(this);

@@ -182,8 +182,7 @@ void AwWebContentsDelegate::WebContentsCreated(
     int opener_render_frame_id,
     const std::string& frame_name,
     const GURL& target_url,
-    content::WebContents* new_contents,
-    const base::Optional<content::WebContents::CreateParams>& create_params) {
+    content::WebContents* new_contents) {
   AwContentsIoThreadClient::RegisterPendingContents(new_contents);
 }
 

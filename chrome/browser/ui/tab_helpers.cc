@@ -135,9 +135,7 @@ const char kTabContentsAttachedTabHelpersUserDataKey[] =
 }  // namespace
 
 // static
-void TabHelpers::AttachTabHelpers(
-    WebContents* web_contents,
-    const base::Optional<WebContents::CreateParams>& create_params) {
+void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   // If already adopted, nothing to be done.
   base::SupportsUserData::Data* adoption_tag =
       web_contents->GetUserData(&kTabContentsAttachedTabHelpersUserDataKey);
@@ -205,7 +203,7 @@ void TabHelpers::AttachTabHelpers(
     MixedContentSettingsTabHelper::CreateForWebContents(web_contents);
   NavigationCorrectionTabObserver::CreateForWebContents(web_contents);
   NavigationMetricsRecorder::CreateForWebContents(web_contents);
-  chrome::InitializePageLoadMetricsForWebContents(web_contents, create_params);
+  chrome::InitializePageLoadMetricsForWebContents(web_contents);
   PermissionRequestManager::CreateForWebContents(web_contents);
   PopupBlockerTabHelper::CreateForWebContents(web_contents);
   PrefsTabHelper::CreateForWebContents(web_contents);
