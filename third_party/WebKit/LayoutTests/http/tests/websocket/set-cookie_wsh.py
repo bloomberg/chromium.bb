@@ -26,7 +26,6 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
 import urlparse
 
 
@@ -39,8 +38,7 @@ def web_socket_do_extra_handshake(request):
         'ws-domain-local-ip=1; Domain=127.0.0.1' + max_age,
         'ws-domain-example-com=1; Domain=example.com' + max_age,
         'ws-path-root=1; Path=/' + max_age,
-        'ws-path-foobar=1; Path=/foo/bar' + max_age,
-        'ws=1' + max_age,
+        'ws-path-foobar=1; Path=/foo/bar' + max_age, 'ws=1' + max_age,
         'same-site-strict=1; SameSite=Strict' + max_age,
         'same-site-lax=1; SameSite=Lax' + max_age
     ]

@@ -17,8 +17,8 @@ def web_socket_transfer_data(request):
     header += struct.pack('!Q', length)
     request.connection.write(header)
 
-    # Send data indefinitely to simulate a real (broken) server sending a big frame.
-    # A client should ignore these bytes and abort the connection.
+    # Send data indefinitely to simulate a real (broken) server sending a big
+    # frame. A client should ignore these bytes and abort the connection.
     while True:
         request.connection.write('X' * 4096)
         time.sleep(1)

@@ -26,7 +26,6 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
 import urllib
 from mod_pywebsocket import handshake
 from mod_pywebsocket.handshake.hybi import compute_accept
@@ -41,7 +40,8 @@ def web_socket_do_extra_handshake(request):
     message = 'HTTP/1.1 101 Switching Protocols\r\n'
     message += 'Upgrade: websocket\r\n'
     message += 'Connection: Upgrade\r\n'
-    message += 'Sec-WebSocket-Accept: %s\r\n' % compute_accept(request.headers_in['Sec-WebSocket-Key'])[0]
+    message += 'Sec-WebSocket-Accept: %s\r\n' % compute_accept(
+        request.headers_in['Sec-WebSocket-Key'])[0]
     message += 'Sec-WebSocket-Extensions: permessage-deflate'
     if parameters:
         message += '; %s\r\n' % parameters

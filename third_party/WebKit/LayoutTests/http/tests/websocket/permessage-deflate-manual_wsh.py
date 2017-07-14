@@ -26,14 +26,12 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
 import urlparse
 import zlib
 from mod_pywebsocket import common, util
 from mod_pywebsocket.extensions import PerMessageDeflateExtensionProcessor
 from mod_pywebsocket.extensions import ExtensionProcessorInterface
 from mod_pywebsocket.common import ExtensionParameter
-
 
 _GOODBYE_MESSAGE = u'Goodbye'
 _ENABLE_MESSAGE = u'EnableCompression'
@@ -44,8 +42,7 @@ _client_max_window_bits = 15
 
 def _get_permessage_deflate_extension_processor(request):
     for extension_processor in request.ws_extension_processors:
-        if isinstance(extension_processor,
-                      PerMessageDeflateExtensionProcessor):
+        if isinstance(extension_processor, PerMessageDeflateExtensionProcessor):
             return extension_processor
     return None
 

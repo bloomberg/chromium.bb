@@ -14,7 +14,9 @@ def web_socket_transfer_data(request):
         if type(message) == str and message == expected_message:
             msgutil.send_message(request, 'PASS: Message #%d.' % test_number)
         else:
-            msgutil.send_message(request, 'FAIL: Message #%d: Received unexpected message: %r' % (test_number, message))
+            msgutil.send_message(
+                request, 'FAIL: Message #%d: Received unexpected message: %r' %
+                (test_number, message))
 
 
 def all_distinct_bytes():

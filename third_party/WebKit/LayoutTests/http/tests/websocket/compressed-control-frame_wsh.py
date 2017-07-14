@@ -26,7 +26,6 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
 from mod_pywebsocket import common
 from mod_pywebsocket import stream
 import zlib
@@ -37,12 +36,17 @@ def web_socket_do_extra_handshake(request):
 
 
 def web_socket_transfer_data(request):
-    compress = zlib.compressobj(
-        zlib.Z_DEFAULT_COMPRESSION, zlib.DEFLATED, -zlib.MAX_WBITS)
+    compress = zlib.compressobj(zlib.Z_DEFAULT_COMPRESSION, zlib.DEFLATED,
+                                -zlib.MAX_WBITS)
     compressed_message = compress.compress('close message')
     compressed_message += compress.flush(zlib.Z_SYNC_FLUSH)
     compressed_message = compressed_message[:-4]
     header = stream.create_header(
-        opcode=common.OPCODE_CLOSE, payload_length=len(compressed_message),
-        fin=1, rsv1=1, rsv2=0, rsv3=0, mask=False)
+        opcode=common.OPCODE_CLOSE,
+        payload_length=len(compressed_message),
+        fin=1,
+        rsv1=1,
+        rsv2=0,
+        rsv3=0,
+        mask=False)
     request.connection.write(header + compressed_message)
