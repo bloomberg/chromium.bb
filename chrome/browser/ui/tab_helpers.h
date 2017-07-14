@@ -5,11 +5,12 @@
 #ifndef CHROME_BROWSER_UI_TAB_HELPERS_H_
 #define CHROME_BROWSER_UI_TAB_HELPERS_H_
 
-#include "base/optional.h"
-#include "content/public/browser/web_contents.h"
-
 namespace android {
 class TabWebContentsDelegateAndroid;
+}
+
+namespace content {
+class WebContents;
 }
 
 namespace chrome {
@@ -59,9 +60,7 @@ class TabHelpers {
   // all the associated tab helpers that are needed for the WebContents to
   // serve in that role. It is safe to call this on a WebContents that was
   // already adopted.
-  static void AttachTabHelpers(
-      content::WebContents* web_contents,
-      const base::Optional<content::WebContents::CreateParams>& create_params);
+  static void AttachTabHelpers(content::WebContents* web_contents);
 };
 
 #endif  // CHROME_BROWSER_UI_TAB_HELPERS_H_

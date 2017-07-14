@@ -65,7 +65,7 @@ void PageLoadMetricsObserverTestHarness::SetUp() {
   SetContents(CreateTestWebContents());
   NavigateAndCommit(GURL("http://www.google.com"));
   observer_ = MetricsWebContentsObserver::CreateForWebContents(
-      web_contents(), base::nullopt,
+      web_contents(),
       base::MakeUnique<TestPageLoadMetricsEmbedderInterface>(this));
   web_contents()->WasShown();
 }

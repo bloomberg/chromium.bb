@@ -241,7 +241,7 @@ class MetricsWebContentsObserverTest : public ChromeRenderViewHostTestHarness {
     embedder_interface_ = embedder_interface.get();
     MetricsWebContentsObserver* observer =
         MetricsWebContentsObserver::CreateForWebContents(
-            web_contents(), base::nullopt, std::move(embedder_interface));
+            web_contents(), std::move(embedder_interface));
     observer->WasShown();
   }
 

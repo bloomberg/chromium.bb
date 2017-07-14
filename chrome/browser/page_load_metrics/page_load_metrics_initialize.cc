@@ -168,11 +168,9 @@ bool PageLoadMetricsEmbedder::IsNewTabPageUrl(const GURL& url) {
 }  // namespace
 
 void InitializePageLoadMetricsForWebContents(
-    content::WebContents* web_contents,
-    const base::Optional<content::WebContents::CreateParams>& create_params) {
+    content::WebContents* web_contents) {
   page_load_metrics::MetricsWebContentsObserver::CreateForWebContents(
-      web_contents, create_params,
-      base::MakeUnique<PageLoadMetricsEmbedder>(web_contents));
+      web_contents, base::MakeUnique<PageLoadMetricsEmbedder>(web_contents));
 }
 
 }  // namespace chrome

@@ -53,15 +53,12 @@ class HeadlessWebContentsImpl::Delegate : public content::WebContentsDelegate {
   explicit Delegate(HeadlessWebContentsImpl* headless_web_contents)
       : headless_web_contents_(headless_web_contents) {}
 
-  void WebContentsCreated(
-      content::WebContents* source_contents,
-      int opener_render_process_id,
-      int opener_render_frame_id,
-      const std::string& frame_name,
-      const GURL& target_url,
-      content::WebContents* new_contents,
-      const base::Optional<content::WebContents::CreateParams>& create_params)
-      override {
+  void WebContentsCreated(content::WebContents* source_contents,
+                          int opener_render_process_id,
+                          int opener_render_frame_id,
+                          const std::string& frame_name,
+                          const GURL& target_url,
+                          content::WebContents* new_contents) override {
     DCHECK(new_contents->GetBrowserContext() ==
            headless_web_contents_->browser_context());
 
