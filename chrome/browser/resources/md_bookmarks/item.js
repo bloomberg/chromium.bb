@@ -6,7 +6,6 @@ Polymer({
   is: 'bookmarks-item',
 
   behaviors: [
-    bookmarks.MouseFocusBehavior,
     bookmarks.StoreClient,
   ],
 

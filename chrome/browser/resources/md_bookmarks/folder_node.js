@@ -6,7 +6,6 @@ Polymer({
   is: 'bookmarks-folder-node',
 
   behaviors: [
-    bookmarks.MouseFocusBehavior,
     bookmarks.StoreClient,
   ],
 
