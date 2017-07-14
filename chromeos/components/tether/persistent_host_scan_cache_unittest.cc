@@ -1,0 +1,158 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chromeos/components/tether/persistent_host_scan_cache.h"
+
+#include <memory>
+#include <unordered_map>
+
+#include "base/memory/ptr_util.h"
+#include "chromeos/components/tether/fake_host_scan_cache.h"
+#include "chromeos/components/tether/host_scan_test_util.h"
+#include "components/prefs/testing_pref_service.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
+namespace chromeos {
+
+namespace tether {
+
+class PersistentHostScanCacheTest : public testing::Test {
+ protected:
+  PersistentHostScanCacheTest()
+      : test_entries_(host_scan_test_util::CreateTestEntries()) {}
+
+  void SetUp() override {
+    test_pref_service_ = base::MakeUnique<TestingPrefServiceSimple>();
+    PersistentHostScanCache::RegisterPrefs(test_pref_service_->registry());
+
+    host_scan_cache_ =
+        base::MakeUnique<PersistentHostScanCache>(test_pref_service_.get());
+    expected_cache_ = base::MakeUnique<FakeHostScanCache>();
+  }
+
+  void SetHostScanResult(const HostScanCacheEntry& entry) {
+    host_scan_cache_->SetHostScanResult(entry);
+    expected_cache_->SetHostScanResult(entry);
+  }
+
+  void RemoveHostScanResult(const std::string& tether_network_guid) {
+    host_scan_cache_->RemoveHostScanResult(tether_network_guid);
+    expected_cache_->RemoveHostScanResult(tether_network_guid);
+  }
+
+  void VerifyPersistentCacheMatchesInMemoryCache(size_t expected_size) {
+    std::unordered_map<std::string, HostScanCacheEntry> entries =
+        host_scan_cache_->GetStoredCacheEntries();
+    EXPECT_EQ(expected_size, entries.size());
+    EXPECT_EQ(expected_size, expected_cache_->cache().size());
+    EXPECT_EQ(expected_cache_->cache(), entries);
+  }
+
+  const std::unordered_map<std::string, HostScanCacheEntry> test_entries_;
+
+  std::unique_ptr<TestingPrefServiceSimple> test_pref_service_;
+  std::unique_ptr<FakeHostScanCache> expected_cache_;
+
+  std::unique_ptr<PersistentHostScanCache> host_scan_cache_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PersistentHostScanCacheTest);
+};
+
+TEST_F(PersistentHostScanCacheTest, TestSetAndRemove) {
+  SetHostScanResult(test_entries_.at(host_scan_test_util::kTetherGuid0));
+  VerifyPersistentCacheMatchesInMemoryCache(1u /* expected_size */);
+
+  SetHostScanResult(test_entries_.at(host_scan_test_util::kTetherGuid1));
+  VerifyPersistentCacheMatchesInMemoryCache(2u /* expected_size */);
+
+  SetHostScanResult(test_entries_.at(host_scan_test_util::kTetherGuid2));
+  VerifyPersistentCacheMatchesInMemoryCache(3u /* expected_size */);
+
+  SetHostScanResult(test_entries_.at(host_scan_test_util::kTetherGuid3));
+  VerifyPersistentCacheMatchesInMemoryCache(4u /* expected_size */);
+
+  RemoveHostScanResult(host_scan_test_util::kTetherGuid0);
+  VerifyPersistentCacheMatchesInMemoryCache(3u /* expected_size */);
+
+  RemoveHostScanResult(host_scan_test_util::kTetherGuid1);
+  VerifyPersistentCacheMatchesInMemoryCache(2u /* expected_size */);
+
+  RemoveHostScanResult(host_scan_test_util::kTetherGuid2);
+  VerifyPersistentCacheMatchesInMemoryCache(1u /* expected_size */);
+
+  RemoveHostScanResult(host_scan_test_util::kTetherGuid3);
+  VerifyPersistentCacheMatchesInMemoryCache(0u /* expected_size */);
+}
+
+TEST_F(PersistentHostScanCacheTest, TestUpdate) {
+  SetHostScanResult(test_entries_.at(host_scan_test_util::kTetherGuid0));
+  VerifyPersistentCacheMatchesInMemoryCache(1u /* expected_size */);
+  EXPECT_EQ(host_scan_test_util::kTetherSetupRequired0,
+            host_scan_cache_->DoesHostRequireSetup(
+                host_scan_test_util::kTetherGuid0));
+
+  // Update existing entry, including changing the "setup required" field.
+  SetHostScanResult(
+      *HostScanCacheEntry::Builder()
+           .SetTetherNetworkGuid(host_scan_test_util::kTetherGuid0)
+           .SetDeviceName(host_scan_test_util::kTetherDeviceName0)
+           .SetCarrier(host_scan_test_util::kTetherCarrier1)
+           .SetBatteryPercentage(host_scan_test_util::kTetherBatteryPercentage1)
+           .SetSignalStrength(host_scan_test_util::kTetherSignalStrength1)
+           .SetSetupRequired(host_scan_test_util::kTetherSetupRequired1)
+           .Build());
+  VerifyPersistentCacheMatchesInMemoryCache(1u /* expected_size */);
+  EXPECT_EQ(host_scan_test_util::kTetherSetupRequired1,
+            host_scan_cache_->DoesHostRequireSetup(
+                host_scan_test_util::kTetherGuid0));
+}
+
+TEST_F(PersistentHostScanCacheTest, TestStoredPersistently) {
+  SetHostScanResult(test_entries_.at(host_scan_test_util::kTetherGuid0));
+  VerifyPersistentCacheMatchesInMemoryCache(1u /* expected_size */);
+
+  SetHostScanResult(test_entries_.at(host_scan_test_util::kTetherGuid1));
+  VerifyPersistentCacheMatchesInMemoryCache(2u /* expected_size */);
+
+  // Now, delete the existing PersistentHostScanCache object. All of its
+  // in-memory state will be cleaned up, but it should have stored the scanned
+  // data persistently.
+  host_scan_cache_.reset();
+
+  // Create a new object.
+  host_scan_cache_ =
+      base::MakeUnique<PersistentHostScanCache>(test_pref_service_.get());
+
+  // The new object should still access the stored scanned data.
+  VerifyPersistentCacheMatchesInMemoryCache(2u /* expected_size */);
+
+  // Make some changes - update one existing result, add a new one, and remove
+  // an old one.
+  SetHostScanResult(
+      *HostScanCacheEntry::Builder()
+           .SetTetherNetworkGuid(host_scan_test_util::kTetherGuid0)
+           .SetDeviceName(host_scan_test_util::kTetherDeviceName0)
+           .SetCarrier(host_scan_test_util::kTetherCarrier1)
+           .SetBatteryPercentage(host_scan_test_util::kTetherBatteryPercentage1)
+           .SetSignalStrength(host_scan_test_util::kTetherSignalStrength1)
+           .SetSetupRequired(host_scan_test_util::kTetherSetupRequired1)
+           .Build());
+  VerifyPersistentCacheMatchesInMemoryCache(2u /* expected_size */);
+
+  SetHostScanResult(test_entries_.at(host_scan_test_util::kTetherGuid2));
+  VerifyPersistentCacheMatchesInMemoryCache(3u /* expected_size */);
+
+  RemoveHostScanResult(host_scan_test_util::kTetherGuid1);
+  VerifyPersistentCacheMatchesInMemoryCache(2u /* expected_size */);
+
+  // Delete the current PersistentHostScanCache and create another new one. It
+  // should still contain the same data.
+  host_scan_cache_.reset(new PersistentHostScanCache(test_pref_service_.get()));
+  VerifyPersistentCacheMatchesInMemoryCache(2u /* expected_size */);
+}
+
+}  // namespace tether
+
+}  // namespace chromeos

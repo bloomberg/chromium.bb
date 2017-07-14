@@ -43,6 +43,8 @@ class HostScanCacheEntry {
   HostScanCacheEntry(const HostScanCacheEntry& other);
   virtual ~HostScanCacheEntry();
 
+  bool operator==(const HostScanCacheEntry& other) const;
+
   // GUID corresponding to the scanned device.
   const std::string tether_network_guid;
 
