@@ -9,7 +9,6 @@ import android.os.Bundle;
 import android.os.IBinder;
 
 import org.chromium.base.process_launcher.ChildProcessConnection;
-import org.chromium.base.process_launcher.ChildProcessCreationParams;
 import org.chromium.base.process_launcher.ICallbackInt;
 import org.chromium.base.process_launcher.IChildProcessService;
 
@@ -74,10 +73,9 @@ class TestChildProcessConnection extends ChildProcessConnection {
      * Creates a mock binding corresponding to real ManagedChildProcessConnection after the
      * connection is established: with initial binding bound and no strong binding.
      */
-    TestChildProcessConnection(ComponentName serviceName, boolean bindAsExternalService,
-            Bundle serviceBundle, ChildProcessCreationParams creationParams) {
-        super(null /* context */, serviceName, bindAsExternalService, serviceBundle,
-                creationParams);
+    TestChildProcessConnection(ComponentName serviceName, boolean bindToCaller,
+            boolean bindAsExternalService, Bundle serviceBundle) {
+        super(null /* context */, serviceName, bindToCaller, bindAsExternalService, serviceBundle);
         mPostOnServiceConnected = true;
     }
 

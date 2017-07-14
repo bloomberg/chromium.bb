@@ -36,8 +36,8 @@ public class ChildProcessConnectionTest {
         String packageName = "org.chromium.test";
         String serviceName = "TestService";
         return new TestChildProcessConnection(new ComponentName(packageName, serviceName),
-                false /* bindAsExternalService */, null /* serviceBundle */,
-                null /* creationParams */);
+                false /* bindToCaller */, false /* bindAsExternalService */,
+                null /* serviceBundle */);
     }
 
     @Test

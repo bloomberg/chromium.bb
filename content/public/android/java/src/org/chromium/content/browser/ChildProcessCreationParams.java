@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.base.process_launcher;
+package org.chromium.content.browser;
 
-import android.content.Intent;
+import android.os.Bundle;
 import android.util.SparseArray;
 
 import org.chromium.base.library_loader.LibraryProcessType;
@@ -95,11 +95,11 @@ public class ChildProcessCreationParams {
         return mBindToCallerCheck;
     }
 
-    public void addIntentExtras(Intent intent) {
-        intent.putExtra(EXTRA_LIBRARY_PROCESS_TYPE, mLibraryProcessType);
+    public void addIntentExtras(Bundle extras) {
+        extras.putInt(EXTRA_LIBRARY_PROCESS_TYPE, mLibraryProcessType);
     }
 
-    public static int getLibraryProcessType(Intent intent) {
-        return intent.getIntExtra(EXTRA_LIBRARY_PROCESS_TYPE, LibraryProcessType.PROCESS_CHILD);
+    public static int getLibraryProcessType(Bundle extras) {
+        return extras.getInt(EXTRA_LIBRARY_PROCESS_TYPE, LibraryProcessType.PROCESS_CHILD);
     }
 }

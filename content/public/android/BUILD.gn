@@ -111,6 +111,7 @@ android_library("content_java") {
     "java/src/org/chromium/content/browser/BindingManager.java",
     "java/src/org/chromium/content/browser/BindingManagerImpl.java",
     "java/src/org/chromium/content/browser/BrowserStartupController.java",
+    "java/src/org/chromium/content/browser/ChildProcessCreationParams.java",
     "java/src/org/chromium/content/browser/ChildProcessLauncherHelper.java",
     "java/src/org/chromium/content/browser/ContentChildProcessConstants.java",
     "java/src/org/chromium/content/browser/ContentClassFactory.java",

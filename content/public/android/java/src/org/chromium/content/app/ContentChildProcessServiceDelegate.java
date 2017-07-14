@@ -23,8 +23,8 @@ import org.chromium.base.annotations.MainDex;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.Linker;
 import org.chromium.base.library_loader.ProcessInitException;
-import org.chromium.base.process_launcher.ChildProcessCreationParams;
 import org.chromium.base.process_launcher.ChildProcessServiceDelegate;
+import org.chromium.content.browser.ChildProcessCreationParams;
 import org.chromium.content.browser.ContentChildProcessConstants;
 import org.chromium.content.common.ContentSwitches;
 import org.chromium.content.common.IGpuProcessCallback;
@@ -65,7 +65,7 @@ public class ContentChildProcessServiceDelegate implements ChildProcessServiceDe
     @Override
     public void onServiceBound(Intent intent) {
         mLinkerParams = ChromiumLinkerParams.create(intent.getExtras());
-        mLibraryProcessType = ChildProcessCreationParams.getLibraryProcessType(intent);
+        mLibraryProcessType = ChildProcessCreationParams.getLibraryProcessType(intent.getExtras());
     }
 
     @Override

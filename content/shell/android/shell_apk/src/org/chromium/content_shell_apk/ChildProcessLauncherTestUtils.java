@@ -5,9 +5,9 @@
 package org.chromium.content_shell_apk;
 
 import org.chromium.base.process_launcher.ChildProcessConnection;
-import org.chromium.base.process_launcher.ChildProcessCreationParams;
 import org.chromium.base.process_launcher.FileDescriptorInfo;
 import org.chromium.base.process_launcher.IChildProcessService;
+import org.chromium.content.browser.ChildProcessCreationParams;
 import org.chromium.content.browser.ChildProcessLauncherHelper;
 import org.chromium.content.browser.LauncherThread;
 

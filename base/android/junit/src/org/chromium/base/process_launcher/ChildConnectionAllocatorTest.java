@@ -57,8 +57,7 @@ public class ChildConnectionAllocatorTest {
 
         @Override
         public ChildProcessConnection createConnection(Context context, ComponentName serviceName,
-                boolean bindAsExternalService, Bundle serviceBundle,
-                ChildProcessCreationParams creationParams) {
+                boolean bindToCaller, boolean bindAsExternalService, Bundle serviceBundle) {
             mLastServiceName = serviceName;
             if (mConnection == null) {
                 mConnection = mock(ChildProcessConnection.class);
@@ -119,20 +118,14 @@ public class ChildConnectionAllocatorTest {
 
     private final TestConnectionFactory mTestConnectionFactory = new TestConnectionFactory();
 
-    // For some reason creating ChildProcessCreationParams from a static context makes the launcher
-    // unhappy. (some Dalvik native library is not found when initializing a SparseArray)
-    private final ChildProcessCreationParams mCreationParams =
-            new ChildProcessCreationParams(TEST_PACKAGE_NAME, false /* isExternalService */,
-                    0 /* libraryProcessType */, true /* bindToCallerCheck */);
-
     private ChildConnectionAllocator mAllocator;
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
 
-        mAllocator = ChildConnectionAllocator.createForTest(mCreationParams, TEST_PACKAGE_NAME,
-                "AllocatorTest", MAX_CONNECTION_NUMBER, false /* bindAsExternalService */,
+        mAllocator = ChildConnectionAllocator.createForTest(TEST_PACKAGE_NAME, "AllocatorTest",
+                MAX_CONNECTION_NUMBER, true /* bindToCaller */, false /* bindAsExternalService */,
                 false /* useStrongBinding */);
         mAllocator.setConnectionFactoryForTesting(mTestConnectionFactory);
     }
@@ -185,8 +178,8 @@ public class ChildConnectionAllocatorTest {
     public void testStrongBindingParam() {
         for (boolean useStrongBinding : new boolean[] {true, false}) {
             ChildConnectionAllocator allocator = ChildConnectionAllocator.createForTest(
-                    mCreationParams, TEST_PACKAGE_NAME, "AllocatorTest", MAX_CONNECTION_NUMBER,
-                    false /* bindAsExternalService */, useStrongBinding);
+                    TEST_PACKAGE_NAME, "AllocatorTest", MAX_CONNECTION_NUMBER,
+                    true /* bindToCaller */, false /* bindAsExternalService */, useStrongBinding);
             allocator.setConnectionFactoryForTesting(mTestConnectionFactory);
             ChildProcessConnection connection = allocator.allocate(
                     null /* context */, null /* serviceBundle */, mServiceCallback);

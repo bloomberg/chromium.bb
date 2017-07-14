@@ -27,7 +27,6 @@ import org.robolectric.shadows.ShadowLooper;
 
 import org.chromium.base.process_launcher.ChildConnectionAllocator;
 import org.chromium.base.process_launcher.ChildProcessConnection;
-import org.chromium.base.process_launcher.ChildProcessCreationParams;
 import org.chromium.base.test.util.Feature;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
@@ -40,9 +39,9 @@ public class SpareChildConnectionTest {
 
     // A connection allocator not used to create connections.
     private final ChildConnectionAllocator mWrongConnectionAllocator =
-            ChildConnectionAllocator.createForTest(null /* creationParams */, "org.chromium.test",
-                    "TestServiceName", 3 /* serviceCount */, false /* bindAsExternalService */,
-                    false /* useStrongBinding */);
+            ChildConnectionAllocator.createForTest("org.chromium.test", "TestServiceName",
+                    3 /* serviceCount */, false /* bindToCaller */,
+                    false /* bindAsExternalService */, false /* useStrongBinding */);
 
     // The allocator used to allocate the actual connection.
     private ChildConnectionAllocator mConnectionAllocator;
@@ -53,12 +52,11 @@ public class SpareChildConnectionTest {
 
         @Override
         public ChildProcessConnection createConnection(Context context, ComponentName serviceName,
-                boolean bindAsExternalService, Bundle serviceBundle,
-                ChildProcessCreationParams creationParams) {
+                boolean bindToCaller, boolean bindAsExternalService, Bundle serviceBundle) {
             // We expect to create only one connection in these tests.
             assert mConnection == null;
             mConnection = new TestChildProcessConnection(
-                    serviceName, bindAsExternalService, serviceBundle, creationParams);
+                    serviceName, bindToCaller, bindAsExternalService, serviceBundle);
             mConnection.setPostOnServiceConnected(false);
             return mConnection;
         }
@@ -78,12 +76,6 @@ public class SpareChildConnectionTest {
 
     private final TestConnectionFactory mTestConnectionFactory = new TestConnectionFactory();
 
-    // For some reason creating ChildProcessCreationParams from a static context makes the launcher
-    // unhappy. (some Dalvik native library is not found when initializing a SparseArray)
-    private final ChildProcessCreationParams mCreationParams = new ChildProcessCreationParams(
-            "org.chromium.test,.spare_connection", true /* isExternalService */,
-            0 /* libraryProcessType */, true /* bindToCallerCheck */);
-
     private SpareChildConnection mSpareConnection;
 
     @Before
@@ -94,10 +86,10 @@ public class SpareChildConnectionTest {
         // asserts are not triggered.
         LauncherThread.setCurrentThreadAsLauncherThread();
 
-        mConnectionAllocator = ChildConnectionAllocator.createForTest(mCreationParams,
-                mCreationParams.getPackageNameForSandboxedService(), "TestServiceName",
-                5 /* serviceCount */, false /* bindAsExternalService */,
-                false /* useStrongBinding */);
+        mConnectionAllocator =
+                ChildConnectionAllocator.createForTest("org.chromium.test.spare_connection",
+                        "TestServiceName", 5 /* serviceCount */, false /* bindToCaller */,
+                        false /* bindAsExternalService */, false /* useStrongBinding */);
         mConnectionAllocator.setConnectionFactoryForTesting(mTestConnectionFactory);
         mSpareConnection = new SpareChildConnection(
                 null /* context */, mConnectionAllocator, null /* serviceBundle */);
