@@ -284,6 +284,8 @@ interface WindowManagerClient {
   // WindowManagerWindowTreeFactory::CreateWindowTree() for details).
   // |local_surface_id| identifies the ID to use to submit CompositorFrames.
   // base::nullopt indicates failure.
+  // This function may also be used to move an existing display root to a new
+  // display.
   SetDisplayRoot(display.mojom.Display display,
                  WmViewportMetrics viewport_metrics,
                  bool is_primary_display,

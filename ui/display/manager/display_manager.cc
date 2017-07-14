@@ -140,6 +140,22 @@ bool ContainsDisplayWithId(const std::vector<Display>& displays,
 using std::string;
 using std::vector;
 
+DisplayManager::BeginEndNotifier::BeginEndNotifier(
+    DisplayManager* display_manager)
+    : display_manager_(display_manager) {
+  if (display_manager_->notify_depth_++ == 0) {
+    for (auto& observer : display_manager_->observers_)
+      observer.OnWillProcessDisplayChanges();
+  }
+}
+
+DisplayManager::BeginEndNotifier::~BeginEndNotifier() {
+  if (--display_manager_->notify_depth_ == 0) {
+    for (auto& observer : display_manager_->observers_)
+      observer.OnDidProcessDisplayChanges();
+  }
+}
+
 // static
 int64_t DisplayManager::kUnifiedDisplayId = -10;
 
@@ -246,6 +262,8 @@ void DisplayManager::SetLayoutForCurrentDisplays(
     std::unique_ptr<DisplayLayout> layout) {
   if (GetNumDisplays() == 1)
     return;
+  BeginEndNotifier notifier(this);
+
   const DisplayIdList list = GetCurrentDisplayIdList();
 
   DCHECK(DisplayLayout::Validate(list, *layout));
@@ -294,14 +312,14 @@ const Display& DisplayManager::FindDisplayContainingPoint(
 
 bool DisplayManager::UpdateWorkAreaOfDisplay(int64_t display_id,
                                              const gfx::Insets& insets) {
+  BeginEndNotifier notifier(this);
   Display* display = FindDisplayForId(display_id);
   DCHECK(display);
   gfx::Rect old_work_area = display->work_area();
   display->UpdateWorkAreaFromInsets(insets);
   bool workarea_changed = old_work_area != display->work_area();
-  if (workarea_changed) {
+  if (workarea_changed)
     NotifyMetricsChanged(*display, DisplayObserver::DISPLAY_METRIC_WORK_AREA);
-  }
   return workarea_changed;
 }
 
@@ -680,6 +698,8 @@ void DisplayManager::UpdateDisplays() {
 
 void DisplayManager::UpdateDisplaysWith(
     const DisplayInfoList& updated_display_info_list) {
+  BeginEndNotifier notifier(this);
+
 #if defined(OS_WIN)
   DCHECK_EQ(1u, updated_display_info_list.size())
       << ": Multiple display test does not work on Windows bots. Please "
@@ -1130,6 +1150,7 @@ bool DisplayManager::UpdateDisplayBounds(int64_t display_id,
     Display* display = FindDisplayForId(display_id);
     DCHECK(display);
     display->SetSize(display_info_[display_id].size_in_pixel());
+    BeginEndNotifier notifier(this);
     NotifyMetricsChanged(*display, DisplayObserver::DISPLAY_METRIC_BOUNDS);
     return true;
   }

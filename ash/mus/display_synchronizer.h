@@ -31,14 +31,29 @@ class DisplaySynchronizer : public WindowTreeHostManager::Observer,
   // WindowTreeHostManager::Observer:
   void OnDisplaysInitialized() override;
   void OnDisplayConfigurationChanged() override;
+  void OnWindowTreeHostReusedForDisplay(
+      AshWindowTreeHost* window_tree_host,
+      const display::Display& display) override;
 
   // display::DisplayObserver:
+  void OnWillProcessDisplayChanges() override;
+  void OnDidProcessDisplayChanges() override;
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t changed_metrics) override;
 
   aura::WindowManagerClient* window_manager_client_;
 
   bool sent_initial_config_ = false;
+
+  // Set to true when OnWillProcessDisplayChanges() is called and false in
+  // OnDidProcessDisplayChanges(). DisplayManager calls out while the list of
+  // displays contains both newly added displays and displays that have been
+  // removed. This means if we attempt to access the list of displays during
+  // this time we may get the wrong state (SendDisplayConfigurationToServer()
+  // would send a bogus display to the window server). By only processing the
+  // change after DisplayManager has updated its internal state we ensure we
+  // don't send a bad config.
+  bool processing_display_changes_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(DisplaySynchronizer);
 };

@@ -1917,6 +1917,25 @@ void WindowTreeClient::SetDisplayConfiguration(
   }
 }
 
+void WindowTreeClient::AddDisplayReusingWindowTreeHost(
+    WindowTreeHostMus* window_tree_host,
+    const display::Display& display,
+    ui::mojom::WmViewportMetricsPtr viewport_metrics) {
+  DCHECK_NE(display.id(), window_tree_host->display_id());
+  window_tree_host->set_display_id(display.id());
+  if (window_manager_client_) {
+    // NOTE: The value of |is_primary_display| doesn't really matter as shortly
+    // after this SetDisplayConfiguration() is called.
+    const bool is_primary_display = true;
+    WindowMus* display_root_window = WindowMus::Get(window_tree_host->window());
+    window_manager_client_->SetDisplayRoot(
+        display, std::move(viewport_metrics), is_primary_display,
+        display_root_window->server_id(),
+        base::Bind(&WindowTreeClient::OnSetDisplayRootDone,
+                   base::Unretained(this), display_root_window->server_id()));
+  }
+}
+
 void WindowTreeClient::OnWindowTreeHostBoundsWillChange(
     WindowTreeHostMus* window_tree_host,
     const gfx::Rect& bounds) {

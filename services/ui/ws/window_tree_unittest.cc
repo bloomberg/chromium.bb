@@ -1644,6 +1644,81 @@ TEST_F(WindowTreeManualDisplayTest, ClientCreatesDisplayRoot) {
                   .empty());
 }
 
+TEST_F(WindowTreeManualDisplayTest, MoveDisplayRootToNewDisplay) {
+  const bool automatically_create_display_roots = false;
+  AddWindowManager(window_server(), kTestUserId1,
+                   automatically_create_display_roots);
+
+  WindowManagerState* window_manager_state =
+      window_server()->GetWindowManagerStateForUser(kTestUserId1);
+  ASSERT_TRUE(window_manager_state);
+  WindowTree* window_manager_tree = window_manager_state->window_tree();
+  EXPECT_TRUE(window_manager_tree->roots().empty());
+  TestWindowManager* test_window_manager =
+      window_server_delegate()->last_binding()->window_manager();
+  EXPECT_EQ(1, test_window_manager->connect_count());
+  EXPECT_EQ(0, test_window_manager->display_added_count());
+
+  // Create a window for the windowmanager and set it as the root.
+  ClientWindowId display_root_id = BuildClientWindowId(window_manager_tree, 10);
+  ASSERT_TRUE(window_manager_tree->NewWindow(display_root_id,
+                                             ServerWindow::Properties()));
+  ServerWindow* display_root =
+      window_manager_tree->GetWindowByClientId(display_root_id);
+  ASSERT_TRUE(display_root);
+  display::Display display1 = MakeDisplay(0, 0, 1024, 768, 1.0f);
+  constexpr int64_t display1_id = 101;
+  display1.set_id(display1_id);
+
+  mojom::WmViewportMetrics metrics;
+  metrics.bounds_in_pixels = display1.bounds();
+  metrics.device_scale_factor = 1.5;
+  metrics.ui_scale_factor = 2.5;
+  const bool is_primary_display = true;
+  ASSERT_TRUE(WindowTreeTestApi(window_manager_tree)
+                  .ProcessSetDisplayRoot(display1, metrics, is_primary_display,
+                                         display_root_id));
+  ASSERT_TRUE(display_root->parent());
+  const WindowId display1_parent_id = display_root->parent()->id();
+  EXPECT_TRUE(window_server_delegate()
+                  ->last_binding()
+                  ->client()
+                  ->tracker()
+                  ->changes()
+                  ->empty());
+  EXPECT_EQ(1u, window_manager_tree->roots().size());
+
+  // Call ProcessSetDisplayRoot() again, with a different display.
+  display::Display display2 = MakeDisplay(0, 0, 1024, 768, 1.0f);
+  constexpr int64_t display2_id = 102;
+  display2.set_id(display2_id);
+  ASSERT_TRUE(WindowTreeTestApi(window_manager_tree)
+                  .ProcessSetDisplayRoot(display2, metrics, is_primary_display,
+                                         display_root_id));
+  ASSERT_TRUE(display_root->parent());
+  EXPECT_NE(display1_parent_id, display_root->parent()->id());
+  EXPECT_TRUE(window_server_delegate()
+                  ->last_binding()
+                  ->client()
+                  ->tracker()
+                  ->changes()
+                  ->empty());
+  EXPECT_EQ(1u, window_manager_tree->roots().size());
+  // The WindowManagerDisplayRoot for |display1| should have been deleted.
+  EXPECT_EQ(1u, WindowManagerStateTestApi(window_manager_state)
+                    .window_manager_display_roots()
+                    .size());
+  EXPECT_FALSE(window_server()->display_manager()->GetDisplayById(display1_id));
+  EXPECT_TRUE(window_server()->display_manager()->GetDisplayById(display2_id));
+
+  // Delete the root, which should delete the WindowManagerDisplayRoot.
+  EXPECT_TRUE(window_manager_tree->DeleteWindow(display_root_id));
+  EXPECT_TRUE(window_manager_tree->roots().empty());
+  EXPECT_TRUE(WindowManagerStateTestApi(window_manager_state)
+                  .window_manager_display_roots()
+                  .empty());
+}
+
 TEST_F(WindowTreeManualDisplayTest,
        DisplayManagerObserverNotifiedWithManualRoots) {
   const bool automatically_create_display_roots = false;

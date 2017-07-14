@@ -4,8 +4,11 @@
 
 #include "ash/mus/display_synchronizer.h"
 
+#include "ash/host/ash_window_tree_host.h"
 #include "ash/shell.h"
+#include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "ui/aura/mus/window_manager_delegate.h"
+#include "ui/aura/mus/window_tree_host_mus.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
 
@@ -25,6 +28,9 @@ DisplaySynchronizer::~DisplaySynchronizer() {
 }
 
 void DisplaySynchronizer::SendDisplayConfigurationToServer() {
+  if (processing_display_changes_)
+    return;
+
   display::DisplayManager* display_manager = Shell::Get()->display_manager();
   const size_t display_count = display_manager->GetNumDisplays();
   if (display_count == 0)
@@ -55,6 +61,38 @@ void DisplaySynchronizer::OnDisplaysInitialized() {
 }
 
 void DisplaySynchronizer::OnDisplayConfigurationChanged() {
+  SendDisplayConfigurationToServer();
+}
+
+void DisplaySynchronizer::OnWindowTreeHostReusedForDisplay(
+    AshWindowTreeHost* window_tree_host,
+    const display::Display& display) {
+  aura::WindowTreeHostMus* window_tree_host_mus =
+      static_cast<aura::WindowTreeHostMus*>(
+          window_tree_host->AsWindowTreeHost());
+  if (window_tree_host_mus->display_id() == display.id())
+    return;
+  const display::ManagedDisplayInfo& display_info =
+      Shell::Get()->display_manager()->GetDisplayInfo(display.id());
+  ui::mojom::WmViewportMetricsPtr viewport_metrics =
+      ui::mojom::WmViewportMetrics::New();
+  viewport_metrics->bounds_in_pixels = display_info.bounds_in_native();
+  viewport_metrics->device_scale_factor = display.device_scale_factor();
+  viewport_metrics->ui_scale_factor = display_info.configured_ui_scale();
+  window_manager_client_->AddDisplayReusingWindowTreeHost(
+      static_cast<aura::WindowTreeHostMus*>(
+          window_tree_host->AsWindowTreeHost()),
+      display, std::move(viewport_metrics));
+}
+
+void DisplaySynchronizer::OnWillProcessDisplayChanges() {
+  DCHECK(!processing_display_changes_);
+  processing_display_changes_ = true;
+}
+
+void DisplaySynchronizer::OnDidProcessDisplayChanges() {
+  DCHECK(processing_display_changes_);
+  processing_display_changes_ = false;
   SendDisplayConfigurationToServer();
 }
 
