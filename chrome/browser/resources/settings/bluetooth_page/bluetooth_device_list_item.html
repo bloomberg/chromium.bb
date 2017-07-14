@@ -34,7 +34,7 @@
       <div hidden$="[[!device.paired]]">
         <button is="paper-icon-button-light" class="icon-more-vert"
             on-tap="onMenuButtonTap_" tabindex$="[[tabindex]]"
-            title="$i18n{moreActions}">
+            title="$i18n{moreActions}" on-keydown="ignoreEnterKey_">
         </button>
         <dialog id="dotsMenu" is="cr-action-menu">
           <button class="dropdown-item" role="option"
