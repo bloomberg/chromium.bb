@@ -56,6 +56,14 @@ chromium.DevTools.Connection = class {
      */
     this.eventListenerIdToEventName_ = new Map();
 
+    /**
+     * An object containing listeners for all DevTools protocol events keyed
+     * by listener id.
+     *
+     * @private {!Map<number, !chromium.DevTools.Connection.AllEventsFunction>}
+     */
+    this.allEventsListeners_ = new Map();
+
     this.transport_.onmessage = this.onJsonMessage_.bind(this);
   }
 
@@ -97,6 +105,31 @@ chromium.DevTools.Connection = class {
     return this.eventListeners_.get(eventName).delete(id);
   }
 
+  /**
+   * Listens for all DevTools protocol events and issues the
+   * callback upon reception.
+   *
+   * @param {!chromium.DevTools.Connection.AllEventsFunction} listener The
+   *     callback issued when we receive a DevTools protocol event.
+   * @return {number} The id of this event listener.
+   */
+  addAllEventsListener(listener) {
+    let id = this.nextListenerId_++;
+    this.allEventsListeners_.set(id, listener);
+    return id;
+  }
+
+  /**
+   * Removes an event listener previously added by
+   * <code>addAllEventsListener</code>.
+   *
+   * @param {number} id The id of the event listener to remove.
+   * @return {boolean} Whether the event listener was actually removed.
+   */
+  removeAllEventsListener(id) {
+    if (!this.allEventsListeners_.has(id)) return false;
+    return this.allEventsListeners_.delete(id);
+  }
 
   /**
    * Issues a DevTools protocol command and returns a promise for the results.
@@ -124,15 +157,12 @@ chromium.DevTools.Connection = class {
   }
 
   /**
-   * If a subclass needs to customize message handling it should override this
-   * method.
-   *
-   * @param {*} message A parsed DevTools protocol message.
    * @param {string} jsonMessage A string containing a JSON DevTools protocol
    *     message.
-   * @protected
+   * @private
    */
-  onMessage_(message, jsonMessage) {
+  onJsonMessage_(jsonMessage) {
+    let message = JSON.parse(jsonMessage);
     if (message.hasOwnProperty('id')) {
       if (!this.pendingCommands_.has(message.id))
         throw new Error('Unrecognized id:' + jsonMessage);
@@ -148,6 +178,9 @@ chromium.DevTools.Connection = class {
       }
       const method = message['method'];
       const params = message['params'];
+      this.allEventsListeners_.forEach(function(listener) {
+        listener({method, params});
+      });
       if (this.eventListeners_.has(method)) {
         this.eventListeners_.get(method).forEach(function(listener) {
           listener(params);
@@ -155,22 +188,17 @@ chromium.DevTools.Connection = class {
       }
     }
   }
-
-
-  /**
-   * @param {string} jsonMessage A string containing a JSON DevTools protocol
-   *     message.
-   * @private
-   */
-  onJsonMessage_(jsonMessage) {
-    this.onMessage_(JSON.parse(jsonMessage), jsonMessage);
-  }
 }
 
 /**
  * @typedef {function(Object): undefined|function(string): undefined}
  */
 chromium.DevTools.Connection.EventFunction;
+
+/**
+ * @typedef {function(Object): undefined}
+ */
+chromium.DevTools.Connection.AllEventsFunction;
 
 /**
  * @typedef {{
