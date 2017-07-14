@@ -500,6 +500,7 @@ source_set("unit_tests_mobile") {
     ":v4_test_util",
     "//base",
     "//components/variations",
+    "//content/test:test_support",
     "//testing/gtest",
     "//url",
   ]
@@ -531,6 +532,8 @@ source_set("whitelist_checker_client_unittest") {
     ":whitelist_checker_client",
     "//base:base",
     "//base/test:test_support",
+    "//content/public/browser",
+    "//content/test:test_support",
     "//testing/gmock:gmock",
     "//testing/gtest:gtest",
   ]

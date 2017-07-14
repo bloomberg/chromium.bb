@@ -10,6 +10,8 @@
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/safe_browsing_db/test_database_manager.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -39,17 +41,22 @@ class MockSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
 
 class WhitelistCheckerClientTest : public testing::Test {
  public:
-  WhitelistCheckerClientTest() : target_url_("http://foo.bar"){};
+  WhitelistCheckerClientTest() : target_url_("http://foo.bar") {}
 
   void SetUp() override {
     database_manager_ = new MockSafeBrowsingDatabaseManager;
     task_runner_ = new base::TestMockTimeTaskRunner(base::Time::Now(),
                                                     base::TimeTicks::Now());
     message_loop_.reset(new base::MessageLoop);
+    io_thread_ = base::MakeUnique<content::TestBrowserThread>(
+        content::BrowserThread::IO, base::MessageLoop::current());
     message_loop_->SetTaskRunner(task_runner_);
   }
 
   void TearDown() override {
+    database_manager_ = nullptr;
+    base::RunLoop().RunUntilIdle();
+
     // Verify no callback is remaining.
     // TODO(nparker): We should somehow EXPECT that no entry is remaining,
     // rather than just invoking it.
@@ -59,6 +66,9 @@ class WhitelistCheckerClientTest : public testing::Test {
  protected:
   GURL target_url_;
   scoped_refptr<MockSafeBrowsingDatabaseManager> database_manager_;
+
+  // Needed for |database_manager_| teardown tasks.
+  std::unique_ptr<content::TestBrowserThread> io_thread_;
 
   std::unique_ptr<base::MessageLoop> message_loop_;
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
