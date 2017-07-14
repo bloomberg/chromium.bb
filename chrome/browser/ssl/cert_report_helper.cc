@@ -28,6 +28,12 @@
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if defined(OS_WIN)
+#include "base/win/win_util.h"
+#elif defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#endif
+
 namespace {
 
 // Certificate reports are only sent from official builds, but this flag can be
@@ -127,6 +133,14 @@ void CertReportHelper::FinishCertCollection(
   report.AddNetworkTimeInfo(g_browser_process->network_time_tracker());
 
   report.AddChromeChannel(chrome::GetChannel());
+
+#if defined(OS_WIN)
+  report.SetIsEnterpriseManaged(base::win::IsEnterpriseManaged());
+#elif defined(OS_CHROMEOS)
+  report.SetIsEnterpriseManaged(g_browser_process->platform_part()
+                                    ->browser_policy_connector_chromeos()
+                                    ->IsEnterpriseManaged());
+#endif
 
   report.SetInterstitialInfo(
       interstitial_reason_, user_proceeded,

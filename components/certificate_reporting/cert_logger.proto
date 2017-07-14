@@ -160,4 +160,8 @@ message CertLoggerRequest {
 
   // The Chrome channel that this error occurred on.
   optional ChromeChannel chrome_channel = 12;
+
+  // True if the machine is enterprise managed. Currently only available for
+  // Windows and ChromeOS clients.
+  optional bool is_enterprise_managed = 13;
 };
