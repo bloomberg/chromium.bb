@@ -38,7 +38,6 @@ using ::testing::Bool;
 using ::testing::Combine;
 using ::testing::Values;
 using ChromeMetricsStatus = ChromeCleanerRunner::ChromeMetricsStatus;
-using CleanerLogsStatus = ChromeCleanerRunner::CleanerLogsStatus;
 
 enum class ReporterEngine {
   kUnspecified,
@@ -55,14 +54,11 @@ enum class ReporterEngine {
 // Parameters:
 // - metrics_status (ChromeMetricsStatus): whether Chrome metrics reporting is
 //       enabled
-// - logs_upload_status (CleanerLogsStatus): whether logs upload in the Cleaner
-//       process should be enabled.
 // - reporter_engine (ReporterEngine): the type of Cleaner engine specified in
 //       the SwReporterInvocation.
 class ChromeCleanerRunnerSimpleTest
     : public testing::TestWithParam<
           std::tuple<ChromeCleanerRunner::ChromeMetricsStatus,
-                     ChromeCleanerRunner::CleanerLogsStatus,
                      ReporterEngine>>,
       public ChromeCleanerRunnerTestDelegate {
  public:
@@ -70,8 +66,7 @@ class ChromeCleanerRunnerSimpleTest
       : command_line_(base::CommandLine::NO_PROGRAM) {}
 
   void SetUp() override {
-    std::tie(metrics_status_, logs_upload_status_, reporter_engine_) =
-        GetParam();
+    std::tie(metrics_status_, reporter_engine_) = GetParam();
 
     SetChromeCleanerRunnerTestDelegateForTesting(this);
     scoped_feature_list_.InitAndEnableFeature(kInBrowserCleanerUIFeature);
@@ -95,7 +90,7 @@ class ChromeCleanerRunnerSimpleTest
 
     ChromeCleanerRunner::RunChromeCleanerAndReplyWithExitCode(
         base::FilePath(FILE_PATH_LITERAL("cleaner.exe")), reporter_invocation,
-        metrics_status_, logs_upload_status_,
+        metrics_status_,
         base::BindOnce(&ChromeCleanerRunnerSimpleTest::OnPromptUser,
                        base::Unretained(this)),
         base::BindOnce(&ChromeCleanerRunnerSimpleTest::OnConnectionClosed,
@@ -137,7 +132,6 @@ class ChromeCleanerRunnerSimpleTest
 
   // Test fixture parameters.
   ChromeCleanerRunner::ChromeMetricsStatus metrics_status_;
-  ChromeCleanerRunner::CleanerLogsStatus logs_upload_status_;
   ReporterEngine reporter_engine_;
 
   // Set by LaunchTestProcess.
@@ -179,10 +173,6 @@ TEST_P(ChromeCleanerRunnerSimpleTest, LaunchParams) {
   EXPECT_EQ(
       metrics_status_ == ChromeMetricsStatus::kEnabled,
       command_line_.HasSwitch(chrome_cleaner::kEnableCrashReportingSwitch));
-
-  EXPECT_EQ(
-      logs_upload_status_ == CleanerLogsStatus::kUploadEnabled,
-      command_line_.HasSwitch(chrome_cleaner::kEnableCleanerLoggingSwitch));
 }
 
 INSTANTIATE_TEST_CASE_P(
@@ -190,8 +180,6 @@ INSTANTIATE_TEST_CASE_P(
     ChromeCleanerRunnerSimpleTest,
     Combine(Values(ChromeCleanerRunner::ChromeMetricsStatus::kEnabled,
                    ChromeCleanerRunner::ChromeMetricsStatus::kDisabled),
-            Values(ChromeCleanerRunner::CleanerLogsStatus::kUploadEnabled,
-                   ChromeCleanerRunner::CleanerLogsStatus::kUploadDisabled),
             Values(ReporterEngine::kUnspecified,
                    ReporterEngine::kOldEngine,
                    ReporterEngine::kNewEngine)));
@@ -250,7 +238,6 @@ class ChromeCleanerRunnerTest
     ChromeCleanerRunner::RunChromeCleanerAndReplyWithExitCode(
         base::FilePath(FILE_PATH_LITERAL("cleaner.exe")),
         SwReporterInvocation(), ChromeMetricsStatus::kDisabled,
-        CleanerLogsStatus::kUploadDisabled,
         base::BindOnce(&ChromeCleanerRunnerTest::OnPromptUser,
                        base::Unretained(this)),
         base::BindOnce(&ChromeCleanerRunnerTest::OnConnectionClosed,

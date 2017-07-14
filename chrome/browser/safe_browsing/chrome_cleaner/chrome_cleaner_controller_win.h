@@ -50,7 +50,6 @@ class ChromeCleanerControllerDelegate {
   // extension. If the operation fails, the file name passed to
   // |fecthed_callback| will be empty.
   virtual void FetchAndVerifyChromeCleaner(FetchedCallback fetched_callback);
-  virtual bool SafeBrowsingExtendedReportingScoutEnabled();
   virtual bool IsMetricsAndCrashReportingEnabled();
 
   // Auxiliary methods for tagging and resetting open profiles.

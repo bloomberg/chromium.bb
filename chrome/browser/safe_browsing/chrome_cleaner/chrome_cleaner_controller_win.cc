@@ -157,11 +157,6 @@ void ChromeCleanerControllerDelegate::FetchAndVerifyChromeCleaner(
       base::BindOnce(&OnChromeCleanerFetched, base::Passed(&fetched_callback)));
 }
 
-bool ChromeCleanerControllerDelegate::
-    SafeBrowsingExtendedReportingScoutEnabled() {
-  return safe_browsing::SafeBrowsingExtendedReportingScoutEnabled();
-}
-
 bool ChromeCleanerControllerDelegate::IsMetricsAndCrashReportingEnabled() {
   return ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled();
 }
@@ -404,14 +399,8 @@ void ChromeCleanerController::OnChromeCleanerFetchedAndVerified(
           ? ChromeCleanerRunner::ChromeMetricsStatus::kEnabled
           : ChromeCleanerRunner::ChromeMetricsStatus::kDisabled;
 
-  ChromeCleanerRunner::CleanerLogsStatus cleaner_logs_status =
-      delegate_->SafeBrowsingExtendedReportingScoutEnabled()
-          ? ChromeCleanerRunner::CleanerLogsStatus::kUploadEnabled
-          : ChromeCleanerRunner::CleanerLogsStatus::kUploadDisabled;
-
   ChromeCleanerRunner::RunChromeCleanerAndReplyWithExitCode(
       executable_path, *reporter_invocation_, metrics_status,
-      cleaner_logs_status,
       base::Bind(&ChromeCleanerController::WeakOnPromptUser,
                  weak_factory_.GetWeakPtr()),
       base::Bind(&ChromeCleanerController::OnConnectionClosed,

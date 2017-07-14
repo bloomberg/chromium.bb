@@ -51,16 +51,14 @@ void ChromeCleanerRunner::RunChromeCleanerAndReplyWithExitCode(
     const base::FilePath& cleaner_executable_path,
     const SwReporterInvocation& reporter_invocation,
     ChromeMetricsStatus metrics_status,
-    CleanerLogsStatus cleaner_logs_status,
     ChromePromptImpl::OnPromptUser on_prompt_user,
     base::OnceClosure on_connection_closed,
     ChromeCleanerRunner::ProcessDoneCallback on_process_done,
     scoped_refptr<base::SequencedTaskRunner> task_runner) {
   auto cleaner_runner = make_scoped_refptr(new ChromeCleanerRunner(
       cleaner_executable_path, reporter_invocation, metrics_status,
-      cleaner_logs_status, std::move(on_prompt_user),
-      std::move(on_connection_closed), std::move(on_process_done),
-      std::move(task_runner)));
+      std::move(on_prompt_user), std::move(on_connection_closed),
+      std::move(on_process_done), std::move(task_runner)));
   auto launch_and_wait = base::BindOnce(
       &ChromeCleanerRunner::LaunchAndWaitForExitOnBackgroundThread,
       cleaner_runner);
@@ -80,7 +78,6 @@ ChromeCleanerRunner::ChromeCleanerRunner(
     const base::FilePath& cleaner_executable_path,
     const SwReporterInvocation& reporter_invocation,
     ChromeMetricsStatus metrics_status,
-    CleanerLogsStatus cleaner_logs_status,
     ChromePromptImpl::OnPromptUser on_prompt_user,
     base::OnceClosure on_connection_closed,
     ProcessDoneCallback on_process_done,
@@ -133,12 +130,6 @@ ChromeCleanerRunner::ChromeCleanerRunner(
     cleaner_command_line_.AppendSwitch(
         chrome_cleaner::kEnableCrashReportingSwitch);
   }
-
-  // Enable logs upload for users who have opted into safe browsing extended
-  // reporting v2.
-  if (cleaner_logs_status == CleanerLogsStatus::kUploadEnabled)
-    cleaner_command_line_.AppendSwitch(
-        chrome_cleaner::kEnableCleanerLoggingSwitch);
 }
 
 ChromeCleanerRunner::ProcessStatus
