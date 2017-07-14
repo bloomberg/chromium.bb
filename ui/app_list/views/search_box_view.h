@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "ui/app_list/app_list_model.h"
 #include "ui/app_list/search_box_model_observer.h"
 #include "ui/app_list/speech_ui_model_observer.h"
 #include "ui/gfx/shadow_value.h"
@@ -32,7 +33,6 @@ enum SearchBoxFocus {
   FOCUS_CONTENTS_VIEW,  // Something outside the SearchBox is selected
 };
 
-class AppListModel;
 class AppListView;
 class AppListViewDelegate;
 class SearchBoxModel;
@@ -109,8 +109,16 @@ class APP_LIST_EXPORT SearchBoxView : public views::View,
   void OnGestureEvent(ui::GestureEvent* event) override;
   void OnMouseEvent(ui::MouseEvent* event) override;
 
-  // Updates the |content_container_|'s background corner radius.
-  void UpdateBackground(bool search_results_state);
+  // Returns background border corner radius in the given state.
+  static int GetSearchBoxBorderCornerRadiusForState(AppListModel::State state);
+
+  // Returns search box color in the given state.
+  SkColor GetSearchBoxColorForState(AppListModel::State state) const;
+
+  // Updates the search box's background corner radius and color.
+  void UpdateBackground(double progress,
+                        AppListModel::State current_state,
+                        AppListModel::State target_state);
 
  private:
   // Updates model text and selection model with current Textfield info.
