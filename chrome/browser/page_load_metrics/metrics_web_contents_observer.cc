@@ -68,7 +68,7 @@ MetricsWebContentsObserver::MetricsWebContentsObserver(
     const base::Optional<content::WebContents::CreateParams>& create_params,
     std::unique_ptr<PageLoadMetricsEmbedderInterface> embedder_interface)
     : content::WebContentsObserver(web_contents),
-      in_foreground_(create_params ? !create_params->initially_hidden : false),
+      in_foreground_(web_contents->IsVisible()),
       embedder_interface_(std::move(embedder_interface)),
       has_navigated_(false),
       page_load_metrics_binding_(web_contents, this) {
