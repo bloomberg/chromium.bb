@@ -27,6 +27,7 @@ namespace cc {
 class DrawQuad;
 class StreamVideoDrawQuad;
 class TextureDrawQuad;
+class TileDrawQuad;
 class ResourceProvider;
 
 class CC_EXPORT OverlayCandidate {
@@ -99,9 +100,17 @@ class CC_EXPORT OverlayCandidate {
   bool overlay_handled;
 
  private:
+  static bool FromDrawQuadResource(ResourceProvider* resource_provider,
+                                   const DrawQuad* quad,
+                                   ResourceId resource_id,
+                                   bool y_flipped,
+                                   OverlayCandidate* candidate);
   static bool FromTextureQuad(ResourceProvider* resource_provider,
                               const TextureDrawQuad* quad,
                               OverlayCandidate* candidate);
+  static bool FromTileQuad(ResourceProvider* resource_provider,
+                           const TileDrawQuad* quad,
+                           OverlayCandidate* candidate);
   static bool FromStreamVideoQuad(ResourceProvider* resource_provider,
                                   const StreamVideoDrawQuad* quad,
                                   OverlayCandidate* candidate);

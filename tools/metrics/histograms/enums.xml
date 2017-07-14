@@ -22500,7 +22500,6 @@ from previous Chrome versions.
       label="OmniboxUIExperimentHideSuggestionUrlTrivialSubdomains:enabled"/>
   <int value="-1938263248" label="enable-extension-info-dialog"/>
   <int value="-1937077699" label="http-form-warning"/>
-  <int value="-1934673791" label="gl-composited-texture-quad-border"/>
   <int value="-1933425042" label="OfflinePreviews:enabled"/>
   <int value="-1930720286" label="nacl-debug-mask"/>
   <int value="-1928198763" label="enable-async-dns"/>
@@ -22612,6 +22611,7 @@ from previous Chrome versions.
   <int value="-1583728573" label="AutofillCreditCardSigninPromo:disabled"/>
   <int value="-1581724231" label="ModalPermissionPrompts:enabled"/>
   <int value="-1578295753" label="UserMediaScreenCapturing:disabled"/>
+  <int value="-1575984706" label="gl-composited-overlay-candidate-quad-border"/>
   <int value="-1575554415" label="AndroidPaymentAppsFilter:enabled"/>
   <int value="-1572010356" label="enable-privet-v3"/>
   <int value="-1571841513" label="enable-devtools-experiments"/>

@@ -204,20 +204,13 @@ bool OverlayCandidate::FromDrawQuad(ResourceProvider* resource_provider,
         quad->shared_quad_state->blend_mode == SkBlendMode::kSrcOver))
     return false;
 
-  auto& transform = quad->shared_quad_state->quad_to_target_transform;
-  candidate->display_rect = gfx::RectF(quad->rect);
-  transform.TransformRect(&candidate->display_rect);
-  candidate->quad_rect_in_target_space =
-      MathUtil::MapEnclosingClippedRect(transform, quad->rect);
-
-  candidate->clip_rect = quad->shared_quad_state->clip_rect;
-  candidate->is_clipped = quad->shared_quad_state->is_clipped;
-  candidate->is_opaque = !quad->ShouldDrawWithBlending();
-
   switch (quad->material) {
     case DrawQuad::TEXTURE_CONTENT:
       return FromTextureQuad(resource_provider,
                              TextureDrawQuad::MaterialCast(quad), candidate);
+    case DrawQuad::TILED_CONTENT:
+      return FromTileQuad(resource_provider, TileDrawQuad::MaterialCast(quad),
+                          candidate);
     case DrawQuad::STREAM_VIDEO_CONTENT:
       return FromStreamVideoQuad(resource_provider,
                                  StreamVideoDrawQuad::MaterialCast(quad),
@@ -261,24 +254,65 @@ bool OverlayCandidate::IsOccluded(const OverlayCandidate& candidate,
 }
 
 // static
-bool OverlayCandidate::FromTextureQuad(ResourceProvider* resource_provider,
-                                       const TextureDrawQuad* quad,
-                                       OverlayCandidate* candidate) {
-  if (!resource_provider->IsOverlayCandidate(quad->resource_id()))
+bool OverlayCandidate::FromDrawQuadResource(ResourceProvider* resource_provider,
+                                            const DrawQuad* quad,
+                                            ResourceId resource_id,
+                                            bool y_flipped,
+                                            OverlayCandidate* candidate) {
+  if (!resource_provider->IsOverlayCandidate(resource_id))
     return false;
-  candidate->format = resource_provider->GetBufferFormat(quad->resource_id());
+
+  candidate->format = resource_provider->GetBufferFormat(resource_id);
   if (std::find(std::begin(kOverlayFormats), std::end(kOverlayFormats),
                 candidate->format) == std::end(kOverlayFormats))
     return false;
+
   gfx::OverlayTransform overlay_transform = GetOverlayTransform(
-      quad->shared_quad_state->quad_to_target_transform, quad->y_flipped);
-  if (quad->background_color != SK_ColorTRANSPARENT ||
-      overlay_transform == gfx::OVERLAY_TRANSFORM_INVALID)
+      quad->shared_quad_state->quad_to_target_transform, y_flipped);
+  if (overlay_transform == gfx::OVERLAY_TRANSFORM_INVALID)
     return false;
-  candidate->resource_id = quad->resource_id();
-  candidate->resource_size_in_pixels = quad->resource_size_in_pixels();
+
+  auto& transform = quad->shared_quad_state->quad_to_target_transform;
+  candidate->display_rect = gfx::RectF(quad->rect);
+  transform.TransformRect(&candidate->display_rect);
+  candidate->quad_rect_in_target_space =
+      MathUtil::MapEnclosingClippedRect(transform, quad->rect);
+
+  candidate->clip_rect = quad->shared_quad_state->clip_rect;
+  candidate->is_clipped = quad->shared_quad_state->is_clipped;
+  candidate->is_opaque = !quad->ShouldDrawWithBlending();
+
+  candidate->resource_id = resource_id;
   candidate->transform = overlay_transform;
+
+  return true;
+}
+
+// static
+bool OverlayCandidate::FromTextureQuad(ResourceProvider* resource_provider,
+                                       const TextureDrawQuad* quad,
+                                       OverlayCandidate* candidate) {
+  if (quad->background_color != SK_ColorTRANSPARENT)
+    return false;
+  if (!FromDrawQuadResource(resource_provider, quad, quad->resource_id(),
+                            quad->y_flipped, candidate)) {
+    return false;
+  }
+  candidate->resource_size_in_pixels = quad->resource_size_in_pixels();
   candidate->uv_rect = BoundingRect(quad->uv_top_left, quad->uv_bottom_right);
+  return true;
+}
+
+// static
+bool OverlayCandidate::FromTileQuad(ResourceProvider* resource_provider,
+                                    const TileDrawQuad* quad,
+                                    OverlayCandidate* candidate) {
+  if (!FromDrawQuadResource(resource_provider, quad, quad->resource_id(), false,
+                            candidate)) {
+    return false;
+  }
+  candidate->resource_size_in_pixels = quad->texture_size;
+  candidate->uv_rect = quad->tex_coord_rect;
   return true;
 }
 
@@ -286,12 +320,10 @@ bool OverlayCandidate::FromTextureQuad(ResourceProvider* resource_provider,
 bool OverlayCandidate::FromStreamVideoQuad(ResourceProvider* resource_provider,
                                            const StreamVideoDrawQuad* quad,
                                            OverlayCandidate* candidate) {
-  if (!resource_provider->IsOverlayCandidate(quad->resource_id()))
+  if (!FromDrawQuadResource(resource_provider, quad, quad->resource_id(), false,
+                            candidate)) {
     return false;
-  gfx::OverlayTransform overlay_transform = GetOverlayTransform(
-      quad->shared_quad_state->quad_to_target_transform, false);
-  if (overlay_transform == gfx::OVERLAY_TRANSFORM_INVALID)
-    return false;
+  }
   if (!quad->matrix.IsScaleOrTranslation()) {
     // We cannot handle anything other than scaling & translation for texture
     // coordinates yet.
@@ -299,7 +331,6 @@ bool OverlayCandidate::FromStreamVideoQuad(ResourceProvider* resource_provider,
   }
   candidate->resource_id = quad->resource_id();
   candidate->resource_size_in_pixels = quad->resource_size_in_pixels();
-  candidate->transform = overlay_transform;
 #if defined(OS_ANDROID)
   candidate->is_backed_by_surface_texture =
       resource_provider->IsBackedBySurfaceTexture(quad->resource_id());

@@ -381,8 +381,8 @@ extern const char kFramebustingDescription[];
 extern const char kGamepadExtensionsName[];
 extern const char kGamepadExtensionsDescription[];
 
-extern const char kGlCompositedTextureQuadBordersName[];
-extern const char kGlCompositedTextureQuadBordersDescription[];
+extern const char kGlCompositedOverlayCandidateQuadBordersName[];
+extern const char kGlCompositedOverlayCandidateQuadBordersDescription[];
 
 extern const char kGpuRasterizationMsaaSampleCountName[];
 extern const char kGpuRasterizationMsaaSampleCountDescription[];

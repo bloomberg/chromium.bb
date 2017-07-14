@@ -204,6 +204,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
                            const gfx::QuadF* clip_region);
   void DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
                         const gfx::QuadF* clip_region);
+  void DrawOverlayCandidateQuadBorder(float* gl_matrix);
 
   void SetShaderOpacity(const DrawQuad* quad);
   void SetShaderQuadF(const gfx::QuadF& quad);
@@ -346,8 +347,9 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   // overlay resource. This means the GLRenderer needs its own ResourcePool.
   std::unique_ptr<ResourcePool> overlay_resource_pool_;
 
-  // If true, draw a green border after compositing a texture quad using GL.
-  bool gl_composited_texture_quad_border_;
+  // If true, draw a green border after compositing a overlay candidate quad
+  // using GL.
+  bool gl_composited_overlay_candidate_quad_border_;
 
   // The method FlippedFramebuffer determines whether the framebuffer associated
   // with a DrawingFrame is flipped. It makes the assumption that the

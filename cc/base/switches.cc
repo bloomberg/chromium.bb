@@ -62,10 +62,12 @@ const char kCompositedRenderPassBorders[] = "renderpass";
 const char kCompositedSurfaceBorders[] = "surface";
 const char kCompositedLayerBorders[] = "layer";
 
-// Renders a green border around GL composited texture quads to help
-// debug and study overlay support.
-const char kGlCompositedTextureQuadBorder[] =
-    "gl-composited-texture-quad-border";
+// TODO(dcastagna): Draw debug quad borders only when it is actually
+// an overlay candidate.
+// Renders a border around GL composited overlay candidate quads to
+// help debug and study overlay support.
+const char kGlCompositedOverlayCandidateQuadBorder[] =
+    "gl-composited-overlay-candidate-quad-border";
 
 // Draws a heads-up-display showing Frames Per Second as well as GPU memory
 // usage. If you also use --enable-logging=stderr --vmodule="head*=1" then FPS
