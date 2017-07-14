@@ -506,12 +506,16 @@ InterfaceEndpointController* MultiplexRouter::AttachEndpointClient(
 
 void MultiplexRouter::DetachEndpointClient(
     const ScopedInterfaceEndpointHandle& handle) {
+  // TODO(crbug.com/741047): Remove this check.
+  CheckObjectIsValid();
+
   const InterfaceId id = handle.id();
 
   DCHECK(IsValidInterfaceId(id));
 
   MayAutoLock locker(&lock_);
-  DCHECK(base::ContainsKey(endpoints_, id));
+  // TODO(crbug.com/741047): change this to DCEHCK.
+  CHECK(base::ContainsKey(endpoints_, id));
 
   InterfaceEndpoint* endpoint = endpoints_[id].get();
   endpoint->DetachClient();
@@ -667,6 +671,9 @@ bool MultiplexRouter::OnPeerAssociatedEndpointClosed(
 
 void MultiplexRouter::OnPipeConnectionError() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // TODO(crbug.com/741047): Remove this check.
+  CheckObjectIsValid();
 
   scoped_refptr<MultiplexRouter> protector(this);
   MayAutoLock locker(&lock_);
