@@ -193,7 +193,7 @@ void VoiceInteractionOverlay::StartAnimation() {
       kRippleCircleStartRadiusDip / kRippleCircleInitRadiusDip;
   gfx::Transform transform;
 
-  const gfx::Point center = host_view_->GetCenterPoint();
+  const gfx::Point center = host_view_->GetAppListButtonCenterPoint();
   transform.Translate(center.x() - kRippleCircleStartRadiusDip,
                       center.y() - kRippleCircleStartRadiusDip);
   transform.Scale(scale_factor, scale_factor);
@@ -311,7 +311,7 @@ void VoiceInteractionOverlay::StartAnimation() {
 void VoiceInteractionOverlay::BurstAnimation() {
   is_bursting_ = true;
 
-  gfx::Point center = host_view_->GetCenterPoint();
+  gfx::Point center = host_view_->GetAppListButtonCenterPoint();
 
   // Setup ripple animations.
   {
@@ -364,7 +364,7 @@ void VoiceInteractionOverlay::EndAnimation() {
       kRippleCircleStartRadiusDip / kRippleCircleInitRadiusDip;
   gfx::Transform transform;
 
-  const gfx::Point center = host_view_->GetCenterPoint();
+  const gfx::Point center = host_view_->GetAppListButtonCenterPoint();
   transform.Translate(center.x() - kRippleCircleStartRadiusDip,
                       center.y() - kRippleCircleStartRadiusDip);
   transform.Scale(scale_factor, scale_factor);
