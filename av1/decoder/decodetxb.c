@@ -60,7 +60,6 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   const int height = tx_size_high[tx_size];
   int cul_level = 0;
   unsigned int(*nz_map_count)[SIG_COEF_CONTEXTS][2];
-  uint8_t txb_mask[32 * 32] = { 0 };
 
   nz_map_count = (counts) ? &counts->nz_map[txs_ctx][plane_type] : NULL;
 
@@ -85,10 +84,11 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   const TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, block, tx_size);
   const SCAN_ORDER *const scan_order = get_scan(cm, tx_size, tx_type, mbmi);
   const int16_t *scan = scan_order->scan;
+  const int16_t *iscan = scan_order->iscan;
 
   for (c = 0; c < seg_eob; ++c) {
     int is_nz;
-    int coeff_ctx = get_nz_map_ctx(tcoeffs, txb_mask, scan[c], bwl, height);
+    int coeff_ctx = get_nz_map_ctx(tcoeffs, scan[c], bwl, height, iscan);
     int eob_ctx = get_eob_ctx(tcoeffs, scan[c], txs_ctx);
 
     if (c < seg_eob - 1)
@@ -111,7 +111,6 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
       if (counts) ++counts->eob_flag[txs_ctx][plane_type][eob_ctx][is_eob];
       if (is_eob) break;
     }
-    txb_mask[scan[c]] = 1;
   }
 
   *eob = AOMMIN(seg_eob, c + 1);
