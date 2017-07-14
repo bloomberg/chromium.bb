@@ -84,6 +84,7 @@ ServiceWorkerGlobalScope* ServiceWorkerGlobalScope::Create(
       startup_data->worker_v8_settings_.v8_cache_options_);
   context->ApplyContentSecurityPolicyFromVector(
       *startup_data->content_security_policy_headers_);
+  context->SetWorkerSettings(std::move(startup_data->worker_settings_));
   if (!startup_data->referrer_policy_.IsNull())
     context->ParseAndSetReferrerPolicy(startup_data->referrer_policy_);
   context->SetAddressSpace(startup_data->address_space_);
