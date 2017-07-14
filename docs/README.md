@@ -11,27 +11,30 @@ below.
 
 [TOC]
 
-## Style guide
+## Creating Documentation
 
 Markdown documents must follow the
 [style guide](https://github.com/google/styleguide/tree/gh-pages/docguide).
 
-## Previewing changes
-
-You can preview your local changes using [md_browser](../tools/md_browser/):
+### Preview local changes using [md_browser](../tools/md_browser/):
 
 ```bash
 # in chromium checkout
 ./tools/md_browser/md_browser.py
 ```
 
-To review someone else's changes, apply them locally first:
+This is only an estimate. The **gitiles** view may differ.
 
-```bash
-# in chromium checkout
-git cl patch <CL number or URL>
-./tools/md_browser/md_browser.py
-```
+### Review changes online with gerrit's links to gitiles:
+
+1.  Upload a patch to gerrit, or receive a review request.  
+    e.g. https://chromium-review.googlesource.com/c/572236
+2.  View a specific .md file.  
+    e.g. https://chromium-review.googlesource.com/c/572236/2/docs/README.md
+3.  Click on **gitiles** link at top of page.
+
+This **gitiles** view is the authoritative view, exactly the same as will be
+used when committed.
 
 ## Document Index
 
