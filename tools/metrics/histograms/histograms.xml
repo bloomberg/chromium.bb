@@ -50201,8 +50201,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="PageLoad.Clients.Ads.Google.Bytes.AdFrames.Aggregate.Network"
-    units="KB">
+<histogram name="PageLoad.Bytes.AdFrames.Aggregate.Network" units="KB">
   <owner>jkarlin@chromium.org</owner>
   <summary>
     The size (in KB) of the resources loaded for all of the ad frames on the
@@ -50216,9 +50215,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram
-    name="PageLoad.Clients.Ads.Google.Bytes.AdFrames.Aggregate.PercentNetwork"
-    units="%">
+<histogram name="PageLoad.Bytes.AdFrames.Aggregate.PercentNetwork" units="%">
   <owner>jkarlin@chromium.org</owner>
   <summary>
     The percentage of bytes loaded for all ad frames that were loaded over the
@@ -50232,8 +50229,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="PageLoad.Clients.Ads.Google.Bytes.AdFrames.Aggregate.Total"
-    units="KB">
+<histogram name="PageLoad.Bytes.AdFrames.Aggregate.Total" units="KB">
   <owner>jkarlin@chromium.org</owner>
   <summary>
     The size (in KB) of the resources loaded for all of the ad frames on the
@@ -50247,8 +50243,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="PageLoad.Clients.Ads.Google.Bytes.AdFrames.PerFrame.Network"
-    units="KB">
+<histogram name="PageLoad.Bytes.AdFrames.PerFrame.Network" units="KB">
   <owner>jkarlin@chromium.org</owner>
   <summary>
     The size (in KB) of the resources loaded for an ad frame from the network.
@@ -50261,9 +50256,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram
-    name="PageLoad.Clients.Ads.Google.Bytes.AdFrames.PerFrame.PercentNetwork"
-    units="%">
+<histogram name="PageLoad.Bytes.AdFrames.PerFrame.PercentNetwork" units="%">
   <owner>jkarlin@chromium.org</owner>
   <summary>
     The percentage of bytes loaded for a single ad frame that were loaded over
@@ -50277,8 +50270,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="PageLoad.Clients.Ads.Google.Bytes.AdFrames.PerFrame.Total"
-    units="KB">
+<histogram name="PageLoad.Bytes.AdFrames.PerFrame.Total" units="KB">
   <owner>jkarlin@chromium.org</owner>
   <summary>
     The size (in KB) of the resources loaded for an ad frame.
@@ -50291,7 +50283,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="PageLoad.Clients.Ads.Google.Bytes.FullPage.Network" units="KB">
+<histogram name="PageLoad.Bytes.FullPage.Network" units="KB">
   <owner>jkarlin@chromium.org</owner>
   <summary>
     The size (in KB) of all of the page's resources that loaded over the
@@ -50303,8 +50295,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="PageLoad.Clients.Ads.Google.Bytes.FullPage.Network.PercentAds"
-    units="%">
+<histogram name="PageLoad.Bytes.FullPage.Network.PercentAds" units="%">
   <owner>jkarlin@chromium.org</owner>
   <summary>
     The percentage of bytes loaded for the page (from the network) that came
@@ -50318,7 +50309,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="PageLoad.Clients.Ads.Google.Bytes.FullPage.Total" units="KB">
+<histogram name="PageLoad.Bytes.FullPage.Total" units="KB">
   <owner>jkarlin@chromium.org</owner>
   <summary>
     The size (in KB) of all of the page's resources.
@@ -50329,8 +50320,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="PageLoad.Clients.Ads.Google.Bytes.FullPage.Total.PercentAds"
-    units="%">
+<histogram name="PageLoad.Bytes.FullPage.Total.PercentAds" units="%">
   <owner>jkarlin@chromium.org</owner>
   <summary>
     The percentage of bytes loaded for the page that came from resource loads in
@@ -50344,8 +50334,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="PageLoad.Clients.Ads.Google.Bytes.NonAdFrames.Aggregate.Total"
-    units="KB">
+<histogram name="PageLoad.Bytes.NonAdFrames.Aggregate.Total" units="KB">
   <owner>jkarlin@chromium.org</owner>
   <summary>
     The size (in KB) of all of the page's resources except for those loaded in
@@ -50359,18 +50348,51 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram
-    name="PageLoad.Clients.Ads.Google.FrameCounts.AnyParentFrame.AdFrames"
-    units="Ad frames">
+<histogram name="PageLoad.Clients.Ads.All.Navigations.AdFrameRenavigatedToAd"
+    enum="DidNavigateToAd">
   <owner>jkarlin@chromium.org</owner>
   <summary>
-    The number of frames on the page identified as Google Ad Frames that have
-    loaded more than 0 bytes of content.
+    When a frame that is (or previously was) an ad frame renavigates, record
+    whether it renavigated to an ad frame or a non-ad frame.
 
-    For pages with zero ad frames, the other PageLoad.Clients.Ads metrics are
-    not recorded unless otherwise specified.
+    An ad frame consists of the identified ad frame and all of its children. Its
+    children (which may also be ads) are not counted when they renavigate.
 
-    Child frames of an ad frame are not included in the count.
+    This metric is recorded as the event happens. Note that this is unlike most
+    other Clients.Ads metrics, which are recorded when the page load is
+    complete.
+  </summary>
+</histogram>
+
+<histogram
+    name="PageLoad.Clients.Ads.All.Navigations.NonAdFrameRenavigatedToAd"
+    enum="DidNavigateToAd">
+  <owner>jkarlin@chromium.org</owner>
+  <summary>
+    When a frame that has never been part of an ad frame renavigates, record
+    whether it renavigated to an ad frame or a non-ad frame.
+
+    This metric is recorded as the event happens. Note that this is unlike most
+    other Clients.Ads metrics, which are recorded when the page load is
+    complete.
+  </summary>
+</histogram>
+
+<histogram name="PageLoad.Clients.Ads.All.ParentExistsForSubFrame"
+    enum="ParentFrameKnown">
+  <owner>jkarlin@chromium.org</owner>
+  <summary>
+    Records whether or not a parent frame is found for a subframe that finishes
+    navigating.
+  </summary>
+</histogram>
+
+<histogram name="PageLoad.Clients.Ads.All.ResourceTypeWhenNoFrameFound"
+    enum="ContentResourceType2">
+  <owner>jkarlin@chromium.org</owner>
+  <summary>
+    Records the content::ResourceType when a resource finishes loading but the
+    ads metrics aren't aware of a committed frame for the resource.
   </summary>
 </histogram>
 
@@ -50424,6 +50446,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram
     name="PageLoad.Clients.Ads.Google.Navigations.AdFrameRenavigatedToAd"
     enum="DidNavigateToAd">
+  <obsolete>
+    Deprecated In July 2017. Use
+    PageLoad.Clients.Ads.All.Navigations.AdFrameRenavigatedToAd instead.
+  </obsolete>
   <owner>jkarlin@chromium.org</owner>
   <summary>
     When a frame that is (or previously was) an ad frame renavigates, record
@@ -50441,6 +50467,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram
     name="PageLoad.Clients.Ads.Google.Navigations.NonAdFrameRenavigatedToAd"
     enum="DidNavigateToAd">
+  <obsolete>
+    Deprecated In July 2017. Use
+    PageLoad.Clients.Ads.All.Navigations.NonAdFrameRenavigatedToAd instead.
+  </obsolete>
   <owner>jkarlin@chromium.org</owner>
   <summary>
     When a frame that has never been part of an ad frame renavigates, record
@@ -50454,6 +50484,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="PageLoad.Clients.Ads.Google.ParentExistsForSubFrame"
     enum="ParentFrameKnown">
+  <obsolete>
+    Deprecated In July 2017. Use
+    PageLoad.Clients.Ads.All.ParentExistsForSubFrame instead.
+  </obsolete>
   <owner>jkarlin@chromium.org</owner>
   <summary>
     Records whether or not a parent frame is found for a subframe that finishes
@@ -50463,6 +50497,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="PageLoad.Clients.Ads.Google.ResourceTypeWhenNoFrameFound"
     enum="ContentResourceType2">
+  <obsolete>
+    Deprecated In July 2017. Use
+    PageLoad.Clients.Ads.All.ResourceTypeWhenNoFrameFound instead.
+  </obsolete>
   <owner>jkarlin@chromium.org</owner>
   <summary>
     Records the content::ResourceType when a resource finishes loading but the
@@ -51156,6 +51194,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>csharrison@chromium.org</owner>
   <summary>
     The number of resources a given page finished loading at parse stop.
+  </summary>
+</histogram>
+
+<histogram name="PageLoad.FrameCounts.AnyParentFrame.AdFrames"
+    units="Ad frames">
+  <owner>jkarlin@chromium.org</owner>
+  <summary>
+    The number of frames on the page that have loaded more than 0 bytes of
+    content.
+
+    For pages with zero ad frames, the other PageLoad.Clients.Ads metrics are
+    not recorded unless otherwise specified.
+
+    Child frames of an ad frame are not included in the count.
   </summary>
 </histogram>
 
@@ -88710,6 +88762,25 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="WebApp" label="WebApp"/>
   <suffix name="WebApk" label="WebApk"/>
   <affected-histogram name="MobileStartup.IntentToCreationTime"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="AdsPageLoadMetrics" separator="." ordering="prefix">
+  <suffix name="Clients.Ads.Google" label="Includes only Google ads."/>
+  <suffix name="Clients.Ads.SubresourceFilter"
+      label="Includes only ads discovered by the SubResourceFilter."/>
+  <suffix name="Clients.Ads.All" label="Includes all discovered ads."/>
+  <affected-histogram name="PageLoad.Bytes.AdFrames.Aggregate.Network"/>
+  <affected-histogram name="PageLoad.Bytes.AdFrames.Aggregate.PercentNetwork"/>
+  <affected-histogram name="PageLoad.Bytes.AdFrames.Aggregate.Total"/>
+  <affected-histogram name="PageLoad.Bytes.AdFrames.PerFrame.Network"/>
+  <affected-histogram name="PageLoad.Bytes.AdFrames.PerFrame.PercentNetwork"/>
+  <affected-histogram name="PageLoad.Bytes.AdFrames.PerFrame.Total"/>
+  <affected-histogram name="PageLoad.Bytes.FullPage.Network"/>
+  <affected-histogram name="PageLoad.Bytes.FullPage.Network.PercentAds"/>
+  <affected-histogram name="PageLoad.Bytes.FullPage.Total"/>
+  <affected-histogram name="PageLoad.Bytes.FullPage.Total.PercentAds"/>
+  <affected-histogram name="PageLoad.Bytes.NonAdFrames.Aggregate.Total"/>
+  <affected-histogram name="PageLoad.FrameCounts.AnyParentFrame.AdFrames"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="AffiliationDummyData" separator=".">
