@@ -297,6 +297,20 @@ std::pair<int, int> LayoutSelection::SelectionStartEnd() {
   return std::make_pair(paint_range_.StartOffset(), paint_range_.EndOffset());
 }
 
+base::Optional<int> LayoutSelection::SelectionStart() const {
+  DCHECK(!HasPendingSelection());
+  if (paint_range_.IsNull())
+    return {};
+  return paint_range_.StartOffset();
+}
+
+base::Optional<int> LayoutSelection::SelectionEnd() const {
+  DCHECK(!HasPendingSelection());
+  if (paint_range_.IsNull())
+    return {};
+  return paint_range_.EndOffset();
+}
+
 void LayoutSelection::ClearSelection() {
   // For querying Layer::compositingState()
   // This is correct, since destroying layout objects needs to cause eager paint

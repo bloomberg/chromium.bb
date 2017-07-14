@@ -100,7 +100,10 @@ class LayoutSelection final : public GarbageCollected<LayoutSelection> {
   void InvalidatePaintForSelection();
 
   void ClearSelection();
+  // TODO(yoiciho): Replace SelectionStartEnd with SelectionStart/End.
   std::pair<int, int> SelectionStartEnd();
+  base::Optional<int> SelectionStart() const;
+  base::Optional<int> SelectionEnd() const;
   void OnDocumentShutdown();
 
   DECLARE_TRACE();

@@ -1163,6 +1163,13 @@ std::pair<int, int> FrameSelection::LayoutSelectionStartEnd() {
   return layout_selection_->SelectionStartEnd();
 }
 
+base::Optional<int> FrameSelection::LayoutSelectionStart() const {
+  return layout_selection_->SelectionStart();
+}
+base::Optional<int> FrameSelection::LayoutSelectionEnd() const {
+  return layout_selection_->SelectionEnd();
+}
+
 void FrameSelection::ClearLayoutSelection() {
   layout_selection_->ClearSelection();
 }
