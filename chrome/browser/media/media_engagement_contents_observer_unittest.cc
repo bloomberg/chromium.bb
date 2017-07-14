@@ -4,6 +4,7 @@
 
 #include "chrome/browser/media/media_engagement_contents_observer.h"
 
+#include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/timer/mock_timer.h"
 #include "build/build_config.h"
@@ -54,7 +55,7 @@ class MediaEngagementContentsObserverTest
 
   void SimulatePlaybackStarted(int id) {
     content::WebContentsObserver::MediaPlayerInfo player_info(true, true);
-    SimulatePlaybackStarted(player_info, id);
+    SimulatePlaybackStarted(player_info, id, false);
   }
 
   void SimulateResizeEvent(int id, gfx::Size size) {
@@ -69,11 +70,12 @@ class MediaEngagementContentsObserverTest
 
   void SimulatePlaybackStarted(
       content::WebContentsObserver::MediaPlayerInfo player_info,
-      int id) {
+      int id,
+      bool muted_state) {
     content::WebContentsObserver::MediaPlayerId player_id =
         std::make_pair(nullptr /* RenderFrameHost */, id);
     contents_observer_->MediaStartedPlaying(player_info, player_id);
-    SimulateMutedStateChange(id, false);
+    SimulateMutedStateChange(id, muted_state);
   }
 
   void SimulatePlaybackStopped(int id) {
@@ -120,6 +122,15 @@ class MediaEngagementContentsObserverTest
         contents_observer_->service_->CreateEngagementScore(url);
     EXPECT_EQ(score->visits(), expected_visits);
     EXPECT_EQ(score->media_playbacks(), expected_media_playbacks);
+    delete score;
+  }
+
+  void SetScores(GURL url, int visits, int media_playbacks) {
+    MediaEngagementScore* score =
+        contents_observer_->service_->CreateEngagementScore(url);
+    score->SetVisits(visits);
+    score->SetMediaPlaybacks(media_playbacks);
+    score->Commit();
     delete score;
   }
 
@@ -329,7 +340,7 @@ TEST_F(MediaEngagementContentsObserverTest, DoNotRecordAudiolessTrack) {
   EXPECT_EQ(0u, GetSignificantActivePlayersCount());
 
   content::WebContentsObserver::MediaPlayerInfo player_info(true, false);
-  SimulatePlaybackStarted(player_info, 0);
+  SimulatePlaybackStarted(player_info, 0, false);
   EXPECT_EQ(0u, GetSignificantActivePlayersCount());
 }
 
@@ -344,4 +355,85 @@ TEST_F(MediaEngagementContentsObserverTest,
   EXPECT_FALSE(GetSignificantActivePlayersCount());
   EXPECT_FALSE(GetStoredPlayerStatesCount());
   EXPECT_FALSE(IsTimerRunning());
+}
+
+TEST_F(MediaEngagementContentsObserverTest, RecordScoreOnPlayback) {
+  GURL url1("https://www.google.com");
+  GURL url2("https://www.google.co.uk");
+  GURL url3("https://www.example.com");
+
+  SetScores(url1, 5, 5);
+  SetScores(url2, 5, 3);
+  SetScores(url3, 1, 1);
+  base::HistogramTester tester;
+  tester.ExpectTotalCount(
+      MediaEngagementContentsObserver::kHistogramScoreAtPlaybackName, 0);
+
+  Navigate(url1);
+  SimulatePlaybackStarted(0);
+  tester.ExpectBucketCount(
+      MediaEngagementContentsObserver::kHistogramScoreAtPlaybackName, 83, 1);
+
+  Navigate(url2);
+  SimulatePlaybackStarted(0);
+  SimulatePlaybackStarted(1);
+  SimulateMutedStateChange(0, false);
+  tester.ExpectBucketCount(
+      MediaEngagementContentsObserver::kHistogramScoreAtPlaybackName, 50, 2);
+
+  Navigate(url3);
+  SimulatePlaybackStarted(0);
+  tester.ExpectBucketCount(
+      MediaEngagementContentsObserver::kHistogramScoreAtPlaybackName, 0, 1);
+  tester.ExpectTotalCount(
+      MediaEngagementContentsObserver::kHistogramScoreAtPlaybackName, 4);
+
+  SimulateMutedStateChange(1, false);
+  tester.ExpectTotalCount(
+      MediaEngagementContentsObserver::kHistogramScoreAtPlaybackName, 4);
+
+  SimulatePlaybackStarted(1);
+  tester.ExpectTotalCount(
+      MediaEngagementContentsObserver::kHistogramScoreAtPlaybackName, 5);
+}
+
+TEST_F(MediaEngagementContentsObserverTest, DoNotRecordScoreOnPlayback_Muted) {
+  GURL url("https://www.google.com");
+  SetScores(url, 5, 5);
+
+  base::HistogramTester tester;
+  Navigate(url);
+  content::WebContentsObserver::MediaPlayerInfo player_info(true, true);
+  SimulatePlaybackStarted(player_info, 0, true);
+  tester.ExpectTotalCount(
+      MediaEngagementContentsObserver::kHistogramScoreAtPlaybackName, 0);
+
+  SimulateMutedStateChange(0, false);
+  tester.ExpectBucketCount(
+      MediaEngagementContentsObserver::kHistogramScoreAtPlaybackName, 83, 1);
+}
+
+TEST_F(MediaEngagementContentsObserverTest,
+       DoNotRecordScoreOnPlayback_NoAudioTrack) {
+  GURL url("https://www.google.com");
+  SetScores(url, 5, 5);
+
+  base::HistogramTester tester;
+  Navigate(url);
+  content::WebContentsObserver::MediaPlayerInfo player_info(true, false);
+  SimulatePlaybackStarted(player_info, 0, false);
+  tester.ExpectTotalCount(
+      MediaEngagementContentsObserver::kHistogramScoreAtPlaybackName, 0);
+}
+
+TEST_F(MediaEngagementContentsObserverTest,
+       DoNotRecordScoreOnPlayback_InternalUrl) {
+  GURL url("chrome://about");
+  SetScores(url, 5, 5);
+
+  base::HistogramTester tester;
+  Navigate(url);
+  SimulatePlaybackStarted(0);
+  tester.ExpectTotalCount(
+      MediaEngagementContentsObserver::kHistogramScoreAtPlaybackName, 0);
 }

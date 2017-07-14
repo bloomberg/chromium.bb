@@ -33,6 +33,7 @@ class MediaEngagementContentsObserver : public content::WebContentsObserver {
   void MediaResized(const gfx::Size& size, const MediaPlayerId& id) override;
 
   static const gfx::Size kSignificantSize;
+  static const char* kHistogramScoreAtPlaybackName;
 
  private:
   // Only MediaEngagementService can create a MediaEngagementContentsObserver.
@@ -63,9 +64,12 @@ class MediaEngagementContentsObserver : public content::WebContentsObserver {
   // A structure containing all the information we have about a player's state.
   struct PlayerState {
     bool muted = true;
-    bool playing = false;  // Currently playing with an audio track.
+    bool playing = false;           // Currently playing.
     bool significant_size = false;  // The video track has at least a certain
                                     // frame size.
+    bool has_audio = false;         // The media has an audio track.
+    bool score_recorded = false;    // The player has logged the engagement
+                                    // score on playback.
   };
   std::map<MediaPlayerId, PlayerState*> player_states_;
   PlayerState* GetPlayerState(const MediaPlayerId& id);
@@ -79,6 +83,10 @@ class MediaEngagementContentsObserver : public content::WebContentsObserver {
 
   bool is_visible_ = false;
   bool significant_playback_recorded_ = false;
+
+  // Records the engagement score for the current origin to a histogram so we
+  // can identify whether the playback would have been blocked.
+  void RecordEngagementScoreToHistogramAtPlayback(const MediaPlayerId& id);
 
   url::Origin committed_origin_;
 

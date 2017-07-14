@@ -29783,6 +29783,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.Engagement.ScoreAtPlayback" units="%">
+  <owner>beccahughes@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
+  <summary>
+    The media engagement score recorded at the time of playback. It is converted
+    to a percentage so should be divided by 100 to get the actual score. It is
+    only recorded for playback that is either lacking an audio track or not
+    muted.
+  </summary>
+</histogram>
+
 <histogram name="Media.FallbackHardwareAudioBitsPerChannel">
   <owner>dalecurtis@chromium.org</owner>
   <summary>
