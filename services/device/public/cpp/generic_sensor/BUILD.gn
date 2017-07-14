@@ -8,6 +8,8 @@ source_set("generic_sensor") {
     "platform_sensor_configuration.h",
     "sensor_reading.cc",
     "sensor_reading.h",
+    "sensor_reading_shared_buffer_reader.cc",
+    "sensor_reading_shared_buffer_reader.h",
   ]
 
   public_deps = [

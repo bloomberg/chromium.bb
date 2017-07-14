@@ -14,6 +14,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Vector.h"
 #include "services/device/public/cpp/generic_sensor/sensor_reading.h"
+#include "services/device/public/cpp/generic_sensor/sensor_reading_shared_buffer_reader.h"
 #include "services/device/public/interfaces/sensor.mojom-blink.h"
 #include "services/device/public/interfaces/sensor_provider.mojom-blink.h"
 
@@ -112,8 +113,6 @@ class SensorProxy final : public GarbageCollectedFinalized<SensorProxy>,
       bool result);
   void OnRemoveConfigurationCompleted(double frequency, bool result);
 
-  bool TryReadFromBuffer(device::SensorReading& result);
-
   void OnPollingTimer(TimerBase*);
 
   // Returns 'true' if readings should be propagated to Observers
@@ -141,6 +140,8 @@ class SensorProxy final : public GarbageCollectedFinalized<SensorProxy>,
   State state_;
   mojo::ScopedSharedBufferHandle shared_buffer_handle_;
   mojo::ScopedSharedBufferMapping shared_buffer_;
+  std::unique_ptr<device::SensorReadingSharedBufferReader>
+      shared_buffer_reader_;
   bool suspended_;
   device::SensorReading reading_;
   std::pair<double, double> frequency_limits_;

@@ -114,14 +114,11 @@ const SensorConfiguration* SensorProxy::DefaultConfig() const {
 
 void SensorProxy::UpdateSensorReading() {
   DCHECK(ShouldProcessReadings());
-  int read_attempts = 0;
-  const int kMaxReadAttemptsCount = 10;
   device::SensorReading reading_data;
-  while (!TryReadFromBuffer(reading_data)) {
-    if (++read_attempts == kMaxReadAttemptsCount) {
-      HandleSensorError();
-      return;
-    }
+  if (!shared_buffer_handle_->is_valid() ||
+      !shared_buffer_reader_->GetReading(&reading_data)) {
+    HandleSensorError();
+    return;
   }
 
   if (reading_.timestamp != reading_data.timestamp) {
@@ -202,6 +199,11 @@ void SensorProxy::OnSensorCreated(SensorInitParamsPtr params,
     HandleSensorError();
     return;
   }
+
+  const auto* buffer = static_cast<const device::SensorReadingSharedBuffer*>(
+      shared_buffer_.get());
+  shared_buffer_reader_.reset(
+      new device::SensorReadingSharedBufferReader(buffer));
   frequency_limits_.first = params->minimum_frequency;
   frequency_limits_.second = params->maximum_frequency;
 
@@ -252,19 +254,6 @@ void SensorProxy::OnRemoveConfigurationCompleted(double frequency,
 
   frequencies_used_.erase(index);
   UpdatePollingStatus();
-}
-
-bool SensorProxy::TryReadFromBuffer(device::SensorReading& result) {
-  DCHECK(IsInitialized());
-  const ReadingBuffer* buffer =
-      static_cast<const ReadingBuffer*>(shared_buffer_.get());
-  const device::OneWriterSeqLock& seqlock = buffer->seqlock.value();
-  auto version = seqlock.ReadBegin();
-  auto reading_data = buffer->reading;
-  if (seqlock.ReadRetry(version))
-    return false;
-  result = reading_data;
-  return true;
 }
 
 void SensorProxy::OnPollingTimer(TimerBase*) {
