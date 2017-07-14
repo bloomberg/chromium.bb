@@ -14,6 +14,8 @@ Toggle breakpoint
 Running: testAddRemoveBreakpointInLineWithOneLocation
 Setting breakpoint
 breakpoint at 5
+  inline breakpoint at (5, 4)
+  inline breakpoint at (5, 13) disabled
 Toggle breakpoint
 
 Running: clickByInlineBreakpoint

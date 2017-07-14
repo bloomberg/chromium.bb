@@ -19,7 +19,7 @@ qwe:5
 baz:4
 (...):1
 Paused in
-qwe:6
+qwe:5
 baz:4
 (...):1
 Paused in

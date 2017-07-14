@@ -13,7 +13,7 @@ location(2, 49)
 location(3, 2)
 location(3, 10)
 location(4, 2)
-location(5, 0)
+location(4, 9)
 Existing location by position
 location(2, 31)
 Not existing location by position

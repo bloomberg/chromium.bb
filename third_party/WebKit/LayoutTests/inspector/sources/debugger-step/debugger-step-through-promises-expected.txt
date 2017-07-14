@@ -30,7 +30,7 @@ Call stack:
 
 Executing StepOver...
 Call stack:
-    0) p2 (debugger-step-through-promises.html:18)
+    0) p2 (debugger-step-through-promises.html:17)
     [Promise.resolve]
     0) testFunction (debugger-step-through-promises.html:14)
     [setTimeout]
@@ -48,7 +48,7 @@ Call stack:
 
 Executing StepOver...
 Call stack:
-    0) p3 (debugger-step-through-promises.html:23)
+    0) p3 (debugger-step-through-promises.html:22)
     [Promise.resolve]
     0) testFunction (debugger-step-through-promises.html:19)
     [setTimeout]

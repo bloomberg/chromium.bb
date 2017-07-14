@@ -19,7 +19,7 @@ Call stack:
 
 Executing StepOut...
 Call stack:
-    0) testFunction (frameworks-sourcemap.html:12)
+    0) testFunction (frameworks-sourcemap.html:11)
     [setTimeout]
     0) scheduleTestFunction (debugger-test.js:3)
     <... skipped remaining frames ...>
