@@ -763,12 +763,14 @@ const FeatureEntry::Choice kEnableWebFontsInterventionV2Choices[] = {
      switches::kEnableWebFontsInterventionV2SwitchValueDisabled},
 };
 
-const FeatureEntry::Choice kSSLVersionMaxChoices[] = {
+const FeatureEntry::Choice kTLS13VariantChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
-    {flag_descriptions::kSslVersionMaxTls12, switches::kSSLVersionMax,
-     "tls1.2"},
-    {flag_descriptions::kSslVersionMaxTls13, switches::kSSLVersionMax,
-     "tls1.3"},
+    {flag_descriptions::kTLS13VariantDisabled, switches::kTLS13Variant,
+     switches::kTLS13VariantDisabled},
+    {flag_descriptions::kTLS13VariantDraft, switches::kTLS13Variant,
+     switches::kTLS13VariantDraft},
+    {flag_descriptions::kTLS13VariantExperiment, switches::kTLS13Variant,
+     switches::kTLS13VariantExperiment},
 };
 
 #if !defined(OS_ANDROID)
@@ -2342,9 +2344,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableWebfontsInterventionTriggerName,
      flag_descriptions::kEnableWebfontsInterventionTriggerDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnableWebFontsInterventionTrigger)},
-    {"ssl-version-max", flag_descriptions::kSslVersionMaxName,
-     flag_descriptions::kSslVersionMaxDescription, kOsAll,
-     MULTI_VALUE_TYPE(kSSLVersionMaxChoices)},
+    {"tls13-variant", flag_descriptions::kTLS13VariantName,
+     flag_descriptions::kTLS13VariantDescription, kOsAll,
+     MULTI_VALUE_TYPE(kTLS13VariantChoices)},
     {"enable-token-binding", flag_descriptions::kEnableTokenBindingName,
      flag_descriptions::kEnableTokenBindingDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kTokenBinding)},

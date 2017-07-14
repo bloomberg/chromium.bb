@@ -10,9 +10,9 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
@@ -85,9 +85,7 @@ uint16_t SSLProtocolVersionFromString(const std::string& version_str) {
   return version;
 }
 
-const base::Feature kTLS13Feature{
-    "NegotiateTLS13", base::FEATURE_DISABLED_BY_DEFAULT,
-};
+const char kTLS13VariantExperimentName[] = "TLS13Variant";
 
 }  // namespace
 
@@ -176,6 +174,7 @@ class SSLConfigServiceManagerPref : public ssl_config::SSLConfigServiceManager {
   BooleanPrefMember common_name_fallback_local_anchors_enabled_;
   StringPrefMember ssl_version_min_;
   StringPrefMember ssl_version_max_;
+  StringPrefMember tls13_variant_;
 
   // The cached list of disabled SSL cipher suites.
   std::vector<uint16_t> disabled_cipher_suites_;
@@ -194,7 +193,23 @@ SSLConfigServiceManagerPref::SSLConfigServiceManagerPref(
       io_task_runner_(io_task_runner) {
   DCHECK(local_state);
 
-  if (base::FeatureList::IsEnabled(kTLS13Feature)) {
+  const std::string tls13_variant =
+      base::GetFieldTrialParamValue(kTLS13VariantExperimentName, "variant");
+  if (tls13_variant == "disabled") {
+    local_state->SetDefaultPrefValue(
+        ssl_config::prefs::kTLS13Variant,
+        new base::Value(switches::kTLS13VariantDisabled));
+  } else if (tls13_variant == "draft") {
+    local_state->SetDefaultPrefValue(
+        ssl_config::prefs::kTLS13Variant,
+        new base::Value(switches::kTLS13VariantDraft));
+    local_state->SetDefaultPrefValue(
+        ssl_config::prefs::kSSLVersionMax,
+        new base::Value(switches::kSSLVersionTLSv13));
+  } else if (tls13_variant == "experiment") {
+    local_state->SetDefaultPrefValue(
+        ssl_config::prefs::kTLS13Variant,
+        new base::Value(switches::kTLS13VariantExperiment));
     local_state->SetDefaultPrefValue(
         ssl_config::prefs::kSSLVersionMax,
         new base::Value(switches::kSSLVersionTLSv13));
@@ -219,6 +234,8 @@ SSLConfigServiceManagerPref::SSLConfigServiceManagerPref(
                         local_state_callback);
   ssl_version_max_.Init(ssl_config::prefs::kSSLVersionMax, local_state,
                         local_state_callback);
+  tls13_variant_.Init(ssl_config::prefs::kTLS13Variant, local_state,
+                      local_state_callback);
 
   local_state_change_registrar_.Init(local_state);
   local_state_change_registrar_.Add(ssl_config::prefs::kCipherSuiteBlacklist,
@@ -248,6 +265,7 @@ void SSLConfigServiceManagerPref::RegisterPrefs(PrefRegistrySimple* registry) {
                                std::string());
   registry->RegisterStringPref(ssl_config::prefs::kSSLVersionMax,
                                std::string());
+  registry->RegisterStringPref(ssl_config::prefs::kTLS13Variant, std::string());
   registry->RegisterListPref(ssl_config::prefs::kCipherSuiteBlacklist);
 }
 
@@ -287,6 +305,7 @@ void SSLConfigServiceManagerPref::GetSSLConfigFromPrefs(
       common_name_fallback_local_anchors_enabled_.GetValue();
   std::string version_min_str = ssl_version_min_.GetValue();
   std::string version_max_str = ssl_version_max_.GetValue();
+  std::string tls13_variant_str = tls13_variant_.GetValue();
   config->version_min = net::kDefaultSSLVersionMin;
   config->version_max = net::kDefaultSSLVersionMax;
   uint16_t version_min = SSLProtocolVersionFromString(version_min_str);
@@ -297,6 +316,16 @@ void SSLConfigServiceManagerPref::GetSSLConfigFromPrefs(
   if (version_max && version_max >= net::SSL_PROTOCOL_VERSION_TLS1_2) {
     config->version_max = version_max;
   }
+
+  if (tls13_variant_str == switches::kTLS13VariantDisabled) {
+    if (config->version_max > net::SSL_PROTOCOL_VERSION_TLS1_2)
+      config->version_max = net::SSL_PROTOCOL_VERSION_TLS1_2;
+  } else if (tls13_variant_str == switches::kTLS13VariantDraft) {
+    config->tls13_variant = net::kTLS13VariantDraft;
+  } else if (tls13_variant_str == switches::kTLS13VariantExperiment) {
+    config->tls13_variant = net::kTLS13VariantExperiment;
+  }
+
   config->disabled_cipher_suites = disabled_cipher_suites_;
 }
 

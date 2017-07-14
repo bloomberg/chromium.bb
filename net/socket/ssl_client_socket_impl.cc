@@ -921,6 +921,15 @@ int SSLClientSocketImpl::Init() {
     return ERR_UNEXPECTED;
   }
 
+  switch (ssl_config_.tls13_variant) {
+    case kTLS13VariantDraft:
+      SSL_set_tls13_variant(ssl_.get(), tls13_default);
+      break;
+    case kTLS13VariantExperiment:
+      SSL_set_tls13_variant(ssl_.get(), tls13_experiment);
+      break;
+  }
+
   // OpenSSL defaults some options to on, others to off. To avoid ambiguity,
   // set everything we care about to an absolute value.
   SslSetClearMask options;

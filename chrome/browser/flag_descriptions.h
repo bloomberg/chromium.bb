@@ -705,10 +705,11 @@ extern const char kSpeculativeServiceWorkerStartOnQueryInputDescription[];
 extern const char kSpellingFeedbackFieldTrialName[];
 extern const char kSpellingFeedbackFieldTrialDescription[];
 
-extern const char kSslVersionMaxName[];
-extern const char kSslVersionMaxDescription[];
-extern const char kSslVersionMaxTls12[];
-extern const char kSslVersionMaxTls13[];
+extern const char kTLS13VariantName[];
+extern const char kTLS13VariantDescription[];
+extern const char kTLS13VariantDisabled[];
+extern const char kTLS13VariantDraft[];
+extern const char kTLS13VariantExperiment[];
 
 extern const char kSuggestionsWithSubStringMatchName[];
 extern const char kSuggestionsWithSubStringMatchDescription[];

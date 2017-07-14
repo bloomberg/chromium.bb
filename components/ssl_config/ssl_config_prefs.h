@@ -14,6 +14,7 @@ extern const char kCertEnableSha1LocalAnchors[];
 extern const char kCertEnableCommonNameFallbackLocalAnchors[];
 extern const char kSSLVersionMin[];
 extern const char kSSLVersionMax[];
+extern const char kTLS13Variant[];
 extern const char kCipherSuiteBlacklist[];
 
 }  // namespace prefs
