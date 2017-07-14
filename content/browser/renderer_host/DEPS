@@ -3,7 +3,6 @@ include_rules = [
   "+components/viz/common",
   "+components/viz/host",
   "+components/viz/service",
-  "+components/variations",
   "+services/ui/public",
   "+third_party/zlib",
   "+ui/latency",

@@ -1,6 +1,6 @@
 include_rules = [
   "+components/discardable_memory/client",
-  "+components/variations",
+  "+components/variations/child_process_field_trial_syncer.h",
   "+content/child",
   "+gin/public/isolate_holder.h",
   "+gin/v8_initializer.h",

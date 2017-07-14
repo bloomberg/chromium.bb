@@ -4,7 +4,6 @@
 
 #include "chrome/browser/safe_browsing/certificate_reporting_service.h"
 
-#include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/test/histogram_tester.h"
@@ -25,7 +24,7 @@
 #include "components/certificate_reporting/error_report.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
-#include "components/variations/variations_switches.h"
+#include "components/variations/variations_params_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -108,13 +107,10 @@ class CertificateReportingServiceBrowserTest : public InProcessBrowserTest {
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitchASCII(
-        switches::kForceFieldTrials,
-        "ReportCertificateErrors/ShowAndPossiblySend/");
     // Setting the sending threshold to 1.0 ensures reporting is enabled.
-    command_line->AppendSwitchASCII(
-        variations::switches::kForceFieldTrialParams,
-        "ReportCertificateErrors.ShowAndPossiblySend:sendingThreshold/1.0");
+    variations::testing::VariationParamsManager::AppendVariationParams(
+        "ReportCertificateErrors", "ShowAndPossiblySend",
+        {{"sendingThreshold", "1.0"}}, command_line);
   }
 
   CertificateReportingServiceTestHelper* test_helper() { return &test_helper_; }

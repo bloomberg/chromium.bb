@@ -118,10 +118,20 @@ include_rules = [
   "+jni",
 ]
 
-# content -> content/shell dependency is not allowed, except for browser tests.
 specific_include_rules = {
   ".*_browsertest[a-z_]*\.(cc|h)": [
+    # content -> content/shell dependency is disallowed, except browser tests.
     "+content/shell/browser",
     "+content/shell/common",
+
+    # components/variations/variations_params_manager.h is allowed from tests
+    # (it is part of //components/variations:test_support target).
+    "+components/variations/variations_params_manager.h",
+  ],
+
+  "test_utils\.cc": [
+    # components/variations/variations_params_manager.h is allowed from tests
+    # (it is part of //components/variations:test_support target).
+    "+components/variations/variations_params_manager.h",
   ],
 }

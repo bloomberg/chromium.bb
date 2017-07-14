@@ -111,6 +111,7 @@ static_library("test_support") {
   ]
 
   deps = [
+    "field_trial_config:field_trial_config",
     "//base/test:test_support",
   ]
 }

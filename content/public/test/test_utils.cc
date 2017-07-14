@@ -19,6 +19,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "components/variations/variations_params_manager.h"
 #include "content/common/site_isolation_policy.h"
 #include "content/common/url_schemes.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
@@ -210,6 +211,23 @@ void ResetSchemesAndOriginsWhitelist() {
   url::Shutdown();
   RegisterContentSchemes(false);
   url::Initialize();
+}
+
+void EnableFeatureWithParam(const base::Feature& feature,
+                            const std::string& param_name,
+                            const std::string& param_value,
+                            base::CommandLine* command_line) {
+  static const char kFakeTrialName[] = "TrialNameForTesting";
+  static const char kFakeTrialGroupName[] = "TrialGroupForTesting";
+
+  // Enable all the |feature|, associating them with |trial_name|.
+  command_line->AppendSwitchASCII(
+      switches::kEnableFeatures,
+      std::string(feature.name) + "<" + kFakeTrialName);
+
+  std::map<std::string, std::string> param_values = {{param_name, param_value}};
+  variations::testing::VariationParamsManager::AppendVariationParams(
+      kFakeTrialName, kFakeTrialGroupName, param_values, command_line);
 }
 
 #if defined(OS_ANDROID)

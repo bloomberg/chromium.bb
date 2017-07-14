@@ -26,8 +26,9 @@
 #endif
 
 namespace base {
-class Value;
 class CommandLine;
+class Value;
+struct Feature;
 }  // namespace base
 
 // A collection of functions designed for use with unit and browser tests.
@@ -86,6 +87,17 @@ void IsolateAllSitesForTesting(base::CommandLine* command_line);
 
 // Resets the internal secure schemes/origins whitelist.
 void ResetSchemesAndOriginsWhitelist();
+
+// Appends command line switches to |command_line| to enable the |feature| and
+// to set field trial params associated with the feature as specified by
+// |param_name| and |param_value|.
+//
+// Note that a dummy trial and trial group will be registered behind the scenes.
+// See also variations::testing::VariationsParamsManager class.
+void EnableFeatureWithParam(const base::Feature& feature,
+                            const std::string& param_name,
+                            const std::string& param_value,
+                            base::CommandLine* command_line);
 
 #if defined(OS_ANDROID)
 // Registers content/browser JNI bindings necessary for some types of tests.
