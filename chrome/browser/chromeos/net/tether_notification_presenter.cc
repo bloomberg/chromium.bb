@@ -12,6 +12,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/proximity_auth/logging/logging.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification_types.h"
@@ -22,6 +23,12 @@ namespace chromeos {
 namespace tether {
 
 namespace {
+
+// Mean value of NetworkStat's signal_strength() range.
+const int kMediumSignalStrength = 50;
+
+// Dimensions of Tether notification icon in pixels.
+constexpr gfx::Size kTetherSignalIconSize(40, 40);
 
 const char kTetherSettingsSubpage[] = "networks?type=Tether";
 
@@ -36,6 +43,15 @@ class SettingsUiDelegateImpl
     chrome::ShowSettingsSubPageForProfile(profile, sub_page);
   }
 };
+
+// Gets the normalized signal strength that can range from 0 to 4. This return
+// value is then used to get an appropriate image to display on the
+// notification.  Defaults to full signal strength (4) if |signal_strength|
+// is out of bounds.
+int GetNormalizedSignalStrength(int signal_strength) {
+  int normalized_signal_strength = signal_strength / 25;
+  return std::min(std::max(normalized_signal_strength, 0), 4);
+}
 
 }  // namespace
 
@@ -59,11 +75,13 @@ constexpr const char
 
 // static
 std::unique_ptr<message_center::Notification>
-TetherNotificationPresenter::CreateNotification(const std::string& id,
-                                                const base::string16& title,
-                                                const base::string16& message) {
+TetherNotificationPresenter::CreateNotificationWithMediumSignalStrengthIcon(
+    const std::string& id,
+    const base::string16& title,
+    const base::string16& message) {
   return CreateNotification(id, title, message,
-                            message_center::RichNotificationData());
+                            message_center::RichNotificationData(),
+                            kMediumSignalStrength);
 }
 
 // static
@@ -72,13 +90,16 @@ TetherNotificationPresenter::CreateNotification(
     const std::string& id,
     const base::string16& title,
     const base::string16& message,
-    const message_center::RichNotificationData rich_notification_data) {
+    const message_center::RichNotificationData rich_notification_data,
+    int signal_strength) {
+  auto source = base::MakeUnique<ash::network_icon::SignalStrengthImageSource>(
+      ash::network_icon::BARS, gfx::kGoogleBlue500, kTetherSignalIconSize,
+      GetNormalizedSignalStrength(signal_strength));
   return base::MakeUnique<message_center::Notification>(
       message_center::NotificationType::NOTIFICATION_TYPE_SIMPLE, id, title,
       message,
-      // TODO(khorimoto): Add tether icon.
-      gfx::Image() /* icon */, base::string16() /* display_source */,
-      GURL() /* origin_url */,
+      gfx::Image(gfx::ImageSkia(std::move(source), kTetherSignalIconSize)),
+      base::string16() /* display_source */, GURL() /* origin_url */,
       message_center::NotifierId(
           message_center::NotifierId::NotifierType::SYSTEM_COMPONENT,
           kTetherNotifierId),
@@ -102,7 +123,8 @@ TetherNotificationPresenter::~TetherNotificationPresenter() {
 }
 
 void TetherNotificationPresenter::NotifyPotentialHotspotNearby(
-    const cryptauth::RemoteDevice& remote_device) {
+    const cryptauth::RemoteDevice& remote_device,
+    int signal_strength) {
   PA_LOG(INFO) << "Displaying \"potential hotspot nearby\" notification for "
                << "device with name \"" << remote_device.name << "\". "
                << "Notification ID = " << kPotentialHotspotNotificationId;
@@ -113,7 +135,6 @@ void TetherNotificationPresenter::NotifyPotentialHotspotNearby(
   rich_notification_data.buttons.push_back(
       message_center::ButtonInfo(l10n_util::GetStringUTF16(
           IDS_TETHER_NOTIFICATION_WIFI_AVAILABLE_ONE_DEVICE_CONNECT)));
-
   ShowNotification(CreateNotification(
       std::string(kPotentialHotspotNotificationId),
       l10n_util::GetStringUTF16(
@@ -121,7 +142,7 @@ void TetherNotificationPresenter::NotifyPotentialHotspotNearby(
       l10n_util::GetStringFUTF16(
           IDS_TETHER_NOTIFICATION_WIFI_AVAILABLE_ONE_DEVICE_MESSAGE,
           base::ASCIIToUTF16(hotspot_nearby_device_.name)),
-      rich_notification_data));
+      rich_notification_data, signal_strength));
 }
 
 void TetherNotificationPresenter::NotifyMultiplePotentialHotspotsNearby() {
@@ -129,7 +150,7 @@ void TetherNotificationPresenter::NotifyMultiplePotentialHotspotsNearby() {
                << "multiple devices. Notification ID = "
                << kPotentialHotspotNotificationId;
 
-  ShowNotification(CreateNotification(
+  ShowNotification(CreateNotificationWithMediumSignalStrengthIcon(
       std::string(kPotentialHotspotNotificationId),
       l10n_util::GetStringUTF16(
           IDS_TETHER_NOTIFICATION_WIFI_AVAILABLE_MULTIPLE_DEVICES_TITLE),
@@ -150,7 +171,7 @@ void TetherNotificationPresenter::NotifySetupRequired(
   PA_LOG(INFO) << "Displaying \"setup required\" notification. Notification "
                << "ID = " << kSetupRequiredNotificationId;
 
-  ShowNotification(CreateNotification(
+  ShowNotification(CreateNotificationWithMediumSignalStrengthIcon(
       std::string(kSetupRequiredNotificationId),
       l10n_util::GetStringFUTF16(IDS_TETHER_NOTIFICATION_SETUP_REQUIRED_TITLE,
                                  base::ASCIIToUTF16(device_name)),
@@ -170,7 +191,7 @@ void TetherNotificationPresenter::NotifyConnectionToHostFailed() {
   PA_LOG(INFO) << "Displaying \"connection attempt failed\" notification. "
                << "Notification ID = " << kActiveHostNotificationId;
 
-  ShowNotification(CreateNotification(
+  ShowNotification(CreateNotificationWithMediumSignalStrengthIcon(
       std::string(kActiveHostNotificationId),
       l10n_util::GetStringUTF16(
           IDS_TETHER_NOTIFICATION_CONNECTION_FAILED_TITLE),

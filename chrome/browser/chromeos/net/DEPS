@@ -2,6 +2,7 @@ include_rules = [
   # Chrome under mustash cannot call directly into ash internals.
   "-ash",
   "+ash/public",
+  "+ash/system/network",
   "+components/captive_portal",
 ]
 

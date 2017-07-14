@@ -29,7 +29,8 @@ FakeNotificationPresenter::GetPotentialHotspotRemoteDevice() {
 }
 
 void FakeNotificationPresenter::NotifyPotentialHotspotNearby(
-    const cryptauth::RemoteDevice& remote_device) {
+    const cryptauth::RemoteDevice& remote_device,
+    int signal_strength) {
   potential_hotspot_state_ =
       PotentialHotspotNotificationState::SINGLE_HOTSPOT_NEARBY_SHOWN;
   potential_hotspot_remote_device_ = remote_device;

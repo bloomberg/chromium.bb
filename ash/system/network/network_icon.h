@@ -9,6 +9,8 @@
 
 #include "ash/ash_export.h"
 #include "base/strings/string16.h"
+#include "ui/gfx/canvas.h"
+#include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace chromeos {
@@ -24,6 +26,46 @@ enum IconType {
   ICON_TYPE_DEFAULT_VIEW,  // dark icons with VPN badges
   ICON_TYPE_LIST,          // dark icons without VPN badges; in-line status
   ICON_TYPE_MENU_LIST,     // dark icons without VPN badges; separate status
+};
+
+// 'NONE' will default to ARCS behavior where appropriate (e.g. no network or
+// if a new type gets added).
+enum ImageType { ARCS, BARS, NONE };
+
+// Depicts a given signal strength using arcs (e.g. for WiFi connections) or
+// bars (e.g. for cell connections).
+class SignalStrengthImageSource : public gfx::CanvasImageSource {
+ public:
+  ASH_EXPORT SignalStrengthImageSource(ImageType image_type,
+                                       SkColor color,
+                                       const gfx::Size& size,
+                                       int signal_strength);
+
+  // This version intuits color and size from icon_type.
+  ASH_EXPORT SignalStrengthImageSource(ImageType image_type,
+                                       IconType icon_type,
+                                       int signal_strength);
+
+  ~SignalStrengthImageSource() override;
+
+  void set_color(SkColor color);
+
+  // gfx::CanvasImageSource:
+  void Draw(gfx::Canvas* canvas) override;
+  bool HasRepresentationAtAllScales() const override;
+
+ private:
+  static gfx::Size GetSizeForIconType(IconType icon_type);
+  void DrawArcs(gfx::Canvas* canvas);
+  void DrawBars(gfx::Canvas* canvas);
+
+  ImageType image_type_;
+  SkColor color_;
+
+  // On a scale of 0 to kNumNetworkImages - 1, how connected we are.
+  int signal_strength_;
+
+  DISALLOW_COPY_AND_ASSIGN(SignalStrengthImageSource);
 };
 
 // Gets the image for provided |network|. |network| must not be NULL.
