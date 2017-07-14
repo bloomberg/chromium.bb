@@ -17,7 +17,8 @@ cr.define('print_preview', function() {
         'getPrivetPrinters',
         'getPrinterCapabilities',
         'print',
-        'setupPrinter'
+        'setupPrinter',
+        'startHideDialog'
       ]);
 
     /**
@@ -130,12 +131,15 @@ cr.define('print_preview', function() {
 
     /** @override */
     print: function(
-        destination, printTicketStore, cloudPrintInterface, documentInfo) {
+        destination, printTicketStore, cloudPrintInterface, documentInfo,
+        opt_isOpenPdfInPreview, opt_showSystemDialog) {
       this.methodCalled('print', {
         destination: destination,
         printTicketStore: printTicketStore,
         cloudPrintInterface: cloudPrintInterface,
         documentInfo: documentInfo,
+        openPdfInPreview: opt_isOpenPdfInPreview || false,
+        showSystemDialog: opt_showSystemDialog || false,
       });
       return Promise.resolve();
     },
@@ -148,8 +152,10 @@ cr.define('print_preview', function() {
           Promise.resolve(this.setupPrinterResponse_);
     },
 
-    /** Stubs for |print_preview.NativeLayer| methods that call C++ handlers. */
-    startHideDialog: function () {},
+    /** @override */
+    startHideDialog: function () {
+      this.methodCalled('startHideDialog');
+    },
 
     /**
      * @param {!print_preview.NativeInitialSettings} settings The settings
