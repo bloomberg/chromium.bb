@@ -241,11 +241,12 @@ void SchedulerStateMachine::AsValueInto(
 // TODO(sunnyps): Remove after fixing https://crbug.com/622080
 std::string SchedulerStateMachine::CrashKeyValueForBeginMainFrameHang() const {
   return base::StringPrintf(
-      "%d,%d,%d,%d,%d,%d,%d,%d,%d", begin_impl_frame_state_,
+      "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d", begin_impl_frame_state_,
       begin_main_frame_state_, layer_tree_frame_sink_state_,
       pending_submit_frames_, visible_, has_pending_tree_,
       pending_tree_is_ready_for_activation_, active_tree_needs_first_draw_,
-      begin_frame_source_paused_);
+      begin_frame_source_paused_, needs_redraw_, needs_prepare_tiles_,
+      needs_one_begin_impl_frame_);
 }
 
 bool SchedulerStateMachine::PendingDrawsShouldBeAborted() const {
