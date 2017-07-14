@@ -296,19 +296,8 @@ class MockQuicConnectionVisitor : public QuicConnectionVisitorInterface {
   MOCK_METHOD0(OnConfigNegotiated, void());
   MOCK_METHOD0(PostProcessAfterData, void());
   MOCK_METHOD0(OnAckNeedsRetransmittableFrame, void());
-  void SaveStreamData(QuicStreamId id,
-                      QuicIOVector iov,
-                      size_t iov_offset,
-                      QuicStreamOffset offset,
-                      QuicByteCount data_length) override;
-  bool WriteStreamData(QuicStreamId id,
-                       QuicStreamOffset offset,
-                       QuicByteCount data_length,
-                       QuicDataWriter* writer) override;
 
  private:
-  SimpleDataProducer producer_;
-
   DISALLOW_COPY_AND_ASSIGN(MockQuicConnectionVisitor);
 };
 
@@ -958,19 +947,7 @@ class MockPacketCreatorDelegate : public QuicPacketCreator::DelegateInterface {
                     const std::string&,
                     ConnectionCloseSource source));
 
-  void SaveStreamData(QuicStreamId id,
-                      QuicIOVector iov,
-                      size_t iov_offset,
-                      QuicStreamOffset offset,
-                      QuicByteCount data_length) override;
-  bool WriteStreamData(QuicStreamId id,
-                       QuicStreamOffset offset,
-                       QuicByteCount data_length,
-                       QuicDataWriter* writer) override;
-
  private:
-  SimpleDataProducer producer_;
-
   DISALLOW_COPY_AND_ASSIGN(MockPacketCreatorDelegate);
 };
 
