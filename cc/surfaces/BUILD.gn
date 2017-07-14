@@ -9,8 +9,6 @@ cc_component("surfaces") {
   sources = [
     "direct_surface_reference_factory.cc",
     "direct_surface_reference_factory.h",
-    "primary_begin_frame_source.cc",
-    "primary_begin_frame_source.h",
     "referenced_surface_tracker.cc",
     "referenced_surface_tracker.h",
     "stub_surface_reference_factory.cc",

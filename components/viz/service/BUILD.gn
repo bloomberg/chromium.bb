@@ -51,6 +51,8 @@ viz_component("service") {
     "frame_sinks/gpu_compositor_frame_sink_delegate.h",
     "frame_sinks/gpu_root_compositor_frame_sink.cc",
     "frame_sinks/gpu_root_compositor_frame_sink.h",
+    "frame_sinks/primary_begin_frame_source.cc",
+    "frame_sinks/primary_begin_frame_source.h",
     "hit_test/hit_test_aggregator.cc",
     "hit_test/hit_test_aggregator.h",
     "viz_service_export.h",

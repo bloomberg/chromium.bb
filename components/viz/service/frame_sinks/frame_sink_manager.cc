@@ -8,8 +8,8 @@
 #include <stdint.h>
 
 #include "base/logging.h"
-#include "cc/surfaces/primary_begin_frame_source.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_client.h"
+#include "components/viz/service/frame_sinks/primary_begin_frame_source.h"
 
 #if DCHECK_IS_ON()
 #include <sstream>

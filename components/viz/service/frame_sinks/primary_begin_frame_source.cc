@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/surfaces/primary_begin_frame_source.h"
+#include "components/viz/service/frame_sinks/primary_begin_frame_source.h"
 
-namespace cc {
+namespace viz {
 
 PrimaryBeginFrameSource::PrimaryBeginFrameSource()
     : begin_frame_source_(this) {}
@@ -12,7 +12,7 @@ PrimaryBeginFrameSource::PrimaryBeginFrameSource()
 PrimaryBeginFrameSource::~PrimaryBeginFrameSource() = default;
 
 void PrimaryBeginFrameSource::OnBeginFrameSourceAdded(
-    BeginFrameSource* begin_frame_source) {
+    cc::BeginFrameSource* begin_frame_source) {
   sources_.insert(begin_frame_source);
 
   if (current_begin_frame_source_)
@@ -24,7 +24,7 @@ void PrimaryBeginFrameSource::OnBeginFrameSourceAdded(
 }
 
 void PrimaryBeginFrameSource::OnBeginFrameSourceRemoved(
-    BeginFrameSource* begin_frame_source) {
+    cc::BeginFrameSource* begin_frame_source) {
   sources_.erase(begin_frame_source);
   if (current_begin_frame_source_ != begin_frame_source)
     return;
@@ -41,26 +41,27 @@ void PrimaryBeginFrameSource::OnBeginFrameSourceRemoved(
     current_begin_frame_source_->AddObserver(this);
 }
 
-void PrimaryBeginFrameSource::OnBeginFrame(const BeginFrameArgs& args) {
+void PrimaryBeginFrameSource::OnBeginFrame(const cc::BeginFrameArgs& args) {
   begin_frame_source_.OnBeginFrame(args);
   last_begin_frame_args_ = args;
 }
 
-const BeginFrameArgs& PrimaryBeginFrameSource::LastUsedBeginFrameArgs() const {
+const cc::BeginFrameArgs& PrimaryBeginFrameSource::LastUsedBeginFrameArgs()
+    const {
   return last_begin_frame_args_;
 }
 
 void PrimaryBeginFrameSource::OnBeginFrameSourcePausedChanged(bool paused) {}
 
-void PrimaryBeginFrameSource::DidFinishFrame(BeginFrameObserver* obs) {
+void PrimaryBeginFrameSource::DidFinishFrame(cc::BeginFrameObserver* obs) {
   begin_frame_source_.DidFinishFrame(obs);
 }
 
-void PrimaryBeginFrameSource::AddObserver(BeginFrameObserver* obs) {
+void PrimaryBeginFrameSource::AddObserver(cc::BeginFrameObserver* obs) {
   begin_frame_source_.AddObserver(obs);
 }
 
-void PrimaryBeginFrameSource::RemoveObserver(BeginFrameObserver* obs) {
+void PrimaryBeginFrameSource::RemoveObserver(cc::BeginFrameObserver* obs) {
   begin_frame_source_.RemoveObserver(obs);
 }
 
@@ -85,4 +86,4 @@ void PrimaryBeginFrameSource::OnNeedsBeginFrames(bool needs_begin_frames) {
     current_begin_frame_source_->RemoveObserver(this);
 }
 
-}  // namespace cc
+}  // namespace viz
