@@ -31,6 +31,7 @@
 #ifndef MIDIOutput_h
 #define MIDIOutput_h
 
+#include <utility>
 #include "core/typed_arrays/ArrayBufferViewHelpers.h"
 #include "core/typed_arrays/DOMTypedArray.h"
 #include "modules/webmidi/MIDIPort.h"
@@ -71,7 +72,10 @@ class MIDIOutput final : public MIDIPort {
              const String& version,
              midi::mojom::PortState);
 
+  void DidOpen(bool opened) override;
+
   unsigned port_index_;
+  Deque<std::pair<Vector<uint8_t>, double>> pending_data_;
 };
 
 }  // namespace blink

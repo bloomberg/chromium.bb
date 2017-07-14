@@ -33,6 +33,7 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/UseCounter.h"
 #include "modules/webmidi/MIDIAccess.h"
 #include "modules/webmidi/MIDIConnectionEvent.h"
@@ -98,17 +99,37 @@ String MIDIPort::type() const {
 }
 
 ScriptPromise MIDIPort::open(ScriptState* script_state) {
-  open();
-  return Accept(script_state);
+  if (connection_ == kConnectionStateOpen)
+    return Accept(script_state);
+
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  TaskRunnerHelper::Get(TaskType::kMiscPlatformAPI, GetExecutionContext())
+      ->PostTask(BLINK_FROM_HERE,
+                 WTF::Bind(&MIDIPort::OpenAsynchronously, WrapPersistent(this),
+                           WrapPersistent(resolver)));
+  running_open_count_++;
+  return resolver->Promise();
+}
+
+void MIDIPort::open() {
+  if (connection_ == kConnectionStateOpen || running_open_count_)
+    return;
+  TaskRunnerHelper::Get(TaskType::kMiscPlatformAPI, GetExecutionContext())
+      ->PostTask(BLINK_FROM_HERE, WTF::Bind(&MIDIPort::OpenAsynchronously,
+                                            WrapPersistent(this), nullptr));
+  running_open_count_++;
 }
 
 ScriptPromise MIDIPort::close(ScriptState* script_state) {
-  if (connection_ != kConnectionStateClosed) {
-    // TODO(toyoshim): Do clear() operation on MIDIOutput.
-    // TODO(toyoshim): Add blink API to perform a real close operation.
-    SetStates(state_, kConnectionStateClosed);
-  }
-  return Accept(script_state);
+  if (connection_ == kConnectionStateClosed)
+    return Accept(script_state);
+
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  TaskRunnerHelper::Get(TaskType::kMiscPlatformAPI, GetExecutionContext())
+      ->PostTask(BLINK_FROM_HERE,
+                 WTF::Bind(&MIDIPort::CloseAsynchronously, WrapPersistent(this),
+                           WrapPersistent(resolver)));
+  return resolver->Promise();
 }
 
 void MIDIPort::SetState(PortState state) {
@@ -173,9 +194,13 @@ DEFINE_TRACE_WRAPPERS(MIDIPort) {
   EventTargetWithInlineData::TraceWrappers(visitor);
 }
 
-void MIDIPort::open() {
+void MIDIPort::OpenAsynchronously(ScriptPromiseResolver* resolver) {
   UseCounter::Count(*ToDocument(GetExecutionContext()),
                     WebFeature::kMIDIPortOpen);
+  DCHECK_NE(0u, running_open_count_);
+  running_open_count_--;
+
+  DidOpen(state_ == PortState::CONNECTED);
   switch (state_) {
     case PortState::DISCONNECTED:
       SetStates(state_, kConnectionStatePending);
@@ -189,6 +214,16 @@ void MIDIPort::open() {
       NOTREACHED();
       break;
   }
+  if (resolver)
+    resolver->Resolve(this);
+}
+
+void MIDIPort::CloseAsynchronously(ScriptPromiseResolver* resolver) {
+  DCHECK(resolver);
+  // TODO(toyoshim): Do clear() operation on MIDIOutput.
+  // TODO(toyoshim): Add blink API to perform a real close operation.
+  SetStates(state_, kConnectionStateClosed);
+  resolver->Resolve(this);
 }
 
 ScriptPromise MIDIPort::Accept(ScriptState* script_state) {
