@@ -147,7 +147,7 @@ void TestLoadTimingCachedResponse(const LoadTimingInfo& load_timing_info) {
   EXPECT_TRUE(load_timing_info.receive_headers_end.is_null());
 }
 
-void DeferNetworkStart(bool* defer) {
+void DeferCallback(bool* defer) {
   *defer = true;
 }
 
@@ -1478,6 +1478,184 @@ TEST(HttpCache, RangeGET_ParallelValidationNoMatch) {
   EXPECT_EQ(5, cache.disk_cache()->create_count());
 }
 
+// Tests that if a transaction is dooming the entry and the entry was doomed by
+// another transaction that was not part of the entry and created a new entry,
+// the new entry should not be incorrectly doomed. (crbug.com/736993)
+TEST(HttpCache, RangeGET_ParallelValidationNoMatchDoomEntry) {
+  MockHttpCache cache;
+
+  ScopedMockTransaction transaction(kRangeGET_TransactionOK);
+  MockHttpRequest request(transaction);
+
+  MockTransaction dooming_transaction(kRangeGET_TransactionOK);
+  dooming_transaction.load_flags |= LOAD_BYPASS_CACHE;
+  MockHttpRequest dooming_request(dooming_transaction);
+
+  std::vector<std::unique_ptr<Context>> context_list;
+  const int kNumTransactions = 3;
+
+  scoped_refptr<MockDiskEntry> first_entry;
+  scoped_refptr<MockDiskEntry> second_entry;
+  for (int i = 0; i < kNumTransactions; ++i) {
+    context_list.push_back(base::MakeUnique<Context>());
+    auto& c = context_list[i];
+
+    c->result = cache.CreateTransaction(&c->trans);
+    ASSERT_THAT(c->result, IsOk());
+    EXPECT_EQ(LOAD_STATE_IDLE, c->trans->GetLoadState());
+
+    MockHttpRequest* this_request = &request;
+
+    if (i == 2)
+      this_request = &dooming_request;
+
+    if (i == 1) {
+      ASSERT_TRUE(first_entry);
+      first_entry->SetDefer(MockDiskEntry::DEFER_READ);
+    }
+
+    c->result = c->trans->Start(this_request, c->callback.callback(),
+                                NetLogWithSource());
+
+    // Continue the transactions. 2nd will pause at the cache reading state and
+    // 3rd transaction will doom the entry.
+    base::RunLoop().RunUntilIdle();
+
+    // Check status of the first and second entries after every transaction.
+    switch (i) {
+      case 0:
+        first_entry =
+            cache.disk_cache()->GetDiskEntryRef(kRangeGET_TransactionOK.url);
+        break;
+      case 1:
+        EXPECT_FALSE(first_entry->is_doomed());
+        break;
+      case 2:
+        EXPECT_TRUE(first_entry->is_doomed());
+        second_entry =
+            cache.disk_cache()->GetDiskEntryRef(kRangeGET_TransactionOK.url);
+        EXPECT_FALSE(second_entry->is_doomed());
+        break;
+    }
+  }
+  // Resume cache read by 1st transaction which will lead to dooming the entry
+  // as well since the entry cannot be validated. This double dooming should not
+  // lead to an assertion.
+  first_entry->ResumeDiskEntryOperation();
+  base::RunLoop().RunUntilIdle();
+
+  // Since second_entry is already created, when 1st transaction goes on to
+  // create an entry, it will get ERR_CACHE_RACE leading to dooming of
+  // second_entry and creation of a third entry.
+  EXPECT_TRUE(second_entry->is_doomed());
+
+  EXPECT_EQ(3, cache.network_layer()->transaction_count());
+  EXPECT_EQ(0, cache.disk_cache()->open_count());
+  EXPECT_EQ(3, cache.disk_cache()->create_count());
+
+  for (auto& context : context_list) {
+    EXPECT_EQ(LOAD_STATE_IDLE, context->trans->GetLoadState());
+  }
+
+  for (auto& c : context_list) {
+    ReadAndVerifyTransaction(c->trans.get(), kRangeGET_TransactionOK);
+  }
+
+  EXPECT_EQ(3, cache.network_layer()->transaction_count());
+  EXPECT_EQ(0, cache.disk_cache()->open_count());
+  EXPECT_EQ(3, cache.disk_cache()->create_count());
+}
+
+// Same as above but tests that the 2nd transaction does not do anything if
+// there is nothing to doom. (crbug.com/736993)
+TEST(HttpCache, RangeGET_ParallelValidationNoMatchDoomEntry1) {
+  MockHttpCache cache;
+
+  ScopedMockTransaction transaction(kRangeGET_TransactionOK);
+  MockHttpRequest request(transaction);
+
+  MockTransaction dooming_transaction(kRangeGET_TransactionOK);
+  dooming_transaction.load_flags |= LOAD_BYPASS_CACHE;
+  MockHttpRequest dooming_request(dooming_transaction);
+
+  std::vector<std::unique_ptr<Context>> context_list;
+  const int kNumTransactions = 3;
+
+  scoped_refptr<MockDiskEntry> first_entry;
+  for (int i = 0; i < kNumTransactions; ++i) {
+    context_list.push_back(base::MakeUnique<Context>());
+    auto& c = context_list[i];
+
+    c->result = cache.CreateTransaction(&c->trans);
+    ASSERT_THAT(c->result, IsOk());
+    EXPECT_EQ(LOAD_STATE_IDLE, c->trans->GetLoadState());
+
+    MockHttpRequest* this_request = &request;
+
+    if (i == 2) {
+      this_request = &dooming_request;
+      cache.disk_cache()->SetDefer(MockDiskEntry::DEFER_CREATE);
+    }
+
+    if (i == 1) {
+      ASSERT_TRUE(first_entry);
+      first_entry->SetDefer(MockDiskEntry::DEFER_READ);
+    }
+
+    c->result = c->trans->Start(this_request, c->callback.callback(),
+                                NetLogWithSource());
+
+    // Continue the transactions. 2nd will pause at the cache reading state and
+    // 3rd transaction will doom the entry and pause before creating a new
+    // entry.
+    base::RunLoop().RunUntilIdle();
+
+    // Check status of the entry after every transaction.
+    switch (i) {
+      case 0:
+        first_entry =
+            cache.disk_cache()->GetDiskEntryRef(kRangeGET_TransactionOK.url);
+        break;
+      case 1:
+        EXPECT_FALSE(first_entry->is_doomed());
+        break;
+      case 2:
+        EXPECT_TRUE(first_entry->is_doomed());
+        break;
+    }
+  }
+  // Resume cache read by 2nd transaction which will lead to dooming the entry
+  // as well since the entry cannot be validated. This double dooming should not
+  // lead to an assertion.
+  first_entry->ResumeDiskEntryOperation();
+  base::RunLoop().RunUntilIdle();
+
+  // Resume creation of entry by 3rd transaction.
+  cache.disk_cache()->ResumeCacheOperation();
+  base::RunLoop().RunUntilIdle();
+
+  // Note that since 3rd transaction's entry is already created but its
+  // callback is deferred, MockDiskCache's implementation returns
+  // ERR_CACHE_CREATE_FAILURE when 2nd transaction tries to create an entry
+  // during that time, leading to it switching over to pass-through mode.
+  // Thus the number of entries is 2 below.
+  EXPECT_EQ(3, cache.network_layer()->transaction_count());
+  EXPECT_EQ(0, cache.disk_cache()->open_count());
+  EXPECT_EQ(2, cache.disk_cache()->create_count());
+
+  for (auto& context : context_list) {
+    EXPECT_EQ(LOAD_STATE_IDLE, context->trans->GetLoadState());
+  }
+
+  for (auto& c : context_list) {
+    ReadAndVerifyTransaction(c->trans.get(), kRangeGET_TransactionOK);
+  }
+
+  EXPECT_EQ(3, cache.network_layer()->transaction_count());
+  EXPECT_EQ(0, cache.disk_cache()->open_count());
+  EXPECT_EQ(2, cache.disk_cache()->create_count());
+}
+
 // Tests parallel validation on range requests with non-overlapping ranges.
 TEST(HttpCache, RangeGET_ParallelValidationDifferentRanges) {
   MockHttpCache cache;
@@ -2159,7 +2337,7 @@ TEST(HttpCache, SimpleGET_ParallelValidationCancelReader) {
     MockHttpRequest* this_request = &request;
     if (i == 3) {
       this_request = &validate_request;
-      c->trans->SetBeforeNetworkStartCallback(base::Bind(&DeferNetworkStart));
+      c->trans->SetBeforeNetworkStartCallback(base::Bind(&DeferCallback));
     }
 
     c->result = c->trans->Start(this_request, c->callback.callback(),
@@ -2257,7 +2435,7 @@ TEST(HttpCache, SimpleGET_ParallelValidationCancelWriter) {
     MockHttpRequest* this_request = &request;
     if (i == 2) {
       this_request = &validate_request;
-      c->trans->SetBeforeNetworkStartCallback(base::Bind(&DeferNetworkStart));
+      c->trans->SetBeforeNetworkStartCallback(base::Bind(&DeferCallback));
     }
 
     c->result = c->trans->Start(this_request, c->callback.callback(),
@@ -2395,7 +2573,7 @@ TEST(HttpCache, SimpleGET_ParallelValidationStopCaching) {
     MockHttpRequest* this_request = &request;
     if (i == 2) {
       this_request = &validate_request;
-      c->trans->SetBeforeNetworkStartCallback(base::Bind(&DeferNetworkStart));
+      c->trans->SetBeforeNetworkStartCallback(base::Bind(&DeferCallback));
     }
 
     c->result = c->trans->Start(this_request, c->callback.callback(),
@@ -2461,7 +2639,7 @@ TEST(HttpCache, SimpleGET_ParallelValidationCancelHeaders) {
     ASSERT_THAT(c->result, IsOk());
 
     if (i == 0)
-      c->trans->SetBeforeNetworkStartCallback(base::Bind(&DeferNetworkStart));
+      c->trans->SetBeforeNetworkStartCallback(base::Bind(&DeferCallback));
 
     c->result =
         c->trans->Start(&request, c->callback.callback(), NetLogWithSource());
