@@ -65,6 +65,8 @@ extern const base::Feature kCaptureThumbnailDependingOnTransitionType;
 
 extern const base::Feature kCaptureThumbnailOnLoadFinished;
 
+extern const base::Feature kCaptureThumbnailOnNavigatingAway;
+
 extern const base::Feature kCheckInstallabilityForBannerOnLoad;
 
 extern const base::Feature kClickToOpenPDFPlaceholder;

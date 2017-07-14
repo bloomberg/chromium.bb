@@ -78,6 +78,9 @@ extern const char kBypassAppBannerEngagementChecksDescription[];
 extern const char kCaptureThumbnailOnLoadFinishedName[];
 extern const char kCaptureThumbnailOnLoadFinishedDescription[];
 
+extern const char kCaptureThumbnailOnNavigatingAwayName[];
+extern const char kCaptureThumbnailOnNavigatingAwayDescription[];
+
 extern const char kCastStreamingHwEncodingName[];
 extern const char kCastStreamingHwEncodingDescription[];
 
