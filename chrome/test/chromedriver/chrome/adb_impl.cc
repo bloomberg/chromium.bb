@@ -72,6 +72,17 @@ void ExecuteCommandOnIOThread(
       base::Bind(&ResponseBuffer::OnResponse, response_buffer));
 }
 
+void SendFileOnIOThread(const std::string& device_serial,
+                        const std::string& filename,
+                        const std::string& content,
+                        scoped_refptr<ResponseBuffer> response_buffer,
+                        int port) {
+  CHECK(base::MessageLoopForIO::IsCurrent());
+  AdbClientSocket::SendFile(
+      port, device_serial, filename, content,
+      base::Bind(&ResponseBuffer::OnResponse, response_buffer));
+}
+
 }  // namespace
 
 AdbImpl::AdbImpl(
@@ -122,20 +133,16 @@ Status AdbImpl::SetCommandLineFile(const std::string& device_serial,
                                    const std::string& exec_name,
                                    const std::string& args) {
   std::string response;
-  std::string quoted_command =
-      base::GetQuotedJSONString(exec_name + " " + args);
-  Status status = ExecuteHostShellCommand(
-      device_serial,
-      base::StringPrintf("echo %s > %s; echo $?",
-                         quoted_command.c_str(),
-                         command_line_file.c_str()),
-      &response);
-  if (!status.IsOk())
-    return status;
-  if (response.find("0") == std::string::npos)
-    return Status(kUnknownError, "Failed to set command line file " +
-                  command_line_file + " on device " + device_serial);
-  return Status(kOk);
+  std::string command(exec_name + " " + args + "\n");
+  scoped_refptr<ResponseBuffer> response_buffer = new ResponseBuffer;
+  VLOG(1) << "Sending command line file: " << command_line_file;
+  io_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&SendFileOnIOThread, device_serial, command_line_file,
+                     command, response_buffer, port_));
+  Status status =
+      response_buffer->GetResponse(&response, base::TimeDelta::FromSeconds(30));
+  return status;
 }
 
 Status AdbImpl::CheckAppInstalled(

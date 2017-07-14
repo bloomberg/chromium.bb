@@ -37,6 +37,12 @@ class AdbClientSocket {
                         const std::string& request,
                         const SocketCallback& callback);
 
+  static void SendFile(int port,
+                       const std::string& serial,
+                       const std::string& filename,
+                       const std::string& content,
+                       const CommandCallback& callback);
+
   explicit AdbClientSocket(int port);
   ~AdbClientSocket();
 
@@ -50,12 +56,12 @@ class AdbClientSocket {
 
   std::unique_ptr<net::StreamSocket> socket_;
 
- private:
   void ReadResponse(const CommandCallback& callback,
                     bool is_void,
                     bool has_length,
                     int result);
 
+ private:
   void OnResponseStatus(const CommandCallback& callback,
                         bool is_void,
                         bool has_length,

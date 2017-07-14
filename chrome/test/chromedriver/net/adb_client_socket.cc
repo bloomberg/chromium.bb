@@ -23,9 +23,14 @@
 namespace {
 
 const int kBufferSize = 16 * 1024;
+const size_t kAdbDataChunkSize = 32 * 1024;
 const char kOkayResponse[] = "OKAY";
 const char kHostTransportCommand[] = "host:transport:%s";
 const char kLocalAbstractCommand[] = "localabstract:%s";
+const char kSyncCommand[] = "sync:";
+const char kSendCommand[] = "SEND";
+const char kDataCommand[] = "DATA";
+const char kDoneCommand[] = "DONE";
 
 typedef base::Callback<void(int, const std::string&)> CommandCallback;
 typedef base::Callback<void(int, net::StreamSocket*)> SocketCallback;
@@ -301,6 +306,129 @@ class AdbQuerySocket : AdbClientSocket {
   CommandCallback callback_;
 };
 
+// Implement the ADB protocol to send a file to the device.
+// The protocol consists of the following steps:
+// * Send "host:transport" command with device serial
+// * Send "sync:" command to initialize file transfer
+// * Send "SEND" command with name and mode of the file
+// * Send "DATA" command one or more times for the file content
+// * Send "DONE" command to indicate end of file transfer
+// The first two commands use normal ADB command format implemented by
+// AdbClientSocket::SendCommand. The remaining commands use a special
+// format implemented by AdbSendFileSocket::SendPayload.
+class AdbSendFileSocket : AdbClientSocket {
+ public:
+  AdbSendFileSocket(int port,
+                    const std::string& serial,
+                    const std::string& filename,
+                    const std::string& content,
+                    const CommandCallback& callback)
+      : AdbClientSocket(port),
+        serial_(serial),
+        filename_(filename),
+        content_(content),
+        current_offset_(0),
+        callback_(callback) {
+    Connect(
+        base::Bind(&AdbSendFileSocket::SendTransport, base::Unretained(this)));
+  }
+
+ private:
+  ~AdbSendFileSocket() {}
+
+  void SendTransport(int result) {
+    if (!CheckNetResultOrDie(result))
+      return;
+    SendCommand(
+        base::StringPrintf(kHostTransportCommand, serial_.c_str()), true, true,
+        base::Bind(&AdbSendFileSocket::SendSync, base::Unretained(this)));
+  }
+
+  void SendSync(int result, const std::string& response) {
+    if (!CheckNetResultOrDie(result))
+      return;
+    SendCommand(
+        kSyncCommand, true, true,
+        base::Bind(&AdbSendFileSocket::SendSend, base::Unretained(this)));
+  }
+
+  void SendSend(int result, const std::string& response) {
+    if (!CheckNetResultOrDie(result))
+      return;
+    // File mode. The following value is equivalent to S_IRUSR | S_IWUSR.
+    // Can't use the symbolic names since they are not available on Windows.
+    int mode = 0600;
+    std::string payload = base::StringPrintf("%s,%d", filename_.c_str(), mode);
+    SendPayload(
+        kSendCommand, payload.length(), payload.c_str(), payload.length(),
+        base::Bind(&AdbSendFileSocket::SendContent, base::Unretained(this)));
+  }
+
+  void SendContent(int result) {
+    if (!CheckNetResultOrDie(result))
+      return;
+    if (current_offset_ >= content_.length()) {
+      SendDone();
+      return;
+    }
+    size_t offset = current_offset_;
+    size_t length = std::min(content_.length() - offset, kAdbDataChunkSize);
+    current_offset_ += length;
+    SendPayload(
+        kDataCommand, length, content_.c_str() + offset, length,
+        base::Bind(&AdbSendFileSocket::SendContent, base::Unretained(this)));
+  }
+
+  void SendDone() {
+    int data = time(NULL);
+    SendPayload(kDoneCommand, data, nullptr, 0,
+                base::Bind(&AdbSendFileSocket::ReadFinalResponse,
+                           base::Unretained(this)));
+  }
+
+  void ReadFinalResponse(int result) {
+    ReadResponse(callback_, true, false, result);
+  }
+
+  // Send a special payload command ("SEND", "DATA", or "DONE").
+  // Each command consists of a command line, followed by a 4-byte integer
+  // sent in raw little-endian format, followed by an optional payload.
+  void SendPayload(const char* command,
+                   int data,
+                   const char* payload,
+                   size_t payloadLength,
+                   const net::CompletionCallback& callback) {
+    std::string buffer(command);
+    for (int i = 0; i < 4; i++) {
+      buffer.append(1, static_cast<char>(data & 0xff));
+      data >>= 8;
+    }
+    if (payloadLength > 0)
+      buffer.append(payload, payloadLength);
+
+    scoped_refptr<net::StringIOBuffer> request_buffer =
+        new net::StringIOBuffer(buffer);
+    int result =
+        socket_->Write(request_buffer.get(), request_buffer->size(), callback);
+    if (result != net::ERR_IO_PENDING)
+      callback.Run(result);
+  }
+
+  bool CheckNetResultOrDie(int result) {
+    if (result >= 0)
+      return true;
+    callback_.Run(result, NULL);
+    delete this;
+    return false;
+  }
+
+  std::string serial_;
+  std::string filename_;
+  std::string content_;
+  size_t current_offset_;
+  CommandCallback callback_;
+};
+
 }  // namespace
 
 // static
@@ -308,6 +436,15 @@ void AdbClientSocket::AdbQuery(int port,
                                const std::string& query,
                                const CommandCallback& callback) {
   new AdbQuerySocket(port, query, callback);
+}
+
+// static
+void AdbClientSocket::SendFile(int port,
+                               const std::string& serial,
+                               const std::string& filename,
+                               const std::string& content,
+                               const CommandCallback& callback) {
+  new AdbSendFileSocket(port, serial, filename, content, callback);
 }
 
 #if BUILDFLAG(DEBUG_DEVTOOLS)
