@@ -214,10 +214,7 @@ void ContentsView::ActivePageChanged() {
   const bool folder_active = state == AppListModel::STATE_APPS &&
                              apps_container_view_->IsInFolderView();
 
-  if (is_fullscreen_app_list_enabled_) {
-    app_list_main_view_->search_box_view()->UpdateBackground(
-        state == AppListModel::STATE_SEARCH_RESULTS);
-  } else {
+  if (!is_fullscreen_app_list_enabled_) {
     app_list_main_view_->search_box_view()->back_button()->SetVisible(
         state != AppListModel::STATE_START);
     app_list_main_view_->search_box_view()->Layout();
@@ -327,6 +324,8 @@ void ContentsView::UpdateSearchBox(double progress,
         gfx::Tween::ColorValueBetween(progress, original_shadow.color(),
                                       target_shadow.color())));
   }
+  if (is_fullscreen_app_list_enabled_)
+    search_box->UpdateBackground(progress, current_state, target_state);
   search_box->GetWidget()->SetBounds(
       search_box->GetViewBoundsForSearchBoxContentsBounds(
           ConvertRectToWidget(search_box_rect)));

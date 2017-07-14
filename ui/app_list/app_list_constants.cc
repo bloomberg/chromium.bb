@@ -127,6 +127,12 @@ const int kSearchBoxPadding = 16;
 const int kSearchBoxTopPadding = 24;
 const int kSearchBoxBottomPadding = 21;
 
+// The preferred height of the search box.
+const int kSearchBoxPreferredHeight = 48;
+
+// The background border corner radius of the search box in fullscreen mode.
+const int kSearchBoxBorderCornerRadiusFullscreen = 24;
+
 // Max items allowed in a folder.
 size_t kMaxFolderItems = 16;
 
