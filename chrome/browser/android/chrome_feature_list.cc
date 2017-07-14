@@ -78,7 +78,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kNTPLaunchAfterInactivity,
     &kNTPOfflinePagesFeature,
     &NTPShowGoogleGInOmniboxFeature,
-    &kOmniboxSpareRenderer,
     &kPayWithGoogleV1,
     &kPhysicalWebFeature,
     &kPhysicalWebSharing,
@@ -218,9 +217,6 @@ const base::Feature kNTPOfflinePagesFeature{"NTPOfflinePages",
 
 const base::Feature NTPShowGoogleGInOmniboxFeature{
     "NTPShowGoogleGInOmnibox", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kOmniboxSpareRenderer{"OmniboxSpareRenderer",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kPayWithGoogleV1{"PayWithGoogleV1",
                                      base::FEATURE_DISABLED_BY_DEFAULT};

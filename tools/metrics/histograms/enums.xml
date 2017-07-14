@@ -22401,6 +22401,17 @@ uploading your change for review.  These are checked by presubmit scripts.
 </enum>
 
 <enum name="LoginCustomFlags">
+<!--
+Values in LoginCustomFlags are:  value=(uint32_t)MD5(label).
+This enum is verified by AboutFlagsHistogramTest unit test.
+To add a new entry, add it with any unique value and run test to compute valid
+value. After that run tools/metrics/histograms/validate_format.py to find out
+where the value should be inserted to maintain ordering.
+Don't remove entries when removing a flag, they are still used to decode data
+from previous Chrome versions.
+-->
+
+  <summary>Chrome flags that lead to Chrome restart on Chrome OS.</summary>
   <int value="-2146613579" label="V8Future:disabled"/>
   <int value="-2143961262" label="D3DVsync:disabled"/>
   <int value="-2143328006"
@@ -23058,17 +23069,6 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="0" label="BAD_FLAG_FORMAT">
     Command-line flag doesn't start with two dashes.
   </int>
-<!--
-Values in LoginCustomFlags are:  value=(uint32_t)MD5(label).
-This enum is verified by AboutFlagsHistogramTest unit test.
-To add a new entry, add it with any unique value and run test to compute valid
-value. After that run tools/metrics/histograms/validate_format.py to find out
-where the value should be inserted to maintain ordering.
-Don't remove entries when removing a flag, they are still used to decode data
-from previous Chrome versions.
--->
-
-  <summary>Chrome flags that lead to Chrome restart on Chrome OS.</summary>
   <int value="7444737" label="NTPSuggestionsStandaloneUI:disabled"/>
   <int value="7533886" label="disable-offer-store-unmasked-wallet-cards"/>
   <int value="10458238" label="disable-print-preview-simplify"/>
@@ -23325,9 +23325,7 @@ from previous Chrome versions.
   <int value="939603162" label="BackgroundLoadingForDownloads:disabled"/>
   <int value="941036016" label="ContentSuggestionsSettings:disabled"/>
   <int value="943319566" label="enable-intent-picker"/>
-  <int value="946688335" label="OmniboxSpareRenderer:disabled"/>
   <int value="952558794" label="enable-remote-assistance"/>
-  <int value="979445973" label="OmniboxSpareRenderer:enabled"/>
   <int value="980396200" label="enable-new-korean-ime"/>
   <int value="981818901" label="AppBanners:enabled"/>
   <int value="982032277" label="NTPOfflineBadge:disabled"/>

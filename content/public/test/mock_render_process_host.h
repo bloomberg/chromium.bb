@@ -131,8 +131,6 @@ class MockRenderProcessHost : public RenderProcessHost {
   bool IsUnused() override;
   void SetIsUsed() override;
 
-  bool HostHasNotBeenUsed() override;
-
   // IPC::Sender via RenderProcessHost.
   bool Send(IPC::Message* msg) override;
 
@@ -201,11 +199,6 @@ class MockRenderProcessHostFactory : public RenderProcessHostFactory {
   // without deleting it. When a test deletes a MockRenderProcessHost, we need
   // to remove it from |processes_| to prevent it from being deleted twice.
   void Remove(MockRenderProcessHost* host) const;
-
-  // Retrieve the current list of mock processes.
-  std::vector<std::unique_ptr<MockRenderProcessHost>>* GetProcesses() {
-    return &processes_;
-  }
 
  private:
   // A list of MockRenderProcessHosts created by this object. This list is used

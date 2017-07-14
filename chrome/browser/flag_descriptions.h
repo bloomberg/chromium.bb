@@ -522,9 +522,6 @@ extern const char kOmniboxDisplayTitleForCurrentUrlDescription[];
 extern const char kOmniboxUIElideSuggestionUrlAfterHostName[];
 extern const char kOmniboxUIElideSuggestionUrlAfterHostDescription[];
 
-extern const char kOmniboxSpareRendererName[];
-extern const char kOmniboxSpareRendererDescription[];
-
 extern const char kOmniboxUIHideSuggestionUrlSchemeName[];
 extern const char kOmniboxUIHideSuggestionUrlSchemeDescription[];
 
