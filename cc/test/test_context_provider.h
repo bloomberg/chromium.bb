@@ -20,6 +20,10 @@
 #include "gpu/command_buffer/client/gles2_interface_stub.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
+namespace skia_bindings {
+class GrContextForGLES2Interface;
+}
+
 namespace cc {
 class TestWebGraphicsContext3D;
 class TestGLES2Interface;
@@ -75,7 +79,7 @@ class TestContextProvider : public ContextProvider {
   std::unique_ptr<TestContextSupport> support_;
   std::unique_ptr<TestWebGraphicsContext3D> context3d_;
   std::unique_ptr<TestGLES2Interface> context_gl_;
-  sk_sp<class GrContext> gr_context_;
+  std::unique_ptr<skia_bindings::GrContextForGLES2Interface> gr_context_;
   std::unique_ptr<ContextCacheController> cache_controller_;
   bool bound_ = false;
 
