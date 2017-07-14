@@ -31,6 +31,8 @@
 #ifndef WebContentDecryptionModule_h
 #define WebContentDecryptionModule_h
 
+#include <memory>
+
 #include "public/platform/WebContentDecryptionModuleResult.h"
 #include "public/platform/WebContentDecryptionModuleSession.h"
 
@@ -41,7 +43,8 @@ class BLINK_PLATFORM_EXPORT WebContentDecryptionModule {
   virtual ~WebContentDecryptionModule();
 
   // Must return non-null.
-  virtual WebContentDecryptionModuleSession* CreateSession() = 0;
+  virtual std::unique_ptr<WebContentDecryptionModuleSession>
+  CreateSession() = 0;
 
   virtual void SetServerCertificate(const unsigned char* certificate,
                                     size_t certificate_length,

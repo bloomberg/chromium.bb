@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
@@ -75,8 +76,9 @@ void CdmSessionAdapter::GetStatusForPolicy(
   cdm_->GetStatusForPolicy(min_hdcp_version, std::move(promise));
 }
 
-WebContentDecryptionModuleSessionImpl* CdmSessionAdapter::CreateSession() {
-  return new WebContentDecryptionModuleSessionImpl(this);
+std::unique_ptr<WebContentDecryptionModuleSessionImpl>
+CdmSessionAdapter::CreateSession() {
+  return base::MakeUnique<WebContentDecryptionModuleSessionImpl>(this);
 }
 
 bool CdmSessionAdapter::RegisterSession(
