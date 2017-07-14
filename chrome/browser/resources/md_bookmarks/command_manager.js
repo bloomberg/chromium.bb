@@ -23,6 +23,7 @@ cr.define('bookmarks', function() {
           return [
             Command.EDIT,
             Command.COPY_URL,
+            Command.SHOW_IN_FOLDER,
             Command.DELETE,
             // <hr>
             Command.OPEN_NEW_TAB,
@@ -74,6 +75,14 @@ cr.define('bookmarks', function() {
       this.boundOnKeydown_ = this.onKeydown_.bind(this);
       document.addEventListener('keydown', this.boundOnKeydown_);
 
+      /**
+       * Indicates where the context menu was opened from. Will be NONE if
+       * menu is not open, indicating that commands are from keyboard shortcuts
+       * or elsewhere in the UI.
+       * @private {MenuSource}
+       */
+      this.menuSource_ = MenuSource.NONE;
+
       /** @private {Object<Command, cr.ui.KeyboardShortcutList>} */
       this.shortcuts_ = {};
 
@@ -108,9 +117,11 @@ cr.define('bookmarks', function() {
      * items.
      * @param {number} x
      * @param {number} y
+     * @param {MenuSource} source
      * @param {Set<string>=} items
      */
-    openCommandMenuAtPosition: function(x, y, items) {
+    openCommandMenuAtPosition: function(x, y, source, items) {
+      this.menuSource_ = source;
       this.menuIds_ = items || this.getState().selection.items;
 
       var dropdown =
@@ -127,8 +138,10 @@ cr.define('bookmarks', function() {
      * Display the command context menu positioned to cover the |target|
      * element. Commands will execute on the currently selected items.
      * @param {!Element} target
+     * @param {MenuSource} source
      */
-    openCommandMenuAtElement: function(target) {
+    openCommandMenuAtElement: function(target, source) {
+      this.menuSource_ = source;
       this.menuIds_ = this.getState().selection.items;
 
       var dropdown =
@@ -143,6 +156,7 @@ cr.define('bookmarks', function() {
 
     closeCommandMenu: function() {
       this.menuIds_ = new Set();
+      this.menuSource_ = MenuSource.NONE;
       /** @type {!CrActionMenuElement} */ (this.$.dropdown.get()).close();
     },
 
@@ -198,6 +212,12 @@ cr.define('bookmarks', function() {
           return this.isSingleBookmark_(itemIds);
         case Command.DELETE:
           return itemIds.size > 0 && this.globalCanEdit_;
+        case Command.SHOW_IN_FOLDER:
+          return this.menuSource_ == MenuSource.LIST && itemIds.size == 1 &&
+              this.getState().search.term != '' &&
+              !this.containsMatchingNode_(itemIds, function(node) {
+                return !node.parentId || node.parentId == ROOT_NODE_ID;
+              });
         case Command.OPEN_NEW_TAB:
         case Command.OPEN_NEW_WINDOW:
         case Command.OPEN_INCOGNITO:
@@ -261,6 +281,11 @@ cr.define('bookmarks', function() {
             this.showTitleToast_(
                 labelPromise, state.nodes[idList[0]].title, false);
           }.bind(this));
+          break;
+        case Command.SHOW_IN_FOLDER:
+          var id = Array.from(itemIds)[0];
+          this.dispatch(bookmarks.actions.selectFolder(
+              assert(state.nodes[id].parentId), state.nodes));
           break;
         case Command.DELETE:
           var idList = Array.from(this.minimizeDeletionSet_(itemIds));
@@ -502,6 +527,9 @@ cr.define('bookmarks', function() {
         case Command.DELETE:
           label = 'menuDelete';
           break;
+        case Command.SHOW_IN_FOLDER:
+          label = 'menuShowInFolder';
+          break;
         case Command.OPEN_NEW_TAB:
           label = multipleNodes ? 'menuOpenAllNewTab' : 'menuOpenNewTab';
           break;
@@ -587,9 +615,9 @@ cr.define('bookmarks', function() {
      */
     onOpenItemMenu_: function(e) {
       if (e.detail.targetElement) {
-        this.openCommandMenuAtElement(e.detail.targetElement);
+        this.openCommandMenuAtElement(e.detail.targetElement, e.detail.source);
       } else {
-        this.openCommandMenuAtPosition(e.detail.x, e.detail.y);
+        this.openCommandMenuAtPosition(e.detail.x, e.detail.y, e.detail.source);
       }
     },
 

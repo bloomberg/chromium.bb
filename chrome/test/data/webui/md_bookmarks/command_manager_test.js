@@ -71,7 +71,7 @@ suite('<bookmarks-command-manager>', function() {
     store.data.selection.items = new Set(['11', '13']);
     store.notifyObservers();
 
-    commandManager.openCommandMenuAtPosition(0, 0);
+    commandManager.openCommandMenuAtPosition(0, 0, MenuSource.LIST);
     Polymer.dom.flush();
 
     var commandHidden = {};
@@ -164,6 +164,45 @@ suite('<bookmarks-command-manager>', function() {
     commandManager.assertLastCommand('redo');
   });
 
+  test.only('Show In Folder is only available during search', function() {
+    store.data.selection.items = new Set(['12']);
+    store.notifyObservers();
+
+    commandManager.openCommandMenuAtPosition(0, 0, MenuSource.LIST);
+    Polymer.dom.flush();
+
+    var showInFolderItem =
+        commandManager.root.querySelector('[command=show-in-folder]');
+
+    // Show in folder hidden when search is inactive.
+    assertTrue(showInFolderItem.hidden);
+
+    // Show in Folder visible when search is active.
+    store.data.search.term = 'test';
+    store.data.search.results = ['12', '13'];
+    store.notifyObservers();
+    commandManager.closeCommandMenu();
+    commandManager.openCommandMenuAtPosition(0, 0, MenuSource.LIST);
+    assertFalse(showInFolderItem.hidden);
+
+    // Show in Folder hidden when menu is opened from the sidebar.
+    commandManager.closeCommandMenu();
+    commandManager.openCommandMenuAtPosition(0, 0, MenuSource.TREE);
+    assertTrue(showInFolderItem.hidden);
+
+    // Show in Folder hidden when multiple items are selected.
+    store.data.selection.items = new Set(['12', '13']);
+    store.notifyObservers();
+    commandManager.closeCommandMenu();
+    commandManager.openCommandMenuAtPosition(0, 0, MenuSource.LIST);
+    assertTrue(showInFolderItem.hidden);
+
+    // Executing the command selects the parent folder.
+    commandManager.handle(Command.SHOW_IN_FOLDER, new Set(['12']));
+    assertEquals('select-folder', store.lastAction.name);
+    assertEquals('1', store.lastAction.id);
+  });
+
   test('does not delete children at same time as ancestor', function() {
     var lastDelete = null;
     chrome.bookmarkManagerPrivate.removeTrees = function(idArray) {
@@ -246,7 +285,7 @@ suite('<bookmarks-command-manager>', function() {
 
     store.data.selection.items = items;
 
-    commandManager.openCommandMenuAtPosition(0, 0);
+    commandManager.openCommandMenuAtPosition(0, 0, MenuSource.LIST);
     Polymer.dom.flush();
 
     var commandItem = {};
@@ -277,7 +316,7 @@ suite('<bookmarks-command-manager>', function() {
     assertFalse(commandManager.canExecute(Command.REDO, items));
 
     // No divider line should be visible when only 'Open' commands are enabled.
-    commandManager.openCommandMenuAtPosition(0, 0);
+    commandManager.openCommandMenuAtPosition(0, 0, MenuSource.LIST);
     commandManager.root.querySelectorAll('hr').forEach(element => {
       assertTrue(element.hidden);
     });
@@ -297,7 +336,7 @@ suite('<bookmarks-command-manager>', function() {
     assertFalse(commandManager.canExecute(Command.EDIT, items));
     assertFalse(commandManager.canExecute(Command.DELETE, items));
 
-    commandManager.openCommandMenuAtPosition(0, 0);
+    commandManager.openCommandMenuAtPosition(0, 0, MenuSource.LIST);
     var commandItem = {};
     commandManager.root.querySelectorAll('.dropdown-item').forEach(element => {
       commandItem[element.getAttribute('command')] = element;
