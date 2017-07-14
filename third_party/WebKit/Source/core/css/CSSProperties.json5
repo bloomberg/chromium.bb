@@ -748,6 +748,8 @@
     },
     {
       name: "border-bottom-color",
+      api_class: "CSSPropertyAPIBorderColor",
+      api_methods: ["parseSingleValue"],
       custom_all: true,
       interpolable: true,
       type_name: "Color",
@@ -792,6 +794,7 @@
     {
       name: "border-bottom-width",
       api_class: "CSSPropertyAPIBorderWidth",
+      api_methods: ["parseSingleValue"],
       converter: "ConvertBorderWidth",
       interpolable: true,
       keywords: ["thin", "medium", "thick"],
@@ -844,6 +847,8 @@
     },
     {
       name: "border-left-color",
+      api_class: "CSSPropertyAPIBorderColor",
+      api_methods: ["parseSingleValue"],
       custom_all: true,
       interpolable: true,
       field_template: "storage_only",
@@ -864,6 +869,7 @@
     {
       name: "border-left-width",
       api_class: "CSSPropertyAPIBorderWidth",
+      api_methods: ["parseSingleValue"],
       converter: "ConvertBorderWidth",
       interpolable: true,
       keywords: ["thin", "medium", "thick"],
@@ -876,6 +882,8 @@
     },
     {
       name: "border-right-color",
+      api_class: "CSSPropertyAPIBorderColor",
+      api_methods: ["parseSingleValue"],
       custom_all: true,
       interpolable: true,
       field_template: "storage_only",
@@ -896,6 +904,7 @@
     {
       name: "border-right-width",
       api_class: "CSSPropertyAPIBorderWidth",
+      api_methods: ["parseSingleValue"],
       converter: "ConvertBorderWidth",
       interpolable: true,
       keywords: ["thin", "medium", "thick"],
@@ -908,6 +917,8 @@
     },
     {
       name: "border-top-color",
+      api_class: "CSSPropertyAPIBorderColor",
+      api_methods: ["parseSingleValue"],
       custom_all: true,
       interpolable: true,
       field_template: "storage_only",
@@ -952,6 +963,7 @@
     {
       name: "border-top-width",
       api_class: "CSSPropertyAPIBorderWidth",
+      api_methods: ["parseSingleValue"],
       converter: "ConvertBorderWidth",
       interpolable: true,
       keywords: ["thin", "medium", "thick"],

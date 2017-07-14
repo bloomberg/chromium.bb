@@ -2,29 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/properties/CSSPropertyAPIBorderWidth.h"
+#include "core/css/properties/CSSPropertyAPIBorderColor.h"
 
+#include "core/CSSPropertyNames.h"
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSParserLocalContext.h"
 #include "core/css/parser/CSSParserMode.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
-#include "core/css/properties/CSSPropertyWebkitBorderWidthUtils.h"
 
 namespace blink {
 
-const CSSValue* CSSPropertyAPIBorderWidth::parseSingleValue(
+const CSSValue* CSSPropertyAPIBorderColor::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext& local_context) {
   CSSPropertyID shorthand = local_context.CurrentShorthand();
-  bool allow_quirky_lengths =
+  bool allow_quirky_colors =
       IsQuirksModeBehavior(context.Mode()) &&
-      (shorthand == CSSPropertyInvalid || shorthand == CSSPropertyBorderWidth);
-  CSSPropertyParserHelpers::UnitlessQuirk unitless =
-      allow_quirky_lengths ? CSSPropertyParserHelpers::UnitlessQuirk::kAllow
-                           : CSSPropertyParserHelpers::UnitlessQuirk::kForbid;
-  return CSSPropertyWebkitBorderWidthUtils::ConsumeBorderWidth(
-      range, context.Mode(), unitless);
+      (shorthand == CSSPropertyInvalid || shorthand == CSSPropertyBorderColor);
+  return CSSPropertyParserHelpers::ConsumeColor(range, context.Mode(),
+                                                allow_quirky_colors);
 }
 
 }  // namespace blink

@@ -47,7 +47,6 @@
 #include "core/css/properties/CSSPropertyPositionUtils.h"
 #include "core/css/properties/CSSPropertyTextDecorationLineUtils.h"
 #include "core/css/properties/CSSPropertyTransitionPropertyUtils.h"
-#include "core/css/properties/CSSPropertyWebkitBorderWidthUtils.h"
 #include "core/frame/UseCounter.h"
 #include "core/layout/LayoutTheme.h"
 #include "platform/wtf/text/StringBuilder.h"
@@ -1222,27 +1221,6 @@ const CSSValue* CSSPropertyParser::ParseSingleValue(
     case CSSPropertyGridRowGap:
       return ConsumeLengthOrPercent(range_, context_->Mode(),
                                     kValueRangeNonNegative);
-    case CSSPropertyBorderBottomColor:
-    case CSSPropertyBorderLeftColor:
-    case CSSPropertyBorderRightColor:
-    case CSSPropertyBorderTopColor: {
-      bool allow_quirky_colors =
-          InQuirksMode() && (current_shorthand == CSSPropertyInvalid ||
-                             current_shorthand == CSSPropertyBorderColor);
-      return ConsumeColor(range_, context_->Mode(), allow_quirky_colors);
-    }
-    case CSSPropertyBorderBottomWidth:
-    case CSSPropertyBorderLeftWidth:
-    case CSSPropertyBorderRightWidth:
-    case CSSPropertyBorderTopWidth: {
-      bool allow_quirky_lengths =
-          InQuirksMode() && (current_shorthand == CSSPropertyInvalid ||
-                             current_shorthand == CSSPropertyBorderWidth);
-      UnitlessQuirk unitless =
-          allow_quirky_lengths ? UnitlessQuirk::kAllow : UnitlessQuirk::kForbid;
-      return CSSPropertyWebkitBorderWidthUtils::ConsumeBorderWidth(
-          range_, context_->Mode(), unitless);
-    }
     case CSSPropertyFilter:
     case CSSPropertyBackdropFilter:
       return ConsumeFilter(range_, context_);
