@@ -1467,7 +1467,6 @@ void SavePackage::OnPathPicked(
 void SavePackage::FinalizeDownloadEntry() {
   DCHECK(download_);
   DCHECK(download_manager_);
-  download_manager_->OnSavePackageSuccessfullyFinished(download_);
   download_ = nullptr;
   download_manager_ = nullptr;
 }

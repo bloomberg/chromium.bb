@@ -80,10 +80,6 @@ class CONTENT_EXPORT DownloadManager : public base::SupportsUserData::Data {
     virtual void OnDownloadCreated(
         DownloadManager* manager, DownloadItem* item) {}
 
-    // A SavePackage has successfully finished.
-    virtual void OnSavePackageSuccessfullyFinished(
-        DownloadManager* manager, DownloadItem* item) {}
-
     // Called when the download manager has finished loading the data.
     virtual void OnManagerInitialized() {}
 

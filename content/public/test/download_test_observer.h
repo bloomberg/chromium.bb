@@ -311,6 +311,31 @@ class DownloadTestItemCreationObserver
   DISALLOW_COPY_AND_ASSIGN(DownloadTestItemCreationObserver);
 };
 
+// Class for mornitoring whether a save package download finishes.
+class SavePackageFinishedObserver : public DownloadItem::Observer,
+                                    public DownloadManager::Observer {
+ public:
+  SavePackageFinishedObserver(DownloadManager* manager,
+                              const base::Closure& callback);
+  ~SavePackageFinishedObserver() override;
+
+  // DownloadItem::Observer:
+  void OnDownloadUpdated(DownloadItem* download) override;
+  void OnDownloadDestroyed(DownloadItem* download) override;
+
+  // DownloadManager::Observer:
+  void OnDownloadCreated(DownloadManager* manager,
+                         DownloadItem* download) override;
+  void ManagerGoingDown(DownloadManager* manager) override;
+
+ private:
+  DownloadManager* download_manager_;
+  DownloadItem* download_;
+  base::Closure callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(SavePackageFinishedObserver);
+};
+
 }  // namespace content`
 
 #endif  // CONTENT_PUBLIC_TEST_DOWNLOAD_TEST_OBSERVER_H_

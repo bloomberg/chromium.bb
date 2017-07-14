@@ -1171,11 +1171,11 @@ void DownloadItemImpl::OnAllDataSaved(
                         // the download and don't expect to receive any more
                         // data.
 
-  if (received_bytes_at_length_mismatch > 0) {
-    if (total_bytes > received_bytes_at_length_mismatch) {
+  if (received_bytes_at_length_mismatch_ > 0) {
+    if (total_bytes > received_bytes_at_length_mismatch_) {
       RecordDownloadCount(
           MORE_BYTES_RECEIVED_AFTER_CONTENT_LENGTH_MISMATCH_COUNT);
-    } else if (total_bytes == received_bytes_at_length_mismatch) {
+    } else if (total_bytes == received_bytes_at_length_mismatch_) {
       RecordDownloadCount(
           NO_BYTES_RECEIVED_AFTER_CONTENT_LENGTH_MISMATCH_COUNT);
     } else {
@@ -1852,7 +1852,7 @@ void DownloadItemImpl::InterruptWithPartialState(
                             job_ && job_->IsParallelizable(),
                             IsParallelDownloadEnabled());
   if (reason == DOWNLOAD_INTERRUPT_REASON_SERVER_CONTENT_LENGTH_MISMATCH)
-    received_bytes_at_length_mismatch = GetReceivedBytes();
+    received_bytes_at_length_mismatch_ = GetReceivedBytes();
 
   if (!GetWebContents())
     RecordDownloadCount(INTERRUPTED_WITHOUT_WEBCONTENTS);
