@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.customtabs;
 
 import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
 import static org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule.LONG_TIMEOUT_MS;
+import static org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.CUSTOM_TABS_UI_TYPE_MEDIA_VIEWER;
 
 import android.app.Activity;
 import android.app.Instrumentation;
@@ -548,7 +549,8 @@ public class CustomTabActivityTest {
     @RetryOnFailure
     public void testAppMenuForMediaViewer() throws InterruptedException {
         Intent intent = createMinimalCustomTabIntent();
-        intent.putExtra(CustomTabIntentDataProvider.EXTRA_IS_MEDIA_VIEWER, true);
+        intent.putExtra(
+                CustomTabIntentDataProvider.EXTRA_UI_TYPE, CUSTOM_TABS_UI_TYPE_MEDIA_VIEWER);
         IntentHandler.addTrustedIntentExtras(intent);
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
 

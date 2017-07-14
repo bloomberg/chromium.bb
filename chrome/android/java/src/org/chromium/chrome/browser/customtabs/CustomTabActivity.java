@@ -4,6 +4,9 @@
 
 package org.chromium.chrome.browser.customtabs;
 
+import static org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.CUSTOM_TABS_UI_TYPE_DEFAULT;
+import static org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.CUSTOM_TABS_UI_TYPE_INFO_PAGE;
+
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -803,12 +806,13 @@ public class CustomTabActivity extends ChromeActivity {
 
     @Override
     protected AppMenuPropertiesDelegate createAppMenuPropertiesDelegate() {
-        return new CustomTabAppMenuPropertiesDelegate(this, mIntentDataProvider.getMenuTitles(),
+        return new CustomTabAppMenuPropertiesDelegate(this,
+                mIntentDataProvider.getUiType(),
+                mIntentDataProvider.getMenuTitles(),
+                mIntentDataProvider.isOpenedByChrome(),
                 mIntentDataProvider.shouldShowShareMenuItem(),
-                mIntentDataProvider.isOpenedByChrome(), mIntentDataProvider.isMediaViewer(),
                 mIntentDataProvider.shouldShowStarButton(),
-                mIntentDataProvider.shouldShowDownloadButton(),
-                mIntentDataProvider.isPaymentRequestUI());
+                mIntentDataProvider.shouldShowDownloadButton());
     }
 
     @Override
@@ -1185,7 +1189,7 @@ public class CustomTabActivity extends ChromeActivity {
         Intent intent = ChromeLauncherActivity.createCustomTabActivityIntent(
                 context, customTabIntent.intent, false);
         intent.setPackage(context.getPackageName());
-        intent.putExtra(CustomTabIntentDataProvider.EXTRA_IS_INFO_PAGE, true);
+        intent.putExtra(CustomTabIntentDataProvider.EXTRA_UI_TYPE, CUSTOM_TABS_UI_TYPE_INFO_PAGE);
         intent.putExtra(Browser.EXTRA_APPLICATION_ID, context.getPackageName());
         if (!(context instanceof Activity)) intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         IntentHandler.addTrustedIntentExtras(intent);
@@ -1197,8 +1201,8 @@ public class CustomTabActivity extends ChromeActivity {
     protected boolean requiresFirstRunToBeCompleted(Intent intent) {
         // Custom Tabs can be used to open Chrome help pages before the ToS has been accepted.
         if (IntentHandler.isIntentChromeOrFirstParty(intent)
-                && IntentUtils.safeGetBooleanExtra(
-                           intent, CustomTabIntentDataProvider.EXTRA_IS_INFO_PAGE, false)) {
+                && IntentUtils.safeGetIntExtra(intent, CustomTabIntentDataProvider.EXTRA_UI_TYPE,
+                           CUSTOM_TABS_UI_TYPE_DEFAULT) == CUSTOM_TABS_UI_TYPE_INFO_PAGE) {
             return false;
         }
 
