@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/cast_channel/cast_socket.h"
+#include "components/cast_channel/cast_socket_service.h"
 #include "components/cast_channel/cast_transport.h"
 #include "components/cast_channel/proto/cast_channel.pb.h"
 #include "net/base/ip_endpoint.h"
@@ -64,6 +65,19 @@ class MockCastSocketObserver : public CastSocket::Observer {
                void(const CastSocket& socket, const CastMessage& message));
 };
 
+class MockCastSocketService : public CastSocketService {
+ public:
+  MockCastSocketService();
+  ~MockCastSocketService() override;
+
+  MOCK_METHOD4(OpenSocket,
+               int(const net::IPEndPoint& ip_endpoint,
+                   net::NetLog* net_log,
+                   const CastSocket::OnOpenCallback& open_cb,
+                   CastSocket::Observer* observer));
+  MOCK_CONST_METHOD1(GetSocket, CastSocket*(int channel_id));
+};
+
 class MockCastSocket : public CastSocket {
  public:
   MockCastSocket();
@@ -73,6 +87,7 @@ class MockCastSocket : public CastSocket {
   MOCK_METHOD1(Close, void(const net::CompletionCallback& callback));
   MOCK_CONST_METHOD0(ready_state, ReadyState());
   MOCK_METHOD1(AddObserver, void(Observer* observer));
+  MOCK_METHOD1(RemoveObserver, void(Observer* observer));
 
   const net::IPEndPoint& ip_endpoint() const override { return ip_endpoint_; }
   void SetIPEndpoint(const net::IPEndPoint& ip_endpoint) {

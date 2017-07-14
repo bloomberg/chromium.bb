@@ -34,7 +34,7 @@ class CastSocketServiceTest : public testing::Test {
 
  protected:
   content::TestBrowserThreadBundle thread_bundle_;
-  scoped_refptr<CastSocketService> cast_socket_service_;
+  std::unique_ptr<CastSocketService> cast_socket_service_;
   base::MockCallback<CastSocket::OnOpenCallback> mock_on_open_callback_;
   MockCastSocketObserver mock_observer_;
 };

@@ -68,23 +68,10 @@ void VerifyMediaSinkInternal(const media_router::MediaSinkInternal& cast_sink,
 
 namespace media_router {
 
-class MockCastSocketService : public cast_channel::CastSocketService {
- public:
-  MOCK_METHOD4(OpenSocket,
-               int(const net::IPEndPoint& ip_endpoint,
-                   net::NetLog* net_log,
-                   const cast_channel::CastSocket::OnOpenCallback& open_cb,
-                   cast_channel::CastSocket::Observer* observer));
-  MOCK_CONST_METHOD1(GetSocket, cast_channel::CastSocket*(int channel_id));
-
- private:
-  ~MockCastSocketService() {}
-};
-
 class CastMediaSinkServiceTest : public ::testing::Test {
  public:
   CastMediaSinkServiceTest()
-      : mock_cast_socket_service_(new MockCastSocketService()),
+      : mock_cast_socket_service_(new cast_channel::MockCastSocketService()),
         media_sink_service_(
             new CastMediaSinkService(mock_sink_discovered_cb_.Get(),
                                      mock_cast_socket_service_.get())),
@@ -103,7 +90,8 @@ class CastMediaSinkServiceTest : public ::testing::Test {
 
   base::MockCallback<MediaSinkService::OnSinksDiscoveredCallback>
       mock_sink_discovered_cb_;
-  scoped_refptr<MockCastSocketService> mock_cast_socket_service_;
+  std::unique_ptr<cast_channel::MockCastSocketService>
+      mock_cast_socket_service_;
   scoped_refptr<CastMediaSinkService> media_sink_service_;
   MockDnsSdRegistry test_dns_sd_registry_;
   base::MockTimer* mock_timer_;

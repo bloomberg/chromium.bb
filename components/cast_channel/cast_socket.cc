@@ -296,6 +296,11 @@ void CastSocketImpl::AddObserver(Observer* observer) {
     observers_.AddObserver(observer);
 }
 
+void CastSocketImpl::RemoveObserver(Observer* observer) {
+  DCHECK(observer);
+  observers_.RemoveObserver(observer);
+}
+
 void CastSocketImpl::OnConnectTimeout() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // Stop all pending connection setup tasks and report back to the client.

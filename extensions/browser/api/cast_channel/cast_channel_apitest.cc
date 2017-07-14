@@ -14,7 +14,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "components/cast_channel/cast_socket.h"
 #include "components/cast_channel/cast_socket_service.h"
-#include "components/cast_channel/cast_socket_service_factory.h"
 #include "components/cast_channel/cast_test_util.h"
 #include "components/cast_channel/logger.h"
 #include "components/cast_channel/proto/cast_channel.pb.h"
@@ -145,8 +144,11 @@ class CastChannelAPITest : public ExtensionApiTest {
           .WillOnce(Return(ReadyState::OPEN))
           .RetiresOnSaturation();
       EXPECT_CALL(*mock_cast_socket_, ready_state())
-          .WillOnce(Return(ReadyState::CLOSED));
+          .Times(2)
+          .WillRepeatedly(Return(ReadyState::CLOSED));
     }
+    EXPECT_CALL(*mock_cast_socket_, Close(_))
+        .WillOnce(InvokeCompletionCallback<0>(net::OK));
   }
 
   extensions::CastChannelAPI* GetApi() {
@@ -154,9 +156,7 @@ class CastChannelAPITest : public ExtensionApiTest {
   }
 
   cast_channel::CastSocketService* GetCastSocketService() {
-    return cast_channel::CastSocketServiceFactory::GetForBrowserContext(
-               profile())
-        .get();
+    return cast_channel::CastSocketService::GetInstance();
   }
 
   // Logs some bogus error details and calls the OnError handler.
@@ -224,7 +224,7 @@ ACTION_P2(InvokeObserverOnError, api_test, cast_socket_service) {
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
       base::Bind(&CastChannelAPITest::DoCallOnError, base::Unretained(api_test),
-                 base::RetainedRef(cast_socket_service)));
+                 base::Unretained(cast_socket_service)));
 }
 
 // TODO(kmarshall): Win Dbg has a workaround that makes RunExtensionSubtest

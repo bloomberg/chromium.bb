@@ -129,6 +129,9 @@ class CastSocket {
 
   // Registers |observer| with the socket to receive messages and error events.
   virtual void AddObserver(Observer* observer) = 0;
+
+  // Unregisters |observer|.
+  virtual void RemoveObserver(Observer* observer) = 0;
 };
 
 // This class implements a channel between Chrome and a Cast device using a TCP
@@ -181,6 +184,7 @@ class CastSocketImpl : public CastSocket {
   bool keep_alive() const override;
   bool audio_only() const override;
   void AddObserver(Observer* observer) override;
+  void RemoveObserver(Observer* observer) override;
 
  protected:
   // CastTransport::Delegate methods for receiving handshake messages.
