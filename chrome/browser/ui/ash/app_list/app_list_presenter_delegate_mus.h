@@ -42,7 +42,7 @@ class AppListPresenterDelegateMus : public app_list::AppListPresenterDelegate,
   // views::PointerWatcher:
   void OnPointerEventObserved(const ui::PointerEvent& event,
                               const gfx::Point& location_in_screen,
-                              views::Widget* target) override;
+                              gfx::NativeView target) override;
 
   // Not owned. Pointer is guaranteed to be valid while this object is alive.
   app_list::AppListPresenterImpl* presenter_;

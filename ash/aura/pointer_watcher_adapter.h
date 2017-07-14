@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "ui/events/event_handler.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
 class Point;
@@ -22,7 +23,6 @@ class PointerEvent;
 namespace views {
 class PointerWatcher;
 enum class PointerWatcherEventTypes;
-class Widget;
 }
 
 namespace ash {
@@ -45,7 +45,7 @@ class ASH_EXPORT PointerWatcherAdapter : public ui::EventHandler {
 
  private:
   gfx::Point GetLocationInScreen(const ui::LocatedEvent& event) const;
-  views::Widget* GetTargetWidget(const ui::LocatedEvent& event) const;
+  gfx::NativeView GetTargetWindow(const ui::LocatedEvent& event) const;
 
   // Calls OnPointerEventObserved() on the appropriate set of watchers as
   // determined by the type of event. |original_event| is the original

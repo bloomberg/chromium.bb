@@ -5,6 +5,7 @@
 #ifndef ASH_SYSTEM_TRAY_TRAY_BUBBLE_WRAPPER_H_
 #define ASH_SYSTEM_TRAY_TRAY_BUBBLE_WRAPPER_H_
 
+#include "ash/ash_export.h"
 #include "base/macros.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -17,7 +18,7 @@ class TrayBackgroundView;
 
 // Creates and manages the Widget and EventFilter components of a bubble.
 
-class TrayBubbleWrapper : public views::WidgetObserver {
+class ASH_EXPORT TrayBubbleWrapper : public views::WidgetObserver {
  public:
   TrayBubbleWrapper(TrayBackgroundView* tray,
                     views::TrayBubbleView* bubble_view);

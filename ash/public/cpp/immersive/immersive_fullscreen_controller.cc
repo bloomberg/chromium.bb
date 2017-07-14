@@ -232,14 +232,16 @@ void ImmersiveFullscreenController::OnGestureEvent(
 void ImmersiveFullscreenController::OnPointerEventObserved(
     const ui::PointerEvent& event,
     const gfx::Point& location_in_screen,
-    views::Widget* target) {
+    gfx::NativeView target) {
   if (event.IsMousePointerEvent()) {
     if (event.type() == ui::ET_POINTER_WHEEL_CHANGED) {
       const ui::MouseWheelEvent mouse_wheel_event(event);
-      OnMouseEvent(mouse_wheel_event, location_in_screen, target);
+      OnMouseEvent(mouse_wheel_event, location_in_screen,
+                   views::Widget::GetTopLevelWidgetForNativeView(target));
     } else {
       const ui::MouseEvent mouse_event(event);
-      OnMouseEvent(mouse_event, location_in_screen, target);
+      OnMouseEvent(mouse_event, location_in_screen,
+                   views::Widget::GetTopLevelWidgetForNativeView(target));
     }
   } else {
     DCHECK(event.IsTouchPointerEvent());

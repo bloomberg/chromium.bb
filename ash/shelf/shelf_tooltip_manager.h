@@ -60,7 +60,7 @@ class ASH_EXPORT ShelfTooltipManager : public ui::EventHandler,
   // views::PointerWatcher overrides:
   void OnPointerEventObserved(const ui::PointerEvent& event,
                               const gfx::Point& location_in_screen,
-                              views::Widget* target) override;
+                              gfx::NativeView target) override;
 
   // ShelfObserver overrides:
   void WillChangeVisibilityState(ShelfVisibilityState new_state) override;

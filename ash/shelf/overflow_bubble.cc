@@ -87,7 +87,7 @@ void OverflowBubble::ProcessPressedEvent(
 void OverflowBubble::OnPointerEventObserved(
     const ui::PointerEvent& event,
     const gfx::Point& location_in_screen,
-    views::Widget* target) {
+    gfx::NativeView target) {
   if (event.type() == ui::ET_POINTER_DOWN)
     ProcessPressedEvent(location_in_screen);
 }

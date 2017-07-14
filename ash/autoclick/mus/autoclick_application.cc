@@ -54,7 +54,7 @@ class AutoclickUI : public views::WidgetDelegateView,
   // Overridden from views::PointerWatcher:
   void OnPointerEventObserved(const ui::PointerEvent& event,
                               const gfx::Point& location_in_screen,
-                              views::Widget* target) override {
+                              gfx::NativeView target) override {
     // AutoclickControllerCommon won't work correctly with a target.
     DCHECK(!event.target());
     if (event.IsTouchPointerEvent()) {

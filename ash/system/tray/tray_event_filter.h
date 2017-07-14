@@ -7,6 +7,7 @@
 
 #include <set>
 
+#include "ash/ash_export.h"
 #include "base/macros.h"
 #include "ui/views/pointer_watcher.h"
 
@@ -23,7 +24,7 @@ class TrayBubbleWrapper;
 
 // Handles events for a tray bubble, e.g. to close the system tray bubble when
 // the user clicks outside it.
-class TrayEventFilter : public views::PointerWatcher {
+class ASH_EXPORT TrayEventFilter : public views::PointerWatcher {
  public:
   TrayEventFilter();
   ~TrayEventFilter() override;
@@ -34,11 +35,11 @@ class TrayEventFilter : public views::PointerWatcher {
   // views::PointerWatcher:
   void OnPointerEventObserved(const ui::PointerEvent& event,
                               const gfx::Point& location_in_screen,
-                              views::Widget* target) override;
+                              gfx::NativeView target) override;
 
  private:
   void ProcessPressedEvent(const gfx::Point& location_in_screen,
-                           views::Widget* target);
+                           gfx::NativeView target);
 
   std::set<TrayBubbleWrapper*> wrappers_;
 
