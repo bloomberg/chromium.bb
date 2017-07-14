@@ -10,9 +10,9 @@
 #include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
+#import "ios/chrome/browser/ui/toolbar/keyboard_assist/toolbar_assistive_keyboard_views.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
-#include "ios/chrome/grit/ios_strings.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -27,8 +27,6 @@
 - (void)keyboardButtonPressed:(NSString*)title;
 // Creates a button shortcut for |title|.
 - (UIView*)shortcutButtonWithTitle:(NSString*)title;
-// Creates a button with an icon based on |iconName|.
-- (UIButton*)iconButton:(NSString*)iconName;
 
 @end
 
@@ -77,34 +75,16 @@
   }
   [self addSubview:shortcutStackView];
 
-  // Create buttons for voice search and camera search.
-  UIButton* voiceSearchButton =
-      [self iconButton:@"keyboard_accessory_voice_search"];
-  [voiceSearchButton addTarget:_delegate
-                        action:@selector(keyboardAccessoryVoiceSearchTouchDown:)
-              forControlEvents:UIControlEventTouchDown];
-  SetA11yLabelAndUiAutomationName(voiceSearchButton,
-                                  IDS_IOS_KEYBOARD_ACCESSORY_VIEW_VOICE_SEARCH,
-                                  @"Voice Search");
-  [voiceSearchButton
-             addTarget:_delegate
-                action:@selector(keyboardAccessoryVoiceSearchTouchUpInside:)
-      forControlEvents:UIControlEventTouchUpInside];
-  UIButton* cameraButton = [self iconButton:@"keyboard_accessory_qr_scanner"];
-  [cameraButton addTarget:_delegate
-                   action:@selector(keyboardAccessoryCameraSearchTouchUpInside:)
-         forControlEvents:UIControlEventTouchUpInside];
-  SetA11yLabelAndUiAutomationName(
-      cameraButton, IDS_IOS_KEYBOARD_ACCESSORY_VIEW_QR_CODE_SEARCH,
-      @"QR code Search");
-
-  // Create and add a stackview containing containing the buttons for voice
-  // search and camera search.
+  // Create and add a stackview containing the leading assistive buttons, i.e.
+  // Voice search and camera search.
+  NSArray<UIButton*>* leadingButtons =
+      ToolbarAssistiveKeyboardLeadingButtons(_delegate);
   UIStackView* searchStackView = [[UIStackView alloc] init];
   searchStackView.translatesAutoresizingMaskIntoConstraints = NO;
   searchStackView.spacing = kBetweenSearchButtonSpacing;
-  [searchStackView addArrangedSubview:voiceSearchButton];
-  [searchStackView addArrangedSubview:cameraButton];
+  for (UIButton* button in leadingButtons) {
+    [searchStackView addArrangedSubview:button];
+  }
   [self addSubview:searchStackView];
 
   // Position the stack views.
@@ -148,22 +128,6 @@
       forControlEvents:UIControlEventTouchUpInside];
   button.isAccessibilityElement = YES;
   [button setAccessibilityLabel:title];
-  return button;
-}
-
-- (UIButton*)iconButton:(NSString*)iconName {
-  const CGFloat kButtonShadowOpacity = 0.35;
-  const CGFloat kButtonShadowRadius = 1.0;
-  const CGFloat kButtonShadowVerticalOffset = 1.0;
-
-  UIButton* button = [UIButton buttonWithType:UIButtonTypeCustom];
-  [button setTranslatesAutoresizingMaskIntoConstraints:NO];
-  UIImage* icon = [UIImage imageNamed:iconName];
-  [button setImage:icon forState:UIControlStateNormal];
-  button.layer.shadowColor = [UIColor blackColor].CGColor;
-  button.layer.shadowOffset = CGSizeMake(0, kButtonShadowVerticalOffset);
-  button.layer.shadowOpacity = kButtonShadowOpacity;
-  button.layer.shadowRadius = kButtonShadowRadius;
   return button;
 }
 
