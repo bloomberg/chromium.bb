@@ -200,6 +200,10 @@ void ErrorReport::AddChromeChannel(version_info::Channel channel) {
   }
 }
 
+void ErrorReport::SetIsEnterpriseManaged(bool is_enterprise_managed) {
+  cert_report_->set_is_enterprise_managed(is_enterprise_managed);
+}
+
 void ErrorReport::SetIsRetryUpload(bool is_retry_upload) {
   cert_report_->set_is_retry_upload(is_retry_upload);
 }
@@ -210,6 +214,10 @@ const std::string& ErrorReport::hostname() const {
 
 CertLoggerRequest::ChromeChannel ErrorReport::chrome_channel() const {
   return cert_report_->chrome_channel();
+}
+
+bool ErrorReport::is_enterprise_managed() const {
+  return cert_report_->is_enterprise_managed();
 }
 
 bool ErrorReport::is_retry_upload() const {

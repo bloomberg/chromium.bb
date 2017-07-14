@@ -15,6 +15,7 @@
 #include "base/threading/thread.h"
 #include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
+#include "build/build_config.h"
 #include "components/certificate_reporting/cert_logger.pb.h"
 #include "components/network_time/network_time_test_utils.h"
 #include "components/prefs/testing_pref_service.h"
@@ -278,6 +279,28 @@ TEST(ErrorReportTest, TestChromeChannelIncluded) {
     EXPECT_EQ(test_case.expected_channel, parsed.chrome_channel());
   }
 }
+
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
+// Tests that the SetIsEnterpriseManaged() function populates
+// is_enterprise_managed correctly on Windows, and that value is correctly
+// extracted from the parsed report.
+// These tests are OS specific because SetIsEnterpriseManaged is called only
+// on the Windows and ChromeOS OS.
+TEST(ErrorReportTest, TestIsEnterpriseManagedPopulatedOnWindows) {
+  SSLInfo ssl_info;
+  ASSERT_NO_FATAL_FAILURE(
+      GetTestSSLInfo(INCLUDE_UNVERIFIED_CERT_CHAIN, &ssl_info, kCertStatus));
+  ErrorReport report(kDummyHostname, ssl_info);
+
+  report.SetIsEnterpriseManaged(true);
+  std::string serialized_report;
+  ASSERT_TRUE(report.Serialize(&serialized_report));
+
+  CertLoggerRequest parsed;
+  ASSERT_TRUE(parsed.ParseFromString(serialized_report));
+  EXPECT_EQ(true, parsed.is_enterprise_managed());
+}
+#endif
 
 #if defined(OS_ANDROID)
 // Tests that information about the Android AIA fetching feature is included in

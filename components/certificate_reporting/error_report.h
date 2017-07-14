@@ -78,6 +78,8 @@ class ErrorReport {
 
   void AddChromeChannel(version_info::Channel channel);
 
+  void SetIsEnterpriseManaged(bool is_enterprise_managed);
+
   // Sets is_retry_upload field of the protobuf to |is_retry_upload|.
   void SetIsRetryUpload(bool is_retry_upload);
 
@@ -86,6 +88,9 @@ class ErrorReport {
 
   // Gets the Chrome channel attached to this report.
   CertLoggerRequest::ChromeChannel chrome_channel() const;
+
+  // Returns true if the device that issued the report is a managed device.
+  bool is_enterprise_managed() const;
 
   // Returns true if the report has been retried.
   bool is_retry_upload() const;
