@@ -125,6 +125,7 @@ Runner.config = {
   RESOURCE_TEMPLATE_ID: 'audio-resources',
   SPEED: 6,
   SPEED_DROP_COEFFICIENT: 3,
+  ARCADE_MODE_INITIAL_TOP_POSITION: 35,
   ARCADE_MODE_TOP_POSITION_PERCENT: 0.1
 };
 
@@ -865,7 +866,8 @@ Runner.prototype = {
     var scaledCanvasHeight = this.dimensions.HEIGHT * scale;
     // Positions the game container at 10% of the available vertical window
     // height minus the game container height.
-    var translateY = Math.max(0, (windowHeight - scaledCanvasHeight) *
+    var translateY = Math.max(0, (windowHeight - scaledCanvasHeight -
+        Runner.config.ARCADE_MODE_INITIAL_TOP_POSITION) *
         Runner.config.ARCADE_MODE_TOP_POSITION_PERCENT);
     this.containerEl.style.transform = 'scale(' + scale + ') translateY(' +
         translateY + 'px)';
