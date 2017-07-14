@@ -13,7 +13,7 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/numerics/saturated_arithmetic.h"
+#include "base/numerics/clamped_math.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace cc {
@@ -258,8 +258,8 @@ auto RTree<T>::BuildRecursive(std::vector<Branch<T>>* branches, int level)
         ++node->num_children;
         ++current_branch;
       }
-      branch.bounds.SetRect(x, y, base::SaturatedSubtraction(right, x),
-                            base::SaturatedSubtraction(bottom, y));
+      branch.bounds.SetRect(x, y, base::ClampSub(right, x),
+                            base::ClampSub(bottom, y));
 
       DCHECK_LT(new_branch_index, current_branch);
       (*branches)[new_branch_index] = std::move(branch);
