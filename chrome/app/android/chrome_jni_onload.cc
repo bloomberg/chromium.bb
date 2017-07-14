@@ -5,21 +5,42 @@
 #include "chrome/app/android/chrome_jni_onload.h"
 
 #include "base/android/jni_android.h"
-#include "base/android/library_loader/library_loader_hooks.h"
+#include "base/android/jni_registrar.h"
+#include "base/android/jni_utils.h"
 #include "chrome/app/android/chrome_android_initializer.h"
-#include "chrome/browser/android/chrome_jni_registrar.h"
 #include "content/public/app/content_jni_onload.h"
+#include "device/vr/features/features.h"
+
+#if BUILDFLAG(ENABLE_VR)
+#include "third_party/gvr-android-sdk/display_synchronizer_jni.h"
+#include "third_party/gvr-android-sdk/gvr_api_jni.h"
+#include "third_party/gvr-android-sdk/native_callbacks_jni.h"
+#endif
 
 namespace android {
+
+// These VR native functions are not handled by the automatic registration, so
+// they are manually registered here.
+#if BUILDFLAG(ENABLE_VR)
+static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
+    {"DisplaySynchronizer",
+     DisplaySynchronizer::RegisterDisplaySynchronizerNatives},
+    {"GvrApi", GvrApi::RegisterGvrApiNatives},
+    {"NativeCallbacks", NativeCallbacks::RegisterNativeCallbacksNatives},
+};
+#endif
 
 bool OnJNIOnLoadRegisterJNI(JNIEnv* env) {
   if (!content::android::OnJNIOnLoadRegisterJNI(env))
     return false;
 
-  if (base::android::GetLibraryProcessType(env) ==
-      base::android::PROCESS_BROWSER) {
-    return RegisterBrowserJNI(env);
+#if BUILDFLAG(ENABLE_VR)
+  // Register manually when on the browser process.
+  if (!base::android::IsSelectiveJniRegistrationEnabled(env)) {
+    return RegisterNativeMethods(env, kChromeRegisteredMethods,
+                                 arraysize(kChromeRegisteredMethods));
   }
+#endif
   return true;
 }
 
