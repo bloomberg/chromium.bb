@@ -4,6 +4,7 @@
 // WARNING: MD4 is cryptographically weak.  Do not use MD4 except in NTLM
 // authentication.
 
+/* clang-format off */
 /* vim:set ts=2 sw=2 et cindent: */
 /* ***** BEGIN LICENSE BLOCK *****
  * Version: MPL 1.1/GPL 2.0/LGPL 2.1
@@ -45,7 +46,7 @@
  * "clean room" MD4 implementation (see RFC 1320)
  */
 
-#include "net/http/md4.h"
+#include "net/ntlm/md4.h"
 
 #include <string.h>
 

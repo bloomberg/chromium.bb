@@ -795,8 +795,6 @@ component("net") {
       "http/bidirectional_stream_request_info.h",
       "http/broken_alternative_services.cc",
       "http/broken_alternative_services.h",
-      "http/des.cc",
-      "http/des.h",
       "http/failing_http_transaction_factory.cc",
       "http/failing_http_transaction_factory.h",
       "http/http_auth.cc",
@@ -885,8 +883,6 @@ component("net") {
       "http/http_transaction.h",
       "http/http_transaction_factory.h",
       "http/http_version.h",
-      "http/md4.cc",
-      "http/md4.h",
       "http/partial_data.cc",
       "http/partial_data.h",
       "http/proxy_client_socket.cc",
@@ -1028,6 +1024,12 @@ component("net") {
       "nqe/throughput_analyzer.cc",
       "nqe/throughput_analyzer.h",
       "nqe/weighted_observation.h",
+      "ntlm/des.cc",
+      "ntlm/des.h",
+      "ntlm/md4.cc",
+      "ntlm/md4.h",
+      "ntlm/ntlm.cc",
+      "ntlm/ntlm.h",
       "ntlm/ntlm_buffer_reader.cc",
       "ntlm/ntlm_buffer_reader.h",
       "ntlm/ntlm_buffer_writer.cc",
@@ -1776,6 +1778,12 @@ component("net") {
 
     if (is_win) {
       sources -= [
+        "ntlm/des.cc",
+        "ntlm/des.h",
+        "ntlm/md4.cc",
+        "ntlm/md4.h",
+        "ntlm/ntlm.cc",
+        "ntlm/ntlm.h",
         "ntlm/ntlm_buffer_reader.cc",
         "ntlm/ntlm_buffer_reader.h",
         "ntlm/ntlm_buffer_writer.cc",
@@ -4705,7 +4713,6 @@ test("net_unittests") {
     "ftp/ftp_util_unittest.cc",
     "http/bidirectional_stream_unittest.cc",
     "http/broken_alternative_services_unittest.cc",
-    "http/des_unittest.cc",
     "http/http_auth_cache_unittest.cc",
     "http/http_auth_challenge_tokenizer_unittest.cc",
     "http/http_auth_controller_unittest.cc",
@@ -4717,6 +4724,7 @@ test("net_unittests") {
     "http/http_auth_handler_mock.cc",
     "http/http_auth_handler_mock.h",
     "http/http_auth_handler_negotiate_unittest.cc",
+    "http/http_auth_handler_ntlm_portable_unittest.cc",
     "http/http_auth_handler_unittest.cc",
     "http/http_auth_multi_round_parse_unittest.cc",
     "http/http_auth_preferences_unittest.cc",
@@ -4844,8 +4852,11 @@ test("net_unittests") {
     "nqe/observation_buffer_unittest.cc",
     "nqe/socket_watcher_unittest.cc",
     "nqe/throughput_analyzer_unittest.cc",
+    "ntlm/des_unittest.cc",
     "ntlm/ntlm_buffer_reader_unittest.cc",
     "ntlm/ntlm_buffer_writer_unittest.cc",
+    "ntlm/ntlm_test_data.h",
+    "ntlm/ntlm_unittest.cc",
     "proxy/dhcp_proxy_script_adapter_fetcher_win_unittest.cc",
     "proxy/dhcp_proxy_script_fetcher_factory_unittest.cc",
     "proxy/dhcp_proxy_script_fetcher_win_unittest.cc",
@@ -5261,8 +5272,12 @@ test("net_unittests") {
 
   if (is_win) {
     sources -= [
+      "http/http_auth_handler_ntlm_portable_unittest.cc",
+      "ntlm/des_unittest.cc",
       "ntlm/ntlm_buffer_reader_unittest.cc",
       "ntlm/ntlm_buffer_writer_unittest.cc",
+      "ntlm/ntlm_test_data.h",
+      "ntlm/ntlm_unittest.cc",
     ]
   }
 

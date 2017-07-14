@@ -4,7 +4,7 @@
 
 #include <string.h>
 
-#include "net/http/des.h"
+#include "net/ntlm/des.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {

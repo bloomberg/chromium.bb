@@ -75,6 +75,7 @@ static constexpr size_t kSignatureLen = arraysize(kSignature);
 static constexpr size_t kSecurityBufferLen =
     (2 * sizeof(uint16_t)) + sizeof(uint32_t);
 static constexpr size_t kNegotiateMessageLen = 32;
+static constexpr size_t kChallengeHeaderLen = 32;
 static constexpr size_t kResponseLenV1 = 24;
 static constexpr size_t kChallengeLen = 8;
 static constexpr size_t kNtlmHashLen = 16;
