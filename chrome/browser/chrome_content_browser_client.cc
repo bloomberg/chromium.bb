@@ -57,6 +57,7 @@
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "chrome/browser/page_load_metrics/experiments/delay_navigation_throttle.h"
 #include "chrome/browser/page_load_metrics/metrics_navigation_throttle.h"
+#include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/permissions/permission_context_base.h"
 #include "chrome/browser/platform_util.h"
@@ -3066,6 +3067,18 @@ void ChromeContentBrowserClient::RecordURLMetric(const std::string& metric,
     rappor::SampleDomainAndRegistryFromGURL(g_browser_process->rappor_service(),
                                             metric, url);
   }
+}
+
+std::string ChromeContentBrowserClient::GetMetricSuffixForURL(const GURL& url) {
+  // Don't change these returned strings. They are written (in hashed form) into
+  // UMA logs. If you add more strings, you must update histograms.xml and get
+  // histograms review. Only Google domains should be here for privacy purposes.
+  // TODO(falken): Ideally Chrome would log the relevant UMA directly and this
+  // function could be removed.
+  if (page_load_metrics::IsGoogleSearchResultUrl(url)) {
+    return "search";
+  }
+  return std::string();
 }
 
 std::vector<std::unique_ptr<content::NavigationThrottle>>

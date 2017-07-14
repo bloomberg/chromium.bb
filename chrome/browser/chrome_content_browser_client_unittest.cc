@@ -379,3 +379,19 @@ TEST(ChromeContentBrowserClientTest, HandleWebUIReverse) {
   EXPECT_TRUE(test_content_browser_client.HandleWebUIReverse(&chrome_settings,
                                                              nullptr));
 }
+
+TEST(ChromeContentBrowserClientTest, GetMetricSuffixForURL) {
+  ChromeContentBrowserClient client;
+  // Search is detected.
+  EXPECT_EQ("search", client.GetMetricSuffixForURL(GURL(
+                          "https://www.google.co.jp/search?q=whatsgoingon")));
+  // Not a Search host.
+  EXPECT_EQ("", client.GetMetricSuffixForURL(GURL(
+                    "https://www.google.example.com/search?q=whatsgoingon")));
+  // For now, non-https is considered a Search host.
+  EXPECT_EQ("search", client.GetMetricSuffixForURL(
+                          GURL("http://www.google.com/search?q=whatsgoingon")));
+  // Not a Search result page (no query).
+  EXPECT_EQ("", client.GetMetricSuffixForURL(
+                    GURL("https://www.google.com/search?notaquery=nope")));
+}

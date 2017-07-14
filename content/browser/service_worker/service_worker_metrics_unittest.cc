@@ -6,6 +6,7 @@
 
 #include "base/test/histogram_tester.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
+#include "content/test/test_content_browser_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -20,6 +21,8 @@ const std::string kPreparationTime =
     "ServiceWorker.ActivatedWorkerPreparationForMainFrame.Time";
 const std::string kPreparationType =
     "ServiceWorker.ActivatedWorkerPreparationForMainFrame.Type";
+const std::string kPreparationTypeSearch =
+    "ServiceWorker.ActivatedWorkerPreparationForMainFrame.Type.search";
 
 void ExpectNoNavPreloadMainFrameUMA(
     const base::HistogramTester& histogram_tester) {
@@ -68,6 +71,15 @@ using CrossProcessTimeDelta = ServiceWorkerMetrics::CrossProcessTimeDelta;
 using StartSituation = ServiceWorkerMetrics::StartSituation;
 using WorkerPreparationType = ServiceWorkerMetrics::WorkerPreparationType;
 
+class MetricTestContentBrowserClient : public TestContentBrowserClient {
+ public:
+  std::string GetMetricSuffixForURL(const GURL& url) override {
+    if (url.host() == "search.example.com")
+      return "search";
+    return std::string();
+  }
+};
+
 TEST(ServiceWorkerMetricsTest, ActivatedWorkerPreparation) {
   base::TimeDelta time = base::TimeDelta::FromMilliseconds(123);
   {
@@ -76,7 +88,7 @@ TEST(ServiceWorkerMetricsTest, ActivatedWorkerPreparation) {
     ServiceWorkerMetrics::RecordActivatedWorkerPreparationForMainFrame(
         time, EmbeddedWorkerStatus::STARTING,
         ServiceWorkerMetrics::StartSituation::UNKNOWN,
-        false /* did_navigation_preload */);
+        false /* did_navigation_preload */, GURL("https://example.com"));
     histogram_tester.ExpectUniqueSample(
         kPreparationType, static_cast<int>(WorkerPreparationType::STARTING), 1);
     histogram_tester.ExpectTotalCount(
@@ -93,7 +105,7 @@ TEST(ServiceWorkerMetricsTest, ActivatedWorkerPreparation) {
     base::HistogramTester histogram_tester;
     ServiceWorkerMetrics::RecordActivatedWorkerPreparationForMainFrame(
         time, EmbeddedWorkerStatus::STOPPED, StartSituation::DURING_STARTUP,
-        true /* did_navigation_preload */);
+        true /* did_navigation_preload */, GURL("https://example.com"));
     histogram_tester.ExpectUniqueSample(
         kPreparationType,
         static_cast<int>(WorkerPreparationType::START_DURING_STARTUP), 1);
@@ -113,7 +125,7 @@ TEST(ServiceWorkerMetricsTest, ActivatedWorkerPreparation) {
     ServiceWorkerMetrics::RecordActivatedWorkerPreparationForMainFrame(
         time, EmbeddedWorkerStatus::STOPPED,
         StartSituation::EXISTING_READY_PROCESS,
-        true /* did_navigation_preload */);
+        true /* did_navigation_preload */, GURL("https://example.com"));
     histogram_tester.ExpectUniqueSample(
         kPreparationType,
         static_cast<int>(
@@ -131,6 +143,43 @@ TEST(ServiceWorkerMetricsTest, ActivatedWorkerPreparation) {
         kPreparationTime + kWorkerStartOccurred + kNavigationPreloadSuffix,
         time, 1);
   }
+
+  // Suffixed metric test.
+  MetricTestContentBrowserClient test_browser_client;
+  ContentBrowserClient* old_browser_client =
+      SetBrowserClientForTesting(&test_browser_client);
+  {
+    base::HistogramTester histogram_tester;
+    ServiceWorkerMetrics::RecordActivatedWorkerPreparationForMainFrame(
+        time, EmbeddedWorkerStatus::STOPPED,
+        StartSituation::EXISTING_READY_PROCESS,
+        true /* did_navigation_preload */, GURL("https://search.example.com"));
+    histogram_tester.ExpectUniqueSample(
+        kPreparationType,
+        static_cast<int>(
+            WorkerPreparationType::START_IN_EXISTING_READY_PROCESS),
+        1);
+    histogram_tester.ExpectUniqueSample(
+        kPreparationTypeSearch,
+        static_cast<int>(
+            WorkerPreparationType::START_IN_EXISTING_READY_PROCESS),
+        1);
+  }
+  {
+    base::HistogramTester histogram_tester;
+    ServiceWorkerMetrics::RecordActivatedWorkerPreparationForMainFrame(
+        time, EmbeddedWorkerStatus::STOPPED,
+        StartSituation::EXISTING_READY_PROCESS,
+        true /* did_navigation_preload */,
+        GURL("https://notsearch.example.com"));
+    histogram_tester.ExpectUniqueSample(
+        kPreparationType,
+        static_cast<int>(
+            WorkerPreparationType::START_IN_EXISTING_READY_PROCESS),
+        1);
+    histogram_tester.ExpectTotalCount(kPreparationTypeSearch, 0);
+  }
+  SetBrowserClientForTesting(old_browser_client);
 }
 
 // ===========================================================================

@@ -95116,6 +95116,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       name="PageLoad.Clients.ServiceWorker.PaintTiming.ParseStartToFirstContentfulPaint"/>
   <affected-histogram
       name="PageLoad.Clients.ServiceWorker.ParseTiming.NavigationToParseStart"/>
+  <affected-histogram
+      name="ServiceWorker.ActivatedWorkerPreparationForMainFrame.Type"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="PageLoadMetricsClientsSubresourceFilter"

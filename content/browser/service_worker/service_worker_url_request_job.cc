@@ -661,7 +661,7 @@ void ServiceWorkerURLRequestJob::DidPrepareFetchEvent(
     // measurement ends when the worker is successfully started.
     ServiceWorkerMetrics::RecordActivatedWorkerPreparationForMainFrame(
         worker_ready_time_ - request()->creation_time(), initial_worker_status_,
-        worker_start_situation_, did_navigation_preload_);
+        worker_start_situation_, did_navigation_preload_, request_->url());
   }
   nav_preload_metrics_->ReportWorkerPreparationFinished();
 }

@@ -745,6 +745,13 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Allows the embedder to record |metric| for a specific |url|.
   virtual void RecordURLMetric(const std::string& metric, const GURL& url) {}
 
+  // Allows the embedder to map URLs to strings, intended to be used as suffixes
+  // for metric names. For example, the embedder can map
+  // "my-special-site-with-a-complicated-name.example.com/and-complicated-path"
+  // to the string "MySpecialSite", which will cause some UMA involving that URL
+  // to be logged as "UmaName.MySpecialSite".
+  virtual std::string GetMetricSuffixForURL(const GURL& url);
+
   // Allows the embedder to register one or more NavigationThrottles for the
   // navigation indicated by |navigation_handle|.  A NavigationThrottle is used
   // to control the flow of a navigation on the UI thread. The embedder is
