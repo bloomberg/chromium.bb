@@ -38,6 +38,8 @@ int StringDeduplicator::Insert(StringPiece string) {
 }
 
 void StringDeduplicator::SerializeIncrementally(TracedValue* traced_value) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("memory-infra"),
+               "StringDeduplicator::SerializeIncrementally");
   for (; last_serialized_index_ != strings_.size(); ++last_serialized_index_) {
     traced_value->BeginDictionary();
     traced_value->SetInteger("id", last_serialized_index_);
