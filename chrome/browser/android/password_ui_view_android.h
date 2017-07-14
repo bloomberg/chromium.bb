@@ -7,6 +7,8 @@
 
 #include <stddef.h>
 
+#include <memory>
+#include <string>
 #include <vector>
 
 #include "base/android/jni_weak_ref.h"

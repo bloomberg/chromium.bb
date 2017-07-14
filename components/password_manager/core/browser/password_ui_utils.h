@@ -8,6 +8,7 @@
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_UI_UTILS_H_
 
 #include <string>
+#include <utility>
 
 #include "base/strings/string_piece.h"
 
@@ -22,25 +23,18 @@ namespace password_manager {
 // Reverses order of labels in hostname.
 std::string SplitByDotAndReverse(base::StringPiece host);
 
-// Removes 'android://' and reverses order of labels in hostname.
-std::string StripAndroidAndReverse(const std::string& origin);
-
-// Returns a string suitable for security display to the user (just like
-// |FormatUrlForSecurityDisplay| with OMIT_HTTP_AND_HTTPS) based on origin of
-// |password_form| and without prefixes "m.", "mobile." or "www.". Also
-// returns the full URL of the origin as |link_url|. |link_url| will be also
-// shown as tooltip on the password page.
-// For Android forms with empty |password_form.affiliated_web_realm|,
-// returns the result of GetHumanReadableOriginForAndroidUri. For other Android
-// forms, returns |password_form.affiliated_web_realm|.
-// |*origin_is_clickable| is set to true, except for Android forms with empty
-// |password_form.affiliated_web_realm|.
-// |is_android_url|, |link_url|, |origin_is_clickable| are required to non-null.
-std::string GetShownOriginAndLinkUrl(
-    const autofill::PasswordForm& password_form,
-    bool* is_android_uri,
-    GURL* link_url,
-    bool* origin_is_clickable);
+// Returns a human readable origin and a link URL for the provided
+// |password_form|.
+//
+// For Web credentials the returned origin is suitable for security display and
+// is stripped off common prefixes like "m.", "mobile." or "www.". Furthermore
+// the link URL is set to the full origin of the original form.
+//
+//  For Android credentials the returned origin is set to the Play Store name
+//  if available, otherwise it is the reversed package name (e.g.
+//  com.example.android gets transformed to android.example.com).
+std::pair<std::string, GURL> GetShownOriginAndLinkUrl(
+    const autofill::PasswordForm& password_form);
 
 // Returns a string suitable for security display to the user (just like
 // |FormatUrlForSecurityDisplay| with OMIT_HTTP_AND_HTTPS) based on origin of

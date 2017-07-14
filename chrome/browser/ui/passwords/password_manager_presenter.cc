@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/passwords/password_manager_presenter.h"
 
 #include <algorithm>
+#include <tuple>
 #include <utility>
 
 #include "base/bind.h"
@@ -41,6 +42,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "url/gurl.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/password_manager/password_manager_util_win.h"
@@ -64,39 +66,46 @@ const char kSortKeyPartsSeparator = ' ';
 // this character should be alphabetically smaller than real federations.
 const char kSortKeyNoFederationSymbol = '-';
 
-// Helper function that returns the type of the entry (non-Android credentials,
-// Android w/ affiliated web realm (i.e. clickable) or w/o web realm).
-std::string GetEntryTypeCode(bool is_android_uri, bool is_clickable) {
-  if (!is_android_uri)
-    return "0";
-  if (is_clickable)
-    return "1";
-  return "2";
-}
-
 // Creates key for sorting password or password exception entries. The key is
 // eTLD+1 followed by the reversed list of domains (e.g.
 // secure.accounts.example.com => example.com.com.example.accounts.secure) and
 // the scheme. If |entry_type == SAVED|, username, password and federation are
-// appended to the key. The entry type code (non-Android, Android w/ or w/o
-// affiliated web realm) is also appended to the key.
+// appended to the key. For Android credentials the canocial spec is included.
 std::string CreateSortKey(const autofill::PasswordForm& form,
                           PasswordEntryType entry_type) {
-  bool is_android_uri = false;
-  bool is_clickable = false;
+  std::string shown_origin;
   GURL link_url;
-  std::string origin = password_manager::GetShownOriginAndLinkUrl(
-      form, &is_android_uri, &link_url, &is_clickable);
+  std::tie(shown_origin, link_url) =
+      password_manager::GetShownOriginAndLinkUrl(form);
 
-  if (!is_clickable)  // e.g. android://com.example.r => r.example.com.
-    origin = password_manager::StripAndroidAndReverse(origin);
+  const auto facet_uri =
+      password_manager::FacetURI::FromPotentiallyInvalidSpec(form.signon_realm);
+  const bool is_android_uri = facet_uri.IsValidAndroidFacetURI();
+
+  if (is_android_uri) {
+    // In case of Android credentials |GetShownOriginAndLinkURl| might return
+    // the app display name, e.g. the Play Store name of the given application.
+    // This might or might not correspond to the eTLD+1, which is why
+    // |shown_origin| is set to the reversed android package name in this case,
+    // e.g. com.example.android => android.example.com.
+    shown_origin = password_manager::SplitByDotAndReverse(
+        facet_uri.android_package_name());
+  }
 
   std::string site_name =
       net::registry_controlled_domains::GetDomainAndRegistry(
-          origin, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+          shown_origin,
+          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
   if (site_name.empty())  // e.g. localhost.
-    site_name = origin;
-  std::string key = site_name + password_manager::SplitByDotAndReverse(origin);
+    site_name = shown_origin;
+
+  std::string key = site_name + kSortKeyPartsSeparator;
+
+  // Since multiple distinct credentials might have the same site name, more
+  // information is added. For Android credentials this includes the full
+  // canonical spec which is guaranteed to be unique for a given App.
+  key += is_android_uri ? facet_uri.canonical_spec()
+                        : password_manager::SplitByDotAndReverse(shown_origin);
 
   if (entry_type == PasswordEntryType::SAVED) {
     key += kSortKeyPartsSeparator + base::UTF16ToUTF8(form.username_value) +
@@ -110,13 +119,7 @@ std::string CreateSortKey(const autofill::PasswordForm& form,
   }
 
   // To separate HTTP/HTTPS credentials, add the scheme to the key.
-  key += kSortKeyPartsSeparator + link_url.scheme();
-
-  // Since Android and non-Android entries shouldn't be merged into one entry,
-  // add the entry type code to the sort key.
-  key +=
-      kSortKeyPartsSeparator + GetEntryTypeCode(is_android_uri, is_clickable);
-  return key;
+  return key += kSortKeyPartsSeparator + link_url.scheme();
 }
 
 // Finds duplicates of |form| in |duplicates|, removes them from |store| and

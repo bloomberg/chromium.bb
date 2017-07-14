@@ -15,9 +15,7 @@ namespace extensions {
 
 // Obtains a collection of URLs from the passed in form. This includes an origin
 // URL used for internal logic, a human friendly string shown to the user as
-// well as a URL that is linked to. In case the passed in form is an Android
-// credential, the link URL is an affiliated website if possible, otherwise it
-// links to the PlayStore.
+// well as a URL that is linked to.
 api::passwords_private::UrlCollection CreateUrlCollectionFromForm(
     const autofill::PasswordForm& form);
 }

@@ -29,7 +29,7 @@ struct SortEntry {
   const char* const origin;
   const char* const username;
   const char* const password;
-  const char* const affiliated_web_realm;
+  const char* const app_display_name;
   const char* const federation;
   const int expected_position;
 };
@@ -144,8 +144,8 @@ void PasswordManagerPresenterTest::SortAndCheckPositions(
       if (entry.federation != nullptr)
         form->federation_origin = url::Origin(GURL(entry.federation));
     }
-    if (entry.affiliated_web_realm)
-      form->affiliated_web_realm = entry.affiliated_web_realm;
+    if (entry.app_display_name)
+      form->app_display_name = entry.app_display_name;
     list.push_back(std::move(form));
     if (entry.expected_position >= 0)
       expected_number_of_unique_entries++;
@@ -303,16 +303,21 @@ TEST_F(PasswordManagerPresenterTest, Sorting_PasswordExceptions) {
 
 TEST_F(PasswordManagerPresenterTest, Sorting_AndroidCredentials) {
   const SortEntry test_cases[] = {
-      {"https://alpha.com", "user", "secret", nullptr, nullptr, 1},
-      {"android://hash@com.alpha", "user", "secret", "https://alpha.com",
-       nullptr, 0},
-      {"android://hash@com.alpha", "user", "secret", "https://alpha.com",
+      // Regular Web Credential.
+      {"https://alpha.example.com", "user", "secret", nullptr, nullptr, 3},
+      // First Android Credential.
+      {"android://hash@com.example.alpha", "user", "secret", nullptr, nullptr,
+       0},
+      // App display name is irrelevant, this should be hidden as a duplicate
+      // of the first one.
+      {"android://hash@com.example.alpha", "user", "secret", "Example App",
        nullptr, -1},
-      {"android://hash@com.alpha", "user", "secret", nullptr, nullptr, 2},
-      {"android://hash@com.betta.android", "user", "secret",
-       "https://betta.com", nullptr, 3},
-      {"android://hash@com.betta.android", "user", "secret", nullptr, nullptr,
-       4}};
+      // Apps with different package names are distinct.
+      {"android://hash@com.example.beta", "user", "secret", nullptr, nullptr,
+       1},
+      // Apps with same package name but different hashes are distinct.
+      {"android://hash_different@com.example.alpha", "user", "secret", nullptr,
+       nullptr, 2}};
   SortAndCheckPositions(test_cases, arraysize(test_cases),
                         PasswordEntryType::SAVED);
 }

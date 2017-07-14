@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <string>
+#include <vector>
 
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -21,6 +22,9 @@ namespace {
 // The URL prefixes that are removed from shown origin.
 const char* const kRemovedPrefixes[] = {"m.", "mobile.", "www."};
 
+constexpr char kPlayStoreAppPrefix[] =
+    "https://play.google.com/store/apps/details?id=";
+
 }  // namespace
 
 std::string SplitByDotAndReverse(base::StringPiece host) {
@@ -30,41 +34,24 @@ std::string SplitByDotAndReverse(base::StringPiece host) {
   return base::JoinString(parts, ".");
 }
 
-std::string StripAndroidAndReverse(const std::string& origin) {
-  const int kAndroidAppSchemeAndDelimiterLength = sizeof("android://") - 1;
-  return SplitByDotAndReverse(
-      base::StringPiece(&origin[kAndroidAppSchemeAndDelimiterLength],
-                        origin.length() - kAndroidAppSchemeAndDelimiterLength));
-}
+std::pair<std::string, GURL> GetShownOriginAndLinkUrl(
+    const autofill::PasswordForm& password_form) {
+  std::string shown_origin;
+  GURL link_url;
 
-std::string GetShownOriginAndLinkUrl(
-    const autofill::PasswordForm& password_form,
-    bool* is_android_uri,
-    GURL* link_url,
-    bool* origin_is_clickable) {
-  DCHECK(is_android_uri);
-  DCHECK(origin_is_clickable);
-  DCHECK(link_url);
-
-  password_manager::FacetURI facet_uri =
-      password_manager::FacetURI::FromPotentiallyInvalidSpec(
-          password_form.signon_realm);
-  *is_android_uri = facet_uri.IsValidAndroidFacetURI();
-  if (*is_android_uri) {
-    if (password_form.affiliated_web_realm.empty()) {
-      *origin_is_clickable = false;
-      // Since the full url should be shown in the tooltip even for
-      // non-clickable origins, return it as |link_url|.
-      *link_url = GURL(password_form.signon_realm);
-      return GetHumanReadableOriginForAndroidUri(facet_uri);
-    }
-    *origin_is_clickable = true;
-    *link_url = GURL(password_form.affiliated_web_realm);
-    return GetShownOrigin(*link_url);
+  FacetURI facet_uri =
+      FacetURI::FromPotentiallyInvalidSpec(password_form.signon_realm);
+  if (facet_uri.IsValidAndroidFacetURI()) {
+    shown_origin = password_form.app_display_name.empty()
+                       ? SplitByDotAndReverse(facet_uri.android_package_name())
+                       : password_form.app_display_name;
+    link_url = GURL(kPlayStoreAppPrefix + facet_uri.android_package_name());
+  } else {
+    shown_origin = GetShownOrigin(password_form.origin);
+    link_url = password_form.origin;
   }
-  *origin_is_clickable = true;
-  *link_url = password_form.origin;
-  return GetShownOrigin(password_form.origin);
+
+  return {std::move(shown_origin), std::move(link_url)};
 }
 
 std::string GetShownOrigin(const GURL& origin) {
