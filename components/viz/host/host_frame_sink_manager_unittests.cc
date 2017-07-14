@@ -131,10 +131,10 @@ TEST_F(HostFrameSinkManagerTest, CreateDestroyCompositorFrameSinkSupport) {
       nullptr /* client */, kFrameSinkId1, true /* is_root */,
       true /* handles_frame_sink_id_invalidation */,
       false /* needs_sync_points */);
-  EXPECT_TRUE(FrameSinkIdExists(support->frame_sink_id()));
+  EXPECT_TRUE(FrameSinkIdExists(kFrameSinkId1));
 
   support.reset();
-  EXPECT_FALSE(FrameSinkIdExists(support->frame_sink_id()));
+  EXPECT_FALSE(FrameSinkIdExists(kFrameSinkId1));
 }
 
 }  // namespace test
