@@ -1609,7 +1609,8 @@ int HttpCache::Transaction::DoSuccessfulSendRequest() {
 
   // Invalidate any cached GET with a successful PUT or DELETE.
   if (mode_ == WRITE && (method_ == "PUT" || method_ == "DELETE")) {
-    if (NonErrorResponse(new_response->headers->response_code())) {
+    if (NonErrorResponse(new_response->headers->response_code()) &&
+        (entry_ && !entry_->doomed)) {
       int ret = cache_->DoomEntry(cache_key_, NULL);
       DCHECK_EQ(OK, ret);
     }
@@ -2902,8 +2903,10 @@ void HttpCache::Transaction::OnCacheLockTimeout(base::TimeTicks start_time) {
 
 void HttpCache::Transaction::DoomPartialEntry(bool delete_object) {
   DVLOG(2) << "DoomPartialEntry";
-  int rv = cache_->DoomEntry(cache_key_, NULL);
-  DCHECK_EQ(OK, rv);
+  if (entry_ && !entry_->doomed) {
+    int rv = cache_->DoomEntry(cache_key_, NULL);
+    DCHECK_EQ(OK, rv);
+  }
   cache_->DoneWithEntry(entry_, this, false /* process_cancel */,
                         partial_ != nullptr);
   entry_ = NULL;
