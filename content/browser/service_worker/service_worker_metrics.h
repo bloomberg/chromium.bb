@@ -282,7 +282,8 @@ class ServiceWorkerMetrics {
       base::TimeDelta time,
       EmbeddedWorkerStatus initial_worker_status,
       StartSituation start_situation,
-      bool did_navigation_preload);
+      bool did_navigation_preload,
+      const GURL& url);
 
   // Records the result of trying to stop a worker.
   static void RecordWorkerStopped(StopStatus status);

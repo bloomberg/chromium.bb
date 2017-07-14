@@ -311,6 +311,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   GetReceiverPresentationServiceDelegate(
       content::WebContents* web_contents) override;
   void RecordURLMetric(const std::string& metric, const GURL& url) override;
+  std::string GetMetricSuffixForURL(const GURL& url) override;
   std::vector<std::unique_ptr<content::NavigationThrottle>>
   CreateThrottlesForNavigation(content::NavigationHandle* handle) override;
   std::unique_ptr<content::NavigationUIData> GetNavigationUIData(

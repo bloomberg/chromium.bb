@@ -204,16 +204,12 @@ void RecordSuffixedMediumTimeHistogram(const std::string& name,
 
 // Use this for histograms with dynamically generated names, which
 // otherwise can't use the UMA_HISTOGRAM macro without code duplication.
-void RecordSuffixedStatusHistogram(const std::string& name,
-                                   const std::string& suffix,
-                                   ServiceWorkerStatusCode status) {
-  const std::string name_with_suffix = name + suffix;
+void RecordHistogramEnum(const std::string& name, int value, int max_value) {
   // This unrolls UMA_HISTOGRAM_ENUMERATION.
   base::HistogramBase* histogram_pointer = base::LinearHistogram::FactoryGet(
-      name_with_suffix, 1, SERVICE_WORKER_ERROR_MAX_VALUE,
-      SERVICE_WORKER_ERROR_MAX_VALUE + 1,
+      name, 1, max_value, max_value + 1,
       base::HistogramBase::kUmaTargetedHistogramFlag);
-  histogram_pointer->Add(status);
+  histogram_pointer->Add(value);
 }
 
 void RecordURLMetricOnUI(const std::string& metric_name, const GURL& url) {
@@ -364,8 +360,11 @@ const char* ServiceWorkerMetrics::StartSituationToString(
 }
 
 ServiceWorkerMetrics::Site ServiceWorkerMetrics::SiteFromURL(const GURL& url) {
-  // UIThreadSearchTermsData::GoogleBaseURLValue() returns the google base
-  // URL, but not available in content layer.
+  // TODO(falken): Plumb through ContentBrowserClient::GetMetricSuffixForURL or
+  // figure out a way to remove ServiceWorkerMetrics::Site entirely instead of
+  // hardcoding sites in //content.
+
+  // This inaccurately matches google.example.com, see the TODO above.
   static const char google_like_scope_prefix[] = "https://www.google.";
   static const char ntp_scope_path[] = "/_/chrome/";
   if (base::StartsWith(url.spec(), google_like_scope_prefix,
@@ -380,8 +379,13 @@ ServiceWorkerMetrics::Site ServiceWorkerMetrics::SiteFromURL(const GURL& url) {
     return ServiceWorkerMetrics::Site::PLUS;
   if (host == "inbox.google.com")
     return ServiceWorkerMetrics::Site::INBOX;
-  if ((host == "docs.google.com") || (host == "drive.google.com"))
+  if (host == "docs.google.com")
     return ServiceWorkerMetrics::Site::DOCS;
+  if (host == "drive.google.com") {
+    // TODO(falken): This should not be DOCS but historically we logged them
+    // together.
+    return ServiceWorkerMetrics::Site::DOCS;
+  }
   return ServiceWorkerMetrics::Site::OTHER;
 }
 
@@ -486,8 +490,9 @@ void ServiceWorkerMetrics::RecordStartWorkerStatus(
 
   UMA_HISTOGRAM_ENUMERATION("ServiceWorker.StartWorker.Status", status,
                             SERVICE_WORKER_ERROR_MAX_VALUE);
-  RecordSuffixedStatusHistogram("ServiceWorker.StartWorker.StatusByPurpose",
-                                EventTypeToSuffix(purpose), status);
+  RecordHistogramEnum(std::string("ServiceWorker.StartWorker.StatusByPurpose") +
+                          EventTypeToSuffix(purpose),
+                      status, SERVICE_WORKER_ERROR_MAX_VALUE);
   UMA_HISTOGRAM_ENUMERATION("ServiceWorker.StartWorker.Purpose",
                             static_cast<int>(purpose),
                             static_cast<int>(EventType::NUM_TYPES));
@@ -520,7 +525,8 @@ void ServiceWorkerMetrics::RecordActivatedWorkerPreparationForMainFrame(
     base::TimeDelta time,
     EmbeddedWorkerStatus initial_worker_status,
     StartSituation start_situation,
-    bool did_navigation_preload) {
+    bool did_navigation_preload,
+    const GURL& url) {
   // Record the worker preparation type.
   WorkerPreparationType preparation =
       GetWorkerPreparationType(initial_worker_status, start_situation);
@@ -528,6 +534,17 @@ void ServiceWorkerMetrics::RecordActivatedWorkerPreparationForMainFrame(
       "ServiceWorker.ActivatedWorkerPreparationForMainFrame.Type",
       static_cast<int>(preparation),
       static_cast<int>(WorkerPreparationType::NUM_TYPES));
+  std::string suffix =
+      GetContentClient()->browser()->GetMetricSuffixForURL(url);
+  if (!suffix.empty()) {
+    RecordHistogramEnum(
+        std::string(
+            "ServiceWorker.ActivatedWorkerPreparationForMainFrame.Type.") +
+            suffix,
+        static_cast<int>(preparation),
+        static_cast<int>(WorkerPreparationType::NUM_TYPES) - 1);
+  }
+
   if (did_navigation_preload) {
     // TODO(falken): Consider removing this UMA if it turns out the same as
     // ServiceWorker.NavPreload.WorkerPreparationType. That UMA is logged at
