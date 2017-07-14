@@ -1,6 +1,6 @@
 {
   "name": "software rendering list",
-  "version": "13.9",
+  "version": "13.10",
   "entries": [
     {
       "id": 1,
@@ -1518,6 +1518,18 @@
       "gl_renderer": "Mali-T760.*",
       "features": [
         "accelerated_2d_canvas",
+        "gpu_rasterization"
+      ]
+    },
+    {
+      "id": 148,
+      "description": "VideoCore V has corrupt rendering with GPU Rasterization",
+      "cr_bugs": [710273],
+      "os": {
+        "type": "android"
+      },
+      "gl_renderer": ".*VideoCore V.*",
+      "features": [
         "gpu_rasterization"
       ]
     }
