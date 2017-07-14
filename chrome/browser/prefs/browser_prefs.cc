@@ -239,6 +239,7 @@
 #include "components/invalidation/impl/invalidator_storage.h"
 #include "components/onc/onc_pref_names.h"
 #include "components/quirks/quirks_manager.h"
+#include "extensions/browser/api/lock_screen_data/lock_screen_item_storage.h"
 #else
 #include "chrome/browser/extensions/default_apps.h"
 #endif
@@ -406,6 +407,8 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   chromeos::WallpaperManager::RegisterPrefs(registry);
   chromeos::echo_offer::RegisterPrefs(registry);
   extensions::ExtensionAssetsManagerChromeOS::RegisterPrefs(registry);
+  extensions::lock_screen_data::LockScreenItemStorage::RegisterLocalState(
+      registry);
   invalidation::InvalidatorStorage::RegisterPrefs(registry);
   ::onc::RegisterPrefs(registry);
   policy::AutoEnrollmentClient::RegisterPrefs(registry);
