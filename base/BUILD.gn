@@ -2723,11 +2723,8 @@ if (is_android) {
       "test/android/javatests/src/org/chromium/base/test/util/TimeoutScale.java",
       "test/android/javatests/src/org/chromium/base/test/util/UserActionTester.java",
       "test/android/javatests/src/org/chromium/base/test/util/UrlUtils.java",
-      "test/android/javatests/src/org/chromium/base/test/util/parameter/BaseParameter.java",
-      "test/android/javatests/src/org/chromium/base/test/util/parameter/Parameter.java",
-      "test/android/javatests/src/org/chromium/base/test/util/parameter/Parameterizable.java",
-      "test/android/javatests/src/org/chromium/base/test/util/parameter/ParameterizedTest.java",
-      "test/android/javatests/src/org/chromium/base/test/util/parameter/parameters/MethodParameter.java",
+      "test/android/javatests/src/org/chromium/base/test/util/parameter/CommandLineParameter.java",
+      "test/android/javatests/src/org/chromium/base/test/util/parameter/SkipCommandLineParameterization.java",
     ]
   }
 

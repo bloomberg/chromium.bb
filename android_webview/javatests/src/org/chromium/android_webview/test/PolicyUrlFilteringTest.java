@@ -14,7 +14,7 @@ import org.chromium.android_webview.policy.AwPolicyProvider;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
-import org.chromium.base.test.util.parameter.ParameterizedTest;
+import org.chromium.base.test.util.parameter.SkipCommandLineParameterization;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.net.test.util.TestWebServer;
 import org.chromium.policy.AbstractAppRestrictionsProvider;
@@ -63,7 +63,7 @@ public class PolicyUrlFilteringTest extends AwTestBase {
     @MediumTest
     @Feature({"AndroidWebView", "Policy"})
     // Run in single process only. crbug.com/615484
-    @ParameterizedTest.Set
+    @SkipCommandLineParameterization
     @RetryOnFailure
     public void testBlacklistedUrl() throws Throwable {
         final AwPolicyProvider testProvider =
@@ -91,7 +91,7 @@ public class PolicyUrlFilteringTest extends AwTestBase {
             @Policies.Item(key = sBlacklistPolicyName, stringArray = {"*"}),
             @Policies.Item(key = sWhitelistPolicyName, stringArray = {sFooWhitelistFilter})})
     // Run in single process only. crbug.com/660517
-    @ParameterizedTest.Set
+    @SkipCommandLineParameterization
     public void testWhitelistedUrl() throws Throwable {
         navigateAndCheckOutcome(mFooTestUrl, 0 /* error count before */, 0 /* error count after */);
 

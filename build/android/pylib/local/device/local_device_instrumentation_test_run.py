@@ -319,7 +319,6 @@ class LocalDeviceInstrumentationTestRun(
     extras = {}
 
     flags_to_add = []
-    flags_to_remove = []
     test_timeout_scale = None
     if self._test_instance.coverage_directory:
       coverage_basename = '%s.ec' % ('%s_group' % test[0]['method']
@@ -375,9 +374,8 @@ class LocalDeviceInstrumentationTestRun(
         target = '%s/%s' % (
             self._test_instance.test_package, self._test_instance.test_runner)
       extras['class'] = test_name
-      if 'flags' in test:
-        flags_to_add.extend(test['flags'].add)
-        flags_to_remove.extend(test['flags'].remove)
+      if 'flags' in test and test['flags']:
+        flags_to_add.extend(test['flags'])
       timeout = self._GetTimeoutFromAnnotations(
         test['annotations'], test_display_name)
 
@@ -398,10 +396,9 @@ class LocalDeviceInstrumentationTestRun(
       flags_to_add.append('--render-test-output-dir=%s' %
                           render_tests_device_output_dir)
 
-    if flags_to_add or flags_to_remove:
+    if flags_to_add:
       self._CreateFlagChangerIfNeeded(device)
-      self._flag_changers[str(device)].PushFlags(
-        add=flags_to_add, remove=flags_to_remove)
+      self._flag_changers[str(device)].PushFlags(add=flags_to_add)
 
     time_ms = lambda: int(time.time() * 1e3)
     start_ms = time_ms()
@@ -433,7 +430,7 @@ class LocalDeviceInstrumentationTestRun(
         result_code, result_bundle, statuses, start_ms, duration_ms)
 
     def restore_flags():
-      if flags_to_add or flags_to_remove:
+      if flags_to_add:
         self._flag_changers[str(device)].Restore()
 
     def restore_timeout_scale():
@@ -480,7 +477,7 @@ class LocalDeviceInstrumentationTestRun(
         result.SetLink('logcat', logcat_url)
 
     # Update the result name if the test used flags.
-    if flags_to_add or flags_to_remove:
+    if flags_to_add:
       for r in results:
         if r.GetName() == test_name:
           r.SetName(test_display_name)

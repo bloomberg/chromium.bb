@@ -16,7 +16,7 @@ import org.chromium.android_webview.test.TestAwContentsClient.OnReceivedLoginReq
 import org.chromium.android_webview.test.TestAwContentsClient.PictureListenerHelper;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.parameter.ParameterizedTest;
+import org.chromium.base.test.util.parameter.SkipCommandLineParameterization;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageStartedHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnReceivedErrorHelper;
 
@@ -25,7 +25,7 @@ import java.util.concurrent.Callable;
 /**
  * Test suite for AwContentsClientCallbackHelper.
  */
-@ParameterizedTest.Set  // These are unit tests. No need to repeat for multiprocess.
+@SkipCommandLineParameterization // These are unit tests. No need to repeat for multiprocess.
 public class AwContentsClientCallbackHelperTest extends AwTestBase {
     /**
      * Callback helper for OnLoadedResource.

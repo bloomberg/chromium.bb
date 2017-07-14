@@ -31,7 +31,7 @@ import org.chromium.base.process_launcher.ChildProcessConnection;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.parameter.ParameterizedTest;
+import org.chromium.base.test.util.parameter.SkipCommandLineParameterization;
 import org.chromium.content.browser.BindingManager;
 import org.chromium.content.browser.ChildProcessLauncherHelper;
 import org.chromium.content_public.common.ContentUrlConstants;
@@ -615,7 +615,7 @@ public class AwContentsTest extends AwTestBase {
     @Feature({"AndroidWebView"})
     @SmallTest
     @CommandLineFlags.Add(AwSwitches.WEBVIEW_SANDBOXED_RENDERER)
-    @ParameterizedTest.Set
+    @SkipCommandLineParameterization
     public void testSandboxedRendererWorks() throws Throwable {
         MockBindingManager bindingManager = new MockBindingManager();
         ChildProcessLauncherHelper.setBindingManagerForTesting(bindingManager);
@@ -644,7 +644,7 @@ public class AwContentsTest extends AwTestBase {
     @Feature({"AndroidWebView"})
     @SmallTest
     @CommandLineFlags.Add(AwSwitches.WEBVIEW_SANDBOXED_RENDERER)
-    @ParameterizedTest.Set
+    @SkipCommandLineParameterization
     public void testRendererPriorityStartsHigh() throws Throwable {
         MockBindingManager bindingManager = new MockBindingManager();
         ChildProcessLauncherHelper.setBindingManagerForTesting(bindingManager);
@@ -666,7 +666,7 @@ public class AwContentsTest extends AwTestBase {
     @Feature({"AndroidWebView"})
     @SmallTest
     @CommandLineFlags.Add(AwSwitches.WEBVIEW_SANDBOXED_RENDERER)
-    @ParameterizedTest.Set
+    @SkipCommandLineParameterization
     public void testRendererPriorityLow() throws Throwable {
         MockBindingManager bindingManager = new MockBindingManager();
         ChildProcessLauncherHelper.setBindingManagerForTesting(bindingManager);
@@ -696,7 +696,7 @@ public class AwContentsTest extends AwTestBase {
     @Feature({"AndroidWebView"})
     @SmallTest
     @CommandLineFlags.Add(AwSwitches.WEBVIEW_SANDBOXED_RENDERER)
-    @ParameterizedTest.Set
+    @SkipCommandLineParameterization
     public void testRendererPriorityManaged() throws Throwable {
         MockBindingManager bindingManager = new MockBindingManager();
         ChildProcessLauncherHelper.setBindingManagerForTesting(bindingManager);
@@ -729,7 +729,7 @@ public class AwContentsTest extends AwTestBase {
     @SmallTest
     @UiThreadTest
     @CommandLineFlags.Add(AwSwitches.WEBVIEW_SANDBOXED_RENDERER)
-    @ParameterizedTest.Set
+    @SkipCommandLineParameterization
     public void testPauseDestroyResume() throws Throwable {
         AwContents awContents;
         awContents = createAwTestContainerView(mContentsClient).getAwContents();
