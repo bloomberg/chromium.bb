@@ -63,6 +63,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         bug=1966) # angle bug ID
 
     # Windows only.
+    self.Fail('conformance/glsl/bugs/sampler-struct-function-arg.html',
+        ['win'], bug=2103) # angle bug ID
     self.Fail('conformance2/rendering/blitframebuffer-outside-readbuffer.html',
         ['win', 'd3d11'], bug=644740)
     self.Fail('conformance2/textures/misc/tex-base-level-bug.html',
@@ -70,6 +72,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('conformance2/textures/svg_image/' +
         'tex-2d-rgb565-rgb-unsigned_short_5_6_5.html',
         ['win'], bug=736926)
+    self.Fail('conformance2/uniforms/uniform-blocks-with-arrays.html',
+        ['win'], bug=2103) # angle bug ID
 
     # Win / NVidia
     self.Flaky('deqp/functional/gles3/fbomultisample*',
@@ -382,6 +386,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', ('nvidia', 0xfe9)], bug=654187)
 
     # Mac AMD
+    self.Fail('conformance/rendering/texture-switch-performance.html',
+        ['mac', 'amd'], bug=735483)
+    self.Fail('conformance2/rendering/texture-switch-performance.html',
+        ['mac', 'amd'], bug=735483)
     self.Fail('deqp/functional/gles3/transformfeedback/' +
         'array_interleaved_lines.html',
         ['mac', 'amd'], bug=483282)
@@ -587,6 +595,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'nvidia'], bug=679677)
     self.Fail('conformance2/rendering/framebuffer-texture-level1.html',
         ['linux', 'nvidia', 'opengl'], bug=680278)
+    self.Fail('conformance2/rendering/multisampling-fragment-evaluation.html',
+        ['linux', 'nvidia', 'no_passthrough'], bug=682815)
     self.Fail('conformance2/textures/image/' +
         'tex-3d-rg8ui-rg_integer-unsigned_byte.html',
         ['linux', ('nvidia', 0xf02)], bug=680282)

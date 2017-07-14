@@ -195,6 +195,9 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'nvidia', 'passthrough', 'd3d11'], bug=737016)
 
     # Win failures
+    # TODO(kbr): re-enable suppression for same test below once fixed.
+    self.Fail('conformance/glsl/bugs/sampler-struct-function-arg.html',
+        ['win'], bug=2103) # angle bug ID
     # Note that the following test seems to pass, but it may still be flaky.
     self.Fail('conformance/glsl/constructors/' +
               'glsl-construct-vec-mat-index.html',
@@ -314,8 +317,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'intel', 'opengl'], bug=1007) # angle bug ID
     self.Fail('conformance/uniforms/uniform-default-values.html',
         ['win', 'intel', 'opengl'], bug=1007) # angle bug ID
-    self.Fail('conformance/glsl/bugs/sampler-struct-function-arg.html',
-        ['win10', 'intel', 'opengl'], bug=1007) # angle bug ID
+    # self.Fail('conformance/glsl/bugs/sampler-struct-function-arg.html',
+    #     ['win10', 'intel', 'opengl'], bug=1007) # angle bug ID
     self.Fail('conformance/glsl/variables/gl-pointcoord.html',
         ['win10', 'intel', 'opengl'], bug=1007) # angle bug ID
 
@@ -376,6 +379,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['mac', 'amd', 'no_passthrough'], bug=625365)
     self.Fail('conformance/rendering/clipping-wide-points.html',
         ['mac', 'amd'], bug=642822)
+    self.Fail('conformance/rendering/texture-switch-performance.html',
+        ['mac', 'amd'], bug=735483)
 
     # Mac Retina NVidia failures
     self.Fail('conformance/attribs/gl-disabled-vertex-attrib.html',
@@ -468,6 +473,16 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Skip('conformance/textures/misc/texture-npot-video.html',
         ['android', 'android-webview-instrumentation', 'no_passthrough'],
               bug=352645)
+    # New video-to-luminance-alpha tests are failing on Android right now.
+    self.Fail('conformance/textures/video/' +
+        'tex-2d-alpha-alpha-unsigned_byte.html',
+        ['android'], bug=733599)
+    self.Fail('conformance/textures/video/' +
+        'tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html',
+        ['android'], bug=733599)
+    self.Fail('conformance/textures/video/' +
+        'tex-2d-luminance-luminance-unsigned_byte.html',
+        ['android'], bug=733599)
     # This crashes in Android WebView on the Nexus 6, preventing the
     # suite from running further. Rather than add multiple
     # suppressions, skip it until it's passing at least in content
