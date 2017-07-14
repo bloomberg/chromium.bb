@@ -718,23 +718,21 @@ void aom_highbd_upsampled_pred_c(uint16_t *comp_pred, int width, int height,
                                   CONVERT_TO_BYTEPTR(comp_pred), width, NULL,
                                   -1, kernel, 16, width, height, bd);
     } else {
-      DECLARE_ALIGNED(16, uint8_t,
-                      temp[((MAX_SB_SIZE * 2 + 16) + 16) * MAX_SB_SIZE]);
-      const uint16_t *ref;
+      DECLARE_ALIGNED(16, uint16_t,
+                      temp[((MAX_SB_SIZE + 16) + 16) * MAX_SB_SIZE]);
       const int16_t *kernel_x;
       const int16_t *kernel_y;
       int intermediate_height;
-      ref = CONVERT_TO_SHORTPTR(ref8);
       kernel_x = av1_get_interp_filter_subpel_kernel(filter, subpel_x_q3 << 1);
       kernel_y = av1_get_interp_filter_subpel_kernel(filter, subpel_y_q3 << 1);
       intermediate_height =
           (((height - 1) * 8 + subpel_y_q3) >> 3) + filter.taps;
       assert(intermediate_height <= (MAX_SB_SIZE * 2 + 16) + 16);
       /*Directly call C versions to allow this to work for small (2x2) sizes.*/
-      aom_highbd_convolve8_horiz_c(
-          CONVERT_TO_BYTEPTR(ref - ref_stride * ((filter.taps >> 1) - 1)),
-          ref_stride, CONVERT_TO_BYTEPTR(temp), MAX_SB_SIZE, kernel_x, 16, NULL,
-          -1, width, intermediate_height, bd);
+      aom_highbd_convolve8_horiz_c(ref8 - ref_stride * ((filter.taps >> 1) - 1),
+                                   ref_stride, CONVERT_TO_BYTEPTR(temp),
+                                   MAX_SB_SIZE, kernel_x, 16, NULL, -1, width,
+                                   intermediate_height, bd);
       aom_highbd_convolve8_vert_c(
           CONVERT_TO_BYTEPTR(temp + MAX_SB_SIZE * ((filter.taps >> 1) - 1)),
           MAX_SB_SIZE, CONVERT_TO_BYTEPTR(comp_pred), width, NULL, -1, kernel_y,
