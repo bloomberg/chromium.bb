@@ -85,9 +85,13 @@ class CONTENT_EXPORT BrowserMessageFilter
 
   // Adds an associated interface factory to this filter. Must be called before
   // RegisterAssociatedInterfaces().
+  //
+  // |filter_removed_callback| is called on the IO thread when this filter is
+  // removed.
   void AddAssociatedInterface(
       const std::string& name,
-      const IPC::ChannelProxy::GenericAssociatedInterfaceFactory& factory);
+      const IPC::ChannelProxy::GenericAssociatedInterfaceFactory& factory,
+      const base::OnceClosure filter_removed_callback);
 
   // Can be called on any thread, after OnChannelConnected is called.
   base::ProcessHandle PeerHandle();
@@ -142,6 +146,9 @@ class CONTENT_EXPORT BrowserMessageFilter
   std::vector<std::pair<std::string,
                         IPC::ChannelProxy::GenericAssociatedInterfaceFactory>>
       associated_interfaces_;
+
+  // Callbacks to be called in OnFilterRemoved().
+  std::vector<base::OnceClosure> filter_removed_callbacks_;
 };
 
 struct BrowserMessageFilterTraits {
