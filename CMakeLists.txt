@@ -401,6 +401,7 @@ endif ()
 if (BUILD_SHARED_LIBS)
   include("${AOM_ROOT}/build/cmake/exports.cmake")
   setup_exports_target()
+  set_target_properties(aom PROPERTIES SOVERSION 0)
 endif ()
 
 # Aomedia documentation rule.
