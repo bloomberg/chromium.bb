@@ -9,7 +9,10 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
+#include "ui/app_list/app_list_features.h"
 #include "ui/app_list/test/app_list_test_view_delegate.h"
+#include "ui/app_list/views/app_list_view.h"
 #include "ui/app_list/views/search_box_view_delegate.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/test/widget_test.h"
@@ -43,16 +46,31 @@ class KeyPressCounterView : public views::View {
 };
 
 class SearchBoxViewTest : public views::test::WidgetTest,
-                          public SearchBoxViewDelegate {
+                          public SearchBoxViewDelegate,
+                          public testing::WithParamInterface<bool> {
  public:
-  SearchBoxViewTest() : query_changed_count_(0) {}
-  ~SearchBoxViewTest() override {}
+  SearchBoxViewTest() = default;
+  ~SearchBoxViewTest() override = default;
 
   // Overridden from testing::Test:
   void SetUp() override {
     views::test::WidgetTest::SetUp();
+
+    if (testing::UnitTest::GetInstance()->current_test_info()->value_param()) {
+      // Current test is parameterized.
+      test_with_fullscreen_ = GetParam();
+      if (test_with_fullscreen_) {
+        scoped_feature_list_.InitAndEnableFeature(
+            features::kEnableFullscreenAppList);
+      }
+    }
+
+    gfx::NativeView parent = GetContext();
+    app_list_view_ = new AppListView(&view_delegate_);
+    app_list_view_->Initialize(parent, 0, false, false);
+
     widget_ = CreateTopLevelPlatformWidget();
-    view_ = new SearchBoxView(this, &view_delegate_);
+    view_ = new SearchBoxView(this, &view_delegate_, app_list_view_);
     counter_view_ = new KeyPressCounterView();
     widget_->GetContentsView()->AddChildView(view_);
     widget_->GetContentsView()->AddChildView(counter_view_);
@@ -60,12 +78,15 @@ class SearchBoxViewTest : public views::test::WidgetTest,
   }
 
   void TearDown() override {
+    app_list_view_->GetWidget()->Close();
     widget_->CloseNow();
     views::test::WidgetTest::TearDown();
   }
 
  protected:
   SearchBoxView* view() { return view_; }
+
+  bool test_with_fullscreen() { return test_with_fullscreen_; }
 
   void SetLongAutoLaunchTimeout() {
     // Sets a long timeout that lasts longer than the test run.
@@ -120,14 +141,21 @@ class SearchBoxViewTest : public views::test::WidgetTest,
   AppListTestViewDelegate view_delegate_;
   views::Widget* widget_;
   SearchBoxView* view_;
+  AppListView* app_list_view_ = nullptr;
   KeyPressCounterView* counter_view_;
   base::string16 last_query_;
-  int query_changed_count_;
+  int query_changed_count_ = 0;
+  bool test_with_fullscreen_ = false;
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchBoxViewTest);
 };
 
-TEST_F(SearchBoxViewTest, Basic) {
+// Instantiate the Boolean which is used to toggle the Fullscreen app list in
+// the parameterized tests.
+INSTANTIATE_TEST_CASE_P(, SearchBoxViewTest, testing::Bool());
+
+TEST_P(SearchBoxViewTest, Basic) {
   KeyPress(ui::VKEY_A);
   EXPECT_EQ("a", GetLastQueryAndReset());
   EXPECT_EQ(1, GetQueryChangedCountAndReset());
@@ -142,7 +170,7 @@ TEST_F(SearchBoxViewTest, Basic) {
   EXPECT_TRUE(GetLastQueryAndReset().empty());
 }
 
-TEST_F(SearchBoxViewTest, CancelAutoLaunch) {
+TEST_P(SearchBoxViewTest, CancelAutoLaunch) {
   SetLongAutoLaunchTimeout();
   ASSERT_NE(base::TimeDelta(), GetAutoLaunchTimeout());
 
@@ -162,6 +190,17 @@ TEST_F(SearchBoxViewTest, CancelAutoLaunch) {
   SetLongAutoLaunchTimeout();
   view()->ClearSearch();
   EXPECT_EQ(base::TimeDelta(), GetAutoLaunchTimeout());
+}
+
+TEST_P(SearchBoxViewTest, CloseButtonTest) {
+  if (!test_with_fullscreen())
+    return;
+
+  KeyPress(ui::VKEY_A);
+  EXPECT_TRUE(view()->IsCloseButtonVisible());
+
+  view()->ClearSearch();
+  EXPECT_FALSE(view()->IsCloseButtonVisible());
 }
 
 }  // namespace test

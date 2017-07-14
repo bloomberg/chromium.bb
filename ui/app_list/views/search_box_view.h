@@ -28,6 +28,7 @@ enum SearchBoxFocus {
   FOCUS_BACK_BUTTON,    // Back button, only responds to ENTER
   FOCUS_SEARCH_BOX,     // Nothing else has partial focus
   FOCUS_MIC_BUTTON,     // Mic button, only responds to ENTER
+  FOCUS_CLOSE_BUTTON,   // Close button, only responds to ENTER
   FOCUS_CONTENTS_VIEW,  // Something outside the SearchBox is selected
 };
 
@@ -67,6 +68,7 @@ class APP_LIST_EXPORT SearchBoxView : public views::View,
 
   views::ImageButton* back_button();
   views::Textfield* search_box() { return search_box_; }
+  bool IsCloseButtonVisible() const;
 
   void set_contents_view(views::View* contents_view) {
     contents_view_ = contents_view;
@@ -143,15 +145,17 @@ class APP_LIST_EXPORT SearchBoxView : public views::View,
 
   SearchBoxViewDelegate* delegate_;     // Not owned.
   AppListViewDelegate* view_delegate_;  // Not owned.
-  AppListModel* model_;                 // Owned by the profile-keyed service.
+  AppListModel* model_ = nullptr;       // Owned by the profile-keyed service.
 
-  views::View* content_container_;        // Owned by views hierarchy.
-  views::ImageView* google_icon_;         // Owned by views hierarchy.
-  SearchBoxImageButton* back_button_;     // Owned by views hierarchy.
-  SearchBoxImageButton* speech_button_;   // Owned by views hierarchy.
-  views::Textfield* search_box_;          // Owned by views hierarchy.
-  views::View* contents_view_;            // Owned by views hierarchy.
-  app_list::AppListView* app_list_view_;  // Owned by views hierarchy.
+  // Owned by views hierarchy.
+  views::View* content_container_;
+  views::ImageView* google_icon_ = nullptr;
+  SearchBoxImageButton* back_button_ = nullptr;
+  SearchBoxImageButton* speech_button_ = nullptr;
+  SearchBoxImageButton* close_button_ = nullptr;
+  views::Textfield* search_box_;
+  views::View* contents_view_ = nullptr;
+  app_list::AppListView* app_list_view_;
 
   SearchBoxFocus focused_view_;  // Which element has TAB'd focus.
 
