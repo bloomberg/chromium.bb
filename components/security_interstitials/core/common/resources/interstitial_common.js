@@ -35,7 +35,6 @@ var HIDDEN_CLASS = 'hidden';
  */
 function sendCommand(cmd) {
 // <if expr="not is_ios">
-  window.domAutomationController.setAutomationId(1);
   window.domAutomationController.send(cmd);
 // </if>
 // <if expr="is_ios">
