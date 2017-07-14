@@ -152,7 +152,6 @@ void ScreenlockBridge::SetLockHandler(LockHandler* lock_handler) {
 void ScreenlockBridge::SetFocusedUser(const AccountId& account_id) {
   if (account_id == focused_account_id_)
     return;
-  PA_LOG(INFO) << "Focused user changed to " << account_id.Serialize();
   focused_account_id_ = account_id;
   for (auto& observer : observers_)
     observer.OnFocusedUserChanged(account_id);
