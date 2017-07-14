@@ -149,11 +149,6 @@ class TestVariationsService : public VariationsService {
   }
 
  private:
-  bool LoadSeed(VariationsSeed* seed) override {
-    if (!seed_stored_)
-      return false;
-    return seed->ParseFromString(stored_seed_data_);
-  }
 
   bool intercepts_fetch_;
   bool fetch_attempted_;
@@ -297,77 +292,6 @@ class VariationsServiceTest : public ::testing::Test {
 
   DISALLOW_COPY_AND_ASSIGN(VariationsServiceTest);
 };
-
-TEST_F(VariationsServiceTest, CreateTrialsFromSeed) {
-  // Create a local base::FieldTrialList, to hold the field trials created in
-  // this test.
-  base::FieldTrialList field_trial_list(nullptr);
-
-  // Create a variations service.
-  TestVariationsService service(
-      base::MakeUnique<web_resource::TestRequestAllowedNotifier>(&prefs_),
-      &prefs_, GetMetricsStateManager());
-  service.SetCreateTrialsFromSeedCalledForTesting(false);
-
-  // Store a seed.
-  service.StoreSeed(SerializeSeed(CreateTestSeed()), std::string(),
-                    std::string(), base::Time::Now(), false, false);
-  prefs_.SetInt64(prefs::kVariationsLastFetchTime,
-                  base::Time::Now().ToInternalValue());
-
-  // Check that field trials are created from the seed. Since the test study has
-  // only 1 experiment with 100% probability weight, we must be part of it.
-  EXPECT_TRUE(service.CreateTrialsFromSeed(base::FeatureList::GetInstance()));
-  EXPECT_EQ(kTestSeedExperimentName,
-            base::FieldTrialList::FindFullName(kTestSeedStudyName));
-}
-
-TEST_F(VariationsServiceTest, CreateTrialsFromSeedNoLastFetchTime) {
-  // Create a local base::FieldTrialList, to hold the field trials created in
-  // this test.
-  base::FieldTrialList field_trial_list(nullptr);
-
-  // Create a variations service
-  TestVariationsService service(
-      base::MakeUnique<web_resource::TestRequestAllowedNotifier>(&prefs_),
-      &prefs_, GetMetricsStateManager());
-  service.SetCreateTrialsFromSeedCalledForTesting(false);
-
-  // Store a seed. To simulate a first run, |prefs::kVariationsLastFetchTime|
-  // is left empty.
-  service.StoreSeed(SerializeSeed(CreateTestSeed()), std::string(),
-                    std::string(), base::Time::Now(), false, false);
-  EXPECT_EQ(0, prefs_.GetInt64(prefs::kVariationsLastFetchTime));
-
-  // Check that field trials are created from the seed. Since the test study has
-  // only 1 experiment with 100% probability weight, we must be part of it.
-  EXPECT_TRUE(service.CreateTrialsFromSeed(base::FeatureList::GetInstance()));
-  EXPECT_EQ(base::FieldTrialList::FindFullName(kTestSeedStudyName),
-            kTestSeedExperimentName);
-}
-
-TEST_F(VariationsServiceTest, CreateTrialsFromOutdatedSeed) {
-  // Create a local base::FieldTrialList, to hold the field trials created in
-  // this test.
-  base::FieldTrialList field_trial_list(nullptr);
-
-  // Create a variations service.
-  TestVariationsService service(
-      base::MakeUnique<web_resource::TestRequestAllowedNotifier>(&prefs_),
-      &prefs_, GetMetricsStateManager());
-  service.SetCreateTrialsFromSeedCalledForTesting(false);
-
-  // Store a seed, with a fetch time 31 days in the past.
-  const base::Time seed_date =
-      base::Time::Now() - base::TimeDelta::FromDays(31);
-  service.StoreSeed(SerializeSeed(CreateTestSeed()), std::string(),
-                    std::string(), seed_date, false, false);
-  prefs_.SetInt64(prefs::kVariationsLastFetchTime, seed_date.ToInternalValue());
-
-  // Check that field trials are not created from the seed.
-  EXPECT_FALSE(service.CreateTrialsFromSeed(base::FeatureList::GetInstance()));
-  EXPECT_TRUE(base::FieldTrialList::FindFullName(kTestSeedStudyName).empty());
-}
 
 TEST_F(VariationsServiceTest, GetVariationsServerURL) {
   const std::string default_variations_url =
