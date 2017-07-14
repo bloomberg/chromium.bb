@@ -1,6 +1,10 @@
 <!DOCTYPE html>
-<script src=../../resources/testharness.js></script>
-<script src=../../resources/testharnessreport.js></script>
+<html>
+<head>
+<script src=/resources/testharness.js></script>
+<script src=/resources/testharnessreport.js></script>
+</head>
+<body>
 <script>
 
 // Run captureStream() on different videos, and assert data is flowing.
@@ -8,7 +12,7 @@
 var makeAsyncTest = function(filename) {
   async_test(function(test) {
     var video = document.createElement('video');
-    video.src = "../../http/tests/media/resources/media-source/webm/" + filename;
+    video.src = "webm/" + filename;
     video.onerror = this.unreached_func("<video> error");
     video.play();
 
@@ -32,3 +36,5 @@ generate_tests(makeAsyncTest, [
 ]);
 
 </script>
+</body>
+</html>
