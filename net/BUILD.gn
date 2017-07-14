@@ -1028,6 +1028,11 @@ component("net") {
       "nqe/throughput_analyzer.cc",
       "nqe/throughput_analyzer.h",
       "nqe/weighted_observation.h",
+      "ntlm/ntlm_buffer_reader.cc",
+      "ntlm/ntlm_buffer_reader.h",
+      "ntlm/ntlm_buffer_writer.cc",
+      "ntlm/ntlm_buffer_writer.h",
+      "ntlm/ntlm_constants.h",
       "proxy/dhcp_proxy_script_adapter_fetcher_win.cc",
       "proxy/dhcp_proxy_script_adapter_fetcher_win.h",
       "proxy/dhcp_proxy_script_fetcher.cc",
@@ -1767,6 +1772,16 @@ component("net") {
       } else {
         sources -= [ "disk_cache/blockfile/mapped_file_avoid_mmap_posix.cc" ]
       }
+    }
+
+    if (is_win) {
+      sources -= [
+        "ntlm/ntlm_buffer_reader.cc",
+        "ntlm/ntlm_buffer_reader.h",
+        "ntlm/ntlm_buffer_writer.cc",
+        "ntlm/ntlm_buffer_writer.h",
+        "ntlm/ntlm_constants.h",
+      ]
     }
 
     if (!enable_built_in_dns) {
@@ -4829,6 +4844,8 @@ test("net_unittests") {
     "nqe/observation_buffer_unittest.cc",
     "nqe/socket_watcher_unittest.cc",
     "nqe/throughput_analyzer_unittest.cc",
+    "ntlm/ntlm_buffer_reader_unittest.cc",
+    "ntlm/ntlm_buffer_writer_unittest.cc",
     "proxy/dhcp_proxy_script_adapter_fetcher_win_unittest.cc",
     "proxy/dhcp_proxy_script_fetcher_factory_unittest.cc",
     "proxy/dhcp_proxy_script_fetcher_win_unittest.cc",
@@ -5240,6 +5257,13 @@ test("net_unittests") {
 
   if (!is_proto_quic && v8_use_external_startup_data) {
     deps += [ "//gin" ]
+  }
+
+  if (is_win) {
+    sources -= [
+      "ntlm/ntlm_buffer_reader_unittest.cc",
+      "ntlm/ntlm_buffer_writer_unittest.cc",
+    ]
   }
 
   if (!use_nss_certs) {
