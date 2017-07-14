@@ -145,6 +145,42 @@ cr.define('print_preview_test', function() {
   }
 
   /**
+   * @return {!print_preview.PrinterCapabilitiesResponse} The capabilities of
+   *     the Save as PDF destination.
+   */
+  function getPdfPrinter() {
+    return {
+      printerId: 'Save as PDF',
+      capabilities: {
+        version: '1.0',
+        printer: {
+          page_orientation: {
+            option: [
+              {type: 'AUTO', is_default: true},
+              {type: 'PORTRAIT'},
+              {type: 'LANDSCAPE'}
+            ]
+          },
+          color: {
+            option: [
+              {type: 'STANDARD_COLOR', is_default: true}
+            ]
+          },
+          media_size: {
+            option: [
+              { name: 'NA_LETTER',
+                width_microns: 0,
+                height_microns: 0,
+                is_default: true
+              }
+            ]
+          }
+        }
+      }
+    };
+  }
+
+  /**
    * Get the default media size for |device|.
    * @param {!print_preview.PrinterCapabilitiesResponse} device
    * @return {{width_microns: number,
@@ -533,36 +569,7 @@ cr.define('print_preview_test', function() {
       initialSettings.systemDefaultDestinationId_ = 'Save as PDF';
 
       // Set PDF printer
-      var device = {
-        printerId: 'Save as PDF',
-        capabilities: {
-          version: '1.0',
-          printer: {
-            page_orientation: {
-              option: [
-                {type: 'AUTO', is_default: true},
-                {type: 'PORTRAIT'},
-                {type: 'LANDSCAPE'}
-              ]
-            },
-            color: {
-              option: [
-                {type: 'STANDARD_COLOR', is_default: true}
-              ]
-            },
-            media_size: {
-              option: [
-                { name: 'NA_LETTER',
-                  width_microns: 0,
-                  height_microns: 0,
-                  is_default: true
-                }
-              ]
-            }
-          }
-        }
-      };
-      nativeLayer.setLocalDestinationCapabilities(device);
+      nativeLayer.setLocalDestinationCapabilities(getPdfPrinter());
 
       setInitialSettings();
       return nativeLayer.whenCalled('getInitialSettings').then(function() {
@@ -1318,7 +1325,9 @@ cr.define('print_preview_test', function() {
            *          printTicketStore: !print_preview.PrintTicketStore,
            *          cloudPrintInterface: print_preview
            *                                  .CloudPrintInterface,
-           *          documentInfo: print_preview.DocumentInfo}} args
+           *          documentInfo: print_preview.DocumentInfo,
+           *          openPdfInPreview: boolean,
+           *          showSystemDialog: boolean}} args
            *      The arguments that print() was called with.
            */
           function(args) {
@@ -1336,6 +1345,7 @@ cr.define('print_preview_test', function() {
             expectEquals(
                 mediaDefault.height_microns,
                 printTicketStore.mediaSize.getValue().height_microns);
+            return nativeLayer.whenCalled('startHideDialog');
           });
     });
 
@@ -1405,5 +1415,74 @@ cr.define('print_preview_test', function() {
             printPreview.destinationStore_.selectedDestination.id);
       });
     });
+
+    // Test that Mac "Open PDF in Preview" link is treated correctly as a
+    // local printer. See crbug.com/741341 and crbug.com/741528
+    if (cr.isMac) {
+      test('MacOpenPDFInPreview', function() {
+        var device = getPdfPrinter();
+        initialSettings.systemDefaultDestinationId_ = device.printerId;
+        return setupSettingsAndDestinationsWithCapabilities(device).
+            then(function() {
+              assertEquals(
+                device.printerId,
+                printPreview.destinationStore_.selectedDestination.id);
+              return nativeLayer.whenCalled('getPreview');
+            }).then(function() {
+              var openPdfPreviewLink = $('open-pdf-in-preview-link');
+              checkElementDisplayed(openPdfPreviewLink, true);
+              openPdfPreviewLink.click();
+              // Should result in a print call and dialog should hide
+              return nativeLayer.whenCalled('print');
+            }).then(
+                /**
+                 * @param {{destination: !print_preview.Destination,
+                 *          printTicketStore: !print_preview.PrintTicketStore,
+                 *          cloudPrintInterface: print_preview
+                 *                                  .CloudPrintInterface,
+                 *          documentInfo: print_preview.DocumentInfo,
+                 *          openPdfInPreview: boolean
+                 *          showSystemDialog: boolean}} args
+                 *      The arguments that print() was called with.
+                 */
+                function(args) {
+                  expectTrue(args.openPdfInPreview);
+                  return nativeLayer.whenCalled('startHideDialog');
+                });
+      });
+    }
+
+    // Test that the system dialog link works correctly on Windows
+    if (cr.isWindows) {
+      test('WinSystemDialogLink', function() {
+        return setupSettingsAndDestinationsWithCapabilities().
+            then(function() {
+              assertEquals(
+                'FooDevice',
+                printPreview.destinationStore_.selectedDestination.id);
+              return nativeLayer.whenCalled('getPreview');
+            }).then(function() {
+              var systemDialogLink = $('system-dialog-link');
+              checkElementDisplayed(systemDialogLink, true);
+              systemDialogLink.click();
+              // Should result in a print call and dialog should hide
+              return nativeLayer.whenCalled('print');
+            }).then(
+                /**
+                 * @param {{destination: !print_preview.Destination,
+                 *          printTicketStore: !print_preview.PrintTicketStore,
+                 *          cloudPrintInterface: print_preview
+                 *                                  .CloudPrintInterface,
+                 *          documentInfo: print_preview.DocumentInfo,
+                 *          openPdfInPreview: boolean
+                 *          showSystemDialog: boolean}} args
+                 *      The arguments that print() was called with.
+                 */
+                function(args) {
+                  expectTrue(args.showSystemDialog);
+                  return nativeLayer.whenCalled('startHideDialog');
+                });
+      });
+    }
   });
 });
