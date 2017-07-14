@@ -62,14 +62,6 @@ namespace blink {
 
 namespace {
 
-// Events for UMA. Do not reorder or delete. Add new events at the end, but
-// before SriResourceIntegrityMismatchEventCount.
-enum SriResourceIntegrityMismatchEvent {
-  kCheckingForIntegrityMismatch = 0,
-  kRefetchDueToIntegrityMismatch = 1,
-  kSriResourceIntegrityMismatchEventCount
-};
-
 #define DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, name)                      \
   case Resource::k##name: {                                                 \
     DEFINE_THREAD_SAFE_STATIC_LOCAL(                                        \
@@ -108,14 +100,6 @@ void AddRedirectsToTimingInfo(Resource* resource, ResourceTimingInfo* info) {
         !SecurityOrigin::AreSameSchemeHostPort(responses[i].Url(), new_url);
     info->AddRedirect(responses[i], cross_origin);
   }
-}
-
-void RecordSriResourceIntegrityMismatchEvent(
-    SriResourceIntegrityMismatchEvent event) {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(EnumerationHistogram, integrity_histogram,
-                                  ("sri.resource_integrity_mismatch_event",
-                                   kSriResourceIntegrityMismatchEventCount));
-  integrity_histogram.Count(event);
 }
 
 ResourceLoadPriority TypeToPriority(Resource::Type type) {
@@ -911,7 +895,6 @@ Resource* ResourceFetcher::MatchPreload(const FetchParameters& params,
 
   Resource* resource = it->value;
 
-  RecordSriResourceIntegrityMismatchEvent(kCheckingForIntegrityMismatch);
   if (resource->MustRefetchDueToIntegrityMetadata(params))
     return nullptr;
 
@@ -1029,9 +1012,7 @@ ResourceFetcher::DetermineRevalidationPolicy(
   // resource must be made to get the raw data. This is expected to be an
   // uncommon case, however, as it implies two same-origin requests to the same
   // resource, but with different integrity metadata.
-  RecordSriResourceIntegrityMismatchEvent(kCheckingForIntegrityMismatch);
   if (existing_resource->MustRefetchDueToIntegrityMetadata(fetch_params)) {
-    RecordSriResourceIntegrityMismatchEvent(kRefetchDueToIntegrityMismatch);
     return kReload;
   }
 
