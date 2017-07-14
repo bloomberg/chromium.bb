@@ -15,7 +15,7 @@
 #endif
 
 #include "base/logging.h"
-#include "base/numerics/saturated_arithmetic.h"
+#include "base/numerics/clamped_math.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "ui/gfx/geometry/insets.h"
@@ -69,8 +69,8 @@ static void SaturatedClampRange(int min, int max, int* origin, int* span) {
     return;
   }
 
-  int effective_span = base::SaturatedSubtraction(max, min);
-  int span_loss = base::SaturatedSubtraction(max, min + effective_span);
+  int effective_span = base::ClampSub(max, min);
+  int span_loss = base::ClampSub(max, base::ClampAdd(min, effective_span));
 
   // If the desired width is within the limits of ints, we can just
   // use the simple computations to represent the range precisely.
@@ -83,12 +83,13 @@ static void SaturatedClampRange(int min, int max, int* origin, int* span) {
   // Now we have to approximate. If one of min or max is close enough
   // to zero we choose to represent that one precisely. The other side is
   // probably practically "infinite", so we move it.
-  if (base::SaturatedAbsolute(max) < std::numeric_limits<int>::max() / 2) {
+  if (base::SafeUnsignedAbs(max) <
+      base::as_unsigned(std::numeric_limits<int>::max() / 2)) {
     // Maintain origin + span == max.
     *span = effective_span;
     *origin = max - effective_span;
-  } else if (base::SaturatedAbsolute(min) <
-             std::numeric_limits<int>::max() / 2) {
+  } else if (base::SafeUnsignedAbs(min) <
+             base::as_unsigned(std::numeric_limits<int>::max() / 2)) {
     // Maintain origin == min.
     *span = effective_span;
     *origin = min;
@@ -116,10 +117,8 @@ void Rect::Inset(int left, int top, int right, int bottom) {
   origin_ += Vector2d(left, top);
   // left+right might overflow/underflow, but width() - (left+right) might
   // overflow as well.
-  set_width(base::SaturatedSubtraction(width(),
-                                       base::SaturatedAddition(left, right)));
-  set_height(base::SaturatedSubtraction(height(),
-                                        base::SaturatedAddition(top, bottom)));
+  set_width(base::ClampSub(width(), base::ClampAdd(left, right)));
+  set_height(base::ClampSub(height(), base::ClampAdd(top, bottom)));
 }
 
 void Rect::Offset(int horizontal, int vertical) {
