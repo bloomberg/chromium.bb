@@ -10,7 +10,7 @@
 
 #include "content/browser/devtools/protocol/devtools_domain_handler.h"
 #include "content/browser/devtools/protocol/target.h"
-#include "content/browser/devtools/service_worker_devtools_manager.h"
+#include "content/browser/devtools/protocol/target_auto_attacher.h"
 #include "content/public/browser/devtools_agent_host_client.h"
 #include "content/public/browser/devtools_agent_host_observer.h"
 
@@ -24,7 +24,6 @@ namespace protocol {
 class TargetHandler : public DevToolsDomainHandler,
                       public Target::Backend,
                       public DevToolsAgentHostClient,
-                      public ServiceWorkerDevToolsManager::Observer,
                       public DevToolsAgentHostObserver {
  public:
   TargetHandler();
@@ -36,8 +35,8 @@ class TargetHandler : public DevToolsDomainHandler,
   void SetRenderFrameHost(RenderFrameHostImpl* host) override;
   Response Disable() override;
 
-  void UpdateServiceWorkers();
-  void UpdateFrames();
+  void DidCommitNavigation();
+  void RenderFrameHostChanged();
 
   // Domain implementation.
   Response SetDiscoverTargets(bool discover) override;
@@ -70,26 +69,14 @@ class TargetHandler : public DevToolsDomainHandler,
       override;
 
  private:
-  using HostsMap = std::map<std::string, scoped_refptr<DevToolsAgentHost>>;
   using RawHostsMap = std::map<std::string, DevToolsAgentHost*>;
 
-  void UpdateServiceWorkers(bool waiting_for_debugger);
-  void ReattachTargetsOfType(const HostsMap& new_hosts,
-                             const std::string& type,
-                             bool waiting_for_debugger);
   void TargetCreatedInternal(DevToolsAgentHost* host);
   void TargetInfoChangedInternal(DevToolsAgentHost* host);
   void TargetDestroyedInternal(DevToolsAgentHost* host);
   bool AttachToTargetInternal(DevToolsAgentHost* host,
                               bool waiting_for_debugger);
   void DetachFromTargetInternal(DevToolsAgentHost* host);
-
-  // ServiceWorkerDevToolsManager::Observer implementation.
-  void WorkerCreated(ServiceWorkerDevToolsAgentHost* host) override;
-  void WorkerReadyForInspection(ServiceWorkerDevToolsAgentHost* host) override;
-  void WorkerVersionInstalled(ServiceWorkerDevToolsAgentHost* host) override;
-  void WorkerVersionDoomed(ServiceWorkerDevToolsAgentHost* host) override;
-  void WorkerDestroyed(ServiceWorkerDevToolsAgentHost* host) override;
 
   // DevToolsAgentHostObserver implementation.
   bool ShouldForceDevToolsAgentHostCreation() override;
@@ -105,13 +92,9 @@ class TargetHandler : public DevToolsDomainHandler,
                        bool replaced_with_another_client) override;
 
   std::unique_ptr<Target::Frontend> frontend_;
+  TargetAutoAttacher auto_attacher_;
   bool discover_;
-  bool auto_attach_;
-  bool wait_for_debugger_on_start_;
-  bool attach_to_frames_;
-  RenderFrameHostImpl* render_frame_host_;
-  HostsMap attached_hosts_;
-  std::set<GURL> frame_urls_;
+  std::map<std::string, scoped_refptr<DevToolsAgentHost>> attached_hosts_;
   RawHostsMap reported_hosts_;
 
   DISALLOW_COPY_AND_ASSIGN(TargetHandler);
