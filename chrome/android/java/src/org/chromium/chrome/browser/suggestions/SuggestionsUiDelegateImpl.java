@@ -42,8 +42,6 @@ public class SuggestionsUiDelegateImpl implements SuggestionsUiDelegate {
 
         mHost = host;
         mReferencePool = referencePool;
-
-        addDestructionObserver(mSuggestionsSource);
     }
 
     @Override
@@ -95,6 +93,11 @@ public class SuggestionsUiDelegateImpl implements SuggestionsUiDelegate {
         mImageFetcher.onDestroy();
 
         for (DestructionObserver observer : mDestructionObservers) observer.onDestroy();
+
+        // SuggestionsSource is not registered with the rest of the destruction observers but
+        // instead explicitly destroyed last so that the other destruction observers can use it
+        // while they are called.
+        mSuggestionsSource.destroy();
 
         mIsDestroyed = true;
     }
