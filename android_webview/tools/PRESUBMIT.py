@@ -15,7 +15,6 @@ def CommonChecks(input_api, output_api):
       input_api, output_api, pylintrc='pylintrc',
       # TODO: lint these and eliminate the blacklist.
       black_list=[
-          r'webview_licenses.py',
           r'webview_repack_locales.py',
       ]))
   return input_api.RunTests(checks, False)
