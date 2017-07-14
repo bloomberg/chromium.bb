@@ -856,11 +856,19 @@ void EffectTree::UpdateSurfaceContentsScale(EffectNode* effect_node) {
   bool use_transform_for_contents_scale =
       property_trees()->can_adjust_raster_scales ||
       effect_node->has_copy_request;
+  const gfx::Vector2dF old_scale = effect_node->surface_contents_scale;
   effect_node->surface_contents_scale =
       use_transform_for_contents_scale
           ? MathUtil::ComputeTransform2dScaleComponents(
                 transform_tree.ToScreen(transform_node->id), layer_scale_factor)
           : gfx::Vector2dF(layer_scale_factor, layer_scale_factor);
+
+  // If surface contents scale changes, draw transforms are no longer valid.
+  // Invalidates the draw transform cache and updates the clip for the surface.
+  if (old_scale != effect_node->surface_contents_scale) {
+    property_trees()->clip_tree.set_needs_update(true);
+    property_trees()->UpdateTransformTreeUpdateNumber();
+  }
 }
 
 EffectNode* EffectTree::FindNodeFromElementId(ElementId id) {
