@@ -73,7 +73,7 @@
         "content_renderer": [ "browser" ],
         "content_utility": [ "browser" ],
         "data_decoder": [ "image_decoder" ],
-        "device": [ "device:nfc", "device:wake_lock" ],
+        "device": [ "device:generic_sensor", "device:nfc", "device:wake_lock" ],
         "file": [ "file:filesystem", "file:leveldb" ],
         "media": [ "media:media" ],
         "network": [
@@ -112,12 +112,15 @@
           "blink::mojom::SensitiveInputVisibilityService",
           "blink::mojom::WebBluetoothService",
           "blink::mojom::WebSocket",
+
           // TODO(beng): figure out how to overlay test interfaces like this.
           "content::mojom::BrowserTarget",
+
           "content::mojom::RendererAudioOutputStreamFactory",
           "device::mojom::VRService",
           "device::mojom::Geolocation",
           "device::mojom::NFC",
+          "device::mojom::SensorProvider",
           "device::mojom::WakeLock",
           "device::usb::DeviceManager",
           "discardable_memory::mojom::DiscardableSharedMemoryManager",
