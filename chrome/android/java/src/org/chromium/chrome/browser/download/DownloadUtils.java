@@ -487,7 +487,8 @@ public class DownloadUtils {
         Intent intent = builder.build().intent;
         intent.setPackage(context.getPackageName());
         intent.setData(contentUri);
-        intent.putExtra(CustomTabIntentDataProvider.EXTRA_IS_MEDIA_VIEWER, true);
+        intent.putExtra(CustomTabIntentDataProvider.EXTRA_UI_TYPE,
+                CustomTabIntentDataProvider.CUSTOM_TABS_UI_TYPE_MEDIA_VIEWER);
         intent.putExtra(CustomTabIntentDataProvider.EXTRA_MEDIA_VIEWER_URL, fileUri.toString());
         intent.putExtra(CustomTabIntentDataProvider.EXTRA_ENABLE_EMBEDDED_MEDIA_EXPERIENCE, true);
         intent.putExtra(
