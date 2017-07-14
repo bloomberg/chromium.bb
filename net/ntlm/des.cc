@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/http/des.h"
+#include "net/ntlm/des.h"
 
 #include "base/logging.h"
 #include "crypto/openssl_util.h"
@@ -11,6 +11,7 @@
 // The iOS version of DESEncrypt is our own code.
 // DESSetKeyParity and DESMakeKey are based on
 // mozilla/security/manager/ssl/src/nsNTLMAuthModule.cpp, CVS rev. 1.14.
+/* clang-format off */
 
 /* ***** BEGIN LICENSE BLOCK *****
  * Version: MPL 1.1/GPL 2.0/LGPL 2.1
