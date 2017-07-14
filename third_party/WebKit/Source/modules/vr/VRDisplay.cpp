@@ -381,6 +381,28 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* script_state,
     return promise;
   }
 
+  for (float value : layer_.leftBounds()) {
+    if (std::isnan(value)) {
+      ForceExitPresent();
+      DOMException* exception = DOMException::Create(
+          kInvalidStateError, "Layer bounds must not contain NAN values");
+      resolver->Reject(exception);
+      ReportPresentationResult(PresentationResult::kInvalidLayerBounds);
+      return promise;
+    }
+  }
+
+  for (float value : layer_.rightBounds()) {
+    if (std::isnan(value)) {
+      ForceExitPresent();
+      DOMException* exception = DOMException::Create(
+          kInvalidStateError, "Layer bounds must not contain NAN values");
+      resolver->Reject(exception);
+      ReportPresentationResult(PresentationResult::kInvalidLayerBounds);
+      return promise;
+    }
+  }
+
   if (!pending_present_resolvers_.IsEmpty()) {
     // If we are waiting on the results of a previous requestPresent call don't
     // fire a new request, just cache the resolver and resolve it when the
@@ -710,6 +732,9 @@ void VRDisplay::submitFrame() {
   TRACE_EVENT_END0("gpu", "VRDisplay::SubmitFrame");
 
   did_submit_this_frame_ = true;
+  // Reset our frame id, since anything we'd want to do (resizing/etc) can
+  // no-longer happen to this frame.
+  vr_frame_id_ = -1;
   // If we were deferring a rAF-triggered vsync request, do this now.
   RequestVSync();
 

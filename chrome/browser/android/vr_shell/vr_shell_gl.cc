@@ -356,6 +356,13 @@ void VrShellGl::SubmitFrame(int16_t frame_index,
   if (!submit_client_.get())
     return;
 
+  if (frame_index < 0 ||
+      !webvr_frame_oustanding_[frame_index % kPoseRingBufferSize]) {
+    mojo::ReportBadMessage("SubmitFrame called with an invalid frame_index");
+    binding_.Close();
+    return;
+  }
+
   webvr_time_js_submit_[frame_index % kPoseRingBufferSize] =
       base::TimeTicks::Now();
 
@@ -432,6 +439,7 @@ void VrShellGl::InitializeRenderer() {
   device::GvrDelegate::GetGvrPoseWithNeckModel(gvr_api_.get(), &head_pose);
   webvr_head_pose_.assign(kPoseRingBufferSize, head_pose);
   webvr_time_pose_.assign(kPoseRingBufferSize, base::TimeTicks());
+  webvr_frame_oustanding_.assign(kPoseRingBufferSize, false);
   webvr_time_js_submit_.assign(kPoseRingBufferSize, base::TimeTicks());
 
   std::vector<gvr::BufferSpec> specs;
@@ -837,6 +845,7 @@ void VrShellGl::DrawFrame(int16_t frame_index) {
     static_assert(!((kPoseRingBufferSize - 1) & kPoseRingBufferSize),
                   "kPoseRingBufferSize must be a power of 2");
     head_pose = webvr_head_pose_[frame_index % kPoseRingBufferSize];
+    webvr_frame_oustanding_[frame_index % kPoseRingBufferSize] = false;
   } else {
     device::GvrDelegate::GetGvrPoseWithNeckModel(gvr_api_.get(), &head_pose);
   }
@@ -1354,14 +1363,45 @@ void VrShellGl::ForceExitVr() {
   browser_->ForceExitVr();
 }
 
+namespace {
+bool ValidateRect(const gfx::RectF& bounds) {
+  // Bounds should be between 0 and 1, with positive width/height.
+  // We simply clamp to [0,1], but still validate that the bounds are not NAN.
+  return !std::isnan(bounds.width()) && !std::isnan(bounds.height()) &&
+         !std::isnan(bounds.x()) && !std::isnan(bounds.y());
+}
+
+gfx::RectF ClampRect(gfx::RectF bounds) {
+  bounds.AdjustToFit(gfx::RectF(0, 0, 1, 1));
+  return bounds;
+}
+
+}  // namespace
+
 void VrShellGl::UpdateLayerBounds(int16_t frame_index,
                                   const gfx::RectF& left_bounds,
                                   const gfx::RectF& right_bounds,
                                   const gfx::Size& source_size) {
+  if (!ValidateRect(left_bounds) || !ValidateRect(right_bounds)) {
+    mojo::ReportBadMessage("UpdateLayerBounds called with invalid bounds");
+    binding_.Close();
+    return;
+  }
+
+  if (frame_index >= 0 &&
+      !webvr_frame_oustanding_[frame_index % kPoseRingBufferSize]) {
+    mojo::ReportBadMessage("UpdateLayerBounds called with invalid frame_index");
+    binding_.Close();
+    return;
+  }
+
   if (frame_index < 0) {
-    webvr_left_viewport_->SetSourceUv(UVFromGfxRect(left_bounds));
-    webvr_right_viewport_->SetSourceUv(UVFromGfxRect(right_bounds));
+    webvr_left_viewport_->SetSourceUv(UVFromGfxRect(ClampRect(left_bounds)));
+    webvr_right_viewport_->SetSourceUv(UVFromGfxRect(ClampRect(right_bounds)));
     CreateOrResizeWebVRSurface(source_size);
+
+    // clear all pending bounds
+    pending_bounds_ = std::queue<std::pair<uint8_t, WebVrBounds>>();
   } else {
     pending_bounds_.emplace(
         frame_index, WebVrBounds(left_bounds, right_bounds, source_size));
@@ -1398,6 +1438,7 @@ void VrShellGl::SendVSync(base::TimeDelta time, GetVSyncCallback callback) {
                                                      prediction_nanos);
 
   webvr_head_pose_[frame_index % kPoseRingBufferSize] = head_mat;
+  webvr_frame_oustanding_[frame_index % kPoseRingBufferSize] = true;
   webvr_time_pose_[frame_index % kPoseRingBufferSize] = base::TimeTicks::Now();
 
   std::move(callback).Run(
