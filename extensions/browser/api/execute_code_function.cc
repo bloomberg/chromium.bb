@@ -7,6 +7,8 @@
 
 #include "extensions/browser/api/execute_code_function.h"
 
+#include "base/task_scheduler/post_task.h"
+#include "base/threading/thread_restrictions.h"
 #include "extensions/browser/component_extension_resource_manager.h"
 #include "extensions/browser/extension_api_frame_id_map.h"
 #include "extensions/browser/extensions_browser_client.h"
@@ -42,14 +44,17 @@ ExecuteCodeFunction::ExecuteCodeFunction() {
 ExecuteCodeFunction::~ExecuteCodeFunction() {
 }
 
-void ExecuteCodeFunction::GetFileURLAndMaybeLocalizeOnFileThread(
+void ExecuteCodeFunction::GetFileURLAndMaybeLocalizeInBackground(
     const std::string& extension_id,
     const base::FilePath& extension_path,
     const std::string& extension_default_locale,
     bool might_require_localization,
     std::string* data) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
+  base::ThreadRestrictions::AssertIOAllowed();
 
+  // TODO(devlin): FilePathToFileURL() doesn't need to be done on a blocking
+  // task runner, so we could do that on the UI thread and then avoid the hop
+  // if we don't need localization.
   file_url_ = net::FilePathToFileURL(resource_.GetFilePath());
 
   if (!might_require_localization)
@@ -69,23 +74,19 @@ void ExecuteCodeFunction::GetFileURLAndMaybeLocalizeOnFileThread(
                                                        data, &error);
 }
 
-void ExecuteCodeFunction::GetFileURLAndLocalizeComponentResourceOnFileThread(
+std::unique_ptr<std::string>
+ExecuteCodeFunction::GetFileURLAndLocalizeComponentResourceInBackground(
     std::unique_ptr<std::string> data,
     const std::string& extension_id,
     const base::FilePath& extension_path,
     const std::string& extension_default_locale,
     bool might_require_localization) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
-  GetFileURLAndMaybeLocalizeOnFileThread(
+  base::ThreadRestrictions::AssertIOAllowed();
+  GetFileURLAndMaybeLocalizeInBackground(
       extension_id, extension_path, extension_default_locale,
       might_require_localization, data.get());
 
-  bool success = true;
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&ExecuteCodeFunction::DidLoadAndLocalizeFile, this,
-                 resource_.relative_path().AsUTF8Unsafe(), success,
-                 base::Passed(std::move(data))));
+  return data;
 }
 
 void ExecuteCodeFunction::DidLoadAndLocalizeFile(
@@ -223,16 +224,21 @@ bool ExecuteCodeFunction::LoadFile(const std::string& file) {
         ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id);
     std::unique_ptr<std::string> data(
         new std::string(resource.data(), resource.size()));
-    content::BrowserThread::PostTask(
-        content::BrowserThread::FILE, FROM_HERE,
-        base::Bind(&ExecuteCodeFunction::
-                       GetFileURLAndLocalizeComponentResourceOnFileThread,
-                   this, base::Passed(std::move(data)), extension_id,
-                   extension_path, extension_default_locale,
-                   might_require_localization));
+
+    base::PostTaskWithTraitsAndReplyWithResult(
+        FROM_HERE,
+        {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+        base::BindOnce(&ExecuteCodeFunction::
+                           GetFileURLAndLocalizeComponentResourceInBackground,
+                       this, base::Passed(std::move(data)), extension_id,
+                       extension_path, extension_default_locale,
+                       might_require_localization),
+        base::BindOnce(&ExecuteCodeFunction::DidLoadAndLocalizeFile, this,
+                       resource_.relative_path().AsUTF8Unsafe(),
+                       true /* We assume this call always succeeds */));
   } else {
     FileReader::OptionalFileThreadTaskCallback get_file_and_l10n_callback =
-        base::Bind(&ExecuteCodeFunction::GetFileURLAndMaybeLocalizeOnFileThread,
+        base::Bind(&ExecuteCodeFunction::GetFileURLAndMaybeLocalizeInBackground,
                    this, extension_id, extension_path, extension_default_locale,
                    might_require_localization);
 
