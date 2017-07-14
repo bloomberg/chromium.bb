@@ -19,7 +19,7 @@ class _StartupPerfBenchmark(perf_benchmark.PerfBenchmark):
         '--enable-stats-collection-bindings'
     ])
 
-  def CreateTimelineBasedMeasurementOptions(self):
+  def CreateCoreTimelineBasedMeasurementOptions(self):
     startup_category_filter = (
         chrome_trace_category_filter.ChromeTraceCategoryFilter(
             filter_string='startup,blink.user_timing'))

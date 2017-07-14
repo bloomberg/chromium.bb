@@ -46,7 +46,7 @@ class _Top25RuntimeStats(perf_benchmark.PerfBenchmark):
     options.AppendExtraBrowserArgs(
       '--enable-blink-features=BlinkRuntimeCallStats')
 
-  def CreateTimelineBasedMeasurementOptions(self):
+  def CreateCoreTimelineBasedMeasurementOptions(self):
     # TODO(fmeawad): most of the cat_filter information is extracted from
     # page_cycler_v2 TimelineBasedMeasurementOptionsForLoadingMetric because
     # used by the loadingMetric because the runtimeStatsMetric uses the

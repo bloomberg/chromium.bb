@@ -53,7 +53,7 @@ class _V8BrowsingBenchmark(_v8BrowsingBenchmarkBaseClass):
   See browsing_stories._BrowsingStory for workload description.
   """
 
-  def CreateTimelineBasedMeasurementOptions(self):
+  def CreateCoreTimelineBasedMeasurementOptions(self):
     categories = [
       # Disable all categories by default.
       '-*',
@@ -109,7 +109,7 @@ class _V8RuntimeStatsBrowsingBenchmark(_v8BrowsingBenchmarkBaseClass):
   See browsing_stories._BrowsingStory for workload description.
   """
 
-  def CreateTimelineBasedMeasurementOptions(self):
+  def CreateCoreTimelineBasedMeasurementOptions(self):
     categories = [
       # Disable all categories by default.
       '-*',
