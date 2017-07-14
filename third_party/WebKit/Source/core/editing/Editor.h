@@ -61,6 +61,7 @@ enum class DeleteDirection;
 enum class DeleteMode { kSimple, kSmart };
 enum class InsertMode { kSimple, kSmart };
 enum class DragSourceType { kHTMLSource, kPlainTextSource };
+enum class TypingContinuation { kContinue, kEnd };
 
 enum EditorCommandSource { kCommandFromMenuOrKeyBinding, kCommandFromDOM };
 enum EditorParagraphSeparator {
@@ -252,7 +253,7 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
   IntRect FirstRectForRange(const EphemeralRange&) const;
 
   void RespondToChangedSelection(const Position& old_selection_start,
-                                 FrameSelection::SetSelectionOptions);
+                                 TypingContinuation);
 
   bool MarkedTextMatchesAreHighlighted() const;
   void SetMarkedTextMatchesAreHighlighted(bool);

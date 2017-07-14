@@ -37,6 +37,7 @@
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/Editor.h"
 #include "core/editing/EphemeralRange.h"
+#include "core/editing/FrameSelection.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/commands/CompositeEditCommand.h"
 #include "core/editing/commands/ReplaceSelectionCommand.h"
@@ -966,7 +967,7 @@ static bool ShouldCheckOldSelection(const Position& old_selection_start) {
 
 void SpellChecker::RespondToChangedSelection(
     const Position& old_selection_start,
-    FrameSelection::SetSelectionOptions options) {
+    TypingContinuation typing_continuation) {
   if (RuntimeEnabledFeatures::IdleTimeSpellCheckingEnabled()) {
     idle_spell_check_callback_->SetNeedsInvocation();
     return;
@@ -986,7 +987,7 @@ void SpellChecker::RespondToChangedSelection(
     return;
   }
 
-  if (!(options & FrameSelection::kCloseTyping))
+  if (typing_continuation == TypingContinuation::kContinue)
     return;
   if (!ShouldCheckOldSelection(old_selection_start))
     return;
