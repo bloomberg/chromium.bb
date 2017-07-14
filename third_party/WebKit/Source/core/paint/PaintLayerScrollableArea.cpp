@@ -797,8 +797,6 @@ void PaintLayerScrollableArea::SetScrollOffsetUnconditionally(
 }
 
 void PaintLayerScrollableArea::UpdateAfterLayout() {
-  DCHECK(Box().HasOverflowClip());
-
   bool relayout_is_prevented = PreventRelayoutScope::RelayoutIsPrevented();
   bool scrollbars_are_frozen =
       in_overflow_relayout_ || FreezeScrollbarsScope::ScrollbarsAreFrozen();

@@ -7,24 +7,29 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [0, 0, 913, 235],
+          "reason": "subtree"
+        },
+        {
           "object": "LayoutView #document",
           "rect": [0, 0, 913, 235],
-          "reason": "geometry"
+          "reason": "subtree"
         },
         {
           "object": "LayoutBlockFlow BODY",
           "rect": [8, 8, 897, 219],
-          "reason": "geometry"
+          "reason": "subtree"
         },
         {
           "object": "LayoutText #text",
           "rect": [8, 8, 897, 214],
-          "reason": "geometry"
+          "reason": "subtree"
         },
         {
           "object": "LayoutView #document",
           "rect": [313, 0, 600, 500],
-          "reason": "geometry"
+          "reason": "subtree"
         },
         {
           "object": "LayoutView #document",
@@ -37,14 +42,19 @@
           "reason": "scroll control"
         },
         {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [483, 0, 430, 500],
+          "reason": "subtree"
+        },
+        {
           "object": "LayoutBlockFlow BODY",
           "rect": [491, 8, 414, 484],
-          "reason": "geometry"
+          "reason": "subtree"
         },
         {
           "object": "LayoutText #text",
           "rect": [491, 8, 414, 484],
-          "reason": "geometry"
+          "reason": "subtree"
         }
       ]
     }
@@ -56,71 +66,75 @@
     },
     {
       "object": "LayoutView #document",
-      "reason": "geometry"
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow HTML",
+      "reason": "subtree"
     },
     {
       "object": "LayoutBlockFlow BODY",
-      "reason": "geometry"
+      "reason": "subtree"
     },
     {
       "object": "RootInlineBox",
-      "reason": "geometry"
+      "reason": "subtree"
     },
     {
       "object": "LayoutText #text",
-      "reason": "geometry"
+      "reason": "subtree"
     },
     {
       "object": "InlineTextBox 'AAAA'",
-      "reason": "geometry"
+      "reason": "subtree"
     },
     {
       "object": "InlineTextBox 'BBBB'",
-      "reason": "geometry"
+      "reason": "subtree"
     },
     {
       "object": "InlineTextBox 'CCCC'",
-      "reason": "geometry"
+      "reason": "subtree"
     },
     {
       "object": "InlineTextBox 'DDDD'",
-      "reason": "geometry"
+      "reason": "subtree"
     },
     {
       "object": "InlineTextBox 'EEEE'",
-      "reason": "geometry"
+      "reason": "subtree"
     },
     {
       "object": "InlineTextBox 'FFFF'",
-      "reason": "geometry"
+      "reason": "subtree"
     },
     {
       "object": "InlineTextBox 'GGGG'",
-      "reason": "geometry"
+      "reason": "subtree"
     },
     {
       "object": "InlineTextBox 'HHHH'",
-      "reason": "geometry"
+      "reason": "subtree"
     },
     {
       "object": "InlineTextBox 'IIII JJJJ'",
-      "reason": "geometry"
+      "reason": "subtree"
     },
     {
       "object": "InlineTextBox 'KKKK'",
-      "reason": "geometry"
+      "reason": "subtree"
     },
     {
       "object": "InlineTextBox 'LLLL'",
-      "reason": "geometry"
+      "reason": "subtree"
     },
     {
       "object": "InlineTextBox 'MMMM'",
-      "reason": "geometry"
+      "reason": "subtree"
     },
     {
       "object": "InlineTextBox 'NNNN'",
-      "reason": "geometry"
+      "reason": "subtree"
     }
   ]
 }
@@ -133,9 +147,19 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [200, 0, 913, 235],
+          "reason": "subtree"
+        },
+        {
           "object": "LayoutView #document",
           "rect": [200, 0, 913, 235],
-          "reason": "geometry"
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [0, 0, 913, 235],
+          "reason": "subtree"
         },
         {
           "object": "LayoutView #document",
@@ -145,27 +169,27 @@
         {
           "object": "LayoutView #document",
           "rect": [0, 0, 913, 235],
-          "reason": "geometry"
+          "reason": "subtree"
         },
         {
           "object": "LayoutBlockFlow BODY",
           "rect": [208, 8, 897, 219],
-          "reason": "geometry"
+          "reason": "subtree"
         },
         {
           "object": "LayoutBlockFlow BODY",
           "rect": [8, 8, 897, 219],
-          "reason": "geometry"
+          "reason": "subtree"
         },
         {
           "object": "LayoutText #text",
           "rect": [208, 8, 897, 214],
-          "reason": "geometry"
+          "reason": "subtree"
         },
         {
           "object": "LayoutText #text",
           "rect": [8, 8, 897, 214],
-          "reason": "geometry"
+          "reason": "subtree"
         },
         {
           "object": "LayoutView #document",
@@ -187,71 +211,75 @@
     },
     {
       "object": "LayoutView #document",
-      "reason": "geometry"
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow HTML",
+      "reason": "subtree"
     },
     {
       "object": "LayoutBlockFlow BODY",
-      "reason": "geometry"
+      "reason": "subtree"
     },
     {
       "object": "RootInlineBox",
-      "reason": "geometry"
+      "reason": "subtree"
     },
     {
       "object": "LayoutText #text",
-      "reason": "geometry"
+      "reason": "subtree"
     },
     {
       "object": "InlineTextBox 'AAAA'",
-      "reason": "geometry"
+      "reason": "subtree"
     },
     {
       "object": "InlineTextBox 'BBBB'",
-      "reason": "geometry"
+      "reason": "subtree"
     },
     {
       "object": "InlineTextBox 'CCCC'",
-      "reason": "geometry"
+      "reason": "subtree"
     },
     {
       "object": "InlineTextBox 'DDDD'",
-      "reason": "geometry"
+      "reason": "subtree"
     },
     {
       "object": "InlineTextBox 'EEEE'",
-      "reason": "geometry"
+      "reason": "subtree"
     },
     {
       "object": "InlineTextBox 'FFFF'",
-      "reason": "geometry"
+      "reason": "subtree"
     },
     {
       "object": "InlineTextBox 'GGGG'",
-      "reason": "geometry"
+      "reason": "subtree"
     },
     {
       "object": "InlineTextBox 'HHHH'",
-      "reason": "geometry"
+      "reason": "subtree"
     },
     {
       "object": "InlineTextBox 'IIII JJJJ'",
-      "reason": "geometry"
+      "reason": "subtree"
     },
     {
       "object": "InlineTextBox 'KKKK'",
-      "reason": "geometry"
+      "reason": "subtree"
     },
     {
       "object": "InlineTextBox 'LLLL'",
-      "reason": "geometry"
+      "reason": "subtree"
     },
     {
       "object": "InlineTextBox 'MMMM'",
-      "reason": "geometry"
+      "reason": "subtree"
     },
     {
       "object": "InlineTextBox 'NNNN'",
-      "reason": "geometry"
+      "reason": "subtree"
     }
   ]
 }
@@ -269,24 +297,29 @@
           "reason": "full"
         },
         {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [-513, 0, 913, 235],
+          "reason": "subtree"
+        },
+        {
           "object": "LayoutView #document",
           "rect": [-513, 0, 913, 235],
-          "reason": "geometry"
+          "reason": "subtree"
         },
         {
           "object": "LayoutBlockFlow BODY",
           "rect": [-505, 8, 897, 219],
-          "reason": "geometry"
+          "reason": "subtree"
         },
         {
           "object": "LayoutText #text",
           "rect": [-505, 8, 897, 214],
-          "reason": "geometry"
+          "reason": "subtree"
         },
         {
           "object": "LayoutView #document",
           "rect": [0, 0, 400, 600],
-          "reason": "geometry"
+          "reason": "subtree"
         },
         {
           "object": "LayoutView #document",
@@ -294,14 +327,19 @@
           "reason": "scroll control"
         },
         {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [39, 0, 361, 600],
+          "reason": "subtree"
+        },
+        {
           "object": "LayoutBlockFlow BODY",
           "rect": [47, 8, 345, 584],
-          "reason": "geometry"
+          "reason": "subtree"
         },
         {
           "object": "LayoutText #text",
           "rect": [47, 8, 345, 565],
-          "reason": "geometry"
+          "reason": "subtree"
         }
       ]
     }
@@ -313,39 +351,43 @@
     },
     {
       "object": "LayoutView #document",
-      "reason": "geometry"
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow HTML",
+      "reason": "subtree"
     },
     {
       "object": "LayoutBlockFlow BODY",
-      "reason": "geometry"
+      "reason": "subtree"
     },
     {
       "object": "RootInlineBox",
-      "reason": "geometry"
+      "reason": "subtree"
     },
     {
       "object": "LayoutText #text",
-      "reason": "geometry"
+      "reason": "subtree"
     },
     {
       "object": "InlineTextBox 'AAAA BBBB CCCC'",
-      "reason": "geometry"
+      "reason": "subtree"
     },
     {
       "object": "InlineTextBox 'DDDD EEEE FFFF'",
-      "reason": "geometry"
+      "reason": "subtree"
     },
     {
       "object": "InlineTextBox 'GGGG HHHH IIII JJJJ'",
-      "reason": "geometry"
+      "reason": "subtree"
     },
     {
       "object": "InlineTextBox 'KKKK LLLL MMMM'",
-      "reason": "geometry"
+      "reason": "subtree"
     },
     {
       "object": "InlineTextBox 'NNNN'",
-      "reason": "geometry"
+      "reason": "subtree"
     }
   ]
 }

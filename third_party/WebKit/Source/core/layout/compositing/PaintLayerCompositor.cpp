@@ -721,10 +721,12 @@ void PaintLayerCompositor::RootFixedBackgroundsChanged() {
 }
 
 bool PaintLayerCompositor::ScrollingLayerDidChange(PaintLayer* layer) {
-  if (ScrollingCoordinator* scrolling_coordinator =
-          this->GetScrollingCoordinator())
+  auto* scrollable_area = layer->GetScrollableArea();
+  auto* scrolling_coordinator = this->GetScrollingCoordinator();
+  if (scrolling_coordinator && scrollable_area) {
     return scrolling_coordinator->ScrollableAreaScrollLayerDidChange(
-        layer->GetScrollableArea());
+        scrollable_area);
+  }
   return false;
 }
 
