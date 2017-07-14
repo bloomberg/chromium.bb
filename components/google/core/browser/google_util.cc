@@ -283,4 +283,30 @@ bool IsYoutubeDomainUrl(const GURL& url,
                       nullptr);
 }
 
+const std::vector<std::string>& GetGoogleRegistrableDomains() {
+  CR_DEFINE_STATIC_LOCAL(std::vector<std::string>, kGoogleRegisterableDomains,
+                         ());
+
+  // Initialize the list.
+  if (kGoogleRegisterableDomains.empty()) {
+    std::vector<std::string> tlds{GOOGLE_TLD_LIST};
+    for (const std::string& tld : tlds) {
+      std::string domain = "google." + tld;
+
+      // The Google TLD list might contain domains that are not considered
+      // to be registrable domains by net::registry_controlled_domains.
+      if (GetDomainAndRegistry(
+              domain,
+              net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES) !=
+          domain) {
+        continue;
+      }
+
+      kGoogleRegisterableDomains.push_back(domain);
+    }
+  }
+
+  return kGoogleRegisterableDomains;
+}
+
 }  // namespace google_util

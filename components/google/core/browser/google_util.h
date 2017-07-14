@@ -8,6 +8,7 @@
 #define COMPONENTS_GOOGLE_CORE_BROWSER_GOOGLE_UTIL_H_
 
 #include <string>
+#include <vector>
 
 #include "base/strings/string_piece.h"
 
@@ -111,6 +112,14 @@ bool IsGoogleSearchUrl(const GURL& url);
 bool IsYoutubeDomainUrl(const GURL& url,
                         SubdomainPermission subdomain_permission,
                         PortPermission port_permission);
+
+// Returns the list of all Google's registerable domains, i.e. domains named
+// google.<eTLD> owned by Google.
+// TODO(msramek): This is currently only used to ensure the deletion of Google
+// service workers on signout. Remove this once we have other options to do it,
+// such as service workers discovering that signin cookies are missing and
+// unregistering themselves.
+const std::vector<std::string>& GetGoogleRegistrableDomains();
 
 }  // namespace google_util
 
