@@ -13,30 +13,31 @@ function checkStateTransition(options) {
         shouldBeEqualToString("eventport.id", options.port.id);
         shouldBeEqualToString("eventport.connection", options.finalconnection);
     };
-    port.onstatechange = function(e) {
-        debug("- check port handler.");
-        checkHandler(e);
-    };
-    access.onstatechange = function(e) {
-        debug("- check access handler.");
-        checkHandler(e);
-    };
-    if (options.method == "send") {
-        port.send([]);
-    }
+    const portPromise = new Promise(resolve => {
+        port.onstatechange = e => {
+            debug("- check port handler.");
+            checkHandler(e);
+            resolve();
+        };
+    });
+    const accessPromise = new Promise(resolve => {
+        access.onstatechange = e => {
+            debug("- check access handler.");
+            checkHandler(e);
+            resolve();
+        };
+    });
     if (options.method == "setonmidimessage") {
         port.onmidimessage = function() {};
+        return Promise.all([portPromise, accessPromise]);
     }
     if (options.method == "addeventlistener") {
         port.addEventListener("midimessage", function() {});
+        return Promise.all([portPromise, accessPromise]);
     }
-    if (options.method == "send" || options.method == "setonmidimessage" ||
-        options.method == "addeventlistener") {
-        // Following tests expect an implicit open finishes synchronously.
-        // But it will be asynchronous in the future.
-        debug("- check final state.");
-        shouldBeEqualToString("port.connection", options.finalconnection);
-        return Promise.resolve();
+    if (options.method == "send") {
+        port.send([]);
+        return Promise.all([portPromise, accessPromise]);
     }
     // |method| is expected to be "open" or "close".
     return port[options.method]().then(function(p) {
