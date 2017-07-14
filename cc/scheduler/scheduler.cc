@@ -12,6 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/base/devtools_instrumentation.h"
@@ -269,6 +270,10 @@ void Scheduler::OnBeginFrameSourcePausedChanged(bool paused) {
 // a BeginRetroFrame.
 bool Scheduler::OnBeginFrameDerivedImpl(const BeginFrameArgs& args) {
   TRACE_EVENT1("cc,benchmark", "Scheduler::BeginFrame", "args", args.AsValue());
+
+  // TEMPORARY: Compositor state for debugging BeginMainFrame renderer hang.
+  // TODO(sunnyps): Remove after fixing https://crbug.com/622080
+  debug_begin_frame_received_at_ = Now();
 
   if (!state_machine_.BeginFrameNeeded()) {
     TRACE_EVENT_INSTANT0("cc", "Scheduler::BeginFrameDropped",
@@ -690,6 +695,12 @@ void Scheduler::ProcessScheduledActions() {
         break;
       }
     }
+
+    // TEMPORARY: Compositor state for debugging BeginMainFrame renderer hang.
+    // TODO(sunnyps): Remove after fixing https://crbug.com/622080
+    if (action != SchedulerStateMachine::ACTION_NONE) {
+      debug_actions_.SaveToBuffer(action);
+    }
   } while (action != SchedulerStateMachine::ACTION_NONE);
 
   ScheduleBeginImplFrameDeadlineIfNeeded();
@@ -697,9 +708,16 @@ void Scheduler::ProcessScheduledActions() {
 
   // TEMPORARY: Compositor state for debugging BeginMainFrame renderer hang.
   // TODO(sunnyps): Remove after fixing https://crbug.com/622080
-  base::debug::SetCrashKeyValue(
-      kBeginMainFrameHangCompositorState,
-      state_machine_.CrashKeyValueForBeginMainFrameHang());
+  std::string state_dump = state_machine_.CrashKeyValueForBeginMainFrameHang();
+  base::StringAppendF(
+      &state_dump, ",%f,%d,%d,%d",
+      (Now() - debug_begin_frame_received_at_).InMillisecondsF(),
+      skipped_last_frame_to_reduce_latency_,
+      skipped_last_frame_missed_exceeded_deadline_, stopped_);
+  for (auto it = debug_actions_.Begin(); it; ++it)
+    base::StringAppendF(&state_dump, ",%d", **it);
+
+  base::debug::SetCrashKeyValue(kBeginMainFrameHangCompositorState, state_dump);
 }
 
 std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
