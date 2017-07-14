@@ -21,7 +21,6 @@
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
-#include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/cache_storage/cache_storage_cache.h"
@@ -129,8 +128,6 @@ RenderMessageFilter::RenderMessageFilter(
                            arraysize(kFilteredMessageClasses)),
       BrowserAssociatedInterface<mojom::RenderMessageFilter>(this, this),
       resource_dispatcher_host_(ResourceDispatcherHostImpl::Get()),
-      shared_bitmap_allocation_notifier_impl_(
-          viz::ServerSharedBitmapManager::current()),
       request_context_(request_context),
       resource_context_(browser_context->GetResourceContext()),
       render_widget_helper_(render_widget_helper),
@@ -215,11 +212,6 @@ void RenderMessageFilter::CreateFullscreenWidget(
   render_widget_helper_->CreateNewFullscreenWidget(opener_id, std::move(widget),
                                                    &route_id);
   std::move(callback).Run(route_id);
-}
-
-void RenderMessageFilter::GetSharedBitmapAllocationNotifier(
-    cc::mojom::SharedBitmapAllocationNotifierAssociatedRequest request) {
-  shared_bitmap_allocation_notifier_impl_.Bind(std::move(request));
 }
 
 #if defined(OS_MACOSX)

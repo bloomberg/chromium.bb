@@ -8,10 +8,6 @@ import "gpu/ipc/common/mailbox.mojom";
 
 // This interface is used when allocating shared bitmaps to be shared with a
 // display compositor.
-// This interface needs to be associated with the channel used to submit
-// CompositorFrames, to prevent running into message ordering issues (the
-// display compositor trying to access shared memory before the registration
-// message below made it to the display compositor).
 interface SharedBitmapAllocationNotifier {
   // Informs the display compositor that the child allocated a shared bitmap.
   DidAllocateSharedBitmap(handle<shared_buffer> buffer, gpu.mojom.Mailbox id);

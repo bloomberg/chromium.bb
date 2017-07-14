@@ -23,12 +23,13 @@ enum ResourceFormat {
 struct TransferableResource {
   uint32 id;
   ResourceFormat format;
-  gfx.mojom.BufferFormat buffer_format;  
+  gfx.mojom.BufferFormat buffer_format;
   uint32 filter;
   gfx.mojom.Size size;
   gpu.mojom.MailboxHolder mailbox_holder;
   bool read_lock_fences_enabled;
   bool is_software;
+  uint32 shared_bitmap_sequence_number;
   bool is_overlay_candidate;
   bool is_backed_by_surface_texture;
   bool wants_promotion_hint;

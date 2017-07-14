@@ -1729,6 +1729,12 @@ void ResourceProvider::TransferResource(Resource* source,
   if (source->type == RESOURCE_TYPE_BITMAP) {
     resource->mailbox_holder.mailbox = source->shared_bitmap_id;
     resource->is_software = true;
+    if (source->shared_bitmap) {
+      resource->shared_bitmap_sequence_number =
+          source->shared_bitmap->sequence_number();
+    } else {
+      resource->shared_bitmap_sequence_number = 0;
+    }
   } else {
     DCHECK(source->mailbox().IsValid());
     DCHECK(source->mailbox().IsTexture());

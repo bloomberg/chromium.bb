@@ -28,6 +28,7 @@
 #include "cc/ipc/compositor_frame_sink.mojom.h"
 #include "components/viz/common/quads/shared_bitmap.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
+#include "components/viz/service/display_embedder/shared_bitmap_allocation_notifier_impl.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/browser/renderer_host/input/input_ack_handler.h"
 #include "content/browser/renderer_host/input/input_router_client.h"
@@ -105,6 +106,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       public TouchEmulatorClient,
       public NON_EXPORTED_BASE(SyntheticGestureController::Delegate),
       public NON_EXPORTED_BASE(cc::mojom::CompositorFrameSink),
+      public NON_EXPORTED_BASE(viz::SharedBitmapAllocationObserver),
       public IPC::Listener {
  public:
   // |routing_id| must not be MSG_ROUTING_NONE.
@@ -755,6 +757,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // process the messages. Virtual for tests.
   virtual void ProcessSwapMessages(std::vector<IPC::Message> messages);
 
+  // viz::SharedBitmapAllocationObserver implementation.
+  void DidAllocateSharedBitmap(
+      uint32_t last_shared_bitmap_sequence_number) override;
+
 #if defined(OS_MACOSX)
   device::mojom::WakeLock* GetWakeLock();
 #endif
@@ -982,6 +988,14 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // List of all swap messages that their corresponding frames have not arrived.
   // Sorted by frame token.
   std::queue<std::pair<uint32_t, std::vector<IPC::Message>>> queued_messages_;
+
+  // If a CompositorFrame is submitted that references SharedBitmaps that don't
+  // exist yet, we keep it here until they are available.
+  struct {
+    viz::LocalSurfaceId local_surface_id;
+    cc::CompositorFrame frame;
+    uint32_t max_shared_bitmap_sequence_number = 0;
+  } saved_frame_;
 
   std::unique_ptr<LegacyIPCWidgetInputHandler> legacy_widget_input_handler_;
 

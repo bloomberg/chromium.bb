@@ -38,6 +38,7 @@ struct CC_EXPORT TransferableResource {
   gpu::MailboxHolder mailbox_holder;
   bool read_lock_fences_enabled;
   bool is_software;
+  uint32_t shared_bitmap_sequence_number;
 #if defined(OS_ANDROID)
   bool is_backed_by_surface_texture;
   bool wants_promotion_hint;
