@@ -5,8 +5,8 @@
 #ifndef USBInTransferResult_h
 #define USBInTransferResult_h
 
-#include "core/dom/DOMArrayBuffer.h"
-#include "core/dom/DOMDataView.h"
+#include "core/typed_arrays/DOMArrayBuffer.h"
+#include "core/typed_arrays/DOMDataView.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Vector.h"

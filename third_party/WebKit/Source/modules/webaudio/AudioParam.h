@@ -30,8 +30,8 @@
 #define AudioParam_h
 
 #include <sys/types.h>
-#include "core/dom/ArrayBufferViewHelpers.h"
-#include "core/dom/DOMTypedArray.h"
+#include "core/typed_arrays/ArrayBufferViewHelpers.h"
+#include "core/typed_arrays/DOMTypedArray.h"
 #include "modules/webaudio/AudioParamTimeline.h"
 #include "modules/webaudio/AudioSummingJunction.h"
 #include "modules/webaudio/BaseAudioContext.h"

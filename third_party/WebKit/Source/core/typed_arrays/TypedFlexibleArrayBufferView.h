@@ -6,7 +6,7 @@
 #define TypedFlexibleArrayBufferView_h
 
 #include "core/CoreExport.h"
-#include "core/dom/FlexibleArrayBufferView.h"
+#include "core/typed_arrays/FlexibleArrayBufferView.h"
 #include "platform/wtf/Noncopyable.h"
 
 namespace blink {

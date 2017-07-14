@@ -5,8 +5,8 @@
 #ifndef USBIsochronousInTransferResult_h
 #define USBIsochronousInTransferResult_h
 
-#include "core/dom/DOMArrayBuffer.h"
-#include "core/dom/DOMDataView.h"
+#include "core/typed_arrays/DOMArrayBuffer.h"
+#include "core/typed_arrays/DOMDataView.h"
 #include "modules/webusb/USBIsochronousInTransferPacket.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"

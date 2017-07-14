@@ -6,8 +6,8 @@
 #define DOMTypedArray_h
 
 #include "core/CoreExport.h"
-#include "core/dom/DOMArrayBufferView.h"
-#include "core/dom/DOMSharedArrayBuffer.h"
+#include "core/typed_arrays/DOMArrayBufferView.h"
+#include "core/typed_arrays/DOMSharedArrayBuffer.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/wtf/typed_arrays/Float32Array.h"
 #include "platform/wtf/typed_arrays/Float64Array.h"

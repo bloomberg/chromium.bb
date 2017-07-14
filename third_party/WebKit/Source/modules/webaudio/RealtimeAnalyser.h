@@ -27,7 +27,7 @@
 #define RealtimeAnalyser_h
 
 #include <memory>
-#include "core/dom/DOMTypedArray.h"
+#include "core/typed_arrays/DOMTypedArray.h"
 #include "platform/audio/AudioArray.h"
 #include "platform/audio/FFTFrame.h"
 #include "platform/wtf/Noncopyable.h"

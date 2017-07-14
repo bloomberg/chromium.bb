@@ -5,7 +5,7 @@
 #ifndef CryptoUtilities_h
 #define CryptoUtilities_h
 
-#include "core/dom/DOMArrayPiece.h"
+#include "core/typed_arrays/DOMArrayPiece.h"
 #include "public/platform/WebVector.h"
 
 namespace blink {

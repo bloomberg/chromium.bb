@@ -25,9 +25,9 @@
 #include "bindings/core/v8/V8TestInterfaceGarbageCollected.h"
 #include "bindings/core/v8/V8TestObject.h"
 #include "bindings/core/v8/V8Uint8Array.h"
-#include "core/dom/ArrayBufferViewHelpers.h"
-#include "core/dom/FlexibleArrayBufferView.h"
 #include "core/frame/Deprecation.h"
+#include "core/typed_arrays/ArrayBufferViewHelpers.h"
+#include "core/typed_arrays/FlexibleArrayBufferView.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {

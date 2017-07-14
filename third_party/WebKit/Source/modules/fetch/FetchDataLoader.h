@@ -5,7 +5,7 @@
 #ifndef FetchDataLoader_h
 #define FetchDataLoader_h
 
-#include "core/dom/DOMArrayBuffer.h"
+#include "core/typed_arrays/DOMArrayBuffer.h"
 #include "modules/ModulesExport.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "platform/blob/BlobData.h"

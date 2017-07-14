@@ -5,7 +5,7 @@
 #ifndef USBIsochronousOutTransferResult_h
 #define USBIsochronousOutTransferResult_h
 
-#include "core/dom/DOMDataView.h"
+#include "core/typed_arrays/DOMDataView.h"
 #include "modules/webusb/USBIsochronousOutTransferPacket.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"

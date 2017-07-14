@@ -5,8 +5,8 @@
 #ifndef DOMArrayPiece_h
 #define DOMArrayPiece_h
 
-#include "core/dom/DOMArrayBuffer.h"
-#include "core/dom/DOMArrayBufferView.h"
+#include "core/typed_arrays/DOMArrayBuffer.h"
+#include "core/typed_arrays/DOMArrayBufferView.h"
 #include "platform/wtf/typed_arrays/ArrayPiece.h"
 
 namespace blink {

@@ -29,7 +29,7 @@
 #include <memory>
 #include "bindings/core/v8/ScriptPromise.h"
 #include "core/dom/ContextLifecycleObserver.h"
-#include "core/dom/DOMArrayPiece.h"
+#include "core/typed_arrays/DOMArrayPiece.h"
 #include "platform/Timer.h"
 #include "platform/bindings/ActiveScriptWrappable.h"
 #include "platform/bindings/ScriptWrappable.h"

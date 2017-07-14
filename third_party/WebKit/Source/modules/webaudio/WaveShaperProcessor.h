@@ -27,7 +27,7 @@
 #define WaveShaperProcessor_h
 
 #include <memory>
-#include "core/dom/DOMTypedArray.h"
+#include "core/typed_arrays/DOMTypedArray.h"
 #include "modules/webaudio/AudioNode.h"
 #include "platform/audio/AudioDSPKernel.h"
 #include "platform/audio/AudioDSPKernelProcessor.h"

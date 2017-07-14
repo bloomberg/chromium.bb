@@ -34,10 +34,10 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <memory>
-#include "core/dom/ArrayBufferViewHelpers.h"
 #include "core/dom/SuspendableObject.h"
 #include "core/events/EventListener.h"
 #include "core/events/EventTarget.h"
+#include "core/typed_arrays/ArrayBufferViewHelpers.h"
 #include "modules/EventTargetModules.h"
 #include "modules/ModulesExport.h"
 #include "modules/websockets/WebSocketChannel.h"

@@ -32,8 +32,8 @@
 #define SourceBuffer_h
 
 #include <memory>
-#include "core/dom/ArrayBufferViewHelpers.h"
 #include "core/dom/SuspendableObject.h"
+#include "core/typed_arrays/ArrayBufferViewHelpers.h"
 #include "modules/EventTargetModules.h"
 #include "modules/mediasource/TrackDefaultList.h"
 #include "platform/AsyncMethodRunner.h"

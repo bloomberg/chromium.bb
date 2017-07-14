@@ -6,8 +6,8 @@
 #define BluetoothRemoteGATTCharacteristic_h
 
 #include "core/dom/ContextLifecycleObserver.h"
-#include "core/dom/DOMArrayPiece.h"
-#include "core/dom/DOMDataView.h"
+#include "core/typed_arrays/DOMArrayPiece.h"
+#include "core/typed_arrays/DOMDataView.h"
 #include "modules/EventTargetModules.h"
 #include "modules/bluetooth/BluetoothRemoteGATTService.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"

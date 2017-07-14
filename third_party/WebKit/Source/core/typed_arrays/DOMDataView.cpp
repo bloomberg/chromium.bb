@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/dom/DOMDataView.h"
+#include "core/typed_arrays/DOMDataView.h"
 
 #include "bindings/core/v8/V8ArrayBuffer.h"
 #include "platform/bindings/DOMDataStore.h"

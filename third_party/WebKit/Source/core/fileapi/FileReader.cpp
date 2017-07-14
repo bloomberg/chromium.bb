@@ -32,7 +32,6 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/StringOrArrayBuffer.h"
-#include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
@@ -40,6 +39,7 @@
 #include "core/events/ProgressEvent.h"
 #include "core/fileapi/File.h"
 #include "core/probe/CoreProbes.h"
+#include "core/typed_arrays/DOMArrayBuffer.h"
 #include "platform/Supplementable.h"
 #include "platform/wtf/AutoReset.h"
 #include "platform/wtf/CurrentTime.h"

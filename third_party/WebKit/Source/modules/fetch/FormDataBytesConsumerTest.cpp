@@ -4,11 +4,11 @@
 
 #include "modules/fetch/FormDataBytesConsumer.h"
 
-#include "core/dom/DOMArrayBuffer.h"
-#include "core/dom/DOMTypedArray.h"
 #include "core/dom/Document.h"
 #include "core/html/FormData.h"
 #include "core/testing/DummyPageHolder.h"
+#include "core/typed_arrays/DOMArrayBuffer.h"
+#include "core/typed_arrays/DOMTypedArray.h"
 #include "modules/fetch/BytesConsumerTestUtil.h"
 #include "platform/blob/BlobData.h"
 #include "platform/network/EncodedFormData.h"

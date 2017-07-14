@@ -29,8 +29,8 @@
 #include "modules/crypto/Crypto.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/DOMArrayBufferView.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/typed_arrays/DOMArrayBufferView.h"
 #include "platform/wtf/CryptographicallyRandomNumber.h"
 
 namespace blink {

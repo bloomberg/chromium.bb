@@ -27,8 +27,8 @@
 
 #include <memory>
 #include "base/gtest_prod_util.h"
-#include "core/dom/ArrayBufferViewHelpers.h"
 #include "core/dom/SuspendableObject.h"
+#include "core/typed_arrays/ArrayBufferViewHelpers.h"
 #include "modules/EventTargetModules.h"
 #include "platform/Timer.h"
 #include "platform/bindings/ActiveScriptWrappable.h"

@@ -6,10 +6,10 @@
 
 #include <stdint.h>
 #include <memory>
-#include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/Document.h"
 #include "core/fileapi/Blob.h"
 #include "core/testing/DummyPageHolder.h"
+#include "core/typed_arrays/DOMArrayBuffer.h"
 #include "modules/websockets/WebSocketChannel.h"
 #include "modules/websockets/WebSocketChannelClient.h"
 #include "modules/websockets/WebSocketHandle.h"

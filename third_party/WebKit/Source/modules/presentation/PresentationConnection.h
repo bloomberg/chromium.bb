@@ -6,11 +6,11 @@
 #define PresentationConnection_h
 
 #include <memory>
-#include "core/dom/ArrayBufferViewHelpers.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/events/EventTarget.h"
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/FileError.h"
+#include "core/typed_arrays/ArrayBufferViewHelpers.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/text/WTFString.h"

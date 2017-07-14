@@ -8,8 +8,8 @@
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "bindings/core/v8/serialization/UnpackedSerializedScriptValue.h"
-#include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/Document.h"
+#include "core/typed_arrays/DOMArrayBuffer.h"
 #include "core/workers/WorkerThreadTestHelper.h"
 #include "platform/bindings/ToV8.h"
 

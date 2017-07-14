@@ -6,8 +6,8 @@
 #define DOMArrayBufferView_h
 
 #include "core/CoreExport.h"
-#include "core/dom/DOMArrayBuffer.h"
-#include "core/dom/DOMSharedArrayBuffer.h"
+#include "core/typed_arrays/DOMArrayBuffer.h"
+#include "core/typed_arrays/DOMSharedArrayBuffer.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/wtf/typed_arrays/ArrayBufferView.h"
 

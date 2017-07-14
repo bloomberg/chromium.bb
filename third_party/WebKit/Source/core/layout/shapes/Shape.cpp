@@ -31,13 +31,13 @@
 
 #include <memory>
 #include "core/css/BasicShapeFunctions.h"
-#include "core/dom/DOMArrayBuffer.h"
-#include "core/dom/DOMTypedArray.h"
 #include "core/layout/shapes/BoxShape.h"
 #include "core/layout/shapes/PolygonShape.h"
 #include "core/layout/shapes/RasterShape.h"
 #include "core/layout/shapes/RectangleShape.h"
 #include "core/svg/graphics/SVGImage.h"
+#include "core/typed_arrays/DOMArrayBuffer.h"
+#include "core/typed_arrays/DOMTypedArray.h"
 #include "platform/LengthFunctions.h"
 #include "platform/geometry/FloatRoundedRect.h"
 #include "platform/geometry/FloatSize.h"

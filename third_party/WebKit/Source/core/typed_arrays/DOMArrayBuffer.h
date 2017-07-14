@@ -6,7 +6,7 @@
 #define DOMArrayBuffer_h
 
 #include "core/CoreExport.h"
-#include "core/dom/DOMArrayBufferBase.h"
+#include "core/typed_arrays/DOMArrayBufferBase.h"
 #include "platform/wtf/typed_arrays/ArrayBuffer.h"
 
 namespace blink {

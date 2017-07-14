@@ -29,7 +29,7 @@
 #ifndef AudioParamTimeline_h
 #define AudioParamTimeline_h
 
-#include "core/dom/DOMTypedArray.h"
+#include "core/typed_arrays/DOMTypedArray.h"
 #include "modules/webaudio/AudioDestinationNode.h"
 #include "modules/webaudio/BaseAudioContext.h"
 #include "platform/wtf/Forward.h"

@@ -31,8 +31,8 @@
 #include "modules/encoding/TextDecoder.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/DOMArrayBuffer.h"
-#include "core/dom/DOMArrayBufferView.h"
+#include "core/typed_arrays/DOMArrayBuffer.h"
+#include "core/typed_arrays/DOMArrayBufferView.h"
 #include "modules/encoding/Encoding.h"
 #include "platform/wtf/StringExtras.h"
 #include "platform/wtf/text/TextEncodingRegistry.h"
