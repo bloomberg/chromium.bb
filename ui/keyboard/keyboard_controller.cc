@@ -406,7 +406,8 @@ void KeyboardController::AddObserver(KeyboardControllerObserver* observer) {
   observer_list_.AddObserver(observer);
 }
 
-bool KeyboardController::HasObserver(KeyboardControllerObserver* observer) {
+bool KeyboardController::HasObserver(
+    KeyboardControllerObserver* observer) const {
   return observer_list_.HasObserver(observer);
 }
 

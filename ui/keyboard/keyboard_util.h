@@ -14,21 +14,9 @@ namespace aura {
 class WindowTreeHost;
 }
 
-namespace gfx {
-class Rect;
-};
-
 class GURL;
 
 namespace keyboard {
-
-// Enumeration of swipe directions.
-enum CursorMoveDirection {
-  kCursorMoveRight = 0x01,
-  kCursorMoveLeft = 0x02,
-  kCursorMoveUp = 0x04,
-  kCursorMoveDown = 0x08
-};
 
 // An enumeration of different keyboard control events that should be logged.
 enum KeyboardControlEvent {
@@ -61,12 +49,6 @@ enum KeyboardState {
   // Request virtual keyboard be suppressed.
   KEYBOARD_STATE_DISABLED,
 };
-
-// Gets the calculated keyboard bounds from |root_bounds|. The keyboard height
-// is specified by |keyboard_height|. This should be only called when keyboard
-// is in FULL_WDITH mode.
-KEYBOARD_EXPORT gfx::Rect FullWidthKeyboardBoundsFromRootBounds(
-    const gfx::Rect& root_bounds, int keyboard_height);
 
 // Sets the state of the a11y onscreen keyboard.
 KEYBOARD_EXPORT void SetAccessibilityKeyboardEnabled(bool enabled);
@@ -142,12 +124,6 @@ KEYBOARD_EXPORT bool IsVoiceInputEnabled();
 // Insert |text| into the active TextInputClient if there is one. Returns true
 // if |text| was successfully inserted.
 KEYBOARD_EXPORT bool InsertText(const base::string16& text);
-
-// Move cursor when swipe on the virtualkeyboard. Returns true if cursor was
-// successfully moved according to |swipe_direction|.
-KEYBOARD_EXPORT bool MoveCursor(int swipe_direction,
-                                int modifier_flags,
-                                aura::WindowTreeHost* host);
 
 // Sends a fabricated key event, where |type| is the event type, |key_value|
 // is the unicode value of the character, |key_code| is the legacy key code

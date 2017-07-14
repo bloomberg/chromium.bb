@@ -94,10 +94,6 @@ bool ChromeVirtualKeyboardDelegate::HideKeyboard() {
   if (!controller)
     return false;
 
-  UMA_HISTOGRAM_ENUMERATION("VirtualKeyboard.KeyboardControlEvent",
-                            keyboard::KEYBOARD_CONTROL_HIDE_USER,
-                            keyboard::KEYBOARD_CONTROL_MAX);
-
   // Pass HIDE_REASON_MANUAL since calls to HideKeyboard as part of this API
   // would be user generated.
   controller->HideKeyboard(keyboard::KeyboardController::HIDE_REASON_MANUAL);
