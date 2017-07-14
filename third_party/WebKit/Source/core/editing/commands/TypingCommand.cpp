@@ -833,7 +833,8 @@ void TypingCommand::DeleteKeyPressed(TextGranularity granularity,
   // current state of the document and we'll get the wrong result.
   const VisibleSelection& selection_after_undo =
       VisibleSelection::CreateWithoutValidationDeprecated(
-          StartingSelection().End(), selection_to_delete.Extent(),
+          StartingSelection().End(),
+          CreateVisiblePosition(selection_to_delete.Extent()).DeepEquivalent(),
           selection_to_delete.Affinity());
   DeleteKeyPressedInternal(selection_to_delete, selection_after_undo, kill_ring,
                            editing_state);
@@ -961,7 +962,8 @@ void TypingCommand::ForwardDeleteKeyPressed(TextGranularity granularity,
       const VisibleSelection& selection_to_delete =
           selection_modifier.Selection();
       if (!StartingSelection().IsRange() ||
-          selection_to_delete.Base() != StartingSelection().Start()) {
+          MostBackwardCaretPosition(selection_to_delete.Base()) !=
+              StartingSelection().Start()) {
         ForwardDeleteKeyPressedInternal(
             selection_to_delete, selection_to_delete, kill_ring, editing_state);
         return;

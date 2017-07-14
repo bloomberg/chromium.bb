@@ -487,20 +487,21 @@ void VisibleSelectionTemplate<Strategy>::Validate(
   AdjustSelectionToAvoidCrossingEditingBoundaries();
   UpdateSelectionType();
 
-  if (GetSelectionType() != kRangeSelection)
-    return;
-
-  // "Constrain" the selection to be the smallest equivalent range of
-  // nodes. This is a somewhat arbitrary choice, but experience shows that
-  // it is useful to make to make the selection "canonical" (if only for
-  // purposes of comparing selections). This is an ideal point of the code
-  // to do this operation, since all selection changes that result in a
-  // RANGE come through here before anyone uses it.
-  // TODO(yosin) Canonicalizing is good, but haven't we already done it
-  // (when we set these two positions to |VisiblePosition|
-  // |deepEquivalent()|s above)?
-  start_ = MostForwardCaretPosition(start_);
-  end_ = MostBackwardCaretPosition(end_);
+  if (GetSelectionType() == kRangeSelection) {
+    // "Constrain" the selection to be the smallest equivalent range of
+    // nodes. This is a somewhat arbitrary choice, but experience shows that
+    // it is useful to make to make the selection "canonical" (if only for
+    // purposes of comparing selections). This is an ideal point of the code
+    // to do this operation, since all selection changes that result in a
+    // RANGE come through here before anyone uses it.
+    // TODO(yosin) Canonicalizing is good, but haven't we already done it
+    // (when we set these two positions to |VisiblePosition|
+    // |DeepEquivalent()|s above)?
+    start_ = MostForwardCaretPosition(start_);
+    end_ = MostBackwardCaretPosition(end_);
+  }
+  base_ = base_is_first_ ? start_ : end_;
+  extent_ = base_is_first_ ? end_ : start_;
 }
 
 template <typename Strategy>
