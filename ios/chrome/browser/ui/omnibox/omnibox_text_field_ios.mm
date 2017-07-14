@@ -472,14 +472,16 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
   // than |fieldText|, it seems it's OK to skip calling self.attributedText
   // during the condition added below. If we change mobile omnibox to match
   // desktop and also color the omnibox while self.editing, this workaround will
-  // no longer work.
+  // no longer work. The check for |autocompleteLength| reduces the scope of
+  // this workaround, without it having introduced crbug.com/740075.
   BOOL updateText = YES;
   // Before M61 branch point this should also go behind a Japanese flag, e.g.
   // [self.textInputMode.primaryLanguage isEqualToString:@"ja-JP"] to be as
   // restrictive as possible.
   if (experimental_flags::IsThirdPartyKeyboardWorkaroundEnabled()) {
     updateText =
-        (!self.editing || ![self.text isEqualToString:fieldText.string]);
+        (!self.editing || ![self.text isEqualToString:fieldText.string] ||
+         autocompleteLength == 0);
   }
   if (updateText) {
     self.attributedText = fieldText;
