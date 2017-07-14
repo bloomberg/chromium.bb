@@ -12,10 +12,8 @@
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_manager.h"
 #import "ios/web_view/internal/cwv_web_view_configuration_internal.h"
-#include "ios/web_view/internal/pref_names.h"
 #import "ios/web_view/internal/translate/cwv_translation_language_internal.h"
 #import "ios/web_view/internal/translate/web_view_translate_client.h"
-#include "ios/web_view/internal/web_view_browser_state.h"
 #import "ios/web_view/public/cwv_translation_controller_delegate.h"
 #import "ios/web_view/public/cwv_translation_policy.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -67,17 +65,6 @@ const NSInteger CWVTranslationErrorScriptLoadError =
 @synthesize delegate = _delegate;
 @synthesize supportedLanguagesByCode = _supportedLanguagesByCode;
 @synthesize webState = _webState;
-
-#pragma mark - Class Methods
-
-+ (void)resetTranslationPolicies {
-  CWVWebViewConfiguration* configuration =
-      [CWVWebViewConfiguration defaultConfiguration];
-  PrefService* prefService = configuration.browserState->GetPrefs();
-  translate::TranslatePrefs translatePrefs(prefService, prefs::kAcceptLanguages,
-                                           nullptr);
-  translatePrefs.ResetToDefaults();
-}
 
 #pragma mark - Internal Methods
 
@@ -169,7 +156,6 @@ const NSInteger CWVTranslationErrorScriptLoadError =
 
 - (void)setTranslationPolicy:(CWVTranslationPolicy*)policy
              forPageLanguage:(CWVTranslationLanguage*)pageLanguage {
-  DCHECK(!_webState->GetBrowserState()->IsOffTheRecord());
   std::string languageCode = base::SysNSStringToUTF8(pageLanguage.languageCode);
   switch (policy.type) {
     case CWVTranslationPolicyAsk: {
@@ -213,7 +199,6 @@ const NSInteger CWVTranslationErrorScriptLoadError =
 
 - (void)setTranslationPolicy:(CWVTranslationPolicy*)policy
                  forPageHost:(NSString*)pageHost {
-  DCHECK(!_webState->GetBrowserState()->IsOffTheRecord());
   DCHECK(pageHost.length);
   switch (policy.type) {
     case CWVTranslationPolicyAsk: {
