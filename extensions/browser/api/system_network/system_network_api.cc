@@ -4,8 +4,21 @@
 
 #include "extensions/browser/api/system_network/system_network_api.h"
 
+#include "base/task_scheduler/post_task.h"
+
 namespace {
 const char kNetworkListError[] = "Network lookup failed or unsupported";
+
+std::unique_ptr<net::NetworkInterfaceList> GetListOnBlockingTaskRunner() {
+  auto interface_list = base::MakeUnique<net::NetworkInterfaceList>();
+  if (net::GetNetworkList(interface_list.get(),
+                          net::INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES)) {
+    return interface_list;
+  }
+
+  return nullptr;
+}
+
 }  // namespace
 
 namespace extensions {
@@ -21,48 +34,28 @@ SystemNetworkGetNetworkInterfacesFunction::
 
 ExtensionFunction::ResponseAction
 SystemNetworkGetNetworkInterfacesFunction::Run() {
-  content::BrowserThread::PostTask(
-      content::BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(
-          &SystemNetworkGetNetworkInterfacesFunction::GetListOnFileThread,
-          this));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  constexpr base::TaskTraits kTraits = {
+      base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+      base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN};
+  using Self = SystemNetworkGetNetworkInterfacesFunction;
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, kTraits, base::BindOnce(&GetListOnBlockingTaskRunner),
+      base::BindOnce(&Self::SendResponseOnUIThread, this));
   return RespondLater();
 }
 
-void SystemNetworkGetNetworkInterfacesFunction::GetListOnFileThread() {
-  net::NetworkInterfaceList interface_list;
-  if (net::GetNetworkList(&interface_list,
-                          net::INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES)) {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(
-            &SystemNetworkGetNetworkInterfacesFunction::SendResponseOnUIThread,
-            this,
-            interface_list));
+void SystemNetworkGetNetworkInterfacesFunction::SendResponseOnUIThread(
+    std::unique_ptr<net::NetworkInterfaceList> interface_list) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (!interface_list) {
+    Respond(Error(kNetworkListError));
     return;
   }
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&SystemNetworkGetNetworkInterfacesFunction::HandleGetListError,
-                 this));
-}
-
-void SystemNetworkGetNetworkInterfacesFunction::HandleGetListError() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  Respond(Error(kNetworkListError));
-}
-
-void SystemNetworkGetNetworkInterfacesFunction::SendResponseOnUIThread(
-    const net::NetworkInterfaceList& interface_list) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
   std::vector<api::system_network::NetworkInterface> create_arg;
-  create_arg.reserve(interface_list.size());
-  for (const net::NetworkInterface& interface : interface_list) {
+  create_arg.reserve(interface_list->size());
+  for (const net::NetworkInterface& interface : *interface_list) {
     api::system_network::NetworkInterface info;
     info.name = interface.name;
     info.address = interface.address.ToString();
