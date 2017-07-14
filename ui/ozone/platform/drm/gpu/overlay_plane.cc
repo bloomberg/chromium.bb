@@ -32,19 +32,6 @@ OverlayPlane::OverlayPlane(const OverlayPlane& other) = default;
 OverlayPlane::~OverlayPlane() {
 }
 
-OverlayPlane::OverlayPlane(const scoped_refptr<ScanoutBuffer>& buffer,
-                           int z_order,
-                           gfx::OverlayTransform plane_transform,
-                           const gfx::Rect& display_bounds,
-                           const gfx::RectF& crop_rect,
-                           const ProcessBufferCallback& processing_callback)
-    : buffer(buffer),
-      z_order(z_order),
-      plane_transform(plane_transform),
-      display_bounds(display_bounds),
-      crop_rect(crop_rect),
-      processing_callback(processing_callback) {}
-
 bool OverlayPlane::operator<(const OverlayPlane& plane) const {
   return std::tie(z_order, display_bounds, crop_rect, plane_transform) <
          std::tie(plane.z_order, plane.display_bounds, plane.crop_rect,

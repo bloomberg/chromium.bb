@@ -31,19 +31,6 @@ struct OverlayPlane {
                const gfx::RectF& crop_rect);
   OverlayPlane(const OverlayPlane& other);
 
-  // This represents a callback function which can handle post processing
-  // operations like scaling, format conversion etc of the buffer bound to this
-  // plane and return the processed buffer.
-  typedef base::Callback<scoped_refptr<ScanoutBuffer>(const gfx::Size& size,
-                                                      uint32_t format)>
-      ProcessBufferCallback;
-  OverlayPlane(const scoped_refptr<ScanoutBuffer>& buffer,
-               int z_order,
-               gfx::OverlayTransform plane_transform,
-               const gfx::Rect& display_bounds,
-               const gfx::RectF& crop_rect,
-               const ProcessBufferCallback& processing_callback);
-
   bool operator<(const OverlayPlane& plane) const;
 
   ~OverlayPlane();
@@ -56,8 +43,6 @@ struct OverlayPlane {
   gfx::OverlayTransform plane_transform;
   gfx::Rect display_bounds;
   gfx::RectF crop_rect;
-  // TODO(dshwang): remove unused |processing_callback|. crbug.com/683347
-  ProcessBufferCallback processing_callback;
 };
 
 }  // namespace ui

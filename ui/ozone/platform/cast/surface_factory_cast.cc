@@ -72,8 +72,6 @@ class CastPixmap : public gfx::NativePixmap {
     parent_->OnOverlayScheduled(display_bounds);
     return true;
   }
-  void SetProcessingCallback(
-      const ProcessingCallback& processing_callback) override {}
   gfx::NativePixmapHandle ExportHandle() override {
     return gfx::NativePixmapHandle();
   }

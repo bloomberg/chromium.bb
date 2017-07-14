@@ -65,9 +65,6 @@ bool VaapiDrmPicture::Initialize() {
     return false;
   }
 
-  pixmap_->SetProcessingCallback(
-      base::Bind(&VaapiWrapper::ProcessPixmap, vaapi_wrapper_));
-
   if (texture_id_ != 0 && !make_context_current_cb_.is_null()) {
     if (!make_context_current_cb_.Run())
       return false;
