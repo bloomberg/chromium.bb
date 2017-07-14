@@ -10,8 +10,10 @@
 
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
+#include "media/mojo/features.h"
 #include "media/mojo/interfaces/interface_factory.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/service_manager/public/interfaces/interface_provider.mojom.h"
 
 namespace media {
 class MediaInterfaceProvider;
@@ -27,8 +29,8 @@ class RenderFrameHost;
 class MediaInterfaceProxy : public media::mojom::InterfaceFactory {
  public:
   // Constructs MediaInterfaceProxy and bind |this| to the |request|. When
-  // connection error happens on the client interface, |error_handler| should be
-  // fired.
+  // connection error happens on the client interface, |error_handler| will be
+  // called, which could destroy |this|.
   MediaInterfaceProxy(RenderFrameHost* render_frame_host,
                       media::mojom::InterfaceFactoryRequest request,
                       const base::Closure& error_handler);
@@ -42,12 +44,21 @@ class MediaInterfaceProxy : public media::mojom::InterfaceFactory {
   void CreateCdm(media::mojom::ContentDecryptionModuleRequest request) final;
 
  private:
+  // Get the |interface_factory_ptr_|.
   media::mojom::InterfaceFactory* GetMediaInterfaceFactory();
 
-  // Callback for connection error on |interface_factory_ptr_|.
-  void OnConnectionError();
+  // Get the |cdm_interface_factory_ptr_|.
+  media::mojom::InterfaceFactory* GetCdmInterfaceFactory();
 
-  void ConnectToService();
+  // Callback for connection error from |interface_factory_ptr_| or
+  // |cdm_interface_factory_ptr_|.
+  void OnMediaServiceConnectionError();
+  void OnCdmServiceConnectionError();
+
+  service_manager::mojom::InterfaceProviderPtr GetFrameServices();
+
+  void ConnectToMediaService();
+  void ConnectToCdmService();
 
   // Safe to hold a raw pointer since |this| is owned by RenderFrameHostImpl.
   RenderFrameHost* render_frame_host_;
@@ -58,8 +69,15 @@ class MediaInterfaceProxy : public media::mojom::InterfaceFactory {
 
   mojo::Binding<media::mojom::InterfaceFactory> binding_;
 
-  // InterfacePtr to the remote media::mojom::InterfaceFactory implementation.
+  // InterfacePtr to the remote media::mojom::InterfaceFactory implementation
+  // in the service named kMediaServiceName hosted in the process specified by
+  // the "mojo_media_host" gn argument. Available options are browser, GPU and
+  // utility processes.
   media::mojom::InterfaceFactoryPtr interface_factory_ptr_;
+
+  // InterfacePtr to the remote media::mojom::InterfaceFactory implementation
+  // in the service named kCdmServiceName hosted in the utility process.
+  media::mojom::InterfaceFactoryPtr cdm_interface_factory_ptr_;
 
   base::ThreadChecker thread_checker_;
 

@@ -140,6 +140,11 @@ service_test("media_service_unittests") {
   ]
 }
 
+service_manifest("cdm_manifest") {
+  name = "cdm"
+  source = "cdm_manifest.json"
+}
+
 service_manifest("media_manifest") {
   name = "media"
   source = "media_manifest.json"

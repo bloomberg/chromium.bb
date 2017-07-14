@@ -47,7 +47,7 @@ namespace {
 
 #if BUILDFLAG(ENABLE_PEPPER_CDMS)
 
-static_assert(BUILDFLAG(ENABLE_MOJO_MEDIA_IN_UTILITY_PROCESS), "");
+static_assert(BUILDFLAG(ENABLE_STANDALONE_CDM_SERVICE), "");
 static_assert(BUILDFLAG(ENABLE_MOJO_CDM), "");
 
 std::unique_ptr<media::CdmAllocator> CreateCdmAllocator() {
@@ -66,7 +66,7 @@ class CdmMojoMediaClient final : public media::MojoMediaClient {
   }
 };
 
-std::unique_ptr<service_manager::Service> CreateMediaService() {
+std::unique_ptr<service_manager::Service> CreateCdmService() {
   return std::unique_ptr<service_manager::Service>(
       new ::media::MediaService(base::MakeUnique<CdmMojoMediaClient>()));
 }
@@ -94,8 +94,8 @@ void UtilityServiceFactory::RegisterServices(ServiceMap* services) {
 
 #if BUILDFLAG(ENABLE_PEPPER_CDMS)
   service_manager::EmbeddedServiceInfo info;
-  info.factory = base::Bind(&CreateMediaService);
-  services->insert(std::make_pair(media::mojom::kMediaServiceName, info));
+  info.factory = base::Bind(&CreateCdmService);
+  services->insert(std::make_pair(media::mojom::kCdmServiceName, info));
 #endif
 
   service_manager::EmbeddedServiceInfo shape_detection_info;

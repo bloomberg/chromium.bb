@@ -182,6 +182,7 @@ service_manifest("packaged_services_manifest") {
   source = "mojo/content_packaged_services_manifest.json"
   packaged_services = [
     "//content/network:manifest",
+    "//media/mojo/services:cdm_manifest",
     "//media/mojo/services:media_manifest",
     "//services/data_decoder:manifest",
     "//services/device:manifest",

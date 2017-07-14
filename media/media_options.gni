@@ -149,6 +149,11 @@ declare_args() {
   # - "utility": Use mojo media service hosted in the utility process.
   mojo_media_host = "none"
 
+  # Force to host the CDM service in standalone "cdm" service instead of the
+  # "media" service hosted in the process specified by "mojo_media_host". Other
+  # mojo media services will not be affected.
+  enable_standalone_cdm_service = false
+
   # Default mojo_media_services and mojo_media_host on various platforms.
   # Can be overridden by gn build arguments from the --args command line flag
   # for local testing.
@@ -167,10 +172,8 @@ declare_args() {
       ]
       mojo_media_host = "gpu"
     } else if (enable_pepper_cdms) {
-      # TODO(xhwang): Also support running "video_decoder" service in the "gpu"
-      # process. See http://crbug.com/664364
       mojo_media_services = [ "cdm" ]
-      mojo_media_host = "utility"
+      enable_standalone_cdm_service = true
     }
   }
 }
