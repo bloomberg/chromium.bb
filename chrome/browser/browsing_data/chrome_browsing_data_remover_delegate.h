@@ -78,17 +78,16 @@ class ChromeBrowsingDataRemoverDelegate
 
     // "Site data" includes storage backend accessible to websites and some
     // additional metadata kept by the browser (e.g. site usage data).
-    DATA_TYPE_SITE_DATA =
-        content::BrowsingDataRemover::DATA_TYPE_COOKIES |
-        content::BrowsingDataRemover::DATA_TYPE_CHANNEL_IDS |
-        content::BrowsingDataRemover::DATA_TYPE_DOM_STORAGE |
-        DATA_TYPE_PLUGIN_DATA |
+    DATA_TYPE_SITE_DATA = content::BrowsingDataRemover::DATA_TYPE_COOKIES |
+                          content::BrowsingDataRemover::DATA_TYPE_CHANNEL_IDS |
+                          content::BrowsingDataRemover::DATA_TYPE_DOM_STORAGE |
+                          DATA_TYPE_PLUGIN_DATA |
 #if defined(OS_ANDROID)
-        DATA_TYPE_WEB_APP_DATA |
+                          DATA_TYPE_WEB_APP_DATA |
 #endif
-        DATA_TYPE_SITE_USAGE_DATA |
-        DATA_TYPE_DURABLE_PERMISSION |
-        DATA_TYPE_EXTERNAL_PROTOCOL_DATA,
+                          DATA_TYPE_SITE_USAGE_DATA |
+                          DATA_TYPE_DURABLE_PERMISSION |
+                          DATA_TYPE_EXTERNAL_PROTOCOL_DATA,
 
     // Datatypes protected by Important Sites.
     IMPORTANT_SITES_DATA_TYPES =
@@ -98,17 +97,16 @@ class ChromeBrowsingDataRemoverDelegate
     // whichever makes sense.
     FILTERABLE_DATA_TYPES = DATA_TYPE_SITE_DATA |
                             content::BrowsingDataRemover::DATA_TYPE_CACHE |
-                            content::BrowsingDataRemover::DATA_TYPE_DOWNLOADS |
-                            DATA_TYPE_CONTENT_SETTINGS,
+                            content::BrowsingDataRemover::DATA_TYPE_DOWNLOADS,
 
     // Includes all the available remove options. Meant to be used by clients
     // that wish to wipe as much data as possible from a Profile, to make it
     // look like a new Profile.
-    ALL_DATA_TYPES = DATA_TYPE_SITE_DATA |
+    ALL_DATA_TYPES = DATA_TYPE_SITE_DATA |  //
                      content::BrowsingDataRemover::DATA_TYPE_CACHE |
                      content::BrowsingDataRemover::DATA_TYPE_DOWNLOADS |
-                     DATA_TYPE_FORM_DATA |
-                     DATA_TYPE_HISTORY |
+                     DATA_TYPE_FORM_DATA |  //
+                     DATA_TYPE_HISTORY |    //
                      DATA_TYPE_PASSWORDS |
                      content::BrowsingDataRemover::DATA_TYPE_MEDIA_LICENSES |
                      DATA_TYPE_CONTENT_SETTINGS,
