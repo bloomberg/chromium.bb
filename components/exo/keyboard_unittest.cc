@@ -10,6 +10,7 @@
 #include "components/exo/buffer.h"
 #include "components/exo/keyboard_delegate.h"
 #include "components/exo/keyboard_device_configuration_delegate.h"
+#include "components/exo/keyboard_observer.h"
 #include "components/exo/shell_surface.h"
 #include "components/exo/surface.h"
 #include "components/exo/test/exo_test_base.h"
@@ -49,6 +50,14 @@ class MockKeyboardDeviceConfigurationDelegate
   MOCK_METHOD1(OnKeyboardTypeChanged, void(bool));
 };
 
+class MockKeyboardObserver : public KeyboardObserver {
+ public:
+  MockKeyboardObserver() {}
+
+  // Overridden from KeyboardObserver:
+  MOCK_METHOD1(OnKeyboardDestroying, void(Keyboard*));
+};
+
 TEST_F(KeyboardTest, OnKeyboardEnter) {
   std::unique_ptr<Surface> surface(new Surface);
   std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
@@ -86,7 +95,6 @@ TEST_F(KeyboardTest, OnKeyboardEnter) {
   // Surface should maintain keyboard focus when moved to top-level window.
   focus_client->FocusWindow(surface->window()->GetToplevelWindow());
 
-  EXPECT_CALL(delegate, OnKeyboardDestroying(keyboard.get()));
   keyboard.reset();
 }
 
@@ -116,7 +124,6 @@ TEST_F(KeyboardTest, OnKeyboardLeave) {
   EXPECT_CALL(delegate, OnKeyboardLeave(surface.get()));
   focus_client->FocusWindow(nullptr);
 
-  EXPECT_CALL(delegate, OnKeyboardDestroying(keyboard.get()));
   keyboard.reset();
 }
 
@@ -155,7 +162,6 @@ TEST_F(KeyboardTest, OnKeyboardKey) {
   generator.ReleaseKey(ui::VKEY_A, 0);
   generator.ReleaseKey(ui::VKEY_A, 0);
 
-  EXPECT_CALL(delegate, OnKeyboardDestroying(keyboard.get()));
   keyboard.reset();
 }
 
@@ -199,7 +205,6 @@ TEST_F(KeyboardTest, OnKeyboardModifiers) {
   EXPECT_CALL(delegate, OnKeyboardModifiers(0));
   generator.ReleaseKey(ui::VKEY_B, 0);
 
-  EXPECT_CALL(delegate, OnKeyboardDestroying(keyboard.get()));
   keyboard.reset();
 }
 
@@ -245,11 +250,56 @@ TEST_F(KeyboardTest, OnKeyboardTypeChanged) {
   static_cast<ui::DeviceHotplugEventObserver*>(device_data_manager)
       ->OnKeyboardDevicesUpdated(keyboards);
 
-  EXPECT_CALL(delegate, OnKeyboardDestroying(keyboard.get()));
-  EXPECT_CALL(configuration_delegate, OnKeyboardDestroying(keyboard.get()));
   keyboard.reset();
 
   maximize_mode_controller->EnableMaximizeModeWindowManager(false);
+}
+
+TEST_F(KeyboardTest, KeyboardObserver) {
+  std::unique_ptr<Surface> surface(new Surface);
+  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
+  gfx::Size buffer_size(10, 10);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  surface->Attach(buffer.get());
+  surface->Commit();
+
+  aura::client::FocusClient* focus_client =
+      aura::client::GetFocusClient(ash::Shell::GetPrimaryRootWindow());
+  focus_client->FocusWindow(nullptr);
+
+  MockKeyboardDelegate delegate;
+  auto keyboard = base::MakeUnique<Keyboard>(&delegate);
+  MockKeyboardObserver observer;
+  keyboard->AddObserver(&observer);
+
+  EXPECT_CALL(observer, OnKeyboardDestroying(keyboard.get()));
+  keyboard.reset();
+}
+
+TEST_F(KeyboardTest, NeedKeyboardKeyAcks) {
+  std::unique_ptr<Surface> surface(new Surface);
+  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
+  gfx::Size buffer_size(10, 10);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  surface->Attach(buffer.get());
+  surface->Commit();
+
+  aura::client::FocusClient* focus_client =
+      aura::client::GetFocusClient(ash::Shell::GetPrimaryRootWindow());
+  focus_client->FocusWindow(nullptr);
+
+  MockKeyboardDelegate delegate;
+  auto keyboard = base::MakeUnique<Keyboard>(&delegate);
+
+  EXPECT_FALSE(keyboard->AreKeyboardKeyAcksNeeded());
+  keyboard->SetNeedKeyboardKeyAcks(true);
+  EXPECT_TRUE(keyboard->AreKeyboardKeyAcksNeeded());
+  keyboard->SetNeedKeyboardKeyAcks(false);
+  EXPECT_FALSE(keyboard->AreKeyboardKeyAcksNeeded());
+
+  keyboard.reset();
 }
 
 }  // namespace
