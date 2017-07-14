@@ -271,8 +271,11 @@ static_library("single_sample_metrics") {
 
 source_set("call_stack_profile_params") {
   sources = [
-    "call_stack_profile_params.cc",
     "call_stack_profile_params.h",
+  ]
+
+  deps = [
+    "//base:base",
   ]
 }
 

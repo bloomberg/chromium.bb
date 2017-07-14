@@ -19,6 +19,7 @@
 #include "chrome/browser/process_singleton.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/common/stack_sampling_configuration.h"
+#include "components/metrics/call_stack_profile_params.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/common/main_function_params.h"
 

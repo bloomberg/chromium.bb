@@ -65,7 +65,19 @@ void ChildCallStackProfileCollector::SetParentProfileCollector(
   profiles_.clear();
 }
 
-void ChildCallStackProfileCollector::Collect(
+base::Optional<base::StackSamplingProfiler::SamplingParams>
+ChildCallStackProfileCollector::Collect(
+    const CallStackProfileParams& params,
+    base::TimeTicks start_timestamp,
+    std::vector<CallStackProfile> profiles) {
+  // Impl function is used as it needs to PostTask() to itself on a different
+  // thread - which only works with a void return value.
+  CollectImpl(params, start_timestamp, std::move(profiles));
+  // Empty return value indicates that collection should not be re-started.
+  return base::Optional<base::StackSamplingProfiler::SamplingParams>();
+}
+
+void ChildCallStackProfileCollector::CollectImpl(
     const CallStackProfileParams& params,
     base::TimeTicks start_timestamp,
     std::vector<CallStackProfile> profiles) {
@@ -76,13 +88,11 @@ void ChildCallStackProfileCollector::Collect(
       (!base::ThreadTaskRunnerHandle::IsSet() ||
        base::ThreadTaskRunnerHandle::Get() != task_runner_)) {
     // Post back to the thread that owns the the parent interface.
-    task_runner_->PostTask(FROM_HERE, base::Bind(
-        &ChildCallStackProfileCollector::Collect,
-        // This class has lazy instance lifetime.
-        base::Unretained(this),
-        params,
-        start_timestamp,
-        base::Passed(std::move(profiles))));
+    task_runner_->PostTask(
+        FROM_HERE, base::Bind(&ChildCallStackProfileCollector::CollectImpl,
+                              // This class has lazy instance lifetime.
+                              base::Unretained(this), params, start_timestamp,
+                              base::Passed(std::move(profiles))));
     return;
   }
 
