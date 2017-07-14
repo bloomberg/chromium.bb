@@ -88,7 +88,8 @@ class SVGScriptElement final : public SVGElement,
   const AtomicString& GetNonceForElement() const override;
   bool AllowInlineScriptForCSP(const AtomicString& nonce,
                                const WTF::OrdinalNumber&,
-                               const String& script_content) override;
+                               const String& script_content,
+                               ContentSecurityPolicy::InlineType) override;
   AtomicString InitiatorName() const override;
   Document& GetDocument() const override;
   void DispatchLoadEvent() override;

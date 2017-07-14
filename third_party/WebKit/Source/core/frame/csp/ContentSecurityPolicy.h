@@ -270,6 +270,7 @@ class CORE_EXPORT ContentSecurityPolicy
                          const String& nonce,
                          const WTF::OrdinalNumber& context_line,
                          const String& script_content,
+                         InlineType,
                          SecurityViolationReportingPolicy =
                              SecurityViolationReportingPolicy::kReport) const;
   bool AllowInlineStyle(Element*,
@@ -277,6 +278,7 @@ class CORE_EXPORT ContentSecurityPolicy
                         const String& nonce,
                         const WTF::OrdinalNumber& context_line,
                         const String& style_content,
+                        InlineType,
                         SecurityViolationReportingPolicy =
                             SecurityViolationReportingPolicy::kReport) const;
 
@@ -291,18 +293,6 @@ class CORE_EXPORT ContentSecurityPolicy
                       SecurityViolationReportingPolicy =
                           SecurityViolationReportingPolicy::kReport) const;
   bool IsFrameAncestorsEnforced() const;
-
-  // The hash allow functions are guaranteed to not have any side
-  // effects, including reporting.
-  // Hash functions check all policies relating to use of a script/style
-  // with the given hash and return true all CSP policies allow it.
-  // If these return true, callers can then process the content or
-  // issue a load and be safe disabling any further CSP checks.
-  //
-  // TODO(mkwst): Fold hashes into 'allow{Script,Style}' checks above, just
-  // as we've done with nonces. https://crbug.com/617065
-  bool AllowScriptWithHash(const String& source, InlineType) const;
-  bool AllowStyleWithHash(const String& source, InlineType) const;
 
   bool AllowRequestWithoutIntegrity(
       WebURLRequest::RequestContext,
@@ -466,6 +456,19 @@ class CORE_EXPORT ContentSecurityPolicy
   void PostViolationReport(const SecurityPolicyViolationEventInit&,
                            LocalFrame*,
                            const Vector<String>& report_endpoints);
+
+  static void FillInCSPHashValues(const String& source,
+                                  uint8_t hash_algorithms_used,
+                                  Vector<CSPHashValue>& csp_hash_values);
+
+  // checks a vector of csp hashes against policy, probably a good idea
+  // to use in tandem with FillInCSPHashValues.
+  static bool CheckScriptHashAgainstPolicy(Vector<CSPHashValue>&,
+                                           const Member<CSPDirectiveList>&,
+                                           InlineType);
+  static bool CheckStyleHashAgainstPolicy(Vector<CSPHashValue>&,
+                                          const Member<CSPDirectiveList>&,
+                                          InlineType);
 
   Member<ExecutionContext> execution_context_;
   bool override_inline_style_allowed_;
