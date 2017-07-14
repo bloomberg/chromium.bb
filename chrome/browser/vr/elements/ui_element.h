@@ -10,11 +10,15 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "cc/animation/animation_target.h"
+#include "cc/animation/transform_operations.h"
+#include "chrome/browser/vr/animation_player.h"
 #include "chrome/browser/vr/color_scheme.h"
 #include "chrome/browser/vr/elements/ui_element_debug_id.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/quaternion.h"
+#include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/geometry/vector3d_f.h"
 #include "ui/gfx/transform.h"
 
@@ -54,39 +58,10 @@ enum Fill {
   SELF = 4,
 };
 
-class WorldRectangle {
- public:
-  const gfx::Transform& transform() const { return transform_; }
-  void set_transform(const gfx::Transform& transform) {
-    transform_ = transform;
-  }
-
-  gfx::Point3F GetCenter() const;
-  gfx::Vector3dF GetNormal() const;
-
-  // Computes the distance from |ray_origin| to this rectangles's plane, along
-  // |ray_vector|. Returns true and populates |distance| if the calculation is
-  // possible, and false if the ray is parallel to the plane.
-  bool GetRayDistance(const gfx::Point3F& ray_origin,
-                      const gfx::Vector3dF& ray_vector,
-                      float* distance) const;
-
-  // Projects a 3D world point onto the X and Y axes of the transformed
-  // rectangle, returning 2D coordinates relative to the un-transformed unit
-  // rectangle. This allows beam intersection points to be mapped to sprite
-  // pixel coordinates. Points that fall onto the rectangle will generate X and
-  // Y values on the interval [-0.5, 0.5].
-  gfx::PointF GetUnitRectangleCoordinates(
-      const gfx::Point3F& world_point) const;
-
- private:
-  gfx::Transform transform_;
-};
-
-class UiElement : public WorldRectangle {
+class UiElement : public cc::AnimationTarget {
  public:
   UiElement();
-  virtual ~UiElement();
+  ~UiElement() override;
 
   virtual void PrepareToDraw();
 
@@ -153,20 +128,16 @@ class UiElement : public WorldRectangle {
   gfx::Vector3dF size() const { return size_; }
   void set_size(const gfx::Vector3dF& size) { size_ = size; }
 
-  // The scale of the object, and its children.
-  gfx::Vector3dF scale() const { return scale_; }
-  void set_scale(const gfx::Vector3dF& scale) { scale_ = scale; }
-
-  // The rotation of the object, and its children.
-  gfx::Quaternion rotation() const { return rotation_; }
-  void set_rotation(const gfx::Quaternion& rotation) { rotation_ = rotation; }
-
-  // The translation of the object, and its children.  Translation is applied
-  // after rotation and scaling.
-  gfx::Vector3dF translation() const { return translation_; }
-  void set_translation(const gfx::Vector3dF& translation) {
-    translation_ = translation;
+  // This is the local transform. It is inherited by descendants.
+  const cc::TransformOperations& transform_operations() const {
+    return transform_operations_;
   }
+
+  void set_transform_operations(const cc::TransformOperations& operations) {
+    transform_operations_ = operations;
+  }
+
+  AnimationPlayer& animation_player() { return animation_player_; }
 
   // The opacity of the object (between 0.0 and 1.0).
   float opacity() const { return opacity_; }
@@ -193,12 +164,6 @@ class UiElement : public WorldRectangle {
 
   YAnchoring y_anchoring() const { return y_anchoring_; }
   void set_y_anchoring(YAnchoring y_anchoring) { y_anchoring_ = y_anchoring; }
-
-  // Animations that affect the properties of the object over time.
-  std::vector<std::unique_ptr<Animation>>& animations() { return animations_; }
-  const std::vector<std::unique_ptr<Animation>>& animations() const {
-    return animations_;
-  }
 
   Fill fill() const { return fill_; }
   void set_fill(Fill fill) { fill_ = fill; }
@@ -245,6 +210,40 @@ class UiElement : public WorldRectangle {
   void SetMode(ColorScheme::Mode mode);
   ColorScheme::Mode mode() const { return mode_; }
 
+  const gfx::Transform& screen_space_transform() const {
+    return screen_space_transform_;
+  }
+  void set_screen_space_transform(const gfx::Transform& transform) {
+    screen_space_transform_ = transform;
+  }
+
+  gfx::Point3F GetCenter() const;
+  gfx::Vector3dF GetNormal() const;
+
+  // Computes the distance from |ray_origin| to this rectangles's plane, along
+  // |ray_vector|. Returns true and populates |distance| if the calculation is
+  // possible, and false if the ray is parallel to the plane.
+  bool GetRayDistance(const gfx::Point3F& ray_origin,
+                      const gfx::Vector3dF& ray_vector,
+                      float* distance) const;
+
+  // Projects a 3D world point onto the X and Y axes of the transformed
+  // rectangle, returning 2D coordinates relative to the un-transformed unit
+  // rectangle. This allows beam intersection points to be mapped to sprite
+  // pixel coordinates. Points that fall onto the rectangle will generate X and
+  // Y values on the interval [-0.5, 0.5].
+  gfx::PointF GetUnitRectangleCoordinates(
+      const gfx::Point3F& world_point) const;
+
+  // cc::AnimationTarget
+  void NotifyClientOpacityAnimated(float opacity,
+                                   cc::Animation* animation) override;
+  void NotifyClientTransformOperationsAnimated(
+      const cc::TransformOperations& operations,
+      cc::Animation* animation) override;
+  void NotifyClientBoundsAnimated(const gfx::SizeF& size,
+                                  cc::Animation* animation) override;
+
  protected:
   virtual void OnSetMode();
 
@@ -276,16 +275,6 @@ class UiElement : public WorldRectangle {
   // The size of the object.  This does not affect children.
   gfx::Vector3dF size_ = {1.0f, 1.0f, 1.0f};
 
-  // The scale of the object, and its children.
-  gfx::Vector3dF scale_ = {1.0f, 1.0f, 1.0f};
-
-  // The rotation of the object, and its children.
-  gfx::Quaternion rotation_;
-
-  // The translation of the object, and its children.  Translation is applied
-  // after rotation and scaling.
-  gfx::Vector3dF translation_ = {0.0f, 0.0f, 0.0f};
-
   // The opacity of the object (between 0.0 and 1.0).
   float opacity_ = 1.0f;
 
@@ -300,8 +289,7 @@ class UiElement : public WorldRectangle {
   XAnchoring x_anchoring_ = XAnchoring::XNONE;
   YAnchoring y_anchoring_ = YAnchoring::YNONE;
 
-  // Animations that affect the properties of the object over time.
-  std::vector<std::unique_ptr<Animation>> animations_;
+  AnimationPlayer animation_player_;
 
   Fill fill_ = Fill::NONE;
 
@@ -322,7 +310,15 @@ class UiElement : public WorldRectangle {
   // An identifier used for testing and debugging, in lieu of a string.
   UiElementDebugId debug_id_ = UiElementDebugId::kNone;
 
-  gfx::Transform transform_;
+  // This local transform operations. They are inherited by descendants and are
+  // stored as a list of operations rather than a baked transform to make
+  // transitions easier to implement (you may, for example, want to animate just
+  // the translation, but leave the rotation and scale in tact).
+  cc::TransformOperations transform_operations_;
+
+  // This is the combined, local to screen transform. It includes
+  // |inheritable_transform_|, |transform_|, and anchoring adjustments.
+  gfx::Transform screen_space_transform_;
 
   ColorScheme::Mode mode_ = ColorScheme::kModeNormal;
 

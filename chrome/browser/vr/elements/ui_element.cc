@@ -8,8 +8,6 @@
 
 #include "base/logging.h"
 #include "base/time/time.h"
-#include "chrome/browser/vr/animation.h"
-#include "chrome/browser/vr/easing.h"
 
 namespace vr {
 
@@ -31,49 +29,13 @@ bool GetRayPlaneDistance(const gfx::Point3F& ray_origin,
 
 }  // namespace
 
-gfx::Point3F WorldRectangle::GetCenter() const {
-  gfx::Point3F center;
-  transform_.TransformPoint(&center);
-  return center;
+UiElement::UiElement() {
+  animation_player_.set_target(this);
 }
 
-gfx::PointF WorldRectangle::GetUnitRectangleCoordinates(
-    const gfx::Point3F& world_point) const {
-  // TODO(acondor): Simplify the math in this function.
-  gfx::Point3F origin(0, 0, 0);
-  gfx::Vector3dF x_axis(1, 0, 0);
-  gfx::Vector3dF y_axis(0, 1, 0);
-  transform_.TransformPoint(&origin);
-  transform_.TransformVector(&x_axis);
-  transform_.TransformVector(&y_axis);
-  gfx::Vector3dF origin_to_world = world_point - origin;
-  float x = gfx::DotProduct(origin_to_world, x_axis) /
-            gfx::DotProduct(x_axis, x_axis);
-  float y = gfx::DotProduct(origin_to_world, y_axis) /
-            gfx::DotProduct(y_axis, y_axis);
-  return gfx::PointF(x, y);
+UiElement::~UiElement() {
+  animation_player_.set_target(nullptr);
 }
-
-gfx::Vector3dF WorldRectangle::GetNormal() const {
-  gfx::Vector3dF x_axis(1, 0, 0);
-  gfx::Vector3dF y_axis(0, 1, 0);
-  transform_.TransformVector(&x_axis);
-  transform_.TransformVector(&y_axis);
-  gfx::Vector3dF normal = CrossProduct(y_axis, x_axis);
-  normal.GetNormalized(&normal);
-  return normal;
-}
-
-bool WorldRectangle::GetRayDistance(const gfx::Point3F& ray_origin,
-                                    const gfx::Vector3dF& ray_vector,
-                                    float* distance) const {
-  return GetRayPlaneDistance(ray_origin, ray_vector, GetCenter(), GetNormal(),
-                             distance);
-}
-
-UiElement::UiElement() : rotation_(gfx::Vector3dF(1, 0, 0), 0) {}
-
-UiElement::~UiElement() = default;
 
 void UiElement::Render(UiElementRenderer* renderer,
                        gfx::Transform view_proj_matrix) const {
@@ -95,89 +57,7 @@ void UiElement::OnButtonUp(const gfx::PointF& position) {}
 void UiElement::PrepareToDraw() {}
 
 void UiElement::Animate(const base::TimeTicks& time) {
-  for (auto& it : animations_) {
-    Animation& animation = *it;
-    if (time < animation.start)
-      continue;
-
-    // If |from| is not specified, start at the current values.
-    if (animation.from.size() == 0) {
-      switch (animation.property) {
-        case Animation::SIZE:
-          animation.from.push_back(size_.x());
-          animation.from.push_back(size_.y());
-          break;
-        case Animation::SCALE:
-          animation.from.push_back(scale_.x());
-          animation.from.push_back(scale_.y());
-          animation.from.push_back(scale_.z());
-          break;
-        case Animation::ROTATION:
-          animation.from.push_back(rotation_.x());
-          animation.from.push_back(rotation_.y());
-          animation.from.push_back(rotation_.z());
-          animation.from.push_back(rotation_.w());
-          break;
-        case Animation::TRANSLATION:
-          animation.from.push_back(translation_.x());
-          animation.from.push_back(translation_.y());
-          animation.from.push_back(translation_.z());
-          break;
-        case Animation::OPACITY:
-          animation.from.push_back(opacity_);
-          break;
-      }
-    }
-    CHECK_EQ(animation.from.size(), animation.to.size());
-
-    std::vector<float> values(animation.from.size());
-    for (std::size_t i = 0; i < animation.from.size(); ++i) {
-      if (animation.to[i] == animation.from[i] ||
-          time >= (animation.start + animation.duration)) {
-        values[i] = animation.to[i];
-        continue;
-      }
-      double value = animation.easing->CalculateValue(
-          (time - animation.start).InMillisecondsF() /
-          animation.duration.InMillisecondsF());
-      values[i] =
-          animation.from[i] + (value * (animation.to[i] - animation.from[i]));
-    }
-    switch (animation.property) {
-      case Animation::SIZE:
-        CHECK_EQ(animation.from.size(), 2u);
-        size_.set_x(values[0]);
-        size_.set_y(values[1]);
-        break;
-      case Animation::SCALE:
-        CHECK_EQ(animation.from.size(), 3u);
-        scale_ = {values[0], values[1], values[2]};
-        break;
-      case Animation::ROTATION:
-        CHECK_EQ(animation.from.size(), 4u);
-        rotation_.set_x(values[0]);
-        rotation_.set_y(values[1]);
-        rotation_.set_z(values[2]);
-        rotation_.set_w(values[3]);
-        break;
-      case Animation::TRANSLATION:
-        CHECK_EQ(animation.from.size(), 3u);
-        translation_ = {values[0], values[1], values[2]};
-        break;
-      case Animation::OPACITY:
-        CHECK_EQ(animation.from.size(), 1u);
-        opacity_ = values[0];
-        break;
-    }
-  }
-  for (auto it = animations_.begin(); it != animations_.end();) {
-    const Animation& animation = **it;
-    if (time >= (animation.start + animation.duration)) {
-      it = animations_.erase(it);
-    } else {
-      ++it;
-    }
-  }
+  animation_player_.Tick(time);
 }
 
 bool UiElement::IsVisible() const {
@@ -205,5 +85,61 @@ void UiElement::SetMode(ColorScheme::Mode mode) {
 }
 
 void UiElement::OnSetMode() {}
+
+gfx::Point3F UiElement::GetCenter() const {
+  gfx::Point3F center;
+  screen_space_transform_.TransformPoint(&center);
+  return center;
+}
+
+gfx::PointF UiElement::GetUnitRectangleCoordinates(
+    const gfx::Point3F& world_point) const {
+  // TODO(acondor): Simplify the math in this function.
+  gfx::Point3F origin(0, 0, 0);
+  gfx::Vector3dF x_axis(1, 0, 0);
+  gfx::Vector3dF y_axis(0, 1, 0);
+  screen_space_transform_.TransformPoint(&origin);
+  screen_space_transform_.TransformVector(&x_axis);
+  screen_space_transform_.TransformVector(&y_axis);
+  gfx::Vector3dF origin_to_world = world_point - origin;
+  float x = gfx::DotProduct(origin_to_world, x_axis) /
+            gfx::DotProduct(x_axis, x_axis);
+  float y = gfx::DotProduct(origin_to_world, y_axis) /
+            gfx::DotProduct(y_axis, y_axis);
+  return gfx::PointF(x, y);
+}
+
+gfx::Vector3dF UiElement::GetNormal() const {
+  gfx::Vector3dF x_axis(1, 0, 0);
+  gfx::Vector3dF y_axis(0, 1, 0);
+  screen_space_transform_.TransformVector(&x_axis);
+  screen_space_transform_.TransformVector(&y_axis);
+  gfx::Vector3dF normal = CrossProduct(y_axis, x_axis);
+  normal.GetNormalized(&normal);
+  return normal;
+}
+
+bool UiElement::GetRayDistance(const gfx::Point3F& ray_origin,
+                               const gfx::Vector3dF& ray_vector,
+                               float* distance) const {
+  return GetRayPlaneDistance(ray_origin, ray_vector, GetCenter(), GetNormal(),
+                             distance);
+}
+
+void UiElement::NotifyClientOpacityAnimated(float opacity,
+                                            cc::Animation* animation) {
+  opacity_ = opacity;
+}
+
+void UiElement::NotifyClientTransformOperationsAnimated(
+    const cc::TransformOperations& operations,
+    cc::Animation* animation) {
+  transform_operations_ = operations;
+}
+
+void UiElement::NotifyClientBoundsAnimated(const gfx::SizeF& size,
+                                           cc::Animation* animation) {
+  set_size({size.width(), size.height(), 1});
+}
 
 }  // namespace vr

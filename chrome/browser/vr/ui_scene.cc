@@ -10,8 +10,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chrome/browser/vr/animation.h"
-#include "chrome/browser/vr/easing.h"
 #include "chrome/browser/vr/elements/ui_element.h"
 
 namespace vr {
@@ -79,26 +77,14 @@ void UiScene::RemoveUiElement(int element_id) {
 }
 
 void UiScene::AddAnimation(int element_id,
-                           std::unique_ptr<Animation> animation) {
+                           std::unique_ptr<cc::Animation> animation) {
   UiElement* element = GetUiElementById(element_id);
-  CHECK_NE(element, nullptr);
-  for (const std::unique_ptr<Animation>& existing : element->animations()) {
-    CHECK_NE(existing->id, animation->id);
-  }
-  element->animations().emplace_back(std::move(animation));
+  element->animation_player().AddAnimation(std::move(animation));
 }
 
 void UiScene::RemoveAnimation(int element_id, int animation_id) {
   UiElement* element = GetUiElementById(element_id);
-  CHECK_NE(element, nullptr);
-  auto& animations = element->animations();
-  for (auto it = animations.begin(); it != animations.end(); ++it) {
-    const Animation& existing_animation = **it;
-    if (existing_animation.id == animation_id) {
-      animations.erase(it);
-      return;
-    }
-  }
+  element->animation_player().RemoveAnimation(animation_id);
 }
 
 void UiScene::OnBeginFrame(const base::TimeTicks& current_time) {
@@ -249,13 +235,8 @@ void UiScene::ApplyRecursiveTransforms(UiElement* element) {
 
   // Compute an inheritable transformation that can be applied to this element,
   // and it's children, if applicable.
-  gfx::Transform inheritable;
-  inheritable.matrix().postScale(element->scale().x(), element->scale().y(),
-                                 element->scale().z());
-  inheritable.ConcatTransform(gfx::Transform(element->rotation()));
-  inheritable.matrix().postTranslate(element->translation().x(),
-                                     element->translation().y(),
-                                     element->translation().z());
+  gfx::Transform inheritable = element->transform_operations().Apply();
+
   if (parent) {
     ApplyAnchoring(*parent, element->x_anchoring(), element->y_anchoring(),
                    &inheritable);
@@ -268,8 +249,7 @@ void UiScene::ApplyRecursiveTransforms(UiElement* element) {
   }
 
   transform.ConcatTransform(inheritable);
-
-  element->set_transform(transform);
+  element->set_screen_space_transform(transform);
   element->set_inheritable_transform(inheritable);
   element->set_dirty(false);
 }

@@ -65,6 +65,20 @@ namespace cc {
     EXPECT_NEAR((expected).y(), (actual).y(), (abs_error)); \
   } while (false)
 
+#define EXPECT_VECTOR3DF_EQ(expected, actual)      \
+  do {                                             \
+    EXPECT_FLOAT_EQ((expected).x(), (actual).x()); \
+    EXPECT_FLOAT_EQ((expected).y(), (actual).y()); \
+    EXPECT_FLOAT_EQ((expected).z(), (actual).z()); \
+  } while (false)
+
+#define EXPECT_VECTOR3DF_NEAR(expected, actual, abs_error)  \
+  do {                                                      \
+    EXPECT_NEAR((expected).x(), (actual).x(), (abs_error)); \
+    EXPECT_NEAR((expected).y(), (actual).y(), (abs_error)); \
+    EXPECT_NEAR((expected).z(), (actual).z(), (abs_error)); \
+  } while (false)
+
 #define EXPECT_FLOAT_ARRAY_EQ(expected, actual, count) \
   do {                                                 \
     for (int i = 0; i < count; i++) {                  \

@@ -1074,7 +1074,8 @@ void VrShellGl::DrawElements(const gfx::Transform& view_proj_matrix,
 
 void VrShellGl::DrawElement(const gfx::Transform& view_proj_matrix,
                             const vr::UiElement& element) {
-  gfx::Transform transform = view_proj_matrix * element.transform();
+  gfx::Transform transform =
+      view_proj_matrix * element.screen_space_transform();
 
   switch (element.fill()) {
     case vr::Fill::OPAQUE_GRADIENT: {
@@ -1122,8 +1123,8 @@ std::vector<const vr::UiElement*> VrShellGl::GetElementsInDrawOrder(
               if (first->draw_phase() != second->draw_phase()) {
                 return first->draw_phase() < second->draw_phase();
               } else {
-                return first->transform().matrix().get(2, 3) <
-                       second->transform().matrix().get(2, 3);
+                return first->screen_space_transform().matrix().get(2, 3) <
+                       second->screen_space_transform().matrix().get(2, 3);
               }
             });
 

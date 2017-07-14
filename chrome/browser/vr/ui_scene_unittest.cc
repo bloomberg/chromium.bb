@@ -11,10 +11,9 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
-#include "chrome/browser/vr/animation.h"
-#include "chrome/browser/vr/easing.h"
 #include "chrome/browser/vr/elements/ui_element.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/transform_util.h"
 
 #define TOLERANCE 0.0001
 
@@ -31,27 +30,10 @@ base::TimeTicks usToTicks(uint64_t us) {
   return base::TimeTicks::FromInternalValue(us);
 }
 
-base::TimeDelta usToDelta(uint64_t us) {
-  return base::TimeDelta::FromInternalValue(us);
-}
-
 void addElement(UiScene* scene, int id) {
   auto element = base::MakeUnique<UiElement>();
   element->set_id(id);
   scene->AddUiElement(std::move(element));
-}
-
-void addAnimation(UiScene* scene,
-                  int element_id,
-                  int animation_id,
-                  Animation::Property property) {
-  std::unique_ptr<easing::Easing> easing = base::MakeUnique<easing::Linear>();
-  std::vector<float> from;
-  std::vector<float> to = {1, 1, 1, 1};
-  auto animation =
-      base::MakeUnique<Animation>(animation_id, property, std::move(easing),
-                                  from, to, usToTicks(0), usToDelta(1));
-  scene->AddAnimation(element_id, std::move(animation));
 }
 
 }  // namespace
@@ -81,29 +63,6 @@ TEST(UiScene, AddRemoveElements) {
   EXPECT_EQ(scene.GetUiElements().size(), 0u);
 }
 
-TEST(UiScene, AddRemoveAnimations) {
-  UiScene scene;
-  addElement(&scene, 0);
-  auto* element = scene.GetUiElementById(0);
-
-  EXPECT_EQ(element->animations().size(), 0u);
-  addAnimation(&scene, 0, 0, Animation::Property::SIZE);
-  EXPECT_EQ(element->animations().size(), 1u);
-  EXPECT_EQ(element->animations()[0]->property, Animation::Property::SIZE);
-  addAnimation(&scene, 0, 1, Animation::Property::SCALE);
-  EXPECT_EQ(element->animations().size(), 2u);
-  EXPECT_EQ(element->animations()[1]->property, Animation::Property::SCALE);
-
-  scene.RemoveAnimation(0, 0);
-  EXPECT_EQ(element->animations().size(), 1u);
-  EXPECT_EQ(element->animations()[0]->property, Animation::Property::SCALE);
-  scene.RemoveAnimation(0, 1);
-  EXPECT_EQ(element->animations().size(), 0u);
-
-  scene.RemoveAnimation(0, 0);
-  EXPECT_EQ(element->animations().size(), 0u);
-}
-
 // This test creates a parent and child UI element, each with their own
 // transformations, and ensures that the child's computed total transform
 // incorporates the parent's transform as well as its own.
@@ -115,28 +74,32 @@ TEST(UiScene, ParentTransformAppliesToChild) {
   auto element = base::MakeUnique<UiElement>();
   element->set_id(0);
   element->set_size({1000, 1000, 1});
-  element->set_scale({3, 3, 1});
-  element->set_rotation(gfx::Quaternion(gfx::Vector3dF(0, 0, 1), M_PI / 2));
-  element->set_translation({6, 1, 0});
+
+  cc::TransformOperations operations;
+  operations.AppendTranslate(6, 1, 0);
+  operations.AppendRotate(0, 0, 1, 180 / 2);
+  operations.AppendScale(3, 3, 1);
+  element->set_transform_operations(operations);
   scene.AddUiElement(std::move(element));
 
   // Add a child to the parent, with different transformations.
   element = base::MakeUnique<UiElement>();
   element->set_id(1);
   element->set_parent_id(0);
-  element->set_size({1, 1, 1});
-  element->set_scale({2, 2, 1});
-  element->set_rotation(gfx::Quaternion(gfx::Vector3dF(0, 0, 1), M_PI / 2));
-  element->set_translation({3, 0, 0});
+  cc::TransformOperations child_operations;
+  child_operations.AppendTranslate(3, 0, 0);
+  child_operations.AppendRotate(0, 0, 1, 180 / 2);
+  child_operations.AppendScale(2, 2, 1);
+  element->set_transform_operations(child_operations);
   scene.AddUiElement(std::move(element));
   const UiElement* child = scene.GetUiElementById(1);
 
   gfx::Point3F origin(0, 0, 0);
   gfx::Point3F point(1, 0, 0);
 
-  scene.OnBeginFrame(usToTicks(0));
-  child->transform().TransformPoint(&origin);
-  child->transform().TransformPoint(&point);
+  scene.OnBeginFrame(usToTicks(1));
+  child->screen_space_transform().TransformPoint(&origin);
+  child->screen_space_transform().TransformPoint(&point);
   EXPECT_VEC3F_NEAR(gfx::Point3F(6, 10, 0), origin);
   EXPECT_VEC3F_NEAR(gfx::Point3F(0, 10, 0), point);
 }
@@ -195,7 +158,9 @@ TEST_P(AnchoringTest, VerifyCorrectPosition) {
   auto element = base::MakeUnique<UiElement>();
   element->set_id(0);
   element->set_size({2, 2, 1});
-  element->set_scale({2, 2, 1});
+  cc::TransformOperations operations;
+  operations.AppendScale(2, 2, 1);
+  element->set_transform_operations(operations);
   scene.AddUiElement(std::move(element));
 
   // Add a child to the parent, with anchoring.

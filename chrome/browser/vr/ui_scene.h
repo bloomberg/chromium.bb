@@ -19,9 +19,12 @@ class ListValue;
 class TimeTicks;
 }  // namespace base
 
+namespace cc {
+class Animation;
+}  // namespace cc
+
 namespace vr {
 
-class Animation;
 class UiElement;
 
 class UiScene {
@@ -43,7 +46,7 @@ class UiScene {
   void RemoveUiElement(int element_id);
 
   // Add an animation to the scene, on element |element_id|.
-  void AddAnimation(int element_id, std::unique_ptr<Animation> animation);
+  void AddAnimation(int element_id, std::unique_ptr<cc::Animation> animation);
 
   // Remove |animation_id| from element |element_id|.
   void RemoveAnimation(int element_id, int animation_id);
