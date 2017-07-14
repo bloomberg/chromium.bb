@@ -63,7 +63,7 @@ TEST(av1_inv_txfm1d, round_trip) {
         int32_t output[64];
         int32_t round_trip_output[64];
 
-        assert(txfm_size <= NELEMENTS(input));
+        ASSERT_LE(txfm_size, NELEMENTS(input));
 
         for (int ni = 0; ni < txfm_size; ++ni) {
           input[ni] = rnd.Rand16() % input_base - rnd.Rand16() % input_base;
