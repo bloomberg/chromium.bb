@@ -33,6 +33,7 @@ class Store {
   static const char kRequiredFilesKey_PlatformValue_Linux[];
   static const char kRequiredFilesKey_PlatformValue_MacOSX[];
   static const char kRequiredFilesKey_PlatformValue_Android[];
+  static const char kRequiredFilesKey_PlatformValue_Fuchsia[];
 };
 
 }  // namespace catalog
