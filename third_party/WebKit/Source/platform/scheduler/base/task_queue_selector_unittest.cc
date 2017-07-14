@@ -220,10 +220,10 @@ TEST_F(TaskQueueSelectorTest, TestDisableEnable) {
   selector_.EnableQueue(task_queues_[2].get());
   selector_.SetQueuePriority(task_queues_[2].get(),
                              TaskQueue::BEST_EFFORT_PRIORITY);
-  EXPECT_THAT(PopTasks(), testing::ElementsAre(2));
+  EXPECT_THAT(PopTasks(), ::testing::ElementsAre(2));
   task_queues_[4]->SetQueueEnabledForTest(true);
   selector_.EnableQueue(task_queues_[4].get());
-  EXPECT_THAT(PopTasks(), testing::ElementsAre(4));
+  EXPECT_THAT(PopTasks(), ::testing::ElementsAre(4));
 }
 
 TEST_F(TaskQueueSelectorTest, TestDisableChangePriorityThenEnable) {
