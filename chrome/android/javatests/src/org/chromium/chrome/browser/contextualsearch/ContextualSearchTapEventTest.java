@@ -203,6 +203,7 @@ public class ContextualSearchTapEventTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
+                mContextualSearchManager.getGestureStateListener().onTouchDown();
                 mContextualSearchClient.showUnhandledTapUIIfNeeded(0, 0);
             }
         });

@@ -1126,6 +1126,9 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
     private void onTouchDown(MotionEvent event) {
         if (mShouldRequestUnbufferedDispatch) requestUnbufferedDispatch(event);
         cancelRequestToScrollFocusedEditableNodeIntoView();
+        for (mGestureStateListenersIterator.rewind(); mGestureStateListenersIterator.hasNext();) {
+            mGestureStateListenersIterator.next().onTouchDown();
+        }
     }
 
     private void updateAfterSizeChanged() {
