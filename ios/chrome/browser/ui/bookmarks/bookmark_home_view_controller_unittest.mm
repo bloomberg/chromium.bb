@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_view_controller.h"
 
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmark_home_view_controller_protected.h"
 #include "ios/chrome/browser/ui/bookmarks/bookmark_ios_unittest.h"
 
 namespace {

@@ -26,6 +26,7 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_folder_editor_view_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_folder_view_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_primary_view.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmark_home_view_controller_protected.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_waiting_view.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_menu_item.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_menu_view.h"

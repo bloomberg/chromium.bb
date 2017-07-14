@@ -32,6 +32,7 @@ source_set("bookmarks") {
     "bookmark_home_tablet_ntp_controller.mm",
     "bookmark_home_view_controller.h",
     "bookmark_home_view_controller.mm",
+    "bookmark_home_view_controller_protected.h",
     "bookmark_home_waiting_view.h",
     "bookmark_home_waiting_view.mm",
     "bookmark_interaction_controller.h",
