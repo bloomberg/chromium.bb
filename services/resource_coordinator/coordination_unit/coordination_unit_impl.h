@@ -23,6 +23,7 @@
 namespace resource_coordinator {
 
 class CoordinationUnitGraphObserver;
+class FrameCoordinationUnitImpl;
 
 class CoordinationUnitImpl : public mojom::CoordinationUnit {
  public:
@@ -30,6 +31,9 @@ class CoordinationUnitImpl : public mojom::CoordinationUnit {
       const CoordinationUnitID& id,
       std::unique_ptr<service_manager::ServiceContextRef> service_ref);
   ~CoordinationUnitImpl() override;
+
+  static const FrameCoordinationUnitImpl* ToFrameCoordinationUnit(
+      const CoordinationUnitImpl* coordination_unit);
 
   // Overridden from mojom::CoordinationUnit:
   void SendEvent(mojom::EventPtr event) override;

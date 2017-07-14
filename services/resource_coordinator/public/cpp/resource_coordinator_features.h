@@ -20,4 +20,11 @@ extern const SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT base::Feature
 
 }  // namespace features
 
+namespace resource_coordinator {
+
+bool SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT
+IsResourceCoordinatorEnabled();
+
+}  // namespace resource_coordinator
+
 #endif  // SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_RESOURCE_COORDINATOR_FEATURES_H_

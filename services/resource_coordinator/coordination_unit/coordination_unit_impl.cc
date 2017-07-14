@@ -9,6 +9,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_graph_observer.h"
+#include "services/resource_coordinator/coordination_unit/frame_coordination_unit_impl.h"
 #include "services/resource_coordinator/public/cpp/coordination_unit_id.h"
 
 namespace resource_coordinator {
@@ -28,6 +29,13 @@ CUIDMap& g_cu_map() {
 }
 
 }  // namespace
+
+// static
+const FrameCoordinationUnitImpl* CoordinationUnitImpl::ToFrameCoordinationUnit(
+    const CoordinationUnitImpl* coordination_unit) {
+  DCHECK(coordination_unit->id().type == CoordinationUnitType::kFrame);
+  return static_cast<const FrameCoordinationUnitImpl*>(coordination_unit);
+}
 
 CoordinationUnitImpl::CoordinationUnitImpl(
     const CoordinationUnitID& id,
@@ -99,6 +107,7 @@ void CoordinationUnitImpl::RecalcCoordinationPolicy() {
 }
 
 void CoordinationUnitImpl::SendEvent(mojom::EventPtr event) {
+  // TODO(crbug.com/691886) Consider removing the following code.
   switch (event->type) {
     case mojom::EventType::kOnWebContentsShown:
       state_flags_[kTabVisible] = true;
@@ -111,9 +120,6 @@ void CoordinationUnitImpl::SendEvent(mojom::EventPtr event) {
       break;
     case mojom::EventType::kOnProcessAudioStopped:
       state_flags_[kAudioPlaying] = false;
-      break;
-    case mojom::EventType::kOnLocalFrameNetworkIdle:
-      state_flags_[kNetworkIdle] = true;
       break;
     case mojom::EventType::kTestEvent:
       state_flags_[kTestState] = true;

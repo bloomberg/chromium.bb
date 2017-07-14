@@ -11,3 +11,11 @@ const base::Feature kGlobalResourceCoordinator{
     "GlobalResourceCoordinator", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
+
+namespace resource_coordinator {
+
+bool IsResourceCoordinatorEnabled() {
+  return base::FeatureList::IsEnabled(features::kGlobalResourceCoordinator);
+}
+
+}  // namespace resource_coordinator

@@ -37,4 +37,12 @@ FrameCoordinationUnitImpl::GetAssociatedCoordinationUnitsOfType(
   }
 }
 
+bool FrameCoordinationUnitImpl::IsMainFrame() const {
+  for (auto* parent : parents_) {
+    if (parent->id().type == CoordinationUnitType::kFrame)
+      return false;
+  }
+  return true;
+}
+
 }  // namespace resource_coordinator
