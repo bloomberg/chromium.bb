@@ -319,12 +319,19 @@ TEST_F(ScreenRotationAnimatorSlowAnimationTest, RotatesDuringRotation) {
   SetDisplayRotation(display_id(), display::Display::ROTATE_0);
   animator()->Rotate(display::Display::ROTATE_90,
                      display::Display::RotationSource::ROTATION_SOURCE_USER);
+  EXPECT_TRUE(animator()->IsRotating());
+  EXPECT_EQ(display::Display::ROTATE_90, animator()->GetTargetRotation());
+
   animator()->Rotate(display::Display::ROTATE_180,
                      display::Display::RotationSource::ROTATION_SOURCE_USER);
   EXPECT_TRUE(test_api()->HasActiveAnimations());
+  EXPECT_TRUE(animator()->IsRotating());
+  EXPECT_EQ(display::Display::ROTATE_180, animator()->GetTargetRotation());
 
   test_api()->CompleteAnimations();
   EXPECT_FALSE(test_api()->HasActiveAnimations());
+  EXPECT_FALSE(animator()->IsRotating());
+
   EXPECT_EQ(display::Display::ROTATE_180, GetDisplayRotation(display_id()));
 }
 
@@ -390,8 +397,17 @@ TEST_F(ScreenRotationAnimatorSmoothAnimationTest,
   SetDisplayRotation(display_id, display::Display::ROTATE_0);
   animator()->Rotate(display::Display::ROTATE_90,
                      display::Display::RotationSource::ROTATION_SOURCE_USER);
+  EXPECT_TRUE(animator()->IsRotating());
+
+  EXPECT_EQ(display::Display::ROTATE_90, animator()->GetTargetRotation());
+  EXPECT_NE(display::Display::ROTATE_90, GetDisplayRotation(display_id));
+
   WaitForCopyCallback();
   EXPECT_TRUE(test_api()->HasActiveAnimations());
+  EXPECT_EQ(display::Display::ROTATE_90, animator()->GetTargetRotation());
+  // Once copy is made, the rotation is set to the target, with the
+  // image that was rotated to the original orientation.
+  EXPECT_EQ(display::Display::ROTATE_90, GetDisplayRotation(display_id));
 
   test_api()->CompleteAnimations();
   EXPECT_FALSE(test_api()->HasActiveAnimations());
