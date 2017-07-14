@@ -10,6 +10,9 @@
 namespace leveldb_proto {
 
 struct Options {
+  // If read_cache_size is specified, a segregated block cache will be
+  // created for this LevelDB instance. Otherwise a shared block cache
+  // will be used.
   Options(const base::FilePath& database_dir)
       : database_dir(database_dir), write_buffer_size(0), read_cache_size(0) {}
   Options(const base::FilePath& database_dir,
