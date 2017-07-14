@@ -6,7 +6,9 @@
 
 #include <fontconfig/fontconfig.h>
 
+#include <memory>
 #include <string>
+#include <utility>
 
 #include "base/files/file_path.h"
 #include "base/single_thread_task_runner.h"
@@ -26,6 +28,7 @@
 #include "base/linux_util.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/os_crypt/key_storage_config_linux.h"
 #include "components/os_crypt/os_crypt.h"
 #include "content/public/browser/browser_thread.h"
 #endif
@@ -61,22 +64,20 @@ void ChromeBrowserMainPartsLinux::PreProfileInit() {
       l10n_util::GetStringUTF8(IDS_SHORT_PRODUCT_NAME));
 
 #if !defined(OS_CHROMEOS)
+  std::unique_ptr<os_crypt::Config> config(new os_crypt::Config());
   // Forward to os_crypt the flag to use a specific password store.
-  OSCrypt::SetStore(
-      parsed_command_line().GetSwitchValueASCII(switches::kPasswordStore));
+  config->store =
+      parsed_command_line().GetSwitchValueASCII(switches::kPasswordStore);
   // Forward the product name
-  OSCrypt::SetProductName(l10n_util::GetStringUTF8(IDS_PRODUCT_NAME));
+  config->product_name = l10n_util::GetStringUTF8(IDS_PRODUCT_NAME);
   // OSCrypt may target keyring, which requires calls from the main thread.
-  scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner(
-      content::BrowserThread::GetTaskRunnerForThread(
-          content::BrowserThread::UI));
-  OSCrypt::SetMainThreadRunner(main_thread_runner);
+  config->main_thread_runner = content::BrowserThread::GetTaskRunnerForThread(
+      content::BrowserThread::UI);
   // OSCrypt can be disabled in a special settings file.
-  OSCrypt::ShouldUsePreference(
-      parsed_command_line().HasSwitch(switches::kEnableEncryptionSelection));
-  base::FilePath user_data_dir;
-  chrome::GetDefaultUserDataDirectory(&user_data_dir);
-  OSCrypt::SetUserDataPath(user_data_dir);
+  config->should_use_preference =
+      parsed_command_line().HasSwitch(switches::kEnableEncryptionSelection);
+  chrome::GetDefaultUserDataDirectory(&config->user_data_path);
+  OSCrypt::SetConfig(std::move(config));
 #endif
 
   ChromeBrowserMainPartsPosix::PreProfileInit();

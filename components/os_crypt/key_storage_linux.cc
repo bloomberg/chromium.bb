@@ -5,13 +5,9 @@
 #include "components/os_crypt/key_storage_linux.h"
 
 #include "base/environment.h"
-#include "base/files/file.h"
-#include "base/files/file_path.h"
-#include "base/files/file_util.h"
-#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/nix/xdg_util.h"
-#include "base/single_thread_task_runner.h"
+#include "components/os_crypt/key_storage_config_linux.h"
 #include "components/os_crypt/key_storage_util_linux.h"
 
 #if defined(USE_LIBSECRET)
@@ -32,61 +28,18 @@ const char KeyStorageLinux::kFolderName[] = "Chromium Keys";
 const char KeyStorageLinux::kKey[] = "Chromium Safe Storage";
 #endif
 
-namespace {
-
-// Parameters to OSCrypt, which are set before the first call to OSCrypt, are
-// stored here.
-struct Configuration {
-  std::string store;
-  std::string product_name;
-  scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner;
-  bool should_use_preference;
-  base::FilePath user_data_path;
-};
-
-base::LazyInstance<Configuration>::DestructorAtExit g_config =
-    LAZY_INSTANCE_INITIALIZER;
-
-}  // namespace
-
 // static
-void KeyStorageLinux::SetStore(const std::string& store_type) {
-  g_config.Get().store = store_type;
-  VLOG(1) << "OSCrypt store set to " << store_type;
-}
-
-// static
-void KeyStorageLinux::SetProductName(const std::string& product_name) {
-  g_config.Get().product_name = product_name;
-}
-
-// static
-void KeyStorageLinux::SetMainThreadRunner(
-    scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner) {
-  g_config.Get().main_thread_runner = main_thread_runner;
-}
-
-// static
-void KeyStorageLinux::ShouldUsePreference(bool should_use_preference) {
-  g_config.Get().should_use_preference = should_use_preference;
-}
-
-// static
-void KeyStorageLinux::SetUserDataPath(const base::FilePath& path) {
-  g_config.Get().user_data_path = path;
-}
-
-// static
-std::unique_ptr<KeyStorageLinux> KeyStorageLinux::CreateService() {
+std::unique_ptr<KeyStorageLinux> KeyStorageLinux::CreateService(
+    const os_crypt::Config& config) {
 #if defined(USE_LIBSECRET) || defined(USE_KEYRING) || defined(USE_KWALLET)
   // Select a backend.
-  bool use_backend = !g_config.Get().should_use_preference ||
-                     os_crypt::GetBackendUse(g_config.Get().user_data_path);
+  bool use_backend = !config.should_use_preference ||
+                     os_crypt::GetBackendUse(config.user_data_path);
   std::unique_ptr<base::Environment> env(base::Environment::Create());
   base::nix::DesktopEnvironment desktop_env =
       base::nix::GetDesktopEnvironment(env.get());
   os_crypt::SelectedLinuxBackend selected_backend =
-      os_crypt::SelectBackend(g_config.Get().store, use_backend, desktop_env);
+      os_crypt::SelectBackend(config.store, use_backend, desktop_env);
 
   // Try initializing the selected backend.
   // In case of GNOME_ANY, prefer Libsecret
@@ -106,7 +59,7 @@ std::unique_ptr<KeyStorageLinux> KeyStorageLinux::CreateService() {
 #if defined(USE_KEYRING)
   if (selected_backend == os_crypt::SelectedLinuxBackend::GNOME_ANY ||
       selected_backend == os_crypt::SelectedLinuxBackend::GNOME_KEYRING) {
-    key_storage.reset(new KeyStorageKeyring(g_config.Get().main_thread_runner));
+    key_storage.reset(new KeyStorageKeyring(config.main_thread_runner));
     if (key_storage->Init()) {
       VLOG(1) << "OSCrypt using Keyring as backend.";
       return key_storage;
@@ -117,13 +70,13 @@ std::unique_ptr<KeyStorageLinux> KeyStorageLinux::CreateService() {
 #if defined(USE_KWALLET)
   if (selected_backend == os_crypt::SelectedLinuxBackend::KWALLET ||
       selected_backend == os_crypt::SelectedLinuxBackend::KWALLET5) {
-    DCHECK(!g_config.Get().product_name.empty());
+    DCHECK(!config.product_name.empty());
     base::nix::DesktopEnvironment used_desktop_env =
         selected_backend == os_crypt::SelectedLinuxBackend::KWALLET
             ? base::nix::DESKTOP_ENVIRONMENT_KDE4
             : base::nix::DESKTOP_ENVIRONMENT_KDE5;
     key_storage.reset(
-        new KeyStorageKWallet(used_desktop_env, g_config.Get().product_name));
+        new KeyStorageKWallet(used_desktop_env, config.product_name));
     if (key_storage->Init()) {
       VLOG(1) << "OSCrypt using KWallet as backend.";
       return key_storage;

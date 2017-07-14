@@ -4,9 +4,13 @@
 
 #include "components/os_crypt/os_crypt_mocker_linux.h"
 
+#include <memory>
+
 #include "base/base64.h"
 #include "base/lazy_instance.h"
+#include "base/memory/ptr_util.h"
 #include "base/rand_util.h"
+#include "components/os_crypt/key_storage_config_linux.h"
 #include "components/os_crypt/os_crypt.h"
 
 namespace {
@@ -50,6 +54,7 @@ OSCryptMockerLinux* OSCryptMockerLinux::GetInstance() {
 // static
 void OSCryptMockerLinux::SetUpWithSingleton() {
   UseMockKeyStorageForTesting(&GetKeyStorage, &GetPassword);
+  OSCrypt::SetConfig(base::MakeUnique<os_crypt::Config>());
 }
 
 // static
