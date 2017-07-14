@@ -236,16 +236,13 @@ bool DOMStorageArea::Clear() {
 }
 
 void DOMStorageArea::FastClear() {
-  // TODO(marja): Unify clearing localStorage and sessionStorage. The problem is
-  // to make the following 3 to work together: 1) FastClear, 2) PurgeMemory and
-  // 3) not creating events when clearing an empty area.
   if (is_shutdown_)
     return;
 
   map_ = new DOMStorageMap(kPerStorageAreaQuota +
                            kPerStorageAreaOverQuotaAllowance);
   // This ensures no import will happen while we're waiting to clear the data
-  // from the database. This mechanism fails if PurgeMemory is called.
+  // from the database.
   is_initial_import_done_ = true;
 
   if (backing_) {
@@ -308,21 +305,25 @@ void DOMStorageArea::DeleteOrigin() {
 
 void DOMStorageArea::PurgeMemory() {
   DCHECK(!is_shutdown_);
-  // Purging sessionStorage is not supported; it won't work with FastClear.
-  DCHECK(!session_storage_backing_.get());
+
   if (!is_initial_import_done_ ||  // We're not using any memory.
       !backing_.get() ||  // We can't purge anything.
       HasUncommittedChanges())  // We leave things alone with changes pending.
+    return;
+
+  // Recreate the database object, this frees up the open sqlite connection
+  // and its page cache.
+  backing_->Reset();
+
+  // Do not set |is_initial_import_done_| to false if map is empty since
+  // FastClear expects no imports while waiting for clearing database.
+  if (!map_ || !map_->Length())
     return;
 
   // Drop the in memory cache, we'll reload when needed.
   is_initial_import_done_ = false;
   map_ = new DOMStorageMap(kPerStorageAreaQuota +
                            kPerStorageAreaOverQuotaAllowance);
-
-  // Recreate the database object, this frees up the open sqlite connection
-  // and its page cache.
-  backing_->Reset();
 }
 
 void DOMStorageArea::Shutdown() {
