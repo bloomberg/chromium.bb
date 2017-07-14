@@ -81,6 +81,14 @@ HostScanCacheEntry::HostScanCacheEntry(const HostScanCacheEntry& other)
 
 HostScanCacheEntry::~HostScanCacheEntry() {}
 
+bool HostScanCacheEntry::operator==(const HostScanCacheEntry& other) const {
+  return tether_network_guid == other.tether_network_guid &&
+         device_name == other.device_name && carrier == other.carrier &&
+         battery_percentage == other.battery_percentage &&
+         signal_strength == other.signal_strength &&
+         setup_required == other.setup_required;
+}
+
 }  // namespace tether
 
 }  // namespace chromeos

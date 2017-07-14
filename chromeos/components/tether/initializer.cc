@@ -18,6 +18,7 @@
 #include "chromeos/components/tether/network_configuration_remover.h"
 #include "chromeos/components/tether/network_connection_handler_tether_delegate.h"
 #include "chromeos/components/tether/notification_presenter.h"
+#include "chromeos/components/tether/persistent_host_scan_cache.h"
 #include "chromeos/components/tether/tether_connector.h"
 #include "chromeos/components/tether/tether_disconnector_impl.h"
 #include "chromeos/components/tether/tether_host_fetcher.h"
@@ -94,6 +95,7 @@ void Initializer::Shutdown() {
 // static
 void Initializer::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   ActiveHost::RegisterPrefs(registry);
+  PersistentHostScanCache::RegisterPrefs(registry);
   TetherHostResponseRecorder::RegisterPrefs(registry);
   TetherDisconnectorImpl::RegisterPrefs(registry);
 }
