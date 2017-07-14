@@ -14,11 +14,18 @@ const char kSSLVersionMax[] = "ssl-version-max";
 // "tls1.3").
 const char kSSLVersionMin[] = "ssl-version-min";
 
+// Specifies the enabled TLS 1.3 variant ("disabled", "draft", "experiment").
+const char kTLS13Variant[] = "tls13-variant";
+
 // These values aren't switches, but rather the values that kSSLVersionMax and
 // kSSLVersionMin can have.
 const char kSSLVersionTLSv1[] = "tls1";
 const char kSSLVersionTLSv11[] = "tls1.1";
 const char kSSLVersionTLSv12[] = "tls1.2";
 const char kSSLVersionTLSv13[] = "tls1.3";
+
+const char kTLS13VariantDisabled[] = "disabled";
+const char kTLS13VariantDraft[] = "draft";
+const char kTLS13VariantExperiment[] = "experiment";
 
 }  // namespace switches

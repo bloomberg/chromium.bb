@@ -1133,11 +1133,6 @@ const char kSpellingFeedbackFieldTrialName[] = "Spelling Feedback Field Trial";
 const char kSpellingFeedbackFieldTrialDescription[] =
     "Enable the field trial for sending user feedback to spelling service.";
 
-const char kSslVersionMaxName[] = "Maximum TLS version enabled.";
-const char kSslVersionMaxDescription[] = "Set maximum enabled TLS version.";
-const char kSslVersionMaxTls12[] = "TLS 1.2";
-const char kSslVersionMaxTls13[] = "TLS 1.3";
-
 const char kSuggestionsWithSubStringMatchName[] =
     "Substring matching for Autofill suggestions";
 const char kSuggestionsWithSubStringMatchDescription[] =
@@ -1182,6 +1177,12 @@ const char kThreadedScrollingDescription[] =
     "force all such scroll events to be handled on the main thread. Note that "
     "this can dramatically hurt scrolling performance of most websites and is "
     "intended for testing purposes only.";
+
+const char kTLS13VariantName[] = "TLS 1.3";
+const char kTLS13VariantDescription[] = "Sets the TLS 1.3 variant used.";
+const char kTLS13VariantDisabled[] = "Disabled";
+const char kTLS13VariantDraft[] = "Enabled (Draft)";
+const char kTLS13VariantExperiment[] = "Enabled (Experiment)";
 
 const char kTopDocumentIsolationName[] = "Top document isolation";
 const char kTopDocumentIsolationDescription[] =

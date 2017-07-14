@@ -5,18 +5,18 @@
 #include <memory>
 #include <utility>
 
-#include "base/feature_list.h"
+#include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/ssl_config/ssl_config_prefs.h"
 #include "components/ssl_config/ssl_config_service_manager.h"
 #include "components/ssl_config/ssl_config_switches.h"
+#include "components/variations/variations_params_manager.h"
 #include "net/ssl/ssl_config.h"
 #include "net/ssl/ssl_config_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -146,18 +146,23 @@ TEST_F(SSLConfigServiceManagerPrefTest, NoCommandLinePrefs) {
   // enabled.
   EXPECT_EQ(net::kDefaultSSLVersionMin, ssl_config.version_min);
   EXPECT_EQ(net::kDefaultSSLVersionMax, ssl_config.version_max);
+  EXPECT_EQ(net::kDefaultTLS13Variant, ssl_config.tls13_variant);
 
   // The settings should not be added to the local_state.
   EXPECT_FALSE(local_state.HasPrefPath(ssl_config::prefs::kSSLVersionMin));
   EXPECT_FALSE(local_state.HasPrefPath(ssl_config::prefs::kSSLVersionMax));
+  EXPECT_FALSE(local_state.HasPrefPath(ssl_config::prefs::kTLS13Variant));
 
   // Explicitly double-check the settings are not in the preference store.
   std::string version_min_str;
   std::string version_max_str;
+  std::string tls13_variant_str;
   EXPECT_FALSE(local_state_store->GetString(ssl_config::prefs::kSSLVersionMin,
                                             &version_min_str));
   EXPECT_FALSE(local_state_store->GetString(ssl_config::prefs::kSSLVersionMax,
                                             &version_max_str));
+  EXPECT_FALSE(local_state_store->GetString(ssl_config::prefs::kTLS13Variant,
+                                            &tls13_variant_str));
 }
 
 // Tests that "ssl3" is not treated as a valid minimum version.
@@ -225,11 +230,31 @@ TEST_F(SSLConfigServiceManagerPrefTest, NoTLS11Max) {
   EXPECT_LE(net::SSL_PROTOCOL_VERSION_TLS1_2, ssl_config.version_max);
 }
 
-// Tests that TLS 1.3 may be enabled via features.
-TEST_F(SSLConfigServiceManagerPrefTest, TLS13Feature) {
-  // Toggle the feature.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitFromCommandLine("NegotiateTLS13", std::string());
+// Tests that TLS 1.3 can be disabled via field trials.
+TEST_F(SSLConfigServiceManagerPrefTest, TLS13VariantFeatureDisabled) {
+  // Toggle the field trial.
+  variations::testing::VariationParamsManager variation_params(
+      "TLS13Variant", {{"variant", "disabled"}});
+
+  TestingPrefServiceSimple local_state;
+  SSLConfigServiceManager::RegisterPrefs(local_state.registry());
+
+  std::unique_ptr<SSLConfigServiceManager> config_manager(
+      SSLConfigServiceManager::CreateDefaultManager(
+          &local_state, base::ThreadTaskRunnerHandle::Get()));
+  scoped_refptr<SSLConfigService> config_service(config_manager->Get());
+  ASSERT_TRUE(config_service.get());
+
+  SSLConfig ssl_config;
+  config_service->GetSSLConfig(&ssl_config);
+  EXPECT_EQ(net::SSL_PROTOCOL_VERSION_TLS1_2, ssl_config.version_max);
+}
+
+// Tests that Draft TLS 1.3 can be enabled via field trials.
+TEST_F(SSLConfigServiceManagerPrefTest, TLS13VariantFeatureDraft) {
+  // Toggle the field trial.
+  variations::testing::VariationParamsManager variation_params(
+      "TLS13Variant", {{"variant", "draft"}});
 
   TestingPrefServiceSimple local_state;
   SSLConfigServiceManager::RegisterPrefs(local_state.registry());
@@ -243,15 +268,38 @@ TEST_F(SSLConfigServiceManagerPrefTest, TLS13Feature) {
   SSLConfig ssl_config;
   config_service->GetSSLConfig(&ssl_config);
   EXPECT_EQ(net::SSL_PROTOCOL_VERSION_TLS1_3, ssl_config.version_max);
+  EXPECT_EQ(net::kTLS13VariantDraft, ssl_config.tls13_variant);
 }
 
-// Tests that the SSLVersionMax preference overwites the TLS 1.3 feature.
+// Tests that Experiment TLS 1.3 can be enabled via field trials.
+TEST_F(SSLConfigServiceManagerPrefTest, TLS13VariantFeatureExperiment) {
+  // Toggle the field trial.
+  variations::testing::VariationParamsManager variation_params(
+      "TLS13Variant", {{"variant", "experiment"}});
+
+  TestingPrefServiceSimple local_state;
+  SSLConfigServiceManager::RegisterPrefs(local_state.registry());
+
+  std::unique_ptr<SSLConfigServiceManager> config_manager(
+      SSLConfigServiceManager::CreateDefaultManager(
+          &local_state, base::ThreadTaskRunnerHandle::Get()));
+  scoped_refptr<SSLConfigService> config_service(config_manager->Get());
+  ASSERT_TRUE(config_service.get());
+
+  SSLConfig ssl_config;
+  config_service->GetSSLConfig(&ssl_config);
+  EXPECT_EQ(net::SSL_PROTOCOL_VERSION_TLS1_3, ssl_config.version_max);
+  EXPECT_EQ(net::kTLS13VariantExperiment, ssl_config.tls13_variant);
+}
+
+// Tests that the SSLVersionMax preference overwites the TLS 1.3 variant
+// field trial.
 TEST_F(SSLConfigServiceManagerPrefTest, TLS13SSLVersionMax) {
   scoped_refptr<TestingPrefStore> local_state_store(new TestingPrefStore());
 
-  // Toggle the feature.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitFromCommandLine("NegotiateTLS13", std::string());
+  // Toggle the field trial.
+  variations::testing::VariationParamsManager variation_params(
+      "TLS13Variant", {{"variant", "experiment"}});
 
   TestingPrefServiceSimple local_state;
   local_state.SetUserPref(ssl_config::prefs::kSSLVersionMax,
@@ -268,6 +316,60 @@ TEST_F(SSLConfigServiceManagerPrefTest, TLS13SSLVersionMax) {
   SSLConfig ssl_config;
   config_service->GetSSLConfig(&ssl_config);
   EXPECT_EQ(net::SSL_PROTOCOL_VERSION_TLS1_2, ssl_config.version_max);
+}
+
+// Tests that disabling TLS 1.3 by preference overwrites the TLS 1.3 field
+// trial.
+TEST_F(SSLConfigServiceManagerPrefTest, TLS13VariantOverrideDisable) {
+  scoped_refptr<TestingPrefStore> local_state_store(new TestingPrefStore());
+
+  // Toggle the field trial.
+  variations::testing::VariationParamsManager variation_params(
+      "TLS13Variant", {{"variant", "experiment"}});
+
+  TestingPrefServiceSimple local_state;
+  local_state.SetUserPref(ssl_config::prefs::kTLS13Variant,
+                          base::MakeUnique<base::Value>("disabled"));
+  SSLConfigServiceManager::RegisterPrefs(local_state.registry());
+
+  std::unique_ptr<SSLConfigServiceManager> config_manager(
+      SSLConfigServiceManager::CreateDefaultManager(
+          &local_state, base::ThreadTaskRunnerHandle::Get()));
+  ASSERT_TRUE(config_manager.get());
+  scoped_refptr<SSLConfigService> config_service(config_manager->Get());
+  ASSERT_TRUE(config_service.get());
+
+  SSLConfig ssl_config;
+  config_service->GetSSLConfig(&ssl_config);
+  EXPECT_EQ(net::SSL_PROTOCOL_VERSION_TLS1_2, ssl_config.version_max);
+}
+
+// Tests that enabling TLS 1.3 by preference overwrites the TLS 1.3 field trial.
+TEST_F(SSLConfigServiceManagerPrefTest, TLS13VariantOverrideEnable) {
+  scoped_refptr<TestingPrefStore> local_state_store(new TestingPrefStore());
+
+  // Toggle the field trial.
+  variations::testing::VariationParamsManager variation_params(
+      "TLS13Variant", {{"variant", "disabled"}});
+
+  TestingPrefServiceSimple local_state;
+  local_state.SetUserPref(ssl_config::prefs::kSSLVersionMax,
+                          base::MakeUnique<base::Value>("tls1.3"));
+  local_state.SetUserPref(ssl_config::prefs::kTLS13Variant,
+                          base::MakeUnique<base::Value>("experiment"));
+  SSLConfigServiceManager::RegisterPrefs(local_state.registry());
+
+  std::unique_ptr<SSLConfigServiceManager> config_manager(
+      SSLConfigServiceManager::CreateDefaultManager(
+          &local_state, base::ThreadTaskRunnerHandle::Get()));
+  ASSERT_TRUE(config_manager.get());
+  scoped_refptr<SSLConfigService> config_service(config_manager->Get());
+  ASSERT_TRUE(config_service.get());
+
+  SSLConfig ssl_config;
+  config_service->GetSSLConfig(&ssl_config);
+  EXPECT_EQ(net::SSL_PROTOCOL_VERSION_TLS1_3, ssl_config.version_max);
+  EXPECT_EQ(net::kTLS13VariantExperiment, ssl_config.tls13_variant);
 }
 
 // Tests that SHA-1 signatures for local trust anchors can be enabled.
