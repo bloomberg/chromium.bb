@@ -68,6 +68,11 @@ void CredentialManagerPasswordFormManager::ProcessMatches(
                  weak_factory_.GetWeakPtr()));
 }
 
+metrics_util::CredentialSourceType
+CredentialManagerPasswordFormManager::GetCredentialSource() {
+  return metrics_util::CredentialSourceType::kCredentialManagementAPI;
+}
+
 void CredentialManagerPasswordFormManager::NotifyDelegate() {
   delegate_->OnProvisionalSaveComplete();
 }

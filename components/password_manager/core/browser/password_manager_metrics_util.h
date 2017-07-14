@@ -208,6 +208,17 @@ enum ReauthToAccessPasswordInSettingsEvent {
   REAUTH_COUNT
 };
 
+// Specifies the type of PasswordFormManagers and derived classes to distinguish
+// the context in which a PasswordFormManager is being created and used.
+enum class CredentialSourceType {
+  kUnknown,
+  // This is used for form based credential management (PasswordFormManager).
+  kPasswordManager,
+  // This is used for credential management API based credential management
+  // (CredentialManagerPasswordFormManager).
+  kCredentialManagementAPI
+};
+
 #if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS)) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 enum class SyncPasswordHashChange {

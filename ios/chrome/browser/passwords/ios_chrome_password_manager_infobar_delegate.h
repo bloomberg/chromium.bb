@@ -41,6 +41,10 @@ class IOSChromePasswordManagerInfoBarDelegate : public ConfirmInfoBarDelegate {
     infobar_response_ = response;
   }
 
+  password_manager::metrics_util::UIDismissalReason infobar_response() const {
+    return infobar_response_;
+  }
+
  private:
   // ConfirmInfoBarDelegate implementation.
   Type GetInfoBarType() const override;

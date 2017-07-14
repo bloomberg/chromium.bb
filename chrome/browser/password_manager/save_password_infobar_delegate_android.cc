@@ -17,6 +17,7 @@
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_manager.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
+#include "components/password_manager/core/browser/password_form_metrics_recorder.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/origin.h"
@@ -41,6 +42,7 @@ void SavePasswordInfoBarDelegate::Create(
 
 SavePasswordInfoBarDelegate::~SavePasswordInfoBarDelegate() {
   password_manager::metrics_util::LogUIDismissalReason(infobar_response_);
+  form_to_save_->metrics_recorder()->RecordUIDismissalReason(infobar_response_);
 }
 
 SavePasswordInfoBarDelegate::SavePasswordInfoBarDelegate(
@@ -62,6 +64,10 @@ SavePasswordInfoBarDelegate::SavePasswordInfoBarDelegate(
       &message, &message_link_range);
   SetMessage(message);
   SetMessageLinkRange(message_link_range);
+
+  form_to_save_->metrics_recorder()->RecordPasswordBubbleShown(
+      form_to_save_->GetCredentialSource(),
+      password_manager::metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING);
 }
 
 infobars::InfoBarDelegate::InfoBarIdentifier

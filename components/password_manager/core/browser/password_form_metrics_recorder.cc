@@ -56,6 +56,9 @@ PasswordFormMetricsRecorder::~PasswordFormMetricsRecorder() {
 
     RecordUkmMetric(internal::kUkmSubmissionFormType, submitted_form_type_);
   }
+
+  RecordUkmMetric(internal::kUkmUpdatingPromptShown, update_prompt_shown_);
+  RecordUkmMetric(internal::kUkmSavingPromptShown, save_prompt_shown_);
 }
 
 // static
@@ -221,6 +224,110 @@ void PasswordFormMetricsRecorder::RecordHistogramsOnSuppressedAccounts(
       GetHistogramSampleForSuppressedAccounts(best_match),
       kMaxSuppressedAccountStats);
   RecordUkmMetric("SuppressedAccount.Manual.SameOrganizationName", best_match);
+}
+
+void PasswordFormMetricsRecorder::RecordPasswordBubbleShown(
+    metrics_util::CredentialSourceType credential_source_type,
+    metrics_util::UIDisplayDisposition display_disposition) {
+  if (credential_source_type == metrics_util::CredentialSourceType::kUnknown)
+    return;
+  BubbleTrigger automatic_trigger_type =
+      credential_source_type ==
+              metrics_util::CredentialSourceType::kPasswordManager
+          ? BubbleTrigger::kPasswordManagerSuggestionAutomatic
+          : BubbleTrigger::kCredentialManagementAPIAutomatic;
+  BubbleTrigger manual_trigger_type =
+      credential_source_type ==
+              metrics_util::CredentialSourceType::kPasswordManager
+          ? BubbleTrigger::kPasswordManagerSuggestionManual
+          : BubbleTrigger::kCredentialManagementAPIManual;
+
+  switch (display_disposition) {
+    // New credential cases:
+    case metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING:
+      save_prompt_shown_ = true;
+      RecordUkmMetric(internal::kUkmSavingPromptTrigger,
+                      static_cast<int64_t>(automatic_trigger_type));
+      break;
+    case metrics_util::MANUAL_WITH_PASSWORD_PENDING:
+      save_prompt_shown_ = true;
+      RecordUkmMetric(internal::kUkmSavingPromptTrigger,
+                      static_cast<int64_t>(manual_trigger_type));
+      break;
+
+    // Update cases:
+    case metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING_UPDATE:
+      update_prompt_shown_ = true;
+      RecordUkmMetric(internal::kUkmUpdatingPromptTrigger,
+                      static_cast<int64_t>(automatic_trigger_type));
+      break;
+    case metrics_util::MANUAL_WITH_PASSWORD_PENDING_UPDATE:
+      update_prompt_shown_ = true;
+      RecordUkmMetric(internal::kUkmUpdatingPromptTrigger,
+                      static_cast<int64_t>(manual_trigger_type));
+      break;
+
+    // Other reasons to show a bubble:
+    case metrics_util::MANUAL_MANAGE_PASSWORDS:
+    case metrics_util::AUTOMATIC_GENERATED_PASSWORD_CONFIRMATION:
+    case metrics_util::AUTOMATIC_SIGNIN_TOAST:
+      // Do nothing.
+      return;
+
+    // Obsolte display dispositions:
+    case metrics_util::MANUAL_BLACKLISTED_OBSOLETE:
+    case metrics_util::AUTOMATIC_CREDENTIAL_REQUEST_OBSOLETE:
+    case metrics_util::NUM_DISPLAY_DISPOSITIONS:
+      NOTREACHED();
+      return;
+  }
+}
+
+void PasswordFormMetricsRecorder::RecordUIDismissalReason(
+    metrics_util::UIDismissalReason ui_dismissal_reason) {
+  DCHECK(!(update_prompt_shown_ && save_prompt_shown_));
+  if (!(update_prompt_shown_ || save_prompt_shown_))
+    return;
+  const char* metric = update_prompt_shown_
+                           ? internal::kUkmUpdatingPromptInteraction
+                           : internal::kUkmSavingPromptInteraction;
+  switch (ui_dismissal_reason) {
+    // Accepted by user.
+    case metrics_util::CLICKED_SAVE:
+      RecordUkmMetric(metric,
+                      static_cast<int64_t>(BubbleDismissalReason::kAccepted));
+      break;
+
+    // Declined by user.
+    case metrics_util::CLICKED_CANCEL:
+    case metrics_util::CLICKED_NEVER:
+      RecordUkmMetric(metric,
+                      static_cast<int64_t>(BubbleDismissalReason::kDeclined));
+      break;
+
+    // Ignored by user.
+    case metrics_util::NO_DIRECT_INTERACTION:
+      RecordUkmMetric(metric,
+                      static_cast<int64_t>(BubbleDismissalReason::kIgnored));
+      break;
+
+    // Ignore these for metrics collection:
+    case metrics_util::CLICKED_MANAGE:
+    case metrics_util::CLICKED_DONE:
+    case metrics_util::CLICKED_OK:
+    case metrics_util::CLICKED_BRAND_NAME:
+    case metrics_util::CLICKED_PASSWORDS_DASHBOARD:
+    case metrics_util::AUTO_SIGNIN_TOAST_TIMEOUT:
+      break;
+
+    // These should not reach here:
+    case metrics_util::CLICKED_UNBLACKLIST_OBSOLETE:
+    case metrics_util::CLICKED_CREDENTIAL_OBSOLETE:
+    case metrics_util::AUTO_SIGNIN_TOAST_CLICKED_OBSOLETE:
+    case metrics_util::NUM_UI_RESPONSES:
+      NOTREACHED();
+      break;
+  }
 }
 
 void PasswordFormMetricsRecorder::RecordFillEvent(ManagerAutofillEvent event) {

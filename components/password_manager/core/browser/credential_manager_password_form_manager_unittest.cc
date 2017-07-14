@@ -75,4 +75,18 @@ TEST_F(CredentialManagerPasswordFormManagerTest, AbortEarly) {
   EXPECT_FALSE(form_manager);
 }
 
+// Ensure that GetCredentialSource is actually overriden and returns the proper
+// value.
+TEST_F(CredentialManagerPasswordFormManagerTest, GetCredentialSource) {
+  PasswordForm observed_form;
+  MockDelegate delegate;
+  auto form_manager = base::MakeUnique<CredentialManagerPasswordFormManager>(
+      &client_, driver_.AsWeakPtr(), observed_form,
+      base::MakeUnique<PasswordForm>(observed_form), &delegate,
+      base::MakeUnique<StubFormSaver>(), base::MakeUnique<FakeFormFetcher>());
+  form_manager->Init(nullptr);
+  ASSERT_EQ(metrics_util::CredentialSourceType::kCredentialManagementAPI,
+            form_manager->GetCredentialSource());
+}
+
 }  // namespace password_manager

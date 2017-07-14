@@ -35,6 +35,8 @@ void ManagePasswordsControllerTest::SetUp() {
   ui_controller_.reset(new testing::NiceMock<PasswordsModelDelegateMock>);
   ON_CALL(*ui_controller_, GetWebContents())
       .WillByDefault(Return(test_web_contents_.get()));
+  ON_CALL(*ui_controller_, GetPasswordFormMetricsRecorder())
+      .WillByDefault(Return(nullptr));
   PasswordStoreFactory::GetInstance()->SetTestingFactoryAndUse(
       profile(), password_manager::BuildPasswordStore<
                      content::BrowserContext,

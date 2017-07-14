@@ -18,9 +18,13 @@ class PasswordsModelDelegateMock
   ~PasswordsModelDelegateMock() override;
 
   MOCK_CONST_METHOD0(GetWebContents, content::WebContents*());
+  MOCK_METHOD0(GetPasswordFormMetricsRecorder,
+               password_manager::PasswordFormMetricsRecorder*());
   MOCK_CONST_METHOD0(GetOrigin, const GURL&());
   MOCK_CONST_METHOD0(GetState, password_manager::ui::State());
   MOCK_CONST_METHOD0(GetPendingPassword, const autofill::PasswordForm&());
+  MOCK_CONST_METHOD0(GetCredentialSource,
+                     password_manager::metrics_util::CredentialSourceType());
   MOCK_CONST_METHOD0(IsPasswordOverridden, bool());
   MOCK_CONST_METHOD0(
       GetCurrentForms,

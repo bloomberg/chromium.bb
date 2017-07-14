@@ -12,6 +12,7 @@
 #include "chrome/browser/password_manager/password_manager_infobar_delegate_android.h"
 #include "chrome/browser/ui/passwords/manage_passwords_state.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 
 namespace content {
 class WebContents;
@@ -57,11 +58,16 @@ class UpdatePasswordInfoBarDelegate : public PasswordManagerInfoBarDelegate {
       std::unique_ptr<password_manager::PasswordFormManager> form_to_update,
       bool is_smartlock_branding_enabled);
 
+  // Used to track the results we get from the info bar.
+  password_manager::metrics_util::UIDismissalReason infobar_response_;
+
   // ConfirmInfoBarDelegate:
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   int GetButtons() const override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;
   bool Accept() override;
+  void InfoBarDismissed() override;
+  bool Cancel() override;
 
   ManagePasswordsState passwords_state_;
   base::string16 branding_;

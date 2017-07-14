@@ -1361,6 +1361,10 @@ std::unique_ptr<PasswordFormManager> PasswordFormManager::Clone() {
   return result;
 }
 
+metrics_util::CredentialSourceType PasswordFormManager::GetCredentialSource() {
+  return metrics_util::CredentialSourceType::kPasswordManager;
+}
+
 void PasswordFormManager::SendVotesOnSave() {
   if (observed_form_.IsPossibleChangePasswordFormWithoutUsername())
     return;

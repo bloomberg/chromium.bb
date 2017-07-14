@@ -52,6 +52,8 @@ class CredentialManagerPasswordFormManager : public PasswordFormManager {
       const std::vector<const autofill::PasswordForm*>& non_federated,
       size_t filtered_count) override;
 
+  metrics_util::CredentialSourceType GetCredentialSource() override;
+
  private:
   // Calls OnProvisionalSaveComplete on |delegate_|.
   void NotifyDelegate();

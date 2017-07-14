@@ -17,6 +17,7 @@
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/infobars/core/infobar.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
+#include "components/password_manager/core/browser/password_form_metrics_recorder.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -36,7 +37,10 @@ void UpdatePasswordInfoBarDelegate::Create(
               is_smartlock_branding_enabled))));
 }
 
-UpdatePasswordInfoBarDelegate::~UpdatePasswordInfoBarDelegate() {}
+UpdatePasswordInfoBarDelegate::~UpdatePasswordInfoBarDelegate() {
+  passwords_state_.form_manager()->metrics_recorder()->RecordUIDismissalReason(
+      infobar_response_);
+}
 
 base::string16 UpdatePasswordInfoBarDelegate::GetBranding() const {
   return l10n_util::GetStringUTF16(is_smartlock_branding_enabled_
@@ -61,7 +65,8 @@ UpdatePasswordInfoBarDelegate::UpdatePasswordInfoBarDelegate(
     content::WebContents* web_contents,
     std::unique_ptr<password_manager::PasswordFormManager> form_to_update,
     bool is_smartlock_branding_enabled)
-    : is_smartlock_branding_enabled_(is_smartlock_branding_enabled) {
+    : infobar_response_(password_manager::metrics_util::NO_DIRECT_INTERACTION),
+      is_smartlock_branding_enabled_(is_smartlock_branding_enabled) {
   base::string16 message;
   gfx::Range message_link_range = gfx::Range();
   GetSavePasswordDialogTitleTextAndLinkRange(
@@ -72,6 +77,10 @@ UpdatePasswordInfoBarDelegate::UpdatePasswordInfoBarDelegate(
   SetMessageLinkRange(message_link_range);
 
   // TODO(melandory): Add histograms, crbug.com/577129
+  form_to_update->metrics_recorder()->RecordPasswordBubbleShown(
+      form_to_update->GetCredentialSource(),
+      password_manager::metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING_UPDATE);
+
   passwords_state_.set_client(
       ChromePasswordManagerClient::FromWebContents(web_contents));
   passwords_state_.OnUpdatePassword(std::move(form_to_update));
@@ -91,7 +100,12 @@ base::string16 UpdatePasswordInfoBarDelegate::GetButtonLabel(
   return l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_UPDATE_BUTTON);
 }
 
+void UpdatePasswordInfoBarDelegate::InfoBarDismissed() {
+  infobar_response_ = password_manager::metrics_util::CLICKED_CANCEL;
+}
+
 bool UpdatePasswordInfoBarDelegate::Accept() {
+  infobar_response_ = password_manager::metrics_util::CLICKED_SAVE;
   UpdatePasswordInfoBar* update_password_infobar =
       static_cast<UpdatePasswordInfoBar*>(infobar());
   password_manager::PasswordFormManager* form_manager =
@@ -104,5 +118,10 @@ bool UpdatePasswordInfoBarDelegate::Accept() {
   } else {
     form_manager->Update(form_manager->pending_credentials());
   }
+  return true;
+}
+
+bool UpdatePasswordInfoBarDelegate::Cancel() {
+  infobar_response_ = password_manager::metrics_util::CLICKED_CANCEL;
   return true;
 }

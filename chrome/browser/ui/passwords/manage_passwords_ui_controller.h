@@ -85,8 +85,12 @@ class ManagePasswordsUIController
   // PasswordsModelDelegate:
   content::WebContents* GetWebContents() const override;
   const GURL& GetOrigin() const override;
+  password_manager::PasswordFormMetricsRecorder*
+  GetPasswordFormMetricsRecorder() override;
   password_manager::ui::State GetState() const override;
   const autofill::PasswordForm& GetPendingPassword() const override;
+  password_manager::metrics_util::CredentialSourceType GetCredentialSource()
+      const override;
   bool IsPasswordOverridden() const override;
   const std::vector<std::unique_ptr<autofill::PasswordForm>>& GetCurrentForms()
       const override;

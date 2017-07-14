@@ -31,6 +31,7 @@ std::unique_ptr<ukm::UkmEntryBuilder> CreateUkmEntryBuilder(
                                                             source_id);
 }
 
+// TODO(crbug.com/738921) Replace this with generalized infrastructure.
 // Verifies that the metric |metric_name| was recorded with value |value| in the
 // single entry of |test_ukm_recorder_| exactly |expected_count| times.
 void ExpectUkmValueCount(ukm::TestUkmRecorder* test_ukm_recorder,
@@ -379,6 +380,144 @@ TEST(PasswordFormMetricsRecorder, SubmittedFormType) {
       histogram_tester.ExpectTotalCount(
           "PasswordManager.SubmittedNonSecureFormType", 0);
     }
+  }
+}
+
+TEST(PasswordFormMetricsRecorder, RecordPasswordBubbleShown) {
+  using Trigger = PasswordFormMetricsRecorder::BubbleTrigger;
+  static constexpr struct {
+    // Stimuli:
+    metrics_util::CredentialSourceType credential_source_type;
+    metrics_util::UIDisplayDisposition display_disposition;
+    // Expectations:
+    const char* expected_trigger_metric;
+    Trigger expected_trigger_value;
+    bool expected_save_prompt_shown;
+    bool expected_update_prompt_shown;
+  } kTests[] = {
+      // Source = PasswordManager, Saving.
+      {metrics_util::CredentialSourceType::kPasswordManager,
+       metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING,
+       internal::kUkmSavingPromptTrigger,
+       Trigger::kPasswordManagerSuggestionAutomatic, true, false},
+      {metrics_util::CredentialSourceType::kPasswordManager,
+       metrics_util::MANUAL_WITH_PASSWORD_PENDING,
+       internal::kUkmSavingPromptTrigger,
+       Trigger::kPasswordManagerSuggestionManual, true, false},
+      // Source = PasswordManager, Updating.
+      {metrics_util::CredentialSourceType::kPasswordManager,
+       metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING_UPDATE,
+       internal::kUkmUpdatingPromptTrigger,
+       Trigger::kPasswordManagerSuggestionAutomatic, false, true},
+      {metrics_util::CredentialSourceType::kPasswordManager,
+       metrics_util::MANUAL_WITH_PASSWORD_PENDING_UPDATE,
+       internal::kUkmUpdatingPromptTrigger,
+       Trigger::kPasswordManagerSuggestionManual, false, true},
+      // Source = Credential Management API, Saving.
+      {metrics_util::CredentialSourceType::kCredentialManagementAPI,
+       metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING,
+       internal::kUkmSavingPromptTrigger,
+       Trigger::kCredentialManagementAPIAutomatic, true, false},
+      {metrics_util::CredentialSourceType::kCredentialManagementAPI,
+       metrics_util::MANUAL_WITH_PASSWORD_PENDING,
+       internal::kUkmSavingPromptTrigger,
+       Trigger::kCredentialManagementAPIManual, true, false},
+      // Source = Credential Management API, Updating.
+      {metrics_util::CredentialSourceType::kCredentialManagementAPI,
+       metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING_UPDATE,
+       internal::kUkmUpdatingPromptTrigger,
+       Trigger::kCredentialManagementAPIAutomatic, false, true},
+      {metrics_util::CredentialSourceType::kCredentialManagementAPI,
+       metrics_util::MANUAL_WITH_PASSWORD_PENDING_UPDATE,
+       internal::kUkmUpdatingPromptTrigger,
+       Trigger::kCredentialManagementAPIManual, false, true},
+      // Source = Unknown, Saving.
+      {metrics_util::CredentialSourceType::kUnknown,
+       metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING,
+       internal::kUkmSavingPromptTrigger,
+       Trigger::kPasswordManagerSuggestionAutomatic, false, false},
+  };
+
+  for (const auto& test : kTests) {
+    SCOPED_TRACE(testing::Message()
+                 << "credential_source_type = "
+                 << static_cast<int64_t>(test.credential_source_type)
+                 << ", display_disposition = " << test.display_disposition);
+    ukm::TestUkmRecorder test_ukm_recorder;
+    {
+      auto recorder = base::MakeRefCounted<PasswordFormMetricsRecorder>(
+          true /*is_main_frame_secure*/,
+          CreateUkmEntryBuilder(&test_ukm_recorder));
+      recorder->RecordPasswordBubbleShown(test.credential_source_type,
+                                          test.display_disposition);
+    }
+    // Verify data
+    const ukm::UkmSource* source = test_ukm_recorder.GetSourceForUrl(kTestUrl);
+    ASSERT_TRUE(source);
+    if (test.credential_source_type !=
+        metrics_util::CredentialSourceType::kUnknown) {
+      test_ukm_recorder.ExpectMetric(
+          *source, "PasswordForm", test.expected_trigger_metric,
+          static_cast<int64_t>(test.expected_trigger_value));
+    } else {
+      EXPECT_FALSE(test_ukm_recorder.HasMetric(
+          *source, "PasswordForm", internal::kUkmSavingPromptTrigger));
+      EXPECT_FALSE(test_ukm_recorder.HasMetric(
+          *source, "PasswordForm", internal::kUkmUpdatingPromptTrigger));
+    }
+    test_ukm_recorder.ExpectMetric(*source, "PasswordForm",
+                                   internal::kUkmSavingPromptShown,
+                                   test.expected_save_prompt_shown);
+    test_ukm_recorder.ExpectMetric(*source, "PasswordForm",
+                                   internal::kUkmUpdatingPromptShown,
+                                   test.expected_update_prompt_shown);
+  }
+}
+
+TEST(PasswordFormMetricsRecorder, RecordUIDismissalReason) {
+  static constexpr struct {
+    // Stimuli:
+    metrics_util::UIDisplayDisposition display_disposition;
+    metrics_util::UIDismissalReason dismissal_reason;
+    // Expectations:
+    const char* expected_trigger_metric;
+    PasswordFormMetricsRecorder::BubbleDismissalReason expected_metric_value;
+  } kTests[] = {
+      {metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING,
+       metrics_util::CLICKED_SAVE, internal::kUkmSavingPromptInteraction,
+       PasswordFormMetricsRecorder::BubbleDismissalReason::kAccepted},
+      {metrics_util::MANUAL_WITH_PASSWORD_PENDING, metrics_util::CLICKED_CANCEL,
+       internal::kUkmSavingPromptInteraction,
+       PasswordFormMetricsRecorder::BubbleDismissalReason::kDeclined},
+      {metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING_UPDATE,
+       metrics_util::CLICKED_NEVER, internal::kUkmUpdatingPromptInteraction,
+       PasswordFormMetricsRecorder::BubbleDismissalReason::kDeclined},
+      {metrics_util::MANUAL_WITH_PASSWORD_PENDING_UPDATE,
+       metrics_util::NO_DIRECT_INTERACTION,
+       internal::kUkmUpdatingPromptInteraction,
+       PasswordFormMetricsRecorder::BubbleDismissalReason::kIgnored},
+  };
+
+  for (const auto& test : kTests) {
+    SCOPED_TRACE(testing::Message()
+                 << "display_disposition = " << test.display_disposition
+                 << ", dismissal_reason = " << test.dismissal_reason);
+    ukm::TestUkmRecorder test_ukm_recorder;
+    {
+      auto recorder = base::MakeRefCounted<PasswordFormMetricsRecorder>(
+          true /*is_main_frame_secure*/,
+          CreateUkmEntryBuilder(&test_ukm_recorder));
+      recorder->RecordPasswordBubbleShown(
+          metrics_util::CredentialSourceType::kPasswordManager,
+          test.display_disposition);
+      recorder->RecordUIDismissalReason(test.dismissal_reason);
+    }
+    // Verify data
+    const ukm::UkmSource* source = test_ukm_recorder.GetSourceForUrl(kTestUrl);
+    ASSERT_TRUE(source);
+    test_ukm_recorder.ExpectMetric(
+        *source, "PasswordForm", test.expected_trigger_metric,
+        static_cast<int64_t>(test.expected_metric_value));
   }
 }
 

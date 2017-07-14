@@ -24,6 +24,7 @@
 #include "components/password_manager/core/browser/password_form_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_form_user_action.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_store.h"
 
 using autofill::FormData;
@@ -275,12 +276,21 @@ class PasswordFormManager : public FormFetcher::Consumer {
   // adds itself as a consumer of the new one.
   void GrabFetcher(std::unique_ptr<FormFetcher> fetcher);
 
+  PasswordFormMetricsRecorder* metrics_recorder() {
+    return metrics_recorder_.get();
+  }
+
   // Create a copy of |*this| which can be passed to the code handling
   // save-password related UI. This omits some parts of the internal data, so
   // the result is not identical to the original.
   // TODO(crbug.com/739366): Replace with translating one appropriate class into
   // another one.
   std::unique_ptr<PasswordFormManager> Clone();
+
+  // Returns who created this PasswordFormManager. The Credential Management API
+  // uses a derived class of the PasswordFormManager that can indicate its
+  // origin.
+  virtual metrics_util::CredentialSourceType GetCredentialSource();
 
  protected:
   // FormFetcher::Consumer:

@@ -288,10 +288,10 @@ bool ChromePasswordManagerClient::PromptUserToSaveOrUpdatePassword(
   if (update_password) {
     UpdatePasswordInfoBarDelegate::Create(web_contents(),
                                           std::move(form_to_save));
-    return true;
+  } else {
+    SavePasswordInfoBarDelegate::Create(web_contents(),
+                                        std::move(form_to_save));
   }
-  SavePasswordInfoBarDelegate::Create(web_contents(),
-                                      std::move(form_to_save));
 #endif  // !defined(OS_ANDROID)
   return true;
 }
