@@ -522,4 +522,47 @@ TEST(PasswordFormMetricsRecorder, RecordUIDismissalReason) {
   }
 }
 
+// Verify that it is ok to open and close the password bubble more than once
+// and still get accurate metrics.
+TEST(PasswordFormMetricsRecorder, SequencesOfBubbles) {
+  using BubbleDismissalReason =
+      PasswordFormMetricsRecorder::BubbleDismissalReason;
+  using BubbleTrigger = PasswordFormMetricsRecorder::BubbleTrigger;
+  ukm::TestUkmRecorder test_ukm_recorder;
+  {
+    auto recorder = base::MakeRefCounted<PasswordFormMetricsRecorder>(
+        true /*is_main_frame_secure*/,
+        CreateUkmEntryBuilder(&test_ukm_recorder));
+    // Open and confirm an automatically triggered saving prompt.
+    recorder->RecordPasswordBubbleShown(
+        metrics_util::CredentialSourceType::kPasswordManager,
+        metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING);
+    recorder->RecordUIDismissalReason(metrics_util::CLICKED_SAVE);
+    // Open and confirm a manually triggered update prompt.
+    recorder->RecordPasswordBubbleShown(
+        metrics_util::CredentialSourceType::kPasswordManager,
+        metrics_util::MANUAL_WITH_PASSWORD_PENDING_UPDATE);
+    recorder->RecordUIDismissalReason(metrics_util::CLICKED_SAVE);
+  }
+  // Verify recorded UKM data.
+  const ukm::UkmSource* source = test_ukm_recorder.GetSourceForUrl(kTestUrl);
+  ASSERT_TRUE(source);
+  test_ukm_recorder.ExpectMetric(
+      *source, "PasswordForm", kUkmSavingPromptInteraction,
+      static_cast<int64_t>(BubbleDismissalReason::kAccepted));
+  test_ukm_recorder.ExpectMetric(
+      *source, "PasswordForm", kUkmUpdatingPromptInteraction,
+      static_cast<int64_t>(BubbleDismissalReason::kAccepted));
+  test_ukm_recorder.ExpectMetric(*source, "PasswordForm",
+                                 kUkmUpdatingPromptShown, 1);
+  test_ukm_recorder.ExpectMetric(*source, "PasswordForm", kUkmSavingPromptShown,
+                                 1);
+  test_ukm_recorder.ExpectMetric(
+      *source, "PasswordForm", kUkmSavingPromptTrigger,
+      static_cast<int64_t>(BubbleTrigger::kPasswordManagerSuggestionAutomatic));
+  test_ukm_recorder.ExpectMetric(
+      *source, "PasswordForm", kUkmUpdatingPromptTrigger,
+      static_cast<int64_t>(BubbleTrigger::kPasswordManagerSuggestionManual));
+}
+
 }  // namespace password_manager

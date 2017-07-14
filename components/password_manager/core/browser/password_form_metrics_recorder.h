@@ -265,6 +265,17 @@ class PasswordFormMetricsRecorder
  private:
   friend class base::RefCounted<PasswordFormMetricsRecorder>;
 
+  // Enum to track which password bubble is currently being displayed.
+  enum class CurrentBubbleOfInterest {
+    // This covers the cases that no password bubble is currently being
+    // displayed or the one displayed is none of the interesting cases.
+    kNone,
+    // The user is currently seeing a password save bubble.
+    kSaveBubble,
+    // The user is currently seeing a password update bubble.
+    kUpdateBubble,
+  };
+
   // Destructor reports a couple of UMA metrics as well as calls
   // RecordUkmMetric.
   ~PasswordFormMetricsRecorder();
@@ -308,6 +319,9 @@ class PasswordFormMetricsRecorder
 
   // Whether this form has an auto generated password.
   bool has_generated_password_ = false;
+
+  // Tracks which bubble is currently being displayed to the user.
+  CurrentBubbleOfInterest current_bubble_ = CurrentBubbleOfInterest::kNone;
 
   // Whether the user was shown a prompt to update a password.
   bool update_prompt_shown_ = false;
