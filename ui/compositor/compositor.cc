@@ -495,13 +495,7 @@ void Compositor::DidFailToInitializeLayerTreeFrameSink() {
   // The LayerTreeFrameSink should already be bound/initialized before being
   // given to
   // the Compositor.
-
-  // TODO(jonross): reenable this once crbug.com/743028 figures out why this is
-  // being reached. Currently one third of all test executions run into this
-  // crbug.com/742966
-  // NOTREACHED();
-  LOG(ERROR) << "Compositor::DidFailToInitializeLayerTreeFrameSink called, "
-             << "when it should be NOTREACHED.";
+  NOTREACHED();
 }
 
 void Compositor::DidCommit() {
