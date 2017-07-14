@@ -462,7 +462,8 @@ class CORE_EXPORT LocalFrameView final
                             const ScrollAlignment& align_x,
                             const ScrollAlignment& align_y,
                             bool is_smooth,
-                            ScrollType = kProgrammaticScroll) override;
+                            ScrollType = kProgrammaticScroll,
+                            bool is_for_scroll_sequence = false) override;
 
   // The window that hosts the LocalFrameView. The LocalFrameView will
   // communicate scrolls and repaints to the host window in the window's

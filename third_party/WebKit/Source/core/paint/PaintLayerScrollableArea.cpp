@@ -1782,7 +1782,8 @@ LayoutRect PaintLayerScrollableArea::ScrollLocalRectIntoView(
     const ScrollAlignment& align_x,
     const ScrollAlignment& align_y,
     bool is_smooth,
-    ScrollType scroll_type) {
+    ScrollType scroll_type,
+    bool is_for_scroll_sequence) {
   LayoutRect local_expose_rect(rect);
   local_expose_rect.Move(-Box().BorderLeft(), -Box().BorderTop());
   LayoutRect visible_rect(LayoutPoint(), ClientSize());
@@ -1792,9 +1793,12 @@ LayoutRect PaintLayerScrollableArea::ScrollLocalRectIntoView(
   ScrollOffset old_scroll_offset = GetScrollOffset();
   ScrollOffset new_scroll_offset(ClampScrollOffset(RoundedIntSize(
       ToScrollOffset(FloatPoint(r.Location()) + old_scroll_offset))));
-  if (is_smooth) {
-    DCHECK(scroll_type == kProgrammaticScroll);
-    GetSmoothScrollSequencer()->QueueAnimation(this, new_scroll_offset);
+  if (is_for_scroll_sequence) {
+    DCHECK(scroll_type == kProgrammaticScroll || scroll_type == kUserScroll);
+    ScrollBehavior behavior =
+        is_smooth ? kScrollBehaviorSmooth : kScrollBehaviorInstant;
+    GetSmoothScrollSequencer()->QueueAnimation(this, new_scroll_offset,
+                                               behavior);
   } else {
     SetScrollOffset(new_scroll_offset, scroll_type, kScrollBehaviorInstant);
   }
@@ -1809,13 +1813,15 @@ LayoutRect PaintLayerScrollableArea::ScrollIntoView(
     const ScrollAlignment& align_x,
     const ScrollAlignment& align_y,
     bool is_smooth,
-    ScrollType scroll_type) {
+    ScrollType scroll_type,
+    bool is_for_scroll_sequence) {
   LayoutRect local_expose_rect(
       Box()
           .AbsoluteToLocalQuad(FloatQuad(FloatRect(rect)), kUseTransforms)
           .BoundingBox());
-  local_expose_rect = ScrollLocalRectIntoView(local_expose_rect, align_x,
-                                              align_y, is_smooth, scroll_type);
+  local_expose_rect =
+      ScrollLocalRectIntoView(local_expose_rect, align_x, align_y, is_smooth,
+                              scroll_type, is_for_scroll_sequence);
   LayoutRect visible_rect(LayoutPoint(), ClientSize());
   LayoutRect intersect =
       LocalToAbsolute(Box(), Intersection(visible_rect, local_expose_rect));

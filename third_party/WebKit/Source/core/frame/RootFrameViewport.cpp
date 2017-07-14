@@ -210,7 +210,8 @@ LayoutRect RootFrameViewport::ScrollIntoView(const LayoutRect& rect_in_content,
                                              const ScrollAlignment& align_x,
                                              const ScrollAlignment& align_y,
                                              bool is_smooth,
-                                             ScrollType scroll_type) {
+                                             ScrollType scroll_type,
+                                             bool is_for_scroll_sequence) {
   // We want to move the rect into the viewport that excludes the scrollbars so
   // we intersect the visual viewport with the scrollbar-excluded frameView
   // content rect. However, we don't use visibleContentRect directly since it
@@ -231,9 +232,11 @@ LayoutRect RootFrameViewport::ScrollIntoView(const LayoutRect& rect_in_content,
       view_rect_in_content, rect_in_content, align_x, align_y);
   if (target_viewport != view_rect_in_content) {
     ScrollOffset target_offset(target_viewport.X(), target_viewport.Y());
-    if (is_smooth) {
-      DCHECK(scroll_type == kProgrammaticScroll);
-      GetSmoothScrollSequencer()->QueueAnimation(this, target_offset);
+    if (is_for_scroll_sequence) {
+      DCHECK(scroll_type == kProgrammaticScroll || scroll_type == kUserScroll);
+      ScrollBehavior behavior =
+          is_smooth ? kScrollBehaviorSmooth : kScrollBehaviorInstant;
+      GetSmoothScrollSequencer()->QueueAnimation(this, target_offset, behavior);
     } else {
       SetScrollOffset(target_offset, scroll_type);
     }

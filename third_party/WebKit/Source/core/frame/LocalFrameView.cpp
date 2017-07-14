@@ -4622,16 +4622,28 @@ LayoutRect LocalFrameView::ScrollIntoView(const LayoutRect& rect_in_content,
                                           const ScrollAlignment& align_x,
                                           const ScrollAlignment& align_y,
                                           bool is_smooth,
-                                          ScrollType scroll_type) {
+                                          ScrollType scroll_type,
+                                          bool is_for_scroll_sequence) {
   LayoutRect view_rect(VisibleContentRect());
   LayoutRect expose_rect = ScrollAlignment::GetRectToExpose(
       view_rect, rect_in_content, align_x, align_y);
+  ScrollOffset old_scroll_offset = GetScrollOffset();
   if (expose_rect != view_rect) {
     ScrollOffset target_offset(expose_rect.X().ToFloat(),
                                expose_rect.Y().ToFloat());
-    if (is_smooth) {
-      DCHECK(scroll_type == kProgrammaticScroll);
-      GetSmoothScrollSequencer()->QueueAnimation(this, target_offset);
+    target_offset = ShouldUseIntegerScrollOffset()
+                        ? ScrollOffset(FlooredIntSize(target_offset))
+                        : target_offset;
+
+    if (is_for_scroll_sequence) {
+      DCHECK(scroll_type == kProgrammaticScroll || scroll_type == kUserScroll);
+      ScrollBehavior behavior =
+          is_smooth ? kScrollBehaviorSmooth : kScrollBehaviorInstant;
+      GetSmoothScrollSequencer()->QueueAnimation(this, target_offset, behavior);
+      ScrollOffset scroll_offset_difference =
+          ClampScrollOffset(target_offset) - old_scroll_offset;
+      GetLayoutBox()->SetPendingOffsetToScroll(
+          -LayoutSize(scroll_offset_difference));
     } else {
       SetScrollOffset(target_offset, scroll_type);
     }

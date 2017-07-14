@@ -107,6 +107,13 @@ struct LayoutBoxRareData {
   // m_hasPreviousContentBoxSizeAndLayoutOverflowRect is true.
   LayoutSize previous_content_box_size_;
   LayoutRect previous_layout_overflow_rect_;
+
+  // Used by LocalFrameView::ScrollIntoView. When the scroll is sequenced
+  // rather than instantly performed, we need the pending_offset_to_scroll
+  // to calculate the next rect_to_scroll as if the scroll has been performed.
+  // TODO(sunyunjia): We should get rid of this variable and move the next
+  // rect_to_scroll calculation into ScrollRectToVisible. crbug.com/741830
+  LayoutSize pending_offset_to_scroll_;
 };
 
 // LayoutBox implements the full CSS box model.
@@ -588,12 +595,15 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   void ScrollByRecursively(const ScrollOffset& delta);
   // If makeVisibleInVisualViewport is set, the visual viewport will be scrolled
   // if required to make the rect visible.
+  // TODO(sunyunjia): Rename this method to distinguish with the one in
+  // LayoutObject. crbug.com/738160
   void ScrollRectToVisible(const LayoutRect&,
                            const ScrollAlignment& align_x,
                            const ScrollAlignment& align_y,
                            ScrollType = kProgrammaticScroll,
                            bool make_visible_in_visual_viewport = true,
-                           ScrollBehavior = kScrollBehaviorAuto);
+                           ScrollBehavior = kScrollBehaviorAuto,
+                           bool is_for_scroll_sequence = false);
 
   LayoutRectOutsets MarginBoxOutsets() const override {
     return margin_box_outsets_;
@@ -796,6 +806,11 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     return rare_data_ ? rare_data_->offset_to_next_page_ : LayoutUnit();
   }
   void SetOffsetToNextPage(LayoutUnit);
+
+  LayoutSize PendingOffsetToScroll() const {
+    return rare_data_ ? rare_data_->pending_offset_to_scroll_ : LayoutSize();
+  }
+  void SetPendingOffsetToScroll(LayoutSize);
 
   // Specify which page or column to associate with an offset, if said offset is
   // exactly at a page or column boundary.

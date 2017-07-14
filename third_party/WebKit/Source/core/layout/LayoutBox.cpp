@@ -648,7 +648,8 @@ void LayoutBox::ScrollRectToVisible(const LayoutRect& rect,
                                     const ScrollAlignment& align_y,
                                     ScrollType scroll_type,
                                     bool make_visible_in_visual_viewport,
-                                    ScrollBehavior scroll_behavior) {
+                                    ScrollBehavior scroll_behavior,
+                                    bool is_for_scroll_sequence) {
   DCHECK(scroll_type == kProgrammaticScroll || scroll_type == kUserScroll);
   // Presumably the same issue as in setScrollTop. See crbug.com/343132.
   DisableCompositingQueryAsserts disabler;
@@ -680,7 +681,8 @@ void LayoutBox::ScrollRectToVisible(const LayoutRect& rect,
     // TODO(eae): We probably don't need this any more as we don't share any
     //            code with the Safari RSS reeder.
     new_rect = GetScrollableArea()->ScrollIntoView(
-        rect_to_scroll, align_x, align_y, is_smooth, scroll_type);
+        rect_to_scroll, align_x, align_y, is_smooth, scroll_type,
+        is_for_scroll_sequence);
     if (new_rect.IsEmpty())
       return;
   } else if (!parent_box && CanBeProgramaticallyScrolled()) {
@@ -693,12 +695,17 @@ void LayoutBox::ScrollRectToVisible(const LayoutRect& rect,
             rect_to_scroll.Move(
                 LayoutSize(GetScrollableArea()->GetScrollOffset()));
           }
-          frame_view->GetScrollableArea()->ScrollIntoView(
-              rect_to_scroll, align_x, align_y, is_smooth, scroll_type);
+          rect_to_scroll = frame_view->GetScrollableArea()->ScrollIntoView(
+              rect_to_scroll, align_x, align_y, is_smooth, scroll_type,
+              is_for_scroll_sequence);
         } else {
-          frame_view->LayoutViewportScrollableArea()->ScrollIntoView(
-              rect_to_scroll, align_x, align_y, is_smooth, scroll_type);
+          rect_to_scroll =
+              frame_view->LayoutViewportScrollableArea()->ScrollIntoView(
+                  rect_to_scroll, align_x, align_y, is_smooth, scroll_type,
+                  is_for_scroll_sequence);
         }
+        if (is_for_scroll_sequence)
+          rect_to_scroll.Move(PendingOffsetToScroll());
         if (owner_element && owner_element->GetLayoutObject()) {
           if (frame_view->SafeToPropagateScrollToParent()) {
             parent_box = owner_element->GetLayoutObject()->EnclosingBox();
@@ -733,7 +740,7 @@ void LayoutBox::ScrollRectToVisible(const LayoutRect& rect,
   if (parent_box) {
     parent_box->ScrollRectToVisible(new_rect, align_x, align_y, scroll_type,
                                     make_visible_in_visual_viewport,
-                                    scroll_behavior);
+                                    scroll_behavior, is_for_scroll_sequence);
   }
 }
 
@@ -5927,6 +5934,10 @@ void LayoutBox::RemoveSnapArea(const LayoutBox& snap_area) {
 
 SnapAreaSet* LayoutBox::SnapAreas() const {
   return rare_data_ ? rare_data_->snap_areas_.get() : nullptr;
+}
+
+void LayoutBox::SetPendingOffsetToScroll(LayoutSize offset) {
+  EnsureRareData().pending_offset_to_scroll_ = offset;
 }
 
 LayoutRect LayoutBox::DebugRect() const {
