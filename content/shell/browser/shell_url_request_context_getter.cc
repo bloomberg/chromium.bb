@@ -115,6 +115,11 @@ ShellURLRequestContextGetter::CreateNetworkDelegate() {
   return base::WrapUnique(new ShellNetworkDelegate);
 }
 
+std::unique_ptr<net::CertVerifier>
+ShellURLRequestContextGetter::GetCertVerifier() {
+  return net::CertVerifier::CreateDefault();
+}
+
 std::unique_ptr<net::ProxyConfigService>
 ShellURLRequestContextGetter::GetProxyConfigService() {
   return net::ProxyService::CreateSystemProxyConfigService(io_task_runner_);
@@ -153,7 +158,7 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
         net::HostResolver::CreateDefaultResolver(
             url_request_context_->net_log()));
 
-    storage_->set_cert_verifier(net::CertVerifier::CreateDefault());
+    storage_->set_cert_verifier(GetCertVerifier());
     storage_->set_transport_security_state(
         base::WrapUnique(new net::TransportSecurityState));
     storage_->set_cert_transparency_verifier(

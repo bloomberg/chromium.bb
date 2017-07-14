@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ssl/ignore_errors_cert_verifier.h"
+#include "content/public/browser/ignore_errors_cert_verifier.h"
 
 #include <iterator>
 #include <utility>
@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
-#include "chrome/common/chrome_switches.h"
+#include "content/public/common/content_switches.h"
 #include "crypto/sha2.h"
 #include "net/base/completion_callback.h"
 #include "net/base/hash_value.h"
@@ -29,11 +29,14 @@ using ::net::SHA256HashValue;
 using ::net::SHA256HashValueLessThan;
 using ::net::X509Certificate;
 
+namespace content {
+
 // static
 std::unique_ptr<CertVerifier> IgnoreErrorsCertVerifier::MaybeWrapCertVerifier(
     const base::CommandLine& command_line,
+    const char* user_data_dir_switch,
     std::unique_ptr<CertVerifier> verifier) {
-  if (!command_line.HasSwitch(switches::kUserDataDir) ||
+  if (!command_line.HasSwitch(user_data_dir_switch) ||
       !command_line.HasSwitch(switches::kIgnoreCertificateErrorsSPKIList)) {
     return verifier;
   }
@@ -130,3 +133,5 @@ int IgnoreErrorsCertVerifier::Verify(const RequestParams& params,
 void IgnoreErrorsCertVerifier::set_whitelist(const SPKIHashSet& whitelist) {
   whitelist_ = whitelist;
 }
+
+}  // namespace content

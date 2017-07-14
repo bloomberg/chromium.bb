@@ -39,6 +39,7 @@ class LayoutTestURLRequestContextGetter : public ShellURLRequestContextGetter {
 
   // ShellURLRequestContextGetter implementation.
   std::unique_ptr<net::NetworkDelegate> CreateNetworkDelegate() override;
+  std::unique_ptr<net::CertVerifier> GetCertVerifier() override;
   std::unique_ptr<net::ProxyConfigService> GetProxyConfigService() override;
   std::unique_ptr<net::ProxyService> GetProxyService() override;
 
