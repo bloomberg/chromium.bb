@@ -1973,9 +1973,14 @@ void BrowserView::ViewHierarchyChanged(
   if (!widget)
     return;
 
-  if (!initialized_ && details.is_add) {
+  bool init = !initialized_ && details.is_add;
+  if (init) {
     InitViews();
     initialized_ = true;
+  }
+
+#if defined(USE_AURA)
+  if (init) {
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kEnableExperimentalFullscreenExitUI)) {
       widget->GetNativeView()->AddPreTargetHandler(GetFullscreenControlHost());
@@ -1985,6 +1990,7 @@ void BrowserView::ViewHierarchyChanged(
     if (native_view)
       native_view->RemovePreTargetHandler(fullscreen_control_host_.get());
   }
+#endif
 }
 
 void BrowserView::PaintChildren(const ui::PaintContext& context) {
