@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_TRANSLATE_CORE_BROWSER_LANGUAGE_MODEL_H_
-#define COMPONENTS_TRANSLATE_CORE_BROWSER_LANGUAGE_MODEL_H_
+#ifndef COMPONENTS_LANGUAGE_CORE_BROWSER_URL_LANGUAGE_HISTOGRAM_H_
+#define COMPONENTS_LANGUAGE_CORE_BROWSER_URL_LANGUAGE_HISTOGRAM_H_
 
 #include <string>
 #include <vector>
@@ -15,14 +15,14 @@
 class PrefRegistrySimple;
 class PrefService;
 
-namespace translate {
+namespace language {
 
 // Collects data about languages in which the user reads the web and provides
 // access to current estimated language preferences. The past behaviour is
-// discounted so that this model reflects changes in browsing habits. This model
-// does not have to contain all languages that ever appeared in user's browsing,
-// languages with insignificant frequency are removed, eventually.
-class LanguageModel : public KeyedService {
+// discounted so that the histogram reflects changes in browsing habits. This
+// histogram does not have to contain all languages that ever appeared in user's
+// browsing, languages with insignificant frequency are removed, eventually.
+class UrlLanguageHistogram : public KeyedService {
  public:
   struct LanguageInfo {
     LanguageInfo() = default;
@@ -39,33 +39,33 @@ class LanguageModel : public KeyedService {
     float frequency = 0.0f;
   };
 
-  explicit LanguageModel(PrefService* pref_service);
-  ~LanguageModel() override;
+  explicit UrlLanguageHistogram(PrefService* pref_service);
+  ~UrlLanguageHistogram() override;
 
-  // Registers profile prefs for the model.
+  // Registers profile prefs for the histogram.
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
-  // Returns a list of the languages currently tracked by the model, sorted by
-  // frequency in decreasing order. The list is empty, if the model has not
-  // enough data points.
+  // Returns a list of the languages currently tracked by the histogram, sorted
+  // by frequency in decreasing order. The list is empty, if the histogram has
+  // not enough data points.
   std::vector<LanguageInfo> GetTopLanguages() const;
 
   // Returns the estimated frequency for the given language or 0 if the language
-  // is not among the top languages kept in the model.
+  // is not among the top languages kept in the histogram.
   float GetLanguageFrequency(const std::string& language_code) const;
 
-  // Informs the model that a page with the given language has been visited.
+  // Informs the histogram that a page with the given language has been visited.
   void OnPageVisited(const std::string& language_code);
 
-  // Reflect in the model that history from |begin| to |end| gets cleared.
+  // Reflect in the histogram that history from |begin| to |end| gets cleared.
   void ClearHistory(base::Time begin, base::Time end);
 
  private:
   PrefService* pref_service_;
 
-  DISALLOW_COPY_AND_ASSIGN(LanguageModel);
+  DISALLOW_COPY_AND_ASSIGN(UrlLanguageHistogram);
 };
 
-}  // namespace translate
+}  // namespace language
 
-#endif  // COMPONENTS_TRANSLATE_CORE_BROWSER_LANGUAGE_MODEL_H_
+#endif  // COMPONENTS_LANGUAGE_CORE_BROWSER_URL_LANGUAGE_HISTOGRAM_H_

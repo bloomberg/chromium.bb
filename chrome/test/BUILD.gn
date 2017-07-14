@@ -3287,6 +3287,7 @@ test("unit_tests") {
 
     # TODO(hashimoto): those tests should be componentized and moved to
     # //components:components_unittests, http://crbug.com/527882.
+    "../browser/language/url_language_histogram_factory_unittest.cc",
     "../browser/search_engines/template_url_fetcher_unittest.cc",
     "../browser/search_engines/template_url_parser_unittest.cc",
     "../browser/search_engines/template_url_service_sync_unittest.cc",
@@ -3325,7 +3326,6 @@ test("unit_tests") {
     "../browser/thumbnails/thumbnail_service_unittest.cc",
     "../browser/thumbnails/thumbnail_utils_unittest.cc",
     "../browser/translate/chrome_translate_client_unittest.cc",
-    "../browser/translate/language_model_factory_unittest.cc",
     "../browser/translate/translate_service_unittest.cc",
     "../browser/ui/android/tab_model/tab_model_list_unittest.cc",
     "../browser/ui/android/tab_model/tab_model_unittest.cc",

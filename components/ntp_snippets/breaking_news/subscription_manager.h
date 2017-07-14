@@ -12,6 +12,7 @@
 #include "url/gurl.h"
 
 class PrefRegistrySimple;
+class PrefService;
 
 namespace ntp_snippets {
 

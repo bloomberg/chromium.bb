@@ -14,7 +14,6 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "components/ntp_snippets/status.h"
-#include "components/translate/core/browser/language_model.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "net/http/http_request_headers.h"
 

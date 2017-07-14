@@ -29,11 +29,11 @@
 #include "ios/chrome/browser/infobars/infobar.h"
 #include "ios/chrome/browser/infobars/infobar_controller.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
+#include "ios/chrome/browser/language/url_language_histogram_factory.h"
 #include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/sync/ios_user_event_service_factory.h"
 #import "ios/chrome/browser/translate/after_translate_infobar_controller.h"
 #import "ios/chrome/browser/translate/before_translate_infobar_controller.h"
-#include "ios/chrome/browser/translate/language_model_factory.h"
 #import "ios/chrome/browser/translate/never_translate_infobar_controller.h"
 #include "ios/chrome/browser/translate/translate_accept_languages_factory.h"
 #import "ios/chrome/browser/translate/translate_message_infobar_controller.h"
@@ -63,7 +63,7 @@ ChromeIOSTranslateClient::ChromeIOSTranslateClient(web::WebState* web_state)
       translate_driver_(web_state,
                         web_state->GetNavigationManager(),
                         translate_manager_.get(),
-                        LanguageModelFactory::GetForBrowserState(
+                        UrlLanguageHistogramFactory::GetForBrowserState(
                             ios::ChromeBrowserState::FromBrowserState(
                                 web_state->GetBrowserState()))) {}
 

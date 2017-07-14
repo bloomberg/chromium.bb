@@ -27,6 +27,7 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/io_thread.h"
+#include "chrome/browser/language/url_language_histogram_factory.h"
 #include "chrome/browser/media/media_device_id_salt.h"
 #include "chrome/browser/media/media_engagement_service.h"
 #include "chrome/browser/net/nqe/ui_network_quality_estimator_service.h"
@@ -45,7 +46,6 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
-#include "chrome/browser/translate/language_model_factory.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
@@ -62,6 +62,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/domain_reliability/service.h"
 #include "components/history/core/browser/history_service.h"
+#include "components/language/core/browser/url_language_histogram.h"
 #include "components/nacl/browser/nacl_browser.h"
 #include "components/nacl/browser/pnacl_host.h"
 #include "components/ntp_snippets/bookmarks/bookmark_last_visit_utils.h"
@@ -73,7 +74,6 @@
 #include "components/previews/core/previews_ui_service.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/sessions/core/tab_restore_service.h"
-#include "components/translate/core/browser/language_model.h"
 #include "components/web_cache/browser/web_cache_manager.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
 #include "content/public/browser/plugin_data_remover.h"
@@ -490,10 +490,11 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
                                                   filter, bookmark_model);
     }
 
-    translate::LanguageModel* language_model =
-        LanguageModelFactory::GetInstance()->GetForBrowserContext(profile_);
-    if (language_model) {
-      language_model->ClearHistory(delete_begin_, delete_end_);
+    language::UrlLanguageHistogram* language_histogram =
+        UrlLanguageHistogramFactory::GetInstance()->GetForBrowserContext(
+            profile_);
+    if (language_histogram) {
+      language_histogram->ClearHistory(delete_begin_, delete_end_);
     }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)

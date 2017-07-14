@@ -13,9 +13,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "components/language/core/browser/url_language_histogram.h"
 #include "components/ntp_snippets/remote/request_params.h"
 #include "components/ntp_snippets/status.h"
-#include "components/translate/core/browser/language_model.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "net/http/http_request_headers.h"
 
@@ -70,9 +70,10 @@ class JsonRequest : public net::URLFetcherDelegate {
     Builder& SetAuthentication(const std::string& account_id,
                                const std::string& auth_header);
     Builder& SetCreationTime(base::TimeTicks creation_time);
-    // The language_model borrowed from the fetcher needs to stay alive until
-    // the request body is built.
-    Builder& SetLanguageModel(const translate::LanguageModel* language_model);
+    // The language_histogram borrowed from the fetcher needs to stay alive
+    // until the request body is built.
+    Builder& SetLanguageHistogram(
+        const language::UrlLanguageHistogram* language_histogram);
     Builder& SetParams(const RequestParams& params);
     Builder& SetParseJsonCallback(ParseJSONCallback callback);
     // The clock borrowed from the fetcher will be injected into the
@@ -104,8 +105,8 @@ class JsonRequest : public net::URLFetcherDelegate {
         const std::string& body) const;
 
     void PrepareLanguages(
-        translate::LanguageModel::LanguageInfo* ui_language,
-        translate::LanguageModel::LanguageInfo* other_top_language) const;
+        language::UrlLanguageHistogram::LanguageInfo* ui_language,
+        language::UrlLanguageHistogram::LanguageInfo* other_top_language) const;
 
     // Only required, if the request needs to be sent.
     std::string auth_header_;
@@ -118,7 +119,7 @@ class JsonRequest : public net::URLFetcherDelegate {
     // Optional properties.
     std::string obfuscated_gaia_id_;
     std::string user_class_;
-    const translate::LanguageModel* language_model_;
+    const language::UrlLanguageHistogram* language_histogram_;
 
     DISALLOW_COPY_AND_ASSIGN(Builder);
   };

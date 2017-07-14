@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/translate/core/browser/language_model.h"
+#include "components/language/core/browser/url_language_histogram.h"
 
 #include <algorithm>
 #include <map>
@@ -12,18 +12,18 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 
-namespace translate {
+namespace language {
 
 namespace {
 
-const char kLanguageModelCounters[] = "language_model_counters";
+const char kUrlLanguageHistogramCounters[] = "language_model_counters";
 
 const int kMaxCountersSum = 1000;
 const int kMinCountersSum = 10;
 const float kCutoffRatio = 0.005f;
 const float kDiscountFactor = 0.75f;
 
-// Gets the sum of the counter for all languages in the model.
+// Gets the sum of the counter for all languages in the histogram.
 int GetCountersSum(const base::DictionaryValue& dict) {
   int sum = 0;
   int counter_value = 0;
@@ -58,16 +58,15 @@ void DiscountAndCleanCounters(base::DictionaryValue* dict) {
 }
 
 // Transforms the counters from prefs into a list of LanguageInfo structs.
-std::vector<LanguageModel::LanguageInfo> GetAllLanguages(
+std::vector<UrlLanguageHistogram::LanguageInfo> GetAllLanguages(
     const base::DictionaryValue& dict) {
-
   int counters_sum = GetCountersSum(dict);
 
   // If the sample is not large enough yet, pretend there are no top languages.
   if (counters_sum < kMinCountersSum)
-    return std::vector<LanguageModel::LanguageInfo>();
+    return std::vector<UrlLanguageHistogram::LanguageInfo>();
 
-  std::vector<LanguageModel::LanguageInfo> top_languages;
+  std::vector<UrlLanguageHistogram::LanguageInfo> top_languages;
   int counter_value = 0;
   for (base::DictionaryValue::Iterator itr(dict); !itr.IsAtEnd();
        itr.Advance()) {
@@ -81,33 +80,35 @@ std::vector<LanguageModel::LanguageInfo> GetAllLanguages(
 
 }  // namespace
 
-LanguageModel::LanguageModel(PrefService* pref_service)
+UrlLanguageHistogram::UrlLanguageHistogram(PrefService* pref_service)
     : pref_service_(pref_service) {}
 
-LanguageModel::~LanguageModel() = default;
+UrlLanguageHistogram::~UrlLanguageHistogram() = default;
 
 // static
-void LanguageModel::RegisterProfilePrefs(PrefRegistrySimple* registry) {
-  registry->RegisterDictionaryPref(kLanguageModelCounters);
+void UrlLanguageHistogram::RegisterProfilePrefs(PrefRegistrySimple* registry) {
+  registry->RegisterDictionaryPref(kUrlLanguageHistogramCounters);
 }
 
-std::vector<LanguageModel::LanguageInfo> LanguageModel::GetTopLanguages()
-    const {
-  std::vector<LanguageModel::LanguageInfo> top_languages =
-      GetAllLanguages(*pref_service_->GetDictionary(kLanguageModelCounters));
+std::vector<UrlLanguageHistogram::LanguageInfo>
+UrlLanguageHistogram::GetTopLanguages() const {
+  std::vector<UrlLanguageHistogram::LanguageInfo> top_languages =
+      GetAllLanguages(
+          *pref_service_->GetDictionary(kUrlLanguageHistogramCounters));
 
   std::sort(top_languages.begin(), top_languages.end(),
-            [](LanguageModel::LanguageInfo a, LanguageModel::LanguageInfo b) {
+            [](UrlLanguageHistogram::LanguageInfo a,
+               UrlLanguageHistogram::LanguageInfo b) {
               return a.frequency > b.frequency;
             });
 
   return top_languages;
 }
 
-float LanguageModel::GetLanguageFrequency(
+float UrlLanguageHistogram::GetLanguageFrequency(
     const std::string& language_code) const {
   const base::DictionaryValue* dict =
-      pref_service_->GetDictionary(kLanguageModelCounters);
+      pref_service_->GetDictionary(kUrlLanguageHistogramCounters);
   int counters_sum = GetCountersSum(*dict);
   // If the sample is not large enough yet, pretend there are no top languages.
   if (counters_sum < kMinCountersSum)
@@ -120,8 +121,8 @@ float LanguageModel::GetLanguageFrequency(
   return static_cast<float>(counter_value) / counters_sum;
 }
 
-void LanguageModel::OnPageVisited(const std::string& language_code) {
-  DictionaryPrefUpdate update(pref_service_, kLanguageModelCounters);
+void UrlLanguageHistogram::OnPageVisited(const std::string& language_code) {
+  DictionaryPrefUpdate update(pref_service_, kUrlLanguageHistogramCounters);
   base::DictionaryValue* dict = update.Get();
   int counter_value = 0;
   // If the key |language_code| does not exist, |counter_value| stays 0.
@@ -132,14 +133,14 @@ void LanguageModel::OnPageVisited(const std::string& language_code) {
     DiscountAndCleanCounters(dict);
 }
 
-void LanguageModel::ClearHistory(base::Time begin, base::Time end) {
+void UrlLanguageHistogram::ClearHistory(base::Time begin, base::Time end) {
   // Ignore all partial removals and react only to "entire" history removal.
   bool is_entire_history = (begin == base::Time() && end == base::Time::Max());
   if (!is_entire_history) {
     return;
   }
 
-  pref_service_->ClearPref(kLanguageModelCounters);
+  pref_service_->ClearPref(kUrlLanguageHistogramCounters);
 }
 
-}  // namespace translate
+}  // namespace language

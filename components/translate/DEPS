@@ -2,6 +2,7 @@ include_rules = [
   "+components/data_use_measurement/core",
   "+components/grit/components_resources.h",
   "+components/infobars",
+  "+components/language",
   "+components/language_usage_metrics",
   "+components/metrics/proto",
   "+components/pref_registry",

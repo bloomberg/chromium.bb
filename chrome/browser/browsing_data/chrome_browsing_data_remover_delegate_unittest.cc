@@ -24,11 +24,11 @@
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/language/url_language_histogram_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/storage/durable_storage_permission_context.h"
-#include "chrome/browser/translate/language_model_factory.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -50,6 +50,7 @@
 #include "components/domain_reliability/service.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/history/core/browser/history_service.h"
+#include "components/language/core/browser/url_language_histogram.h"
 #include "components/ntp_snippets/bookmarks/bookmark_last_visit_utils.h"
 #include "components/omnibox/browser/omnibox_pref_names.h"
 #include "components/os_crypt/os_crypt_mocker.h"
@@ -57,7 +58,6 @@
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/prefs/testing_pref_service.h"
-#include "components/translate/core/browser/language_model.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/test/browsing_data_remover_test_util.h"
@@ -2072,18 +2072,19 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
 }
 
 // Test that the remover clears language model data (normally added by the
-// ChromeTranslateClient).
+// LanguageDetectionDriver).
 TEST_F(ChromeBrowsingDataRemoverDelegateTest,
-       LanguageModelClearedOnClearingCompleteHistory) {
-  translate::LanguageModel* language_model =
-      LanguageModelFactory::GetInstance()->GetForBrowserContext(GetProfile());
+       LanguageHistogramClearedOnClearingCompleteHistory) {
+  language::UrlLanguageHistogram* language_histogram =
+      UrlLanguageHistogramFactory::GetInstance()->GetForBrowserContext(
+          GetProfile());
 
   // Simulate browsing.
   for (int i = 0; i < 100; i++) {
-    language_model->OnPageVisited("en");
-    language_model->OnPageVisited("en");
-    language_model->OnPageVisited("en");
-    language_model->OnPageVisited("es");
+    language_histogram->OnPageVisited("en");
+    language_histogram->OnPageVisited("en");
+    language_histogram->OnPageVisited("en");
+    language_histogram->OnPageVisited("es");
   }
 
   // Clearing a part of the history has no effect.
@@ -2091,18 +2092,18 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
       AnHourAgo(), base::Time::Max(),
       ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY, false);
 
-  EXPECT_THAT(language_model->GetTopLanguages(), SizeIs(2));
-  EXPECT_THAT(language_model->GetLanguageFrequency("en"), FloatEq(0.75));
-  EXPECT_THAT(language_model->GetLanguageFrequency("es"), FloatEq(0.25));
+  EXPECT_THAT(language_histogram->GetTopLanguages(), SizeIs(2));
+  EXPECT_THAT(language_histogram->GetLanguageFrequency("en"), FloatEq(0.75));
+  EXPECT_THAT(language_histogram->GetLanguageFrequency("es"), FloatEq(0.25));
 
   // Clearing the full history does the trick.
   BlockUntilBrowsingDataRemoved(
       base::Time(), base::Time::Max(),
       ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY, false);
 
-  EXPECT_THAT(language_model->GetTopLanguages(), SizeIs(0));
-  EXPECT_THAT(language_model->GetLanguageFrequency("en"), FloatEq(0.0));
-  EXPECT_THAT(language_model->GetLanguageFrequency("es"), FloatEq(0.0));
+  EXPECT_THAT(language_histogram->GetTopLanguages(), SizeIs(0));
+  EXPECT_THAT(language_histogram->GetLanguageFrequency("en"), FloatEq(0.0));
+  EXPECT_THAT(language_histogram->GetLanguageFrequency("es"), FloatEq(0.0));
 }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)

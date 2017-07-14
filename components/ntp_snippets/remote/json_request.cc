@@ -37,11 +37,11 @@
 #include "third_party/icu/source/common/unicode/utypes.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using language::UrlLanguageHistogram;
 using net::URLFetcher;
 using net::URLRequestContextGetter;
 using net::HttpRequestHeaders;
 using net::URLRequestStatus;
-using translate::LanguageModel;
 
 namespace ntp_snippets {
 
@@ -52,7 +52,7 @@ namespace {
 // Variation parameter for disabling the retry.
 const char kBackground5xxRetriesName[] = "background_5xx_retries_count";
 
-// Variation parameter for sending LanguageModel info to the server.
+// Variation parameter for sending UrlLanguageHistogram info to the server.
 const char kSendTopLanguagesName[] = "send_top_languages";
 
 // Variation parameter for sending UserClassifier info to the server.
@@ -108,7 +108,7 @@ std::string ISO639FromPosixLocale(const std::string& locale) {
 }
 
 void AppendLanguageInfoToList(base::ListValue* list,
-                              const LanguageModel::LanguageInfo& info) {
+                              const UrlLanguageHistogram::LanguageInfo& info) {
   auto lang = base::MakeUnique<base::DictionaryValue>();
   lang->SetString("language", info.language_code);
   lang->SetDouble("frequency", info.frequency);
@@ -216,7 +216,7 @@ void JsonRequest::OnJsonError(const std::string& error) {
            /*error_details=*/base::StringPrintf(" (error %s)", error.c_str()));
 }
 
-JsonRequest::Builder::Builder() : language_model_(nullptr) {}
+JsonRequest::Builder::Builder() : language_histogram_(nullptr) {}
 JsonRequest::Builder::Builder(JsonRequest::Builder&&) = default;
 JsonRequest::Builder::~Builder() = default;
 
@@ -246,9 +246,9 @@ JsonRequest::Builder& JsonRequest::Builder::SetAuthentication(
   return *this;
 }
 
-JsonRequest::Builder& JsonRequest::Builder::SetLanguageModel(
-    const translate::LanguageModel* language_model) {
-  language_model_ = language_model;
+JsonRequest::Builder& JsonRequest::Builder::SetLanguageHistogram(
+    const language::UrlLanguageHistogram* language_histogram) {
+  language_histogram_ = language_histogram;
   return *this;
 }
 
@@ -326,8 +326,8 @@ std::string JsonRequest::Builder::BuildBody() const {
     request->SetString("userActivenessClass", user_class_);
   }
 
-  translate::LanguageModel::LanguageInfo ui_language;
-  translate::LanguageModel::LanguageInfo other_top_language;
+  language::UrlLanguageHistogram::LanguageInfo ui_language;
+  language::UrlLanguageHistogram::LanguageInfo other_top_language;
   PrepareLanguages(&ui_language, &other_top_language);
   if (ui_language.frequency != 0 || other_top_language.frequency != 0) {
     auto language_list = base::MakeUnique<base::ListValue>();
@@ -366,8 +366,8 @@ std::unique_ptr<net::URLFetcher> JsonRequest::Builder::BuildURLFetcher(
             "request."
           data:
             "The Chromium UI language, as well as a second language the user "
-            "understands, based on translate::LanguageModel. For signed-in "
-            "users, the requests is authenticated."
+            "understands, based on language::UrlLanguageHistogram. For "
+            "signed-in users, the requests is authenticated."
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
@@ -402,12 +402,12 @@ std::unique_ptr<net::URLFetcher> JsonRequest::Builder::BuildURLFetcher(
 }
 
 void JsonRequest::Builder::PrepareLanguages(
-    translate::LanguageModel::LanguageInfo* ui_language,
-    translate::LanguageModel::LanguageInfo* other_top_language) const {
+    language::UrlLanguageHistogram::LanguageInfo* ui_language,
+    language::UrlLanguageHistogram::LanguageInfo* other_top_language) const {
   // TODO(jkrcal): Add language model factory for iOS and add fakes to tests so
-  // that |language_model| is never nullptr. Remove this check and add a DCHECK
-  // into the constructor.
-  if (!language_model_ || !IsSendingTopLanguagesEnabled()) {
+  // that |language_histogram| is never nullptr. Remove this check and add a
+  // DCHECK into the constructor.
+  if (!language_histogram_ || !IsSendingTopLanguagesEnabled()) {
     return;
   }
 
@@ -415,11 +415,11 @@ void JsonRequest::Builder::PrepareLanguages(
   ui_language->language_code = ISO639FromPosixLocale(
       PosixLocaleFromBCP47Language(params_.language_code));
   ui_language->frequency =
-      language_model_->GetLanguageFrequency(ui_language->language_code);
+      language_histogram_->GetLanguageFrequency(ui_language->language_code);
 
-  std::vector<LanguageModel::LanguageInfo> top_languages =
-      language_model_->GetTopLanguages();
-  for (const LanguageModel::LanguageInfo& info : top_languages) {
+  std::vector<UrlLanguageHistogram::LanguageInfo> top_languages =
+      language_histogram_->GetTopLanguages();
+  for (const UrlLanguageHistogram::LanguageInfo& info : top_languages) {
     if (info.language_code != ui_language->language_code) {
       *other_top_language = info;
 
