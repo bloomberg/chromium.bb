@@ -44,6 +44,7 @@
  *   MANAGE_ACCESSIBILITY: (undefined|!settings.Route),
  *   MANAGE_PASSWORDS: (undefined|!settings.Route),
  *   MANAGE_PROFILE: (undefined|!settings.Route),
+ *   MULTIDEVICE: (undefined|!settings.Route),
  *   NETWORK_CONFIG: (undefined|!settings.Route),
  *   NETWORK_DETAIL: (undefined|!settings.Route),
  *   ON_STARTUP: (undefined|!settings.Route),
@@ -345,6 +346,8 @@ cr.define('settings', function() {
       r.CUPS_PRINTERS = r.PRINTING.createChild('/cupsPrinters');
       r.CUPS_PRINTER_DETAIL =
           r.CUPS_PRINTERS.createChild('/cupsPrinterDetails');
+
+      r.MULTIDEVICE = r.ADVANCED.createSection('/multidevice', 'multidevice');
       // </if>
 
       r.ACCESSIBILITY = r.ADVANCED.createSection('/accessibility', 'a11y');

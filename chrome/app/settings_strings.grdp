@@ -3214,4 +3214,18 @@
       Open proxy settings
     </message>
   </if>
+
+  <!-- Multidevice Page -->
+  <if expr="chromeos">
+    <message name="IDS_SETTINGS_MULTIDEVICE" desc="Name of the settings page features the user's other devices connected to the Chromebook.">
+      Connected devices
+    </message>
+    <message name="IDS_SETTINGS_MULTIDEVICE_SMS_CONNECT" desc="Title of the multi-device feature for displaying SMS notifications.">
+      SMS connect
+    </message>
+    <message name="IDS_SETTINGS_MULTIDEVICE_SMS_CONNECT_SUMMARY" desc="Summary explaining what the SMS connect feature does.">
+      Get notifications for new text messages on your Chromebook
+    </message>
+  </if>
+
 </grit-part>

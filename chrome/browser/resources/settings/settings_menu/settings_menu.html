@@ -163,6 +163,12 @@
             <iron-icon icon="cr:print"></iron-icon>
             $i18n{printingPageTitle}
           </a>
+<if expr="chromeos">
+          <a href="/multidevice" hidden="[[!showMultidevice]]">
+            <iron-icon icon="settings:sync"></iron-icon>
+            $i18n{multidevicePageTitle}
+          </a>
+</if>
           <a href="/accessibility">
             <iron-icon icon="settings:accessibility"></iron-icon>
             $i18n{a11yPageTitle}

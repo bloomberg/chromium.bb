@@ -1640,6 +1640,29 @@ TEST_F('CrSettingsPrintingPageTest', 'All', function() {
   mocha.run();
 });
 
+/**
+ * Test fixture for the multidevice settings page.
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsMultidevicePageTest() {}
+
+CrSettingsMultidevicePageTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://md-settings/multidevice_page/multidevice_page.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    'multidevice_page_tests.js',
+  ]),
+};
+
+TEST_F('CrSettingsMultidevicePageTest', 'All', function() {
+  mocha.run();
+});
+
 GEN('#endif');
 
 GEN('#if defined(OS_CHROMEOS)');
