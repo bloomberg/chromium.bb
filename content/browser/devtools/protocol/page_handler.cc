@@ -377,8 +377,10 @@ void PageHandler::CaptureScreenshot(
     if (!modified_params.view_size.width)
       emulated_view_size = original_view_size;
 
-    double dpfactor = modified_params.device_scale_factor /
-                      widget_host->GetView()->current_device_scale_factor();
+    ScreenInfo screen_info;
+    widget_host->GetScreenInfo(&screen_info);
+    double dpfactor =
+        modified_params.device_scale_factor / screen_info.device_scale_factor;
     modified_params.scale = dpfactor;
     modified_params.view_size.width = emulated_view_size.width();
     modified_params.view_size.height = emulated_view_size.height();
