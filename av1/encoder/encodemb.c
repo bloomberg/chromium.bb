@@ -503,7 +503,7 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
                      AV1_XFORM_QUANT xform_quant_idx) {
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
-#if !(CONFIG_PVQ || CONFIG_DAALA_DIST)
+#if !(CONFIG_PVQ || CONFIG_DIST_8X8)
   const struct macroblock_plane *const p = &x->plane[plane];
   const struct macroblockd_plane *const pd = &xd->plane[plane];
 #else
@@ -538,10 +538,10 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
 
   TxfmParam txfm_param;
 
-#if CONFIG_PVQ || CONFIG_DAALA_DIST || CONFIG_LGT
+#if CONFIG_PVQ || CONFIG_DIST_8X8 || CONFIG_LGT
   uint8_t *dst;
   const int dst_stride = pd->dst.stride;
-#if CONFIG_PVQ || CONFIG_DAALA_DIST
+#if CONFIG_PVQ || CONFIG_DIST_8X8
   int16_t *pred;
   const int txw = tx_size_wide[tx_size];
   const int txh = tx_size_high[tx_size];
@@ -601,9 +601,9 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
 #endif  // CONFIG_HIGHBITDEPTH
 #endif
 
-#if CONFIG_PVQ || CONFIG_DAALA_DIST || CONFIG_LGT
+#if CONFIG_PVQ || CONFIG_DIST_8X8 || CONFIG_LGT
   dst = &pd->dst.buf[(blk_row * dst_stride + blk_col) << tx_size_wide_log2[0]];
-#if CONFIG_PVQ || CONFIG_DAALA_DIST
+#if CONFIG_PVQ || CONFIG_DIST_8X8
   pred = &pd->pred[(blk_row * diff_stride + blk_col) << tx_size_wide_log2[0]];
 
 // copy uint8 orig and predicted block to int16 buffer
@@ -622,8 +622,8 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
 #if CONFIG_HIGHBITDEPTH
   }
 #endif  // CONFIG_HIGHBITDEPTH
-#endif  // CONFIG_PVQ || CONFIG_DAALA_DIST
-#endif  // CONFIG_PVQ || CONFIG_DAALA_DIST || CONFIG_LGT
+#endif  // CONFIG_PVQ || CONFIG_DIST_8X8
+#endif  // CONFIG_PVQ || CONFIG_DIST_8X8 || CONFIG_LGT
 
   (void)ctx;
 

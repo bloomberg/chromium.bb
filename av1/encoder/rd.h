@@ -457,7 +457,7 @@ static INLINE void av1_init_rd_stats(RD_STATS *rd_stats) {
   rd_stats->rdcost = 0;
   rd_stats->sse = 0;
   rd_stats->skip = 1;
-#if CONFIG_DAALA_DIST && CONFIG_CB4X4
+#if CONFIG_DIST_8X8 && CONFIG_CB4X4
   rd_stats->dist_y = 0;
 #endif
 #if CONFIG_RD_DEBUG
@@ -484,7 +484,7 @@ static INLINE void av1_invalid_rd_stats(RD_STATS *rd_stats) {
   rd_stats->rdcost = INT64_MAX;
   rd_stats->sse = INT64_MAX;
   rd_stats->skip = 0;
-#if CONFIG_DAALA_DIST && CONFIG_CB4X4
+#if CONFIG_DIST_8X8 && CONFIG_CB4X4
   rd_stats->dist_y = INT64_MAX;
 #endif
 #if CONFIG_RD_DEBUG
@@ -511,7 +511,7 @@ static INLINE void av1_merge_rd_stats(RD_STATS *rd_stats_dst,
   rd_stats_dst->dist += rd_stats_src->dist;
   rd_stats_dst->sse += rd_stats_src->sse;
   rd_stats_dst->skip &= rd_stats_src->skip;
-#if CONFIG_DAALA_DIST && CONFIG_CB4X4
+#if CONFIG_DIST_8X8 && CONFIG_CB4X4
   rd_stats_dst->dist_y += rd_stats_src->dist_y;
 #endif
 #if CONFIG_RD_DEBUG

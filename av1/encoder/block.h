@@ -205,7 +205,7 @@ struct macroblock {
   int pvq_speed;
   int pvq_coded;  // Indicates whether pvq_info needs be stored to tokenize
 #endif
-#if CONFIG_DAALA_DIST
+#if CONFIG_DIST_8X8
 #if CONFIG_CB4X4
 #if CONFIG_HIGHBITDEPTH
   DECLARE_ALIGNED(16, uint16_t, decoded_8x8[8 * 8]);
@@ -213,7 +213,7 @@ struct macroblock {
   DECLARE_ALIGNED(16, uint8_t, decoded_8x8[8 * 8]);
 #endif
 #endif  // CONFIG_CB4X4
-#endif  // CONFIG_DAALA_DIST
+#endif  // CONFIG_DIST_8X8
 #if CONFIG_CFL
   // Whether luma needs to be stored during RDO.
   int cfl_store_y;

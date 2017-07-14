@@ -329,7 +329,7 @@ typedef struct RD_STATS {
   int64_t rdcost;
   int64_t sse;
   int skip;  // sse should equal to dist when skip == 1
-#if CONFIG_DAALA_DIST && CONFIG_CB4X4
+#if CONFIG_DIST_8X8 && CONFIG_CB4X4
   int64_t dist_y;
 #endif
 #if CONFIG_RD_DEBUG
@@ -608,8 +608,10 @@ typedef struct macroblockd_plane {
   const dequant_val_type_nuq *dequant_val_nuq[QUANT_PROFILES];
 #endif  // CONFIG_NEW_QUANT
 
-#if CONFIG_PVQ || CONFIG_DAALA_DIST
+#if CONFIG_PVQ || CONFIG_DIST_8X8
   DECLARE_ALIGNED(16, int16_t, pred[MAX_SB_SQUARE]);
+#endif
+#if CONFIG_PVQ
   // PVQ: forward transformed predicted image, a reference for PVQ.
   tran_low_t *pvq_ref_coeff;
 #endif

@@ -1315,10 +1315,10 @@ static int set_segment_rdmult(const AV1_COMP *const cpi, MACROBLOCK *const x,
   return av1_compute_rd_mult(cpi, segment_qindex + cm->y_dc_delta_q);
 }
 
-#if CONFIG_DAALA_DIST && CONFIG_CB4X4
-static void daala_dist_set_sub8x8_dst(MACROBLOCK *const x, uint8_t *dst8x8,
-                                      BLOCK_SIZE bsize, int bw, int bh,
-                                      int mi_row, int mi_col) {
+#if CONFIG_DIST_8X8 && CONFIG_CB4X4
+static void dist_8x8_set_sub8x8_dst(MACROBLOCK *const x, uint8_t *dst8x8,
+                                    BLOCK_SIZE bsize, int bw, int bh,
+                                    int mi_row, int mi_col) {
   MACROBLOCKD *const xd = &x->e_mbd;
   struct macroblockd_plane *const pd = &xd->plane[0];
   const int dst_stride = pd->dst.stride;
@@ -3729,7 +3729,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
             &this_rdc, best_rdc.rdcost - sum_rdc.rdcost, pc_tree->split[idx]);
 #endif  // CONFIG_SUPERTX
 
-#if CONFIG_DAALA_DIST && CONFIG_CB4X4
+#if CONFIG_DIST_8X8 && CONFIG_CB4X4
         if (bsize == BLOCK_8X8 && this_rdc.rate != INT_MAX) {
           assert(this_rdc.dist_y < INT64_MAX);
         }
@@ -3747,7 +3747,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
 #if CONFIG_SUPERTX
           sum_rate_nocoef += this_rate_nocoef;
 #endif  // CONFIG_SUPERTX
-#if CONFIG_DAALA_DIST && CONFIG_CB4X4
+#if CONFIG_DIST_8X8 && CONFIG_CB4X4
           if (bsize == BLOCK_8X8) {
             assert(this_rdc.dist_y < INT64_MAX);
             sum_rdc.dist_y += this_rdc.dist_y;
@@ -3757,11 +3757,10 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
       }
       reached_last_index = (idx == 4);
 
-#if CONFIG_DAALA_DIST && CONFIG_CB4X4
+#if CONFIG_DIST_8X8 && CONFIG_CB4X4
       if (reached_last_index && sum_rdc.rdcost != INT64_MAX &&
           bsize == BLOCK_8X8) {
-        int use_activity_masking = 0;
-        int64_t daala_dist;
+        int64_t dist_8x8;
         const int src_stride = x->plane[0].src.stride;
         uint8_t *decoded_8x8;
 
@@ -3772,19 +3771,16 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
 #endif
           decoded_8x8 = (uint8_t *)x->decoded_8x8;
 
-#if CONFIG_PVQ
-        use_activity_masking = x->daala_enc.use_activity_masking;
-#endif
-        daala_dist =
-            av1_daala_dist(xd, x->plane[0].src.buf - 4 * src_stride - 4,
-                           src_stride, decoded_8x8, 8, 8, 8, 8, 8, 1,
-                           use_activity_masking, x->qindex)
+        dist_8x8 =
+            av1_dist_8x8(cpi, xd, x->plane[0].src.buf - 4 * src_stride - 4,
+                         src_stride, decoded_8x8, 8, BLOCK_8X8, 8, 8, 8, 8,
+                         x->qindex)
             << 4;
         assert(sum_rdc.dist_y < INT64_MAX);
-        sum_rdc.dist = sum_rdc.dist - sum_rdc.dist_y + daala_dist;
+        sum_rdc.dist = sum_rdc.dist - sum_rdc.dist_y + dist_8x8;
         sum_rdc.rdcost = RDCOST(x->rdmult, sum_rdc.rate, sum_rdc.dist);
       }
-#endif  // CONFIG_DAALA_DIST && CONFIG_CB4X4
+#endif  // CONFIG_DIST_8X8 && CONFIG_CB4X4
 
 #if CONFIG_SUPERTX
       if (supertx_allowed && sum_rdc.rdcost < INT64_MAX && reached_last_index) {
@@ -3922,14 +3918,14 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
                        best_rdc.rdcost - sum_rdc.rdcost);
 #endif  // CONFIG_SUPERTX
 
-#if CONFIG_DAALA_DIST && CONFIG_CB4X4
+#if CONFIG_DIST_8X8 && CONFIG_CB4X4
       if (this_rdc.rate != INT_MAX && bsize == BLOCK_8X8) {
         update_state(cpi, td, &pc_tree->horizontal[1], mi_row + mi_step, mi_col,
                      subsize, DRY_RUN_NORMAL);
         encode_superblock(cpi, td, tp, DRY_RUN_NORMAL, mi_row + mi_step, mi_col,
                           subsize, NULL);
       }
-#endif  // CONFIG_DAALA_DIST && CONFIG_CB4X4
+#endif  // CONFIG_DIST_8X8 && CONFIG_CB4X4
 
       if (this_rdc.rate == INT_MAX) {
         sum_rdc.rdcost = INT64_MAX;
@@ -3943,14 +3939,13 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
 #if CONFIG_SUPERTX
         sum_rate_nocoef += this_rate_nocoef;
 #endif  // CONFIG_SUPERTX
-#if CONFIG_DAALA_DIST && CONFIG_CB4X4
+#if CONFIG_DIST_8X8 && CONFIG_CB4X4
         sum_rdc.dist_y += this_rdc.dist_y;
 #endif
       }
-#if CONFIG_DAALA_DIST && CONFIG_CB4X4
+#if CONFIG_DIST_8X8 && CONFIG_CB4X4
       if (sum_rdc.rdcost != INT64_MAX && bsize == BLOCK_8X8) {
-        int use_activity_masking = 0;
-        int64_t daala_dist;
+        int64_t dist_8x8;
         const int src_stride = x->plane[0].src.stride;
         uint8_t *decoded_8x8;
 
@@ -3961,17 +3956,14 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
 #endif
           decoded_8x8 = (uint8_t *)x->decoded_8x8;
 
-#if CONFIG_PVQ
-        use_activity_masking = x->daala_enc.use_activity_masking;
-#endif
-        daala_dist = av1_daala_dist(xd, x->plane[0].src.buf - 4 * src_stride,
-                                    src_stride, decoded_8x8, 8, 8, 8, 8, 8, 1,
-                                    use_activity_masking, x->qindex)
-                     << 4;
-        sum_rdc.dist = sum_rdc.dist - sum_rdc.dist_y + daala_dist;
+        dist_8x8 = av1_dist_8x8(cpi, xd, x->plane[0].src.buf - 4 * src_stride,
+                                src_stride, decoded_8x8, 8, BLOCK_8X8, 8, 8, 8,
+                                8, x->qindex)
+                   << 4;
+        sum_rdc.dist = sum_rdc.dist - sum_rdc.dist_y + dist_8x8;
         sum_rdc.rdcost = RDCOST(x->rdmult, sum_rdc.rate, sum_rdc.dist);
       }
-#endif  // CONFIG_DAALA_DIST && CONFIG_CB4X4
+#endif  // CONFIG_DIST_8X8 && CONFIG_CB4X4
     }
 
 #if CONFIG_SUPERTX
@@ -4106,14 +4098,14 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
                        best_rdc.rdcost - sum_rdc.rdcost);
 #endif  // CONFIG_SUPERTX
 
-#if CONFIG_DAALA_DIST && CONFIG_CB4X4
+#if CONFIG_DIST_8X8 && CONFIG_CB4X4
       if (this_rdc.rate != INT_MAX && bsize == BLOCK_8X8) {
         update_state(cpi, td, &pc_tree->vertical[1], mi_row, mi_col + mi_step,
                      subsize, DRY_RUN_NORMAL);
         encode_superblock(cpi, td, tp, DRY_RUN_NORMAL, mi_row, mi_col + mi_step,
                           subsize, NULL);
       }
-#endif  // CONFIG_DAALA_DIST && CONFIG_CB4X4
+#endif  // CONFIG_DIST_8X8 && CONFIG_CB4X4
 
       if (this_rdc.rate == INT_MAX) {
         sum_rdc.rdcost = INT64_MAX;
@@ -4127,14 +4119,13 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
 #if CONFIG_SUPERTX
         sum_rate_nocoef += this_rate_nocoef;
 #endif  // CONFIG_SUPERTX
-#if CONFIG_DAALA_DIST && CONFIG_CB4X4
+#if CONFIG_DIST_8X8 && CONFIG_CB4X4
         sum_rdc.dist_y += this_rdc.dist_y;
 #endif
       }
-#if CONFIG_DAALA_DIST && CONFIG_CB4X4
+#if CONFIG_DIST_8X8 && CONFIG_CB4X4
       if (sum_rdc.rdcost != INT64_MAX && bsize == BLOCK_8X8) {
-        int use_activity_masking = 0;
-        int64_t daala_dist;
+        int64_t dist_8x8;
         const int src_stride = x->plane[0].src.stride;
         uint8_t *decoded_8x8;
 
@@ -4145,17 +4136,14 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
 #endif
           decoded_8x8 = (uint8_t *)x->decoded_8x8;
 
-#if CONFIG_PVQ
-        use_activity_masking = x->daala_enc.use_activity_masking;
-#endif
-        daala_dist =
-            av1_daala_dist(xd, x->plane[0].src.buf - 4, src_stride, decoded_8x8,
-                           8, 8, 8, 8, 8, 1, use_activity_masking, x->qindex)
+        dist_8x8 =
+            av1_dist_8x8(cpi, xd, x->plane[0].src.buf - 4, src_stride,
+                         decoded_8x8, 8, BLOCK_8X8, 8, 8, 8, 8, x->qindex)
             << 4;
-        sum_rdc.dist = sum_rdc.dist - sum_rdc.dist_y + daala_dist;
+        sum_rdc.dist = sum_rdc.dist - sum_rdc.dist_y + dist_8x8;
         sum_rdc.rdcost = RDCOST(x->rdmult, sum_rdc.rate, sum_rdc.dist);
       }
-#endif  // CONFIG_DAALA_DIST && CONFIG_CB4X4
+#endif  // CONFIG_DIST_8X8 && CONFIG_CB4X4
     }
 #if CONFIG_SUPERTX
     if (supertx_allowed && sum_rdc.rdcost < INT64_MAX && !abort_flag) {
@@ -4405,11 +4393,11 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
   (void)best_rd;
   *rd_cost = best_rdc;
 
-#if CONFIG_DAALA_DIST && CONFIG_CB4X4
+#if CONFIG_DIST_8X8 && CONFIG_CB4X4
   if (bsize <= BLOCK_8X8 && rd_cost->rate != INT_MAX) {
     assert(rd_cost->dist_y < INT64_MAX);
   }
-#endif  // CONFIG_DAALA_DIST && CONFIG_CB4X4
+#endif  // CONFIG_DIST_8X8 && CONFIG_CB4X4
 #if CONFIG_SUPERTX
   *rate_nocoef = best_rate_nocoef;
 #endif  // CONFIG_SUPERTX
@@ -4435,13 +4423,13 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
   x->cfl_store_y = 0;
 #endif
 
-#if CONFIG_DAALA_DIST && CONFIG_CB4X4
+#if CONFIG_DIST_8X8 && CONFIG_CB4X4
   if (best_rdc.rate < INT_MAX && best_rdc.dist < INT64_MAX &&
       bsize == BLOCK_4X4 && pc_tree->index == 3) {
     encode_sb(cpi, td, tile_info, tp, mi_row, mi_col, DRY_RUN_NORMAL, bsize,
               pc_tree, NULL);
   }
-#endif  // CONFIG_DAALA_DIST && CONFIG_CB4X4
+#endif  // CONFIG_DIST_8X8 && CONFIG_CB4X4
 
   if (bsize == cm->sb_size) {
 #if !CONFIG_PVQ && !CONFIG_LV_MAP
@@ -6053,11 +6041,11 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
 #endif
   }
 
-#if CONFIG_DAALA_DIST && CONFIG_CB4X4
+#if CONFIG_DIST_8X8 && CONFIG_CB4X4
   if (bsize < BLOCK_8X8) {
-    daala_dist_set_sub8x8_dst(x, (uint8_t *)x->decoded_8x8, bsize,
-                              block_size_wide[bsize], block_size_high[bsize],
-                              mi_row, mi_col);
+    dist_8x8_set_sub8x8_dst(x, (uint8_t *)x->decoded_8x8, bsize,
+                            block_size_wide[bsize], block_size_high[bsize],
+                            mi_row, mi_col);
   }
 #endif
 
