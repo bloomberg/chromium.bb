@@ -119,7 +119,6 @@ component("app_list") {
       "views/apps_container_view.h",
       "views/apps_grid_view.cc",
       "views/apps_grid_view.h",
-      "views/apps_grid_view_delegate.h",
       "views/apps_grid_view_folder_delegate.h",
       "views/contents_view.cc",
       "views/contents_view.h",
