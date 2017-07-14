@@ -198,8 +198,8 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS, RestoreMinimized) {
       ++minimized_count;
   }
   EXPECT_EQ(2u, total_count);
-  // Chrome OS always activates the last browser window on login, which results
-  // in one window being restored. This seems reasonable as it reminds users
-  // they have a browser running instead of just showing them an empty desktop.
-  EXPECT_EQ(1u, minimized_count);
+  // Chrome OS always activates the last browser windows on login to remind
+  // users they have a browser running instead of just showing them an empty
+  // desktop.
+  EXPECT_EQ(0u, minimized_count);
 }

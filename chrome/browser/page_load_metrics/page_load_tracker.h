@@ -44,6 +44,7 @@ extern const char kAbortChainSizeNewNavigation[];
 extern const char kAbortChainSizeNoCommit[];
 extern const char kAbortChainSizeSameURL[];
 extern const char kPageLoadCompletedAfterAppBackground[];
+extern const char kPageLoadStartedInForeground[];
 
 }  // namespace internal
 
