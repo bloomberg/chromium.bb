@@ -11,8 +11,6 @@ source_set("translate") {
     "before_translate_infobar_controller.mm",
     "chrome_ios_translate_client.h",
     "chrome_ios_translate_client.mm",
-    "language_model_factory.cc",
-    "language_model_factory.h",
     "never_translate_infobar_controller.h",
     "never_translate_infobar_controller.mm",
     "translate_accept_languages_factory.cc",
@@ -46,6 +44,7 @@ source_set("translate") {
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/infobars",
+    "//ios/chrome/browser/language",
     "//ios/chrome/browser/sync",
     "//ios/chrome/browser/ui/infobars",
     "//ios/web",
@@ -62,7 +61,6 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "js_language_detection_manager_unittest.mm",
-    "language_model_factory_unittest.cc",
     "translate_service_ios_unittest.cc",
   ]
   deps = [

@@ -11,6 +11,7 @@
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "components/language/core/browser/url_language_histogram.h"
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/user_classifier.h"
 #include "components/signin/core/browser/access_token_fetcher.h"
@@ -18,11 +19,11 @@
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
 
+using language::UrlLanguageHistogram;
 using net::HttpRequestHeaders;
 using net::URLFetcher;
 using net::URLRequestContextGetter;
 using net::URLRequestStatus;
-using translate::LanguageModel;
 
 namespace ntp_snippets {
 
@@ -128,7 +129,7 @@ RemoteSuggestionsFetcherImpl::RemoteSuggestionsFetcherImpl(
     OAuth2TokenService* token_service,
     scoped_refptr<URLRequestContextGetter> url_request_context_getter,
     PrefService* pref_service,
-    LanguageModel* language_model,
+    UrlLanguageHistogram* language_histogram,
     const ParseJSONCallback& parse_json_callback,
     const GURL& api_endpoint,
     const std::string& api_key,
@@ -136,7 +137,7 @@ RemoteSuggestionsFetcherImpl::RemoteSuggestionsFetcherImpl(
     : signin_manager_(signin_manager),
       token_service_(token_service),
       url_request_context_getter_(std::move(url_request_context_getter)),
-      language_model_(language_model),
+      language_histogram_(language_histogram),
       parse_json_callback_(parse_json_callback),
       fetch_url_(api_endpoint),
       api_key_(api_key),
@@ -172,7 +173,7 @@ void RemoteSuggestionsFetcherImpl::FetchSnippets(
   }
 
   JsonRequest::Builder builder;
-  builder.SetLanguageModel(language_model_)
+  builder.SetLanguageHistogram(language_histogram_)
       .SetParams(params)
       .SetParseJsonCallback(parse_json_callback_)
       .SetClock(clock_.get())

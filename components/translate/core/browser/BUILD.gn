@@ -6,8 +6,6 @@ import("//build/config/ui.gni")
 
 static_library("browser") {
   sources = [
-    "language_model.cc",
-    "language_model.h",
     "language_state.cc",
     "language_state.h",
     "page_translated_details.h",
@@ -89,7 +87,6 @@ static_library("browser") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "language_model_unittest.cc",
     "language_state_unittest.cc",
     "mock_translate_client.cc",
     "mock_translate_client.h",

@@ -19,22 +19,22 @@
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/keyed_service/core/service_access_type.h"
+#include "components/language/core/browser/url_language_histogram.h"
 #include "components/omnibox/browser/omnibox_pref_names.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/sessions/core/tab_restore_service.h"
-#include "components/translate/core/browser/language_model.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/history/web_history_service_factory.h"
 #include "ios/chrome/browser/ios_chrome_io_thread.h"
+#include "ios/chrome/browser/language/url_language_histogram_factory.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
-#include "ios/chrome/browser/translate/language_model_factory.h"
 #include "ios/chrome/browser/web_data_service_factory.h"
 #include "ios/net/http_cache_helper.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -247,11 +247,11 @@ void IOSChromeBrowsingDataRemover::RemoveImpl(int remove_mask) {
         data_manager->Refresh();
     }
 
-    // Remove language model history.
-    translate::LanguageModel* language_model =
-        LanguageModelFactory::GetForBrowserState(browser_state_);
-    if (language_model) {
-      language_model->ClearHistory(delete_begin_, delete_end_);
+    // Remove language histogram history.
+    language::UrlLanguageHistogram* language_histogram =
+        UrlLanguageHistogramFactory::GetForBrowserState(browser_state_);
+    if (language_histogram) {
+      language_histogram->ClearHistory(delete_begin_, delete_end_);
     }
   }
 

@@ -11,6 +11,7 @@
 #include "components/flags_ui/pref_service_flags_storage.h"
 #include "components/gcm_driver/gcm_channel_status_syncer.h"
 #import "components/handoff/handoff_manager.h"
+#include "components/language/core/browser/url_language_histogram.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/ntp_snippets/category_rankers/click_based_category_ranker.h"
@@ -33,7 +34,6 @@
 #include "components/ssl_config/ssl_config_service_manager.h"
 #include "components/strings/grit/components_locale_settings.h"
 #include "components/sync/base/sync_prefs.h"
-#include "components/translate/core/browser/language_model.h"
 #include "components/translate/core/browser/translate_pref_names.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/update_client/update_client.h"
@@ -103,6 +103,7 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   gcm::GCMChannelStatusSyncer::RegisterProfilePrefs(registry);
   HostContentSettingsMap::RegisterProfilePrefs(registry);
   HttpServerPropertiesManagerFactory::RegisterProfilePrefs(registry);
+  language::UrlLanguageHistogram::RegisterProfilePrefs(registry);
   ntp_snippets::ClickBasedCategoryRanker::RegisterProfilePrefs(registry);
   ntp_snippets::ContentSuggestionsService::RegisterProfilePrefs(registry);
   ntp_snippets::RemoteSuggestionsProviderImpl::RegisterProfilePrefs(registry);
@@ -117,7 +118,6 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   PrefProxyConfigTrackerImpl::RegisterProfilePrefs(registry);
   syncer::SyncPrefs::RegisterProfilePrefs(registry);
   TemplateURLPrepopulateData::RegisterProfilePrefs(registry);
-  translate::LanguageModel::RegisterProfilePrefs(registry);
   translate::TranslatePrefs::RegisterProfilePrefs(registry);
   variations::VariationsService::RegisterProfilePrefs(registry);
   ZeroSuggestProvider::RegisterProfilePrefs(registry);

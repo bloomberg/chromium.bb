@@ -24,6 +24,7 @@ source_set("browser") {
   deps = [
     ":injected_js",
     "//base",
+    "//components/language/core/browser",
     "//components/prefs",
     "//components/translate/core/browser",
     "//components/translate/core/common",
