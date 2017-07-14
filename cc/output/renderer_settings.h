@@ -26,7 +26,7 @@ class CC_EXPORT RendererSettings {
   bool finish_rendering_on_resize = false;
   bool should_clear_root_render_pass = true;
   bool release_overlay_resources_after_gpu_query = false;
-  bool gl_composited_texture_quad_border = false;
+  bool gl_composited_overlay_candidate_quad_border = false;
   bool show_overdraw_feedback = false;
   bool enable_color_correct_rendering = false;
   int highp_threshold_min = 0;

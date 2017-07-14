@@ -35,7 +35,7 @@ CC_BASE_EXPORT extern const char kEnableSurfaceSynchronization[];
 // Debug visualizations.
 CC_BASE_EXPORT extern const char kShowCompositedLayerBorders[];
 CC_BASE_EXPORT extern const char kUIShowCompositedLayerBorders[];
-CC_BASE_EXPORT extern const char kGlCompositedTextureQuadBorder[];
+CC_BASE_EXPORT extern const char kGlCompositedOverlayCandidateQuadBorder[];
 CC_BASE_EXPORT extern const char kShowFPSCounter[];
 CC_BASE_EXPORT extern const char kUIShowFPSCounter[];
 CC_BASE_EXPORT extern const char kShowLayerAnimationBounds[];
