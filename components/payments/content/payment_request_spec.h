@@ -89,6 +89,9 @@ class PaymentRequestSpec : public PaymentOptionsProvider {
       const {
     return supported_card_types_set_;
   }
+  const std::vector<std::string>& url_payment_method_identifiers() const {
+    return url_payment_method_identifiers_;
+  }
   // Returns whether the |method_name| was specified as supported through the
   // "basic-card" payment method. If false, it means either the |method_name| is
   // not supported at all, or specified directly in supportedMethods.
@@ -180,6 +183,12 @@ class PaymentRequestSpec : public PaymentOptionsProvider {
   // Only the set of basic-card specified networks. NOTE: callers should use
   // |supported_card_networks_set_| to check merchant support.
   std::set<std::string> basic_card_specified_networks_;
+
+  // A list of supported url-based payment method identifers specified by the
+  // merchant. This encompasses one of the two types of payment method
+  // identifers, the other being standardized payment method identifiers i.e.,
+  // basic-card.
+  std::vector<std::string> url_payment_method_identifiers_;
 
   // A mapping of the payment method names to the corresponding JSON-stringified
   // payment method specific data.

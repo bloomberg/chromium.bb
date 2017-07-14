@@ -143,12 +143,12 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryCCTest, QueryQuota) {
   ExpectBodyContains({"NotAllowedError"});
 }
 
-class PaymentRequestCanMakePaymentQueryBasicCardTest
+class PaymentRequestCanMakePaymentQueryPMITest
     : public PaymentRequestBrowserTestBase {
  protected:
-  PaymentRequestCanMakePaymentQueryBasicCardTest()
-      : PaymentRequestBrowserTestBase("/payment_request_basic_card_test.html") {
-  }
+  PaymentRequestCanMakePaymentQueryPMITest()
+      : PaymentRequestBrowserTestBase(
+            "/payment_request_payment_method_identifier_test.html") {}
 
   void CallCanMakePayment(bool visa) {
     ResetEventObserver(DialogEvent::CAN_MAKE_PAYMENT_CALLED);
@@ -159,11 +159,10 @@ class PaymentRequestCanMakePaymentQueryBasicCardTest
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(PaymentRequestCanMakePaymentQueryBasicCardTest);
+  DISALLOW_COPY_AND_ASSIGN(PaymentRequestCanMakePaymentQueryPMITest);
 };
 
-IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryBasicCardTest,
-                       QueryQuota) {
+IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryPMITest, QueryQuota) {
   // Query "basic-card" payment method with "supportedNetworks": ["visa"] in the
   // payment method specific data.
   CallCanMakePayment(/*visa=*/true);

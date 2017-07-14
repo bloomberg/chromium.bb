@@ -19,6 +19,8 @@
 #include "components/payments/core/payment_address.h"
 #include "components/payments/core/payment_method_data.h"
 #include "third_party/libphonenumber/phonenumber_api.h"
+#include "url/gurl.h"
+#include "url/url_constants.h"
 
 namespace payments {
 namespace data_util {
@@ -91,12 +93,14 @@ BasicCardResponse GetBasicCardResponseFromAutofillCreditCard(
   return response;
 }
 
-void ParseBasicCardSupportedNetworks(
+void ParseSupportedMethods(
     const std::vector<PaymentMethodData>& method_data,
     std::vector<std::string>* out_supported_networks,
-    std::set<std::string>* out_basic_card_specified_networks) {
+    std::set<std::string>* out_basic_card_specified_networks,
+    std::vector<std::string>* out_url_payment_method_identifiers) {
   DCHECK(out_supported_networks->empty());
   DCHECK(out_basic_card_specified_networks->empty());
+  DCHECK(out_url_payment_method_identifiers->empty());
 
   const std::set<std::string> kBasicCardNetworks{
       "amex",       "diners", "discover", "jcb",
@@ -149,6 +153,13 @@ void ParseBasicCardSupportedNetworks(
             }
           }
         }
+      } else {
+        // Here |method| could be a repeated deprecated supported network (e.g.,
+        // "visa"), some invalid string or a URL Payment Method Identifier.
+        // Capture this last category if the URL is https.
+        GURL url(method);
+        if (url.is_valid() && url.SchemeIs(url::kHttpsScheme))
+          out_url_payment_method_identifiers->push_back(method);
       }
     }
   }

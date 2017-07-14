@@ -38,8 +38,10 @@ BasicCardResponse GetBasicCardResponseFromAutofillCreditCard(
     const autofill::AutofillProfile& billing_profile,
     const std::string& app_locale);
 
-// Parse the supported card networks from supportedMethods and  "basic-card"'s
-// supportedNetworks. |out_supported_networks| is filled with list of networks
+// Parse all the supported payment methods from the merchant including 1) the
+// supported card networks from supportedMethods and  "basic-card"'s
+// supportedNetworks and 2) the url-based payment method identifiers.
+// |out_supported_networks| is filled with a list of networks
 // in the order that they were specified by the merchant.
 // |out_basic_card_supported_networks| is a subset of |out_supported_networks|
 // that includes all networks that were specified as part of "basic-card". This
@@ -47,10 +49,13 @@ BasicCardResponse GetBasicCardResponseFromAutofillCreditCard(
 // "basic-card" in the PaymentResponse. |method_data.supported_networks| is
 // expected to only contain basic-card card network names (the list is at
 // https://www.w3.org/Payments/card-network-ids).
-void ParseBasicCardSupportedNetworks(
+// |out_url_payment_method_identifiers| is filled with a list of all the
+// payment method identifiers specicied by the merchant that are URL-based.
+void ParseSupportedMethods(
     const std::vector<PaymentMethodData>& method_data,
     std::vector<std::string>* out_supported_networks,
-    std::set<std::string>* out_basic_card_supported_networks);
+    std::set<std::string>* out_basic_card_supported_networks,
+    std::vector<std::string>* out_url_payment_method_identifiers);
 
 // Parses the supported card types (e.g., credit, debit, prepaid) from
 // supportedTypes. |out_supported_card_types_set| is expected to be empty. It
