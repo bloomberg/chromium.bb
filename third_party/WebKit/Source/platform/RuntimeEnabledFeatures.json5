@@ -696,7 +696,7 @@
     },
     {
       name: "NetInfoDownlink",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "NetInfoDownlinkMax",
@@ -704,14 +704,10 @@
     },
     {
       name: "NetInfoEffectiveType",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "NetInfoRtt",
-      status: "experimental",
-    },
-    {
-      name: "NetworkInformation",
       status: "stable",
     },
     // Not a web exposed feature, enabled from the command line.

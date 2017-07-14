@@ -3700,6 +3700,7 @@ interface Navigator
     getter appName
     getter appVersion
     getter budget
+    getter connection
     getter cookieEnabled
     getter credentials
     getter doNotTrack
@@ -3737,6 +3738,14 @@ interface Navigator
     method unregisterProtocolHandler
     method vibrate
     method webkitGetUserMedia
+interface NetworkInformation : EventTarget
+    attribute @@toStringTag
+    getter downlink
+    getter effectiveType
+    getter onchange
+    getter rtt
+    method constructor
+    setter onchange
 interface Node : EventTarget
     attribute @@toStringTag
     attribute ATTRIBUTE_NODE

@@ -44,7 +44,7 @@ class NetInfoBrowserTest : public content::ContentBrowserTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     // TODO(jkarlin): Once NetInfo is enabled on all platforms remove this
     // switch.
-    command_line->AppendSwitch(switches::kEnableNetworkInformation);
+    command_line->AppendSwitch(switches::kEnableNetworkInformationDownlinkMax);
 
     // TODO(jkarlin): Remove this once downlinkMax is no longer
     // experimental.

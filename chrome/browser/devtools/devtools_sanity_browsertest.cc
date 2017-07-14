@@ -1985,7 +1985,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsPixelOutputTests,
 class DevToolsNetInfoTest : public DevToolsSanityTest {
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kEnableNetworkInformation);
+    command_line->AppendSwitch(switches::kEnableNetworkInformationDownlinkMax);
     command_line->AppendSwitch(
         switches::kEnableExperimentalWebPlatformFeatures);
   }

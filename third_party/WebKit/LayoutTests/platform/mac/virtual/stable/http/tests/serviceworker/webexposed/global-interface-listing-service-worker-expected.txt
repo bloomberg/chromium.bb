@@ -614,6 +614,14 @@ interface NavigationPreloadManager
     method enable
     method getState
     method setHeaderValue
+interface NetworkInformation : EventTarget
+    attribute @@toStringTag
+    getter downlink
+    getter effectiveType
+    getter onchange
+    getter rtt
+    method constructor
+    setter onchange
 interface Notification : EventTarget
     static getter maxActions
     static getter permission
@@ -933,6 +941,7 @@ interface WorkerNavigator
     getter appName
     getter appVersion
     getter budget
+    getter connection
     getter hardwareConcurrency
     getter onLine
     getter permissions

@@ -196,8 +196,8 @@ void WebRuntimeFeatures::EnableNavigatorContentUtils(bool enable) {
   RuntimeEnabledFeatures::SetNavigatorContentUtilsEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableNetworkInformation(bool enable) {
-  RuntimeEnabledFeatures::SetNetworkInformationEnabled(enable);
+void WebRuntimeFeatures::EnableNetInfoDownlinkMax(bool enable) {
+  RuntimeEnabledFeatures::SetNetInfoDownlinkMaxEnabled(enable);
 }
 
 void WebRuntimeFeatures::EnableOffMainThreadFetch(bool enable) {

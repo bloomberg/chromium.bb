@@ -400,8 +400,11 @@ const char kEnableLowResTiling[] = "enable-low-res-tiling";
 // builds.
 const char kEnableLogging[]                 = "enable-logging";
 
-// Enables the network information API.
-const char kEnableNetworkInformation[]      = "enable-network-information";
+// Enables the type, downlinkMax attributes of the NetInfo API. Also, enables
+// triggering of change attribute of the NetInfo API when there is a change in
+// the connection type.
+const char kEnableNetworkInformationDownlinkMax[] =
+    "enable-network-information-downlink-max";
 
 // Disables the video decoder from drawing to an NV12 textures instead of ARGB.
 const char kDisableNv12DxgiVideo[] = "disable-nv12-dxgi-video";

@@ -589,6 +589,14 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method enable
 [Worker]     method getState
 [Worker]     method setHeaderValue
+[Worker] interface NetworkInformation : EventTarget
+[Worker]     attribute @@toStringTag
+[Worker]     getter downlink
+[Worker]     getter effectiveType
+[Worker]     getter onchange
+[Worker]     getter rtt
+[Worker]     method constructor
+[Worker]     setter onchange
 [Worker] interface Notification : EventTarget
 [Worker]     static getter maxActions
 [Worker]     static getter permission
@@ -891,6 +899,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter appName
 [Worker]     getter appVersion
 [Worker]     getter budget
+[Worker]     getter connection
 [Worker]     getter hardwareConcurrency
 [Worker]     getter onLine
 [Worker]     getter permissions
