@@ -440,12 +440,6 @@ static int av1_pvq_decode_helper2(AV1_COMMON *cm, MACROBLOCKD *const xd,
     fwd_txfm_param.tx_type = tx_type;
     fwd_txfm_param.tx_size = tx_size;
     fwd_txfm_param.lossless = xd->lossless[seg_id];
-#if CONFIG_LGT
-    fwd_txfm_param.is_inter = is_inter_block(mbmi);
-    fwd_txfm_param.dst = dst;
-    int block = get_block_idx(xd, plane, row, col);
-    fwd_txfm_param.mode = get_prediction_mode(xd->mi[0], plane, tx_size, block);
-#endif
 
 #if CONFIG_HIGHBITDEPTH
     if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
@@ -463,11 +457,7 @@ static int av1_pvq_decode_helper2(AV1_COMMON *cm, MACROBLOCKD *const xd,
     eob = av1_pvq_decode_helper(xd, pvq_ref_coeff, dqcoeff, quant, plane,
                                 tx_size, tx_type, xdec, ac_dc_coded);
 
-    inverse_transform_block(xd, plane,
-#if CONFIG_LGT
-                            fwd_txfm_param.mode,
-#endif
-                            tx_type, tx_size, dst, pd->dst.stride,
+    inverse_transform_block(xd, plane, tx_type, tx_size, dst, pd->dst.stride,
                             max_scan_line, eob);
   }
 
