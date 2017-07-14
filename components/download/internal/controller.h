@@ -42,8 +42,8 @@ class Controller {
   Controller() = default;
   virtual ~Controller() = default;
 
-  // Initializes the controller.  Initialization may be asynchronous.
-  virtual void Initialize() = 0;
+  // Initializes the controller. Initialization may be asynchronous.
+  virtual void Initialize(const base::Closure& callback) = 0;
 
   // Returns the status of Controller.
   virtual const StartupStatus* GetStartupStatus() = 0;

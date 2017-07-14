@@ -121,7 +121,8 @@ void FileMonitorImpl::DeleteUnknownFiles(
 }
 
 std::vector<Entry*> FileMonitorImpl::CleanupFilesForCompletedEntries(
-    const Model::EntryList& entries) {
+    const Model::EntryList& entries,
+    const base::Closure& completion_callback) {
   std::vector<Entry*> entries_to_remove;
   std::set<base::FilePath> files_to_remove;
   for (auto* entry : entries) {
@@ -132,9 +133,11 @@ std::vector<Entry*> FileMonitorImpl::CleanupFilesForCompletedEntries(
     files_to_remove.insert(entry->target_file_path);
   }
 
-  file_thread_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&DeleteFilesOnFileThread, files_to_remove,
-                            stats::FileCleanupReason::TIMEOUT));
+  file_thread_task_runner_->PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(&DeleteFilesOnFileThread, files_to_remove,
+                 stats::FileCleanupReason::TIMEOUT),
+      completion_callback);
   return entries_to_remove;
 }
 

@@ -9,6 +9,8 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
+#include "base/test/test_simple_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/download/internal/startup_status.h"
 #include "components/download/internal/test/download_params_utils.h"
 #include "components/download/internal/test/mock_controller.h"
@@ -23,16 +25,16 @@ namespace {
 
 class DownloadServiceImplTest : public testing::Test {
  public:
-  DownloadServiceImplTest() : controller_(nullptr) {}
+  DownloadServiceImplTest()
+      : controller_(nullptr),
+        task_runner_(new base::TestSimpleTaskRunner),
+        handle_(task_runner_) {}
   ~DownloadServiceImplTest() override = default;
 
   void SetUp() override {
     auto config = base::MakeUnique<Configuration>();
     auto controller = base::MakeUnique<test::MockController>();
     controller_ = controller.get();
-
-    EXPECT_CALL(*controller_, Initialize()).Times(1);
-
     service_ = base::MakeUnique<DownloadServiceImpl>(std::move(config),
                                                      std::move(controller));
   }
@@ -40,6 +42,8 @@ class DownloadServiceImplTest : public testing::Test {
  protected:
   test::MockController* controller_;
   std::unique_ptr<DownloadServiceImpl> service_;
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
+  base::ThreadTaskRunnerHandle handle_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadServiceImplTest);
 };
@@ -74,26 +78,46 @@ TEST_F(DownloadServiceImplTest, TestApiPassThrough) {
   EXPECT_CALL(*controller_, GetOwnerOfDownload(_))
       .WillRepeatedly(Return(DownloadClient::TEST));
 
-  testing::Sequence seq;
-  EXPECT_CALL(*controller_, StartDownload(_)).Times(1).InSequence(seq);
-  EXPECT_CALL(*controller_, PauseDownload(params.guid))
-      .Times(1)
-      .InSequence(seq);
-  EXPECT_CALL(*controller_, ResumeDownload(params.guid))
-      .Times(1)
-      .InSequence(seq);
-  EXPECT_CALL(*controller_, CancelDownload(params.guid))
-      .Times(1)
-      .InSequence(seq);
-  EXPECT_CALL(*controller_, ChangeDownloadCriteria(params.guid, _))
-      .Times(1)
-      .InSequence(seq);
+  EXPECT_CALL(*controller_, StartDownload(_)).Times(0);
+  EXPECT_CALL(*controller_, PauseDownload(params.guid)).Times(0);
+  EXPECT_CALL(*controller_, ResumeDownload(params.guid)).Times(0);
+  EXPECT_CALL(*controller_, CancelDownload(params.guid)).Times(0);
+  EXPECT_CALL(*controller_, ChangeDownloadCriteria(params.guid, _)).Times(0);
 
   service_->StartDownload(params);
   service_->PauseDownload(params.guid);
   service_->ResumeDownload(params.guid);
   service_->CancelDownload(params.guid);
   service_->ChangeDownloadCriteria(params.guid, scheduling_params);
+  task_runner_->RunUntilIdle();
+
+  testing::Sequence seq1;
+  EXPECT_CALL(*controller_, StartDownload(_)).Times(1).InSequence(seq1);
+  EXPECT_CALL(*controller_, PauseDownload(params.guid))
+      .Times(1)
+      .InSequence(seq1);
+  EXPECT_CALL(*controller_, ResumeDownload(params.guid))
+      .Times(1)
+      .InSequence(seq1);
+  EXPECT_CALL(*controller_, CancelDownload(params.guid))
+      .Times(1)
+      .InSequence(seq1);
+  EXPECT_CALL(*controller_, ChangeDownloadCriteria(params.guid, _))
+      .Times(1)
+      .InSequence(seq1);
+
+  controller_->TriggerInitCompleted();
+  task_runner_->RunUntilIdle();
+
+  EXPECT_CALL(*controller_, PauseDownload(params.guid))
+      .Times(1)
+      .InSequence(seq1);
+  EXPECT_CALL(*controller_, ResumeDownload(params.guid))
+      .Times(1)
+      .InSequence(seq1);
+  service_->PauseDownload(params.guid);
+  service_->ResumeDownload(params.guid);
+  task_runner_->RunUntilIdle();
 }
 
 }  // namespace download
