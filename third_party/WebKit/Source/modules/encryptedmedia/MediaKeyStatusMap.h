@@ -7,7 +7,7 @@
 
 #include "bindings/core/v8/Iterable.h"
 #include "bindings/core/v8/ScriptValue.h"
-#include "core/dom/DOMArrayPiece.h"
+#include "core/typed_arrays/DOMArrayPiece.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Heap.h"
 

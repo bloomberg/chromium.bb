@@ -4,7 +4,7 @@
 
 #include "modules/fetch/FetchResponseData.h"
 
-#include "core/dom/DOMArrayBuffer.h"
+#include "core/typed_arrays/DOMArrayBuffer.h"
 #include "modules/fetch/BodyStreamBuffer.h"
 #include "modules/fetch/FetchHeaderList.h"
 #include "platform/bindings/ScriptState.h"

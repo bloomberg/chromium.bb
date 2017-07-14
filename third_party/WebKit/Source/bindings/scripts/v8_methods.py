@@ -151,7 +151,7 @@ def method_context(interface, method, is_visible=True):
     if is_post_message:
         includes.add('bindings/core/v8/serialization/SerializedScriptValueFactory.h')
         includes.add('bindings/core/v8/serialization/Transferables.h')
-        includes.add('core/dom/DOMArrayBufferBase.h')
+        includes.add('core/typed_arrays/DOMArrayBufferBase.h')
         includes.add('core/imagebitmap/ImageBitmap.h')
 
     if 'LenientThis' in extended_attributes:

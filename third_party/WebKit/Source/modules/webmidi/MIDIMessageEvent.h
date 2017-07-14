@@ -31,7 +31,7 @@
 #ifndef MIDIMessageEvent_h
 #define MIDIMessageEvent_h
 
-#include "core/dom/DOMTypedArray.h"
+#include "core/typed_arrays/DOMTypedArray.h"
 #include "modules/EventModules.h"
 
 namespace blink {

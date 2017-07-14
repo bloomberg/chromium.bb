@@ -6,7 +6,7 @@
 #define DOMDataView_h
 
 #include "core/CoreExport.h"
-#include "core/dom/DOMArrayBufferView.h"
+#include "core/typed_arrays/DOMArrayBufferView.h"
 
 namespace blink {
 

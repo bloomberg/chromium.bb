@@ -6,7 +6,7 @@
 #define WebGLAny_h
 
 #include "bindings/core/v8/ScriptValue.h"
-#include "core/dom/DOMTypedArray.h"
+#include "core/typed_arrays/DOMTypedArray.h"
 #include "modules/webgl/WebGLObject.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/PassRefPtr.h"

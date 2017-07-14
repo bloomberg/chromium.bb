@@ -8,8 +8,8 @@
 #include <memory>
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptValue.h"
-#include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMTimeStamp.h"
+#include "core/typed_arrays/DOMArrayBuffer.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"

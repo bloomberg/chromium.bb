@@ -4,7 +4,7 @@
 
 #include "modules/push_messaging/PushManager.h"
 
-#include "core/dom/DOMArrayBuffer.h"
+#include "core/typed_arrays/DOMArrayBuffer.h"
 #include "modules/push_messaging/PushSubscriptionOptions.h"
 #include "modules/push_messaging/PushSubscriptionOptionsInit.h"
 #include "public/platform/WebString.h"

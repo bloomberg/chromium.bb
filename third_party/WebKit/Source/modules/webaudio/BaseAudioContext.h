@@ -28,11 +28,11 @@
 
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "core/dom/ArrayBufferViewHelpers.h"
-#include "core/dom/DOMTypedArray.h"
 #include "core/dom/SuspendableObject.h"
 #include "core/events/EventListener.h"
 #include "core/html/media/AutoplayPolicy.h"
+#include "core/typed_arrays/ArrayBufferViewHelpers.h"
+#include "core/typed_arrays/DOMTypedArray.h"
 #include "modules/EventTargetModules.h"
 #include "modules/ModulesExport.h"
 #include "modules/webaudio/AsyncAudioDecoder.h"

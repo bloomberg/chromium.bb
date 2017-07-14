@@ -6,7 +6,7 @@
 #define WebGLGetBufferSubDataAsync_h
 
 #include "bindings/core/v8/ScriptPromise.h"
-#include "core/dom/ArrayBufferViewHelpers.h"
+#include "core/typed_arrays/ArrayBufferViewHelpers.h"
 #include "modules/webgl/WebGLExtension.h"
 
 namespace blink {

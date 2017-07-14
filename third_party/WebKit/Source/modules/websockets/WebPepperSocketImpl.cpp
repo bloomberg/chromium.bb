@@ -32,9 +32,9 @@
 
 #include <stddef.h>
 #include <memory>
-#include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/Document.h"
 #include "core/inspector/ConsoleTypes.h"
+#include "core/typed_arrays/DOMArrayBuffer.h"
 #include "modules/websockets/DocumentWebSocketChannel.h"
 #include "modules/websockets/WebPepperSocketChannelClientProxy.h"
 #include "modules/websockets/WebSocketChannel.h"

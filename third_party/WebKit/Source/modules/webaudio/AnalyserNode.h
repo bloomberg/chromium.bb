@@ -26,8 +26,8 @@
 #ifndef AnalyserNode_h
 #define AnalyserNode_h
 
-#include "core/dom/ArrayBufferViewHelpers.h"
-#include "core/dom/DOMTypedArray.h"
+#include "core/typed_arrays/ArrayBufferViewHelpers.h"
+#include "core/typed_arrays/DOMTypedArray.h"
 #include "modules/webaudio/AudioBasicInspectorNode.h"
 #include "modules/webaudio/RealtimeAnalyser.h"
 

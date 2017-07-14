@@ -5,8 +5,8 @@
 #include "modules/push_messaging/PushSubscriptionOptions.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/typed_arrays/DOMArrayBuffer.h"
 #include "modules/push_messaging/PushSubscriptionOptionsInit.h"
 #include "platform/wtf/ASCIICType.h"
 #include "platform/wtf/Assertions.h"

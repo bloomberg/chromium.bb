@@ -6,8 +6,8 @@
 #define BluetoothRemoteGATTDescriptor_h
 
 #include <memory>
-#include "core/dom/DOMArrayPiece.h"
-#include "core/dom/DOMDataView.h"
+#include "core/typed_arrays/DOMArrayPiece.h"
+#include "core/typed_arrays/DOMDataView.h"
 #include "modules/EventTargetModules.h"
 #include "modules/bluetooth/Bluetooth.h"
 #include "modules/bluetooth/BluetoothRemoteGATTCharacteristic.h"

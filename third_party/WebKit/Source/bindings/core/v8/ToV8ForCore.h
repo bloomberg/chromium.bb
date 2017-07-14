@@ -11,8 +11,8 @@
 #include "bindings/core/v8/IDLDictionaryBase.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8NodeFilterCondition.h"
-#include "core/dom/ArrayBufferViewHelpers.h"
 #include "core/dom/Node.h"
+#include "core/typed_arrays/ArrayBufferViewHelpers.h"
 #include "platform/bindings/ToV8.h"
 #include "v8/include/v8.h"
 

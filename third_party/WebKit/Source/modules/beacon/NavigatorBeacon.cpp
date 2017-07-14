@@ -6,7 +6,6 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/modules/v8/ArrayBufferViewOrBlobOrStringOrFormData.h"
-#include "core/dom/DOMArrayBufferView.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/fileapi/Blob.h"
@@ -15,6 +14,7 @@
 #include "core/frame/UseCounter.h"
 #include "core/html/FormData.h"
 #include "core/loader/PingLoader.h"
+#include "core/typed_arrays/DOMArrayBufferView.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/loader/fetch/FetchUtils.h"
 

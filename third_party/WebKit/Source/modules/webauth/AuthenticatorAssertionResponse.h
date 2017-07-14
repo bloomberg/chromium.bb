@@ -5,7 +5,7 @@
 #ifndef AuthenticatorAssertionResponse_h
 #define AuthenticatorAssertionResponse_h
 
-#include "core/dom/DOMArrayBuffer.h"
+#include "core/typed_arrays/DOMArrayBuffer.h"
 #include "modules/ModulesExport.h"
 #include "modules/webauth/AuthenticatorResponse.h"
 #include "platform/bindings/ScriptWrappable.h"

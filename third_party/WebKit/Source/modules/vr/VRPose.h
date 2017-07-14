@@ -5,7 +5,7 @@
 #ifndef VRPose_h
 #define VRPose_h
 
-#include "core/dom/DOMTypedArray.h"
+#include "core/typed_arrays/DOMTypedArray.h"
 #include "device/vr/vr_service.mojom-blink.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"

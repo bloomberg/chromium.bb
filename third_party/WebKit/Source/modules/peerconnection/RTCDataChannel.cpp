@@ -27,13 +27,13 @@
 #include <memory>
 #include <utility>
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/DOMArrayBuffer.h"
-#include "core/dom/DOMArrayBufferView.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/events/MessageEvent.h"
 #include "core/fileapi/Blob.h"
+#include "core/typed_arrays/DOMArrayBuffer.h"
+#include "core/typed_arrays/DOMArrayBufferView.h"
 #include "modules/peerconnection/RTCPeerConnection.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebRTCPeerConnectionHandler.h"

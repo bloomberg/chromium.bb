@@ -5,8 +5,8 @@
 #include "modules/encryptedmedia/MediaKeyStatusMap.h"
 
 #include "bindings/core/v8/ArrayBufferOrArrayBufferView.h"
-#include "core/dom/DOMArrayBuffer.h"
-#include "core/dom/DOMArrayPiece.h"
+#include "core/typed_arrays/DOMArrayBuffer.h"
+#include "core/typed_arrays/DOMArrayPiece.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebData.h"
 

@@ -6,7 +6,7 @@
 #define FlexibleArrayBufferView_h
 
 #include "core/CoreExport.h"
-#include "core/dom/DOMArrayBufferView.h"
+#include "core/typed_arrays/DOMArrayBufferView.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Noncopyable.h"
 

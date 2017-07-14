@@ -31,11 +31,11 @@
 
 #include "bindings/core/v8/Uint8ClampedArrayOrUint16ArrayOrFloat32Array.h"
 #include "core/CoreExport.h"
-#include "core/dom/ArrayBufferViewHelpers.h"
-#include "core/dom/DOMTypedArray.h"
 #include "core/html/ImageDataColorSettings.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/imagebitmap/ImageBitmapSource.h"
+#include "core/typed_arrays/ArrayBufferViewHelpers.h"
+#include "core/typed_arrays/DOMTypedArray.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/IntSize.h"

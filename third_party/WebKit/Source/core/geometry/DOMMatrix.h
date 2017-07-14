@@ -7,9 +7,9 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/StringOrUnrestrictedDoubleSequence.h"
-#include "core/dom/ArrayBufferViewHelpers.h"
 #include "core/geometry/DOMMatrixInit.h"
 #include "core/geometry/DOMMatrixReadOnly.h"
+#include "core/typed_arrays/ArrayBufferViewHelpers.h"
 
 namespace blink {
 

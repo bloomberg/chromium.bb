@@ -5,7 +5,7 @@
 #ifndef AuthenticatorResponse_h
 #define AuthenticatorResponse_h
 
-#include "core/dom/DOMArrayBuffer.h"
+#include "core/typed_arrays/DOMArrayBuffer.h"
 #include "modules/ModulesExport.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"

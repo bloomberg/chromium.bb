@@ -6,9 +6,9 @@
 
 #include "bindings/core/v8/serialization/SerializedScriptValue.h"
 #include "bindings/core/v8/serialization/SerializedScriptValueFactory.h"
-#include "core/dom/DOMArrayBuffer.h"
-#include "core/dom/DOMSharedArrayBuffer.h"
 #include "core/imagebitmap/ImageBitmap.h"
+#include "core/typed_arrays/DOMArrayBuffer.h"
+#include "core/typed_arrays/DOMSharedArrayBuffer.h"
 #include "platform/wtf/typed_arrays/ArrayBufferContents.h"
 
 namespace blink {

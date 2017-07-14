@@ -29,7 +29,7 @@
 #include <memory>
 #include "bindings/core/v8/ScriptPromiseProperty.h"
 #include "core/dom/ContextLifecycleObserver.h"
-#include "core/dom/DOMArrayPiece.h"
+#include "core/typed_arrays/DOMArrayPiece.h"
 #include "modules/EventTargetModules.h"
 #include "modules/encryptedmedia/MediaKeyStatusMap.h"
 #include "platform/Timer.h"

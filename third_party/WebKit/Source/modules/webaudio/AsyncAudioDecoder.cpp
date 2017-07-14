@@ -27,7 +27,7 @@
 
 #include "bindings/modules/v8/DecodeErrorCallback.h"
 #include "bindings/modules/v8/DecodeSuccessCallback.h"
-#include "core/dom/DOMArrayBuffer.h"
+#include "core/typed_arrays/DOMArrayBuffer.h"
 #include "modules/webaudio/AudioBuffer.h"
 #include "modules/webaudio/BaseAudioContext.h"
 #include "platform/CrossThreadFunctional.h"

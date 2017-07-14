@@ -5,7 +5,7 @@
 #ifndef GamepadPose_h
 #define GamepadPose_h
 
-#include "core/dom/DOMTypedArray.h"
+#include "core/typed_arrays/DOMTypedArray.h"
 #include "device/gamepad/public/cpp/gamepad.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"

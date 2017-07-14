@@ -8,8 +8,8 @@
 #include <memory>
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/CoreExport.h"
-#include "core/dom/DOMTypedArray.h"
 #include "core/fileapi/BlobCallback.h"
+#include "core/typed_arrays/DOMTypedArray.h"
 #include "core/workers/ParentFrameTaskRunners.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/heap/Handle.h"

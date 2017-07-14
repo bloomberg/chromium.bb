@@ -6,9 +6,9 @@
 #define HTMLMediaElementEncryptedMedia_h
 
 #include "core/EventTypeNames.h"
-#include "core/dom/DOMTypedArray.h"
 #include "core/events/EventTarget.h"
 #include "core/html/HTMLMediaElement.h"
+#include "core/typed_arrays/DOMTypedArray.h"
 #include "modules/ModulesExport.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"

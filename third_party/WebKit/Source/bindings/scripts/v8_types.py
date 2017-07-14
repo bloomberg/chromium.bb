@@ -355,8 +355,8 @@ IdlRecordType.is_traceable = property(
 INCLUDES_FOR_TYPE = {
     'object': set(),
     'ArrayBufferView': set(['bindings/core/v8/V8ArrayBufferView.h',
-                            'core/dom/ArrayBufferViewHelpers.h',
-                            'core/dom/FlexibleArrayBufferView.h']),
+                            'core/typed_arrays/ArrayBufferViewHelpers.h',
+                            'core/typed_arrays/FlexibleArrayBufferView.h']),
     'Dictionary': set(['bindings/core/v8/Dictionary.h']),
     'EventHandler': set(['bindings/core/v8/V8AbstractEventListener.h',
                          'bindings/core/v8/V8EventListenerHelper.h']),
@@ -476,7 +476,7 @@ def impl_includes_for_type(idl_type, interfaces_info):
     if base_idl_type in INCLUDES_FOR_TYPE:
         includes_for_type.update(INCLUDES_FOR_TYPE[base_idl_type])
     if idl_type.is_array_buffer_view_or_typed_array:
-        return set(['core/dom/DOMTypedArray.h', 'core/dom/ArrayBufferViewHelpers.h'])
+        return set(['core/typed_arrays/DOMTypedArray.h', 'core/typed_arrays/ArrayBufferViewHelpers.h'])
     return includes_for_type
 
 

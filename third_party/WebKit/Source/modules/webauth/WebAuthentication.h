@@ -6,6 +6,7 @@
 #define WebAuthentication_h
 
 #include "core/dom/ContextLifecycleObserver.h"
+#include "core/typed_arrays/DOMArrayBuffer.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/modules/webauth/authenticator.mojom-blink.h"
