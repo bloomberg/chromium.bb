@@ -695,22 +695,24 @@ void AppsGridView::Layout() {
   gfx::Rect rect(GetContentsBounds());
   const gfx::Vector2d page_zero_offset = CalculateTransitionOffset(0);
 
-  LayoutSuggestedAppsIndicator(&rect);
-  if (suggestions_container_) {
-    gfx::Rect suggestions_rect(rect);
-    suggestions_rect.set_height(
-        suggestions_container_->GetHeightForWidth(suggestions_rect.width()));
-    suggestions_rect.Offset((suggestions_rect.width() - kGridTileWidth) / 2 -
-                                (kGridTileWidth + kGridTileSpacing) * 2,
-                            0);
-    suggestions_rect.Offset(page_zero_offset.x(), page_zero_offset.y());
-    suggestions_container_->SetBoundsRect(suggestions_rect);
-    rect.Inset(0,
-               suggestions_container_->GetPreferredSize().height() +
-                   kSuggestionsAllAppsIndicatorPadding,
-               0, 0);
+  if (!folder_delegate_) {
+    LayoutSuggestedAppsIndicator(&rect);
+    if (suggestions_container_) {
+      gfx::Rect suggestions_rect(rect);
+      suggestions_rect.set_height(
+          suggestions_container_->GetHeightForWidth(suggestions_rect.width()));
+      suggestions_rect.Offset((suggestions_rect.width() - kGridTileWidth) / 2 -
+                                  (kGridTileWidth + kGridTileSpacing) * 2,
+                              0);
+      suggestions_rect.Offset(page_zero_offset.x(), page_zero_offset.y());
+      suggestions_container_->SetBoundsRect(suggestions_rect);
+      rect.Inset(0,
+                 suggestions_container_->GetPreferredSize().height() +
+                     kSuggestionsAllAppsIndicatorPadding,
+                 0, 0);
+    }
+    LayoutAllAppsIndicator(&rect);
   }
-  LayoutAllAppsIndicator(&rect);
 
   CalculateIdealBounds();
   for (int i = 0; i < view_model_.view_size(); ++i) {
@@ -2125,7 +2127,7 @@ gfx::Size AppsGridView::GetTileGridSize() const {
 }
 
 int AppsGridView::GetHeightOnTopOfAllAppsTiles() const {
-  if (!is_fullscreen_app_list_enabled_)
+  if (!is_fullscreen_app_list_enabled_ || folder_delegate_)
     return 0;
 
   if (pagination_model_.selected_page() == 0) {
