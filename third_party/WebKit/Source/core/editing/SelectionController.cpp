@@ -765,8 +765,10 @@ void SelectionController::SetNonDirectionalSelectionIfNeeded(
     builder.SetBaseAndExtent(adjusted_selection.Base(),
                              adjusted_selection.Extent());
   } else if (original_base.IsNotNull()) {
-    if (Selection().ComputeVisibleSelectionInFlatTree().Base() ==
-        new_selection.Base()) {
+    if (CreateVisiblePosition(
+            Selection().ComputeVisibleSelectionInFlatTree().Base())
+            .DeepEquivalent() ==
+        CreateVisiblePosition(new_selection.Base()).DeepEquivalent()) {
       builder.SetBaseAndExtent(original_base.DeepEquivalent(),
                                new_selection.Extent());
     }

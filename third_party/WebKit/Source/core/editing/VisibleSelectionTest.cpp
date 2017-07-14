@@ -124,13 +124,13 @@ TEST_F(VisibleSelectionTest, expandUsingGranularity) {
   selection_in_flat_tree =
       ExpandUsingGranularity(selection_in_flat_tree, TextGranularity::kWord);
 
-  EXPECT_EQ(Position(one, 1), selection.Base());
-  EXPECT_EQ(Position(one, 1), selection.Extent());
+  EXPECT_EQ(selection.Start(), selection.Base());
+  EXPECT_EQ(selection.End(), selection.Extent());
   EXPECT_EQ(Position(one, 0), selection.Start());
   EXPECT_EQ(Position(two, 2), selection.End());
 
-  EXPECT_EQ(PositionInFlatTree(one, 1), selection_in_flat_tree.Base());
-  EXPECT_EQ(PositionInFlatTree(one, 1), selection_in_flat_tree.Extent());
+  EXPECT_EQ(selection_in_flat_tree.Start(), selection_in_flat_tree.Base());
+  EXPECT_EQ(selection_in_flat_tree.End(), selection_in_flat_tree.Extent());
   EXPECT_EQ(PositionInFlatTree(one, 0), selection_in_flat_tree.Start());
   EXPECT_EQ(PositionInFlatTree(five, 5), selection_in_flat_tree.End());
 
@@ -145,13 +145,13 @@ TEST_F(VisibleSelectionTest, expandUsingGranularity) {
   selection_in_flat_tree =
       ExpandUsingGranularity(selection_in_flat_tree, TextGranularity::kWord);
 
-  EXPECT_EQ(Position(two, 1), selection.Base());
-  EXPECT_EQ(Position(two, 1), selection.Extent());
+  EXPECT_EQ(selection.Start(), selection.Base());
+  EXPECT_EQ(selection.End(), selection.Extent());
   EXPECT_EQ(Position(one, 0), selection.Start());
   EXPECT_EQ(Position(two, 2), selection.End());
 
-  EXPECT_EQ(PositionInFlatTree(two, 1), selection_in_flat_tree.Base());
-  EXPECT_EQ(PositionInFlatTree(two, 1), selection_in_flat_tree.Extent());
+  EXPECT_EQ(selection_in_flat_tree.Start(), selection_in_flat_tree.Base());
+  EXPECT_EQ(selection_in_flat_tree.End(), selection_in_flat_tree.Extent());
   EXPECT_EQ(PositionInFlatTree(three, 0), selection_in_flat_tree.Start());
   EXPECT_EQ(PositionInFlatTree(four, 4), selection_in_flat_tree.End());
 
@@ -166,13 +166,13 @@ TEST_F(VisibleSelectionTest, expandUsingGranularity) {
   selection_in_flat_tree =
       ExpandUsingGranularity(selection_in_flat_tree, TextGranularity::kWord);
 
-  EXPECT_EQ(Position(three, 1), selection.Base());
-  EXPECT_EQ(Position(three, 1), selection.Extent());
+  EXPECT_EQ(selection.Start(), selection.Base());
+  EXPECT_EQ(selection.End(), selection.Extent());
   EXPECT_EQ(Position(three, 0), selection.Start());
   EXPECT_EQ(Position(four, 4), selection.End());
 
-  EXPECT_EQ(PositionInFlatTree(three, 1), selection_in_flat_tree.Base());
-  EXPECT_EQ(PositionInFlatTree(three, 1), selection_in_flat_tree.Extent());
+  EXPECT_EQ(selection_in_flat_tree.Start(), selection_in_flat_tree.Base());
+  EXPECT_EQ(selection_in_flat_tree.End(), selection_in_flat_tree.Extent());
   EXPECT_EQ(PositionInFlatTree(three, 0), selection_in_flat_tree.Start());
   EXPECT_EQ(PositionInFlatTree(four, 4), selection_in_flat_tree.End());
 
@@ -187,13 +187,13 @@ TEST_F(VisibleSelectionTest, expandUsingGranularity) {
   selection_in_flat_tree =
       ExpandUsingGranularity(selection_in_flat_tree, TextGranularity::kWord);
 
-  EXPECT_EQ(Position(four, 1), selection.Base());
-  EXPECT_EQ(Position(four, 1), selection.Extent());
+  EXPECT_EQ(selection.Start(), selection.Base());
+  EXPECT_EQ(selection.End(), selection.Extent());
   EXPECT_EQ(Position(three, 0), selection.Start());
   EXPECT_EQ(Position(four, 4), selection.End());
 
-  EXPECT_EQ(PositionInFlatTree(four, 1), selection_in_flat_tree.Base());
-  EXPECT_EQ(PositionInFlatTree(four, 1), selection_in_flat_tree.Extent());
+  EXPECT_EQ(selection_in_flat_tree.Start(), selection_in_flat_tree.Base());
+  EXPECT_EQ(selection_in_flat_tree.End(), selection_in_flat_tree.Extent());
   EXPECT_EQ(PositionInFlatTree(three, 0), selection_in_flat_tree.Start());
   EXPECT_EQ(PositionInFlatTree(four, 4), selection_in_flat_tree.End());
 
@@ -208,13 +208,13 @@ TEST_F(VisibleSelectionTest, expandUsingGranularity) {
   selection_in_flat_tree =
       ExpandUsingGranularity(selection_in_flat_tree, TextGranularity::kWord);
 
-  EXPECT_EQ(Position(five, 1), selection.Base());
-  EXPECT_EQ(Position(five, 1), selection.Extent());
+  EXPECT_EQ(selection.Start(), selection.Base());
+  EXPECT_EQ(selection.End(), selection.Extent());
   EXPECT_EQ(Position(five, 0), selection.Start());
   EXPECT_EQ(Position(five, 5), selection.End());
 
-  EXPECT_EQ(PositionInFlatTree(five, 1), selection_in_flat_tree.Base());
-  EXPECT_EQ(PositionInFlatTree(five, 1), selection_in_flat_tree.Extent());
+  EXPECT_EQ(selection_in_flat_tree.Start(), selection_in_flat_tree.Base());
+  EXPECT_EQ(selection_in_flat_tree.End(), selection_in_flat_tree.Extent());
   EXPECT_EQ(PositionInFlatTree(one, 0), selection_in_flat_tree.Start());
   EXPECT_EQ(PositionInFlatTree(five, 5), selection_in_flat_tree.End());
 }
