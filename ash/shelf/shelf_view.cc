@@ -28,6 +28,7 @@
 #include "ash/shell_delegate.h"
 #include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/root_window_finder.h"
 #include "base/auto_reset.h"
 #include "base/memory/ptr_util.h"
@@ -755,15 +756,31 @@ void ShelfView::CalculateIdealBounds(gfx::Rect* overflow_bounds) const {
 
   int w = shelf_->PrimaryAxisValue(kShelfButtonSize, width());
   int h = shelf_->PrimaryAxisValue(height(), kShelfButtonSize);
+
+  const bool is_maximize_mode = Shell::Get()->maximize_mode_controller()
+                                    ? Shell::Get()
+                                          ->maximize_mode_controller()
+                                          ->IsMaximizeModeWindowManagerEnabled()
+                                    : false;
+
   for (int i = 0; i < view_model_->view_size(); ++i) {
     if (i < first_visible_index_) {
       view_model_->set_ideal_bounds(i, gfx::Rect(x, y, 0, 0));
       continue;
     }
 
-    view_model_->set_ideal_bounds(i, gfx::Rect(x, y, w, h));
-    x = shelf_->PrimaryAxisValue(x + w + kShelfButtonSpacing, x);
-    y = shelf_->PrimaryAxisValue(y, y + h + kShelfButtonSpacing);
+    int width = w;
+    int height = h;
+    // If this is the app list button and we are in maximize/tablet mode, make
+    // space for the back button (which is part of the app list button).
+    if (i == 0 && is_maximize_mode) {
+      width = shelf_->PrimaryAxisValue(2 * w + kShelfButtonSpacing, w);
+      height = shelf_->PrimaryAxisValue(h, 2 * h + kShelfButtonSpacing);
+    }
+
+    view_model_->set_ideal_bounds(i, gfx::Rect(x, y, width, height));
+    x = shelf_->PrimaryAxisValue(x + width + kShelfButtonSpacing, x);
+    y = shelf_->PrimaryAxisValue(y, y + height + kShelfButtonSpacing);
   }
 
   if (is_overflow_mode()) {
