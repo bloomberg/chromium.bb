@@ -87,6 +87,13 @@ const char kCaptureThumbnailOnLoadFinishedDescription[] =
     "Capture a page thumbnail (for use on the New Tab page) when the page load "
     "finishes, in addition to other times a thumbnail may be captured.";
 
+const char kCaptureThumbnailOnNavigatingAwayName[] =
+    "Capture page thumbnail on navigating away";
+const char kCaptureThumbnailOnNavigatingAwayDescription[] =
+    "Capture a page thumbnail (for use on the New Tab page) when navigating "
+    "away from the current page, in addition to other times a thumbnail may be "
+    "captured.";
+
 const char kCastStreamingHwEncodingName[] =
     "Cast Streaming hardware video encoding";
 const char kCastStreamingHwEncodingDescription[] =

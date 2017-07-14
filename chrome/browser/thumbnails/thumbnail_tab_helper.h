@@ -73,6 +73,7 @@ class ThumbnailTabHelper
   void WidgetHidden(content::RenderWidgetHost* widget);
 
   const bool capture_on_load_finished_;
+  const bool capture_on_navigating_away_;
 
   content::NotificationRegistrar registrar_;
 
