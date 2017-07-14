@@ -13,9 +13,9 @@
 #include "base/containers/flat_map.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "cc/surfaces/primary_begin_frame_source.h"
 #include "cc/surfaces/surface_manager.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
+#include "components/viz/service/frame_sinks/primary_begin_frame_source.h"
 #include "components/viz/service/viz_service_export.h"
 
 namespace cc {
@@ -125,7 +125,7 @@ class VIZ_SERVICE_EXPORT FrameSinkManager {
   // parent in the dag.
   std::unordered_map<cc::BeginFrameSource*, FrameSinkId> registered_sources_;
 
-  cc::PrimaryBeginFrameSource primary_source_;
+  PrimaryBeginFrameSource primary_source_;
 
   // |surface_manager_| should be placed under |primary_source_| so that all
   // surfaces are destroyed before |primary_source_|.
