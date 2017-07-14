@@ -24,9 +24,10 @@ bool ShouldUseFullSizeContentView() {
   // stopped the window buttons from being covered by the content view. This
   // may break in a future macOS release. NSFullSizeContentViewWindowMask is a
   // new (10.10+), supported way to make the content view the full size of the
-  // window without covering the controls.
+  // window without covering the controls. It's only enabled in 10.12+ due to a
+  // performance regression seen in 10.11 (https://crbug.com/742472).
   return base::FeatureList::IsEnabled(features::kMacFullSizeContentView) &&
-         base::mac::IsAtLeastOS10_11();
+         base::mac::IsAtLeastOS10_12();
 }
 
 }  // namespace chrome
