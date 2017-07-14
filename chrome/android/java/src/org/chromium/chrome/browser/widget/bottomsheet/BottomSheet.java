@@ -245,6 +245,9 @@ public class BottomSheet
     /** Whether or not the back button was used to enter the tab switcher. */
     private boolean mBackButtonDismissesChrome;
 
+    /** Whether {@link #destroy()} has been called. **/
+    private boolean mIsDestroyed;
+
     /**
      * An interface defining content that can be displayed inside of the bottom sheet for Chrome
      * Home.
@@ -488,6 +491,16 @@ public class BottomSheet
     }
 
     /**
+     * Called when the activity containing the {@link BottomSheet} is destroyed.
+     */
+    public void destroy() {
+        mIsDestroyed = true;
+        mIsTouchEnabled = false;
+        mObservers.clear();
+        endAnimations();
+    }
+
+    /**
      * Handle a back press event.
      *     - If the navigation stack is empty, the sheet will be opened to the half state.
      *         - If the tab switcher is visible, {@link ChromeActivity} will handle the event.
@@ -528,6 +541,13 @@ public class BottomSheet
     public void onExpandButtonPressed() {
         mMetrics.recordSheetOpenReason(BottomSheetMetrics.OPENED_BY_EXPAND_BUTTON);
         setSheetState(BottomSheet.SHEET_STATE_HALF, true);
+    }
+
+    /** Immediately end all animations and null the animators. */
+    public void endAnimations() {
+        if (mSettleAnimator != null) mSettleAnimator.end();
+        mSettleAnimator = null;
+        endTransitionAnimations();
     }
 
     /**
@@ -895,6 +915,8 @@ public class BottomSheet
         mContentSwapAnimatorSet.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
+                if (mIsDestroyed) return;
+
                 mSheetContent = content;
                 for (BottomSheetObserver o : mObservers) {
                     o.onSheetContentChanged(content);
@@ -1094,6 +1116,8 @@ public class BottomSheet
         mSettleAnimator.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animator) {
+                if (mIsDestroyed) return;
+
                 mSettleAnimator = null;
                 setInternalCurrentState(targetState);
                 mTargetState = SHEET_STATE_NONE;
@@ -1490,13 +1514,5 @@ public class BottomSheet
         helpBubble.show();
         mHasShownTextBubble = true;
         preferences.edit().putBoolean(BOTTOM_SHEET_HELP_BUBBLE_SHOWN, true).apply();
-    }
-
-    /** Ends all animations. */
-    @VisibleForTesting
-    public void endAnimationsForTests() {
-        if (mSettleAnimator != null) mSettleAnimator.end();
-        mSettleAnimator = null;
-        endTransitionAnimations();
     }
 }

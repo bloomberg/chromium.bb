@@ -1143,6 +1143,16 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             mToolbarManager = null;
         }
 
+        if (mBottomSheet != null) {
+            mBottomSheet.destroy();
+            mBottomSheet = null;
+        }
+
+        if (mBottomSheetContentController != null) {
+            mBottomSheetContentController.destroy();
+            mBottomSheetContentController = null;
+        }
+
         if (mTabModelsInitialized) {
             TabModelSelector selector = getTabModelSelector();
             if (selector != null) selector.destroy();
