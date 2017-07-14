@@ -78,7 +78,6 @@
 #endif
 
 #if defined(OS_WIN)
-#include "base/win/windows_version.h"
 #include "content/common/sandbox_win.h"
 #include "sandbox/win/src/sandbox_policy.h"
 #include "ui/gfx/switches.h"
@@ -260,38 +259,31 @@ class GpuSandboxedProcessLauncherDelegate
   // backend. Note that the GPU process is connected to the interactive
   // desktop.
   bool PreSpawnTarget(sandbox::TargetPolicy* policy) override {
-    if (base::win::GetVersion() > base::win::VERSION_XP) {
-      if (cmd_line_.GetSwitchValueASCII(switches::kUseGL) ==
-          gl::kGLImplementationDesktopName) {
-        // Open GL path.
-        policy->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS,
-                              sandbox::USER_LIMITED);
-        SetJobLevel(cmd_line_, sandbox::JOB_UNPROTECTED, 0, policy);
-        policy->SetDelayedIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
-      } else {
-        policy->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS,
-                              sandbox::USER_LIMITED);
-
-        // UI restrictions break when we access Windows from outside our job.
-        // However, we don't want a proxy window in this process because it can
-        // introduce deadlocks where the renderer blocks on the gpu, which in
-        // turn blocks on the browser UI thread. So, instead we forgo a window
-        // message pump entirely and just add job restrictions to prevent child
-        // processes.
-        SetJobLevel(cmd_line_,
-                    sandbox::JOB_LIMITED_USER,
-                    JOB_OBJECT_UILIMIT_SYSTEMPARAMETERS |
-                    JOB_OBJECT_UILIMIT_DESKTOP |
-                    JOB_OBJECT_UILIMIT_EXITWINDOWS |
-                    JOB_OBJECT_UILIMIT_DISPLAYSETTINGS,
-                    policy);
-
-        policy->SetIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
-      }
-    } else {
-      SetJobLevel(cmd_line_, sandbox::JOB_UNPROTECTED, 0, policy);
-      policy->SetTokenLevel(sandbox::USER_UNPROTECTED,
+    if (cmd_line_.GetSwitchValueASCII(switches::kUseGL) ==
+        gl::kGLImplementationDesktopName) {
+      // Open GL path.
+      policy->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS,
                             sandbox::USER_LIMITED);
+      SetJobLevel(cmd_line_, sandbox::JOB_UNPROTECTED, 0, policy);
+      policy->SetDelayedIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
+    } else {
+      policy->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS,
+                            sandbox::USER_LIMITED);
+
+      // UI restrictions break when we access Windows from outside our job.
+      // However, we don't want a proxy window in this process because it can
+      // introduce deadlocks where the renderer blocks on the gpu, which in
+      // turn blocks on the browser UI thread. So, instead we forgo a window
+      // message pump entirely and just add job restrictions to prevent child
+      // processes.
+      SetJobLevel(cmd_line_, sandbox::JOB_LIMITED_USER,
+                  JOB_OBJECT_UILIMIT_SYSTEMPARAMETERS |
+                      JOB_OBJECT_UILIMIT_DESKTOP |
+                      JOB_OBJECT_UILIMIT_EXITWINDOWS |
+                      JOB_OBJECT_UILIMIT_DISPLAYSETTINGS,
+                  policy);
+
+      policy->SetIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
     }
 
     // Allow the server side of GPU sockets, which are pipes that have

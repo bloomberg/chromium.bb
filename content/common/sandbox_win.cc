@@ -409,22 +409,10 @@ sandbox::ResultCode AddPolicyForSandboxedProcess(
   if (result != sandbox::SBOX_ALL_OK)
     return result;
 
-  // Close the proxy settings on XP.
-  if (base::win::GetVersion() <= base::win::VERSION_SERVER_2003)
-    result = policy->AddKernelObjectToClose(L"Key",
-                 L"HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\" \
-                     L"CurrentVersion\\Internet Settings");
-  if (result != sandbox::SBOX_ALL_OK)
-    return result;
-
-  sandbox::TokenLevel initial_token = sandbox::USER_UNPROTECTED;
-  if (base::win::GetVersion() > base::win::VERSION_XP) {
-    // On 2003/Vista the initial token has to be restricted if the main
-    // token is restricted.
-    initial_token = sandbox::USER_RESTRICTED_SAME_ACCESS;
-  }
-
-  result = policy->SetTokenLevel(initial_token, sandbox::USER_LOCKDOWN);
+  // On 2003/Vista+ the initial token has to be restricted if the main
+  // token is restricted.
+  result = policy->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS,
+                                 sandbox::USER_LOCKDOWN);
   if (result != sandbox::SBOX_ALL_OK)
     return result;
   // Prevents the renderers from manipulating low-integrity processes.

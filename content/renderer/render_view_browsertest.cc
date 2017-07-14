@@ -1178,7 +1178,7 @@ TEST_F(RenderViewImplTest, ImeComposition) {
     const wchar_t* result;
   };
   static const ImeMessage kImeMessages[] = {
-      // Scenario 1: input a Chinese word with Microsoft IME (on Vista).
+      // Scenario 1: input a Chinese word with Microsoft IME.
       {IME_INITIALIZE, true, 0, 0, NULL, NULL},
       {IME_SETINPUTMODE, true, 0, 0, NULL, NULL},
       {IME_SETFOCUS, true, 0, 0, NULL, NULL},
@@ -1188,7 +1188,7 @@ TEST_F(RenderViewImplTest, ImeComposition) {
       {IME_SETCOMPOSITION, false, 4, 4, L"niha", L"niha"},
       {IME_SETCOMPOSITION, false, 5, 5, L"nihao", L"nihao"},
       {IME_COMMITTEXT, false, -1, -1, L"\x4F60\x597D", L"\x4F60\x597D"},
-      // Scenario 2: input a Japanese word with Microsoft IME (on Vista).
+      // Scenario 2: input a Japanese word with Microsoft IME.
       {IME_INITIALIZE, true, 0, 0, NULL, NULL},
       {IME_SETINPUTMODE, true, 0, 0, NULL, NULL},
       {IME_SETFOCUS, true, 0, 0, NULL, NULL},
@@ -1203,7 +1203,7 @@ TEST_F(RenderViewImplTest, ImeComposition) {
       {IME_SETCOMPOSITION, false, 0, 2, L"\x6F22\x5B57", L"\x6F22\x5B57"},
       {IME_FINISHCOMPOSINGTEXT, false, -1, -1, L"", L"\x6F22\x5B57"},
       {IME_CANCELCOMPOSITION, false, -1, -1, L"", L"\x6F22\x5B57"},
-      // Scenario 3: input a Korean word with Microsot IME (on Vista).
+      // Scenario 3: input a Korean word with Microsot IME.
       {IME_INITIALIZE, true, 0, 0, NULL, NULL},
       {IME_SETINPUTMODE, true, 0, 0, NULL, NULL},
       {IME_SETFOCUS, true, 0, 0, NULL, NULL},
@@ -1498,12 +1498,6 @@ TEST_F(RenderViewImplTest, TestBackForward) {
 
 #if defined(OS_MACOSX) || defined(USE_AURA)
 TEST_F(RenderViewImplTest, GetCompositionCharacterBoundsTest) {
-#if defined(OS_WIN)
-  // http://crbug.com/304193
-  if (base::win::GetVersion() < base::win::VERSION_VISTA)
-    return;
-#endif
-
   LoadHTML("<textarea id=\"test\" cols=\"100\"></textarea>");
   ExecuteJavaScriptForTests("document.getElementById('test').focus();");
 

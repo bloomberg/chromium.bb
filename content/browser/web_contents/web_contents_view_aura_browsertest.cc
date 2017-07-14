@@ -49,10 +49,6 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
 
-#if defined(OS_WIN)
-#include "base/win/windows_version.h"
-#endif
-
 namespace {
 
 // TODO(tdresser): Find a way to avoid sleeping like this. See crbug.com/405282
@@ -639,14 +635,6 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
 #define MAYBE_OverscrollScreenshot OverscrollScreenshot
 #endif
 IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, MAYBE_OverscrollScreenshot) {
-  // Disable the test for WinXP.  See http://crbug/294116.
-#if defined(OS_WIN)
-  if (base::win::GetVersion() < base::win::VERSION_VISTA) {
-    LOG(WARNING) << "Test disabled due to unknown bug on WinXP.";
-    return;
-  }
-#endif
-
   ASSERT_NO_FATAL_FAILURE(StartTestWithPage("/overscroll_navigation.html"));
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
