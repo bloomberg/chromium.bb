@@ -24,6 +24,11 @@ bool MediaControlOverflowMenuButtonElement::WillRespondToMouseClickEvents() {
   return true;
 }
 
+const char* MediaControlOverflowMenuButtonElement::GetNameForHistograms()
+    const {
+  return "OverflowButton";
+}
+
 void MediaControlOverflowMenuButtonElement::DefaultEventHandler(Event* event) {
   if (event->type() == EventTypeNames::click) {
     if (static_cast<MediaControlsImpl&>(GetMediaControls())

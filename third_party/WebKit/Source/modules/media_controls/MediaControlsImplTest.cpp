@@ -480,66 +480,6 @@ TEST_F(MediaControlsImplTest, DownloadButtonNotDisplayedEmptyUrl) {
   EXPECT_FALSE(IsElementVisible(*download_button));
 }
 
-TEST_F(MediaControlsImplTest, DownloadButtonDisplayedHiddenAndDisplayed) {
-  EnsureSizing();
-
-  Element* download_button = GetElementByShadowPseudoId(
-      MediaControls(), "-internal-media-controls-download-button");
-  ASSERT_NE(nullptr, download_button);
-
-  // Initially show button.
-  MediaControls().MediaElement().SetSrc("https://example.com/foo.mp4");
-  testing::RunPendingTasks();
-  SimulateLoadedMetadata();
-  EXPECT_TRUE(IsElementVisible(*download_button));
-  GetHistogramTester().ExpectBucketCount("Media.Controls.Download",
-                                         DownloadActionMetrics::kShown, 1);
-
-  // Hide button.
-  MediaControls().MediaElement().SetSrc("");
-  testing::RunPendingTasks();
-  EXPECT_FALSE(IsElementVisible(*download_button));
-  GetHistogramTester().ExpectBucketCount("Media.Controls.Download",
-                                         DownloadActionMetrics::kShown, 1);
-
-  // Showing button again should not increment Shown count.
-  MediaControls().MediaElement().SetSrc("https://example.com/foo.mp4");
-  testing::RunPendingTasks();
-  EXPECT_TRUE(IsElementVisible(*download_button));
-  GetHistogramTester().ExpectBucketCount("Media.Controls.Download",
-                                         DownloadActionMetrics::kShown, 1);
-}
-
-TEST_F(MediaControlsImplTest, DownloadButtonRecordsClickOnlyOnce) {
-  EnsureSizing();
-
-  MediaControlDownloadButtonElement* download_button =
-      static_cast<MediaControlDownloadButtonElement*>(
-          GetElementByShadowPseudoId(
-              MediaControls(), "-internal-media-controls-download-button"));
-  ASSERT_NE(nullptr, download_button);
-
-  // Initially show button.
-  MediaControls().MediaElement().SetSrc("https://example.com/foo.mp4");
-  testing::RunPendingTasks();
-  SimulateLoadedMetadata();
-  EXPECT_TRUE(IsElementVisible(*download_button));
-  GetHistogramTester().ExpectBucketCount("Media.Controls.Download",
-                                         DownloadActionMetrics::kShown, 1);
-
-  // Click button once.
-  download_button->DispatchSimulatedClick(
-      Event::CreateBubble(EventTypeNames::click), kSendNoEvents);
-  GetHistogramTester().ExpectBucketCount("Media.Controls.Download",
-                                         DownloadActionMetrics::kClicked, 1);
-
-  // Clicking button again should not increment Clicked count.
-  download_button->DispatchSimulatedClick(
-      Event::CreateBubble(EventTypeNames::click), kSendNoEvents);
-  GetHistogramTester().ExpectBucketCount("Media.Controls.Download",
-                                         DownloadActionMetrics::kClicked, 1);
-}
-
 TEST_F(MediaControlsImplTest, DownloadButtonNotDisplayedInfiniteDuration) {
   EnsureSizing();
 

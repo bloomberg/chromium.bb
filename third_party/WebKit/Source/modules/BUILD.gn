@@ -271,6 +271,7 @@ source_set("unit_tests") {
     "media_controls/MediaControlsImplTest.cpp",
     "media_controls/MediaControlsOrientationLockDelegateTest.cpp",
     "media_controls/MediaControlsRotateToFullscreenDelegateTest.cpp",
+    "media_controls/elements/MediaControlInputElementTest.cpp",
     "mediastream/MediaConstraintsTest.cpp",
     "notifications/NotificationDataTest.cpp",
     "notifications/NotificationImageLoaderTest.cpp",

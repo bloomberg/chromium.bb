@@ -724,6 +724,7 @@ class CORE_EXPORT HTMLMediaElement
   friend class HTMLMediaElementTest;
   friend class HTMLMediaElementEventListenersTest;
   friend class HTMLVideoElement;
+  friend class MediaControlInputElementTest;
   friend class MediaControlsOrientationLockDelegateTest;
   friend class MediaControlsRotateToFullscreenDelegateTest;
 

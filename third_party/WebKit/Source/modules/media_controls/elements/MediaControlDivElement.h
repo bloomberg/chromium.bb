@@ -20,6 +20,7 @@ class MediaControlDivElement : public HTMLDivElement,
 
   // Implements MediaControlElementBase.
   void SetOverflowElementIsWanted(bool) final;
+  void MaybeRecordDisplayed() final;
 
   DECLARE_VIRTUAL_TRACE();
 

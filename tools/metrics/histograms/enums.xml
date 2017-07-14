@@ -24766,6 +24766,11 @@ from previous Chrome versions.
   <int value="39" label="SmoothStream"/>
 </enum>
 
+<enum name="MediaControlsCTREvent">
+  <int value="0" label="Displayed"/>
+  <int value="1" label="Interacted"/>
+</enum>
+
 <enum name="MediaControlsDownloadReason">
   <int value="0" label="Shown"/>
   <int value="1" label="Clicked"/>

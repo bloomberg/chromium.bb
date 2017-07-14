@@ -42,6 +42,10 @@ bool MediaControlPlayButtonElement::HasOverflowButton() const {
   return true;
 }
 
+const char* MediaControlPlayButtonElement::GetNameForHistograms() const {
+  return IsOverflowElement() ? "PlayPauseOverflowButton" : "PlayPauseButton";
+}
+
 void MediaControlPlayButtonElement::DefaultEventHandler(Event* event) {
   if (event->type() == EventTypeNames::click) {
     if (MediaElement().paused()) {

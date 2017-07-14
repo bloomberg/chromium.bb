@@ -20,6 +20,9 @@ class MediaControlOverlayPlayButtonElement final
   // MediaControlInputElement overrides.
   void UpdateDisplayType() override;
 
+ protected:
+  const char* GetNameForHistograms() const override;
+
  private:
   void DefaultEventHandler(Event*) override;
   bool KeepEventInNode(Event*) override;
