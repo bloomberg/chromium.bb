@@ -41,7 +41,7 @@ class _BaseCastBenchmark(perf_benchmark.PerfBenchmark):
 class TraceEventCastBenckmark(_BaseCastBenchmark):
   """Benchmark for dialog latency from trace event."""
 
-  def CreateTimelineBasedMeasurementOptions(self):
+  def CreateCoreTimelineBasedMeasurementOptions(self):
     media_router_category = 'media_router'
     category_filter = chrome_trace_category_filter.ChromeTraceCategoryFilter(
         media_router_category)
