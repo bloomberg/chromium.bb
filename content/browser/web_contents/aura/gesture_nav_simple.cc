@@ -105,6 +105,9 @@ class Affordance : public ui::LayerDelegate, public gfx::AnimationDelegate {
   // Returns the root layer of the affordance.
   ui::Layer* root_layer() const { return root_layer_.get(); }
 
+  // Returns whether the affordance is performing abort or complete animation.
+  bool IsFinishing() const { return state_ != State::DRAGGING; }
+
  private:
   enum class State { DRAGGING, ABORTING, COMPLETING };
 
@@ -373,7 +376,7 @@ gfx::Size GestureNavSimple::GetDisplaySize() const {
 }
 
 bool GestureNavSimple::OnOverscrollUpdate(float delta_x, float delta_y) {
-  if (!affordance_)
+  if (!affordance_ || affordance_->IsFinishing())
     return false;
   affordance_->SetDragProgress(
       std::min(1.f, std::abs(delta_x) / completion_threshold_));
