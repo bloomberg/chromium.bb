@@ -606,14 +606,15 @@ void WindowTreeHostManager::OnDisplayAdded(const display::Display& display) {
     // unified and non unified, but I'm keeping them separated to minimize
     // the risk in M44. I'll consolidate this in M45.
     DCHECK(window_tree_hosts_.empty());
-    primary_display_id = display.id();
-    window_tree_hosts_[display.id()] = primary_tree_host_for_replace_;
-    GetRootWindowSettings(GetWindow(primary_tree_host_for_replace_))
-        ->display_id = display.id();
+    AshWindowTreeHost* ash_host = primary_tree_host_for_replace_;
     primary_tree_host_for_replace_ = nullptr;
+    primary_display_id = display.id();
+    window_tree_hosts_[display.id()] = ash_host;
+    GetRootWindowSettings(GetWindow(ash_host))->display_id = display.id();
+    for (auto& observer : observers_)
+      observer.OnWindowTreeHostReusedForDisplay(ash_host, display);
     const display::ManagedDisplayInfo& display_info =
         GetDisplayManager()->GetDisplayInfo(display.id());
-    AshWindowTreeHost* ash_host = window_tree_hosts_[display.id()];
     ash_host->AsWindowTreeHost()->SetBoundsInPixels(
         display_info.bounds_in_native());
     SetDisplayPropertiesOnHost(ash_host, display);

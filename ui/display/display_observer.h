@@ -28,6 +28,14 @@ class DISPLAY_EXPORT DisplayObserver {
     DISPLAY_METRIC_COLOR_SPACE = 1 << 6,
   };
 
+  // This may be called before other methods to signal changes are about to
+  // happen. Not all classes that support DisplayObserver call this.
+  virtual void OnWillProcessDisplayChanges();
+
+  // Called after OnWillProcessDisplayChanges() to indicate display changes have
+  // completed. Not all classes that support DisplayObserver call this.
+  virtual void OnDidProcessDisplayChanges();
+
   // Called when |new_display| has been added.
   virtual void OnDisplayAdded(const Display& new_display);
 

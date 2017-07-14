@@ -103,6 +103,14 @@ class AURA_EXPORT WindowManagerClient {
       std::vector<ui::mojom::WmViewportMetricsPtr> viewport_metrics,
       int64_t primary_display_id) = 0;
 
+  // Adds |display| as a new display moving |window_tree_host| to the new
+  // display. This results in closing the previous display |window_tree_host|
+  // was associated with.
+  virtual void AddDisplayReusingWindowTreeHost(
+      WindowTreeHostMus* window_tree_host,
+      const display::Display& display,
+      ui::mojom::WmViewportMetricsPtr viewport_metrics) = 0;
+
  protected:
   virtual ~WindowManagerClient() {}
 };

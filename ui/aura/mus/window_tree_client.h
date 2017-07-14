@@ -496,6 +496,10 @@ class AURA_EXPORT WindowTreeClient
       const std::vector<display::Display>& displays,
       std::vector<ui::mojom::WmViewportMetricsPtr> viewport_metrics,
       int64_t primary_display_id) override;
+  void AddDisplayReusingWindowTreeHost(
+      WindowTreeHostMus* window_tree_host,
+      const display::Display& display,
+      ui::mojom::WmViewportMetricsPtr viewport_metrics) override;
 
   // Overriden from WindowTreeHostMusDelegate:
   void OnWindowTreeHostBoundsWillChange(WindowTreeHostMus* window_tree_host,
