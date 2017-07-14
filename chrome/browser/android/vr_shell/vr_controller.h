@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "chrome/browser/android/vr_shell/vr_controller_model.h"
+#include "chrome/browser/vr/vr_controller_model.h"
 #include "device/vr/android/gvr/gvr_gamepad_data_provider.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
 #include "ui/gfx/geometry/point3_f.h"
@@ -69,7 +69,7 @@ class VrController {
   float GetOpacity() const;
   gfx::Point3F GetPointerStart() const;
 
-  VrControllerModel::State GetModelState() const;
+  vr::VrControllerModel::State GetModelState() const;
 
   bool TouchDownHappened();
 

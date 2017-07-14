@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
-#include "chrome/browser/android/vr_shell/vr_controller_model.h"
 #include "chrome/browser/ui/toolbar/chrome_toolbar_model_delegate.h"
 #include "chrome/browser/vr/ui_interface.h"
 #include "chrome/browser/vr/ui_unsupported_mode.h"
@@ -173,7 +172,6 @@ class VrShell : public device::GvrDelegate,
   void ExitVrDueToUnsupportedMode(vr::UiUnsupportedMode mode);
 
   void ProcessContentGesture(std::unique_ptr<blink::WebInputEvent> event);
-  void SubmitControllerModel(std::unique_ptr<VrControllerModel> model);
 
   // device::GvrGamepadDataProvider implementation.
   void UpdateGamepadData(device::GvrGamepadData) override;

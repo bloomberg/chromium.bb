@@ -186,14 +186,14 @@ gfx::Point3F VrController::GetPointerStart() const {
          gfx::ScaleVector3d(pointer_direction, kLaserStartDisplacement);
 }
 
-VrControllerModel::State VrController::GetModelState() const {
+vr::VrControllerModel::State VrController::GetModelState() const {
   if (ButtonState(gvr::ControllerButton::GVR_CONTROLLER_BUTTON_CLICK))
-    return VrControllerModel::TOUCHPAD;
+    return vr::VrControllerModel::TOUCHPAD;
   if (ButtonState(gvr::ControllerButton::GVR_CONTROLLER_BUTTON_APP))
-    return VrControllerModel::APP;
+    return vr::VrControllerModel::APP;
   if (ButtonState(gvr::ControllerButton::GVR_CONTROLLER_BUTTON_HOME))
-    return VrControllerModel::SYSTEM;
-  return VrControllerModel::IDLE;
+    return vr::VrControllerModel::SYSTEM;
+  return vr::VrControllerModel::IDLE;
 }
 
 bool VrController::TouchDownHappened() {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/vr_shell/vr_controller_model.h"
+#include "chrome/browser/vr/vr_controller_model.h"
 
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
@@ -14,7 +14,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/codec/png_codec.h"
 
-namespace vr_shell {
+namespace vr {
 
 namespace {
 
@@ -170,4 +170,4 @@ std::unique_ptr<VrControllerModel> VrControllerModel::LoadFromResources() {
   return controller_model;
 }
 
-}  // namespace vr_shell
+}  // namespace vr

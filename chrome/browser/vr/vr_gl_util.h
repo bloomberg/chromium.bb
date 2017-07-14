@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ANDROID_VR_SHELL_VR_GL_UTIL_H_
-#define CHROME_BROWSER_ANDROID_VR_SHELL_VR_GL_UTIL_H_
+#ifndef CHROME_BROWSER_VR_VR_GL_UTIL_H_
+#define CHROME_BROWSER_VR_VR_GL_UTIL_H_
 
 #include <array>
 #include <string>
@@ -17,7 +17,7 @@ class Size;
 class Transform;
 }  // namespace gfx
 
-namespace vr_shell {
+namespace vr {
 
 std::array<float, 16> MatrixToGLArray(const gfx::Transform& matrix);
 
@@ -34,6 +34,6 @@ GLuint CreateAndLinkProgram(GLuint vertex_shader_handle,
                             GLuint fragment_shader_handle,
                             std::string& error);
 
-}  // namespace vr_shell
+}  // namespace vr
 
-#endif  // CHROME_BROWSER_ANDROID_VR_SHELL_VR_GL_UTIL_H_
+#endif  // CHROME_BROWSER_VR_VR_GL_UTIL_H_
