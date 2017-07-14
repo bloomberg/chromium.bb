@@ -156,11 +156,9 @@ static EphemeralRangeInFlatTree CalcSelection(
               .DeepEquivalent();
       const PositionInFlatTree end_position =
           NextPositionOf(base, PositionMoveType::kGraphemeCluster);
-      const VisibleSelectionInFlatTree& block_cursor =
-          CreateVisibleSelection(SelectionInFlatTree::Builder()
-                                     .SetBaseAndExtent(base, end_position)
-                                     .Build());
-      return {block_cursor.Start(), block_cursor.End()};
+      return base <= end_position
+                 ? EphemeralRangeInFlatTree(base, end_position)
+                 : EphemeralRangeInFlatTree(end_position, base);
     }
   }
   NOTREACHED();
