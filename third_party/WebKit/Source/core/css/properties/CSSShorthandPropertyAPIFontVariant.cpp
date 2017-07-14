@@ -15,7 +15,7 @@ bool CSSShorthandPropertyAPIFontVariant::parseShorthand(
     bool important,
     CSSParserTokenRange& range,
     const CSSParserContext&,
-    const CSSParserLocalContext&,
+    bool,
     HeapVector<CSSProperty, 256>& properties) {
   if (CSSPropertyParserHelpers::IdentMatches<CSSValueNormal, CSSValueNone>(
           range.Peek().Id())) {

@@ -15,7 +15,7 @@ bool CSSShorthandPropertyAPIWebkitMaskBoxImage::parseShorthand(
     bool important,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    const CSSParserLocalContext&,
+    bool,
     HeapVector<CSSProperty, 256>& properties) {
   CSSValue* source = nullptr;
   CSSValue* slice = nullptr;

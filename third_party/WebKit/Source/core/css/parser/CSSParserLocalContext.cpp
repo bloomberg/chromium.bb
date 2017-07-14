@@ -6,13 +6,20 @@
 
 namespace blink {
 
-CSSParserLocalContext::CSSParserLocalContext() : use_alias_parsing_(false) {}
+CSSParserLocalContext::CSSParserLocalContext()
+    : use_alias_parsing_(false), current_shorthand_(CSSPropertyInvalid) {}
 
-CSSParserLocalContext::CSSParserLocalContext(bool use_alias_parsing)
-    : use_alias_parsing_(use_alias_parsing) {}
+CSSParserLocalContext::CSSParserLocalContext(bool use_alias_parsing,
+                                             CSSPropertyID current_shorthand)
+    : use_alias_parsing_(use_alias_parsing),
+      current_shorthand_(current_shorthand) {}
 
 bool CSSParserLocalContext::UseAliasParsing() const {
   return use_alias_parsing_;
+}
+
+CSSPropertyID CSSParserLocalContext::CurrentShorthand() const {
+  return current_shorthand_;
 }
 
 }  // namespace blink
