@@ -1750,7 +1750,7 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
 
   ### Toolchain waterfall entries.
   ### Toolchain builder configs: 3 architectures {amd64,arm,arm64}
-  ###                          x 3 toolchains {gcc,llvm,llvm-next}
+  ###                          x 2 toolchains {gcc,llvm-next}
   ### All of these builders should be slaves of 'master-toolchain'.
 
   ### Master toolchain config.
@@ -1782,8 +1782,8 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
             **kwargs
         ),
         site_config.Add(
-            name + '-llvm-toolchain',
-            site_config.templates.llvm_toolchain,
+            name + '-llvm-next-toolchain',
+            site_config.templates.llvm_next_toolchain,
             *args,
             boards=[board],
             important=True,
@@ -1792,15 +1792,6 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
                 constants.HWTEST_MACH_POOL),
             hw_tests_override=hw_test_list.ToolchainTestMedium(
                 constants.HWTEST_MACH_POOL),
-            **kwargs
-        ),
-        site_config.Add(
-            name + '-llvm-next-toolchain',
-            site_config.templates.llvm_next_toolchain,
-            *args,
-            boards=[board],
-            important=True,
-            active_waterfall=constants.WATERFALL_INTERNAL,
             **kwargs
         )
     ])
