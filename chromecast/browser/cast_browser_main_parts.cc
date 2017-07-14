@@ -259,7 +259,7 @@ const DefaultCommandLineSwitch kDefaultSwitches[] = {
     {switches::kDisableES3GLContext, ""},
     // Enable navigator.connection API.
     // TODO(derekjchow): Remove this switch when enabled by default.
-    {switches::kEnableNetworkInformation, ""},
+    {switches::kEnableNetworkInformationDownlinkMax, ""},
     // TODO(halliwell): Remove after fixing b/35422666.
     {switches::kEnableUseZoomForDSF, "false"},
 };

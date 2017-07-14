@@ -165,6 +165,13 @@ void NetworkInformation::ConnectionChange(
     return;
   }
 
+  if (!RuntimeEnabledFeatures::NetInfoDownlinkMaxEnabled() &&
+      effective_type_ == effective_type &&
+      http_rtt_msec_ == new_http_rtt_msec &&
+      downlink_mbps_ == new_downlink_mbps) {
+    return;
+  }
+
   type_ = type;
   downlink_max_mbps_ = downlink_max_mbps;
   effective_type_ = effective_type;
