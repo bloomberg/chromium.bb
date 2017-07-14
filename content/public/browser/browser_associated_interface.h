@@ -58,14 +58,15 @@ class BrowserAssociatedInterface {
     internal_state_->Initialize();
     filter->AddAssociatedInterface(
         Interface::Name_,
-        base::Bind(&InternalState::BindRequest, internal_state_));
+        base::Bind(&InternalState::BindRequest, internal_state_),
+        base::BindOnce(&InternalState::ClearBindings, internal_state_));
   }
 
-  ~BrowserAssociatedInterface() {
-    internal_state_->ShutDown();
-  }
+  ~BrowserAssociatedInterface() { internal_state_->ClearBindings(); }
 
  private:
+  friend class TestDriverMessageFilter;
+
   class InternalState : public base::RefCountedThreadSafe<InternalState> {
    public:
     explicit InternalState(Interface* impl) : impl_(impl) {}
@@ -79,10 +80,11 @@ class BrowserAssociatedInterface {
       bindings_.reset(new mojo::AssociatedBindingSet<Interface>);
     }
 
-    void ShutDown() {
+    void ClearBindings() {
       if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-        BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                                base::Bind(&InternalState::ShutDown, this));
+        BrowserThread::PostTask(
+            BrowserThread::IO, FROM_HERE,
+            base::Bind(&InternalState::ClearBindings, this));
         return;
       }
       bindings_.reset();
@@ -99,6 +101,7 @@ class BrowserAssociatedInterface {
 
    private:
     friend class base::RefCountedThreadSafe<InternalState>;
+    friend class TestDriverMessageFilter;
 
     ~InternalState() {}
 
