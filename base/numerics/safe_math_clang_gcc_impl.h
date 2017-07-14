@@ -126,6 +126,50 @@ struct ClampedAddFastOp {
   }
 };
 
+// This is the fastest negation on Intel, and a decent fallback on arm.
+__attribute__((always_inline)) inline int8_t ClampedNegate(uint8_t value) {
+  uint8_t carry;
+  return __builtin_subcb(0, value, 0, &carry) + carry;
+}
+
+__attribute__((always_inline)) inline int8_t ClampedNegate(int8_t value) {
+  return ClampedNegate(static_cast<uint8_t>(value));
+}
+
+__attribute__((always_inline)) inline int16_t ClampedNegate(uint16_t value) {
+  uint16_t carry;
+  return __builtin_subcs(0, value, 0, &carry) + carry;
+}
+
+__attribute__((always_inline)) inline int16_t ClampedNegate(int16_t value) {
+  return ClampedNegate(static_cast<uint16_t>(value));
+}
+
+__attribute__((always_inline)) inline int32_t ClampedNegate(uint32_t value) {
+  uint32_t carry;
+  return __builtin_subc(0, value, 0, &carry) + carry;
+}
+
+__attribute__((always_inline)) inline int32_t ClampedNegate(int32_t value) {
+  return ClampedNegate(static_cast<uint32_t>(value));
+}
+
+// These are the LP64 platforms minus Mac (because Xcode blows up otherwise).
+#if !defined(__APPLE__) && defined(__LP64__) && __LP64__
+__attribute__((always_inline)) inline int64_t ClampedNegate(uint64_t value) {
+  uint64_t carry;
+  return __builtin_subcl(0, value, 0, &carry) + carry;
+}
+#else  // Mac, Windows, and any IL32 platforms.
+__attribute__((always_inline)) inline int64_t ClampedNegate(uint64_t value) {
+  uint64_t carry;
+  return __builtin_subcll(0, value, 0, &carry) + carry;
+}
+#endif
+__attribute__((always_inline)) inline int64_t ClampedNegate(int64_t value) {
+  return ClampedNegate(static_cast<uint64_t>(value));
+}
+
 template <typename T, typename U>
 struct ClampedSubFastOp {
   static const bool is_supported = true;
@@ -134,6 +178,17 @@ struct ClampedSubFastOp {
     if ((!IsCompileTimeConstant(x) || !IsCompileTimeConstant(y)) &&
         ClampedSubFastAsmOp<T, U>::is_supported) {
       return ClampedSubFastAsmOp<T, U>::template Do<V>(x, y);
+    }
+
+    // Fast path for generic clamped negation.
+    if (std::is_same<T, U>::value && std::is_same<U, V>::value &&
+        IsCompileTimeConstant(x) && x == 0 && !IsCompileTimeConstant(y)) {
+      // We use IntegerForDigitsAndSign<> to convert the type to a uint*_t,
+      // otherwise Xcode can't resolve to the standard integral types correctly.
+      return ClampedNegate(
+          static_cast<typename IntegerForDigitsAndSign<
+              IntegerBitsPlusSign<T>::value, std::is_signed<T>::value>::type>(
+              y));
     }
 
     V result;
