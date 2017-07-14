@@ -99,9 +99,13 @@ public class AndroidSyncSettingsTest extends InstrumentationTestCase {
     private Account mAlternateAccount;
     private MockSyncSettingsObserver mSyncSettingsObserver;
     private FakeAccountManagerDelegate mAccountManager;
+    private CallbackHelper mCallbackHelper;
+    private int mNumberOfCallsToWait;
 
     @Override
     protected void setUp() throws Exception {
+        mNumberOfCallsToWait = 0;
+        mCallbackHelper = new CallbackHelper();
         mContext = getInstrumentation().getTargetContext();
         setupTestAccounts(mContext);
         // Set signed in account to mAccount before initializing AndroidSyncSettings to let
@@ -137,6 +141,7 @@ public class AndroidSyncSettingsTest extends InstrumentationTestCase {
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
+        if (mNumberOfCallsToWait > 0) mCallbackHelper.waitForCallback(0, mNumberOfCallsToWait);
         AccountManagerHelper.resetAccountManagerHelperForTests();
     }
 
@@ -158,6 +163,25 @@ public class AndroidSyncSettingsTest extends InstrumentationTestCase {
         });
     }
 
+    private void updateAccount(Account account) {
+        updateAccountWithCallback(account, new Callback<Boolean>() {
+            @Override
+            public void onResult(Boolean result) {
+                mCallbackHelper.notifyCalled();
+            }
+        });
+    }
+
+    private void updateAccountSync(Account account) throws InterruptedException, TimeoutException {
+        updateAccount(account);
+        mCallbackHelper.waitForCallback(0, mNumberOfCallsToWait);
+    }
+
+    private void updateAccountWithCallback(Account account, Callback<Boolean> callback) {
+        AndroidSyncSettings.updateAccount(mContext, account, callback);
+        mNumberOfCallsToWait++;
+    }
+
     @SmallTest
     @Feature({"Sync"})
     public void testAccountInitialization() throws InterruptedException, TimeoutException {
@@ -165,19 +189,12 @@ public class AndroidSyncSettingsTest extends InstrumentationTestCase {
         assertEquals(1, mSyncContentResolverDelegate.mSetIsSyncableCalls.get());
         assertEquals(1, mSyncContentResolverDelegate.mRemovePeriodicSyncCalls.get());
 
-        final CallbackHelper callbackHelper = new CallbackHelper();
-        AndroidSyncSettings.updateAccount(mContext, null, new Callback<Boolean>() {
-            @Override
-            public void onResult(Boolean result) {
-                callbackHelper.notifyCalled();
-            }
-        });
-        callbackHelper.waitForCallback(0);
+        updateAccountSync(null);
 
         // mAccount was set to be not syncable.
         assertEquals(2, mSyncContentResolverDelegate.mSetIsSyncableCalls.get());
         assertEquals(1, mSyncContentResolverDelegate.mRemovePeriodicSyncCalls.get());
-        AndroidSyncSettings.updateAccount(mContext, mAlternateAccount);
+        updateAccount(mAlternateAccount);
         // mAlternateAccount was set to be syncable and not have periodic syncs.
         assertEquals(3, mSyncContentResolverDelegate.mSetIsSyncableCalls.get());
         assertEquals(2, mSyncContentResolverDelegate.mRemovePeriodicSyncCalls.get());
@@ -264,7 +281,7 @@ public class AndroidSyncSettingsTest extends InstrumentationTestCase {
         mSyncContentResolverDelegate.waitForLastNotificationCompleted();
         assertTrue("account should be synced", AndroidSyncSettings.isSyncEnabled(mContext));
 
-        AndroidSyncSettings.updateAccount(mContext, mAlternateAccount);
+        updateAccount(mAlternateAccount);
         enableChromeSyncOnUiThread();
         mSyncContentResolverDelegate.waitForLastNotificationCompleted();
         assertTrue(
@@ -274,11 +291,11 @@ public class AndroidSyncSettingsTest extends InstrumentationTestCase {
         mSyncContentResolverDelegate.waitForLastNotificationCompleted();
         assertFalse("alternate account should not be synced",
                 AndroidSyncSettings.isSyncEnabled(mContext));
-        AndroidSyncSettings.updateAccount(mContext, mAccount);
+        updateAccount(mAccount);
         assertTrue("account should still be synced", AndroidSyncSettings.isSyncEnabled(mContext));
 
         // Ensure we don't erroneously re-use cached data.
-        AndroidSyncSettings.updateAccount(mContext, null);
+        updateAccount(null);
         assertFalse(
                 "null account should not be synced", AndroidSyncSettings.isSyncEnabled(mContext));
     }
@@ -314,7 +331,7 @@ public class AndroidSyncSettingsTest extends InstrumentationTestCase {
                 mSyncContentResolverDelegate.mGetSyncAutomaticallyCalls.get());
 
         // Do a bunch of reads for alternate account.
-        AndroidSyncSettings.updateAccount(mContext, mAlternateAccount);
+        updateAccount(mAlternateAccount);
         AndroidSyncSettings.isMasterSyncEnabled(mContext);
         AndroidSyncSettings.isSyncEnabled(mContext);
         AndroidSyncSettings.isChromeSyncEnabled(mContext);
@@ -348,12 +365,12 @@ public class AndroidSyncSettingsTest extends InstrumentationTestCase {
                 mSyncSettingsObserver.receivedNotification());
 
         mSyncSettingsObserver.clearNotification();
-        AndroidSyncSettings.updateAccount(mContext, mAlternateAccount);
+        updateAccount(mAlternateAccount);
         assertTrue("switching to account with different settings should notify",
                 mSyncSettingsObserver.receivedNotification());
 
         mSyncSettingsObserver.clearNotification();
-        AndroidSyncSettings.updateAccount(mContext, mAccount);
+        updateAccount(mAccount);
         assertTrue("switching to account with different settings should notify",
                 mSyncSettingsObserver.receivedNotification());
 
@@ -379,18 +396,18 @@ public class AndroidSyncSettingsTest extends InstrumentationTestCase {
             throws InterruptedException, TimeoutException {
         assertEquals(1, mSyncContentResolverDelegate.getIsSyncable(mAccount, mAuthority));
 
-        final CallbackHelper callbackHelper = new CallbackHelper();
-        AndroidSyncSettings.updateAccount(mContext, null, new Callback<Boolean>() {
+        int currentCalls = mCallbackHelper.getCallCount();
+        updateAccountWithCallback(null, new Callback<Boolean>() {
             @Override
             public void onResult(Boolean result) {
                 assertTrue(result);
-                callbackHelper.notifyCalled();
+                mCallbackHelper.notifyCalled();
             }
         });
-        callbackHelper.waitForCallback(0);
+        mCallbackHelper.waitForCallback(currentCalls, mNumberOfCallsToWait);
 
         assertEquals(0, mSyncContentResolverDelegate.getIsSyncable(mAccount, mAuthority));
-        AndroidSyncSettings.updateAccount(mContext, mAccount);
+        updateAccount(mAccount);
         assertEquals(1, mSyncContentResolverDelegate.getIsSyncable(mAccount, mAuthority));
     }
 
@@ -413,7 +430,7 @@ public class AndroidSyncSettingsTest extends InstrumentationTestCase {
         assertTrue(mSyncContentResolverDelegate.getSyncAutomatically(mAccount, mAuthority));
 
         // Ensure bug is fixed.
-        AndroidSyncSettings.enableChromeSync(mContext);
+        enableChromeSyncOnUiThread();
         assertEquals(1, mSyncContentResolverDelegate.getIsSyncable(mAccount, mAuthority));
         // Should still be enabled.
         assertTrue(mSyncContentResolverDelegate.getSyncAutomatically(mAccount, mAuthority));
