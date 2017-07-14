@@ -17,7 +17,6 @@
   * [I want Chrome to have better performance](help_improve_performance.md)
   * [Perf sheriffing documentation](perf_regression_sheriffing.md)
   * [I want to add tests or platforms to the perf waterfall](adding_tests_bots.md)
-  * [I'm looking for more information on the Speed Progam](speed_program.md)
 
 ## Core Teams and Work
 
