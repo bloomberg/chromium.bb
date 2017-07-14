@@ -26,10 +26,6 @@ namespace cc {
 
 namespace {
 
-// We don't perform per-layer solid color analysis when there are too many skia
-// operations.
-const int kOpCountThatIsOkToAnalyze = 10;
-
 bool GetCanvasClipBounds(SkCanvas* canvas, gfx::Rect* clip_bounds) {
   SkRect canvas_clip_bounds;
   if (!canvas->getLocalClipBounds(&canvas_clip_bounds))
@@ -84,10 +80,6 @@ size_t DisplayItemList::BytesUsed() const {
   // contribute to memory usage?
   // TODO(vmpstr): Probably DiscardableImageMap is worth counting here.
   return sizeof(*this) + paint_op_buffer_.bytes_used();
-}
-
-bool DisplayItemList::ShouldBeAnalyzedForSolidColor() const {
-  return op_count() <= kOpCountThatIsOkToAnalyze;
 }
 
 void DisplayItemList::EmitTraceSnapshot() const {
@@ -196,7 +188,8 @@ sk_sp<PaintRecord> DisplayItemList::ReleaseAsRecord() {
 }
 
 bool DisplayItemList::GetColorIfSolidInRect(const gfx::Rect& rect,
-                                            SkColor* color) {
+                                            SkColor* color,
+                                            int max_ops_to_analyze) {
   std::vector<size_t>* indices_to_use = nullptr;
   std::vector<size_t> indices;
   if (!rect.Contains(rtree_.GetBounds())) {
@@ -205,8 +198,8 @@ bool DisplayItemList::GetColorIfSolidInRect(const gfx::Rect& rect,
   }
 
   base::Optional<SkColor> solid_color =
-      SolidColorAnalyzer::DetermineIfSolidColor(&paint_op_buffer_, rect,
-                                                indices_to_use);
+      SolidColorAnalyzer::DetermineIfSolidColor(
+          &paint_op_buffer_, rect, max_ops_to_analyze, indices_to_use);
   if (solid_color) {
     *color = *solid_color;
     return true;
