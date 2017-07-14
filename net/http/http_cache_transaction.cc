@@ -580,6 +580,11 @@ size_t HttpCache::Transaction::EstimateMemoryUsage() const {
   return 0;
 }
 
+void HttpCache::Transaction::SetSharedWritingFailState(int result) {
+  // TODO(shivanisha): Implement when integrating with HttpCache::Writers.
+  NOTIMPLEMENTED();
+}
+
 //-----------------------------------------------------------------------------
 
 // A few common patterns: (Foo* means Foo -> FooComplete)
@@ -1155,8 +1160,8 @@ int HttpCache::Transaction::DoAddToEntry() {
 
   // If headers phase is already done then we are here because of validation not
   // matching and creating a new entry. This transaction should be the
-  // first transaction of that new entry and thus it should not be subject
-  // to any cache lock delays, thus returning early from here.
+  // first transaction of that new entry and thus it will not have cache lock
+  // delays, thus returning early from here.
   if (done_headers_create_new_entry_) {
     DCHECK_EQ(mode_, WRITE);
     TransitionToState(STATE_DONE_HEADERS_ADD_TO_ENTRY_COMPLETE);

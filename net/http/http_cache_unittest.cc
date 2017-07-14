@@ -218,7 +218,7 @@ void RunTransactionTestBase(HttpCache* cache,
   rv = trans->Start(&request, callback.callback(), net_log);
   if (rv == ERR_IO_PENDING)
     rv = callback.WaitForResult();
-  ASSERT_EQ(trans_info.return_code, rv);
+  ASSERT_EQ(trans_info.start_return_code, rv);
 
   if (OK != rv)
     return;
@@ -1076,7 +1076,7 @@ TEST(HttpCache, SimpleGET_CacheSignal_Failure) {
   RemoveMockTransaction(&transaction);
 
   // Network failure with error; should fail but have was_cached set.
-  transaction.return_code = ERR_FAILED;
+  transaction.start_return_code = ERR_FAILED;
   AddMockTransaction(&transaction);
 
   MockHttpRequest request(transaction);
@@ -4691,7 +4691,7 @@ TEST(HttpCache, SimpleHEAD_WithRanges) {
   transaction.method = "HEAD";
   transaction.request_headers = "Range: bytes = 0-4\r\n";
   transaction.load_flags |= LOAD_ONLY_FROM_CACHE | LOAD_SKIP_CACHE_VALIDATION;
-  transaction.return_code = ERR_CACHE_MISS;
+  transaction.start_return_code = ERR_CACHE_MISS;
   RunTransactionTest(cache.http_cache(), transaction);
 
   EXPECT_EQ(0, cache.disk_cache()->open_count());
@@ -4857,7 +4857,7 @@ TEST(HttpCache, SimpleHEAD_InvalidatesEntry) {
   // Load from the cache.
   transaction.method = "GET";
   transaction.load_flags |= LOAD_ONLY_FROM_CACHE | LOAD_SKIP_CACHE_VALIDATION;
-  transaction.return_code = ERR_CACHE_MISS;
+  transaction.start_return_code = ERR_CACHE_MISS;
   RunTransactionTest(cache.http_cache(), transaction);
 
   RemoveMockTransaction(&transaction);
@@ -5134,7 +5134,7 @@ TEST(HttpCache, SimpleGET_DontInvalidateOnFailure) {
 
   // Fail the network request.
   MockTransaction transaction(kSimpleGET_Transaction);
-  transaction.return_code = ERR_FAILED;
+  transaction.start_return_code = ERR_FAILED;
   transaction.load_flags |= LOAD_VALIDATE_CACHE;
 
   AddMockTransaction(&transaction);
@@ -5143,7 +5143,7 @@ TEST(HttpCache, SimpleGET_DontInvalidateOnFailure) {
   RemoveMockTransaction(&transaction);
 
   transaction.load_flags = LOAD_ONLY_FROM_CACHE | LOAD_SKIP_CACHE_VALIDATION;
-  transaction.return_code = OK;
+  transaction.start_return_code = OK;
   AddMockTransaction(&transaction);
   RunTransactionTest(cache.http_cache(), transaction);
 
@@ -8218,12 +8218,12 @@ TEST(HttpCache, SkipVaryCheck) {
   // The request should fail.
   transaction.load_flags = LOAD_ONLY_FROM_CACHE;
   transaction.request_headers = "accept-encoding: foo\r\n";
-  transaction.return_code = ERR_CACHE_MISS;
+  transaction.start_return_code = ERR_CACHE_MISS;
   RunTransactionTest(cache.http_cache(), transaction);
 
   // Change the load flags to ignore vary checks, the request should now hit.
   transaction.load_flags = LOAD_ONLY_FROM_CACHE | LOAD_SKIP_VARY_CHECK;
-  transaction.return_code = OK;
+  transaction.start_return_code = OK;
   RunTransactionTest(cache.http_cache(), transaction);
 }
 
@@ -8249,7 +8249,7 @@ TEST(HttpCache, ValidLoadOnlyFromCache) {
 
   // If the cache entry is checked for validitiy, it should fail.
   transaction.load_flags = LOAD_ONLY_FROM_CACHE;
-  transaction.return_code = ERR_CACHE_MISS;
+  transaction.start_return_code = ERR_CACHE_MISS;
   RunTransactionTest(cache.http_cache(), transaction);
 }
 
@@ -8265,7 +8265,7 @@ TEST(HttpCache, InvalidLoadFlagCombination) {
   // DevTools relies on this combination of flags for "disable cache" mode
   // when a resource is only supposed to be loaded from cache.
   transaction.load_flags = LOAD_ONLY_FROM_CACHE | LOAD_BYPASS_CACHE;
-  transaction.return_code = ERR_CACHE_MISS;
+  transaction.start_return_code = ERR_CACHE_MISS;
   RunTransactionTest(cache.http_cache(), transaction);
 }
 

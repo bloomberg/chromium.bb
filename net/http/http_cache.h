@@ -246,6 +246,9 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
   class QuicServerInfoFactoryAdaptor;
   class Transaction;
   class WorkItem;
+  class Writers;
+  friend class WritersTest;  // To access ActiveEntry in the test class.
+  friend class MockHttpCacheTransaction;
   friend class Transaction;
   friend class ViewCacheHelper;
   struct PendingOp;  // Info for an entry under construction.
