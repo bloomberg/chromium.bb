@@ -60,6 +60,7 @@ class MESSAGE_CENTER_EXPORT NotificationControlButtonsView
 
   // views::View
   const char* GetClassName() const override;
+  void SetVisible(bool visible) override;
 
   // views::ButtonListener
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;

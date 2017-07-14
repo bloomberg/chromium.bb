@@ -637,8 +637,7 @@ void NotificationView::UpdateControlButtonsVisibility() {
   // (1) the mouse is hovering on the notification.
   // (2) the focus is on the control buttons.
   const bool target_visibility =
-      IsMouseHovered() || HasFocus() ||
-      control_buttons_view_->IsCloseButtonFocused() ||
+      IsMouseHovered() || control_buttons_view_->IsCloseButtonFocused() ||
       control_buttons_view_->IsSettingsButtonFocused();
 #else
   // On non Chrome OS, the settings button and the close button are always

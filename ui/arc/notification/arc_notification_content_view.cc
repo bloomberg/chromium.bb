@@ -278,9 +278,6 @@ void ArcNotificationContentView::MaybeCreateFloatingControlButtons() {
   // a horizontal box.
   control_buttons_view_ =
       new message_center::NotificationControlButtonsView(notification_view);
-  control_buttons_view_->SetPaintToLayer(ui::LAYER_TEXTURED);
-  control_buttons_view_->layer()->SetFillsBoundsOpaquely(false);
-
   control_buttons_view_->SetBackgroundColor(
       GetControlButtonBackgroundColor(item_->GetShownContents()));
   control_buttons_view_->ShowSettingsButton(
