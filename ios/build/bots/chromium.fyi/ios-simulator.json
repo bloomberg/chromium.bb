@@ -80,6 +80,48 @@
       "device type": "iPhone 6s",
       "os": "10.0",
       "xcode version": "8.0"
+    },
+    {
+      "app": "ios_clean_chrome_unittests",
+      "device type": "iPhone 5",
+      "os": "10.0",
+      "xcode version": "8.0"
+    },
+    {
+      "app": "ios_clean_chrome_unittests",
+      "device type": "iPhone 6s",
+      "os": "10.0",
+      "xcode version": "8.0"
+    },
+    {
+      "app": "ios_clean_chrome_unittests",
+      "device type": "iPhone 6s Plus",
+      "os": "10.0",
+      "xcode version": "8.0"
+    },
+    {
+      "app": "ios_clean_chrome_unittests",
+      "device type": "iPad Air 2",
+      "os": "10.0",
+      "xcode version": "8.0"
+    },
+    {
+      "app": "ios_clean_chrome_unittests",
+      "device type": "iPad Retina",
+      "os": "10.0",
+      "xcode version": "8.0"
+    },
+    {
+      "app": "ios_clean_chrome_unittests",
+      "device type": "iPhone 5",
+      "os": "9.0",
+      "xcode version": "8.0"
+    },
+    {
+      "app": "ios_clean_chrome_unittests",
+      "device type": "iPad Air 2",
+      "os": "9.0",
+      "xcode version": "8.0"
     }
   ]
 }
