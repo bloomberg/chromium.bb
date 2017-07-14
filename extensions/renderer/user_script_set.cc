@@ -8,6 +8,7 @@
 
 #include <utility>
 
+#include "base/debug/alias.h"
 #include "base/memory/ref_counted.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/render_frame.h"
@@ -35,6 +36,11 @@ namespace {
 // user script to wrap it in an anonymous scope.
 const char kUserScriptHead[] = "(function (unsafeWindow) {\n";
 const char kUserScriptTail[] = "\n})(window);";
+// Maximum number of total content scripts we allow (across all extensions).
+// The limit exists to diagnose https://crbug.com/723381. The number is
+// arbitrarily chosen.
+// TODO(lazyboy): Remove when the bug is fixed.
+const uint32_t kNumScriptsArbitraryMax = 100000u;
 
 GURL GetDocumentUrlForFrame(blink::WebLocalFrame* frame) {
   GURL data_source_url = ScriptContext::GetDataSourceURLForFrame(frame);
@@ -115,7 +121,13 @@ bool UserScriptSet::UpdateUserScripts(base::SharedMemoryHandle shared_memory,
   base::Pickle pickle(reinterpret_cast<char*>(shared_memory_->memory()),
                       pickle_size);
   base::PickleIterator iter(pickle);
+  base::debug::Alias(&pickle_size);
   CHECK(iter.ReadUInt32(&num_scripts));
+
+  // Sometimes the shared memory contents seem to be corrupted
+  // (https://crbug.com/723381). Set an arbitrary max limit to the number of
+  // scripts so that we don't add OOM noise to crash reports.
+  CHECK_LT(num_scripts, kNumScriptsArbitraryMax);
 
   scripts_.clear();
   script_sources_.clear();
