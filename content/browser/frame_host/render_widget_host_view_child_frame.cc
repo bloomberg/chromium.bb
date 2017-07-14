@@ -477,8 +477,8 @@ void RenderWidgetHostViewChildFrame::ProcessCompositorFrame(
 void RenderWidgetHostViewChildFrame::SendSurfaceInfoToEmbedder() {
   if (service_manager::ServiceManagerIsRemote())
     return;
-  cc::SurfaceSequence sequence =
-      cc::SurfaceSequence(frame_sink_id_, next_surface_sequence_++);
+  viz::SurfaceSequence sequence =
+      viz::SurfaceSequence(frame_sink_id_, next_surface_sequence_++);
   cc::SurfaceManager* manager = GetFrameSinkManager()->surface_manager();
   viz::SurfaceId surface_id(frame_sink_id_, local_surface_id_);
   // The renderer process will satisfy this dependency when it creates a
@@ -491,7 +491,7 @@ void RenderWidgetHostViewChildFrame::SendSurfaceInfoToEmbedder() {
 
 void RenderWidgetHostViewChildFrame::SendSurfaceInfoToEmbedderImpl(
     const viz::SurfaceInfo& surface_info,
-    const cc::SurfaceSequence& sequence) {
+    const viz::SurfaceSequence& sequence) {
   frame_connector_->SetChildFrameSurface(surface_info, sequence);
 }
 
@@ -513,7 +513,7 @@ void RenderWidgetHostViewChildFrame::OnDidNotProduceFrame(
 
 void RenderWidgetHostViewChildFrame::OnSurfaceChanged(
     const viz::SurfaceInfo& surface_info) {
-  cc::SurfaceSequence sequence(frame_sink_id_, next_surface_sequence_++);
+  viz::SurfaceSequence sequence(frame_sink_id_, next_surface_sequence_++);
   SendSurfaceInfoToEmbedderImpl(surface_info, sequence);
 }
 

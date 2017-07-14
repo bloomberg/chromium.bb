@@ -21,8 +21,8 @@
 #include "cc/layers/layer_client.h"
 #include "cc/layers/surface_layer.h"
 #include "cc/layers/texture_layer_client.h"
-#include "cc/surfaces/sequence_surface_reference_factory.h"
 #include "components/viz/common/quads/texture_mailbox.h"
+#include "components/viz/common/surfaces/sequence_surface_reference_factory.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/compositor/compositor.h"
@@ -304,7 +304,7 @@ class COMPOSITOR_EXPORT Layer
   // Begins showing content from a surface with a particular ID.
   void SetShowPrimarySurface(
       const viz::SurfaceInfo& surface_info,
-      scoped_refptr<cc::SurfaceReferenceFactory> surface_ref);
+      scoped_refptr<viz::SurfaceReferenceFactory> surface_ref);
 
   // In the event that the primary surface is not yet available in the
   // display compositor, the fallback surface will be used.

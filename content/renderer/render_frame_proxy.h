@@ -21,12 +21,9 @@ namespace blink {
 struct WebRect;
 }
 
-namespace cc {
-struct SurfaceSequence;
-}
-
 namespace viz {
 class SurfaceInfo;
+struct SurfaceSequence;
 }
 
 namespace content {
@@ -168,7 +165,7 @@ class CONTENT_EXPORT RenderFrameProxy
   void OnChildFrameProcessGone();
   void OnCompositorFrameSwapped(const IPC::Message& message);
   void OnSetChildFrameSurface(const viz::SurfaceInfo& surface_info,
-                              const cc::SurfaceSequence& sequence);
+                              const viz::SurfaceSequence& sequence);
   void OnUpdateOpener(int opener_routing_id);
   void OnDidStopLoading();
   void OnDidUpdateFramePolicy(

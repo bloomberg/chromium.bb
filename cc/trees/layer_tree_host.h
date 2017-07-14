@@ -35,8 +35,6 @@
 #include "cc/layers/layer_list_iterator.h"
 #include "cc/output/layer_tree_frame_sink.h"
 #include "cc/output/swap_promise.h"
-#include "cc/surfaces/surface_reference_owner.h"
-#include "cc/surfaces/surface_sequence_generator.h"
 #include "cc/trees/compositor_mode.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_settings.h"
@@ -45,6 +43,8 @@
 #include "cc/trees/swap_promise_manager.h"
 #include "cc/trees/target_property.h"
 #include "components/viz/common/quads/resource_format.h"
+#include "components/viz/common/surfaces/surface_reference_owner.h"
+#include "components/viz/common/surfaces/surface_sequence_generator.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -65,8 +65,9 @@ class UIResourceManager;
 struct RenderingStats;
 struct ScrollAndScaleSet;
 
-class CC_EXPORT LayerTreeHost : public NON_EXPORTED_BASE(SurfaceReferenceOwner),
-                                public NON_EXPORTED_BASE(MutatorHostClient) {
+class CC_EXPORT LayerTreeHost
+    : public NON_EXPORTED_BASE(viz::SurfaceReferenceOwner),
+      public NON_EXPORTED_BASE(MutatorHostClient) {
  public:
   struct CC_EXPORT InitParams {
     LayerTreeHostClient* client = nullptr;
@@ -457,8 +458,8 @@ class CC_EXPORT LayerTreeHost : public NON_EXPORTED_BASE(SurfaceReferenceOwner),
   bool IsSingleThreaded() const;
   bool IsThreaded() const;
 
-  // SurfaceReferenceOwner implementation.
-  SurfaceSequenceGenerator* GetSurfaceSequenceGenerator() override;
+  // viz::SurfaceReferenceOwner implementation.
+  viz::SurfaceSequenceGenerator* GetSurfaceSequenceGenerator() override;
 
   // MutatorHostClient implementation.
   bool IsElementInList(ElementId element_id,
@@ -585,7 +586,7 @@ class CC_EXPORT LayerTreeHost : public NON_EXPORTED_BASE(SurfaceReferenceOwner),
 
   TaskGraphRunner* task_graph_runner_;
 
-  SurfaceSequenceGenerator surface_sequence_generator_;
+  viz::SurfaceSequenceGenerator surface_sequence_generator_;
   uint32_t num_consecutive_frames_without_slow_paths_ = 0;
 
   scoped_refptr<Layer> root_layer_;

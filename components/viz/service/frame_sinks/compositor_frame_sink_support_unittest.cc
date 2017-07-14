@@ -554,7 +554,7 @@ TEST_F(CompositorFrameSinkSupportTest,
   SurfaceId surface_id(kAnotherArbitraryFrameSinkId, local_surface_id);
   cc::Surface* surface = GetSurfaceForId(surface_id);
   surface->AddDestructionDependency(
-      cc::SurfaceSequence(kYetAnotherArbitraryFrameSinkId, 4));
+      SurfaceSequence(kYetAnotherArbitraryFrameSinkId, 4));
 
   std::vector<cc::ReturnedResource> returned_resource = {
       resource.ToReturnedResource()};
@@ -591,7 +591,7 @@ TEST_F(CompositorFrameSinkSupportTest,
   SurfaceId surface_id(kAnotherArbitraryFrameSinkId, local_surface_id);
   cc::Surface* surface = GetSurfaceForId(surface_id);
   surface->AddDestructionDependency(
-      cc::SurfaceSequence(kYetAnotherArbitraryFrameSinkId, 4));
+      SurfaceSequence(kYetAnotherArbitraryFrameSinkId, 4));
 
   std::vector<cc::ReturnedResource> returned_resources;
   EXPECT_TRUE(GetSurfaceForId(surface_id));
@@ -603,7 +603,7 @@ TEST_F(CompositorFrameSinkSupportTest,
   EXPECT_CALL(mock_client, DidReceiveCompositorFrameAck(returned_resources))
       .Times(1);
   manager_.surface_manager()->SatisfySequence(
-      cc::SurfaceSequence(kYetAnotherArbitraryFrameSinkId, 4));
+      SurfaceSequence(kYetAnotherArbitraryFrameSinkId, 4));
   EXPECT_FALSE(GetSurfaceForId(surface_id));
 }
 
@@ -618,14 +618,14 @@ TEST_F(CompositorFrameSinkSupportTest, DestroySequence) {
 
   // Check that waiting before the sequence is satisfied works.
   GetSurfaceForId(id2)->AddDestructionDependency(
-      cc::SurfaceSequence(kYetAnotherArbitraryFrameSinkId, 4));
+      SurfaceSequence(kYetAnotherArbitraryFrameSinkId, 4));
   support2->EvictCurrentSurface();
 
   DCHECK(GetSurfaceForId(id2));
   manager_.surface_manager()->SatisfySequence(
-      cc::SurfaceSequence(kYetAnotherArbitraryFrameSinkId, 4));
+      SurfaceSequence(kYetAnotherArbitraryFrameSinkId, 4));
   manager_.surface_manager()->SatisfySequence(
-      cc::SurfaceSequence(kYetAnotherArbitraryFrameSinkId, 6));
+      SurfaceSequence(kYetAnotherArbitraryFrameSinkId, 6));
   DCHECK(!GetSurfaceForId(id2));
 
   // Check that waiting after the sequence is satisfied works.
@@ -633,7 +633,7 @@ TEST_F(CompositorFrameSinkSupportTest, DestroySequence) {
                                   cc::test::MakeCompositorFrame());
   DCHECK(GetSurfaceForId(id2));
   GetSurfaceForId(id2)->AddDestructionDependency(
-      cc::SurfaceSequence(kAnotherArbitraryFrameSinkId, 6));
+      SurfaceSequence(kAnotherArbitraryFrameSinkId, 6));
   support2->EvictCurrentSurface();
   DCHECK(!GetSurfaceForId(id2));
 }
@@ -650,7 +650,7 @@ TEST_F(CompositorFrameSinkSupportTest, InvalidFrameSinkId) {
 
   manager_.RegisterFrameSinkId(frame_sink_id);
   GetSurfaceForId(id)->AddDestructionDependency(
-      cc::SurfaceSequence(frame_sink_id, 4));
+      SurfaceSequence(frame_sink_id, 4));
 
   support_->EvictCurrentSurface();
 
@@ -687,7 +687,7 @@ TEST_F(CompositorFrameSinkSupportTest, DestroyCycle) {
               local_surface_id2);
   }
   GetSurfaceForId(id2)->AddDestructionDependency(
-      cc::SurfaceSequence(kAnotherArbitraryFrameSinkId, 4));
+      SurfaceSequence(kAnotherArbitraryFrameSinkId, 4));
   support2->EvictCurrentSurface();
   // Give local_surface_id_ a frame that references id2.
   {
@@ -703,7 +703,7 @@ TEST_F(CompositorFrameSinkSupportTest, DestroyCycle) {
 
   // Satisfy last destruction dependency for id2.
   manager_.surface_manager()->SatisfySequence(
-      cc::SurfaceSequence(kAnotherArbitraryFrameSinkId, 4));
+      SurfaceSequence(kAnotherArbitraryFrameSinkId, 4));
 
   // id2 and local_surface_id_ are in a reference cycle that has no surface
   // sequences holding on to it, so they should be destroyed.

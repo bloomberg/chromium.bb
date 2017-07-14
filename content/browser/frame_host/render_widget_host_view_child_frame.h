@@ -18,8 +18,8 @@
 #include "build/build_config.h"
 #include "cc/resources/returned_resource.h"
 #include "cc/scheduler/begin_frame_source.h"
-#include "cc/surfaces/surface_sequence.h"
 #include "components/viz/common/surfaces/surface_info.h"
+#include "components/viz/common/surfaces/surface_sequence.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support_client.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
@@ -259,7 +259,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
  private:
   virtual void SendSurfaceInfoToEmbedderImpl(
       const viz::SurfaceInfo& surface_info,
-      const cc::SurfaceSequence& sequence);
+      const viz::SurfaceSequence& sequence);
 
   void SubmitSurfaceCopyRequest(const gfx::Rect& src_subrect,
                                 const gfx::Size& dst_size,

@@ -7,10 +7,10 @@
 #include "cc/layers/layer.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/surface_layer.h"
-#include "cc/surfaces/sequence_surface_reference_factory.h"
-#include "cc/surfaces/surface_sequence.h"
+#include "components/viz/common/surfaces/sequence_surface_reference_factory.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/common/surfaces/surface_info.h"
+#include "components/viz/common/surfaces/surface_sequence.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/mojo/MojoHelper.h"
 #include "platform/wtf/Functional.h"
@@ -26,7 +26,7 @@ namespace blink {
 
 namespace {
 class SequenceSurfaceReferenceFactoryImpl
-    : public cc::SequenceSurfaceReferenceFactory {
+    : public viz::SequenceSurfaceReferenceFactory {
  public:
   SequenceSurfaceReferenceFactoryImpl(base::WeakPtr<SurfaceLayerBridge> bridge)
       : bridge_(bridge) {}
@@ -36,12 +36,12 @@ class SequenceSurfaceReferenceFactoryImpl
 
   // cc::SequenceSurfaceReferenceFactory implementation:
   void RequireSequence(const viz::SurfaceId& id,
-                       const cc::SurfaceSequence& sequence) const override {
+                       const viz::SurfaceSequence& sequence) const override {
     DCHECK(bridge_);
     bridge_->RequireCallback(id, sequence);
   }
 
-  void SatisfySequence(const cc::SurfaceSequence& sequence) const override {
+  void SatisfySequence(const viz::SurfaceSequence& sequence) const override {
     if (bridge_)
       bridge_->SatisfyCallback(sequence);
   }
@@ -85,12 +85,12 @@ SurfaceLayerBridge::~SurfaceLayerBridge() {
   }
 }
 
-void SurfaceLayerBridge::SatisfyCallback(const cc::SurfaceSequence& sequence) {
+void SurfaceLayerBridge::SatisfyCallback(const viz::SurfaceSequence& sequence) {
   service_->Satisfy(sequence);
 }
 
 void SurfaceLayerBridge::RequireCallback(const viz::SurfaceId& surface_id,
-                                         const cc::SurfaceSequence& sequence) {
+                                         const viz::SurfaceSequence& sequence) {
   service_->Require(surface_id, sequence);
 }
 

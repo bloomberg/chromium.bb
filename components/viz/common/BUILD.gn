@@ -33,9 +33,16 @@ viz_source_set("common") {
     "surfaces/local_surface_id.h",
     "surfaces/local_surface_id_allocator.cc",
     "surfaces/local_surface_id_allocator.h",
+    "surfaces/sequence_surface_reference_factory.cc",
+    "surfaces/sequence_surface_reference_factory.h",
     "surfaces/surface_id.cc",
     "surfaces/surface_id.h",
     "surfaces/surface_info.h",
+    "surfaces/surface_reference_factory.h",
+    "surfaces/surface_reference_owner.h",
+    "surfaces/surface_sequence.h",
+    "surfaces/surface_sequence_generator.cc",
+    "surfaces/surface_sequence_generator.h",
   ]
 
   deps = [

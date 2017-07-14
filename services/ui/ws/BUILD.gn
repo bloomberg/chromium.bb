@@ -138,7 +138,7 @@ static_library("lib") {
     "//cc",
     "//cc/ipc:interfaces",
     "//cc/surfaces",
-    "//cc/surfaces:surface_id",
+    "//components/viz/common",
     "//mojo/common:common_base",
     "//mojo/public/cpp/bindings",
     "//services/service_manager/public/cpp",

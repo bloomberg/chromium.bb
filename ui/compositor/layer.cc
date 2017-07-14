@@ -687,7 +687,7 @@ bool Layer::TextureFlipped() const {
 
 void Layer::SetShowPrimarySurface(
     const viz::SurfaceInfo& surface_info,
-    scoped_refptr<cc::SurfaceReferenceFactory> ref_factory) {
+    scoped_refptr<viz::SurfaceReferenceFactory> ref_factory) {
   DCHECK(type_ == LAYER_TEXTURED || type_ == LAYER_SOLID_COLOR);
 
   if (!surface_layer_) {

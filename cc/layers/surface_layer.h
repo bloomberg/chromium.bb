@@ -8,8 +8,8 @@
 #include "base/macros.h"
 #include "cc/cc_export.h"
 #include "cc/layers/layer.h"
-#include "cc/surfaces/surface_reference_factory.h"
 #include "components/viz/common/surfaces/surface_info.h"
+#include "components/viz/common/surfaces/surface_reference_factory.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace cc {
@@ -19,7 +19,7 @@ namespace cc {
 class CC_EXPORT SurfaceLayer : public Layer {
  public:
   static scoped_refptr<SurfaceLayer> Create(
-      scoped_refptr<SurfaceReferenceFactory> ref_factory);
+      scoped_refptr<viz::SurfaceReferenceFactory> ref_factory);
 
   void SetPrimarySurfaceInfo(const viz::SurfaceInfo& surface_info);
   void SetFallbackSurfaceInfo(const viz::SurfaceInfo& surface_info);
@@ -33,7 +33,8 @@ class CC_EXPORT SurfaceLayer : public Layer {
   void SetLayerTreeHost(LayerTreeHost* host) override;
   void PushPropertiesTo(LayerImpl* layer) override;
 
-  scoped_refptr<SurfaceReferenceFactory> surface_reference_factory() const {
+  scoped_refptr<viz::SurfaceReferenceFactory> surface_reference_factory()
+      const {
     return ref_factory_;
   }
 
@@ -46,7 +47,8 @@ class CC_EXPORT SurfaceLayer : public Layer {
   }
 
  protected:
-  explicit SurfaceLayer(scoped_refptr<SurfaceReferenceFactory> ref_factory);
+  explicit SurfaceLayer(
+      scoped_refptr<viz::SurfaceReferenceFactory> ref_factory);
   bool HasDrawableContent() const override;
 
  private:
@@ -57,7 +59,7 @@ class CC_EXPORT SurfaceLayer : public Layer {
   viz::SurfaceInfo fallback_surface_info_;
   base::Closure fallback_reference_returner_;
 
-  scoped_refptr<SurfaceReferenceFactory> ref_factory_;
+  scoped_refptr<viz::SurfaceReferenceFactory> ref_factory_;
   bool stretch_content_to_fill_bounds_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceLayer);

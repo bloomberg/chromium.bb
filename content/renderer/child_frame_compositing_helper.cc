@@ -15,7 +15,7 @@
 #include "cc/output/copy_output_result.h"
 #include "cc/paint/paint_image.h"
 #include "cc/resources/single_release_callback.h"
-#include "cc/surfaces/sequence_surface_reference_factory.h"
+#include "components/viz/common/surfaces/sequence_surface_reference_factory.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/browser_plugin/browser_plugin_messages.h"
 #include "content/common/content_switches_internal.h"
@@ -43,13 +43,13 @@ namespace content {
 namespace {
 
 class IframeSurfaceReferenceFactory
-    : public cc::SequenceSurfaceReferenceFactory {
+    : public viz::SequenceSurfaceReferenceFactory {
  public:
   IframeSurfaceReferenceFactory(scoped_refptr<ThreadSafeSender> sender,
                                 int routing_id)
       : sender_(std::move(sender)), routing_id_(routing_id) {}
 
-  void AddPendingSequence(const cc::SurfaceSequence& sequence) {
+  void AddPendingSequence(const viz::SurfaceSequence& sequence) {
     ReleasePendingSequenceIfNecessary();
     pending_sequence_ = sequence;
   }
@@ -63,13 +63,13 @@ class IframeSurfaceReferenceFactory
     if (pending_sequence_.is_valid()) {
       sender_->Send(
           new FrameHostMsg_SatisfySequence(routing_id_, pending_sequence_));
-      pending_sequence_ = cc::SurfaceSequence();
+      pending_sequence_ = viz::SurfaceSequence();
     }
   }
 
   // cc::SequenceSurfaceReferenceFactory implementation:
   void RequireSequence(const viz::SurfaceId& surface_id,
-                       const cc::SurfaceSequence& sequence) const override {
+                       const viz::SurfaceSequence& sequence) const override {
     sender_->Send(
         new FrameHostMsg_RequireSequence(routing_id_, surface_id, sequence));
     // If there is a temporary reference that was waiting on a new one to be
@@ -77,19 +77,19 @@ class IframeSurfaceReferenceFactory
     ReleasePendingSequenceIfNecessary();
   }
 
-  void SatisfySequence(const cc::SurfaceSequence& sequence) const override {
+  void SatisfySequence(const viz::SurfaceSequence& sequence) const override {
     sender_->Send(new FrameHostMsg_SatisfySequence(routing_id_, sequence));
   }
 
   const scoped_refptr<ThreadSafeSender> sender_;
-  mutable cc::SurfaceSequence pending_sequence_;
+  mutable viz::SurfaceSequence pending_sequence_;
   const int routing_id_;
 
   DISALLOW_COPY_AND_ASSIGN(IframeSurfaceReferenceFactory);
 };
 
 class BrowserPluginSurfaceReferenceFactory
-    : public cc::SequenceSurfaceReferenceFactory {
+    : public viz::SequenceSurfaceReferenceFactory {
  public:
   BrowserPluginSurfaceReferenceFactory(scoped_refptr<ThreadSafeSender> sender,
                                        int routing_id,
@@ -98,7 +98,7 @@ class BrowserPluginSurfaceReferenceFactory
         routing_id_(routing_id),
         browser_plugin_instance_id_(browser_plugin_instance_id) {}
 
-  void AddPendingSequence(const cc::SurfaceSequence& sequence) {
+  void AddPendingSequence(const viz::SurfaceSequence& sequence) {
     ReleasePendingSequenceIfNecessary();
     pending_sequence_ = sequence;
   }
@@ -112,18 +112,18 @@ class BrowserPluginSurfaceReferenceFactory
     if (pending_sequence_.is_valid()) {
       sender_->Send(new BrowserPluginHostMsg_SatisfySequence(
           routing_id_, browser_plugin_instance_id_, pending_sequence_));
-      pending_sequence_ = cc::SurfaceSequence();
+      pending_sequence_ = viz::SurfaceSequence();
     }
   }
 
   // cc::SequenceSurfaceRefrenceFactory implementation:
-  void SatisfySequence(const cc::SurfaceSequence& seq) const override {
+  void SatisfySequence(const viz::SurfaceSequence& seq) const override {
     sender_->Send(new BrowserPluginHostMsg_SatisfySequence(
         routing_id_, browser_plugin_instance_id_, seq));
   }
 
   void RequireSequence(const viz::SurfaceId& surface_id,
-                       const cc::SurfaceSequence& sequence) const override {
+                       const viz::SurfaceSequence& sequence) const override {
     sender_->Send(new BrowserPluginHostMsg_RequireSequence(
         routing_id_, browser_plugin_instance_id_, surface_id, sequence));
     // If there is a temporary reference that was waiting on a new one to be
@@ -132,7 +132,7 @@ class BrowserPluginSurfaceReferenceFactory
   }
 
   const scoped_refptr<ThreadSafeSender> sender_;
-  mutable cc::SurfaceSequence pending_sequence_;
+  mutable viz::SurfaceSequence pending_sequence_;
   const int routing_id_;
   const int browser_plugin_instance_id_;
 
@@ -250,7 +250,7 @@ void ChildFrameCompositingHelper::ChildFrameGone() {
 
 void ChildFrameCompositingHelper::OnSetSurface(
     const viz::SurfaceInfo& surface_info,
-    const cc::SurfaceSequence& sequence) {
+    const viz::SurfaceSequence& sequence) {
   float scale_factor = surface_info.device_scale_factor();
   surface_id_ = surface_info.id();
   scoped_refptr<cc::SurfaceLayer> surface_layer =

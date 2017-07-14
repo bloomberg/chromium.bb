@@ -17,9 +17,9 @@
 #include "build/build_config.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_manager.h"
-#include "cc/surfaces/surface_sequence.h"
 #include "cc/test/begin_frame_args_test.h"
 #include "cc/test/fake_external_begin_frame_source.h"
+#include "components/viz/common/surfaces/surface_sequence.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "content/browser/compositor/test/no_transport_image_transport_factory.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
@@ -65,7 +65,7 @@ class MockCrossProcessFrameConnector : public CrossProcessFrameConnector {
   ~MockCrossProcessFrameConnector() override {}
 
   void SetChildFrameSurface(const viz::SurfaceInfo& surface_info,
-                            const cc::SurfaceSequence& sequence) override {
+                            const viz::SurfaceSequence& sequence) override {
     last_surface_info_ = surface_info;
   }
 

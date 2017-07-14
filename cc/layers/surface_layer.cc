@@ -12,10 +12,10 @@
 #include "base/trace_event/trace_event.h"
 #include "cc/layers/surface_layer_impl.h"
 #include "cc/output/swap_promise.h"
-#include "cc/surfaces/surface_sequence_generator.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/swap_promise_manager.h"
 #include "cc/trees/task_runner_provider.h"
+#include "components/viz/common/surfaces/surface_sequence_generator.h"
 
 namespace cc {
 
@@ -52,11 +52,12 @@ class SatisfySwapPromise : public SwapPromise {
 };
 
 scoped_refptr<SurfaceLayer> SurfaceLayer::Create(
-    scoped_refptr<SurfaceReferenceFactory> ref_factory) {
+    scoped_refptr<viz::SurfaceReferenceFactory> ref_factory) {
   return make_scoped_refptr(new SurfaceLayer(std::move(ref_factory)));
 }
 
-SurfaceLayer::SurfaceLayer(scoped_refptr<SurfaceReferenceFactory> ref_factory)
+SurfaceLayer::SurfaceLayer(
+    scoped_refptr<viz::SurfaceReferenceFactory> ref_factory)
     : ref_factory_(std::move(ref_factory)) {}
 
 SurfaceLayer::~SurfaceLayer() {

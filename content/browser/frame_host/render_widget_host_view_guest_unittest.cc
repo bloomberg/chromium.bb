@@ -15,7 +15,7 @@
 #include "build/build_config.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_manager.h"
-#include "cc/surfaces/surface_sequence.h"
+#include "components/viz/common/surfaces/surface_sequence.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/compositor/test/no_transport_image_transport_factory.h"
 #include "content/browser/gpu/compositor_util.h"
@@ -134,7 +134,7 @@ class TestBrowserPluginGuest : public BrowserPluginGuest {
   }
 
   void SetChildFrameSurface(const viz::SurfaceInfo& surface_info,
-                            const cc::SurfaceSequence& sequence) override {
+                            const viz::SurfaceSequence& sequence) override {
     last_surface_info_ = surface_info;
   }
 

@@ -16,7 +16,6 @@
 #include "cc/layers/surface_layer.h"
 #include "cc/layers/surface_layer_impl.h"
 #include "cc/output/compositor_frame.h"
-#include "cc/surfaces/sequence_surface_reference_factory.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/fake_layer_tree_host_client.h"
@@ -25,6 +24,7 @@
 #include "cc/test/layer_tree_test.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/layer_tree_host.h"
+#include "components/viz/common/surfaces/sequence_surface_reference_factory.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -75,14 +75,15 @@ class SurfaceLayerTest : public testing::Test {
   FakeLayerTreeHostImpl host_impl_;
 };
 
-class MockSurfaceReferenceFactory : public SequenceSurfaceReferenceFactory {
+class MockSurfaceReferenceFactory
+    : public viz::SequenceSurfaceReferenceFactory {
  public:
   MockSurfaceReferenceFactory() {}
 
   // SequenceSurfaceReferenceFactory implementation.
-  MOCK_CONST_METHOD1(SatisfySequence, void(const SurfaceSequence&));
+  MOCK_CONST_METHOD1(SatisfySequence, void(const viz::SurfaceSequence&));
   MOCK_CONST_METHOD2(RequireSequence,
-                     void(const viz::SurfaceId&, const SurfaceSequence&));
+                     void(const viz::SurfaceId&, const viz::SurfaceSequence&));
 
  protected:
   ~MockSurfaceReferenceFactory() override = default;
@@ -92,7 +93,8 @@ class MockSurfaceReferenceFactory : public SequenceSurfaceReferenceFactory {
 };
 
 // Check that one surface can be referenced by multiple LayerTreeHosts, and
-// each will create its own SurfaceSequence that's satisfied on destruction.
+// each will create its own viz::SurfaceSequence that's satisfied on
+// destruction.
 TEST_F(SurfaceLayerTest, MultipleFramesOneSurface) {
   const base::UnguessableToken kArbitraryToken =
       base::UnguessableToken::Create();
@@ -100,8 +102,8 @@ TEST_F(SurfaceLayerTest, MultipleFramesOneSurface) {
       viz::SurfaceId(kArbitraryFrameSinkId,
                      viz::LocalSurfaceId(1, kArbitraryToken)),
       1.f, gfx::Size(1, 1));
-  const SurfaceSequence expected_seq1(viz::FrameSinkId(1, 1), 1u);
-  const SurfaceSequence expected_seq2(viz::FrameSinkId(2, 2), 1u);
+  const viz::SurfaceSequence expected_seq1(viz::FrameSinkId(1, 1), 1u);
+  const viz::SurfaceSequence expected_seq2(viz::FrameSinkId(2, 2), 1u);
   const viz::SurfaceId expected_id(kArbitraryFrameSinkId,
                                    viz::LocalSurfaceId(1, kArbitraryToken));
 
@@ -160,7 +162,7 @@ TEST_F(SurfaceLayerTest, MultipleFramesOneSurface) {
 TEST_F(SurfaceLayerTest, SurfaceInfoPushProperties) {
   // We use a nice mock here because we are not really interested in calls to
   // MockSurfaceReferenceFactory and we don't want warnings printed.
-  scoped_refptr<SurfaceReferenceFactory> ref_factory =
+  scoped_refptr<viz::SurfaceReferenceFactory> ref_factory =
       new testing::NiceMock<MockSurfaceReferenceFactory>();
 
   scoped_refptr<SurfaceLayer> layer = SurfaceLayer::Create(ref_factory);
@@ -222,7 +224,7 @@ TEST_F(SurfaceLayerTest, SurfaceInfoPushProperties) {
 TEST_F(SurfaceLayerTest, CheckSurfaceReferencesForClonedLayer) {
   // We use a nice mock here because we are not really interested in calls to
   // MockSurfaceReferenceFactory and we don't want warnings printed.
-  scoped_refptr<SurfaceReferenceFactory> ref_factory =
+  scoped_refptr<viz::SurfaceReferenceFactory> ref_factory =
       new testing::NiceMock<MockSurfaceReferenceFactory>();
 
   const viz::SurfaceId old_surface_id(
@@ -292,7 +294,7 @@ TEST_F(SurfaceLayerTest, CheckSurfaceReferencesForClonedLayer) {
 TEST_F(SurfaceLayerTest, CheckNeedsSurfaceIdsSyncForClonedLayers) {
   // We use a nice mock here because we are not really interested in calls to
   // MockSurfaceReferenceFactory and we don't want warnings printed.
-  scoped_refptr<SurfaceReferenceFactory> ref_factory =
+  scoped_refptr<viz::SurfaceReferenceFactory> ref_factory =
       new testing::NiceMock<MockSurfaceReferenceFactory>();
 
   const viz::SurfaceInfo surface_info(
@@ -349,7 +351,7 @@ TEST_F(SurfaceLayerTest, CheckNeedsSurfaceIdsSyncForClonedLayers) {
   EXPECT_THAT(layer_tree_host_->SurfaceLayerIds(), SizeIs(0));
 }
 
-// Check that SurfaceSequence is sent through swap promise.
+// Check that viz::SurfaceSequence is sent through swap promise.
 class SurfaceLayerSwapPromise : public LayerTreeTest {
  public:
   SurfaceLayerSwapPromise()
@@ -374,7 +376,7 @@ class SurfaceLayerSwapPromise : public LayerTreeTest {
     testing::Mock::VerifyAndClearExpectations(ref_factory_.get());
 
     // Add the layer to the tree. A sequence must be required.
-    SurfaceSequence expected_seq(kArbitraryFrameSinkId, 1u);
+    viz::SurfaceSequence expected_seq(kArbitraryFrameSinkId, 1u);
     viz::SurfaceId expected_id(kArbitraryFrameSinkId,
                                viz::LocalSurfaceId(1, kArbitraryToken));
     EXPECT_CALL(*ref_factory_, SatisfySequence(_)).Times(0);
@@ -420,7 +422,7 @@ class SurfaceLayerSwapPromise : public LayerTreeTest {
       base::UnguessableToken::Create();
 };
 
-// Check that SurfaceSequence is sent through swap promise.
+// Check that viz::SurfaceSequence is sent through swap promise.
 class SurfaceLayerSwapPromiseWithDraw : public SurfaceLayerSwapPromise {
  public:
   void ChangeTree() override {
@@ -442,8 +444,8 @@ class SurfaceLayerSwapPromiseWithDraw : public SurfaceLayerSwapPromise {
 
 SINGLE_AND_MULTI_THREAD_TEST_F(SurfaceLayerSwapPromiseWithDraw);
 
-// Check that SurfaceSequence is sent through swap promise and resolved when
-// swap fails.
+// Check that viz::SurfaceSequence is sent through swap promise and resolved
+// when swap fails.
 class SurfaceLayerSwapPromiseWithoutDraw : public SurfaceLayerSwapPromise {
  public:
   SurfaceLayerSwapPromiseWithoutDraw() : SurfaceLayerSwapPromise() {}

@@ -250,8 +250,7 @@ void LayerTreeHost::QueueSwapPromise(
   swap_promise_manager_.QueueSwapPromise(std::move(swap_promise));
 }
 
-SurfaceSequenceGenerator*
-LayerTreeHost::GetSurfaceSequenceGenerator() {
+viz::SurfaceSequenceGenerator* LayerTreeHost::GetSurfaceSequenceGenerator() {
   return &surface_sequence_generator_;
 }
 

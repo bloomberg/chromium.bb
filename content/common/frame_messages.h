@@ -14,9 +14,9 @@
 #include <vector>
 
 #include "build/build_config.h"
-#include "cc/surfaces/surface_sequence.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/common/surfaces/surface_info.h"
+#include "components/viz/common/surfaces/surface_sequence.h"
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
 #include "content/common/content_security_policy/csp_context.h"
@@ -700,7 +700,7 @@ IPC_STRUCT_TRAITS_END()
 
 IPC_MESSAGE_ROUTED2(FrameMsg_SetChildFrameSurface,
                     viz::SurfaceInfo /* surface_info */,
-                    cc::SurfaceSequence /* sequence */)
+                    viz::SurfaceSequence /* sequence */)
 
 // Notifies the embedding frame that the process rendering the child frame's
 // contents has terminated.
@@ -1422,13 +1422,13 @@ IPC_MESSAGE_CONTROL3(FrameHostMsg_PluginInstanceThrottleStateChange,
 
 // Satisfies a Surface destruction dependency associated with |sequence|.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_SatisfySequence,
-                    cc::SurfaceSequence /* sequence */)
+                    viz::SurfaceSequence /* sequence */)
 
 // Creates a destruction dependency for the Surface specified by the given
 // |surface_id|.
 IPC_MESSAGE_ROUTED2(FrameHostMsg_RequireSequence,
                     viz::SurfaceId /* surface_id */,
-                    cc::SurfaceSequence /* sequence */)
+                    viz::SurfaceSequence /* sequence */)
 
 // Provides the result from handling BeforeUnload.  |proceed| matches the return
 // value of the frame's beforeunload handler: true if the user decided to

@@ -130,7 +130,7 @@ void WindowPortLocal::OnSurfaceChanged(const viz::SurfaceId& surface_id,
   DCHECK_EQ(surface_id.frame_sink_id(), frame_sink_id_);
   local_surface_id_ = surface_id.local_surface_id();
   viz::SurfaceInfo surface_info(surface_id, 1.0f, surface_size);
-  scoped_refptr<cc::SurfaceReferenceFactory> reference_factory =
+  scoped_refptr<viz::SurfaceReferenceFactory> reference_factory =
       aura::Env::GetInstance()
           ->context_factory_private()
           ->GetFrameSinkManager()
