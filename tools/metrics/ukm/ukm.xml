@@ -708,6 +708,28 @@ be describing additional metrics about the same event.
       enum ManagerAutofillEvent.
     </summary>
   </metric>
+  <metric name="Saving.Prompt.Interaction">
+    <summary>
+      Records how the user interacted with a saving prompt. Recorded values
+      correspond to the enum PasswordFormMetricsRecorder::BubbleDismissalReason.
+    </summary>
+  </metric>
+  <metric name="Saving.Prompt.Shown">
+    <summary>
+      Records, for each password form seen by the password manager, whether the
+      user was shown a prompt that asked for permission to save new credentials.
+      In case a store() via the Credential Management API, a virtual password
+      form is created, for which this metric is recorded. Recorded values are 0
+      and 1 for false and true.
+    </summary>
+  </metric>
+  <metric name="Saving.Prompt.Trigger">
+    <summary>
+      Records the trigger of each password save bubble that was shown to the
+      user to ask for permission to save new credentials. Recorded values
+      correspond to the enum PasswordFormMetricsRecorder::BubbleTrigger.
+    </summary>
+  </metric>
   <metric name="Submission.Observed">
     <summary>
       Records whether a submission of a password form has been observered. The
@@ -806,6 +828,26 @@ be describing additional metrics about the same event.
       recording happens only for credentials that were originally entered by the
       user (as opposed to auto-generated). Recorded values correspond to the
       enum SuppressedAccountExistence.
+    </summary>
+  </metric>
+  <metric name="Updating.Prompt.Interaction">
+    <summary>
+      Records how the user interacted with an updating prompt. Recorded values
+      correspond to the enum PasswordFormMetricsRecorder::BubbleDismissalReason.
+    </summary>
+  </metric>
+  <metric name="Updating.Prompt.Shown">
+    <summary>
+      Records, for each password form seen by the password manager, whether the
+      user was shown a prompt that asked for permission to update existing
+      credentials. Recorded values are 0 and 1 for false and true.
+    </summary>
+  </metric>
+  <metric name="Updating.Prompt.Trigger">
+    <summary>
+      Records the trigger of each password update bubble that was shown to the
+      user to ask for permission to update existing credentials. Recorded values
+      correspond to the enum PasswordFormMetricsRecorder::BubbleTrigger.
     </summary>
   </metric>
 </event>

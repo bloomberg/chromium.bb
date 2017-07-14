@@ -22,6 +22,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
+#include "components/password_manager/core/browser/password_form_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_manager_constants.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -110,11 +111,16 @@ class ManagePasswordsBubbleModel::InteractionKeeper {
   }
 
  private:
+  static password_manager::metrics_util::UIDismissalReason
+  ToNearestUIDismissalReason(
+      password_manager::metrics_util::UpdatePasswordSubmissionEvent
+          update_password_submission_event);
+
   // The way the bubble appeared.
   const password_manager::metrics_util::UIDisplayDisposition
   display_disposition_;
 
-  // Dismissal reason for a bubble.
+  // Dismissal reason for a save bubble. Not filled for update bubbles.
   password_manager::metrics_util::UIDismissalReason dismissal_reason_;
 
   // Dismissal reason for the update bubble.
@@ -216,6 +222,51 @@ void ManagePasswordsBubbleModel::InteractionKeeper::ReportInteractions(
     if (update_password_submission_event_ != metrics_util::NO_UPDATE_SUBMISSION)
       LogUpdatePasswordSubmissionEvent(update_password_submission_event_);
   }
+
+  // Record UKM statistics on dismissal reason.
+  if (model->delegate_ && model->delegate_->GetPasswordFormMetricsRecorder()) {
+    if (model->state() != password_manager::ui::PENDING_PASSWORD_UPDATE_STATE) {
+      model->delegate_->GetPasswordFormMetricsRecorder()
+          ->RecordUIDismissalReason(dismissal_reason_);
+    } else {
+      model->delegate_->GetPasswordFormMetricsRecorder()
+          ->RecordUIDismissalReason(
+              ToNearestUIDismissalReason(update_password_submission_event_));
+    }
+  }
+}
+
+// static
+password_manager::metrics_util::UIDismissalReason
+ManagePasswordsBubbleModel::InteractionKeeper::ToNearestUIDismissalReason(
+    password_manager::metrics_util::UpdatePasswordSubmissionEvent
+        update_password_submission_event) {
+  switch (update_password_submission_event) {
+    case password_manager::metrics_util::NO_ACCOUNTS_CLICKED_UPDATE:
+    case password_manager::metrics_util::ONE_ACCOUNT_CLICKED_UPDATE:
+    case password_manager::metrics_util::MULTIPLE_ACCOUNTS_CLICKED_UPDATE:
+    case password_manager::metrics_util::PASSWORD_OVERRIDDEN_CLICKED_UPDATE:
+      return password_manager::metrics_util::CLICKED_SAVE;
+
+    case password_manager::metrics_util::NO_ACCOUNTS_CLICKED_NOPE:
+    case password_manager::metrics_util::ONE_ACCOUNT_CLICKED_NOPE:
+    case password_manager::metrics_util::MULTIPLE_ACCOUNTS_CLICKED_NOPE:
+    case password_manager::metrics_util::PASSWORD_OVERRIDDEN_CLICKED_NOPE:
+      return password_manager::metrics_util::CLICKED_CANCEL;
+
+    case password_manager::metrics_util::NO_ACCOUNTS_NO_INTERACTION:
+    case password_manager::metrics_util::ONE_ACCOUNT_NO_INTERACTION:
+    case password_manager::metrics_util::MULTIPLE_ACCOUNTS_NO_INTERACTION:
+    case password_manager::metrics_util::PASSWORD_OVERRIDDEN_NO_INTERACTION:
+    case password_manager::metrics_util::NO_UPDATE_SUBMISSION:
+      return password_manager::metrics_util::NO_DIRECT_INTERACTION;
+
+    case password_manager::metrics_util::UPDATE_PASSWORD_EVENT_COUNT:
+      // Not reached.
+      break;
+  }
+  NOTREACHED();
+  return password_manager::metrics_util::NO_DIRECT_INTERACTION;
 }
 
 ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
@@ -317,6 +368,11 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
         NOTREACHED();
         break;
     }
+  }
+
+  if (delegate_ && delegate_->GetPasswordFormMetricsRecorder()) {
+    delegate_->GetPasswordFormMetricsRecorder()->RecordPasswordBubbleShown(
+        delegate_->GetCredentialSource(), display_disposition);
   }
   metrics_util::LogUIDisplayDisposition(display_disposition);
   interaction_keeper_.reset(new InteractionKeeper(std::move(interaction_stats),

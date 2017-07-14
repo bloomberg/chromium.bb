@@ -208,6 +208,15 @@ const GURL& ManagePasswordsUIController::GetOrigin() const {
   return passwords_data_.origin();
 }
 
+password_manager::PasswordFormMetricsRecorder*
+ManagePasswordsUIController::GetPasswordFormMetricsRecorder() {
+  // The form manager may be null for example for auto sign-in toasts of the
+  // credential manager API.
+  password_manager::PasswordFormManager* form_manager =
+      passwords_data_.form_manager();
+  return form_manager ? form_manager->metrics_recorder() : nullptr;
+}
+
 password_manager::ui::State ManagePasswordsUIController::GetState() const {
   return passwords_data_.state();
 }
@@ -224,6 +233,15 @@ const autofill::PasswordForm& ManagePasswordsUIController::
   password_manager::PasswordFormManager* form_manager =
       passwords_data_.form_manager();
   return form_manager->pending_credentials();
+}
+
+password_manager::metrics_util::CredentialSourceType
+ManagePasswordsUIController::GetCredentialSource() const {
+  password_manager::PasswordFormManager* form_manager =
+      passwords_data_.form_manager();
+  return form_manager
+             ? form_manager->GetCredentialSource()
+             : password_manager::metrics_util::CredentialSourceType::kUnknown;
 }
 
 bool ManagePasswordsUIController::IsPasswordOverridden() const {

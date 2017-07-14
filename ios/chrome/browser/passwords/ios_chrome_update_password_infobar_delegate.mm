@@ -42,7 +42,10 @@ void IOSChromeUpdatePasswordInfoBarDelegate::Create(
 }
 
 IOSChromeUpdatePasswordInfoBarDelegate::
-    ~IOSChromeUpdatePasswordInfoBarDelegate() {}
+    ~IOSChromeUpdatePasswordInfoBarDelegate() {
+  form_to_save()->metrics_recorder()->RecordUIDismissalReason(
+      infobar_response());
+}
 
 IOSChromeUpdatePasswordInfoBarDelegate::IOSChromeUpdatePasswordInfoBarDelegate(
     bool is_smart_lock_branding_enabled,
@@ -50,6 +53,9 @@ IOSChromeUpdatePasswordInfoBarDelegate::IOSChromeUpdatePasswordInfoBarDelegate(
     : IOSChromePasswordManagerInfoBarDelegate(is_smart_lock_branding_enabled,
                                               std::move(form_manager)) {
   selected_account_ = form_to_save()->preferred_match()->username_value;
+  form_to_save()->metrics_recorder()->RecordPasswordBubbleShown(
+      form_to_save()->GetCredentialSource(),
+      password_manager::metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING_UPDATE);
 }
 
 bool IOSChromeUpdatePasswordInfoBarDelegate::ShowMultipleAccounts() const {
@@ -106,5 +112,12 @@ bool IOSChromeUpdatePasswordInfoBarDelegate::Accept() {
   } else {
     form_to_save()->Update(form_to_save()->pending_credentials());
   }
+  set_infobar_response(password_manager::metrics_util::CLICKED_SAVE);
+  return true;
+}
+
+bool IOSChromeUpdatePasswordInfoBarDelegate::Cancel() {
+  DCHECK(form_to_save());
+  set_infobar_response(password_manager::metrics_util::CLICKED_CANCEL);
   return true;
 }

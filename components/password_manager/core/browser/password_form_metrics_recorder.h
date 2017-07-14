@@ -14,11 +14,13 @@
 #include "base/memory/ref_counted.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/password_form_user_action.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 
 namespace password_manager {
 
-// Internal namespace is intended for component wide access only.
+// Internal namespace is intended for component wide access and unit testing
+// only.
 namespace internal {
 // UKM Metric names. Exposed in internal namespace for unittesting.
 
@@ -35,6 +37,33 @@ constexpr char kUkmSubmissionResult[] = "Submission.SubmissionResult";
 // values correspond to PasswordFormMetricsRecorder::SubmittedFormType.
 // Note that no metric is recorded for kSubmittedFormTypeUnspecified.
 constexpr char kUkmSubmissionFormType[] = "Submission.SubmittedFormType";
+
+// This metric records the boolean value indicating whether a password update
+// prompt was shown, which asked the user for permission to update a password.
+constexpr char kUkmUpdatingPromptShown[] = "Updating.Prompt.Shown";
+
+// This metric records the reason why a password update prompt was shown to ask
+// the user for permission to update a password. The values correspond to
+// PasswordFormMetricsRecorder::BubbleTrigger.
+constexpr char kUkmUpdatingPromptTrigger[] = "Updating.Prompt.Trigger";
+
+// This metric records how a user interacted with an updating prompt. The values
+// correspond to PasswordFormMetricsRecorder::BubbleDismissalReason.
+constexpr char kUkmUpdatingPromptInteraction[] = "Updating.Prompt.Interaction";
+
+// This metric records the boolean value indicating whether a password save
+// prompt was shown, which asked the user for permission to save a new
+// credential.
+constexpr char kUkmSavingPromptShown[] = "Saving.Prompt.Shown";
+
+// This metric records the reason why a password save prompt was shown to ask
+// the user for permission to save a new credential. The values correspond to
+// PasswordFormMetricsRecorder::BubbleTrigger.
+constexpr char kUkmSavingPromptTrigger[] = "Saving.Prompt.Trigger";
+
+// This metric records how a user interacted with a saving prompt. The values
+// correspond to PasswordFormMetricsRecorder::BubbleDismissalReason.
+constexpr char kUkmSavingPromptInteraction[] = "Saving.Prompt.Interaction";
 
 // This metric records attempts to fill a password form. Values correspond to
 // PasswordFormMetricsRecorder::ManagerFillEvent.
@@ -147,6 +176,28 @@ class PasswordFormMetricsRecorder
     kSubmittedFormTypeMax
   };
 
+  // The reason why a password bubble was shown on the screen.
+  enum class BubbleTrigger {
+    kUnknown = 0,
+    // The password manager suggests the user to save a password and asks for
+    // confirmation.
+    kPasswordManagerSuggestionAutomatic,
+    kPasswordManagerSuggestionManual,
+    // The site asked the user to save a password via the credential management
+    // API.
+    kCredentialManagementAPIAutomatic,
+    kCredentialManagementAPIManual,
+    kMax,
+  };
+
+  // The reason why a password bubble was dismissed.
+  enum class BubbleDismissalReason {
+    kUnknown = 0,
+    kAccepted = 1,
+    kDeclined = 2,
+    kIgnored = 3
+  };
+
   // The maximum number of combinations of the ManagerAction, UserAction and
   // SubmitResult enums.
   // This is used when recording the actions taken by the form in UMA.
@@ -193,6 +244,15 @@ class PasswordFormMetricsRecorder
       bool observed_form_origin_has_cryptographic_scheme,
       const FormFetcher& form_fetcher,
       const autofill::PasswordForm& pending_credentials);
+
+  // Records the event that a password bubble was shown.
+  void RecordPasswordBubbleShown(
+      metrics_util::CredentialSourceType credential_source_type,
+      metrics_util::UIDisplayDisposition display_disposition);
+
+  // Records the dismissal of a password bubble.
+  void RecordUIDismissalReason(
+      metrics_util::UIDismissalReason ui_dismissal_reason);
 
   // Records that the password manager managed or failed to fill a form.
   void RecordFillEvent(ManagerAutofillEvent event);
@@ -248,6 +308,12 @@ class PasswordFormMetricsRecorder
 
   // Whether this form has an auto generated password.
   bool has_generated_password_ = false;
+
+  // Whether the user was shown a prompt to update a password.
+  bool update_prompt_shown_ = false;
+
+  // Whether the user was shown a prompt to save a new credential.
+  bool save_prompt_shown_ = false;
 
   // These three fields record the "ActionsTaken" by the browser and
   // the user with this form, and the result. They are combined and

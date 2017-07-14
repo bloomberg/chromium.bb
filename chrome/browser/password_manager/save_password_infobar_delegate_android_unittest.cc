@@ -21,9 +21,13 @@
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/ukm/test_ukm_recorder.h"
+#include "components/ukm/ukm_source.h"
 #include "content/public/browser/web_contents.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using password_manager::PasswordFormMetricsRecorder;
 
 namespace {
 
@@ -75,7 +79,8 @@ class SavePasswordInfoBarDelegateTest : public ChromeRenderViewHostTestHarness {
 
   PrefService* prefs();
   const autofill::PasswordForm& test_form() { return test_form_; }
-  std::unique_ptr<MockPasswordFormManager> CreateMockFormManager();
+  std::unique_ptr<MockPasswordFormManager> CreateMockFormManager(
+      scoped_refptr<PasswordFormMetricsRecorder> metrics_recorder);
 
  protected:
   std::unique_ptr<ConfirmInfoBarDelegate> CreateDelegate(
@@ -99,7 +104,6 @@ SavePasswordInfoBarDelegateTest::SavePasswordInfoBarDelegateTest()
   test_form_.origin = GURL("http://example.com");
   test_form_.username_value = base::ASCIIToUTF16("username");
   test_form_.password_value = base::ASCIIToUTF16("12345");
-  fetcher_.Fetch();
 }
 
 PrefService* SavePasswordInfoBarDelegateTest::prefs() {
@@ -109,11 +113,15 @@ PrefService* SavePasswordInfoBarDelegateTest::prefs() {
 }
 
 std::unique_ptr<MockPasswordFormManager>
-SavePasswordInfoBarDelegateTest::CreateMockFormManager() {
+SavePasswordInfoBarDelegateTest::CreateMockFormManager(
+    scoped_refptr<PasswordFormMetricsRecorder> metrics_recorder) {
   auto manager = base::MakeUnique<MockPasswordFormManager>(
       &password_manager_, &client_, driver_.AsWeakPtr(), test_form(),
       &fetcher_);
-  manager->Init(nullptr);
+  manager->Init(metrics_recorder);
+  manager->ProvisionallySave(
+      test_form(),
+      password_manager::PasswordFormManager::ALLOW_OTHER_POSSIBLE_USERNAMES);
   return manager;
 }
 
@@ -137,7 +145,7 @@ void SavePasswordInfoBarDelegateTest::TearDown() {
 
 TEST_F(SavePasswordInfoBarDelegateTest, CancelTestCredentialSourceAPI) {
   std::unique_ptr<MockPasswordFormManager> password_form_manager(
-      CreateMockFormManager());
+      CreateMockFormManager(nullptr));
   EXPECT_CALL(*password_form_manager.get(), PermanentlyBlacklist());
   std::unique_ptr<ConfirmInfoBarDelegate> infobar(
       CreateDelegate(std::move(password_form_manager)));
@@ -147,9 +155,88 @@ TEST_F(SavePasswordInfoBarDelegateTest, CancelTestCredentialSourceAPI) {
 TEST_F(SavePasswordInfoBarDelegateTest,
        CancelTestCredentialSourcePasswordManager) {
   std::unique_ptr<MockPasswordFormManager> password_form_manager(
-      CreateMockFormManager());
+      CreateMockFormManager(nullptr));
   EXPECT_CALL(*password_form_manager.get(), PermanentlyBlacklist());
   std::unique_ptr<ConfirmInfoBarDelegate> infobar(
       CreateDelegate(std::move(password_form_manager)));
   EXPECT_TRUE(infobar->Cancel());
 }
+
+class SavePasswordInfoBarDelegateTestForUKMs
+    : public SavePasswordInfoBarDelegateTest,
+      public ::testing::WithParamInterface<
+          PasswordFormMetricsRecorder::BubbleDismissalReason> {
+ public:
+  SavePasswordInfoBarDelegateTestForUKMs() = default;
+  ~SavePasswordInfoBarDelegateTestForUKMs() = default;
+};
+
+// Verify that URL keyed metrics are recorded for showing and interacting with
+// the password save prompt.
+TEST_P(SavePasswordInfoBarDelegateTestForUKMs, VerifyUKMRecording) {
+  using BubbleTrigger = PasswordFormMetricsRecorder::BubbleTrigger;
+  using BubbleDismissalReason =
+      PasswordFormMetricsRecorder::BubbleDismissalReason;
+
+  BubbleDismissalReason dismissal_reason = GetParam();
+  SCOPED_TRACE(::testing::Message() << "dismissal_reason = "
+                                    << static_cast<int64_t>(dismissal_reason));
+
+  ukm::TestUkmRecorder test_ukm_recorder;
+  {
+    // Setup metrics recorder
+    ukm::SourceId source_id = test_ukm_recorder.GetNewSourceID();
+    static_cast<ukm::UkmRecorder*>(&test_ukm_recorder)
+        ->UpdateSourceURL(source_id, GURL("https://www.example.com/"));
+    auto recorder = base::MakeRefCounted<PasswordFormMetricsRecorder>(
+        true /*is_main_frame_secure*/,
+        PasswordFormMetricsRecorder::CreateUkmEntryBuilder(&test_ukm_recorder,
+                                                           source_id));
+
+    // Exercise delegate.
+    std::unique_ptr<MockPasswordFormManager> password_form_manager(
+        CreateMockFormManager(recorder));
+    if (dismissal_reason == BubbleDismissalReason::kDeclined)
+      EXPECT_CALL(*password_form_manager.get(), PermanentlyBlacklist());
+    std::unique_ptr<ConfirmInfoBarDelegate> infobar(
+        CreateDelegate(std::move(password_form_manager)));
+    switch (dismissal_reason) {
+      case BubbleDismissalReason::kAccepted:
+        EXPECT_TRUE(infobar->Accept());
+        break;
+      case BubbleDismissalReason::kDeclined:
+        EXPECT_TRUE(infobar->Cancel());
+        break;
+      case BubbleDismissalReason::kIgnored:
+        // Do nothing.
+        break;
+      case BubbleDismissalReason::kUnknown:
+        NOTREACHED();
+        break;
+    }
+  }
+
+  // Verify metrics.
+  const ukm::UkmSource* source =
+      test_ukm_recorder.GetSourceForUrl("https://www.example.com/");
+  ASSERT_TRUE(source);
+  test_ukm_recorder.ExpectMetric(
+      *source, "PasswordForm",
+      password_manager::internal::kUkmSavingPromptShown, 1);
+  test_ukm_recorder.ExpectMetric(
+      *source, "PasswordForm",
+      password_manager::internal::kUkmSavingPromptTrigger,
+      static_cast<int64_t>(BubbleTrigger::kPasswordManagerSuggestionAutomatic));
+  test_ukm_recorder.ExpectMetric(
+      *source, "PasswordForm",
+      password_manager::internal::kUkmSavingPromptInteraction,
+      static_cast<int64_t>(dismissal_reason));
+}
+
+INSTANTIATE_TEST_CASE_P(
+    /*no extra name*/,
+    SavePasswordInfoBarDelegateTestForUKMs,
+    ::testing::Values(
+        PasswordFormMetricsRecorder::BubbleDismissalReason::kAccepted,
+        PasswordFormMetricsRecorder::BubbleDismissalReason::kDeclined,
+        PasswordFormMetricsRecorder::BubbleDismissalReason::kIgnored));
