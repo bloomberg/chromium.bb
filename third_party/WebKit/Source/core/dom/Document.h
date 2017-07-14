@@ -1497,8 +1497,6 @@ class CORE_EXPORT Document : public ContainerNode,
   // This is cheaper than making setCompatibilityMode virtual.
   bool compatibility_mode_locked_;
 
-  TaskHandle execute_scripts_waiting_for_resources_task_handle_;
-
   bool has_autofocused_;
   TaskRunnerTimer<Document> clear_focused_element_timer_;
   Member<Element> autofocus_element_;

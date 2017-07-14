@@ -3700,12 +3700,10 @@ void Document::DidRemoveAllPendingBodyStylesheets() {
 void Document::DidLoadAllScriptBlockingResources() {
   // Use wrapWeakPersistent because the task should not keep this Document alive
   // just for executing scripts.
-  execute_scripts_waiting_for_resources_task_handle_ =
-      TaskRunnerHelper::Get(TaskType::kNetworking, this)
-          ->PostCancellableTask(
-              BLINK_FROM_HERE,
-              WTF::Bind(&Document::ExecuteScriptsWaitingForResources,
-                        WrapWeakPersistent(this)));
+  TaskRunnerHelper::Get(TaskType::kNetworking, this)
+      ->PostTask(BLINK_FROM_HERE,
+                 WTF::Bind(&Document::ExecuteScriptsWaitingForResources,
+                           WrapWeakPersistent(this)));
 
   if (IsHTMLDocument() && body()) {
     // For HTML if we have no more stylesheets to load and we're past the body
