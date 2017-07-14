@@ -226,6 +226,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [super loadModel];
   CollectionViewModel* model = self.collectionViewModel;
 
+  self.title = [_dataSource title];
+
   [self.pickerViews removeAllObjects];
 
   CollectionViewItem* headerItem = [_dataSource headerItem];

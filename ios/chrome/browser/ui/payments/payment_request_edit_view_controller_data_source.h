@@ -24,6 +24,9 @@ typedef NS_ENUM(NSInteger, EditViewControllerState) {
 // The current state of the view controller.
 @property(nonatomic, assign) EditViewControllerState state;
 
+// The title to display in the view controller.
+- (NSString*)title;
+
 // Returns the header item. May be nil.
 - (CollectionViewItem*)headerItem;
 

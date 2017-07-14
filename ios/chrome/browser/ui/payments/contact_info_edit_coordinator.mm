@@ -51,13 +51,6 @@ using ::AutofillTypeFromAutofillUIType;
 
 - (void)start {
   self.editViewController = [[PaymentRequestEditViewController alloc] init];
-  // TODO(crbug.com/602666): Title varies depending on what field is missing.
-  // e.g., Add Email vs. Add Phone Number.
-  NSString* title =
-      self.profile
-          ? l10n_util::GetNSString(IDS_PAYMENTS_EDIT_CONTACT_DETAILS_LABEL)
-          : l10n_util::GetNSString(IDS_PAYMENTS_ADD_CONTACT_DETAILS_LABEL);
-  [self.editViewController setTitle:title];
   [self.editViewController setDelegate:self];
   [self.editViewController setValidatorDelegate:self];
   self.mediator = [[ContactInfoEditMediator alloc]

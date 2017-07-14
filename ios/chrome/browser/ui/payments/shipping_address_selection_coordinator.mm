@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/autofill_profile.h"
-#include "components/payments/core/strings_util.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 #import "ios/chrome/browser/payments/payment_request_util.h"
 #import "ios/chrome/browser/ui/payments/cells/autofill_profile_item.h"
@@ -21,10 +20,6 @@
 #endif
 
 namespace {
-using ::payment_request_util::GetShippingAddressSelectorErrorMessage;
-using ::payments::GetShippingAddressSectionString;
-using ::payments::GetShippingAddressSelectorInfoMessage;
-
 // The delay in nano seconds before notifying the delegate of the selection.
 const int64_t kDelegateNotificationDelayInNanoSeconds = 0.2 * NSEC_PER_SEC;
 }  // namespace
@@ -63,15 +58,8 @@ const int64_t kDelegateNotificationDelayInNanoSeconds = 0.2 * NSEC_PER_SEC;
 - (void)start {
   self.mediator = [[ShippingAddressSelectionMediator alloc]
       initWithPaymentRequest:self.paymentRequest];
-  self.mediator.headerText =
-      self.paymentRequest->shipping_options().empty()
-          ? base::SysUTF16ToNSString(GetShippingAddressSelectorInfoMessage(
-                self.paymentRequest->shipping_type()))
-          : nil;
 
   self.viewController = [[PaymentRequestSelectorViewController alloc] init];
-  self.viewController.title = base::SysUTF16ToNSString(
-      GetShippingAddressSectionString(self.paymentRequest->shipping_type()));
   self.viewController.delegate = self;
   self.viewController.dataSource = self.mediator;
   [self.viewController loadModel];
@@ -96,8 +84,6 @@ const int64_t kDelegateNotificationDelayInNanoSeconds = 0.2 * NSEC_PER_SEC;
   self.viewController.view.userInteractionEnabled = YES;
 
   DCHECK(self.paymentRequest);
-  self.mediator.headerText =
-      GetShippingAddressSelectorErrorMessage(*self.paymentRequest);
   self.mediator.state = PaymentRequestSelectorStateError;
   [self.viewController loadModel];
   [self.viewController.collectionView reloadData];

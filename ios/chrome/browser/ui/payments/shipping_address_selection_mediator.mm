@@ -8,6 +8,7 @@
 
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/autofill_profile.h"
+#include "components/payments/core/strings_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 #import "ios/chrome/browser/payments/payment_request_util.h"
@@ -22,6 +23,9 @@
 #endif
 
 namespace {
+using ::payments::GetShippingAddressSectionString;
+using ::payments::GetShippingAddressSelectorInfoMessage;
+using ::payment_request_util::GetShippingAddressSelectorErrorMessage;
 using ::payment_request_util::GetAddressNotificationLabelFromAutofillProfile;
 using ::payment_request_util::GetNameLabelFromAutofillProfile;
 using ::payment_request_util::GetPhoneNumberLabelFromAutofillProfile;
@@ -42,7 +46,6 @@ using ::payment_request_util::GetShippingAddressLabelFromAutofillProfile;
 
 @implementation ShippingAddressSelectionMediator
 
-@synthesize headerText = _headerText;
 @synthesize state = _state;
 @synthesize selectedItemIndex = _selectedItemIndex;
 @synthesize paymentRequest = _paymentRequest;
@@ -59,18 +62,34 @@ using ::payment_request_util::GetShippingAddressLabelFromAutofillProfile;
   return self;
 }
 
+- (NSString*)getHeaderText {
+  if (self.state == PaymentRequestSelectorStateError) {
+    return GetShippingAddressSelectorErrorMessage(*self.paymentRequest);
+  } else {
+    return self.paymentRequest->shipping_options().empty()
+               ? base::SysUTF16ToNSString(GetShippingAddressSelectorInfoMessage(
+                     self.paymentRequest->shipping_type()))
+               : nil;
+  }
+}
+
 #pragma mark - PaymentRequestSelectorViewControllerDataSource
 
 - (BOOL)allowsEditMode {
   return YES;
 }
 
+- (NSString*)title {
+  return base::SysUTF16ToNSString(
+      GetShippingAddressSectionString(self.paymentRequest->shipping_type()));
+}
+
 - (CollectionViewItem*)headerItem {
-  if (!self.headerText.length)
+  if (![self getHeaderText].length)
     return nil;
 
   PaymentsTextItem* headerItem = [[PaymentsTextItem alloc] init];
-  headerItem.text = self.headerText;
+  headerItem.text = [self getHeaderText];
   if (self.state == PaymentRequestSelectorStateError)
     headerItem.image = NativeImage(IDR_IOS_PAYMENTS_WARNING);
   return headerItem;

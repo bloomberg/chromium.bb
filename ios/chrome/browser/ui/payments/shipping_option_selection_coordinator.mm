@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
-#include "components/payments/core/strings_util.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 #import "ios/chrome/browser/payments/payment_request_util.h"
 #include "ios/chrome/browser/ui/payments/shipping_option_selection_mediator.h"
@@ -18,7 +17,6 @@
 
 namespace {
 using ::payment_request_util::GetShippingOptionSelectorErrorMessage;
-using ::payments::GetShippingOptionSectionString;
 
 // The delay in nano seconds before notifying the delegate of the selection.
 const int64_t kDelegateNotificationDelayInNanoSeconds = 0.2 * NSEC_PER_SEC;
@@ -52,8 +50,6 @@ const int64_t kDelegateNotificationDelayInNanoSeconds = 0.2 * NSEC_PER_SEC;
       initWithPaymentRequest:self.paymentRequest];
 
   self.viewController = [[PaymentRequestSelectorViewController alloc] init];
-  self.viewController.title = base::SysUTF16ToNSString(
-      GetShippingOptionSectionString(self.paymentRequest->shipping_type()));
   self.viewController.delegate = self;
   self.viewController.dataSource = self.mediator;
   [self.viewController loadModel];

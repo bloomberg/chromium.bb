@@ -15,10 +15,6 @@ class PaymentRequest;
 @interface ShippingAddressSelectionMediator
     : NSObject<PaymentRequestSelectorViewControllerDataSource>
 
-// The text to display in the header item. If nil, the header item will also be
-// nil.
-@property(nonatomic, copy) NSString* headerText;
-
 // Redefined to be read-write.
 @property(nonatomic, readwrite, assign) PaymentRequestSelectorState state;
 

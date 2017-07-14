@@ -103,11 +103,6 @@ bool IsValidCreditCardNumber(const base::string16& card_number,
   _creditCard = _paymentMethod ? _paymentMethod->credit_card() : nil;
 
   _editViewController = [[PaymentRequestEditViewController alloc] init];
-  // TODO(crbug.com/602666): Title varies depending on the missing fields.
-  NSString* title = _creditCard
-                        ? l10n_util::GetNSString(IDS_PAYMENTS_EDIT_CARD)
-                        : l10n_util::GetNSString(IDS_PAYMENTS_ADD_CARD_LABEL);
-  [_editViewController setTitle:title];
   [_editViewController setDelegate:self];
   [_editViewController setValidatorDelegate:self];
   _mediator = [[CreditCardEditViewControllerMediator alloc]
