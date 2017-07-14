@@ -25,71 +25,6 @@ namespace {
 
 HomedirMethods* g_homedir_methods = NULL;
 
-void FillKeyProtobuf(const KeyDefinition& key_def, Key* key) {
-  key->set_secret(key_def.secret);
-  KeyData* data = key->mutable_data();
-  DCHECK_EQ(KeyDefinition::TYPE_PASSWORD, key_def.type);
-  data->set_type(KeyData::KEY_TYPE_PASSWORD);
-  data->set_label(key_def.label);
-
-  if (key_def.revision > 0)
-    data->set_revision(key_def.revision);
-
-  if (key_def.privileges != 0) {
-    KeyPrivileges* privileges = data->mutable_privileges();
-    privileges->set_mount(key_def.privileges & PRIV_MOUNT);
-    privileges->set_add(key_def.privileges & PRIV_ADD);
-    privileges->set_remove(key_def.privileges & PRIV_REMOVE);
-    privileges->set_update(key_def.privileges & PRIV_MIGRATE);
-    privileges->set_authorized_update(key_def.privileges &
-                                      PRIV_AUTHORIZED_UPDATE);
-  }
-
-  for (std::vector<KeyDefinition::AuthorizationData>::const_iterator auth_it =
-          key_def.authorization_data.begin();
-       auth_it != key_def.authorization_data.end(); ++auth_it) {
-    KeyAuthorizationData* auth_data = data->add_authorization_data();
-    switch (auth_it->type) {
-      case KeyDefinition::AuthorizationData::TYPE_HMACSHA256:
-        auth_data->set_type(
-            KeyAuthorizationData::KEY_AUTHORIZATION_TYPE_HMACSHA256);
-        break;
-      case KeyDefinition::AuthorizationData::TYPE_AES256CBC_HMACSHA256:
-        auth_data->set_type(
-            KeyAuthorizationData::KEY_AUTHORIZATION_TYPE_AES256CBC_HMACSHA256);
-        break;
-      default:
-        NOTREACHED();
-        break;
-    }
-
-    for (std::vector<KeyDefinition::AuthorizationData::Secret>::const_iterator
-             secret_it = auth_it->secrets.begin();
-         secret_it != auth_it->secrets.end(); ++secret_it) {
-      KeyAuthorizationSecret* secret = auth_data->add_secrets();
-      secret->mutable_usage()->set_encrypt(secret_it->encrypt);
-      secret->mutable_usage()->set_sign(secret_it->sign);
-      if (!secret_it->symmetric_key.empty())
-        secret->set_symmetric_key(secret_it->symmetric_key);
-      if (!secret_it->public_key.empty())
-        secret->set_public_key(secret_it->public_key);
-      secret->set_wrapped(secret_it->wrapped);
-    }
-  }
-
-  for (std::vector<KeyDefinition::ProviderData>::const_iterator it =
-           key_def.provider_data.begin(); it != key_def.provider_data.end();
-       ++it) {
-    KeyProviderData::Entry* entry =
-        data->mutable_provider_data()->add_entry();
-    entry->set_name(it->name);
-    if (it->number)
-      entry->set_number(*it->number);
-    if (it->bytes)
-      entry->set_bytes(*it->bytes);
-  }
-}
-
 // Fill authorization protobuffer.
 void FillAuthorizationProtobuf(const Authorization& auth,
                                cryptohome::AuthorizationRequest* auth_proto) {
@@ -203,33 +138,13 @@ class HomedirMethodsImpl : public HomedirMethods {
 
   void MountEx(const Identification& id,
                const Authorization& auth,
-               const MountParameters& request,
+               const MountRequest& request,
                const MountCallback& callback) override {
     cryptohome::AuthorizationRequest auth_proto;
-    cryptohome::MountRequest request_proto;
 
     FillAuthorizationProtobuf(auth, &auth_proto);
-
-    if (request.ephemeral)
-      request_proto.set_require_ephemeral(true);
-
-    if (!request.create_keys.empty()) {
-      CreateRequest* create = request_proto.mutable_create();
-      for (size_t i = 0; i < request.create_keys.size(); ++i)
-        FillKeyProtobuf(request.create_keys[i], create->add_keys());
-    }
-
-    if (request.force_dircrypto_if_available)
-      request_proto.set_force_dircrypto_if_available(true);
-
-    if (request.to_migrate_from_ecryptfs)
-      request_proto.set_to_migrate_from_ecryptfs(true);
-
-    if (request.public_mount)
-      request_proto.set_public_mount(true);
-
     DBusThreadManager::Get()->GetCryptohomeClient()->MountEx(
-        id, auth_proto, request_proto,
+        id, auth_proto, request,
         base::Bind(&HomedirMethodsImpl::OnMountExCallback,
                    weak_ptr_factory_.GetWeakPtr(), callback));
   }
@@ -243,7 +158,7 @@ class HomedirMethodsImpl : public HomedirMethods {
     cryptohome::AddKeyRequest request;
 
     FillAuthorizationProtobuf(auth, &auth_proto);
-    FillKeyProtobuf(new_key, request.mutable_key());
+    KeyDefinitionToKey(new_key, request.mutable_key());
     request.set_clobber_if_exists(clobber_if_exists);
 
     DBusThreadManager::Get()->GetCryptohomeClient()->AddKeyEx(
@@ -277,7 +192,7 @@ class HomedirMethodsImpl : public HomedirMethods {
     cryptohome::UpdateKeyRequest pb_update_key;
 
     FillAuthorizationProtobuf(auth, &auth_proto);
-    FillKeyProtobuf(new_key, pb_update_key.mutable_changes());
+    KeyDefinitionToKey(new_key, pb_update_key.mutable_changes());
     pb_update_key.set_authorization_signature(signature);
 
     DBusThreadManager::Get()->GetCryptohomeClient()->UpdateKeyEx(
@@ -483,6 +398,70 @@ class HomedirMethodsImpl : public HomedirMethods {
 };
 
 }  // namespace
+
+void KeyDefinitionToKey(const KeyDefinition& key_def, Key* key) {
+  key->set_secret(key_def.secret);
+  KeyData* data = key->mutable_data();
+  DCHECK_EQ(KeyDefinition::TYPE_PASSWORD, key_def.type);
+  data->set_type(KeyData::KEY_TYPE_PASSWORD);
+  data->set_label(key_def.label);
+
+  if (key_def.revision > 0)
+    data->set_revision(key_def.revision);
+
+  if (key_def.privileges != 0) {
+    KeyPrivileges* privileges = data->mutable_privileges();
+    privileges->set_mount(key_def.privileges & PRIV_MOUNT);
+    privileges->set_add(key_def.privileges & PRIV_ADD);
+    privileges->set_remove(key_def.privileges & PRIV_REMOVE);
+    privileges->set_update(key_def.privileges & PRIV_MIGRATE);
+    privileges->set_authorized_update(key_def.privileges &
+                                      PRIV_AUTHORIZED_UPDATE);
+  }
+
+  for (std::vector<KeyDefinition::AuthorizationData>::const_iterator auth_it =
+           key_def.authorization_data.begin();
+       auth_it != key_def.authorization_data.end(); ++auth_it) {
+    KeyAuthorizationData* auth_data = data->add_authorization_data();
+    switch (auth_it->type) {
+      case KeyDefinition::AuthorizationData::TYPE_HMACSHA256:
+        auth_data->set_type(
+            KeyAuthorizationData::KEY_AUTHORIZATION_TYPE_HMACSHA256);
+        break;
+      case KeyDefinition::AuthorizationData::TYPE_AES256CBC_HMACSHA256:
+        auth_data->set_type(
+            KeyAuthorizationData::KEY_AUTHORIZATION_TYPE_AES256CBC_HMACSHA256);
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+
+    for (std::vector<KeyDefinition::AuthorizationData::Secret>::const_iterator
+             secret_it = auth_it->secrets.begin();
+         secret_it != auth_it->secrets.end(); ++secret_it) {
+      KeyAuthorizationSecret* secret = auth_data->add_secrets();
+      secret->mutable_usage()->set_encrypt(secret_it->encrypt);
+      secret->mutable_usage()->set_sign(secret_it->sign);
+      if (!secret_it->symmetric_key.empty())
+        secret->set_symmetric_key(secret_it->symmetric_key);
+      if (!secret_it->public_key.empty())
+        secret->set_public_key(secret_it->public_key);
+      secret->set_wrapped(secret_it->wrapped);
+    }
+  }
+
+  for (std::vector<KeyDefinition::ProviderData>::const_iterator it =
+           key_def.provider_data.begin();
+       it != key_def.provider_data.end(); ++it) {
+    KeyProviderData::Entry* entry = data->mutable_provider_data()->add_entry();
+    entry->set_name(it->name);
+    if (it->number)
+      entry->set_number(*it->number);
+    if (it->bytes)
+      entry->set_bytes(*it->bytes);
+  }
+}
 
 // static
 void HomedirMethods::Initialize() {

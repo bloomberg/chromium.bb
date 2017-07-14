@@ -149,36 +149,6 @@ struct CHROMEOS_EXPORT Authorization {
   std::string label;
 };
 
-// Parameters for Mount call.
-class CHROMEOS_EXPORT MountParameters {
- public:
-  explicit MountParameters(bool ephemeral);
-  MountParameters(const MountParameters& other);
-  ~MountParameters();
-
-  bool operator==(const MountParameters& other) const;
-
-  // If |true|, the mounted home dir will be backed by tmpfs. If |false|, the
-  // ephemeral users policy decides whether tmpfs or an encrypted directory is
-  // used as the backend.
-  bool ephemeral;
-
-  // If not empty, home dir will be created with these keys if it exist.
-  std::vector<KeyDefinition> create_keys;
-
-  // If |true|, and cryptohomed supports the new "dircrypto" encryption,
-  // forces to use the new encryption. That is, makes it an error to mount
-  // an existing home directory encrypted in the old way (ecryptfs).
-  bool force_dircrypto_if_available = false;
-
-  // If |true|, mounts the existing ecryptfs vault to a temporary location while
-  // setting up a new dircrypto directory.
-  bool to_migrate_from_ecryptfs = false;
-
-  // If |true|, the home dir will be mounted as public mount.
-  bool public_mount = false;
-};
-
 // This function returns true if cryptohome of |account_id| is migrated to
 // accountId-based identifier (AccountId::GetAccountIdKey()).
 bool GetGaiaIdMigrationStatus(const AccountId& account_id);

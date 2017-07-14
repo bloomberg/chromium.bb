@@ -176,15 +176,17 @@ void DoMount(const base::WeakPtr<AuthAttemptState>& attempt,
   const cryptohome::KeyDefinition auth_key(key->GetSecret(),
                                            std::string(),
                                            cryptohome::PRIV_DEFAULT);
-  cryptohome::MountParameters mount(ephemeral);
+  cryptohome::MountRequest mount;
+  if (ephemeral)
+    mount.set_require_ephemeral(true);
   if (create_if_nonexistent) {
-    mount.create_keys.push_back(cryptohome::KeyDefinition(
-        key->GetSecret(),
-        kCryptohomeGAIAKeyLabel,
-        cryptohome::PRIV_DEFAULT));
+    KeyDefinitionToKey(
+        cryptohome::KeyDefinition(key->GetSecret(), kCryptohomeGAIAKeyLabel,
+                                  cryptohome::PRIV_DEFAULT),
+        mount.mutable_create()->add_keys());
   }
-  mount.force_dircrypto_if_available =
-      attempt->user_context.IsForcingDircrypto();
+  if (attempt->user_context.IsForcingDircrypto())
+    mount.set_force_dircrypto_if_available(true);
 
   cryptohome::HomedirMethods::GetInstance()->MountEx(
       cryptohome::Identification(attempt->user_context.GetAccountId()),
@@ -416,12 +418,15 @@ void MountGuestAndGetHash(const base::WeakPtr<AuthAttemptState>& attempt,
 void MountPublic(const base::WeakPtr<AuthAttemptState>& attempt,
                  scoped_refptr<CryptohomeAuthenticator> resolver,
                  bool force_dircrypto_if_available) {
-  cryptohome::MountParameters mount(false /* ephemeral */);
-  mount.force_dircrypto_if_available = force_dircrypto_if_available;
-  mount.public_mount = true;
+  cryptohome::MountRequest mount;
+  if (force_dircrypto_if_available)
+    mount.set_force_dircrypto_if_available(true);
+  mount.set_public_mount(true);
   // Set the request to create a new homedir when missing.
-  mount.create_keys.push_back(cryptohome::KeyDefinition(
-      std::string(), kCryptohomePublicMountKeyLabel, cryptohome::PRIV_DEFAULT));
+  KeyDefinitionToKey(
+      cryptohome::KeyDefinition(std::string(), kCryptohomePublicMountKeyLabel,
+                                cryptohome::PRIV_DEFAULT),
+      mount.mutable_create()->add_keys());
 
   // For public mounts, authorization secret is filled by cryptohomed, hence it
   // is left empty. Authentication's key label is also set to an empty string,

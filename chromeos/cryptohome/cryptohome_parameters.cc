@@ -230,18 +230,6 @@ bool Authorization::operator==(const Authorization& other) const {
   return key == other.key && label == other.label;
 }
 
-MountParameters::MountParameters(bool ephemeral) : ephemeral(ephemeral) {
-}
-
-MountParameters::MountParameters(const MountParameters& other) = default;
-
-bool MountParameters::operator==(const MountParameters& other) const {
-  return ephemeral == other.ephemeral && create_keys == other.create_keys;
-}
-
-MountParameters::~MountParameters() {
-}
-
 bool GetGaiaIdMigrationStatus(const AccountId& account_id) {
   return user_manager::known_user::GetGaiaIdMigrationStatus(account_id,
                                                             kCryptohome);
