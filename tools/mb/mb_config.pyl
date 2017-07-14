@@ -258,7 +258,7 @@
       'GPU Win Clang Builder (dbg)': 'gpu_fyi_tests_win_clang_debug_bot',
       'GPU Win x64 Builder': 'gpu_tests_deqp_gles_release_trybot',
       'GPU Win x64 Builder (dbg)': 'gpu_tests_deqp_gles_debug_trybot',
-      'Linux ChromiumOS Builder': 'gpu_fyi_tests_chromeos_release_trybot',
+      'Linux ChromiumOS Builder': 'gpu_fyi_tests_chromeos_x11_cros_release_trybot',
       # This is, confusingly, apparently not actually building ChromiumOS.
       'Linux ChromiumOS Ozone Builder': 'gpu_fyi_tests_ozone_linux_system_gbm_libdrm_release_trybot',
       'Linux GPU TSAN Release': 'gpu_fyi_tests_release_trybot_tsan',
@@ -505,7 +505,7 @@
 
     'tryserver.chromium.angle': {
       'android_angle_rel_ng': 'gpu_tests_deqp_android_release_trybot_arm64',
-      'linux_angle_chromeos_rel_ng': 'gpu_fyi_tests_chromeos_release_trybot',
+      'linux_angle_chromeos_rel_ng': 'gpu_fyi_tests_chromeos_x11_cros_release_trybot',
       'linux_angle_dbg_ng': 'gpu_fyi_tests_debug_trybot',
       'linux_angle_rel_ng': 'gpu_fyi_tests_release_trybot',
       'mac_angle_dbg_ng': 'gpu_fyi_tests_debug_trybot',
@@ -1227,8 +1227,8 @@
       'debug_trybot', 'x86',
     ],
 
-    'gpu_fyi_tests_chromeos_release_trybot': [
-      'gpu_fyi_tests', 'release_trybot', 'chromeos', 'system_gbm_libdrm',
+    'gpu_fyi_tests_chromeos_x11_cros_release_trybot': [
+      'gpu_fyi_tests', 'chromeos', 'x11_cros', 'release_trybot',
     ],
 
     'gpu_fyi_tests_debug_trybot': [
@@ -1955,6 +1955,11 @@
 
     'win_analyze': {
       'gn_args': 'use_vs_code_analysis=true',
+    },
+
+    'x11_cros': {
+      # When use_ozone=false then use_x11=true.
+      'gn_args': 'use_ozone=false',
     },
 
     'x64': {
