@@ -5,71 +5,94 @@
 <script src=../resources/idlharness.js></script>
 <script type="text/plain" id="tested">
 [SecureContext]
-interface ScopedCredentialInfo {
-    readonly attribute ArrayBuffer  clientData;
-    readonly attribute ArrayBuffer  attestation;
+interface PublicKeyCredential : Credential {
+    [SameObject] readonly attribute ArrayBuffer           rawId;
+    [SameObject] readonly attribute AuthenticatorResponse response;
 };
 
-dictionary RelyingPartyAccount {
-    required DOMString rpDisplayName;
-    required DOMString displayName;
-    required DOMString id;
-    DOMString          name;
-    DOMString          imageURL;
+partial dictionary CredentialCreationOptions {
+    MakeCredentialOptions? publicKey;
 };
 
-dictionary ScopedCredentialParameters {
-    required ScopedCredentialType  type;
+partial dictionary CredentialRequestOptions {
+    PublicKeyCredentialRequestOptions? publicKey;
+};
+
+[SecureContext]
+interface AuthenticatorResponse {
+    [SameObject] readonly attribute ArrayBuffer clientDataJSON;
+};
+
+[SecureContext]
+interface AuthenticatorAttestationResponse : AuthenticatorResponse {
+    [SameObject] readonly attribute ArrayBuffer attestationObject;
+};
+
+[SecureContext]
+interface AuthenticatorAssertionResponse : AuthenticatorResponse {
+    [SameObject] readonly attribute ArrayBuffer      authenticatorData;
+    [SameObject] readonly attribute ArrayBuffer      signature;
+};
+
+dictionary PublicKeyCredentialParameters {
+    required PublicKeyCredentialType  type;
     required AlgorithmIdentifier   algorithm;
 };
 
-dictionary ScopedCredentialOptions {
-    unsigned long                             timeoutSeconds;
-    USVString                                 rpId;
-    sequence < ScopedCredentialDescriptor >   excludeList;
-    AuthenticationExtension                   extensions;
+dictionary MakeCredentialOptions {
+    required PublicKeyCredentialEntity rp;
+    required PublicKeyCredentialUserEntity user;
+
+    required BufferSource                         challenge;
+    required sequence<PublicKeyCredentialParameters> parameters;
+
+    unsigned long                        timeout;
+    sequence<PublicKeyCredentialDescriptor> excludeCredentials = [];
+    AuthenticatorSelectionCriteria       authenticatorSelection;
 };
 
-[SecureContext]
-interface AuthenticationAssertion {
-    readonly attribute ScopedCredential  credential;
-    readonly attribute ArrayBuffer       clientData;
-    readonly attribute ArrayBuffer       authenticatorData;
-    readonly attribute ArrayBuffer       signature;
+dictionary PublicKeyCredentialEntity {
+    DOMString id;
+    DOMString name;
+    USVString icon;
 };
 
-dictionary AssertionOptions {
-    unsigned long                            timeoutSeconds;
-    USVString                                rpId;
-    sequence < ScopedCredentialDescriptor >  allowList;
-    AuthenticationExtension                  extensions;
+dictionary PublicKeyCredentialUserEntity : PublicKeyCredentialEntity {
+    DOMString displayName;
 };
 
-dictionary AuthenticationExtension {
+dictionary AuthenticatorSelectionCriteria {
+    AuthenticatorAttachment    attachment;
+    boolean       requireResidentKey = false;
 };
 
-dictionary AuthenticationClientData {
+enum AuthenticatorAttachment {
+    "platform",
+    "cross-platform"
+};
+
+dictionary PublicKeyCredentialRequestOptions {
+    required BufferSource                challenge;
+    unsigned long                        timeout;
+    USVString                            rpId;
+    sequence<PublicKeyCredentialDescriptor> allowCredentials = [];
+};
+
+dictionary CollectedClientData {
     required DOMString           challenge;
     required DOMString           origin;
-    required AlgorithmIdentifier hashAlg;
-    DOMString                    tokenBinding;
-    AuthenticationExtension      extensions;
+    required DOMString           hashAlgorithm;
+    DOMString                    tokenBindingId;
 };
 
-enum ScopedCredentialType {
-    "ScopedCred"
+enum PublicKeyCredentialType {
+    "public-key"
 };
 
-[SecureContext]
-interface ScopedCredential {
-    readonly attribute ScopedCredentialType type;
-    readonly attribute ArrayBuffer          id;
-};
-
-dictionary ScopedCredentialDescriptor {
-    required ScopedCredentialType type;
-    required BufferSource   id;
-    sequence <Transport>  transports;
+dictionary PublicKeyCredentialDescriptor {
+    required PublicKeyCredentialType type;
+    required BufferSource id;
+    sequence<Transport>   transports;
 };
 
 enum Transport {
@@ -77,20 +100,17 @@ enum Transport {
     "nfc",
     "ble"
 };
-[SecureContext]
+
 interface WebAuthentication {
-    Promise <ScopedCredentialInfo> makeCredential (
-        Account                                 accountInformation,
-        sequence < ScopedCredentialParameters > cryptoParameters,
-        BufferSource                            attestationChallenge,
-        optional ScopedCredentialOptions        options
+    Promise<AuthenticatorAttestationResponse> makeCredential (
+        MakeCredentialOptions	                publicKey
     );
 
-    Promise <AuthenticationAssertion> getAssertion (
-        BufferSource               assertionChallenge,
-        optional AssertionOptions  options
+    Promise<AuthenticatorAssertionResponse> getAssertion (
+        PublicKeyCredentialRequestOptions     publicKey
     );
 };
+
 </script>
 <script>
 (function() {

@@ -392,12 +392,18 @@ interface AudioTrackList : EventTarget
     setter onaddtrack
     setter onchange
     setter onremovetrack
-interface AuthenticationAssertion
+interface AuthenticatorAssertionResponse : AuthenticatorResponse
     attribute @@toStringTag
     getter authenticatorData
-    getter clientData
-    getter credential
     getter signature
+    method constructor
+interface AuthenticatorAttestationResponse : AuthenticatorResponse
+    attribute @@toStringTag
+    getter attestationObject
+    method constructor
+interface AuthenticatorResponse
+    attribute @@toStringTag
+    getter clientDataJSON
     method constructor
 interface BackgroundFetchFetch
     attribute @@toStringTag
@@ -5066,6 +5072,11 @@ interface PromiseRejectionEvent : Event
     getter promise
     getter reason
     method constructor
+interface PublicKeyCredential : Credential
+    attribute @@toStringTag
+    getter rawId
+    getter response
+    method constructor
 interface PushManager
     static getter supportedContentEncodings
     attribute @@toStringTag
@@ -6414,16 +6425,6 @@ interface SVGViewElement : SVGElement
     getter zoomAndPan
     method constructor
     setter zoomAndPan
-interface ScopedCredential
-    attribute @@toStringTag
-    getter id
-    getter type
-    method constructor
-interface ScopedCredentialInfo
-    attribute @@toStringTag
-    getter attestation
-    getter clientData
-    method constructor
 interface Screen
     attribute @@toStringTag
     getter availHeight

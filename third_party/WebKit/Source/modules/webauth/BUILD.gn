@@ -6,11 +6,16 @@ import("//third_party/WebKit/Source/modules/modules.gni")
 
 blink_modules_sources("webauth") {
   sources = [
-    "AuthenticationAssertion.h",
+    "AuthenticatorAssertionResponse.cpp",
+    "AuthenticatorAssertionResponse.h",
+    "AuthenticatorAttestationResponse.cpp",
+    "AuthenticatorAttestationResponse.h",
+    "AuthenticatorResponse.cpp",
+    "AuthenticatorResponse.h",
     "NavigatorAuth.cpp",
     "NavigatorAuth.h",
-    "ScopedCredential.h",
-    "ScopedCredentialInfo.h",
+    "PublicKeyCredential.cpp",
+    "PublicKeyCredential.h",
     "WebAuthentication.cpp",
     "WebAuthentication.h",
   ]

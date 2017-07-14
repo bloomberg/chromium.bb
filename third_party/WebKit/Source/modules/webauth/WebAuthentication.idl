@@ -2,12 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://w3c.github.io/webauthn/#webauthentication
-
 [
     RuntimeEnabled=WebAuth,
     SecureContext
 ] interface WebAuthentication {
-    [CallWith=ScriptState] Promise<sequence<ScopedCredentialInfo>> makeCredential(RelyingPartyAccount accountInformation, sequence<ScopedCredentialParameters> cryptoParameters, BufferSource attestationChallenge, optional ScopedCredentialOptions options);
-    [CallWith=ScriptState] Promise<sequence<WebAuthnAssertion>> getAssertion(BufferSource assertionChallenge, optional AuthenticationAssertionOptions options);
+    [CallWith=ScriptState] Promise<AuthenticatorAttestationResponse> makeCredential(MakeCredentialOptions publicKey);
+    [CallWith=ScriptState] Promise<AuthenticatorAssertionResponse> getAssertion(PublicKeyCredentialRequestOptions publicKey);
 };

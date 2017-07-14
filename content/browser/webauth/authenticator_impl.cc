@@ -17,13 +17,13 @@ namespace content {
 
 namespace {
 
-const char kGetAssertionType[] = "navigator.id.getAssertion";
+constexpr char kMakeCredentialType[] = "navigator.id.makeCredential";
 
 // JSON key values
-const char kTypeKey[] = "type";
-const char kChallengeKey[] = "challenge";
-const char kOriginKey[] = "origin";
-const char kCidPubkeyKey[] = "cid_pubkey";
+constexpr char kTypeKey[] = "type";
+constexpr char kChallengeKey[] = "challenge";
+constexpr char kOriginKey[] = "origin";
+constexpr char kCidPubkeyKey[] = "cid_pubkey";
 
 }  // namespace
 
@@ -53,10 +53,7 @@ AuthenticatorImpl::AuthenticatorImpl(RenderFrameHost* render_frame_host) {
 
 // mojom:Authenticator
 void AuthenticatorImpl::MakeCredential(
-    webauth::mojom::RelyingPartyAccountPtr account,
-    std::vector<webauth::mojom::ScopedCredentialParametersPtr> parameters,
-    const std::vector<uint8_t>& challenge,
-    webauth::mojom::ScopedCredentialOptionsPtr options,
+    webauth::mojom::MakeCredentialOptionsPtr options,
     MakeCredentialCallback callback) {
   std::string effective_domain;
   std::string relying_party_id;
@@ -71,7 +68,7 @@ void AuthenticatorImpl::MakeCredential(
     return;
   }
 
-  if (!options->relying_party_id) {
+  if (options->relying_party->id.empty()) {
     relying_party_id = caller_origin_.Serialize();
   } else {
     effective_domain = caller_origin_.host();
@@ -80,18 +77,17 @@ void AuthenticatorImpl::MakeCredential(
     // TODO(kpaulhamus): Check if relyingPartyId is a registrable domain
     // suffix of and equal to effectiveDomain and set relyingPartyId
     // appropriately.
-    relying_party_id = options->relying_party_id.value_or(std::string());
+    relying_party_id = options->relying_party->id;
   }
 
   // TODO(kpaulhamus): Check ScopedCredentialParameter's type and
   // algorithmIdentifier after algorithmIdentifier is added to mojom to
   // make sure it is U2F_V2.
-
-  client_data.SetString(kTypeKey, kGetAssertionType);
-  client_data.SetString(
-      kChallengeKey,
-      base::StringPiece(reinterpret_cast<const char*>(challenge.data()),
-                        challenge.size()));
+  client_data.SetString(kTypeKey, kMakeCredentialType);
+  client_data.SetString(kChallengeKey,
+                        base::StringPiece(reinterpret_cast<const char*>(
+                                              options->challenge.data()),
+                                          options->challenge.size()));
   client_data.SetString(kOriginKey, relying_party_id);
   // Channel ID is optional, and missing if the browser doesn't support it.
   // It is present and set to the constant "unused" if the browser
