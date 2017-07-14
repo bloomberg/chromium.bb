@@ -79,12 +79,8 @@ void SystemModalContainerLayoutManager::OnWindowAddedToLayout(
     aura::Window* child) {
   DCHECK(child->type() == aura::client::WINDOW_TYPE_NORMAL ||
          child->type() == aura::client::WINDOW_TYPE_POPUP);
-  // TODO(mash): IsUserSessionBlocked() depends on knowing the login state. We
-  // need a non-stub version of SessionStateDelegate. crbug.com/648964
-  if (Shell::GetAshConfig() != Config::MASH) {
-    DCHECK(container_->id() != kShellWindowId_LockSystemModalContainer ||
-           Shell::Get()->session_controller()->IsUserSessionBlocked());
-  }
+  DCHECK(container_->id() != kShellWindowId_LockSystemModalContainer ||
+         Shell::Get()->session_controller()->IsUserSessionBlocked());
   // Since this is for SystemModal, there is no good reason to add windows
   // other than MODAL_TYPE_NONE or MODAL_TYPE_SYSTEM. DCHECK to avoid simple
   // mistake.
