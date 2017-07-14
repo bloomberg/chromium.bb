@@ -92489,6 +92489,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="Net.BidirectionalStream.TimeToSendStart"/>
 </histogram_suffixes>
 
+<histogram_suffixes name="Net.HttpJob.TotalTimeSuccess.Priorities"
+    separator=".">
+  <suffix name="Priority0" label="THROTTLED or MINIMUM_PRIORITY"/>
+  <suffix name="Priority1" label="IDLE"/>
+  <suffix name="Priority2" label="LOWEST or DEFAULT_PRIORITY"/>
+  <suffix name="Priority3" label="LOW"/>
+  <suffix name="Priority4" label="MEDIUM"/>
+  <suffix name="Priority5" label="HIGHEST or MAXIMUM_PRIORITY"/>
+  <affected-histogram name="Net.HttpJob.TotalTimeSuccess"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="Net.QuicClientHelloRejectReasons.QuicIsSecureOrNot"
     separator=".">
   <owner>rch@chromium.org</owner>
