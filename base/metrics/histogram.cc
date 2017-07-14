@@ -529,6 +529,36 @@ void Histogram::WriteAscii(std::string* output) const {
   WriteAsciiImpl(true, "\n", output);
 }
 
+void Histogram::ValidateHistogramContents() const {
+  enum Fields : int {
+    kBucketRangesField,
+    kUnloggedSamplesField,
+    kLoggedSamplesField,
+    kIdField,
+    kHistogramNameField,
+    kFlagsField,
+  };
+
+  uint32_t bad_fields = 0;
+  if (!bucket_ranges_)
+    bad_fields |= 1 << kBucketRangesField;
+  if (!unlogged_samples_)
+    bad_fields |= 1 << kUnloggedSamplesField;
+  if (!logged_samples_)
+    bad_fields |= 1 << kLoggedSamplesField;
+  else if (logged_samples_->id() == 0)
+    bad_fields |= 1 << kIdField;
+  else if (HashMetricName(histogram_name()) != logged_samples_->id())
+    bad_fields |= 1 << kHistogramNameField;
+  if (flags() == 0)
+    bad_fields |= 1 << kFlagsField;
+
+  // Abort if a problem is found (except "flags", which could legally be zero).
+  CHECK_EQ(0U, bad_fields & ~(1 << kFlagsField))
+      << histogram_name() << ": " << bad_fields;
+  debug::Alias(&bad_fields);
+}
+
 bool Histogram::SerializeInfoImpl(Pickle* pickle) const {
   DCHECK(bucket_ranges()->HasValidChecksum());
   return pickle->WriteString(histogram_name()) &&
