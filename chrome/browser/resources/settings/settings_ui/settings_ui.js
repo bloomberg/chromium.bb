@@ -57,6 +57,9 @@ Polymer({
     showAndroidApps_: Boolean,
 
     /** @private */
+    showMultidevice_: Boolean,
+
+    /** @private */
     havePlayStoreApp_: Boolean,
 
     /** @private */
@@ -128,6 +131,9 @@ Polymer({
 
     this.showAndroidApps_ = loadTimeData.valueExists('androidAppsVisible') &&
         loadTimeData.getBoolean('androidAppsVisible');
+    this.showMultidevice_ =
+        loadTimeData.valueExists('enableMultideviceSettings') &&
+        loadTimeData.getBoolean('enableMultideviceSettings');
     this.havePlayStoreApp_ = loadTimeData.valueExists('havePlayStoreApp') &&
         loadTimeData.getBoolean('havePlayStoreApp');
 

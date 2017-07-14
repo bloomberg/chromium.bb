@@ -18,9 +18,13 @@ Polymer({
       notify: true,
     },
 
+    // <if expr="chromeos">
     showAndroidApps: Boolean,
 
+    showMultidevice: Boolean,
+
     havePlayStoreApp: Boolean,
+    // </if>
 
     /** @type {!AndroidAppsInfo|undefined} */
     androidAppsInfo: Object,
@@ -217,6 +221,16 @@ Polymer({
     }
 
     return true;
+  },
+
+  /**
+   * @return {boolean} Whether to show the multidevice settings page.
+   * @private
+   */
+  shouldShowMultidevice_: function() {
+    var visibility = /** @type {boolean|undefined} */ (
+        this.get('pageVisibility.multidevice'));
+    return this.showMultidevice && this.showPage_(visibility);
   },
 
   /**

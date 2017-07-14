@@ -1164,6 +1164,12 @@
         <structure name="IDR_SETTINGS_INTERNET_SUBPAGE_JS"
                    file="internet_page/internet_subpage.js"
                    type="chrome_html" />
+        <structure name="IDR_SETTINGS_MULTIDEVICE_PAGE_HTML"
+                   file="multidevice_page/multidevice_page.html"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_MULTIDEVICE_PAGE_JS"
+                   file="multidevice_page/multidevice_page.js"
+                   type="chrome_html" />
         <structure name="IDR_SETTINGS_NETWORK_APNLIST_HTML"
                    file="internet_page/network_apnlist.html"
                    type="chrome_html" />
