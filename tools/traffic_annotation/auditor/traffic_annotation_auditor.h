@@ -83,9 +83,20 @@ class AuditorResult {
   int line_;
 };
 
+// Base class for Annotation and Call instances.
+class InstanceBase {
+ public:
+  InstanceBase(){};
+  virtual ~InstanceBase(){};
+  virtual AuditorResult Deserialize(
+      const std::vector<std::string>& serialized_lines,
+      int start_line,
+      int end_line) = 0;
+};
+
 // Holds an instance of network traffic annotation.
 // TODO(rhalavati): Check if this class can also be reused in clang tool.
-class AnnotationInstance {
+class AnnotationInstance : public InstanceBase {
  public:
   // Annotation Type.
   enum class AnnotationType {
@@ -115,7 +126,7 @@ class AnnotationInstance {
   // FATAL, furthur processing of the text should be stopped.
   AuditorResult Deserialize(const std::vector<std::string>& serialized_lines,
                             int start_line,
-                            int end_line);
+                            int end_line) override;
 
   // Protobuf of the annotation.
   traffic_annotation::NetworkTrafficAnnotation proto;
@@ -134,7 +145,7 @@ class AnnotationInstance {
 // Holds an instance of calling a function that might have a network traffic
 // annotation argument.
 // TODO(rhalavati): Check if this class can also be reused in clang tool.
-class CallInstance {
+class CallInstance : public InstanceBase {
  public:
   CallInstance();
   CallInstance(const CallInstance& other);
@@ -152,7 +163,7 @@ class CallInstance {
   // FATAL, further processing of the text should be stopped.
   AuditorResult Deserialize(const std::vector<std::string>& serialized_lines,
                             int start_line,
-                            int end_line);
+                            int end_line) override;
 
   std::string file_path;
   uint32_t line_number;
@@ -205,7 +216,7 @@ class TrafficAnnotationAuditor {
   // texts. This list includes all unique ids that are defined in
   // net/traffic_annotation/network_traffic_annotation.h and
   // net/traffic_annotation/network_traffic_annotation_test_helper.h
-  const std::map<int, std::string>& GetReservedUniqueIDs();
+  static const std::map<int, std::string>& GetReservedUniqueIDs();
 
   std::string clang_tool_raw_output() const { return clang_tool_raw_output_; };
 
@@ -217,14 +228,20 @@ class TrafficAnnotationAuditor {
     return extracted_annotations_;
   }
 
+  void SetExtractedAnnotationsForTest(
+      const std::vector<AnnotationInstance>& annotations) {
+    extracted_annotations_ = annotations;
+  }
+
   const std::vector<CallInstance>& extracted_calls() const {
     return extracted_calls_;
   }
 
   const std::vector<AuditorResult>& errors() const { return errors_; }
 
- private:
+  void ClearErrorsForTest() { errors_.clear(); }
 
+ private:
   const base::FilePath source_path_;
   const base::FilePath build_path_;
 

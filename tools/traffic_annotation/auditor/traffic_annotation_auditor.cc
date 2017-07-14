@@ -506,6 +506,7 @@ bool TrafficAnnotationAuditor::LoadWhiteList() {
   return false;
 }
 
+// static
 const std::map<int, std::string>&
 TrafficAnnotationAuditor::GetReservedUniqueIDs() {
   return kReservedAnnotations;

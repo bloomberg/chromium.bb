@@ -183,7 +183,7 @@ int main(int argc, char* argv[]) {
     }
 
     const std::map<int, std::string> reserved_ids =
-        auditor.GetReservedUniqueIDs();
+        TrafficAnnotationAuditor::GetReservedUniqueIDs();
     for (const auto& item : reserved_ids)
       items.push_back(item);
 
