@@ -1080,7 +1080,8 @@ CommandHandler.COMMANDS_['get-info'] = /** @type {Command} */ ({
    * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps to use.
    */
   canExecute: function(event, fileManager) {
-    var entries = CommandUtil.getCommandEntries(event.target);
+    // QuickViewModel refers the file selection instead of event target.
+    var entries = fileManager.getSelection().entries;
     if (entries.length === 0) {
       event.canExecute = false;
       event.command.setHidden(true);

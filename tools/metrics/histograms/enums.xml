@@ -16636,6 +16636,7 @@ uploading your change for review.  These are checked by presubmit scripts.
 <enum name="FileManagerQuickViewWayToOpen">
   <int value="0" label="Context menu"/>
   <int value="1" label="Space key"/>
+  <int value="2" label="Selection menu"/>
 </enum>
 
 <enum name="FileManagerRootType">
