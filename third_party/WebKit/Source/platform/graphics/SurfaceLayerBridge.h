@@ -8,8 +8,8 @@
 #include <memory>
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "cc/surfaces/surface_reference_factory.h"
 #include "components/viz/common/surfaces/surface_id.h"
+#include "components/viz/common/surfaces/surface_reference_factory.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "platform/PlatformExport.h"
 #include "public/platform/WebSurfaceLayerBridge.h"
@@ -48,8 +48,8 @@ class PLATFORM_EXPORT SurfaceLayerBridge
 
   // Implementation of blink::mojom::blink::OffscreenCanvasSurfaceClient
   void OnSurfaceCreated(const viz::SurfaceInfo&) override;
-  void SatisfyCallback(const cc::SurfaceSequence&);
-  void RequireCallback(const viz::SurfaceId&, const cc::SurfaceSequence&);
+  void SatisfyCallback(const viz::SurfaceSequence&);
+  void RequireCallback(const viz::SurfaceId&, const viz::SurfaceSequence&);
 
   // Implementation of WebSurfaceLayerBridge.
   WebLayer* GetWebLayer() const override { return web_layer_.get(); }
@@ -62,7 +62,7 @@ class PLATFORM_EXPORT SurfaceLayerBridge
   scoped_refptr<cc::Layer> cc_layer_;
   std::unique_ptr<WebLayer> web_layer_;
 
-  scoped_refptr<cc::SurfaceReferenceFactory> ref_factory_;
+  scoped_refptr<viz::SurfaceReferenceFactory> ref_factory_;
   base::WeakPtrFactory<SurfaceLayerBridge> weak_factory_;
 
   SurfaceLayerBridgeObserver* observer_;

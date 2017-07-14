@@ -20,10 +20,10 @@
 #include "cc/quads/yuv_video_draw_quad.h"
 #include "cc/resources/returned_resource.h"
 #include "cc/resources/transferable_resource.h"
-#include "cc/surfaces/surface_sequence.h"
 #include "components/viz/common/quads/resource_format.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/common/surfaces/surface_info.h"
+#include "components/viz/common/surfaces/surface_sequence.h"
 #include "ui/gfx/ipc/color/gfx_param_traits.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
 #include "ui/gfx/ipc/skia/gfx_skia_param_traits.h"
@@ -44,7 +44,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(cc::YUVVideoDrawQuad::ColorSpace,
 IPC_ENUM_TRAITS_MAX_VALUE(cc::SurfaceDrawQuadType,
                           cc::SurfaceDrawQuadType::LAST)
 
-IPC_STRUCT_TRAITS_BEGIN(cc::SurfaceSequence)
+IPC_STRUCT_TRAITS_BEGIN(viz::SurfaceSequence)
   IPC_STRUCT_TRAITS_MEMBER(frame_sink_id)
   IPC_STRUCT_TRAITS_MEMBER(sequence)
 IPC_STRUCT_TRAITS_END()

@@ -656,7 +656,7 @@ source_set("blink_headers") {
     "//base:base",
     "//cc:cc",
     "//cc/paint:paint",
-    "//cc/surfaces:surface_id",
+    "//components/viz/common",
     "//device/screen_orientation/public/interfaces:interfaces_shared_cpp_sources",
     "//media/midi:mojo_shared_cpp_sources",
     "//mojo/public/cpp/bindings:bindings",

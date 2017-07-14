@@ -95,19 +95,19 @@ void CrossProcessFrameConnector::RenderProcessGone() {
 
 void CrossProcessFrameConnector::SetChildFrameSurface(
     const viz::SurfaceInfo& surface_info,
-    const cc::SurfaceSequence& sequence) {
+    const viz::SurfaceSequence& sequence) {
   frame_proxy_in_parent_renderer_->Send(new FrameMsg_SetChildFrameSurface(
       frame_proxy_in_parent_renderer_->GetRoutingID(), surface_info, sequence));
 }
 
 void CrossProcessFrameConnector::OnSatisfySequence(
-    const cc::SurfaceSequence& sequence) {
+    const viz::SurfaceSequence& sequence) {
   GetFrameSinkManager()->surface_manager()->SatisfySequence(sequence);
 }
 
 void CrossProcessFrameConnector::OnRequireSequence(
     const viz::SurfaceId& id,
-    const cc::SurfaceSequence& sequence) {
+    const viz::SurfaceSequence& sequence) {
   GetFrameSinkManager()->surface_manager()->RequireSequence(id, sequence);
 }
 

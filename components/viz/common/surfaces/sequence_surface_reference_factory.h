@@ -2,37 +2,35 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_SURFACES_SEQUENCE_SURFACE_REFERENCE_FACTORY_H_
-#define CC_SURFACES_SEQUENCE_SURFACE_REFERENCE_FACTORY_H_
+#ifndef COMPONENTS_VIZ_COMMON_SURFACES_SEQUENCE_SURFACE_REFERENCE_FACTORY_H_
+#define COMPONENTS_VIZ_COMMON_SURFACES_SEQUENCE_SURFACE_REFERENCE_FACTORY_H_
 
-#include "cc/surfaces/surface_reference_factory.h"
-#include "cc/surfaces/surface_sequence.h"
-#include "cc/surfaces/surfaces_export.h"
+#include "components/viz/common/surfaces/surface_reference_factory.h"
+#include "components/viz/common/surfaces/surface_sequence.h"
 
-namespace cc {
+namespace viz {
 
 // A surface reference factory that uses SurfaceSequence.
-class CC_SURFACES_EXPORT SequenceSurfaceReferenceFactory
+class SequenceSurfaceReferenceFactory
     : public NON_EXPORTED_BASE(SurfaceReferenceFactory) {
  public:
   SequenceSurfaceReferenceFactory() = default;
 
   // SurfaceReferenceFactory implementation:
-  base::Closure CreateReference(
-      SurfaceReferenceOwner* owner,
-      const viz::SurfaceId& surface_id) const override;
+  base::Closure CreateReference(SurfaceReferenceOwner* owner,
+                                const SurfaceId& surface_id) const override;
 
  protected:
   ~SequenceSurfaceReferenceFactory() override = default;
 
  private:
-  virtual void RequireSequence(const viz::SurfaceId& surface_id,
+  virtual void RequireSequence(const SurfaceId& surface_id,
                                const SurfaceSequence& sequence) const = 0;
   virtual void SatisfySequence(const SurfaceSequence& sequence) const = 0;
 
   DISALLOW_COPY_AND_ASSIGN(SequenceSurfaceReferenceFactory);
 };
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_SURFACES_SEQUENCE_SURFACE_REFERENCE_FACTORY_H_
+#endif  // COMPONENTS_VIZ_COMMON_SURFACES_SEQUENCE_SURFACE_REFERENCE_FACTORY_H_

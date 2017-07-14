@@ -431,7 +431,7 @@ void BrowserPluginGuest::PointerLockPermissionResponse(bool allow) {
 
 void BrowserPluginGuest::SetChildFrameSurface(
     const viz::SurfaceInfo& surface_info,
-    const cc::SurfaceSequence& sequence) {
+    const viz::SurfaceSequence& sequence) {
   has_attached_since_surface_set_ = false;
   SendMessageToEmbedder(base::MakeUnique<BrowserPluginMsg_SetChildFrameSurface>(
       browser_plugin_instance_id(), surface_info, sequence));
@@ -439,14 +439,14 @@ void BrowserPluginGuest::SetChildFrameSurface(
 
 void BrowserPluginGuest::OnSatisfySequence(
     int instance_id,
-    const cc::SurfaceSequence& sequence) {
+    const viz::SurfaceSequence& sequence) {
   GetFrameSinkManager()->surface_manager()->SatisfySequence(sequence);
 }
 
 void BrowserPluginGuest::OnRequireSequence(
     int instance_id,
     const viz::SurfaceId& id,
-    const cc::SurfaceSequence& sequence) {
+    const viz::SurfaceSequence& sequence) {
   GetFrameSinkManager()->surface_manager()->RequireSequence(id, sequence);
 }
 

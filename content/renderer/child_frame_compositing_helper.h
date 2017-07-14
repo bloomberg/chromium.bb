@@ -15,8 +15,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"
-#include "cc/surfaces/surface_reference_factory.h"
 #include "components/viz/common/surfaces/surface_id.h"
+#include "components/viz/common/surfaces/surface_reference_factory.h"
 #include "content/common/content_export.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -55,7 +55,7 @@ class CONTENT_EXPORT ChildFrameCompositingHelper
 
   void OnContainerDestroy();
   void OnSetSurface(const viz::SurfaceInfo& surface_info,
-                    const cc::SurfaceSequence& sequence);
+                    const viz::SurfaceSequence& sequence);
   void UpdateVisibility(bool);
   void ChildFrameGone();
 
@@ -95,7 +95,7 @@ class CONTENT_EXPORT ChildFrameCompositingHelper
   viz::SurfaceId surface_id_;
   blink::WebRemoteFrame* frame_;
 
-  scoped_refptr<cc::SurfaceReferenceFactory> surface_reference_factory_;
+  scoped_refptr<viz::SurfaceReferenceFactory> surface_reference_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildFrameCompositingHelper);
 };

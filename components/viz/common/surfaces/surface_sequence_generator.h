@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_SURFACES_SURFACE_SEQUENCE_GENERATOR_H_
-#define CC_SURFACES_SURFACE_SEQUENCE_GENERATOR_H_
+#ifndef COMPONENTS_VIZ_COMMON_SURFACES_SURFACE_SEQUENCE_GENERATOR_H_
+#define COMPONENTS_VIZ_COMMON_SURFACES_SURFACE_SEQUENCE_GENERATOR_H_
 
 #include <stdint.h>
 
@@ -12,10 +12,9 @@
 #include "base/macros.h"
 
 #include "components/viz/common/surfaces/frame_sink_id.h"
+#include "components/viz/common/surfaces/surface_sequence.h"
 
-namespace cc {
-
-struct SurfaceSequence;
+namespace viz {
 
 // Generates unique surface sequences for a surface client id.
 class SurfaceSequenceGenerator {
@@ -23,19 +22,19 @@ class SurfaceSequenceGenerator {
   SurfaceSequenceGenerator();
   ~SurfaceSequenceGenerator();
 
-  void set_frame_sink_id(const viz::FrameSinkId& frame_sink_id) {
+  void set_frame_sink_id(const FrameSinkId& frame_sink_id) {
     frame_sink_id_ = frame_sink_id;
   }
 
   SurfaceSequence CreateSurfaceSequence();
 
  private:
-  viz::FrameSinkId frame_sink_id_;
+  FrameSinkId frame_sink_id_;
   uint32_t next_surface_sequence_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceSequenceGenerator);
 };
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_SURFACES_SURFACE_SEQUENCE_GENERATOR_H_
+#endif  // COMPONENTS_VIZ_COMMON_SURFACES_SURFACE_SEQUENCE_GENERATOR_H_

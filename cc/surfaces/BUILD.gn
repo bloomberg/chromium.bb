@@ -4,25 +4,6 @@
 
 import("//cc/cc.gni")
 
-cc_source_set("surface_id") {
-  sources = [
-    "surface_reference.cc",
-    "surface_reference.h",
-    "surface_reference_factory.h",
-    "surface_reference_owner.h",
-    "surface_sequence.h",
-    "surface_sequence_generator.cc",
-    "surface_sequence_generator.h",
-  ]
-
-  deps = [
-    "//base",
-    "//components/viz/common",
-    "//mojo/public/cpp/bindings:struct_traits",
-    "//ui/gfx/geometry:geometry",
-  ]
-}
-
 cc_component("surfaces") {
   output_name = "cc_surfaces"
   sources = [
@@ -32,8 +13,6 @@ cc_component("surfaces") {
     "primary_begin_frame_source.h",
     "referenced_surface_tracker.cc",
     "referenced_surface_tracker.h",
-    "sequence_surface_reference_factory.cc",
-    "sequence_surface_reference_factory.h",
     "stub_surface_reference_factory.cc",
     "stub_surface_reference_factory.h",
     "surface.cc",
@@ -49,6 +28,8 @@ cc_component("surfaces") {
     "surface_hittest_delegate.h",
     "surface_manager.cc",
     "surface_manager.h",
+    "surface_reference.cc",
+    "surface_reference.h",
     "surface_resource_holder.cc",
     "surface_resource_holder.h",
     "surface_resource_holder_client.h",
@@ -58,14 +39,13 @@ cc_component("surfaces") {
   defines = [ "CC_SURFACES_IMPLEMENTATION=1" ]
 
   public_deps = [
-    ":surface_id",
+    "//components/viz/common",
   ]
 
   deps = [
     "//base",
     "//base/third_party/dynamic_annotations",
     "//cc",
-    "//components/viz/common",
     "//gpu/command_buffer/client:gles2_interface",
     "//gpu/command_buffer/common",
     "//gpu/vulkan:features",

@@ -21,10 +21,10 @@
 #include "cc/output/compositor_frame.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/surfaces/surface_dependency_deadline.h"
-#include "cc/surfaces/surface_sequence.h"
 #include "cc/surfaces/surfaces_export.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/surface_info.h"
+#include "components/viz/common/surfaces/surface_sequence.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace ui {
@@ -121,14 +121,14 @@ class CC_SURFACES_EXPORT Surface : public SurfaceDeadlineObserver {
   void RunDrawCallback();
   void RunWillDrawCallback(const gfx::Rect& damage_rect);
 
-  // Add a SurfaceSequence that must be satisfied before the Surface is
+  // Add a viz::SurfaceSequence that must be satisfied before the Surface is
   // destroyed.
-  void AddDestructionDependency(SurfaceSequence sequence);
+  void AddDestructionDependency(viz::SurfaceSequence sequence);
 
   // Satisfy all destruction dependencies that are contained in sequences, and
   // remove them from sequences.
   void SatisfyDestructionDependencies(
-      base::flat_set<SurfaceSequence>* sequences,
+      base::flat_set<viz::SurfaceSequence>* sequences,
       base::flat_set<viz::FrameSinkId>* valid_id_namespaces);
   size_t GetDestructionDependencyCount() const {
     return destruction_dependencies_.size();
@@ -215,7 +215,7 @@ class CC_SURFACES_EXPORT Surface : public SurfaceDeadlineObserver {
   int frame_index_;
   bool closed_ = false;
   const bool needs_sync_tokens_;
-  std::vector<SurfaceSequence> destruction_dependencies_;
+  std::vector<viz::SurfaceSequence> destruction_dependencies_;
 
   base::flat_set<viz::SurfaceId> activation_dependencies_;
   base::flat_set<viz::SurfaceId> late_activation_dependencies_;

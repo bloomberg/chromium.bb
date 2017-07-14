@@ -355,15 +355,15 @@ void Surface::RunWillDrawCallback(const gfx::Rect& damage_rect) {
                                              damage_rect);
 }
 
-void Surface::AddDestructionDependency(SurfaceSequence sequence) {
+void Surface::AddDestructionDependency(viz::SurfaceSequence sequence) {
   destruction_dependencies_.push_back(sequence);
 }
 
 void Surface::SatisfyDestructionDependencies(
-    base::flat_set<SurfaceSequence>* sequences,
+    base::flat_set<viz::SurfaceSequence>* sequences,
     base::flat_set<viz::FrameSinkId>* valid_frame_sink_ids) {
   base::EraseIf(destruction_dependencies_,
-                [sequences, valid_frame_sink_ids](SurfaceSequence seq) {
+                [sequences, valid_frame_sink_ids](viz::SurfaceSequence seq) {
                   return (!!sequences->erase(seq) ||
                           !valid_frame_sink_ids->count(seq.frame_sink_id));
                 });

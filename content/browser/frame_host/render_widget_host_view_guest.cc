@@ -14,7 +14,7 @@
 #include "build/build_config.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_manager.h"
-#include "cc/surfaces/surface_sequence.h"
+#include "components/viz/common/surfaces/surface_sequence.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/renderer_host/input/input_router.h"
@@ -283,7 +283,7 @@ void RenderWidgetHostViewGuest::SetTooltipText(
 
 void RenderWidgetHostViewGuest::SendSurfaceInfoToEmbedderImpl(
     const viz::SurfaceInfo& surface_info,
-    const cc::SurfaceSequence& sequence) {
+    const viz::SurfaceSequence& sequence) {
   if (guest_ && !guest_->is_in_destruction())
     guest_->SetChildFrameSurface(surface_info, sequence);
 }

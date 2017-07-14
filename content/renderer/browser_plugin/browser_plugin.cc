@@ -127,7 +127,7 @@ bool BrowserPlugin::OnMessageReceived(const IPC::Message& message) {
 void BrowserPlugin::OnSetChildFrameSurface(
     int browser_plugin_instance_id,
     const viz::SurfaceInfo& surface_info,
-    const cc::SurfaceSequence& sequence) {
+    const viz::SurfaceSequence& sequence) {
   if (!attached())
     return;
 
@@ -136,7 +136,7 @@ void BrowserPlugin::OnSetChildFrameSurface(
   compositing_helper_->OnSetSurface(surface_info, sequence);
 }
 
-void BrowserPlugin::SendSatisfySequence(const cc::SurfaceSequence& sequence) {
+void BrowserPlugin::SendSatisfySequence(const viz::SurfaceSequence& sequence) {
   BrowserPluginManager::Get()->Send(new BrowserPluginHostMsg_SatisfySequence(
       render_frame_routing_id_, browser_plugin_instance_id_, sequence));
 }
