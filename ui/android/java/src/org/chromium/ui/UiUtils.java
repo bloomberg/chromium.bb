@@ -22,7 +22,7 @@ import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.view.inputmethod.InputMethodSubtype;
-import android.widget.LinearLayout;
+import android.widget.AbsListView;
 import android.widget.ListAdapter;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -429,8 +429,8 @@ public class UiUtils {
     public static int computeMaxWidthOfListAdapterItems(ListAdapter adapter) {
         final int widthMeasureSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
         final int heightMeasureSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        AbsListView.LayoutParams params = new AbsListView.LayoutParams(
+                AbsListView.LayoutParams.WRAP_CONTENT, AbsListView.LayoutParams.WRAP_CONTENT);
 
         int maxWidth = 0;
         View[] itemViews = new View[adapter.getViewTypeCount()];
