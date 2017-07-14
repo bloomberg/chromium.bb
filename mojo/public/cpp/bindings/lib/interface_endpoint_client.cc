@@ -167,11 +167,14 @@ InterfaceEndpointClient::InterfaceEndpointClient(
 InterfaceEndpointClient::~InterfaceEndpointClient() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // TODO(crbug.com/741047): Remove this.
+  // TODO(crbug.com/741047): Remove these checks.
+  CheckObjectIsValid();
   CHECK(task_runner_->RunsTasksInCurrentSequence());
 
-  if (controller_)
+  if (controller_) {
+    CHECK(handle_.group_controller());
     handle_.group_controller()->DetachEndpointClient(handle_);
+  }
 }
 
 AssociatedGroup* InterfaceEndpointClient::associated_group() {
