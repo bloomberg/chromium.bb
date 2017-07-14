@@ -22,6 +22,8 @@ class SkiaTextMetrics final {
   void GetSkiaBoundsForGlyph(Glyph, SkRect* bounds);
   float GetSkiaWidthForGlyph(Glyph);
 
+  static hb_position_t SkiaScalarToHarfBuzzPosition(SkScalar value);
+
  private:
   const SkPaint* paint_;
 };
