@@ -3,6 +3,7 @@ Tests inspector ParsedURL class
 Parsing url: http://example.com/?queryParam1=value1&queryParam2=value2#fragmentWith/Many//Slashes
   isValid: true
   scheme: http
+  user: undefined
   host: example.com
   port: undefined
   path: /
@@ -10,19 +11,21 @@ Parsing url: http://example.com/?queryParam1=value1&queryParam2=value2#fragmentW
   fragment: fragmentWith/Many//Slashes
   folderPathComponents: 
   lastPathComponent: 
-Parsing url: http://example.com/foo.html?queryParam1=value1&queryParam2=value2#fragmentWith/Many//Slashes
+Parsing url: http://example.com/foo.html?queryParam1=value1@&queryParam2=value2#fragmentWith/Many//Slashes
   isValid: true
   scheme: http
+  user: undefined
   host: example.com
   port: undefined
   path: /foo.html
-  queryParams: queryParam1=value1&queryParam2=value2
+  queryParams: queryParam1=value1@&queryParam2=value2
   fragment: fragmentWith/Many//Slashes
   folderPathComponents: 
   lastPathComponent: foo.html
-Parsing url: http://example.com/foo/bar.html?queryParam1=value1&queryParam2=value2#fragmentWith/Many//Slashes
+Parsing url: http://user42:Alina-!$&@example.com/foo/bar.html?queryParam1=value1&queryParam2=value2#fragmentWith/Many//Slashes
   isValid: true
   scheme: http
+  user: user42:Alina-!$&
   host: example.com
   port: undefined
   path: /foo/bar.html
@@ -30,9 +33,10 @@ Parsing url: http://example.com/foo/bar.html?queryParam1=value1&queryParam2=valu
   fragment: fragmentWith/Many//Slashes
   folderPathComponents: /foo
   lastPathComponent: bar.html
-Parsing url: http://example.com/foo/bar/baz.html?queryParam1=value1&queryParam2=value2#fragmentWith/Many//Slashes
+Parsing url: http://foo@example.com/foo/bar/baz.html?queryParam1=value1&queryParam2=value2#fragmentWith/Many//Slashes
   isValid: true
   scheme: http
+  user: foo
   host: example.com
   port: undefined
   path: /foo/bar/baz.html
@@ -43,6 +47,7 @@ Parsing url: http://example.com/foo/bar/baz.html?queryParam1=value1&queryParam2=
 Parsing url: http://example.com//?queryParam1=value1
   isValid: true
   scheme: http
+  user: undefined
   host: example.com
   port: undefined
   path: //
@@ -53,6 +58,7 @@ Parsing url: http://example.com//?queryParam1=value1
 Parsing url: http://example.com//foo.html
   isValid: true
   scheme: http
+  user: undefined
   host: example.com
   port: undefined
   path: //foo.html
@@ -63,6 +69,7 @@ Parsing url: http://example.com//foo.html
 Parsing url: http://example.com//foo/bar.html
   isValid: true
   scheme: http
+  user: undefined
   host: example.com
   port: undefined
   path: //foo/bar.html
@@ -73,6 +80,7 @@ Parsing url: http://example.com//foo/bar.html
 Parsing url: http://example.com/foo//bar.html
   isValid: true
   scheme: http
+  user: undefined
   host: example.com
   port: undefined
   path: /foo//bar.html
@@ -83,6 +91,7 @@ Parsing url: http://example.com/foo//bar.html
 Parsing url: http://example.com//foo//bar.html
   isValid: true
   scheme: http
+  user: undefined
   host: example.com
   port: undefined
   path: //foo//bar.html
@@ -93,6 +102,7 @@ Parsing url: http://example.com//foo//bar.html
 Parsing url: http://example.com//foo/bar/baz.html
   isValid: true
   scheme: http
+  user: undefined
   host: example.com
   port: undefined
   path: //foo/bar/baz.html
@@ -103,6 +113,7 @@ Parsing url: http://example.com//foo/bar/baz.html
 Parsing url: http://example.com/foo//bar/baz.html
   isValid: true
   scheme: http
+  user: undefined
   host: example.com
   port: undefined
   path: /foo//bar/baz.html
@@ -113,6 +124,7 @@ Parsing url: http://example.com/foo//bar/baz.html
 Parsing url: http://example.com/foo/bar//baz.html
   isValid: true
   scheme: http
+  user: undefined
   host: example.com
   port: undefined
   path: /foo/bar//baz.html
@@ -123,6 +135,7 @@ Parsing url: http://example.com/foo/bar//baz.html
 Parsing url: http://example.com///foo/bar/baz.html
   isValid: true
   scheme: http
+  user: undefined
   host: example.com
   port: undefined
   path: ///foo/bar/baz.html
@@ -133,6 +146,7 @@ Parsing url: http://example.com///foo/bar/baz.html
 Parsing url: http://example.com/foo////bar/baz.html
   isValid: true
   scheme: http
+  user: undefined
   host: example.com
   port: undefined
   path: /foo////bar/baz.html
@@ -143,6 +157,7 @@ Parsing url: http://example.com/foo////bar/baz.html
 Parsing url: http://example.com/foo/bar/////baz.html
   isValid: true
   scheme: http
+  user: undefined
   host: example.com
   port: undefined
   path: /foo/bar/////baz.html
