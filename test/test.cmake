@@ -35,37 +35,37 @@ set(AOM_UNIT_TEST_COMMON_SOURCES
     "${AOM_ROOT}/test/util.h"
     "${AOM_ROOT}/test/video_source.h")
 
-if (HAVE_NEON)
-  set(AOM_UNIT_TEST_COMMON_SOURCES
-      ${AOM_UNIT_TEST_COMMON_SOURCES}
-      "${AOM_ROOT}/test/simd_neon_test.cc")
-endif ()
-if (HAVE_SSE2)
-  set(AOM_UNIT_TEST_COMMON_SOURCES
-      ${AOM_UNIT_TEST_COMMON_SOURCES}
-      "${AOM_ROOT}/test/simd_sse2_test.cc")
-endif ()
-if (HAVE_SSSE3)
-  set(AOM_UNIT_TEST_COMMON_SOURCES
-      ${AOM_UNIT_TEST_COMMON_SOURCES}
-      "${AOM_ROOT}/test/simd_ssse3_test.cc")
-endif ()
-if (HAVE_SSE4)
-  set(AOM_UNIT_TEST_COMMON_SOURCES
-      ${AOM_UNIT_TEST_COMMON_SOURCES}
-      "${AOM_ROOT}/test/simd_sse4_test.cc")
-endif ()
-if (HAVE_AVX2)
-  set(AOM_UNIT_TEST_COMMON_SOURCES
-      ${AOM_UNIT_TEST_COMMON_SOURCES}
-      "${AOM_ROOT}/test/simd_avx2_test.cc")
-endif ()
-
 if (NOT BUILD_SHARED_LIBS)
   set(AOM_UNIT_TEST_COMMON_SOURCES
       ${AOM_UNIT_TEST_COMMON_SOURCES}
       "${AOM_ROOT}/test/convolve_test.cc"
       "${AOM_ROOT}/test/simd_impl.h")
+
+  if (HAVE_NEON)
+    set(AOM_UNIT_TEST_COMMON_SOURCES
+        ${AOM_UNIT_TEST_COMMON_SOURCES}
+        "${AOM_ROOT}/test/simd_neon_test.cc")
+  endif ()
+  if (HAVE_SSE2)
+    set(AOM_UNIT_TEST_COMMON_SOURCES
+        ${AOM_UNIT_TEST_COMMON_SOURCES}
+        "${AOM_ROOT}/test/simd_sse2_test.cc")
+  endif ()
+  if (HAVE_SSSE3)
+    set(AOM_UNIT_TEST_COMMON_SOURCES
+        ${AOM_UNIT_TEST_COMMON_SOURCES}
+        "${AOM_ROOT}/test/simd_ssse3_test.cc")
+  endif ()
+  if (HAVE_SSE4)
+    set(AOM_UNIT_TEST_COMMON_SOURCES
+        ${AOM_UNIT_TEST_COMMON_SOURCES}
+        "${AOM_ROOT}/test/simd_sse4_test.cc")
+  endif ()
+  if (HAVE_AVX2)
+    set(AOM_UNIT_TEST_COMMON_SOURCES
+        ${AOM_UNIT_TEST_COMMON_SOURCES}
+        "${AOM_ROOT}/test/simd_avx2_test.cc")
+  endif ()
 
   if (CONFIG_ACCOUNTING)
     set(AOM_UNIT_TEST_COMMON_SOURCES
