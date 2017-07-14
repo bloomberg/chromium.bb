@@ -1654,6 +1654,9 @@ crbug.com/638621 [ Win7 ] virtual/mojo-loading/http/tests/media/video-buffered-r
 crbug.com/646644 [ Mac10.9 ] http/tests/media/video-buffered-range-contains-currentTime.html [ Failure Timeout ]
 crbug.com/646644 [ Mac10.9 ] virtual/mojo-loading/http/tests/media/video-buffered-range-contains-currentTime.html [ Failure Timeout ]
 
+crbug.com/743068 [ Mac10.9 ] fast/forms/calendar-picker/calendar-picker-appearance-zoom125.html [ Pass Failure ]
+crbug.com/743068 [ Mac10.9 ] fast/forms/calendar-picker/calendar-picker-appearance-zoom200.html [ Pass Failure ]
+
 crbug.com/637930 http/tests/media/video-buffered.html [ Pass Failure ]
 crbug.com/637930 virtual/mojo-loading/http/tests/media/video-buffered.html [ Pass Failure ]
 
