@@ -335,9 +335,9 @@ class HWTestList(object):
             config_lib.HWTestConfig(constants.HWTEST_COMMIT_SUITE,
                                     **default_dict)]
 
-  def ToolchainTestFull(self, **kwargs):
+  def ToolchainTestFull(self, machine_pool, **kwargs):
     """Return full set of HWTESTConfigs to run toolchain correctness tests."""
-    default_dict = dict(pool=constants.HWTEST_SUITES_POOL, async=False,
+    default_dict = dict(pool=machine_pool, async=False,
                         file_bugs=False,
                         priority=constants.HWTEST_DEFAULT_PRIORITY)
     default_dict.update(kwargs)
@@ -1757,8 +1757,9 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       description='Full release build with next minor GCC toolchain revision',
       useflags=append_useflags(['next_gcc']),
       latest_toolchain=True,
-      hw_tests=hw_test_list.ToolchainTestFull(),
-      hw_tests_override=hw_test_list.ToolchainTestFull(),
+      hw_tests=hw_test_list.ToolchainTestFull(constants.HWTEST_SUITES_POOL),
+      hw_tests_override=hw_test_list.ToolchainTestFull(
+          constants.HWTEST_SUITES_POOL),
   )
   site_config.AddTemplate(
       'llvm_toolchain',
