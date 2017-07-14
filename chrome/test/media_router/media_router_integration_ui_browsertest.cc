@@ -46,9 +46,8 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, MANUAL_Dialog_Basic) {
   // closing after the route has been created. Then, check that the dialog
   // remains open.
   std::string mouse_enter_script = base::StringPrintf(
-      "domAutomationController.send("
-      "window.document.getElementById('media-router-container').dispatchEvent("
-      "new Event('mouseenter')))");
+      "window.document.getElementById('media-router-container')"
+      "    .dispatchEvent(new Event('mouseenter'));");
   ASSERT_TRUE(content::ExecuteScript(dialog_contents, mouse_enter_script));
 #endif
   WaitUntilRouteCreated();
@@ -121,9 +120,8 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, MANUAL_Dialog_Basic) {
   // the timer started when the route is initially closed times out before the
   // mouseleave event is dispatched. In that case, the dialog remains open.
   std::string mouse_leave_script = base::StringPrintf(
-      "domAutomationController.send("
-      "window.document.getElementById('media-router-container').dispatchEvent("
-      "new Event('mouseleave')))");
+      "window.document.getElementById('media-router-container')"
+      "    .dispatchEvent(new Event('mouseleave'));");
   ASSERT_TRUE(content::ExecuteScript(dialog_contents, mouse_leave_script));
 #endif
   LOG(INFO) << "Closing route on UI";
