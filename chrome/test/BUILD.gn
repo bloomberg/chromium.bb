@@ -3723,6 +3723,7 @@ test("unit_tests") {
       "../browser/ui/webui/settings/downloads_handler_unittest.cc",
       "../browser/ui/webui/settings/md_settings_ui_unittest.cc",
       "../browser/ui/webui/settings/metrics_reporting_handler_unittest.cc",
+      "../browser/ui/webui/settings/on_startup_handler_unittest.cc",
       "../browser/ui/webui/settings/people_handler_unittest.cc",
       "../browser/ui/webui/settings/profile_info_handler_unittest.cc",
       "../browser/ui/webui/settings/reset_settings_handler_unittest.cc",

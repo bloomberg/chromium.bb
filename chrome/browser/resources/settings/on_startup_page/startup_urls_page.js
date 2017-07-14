@@ -63,6 +63,10 @@ Polymer({
   /** @override */
   attached: function() {
     this.getNtpExtension_();
+    this.addWebUIListener('update-ntp-extension', function(ntpExtension) {
+      // Note that |ntpExtension| is empty if there is no NTP extension.
+      this.ntpExtension_ = ntpExtension;
+    }.bind(this));
 
     this.browserProxy_ = settings.StartupUrlsPageBrowserProxyImpl.getInstance();
     this.addWebUIListener('update-startup-pages', function(startupPages) {
