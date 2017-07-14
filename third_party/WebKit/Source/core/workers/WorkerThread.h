@@ -63,8 +63,8 @@ enum WorkerThreadStartMode {
 
 // WorkerThread is a kind of WorkerBackingThread client. Each worker mechanism
 // can access the lower thread infrastructure via an implementation of this
-// abstract class. Multiple WorkerThreads can share one WorkerBackingThread.
-// See WorkerBackingThread.h for more details.
+// abstract class. Multiple WorkerThreads may share one WorkerBackingThread for
+// worklets.
 //
 // WorkerThread start and termination must be initiated on the main thread and
 // an actual task is executed on the worker thread.

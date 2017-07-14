@@ -409,7 +409,7 @@ void WorkerThread::InitializeOnWorkerThread(
     MutexLocker lock(thread_state_mutex_);
 
     if (IsOwningBackingThread())
-      GetWorkerBackingThread().Initialize(v8_settings);
+      GetWorkerBackingThread().InitializeOnBackingThread(v8_settings);
     GetWorkerBackingThread().BackingThread().AddTaskObserver(this);
 
     console_message_storage_ = new ConsoleMessageStorage();
@@ -518,7 +518,7 @@ void WorkerThread::PerformShutdownOnWorkerThread() {
   global_scope_ = nullptr;
 
   if (IsOwningBackingThread())
-    GetWorkerBackingThread().Shutdown();
+    GetWorkerBackingThread().ShutdownOnBackingThread();
   // We must not touch workerBackingThread() from now on.
 
   // Notify the proxy that the WorkerOrWorkletGlobalScope has been disposed
