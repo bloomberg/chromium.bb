@@ -13,6 +13,7 @@
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/origin_util.h"
 #include "extensions/common/constants.h"
 #include "ppapi/features/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -178,6 +179,8 @@ TEST(ChromeContentClientTest, AdditionalSchemes) {
   url::Origin origin(extension_url);
   EXPECT_EQ("chrome-extension://abcdefghijklmnopqrstuvwxyzabcdef",
             origin.Serialize());
+
+  EXPECT_TRUE(content::IsOriginSecure(GURL("chrome-native://newtab/")));
 }
 
 class OriginTrialInitializationTestThread
