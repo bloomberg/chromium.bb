@@ -260,10 +260,7 @@ int LayerTreeHostCommon::CalculateLayerJitter(LayerImpl* layer) {
   return jitter;
 }
 
-enum PropertyTreeOption {
-  BUILD_PROPERTY_TREES_IF_NEEDED,
-  DONT_BUILD_PROPERTY_TREES
-};
+enum PropertyTreeOption { BUILD_PROPERTY_TREES, DONT_BUILD_PROPERTY_TREES };
 
 static void AddSurfaceToRenderSurfaceList(
     RenderSurfaceImpl* render_surface,
@@ -500,11 +497,11 @@ void CalculateDrawPropertiesInternal(
   inputs->render_surface_list->clear();
 
   const bool should_measure_property_tree_performance =
-      property_tree_option == BUILD_PROPERTY_TREES_IF_NEEDED;
+      property_tree_option == BUILD_PROPERTY_TREES;
 
   LayerImplList visible_layer_list;
   switch (property_tree_option) {
-    case BUILD_PROPERTY_TREES_IF_NEEDED: {
+    case BUILD_PROPERTY_TREES: {
       // The translation from layer to property trees is an intermediate
       // state. We will eventually get these data passed directly to the
       // compositor.
@@ -671,7 +668,9 @@ void LayerTreeHostCommon::CalculateDrawProperties(
 
 void LayerTreeHostCommon::CalculateDrawPropertiesForTesting(
     CalcDrawPropsImplInputsForTesting* inputs) {
-  CalculateDrawPropertiesInternal(inputs, BUILD_PROPERTY_TREES_IF_NEEDED);
+  CalculateDrawPropertiesInternal(inputs, inputs->property_trees->needs_rebuild
+                                              ? BUILD_PROPERTY_TREES
+                                              : DONT_BUILD_PROPERTY_TREES);
 }
 
 PropertyTrees* GetPropertyTrees(Layer* layer) {

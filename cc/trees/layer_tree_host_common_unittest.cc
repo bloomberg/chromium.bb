@@ -248,20 +248,6 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
         update_layer_list_impl(), property_trees);
   }
 
-  void ExecuteCalculateDrawPropertiesWithoutSeparateSurfaces(
-      LayerImpl* root_layer) {
-    gfx::Size device_viewport_size =
-        gfx::Size(root_layer->bounds().width(), root_layer->bounds().height());
-    render_surface_list_impl_.reset(new RenderSurfaceList);
-
-    DCHECK(!root_layer->bounds().IsEmpty());
-    LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-        root_layer, device_viewport_size, render_surface_list_impl_.get());
-    inputs.can_adjust_raster_scales = true;
-
-    LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
-  }
-
   void ExecuteCalculateDrawPropertiesWithoutAdjustingRasterScales(
       LayerImpl* root_layer) {
     gfx::Size device_viewport_size =
@@ -10189,6 +10175,64 @@ TEST_F(LayerTreeHostCommonTest, CanAdjustRasterScaleTest) {
   EXPECT_EQ(gfx::Transform(), child->DrawTransform());
   EXPECT_EQ(gfx::Rect(10, 10), child->clip_rect());
   EXPECT_EQ(gfx::Rect(10, 10), child->drawable_content_rect());
+}
+
+TEST_F(LayerTreeHostCommonTest, SurfaceContentsScaleChangeWithCopyRequestTest) {
+  LayerImpl* root = root_layer_for_testing();
+  LayerImpl* scale_layer = AddChild<LayerImpl>(root);
+  LayerImpl* copy_layer = AddChild<LayerImpl>(scale_layer);
+  LayerImpl* clip_layer = AddChild<LayerImpl>(copy_layer);
+  LayerImpl* test_layer = AddChild<LayerImpl>(clip_layer);
+
+  root->SetBounds(gfx::Size(150, 150));
+
+  scale_layer->SetBounds(gfx::Size(30, 30));
+  gfx::Transform transform;
+  transform.Scale(5.f, 5.f);
+  scale_layer->test_properties()->transform = transform;
+
+  // Need to persist the render surface after copy request is cleared.
+  copy_layer->test_properties()->force_render_surface = true;
+  copy_layer->test_properties()->copy_requests.push_back(
+      CopyOutputRequest::CreateRequest(base::Bind(&EmptyCopyOutputCallback)));
+
+  clip_layer->SetDrawsContent(true);
+  clip_layer->SetMasksToBounds(true);
+  clip_layer->SetBounds(gfx::Size(10, 10));
+
+  test_layer->SetDrawsContent(true);
+  test_layer->SetMasksToBounds(true);
+  test_layer->SetBounds(gfx::Size(20, 20));
+
+  ExecuteCalculateDrawPropertiesWithoutAdjustingRasterScales(root);
+
+  // Check surface with copy request draw properties.
+  EXPECT_EQ(gfx::Rect(50, 50), GetRenderSurface(copy_layer)->content_rect());
+  EXPECT_EQ(gfx::Transform(), GetRenderSurface(copy_layer)->draw_transform());
+  EXPECT_EQ(gfx::RectF(50.0f, 50.0f),
+            GetRenderSurface(copy_layer)->DrawableContentRect());
+
+  // Check test layer draw properties.
+  EXPECT_EQ(gfx::Rect(10, 10), test_layer->visible_layer_rect());
+  EXPECT_EQ(transform, test_layer->DrawTransform());
+  EXPECT_EQ(gfx::Rect(50, 50), test_layer->clip_rect());
+  EXPECT_EQ(gfx::Rect(50, 50), test_layer->drawable_content_rect());
+
+  // Clear the copy request and call UpdateSurfaceContentsScale.
+  host_impl()->active_tree()->property_trees()->effect_tree.ClearCopyRequests();
+  ExecuteCalculateDrawPropertiesWithoutAdjustingRasterScales(root);
+
+  // Check surface draw properties without copy request.
+  EXPECT_EQ(gfx::Rect(10, 10), GetRenderSurface(copy_layer)->content_rect());
+  EXPECT_EQ(transform, GetRenderSurface(copy_layer)->draw_transform());
+  EXPECT_EQ(gfx::RectF(50.0f, 50.0f),
+            GetRenderSurface(copy_layer)->DrawableContentRect());
+
+  // Check test layer draw properties without copy request.
+  EXPECT_EQ(gfx::Rect(10, 10), test_layer->visible_layer_rect());
+  EXPECT_EQ(gfx::Transform(), test_layer->DrawTransform());
+  EXPECT_EQ(gfx::Rect(10, 10), test_layer->clip_rect());
+  EXPECT_EQ(gfx::Rect(10, 10), test_layer->drawable_content_rect());
 }
 
 }  // namespace
