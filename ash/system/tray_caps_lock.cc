@@ -52,14 +52,14 @@ bool CapsLockIsEnabled() {
 }
 
 std::unique_ptr<Notification> CreateNotification() {
-  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   const int string_id =
       Shell::Get()->system_tray_delegate()->IsSearchKeyMappedToCapsLock()
           ? IDS_ASH_STATUS_TRAY_CAPS_LOCK_CANCEL_BY_SEARCH
           : IDS_ASH_STATUS_TRAY_CAPS_LOCK_CANCEL_BY_ALT_SEARCH;
   std::unique_ptr<Notification> notification(new Notification(
       message_center::NOTIFICATION_TYPE_SIMPLE, kCapsLockNotificationId,
-      base::string16(), bundle.GetLocalizedString(string_id),
+      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_CAPS_LOCK_ENABLED),
+      l10n_util::GetStringUTF16(string_id),
       gfx::Image(
           gfx::CreateVectorIcon(kSystemMenuCapsLockIcon,
                                 TrayPopupItemStyle::GetIconColor(
