@@ -1342,13 +1342,10 @@ void AppsGridView::ExtractDragLocation(const ui::LocatedEvent& event,
   // could have integer round error and causes jitter.
   *drag_point = event.root_location();
 
-  // GetWidget() could be NULL for tests.
-  if (GetWidget()) {
-    aura::Window::ConvertPointToTarget(
-        GetWidget()->GetNativeWindow()->GetRootWindow(),
-        GetWidget()->GetNativeWindow(), drag_point);
-  }
-
+  DCHECK(GetWidget());
+  aura::Window::ConvertPointToTarget(
+      GetWidget()->GetNativeWindow()->GetRootWindow(),
+      GetWidget()->GetNativeWindow(), drag_point);
   views::View::ConvertPointFromWidget(this, drag_point);
 }
 
@@ -2101,11 +2098,19 @@ bool AppsGridView::EnableFolderDragDropUI() {
 AppsGridView::Index AppsGridView::GetNearestTileIndexForPoint(
     const gfx::Point& point) const {
   gfx::Rect bounds = GetContentsBounds();
+  bounds.Inset(0, GetHeightOnTopOfAllAppsTiles(), 0, 0);
   const gfx::Size total_tile_size = GetTotalTileSize();
   int col = ClampToRange((point.x() - bounds.x()) / total_tile_size.width(), 0,
                          cols_ - 1);
-  int row = ClampToRange((point.y() - bounds.y()) / total_tile_size.height(), 0,
-                         rows_per_page_ - 1);
+  int row = rows_per_page_;
+  if (is_fullscreen_app_list_enabled_ &&
+      pagination_model_.selected_page() == 0) {
+    row = ClampToRange((point.y() - bounds.y()) / total_tile_size.height(), 0,
+                       rows_per_page_ - 2);
+  } else {
+    row = ClampToRange((point.y() - bounds.y()) / total_tile_size.height(), 0,
+                       rows_per_page_ - 1);
+  }
   return Index(pagination_model_.selected_page(), row * cols_ + col);
 }
 
