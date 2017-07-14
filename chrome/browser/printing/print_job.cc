@@ -318,6 +318,21 @@ void PrintJob::OnPdfPageConverted(int page_number,
       base::Bind(&PrintJob::OnPdfPageConverted, this));
 }
 
+void PrintJob::StartPdfToTextConversion(
+    const scoped_refptr<base::RefCountedMemory>& bytes,
+    const gfx::Size& page_size) {
+  DCHECK(!pdf_conversion_state_);
+  pdf_conversion_state_ =
+      base::MakeUnique<PdfConversionState>(gfx::Size(), gfx::Rect());
+  const int kPrinterDpi = settings().dpi();
+  gfx::Rect page_area = gfx::Rect(0, 0, page_size.width(), page_size.height());
+  PdfRenderSettings settings(page_area, gfx::Point(0, 0), kPrinterDpi,
+                             /*autorotate=*/true,
+                             PdfRenderSettings::Mode::TEXTONLY);
+  pdf_conversion_state_->Start(
+      bytes, settings, base::Bind(&PrintJob::OnPdfConversionStarted, this));
+}
+
 void PrintJob::StartPdfToPostScriptConversion(
     const scoped_refptr<base::RefCountedMemory>& bytes,
     const gfx::Rect& content_area,

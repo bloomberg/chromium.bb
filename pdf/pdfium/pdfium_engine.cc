@@ -4154,10 +4154,9 @@ void PDFiumEngineExports::SetPDFUseGDIPrinting(bool enable) {
   FPDF_SetPrintTextWithGDI(enable);
 }
 
-void PDFiumEngineExports::SetPDFPostscriptPrintingLevel(int postscript_level) {
-  FPDF_SetPrintPostscriptLevel(postscript_level);
+void PDFiumEngineExports::SetPDFUsePrintMode(int mode) {
+  FPDF_SetPrintMode(mode);
 }
-
 #endif  // defined(OS_WIN)
 
 bool PDFiumEngineExports::RenderPDFPageToBitmap(
