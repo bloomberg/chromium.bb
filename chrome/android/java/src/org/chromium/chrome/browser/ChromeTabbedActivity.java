@@ -1140,10 +1140,6 @@ public class ChromeTabbedActivity
                 }
             }
 
-            // We send this intent so that we can enter WebVr presentation mode if needed. This
-            // call doesn't consume the intent because it also has the url that we need to load.
-            VrShellDelegate.onNewIntent(ChromeTabbedActivity.this, intent);
-
             TabModel tabModel = getCurrentTabModel();
             switch (tabOpenType) {
                 case REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB:

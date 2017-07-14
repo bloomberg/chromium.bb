@@ -56,6 +56,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.webapps.WebappActivity;
+import org.chromium.ui.UiUtils;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -115,6 +116,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
     private static VrShellDelegate sInstance;
     private static VrBroadcastReceiver sVrBroadcastReceiver;
     private static boolean sRegisteredDaydreamHook = false;
+    private static View sBlackOverlayView;
 
     private ChromeActivity mActivity;
 
@@ -169,8 +171,6 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
     // presentation experience.
     private boolean mVrBrowserUsed;
 
-    private View mOverlayView;
-
     private final VSyncEstimator mVSyncEstimator;
 
     private static final class VrBroadcastReceiver extends BroadcastReceiver {
@@ -197,7 +197,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
                 // resuming the Activity, see the comment about the custom animation below.
                 // However, if we're already in VR (in one of the cases where we chose not to exit
                 // VR before the DON flow), we don't need to add the overlay.
-                if (!sInstance.mInVr) sInstance.addOverlayView();
+                if (!sInstance.mInVr) addBlackOverlayViewForActivity(sInstance.mActivity);
                 sInstance.mNeedsAnimationCancel = !sInstance.mInVr;
 
                 // We start the Activity with a custom animation that keeps it hidden while starting
@@ -241,8 +241,9 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         VrClassesWrapper wrapper = getVrClassesWrapper();
         if (wrapper == null) return;
         nativeOnLibraryAvailable();
-        if (sInstance != null && sInstance.mAutopresentWebVr) {
-            sInstance.enterVr(false);
+
+        if (sInstance != null) {
+            sInstance.cancelStartupAnimationIfNeeded();
         }
     }
 
@@ -787,8 +788,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
 
         maybeSetPresentResult(true, donSuceeded);
         mVrShell.getContainer().setOnSystemUiVisibilityChangeListener(this);
-        removeOverlayView();
-
+        removeBlackOverlayView();
         if (!donSuceeded && !mAutopresentWebVr && isDaydreamCurrentViewer()) {
             // TODO(mthiesse): This is a VERY dirty hack. We need to know whether or not entering VR
             // will trigger the DON flow, so that we can wait for it to complete before we let the
@@ -808,26 +808,84 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         }
     }
 
+    private static void addBlackOverlayViewForActivity(ChromeActivity activity) {
+        if (sBlackOverlayView != null) return;
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
+                WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT);
+        sBlackOverlayView = new View(activity);
+        sBlackOverlayView.setBackgroundColor(Color.BLACK);
+        activity.getWindow().addContentView(sBlackOverlayView, params);
+    }
+
+    private static void removeBlackOverlayView() {
+        if (sBlackOverlayView != null) UiUtils.removeViewFromParent(sBlackOverlayView);
+        sBlackOverlayView = null;
+    }
+
+    private static boolean isTrustedDaydreamIntent(Intent intent) {
+        return isVrIntent(intent)
+                && IntentHandler.isIntentFromTrustedApp(intent, DAYDREAM_HOME_PACKAGE);
+    }
+
     private void onAutopresentIntent() {
         // Autopresent intents are only expected from trusted first party apps while
         // we're not in vr.
         assert !mInVr;
-        mAutopresentWebVr = true;
         mDonSucceeded = true;
+        mAutopresentWebVr = true;
+    }
+
+    private void onVrIntent() {
+        // We assume that when we get a VR intent, we're in the headset.
+        mNeedsAnimationCancel = true;
     }
 
     /**
      * This is called every time ChromeActivity gets a new intent.
      */
-    public static void onNewIntent(ChromeActivity activity, Intent intent) {
-        if (IntentUtils.safeGetBooleanExtra(intent, DAYDREAM_VR_EXTRA, false)
+    public static void onNewIntentWithNative(ChromeActivity activity, Intent intent) {
+        if (!isVrIntent(intent) || !activitySupportsVrBrowsing(activity)) return;
+        VrShellDelegate instance = getInstance(activity);
+        if (instance == null) return;
+        instance.onVrIntent();
+        if (isTrustedDaydreamIntent(intent)
                 && ChromeFeatureList.isEnabled(ChromeFeatureList.WEBVR_AUTOPRESENT)
-                && activitySupportsAutopresentation(activity)
-                && IntentHandler.isIntentFromTrustedApp(intent, DAYDREAM_HOME_PACKAGE)) {
-            VrShellDelegate instance = getInstance(activity);
-            if (instance == null) return;
+                && activitySupportsAutopresentation(activity)) {
             instance.onAutopresentIntent();
         }
+    }
+
+    /**
+     * This is called when ChromeTabbedActivity gets a new intent before native is initialized.
+     */
+    public static void maybeHandleVrIntentPreNative(ChromeActivity activity, Intent intent) {
+        if (isTrustedDaydreamIntent(intent)) {
+            // We add a black overlay view so that we can show black while the VR UI is loading.
+            // Note that this alone isn't sufficient to prevent 2D UI from showing when
+            // auto-presenting WebVR. See comment about the custom animation in {@link
+            // getVrIntentOptions}.
+            addBlackOverlayViewForActivity(activity);
+        }
+    }
+
+    /**
+     * @return Whether or not the given intent is a VR-specific intent.
+     */
+    public static boolean isVrIntent(Intent intent) {
+        return IntentUtils.safeGetBooleanExtra(intent, DAYDREAM_VR_EXTRA, false);
+    }
+
+    /**
+     * @return Options that a VR-specific Chrome activity should be launched with.
+     */
+    public static Bundle getVrIntentOptions(Context context) {
+        // These options are used to start the Activity with a custom animation to keep it hidden
+        // for a few hundread milliseconds - enough time for us to draw the first black view.
+        // The animation is sufficient to hide the 2D screenshot but not to the 2D UI while the
+        // WebVR page is being loaded because the animation is somehow cancelled when we try to
+        // enter VR (I don't know what's cancelling it). To hide the 2D UI, we resort to the black
+        // overlay view added in {@link startWithVrIntentPreNative}.
+        return ActivityOptions.makeCustomAnimation(context, R.anim.stay_hidden, 0).toBundle();
     }
 
     @Override
@@ -931,15 +989,18 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         return true;
     }
 
+    private boolean cancelStartupAnimationIfNeeded() {
+        if (!mNeedsAnimationCancel) return false;
+        mCancellingEntryAnimation = true;
+        Bundle options = ActivityOptions.makeCustomAnimation(mActivity, 0, 0).toBundle();
+        mActivity.startActivity(new Intent(mActivity, VrCancelAnimationActivity.class), options);
+        mNeedsAnimationCancel = false;
+        return true;
+    }
+
     private void onResume() {
-        if (mNeedsAnimationCancel) {
-            mCancellingEntryAnimation = true;
-            Bundle options = ActivityOptions.makeCustomAnimation(mActivity, 0, 0).toBundle();
-            mActivity.startActivity(
-                    new Intent(mActivity, VrCancelAnimationActivity.class), options);
-            mNeedsAnimationCancel = false;
-            return;
-        }
+        if (cancelStartupAnimationIfNeeded()) return;
+
         mPaused = false;
 
         maybeUpdateVrSupportLevel();
@@ -1140,7 +1201,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         // Ensure we can't asynchronously enter VR after trying to exit it.
         mEnterVrHandler.removeCallbacksAndMessages(null);
         mDonSucceeded = false;
-        removeOverlayView();
+        removeBlackOverlayView();
         mVrClassesWrapper.setVrModeEnabled(mActivity, false);
         restoreWindowMode();
     }
@@ -1367,23 +1428,6 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
                     .setSystemUiVisibility(mRestoreSystemUiVisibilityFlag);
         }
         mRestoreSystemUiVisibilityFlag = -1;
-    }
-
-    private void addOverlayView() {
-        if (mOverlayView != null) return;
-        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
-                WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT);
-        FrameLayout decor = (FrameLayout) mActivity.getWindow().getDecorView();
-        mOverlayView = new View(mActivity);
-        mOverlayView.setBackgroundColor(Color.BLACK);
-        decor.addView(mOverlayView, -1, params);
-    }
-
-    private void removeOverlayView() {
-        if (mOverlayView == null) return;
-        FrameLayout decor = (FrameLayout) sInstance.mActivity.getWindow().getDecorView();
-        decor.removeView(mOverlayView);
-        mOverlayView = null;
     }
 
     /**
