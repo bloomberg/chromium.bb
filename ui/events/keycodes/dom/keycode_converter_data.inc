@@ -522,7 +522,8 @@ USB_KEYMAP_DECLARATION {
   // USB#0x0c019e: AL Terminal Lock/Screensaver
   USB_KEYMAP(0x0c019e, 0x0098, 0x00a0, 0x0000, 0xffff, NULL, LOCK_SCREEN),
   // USB#0x0c019f AL Control Panel
-  USB_KEYMAP(0x0c019f, 0x0243, 0x024b, 0x0000, 0xffff, NULL, LAUNCH_CONTROL_PANEL),
+  USB_KEYMAP(0x0c019f, 0x0243, 0x024b, 0x0000, 0xffff, "LaunchControlPanel",
+             LAUNCH_CONTROL_PANEL),
   // USB#0x0c01a2: AL Select Task/Application
   USB_KEYMAP(0x0c01a2, 0x0244, 0x024c, 0x0000, 0xffff, "SelectTask", SELECT_TASK),
   // USB#0x0c01a7: AL_Documents

@@ -365,6 +365,9 @@ DOM_KEY_MAP_DECLARATION {
   // It is not included in any web standard because it is not exposed
   // to the web platform.
   DOM_KEY_MAP("LaunchAssistant",      LAUNCH_ASSISTANT,         0x0B0E),
+  // Similarly to Launch Assistant, Launch Control Panel is also
+  // Chrome-specific.
+  DOM_KEY_MAP("LaunchControlPanel",   LAUNCH_CONTROL_PANEL,     0x0B0F),
 
   // =========================================================
   // Browser Keys
