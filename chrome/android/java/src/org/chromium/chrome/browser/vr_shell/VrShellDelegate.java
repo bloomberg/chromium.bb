@@ -94,6 +94,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
 
     private static final String DAYDREAM_VR_EXTRA = "android.intent.extra.VR_LAUNCH";
     private static final String DAYDREAM_HOME_PACKAGE = "com.google.android.vr.home";
+    static final String VR_FRE_INTENT_EXTRA = "org.chromium.chrome.browser.vr_shell.VR_FRE";
 
     // Linter and formatter disagree on how the line below should be formatted.
     /* package */
@@ -420,7 +421,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
     }
 
     @SuppressWarnings("unchecked")
-    private static VrClassesWrapper createVrClassesWrapper() {
+    /* package */ static VrClassesWrapper createVrClassesWrapper() {
         try {
             Class<? extends VrClassesWrapper> vrClassesBuilderClass =
                     (Class<? extends VrClassesWrapper>) Class.forName(
@@ -482,6 +483,13 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         // controller.
         if (vrSupportLevel != VR_DAYDREAM) return false;
         return ChromeFeatureList.isEnabled(ChromeFeatureList.VR_SHELL);
+    }
+
+    /**
+     *  @return Whether or not VR is supported on this platform.
+     */
+    private static boolean isVrEnabled() {
+        return getVrClassesWrapper() != null;
     }
 
     private class VSyncEstimator {
@@ -869,10 +877,31 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
     }
 
     /**
+     * @return An intent that will launch a VR activity that will prompt the
+     * user to take off their headset and foward the freIntent to the standard
+     * 2D FRE activity.
+     */
+    public static Intent setupVrFreIntent(Context context, Intent freIntent) {
+        if (!isVrEnabled()) return freIntent;
+        Intent intent = new Intent();
+        intent.setClassName(context, VrFirstRunActivity.class.getName());
+        intent.putExtra(VR_FRE_INTENT_EXTRA, new Intent(freIntent));
+        intent.putExtra(DAYDREAM_VR_EXTRA, true);
+        return intent;
+    }
+
+    /**
      * @return Whether or not the given intent is a VR-specific intent.
      */
     public static boolean isVrIntent(Intent intent) {
         return IntentUtils.safeGetBooleanExtra(intent, DAYDREAM_VR_EXTRA, false);
+    }
+
+    /*
+     * Remove VR-specific extras from the given intent.
+     */
+    public static void removeVrExtras(Intent intent) {
+        intent.removeExtra(DAYDREAM_VR_EXTRA);
     }
 
     /**
