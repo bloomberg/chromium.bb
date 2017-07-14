@@ -26,19 +26,27 @@
 
 #include "platform/loader/fetch/ResourceError.h"
 
+#include "net/base/net_errors.h"
 #include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLError.h"
 
 namespace blink {
 
+namespace {
+constexpr char kThrottledErrorDescription[] =
+    "Request throttled. Visit http://dev.chromium.org/throttling for more "
+    "information.";
+}  // namespace
+
 const char kErrorDomainBlinkInternal[] = "BlinkInternal";
 
 ResourceError ResourceError::CancelledError(const String& failing_url) {
-  return Platform::Current()->CancelledError(
-      KURL(kParsedURLString, failing_url));
+  return WebURLError(KURL(kParsedURLString, failing_url), false,
+                     net::ERR_ABORTED);
 }
 
 ResourceError ResourceError::CancelledDueToAccessCheckError(
@@ -111,6 +119,27 @@ bool ResourceError::Compare(const ResourceError& a, const ResourceError& b) {
     return false;
 
   return true;
+}
+
+void ResourceError::InitializeWebURLError(WebURLError* error,
+                                          const WebURL& url,
+                                          bool stale_copy_in_cache,
+                                          int reason) {
+  error->domain = WebString::FromASCII(net::kErrorDomain);
+  error->reason = reason;
+  error->stale_copy_in_cache = stale_copy_in_cache;
+  error->unreachable_url = url;
+  if (reason == net::ERR_ABORTED) {
+    error->is_cancellation = true;
+  } else if (reason == net::ERR_CACHE_MISS) {
+    error->is_cache_miss = true;
+  } else if (reason == net::ERR_TEMPORARILY_THROTTLED) {
+    error->localized_description =
+        WebString::FromASCII(kThrottledErrorDescription);
+  } else {
+    error->localized_description =
+        WebString::FromASCII(net::ErrorToString(reason));
+  }
 }
 
 }  // namespace blink

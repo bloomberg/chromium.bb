@@ -20,8 +20,6 @@
 #include "third_party/WebKit/public/platform/WebHTTPHeaderVisitor.h"
 #include "third_party/WebKit/public/platform/WebMixedContent.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/platform/WebURL.h"
-#include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 
 using blink::WebCachePolicy;
@@ -33,10 +31,6 @@ using blink::WebURLRequest;
 namespace content {
 
 namespace {
-
-const char kThrottledErrorDescription[] =
-    "Request throttled. Visit http://dev.chromium.org/throttling for more "
-    "information.";
 
 class HeaderFlattener : public blink::WebHTTPHeaderVisitor {
  public:
@@ -492,38 +486,6 @@ STATIC_ASSERT_ENUM(ServiceWorkerMode::ALL,
 ServiceWorkerMode GetServiceWorkerModeForWebURLRequest(
     const blink::WebURLRequest& request) {
   return static_cast<ServiceWorkerMode>(request.GetServiceWorkerMode());
-}
-
-blink::WebURLError CreateWebURLError(const blink::WebURL& unreachable_url,
-                                     bool stale_copy_in_cache,
-                                     int reason) {
-  blink::WebURLError error;
-  error.domain = WebString::FromASCII(net::kErrorDomain);
-  error.reason = reason;
-  error.unreachable_url = unreachable_url;
-  error.stale_copy_in_cache = stale_copy_in_cache;
-  if (reason == net::ERR_ABORTED) {
-    error.is_cancellation = true;
-  } else if (reason == net::ERR_CACHE_MISS) {
-    error.is_cache_miss = true;
-  } else if (reason == net::ERR_TEMPORARILY_THROTTLED) {
-    error.localized_description =
-        WebString::FromASCII(kThrottledErrorDescription);
-  } else {
-    error.localized_description =
-        WebString::FromASCII(net::ErrorToString(reason));
-  }
-  return error;
-}
-
-blink::WebURLError CreateWebURLError(const blink::WebURL& unreachable_url,
-                                     bool stale_copy_in_cache,
-                                     int reason,
-                                     bool was_ignored_by_handler) {
-  blink::WebURLError error =
-      CreateWebURLError(unreachable_url, stale_copy_in_cache, reason);
-  error.was_ignored_by_handler = was_ignored_by_handler;
-  return error;
 }
 
 }  // namespace content

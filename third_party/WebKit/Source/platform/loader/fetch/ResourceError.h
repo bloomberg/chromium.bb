@@ -36,7 +36,9 @@
 
 namespace blink {
 
+class WebURL;
 enum class ResourceRequestBlockedReason;
+struct WebURLError;
 
 // Used for errors that won't be exposed to clients.
 PLATFORM_EXPORT extern const char kErrorDomainBlinkInternal[];
@@ -131,6 +133,11 @@ class PLATFORM_EXPORT ResourceError final {
   bool ShouldCollapseInitiator() const { return should_collapse_initiator_; }
 
   static bool Compare(const ResourceError&, const ResourceError&);
+
+  static void InitializeWebURLError(WebURLError*,
+                                    const WebURL&,
+                                    bool stale_copy_in_cache,
+                                    int reason);
 
  private:
   String domain_;

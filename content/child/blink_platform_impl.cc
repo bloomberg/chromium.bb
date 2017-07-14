@@ -369,11 +369,6 @@ WebString BlinkPlatformImpl::UserAgent() {
   return blink::WebString::FromUTF8(GetContentClient()->GetUserAgent());
 }
 
-WebURLError BlinkPlatformImpl::CancelledError(
-    const WebURL& unreachableURL) const {
-  return CreateWebURLError(unreachableURL, false, net::ERR_ABORTED);
-}
-
 std::unique_ptr<blink::WebThread> BlinkPlatformImpl::CreateThread(
     const char* name) {
   std::unique_ptr<blink::scheduler::WebThreadBase> thread =

@@ -373,10 +373,6 @@ class BLINK_PLATFORM_EXPORT Platform {
       const blink::WebSecurityOrigin& cache_storage_origin,
       const WebString& cache_storage_cache_name) {}
 
-  virtual WebURLError CancelledError(const WebURL&) const {
-    return WebURLError();
-  }
-
   // Plugins -------------------------------------------------------------
 
   // If refresh is true, then cached information should not be used to

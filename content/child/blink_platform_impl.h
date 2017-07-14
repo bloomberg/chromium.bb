@@ -81,7 +81,6 @@ class CONTENT_EXPORT BlinkPlatformImpl
   std::unique_ptr<blink::WebDataConsumerHandle> CreateDataConsumerHandle(
       mojo::ScopedDataPipeConsumerHandle handle) override;
   blink::WebString UserAgent() override;
-  blink::WebURLError CancelledError(const blink::WebURL& url) const override;
   std::unique_ptr<blink::WebThread> CreateThread(const char* name) override;
   blink::WebThread* CurrentThread() override;
   void RecordAction(const blink::UserMetricsAction&) override;

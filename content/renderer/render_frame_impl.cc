@@ -5199,8 +5199,8 @@ void RenderFrameImpl::OnFailedNavigation(
       common_params, StartNavigationParams(), request_params));
 
   // Send the provisional load failure.
-  blink::WebURLError error =
-      CreateWebURLError(common_params.url, has_stale_copy_in_cache, error_code);
+  blink::WebURLError error(common_params.url, has_stale_copy_in_cache,
+                           error_code);
   WebURLRequest failed_request =
       CreateURLRequestForNavigation(common_params, request_params,
                                     std::unique_ptr<StreamOverrideParameters>(),

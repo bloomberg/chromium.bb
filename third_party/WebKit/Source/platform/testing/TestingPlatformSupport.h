@@ -116,7 +116,6 @@ class TestingPlatformSupport : public Platform {
       const WebURLRequest&,
       base::SingleThreadTaskRunner*) override;
   WebData GetDataResource(const char* name) override;
-  WebURLError CancelledError(const WebURL&) const override;
   InterfaceProvider* GetInterfaceProvider() override;
 
   virtual void RunUntilIdle();
