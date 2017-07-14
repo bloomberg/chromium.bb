@@ -6,6 +6,10 @@
 
 #include <stdint.h>
 
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "base/guid.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
@@ -81,7 +85,7 @@
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/mock_cryptohome_client.h"
+#include "chromeos/dbus/fake_cryptohome_client.h"
 #include "components/signin/core/account_id/account_id.h"
 #endif
 
@@ -168,11 +172,24 @@ class TestWebappRegistry : public WebappRegistry {
 #endif
 
 #if defined(OS_CHROMEOS)
-void FakeDBusCall(const chromeos::BoolDBusMethodCallback& callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(callback, chromeos::DBUS_METHOD_CALL_SUCCESS, true));
-}
+// Customized fake class to count TpmAttestationDeleteKeys call.
+class FakeCryptohomeClient : public chromeos::FakeCryptohomeClient {
+ public:
+  void TpmAttestationDeleteKeys(
+      chromeos::attestation::AttestationKeyType key_type,
+      const cryptohome::Identification& cryptohome_id,
+      const std::string& key_prefix,
+      const chromeos::BoolDBusMethodCallback& callback) override {
+    ++delete_keys_call_count_;
+    chromeos::FakeCryptohomeClient::TpmAttestationDeleteKeys(
+        key_type, cryptohome_id, key_prefix, callback);
+  }
+
+  int delete_keys_call_count() const { return delete_keys_call_count_; }
+
+ private:
+  int delete_keys_call_count_ = 0;
+};
 #endif
 
 class RemoveCookieTester {
@@ -1373,21 +1390,18 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
       AccountId::FromUserEmail("test@example.com"));
   chromeos::ScopedUserManagerEnabler user_manager_enabler(mock_user_manager);
 
-  std::unique_ptr<chromeos::DBusThreadManagerSetter> dbus_setter =
-      chromeos::DBusThreadManager::GetSetterForTesting();
-  chromeos::MockCryptohomeClient* cryptohome_client =
-      new chromeos::MockCryptohomeClient;
-  dbus_setter->SetCryptohomeClient(
-      std::unique_ptr<chromeos::CryptohomeClient>(cryptohome_client));
-
-  // Expect exactly one call.  No calls means no attempt to delete keys and more
-  // than one call means a significant performance problem.
-  EXPECT_CALL(*cryptohome_client, TpmAttestationDeleteKeys(_, _, _, _))
-      .WillOnce(WithArgs<3>(Invoke(FakeDBusCall)));
+  // Owned by DBusThreadManager.
+  FakeCryptohomeClient* cryptohome_client = new FakeCryptohomeClient();
+  chromeos::DBusThreadManager::GetSetterForTesting()->SetCryptohomeClient(
+      base::WrapUnique(cryptohome_client));
 
   BlockUntilBrowsingDataRemoved(
       base::Time(), base::Time::Max(),
       content::BrowsingDataRemover::DATA_TYPE_MEDIA_LICENSES, false);
+
+  // Expect exactly one call.  No calls means no attempt to delete keys and more
+  // than one call means a significant performance problem.
+  EXPECT_EQ(1, cryptohome_client->delete_keys_call_count());
 
   chromeos::DBusThreadManager::Shutdown();
 }

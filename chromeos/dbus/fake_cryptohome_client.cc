@@ -527,7 +527,7 @@ void FakeCryptohomeClient::TpmAttestationDeleteKeys(
     const std::string& key_prefix,
     const BoolDBusMethodCallback& callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, false));
+      FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, true));
 }
 
 void FakeCryptohomeClient::GetKeyDataEx(
