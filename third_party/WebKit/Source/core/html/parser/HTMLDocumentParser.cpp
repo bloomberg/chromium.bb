@@ -1131,6 +1131,9 @@ void HTMLDocumentParser::NotifyScriptLoaded(PendingScript* pending_script) {
 }
 
 void HTMLDocumentParser::ExecuteScriptsWaitingForResources() {
+  if (IsStopped())
+    return;
+
   DCHECK(GetDocument()->IsScriptExecutionReady());
 
   if (is_waiting_for_stylesheets_)
