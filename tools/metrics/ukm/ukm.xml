@@ -850,6 +850,12 @@ be describing additional metrics about the same event.
       correspond to the enum PasswordFormMetricsRecorder::BubbleTrigger.
     </summary>
   </metric>
+  <metric name="User.ActionSimplified">
+    <summary>
+      Records what the user does with a form. Recorded values correspond to the
+      enum password_manager::UserAction.
+    </summary>
+  </metric>
 </event>
 
 <event name="PageWithPassword">
