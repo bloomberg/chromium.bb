@@ -1,6 +1,0 @@
-This is a testharness.js-based test.
-PASS Delete basics 
-PASS Deleting appended multiple 
-FAIL Deleting all params keeps ? in URL assert_equals: url.href has ? expected "http://example.com/?" but got "http://example.com/"
-Harness: the test ran to completion.
-
