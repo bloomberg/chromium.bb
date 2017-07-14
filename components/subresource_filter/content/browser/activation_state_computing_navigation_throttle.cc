@@ -123,6 +123,17 @@ void ActivationStateComputingNavigationThrottle::OnActivationStateComputed(
   navigation_handle()->Resume();
 }
 
+AsyncDocumentSubresourceFilter*
+ActivationStateComputingNavigationThrottle::filter() const {
+  // TODO(csharrison): This should not really be necessary, as we should be
+  // delaying the navigation until the filter has computed an activation state.
+  // See crbug.com/736249. In the mean time, have a check here to avoid
+  // returning a filter in an invalid state.
+  if (async_filter_ && async_filter_->has_activation_state())
+    return async_filter_.get();
+  return nullptr;
+}
+
 // Ensure the caller cannot take ownership of a subresource filter for cases
 // when activation IPCs are not sent to the render process.
 std::unique_ptr<AsyncDocumentSubresourceFilter>

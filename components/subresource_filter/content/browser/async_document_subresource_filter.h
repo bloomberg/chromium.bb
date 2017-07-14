@@ -116,6 +116,8 @@ class AsyncDocumentSubresourceFilter {
   // Must be called after activation state computation is finished.
   const ActivationState& activation_state() const;
 
+  bool has_activation_state() const { return activation_state_.has_value(); }
+
   // The |first_disallowed_load_callback|, if it is non-null, is invoked on the
   // first ReportDisallowedLoad() call.
   void set_first_disallowed_load_callback(base::OnceClosure callback) {
