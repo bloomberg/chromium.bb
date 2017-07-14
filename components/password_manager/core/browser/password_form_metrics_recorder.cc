@@ -27,6 +27,7 @@ const char kUkmSavingPromptShown[] = "Saving.Prompt.Shown";
 const char kUkmSavingPromptTrigger[] = "Saving.Prompt.Trigger";
 const char kUkmSavingPromptInteraction[] = "Saving.Prompt.Interaction";
 const char kUkmManagerFillEvent[] = "ManagerFill.Action";
+const char kUkmUserActionSimplified[] = "User.ActionSimplified";
 
 PasswordFormMetricsRecorder::PasswordFormMetricsRecorder(
     bool is_main_frame_secure,
@@ -37,6 +38,7 @@ PasswordFormMetricsRecorder::PasswordFormMetricsRecorder(
 PasswordFormMetricsRecorder::~PasswordFormMetricsRecorder() {
   UMA_HISTOGRAM_ENUMERATION("PasswordManager.ActionsTakenV3", GetActionsTaken(),
                             kMaxNumActionsTaken);
+  RecordUkmMetric(kUkmUserActionSimplified, static_cast<int64_t>(user_action_));
 
   // Use the visible main frame URL at the time the PasswordFormManager
   // is created, in case a navigation has already started and the

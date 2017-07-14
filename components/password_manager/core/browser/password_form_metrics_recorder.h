@@ -66,6 +66,10 @@ extern const char kUkmSavingPromptInteraction[];
 // PasswordFormMetricsRecorder::ManagerFillEvent.
 extern const char kUkmManagerFillEvent[];
 
+// This metric records what the user does with a form. Values correspond to the
+// enum UserAction.
+extern const char kUkmUserActionSimplified[];
+
 class FormFetcher;
 
 // The pupose of this class is to record various types of metrics about the

@@ -242,12 +242,13 @@ TEST(PasswordFormMetricsRecorder, Actions) {
 
     base::HistogramTester histogram_tester;
     base::UserActionTester user_action_tester;
+    ukm::TestUkmRecorder test_ukm_recorder;
 
     // Use a scoped PasswordFromMetricsRecorder because some metrics are recored
     // on destruction.
     {
       auto recorder = base::MakeRefCounted<PasswordFormMetricsRecorder>(
-          test.is_main_frame_secure, nullptr);
+          test.is_main_frame_secure, CreateUkmEntryBuilder(&test_ukm_recorder));
 
       recorder->SetManagerAction(test.manager_action);
       if (test.user_action != UserAction::kNone)
@@ -294,6 +295,12 @@ TEST(PasswordFormMetricsRecorder, Actions) {
       case UserAction::kMax:
         break;
     }
+
+    const ukm::UkmSource* source = test_ukm_recorder.GetSourceForUrl(kTestUrl);
+    ASSERT_TRUE(source);
+    test_ukm_recorder.ExpectMetric(*source, "PasswordForm",
+                                   kUkmUserActionSimplified,
+                                   static_cast<int64_t>(test.user_action));
   }
 }
 
