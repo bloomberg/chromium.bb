@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/file_system/file_system_api.h"
-
 #include "base/callback.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -21,16 +19,19 @@
 #include "chrome/browser/extensions/api/file_system/consent_provider.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/extensions/api/file_system.h"
 #include "components/drive/chromeos/file_system_interface.h"
 #include "components/drive/service/fake_drive_service.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/api/file_system/file_system_api.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/common/api/file_system.h"
 #include "google_apis/drive/base_requests.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/test_util.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "ui/base/ui_base_types.h"
+
+// TODO(michaelpg): Port these tests to app_shell: crbug.com/505926.
 
 using file_manager::VolumeManager;
 

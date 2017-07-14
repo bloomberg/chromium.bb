@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "extensions/browser/api/file_system/file_system_delegate.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
 namespace base {
@@ -25,19 +26,17 @@ namespace extensions {
 // open. Deletes itself once the dialog is closed.
 class FileEntryPicker : public ui::SelectFileDialog::Listener {
  public:
-  using FilesSelectedCallback =
-      base::OnceCallback<void(const std::vector<base::FilePath>& paths)>;
-
   // Creates a file picker. After the user picks file(s) or cancels, the
   // relevant callback is called and this object deletes itself.
   // The dialog is modal to the |web_contents|'s window.
   // See SelectFileDialog::SelectFile for the other parameters.
-  FileEntryPicker(content::WebContents* web_contents,
-                  const base::FilePath& suggested_name,
-                  const ui::SelectFileDialog::FileTypeInfo& file_type_info,
-                  ui::SelectFileDialog::Type picker_type,
-                  FilesSelectedCallback files_selected_callback,
-                  base::OnceClosure file_selection_canceled_callback);
+  FileEntryPicker(
+      content::WebContents* web_contents,
+      const base::FilePath& suggested_name,
+      const ui::SelectFileDialog::FileTypeInfo& file_type_info,
+      ui::SelectFileDialog::Type picker_type,
+      FileSystemDelegate::FilesSelectedCallback files_selected_callback,
+      base::OnceClosure file_selection_canceled_callback);
 
  private:
   ~FileEntryPicker() override;  // FileEntryPicker deletes itself.
@@ -56,7 +55,7 @@ class FileEntryPicker : public ui::SelectFileDialog::Listener {
       void* params) override;
   void FileSelectionCanceled(void* params) override;
 
-  FilesSelectedCallback files_selected_callback_;
+  FileSystemDelegate::FilesSelectedCallback files_selected_callback_;
   base::OnceClosure file_selection_canceled_callback_;
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
 

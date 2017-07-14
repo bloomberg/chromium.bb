@@ -13,6 +13,7 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/api/file_system/file_system_delegate.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/shell_dialogs/selected_file_info.h"
 
@@ -23,7 +24,7 @@ FileEntryPicker::FileEntryPicker(
     const base::FilePath& suggested_name,
     const ui::SelectFileDialog::FileTypeInfo& file_type_info,
     ui::SelectFileDialog::Type picker_type,
-    FilesSelectedCallback files_selected_callback,
+    FileSystemDelegate::FilesSelectedCallback files_selected_callback,
     base::OnceClosure file_selection_canceled_callback)
     : files_selected_callback_(std::move(files_selected_callback)),
       file_selection_canceled_callback_(
