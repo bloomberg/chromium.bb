@@ -15,6 +15,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
+#include "base/sys_info.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_checker.h"
 #include "base/trace_event/memory_dump_manager.h"
@@ -86,16 +87,33 @@ bool LevelDB::InitWithOptions(const base::FilePath& database_dir,
   return false;
 }
 
+static size_t DefaultBlockCacheSize() {
+  if (base::SysInfo::IsLowEndDevice())
+    return 512 * 1024;  // 512KB
+  else
+    return 8 * 1024 * 1024;  // 8MB
+}
+
 bool LevelDB::Init(const leveldb_proto::Options& options) {
   leveldb::Options leveldb_options;
   leveldb_options.create_if_missing = true;
   leveldb_options.max_open_files = 0;  // Use minimum.
   leveldb_options.reuse_logs = leveldb_env::kDefaultLogReuseOptionValue;
+
+  static leveldb::Cache* default_block_cache =
+      leveldb::NewLRUCache(DefaultBlockCacheSize());
+
   if (options.write_buffer_size != 0)
     leveldb_options.write_buffer_size = options.write_buffer_size;
   if (options.read_cache_size != 0) {
     custom_block_cache_.reset(leveldb::NewLRUCache(options.read_cache_size));
     leveldb_options.block_cache = custom_block_cache_.get();
+  } else {
+    // By default, allocate a single block cache to be shared across
+    // all LevelDB instances created via this method.
+    // See also content/browser/indexed_db/leveldb/leveldb_database.cc,
+    // which has its own shared block cache for IndexedDB databases.
+    leveldb_options.block_cache = default_block_cache;
   }
   if (options.database_dir.empty()) {
     env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
