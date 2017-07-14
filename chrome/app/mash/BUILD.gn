@@ -122,8 +122,6 @@ if (is_chromeos) {
   catalog("catalog_mus") {
     catalog_deps = [ "//chrome/app:catalog" ]
     embedded_services = [
-      "//services/ui:manifest",
-
       # TODO(sky): verify if we need this.
       "//services/ui/ime/test_ime_driver:manifest",
     ]

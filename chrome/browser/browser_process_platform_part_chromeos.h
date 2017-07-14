@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "chrome/browser/browser_process_platform_part_base.h"
+#include "services/ui/common/image_cursors_set.h"
 
 namespace chromeos {
 class ChromeSessionManager;
@@ -139,6 +140,9 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
   std::unique_ptr<ScopedKeepAlive> keep_alive_;
 
   base::flat_set<std::string> compatible_cros_components_;
+
+  // Used by the UI Service.
+  ui::ImageCursorsSet image_cursors_set_;
 
 #if defined(USE_OZONE)
   std::unique_ptr<ui::InputDeviceControllerClient>

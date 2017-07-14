@@ -44,6 +44,7 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
+#include "services/ui/service.h"
 
 #if defined(USE_OZONE)
 #include "content/public/common/service_manager_connection.h"
@@ -128,6 +129,15 @@ class ChromeServiceChromeOS : public service_manager::Service,
 
   DISALLOW_COPY_AND_ASSIGN(ChromeServiceChromeOS);
 };
+
+std::unique_ptr<service_manager::Service> CreateEmbeddedUIService(
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+    base::WeakPtr<ui::ImageCursorsSet> image_cursors_set_weak_ptr) {
+  ui::Service::InProcessConfig config;
+  config.resource_runner = task_runner;
+  config.image_cursors_set_weak_ptr = image_cursors_set_weak_ptr;
+  return base::MakeUnique<ui::Service>(&config);
+}
 
 }  // namespace
 
@@ -273,6 +283,17 @@ void BrowserProcessPlatformPart::RegisterInProcessServices(
                               base::ThreadTaskRunnerHandle::Get());
     info.task_runner = base::ThreadTaskRunnerHandle::Get();
     services->insert(std::make_pair(ash::mojom::kServiceName, info));
+  }
+
+  if (chromeos::GetAshConfig() == ash::Config::MUS) {
+    service_manager::EmbeddedServiceInfo info;
+    info.factory = base::Bind(&CreateEmbeddedUIService,
+                              base::ThreadTaskRunnerHandle::Get(),
+                              image_cursors_set_.GetWeakPtr());
+    info.use_own_thread = true;
+    info.message_loop_type = base::MessageLoop::TYPE_UI;
+    info.thread_priority = base::ThreadPriority::DISPLAY;
+    services->insert(std::make_pair(ui::mojom::kServiceName, info));
   }
 }
 
