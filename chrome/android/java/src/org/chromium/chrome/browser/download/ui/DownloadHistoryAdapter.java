@@ -565,7 +565,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
                 .apply();
         RecordHistogram.recordBooleanHistogram(
                 "Android.DownloadManager.ShowStorageInfo", mShouldShowStorageInfoHeader);
-        filter(mFilter);
+        if (mLoadingDelegate.isLoaded()) filter(mFilter);
     }
 
     private DownloadDelegate getDownloadDelegate() {
