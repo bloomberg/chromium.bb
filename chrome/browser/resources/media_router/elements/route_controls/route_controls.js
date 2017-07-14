@@ -69,6 +69,16 @@ Polymer({
     },
 
     /**
+     * The timestamp for when the controller last submitted a volume change
+     * request for the volume slider being dragged.
+     * @private {boolean}
+     */
+    lastVolumeChangeByDragging_: {
+      type: Number,
+      value: 0,
+    },
+
+    /**
      * The timestamp for when the route details view was opened.
      * @type {number}
      */
@@ -285,11 +295,11 @@ Polymer({
   },
 
   /**
-   * Called when the user starts dragging the seek bar.
+   * Called while the user is dragging the seek bar.
    * @param {!Event} e
    * @private
    */
-  onSeekStart_: function(e) {
+  onSeekByDragging_: function(e) {
     this.isSeeking_ = true;
     var target = /** @type {{immediateValue: number}} */ (e.target);
     this.displayedCurrentTime_ = target.immediateValue;
@@ -301,28 +311,43 @@ Polymer({
    * @private
    */
   onVolumeChangeComplete_: function(e) {
-    this.isVolumeChanging_ = false;
     this.volumeSliderValue_ = e.target.value;
     media_router.browserApi.setCurrentMediaVolume(this.volumeSliderValue_);
+    if (this.isVolumeChanging_) {
+      // Wait for 1 second before applying external volume updates, to prevent
+      // notifications originating from this controller moving the slider knob
+      // around.
+      var that = this;
+      setTimeout(function() {
+        that.isVolumeChanging_ = false;
+      }, 1000);
+    }
   },
 
   /**
-   * Called when the user starts dragging the volume bar.
+   * Called while the user is dragging the volume bar.
    * @param {!Event} e
    * @private
    */
-  onVolumeChangeStart_: function(e) {
+  onVolumeChangeByDragging_: function(e) {
+    /** @const */ var currentTime = Date.now();
+    // We limit the frequency of volume change requests during dragging to
+    // limit the number of Mojo calls to the component extension.
+    if (currentTime - this.lastVolumeChangeByDragging_ < 300) {
+      return;
+    }
+    this.lastVolumeChangeByDragging_ = currentTime;
     this.isVolumeChanging_ = true;
     var target = /** @type {{immediateValue: number}} */ (e.target);
     this.volumeSliderValue_ = target.immediateValue;
+    media_router.browserApi.setCurrentMediaVolume(this.volumeSliderValue_);
   },
 
   /**
    * Resets the route controls. Called when the route details view is closed.
    */
   reset: function() {
-    this.routeStatus = new media_router.RouteStatus(
-        '', '', false, false, false, false, false, false, 0, 0, 0);
+    this.routeStatus = new media_router.RouteStatus();
     media_router.ui.setRouteControls(null);
   },
 
