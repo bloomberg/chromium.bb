@@ -241,12 +241,6 @@ crbug.com/711807 external/wpt/css/CSS2/normal-flow/replaced-intrinsic-001.xht [ 
 crbug.com/711807 external/wpt/css/CSS2/normal-flow/replaced-intrinsic-002.xht [ Skip ]
 crbug.com/711807 external/wpt/css/CSS2/normal-flow/width-inherit-001.xht [ Skip ]
 
-#### third_party/WebKit/LayoutTests/external/wpt/css-paint-api
-#### Passed: 50
-#### Skipped: 2
-crbug.com/578252 external/wpt/css-paint-api/background-image-tiled.html [ Skip ]
-crbug.com/578252 external/wpt/css-paint-api/geometry-background-image-tiled-001.html [ Skip ]
-
 #### third_party/WebKit/LayoutTests/overflow
 crbug.com/724697 overflow/overflow-basic-002.html [ Failure ]
 crbug.com/724701 overflow/overflow-basic-004.html [ Failure ]
