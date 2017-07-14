@@ -877,6 +877,8 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
   bool IsSelfCollapsingBlock() const override;
   bool CheckIfIsSelfCollapsingBlock() const;
 
+  bool ShouldTruncateOverflowingText(const LayoutBlockFlow*) const;
+
  protected:
   std::unique_ptr<LayoutBlockFlowRareData> rare_data_;
   std::unique_ptr<FloatingObjects> floating_objects_;
