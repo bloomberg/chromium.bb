@@ -9,8 +9,6 @@ import android.text.TextUtils;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.chrome.browser.WarmupManager;
-import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestion.MatchClassification;
 import org.chromium.chrome.browser.omnibox.VoiceSuggestionProvider.VoiceResult;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -161,12 +159,6 @@ public class AutocompleteController {
     public void startZeroSuggest(Profile profile, String omniboxText, String url,
             boolean focusedFromFakebox) {
         if (profile == null || TextUtils.isEmpty(url)) return;
-
-        if (!NewTabPage.isNTPUrl(url)) {
-            // Proactively start up a renderer, to reduce the time to display search results,
-            // especially if a Service Worker is used.
-            WarmupManager.getInstance().createSpareRenderProcessHost(profile);
-        }
         mNativeAutocompleteControllerAndroid = nativeInit(profile);
         if (mNativeAutocompleteControllerAndroid != 0) {
             if (mUseCachedZeroSuggestResults) mWaitingForSuggestionsToCache = true;
