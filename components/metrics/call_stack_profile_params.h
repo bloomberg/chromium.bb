@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_METRICS_CALL_STACK_PROFILE_PARAMS_H_
 #define COMPONENTS_METRICS_CALL_STACK_PROFILE_PARAMS_H_
 
+#include "base/time/time.h"
+
 namespace metrics {
 
 // Parameters to pass back to the metrics provider.
@@ -49,7 +51,8 @@ struct CallStackProfileParams {
     PROCESS_STARTUP,
     JANKY_TASK,
     THREAD_HUNG,
-    TRIGGER_LAST = THREAD_HUNG
+    PERIODIC_COLLECTION,
+    TRIGGER_LAST = PERIODIC_COLLECTION
   };
 
   // Allows the caller to specify whether sample ordering is
@@ -64,10 +67,20 @@ struct CallStackProfileParams {
 
   // The default constructor is required for mojo and should not be used
   // otherwise. A valid trigger should always be specified.
-  CallStackProfileParams();
-  CallStackProfileParams(Process process, Thread thread, Trigger trigger);
-  CallStackProfileParams(Process process, Thread thread, Trigger trigger,
-                         SampleOrderingSpec ordering_spec);
+  constexpr CallStackProfileParams()
+      : CallStackProfileParams(UNKNOWN_PROCESS, UNKNOWN_THREAD, UNKNOWN) {}
+  constexpr CallStackProfileParams(Process process,
+                                   Thread thread,
+                                   Trigger trigger)
+      : CallStackProfileParams(process, thread, trigger, MAY_SHUFFLE) {}
+  constexpr CallStackProfileParams(Process process,
+                                   Thread thread,
+                                   Trigger trigger,
+                                   SampleOrderingSpec ordering_spec)
+      : process(process),
+        thread(thread),
+        trigger(trigger),
+        ordering_spec(ordering_spec) {}
 
   // The collection process.
   Process process;
@@ -80,6 +93,12 @@ struct CallStackProfileParams {
 
   // Whether to preserve sample ordering.
   SampleOrderingSpec ordering_spec;
+
+  // The time at which the CallStackProfileMetricsProvider became aware of the
+  // request for profiling. In particular, this is when callback was requested
+  // via CallStackProfileMetricsProvider::GetProfilerCallback(). Used to
+  // determine if collection was disabled during the collection of the profile.
+  base::TimeTicks start_timestamp;
 };
 
 }  // namespace metrics

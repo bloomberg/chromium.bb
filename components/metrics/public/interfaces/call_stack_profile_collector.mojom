@@ -66,6 +66,7 @@ enum Trigger {
   PROCESS_STARTUP,
   JANKY_TASK,
   THREAD_HUNG,
+  PERIODIC_COLLECTION,
 };
 
 enum SampleOrderingSpec {

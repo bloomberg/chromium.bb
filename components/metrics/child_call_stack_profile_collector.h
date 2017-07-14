@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_METRICS_CHILD_CALL_STACK_PROFILE_COLLECTOR_H_
 #define COMPONENTS_METRICS_CHILD_CALL_STACK_PROFILE_COLLECTOR_H_
 
+#include <vector>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
@@ -90,9 +92,14 @@ class ChildCallStackProfileCollector {
 
   using CallStackProfile = base::StackSamplingProfiler::CallStackProfile;
 
-  void Collect(const CallStackProfileParams& params,
-               base::TimeTicks start_timestamp,
-               std::vector<CallStackProfile> profiles);
+  base::Optional<base::StackSamplingProfiler::SamplingParams> Collect(
+      const CallStackProfileParams& params,
+      base::TimeTicks start_timestamp,
+      std::vector<CallStackProfile> profiles);
+
+  void CollectImpl(const CallStackProfileParams& params,
+                   base::TimeTicks start_timestamp,
+                   std::vector<CallStackProfile> profiles);
 
   // This object may be accessed on any thread, including the profiler
   // thread. The expected use case for the object is to be created and have

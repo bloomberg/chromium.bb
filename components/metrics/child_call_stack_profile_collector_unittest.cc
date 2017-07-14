@@ -30,7 +30,7 @@ class ChildCallStackProfileCollectorTest : public testing::Test {
    public:
     using CallStackProfile = base::StackSamplingProfiler::CallStackProfile;
 
-    Receiver(mojom::CallStackProfileCollectorRequest request)
+    explicit Receiver(mojom::CallStackProfileCollectorRequest request)
         : binding_(this, std::move(request)) {}
     ~Receiver() override {}
 
@@ -73,6 +73,7 @@ class ChildCallStackProfileCollectorTest : public testing::Test {
   std::unique_ptr<Receiver> receiver_impl_;
   ChildCallStackProfileCollector child_collector_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(ChildCallStackProfileCollectorTest);
 };
 

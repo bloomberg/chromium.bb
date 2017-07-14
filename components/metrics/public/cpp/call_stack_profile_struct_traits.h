@@ -5,9 +5,11 @@
 // Defines StructTraits specializations for translating between mojo types and
 // base::StackSamplingProfiler types, with data validity checks.
 
-#ifndef COMPONENTS_METRICS_CALL_STACK_PROFILE_STRUCT_TRAITS_H_
-#define COMPONENTS_METRICS_CALL_STACK_PROFILE_STRUCT_TRAITS_H_
+#ifndef COMPONENTS_METRICS_PUBLIC_CPP_CALL_STACK_PROFILE_STRUCT_TRAITS_H_
+#define COMPONENTS_METRICS_PUBLIC_CPP_CALL_STACK_PROFILE_STRUCT_TRAITS_H_
 
+#include <string>
+#include <utility>
 #include <vector>
 
 #include "base/files/file_path.h"
@@ -307,6 +309,8 @@ struct EnumTraits<metrics::mojom::Trigger,
         return metrics::mojom::Trigger::JANKY_TASK;
       case metrics::CallStackProfileParams::Trigger::THREAD_HUNG:
         return metrics::mojom::Trigger::THREAD_HUNG;
+      case metrics::CallStackProfileParams::Trigger::PERIODIC_COLLECTION:
+        return metrics::mojom::Trigger::PERIODIC_COLLECTION;
     }
     NOTREACHED();
     return metrics::mojom::Trigger::UNKNOWN;
@@ -326,6 +330,9 @@ struct EnumTraits<metrics::mojom::Trigger,
         return true;
       case metrics::mojom::Trigger::THREAD_HUNG:
         *out = metrics::CallStackProfileParams::Trigger::THREAD_HUNG;
+        return true;
+      case metrics::mojom::Trigger::PERIODIC_COLLECTION:
+        *out = metrics::CallStackProfileParams::Trigger::PERIODIC_COLLECTION;
         return true;
     }
     return false;
@@ -371,7 +378,6 @@ struct StructTraits<metrics::mojom::CallStackProfileParamsDataView,
 template <>
 struct EnumTraits<metrics::mojom::SampleOrderingSpec,
                   metrics::CallStackProfileParams::SampleOrderingSpec> {
-
   static metrics::mojom::SampleOrderingSpec ToMojom(
       metrics::CallStackProfileParams::SampleOrderingSpec spec) {
     switch (spec) {
@@ -400,6 +406,6 @@ struct EnumTraits<metrics::mojom::SampleOrderingSpec,
   }
 };
 
-}  // mojo
+}  // namespace mojo
 
-#endif  // COMPONENTS_METRICS_CALL_STACK_PROFILE_STRUCT_TRAITS_H_
+#endif  // COMPONENTS_METRICS_PUBLIC_CPP_CALL_STACK_PROFILE_STRUCT_TRAITS_H_

@@ -630,16 +630,11 @@ ChromeBrowserMainParts::ChromeBrowserMainParts(
       result_code_(content::RESULT_CODE_NORMAL_EXIT),
       startup_watcher_(new StartupTimeBomb()),
       shutdown_watcher_(new ShutdownWatcherHelper()),
-      sampling_profiler_(
-          base::PlatformThread::CurrentId(),
-          StackSamplingConfiguration::Get()->
-              GetSamplingParamsForCurrentProcess(),
-          metrics::CallStackProfileMetricsProvider::GetProfilerCallback(
-              metrics::CallStackProfileParams(
-                  metrics::CallStackProfileParams::BROWSER_PROCESS,
-                  metrics::CallStackProfileParams::UI_THREAD,
-                  metrics::CallStackProfileParams::PROCESS_STARTUP,
-                  metrics::CallStackProfileParams::MAY_SHUFFLE))),
+      sampling_profiler_(base::PlatformThread::CurrentId(),
+                         StackSamplingConfiguration::Get()
+                             ->GetSamplingParamsForCurrentProcess(),
+                         metrics::CallStackProfileMetricsProvider::
+                             GetProfilerCallbackForBrowserProcessStartup()),
       profile_(NULL),
       run_message_loop_(true),
       local_state_(NULL) {
