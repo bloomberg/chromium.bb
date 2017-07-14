@@ -9,35 +9,36 @@
 
 namespace blink {
 
-struct TestRun {
+struct SmallCapsTestRun {
   std::string text;
   SmallCapsIterator::SmallCapsBehavior code;
 };
 
-struct ExpectedRun {
+struct SmallCapsExpectedRun {
   unsigned limit;
   SmallCapsIterator::SmallCapsBehavior small_caps_behavior;
 
-  ExpectedRun(unsigned the_limit,
-              SmallCapsIterator::SmallCapsBehavior the_small_caps_behavior)
+  SmallCapsExpectedRun(
+      unsigned the_limit,
+      SmallCapsIterator::SmallCapsBehavior the_small_caps_behavior)
       : limit(the_limit), small_caps_behavior(the_small_caps_behavior) {}
 };
 
 class SmallCapsIteratorTest : public ::testing::Test {
  protected:
-  void CheckRuns(const Vector<TestRun>& runs) {
+  void CheckRuns(const Vector<SmallCapsTestRun>& runs) {
     String text(g_empty_string16_bit);
-    Vector<ExpectedRun> expect;
+    Vector<SmallCapsExpectedRun> expect;
     for (auto& run : runs) {
       text.append(String::FromUTF8(run.text.c_str()));
-      expect.push_back(ExpectedRun(text.length(), run.code));
+      expect.push_back(SmallCapsExpectedRun(text.length(), run.code));
     }
     SmallCapsIterator small_caps_iterator(text.Characters16(), text.length());
     VerifyRuns(&small_caps_iterator, expect);
   }
 
   void VerifyRuns(SmallCapsIterator* small_caps_iterator,
-                  const Vector<ExpectedRun>& expect) {
+                  const Vector<SmallCapsExpectedRun>& expect) {
     unsigned limit;
     SmallCapsIterator::SmallCapsBehavior small_caps_behavior;
     unsigned long run_count = 0;
@@ -52,13 +53,13 @@ class SmallCapsIteratorTest : public ::testing::Test {
 };
 
 // Some of our compilers cannot initialize a vector from an array yet.
-#define DECLARE_RUNSVECTOR(...)                    \
-  static const TestRun kRunsArray[] = __VA_ARGS__; \
-  Vector<TestRun> runs;                            \
+#define DECLARE_SMALL_CAPS_RUNSVECTOR(...)                  \
+  static const SmallCapsTestRun kRunsArray[] = __VA_ARGS__; \
+  Vector<SmallCapsTestRun> runs;                            \
   runs.Append(kRunsArray, sizeof(kRunsArray) / sizeof(*kRunsArray));
 
-#define CHECK_RUNS(...)            \
-  DECLARE_RUNSVECTOR(__VA_ARGS__); \
+#define CHECK_SMALL_CAPS_RUN(...)             \
+  DECLARE_SMALL_CAPS_RUNSVECTOR(__VA_ARGS__); \
   CheckRuns(runs);
 
 TEST_F(SmallCapsIteratorTest, Empty) {
@@ -73,44 +74,44 @@ TEST_F(SmallCapsIteratorTest, Empty) {
 }
 
 TEST_F(SmallCapsIteratorTest, UppercaseA) {
-  CHECK_RUNS({{"A", SmallCapsIterator::kSmallCapsSameCase}});
+  CHECK_SMALL_CAPS_RUN({{"A", SmallCapsIterator::kSmallCapsSameCase}});
 }
 
 TEST_F(SmallCapsIteratorTest, LowercaseA) {
-  CHECK_RUNS({{"a", SmallCapsIterator::kSmallCapsUppercaseNeeded}});
+  CHECK_SMALL_CAPS_RUN({{"a", SmallCapsIterator::kSmallCapsUppercaseNeeded}});
 }
 
 TEST_F(SmallCapsIteratorTest, UppercaseLowercaseA) {
-  CHECK_RUNS({{"A", SmallCapsIterator::kSmallCapsSameCase},
-              {"a", SmallCapsIterator::kSmallCapsUppercaseNeeded}});
+  CHECK_SMALL_CAPS_RUN({{"A", SmallCapsIterator::kSmallCapsSameCase},
+                        {"a", SmallCapsIterator::kSmallCapsUppercaseNeeded}});
 }
 
 TEST_F(SmallCapsIteratorTest, UppercasePunctuationMixed) {
-  CHECK_RUNS({{"AAA??", SmallCapsIterator::kSmallCapsSameCase}});
+  CHECK_SMALL_CAPS_RUN({{"AAA??", SmallCapsIterator::kSmallCapsSameCase}});
 }
 
 TEST_F(SmallCapsIteratorTest, LowercasePunctuationMixed) {
-  CHECK_RUNS({{"aaa", SmallCapsIterator::kSmallCapsUppercaseNeeded},
-              {"===", SmallCapsIterator::kSmallCapsSameCase}});
+  CHECK_SMALL_CAPS_RUN({{"aaa", SmallCapsIterator::kSmallCapsUppercaseNeeded},
+                        {"===", SmallCapsIterator::kSmallCapsSameCase}});
 }
 
 TEST_F(SmallCapsIteratorTest, LowercasePunctuationInterleaved) {
-  CHECK_RUNS({{"aaa", SmallCapsIterator::kSmallCapsUppercaseNeeded},
-              {"===", SmallCapsIterator::kSmallCapsSameCase},
-              {"bbb", SmallCapsIterator::kSmallCapsUppercaseNeeded}});
+  CHECK_SMALL_CAPS_RUN({{"aaa", SmallCapsIterator::kSmallCapsUppercaseNeeded},
+                        {"===", SmallCapsIterator::kSmallCapsSameCase},
+                        {"bbb", SmallCapsIterator::kSmallCapsUppercaseNeeded}});
 }
 
 TEST_F(SmallCapsIteratorTest, Japanese) {
-  CHECK_RUNS({{"ほへと", SmallCapsIterator::kSmallCapsSameCase}});
+  CHECK_SMALL_CAPS_RUN({{"ほへと", SmallCapsIterator::kSmallCapsSameCase}});
 }
 
 TEST_F(SmallCapsIteratorTest, Armenian) {
-  CHECK_RUNS({{"աբգդ", SmallCapsIterator::kSmallCapsUppercaseNeeded},
-              {"ԵԶԷԸ", SmallCapsIterator::kSmallCapsSameCase}});
+  CHECK_SMALL_CAPS_RUN({{"աբգդ", SmallCapsIterator::kSmallCapsUppercaseNeeded},
+                        {"ԵԶԷԸ", SmallCapsIterator::kSmallCapsSameCase}});
 }
 
 TEST_F(SmallCapsIteratorTest, CombiningCharacterSequence) {
-  CHECK_RUNS({{"èü", SmallCapsIterator::kSmallCapsUppercaseNeeded}});
+  CHECK_SMALL_CAPS_RUN({{"èü", SmallCapsIterator::kSmallCapsUppercaseNeeded}});
 }
 
 }  // namespace blink
