@@ -540,9 +540,9 @@ void Tab::SetData(const TabRendererData& data) {
 
   base::string16 title = data_.title;
   if (title.empty()) {
-    title = data_.loading ?
-        l10n_util::GetStringUTF16(IDS_TAB_LOADING_TITLE) :
-        CoreTabHelper::GetDefaultTitle();
+    title = ShouldShowThrobber(data_.network_state)
+                ? l10n_util::GetStringUTF16(IDS_TAB_LOADING_TITLE)
+                : CoreTabHelper::GetDefaultTitle();
   } else {
     Browser::FormatTitleForDisplay(&title);
   }

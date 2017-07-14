@@ -39,7 +39,6 @@ struct CHROME_VIEWS_EXPORT TabRendererData {
   NetworkState network_state;
   base::string16 title;
   GURL url;
-  bool loading;
   base::TerminationStatus crashed_status;
   bool incognito;
   bool show_icon;
