@@ -716,9 +716,6 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
     // Flush the profile data to disk for all loaded profiles.
     profile->SetExitType(Profile::EXIT_CRASHED);
     profile->GetPrefs()->CommitPendingWrite();
-    if (base::FeatureList::IsEnabled(features::kPrefService)) {
-      FlushTaskRunner(profile->GetPrefServiceTaskRunner().get());
-    }
     FlushTaskRunner(profile->GetIOTaskRunner().get());
 
     // Make sure that the prefs file was written with the expected key/value.

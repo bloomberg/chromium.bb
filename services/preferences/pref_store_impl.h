@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_PREFERENCES_PUBLIC_CPP_PREF_STORE_IMPL_H_
-#define SERVICES_PREFERENCES_PUBLIC_CPP_PREF_STORE_IMPL_H_
+#ifndef SERVICES_PREFERENCES_PREF_STORE_IMPL_H_
+#define SERVICES_PREFERENCES_PREF_STORE_IMPL_H_
 
 #include <string>
 #include <vector>
@@ -19,18 +19,13 @@ namespace prefs {
 
 // Wraps an actual PrefStore implementation and exposes it as a
 // mojom::PrefStore interface.
-class PrefStoreImpl : public ::PrefStore::Observer, public mojom::PrefStore {
+class PrefStoreImpl : public ::PrefStore::Observer {
  public:
-  PrefStoreImpl(scoped_refptr<::PrefStore> pref_store,
-                mojom::PrefStoreRequest request);
+  explicit PrefStoreImpl(scoped_refptr<::PrefStore> pref_store);
   ~PrefStoreImpl() override;
 
-  // The created instance is registered in and owned by the
-  // |mojom::PrefStoreRegistry|.
-  static std::unique_ptr<PrefStoreImpl> Create(
-      mojom::PrefStoreRegistry* registry_ptr,
-      scoped_refptr<::PrefStore> pref_store,
-      PrefValueStore::PrefStoreType type);
+  mojom::PrefStoreConnectionPtr AddObserver(
+      const std::vector<std::string>& prefs_to_observe);
 
  private:
   class Observer;
@@ -38,10 +33,6 @@ class PrefStoreImpl : public ::PrefStore::Observer, public mojom::PrefStore {
   // PrefStore::Observer:
   void OnPrefValueChanged(const std::string& key) override;
   void OnInitializationCompleted(bool succeeded) override;
-
-  // prefs::mojom::PrefStore:
-  void AddObserver(const std::vector<std::string>& prefs_to_observe,
-                   AddObserverCallback callback) override;
 
   // The backing store we observer for changes.
   scoped_refptr<::PrefStore> backing_pref_store_;
@@ -54,11 +45,9 @@ class PrefStoreImpl : public ::PrefStore::Observer, public mojom::PrefStore {
   // OnInitializationCompleted was called.
   bool backing_pref_store_initialized_;
 
-  mojo::Binding<mojom::PrefStore> binding_;
-
   DISALLOW_COPY_AND_ASSIGN(PrefStoreImpl);
 };
 
 }  // namespace prefs
 
-#endif  // SERVICES_PREFERENCES_PUBLIC_CPP_PREF_STORE_IMPL_H_
+#endif  // SERVICES_PREFERENCES_PREF_STORE_IMPL_H_

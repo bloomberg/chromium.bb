@@ -146,23 +146,20 @@ struct PersistentPrefStoreClient::InFlightWrite {
 };
 
 PersistentPrefStoreClient::PersistentPrefStoreClient(
-    mojom::PrefStoreConnectorPtr connector,
-    scoped_refptr<PrefRegistry> pref_registry,
-    std::vector<PrefValueStore::PrefStoreType> already_connected_types)
-    : connector_(std::move(connector)),
-      pref_registry_(std::move(pref_registry)),
-      already_connected_types_(std::move(already_connected_types)),
-      weak_factory_(this) {
-  DCHECK(connector_);
-}
-
-PersistentPrefStoreClient::PersistentPrefStoreClient(
     mojom::PersistentPrefStoreConnectionPtr connection)
     : weak_factory_(this) {
-  OnConnect(std::move(connection), nullptr,
-            std::vector<mojom::PrefRegistrationPtr>(),
-            std::unordered_map<PrefValueStore::PrefStoreType,
-                               prefs::mojom::PrefStoreConnectionPtr>());
+  read_error_ = connection->read_error;
+  read_only_ = connection->read_only;
+  pref_store_ = std::move(connection->pref_store);
+  if (error_delegate_ && read_error_ != PREF_READ_ERROR_NONE)
+    error_delegate_->OnError(read_error_);
+  error_delegate_.reset();
+  if (connection->pref_store_connection) {
+    Init(std::move(connection->pref_store_connection->initial_prefs), true,
+         std::move(connection->pref_store_connection->observer));
+  } else {
+    Init(nullptr, false, nullptr);
+  }
 }
 
 void PersistentPrefStoreClient::SetValue(const std::string& key,
@@ -222,32 +219,11 @@ PersistentPrefStore::PrefReadError PersistentPrefStoreClient::GetReadError()
 }
 
 PersistentPrefStore::PrefReadError PersistentPrefStoreClient::ReadPrefs() {
-  mojom::PersistentPrefStoreConnectionPtr connection;
-  mojom::PersistentPrefStoreConnectionPtr incognito_connection;
-  std::vector<mojom::PrefRegistrationPtr> defaults;
-  std::unordered_map<PrefValueStore::PrefStoreType,
-                     prefs::mojom::PrefStoreConnectionPtr>
-      other_pref_stores;
-  mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_calls;
-  bool success = connector_->Connect(
-      SerializePrefRegistry(*pref_registry_), already_connected_types_,
-      &connection, &incognito_connection, &defaults, &other_pref_stores);
-  DCHECK(success);
-  pref_registry_ = nullptr;
-  OnConnect(std::move(connection), std::move(incognito_connection),
-            std::move(defaults), std::move(other_pref_stores));
-  return read_error_;
+  return GetReadError();
 }
 
 void PersistentPrefStoreClient::ReadPrefsAsync(
-    ReadErrorDelegate* error_delegate) {
-  error_delegate_.reset(error_delegate);
-  connector_->Connect(SerializePrefRegistry(*pref_registry_),
-                      already_connected_types_,
-                      base::Bind(&PersistentPrefStoreClient::OnConnect,
-                                 base::Unretained(this)));
-  pref_registry_ = nullptr;
-}
+    ReadErrorDelegate* error_delegate) {}
 
 void PersistentPrefStoreClient::CommitPendingWrite(
     base::OnceClosure done_callback) {
@@ -272,29 +248,6 @@ PersistentPrefStoreClient::~PersistentPrefStoreClient() {
     return;
 
   CommitPendingWrite(base::OnceClosure());
-}
-
-void PersistentPrefStoreClient::OnConnect(
-    mojom::PersistentPrefStoreConnectionPtr connection,
-    mojom::PersistentPrefStoreConnectionPtr incognito_connection,
-    std::vector<mojom::PrefRegistrationPtr> defaults,
-    std::unordered_map<PrefValueStore::PrefStoreType,
-                       prefs::mojom::PrefStoreConnectionPtr>
-        other_pref_stores) {
-  connector_.reset();
-  read_error_ = connection->read_error;
-  read_only_ = connection->read_only;
-  pref_store_ = std::move(connection->pref_store);
-  if (error_delegate_ && read_error_ != PREF_READ_ERROR_NONE)
-    error_delegate_->OnError(read_error_);
-  error_delegate_.reset();
-
-  if (connection->pref_store_connection) {
-    Init(std::move(connection->pref_store_connection->initial_prefs), true,
-         std::move(connection->pref_store_connection->observer));
-  } else {
-    Init(nullptr, false, nullptr);
-  }
 }
 
 void PersistentPrefStoreClient::QueueWrite(

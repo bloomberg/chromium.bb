@@ -11,9 +11,6 @@
 #include "components/prefs/pref_notifier_impl.h"
 #include "components/prefs/pref_value_store.h"
 #include "components/sync_preferences/pref_service_syncable.h"
-#include "services/preferences/public/cpp/registering_delegate.h"
-#include "services/preferences/public/interfaces/preferences.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 #if !defined(OS_IOS)
 #include "components/policy/core/browser/browser_policy_connector.h"
@@ -57,16 +54,9 @@ void PrefServiceSyncableFactory::SetPrefModelAssociatorClient(
 
 std::unique_ptr<PrefServiceSyncable> PrefServiceSyncableFactory::CreateSyncable(
     user_prefs::PrefRegistrySyncable* pref_registry,
-    service_manager::Connector* connector) {
+    std::unique_ptr<PrefValueStore::Delegate> delegate) {
   TRACE_EVENT0("browser", "PrefServiceSyncableFactory::CreateSyncable");
   PrefNotifierImpl* pref_notifier = new PrefNotifierImpl();
-
-  std::unique_ptr<RegisteringDelegate> delegate;
-  if (connector) {
-    prefs::mojom::PrefStoreRegistryPtr registry;
-    connector->BindInterface(prefs::mojom::kServiceName, &registry);
-    delegate = base::MakeUnique<RegisteringDelegate>(std::move(registry));
-  }
 
   std::unique_ptr<PrefServiceSyncable> pref_service(new PrefServiceSyncable(
       pref_notifier,

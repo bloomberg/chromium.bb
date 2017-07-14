@@ -157,15 +157,16 @@ PersistentPrefStoreImpl::PersistentPrefStoreImpl(
     scoped_refptr<PersistentPrefStore> backing_pref_store,
     base::OnceClosure on_initialized)
     : backing_pref_store_(backing_pref_store) {
+  backing_pref_store_->AddObserver(this);
   if (!backing_pref_store_->IsInitializationComplete()) {
-    backing_pref_store_->AddObserver(this);
     on_initialized_ = std::move(on_initialized);
     initializing_ = true;
-    backing_pref_store_->ReadPrefsAsync(nullptr);
   }
 }
 
-PersistentPrefStoreImpl::~PersistentPrefStoreImpl() = default;
+PersistentPrefStoreImpl::~PersistentPrefStoreImpl() {
+  backing_pref_store_->RemoveObserver(this);
+}
 
 mojom::PersistentPrefStoreConnectionPtr
 PersistentPrefStoreImpl::CreateConnection(ObservedPrefs observed_prefs) {
@@ -193,17 +194,33 @@ PersistentPrefStoreImpl::CreateConnection(ObservedPrefs observed_prefs) {
       backing_pref_store_->ReadOnly());
 }
 
-void PersistentPrefStoreImpl::OnPrefValueChanged(const std::string& key) {}
+void PersistentPrefStoreImpl::OnPrefValueChanged(const std::string& key) {
+  if (write_in_progress_)
+    return;
+
+  const base::Value* value = nullptr;
+  for (auto& entry : connections_) {
+    auto update_value = mojom::PrefUpdateValue::New();
+    if (GetValue(key, &value)) {
+      update_value->set_atomic_update(value->CreateDeepCopy());
+    } else {
+      update_value->set_atomic_update(nullptr);
+    }
+    std::vector<mojom::PrefUpdatePtr> updates;
+    updates.emplace_back(base::in_place, key, std::move(update_value), 0);
+    entry.first->OnPrefValuesChanged(updates);
+  }
+}
 
 void PersistentPrefStoreImpl::OnInitializationCompleted(bool succeeded) {
   DCHECK(initializing_);
-  backing_pref_store_->RemoveObserver(this);
   initializing_ = false;
   std::move(on_initialized_).Run();
 }
 
 void PersistentPrefStoreImpl::SetValues(
     std::vector<mojom::PrefUpdatePtr> updates) {
+  base::AutoReset<bool> scoped_call_in_progress(&write_in_progress_, true);
   for (auto& entry : connections_)
     entry.first->OnPrefValuesChanged(updates);
 

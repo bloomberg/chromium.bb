@@ -59,6 +59,10 @@ class PersistentPrefStoreImpl : public PrefStore::Observer {
 
   base::OnceClosure on_initialized_;
 
+  // If true then a write is in progress and any update notifications should be
+  // ignored, as those updates would originate from ourselves.
+  bool write_in_progress_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(PersistentPrefStoreImpl);
 };
 

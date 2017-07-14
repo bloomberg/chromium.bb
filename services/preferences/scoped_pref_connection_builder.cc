@@ -5,37 +5,31 @@
 #include "services/preferences/scoped_pref_connection_builder.h"
 
 #include "services/preferences/persistent_pref_store_impl.h"
+#include "services/preferences/pref_store_impl.h"
 
 namespace prefs {
 
 ScopedPrefConnectionBuilder::ScopedPrefConnectionBuilder(
     std::vector<std::string> observed_prefs,
-    std::set<PrefValueStore::PrefStoreType> required_types,
     mojom::PrefStoreConnector::ConnectCallback callback)
     : callback_(std::move(callback)),
-      observed_prefs_(std::move(observed_prefs)),
-      required_types_(std::move(required_types)) {}
+      observed_prefs_(std::move(observed_prefs)) {}
 
-std::set<PrefValueStore::PrefStoreType>
-ScopedPrefConnectionBuilder::ProvidePrefStoreConnections(
+void ScopedPrefConnectionBuilder::ProvidePrefStoreConnections(
     const std::unordered_map<PrefValueStore::PrefStoreType,
-                             mojom::PrefStorePtr>& pref_stores) {
+                             std::unique_ptr<PrefStoreImpl>>& pref_stores) {
   for (const auto& pref_store : pref_stores) {
-    auto it = required_types_.find(pref_store.first);
-    if (it != required_types_.end()) {
-      ProvidePrefStoreConnection(pref_store.first, pref_store.second.get());
-      required_types_.erase(it);
-    }
+    ProvidePrefStoreConnection(pref_store.first, pref_store.second.get());
   }
-  return std::move(required_types_);
 }
 
 void ScopedPrefConnectionBuilder::ProvidePrefStoreConnection(
     PrefValueStore::PrefStoreType type,
-    mojom::PrefStore* pref_store) {
-  pref_store->AddObserver(
-      observed_prefs_,
-      base::Bind(&ScopedPrefConnectionBuilder::OnConnect, this, type));
+    PrefStoreImpl* pref_store) {
+  bool inserted =
+      connections_.emplace(type, pref_store->AddObserver(observed_prefs_))
+          .second;
+  DCHECK(inserted);
 }
 
 void ScopedPrefConnectionBuilder::ProvidePersistentPrefStore(
@@ -46,11 +40,11 @@ void ScopedPrefConnectionBuilder::ProvidePersistentPrefStore(
                                              observed_prefs_.end()));
 }
 
-void ScopedPrefConnectionBuilder::ProvideIncognitoConnector(
-    const mojom::PrefStoreConnectorPtr& incognito_connector) {
-  incognito_connector->ConnectToUserPrefStore(
-      observed_prefs_,
-      base::Bind(&ScopedPrefConnectionBuilder::OnIncognitoConnect, this));
+void ScopedPrefConnectionBuilder::ProvideIncognitoPersistentPrefStoreUnderlay(
+    PersistentPrefStoreImpl* persistent_pref_store) {
+  incognito_connection_ = persistent_pref_store->CreateConnection(
+      PersistentPrefStoreImpl::ObservedPrefs(observed_prefs_.begin(),
+                                             observed_prefs_.end()));
 }
 
 void ScopedPrefConnectionBuilder::ProvideDefaults(
@@ -62,19 +56,6 @@ ScopedPrefConnectionBuilder::~ScopedPrefConnectionBuilder() {
   std::move(callback_).Run(std::move(persistent_pref_store_connection_),
                            std::move(incognito_connection_),
                            std::move(defaults_), std::move(connections_));
-}
-
-void ScopedPrefConnectionBuilder::OnConnect(
-    PrefValueStore::PrefStoreType type,
-    mojom::PrefStoreConnectionPtr connection_ptr) {
-  bool inserted = connections_.emplace(type, std::move(connection_ptr)).second;
-  DCHECK(inserted);
-}
-
-void ScopedPrefConnectionBuilder::OnIncognitoConnect(
-    mojom::PersistentPrefStoreConnectionPtr connection_ptr) {
-  DCHECK(!incognito_connection_);
-  incognito_connection_ = std::move(connection_ptr);
 }
 
 }  // namespace prefs

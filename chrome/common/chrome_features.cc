@@ -312,10 +312,6 @@ const base::Feature kPreferHtmlOverPlugins{"PreferHtmlOverPlugins",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
-// Enables the pref service. See https://crbug.com/654988.
-const base::Feature kPrefService{"PrefService",
-                                 base::FEATURE_DISABLED_BY_DEFAULT};
-
 #if defined(OS_CHROMEOS)
 // The lock screen will be preloaded so it is instantly available when the user
 // locks the Chromebook device.
@@ -434,15 +430,5 @@ const base::Feature kCrOSComponent{"CrOSComponent",
 const base::Feature kInstantTethering{"InstantTethering",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_CHROMEOS)
-
-bool PrefServiceEnabled() {
-  return base::FeatureList::IsEnabled(features::kPrefService) ||
-#if BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
-         base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-             switches::kMusConfig) == switches::kMash;
-#else
-         false;
-#endif
-}
 
 }  // namespace features

@@ -198,8 +198,7 @@ void TestExtensionPrefs::AddExtension(Extension* extension) {
 PrefService* TestExtensionPrefs::CreateIncognitoPrefService() const {
   return CreateIncognitoPrefServiceSyncable(
       pref_service_.get(),
-      new ExtensionPrefStore(extension_pref_value_map_.get(), true),
-      std::set<PrefValueStore::PrefStoreType>(), nullptr, nullptr);
+      new ExtensionPrefStore(extension_pref_value_map_.get(), true), nullptr);
 }
 
 void TestExtensionPrefs::set_extensions_disabled(bool extensions_disabled) {

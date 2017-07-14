@@ -16,32 +16,29 @@
 
 namespace prefs {
 class PersistentPrefStoreImpl;
+class PrefStoreImpl;
 
 // A builder for connections to pref stores. When all references are released,
 // the connection is created.
 class ScopedPrefConnectionBuilder
     : public base::RefCounted<ScopedPrefConnectionBuilder> {
  public:
-  // |required_types| lists all the |Provide*| calls the client of this object
-  // is expected to make. Once all these |Provide*| calls have been made, the
-  // |callback| will be invoked.
   ScopedPrefConnectionBuilder(
       std::vector<std::string> observed_prefs,
-      std::set<PrefValueStore::PrefStoreType> required_types,
       mojom::PrefStoreConnector::ConnectCallback callback);
 
-  std::set<PrefValueStore::PrefStoreType> ProvidePrefStoreConnections(
+  void ProvidePrefStoreConnections(
       const std::unordered_map<PrefValueStore::PrefStoreType,
-                               mojom::PrefStorePtr>& pref_stores);
+                               std::unique_ptr<PrefStoreImpl>>& pref_stores);
 
   void ProvidePrefStoreConnection(PrefValueStore::PrefStoreType type,
-                                  mojom::PrefStore* ptr);
+                                  PrefStoreImpl* ptr);
 
   void ProvidePersistentPrefStore(
       PersistentPrefStoreImpl* persistent_pref_store);
 
-  void ProvideIncognitoConnector(
-      const mojom::PrefStoreConnectorPtr& incognito_connector);
+  void ProvideIncognitoPersistentPrefStoreUnderlay(
+      PersistentPrefStoreImpl* persistent_pref_store);
 
   void ProvideDefaults(std::vector<mojom::PrefRegistrationPtr> defaults);
 
@@ -49,16 +46,8 @@ class ScopedPrefConnectionBuilder
   friend class base::RefCounted<ScopedPrefConnectionBuilder>;
   ~ScopedPrefConnectionBuilder();
 
-  void OnConnect(PrefValueStore::PrefStoreType type,
-                 mojom::PrefStoreConnectionPtr connection_ptr);
-
-  void OnIncognitoConnect(
-      mojom::PersistentPrefStoreConnectionPtr connection_ptr);
-
   mojom::PrefStoreConnector::ConnectCallback callback_;
   std::vector<std::string> observed_prefs_;
-
-  std::set<PrefValueStore::PrefStoreType> required_types_;
 
   std::unordered_map<PrefValueStore::PrefStoreType,
                      mojom::PrefStoreConnectionPtr>

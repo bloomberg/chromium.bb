@@ -14,7 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "services/preferences/public/interfaces/preferences.mojom.h"
 
-class DefaultPrefStore;
+class PrefRegistry;
 
 namespace service_manager {
 class Identity;
@@ -28,12 +28,11 @@ class ScopedPrefConnectionBuilder;
 // connections that require them.
 class SharedPrefRegistry {
  public:
-  SharedPrefRegistry();
+  explicit SharedPrefRegistry(scoped_refptr<PrefRegistry> registry);
   ~SharedPrefRegistry();
 
   scoped_refptr<ScopedPrefConnectionBuilder> CreateConnectionBuilder(
       mojom::PrefRegistryPtr pref_registry,
-      std::set<PrefValueStore::PrefStoreType> required_types,
       const service_manager::Identity& identity,
       mojom::PrefStoreConnector::ConnectCallback callback);
 
@@ -52,8 +51,7 @@ class SharedPrefRegistry {
   void ProvideDefaultPrefs(ScopedPrefConnectionBuilder* connection,
                            std::vector<std::string> foreign_prefs);
 
-  scoped_refptr<DefaultPrefStore> defaults_;
-  std::map<std::string, int> pref_flags_;
+  scoped_refptr<PrefRegistry> registry_;
 
   std::set<std::string> public_pref_keys_;
 

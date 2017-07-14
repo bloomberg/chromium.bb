@@ -81,6 +81,5 @@ CreateIncognitoBrowserStatePrefs(
   overlay_pref_names.push_back(proxy_config::prefs::kProxy);
   return base::WrapUnique(pref_service->CreateIncognitoPrefService(
       nullptr,  // incognito_extension_pref_store
-      overlay_pref_names, std::set<PrefValueStore::PrefStoreType>(), nullptr,
-      nullptr));
+      overlay_pref_names, nullptr));
 }
