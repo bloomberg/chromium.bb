@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "extensions/renderer/bindings/api_event_listeners.h"
+#include "extensions/renderer/bindings/exception_handler.h"
 #include "gin/data_object_builder.h"
 #include "gin/object_template_builder.h"
 #include "gin/per_context_data.h"
@@ -18,11 +19,13 @@ gin::WrapperInfo EventEmitter::kWrapperInfo = {gin::kEmbedderNativeGin};
 EventEmitter::EventEmitter(bool supports_filters,
                            std::unique_ptr<APIEventListeners> listeners,
                            const binding::RunJSFunction& run_js,
-                           const binding::RunJSFunctionSync& run_js_sync)
+                           const binding::RunJSFunctionSync& run_js_sync,
+                           ExceptionHandler* exception_handler)
     : supports_filters_(supports_filters),
       listeners_(std::move(listeners)),
       run_js_(run_js),
-      run_js_sync_(run_js_sync) {}
+      run_js_sync_(run_js_sync),
+      exception_handler_(exception_handler) {}
 
 EventEmitter::~EventEmitter() {}
 
@@ -178,10 +181,6 @@ void EventEmitter::DispatchImpl(
 
   v8::Isolate* isolate = context->GetIsolate();
   v8::TryCatch try_catch(isolate);
-  // SetVerbose() means the error will still get logged, which is what we
-  // want. We don't let it bubble up any further to prevent it from being
-  // surfaced in e.g. JS code that triggered the event.
-  try_catch.SetVerbose(true);
   for (const auto& listener : listeners) {
     if (run_sync) {
       DCHECK(out_values);
@@ -191,6 +190,11 @@ void EventEmitter::DispatchImpl(
         out_values->push_back(std::move(result));
     } else {
       run_js_.Run(listener, context, args->size(), args->data());
+    }
+
+    if (try_catch.HasCaught()) {
+      exception_handler_->HandleException(context, "Error in event handler",
+                                          &try_catch);
     }
   }
 }

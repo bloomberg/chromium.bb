@@ -17,6 +17,7 @@ class Arguments;
 
 namespace extensions {
 class APIEventListeners;
+class ExceptionHandler;
 struct EventFilteringInfo;
 
 // A gin::Wrappable Event object. One is expected to be created per event, per
@@ -27,7 +28,8 @@ class EventEmitter final : public gin::Wrappable<EventEmitter> {
   EventEmitter(bool supports_filters,
                std::unique_ptr<APIEventListeners> listeners,
                const binding::RunJSFunction& run_js,
-               const binding::RunJSFunctionSync& run_js_sync);
+               const binding::RunJSFunctionSync& run_js_sync,
+               ExceptionHandler* exception_handler);
   ~EventEmitter() override;
 
   static gin::WrapperInfo kWrapperInfo;
@@ -76,6 +78,9 @@ class EventEmitter final : public gin::Wrappable<EventEmitter> {
 
   binding::RunJSFunction run_js_;
   binding::RunJSFunctionSync run_js_sync_;
+
+  // The associated exception handler; guaranteed to outlive this object.
+  ExceptionHandler* const exception_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(EventEmitter);
 };

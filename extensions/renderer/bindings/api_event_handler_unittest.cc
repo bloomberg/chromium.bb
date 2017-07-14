@@ -13,6 +13,7 @@
 #include "extensions/common/event_filtering_info.h"
 #include "extensions/renderer/bindings/api_binding_test.h"
 #include "extensions/renderer/bindings/api_binding_test_util.h"
+#include "extensions/renderer/bindings/exception_handler.h"
 #include "gin/arguments.h"
 #include "gin/converter.h"
 #include "gin/public/context_holder.h"
@@ -41,7 +42,7 @@ class APIEventHandlerTest : public APIBindingTest {
     handler_ = base::MakeUnique<APIEventHandler>(
         base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
         base::Bind(&RunFunctionOnGlobalAndReturnHandle),
-        base::Bind(&DoNothingOnEventListenersChanged));
+        base::Bind(&DoNothingOnEventListenersChanged), nullptr);
   }
 
   void TearDown() override {
@@ -551,10 +552,18 @@ TEST_F(APIEventHandlerTest, TestEventListenersThrowingExceptions) {
       result.Reset(context->GetIsolate(), local);
   };
 
+  auto log_error =
+      [](std::vector<std::string>* errors_out, v8::Local<v8::Context> context,
+         const std::string& error) { errors_out->push_back(error); };
+
+  std::vector<std::string> logged_errors;
+  ExceptionHandler exception_handler(
+      base::Bind(log_error, &logged_errors),
+      base::Bind(&RunFunctionOnGlobalAndIgnoreResult));
   SetHandler(base::MakeUnique<APIEventHandler>(
       base::Bind(run_js_and_expect_error),
       base::Bind(&RunFunctionOnGlobalAndReturnHandle),
-      base::Bind(&DoNothingOnEventListenersChanged)));
+      base::Bind(&DoNothingOnEventListenersChanged), &exception_handler));
 
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = MainContext();
@@ -563,25 +572,6 @@ TEST_F(APIEventHandlerTest, TestEventListenersThrowingExceptions) {
   v8::Local<v8::Object> event = handler()->CreateEventInstance(
       kEventName, false, binding::kNoListenerMax, true, context);
   ASSERT_FALSE(event.IsEmpty());
-
-  bool did_throw = false;
-  auto message_listener = [](v8::Local<v8::Message> message,
-                             v8::Local<v8::Value> data) {
-    ASSERT_FALSE(data.IsEmpty());
-    ASSERT_TRUE(data->IsExternal());
-    bool* did_throw = static_cast<bool*>(data.As<v8::External>()->Value());
-    *did_throw = true;
-    EXPECT_EQ("Uncaught Error: Event handler error",
-              gin::V8ToString(message->Get()));
-  };
-
-  isolate()->AddMessageListener(message_listener,
-                                v8::External::New(isolate(), &did_throw));
-  base::ScopedClosureRunner remove_message_listener(base::Bind(
-      [](v8::Isolate* isolate, v8::MessageCallback listener) {
-        isolate->RemoveMessageListeners(listener);
-      },
-      isolate(), message_listener));
 
   // A listener that will throw an exception. We guarantee that we throw the
   // exception first so that we don't rely on event listener ordering.
@@ -617,7 +607,9 @@ TEST_F(APIEventHandlerTest, TestEventListenersThrowingExceptions) {
                                                 "didThrow"));
   EXPECT_EQ("[42]", GetStringPropertyFromObject(context->Global(), context,
                                                 "eventArgs"));
-  EXPECT_TRUE(did_throw);
+  ASSERT_EQ(1u, logged_errors.size());
+  EXPECT_EQ("Error in event handler: Uncaught Error: Event handler error",
+            logged_errors[0]);
 }
 
 // Tests being notified as listeners are added or removed from events.
@@ -625,7 +617,8 @@ TEST_F(APIEventHandlerTest, CallbackNotifications) {
   MockEventChangeHandler change_handler;
   SetHandler(base::MakeUnique<APIEventHandler>(
       base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
-      base::Bind(&RunFunctionOnGlobalAndReturnHandle), change_handler.Get()));
+      base::Bind(&RunFunctionOnGlobalAndReturnHandle), change_handler.Get(),
+      nullptr));
 
   v8::HandleScope handle_scope(isolate());
 
@@ -911,7 +904,7 @@ TEST_F(APIEventHandlerTest, TestCreateCustomEvent) {
   MockEventChangeHandler change_handler;
   APIEventHandler handler(base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
                           base::Bind(&RunFunctionOnGlobalAndReturnHandle),
-                          change_handler.Get());
+                          change_handler.Get(), nullptr);
 
   v8::Local<v8::Object> event = handler.CreateAnonymousEventInstance(context);
   ASSERT_FALSE(event.IsEmpty());
@@ -960,7 +953,7 @@ TEST_F(APIEventHandlerTest, TestCreateCustomEventWithCyclicDependency) {
   MockEventChangeHandler change_handler;
   APIEventHandler handler(base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
                           base::Bind(&RunFunctionOnGlobalAndReturnHandle),
-                          change_handler.Get());
+                          change_handler.Get(), nullptr);
 
   v8::Local<v8::Object> event = handler.CreateAnonymousEventInstance(context);
   ASSERT_FALSE(event.IsEmpty());
@@ -987,7 +980,7 @@ TEST_F(APIEventHandlerTest, TestUnmanagedEvents) {
 
   APIEventHandler handler(base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
                           base::Bind(&RunFunctionOnGlobalAndReturnHandle),
-                          base::Bind(fail_on_notified));
+                          base::Bind(fail_on_notified), nullptr);
 
   const char kEventName[] = "alpha";
   v8::Local<v8::Object> event = handler.CreateEventInstance(

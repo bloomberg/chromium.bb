@@ -10,6 +10,7 @@
 #include "extensions/renderer/bindings/api_binding_test.h"
 #include "extensions/renderer/bindings/api_binding_test_util.h"
 #include "extensions/renderer/bindings/api_event_listeners.h"
+#include "extensions/renderer/bindings/exception_handler.h"
 #include "gin/handle.h"
 
 namespace extensions {
@@ -50,9 +51,18 @@ TEST_F(EventEmitterUnittest, TestDispatchMethod) {
     ignore_result(function->Call(context, context->Global(), argc, argv));
   };
 
+  auto log_error = [](std::vector<std::string>* errors,
+                      v8::Local<v8::Context> context,
+                      const std::string& error) { errors->push_back(error); };
+
+  std::vector<std::string> logged_errors;
+  ExceptionHandler exception_handler(base::Bind(log_error, &logged_errors),
+                                     base::Bind(run_js));
+
   gin::Handle<EventEmitter> event = gin::CreateHandle(
-      isolate(), new EventEmitter(false, std::move(listeners),
-                                  base::Bind(run_js), base::Bind(run_js_sync)));
+      isolate(),
+      new EventEmitter(false, std::move(listeners), base::Bind(run_js),
+                       base::Bind(run_js_sync), &exception_handler));
 
   v8::Local<v8::Value> v8_event = event.ToV8();
 
@@ -114,6 +124,9 @@ TEST_F(EventEmitterUnittest, TestDispatchMethod) {
   }
   EXPECT_EQ("{\"results\":[\"listener1\",{\"listener\":\"listener2\"}]}",
             V8ToString(dispatch_result, context));
+
+  ASSERT_EQ(1u, logged_errors.size());
+  EXPECT_EQ("Error in event handler: Uncaught Error: hahaha", logged_errors[0]);
 }
 
 }  // namespace extensions

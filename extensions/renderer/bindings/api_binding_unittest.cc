@@ -179,7 +179,7 @@ class APIBindingUnittest : public APIBindingTest {
     event_handler_ = base::MakeUnique<APIEventHandler>(
         base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
         base::Bind(&RunFunctionOnGlobalAndReturnHandle),
-        base::Bind(&OnEventListenersChanged));
+        base::Bind(&OnEventListenersChanged), nullptr);
     access_checker_ =
         base::MakeUnique<BindingAccessChecker>(availability_callback_);
     binding_ = base::MakeUnique<APIBinding>(
