@@ -3245,6 +3245,58 @@ TEST_F(WebContentsImplTestWithSiteIsolation, StartStopEventsBalance) {
   EXPECT_FALSE(observer.is_loading());
 }
 
+// Tests that WebContentsImpl::IsLoadingToDifferentDocument only reports main
+// frame loads. Browser-initiated navigation of subframes is only possible in
+// --site-per-process mode within unit tests.
+TEST_F(WebContentsImplTestWithSiteIsolation, IsLoadingToDifferentDocument) {
+  const GURL main_url("http://www.chromium.org");
+  TestRenderFrameHost* orig_rfh = main_test_rfh();
+
+  // Navigate the main RenderFrame, simulate the DidStartLoading, and commit.
+  // The frame should still be loading.
+  controller().LoadURL(main_url, Referrer(), ui::PAGE_TRANSITION_TYPED,
+                       std::string());
+  int entry_id = controller().GetPendingEntry()->GetUniqueID();
+
+  // PlzNavigate: the RenderFrameHost does not expect to receive
+  // DidStartLoading IPCs for navigations to different documents.
+  if (!IsBrowserSideNavigationEnabled()) {
+    orig_rfh->OnMessageReceived(
+        FrameHostMsg_DidStartLoading(orig_rfh->GetRoutingID(), false));
+  }
+  main_test_rfh()->PrepareForCommit();
+  contents()->TestDidNavigate(orig_rfh, entry_id, true, main_url,
+                              ui::PAGE_TRANSITION_TYPED);
+  EXPECT_FALSE(contents()->CrossProcessNavigationPending());
+  EXPECT_EQ(orig_rfh, main_test_rfh());
+  EXPECT_TRUE(contents()->IsLoading());
+  EXPECT_TRUE(contents()->IsLoadingToDifferentDocument());
+
+  // Send the DidStopLoading for the main frame and ensure it isn't loading
+  // anymore.
+  orig_rfh->OnMessageReceived(
+      FrameHostMsg_DidStopLoading(orig_rfh->GetRoutingID()));
+  EXPECT_FALSE(contents()->IsLoading());
+  EXPECT_FALSE(contents()->IsLoadingToDifferentDocument());
+
+  // Create a child frame to navigate.
+  TestRenderFrameHost* subframe = orig_rfh->AppendChild("subframe");
+
+  // Navigate the child frame to about:blank, make sure the web contents is
+  // marked as "loading" but not "loading to different document".
+  if (!IsBrowserSideNavigationEnabled()) {
+    subframe->OnMessageReceived(
+        FrameHostMsg_DidStartLoading(subframe->GetRoutingID(), true));
+  }
+  subframe->SendNavigateWithTransition(0, false, GURL("about:blank"),
+                                       ui::PAGE_TRANSITION_AUTO_SUBFRAME);
+  EXPECT_TRUE(contents()->IsLoading());
+  EXPECT_FALSE(contents()->IsLoadingToDifferentDocument());
+  subframe->OnMessageReceived(
+      FrameHostMsg_DidStopLoading(subframe->GetRoutingID()));
+  EXPECT_FALSE(contents()->IsLoading());
+}
+
 // Ensure that WebContentsImpl does not stop loading too early when there still
 // is a pending renderer. This can happen if a same-process non user-initiated
 // navigation completes while there is an ongoing cross-process navigation.

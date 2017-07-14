@@ -1361,7 +1361,7 @@ class CONTENT_EXPORT WebContentsImpl
   // Data for loading state ----------------------------------------------------
 
   // Indicates whether the current load is to a different document. Only valid
-  // if is_loading_ is true.
+  // if |is_loading_| is true and only tracks loads in the main frame.
   bool is_load_to_different_document_;
 
   // Indicates if the tab is considered crashed.
