@@ -34,7 +34,7 @@
 
 #include "core/CoreExport.h"
 #include "core/dom/ContextLifecycleObserver.h"
-#include "core/exported/WebPluginContainerBase.h"
+#include "core/plugins/PluginView.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Compiler.h"
 #include "platform/wtf/PassRefPtr.h"
@@ -61,7 +61,12 @@ class WheelEvent;
 struct WebPrintParams;
 struct WebPrintPresetOptions;
 
-class CORE_EXPORT WebPluginContainerImpl final : public WebPluginContainerBase {
+class CORE_EXPORT WebPluginContainerImpl final
+    : public GarbageCollectedFinalized<WebPluginContainerImpl>,
+      public PluginView,
+      NON_EXPORTED_BASE(public WebPluginContainer),
+      public ContextClient {
+  USING_GARBAGE_COLLECTED_MIXIN(WebPluginContainerImpl);
   USING_PRE_FINALIZER(WebPluginContainerImpl, PreFinalize);
 
  public:
@@ -142,37 +147,34 @@ class CORE_EXPORT WebPluginContainerImpl final : public WebPluginContainerBase {
   // (which means it controls the layout, number of pages etc).
   // Whether the plugin supports its own paginated print. The other print
   // interface methods are called only if this method returns true.
-  bool SupportsPaginatedPrint() const override;
+  bool SupportsPaginatedPrint() const;
   // If the plugin content should not be scaled to the printable area of
   // the page, then this method should return true.
-  bool IsPrintScalingDisabled() const override;
+  bool IsPrintScalingDisabled() const;
   // Returns true on success and sets the out parameter to the print preset
   // options for the document.
-  bool GetPrintPresetOptionsFromDocument(WebPrintPresetOptions*) const override;
+  bool GetPrintPresetOptionsFromDocument(WebPrintPresetOptions*) const;
   // Sets up printing at the specified WebPrintParams. Returns the number of
   // pages to be printed at these settings.
-  int PrintBegin(const WebPrintParams&) const override;
+  int PrintBegin(const WebPrintParams&) const;
   // Prints the page specified by pageNumber (0-based index) into the supplied
   // canvas.
-  void PrintPage(int page_number,
-                 GraphicsContext&,
-                 const IntRect& paint_rect) override;
+  void PrintPage(int page_number, GraphicsContext&, const IntRect& paint_rect);
   // Ends the print operation.
-  void PrintEnd() override;
+  void PrintEnd();
 
   // Copy the selected text.
   void Copy();
 
   // Pass the edit command to the plugin.
-  bool ExecuteEditCommand(const WebString& name) override;
-  bool ExecuteEditCommand(const WebString& name,
-                          const WebString& value) override;
+  bool ExecuteEditCommand(const WebString& name);
+  bool ExecuteEditCommand(const WebString& name, const WebString& value);
 
   // Resource load events for the plugin's source data:
   void DidReceiveResponse(const ResourceResponse&) override;
   void DidReceiveData(const char* data, int data_length) override;
-  void DidFinishLoading() override;
-  void DidFailLoading(const ResourceError&) override;
+  void DidFinishLoading();
+  void DidFailLoading(const ResourceError&);
 
   WebPluginContainerImpl* GetWebPluginContainer() const override {
     return const_cast<WebPluginContainerImpl*>(this);
@@ -218,7 +220,7 @@ class CORE_EXPORT WebPluginContainerImpl final : public WebPluginContainerBase {
 
   void CalculateGeometry(IntRect& window_rect,
                          IntRect& clip_rect,
-                         IntRect& unobscured_rect) override;
+                         IntRect& unobscured_rect);
 
   friend class WebPluginContainerTest;
 
