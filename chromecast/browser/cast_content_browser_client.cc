@@ -82,6 +82,10 @@
 #include "chromecast/media/cdm/cast_cdm_factory.h"
 #endif  // BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
 
+#if defined(USE_ALSA)
+#include "chromecast/media/audio/cast_audio_manager_alsa.h"  // nogncheck
+#endif  // defined(USE_ALSA)
+
 namespace chromecast {
 namespace shell {
 
@@ -202,11 +206,19 @@ CastContentBrowserClient::CreateAudioManager(
   // because we already have a mixer in the audio pipeline downstream of
   // CastAudioManager.
   bool use_mixer = true;
+#if defined(USE_ALSA)
+  return base::MakeUnique<media::CastAudioManagerAlsa>(
+      base::MakeUnique<::media::AudioThreadImpl>(), audio_log_factory,
+      base::MakeUnique<media::MediaPipelineBackendFactoryImpl>(
+          media_pipeline_backend_manager()),
+      GetMediaTaskRunner(), use_mixer);
+#else
   return base::MakeUnique<media::CastAudioManager>(
       base::MakeUnique<::media::AudioThreadImpl>(), audio_log_factory,
       base::MakeUnique<media::MediaPipelineBackendFactoryImpl>(
           media_pipeline_backend_manager()),
       GetMediaTaskRunner(), use_mixer);
+#endif  // defined(USE_ALSA)
 }
 
 std::unique_ptr<::media::CdmFactory>
