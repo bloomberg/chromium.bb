@@ -24,6 +24,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/google/core/browser/google_util.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -106,6 +107,10 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
 
   source->SetJsonPath("strings.js");
 
+  // Add common strings.
+  source->AddLocalizedString("close", IDS_CLOSE);
+
+  // Add extension-specific strings.
   source->AddLocalizedString("title",
                              IDS_MANAGE_EXTENSIONS_SETTING_WINDOWS_TITLE);
   source->AddLocalizedString("toolbarTitle", IDS_MD_EXTENSIONS_TOOLBAR_TITLE);

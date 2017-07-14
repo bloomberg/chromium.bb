@@ -1,55 +1,14 @@
+<link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/shadow.html">
 
 <dom-module id="extensions-pack-dialog">
   <template>
-    <style>
-      dialog {
-        @apply(--shadow-elevation-2dp);
-        border: none;
-        border-radius: 2px;
-        padding: 0;
-        width: 512px;
-      }
-
-      header {
-        -webkit-padding-end: 20px;
-        -webkit-padding-start: 24px;
-        align-items: center;
-        border-bottom: 1px solid var(--paper-grey-200);
-        color: #333;
-        display: flex;
-        font-size: 16px;
-        justify-content: space-between;
-        padding-bottom: 16px;
-        padding-top: 16px;
-      }
-
-      #close-button {
-        height: 20px;
-        padding: 0;
-        width: 20px;
-      }
-
-      #main {
-        -webkit-margin-end: 16px;
-        -webkit-margin-start: 24px;
-        font-size: 13px;
-        max-width: 800px;
-        padding-bottom: 16px;
-        padding-top: 20px;
-      }
-
-      #description {
-        color: #333;
-      }
-
+    <style include="cr-shared-style">
       paper-button {
         align-items: center;
         border-radius: 2px;
@@ -59,6 +18,12 @@
         justify-content: center;
         padding: 8px 12px;
         text-transform: uppercase;
+      }
+
+      .body {
+        /* TODO(scottchen): make a shared font-size/line-height css file. */
+        font-size: 13px;
+        line-height: 20px;
       }
 
       .file-input {
@@ -76,31 +41,12 @@
         -webkit-margin-start: 10px;
         color: var(--google-blue-500);
       }
-
-      #buttons-container {
-        display: flex;
-        justify-content: flex-end;
-        padding: 20px;
-      }
-
-      #dismiss {
-        color: #5a5a5a;
-      }
-
-      #confirm {
-        -webkit-margin-start: 12px;
-        background-color: var(--google-blue-500);
-        color: white;
-      }
     </style>
-    <dialog>
-      <header>
-        <span>$i18n{packDialogTitle}</span>
-        <paper-icon-button id="close-button" icon="close" on-tap="close">
-        </paper-icon-button>
-      </header>
-      <div id="main">
-        <div id="description">$i18n{packDialogContent}</div>
+
+    <dialog is="cr-dialog" id="dialog" close-text="$i18n{close}">
+      <div class="title">$i18n{packDialogTitle}</div>
+      <div class="body">
+        <div>$i18n{packDialogContent}</div>
         <div class="file-input">
           <paper-input id="root-dir" label="$i18n{packDialogExtensionRoot}"
               always-float-label value="[[packDirectory_]]">
@@ -118,11 +64,11 @@
           </paper-button>
         </div>
       </div>
-      <div id="buttons-container">
-        <paper-button id="dismiss" on-tap="close">
+      <div class="button-container">
+        <paper-button class="cancel-button" on-tap="close">
           $i18n{packDialogCancel}
         </paper-button>
-        <paper-button id="confirm" on-tap="onConfirmTap_">
+        <paper-button class="action-button" on-tap="onConfirmTap_">
           $i18n{packDialogConfirm}
         </paper-button>
       </div>

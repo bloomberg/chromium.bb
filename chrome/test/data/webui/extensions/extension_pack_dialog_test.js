@@ -88,7 +88,7 @@ cr.define('extension_pack_dialog_tests', function() {
         mockDelegate.keyPromise.resolve(kKeyPath);
 
         return Promise.all(promises).then(function() {
-          MockInteractions.tap(packDialog.$$('#confirm'));
+          MockInteractions.tap(packDialog.$$('.action-button'));
           expectEquals(kRootPath, mockDelegate.rootPath);
           expectEquals(kKeyPath, mockDelegate.keyPath);
           expectFalse(isDialogVisible());
