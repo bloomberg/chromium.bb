@@ -112,16 +112,27 @@ void DisplayConfigurationController::SetDisplayRotation(
     display::Display::Rotation rotation,
     display::Display::RotationSource source) {
   if (display_manager_->IsDisplayIdValid(display_id)) {
-    if (display_manager_->GetDisplayInfo(display_id).GetActiveRotation() ==
-        rotation) {
+    if (GetTargetRotation(display_id) == rotation)
       return;
-    }
     ScreenRotationAnimator* screen_rotation_animator =
         GetScreenRotationAnimatorForDisplay(display_id);
     screen_rotation_animator->Rotate(rotation, source);
   } else {
     display_manager_->SetDisplayRotation(display_id, rotation, source);
   }
+}
+
+display::Display::Rotation DisplayConfigurationController::GetTargetRotation(
+    int64_t display_id) {
+  if (!display_manager_->IsDisplayIdValid(display_id))
+    return display::Display::ROTATE_0;
+
+  ScreenRotationAnimator* animator =
+      GetScreenRotationAnimatorForDisplay(display_id);
+  if (animator->IsRotating())
+    return animator->GetTargetRotation();
+
+  return display_manager_->GetDisplayInfo(display_id).GetActiveRotation();
 }
 
 void DisplayConfigurationController::SetPrimaryDisplayId(int64_t display_id) {
