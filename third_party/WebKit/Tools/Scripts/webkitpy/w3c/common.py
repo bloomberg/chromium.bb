@@ -84,8 +84,9 @@ def is_exportable(chromium_commit, local_wpt, wpt_github):
     message = chromium_commit.message()
     if 'NOEXPORT=true' in message or 'No-Export: true' in message or message.startswith('Import'):
         return False
+
     patch = chromium_commit.format_patch()
-    if not (patch and local_wpt.test_patch(patch, chromium_commit)):
+    if not patch:
         return False
 
     # If there's a corresponding closed PR, then this commit should not
@@ -94,6 +95,10 @@ def is_exportable(chromium_commit, local_wpt, wpt_github):
     pull_request = wpt_github.pr_for_chromium_commit(chromium_commit)
     if pull_request and pull_request.state == 'closed':
         return False
+
+    if not local_wpt.test_patch(patch, chromium_commit):
+        return False
+
     return True
 
 
