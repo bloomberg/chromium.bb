@@ -174,6 +174,7 @@ enum AttachmentMetadataField {
 enum {
   ATTACHMENT_METADATA_FIELDS_COUNT =
       ATTACHMENT_METADATA_FIELDS_END - ATTACHMENT_METADATA_FIELDS_BEGIN,
+  // If FIELD_COUNT is changed then g_metas_columns must be updated.
   FIELD_COUNT = ATTACHMENT_METADATA_FIELDS_END - BEGIN_FIELDS,
   // Past this point we have temporaries, stored in memory only.
   BEGIN_TEMPS = ATTACHMENT_METADATA_FIELDS_END,
