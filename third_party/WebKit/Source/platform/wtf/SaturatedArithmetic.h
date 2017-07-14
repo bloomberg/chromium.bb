@@ -31,19 +31,18 @@
 #ifndef SaturatedArithmetic_h
 #define SaturatedArithmetic_h
 
-#include "base/numerics/clamped_math.h"
 #include "base/numerics/saturated_arithmetic.h"
 
 namespace WTF {
-using base::ClampAdd;
-using base::ClampSub;
-using base::MakeClampedNum;
+using base::SaturatedAddition;
+using base::SaturatedSubtraction;
+using base::SaturatedNegative;
 using base::SaturatedSet;
 }  // namespace WTF
 
-using WTF::ClampAdd;
-using WTF::ClampSub;
-using WTF::MakeClampedNum;
+using WTF::SaturatedAddition;
+using WTF::SaturatedSubtraction;
+using WTF::SaturatedNegative;
 using WTF::SaturatedSet;
 
 #endif  // SaturatedArithmetic_h
