@@ -6,7 +6,7 @@
 
 #include "cc/output/layer_tree_frame_sink.h"
 #include "cc/resources/returned_resource.h"
-#include "components/exo/surface.h"
+#include "components/exo/surface_tree_host.h"
 
 namespace exo {
 
@@ -14,19 +14,16 @@ namespace exo {
 // LayerTreeFrameSinkHolder, public:
 
 LayerTreeFrameSinkHolder::LayerTreeFrameSinkHolder(
-    Surface* surface,
+    SurfaceTreeHost* surface_tree_host,
     std::unique_ptr<cc::LayerTreeFrameSink> frame_sink)
-    : surface_(surface),
+    : surface_tree_host_(surface_tree_host),
       frame_sink_(std::move(frame_sink)),
       weak_factory_(this) {
-  surface_->AddSurfaceObserver(this);
   frame_sink_->BindToClient(this);
 }
 
 LayerTreeFrameSinkHolder::~LayerTreeFrameSinkHolder() {
   frame_sink_->DetachFromClient();
-  if (surface_)
-    surface_->RemoveSurfaceObserver(this);
 
   // Release all resources which aren't returned from LayerTreeFrameSink.
   for (auto& callback : release_callbacks_)
@@ -58,8 +55,7 @@ base::WeakPtr<LayerTreeFrameSinkHolder> LayerTreeFrameSinkHolder::GetWeakPtr() {
 
 void LayerTreeFrameSinkHolder::SetBeginFrameSource(
     cc::BeginFrameSource* source) {
-  if (surface_)
-    surface_->SetBeginFrameSource(source);
+  surface_tree_host_->SetBeginFrameSource(source);
 }
 
 void LayerTreeFrameSinkHolder::ReclaimResources(
@@ -75,16 +71,7 @@ void LayerTreeFrameSinkHolder::ReclaimResources(
 }
 
 void LayerTreeFrameSinkHolder::DidReceiveCompositorFrameAck() {
-  if (surface_)
-    surface_->DidReceiveCompositorFrameAck();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// SurfaceObserver overrides:
-
-void LayerTreeFrameSinkHolder::OnSurfaceDestroying(Surface* surface) {
-  surface_->RemoveSurfaceObserver(this);
-  surface_ = nullptr;
+  surface_tree_host_->DidReceiveCompositorFrameAck();
 }
 
 }  // namespace exo
