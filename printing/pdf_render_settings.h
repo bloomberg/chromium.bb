@@ -16,6 +16,7 @@ struct PdfRenderSettings {
   enum Mode {
     NORMAL = 0,
 #if defined(OS_WIN)
+    TEXTONLY,
     GDI_TEXT,
     POSTSCRIPT_LEVEL2,
     POSTSCRIPT_LEVEL3,

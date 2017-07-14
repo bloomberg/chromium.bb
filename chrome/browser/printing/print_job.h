@@ -105,6 +105,10 @@ class PrintJob : public PrintJobWorkerOwner,
       const gfx::Rect& content_area,
       const gfx::Point& physical_offset,
       bool ps_level2);
+
+  void StartPdfToTextConversion(
+      const scoped_refptr<base::RefCountedMemory>& bytes,
+      const gfx::Size& page_size);
 #endif  // defined(OS_WIN)
 
  protected:

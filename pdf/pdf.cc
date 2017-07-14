@@ -122,8 +122,8 @@ void SetPDFUseGDIPrinting(bool enable) {
   PDFEngineExports::Get()->SetPDFUseGDIPrinting(enable);
 }
 
-void SetPDFPostscriptPrintingLevel(int postscript_level) {
-  PDFEngineExports::Get()->SetPDFPostscriptPrintingLevel(postscript_level);
+void SetPDFUsePrintMode(int mode) {
+  PDFEngineExports::Get()->SetPDFUsePrintMode(mode);
 }
 #endif  // defined(OS_WIN)
 

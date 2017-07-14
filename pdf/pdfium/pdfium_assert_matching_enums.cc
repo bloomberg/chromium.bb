@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "build/build_config.h"
+#include "pdf/pdf.h"
 #include "ppapi/c/pp_input_event.h"
 #include "ppapi/c/private/ppb_pdf.h"
 #include "ppapi/c/private/ppp_pdf.h"
+#include "third_party/pdfium/public/fpdf_edit.h"
 #include "third_party/pdfium/public/fpdf_fwlevent.h"
 #include "third_party/pdfium/public/fpdf_sysfontinfo.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -210,3 +213,10 @@ STATIC_ASSERT_ENUM(PP_PRIVATEDUPLEXMODE_NONE, DuplexUndefined);
 STATIC_ASSERT_ENUM(PP_PRIVATEDUPLEXMODE_SIMPLEX, Simplex);
 STATIC_ASSERT_ENUM(PP_PRIVATEDUPLEXMODE_SHORT_EDGE, DuplexFlipShortEdge);
 STATIC_ASSERT_ENUM(PP_PRIVATEDUPLEXMODE_LONG_EDGE, DuplexFlipLongEdge);
+
+#if defined(OS_WIN)
+STATIC_ASSERT_ENUM(chrome_pdf::kEmf, FPDF_PRINTMODE_EMF);
+STATIC_ASSERT_ENUM(chrome_pdf::kTextOnly, FPDF_PRINTMODE_TEXTONLY);
+STATIC_ASSERT_ENUM(chrome_pdf::kPostScript2, FPDF_PRINTMODE_POSTSCRIPT2);
+STATIC_ASSERT_ENUM(chrome_pdf::kPostScript3, FPDF_PRINTMODE_POSTSCRIPT3);
+#endif

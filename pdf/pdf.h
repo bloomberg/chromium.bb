@@ -36,6 +36,14 @@ void PPP_ShutdownModule();
 const void* PPP_GetInterface(const char* interface_name);
 
 #if defined(OS_WIN)
+// Printing modes - type to convert PDF to for printing
+enum PrintingMode {
+  kEmf = 0,
+  kTextOnly = 1,
+  kPostScript2 = 2,
+  kPostScript3 = 3,
+};
+
 // |pdf_buffer| is the buffer that contains the entire PDF document to be
 //     rendered.
 // |buffer_size| is the size of |pdf_buffer| in bytes.
@@ -83,7 +91,7 @@ void SetPDFEnsureTypefaceCharactersAccessible(
 
 void SetPDFUseGDIPrinting(bool enable);
 
-void SetPDFPostscriptPrintingLevel(int postscript_level);
+void SetPDFUsePrintMode(int mode);
 #endif  // defined(OS_WIN)
 
 // |page_count| and |max_page_width| are optional and can be NULL.
