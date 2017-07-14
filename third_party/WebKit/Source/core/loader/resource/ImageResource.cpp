@@ -120,7 +120,7 @@ class ImageResource::ImageResourceInfoImpl final
 
   void SetDecodedSize(size_t size) override { resource_->SetDecodedSize(size); }
   void WillAddClientOrObserver() override {
-    resource_->WillAddClientOrObserver(Resource::kMarkAsReferenced);
+    resource_->WillAddClientOrObserver();
   }
   void DidRemoveClientOrObserver() override {
     resource_->DidRemoveClientOrObserver();
@@ -280,7 +280,7 @@ void ImageResource::DestroyDecodedDataForFailedRevalidation() {
 
 void ImageResource::DestroyDecodedDataIfPossible() {
   GetContent()->DestroyDecodedData();
-  if (GetContent()->HasImage() && !IsPreloaded() &&
+  if (GetContent()->HasImage() && !IsUnusedPreload() &&
       GetContent()->IsRefetchableDataFromDiskCache()) {
     UMA_HISTOGRAM_MEMORY_KB("Memory.Renderer.EstimatedDroppableEncodedSize",
                             EncodedSize() / 1024);
