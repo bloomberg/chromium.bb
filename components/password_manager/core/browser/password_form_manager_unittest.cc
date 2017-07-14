@@ -3759,8 +3759,7 @@ TEST_F(PasswordFormManagerTest, TestUkmForFilling) {
     const auto* source =
         test_ukm_recorder.GetSourceForUrl(form_to_fill.origin.spec().c_str());
     test_ukm_recorder.ExpectMetric(*source, "PasswordForm",
-                                   internal::kUkmManagerFillEvent,
-                                   test.expected_event);
+                                   kUkmManagerFillEvent, test.expected_event);
   }
 }
 

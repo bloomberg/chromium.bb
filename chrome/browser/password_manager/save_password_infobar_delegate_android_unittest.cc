@@ -220,17 +220,14 @@ TEST_P(SavePasswordInfoBarDelegateTestForUKMs, VerifyUKMRecording) {
   const ukm::UkmSource* source =
       test_ukm_recorder.GetSourceForUrl("https://www.example.com/");
   ASSERT_TRUE(source);
+  test_ukm_recorder.ExpectMetric(*source, "PasswordForm",
+                                 password_manager::kUkmSavingPromptShown, 1);
   test_ukm_recorder.ExpectMetric(
-      *source, "PasswordForm",
-      password_manager::internal::kUkmSavingPromptShown, 1);
-  test_ukm_recorder.ExpectMetric(
-      *source, "PasswordForm",
-      password_manager::internal::kUkmSavingPromptTrigger,
+      *source, "PasswordForm", password_manager::kUkmSavingPromptTrigger,
       static_cast<int64_t>(BubbleTrigger::kPasswordManagerSuggestionAutomatic));
-  test_ukm_recorder.ExpectMetric(
-      *source, "PasswordForm",
-      password_manager::internal::kUkmSavingPromptInteraction,
-      static_cast<int64_t>(dismissal_reason));
+  test_ukm_recorder.ExpectMetric(*source, "PasswordForm",
+                                 password_manager::kUkmSavingPromptInteraction,
+                                 static_cast<int64_t>(dismissal_reason));
 }
 
 INSTANTIATE_TEST_CASE_P(

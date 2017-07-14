@@ -43,7 +43,7 @@ PasswordFormMetricsRecorder::~PasswordFormMetricsRecorder() {
       metrics_util::LogPasswordGenerationAvailableSubmissionEvent(
           metrics_util::PASSWORD_NOT_SUBMITTED);
     }
-    RecordUkmMetric(internal::kUkmSubmissionObserved, 0 /*false*/);
+    RecordUkmMetric(kUkmSubmissionObserved, 0 /*false*/);
   }
 
   if (submitted_form_type_ != kSubmittedFormTypeUnspecified) {
@@ -54,11 +54,11 @@ PasswordFormMetricsRecorder::~PasswordFormMetricsRecorder() {
                                 submitted_form_type_, kSubmittedFormTypeMax);
     }
 
-    RecordUkmMetric(internal::kUkmSubmissionFormType, submitted_form_type_);
+    RecordUkmMetric(kUkmSubmissionFormType, submitted_form_type_);
   }
 
-  RecordUkmMetric(internal::kUkmUpdatingPromptShown, update_prompt_shown_);
-  RecordUkmMetric(internal::kUkmSavingPromptShown, save_prompt_shown_);
+  RecordUkmMetric(kUkmUpdatingPromptShown, update_prompt_shown_);
+  RecordUkmMetric(kUkmSavingPromptShown, save_prompt_shown_);
 }
 
 // static
@@ -115,8 +115,8 @@ void PasswordFormMetricsRecorder::LogSubmitPassed() {
     }
   }
   base::RecordAction(base::UserMetricsAction("PasswordManager_LoginPassed"));
-  RecordUkmMetric(internal::kUkmSubmissionObserved, 1 /*true*/);
-  RecordUkmMetric(internal::kUkmSubmissionResult, kSubmitResultPassed);
+  RecordUkmMetric(kUkmSubmissionObserved, 1 /*true*/);
+  RecordUkmMetric(kUkmSubmissionResult, kSubmitResultPassed);
   submit_result_ = kSubmitResultPassed;
 }
 
@@ -129,8 +129,8 @@ void PasswordFormMetricsRecorder::LogSubmitFailed() {
         metrics_util::PASSWORD_SUBMISSION_FAILED);
   }
   base::RecordAction(base::UserMetricsAction("PasswordManager_LoginFailed"));
-  RecordUkmMetric(internal::kUkmSubmissionObserved, 1 /*true*/);
-  RecordUkmMetric(internal::kUkmSubmissionResult, kSubmitResultFailed);
+  RecordUkmMetric(kUkmSubmissionObserved, 1 /*true*/);
+  RecordUkmMetric(kUkmSubmissionResult, kSubmitResultFailed);
   submit_result_ = kSubmitResultFailed;
 }
 
@@ -246,24 +246,24 @@ void PasswordFormMetricsRecorder::RecordPasswordBubbleShown(
     // New credential cases:
     case metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING:
       save_prompt_shown_ = true;
-      RecordUkmMetric(internal::kUkmSavingPromptTrigger,
+      RecordUkmMetric(kUkmSavingPromptTrigger,
                       static_cast<int64_t>(automatic_trigger_type));
       break;
     case metrics_util::MANUAL_WITH_PASSWORD_PENDING:
       save_prompt_shown_ = true;
-      RecordUkmMetric(internal::kUkmSavingPromptTrigger,
+      RecordUkmMetric(kUkmSavingPromptTrigger,
                       static_cast<int64_t>(manual_trigger_type));
       break;
 
     // Update cases:
     case metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING_UPDATE:
       update_prompt_shown_ = true;
-      RecordUkmMetric(internal::kUkmUpdatingPromptTrigger,
+      RecordUkmMetric(kUkmUpdatingPromptTrigger,
                       static_cast<int64_t>(automatic_trigger_type));
       break;
     case metrics_util::MANUAL_WITH_PASSWORD_PENDING_UPDATE:
       update_prompt_shown_ = true;
-      RecordUkmMetric(internal::kUkmUpdatingPromptTrigger,
+      RecordUkmMetric(kUkmUpdatingPromptTrigger,
                       static_cast<int64_t>(manual_trigger_type));
       break;
 
@@ -288,9 +288,8 @@ void PasswordFormMetricsRecorder::RecordUIDismissalReason(
   DCHECK(!(update_prompt_shown_ && save_prompt_shown_));
   if (!(update_prompt_shown_ || save_prompt_shown_))
     return;
-  const char* metric = update_prompt_shown_
-                           ? internal::kUkmUpdatingPromptInteraction
-                           : internal::kUkmSavingPromptInteraction;
+  const char* metric = update_prompt_shown_ ? kUkmUpdatingPromptInteraction
+                                            : kUkmSavingPromptInteraction;
   switch (ui_dismissal_reason) {
     // Accepted by user.
     case metrics_util::CLICKED_SAVE:
@@ -331,7 +330,7 @@ void PasswordFormMetricsRecorder::RecordUIDismissalReason(
 }
 
 void PasswordFormMetricsRecorder::RecordFillEvent(ManagerAutofillEvent event) {
-  RecordUkmMetric(internal::kUkmManagerFillEvent, event);
+  RecordUkmMetric(kUkmManagerFillEvent, event);
 }
 
 PasswordFormMetricsRecorder::SuppressedAccountExistence
