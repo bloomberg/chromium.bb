@@ -17,6 +17,7 @@ source_set("exo") {
     "keyboard.h",
     "keyboard_delegate.h",
     "keyboard_device_configuration_delegate.h",
+    "keyboard_observer.h",
     "layer_tree_frame_sink_holder.cc",
     "layer_tree_frame_sink_holder.h",
     "notification_surface.cc",

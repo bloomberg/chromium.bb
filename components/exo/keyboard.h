@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "components/exo/keyboard_observer.h"
 #include "components/exo/surface_observer.h"
 #include "components/exo/wm_helper.h"
 #include "ui/events/event_handler.h"
@@ -36,6 +37,16 @@ class Keyboard : public ui::EventHandler,
   bool HasDeviceConfigurationDelegate() const;
   void SetDeviceConfigurationDelegate(
       KeyboardDeviceConfigurationDelegate* delegate);
+
+  // Management of the observer list.
+  void AddObserver(KeyboardObserver* observer);
+  bool HasObserver(KeyboardObserver* observer) const;
+  void RemoveObserver(KeyboardObserver* observer);
+
+  void SetNeedKeyboardKeyAcks(bool need_acks);
+  bool AreKeyboardKeyAcksNeeded() const;
+
+  void AckKeyboardKey(uint32_t serial, bool handled);
 
   // Overridden from ui::EventHandler:
   void OnKeyEvent(ui::KeyEvent* event) override;
@@ -67,6 +78,8 @@ class Keyboard : public ui::EventHandler,
   // to.
   KeyboardDeviceConfigurationDelegate* device_configuration_delegate_ = nullptr;
 
+  bool are_keyboard_key_acks_needed = false;
+
   // The current focus surface for the keyboard.
   Surface* focus_ = nullptr;
 
@@ -75,6 +88,8 @@ class Keyboard : public ui::EventHandler,
 
   // Current set of modifier flags.
   int modifier_flags_ = 0;
+
+  base::ObserverList<KeyboardObserver> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(Keyboard);
 };
