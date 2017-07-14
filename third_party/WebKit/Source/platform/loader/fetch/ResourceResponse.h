@@ -46,6 +46,15 @@ namespace blink {
 
 struct CrossThreadResourceResponseData;
 
+// A ResourceResponse is a "response" object used in blink. Conceptually
+// it is https://fetch.spec.whatwg.org/#concept-response, but it contains
+// a lot of blink specific fields. WebURLResponse is the "public version"
+// of this class and public classes (i.e., classes in public/platform) use it.
+//
+// There are cases where we need to copy a response across threads, and
+// CrossThreadResourceResponseData is a struct for the purpose. When you add a
+// member variable to this class, do not forget to add the corresponding
+// one in CrossThreadResourceResponseData and write copying logic.
 class PLATFORM_EXPORT ResourceResponse final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
@@ -530,6 +539,14 @@ inline bool operator!=(const ResourceResponse& a, const ResourceResponse& b) {
   return !(a == b);
 }
 
+// This class is needed to copy a ResourceResponse across threads, because it
+// has some members which cannot be transferred across threads (AtomicString
+// for example).
+// There are some rules / restrictions:
+//  - This struct cannot contain an object that cannot be transferred across
+//    threads (e.g., AtomicString)
+//  - Non-simple members need explicit copying (e.g., String::IsolatedCopy,
+//    KURL::Copy) rather than the copy constructor or the assignment operator.
 struct CrossThreadResourceResponseData {
   WTF_MAKE_NONCOPYABLE(CrossThreadResourceResponseData);
   USING_FAST_MALLOC(CrossThreadResourceResponseData);
