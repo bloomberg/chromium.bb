@@ -20,6 +20,7 @@
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/content_features.h"
 #include "media/audio/audio_device_description.h"
 #include "media/audio/audio_system.h"
 #include "media/base/media_switches.h"
@@ -231,6 +232,11 @@ void MediaDevicesManager::StartMonitoring() {
 
   if (!base::SystemMonitor::Get())
     return;
+
+#if defined(OS_MACOSX)
+  if (!base::FeatureList::IsEnabled(features::kDeviceMonitorMac))
+    return;
+#endif
 
   monitoring_started_ = true;
   base::SystemMonitor::Get()->AddDevicesChangedObserver(this);

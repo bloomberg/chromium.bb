@@ -411,6 +411,10 @@ const base::Feature kWinSboxDisableExtensionPoints{
 #endif
 
 #if defined(OS_MACOSX)
+// Enables caching of media devices for the purpose of enumerating them.
+const base::Feature kDeviceMonitorMac{"DeviceMonitorMac",
+                                      base::FEATURE_ENABLED_BY_DEFAULT};
+
 // The V2 sandbox on MacOS removes the unsandboed warmup phase and sandboxes the
 // entire life of the process.
 const base::Feature kMacV2Sandbox{"MacV2Sandbox",
