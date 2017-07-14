@@ -51,6 +51,8 @@ viz_component("service") {
     "frame_sinks/gpu_compositor_frame_sink_delegate.h",
     "frame_sinks/gpu_root_compositor_frame_sink.cc",
     "frame_sinks/gpu_root_compositor_frame_sink.h",
+    "hit_test/hit_test_aggregator.cc",
+    "hit_test/hit_test_aggregator.h",
     "viz_service_export.h",
   ]
 
@@ -77,6 +79,7 @@ viz_component("service") {
     "//cc/surfaces",
     "//gpu/command_buffer/client:gles2_interface",
     "//gpu/ipc:command_buffer",
+    "//services/viz/hit_test/public/interfaces",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/latency",
@@ -127,6 +130,7 @@ viz_source_set("unit_tests") {
     "frame_sinks/compositor_frame_sink_support_unittest.cc",
     "frame_sinks/direct_layer_tree_frame_sink_unittest.cc",
     "frame_sinks/frame_sink_manager_unittest.cc",
+    "hit_test/hit_test_aggregator_unittest.cc",
   ]
 
   if (!use_aura && !is_mac) {
@@ -144,6 +148,12 @@ viz_source_set("unit_tests") {
     "//base/test:test_support",
     "//cc:test_support",
     "//components/viz/common",
+    "//gpu/command_buffer/client",
+    "//gpu/command_buffer/client:gles2_implementation",
+    "//gpu/ipc:gl_in_process_context",
+    "//media",
+    "//services/viz/hit_test/public/interfaces",
+    "//skia",
     "//testing/gmock",
     "//testing/gtest",
     "//ui/display/types",

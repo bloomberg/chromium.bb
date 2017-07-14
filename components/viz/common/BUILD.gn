@@ -13,6 +13,7 @@ viz_source_set("common") {
     "gl_helper_readback_support.h",
     "gl_helper_scaling.cc",
     "gl_helper_scaling.h",
+    "hit_test/aggregated_hit_test_region.h",
     "quads/resource_format.h",
     "quads/shared_bitmap.cc",
     "quads/shared_bitmap.h",
@@ -51,6 +52,7 @@ viz_source_set("common") {
     "//mojo/public/cpp/bindings",
     "//skia",
     "//ui/gfx:color_space",
+    "//ui/gfx:geometry_skia",
     "//ui/gfx/geometry",
   ]
 
