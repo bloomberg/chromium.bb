@@ -408,7 +408,10 @@ service_manifest("chrome_content_packaged_services_manifest_overlay") {
       "//chrome/browser/chrome_content_packaged_services_manifest_overlay.json"
   packaged_services = chrome_packaged_services
   if (is_chromeos) {
-    packaged_services += [ "//ash/mus:manifest" ]
+    packaged_services += [
+      "//ash/mus:manifest",
+      "//services/ui:manifest",
+    ]
   }
 }
 
