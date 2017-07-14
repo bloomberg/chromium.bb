@@ -44,9 +44,8 @@ class IndexedDBContext : public base::RefCountedThreadSafe<IndexedDBContext> {
   virtual base::FilePath GetFilePathForTesting(
       const GURL& origin_url) const = 0;
 
-  // Set the task runner for tests if browser main loop is not initialized.
-  virtual void SetTaskRunnerForTesting(
-      base::SequencedTaskRunner* task_runner) = 0;
+  // Forget the origins/sizes read from disk.
+  virtual void ResetCachesForTesting() = 0;
 
  protected:
   friend class base::RefCountedThreadSafe<IndexedDBContext>;

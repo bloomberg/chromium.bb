@@ -16,11 +16,6 @@ namespace {
 
 class CannedBrowsingDataIndexedDBHelperTest : public testing::Test {
  public:
-  void SetUp() override {
-    IndexedDBContext()->SetTaskRunnerForTesting(
-        base::ThreadTaskRunnerHandle::Get().get());
-  }
-
   content::IndexedDBContext* IndexedDBContext() {
     return content::BrowserContext::GetDefaultStoragePartition(&profile_)->
         GetIndexedDBContext();
