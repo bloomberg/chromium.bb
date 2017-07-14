@@ -120,12 +120,18 @@ class APP_LIST_EXPORT SearchBoxView : public views::View,
                         AppListModel::State current_state,
                         AppListModel::State target_state);
 
+  // Used only in the tests to get the current search icon.
+  views::ImageView* get_search_icon_for_test() { return search_icon_; }
+
  private:
   // Updates model text and selection model with current Textfield info.
   void UpdateModel();
 
   // Fires query change notification.
   void NotifyQueryChanged();
+
+  // Updates the search icon.
+  void UpdateSearchIcon(bool is_google, const SkColor& search_box_color);
 
   // Overridden from views::TextfieldController:
   void ContentsChanged(views::Textfield* sender,
@@ -157,7 +163,7 @@ class APP_LIST_EXPORT SearchBoxView : public views::View,
 
   // Owned by views hierarchy.
   views::View* content_container_;
-  views::ImageView* google_icon_ = nullptr;
+  views::ImageView* search_icon_ = nullptr;
   SearchBoxImageButton* back_button_ = nullptr;
   SearchBoxImageButton* speech_button_ = nullptr;
   SearchBoxImageButton* close_button_ = nullptr;
