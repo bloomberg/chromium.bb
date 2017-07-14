@@ -138,11 +138,12 @@ class LocalWPT(object):
             self.run(['git', 'apply', '-'], input=patch)
             self.run(['git', 'add', '.'])
             output = self.run(['git', 'diff', 'origin/master'])
-        except ScriptError:
-            _log.debug('Patch did not apply cleanly for the following commit, skipping:')
+        except ScriptError as e:
+            _log.info('Patch did not apply cleanly for the following commit:')
             if chromium_commit:
-                _log.debug('Commit: %s', chromium_commit.url())
-                _log.debug('Commit subject: "%s"', chromium_commit.subject())
+                _log.info('Commit: %s', chromium_commit.url())
+                _log.info('Commit subject: "%s"', chromium_commit.subject())
+                _log.info('Message: %s\n\n', e.message)
             output = ''
 
         self.clean()

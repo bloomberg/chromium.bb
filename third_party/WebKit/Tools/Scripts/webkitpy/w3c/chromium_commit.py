@@ -73,7 +73,7 @@ class ChromiumCommit(object):
     def subject(self):
         return self.host.executive.run_command([
             'git', 'show', '--format=%s', '--no-patch', self.sha
-        ], cwd=self.absolute_chromium_dir)
+        ], cwd=self.absolute_chromium_dir).strip()
 
     def body(self):
         return self.host.executive.run_command([

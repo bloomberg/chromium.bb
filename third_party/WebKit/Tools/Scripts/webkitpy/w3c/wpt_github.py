@@ -236,7 +236,7 @@ class WPTGitHub(object):
         # so we fall back to trying to use commit position here, although
         # commit position is not correct sometimes (https://crbug.com/737178).
         # TODO(qyearsley): Remove this fallback after full Gerrit migration.
-        pull_request = self.pr_with_position(chromium_commit.position)
+        return self.pr_with_position(chromium_commit.position)
 
     def pr_with_change_id(self, target_change_id):
         for pull_request in self.all_pull_requests():
