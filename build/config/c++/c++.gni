@@ -10,4 +10,9 @@ declare_args() {
   # library.
   use_custom_libcxx = (is_linux && !is_chromeos &&
                        (!is_chromecast || is_cast_desktop_build)) || is_msan
+
+  # Sanitizer builds need to override operator new, operator delete, and
+  # some exception handling symbols, so libc++ must be a shared library
+  # to prevent duplicate symbol errors when linking.
+  libcpp_is_static = !is_component_build && !using_sanitizer
 }
