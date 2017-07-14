@@ -259,7 +259,8 @@
       'GPU Win x64 Builder': 'gpu_tests_deqp_gles_release_trybot',
       'GPU Win x64 Builder (dbg)': 'gpu_tests_deqp_gles_debug_trybot',
       'Linux ChromiumOS Builder': 'gpu_fyi_tests_chromeos_release_trybot',
-      'Linux ChromiumOS Ozone Builder': 'gpu_fyi_tests_chromeos_release_trybot',
+      # This is, confusingly, apparently not actually building ChromiumOS.
+      'Linux ChromiumOS Ozone Builder': 'gpu_fyi_tests_ozone_linux_system_gbm_libdrm_release_trybot',
       'Linux GPU TSAN Release': 'gpu_fyi_tests_release_trybot_tsan',
       'Mac GPU ASAN Release': 'gpu_fyi_tests_release_trybot_asan',
     },
@@ -1232,6 +1233,10 @@
 
     'gpu_fyi_tests_debug_trybot': [
       'gpu_fyi_tests', 'debug_trybot',
+    ],
+
+    'gpu_fyi_tests_ozone_linux_system_gbm_libdrm_release_trybot': [
+      'gpu_fyi_tests', 'ozone_linux', 'system_gbm_libdrm', 'release_trybot',
     ],
 
     'gpu_fyi_tests_release_trybot': [
