@@ -40,6 +40,11 @@ class FakeContextFactory : public ui::ContextFactory {
   void AddObserver(ui::ContextFactoryObserver* observer) override {}
   void RemoveObserver(ui::ContextFactoryObserver* observer) override {}
 
+ protected:
+  const cc::RendererSettings& renderer_settings() const {
+    return renderer_settings_;
+  }
+
  private:
   cc::FakeLayerTreeFrameSink* frame_sink_ = nullptr;
   cc::TestTaskGraphRunner task_graph_runner_;
