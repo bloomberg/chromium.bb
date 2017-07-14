@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/api/chrome_device_permissions_prompt.h"
 #include "chrome/browser/extensions/api/declarative_content/chrome_content_rules_registry.h"
 #include "chrome/browser/extensions/api/declarative_content/default_content_predicate_evaluators.h"
+#include "chrome/browser/extensions/api/file_system/chrome_file_system_delegate.h"
 #include "chrome/browser/extensions/api/management/chrome_management_api_delegate.h"
 #include "chrome/browser/extensions/api/metrics_private/chrome_metrics_private_delegate.h"
 #include "chrome/browser/extensions/api/networking_cast_private/chrome_networking_cast_private_delegate.h"
@@ -177,6 +178,12 @@ ChromeExtensionsAPIClient::GetNetworkingCastPrivateDelegate() {
         ChromeNetworkingCastPrivateDelegate::Create();
 #endif
   return networking_cast_private_delegate_.get();
+}
+
+FileSystemDelegate* ChromeExtensionsAPIClient::GetFileSystemDelegate() {
+  if (!file_system_delegate_)
+    file_system_delegate_ = base::MakeUnique<ChromeFileSystemDelegate>();
+  return file_system_delegate_.get();
 }
 
 #if defined(OS_CHROMEOS)

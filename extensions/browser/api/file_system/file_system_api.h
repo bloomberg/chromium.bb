@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_FILE_SYSTEM_FILE_SYSTEM_API_H_
-#define CHROME_BROWSER_EXTENSIONS_API_FILE_SYSTEM_FILE_SYSTEM_API_H_
+#ifndef EXTENSIONS_BROWSER_API_FILE_SYSTEM_FILE_SYSTEM_API_H_
+#define EXTENSIONS_BROWSER_API_FILE_SYSTEM_FILE_SYSTEM_API_H_
 
 #include <memory>
 #include <string>
@@ -12,18 +12,11 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/browser/extensions/chrome_extension_function.h"
-#include "chrome/browser/extensions/chrome_extension_function_details.h"
-#include "chrome/common/extensions/api/file_system.h"
 #include "extensions/browser/extension_function.h"
+#include "extensions/common/api/file_system.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/extensions/api/file_system/consent_provider.h"
-#endif
 
 namespace content {
 class WebContents;
@@ -46,12 +39,6 @@ void SetLastChooseEntryDirectory(ExtensionPrefs* prefs,
                                  const std::string& extension_id,
                                  const base::FilePath& path);
 
-#if defined(OS_CHROMEOS)
-// Dispatches an event about a mounted on unmounted volume in the system to
-// each extension which can request it.
-void DispatchVolumeListChangeEvent(Profile* profile);
-#endif
-
 }  // namespace file_system_api
 
 class FileSystemGetDisplayPathFunction : public UIThreadExtensionFunction {
@@ -64,7 +51,7 @@ class FileSystemGetDisplayPathFunction : public UIThreadExtensionFunction {
   ResponseAction Run() override;
 };
 
-class FileSystemEntryFunction : public ChromeAsyncExtensionFunction {
+class FileSystemEntryFunction : public UIThreadExtensionFunction {
  protected:
   FileSystemEntryFunction();
 
@@ -107,7 +94,7 @@ class FileSystemGetWritableEntryFunction : public FileSystemEntryFunction {
 
  protected:
   ~FileSystemGetWritableEntryFunction() override {}
-  bool RunAsync() override;
+  ResponseAction Run() override;
 
  private:
   void CheckPermissionAndSendResponse();
@@ -160,7 +147,7 @@ class FileSystemChooseEntryFunction : public FileSystemEntryFunction {
 
  protected:
   ~FileSystemChooseEntryFunction() override {}
-  bool RunAsync() override;
+  ResponseAction Run() override;
   void ShowPicker(const ui::SelectFileDialog::FileTypeInfo& file_type_info,
                   ui::SelectFileDialog::Type picker_type);
 
@@ -177,25 +164,29 @@ class FileSystemChooseEntryFunction : public FileSystemEntryFunction {
   void FileSelectionCanceled();
 
   // Check if the chosen directory is or is an ancestor of a sensitive
-  // directory. If so, show a dialog to confirm that the user wants to open the
-  // directory. Calls OnDirectoryAccessConfirmed if the directory isn't
-  // sensitive or the user chooses to open it. Otherwise, calls
-  // FileSelectionCanceled.
+  // directory. If so, calls ConfirmSensitiveDirectoryAccess. Otherwise, calls
+  // OnDirectoryAccessConfirmed.
   void ConfirmDirectoryAccessAsync(bool non_native_path,
                                    const std::vector<base::FilePath>& paths,
                                    content::WebContents* web_contents);
+
+  // Shows a dialog to confirm whether the user wants to open the directory.
+  // Calls OnDirectoryAccessConfirmed or FileSelectionCanceled.
+  void ConfirmSensitiveDirectoryAccess(const std::vector<base::FilePath>& paths,
+                                       content::WebContents* web_contents);
+
   void OnDirectoryAccessConfirmed(const std::vector<base::FilePath>& paths);
 
   base::FilePath initial_path_;
 };
 
-class FileSystemRetainEntryFunction : public ChromeAsyncExtensionFunction {
+class FileSystemRetainEntryFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileSystem.retainEntry", FILESYSTEM_RETAINENTRY)
 
  protected:
   ~FileSystemRetainEntryFunction() override {}
-  bool RunAsync() override;
+  ResponseAction Run() override;
 
  private:
   // Retains the file entry referenced by |entry_id| in apps::SavedFilesService.
@@ -222,7 +213,7 @@ class FileSystemRestoreEntryFunction : public FileSystemEntryFunction {
 
  protected:
   ~FileSystemRestoreEntryFunction() override {}
-  bool RunAsync() override;
+  ResponseAction Run() override;
 };
 
 class FileSystemObserveDirectoryFunction : public UIThreadExtensionFunction {
@@ -299,11 +290,8 @@ class FileSystemRequestFileSystemFunction : public UIThreadExtensionFunction {
  private:
   // Called when a user grants or rejects permissions for the file system
   // access.
-  void OnConsentReceived(const base::WeakPtr<file_manager::Volume>& volume,
-                         bool writable,
-                         file_system_api::ConsentProvider::Consent result);
-
-  ChromeExtensionFunctionDetails chrome_details_;
+  void OnGotFileSystem(const std::string& id, const std::string& path);
+  void OnError(const std::string& error);
 };
 
 // Requests a list of available volumes.
@@ -320,10 +308,11 @@ class FileSystemGetVolumeListFunction : public UIThreadExtensionFunction {
   ExtensionFunction::ResponseAction Run() override;
 
  private:
-  ChromeExtensionFunctionDetails chrome_details_;
+  void OnGotVolumeList(const std::vector<api::file_system::Volume>& volumes);
+  void OnError(const std::string& error);
 };
 #endif
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_FILE_SYSTEM_FILE_SYSTEM_API_H_
+#endif  // EXTENSIONS_BROWSER_API_FILE_SYSTEM_FILE_SYSTEM_API_H_

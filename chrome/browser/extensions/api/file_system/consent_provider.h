@@ -31,6 +31,10 @@ namespace file_system_api {
 // Interaction with UI and environmental checks (kiosk mode, whitelist) are
 // provided by a delegate: ConsentProviderDelegate. For testing, it is
 // TestingConsentProviderDelegate.
+// This class may post callbacks given to it, but does not asynchronously call
+// itself. It is generally safe to use a temporary ConsentProvider.
+// TODO(michaelpg): Make this easier to use by replacing member functions with
+// static methods.
 class ConsentProvider {
  public:
   enum Consent { CONSENT_GRANTED, CONSENT_REJECTED, CONSENT_IMPOSSIBLE };
@@ -42,6 +46,7 @@ class ConsentProvider {
    public:
     // Shows a dialog for granting permissions.
     virtual void ShowDialog(const Extension& extension,
+                            content::RenderFrameHost* host,
                             const base::WeakPtr<file_manager::Volume>& volume,
                             bool writable,
                             const ShowDialogCallback& callback) = 0;
@@ -66,6 +71,7 @@ class ConsentProvider {
   // volume by the |extension|. Must be called only if the extension is
   // grantable, which can be checked with IsGrantable().
   void RequestConsent(const Extension& extension,
+                      content::RenderFrameHost* host,
                       const base::WeakPtr<file_manager::Volume>& volume,
                       bool writable,
                       const ConsentCallback& callback);
@@ -83,7 +89,7 @@ class ConsentProvider {
 // context of running extensions) for ConsentProvider.
 class ConsentProviderDelegate : public ConsentProvider::DelegateInterface {
  public:
-  ConsentProviderDelegate(Profile* profile, content::RenderFrameHost* host);
+  explicit ConsentProviderDelegate(Profile* profile);
   ~ConsentProviderDelegate();
 
  private:
@@ -95,6 +101,7 @@ class ConsentProviderDelegate : public ConsentProvider::DelegateInterface {
 
   // ConsentProvider::DelegateInterface overrides:
   void ShowDialog(const Extension& extension,
+                  content::RenderFrameHost* host,
                   const base::WeakPtr<file_manager::Volume>& volume,
                   bool writable,
                   const file_system_api::ConsentProvider::ShowDialogCallback&
@@ -106,7 +113,6 @@ class ConsentProviderDelegate : public ConsentProvider::DelegateInterface {
   bool IsWhitelistedComponent(const Extension& extension) override;
 
   Profile* const profile_;
-  content::RenderFrameHost* const host_;
 
   DISALLOW_COPY_AND_ASSIGN(ConsentProviderDelegate);
 };

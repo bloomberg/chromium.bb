@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/file_system/file_system_api.h"
+#include "extensions/browser/api/file_system/file_system_api.h"
 
 #include <stddef.h>
 
@@ -15,6 +15,8 @@
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
+
+// Tests static helper methods of chrome.fileSystem API functions.
 
 using extensions::FileSystemChooseEntryFunction;
 using extensions::api::file_system::AcceptOption;
