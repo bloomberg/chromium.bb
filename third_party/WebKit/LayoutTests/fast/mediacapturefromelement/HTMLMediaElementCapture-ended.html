@@ -1,10 +1,6 @@
 <!DOCTYPE html>
-<html>
-<head>
-<script src=/resources/testharness.js></script>
-<script src=/resources/testharnessreport.js></script>
-</head>
-<body>
+<script src=../../resources/testharness.js></script>
+<script src=../../resources/testharnessreport.js></script>
 <script>
 
 // Run captureStream() on different videos, and assert the mediastream is
@@ -13,7 +9,7 @@
 var makeAsyncTest = function(filename) {
   async_test(function(test) {
     var video = document.createElement('video');
-    video.src = "webm/" + filename;
+    video.src = "../../http/tests/media/resources/media-source/webm/" + filename;
     video.onerror = this.unreached_func("<video> error");
     video.play();
 
@@ -25,7 +21,7 @@ var makeAsyncTest = function(filename) {
       assert_false(stream.active, 'stream must be inactive');
     });
 
- }), "<video>.captureStream() and assert ended event.";
+ }), "<video>.captureStream() and assert data flows.";
 };
 
 generate_tests(makeAsyncTest, [
@@ -35,5 +31,3 @@ generate_tests(makeAsyncTest, [
 ]);
 
 </script>
-</body>
-</html>
