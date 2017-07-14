@@ -201,7 +201,7 @@ bool OSMetrics::FillOSMemoryDump(base::ProcessId pid,
 
   const static size_t page_size = base::GetPageSize();
   uint64_t rss_anon_bytes = (resident_pages - shared_pages) * page_size;
-  uint64_t vm_swap_bytes = (resident_pages - shared_pages) * page_size;
+  uint64_t vm_swap_bytes = process_metrics->GetVmSwapBytes();
 
   dump->platform_private_footprint.rss_anon_bytes = rss_anon_bytes;
   dump->platform_private_footprint.vm_swap_bytes = vm_swap_bytes;
