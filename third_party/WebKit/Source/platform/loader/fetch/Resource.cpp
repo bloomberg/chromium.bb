@@ -836,7 +836,18 @@ bool Resource::CanReuse(const FetchParameters& params) const {
   //
   // request_initiator_context is benign (indicates document vs. worker).
 
-  if (new_options.synchronous_policy != options_.synchronous_policy)
+  // Reuse only if both the existing Resource and the new request are
+  // asynchronous. Particularly,
+  // 1. Sync and async Resource/requests shouldn't be mixed (crbug.com/652172),
+  // 2. Sync existing Resources shouldn't be revalidated, and
+  // 3. Sync new requests shouldn't revalidate existing Resources.
+  //
+  // 2. and 3. are because SyncResourceHandler handles redirects without
+  // calling WillFollowRedirect, and causes response URL mismatch
+  // (crbug.com/618967) and bypassing redirect restriction around revalidation
+  // (crbug.com/613971 for 2. and crbug.com/614989 for 3.).
+  if (new_options.synchronous_policy == kRequestSynchronously ||
+      options_.synchronous_policy == kRequestSynchronously)
     return false;
 
   if (resource_request_.GetKeepalive() || new_request.GetKeepalive()) {
