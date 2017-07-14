@@ -14,8 +14,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "components/download/content/public/all_download_item_notifier.h"
 #include "components/history/core/browser/history_service.h"
-#include "content/public/browser/all_download_item_notifier.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 
@@ -25,7 +25,7 @@ struct DownloadRow;
 
 // Observes a single DownloadManager and all its DownloadItems, keeping the
 // DownloadDatabase up to date.
-class DownloadHistory : public content::AllDownloadItemNotifier::Observer {
+class DownloadHistory : public download::AllDownloadItemNotifier::Observer {
  public:
   typedef std::set<uint32_t> IdSet;
 
@@ -133,7 +133,7 @@ class DownloadHistory : public content::AllDownloadItemNotifier::Observer {
   // Removes all |removing_ids_| from |history_|.
   void RemoveDownloadsBatch();
 
-  content::AllDownloadItemNotifier notifier_;
+  download::AllDownloadItemNotifier notifier_;
 
   std::unique_ptr<HistoryAdapter> history_;
 

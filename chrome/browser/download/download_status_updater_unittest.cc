@@ -87,6 +87,7 @@ class DownloadStatusUpdaterTest : public testing::Test {
     while (manager_observers_.size() <= static_cast<size_t>(i)) {
       manager_observers_.push_back(nullptr);
     }
+    EXPECT_CALL(*mgr, IsManagerInitialized());
     EXPECT_CALL(*mgr, AddObserver(_))
         .WillOnce(WithArg<0>(Invoke(
             this, &DownloadStatusUpdaterTest::SetObserver)));

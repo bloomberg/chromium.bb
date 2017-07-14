@@ -831,6 +831,7 @@ static_library("extensions") {
     "//components/cryptauth",
     "//components/data_reduction_proxy/core/browser",
     "//components/dom_distiller/core",
+    "//components/download/content/public",
     "//components/drive",
     "//components/favicon/content",
     "//components/feedback",

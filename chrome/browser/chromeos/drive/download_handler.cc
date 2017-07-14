@@ -171,7 +171,7 @@ void DownloadHandler::Initialize(
 
   if (download_manager) {
     notifier_.reset(
-        new content::AllDownloadItemNotifier(download_manager, this));
+        new download::AllDownloadItemNotifier(download_manager, this));
     // Remove any persisted Drive DownloadItem. crbug.com/171384
     DownloadManager::DownloadVector downloads;
     download_manager->GetAllDownloads(&downloads);
@@ -185,7 +185,7 @@ void DownloadHandler::Initialize(
 void DownloadHandler::ObserveIncognitoDownloadManager(
     DownloadManager* download_manager) {
   notifier_incognito_.reset(
-      new content::AllDownloadItemNotifier(download_manager, this));
+      new download::AllDownloadItemNotifier(download_manager, this));
 }
 
 void DownloadHandler::SubstituteDriveDownloadPath(

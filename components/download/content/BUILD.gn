@@ -9,5 +9,6 @@ group("unit_tests") {
 
   deps = [
     "//components/download/content/internal:unit_tests",
+    "//components/download/content/public:unit_tests",
   ]
 }

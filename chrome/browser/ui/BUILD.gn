@@ -507,6 +507,7 @@ split_static_library("ui") {
     "//components/dom_distiller/content/browser",
     "//components/dom_distiller/webui",
     "//components/domain_reliability",
+    "//components/download/content/public",
     "//components/favicon/content",
     "//components/favicon/core",
     "//components/feedback",

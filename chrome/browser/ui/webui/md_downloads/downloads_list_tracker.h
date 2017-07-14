@@ -15,7 +15,7 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "content/public/browser/all_download_item_notifier.h"
+#include "components/download/content/public/all_download_item_notifier.h"
 #include "content/public/browser/download_item.h"
 
 namespace base {
@@ -30,7 +30,8 @@ class WebUI;
 
 // A class that tracks all downloads activity and keeps a sorted representation
 // of the downloads as chrome://downloads wants to display them.
-class DownloadsListTracker : public content::AllDownloadItemNotifier::Observer {
+class DownloadsListTracker
+    : public download::AllDownloadItemNotifier::Observer {
  public:
   DownloadsListTracker(content::DownloadManager* download_manager,
                        content::WebUI* web_ui);
@@ -109,8 +110,8 @@ class DownloadsListTracker : public content::AllDownloadItemNotifier::Observer {
   // if sending updates.
   void RemoveItem(const SortedSet::iterator& remove);
 
-  content::AllDownloadItemNotifier main_notifier_;
-  std::unique_ptr<content::AllDownloadItemNotifier> original_notifier_;
+  download::AllDownloadItemNotifier main_notifier_;
+  std::unique_ptr<download::AllDownloadItemNotifier> original_notifier_;
 
   // The WebUI object corresponding to the page we care about.
   content::WebUI* const web_ui_;

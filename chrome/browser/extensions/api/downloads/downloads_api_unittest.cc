@@ -69,6 +69,7 @@ class DownloadsApiUnitTest : public ExtensionApiUnittest {
     ExtensionApiUnittest::SetUp();
 
     manager_.reset(new testing::StrictMock<MockDownloadManager>());
+    EXPECT_CALL(*manager_, IsManagerInitialized());
     EXPECT_CALL(*manager_, AddObserver(testing::_))
         .WillOnce(testing::SaveArg<0>(&download_history_manager_observer_));
     EXPECT_CALL(*manager_, RemoveObserver(testing::Eq(testing::ByRef(
