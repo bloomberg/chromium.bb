@@ -133,6 +133,22 @@ TEST_F(PingLoaderTest, LinkAuditPingPriority) {
   EXPECT_EQ(kResourceLoadPriorityVeryLow, request.Priority());
 }
 
+TEST_F(PingLoaderTest, ViolationPriority) {
+  SetDocumentURL(KURL(kParsedURLString, "http://localhost/foo.html"));
+
+  KURL ping_url(kParsedURLString, "https://localhost/bar.html");
+  URLTestHelpers::RegisterMockedURLLoad(
+      ping_url, testing::CoreTestDataPath("bar.html"), "text/html");
+  PingLoader::SendViolationReport(&page_holder_->GetFrame(), ping_url,
+                                  EncodedFormData::Create(),
+                                  PingLoader::kXSSAuditorViolationReport);
+  Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+  const ResourceRequest& request = client_->PingRequest();
+  ASSERT_FALSE(request.IsNull());
+  ASSERT_EQ(request.Url(), ping_url);
+  EXPECT_EQ(kResourceLoadPriorityVeryLow, request.Priority());
+}
+
 TEST_F(PingLoaderTest, BeaconPriority) {
   SetDocumentURL(KURL(kParsedURLString, "https://localhost/foo.html"));
 
