@@ -9566,6 +9566,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Cookie.CookieLineCookieValueValidity" enum="BooleanValid">
+  <obsolete>
+    Removed 2017-07-14 as it demonstrated that making cookie parsing rules
+    stricter was not feasible. See https://crbug.com/638117.
+  </obsolete>
   <owner>ricea@chromium.org</owner>
   <summary>
     Indicates whether a cookie initialised from a Set-Cookie header value was
