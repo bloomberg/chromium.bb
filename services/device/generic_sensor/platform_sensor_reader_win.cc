@@ -166,8 +166,36 @@ std::unique_ptr<ReaderInitParams> CreateMagnetometerReaderInitParams() {
   return params;
 }
 
-// AbsoluteOrientation sensor reader initialization parameters.
-std::unique_ptr<ReaderInitParams> CreateAbsoluteOrientationReaderInitParams() {
+// AbsoluteOrientationEulerAngles sensor reader initialization parameters.
+std::unique_ptr<ReaderInitParams>
+CreateAbsoluteOrientationEulerAnglesReaderInitParams() {
+  auto params = base::MakeUnique<ReaderInitParams>();
+  params->sensor_type_id = SENSOR_TYPE_INCLINOMETER_3D;
+  params->reader_func =
+      base::Bind([](ISensorDataReport* report, SensorReading* reading) {
+        double x = 0.0;
+        double y = 0.0;
+        double z = 0.0;
+        if (!GetReadingValueForProperty(SENSOR_DATA_TYPE_TILT_X_DEGREES, report,
+                                        &x) ||
+            !GetReadingValueForProperty(SENSOR_DATA_TYPE_TILT_Y_DEGREES, report,
+                                        &y) ||
+            !GetReadingValueForProperty(SENSOR_DATA_TYPE_TILT_Z_DEGREES, report,
+                                        &z)) {
+          return E_FAIL;
+        }
+
+        reading->values[0] = x;
+        reading->values[1] = y;
+        reading->values[2] = z;
+        return S_OK;
+      });
+  return params;
+}
+
+// AbsoluteOrientationQuaternion sensor reader initialization parameters.
+std::unique_ptr<ReaderInitParams>
+CreateAbsoluteOrientationQuaternionReaderInitParams() {
   auto params = base::MakeUnique<ReaderInitParams>();
   params->sensor_type_id = SENSOR_TYPE_AGGREGATED_DEVICE_ORIENTATION;
   params->reader_func =
@@ -211,8 +239,10 @@ std::unique_ptr<ReaderInitParams> CreateReaderInitParamsForSensor(
       return CreateGyroscopeReaderInitParams();
     case mojom::SensorType::MAGNETOMETER:
       return CreateMagnetometerReaderInitParams();
+    case mojom::SensorType::ABSOLUTE_ORIENTATION_EULER_ANGLES:
+      return CreateAbsoluteOrientationEulerAnglesReaderInitParams();
     case mojom::SensorType::ABSOLUTE_ORIENTATION_QUATERNION:
-      return CreateAbsoluteOrientationReaderInitParams();
+      return CreateAbsoluteOrientationQuaternionReaderInitParams();
     default:
       NOTIMPLEMENTED();
       return nullptr;

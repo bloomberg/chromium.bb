@@ -16,7 +16,13 @@ enum SensorType {
   GYROSCOPE,
   MAGNETOMETER,
   PRESSURE,
+  // Legacy sensor to support the W3C DeviceOrientation Event Specification.
+  ABSOLUTE_ORIENTATION_EULER_ANGLES,
+  // Recommended for new code.
   ABSOLUTE_ORIENTATION_QUATERNION,
+  // Legacy sensor to support the W3C DeviceOrientation Event Specification.
+  RELATIVE_ORIENTATION_EULER_ANGLES,
+  // Recommended for new code.
   RELATIVE_ORIENTATION_QUATERNION,
   LAST = RELATIVE_ORIENTATION_QUATERNION // Note: LAST is also equal to the types count.
 };

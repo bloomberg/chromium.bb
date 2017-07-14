@@ -14,17 +14,19 @@ Support for the SensorTypes defined by the Mojo interface is summarized in this
 table. An empty cell indicates that the sensor type is not supported on that
 platform.
 
-| SensorType                      | Android                   | Linux          | macOS              | Windows                                   |
-| ------------------------------- | ------------------------- | -------------- | ------------------ | ----------------------------------------- |
-| AMBIENT_LIGHT                   | TYPE_LIGHT                | in_illuminance | AppleLMUController | SENSOR_TYPE_AMBIENT_LIGHT                 |
-| PROXIMITY                       |                           |                |                    |                                           |
-| ACCELEROMETER                   | TYPE_ACCELEROMETER        | in_accel       | SMCMotionSensor    | SENSOR_TYPE_ACCELEROMETER_3D              |
-| LINEAR_ACCELEROMETER            | TYPE_LINEAR_ACCELEROMETER |                |                    |                                           |
-| GYROSCOPE                       | TYPE_GYROSCOPE            | in_anglvel     |                    | SENSOR_TYPE_GYROMETER_3D                  |
-| MAGNETOMETER                    | TYPE_MAGNETIC_FIELD       | in_magn        |                    | SENSOR_TYPE_COMPASS_3D                    |
-| PRESSURE                        |                           |                |                    |                                           |
-| ABSOLUTE_ORIENTATION_QUATERNION | TYPE_ROTATION_VECTOR      |                |                    | SENSOR_TYPE_AGGREGATED_DEVICE_ORIENTATION |
-| RELATIVE_ORIENTATION_QUATERNION | TYPE_GAME_ROTATION_VECTOR |                |                    |                                           |
+| SensorType                        | Android                   | Linux          | macOS              | Windows                                   |
+| --------------------------------- | ------------------------- | -------------- | ------------------ | ----------------------------------------- |
+| AMBIENT_LIGHT                     | TYPE_LIGHT                | in_illuminance | AppleLMUController | SENSOR_TYPE_AMBIENT_LIGHT                 |
+| PROXIMITY                         |                           |                |                    |                                           |
+| ACCELEROMETER                     | TYPE_ACCELEROMETER        | in_accel       | SMCMotionSensor    | SENSOR_TYPE_ACCELEROMETER_3D              |
+| LINEAR_ACCELEROMETER              | TYPE_LINEAR_ACCELEROMETER |                |                    |                                           |
+| GYROSCOPE                         | TYPE_GYROSCOPE            | in_anglvel     |                    | SENSOR_TYPE_GYROMETER_3D                  |
+| MAGNETOMETER                      | TYPE_MAGNETIC_FIELD       | in_magn        |                    | SENSOR_TYPE_COMPASS_3D                    |
+| PRESSURE                          |                           |                |                    |                                           |
+| ABSOLUTE_ORIENTATION_EULER_ANGLES |                           |                |                    | SENSOR_TYPE_INCLINOMETER_3D               |
+| ABSOLUTE_ORIENTATION_QUATERNION   | TYPE_ROTATION_VECTOR      |                |                    | SENSOR_TYPE_AGGREGATED_DEVICE_ORIENTATION |
+| RELATIVE_ORIENTATION_EULER_ANGLES |                           |                |                    |                                           |
+| RELATIVE_ORIENTATION_QUATERNION   | TYPE_GAME_ROTATION_VECTOR |                |                    |                                           |
 
 ### Android
 

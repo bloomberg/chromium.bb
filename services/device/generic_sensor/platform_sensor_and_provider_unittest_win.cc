@@ -673,9 +673,53 @@ TEST_F(PlatformSensorAndProviderTestWin, CheckMagnetometerReadingConversion) {
   EXPECT_TRUE(sensor->StopListening(client.get(), configuration));
 }
 
-// Tests that AbsoluteOrientation sensor readings are correctly converted.
+// Tests that AbsoluteOrientationEulerAngles sensor readings are correctly
+// provided.
 TEST_F(PlatformSensorAndProviderTestWin,
-       CheckDeviceOrientationReadingConversion) {
+       CheckDeviceOrientationEulerAnglesReadingConversion) {
+  mojo::ScopedSharedBufferHandle handle =
+      PlatformSensorProviderWin::GetInstance()->CloneSharedBufferHandle();
+  mojo::ScopedSharedBufferMapping mapping =
+      handle->MapAtOffset(sizeof(SensorReadingSharedBuffer),
+                          SensorReadingSharedBuffer::GetOffset(
+                              SensorType::ABSOLUTE_ORIENTATION_EULER_ANGLES));
+
+  SetSupportedSensor(SENSOR_TYPE_INCLINOMETER_3D);
+  auto sensor = CreateSensor(SensorType::ABSOLUTE_ORIENTATION_EULER_ANGLES);
+  EXPECT_TRUE(sensor);
+
+  auto client = base::MakeUnique<NiceMock<MockPlatformSensorClient>>(sensor);
+  PlatformSensorConfiguration configuration(10);
+  EXPECT_TRUE(StartListening(sensor, client.get(), configuration));
+  EXPECT_CALL(*client, OnSensorReadingChanged()).Times(1);
+
+  double x = 10;
+  double y = 20;
+  double z = 30;
+
+  base::win::ScopedPropVariant pvX, pvY, pvZ;
+  InitPropVariantFromDouble(x, pvX.Receive());
+  InitPropVariantFromDouble(y, pvY.Receive());
+  InitPropVariantFromDouble(z, pvZ.Receive());
+
+  GenerateDataUpdatedEvent({{SENSOR_DATA_TYPE_TILT_X_DEGREES, pvX.ptr()},
+                            {SENSOR_DATA_TYPE_TILT_Y_DEGREES, pvY.ptr()},
+                            {SENSOR_DATA_TYPE_TILT_Z_DEGREES, pvZ.ptr()}});
+
+  base::RunLoop().RunUntilIdle();
+  SensorReadingSharedBuffer* buffer =
+      static_cast<SensorReadingSharedBuffer*>(mapping.get());
+
+  EXPECT_THAT(buffer->reading.values[0], x);
+  EXPECT_THAT(buffer->reading.values[1], y);
+  EXPECT_THAT(buffer->reading.values[2], z);
+  EXPECT_TRUE(sensor->StopListening(client.get(), configuration));
+}
+
+// Tests that AbsoluteOrientationQuaternion sensor readings are correctly
+// provided.
+TEST_F(PlatformSensorAndProviderTestWin,
+       CheckDeviceOrientationQuaternionReadingConversion) {
   mojo::ScopedSharedBufferHandle handle =
       PlatformSensorProviderWin::GetInstance()->CloneSharedBufferHandle();
   mojo::ScopedSharedBufferMapping mapping =
