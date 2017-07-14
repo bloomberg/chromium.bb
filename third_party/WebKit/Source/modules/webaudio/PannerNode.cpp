@@ -463,10 +463,15 @@ void PannerHandler::CalculateAzimuthElevation(
     const FloatPoint3D& listener_position,
     const FloatPoint3D& listener_forward,
     const FloatPoint3D& listener_up) {
-  double azimuth = 0.0;
-
   // Calculate the source-listener vector
   FloatPoint3D source_listener = position - listener_position;
+
+  // Quick default return if the source and listener are at the same position.
+  if (source_listener.IsZero()) {
+    *out_azimuth = 0;
+    *out_elevation = 0;
+    return;
+  }
 
   // normalize() does nothing if the length of |sourceListener| is zero.
   source_listener.Normalize();
@@ -484,7 +489,7 @@ void PannerHandler::CalculateAzimuthElevation(
 
   FloatPoint3D projected_source = source_listener - up_projection * up;
 
-  azimuth = rad2deg(projected_source.AngleBetween(listener_right));
+  double azimuth = rad2deg(projected_source.AngleBetween(listener_right));
   FixNANs(azimuth);  // avoid illegal values
 
   // Source  in front or behind the listener
