@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/permissions/permissions_browsertest.h"
 #include "chrome/browser/ui/permission_bubble/mock_permission_prompt_factory.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/variations/variations_switches.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/ppapi_test_utils.h"
+#include "content/public/test/test_utils.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "url/gurl.h"
 
@@ -55,13 +55,9 @@ class FlashPermissionBrowserTest : public PermissionsBrowserTest {
 
     // Set a high engagement threshhold so it doesn't interfere with testing the
     // permission.
-    command_line->AppendSwitchASCII(switches::kEnableFeatures,
-                                    "PreferHtmlOverPlugins<Study1");
-    command_line->AppendSwitchASCII(switches::kForceFieldTrials,
-                                    "Study1/Enabled/");
-    command_line->AppendSwitchASCII(
-        variations::switches::kForceFieldTrialParams,
-        "Study1.Enabled:engagement_threshold_for_flash/100");
+    content::EnableFeatureWithParam(features::kPreferHtmlOverPlugins,
+                                    "engagement_threshold_for_flash", "100",
+                                    command_line);
   }
 
   void TriggerPrompt() override {

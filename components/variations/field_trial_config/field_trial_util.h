@@ -15,6 +15,10 @@ namespace variations {
 
 struct FieldTrialTestingConfig;
 
+// Escapes the trial name, or parameter name, or parameter value in a way that
+// makes it usable within variations::switches::kForceFieldTrialParams.
+std::string EscapeValue(const std::string& value);
+
 // Provides a mechanism to associate multiple set of params to multiple groups
 // with a formatted string specified from commandline. See
 // kForceFieldTrialParams in components/variations/variations_switches.cc for

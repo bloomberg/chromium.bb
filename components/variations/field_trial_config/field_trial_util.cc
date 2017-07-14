@@ -21,7 +21,7 @@
 namespace variations {
 namespace {
 
-std::string EscapeValue(const std::string& value) {
+std::string UnescapeValue(const std::string& value) {
   return net::UnescapeURLComponent(
       value, net::UnescapeRule::PATH_SEPARATORS |
                  net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS);
@@ -83,6 +83,12 @@ const FieldTrialTestingExperiment& ChooseExperiment(
 
 } // namespace
 
+std::string EscapeValue(const std::string& value) {
+  // This needs to be the inverse of UnescapeValue in the anonymous namespace
+  // above.
+  return net::EscapeQueryParamValue(value, true /* use_plus */);
+}
+
 bool AssociateParamsFromString(const std::string& varations_string) {
   // Format: Trial1.Group1:k1/v1/k2/v2,Trial2.Group2:k1/v1/k2/v2
   std::set<std::pair<std::string, std::string>> trial_groups;
@@ -109,8 +115,8 @@ bool AssociateParamsFromString(const std::string& varations_string) {
       DLOG(ERROR) << "Param name and param value should be separated by '/'";
       return false;
     }
-    std::string trial = EscapeValue(group_parts[0]);
-    std::string group = EscapeValue(group_parts[1]);
+    std::string trial = UnescapeValue(group_parts[0]);
+    std::string group = UnescapeValue(group_parts[1]);
     auto trial_group = std::make_pair(trial, group);
     if (trial_groups.find(trial_group) != trial_groups.end()) {
       DLOG(ERROR) << base::StringPrintf(
@@ -121,8 +127,8 @@ bool AssociateParamsFromString(const std::string& varations_string) {
     trial_groups.insert(trial_group);
     std::map<std::string, std::string> params;
     for (size_t i = 0; i < key_values.size(); i += 2) {
-      std::string key = EscapeValue(key_values[i]);
-      std::string value = EscapeValue(key_values[i + 1]);
+      std::string key = UnescapeValue(key_values[i]);
+      std::string value = UnescapeValue(key_values[i + 1]);
       params[key] = value;
     }
     AssociateVariationParams(trial, group, params);

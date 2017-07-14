@@ -234,6 +234,7 @@ static_library("test_support") {
   ]
 
   public_deps = [
+    "//components/variations:test_support",
     "//content/public/app:both",
     "//content/public/browser",
     "//content/public/common",

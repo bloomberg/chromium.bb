@@ -4,7 +4,6 @@
 
 #include <utility>
 
-#include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "build/build_config.h"
@@ -17,7 +16,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/prefs/pref_service.h"
-#include "components/variations/variations_switches.h"
+#include "components/variations/variations_params_manager.h"
 #include "content/public/browser/background_tracing_config.h"
 #include "content/public/browser/background_tracing_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -251,11 +250,9 @@ class ChromeTracingDelegateBrowserTestOnStartup
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kForceFieldTrials, "BackgroundTracing/TestGroup/");
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        variations::switches::kForceFieldTrialParams,
-        "BackgroundTracing.TestGroup:config/default_config_for_testing");
+    variations::testing::VariationParamsManager::AppendVariationParams(
+        "BackgroundTracing", "TestGroup",
+        {{"config", "default_config_for_testing"}}, command_line);
 
     tracing::SetConfigTextFilterForTesting(&FieldTrialConfigTextFilter);
   }

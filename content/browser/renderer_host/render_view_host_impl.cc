@@ -29,7 +29,6 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
-#include "components/variations/variations_associated_data.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"

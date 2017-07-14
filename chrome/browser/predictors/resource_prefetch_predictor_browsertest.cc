@@ -23,6 +23,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browsing_data_remover.h"
+#include "content/public/test/test_utils.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/url_util.h"
 #include "net/dns/mock_host_resolver.h"
@@ -321,13 +322,9 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
   using URLRequestSummary = URLRequestSummary;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitchASCII("force-fieldtrials", "trial/group");
-    std::string parameter = base::StringPrintf(
-        "trial.group:%s/%s", kModeParamName, kExternalPrefetchingMode);
-    command_line->AppendSwitchASCII("force-fieldtrial-params", parameter);
-    std::string enabled_feature = base::StringPrintf(
-        "%s<trial", kSpeculativeResourcePrefetchingFeatureName);
-    command_line->AppendSwitchASCII("enable-features", enabled_feature);
+    content::EnableFeatureWithParam(kSpeculativeResourcePrefetchingFeature,
+                                    kModeParamName, kExternalPrefetchingMode,
+                                    command_line);
   }
 
   void SetUpOnMainThread() override {

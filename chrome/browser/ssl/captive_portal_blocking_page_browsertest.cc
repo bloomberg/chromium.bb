@@ -7,7 +7,6 @@
 #include <string>
 #include <utility>
 
-#include "base/base_switches.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -28,7 +27,7 @@
 #include "components/captive_portal/captive_portal_detector.h"
 #include "components/prefs/pref_service.h"
 #include "components/security_state/core/security_state.h"
-#include "components/variations/variations_switches.h"
+#include "components/variations/variations_params_manager.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
@@ -100,13 +99,10 @@ class CaptivePortalBlockingPageTest : public InProcessBrowserTest {
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitchASCII(
-        switches::kForceFieldTrials,
-        "ReportCertificateErrors/ShowAndPossiblySend/");
     // Setting the sending threshold to 1.0 ensures reporting is enabled.
-    command_line->AppendSwitchASCII(
-        variations::switches::kForceFieldTrialParams,
-        "ReportCertificateErrors.ShowAndPossiblySend:sendingThreshold/1.0");
+    variations::testing::VariationParamsManager::AppendVariationParams(
+        "ReportCertificateErrors", "ShowAndPossiblySend",
+        {{"sendingThreshold", "1.0"}}, command_line);
   }
 
   void TestInterstitial(bool is_wifi_connection,
