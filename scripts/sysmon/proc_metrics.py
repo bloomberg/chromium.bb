@@ -93,7 +93,7 @@ class _ProcessMetric(object):
     """Finish collection and send metrics."""
     _count_metric.set(self._count, fields=self._fields)
     self._count = 0
-    _cpu_percent_metric.set(self._cpu_percent, fields=self._fields)
+    _cpu_percent_metric.set(int(round(self._cpu_percent)), fields=self._fields)
     self._cpu_percent = 0
 
 
