@@ -13,9 +13,6 @@ cr.define('bookmarks', function() {
     /** @private {HTMLElement} */
     this.previousFocusElement_ = null;
 
-    /** @private {boolean} */
-    this.previousMouseFocus_ = false;
-
     /** @private {Set<HTMLDialogElement>} */
     this.dialogs_ = new Set();
   }
@@ -50,8 +47,6 @@ cr.define('bookmarks', function() {
     /** @private */
     updatePreviousFocus_: function() {
       this.previousFocusElement_ = this.getFocusedElement_();
-      this.previousMouseFocus_ = bookmarks.MouseFocusBehavior.isMouseFocused(
-          this.previousFocusElement_);
     },
 
     /**
@@ -80,13 +75,9 @@ cr.define('bookmarks', function() {
 
         assert(this.dialogs_.delete(dialog));
         // Focus the originally focused element if there are no more dialogs.
-        if (!this.dialogs_.size) {
+        if (!this.dialogs_.size)
           this.previousFocusElement_.focus();
-          if (this.previousMouseFocus_) {
-            bookmarks.MouseFocusBehavior.addMouseFocusClass(
-                this.previousFocusElement_);
-          }
-        }
+
         dialog.removeEventListener('close', closeListener);
       }.bind(this);
 
