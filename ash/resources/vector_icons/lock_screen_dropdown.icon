@@ -1,0 +1,13 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+PATH_COLOR_ARGB, 0x57, 0xFF, 0xFF, 0xFF,
+MOVE_TO, 33.18f, 17.18f,
+LINE_TO, 24, 26.34f,
+R_LINE_TO, -9.18f, -9.16f,
+LINE_TO, 12, 20,
+R_LINE_TO, 12, 12,
+R_LINE_TO, 12, -12,
+CLOSE,
+END

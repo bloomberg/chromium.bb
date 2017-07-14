@@ -193,7 +193,7 @@ LoginUserView::LoginUserView(LoginDisplayStyle style, bool show_dropdown)
     user_dropdown_->SetPreferredSize(
         gfx::Size(kDropdownIconSizeDp, kDropdownIconSizeDp));
     user_dropdown_->SetImage(
-        gfx::CreateVectorIcon(kSystemMenuArrowRightIcon, SK_ColorWHITE));
+        gfx::CreateVectorIcon(kLockScreenDropdownIcon, SK_ColorWHITE));
   }
 
   switch (style) {
