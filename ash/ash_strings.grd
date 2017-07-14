@@ -771,12 +771,10 @@ This file contains the strings for ash.
         Alt+Search or Shift
       </message>
       <message name="IDS_ASH_STATUS_TRAY_CAPS_LOCK_CANCEL_BY_ALT_SEARCH" desc="The message shown on a bubble when caps lock is turned on.">
-CAPS LOCK is on.
-Press Alt+Search or Shift to cancel.
+        Press Alt+Search or Shift to cancel.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_CAPS_LOCK_CANCEL_BY_SEARCH" desc="The message shown on a bubble when caps lock is turned on.">
-CAPS LOCK is on.
-Press Search or Shift to cancel.
+        Press Search or Shift to cancel.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_BATTERY_FULL" desc="The label in the tray dialog to indicate that the battery is full.">
         Battery full
