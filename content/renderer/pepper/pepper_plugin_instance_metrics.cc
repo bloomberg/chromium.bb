@@ -11,10 +11,6 @@
 #include "build/build_config.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
 
-#if defined(OS_WIN)
-#include "base/win/windows_version.h"
-#endif
-
 #define UMA_HISTOGRAM_ASPECT_RATIO(name, width, height) \
   UMA_HISTOGRAM_SPARSE_SLOWLY(                          \
       name, (height) ? ((width)*100) / (height) : kInfiniteRatio);
@@ -84,7 +80,6 @@ void SetGPUHistogram(const ppapi::Preferences& prefs,
 // run Stage3D content on machines that have it blacklisted.
 #if defined(OS_WIN)
   bool needs_gpu = false;
-  bool is_xp = base::win::GetVersion() <= base::win::VERSION_XP;
 
   for (size_t i = 0; i < arg_names.size(); i++) {
     if (arg_names[i] == "wmode") {
@@ -99,12 +94,8 @@ void SetGPUHistogram(const ppapi::Preferences& prefs,
   // 1 : No 3D content and GPU is not blacklisted
   // 2 : 3D content but GPU is blacklisted
   // 3 : 3D content and GPU is not blacklisted
-  // 4 : No 3D content and GPU is blacklisted on XP
-  // 5 : No 3D content and GPU is not blacklisted on XP
-  // 6 : 3D content but GPU is blacklisted on XP
-  // 7 : 3D content and GPU is not blacklisted on XP
-  UMA_HISTOGRAM_ENUMERATION(
-      "Flash.UsesGPU", is_xp * 4 + needs_gpu * 2 + prefs.is_webgl_supported, 8);
+  UMA_HISTOGRAM_ENUMERATION("Flash.UsesGPU",
+                            needs_gpu * 2 + prefs.is_webgl_supported, 8);
 #endif
 }
 
