@@ -11,6 +11,8 @@
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer_manager.h"
+#include "components/subresource_filter/core/common/activation_decision.h"
+#include "components/subresource_filter/core/common/activation_level.h"
 #include "components/ukm/ukm_source.h"
 
 namespace internal {
@@ -59,6 +61,10 @@ extern const char kHistogramSubresourceFilterCount[];
 
 extern const char kHistogramSubresourceFilterActivationDecision[];
 extern const char kHistogramSubresourceFilterActivationDecisionReload[];
+
+extern const char kUkmSubresourceFilterName[];
+extern const char kUkmSubresourceFilterActivationDecision[];
+extern const char kUkmSubresourceFilterDryRun[];
 
 }  // namespace internal
 
@@ -115,6 +121,7 @@ class SubresourceFilterMetricsObserver
                    base::TimeTicks app_background_time);
 
   base::Optional<subresource_filter::ActivationDecision> activation_decision_;
+  base::Optional<subresource_filter::ActivationLevel> activation_level_;
 
   ScopedObserver<subresource_filter::SubresourceFilterObserverManager,
                  subresource_filter::SubresourceFilterObserver>

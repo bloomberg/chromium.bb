@@ -46,6 +46,7 @@ extern const char
     kHistogramServiceWorkerParseStartToFirstContentfulPaintSearch[];
 extern const char kHistogramServiceWorkerDomContentLoadedSearch[];
 extern const char kHistogramServiceWorkerLoadSearch[];
+extern const char kUkmServiceWorkerName[];
 
 extern const char kHistogramNoServiceWorkerFirstContentfulPaintSearch[];
 extern const char kHistogramNoServiceWorkerFirstMeaningfulPaintSearch[];
@@ -80,10 +81,13 @@ class ServiceWorkerPageLoadMetricsObserver
   void OnLoadEventStart(
       const page_load_metrics::mojom::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+  void OnLoadingBehaviorObserved(
+      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
 
  private:
   ui::PageTransition transition_ = ui::PAGE_TRANSITION_LINK;
   bool was_no_store_main_resource_ = false;
+  bool logged_ukm_event_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerPageLoadMetricsObserver);
 };

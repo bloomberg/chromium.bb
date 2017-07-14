@@ -395,6 +395,34 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="Intervention.DocumentWrite.ScriptBlock" singular="True">
+  <owner>bmcquade@chromium.org</owner>
+  <summary>
+    Recorded for page loads where the document.write script block intervention
+    could apply.
+  </summary>
+  <metric name="Disabled.Reload">
+    <summary>
+      Records '1' if the document.write script block intervention could have
+      applied, but was disabled due to the page being reloaded.
+    </summary>
+  </metric>
+  <metric name="ParseTiming.ParseBlockedOnScriptExecutionFromDocumentWrite">
+    <summary>
+      Measures the time in milliseconds that the HTML parser spent blocked on
+      the execution of scripts inserted from document.write, for main frame
+      documents that finished parsing.
+    </summary>
+  </metric>
+  <metric name="ParseTiming.ParseBlockedOnScriptLoadFromDocumentWrite">
+    <summary>
+      Measures the time in milliseconds that the HTML parser spent blocked on
+      the load of scripts inserted from document.write, for main frame documents
+      that finished parsing.
+    </summary>
+  </metric>
+</event>
+
 <event name="LocalNetworkRequests">
   <owner>uthakore@chromium.org</owner>
   <summary>
@@ -650,6 +678,22 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="PageLoad.FromGoogleSearch" singular="True">
+  <owner>bmcquade@chromium.org</owner>
+  <owner>mushan@chromium.org</owner>
+  <summary>
+    Recorded for page loads that were navigated to via Google Search.
+  </summary>
+</event>
+
+<event name="PageLoad.ServiceWorkerControlled" singular="True">
+  <owner>bmcquade@chromium.org</owner>
+  <owner>falken@chromium.org</owner>
+  <summary>
+    Recorded for page loads controlled by a service worker.
+  </summary>
+</event>
+
 <event name="PasswordForm">
   <owner>battre@chromium.org</owner>
   <summary>
@@ -804,6 +848,30 @@ be describing additional metrics about the same event.
   <summary>
     Recorded when a Flash object instance is created.
   </summary>
+</event>
+
+<event name="SubresourceFilter" singular="True">
+  <owner>bmcquade@chromium.org</owner>
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    Recorded for page loads where subresource filtering policy was evaluated.
+  </summary>
+  <metric name="ActivationDecision">
+    <summary>
+      Enum that records the policy decision to activate subresource filtering
+      for a page load. 0 = Unknown, 1 = Activated, 2 = Disabled, 3 = Unsupported
+      scheme, 4 = URL whitelisted, 5 = Activation conditions not met.
+      'Activated' indicates that subresource filtering was activated. All other
+      reasons indicate that subresource filtering was not activated.
+    </summary>
+  </metric>
+  <metric name="DryRun">
+    <summary>
+      Records '1' if subresource filtering was activated in dry run mode. In dry
+      run mode, subresource filtering policy is evaluated against resources
+      loaded on the page, but subresource filtering is not actually applied.
+    </summary>
+  </metric>
 </event>
 
 <event name="Translate">

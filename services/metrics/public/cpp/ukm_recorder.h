@@ -19,8 +19,12 @@
 #include "url/gurl.h"
 
 class ContextualSearchRankerLoggerImpl;
+class DocumentWritePageLoadMetricsObserver;
+class FromGWSPageLoadMetricsLogger;
 class PluginInfoMessageFilter;
 class ProcessMemoryMetricsEmitter;
+class ServiceWorkerPageLoadMetricsObserver;
+class SubresourceFilterMetricsObserver;
 class UkmPageLoadMetricsObserver;
 class LocalNetworkRequestsPageLoadMetricsObserver;
 
@@ -94,6 +98,10 @@ class METRICS_EXPORT UkmRecorder {
   friend PluginInfoMessageFilter;
   friend UkmPageLoadMetricsObserver;
   friend LocalNetworkRequestsPageLoadMetricsObserver;
+  friend DocumentWritePageLoadMetricsObserver;
+  friend FromGWSPageLoadMetricsLogger;
+  friend ServiceWorkerPageLoadMetricsObserver;
+  friend SubresourceFilterMetricsObserver;
   friend translate::TranslateRankerImpl;
   friend TestRecordingHelper;
   friend UkmInterface;

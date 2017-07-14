@@ -36,6 +36,8 @@ extern const char kHistogramFromGWSForegroundDuration[];
 extern const char kHistogramFromGWSForegroundDurationAfterPaint[];
 extern const char kHistogramFromGWSForegroundDurationNoCommit[];
 
+extern const char kUkmFromGoogleSearchName[];
+
 }  // namespace internal
 
 // FromGWSPageLoadMetricsLogger is a peer class to
@@ -63,6 +65,8 @@ class FromGWSPageLoadMetricsLogger {
   }
 
   // Invoked when metrics for the given page are complete.
+  void OnCommit(content::NavigationHandle* navigation_handle,
+                ukm::SourceId source_id);
   void OnComplete(const page_load_metrics::mojom::PageLoadTiming& timing,
                   const page_load_metrics::PageLoadExtraInfo& extra_info);
   void OnFailedProvisionalLoad(

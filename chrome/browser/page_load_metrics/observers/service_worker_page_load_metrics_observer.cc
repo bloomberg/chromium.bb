@@ -4,9 +4,11 @@
 
 #include "chrome/browser/page_load_metrics/observers/service_worker_page_load_metrics_observer.h"
 
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/page_load_metrics/observers/from_gws_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
 #include "net/http/http_response_headers.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/WebKit/public/platform/WebLoadingBehaviorFlag.h"
 
 namespace internal {
@@ -109,6 +111,10 @@ const char kHistogramNoServiceWorkerDomContentLoadedSearch[] =
 const char kHistogramNoServiceWorkerLoadSearch[] =
     "PageLoad.Clients.NoServiceWorker.DocumentTiming."
     "NavigationToLoadEventFired.search";
+
+// UKM (URL-keyed metrics) entry identifier, recorded for pages (main frame
+// loads) controlled by a service worker.
+const char kUkmServiceWorkerName[] = "PageLoad.ServiceWorkerControlled";
 
 }  // namespace internal
 
@@ -341,5 +347,17 @@ void ServiceWorkerPageLoadMetricsObserver::OnParseStart(
   } else {
     PAGE_LOAD_HISTOGRAM(internal::kBackgroundHistogramServiceWorkerParseStart,
                         timing.parse_timing->parse_start.value());
+  }
+}
+
+void ServiceWorkerPageLoadMetricsObserver::OnLoadingBehaviorObserved(
+    const page_load_metrics::PageLoadExtraInfo& info) {
+  if (!IsServiceWorkerControlled(info) || logged_ukm_event_)
+    return;
+  ukm::UkmRecorder* ukm_recorder = g_browser_process->ukm_recorder();
+  if (ukm_recorder) {
+    ukm_recorder->GetEntryBuilder(info.source_id,
+                                  internal::kUkmServiceWorkerName);
+    logged_ukm_event_ = true;
   }
 }
