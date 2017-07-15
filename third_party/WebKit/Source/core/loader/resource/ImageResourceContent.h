@@ -57,6 +57,8 @@ class CORE_EXPORT ImageResourceContent final
 
   static ImageResourceContent* Fetch(FetchParameters&, ResourceFetcher*);
 
+  ~ImageResourceContent() override;
+
   // Returns the nullImage() if the image is not available yet.
   blink::Image* GetImage();
   bool HasImage() const { return image_.Get(); }
@@ -226,9 +228,7 @@ class CORE_EXPORT ImageResourceContent final
   HashCountedSet<ImageResourceObserver*> observers_;
   HashCountedSet<ImageResourceObserver*> finished_observers_;
 
-#if DCHECK_IS_ON()
   bool is_update_image_being_called_ = false;
-#endif
 };
 
 }  // namespace blink
