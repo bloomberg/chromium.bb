@@ -8,17 +8,45 @@
 
 #include "ash/system/audio/tray_audio.h"
 #include "base/logging.h"
+#include "base/memory/singleton.h"
 #include "chromeos/audio/audio_device.h"
 #include "components/arc/arc_bridge_service.h"
+#include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 
 namespace arc {
+namespace {
+
+// Singleton factory for ArcAccessibilityHelperBridge.
+class ArcAudioBridgeFactory
+    : public internal::ArcBrowserContextKeyedServiceFactoryBase<
+          ArcAudioBridge,
+          ArcAudioBridgeFactory> {
+ public:
+  // Factory name used by ArcBrowserContextKeyedServiceFactoryBase.
+  static constexpr const char* kName = "ArcAudioBridgeFactory";
+
+  static ArcAudioBridgeFactory* GetInstance() {
+    return base::Singleton<ArcAudioBridgeFactory>::get();
+  }
+
+ private:
+  friend base::DefaultSingletonTraits<ArcAudioBridgeFactory>;
+  ArcAudioBridgeFactory() = default;
+  ~ArcAudioBridgeFactory() override = default;
+};
+
+}  // namespace
 
 // static
-const char ArcAudioBridge::kArcServiceName[] = "arc::ArcAudioBridge";
+ArcAudioBridge* ArcAudioBridge::GetForBrowserContext(
+    content::BrowserContext* context) {
+  return ArcAudioBridgeFactory::GetForBrowserContext(context);
+}
 
-ArcAudioBridge::ArcAudioBridge(ArcBridgeService* bridge_service)
-    : ArcService(bridge_service), binding_(this) {
-  arc_bridge_service()->audio()->AddObserver(this);
+ArcAudioBridge::ArcAudioBridge(content::BrowserContext* context,
+                               ArcBridgeService* bridge_service)
+    : arc_bridge_service_(bridge_service), binding_(this) {
+  arc_bridge_service_->audio()->AddObserver(this);
   if (chromeos::CrasAudioHandler::IsInitialized()) {
     cras_audio_handler_ = chromeos::CrasAudioHandler::Get();
     cras_audio_handler_->AddAudioObserver(this);
@@ -26,15 +54,20 @@ ArcAudioBridge::ArcAudioBridge(ArcBridgeService* bridge_service)
 }
 
 ArcAudioBridge::~ArcAudioBridge() {
-  if (cras_audio_handler_ && chromeos::CrasAudioHandler::IsInitialized()) {
+  if (cras_audio_handler_)
     cras_audio_handler_->RemoveAudioObserver(this);
-  }
-  arc_bridge_service()->audio()->RemoveObserver(this);
+
+  // TODO(hidehiko): Currently, the lifetime of ArcBridgeService and
+  // BrowserContextKeyedService is not nested.
+  // If ArcServiceManager::Get() returns nullptr, it is already destructed,
+  // so do not touch it.
+  if (ArcServiceManager::Get())
+    arc_bridge_service_->audio()->RemoveObserver(this);
 }
 
 void ArcAudioBridge::OnInstanceReady() {
   mojom::AudioInstance* audio_instance =
-      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service()->audio(), Init);
+      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->audio(), Init);
   DCHECK(audio_instance);  // the instance on ARC side is too old.
   mojom::AudioHostPtr host_proxy;
   binding_.Bind(mojo::MakeRequest(&host_proxy));
@@ -109,7 +142,7 @@ void ArcAudioBridge::SendSwitchState(bool headphone_inserted,
   if (!available_)
     return;
   mojom::AudioInstance* audio_instance = ARC_GET_INSTANCE_FOR_METHOD(
-      arc_bridge_service()->audio(), NotifySwitchState);
+      arc_bridge_service_->audio(), NotifySwitchState);
   if (audio_instance)
     audio_instance->NotifySwitchState(switch_state);
 }
@@ -119,7 +152,7 @@ void ArcAudioBridge::SendVolumeState() {
   if (!available_)
     return;
   mojom::AudioInstance* audio_instance = ARC_GET_INSTANCE_FOR_METHOD(
-      arc_bridge_service()->audio(), NotifyVolumeState);
+      arc_bridge_service_->audio(), NotifyVolumeState);
   if (audio_instance)
     audio_instance->NotifyVolumeState(volume_, muted_);
 }
