@@ -97,8 +97,6 @@ void ArcServiceLauncher::Initialize() {
   arc_service_manager_->AddService(
       base::MakeUnique<ArcDownloadsWatcherService>(arc_bridge_service));
   arc_service_manager_->AddService(
-      base::MakeUnique<ArcEnterpriseReportingService>(arc_bridge_service));
-  arc_service_manager_->AddService(
       base::MakeUnique<ArcFileSystemMounter>(arc_bridge_service));
   arc_service_manager_->AddService(
       base::MakeUnique<ArcImeService>(arc_bridge_service));
@@ -197,6 +195,7 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   ArcBootErrorNotification::GetForBrowserContext(profile);
   ArcClipboardBridge::GetForBrowserContext(profile);
   ArcCrashCollectorBridge::GetForBrowserContext(profile);
+  ArcEnterpriseReportingService::GetForBrowserContext(profile);
 
   arc_service_manager_->AddService(base::MakeUnique<ArcBootPhaseMonitorBridge>(
       arc_service_manager_->arc_bridge_service(),
