@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/base_switches.h"
 #include "base/build_time.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
@@ -298,6 +299,38 @@ VariationsService::VariationsService(
   DCHECK(resource_request_allowed_notifier_.get());
 
   resource_request_allowed_notifier_->Init(this);
+
+  // Increment the crash streak if the previous session crashed.
+  // Note that the streak is not cleared if the previous run didn’t crash.
+  // Instead, it’s incremented on each crash until Chrome is able to
+  // successfully fetch a new seed. This way, a seed update that mostly
+  // destabilizes Chrome will still result in a fallback to safe mode.
+  int num_crashes = local_state->GetInteger(prefs::kVariationsCrashStreak);
+  if (!state_manager_->clean_exit_beacon()->exited_cleanly()) {
+    ++num_crashes;
+    local_state->SetInteger(prefs::kVariationsCrashStreak, num_crashes);
+  }
+
+  // After three failures in a row -- either consistent crashes or consistent
+  // failures to fetch the seed -- assume that the current seed is bad, and fall
+  // back to the safe seed. However, ignore any number of failures if the
+  // --force-fieldtrials flag is set, as this flag is only used by developers,
+  // and there's no need to make the development process flakier.
+  const int kMaxFailuresBeforeRevertingToSafeSeed = 3;
+  int num_failures_to_fetch =
+      local_state->GetInteger(prefs::kVariationsFailedToFetchSeedStreak);
+  bool fall_back_to_safe_mode =
+      (num_crashes >= kMaxFailuresBeforeRevertingToSafeSeed ||
+       num_failures_to_fetch >= kMaxFailuresBeforeRevertingToSafeSeed) &&
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ::switches::kForceFieldTrials);
+  UMA_HISTOGRAM_BOOLEAN("Variations.SafeMode.FellBackToSafeMode",
+                        fall_back_to_safe_mode);
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Variations.SafeMode.Streak.Crashes",
+                              std::min(std::max(num_crashes, 0), 100));
+  UMA_HISTOGRAM_SPARSE_SLOWLY(
+      "Variations.SafeMode.Streak.FetchFailures",
+      std::min(std::max(num_failures_to_fetch, 0), 100));
 }
 
 VariationsService::~VariationsService() {
@@ -469,6 +502,11 @@ void VariationsService::RegisterPrefs(PrefRegistrySimple* registry) {
   // This preference keeps track of the country code used to filter
   // permanent-consistency studies.
   registry->RegisterListPref(prefs::kVariationsPermanentConsistencyCountry);
+
+  // Prefs tracking failures along the way to fetching a seed, used to implement
+  // Safe Mode.
+  registry->RegisterIntegerPref(prefs::kVariationsCrashStreak, 0);
+  registry->RegisterIntegerPref(prefs::kVariationsFailedToFetchSeedStreak, 0);
 }
 
 // static
@@ -514,6 +552,13 @@ void VariationsService::EnableForTesting() {
 
 void VariationsService::DoActualFetch() {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  // Pessimistically assume the fetch will fail. The failure streak will be
+  // reset upon success.
+  int num_failures_to_fetch =
+      local_state_->GetInteger(prefs::kVariationsFailedToFetchSeedStreak);
+  local_state_->SetInteger(prefs::kVariationsFailedToFetchSeedStreak,
+                           num_failures_to_fetch + 1);
 
   // Normally, there shouldn't be a |pending_request_| when this fires. However
   // it's not impossible - for example if Chrome was paused (e.g. in a debugger
@@ -595,7 +640,7 @@ bool VariationsService::StoreSeed(const std::string& seed_data,
                                  is_gzip_compressed, seed.get())) {
     return false;
   }
-  RecordLastFetchTime();
+  RecordSuccessfulFetch();
 
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
@@ -714,7 +759,8 @@ void VariationsService::OnURLFetchComplete(const net::URLFetcher* source) {
     DVLOG(1) << "Variations server request returned non-HTTP_OK response code: "
              << response_code;
     if (response_code == net::HTTP_NOT_MODIFIED) {
-      RecordLastFetchTime();
+      RecordSuccessfulFetch();
+
       // Update the seed date value in local state (used for expiry check on
       // next start up), since 304 is a successful response.
       seed_store_.UpdateSeedDateAndLogDayChange(response_date);
@@ -797,6 +843,17 @@ void VariationsService::PerformSimulationWithVersion(
   UMA_HISTOGRAM_TIMES("Variations.SimulateSeed.Duration", timer.Elapsed());
 
   NotifyObservers(result);
+}
+
+void VariationsService::RecordSuccessfulFetch() {
+  RecordLastFetchTime();
+
+  // Note: It's important to clear the crash streak as well as the fetch
+  // failures streak. Crashes that occur after a successful seed fetch do not
+  // prevent updating to a new seed, and therefore do not necessitate falling
+  // back to a safe seed.
+  local_state_->SetInteger(prefs::kVariationsCrashStreak, 0);
+  local_state_->SetInteger(prefs::kVariationsFailedToFetchSeedStreak, 0);
 }
 
 void VariationsService::RecordLastFetchTime() {

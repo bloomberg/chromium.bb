@@ -13,6 +13,8 @@ namespace prefs {
 
 extern const char kVariationsCompressedSeed[];
 extern const char kVariationsCountry[];
+extern const char kVariationsCrashStreak[];
+extern const char kVariationsFailedToFetchSeedStreak[];
 extern const char kVariationsLastFetchTime[];
 extern const char kVariationsPermanentConsistencyCountry[];
 extern const char kVariationsPermutedEntropyCache[];

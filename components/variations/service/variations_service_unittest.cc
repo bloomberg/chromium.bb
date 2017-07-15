@@ -11,19 +11,22 @@
 #include <vector>
 
 #include "base/base64.h"
+#include "base/base_switches.h"
+#include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/version.h"
 #include "components/metrics/clean_exit_beacon.h"
 #include "components/metrics/client_info.h"
+#include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_state_manager.h"
 #include "components/metrics/test_enabled_state_provider.h"
 #include "components/prefs/testing_pref_service.h"
@@ -48,6 +51,10 @@ std::unique_ptr<metrics::ClientInfo> StubLoadClientInfo() {
   return std::unique_ptr<metrics::ClientInfo>();
 }
 
+base::Version StubGetVersionForSimulation() {
+  return base::Version();
+}
+
 class TestVariationsServiceClient : public VariationsServiceClient {
  public:
   TestVariationsServiceClient() {}
@@ -57,7 +64,7 @@ class TestVariationsServiceClient : public VariationsServiceClient {
   std::string GetApplicationLocale() override { return std::string(); }
   base::Callback<base::Version(void)> GetVersionForSimulationCallback()
       override {
-    return base::Callback<base::Version(void)>();
+    return base::Bind(&StubGetVersionForSimulation);
   }
   net::URLRequestContextGetter* GetURLRequestContext() override {
     return nullptr;
@@ -291,7 +298,7 @@ class VariationsServiceTest : public ::testing::Test {
   TestingPrefServiceSimple prefs_;
 
  private:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<metrics::TestEnabledStateProvider> enabled_state_provider_;
   std::unique_ptr<metrics::MetricsStateManager> metrics_state_manager_;
 
@@ -782,6 +789,213 @@ TEST_F(VariationsServiceTest, OverrideStoredPermanentCountry) {
               ListValueToString(*pref_value))
         << test.pref_value_before << ", " << test.country_code_override;
   }
+}
+
+TEST_F(VariationsServiceTest, SafeMode_NoPrefs) {
+  // Create a variations service.
+  base::HistogramTester histogram_tester;
+  TestVariationsService service(
+      base::MakeUnique<web_resource::TestRequestAllowedNotifier>(&prefs_),
+      &prefs_, GetMetricsStateManager());
+
+  histogram_tester.ExpectUniqueSample("Variations.SafeMode.FellBackToSafeMode",
+                                      false, 1);
+  histogram_tester.ExpectUniqueSample("Variations.SafeMode.Streak.Crashes", 0,
+                                      1);
+  histogram_tester.ExpectUniqueSample(
+      "Variations.SafeMode.Streak.FetchFailures", 0, 1);
+}
+
+TEST_F(VariationsServiceTest, SafeMode_NoCrashes_NoFetchFailures) {
+  prefs_.SetInteger(prefs::kVariationsCrashStreak, 0);
+  prefs_.SetInteger(prefs::kVariationsFailedToFetchSeedStreak, 0);
+
+  // Create a variations service.
+  base::HistogramTester histogram_tester;
+  TestVariationsService service(
+      base::MakeUnique<web_resource::TestRequestAllowedNotifier>(&prefs_),
+      &prefs_, GetMetricsStateManager());
+
+  histogram_tester.ExpectUniqueSample("Variations.SafeMode.FellBackToSafeMode",
+                                      false, 1);
+  histogram_tester.ExpectUniqueSample("Variations.SafeMode.Streak.Crashes", 0,
+                                      1);
+  histogram_tester.ExpectUniqueSample(
+      "Variations.SafeMode.Streak.FetchFailures", 0, 1);
+}
+
+TEST_F(VariationsServiceTest, SafeMode_SomeCrashes_SomeFetchFailures) {
+  prefs_.SetInteger(prefs::kVariationsCrashStreak, 1);
+  prefs_.SetInteger(prefs::kVariationsFailedToFetchSeedStreak, 2);
+
+  // Create a variations service.
+  base::HistogramTester histogram_tester;
+  TestVariationsService service(
+      base::MakeUnique<web_resource::TestRequestAllowedNotifier>(&prefs_),
+      &prefs_, GetMetricsStateManager());
+
+  histogram_tester.ExpectUniqueSample("Variations.SafeMode.FellBackToSafeMode",
+                                      false, 1);
+  histogram_tester.ExpectUniqueSample("Variations.SafeMode.Streak.Crashes", 1,
+                                      1);
+  histogram_tester.ExpectUniqueSample(
+      "Variations.SafeMode.Streak.FetchFailures", 2, 1);
+}
+
+TEST_F(VariationsServiceTest, SafeMode_NoCrashes_ManyFetchFailures) {
+  prefs_.SetInteger(prefs::kVariationsCrashStreak, 0);
+  prefs_.SetInteger(prefs::kVariationsFailedToFetchSeedStreak, 3);
+
+  // Create a variations service.
+  base::HistogramTester histogram_tester;
+  TestVariationsService service(
+      base::MakeUnique<web_resource::TestRequestAllowedNotifier>(&prefs_),
+      &prefs_, GetMetricsStateManager());
+
+  histogram_tester.ExpectUniqueSample("Variations.SafeMode.FellBackToSafeMode",
+                                      true, 1);
+  histogram_tester.ExpectUniqueSample("Variations.SafeMode.Streak.Crashes", 0,
+                                      1);
+  histogram_tester.ExpectUniqueSample(
+      "Variations.SafeMode.Streak.FetchFailures", 3, 1);
+}
+
+TEST_F(VariationsServiceTest, SafeMode_ManyCrashes_NoFetchFailures) {
+  prefs_.SetInteger(prefs::kVariationsCrashStreak, 3);
+  prefs_.SetInteger(prefs::kVariationsFailedToFetchSeedStreak, 0);
+
+  // Create a variations service.
+  base::HistogramTester histogram_tester;
+  TestVariationsService service(
+      base::MakeUnique<web_resource::TestRequestAllowedNotifier>(&prefs_),
+      &prefs_, GetMetricsStateManager());
+
+  histogram_tester.ExpectUniqueSample("Variations.SafeMode.FellBackToSafeMode",
+                                      true, 1);
+  histogram_tester.ExpectUniqueSample("Variations.SafeMode.Streak.Crashes", 3,
+                                      1);
+  histogram_tester.ExpectUniqueSample(
+      "Variations.SafeMode.Streak.FetchFailures", 0, 1);
+}
+
+TEST_F(VariationsServiceTest, SafeMode_OverriddenByCommandlineFlag) {
+  prefs_.SetInteger(prefs::kVariationsCrashStreak, 3);
+  prefs_.SetInteger(prefs::kVariationsFailedToFetchSeedStreak, 3);
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      ::switches::kForceFieldTrials, "SomeFieldTrial");
+
+  // Create a variations service.
+  base::HistogramTester histogram_tester;
+  TestVariationsService service(
+      base::MakeUnique<web_resource::TestRequestAllowedNotifier>(&prefs_),
+      &prefs_, GetMetricsStateManager());
+
+  histogram_tester.ExpectUniqueSample("Variations.SafeMode.FellBackToSafeMode",
+                                      false, 1);
+  histogram_tester.ExpectUniqueSample("Variations.SafeMode.Streak.Crashes", 3,
+                                      1);
+  histogram_tester.ExpectUniqueSample(
+      "Variations.SafeMode.Streak.FetchFailures", 3, 1);
+}
+
+TEST_F(VariationsServiceTest, SafeMode_CrashIncrementsCrashStreak) {
+  prefs_.SetInteger(prefs::kVariationsCrashStreak, 1);
+  prefs_.SetBoolean(metrics::prefs::kStabilityExitedCleanly, false);
+
+  // Create a variations service.
+  TestVariationsService service(
+      base::MakeUnique<web_resource::TestRequestAllowedNotifier>(&prefs_),
+      &prefs_, GetMetricsStateManager());
+
+  EXPECT_EQ(2, prefs_.GetInteger(prefs::kVariationsCrashStreak));
+}
+
+TEST_F(VariationsServiceTest, SafeMode_NoCrashPreservesCrashStreak) {
+  prefs_.SetInteger(prefs::kVariationsCrashStreak, 1);
+  prefs_.SetBoolean(metrics::prefs::kStabilityExitedCleanly, true);
+
+  // Create a variations service.
+  TestVariationsService service(
+      base::MakeUnique<web_resource::TestRequestAllowedNotifier>(&prefs_),
+      &prefs_, GetMetricsStateManager());
+
+  EXPECT_EQ(1, prefs_.GetInteger(prefs::kVariationsCrashStreak));
+}
+
+TEST_F(VariationsServiceTest, SafeMode_StartingRequestIncrementsFetchFailures) {
+  prefs_.SetInteger(prefs::kVariationsFailedToFetchSeedStreak, 1);
+
+  // Create a variations service and start the fetch.
+  TestVariationsService service(
+      base::MakeUnique<web_resource::TestRequestAllowedNotifier>(&prefs_),
+      &prefs_, GetMetricsStateManager());
+  service.set_intercepts_fetch(false);
+  net::TestURLFetcherFactory factory;
+  service.DoActualFetch();
+
+  EXPECT_EQ(2, prefs_.GetInteger(prefs::kVariationsFailedToFetchSeedStreak));
+}
+
+TEST_F(VariationsServiceTest, SafeMode_SuccessfulFetchClearsFailureStreaks) {
+  prefs_.SetInteger(prefs::kVariationsCrashStreak, 2);
+  prefs_.SetInteger(prefs::kVariationsFailedToFetchSeedStreak, 1);
+
+  // Create a variations service and perform a successful fetch.
+  VariationsService service(
+      base::MakeUnique<TestVariationsServiceClient>(),
+      base::MakeUnique<web_resource::TestRequestAllowedNotifier>(&prefs_),
+      &prefs_, GetMetricsStateManager(), UIStringOverrider());
+
+  service.SetCreateTrialsFromSeedCalledForTesting(true);
+  net::TestURLFetcherFactory factory;
+  // This will actually start the fetch.
+  service.PerformPreMainMessageLoopStartup();
+
+  // The below seed and signature pair were generated using the server's
+  // private key.
+  const std::string base64_seed_data =
+      "CigxZDI5NDY0ZmIzZDc4ZmYxNTU2ZTViNTUxYzY0NDdjYmM3NGU1ZmQwEr0BCh9VTUEtVW5p"
+      "Zm9ybWl0eS1UcmlhbC0xMC1QZXJjZW50GICckqUFOAFCB2RlZmF1bHRKCwoHZGVmYXVsdBAB"
+      "SgwKCGdyb3VwXzAxEAFKDAoIZ3JvdXBfMDIQAUoMCghncm91cF8wMxABSgwKCGdyb3VwXzA0"
+      "EAFKDAoIZ3JvdXBfMDUQAUoMCghncm91cF8wNhABSgwKCGdyb3VwXzA3EAFKDAoIZ3JvdXBf"
+      "MDgQAUoMCghncm91cF8wORAB";
+  const std::string base64_seed_signature =
+      "MEQCIDD1IVxjzWYncun+9IGzqYjZvqxxujQEayJULTlbTGA/AiAr0oVmEgVUQZBYq5VLOSvy"
+      "96JkMYgzTkHPwbv7K/CmgA==";
+
+  std::string response;
+  ASSERT_TRUE(base::Base64Decode(base64_seed_data, &response));
+  const std::string header = "X-Seed-Signature:" + base64_seed_signature;
+
+  net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
+  SimulateServerResponseWithHeader(net::HTTP_OK, fetcher, &header);
+  fetcher->SetResponseString(response);
+  service.OnURLFetchComplete(fetcher);
+
+  // Verify that the streaks were rest.
+  EXPECT_EQ(0, prefs_.GetInteger(prefs::kVariationsCrashStreak));
+  EXPECT_EQ(0, prefs_.GetInteger(prefs::kVariationsFailedToFetchSeedStreak));
+}
+
+TEST_F(VariationsServiceTest, SafeMode_NotModifiedFetchClearsFailureStreaks) {
+  prefs_.SetInteger(prefs::kVariationsCrashStreak, 2);
+  prefs_.SetInteger(prefs::kVariationsFailedToFetchSeedStreak, 1);
+
+  // Create a variations service and perform a successful fetch.
+  TestVariationsService service(
+      base::MakeUnique<web_resource::TestRequestAllowedNotifier>(&prefs_),
+      &prefs_, GetMetricsStateManager());
+  service.set_intercepts_fetch(false);
+
+  net::TestURLFetcherFactory factory;
+  service.DoActualFetch();
+
+  net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
+  SimulateServerResponse(net::HTTP_NOT_MODIFIED, fetcher);
+  service.OnURLFetchComplete(fetcher);
+
+  EXPECT_EQ(0, prefs_.GetInteger(prefs::kVariationsCrashStreak));
+  EXPECT_EQ(0, prefs_.GetInteger(prefs::kVariationsFailedToFetchSeedStreak));
 }
 
 }  // namespace variations

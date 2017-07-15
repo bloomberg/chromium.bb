@@ -212,6 +212,10 @@ class VariationsService
                            LoadPermanentConsistencyCountry);
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, CountryHeader);
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, GetVariationsServerURL);
+  FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest,
+                           SafeMode_SuccessfulFetchClearsFailureStreaks);
+  FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest,
+                           SafeMode_NotModifiedFetchClearsFailureStreaks);
 
   // Set of different possible values to report for the
   // Variations.LoadPermanentConsistencyCountryResult histogram. This enum must
@@ -263,6 +267,11 @@ class VariationsService
   void PerformSimulationWithVersion(
       std::unique_ptr<variations::VariationsSeed> seed,
       const base::Version& version);
+
+  // Records a successful fetch:
+  //   (1) Resets failure streaks for Safe Mode.
+  //   (2) Records the time of this fetch as the most recent successful fetch.
+  void RecordSuccessfulFetch();
 
   // Record the time of the most recent successful fetch.
   void RecordLastFetchTime();
