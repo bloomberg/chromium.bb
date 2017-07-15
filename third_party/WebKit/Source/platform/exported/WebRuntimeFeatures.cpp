@@ -64,6 +64,10 @@ void WebRuntimeFeatures::EnableTestOnlyFeatures(bool enable) {
   RuntimeEnabledFeatures::SetTestFeaturesEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableOriginTrialControlledFeatures(bool enable) {
+  RuntimeEnabledFeatures::SetOriginTrialControlledFeaturesEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableAccelerated2dCanvas(bool enable) {
   RuntimeEnabledFeatures::SetAccelerated2dCanvasEnabled(enable);
 }

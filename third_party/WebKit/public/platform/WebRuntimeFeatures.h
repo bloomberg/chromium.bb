@@ -41,15 +41,19 @@ namespace blink {
 // Stable features are enabled by default.
 class WebRuntimeFeatures {
  public:
-  // Enable features with status=experimental listed in
+  // Enable or disable features with status=experimental listed in
   // Source/platform/RuntimeEnabledFeatures.in.
   BLINK_PLATFORM_EXPORT static void EnableExperimentalFeatures(bool);
 
-  // Enable features with status=test listed in
+  // Enable or disable features with status=test listed in
   // Source/platform/RuntimeEnabledFeatures.in.
   BLINK_PLATFORM_EXPORT static void EnableTestOnlyFeatures(bool);
 
-  // Enables a feature by its string identifier from
+  // Enable or disable features with non-empty origin_trial_feature_name in
+  // Source/platform/RuntimeEnabledFeatures.in.
+  BLINK_PLATFORM_EXPORT static void EnableOriginTrialControlledFeatures(bool);
+
+  // Enables or disables a feature by its string identifier from
   // Source/platform/RuntimeEnabledFeatures.in.
   // Note: We use std::string instead of WebString because this API can
   // be called before blink::initalize(). We can't create WebString objects
