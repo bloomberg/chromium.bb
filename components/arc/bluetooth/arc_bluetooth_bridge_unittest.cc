@@ -93,8 +93,9 @@ class ArcBluetoothBridgeTest : public testing::Test {
     fake_bluetooth_instance_ = base::MakeUnique<FakeBluetoothInstance>();
     arc_bridge_service_->bluetooth()->SetInstance(
         fake_bluetooth_instance_.get(), 2);
-    arc_bluetooth_bridge_ =
-        base::MakeUnique<ArcBluetoothBridge>(arc_bridge_service_.get());
+    // TODO(hidehiko): Use Singleton instance tied to BrowserContext.
+    arc_bluetooth_bridge_ = base::MakeUnique<ArcBluetoothBridge>(
+        nullptr, arc_bridge_service_.get());
 
     device::BluetoothAdapterFactory::GetAdapter(base::Bind(
         &ArcBluetoothBridgeTest::OnAdapterInitialized, base::Unretained(this)));

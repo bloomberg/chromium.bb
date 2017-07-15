@@ -16,9 +16,9 @@
 
 #include "base/callback.h"
 #include "base/timer/timer.h"
-#include "components/arc/arc_service.h"
 #include "components/arc/common/bluetooth.mojom.h"
 #include "components/arc/instance_holder.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_advertisement.h"
@@ -31,19 +31,29 @@
 #include "device/bluetooth/bluez/bluetooth_adapter_bluez.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
+namespace content {
+class BrowserContext;
+}  // namespace content
+
 namespace arc {
 
 class ArcBridgeService;
 
 class ArcBluetoothBridge
-    : public ArcService,
+    : public KeyedService,
       public InstanceHolder<mojom::BluetoothInstance>::Observer,
       public device::BluetoothAdapter::Observer,
       public device::BluetoothAdapterFactory::AdapterCallback,
       public device::BluetoothLocalGattService::Delegate,
       public mojom::BluetoothHost {
  public:
-  explicit ArcBluetoothBridge(ArcBridgeService* bridge_service);
+  // Returns singleton instance for the given BrowserContext,
+  // or nullptr if the browser |context| is not allowed to use ARC.
+  static ArcBluetoothBridge* GetForBrowserContext(
+      content::BrowserContext* context);
+
+  ArcBluetoothBridge(content::BrowserContext* context,
+                     ArcBridgeService* bridge_service);
   ~ArcBluetoothBridge() override;
 
   // Overridden from InstanceHolder<mojom::BluetoothInstance>::Observer:
@@ -429,6 +439,8 @@ class ArcBluetoothBridge
   bool GetAdvertisementHandle(int32_t* adv_handle);
 
   void SendDevice(const device::BluetoothDevice* device) const;
+
+  ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
 
   mojo::Binding<mojom::BluetoothHost> binding_;
 

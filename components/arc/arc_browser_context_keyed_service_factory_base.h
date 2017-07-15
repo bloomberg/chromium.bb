@@ -70,6 +70,9 @@ namespace internal {
 // subclasses.
 //
 // This header is intended to be included only from the .cc file directly.
+//
+// TODO(hidehiko): Make ArcFooService constructor (and maybe destructor)
+// private with declaring appropriate friend.
 template <typename Service, typename Factory>
 class ArcBrowserContextKeyedServiceFactoryBase
     : public BrowserContextKeyedServiceFactory {
