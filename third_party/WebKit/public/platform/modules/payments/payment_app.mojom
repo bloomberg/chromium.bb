@@ -64,15 +64,15 @@ struct PaymentRequestEventData {
 };
 
 // This struct is provided to receive payment app response from render
-// side (PaymentAppResponse.idl).
-struct PaymentAppResponse {
+// side (PaymentHandlerResponse.idl).
+struct PaymentHandlerResponse {
   string method_name;
   string stringified_details;
 };
 
-// This interface is provided to pass a payment app response from payment
+// This interface is provided to pass a payment handler response from payment
 // request event in renderer side to browser side by calling respondWith().
-interface PaymentAppResponseCallback {
-  OnPaymentAppResponse(PaymentAppResponse response,
+interface PaymentHandlerResponseCallback {
+  OnPaymentHandlerResponse(PaymentHandlerResponse response,
                        mojo.common.mojom.Time dispatch_event_time);
 };

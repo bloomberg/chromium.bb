@@ -23,7 +23,7 @@ namespace {
 
 using ::payments::mojom::PaymentRequestEventData;
 using ::payments::mojom::PaymentRequestEventDataPtr;
-using ::payments::mojom::PaymentAppResponsePtr;
+using ::payments::mojom::PaymentHandlerResponsePtr;
 using ::payments::mojom::PaymentCurrencyAmount;
 using ::payments::mojom::PaymentDetailsModifier;
 using ::payments::mojom::PaymentDetailsModifierPtr;
@@ -38,8 +38,8 @@ void GetAllPaymentAppsCallback(const base::Closure& done_callback,
 }
 
 void InvokePaymentAppCallback(const base::Closure& done_callback,
-                              PaymentAppResponsePtr* out_response,
-                              PaymentAppResponsePtr response) {
+                              PaymentHandlerResponsePtr* out_response,
+                              PaymentHandlerResponsePtr response) {
   *out_response = std::move(response);
   done_callback.Run();
 }
@@ -101,7 +101,7 @@ class PaymentAppBrowserTest : public ContentBrowserTest {
     return registrationIds;
   }
 
-  PaymentAppResponsePtr InvokePaymentAppWithTestData(
+  PaymentHandlerResponsePtr InvokePaymentAppWithTestData(
       int64_t registration_id,
       const std::string& supported_method,
       const std::string& instrument_key) {
@@ -131,7 +131,7 @@ class PaymentAppBrowserTest : public ContentBrowserTest {
     event_data->instrument_key = instrument_key;
 
     base::RunLoop run_loop;
-    PaymentAppResponsePtr response;
+    PaymentHandlerResponsePtr response;
     PaymentAppProvider::GetInstance()->InvokePaymentApp(
         shell()->web_contents()->GetBrowserContext(), registration_id,
         std::move(event_data),
@@ -170,7 +170,7 @@ IN_PROC_BROWSER_TEST_F(PaymentAppBrowserTest, PaymentAppInvocation) {
   std::vector<int64_t> registrationIds = GetAllPaymentAppRegistrationIDs();
   ASSERT_EQ(1U, registrationIds.size());
 
-  PaymentAppResponsePtr response(InvokePaymentAppWithTestData(
+  PaymentHandlerResponsePtr response(InvokePaymentAppWithTestData(
       registrationIds[0], "basic-card", "basic-card-payment-app-id"));
   ASSERT_EQ("test", response->method_name);
 
@@ -204,7 +204,7 @@ IN_PROC_BROWSER_TEST_F(PaymentAppBrowserTest, PaymentAppOpenWindowFailed) {
   std::vector<int64_t> registrationIds = GetAllPaymentAppRegistrationIDs();
   ASSERT_EQ(1U, registrationIds.size());
 
-  PaymentAppResponsePtr response(InvokePaymentAppWithTestData(
+  PaymentHandlerResponsePtr response(InvokePaymentAppWithTestData(
       registrationIds[0], "https://bobpay.com", "bobpay-payment-app-id"));
   // InvokePaymentAppCallback returns empty method_name in case of failure, like
   // in PaymentRequestRespondWithObserver::OnResponseRejected.

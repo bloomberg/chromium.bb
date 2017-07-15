@@ -58,14 +58,16 @@ void OnGotAllPaymentApps(const JavaRef<jobject>& jweb_contents,
   Java_ServiceWorkerPaymentAppBridge_onAllPaymentAppsCreated(env, jcallback);
 }
 
-void OnPaymentAppInvoked(const JavaRef<jobject>& jweb_contents,
-                         const JavaRef<jobject>& jcallback,
-                         payments::mojom::PaymentAppResponsePtr app_response) {
+void OnPaymentAppInvoked(
+    const JavaRef<jobject>& jweb_contents,
+    const JavaRef<jobject>& jcallback,
+    payments::mojom::PaymentHandlerResponsePtr handler_response) {
   JNIEnv* env = AttachCurrentThread();
 
   Java_ServiceWorkerPaymentAppBridge_onPaymentAppInvoked(
-      env, jcallback, ConvertUTF8ToJavaString(env, app_response->method_name),
-      ConvertUTF8ToJavaString(env, app_response->stringified_details));
+      env, jcallback,
+      ConvertUTF8ToJavaString(env, handler_response->method_name),
+      ConvertUTF8ToJavaString(env, handler_response->stringified_details));
 }
 
 }  // namespace

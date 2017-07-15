@@ -35,7 +35,7 @@ class CONTENT_EXPORT PaymentAppProvider {
   using PaymentApps = std::map<GURL, std::unique_ptr<StoredPaymentApp>>;
   using GetAllPaymentAppsCallback = base::OnceCallback<void(PaymentApps)>;
   using InvokePaymentAppCallback =
-      base::Callback<void(payments::mojom::PaymentAppResponsePtr)>;
+      base::Callback<void(payments::mojom::PaymentHandlerResponsePtr)>;
 
   // Should be accessed only on the UI thread.
   virtual void GetAllPaymentApps(BrowserContext* browser_context,
