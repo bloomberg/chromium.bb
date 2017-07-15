@@ -121,11 +121,7 @@ PLATFORM_EXPORT double ParseDate(const String&);
 // - OWSes at the head and the tail of the region before the first semicolon
 //   are trimmed.
 PLATFORM_EXPORT AtomicString ExtractMIMETypeFromMediaType(const AtomicString&);
-PLATFORM_EXPORT String ExtractCharsetFromMediaType(const String&);
-PLATFORM_EXPORT void FindCharsetInMediaType(const String& media_type,
-                                            unsigned& charset_pos,
-                                            unsigned& charset_len,
-                                            unsigned start = 0);
+
 PLATFORM_EXPORT ReflectedXSSDisposition
 ParseXSSProtectionHeader(const String& header,
                          String& failure_reason,

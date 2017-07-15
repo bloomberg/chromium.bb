@@ -102,11 +102,75 @@ class ScopedEventDispatchProtect final {
   int* const level_;
 };
 
+// These methods were placed in HTTPParsers.h. Since these methods don't
+// perform ABNF validation but loosely look for the part that is likely to be
+// indicating the charset parameter, new code should use
+// HttpUtil::ParseContentType() than these. To discourage use of these methods,
+// moved from HTTPParser.h to the only user XMLHttpRequest.cpp.
+//
+// TODO(tyoshino): Switch XHR to use HttpUtil. See crbug.com/743311.
+void FindCharsetInMediaType(const String& media_type,
+                            unsigned& charset_pos,
+                            unsigned& charset_len,
+                            unsigned start) {
+  charset_pos = start;
+  charset_len = 0;
+
+  size_t pos = start;
+  unsigned length = media_type.length();
+
+  while (pos < length) {
+    pos = media_type.FindIgnoringASCIICase("charset", pos);
+    if (pos == kNotFound || !pos) {
+      charset_len = 0;
+      return;
+    }
+
+    // is what we found a beginning of a word?
+    if (media_type[pos - 1] > ' ' && media_type[pos - 1] != ';') {
+      pos += 7;
+      continue;
+    }
+
+    pos += 7;
+
+    // skip whitespace
+    while (pos != length && media_type[pos] <= ' ')
+      ++pos;
+
+    // this "charset" substring wasn't a parameter
+    // name, but there may be others
+    if (media_type[pos++] != '=')
+      continue;
+
+    while (pos != length && (media_type[pos] <= ' ' || media_type[pos] == '"' ||
+                             media_type[pos] == '\''))
+      ++pos;
+
+    // we don't handle spaces within quoted parameter values, because charset
+    // names cannot have any
+    unsigned endpos = pos;
+    while (pos != length && media_type[endpos] > ' ' &&
+           media_type[endpos] != '"' && media_type[endpos] != '\'' &&
+           media_type[endpos] != ';')
+      ++endpos;
+
+    charset_pos = pos;
+    charset_len = endpos - pos;
+    return;
+  }
+}
+String ExtractCharsetFromMediaType(const String& media_type) {
+  unsigned pos, len;
+  FindCharsetInMediaType(media_type, pos, len, 0);
+  return media_type.Substring(pos, len);
+}
+
 void ReplaceCharsetInMediaType(String& media_type,
                                const String& charset_value) {
   unsigned pos = 0, len = 0;
 
-  FindCharsetInMediaType(media_type, pos, len);
+  FindCharsetInMediaType(media_type, pos, len, 0);
 
   if (!len) {
     // When no charset found, do nothing.
