@@ -1850,7 +1850,7 @@ void FFmpegDemuxer::OnReadFrameDone(ScopedAVPacket packet, int result) {
 bool FFmpegDemuxer::StreamsHaveAvailableCapacity() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   for (const auto& stream : streams_) {
-    if (stream && stream->HasAvailableCapacity())
+    if (stream && stream->IsEnabled() && stream->HasAvailableCapacity())
       return true;
   }
   return false;
