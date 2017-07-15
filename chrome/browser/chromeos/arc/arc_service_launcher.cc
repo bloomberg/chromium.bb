@@ -95,8 +95,6 @@ void ArcServiceLauncher::Initialize() {
 
   // List in lexicographical order.
   arc_service_manager_->AddService(
-      base::MakeUnique<ArcAudioBridge>(arc_bridge_service));
-  arc_service_manager_->AddService(
       base::MakeUnique<ArcBluetoothBridge>(arc_bridge_service));
   arc_service_manager_->AddService(
       base::MakeUnique<ArcBootErrorNotification>(arc_bridge_service));
@@ -201,6 +199,7 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   // Those services will be initialized lazily.
   // List in lexicographical order.
   ArcAccessibilityHelperBridge::GetForBrowserContext(profile);
+  ArcAudioBridge::GetForBrowserContext(profile);
   ArcAuthService::GetForBrowserContext(profile);
 
   arc_service_manager_->AddService(base::MakeUnique<ArcBootPhaseMonitorBridge>(

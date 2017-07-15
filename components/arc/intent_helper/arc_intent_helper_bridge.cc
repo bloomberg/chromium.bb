@@ -85,7 +85,12 @@ void ArcIntentHelperBridge::SetWallpaperDeprecated(
 }
 
 void ArcIntentHelperBridge::OpenVolumeControl() {
-  ArcServiceManager::Get()->GetService<ArcAudioBridge>()->ShowVolumeControls();
+  // TODO(hidehiko): Use browser_context passed to this class's ctor, after
+  // we migrate this into BrowserContextKeyedService.
+  auto* audio = ArcAudioBridge::GetForBrowserContext(
+      ArcServiceManager::Get()->browser_context());
+  DCHECK(audio);
+  audio->ShowVolumeControls();
 }
 
 ArcIntentHelperBridge::GetResult ArcIntentHelperBridge::GetActivityIcons(
