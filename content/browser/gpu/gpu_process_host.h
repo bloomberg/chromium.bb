@@ -47,7 +47,6 @@ struct ChannelHandle;
 }
 
 namespace gpu {
-struct GpuPreferences;
 class ShaderDiskCache;
 struct SyncToken;
 }
@@ -217,7 +216,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
 
   void CreateChannelCache(int32_t client_id);
 
-  bool LaunchGpuProcess(gpu::GpuPreferences* gpu_preferences);
+  bool LaunchGpuProcess();
 
   void SendOutstandingReplies();
 

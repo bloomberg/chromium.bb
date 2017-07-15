@@ -120,14 +120,13 @@ class CONTENT_EXPORT GpuDataManagerImpl
   void AppendRendererCommandLine(base::CommandLine* command_line) const;
 
   // Insert switches into gpu process command line: kUseGL, etc.
-  // If the gpu_preferences isn't a nullptr, the gpu_preferences will be set
-  // for some GPU switches which have been replaced by GpuPreferences, and those
-  // switches will not be append to the command_line anymore.
-  void AppendGpuCommandLine(base::CommandLine* command_line,
-                            gpu::GpuPreferences* gpu_preferences) const;
+  void AppendGpuCommandLine(base::CommandLine* command_line) const;
 
   // Update WebPreferences for renderer based on blacklisting decisions.
   void UpdateRendererWebPrefs(WebPreferences* prefs) const;
+
+  // Update GpuPreferences based on blacklisting decisions.
+  void UpdateGpuPreferences(gpu::GpuPreferences* gpu_preferences) const;
 
   std::string GetBlacklistVersion() const;
   std::string GetDriverBugListVersion() const;
