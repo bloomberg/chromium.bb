@@ -1066,6 +1066,7 @@ class Port(object):
                 'LD_LIBRARY_PATH',
                 'DBUS_SESSION_BUS_ADDRESS',
                 'XDG_DATA_DIRS',
+                'XDG_RUNTIME_DIR'
             ]
             clean_env['DISPLAY'] = self.host.environ.get('DISPLAY', ':1')
         if self.host.platform.is_mac():
