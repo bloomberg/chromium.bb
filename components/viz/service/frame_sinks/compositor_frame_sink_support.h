@@ -16,10 +16,10 @@
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/referenced_surface_tracker.h"
 #include "cc/surfaces/surface_client.h"
-#include "cc/surfaces/surface_resource_holder.h"
-#include "cc/surfaces/surface_resource_holder_client.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_client.h"
+#include "components/viz/service/frame_sinks/surface_resource_holder.h"
+#include "components/viz/service/frame_sinks/surface_resource_holder_client.h"
 #include "components/viz/service/viz_service_export.h"
 
 namespace cc {
@@ -34,7 +34,7 @@ class CompositorFrameSinkSupportClient;
 
 class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
     : public cc::BeginFrameObserver,
-      public cc::SurfaceResourceHolderClient,
+      public SurfaceResourceHolderClient,
       public FrameSinkManagerClient,
       public cc::SurfaceClient {
  public:
@@ -125,7 +125,7 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   // added. This will not contain a value if |is_root_| is false.
   base::Optional<LocalSurfaceId> referenced_local_surface_id_;
 
-  cc::SurfaceResourceHolder surface_resource_holder_;
+  SurfaceResourceHolder surface_resource_holder_;
 
   // Counts the number of CompositorFrames that have been submitted and have not
   // yet received an ACK.

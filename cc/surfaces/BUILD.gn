@@ -28,9 +28,6 @@ cc_component("surfaces") {
     "surface_manager.h",
     "surface_reference.cc",
     "surface_reference.h",
-    "surface_resource_holder.cc",
-    "surface_resource_holder.h",
-    "surface_resource_holder_client.h",
     "surfaces_export.h",
   ]
 
