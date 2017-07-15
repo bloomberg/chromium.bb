@@ -838,7 +838,6 @@ component("ash") {
     "//components/session_manager:base",
     "//components/signin/core/account_id",
     "//components/user_manager",
-    "//components/vector_icons",
     "//components/wallpaper",
     "//device/bluetooth",
     "//gpu/command_buffer/client",

@@ -9,7 +9,6 @@ aggregate_vector_icons("components_vector_icons") {
 
   icons = [
     "bluetooth_connected.icon",
-    "screen_share.1x.icon",
     "screen_share.icon",
   ]
 }

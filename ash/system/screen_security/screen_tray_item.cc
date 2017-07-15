@@ -9,7 +9,6 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_item_style.h"
 #include "ash/system/tray/tray_popup_utils.h"
-#include "components/vector_icons/vector_icons.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/message_center/message_center.h"
 #include "ui/views/controls/button/label_button.h"
@@ -25,7 +24,7 @@ ScreenTrayView::ScreenTrayView(ScreenTrayItem* screen_tray_item)
     : TrayItemView(screen_tray_item), screen_tray_item_(screen_tray_item) {
   CreateImageView();
   image_view()->SetImage(
-      gfx::CreateVectorIcon(vector_icons::kScreenShareIcon, kTrayIconColor));
+      gfx::CreateVectorIcon(kSystemTrayScreenShareIcon, kTrayIconColor));
   Update();
 }
 
