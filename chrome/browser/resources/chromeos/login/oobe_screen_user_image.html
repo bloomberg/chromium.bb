@@ -5,32 +5,8 @@
          i18n-content="userImageScreenDescription"></p>
     </div>
     <div id="user-image-screen-main">
-      <grid id="user-image-grid" tabindex="1"
-          aria-labelledby="user-image-screen-description">
-      </grid>
-      <div id="user-image-preview">
-        <img id="user-image-preview-img" class="animated-transform" alt="">
-        <div class="user-image-stream-area">
-          <div class="perspective-box">
-            <div id="user-image-stream-crop">
-              <video class="user-image-stream" autoplay></video>
-            </div>
-          </div>
-          <div class="spinner"></div>
-        </div>
-        <p id="user-image-preview-caption"></p>
-        <button id="discard-photo" i18n-values="title:discardPhoto"
-            tabindex="2"></button>
-        <button id="take-photo" i18n-values="title:takePhoto" tabindex="2">
-        </button>
-        <button id="flip-photo" class="custom-appearance"
-            i18n-values="title:flipPhoto" tabindex="1"></button>
-      </div>
-      <div id="user-image-attribution">
-        <span i18n-content="authorCredit"></span>
-        <strong id="user-image-author-name"></strong>
-        <a id="user-image-author-website" target="_blank"></a>
-      </div>
+      <oobe-change-picture id="changePicture">
+      </oobe-change-picture>
     </div>
   </div>
   <div id="user-image-controls" class="step-controls"></div>

@@ -57,10 +57,12 @@
             icon="cr:camera-alt" title="[[takePhotoLabel]]"
             hidden="[[!cameraPresent]]">
         </iron-icon>
-        <!-- Selects the file picker as the picture source. -->
-        <iron-icon data-type$="[[selectionTypesEnum_.FILE]]" role="radio"
-            icon="cr:folder" title="[[chooseFileLabel]]">
-        </iron-icon>
+        <template is="dom-if" if="[[chooseFileLabel]]">
+          <!-- Selects the file picker as the picture source. -->
+          <iron-icon data-type$="[[selectionTypesEnum_.FILE]]" role="radio"
+              icon="cr:folder" title="[[chooseFileLabel]]">
+          </iron-icon>
+        </template>
         <!-- Shows and selects the current profile picture. -->
         <img id="profileImage" role="radio"
             data-type$="[[selectionTypesEnum_.PROFILE]]"

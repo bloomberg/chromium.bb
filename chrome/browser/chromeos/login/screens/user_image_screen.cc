@@ -101,16 +101,18 @@ void UserImageScreen::OnPhotoTaken(const std::string& raw_data) {
 void UserImageScreen::OnImageSelected(const std::string& image_type,
                                       const std::string& image_url,
                                       bool is_user_selection) {
-  if (is_user_selection) {
+  if (is_user_selection)
     user_has_selected_image_ = true;
-  }
-  if (image_url.empty())
-    return;
-  int user_image_index = user_manager::User::USER_IMAGE_INVALID;
-  if (image_type == "default" &&
-      default_user_image::IsDefaultImageUrl(image_url, &user_image_index)) {
+
+  if (image_type == "default") {
+    int user_image_index = user_manager::User::USER_IMAGE_INVALID;
+    if (image_url.empty() ||
+        !default_user_image::IsDefaultImageUrl(image_url, &user_image_index)) {
+      LOG(ERROR) << "Unexpected default image url: " << image_url;
+      return;
+    }
     selected_image_ = user_image_index;
-  } else if (image_type == "camera") {
+  } else if (image_type == "camera" || image_type == "old") {
     selected_image_ = user_manager::User::USER_IMAGE_EXTERNAL;
   } else if (image_type == "profile") {
     selected_image_ = user_manager::User::USER_IMAGE_PROFILE;

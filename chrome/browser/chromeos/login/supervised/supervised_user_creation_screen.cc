@@ -636,13 +636,15 @@ void SupervisedUserCreationScreen::OnDecodeImageFailed() {
 void SupervisedUserCreationScreen::OnImageSelected(
     const std::string& image_type,
     const std::string& image_url) {
-  if (image_url.empty())
-    return;
-  int user_image_index = user_manager::User::USER_IMAGE_INVALID;
-  if (image_type == "default" &&
-      default_user_image::IsDefaultImageUrl(image_url, &user_image_index)) {
+  if (image_type == "default") {
+    int user_image_index = user_manager::User::USER_IMAGE_INVALID;
+    if (image_url.empty() ||
+        !default_user_image::IsDefaultImageUrl(image_url, &user_image_index)) {
+      LOG(ERROR) << "Unexpected default image url: " << image_url;
+      return;
+    }
     selected_image_ = user_image_index;
-  } else if (image_type == "camera") {
+  } else if (image_type == "camera" || image_type == "old") {
     selected_image_ = user_manager::User::USER_IMAGE_EXTERNAL;
   } else {
     NOTREACHED() << "Unexpected image type: " << image_type;

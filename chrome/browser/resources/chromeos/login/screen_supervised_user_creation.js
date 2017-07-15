@@ -1130,7 +1130,7 @@ login.createScreen(
                 Math.random() * this.imagesData_.length)];
             this.context_.selectedImageUrl = selected.url;
             imageGrid.selectedItemUrl = selected.url;
-            chrome.send('supervisedUserSelectImage', [selected.url, 'default']);
+            chrome.send('supervisedUserSelectImage', ['default', selected.url]);
             this.getScreenElement('image-grid').redraw();
             this.checkUserName_();
             this.updateNextButtonForUser_();
@@ -1148,7 +1148,7 @@ login.createScreen(
                   this.imagesData_[Math.floor(
                                        Math.random() * this.imagesData_.length)]
                       .url;
-              chrome.send('supervisedUserSelectImage', [selected, 'default']);
+              chrome.send('supervisedUserSelectImage', ['default', selected]);
             }
             imageGrid.selectedItemUrl = selected;
             this.getScreenElement('image-grid').redraw();
@@ -1462,7 +1462,7 @@ login.createScreen(
             this.context_.selectedImageUrl = imageGrid.selectedItemUrl;
             chrome.send(
                 'supervisedUserSelectImage',
-                [imageGrid.selectedItemUrl, imageGrid.selectionType]);
+                [imageGrid.selectionType, imageGrid.selectedItemUrl]);
           }
           // Start/stop camera on (de)selection.
           if (!imageGrid.inProgramSelection &&

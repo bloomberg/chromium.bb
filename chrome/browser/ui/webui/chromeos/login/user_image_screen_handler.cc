@@ -99,23 +99,13 @@ void UserImageScreenHandler::DeclareLocalizedValues(
   builder->Add("profilePhotoLoading",
                IDS_IMAGE_SCREEN_PROFILE_LOADING_PHOTO);
   builder->Add("okButtonText", IDS_OK);
-  builder->Add("authorCredit", IDS_OPTIONS_SET_WALLPAPER_AUTHOR_TEXT);
   builder->Add("photoFromCamera", IDS_OPTIONS_CHANGE_PICTURE_PHOTO_FROM_CAMERA);
-  builder->Add("photoFlippedAccessibleText",
-               IDS_OPTIONS_PHOTO_FLIP_ACCESSIBLE_TEXT);
-  builder->Add("photoFlippedBackAccessibleText",
-               IDS_OPTIONS_PHOTO_FLIPBACK_ACCESSIBLE_TEXT);
-  builder->Add("photoCaptureAccessibleText",
-               IDS_OPTIONS_PHOTO_CAPTURE_ACCESSIBLE_TEXT);
-  builder->Add("photoDiscardAccessibleText",
-               IDS_OPTIONS_PHOTO_DISCARD_ACCESSIBLE_TEXT);
   builder->Add("syncingPreferences", IDS_IMAGE_SCREEN_SYNCING_PREFERENCES);
 }
 
 void UserImageScreenHandler::RegisterMessages() {
   AddCallback("getImages", &UserImageScreenHandler::HandleGetImages);
   AddCallback("screenReady", &UserImageScreenHandler::HandleScreenReady);
-  AddCallback("takePhoto", &UserImageScreenHandler::HandleTakePhoto);
   AddCallback("discardPhoto", &UserImageScreenHandler::HandleDiscardPhoto);
   AddCallback("photoTaken", &UserImageScreenHandler::HandlePhotoTaken);
   AddCallback("selectImage", &UserImageScreenHandler::HandleSelectImage);
@@ -143,14 +133,11 @@ void UserImageScreenHandler::HandlePhotoTaken(const std::string& image_url) {
   if (!net::DataURL::Parse(GURL(image_url), &mime_type, &charset, &raw_data))
     NOTREACHED();
   DCHECK_EQ("image/png", mime_type);
+  AccessibilityManager::Get()->PlayEarcon(
+      SOUND_CAMERA_SNAP, PlaySoundOption::SPOKEN_FEEDBACK_ENABLED);
 
   if (screen_)
     screen_->OnPhotoTaken(raw_data);
-}
-
-void UserImageScreenHandler::HandleTakePhoto() {
-  AccessibilityManager::Get()->PlayEarcon(
-      SOUND_CAMERA_SNAP, PlaySoundOption::SPOKEN_FEEDBACK_ENABLED);
 }
 
 void UserImageScreenHandler::HandleDiscardPhoto() {
@@ -158,8 +145,8 @@ void UserImageScreenHandler::HandleDiscardPhoto() {
       SOUND_OBJECT_DELETE, PlaySoundOption::SPOKEN_FEEDBACK_ENABLED);
 }
 
-void UserImageScreenHandler::HandleSelectImage(const std::string& image_url,
-                                               const std::string& image_type,
+void UserImageScreenHandler::HandleSelectImage(const std::string& image_type,
+                                               const std::string& image_url,
                                                bool is_user_selection) {
   if (screen_)
     screen_->OnImageSelected(image_type, image_url, is_user_selection);

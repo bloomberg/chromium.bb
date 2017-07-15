@@ -59,8 +59,8 @@ class SupervisedUserCreationScreenHandler : public BaseScreenHandler {
     virtual void HideFlow() = 0;
 
     virtual void OnPhotoTaken(const std::string& raw_data) = 0;
-    virtual void OnImageSelected(const std::string& image_url,
-                                 const std::string& image_type) = 0;
+    virtual void OnImageSelected(const std::string& image_type,
+                                 const std::string& image_url) = 0;
     virtual void OnImageAccepted() = 0;
     virtual void OnPageSelected(const std::string& page) = 0;
   };

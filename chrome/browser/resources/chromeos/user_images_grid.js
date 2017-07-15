@@ -309,6 +309,8 @@ cr.define('options', function() {
       previewClassList[value == 'default' ? 'add' : 'remove']('default-image');
       previewClassList[value == 'profile' ? 'add' : 'remove']('profile-image');
       previewClassList[value == 'camera' ? 'add' : 'remove']('camera');
+      if (!$('user-image-grid'))
+        return;
 
       var setFocusIfLost = function() {
         // Set focus to the grid, if focus is not on UI.

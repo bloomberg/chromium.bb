@@ -52,8 +52,8 @@ class UserImageScreen : public BaseScreen,
 
   // Called when some image was selected. |is_user_selection| indicates if
   // it was user selection or image was selected programmatically.
-  void OnImageSelected(const std::string& image_url,
-                       const std::string& image_type,
+  void OnImageSelected(const std::string& image_type,
+                       const std::string& image_url,
                        bool is_user_selection);
 
   // Called when user accepts currently selected image.

@@ -27,6 +27,7 @@
 // <include src="navigation_bar.js">
 // <include src="oobe_a11y_option.js">
 // <include src="oobe_buttons.js">
+// <include src="oobe_change_picture.js">
 // <include src="oobe_dialog.js">
 // <include src="oobe_eula.js">
 // <include src="oobe_hid_detection.js">
