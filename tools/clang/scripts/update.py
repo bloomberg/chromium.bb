@@ -588,7 +588,7 @@ def UpdateClang(args):
 
   # Build PDBs for archival on Windows.  Don't use RelWithDebInfo since it
   # has different optimization defaults than Release.
-  if sys.platform == 'win32' and args.bootstrap:
+  if sys.platform == 'win32':
     cflags += ['/Zi']
     cxxflags += ['/Zi']
     ldflags += ['/DEBUG', '/OPT:REF', '/OPT:ICF']
