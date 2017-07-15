@@ -63,13 +63,11 @@ class SyncEngineInitializerTest : public testing::Test {
         std::move(fake_drive_service),
         std::unique_ptr<drive::DriveUploaderInterface>(),
         nullptr /* task_logger */, base::ThreadTaskRunnerHandle::Get(),
-        base::ThreadTaskRunnerHandle::Get(), nullptr /* worker_pool */));
+        base::ThreadTaskRunnerHandle::Get()));
 
     sync_task_manager_.reset(new SyncTaskManager(
-        base::WeakPtr<SyncTaskManager::Client>(),
-        1 /* maximum_parallel_task */,
-        base::ThreadTaskRunnerHandle::Get(),
-        nullptr /* worker_pool */));
+        base::WeakPtr<SyncTaskManager::Client>(), 1 /* maximum_parallel_task */,
+        base::ThreadTaskRunnerHandle::Get()));
     sync_task_manager_->Initialize(SYNC_STATUS_OK);
   }
 

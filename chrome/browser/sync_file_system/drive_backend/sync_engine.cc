@@ -12,7 +12,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task_scheduler/post_task.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -223,7 +222,6 @@ std::unique_ptr<SyncEngine> SyncEngine::CreateForBrowserContext(
 
   std::unique_ptr<drive_backend::SyncEngine> sync_engine(new SyncEngine(
       ui_task_runner.get(), worker_task_runner.get(), drive_task_runner.get(),
-      content::BrowserThread::GetBlockingPool(),
       GetSyncFileSystemDir(context->GetPath()), task_logger,
       notification_manager, extension_service, signin_manager, token_service,
       request_context.get(), base::MakeUnique<DriveServiceFactory>(),
@@ -334,8 +332,7 @@ void SyncEngine::InitializeInternal(
                                 worker_task_runner_.get()));
   std::unique_ptr<SyncEngineContext> sync_engine_context(new SyncEngineContext(
       std::move(drive_service_on_worker), std::move(drive_uploader_on_worker),
-      task_logger_, ui_task_runner_.get(), worker_task_runner_.get(),
-      worker_pool_.get()));
+      task_logger_, ui_task_runner_.get(), worker_task_runner_.get()));
 
   worker_observer_.reset(new WorkerObserver(ui_task_runner_.get(),
                                             weak_ptr_factory_.GetWeakPtr()));
@@ -721,7 +718,6 @@ SyncEngine::SyncEngine(
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
     const scoped_refptr<base::SequencedTaskRunner>& worker_task_runner,
     const scoped_refptr<base::SequencedTaskRunner>& drive_task_runner,
-    const scoped_refptr<base::SequencedWorkerPool>& worker_pool,
     const base::FilePath& sync_file_system_dir,
     TaskLogger* task_logger,
     drive::DriveNotificationManager* notification_manager,
@@ -734,7 +730,6 @@ SyncEngine::SyncEngine(
     : ui_task_runner_(ui_task_runner),
       worker_task_runner_(worker_task_runner),
       drive_task_runner_(drive_task_runner),
-      worker_pool_(worker_pool),
       sync_file_system_dir_(sync_file_system_dir),
       task_logger_(task_logger),
       notification_manager_(notification_manager),

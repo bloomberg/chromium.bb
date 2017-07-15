@@ -15,6 +15,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_scheduler.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/sync_file_system/drive_backend/callback_helper.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_constants.h"
@@ -118,8 +119,7 @@ class DriveBackendSyncTest : public testing::Test,
 
     remote_sync_service_.reset(new SyncEngine(
         base::ThreadTaskRunnerHandle::Get(),  // ui_task_runner
-        worker_task_runner_.get(), drive_task_runner.get(),
-        content::BrowserThread::GetBlockingPool(), base_dir_.GetPath(),
+        worker_task_runner_.get(), drive_task_runner.get(), base_dir_.GetPath(),
         nullptr,  // task_logger
         nullptr,  // notification_manager
         nullptr,  // extension_service
@@ -153,7 +153,7 @@ class DriveBackendSyncTest : public testing::Test,
     local_sync_service_.reset();
     remote_sync_service_.reset();
 
-    content::RunAllBlockingPoolTasksUntilIdle();
+    base::TaskScheduler::GetInstance()->FlushForTesting();
     RevokeSyncableFileSystem();
   }
 

@@ -27,7 +27,6 @@ class OAuth2TokenService;
 
 namespace base {
 class SequencedTaskRunner;
-class SequencedWorkerPool;
 }
 
 namespace drive {
@@ -158,7 +157,6 @@ class SyncEngine : public RemoteFileSyncService,
   SyncEngine(const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
              const scoped_refptr<base::SequencedTaskRunner>& worker_task_runner,
              const scoped_refptr<base::SequencedTaskRunner>& drive_task_runner,
-             const scoped_refptr<base::SequencedWorkerPool>& worker_pool,
              const base::FilePath& sync_file_system_dir,
              TaskLogger* task_logger,
              drive::DriveNotificationManager* notification_manager,
@@ -184,7 +182,6 @@ class SyncEngine : public RemoteFileSyncService,
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
   scoped_refptr<base::SequencedTaskRunner> worker_task_runner_;
   scoped_refptr<base::SequencedTaskRunner> drive_task_runner_;
-  scoped_refptr<base::SequencedWorkerPool> worker_pool_;
 
   const base::FilePath sync_file_system_dir_;
   TaskLogger* task_logger_;

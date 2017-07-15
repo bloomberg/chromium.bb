@@ -72,10 +72,9 @@ void SyncWorker::Initialize(std::unique_ptr<SyncEngineContext> context) {
 
   context_ = std::move(context);
 
-  task_manager_.reset(new SyncTaskManager(
-      weak_ptr_factory_.GetWeakPtr(), 0 /* maximum_background_task */,
-      context_->GetWorkerTaskRunner(),
-      context_->GetWorkerPool()));
+  task_manager_.reset(new SyncTaskManager(weak_ptr_factory_.GetWeakPtr(),
+                                          0 /* maximum_background_task */,
+                                          context_->GetWorkerTaskRunner()));
   task_manager_->Initialize(SYNC_STATUS_OK);
 
   PostInitializeTask();

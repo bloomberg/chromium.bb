@@ -12,7 +12,6 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_scheduler/post_task.h"
-#include "base/test/sequenced_worker_pool_owner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/sync_file_system/drive_backend/callback_helper.h"
 #include "chrome/browser/sync_file_system/drive_backend/fake_sync_worker.h"
@@ -34,7 +33,7 @@ class SyncEngineTest : public testing::Test,
  public:
   typedef RemoteFileSyncService::OriginStatusMap RemoteOriginStatusMap;
 
-  SyncEngineTest() : worker_pool_owner_(2, "Worker") {}
+  SyncEngineTest() {}
   ~SyncEngineTest() override {}
 
   void SetUp() override {
@@ -51,7 +50,7 @@ class SyncEngineTest : public testing::Test,
     sync_engine_.reset(new drive_backend::SyncEngine(
         ui_task_runner.get(), worker_task_runner_.get(),
         nullptr,  // drive_task_runner
-        worker_pool_owner_.pool().get(), profile_dir_.GetPath(),
+        profile_dir_.GetPath(),
         nullptr,    // task_logger
         nullptr,    // notification_manager
         nullptr,    // extension_service
@@ -126,7 +125,6 @@ class SyncEngineTest : public testing::Test,
   base::ScopedTempDir profile_dir_;
   std::unique_ptr<drive_backend::SyncEngine> sync_engine_;
 
-  base::SequencedWorkerPoolOwner worker_pool_owner_;
   scoped_refptr<base::SequencedTaskRunner> worker_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncEngineTest);

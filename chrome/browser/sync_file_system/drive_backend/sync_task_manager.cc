@@ -60,16 +60,13 @@ bool SyncTaskManager::PendingTaskComparator::operator()(
 SyncTaskManager::SyncTaskManager(
     base::WeakPtr<Client> client,
     size_t maximum_background_task,
-    const scoped_refptr<base::SequencedTaskRunner>& task_runner,
-    const scoped_refptr<base::SequencedWorkerPool>& worker_pool)
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner)
     : client_(client),
       maximum_background_task_(maximum_background_task),
       pending_task_seq_(0),
       task_token_seq_(SyncTaskToken::kMinimumBackgroundTaskTokenID),
       task_runner_(task_runner),
-      worker_pool_(worker_pool),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
 SyncTaskManager::~SyncTaskManager() {
   weak_ptr_factory_.InvalidateWeakPtrs();
@@ -207,10 +204,6 @@ bool SyncTaskManager::IsRunningTask(int64_t token_id) const {
 
 void SyncTaskManager::DetachFromSequence() {
   sequence_checker_.DetachFromSequence();
-}
-
-bool SyncTaskManager::ShouldTrackTaskToken() const {
-  return !worker_pool_ || !worker_pool_->IsShutdownInProgress();
 }
 
 void SyncTaskManager::NotifyTaskDoneBody(std::unique_ptr<SyncTaskToken> token,
