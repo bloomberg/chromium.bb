@@ -196,7 +196,7 @@ class WebGLConformanceExpectations(GpuTestExpectations):
 
     # Win failures
     # TODO(kbr): re-enable suppression for same test below once fixed.
-    self.Fail('conformance/glsl/bugs/sampler-struct-function-arg.html',
+    self.Skip('conformance/glsl/bugs/sampler-struct-function-arg.html',
         ['win'], bug=2103) # angle bug ID
     # Note that the following test seems to pass, but it may still be flaky.
     self.Fail('conformance/glsl/constructors/' +
