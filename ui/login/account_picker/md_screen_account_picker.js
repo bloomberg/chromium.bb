@@ -496,6 +496,7 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
 
       this.lockScreenAppsState_ = state;
       $('login-header-bar').lockScreenAppsState = state;
+      $('top-header-bar').lockScreenAppsState = state;
 
       // Reset the focused pod if app window is being shown on top of the user
       // pods. Main goal is to clear any credentials the user might have input.

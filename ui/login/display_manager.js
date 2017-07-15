@@ -95,13 +95,20 @@
 
 /* Possible lock screen enabled app activity state. */
 /** @const */ var LOCK_SCREEN_APPS_STATE = {
-  // No lock screen enabled app running.
+  // No lock screen enabled app available.
   NONE: 'LOCK_SCREEN_APPS_STATE.NONE',
+  // A lock screen enabled note taking app is available, but has not been
+  // launched to handle a lock screen action.
+  AVAILABLE: 'LOCK_SCREEN_APPS_STATE.AVAILABLE',
   // A lock screen enabled app is running in background - behind lock screen UI.
   BACKGROUND: 'LOCK_SCREEN_APPS_STATE.BACKGROUND',
   // A lock screen enabled app is running in foreground - an app window is
   // shown over the lock screen user pods (header bar should still be visible).
   FOREGROUND: 'LOCK_SCREEN_APPS_STATE.FOREGROUND',
+  // State used to request launch of a lock screen note-taking app - this state
+  // is not expected to be received from platform as a current state (instead,
+  // on successful launch, state will be changed to FOREGROUND).
+  LAUNCH_REQUESTED: 'LOCK_SCREEN_APPS_STATE.LAUNCH_REQUESTED'
 };
 
 /** @const */ var USER_ACTION_ROLLBACK_TOGGLED = 'rollback-toggled';

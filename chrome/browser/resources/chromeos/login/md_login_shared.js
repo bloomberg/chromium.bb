@@ -20,6 +20,7 @@
 // <include src="../../../../../ui/login/bubble.js">
 // <include src="../../../../../ui/login/display_manager.js">
 // <include src="md_header_bar.js">
+// <include src="md_top_header_bar.js">
 
 // <include
 // src="../../../../../ui/login/account_picker/md_screen_account_picker.js">

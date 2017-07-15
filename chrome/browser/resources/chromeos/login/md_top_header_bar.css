@@ -1,0 +1,103 @@
+/* Copyright 2017 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+#top-header-bar {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+  z-index: 1;
+}
+
+#top-header-bar.version-labels-unset  #version-labels {
+  display: none;
+}
+
+.new-note-action-container {
+  display: flex;
+  flex: 0;
+  height: 56px;
+  justify-content: flex-end;
+  min-width: 56px;
+  overflow: hidden;
+  width: 56px;
+  z-index: 1;
+}
+
+.new-note-action-container-activated {
+  bottom: 0;
+  height: 100%;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 100%;
+}
+
+.new-note-action-above-login-header {
+  z-index: 5;
+}
+
+.new-note-action {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 0 0 0 48px;
+  cursor: pointer;
+  display: flex;
+  height: 48px;
+  justify-content: flex-end;
+  transition: all 300ms ease-in;
+  width: 48px;
+  z-index: 1;
+}
+
+.new-note-action.disabled {
+  cursor: default;
+  pointer-events: none;
+}
+
+.new-note-action:not(.new-note-action-short-transition) {
+  transition: all 300ms;
+}
+
+.new-note-action-short-transition {
+  transition: all 5ms;
+}
+
+html[dir=rtl] .new-note-action {
+  border-radius: 0 0 48px 0;
+}
+
+.new-note-action:hover,
+.new-note-action:focus {
+  border-radius: 0 0 0 56px;
+  height: 56px;
+  outline: none;
+  width: 56px;
+}
+
+html[dir=rtl] .new-note-action:hover,
+html[dir=rtl] .new-note-action:focus {
+  border-radius: 0 0 56px 0;
+}
+
+.new-note-action-container-activated > .new-note-action {
+  background-color: #000;
+  bottom: auto;
+  left: auto;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+html[dir=rtl] .new-note-action-container-activated > .new-note-action {
+  left: 0;
+  right: auto;
+}
+
+.new-note-action-icon {
+  height: 16px;
+  padding: 16px;
+  width: 16px;
+}
+

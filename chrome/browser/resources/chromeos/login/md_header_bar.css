@@ -18,6 +18,7 @@
 
 #login-header-bar.full-header-background {
   background-color: #000;
+  border-top: 1px solid #000;
 }
 
 html[screen=lock] .login-header-bar-hidden,

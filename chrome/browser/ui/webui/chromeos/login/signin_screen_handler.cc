@@ -128,6 +128,9 @@ const char kSourceAccountPicker[] = "account-picker";
 const char kNoLockScreenApps[] = "LOCK_SCREEN_APPS_STATE.NONE";
 const char kBackgroundLockScreenApps[] = "LOCK_SCREEN_APPS_STATE.BACKGROUND";
 const char kForegroundLockScreenApps[] = "LOCK_SCREEN_APPS_STATE.FOREGROUND";
+const char kAvailableLockScreenApps[] = "LOCK_SCREEN_APPS_STATE.AVAILABLE";
+const char kLaunchRequestedLockScreenApps[] =
+    "LOCK_SCREEN_APPS_STATE.LAUNCH_REQUESTED";
 
 // The alpha value for the signin screen background.
 // TODO(crbug.com/732566): Move all constants related to views-based signin
@@ -474,6 +477,9 @@ void SigninScreenHandler::DeclareLocalizedValues(
   builder->Add("adPasswordChangeMessage", IDS_AD_PASSWORD_CHANGE_MESSAGE);
   builder->Add("adOldPasswordError", IDS_AD_PASSWORD_CHANGE_INVALID_PASSWORD);
   builder->Add("adNewPasswordError", IDS_AD_PASSWORD_CHANGE_PASSWORDS_MISMATCH);
+
+  builder->Add("newLockScreenNoteButton",
+               IDS_LOGIN_NEW_LOCK_SCREEN_NOTE_BUTTON_TITLE);
 }
 
 void SigninScreenHandler::RegisterMessages() {
@@ -1091,6 +1097,7 @@ void SigninScreenHandler::OnLockScreenNoteStateChanged(
 
   std::string lock_screen_apps_state;
   switch (state) {
+    case ash::mojom::TrayActionState::kLaunching:
     case ash::mojom::TrayActionState::kActive:
       lock_screen_apps_state = kForegroundLockScreenApps;
       break;
@@ -1098,8 +1105,9 @@ void SigninScreenHandler::OnLockScreenNoteStateChanged(
       lock_screen_apps_state = kBackgroundLockScreenApps;
       break;
     case ash::mojom::TrayActionState::kAvailable:
+      lock_screen_apps_state = kAvailableLockScreenApps;
+      break;
     case ash::mojom::TrayActionState::kNotAvailable:
-    case ash::mojom::TrayActionState::kLaunching:
       lock_screen_apps_state = kNoLockScreenApps;
       break;
   }
@@ -1502,10 +1510,13 @@ void SigninScreenHandler::HandleSetLockScreenAppsState(
   lock_screen_apps::StateController* state_controller =
       lock_screen_apps::StateController::Get();
 
-  if (state == kBackgroundLockScreenApps)
+  if (state == kBackgroundLockScreenApps) {
     state_controller->MoveToBackground();
-  else if (state == kForegroundLockScreenApps)
+  } else if (state == kForegroundLockScreenApps) {
     state_controller->MoveToForeground();
+  } else if (state == kLaunchRequestedLockScreenApps) {
+    state_controller->RequestNewLockScreenNote();
+  }
 }
 
 bool SigninScreenHandler::AllWhitelistedUsersPresent() {

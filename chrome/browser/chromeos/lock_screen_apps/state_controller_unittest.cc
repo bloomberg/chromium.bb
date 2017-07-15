@@ -758,6 +758,24 @@ TEST_F(LockScreenAppStateTest, MoveToBackgroundAndForeground) {
   EXPECT_FALSE(app_window()->closed());
 }
 
+TEST_F(LockScreenAppStateTest, MoveToBackgroundWhileLaunching) {
+  ASSERT_TRUE(InitializeNoteTakingApp(TrayActionState::kLaunching,
+                                      true /* enable_app_launch */));
+
+  state_controller()->MoveToBackground();
+  state_controller()->FlushTrayActionForTesting();
+
+  EXPECT_EQ(TrayActionState::kAvailable,
+            state_controller()->GetLockScreenNoteState());
+
+  EXPECT_FALSE(state_controller()->CreateAppWindowForLockScreenAction(
+      profile(), app(), extensions::api::app_runtime::ACTION_TYPE_NEW_NOTE,
+      base::MakeUnique<ChromeAppDelegate>(true)));
+
+  ExpectObservedStatesMatch({TrayActionState::kAvailable},
+                            "Move to background cancels launch.");
+}
+
 TEST_F(LockScreenAppStateTest, MoveToForegroundFromNonBackgroundState) {
   ASSERT_TRUE(InitializeNoteTakingApp(TrayActionState::kAvailable,
                                       true /* enable_app_launch */));

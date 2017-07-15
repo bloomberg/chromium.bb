@@ -258,9 +258,11 @@ extensions::AppWindow* StateController::CreateAppWindowForLockScreenAction(
 }
 
 void StateController::MoveToBackground() {
-  if (GetLockScreenNoteState() != TrayActionState::kActive)
-    return;
-  UpdateLockScreenNoteState(TrayActionState::kBackground);
+  if (GetLockScreenNoteState() == TrayActionState::kLaunching) {
+    UpdateLockScreenNoteState(TrayActionState::kAvailable);
+  } else if (GetLockScreenNoteState() == TrayActionState::kActive) {
+    UpdateLockScreenNoteState(TrayActionState::kBackground);
+  }
 }
 
 void StateController::MoveToForeground() {
