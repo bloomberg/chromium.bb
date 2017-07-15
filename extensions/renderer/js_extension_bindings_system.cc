@@ -116,19 +116,6 @@ v8::Local<v8::Object> GetOrCreateBindObjectIfAvailable(
   return bind_object.IsEmpty() ? GetOrCreateChrome(context) : bind_object;
 }
 
-// Determines if a ScriptContext can connect to any externally_connectable-
-// enabled extension.
-bool IsRuntimeAvailableToContext(ScriptContext* context) {
-  for (const auto& extension :
-       *RendererExtensionRegistry::Get()->GetMainThreadExtensionSet()) {
-    ExternallyConnectableInfo* info = static_cast<ExternallyConnectableInfo*>(
-        extension->GetManifestData(manifest_keys::kExternallyConnectable));
-    if (info && info->matches.MatchesURL(context->url()))
-      return true;
-  }
-  return false;
-}
-
 // Creates the event bindings if necessary for the given |context|.
 void MaybeCreateEventBindings(ScriptContext* context) {
   // chrome.Event is part of the public API (although undocumented). Make it
@@ -177,12 +164,10 @@ void JsExtensionBindingsSystem::UpdateBindingsForContext(
       // Hard-code registration of any APIs that are exposed to webpage-like
       // contexts, because it's too expensive to run the full bindings code.
       // All of the same permission checks will still apply.
-      if (context->GetAvailability("app").is_available())
-        RegisterBinding("app", "app", context);
-      if (context->GetAvailability("webstore").is_available())
-        RegisterBinding("webstore", "webstore", context);
-      if (context->GetAvailability("dashboardPrivate").is_available())
-        RegisterBinding("dashboardPrivate", "dashboardPrivate", context);
+      for (const char* feature_name : kWebAvailableFeatures) {
+        if (context->GetAvailability(feature_name).is_available())
+          RegisterBinding(feature_name, feature_name, context);
+      }
       if (IsRuntimeAvailableToContext(context))
         RegisterBinding("runtime", "runtime", context);
       break;

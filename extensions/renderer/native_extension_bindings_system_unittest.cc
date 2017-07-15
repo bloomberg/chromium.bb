@@ -8,6 +8,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "components/crx_file/id_util.h"
+#include "content/public/test/mock_render_thread.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/extension_messages.h"
@@ -102,6 +103,7 @@ class NativeExtensionBindingsSystemUnittest : public APIBindingTest {
   }
 
   void SetUp() override {
+    render_thread_ = base::MakeUnique<content::MockRenderThread>();
     script_context_set_ = base::MakeUnique<ScriptContextSet>(&extension_ids_);
     bindings_system_ = base::MakeUnique<NativeExtensionBindingsSystem>(
         base::Bind(&NativeExtensionBindingsSystemUnittest::MockSendRequestIPC,
@@ -125,6 +127,7 @@ class NativeExtensionBindingsSystemUnittest : public APIBindingTest {
     ASSERT_TRUE(raw_script_contexts_.empty());
     script_context_set_.reset();
     bindings_system_.reset();
+    render_thread_.reset();
     APIBindingTest::TearDown();
   }
 
@@ -179,7 +182,10 @@ class NativeExtensionBindingsSystemUnittest : public APIBindingTest {
     raw_script_contexts_.erase(iter);
   }
 
-  void RegisterExtension(const ExtensionId& id) { extension_ids_.insert(id); }
+  void RegisterExtension(scoped_refptr<const Extension> extension) {
+    extension_ids_.insert(extension->id());
+    RendererExtensionRegistry::Get()->Insert(extension);
+  }
 
   void InitEventChangeHandler() {
     event_change_handler_ = base::MakeUnique<MockEventChangeHandler>();
@@ -196,6 +202,7 @@ class NativeExtensionBindingsSystemUnittest : public APIBindingTest {
 
  private:
   ExtensionIdSet extension_ids_;
+  std::unique_ptr<content::MockRenderThread> render_thread_;
   std::unique_ptr<ScriptContextSet> script_context_set_;
   std::vector<ScriptContext*> raw_script_contexts_;
   std::unique_ptr<NativeExtensionBindingsSystem> bindings_system_;
@@ -212,7 +219,7 @@ class NativeExtensionBindingsSystemUnittest : public APIBindingTest {
 TEST_F(NativeExtensionBindingsSystemUnittest, Basic) {
   scoped_refptr<Extension> extension = CreateExtension(
       "foo", ItemType::EXTENSION, {"idle", "power", "webRequest"});
-  RegisterExtension(extension->id());
+  RegisterExtension(extension);
 
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = MainContext();
@@ -322,7 +329,7 @@ TEST_F(NativeExtensionBindingsSystemUnittest, Basic) {
 TEST_F(NativeExtensionBindingsSystemUnittest, Events) {
   scoped_refptr<Extension> extension =
       CreateExtension("foo", ItemType::EXTENSION, {"idle", "power"});
-  RegisterExtension(extension->id());
+  RegisterExtension(extension);
 
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = MainContext();
@@ -364,7 +371,7 @@ TEST_F(NativeExtensionBindingsSystemUnittest, Events) {
 TEST_F(NativeExtensionBindingsSystemUnittest, APIObjectsAreEqual) {
   scoped_refptr<Extension> extension =
       CreateExtension("foo", ItemType::EXTENSION, {"idle"});
-  RegisterExtension(extension->id());
+  RegisterExtension(extension);
 
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = MainContext();
@@ -392,7 +399,7 @@ TEST_F(NativeExtensionBindingsSystemUnittest,
   scoped_refptr<Extension> extension =
       CreateExtension("foo", ItemType::EXTENSION, {"idle", "power"});
 
-  RegisterExtension(extension->id());
+  RegisterExtension(extension);
 
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = MainContext();
@@ -448,7 +455,7 @@ TEST_F(NativeExtensionBindingsSystemUnittest, TestBridgingToJSCustomBindings) {
 
   scoped_refptr<Extension> extension =
       CreateExtension("foo", ItemType::EXTENSION, {"idle"});
-  RegisterExtension(extension->id());
+  RegisterExtension(extension);
 
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = MainContext();
@@ -538,7 +545,7 @@ TEST_F(NativeExtensionBindingsSystemUnittest, TestSendRequestHook) {
 
   scoped_refptr<Extension> extension =
       CreateExtension("foo", ItemType::EXTENSION, {"idle"});
-  RegisterExtension(extension->id());
+  RegisterExtension(extension);
 
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = MainContext();
@@ -574,7 +581,7 @@ TEST_F(NativeExtensionBindingsSystemUnittest, TestEventRegistration) {
   scoped_refptr<Extension> extension =
       CreateExtension("foo", ItemType::EXTENSION, {"idle", "power"});
 
-  RegisterExtension(extension->id());
+  RegisterExtension(extension);
 
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = MainContext();
@@ -628,7 +635,7 @@ TEST_F(NativeExtensionBindingsSystemUnittest,
   scoped_refptr<Extension> app = CreateExtension("foo", ItemType::PLATFORM_APP,
                                                  std::vector<std::string>());
   EXPECT_TRUE(app->is_platform_app());
-  RegisterExtension(app->id());
+  RegisterExtension(app);
 
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = MainContext();
@@ -667,7 +674,7 @@ TEST_F(NativeExtensionBindingsSystemUnittest,
        TestPrefixedApiMethodsAndSystemBinding) {
   scoped_refptr<Extension> extension =
       CreateExtension("foo", ItemType::EXTENSION, {"system.cpu"});
-  RegisterExtension(extension->id());
+  RegisterExtension(extension);
 
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = MainContext();
@@ -707,7 +714,7 @@ TEST_F(NativeExtensionBindingsSystemUnittest,
 TEST_F(NativeExtensionBindingsSystemUnittest, TestLastError) {
   scoped_refptr<Extension> extension =
       CreateExtension("foo", ItemType::EXTENSION, {"idle", "power"});
-  RegisterExtension(extension->id());
+  RegisterExtension(extension);
 
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = MainContext();
@@ -757,7 +764,7 @@ TEST_F(NativeExtensionBindingsSystemUnittest, TestLastError) {
 TEST_F(NativeExtensionBindingsSystemUnittest, TestCustomProperties) {
   scoped_refptr<Extension> extension =
       CreateExtension("storage extension", ItemType::EXTENSION, {"storage"});
-  RegisterExtension(extension->id());
+  RegisterExtension(extension);
 
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = MainContext();
@@ -793,7 +800,7 @@ TEST_F(NativeExtensionBindingsSystemUnittest,
        CheckDifferentContextsHaveDifferentAPIObjects) {
   scoped_refptr<Extension> extension =
       CreateExtension("extension", ItemType::EXTENSION, {"idle"});
-  RegisterExtension(extension->id());
+  RegisterExtension(extension);
 
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context_a = MainContext();
@@ -828,45 +835,78 @@ TEST_F(NativeExtensionBindingsSystemUnittest,
 // context are properly present or absent from the API object.
 TEST_F(NativeExtensionBindingsSystemUnittest,
        CheckRestrictedFeaturesBasedOnContext) {
-  scoped_refptr<Extension> extension =
-      CreateExtension("extension", ItemType::EXTENSION, {"idle"});
-  RegisterExtension(extension->id());
+  scoped_refptr<Extension> connectable_extension;
+  {
+    DictionaryBuilder manifest;
+    manifest.Set("name", "connectable")
+        .Set("manifest_version", 2)
+        .Set("version", "0.1")
+        .Set("description", "test extension");
+    DictionaryBuilder connectable;
+    connectable.Set("matches",
+                    ListBuilder().Append("*://example.com/*").Build());
+    manifest.Set("externally_connectable", connectable.Build());
+    connectable_extension =
+        ExtensionBuilder()
+            .SetManifest(manifest.Build())
+            .SetLocation(Manifest::INTERNAL)
+            .SetID(crx_file::id_util::GenerateId("connectable"))
+            .Build();
+  }
+
+  RegisterExtension(connectable_extension);
 
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> blessed_context = MainContext();
-  v8::Local<v8::Context> webpage_context = AddContext();
+  v8::Local<v8::Context> connectable_webpage_context = AddContext();
+  v8::Local<v8::Context> nonconnectable_webpage_context = AddContext();
 
   // Create two contexts - a blessed extension context and a normal web page
   // context.
-  ScriptContext* blessed_script_context = CreateScriptContext(
-      blessed_context, extension.get(), Feature::BLESSED_EXTENSION_CONTEXT);
-  blessed_script_context->set_url(extension->url());
+  ScriptContext* blessed_script_context =
+      CreateScriptContext(blessed_context, connectable_extension.get(),
+                          Feature::BLESSED_EXTENSION_CONTEXT);
+  blessed_script_context->set_url(connectable_extension->url());
   bindings_system()->UpdateBindingsForContext(blessed_script_context);
 
-  ScriptContext* webpage_script_context =
-      CreateScriptContext(webpage_context, nullptr, Feature::WEB_PAGE_CONTEXT);
-  webpage_script_context->set_url(GURL("http://example.com"));
-  bindings_system()->UpdateBindingsForContext(webpage_script_context);
+  ScriptContext* connectable_webpage_script_context = CreateScriptContext(
+      connectable_webpage_context, nullptr, Feature::WEB_PAGE_CONTEXT);
+  connectable_webpage_script_context->set_url(GURL("http://example.com"));
+  bindings_system()->UpdateBindingsForContext(
+      connectable_webpage_script_context);
+
+  ScriptContext* nonconnectable_webpage_script_context = CreateScriptContext(
+      nonconnectable_webpage_context, nullptr, Feature::WEB_PAGE_CONTEXT);
+  nonconnectable_webpage_script_context->set_url(GURL("http://notexample.com"));
+  bindings_system()->UpdateBindingsForContext(
+      nonconnectable_webpage_script_context);
 
   // Check that properties are correctly restricted. The blessed context should
-  // have access to the whole runtime API, but the webpage should only have
-  // access to sendMessage.
+  // have access to the whole runtime API, the connectable webpage should only
+  // have access to sendMessage, and the nonconnectable webpage should not have
+  // access to any of the API.
+  const char kRuntime[] = "chrome.runtime";
   const char kSendMessage[] = "chrome.runtime.sendMessage";
   const char kGetUrl[] = "chrome.runtime.getURL";
   const char kOnMessage[] = "chrome.runtime.onMessage";
+  ASSERT_TRUE(PropertyExists(blessed_context, kRuntime));
   EXPECT_TRUE(PropertyExists(blessed_context, kSendMessage));
   EXPECT_TRUE(PropertyExists(blessed_context, kGetUrl));
   EXPECT_TRUE(PropertyExists(blessed_context, kOnMessage));
-  EXPECT_TRUE(PropertyExists(webpage_context, kSendMessage));
-  EXPECT_FALSE(PropertyExists(webpage_context, kGetUrl));
-  EXPECT_FALSE(PropertyExists(webpage_context, kOnMessage));
+
+  ASSERT_TRUE(PropertyExists(connectable_webpage_context, kRuntime));
+  EXPECT_TRUE(PropertyExists(connectable_webpage_context, kSendMessage));
+  EXPECT_FALSE(PropertyExists(connectable_webpage_context, kGetUrl));
+  EXPECT_FALSE(PropertyExists(connectable_webpage_context, kOnMessage));
+
+  EXPECT_FALSE(PropertyExists(nonconnectable_webpage_context, kRuntime));
 }
 
 // Tests behavior when script sets window.chrome to be various things.
 TEST_F(NativeExtensionBindingsSystemUnittest, TestUsingOtherChromeObjects) {
   scoped_refptr<Extension> extension = CreateExtension(
       "extension", ItemType::EXTENSION, std::vector<std::string>());
-  RegisterExtension(extension->id());
+  RegisterExtension(extension);
 
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context_a = MainContext();
@@ -935,7 +975,7 @@ TEST_F(NativeExtensionBindingsSystemUnittest, TestUsingOtherChromeObjects) {
 TEST_F(NativeExtensionBindingsSystemUnittest, TestUpdatingPermissions) {
   scoped_refptr<Extension> extension =
       CreateExtension("extension", ItemType::EXTENSION, {"idle"});
-  RegisterExtension(extension->id());
+  RegisterExtension(extension);
 
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = MainContext();
@@ -1030,7 +1070,7 @@ TEST_F(NativeExtensionBindingsSystemUnittest, UnmanagedEvents) {
 
   scoped_refptr<Extension> extension =
       CreateExtension("foo", ItemType::EXTENSION, std::vector<std::string>());
-  RegisterExtension(extension->id());
+  RegisterExtension(extension);
 
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = MainContext();

@@ -420,14 +420,65 @@ void NativeExtensionBindingsSystem::WillReleaseScriptContext(
 
 void NativeExtensionBindingsSystem::UpdateBindingsForContext(
     ScriptContext* context) {
-  v8::HandleScope handle_scope(context->isolate());
+  v8::Isolate* isolate = context->isolate();
+  v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Context> v8_context = context->v8_context();
   v8::Local<v8::Object> chrome = GetOrCreateChrome(v8_context);
   if (chrome.IsEmpty())
     return;
 
-  BindingsSystemPerContextData* data = GetBindingsDataFromContext(v8_context);
-  DCHECK(data);
+  DCHECK(GetBindingsDataFromContext(v8_context));
+
+  auto set_accessor = [chrome, isolate,
+                       v8_context](base::StringPiece accessor_name) {
+    v8::Local<v8::String> api_name =
+        gin::StringToSymbol(isolate, accessor_name);
+    v8::Maybe<bool> success = chrome->SetAccessor(
+        v8_context, api_name, &BindingAccessor, nullptr, api_name);
+    return success.IsJust() && success.FromJust();
+  };
+
+  bool is_webpage = false;
+  switch (context->context_type()) {
+    case Feature::UNSPECIFIED_CONTEXT:
+    case Feature::WEB_PAGE_CONTEXT:
+    case Feature::BLESSED_WEB_PAGE_CONTEXT:
+      is_webpage = true;
+      break;
+    case Feature::SERVICE_WORKER_CONTEXT:
+      DCHECK(ExtensionsClient::Get()
+                 ->ExtensionAPIEnabledInExtensionServiceWorkers());
+    // Intentional fallthrough.
+    case Feature::BLESSED_EXTENSION_CONTEXT:
+    case Feature::LOCK_SCREEN_EXTENSION_CONTEXT:
+    case Feature::UNBLESSED_EXTENSION_CONTEXT:
+    case Feature::CONTENT_SCRIPT_CONTEXT:
+    case Feature::WEBUI_CONTEXT:
+      is_webpage = false;
+  }
+
+  if (is_webpage) {
+    // Hard-code registration of any APIs that are exposed to webpage-like
+    // contexts, because it's more expensive to iterate over all the existing
+    // features when only a handful could ever be available.
+    // All of the same permission checks will still apply.
+    // TODO(devlin): It could be interesting to apply this same logic to all
+    // context types, especially on a given platform. Something to think about
+    // for when we generate features.
+    for (const char* feature_name : kWebAvailableFeatures) {
+      if (context->GetAvailability(feature_name).is_available() &&
+          !set_accessor(feature_name)) {
+        LOG(ERROR) << "Failed to create API on Chrome object.";
+        return;
+      }
+    }
+
+    // Runtime is special (see IsRuntimeAvailableToContext()).
+    if (IsRuntimeAvailableToContext(context) && !set_accessor("runtime"))
+      LOG(ERROR) << "Failed to create API on Chrome object.";
+
+    return;
+  }
 
   const FeatureProvider* api_feature_provider =
       FeatureProvider::GetAPIFeatures();
@@ -471,11 +522,7 @@ void NativeExtensionBindingsSystem::UpdateBindingsForContext(
     base::StringPiece accessor_name =
         GetFirstDifferentAPIName(map_entry.first, base::StringPiece());
     last_accessor = accessor_name;
-    v8::Local<v8::String> api_name =
-        gin::StringToSymbol(v8_context->GetIsolate(), accessor_name);
-    v8::Maybe<bool> success = chrome->SetAccessor(
-        v8_context, api_name, &BindingAccessor, nullptr, api_name);
-    if (!success.IsJust() || !success.FromJust()) {
+    if (!set_accessor(accessor_name)) {
       LOG(ERROR) << "Failed to create API on Chrome object.";
       return;
     }
