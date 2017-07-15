@@ -173,6 +173,7 @@ component("views") {
     "layout/grid_layout.h",
     "layout/layout_manager.h",
     "layout/layout_provider.h",
+    "linux_ui/device_scale_factor_observer.h",
     "linux_ui/linux_ui.h",
     "linux_ui/status_icon_linux.h",
     "linux_ui/window_button_order_observer.h",
