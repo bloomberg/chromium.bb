@@ -7,7 +7,6 @@ package org.chromium.chrome.browser;
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.provider.Browser;
 import android.support.annotation.Nullable;
 import android.support.customtabs.CustomTabsIntent;
@@ -76,8 +75,6 @@ public class ServiceTabLauncher {
             return;
         }
 
-        final TabDelegate tabDelegate = new TabDelegate(incognito);
-
         // 1. Launch WebAPK if one matches the target URL.
         String webApkPackageName =
                 WebApkValidator.queryWebApkPackage(ContextUtils.getApplicationContext(), url);
@@ -93,8 +90,8 @@ public class ServiceTabLauncher {
 
         // 2. Launch WebappActivity if one matches the target URL and was opened recently.
         // Otherwise, open the URL in a tab.
-        final WebappDataStorage storage =
-                WebappRegistry.getInstance().getWebappDataStorageForUrl(url);
+        WebappDataStorage storage = WebappRegistry.getInstance().getWebappDataStorageForUrl(url);
+        TabDelegate tabDelegate = new TabDelegate(incognito);
 
         // Open a new tab if:
         // - We did not find a WebappDataStorage corresponding to this URL.
@@ -112,28 +109,16 @@ public class ServiceTabLauncher {
                     Tab.INVALID_TAB_ID);
         } else {
             // The URL is within the scope of a recently launched standalone-capable web app
-            // on the home screen, so open it a standalone web app frame. An AsyncTask is
-            // used because WebappDataStorage.createWebappLaunchIntent contains a Bitmap
-            // decode operation and should not be run on the UI thread.
+            // on the home screen, so open it a standalone web app frame.
             //
             // This currently assumes that the only source is notifications; any future use
             // which adds a different source will need to change this.
-            new AsyncTask<Void, Void, Intent>() {
-                @Override
-                protected final Intent doInBackground(Void... nothing) {
-                    return storage.createWebappLaunchIntent();
-                }
-
-                @Override
-                protected final void onPostExecute(Intent intent) {
-                    // Replace the web app URL with the URL from the notification. This is
-                    // within the webapp's scope, so it is valid.
-                    intent.putExtra(ShortcutHelper.EXTRA_URL, url);
-                    intent.putExtra(ShortcutHelper.EXTRA_SOURCE,
-                            ShortcutSource.NOTIFICATION);
-                    tabDelegate.createNewStandaloneFrame(intent);
-                }
-            }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            Intent intent = storage.createWebappLaunchIntent();
+            // Replace the web app URL with the URL from the notification. This is within the
+            // webapp's scope, so it is valid.
+            intent.putExtra(ShortcutHelper.EXTRA_URL, url);
+            intent.putExtra(ShortcutHelper.EXTRA_SOURCE, ShortcutSource.NOTIFICATION);
+            tabDelegate.createNewStandaloneFrame(intent);
         }
     }
 

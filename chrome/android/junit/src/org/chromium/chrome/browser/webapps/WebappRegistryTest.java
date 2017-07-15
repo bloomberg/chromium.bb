@@ -10,7 +10,6 @@ import static org.junit.Assert.assertTrue;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.AsyncTask;
 import android.text.TextUtils;
 
 import org.junit.After;
@@ -654,14 +653,8 @@ public class WebappRegistryTest {
                 WebappRegistry.KEY_WEBAPP_SET, Collections.<String>emptySet());
     }
 
-    private Intent createShortcutIntent(final String url) throws Exception {
-        AsyncTask<Void, Void, Intent> shortcutIntentTask = new AsyncTask<Void, Void, Intent>() {
-            @Override
-            protected Intent doInBackground(Void... nothing) {
-                return ShortcutHelper.createWebappShortcutIntentForTesting("id", url);
-            }
-        };
-        return shortcutIntentTask.execute().get();
+    private Intent createShortcutIntent(final String url) {
+        return ShortcutHelper.createWebappShortcutIntentForTesting("id", url);
     }
 
     private Intent createWebApkIntent(String webappId, String webApkPackage) {
