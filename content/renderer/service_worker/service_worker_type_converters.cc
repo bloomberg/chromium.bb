@@ -49,7 +49,7 @@ TypeConverter<blink::WebPaymentRequestEventData,
         std::move(input->method_data[i]));
   }
 
-  output.total = mojo::ConvertTo<blink::WebPaymentItem>(input->total);
+  output.total = mojo::ConvertTo<blink::WebPaymentCurrencyAmount>(input->total);
 
   output.modifiers = blink::WebVector<blink::WebPaymentDetailsModifier>(
       input->modifiers.size());

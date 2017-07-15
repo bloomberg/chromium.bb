@@ -102,7 +102,7 @@ PaymentRequestEventInit PaymentEventDataConversion::ToPaymentRequestEventInit(
     method_data.push_back(ToPaymentMethodData(script_state, md));
   }
   event_data.setMethodData(method_data);
-  event_data.setTotal(ToPaymentItem(web_event_data.total));
+  event_data.setTotal(ToPaymentCurrencyAmount(web_event_data.total));
   HeapVector<PaymentDetailsModifier> modifiers;
   for (const auto& modifier : web_event_data.modifiers) {
     modifiers.push_back(ToPaymentDetailsModifier(script_state, modifier));

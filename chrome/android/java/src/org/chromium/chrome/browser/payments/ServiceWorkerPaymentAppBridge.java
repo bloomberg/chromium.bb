@@ -94,6 +94,11 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
     }
 
     @CalledByNative
+    private static String getCurrencySystemFromPaymentItem(PaymentItem item) {
+        return item.amount.currencySystem;
+    }
+
+    @CalledByNative
     private static void onPaymentAppCreated(long registrationId, String label,
             @Nullable String sublabel, @Nullable Bitmap icon, String[] methodNameArray,
             WebContents webContents, Object callback) {
