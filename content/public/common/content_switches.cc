@@ -368,6 +368,10 @@ const char kEnableExperimentalCanvasFeatures[] =
 const char kEnableExperimentalWebPlatformFeatures[] =
     "enable-experimental-web-platform-features";
 
+// Disables all RuntimeEnabledFeatures that can be enabled via OriginTrials.
+const char kDisableOriginTrialControlledBlinkFeatures[] =
+    "disable-origin-trial-controlled-blink-features";
+
 // Comma-separated list of feature names to enable. See also kDisableFeatures.
 const char kEnableFeatures[] = "enable-features";
 
