@@ -611,6 +611,7 @@ bool GpuProcessHost::Init() {
   process_->GetHost()->CreateChannelMojo();
 
   gpu::GpuPreferences gpu_preferences = GetGpuPreferencesFromCommandLine();
+  GpuDataManagerImpl::GetInstance()->UpdateGpuPreferences(&gpu_preferences);
   if (in_process_) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     DCHECK(GetGpuMainThreadFactory());
@@ -630,7 +631,7 @@ bool GpuProcessHost::Init() {
     in_process_gpu_thread_->StartWithOptions(options);
 
     OnProcessLaunched();  // Fake a callback that the process is ready.
-  } else if (!LaunchGpuProcess(&gpu_preferences)) {
+  } else if (!LaunchGpuProcess()) {
     return false;
   }
 
@@ -988,7 +989,7 @@ void GpuProcessHost::ForceShutdown() {
   process_->ForceShutdown();
 }
 
-bool GpuProcessHost::LaunchGpuProcess(gpu::GpuPreferences* gpu_preferences) {
+bool GpuProcessHost::LaunchGpuProcess() {
   const base::CommandLine& browser_command_line =
       *base::CommandLine::ForCurrentProcess();
 
@@ -1046,8 +1047,7 @@ bool GpuProcessHost::LaunchGpuProcess(gpu::GpuPreferences* gpu_preferences) {
   GetContentClient()->browser()->AppendExtraCommandLineSwitches(
       cmd_line.get(), process_->GetData().id);
 
-  GpuDataManagerImpl::GetInstance()->AppendGpuCommandLine(cmd_line.get(),
-                                                          gpu_preferences);
+  GpuDataManagerImpl::GetInstance()->AppendGpuCommandLine(cmd_line.get());
   if (cmd_line->HasSwitch(switches::kUseGL)) {
     swiftshader_rendering_ = (cmd_line->GetSwitchValueASCII(switches::kUseGL) ==
                               gl::kGLImplementationSwiftShaderForWebGLName);

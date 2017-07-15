@@ -669,7 +669,7 @@ void GpuDataManagerImplPrivate::Initialize() {
 
   if (in_process_gpu_) {
     command_line->AppendSwitch(switches::kDisableGpuWatchdog);
-    AppendGpuCommandLine(command_line, nullptr);
+    AppendGpuCommandLine(command_line);
   }
 }
 
@@ -772,8 +772,7 @@ void GpuDataManagerImplPrivate::AppendRendererCommandLine(
 }
 
 void GpuDataManagerImplPrivate::AppendGpuCommandLine(
-    base::CommandLine* command_line,
-    gpu::GpuPreferences* gpu_preferences) const {
+    base::CommandLine* command_line) const {
   DCHECK(command_line);
 
   std::string use_gl =
@@ -818,15 +817,8 @@ void GpuDataManagerImplPrivate::AppendGpuCommandLine(
                                     disabled_extensions_);
   }
 
-  if (gpu_preferences && IsGpuSchedulerEnabled())
-    gpu_preferences->enable_gpu_scheduler = true;
-
   if (ShouldDisableAcceleratedVideoDecode(command_line)) {
-    if (gpu_preferences) {
-      gpu_preferences->disable_accelerated_video_decode = true;
-    } else {
-      command_line->AppendSwitch(switches::kDisableAcceleratedVideoDecode);
-    }
+    command_line->AppendSwitch(switches::kDisableAcceleratedVideoDecode);
   }
 
   if (gpu_driver_bugs_.find(gpu::CREATE_DEFAULT_GL_CONTEXT) !=
@@ -840,15 +832,6 @@ void GpuDataManagerImplPrivate::AppendGpuCommandLine(
     command_line->AppendSwitch(switches::kEnableDrmAtomic);
   }
 #endif
-
-  if (gpu_preferences) { // enable_es3_apis
-    bool blacklisted = IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_WEBGL2);
-    bool enabled = base::CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnableES3APIs);
-    bool disabled = base::CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kDisableES3APIs);
-    gpu_preferences->enable_es3_apis = (enabled || !blacklisted) && !disabled;
-  }
 
   // Pass GPU and driver information to GPU process. We try to avoid full GPU
   // info collection at GPU process startup, but we need gpu vendor_id,
@@ -935,6 +918,25 @@ void GpuDataManagerImplPrivate::UpdateRendererWebPrefs(
   prefs->disable_2d_canvas_copy_on_write =
       IsDriverBugWorkaroundActive(gpu::BROKEN_EGL_IMAGE_REF_COUNTING) &&
       command_line->HasSwitch(switches::kEnableThreadedTextureMailboxes);
+}
+
+void GpuDataManagerImplPrivate::UpdateGpuPreferences(
+    gpu::GpuPreferences* gpu_preferences) const {
+  DCHECK(gpu_preferences);
+
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
+
+  if (IsGpuSchedulerEnabled())
+    gpu_preferences->enable_gpu_scheduler = true;
+
+  if (ShouldDisableAcceleratedVideoDecode(command_line))
+    gpu_preferences->disable_accelerated_video_decode = true;
+
+  gpu_preferences->enable_es3_apis =
+      (command_line->HasSwitch(switches::kEnableES3APIs) ||
+       !IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_WEBGL2)) &&
+      !command_line->HasSwitch(switches::kDisableES3APIs);
 }
 
 void GpuDataManagerImplPrivate::DisableHardwareAcceleration() {
