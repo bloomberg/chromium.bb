@@ -362,64 +362,6 @@ AtomicString ExtractMIMETypeFromMediaType(const AtomicString& media_type) {
       media_type.GetString().Substring(type_start, type_end - type_start));
 }
 
-String ExtractCharsetFromMediaType(const String& media_type) {
-  unsigned pos, len;
-  FindCharsetInMediaType(media_type, pos, len);
-  return media_type.Substring(pos, len);
-}
-
-void FindCharsetInMediaType(const String& media_type,
-                            unsigned& charset_pos,
-                            unsigned& charset_len,
-                            unsigned start) {
-  charset_pos = start;
-  charset_len = 0;
-
-  size_t pos = start;
-  unsigned length = media_type.length();
-
-  while (pos < length) {
-    pos = media_type.FindIgnoringASCIICase("charset", pos);
-    if (pos == kNotFound || !pos) {
-      charset_len = 0;
-      return;
-    }
-
-    // is what we found a beginning of a word?
-    if (media_type[pos - 1] > ' ' && media_type[pos - 1] != ';') {
-      pos += 7;
-      continue;
-    }
-
-    pos += 7;
-
-    // skip whitespace
-    while (pos != length && media_type[pos] <= ' ')
-      ++pos;
-
-    if (media_type[pos++] !=
-        '=')  // this "charset" substring wasn't a parameter
-              // name, but there may be others
-      continue;
-
-    while (pos != length && (media_type[pos] <= ' ' || media_type[pos] == '"' ||
-                             media_type[pos] == '\''))
-      ++pos;
-
-    // we don't handle spaces within quoted parameter values, because charset
-    // names cannot have any
-    unsigned endpos = pos;
-    while (pos != length && media_type[endpos] > ' ' &&
-           media_type[endpos] != '"' && media_type[endpos] != '\'' &&
-           media_type[endpos] != ';')
-      ++endpos;
-
-    charset_pos = pos;
-    charset_len = endpos - pos;
-    return;
-  }
-}
-
 ReflectedXSSDisposition ParseXSSProtectionHeader(const String& header,
                                                  String& failure_reason,
                                                  unsigned& failure_position,
