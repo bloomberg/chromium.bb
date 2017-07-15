@@ -194,12 +194,10 @@ bool IncognitoModePrefs::CanOpenBrowser(Profile* profile) {
 #if defined(OS_WIN)
 // static
 void IncognitoModePrefs::InitializePlatformParentalControls() {
-  // TODO(fdoray): This task uses COM. Add the WithCom() trait once supported.
-  // crbug.com/662122
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-      base::Bind(
-          base::IgnoreResult(&PlatformParentalControlsValue::GetInstance)));
+  base::CreateCOMSTATaskRunnerWithTraits(
+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE})
+      ->PostTask(FROM_HERE, base::Bind(base::IgnoreResult(
+                                &PlatformParentalControlsValue::GetInstance)));
 }
 #endif
 
