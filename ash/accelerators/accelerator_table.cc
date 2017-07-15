@@ -132,6 +132,9 @@ const AcceleratorData kAcceleratorData[] = {
     {true, ui::VKEY_P, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, SHOW_STYLUS_TOOLS},
     {true, ui::VKEY_S, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
      SHOW_SYSTEM_TRAY_BUBBLE},
+    // Until we have unified settings and notifications the "hamburger"
+    // key opens quick settings.
+    {true, ui::VKEY_SETTINGS, ui::EF_NONE, SHOW_SYSTEM_TRAY_BUBBLE},
     {true, ui::VKEY_K, ui::EF_SHIFT_DOWN | ui::EF_COMMAND_DOWN,
      SHOW_IME_MENU_BUBBLE},
     {true, ui::VKEY_1, ui::EF_ALT_DOWN, LAUNCH_APP_0},
