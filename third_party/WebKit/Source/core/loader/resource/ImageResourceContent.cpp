@@ -92,6 +92,12 @@ ImageResourceContent* ImageResourceContent::Fetch(FetchParameters& params,
   return resource->GetContent();
 }
 
+ImageResourceContent::~ImageResourceContent() {
+  // For investigation of crbug.com/737392.
+  // TODO(hiroshige): Remove this before going to beta.
+  CHECK(!is_update_image_being_called_);
+}
+
 void ImageResourceContent::SetImageResourceInfo(ImageResourceInfo* info) {
   info_ = info;
 }
@@ -322,13 +328,18 @@ PassRefPtr<Image> ImageResourceContent::CreateImage(bool is_multipart) {
 void ImageResourceContent::ClearImage() {
   if (!image_)
     return;
+  CHECK_NE(GetContentStatus(), ResourceStatus::kNotStarted);
   int64_t length = image_->Data() ? image_->Data()->size() : 0;
+  CHECK_NE(GetContentStatus(), ResourceStatus::kNotStarted);
   v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(-length);
+  CHECK_NE(GetContentStatus(), ResourceStatus::kNotStarted);
 
   // If our Image has an observer, it's always us so we need to clear the back
   // pointer before dropping our reference.
   image_->ClearImageObserver();
+  CHECK_NE(GetContentStatus(), ResourceStatus::kNotStarted);
   image_.Clear();
+  CHECK_NE(GetContentStatus(), ResourceStatus::kNotStarted);
   size_available_ = Image::kSizeUnavailable;
 }
 
@@ -337,6 +348,8 @@ void ImageResourceContent::UpdateToLoadedContentStatus(
     ResourceStatus new_status) {
   // When |ShouldNotifyFinish|, we set content_status_
   // to a loaded ResourceStatus.
+
+  CHECK_NE(GetContentStatus(), ResourceStatus::kNotStarted);
 
   // Checks |new_status| (i.e. Resource's current status).
   switch (new_status) {
@@ -421,10 +434,8 @@ ImageResourceContent::UpdateImageResult ImageResourceContent::UpdateImage(
     bool is_multipart) {
   TRACE_EVENT0("blink", "ImageResourceContent::updateImage");
 
-#if DCHECK_IS_ON()
-  DCHECK(!is_update_image_being_called_);
+  CHECK(!is_update_image_being_called_);
   AutoReset<bool> scope(&is_update_image_being_called_, true);
-#endif
 
   CHECK_NE(GetContentStatus(), ResourceStatus::kNotStarted);
 
@@ -453,7 +464,9 @@ ImageResourceContent::UpdateImageResult ImageResourceContent::UpdateImage(
         if (!image_)
           image_ = CreateImage(is_multipart);
         DCHECK(image_);
+        CHECK_NE(GetContentStatus(), ResourceStatus::kNotStarted);
         size_available_ = image_->SetData(std::move(data), all_data_received);
+        CHECK_NE(GetContentStatus(), ResourceStatus::kNotStarted);
         DCHECK(all_data_received ||
                size_available_ !=
                    Image::kSizeAvailableAndLoadingAsynchronously);
