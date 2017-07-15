@@ -10,7 +10,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
 #include "chrome/browser/sync_file_system/remote_change_processor.h"
 #include "chrome/browser/sync_file_system/task_logger.h"
@@ -25,16 +24,14 @@ SyncEngineContext::SyncEngineContext(
     std::unique_ptr<drive::DriveUploaderInterface> drive_uploader,
     TaskLogger* task_logger,
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
-    const scoped_refptr<base::SequencedTaskRunner>& worker_task_runner,
-    const scoped_refptr<base::SequencedWorkerPool>& worker_pool)
+    const scoped_refptr<base::SequencedTaskRunner>& worker_task_runner)
     : drive_service_(std::move(drive_service)),
       drive_uploader_(std::move(drive_uploader)),
       task_logger_(task_logger ? task_logger->AsWeakPtr()
                                : base::WeakPtr<TaskLogger>()),
       remote_change_processor_(nullptr),
       ui_task_runner_(ui_task_runner),
-      worker_task_runner_(worker_task_runner),
-      worker_pool_(worker_pool) {
+      worker_task_runner_(worker_task_runner) {
   sequence_checker_.DetachFromSequence();
 }
 
@@ -80,11 +77,6 @@ base::SingleThreadTaskRunner* SyncEngineContext::GetUITaskRunner() {
 base::SequencedTaskRunner* SyncEngineContext::GetWorkerTaskRunner() {
   DCHECK(sequence_checker_.CalledOnValidSequence());
   return worker_task_runner_.get();
-}
-
-base::SequencedWorkerPool* SyncEngineContext::GetWorkerPool() {
-  DCHECK(sequence_checker_.CalledOnValidSequence());
-  return worker_pool_.get();
 }
 
 void SyncEngineContext::SetMetadataDatabase(

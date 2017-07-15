@@ -74,16 +74,14 @@ class ConflictResolverTest : public testing::Test {
     context_.reset(new SyncEngineContext(
         std::move(fake_drive_service), std::move(drive_uploader),
         nullptr /* task_logger */, base::ThreadTaskRunnerHandle::Get(),
-        base::ThreadTaskRunnerHandle::Get(), nullptr /* worker_pool */));
+        base::ThreadTaskRunnerHandle::Get()));
     context_->SetRemoteChangeProcessor(remote_change_processor_.get());
 
     RegisterSyncableFileSystem();
 
     sync_task_manager_.reset(new SyncTaskManager(
         base::WeakPtr<SyncTaskManager::Client>(),
-        10 /* maximum_background_task */,
-        base::ThreadTaskRunnerHandle::Get(),
-        nullptr /* worker_pool */));
+        10 /* maximum_background_task */, base::ThreadTaskRunnerHandle::Get()));
     sync_task_manager_->Initialize(SYNC_STATUS_OK);
   }
 
