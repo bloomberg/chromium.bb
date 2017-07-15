@@ -236,6 +236,7 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleText(
       MoveToNextOf(item);
       if (auto_wrap_ && break_iterator_.IsBreakable(item.EndOffset()))
         return LineBreakState::kIsBreakable;
+      item_result->shape_result = item.TextShapeResult();
       item_result->prohibit_break_after = true;
       return LineBreakState::kNotBreakable;
     }

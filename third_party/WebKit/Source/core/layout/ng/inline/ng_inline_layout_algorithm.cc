@@ -166,6 +166,7 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
         box->AccumulateUsedFonts(item, item_result.start_offset,
                                  item_result.end_offset, baseline_type_);
       }
+      text_builder.SetShapeResult(std::move(item_result.shape_result));
       RefPtr<NGPhysicalTextFragment> text_fragment =
           text_builder.ToTextFragment(item_result.item_index,
                                       item_result.start_offset,
@@ -177,7 +178,6 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
       // influence the line height.
       // https://drafts.csswg.org/css2/visudet.html#line-height
       box->ComputeTextMetrics(*item.Style(), baseline_type_);
-      text_builder.SetDirection(box->style->Direction());
       if (ShouldCreateBoxFragment(item, item_result))
         box->SetNeedsBoxFragment(item_result.needs_box_when_empty);
     } else if (item.Type() == NGInlineItem::kCloseTag) {
@@ -305,7 +305,6 @@ NGInlineBoxState* NGInlineLayoutAlgorithm::PlaceAtomicInline(
   // TODO(kojii): Try to eliminate the wrapping text fragment and use the
   // |fragment| directly. Currently |CopyFragmentDataToLayoutBlockFlow|
   // requires a text fragment.
-  text_builder->SetDirection(style.Direction());
   text_builder->SetSize({fragment.InlineSize(), metrics.LineHeight()});
   LayoutUnit line_top = item_result->margins.block_start - metrics.ascent;
   RefPtr<NGPhysicalTextFragment> text_fragment = text_builder->ToTextFragment(
