@@ -83264,6 +83264,33 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Variations.SafeMode.FellBackToSafeMode" enum="BooleanSafeMode">
+  <owner>isherman@chromium.org</owner>
+  <summary>
+    Whether or not the VariationsService fell back to Safe Mode, due to either
+    too many crashes or too many failures to fetch a new seed. Recorded during
+    Chrome startup, when the VariationsService is created.
+  </summary>
+</histogram>
+
+<histogram name="Variations.SafeMode.Streak.Crashes" units="crashes">
+  <owner>isherman@chromium.org</owner>
+  <summary>
+    The number of consecutive crashes observed by the VariationsService, without
+    a single intervening successful seed fetch. Recorded during Chrome startup,
+    when the VariationsService is created.
+  </summary>
+</histogram>
+
+<histogram name="Variations.SafeMode.Streak.FetchFailures" units="failures">
+  <owner>isherman@chromium.org</owner>
+  <summary>
+    The number of consecutive failed attempts to fetch a new seed by the
+    VariationsService. Recorded during Chrome startup, when the
+    VariationsService is created.
+  </summary>
+</histogram>
+
 <histogram name="Variations.SeedDateChange" enum="VariationsSeedDateChange">
   <owner>jwd@chromium.org</owner>
   <summary>

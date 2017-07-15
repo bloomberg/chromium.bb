@@ -3506,6 +3506,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Revoked"/>
 </enum>
 
+<enum name="BooleanSafeMode">
+  <int value="0" label="Regular mode"/>
+  <int value="1" label="Safe mode"/>
+</enum>
+
 <enum name="BooleanSecure">
   <int value="0" label="Insecure"/>
   <int value="1" label="Secure"/>

@@ -14,6 +14,15 @@ const char kVariationsCompressedSeed[] = "variations_compressed_seed";
 // studies.
 const char kVariationsCountry[] = "variations_country";
 
+// The number of times that Chrome has crashed before successfully fetching a
+// new seed. Used to determine whether to fall back to a "safe" seed.
+const char kVariationsCrashStreak[] = "variations_crash_streak";
+
+// The number of times that the VariationsService has failed to fetch a new
+// seed. Used to determine whether to fall back to a "safe" seed.
+const char kVariationsFailedToFetchSeedStreak[] =
+    "variations_failed_to_fetch_seed_streak";
+
 // 64-bit integer serialization of the base::Time from the last successful seed
 // fetch (i.e. when the Variations server responds with 200 or 304).
 const char kVariationsLastFetchTime[] = "variations_last_fetch_time";
