@@ -90,6 +90,7 @@ source_set("renderer") {
     "dom_activity_logger.h",
     "event_bindings.cc",
     "event_bindings.h",
+    "extension_bindings_system.cc",
     "extension_bindings_system.h",
     "extension_frame_helper.cc",
     "extension_frame_helper.h",
