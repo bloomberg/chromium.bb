@@ -8,19 +8,31 @@
 #include <string>
 
 #include "base/macros.h"
-#include "components/arc/arc_service.h"
 #include "components/arc/common/clipboard.mojom.h"
 #include "components/arc/instance_holder.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
+
+namespace content {
+class BrowserContext;
+}  // namespace content
 
 namespace arc {
 
+class ArcBridgeService;
+
 class ArcClipboardBridge
-    : public ArcService,
+    : public KeyedService,
       public InstanceHolder<mojom::ClipboardInstance>::Observer,
       public mojom::ClipboardHost {
  public:
-  explicit ArcClipboardBridge(ArcBridgeService* bridge_service);
+  // Returns singleton instance for the given BrowserContext,
+  // or nullptr if the browser |context| is not allowed to use ARC.
+  static ArcClipboardBridge* GetForBrowserContext(
+      content::BrowserContext* context);
+
+  ArcClipboardBridge(content::BrowserContext* context,
+                     ArcBridgeService* bridge_service);
   ~ArcClipboardBridge() override;
 
   // InstanceHolder<mojom::ClipboardInstance>::Observer overrides.
@@ -33,6 +45,7 @@ class ArcClipboardBridge
  private:
   THREAD_CHECKER(thread_checker_);
 
+  ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
   mojo::Binding<mojom::ClipboardHost> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcClipboardBridge);
