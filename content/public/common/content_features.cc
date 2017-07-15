@@ -127,6 +127,10 @@ const base::Feature kHeapCompaction{"HeapCompaction",
 const base::Feature kIdleTimeSpellChecking{"IdleTimeSpellChecking",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable lazy initialization of the media controls.
+const base::Feature kLazyInitializeMediaControls{
+    "LazyInitializeMediaControls", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enables lazily parsing css properties for performance.
 const base::Feature kLazyParseCSS{"LazyParseCSS",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
