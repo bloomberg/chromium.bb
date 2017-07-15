@@ -82,11 +82,10 @@ void DrawTaskbarDecoration(gfx::NativeWindow window, const gfx::Image* image) {
     bitmap.reset(new SkBitmap(
         profiles::GetAvatarIconAsSquare(*image->ToSkBitmap(), 1)));
   }
-  // TODO(robliao): Annotate this task with .WithCOM() once supported.
-  // https://crbug.com/662122
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-      base::Bind(&SetOverlayIcon, hwnd, base::Passed(&bitmap)));
+  base::CreateCOMSTATaskRunnerWithTraits(
+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE})
+      ->PostTask(FROM_HERE,
+                 base::Bind(&SetOverlayIcon, hwnd, base::Passed(&bitmap)));
 }
 
 }  // namespace chrome
