@@ -9,7 +9,7 @@
 
 #include "base/callback_forward.h"
 #include "base/containers/flat_map.h"
-#include "base/files/scoped_file.h"
+#include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_pump_libevent.h"
@@ -47,7 +47,7 @@ class MemlogReceiverPipeServer
   // Runs on IO Thread.
   // TODO(ajwong): Make private once the correct separation of responsibilities
   // is worked out between MemlogReceiverPipeServer and ProfilingProcess.
-  void OnNewPipe(base::ScopedFD pipe, int sender_pid);
+  void OnNewPipe(base::ScopedPlatformFile pipe, int sender_pid);
 
  private:
   friend class base::RefCountedThreadSafe<MemlogReceiverPipeServer>;

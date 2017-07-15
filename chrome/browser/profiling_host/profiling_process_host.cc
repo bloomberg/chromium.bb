@@ -16,6 +16,7 @@
 #include "content/public/common/content_switches.h"
 #include "mojo/edk/embedder/outgoing_broker_client_invitation.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 
 #if defined(OS_LINUX)
 #include <fcntl.h>
@@ -30,7 +31,6 @@
 #include "base/third_party/valgrind/valgrind.h"
 #include "chrome/common/profiling/profiling_constants.h"
 #include "content/public/browser/file_descriptor_info.h"
-#include "mojo/public/cpp/system/platform_handle.h"
 #endif
 
 namespace profiling {
@@ -154,6 +154,7 @@ void ProfilingProcessHost::Launch() {
 #if defined(OS_WIN)
   base::Process process = base::Process::Current();
   pipe_id_ = base::IntToString(static_cast<int>(process.Pid()));
+  base::CommandLine profiling_cmd = MakeProfilingCommandLine(pipe_id_);
 #else
 
   // Create the socketpair for the low level memlog pipe.
@@ -169,9 +170,9 @@ void ProfilingProcessHost::Launch() {
   pipe_id_ = base::IntToString(memlog_fds[0]);
 
   handle_passing_info.emplace_back(child_end.get(), child_end.get());
-#endif
   base::CommandLine profiling_cmd =
       MakeProfilingCommandLine(base::IntToString(child_end.get()));
+#endif
 
   // Keep the server handle, pass the client handle to the child.
   pending_control_connection_ = control_channel.PassServerHandle();

@@ -42,6 +42,19 @@ void MemlogReceiverPipeServer::Start() {
       base::Bind(&MemlogReceiverPipeServer::ScheduleNewConnection, this, true));
 }
 
+void MemlogReceiverPipeServer::OnNewPipe(base::ScopedPlatformFile pipe,
+                                         int sender_pid) {
+  MemlogReceiverPipe::CompletionThunk::Callback cb;
+  std::unique_ptr<MemlogReceiverPipe::CompletionThunk> ct(
+      new MemlogReceiverPipe::CompletionThunk(pipe.Take(), std::move(cb)));
+  scoped_refptr<MemlogReceiverPipe> receiver_pipe(
+      new MemlogReceiverPipe(std::move(ct)));
+
+  if (!on_new_connection_.is_null())
+    on_new_connection_.Run(std::move(receiver_pipe), sender_pid);
+  receiver_pipe->StartReadingOnIOThread();
+}
+
 base::string16 MemlogReceiverPipeServer::GetPipeName() const {
   base::string16 pipe_name(kWindowsPipePrefix);
   pipe_name.append(pipe_id_);
@@ -78,7 +91,7 @@ void MemlogReceiverPipeServer::OnIOCompleted(size_t bytes_transfered,
 
   // TODO(ajwong): Why should there be a null-check here?
   if (!on_new_connection_.is_null())
-    on_new_connection_.Run(pipe);
+    on_new_connection_.Run(std::move(pipe), pipe->GetRemoteProcessID());
   pipe->StartReadingOnIOThread();
 }
 
