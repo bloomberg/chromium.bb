@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.preferences.privacy;
 
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.PreferenceScreen;
@@ -124,14 +123,7 @@ public class ClearBrowsingDataPreferencesTest
      */
     @MediumTest
     public void testClearingHistoryClearsWebappScopesAndLaunchTimes() throws Exception {
-        AsyncTask<Void, Void, Intent> shortcutIntentTask = new AsyncTask<Void, Void, Intent>() {
-            @Override
-            protected Intent doInBackground(Void... nothing) {
-                return ShortcutHelper.createWebappShortcutIntentForTesting("id", "url");
-            }
-        };
-        final Intent shortcutIntent = shortcutIntentTask.execute().get();
-
+        Intent shortcutIntent = ShortcutHelper.createWebappShortcutIntentForTesting("id", "url");
         TestFetchStorageCallback callback = new TestFetchStorageCallback();
         WebappRegistry.getInstance().register("first", callback);
         callback.waitForCallback(0);

@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.browsing_data;
 
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.support.test.filters.MediumTest;
 
 import org.junit.Assert;
@@ -72,14 +71,8 @@ public class BrowsingDataRemoverIntegrationTest {
     }
 
     private void registerWebapp(final String webappId, final String webappUrl) throws Exception {
-        AsyncTask<Void, Void, Intent> shortcutIntentTask = new AsyncTask<Void, Void, Intent>() {
-            @Override
-            protected Intent doInBackground(Void... nothing) {
-                return ShortcutHelper.createWebappShortcutIntentForTesting(webappId, webappUrl);
-            }
-        };
-
-        final Intent shortcutIntent = shortcutIntentTask.execute().get();
+        Intent shortcutIntent =
+                ShortcutHelper.createWebappShortcutIntentForTesting(webappId, webappUrl);
         TestFetchStorageCallback callback = new TestFetchStorageCallback();
         WebappRegistry.getInstance().register(webappId, callback);
         callback.waitForCallback(0);

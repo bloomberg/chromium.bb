@@ -12,7 +12,6 @@ import android.os.AsyncTask;
 import android.text.TextUtils;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.browser.ShortcutHelper;
@@ -191,12 +190,10 @@ public class WebappDataStorage {
     }
 
     /**
-     * Creates and returns a web app launch intent from the data stored in this object. Must not be
-     * called on the main thread as it requires a potentially expensive image decode.
+     * Creates and returns a web app launch intent from the data stored in this object.
      * @return The web app launch intent.
      */
     public Intent createWebappLaunchIntent() {
-        assert !ThreadUtils.runningOnUiThread();
         // Assume that all of the data is invalid if the version isn't set, so return a null intent.
         int version = mPreferences.getInt(KEY_VERSION, VERSION_INVALID);
         if (version == VERSION_INVALID) return null;
@@ -207,8 +204,8 @@ public class WebappDataStorage {
                 mPreferences.getString(KEY_ACTION, null), mPreferences.getString(KEY_URL, null),
                 mPreferences.getString(KEY_SCOPE, null), mPreferences.getString(KEY_NAME, null),
                 mPreferences.getString(KEY_SHORT_NAME, null),
-                ShortcutHelper.decodeBitmapFromString(mPreferences.getString(KEY_ICON, null)),
-                version, mPreferences.getInt(KEY_DISPLAY_MODE, WebDisplayMode.STANDALONE),
+                mPreferences.getString(KEY_ICON, null), version,
+                mPreferences.getInt(KEY_DISPLAY_MODE, WebDisplayMode.STANDALONE),
                 mPreferences.getInt(KEY_ORIENTATION, ScreenOrientationValues.DEFAULT),
                 mPreferences.getLong(
                         KEY_THEME_COLOR, ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING),
