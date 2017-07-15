@@ -11,9 +11,10 @@
 
 #include "base/stl_util.h"
 #include "cc/output/copy_output_request.h"
+#include "cc/resources/returned_resource.h"
+#include "cc/resources/transferable_resource.h"
 #include "cc/surfaces/surface_client.h"
 #include "cc/surfaces/surface_manager.h"
-#include "cc/surfaces/surface_resource_holder_client.h"
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
 
 namespace cc {
