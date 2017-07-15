@@ -1042,15 +1042,25 @@ TEST(V8ScriptValueSerializerTest, RoundTripImageBitmapWithColorSpaceInfo) {
   EXPECT_EQ(kP3CanvasColorSpace, color_params.color_space());
   EXPECT_EQ(kF16CanvasPixelFormat, color_params.pixel_format());
 
-  // Check that the pixel at (3, 3) is red.
+  // Check that the pixel at (3, 3) is red. We expect red in P3 to be
+  // {0x94, 0x3A, 0x3F, 0x28, 0x5F, 0x24, 0x00, 0x3C} when each color
+  // component is presented as a half float in Skia. However, difference in
+  // GPU hardware may result in small differences in lower significant byte in
+  // Skia color conversion pipeline. Hence, we use a tolerance of 2 here.
   uint8_t pixel[8] = {};
   ASSERT_TRUE(
       new_image_bitmap->BitmapImage()->ImageForCurrentFrame()->readPixels(
           info.makeWH(1, 1), &pixel, 8, 3, 3));
-  // The reference values are the hex representation of red in P3 (as stored
-  // in half floats by Skia).
-  ASSERT_THAT(pixel, ::testing::ElementsAre(0x94, 0x3A, 0x3F, 0x28, 0x5F, 0x24,
-                                            0x0, 0x3C));
+  uint8_t p3_red[8] = {0x94, 0x3A, 0x3F, 0x28, 0x5F, 0x24, 0x00, 0x3C};
+  bool approximate_match = true;
+  uint8_t tolerance = 2;
+  for (int i = 0; i < 8; i++) {
+    if (std::abs(p3_red[i] - pixel[i]) > tolerance) {
+      approximate_match = false;
+      break;
+    }
+  }
+  ASSERT_TRUE(approximate_match);
 }
 
 TEST(V8ScriptValueSerializerTest, DecodeImageBitmap) {
