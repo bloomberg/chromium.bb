@@ -36,7 +36,6 @@ static const CGFloat kPinEntryViewHeight = 90.f;
 static const CGFloat kReconnectViewWidth = 120.f;
 static const CGFloat kReconnectViewHeight = 90.f;
 
-static const CGFloat kTopPadding = 240.f;
 static const CGFloat kPadding = 20.f;
 static const CGFloat kMargin = 20.f;
 
@@ -197,7 +196,6 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
   NSDictionary* layoutMetrics = @{
     @"padding" : @(kPadding),
     @"margin" : @(kMargin),
-    @"topPadding" : @(kTopPadding),
     @"iconDiameter" : @(kIconRadius * 2),
     @"pinEntryViewWidth" : @(kPinEntryViewWidth),
     @"pinEntryViewHeight" : @(kPinEntryViewHeight),
@@ -237,9 +235,8 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
                                                       views:views]];
 
   // Anchors:
-  _activityIndicatorTopConstraintFull =
-      [_activityIndicator.topAnchor constraintEqualToAnchor:self.view.topAnchor
-                                                   constant:kTopPadding];
+  _activityIndicatorTopConstraintFull = [_activityIndicator.bottomAnchor
+      constraintEqualToAnchor:self.view.centerYAnchor];
   _activityIndicatorTopConstraintFull.active = YES;
 
   [_iconView.centerYAnchor
