@@ -576,6 +576,10 @@
       name: "LayoutNG",
     },
     {
+      name: "LazyInitializeMediaControls",
+      // This is enabled by features::kLazyInitializeMediaControls.
+    },
+    {
       name: "LazyParseCSS",
       status: "experimental",
     },

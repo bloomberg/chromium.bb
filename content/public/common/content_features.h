@@ -41,6 +41,7 @@ CONTENT_EXPORT extern const base::Feature kGamepadExtensions;
 CONTENT_EXPORT extern const base::Feature kGuestViewCrossProcessFrames;
 CONTENT_EXPORT extern const base::Feature kHeapCompaction;
 CONTENT_EXPORT extern const base::Feature kIdleTimeSpellChecking;
+CONTENT_EXPORT extern const base::Feature kLazyInitializeMediaControls;
 CONTENT_EXPORT extern const base::Feature kLazyParseCSS;
 CONTENT_EXPORT extern const base::Feature kLoadingWithMojo;
 CONTENT_EXPORT extern const base::Feature kMediaDocumentDownloadButton;

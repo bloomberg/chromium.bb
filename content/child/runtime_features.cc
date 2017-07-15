@@ -404,6 +404,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
     WebRuntimeFeatures::EnableOriginTrialControlledFeatures(false);
   }
 
+  WebRuntimeFeatures::EnableLazyInitializeMediaControls(
+      base::FeatureList::IsEnabled(features::kLazyInitializeMediaControls));
+
   // Enable explicitly enabled features, and then disable explicitly disabled
   // ones.
   if (command_line.HasSwitch(switches::kEnableBlinkFeatures)) {
