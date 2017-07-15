@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/l10n_util.h"
 
 #include "base/i18n/rtl.h"
+#include "base/mac/availability.h"
 #include "base/mac/mac_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -93,29 +94,31 @@ bool ShouldFlipWindowControlsInRTL() {
   return ShouldDoExperimentalRTLLayout() && base::mac::IsAtLeastOS10_12();
 }
 
-// TODO(lgrey): Remove these when all builds are on 10.12 SDK.
+// TODO(lgrey): Remove these when deployment target is 10.12.
 #if defined(MAC_OS_X_VERSION_10_12) && \
     (MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_12)
 #warning LeadingCellImagePosition/TrailingCellImagePosition \
   should be removed since the deployment target is >= 10.12
 #endif
 
-#if !defined(MAC_OS_X_VERSION_10_12) || \
-    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_12
 NSCellImagePosition LeadingCellImagePosition() {
+#if defined(MAC_OS_X_VERSION_10_12) && \
+    MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_12
+  if (@available(macOS 10.12, *)) {
+    return NSImageLeading;
+  }
+#endif
   return ShouldDoExperimentalRTLLayout() ? NSImageRight : NSImageLeft;
 }
 NSCellImagePosition TrailingCellImagePosition() {
+#if defined(MAC_OS_X_VERSION_10_12) && \
+    MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_12
+  if (@available(macOS 10.12, *)) {
+    return NSImageTrailing;
+  }
+#endif
   return ShouldDoExperimentalRTLLayout() ? NSImageLeft : NSImageRight;
 }
-#else
-NSCellImagePosition LeadingCellImagePosition() {
-  return NSImageLeading;
-}
-NSCellImagePosition TrailingCellImagePosition() {
-  return NSImageTrailing;
-}
-#endif  // MAC_OS_X_VERSION_10_12
 
 NSRectEdge LeadingEdge() {
   return ShouldDoExperimentalRTLLayout() ? NSMaxXEdge : NSMinXEdge;

@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/mac/availability.h"
 #include "base/mac/mac_util.h"
 #import "base/mac/scoped_nsobject.h"
 #import "base/mac/sdk_forward_declarations.h"
@@ -177,7 +178,7 @@ class HomePrefNotificationBridge {
 }
 
 // Creates and returns a touch bar for tab fullscreen mode.
-- (NSTouchBar*)createTabFullscreenTouchBar;
+- (NSTouchBar*)createTabFullscreenTouchBar API_AVAILABLE(macos(10.12.2));
 
 // Creates and returns the back and forward segmented buttons.
 - (NSView*)backOrForwardTouchBarView;
@@ -252,7 +253,8 @@ class HomePrefNotificationBridge {
 }
 
 - (NSTouchBarItem*)touchBar:(NSTouchBar*)touchBar
-      makeItemForIdentifier:(NSTouchBarItemIdentifier)identifier {
+      makeItemForIdentifier:(NSTouchBarItemIdentifier)identifier
+    API_AVAILABLE(macos(10.12.2)) {
   if (!touchBar)
     return nil;
 
@@ -341,7 +343,7 @@ class HomePrefNotificationBridge {
   return touchBarItem.autorelease();
 }
 
-- (NSTouchBar*)createTabFullscreenTouchBar {
+- (NSTouchBar*)createTabFullscreenTouchBar API_AVAILABLE(macos(10.12.2)) {
   base::scoped_nsobject<NSTouchBar> touchBar([[ui::NSTouchBar() alloc] init]);
   [touchBar setDelegate:self];
 

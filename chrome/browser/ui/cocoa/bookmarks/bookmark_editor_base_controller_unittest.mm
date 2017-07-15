@@ -282,25 +282,22 @@ TEST_F(BookmarkEditorBaseControllerTest, ExpandedState) {
 
 // Verifies the dialog's touch bar.
 TEST_F(BookmarkEditorBaseControllerTest, TouchBar) {
-  if (!base::mac::IsAtLeastOS10_12()) {
-    [controller_ cancel:nil];
-    return;
+  if (@available(macOS 10.12.2, *)) {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeature(features::kBrowserTouchBar);
+
+    NSTouchBar* touch_bar = [controller_ makeTouchBar];
+    NSArray* touch_bar_items = [touch_bar itemIdentifiers];
+    EXPECT_TRUE([touch_bar_items
+        containsObject:ui::GetTouchBarItemId(kBookmarkEditDialogTouchBarId,
+                                             kNewFolderTouchBarId)]);
+    EXPECT_TRUE([touch_bar_items
+        containsObject:ui::GetTouchBarItemId(kBookmarkEditDialogTouchBarId,
+                                             kCancelTouchBarId)]);
+    EXPECT_TRUE([touch_bar_items
+        containsObject:ui::GetTouchBarItemId(kBookmarkEditDialogTouchBarId,
+                                             kSaveTouchBarId)]);
   }
-
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kBrowserTouchBar);
-
-  NSTouchBar* touch_bar = [controller_ makeTouchBar];
-  NSArray* touch_bar_items = [touch_bar itemIdentifiers];
-  EXPECT_TRUE([touch_bar_items
-      containsObject:ui::GetTouchBarItemId(kBookmarkEditDialogTouchBarId,
-                                           kNewFolderTouchBarId)]);
-  EXPECT_TRUE([touch_bar_items
-      containsObject:ui::GetTouchBarItemId(kBookmarkEditDialogTouchBarId,
-                                           kCancelTouchBarId)]);
-  EXPECT_TRUE([touch_bar_items
-      containsObject:ui::GetTouchBarItemId(kBookmarkEditDialogTouchBarId,
-                                           kSaveTouchBarId)]);
 
   [controller_ cancel:nil];
 }

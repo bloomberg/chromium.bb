@@ -200,29 +200,27 @@ IN_PROC_BROWSER_TEST_F(ContentSettingBubbleControllerTest,
 
 // Verifies the bubble's touch bar.
 IN_PROC_BROWSER_TEST_F(ContentSettingBubbleControllerTest, TouchBar) {
-  if (!base::mac::IsAtLeastOS10_12()) {
-    [parent_ close];
-    return;
+  if (@available(macOS 10.12.2, *)) {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeature(features::kBrowserTouchBar);
+
+    TabSpecificContentSettings::FromWebContents(web_contents())
+        ->BlockAllContentForTesting();
+    ContentSettingBubbleController* controller =
+        CreateBubbleController(new ContentSettingMediaStreamBubbleModel(
+            nullptr, web_contents(), profile()));
+    EXPECT_TRUE(controller);
+
+    NSTouchBar* touch_bar = nil;
+    touch_bar = [controller makeTouchBar];
+    NSArray* touch_bar_items = [touch_bar itemIdentifiers];
+    EXPECT_TRUE([touch_bar_items
+        containsObject:ui::GetTouchBarItemId(kContentSettingsBubbleTouchBarId,
+                                             kDoneTouchBarId)]);
+    EXPECT_TRUE([touch_bar_items
+        containsObject:ui::GetTouchBarItemId(kContentSettingsBubbleTouchBarId,
+                                             kManageTouchBarId)]);
   }
-
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kBrowserTouchBar);
-
-  TabSpecificContentSettings::FromWebContents(web_contents())
-      ->BlockAllContentForTesting();
-  ContentSettingBubbleController* controller =
-      CreateBubbleController(new ContentSettingMediaStreamBubbleModel(
-          nullptr, web_contents(), profile()));
-  EXPECT_TRUE(controller);
-
-  NSTouchBar* touch_bar = [controller makeTouchBar];
-  NSArray* touch_bar_items = [touch_bar itemIdentifiers];
-  EXPECT_TRUE([touch_bar_items
-      containsObject:ui::GetTouchBarItemId(kContentSettingsBubbleTouchBarId,
-                                           kDoneTouchBarId)]);
-  EXPECT_TRUE([touch_bar_items
-      containsObject:ui::GetTouchBarItemId(kContentSettingsBubbleTouchBarId,
-                                           kManageTouchBarId)]);
 
   [parent_ close];
 }

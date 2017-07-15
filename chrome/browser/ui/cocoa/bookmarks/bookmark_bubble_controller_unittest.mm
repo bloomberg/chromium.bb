@@ -510,24 +510,23 @@ TEST_F(BookmarkBubbleControllerTest, TextfieldChanges) {
 
 // Verifies the bubble's touch bar.
 TEST_F(BookmarkBubbleControllerTest, TouchBar) {
-  if (!base::mac::IsAtLeastOS10_12())
-    return;
+  if (@available(macOS 10.12.2, *)) {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeature(features::kBrowserTouchBar);
 
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kBrowserTouchBar);
-
-  const BookmarkNode* node = CreateTestBookmark();
-  NSTouchBar* touch_bar = [ControllerForNode(node) makeTouchBar];
-  NSArray* touch_bar_items = [touch_bar itemIdentifiers];
-  EXPECT_TRUE([touch_bar_items
-      containsObject:ui::GetTouchBarItemId(kBookmarkBubbleTouchBarId,
-                                           kRemoveTouchBarId)]);
-  EXPECT_TRUE([touch_bar_items
-      containsObject:ui::GetTouchBarItemId(kBookmarkBubbleTouchBarId,
-                                           kEditTouchBarId)]);
-  EXPECT_TRUE([touch_bar_items
-      containsObject:ui::GetTouchBarItemId(kBookmarkBubbleTouchBarId,
-                                           kDoneTouchBarId)]);
+    const BookmarkNode* node = CreateTestBookmark();
+    NSTouchBar* touch_bar = [ControllerForNode(node) makeTouchBar];
+    NSArray* touch_bar_items = [touch_bar itemIdentifiers];
+    EXPECT_TRUE([touch_bar_items
+        containsObject:ui::GetTouchBarItemId(kBookmarkBubbleTouchBarId,
+                                             kRemoveTouchBarId)]);
+    EXPECT_TRUE([touch_bar_items
+        containsObject:ui::GetTouchBarItemId(kBookmarkBubbleTouchBarId,
+                                             kEditTouchBarId)]);
+    EXPECT_TRUE([touch_bar_items
+        containsObject:ui::GetTouchBarItemId(kBookmarkBubbleTouchBarId,
+                                             kDoneTouchBarId)]);
+  }
 }
 
 }  // namespace

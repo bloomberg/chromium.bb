@@ -68,6 +68,7 @@ class VIEWS_EXPORT BridgedNativeWidget
                                               const gfx::Size& size);
 
   // Whether an event monitor should be used to intercept window drag events.
+  // Evalutes to |true| on macOS 10.10 and older.
   static bool ShouldUseDragEventMonitor();
 
   // Creates one side of the bridge. |parent| must not be NULL.
