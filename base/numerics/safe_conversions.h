@@ -13,9 +13,7 @@
 
 #include "base/numerics/safe_conversions_impl.h"
 
-// TODO(jschuh): Investigate why these were failing to build for ios.
-#if !defined(__APPLE__) && !defined(__native_client__) && \
-    (defined(__ARMEL__) || defined(__arch64__))
+#if !defined(__native_client__) && (defined(__ARMEL__) || defined(__arch64__))
 #include "base/numerics/safe_conversions_arm_impl.h"
 #define BASE_HAS_OPTIMIZED_SAFE_CONVERSIONS (1)
 #else
@@ -117,7 +115,7 @@ template <typename Dst,
 constexpr Dst saturated_cast(Src value) {
   using SrcType = typename UnderlyingType<Src>::type;
   return !IsCompileTimeConstant(value) &&
-                 SaturateFastAsmOp<Dst, Src>::is_supported &&
+                 SaturateFastAsmOp<Dst, SrcType>::is_supported &&
                  std::is_same<SaturationHandler<Dst>,
                               SaturationDefaultLimits<Dst>>::value
              ? SaturateFastAsmOp<Dst, SrcType>::Do(value)
