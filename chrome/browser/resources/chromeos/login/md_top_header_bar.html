@@ -1,0 +1,26 @@
+<iron-iconset-svg name="new-note-action" size="16">
+  <svg>
+    <defs>
+      <g id="action-icon" fill="none" fill-rule="evenodd">
+        <path d="M0 0h16v16H0"></path>
+        <path fill="#FFF" fill-rule="nonzero" d="M9.333 1.333H4c-.737 0-1.327.597-1.327 1.334l-.006 10.666c0 .737.59 1.334 1.326 1.334H12c.737 0 1.333-.597 1.333-1.334v-8l-4-4zm1.334 9.334h-2v2H7.333v-2h-2V9.333h2v-2h1.334v2h2v1.334zM8.667 6V2.333L12.333 6H8.667z"></path>
+      </g>
+    </defs>
+  </svg>
+</iron-iconset-svg>
+
+<div id="top-header-bar">
+  <div id="version-labels" hidden>
+    <div id="version"></div>
+    <div id="asset-id"></div>
+    <div id="bluetooth-name" hidden></div>
+  </div>
+  <div hidden id="new-note-action-container" class="new-note-action-container">
+    <div role="button" id="new-note-action" class="new-note-action"
+        tabindex="0" i18n-values="aria-label:newLockScreenNoteButton">
+      <iron-icon icon="new-note-action:action-icon"
+          id="new-note-action-icon" class="new-note-action-icon">
+      </iron-icon>
+    </div>
+  </div>
+</div>
