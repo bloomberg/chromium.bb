@@ -9,11 +9,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/arc/arc_bridge_service.h"
+#include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/user_manager/user_manager.h"
+#include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
@@ -34,21 +35,28 @@ const char kStoragePage[] = "storage";
 class LowDiskSpaceErrorNotificationDelegate
     : public message_center::NotificationDelegate {
  public:
-  LowDiskSpaceErrorNotificationDelegate() = default;
+  explicit LowDiskSpaceErrorNotificationDelegate(
+      content::BrowserContext* context)
+      : context_(context) {}
 
   // message_center::NotificationDelegate
   void ButtonClick(int button_index) override {
-    chrome::ShowSettingsSubPageForProfile(
-        ProfileManager::GetActiveUserProfile(), kStoragePage);
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    chrome::ShowSettingsSubPageForProfile(Profile::FromBrowserContext(context_),
+                                          kStoragePage);
   }
 
  private:
   ~LowDiskSpaceErrorNotificationDelegate() override = default;
 
+  // Passed from ArcBootErrorNotification, so owned by ProfileManager.
+  // Thus, touching this on UI thread while the message loop is running
+  // should be safe.
+  content::BrowserContext* const context_;
   DISALLOW_COPY_AND_ASSIGN(LowDiskSpaceErrorNotificationDelegate);
 };
 
-void ShowLowDiskSpaceErrorNotification() {
+void ShowLowDiskSpaceErrorNotification(content::BrowserContext* context) {
   // We suppress the low-disk notification when there are multiple users on an
   // enterprise managed device. crbug.com/656788.
   if (g_browser_process->platform_part()
@@ -82,24 +90,54 @@ void ShowLowDiskSpaceErrorNotification() {
           gfx::Image(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
               IDR_DISK_SPACE_NOTIFICATION_CRITICAL)),
           base::UTF8ToUTF16(kDisplaySource), GURL(), notifier_id,
-          optional_fields, new LowDiskSpaceErrorNotificationDelegate()));
+          optional_fields, new LowDiskSpaceErrorNotificationDelegate(context)));
 }
+
+// Singleton factory for ArcBootErrorNotificationFactory.
+class ArcBootErrorNotificationFactory
+    : public internal::ArcBrowserContextKeyedServiceFactoryBase<
+          ArcBootErrorNotification,
+          ArcBootErrorNotificationFactory> {
+ public:
+  // Factory name used by ArcBrowserContextKeyedServiceFactoryBase.
+  static constexpr const char* kName = "ArcBootErrorNotificationFactory";
+
+  static ArcBootErrorNotificationFactory* GetInstance() {
+    return base::Singleton<ArcBootErrorNotificationFactory>::get();
+  }
+
+ private:
+  friend base::DefaultSingletonTraits<ArcBootErrorNotificationFactory>;
+  ArcBootErrorNotificationFactory() = default;
+  ~ArcBootErrorNotificationFactory() override = default;
+};
 
 }  // namespace
 
+// static
+ArcBootErrorNotification* ArcBootErrorNotification::GetForBrowserContext(
+    content::BrowserContext* context) {
+  return ArcBootErrorNotificationFactory::GetForBrowserContext(context);
+}
+
 ArcBootErrorNotification::ArcBootErrorNotification(
+    content::BrowserContext* context,
     ArcBridgeService* bridge_service)
-    : ArcService(bridge_service) {
+    : context_(context) {
   ArcSessionManager::Get()->AddObserver(this);
 }
 
 ArcBootErrorNotification::~ArcBootErrorNotification() {
-  ArcSessionManager::Get()->RemoveObserver(this);
+  // TODO(hidehiko): Currently, the lifetime of ArcSessionManager and
+  // BrowserContextKeyedService is not nested. Remove if statement.
+  auto* arc_session_manager = ArcSessionManager::Get();
+  if (arc_session_manager)
+    arc_session_manager->RemoveObserver(this);
 }
 
 void ArcBootErrorNotification::OnArcSessionStopped(ArcStopReason reason) {
   if (reason == ArcStopReason::LOW_DISK_SPACE)
-    ShowLowDiskSpaceErrorNotification();
+    ShowLowDiskSpaceErrorNotification(context_);
 }
 
 }  // namespace arc
