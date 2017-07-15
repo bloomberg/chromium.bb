@@ -1,0 +1,54 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/cr_elements/chromeos/cr_picture/cr_picture_list.html">
+<link rel="import" href="chrome://resources/cr_elements/chromeos/cr_picture/cr_picture_pane.html">
+<link rel="import" href="chrome://resources/cr_elements/chromeos/cr_picture/cr_picture_types.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/html/util.html">
+
+<dom-module id="oobe-change-picture">
+  <template>
+    <style>
+      #outer {
+        -webkit-margin-start: 8px;
+        align-items: flex-start;
+        display: flex;
+        padding-top: 16px;
+      }
+
+      cr-picture-list {
+        -webkit-margin-end: 32px;
+        height: 340px;
+        overflow-x: hidden;
+        overflow-y: auto;
+        width: 340px;
+      }
+
+      cr-picture-pane {
+        -webkit-margin-end: 10px;
+        flex-shrink: 0;
+        width: 228px;
+      }
+    </style>
+    <div id="outer">
+      <cr-picture-list id="pictureList" tabindex="0"
+          camera-present="[[cameraPresent]]"
+          default-images="[[defaultImages]]"
+          selected-item="{{selectedItem_}}"
+          old-image-label="[[i18nDynamic(locale, 'photoFromCamera')]]"
+          profile-image-label="[[i18nDynamic(locale, 'profilePhoto')]]"
+          profile-image-loading-label="[[i18nDynamic(
+              locale, 'profilePhotoLoading')]]"
+          take-photo-label="[[i18nDynamic(locale, 'takePhoto')]]">
+      </cr-picture-list>
+      <cr-picture-pane id="picturePane"
+          camera-present="[[cameraPresent]]",
+          image-src="[[getImageSrc_(selectedItem_)]]"
+          image-type="[[getImageType_(selectedItem_)]]"
+          discard-image-label="[[i18nDynamic(locale, 'discardPhoto')]]"
+          flip-photo-label="[[i18nDynamic(locale, 'flipPhoto')]]"
+          take-photo-label="[[i18nDynamic(locale, 'takePhoto')]]">
+      </cr-picture-pane>
+    </div>
+  </template>
+</dom-module>

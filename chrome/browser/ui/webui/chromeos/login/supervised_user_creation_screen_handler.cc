@@ -434,8 +434,8 @@ void SupervisedUserCreationScreenHandler::HandleDiscardPhoto() {
 }
 
 void SupervisedUserCreationScreenHandler::HandleSelectImage(
-    const std::string& image_url,
-    const std::string& image_type) {
+    const std::string& image_type,
+    const std::string& image_url) {
   if (delegate_)
     delegate_->OnImageSelected(image_type, image_url);
 }

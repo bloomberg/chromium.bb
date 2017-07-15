@@ -113,8 +113,8 @@ class SupervisedUserCreationScreen
 
   // SupervisedUserCreationScreenHandler::Delegate (image) implementation:
   void OnPhotoTaken(const std::string& raw_data) override;
-  void OnImageSelected(const std::string& image_url,
-                       const std::string& image_type) override;
+  void OnImageSelected(const std::string& image_type,
+                       const std::string& image_url) override;
   void OnImageAccepted() override;
   // ImageDecoder::ImageRequest overrides:
   void OnImageDecoded(const SkBitmap& decoded_image) override;
