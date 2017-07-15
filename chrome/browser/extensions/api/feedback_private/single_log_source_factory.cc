@@ -30,17 +30,20 @@ std::unique_ptr<SystemLogsSource> SingleLogSourceFactory::CreateSingleLogSource(
 
   switch (source_type) {
     case feedback_private::LOG_SOURCE_MESSAGES:
-      return base::MakeUnique<system_logs::SingleLogFileLogSource>(
+      return base::MakeUnique<SingleLogFileLogSource>(
           SingleLogFileLogSource::SupportedSource::kMessages);
     case feedback_private::LOG_SOURCE_UILATEST:
-      return base::MakeUnique<system_logs::SingleLogFileLogSource>(
+      return base::MakeUnique<SingleLogFileLogSource>(
           SingleLogFileLogSource::SupportedSource::kUiLatest);
     case feedback_private::LOG_SOURCE_DRMMODETEST:
-      return base::MakeUnique<system_logs::SingleDebugDaemonLogSource>(
+      return base::MakeUnique<SingleDebugDaemonLogSource>(
           SingleDebugDaemonLogSource::SupportedSource::kModetest);
     case feedback_private::LOG_SOURCE_LSUSB:
-      return base::MakeUnique<system_logs::SingleDebugDaemonLogSource>(
+      return base::MakeUnique<SingleDebugDaemonLogSource>(
           SingleDebugDaemonLogSource::SupportedSource::kLsusb);
+    case feedback_private::LOG_SOURCE_ATRUSLOG:
+      return base::MakeUnique<SingleLogFileLogSource>(
+          SingleLogFileLogSource::SupportedSource::kAtrusLog);
     case feedback_private::LOG_SOURCE_NONE:
     default:
       NOTREACHED() << "Unknown log source type.";
