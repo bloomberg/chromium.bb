@@ -204,7 +204,7 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
                           double dispatch_event_time) override;
   void RespondToPaymentRequestEvent(
       int payment_request_id,
-      const blink::WebPaymentAppResponse& response,
+      const blink::WebPaymentHandlerResponse& response,
       double dispatch_event_time) override;
   void DidHandlePaymentRequestEvent(int payment_request_id,
                                     blink::WebServiceWorkerEventResult result,
@@ -298,7 +298,7 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
   void DispatchPaymentRequestEvent(
       int payment_request_id,
       payments::mojom::PaymentRequestEventDataPtr event_data,
-      payments::mojom::PaymentAppResponseCallbackPtr response_callback,
+      payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
       DispatchPaymentRequestEventCallback callback) override;
   void Ping(PingCallback callback) override;
 

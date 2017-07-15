@@ -7,13 +7,10 @@
 #include <v8.h>
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/modules/v8/V8PaymentAppResponse.h"
 #include "core/dom/ExecutionContext.h"
-#include "modules/payments/PaymentAppResponse.h"
 #include "modules/payments/PaymentHandlerUtils.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
 #include "modules/serviceworkers/WaitUntilObserver.h"
-#include "public/platform/modules/payments/WebPaymentAppResponse.h"
 
 namespace blink {
 

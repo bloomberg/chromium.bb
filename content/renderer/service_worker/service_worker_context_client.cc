@@ -66,7 +66,7 @@
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/platform/modules/background_fetch/WebBackgroundFetchSettledFetch.h"
 #include "third_party/WebKit/public/platform/modules/notifications/WebNotificationData.h"
-#include "third_party/WebKit/public/platform/modules/payments/WebPaymentAppResponse.h"
+#include "third_party/WebKit/public/platform/modules/payments/WebPaymentHandlerResponse.h"
 #include "third_party/WebKit/public/platform/modules/payments/WebPaymentRequestEventData.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerClientQueryOptions.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerError.h"
@@ -366,7 +366,7 @@ struct ServiceWorkerContextClient::WorkerContextData {
 
   // Pending callbacks for Payment App Response.
   std::map<int /* payment_request_id */,
-           payments::mojom::PaymentAppResponseCallbackPtr>
+           payments::mojom::PaymentHandlerResponseCallbackPtr>
       payment_response_callbacks;
 
   // Pending callbacks for Payment Request Events.
@@ -1083,15 +1083,15 @@ void ServiceWorkerContextClient::DidHandleSyncEvent(
 
 void ServiceWorkerContextClient::RespondToPaymentRequestEvent(
     int payment_request_id,
-    const blink::WebPaymentAppResponse& web_response,
+    const blink::WebPaymentHandlerResponse& web_response,
     double dispatch_event_time) {
-  const payments::mojom::PaymentAppResponseCallbackPtr& response_callback =
+  const payments::mojom::PaymentHandlerResponseCallbackPtr& response_callback =
       context_->payment_response_callbacks[payment_request_id];
-  payments::mojom::PaymentAppResponsePtr response =
-      payments::mojom::PaymentAppResponse::New();
+  payments::mojom::PaymentHandlerResponsePtr response =
+      payments::mojom::PaymentHandlerResponse::New();
   response->method_name = web_response.method_name.Utf8();
   response->stringified_details = web_response.stringified_details.Utf8();
-  response_callback->OnPaymentAppResponse(
+  response_callback->OnPaymentHandlerResponse(
       std::move(response), base::Time::FromDoubleT(dispatch_event_time));
   context_->payment_response_callbacks.erase(payment_request_id);
 }
@@ -1230,7 +1230,7 @@ void ServiceWorkerContextClient::DispatchSyncEvent(
 void ServiceWorkerContextClient::DispatchPaymentRequestEvent(
     int payment_request_id,
     payments::mojom::PaymentRequestEventDataPtr eventData,
-    payments::mojom::PaymentAppResponseCallbackPtr response_callback,
+    payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
     DispatchPaymentRequestEventCallback callback) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerContextClient::DispatchPaymentRequestEvent");

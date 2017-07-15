@@ -484,7 +484,7 @@ modules_dictionary_idl_files =
                     "payments/BasicCardRequest.idl",
                     "payments/CanMakePaymentEventInit.idl",
                     "payments/ImageObject.idl",
-                    "payments/PaymentAppResponse.idl",
+                    "payments/PaymentHandlerResponse.idl",
                     "payments/PaymentRequestEventInit.idl",
                     "payments/PaymentCurrencyAmount.idl",
                     "payments/PaymentDetailsBase.idl",

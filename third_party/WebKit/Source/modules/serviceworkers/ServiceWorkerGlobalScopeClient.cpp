@@ -36,7 +36,7 @@
 #include "core/workers/WorkerGlobalScope.h"
 #include "modules/fetch/Response.h"
 #include "public/platform/WebURL.h"
-#include "public/platform/modules/payments/WebPaymentAppResponse.h"
+#include "public/platform/modules/payments/WebPaymentHandlerResponse.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerResponse.h"
 #include "public/web/modules/serviceworker/WebServiceWorkerContextClient.h"
 
@@ -163,7 +163,7 @@ void ServiceWorkerGlobalScopeClient::RespondToCanMakePaymentEvent(
 
 void ServiceWorkerGlobalScopeClient::RespondToPaymentRequestEvent(
     int event_id,
-    const WebPaymentAppResponse& response,
+    const WebPaymentHandlerResponse& response,
     double event_dispatch_time) {
   client_.RespondToPaymentRequestEvent(event_id, response, event_dispatch_time);
 }

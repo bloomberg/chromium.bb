@@ -133,7 +133,7 @@ interface ServiceWorkerEventDispatcher {
           mojo.common.mojom.Time dispatch_event_time);
   DispatchPaymentRequestEvent(int32 payment_request_id,
                               payments.mojom.PaymentRequestEventData request_data,
-                              payments.mojom.PaymentAppResponseCallback response_callback)
+                              payments.mojom.PaymentHandlerResponseCallback response_callback)
       => (blink.mojom.ServiceWorkerEventStatus status,
           mojo.common.mojom.Time dispatch_event_time);
   DispatchExtendableMessageEvent(ExtendableMessageEvent event)

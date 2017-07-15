@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebPaymentAppResponse_h
-#define WebPaymentAppResponse_h
+#ifndef WebPaymentHandlerResponse_h
+#define WebPaymentHandlerResponse_h
 
 #include "public/platform/WebString.h"
 
 namespace blink {
 
-// https://w3c.github.io/webpayments-payment-apps-api/#idl-def-paymentappresponse
-struct WebPaymentAppResponse {
+// https://w3c.github.io/payment-handler/#paymenthandlerresponse-dictionary
+struct WebPaymentHandlerResponse {
   WebString method_name;
   WebString stringified_details;
 };
 
 }  // namespace blink
 
-#endif  // WebPaymentAppResponse_h
+#endif  // WebPaymentHandlerResponse_h

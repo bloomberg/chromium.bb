@@ -70,7 +70,7 @@ class PaymentAppContentUnitTestBase::PaymentAppForWorkerTestHelper
 
   void OnPaymentRequestEvent(
       payments::mojom::PaymentRequestEventDataPtr event_data,
-      payments::mojom::PaymentAppResponseCallbackPtr response_callback,
+      payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
       mojom::ServiceWorkerEventDispatcher::DispatchPaymentRequestEventCallback
           callback) override {
     EmbeddedWorkerTestHelper::OnPaymentRequestEvent(

@@ -34,8 +34,9 @@ void GetAllPaymentAppsCallback(PaymentAppProvider::PaymentApps* out_apps,
   *out_apps = std::move(apps);
 }
 
-void InvokePaymentAppCallback(bool* called,
-                              payments::mojom::PaymentAppResponsePtr response) {
+void InvokePaymentAppCallback(
+    bool* called,
+    payments::mojom::PaymentHandlerResponsePtr response) {
   *called = true;
 }
 
