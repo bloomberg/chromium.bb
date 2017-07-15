@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/mac/availability.h"
 #import "base/mac/sdk_forward_declarations.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -911,7 +912,8 @@ const ContentTypeToNibPath kNibPaths[] = {
 }
 
 - (NSTouchBarItem*)touchBar:(NSTouchBar*)touchBar
-      makeItemForIdentifier:(NSTouchBarItemIdentifier)identifier {
+      makeItemForIdentifier:(NSTouchBarItemIdentifier)identifier
+    API_AVAILABLE(macos(10.12.2)) {
   NSButton* button = nil;
   if ([identifier hasSuffix:kManageTouchBarId]) {
     NSString* title = base::SysUTF16ToNSString(

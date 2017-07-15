@@ -8,6 +8,7 @@
 
 #include "base/auto_reset.h"
 #include "base/logging.h"
+#include "base/mac/availability.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
@@ -380,7 +381,8 @@ NSString* const kOkEnabledName = @"okEnabled";
 }
 
 - (NSTouchBarItem*)touchBar:(NSTouchBar*)touchBar
-      makeItemForIdentifier:(NSTouchBarItemIdentifier)identifier {
+      makeItemForIdentifier:(NSTouchBarItemIdentifier)identifier
+    API_AVAILABLE(macos(10.12.2)) {
   NSButton* button = nil;
   if ([identifier hasSuffix:kNewFolderTouchBarId]) {
     button =

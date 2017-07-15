@@ -198,7 +198,7 @@ TEST_F(AutocompleteTextFieldEditorTest, Display) {
 
 // Tests that the Touch Bar is nothing.
 TEST_F(AutocompleteTextFieldEditorTest, TouchBarTest) {
-  if ([field_ respondsToSelector:@selector(touchBar)]) {
+  if (@available(macOS 10.12.2, *)) {
     NSTouchBar* touch_bar = [field_ performSelector:@selector(touchBar)];
     EXPECT_FALSE(touch_bar);
   }

@@ -510,10 +510,14 @@ const CGFloat kWindowGradientHeight = 24.0;
 }
 
 - (NSTouchBar*)makeTouchBar {
-  BrowserWindowController* bwc =
-      base::mac::ObjCCastStrict<BrowserWindowController>(
-          [self windowController]);
-  return [[bwc browserWindowTouchBar] makeTouchBar];
+  if (@available(macOS 10.12.2, *)) {
+    BrowserWindowController* bwc =
+        base::mac::ObjCCastStrict<BrowserWindowController>(
+            [self windowController]);
+    return [[bwc browserWindowTouchBar] makeTouchBar];
+  } else {
+    return nil;
+  }
 }
 
 - (NSColor*)titleColor {

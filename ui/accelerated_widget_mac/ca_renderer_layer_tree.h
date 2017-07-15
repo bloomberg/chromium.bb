@@ -16,6 +16,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/ref_counted.h"
 #include "ui/accelerated_widget_mac/accelerated_widget_mac_export.h"
+#include "ui/accelerated_widget_mac/availability_macros.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/mac/io_surface.h"
@@ -57,8 +58,9 @@ class ACCELERATED_WIDGET_MAC_EXPORT CARendererLayerTree {
   // layer on a black background. If so, then set |fullscreen_low_power_layer|
   // to draw this content and return true. Otherwise return false. This is to
   // be called after committing scheduled CALayers.
+
   bool CommitFullscreenLowPowerLayer(
-      AVSampleBufferDisplayLayer* fullscreen_low_power_layer);
+      AVSampleBufferDisplayLayer109* fullscreen_low_power_layer);
 
   // Returns the contents used for a given solid color.
   id ContentsForSolidColorForTesting(unsigned int color);
@@ -184,7 +186,7 @@ class ACCELERATED_WIDGET_MAC_EXPORT CARendererLayerTree {
 
     // If this layer's contents can be represented as an
     // AVSampleBufferDisplayLayer, then |ca_layer| will point to |av_layer|.
-    base::scoped_nsobject<AVSampleBufferDisplayLayer> av_layer;
+    base::scoped_nsobject<AVSampleBufferDisplayLayer109> av_layer;
     bool use_av_layer = false;
 
    private:
