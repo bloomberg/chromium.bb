@@ -28,7 +28,9 @@ class WhitelistCheckerClient : public SafeBrowsingDatabaseManager::Client {
       const GURL& url,
       BoolCallback callback_for_result);
 
-  WhitelistCheckerClient(BoolCallback callback_for_result);
+  WhitelistCheckerClient(
+      BoolCallback callback_for_result,
+      scoped_refptr<SafeBrowsingDatabaseManager> database_manager);
   ~WhitelistCheckerClient() override;
 
   // SafeBrowsingDatabaseMananger::Client impl
@@ -38,10 +40,14 @@ class WhitelistCheckerClient : public SafeBrowsingDatabaseManager::Client {
   static const int kTimeoutMsec = 5000;
   base::OneShotTimer timer_;
   BoolCallback callback_for_result_;
+  scoped_refptr<SafeBrowsingDatabaseManager> database_manager_;
   base::WeakPtrFactory<WhitelistCheckerClient> weak_factory_;
 
  private:
   WhitelistCheckerClient();
+
+  // Called when the call to CheckCsdWhitelistUrl times out.
+  void OnCheckWhitelistUrlTimeout();
 };
 
 }  // namespace safe_browsing
