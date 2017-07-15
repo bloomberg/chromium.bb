@@ -10,10 +10,12 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/memory/singleton.h"
 #include "base/process/launch.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/task_scheduler/task_traits.h"
 #include "components/arc/arc_bridge_service.h"
+#include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "mojo/edk/embedder/embedder.h"
 
 namespace {
@@ -49,21 +51,56 @@ void RunCrashReporter(const std::string& crash_type,
 }  // namespace
 
 namespace arc {
+namespace {
 
-ArcCrashCollectorBridge::ArcCrashCollectorBridge(ArcBridgeService* bridge)
-    : ArcService(bridge), binding_(this) {
-  arc_bridge_service()->crash_collector()->AddObserver(this);
+// Singleton factory for ArcCrashCollectorBridge.
+class ArcCrashCollectorBridgeFactory
+    : public internal::ArcBrowserContextKeyedServiceFactoryBase<
+          ArcCrashCollectorBridge,
+          ArcCrashCollectorBridgeFactory> {
+ public:
+  // Factory name used by ArcBrowserContextKeyedServiceFactoryBase.
+  static constexpr const char* kName = "ArcCrashCollectorBridgeFactory";
+
+  static ArcCrashCollectorBridgeFactory* GetInstance() {
+    return base::Singleton<ArcCrashCollectorBridgeFactory>::get();
+  }
+
+ private:
+  friend base::DefaultSingletonTraits<ArcCrashCollectorBridgeFactory>;
+  ArcCrashCollectorBridgeFactory() = default;
+  ~ArcCrashCollectorBridgeFactory() override = default;
+};
+
+}  // namespace
+
+// static
+ArcCrashCollectorBridge* ArcCrashCollectorBridge::GetForBrowserContext(
+    content::BrowserContext* context) {
+  return ArcCrashCollectorBridgeFactory::GetForBrowserContext(context);
+}
+
+ArcCrashCollectorBridge::ArcCrashCollectorBridge(
+    content::BrowserContext* context,
+    ArcBridgeService* bridge_service)
+    : arc_bridge_service_(bridge_service), binding_(this) {
+  arc_bridge_service_->crash_collector()->AddObserver(this);
 }
 
 ArcCrashCollectorBridge::~ArcCrashCollectorBridge() {
-  arc_bridge_service()->crash_collector()->RemoveObserver(this);
+  // TODO(hidehiko): Currently, the lifetime of ArcBridgeService and
+  // BrowserContextKeyedService is not nested.
+  // If ArcServiceManager::Get() returns nullptr, it is already destructed,
+  // so do not touch it.
+  if (ArcServiceManager::Get())
+    arc_bridge_service_->crash_collector()->RemoveObserver(this);
 }
 
 void ArcCrashCollectorBridge::OnInstanceReady() {
   mojom::CrashCollectorHostPtr host_ptr;
   binding_.Bind(mojo::MakeRequest(&host_ptr));
-  auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
-      arc_bridge_service()->crash_collector(), Init);
+  auto* instance =
+      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->crash_collector(), Init);
   DCHECK(instance);
   instance->Init(std::move(host_ptr));
 }
