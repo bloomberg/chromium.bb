@@ -8,27 +8,67 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/memory/singleton.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "components/arc/arc_bridge_service.h"
+#include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/arc_service_manager.h"
 
 namespace arc {
+namespace {
+
+// Singleton factory for ArcEnterpriseReportingService.
+class ArcEnterpriseReportingServiceFactory
+    : public internal::ArcBrowserContextKeyedServiceFactoryBase<
+          ArcEnterpriseReportingService,
+          ArcEnterpriseReportingServiceFactory> {
+ public:
+  // Factory name used by ArcBrowserContextKeyedServiceFactoryBase.
+  static constexpr const char* kName = "ArcEnterpriseReportingServiceFactory";
+
+  static ArcEnterpriseReportingServiceFactory* GetInstance() {
+    return base::Singleton<ArcEnterpriseReportingServiceFactory>::get();
+  }
+
+ private:
+  friend base::DefaultSingletonTraits<ArcEnterpriseReportingServiceFactory>;
+  ArcEnterpriseReportingServiceFactory() = default;
+  ~ArcEnterpriseReportingServiceFactory() override = default;
+};
+
+}  // namespace
+
+// static
+ArcEnterpriseReportingService*
+ArcEnterpriseReportingService::GetForBrowserContext(
+    content::BrowserContext* context) {
+  return ArcEnterpriseReportingServiceFactory::GetForBrowserContext(context);
+}
 
 ArcEnterpriseReportingService::ArcEnterpriseReportingService(
+    content::BrowserContext* context,
     ArcBridgeService* bridge_service)
-    : ArcService(bridge_service), binding_(this), weak_ptr_factory_(this) {
-  arc_bridge_service()->enterprise_reporting()->AddObserver(this);
+    : arc_bridge_service_(bridge_service),
+      binding_(this),
+      weak_ptr_factory_(this) {
+  arc_bridge_service_->enterprise_reporting()->AddObserver(this);
 }
 
 ArcEnterpriseReportingService::~ArcEnterpriseReportingService() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  arc_bridge_service()->enterprise_reporting()->RemoveObserver(this);
+
+  // TODO(hidehiko): Currently, the lifetime of ArcBridgeService and
+  // BrowserContextKeyedService is not nested.
+  // If ArcServiceManager::Get() returns nullptr, it is already destructed,
+  // so do not touch it.
+  if (ArcServiceManager::Get())
+    arc_bridge_service_->enterprise_reporting()->RemoveObserver(this);
 }
 
 void ArcEnterpriseReportingService::OnInstanceReady() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
-      arc_bridge_service()->enterprise_reporting(), Init);
+      arc_bridge_service_->enterprise_reporting(), Init);
   DCHECK(instance);
   mojom::EnterpriseReportingHostPtr host_proxy;
   binding_.Bind(mojo::MakeRequest(&host_proxy));
