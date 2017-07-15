@@ -23,11 +23,8 @@ promise_test(() => {
         supportedMethods: ['basic-card']
       }],
       total: {
-        label: 'Total',
-        amount: {
-          currency: 'USD',
-          value: '55.00'
-        }
+        currency: 'USD',
+        value: '55.00'
       },
       modifiers: [{
         supportedMethods: ['basic-card']
@@ -42,9 +39,8 @@ promise_test(() => {
       assert_equals(e.methodData.length, 1);
       assert_equals(e.methodData[0].supportedMethods.length, 1);
       assert_equals(e.methodData[0].supportedMethods[0], 'basic-card');
-      assert_equals(e.total.label, 'Total');
-      assert_equals(e.total.amount.currency, 'USD');
-      assert_equals(e.total.amount.value, '55.00');
+      assert_equals(e.total.currency, 'USD');
+      assert_equals(e.total.value, '55.00');
       assert_equals(e.modifiers.length, 1);
       assert_equals(e.modifiers[0].supportedMethods.length, 1);
       assert_equals(e.modifiers[0].supportedMethods[0], 'basic-card');

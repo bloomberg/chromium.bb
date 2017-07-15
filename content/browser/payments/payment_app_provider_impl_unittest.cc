@@ -101,8 +101,7 @@ TEST_F(PaymentAppProviderTest, InvokePaymentAppTest) {
   payments::mojom::PaymentRequestEventDataPtr event_data =
       payments::mojom::PaymentRequestEventData::New();
   event_data->method_data.push_back(payments::mojom::PaymentMethodData::New());
-  event_data->total = payments::mojom::PaymentItem::New();
-  event_data->total->amount = payments::mojom::PaymentCurrencyAmount::New();
+  event_data->total = payments::mojom::PaymentCurrencyAmount::New();
 
   bool called = false;
   InvokePaymentApp(apps[GURL("https://hellopay.com/")]->registration_id,

@@ -116,14 +116,15 @@ class PaymentAppBrowserTest : public ContentBrowserTest {
     event_data->method_data.push_back(PaymentMethodData::New());
     event_data->method_data[0]->supported_methods = {supported_method};
 
-    event_data->total = PaymentItem::New();
-    event_data->total->amount = PaymentCurrencyAmount::New();
-    event_data->total->amount->currency = "USD";
+    event_data->total = PaymentCurrencyAmount::New();
+    event_data->total->currency = "USD";
+    event_data->total->value = "55";
 
     PaymentDetailsModifierPtr modifier = PaymentDetailsModifier::New();
     modifier->total = PaymentItem::New();
     modifier->total->amount = PaymentCurrencyAmount::New();
     modifier->total->amount->currency = "USD";
+    modifier->total->amount->value = "55";
     modifier->method_data = PaymentMethodData::New();
     modifier->method_data->supported_methods = {supported_method};
     event_data->modifiers.push_back(std::move(modifier));
@@ -186,13 +187,14 @@ IN_PROC_BROWSER_TEST_F(PaymentAppBrowserTest, PaymentAppInvocation) {
   EXPECT_EQ("[{\"supportedMethods\":[\"basic-card\"]}]",
             PopConsoleString() /* methodData */);
   EXPECT_EQ(
-      "{\"amount\":{\"currency\":\"USD\",\"currencySystem\":\"urn:iso:std:iso:"
-      "4217\",\"value\":\"\"},\"label\":\"\",\"pending\":false}",
+      "{\"currency\":\"USD\",\"currencySystem\":\"urn:iso:std:iso:4217\","
+      "\"value\":\"55\"}",
       PopConsoleString() /* total */);
   EXPECT_EQ(
       "[{\"additionalDisplayItems\":[],\"supportedMethods\":[\"basic-card\"],"
       "\"total\":{\"amount\":{\"currency\":\"USD\",\"currencySystem\":\"urn:"
-      "iso:std:iso:4217\",\"value\":\"\"},\"label\":\"\",\"pending\":false}}]",
+      "iso:std:iso:4217\",\"value\":\"55\"},\"label\":\"\",\"pending\":false}}"
+      "]",
       PopConsoleString() /* modifiers */);
   EXPECT_EQ("basic-card-payment-app-id",
             PopConsoleString() /* instrumentKey */);
@@ -222,14 +224,15 @@ IN_PROC_BROWSER_TEST_F(PaymentAppBrowserTest, PaymentAppOpenWindowFailed) {
   EXPECT_EQ("[{\"supportedMethods\":[\"https://bobpay.com\"]}]",
             PopConsoleString() /* methodData */);
   EXPECT_EQ(
-      "{\"amount\":{\"currency\":\"USD\",\"currencySystem\":\"urn:iso:std:iso:"
-      "4217\",\"value\":\"\"},\"label\":\"\",\"pending\":false}",
+      "{\"currency\":\"USD\",\"currencySystem\":\"urn:iso:std:iso:4217\","
+      "\"value\":\"55\"}",
       PopConsoleString() /* total */);
   EXPECT_EQ(
       "[{\"additionalDisplayItems\":[],\"supportedMethods\":[\"https://"
       "bobpay.com\"],"
       "\"total\":{\"amount\":{\"currency\":\"USD\",\"currencySystem\":\"urn:"
-      "iso:std:iso:4217\",\"value\":\"\"},\"label\":\"\",\"pending\":false}}]",
+      "iso:std:iso:4217\",\"value\":\"55\"},\"label\":\"\",\"pending\":false}}"
+      "]",
       PopConsoleString() /* modifiers */);
   EXPECT_EQ("bobpay-payment-app-id", PopConsoleString() /* instrumentKey */);
 }

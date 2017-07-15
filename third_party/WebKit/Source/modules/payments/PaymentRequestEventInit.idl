@@ -9,7 +9,7 @@ dictionary PaymentRequestEventInit : ExtendableEventInit {
     USVString paymentRequestOrigin;
     DOMString paymentRequestId;
     sequence<PaymentMethodData> methodData;
-    PaymentItem total;
+    PaymentCurrencyAmount total;
     sequence<PaymentDetailsModifier> modifiers;
     DOMString instrumentKey;
 };

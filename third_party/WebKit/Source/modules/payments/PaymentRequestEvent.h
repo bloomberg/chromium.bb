@@ -58,7 +58,7 @@ class MODULES_EXPORT PaymentRequestEvent final : public ExtendableEvent {
   String payment_request_origin_;
   String payment_request_id_;
   HeapVector<PaymentMethodData> method_data_;
-  PaymentItem total_;
+  PaymentCurrencyAmount total_;
   HeapVector<PaymentDetailsModifier> modifiers_;
   String instrument_key_;
 
