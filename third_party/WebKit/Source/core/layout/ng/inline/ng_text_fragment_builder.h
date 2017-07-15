@@ -14,6 +14,7 @@
 namespace blink {
 
 class NGPhysicalTextFragment;
+class ShapeResult;
 
 class CORE_EXPORT NGTextFragmentBuilder final {
   STACK_ALLOCATED();
@@ -21,12 +22,9 @@ class CORE_EXPORT NGTextFragmentBuilder final {
  public:
   NGTextFragmentBuilder(NGInlineNode);
 
-  NGTextFragmentBuilder& SetDirection(TextDirection);
-
   NGTextFragmentBuilder& SetSize(const NGLogicalSize&);
 
-  void UniteMetrics(const NGLineHeightMetrics&);
-  const NGLineHeightMetrics& Metrics() const { return metrics_; }
+  NGTextFragmentBuilder& SetShapeResult(RefPtr<const ShapeResult>);
 
   // Creates the fragment. Can only be called once.
   RefPtr<NGPhysicalTextFragment> ToTextFragment(unsigned index,
@@ -34,13 +32,13 @@ class CORE_EXPORT NGTextFragmentBuilder final {
                                                 unsigned end_offset);
 
  private:
-  TextDirection direction_;
-
   NGInlineNode node_;
 
   NGLogicalSize size_;
 
-  NGLineHeightMetrics metrics_;
+  RefPtr<const ShapeResult> shape_result_;
+
+  NGWritingMode writing_mode_;
 };
 
 }  // namespace blink
