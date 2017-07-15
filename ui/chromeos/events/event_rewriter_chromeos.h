@@ -10,6 +10,7 @@
 #include <set>
 #include <string>
 
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "ui/events/event.h"
 #include "ui/events/event_rewriter.h"
@@ -42,6 +43,20 @@ class EventRewriterChromeOS : public ui::EventRewriter {
     kDeviceAppleKeyboard,
     kDeviceHotrodRemote,
     kDeviceVirtualCoreKeyboard,  // X-server generated events.
+  };
+
+  enum KeyboardTopRowLayout {
+    // The original Chrome OS Layout:
+    // Browser Back, Browser Forward, Refresh, Full Screen, Overview,
+    // Brightness Down, Brightness Up, Mute, Volume Down, Volume Up.
+    kKbdTopRowLayout1 = 1,
+    // 2017 keyboard layout: Browser Forward is gone and Play/Pause
+    // key is added between Brightness Up and Mute.
+    kKbdTopRowLayout2 = 2,
+
+    kKbdTopRowLayoutDefault = kKbdTopRowLayout1,
+    kKbdTopRowLayoutMin = kKbdTopRowLayout1,
+    kKbdTopRowLayoutMax = kKbdTopRowLayout2
   };
 
   // Things that keyboard-related rewriter phases can change about an Event.
@@ -88,17 +103,16 @@ class EventRewriterChromeOS : public ui::EventRewriter {
   ~EventRewriterChromeOS() override;
 
   // Calls KeyboardDeviceAddedInternal.
-  DeviceType KeyboardDeviceAddedForTesting(int device_id,
-                                           const std::string& device_name);
+  DeviceType KeyboardDeviceAddedForTesting(
+      int device_id,
+      const std::string& device_name,
+      KeyboardTopRowLayout layout = kKbdTopRowLayoutDefault);
 
   // Calls RewriteMouseEvent().
   void RewriteMouseButtonEventForTesting(
       const ui::MouseEvent& event,
       std::unique_ptr<ui::Event>* rewritten_event);
 
-  const std::map<int, DeviceType>& device_id_to_type_for_testing() const {
-    return device_id_to_type_;
-  }
   void set_last_keyboard_device_id_for_testing(int device_id) {
     last_keyboard_device_id_ = device_id;
   }
@@ -123,6 +137,11 @@ class EventRewriterChromeOS : public ui::EventRewriter {
       std::unique_ptr<ui::Event>* rewritten_event);
 
  private:
+  struct DeviceInfo {
+    DeviceType type;
+    KeyboardTopRowLayout top_row_layout;
+  };
+
   void DeviceKeyPressedOrReleased(int device_id);
 
   // Adds a device to |device_id_to_type_|.
@@ -133,7 +152,8 @@ class EventRewriterChromeOS : public ui::EventRewriter {
   DeviceType KeyboardDeviceAddedInternal(int device_id,
                                          const std::string& device_name,
                                          int vendor_id,
-                                         int product_id);
+                                         int product_id,
+                                         KeyboardTopRowLayout layout);
 
   // Returns true if |last_keyboard_device_id_| is Apple's.
   bool IsAppleKeyboard() const;
@@ -177,7 +197,7 @@ class EventRewriterChromeOS : public ui::EventRewriter {
   // This is to ensure that press and release events are rewritten consistently.
   std::set<int> pressed_device_ids_;
 
-  std::map<int, DeviceType> device_id_to_type_;
+  std::map<int, DeviceInfo> device_id_to_info_;
 
   // The |source_device_id()| of the most recent keyboard event,
   // used to interpret modifiers on pointer events.
