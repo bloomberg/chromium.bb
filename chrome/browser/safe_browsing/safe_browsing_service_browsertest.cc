@@ -2152,9 +2152,6 @@ IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest, SubResourceHitOnFreshTab) {
 // START: These tests use SafeBrowsingService::Client to directly interact with
 // SafeBrowsingService.
 ///////////////////////////////////////////////////////////////////////////////
-#if defined(GOOGLE_CHROME_BUILD)
-// This test is only enabled when GOOGLE_CHROME_BUILD is true because the store
-// that this test uses is only populated on GOOGLE_CHROME_BUILD builds.
 IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest, CheckDownloadUrl) {
   GURL badbin_url = embedded_test_server()->GetURL(kMalwareFile);
   std::vector<GURL> badbin_urls(1, badbin_url);
@@ -2172,7 +2169,6 @@ IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest, CheckDownloadUrl) {
   // Now, the badbin_url is not safe since it is added to download database.
   EXPECT_EQ(SB_THREAT_TYPE_URL_BINARY_MALWARE, client->GetThreatType());
 }
-#endif  // defined(GOOGLE_CHROME_BUILD)
 
 IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest, CheckUnwantedSoftwareUrl) {
   const GURL bad_url = embedded_test_server()->GetURL(kMalwareFile);
@@ -2306,9 +2302,6 @@ IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest, UnknownWebSocketNotBlocked) {
   EXPECT_FALSE(got_hit_report());
 }
 
-#if defined(GOOGLE_CHROME_BUILD)
-// This test is only enabled when GOOGLE_CHROME_BUILD is true because the store
-// that this test uses is only populated on GOOGLE_CHROME_BUILD builds.
 IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest, CheckDownloadUrlRedirects) {
   GURL original_url = embedded_test_server()->GetURL(kEmptyPage);
   GURL badbin_url = embedded_test_server()->GetURL(kMalwareFile);
@@ -2331,7 +2324,6 @@ IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest, CheckDownloadUrlRedirects) {
   // Now, the badbin_url is not safe since it is added to download database.
   EXPECT_EQ(SB_THREAT_TYPE_URL_BINARY_MALWARE, client->GetThreatType());
 }
-#endif  // defined(GOOGLE_CHROME_BUILD)
 
 #if defined(GOOGLE_CHROME_BUILD)
 // This test is only enabled when GOOGLE_CHROME_BUILD is true because the store
