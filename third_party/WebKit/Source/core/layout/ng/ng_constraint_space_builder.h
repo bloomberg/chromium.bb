@@ -61,8 +61,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
       const WTF::Optional<LayoutUnit>& clearance_offset);
 
   void AddBaselineRequests(const Vector<NGBaselineRequest>&);
-  NGConstraintSpaceBuilder& AddBaselineRequest(NGBaselineAlgorithmType,
-                                               FontBaseline);
+  NGConstraintSpaceBuilder& AddBaselineRequest(const NGBaselineRequest&);
 
   // Creates a new constraint space. This may be called multiple times, for
   // example the constraint space will be different for a child which:

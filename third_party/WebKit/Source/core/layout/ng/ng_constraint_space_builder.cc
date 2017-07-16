@@ -153,14 +153,17 @@ NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetUnpositionedFloats(
 
 void NGConstraintSpaceBuilder::AddBaselineRequests(
     const Vector<NGBaselineRequest>& requests) {
+  DCHECK(baseline_requests_.IsEmpty());
   baseline_requests_.AppendVector(requests);
 }
 
 NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::AddBaselineRequest(
-    NGBaselineAlgorithmType algorithm_type,
-    FontBaseline baseline_type) {
-  baseline_requests_.push_back(
-      NGBaselineRequest{algorithm_type, baseline_type});
+    const NGBaselineRequest& request) {
+  for (const auto& existing : baseline_requests_) {
+    if (existing == request)
+      return *this;
+  }
+  baseline_requests_.push_back(request);
   return *this;
 }
 

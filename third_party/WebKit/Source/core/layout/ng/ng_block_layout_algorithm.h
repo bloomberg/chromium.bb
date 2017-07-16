@@ -148,7 +148,9 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   void FinalizeForFragmentation();
 
   void PropagateBaselinesFromChildren();
-  bool AddBaseline(const NGBaselineRequest&, unsigned);
+  bool AddBaseline(const NGBaselineRequest&,
+                   const NGPhysicalFragment*,
+                   LayoutUnit child_offset);
 
   // Calculates logical offset for the current fragment using either
   // {@code content_size_} when the fragment doesn't know it's offset

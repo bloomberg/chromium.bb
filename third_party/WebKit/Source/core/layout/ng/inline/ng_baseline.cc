@@ -10,6 +10,15 @@
 
 namespace blink {
 
+bool operator==(const NGBaselineRequest& lhs, const NGBaselineRequest& rhs) {
+  return lhs.algorithm_type == rhs.algorithm_type &&
+         lhs.baseline_type == rhs.baseline_type;
+}
+
+bool operator!=(const NGBaselineRequest& lhs, const NGBaselineRequest& rhs) {
+  return !(lhs == rhs);
+}
+
 bool NGBaseline::ShouldPropagateBaselines(const NGLayoutInputNode node) {
   if (node.IsInline())
     return true;

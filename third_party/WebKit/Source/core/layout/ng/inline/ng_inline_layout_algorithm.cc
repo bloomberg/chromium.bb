@@ -396,21 +396,18 @@ LayoutUnit NGInlineLayoutAlgorithm::ComputeContentSize(
   return content_size;
 }
 
-// Add a baseline from a child line box.
+// Add a baseline from a child line box fragment.
 // @return false if the specified child is not a line box.
 bool NGInlineLayoutAlgorithm::AddBaseline(const NGBaselineRequest& request,
-                                          unsigned child_index) {
-  const NGPhysicalFragment* child =
-      container_builder_.Children()[child_index].Get();
+                                          const NGPhysicalFragment* child,
+                                          LayoutUnit child_offset) {
   if (!child->IsLineBox())
     return false;
 
   const NGPhysicalLineBoxFragment* line_box =
       ToNGPhysicalLineBoxFragment(child);
   LayoutUnit offset = line_box->BaselinePosition(request.baseline_type);
-  container_builder_.AddBaseline(
-      request.algorithm_type, request.baseline_type,
-      offset + container_builder_.Offsets()[child_index].block_offset);
+  container_builder_.AddBaseline(request, offset + child_offset);
   return true;
 }
 
@@ -426,13 +423,15 @@ void NGInlineLayoutAlgorithm::PropagateBaselinesFromChildren() {
       case NGBaselineAlgorithmType::kAtomicInline:
       case NGBaselineAlgorithmType::kAtomicInlineForFirstLine:
         for (unsigned i = container_builder_.Children().size(); i--;) {
-          if (AddBaseline(request, i))
+          if (AddBaseline(request, container_builder_.Children()[i].Get(),
+                          container_builder_.Offsets()[i].block_offset))
             break;
         }
         break;
       case NGBaselineAlgorithmType::kFirstLine:
         for (unsigned i = 0; i < container_builder_.Children().size(); i++) {
-          if (AddBaseline(request, i))
+          if (AddBaseline(request, container_builder_.Children()[i].Get(),
+                          container_builder_.Offsets()[i].block_offset))
             break;
         }
         break;
