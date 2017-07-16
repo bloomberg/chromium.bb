@@ -9,31 +9,70 @@
 
 #include "ash/shell.h"
 #include "base/logging.h"
+#include "base/memory/singleton.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_policy_controller.h"
 #include "components/arc/arc_bridge_service.h"
+#include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/arc_service_manager.h"
 
 namespace arc {
+namespace {
 
 // Delay for notifying Android about screen brightness changes, added in
 // order to prevent spammy brightness updates.
 constexpr base::TimeDelta kNotifyBrightnessDelay =
     base::TimeDelta::FromMilliseconds(200);
 
-ArcPowerBridge::ArcPowerBridge(ArcBridgeService* bridge_service)
-    : ArcService(bridge_service), binding_(this), weak_ptr_factory_(this) {
-  arc_bridge_service()->power()->AddObserver(this);
+// Singleton factory for ArcPowerBridge.
+class ArcPowerBridgeFactory
+    : public internal::ArcBrowserContextKeyedServiceFactoryBase<
+          ArcPowerBridge,
+          ArcPowerBridgeFactory> {
+ public:
+  // Factory name used by ArcBrowserContextKeyedServiceFactoryBase.
+  static constexpr const char* kName = "ArcPowerBridgeFactory";
+
+  static ArcPowerBridgeFactory* GetInstance() {
+    return base::Singleton<ArcPowerBridgeFactory>::get();
+  }
+
+ private:
+  friend base::DefaultSingletonTraits<ArcPowerBridgeFactory>;
+  ArcPowerBridgeFactory() = default;
+  ~ArcPowerBridgeFactory() override = default;
+};
+
+}  // namespace
+
+// static
+ArcPowerBridge* ArcPowerBridge::GetForBrowserContext(
+    content::BrowserContext* context) {
+  return ArcPowerBridgeFactory::GetForBrowserContext(context);
+}
+
+ArcPowerBridge::ArcPowerBridge(content::BrowserContext* context,
+                               ArcBridgeService* bridge_service)
+    : arc_bridge_service_(bridge_service),
+      binding_(this),
+      weak_ptr_factory_(this) {
+  arc_bridge_service_->power()->AddObserver(this);
 }
 
 ArcPowerBridge::~ArcPowerBridge() {
-  arc_bridge_service()->power()->RemoveObserver(this);
   ReleaseAllDisplayWakeLocks();
+
+  // TODO(hidehiko): Currently, the lifetime of ArcBridgeService and
+  // BrowserContextKeyedService is not nested.
+  // If ArcServiceManager::Get() returns nullptr, it is already destructed,
+  // so do not touch it.
+  if (ArcServiceManager::Get())
+    arc_bridge_service_->power()->RemoveObserver(this);
 }
 
 void ArcPowerBridge::OnInstanceReady() {
   mojom::PowerInstance* power_instance =
-      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service()->power(), Init);
+      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->power(), Init);
   DCHECK(power_instance);
   mojom::PowerHostPtr host_proxy;
   binding_.Bind(mojo::MakeRequest(&host_proxy));
@@ -56,8 +95,8 @@ void ArcPowerBridge::OnInstanceClosed() {
 }
 
 void ArcPowerBridge::SuspendImminent() {
-  mojom::PowerInstance* power_instance = ARC_GET_INSTANCE_FOR_METHOD(
-      arc_bridge_service()->power(), Suspend);
+  mojom::PowerInstance* power_instance =
+      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->power(), Suspend);
   if (!power_instance)
     return;
 
@@ -67,8 +106,8 @@ void ArcPowerBridge::SuspendImminent() {
 }
 
 void ArcPowerBridge::SuspendDone(const base::TimeDelta& sleep_duration) {
-  mojom::PowerInstance* power_instance = ARC_GET_INSTANCE_FOR_METHOD(
-      arc_bridge_service()->power(), Resume);
+  mojom::PowerInstance* power_instance =
+      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->power(), Resume);
   if (!power_instance)
     return;
 
@@ -93,8 +132,8 @@ void ArcPowerBridge::BrightnessChanged(int level, bool user_initiated) {
 
 void ArcPowerBridge::OnPowerStateChanged(
     chromeos::DisplayPowerState power_state) {
-  mojom::PowerInstance* power_instance = ARC_GET_INSTANCE_FOR_METHOD(
-      arc_bridge_service()->power(), SetInteractive);
+  mojom::PowerInstance* power_instance =
+      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->power(), SetInteractive);
   if (!power_instance)
     return;
 
@@ -175,7 +214,7 @@ void ArcPowerBridge::ReleaseAllDisplayWakeLocks() {
 
 void ArcPowerBridge::UpdateAndroidScreenBrightness(double percent) {
   mojom::PowerInstance* power_instance = ARC_GET_INSTANCE_FOR_METHOD(
-      arc_bridge_service()->power(), UpdateScreenBrightnessSettings);
+      arc_bridge_service_->power(), UpdateScreenBrightnessSettings);
   if (!power_instance)
     return;
   power_instance->UpdateScreenBrightnessSettings(percent);
