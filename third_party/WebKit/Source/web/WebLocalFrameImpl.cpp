@@ -126,6 +126,7 @@
 #include "core/exported/SharedWorkerRepositoryClientImpl.h"
 #include "core/exported/WebAssociatedURLLoaderImpl.h"
 #include "core/exported/WebDataSourceImpl.h"
+#include "core/exported/WebDevToolsAgentImpl.h"
 #include "core/exported/WebPluginContainerImpl.h"
 #include "core/exported/WebRemoteFrameImpl.h"
 #include "core/exported/WebViewBase.h"
@@ -232,7 +233,6 @@
 #include "public/web/WebSerializedScriptValue.h"
 #include "public/web/WebTreeScopeType.h"
 #include "skia/ext/platform_canvas.h"
-#include "web/WebDevToolsAgentImpl.h"
 #include "web/WebFrameWidgetImpl.h"
 
 namespace blink {

@@ -42,8 +42,6 @@ component("web") {
     "ChromeClientImpl.h",
     "LocalFrameClientImpl.cpp",
     "LocalFrameClientImpl.h",
-    "WebDevToolsAgentImpl.cpp",
-    "WebDevToolsAgentImpl.h",
     "WebExport.h",
     "WebFactoryImpl.cpp",
     "WebFactoryImpl.h",

@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "web/WebDevToolsAgentImpl.h"
+#include "core/exported/WebDevToolsAgentImpl.h"
 
 #include <v8-inspector.h>
 #include <memory>
@@ -69,12 +69,6 @@
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "core/probe/CoreProbes.h"
-#include "modules/accessibility/InspectorAccessibilityAgent.h"
-#include "modules/cachestorage/InspectorCacheStorageAgent.h"
-#include "modules/device_orientation/DeviceOrientationInspectorAgent.h"
-#include "modules/indexeddb/InspectorIndexedDBAgent.h"
-#include "modules/storage/InspectorDOMStorageAgent.h"
-#include "modules/webdatabase/InspectorDatabaseAgent.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsContext.h"
@@ -100,7 +94,7 @@ bool IsMainFrame(WebLocalFrameBase* frame) {
   // though |frame| is meant to be main frame.  See http://crbug.com/526162.
   return frame->ViewImpl() && !frame->Parent();
 }
-}
+}  // namespace
 
 class ClientMessageLoopAdapter : public MainThreadDebugger::ClientMessageLoop {
  public:
@@ -341,9 +335,6 @@ InspectorSession* WebDevToolsAgentImpl::InitializeSession(int session_id,
   session->Append(
       InspectorApplicationCacheAgent::Create(inspected_frames_.Get()));
 
-  session->Append(new InspectorIndexedDBAgent(inspected_frames_.Get(),
-                                              session->V8Session()));
-
   InspectorWorkerAgent* worker_agent =
       new InspectorWorkerAgent(inspected_frames_.Get());
   session->Append(worker_agent);
@@ -368,8 +359,6 @@ InspectorSession* WebDevToolsAgentImpl::InitializeSession(int session_id,
       &inspected_frames_->Root()->GetPage()->GetConsoleMessageStorage(),
       inspected_frames_->Root()->GetPerformanceMonitor()));
 
-  session->Append(new DeviceOrientationInspectorAgent(inspected_frames_.Get()));
-
   InspectorOverlayAgent* overlay_agent =
       new InspectorOverlayAgent(web_local_frame_impl_, inspected_frames_.Get(),
                                 session->V8Session(), dom_agent);
@@ -385,14 +374,12 @@ InspectorSession* WebDevToolsAgentImpl::InitializeSession(int session_id,
     // we have to store the frame which will become the main frame later.
     session->Append(
         InspectorEmulationAgent::Create(web_local_frame_impl_, this));
-    // TODO(dgozman): migrate each of the following agents to frame once module
-    // is ready.
-    Page* page = web_local_frame_impl_->ViewImpl()->GetPage();
-    session->Append(InspectorDatabaseAgent::Create(page));
-    session->Append(new InspectorAccessibilityAgent(page, dom_agent));
-    session->Append(InspectorDOMStorageAgent::Create(page));
-    session->Append(InspectorCacheStorageAgent::Create());
   }
+
+  // Call session init callbacks registered from higher layers
+  InspectorAgent::CallSessionInitCallbacks(
+      session, include_view_agents_, dom_agent, inspected_frames_.Get(),
+      web_local_frame_impl_->ViewImpl()->GetPage());
 
   if (!sessions_.size())
     Platform::Current()->CurrentThread()->AddTaskObserver(this);
@@ -651,9 +638,10 @@ void WebDevToolsAgentImpl::RunDebuggerTask(
 
   WebDevToolsAgentImpl* agent_impl =
       static_cast<WebDevToolsAgentImpl*>(webagent);
-  if (agent_impl->Attached())
+  if (agent_impl->Attached()) {
     agent_impl->DispatchMessageFromFrontend(session_id, descriptor->Method(),
                                             descriptor->Message());
+  }
 }
 
 void WebDevToolsAgent::InterruptAndDispatch(int session_id,
