@@ -236,7 +236,8 @@ def process_file(mode, test_name, tests_location, filepath, ninja_targets,
       raise Error('%s: %s is broken: %s' % (filename, builder, data))
     if ('gtest_tests' not in data and
         'isolated_scripts' not in data and
-        'additional_compile_targets' not in data):
+        'additional_compile_targets' not in data and
+        'instrumentation_tests' not in data):
       continue
 
     for d in data.get('junit_tests', []):
@@ -288,6 +289,15 @@ def process_file(mode, test_name, tests_location, filepath, ninja_targets,
 
     for d in data.get('isolated_scripts', []):
       name = d['isolate_name']
+      if (name not in ninja_targets and
+          name not in SKIP_GN_ISOLATE_MAP_TARGETS):
+        raise Error('%s: %s / %s is not listed in gn_isolate_map.pyl.' %
+                    (filename, builder, name))
+      elif name in ninja_targets:
+        ninja_targets_seen.add(name)
+
+    for d in data.get('instrumentation_tests', []):
+      name = d['test']
       if (name not in ninja_targets and
           name not in SKIP_GN_ISOLATE_MAP_TARGETS):
         raise Error('%s: %s / %s is not listed in gn_isolate_map.pyl.' %
