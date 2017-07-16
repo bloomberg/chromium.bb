@@ -9,11 +9,15 @@
 
 #include "base/macros.h"
 #include "chromeos/dbus/power_manager_client.h"
-#include "components/arc/arc_service.h"
 #include "components/arc/common/power.mojom.h"
 #include "components/arc/instance_holder.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/display/manager/chromeos/display_configurator.h"
+
+namespace content {
+class BrowserContext;
+}  // namespace content
 
 namespace arc {
 
@@ -21,13 +25,18 @@ class ArcBridgeService;
 
 // ARC Power Client sets power management policy based on requests from
 // ARC instances.
-class ArcPowerBridge : public ArcService,
+class ArcPowerBridge : public KeyedService,
                        public InstanceHolder<mojom::PowerInstance>::Observer,
                        public chromeos::PowerManagerClient::Observer,
                        public display::DisplayConfigurator::Observer,
                        public mojom::PowerHost {
  public:
-  explicit ArcPowerBridge(ArcBridgeService* bridge_service);
+  // Returns singleton instance for the given BrowserContext,
+  // or nullptr if the browser |context| is not allowed to use ARC.
+  static ArcPowerBridge* GetForBrowserContext(content::BrowserContext* context);
+
+  ArcPowerBridge(content::BrowserContext* context,
+                 ArcBridgeService* bridge_service);
   ~ArcPowerBridge() override;
 
   // InstanceHolder<mojom::PowerInstance>::Observer overrides.
@@ -52,6 +61,7 @@ class ArcPowerBridge : public ArcService,
   void ReleaseAllDisplayWakeLocks();
   void UpdateAndroidScreenBrightness(double percent);
 
+  ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
   mojo::Binding<mojom::PowerHost> binding_;
 
   // Stores a mapping of type -> wake lock ID for all wake locks
