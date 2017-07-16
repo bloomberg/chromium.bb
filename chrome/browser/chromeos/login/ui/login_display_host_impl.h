@@ -28,6 +28,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/display/display_observer.h"
+#include "ui/events/devices/input_device_event_observer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/widget/widget_removals_observer.h"
 #include "ui/wm/public/scoped_drag_drop_disabler.h"
@@ -51,6 +52,7 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
                              public chromeos::SessionManagerClient::Observer,
                              public chromeos::CrasAudioHandler::AudioObserver,
                              public display::DisplayObserver,
+                             public ui::InputDeviceEventObserver,
                              public views::WidgetRemovalsObserver,
                              public chrome::MultiUserWindowManager::Observer {
  public:
@@ -121,6 +123,9 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
   void OnDisplayAdded(const display::Display& new_display) override;
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t changed_metrics) override;
+
+  // Overridden from ui::InputDeviceEventObserver
+  void OnTouchscreenDeviceConfigurationChanged() override;
 
   // Overriden from views::WidgetRemovalsObserver:
   void OnWillRemoveView(views::Widget* widget, views::View* view) override;
