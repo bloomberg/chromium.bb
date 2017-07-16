@@ -101,8 +101,6 @@ void ArcServiceLauncher::Initialize() {
   arc_service_manager_->AddService(
       base::MakeUnique<ArcIntentHelperBridge>(arc_bridge_service));
   arc_service_manager_->AddService(
-      base::MakeUnique<ArcMetricsService>(arc_bridge_service));
-  arc_service_manager_->AddService(
       base::MakeUnique<ArcNetHostImpl>(arc_bridge_service));
   arc_service_manager_->AddService(
       base::MakeUnique<ArcObbMounterBridge>(arc_bridge_service));
@@ -195,6 +193,7 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   ArcCrashCollectorBridge::GetForBrowserContext(profile);
   ArcEnterpriseReportingService::GetForBrowserContext(profile);
   ArcFileSystemMounter::GetForBrowserContext(profile);
+  ArcMetricsService::GetForBrowserContext(profile);
 
   arc_service_manager_->AddService(base::MakeUnique<ArcBootPhaseMonitorBridge>(
       arc_service_manager_->arc_bridge_service(),
