@@ -392,10 +392,8 @@ void NGBlockNode::CopyBaselinesFromOldLayout(
         break;
       case NGBaselineAlgorithmType::kFirstLine: {
         int position = box_->FirstLineBoxBaseline();
-        if (position != -1) {
-          builder->AddBaseline(request.algorithm_type, request.baseline_type,
-                               LayoutUnit(position));
-        }
+        if (position != -1)
+          builder->AddBaseline(request, LayoutUnit(position));
         break;
       }
     }
@@ -425,7 +423,7 @@ void NGBlockNode::AddAtomicInlineBaselineFromOldLayout(
   if (box_->IsAtomicInlineLevel())
     position -= box_->MarginOver();
 
-  builder->AddBaseline(request.algorithm_type, request.baseline_type, position);
+  builder->AddBaseline(request, position);
 }
 
 void NGBlockNode::UseOldOutOfFlowPositioning() {

@@ -366,12 +366,12 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleAtomicInline(
   // would synthesize box-baseline.
   if (NGBaseline::ShouldPropagateBaselines(layout_box)) {
     constraint_space_builder.AddBaselineRequest(
-        line_info.UseFirstLineStyle()
-            ? NGBaselineAlgorithmType::kAtomicInlineForFirstLine
-            : NGBaselineAlgorithmType::kAtomicInline,
-        IsHorizontalWritingMode(constraint_space_->WritingMode())
-            ? FontBaseline::kAlphabeticBaseline
-            : FontBaseline::kIdeographicBaseline);
+        {line_info.UseFirstLineStyle()
+             ? NGBaselineAlgorithmType::kAtomicInlineForFirstLine
+             : NGBaselineAlgorithmType::kAtomicInline,
+         IsHorizontalWritingMode(constraint_space_->WritingMode())
+             ? FontBaseline::kAlphabeticBaseline
+             : FontBaseline::kIdeographicBaseline});
   }
   RefPtr<NGConstraintSpace> constraint_space =
       constraint_space_builder.SetIsNewFormattingContext(true)

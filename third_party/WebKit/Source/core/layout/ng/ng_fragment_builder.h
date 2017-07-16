@@ -106,6 +106,8 @@ class CORE_EXPORT NGFragmentBuilder final {
 
   RefPtr<NGLayoutResult> Abort(NGLayoutResult::NGLayoutResultStatus);
 
+  // A vector of child offsets. Initially set by AddChild().
+  const Vector<NGLogicalOffset>& Offsets() const { return offsets_; }
   Vector<NGLogicalOffset>& MutableOffsets() { return offsets_; }
 
   void SwapUnpositionedFloats(
@@ -121,8 +123,6 @@ class CORE_EXPORT NGFragmentBuilder final {
     return children_;
   }
 
-  const Vector<NGLogicalOffset>& Offsets() const { return offsets_; }
-
   bool DidBreak() const { return did_break_; }
 
   NGFragmentBuilder& SetBorderEdges(NGBorderEdges border_edges) {
@@ -130,7 +130,15 @@ class CORE_EXPORT NGFragmentBuilder final {
     return *this;
   }
 
-  void AddBaseline(NGBaselineAlgorithmType, FontBaseline, LayoutUnit);
+  // Layout algorithms should call this function for each baseline request in
+  // the constraint space.
+  //
+  // If a request should use a synthesized baseline from the box rectangle,
+  // algorithms can omit the call.
+  //
+  // This function should be called at most once for a given algorithm/baseline
+  // type pair.
+  void AddBaseline(NGBaselineRequest, LayoutUnit);
 
  private:
   // An out-of-flow positioned-candidate is a temporary data structure used

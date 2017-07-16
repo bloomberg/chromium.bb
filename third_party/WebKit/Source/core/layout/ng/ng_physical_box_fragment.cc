@@ -31,8 +31,7 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
 const NGBaseline* NGPhysicalBoxFragment::Baseline(
     const NGBaselineRequest& request) const {
   for (const auto& baseline : baselines_) {
-    if (baseline.algorithm_type == request.algorithm_type &&
-        baseline.baseline_type == request.baseline_type)
+    if (baseline.request == request)
       return &baseline;
   }
   return nullptr;
