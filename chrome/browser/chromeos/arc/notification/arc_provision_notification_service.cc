@@ -8,10 +8,12 @@
 
 #include "ash/system/devicetype_utils.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/singleton.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
+#include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
@@ -69,36 +71,67 @@ void DelegateImpl::RemoveManagedProvisionNotification() {
       kManagedProvisionNotificationId, false);
 }
 
+// Singleton factory for ArcProvisionNotificationService.
+class ArcProvisionNotificationServiceFactory
+    : public internal::ArcBrowserContextKeyedServiceFactoryBase<
+          ArcProvisionNotificationService,
+          ArcProvisionNotificationServiceFactory> {
+ public:
+  // Factory name used by ArcBrowserContextKeyedServiceFactoryBase.
+  static constexpr const char* kName = "ArcProvisionNotificationServiceFactory";
+
+  static ArcProvisionNotificationServiceFactory* GetInstance() {
+    return base::Singleton<ArcProvisionNotificationServiceFactory>::get();
+  }
+
+ private:
+  friend base::DefaultSingletonTraits<ArcProvisionNotificationServiceFactory>;
+  ArcProvisionNotificationServiceFactory() = default;
+  ~ArcProvisionNotificationServiceFactory() override = default;
+};
+
 }  // namespace
 
 ArcProvisionNotificationService::Delegate::Delegate() = default;
 
 ArcProvisionNotificationService::Delegate::~Delegate() = default;
 
+// static
+ArcProvisionNotificationService*
+ArcProvisionNotificationService::GetForBrowserContext(
+    content::BrowserContext* context) {
+  return ArcProvisionNotificationServiceFactory::GetForBrowserContext(context);
+}
+
 ArcProvisionNotificationService::ArcProvisionNotificationService(
+    content::BrowserContext* context,
     ArcBridgeService* bridge_service)
-    : ArcProvisionNotificationService(bridge_service,
-                                      base::MakeUnique<DelegateImpl>()) {}
+    : ArcProvisionNotificationService(base::MakeUnique<DelegateImpl>()) {}
 
 ArcProvisionNotificationService::~ArcProvisionNotificationService() {
   // Make sure no notification is left being shown.
   delegate_->RemoveManagedProvisionNotification();
-  ArcSessionManager::Get()->RemoveObserver(this);
+
+  // TODO(hidehiko): Currently, the lifetime of ArcSessionManager and
+  // BrowserContextKeyedService is not nested.
+  // If ArcSessionManager::Get() returns nullptr, it is already destructed,
+  // so do not touch it.
+  auto* arc_session_manager = ArcSessionManager::Get();
+  if (arc_session_manager)
+    arc_session_manager->RemoveObserver(this);
 }
 
 // static
 std::unique_ptr<ArcProvisionNotificationService>
 ArcProvisionNotificationService::CreateForTesting(
-    ArcBridgeService* bridge_service,
     std::unique_ptr<Delegate> delegate) {
   return base::WrapUnique<ArcProvisionNotificationService>(
-      new ArcProvisionNotificationService(bridge_service, std::move(delegate)));
+      new ArcProvisionNotificationService(std::move(delegate)));
 }
 
 ArcProvisionNotificationService::ArcProvisionNotificationService(
-    ArcBridgeService* bridge_service,
     std::unique_ptr<Delegate> delegate)
-    : ArcService(bridge_service), delegate_(std::move(delegate)) {
+    : delegate_(std::move(delegate)) {
   ArcSessionManager::Get()->AddObserver(this);
 }
 
