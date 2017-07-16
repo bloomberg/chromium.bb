@@ -596,3 +596,41 @@ int amdgpu_cs_destroy_semaphore(amdgpu_semaphore_handle sem)
 {
 	return amdgpu_cs_unreference_sem(sem);
 }
+
+int amdgpu_cs_create_syncobj(amdgpu_device_handle dev,
+			     uint32_t *handle)
+{
+	if (NULL == dev)
+		return -EINVAL;
+
+	return drmSyncobjCreate(dev->fd, 0, handle);
+}
+
+int amdgpu_cs_destroy_syncobj(amdgpu_device_handle dev,
+			      uint32_t handle)
+{
+	if (NULL == dev)
+		return -EINVAL;
+
+	return drmSyncobjDestroy(dev->fd, handle);
+}
+
+int amdgpu_cs_export_syncobj(amdgpu_device_handle dev,
+			     uint32_t handle,
+			     int *shared_fd)
+{
+	if (NULL == dev)
+		return -EINVAL;
+
+	return drmSyncobjHandleToFD(dev->fd, handle, shared_fd);
+}
+
+int amdgpu_cs_import_syncobj(amdgpu_device_handle dev,
+			     int shared_fd,
+			     uint32_t *handle)
+{
+	if (NULL == dev)
+		return -EINVAL;
+
+	return drmSyncobjFDToHandle(dev->fd, shared_fd, handle);
+}

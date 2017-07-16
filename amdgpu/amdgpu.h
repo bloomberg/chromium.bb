@@ -1328,8 +1328,61 @@ int amdgpu_cs_destroy_semaphore(amdgpu_semaphore_handle sem);
 */
 const char *amdgpu_get_marketing_name(amdgpu_device_handle dev);
 
+/**
+ *  Create kernel sync object
+ *
+ * \param   dev	      - \c [in]  device handle
+ * \param   syncobj   - \c [out] sync object handle
+ *
+ * \return   0 on success\n
+ *          <0 - Negative POSIX Error code
+ *
+*/
+int amdgpu_cs_create_syncobj(amdgpu_device_handle dev,
+			     uint32_t *syncobj);
+/**
+ *  Destroy kernel sync object
+ *
+ * \param   dev	    - \c [in] device handle
+ * \param   syncobj - \c [in] sync object handle
+ *
+ * \return   0 on success\n
+ *          <0 - Negative POSIX Error code
+ *
+*/
+int amdgpu_cs_destroy_syncobj(amdgpu_device_handle dev,
+			      uint32_t syncobj);
+
+/**
+ *  Export kernel sync object to shareable fd.
+ *
+ * \param   dev	       - \c [in] device handle
+ * \param   syncobj    - \c [in] sync object handle
+ * \param   shared_fd  - \c [out] shared file descriptor.
+ *
+ * \return   0 on success\n
+ *          <0 - Negative POSIX Error code
+ *
+*/
+int amdgpu_cs_export_syncobj(amdgpu_device_handle dev,
+			     uint32_t syncobj,
+			     int *shared_fd);
+/**
+ *  Import kernel sync object from shareable fd.
+ *
+ * \param   dev	       - \c [in] device handle
+ * \param   shared_fd  - \c [in] shared file descriptor.
+ * \param   syncobj    - \c [out] sync object handle
+ *
+ * \return   0 on success\n
+ *          <0 - Negative POSIX Error code
+ *
+*/
+int amdgpu_cs_import_syncobj(amdgpu_device_handle dev,
+			     int shared_fd,
+			     uint32_t *syncobj);
+
 #ifdef __cplusplus
 }
 #endif
-
 #endif /* #ifdef _AMDGPU_H_ */
