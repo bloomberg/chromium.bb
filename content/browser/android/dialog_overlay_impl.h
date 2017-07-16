@@ -9,8 +9,8 @@
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/unguessable_token.h"
-#include "content/browser/android/content_view_core_impl.h"
-#include "content/browser/android/content_view_core_impl_observer.h"
+#include "content/browser/android/content_view_core.h"
+#include "content/browser/android/content_view_core_observer.h"
 #include "content/public/browser/web_contents_observer.h"
 
 namespace content {
@@ -19,7 +19,7 @@ namespace content {
 // java side.  When the ContentViewCore for the provided token is attached or
 // detached from a WindowAndroid, we get the Android window token and notify the
 // java side.
-class DialogOverlayImpl : public ContentViewCoreImplObserver,
+class DialogOverlayImpl : public ContentViewCoreObserver,
                           public WebContentsObserver {
  public:
   // Registers the JNI methods for DialogOverlayImpl.
@@ -30,7 +30,7 @@ class DialogOverlayImpl : public ContentViewCoreImplObserver,
   DialogOverlayImpl(const base::android::JavaParamRef<jobject>& obj,
                     RenderFrameHostImpl* rfhi,
                     WebContents* web_contents,
-                    ContentViewCoreImpl* cvc);
+                    ContentViewCore* cvc);
   ~DialogOverlayImpl() override;
 
   // Called when the java side is ready for token / dismissed callbacks.  May
@@ -48,7 +48,7 @@ class DialogOverlayImpl : public ContentViewCoreImplObserver,
                            const base::android::JavaParamRef<jobject>& obj,
                            const base::android::JavaParamRef<jobject>& rect);
 
-  // ContentViewCoreImplObserver
+  // ContentViewCoreObserver
   void OnContentViewCoreDestroyed() override;
   void OnAttachedToWindow() override;
   void OnDetachedFromWindow() override;
@@ -74,8 +74,8 @@ class DialogOverlayImpl : public ContentViewCoreImplObserver,
   // RenderFrameHostImpl* associated with the given overlay routing token.
   RenderFrameHostImpl* rfhi_;
 
-  // ContentViewCoreImpl instance that we're registered with as an observer.
-  ContentViewCoreImpl* cvc_;
+  // ContentViewCore instance that we're registered with as an observer.
+  ContentViewCore* cvc_;
 };
 
 }  // namespace content

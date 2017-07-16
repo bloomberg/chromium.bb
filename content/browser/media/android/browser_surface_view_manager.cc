@@ -6,7 +6,7 @@
 
 #include "base/android/build_info.h"
 #include "base/trace_event/trace_event.h"
-#include "content/browser/android/content_view_core_impl.h"
+#include "content/browser/android/content_view_core.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/media/surface_view_manager_messages_android.h"

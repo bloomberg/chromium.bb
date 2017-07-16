@@ -28,7 +28,6 @@ source_set("browser_sources") {
     "android/compositor.h",
     "android/compositor_client.h",
     "android/content_protocol_handler.h",
-    "android/content_view_core.h",
     "android/content_view_layer_renderer.h",
     "android/devtools_auth.h",
     "android/java_interfaces.h",

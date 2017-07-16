@@ -40,8 +40,7 @@ static jlong Init(JNIEnv* env,
   if (!rfhi->IsCurrent() || web_contents_impl->IsHidden())
     return 0;
 
-  ContentViewCoreImpl* cvc =
-      content::ContentViewCoreImpl::FromWebContents(web_contents_impl);
+  ContentViewCore* cvc = ContentViewCore::FromWebContents(web_contents_impl);
 
   if (!cvc)
     return 0;
@@ -53,7 +52,7 @@ static jlong Init(JNIEnv* env,
 DialogOverlayImpl::DialogOverlayImpl(const JavaParamRef<jobject>& obj,
                                      RenderFrameHostImpl* rfhi,
                                      WebContents* web_contents,
-                                     ContentViewCoreImpl* cvc)
+                                     ContentViewCore* cvc)
     : WebContentsObserver(web_contents), rfhi_(rfhi), cvc_(cvc) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(rfhi_);

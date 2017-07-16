@@ -31,7 +31,7 @@
 #include "media/base/media_content_type.h"
 
 #if !defined(USE_AURA)
-#include "content/browser/android/content_view_core_impl.h"
+#include "content/browser/android/content_view_core.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
 #endif
 
@@ -79,7 +79,7 @@ BrowserMediaPlayerManager* BrowserMediaPlayerManager::Create(
 
 #if !defined(USE_AURA)
 ContentViewCore* BrowserMediaPlayerManager::GetContentViewCore() const {
-  return ContentViewCoreImpl::FromWebContents(web_contents());
+  return ContentViewCore::FromWebContents(web_contents());
 }
 #endif
 

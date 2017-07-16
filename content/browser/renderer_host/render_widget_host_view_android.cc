@@ -38,7 +38,7 @@
 #include "content/browser/accessibility/browser_accessibility_manager_android.h"
 #include "content/browser/accessibility/web_contents_accessibility_android.h"
 #include "content/browser/android/composited_touch_handle_drawable.h"
-#include "content/browser/android/content_view_core_impl.h"
+#include "content/browser/android/content_view_core.h"
 #include "content/browser/android/ime_adapter_android.h"
 #include "content/browser/android/overscroll_controller_android.h"
 #include "content/browser/android/selection_popup_controller.h"
@@ -443,7 +443,7 @@ void RenderWidgetHostViewAndroid::OnContextLost() {
 
 RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
     RenderWidgetHostImpl* widget_host,
-    ContentViewCoreImpl* content_view_core)
+    ContentViewCore* content_view_core)
     : host_(widget_host),
       begin_frame_source_(nullptr),
       outstanding_begin_frame_requests_(0),
@@ -643,7 +643,7 @@ void RenderWidgetHostViewAndroid::Hide() {
 }
 
 bool RenderWidgetHostViewAndroid::IsShowing() {
-  // ContentViewCoreImpl represents the native side of the Java
+  // ContentViewCore represents the native side of the Java
   // ContentViewCore.  It being NULL means that it is not attached
   // to the View system yet, so we treat this RWHVA as hidden.
   return is_showing_ && content_view_core_;
@@ -2045,7 +2045,7 @@ viz::FrameSinkId RenderWidgetHostViewAndroid::GetFrameSinkId() {
 }
 
 void RenderWidgetHostViewAndroid::SetContentViewCore(
-    ContentViewCoreImpl* content_view_core) {
+    ContentViewCore* content_view_core) {
   DCHECK(!content_view_core || !content_view_core_ ||
          (content_view_core_ == content_view_core));
   StopObservingRootWindow();

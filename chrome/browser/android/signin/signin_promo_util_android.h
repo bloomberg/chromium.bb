@@ -7,17 +7,19 @@
 
 #include "base/android/jni_android.h"
 #include "components/signin/core/browser/signin_metrics.h"
-#include "content/public/browser/android/content_view_core.h"
+
+namespace ui {
+class WindowAndroid;
+}
 
 namespace chrome {
 namespace android {
 
 class SigninPromoUtilAndroid {
  public:
-  // Opens a signin flow with the specified |access_point| for metrics within
-  // the context of |content_view_core|, which could be null.
+  // Opens a signin flow with the specified |access_point| for metrics.
   static void StartAccountSigninActivityForPromo(
-      content::ContentViewCore* content_view_core,
+      ui::WindowAndroid* window,
       signin_metrics::AccessPoint access_point);
 };
 

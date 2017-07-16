@@ -57,7 +57,7 @@
 #include "components/autofill/core/browser/autofill_save_card_infobar_delegate_mobile.h"
 #include "components/autofill/core/browser/autofill_save_card_infobar_mobile.h"
 #include "components/infobars/core/infobar.h"
-#include "content/public/browser/android/content_view_core.h"
+#include "ui/android/window_android.h"
 #else  // !OS_ANDROID
 #include "chrome/browser/ui/autofill/save_card_bubble_controller_impl.h"
 #include "chrome/browser/ui/browser.h"
@@ -378,9 +378,11 @@ bool ChromeAutofillClient::ShouldShowSigninPromo() {
 
 void ChromeAutofillClient::StartSigninFlow() {
 #if defined(OS_ANDROID)
-  chrome::android::SigninPromoUtilAndroid::StartAccountSigninActivityForPromo(
-      content::ContentViewCore::FromWebContents(web_contents()),
-      signin_metrics::AccessPoint::ACCESS_POINT_AUTOFILL_DROPDOWN);
+  auto* window = web_contents()->GetNativeView()->GetWindowAndroid();
+  if (window) {
+    chrome::android::SigninPromoUtilAndroid::StartAccountSigninActivityForPromo(
+        window, signin_metrics::AccessPoint::ACCESS_POINT_AUTOFILL_DROPDOWN);
+  }
 #endif
 }
 
