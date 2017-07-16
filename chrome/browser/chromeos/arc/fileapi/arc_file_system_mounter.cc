@@ -5,21 +5,47 @@
 #include "chrome/browser/chromeos/arc/fileapi/arc_file_system_mounter.h"
 
 #include "base/files/file_path.h"
+#include "base/memory/singleton.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_url_util.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_util.h"
+#include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "content/public/browser/browser_thread.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 
 using content::BrowserThread;
 
 namespace arc {
+namespace {
+
+// Singleton factory for ArcFileSystemMounter.
+class ArcFileSystemMounterFactory
+    : public internal::ArcBrowserContextKeyedServiceFactoryBase<
+          ArcFileSystemMounter,
+          ArcFileSystemMounterFactory> {
+ public:
+  // Factory name used by ArcBrowserContextKeyedServiceFactoryBase.
+  static constexpr const char* kName = "ArcFileSystemMounterFactory";
+
+  static ArcFileSystemMounterFactory* GetInstance() {
+    return base::Singleton<ArcFileSystemMounterFactory>::get();
+  }
+
+ private:
+  friend base::DefaultSingletonTraits<ArcFileSystemMounterFactory>;
+  ArcFileSystemMounterFactory() = default;
+  ~ArcFileSystemMounterFactory() override = default;
+};
+
+}  // namespace
 
 // static
-const char ArcFileSystemMounter::kArcServiceName[] =
-    "arc::ArcFileSystemMounter";
+ArcFileSystemMounter* ArcFileSystemMounter::GetForBrowserContext(
+    content::BrowserContext* context) {
+  return ArcFileSystemMounterFactory::GetForBrowserContext(context);
+}
 
-ArcFileSystemMounter::ArcFileSystemMounter(ArcBridgeService* bridge_service)
-    : ArcService(bridge_service) {
+ArcFileSystemMounter::ArcFileSystemMounter(content::BrowserContext* context,
+                                           ArcBridgeService* bridge_service) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   storage::ExternalMountPoints* mount_points =
