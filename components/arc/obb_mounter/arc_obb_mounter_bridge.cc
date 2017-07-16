@@ -4,10 +4,14 @@
 
 #include "components/arc/obb_mounter/arc_obb_mounter_bridge.h"
 
+#include <utility>
+
 #include "base/bind.h"
+#include "base/memory/singleton.h"
 #include "chromeos/dbus/arc_obb_mounter_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/arc/arc_bridge_service.h"
+#include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 
 namespace arc {
 
@@ -19,20 +23,51 @@ void RunObbCallback(const base::Callback<void(bool)>& callback,
   callback.Run(result == chromeos::DBUS_METHOD_CALL_SUCCESS);
 }
 
+// Singleton factory for ArcObbMounterBridge.
+class ArcObbMounterBridgeFactory
+    : public internal::ArcBrowserContextKeyedServiceFactoryBase<
+          ArcObbMounterBridge,
+          ArcObbMounterBridgeFactory> {
+ public:
+  // Factory name used by ArcBrowserContextKeyedServiceFactoryBase.
+  static constexpr const char* kName = "ArcObbMounterBridgeFactory";
+
+  static ArcObbMounterBridgeFactory* GetInstance() {
+    return base::Singleton<ArcObbMounterBridgeFactory>::get();
+  }
+
+ private:
+  friend base::DefaultSingletonTraits<ArcObbMounterBridgeFactory>;
+  ArcObbMounterBridgeFactory() = default;
+  ~ArcObbMounterBridgeFactory() override = default;
+};
+
 }  // namespace
 
-ArcObbMounterBridge::ArcObbMounterBridge(ArcBridgeService* bridge_service)
-    : ArcService(bridge_service), binding_(this) {
-  arc_bridge_service()->obb_mounter()->AddObserver(this);
+// static
+ArcObbMounterBridge* ArcObbMounterBridge::GetForBrowserContext(
+    content::BrowserContext* context) {
+  return ArcObbMounterBridgeFactory::GetForBrowserContext(context);
+}
+
+ArcObbMounterBridge::ArcObbMounterBridge(content::BrowserContext* context,
+                                         ArcBridgeService* bridge_service)
+    : arc_bridge_service_(bridge_service), binding_(this) {
+  arc_bridge_service_->obb_mounter()->AddObserver(this);
 }
 
 ArcObbMounterBridge::~ArcObbMounterBridge() {
-  arc_bridge_service()->obb_mounter()->RemoveObserver(this);
+  // TODO(hidehiko): Currently, the lifetime of ArcBridgeService and
+  // BrowserContextKeyedService is not nested.
+  // If ArcServiceManager::Get() returns nullptr, it is already destructed,
+  // so do not touch it.
+  if (ArcServiceManager::Get())
+    arc_bridge_service_->obb_mounter()->RemoveObserver(this);
 }
 
 void ArcObbMounterBridge::OnInstanceReady() {
   mojom::ObbMounterInstance* obb_mounter_instance =
-      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service()->obb_mounter(), Init);
+      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->obb_mounter(), Init);
   DCHECK(obb_mounter_instance);
   mojom::ObbMounterHostPtr host_proxy;
   binding_.Bind(mojo::MakeRequest(&host_proxy));
