@@ -1204,6 +1204,7 @@ size_t NumParallelJobs() {
       LOG(ERROR) << "Invalid value for " << switches::kTestLauncherJobs;
       return 0U;
     }
+    return jobs;
   } else if (command_line->HasSwitch(kGTestFilterFlag) && !BotModeEnabled()) {
     // Do not run jobs in parallel by default if we are running a subset of
     // the tests and if bot mode is off.
