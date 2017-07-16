@@ -780,7 +780,7 @@
         'chrome/browser/net/.*net_log|' \
         'chrome/browser/resources/net_internals/|' \
         'chrome/browser/ui/webui/net_internals/|' \
-	'components/net_log/'
+        'components/net_log/'
     },
     'net_spdy': {
       'filepath': 'net/spdy/',
@@ -1272,8 +1272,8 @@
                   '|third_party/WebKit/Source/core/rendering/.*Bidi',
     },
     'blink_bindings': {
-      'filepath': 'third_party/WebKit/Source/platform/bindings',
-      'filepath': 'third_party/WebKit/Source/bindings',
+      'filepath': 'third_party/WebKit/Source/platform/bindings' \
+                  '|third_party/WebKit/Source/bindings',
     },
     'blink_bindings_serialization': {
       'filepath': 'third_party/WebKit/Source/bindings/(core|modules)/v8/.*[Ss]erializ',
@@ -1381,8 +1381,8 @@
                   '|third_party/WebKit/LayoutTests/imagecapture/'
     },
     'blink_loader': {
-      'filepath': 'third_party/WebKit/Source/core/loader', \
-      'filepath': 'third_party/WebKit/Source/platform/loader'
+      'filepath': 'third_party/WebKit/Source/core/loader' \
+                  '|third_party/WebKit/Source/platform/loader'
     },
     'blink_modules': {
       'filepath': 'third_party/WebKit/Source/modules'
