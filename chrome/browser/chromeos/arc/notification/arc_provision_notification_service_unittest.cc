@@ -21,7 +21,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/test/fake_arc_session.h"
@@ -79,7 +78,6 @@ class ArcProvisionNotificationServiceTest : public testing::Test {
         mock_arc_provision_notification_service_delegate.get();
     arc_provision_notification_service_ =
         ArcProvisionNotificationService::CreateForTesting(
-            arc_bridge_service(),
             std::move(mock_arc_provision_notification_service_delegate));
 
     const AccountId account_id(AccountId::FromUserEmailGaiaId(
@@ -103,9 +101,6 @@ class ArcProvisionNotificationServiceTest : public testing::Test {
   TestingProfile* profile() { return profile_.get(); }
   ArcServiceManager* arc_service_manager() {
     return arc_service_manager_.get();
-  }
-  ArcBridgeService* arc_bridge_service() {
-    return arc_service_manager_->arc_bridge_service();
   }
   ArcSessionManager* arc_session_manager() {
     return arc_session_manager_.get();
