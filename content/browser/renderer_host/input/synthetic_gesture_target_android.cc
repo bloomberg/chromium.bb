@@ -4,7 +4,7 @@
 
 #include "content/browser/renderer_host/input/synthetic_gesture_target_android.h"
 
-#include "content/browser/android/content_view_core_impl.h"
+#include "content/browser/android/content_view_core.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "jni/MotionEventSynthesizer_jni.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"

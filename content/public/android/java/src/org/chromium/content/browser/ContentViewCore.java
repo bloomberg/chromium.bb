@@ -204,7 +204,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
     private WebContents mWebContents;
     private WebContentsObserver mWebContentsObserver;
 
-    // Native pointer to C++ ContentViewCoreImpl object which will be set by nativeInit().
+    // Native pointer to C++ ContentViewCore object which will be set by nativeInit().
     private long mNativeContentViewCore;
 
     private boolean mAttachedToWindow;
@@ -274,7 +274,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
     /**
      * PID used to indicate an invalid render process.
      */
-    // Keep in sync with the value returned from ContentViewCoreImpl::GetCurrentRendererProcessId()
+    // Keep in sync with the value returned from ContentViewCore::GetCurrentRendererProcessId()
     // if there is no render process.
     public static final int INVALID_RENDER_PROCESS_PID = 0;
 
@@ -2225,79 +2225,75 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
     private static native ContentViewCore nativeFromWebContentsAndroid(WebContents webContents);
 
     private native void nativeUpdateWindowAndroid(
-            long nativeContentViewCoreImpl, long windowAndroidPtr);
-    private native WebContents nativeGetWebContentsAndroid(long nativeContentViewCoreImpl);
-    private native WindowAndroid nativeGetJavaWindowAndroid(long nativeContentViewCoreImpl);
+            long nativeContentViewCore, long windowAndroidPtr);
+    private native WebContents nativeGetWebContentsAndroid(long nativeContentViewCore);
+    private native WindowAndroid nativeGetJavaWindowAndroid(long nativeContentViewCore);
 
-    private native void nativeOnJavaContentViewCoreDestroyed(long nativeContentViewCoreImpl);
+    private native void nativeOnJavaContentViewCoreDestroyed(long nativeContentViewCore);
 
-    private native void nativeSetFocus(long nativeContentViewCoreImpl, boolean focused);
+    private native void nativeSetFocus(long nativeContentViewCore, boolean focused);
 
-    private native void nativeSetDIPScale(long nativeContentViewCoreImpl, float dipScale);
+    private native void nativeSetDIPScale(long nativeContentViewCore, float dipScale);
 
     private native void nativeSendOrientationChangeEvent(
-            long nativeContentViewCoreImpl, int orientation);
+            long nativeContentViewCore, int orientation);
 
-    private native void nativeScrollBegin(long nativeContentViewCoreImpl, long timeMs, float x,
-            float y, float hintX, float hintY, boolean targetViewport, boolean fromGamepad);
+    private native void nativeScrollBegin(long nativeContentViewCore, long timeMs, float x, float y,
+            float hintX, float hintY, boolean targetViewport, boolean fromGamepad);
 
-    private native void nativeScrollEnd(long nativeContentViewCoreImpl, long timeMs);
+    private native void nativeScrollEnd(long nativeContentViewCore, long timeMs);
 
     private native void nativeScrollBy(
-            long nativeContentViewCoreImpl, long timeMs, float x, float y,
-            float deltaX, float deltaY);
+            long nativeContentViewCore, long timeMs, float x, float y, float deltaX, float deltaY);
 
-    private native void nativeFlingStart(long nativeContentViewCoreImpl, long timeMs, float x,
-            float y, float vx, float vy, boolean targetViewport, boolean fromGamepad);
+    private native void nativeFlingStart(long nativeContentViewCore, long timeMs, float x, float y,
+            float vx, float vy, boolean targetViewport, boolean fromGamepad);
 
     private native void nativeFlingCancel(
-            long nativeContentViewCoreImpl, long timeMs, boolean fromGamepad);
+            long nativeContentViewCore, long timeMs, boolean fromGamepad);
 
-    private native void nativeDoubleTap(
-            long nativeContentViewCoreImpl, long timeMs, float x, float y);
+    private native void nativeDoubleTap(long nativeContentViewCore, long timeMs, float x, float y);
 
     private native void nativeResolveTapDisambiguation(
-            long nativeContentViewCoreImpl, long timeMs, float x, float y, boolean isLongPress);
+            long nativeContentViewCore, long timeMs, float x, float y, boolean isLongPress);
 
-    private native void nativePinchBegin(
-            long nativeContentViewCoreImpl, long timeMs, float x, float y);
+    private native void nativePinchBegin(long nativeContentViewCore, long timeMs, float x, float y);
 
-    private native void nativePinchEnd(long nativeContentViewCoreImpl, long timeMs);
+    private native void nativePinchEnd(long nativeContentViewCore, long timeMs);
 
-    private native void nativePinchBy(long nativeContentViewCoreImpl, long timeMs,
-            float anchorX, float anchorY, float deltaScale);
+    private native void nativePinchBy(long nativeContentViewCore, long timeMs, float anchorX,
+            float anchorY, float deltaScale);
 
     private native void nativeSetTextHandlesTemporarilyHidden(
-            long nativeContentViewCoreImpl, boolean hidden);
+            long nativeContentViewCore, boolean hidden);
 
-    private native void nativeResetGestureDetection(long nativeContentViewCoreImpl);
+    private native void nativeResetGestureDetection(long nativeContentViewCore);
 
     private native void nativeSetDoubleTapSupportEnabled(
-            long nativeContentViewCoreImpl, boolean enabled);
+            long nativeContentViewCore, boolean enabled);
 
     private native void nativeSetMultiTouchZoomSupportEnabled(
-            long nativeContentViewCoreImpl, boolean enabled);
+            long nativeContentViewCore, boolean enabled);
 
-    private native void nativeSelectPopupMenuItems(long nativeContentViewCoreImpl,
-            long nativeSelectPopupSourceFrame, int[] indices);
+    private native void nativeSelectPopupMenuItems(
+            long nativeContentViewCore, long nativeSelectPopupSourceFrame, int[] indices);
 
-    private native int nativeGetCurrentRenderProcessId(long nativeContentViewCoreImpl);
+    private native int nativeGetCurrentRenderProcessId(long nativeContentViewCore);
 
     private native void nativeSetAllowJavascriptInterfacesInspection(
-            long nativeContentViewCoreImpl, boolean allow);
+            long nativeContentViewCore, boolean allow);
 
-    private native void nativeAddJavascriptInterface(long nativeContentViewCoreImpl, Object object,
-            String name, Class requiredAnnotation);
+    private native void nativeAddJavascriptInterface(
+            long nativeContentViewCore, Object object, String name, Class requiredAnnotation);
 
-    private native void nativeRemoveJavascriptInterface(long nativeContentViewCoreImpl,
-            String name);
+    private native void nativeRemoveJavascriptInterface(long nativeContentViewCore, String name);
 
-    private native void nativeWasResized(long nativeContentViewCoreImpl);
+    private native void nativeWasResized(long nativeContentViewCore);
 
-    private native void nativeSetTextTrackSettings(long nativeContentViewCoreImpl,
+    private native void nativeSetTextTrackSettings(long nativeContentViewCore,
             boolean textTracksEnabled, String textTrackBackgroundColor, String textTrackFontFamily,
             String textTrackFontStyle, String textTrackFontVariant, String textTrackTextColor,
             String textTrackTextShadow, String textTrackTextSize);
 
-    private native void nativeSetBackgroundOpaque(long nativeContentViewCoreImpl, boolean opaque);
+    private native void nativeSetBackgroundOpaque(long nativeContentViewCore, boolean opaque);
 }
