@@ -23,6 +23,8 @@ blink_core_sources("exported") {
     "WebDataSourceImpl.cpp",
     "WebDataSourceImpl.h",
     "WebDateTimeSuggestion.cpp",
+    "WebDevToolsAgentImpl.cpp",
+    "WebDevToolsAgentImpl.h",
     "WebDevToolsFrontendImpl.cpp",
     "WebDevToolsFrontendImpl.h",
     "WebDocument.cpp",
@@ -87,6 +89,7 @@ blink_core_sources("exported") {
     "WebTextCheckingResult.cpp",
     "WebUserGestureIndicator.cpp",
     "WebUserGestureToken.cpp",
+    "WebViewBase.cpp",
     "WebViewBase.h",
   ]
 

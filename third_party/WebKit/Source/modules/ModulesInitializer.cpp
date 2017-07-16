@@ -13,6 +13,7 @@
 #include "core/frame/WebLocalFrameBase.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLMediaElement.h"
+#include "core/inspector/InspectorSession.h"
 #include "core/offscreencanvas/OffscreenCanvas.h"
 #include "core/page/ChromeClient.h"
 #include "core/workers/Worker.h"
@@ -23,18 +24,22 @@
 #include "modules/EventTargetModulesNames.h"
 #include "modules/IndexedDBNames.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
+#include "modules/accessibility/InspectorAccessibilityAgent.h"
 #include "modules/app_banner/AppBannerController.h"
 #include "modules/audio_output_devices/AudioOutputDeviceClient.h"
 #include "modules/audio_output_devices/AudioOutputDeviceClientImpl.h"
+#include "modules/cachestorage/InspectorCacheStorageAgent.h"
 #include "modules/canvas2d/CanvasRenderingContext2D.h"
 #include "modules/compositorworker/CompositorWorkerThread.h"
 #include "modules/csspaint/CSSPaintImageGeneratorImpl.h"
+#include "modules/device_orientation/DeviceOrientationInspectorAgent.h"
 #include "modules/document_metadata/CopylessPasteServer.h"
 #include "modules/exported/WebEmbeddedWorkerImpl.h"
 #include "modules/filesystem/DraggedIsolatedFileSystemImpl.h"
 #include "modules/filesystem/LocalFileSystemClient.h"
 #include "modules/imagebitmap/ImageBitmapRenderingContext.h"
 #include "modules/indexeddb/IndexedDBClientImpl.h"
+#include "modules/indexeddb/InspectorIndexedDBAgent.h"
 #include "modules/installation/InstallationServiceImpl.h"
 #include "modules/installedapp/InstalledAppController.h"
 #include "modules/media_controls/MediaControlsImpl.h"
@@ -46,9 +51,11 @@
 #include "modules/presentation/PresentationController.h"
 #include "modules/push_messaging/PushController.h"
 #include "modules/screen_orientation/ScreenOrientationControllerImpl.h"
+#include "modules/storage/InspectorDOMStorageAgent.h"
 #include "modules/time_zone_monitor/TimeZoneMonitorClient.h"
 #include "modules/vr/VRController.h"
 #include "modules/webdatabase/DatabaseManager.h"
+#include "modules/webdatabase/InspectorDatabaseAgent.h"
 #include "modules/webgl/WebGL2RenderingContext.h"
 #include "modules/webgl/WebGLRenderingContext.h"
 #include "platform/mojo/MojoHelper.h"
@@ -170,6 +177,25 @@ void ModulesInitializer::Initialize() {
 
   HTMLMediaElement::RegisterMediaControlsFactory(
       WTF::MakeUnique<MediaControlsImpl::Factory>());
+
+  // Session Initializers for Inspector Agents in modules/
+  // These methods typically create agents and append them to a session.
+  // TODO(nverne): remove this and restore to WebDevToolsAgentImpl once that
+  // class is a controller/ crbug:731490
+  InspectorAgent::RegisterSessionInitCallback(
+      [](InspectorSession* session, bool allow_view_agents,
+         InspectorDOMAgent* dom_agent, InspectedFrames* inspected_frames,
+         Page* page) {
+        session->Append(new InspectorIndexedDBAgent(inspected_frames,
+                                                    session->V8Session()));
+        session->Append(new DeviceOrientationInspectorAgent(inspected_frames));
+        if (allow_view_agents) {
+          session->Append(InspectorDatabaseAgent::Create(page));
+          session->Append(new InspectorAccessibilityAgent(page, dom_agent));
+          session->Append(InspectorDOMStorageAgent::Create(page));
+          session->Append(InspectorCacheStorageAgent::Create());
+        }
+      });
 
   DCHECK(IsInitialized());
 }
