@@ -11,10 +11,12 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/memory/singleton.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/task_scheduler/task_traits.h"
 #include "base/threading/thread_restrictions.h"
 #include "components/arc/arc_bridge_service.h"
+#include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "net/base/filename_util.h"
 #include "url/gurl.h"
@@ -45,19 +47,55 @@ base::Optional<base::FilePath> SavePdf(base::File file) {
 }  // namespace
 
 namespace arc {
+namespace {
 
-ArcPrintService::ArcPrintService(ArcBridgeService* bridge_service)
-    : ArcService(bridge_service), binding_(this), weak_ptr_factory_(this) {
-  arc_bridge_service()->print()->AddObserver(this);
+// Singleton factory for ArcPrintService.
+class ArcPrintServiceFactory
+    : public internal::ArcBrowserContextKeyedServiceFactoryBase<
+          ArcPrintService,
+          ArcPrintServiceFactory> {
+ public:
+  // Factory name used by ArcBrowserContextKeyedServiceFactoryBase.
+  static constexpr const char* kName = "ArcPrintServiceFactory";
+
+  static ArcPrintServiceFactory* GetInstance() {
+    return base::Singleton<ArcPrintServiceFactory>::get();
+  }
+
+ private:
+  friend base::DefaultSingletonTraits<ArcPrintServiceFactory>;
+  ArcPrintServiceFactory() = default;
+  ~ArcPrintServiceFactory() override = default;
+};
+
+}  // namespace
+
+// static
+ArcPrintService* ArcPrintService::GetForBrowserContext(
+    content::BrowserContext* context) {
+  return ArcPrintServiceFactory::GetForBrowserContext(context);
+}
+
+ArcPrintService::ArcPrintService(content::BrowserContext* context,
+                                 ArcBridgeService* bridge_service)
+    : arc_bridge_service_(bridge_service),
+      binding_(this),
+      weak_ptr_factory_(this) {
+  arc_bridge_service_->print()->AddObserver(this);
 }
 
 ArcPrintService::~ArcPrintService() {
-  arc_bridge_service()->print()->RemoveObserver(this);
+  // TODO(hidehiko): Currently, the lifetime of ArcBridgeService and
+  // BrowserContextKeyedService is not nested.
+  // If ArcServiceManager::Get() returns nullptr, it is already destructed,
+  // so do not touch it.
+  if (ArcServiceManager::Get())
+    arc_bridge_service_->print()->RemoveObserver(this);
 }
 
 void ArcPrintService::OnInstanceReady() {
   mojom::PrintInstance* print_instance =
-      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service()->print(), Init);
+      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->print(), Init);
   DCHECK(print_instance);
   mojom::PrintHostPtr host_proxy;
   binding_.Bind(mojo::MakeRequest(&host_proxy));

@@ -10,20 +10,30 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/threading/thread_checker.h"
-#include "components/arc/arc_service.h"
 #include "components/arc/common/print.mojom.h"
 #include "components/arc/instance_holder.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
+
+namespace content {
+class BrowserContext;
+}  // namespace content
 
 namespace arc {
 
 class ArcBridgeService;
 
-class ArcPrintService : public ArcService,
+class ArcPrintService : public KeyedService,
                         public InstanceHolder<mojom::PrintInstance>::Observer,
                         public mojom::PrintHost {
  public:
-  explicit ArcPrintService(ArcBridgeService* bridge_service);
+  // Returns singleton instance for the given BrowserContext,
+  // or nullptr if the browser |context| is not allowed to use ARC.
+  static ArcPrintService* GetForBrowserContext(
+      content::BrowserContext* context);
+
+  ArcPrintService(content::BrowserContext* context,
+                  ArcBridgeService* bridge_service);
   ~ArcPrintService() override;
 
   // InstanceHolder<mojom::PrintInstance>::Observer override:
@@ -38,6 +48,8 @@ class ArcPrintService : public ArcService,
   void OpenPdf(base::Optional<base::FilePath> file_path) const;
 
   THREAD_CHECKER(thread_checker_);
+
+  ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
   mojo::Binding<mojom::PrintHost> binding_;
 
   base::WeakPtrFactory<ArcPrintService> weak_ptr_factory_;
