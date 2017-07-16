@@ -25,10 +25,10 @@ TEST(GraphicsMemoryDumpProviderTest, ParseResponse) {
   std::string json;
   mad->attributes_for_testing()->AppendAsTraceFormat(&json);
   ASSERT_EQ(
-      "{\"memtrack_pss\":{\"type\":\"scalar\",\"units\":\"bytes\",\"value\":"
-      "\"22\"},"
-      "\"memtrack_total\":{\"type\":\"scalar\",\"units\":\"bytes\",\"value\":"
-      "\"c\"}}",
+      "{\"memtrack_total\":{\"type\":\"scalar\",\"units\":\"bytes\",\"value\":"
+      "\"c\"},"
+      "\"memtrack_pss\":{\"type\":\"scalar\",\"units\":\"bytes\",\"value\":"
+      "\"22\"}}",
       json);
 
   // Check the "gl" row.
@@ -37,10 +37,10 @@ TEST(GraphicsMemoryDumpProviderTest, ParseResponse) {
   json = "";
   mad->attributes_for_testing()->AppendAsTraceFormat(&json);
   ASSERT_EQ(
-      "{\"memtrack_pss\":{\"type\":\"scalar\",\"units\":\"bytes\",\"value\":"
-      "\"4e\"},"
-      "\"memtrack_total\":{\"type\":\"scalar\",\"units\":\"bytes\",\"value\":"
-      "\"38\"}}",
+      "{\"memtrack_total\":{\"type\":\"scalar\",\"units\":\"bytes\",\"value\":"
+      "\"38\"},"
+      "\"memtrack_pss\":{\"type\":\"scalar\",\"units\":\"bytes\",\"value\":"
+      "\"4e\"}}",
       json);
 
   // Test for truncated input.

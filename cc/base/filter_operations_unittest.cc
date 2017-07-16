@@ -970,8 +970,8 @@ TEST(FilterOperationsTest, ToString) {
 
   filters.Append(FilterOperation::CreateSaturateFilter(3.f));
   filters.Append(FilterOperation::CreateBlurFilter(2.f));
-  EXPECT_EQ(std::string("{\"FilterOperations\":[{\"amount\":3.0,\"type\":2},"
-                        "{\"amount\":2.0,\"type\":8}]}"),
+  EXPECT_EQ(std::string("{\"FilterOperations\":[{\"type\":2,\"amount\":3.0},"
+                        "{\"type\":8,\"amount\":2.0}]}"),
             filters.ToString());
 }
 
