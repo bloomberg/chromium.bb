@@ -106,7 +106,7 @@ TEST(StackFrameDeduplicatorTest, ImplicitId0) {
   StackFrameDeduplicator dedup(&string_dedup);
 
   // Node #0 is added implicitly and corresponds to an empty backtrace.
-  ASSERT_EQ(dedup.begin() + 1, dedup.end());
+  ASSERT_TRUE(dedup.begin() + 1 == dedup.end());
   ASSERT_EQ(0, dedup.Insert(std::begin(null_bt), std::begin(null_bt)));
 
   // Placeholder entry for ID 0 is a frame with NULL name and no parent.
@@ -138,7 +138,7 @@ TEST(StackFrameDeduplicatorTest, SingleBacktrace) {
   ASSERT_EQ(kMalloc, (iter + 2)->frame);
   ASSERT_EQ(2, (iter + 2)->parent_frame_index);
 
-  ASSERT_EQ(iter + 3, dedup.end());
+  ASSERT_TRUE(iter + 3 == dedup.end());
 }
 
 TEST(StackFrameDeduplicatorTest, SingleBacktraceWithNull) {
@@ -168,7 +168,7 @@ TEST(StackFrameDeduplicatorTest, SingleBacktraceWithNull) {
   ASSERT_EQ(kMalloc, (iter + 2)->frame);
   ASSERT_EQ(2, (iter + 2)->parent_frame_index);
 
-  ASSERT_EQ(iter + 3, dedup.end());
+  ASSERT_TRUE(iter + 3 == dedup.end());
 }
 
 // Test that there can be different call trees (there can be multiple bottom
@@ -206,7 +206,7 @@ TEST(StackFrameDeduplicatorTest, MultipleRoots) {
   ASSERT_EQ(kCreateWidget, (iter + 3)->frame);
   ASSERT_EQ(3, (iter + 3)->parent_frame_index);
 
-  ASSERT_EQ(iter + 4, dedup.end());
+  ASSERT_TRUE(iter + 4 == dedup.end());
 }
 
 TEST(StackFrameDeduplicatorTest, Deduplication) {
@@ -236,7 +236,7 @@ TEST(StackFrameDeduplicatorTest, Deduplication) {
   ASSERT_EQ(kInitialize, (iter + 2)->frame);
   ASSERT_EQ(1, (iter + 2)->parent_frame_index);
 
-  ASSERT_EQ(iter + 3, dedup.end());
+  ASSERT_TRUE(iter + 3 == dedup.end());
 
   // Inserting the same backtrace again should return the index of the existing
   // node.

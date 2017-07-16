@@ -5,11 +5,12 @@
 #ifndef BASE_TRACE_EVENT_HEAP_PROFILER_STACK_FRAME_DEDUPLICATOR_H_
 #define BASE_TRACE_EVENT_HEAP_PROFILER_STACK_FRAME_DEDUPLICATOR_H_
 
-#include <map>
+#include <deque>
 #include <string>
-#include <vector>
+#include <unordered_map>
 
 #include "base/base_export.h"
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/trace_event/heap_profiler_allocation_context.h"
 
@@ -45,10 +46,10 @@ class BASE_EXPORT StackFrameDeduplicator {
     constexpr static int kInvalidFrameIndex = -1;
 
     // Indices into |frames_| of frames called from the current frame.
-    std::map<StackFrame, int> children;
+    base::flat_map<StackFrame, int> children;
   };
 
-  using ConstIterator = std::vector<FrameNode>::const_iterator;
+  using ConstIterator = std::deque<FrameNode>::const_iterator;
 
   // |string_deduplication| is used during serialization, and is expected
   // to outlive instances of this class.
@@ -73,11 +74,22 @@ class BASE_EXPORT StackFrameDeduplicator {
   void EstimateTraceMemoryOverhead(TraceEventMemoryOverhead* overhead);
 
  private:
+  // Checks that existing backtrace identified by |frame_index| equals
+  // to the one identified by |begin_frame|, |end_frame|.
+  bool Match(int frame_index,
+             const StackFrame* begin_frame,
+             const StackFrame* end_frame) const;
+
   StringDeduplicator* string_deduplicator_;
 
-  std::map<StackFrame, int> roots_;
-  std::vector<FrameNode> frames_;
+  base::flat_map<StackFrame, int> roots_;
+  std::deque<FrameNode> frames_;
   size_t last_exported_index_;
+
+  // {backtrace_hash -> frame_index} map for finding backtraces that are
+  // already added. Backtraces themselves are not stored in the map, instead
+  // Match() is used on the found frame_index to detect collisions.
+  std::unordered_map<size_t, int> backtrace_lookup_table_;
 
   DISALLOW_COPY_AND_ASSIGN(StackFrameDeduplicator);
 };
