@@ -19,10 +19,6 @@
 #include "storage/browser/blob/blob_reader.h"
 #include "storage/browser/storage_browser_export.h"
 
-namespace base {
-class SingleThreadTaskRunner;
-}
-
 namespace net {
 class HttpResponseHeaders;
 class IOBuffer;
@@ -41,8 +37,7 @@ class STORAGE_EXPORT BlobURLRequestJob
   BlobURLRequestJob(net::URLRequest* request,
                     net::NetworkDelegate* network_delegate,
                     BlobDataHandle* blob_handle,
-                    storage::FileSystemContext* file_system_context,
-                    base::SingleThreadTaskRunner* resolving_thread_task_runner);
+                    storage::FileSystemContext* file_system_context);
 
   // net::URLRequestJob methods.
   void Start() override;

@@ -144,8 +144,7 @@ class BlobURLRequestJobTest : public testing::TestWithParam<bool> {
         net::NetworkDelegate* network_delegate) const override {
       return new BlobURLRequestJob(request, network_delegate,
                                    test_->GetHandleFromBuilder(),
-                                   test_->file_system_context_.get(),
-                                   base::ThreadTaskRunnerHandle::Get().get());
+                                   test_->file_system_context_.get());
     }
 
    private:

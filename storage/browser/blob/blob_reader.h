@@ -23,7 +23,6 @@ class GURL;
 
 namespace base {
 class FilePath;
-class SequencedTaskRunner;
 class TaskRunner;
 class Time;
 }
@@ -144,8 +143,7 @@ class STORAGE_EXPORT BlobReader {
   FRIEND_TEST_ALL_PREFIXES(BlobReaderTest, ReadFromIncompleteBlob);
 
   BlobReader(const BlobDataHandle* blob_handle,
-             std::unique_ptr<FileStreamReaderProvider> file_stream_provider,
-             base::SequencedTaskRunner* file_task_runner);
+             std::unique_ptr<FileStreamReaderProvider> file_stream_provider);
 
   bool total_size_calculated() const { return total_size_calculated_; }
 
@@ -199,7 +197,7 @@ class STORAGE_EXPORT BlobReader {
   std::unique_ptr<BlobDataHandle> blob_handle_;
   std::unique_ptr<BlobDataSnapshot> blob_data_;
   std::unique_ptr<FileStreamReaderProvider> file_stream_provider_;
-  scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
+  scoped_refptr<base::TaskRunner> file_task_runner_;
   scoped_refptr<net::IOBufferWithSize> side_data_;
 
   int net_error_;

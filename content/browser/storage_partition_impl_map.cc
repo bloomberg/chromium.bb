@@ -85,8 +85,7 @@ class BlobProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
       // the main thread but we want blob_protocol_handler_ constructed
       // on the IO thread.
       blob_protocol_handler_.reset(new storage::BlobProtocolHandler(
-          blob_storage_context_->context(), file_system_context_.get(),
-          BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE).get()));
+          blob_storage_context_->context(), file_system_context_.get()));
     }
     return blob_protocol_handler_->MaybeCreateJob(request, network_delegate);
   }
