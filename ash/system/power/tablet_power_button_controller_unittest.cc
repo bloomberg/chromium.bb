@@ -408,7 +408,7 @@ TEST_F(TabletPowerButtonControllerTest, IgnorePowerOnKeyEvent) {
 // Tests that under (1) tablet power button pressed/released, (2) keyboard/mouse
 // events on laptop mode when screen is off, requesting/stopping backlights
 // forced off should also set corresponding touchscreen state in local pref.
-TEST_F(TabletPowerButtonControllerTest, TouchscreenState) {
+TEST_F(TabletPowerButtonControllerTest, DisableTouchscreenWhileForcedOff) {
   // Tests tablet power button.
   ASSERT_TRUE(shell_delegate_->IsTouchscreenEnabledInPrefs(true));
   PressPowerButton();
@@ -440,6 +440,23 @@ TEST_F(TabletPowerButtonControllerTest, TouchscreenState) {
   ASSERT_FALSE(shell_delegate_->IsTouchscreenEnabledInPrefs(true));
   generator_->MoveMouseBy(1, 1);
   power_manager_client_->SendBrightnessChanged(kNonZeroBrightness, false);
+  EXPECT_TRUE(shell_delegate_->IsTouchscreenEnabledInPrefs(true));
+}
+
+// When the screen is turned off automatically, the touchscreen should also be
+// disabled.
+TEST_F(TabletPowerButtonControllerTest, DisableTouchscreenForInactivity) {
+  ASSERT_TRUE(shell_delegate_->IsTouchscreenEnabledInPrefs(true));
+
+  // Turn screen off for automated change (e.g. user is inactive).
+  power_manager_client_->SendBrightnessChanged(0, false);
+  EXPECT_FALSE(shell_delegate_->IsTouchscreenEnabledInPrefs(true));
+  power_manager_client_->SendBrightnessChanged(kNonZeroBrightness, true);
+  EXPECT_TRUE(shell_delegate_->IsTouchscreenEnabledInPrefs(true));
+
+  // After decreasing the brightness to zero for a user request, the touchscreen
+  // should remain enabled.
+  power_manager_client_->SendBrightnessChanged(0, true);
   EXPECT_TRUE(shell_delegate_->IsTouchscreenEnabledInPrefs(true));
 }
 
