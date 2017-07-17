@@ -139,7 +139,7 @@ class Printer(object):
             ndigits = int(math.log10(len(num))) + 1
         return ndigits
 
-    def print_results(self, run_time, run_results, summarized_results):
+    def print_results(self, run_time, run_results):
         self._print_timing_statistics(run_time, run_results)
         self._print_one_line_summary(run_time, run_results)
 
