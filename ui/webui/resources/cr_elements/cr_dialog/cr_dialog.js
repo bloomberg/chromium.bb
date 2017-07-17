@@ -222,5 +222,9 @@ Polymer({
           easing: 'ease-in-out',
           iterations: 1,
         }));
+
+    // Prevent any text from being selected within the dialog when clicking in
+    // the backdrop area.
+    e.preventDefault();
   },
 });
