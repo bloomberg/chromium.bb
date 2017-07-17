@@ -44,6 +44,73 @@ class LockScreenNoteTakingTest : public ExtensionBrowserTest {
            ash::mojom::TrayActionState::kAvailable;
   }
 
+  bool RunTestAppInLockScreenContext(const std::string& test_app,
+                                     std::string* error) {
+    scoped_refptr<const extensions::Extension> app =
+        LoadExtension(test_data_dir_.AppendASCII(test_app));
+    if (!app) {
+      *error = "Unable to load the test app.";
+      return false;
+    }
+
+    if (!EnableLockScreenAppLaunch(app->id())) {
+      *error = "Failed to enable app for lock screen.";
+      return false;
+    }
+
+    // The test app will send "readyToClose" message from the app window created
+    // as part of the test. The message will be sent after the tests in the app
+    // window context have been run and the window is ready to be closed.
+    // The test should reply to this message in order for the app window to
+    // close itself.
+    ExtensionTestMessageListener ready_to_close("readyToClose",
+                                                true /* will_reply */);
+
+    extensions::ResultCatcher catcher;
+    lock_screen_apps::StateController::Get()->RequestNewLockScreenNote();
+
+    if (lock_screen_apps::StateController::Get()->GetLockScreenNoteState() !=
+        ash::mojom::TrayActionState::kLaunching) {
+      *error = "App launch request failed";
+      return false;
+    }
+
+    // The test will run two sets of tests:
+    // *  in the window that gets created as the response to the new_note action
+    //    launch
+    // *  in the app background page - the test will launch an app window and
+    //    wait for it to be closed
+    // Test runner should wait for both of those to finish (test result message
+    // will be sent for each set of tests).
+    if (!catcher.GetNextResult()) {
+      *error = catcher.message();
+      if (ready_to_close.was_satisfied())
+        ready_to_close.Reply("failed");
+      return false;
+    }
+
+    if (lock_screen_apps::StateController::Get()->GetLockScreenNoteState() !=
+        ash::mojom::TrayActionState::kActive) {
+      *error = "App not in active state.";
+      return false;
+    }
+
+    if (!ready_to_close.WaitUntilSatisfied()) {
+      *error = "Failed waiting for readyToClose message.";
+      return false;
+    }
+
+    // Close the app window created by the API test.
+    ready_to_close.Reply("close");
+
+    if (!catcher.GetNextResult()) {
+      *error = catcher.message();
+      return false;
+    }
+
+    return true;
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(LockScreenNoteTakingTest);
 };
@@ -53,42 +120,10 @@ class LockScreenNoteTakingTest : public ExtensionBrowserTest {
 IN_PROC_BROWSER_TEST_F(LockScreenNoteTakingTest, Launch) {
   ASSERT_TRUE(lock_screen_apps::StateController::IsEnabled());
 
-  scoped_refptr<const extensions::Extension> app =
-      LoadExtension(test_data_dir_.AppendASCII("lock_screen_apps/app_launch"));
-  ASSERT_TRUE(app);
-  ASSERT_TRUE(EnableLockScreenAppLaunch(app->id()));
-
-  // The test app will send "readyToClose" message from the app window created
-  // as part of the test. The message will be sent after the tests in the app
-  // window context have been run and the window is ready to be closed.
-  // The test should reply to this message in order for the app window to close
-  // itself.
-  ExtensionTestMessageListener ready_to_close("readyToClose",
-                                              true /* will_reply */);
-
-  extensions::ResultCatcher catcher;
-  lock_screen_apps::StateController::Get()->RequestNewLockScreenNote();
-
-  ASSERT_EQ(ash::mojom::TrayActionState::kLaunching,
-            lock_screen_apps::StateController::Get()->GetLockScreenNoteState());
-
-  // The test will run two sets of tests:
-  // *  in the window that gets created as the response to the new_note action
-  //    launch
-  // *  in the app background page - the test will launch an app window and wait
-  //    for it to be closed
-  // Test runner should wait for both of those to finish (test result message
-  // will be sent for each set of tests).
-  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
-
-  ASSERT_EQ(ash::mojom::TrayActionState::kActive,
-            lock_screen_apps::StateController::Get()->GetLockScreenNoteState());
-
-  ASSERT_TRUE(ready_to_close.WaitUntilSatisfied());
-  // Close the app window created by the API test.
-  ready_to_close.Reply("close");
-
-  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+  std::string error_message;
+  ASSERT_TRUE(RunTestAppInLockScreenContext("lock_screen_apps/app_launch",
+                                            &error_message))
+      << error_message;
 
   EXPECT_EQ(ash::mojom::TrayActionState::kAvailable,
             lock_screen_apps::StateController::Get()->GetLockScreenNoteState());
@@ -126,5 +161,49 @@ IN_PROC_BROWSER_TEST_F(LockScreenNoteTakingTest, LaunchInNonLockScreenContext) {
   apps::LaunchPlatformAppWithAction(profile(), app.get(),
                                     std::move(action_data), base::FilePath());
 
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
+IN_PROC_BROWSER_TEST_F(LockScreenNoteTakingTest, DataCreation) {
+  ASSERT_TRUE(lock_screen_apps::StateController::IsEnabled());
+
+  std::string error_message;
+  ASSERT_TRUE(RunTestAppInLockScreenContext("lock_screen_apps/data_provider",
+                                            &error_message))
+      << error_message;
+
+  EXPECT_EQ(ash::mojom::TrayActionState::kAvailable,
+            lock_screen_apps::StateController::Get()->GetLockScreenNoteState());
+
+  extensions::ResultCatcher catcher;
+  session_manager::SessionManager::Get()->SetSessionState(
+      session_manager::SessionState::ACTIVE);
+
+  // Unlocking the session should trigger onDataItemsAvailable event, which
+  // should be catched by the background page in the main app - the event should
+  // start another test sequence.
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
+IN_PROC_BROWSER_TEST_F(LockScreenNoteTakingTest, PRE_DataAvailableOnRestart) {
+  ASSERT_TRUE(lock_screen_apps::StateController::IsEnabled());
+
+  std::string error_message;
+  ASSERT_TRUE(RunTestAppInLockScreenContext("lock_screen_apps/data_provider",
+                                            &error_message))
+      << error_message;
+
+  EXPECT_EQ(ash::mojom::TrayActionState::kAvailable,
+            lock_screen_apps::StateController::Get()->GetLockScreenNoteState());
+}
+
+IN_PROC_BROWSER_TEST_F(LockScreenNoteTakingTest, DataAvailableOnRestart) {
+  // In PRE_ part  of the test there were data items created in the lock screen
+  // storage - when the lock screen note taking is initialized,
+  // OnDataItemsAvailable should be dispatched to the test app (given that the
+  // lock screen app's data storage is not empty), which should in turn run a
+  // sequence of API tests (in the test app background page).
+  // This test is intended to catch the result of these tests.
+  extensions::ResultCatcher catcher;
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }

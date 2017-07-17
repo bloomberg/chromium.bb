@@ -195,6 +195,7 @@
 #include "chrome/browser/chromeos/extensions/echo_private_api.h"
 #include "chrome/browser/chromeos/file_system_provider/registry.h"
 #include "chrome/browser/chromeos/first_run/first_run.h"
+#include "chrome/browser/chromeos/lock_screen_apps/state_controller.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_mode_detector.h"
 #include "chrome/browser/chromeos/login/quick_unlock/fingerprint_storage.h"
 #include "chrome/browser/chromeos/login/quick_unlock/pin_storage.h"
@@ -599,6 +600,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   chromeos::UserImageSyncObserver::RegisterProfilePrefs(registry);
   extensions::EPKPChallengeUserKey::RegisterProfilePrefs(registry);
   flags_ui::PrefServiceFlagsStorage::RegisterProfilePrefs(registry);
+  lock_screen_apps::StateController::RegisterProfilePrefs(registry);
   policy::DeviceStatusCollector::RegisterProfilePrefs(registry);
   ::onc::RegisterProfilePrefs(registry);
 #endif

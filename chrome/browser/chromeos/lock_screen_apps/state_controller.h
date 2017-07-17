@@ -6,8 +6,10 @@
 #define CHROME_BROWSER_CHROMEOS_LOCK_SCREEN_APPS_STATE_CONTROLLER_H_
 
 #include <memory>
+#include <string>
 
 #include "ash/public/interfaces/tray_action.mojom.h"
+#include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
@@ -21,6 +23,8 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/events/devices/input_device_event_observer.h"
 
+class PrefRegistrySimple;
+
 namespace content {
 class BrowserContext;
 }
@@ -29,6 +33,10 @@ namespace extensions {
 class AppDelegate;
 class AppWindow;
 class Extension;
+
+namespace lock_screen_data {
+class LockScreenItemStorage;
+}
 }  // namespace extensions
 
 namespace session_manager {
@@ -60,6 +68,8 @@ class StateController : public ash::mojom::TrayActionClient,
   // Returns the global StateController instance. Note that this can return
   // nullptr when lock screen apps are not enabled (see |IsEnabled|).
   static StateController* Get();
+
+  static void RegisterProfilePrefs(PrefRegistrySimple* pref_registry);
 
   // Note that only one StateController is allowed per process. Creating a
   // StateController will set global instance ptr that can be accessed using
@@ -145,6 +155,18 @@ class StateController : public ash::mojom::TrayActionClient,
                        Profile* lock_screen_profile,
                        Profile::CreateStatus status);
 
+  // Gets the encryption key that should be used to encrypt user data created on
+  // the lock screen. If a key hadn't previously been created and saved to
+  // user prefs, a new key is created and saved.
+  // |crypto_key| - the found/created key.
+  // Returns whether |crypto_key| was successfully retrieved.
+  bool GetUserCryptoKey(Profile* profile, std::string* crypto_key);
+
+  // Finishes lock screen apps initialization with primary user profile and
+  // associated encryption key to be used for encrypting user data created in
+  // lock screen context.
+  void InitializeWithCryptoKey(Profile* profile, const std::string& crypto_key);
+
   // Called when app manager reports that note taking availability has changed.
   void OnNoteTakingAvailabilityChanged();
 
@@ -171,6 +193,9 @@ class StateController : public ash::mojom::TrayActionClient,
   ash::mojom::TrayActionPtr tray_action_ptr_;
 
   Profile* lock_screen_profile_ = nullptr;
+
+  std::unique_ptr<extensions::lock_screen_data::LockScreenItemStorage>
+      lock_screen_data_;
 
   std::unique_ptr<AppManager> app_manager_;
 

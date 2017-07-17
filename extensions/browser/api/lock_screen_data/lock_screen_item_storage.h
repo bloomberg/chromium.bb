@@ -131,6 +131,8 @@ class LockScreenItemStorage : public ExtensionRegistryObserver {
       ItemFactoryCallback* factory_callback,
       ItemStoreDeleter* deleter_callback);
 
+  const std::string& crypto_key_for_testing() const { return crypto_key_; }
+
  private:
   // Maps a data item ID to the data item instance.
   using DataItemMap =

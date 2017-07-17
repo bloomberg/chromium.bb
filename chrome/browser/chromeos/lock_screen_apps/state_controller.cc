@@ -7,20 +7,26 @@
 #include <utility>
 
 #include "ash/public/interfaces/constants.mojom.h"
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
+#include "base/path_service.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/lock_screen_apps/app_manager_impl.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "content/public/common/service_manager_connection.h"
+#include "crypto/symmetric_key.h"
+#include "extensions/browser/api/lock_screen_data/lock_screen_item_storage.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/common/extension.h"
@@ -34,7 +40,20 @@ namespace lock_screen_apps {
 
 namespace {
 
+// Key for user pref that contains the 256 bit AES key that should be used to
+// encrypt persisted user data created on the lock screen.
+constexpr char kDataCryptoKeyPref[] = "lockScreenAppDataCryptoKey";
+
 StateController* g_instance = nullptr;
+
+// Generates a random 256 bit AES key. Returns an empty string on error.
+std::string GenerateCryptoKey() {
+  std::unique_ptr<crypto::SymmetricKey> symmetric_key =
+      crypto::SymmetricKey::GenerateRandomKey(crypto::SymmetricKey::AES, 256);
+  if (!symmetric_key)
+    return "";
+  return symmetric_key->key();
+}
 
 }  // namespace
 
@@ -48,6 +67,11 @@ bool StateController::IsEnabled() {
 StateController* StateController::Get() {
   DCHECK(g_instance || !IsEnabled());
   return g_instance;
+}
+
+// static
+void StateController::RegisterProfilePrefs(PrefRegistrySimple* registry) {
+  registry->RegisterStringPref(kDataCryptoKeyPref, "");
 }
 
 StateController::StateController()
@@ -114,6 +138,7 @@ void StateController::SetPrimaryProfile(Profile* profile) {
 
 void StateController::Shutdown() {
   session_observer_.RemoveAll();
+  lock_screen_data_.reset();
   if (app_manager_) {
     app_manager_->Stop();
     ResetNoteTakingWindowAndMoveToNextState(true /*close_window*/);
@@ -146,11 +171,49 @@ void StateController::OnProfilesReady(Profile* primary_profile,
   lock_screen_profile_->GetPrefs()->SetBoolean(prefs::kForceEphemeralProfiles,
                                                true);
 
+  std::string key;
+  if (!GetUserCryptoKey(primary_profile, &key)) {
+    LOG(ERROR) << "Failed to get crypto key for user lock screen apps.";
+    return;
+  }
+
+  InitializeWithCryptoKey(primary_profile, key);
+}
+
+bool StateController::GetUserCryptoKey(Profile* profile, std::string* key) {
+  *key = profile->GetPrefs()->GetString(kDataCryptoKeyPref);
+  if (!key->empty() && base::Base64Decode(*key, key))
+    return true;
+
+  *key = GenerateCryptoKey();
+
+  if (key->empty())
+    return false;
+
+  std::string base64_encoded_key;
+  base::Base64Encode(*key, &base64_encoded_key);
+
+  profile->GetPrefs()->SetString(kDataCryptoKeyPref, base64_encoded_key);
+  return true;
+}
+
+void StateController::InitializeWithCryptoKey(Profile* profile,
+                                              const std::string& crypto_key) {
+  base::FilePath base_path;
+  if (!base::PathService::Get(chrome::DIR_USER_DATA, &base_path)) {
+    LOG(ERROR) << "Failed to get base storage dir for lock screen app data.";
+    return;
+  }
+
+  lock_screen_data_ =
+      base::MakeUnique<extensions::lock_screen_data::LockScreenItemStorage>(
+          profile, g_browser_process->local_state(), crypto_key,
+          base_path.AppendASCII("lock_screen_app_data"));
+
   // App manager might have been set previously by a test.
   if (!app_manager_)
     app_manager_ = base::MakeUnique<AppManagerImpl>();
-  app_manager_->Initialize(primary_profile,
-                           lock_screen_profile->GetOriginalProfile());
+  app_manager_->Initialize(profile, lock_screen_profile_->GetOriginalProfile());
 
   input_devices_observer_.Add(ui::InputDeviceManager::GetInstance());
   power_manager_client_observer_.Add(
@@ -192,6 +255,7 @@ void StateController::RequestNewLockScreenNote() {
 
 void StateController::OnSessionStateChanged() {
   if (!session_manager::SessionManager::Get()->IsScreenLocked()) {
+    lock_screen_data_->SetSessionLocked(false);
     app_manager_->Stop();
     ResetNoteTakingWindowAndMoveToNextState(true /*close_window*/);
     return;
@@ -203,6 +267,7 @@ void StateController::OnSessionStateChanged() {
   app_manager_->Start(
       base::Bind(&StateController::OnNoteTakingAvailabilityChanged,
                  base::Unretained(this)));
+  lock_screen_data_->SetSessionLocked(true);
   OnNoteTakingAvailabilityChanged();
 }
 
