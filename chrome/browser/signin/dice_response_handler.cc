@@ -225,6 +225,8 @@ void DiceResponseHandler::ProcessDiceSignoutHeader(
       VLOG(1) << "[Dice] Signing out all accounts.";
       signin_manager_->SignOut(signin_metrics::SERVER_FORCED_DISABLE,
                                signin_metrics::SignoutDelete::IGNORE_METRIC);
+      // Cancel all Dice token fetches currently in flight.
+      token_fetchers_.clear();
       return;
     } else {
       signed_out_accounts.push_back(signed_out_account);
@@ -234,6 +236,16 @@ void DiceResponseHandler::ProcessDiceSignoutHeader(
   for (const auto& account : signed_out_accounts) {
     VLOG(1) << "[Dice]: Revoking token for account: " << account;
     token_service_->RevokeCredentials(account);
+    // If a token fetch is in flight for the same account, cancel it.
+    for (auto it = token_fetchers_.begin(); it != token_fetchers_.end(); ++it) {
+      std::string token_fetcher_account_id =
+          account_tracker_service_->PickAccountIdForAccount(
+              it->get()->gaia_id(), it->get()->email());
+      if (token_fetcher_account_id == account) {
+        token_fetchers_.erase(it);
+        break;
+      }
+    }
   }
 }
 
