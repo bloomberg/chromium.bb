@@ -333,6 +333,7 @@ source_set("eg_tests") {
   deps = [
     ":settings",
     "//base",
+    "//base/test:test_support",
     "//components/autofill/core/common",
     "//components/browsing_data/core",
     "//components/content_settings/core/browser",
