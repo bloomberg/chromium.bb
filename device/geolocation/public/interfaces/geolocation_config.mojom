@@ -4,8 +4,8 @@
 
 module device.mojom;
 
-// Provides an interface for browser process to access geolocation capturing
-// config.
+// Provides an interface for trusted clients (e.g., the browser process
+// in Chrome) to access geolocation capturing config.
 interface GeolocationConfig {
   // Returns true if the location is being captured and high_accuracy is
   // enabled.
