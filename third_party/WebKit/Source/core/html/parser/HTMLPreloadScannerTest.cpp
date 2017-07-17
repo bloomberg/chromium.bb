@@ -23,7 +23,7 @@
 
 namespace blink {
 
-struct TestCase {
+struct PreloadScannerTestCase {
   const char* base_url;
   const char* input_html;
   const char* preloaded_url;  // Or nullptr if no preload is expected.
@@ -211,7 +211,7 @@ class HTMLPreloadScannerTest : public ::testing::Test {
 
   void SetUp() override { RunSetUp(kViewportEnabled); }
 
-  void Test(TestCase test_case) {
+  void Test(PreloadScannerTestCase test_case) {
     MockHTMLResourcePreloader preloader;
     KURL base_url(kParsedURLString, test_case.base_url);
     scanner_->AppendToEnd(String(test_case.input_html));
@@ -278,7 +278,7 @@ class HTMLPreloadScannerTest : public ::testing::Test {
 };
 
 TEST_F(HTMLPreloadScannerTest, testImages) {
-  TestCase test_cases[] = {
+  PreloadScannerTestCase test_cases[] = {
       {"http://example.test", "<img src='bla.gif'>", "bla.gif",
        "http://example.test/", Resource::kImage, 0},
       {"http://example.test", "<img srcset='bla.gif 320w, blabla.gif 640w'>",
@@ -332,7 +332,7 @@ TEST_F(HTMLPreloadScannerTest, testImages) {
 }
 
 TEST_F(HTMLPreloadScannerTest, testImagesWithViewport) {
-  TestCase test_cases[] = {
+  PreloadScannerTestCase test_cases[] = {
       {"http://example.test",
        "<meta name=viewport content='width=160'><img srcset='bla.gif 320w, "
        "blabla.gif 640w'>",
@@ -384,7 +384,7 @@ TEST_F(HTMLPreloadScannerTest, testImagesWithViewport) {
 }
 
 TEST_F(HTMLPreloadScannerTest, testImagesWithViewportDeviceWidth) {
-  TestCase test_cases[] = {
+  PreloadScannerTestCase test_cases[] = {
       {"http://example.test",
        "<meta name=viewport content='width=device-width'><img srcset='bla.gif "
        "320w, blabla.gif 640w'>",
@@ -437,7 +437,7 @@ TEST_F(HTMLPreloadScannerTest, testImagesWithViewportDeviceWidth) {
 
 TEST_F(HTMLPreloadScannerTest, testImagesWithViewportDisabled) {
   RunSetUp(kViewportDisabled);
-  TestCase test_cases[] = {
+  PreloadScannerTestCase test_cases[] = {
       {"http://example.test",
        "<meta name=viewport content='width=160'><img src='bla.gif'>", "bla.gif",
        "http://example.test/", Resource::kImage, 0},
@@ -488,7 +488,7 @@ TEST_F(HTMLPreloadScannerTest, testImagesWithViewportDisabled) {
 }
 
 TEST_F(HTMLPreloadScannerTest, testViewportNoContent) {
-  TestCase test_cases[] = {
+  PreloadScannerTestCase test_cases[] = {
       {"http://example.test",
        "<meta name=viewport><img srcset='bla.gif 320w, blabla.gif 640w'>",
        "blabla.gif", "http://example.test/", Resource::kImage, 0},
@@ -513,7 +513,7 @@ TEST_F(HTMLPreloadScannerTest, testMetaAcceptCH) {
   all.SetShouldSendForTesting(kWebClientHintsTypeResourceWidth);
   viewport_width.SetShouldSendForTesting(kWebClientHintsTypeViewportWidth);
   all.SetShouldSendForTesting(kWebClientHintsTypeViewportWidth);
-  TestCase test_cases[] = {
+  PreloadScannerTestCase test_cases[] = {
       {"http://example.test",
        "<meta http-equiv='accept-ch' content='bla'><img srcset='bla.gif 320w, "
        "blabla.gif 640w'>",
@@ -595,7 +595,7 @@ TEST_F(HTMLPreloadScannerTest, testPreconnect) {
 TEST_F(HTMLPreloadScannerTest, testDisables) {
   RunSetUp(kViewportEnabled, kPreloadDisabled);
 
-  TestCase test_cases[] = {
+  PreloadScannerTestCase test_cases[] = {
       {"http://example.test", "<img src='bla.gif'>"},
   };
 
@@ -604,7 +604,7 @@ TEST_F(HTMLPreloadScannerTest, testDisables) {
 }
 
 TEST_F(HTMLPreloadScannerTest, testPicture) {
-  TestCase test_cases[] = {
+  PreloadScannerTestCase test_cases[] = {
       {"http://example.test",
        "<picture><source srcset='srcset_bla.gif'><img src='bla.gif'></picture>",
        "srcset_bla.gif", "http://example.test/", Resource::kImage, 0},
@@ -816,7 +816,7 @@ TEST_F(HTMLPreloadScannerTest, testReferrerPolicyOnDocument) {
 }
 
 TEST_F(HTMLPreloadScannerTest, testLinkRelPreload) {
-  TestCase test_cases[] = {
+  PreloadScannerTestCase test_cases[] = {
       {"http://example.test", "<link rel=preload as=fetch href=bla>", "bla",
        "http://example.test/", Resource::kRaw, 0},
       {"http://example.test", "<link rel=preload href=bla as=script>", "bla",
@@ -867,7 +867,7 @@ TEST_F(HTMLPreloadScannerTest, testLinkRelPreload) {
 }
 
 TEST_F(HTMLPreloadScannerTest, testNoDataUrls) {
-  TestCase test_cases[] = {
+  PreloadScannerTestCase test_cases[] = {
       {"http://example.test",
        "<link rel=preload href='data:text/html,<p>data</data>'>", nullptr,
        "http://example.test/", Resource::kRaw, 0},
@@ -884,7 +884,7 @@ TEST_F(HTMLPreloadScannerTest, testNoDataUrls) {
 // The preload scanner should follow the same policy that the ScriptLoader does
 // with regard to the type and language attribute.
 TEST_F(HTMLPreloadScannerTest, testScriptTypeAndLanguage) {
-  TestCase test_cases[] = {
+  PreloadScannerTestCase test_cases[] = {
       // Allow empty src and language attributes.
       {"http://example.test", "<script src='test.js'></script>", "test.js",
        "http://example.test/", Resource::kScript, 0},
@@ -931,7 +931,7 @@ TEST_F(HTMLPreloadScannerTest, testScriptTypeAndLanguage) {
 
 // Regression test for crbug.com/664744.
 TEST_F(HTMLPreloadScannerTest, testUppercaseAsValues) {
-  TestCase test_cases[] = {
+  PreloadScannerTestCase test_cases[] = {
       {"http://example.test", "<link rel=preload href=bla as=SCRIPT>", "bla",
        "http://example.test/", Resource::kScript, 0},
       {"http://example.test", "<link rel=preload href=bla as=fOnT>", "bla",
