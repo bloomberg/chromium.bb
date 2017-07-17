@@ -269,6 +269,18 @@ void EventDispatcher::RemoveAccelerator(uint32_t id) {
     accelerators_.erase(it);
 }
 
+void EventDispatcher::SetKeyEventsThatDontHideCursor(
+    std::vector<::ui::mojom::EventMatcherPtr> dont_hide_cursor_list) {
+  dont_hide_cursor_matchers_.clear();
+  for (auto& matcher_ptr : dont_hide_cursor_list) {
+    EventMatcher matcher(*matcher_ptr);
+    // Ensure we don't have pointer matchers in our key only list.
+    DCHECK(!matcher.HasFields(EventMatcher::POINTER_KIND |
+                              EventMatcher::POINTER_LOCATION));
+    dont_hide_cursor_matchers_.push_back(std::move(matcher));
+  }
+}
+
 bool EventDispatcher::IsProcessingEvent() const {
   return event_targeter_->IsHitTestInFlight();
 }
@@ -355,6 +367,12 @@ void EventDispatcher::ProcessKeyEvent(const ui::KeyEvent& event,
   ServerWindow* focused_window =
       delegate_->GetFocusedWindowForEventDispatcher(event_display_id_);
   if (focused_window) {
+    // We only hide the cursor when there's a window to receive the key
+    // event. We want to hide the cursor when the user is entering text
+    // somewhere so if the user is at the desktop with no window to react to
+    // the key press, there's no reason to hide the cursor.
+    HideCursorOnMatchedKeyEvent(event);
+
     // Assume key events are for the client area.
     const bool in_nonclient_area = false;
     const ClientSpecificId client_id =
@@ -367,6 +385,19 @@ void EventDispatcher::ProcessKeyEvent(const ui::KeyEvent& event,
   if (post_target)
     delegate_->OnAccelerator(post_target->id(), event_display_id_, event,
                              EventDispatcherDelegate::AcceleratorPhase::POST);
+}
+
+void EventDispatcher::HideCursorOnMatchedKeyEvent(const ui::KeyEvent& event) {
+  bool hide_cursor = !dont_hide_cursor_matchers_.empty();
+  for (auto& matcher : dont_hide_cursor_matchers_) {
+    if (matcher.MatchesEvent(event)) {
+      hide_cursor = false;
+      break;
+    }
+  }
+
+  if (hide_cursor)
+    delegate_->OnEventChangesCursorVisibility(false);
 }
 
 void EventDispatcher::ProcessPointerEventOnFoundTarget(
@@ -392,6 +423,12 @@ void EventDispatcher::ProcessPointerEventOnFoundTarget(
   const bool is_mouse_event = event.IsMousePointerEvent();
 
   if (is_mouse_event) {
+    // This corresponds to the code in CompoundEventFilter which updates
+    // visibility on each mouse event. Here, we're sure that we're a non-exit
+    // mouse event and FROM_TOUCH doesn't exist in mus so we shouldn't need
+    // further filtering.
+    delegate_->OnEventChangesCursorVisibility(true);
+
     SetMousePointerLocation(location_target.location_in_root,
                             location_target.display_id);
     delegate_->OnMouseCursorLocationChanged(location_target.location_in_root,

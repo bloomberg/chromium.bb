@@ -1899,6 +1899,14 @@ void WindowTreeClient::SetGlobalOverrideCursor(
     window_manager_client_->WmSetGlobalOverrideCursor(std::move(cursor));
 }
 
+void WindowTreeClient::SetKeyEventsThatDontHideCursor(
+    std::vector<ui::mojom::EventMatcherPtr> cursor_key_list) {
+  if (window_manager_client_) {
+    window_manager_client_->SetKeyEventsThatDontHideCursor(
+        std::move(cursor_key_list));
+  }
+}
+
 void WindowTreeClient::RequestClose(Window* window) {
   DCHECK(window);
   if (window_manager_client_)

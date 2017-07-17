@@ -36,7 +36,7 @@ struct EventFlagsMatcher {
 // then all key-events will match.
 // An example matcher to match the Ctrl+A accelerator would be:
 // - |type_matcher.type| = ui::mojom::EventType::KEY_PRESSED
-// - |flags_matcher.flags| = ui::mojom::kEventVlagControlDown
+// - |flags_matcher.flags| = ui::mojom::kEventFlagControlDown
 // - |key_matcher.keyboard_code| = ui::mojom::KeyboardCode::A
 //
 // A matcher to match any key-press event would be:

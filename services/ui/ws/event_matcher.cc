@@ -71,7 +71,13 @@ EventMatcher::EventMatcher(const mojom::EventMatcher& matcher)
   }
 }
 
+EventMatcher::EventMatcher(EventMatcher&& rhs) = default;
+
 EventMatcher::~EventMatcher() {}
+
+bool EventMatcher::HasFields(int fields) {
+  return (fields_to_match_ & fields) != 0;
+}
 
 bool EventMatcher::MatchesEvent(const ui::Event& event) const {
   if ((fields_to_match_ & TYPE) && event.type() != event_type_)

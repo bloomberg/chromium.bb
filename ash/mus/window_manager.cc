@@ -13,6 +13,7 @@
 #include "ash/mus/accelerators/accelerator_handler.h"
 #include "ash/mus/accelerators/accelerator_ids.h"
 #include "ash/mus/bridge/shell_port_mash.h"
+#include "ash/mus/event_matcher_util.h"
 #include "ash/mus/move_event_handler.h"
 #include "ash/mus/non_client_frame_controller.h"
 #include "ash/mus/property_util.h"
@@ -138,6 +139,8 @@ void WindowManager::Init(
 
   if (shell_delegate)
     shell_delegate_ = std::move(shell_delegate);
+
+  InitCursorOnKeyList();
 }
 
 void WindowManager::SetLostConnectionCallback(base::OnceClosure closure) {
@@ -183,6 +186,41 @@ void WindowManager::CreateShell() {
                                          : new ShellDelegateMus(connector_);
   init_params.shell_port = shell_port;
   Shell::CreateInstance(init_params);
+}
+
+void WindowManager::InitCursorOnKeyList() {
+  DCHECK(window_manager_client_);
+  if (config_ == Config::MASH) {
+    // In Mash, we build a list of keys and send them to the window
+    // server. This controls which keys *don't* hide the cursors.
+
+    // TODO(erg): This needs to also check the case of the accessibility
+    // keyboard being shown, since clicking a key on the keyboard shouldn't
+    // hide the cursor.
+    std::vector<ui::mojom::EventMatcherPtr> cursor_key_list;
+    cursor_key_list.push_back(BuildKeyReleaseMatcher());
+    cursor_key_list.push_back(BuildAltMatcher());
+    cursor_key_list.push_back(BuildControlMatcher());
+
+    BuildKeyMatcherRange(ui::mojom::KeyboardCode::F1,
+                         ui::mojom::KeyboardCode::F24, &cursor_key_list);
+    BuildKeyMatcherRange(ui::mojom::KeyboardCode::BROWSER_BACK,
+                         ui::mojom::KeyboardCode::MEDIA_LAUNCH_APP2,
+                         &cursor_key_list);
+    BuildKeyMatcherList(
+        {ui::mojom::KeyboardCode::SHIFT, ui::mojom::KeyboardCode::CONTROL,
+         ui::mojom::KeyboardCode::MENU,
+         ui::mojom::KeyboardCode::LWIN,  // Search key == VKEY_LWIN.
+         ui::mojom::KeyboardCode::WLAN, ui::mojom::KeyboardCode::POWER,
+         ui::mojom::KeyboardCode::BRIGHTNESS_DOWN,
+         ui::mojom::KeyboardCode::BRIGHTNESS_UP,
+         ui::mojom::KeyboardCode::KBD_BRIGHTNESS_DOWN,
+         ui::mojom::KeyboardCode::KBD_BRIGHTNESS_UP},
+        &cursor_key_list);
+
+    window_manager_client_->SetKeyEventsThatDontHideCursor(
+        std::move(cursor_key_list));
+  }
 }
 
 void WindowManager::InstallFrameDecorationValues() {
