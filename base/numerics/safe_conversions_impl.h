@@ -76,15 +76,29 @@ constexpr typename std::make_unsigned<T>::type SafeUnsignedAbs(T value) {
                                 : static_cast<UnsignedT>(value);
 }
 
-// This provides a small optimization that generates more compact code when one
-// of the components in an operation is a compile-time constant.
+// This allows us to switch paths on known compile-time constants.
+#if defined(__clang__) || defined(__GNUC__)
+constexpr bool CanDetectCompileTimeConstant() {
+  return true;
+}
 template <typename T>
 constexpr bool IsCompileTimeConstant(const T v) {
-#if defined(__clang__) || defined(__GNUC__)
   return __builtin_constant_p(v);
+}
 #else
+constexpr bool CanDetectCompileTimeConstant() {
   return false;
+}
+template <typename T>
+constexpr bool IsCompileTimeConstant(const T v) {
+  return false;
+}
 #endif
+template <typename T>
+constexpr bool MustTreatAsConstexpr(const T v) {
+  // Either we can't detect a compile-time constant, and must always use the
+  // constexpr path, or we know we have a compile-time constant.
+  return !CanDetectCompileTimeConstant() || IsCompileTimeConstant(v);
 }
 
 // Forces a crash, like a CHECK(false). Used for numeric boundary errors.
