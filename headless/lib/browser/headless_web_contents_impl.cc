@@ -48,6 +48,15 @@ HeadlessWebContentsImpl* HeadlessWebContentsImpl::From(
   return static_cast<HeadlessWebContentsImpl*>(web_contents);
 }
 
+// static
+HeadlessWebContentsImpl* HeadlessWebContentsImpl::From(
+    HeadlessBrowser* browser,
+    content::WebContents* contents) {
+  return HeadlessWebContentsImpl::From(
+      browser->GetWebContentsForDevToolsAgentHostId(
+          content::DevToolsAgentHost::GetOrCreateFor(contents)->GetId()));
+}
+
 class HeadlessWebContentsImpl::Delegate : public content::WebContentsDelegate {
  public:
   explicit Delegate(HeadlessWebContentsImpl* headless_web_contents)
@@ -94,12 +103,30 @@ class HeadlessWebContentsImpl::Delegate : public content::WebContentsDelegate {
   }
 
   void CloseContents(content::WebContents* source) override {
-    if (source != headless_web_contents_->web_contents())
-      return;
-    headless_web_contents_->Close();
+    auto* const headless_contents =
+        HeadlessWebContentsImpl::From(browser(), source);
+    DCHECK(headless_contents);
+    headless_contents->Close();
+  }
+
+  void AddNewContents(content::WebContents* source,
+                      content::WebContents* new_contents,
+                      WindowOpenDisposition disposition,
+                      const gfx::Rect& initial_rect,
+                      bool user_gesture,
+                      bool* was_blocked) override {
+    const gfx::Rect default_rect(
+        headless_web_contents_->browser()->options()->window_size);
+    const gfx::Rect rect = initial_rect.IsEmpty() ? default_rect : initial_rect;
+    auto* const headless_contents =
+        HeadlessWebContentsImpl::From(browser(), new_contents);
+    DCHECK(headless_contents);
+    headless_contents->SetBounds(rect);
   }
 
  private:
+  HeadlessBrowserImpl* browser() { return headless_web_contents_->browser(); }
+
   HeadlessWebContentsImpl* headless_web_contents_;  // Not owned.
   DISALLOW_COPY_AND_ASSIGN(Delegate);
 };
