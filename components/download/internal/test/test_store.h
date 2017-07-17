@@ -27,12 +27,14 @@ class TestStore : public Store {
   // Store implementation.
   bool IsInitialized() override;
   void Initialize(InitCallback callback) override;
+  void HardRecover(StoreCallback callback) override;
   void Update(const Entry& entry, StoreCallback callback) override;
   void Remove(const std::string& guid, StoreCallback callback) override;
 
   // Callback trigger methods.
   void AutomaticallyTriggerAllFutureCallbacks(bool success);
   void TriggerInit(bool success, std::unique_ptr<std::vector<Entry>> entries);
+  void TriggerHardRecover(bool success);
   void TriggerUpdate(bool success);
   void TriggerRemove(bool success);
 
@@ -55,6 +57,7 @@ class TestStore : public Store {
 
   base::Optional<bool> automatic_callback_response_;
   InitCallback init_callback_;
+  StoreCallback hard_recover_callback_;
   StoreCallback update_callback_;
   StoreCallback remove_callback_;
 

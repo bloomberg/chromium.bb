@@ -34,6 +34,9 @@ class Store {
   // Store.
   virtual void Initialize(InitCallback callback) = 0;
 
+  // Destroys the underlying store and attempts to re-initialize.
+  virtual void HardRecover(StoreCallback callback) = 0;
+
   // Adds or updates |entry| in this Store asynchronously and returns whether or
   // not that was successful.
   virtual void Update(const Entry& entry, StoreCallback callback) = 0;

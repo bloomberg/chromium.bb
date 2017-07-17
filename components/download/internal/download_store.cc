@@ -45,6 +45,12 @@ void DownloadStore::Initialize(InitCallback callback) {
                      weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
+void DownloadStore::HardRecover(StoreCallback callback) {
+  is_initialized_ = false;
+  db_->Destroy(base::BindOnce(&DownloadStore::OnDatabaseDestroyed,
+                              weak_factory_.GetWeakPtr(), std::move(callback)));
+}
+
 void DownloadStore::OnDatabaseInited(InitCallback callback, bool success) {
   if (!success) {
     std::move(callback).Run(success, base::MakeUnique<std::vector<Entry>>());
@@ -67,6 +73,24 @@ void DownloadStore::OnDatabaseLoaded(InitCallback callback,
   auto entries = ProtoConversions::EntryVectorFromProto(std::move(protos));
   is_initialized_ = true;
   std::move(callback).Run(success, std::move(entries));
+}
+
+void DownloadStore::OnDatabaseDestroyed(StoreCallback callback, bool success) {
+  if (!success) {
+    std::move(callback).Run(success);
+    return;
+  }
+
+  db_->InitWithOptions(
+      kDatabaseClientName, leveldb_proto::Options(database_dir_),
+      base::BindOnce(&DownloadStore::OnDatabaseInitedAfterDestroy,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void DownloadStore::OnDatabaseInitedAfterDestroy(StoreCallback callback,
+                                                 bool success) {
+  is_initialized_ = success;
+  std::move(callback).Run(success);
 }
 
 void DownloadStore::Update(const Entry& entry, StoreCallback callback) {

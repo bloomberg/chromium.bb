@@ -28,6 +28,13 @@ void ModelImpl::Initialize(Client* client) {
                                 weak_ptr_factory_.GetWeakPtr()));
 }
 
+void ModelImpl::HardRecover() {
+  entries_.clear();
+
+  store_->HardRecover(base::BindOnce(&ModelImpl::OnHardRecoverFinished,
+                                     weak_ptr_factory_.GetWeakPtr()));
+}
+
 void ModelImpl::Add(const Entry& entry) {
   DCHECK(store_->IsInitialized());
   DCHECK(entries_.find(entry.guid) == entries_.end());
@@ -94,6 +101,10 @@ void ModelImpl::OnInitializedFinished(
   }
 
   client_->OnModelReady(true);
+}
+
+void ModelImpl::OnHardRecoverFinished(bool success) {
+  client_->OnHardRecoverComplete(success);
 }
 
 void ModelImpl::OnAddFinished(DownloadClient client,

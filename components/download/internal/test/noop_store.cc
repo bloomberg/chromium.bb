@@ -27,6 +27,12 @@ void NoopStore::Initialize(InitCallback callback) {
                      std::move(callback)));
 }
 
+void NoopStore::HardRecover(StoreCallback callback) {
+  initialized_ = true;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), true));
+}
+
 void NoopStore::Update(const Entry& entry, StoreCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), true /** success */));

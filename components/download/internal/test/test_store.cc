@@ -27,6 +27,13 @@ void TestStore::Initialize(InitCallback callback) {
                 base::MakeUnique<std::vector<Entry>>());
 }
 
+void TestStore::HardRecover(StoreCallback callback) {
+  hard_recover_callback_ = std::move(callback);
+
+  if (automatic_callback_response_.has_value())
+    TriggerHardRecover(automatic_callback_response_.value());
+}
+
 void TestStore::Update(const Entry& entry, StoreCallback callback) {
   updated_entries_.push_back(entry);
   update_callback_ = std::move(callback);
@@ -52,6 +59,11 @@ void TestStore::TriggerInit(bool success,
   ready_ = success;
   DCHECK(init_callback_);
   std::move(init_callback_).Run(success, std::move(entries));
+}
+
+void TestStore::TriggerHardRecover(bool success) {
+  DCHECK(hard_recover_callback_);
+  std::move(hard_recover_callback_).Run(success);
 }
 
 void TestStore::TriggerUpdate(bool success) {

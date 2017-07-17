@@ -82,6 +82,70 @@ TEST_F(DownloadServiceModelImplTest, BadInit) {
   store_->TriggerInit(false, base::MakeUnique<std::vector<Entry>>());
 }
 
+TEST_F(DownloadServiceModelImplTest, HardRecoverGoodModel) {
+  Entry entry1 = test::BuildBasicEntry();
+  Entry entry2 = test::BuildBasicEntry();
+  std::vector<Entry> entries = {entry1, entry2};
+
+  EXPECT_CALL(client_, OnModelReady(true)).Times(1);
+
+  model_->Initialize(&client_);
+  EXPECT_TRUE(store_->init_called());
+  store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
+
+  EXPECT_CALL(client_, OnHardRecoverComplete(true));
+
+  model_->HardRecover();
+  store_->TriggerHardRecover(true);
+  EXPECT_TRUE(model_->PeekEntries().empty());
+}
+
+TEST_F(DownloadServiceModelImplTest, HardRecoverBadModel) {
+  EXPECT_CALL(client_, OnModelReady(false)).Times(1);
+
+  model_->Initialize(&client_);
+  EXPECT_TRUE(store_->init_called());
+  store_->TriggerInit(false, base::MakeUnique<std::vector<Entry>>());
+
+  EXPECT_CALL(client_, OnHardRecoverComplete(true));
+
+  model_->HardRecover();
+  store_->TriggerHardRecover(true);
+  EXPECT_TRUE(model_->PeekEntries().empty());
+}
+
+TEST_F(DownloadServiceModelImplTest, HardRecoverFailsGoodModel) {
+  Entry entry1 = test::BuildBasicEntry();
+  Entry entry2 = test::BuildBasicEntry();
+  std::vector<Entry> entries = {entry1, entry2};
+
+  EXPECT_CALL(client_, OnModelReady(true)).Times(1);
+
+  model_->Initialize(&client_);
+  EXPECT_TRUE(store_->init_called());
+  store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
+
+  EXPECT_CALL(client_, OnHardRecoverComplete(false));
+
+  model_->HardRecover();
+  store_->TriggerHardRecover(false);
+  EXPECT_TRUE(model_->PeekEntries().empty());
+}
+
+TEST_F(DownloadServiceModelImplTest, HardRecoverFailsBadModel) {
+  EXPECT_CALL(client_, OnModelReady(false)).Times(1);
+
+  model_->Initialize(&client_);
+  EXPECT_TRUE(store_->init_called());
+  store_->TriggerInit(false, base::MakeUnique<std::vector<Entry>>());
+
+  EXPECT_CALL(client_, OnHardRecoverComplete(false));
+
+  model_->HardRecover();
+  store_->TriggerHardRecover(false);
+  EXPECT_TRUE(model_->PeekEntries().empty());
+}
+
 TEST_F(DownloadServiceModelImplTest, Add) {
   Entry entry1 = test::BuildBasicEntry();
   Entry entry2 = test::BuildBasicEntry();
