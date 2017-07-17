@@ -836,7 +836,6 @@ cc_test("cc_unittests") {
     "animation/keyframed_animation_curve_unittest.cc",
     "animation/scroll_offset_animation_curve_unittest.cc",
     "animation/transform_operations_unittest.cc",
-    "surfaces/referenced_surface_tracker_unittest.cc",
     "surfaces/surface_hittest_unittest.cc",
     "surfaces/surface_manager_ref_unittest.cc",
     "surfaces/surface_synchronization_unittest.cc",
