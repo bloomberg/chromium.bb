@@ -7061,7 +7061,7 @@ TEST_F(AutofillManagerTest, SignInFormSubmission_Upload) {
   types.insert(EMAIL_ADDRESS);
   expected_types.push_back(types);
 
-  test::CreateTestFormField("Password", "pw", "secret", "password", &field);
+  test::CreateTestFormField("Password", "pw", "", "password", &field);
   form.fields.push_back(field);
   FormsSeen(std::vector<FormData>(1, form));
   types.clear();
