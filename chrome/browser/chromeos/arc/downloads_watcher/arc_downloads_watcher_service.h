@@ -12,14 +12,18 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "components/arc/arc_service.h"
 #include "components/arc/common/file_system.mojom.h"
 #include "components/arc/instance_holder.h"
+#include "components/keyed_service/core/keyed_service.h"
 
 namespace base {
 class FilePath;
 class SequencedTaskRunner;
 }  // namespace base
+
+namespace content {
+class BrowserContext;
+}  // namespace content
 
 namespace arc {
 
@@ -31,10 +35,16 @@ bool HasAndroidSupportedMediaExtension(const base::FilePath& path);
 // Watches Downloads directory and registers newly created media files to
 // Android MediaProvider.
 class ArcDownloadsWatcherService
-    : public ArcService,
+    : public KeyedService,
       public InstanceHolder<mojom::FileSystemInstance>::Observer {
  public:
-  explicit ArcDownloadsWatcherService(ArcBridgeService* bridge_service);
+  // Returns singleton instance for the given BrowserContext,
+  // or nullptr if the browser |context| is not allowed to use ARC.
+  static ArcDownloadsWatcherService* GetForBrowserContext(
+      content::BrowserContext* context);
+
+  ArcDownloadsWatcherService(content::BrowserContext* context,
+                             ArcBridgeService* bridge_service);
   ~ArcDownloadsWatcherService() override;
 
   // InstanceHolder<mojom::FileSystemInstance>::Observer
@@ -48,6 +58,9 @@ class ArcDownloadsWatcherService
   void StopWatchingDownloads();
 
   void OnDownloadsChanged(const std::vector<std::string>& paths);
+
+  content::BrowserContext* const context_;
+  ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
 
   std::unique_ptr<DownloadsWatcher> watcher_;
 
