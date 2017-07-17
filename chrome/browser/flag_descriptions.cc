@@ -1180,6 +1180,8 @@ const char kTLS13VariantDescription[] = "Sets the TLS 1.3 variant used.";
 const char kTLS13VariantDisabled[] = "Disabled";
 const char kTLS13VariantDraft[] = "Enabled (Draft)";
 const char kTLS13VariantExperiment[] = "Enabled (Experiment)";
+const char kTLS13VariantRecordTypeExperiment[] =
+    "Enabled (Record Type Experiment)";
 
 const char kTopDocumentIsolationName[] = "Top document isolation";
 const char kTopDocumentIsolationDescription[] =

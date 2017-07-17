@@ -928,6 +928,9 @@ int SSLClientSocketImpl::Init() {
     case kTLS13VariantExperiment:
       SSL_set_tls13_variant(ssl_.get(), tls13_experiment);
       break;
+    case kTLS13VariantRecordTypeExperiment:
+      SSL_set_tls13_variant(ssl_.get(), tls13_record_type_experiment);
+      break;
   }
 
   // OpenSSL defaults some options to on, others to off. To avoid ambiguity,
