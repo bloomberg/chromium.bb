@@ -811,8 +811,6 @@ void VrShellGl::DrawFrame(int16_t frame_index) {
     DrawWebVr();
   }
 
-  gfx::Transform head_pose;
-
   // When using async reprojection, we need to know which pose was
   // used in the WebVR app for drawing this frame and supply it when
   // submitting. Technically we don't need a pose if not reprojecting,
@@ -836,7 +834,8 @@ void VrShellGl::DrawFrame(int16_t frame_index) {
     // TODO(crbug.com/704690): Acquire controller state in a way that's timely
     // for both the gamepad API and UI input handling.
     TRACE_EVENT0("gpu", "VrShellGl::UpdateController");
-    gfx::Vector3dF head_direction = GetForwardVector(head_pose);
+    gfx::Vector3dF head_direction =
+        GetForwardVector(render_info_primary_.head_pose);
     UpdateController(head_direction);
     HandleControllerInput(head_direction);
   }
