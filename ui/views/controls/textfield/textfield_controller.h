@@ -40,7 +40,8 @@ class VIEWS_EXPORT TextfieldController {
 
   // Called to get notified about mouse events in the edit.
   // Returns true if the message was handled and should not be processed
-  // further. Currently, only mouse down events are sent here.
+  // further. Currently, only mouse down events and mouse wheel events are sent
+  // here.
   virtual bool HandleMouseEvent(Textfield* sender,
                                 const ui::MouseEvent& mouse_event);
 

@@ -405,21 +405,23 @@ void SearchBoxView::HandleSearchBoxEvent(ui::LocatedEvent* located_event) {
   if (!is_fullscreen_app_list_enabled_)
     return;
 
-  if (located_event->type() != ui::ET_MOUSE_PRESSED &&
-      located_event->type() != ui::ET_GESTURE_TAP)
-    return;
+  if (located_event->type() == ui::ET_MOUSEWHEEL) {
+    if (!app_list_view_->HandleScroll(located_event))
+      return;
 
-  bool event_is_in_searchbox_bounds =
-      GetWidget()->GetWindowBoundsInScreen().Contains(
-          located_event->root_location());
-
-  if (!is_search_box_active_ && event_is_in_searchbox_bounds &&
-      search_box_->text().empty()) {
+  } else if (located_event->type() == ui::ET_MOUSE_PRESSED ||
+             located_event->type() == ui::ET_GESTURE_TAP) {
+    bool event_is_in_searchbox_bounds =
+        GetWidget()->GetWindowBoundsInScreen().Contains(
+            located_event->root_location());
+    if (is_search_box_active_ || !event_is_in_searchbox_bounds ||
+        !search_box_->text().empty())
+      return;
     // If the event was within the searchbox bounds and in an inactive empty
     // search box, enable the search box.
     SetSearchBoxActive(true);
-    located_event->SetHandled();
   }
+  located_event->SetHandled();
 }
 
 bool SearchBoxView::OnTextfieldEvent() {
@@ -436,7 +438,6 @@ bool SearchBoxView::OnTextfieldEvent() {
 bool SearchBoxView::OnMouseWheel(const ui::MouseWheelEvent& event) {
   if (contents_view_)
     return contents_view_->OnMouseWheel(event);
-
   return false;
 }
 
@@ -453,6 +454,9 @@ const char* SearchBoxView::GetClassName() const {
 }
 
 void SearchBoxView::OnGestureEvent(ui::GestureEvent* event) {
+  if (!is_fullscreen_app_list_enabled_)
+    return;
+
   HandleSearchBoxEvent(event);
 }
 
@@ -589,7 +593,14 @@ bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
 
 bool SearchBoxView::HandleMouseEvent(views::Textfield* sender,
                                      const ui::MouseEvent& mouse_event) {
-  return OnTextfieldEvent();
+  if (!is_fullscreen_app_list_enabled_)
+    return false;
+
+  if (mouse_event.type() == ui::ET_MOUSEWHEEL) {
+    return app_list_view_->HandleScroll(&mouse_event);
+  } else {
+    return OnTextfieldEvent();
+  }
 }
 
 bool SearchBoxView::HandleGestureEvent(views::Textfield* sender,

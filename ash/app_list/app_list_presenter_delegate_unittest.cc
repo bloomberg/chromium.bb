@@ -752,4 +752,41 @@ TEST_F(FullscreenAppListPresenterDelegateTest,
   EXPECT_FALSE(app_list_presenter_impl()->IsVisible());
 }
 
+// Tests that the app list transitions on mousewheel and gesture scroll events.
+TEST_P(FullscreenAppListPresenterDelegateTest,
+       MouseWheelAndGestureScrollTransition) {
+  const bool test_mouse_event = GetParam();
+  app_list_presenter_impl()->Show(GetPrimaryDisplayId());
+  app_list::AppListView* view = app_list_presenter_impl()->GetView();
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  EXPECT_EQ(view->app_list_state(), app_list::AppListView::PEEKING);
+
+  // Move mouse to over the searchbox, mousewheel scroll up.
+  generator.MoveMouseTo(GetPointInsideSearchbox());
+  if (test_mouse_event) {
+    generator.MoveMouseWheel(0, -30);
+  } else {
+    generator.ScrollSequence(GetPointInsideSearchbox(),
+                             base::TimeDelta::FromMilliseconds(5), 0, -300, 2,
+                             2);
+  }
+  EXPECT_EQ(view->app_list_state(), app_list::AppListView::FULLSCREEN_ALL_APPS);
+
+  // Swipe down, the app list should return to peeking mode.
+  generator.GestureScrollSequence(gfx::Point(0, 0), gfx::Point(0, 720),
+                                  base::TimeDelta::FromMilliseconds(100), 10);
+  EXPECT_EQ(view->app_list_state(), app_list::AppListView::PEEKING);
+
+  // Move mouse away from the searchbox, mousewheel scroll up.
+  generator.MoveMouseTo(GetPointOutsideSearchbox());
+  if (test_mouse_event) {
+    generator.MoveMouseWheel(0, -30);
+  } else {
+    generator.ScrollSequence(GetPointOutsideSearchbox(),
+                             base::TimeDelta::FromMilliseconds(5), 0, -300, 2,
+                             2);
+  }
+  EXPECT_EQ(view->app_list_state(), app_list::AppListView::FULLSCREEN_ALL_APPS);
+}
+
 }  // namespace ash

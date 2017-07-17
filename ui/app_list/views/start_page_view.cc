@@ -410,7 +410,7 @@ bool StartPageView::OnMouseWheel(const ui::MouseWheelEvent& event) {
   // Negative y_offset is a downward scroll.
   if (event.y_offset() < 0) {
     MaybeOpenCustomLauncherPage();
-    return true;
+    return IsCustomLauncherPageActive();
   }
 
   return false;
