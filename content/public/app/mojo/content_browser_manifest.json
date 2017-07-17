@@ -45,6 +45,7 @@
           "shape_detection::mojom::FaceDetectionProvider",
           "resource_coordinator::mojom::CoordinationUnit",
           "shape_detection::mojom::TextDetection",
+          "storage::mojom::BlobRegistry",
           "ui::mojom::Gpu"
         ],
         "geolocation_config": [

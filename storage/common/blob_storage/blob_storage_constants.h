@@ -52,6 +52,12 @@ struct STORAGE_COMMON_EXPORT BlobStorageLimits {
   // This is the maximum size of a shared memory handle.
   size_t max_shared_memory_size = kDefaultSharedMemorySize;
 
+  // This is the maximum size of a bytes BlobDataItem. Only used for mojo
+  // based blob transportation, as the old IPC/shared memory based
+  // implementation doesn't support different values for this and
+  // max_shared_memory_size.
+  size_t max_bytes_data_item_size = kDefaultSharedMemorySize;
+
   // This is the maximum amount of memory we can use to store blobs.
   size_t max_blob_in_memory_space = kDefaultMaxBlobInMemorySpace;
   // The ratio applied to |max_blob_in_memory_space| to reduce memory usage

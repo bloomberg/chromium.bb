@@ -81,6 +81,16 @@ class STORAGE_EXPORT BlobDataBuilder {
                           size_t offset,
                           size_t length);
 
+  // Same as PopulateFutureData, but rather than passing in the data to be
+  // copied, this method returns a pointer where the caller can copy |length|
+  // bytes of data to.
+  // Returns nullptr if:
+  // * The item was not created by using AppendFutureData, or
+  // * The offset and length are not valid.
+  char* GetFutureDataPointerToPopulate(size_t index,
+                                       size_t offset,
+                                       size_t length);
+
   // Adds an item that is flagged for future data population. Use
   // 'PopulateFutureFile' to set the file path and expected modification time
   // of this file. Returns the index of the item (to be used in
