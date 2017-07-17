@@ -395,8 +395,17 @@ void SubscribeForGCMPushUpdates(
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetURLRequestContext();
 
+  std::string api_key;
+  // The API is private. If we don't have the official API key, don't even try.
+  if (google_apis::IsGoogleChromeAPIKeyUsed()) {
+    bool is_stable_channel =
+        chrome::GetChannel() == version_info::Channel::STABLE;
+    api_key = is_stable_channel ? google_apis::GetAPIKey()
+                                : google_apis::GetNonStableAPIKey();
+  }
+
   auto subscription_manager = base::MakeUnique<SubscriptionManager>(
-      request_context, pref_service, signin_manager, token_service,
+      request_context, pref_service, signin_manager, token_service, api_key,
       GetPushUpdatesSubscriptionEndpoint(chrome::GetChannel()),
       GetPushUpdatesUnsubscriptionEndpoint(chrome::GetChannel()));
 
