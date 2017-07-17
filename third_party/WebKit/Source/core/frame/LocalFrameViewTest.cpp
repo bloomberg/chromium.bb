@@ -29,9 +29,9 @@ using ::testing::AnyNumber;
 namespace blink {
 namespace {
 
-class MockChromeClient : public EmptyChromeClient {
+class AnimationMockChromeClient : public EmptyChromeClient {
  public:
-  MockChromeClient() : has_scheduled_animation_(false) {}
+  AnimationMockChromeClient() : has_scheduled_animation_(false) {}
 
   // ChromeClient
   MOCK_METHOD2(AttachRootGraphicsLayer,
@@ -57,7 +57,7 @@ class LocalFrameViewTest
  protected:
   LocalFrameViewTest()
       : ScopedRootLayerScrollingForTest(GetParam()),
-        chrome_client_(new MockChromeClient) {
+        chrome_client_(new AnimationMockChromeClient) {
     EXPECT_CALL(ChromeClient(), AttachRootGraphicsLayer(_, _))
         .Times(AnyNumber());
   }
@@ -76,10 +76,10 @@ class LocalFrameViewTest
   }
 
   Document& GetDocument() { return page_holder_->GetDocument(); }
-  MockChromeClient& ChromeClient() { return *chrome_client_; }
+  AnimationMockChromeClient& ChromeClient() { return *chrome_client_; }
 
  private:
-  Persistent<MockChromeClient> chrome_client_;
+  Persistent<AnimationMockChromeClient> chrome_client_;
   std::unique_ptr<DummyPageHolder> page_holder_;
 };
 

@@ -19,7 +19,7 @@ using ::testing::_;
 namespace blink {
 namespace {
 
-class MockChromeClient : public EmptyChromeClient {
+class ScrollableAreaMockChromeClient : public EmptyChromeClient {
  public:
   MOCK_METHOD3(MockSetToolTip, void(LocalFrame*, const String&, TextDirection));
   void SetToolTip(LocalFrame& frame,
@@ -35,13 +35,15 @@ class PaintLayerScrollableAreaTest : public RenderingTest {
  public:
   PaintLayerScrollableAreaTest()
       : RenderingTest(EmptyLocalFrameClient::Create()),
-        chrome_client_(new MockChromeClient) {}
+        chrome_client_(new ScrollableAreaMockChromeClient) {}
 
   ~PaintLayerScrollableAreaTest() {
     ::testing::Mock::VerifyAndClearExpectations(&GetChromeClient());
   }
 
-  MockChromeClient& GetChromeClient() const override { return *chrome_client_; }
+  ScrollableAreaMockChromeClient& GetChromeClient() const override {
+    return *chrome_client_;
+  }
 
   BackgroundPaintLocation GetBackgroundPaintLocation(const char* element_id) {
     PaintLayer* paint_layer =
@@ -55,7 +57,7 @@ class PaintLayerScrollableAreaTest : public RenderingTest {
     EnableCompositing();
   }
 
-  Persistent<MockChromeClient> chrome_client_;
+  Persistent<ScrollableAreaMockChromeClient> chrome_client_;
 };
 
 TEST_F(PaintLayerScrollableAreaTest,
