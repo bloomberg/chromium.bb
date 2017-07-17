@@ -20,7 +20,7 @@
  * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
  * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
- * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * OF LIABILITY, WHETHER IN CONTRACTg, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
@@ -197,12 +197,6 @@ bool MediaControlsPainter::PaintMediaOverlayPlayButton(
   if (!HasSource(media_element) || !media_element->paused())
     return false;
 
-  // TODO(mlamouri): it might be possible to use the PanelLayoutObject() call
-  // instead.
-  HTMLDivElement* panel_element = nullptr;
-  if (media_element->GetMediaControls())
-    panel_element = media_element->GetMediaControls()->PanelElement();
-
   static Image* media_overlay_play = PlatformResource("mediaplayerOverlayPlay");
 
   IntRect button_rect(rect);
@@ -214,7 +208,20 @@ bool MediaControlsPainter::PaintMediaOverlayPlayButton(
   if (!box)
     return false;
   int media_height = box->PixelSnappedHeight();
-  int media_panel_height = panel_element ? panel_element->clientHeight() : 0;
+
+  int media_panel_height = 0;
+  if (media_element->GetMediaControls()) {
+    if (LayoutObject* object =
+            media_element->GetMediaControls()->PanelLayoutObject()) {
+      if (object->IsBox()) {
+        media_panel_height =
+            AdjustLayoutUnitForAbsoluteZoom(ToLayoutBox(object)->ClientHeight(),
+                                            *ToLayoutBox(object))
+                .Round();
+      }
+    }
+  }
+
   button_rect.SetX(rect.Center().X() - kMediaOverlayPlayButtonWidth / 2);
   button_rect.SetY(rect.Center().Y() - kMediaOverlayPlayButtonHeight / 2 +
                    (media_height - rect.Height() - media_panel_height) / 2);
