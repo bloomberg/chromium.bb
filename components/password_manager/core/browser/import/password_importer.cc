@@ -8,8 +8,7 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/optional.h"
-#include "base/task_runner.h"
-#include "base/task_runner_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/import/password_csv_reader.h"
 
@@ -46,13 +45,14 @@ static void ParsePasswords(
 }  // namespace
 
 // static
-void PasswordImporter::Import(
-    const base::FilePath& path,
-    scoped_refptr<base::TaskRunner> blocking_task_runner,
-    const CompletionCallback& completion) {
-  base::PostTaskAndReplyWithResult(blocking_task_runner.get(), FROM_HERE,
-                                   base::Bind(&ReadFileToString, path),
-                                   base::Bind(&ParsePasswords, completion));
+void PasswordImporter::Import(const base::FilePath& path,
+                              const CompletionCallback& completion) {
+  // Posting with USER_VISIBLE priority, because the result of the import is
+  // visible to the user in the password settings page.
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
+      base::Bind(&ReadFileToString, path),
+      base::Bind(&ParsePasswords, completion));
 }
 
 // static

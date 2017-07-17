@@ -11,14 +11,9 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 
 namespace autofill {
 struct PasswordForm;
-}
-
-namespace base {
-class TaskRunner;
 }
 
 namespace password_manager {
@@ -28,12 +23,11 @@ namespace password_manager {
 class PasswordExporter {
  public:
   // Exports |passwords| into a file at |path|, overwriting any existing file.
-  // Blocking IO tasks will be posted to |blocking_task_runner|. The format of
-  // the export will be selected based on the file extension in |path|.
+  // The format of the export will be selected based on the file extension in
+  // |path|.
   static void Export(
       const base::FilePath& path,
-      const std::vector<std::unique_ptr<autofill::PasswordForm>>& passwords,
-      scoped_refptr<base::TaskRunner> blocking_task_runner);
+      const std::vector<std::unique_ptr<autofill::PasswordForm>>& passwords);
 
   // Returns the file extensions corresponding to supported formats.
   // Inner vector indicates equivalent extensions. For example:
