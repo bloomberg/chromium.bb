@@ -19,23 +19,29 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
+#include "chrome/test/base/test_chrome_web_ui_controller_factory.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chrome/test/base/testing_profile_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/fake_auth_status_provider.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync_preferences/pref_service_syncable.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/browser/web_ui_controller.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_web_ui.h"
+#include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/layout.h"
 
@@ -169,36 +175,36 @@ class TestingPeopleHandler : public PeopleHandler {
   DISALLOW_COPY_AND_ASSIGN(TestingPeopleHandler);
 };
 
+class TestWebUIProvider
+    : public TestChromeWebUIControllerFactory::WebUIProvider {
+ public:
+  content::WebUIController* NewWebUI(content::WebUI* web_ui,
+                                     const GURL& url) override {
+    content::WebUIController* controller = new content::WebUIController(web_ui);
+    return controller;
+  }
+};
+
 // The boolean parameter indicates whether the test is run with ClientOAuth
 // or not.  The test parameter is a bool: whether or not to test with/
 // /ClientLogin enabled or not.
-class PeopleHandlerTest : public testing::Test {
+class PeopleHandlerTest : public ChromeRenderViewHostTestHarness {
  public:
   PeopleHandlerTest() : error_(GoogleServiceAuthError::NONE) {}
   void SetUp() override {
+    ChromeRenderViewHostTestHarness::SetUp();
     error_ = GoogleServiceAuthError::AuthErrorNone();
-
-    profile_manager_.reset(
-        new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
-    ASSERT_TRUE(profile_manager_->SetUp());
-
-    TestingProfile::TestingFactories testing_factories;
-    testing_factories.push_back(std::make_pair(
-        SigninManagerFactory::GetInstance(), BuildFakeSigninManagerBase));
-    profile_ = profile_manager_->CreateTestingProfile(
-        "Person 1", nullptr, base::UTF8ToUTF16("Person 1"), 0, std::string(),
-        testing_factories);
 
     // Sign in the user.
     mock_signin_ = static_cast<SigninManagerBase*>(
-        SigninManagerFactory::GetForProfile(profile_));
+        SigninManagerFactory::GetForProfile(profile()));
     std::string username = GetTestUser();
     if (!username.empty())
       mock_signin_->SetAuthenticatedAccountInfo(username, username);
 
     mock_pss_ = static_cast<ProfileSyncServiceMock*>(
         ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-            profile_, BuildMockProfileSyncService));
+            profile(), BuildMockProfileSyncService));
     EXPECT_CALL(*mock_pss_, GetAuthError()).WillRepeatedly(ReturnRef(error_));
     ON_CALL(*mock_pss_, GetPassphraseType())
         .WillByDefault(Return(syncer::PassphraseType::IMPLICIT_PASSPHRASE));
@@ -209,8 +215,15 @@ class PeopleHandlerTest : public testing::Test {
 
     mock_pss_->Initialize();
 
-    handler_.reset(new TestingPeopleHandler(&web_ui_, profile_));
+    handler_.reset(new TestingPeopleHandler(&web_ui_, profile()));
     handler_->AllowJavascript();
+  }
+
+  void TearDown() override {
+    handler_->set_web_ui(nullptr);
+    handler_->DisallowJavascript();
+    handler_->sync_startup_tracker_.reset();
+    ChromeRenderViewHostTestHarness::TearDown();
   }
 
   // Setup the expectations for calls made when displaying the config page.
@@ -265,9 +278,9 @@ class PeopleHandlerTest : public testing::Test {
 
     // Cancelling the spinner dialog will cause CloseSyncSetup().
     handler_->CloseSyncSetup();
-    EXPECT_EQ(NULL,
-              LoginUIServiceFactory::GetForProfile(
-                  profile_)->current_login_ui());
+    EXPECT_EQ(
+        NULL,
+        LoginUIServiceFactory::GetForProfile(profile())->current_login_ui());
   }
 
   const base::DictionaryValue* ExpectSyncPrefsChanged() {
@@ -297,13 +310,12 @@ class PeopleHandlerTest : public testing::Test {
     return std::string(kTestUser);
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
-  std::unique_ptr<TestingProfileManager> profile_manager_;
-  Profile* profile_;
   ProfileSyncServiceMock* mock_pss_;
   GoogleServiceAuthError error_;
   SigninManagerBase* mock_signin_;
   content::TestWebUI web_ui_;
+  TestWebUIProvider test_provider_;
+  std::unique_ptr<TestChromeWebUIControllerFactory> test_factory_;
   std::unique_ptr<TestingPeopleHandler> handler_;
 };
 
@@ -326,16 +338,16 @@ TEST_F(PeopleHandlerFirstSigninTest, DisplayBasicLogin) {
   handler_->HandleStartSignin(&list_args);
 
   // Sync setup hands off control to the gaia login tab.
-  EXPECT_EQ(NULL,
-            LoginUIServiceFactory::GetForProfile(
-                profile_)->current_login_ui());
+  EXPECT_EQ(
+      NULL,
+      LoginUIServiceFactory::GetForProfile(profile())->current_login_ui());
 
   ASSERT_FALSE(handler_->is_configuring_sync());
 
   handler_->CloseSyncSetup();
-  EXPECT_EQ(NULL,
-            LoginUIServiceFactory::GetForProfile(
-                profile_)->current_login_ui());
+  EXPECT_EQ(
+      NULL,
+      LoginUIServiceFactory::GetForProfile(profile())->current_login_ui());
 }
 
 TEST_F(PeopleHandlerTest, ShowSyncSetupWhenNotSignedIn) {
@@ -346,9 +358,9 @@ TEST_F(PeopleHandlerTest, ShowSyncSetupWhenNotSignedIn) {
   ExpectPageStatusChanged(PeopleHandler::kDonePageStatus);
 
   ASSERT_FALSE(handler_->is_configuring_sync());
-  EXPECT_EQ(NULL,
-            LoginUIServiceFactory::GetForProfile(
-                profile_)->current_login_ui());
+  EXPECT_EQ(
+      NULL,
+      LoginUIServiceFactory::GetForProfile(profile())->current_login_ui());
 }
 #endif  // !defined(OS_CHROMEOS)
 
@@ -359,9 +371,9 @@ TEST_F(PeopleHandlerTest, HandleSetupUIWhenSyncDisabled) {
   handler_->HandleShowSetupUI(NULL);
 
   // Sync setup is closed when sync is disabled.
-  EXPECT_EQ(NULL,
-            LoginUIServiceFactory::GetForProfile(
-                profile_)->current_login_ui());
+  EXPECT_EQ(
+      NULL,
+      LoginUIServiceFactory::GetForProfile(profile())->current_login_ui());
   ASSERT_FALSE(handler_->is_configuring_sync());
 }
 
@@ -381,9 +393,9 @@ TEST_F(PeopleHandlerTest, DisplayConfigureWithEngineDisabledAndCancel) {
   // spinner is showing.
   handler_->HandleShowSetupUI(NULL);
 
-  EXPECT_EQ(handler_.get(),
-            LoginUIServiceFactory::GetForProfile(
-                profile_)->current_login_ui());
+  EXPECT_EQ(
+      handler_.get(),
+      LoginUIServiceFactory::GetForProfile(profile())->current_login_ui());
 
   ExpectSpinnerAndClose();
 }
@@ -446,9 +458,9 @@ TEST_F(PeopleHandlerTest,
   EXPECT_CALL(*mock_pss_, OnSetupInProgressHandleDestroyed());
 
   handler_->CloseSyncSetup();
-  EXPECT_EQ(NULL,
-            LoginUIServiceFactory::GetForProfile(
-                profile_)->current_login_ui());
+  EXPECT_EQ(
+      NULL,
+      LoginUIServiceFactory::GetForProfile(profile())->current_login_ui());
 }
 
 TEST_F(PeopleHandlerTest, DisplayConfigureWithEngineDisabledAndSigninFailed) {
@@ -467,9 +479,9 @@ TEST_F(PeopleHandlerTest, DisplayConfigureWithEngineDisabledAndSigninFailed) {
   NotifySyncListeners();
 
   // On failure, the dialog will be closed.
-  EXPECT_EQ(NULL,
-            LoginUIServiceFactory::GetForProfile(
-                profile_)->current_login_ui());
+  EXPECT_EQ(
+      NULL,
+      LoginUIServiceFactory::GetForProfile(profile())->current_login_ui());
 }
 
 // Tests that signals not related to user intention to configure sync don't
@@ -478,6 +490,27 @@ TEST_F(PeopleHandlerTest, OnlyStartEngineWhenConfiguringSync) {
   EXPECT_CALL(*mock_pss_, IsEngineInitialized()).WillRepeatedly(Return(false));
   EXPECT_CALL(*mock_pss_, RequestStart()).Times(0);
   NotifySyncStateChanged();
+}
+
+TEST_F(PeopleHandlerTest, AcquireSyncBlockerWhenLoadingSyncSettingsSubpage) {
+  /// We set up a factory override here to prevent a new web ui from being
+  /// created when we navigate to a page that would normally create one.
+  web_ui_.set_web_contents(web_contents());
+  test_factory_ = base::MakeUnique<TestChromeWebUIControllerFactory>();
+  test_factory_->AddFactoryOverride(
+      chrome::GetSettingsUrl(chrome::kSyncSetupSubPage).host(),
+      &test_provider_);
+  content::WebUIControllerFactory::RegisterFactory(test_factory_.get());
+  content::WebUIControllerFactory::UnregisterFactoryForTesting(
+      ChromeWebUIControllerFactory::GetInstance());
+
+  EXPECT_FALSE(handler_->sync_blocker_);
+
+  content::WebContentsTester::For(web_contents())
+      ->StartNavigation(chrome::GetSettingsUrl(chrome::kSyncSetupSubPage));
+  handler_->InitializeSyncBlocker();
+
+  EXPECT_TRUE(handler_->sync_blocker_);
 }
 
 #if !defined(OS_CHROMEOS)
@@ -726,7 +759,7 @@ TEST_F(PeopleHandlerTest, ShowSigninOnAuthError) {
   SetupInitializedProfileSyncService();
   mock_signin_->SetAuthenticatedAccountInfo(kTestUser, kTestUser);
   FakeAuthStatusProvider provider(
-      SigninErrorControllerFactory::GetForProfile(profile_));
+      SigninErrorControllerFactory::GetForProfile(profile()));
   provider.SetAuthError(kTestUser, error_);
   EXPECT_CALL(*mock_pss_, CanSyncStart()).WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_pss_, IsPassphraseRequired())
@@ -741,8 +774,9 @@ TEST_F(PeopleHandlerTest, ShowSigninOnAuthError) {
   // happen if the user manually navigates to chrome://settings/syncSetup -
   // clicking on the button in the UI will sign the user out rather than
   // displaying a spinner. Should be no visible UI on ChromeOS in this case.
-  EXPECT_EQ(NULL, LoginUIServiceFactory::GetForProfile(
-      profile_)->current_login_ui());
+  EXPECT_EQ(
+      NULL,
+      LoginUIServiceFactory::GetForProfile(profile())->current_login_ui());
 #else
 
   // On ChromeOS, this should display the spinner while we try to startup the
@@ -750,9 +784,9 @@ TEST_F(PeopleHandlerTest, ShowSigninOnAuthError) {
   handler_->OpenSyncSetup();
 
   // Sync setup is closed when re-auth is in progress.
-  EXPECT_EQ(NULL,
-            LoginUIServiceFactory::GetForProfile(
-                profile_)->current_login_ui());
+  EXPECT_EQ(
+      NULL,
+      LoginUIServiceFactory::GetForProfile(profile())->current_login_ui());
 
   ASSERT_FALSE(handler_->is_configuring_sync());
 #endif
@@ -792,7 +826,7 @@ TEST_F(PeopleHandlerTest, ShowSetupManuallySyncAll) {
   EXPECT_CALL(*mock_pss_, IsUsingSecondaryPassphrase())
       .WillRepeatedly(Return(false));
   SetupInitializedProfileSyncService();
-  syncer::SyncPrefs sync_prefs(profile_->GetPrefs());
+  syncer::SyncPrefs sync_prefs(profile()->GetPrefs());
   sync_prefs.SetKeepEverythingSynced(false);
   SetDefaultExpectationsForConfigPage();
   // This should display the sync setup dialog (not login).
@@ -811,7 +845,7 @@ TEST_F(PeopleHandlerTest, ShowSetupSyncForAllTypesIndividually) {
     EXPECT_CALL(*mock_pss_, IsUsingSecondaryPassphrase())
         .WillRepeatedly(Return(false));
     SetupInitializedProfileSyncService();
-    syncer::SyncPrefs sync_prefs(profile_->GetPrefs());
+    syncer::SyncPrefs sync_prefs(profile()->GetPrefs());
     sync_prefs.SetKeepEverythingSynced(false);
     SetDefaultExpectationsForConfigPage();
     syncer::ModelTypeSet types;
@@ -823,7 +857,7 @@ TEST_F(PeopleHandlerTest, ShowSetupSyncForAllTypesIndividually) {
     handler_->OpenSyncSetup();
 
     // Close the config overlay.
-    LoginUIServiceFactory::GetForProfile(profile_)->LoginUIClosed(
+    LoginUIServiceFactory::GetForProfile(profile())->LoginUIClosed(
         handler_.get());
 
     const base::DictionaryValue* dictionary = ExpectSyncPrefsChanged();
