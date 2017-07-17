@@ -82,9 +82,9 @@ class StubLocalFrameClientWithParent final : public EmptyLocalFrameClient {
   Member<Frame> parent_;
 };
 
-class MockLocalFrameClient : public EmptyLocalFrameClient {
+class FrameFetchContextMockLocalFrameClient : public EmptyLocalFrameClient {
  public:
-  MockLocalFrameClient() : EmptyLocalFrameClient() {}
+  FrameFetchContextMockLocalFrameClient() : EmptyLocalFrameClient() {}
   MOCK_METHOD1(DidDisplayContentWithCertificateErrors, void(const KURL&));
   MOCK_METHOD2(DispatchDidLoadResourceFromMemoryCache,
                void(const ResourceRequest&, const ResourceResponse&));
@@ -215,7 +215,7 @@ class FrameFetchContextMockedLocalFrameClientTest
   void SetUp() override {
     url = KURL(NullURL(), "https://example.test/foo");
     main_resource_url = KURL(NullURL(), "https://www.example.test");
-    client = new ::testing::NiceMock<MockLocalFrameClient>();
+    client = new ::testing::NiceMock<FrameFetchContextMockLocalFrameClient>();
     dummy_page_holder =
         DummyPageHolder::Create(IntSize(500, 500), nullptr, client);
     dummy_page_holder->GetPage().SetDeviceScaleFactorDeprecated(1.0);
@@ -230,7 +230,7 @@ class FrameFetchContextMockedLocalFrameClientTest
   KURL url;
   KURL main_resource_url;
 
-  Persistent<::testing::NiceMock<MockLocalFrameClient>> client;
+  Persistent<::testing::NiceMock<FrameFetchContextMockLocalFrameClient>> client;
 };
 
 class FrameFetchContextModifyRequestTest : public FrameFetchContextTest {
