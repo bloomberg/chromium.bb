@@ -1,0 +1,40 @@
+# Copyright 2017 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//media/media_options.gni")
+
+source_set("video") {
+  visibility = [ "//media/filters" ]
+
+  sources = [
+    "//media/video/fake_video_encode_accelerator.cc",
+    "//media/video/fake_video_encode_accelerator.h",
+    "//media/video/gpu_memory_buffer_video_frame_pool.cc",
+    "//media/video/gpu_memory_buffer_video_frame_pool.h",
+    "//media/video/h264_poc.cc",
+    "//media/video/h264_poc.h",
+    "//media/video/half_float_maker.cc",
+    "//media/video/half_float_maker.h",
+    "//media/video/jpeg_decode_accelerator.cc",
+    "//media/video/jpeg_decode_accelerator.h",
+    "//media/video/picture.cc",
+    "//media/video/picture.h",
+    "//media/video/video_decode_accelerator.cc",
+    "//media/video/video_decode_accelerator.h",
+    "//media/video/video_encode_accelerator.cc",
+    "//media/video/video_encode_accelerator.h",
+  ]
+
+  # TODO(wolenetz): Fix size_t to int truncation in win64.
+  # See http://crbug.com/171009
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
+  deps = [
+    "//gpu",
+    "//skia",
+    "//third_party/libyuv",
+  ]
+
+  configs += [ "//media:media_implementation" ]
+}

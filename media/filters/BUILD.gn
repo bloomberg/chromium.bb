@@ -85,26 +85,6 @@ source_set("filters") {
   # See http://crbug.com/171009
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
-  # TODO(a.suchit): Needs to create separate BUILD.gn file for video.
-  sources += [
-    "//media/video/fake_video_encode_accelerator.cc",
-    "//media/video/fake_video_encode_accelerator.h",
-    "//media/video/gpu_memory_buffer_video_frame_pool.cc",
-    "//media/video/gpu_memory_buffer_video_frame_pool.h",
-    "//media/video/h264_poc.cc",
-    "//media/video/h264_poc.h",
-    "//media/video/half_float_maker.cc",
-    "//media/video/half_float_maker.h",
-    "//media/video/jpeg_decode_accelerator.cc",
-    "//media/video/jpeg_decode_accelerator.h",
-    "//media/video/picture.cc",
-    "//media/video/picture.h",
-    "//media/video/video_decode_accelerator.cc",
-    "//media/video/video_decode_accelerator.h",
-    "//media/video/video_encode_accelerator.cc",
-    "//media/video/video_encode_accelerator.h",
-  ]
-
   configs += [
     "//media:media_config",
     "//media:media_implementation",
@@ -123,6 +103,7 @@ source_set("filters") {
     "//media/audio",
     "//media/cdm",
     "//media/muxers",
+    "//media/video",
   ]
 
   if (proprietary_codecs) {
