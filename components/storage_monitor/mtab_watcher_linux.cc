@@ -12,7 +12,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "content/public/browser/browser_thread.h"
+#include "base/threading/thread_restrictions.h"
 
 namespace {
 
@@ -36,11 +36,10 @@ const char* const kKnownFileSystems[] = {
 namespace storage_monitor {
 
 MtabWatcherLinux::MtabWatcherLinux(const base::FilePath& mtab_path,
-                                   base::WeakPtr<Delegate> delegate)
-    : mtab_path_(mtab_path),
-      delegate_(delegate),
-      weak_ptr_factory_(this) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
+                                   const UpdateMtabCallback& callback)
+    : mtab_path_(mtab_path), callback_(callback), weak_ptr_factory_(this) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  base::ThreadRestrictions::AssertIOAllowed();
   bool ret = file_watcher_.Watch(
       mtab_path_, false,
       base::Bind(&MtabWatcherLinux::OnFilePathChanged,
@@ -54,11 +53,13 @@ MtabWatcherLinux::MtabWatcherLinux(const base::FilePath& mtab_path,
 }
 
 MtabWatcherLinux::~MtabWatcherLinux() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  base::ThreadRestrictions::AssertIOAllowed();
 }
 
 void MtabWatcherLinux::ReadMtab() const {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  base::ThreadRestrictions::AssertIOAllowed();
 
   FILE* fp = setmntent(mtab_path_.value().c_str(), "r");
   if (!fp)
@@ -82,14 +83,13 @@ void MtabWatcherLinux::ReadMtab() const {
   }
   endmntent(fp);
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&Delegate::UpdateMtab, delegate_, device_map));
+  callback_.Run(device_map);
 }
 
 void MtabWatcherLinux::OnFilePathChanged(
     const base::FilePath& path, bool error) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  base::ThreadRestrictions::AssertIOAllowed();
 
   if (path != mtab_path_) {
     // This cannot happen unless FilePathWatcher is buggy. Just ignore this

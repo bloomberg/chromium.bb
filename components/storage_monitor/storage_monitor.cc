@@ -84,7 +84,7 @@ std::vector<StorageInfo> StorageMonitor::GetAllAvailableStorages() const {
 }
 
 void StorageMonitor::EnsureInitialized(base::Closure callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (initialized_) {
     if (!callback.is_null())
       callback.Run();
