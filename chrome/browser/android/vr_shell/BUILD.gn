@@ -48,7 +48,6 @@ static_library("vr_android") {
     ":vr_shell_jni_headers",
     "//base",
     "//cc",
-    "//chrome:resources",
     "//chrome/browser/vr:vr_common",
     "//components/rappor",
     "//content/public/android:jni",
