@@ -15,7 +15,7 @@ for (let command of ['optimize', 'offsets', 'snippet']) {
     database.transaction(testCase.step_func(transaction => {
       transaction.executeSql(
           'DROP TABLE IF EXISTS main;', [], () => {},
-          testCase.unreached_func('FTS3 table drop should not fail'));
+          testCase.unreached_func('Table drop should not fail'));
       transaction.executeSql(
           'CREATE VIRTUAL TABLE main USING FTS3(fts3table);', [], () => {},
           testCase.unreached_func('FTS3 table creation should not fail'));
