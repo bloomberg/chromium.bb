@@ -34,7 +34,7 @@ class VIZ_SERVICE_EXPORT HitTestAggregator : public cc::SurfaceObserver {
   // In this call HitTestRegionList structures received from active surfaces
   // are aggregated into the HitTestRegionList structure in
   // shared memory used for event targetting.
-  void Aggregate(SurfaceId display_surface_id);
+  void Aggregate(const SurfaceId& display_surface_id);
 
   // Performs the work of Aggregate by creating a PostTask so that
   // the work is not directly on the call.
@@ -87,7 +87,7 @@ class VIZ_SERVICE_EXPORT HitTestAggregator : public cc::SurfaceObserver {
   void AllocateHitTestRegionArray(int length);
 
   // Appends the root element to the AggregatedHitTestRegion array.
-  void AppendRoot(SurfaceId surface_id);
+  void AppendRoot(const SurfaceId& surface_id);
 
   // Appends a region to the HitTestRegionList structure to recursively
   // build the tree.
