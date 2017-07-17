@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright (c) 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -3823,7 +3823,13 @@ class _GitCookiesChecker(object):
   @staticmethod
   def _parse_identity(identity):
     """Parses identity "git-<ldap>.example.com" into <ldap> and domain."""
-    username, domain = identity.split('.', 1)
+    # Special case: users whose ldaps contain ".", which are generally not
+    # distinguishable from sub-domains. But we do know typical domains:
+    if identity.endswith('.chromium.org'):
+      domain = 'chromium.org'
+      username = identity[:-len('.chromium.org')]
+    else:
+      username, domain = identity.split('.', 1)
     if username.startswith('git-'):
       username = username[len('git-'):]
     return username, domain

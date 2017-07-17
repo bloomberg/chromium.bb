@@ -528,6 +528,18 @@ class GitCookiesCheckerTest(TestCase):
     self.c._all_hosts = [(ensure_googlesource(h), i, '.gitcookies')
                          for h, i in subhost_identity_pairs]
 
+  def test_identity_parsing(self):
+    self.assertEqual(self.c._parse_identity('ldap.google.com'),
+                     ('ldap', 'google.com'))
+    self.assertEqual(self.c._parse_identity('git-ldap.example.com'),
+                     ('ldap', 'example.com'))
+    # Specical case because we know there are no subdomains in chromium.org.
+    self.assertEqual(self.c._parse_identity('git-note.period.chromium.org'),
+                     ('note.period', 'chromium.org'))
+    # Pathological: .period. can be either ldap OR domain, more likely domain.
+    self.assertEqual(self.c._parse_identity('git-note.period.example.com'),
+                     ('note', 'period.example.com'))
+
   def test_analysis_nothing(self):
     self.c._all_hosts = []
     self.assertFalse(self.c.has_generic_host())
