@@ -204,6 +204,54 @@ AXPlatformNodeWin::AXPlatformNodeWin() {
 AXPlatformNodeWin::~AXPlatformNodeWin() {
 }
 
+// Static
+void AXPlatformNodeWin::SanitizeStringAttributeForIA2(
+    const base::string16& input,
+    base::string16* output) {
+  DCHECK(output);
+  // According to the IA2 Spec, these characters need to be escaped with a
+  // backslash: backslash, colon, comma, equals and semicolon.
+  // Note that backslash must be replaced first.
+  base::ReplaceChars(input, L"\\", L"\\\\", output);
+  base::ReplaceChars(*output, L":", L"\\:", output);
+  base::ReplaceChars(*output, L",", L"\\,", output);
+  base::ReplaceChars(*output, L"=", L"\\=", output);
+  base::ReplaceChars(*output, L";", L"\\;", output);
+}
+
+void AXPlatformNodeWin::StringAttributeToIA2(
+    std::vector<base::string16>& attributes,
+    ui::AXStringAttribute attribute,
+    const char* ia2_attr) {
+  base::string16 value;
+  if (GetString16Attribute(attribute, &value)) {
+    SanitizeStringAttributeForIA2(value, &value);
+    attributes.push_back(base::ASCIIToUTF16(ia2_attr) + L":" + value);
+  }
+}
+
+void AXPlatformNodeWin::BoolAttributeToIA2(
+    std::vector<base::string16>& attributes,
+    ui::AXBoolAttribute attribute,
+    const char* ia2_attr) {
+  bool value;
+  if (GetBoolAttribute(attribute, &value)) {
+    attributes.push_back((base::ASCIIToUTF16(ia2_attr) + L":") +
+                         (value ? L"true" : L"false"));
+  }
+}
+
+void AXPlatformNodeWin::IntAttributeToIA2(
+    std::vector<base::string16>& attributes,
+    ui::AXIntAttribute attribute,
+    const char* ia2_attr) {
+  int value;
+  if (GetIntAttribute(attribute, &value)) {
+    attributes.push_back(base::ASCIIToUTF16(ia2_attr) + L":" +
+                         base::IntToString16(value));
+  }
+}
+
 //
 // AXPlatformNodeBase implementation.
 //
@@ -821,7 +869,7 @@ STDMETHODIMP AXPlatformNodeWin::role(LONG* role) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_ROLE);
   COM_OBJECT_VALIDATE_1_ARG(role);
 
-  *role = IA2Role();
+  *role = ComputeIA2Role();
   // If we didn't explicitly set the IAccessible2 role, make it the same
   // as the MSAA role.
   if (!*role)
@@ -832,7 +880,7 @@ STDMETHODIMP AXPlatformNodeWin::role(LONG* role) {
 STDMETHODIMP AXPlatformNodeWin::get_states(AccessibleStates* states) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_STATES);
   COM_OBJECT_VALIDATE_1_ARG(states);
-  *states = IA2State();
+  *states = ComputeIA2State();
   return S_OK;
 }
 
@@ -2259,7 +2307,7 @@ bool AXPlatformNodeWin::IsWebAreaForPresentationalIframe() {
   return parent->GetData().role == ui::AX_ROLE_IFRAME_PRESENTATIONAL;
 }
 
-int32_t AXPlatformNodeWin::IA2State() {
+int32_t AXPlatformNodeWin::ComputeIA2State() {
   const AXNodeData& data = GetData();
 
   int32_t ia2_state = IA2_STATE_OPAQUE;
@@ -2327,9 +2375,9 @@ int32_t AXPlatformNodeWin::IA2State() {
   return ia2_state;
 }
 
-// IA2Role() only returns a role if the MSAA role doesn't suffice,
+// ComputeIA2Role() only returns a role if the MSAA role doesn't suffice,
 // otherwise this method returns 0. See AXPlatformNodeWin::role().
-int32_t AXPlatformNodeWin::IA2Role() {
+int32_t AXPlatformNodeWin::ComputeIA2Role() {
   // If this is a web area for a presentational iframe, give it a role of
   // something other than DOCUMENT so that the fact that it's a separate doc
   // is not exposed to AT.
@@ -2463,6 +2511,215 @@ int32_t AXPlatformNodeWin::IA2Role() {
       break;
   }
   return ia2_role;
+}
+
+std::vector<base::string16> AXPlatformNodeWin::ComputeIA2Attributes() {
+  std::vector<base::string16> result;
+  // Expose some HTLM and ARIA attributes in the IAccessible2 attributes string.
+  // "display", "tag", and "xml-roles" have somewhat unusual names for
+  // historical reasons. Aside from that virtually every ARIA attribute
+  // is exposed in a really straightforward way, i.e. "aria-foo" is exposed
+  // as "foo".
+  StringAttributeToIA2(result, ui::AX_ATTR_DISPLAY, "display");
+  StringAttributeToIA2(result, ui::AX_ATTR_HTML_TAG, "tag");
+  StringAttributeToIA2(result, ui::AX_ATTR_ROLE, "xml-roles");
+  StringAttributeToIA2(result, ui::AX_ATTR_PLACEHOLDER, "placeholder");
+
+  StringAttributeToIA2(result, ui::AX_ATTR_AUTO_COMPLETE, "autocomplete");
+  StringAttributeToIA2(result, ui::AX_ATTR_ROLE_DESCRIPTION, "roledescription");
+  StringAttributeToIA2(result, ui::AX_ATTR_KEY_SHORTCUTS, "keyshortcuts");
+
+  IntAttributeToIA2(result, ui::AX_ATTR_HIERARCHICAL_LEVEL, "level");
+  IntAttributeToIA2(result, ui::AX_ATTR_SET_SIZE, "setsize");
+  IntAttributeToIA2(result, ui::AX_ATTR_POS_IN_SET, "posinset");
+
+  if (HasIntAttribute(ui::AX_ATTR_CHECKED_STATE))
+    result.push_back(L"checkable:true");
+
+  // Expose live region attributes.
+  StringAttributeToIA2(result, ui::AX_ATTR_LIVE_STATUS, "live");
+  StringAttributeToIA2(result, ui::AX_ATTR_LIVE_RELEVANT, "relevant");
+  BoolAttributeToIA2(result, ui::AX_ATTR_LIVE_ATOMIC, "atomic");
+  BoolAttributeToIA2(result, ui::AX_ATTR_LIVE_BUSY, "busy");
+
+  // Expose container live region attributes.
+  StringAttributeToIA2(result, ui::AX_ATTR_CONTAINER_LIVE_STATUS,
+                       "container-live");
+  StringAttributeToIA2(result, ui::AX_ATTR_CONTAINER_LIVE_RELEVANT,
+                       "container-relevant");
+  BoolAttributeToIA2(result, ui::AX_ATTR_CONTAINER_LIVE_ATOMIC,
+                     "container-atomic");
+  BoolAttributeToIA2(result, ui::AX_ATTR_CONTAINER_LIVE_BUSY, "container-busy");
+
+  // Expose the non-standard explicit-name IA2 attribute.
+  int name_from;
+  if (GetIntAttribute(ui::AX_ATTR_NAME_FROM, &name_from) &&
+      name_from != ui::AX_NAME_FROM_CONTENTS) {
+    result.push_back(L"explicit-name:true");
+  }
+
+  // Expose the aria-current attribute.
+  int32_t aria_current_state;
+  if (GetIntAttribute(ui::AX_ATTR_ARIA_CURRENT_STATE, &aria_current_state)) {
+    switch (static_cast<ui::AXAriaCurrentState>(aria_current_state)) {
+      case ui::AX_ARIA_CURRENT_STATE_NONE:
+        break;
+      case ui::AX_ARIA_CURRENT_STATE_FALSE:
+        result.push_back(L"current:false");
+        break;
+      case ui::AX_ARIA_CURRENT_STATE_TRUE:
+        result.push_back(L"current:true");
+        break;
+      case ui::AX_ARIA_CURRENT_STATE_PAGE:
+        result.push_back(L"current:page");
+        break;
+      case ui::AX_ARIA_CURRENT_STATE_STEP:
+        result.push_back(L"current:step");
+        break;
+      case ui::AX_ARIA_CURRENT_STATE_LOCATION:
+        result.push_back(L"current:location");
+        break;
+      case ui::AX_ARIA_CURRENT_STATE_DATE:
+        result.push_back(L"current:date");
+        break;
+      case ui::AX_ARIA_CURRENT_STATE_TIME:
+        result.push_back(L"current:time");
+        break;
+    }
+  }
+
+  // Expose table cell index.
+  if (ui::IsCellOrTableHeaderRole(GetData().role)) {
+    AXPlatformNodeBase* table = FromNativeViewAccessible(GetParent());
+
+    while (table && !ui::IsTableLikeRole(table->GetData().role))
+      table = FromNativeViewAccessible(table->GetParent());
+
+    if (table) {
+      const std::vector<int32_t>& unique_cell_ids =
+          table->GetIntListAttribute(ui::AX_ATTR_UNIQUE_CELL_IDS);
+      for (size_t i = 0; i < unique_cell_ids.size(); ++i) {
+        if (unique_cell_ids[i] == GetData().id) {
+          result.push_back(base::string16(L"table-cell-index:") +
+                           base::IntToString16(static_cast<int>(i)));
+        }
+      }
+    }
+  }
+
+  // Expose aria-colcount and aria-rowcount in a table, grid or treegrid.
+  if (ui::IsTableLikeRole(GetData().role)) {
+    IntAttributeToIA2(result, ui::AX_ATTR_ARIA_COLUMN_COUNT, "colcount");
+    IntAttributeToIA2(result, ui::AX_ATTR_ARIA_ROW_COUNT, "rowcount");
+  }
+
+  // Expose aria-colindex and aria-rowindex in a cell or row.
+  if (ui::IsCellOrTableHeaderRole(GetData().role) ||
+      GetData().role == ui::AX_ROLE_ROW) {
+    if (GetData().role != ui::AX_ROLE_ROW)
+      IntAttributeToIA2(result, ui::AX_ATTR_ARIA_CELL_COLUMN_INDEX, "colindex");
+    IntAttributeToIA2(result, ui::AX_ATTR_ARIA_CELL_ROW_INDEX, "rowindex");
+  }
+
+  // Expose row or column header sort direction.
+  int32_t sort_direction;
+  if ((MSAARole() == ROLE_SYSTEM_COLUMNHEADER ||
+       MSAARole() == ROLE_SYSTEM_ROWHEADER) &&
+      GetIntAttribute(ui::AX_ATTR_SORT_DIRECTION, &sort_direction)) {
+    switch (static_cast<ui::AXSortDirection>(sort_direction)) {
+      case ui::AX_SORT_DIRECTION_NONE:
+        break;
+      case ui::AX_SORT_DIRECTION_UNSORTED:
+        result.push_back(L"sort:none");
+        break;
+      case ui::AX_SORT_DIRECTION_ASCENDING:
+        result.push_back(L"sort:ascending");
+        break;
+      case ui::AX_SORT_DIRECTION_DESCENDING:
+        result.push_back(L"sort:descending");
+        break;
+      case ui::AX_SORT_DIRECTION_OTHER:
+        result.push_back(L"sort:other");
+        break;
+    }
+  }
+
+  if (ui::IsCellOrTableHeaderRole(GetData().role)) {
+    // Expose colspan attribute.
+    base::string16 colspan;
+    if (GetData().GetHtmlAttribute("aria-colspan", &colspan)) {
+      SanitizeStringAttributeForIA2(colspan, &colspan);
+      result.push_back(L"colspan:" + colspan);
+    }
+    // Expose rowspan attribute.
+    base::string16 rowspan;
+    if (GetData().GetHtmlAttribute("aria-rowspan", &rowspan)) {
+      SanitizeStringAttributeForIA2(rowspan, &rowspan);
+      result.push_back(L"rowspan:" + rowspan);
+    }
+  }
+
+  // Expose slider value.
+  if (IsRangeValueSupported()) {
+    base::string16 value = GetRangeValueText();
+    SanitizeStringAttributeForIA2(value, &value);
+    result.push_back(L"valuetext:" + value);
+  }
+
+  // Expose dropeffect attribute.
+  base::string16 drop_effect;
+  if (GetData().GetHtmlAttribute("aria-dropeffect", &drop_effect)) {
+    SanitizeStringAttributeForIA2(drop_effect, &drop_effect);
+    result.push_back(L"dropeffect:" + drop_effect);
+  }
+
+  // Expose grabbed attribute.
+  base::string16 grabbed;
+  if (GetData().GetHtmlAttribute("aria-grabbed", &grabbed)) {
+    SanitizeStringAttributeForIA2(grabbed, &grabbed);
+    result.push_back(L"grabbed:" + grabbed);
+  }
+
+  // Expose class attribute.
+  base::string16 class_attr;
+  if (GetData().GetHtmlAttribute("class", &class_attr)) {
+    SanitizeStringAttributeForIA2(class_attr, &class_attr);
+    result.push_back(L"class:" + class_attr);
+  }
+
+  // Expose datetime attribute.
+  base::string16 datetime;
+  if (GetData().role == ui::AX_ROLE_TIME &&
+      GetData().GetHtmlAttribute("datetime", &datetime)) {
+    SanitizeStringAttributeForIA2(datetime, &datetime);
+    result.push_back(L"datetime:" + datetime);
+  }
+
+  // Expose id attribute.
+  base::string16 id;
+  if (GetData().GetHtmlAttribute("id", &id)) {
+    SanitizeStringAttributeForIA2(id, &id);
+    result.push_back(L"id:" + id);
+  }
+
+  // Expose src attribute.
+  base::string16 src;
+  if (GetData().role == ui::AX_ROLE_IMAGE &&
+      GetData().GetHtmlAttribute("src", &src)) {
+    SanitizeStringAttributeForIA2(src, &src);
+    result.push_back(L"src:" + src);
+  }
+
+  // Expose input-text type attribute.
+  base::string16 type;
+  base::string16 html_tag = GetString16Attribute(ui::AX_ATTR_HTML_TAG);
+  if (IsSimpleTextControl() && html_tag == L"input" &&
+      GetData().GetHtmlAttribute("type", &type)) {
+    SanitizeStringAttributeForIA2(type, &type);
+    result.push_back(L"text-input-type:" + type);
+  }
+
+  return result;
 }
 
 bool AXPlatformNodeWin::ShouldNodeHaveReadonlyState(

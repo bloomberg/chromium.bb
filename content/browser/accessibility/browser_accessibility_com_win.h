@@ -788,19 +788,6 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
   // Sets the selection given a start and end offset in IA2 Hypertext.
   void SetIA2HypertextSelection(LONG start_offset, LONG end_offset);
 
-  // If the string attribute |attribute| is present, add its value as an
-  // IAccessible2 attribute with the name |ia2_attr|.
-  void StringAttributeToIA2(ui::AXStringAttribute attribute,
-                            const char* ia2_attr);
-
-  // If the bool attribute |attribute| is present, add its value as an
-  // IAccessible2 attribute with the name |ia2_attr|.
-  void BoolAttributeToIA2(ui::AXBoolAttribute attribute, const char* ia2_attr);
-
-  // If the int attribute |attribute| is present, add its value as an
-  // IAccessible2 attribute with the name |ia2_attr|.
-  void IntAttributeToIA2(ui::AXIntAttribute attribute, const char* ia2_attr);
-
   //
   // Helper methods for IA2 hyperlinks.
   //
@@ -850,13 +837,6 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
   // selection.)
   void GetSelectionOffsets(int* selection_start, int* selection_end) const;
 
-  // Get the range value text, which might come from aria-valuetext or
-  // a floating-point value. This is different from the value string
-  // attribute used in input controls such as text boxes and combo boxes.
-  base::string16 GetRangeValueText();
-
-  // Return true for roles that support the value interface
-  bool IsRangeValueSupported();
 
   bool IsSameHypertextCharacter(size_t old_char_index, size_t new_char_index);
   void ComputeHypertextRemovedAndInserted(int* start,
@@ -910,9 +890,6 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
       const base::string16& reverse_relation_type);
   void RemoveTargetFromRelation(const base::string16& relation_type,
                                 int target_id);
-
-  // Updates object attributes of IA2 with html attributes.
-  void UpdateRequiredAttributes();
 
   // Fire a Windows-specific accessibility event notification on this node.
   void FireNativeEvent(LONG win_event_type) const;
