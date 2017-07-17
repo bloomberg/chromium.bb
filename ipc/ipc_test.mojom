@@ -31,6 +31,8 @@ interface IndirectTestDriver {
 
 interface Reflector {
   Ping(string value) => (string value);
+  [Sync]
+  SyncPing(string value) => (string response);
   Quit();
 };
 
