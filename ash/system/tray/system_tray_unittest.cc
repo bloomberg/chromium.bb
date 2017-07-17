@@ -488,7 +488,7 @@ TEST_F(SystemTrayTest, Activation) {
   // Opening the bubble with an accelerator activates the bubble because the
   // user will probably navigate with the keyboard.
   Shell::Get()->accelerator_controller()->PerformActionIfEnabled(
-      SHOW_SYSTEM_TRAY_BUBBLE);
+      TOGGLE_SYSTEM_TRAY_BUBBLE);
   ASSERT_TRUE(tray->GetWidget());
   EXPECT_TRUE(tray->GetSystemBubble()->bubble_view()->GetWidget()->IsActive());
   EXPECT_FALSE(widget->IsActive());
