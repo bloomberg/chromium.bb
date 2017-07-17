@@ -504,7 +504,10 @@ bool ParseInspectorMessage(
     InspectorMessageType* type,
     InspectorEvent* event,
     InspectorCommandResponse* command_response) {
-  std::unique_ptr<base::Value> message_value = base::JSONReader::Read(message);
+  // We want to allow invalid characters in case they are valid ECMAScript
+  // strings. For example, webplatform tests use this to check string handling
+  std::unique_ptr<base::Value> message_value =
+      base::JSONReader::Read(message, base::JSON_REPLACE_INVALID_CHARACTERS);
   base::DictionaryValue* message_dict;
   if (!message_value || !message_value->GetAsDictionary(&message_dict))
     return false;
