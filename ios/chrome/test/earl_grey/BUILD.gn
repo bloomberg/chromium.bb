@@ -60,6 +60,7 @@ chrome_ios_eg_test("ios_chrome_ui_egtests") {
     "//ios/chrome/browser/ui/infobars:eg_tests",
     "//ios/chrome/browser/ui/ntp:eg_tests",
     "//ios/chrome/browser/ui/ntp/recent_tabs:eg_tests",
+    "//ios/chrome/browser/ui/payments:eg_tests",
     "//ios/chrome/browser/ui/print:eg_tests",
     "//ios/chrome/browser/ui/qr_scanner:eg_tests",
     "//ios/chrome/browser/ui/sad_tab:eg_tests",
