@@ -25,8 +25,8 @@ declare_args() {
   jumbo_file_merge_limit = 200
 }
 
-# Use this to generate a target which merges sources if possible to
-# compile much faster.
+# Use one of the targets jumbo_target or jumbo_component to generate a
+# target which merges sources if possible to compile much faster.
 #
 # Special values.
 #
@@ -46,7 +46,7 @@ declare_args() {
 #      If set to a list of files, those files will not be merged with
 #      the rest. This can be necessary if merging the files causes
 #      compilation issues and fixing the issues is impractical.
-template("jumbo_target") {
+template("internal_jumbo_target") {
   use_jumbo_build_for_target = use_jumbo_build
   if (defined(invoker.always_build_jumbo) && invoker.always_build_jumbo) {
     use_jumbo_build_for_target = true
@@ -177,9 +177,37 @@ template("jumbo_target") {
   }
 }
 
+# See documentation above by "internal_jumbo_target".
+template("jumbo_target") {
+  internal_jumbo_target(target_name) {
+    forward_variables_from(invoker, "*")
+  }
+}
+
 set_defaults("jumbo_target") {
   # This sets the default list of configs when the content_source_set target
   # is defined. The default_compiler_configs comes from BUILDCONFIG.gn and
   # is the list normally applied to static libraries and source sets.
   configs = default_compiler_configs
+}
+
+# See documentation above by "internal_jumbo_target".
+template("jumbo_component") {
+  internal_jumbo_target(target_name) {
+    forward_variables_from(invoker, "*")
+  }
+}
+
+set_defaults("jumbo_component") {
+  # This sets the default list of configs when the content_source_set
+  # target is defined. This code is a clone of set_defaults for the
+  # ordinary "component" template.
+  if (is_component_build) {
+    configs = default_shared_library_configs
+    if (is_android) {
+      configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
+    }
+  } else {
+    configs = default_compiler_configs
+  }
 }
