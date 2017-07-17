@@ -14,7 +14,8 @@
 @interface CRWWKScriptMessageRouter : NSObject
 
 // Underlying WKUserContentController.
-@property(nonatomic, readonly) WKUserContentController* userContentController;
+@property(weak, nonatomic, readonly)
+    WKUserContentController* userContentController;
 
 // Designated initializer. |userContentController| must not be nil.
 - (instancetype)initWithUserContentController:

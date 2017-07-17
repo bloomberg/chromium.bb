@@ -7,6 +7,10 @@
 #include "base/logging.h"
 #import "ios/web/public/web_state/crw_web_controller_observer.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace web {
 
 WebControllerObserverBridge::WebControllerObserverBridge(

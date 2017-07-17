@@ -7,12 +7,15 @@
 #import <Foundation/Foundation.h>
 #import <WebKit/WebKit.h>
 
-#import "base/ios/weak_nsobject.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "ios/web/public/browser_state.h"
 #import "ios/web/web_state/js/page_script_util.h"
 #import "ios/web/web_state/ui/crw_wk_script_message_router.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace web {
 
@@ -23,10 +26,10 @@ const char kWKWebViewConfigProviderKeyName[] = "wk_web_view_config_provider";
 // Returns an autoreleased instance of WKUserScript to be added to
 // configuration's userContentController.
 WKUserScript* InternalGetEarlyPageScript(BrowserState* browser_state) {
-  return [[[WKUserScript alloc]
+  return [[WKUserScript alloc]
         initWithSource:GetEarlyPageScript(browser_state)
          injectionTime:WKUserScriptInjectionTimeAtDocumentStart
-      forMainFrameOnly:YES] autorelease];
+      forMainFrameOnly:YES];
 }
 
 }  // namespace
@@ -70,7 +73,7 @@ WKWebViewConfigurationProvider::GetWebViewConfiguration() {
         addUserScript:InternalGetEarlyPageScript(browser_state_)];
   }
   // Prevent callers from changing the internals of configuration.
-  return [[configuration_ copy] autorelease];
+  return [configuration_ copy];
 }
 
 CRWWKScriptMessageRouter*
