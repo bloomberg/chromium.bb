@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 #include "mojo/public/cpp/bindings/associated_binding.h"
-#include "base/single_thread_task_runner.h"
+
+#include "mojo/public/cpp/bindings/lib/task_runner_helper.h"
 
 namespace mojo {
 
@@ -49,7 +50,7 @@ void AssociatedBindingBase::BindImpl(
     MessageReceiverWithResponderStatus* receiver,
     std::unique_ptr<MessageReceiver> payload_validator,
     bool expect_sync_requests,
-    scoped_refptr<base::SequencedTaskRunner> runner,
+    scoped_refptr<base::SingleThreadTaskRunner> runner,
     uint32_t interface_version) {
   if (!handle.is_valid()) {
     endpoint_client_.reset();
@@ -58,7 +59,9 @@ void AssociatedBindingBase::BindImpl(
 
   endpoint_client_.reset(new InterfaceEndpointClient(
       std::move(handle), receiver, std::move(payload_validator),
-      expect_sync_requests, std::move(runner), interface_version));
+      expect_sync_requests,
+      internal::GetTaskRunnerToUseFromUserProvidedTaskRunner(std::move(runner)),
+      interface_version));
 }
 
 }  // namespace mojo

@@ -23,7 +23,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace base {
-class SequencedTaskRunner;
+class SingleThreadTaskRunner;
 }
 
 namespace viz {
@@ -53,7 +53,7 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   // |task_runner| will be the resize helper task runner. May only be called
   // once.
   void BindAndSetClient(cc::mojom::FrameSinkManagerRequest request,
-                        scoped_refptr<base::SequencedTaskRunner> task_runner,
+                        scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                         cc::mojom::FrameSinkManagerClientPtr client);
 
   // Sets up a direction connection to |client| without using Mojo.

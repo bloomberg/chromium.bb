@@ -30,7 +30,7 @@ void HostFrameSinkManager::SetLocalManager(
 
 void HostFrameSinkManager::BindAndSetManager(
     cc::mojom::FrameSinkManagerClientRequest request,
-    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     cc::mojom::FrameSinkManagerPtr ptr) {
   DCHECK(!frame_sink_manager_impl_);
   DCHECK(!binding_.is_bound());

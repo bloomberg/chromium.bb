@@ -24,9 +24,9 @@ class SequencedTaskRunner;
 
 namespace mojo {
 
-// This provides a convenient thread-bound watcher implementation to safely
+// This provides a convenient sequence-bound watcher implementation to safely
 // watch a single handle, dispatching state change notifications to an arbitrary
-// SequencedTaskRunner running on the same thread as the SimpleWatcher.
+// SequencedTaskRunner running on the same sequence as the SimpleWatcher.
 //
 // SimpleWatcher exposes the concept of "arming" from the low-level Watcher API.
 // In general, a SimpleWatcher must be "armed" in order to dispatch a single
@@ -107,7 +107,7 @@ class MOJO_CPP_SYSTEM_EXPORT SimpleWatcher {
   // explicitly called.
   //
   // Once the watch is started, |callback| may be called at any time on the
-  // current thread until |Cancel()| is called or the handle is closed. Note
+  // current sequence until |Cancel()| is called or the handle is closed. Note
   // that |callback| can be called for results other than
   // |MOJO_RESULT_CANCELLED| only if the SimpleWatcher is currently armed. Use
   // ArmingPolicy to configure how a SimpleWatcher is armed.
@@ -202,8 +202,8 @@ class MOJO_CPP_SYSTEM_EXPORT SimpleWatcher {
   // The policy used to determine how this SimpleWatcher is armed.
   const ArmingPolicy arming_policy_;
 
-  // The TaskRunner of this SimpleWatcher's owning thread. This field is safe to
-  // access from any thread.
+  // The TaskRunner of this SimpleWatcher's owning sequence. This field is safe
+  // to access from any sequence.
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   // Whether |task_runner_| is the same as
@@ -216,7 +216,7 @@ class MOJO_CPP_SYSTEM_EXPORT SimpleWatcher {
   // if any.
   scoped_refptr<Context> context_;
 
-  // Fields below must only be accessed on the SimpleWatcher's owning thread.
+  // Fields below must only be accessed on the SimpleWatcher's owning sequence.
 
   // The handle currently under watch. Not owned.
   Handle handle_;

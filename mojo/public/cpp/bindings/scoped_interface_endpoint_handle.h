@@ -24,7 +24,7 @@ class AssociatedGroupController;
 // ScopedInterfaceEndpointHandle refers to one end of an interface, either the
 // implementation side or the client side.
 // Threading: At any given time, a ScopedInterfaceEndpointHandle should only
-// be accessed from a single thread.
+// be accessed from a single sequence.
 class MOJO_CPP_BINDINGS_EXPORT ScopedInterfaceEndpointHandle {
  public:
   // Creates a pair of handles representing the two endpoints of an interface,
@@ -69,7 +69,7 @@ class MOJO_CPP_BINDINGS_EXPORT ScopedInterfaceEndpointHandle {
   using AssociationEventCallback = base::OnceCallback<void(AssociationEvent)>;
   // Note:
   // - |handler| won't run if the handle is invalid. Otherwise, |handler| is run
-  //   on the calling thread asynchronously, even if the interface has already
+  //   on the calling sequence asynchronously, even if the interface has already
   //   been associated or the peer has been closed before association.
   // - |handler| won't be called after this object is destroyed or reset.
   // - A null |handler| can be used to cancel the previous callback.
@@ -98,8 +98,8 @@ class MOJO_CPP_BINDINGS_EXPORT ScopedInterfaceEndpointHandle {
   void ResetInternal(const base::Optional<DisconnectReason>& reason);
 
   // Used by AssociatedGroup.
-  // It is safe to run the returned callback on any thread, or after this handle
-  // is destroyed.
+  // It is safe to run the returned callback on any sequence, or after this
+  // handle is destroyed.
   // The return value of the getter:
   //   - If the getter is retrieved when the handle is invalid, the return value
   //     of the getter will always be null.

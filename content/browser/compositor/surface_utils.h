@@ -15,7 +15,7 @@
 #include "ui/gfx/geometry/size.h"
 
 namespace base {
-class SequencedTaskRunner;
+class SingleThreadTaskRunner;
 }
 
 namespace cc {
@@ -53,7 +53,7 @@ CONTENT_EXPORT void ConnectWithLocalFrameSinkManager(
 CONTENT_EXPORT void ConnectWithInProcessFrameSinkManager(
     viz::HostFrameSinkManager* host_frame_sink_manager,
     viz::FrameSinkManagerImpl* frame_sink_manager_impl,
-    scoped_refptr<base::SequencedTaskRunner> task_runner);
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
 }  // namespace surface_utils
 

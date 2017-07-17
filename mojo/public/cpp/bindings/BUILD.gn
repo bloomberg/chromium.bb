@@ -108,6 +108,8 @@ component("bindings") {
     "lib/sync_event_watcher.cc",
     "lib/sync_handle_registry.cc",
     "lib/sync_handle_watcher.cc",
+    "lib/task_runner_helper.cc",
+    "lib/task_runner_helper.h",
     "lib/template_util.h",
     "lib/unserialized_message_context.cc",
     "lib/unserialized_message_context.h",

@@ -4,6 +4,8 @@
 
 #include "mojo/public/cpp/bindings/lib/associated_interface_ptr_state.h"
 
+#include "mojo/public/cpp/bindings/lib/task_runner_helper.h"
+
 namespace mojo {
 namespace internal {
 
@@ -56,7 +58,7 @@ void AssociatedInterfacePtrStateBase::Bind(
     ScopedInterfaceEndpointHandle handle,
     uint32_t version,
     std::unique_ptr<MessageReceiver> validator,
-    scoped_refptr<base::SequencedTaskRunner> runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> runner) {
   DCHECK(!endpoint_client_);
   DCHECK_EQ(0u, version_);
   DCHECK(handle.is_valid());
@@ -66,7 +68,7 @@ void AssociatedInterfacePtrStateBase::Bind(
   // will not be used.
   endpoint_client_ = base::MakeUnique<InterfaceEndpointClient>(
       std::move(handle), nullptr, std::move(validator), false,
-      std::move(runner), 0u);
+      GetTaskRunnerToUseFromUserProvidedTaskRunner(std::move(runner)), 0u);
 }
 
 ScopedInterfaceEndpointHandle AssociatedInterfacePtrStateBase::PassHandle() {

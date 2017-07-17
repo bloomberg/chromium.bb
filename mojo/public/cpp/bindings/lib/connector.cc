@@ -156,7 +156,8 @@ Connector::Connector(ScopedMessagePipeHandle message_pipe,
 
 Connector::~Connector() {
   {
-    // Allow for quick destruction on any thread if the pipe is already closed.
+    // Allow for quick destruction on any sequence if the pipe is already
+    // closed.
     base::AutoLock lock(connected_lock_);
     if (!connected_)
       return;
@@ -263,9 +264,9 @@ bool Connector::Accept(Message* message) {
   if (!lock_)
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // It shouldn't hurt even if |error_| may be changed by a different thread at
-  // the same time. The outcome is that we may write into |message_pipe_| after
-  // encountering an error, which should be fine.
+  // It shouldn't hurt even if |error_| may be changed by a different sequence
+  // at the same time. The outcome is that we may write into |message_pipe_|
+  // after encountering an error, which should be fine.
   if (error_)
     return false;
 
@@ -291,10 +292,10 @@ bool Connector::Accept(Message* message) {
     case MOJO_RESULT_BUSY:
       // We'd get a "busy" result if one of the message's handles is:
       //   - |message_pipe_|'s own handle;
-      //   - simultaneously being used on another thread; or
+      //   - simultaneously being used on another sequence; or
       //   - in a "busy" state that prohibits it from being transferred (e.g.,
       //     a data pipe handle in the middle of a two-phase read/write,
-      //     regardless of which thread that two-phase read/write is happening
+      //     regardless of which sequence that two-phase read/write is happening
       //     on).
       // TODO(vtl): I wonder if this should be a |DCHECK()|. (But, until
       // crbug.com/389666, etc. are resolved, this will make tests fail quickly

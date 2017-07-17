@@ -14,8 +14,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/sequenced_task_runner.h"
-#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/single_thread_task_runner.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/associated_interface_request.h"
 #include "mojo/public/cpp/bindings/bindings_export.h"
@@ -71,8 +70,7 @@ class AssociatedInterfacePtr {
   // comments of MakeRequest(AssociatedInterfacePtr<Interface>*) for more
   // details.
   void Bind(AssociatedInterfacePtrInfo<Interface> info,
-            scoped_refptr<base::SequencedTaskRunner> runner =
-                base::SequencedTaskRunnerHandle::Get()) {
+            scoped_refptr<base::SingleThreadTaskRunner> runner = nullptr) {
     reset();
 
     if (info.is_valid())
@@ -148,7 +146,7 @@ class AssociatedInterfacePtr {
 
   // Unbinds and returns the associated interface pointer information which
   // could be used to setup an AssociatedInterfacePtr again. This method may be
-  // used to move the proxy to a different thread.
+  // used to move the proxy to a different sequence.
   //
   // It is an error to call PassInterface() while there are pending responses.
   // TODO: fix this restriction, it's not always obvious when there is a
@@ -186,8 +184,7 @@ class AssociatedInterfacePtr {
 template <typename Interface>
 AssociatedInterfaceRequest<Interface> MakeRequest(
     AssociatedInterfacePtr<Interface>* ptr,
-    scoped_refptr<base::SequencedTaskRunner> runner =
-        base::SequencedTaskRunnerHandle::Get()) {
+    scoped_refptr<base::SingleThreadTaskRunner> runner = nullptr) {
   AssociatedInterfacePtrInfo<Interface> ptr_info;
   auto request = MakeRequest(&ptr_info);
   ptr->Bind(std::move(ptr_info), std::move(runner));

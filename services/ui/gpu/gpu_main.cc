@@ -191,8 +191,7 @@ void GpuMain::CreateFrameSinkManagerOnCompositorThread(
 
   frame_sink_manager_ = base::MakeUnique<viz::FrameSinkManagerImpl>(
       true, display_provider_.get());
-  frame_sink_manager_->BindAndSetClient(std::move(request),
-                                        base::SequencedTaskRunnerHandle::Get(),
+  frame_sink_manager_->BindAndSetClient(std::move(request), nullptr,
                                         std::move(client));
 }
 

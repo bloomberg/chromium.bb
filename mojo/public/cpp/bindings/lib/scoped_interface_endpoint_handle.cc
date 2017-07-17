@@ -15,7 +15,7 @@ namespace mojo {
 
 // ScopedInterfaceEndpointHandle::State ----------------------------------------
 
-// State could be called from multiple threads.
+// State could be called from multiple sequences.
 class ScopedInterfaceEndpointHandle::State
     : public base::RefCountedThreadSafe<State> {
  public:
@@ -52,7 +52,7 @@ class ScopedInterfaceEndpointHandle::State
           // Intentionally keep |group_controller_| unchanged.
           // That is because the callback created by
           // CreateGroupControllerGetter() could still be used after this point,
-          // potentially from another thread. We would like it to continue
+          // potentially from another sequence. We would like it to continue
           // returning the same group controller.
           //
           // Imagine there is a ThreadSafeForwarder A:
@@ -172,7 +172,7 @@ class ScopedInterfaceEndpointHandle::State
     DCHECK(!IsValidInterfaceId(id_));
   }
 
-  // Called by the peer, maybe from a different thread.
+  // Called by the peer, maybe from a different sequence.
   void OnAssociated(InterfaceId id,
                     scoped_refptr<AssociatedGroupController> group_controller) {
     AssociationEventCallback handler;
@@ -180,7 +180,7 @@ class ScopedInterfaceEndpointHandle::State
       internal::MayAutoLock locker(&lock_);
 
       // There may be race between Close() of endpoint A and
-      // NotifyPeerAssociation() of endpoint A_peer on different threads.
+      // NotifyPeerAssociation() of endpoint A_peer on different sequences.
       // Therefore, it is possible that endpoint A has been closed but it
       // still gets OnAssociated() call from its peer.
       if (!pending_association_)
@@ -208,7 +208,7 @@ class ScopedInterfaceEndpointHandle::State
       std::move(handler).Run(ASSOCIATED);
   }
 
-  // Called by the peer, maybe from a different thread.
+  // Called by the peer, maybe from a different sequence.
   void OnPeerClosedBeforeAssociation(
       const base::Optional<DisconnectReason>& reason) {
     AssociationEventCallback handler;
@@ -216,7 +216,7 @@ class ScopedInterfaceEndpointHandle::State
       internal::MayAutoLock locker(&lock_);
 
       // There may be race between Close()/NotifyPeerAssociation() of endpoint
-      // A and Close() of endpoint A_peer on different threads.
+      // A and Close() of endpoint A_peer on different sequences.
       // Therefore, it is possible that endpoint A is not in pending association
       // state but still gets OnPeerClosedBeforeAssociation() call from its
       // peer.
@@ -374,7 +374,7 @@ void ScopedInterfaceEndpointHandle::ResetInternal(
 
 base::Callback<AssociatedGroupController*()>
 ScopedInterfaceEndpointHandle::CreateGroupControllerGetter() const {
-  // We allow this callback to be run on any thread. If this handle is created
+  // We allow this callback to be run on any sequence. If this handle is created
   // in non-pending state, we don't have a lock but it should still be safe
   // because the group controller never changes.
   return base::Bind(&State::group_controller, state_);

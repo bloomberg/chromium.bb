@@ -22,22 +22,22 @@
 #include "mojo/public/cpp/bindings/sync_event_watcher.h"
 
 // ThreadSafeInterfacePtr wraps a non-thread-safe InterfacePtr and proxies
-// messages to it. Async calls are posted to the thread that the InteracePtr is
-// bound to, and the responses are posted back. Sync calls are dispatched
-// directly if the call is made on the thread that the wrapped InterfacePtr is
+// messages to it. Async calls are posted to the sequence that the InteracePtr
+// is bound to, and the responses are posted back. Sync calls are dispatched
+// directly if the call is made on the sequence that the wrapped InterfacePtr is
 // bound to, or posted otherwise. It's important to be aware that sync calls
-// block both the calling thread and the InterfacePtr thread. That means that
-// you cannot make sync calls through a ThreadSafeInterfacePtr if the
-// underlying InterfacePtr is bound to a thread that cannot block, like the IO
+// block both the calling sequence and the InterfacePtr sequence. That means
+// that you cannot make sync calls through a ThreadSafeInterfacePtr if the
+// underlying InterfacePtr is bound to a sequence that cannot block, like the IO
 // thread.
 
 namespace mojo {
 
-// Instances of this class may be used from any thread to serialize |Interface|
-// messages and forward them elsewhere. In general you should use one of the
-// ThreadSafeInterfacePtrBase helper aliases defined below, but this type may be
-// useful if you need/want to manually manage the lifetime of the underlying
-// proxy object which will be used to ultimately send messages.
+// Instances of this class may be used from any sequence to serialize
+// |Interface| messages and forward them elsewhere. In general you should use
+// one of the ThreadSafeInterfacePtrBase helper aliases defined below, but this
+// type may be useful if you need/want to manually manage the lifetime of the
+// underlying proxy object which will be used to ultimately send messages.
 template <typename Interface>
 class ThreadSafeForwarder : public MessageReceiverWithResponder {
  public:
@@ -50,7 +50,8 @@ class ThreadSafeForwarder : public MessageReceiverWithResponder {
   // |forward| or |forward_with_responder| by posting to |task_runner|.
   //
   // Any message sent through this forwarding interface will dispatch its reply,
-  // if any, back to the thread which called the corresponding interface method.
+  // if any, back to the sequence which called the corresponding interface
+  // method.
   ThreadSafeForwarder(
       const scoped_refptr<base::SequencedTaskRunner>& task_runner,
       const ForwardMessageCallback& forward,
@@ -111,7 +112,7 @@ class ThreadSafeForwarder : public MessageReceiverWithResponder {
     }
 
     // Async messages are always posted (even if |task_runner_| runs tasks on
-    // this thread) to guarantee that two async calls can't be reordered.
+    // this sequence) to guarantee that two async calls can't be reordered.
     if (!message->has_flag(Message::kFlagIsSync)) {
       auto reply_forwarder =
           base::MakeUnique<ForwardToCallingThread>(std::move(responder));
@@ -123,15 +124,15 @@ class ThreadSafeForwarder : public MessageReceiverWithResponder {
 
     SyncCallRestrictions::AssertSyncCallAllowed();
 
-    // If the InterfacePtr is bound to this thread, dispatch it directly.
+    // If the InterfacePtr is bound to this sequence, dispatch it directly.
     if (task_runner_->RunsTasksInCurrentSequence()) {
       forward_with_responder_.Run(std::move(*message), std::move(responder));
       return true;
     }
 
-    // If the InterfacePtr is bound on another thread, post the call.
-    // TODO(yzshen, watk): We block both this thread and the InterfacePtr
-    // thread. Ideally only this thread would block.
+    // If the InterfacePtr is bound on another sequence, post the call.
+    // TODO(yzshen, watk): We block both this sequence and the InterfacePtr
+    // sequence. Ideally only this sequence would block.
     auto response = make_scoped_refptr(new SyncResponseInfo());
     auto response_signaler = base::MakeUnique<SyncResponseSignaler>(response);
     task_runner_->PostTask(
@@ -164,7 +165,7 @@ class ThreadSafeForwarder : public MessageReceiverWithResponder {
     return true;
   }
 
-  // Data that we need to share between the threads involved in a sync call.
+  // Data that we need to share between the sequences involved in a sync call.
   struct SyncResponseInfo
       : public base::RefCountedThreadSafe<SyncResponseInfo> {
     Message message;
@@ -263,9 +264,9 @@ class ThreadSafeInterfacePtrBase
       : forwarder_(std::move(forwarder)) {}
 
   // Creates a ThreadSafeInterfacePtrBase wrapping an underlying non-thread-safe
-  // InterfacePtrType which is bound to the calling thread. All messages sent
+  // InterfacePtrType which is bound to the calling sequence. All messages sent
   // via this thread-safe proxy will internally be sent by first posting to this
-  // (the calling) thread's TaskRunner.
+  // (the calling) sequence's TaskRunner.
   static scoped_refptr<ThreadSafeInterfacePtrBase> Create(
       InterfacePtrType interface_ptr) {
     scoped_refptr<PtrWrapper> wrapper =
@@ -296,7 +297,7 @@ class ThreadSafeInterfacePtrBase
   struct PtrWrapperDeleter;
 
   // Helper class which owns an |InterfacePtrType| instance on an appropriate
-  // thread. This is kept alive as long its bound within some
+  // sequence. This is kept alive as long its bound within some
   // ThreadSafeForwarder's callbacks.
   class PtrWrapper
       : public base::RefCountedThreadSafe<PtrWrapper, PtrWrapperDeleter> {
@@ -323,8 +324,8 @@ class ThreadSafeInterfacePtrBase
       // endpoints on this interface (at least not immediately). In order to fix
       // this, we need to create a MultiplexRouter immediately and bind it to
       // the interface pointer on the |task_runner_|. Therefore, MultiplexRouter
-      // should be able to be created on a thread different than the one that it
-      // is supposed to listen on. crbug.com/682334
+      // should be able to be created on a sequence different than the one that
+      // it is supposed to listen on. crbug.com/682334
       task_runner_->PostTask(FROM_HERE, base::Bind(&PtrWrapper::Bind, this,
                                                    base::Passed(&ptr_info)));
     }

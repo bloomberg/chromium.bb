@@ -18,8 +18,8 @@ class InterfaceEndpointController {
   virtual bool SendMessage(Message* message) = 0;
 
   // Allows the interface endpoint to watch for incoming sync messages while
-  // others perform sync handle watching on the same thread. Please see comments
-  // of SyncHandleWatcher::AllowWokenUpBySyncWatchOnSameThread().
+  // others perform sync handle watching on the same sequence. Please see
+  // comments of SyncHandleWatcher::AllowWokenUpBySyncWatchOnSameThread().
   virtual void AllowWokenUpBySyncWatchOnSameThread() = 0;
 
   // Watches the interface endpoint for incoming sync messages. (It also watches

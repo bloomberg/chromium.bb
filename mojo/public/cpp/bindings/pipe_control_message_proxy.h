@@ -19,11 +19,11 @@ class MessageReceiver;
 
 // Proxy for request messages defined in pipe_control_messages.mojom.
 //
-// NOTE: This object may be used from multiple threads.
+// NOTE: This object may be used from multiple sequences.
 class MOJO_CPP_BINDINGS_EXPORT PipeControlMessageProxy {
  public:
   // Doesn't take ownership of |receiver|. If This PipeControlMessageProxy will
-  // be used from multiple threads, |receiver| must be thread-safe.
+  // be used from multiple sequences, |receiver| must be thread-safe.
   explicit PipeControlMessageProxy(MessageReceiver* receiver);
 
   void NotifyPeerEndpointClosed(InterfaceId id,
