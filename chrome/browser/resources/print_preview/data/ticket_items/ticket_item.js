@@ -106,15 +106,13 @@ cr.define('print_preview.ticket_items', function() {
 
     /** @return {print_preview.ValueType} The value of the ticket item. */
     getValue: function() {
-      if (this.isCapabilityAvailable()) {
-        if (this.value_ == null) {
-          return this.getDefaultValueInternal();
-        } else {
-          return this.value_;
-        }
-      } else {
+      if (!this.isCapabilityAvailable()) {
         return this.getCapabilityNotAvailableValueInternal();
       }
+      if (this.value_ == null) {
+        return this.getDefaultValueInternal();
+      }
+      return this.value_;
     },
 
     /** @return {boolean} Whether the ticket item was modified by the user. */

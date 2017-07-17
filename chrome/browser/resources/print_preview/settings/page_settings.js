@@ -146,28 +146,28 @@ cr.define('print_preview', function() {
      * @private
      */
     setInvalidStateVisible_: function(validity) {
-      if (validity !== PageRangeStatus.NO_ERROR) {
-        var message;
-        if (validity === PageRangeStatus.LIMIT_ERROR) {
-          if (this.pageRangeTicketItem_.getDocumentNumPages()) {
-            message = loadTimeData.getStringF(
-                'pageRangeLimitInstructionWithValue',
-                this.pageRangeTicketItem_.getDocumentNumPages());
-          } else {
-            message = loadTimeData.getString('pageRangeLimitInstruction');
-          }
-        } else {
-          message = loadTimeData.getStringF(
-              'pageRangeSyntaxInstruction',
-              loadTimeData.getString('examplePageRangeText'));
-        }
-        this.customHintEl_.textContent = message;
-        this.customInput_.classList.add('invalid');
-        fadeInElement(this.customHintEl_);
-      } else {
+      if (validity === PageRangeStatus.NO_ERROR) {
         this.customInput_.classList.remove('invalid');
         fadeOutElement(this.customHintEl_);
+        return;
       }
+      var message;
+      if (validity === PageRangeStatus.LIMIT_ERROR) {
+        if (this.pageRangeTicketItem_.getDocumentNumPages()) {
+          message = loadTimeData.getStringF(
+              'pageRangeLimitInstructionWithValue',
+              this.pageRangeTicketItem_.getDocumentNumPages());
+        } else {
+          message = loadTimeData.getString('pageRangeLimitInstruction');
+        }
+      } else {
+        message = loadTimeData.getStringF(
+            'pageRangeSyntaxInstruction',
+            loadTimeData.getString('examplePageRangeText'));
+      }
+      this.customHintEl_.textContent = message;
+      this.customInput_.classList.add('invalid');
+      fadeInElement(this.customHintEl_);
     },
 
     /**
