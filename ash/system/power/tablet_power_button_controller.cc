@@ -178,7 +178,7 @@ void TabletPowerButtonController::OnPowerButtonEvent(
     }
 
     last_button_down_time_ = tick_clock_->NowTicks();
-    screen_off_when_power_button_down_ = brightness_level_is_zero_;
+    screen_off_when_power_button_down_ = screen_state_ != ScreenState::ON;
     SetDisplayForcedOff(false);
     StartShutdownTimer();
   } else {
@@ -244,7 +244,17 @@ void TabletPowerButtonController::PowerManagerRestarted() {
 
 void TabletPowerButtonController::BrightnessChanged(int level,
                                                     bool user_initiated) {
-  brightness_level_is_zero_ = level == 0;
+  const ScreenState old_state = screen_state_;
+  if (level != 0)
+    screen_state_ = ScreenState::ON;
+  else
+    screen_state_ = user_initiated ? ScreenState::OFF : ScreenState::OFF_AUTO;
+
+  // Disable the touchscreen when the screen is turned off due to inactivity:
+  // https://crbug.com/743291
+  if ((screen_state_ == ScreenState::OFF_AUTO) !=
+      (old_state == ScreenState::OFF_AUTO))
+    UpdateTouchscreenStatus();
 }
 
 void TabletPowerButtonController::SuspendDone(
@@ -446,8 +456,10 @@ void TabletPowerButtonController::OnGotInitialBacklightsForcedOff(
 }
 
 void TabletPowerButtonController::UpdateTouchscreenStatus() {
+  const bool enable_touchscreen =
+      !backlights_forced_off_ && (screen_state_ != ScreenState::OFF_AUTO);
   ShellDelegate* delegate = Shell::Get()->shell_delegate();
-  delegate->SetTouchscreenEnabledInPrefs(!backlights_forced_off_,
+  delegate->SetTouchscreenEnabledInPrefs(enable_touchscreen,
                                          true /* use_local_state */);
   delegate->UpdateTouchscreenStatusFromPrefs();
 }

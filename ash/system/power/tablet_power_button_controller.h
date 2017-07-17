@@ -144,8 +144,20 @@ class ASH_EXPORT TabletPowerButtonController
   // and locking is possible.
   void LockScreenIfRequired();
 
-  // True if the brightness level is currently set to off.
-  bool brightness_level_is_zero_ = false;
+  // Screen state as communicated by D-Bus signals from powerd about backlight
+  // brightness changes.
+  enum class ScreenState {
+    // The screen is on.
+    ON,
+    // The screen is off.
+    OFF,
+    // The screen is off, specifically due to an automated change like user
+    // inactivity.
+    OFF_AUTO,
+  };
+
+  // Current screen state.
+  ScreenState screen_state_ = ScreenState::ON;
 
   // Current forced-off state of backlights.
   bool backlights_forced_off_ = false;
