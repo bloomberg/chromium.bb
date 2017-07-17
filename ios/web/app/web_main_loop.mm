@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/power_monitor/power_monitor.h"
@@ -24,12 +23,11 @@
 #include "base/threading/thread_restrictions.h"
 #import "ios/web/net/cookie_notification_bridge.h"
 #include "ios/web/public/app/web_main_parts.h"
-#import "ios/web/public/global_state/ios_global_state.h"
+#include "ios/web/public/global_state/ios_global_state.h"
 #import "ios/web/public/web_client.h"
 #include "ios/web/service_manager_context.h"
 #include "ios/web/web_thread_impl.h"
 #include "ios/web/webui/url_data_manager_ios.h"
-#include "net/base/network_change_notifier.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -46,8 +44,6 @@ WebMainLoop* g_current_web_main_loop = nullptr;
 WebMainLoop::WebMainLoop() : result_code_(0), created_threads_(false) {
   DCHECK(!g_current_web_main_loop);
   g_current_web_main_loop = this;
-
-  ios_global_state::Create();
 }
 
 WebMainLoop::~WebMainLoop() {
@@ -71,11 +67,7 @@ void WebMainLoop::MainMessageLoopStart() {
     parts_->PreMainMessageLoopStart();
   }
 
-  // Create a MessageLoop if one does not already exist for the current thread.
-  if (!base::MessageLoop::current()) {
-    main_message_loop_.reset(new base::MessageLoopForUI);
-  }
-  base::MessageLoopForUI::current()->Attach();
+  ios_global_state::BuildMessageLoop();
 
   InitializeMainThread();
 
@@ -87,7 +79,8 @@ void WebMainLoop::MainMessageLoopStart() {
   std::unique_ptr<base::PowerMonitorSource> power_monitor_source(
       new base::PowerMonitorDeviceSource());
   power_monitor_.reset(new base::PowerMonitor(std::move(power_monitor_source)));
-  network_change_notifier_.reset(net::NetworkChangeNotifier::Create());
+
+  ios_global_state::CreateNetworkChangeNotifier();
 
   if (parts_) {
     parts_->PostMainMessageLoopStart();

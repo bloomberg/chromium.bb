@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/at_exit.h"
 #include "base/atomicops.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -54,11 +53,6 @@
 #include "url/url_util.h"
 
 namespace {
-
-base::AtExitManager* g_at_exit_ = nullptr;
-net::NetworkChangeNotifier* g_network_change_notifier = nullptr;
-// MessageLoop on the main thread.
-base::MessageLoop* g_main_message_loop = nullptr;
 
 // Request context getter for Cronet.
 class CronetURLRequestContextGetter : public net::URLRequestContextGetter {
@@ -128,28 +122,16 @@ net::URLRequestContextGetter* CronetEnvironment::GetURLRequestContextGetter()
 void CronetEnvironment::Initialize() {
   // This method must be called once from the main thread.
   DCHECK_EQ([NSThread currentThread], [NSThread mainThread]);
-  if (!g_at_exit_)
-    g_at_exit_ = new base::AtExitManager;
 
-  // Initializes the statistics recorder system. This needs to be done before
-  // emitting histograms to prevent memory leaks (crbug.com/707836).
-  base::StatisticsRecorder::Initialize();
-
-  ios_global_state::Create();
+  ios_global_state::CreateParams create_params;
+  create_params.install_at_exit_manager = true;
+  ios_global_state::Create(create_params);
   ios_global_state::StartTaskScheduler(/*init_params=*/nullptr);
 
   url::Initialize();
-  base::CommandLine::Init(0, nullptr);
 
-  // Create a message loop on the UI thread.
-  DCHECK(!base::MessageLoop::current());
-  DCHECK(!g_main_message_loop);
-  g_main_message_loop = new base::MessageLoopForUI();
-  base::MessageLoopForUI::current()->Attach();
-  // The network change notifier must be initialized so that registered
-  // delegates will receive callbacks.
-  DCHECK(!g_network_change_notifier);
-  g_network_change_notifier = net::NetworkChangeNotifier::Create();
+  ios_global_state::BuildMessageLoop();
+  ios_global_state::CreateNetworkChangeNotifier();
 }
 
 bool CronetEnvironment::StartNetLog(base::FilePath::StringType file_name,
@@ -282,7 +264,6 @@ CronetEnvironment::~CronetEnvironment() {
 
 void CronetEnvironment::InitializeOnNetworkThread() {
   DCHECK(network_io_thread_->task_runner()->BelongsToCurrentThread());
-  base::FeatureList::InitializeInstance(std::string(), std::string());
 
   static bool ssl_key_log_file_set = false;
   if (!ssl_key_log_file_set && !ssl_key_log_file_name_.empty()) {
