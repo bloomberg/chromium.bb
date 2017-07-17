@@ -13,36 +13,50 @@
 
 <dom-module id="settings-change-picture">
   <template>
-    <style include="settings-shared">
-      #container {
-        -webkit-margin-start: 16px;
-        align-items: flex-start;
+    <style>
+      #title {
+        -webkit-margin-start: 20px;
         padding-top: 16px;
       }
 
-      #authorCredit {
-        color: var(--paper-grey-600);
-        margin-top: 8px;
+      #container {
+        -webkit-margin-start: 20px;
+        align-items: flex-start;
+        display: flex;
+        padding-top: 16px;
       }
 
-      cr-picture-pane {
-        -webkit-margin-end: 10px;
+      #picturePane {
+        --cr-picture-image-size: 288px;
+        -webkit-margin-end: 24px;
         flex-shrink: 0;
-        width: 228px;
+        width: 288px;
       }
+
+      #authorCredit {
+        color: var(--paper-grey-500);
+        display: flex;
+        flex-direction: column;
+        margin-top: 20px;
+      }
+
+      #pictureList {
+        width: 350px;
+      }
+
     </style>
-    <div id="container" class="settings-box">
-      <div class="start">
-        <cr-picture-list id="pictureList"
-            camera-present="[[cameraPresent_]]"
-            default-images="[[defaultImages_]]"
-            selected-item="{{selectedItem_}}"
-            choose-file-label="$i18n{chooseFile}"
-            old-image-label="$i18n{oldPhoto}"
-            profile-image-label="$i18n{profilePhoto}"
-            profile-image-loading-label="$i18n{profilePhotoLoading}"
+    <div id="title">$i18n{changePicturePageDescription}</div>
+    <div id="container">
+      <div>
+        <cr-picture-pane id="picturePane"
+            camera-present="[[cameraPresent_]]",
+            image-src="[[getImageSrc_(selectedItem_)]]"
+            image-type="[[getImageType_(selectedItem_)]]"
+            discard-image-label="$i18n{discardPhoto}"
+            flip-photo-label="$i18n{flipPhoto}"
+            preview-alt-text="$i18n{previewAltText}"
             take-photo-label="$i18n{takePhoto}">
-        </cr-picture-list>
+        </cr-picture-pane>
         <div id="authorCredit"
             hidden="[[!isAuthorCreditShown_(selectedItem_)]]">
           [[getAuthorCredit_(selectedItem_, defaultImages_)]]
@@ -52,15 +66,16 @@
           </a>
         </div>
       </div>
-      <cr-picture-pane id="picturePane"
-          camera-present="[[cameraPresent_]]",
-          image-src="[[getImageSrc_(selectedItem_)]]"
-          image-type="[[getImageType_(selectedItem_)]]"
-          discard-image-label="$i18n{discardPhoto}"
-          flip-photo-label="$i18n{flipPhoto}"
-          preview-alt-text="$i18n{previewAltText}"
+      <cr-picture-list id="pictureList"
+          camera-present="[[cameraPresent_]]"
+          default-images="[[defaultImages_]]"
+          selected-item="{{selectedItem_}}"
+          choose-file-label="$i18n{chooseFile}"
+          old-image-label="$i18n{oldPhoto}"
+          profile-image-label="$i18n{profilePhoto}"
+          profile-image-loading-label="$i18n{profilePhotoLoading}"
           take-photo-label="$i18n{takePhoto}">
-      </cr-picture-pane>
+      </cr-picture-list>
     </div>
   </template>
   <script src="change_picture.js"></script>
