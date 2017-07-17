@@ -199,18 +199,6 @@ const int kTouchPointPadding = 32;
     EXPECT_EQ(expected.Height(), actual.Height()); \
   } while (false)
 
-#define EXPECT_SIZE_EQ(expected, actual)           \
-  do {                                             \
-    EXPECT_EQ(expected.Width(), actual.Width());   \
-    EXPECT_EQ(expected.Height(), actual.Height()); \
-  } while (false)
-
-#define EXPECT_FLOAT_POINT_EQ(expected, actual) \
-  do {                                          \
-    EXPECT_FLOAT_EQ(expected.x(), actual.x());  \
-    EXPECT_FLOAT_EQ(expected.y(), actual.y());  \
-  } while (false)
-
 class WebFrameTest : public ::testing::Test {
  protected:
   WebFrameTest()

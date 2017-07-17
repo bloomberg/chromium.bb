@@ -141,12 +141,6 @@ class BrowserControlsTest : public ::testing::Test {
   FrameTestHelpers::WebViewHelper helper_;
 };
 
-#define EXPECT_SIZE_EQ(expected, actual)                     \
-  do {                                                       \
-    EXPECT_FLOAT_EQ((expected).Width(), (actual).Width());   \
-    EXPECT_FLOAT_EQ((expected).Height(), (actual).Height()); \
-  } while (false)
-
 // Disable these tests on Mac OSX until further investigation.
 // Local build on Mac is OK but the bot fails. This is not an issue as
 // Browser Controls are currently only used on Android.
