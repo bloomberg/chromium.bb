@@ -82,7 +82,7 @@ class PLATFORM_EXPORT TaskQueueImpl {
     }
   };
 
-  class PLATFORM_EXPORT Task : public base::PendingTask {
+  class PLATFORM_EXPORT Task : public TaskQueue::Task {
    public:
     Task();
     Task(const tracked_objects::Location& posted_from,
@@ -134,8 +134,8 @@ class PLATFORM_EXPORT TaskQueueImpl {
   };
 
   using OnNextWakeUpChangedCallback = base::Callback<void(base::TimeTicks)>;
-  using OnTaskCompletedHandler =
-      base::Callback<void(base::TimeTicks, base::TimeTicks)>;
+  using OnTaskCompletedHandler = base::Callback<
+      void(const TaskQueue::Task&, base::TimeTicks, base::TimeTicks)>;
 
   // TaskQueue implementation.
   const char* GetName() const;
@@ -262,7 +262,9 @@ class PLATFORM_EXPORT TaskQueueImpl {
   // Allows wrapping TaskQueue to set a handler to subscribe for notifications
   // about completed tasks.
   void SetOnTaskCompletedHandler(OnTaskCompletedHandler handler);
-  void OnTaskCompleted(base::TimeTicks start, base::TimeTicks end);
+  void OnTaskCompleted(const TaskQueue::Task& task,
+                       base::TimeTicks start,
+                       base::TimeTicks end);
 
   // Disables queue for testing purposes, when a QueueEnabledVoter can't be
   // constructed due to not having TaskQueue.

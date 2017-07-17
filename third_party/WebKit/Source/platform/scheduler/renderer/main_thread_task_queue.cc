@@ -89,9 +89,10 @@ MainThreadTaskQueue::MainThreadTaskQueue(
 
 MainThreadTaskQueue::~MainThreadTaskQueue() {}
 
-void MainThreadTaskQueue::OnTaskCompleted(base::TimeTicks start,
+void MainThreadTaskQueue::OnTaskCompleted(const TaskQueue::Task& task,
+                                          base::TimeTicks start,
                                           base::TimeTicks end) {
-  renderer_scheduler_->OnTaskCompleted(this, start, end);
+  renderer_scheduler_->OnTaskCompleted(this, task, start, end);
 }
 
 void MainThreadTaskQueue::UnregisterTaskQueue() {
