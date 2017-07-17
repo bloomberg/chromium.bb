@@ -3117,7 +3117,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       print('Adding self-LGTM (Code-Review +1) because of TBRs.')
       gerrit_util.SetReview(
           self._GetGerritHost(), self.GetIssue(),
-          labels={'Code-Review': 1}, notify=bool(options.send_mail))
+          msg='Self-approving for TBR', labels={'Code-Review': 1})
 
     return 0
 
@@ -3202,11 +3202,10 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
         _CQState.DRY_RUN: 1,
         _CQState.COMMIT:  2,
     }
-    kwargs = {'labels': {'Commit-Queue': vote_map[new_state]}}
-    if new_state == _CQState.DRY_RUN:
-      # Don't spam everybody reviewer/owner.
-      kwargs['notify'] = False
-    gerrit_util.SetReview(self._GetGerritHost(), self.GetIssue(), **kwargs)
+    labels = {'Commit-Queue': vote_map[new_state]}
+    notify = False if new_state == _CQState.DRY_RUN else None
+    gerrit_util.SetReview(self._GetGerritHost(), self.GetIssue(),
+                          labels=labels, notify=notify)
 
   def CannotTriggerTryJobReason(self):
     try:

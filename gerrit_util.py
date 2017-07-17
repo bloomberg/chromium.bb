@@ -717,7 +717,7 @@ def SetReview(host, change, msg=None, labels=None, notify=None, ready=None):
     body['message'] = msg
   if labels:
     body['labels'] = labels
-  if notify:
+  if notify is not None:
     body['notify'] = 'ALL' if notify else 'NONE'
   if ready:
     body['ready'] = True

@@ -623,8 +623,8 @@ class TestGitCl(TestCase):
               lambda h, i, reviewers, ccs, notify: self._mocked_call(
                   'AddReviewers', h, i, reviewers, ccs, notify))
     self.mock(git_cl.gerrit_util, 'SetReview',
-              lambda h, i, labels, notify: self._mocked_call(
-                  'SetReview', h, i, labels, notify))
+              lambda h, i, msg=None, labels=None, notify=None:
+                  self._mocked_call('SetReview', h, i, msg, labels, notify))
     self.mock(git_cl.gerrit_util.GceAuthenticator, 'is_gce',
               classmethod(lambda _: False))
     self.mock(git_cl, 'DieWithError',
@@ -1605,7 +1605,8 @@ class TestGitCl(TestCase):
     if tbr:
       calls += [
         (('SetReview', 'chromium-review.googlesource.com',
-          123456 if squash else None, {'Code-Review': 1}, notify), ''),
+          123456 if squash else None, 'Self-approving for TBR',
+          {'Code-Review': 1}, None), ''),
       ]
     calls += cls._git_post_upload_calls()
     return calls
