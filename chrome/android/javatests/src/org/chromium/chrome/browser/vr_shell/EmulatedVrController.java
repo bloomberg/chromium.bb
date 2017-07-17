@@ -43,6 +43,14 @@ public class EmulatedVrController {
     }
 
     /**
+     * Presses and quickly releases the Daydream controller's app button.
+     * Or, if the button is already pressed, releases and quickly presses again.
+     */
+    public void pressReleaseAppButton() {
+        mApi.buttonEvent.sendAppButtonEvent();
+    }
+
+    /**
      * Holds the home button to recenter the view using an arbitrary, but valid
      * orientation quaternion.
      */

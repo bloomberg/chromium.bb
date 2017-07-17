@@ -21,6 +21,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.vr_shell.util.CardboardUtils;
 import org.chromium.chrome.browser.vr_shell.util.VrTransitionUtils;
@@ -130,5 +131,24 @@ public class WebVrInputTest {
         VrTransitionUtils.enterPresentationAndWait(
                 mVrTestRule.getFirstTabCvc(), mVrTestRule.getFirstTabWebContents());
         mVrTestRule.endTest(mVrTestRule.getFirstTabWebContents());
+    }
+
+    /**
+     * Verifies that pressing the Daydream controller's 'app' button causes the user to exit
+     * WebVR presentation.
+     */
+    @Test
+    @MediumTest
+    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
+    @RetryOnFailure(message = "Very rarely, button press not registered (race condition?)")
+    public void testAppButtonExitsPresentation() throws InterruptedException {
+        mVrTestRule.loadUrlAndAwaitInitialization(
+                mVrTestRule.getHtmlTestFile("generic_webvr_page"), PAGE_LOAD_TIMEOUT_S);
+        VrTransitionUtils.enterPresentationOrFail(mVrTestRule.getFirstTabCvc());
+        EmulatedVrController controller = new EmulatedVrController(mVrTestRule.getActivity());
+        controller.pressReleaseAppButton();
+        Assert.assertTrue("App button exited WebVR presentation",
+                mVrTestRule.pollJavaScriptBoolean("!vrDisplay.isPresenting", POLL_TIMEOUT_SHORT_MS,
+                        mVrTestRule.getFirstTabWebContents()));
     }
 }
