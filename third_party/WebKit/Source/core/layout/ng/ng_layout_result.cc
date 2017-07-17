@@ -4,10 +4,12 @@
 
 #include "core/layout/ng/ng_layout_result.h"
 
+#include "core/layout/ng/ng_unpositioned_float.h"
+
 namespace blink {
 
 NGLayoutResult::NGLayoutResult(
-    PassRefPtr<NGPhysicalFragment> physical_fragment,
+    RefPtr<NGPhysicalFragment> physical_fragment,
     Vector<NGOutOfFlowPositionedDescendant> oof_positioned_descendants,
     Vector<RefPtr<NGUnpositionedFloat>>& unpositioned_floats,
     const WTF::Optional<NGLogicalOffset> bfc_offset,

@@ -7,6 +7,8 @@
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/ng/ng_block_node.h"
 #include "core/layout/ng/ng_layout_input_node.h"
+#include "core/layout/ng/ng_layout_result.h"
+#include "core/layout/ng/ng_unpositioned_float.h"
 
 namespace blink {
 

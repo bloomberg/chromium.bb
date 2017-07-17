@@ -119,14 +119,6 @@ NGFragmentBuilder& NGFragmentBuilder::AddChild(
   return *this;
 }
 
-NGFragmentBuilder& NGFragmentBuilder::AddPositionedFloat(
-    NGPositionedFloat positioned_float) {
-  did_break_ |= !positioned_float.fragment->BreakToken()->IsFinished();
-  child_break_tokens_.push_back(positioned_float.fragment->BreakToken());
-  positioned_floats_.push_back(positioned_float);
-  return *this;
-}
-
 NGFragmentBuilder& NGFragmentBuilder::SetBfcOffset(
     const NGLogicalOffset& offset) {
   bfc_offset_ = offset;
@@ -223,18 +215,10 @@ RefPtr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment() {
     }
   }
 
-  for (auto& positioned_float : positioned_floats_) {
-    NGPhysicalFragment* floating_fragment = positioned_float.fragment.Get();
-    floating_fragment->SetOffset(
-        positioned_float.logical_offset.ConvertToPhysical(
-            writing_mode_, direction_, physical_size,
-            floating_fragment->Size()));
-  }
-
   RefPtr<NGPhysicalBoxFragment> fragment = AdoptRef(new NGPhysicalBoxFragment(
       layout_object_, physical_size, overflow_.ConvertToPhysical(writing_mode_),
-      children_, positioned_floats_, baselines_,
-      border_edges_.ToPhysical(writing_mode_), std::move(break_token)));
+      children_, baselines_, border_edges_.ToPhysical(writing_mode_),
+      std::move(break_token)));
 
   return AdoptRef(new NGLayoutResult(
       std::move(fragment), oof_positioned_descendants_, unpositioned_floats_,

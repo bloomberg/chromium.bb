@@ -5,6 +5,7 @@
 #include "core/layout/ng/ng_absolute_utils.h"
 
 #include "core/layout/ng/ng_constraint_space.h"
+#include "core/layout/ng/ng_layout_result.h"
 #include "core/layout/ng/ng_length_utils.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/LengthFunctions.h"

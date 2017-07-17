@@ -46,8 +46,6 @@ class CORE_EXPORT NGFragmentBuilder final {
   NGFragmentBuilder& AddChild(RefPtr<NGPhysicalFragment>,
                               const NGLogicalOffset&);
 
-  NGFragmentBuilder& AddPositionedFloat(NGPositionedFloat);
-
   NGFragmentBuilder& SetBfcOffset(const NGLogicalOffset& offset);
 
   // Builder has non-trivial out-of-flow descendant methods.
@@ -186,8 +184,6 @@ class CORE_EXPORT NGFragmentBuilder final {
   // Floats that need to be positioned by the next in-flow fragment that can
   // determine its block position in space.
   Vector<RefPtr<NGUnpositionedFloat>> unpositioned_floats_;
-
-  Vector<NGPositionedFloat> positioned_floats_;
 
   WTF::Optional<NGLogicalOffset> bfc_offset_;
   NGMarginStrut end_margin_strut_;
