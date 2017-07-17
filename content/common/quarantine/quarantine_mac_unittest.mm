@@ -10,6 +10,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
+#include "base/mac/availability.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
@@ -29,32 +30,28 @@ class QuarantineMacTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    if (base::mac::IsAtMostOS10_9()) {
-      LOG(WARNING) << "Test suite requires Mac OS X 10.10 or later";
-      return;
-    }
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    ASSERT_TRUE(
-        base::CreateTemporaryFileInDir(temp_dir_.GetPath(), &test_file_));
-    file_url_.reset([[NSURL alloc]
-        initFileURLWithPath:base::SysUTF8ToNSString(test_file_.value())]);
+    if (@available(macos 10.10, *)) {
+      ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+      ASSERT_TRUE(
+          base::CreateTemporaryFileInDir(temp_dir_.GetPath(), &test_file_));
+      file_url_.reset([[NSURL alloc]
+          initFileURLWithPath:base::SysUTF8ToNSString(test_file_.value())]);
 
-    base::scoped_nsobject<NSMutableDictionary> properties(
-        [[NSMutableDictionary alloc] init]);
-    [properties
-        setValue:@"com.google.Chrome"
-          forKey:static_cast<NSString*>(kLSQuarantineAgentBundleIdentifierKey)];
-    [properties setValue:@"Google Chrome.app"
-                  forKey:static_cast<NSString*>(kLSQuarantineAgentNameKey)];
-    [properties setValue:@(1) forKey:@"kLSQuarantineIsOwnedByCurrentUserKey"];
-// NSURLQuarantinePropertiesKey is only available on macOS 10.10+.
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunguarded-availability"
-    bool success = [file_url_ setResourceValue:properties
-                                        forKey:NSURLQuarantinePropertiesKey
-                                         error:nullptr];
-#pragma clang diagnostic pop
-    ASSERT_TRUE(success);
+      base::scoped_nsobject<NSMutableDictionary> properties(
+          [[NSMutableDictionary alloc] init]);
+      [properties setValue:@"com.google.Chrome"
+                    forKey:static_cast<NSString*>(
+                               kLSQuarantineAgentBundleIdentifierKey)];
+      [properties setValue:@"Google Chrome.app"
+                    forKey:static_cast<NSString*>(kLSQuarantineAgentNameKey)];
+      [properties setValue:@(1) forKey:@"kLSQuarantineIsOwnedByCurrentUserKey"];
+      bool success = [file_url_ setResourceValue:properties
+                                          forKey:NSURLQuarantinePropertiesKey
+                                           error:nullptr];
+      ASSERT_TRUE(success);
+    } else {
+      LOG(WARNING) << "Test suite requires Mac OS X 10.10 or later";
+    }
   }
 
   base::ScopedTempDir temp_dir_;
