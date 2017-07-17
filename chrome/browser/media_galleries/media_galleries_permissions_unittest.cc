@@ -14,8 +14,6 @@
 #include "chrome/browser/media_galleries/media_galleries_test_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/storage_monitor/test_storage_monitor.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -36,9 +34,7 @@ void AddGalleryPermission(MediaGalleryPrefId gallery,
 // Test the MediaGalleries permissions functions.
 class MediaGalleriesPermissionsTest : public extensions::ExtensionPrefsTest {
  protected:
-  MediaGalleriesPermissionsTest()
-      : file_thread_(content::BrowserThread::FILE) {
-  }
+  MediaGalleriesPermissionsTest() {}
   ~MediaGalleriesPermissionsTest() override {}
 
   // This is the same implementation as ExtensionPrefsTest::TearDown(), except
@@ -62,8 +58,6 @@ class MediaGalleriesPermissionsTest : public extensions::ExtensionPrefsTest {
   }
 
   void Initialize() override {
-    file_thread_.Start();
-
     ASSERT_TRUE(storage_monitor::TestStorageMonitor::CreateAndInstall());
     profile_.reset(new TestingProfile);
     gallery_prefs_.reset(new MediaGalleriesPreferences(profile_.get()));
@@ -152,7 +146,6 @@ class MediaGalleriesPermissionsTest : public extensions::ExtensionPrefsTest {
 
   // Needed for |gallery_prefs_| to initialize correctly.
   EnsureMediaDirectoriesExists ensure_media_directories_exists_;
-  content::TestBrowserThread file_thread_;
 
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<MediaGalleriesPreferences> gallery_prefs_;
