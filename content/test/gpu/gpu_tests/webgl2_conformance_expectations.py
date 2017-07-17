@@ -200,11 +200,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('deqp/*', ['win', 'intel', 'd3d11'], bug=628395)
 
     # Passthrough command decoder / D3D11
-    self.Fail('conformance2/textures/misc/' +
-        'copy-texture-image-webgl-specific.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
-    self.Fail('conformance/textures/misc/copy-tex-image-and-sub-image-2d.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
     self.Fail('deqp/functional/gles3/shaderstruct.html',
         ['win', 'passthrough', 'd3d11'], bug=602688)
 
