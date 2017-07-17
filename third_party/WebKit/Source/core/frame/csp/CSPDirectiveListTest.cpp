@@ -157,8 +157,8 @@ TEST_F(CSPDirectiveListTest, AllowScriptFromSourceNoNonce) {
   };
 
   for (const auto& test : cases) {
-    SCOPED_TRACE(testing::Message() << "List: `" << test.list << "`, URL: `"
-                                    << test.url << "`");
+    SCOPED_TRACE(::testing::Message()
+                 << "List: `" << test.list << "`, URL: `" << test.url << "`");
     KURL script_src = KURL(NullURL(), test.url);
 
     // Report-only
@@ -213,8 +213,8 @@ TEST_F(CSPDirectiveListTest, AllowFromSourceWithNonce) {
   };
 
   for (const auto& test : cases) {
-    SCOPED_TRACE(testing::Message() << "List: `" << test.list << "`, URL: `"
-                                    << test.url << "`");
+    SCOPED_TRACE(::testing::Message()
+                 << "List: `" << test.list << "`, URL: `" << test.url << "`");
     KURL resource = KURL(NullURL(), test.url);
 
     // Report-only 'script-src'
@@ -350,7 +350,7 @@ TEST_F(CSPDirectiveListTest, AllowScriptFromSourceWithHash) {
   };
 
   for (const auto& test : cases) {
-    SCOPED_TRACE(testing::Message()
+    SCOPED_TRACE(::testing::Message()
                  << "List: `" << test.list << "`, URL: `" << test.url
                  << "`, Integrity: `" << test.integrity << "`");
     KURL resource = KURL(NullURL(), test.url);
