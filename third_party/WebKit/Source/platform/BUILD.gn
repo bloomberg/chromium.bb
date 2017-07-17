@@ -740,6 +740,7 @@ component("platform") {
     "fonts/shaping/CaseMappingHarfBuzzBufferFiller.h",
     "fonts/shaping/HarfBuzzFace.cpp",
     "fonts/shaping/HarfBuzzFace.h",
+    "fonts/shaping/HarfBuzzFontCache.h",
     "fonts/shaping/HarfBuzzShaper.cpp",
     "fonts/shaping/HarfBuzzShaper.h",
     "fonts/shaping/RunSegmenter.cpp",
