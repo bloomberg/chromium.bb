@@ -2180,8 +2180,16 @@ void AutofillManager::DeterminePossibleFieldTypesForUpload(
   // profile or credit card, identify any stored types that match the value.
   for (size_t i = 0; i < submitted_form->field_count(); ++i) {
     AutofillField* field = submitted_form->field(i);
-    ServerFieldTypeSet matching_types = field->possible_types();
 
+    if (!field->possible_types().empty() && field->IsEmpty()) {
+      // This is a password field in a sign-in form. Skip checking its type
+      // since |field->value| is not set.
+      DCHECK_EQ(1u, field->possible_types().size());
+      DCHECK_EQ(PASSWORD, *field->possible_types().begin());
+      continue;
+    }
+
+    ServerFieldTypeSet matching_types;
     base::string16 value;
     base::TrimWhitespace(field->value, base::TRIM_ALL, &value);
 
