@@ -230,7 +230,7 @@ class Manager(object):
                 if self._options.show_results and (
                         exit_code or (self._options.full_results_html and initial_results.total_failures)):
                     self._port.show_results_html_file(results_path)
-                self._printer.print_results(time.time() - start_time, initial_results, summarized_failing_results)
+                self._printer.print_results(time.time() - start_time, initial_results)
 
         return test_run_results.RunDetails(
             exit_code, summarized_full_results, summarized_failing_results,
