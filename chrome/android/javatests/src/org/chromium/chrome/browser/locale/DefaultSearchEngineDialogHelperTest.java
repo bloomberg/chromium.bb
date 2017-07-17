@@ -210,11 +210,15 @@ public class DefaultSearchEngineDialogHelperTest {
         Assert.assertFalse("Button enabled before selection", okButton.isEnabled());
         Assert.assertEquals("Dialog was already dismissed", 0, mDismissRunnable.runCount);
 
+        Assert.assertNull("Engine was already selected", helper.getCurrentlySelectedKeyword());
         // Select and confirm the first engine in the list.
         int index = 0;
         selectEngineFromList(helper, radioLayout, okButton, index);
+        Assert.assertNotNull("Engine was already selected", helper.getCurrentlySelectedKeyword());
+        Assert.assertNull("Engine was already selected", helper.getConfirmedKeyword());
         okButton.performClick();
         confirmEngineSelection(helper, radioLayout, index);
+        Assert.assertNotNull("Engine was already selected", helper.getConfirmedKeyword());
     }
 
     @Test
