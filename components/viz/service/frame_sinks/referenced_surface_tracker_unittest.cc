@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/surfaces/referenced_surface_tracker.h"
+#include "components/viz/service/frame_sinks/referenced_surface_tracker.h"
 
 #include <memory>
 
@@ -19,24 +19,23 @@
 using testing::UnorderedElementsAre;
 using testing::IsEmpty;
 
-namespace cc {
+namespace viz {
 namespace test {
 namespace {
 
-constexpr viz::FrameSinkId kParentFrameSink(2, 1);
-constexpr viz::FrameSinkId kChildFrameSink1(65563, 1);
-constexpr viz::FrameSinkId kChildFrameSink2(65564, 1);
+constexpr FrameSinkId kParentFrameSink(2, 1);
+constexpr FrameSinkId kChildFrameSink1(65563, 1);
+constexpr FrameSinkId kChildFrameSink2(65564, 1);
 
-base::flat_set<viz::SurfaceId> MakeReferenceSet(
-    std::initializer_list<viz::SurfaceId> surface_ids) {
-  return base::flat_set<viz::SurfaceId>(surface_ids, base::KEEP_FIRST_OF_DUPES);
+base::flat_set<SurfaceId> MakeReferenceSet(
+    std::initializer_list<SurfaceId> surface_ids) {
+  return base::flat_set<SurfaceId>(surface_ids, base::KEEP_FIRST_OF_DUPES);
 }
 
-viz::SurfaceId MakeSurfaceId(const viz::FrameSinkId& frame_sink_id,
-                             uint32_t local_id) {
-  return viz::SurfaceId(
-      frame_sink_id, viz::LocalSurfaceId(
-                         local_id, base::UnguessableToken::Deserialize(0, 1u)));
+SurfaceId MakeSurfaceId(const FrameSinkId& frame_sink_id, uint32_t local_id) {
+  return SurfaceId(
+      frame_sink_id,
+      LocalSurfaceId(local_id, base::UnguessableToken::Deserialize(0, 1u)));
 }
 
 }  // namespace
@@ -46,18 +45,18 @@ class ReferencedSurfaceTrackerTest : public testing::Test {
   ReferencedSurfaceTrackerTest() {}
   ~ReferencedSurfaceTrackerTest() override {}
 
-  const std::vector<SurfaceReference>& references_to_remove() const {
+  const std::vector<cc::SurfaceReference>& references_to_remove() const {
     return references_to_remove_;
   }
 
-  const std::vector<SurfaceReference>& references_to_add() const {
+  const std::vector<cc::SurfaceReference>& references_to_add() const {
     return references_to_add_;
   }
 
   void UpdateReferences(
-      const viz::SurfaceId& surface_id,
-      const base::flat_set<viz::SurfaceId>& old_referenced_surfaces,
-      const base::flat_set<viz::SurfaceId>& new_referenced_surfaces) {
+      const SurfaceId& surface_id,
+      const base::flat_set<SurfaceId>& old_referenced_surfaces,
+      const base::flat_set<SurfaceId>& new_referenced_surfaces) {
     references_to_add_.clear();
     references_to_remove_.clear();
     GetSurfaceReferenceDifference(surface_id, old_referenced_surfaces,
@@ -66,16 +65,16 @@ class ReferencedSurfaceTrackerTest : public testing::Test {
   }
 
  private:
-  std::vector<SurfaceReference> references_to_add_;
-  std::vector<SurfaceReference> references_to_remove_;
+  std::vector<cc::SurfaceReference> references_to_add_;
+  std::vector<cc::SurfaceReference> references_to_remove_;
 
   DISALLOW_COPY_AND_ASSIGN(ReferencedSurfaceTrackerTest);
 };
 
 TEST_F(ReferencedSurfaceTrackerTest, AddSurfaceReference) {
-  const viz::SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
-  const viz::SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
-  const SurfaceReference reference(parent_id, child_id1);
+  const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
+  const SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
+  const cc::SurfaceReference reference(parent_id, child_id1);
 
   // Check that reference to |child_id1| is added.
   UpdateReferences(parent_id, MakeReferenceSet({}),
@@ -85,9 +84,9 @@ TEST_F(ReferencedSurfaceTrackerTest, AddSurfaceReference) {
 }
 
 TEST_F(ReferencedSurfaceTrackerTest, NoChangeToReferences) {
-  const viz::SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
-  const viz::SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
-  const SurfaceReference reference(parent_id, child_id1);
+  const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
+  const SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
+  const cc::SurfaceReference reference(parent_id, child_id1);
 
   // Check that no references are added or removed.
   auto referenced_surfaces = MakeReferenceSet({child_id1});
@@ -97,9 +96,9 @@ TEST_F(ReferencedSurfaceTrackerTest, NoChangeToReferences) {
 }
 
 TEST_F(ReferencedSurfaceTrackerTest, RemoveSurfaceReference) {
-  const viz::SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
-  const viz::SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
-  const SurfaceReference reference(parent_id, child_id1);
+  const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
+  const SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
+  const cc::SurfaceReference reference(parent_id, child_id1);
 
   // Check that reference to |child_id1| is removed.
   UpdateReferences(parent_id, MakeReferenceSet({child_id1}),
@@ -109,11 +108,11 @@ TEST_F(ReferencedSurfaceTrackerTest, RemoveSurfaceReference) {
 }
 
 TEST_F(ReferencedSurfaceTrackerTest, RemoveOneOfTwoSurfaceReferences) {
-  const viz::SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
-  const viz::SurfaceId child_id1_first = MakeSurfaceId(kChildFrameSink1, 1);
-  const viz::SurfaceId child_id1_second = MakeSurfaceId(kChildFrameSink1, 2);
-  const SurfaceReference reference_first(parent_id, child_id1_first);
-  const SurfaceReference reference_second(parent_id, child_id1_second);
+  const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
+  const SurfaceId child_id1_first = MakeSurfaceId(kChildFrameSink1, 1);
+  const SurfaceId child_id1_second = MakeSurfaceId(kChildFrameSink1, 2);
+  const cc::SurfaceReference reference_first(parent_id, child_id1_first);
+  const cc::SurfaceReference reference_second(parent_id, child_id1_second);
 
   // Check that reference to |child_id1_first| is removed and reference to
   // |child_id1_second| is added.
@@ -124,11 +123,11 @@ TEST_F(ReferencedSurfaceTrackerTest, RemoveOneOfTwoSurfaceReferences) {
 }
 
 TEST_F(ReferencedSurfaceTrackerTest, AddTwoThenRemoveOneSurfaceReferences) {
-  const viz::SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
-  const viz::SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
-  const viz::SurfaceId child_id2 = MakeSurfaceId(kChildFrameSink2, 2);
-  const SurfaceReference reference1(parent_id, child_id1);
-  const SurfaceReference reference2(parent_id, child_id2);
+  const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
+  const SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
+  const SurfaceId child_id2 = MakeSurfaceId(kChildFrameSink2, 2);
+  const cc::SurfaceReference reference1(parent_id, child_id1);
+  const cc::SurfaceReference reference2(parent_id, child_id2);
 
   // Check that first frame adds both surface references.
   const auto initial_referenced = MakeReferenceSet({child_id1, child_id2});
@@ -145,4 +144,4 @@ TEST_F(ReferencedSurfaceTrackerTest, AddTwoThenRemoveOneSurfaceReferences) {
 }
 
 }  // namespace test
-}  // namespace cc
+}  // namespace viz

@@ -53,6 +53,8 @@ viz_component("service") {
     "frame_sinks/gpu_root_compositor_frame_sink.h",
     "frame_sinks/primary_begin_frame_source.cc",
     "frame_sinks/primary_begin_frame_source.h",
+    "frame_sinks/referenced_surface_tracker.cc",
+    "frame_sinks/referenced_surface_tracker.h",
     "frame_sinks/surface_resource_holder.cc",
     "frame_sinks/surface_resource_holder.h",
     "frame_sinks/surface_resource_holder_client.h",
@@ -135,6 +137,7 @@ viz_source_set("unit_tests") {
     "frame_sinks/compositor_frame_sink_support_unittest.cc",
     "frame_sinks/direct_layer_tree_frame_sink_unittest.cc",
     "frame_sinks/frame_sink_manager_unittest.cc",
+    "frame_sinks/referenced_surface_tracker_unittest.cc",
     "hit_test/hit_test_aggregator_unittest.cc",
   ]
 
