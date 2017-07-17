@@ -130,6 +130,9 @@ class CC_EXPORT ImageDecodeCache {
   // image is locked, then the cache can do its best to clean it
   // up later.
   virtual void NotifyImageUnused(uint32_t skimage_id) = 0;
+
+ protected:
+  void RecordImageMipLevelUMA(int mip_level);
 };
 
 }  // namespace cc

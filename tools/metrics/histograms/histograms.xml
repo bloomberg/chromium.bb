@@ -61920,6 +61920,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Renderer4.ImageDecodeMipLevel" units="mip level">
+  <owner>khushalsagar@chromium.org</owner>
+  <summary>
+    The mip level at which images are decoded for rasterization in the renderer.
+    This value is recorded each time an image is decoded in the compositor and
+    records the mip level used for the decode. Note that the mip levels recorded
+    lie between [1, 32], with the value of 1 indicating the use of the original
+    image.
+  </summary>
+</histogram>
+
 <histogram name="Renderer4.ImageDecodeTaskDurationUs" units="microseconds">
   <owner>vmpstr@chromium.org</owner>
   <summary>

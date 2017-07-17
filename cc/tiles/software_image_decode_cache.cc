@@ -430,6 +430,9 @@ void SoftwareImageDecodeCache::DecodeImage(const ImageKey& key,
   if (task_type == DecodeTaskType::USE_OUT_OF_RASTER_TASKS)
     decoded_image->mark_out_of_raster();
 
+  RecordImageMipLevelUMA(
+      MipMapUtil::GetLevelForSize(key.src_rect().size(), key.target_size()));
+
   decoded_images_.Put(key, std::move(decoded_image));
 }
 
