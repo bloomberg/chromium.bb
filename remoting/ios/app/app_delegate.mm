@@ -8,8 +8,6 @@
 
 #import "remoting/ios/app/app_delegate.h"
 
-#import <WebKit/WebKit.h>
-
 #include "base/logging.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -19,6 +17,7 @@
 #import "remoting/ios/app/help_and_feedback.h"
 #import "remoting/ios/app/remoting_view_controller.h"
 #import "remoting/ios/app/user_status_presenter.h"
+#import "remoting/ios/app/web_view_controller.h"
 #import "remoting/ios/facade/remoting_oauth_authentication.h"
 
 @interface AppDelegate ()<FirstLaunchViewControllerDelegate> {
@@ -118,19 +117,30 @@ static NSString* const kFAQsUrl =
 #pragma mark - AppDelegate
 
 - (void)navigateToFAQs:(UINavigationController*)navigationController {
-  [self navigateToUrl:kFAQsUrl
-                     title:@"FAQs"
-      navigationController:navigationController];
+  WebViewController* viewController =
+      [[WebViewController alloc] initWithUrl:kFAQsUrl title:@"FAQs"];
+  [navigationController pushViewController:viewController animated:YES];
 }
 
 - (void)navigateToHelpCenter:(UINavigationController*)navigationController {
-  [self navigateToUrl:kHelpCenterUrl
-                     title:@"Help Center"
-      navigationController:navigationController];
+  [navigationController pushViewController:[self createHelpViewController]
+                                  animated:YES];
+}
+
+- (void)presentHelpCenter {
+  UINavigationController* navController = [[UINavigationController alloc]
+      initWithRootViewController:[self createHelpViewController]];
+  [AppDelegate.topPresentingVC presentViewController:navController
+                                            animated:YES
+                                          completion:nil];
 }
 
 - (void)presentFeedbackFlowWithContext:(NSString*)context {
   [HelpAndFeedback.instance presentFeedbackFlowWithContext:context];
+}
+
+- (void)emailSetupInstructions {
+  NSLog(@"TODO: emailSetupInstructions");
 }
 
 #pragma mark - FirstLaunchViewPresenterDelegate
@@ -142,24 +152,31 @@ static NSString* const kFAQsUrl =
 
 #pragma mark - Private
 
-- (void)navigateToUrl:(NSString*)url
-                   title:(NSString*)title
-    navigationController:(UINavigationController*)navigationController {
-  UIViewController* viewController = [[UIViewController alloc] init];
-  viewController.title = title;
-
-  NSURLRequest* request =
-      [NSURLRequest requestWithURL:[NSURL URLWithString:url]];
-  WKWebView* webView =
-      [[WKWebView alloc] initWithFrame:viewController.view.frame
-                         configuration:[[WKWebViewConfiguration alloc] init]];
-  [viewController.view addSubview:webView];
-  [navigationController pushViewController:viewController animated:YES];
-  [webView loadRequest:request];
+- (WebViewController*)createHelpViewController {
+  WebViewController* viewController =
+      [[WebViewController alloc] initWithUrl:kHelpCenterUrl
+                                       title:@"Help Center"];
+  viewController.navigationItem.rightBarButtonItem =
+      [[UIBarButtonItem alloc] initWithTitle:@"Credits"
+                                       style:UIBarButtonItemStylePlain
+                                      target:self
+                                      action:@selector(onTapCredits:)];
+  return viewController;
 }
 
-- (void)emailSetupInstructions {
-  NSLog(@"TODO: emailSetupInstructions");
+- (void)onTapCredits:(id)button {
+  NSLog(@"tap credits");
+}
+
++ (UIViewController*)topPresentingVC {
+  UIViewController* topController =
+      UIApplication.sharedApplication.keyWindow.rootViewController;
+
+  while (topController.presentedViewController) {
+    topController = topController.presentedViewController;
+  }
+
+  return topController;
 }
 
 @end
