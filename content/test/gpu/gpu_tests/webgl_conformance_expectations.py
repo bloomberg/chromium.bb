@@ -111,6 +111,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/glsl/misc/uninitialized-local-global-variables.html',
         bug=1966) # angle bug ID
 
+    # Don't run performance tests on debug builds
+    self.Skip('conformance/rendering/texture-switch-performance.html',
+        ['debug'])
+
     # Passthrough command decoder
     self.Fail('conformance/extensions/webgl-draw-buffers.html',
         ['passthrough'], bug=1523) # angle bug ID
@@ -380,7 +384,7 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/rendering/clipping-wide-points.html',
         ['mac', 'amd'], bug=642822)
     self.Fail('conformance/rendering/texture-switch-performance.html',
-        ['mac', 'amd'], bug=735483)
+        ['mac', 'amd', 'release'], bug=735483)
 
     # Mac Retina NVidia failures
     self.Fail('conformance/attribs/gl-disabled-vertex-attrib.html',
