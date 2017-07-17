@@ -16,7 +16,7 @@
 
 namespace blink {
 
-class NGPhysicalBoxFragment;
+class NGLayoutResult;
 
 // Struct that keeps all information needed to position floats in LayoutNG.
 struct CORE_EXPORT NGUnpositionedFloat
@@ -55,9 +55,9 @@ struct CORE_EXPORT NGUnpositionedFloat
   // data on this object.
   NGBoxStrut margins;
 
-  // The fragment for this unpositioned float. This is only present if it's in
-  // a different writing mode than the BFC.
-  WTF::Optional<RefPtr<NGPhysicalBoxFragment>> fragment;
+  // The layout result for this unpositioned float. This is only present if
+  // it's in a different writing mode than the BFC.
+  WTF::Optional<RefPtr<NGLayoutResult>> layout_result;
 
   bool IsLeft() const;
   bool IsRight() const;

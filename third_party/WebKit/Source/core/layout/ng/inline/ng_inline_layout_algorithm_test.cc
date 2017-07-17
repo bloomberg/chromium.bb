@@ -13,6 +13,7 @@
 #include "core/layout/ng/ng_block_break_token.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
 #include "core/layout/ng/ng_layout_result.h"
+#include "core/layout/ng/ng_unpositioned_float.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/geometry/LayoutRect.h"
 
@@ -189,7 +190,7 @@ TEST_F(NGInlineLayoutAlgorithmTest, TextFloatsAroundFloatsBefore) {
   auto* container_fragment =
       ToNGPhysicalBoxFragment(body_fragment->Children()[0].Get());
   auto* span_box_fragments_wrapper =
-      ToNGPhysicalBoxFragment(container_fragment->Children()[0].Get());
+      ToNGPhysicalBoxFragment(container_fragment->Children()[3].Get());
   auto* line_box_fragments_wrapper =
       ToNGPhysicalBoxFragment(span_box_fragments_wrapper->Children()[0].Get());
   Vector<NGPhysicalLineBoxFragment*> line_boxes;

@@ -60,6 +60,9 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   // After we run the layout algorithm, this function copies back the geometry
   // data to the layout box.
   void CopyFragmentDataToLayoutBox(const NGConstraintSpace&, NGLayoutResult*);
+  void CopyChildFragmentPosition(
+      const NGPhysicalFragment& fragment,
+      const NGPhysicalOffset& additional_offset = NGPhysicalOffset());
 
   void CopyBaselinesFromOldLayout(const NGConstraintSpace&, NGFragmentBuilder*);
   void AddAtomicInlineBaselineFromOldLayout(const NGBaselineRequest&,

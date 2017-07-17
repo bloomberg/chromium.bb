@@ -3,5 +3,7 @@
 // found in the LICENSE file.
 
 #include "core/layout/ng/inline/ng_text_fragment.h"
+#include "core/layout/ng/ng_layout_result.h"
+#include "core/layout/ng/ng_unpositioned_float.h"
 
 namespace blink {}  // namespace blink

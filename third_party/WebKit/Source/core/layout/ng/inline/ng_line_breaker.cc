@@ -457,9 +457,11 @@ void NGLineBreaker::HandleFloat(const NGInlineItem& item,
     LayoutUnit origin_block_offset =
         container_bfc_offset.block_offset + content_offset_.block_offset;
 
-    container_builder_->AddPositionedFloat(
+    NGPositionedFloat positioned_float =
         PositionFloat(origin_block_offset, container_bfc_offset.block_offset,
-                      unpositioned_float.Get(), constraint_space_));
+                      unpositioned_float.Get(), constraint_space_);
+    container_builder_->AddChild(positioned_float.layout_result,
+                                 positioned_float.logical_offset);
 
     // We need to recalculate the available_width as the float probably
     // consumed space on the line.
