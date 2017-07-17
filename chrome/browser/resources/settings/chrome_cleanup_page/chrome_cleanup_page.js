@@ -102,6 +102,15 @@ Polymer({
         return /** @type {chrome.settingsPrivate.PrefObject} */ ({});
       },
     },
+
+    /** @private */
+    isPartnerPowered_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.valueExists('cleanupPoweredByPartner') &&
+            loadTimeData.getBoolean('cleanupPoweredByPartner');
+      },
+    },
   },
 
   /** @private {?settings.ChromeCleanupProxy} */
@@ -153,6 +162,14 @@ Polymer({
    */
   showFiles_: function() {
     this.showFilesToRemove_ = true;
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  showPoweredBy_: function() {
+    return this.showFilesToRemove_ && this.isPartnerPowered_;
   },
 
   /**
