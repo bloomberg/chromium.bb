@@ -220,6 +220,10 @@ void MdTextButton::UpdatePadding() {
       label()->font_list().GetFontSize() -
       style::GetFont(style::CONTEXT_BUTTON_MD, style::STYLE_PRIMARY)
           .GetFontSize();
+  // TODO(tapted): This should get |target_height| using LayoutProvider::
+  // GetControlHeightForFont(). It can't because that only returns a correct
+  // result with --secondary-ui-md, and MdTextButtons appear in top chrome
+  // without that.
   const int kBaseHeight = 28;
   int target_height = std::max(kBaseHeight + size_delta * 2,
                                label()->font_list().GetFontSize() * 2);

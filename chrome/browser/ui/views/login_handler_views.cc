@@ -46,6 +46,8 @@ class LoginHandlerViews : public LoginHandler, public views::DialogDelegate {
   void OnLoginModelDestroying() override {}
 
   // views::DialogDelegate:
+  bool ShouldShowCloseButton() const override { return false; }
+
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override {
     if (button == ui::DIALOG_BUTTON_OK)
       return l10n_util::GetStringUTF16(IDS_LOGIN_DIALOG_OK_BUTTON_LABEL);
