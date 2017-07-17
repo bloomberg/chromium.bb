@@ -16,7 +16,6 @@
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/predictors/loading_data_collector.h"
-#include "chrome/browser/predictors/loading_stats_collector.h"
 #include "chrome/browser/predictors/predictor_database.h"
 #include "chrome/browser/predictors/predictor_database_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -193,7 +192,6 @@ ResourcePrefetchPredictor::ResourcePrefetchPredictor(
     Profile* profile)
     : profile_(profile),
       observer_(nullptr),
-      stats_collector_(nullptr),
       config_(config),
       initialization_state_(NOT_INITIALIZED),
       tables_(PredictorDatabaseFactory::GetForProfile(profile)
@@ -258,11 +256,6 @@ bool ResourcePrefetchPredictor::IsResourcePrefetchable(
 
 void ResourcePrefetchPredictor::SetObserverForTesting(TestObserver* observer) {
   observer_ = observer;
-}
-
-void ResourcePrefetchPredictor::SetStatsCollector(
-    LoadingStatsCollector* stats_collector) {
-  stats_collector_ = stats_collector;
 }
 
 void ResourcePrefetchPredictor::Shutdown() {
