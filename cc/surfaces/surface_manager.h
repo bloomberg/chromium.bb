@@ -183,10 +183,6 @@ class CC_SURFACES_EXPORT SurfaceManager {
     return lifetime_type_ == LifetimeType::REFERENCES;
   }
 
-  const base::flat_set<viz::FrameSinkId>& GetValidFrameSinkIds() {
-    return valid_frame_sink_ids_;
-  }
-
  private:
   friend class test::SurfaceSynchronizationTest;
   friend class SurfaceManagerRefTest;
