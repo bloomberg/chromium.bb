@@ -52,9 +52,12 @@ TileItemView* SuggestionsContainerView::GetTileItemView(int index) {
 }
 
 int SuggestionsContainerView::DoUpdate() {
-  // Ignore updates and disable buttons when transitioning to a different
-  // state.
-  if (contents_view_->GetActiveState() != AppListModel::STATE_START) {
+  // Ignore updates and disable buttons when suggestions container view is not
+  // shown. For bubble launcher, that is not on STATE_START state; for
+  // fullscreen launcher, that is not on STATE_START and STATE_APPS state.
+  const AppListModel::State state = contents_view_->GetActiveState();
+  if (state != AppListModel::STATE_START &&
+      (!is_fullscreen_app_list_enabled_ || state != AppListModel::STATE_APPS)) {
     for (auto* view : search_result_tile_views_)
       view->SetEnabled(false);
 
