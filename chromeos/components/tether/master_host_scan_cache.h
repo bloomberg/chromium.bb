@@ -8,28 +8,26 @@
 #include <memory>
 #include <unordered_map>
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "chromeos/components/tether/host_scan_cache.h"
-#include "chromeos/components/tether/tether_host_response_recorder.h"
 
 namespace chromeos {
-
-class NetworkStateHandler;
 
 namespace tether {
 
 class ActiveHost;
-class DeviceIdTetherNetworkGuidMap;
-class TetherHostResponseRecorder;
+class PersistentHostScanCache;
 class TimerFactory;
 
-// Master host scan cache, which stores host scan results in the network stack.
-// TODO(khorimoto): Add the ability to store tether host scan results
-// persistently so that they can be recovered after a browser crash.
-class MasterHostScanCache : public HostScanCache,
-                            public TetherHostResponseRecorder::Observer {
+// HostScanCache implementation which interfaces with the network stack as well
+// as storing scanned device properties persistently and recovering stored
+// properties after a browser crash. When SetHostScanResult() is called,
+// MasterHostScanCache starts a timer which automatically removes scan results
+// after |kNumMinutesBeforeCacheEntryExpires| minutes.
+class MasterHostScanCache : public HostScanCache {
  public:
   // The number of minutes that a cache entry is considered to be valid before
   // it becomes stale. Once a cache entry is inserted, it will be automatically
@@ -45,37 +43,32 @@ class MasterHostScanCache : public HostScanCache,
   //         are still within the distance needed to communicate.
   static constexpr int kNumMinutesBeforeCacheEntryExpires = 5;
 
-  MasterHostScanCache(
-      NetworkStateHandler* network_state_handler,
-      ActiveHost* active_host,
-      TetherHostResponseRecorder* tether_host_response_recorder,
-      DeviceIdTetherNetworkGuidMap* device_id_tether_network_guid_map);
+  MasterHostScanCache(std::unique_ptr<TimerFactory> timer_factory,
+                      ActiveHost* active_host,
+                      HostScanCache* network_host_scan_cache,
+                      PersistentHostScanCache* persistent_host_scan_cache);
   ~MasterHostScanCache() override;
 
   // HostScanCache:
   void SetHostScanResult(const HostScanCacheEntry& entry) override;
   bool RemoveHostScanResult(const std::string& tether_network_guid) override;
+  bool ExistsInCache(const std::string& tether_network_guid) override;
   void ClearCacheExceptForActiveHost() override;
   bool DoesHostRequireSetup(const std::string& tether_network_guid) override;
-
-  // TetherHostResponseRecorder::Observer:
-  void OnPreviouslyConnectedHostIdsChanged() override;
 
  private:
   friend class MasterHostScanCacheTest;
 
-  void SetTimerFactoryForTest(
-      std::unique_ptr<TimerFactory> timer_factory_for_test);
-
-  bool HasConnectedToHost(const std::string& tether_network_guid);
+  void InitializeFromPersistentCache();
   void StartTimer(const std::string& tether_network_guid);
   void OnTimerFired(const std::string& tether_network_guid);
 
   std::unique_ptr<TimerFactory> timer_factory_;
-  NetworkStateHandler* network_state_handler_;
   ActiveHost* active_host_;
-  TetherHostResponseRecorder* tether_host_response_recorder_;
-  DeviceIdTetherNetworkGuidMap* device_id_tether_network_guid_map_;
+  HostScanCache* network_host_scan_cache_;
+  PersistentHostScanCache* persistent_host_scan_cache_;
+
+  bool is_initializing_;
 
   // Maps from the Tether network GUID to a Timer object. While a scan result is
   // active in the cache, the corresponding Timer object starts running; if the
@@ -83,7 +76,6 @@ class MasterHostScanCache : public HostScanCache,
   // host).
   std::unordered_map<std::string, std::unique_ptr<base::Timer>>
       tether_guid_to_timer_map_;
-  std::unordered_set<std::string> setup_required_tether_guids_;
   base::WeakPtrFactory<MasterHostScanCache> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MasterHostScanCache);

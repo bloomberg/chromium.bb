@@ -29,6 +29,10 @@ class HostScanCache {
   // a no-op. Returns whether a scan result was actually removed.
   virtual bool RemoveHostScanResult(const std::string& tether_network_guid) = 0;
 
+  // Returns whether an entry corresponding to GUId |tether_network_gui| exists
+  // in the cache.
+  virtual bool ExistsInCache(const std::string& tether_network_guid) = 0;
+
   // Removes all scan results from the cache unless they correspond to the
   // active host; the active host must always remain in the cache while
   // connecting/connected to ensure the UI is up to date.
