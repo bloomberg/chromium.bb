@@ -20,6 +20,7 @@
 #include "components/omnibox/browser/history_url_provider.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/url_prefix.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
 namespace {
 
@@ -151,7 +152,12 @@ ScoredHistoryMatch::ScoredHistoryMatch(
     bool is_url_bookmarked,
     size_t num_matching_pages,
     base::Time now)
-    : HistoryMatch(row, 0, false, false), raw_score(0) {
+    : raw_score(0) {
+  // Initialize HistoryMatch fields. TODO(tommycli): Merge these two classes.
+  url_info = row;
+  input_location = 0;
+  innermost_match = false;
+
   // NOTE: Call Init() before doing any validity checking to ensure that the
   // class is always initialized after an instance has been constructed. In
   // particular, this ensures that the class is initialized after an instance
@@ -458,6 +464,22 @@ float ScoredHistoryMatch::GetTopicalityScore(
       GetAdjustedOffsetForComponent(url, adjustments, url::Parsed::HOST);
   const size_t path_pos =
       GetAdjustedOffsetForComponent(url, adjustments, url::Parsed::PATH);
+
+  // Get the position of the last period in the hostname.
+  const url::Parsed& parsed = url.parsed_for_possibly_invalid_spec();
+  size_t last_part_of_host_pos = url.possibly_invalid_spec().rfind(
+      '.', parsed.CountCharactersBefore(url::Parsed::PATH, true));
+  base::OffsetAdjuster::AdjustOffset(adjustments, &last_part_of_host_pos);
+
+  // Get the position of the domain and registry portion of the hostname.
+  size_t domain_and_registry_pos =
+      parsed.CountCharactersBefore(url::Parsed::PATH, true) -
+      net::registry_controlled_domains::GetDomainAndRegistry(
+          url.host_piece(),
+          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)
+          .size();
+  base::OffsetAdjuster::AdjustOffset(adjustments, &domain_and_registry_pos);
+
   // Loop through all URL matches and score them appropriately.
   // First, filter all matches not at a word boundary and in the path (or
   // later).
@@ -488,16 +510,15 @@ float ScoredHistoryMatch::GetTopicalityScore(
       // The match is in the query or ref component.
       DCHECK(at_word_boundary);
       term_scores[url_match.term_num] += 5;
+      match_after_host = true;
     } else if (term_word_offset >= path_pos) {
       // The match is in the path component.
       DCHECK(at_word_boundary);
       term_scores[url_match.term_num] += 8;
+      match_after_host = true;
     } else if (term_word_offset >= host_pos) {
-      // Get the position of the last period in the hostname.
-      const url::Parsed& parsed = url.parsed_for_possibly_invalid_spec();
-      size_t last_part_of_host_pos = url.possibly_invalid_spec().rfind(
-          '.', parsed.CountCharactersBefore(url::Parsed::PATH, true));
-      base::OffsetAdjuster::AdjustOffset(adjustments, &last_part_of_host_pos);
+      if (term_word_offset < domain_and_registry_pos)
+        match_in_subdomain = true;
 
       if (term_word_offset < last_part_of_host_pos) {
         // Either there are no dots in the hostname or this match isn't

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_HISTORY_CORE_BROWSER_HISTORY_MATCH_H_
-#define COMPONENTS_HISTORY_CORE_BROWSER_HISTORY_MATCH_H_
+#ifndef COMPONENTS_OMNIBOX_BROWSER_HISTORY_MATCH_H_
+#define COMPONENTS_OMNIBOX_BROWSER_HISTORY_MATCH_H_
 
 #include <stddef.h>
 
@@ -18,11 +18,6 @@ struct HistoryMatch {
   // Required for STL, we don't use this directly.
   HistoryMatch();
 
-  HistoryMatch(const URLRow& url_info,
-               size_t input_location,
-               bool match_in_scheme,
-               bool innermost_match);
-
   static bool EqualsGURL(const HistoryMatch& h, const GURL& url);
 
   // Returns true if url in this HistoryMatch is just a host
@@ -35,15 +30,17 @@ struct HistoryMatch {
   // The offset of the user's input within the URL.
   size_t input_location;
 
-  // Whether this is a match in the scheme.  This determines whether we'll go
-  // ahead and show a scheme on the URL even if the user didn't type one.
-  // If our best match was in the scheme, not showing the scheme is both
+  // Whether there is a match within specific URL components. This is used
+  // to prevent hiding the component containing the match. For instance,
+  // if our best match was in the scheme, not showing the scheme is both
   // confusing and, for inline autocomplete of the fill_into_edit, dangerous.
   // (If the user types "h" and we match "http://foo/", we need to inline
   // autocomplete that, not "foo/", which won't show anything at all, and
   // will mislead the user into thinking the What You Typed match is what's
   // selected.)
   bool match_in_scheme;
+  bool match_in_subdomain;
+  bool match_after_host;
 
   // A match after any scheme/"www.", if the user input could match at both
   // locations.  If the user types "w", an innermost match ("website.com") is
@@ -56,4 +53,4 @@ typedef std::deque<HistoryMatch> HistoryMatches;
 
 }  // namespace history
 
-#endif  // COMPONENTS_HISTORY_CORE_BROWSER_HISTORY_MATCH_H_
+#endif  // COMPONENTS_OMNIBOX_BROWSER_HISTORY_MATCH_H_
