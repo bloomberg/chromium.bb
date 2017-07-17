@@ -25206,6 +25206,13 @@ from previous Chrome versions.
   <int value="1" label="Http Live Stream Type"/>
 </enum>
 
+<enum name="MemCacheWriteResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Invalid Argument"/>
+  <int value="2" label="Exceeded Single Entry Size"/>
+  <int value="3" label="Exceeded Cache Size"/>
+</enum>
+
 <enum name="MemoryPressureLevel">
   <int value="0" label="No memory pressure"/>
   <int value="1" label="Moderate memory pressure"/>
