@@ -97,13 +97,11 @@ class SpdyFramerTestUtil {
       return headers_handler_.get();
     }
 
-    void OnHeaderFrameEnd(SpdyStreamId stream_id, bool end_headers) override {
+    void OnHeaderFrameEnd(SpdyStreamId stream_id) override {
       CHECK(!finished_);
       frame_->set_header_block(headers_handler_->decoded_block().Clone());
       finished_ = true;
-      if (end_headers) {
-        headers_handler_.reset();
-      }
+      headers_handler_.reset();
     }
 
     void OnHeaders(SpdyStreamId stream_id,
@@ -459,13 +457,11 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
     return headers_handler_.get();
   }
 
-  void OnHeaderFrameEnd(SpdyStreamId stream_id, bool end_headers) override {
+  void OnHeaderFrameEnd(SpdyStreamId stream_id) override {
     CHECK(headers_handler_ != nullptr);
     headers_ = headers_handler_->decoded_block().Clone();
     header_bytes_received_ = headers_handler_->header_bytes_parsed();
-    if (end_headers) {
-      headers_handler_.reset();
-    }
+    headers_handler_.reset();
   }
 
   void OnRstStream(SpdyStreamId stream_id, SpdyErrorCode error_code) override {
@@ -4141,7 +4137,7 @@ TEST_P(SpdyFramerTest, HeadersFrameFlags) {
                                    parent_stream_id, exclusive, fin, end));
     EXPECT_CALL(visitor, OnHeaderFrameStart(57)).Times(1);
     if (end) {
-      EXPECT_CALL(visitor, OnHeaderFrameEnd(57, _)).Times(1);
+      EXPECT_CALL(visitor, OnHeaderFrameEnd(57)).Times(1);
     }
     if (flags & DATA_FLAG_FIN && end) {
       EXPECT_CALL(visitor, OnStreamEnd(_));
@@ -4234,7 +4230,7 @@ TEST_P(SpdyFramerTest, PushPromiseFrameFlags) {
     EXPECT_CALL(visitor, OnPushPromise(client_id, promised_id, end));
     EXPECT_CALL(visitor, OnHeaderFrameStart(client_id)).Times(1);
     if (end) {
-      EXPECT_CALL(visitor, OnHeaderFrameEnd(client_id, _)).Times(1);
+      EXPECT_CALL(visitor, OnHeaderFrameEnd(client_id)).Times(1);
     }
 
     framer.ProcessInput(frame.data(), frame.size());
@@ -4294,7 +4290,7 @@ TEST_P(SpdyFramerTest, ContinuationFrameFlags) {
     EXPECT_CALL(visitor, OnContinuation(42, flags & HEADERS_FLAG_END_HEADERS));
     bool end = flags & HEADERS_FLAG_END_HEADERS;
     if (end) {
-      EXPECT_CALL(visitor, OnHeaderFrameEnd(42, _)).Times(1);
+      EXPECT_CALL(visitor, OnHeaderFrameEnd(42)).Times(1);
     }
 
     framer.ProcessInput(frame0.data(), frame0.size());

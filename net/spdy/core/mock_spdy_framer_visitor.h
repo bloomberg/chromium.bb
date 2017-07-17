@@ -35,7 +35,7 @@ class MockSpdyFramerVisitor : public SpdyFramerVisitorInterface {
   MOCK_METHOD2(OnStreamPadding, void(SpdyStreamId stream_id, size_t len));
   MOCK_METHOD1(OnHeaderFrameStart,
                SpdyHeadersHandlerInterface*(SpdyStreamId stream_id));
-  MOCK_METHOD2(OnHeaderFrameEnd, void(SpdyStreamId stream_id, bool end));
+  MOCK_METHOD1(OnHeaderFrameEnd, void(SpdyStreamId stream_id));
   MOCK_METHOD2(OnRstStream,
                void(SpdyStreamId stream_id, SpdyErrorCode error_code));
   MOCK_METHOD0(OnSettings, void());
@@ -77,7 +77,7 @@ class MockSpdyFramerVisitor : public SpdyFramerVisitorInterface {
     ON_CALL(*this, OnHeaderFrameStart(testing::_))
         .WillByDefault(testing::Invoke(
             this, &MockSpdyFramerVisitor::ReturnTestHeadersHandler));
-    ON_CALL(*this, OnHeaderFrameEnd(testing::_, testing::_))
+    ON_CALL(*this, OnHeaderFrameEnd(testing::_))
         .WillByDefault(testing::Invoke(
             this, &MockSpdyFramerVisitor::ResetTestHeadersHandler));
   }
@@ -90,10 +90,8 @@ class MockSpdyFramerVisitor : public SpdyFramerVisitorInterface {
     return headers_handler_.get();
   }
 
-  void ResetTestHeadersHandler(SpdyStreamId /* stream_id */, bool end) {
-    if (end) {
-      headers_handler_.reset();
-    }
+  void ResetTestHeadersHandler(SpdyStreamId /* stream_id */) {
+    headers_handler_.reset();
   }
 
   std::unique_ptr<SpdyHeadersHandlerInterface> headers_handler_;
