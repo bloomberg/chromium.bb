@@ -969,6 +969,14 @@ should be able to be added at any place in this file.
   <description>Toggles Spoken Feedback (ChromeVox)</description>
 </action>
 
+<action name="Accel_Toggle_System_Tray_Bubble">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <description>
+    User invoked keyboard accelerator, such as Shift-Alt-S or Hamburger key, to
+    bring up or dismiss the system tray menu.
+  </description>
+</action>
+
 <action name="Accel_Toggle_Touchpad">
   <owner>afakhry@chromium.org</owner>
   <description>

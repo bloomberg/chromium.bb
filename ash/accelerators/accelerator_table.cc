@@ -131,10 +131,10 @@ const AcceleratorData kAcceleratorData[] = {
      SHOW_MESSAGE_CENTER_BUBBLE},
     {true, ui::VKEY_P, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, SHOW_STYLUS_TOOLS},
     {true, ui::VKEY_S, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
-     SHOW_SYSTEM_TRAY_BUBBLE},
+     TOGGLE_SYSTEM_TRAY_BUBBLE},
     // Until we have unified settings and notifications the "hamburger"
     // key opens quick settings.
-    {true, ui::VKEY_SETTINGS, ui::EF_NONE, SHOW_SYSTEM_TRAY_BUBBLE},
+    {true, ui::VKEY_SETTINGS, ui::EF_NONE, TOGGLE_SYSTEM_TRAY_BUBBLE},
     {true, ui::VKEY_K, ui::EF_SHIFT_DOWN | ui::EF_COMMAND_DOWN,
      SHOW_IME_MENU_BUBBLE},
     {true, ui::VKEY_1, ui::EF_ALT_DOWN, LAUNCH_APP_0},
@@ -333,7 +333,6 @@ const AcceleratorAction kActionsAllowedAtLoginOrLockScreen[] = {
     SCALE_UI_RESET,
     SCALE_UI_UP,
     SHOW_IME_MENU_BUBBLE,
-    SHOW_SYSTEM_TRAY_BUBBLE,
     SWITCH_IME,  // Switch to another IME depending on the accelerator.
     TAKE_PARTIAL_SCREENSHOT,
     TAKE_SCREENSHOT,
@@ -342,6 +341,7 @@ const AcceleratorAction kActionsAllowedAtLoginOrLockScreen[] = {
     TOGGLE_HIGH_CONTRAST,
     TOGGLE_MIRROR_MODE,
     TOGGLE_SPOKEN_FEEDBACK,
+    TOGGLE_SYSTEM_TRAY_BUBBLE,
     TOGGLE_WIFI,
     TOUCH_HUD_CLEAR,
     VOLUME_DOWN,
