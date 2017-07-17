@@ -33,8 +33,6 @@ static_library("browser") {
     "history_db_task.h",
     "history_delete_directives_data_type_controller.cc",
     "history_delete_directives_data_type_controller.h",
-    "history_match.cc",
-    "history_match.h",
     "history_model_worker.cc",
     "history_model_worker.h",
     "history_service.cc",

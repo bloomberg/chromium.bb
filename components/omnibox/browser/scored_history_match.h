@@ -14,8 +14,8 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_offset_string_conversions.h"
 #include "base/time/time.h"
-#include "components/history/core/browser/history_match.h"
 #include "components/history/core/browser/history_types.h"
+#include "components/omnibox/browser/history_match.h"
 #include "components/omnibox/browser/in_memory_url_index_types.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 

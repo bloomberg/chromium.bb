@@ -293,15 +293,23 @@ TEST_F(ScoredHistoryMatchTest, Inlining) {
     ScoredHistoryMatch scored_a(row, visits, ASCIIToUTF16("g"), Make1Term("g"),
                                 one_word_no_offset, word_starts, false, 1, now);
     EXPECT_FALSE(scored_a.match_in_scheme);
+    EXPECT_FALSE(scored_a.match_in_subdomain);
+    EXPECT_FALSE(scored_a.match_after_host);
     ScoredHistoryMatch scored_b(row, visits, ASCIIToUTF16("w"), Make1Term("w"),
                                 one_word_no_offset, word_starts, false, 1, now);
     EXPECT_FALSE(scored_b.match_in_scheme);
+    EXPECT_TRUE(scored_b.match_in_subdomain);
+    EXPECT_FALSE(scored_b.match_after_host);
     ScoredHistoryMatch scored_c(row, visits, ASCIIToUTF16("h"), Make1Term("h"),
                                 one_word_no_offset, word_starts, false, 1, now);
     EXPECT_TRUE(scored_c.match_in_scheme);
+    EXPECT_FALSE(scored_c.match_in_subdomain);
+    EXPECT_FALSE(scored_c.match_after_host);
     ScoredHistoryMatch scored_d(row, visits, ASCIIToUTF16("o"), Make1Term("o"),
                                 one_word_no_offset, word_starts, false, 1, now);
     EXPECT_FALSE(scored_d.match_in_scheme);
+    EXPECT_FALSE(scored_d.match_in_subdomain);
+    EXPECT_FALSE(scored_d.match_after_host);
   }
 
   {
@@ -310,27 +318,74 @@ TEST_F(ScoredHistoryMatchTest, Inlining) {
     ScoredHistoryMatch scored_a(row, visits, ASCIIToUTF16("t"), Make1Term("t"),
                                 one_word_no_offset, word_starts, false, 1, now);
     EXPECT_FALSE(scored_a.match_in_scheme);
+    EXPECT_TRUE(scored_a.match_in_subdomain);
+    EXPECT_FALSE(scored_a.match_after_host);
     ScoredHistoryMatch scored_b(row, visits, ASCIIToUTF16("f"), Make1Term("f"),
                                 one_word_no_offset, word_starts, false, 1, now);
     EXPECT_FALSE(scored_b.match_in_scheme);
+    EXPECT_FALSE(scored_b.match_in_subdomain);
+    EXPECT_FALSE(scored_b.match_after_host);
     ScoredHistoryMatch scored_c(row, visits, ASCIIToUTF16("o"), Make1Term("o"),
                                 one_word_no_offset, word_starts, false, 1, now);
     EXPECT_FALSE(scored_c.match_in_scheme);
+    EXPECT_FALSE(scored_c.match_in_subdomain);
+    EXPECT_FALSE(scored_c.match_after_host);
+  }
+
+  {
+    history::URLRow row(MakeURLRow("http://en.m.foo.com", "abcdef", 3, 30, 1));
+    PopulateWordStarts(row, &word_starts);
+    ScoredHistoryMatch scored_a(row, visits, ASCIIToUTF16("e"), Make1Term("e"),
+                                one_word_no_offset, word_starts, false, 1, now);
+    EXPECT_FALSE(scored_a.match_in_scheme);
+    EXPECT_TRUE(scored_a.match_in_subdomain);
+    EXPECT_FALSE(scored_a.match_after_host);
+    ScoredHistoryMatch scored_b(row, visits, ASCIIToUTF16("m"), Make1Term("m"),
+                                one_word_no_offset, word_starts, false, 1, now);
+    EXPECT_FALSE(scored_b.match_in_scheme);
+    EXPECT_TRUE(scored_b.match_in_subdomain);
+    EXPECT_FALSE(scored_b.match_after_host);
+    ScoredHistoryMatch scored_c(row, visits, ASCIIToUTF16("f"), Make1Term("f"),
+                                one_word_no_offset, word_starts, false, 1, now);
+    EXPECT_FALSE(scored_c.match_in_scheme);
+    EXPECT_FALSE(scored_c.match_in_subdomain);
+    EXPECT_FALSE(scored_c.match_after_host);
   }
 
   {
     history::URLRow row(
-        MakeURLRow("https://www.testing.com", "abcdef", 3, 30, 1));
+        MakeURLRow("https://www.testing.com/xxx?yyy#zzz", "abcdef", 3, 30, 1));
     PopulateWordStarts(row, &word_starts);
     ScoredHistoryMatch scored_a(row, visits, ASCIIToUTF16("t"), Make1Term("t"),
                                 one_word_no_offset, word_starts, false, 1, now);
     EXPECT_FALSE(scored_a.match_in_scheme);
+    EXPECT_FALSE(scored_a.match_in_subdomain);
+    EXPECT_FALSE(scored_a.match_after_host);
     ScoredHistoryMatch scored_b(row, visits, ASCIIToUTF16("h"), Make1Term("h"),
                                 one_word_no_offset, word_starts, false, 1, now);
     EXPECT_TRUE(scored_b.match_in_scheme);
+    EXPECT_FALSE(scored_b.match_in_subdomain);
+    EXPECT_FALSE(scored_b.match_after_host);
     ScoredHistoryMatch scored_c(row, visits, ASCIIToUTF16("w"), Make1Term("w"),
                                 one_word_no_offset, word_starts, false, 1, now);
     EXPECT_FALSE(scored_c.match_in_scheme);
+    EXPECT_TRUE(scored_c.match_in_subdomain);
+    EXPECT_FALSE(scored_c.match_after_host);
+    ScoredHistoryMatch scored_d(row, visits, ASCIIToUTF16("x"), Make1Term("x"),
+                                one_word_no_offset, word_starts, false, 1, now);
+    EXPECT_FALSE(scored_d.match_in_scheme);
+    EXPECT_FALSE(scored_d.match_in_subdomain);
+    EXPECT_TRUE(scored_d.match_after_host);
+    ScoredHistoryMatch scored_e(row, visits, ASCIIToUTF16("y"), Make1Term("y"),
+                                one_word_no_offset, word_starts, false, 1, now);
+    EXPECT_FALSE(scored_e.match_in_scheme);
+    EXPECT_FALSE(scored_e.match_in_subdomain);
+    EXPECT_TRUE(scored_e.match_after_host);
+    ScoredHistoryMatch scored_f(row, visits, ASCIIToUTF16("z"), Make1Term("z"),
+                                one_word_no_offset, word_starts, false, 1, now);
+    EXPECT_FALSE(scored_f.match_in_scheme);
+    EXPECT_FALSE(scored_f.match_in_subdomain);
+    EXPECT_TRUE(scored_f.match_after_host);
   }
 
   {
@@ -340,13 +395,19 @@ TEST_F(ScoredHistoryMatchTest, Inlining) {
     ScoredHistoryMatch scored_a(row, visits, ASCIIToUTF16("x"), Make1Term("x"),
                                 one_word_no_offset, word_starts, false, 1, now);
     EXPECT_FALSE(scored_a.match_in_scheme);
+    EXPECT_FALSE(scored_a.match_in_subdomain);
+    EXPECT_FALSE(scored_a.match_after_host);
     ScoredHistoryMatch scored_b(row, visits, ASCIIToUTF16("xn"),
                                 Make1Term("xn"), one_word_no_offset,
                                 word_starts, false, 1, now);
     EXPECT_FALSE(scored_b.match_in_scheme);
+    EXPECT_FALSE(scored_b.match_in_subdomain);
+    EXPECT_FALSE(scored_b.match_after_host);
     ScoredHistoryMatch scored_c(row, visits, ASCIIToUTF16("w"), Make1Term("w"),
                                 one_word_no_offset, word_starts, false, 1, now);
     EXPECT_FALSE(scored_c.match_in_scheme);
+    EXPECT_TRUE(scored_c.match_in_subdomain);
+    EXPECT_FALSE(scored_c.match_after_host);
   }
 }
 
