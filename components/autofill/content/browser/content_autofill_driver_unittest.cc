@@ -203,6 +203,8 @@ class FakeAutofillAgent : public mojom::AutofillAgent {
 
   void SetUserGestureRequired(bool required) override {}
 
+  void SetSecureContextRequired(bool required) override {}
+
   mojo::BindingSet<mojom::AutofillAgent> bindings_;
 
   base::Closure quit_closure_;
