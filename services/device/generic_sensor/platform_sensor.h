@@ -31,7 +31,7 @@ class PlatformSensor : public base::RefCountedThreadSafe<PlatformSensor> {
    public:
     virtual void OnSensorReadingChanged() = 0;
     virtual void OnSensorError() = 0;
-    virtual bool IsNotificationSuspended() = 0;
+    virtual bool IsSuspended() = 0;
 
    protected:
     virtual ~Client() {}

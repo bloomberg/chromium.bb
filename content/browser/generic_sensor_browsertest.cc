@@ -63,6 +63,7 @@ class FakeAmbientLightSensor : public device::mojom::Sensor {
 
   void Suspend() override {}
   void Resume() override {}
+  void ConfigureReadingChangeNotifications(bool enabled) override {}
 
   device::PlatformSensorConfiguration GetDefaultConfiguration() {
     return device::PlatformSensorConfiguration(60 /* frequency */);
