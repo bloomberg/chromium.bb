@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.browser;
+package org.chromium.base.test;
 
 import android.content.ComponentName;
 import android.os.Bundle;
@@ -13,7 +13,7 @@ import org.chromium.base.process_launcher.ICallbackInt;
 import org.chromium.base.process_launcher.IChildProcessService;
 
 /** An implementation of ChildProcessConnection that does not connect to a real service. */
-class TestChildProcessConnection extends ChildProcessConnection {
+public class TestChildProcessConnection extends ChildProcessConnection {
     private static class MockServiceBinder extends IChildProcessService.Stub {
         @Override
         public boolean bindToCaller() {
@@ -41,7 +41,7 @@ class TestChildProcessConnection extends ChildProcessConnection {
         @Override
         public boolean bind() {
             if (TestChildProcessConnection.this.mPostOnServiceConnected) {
-                LauncherThread.post(new Runnable() {
+                getLauncherHandler().post(new Runnable() {
                     @Override
                     public void run() {
                         // TODO(boliu): implement a dummy service.
@@ -73,7 +73,7 @@ class TestChildProcessConnection extends ChildProcessConnection {
      * Creates a mock binding corresponding to real ManagedChildProcessConnection after the
      * connection is established: with initial binding bound and no strong binding.
      */
-    TestChildProcessConnection(ComponentName serviceName, boolean bindToCaller,
+    public TestChildProcessConnection(ComponentName serviceName, boolean bindToCaller,
             boolean bindAsExternalService, Bundle serviceBundle) {
         super(null /* context */, serviceName, bindToCaller, bindAsExternalService, serviceBundle);
         mPostOnServiceConnected = true;
