@@ -6354,6 +6354,35 @@ TEST_F(ExtensionServiceTest, MultipleExternalInstallErrors) {
   EXPECT_FALSE(HasExternalInstallErrors(service_));
 }
 
+// Regression test for crbug.com/739142. Verifies that no UAF occurs when
+// ExternalInstallError needs to be deleted asynchronously.
+TEST_F(ExtensionServiceTest, InstallPromptAborted) {
+  FeatureSwitch::ScopedOverride prompt(
+      FeatureSwitch::prompt_for_external_extensions(), true);
+  InitializeEmptyExtensionService();
+
+  MockExternalProvider* reg_provider =
+      AddMockExternalProvider(Manifest::EXTERNAL_REGISTRY);
+
+  reg_provider->UpdateOrAddExtension(good_crx, "1.0.0.0",
+                                     data_dir().AppendASCII("good.crx"));
+  WaitForExternalExtensionInstalled();
+  EXPECT_EQ(
+      1u, service()->external_install_manager()->GetErrorsForTesting().size());
+  EXPECT_FALSE(service()->IsExtensionEnabled(good_crx));
+  EXPECT_TRUE(GetError(good_crx));
+
+  // Abort the extension install prompt. This should cause the
+  // ExternalInstallError to be deleted asynchronously.
+  GetError(good_crx)->OnInstallPromptDone(
+      ExtensionInstallPrompt::Result::ABORTED);
+  EXPECT_TRUE(GetError(good_crx));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(GetError(good_crx));
+
+  EXPECT_FALSE(HasExternalInstallErrors(service_));
+}
+
 TEST_F(ExtensionServiceTest, MultipleExternalInstallBubbleErrors) {
   FeatureSwitch::ScopedOverride prompt(
       FeatureSwitch::prompt_for_external_extensions(), true);
