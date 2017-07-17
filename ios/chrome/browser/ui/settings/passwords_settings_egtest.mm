@@ -12,10 +12,7 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/password_store.h"
-#include "components/password_manager/core/common/password_manager_pref_names.h"
-#include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #import "ios/chrome/browser/ui/settings/password_details_collection_view_controller_for_testing.h"
 #import "ios/chrome/browser/ui/settings/reauthentication_module.h"
@@ -276,32 +273,15 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
   [super tearDown];
 }
 
-// Return pref for saving passwords back to the passed value and restores the
-// experimental flag for viewing passwords.
-- (void)passwordsTearDown:(BOOL)defaultPasswordManagementSetting
-                         :(NSString*)oldExperiment {
-  ios::ChromeBrowserState* browserState =
-      chrome_test_util::GetOriginalBrowserState();
-  PrefService* preferences = browserState->GetPrefs();
-  preferences->SetBoolean(
-      password_manager::prefs::kPasswordManagerSavingEnabled,
-      defaultPasswordManagementSetting);
-
+// Restores the experimental flag for viewing passwords.
+- (void)passwordsTearDown:(NSString*)oldExperiment {
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
   [defaults setObject:oldExperiment forKey:@"EnableViewCopyPasswords"];
 }
 
-// Sets the preference to allow saving passwords and activates the flag to use
-// the new UI for viewing passwords in settings. Also, ensures that original
-// state is restored after the test ends.
+// Activates the flag to use the new UI for viewing passwords in settings.
+// Also, ensures that original state is restored after the test ends.
 - (void)scopedEnablePasswordManagementAndViewingUI {
-  // Retrieve the original preference state.
-  ios::ChromeBrowserState* browserState =
-      chrome_test_util::GetOriginalBrowserState();
-  PrefService* preferences = browserState->GetPrefs();
-  bool defaultPasswordManagerSavingPref = preferences->GetBoolean(
-      password_manager::prefs::kPasswordManagerSavingEnabled);
-
   // Retrieve the experiment setting.
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
   NSString* oldSetting = [defaults stringForKey:@"EnableViewCopyPasswords"];
@@ -309,12 +289,8 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
   // Ensure restoring that on tear-down.
   __weak PasswordsSettingsTestCase* weakSelf = self;
   [self setTearDownHandler:^{
-    [weakSelf passwordsTearDown:defaultPasswordManagerSavingPref:oldSetting];
+    [weakSelf passwordsTearDown:oldSetting];
   }];
-
-  // Enable saving.
-  preferences->SetBoolean(
-      password_manager::prefs::kPasswordManagerSavingEnabled, true);
 
   // Enable viewing passwords in settings.
   [defaults setObject:@"Enabled" forKey:@"EnableViewCopyPasswords"];
