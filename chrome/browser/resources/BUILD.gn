@@ -158,3 +158,15 @@ if (enable_extensions) {
     output_dir = "$root_gen_dir/chrome"
   }
 }
+
+if (enable_vr) {
+  grit("vr_shell_resources") {
+    source = "vr_shell_resources.grd"
+    defines = chrome_grit_defines
+    outputs = [
+      "grit/vr_shell_resources.h",
+      "vr_shell_resources.pak",
+    ]
+    output_dir = "$root_gen_dir/chrome"
+  }
+}

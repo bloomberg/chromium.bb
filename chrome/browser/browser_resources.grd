@@ -235,7 +235,6 @@
         <include name="IDR_SNIPPETS_INTERNALS_HTML" file="resources\snippets_internals.html" allowexternalscript="true" compress="gzip" type="BINDATA" />
         <include name="IDR_SNIPPETS_INTERNALS_CSS" file="resources\snippets_internals.css" compress="gzip" type="BINDATA" />
         <include name="IDR_SNIPPETS_INTERNALS_JS" file="resources\snippets_internals.js" compress="gzip" type="BINDATA" />
-        <part file="vr_shell_resources.grdp" />
       </if>
       <include name="IDR_SUPERVISED_USER_INTERNALS_HTML" file="resources\supervised_user_internals.html" allowexternalscript="true" compress="gzip" type="BINDATA" />
       <include name="IDR_SUPERVISED_USER_INTERNALS_CSS" file="resources\supervised_user_internals.css" compress="gzip" type="BINDATA" />

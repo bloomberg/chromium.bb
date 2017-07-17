@@ -109,6 +109,7 @@ static_library("vr_common") {
     "//cc/animation",
     "//cc/paint",
     "//chrome/app:generated_resources",
+    "//chrome/browser/resources:vr_shell_resources",
     "//components/security_state/core",
     "//components/strings",
     "//components/toolbar",
