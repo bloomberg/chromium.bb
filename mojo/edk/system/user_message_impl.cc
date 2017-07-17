@@ -4,7 +4,10 @@
 
 #include "mojo/edk/system/user_message_impl.h"
 
+#include <algorithm>
+
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros_local.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/numerics/safe_math.h"
 #include "mojo/edk/embedder/embedder_internal.h"
@@ -20,6 +23,11 @@ namespace mojo {
 namespace edk {
 
 namespace {
+
+// The minimum amount of memory to allocate for a new serialized message buffer.
+// This should be sufficiently large such that most seiralized messages do not
+// incur any reallocations as they're expanded to full size.
+const uint32_t kMinimumPayloadBufferSize = 4096;
 
 #pragma pack(push, 1)
 // Header attached to every message.
@@ -57,10 +65,12 @@ static_assert(sizeof(DispatcherHeader) % 8 == 0,
 MojoResult SerializeEventMessage(
     ports::UserMessageEvent* event,
     size_t payload_size,
+    size_t payload_buffer_size,
     const Dispatcher::DispatcherInTransit* dispatchers,
     size_t num_dispatchers,
     Channel::MessagePtr* out_message,
     void** out_header,
+    size_t* out_header_size,
     void** out_user_payload) {
   // A structure for tracking information about every Dispatcher that will be
   // serialized into the message. This is NOT part of the message itself.
@@ -94,9 +104,11 @@ MojoResult SerializeEventMessage(
   event->ReservePorts(num_ports);
   const size_t event_size = event->GetSerializedSize();
   const size_t total_size = event_size + header_size + payload_size;
+  const size_t total_buffer_size =
+      event_size + header_size + payload_buffer_size;
   void* data;
-  Channel::MessagePtr message =
-      NodeChannel::CreateEventMessage(total_size, &data, num_handles);
+  Channel::MessagePtr message = NodeChannel::CreateEventMessage(
+      total_buffer_size, total_size, &data, num_handles);
   auto* header = reinterpret_cast<MessageHeader*>(static_cast<uint8_t*>(data) +
                                                   event_size);
 
@@ -166,6 +178,7 @@ MojoResult SerializeEventMessage(
 
   *out_message = std::move(message);
   *out_header = header;
+  *out_header_size = header_size;
   *out_user_payload = reinterpret_cast<uint8_t*>(header) + header_size;
   return MOJO_RESULT_OK;
 }
@@ -176,11 +189,10 @@ MojoResult SerializeEventMessage(
 const ports::UserMessage::TypeInfo UserMessageImpl::kUserMessageTypeInfo = {};
 
 UserMessageImpl::~UserMessageImpl() {
-  if (HasContext()) {
-    if (context_thunks_.has_value())
-      context_thunks_->destroy(context_);
+  if (HasContext() && context_destructor_) {
     DCHECK(!channel_message_);
     DCHECK(!has_serialized_handles_);
+    context_destructor_(context_);
   } else if (IsSerialized() && has_serialized_handles_) {
     // Ensure that any handles still serialized within this message are
     // extracted and closed so they don't leak.
@@ -198,12 +210,10 @@ UserMessageImpl::~UserMessageImpl() {
 
 // static
 std::unique_ptr<ports::UserMessageEvent>
-UserMessageImpl::CreateEventForNewMessageWithContext(
-    uintptr_t context,
-    const MojoMessageOperationThunks* thunks) {
+UserMessageImpl::CreateEventForNewMessage() {
   auto message_event = base::MakeUnique<ports::UserMessageEvent>(0);
-  message_event->AttachMessage(base::WrapUnique(
-      new UserMessageImpl(message_event.get(), context, thunks)));
+  message_event->AttachMessage(
+      base::WrapUnique(new UserMessageImpl(message_event.get())));
   return message_event;
 }
 
@@ -217,14 +227,15 @@ MojoResult UserMessageImpl::CreateEventForNewSerializedMessage(
   void* header = nullptr;
   void* user_payload = nullptr;
   auto event = base::MakeUnique<ports::UserMessageEvent>(0);
-  MojoResult rv = SerializeEventMessage(event.get(), num_bytes, dispatchers,
-                                        num_dispatchers, &channel_message,
-                                        &header, &user_payload);
+  size_t header_size = 0;
+  MojoResult rv = SerializeEventMessage(
+      event.get(), num_bytes, num_bytes, dispatchers, num_dispatchers,
+      &channel_message, &header, &header_size, &user_payload);
   if (rv != MOJO_RESULT_OK)
     return rv;
   event->AttachMessage(base::WrapUnique(
       new UserMessageImpl(event.get(), std::move(channel_message), header,
-                          user_payload, num_bytes)));
+                          header_size, user_payload, num_bytes)));
   *out_event = std::move(event);
   return MOJO_RESULT_OK;
 }
@@ -248,7 +259,7 @@ std::unique_ptr<UserMessageImpl> UserMessageImpl::CreateFromChannelMessage(
   const size_t user_payload_size = payload_size - header_size;
   return base::WrapUnique(
       new UserMessageImpl(message_event, std::move(channel_message), header,
-                          user_payload, user_payload_size));
+                          header_size, user_payload, user_payload_size));
 }
 
 // static
@@ -277,58 +288,97 @@ uintptr_t UserMessageImpl::ReleaseContext() {
   return context;
 }
 
+size_t UserMessageImpl::user_payload_buffer_size() const {
+  DCHECK(IsSerialized());
+  return channel_message_->capacity();
+}
+
 size_t UserMessageImpl::num_handles() const {
   DCHECK(IsSerialized());
   DCHECK(header_);
   return static_cast<const MessageHeader*>(header_)->num_dispatchers;
 }
 
-MojoResult UserMessageImpl::SerializeIfNecessary() {
+MojoResult UserMessageImpl::AttachContext(
+    uintptr_t context,
+    MojoMessageContextSerializer serializer,
+    MojoMessageContextDestructor destructor) {
+  if (HasContext())
+    return MOJO_RESULT_ALREADY_EXISTS;
   if (IsSerialized())
     return MOJO_RESULT_FAILED_PRECONDITION;
-  if (!context_thunks_.has_value())
-    return MOJO_RESULT_NOT_FOUND;
+  context_ = context;
+  context_serializer_ = serializer;
+  context_destructor_ = destructor;
+  return MOJO_RESULT_OK;
+}
 
-  DCHECK(HasContext());
-  DCHECK(!has_serialized_handles_);
-  size_t num_bytes = 0;
-  size_t num_handles = 0;
-  context_thunks_->get_serialized_size(context_, &num_bytes, &num_handles);
-
-  std::vector<ScopedHandle> handles(num_handles);
+MojoResult UserMessageImpl::AttachSerializedMessageBuffer(
+    uint32_t payload_size,
+    const MojoHandle* handles,
+    uint32_t num_handles) {
   std::vector<Dispatcher::DispatcherInTransit> dispatchers;
   if (num_handles > 0) {
-    auto* raw_handles = reinterpret_cast<MojoHandle*>(handles.data());
-    context_thunks_->serialize_handles(context_, raw_handles);
     MojoResult acquire_result = internal::g_core->AcquireDispatchersForTransit(
-        raw_handles, num_handles, &dispatchers);
+        handles, num_handles, &dispatchers);
     if (acquire_result != MOJO_RESULT_OK)
       return acquire_result;
   }
-
   Channel::MessagePtr channel_message;
   MojoResult rv = SerializeEventMessage(
-      message_event_, num_bytes, dispatchers.data(), num_handles,
-      &channel_message, &header_, &user_payload_);
+      message_event_, payload_size,
+      std::max(payload_size, kMinimumPayloadBufferSize), dispatchers.data(),
+      num_handles, &channel_message, &header_, &header_size_, &user_payload_);
   if (num_handles > 0) {
     internal::g_core->ReleaseDispatchersForTransit(dispatchers,
                                                    rv == MOJO_RESULT_OK);
   }
-
   if (rv != MOJO_RESULT_OK)
     return MOJO_RESULT_ABORTED;
-
-  // The handles are now owned by the message event. Release them here.
-  for (auto& handle : handles)
-    ignore_result(handle.release());
-
-  if (num_bytes)
-    context_thunks_->serialize_payload(context_, user_payload_);
-  user_payload_size_ = num_bytes;
+  user_payload_size_ = payload_size;
   channel_message_ = std::move(channel_message);
+  has_serialized_handles_ = true;
+  return MOJO_RESULT_OK;
+}
 
-  context_thunks_->destroy(context_);
-  context_ = 0;
+MojoResult UserMessageImpl::ExtendSerializedMessagePayload(
+    uint32_t new_payload_size) {
+  if (!IsSerialized())
+    return MOJO_RESULT_FAILED_PRECONDITION;
+  if (new_payload_size < user_payload_size_)
+    return MOJO_RESULT_OUT_OF_RANGE;
+
+  size_t header_offset =
+      static_cast<uint8_t*>(header_) -
+      static_cast<const uint8_t*>(channel_message_->payload());
+  size_t user_payload_offset =
+      static_cast<uint8_t*>(user_payload_) -
+      static_cast<const uint8_t*>(channel_message_->payload());
+  channel_message_->ExtendPayload(user_payload_offset + new_payload_size);
+  header_ = static_cast<uint8_t*>(channel_message_->mutable_payload()) +
+            header_offset;
+  user_payload_ = static_cast<uint8_t*>(channel_message_->mutable_payload()) +
+                  user_payload_offset;
+  user_payload_size_ = new_payload_size;
+  return MOJO_RESULT_OK;
+}
+
+MojoResult UserMessageImpl::SerializeIfNecessary() {
+  if (IsSerialized())
+    return MOJO_RESULT_FAILED_PRECONDITION;
+
+  DCHECK(HasContext());
+  DCHECK(!has_serialized_handles_);
+  if (!context_serializer_)
+    return MOJO_RESULT_NOT_FOUND;
+
+  uintptr_t context = ReleaseContext();
+  context_serializer_(reinterpret_cast<MojoMessageHandle>(message_event_),
+                      context);
+
+  if (context_destructor_)
+    context_destructor_(context);
+
   has_serialized_handles_ = true;
   return MOJO_RESULT_OK;
 }
@@ -417,19 +467,14 @@ MojoResult UserMessageImpl::ExtractSerializedHandles(
   return MOJO_RESULT_OK;
 }
 
-UserMessageImpl::UserMessageImpl(ports::UserMessageEvent* message_event,
-                                 uintptr_t context,
-                                 const MojoMessageOperationThunks* thunks)
+UserMessageImpl::UserMessageImpl(ports::UserMessageEvent* message_event)
     : ports::UserMessage(&kUserMessageTypeInfo),
-      message_event_(message_event),
-      context_(context) {
-  if (thunks)
-    context_thunks_ = *thunks;
-}
+      message_event_(message_event) {}
 
 UserMessageImpl::UserMessageImpl(ports::UserMessageEvent* message_event,
                                  Channel::MessagePtr channel_message,
                                  void* header,
+                                 size_t header_size,
                                  void* user_payload,
                                  size_t user_payload_size)
     : ports::UserMessage(&kUserMessageTypeInfo),
@@ -437,6 +482,7 @@ UserMessageImpl::UserMessageImpl(ports::UserMessageEvent* message_event,
       channel_message_(std::move(channel_message)),
       has_serialized_handles_(true),
       header_(header),
+      header_size_(header_size),
       user_payload_(user_payload),
       user_payload_size_(user_payload_size) {}
 

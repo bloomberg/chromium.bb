@@ -462,24 +462,11 @@ MojoResult Core::ArmWatcher(MojoHandle watcher_handle,
                       ready_signals_states);
 }
 
-MojoResult Core::CreateMessage(uintptr_t context,
-                               const MojoMessageOperationThunks* thunks,
-                               MojoMessageHandle* message_handle) {
-  if (!message_handle || !context)
+MojoResult Core::CreateMessage(MojoMessageHandle* message_handle) {
+  if (!message_handle)
     return MOJO_RESULT_INVALID_ARGUMENT;
-
-  if (thunks) {
-    if (thunks->struct_size != sizeof(MojoMessageOperationThunks))
-      return MOJO_RESULT_INVALID_ARGUMENT;
-
-    if (!thunks->get_serialized_size || !thunks->serialize_handles ||
-        !thunks->serialize_payload || !thunks->destroy)
-      return MOJO_RESULT_INVALID_ARGUMENT;
-  }
-
   *message_handle = reinterpret_cast<MojoMessageHandle>(
-      UserMessageImpl::CreateEventForNewMessageWithContext(context, thunks)
-          .release());
+      UserMessageImpl::CreateEventForNewMessage().release());
   return MOJO_RESULT_OK;
 }
 
@@ -499,6 +486,46 @@ MojoResult Core::SerializeMessage(MojoMessageHandle message_handle) {
   return reinterpret_cast<ports::UserMessageEvent*>(message_handle)
       ->GetMessage<UserMessageImpl>()
       ->SerializeIfNecessary();
+}
+
+MojoResult Core::AttachSerializedMessageBuffer(MojoMessageHandle message_handle,
+                                               uint32_t payload_size,
+                                               const MojoHandle* handles,
+                                               uint32_t num_handles,
+                                               void** buffer,
+                                               uint32_t* buffer_size) {
+  if (!message_handle || (num_handles && !handles) || !buffer || !buffer_size)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+  auto* message = reinterpret_cast<ports::UserMessageEvent*>(message_handle)
+                      ->GetMessage<UserMessageImpl>();
+  MojoResult rv = message->AttachSerializedMessageBuffer(payload_size, handles,
+                                                         num_handles);
+  if (rv != MOJO_RESULT_OK)
+    return rv;
+
+  *buffer = message->user_payload();
+  *buffer_size =
+      base::checked_cast<uint32_t>(message->user_payload_buffer_size());
+  return MOJO_RESULT_OK;
+}
+
+MojoResult Core::ExtendSerializedMessagePayload(
+    MojoMessageHandle message_handle,
+    uint32_t new_payload_size,
+    void** new_buffer,
+    uint32_t* new_buffer_size) {
+  if (!message_handle || !new_buffer || !new_buffer_size)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+  auto* message = reinterpret_cast<ports::UserMessageEvent*>(message_handle)
+                      ->GetMessage<UserMessageImpl>();
+  MojoResult rv = message->ExtendSerializedMessagePayload(new_payload_size);
+  if (rv != MOJO_RESULT_OK)
+    return rv;
+
+  *new_buffer = message->user_payload();
+  *new_buffer_size =
+      base::checked_cast<uint32_t>(message->user_payload_buffer_size());
+  return MOJO_RESULT_OK;
 }
 
 MojoResult Core::GetSerializedMessageContents(
@@ -544,6 +571,17 @@ MojoResult Core::GetSerializedMessageContents(
   RequestContext request_context;
   return message->ExtractSerializedHandles(
       UserMessageImpl::ExtractBadHandlePolicy::kAbort, handles);
+}
+
+MojoResult Core::AttachMessageContext(MojoMessageHandle message_handle,
+                                      uintptr_t context,
+                                      MojoMessageContextSerializer serializer,
+                                      MojoMessageContextDestructor destructor) {
+  if (!message_handle || !context)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+  auto* message = reinterpret_cast<ports::UserMessageEvent*>(message_handle)
+                      ->GetMessage<UserMessageImpl>();
+  return message->AttachContext(context, serializer, destructor);
 }
 
 MojoResult Core::GetMessageContext(MojoMessageHandle message_handle,

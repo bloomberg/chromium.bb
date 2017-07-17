@@ -4,60 +4,9 @@
 
 #include "mojo/public/cpp/system/message_pipe.h"
 
+#include "base/numerics/safe_math.h"
+
 namespace mojo {
-
-namespace {
-
-struct RawMessage {
-  RawMessage(const void* bytes,
-             size_t num_bytes,
-             const MojoHandle* handles,
-             size_t num_handles)
-      : bytes(static_cast<const uint8_t*>(bytes)),
-        num_bytes(num_bytes),
-        handles(handles),
-        num_handles(num_handles) {}
-
-  const uint8_t* const bytes;
-  const size_t num_bytes;
-  const MojoHandle* const handles;
-  const size_t num_handles;
-};
-
-void GetRawMessageSize(uintptr_t context,
-                       size_t* num_bytes,
-                       size_t* num_handles) {
-  auto* message = reinterpret_cast<RawMessage*>(context);
-  *num_bytes = message->num_bytes;
-  *num_handles = message->num_handles;
-}
-
-void SerializeRawMessageHandles(uintptr_t context, MojoHandle* handles) {
-  auto* message = reinterpret_cast<RawMessage*>(context);
-  DCHECK(message->handles);
-  DCHECK(message->num_handles);
-  std::copy(message->handles, message->handles + message->num_handles, handles);
-}
-
-void SerializeRawMessagePayload(uintptr_t context, void* buffer) {
-  auto* message = reinterpret_cast<RawMessage*>(context);
-  DCHECK(message->bytes);
-  DCHECK(message->num_bytes);
-  std::copy(message->bytes, message->bytes + message->num_bytes,
-            static_cast<uint8_t*>(buffer));
-}
-
-void DoNothing(uintptr_t context) {}
-
-const MojoMessageOperationThunks kRawMessageThunks = {
-    sizeof(kRawMessageThunks),
-    &GetRawMessageSize,
-    &SerializeRawMessageHandles,
-    &SerializeRawMessagePayload,
-    &DoNothing,
-};
-
-}  // namespace
 
 MojoResult WriteMessageRaw(MessagePipeHandle message_pipe,
                            const void* bytes,
@@ -65,21 +14,21 @@ MojoResult WriteMessageRaw(MessagePipeHandle message_pipe,
                            const MojoHandle* handles,
                            size_t num_handles,
                            MojoWriteMessageFlags flags) {
-  RawMessage message(bytes, num_bytes, handles, num_handles);
   ScopedMessageHandle message_handle;
-  MojoResult rv = CreateMessage(reinterpret_cast<uintptr_t>(&message),
-                                &kRawMessageThunks, &message_handle);
+  MojoResult rv = CreateMessage(&message_handle);
   DCHECK_EQ(MOJO_RESULT_OK, rv);
 
-  // Force the message object to be serialized immediately so we can copy the
-  // local data in.
-  if (MojoSerializeMessage(message_handle->value()) != MOJO_RESULT_OK) {
-    // If serialization fails for some reason (e.g. invalid handles) we must
-    // be careful to not propagate the message object further. It is unsafe for
-    // the message's unserialized context to persist beyond the scope of this
-    // function.
+  void* buffer;
+  uint32_t buffer_size;
+  rv = MojoAttachSerializedMessageBuffer(
+      message_handle->value(), base::checked_cast<uint32_t>(num_bytes), handles,
+      base::checked_cast<uint32_t>(num_handles), &buffer, &buffer_size);
+  if (rv != MOJO_RESULT_OK)
     return MOJO_RESULT_ABORTED;
-  }
+
+  DCHECK(buffer);
+  DCHECK_GE(buffer_size, base::checked_cast<uint32_t>(num_bytes));
+  memcpy(buffer, bytes, num_bytes);
 
   return MojoWriteMessage(message_pipe.value(),
                           message_handle.release().value(), flags);

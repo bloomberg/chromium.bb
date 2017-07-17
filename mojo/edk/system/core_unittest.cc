@@ -30,28 +30,6 @@ const MojoHandleSignals kAllSignals =
 
 using CoreTest = test::CoreTestBase;
 
-void UnusedGetSerializedSize(uintptr_t context,
-                             size_t* num_bytes,
-                             size_t* num_handles) {}
-void UnusedSerializeHandles(uintptr_t context, MojoHandle* handles) {}
-void UnusedSerializePayload(uintptr_t context, void* buffer) {}
-void IgnoreDestroyMessage(uintptr_t context) {}
-
-const MojoMessageOperationThunks kUnusedMessageThunks = {
-    sizeof(MojoMessageOperationThunks),
-    &UnusedGetSerializedSize,
-    &UnusedSerializeHandles,
-    &UnusedSerializePayload,
-    &IgnoreDestroyMessage,
-};
-
-MojoMessageHandle CreateTestMessageHandle(Core* core, uintptr_t context) {
-  MojoMessageHandle handle;
-  CHECK_EQ(MOJO_RESULT_OK,
-           core->CreateMessage(context, &kUnusedMessageThunks, &handle));
-  return handle;
-}
-
 TEST_F(CoreTest, GetTimeTicksNow) {
   const MojoTimeTicks start = core()->GetTimeTicksNow();
   ASSERT_NE(static_cast<MojoTimeTicks>(0), start)
@@ -73,10 +51,9 @@ TEST_F(CoreTest, Basic) {
 
   ASSERT_EQ(0u, info.GetWriteMessageCallCount());
   MojoMessageHandle message;
-  ASSERT_EQ(MOJO_RESULT_OK, core()->CreateMessage(42, nullptr, &message));
+  ASSERT_EQ(MOJO_RESULT_OK, core()->CreateMessage(&message));
   ASSERT_EQ(MOJO_RESULT_OK,
-            core()->WriteMessage(h, CreateTestMessageHandle(core(), 42),
-                                 MOJO_WRITE_MESSAGE_FLAG_NONE));
+            core()->WriteMessage(h, message, MOJO_WRITE_MESSAGE_FLAG_NONE));
   ASSERT_EQ(1u, info.GetWriteMessageCallCount());
 
   ASSERT_EQ(0u, info.GetReadMessageCallCount());
@@ -196,8 +173,10 @@ TEST_F(CoreTest, MessagePipe) {
 
   // Write to |h[1]|.
   const uintptr_t kTestMessageContext = 123;
+  ASSERT_EQ(MOJO_RESULT_OK, core()->CreateMessage(&message));
   ASSERT_EQ(MOJO_RESULT_OK,
-            core()->CreateMessage(kTestMessageContext, nullptr, &message));
+            core()->AttachMessageContext(message, kTestMessageContext, nullptr,
+                                         nullptr));
   ASSERT_EQ(MOJO_RESULT_OK,
             core()->WriteMessage(h[1], message, MOJO_WRITE_MESSAGE_FLAG_NONE));
 
@@ -222,8 +201,10 @@ TEST_F(CoreTest, MessagePipe) {
   ASSERT_EQ(kAllSignals, hss[0].satisfiable_signals);
 
   // Write to |h[0]|.
+  ASSERT_EQ(MOJO_RESULT_OK, core()->CreateMessage(&message));
   ASSERT_EQ(MOJO_RESULT_OK,
-            core()->CreateMessage(kTestMessageContext, nullptr, &message));
+            core()->AttachMessageContext(message, kTestMessageContext, nullptr,
+                                         nullptr));
   ASSERT_EQ(MOJO_RESULT_OK,
             core()->WriteMessage(h[0], message, MOJO_WRITE_MESSAGE_FLAG_NONE));
 
@@ -259,8 +240,10 @@ TEST_F(CoreTest, MessagePipe) {
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss[1].satisfiable_signals);
 
   // Try writing to |h[1]|.
+  ASSERT_EQ(MOJO_RESULT_OK, core()->CreateMessage(&message));
   ASSERT_EQ(MOJO_RESULT_OK,
-            core()->CreateMessage(kTestMessageContext, nullptr, &message));
+            core()->AttachMessageContext(message, kTestMessageContext, nullptr,
+                                         nullptr));
   ASSERT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
             core()->WriteMessage(h[1], message, MOJO_WRITE_MESSAGE_FLAG_NONE));
 
@@ -277,8 +260,10 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing1) {
   // Make sure that |h_passing[]| work properly.
   const uintptr_t kTestMessageContext = 42;
   MojoMessageHandle message;
+  ASSERT_EQ(MOJO_RESULT_OK, core()->CreateMessage(&message));
   ASSERT_EQ(MOJO_RESULT_OK,
-            core()->CreateMessage(kTestMessageContext, nullptr, &message));
+            core()->AttachMessageContext(message, kTestMessageContext, nullptr,
+                                         nullptr));
   ASSERT_EQ(MOJO_RESULT_OK, core()->WriteMessage(h_passing[0], message,
                                                  MOJO_WRITE_MESSAGE_FLAG_NONE));
   hss = kEmptyMojoHandleSignalsState;

@@ -8,6 +8,8 @@
 #include <vector>
 
 #include "base/memory/ptr_util.h"
+#include "base/numerics/safe_math.h"
+#include "base/rand_util.h"
 #include "mojo/edk/test/mojo_test_base.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
@@ -26,16 +28,16 @@ class TestMessageBase {
 
   static MojoMessageHandle MakeMessageHandle(
       std::unique_ptr<TestMessageBase> message) {
-    MojoMessageOperationThunks thunks;
-    thunks.struct_size = sizeof(MojoMessageOperationThunks);
-    thunks.get_serialized_size = &CallGetSerializedSize;
-    thunks.serialize_handles = &CallSerializeHandles;
-    thunks.serialize_payload = &CallSerializePayload;
-    thunks.destroy = &Destroy;
     MojoMessageHandle handle;
-    MojoResult rv = MojoCreateMessage(
-        reinterpret_cast<uintptr_t>(message.release()), &thunks, &handle);
+    MojoResult rv = MojoCreateMessage(&handle);
     DCHECK_EQ(MOJO_RESULT_OK, rv);
+
+    rv = MojoAttachMessageContext(
+        handle, reinterpret_cast<uintptr_t>(message.release()),
+        &TestMessageBase::SerializeMessageContext,
+        &TestMessageBase::DestroyMessageContext);
+    DCHECK_EQ(MOJO_RESULT_OK, rv);
+
     return handle;
   }
 
@@ -58,22 +60,28 @@ class TestMessageBase {
   virtual void SerializePayload(void* buffer) = 0;
 
  private:
-  static void CallGetSerializedSize(uintptr_t context,
-                                    size_t* num_bytes,
-                                    size_t* num_handles) {
-    reinterpret_cast<TestMessageBase*>(context)->GetSerializedSize(num_bytes,
-                                                                   num_handles);
+  static void SerializeMessageContext(MojoMessageHandle message_handle,
+                                      uintptr_t context) {
+    auto* message = reinterpret_cast<TestMessageBase*>(context);
+    size_t num_bytes = 0;
+    size_t num_handles = 0;
+    message->GetSerializedSize(&num_bytes, &num_handles);
+    std::vector<MojoHandle> handles(num_handles);
+    if (num_handles)
+      message->SerializeHandles(handles.data());
+
+    void* buffer;
+    uint32_t buffer_size;
+    MojoResult rv = MojoAttachSerializedMessageBuffer(
+        message_handle, base::checked_cast<uint32_t>(num_bytes), handles.data(),
+        base::checked_cast<uint32_t>(num_handles), &buffer, &buffer_size);
+    DCHECK_EQ(MOJO_RESULT_OK, rv);
+    DCHECK_GE(buffer_size, base::checked_cast<uint32_t>(num_bytes));
+    if (num_bytes)
+      message->SerializePayload(buffer);
   }
 
-  static void CallSerializeHandles(uintptr_t context, MojoHandle* handles) {
-    reinterpret_cast<TestMessageBase*>(context)->SerializeHandles(handles);
-  }
-
-  static void CallSerializePayload(uintptr_t context, void* buffer) {
-    reinterpret_cast<TestMessageBase*>(context)->SerializePayload(buffer);
-  }
-
-  static void Destroy(uintptr_t context) {
+  static void DestroyMessageContext(uintptr_t context) {
     delete reinterpret_cast<TestMessageBase*>(context);
   }
 };
@@ -156,10 +164,24 @@ TEST_F(MessageTest, InvalidMessageObjects) {
             MojoSerializeMessage(MOJO_MESSAGE_HANDLE_INVALID));
 
   MojoMessageHandle message_handle;
+  void* buffer;
+  uint32_t buffer_size;
+  ASSERT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoCreateMessage(nullptr));
+  ASSERT_EQ(MOJO_RESULT_OK, MojoCreateMessage(&message_handle));
   ASSERT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            MojoCreateMessage(0, nullptr, &message_handle));
+            MojoAttachMessageContext(message_handle, 0, nullptr, nullptr));
   ASSERT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            MojoCreateMessage(1234, nullptr, nullptr));
+            MojoAttachSerializedMessageBuffer(message_handle, 0, nullptr, 0,
+                                              &buffer, nullptr));
+  ASSERT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+            MojoAttachSerializedMessageBuffer(message_handle, 0, nullptr, 0,
+                                              nullptr, &buffer_size));
+  ASSERT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+            MojoAttachSerializedMessageBuffer(message_handle, 0, nullptr, 0,
+                                              nullptr, nullptr));
+  ASSERT_EQ(MOJO_RESULT_OK,
+            MojoAttachSerializedMessageBuffer(message_handle, 0, nullptr, 0,
+                                              &buffer, &buffer_size));
 }
 
 TEST_F(MessageTest, SendLocalMessageWithContext) {
@@ -218,6 +240,25 @@ TEST_F(MessageTest, SerializeSimpleMessageNoHandlesWithContext) {
     auto message = base::MakeUnique<SimpleMessage>(kTestMessageWithContext1);
     MojoWriteMessage(h, TestMessageBase::MakeMessageHandle(std::move(message)),
                      MOJO_WRITE_MESSAGE_FLAG_NONE);
+  });
+}
+
+TEST_F(MessageTest, SerializeDynamicallySizedMessage) {
+  RunTestClient("ReceiveMessageNoHandles", [&](MojoHandle h) {
+    MojoMessageHandle message;
+    EXPECT_EQ(MOJO_RESULT_OK, MojoCreateMessage(&message));
+
+    void* buffer;
+    uint32_t buffer_size;
+    EXPECT_EQ(MOJO_RESULT_OK,
+              MojoAttachSerializedMessageBuffer(message, 0, nullptr, 0, &buffer,
+                                                &buffer_size));
+    EXPECT_EQ(MOJO_RESULT_OK, MojoExtendSerializedMessagePayload(
+                                  message, sizeof(kTestMessageWithContext1) - 1,
+                                  &buffer, &buffer_size));
+    memcpy(buffer, kTestMessageWithContext1,
+           sizeof(kTestMessageWithContext1) - 1);
+    MojoWriteMessage(h, message, MOJO_WRITE_MESSAGE_FLAG_NONE);
   });
 }
 
@@ -489,6 +530,178 @@ TEST_F(MessageTest, DoubleSerialize) {
             MojoSerializeMessage(message_handle));
 
   EXPECT_EQ(MOJO_RESULT_OK, MojoDestroyMessage(message_handle));
+}
+
+TEST_F(MessageTest, ExtendMessagePayload) {
+  MojoMessageHandle message;
+  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateMessage(&message));
+
+  const std::string kTestMessagePart1("hello i am message.");
+  void* buffer;
+  uint32_t buffer_size;
+  EXPECT_EQ(MOJO_RESULT_OK,
+            MojoAttachSerializedMessageBuffer(
+                message, static_cast<uint32_t>(kTestMessagePart1.size()),
+                nullptr, 0, &buffer, &buffer_size));
+  ASSERT_GE(buffer_size, static_cast<uint32_t>(kTestMessagePart1.size()));
+  memcpy(buffer, kTestMessagePart1.data(), kTestMessagePart1.size());
+
+  void* payload;
+  uint32_t payload_size;
+  EXPECT_EQ(MOJO_RESULT_OK,
+            MojoGetSerializedMessageContents(
+                message, &payload, &payload_size, nullptr, nullptr,
+                MOJO_GET_SERIALIZED_MESSAGE_CONTENTS_FLAG_NONE));
+  EXPECT_EQ(kTestMessagePart1.size(), payload_size);
+  EXPECT_EQ(
+      0, memcmp(payload, kTestMessagePart1.data(), kTestMessagePart1.size()));
+
+  const std::string kTestMessagePart2 = " in ur computer.";
+  const std::string kTestMessageCombined1 =
+      kTestMessagePart1 + kTestMessagePart2;
+  EXPECT_EQ(MOJO_RESULT_OK,
+            MojoExtendSerializedMessagePayload(
+                message, static_cast<uint32_t>(kTestMessageCombined1.size()),
+                &buffer, &buffer_size));
+  memcpy(static_cast<uint8_t*>(buffer) + kTestMessagePart1.size(),
+         kTestMessagePart2.data(), kTestMessagePart2.size());
+  EXPECT_EQ(MOJO_RESULT_OK,
+            MojoGetSerializedMessageContents(
+                message, &payload, &payload_size, nullptr, nullptr,
+                MOJO_GET_SERIALIZED_MESSAGE_CONTENTS_FLAG_NONE));
+  EXPECT_EQ(kTestMessageCombined1.size(), payload_size);
+  EXPECT_EQ(0, memcmp(payload, kTestMessageCombined1.data(),
+                      kTestMessageCombined1.size()));
+
+  const std::string kTestMessagePart3 = kTestMessagePart2 + " carry ur bits.";
+  const std::string kTestMessageCombined2 =
+      kTestMessageCombined1 + kTestMessagePart3;
+  EXPECT_EQ(MOJO_RESULT_OK,
+            MojoExtendSerializedMessagePayload(
+                message, static_cast<uint32_t>(kTestMessageCombined2.size()),
+                &buffer, &buffer_size));
+  memcpy(static_cast<uint8_t*>(buffer) + kTestMessageCombined1.size(),
+         kTestMessagePart3.data(), kTestMessagePart3.size());
+  EXPECT_EQ(MOJO_RESULT_OK,
+            MojoGetSerializedMessageContents(
+                message, &payload, &payload_size, nullptr, nullptr,
+                MOJO_GET_SERIALIZED_MESSAGE_CONTENTS_FLAG_NONE));
+  EXPECT_EQ(kTestMessageCombined2.size(), payload_size);
+  EXPECT_EQ(0, memcmp(payload, kTestMessageCombined2.data(),
+                      kTestMessageCombined2.size()));
+}
+
+TEST_F(MessageTest, ExtendMessageWithHandlesPayload) {
+  MojoMessageHandle message;
+  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateMessage(&message));
+
+  MojoHandle handles[2];
+  CreateMessagePipe(&handles[0], &handles[1]);
+
+  const std::string kTestMessagePart1("hello i am message.");
+  void* buffer;
+  uint32_t buffer_size;
+  EXPECT_EQ(MOJO_RESULT_OK,
+            MojoAttachSerializedMessageBuffer(
+                message, static_cast<uint32_t>(kTestMessagePart1.size()),
+                handles, 2, &buffer, &buffer_size));
+  ASSERT_GE(buffer_size, static_cast<uint32_t>(kTestMessagePart1.size()));
+  memcpy(buffer, kTestMessagePart1.data(), kTestMessagePart1.size());
+
+  const std::string kTestMessagePart2 = " in ur computer.";
+  const std::string kTestMessageCombined1 =
+      kTestMessagePart1 + kTestMessagePart2;
+  EXPECT_EQ(MOJO_RESULT_OK,
+            MojoExtendSerializedMessagePayload(
+                message, static_cast<uint32_t>(kTestMessageCombined1.size()),
+                &buffer, &buffer_size));
+  memcpy(static_cast<uint8_t*>(buffer) + kTestMessagePart1.size(),
+         kTestMessagePart2.data(), kTestMessagePart2.size());
+
+  void* payload;
+  uint32_t payload_size;
+  uint32_t num_handles = 2;
+  EXPECT_EQ(MOJO_RESULT_OK,
+            MojoGetSerializedMessageContents(
+                message, &payload, &payload_size, handles, &num_handles,
+                MOJO_GET_SERIALIZED_MESSAGE_CONTENTS_FLAG_NONE));
+  EXPECT_EQ(2u, num_handles);
+  EXPECT_EQ(kTestMessageCombined1.size(), payload_size);
+  EXPECT_EQ(0, memcmp(payload, kTestMessageCombined1.data(),
+                      kTestMessageCombined1.size()));
+
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(handles[0]));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(handles[1]));
+}
+
+TEST_F(MessageTest, ExtendMessagePayloadLarge) {
+  // We progressively extend a message payload from small to large using various
+  // chunk sizes to test potentially interesting boundary conditions.
+  constexpr size_t kTestChunkSizes[] = {1, 2, 3, 64, 509, 4096, 16384, 65535};
+  for (const size_t kChunkSize : kTestChunkSizes) {
+    MojoMessageHandle message;
+    EXPECT_EQ(MOJO_RESULT_OK, MojoCreateMessage(&message));
+
+    MojoHandle handles[2];
+    CreateMessagePipe(&handles[0], &handles[1]);
+
+    const std::string kTestMessageHeader("hey pretend i'm a header");
+    void* buffer;
+    uint32_t buffer_size;
+    EXPECT_EQ(MOJO_RESULT_OK,
+              MojoAttachSerializedMessageBuffer(
+                  message, static_cast<uint32_t>(kTestMessageHeader.size()),
+                  handles, 2, &buffer, &buffer_size));
+    ASSERT_GE(buffer_size, static_cast<uint32_t>(kTestMessageHeader.size()));
+    memcpy(buffer, kTestMessageHeader.data(), kTestMessageHeader.size());
+
+    // 5 MB should be well beyond any reasonable default buffer size for the
+    // system implementation to choose, meaning that this test should guarantee
+    // several reallocations of the serialized message buffer as we
+    // progressively extend the payload to this size.
+    constexpr size_t kTestMessagePayloadSize = 5 * 1024 * 1024;
+    std::vector<uint8_t> test_payload(kTestMessagePayloadSize);
+    base::RandBytes(test_payload.data(), kTestMessagePayloadSize);
+
+    size_t current_payload_size = 0;
+    while (current_payload_size < kTestMessagePayloadSize) {
+      const size_t previous_payload_size = current_payload_size;
+      current_payload_size =
+          std::min(current_payload_size + kChunkSize, kTestMessagePayloadSize);
+      const size_t current_chunk_size =
+          current_payload_size - previous_payload_size;
+      const size_t previous_total_size =
+          kTestMessageHeader.size() + previous_payload_size;
+      const size_t current_total_size =
+          kTestMessageHeader.size() + current_payload_size;
+      EXPECT_EQ(MOJO_RESULT_OK,
+                MojoExtendSerializedMessagePayload(
+                    message, static_cast<uint32_t>(current_total_size), &buffer,
+                    &buffer_size));
+      EXPECT_GE(buffer_size, static_cast<uint32_t>(current_total_size));
+      memcpy(static_cast<uint8_t*>(buffer) + previous_total_size,
+             &test_payload[previous_payload_size], current_chunk_size);
+    }
+
+    void* payload;
+    uint32_t payload_size;
+    uint32_t num_handles = 2;
+    EXPECT_EQ(MOJO_RESULT_OK,
+              MojoGetSerializedMessageContents(
+                  message, &payload, &payload_size, handles, &num_handles,
+                  MOJO_GET_SERIALIZED_MESSAGE_CONTENTS_FLAG_NONE));
+    EXPECT_EQ(static_cast<uint32_t>(kTestMessageHeader.size() +
+                                    kTestMessagePayloadSize),
+              payload_size);
+    EXPECT_EQ(0, memcmp(payload, kTestMessageHeader.data(),
+                        kTestMessageHeader.size()));
+    EXPECT_EQ(0,
+              memcmp(static_cast<uint8_t*>(payload) + kTestMessageHeader.size(),
+                     test_payload.data(), kTestMessagePayloadSize));
+
+    EXPECT_EQ(MOJO_RESULT_OK, MojoClose(handles[0]));
+    EXPECT_EQ(MOJO_RESULT_OK, MojoClose(handles[1]));
+  }
 }
 
 }  // namespace

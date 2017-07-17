@@ -13,6 +13,7 @@
 
 #include "base/macros.h"
 #include "base/memory/aligned_memory.h"
+#include "base/numerics/safe_math.h"
 #include "base/process/process_handle.h"
 #include "mojo/edk/embedder/embedder_internal.h"
 #include "mojo/edk/embedder/platform_handle.h"
@@ -55,18 +56,30 @@ const size_t kMaxUnusedReadBufferCapacity = 4096;
 const size_t kMaxAttachedHandles = 128;
 
 Channel::Message::Message(size_t payload_size, size_t max_handles)
-#if defined(MOJO_EDK_LEGACY_PROTOCOL)
-    : Message(payload_size, max_handles, MessageType::NORMAL_LEGACY) {
-}
-#else
-    : Message(payload_size, max_handles, MessageType::NORMAL) {
-}
-#endif
+    : Message(payload_size, payload_size, max_handles) {}
 
 Channel::Message::Message(size_t payload_size,
                           size_t max_handles,
                           MessageType message_type)
+    : Message(payload_size, payload_size, max_handles, message_type) {}
+
+Channel::Message::Message(size_t capacity,
+                          size_t payload_size,
+                          size_t max_handles)
+#if defined(MOJO_EDK_LEGACY_PROTOCOL)
+    : Message(capacity, payload_size, max_handles, MessageType::NORMAL_LEGACY) {
+}
+#else
+    : Message(capacity, payload_size, max_handles, MessageType::NORMAL) {
+}
+#endif
+
+Channel::Message::Message(size_t capacity,
+                          size_t payload_size,
+                          size_t max_handles,
+                          MessageType message_type)
     : max_handles_(max_handles) {
+  DCHECK_GE(capacity, payload_size);
   DCHECK_LE(max_handles_, kMaxAttachedHandles);
 
   const bool is_legacy_message = (message_type == MessageType::NORMAL_LEGACY);
@@ -94,9 +107,10 @@ Channel::Message::Message(size_t payload_size,
       is_legacy_message ? sizeof(LegacyHeader) : sizeof(Header);
   DCHECK(extra_header_size == 0 || !is_legacy_message);
 
+  capacity_ = header_size + extra_header_size + capacity;
   size_ = header_size + extra_header_size + payload_size;
-  data_ = static_cast<char*>(base::AlignedAlloc(size_,
-                                                kChannelMessageAlignment));
+  data_ = static_cast<char*>(
+      base::AlignedAlloc(capacity_, kChannelMessageAlignment));
   // Only zero out the header and not the payload. Since the payload is going to
   // be memcpy'd, zeroing the payload is unnecessary work and a significant
   // performance issue when dealing with large messages. Any sanitizer errors
@@ -104,11 +118,11 @@ Channel::Message::Message(size_t payload_size,
   // treated as an error and fixed.
   memset(data_, 0, header_size + extra_header_size);
 
-  DCHECK_LE(size_, std::numeric_limits<uint32_t>::max());
+  DCHECK(base::IsValueInRangeForNumericType<uint32_t>(size_));
   legacy_header()->num_bytes = static_cast<uint32_t>(size_);
 
-  DCHECK_LE(header_size + extra_header_size,
-            std::numeric_limits<uint16_t>::max());
+  DCHECK(base::IsValueInRangeForNumericType<uint16_t>(header_size +
+                                                      extra_header_size));
   legacy_header()->message_type = message_type;
 
   if (is_legacy_message) {
@@ -236,6 +250,29 @@ Channel::MessagePtr Channel::Message::Deserialize(const void* data,
 #endif
 
   return message;
+}
+
+size_t Channel::Message::capacity() const {
+  if (is_legacy_message())
+    return capacity_ - sizeof(LegacyHeader);
+  return capacity_ - header()->num_header_bytes;
+}
+
+void Channel::Message::ExtendPayload(size_t new_payload_size) {
+  size_t capacity_without_header = capacity();
+  size_t header_size = capacity_ - capacity_without_header;
+  if (new_payload_size > capacity_without_header) {
+    size_t new_capacity =
+        std::max(capacity_without_header * 2, new_payload_size) + header_size;
+    void* new_data = base::AlignedAlloc(new_capacity, kChannelMessageAlignment);
+    memcpy(new_data, data_, size_);
+    base::AlignedFree(data_);
+    data_ = static_cast<char*>(new_data);
+    capacity_ = new_capacity;
+  }
+  size_ = header_size + new_payload_size;
+  DCHECK(base::IsValueInRangeForNumericType<uint32_t>(size_));
+  legacy_header()->num_bytes = static_cast<uint32_t>(size_);
 }
 
 const void* Channel::Message::extra_header() const {

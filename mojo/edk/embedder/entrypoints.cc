@@ -59,10 +59,8 @@ MojoResult MojoCancelWatchImpl(MojoHandle watcher_handle, uintptr_t context) {
   return g_core->CancelWatch(watcher_handle, context);
 }
 
-MojoResult MojoCreateMessageImpl(uintptr_t context,
-                                 const MojoMessageOperationThunks* thunks,
-                                 MojoMessageHandle* message) {
-  return g_core->CreateMessage(context, thunks, message);
+MojoResult MojoCreateMessageImpl(MojoMessageHandle* message) {
+  return g_core->CreateMessage(message);
 }
 
 MojoResult MojoDestroyMessageImpl(MojoMessageHandle message) {
@@ -71,6 +69,24 @@ MojoResult MojoDestroyMessageImpl(MojoMessageHandle message) {
 
 MojoResult MojoSerializeMessageImpl(MojoMessageHandle message) {
   return g_core->SerializeMessage(message);
+}
+
+MojoResult MojoAttachSerializedMessageBufferImpl(MojoMessageHandle message,
+                                                 uint32_t payload_size,
+                                                 const MojoHandle* handles,
+                                                 uint32_t num_handles,
+                                                 void** buffer,
+                                                 uint32_t* buffer_size) {
+  return g_core->AttachSerializedMessageBuffer(
+      message, payload_size, handles, num_handles, buffer, buffer_size);
+}
+
+MojoResult MojoExtendSerializedMessagePayloadImpl(MojoMessageHandle message,
+                                                  uint32_t new_payload_size,
+                                                  void** new_buffer,
+                                                  uint32_t* new_buffer_size) {
+  return g_core->ExtendSerializedMessagePayload(message, new_payload_size,
+                                                new_buffer, new_buffer_size);
 }
 
 MojoResult MojoGetSerializedMessageContentsImpl(
@@ -82,6 +98,14 @@ MojoResult MojoGetSerializedMessageContentsImpl(
     MojoGetSerializedMessageContentsFlags flags) {
   return g_core->GetSerializedMessageContents(message, buffer, num_bytes,
                                               handles, num_handles, flags);
+}
+
+MojoResult MojoAttachMessageContextImpl(
+    MojoMessageHandle message,
+    uintptr_t context,
+    MojoMessageContextSerializer serializer,
+    MojoMessageContextDestructor destructor) {
+  return g_core->AttachMessageContext(message, context, serializer, destructor);
 }
 
 MojoResult MojoGetMessageContextImpl(MojoMessageHandle message,
@@ -262,7 +286,10 @@ MojoSystemThunks MakeSystemThunks() {
                                     MojoCreateMessageImpl,
                                     MojoDestroyMessageImpl,
                                     MojoSerializeMessageImpl,
+                                    MojoAttachSerializedMessageBufferImpl,
+                                    MojoExtendSerializedMessagePayloadImpl,
                                     MojoGetSerializedMessageContentsImpl,
+                                    MojoAttachMessageContextImpl,
                                     MojoGetMessageContextImpl,
                                     MojoWrapPlatformHandleImpl,
                                     MojoUnwrapPlatformHandleImpl,

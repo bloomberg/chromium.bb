@@ -95,7 +95,8 @@ class NodeChannel : public base::RefCountedThreadSafe<NodeChannel>,
       scoped_refptr<base::TaskRunner> io_task_runner,
       const ProcessErrorCallback& process_error_callback);
 
-  static Channel::MessagePtr CreateEventMessage(size_t payload_size,
+  static Channel::MessagePtr CreateEventMessage(size_t capacity,
+                                                size_t payload_size,
                                                 void** payload,
                                                 size_t num_handles);
 

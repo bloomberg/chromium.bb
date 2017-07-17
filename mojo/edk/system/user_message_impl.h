@@ -50,11 +50,8 @@ class MOJO_SYSTEM_IMPL_EXPORT UserMessageImpl
 
   ~UserMessageImpl() override;
 
-  // Creates a new ports::UserMessageEvent with an attached unserialized
-  // UserMessageImpl associated with |context| and |thunks|.
-  static std::unique_ptr<ports::UserMessageEvent>
-  CreateEventForNewMessageWithContext(uintptr_t context,
-                                      const MojoMessageOperationThunks* thunks);
+  // Creates a new ports::UserMessageEvent with an attached UserMessageImpl.
+  static std::unique_ptr<ports::UserMessageEvent> CreateEventForNewMessage();
 
   // Creates a new ports::UserMessageEvent with an attached serialized
   // UserMessageImpl. May fail iff one or more |dispatchers| fails to serialize
@@ -114,10 +111,20 @@ class MOJO_SYSTEM_IMPL_EXPORT UserMessageImpl
     return user_payload_size_;
   }
 
+  size_t user_payload_buffer_size() const;
+
   size_t num_handles() const;
 
   void set_source_node(const ports::NodeName& name) { source_node_ = name; }
   const ports::NodeName& source_node() const { return source_node_; }
+
+  MojoResult AttachContext(uintptr_t context,
+                           MojoMessageContextSerializer serializer,
+                           MojoMessageContextDestructor destructor);
+  MojoResult AttachSerializedMessageBuffer(uint32_t payload_size,
+                                           const MojoHandle* handles,
+                                           uint32_t num_handles);
+  MojoResult ExtendSerializedMessagePayload(uint32_t new_payload_size);
 
   // If this message is not already serialized, this serializes it.
   MojoResult SerializeIfNecessary();
@@ -140,9 +147,7 @@ class MOJO_SYSTEM_IMPL_EXPORT UserMessageImpl
   // |thunks|. If the message is ever going to be routed to another node (see
   // |WillBeRoutedExternally()| below), it will be serialized at that time using
   // operations provided by |thunks|.
-  UserMessageImpl(ports::UserMessageEvent* message_event,
-                  uintptr_t context,
-                  const MojoMessageOperationThunks* thunks);
+  UserMessageImpl(ports::UserMessageEvent* message_event);
 
   // Creates a serialized UserMessageImpl backed by an existing Channel::Message
   // object. |header| and |user_payload| must be pointers into
@@ -151,6 +156,7 @@ class MOJO_SYSTEM_IMPL_EXPORT UserMessageImpl
   UserMessageImpl(ports::UserMessageEvent* message_event,
                   Channel::MessagePtr channel_message,
                   void* header,
+                  size_t header_size,
                   void* user_payload,
                   size_t user_payload_size);
 
@@ -162,7 +168,8 @@ class MOJO_SYSTEM_IMPL_EXPORT UserMessageImpl
 
   // Unserialized message state.
   uintptr_t context_ = 0;
-  base::Optional<MojoMessageOperationThunks> context_thunks_;
+  MojoMessageContextSerializer context_serializer_ = nullptr;
+  MojoMessageContextDestructor context_destructor_ = nullptr;
 
   // Serialized message contents. May be null if this is not a serialized
   // message.
@@ -178,6 +185,7 @@ class MOJO_SYSTEM_IMPL_EXPORT UserMessageImpl
   // after any serialized dispatchers, with the payload comprising the remaining
   // |user_payload_size_| bytes of the message.
   void* header_ = nullptr;
+  size_t header_size_ = 0;
   void* user_payload_ = nullptr;
   size_t user_payload_size_ = 0;
 

@@ -98,8 +98,10 @@ TEST(CoreTest, BasicMessagePipe) {
 
   // Write to |h1|.
   const uintptr_t kTestMessageContext = 1234;
-  EXPECT_EQ(MOJO_RESULT_OK,
-            MojoCreateMessage(kTestMessageContext, nullptr, &message));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateMessage(&message));
+  EXPECT_EQ(
+      MOJO_RESULT_OK,
+      MojoAttachMessageContext(message, kTestMessageContext, nullptr, nullptr));
   EXPECT_EQ(MOJO_RESULT_OK,
             MojoWriteMessage(h1, message, MOJO_WRITE_MESSAGE_FLAG_NONE));
 

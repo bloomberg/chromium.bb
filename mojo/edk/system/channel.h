@@ -124,6 +124,11 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
     // |payload_size| bytes plus a header, plus |max_handles| platform handles.
     Message(size_t payload_size, size_t max_handles);
     Message(size_t payload_size, size_t max_handles, MessageType message_type);
+    Message(size_t capacity, size_t payload_size, size_t max_handles);
+    Message(size_t capacity,
+            size_t max_handles,
+            size_t payload_size,
+            MessageType message_type);
     ~Message();
 
     // Constructs a Message from serialized message data.
@@ -131,6 +136,18 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
 
     const void* data() const { return data_; }
     size_t data_num_bytes() const { return size_; }
+
+    // The current capacity of the message buffer, not counting internal header
+    // data.
+    size_t capacity() const;
+
+    // Extends the portion of the total message capacity which contains
+    // meaningful payload data. Storage capacity which falls outside of this
+    // range is not transmitted when the message is sent.
+    //
+    // If the message's current capacity is not large enough to accommodate the
+    // new payload size, it will be reallocated accordingly.
+    void ExtendPayload(size_t new_payload_size);
 
     const void* extra_header() const;
     void* mutable_extra_header();
@@ -174,9 +191,19 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
     void SetVersionForTest(uint16_t version_number);
 
    private:
-    size_t size_ = 0;
-    size_t max_handles_ = 0;
+    // The message data buffer.
     char* data_ = nullptr;
+
+    // The capacity of the buffer at |data_|.
+    size_t capacity_ = 0;
+
+    // The size of the message. This is the portion of |data_| that should
+    // be transmitted if the message is written to a channel. Includes all
+    // headers and user payload.
+    size_t size_ = 0;
+
+    // Maximum number of handles which may be attached to this message.
+    size_t max_handles_ = 0;
 
     ScopedPlatformHandleVectorPtr handle_vector_;
 
