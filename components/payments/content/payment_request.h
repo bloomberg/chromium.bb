@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "components/payments/content/payment_request_spec.h"
 #include "components/payments/content/payment_request_state.h"
 #include "components/payments/core/journey_logger.h"
@@ -125,6 +126,8 @@ class PaymentRequest : public mojom::PaymentRequest,
 
   // Whether a completion was already recorded for this Payment Request.
   bool has_recorded_completion_ = false;
+
+  base::WeakPtrFactory<PaymentRequest> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentRequest);
 };

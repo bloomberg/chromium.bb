@@ -36,14 +36,15 @@ PaymentRequest::PaymentRequest(
       observer_for_testing_(observer_for_testing),
       journey_logger_(delegate_->IsIncognito(),
                       web_contents_->GetLastCommittedURL(),
-                      delegate_->GetUkmRecorder()) {
+                      delegate_->GetUkmRecorder()),
+      weak_ptr_factory_(this) {
   // OnConnectionTerminated will be called when the Mojo pipe is closed. This
   // will happen as a result of many renderer-side events (both successful and
   // erroneous in nature).
   // TODO(crbug.com/683636): Investigate using
   // set_connection_error_with_reason_handler with Binding::CloseWithReason.
   binding_.set_connection_error_handler(base::Bind(
-      &PaymentRequest::OnConnectionTerminated, base::Unretained(this)));
+      &PaymentRequest::OnConnectionTerminated, weak_ptr_factory_.GetWeakPtr()));
 }
 
 PaymentRequest::~PaymentRequest() {}
