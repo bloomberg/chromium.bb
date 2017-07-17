@@ -114,6 +114,10 @@ void ChangePictureHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "selectImage", base::Bind(&ChangePictureHandler::HandleSelectImage,
                                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "requestSelectedImage",
+      base::Bind(&ChangePictureHandler::HandleRequestSelectedImage,
+                 base::Unretained(this)));
 }
 
 void ChangePictureHandler::OnJavascriptAllowed() {
@@ -320,6 +324,11 @@ void ChangePictureHandler::HandleSelectImage(const base::ListValue* args) {
   // Ignore the result of the previous decoding if it's no longer needed.
   if (!waiting_for_camera_photo)
     ImageDecoder::Cancel(this);
+}
+
+void ChangePictureHandler::HandleRequestSelectedImage(
+    const base::ListValue* args) {
+  SendSelectedImage();
 }
 
 void ChangePictureHandler::FileSelected(const base::FilePath& path,
