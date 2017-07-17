@@ -95,8 +95,6 @@ void ArcServiceLauncher::Initialize() {
 
   // List in lexicographical order.
   arc_service_manager_->AddService(
-      base::MakeUnique<ArcImeService>(arc_bridge_service));
-  arc_service_manager_->AddService(
       base::MakeUnique<ArcIntentHelperBridge>(arc_bridge_service));
   arc_service_manager_->AddService(
       base::MakeUnique<ArcPolicyBridge>(arc_bridge_service));
@@ -180,6 +178,7 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   ArcDownloadsWatcherService::GetForBrowserContext(profile);
   ArcEnterpriseReportingService::GetForBrowserContext(profile);
   ArcFileSystemMounter::GetForBrowserContext(profile);
+  ArcImeService::GetForBrowserContext(profile);
   ArcMetricsService::GetForBrowserContext(profile);
   ArcNetHostImpl::GetForBrowserContext(profile);
   ArcObbMounterBridge::GetForBrowserContext(profile);

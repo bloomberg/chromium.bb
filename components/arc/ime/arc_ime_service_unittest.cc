@@ -146,7 +146,8 @@ class ArcImeServiceTest : public testing::Test {
  private:
   void SetUp() override {
     arc_bridge_service_ = base::MakeUnique<ArcBridgeService>();
-    instance_ = base::MakeUnique<ArcImeService>(arc_bridge_service_.get());
+    instance_ =
+        base::MakeUnique<ArcImeService>(nullptr, arc_bridge_service_.get());
     fake_arc_ime_bridge_ = new FakeArcImeBridge();
     instance_->SetImeBridgeForTesting(base::WrapUnique(fake_arc_ime_bridge_));
 
