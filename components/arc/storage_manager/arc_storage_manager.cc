@@ -8,38 +8,49 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/memory/singleton.h"
 #include "components/arc/arc_bridge_service.h"
+#include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 
 namespace arc {
-
 namespace {
 
-// This class is owned by ArcServiceManager so that it is safe to use this raw
-// pointer as the singleton reference.
-ArcStorageManager* g_arc_storage_manager = nullptr;
+// Singleton factory for ArcStorageManager.
+class ArcStorageManagerFactory
+    : public internal::ArcBrowserContextKeyedServiceFactoryBase<
+          ArcStorageManager,
+          ArcStorageManagerFactory> {
+ public:
+  // Factory name used by ArcBrowserContextKeyedServiceFactoryBase.
+  static constexpr const char* kName = "ArcStorageManagerFactory";
+
+  static ArcStorageManagerFactory* GetInstance() {
+    return base::Singleton<ArcStorageManagerFactory>::get();
+  }
+
+ private:
+  friend base::DefaultSingletonTraits<ArcStorageManagerFactory>;
+  ArcStorageManagerFactory() = default;
+  ~ArcStorageManagerFactory() override = default;
+};
 
 }  // namespace
 
-ArcStorageManager::ArcStorageManager(ArcBridgeService* bridge_service)
-    : ArcService(bridge_service) {
-  DCHECK(!g_arc_storage_manager);
-  g_arc_storage_manager = this;
-}
-
-ArcStorageManager::~ArcStorageManager() {
-  DCHECK_EQ(this, g_arc_storage_manager);
-  g_arc_storage_manager = nullptr;
-}
-
 // static
-ArcStorageManager* ArcStorageManager::Get() {
-  DCHECK(g_arc_storage_manager);
-  return g_arc_storage_manager;
+ArcStorageManager* ArcStorageManager::GetForBrowserContext(
+    content::BrowserContext* context) {
+  return ArcStorageManagerFactory::GetForBrowserContext(context);
 }
+
+ArcStorageManager::ArcStorageManager(content::BrowserContext* context,
+                                     ArcBridgeService* bridge_service)
+    : arc_bridge_service_(bridge_service) {}
+
+ArcStorageManager::~ArcStorageManager() = default;
 
 bool ArcStorageManager::OpenPrivateVolumeSettings() {
   auto* storage_manager_instance = ARC_GET_INSTANCE_FOR_METHOD(
-      arc_bridge_service()->storage_manager(), OpenPrivateVolumeSettings);
+      arc_bridge_service_->storage_manager(), OpenPrivateVolumeSettings);
   if (!storage_manager_instance)
     return false;
   storage_manager_instance->OpenPrivateVolumeSettings();
@@ -49,7 +60,7 @@ bool ArcStorageManager::OpenPrivateVolumeSettings() {
 bool ArcStorageManager::GetApplicationsSize(
     const GetApplicationsSizeCallback& callback) {
   auto* storage_manager_instance = ARC_GET_INSTANCE_FOR_METHOD(
-      arc_bridge_service()->storage_manager(), GetApplicationsSize);
+      arc_bridge_service_->storage_manager(), GetApplicationsSize);
   if (!storage_manager_instance)
     return false;
   storage_manager_instance->GetApplicationsSize(callback);
@@ -59,7 +70,7 @@ bool ArcStorageManager::GetApplicationsSize(
 bool ArcStorageManager::DeleteApplicationsCache(
     const base::Callback<void()>& callback) {
   auto* storage_manager_instance = ARC_GET_INSTANCE_FOR_METHOD(
-      arc_bridge_service()->storage_manager(), DeleteApplicationsCache);
+      arc_bridge_service_->storage_manager(), DeleteApplicationsCache);
   if (!storage_manager_instance)
     return false;
   storage_manager_instance->DeleteApplicationsCache(callback);
