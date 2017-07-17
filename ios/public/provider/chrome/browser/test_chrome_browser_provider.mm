@@ -97,9 +97,4 @@ BrandedImageProvider* TestChromeBrowserProvider::GetBrandedImageProvider()
   return branded_image_provider_.get();
 }
 
-id<NativeAppWhitelistManager>
-TestChromeBrowserProvider::GetNativeAppWhitelistManager() const {
-  return nil;
-}
-
 }  // namespace ios
