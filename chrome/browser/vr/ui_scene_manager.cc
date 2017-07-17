@@ -102,7 +102,7 @@ static constexpr float kSplashScreenIconHeight =
 static constexpr float kSplashScreenIconWidth =
     kSplashScreenIconDMM * kSplashScreenDistance;
 static constexpr float kSplashScreenIconVerticalOffset =
-    0.2 * kSplashScreenDistance;
+    -0.1 * kSplashScreenDistance;
 
 static constexpr float kCloseButtonDistance = 2.4;
 static constexpr float kCloseButtonHeight =
