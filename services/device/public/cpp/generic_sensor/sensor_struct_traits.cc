@@ -19,7 +19,6 @@ bool StructTraits<device::mojom::SensorConfigurationDataView,
   }
 
   out->set_frequency(data.frequency());
-  out->set_suppress_on_change_events(data.suppress_on_change_events());
   return true;
 }
 

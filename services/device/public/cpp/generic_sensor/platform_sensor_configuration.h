@@ -25,14 +25,8 @@ class PlatformSensorConfiguration {
   void set_frequency(double frequency);
   double frequency() const { return frequency_; }
 
-  void set_suppress_on_change_events(bool suppress_on_change_events) {
-    suppress_on_change_events_ = suppress_on_change_events;
-  }
-  bool suppress_on_change_events() const { return suppress_on_change_events_; }
-
  private:
   double frequency_ = 1.0;  // 1 Hz by default.
-  bool suppress_on_change_events_ = false;
 };
 
 }  // namespace device

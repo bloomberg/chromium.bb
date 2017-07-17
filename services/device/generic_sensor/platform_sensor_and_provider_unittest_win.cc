@@ -393,7 +393,7 @@ class MockPlatformSensorClient : public PlatformSensor::Client {
     if (sensor_)
       sensor_->AddClient(this);
 
-    ON_CALL(*this, IsNotificationSuspended()).WillByDefault(Return(false));
+    ON_CALL(*this, IsSuspended()).WillByDefault(Return(false));
   }
 
   ~MockPlatformSensorClient() override {
@@ -404,7 +404,7 @@ class MockPlatformSensorClient : public PlatformSensor::Client {
   // PlatformSensor::Client interface.
   MOCK_METHOD0(OnSensorReadingChanged, void());
   MOCK_METHOD0(OnSensorError, void());
-  MOCK_METHOD0(IsNotificationSuspended, bool());
+  MOCK_METHOD0(IsSuspended, bool());
 
  private:
   scoped_refptr<PlatformSensor> sensor_;
