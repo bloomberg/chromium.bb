@@ -45,8 +45,6 @@ component("web") {
     "WebExport.h",
     "WebFactoryImpl.cpp",
     "WebFactoryImpl.h",
-    "WebFrameWidgetImpl.cpp",
-    "WebFrameWidgetImpl.h",
     "WebKit.cpp",
     "WebLocalFrameImpl.cpp",
     "WebLocalFrameImpl.h",
