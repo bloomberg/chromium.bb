@@ -8,7 +8,7 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
-#include "base/task_runner.h"
+#include "base/task_scheduler/post_task.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/export/password_csv_writer.h"
 
@@ -28,10 +28,11 @@ void WriteToFile(const base::FilePath& path,
 // static
 void PasswordExporter::Export(
     const base::FilePath& path,
-    const std::vector<std::unique_ptr<autofill::PasswordForm>>& passwords,
-    scoped_refptr<base::TaskRunner> blocking_task_runner) {
-  blocking_task_runner->PostTask(
-      FROM_HERE,
+    const std::vector<std::unique_ptr<autofill::PasswordForm>>& passwords) {
+  // Posting with USER_VISIBLE priority, because the result of the export is
+  // visible to the user in the target file.
+  base::PostTaskWithTraits(
+      FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
       base::Bind(&WriteToFile, path,
                  base::Passed(base::MakeUnique<std::string>(
                      PasswordCSVWriter::SerializePasswords(passwords)))));

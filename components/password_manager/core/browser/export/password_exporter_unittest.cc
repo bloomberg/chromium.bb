@@ -10,10 +10,9 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"
-#include "base/message_loop/message_loop.h"
-#include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/autofill/core/common/password_form.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -48,11 +47,9 @@ class PasswordExporterTest : public testing::Test {
     base::FilePath output_file =
         temporary_dir.AppendASCII("passwords").AddExtension(provided_extension);
 
-    PasswordExporter::Export(output_file, passwords,
-                             message_loop_.task_runner());
+    PasswordExporter::Export(output_file, passwords);
 
-    base::RunLoop run_loop;
-    run_loop.RunUntilIdle();
+    scoped_task_environment_.RunUntilIdle();
 
     if (provided_extension != expected_extension) {
       output_file = output_file.ReplaceExtension(expected_extension);
@@ -63,7 +60,7 @@ class PasswordExporterTest : public testing::Test {
   }
 
  private:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordExporterTest);
 };

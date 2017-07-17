@@ -8,10 +8,8 @@
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/ref_counted.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
-#include "base/test/test_simple_task_runner.h"
 #include "components/autofill/core/common/password_form.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -35,7 +33,6 @@ class PasswordImporterTest : public testing::Test {
  protected:
   void StartImportAndWaitForCompletion(const base::FilePath& input_file) {
     PasswordImporter::Import(input_file,
-                             scoped_task_environment_.GetMainThreadTaskRunner(),
                              base::Bind(&PasswordImporterTest::OnImportFinished,
                                         base::Unretained(this)));
 

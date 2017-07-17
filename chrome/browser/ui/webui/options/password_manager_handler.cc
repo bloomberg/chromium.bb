@@ -41,7 +41,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/url_formatter.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
@@ -334,11 +333,8 @@ void PasswordManagerHandler::ImportPasswordFileSelected(
       new ImportPasswordResultConsumer(GetProfile()));
 
   password_manager::PasswordImporter::Import(
-      path, content::BrowserThread::GetTaskRunnerForThread(
-                content::BrowserThread::FILE)
-                .get(),
-      base::Bind(&ImportPasswordResultConsumer::ConsumePassword,
-                 form_consumer));
+      path, base::Bind(&ImportPasswordResultConsumer::ConsumePassword,
+                       form_consumer));
 }
 
 PasswordManagerHandler::ImportPasswordResultConsumer::
@@ -396,10 +392,7 @@ void PasswordManagerHandler::ExportPasswordFileSelected(
       password_manager_presenter_->GetAllPasswords();
   UMA_HISTOGRAM_COUNTS("PasswordManager.ExportedPasswordsPerUserInCSV",
                        password_list.size());
-  password_manager::PasswordExporter::Export(
-      path, password_list, content::BrowserThread::GetTaskRunnerForThread(
-                               content::BrowserThread::FILE)
-                               .get());
+  password_manager::PasswordExporter::Export(path, password_list);
 }
 
 }  // namespace options

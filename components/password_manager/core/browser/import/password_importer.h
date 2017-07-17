@@ -11,14 +11,9 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 
 namespace autofill {
 struct PasswordForm;
-}
-
-namespace base {
-class TaskRunner;
 }
 
 namespace password_manager {
@@ -40,11 +35,9 @@ class PasswordImporter {
       CompletionCallback;
 
   // Imports passwords from the file at |path|, and fires |completion| callback
-  // on the calling thread with the passwords when ready. Blocking IO operations
-  // will be posted to |blocking_task_runner|. The only supported file format is
-  // CSV.
+  // on the calling thread with the passwords when ready. The only supported
+  // file format is CSV.
   static void Import(const base::FilePath& path,
-                     scoped_refptr<base::TaskRunner> blocking_task_runner,
                      const CompletionCallback& completion);
 
   // Returns the file extensions corresponding to supported formats.
