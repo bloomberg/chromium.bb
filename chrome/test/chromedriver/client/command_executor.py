@@ -67,6 +67,7 @@ class Command(object):
   ELEMENT_EQUALS = (
       _Method.GET, '/session/:sessionId/element/:id/equals/:other')
   GET_COOKIES = (_Method.GET, '/session/:sessionId/cookie')
+  GET_NAMED_COOKIE = (_Method.GET, '/session/:sessionId/cookie/:name')
   ADD_COOKIE = (_Method.POST, '/session/:sessionId/cookie')
   DELETE_ALL_COOKIES = (_Method.DELETE, '/session/:sessionId/cookie')
   DELETE_COOKIE = (_Method.DELETE, '/session/:sessionId/cookie/:name')

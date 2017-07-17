@@ -299,6 +299,10 @@ HttpHandler::HttpHandler(
           kGet,
           "session/:sessionId/cookie",
           WrapToCommand("GetCookies", base::Bind(&ExecuteGetCookies))),
+      CommandMapping(
+          kGet,
+          "session/:sessionId/cookie/:name",
+          WrapToCommand("GetNamedCookie", base::Bind(&ExecuteGetNamedCookie))),
       CommandMapping(kPost,
                      "session/:sessionId/cookie",
                      WrapToCommand("AddCookie", base::Bind(&ExecuteAddCookie))),
@@ -809,6 +813,7 @@ HttpHandler::PrepareStandardResponse(
     case kNoSuchSession:
     case kNoSuchElement:
     case kUnknownCommand:
+    case kNoSuchCookie:
       response.reset(new net::HttpServerResponseInfo(net::HTTP_NOT_FOUND));
       break;
     case kTimeout:
