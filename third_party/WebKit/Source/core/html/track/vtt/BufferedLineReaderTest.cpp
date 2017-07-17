@@ -149,17 +149,15 @@ TEST(BufferedLineReaderTest, LineEndingCRLF_EOS) {
   ASSERT_FALSE(reader.GetLine(line));
 }
 
-enum LineBreakType { kCr, kLf, kCrLf };
+enum NewlineType { kCr, kLf, kCrLf };
 
-String LineBreakString(LineBreakType type) {
+String LineBreakString(NewlineType type) {
   static const char kBreakStrings[] = "\r\n";
   return String(type == kLf ? kBreakStrings + 1 : kBreakStrings,
                 type == kCrLf ? 2 : 1);
 }
 
-String MakeTestData(const char** lines,
-                    const LineBreakType* breaks,
-                    int count) {
+String MakeTestData(const char** lines, const NewlineType* breaks, int count) {
   StringBuilder builder;
   for (int i = 0; i < count; ++i) {
     builder.Append(lines[i]);
@@ -174,7 +172,7 @@ const size_t kBlockSizes[] = {64, 32, 16, 8,  4,  2,  1,  3,
 TEST(BufferedLineReaderTest, BufferSizes) {
   const char* lines[] = {"aaaaaaaaaaaaaaaa", "bbbbbbbbbb", "ccccccccccccc", "",
                          "dddddd",           "",           "eeeeeeeeee"};
-  const LineBreakType kBreaks[] = {kLf, kLf, kLf, kLf, kLf, kLf, kLf};
+  const NewlineType kBreaks[] = {kLf, kLf, kLf, kLf, kLf, kLf, kLf};
   const size_t num_test_lines = WTF_ARRAY_LENGTH(lines);
   static_assert(num_test_lines == WTF_ARRAY_LENGTH(kBreaks),
                 "number of test lines and breaks should be the same");
@@ -201,7 +199,7 @@ TEST(BufferedLineReaderTest, BufferSizesMixedEndings) {
   const char* lines[] = {
       "aaaaaaaaaaaaaaaa", "bbbbbbbbbb", "ccccccccccccc",      "",
       "dddddd",           "eeeeeeeeee", "fffffffffffffffffff"};
-  const LineBreakType kBreaks[] = {kCr, kLf, kCrLf, kCr, kLf, kCrLf, kLf};
+  const NewlineType kBreaks[] = {kCr, kLf, kCrLf, kCr, kLf, kCrLf, kLf};
   const size_t num_test_lines = WTF_ARRAY_LENGTH(lines);
   static_assert(num_test_lines == WTF_ARRAY_LENGTH(kBreaks),
                 "number of test lines and breaks should be the same");
