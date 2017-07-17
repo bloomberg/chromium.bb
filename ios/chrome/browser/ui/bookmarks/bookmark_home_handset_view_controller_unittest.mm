@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_handset_view_controller.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmark_home_view_controller_protected.h"
 #include "ios/chrome/browser/ui/bookmarks/bookmark_ios_unittest.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_promo_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
