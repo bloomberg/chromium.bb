@@ -14,6 +14,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequence_checker.h"
 #include "chrome/browser/media/webrtc/rtp_dump_type.h"
 
 class WebRtcRtpDumpWriter;
@@ -113,6 +114,8 @@ class WebRtcRtpDumpHandler {
                    RtpDumpType ended_type,
                    bool incoming_succeeded,
                    bool outgoing_succeeded);
+
+  SEQUENCE_CHECKER(main_sequence_);
 
   // The absolute path to the directory containing the incoming/outgoing dumps.
   const base::FilePath dump_dir_;
