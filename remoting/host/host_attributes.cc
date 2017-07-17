@@ -4,10 +4,6 @@
 
 #include "remoting/host/host_attributes.h"
 
-#if defined(OS_WIN)
-#include <D3DCommon.h>
-#endif
-
 #include <type_traits>
 
 #include "base/atomicops.h"
@@ -15,10 +11,12 @@
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
-#include "base/win/windows_version.h"
 #include "build/build_config.h"
 
 #if defined(OS_WIN)
+#include <D3DCommon.h>
+
+#include "base/win/windows_version.h"
 #include "third_party/webrtc/modules/desktop_capture/win/dxgi_duplicator_controller.h"
 #include "third_party/webrtc/modules/desktop_capture/win/screen_capturer_win_directx.h"
 #endif
