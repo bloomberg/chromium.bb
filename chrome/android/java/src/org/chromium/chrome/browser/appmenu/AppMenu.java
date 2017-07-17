@@ -167,6 +167,7 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
             @IdRes int footerResourceId, Integer highlightedItemId) {
         mPopup = new PopupWindow(context);
         mPopup.setFocusable(true);
+        if (!isByPermanentButton) mPopup.setClippingEnabled(false);
         mPopup.setInputMethodMode(PopupWindow.INPUT_METHOD_NOT_NEEDED);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -376,9 +377,12 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
             // (appRect.bottom - anchorViewLocationOnScreenY) is used to determine the visible
             // bottom edge of the anchor view.
             if (anchorAtBottom) {
+                Rect bgPadding = new Rect();
+                mPopup.getBackground().getPadding(bgPadding);
                 anchorView.getLocationOnScreen(mTempLocation);
                 int anchorViewLocationOnScreenY = mTempLocation[1];
                 offsets[1] += appRect.bottom - anchorViewLocationOnScreenY - popupHeight;
+                if (!mIsByPermanentButton) offsets[1] += bgPadding.height();
             }
 
             if (!ApiCompatibilityUtils.isLayoutRtl(anchorView.getRootView())) {
