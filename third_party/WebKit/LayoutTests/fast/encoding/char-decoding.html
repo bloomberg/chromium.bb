@@ -144,7 +144,7 @@ testDecode('UTF-16BE', '%D8%69%DE%D6', 'U+D869/U+DED6');
 testDecode('unicodeFFFE', '%D8%69%DE%D6', 'U+D869/U+DED6');
 
 // Replacement encodings should decode non-empty streams as replacement (U+FFFD) then EOF
-["csiso2022kr", "hz-gb-2312", "iso-2022-cn", "iso-2022-cn-ext", "iso-2022-kr"]
+["replacement", "csiso2022kr", "hz-gb-2312", "iso-2022-cn", "iso-2022-cn-ext", "iso-2022-kr"]
 .forEach(function(encoding) {
     testDecode(encoding, "", "");
     testDecode(encoding, "%41%42%43%61%62%63%31%32%33%A0", "U+FFFD");

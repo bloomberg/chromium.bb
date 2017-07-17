@@ -44,16 +44,10 @@ static const TextEncoding& UTF7Encoding() {
 
 TextEncoding::TextEncoding(const char* name)
     : name_(AtomicCanonicalTextEncodingName(name)) {
-  // Aliases are valid, but not "replacement" itself.
-  if (name_ && IsReplacementEncoding(name))
-    name_ = 0;
 }
 
 TextEncoding::TextEncoding(const String& name)
     : name_(AtomicCanonicalTextEncodingName(name)) {
-  // Aliases are valid, but not "replacement" itself.
-  if (name_ && IsReplacementEncoding(name))
-    name_ = 0;
 }
 
 String TextEncoding::Decode(const char* data,

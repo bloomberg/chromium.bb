@@ -10,6 +10,11 @@
 
 namespace WTF {
 
+// The "replacement" encoding exists to prevent attacks that abuse a mismatch
+// between encodings supported on the server and the client. The encoder is
+// the same as UTF-8; and for a non-empty input the decoder emits U+FFFD and
+// terminates. See: https://encoding.spec.whatwg.org/#replacement and
+// https://encoding.spec.whatwg.org/#output-encodings
 class TextCodecReplacement final : public TextCodecUTF8 {
  public:
   TextCodecReplacement();
