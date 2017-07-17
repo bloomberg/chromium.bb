@@ -21,16 +21,6 @@
 #include "chrome/browser/android/chrome_application.h"
 #include "chrome/browser/android/chrome_backup_agent.h"
 #include "chrome/browser/android/chrome_feature_list.h"
-#include "chrome/browser/android/compositor/compositor_view.h"
-#include "chrome/browser/android/compositor/layer_title_cache.h"
-#include "chrome/browser/android/compositor/resources/resource_factory.h"
-#include "chrome/browser/android/compositor/scene_layer/contextual_search_scene_layer.h"
-#include "chrome/browser/android/compositor/scene_layer/scene_layer.h"
-#include "chrome/browser/android/compositor/scene_layer/static_tab_scene_layer.h"
-#include "chrome/browser/android/compositor/scene_layer/tab_list_scene_layer.h"
-#include "chrome/browser/android/compositor/scene_layer/tab_strip_scene_layer.h"
-#include "chrome/browser/android/compositor/scene_layer/toolbar_scene_layer.h"
-#include "chrome/browser/android/compositor/tab_content_manager.h"
 #include "chrome/browser/android/contextualsearch/contextual_search_context.h"
 #include "chrome/browser/android/contextualsearch/contextual_search_manager.h"
 #include "chrome/browser/android/contextualsearch/contextual_search_ranker_logger_impl.h"
@@ -197,7 +187,6 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
      media_router::MediaRouterDialogControllerAndroid::Register},
     {"ChromePayments", payments::android::RegisterChromePayments},
     {"ChromeWebApkHost", ChromeWebApkHost::Register},
-    {"CompositorView", RegisterCompositorView},
     {"SecurityStateModel", RegisterSecurityStateModelAndroid},
     {"ConnectivityChecker", chrome::android::RegisterConnectivityChecker},
     {"ContentSuggestionsNotificationHelper",
@@ -206,7 +195,6 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"ContextualSearchManager", RegisterContextualSearchManager},
     {"ContextualSearchRankerLoggerImpl",
      RegisterContextualSearchRankerLoggerImpl},
-    {"ContextualSearchSceneLayer", RegisterContextualSearchSceneLayer},
     {"ContextualSearchTabHelper", RegisterContextualSearchTabHelper},
     {"CookiesFetcher", RegisterCookiesFetcher},
     {"CtrSuppression", RegisterCtrSuppression},
@@ -247,7 +235,6 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
      invalidation::InvalidationServiceFactoryAndroid::Register},
     {"LargeIconBridge", LargeIconBridge::RegisterLargeIconBridge},
     {"LaunchMetrics", metrics::RegisterLaunchMetrics},
-    {"LayerTitleCache", RegisterLayerTitleCache},
     {"LoadingPredictor", predictors::RegisterLoadingPredictor},
     {"LocaleManager", RegisterLocaleManager},
     {"LocationSettingsImpl", LocationSettingsImpl::Register},
@@ -296,11 +283,9 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"RecordCastAction", remote_media::RegisterRecordCastAction},
     {"RemoteMediaPlayerBridge",
      remote_media::RemoteMediaPlayerBridge::RegisterRemoteMediaPlayerBridge},
-    {"ResourceFactory", RegisterResourceFactory},
     {"RevenueStats", chrome::android::RegisterRevenueStats},
     {"RlzPingHandler", chrome::android::RegisterRlzPingHandler},
     {"SafeBrowsing", safe_browsing::android::RegisterBrowserJNI},
-    {"SceneLayer", RegisterSceneLayer},
     {"ScreenshotTask", chrome::android::RegisterScreenshotTask},
     {"ServiceTabLauncher", ServiceTabLauncher::Register},
     {"SearchGeolocationDisclosureTabHelper",
@@ -317,20 +302,15 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
 #endif
     {"SqliteCursor", SQLiteCursor::RegisterSqliteCursor},
     {"StartupMetricUtils", chrome::android::RegisterStartupMetricUtils},
-    {"StaticTabSceneLayer", RegisterStaticTabSceneLayer},
     {"SuggestionsEventReporterBridge", RegisterSuggestionsEventReporterBridge},
     {"SupervisedUserContentProvider", SupervisedUserContentProvider::Register},
     {"Sync", syncer::RegisterSyncJni},
     {"SyncSessionsMetrics", SyncSessionsMetricsAndroid::Register},
     {"TabAndroid", TabAndroid::RegisterTabAndroid},
-    {"TabContentManager", RegisterTabContentManager},
-    {"TabListSceneLayer", RegisterTabListSceneLayer},
     {"TabState", RegisterTabState},
-    {"TabStripSceneLayer", RegisterTabStripSceneLayer},
     {"TabWebContentsDelegateAndroid", RegisterTabWebContentsDelegateAndroid},
     {"TemplateUrlServiceAndroid", TemplateUrlServiceAndroid::Register},
     {"ThumbnailProvider", ThumbnailProvider::RegisterThumbnailProvider},
-    {"ToolbarSceneLayer", RegisterToolbarSceneLayer},
     {"TtsPlatformImpl", TtsPlatformImplAndroid::Register},
     {"UmaSessionStats", RegisterUmaSessionStats},
     {"UrlFilterBridge", UrlFilterBridge::Register},

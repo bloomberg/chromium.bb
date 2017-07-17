@@ -55,8 +55,6 @@ class SceneLayer {
   DISALLOW_COPY_AND_ASSIGN(SceneLayer);
 };
 
-bool RegisterSceneLayer(JNIEnv* env);
-
 }  // namespace android
 
 #endif  // CHROME_BROWSER_ANDROID_COMPOSITOR_SCENE_LAYER_SCENE_LAYER_H_

@@ -338,10 +338,6 @@ void TabContentManager::PutThumbnailIntoCache(int tab_id,
     thumbnail_cache_->Put(tab_id, bitmap, thumbnail_scale);
 }
 
-bool RegisterTabContentManager(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 // ----------------------------------------------------------------------------
 // Native JNI methods
 // ----------------------------------------------------------------------------

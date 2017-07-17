@@ -134,8 +134,6 @@ class ContextualSearchSceneLayer : public SceneLayer,
   DISALLOW_COPY_AND_ASSIGN(ContextualSearchSceneLayer);
 };
 
-bool RegisterContextualSearchSceneLayer(JNIEnv* env);
-
 }  // namespace android
 
 #endif  // CHROME_BROWSER_ANDROID_COMPOSITOR_SCENE_LAYER_CONTEXTUAL_SEARCH_SCENE_LAYER_H_

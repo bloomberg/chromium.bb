@@ -76,8 +76,6 @@ class ToolbarSceneLayer : public SceneLayer {
   DISALLOW_COPY_AND_ASSIGN(ToolbarSceneLayer);
 };
 
-bool RegisterToolbarSceneLayer(JNIEnv* env);
-
 }  // namespace android
 
 #endif  // CHROME_BROWSER_ANDROID_COMPOSITOR_SCENE_LAYER_TOOLBAR_SCENE_LAYER_H_
