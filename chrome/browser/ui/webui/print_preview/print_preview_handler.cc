@@ -88,8 +88,6 @@
 #include "third_party/icu/source/i18n/unicode/ulocdata.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/printing/printers_manager.h"
-#include "chrome/browser/chromeos/printing/printers_manager_factory.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
 #include "chrome/common/url_constants.h"

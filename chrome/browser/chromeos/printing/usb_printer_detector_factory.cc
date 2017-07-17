@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/printing/usb_printer_detector_factory.h"
 
 #include "base/command_line.h"
-#include "chrome/browser/chromeos/printing/printers_manager_factory.h"
+#include "chrome/browser/chromeos/printing/synced_printers_manager_factory.h"
 #include "chrome/browser/chromeos/printing/usb_printer_detector.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -39,7 +39,7 @@ UsbPrinterDetectorFactory::UsbPrinterDetectorFactory()
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(
       extensions::ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
-  DependsOn(PrintersManagerFactory::GetInstance());
+  DependsOn(SyncedPrintersManagerFactory::GetInstance());
 }
 
 UsbPrinterDetectorFactory::~UsbPrinterDetectorFactory() {}

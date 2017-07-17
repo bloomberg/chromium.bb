@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/printing/printers_manager_factory.h"
+#include "chrome/browser/chromeos/printing/synced_printers_manager_factory.h"
 
 #include <memory>
 #include <utility>
@@ -22,36 +22,36 @@ namespace chromeos {
 
 namespace {
 
-base::LazyInstance<PrintersManagerFactory>::DestructorAtExit
+base::LazyInstance<SyncedPrintersManagerFactory>::DestructorAtExit
     g_printers_manager = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
 // static
-PrintersManager* PrintersManagerFactory::GetForBrowserContext(
+SyncedPrintersManager* SyncedPrintersManagerFactory::GetForBrowserContext(
     content::BrowserContext* context) {
-  return static_cast<PrintersManager*>(
+  return static_cast<SyncedPrintersManager*>(
       GetInstance()->GetServiceForBrowserContext(context, true));
 }
 
 // static
-PrintersManagerFactory* PrintersManagerFactory::GetInstance() {
+SyncedPrintersManagerFactory* SyncedPrintersManagerFactory::GetInstance() {
   return g_printers_manager.Pointer();
 }
 
-content::BrowserContext* PrintersManagerFactory::GetBrowserContextToUse(
+content::BrowserContext* SyncedPrintersManagerFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
   return chrome::GetBrowserContextRedirectedInIncognito(context);
 }
 
-PrintersManagerFactory::PrintersManagerFactory()
+SyncedPrintersManagerFactory::SyncedPrintersManagerFactory()
     : BrowserContextKeyedServiceFactory(
-          "PrintersManager",
+          "SyncedPrintersManager",
           BrowserContextDependencyManager::GetInstance()) {}
 
-PrintersManagerFactory::~PrintersManagerFactory() {}
+SyncedPrintersManagerFactory::~SyncedPrintersManagerFactory() {}
 
-PrintersManager* PrintersManagerFactory::BuildServiceInstanceFor(
+SyncedPrintersManager* SyncedPrintersManagerFactory::BuildServiceInstanceFor(
     content::BrowserContext* browser_context) const {
   Profile* profile = Profile::FromBrowserContext(browser_context);
 
@@ -61,11 +61,10 @@ PrintersManager* PrintersManagerFactory::BuildServiceInstanceFor(
 
   std::unique_ptr<PrintersSyncBridge> sync_bridge =
       base::MakeUnique<PrintersSyncBridge>(
-          store_factory,
-          base::BindRepeating(
-              base::IgnoreResult(&base::debug::DumpWithoutCrashing)));
+          store_factory, base::BindRepeating(base::IgnoreResult(
+                             &base::debug::DumpWithoutCrashing)));
 
-  return new PrintersManager(profile, std::move(sync_bridge));
+  return new SyncedPrintersManager(profile, std::move(sync_bridge));
 }
 
 }  // namespace chromeos

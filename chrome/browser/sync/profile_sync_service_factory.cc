@@ -68,7 +68,7 @@
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/printing/printers_manager_factory.h"
+#include "chrome/browser/chromeos/printing/synced_printers_manager_factory.h"
 #include "components/sync_wifi/wifi_credential_syncable_service_factory.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -159,7 +159,7 @@ ProfileSyncServiceFactory::ProfileSyncServiceFactory()
       extensions::ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 #if defined(OS_CHROMEOS)
-  DependsOn(chromeos::PrintersManagerFactory::GetInstance());
+  DependsOn(chromeos::SyncedPrintersManagerFactory::GetInstance());
   DependsOn(sync_wifi::WifiCredentialSyncableServiceFactory::GetInstance());
 #endif  // defined(OS_CHROMEOS)
 

@@ -21,7 +21,7 @@
 #include "chrome/browser/chromeos/printing/ppd_provider_factory.h"
 #include "chrome/browser/chromeos/printing/printer_configurer.h"
 #include "chrome/browser/chromeos/printing/printer_info.h"
-#include "chrome/browser/chromeos/printing/printers_manager_factory.h"
+#include "chrome/browser/chromeos/printing/synced_printers_manager_factory.h"
 #include "chrome/browser/chromeos/printing/usb_printer_detector.h"
 #include "chrome/browser/chromeos/printing/usb_printer_detector_factory.h"
 #include "chrome/browser/download/download_prefs.h"
@@ -186,7 +186,8 @@ void CupsPrintersHandler::HandleGetCupsPrintersList(
   CHECK(args->GetString(0, &callback_id));
 
   std::vector<std::unique_ptr<Printer>> printers =
-      PrintersManagerFactory::GetForBrowserContext(profile_)->GetPrinters();
+      SyncedPrintersManagerFactory::GetForBrowserContext(profile_)
+          ->GetPrinters();
 
   auto printers_list = base::MakeUnique<base::ListValue>();
   for (const std::unique_ptr<Printer>& printer : printers) {
@@ -208,7 +209,7 @@ void CupsPrintersHandler::HandleUpdateCupsPrinter(const base::ListValue* args) {
 
   std::unique_ptr<Printer> printer = base::MakeUnique<Printer>(printer_id);
   printer->set_display_name(printer_name);
-  PrintersManagerFactory::GetForBrowserContext(profile_)->RegisterPrinter(
+  SyncedPrintersManagerFactory::GetForBrowserContext(profile_)->RegisterPrinter(
       std::move(printer));
 }
 
@@ -217,8 +218,8 @@ void CupsPrintersHandler::HandleRemoveCupsPrinter(const base::ListValue* args) {
   std::string printer_name;
   CHECK(args->GetString(0, &printer_id));
   CHECK(args->GetString(1, &printer_name));
-  PrintersManager* prefs =
-      PrintersManagerFactory::GetForBrowserContext(profile_);
+  SyncedPrintersManager* prefs =
+      SyncedPrintersManagerFactory::GetForBrowserContext(profile_);
   auto printer = prefs->GetPrinter(printer_id);
   if (!printer)
     return;
@@ -419,7 +420,8 @@ void CupsPrintersHandler::OnAddedPrinter(std::unique_ptr<Printer> printer,
     case PrinterSetupResult::kSuccess: {
       UMA_HISTOGRAM_ENUMERATION("Printing.CUPS.PrinterAdded",
                                 printer->GetProtocol(), Printer::kProtocolMax);
-      auto* manager = PrintersManagerFactory::GetForBrowserContext(profile_);
+      auto* manager =
+          SyncedPrintersManagerFactory::GetForBrowserContext(profile_);
       manager->PrinterInstalled(*printer);
       manager->RegisterPrinter(std::move(printer));
       break;
@@ -571,8 +573,8 @@ void CupsPrintersHandler::OnPrintersFound(
   std::unique_ptr<base::ListValue> printers_list =
       base::MakeUnique<base::ListValue>();
   // Filter out already-configured printers as we go.
-  PrintersManager* printers_manager =
-      PrintersManagerFactory::GetForBrowserContext(profile_);
+  SyncedPrintersManager* printers_manager =
+      SyncedPrintersManagerFactory::GetForBrowserContext(profile_);
   if (printers_manager != nullptr) {
     for (const auto& printer : printers) {
       if (printers_manager->GetPrinter(printer.id()).get() == nullptr) {
@@ -581,7 +583,7 @@ void CupsPrintersHandler::OnPrintersFound(
     }
   } else {
     LOG(WARNING) << "Failing to get available printers because no "
-                    "PrintersManager exists.";
+                    "SyncedPrintersManager exists.";
   }
   FireWebUIListener("on-printer-discovered", *printers_list);
 }

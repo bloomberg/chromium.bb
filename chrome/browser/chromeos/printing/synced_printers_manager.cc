@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/printing/printers_manager.h"
+#include "chrome/browser/chromeos/printing/synced_printers_manager.h"
 
 #include <memory>
 #include <string>
@@ -51,29 +51,30 @@ bool UpdatePrinterPref(PrintersSyncBridge* sync_bridge,
 
 }  // anonymous namespace
 
-PrintersManager::PrintersManager(
+SyncedPrintersManager::SyncedPrintersManager(
     Profile* profile,
     std::unique_ptr<PrintersSyncBridge> sync_bridge)
     : profile_(profile), sync_bridge_(std::move(sync_bridge)) {
   pref_change_registrar_.Init(profile->GetPrefs());
   pref_change_registrar_.Add(
       prefs::kRecommendedNativePrinters,
-      base::Bind(&PrintersManager::UpdateRecommendedPrinters,
+      base::Bind(&SyncedPrintersManager::UpdateRecommendedPrinters,
                  base::Unretained(this)));
   UpdateRecommendedPrinters();
 }
 
-PrintersManager::~PrintersManager() {}
+SyncedPrintersManager::~SyncedPrintersManager() {}
 
 // static
-void PrintersManager::RegisterProfilePrefs(
+void SyncedPrintersManager::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterListPref(prefs::kPrintingDevices,
                              user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterListPref(prefs::kRecommendedNativePrinters);
 }
 
-std::vector<std::unique_ptr<Printer>> PrintersManager::GetPrinters() const {
+std::vector<std::unique_ptr<Printer>> SyncedPrintersManager::GetPrinters()
+    const {
   std::vector<std::unique_ptr<Printer>> printers;
 
   std::vector<sync_pb::PrinterSpecifics> values =
@@ -85,8 +86,8 @@ std::vector<std::unique_ptr<Printer>> PrintersManager::GetPrinters() const {
   return printers;
 }
 
-std::vector<std::unique_ptr<Printer>> PrintersManager::GetRecommendedPrinters()
-    const {
+std::vector<std::unique_ptr<Printer>>
+SyncedPrintersManager::GetRecommendedPrinters() const {
   std::vector<std::unique_ptr<Printer>> printers;
 
   for (const std::string& key : recommended_printer_ids_) {
@@ -99,7 +100,7 @@ std::vector<std::unique_ptr<Printer>> PrintersManager::GetRecommendedPrinters()
   return printers;
 }
 
-std::unique_ptr<Printer> PrintersManager::GetPrinter(
+std::unique_ptr<Printer> SyncedPrintersManager::GetPrinter(
     const std::string& printer_id) const {
   // check for a policy printer first
   const auto& policy_printers = recommended_printers_;
@@ -114,7 +115,7 @@ std::unique_ptr<Printer> PrintersManager::GetPrinter(
   return printer.has_value() ? printing::SpecificsToPrinter(*printer) : nullptr;
 }
 
-void PrintersManager::RegisterPrinter(std::unique_ptr<Printer> printer) {
+void SyncedPrintersManager::RegisterPrinter(std::unique_ptr<Printer> printer) {
   if (printer->id().empty()) {
     printer->set_id(base::GenerateGUID());
   }
@@ -134,7 +135,7 @@ void PrintersManager::RegisterPrinter(std::unique_ptr<Printer> printer) {
   }
 }
 
-bool PrintersManager::RemovePrinter(const std::string& printer_id) {
+bool SyncedPrintersManager::RemovePrinter(const std::string& printer_id) {
   DCHECK(!printer_id.empty());
 
   base::Optional<sync_pb::PrinterSpecifics> printer =
@@ -155,21 +156,21 @@ bool PrintersManager::RemovePrinter(const std::string& printer_id) {
   return success;
 }
 
-void PrintersManager::AddObserver(Observer* observer) {
+void SyncedPrintersManager::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }
 
-void PrintersManager::RemoveObserver(Observer* observer) {
+void SyncedPrintersManager::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-PrintersSyncBridge* PrintersManager::GetSyncBridge() {
+PrintersSyncBridge* SyncedPrintersManager::GetSyncBridge() {
   return sync_bridge_.get();
 }
 
 // This method is not thread safe and could interact poorly with readers of
 // |recommended_printers_|.
-void PrintersManager::UpdateRecommendedPrinters() {
+void SyncedPrintersManager::UpdateRecommendedPrinters() {
   const PrefService* prefs = profile_->GetPrefs();
 
   const base::ListValue* values =
@@ -227,12 +228,13 @@ void PrintersManager::UpdateRecommendedPrinters() {
   recommended_printers_.swap(new_printers);
 }
 
-void PrintersManager::PrinterInstalled(const Printer& printer) {
+void SyncedPrintersManager::PrinterInstalled(const Printer& printer) {
   DCHECK(!printer.last_updated().is_null());
   installed_printer_timestamps_[printer.id()] = printer.last_updated();
 }
 
-bool PrintersManager::IsConfigurationCurrent(const Printer& printer) const {
+bool SyncedPrintersManager::IsConfigurationCurrent(
+    const Printer& printer) const {
   auto found = installed_printer_timestamps_.find(printer.id());
   if (found == installed_printer_timestamps_.end())
     return false;

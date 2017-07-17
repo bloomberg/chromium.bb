@@ -18,8 +18,8 @@
 #include "chrome/browser/chromeos/printing/cups_print_job_manager_factory.h"
 #include "chrome/browser/chromeos/printing/ppd_provider_factory.h"
 #include "chrome/browser/chromeos/printing/printer_configurer.h"
-#include "chrome/browser/chromeos/printing/printers_manager.h"
-#include "chrome/browser/chromeos/printing/printers_manager_factory.h"
+#include "chrome/browser/chromeos/printing/synced_printers_manager.h"
+#include "chrome/browser/chromeos/printing/synced_printers_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/print_preview/printer_capabilities.h"
 #include "chrome/common/chrome_switches.h"
@@ -74,7 +74,8 @@ void FetchCapabilities(std::unique_ptr<chromeos::Printer> printer,
 class PrinterBackendProxyChromeos : public PrinterBackendProxy {
  public:
   explicit PrinterBackendProxyChromeos(Profile* profile)
-      : prefs_(chromeos::PrintersManagerFactory::GetForBrowserContext(profile)),
+      : prefs_(chromeos::SyncedPrintersManagerFactory::GetForBrowserContext(
+            profile)),
         printer_configurer_(chromeos::PrinterConfigurer::Create(profile)),
         weak_factory_(this) {
     // Construct the CupsPrintJobManager to listen for printing events.
@@ -94,7 +95,7 @@ class PrinterBackendProxyChromeos : public PrinterBackendProxy {
   };
 
   void EnumeratePrinters(const EnumeratePrintersCallback& cb) override {
-    // PrintersManager is not thread safe and must be called from the UI
+    // SyncedPrintersManager is not thread safe and must be called from the UI
     // thread.
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -183,7 +184,7 @@ class PrinterBackendProxyChromeos : public PrinterBackendProxy {
     cb.Run(nullptr);
   }
 
-  chromeos::PrintersManager* prefs_;
+  chromeos::SyncedPrintersManager* prefs_;
   scoped_refptr<chromeos::printing::PpdProvider> ppd_provider_;
   std::unique_ptr<chromeos::PrinterConfigurer> printer_configurer_;
   base::WeakPtrFactory<PrinterBackendProxyChromeos> weak_factory_;
