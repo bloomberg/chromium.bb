@@ -34,7 +34,7 @@ def reparse_url(parsed_url, query_params):
       path=parsed_url.path,
       params=parsed_url.params,
       fragment=parsed_url.fragment,
-      query=urllib.urlencode(query_params))
+      query=urllib.urlencode(query_params, doseq=True))
 
 
 def gitiles_get(parsed_url, handler, attempts):
