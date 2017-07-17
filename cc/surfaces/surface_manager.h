@@ -33,16 +33,18 @@
 #include <string>
 #endif
 
+namespace viz {
+namespace test {
+class SurfaceSynchronizationTest;
+}
+}  // namespace viz
+
 namespace cc {
 
 struct BeginFrameAck;
 struct BeginFrameArgs;
 class CompositorFrame;
 class Surface;
-
-namespace test {
-class SurfaceSynchronizationTest;
-}
 
 class CC_SURFACES_EXPORT SurfaceManager {
  public:
@@ -184,7 +186,7 @@ class CC_SURFACES_EXPORT SurfaceManager {
   }
 
  private:
-  friend class test::SurfaceSynchronizationTest;
+  friend class viz::test::SurfaceSynchronizationTest;
   friend class SurfaceManagerRefTest;
 
   using SurfaceIdSet = std::unordered_set<viz::SurfaceId, viz::SurfaceIdHash>;
