@@ -4,7 +4,7 @@
 
 #user-image {
   min-height: 443px;
-  padding: 70px 17px 21px;
+  padding-bottom: 24px;
   width: 702px;
 }
 
@@ -18,8 +18,8 @@
   -webkit-margin-start: 8px;
 }
 
-#user-image-screen-description {
-  margin-top: 0;
+#user-image-screen-title {
+  font-size: 28px;
 }
 
 #user-image .step-contents {

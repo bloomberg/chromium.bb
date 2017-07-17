@@ -3049,8 +3049,13 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
 
       <!-- User Image Selection Dialog -->
       <if expr="chromeos">
-        <message name="IDS_USER_IMAGE_SCREEN_TITLE" desc="String to be displayed in the title bar of the user image selection dialog">
-          Choose your account picture
+        <message name="IDS_USER_IMAGE_SCREEN_TITLE" desc="String to be displayed in the title bar of the oobe/login user image selection dialog">
+          Set your profile picture
+        </message>
+        <message name="IDS_USER_IMAGE_SCREEN_DESCRIPTION" desc="Description text for the oobe/login user image selection dialog.">
+          Take a new photo or choose an existing photo or icon.
+          <ph name="LINE_BREAK">&lt;br&gt;&lt;br&gt;</ph>
+          This picture will show up on the Chromebook sign in screen and lock screen.
         </message>
       </if>
 

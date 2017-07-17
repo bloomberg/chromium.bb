@@ -91,7 +91,7 @@ void UserImageScreenHandler::DeclareLocalizedValues(
     ::login::LocalizedValuesBuilder* builder) {
   builder->Add("userImageScreenTitle", IDS_USER_IMAGE_SCREEN_TITLE);
   builder->Add("userImageScreenDescription",
-               IDS_OPTIONS_CHANGE_PICTURE_DIALOG_TEXT);
+               IDS_USER_IMAGE_SCREEN_DESCRIPTION);
   builder->Add("takePhoto", IDS_OPTIONS_CHANGE_PICTURE_TAKE_PHOTO);
   builder->Add("discardPhoto", IDS_OPTIONS_CHANGE_PICTURE_DISCARD_PHOTO);
   builder->Add("flipPhoto", IDS_OPTIONS_CHANGE_PICTURE_FLIP_PHOTO);
