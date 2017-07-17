@@ -103,9 +103,6 @@
       'Browser Side Navigation Linux': 'release_bot',
       'CFI Linux CF': 'cfi_full_cfi_diag_recover_release_static',
       'CFI Linux ToT': 'cfi_full_clang_tot_release_static',
-      'CFI Linux': 'cfi_release_static',
-      'CFI Linux Full': 'cfi_full_cfi_diag_thin_lto_release_static_dcheck_always_on_goma',
-      'CFI ThinLTO Linux ToT': 'cfi_thin_lto_clang_tot_full_symbols_release_static_use_lld',
       'Chromium Linux Goma Canary': 'release_bot',
       'Chromium Linux Goma Canary': 'release_bot',
       'Chromium Linux Goma Canary (clobber)': 'release_bot',
@@ -187,8 +184,6 @@
       'MD Top Chrome ChromeOS non-material': 'chromeos_with_codecs_debug_bot',
       'MD Top Chrome Win material': 'debug_bot_minimal_symbols',
       'MD Top Chrome Linux material': 'debug_bot',
-      'LTO Linux': 'official_goma_thin_lto_use_lld',
-      'LTO Linux Perf': 'official_goma_thin_lto_use_lld',
       'Libfuzzer Upload Linux ASan': 'release_libfuzzer_asan',
       'Libfuzzer Upload Linux ASan Debug': 'debug_libfuzzer_asan',
       'Libfuzzer Upload Linux MSan': 'release_libfuzzer_msan',
@@ -999,14 +994,6 @@
       'cfi_full', 'cfi_diag', 'thin_lto', 'release', 'static', 'dcheck_always_on', 'goma',
     ],
 
-    'cfi_release_static': [
-      'cfi', 'release', 'static',
-    ],
-
-    'cfi_thin_lto_clang_tot_full_symbols_release_static_use_lld': [
-      'cfi', 'thin_lto', 'clang_tot', 'full_symbols', 'release', 'static', 'use_lld',
-    ],
-
     'chrome_with_codecs_blink_logging_release_trybot': [
       'chrome_with_codecs', 'blink_logging', 'release_trybot',
     ],
@@ -1364,10 +1351,6 @@
       'official', 'goma', 'chromeos',
     ],
 
-    'official_goma_thin_lto_use_lld': [
-      'official', 'goma', 'thin_lto', 'use_lld',
-    ],
-
     'official_goma_minimal_symbols_android': [
       'official', 'goma', 'minimal_symbols', 'android',
     ],
@@ -1615,13 +1598,8 @@
       'gn_args': 'is_cast_audio_only=true enable_webrtc=false'
     },
 
-    'cfi': {
-      'gn_args': 'is_cfi=true',
-    },
-
     'cfi_full': {
-      'gn_args': 'use_cfi_cast=true',
-      'mixins': ['cfi'],
+      'gn_args': 'is_cfi=true use_cfi_cast=true',
     },
 
     'cfi_diag': {
