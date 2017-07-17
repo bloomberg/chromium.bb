@@ -108,10 +108,17 @@ content::WebUIDataSource* CreateMdBookmarksUIHTMLSource(Profile* profile) {
   AddLocalizedString(source, "undo", IDS_BOOKMARK_BAR_UNDO);
 
   // Resources.
+  source->AddResourcePath("images/folder_open.svg",
+                          IDR_MD_BOOKMARKS_IMAGES_FOLDER_OPEN_SVG);
+  source->AddResourcePath("images/folder.svg",
+                          IDR_MD_BOOKMARKS_IMAGES_FOLDER_SVG);
 #if BUILDFLAG(USE_VULCANIZE)
   source->AddResourcePath("crisper.js", IDR_MD_BOOKMARKS_CRISPER_JS);
   source->SetDefaultResource(IDR_MD_BOOKMARKS_VULCANIZED_HTML);
-  source->UseGzip(std::unordered_set<std::string>());
+  std::unordered_set<std::string> exclusions;
+  exclusions.insert("images/folder_open.svg");
+  exclusions.insert("images/folder.svg");
+  source->UseGzip(exclusions);
 #else
   source->AddResourcePath("actions.html", IDR_MD_BOOKMARKS_ACTIONS_HTML);
   source->AddResourcePath("actions.js", IDR_MD_BOOKMARKS_ACTIONS_JS);
@@ -142,7 +149,6 @@ content::WebUIDataSource* CreateMdBookmarksUIHTMLSource(Profile* profile) {
                           IDR_MD_BOOKMARKS_FOLDER_NODE_HTML);
   source->AddResourcePath("folder_node.js",
                           IDR_MD_BOOKMARKS_FOLDER_NODE_JS);
-  source->AddResourcePath("icons.html", IDR_MD_BOOKMARKS_ICONS_HTML);
   source->AddResourcePath("item.html", IDR_MD_BOOKMARKS_ITEM_HTML);
   source->AddResourcePath("item.js", IDR_MD_BOOKMARKS_ITEM_JS);
   source->AddResourcePath("list.html", IDR_MD_BOOKMARKS_LIST_HTML);

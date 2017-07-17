@@ -258,14 +258,6 @@ Polymer({
     return children.pop().getLastVisibleDescendant_();
   },
 
-  /**
-   * @private
-   * @return {string}
-   */
-  getFolderIcon_: function() {
-    return this.isSelectedFolder_ ? 'bookmarks:folder-open' : 'cr:folder';
-  },
-
   /** @private */
   selectFolder_: function() {
     if (!this.isSelectedFolder_) {

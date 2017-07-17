@@ -64,13 +64,6 @@
         width: 24px;
       }
 
-      #icon {
-        background-repeat: no-repeat;
-        height: 16px;
-        margin: 2px;
-        width: 16px;
-      }
-
       .centered {
         align-items: center;
         display: flex;
@@ -99,9 +92,7 @@
     </div>
     <div id="primary" class="chip-container centered">
       <div id="icon-wrapper" class="centered">
-        <iron-icon id="folder-icon" icon="cr:folder" hidden$="[[!isFolder_]]">
-        </iron-icon>
-        <div id="icon" hidden$="[[isFolder_]]"></div>
+        <div id="icon"></div>
       </div>
       <div id="title"></div>
     </div>
