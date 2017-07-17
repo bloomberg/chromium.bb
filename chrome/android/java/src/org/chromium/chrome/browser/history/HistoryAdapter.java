@@ -444,4 +444,9 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
     ViewGroup getPrivacyDisclaimersForTests() {
         return mPrivacyDisclaimers;
     }
+
+    @VisibleForTesting
+    public ArrayList<HistoryItemView> getItemViewsForTests() {
+        return mItemViews;
+    }
 }
