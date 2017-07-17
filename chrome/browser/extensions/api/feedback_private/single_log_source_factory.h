@@ -8,8 +8,8 @@
 #include <memory>
 
 #include "base/callback.h"
-#include "chrome/browser/feedback/system_logs/system_logs_fetcher.h"
 #include "chrome/common/extensions/api/feedback_private.h"
+#include "components/feedback/system_logs/system_logs_fetcher.h"
 
 namespace extensions {
 

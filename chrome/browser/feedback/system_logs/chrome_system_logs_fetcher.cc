@@ -9,7 +9,7 @@
 #include "chrome/browser/feedback/system_logs/log_sources/chrome_internal_log_source.h"
 #include "chrome/browser/feedback/system_logs/log_sources/crash_ids_source.h"
 #include "chrome/browser/feedback/system_logs/log_sources/memory_details_log_source.h"
-#include "chrome/browser/feedback/system_logs/system_logs_fetcher.h"
+#include "components/feedback/system_logs/system_logs_fetcher.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/system_logs/command_line_log_source.h"
