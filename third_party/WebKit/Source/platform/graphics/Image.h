@@ -233,7 +233,7 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
                            const FloatPoint& phase,
                            SkBlendMode,
                            const FloatRect&,
-                           const FloatSize& repeat_spacing = FloatSize());
+                           const FloatSize& repeat_spacing);
 
  private:
   bool image_observer_disabled_;

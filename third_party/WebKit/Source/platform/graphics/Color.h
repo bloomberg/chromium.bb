@@ -26,10 +26,9 @@
 #ifndef Color_h
 #define Color_h
 
-#include "platform/animation/AnimationUtilities.h"
+#include "platform/PlatformExport.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Forward.h"
-#include "platform/wtf/text/StringView.h"
 #include "platform/wtf/text/Unicode.h"
 
 namespace blink {
@@ -161,31 +160,6 @@ inline bool operator!=(const Color& a, const Color& b) {
 PLATFORM_EXPORT Color ColorFromPremultipliedARGB(RGBA32);
 PLATFORM_EXPORT RGBA32 PremultipliedARGBFromColor(const Color&);
 
-inline Color Blend(const Color& from,
-                   const Color& to,
-                   double progress,
-                   bool blend_premultiplied = true) {
-  if (blend_premultiplied) {
-    // Contrary to the name, RGBA32 actually stores ARGB, so we can initialize
-    // Color directly from premultipliedARGBFromColor(). Also,
-    // premultipliedARGBFromColor() bails on zero alpha, so special-case that.
-    Color premult_from = from.Alpha() ? PremultipliedARGBFromColor(from) : 0;
-    Color premult_to = to.Alpha() ? PremultipliedARGBFromColor(to) : 0;
-
-    Color premult_blended(
-        Blend(premult_from.Red(), premult_to.Red(), progress),
-        Blend(premult_from.Green(), premult_to.Green(), progress),
-        Blend(premult_from.Blue(), premult_to.Blue(), progress),
-        Blend(premult_from.Alpha(), premult_to.Alpha(), progress));
-
-    return Color(ColorFromPremultipliedARGB(premult_blended.Rgb()));
-  }
-
-  return Color(Blend(from.Red(), to.Red(), progress),
-               Blend(from.Green(), to.Green(), progress),
-               Blend(from.Blue(), to.Blue(), progress),
-               Blend(from.Alpha(), to.Alpha(), progress));
-}
 }  // namespace blink
 
 #endif  // Color_h

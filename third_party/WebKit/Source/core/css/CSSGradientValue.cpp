@@ -38,6 +38,7 @@
 #include "core/layout/LayoutObject.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "platform/geometry/IntSize.h"
+#include "platform/graphics/ColorBlend.h"
 #include "platform/graphics/Gradient.h"
 #include "platform/graphics/GradientGeneratedImage.h"
 #include "platform/graphics/Image.h"
