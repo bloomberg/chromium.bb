@@ -1,13 +1,14 @@
-<link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
-<link rel="import" href="chrome://resources/cr_elements/icons.html">
-<link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
+
+<link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_icons_css.html">
+<link rel="import" href="chrome://resources/html/assert.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/default-theme.html">
 
 <dom-module id="cr-dialog">
   <template>
-    <style include="cr-hidden-style">
+    <style include="cr-hidden-style cr-icons">
       :host {
         --scroll-border: 1px solid var(--paper-grey-300);
         border: 0;
@@ -107,11 +108,6 @@
       }
 
       #close {
-        --paper-icon-button: {
-          height: 36px;
-          width: 36px;
-        };
-
         --layout-inline: {
           display: flex;
         };
@@ -126,10 +122,10 @@
       <div class="title-container" tabindex="-1">
         <content select=".title"></content>
       </div>
-      <paper-icon-button icon="cr:clear" on-tap="cancel" id="close"
-          aria-label$="[[closeText]]" on-keypress="onCloseKeypress_"
-          hidden$="[[noCancel]]">
-      </paper-icon-button>
+      <button is="paper-icon-button-light" class="icon-clear" id="close"
+          aria-label$="[[closeText]]" hidden$="[[noCancel]]" on-tap="cancel"
+          on-keypress="onCloseKeypress_">
+      </button>
     </div>
     <div class="body-container">
       <span id="bodyTopMarker"></span>
