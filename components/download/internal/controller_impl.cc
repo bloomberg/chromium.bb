@@ -395,6 +395,10 @@ void ControllerImpl::OnModelReady(bool success) {
   AttemptToFinalizeSetup();
 }
 
+void ControllerImpl::OnHardRecoverComplete(bool success) {
+  // TODO(dtrainor): Support recovery.
+}
+
 void ControllerImpl::OnItemAdded(bool success,
                                  DownloadClient client,
                                  const std::string& guid) {

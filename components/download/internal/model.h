@@ -32,6 +32,11 @@ class Model {
     // callback.  If |success| is true it can be accessed now.
     virtual void OnModelReady(bool success) = 0;
 
+    // Called asynchronously in response to a Model::HardRecover call.  If
+    // |success| is |false|, recovery of the Model and/or the underlying Store
+    // failed.  After this call there should be no entries stored in this Model.
+    virtual void OnHardRecoverComplete(bool success) = 0;
+
     // Called when an Entry addition is complete.  |success| determines whether
     // or not the entry has been successfully persisted to the Store.
     virtual void OnItemAdded(bool success,
@@ -58,6 +63,10 @@ class Model {
   // Initializes the Model.  Client::OnInitialized() will be called in response.
   // The Model can be used after that call.
   virtual void Initialize(Client* client) = 0;
+
+  // Deletes and attempts to re-initialize the Store.
+  // Client::OnHardRecoveryComplete() will be called in response asynchronously.
+  virtual void HardRecover() = 0;
 
   // Adds |entry| to this Model and attempts to write |entry| to the Store.
   // Client::OnItemAdded() will be called in response asynchronously.

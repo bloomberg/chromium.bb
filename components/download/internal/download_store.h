@@ -34,6 +34,7 @@ class DownloadStore : public Store {
   // Store implementation.
   bool IsInitialized() override;
   void Initialize(InitCallback callback) override;
+  void HardRecover(StoreCallback callback) override;
   void Update(const Entry& entry, StoreCallback callback) override;
   void Remove(const std::string& guid, StoreCallback callback) override;
 
@@ -42,6 +43,8 @@ class DownloadStore : public Store {
   void OnDatabaseLoaded(InitCallback callback,
                         bool success,
                         std::unique_ptr<std::vector<protodb::Entry>> protos);
+  void OnDatabaseDestroyed(StoreCallback callback, bool success);
+  void OnDatabaseInitedAfterDestroy(StoreCallback callback, bool success);
 
   std::unique_ptr<leveldb_proto::ProtoDatabase<protodb::Entry>> db_;
   base::FilePath database_dir_;

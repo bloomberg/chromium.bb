@@ -80,6 +80,7 @@ class ControllerImpl : public Controller,
 
   // Model::Client implementation.
   void OnModelReady(bool success) override;
+  void OnHardRecoverComplete(bool success) override;
   void OnItemAdded(bool success,
                    DownloadClient client,
                    const std::string& guid) override;

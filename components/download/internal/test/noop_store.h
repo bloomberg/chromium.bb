@@ -25,6 +25,7 @@ class NoopStore : public Store {
   // Store implementation.
   bool IsInitialized() override;
   void Initialize(InitCallback callback) override;
+  void HardRecover(StoreCallback callback) override;
   void Update(const Entry& entry, StoreCallback callback) override;
   void Remove(const std::string& guid, StoreCallback callback) override;
 
