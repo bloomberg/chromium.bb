@@ -120,7 +120,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/printing/cups_print_job_manager_factory.h"
-#include "chrome/browser/chromeos/printing/printers_manager_factory.h"
+#include "chrome/browser/chromeos/printing/synced_printers_manager_factory.h"
 #include "chrome/browser/chromeos/printing/usb_printer_detector_factory.h"
 #include "chrome/browser/chromeos/tether/tether_service_factory.h"
 #include "chrome/browser/extensions/api/platform_keys/verify_trust_api.h"
@@ -233,7 +233,7 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
 #if defined(OS_CHROMEOS)
   chromeos::UsbPrinterDetectorFactory::GetInstance();
   chromeos::CupsPrintJobManagerFactory::GetInstance();
-  chromeos::PrintersManagerFactory::GetInstance();
+  chromeos::SyncedPrintersManagerFactory::GetInstance();
   TetherServiceFactory::GetInstance();
   extensions::VerifyTrustAPI::GetFactoryInstance();
 #endif

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/printing/printers_manager.h"
+#include "chrome/browser/chromeos/printing/synced_printers_manager.h"
 
 #include <memory>
 #include <utility>
@@ -13,8 +13,8 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/printing/printers_manager_factory.h"
 #include "chrome/browser/chromeos/printing/printers_sync_bridge.h"
+#include "chrome/browser/chromeos/printing/synced_printers_manager_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/sync/model/fake_model_type_change_processor.h"
@@ -43,7 +43,7 @@ const char kLexJson[] = R"json({
       } )json";
 
 // Helper class to record observed events.
-class LoggingObserver : public PrintersManager::Observer {
+class LoggingObserver : public SyncedPrintersManager::Observer {
  public:
   void OnPrinterAdded(const Printer& printer) override {
     last_added_ = printer;
@@ -84,9 +84,9 @@ class LoggingObserver : public PrintersManager::Observer {
 
 }  // namespace
 
-class PrintersManagerTest : public testing::Test {
+class SyncedPrintersManagerTest : public testing::Test {
  protected:
-  PrintersManagerTest()
+  SyncedPrintersManagerTest()
       : manager_(
             &profile_,
             base::MakeUnique<PrintersSyncBridge>(
@@ -103,10 +103,10 @@ class PrintersManagerTest : public testing::Test {
   // Must outlive |manager_|.
   TestingProfile profile_;
 
-  PrintersManager manager_;
+  SyncedPrintersManager manager_;
 };
 
-TEST_F(PrintersManagerTest, AddPrinter) {
+TEST_F(SyncedPrintersManagerTest, AddPrinter) {
   LoggingObserver observer;
   manager_.AddObserver(&observer);
   manager_.RegisterPrinter(base::MakeUnique<Printer>(kPrinterId));
@@ -120,7 +120,7 @@ TEST_F(PrintersManagerTest, AddPrinter) {
   EXPECT_FALSE(observer.UpdateCalled());
 }
 
-TEST_F(PrintersManagerTest, UpdatePrinterAssignsId) {
+TEST_F(SyncedPrintersManagerTest, UpdatePrinterAssignsId) {
   manager_.RegisterPrinter(base::MakeUnique<Printer>());
 
   auto printers = manager_.GetPrinters();
@@ -128,7 +128,7 @@ TEST_F(PrintersManagerTest, UpdatePrinterAssignsId) {
   EXPECT_FALSE(printers[0]->id().empty());
 }
 
-TEST_F(PrintersManagerTest, UpdatePrinter) {
+TEST_F(SyncedPrintersManagerTest, UpdatePrinter) {
   manager_.RegisterPrinter(base::MakeUnique<Printer>(kPrinterId));
   auto updated_printer = base::MakeUnique<Printer>(kPrinterId);
   updated_printer->set_uri(kUri);
@@ -147,7 +147,7 @@ TEST_F(PrintersManagerTest, UpdatePrinter) {
   EXPECT_FALSE(observer.AddCalled());
 }
 
-TEST_F(PrintersManagerTest, RemovePrinter) {
+TEST_F(SyncedPrintersManagerTest, RemovePrinter) {
   manager_.RegisterPrinter(base::MakeUnique<Printer>("OtherUUID"));
   manager_.RegisterPrinter(base::MakeUnique<Printer>(kPrinterId));
   manager_.RegisterPrinter(base::MakeUnique<Printer>());
@@ -162,7 +162,7 @@ TEST_F(PrintersManagerTest, RemovePrinter) {
 
 // Tests for policy printers
 
-TEST_F(PrintersManagerTest, RecommendedPrinters) {
+TEST_F(SyncedPrintersManagerTest, RecommendedPrinters) {
   std::string first_printer =
       R"json({
       "display_name": "Color Laser",
@@ -195,7 +195,7 @@ TEST_F(PrintersManagerTest, RecommendedPrinters) {
   EXPECT_EQ(Printer::Source::SRC_POLICY, printers[1]->source());
 }
 
-TEST_F(PrintersManagerTest, GetRecommendedPrinter) {
+TEST_F(SyncedPrintersManagerTest, GetRecommendedPrinter) {
   std::string printer = kLexJson;
   auto value = base::MakeUnique<base::ListValue>();
   value->AppendString(printer);
@@ -215,18 +215,18 @@ TEST_F(PrintersManagerTest, GetRecommendedPrinter) {
   EXPECT_EQ(Printer::Source::SRC_POLICY, from_list.source());
 }
 
-TEST_F(PrintersManagerTest, PrinterNotInstalled) {
+TEST_F(SyncedPrintersManagerTest, PrinterNotInstalled) {
   Printer printer(kPrinterId, base::Time::FromInternalValue(1000));
   EXPECT_FALSE(manager_.IsConfigurationCurrent(printer));
 }
 
-TEST_F(PrintersManagerTest, PrinterIsInstalled) {
+TEST_F(SyncedPrintersManagerTest, PrinterIsInstalled) {
   Printer printer(kPrinterId, base::Time::FromInternalValue(1000));
   manager_.PrinterInstalled(printer);
   EXPECT_TRUE(manager_.IsConfigurationCurrent(printer));
 }
 
-TEST_F(PrintersManagerTest, UpdatedPrinterConfiguration) {
+TEST_F(SyncedPrintersManagerTest, UpdatedPrinterConfiguration) {
   Printer printer(kPrinterId, base::Time::FromInternalValue(1000));
   manager_.PrinterInstalled(printer);
 

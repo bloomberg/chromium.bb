@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "chrome/browser/chromeos/printing/printers_manager.h"
+#include "chrome/browser/chromeos/printing/synced_printers_manager.h"
 #include "chrome/browser/sync/test/integration/await_match_status_change_checker.h"
 #include "chromeos/printing/printer_configuration.h"
 
@@ -22,23 +22,23 @@ void SetupClients();
 chromeos::Printer CreateTestPrinter(int index);
 
 // Add printer to the supplied store.
-void AddPrinter(chromeos::PrintersManager* manager,
+void AddPrinter(chromeos::SyncedPrintersManager* manager,
                 const chromeos::Printer& printer);
 
 // Remove printer |index| from the |manager|.
-void RemovePrinter(chromeos::PrintersManager* manager, int index);
+void RemovePrinter(chromeos::SyncedPrintersManager* manager, int index);
 
 // Change the description of the printer at |index| with |description|.  Returns
 // false if the printer is not tracked by the manager.
-bool EditPrinterDescription(chromeos::PrintersManager* manager,
+bool EditPrinterDescription(chromeos::SyncedPrintersManager* manager,
                             int index,
                             const std::string& description);
 
 // Returns the verifier store.
-chromeos::PrintersManager* GetVerifierPrinterStore();
+chromeos::SyncedPrintersManager* GetVerifierPrinterStore();
 
 // Returns printer store at |index|.
-chromeos::PrintersManager* GetPrinterStore(int index);
+chromeos::SyncedPrintersManager* GetPrinterStore(int index);
 
 // Returns the number of printers in the verifier store.
 int GetVerifierPrinterCount();
