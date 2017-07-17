@@ -10,7 +10,6 @@
 #include "base/base64.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
-#include "components/autofill/core/common/password_form.h"
 #include "components/url_formatter/elide_url.h"
 #include "components/variations/variations_associated_data.h"
 #include "net/base/escape.h"
@@ -196,7 +195,7 @@ std::vector<FacetURI> ExtractAndSortFacetURIs(const AffiliatedFacets& facets) {
                  [](const Facet& facet) { return facet.uri; });
   std::sort(uris.begin(), uris.end());
   return uris;
-};
+}
 
 }  // namespace
 
@@ -315,22 +314,6 @@ bool AreEquivalenceClassesEqual(const AffiliatedFacets& a,
 bool IsValidAndroidFacetURI(const std::string& url) {
   FacetURI facet = FacetURI::FromPotentiallyInvalidSpec(url);
   return facet.IsValidAndroidFacetURI();
-}
-
-std::string GetHumanReadableOrigin(
-    const autofill::PasswordForm& password_form) {
-  FacetURI facet_uri =
-      FacetURI::FromPotentiallyInvalidSpec(password_form.signon_realm);
-  if (facet_uri.IsValidAndroidFacetURI())
-    return GetHumanReadableOriginForAndroidUri(facet_uri);
-
-  return base::UTF16ToUTF8(
-      url_formatter::FormatUrlForSecurityDisplay(password_form.origin));
-}
-
-std::string GetHumanReadableOriginForAndroidUri(const FacetURI facet_uri) {
-  DCHECK(facet_uri.IsValidAndroidFacetURI());
-  return facet_uri.scheme() + "://" + facet_uri.android_package_name();
 }
 
 }  // namespace password_manager
