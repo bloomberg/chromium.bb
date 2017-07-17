@@ -1372,8 +1372,8 @@
     <message name="IDS_SETTINGS_INTERNET_TETHER_CONNECTION_DESCRIPTION_TITLE" desc="Settings > Internet > Tether Connection Dialog > Title of the section describing what will happen when tethering is enabled.">
       While the hotspot is on, your <ph name="PHONE_NAME">$1<ex>Google Pixel XL</ex></ph> will:
     </message>
-    <message name="IDS_SETTINGS_INTERNET_TETHER_CONNECTION_DESCRIPTION_CELLULAR_DATA" desc="Settings > Internet > Tether Connection Dialog > Bulletpoint alerting the user that tethering will use cellular data.">
-      Use cellular data
+    <message name="IDS_SETTINGS_INTERNET_TETHER_CONNECTION_DESCRIPTION_MOBILE_DATA" desc="Settings > Internet > Tether Connection Dialog > Bulletpoint alerting the user that tethering will use mobile data.">
+      Use mobile data
     </message>
     <message name="IDS_SETTINGS_INTERNET_TETHER_CONNECTION_DESCRIPTION_BATTERY" desc="Settings > Internet > Tether Connection Dialog > Bullet point alerting the user that tethering will use both devices' batteries.">
       Use the battery more quickly (currently <ph name="BATTERY_PERCENTAGE">$1<ex>100</ex></ph>%)
@@ -1391,7 +1391,7 @@
       Get data connection
     </message>
     <message name="IDS_SETTINGS_INTERNET_TOGGLE_TETHER_SUBTEXT" desc="Settings > Internet: Description for Tether enable/disable toggle .">
-      Let this device find other devices with your Google Account that have a cellular data connection
+      Let this device find other devices with your Google Account that have a mobile data connection
     </message>
     <message name="IDS_SETTINGS_INTERNET_TOGGLE_MOBILE_ACCESSIBILITY_LABEL" desc="Accessibility only label for mobile data enable/disable toggle .">
       Mobile data enable
