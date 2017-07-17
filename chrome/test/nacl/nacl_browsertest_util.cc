@@ -19,6 +19,7 @@
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/webplugininfo.h"
+#include "extensions/common/switches.h"
 
 typedef content::TestMessageHandler::MessageResponse MessageResponse;
 
@@ -329,7 +330,7 @@ void NaClBrowserTestNewlibExtension::SetUpCommandLine(
   ASSERT_TRUE(GetDocumentRoot(&document_root));
 
   // Document root is relative to source root, and source root may not be CWD.
-  command_line->AppendSwitchPath(switches::kLoadExtension,
+  command_line->AppendSwitchPath(extensions::switches::kLoadExtension,
                                  src_root.Append(document_root));
 }
 
@@ -347,6 +348,6 @@ void NaClBrowserTestGLibcExtension::SetUpCommandLine(
   ASSERT_TRUE(GetDocumentRoot(&document_root));
 
   // Document root is relative to source root, and source root may not be CWD.
-  command_line->AppendSwitchPath(switches::kLoadExtension,
+  command_line->AppendSwitchPath(extensions::switches::kLoadExtension,
                                  src_root.Append(document_root));
 }

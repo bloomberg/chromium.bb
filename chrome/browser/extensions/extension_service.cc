@@ -100,6 +100,7 @@
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permission_message_provider.h"
 #include "extensions/common/permissions/permissions_data.h"
+#include "extensions/common/switches.h"
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/supervised_user/supervised_user_service.h"
@@ -469,7 +470,7 @@ void ExtensionService::Init() {
 
   LoadExtensionsFromCommandLineFlag(switches::kDisableExtensionsExcept);
   if (load_command_line_extensions)
-    LoadExtensionsFromCommandLineFlag(switches::kLoadExtension);
+    LoadExtensionsFromCommandLineFlag(extensions::switches::kLoadExtension);
   // ChromeDriver has no way of determining the Chrome version until after
   // launch, so it needs to continue passing load-component-extension until it
   // stops supporting Chrome 56 (when M58 is released). These extensions are

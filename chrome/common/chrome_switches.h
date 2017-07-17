@@ -156,7 +156,6 @@ extern const char kInstantProcess[];
 extern const char kKeepAliveForTest[];
 extern const char kKioskMode[];
 extern const char kKioskModePrinting[];
-extern const char kLoadExtension[];
 extern const char kLoadMediaRouterComponentExtension[];
 extern const char kMakeDefaultBrowser[];
 extern const char kMediaCacheSize[];
