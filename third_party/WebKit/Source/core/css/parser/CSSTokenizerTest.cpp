@@ -90,7 +90,7 @@ static CSSParserToken AtKeyword(const String& string) {
 static CSSParserToken GetString(const String& string) {
   return CSSParserToken(kStringToken, string);
 }
-static CSSParserToken Function(const String& string) {
+static CSSParserToken Func(const String& string) {
   return CSSParserToken(kFunctionToken, string);
 }
 static CSSParserToken Url(const String& string) {
@@ -272,17 +272,17 @@ TEST(CSSTokenizerTest, IdentToken) {
 }
 
 TEST(CSSTokenizerTest, FunctionToken) {
-  TEST_TOKENS("scale(2)", Function("scale"),
-              Number(kIntegerValueType, 2, kNoSign), RightParenthesis());
-  TEST_TOKENS("foo-bar\\ baz(", Function("foo-bar baz"));
-  TEST_TOKENS("fun\\(ction(", Function("fun(ction"));
-  TEST_TOKENS("-foo(", Function("-foo"));
-  TEST_TOKENS("url(\"foo.gif\"", Function("url"), GetString("foo.gif"));
-  TEST_TOKENS("foo(  \'bar.gif\'", Function("foo"), Whitespace(),
+  TEST_TOKENS("scale(2)", Func("scale"), Number(kIntegerValueType, 2, kNoSign),
+              RightParenthesis());
+  TEST_TOKENS("foo-bar\\ baz(", Func("foo-bar baz"));
+  TEST_TOKENS("fun\\(ction(", Func("fun(ction"));
+  TEST_TOKENS("-foo(", Func("-foo"));
+  TEST_TOKENS("url(\"foo.gif\"", Func("url"), GetString("foo.gif"));
+  TEST_TOKENS("foo(  \'bar.gif\'", Func("foo"), Whitespace(),
               GetString("bar.gif"));
   // To simplify implementation we drop the whitespace in
   // function(url),whitespace,string()
-  TEST_TOKENS("url(  \'bar.gif\'", Function("url"), GetString("bar.gif"));
+  TEST_TOKENS("url(  \'bar.gif\'", Func("url"), GetString("bar.gif"));
 }
 
 TEST(CSSTokenizerTest, AtKeywordToken) {
