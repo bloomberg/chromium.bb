@@ -1,0 +1,55 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef EXTENSIONS_RENDERER_IPC_MESSAGE_SENDER_H_
+#define EXTENSIONS_RENDERER_IPC_MESSAGE_SENDER_H_
+
+#include "base/macros.h"
+
+#include <memory>
+#include <string>
+
+#include "extensions/renderer/bindings/api_binding_types.h"
+
+struct ExtensionHostMsg_Request_Params;
+
+namespace extensions {
+class ScriptContext;
+class WorkerThreadDispatcher;
+
+// A class to handle sending bindings-related messages to the browser. Different
+// versions handle main thread vs. service worker threads.
+class IPCMessageSender {
+ public:
+  virtual ~IPCMessageSender();
+
+  // Sends a request message to the browser.
+  virtual void SendRequestIPC(
+      ScriptContext* context,
+      std::unique_ptr<ExtensionHostMsg_Request_Params> params,
+      binding::RequestThread thread) = 0;
+
+  // Handles sending any additional messages required after receiving a response
+  // to a request.
+  virtual void SendOnRequestResponseReceivedIPC(int request_id) = 0;
+
+  // TODO(devlin): Move event IPC messaging here, too.
+
+  // Creates an IPCMessageSender for use on the main thread.
+  static std::unique_ptr<IPCMessageSender> CreateMainThreadIPCMessageSender();
+
+  // Creates an IPCMessageSender for use on a worker thread.
+  static std::unique_ptr<IPCMessageSender> CreateWorkerThreadIPCMessageSender(
+      WorkerThreadDispatcher* dispatcher,
+      int64_t service_worker_version_id);
+
+ protected:
+  IPCMessageSender();
+
+  DISALLOW_COPY_AND_ASSIGN(IPCMessageSender);
+};
+
+}  // namespace extensions
+
+#endif  // EXTENSIONS_RENDERER_IPC_MESSAGE_SENDER_H_

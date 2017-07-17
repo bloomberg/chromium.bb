@@ -71,6 +71,7 @@
 #include "extensions/renderer/file_system_natives.h"
 #include "extensions/renderer/guest_view/guest_view_internal_custom_bindings.h"
 #include "extensions/renderer/id_generator_custom_bindings.h"
+#include "extensions/renderer/ipc_message_sender.h"
 #include "extensions/renderer/js_extension_bindings_system.h"
 #include "extensions/renderer/logging_native_handler.h"
 #include "extensions/renderer/messaging_bindings.h"
@@ -87,7 +88,6 @@
 #include "extensions/renderer/script_injection.h"
 #include "extensions/renderer/script_injection_manager.h"
 #include "extensions/renderer/send_request_natives.h"
-#include "extensions/renderer/service_worker_request_sender.h"
 #include "extensions/renderer/set_icon_natives.h"
 #include "extensions/renderer/static_v8_external_one_byte_string_resource.h"
 #include "extensions/renderer/test_features_native_handler.h"
@@ -185,26 +185,6 @@ class ChromeNativeHandler : public ObjectBackedNativeHandler {
   }
 };
 
-// Handler for sending IPCs with native extension bindings. Only used for
-// the main thread.
-void SendRequestIPC(ScriptContext* context,
-                    const ExtensionHostMsg_Request_Params& params,
-                    binding::RequestThread thread) {
-  content::RenderFrame* frame = context->GetRenderFrame();
-  if (!frame)
-    return;
-
-  switch (thread) {
-    case binding::RequestThread::UI:
-      frame->Send(new ExtensionHostMsg_Request(frame->GetRoutingID(), params));
-      break;
-    case binding::RequestThread::IO:
-      frame->Send(new ExtensionHostMsg_RequestForIOThread(frame->GetRoutingID(),
-                                                          params));
-      break;
-  }
-}
-
 // Sends a notification to the browser that an event either has or no longer has
 // listeners associated with it. Note that we only do this for the first added/
 // last removed listener, rather than for each subsequent listener; the browser
@@ -264,19 +244,25 @@ Dispatcher::Dispatcher(DispatcherDelegate* delegate)
       content_watcher_(new ContentWatcher()),
       source_map_(&ResourceBundle::GetSharedInstance()),
       v8_schema_registry_(new V8SchemaRegistry),
+      ipc_message_sender_(IPCMessageSender::CreateMainThreadIPCMessageSender()),
       user_script_set_manager_observer_(this),
       activity_logging_enabled_(false) {
   const base::CommandLine& command_line =
       *(base::CommandLine::ForCurrentProcess());
 
   if (FeatureSwitch::native_crx_bindings()->IsEnabled()) {
+    // This Unretained is safe because the IPCMessageSender is guaranteed to
+    // outlive the bindings system.
     auto system = base::MakeUnique<NativeExtensionBindingsSystem>(
-        base::Bind(&SendRequestIPC), base::Bind(&SendEventListenersIPC));
+        base::Bind(&IPCMessageSender::SendRequestIPC,
+                   base::Unretained(ipc_message_sender_.get())),
+        base::Bind(&SendEventListenersIPC));
     delegate_->InitializeBindingsSystem(this, system->api_system());
     bindings_system_ = std::move(system);
   } else {
     bindings_system_ = base::MakeUnique<JsExtensionBindingsSystem>(
-        &source_map_, base::MakeUnique<RequestSender>());
+        &source_map_,
+        base::MakeUnique<RequestSender>(ipc_message_sender_.get()));
   }
 
   set_idle_notifications_ =
@@ -662,6 +648,7 @@ void Dispatcher::OnExtensionResponse(int request_id,
                                      const base::ListValue& response,
                                      const std::string& error) {
   bindings_system_->HandleResponse(request_id, success, response, error);
+  ipc_message_sender_->SendOnRequestResponseReceivedIPC(request_id);
 }
 
 void Dispatcher::DispatchEvent(const std::string& extension_id,

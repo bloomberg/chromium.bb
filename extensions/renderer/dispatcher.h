@@ -56,6 +56,7 @@ namespace extensions {
 class ContentWatcher;
 class DispatcherDelegate;
 class ExtensionBindingsSystem;
+class IPCMessageSender;
 class ScriptContext;
 class ScriptInjectionManager;
 struct EventFilteringInfo;
@@ -278,6 +279,9 @@ class Dispatcher : public content::RenderThreadObserver,
 
   // Cache for the v8 representation of extension API schemas.
   std::unique_ptr<V8SchemaRegistry> v8_schema_registry_;
+
+  // A helper to dispatch event and request IPCs.
+  std::unique_ptr<IPCMessageSender> ipc_message_sender_;
 
   // The bindings system associated with the main thread.
   std::unique_ptr<ExtensionBindingsSystem> bindings_system_;

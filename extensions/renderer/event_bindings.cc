@@ -26,7 +26,6 @@
 #include "extensions/common/value_counter.h"
 #include "extensions/renderer/extension_frame_helper.h"
 #include "extensions/renderer/script_context.h"
-#include "extensions/renderer/service_worker_request_sender.h"
 #include "extensions/renderer/worker_thread_dispatcher.h"
 #include "gin/converter.h"
 #include "url/gurl.h"

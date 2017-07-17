@@ -131,18 +131,11 @@ class NativeExtensionBindingsSystemUnittest : public APIBindingTest {
     APIBindingTest::TearDown();
   }
 
-  void MockSendRequestIPC(ScriptContext* context,
-                          const ExtensionHostMsg_Request_Params& params,
-                          binding::RequestThread thread) {
-    last_params_.name = params.name;
-    last_params_.arguments.Swap(params.arguments.CreateDeepCopy().get());
-    last_params_.extension_id = params.extension_id;
-    last_params_.source_url = params.source_url;
-    last_params_.request_id = params.request_id;
-    last_params_.has_callback = params.has_callback;
-    last_params_.user_gesture = params.user_gesture;
-    last_params_.worker_thread_id = params.worker_thread_id;
-    last_params_.service_worker_version_id = params.service_worker_version_id;
+  void MockSendRequestIPC(
+      ScriptContext* context,
+      std::unique_ptr<ExtensionHostMsg_Request_Params> params,
+      binding::RequestThread thread) {
+    last_params_ = std::move(params);
   }
 
   void MockSendListenerIPC(binding::EventListenersChanged changed,
@@ -194,7 +187,8 @@ class NativeExtensionBindingsSystemUnittest : public APIBindingTest {
   NativeExtensionBindingsSystem* bindings_system() {
     return bindings_system_.get();
   }
-  const ExtensionHostMsg_Request_Params& last_params() { return last_params_; }
+  bool has_last_params() const { return !!last_params_; }
+  const ExtensionHostMsg_Request_Params& last_params() { return *last_params_; }
   StringSourceMap* source_map() { return &source_map_; }
   MockEventChangeHandler* event_change_handler() {
     return event_change_handler_.get();
@@ -207,7 +201,7 @@ class NativeExtensionBindingsSystemUnittest : public APIBindingTest {
   std::vector<ScriptContext*> raw_script_contexts_;
   std::unique_ptr<NativeExtensionBindingsSystem> bindings_system_;
 
-  ExtensionHostMsg_Request_Params last_params_;
+  std::unique_ptr<ExtensionHostMsg_Request_Params> last_params_;
   std::unique_ptr<MockEventChangeHandler> event_change_handler_;
 
   StringSourceMap source_map_;
@@ -1030,7 +1024,7 @@ TEST_F(NativeExtensionBindingsSystemUnittest, TestUpdatingPermissions) {
     RunFunctionAndExpectError(
         run_idle, context, arraysize(args), args,
         "Uncaught Error: 'idle.queryState' is not available in this context.");
-    EXPECT_TRUE(last_params().name.empty());
+    EXPECT_FALSE(has_last_params());
   }
 
   {

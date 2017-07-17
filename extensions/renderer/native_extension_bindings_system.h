@@ -29,9 +29,10 @@ class ScriptContext;
 // Designed to be used in a single thread, but for all contexts on that thread.
 class NativeExtensionBindingsSystem : public ExtensionBindingsSystem {
  public:
+  // TODO(devlin): Instead, pass in an IPCMessageSender.
   using SendRequestIPCMethod =
       base::Callback<void(ScriptContext*,
-                          const ExtensionHostMsg_Request_Params&,
+                          std::unique_ptr<ExtensionHostMsg_Request_Params>,
                           binding::RequestThread)>;
   using SendEventListenerIPCMethod =
       base::Callback<void(binding::EventListenersChanged,
