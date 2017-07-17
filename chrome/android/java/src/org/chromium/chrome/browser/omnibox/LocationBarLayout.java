@@ -646,6 +646,13 @@ public class LocationBarLayout extends FrameLayout
                 ApiCompatibilityUtils.setLayoutDirection(childView, layoutDirection);
             }
         }
+
+        /**
+         * @return Whether or not the suggestions list is scrolled any amount.
+         */
+        private boolean isScrolled() {
+            return computeVerticalScrollOffset() > 0;
+        }
     }
 
     public LocationBarLayout(Context context, AttributeSet attrs) {
@@ -688,6 +695,17 @@ public class LocationBarLayout extends FrameLayout
         mSuggestionListAdapter = new OmniboxResultsAdapter(getContext(), this, mSuggestionItems);
 
         mMicButton = (TintedImageButton) findViewById(R.id.mic_button);
+    }
+
+    @Override
+    public boolean isSuggestionsListShown() {
+        return mSuggestionsShown;
+    }
+
+    @Override
+    public boolean isSuggestionsListScrolled() {
+        if (!mSuggestionsShown || mSuggestionList == null) return false;
+        return mSuggestionList.isScrolled();
     }
 
     @Override
