@@ -114,7 +114,7 @@ class SpdyFramerVisitorAdapter : public SpdyFramerVisitorInterface {
   void OnStreamPadding(SpdyStreamId stream_id, size_t len) override;
   SpdyHeadersHandlerInterface* OnHeaderFrameStart(
       SpdyStreamId stream_id) override;
-  void OnHeaderFrameEnd(SpdyStreamId stream_id, bool end_headers) override;
+  void OnHeaderFrameEnd(SpdyStreamId stream_id) override;
   void OnRstStream(SpdyStreamId stream_id, SpdyErrorCode error_code) override;
   void OnSetting(SpdySettingsIds id, uint32_t value) override;
   void OnPing(SpdyPingId unique_id, bool is_ack) override;

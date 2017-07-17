@@ -68,7 +68,7 @@ class MockVisitor : public SpdyFramerVisitorInterface {
   MOCK_METHOD2(OnStreamPadding, void(SpdyStreamId stream_id, size_t len));
   MOCK_METHOD1(OnHeaderFrameStart,
                SpdyHeadersHandlerInterface*(SpdyStreamId stream_id));
-  MOCK_METHOD2(OnHeaderFrameEnd, void(SpdyStreamId stream_id, bool end));
+  MOCK_METHOD1(OnHeaderFrameEnd, void(SpdyStreamId stream_id));
   MOCK_METHOD3(OnControlFrameHeaderData,
                bool(SpdyStreamId stream_id,
                     const char* header_data,
@@ -289,7 +289,7 @@ class QuicHeadersStreamTest : public QuicTestWithParam<TestParamsTuple> {
     headers_handler_.reset(new TestHeadersHandler);
     EXPECT_CALL(visitor_, OnHeaderFrameStart(stream_id))
         .WillOnce(Return(headers_handler_.get()));
-    EXPECT_CALL(visitor_, OnHeaderFrameEnd(stream_id, true)).Times(1);
+    EXPECT_CALL(visitor_, OnHeaderFrameEnd(stream_id)).Times(1);
     if (fin) {
       EXPECT_CALL(visitor_, OnStreamEnd(stream_id));
     }
@@ -395,7 +395,7 @@ TEST_P(QuicHeadersStreamTest, WritePushPromises) {
       headers_handler_.reset(new TestHeadersHandler);
       EXPECT_CALL(visitor_, OnHeaderFrameStart(stream_id))
           .WillOnce(Return(headers_handler_.get()));
-      EXPECT_CALL(visitor_, OnHeaderFrameEnd(stream_id, true)).Times(1);
+      EXPECT_CALL(visitor_, OnHeaderFrameEnd(stream_id)).Times(1);
       framer_->ProcessInput(saved_data_.data(), saved_data_.length());
       EXPECT_FALSE(framer_->HasError())
           << SpdyFramer::SpdyFramerErrorToString(framer_->spdy_framer_error());

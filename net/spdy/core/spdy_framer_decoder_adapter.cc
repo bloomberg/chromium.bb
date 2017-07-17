@@ -82,9 +82,8 @@ SpdyHeadersHandlerInterface* SpdyFramerVisitorAdapter::OnHeaderFrameStart(
   return visitor_->OnHeaderFrameStart(stream_id);
 }
 
-void SpdyFramerVisitorAdapter::OnHeaderFrameEnd(SpdyStreamId stream_id,
-                                                bool end_headers) {
-  visitor_->OnHeaderFrameEnd(stream_id, end_headers);
+void SpdyFramerVisitorAdapter::OnHeaderFrameEnd(SpdyStreamId stream_id) {
+  visitor_->OnHeaderFrameEnd(stream_id);
 }
 
 void SpdyFramerVisitorAdapter::OnRstStream(SpdyStreamId stream_id,

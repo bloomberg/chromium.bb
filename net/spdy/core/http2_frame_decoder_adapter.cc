@@ -889,7 +889,7 @@ class Http2DecoderAdapter : public SpdyFramerDecoderAdapter,
           << frame_header();
       has_expected_frame_type_ = false;
       if (GetHpackDecoder()->HandleControlFrameHeadersComplete(nullptr)) {
-        visitor()->OnHeaderFrameEnd(stream_id(), true);
+        visitor()->OnHeaderFrameEnd(stream_id());
       } else {
         SetSpdyErrorAndNotify(SpdyFramerError::SPDY_DECOMPRESS_FAILURE);
         return;

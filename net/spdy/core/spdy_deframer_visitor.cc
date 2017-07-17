@@ -141,7 +141,7 @@ class SpdyTestDeframerImpl : public SpdyTestDeframer,
   void OnContinuation(SpdyStreamId stream_id, bool end) override;
   SpdyHeadersHandlerInterface* OnHeaderFrameStart(
       SpdyStreamId stream_id) override;
-  void OnHeaderFrameEnd(SpdyStreamId stream_id, bool end_headers) override;
+  void OnHeaderFrameEnd(SpdyStreamId stream_id) override;
   void OnDataFrameHeader(SpdyStreamId stream_id,
                          size_t length,
                          bool fin) override;
@@ -498,10 +498,8 @@ SpdyHeadersHandlerInterface* SpdyTestDeframerImpl::OnHeaderFrameStart(
   return this;
 }
 
-void SpdyTestDeframerImpl::OnHeaderFrameEnd(SpdyStreamId stream_id,
-                                            bool end_headers) {
-  DVLOG(1) << "OnHeaderFrameEnd stream_id: " << stream_id
-           << "    end_headers: " << (end_headers ? "true" : "false");
+void SpdyTestDeframerImpl::OnHeaderFrameEnd(SpdyStreamId stream_id) {
+  DVLOG(1) << "OnHeaderFrameEnd stream_id: " << stream_id;
 }
 
 // Received the fixed portion of a HEADERS frame. Called before the variable
