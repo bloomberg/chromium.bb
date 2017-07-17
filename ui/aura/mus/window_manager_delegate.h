@@ -80,6 +80,10 @@ class AURA_EXPORT WindowManagerClient {
   virtual void SetGlobalOverrideCursor(
       base::Optional<ui::CursorData> cursor) = 0;
 
+  // Sets the list of keys which don't hide the cursor.
+  virtual void SetKeyEventsThatDontHideCursor(
+      std::vector<ui::mojom::EventMatcherPtr> cursor_key_list) = 0;
+
   // Requests the client embedded in |window| to close the window. Only
   // applicable to top-level windows. If a client is not embedded in |window|,
   // this does nothing.

@@ -111,6 +111,10 @@ class WindowManager : public aura::WindowManagerDelegate,
   // Creates the Shell. This is done after the connection to mus is established.
   void CreateShell();
 
+  // If Mash, tells the window server about keys we don't want to hide the
+  // cursor on.
+  void InitCursorOnKeyList();
+
   // Sets the frame decoration values on the server.
   void InstallFrameDecorationValues();
 

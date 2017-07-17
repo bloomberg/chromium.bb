@@ -36,6 +36,8 @@ source_set("lib") {
     "display_synchronizer.h",
     "drag_window_resizer.cc",
     "drag_window_resizer.h",
+    "event_matcher_util.cc",
+    "event_matcher_util.h",
     "frame/detached_title_area_renderer.cc",
     "frame/detached_title_area_renderer.h",
     "keyboard_ui_mus.cc",

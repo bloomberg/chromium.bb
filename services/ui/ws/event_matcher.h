@@ -20,14 +20,6 @@ namespace ws {
 // Wraps a mojom::EventMatcher and allows events to be tested against it.
 class EventMatcher {
  public:
-  explicit EventMatcher(const mojom::EventMatcher& matcher);
-  ~EventMatcher();
-
-  bool MatchesEvent(const ui::Event& event) const;
-
-  bool Equals(const EventMatcher& other) const;
-
- private:
   enum MatchFields {
     NONE = 0,
     TYPE = 1 << 0,
@@ -37,6 +29,19 @@ class EventMatcher {
     POINTER_LOCATION = 1 << 4,
   };
 
+  explicit EventMatcher(const mojom::EventMatcher& matcher);
+  EventMatcher(EventMatcher&& rhs);
+  ~EventMatcher();
+
+  // Returns true if this matcher would match any of types in the |fields|
+  // bitarray.
+  bool HasFields(int fields);
+
+  bool MatchesEvent(const ui::Event& event) const;
+
+  bool Equals(const EventMatcher& other) const;
+
+ private:
   uint32_t fields_to_match_;
   ui::EventType event_type_;
   // Bitfields of kEventFlag* and kMouseEventFlag* values in

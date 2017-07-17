@@ -101,6 +101,10 @@ class TestEventDispatcherDelegate : public EventDispatcherDelegate {
   bool has_queued_events() const { return !dispatched_event_queue_.empty(); }
   ServerWindow* lost_capture_window() { return lost_capture_window_; }
 
+  base::Optional<bool> last_cursor_visibility() {
+    return last_cursor_visibility_;
+  }
+
   // EventDispatcherDelegate:
   void SetFocusedWindowFromEventDispatcher(ServerWindow* window) override {
     focused_window_ = window;
@@ -132,6 +136,9 @@ class TestEventDispatcherDelegate : public EventDispatcherDelegate {
   }
   void OnMouseCursorLocationChanged(const gfx::Point& point,
                                     int64_t display_id) override {}
+  void OnEventChangesCursorVisibility(bool visible) override {
+    last_cursor_visibility_ = visible;
+  }
   void DispatchInputEventToWindow(ServerWindow* target,
                                   ClientSpecificId client_id,
                                   int64_t display_id,
@@ -166,6 +173,7 @@ class TestEventDispatcherDelegate : public EventDispatcherDelegate {
   std::queue<std::unique_ptr<DispatchedEventDetails>> dispatched_event_queue_;
   ServerWindow* root_ = nullptr;
   std::unique_ptr<ui::Event> last_event_target_not_found_;
+  base::Optional<bool> last_cursor_visibility_;
 
   DISALLOW_COPY_AND_ASSIGN(TestEventDispatcherDelegate);
 };
@@ -200,6 +208,13 @@ void ExpectDispatchedEventDetailsMatches(const DispatchedEventDetails* details,
   ASSERT_TRUE(details->IsClientArea());
   ASSERT_EQ(root_location, details->event->AsLocatedEvent()->root_location());
   ASSERT_EQ(location, details->event->AsLocatedEvent()->location());
+}
+
+ui::mojom::EventMatcherPtr BuildKeyMatcher(ui::mojom::KeyboardCode code) {
+  ui::mojom::EventMatcherPtr matcher(ui::mojom::EventMatcher::New());
+  matcher->key_matcher = ui::mojom::KeyEventMatcher::New();
+  matcher->key_matcher->keyboard_code = code;
+  return matcher;
 }
 
 }  // namespace
@@ -1973,6 +1988,80 @@ TEST_P(EventDispatcherTest, LocationHonorsTransform) {
   ui::PointerEvent* dispatched_event = details->event->AsPointerEvent();
   EXPECT_EQ(gfx::Point(20, 25), dispatched_event->root_location());
   EXPECT_EQ(gfx::Point(5, 7), dispatched_event->location());
+}
+
+TEST_P(EventDispatcherTest, MouseMovementsShowCursor) {
+  EXPECT_EQ(base::Optional<bool>(),
+            test_event_dispatcher_delegate()->last_cursor_visibility());
+
+  const ui::PointerEvent move1(
+      ui::MouseEvent(ui::ET_MOUSE_MOVED, gfx::Point(11, 11), gfx::Point(11, 11),
+                     base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, 0));
+  DispatchEvent(event_dispatcher(), move1, 0,
+                EventDispatcher::AcceleratorMatchPhase::ANY);
+
+  EXPECT_EQ(base::Optional<bool>(true),
+            test_event_dispatcher_delegate()->last_cursor_visibility());
+}
+
+TEST_P(EventDispatcherTest, KeyDoesntHideCursorWithNoList) {
+  // In the case of mus, we don't send a list to the window server so ensure we
+  // don't hide the cursor in this mode.
+  TestEventDispatcherDelegate* event_dispatcher_delegate =
+      test_event_dispatcher_delegate();
+  EXPECT_EQ(base::Optional<bool>(),
+            event_dispatcher_delegate->last_cursor_visibility());
+
+  // Set focused window for EventDispatcher dispatches key events.
+  std::unique_ptr<ServerWindow> child = CreateChildWindow(WindowId(1, 3));
+  event_dispatcher_delegate->SetFocusedWindowFromEventDispatcher(child.get());
+
+  ui::KeyEvent key(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
+  DispatchEvent(event_dispatcher(), key, 0,
+                EventDispatcher::AcceleratorMatchPhase::ANY);
+
+  EXPECT_EQ(base::Optional<bool>(),
+            event_dispatcher_delegate->last_cursor_visibility());
+}
+
+TEST_P(EventDispatcherTest, KeyDoesntHideCursorOnMatch) {
+  // In the case of mash, we send a list of keys which don't hide the cursor.
+  std::vector<ui::mojom::EventMatcherPtr> matchers;
+  matchers.push_back(BuildKeyMatcher(ui::mojom::KeyboardCode::A));
+  event_dispatcher()->SetKeyEventsThatDontHideCursor(std::move(matchers));
+
+  // Set focused window for EventDispatcher dispatches key events.
+  TestEventDispatcherDelegate* event_dispatcher_delegate =
+      test_event_dispatcher_delegate();
+  std::unique_ptr<ServerWindow> child = CreateChildWindow(WindowId(1, 3));
+  event_dispatcher_delegate->SetFocusedWindowFromEventDispatcher(child.get());
+
+  ui::KeyEvent key(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
+  DispatchEvent(event_dispatcher(), key, 0,
+                EventDispatcher::AcceleratorMatchPhase::ANY);
+
+  EXPECT_EQ(base::Optional<bool>(),
+            event_dispatcher_delegate->last_cursor_visibility());
+}
+
+TEST_P(EventDispatcherTest, KeyHidesCursorOnNoMatch) {
+  // In the case of mash, we send a list of keys which don't hide the cursor.
+  std::vector<ui::mojom::EventMatcherPtr> matchers;
+  matchers.push_back(BuildKeyMatcher(ui::mojom::KeyboardCode::B));
+  event_dispatcher()->SetKeyEventsThatDontHideCursor(std::move(matchers));
+
+  // Set focused window for EventDispatcher dispatches key events.
+  TestEventDispatcherDelegate* event_dispatcher_delegate =
+      test_event_dispatcher_delegate();
+  std::unique_ptr<ServerWindow> child = CreateChildWindow(WindowId(1, 3));
+  event_dispatcher_delegate->SetFocusedWindowFromEventDispatcher(child.get());
+
+  ui::KeyEvent key(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
+  DispatchEvent(event_dispatcher(), key, 0,
+                EventDispatcher::AcceleratorMatchPhase::ANY);
+
+  EXPECT_EQ(base::Optional<bool>(false),
+            event_dispatcher_delegate->last_cursor_visibility());
 }
 
 INSTANTIATE_TEST_CASE_P(/* no prefix */, EventDispatcherTest, testing::Bool());

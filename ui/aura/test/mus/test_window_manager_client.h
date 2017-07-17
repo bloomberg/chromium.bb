@@ -40,6 +40,8 @@ class TestWindowManagerClient : public ui::mojom::WindowManagerClient {
   void AddAccelerators(std::vector<ui::mojom::WmAcceleratorPtr> accelerators,
                        const AddAcceleratorsCallback& callback) override;
   void RemoveAccelerator(uint32_t id) override;
+  void SetKeyEventsThatDontHideCursor(
+      std::vector<::ui::mojom::EventMatcherPtr> dont_hide_cursor_list) override;
   void SetDisplayRoot(const display::Display& display,
                       ui::mojom::WmViewportMetricsPtr viewport_metrics,
                       bool is_primary_display,

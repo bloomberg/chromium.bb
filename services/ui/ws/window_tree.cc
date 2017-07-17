@@ -2273,6 +2273,13 @@ void WindowTree::SetExtendedHitRegionForChildren(
                                                      touch_insets);
 }
 
+void WindowTree::SetKeyEventsThatDontHideCursor(
+    std::vector<::ui::mojom::EventMatcherPtr> dont_hide_cursor_list) {
+  DCHECK(window_manager_state_);
+  window_manager_state_->SetKeyEventsThatDontHideCursor(
+      std::move(dont_hide_cursor_list));
+}
+
 void WindowTree::SetDisplayRoot(const display::Display& display,
                                 mojom::WmViewportMetricsPtr viewport_metrics,
                                 bool is_primary_display,

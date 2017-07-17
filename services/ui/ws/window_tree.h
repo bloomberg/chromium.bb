@@ -521,6 +521,8 @@ class WindowTree : public mojom::WindowTree,
       Id window_id,
       const gfx::Insets& mouse_insets,
       const gfx::Insets& touch_insets) override;
+  void SetKeyEventsThatDontHideCursor(
+      std::vector<::ui::mojom::EventMatcherPtr> dont_hide_cursor_list) override;
   void SetDisplayRoot(const display::Display& display,
                       mojom::WmViewportMetricsPtr viewport_metrics,
                       bool is_primary_display,
