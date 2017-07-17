@@ -136,6 +136,12 @@ class MetricsWebContentsObserver
                        const mojom::PageLoadTiming& timing,
                        const mojom::PageLoadMetadata& metadata);
 
+  // Informs the observers of the currently committed load that the event
+  // corresponding to |event_key| has occurred. This should not be called within
+  // WebContentsObserver::DidFinishNavigation methods.
+  // This method is subject to change and may be removed in the future.
+  void BroadcastEventToObservers(const void* const event_key);
+
  private:
   friend class content::WebContentsUserData<MetricsWebContentsObserver>;
 

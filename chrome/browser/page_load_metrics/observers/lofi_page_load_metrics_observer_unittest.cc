@@ -314,7 +314,7 @@ TEST_F(LoFiPageLoadMetricsObserverTest, BothLoFiSeen) {
   std::unique_ptr<DataReductionProxyData> data2 =
       base::MakeUnique<DataReductionProxyData>();
   data2->set_used_data_reduction_proxy(true);
-  data2->set_lofi_received(true);
+  data2->set_client_lofi_requested(true);
 
   // Prepare 4 resources of varying size and configurations, 1 has Client LoFi,
   // 1 has Server LoFi.

@@ -892,6 +892,35 @@ be describing additional metrics about the same event.
   </summary>
 </event>
 
+<event name="Previews" singular="True">
+  <owner>ryansturm@chromium.org</owner>
+  <summary>
+    Previews related metrics associated with a page load. See
+    //componenets/previews/.
+  </summary>
+  <metric name="client_lofi">
+    <summary>
+      Set to 1 when a user is shown a client lo-fi image in a page load.
+    </summary>
+  </metric>
+  <metric name="lite_page">
+    <summary>
+      Set to 1 when a user is shown a lite page in page load.
+    </summary>
+  </metric>
+  <metric name="opt_out">
+    <summary>
+      Set to 1 when a user clicks &quot;Show Original&quot; on a preview page
+      load.
+    </summary>
+  </metric>
+  <metric name="server_lofi">
+    <summary>
+      Set to 1 when a user is shown a server lo-fi image in a page load.
+    </summary>
+  </metric>
+</event>
+
 <event name="SubresourceFilter" singular="True">
   <owner>bmcquade@chromium.org</owner>
   <owner>csharrison@chromium.org</owner>

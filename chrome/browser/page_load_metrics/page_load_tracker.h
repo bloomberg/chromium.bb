@@ -33,7 +33,6 @@ class NavigationHandle;
 namespace page_load_metrics {
 
 class PageLoadMetricsEmbedderInterface;
-class PageLoadMetricsObserver;
 
 namespace internal {
 
@@ -270,6 +269,10 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client {
   // once the experiment is complete.
   void OnNavigationDelayComplete(base::TimeDelta scheduled_delay,
                                  base::TimeDelta actual_delay);
+
+  // Informs the observers that the event corresponding to |event_key| has
+  // occurred.
+  void BroadcastEventToObservers(const void* const event_key);
 
  private:
   // This function converts a TimeTicks value taken in the browser process

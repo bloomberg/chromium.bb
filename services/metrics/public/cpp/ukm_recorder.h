@@ -55,6 +55,10 @@ class PasswordManagerMetricsRecorder;
 class PasswordFormMetricsRecorder;
 }  // namespace password_manager
 
+namespace previews {
+class PreviewsUKMObserver;
+}
+
 namespace ukm {
 
 class UkmEntryBuilder;
@@ -110,6 +114,7 @@ class METRICS_EXPORT UkmRecorder {
   friend content::RenderWidgetHostLatencyTracker;
   friend password_manager::PasswordManagerMetricsRecorder;
   friend password_manager::PasswordFormMetricsRecorder;
+  friend previews::PreviewsUKMObserver;
   friend resource_coordinator::CoordinationUnitManager;
   FRIEND_TEST_ALL_PREFIXES(UkmServiceTest, AddEntryWithEmptyMetrics);
   FRIEND_TEST_ALL_PREFIXES(UkmServiceTest, EntryBuilderAndSerialization);
