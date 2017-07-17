@@ -41,15 +41,19 @@ bool GLFenceEGL::HasCompleted() {
 }
 
 void GLFenceEGL::ClientWait() {
-  EGLint flags = 0;
-  EGLTimeKHR time = EGL_FOREVER_KHR;
-  EGLint result = eglClientWaitSyncKHR(display_, sync_, flags, time);
+  EGLint result = ClientWaitWithTimeoutNanos(EGL_FOREVER_KHR);
   DCHECK(g_ignore_egl_sync_failures || EGL_TIMEOUT_EXPIRED_KHR != result);
+}
+
+EGLint GLFenceEGL::ClientWaitWithTimeoutNanos(EGLTimeKHR timeout) {
+  EGLint flags = 0;
+  EGLint result = eglClientWaitSyncKHR(display_, sync_, flags, timeout);
   if (result == EGL_FALSE) {
     LOG(ERROR) << "Failed to wait for EGLSync. error:"
                << ui::GetLastEGLErrorString();
     CHECK(g_ignore_egl_sync_failures);
   }
+  return result;
 }
 
 void GLFenceEGL::ServerWait() {

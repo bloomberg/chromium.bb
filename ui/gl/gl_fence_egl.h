@@ -24,6 +24,9 @@ class GL_EXPORT GLFenceEGL : public GLFence {
   void ClientWait() override;
   void ServerWait() override;
 
+  // EGL-specific wait-with-timeout implementation:
+  EGLint ClientWaitWithTimeoutNanos(EGLTimeKHR timeout);
+
  private:
   EGLSyncKHR sync_;
   EGLDisplay display_;
