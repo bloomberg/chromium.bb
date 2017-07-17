@@ -170,7 +170,10 @@ void ThumbnailCache::Put(TabId tab_id,
   if (!ui_resource_provider_ || bitmap.empty() || thumbnail_scale <= 0)
     return;
 
-  DCHECK(thumbnail_meta_data_.find(tab_id) != thumbnail_meta_data_.end());
+  if (thumbnail_meta_data_.find(tab_id) == thumbnail_meta_data_.end()) {
+    DVLOG(1) << "Thumbnail meta data was removed for tab id " << tab_id;
+    return;
+  }
 
   base::Time time_stamp = thumbnail_meta_data_[tab_id].capture_time();
   std::unique_ptr<Thumbnail> thumbnail = Thumbnail::Create(
