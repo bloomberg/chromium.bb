@@ -37,7 +37,7 @@ class CORE_EXPORT CSSMatrixComponent final : public CSSTransformComponent {
 
   // Internal methods - from CSSTransformComponent.
   TransformComponentType GetType() const final { return kMatrixType; }
-  DOMMatrix* AsMatrix() const final;
+  const DOMMatrix* AsMatrix() const final;
   CSSFunctionValue* ToCSSValue() const final;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {

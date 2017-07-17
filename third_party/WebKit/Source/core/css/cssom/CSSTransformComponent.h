@@ -52,7 +52,7 @@ class CORE_EXPORT CSSTransformComponent
   // Internal methods.
   virtual TransformComponentType GetType() const = 0;
   virtual CSSFunctionValue* ToCSSValue() const = 0;
-  virtual DOMMatrix* AsMatrix() const = 0;
+  virtual const DOMMatrix* AsMatrix() const = 0;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 

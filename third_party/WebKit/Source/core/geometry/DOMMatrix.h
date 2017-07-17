@@ -88,7 +88,7 @@ class CORE_EXPORT DOMMatrix : public DOMMatrixReadOnly {
   }
 
   DOMMatrix* multiplySelf(DOMMatrixInit&, ExceptionState&);
-  DOMMatrix* multiplySelf(DOMMatrix* other_matrix);
+  DOMMatrix* multiplySelf(const DOMMatrix& other_matrix);
   DOMMatrix* preMultiplySelf(DOMMatrixInit&, ExceptionState&);
   DOMMatrix* translateSelf(double tx = 0, double ty = 0, double tz = 0);
   DOMMatrix* scaleSelf(double sx = 1);

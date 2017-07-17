@@ -41,16 +41,16 @@ class CORE_EXPORT CSSTranslation final : public CSSTransformComponent {
   static CSSTranslation* FromCSSValue(const CSSFunctionValue&);
 
   // Getters and setters for attributes defined in the IDL.
-  CSSNumericValue* x() const { return x_; }
-  CSSNumericValue* y() const { return y_; }
-  CSSNumericValue* z() const { return z_; }
+  CSSNumericValue* x() { return x_; }
+  CSSNumericValue* y() { return y_; }
+  CSSNumericValue* z() { return z_; }
   void setX(CSSNumericValue* x, ExceptionState&);
   void setY(CSSNumericValue* y, ExceptionState&);
   void setZ(CSSNumericValue* z, ExceptionState&);
 
   // Internal methods - from CSSTransformComponent.
   TransformComponentType GetType() const final { return kTranslationType; }
-  DOMMatrix* AsMatrix() const final;
+  const DOMMatrix* AsMatrix() const final;
   CSSFunctionValue* ToCSSValue() const final;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {

@@ -143,14 +143,14 @@ DOMMatrix* DOMMatrix::multiplySelf(DOMMatrixInit& other,
     DCHECK(exception_state.HadException());
     return nullptr;
   }
-  return multiplySelf(other_matrix);
+  return multiplySelf(*other_matrix);
 }
 
-DOMMatrix* DOMMatrix::multiplySelf(DOMMatrix* other_matrix) {
-  if (!other_matrix->is2D())
+DOMMatrix* DOMMatrix::multiplySelf(const DOMMatrix& other_matrix) {
+  if (!other_matrix.is2D())
     is2d_ = false;
 
-  *matrix_ *= other_matrix->Matrix();
+  *matrix_ *= other_matrix.Matrix();
 
   return this;
 }
