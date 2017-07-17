@@ -5,26 +5,27 @@
 #ifndef COMPONENTS_SAFE_BROWSING_WEBUI_SAFE_BROWSING_UI_H_
 #define COMPONENTS_SAFE_BROWSING_WEBUI_SAFE_BROWSING_UI_H_
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/macros.h"
-#include "base/values.h"
-#include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
+namespace base {
+class ListValue;
+}
+
 namespace safe_browsing {
 class SafeBrowsingUIHandler : public content::WebUIMessageHandler {
  public:
-  SafeBrowsingUIHandler();
+  SafeBrowsingUIHandler(content::BrowserContext*);
   ~SafeBrowsingUIHandler() override;
-  void ExpParamList(const base::ListValue* args);
+  void GetExperiments(const base::ListValue* args);
+  void GetPrefs(const base::ListValue* args);
   void RegisterMessages() override;
 
  private:
+  content::BrowserContext* browser_context_;
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingUIHandler);
 };
 
