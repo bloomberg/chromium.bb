@@ -118,12 +118,14 @@ Polymer({
    */
   setOldImageUrl(imageUrl) {
     this.oldImageUrl_ = imageUrl;
-    if (imageUrl)
+    if (imageUrl) {
       this.$.selector.select(this.$.selector.indexOf(this.$.oldImage));
-    else if (this.cameraSelected_)
+      this.selectedImageUrl_ = imageUrl;
+    } else if (this.cameraSelected_) {
       this.$.selector.select(this.$.selector.indexOf(this.$.cameraImage));
-    else if (this.fallbackImage_)
+    } else if (this.fallbackImage_) {
       this.selectImage_(this.fallbackImage_, true /* activate */);
+    }
   },
 
   /**
@@ -135,6 +137,7 @@ Polymer({
     if (!this.selectedItem ||
         this.selectedItem.dataset.type != CrPicture.SelectionTypes.CAMERA) {
       this.$.selector.select(this.$.selector.indexOf(image));
+      this.selectedItem = image;
     }
   },
 

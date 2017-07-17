@@ -16,6 +16,7 @@ cr.define('settings_people_page_change_picture', function() {
       'selectProfileImage',
       'photoTaken',
       'chooseFile',
+      'requestSelectedImage',
     ]);
   };
 
@@ -75,6 +76,11 @@ cr.define('settings_people_page_change_picture', function() {
     /** @override */
     chooseFile: function() {
       this.methodCalled('chooseFile');
+    },
+
+    /** @override */
+    requestSelectedImage: function() {
+      this.methodCalled('requestSelectedImage');
     },
   };
 
@@ -187,6 +193,8 @@ cr.define('settings_people_page_change_picture', function() {
       });
 
       test('ChangePictureOldImage', function() {
+        assertFalse(!!changePicture.selectedItem_);
+
         // By default there is no old image and the element is hidden.
         var oldImage = crPictureList.$.oldImage;
         assertTrue(!!oldImage);
@@ -195,15 +203,20 @@ cr.define('settings_people_page_change_picture', function() {
         cr.webUIListenerCallback('old-image-changed', 'fake-old-image.jpg');
         Polymer.dom.flush();
 
-        // Expect the old image to be selected once an old image is sent via
-        // the native interface.
-        expectEquals(CrPicture.SelectionTypes.OLD,
-                     changePicture.selectedItem_.dataset.type);
-        expectFalse(oldImage.hidden);
-        expectFalse(crPicturePane.cameraActive_);
-        var discard = crPicturePane.$$('#discard');
-        assertTrue(!!discard);
-        expectFalse(discard.hidden);
+        return new Promise(function(resolve) {
+          changePicture.async(resolve);
+        }).then(function() {
+          assertTrue(!!changePicture.selectedItem_);
+          // Expect the old image to be selected once an old image is sent via
+          // the native interface.
+          expectEquals(CrPicture.SelectionTypes.OLD,
+                       changePicture.selectedItem_.dataset.type);
+          expectFalse(oldImage.hidden);
+          expectFalse(crPicturePane.cameraActive_);
+          var discard = crPicturePane.$$('#discard');
+          assertTrue(!!discard);
+          expectFalse(discard.hidden);
+        });
       });
 
       test('ChangePictureSelectFirstDefaultImage', function() {

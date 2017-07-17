@@ -88,6 +88,7 @@ Polymer({
   currentRouteChanged: function(newRoute) {
     if (newRoute == settings.routes.CHANGE_PICTURE) {
       this.browserProxy_.initialize();
+      this.browserProxy_.requestSelectedImage();
       this.pictureList_.setFocus();
     } else {
       // Ensure we deactivate the camera when we navigate away.

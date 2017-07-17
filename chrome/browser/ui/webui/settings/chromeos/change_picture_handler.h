@@ -87,6 +87,9 @@ class ChangePictureHandler : public ::settings::SettingsPageUIHandler,
   // Selects one of the available images as user's.
   void HandleSelectImage(const base::ListValue* args);
 
+  // Requests the currently selected image.
+  void HandleRequestSelectedImage(const base::ListValue* args);
+
   // SelectFileDialog::Delegate implementation.
   void FileSelected(const base::FilePath& path,
                     int index,
