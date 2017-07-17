@@ -56,9 +56,11 @@ class WebFrameTestClient : public blink::WebFrameClient {
                               const blink::WebString& source_name,
                               unsigned source_line,
                               const blink::WebString& stack_trace) override;
+  void DownloadURL(const blink::WebURLRequest& request,
+                   const blink::WebString& suggested_name) override;
   void LoadURLExternally(const blink::WebURLRequest& request,
                          blink::WebNavigationPolicy policy,
-                         const blink::WebString& suggested_name,
+                         blink::WebTriggeringEventInfo triggering_event_info,
                          bool replaces_current_history_item) override;
   void LoadErrorPage(int reason) override;
   void DidStartProvisionalLoad(blink::WebDataSource* data_source,

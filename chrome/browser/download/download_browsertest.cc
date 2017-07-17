@@ -2667,7 +2667,7 @@ EchoReferrerRequestHandler(const net::test_server::HttpRequest& request) {
   return std::move(response);
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadTest, LoadURLExternallyReferrerPolicy) {
+IN_PROC_BROWSER_TEST_F(DownloadTest, AltClickDownloadReferrerPolicy) {
   embedded_test_server()->RegisterRequestHandler(
       base::Bind(&EchoReferrerRequestHandler));
   embedded_test_server()->ServeFilesFromDirectory(GetTestDataDirectory());

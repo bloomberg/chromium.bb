@@ -20,6 +20,7 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
 #include "third_party/WebKit/public/web/WebNavigationPolicy.h"
+#include "third_party/WebKit/public/web/WebTriggeringEventInfo.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -148,8 +149,10 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
       std::unique_ptr<PluginInstanceThrottler> throttler) = 0;
 
   // The client should handle the navigation externally.
-  virtual void LoadURLExternally(const blink::WebURLRequest& request,
-                                 blink::WebNavigationPolicy policy) = 0;
+  virtual void LoadURLExternally(
+      const blink::WebURLRequest& request,
+      blink::WebNavigationPolicy policy,
+      blink::WebTriggeringEventInfo triggering_event_info) = 0;
 
   // Execute a string of JavaScript in this frame's context.
   virtual void ExecuteJavaScript(const base::string16& javascript) = 0;
