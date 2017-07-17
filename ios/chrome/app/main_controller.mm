@@ -179,7 +179,7 @@ NSString* const kMemoryDebuggingToolsStartup = @"MemoryDebuggingToolsStartup";
 NSString* const kSendInstallPingIfNecessary = @"SendInstallPingIfNecessary";
 
 // Constants for deferring check of native iOS apps installed.
-NSString* const kCheckNativeApps = @"CheckNativeApps";
+NSString* const kCheckForFirstPartyApps = @"CheckForFirstPartyApps";
 
 // Constants for deferred deletion of leftover user downloaded files.
 NSString* const kDeleteDownloads = @"DeleteDownloads";
@@ -455,8 +455,9 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 // Asynchronously creates the pref observers.
 - (void)schedulePrefObserverInitialization;
 // Asynchronously schedules a check for what other native iOS apps are currently
-// installed.
-- (void)scheduleCheckNativeApps;
+// installed. Note that there may be App Store restrictions around checking for
+// native iOS apps not owned by the browser vendor.
+- (void)scheduleCheckForFirstPartyApps;
 // Asynchronously schedules pings to distribution services.
 - (void)scheduleAppDistributionPings;
 // Asynchronously schedule the init of the memoryDebuggerManager.
@@ -1016,14 +1017,12 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
                   }];
 }
 
-- (void)scheduleCheckNativeApps {
-  void (^checkInstalledApps)(void) = ^{
-    [ios::GetChromeBrowserProvider()->GetNativeAppWhitelistManager()
-            checkInstalledApps];
-  };
+- (void)scheduleCheckForFirstPartyApps {
   [[DeferredInitializationRunner sharedInstance]
-      enqueueBlockNamed:kCheckNativeApps
-                  block:checkInstalledApps];
+      enqueueBlockNamed:kCheckForFirstPartyApps
+                  block:^{
+                    ios::GetChromeBrowserProvider()->CheckForFirstPartyApps();
+                  }];
 }
 
 - (void)scheduleAppDistributionPings {
@@ -1152,7 +1151,7 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
   [self scheduleStartupAttemptReset];
   [self startFreeMemoryMonitoring];
   [self scheduleAppDistributionPings];
-  [self scheduleCheckNativeApps];
+  [self scheduleCheckForFirstPartyApps];
 }
 
 - (void)scheduleTasksRequiringBVCWithBrowserState {
