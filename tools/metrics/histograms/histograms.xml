@@ -52573,6 +52573,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PasswordManager.IE7LookupResult" enum="IE7LookupResultStatus">
+  <owner>vabr@chromium.org</owner>
+  <summary>
+    The result of importing passwords stored in IE7 into Chrome's password
+    store.
+  </summary>
+</histogram>
+
 <histogram name="PasswordManager.ImportedPasswordsPerUserInCSV">
   <owner>xunlu@chromium.org</owner>
   <owner>vabr@chromium.org</owner>

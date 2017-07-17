@@ -208,6 +208,13 @@ enum ReauthToAccessPasswordInSettingsEvent {
   REAUTH_COUNT
 };
 
+// Metrics: PasswordManager.IE7LookupResult
+enum IE7LookupResultStatus {
+  IE7_RESULTS_ABSENT = 0,
+  IE7_RESULTS_PRESENT = 1,
+  IE7_RESULTS_COUNT
+};
+
 // Specifies the type of PasswordFormManagers and derived classes to distinguish
 // the context in which a PasswordFormManager is being created and used.
 enum class CredentialSourceType {
