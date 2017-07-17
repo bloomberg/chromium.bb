@@ -15,7 +15,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/debug/stack_trace.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "net/base/io_buffer.h"
@@ -73,10 +73,10 @@ BlobReader::FileStreamReaderProvider::~FileStreamReaderProvider() {}
 
 BlobReader::BlobReader(
     const BlobDataHandle* blob_handle,
-    std::unique_ptr<FileStreamReaderProvider> file_stream_provider,
-    base::SequencedTaskRunner* file_task_runner)
+    std::unique_ptr<FileStreamReaderProvider> file_stream_provider)
     : file_stream_provider_(std::move(file_stream_provider)),
-      file_task_runner_(file_task_runner),
+      file_task_runner_(base::CreateTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE})),
       net_error_(net::OK),
       weak_factory_(this) {
   if (blob_handle) {

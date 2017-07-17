@@ -16,10 +16,11 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner.h"
+#include "base/test/scoped_task_environment.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
@@ -356,9 +357,8 @@ class BlobReaderTest : public ::testing::Test {
   void InitializeReader(BlobDataBuilder* builder) {
     blob_handle_ = builder ? context_.AddFinishedBlob(builder) : nullptr;
     provider_ = new MockFileStreamReaderProvider();
-    reader_.reset(new BlobReader(blob_handle_.get(),
-                                 base::WrapUnique(provider_),
-                                 message_loop_.task_runner().get()));
+    reader_.reset(
+        new BlobReader(blob_handle_.get(), base::WrapUnique(provider_)));
   }
 
   // Takes ownership of the file reader (the blob reader takes ownership).
@@ -366,9 +366,9 @@ class BlobReaderTest : public ::testing::Test {
                            base::Time modification_time,
                            uint64_t initial_offset,
                            FakeFileStreamReader* reader) {
-    EXPECT_CALL(*provider_, CreateForLocalFileMock(
-                                message_loop_.task_runner().get(), file_path,
-                                initial_offset, modification_time))
+    EXPECT_CALL(*provider_,
+                CreateForLocalFileMock(testing::_, file_path, initial_offset,
+                                       modification_time))
         .WillOnce(testing::Return(reader));
   }
 
@@ -414,10 +414,11 @@ class BlobReaderTest : public ::testing::Test {
     return reader_->total_size_calculated();
   }
 
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+
   BlobStorageContext context_;
   std::unique_ptr<BlobDataHandle> blob_handle_;
   MockFileStreamReaderProvider* provider_ = nullptr;
-  base::MessageLoop message_loop_;
   std::unique_ptr<BlobReader> reader_;
 
  private:
@@ -516,7 +517,7 @@ TEST_F(BlobReaderTest, BasicFileSystem) {
 
 TEST_F(BlobReaderTest, BasicDiskCache) {
   std::unique_ptr<disk_cache::Backend> cache =
-      CreateInMemoryDiskCache(message_loop_.task_runner());
+      CreateInMemoryDiskCache(base::ThreadTaskRunnerHandle::Get());
   ASSERT_TRUE(cache);
 
   BlobDataBuilder b("uuid");
@@ -551,7 +552,7 @@ TEST_F(BlobReaderTest, BasicDiskCache) {
 
 TEST_F(BlobReaderTest, DiskCacheWithSideData) {
   std::unique_ptr<disk_cache::Backend> cache =
-      CreateInMemoryDiskCache(message_loop_.task_runner());
+      CreateInMemoryDiskCache(base::ThreadTaskRunnerHandle::Get());
   ASSERT_TRUE(cache);
 
   BlobDataBuilder b("uuid");
@@ -725,7 +726,7 @@ TEST_F(BlobReaderTest, FileAsync) {
   this->InitializeReader(&b);
 
   std::unique_ptr<FakeFileStreamReader> reader(new FakeFileStreamReader(kData));
-  reader->SetAsyncRunner(message_loop_.task_runner().get());
+  reader->SetAsyncRunner(base::ThreadTaskRunnerHandle::Get().get());
 
   ExpectLocalFileCall(kPath, kTime, 0, reader.release());
 
@@ -761,7 +762,7 @@ TEST_F(BlobReaderTest, FileSystemAsync) {
   this->InitializeReader(&b);
 
   std::unique_ptr<FakeFileStreamReader> reader(new FakeFileStreamReader(kData));
-  reader->SetAsyncRunner(message_loop_.task_runner().get());
+  reader->SetAsyncRunner(base::ThreadTaskRunnerHandle::Get().get());
 
   ExpectFileSystemCall(kURL, 0, kData.size(), kTime, reader.release());
 
@@ -790,7 +791,7 @@ TEST_F(BlobReaderTest, FileSystemAsync) {
 
 TEST_F(BlobReaderTest, DiskCacheAsync) {
   std::unique_ptr<disk_cache::Backend> cache =
-      CreateInMemoryDiskCache(message_loop_.task_runner());
+      CreateInMemoryDiskCache(base::ThreadTaskRunnerHandle::Get());
   ASSERT_TRUE(cache);
 
   BlobDataBuilder b("uuid");
@@ -837,12 +838,12 @@ TEST_F(BlobReaderTest, FileRange) {
   this->InitializeReader(&b);
 
   std::unique_ptr<FakeFileStreamReader> reader(new FakeFileStreamReader(kData));
-  reader->SetAsyncRunner(message_loop_.task_runner().get());
+  reader->SetAsyncRunner(base::ThreadTaskRunnerHandle::Get().get());
   ExpectLocalFileCall(kPath, kTime, 0, reader.release());
 
   // We create the reader again with the offset after the seek.
   reader.reset(new FakeFileStreamReader(kRangeData));
-  reader->SetAsyncRunner(message_loop_.task_runner().get());
+  reader->SetAsyncRunner(base::ThreadTaskRunnerHandle::Get().get());
   ExpectLocalFileCall(kPath, kTime, kOffset, reader.release());
 
   int size_result = -1;
@@ -868,7 +869,7 @@ TEST_F(BlobReaderTest, FileRange) {
 
 TEST_F(BlobReaderTest, DiskCacheRange) {
   std::unique_ptr<disk_cache::Backend> cache =
-      CreateInMemoryDiskCache(message_loop_.task_runner());
+      CreateInMemoryDiskCache(base::ThreadTaskRunnerHandle::Get());
   ASSERT_TRUE(cache);
 
   BlobDataBuilder b("uuid");
@@ -939,7 +940,7 @@ TEST_F(BlobReaderTest, FileSomeAsyncSegmentedOffsetsUnknownSizes) {
     std::unique_ptr<FakeFileStreamReader> reader(new FakeFileStreamReader(
         std::string(buf.get() + offset, kItemSize), kItemSize + offset));
     if (i % 4 != 0) {
-      reader->SetAsyncRunner(message_loop_.task_runner().get());
+      reader->SetAsyncRunner(base::ThreadTaskRunnerHandle::Get().get());
     }
     FilePath path = kPathBase.Append(
         FilePath::FromUTF8Unsafe(base::StringPrintf("%d", current_value)));
@@ -977,7 +978,7 @@ TEST_F(BlobReaderTest, FileSomeAsyncSegmentedOffsetsUnknownSizes) {
 TEST_F(BlobReaderTest, MixedContent) {
   // Includes data, a file, and a disk cache entry.
   std::unique_ptr<disk_cache::Backend> cache =
-      CreateInMemoryDiskCache(message_loop_.task_runner());
+      CreateInMemoryDiskCache(base::ThreadTaskRunnerHandle::Get());
   ASSERT_TRUE(cache);
 
   BlobDataBuilder b("uuid");
@@ -1004,7 +1005,7 @@ TEST_F(BlobReaderTest, MixedContent) {
 
   std::unique_ptr<FakeFileStreamReader> reader(
       new FakeFileStreamReader(kData1));
-  reader->SetAsyncRunner(message_loop_.task_runner().get());
+  reader->SetAsyncRunner(base::ThreadTaskRunnerHandle::Get().get());
   ExpectLocalFileCall(kData1Path, kTime, 0, reader.release());
 
   int size_result = -1;
@@ -1118,7 +1119,7 @@ TEST_F(BlobReaderTest, FileErrorsAsync) {
   builder1.AppendFile(kPath, 0, kData.size(), kTime);
   this->InitializeReader(&builder1);
   FakeFileStreamReader* reader = new FakeFileStreamReader(kData);
-  reader->SetAsyncRunner(message_loop_.task_runner().get());
+  reader->SetAsyncRunner(base::ThreadTaskRunnerHandle::Get().get());
   reader->SetReturnError(net::ERR_FILE_NOT_FOUND);
   ExpectLocalFileCall(kPath, kTime, 0, reader);
 
@@ -1138,7 +1139,7 @@ TEST_F(BlobReaderTest, FileErrorsAsync) {
   EXPECT_EQ(BlobReader::Status::DONE,
             reader_->CalculateSize(base::Bind(&SetValue<int>, &size_result)));
   reader->SetReturnError(net::ERR_FILE_NOT_FOUND);
-  reader->SetAsyncRunner(message_loop_.task_runner().get());
+  reader->SetAsyncRunner(base::ThreadTaskRunnerHandle::Get().get());
 
   scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kData.size()));
   int bytes_read = 0;
@@ -1196,8 +1197,8 @@ TEST_F(BlobReaderTest, HandleBeforeAsyncCancel) {
       b, base::Bind(&SaveBlobStatusAndFiles, &can_populate_status, &files));
   EXPECT_EQ(BlobStatus::PENDING_TRANSPORT, can_populate_status);
   provider_ = new MockFileStreamReaderProvider();
-  reader_.reset(new BlobReader(blob_handle_.get(), base::WrapUnique(provider_),
-                               message_loop_.task_runner().get()));
+  reader_.reset(
+      new BlobReader(blob_handle_.get(), base::WrapUnique(provider_)));
   int size_result = -1;
   EXPECT_EQ(BlobReader::Status::IO_PENDING,
             reader_->CalculateSize(base::Bind(&SetValue<int>, &size_result)));
@@ -1222,8 +1223,8 @@ TEST_F(BlobReaderTest, ReadFromIncompleteBlob) {
       b, base::Bind(&SaveBlobStatusAndFiles, &can_populate_status, &files));
   EXPECT_EQ(BlobStatus::PENDING_TRANSPORT, can_populate_status);
   provider_ = new MockFileStreamReaderProvider();
-  reader_.reset(new BlobReader(blob_handle_.get(), base::WrapUnique(provider_),
-                               message_loop_.task_runner().get()));
+  reader_.reset(
+      new BlobReader(blob_handle_.get(), base::WrapUnique(provider_)));
   int size_result = -1;
   EXPECT_EQ(BlobReader::Status::IO_PENDING,
             reader_->CalculateSize(base::Bind(&SetValue<int>, &size_result)));

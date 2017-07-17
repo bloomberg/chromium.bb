@@ -2657,9 +2657,7 @@ class CacheStorageSideDataSizeChecker
       std::unique_ptr<storage::BlobDataHandle> blob_data_handle) {
     ASSERT_EQ(CACHE_STORAGE_OK, error);
     blob_data_handle_ = std::move(blob_data_handle);
-    blob_reader_ = blob_data_handle_->CreateReader(
-        file_system_context_,
-        base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()}).get());
+    blob_reader_ = blob_data_handle_->CreateReader(file_system_context_);
     const storage::BlobReader::Status status = blob_reader_->CalculateSize(
         base::Bind(&self::OnBlobReaderCalculateSizeCallback, this, result,
                    continuation));

@@ -76,12 +76,10 @@ BlobDataHandle::BlobDataHandleShared::BlobDataHandleShared(
 }
 
 std::unique_ptr<BlobReader> BlobDataHandle::CreateReader(
-    FileSystemContext* file_system_context,
-    base::SequencedTaskRunner* file_task_runner) const {
+    FileSystemContext* file_system_context) const {
   return std::unique_ptr<BlobReader>(new BlobReader(
       this, std::unique_ptr<BlobReader::FileStreamReaderProvider>(
-                new FileStreamReaderProviderImpl(file_system_context)),
-      file_task_runner));
+                new FileStreamReaderProviderImpl(file_system_context))));
 }
 
 BlobDataHandle::BlobDataHandleShared::~BlobDataHandleShared() {

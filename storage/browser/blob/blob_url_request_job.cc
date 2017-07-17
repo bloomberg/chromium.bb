@@ -43,23 +43,19 @@
 
 namespace storage {
 
-BlobURLRequestJob::BlobURLRequestJob(
-    net::URLRequest* request,
-    net::NetworkDelegate* network_delegate,
-    BlobDataHandle* blob_handle,
-    FileSystemContext* file_system_context,
-    base::SingleThreadTaskRunner* file_task_runner)
+BlobURLRequestJob::BlobURLRequestJob(net::URLRequest* request,
+                                     net::NetworkDelegate* network_delegate,
+                                     BlobDataHandle* blob_handle,
+                                     FileSystemContext* file_system_context)
     : net::URLRequestJob(request, network_delegate),
       error_(false),
       byte_range_set_(false),
       weak_factory_(this) {
   TRACE_EVENT_ASYNC_BEGIN1("Blob", "BlobRequest", this, "uuid",
                            blob_handle ? blob_handle->uuid() : "NotFound");
-  DCHECK(file_task_runner);
   if (blob_handle) {
     blob_handle_.reset(new BlobDataHandle(*blob_handle));
-    blob_reader_ =
-        blob_handle_->CreateReader(file_system_context, file_task_runner);
+    blob_reader_ = blob_handle_->CreateReader(file_system_context);
   }
 }
 
