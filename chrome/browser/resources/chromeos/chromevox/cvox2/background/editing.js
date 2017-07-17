@@ -311,6 +311,14 @@ AutomationRichEditableText.prototype = {
       return;
     }
 
+    // TODO(dtseng): base/extent and anchor/focus are ordered
+    // (i.e. anchor/base always comes before focus/extent) in Blink
+    // accessibility. However, in other parts of Blink, they are
+    // unordered (i.e. anchor is where the selection starts and focus
+    // where it ends). The latter is correct. Change this once Blink
+    // ax gets fixed.
+    var curBase = baseLineOnStart ? focusLine : anchorLine;
+
     if (cur.text == '') {
       // This line has no text content. Describe the DOM selection.
       new Output()
@@ -318,13 +326,13 @@ AutomationRichEditableText.prototype = {
               new Range(cur.start_, cur.end_),
               new Range(prev.start_, prev.end_), Output.EventType.NAVIGATE)
           .go();
-    } else if (!cur.hasCollapsedSelection()) {
-      // This is a selection.
+    } else if (
+        !cur.hasCollapsedSelection() &&
+        (curBase.isSameLine(prevAnchorLine) ||
+         curBase.isSameLine(prevFocusLine))) {
+      // This is a selection that gets extended from the same anchor.
 
       // Speech requires many more states than braille.
-      // TODO(dtseng): base/extent and anchor/focus are mismatched in AX. Swap
-      // once this works.
-      var curBase = baseLineOnStart ? focusLine : anchorLine;
       var curExtent = baseLineOnStart ? anchorLine : focusLine;
       var text = '';
       var suffixMsg = '';
@@ -380,9 +388,12 @@ AutomationRichEditableText.prototype = {
       cvox.ChromeVox.tts.speak(Msgs.getMsg(suffixMsg), cvox.QueueMode.QUEUE);
       this.brailleCurrentRichLine_();
     } else {
+      // A catch-all for any other transitions.
+
       // Describe the current line. This accounts for previous/current
       // selections and picking the line edge boundary that changed (as computed
-      // above). This is also the code path for describing paste.
+      // above). This is also the code path for describing paste. It also covers
+      // jump commands which are non-overlapping selections from prev to cur.
       this.speakCurrentRichLine_(prev);
       this.brailleCurrentRichLine_();
     }
