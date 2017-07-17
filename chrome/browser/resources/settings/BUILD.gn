@@ -61,6 +61,10 @@ polymer_css_build("build") {
 
 grit("flattened_resources") {
   source = "settings_resources.grd"
+
+  # The .grd contains references to generated files.
+  source_is_generated = true
+
   defines = chrome_grit_defines
   outputs = [
     "grit/settings_resources.h",
