@@ -1146,6 +1146,7 @@ void GpuImageDecodeCache::DecodeImageIfNecessary(const DrawImage& draw_image,
   }
 
   TRACE_EVENT0("cc", "GpuImageDecodeCache::DecodeImage");
+  RecordImageMipLevelUMA(image_data->upload_params.fPreScaleMipLevel);
 
   image_data->decode.ResetData();
   std::unique_ptr<base::DiscardableMemory> backing_memory;

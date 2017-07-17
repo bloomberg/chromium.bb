@@ -345,6 +345,7 @@ cc_component("cc") {
     "tiles/gpu_image_decode_cache.h",
     "tiles/image_controller.cc",
     "tiles/image_controller.h",
+    "tiles/image_decode_cache.cc",
     "tiles/image_decode_cache.h",
     "tiles/mipmap_util.cc",
     "tiles/mipmap_util.h",
