@@ -67,6 +67,8 @@ class ASH_EXPORT AppListButton : public views::ImageButton,
                                   aura::Window* root_window) override;
   void OnVoiceInteractionStatusChanged(bool running) override;
 
+  void StartVoiceInteractionAnimation();
+
   // True if the app list is currently showing for this display.
   // This is useful because other IsApplistVisible functions aren't per-display.
   bool is_showing_app_list_;
@@ -80,6 +82,8 @@ class ASH_EXPORT AppListButton : public views::ImageButton,
 
   VoiceInteractionOverlay* voice_interaction_overlay_;
   std::unique_ptr<base::OneShotTimer> voice_interaction_animation_delay_timer_;
+  std::unique_ptr<base::OneShotTimer>
+      voice_interaction_animation_hide_delay_timer_;
 
   bool voice_interaction_running_ = false;
 
