@@ -52,16 +52,14 @@
 #include "public/web/WebSettings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using blink::URLTestHelpers::ToKURL;
-using blink::URLTestHelpers::RegisterMockedURLLoad;
-
 namespace blink {
 
 class FrameSerializerTest : public ::testing::Test,
                             public FrameSerializer::Delegate {
  public:
   FrameSerializerTest()
-      : folder_("frameserializer/"), base_url_(ToKURL("http://www.test.com")) {}
+      : folder_("frameserializer/"),
+        base_url_(URLTestHelpers::ToKURL("http://www.test.com")) {}
 
  protected:
   void SetUp() override {
@@ -80,7 +78,7 @@ class FrameSerializerTest : public ::testing::Test,
   void SetRewriteURLFolder(const char* folder) { rewrite_folder_ = folder; }
 
   void RegisterURL(const KURL& url, const char* file, const char* mime_type) {
-    RegisterMockedURLLoad(
+    URLTestHelpers::RegisterMockedURLLoad(
         url, testing::CoreTestDataPath(WebString::FromUTF8(folder_ + file)),
         WebString::FromUTF8(mime_type));
   }
@@ -356,8 +354,9 @@ TEST_F(FrameSerializerTest, CSS) {
   RegisterURL("ul-dot.png", "image.png", "image/png");
   RegisterURL("ol-dot.png", "image.png", "image/png");
 
-  const KURL image_url_from_data_url(ToKURL("http://www.dataurl.com"),
-                                     "fuchsia_background.png");
+  const KURL image_url_from_data_url(
+      URLTestHelpers::ToKURL("http://www.dataurl.com"),
+      "fuchsia_background.png");
   RegisterURL(image_url_from_data_url, "image.png", "image/png");
 
   RegisterURL("included_in_another_frame.css", "text/css");

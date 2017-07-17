@@ -66,7 +66,7 @@ GestureEventWithHitTestResults GetTargetedEvent(WebViewBase* web_view_impl,
       .TargetGestureEvent(scaled_event, true);
 }
 
-std::string RegisterMockedURLLoad() {
+std::string LinkRegisterMockedURLLoad() {
   WebURL url = URLTestHelpers::RegisterMockedURLLoadFromBase(
       WebString::FromUTF8("http://www.test.com/"), testing::CoreTestDataPath(),
       WebString::FromUTF8("test_touch_link_highlight.html"));
@@ -76,7 +76,7 @@ std::string RegisterMockedURLLoad() {
 }  // namespace
 
 TEST(LinkHighlightImplTest, verifyWebViewImplIntegration) {
-  const std::string url = RegisterMockedURLLoad();
+  const std::string url = LinkRegisterMockedURLLoad();
   FrameTestHelpers::WebViewHelper web_view_helper;
   WebViewBase* web_view_impl = web_view_helper.InitializeAndLoad(url);
   int page_width = 640;
@@ -133,7 +133,7 @@ TEST(LinkHighlightImplTest, verifyWebViewImplIntegration) {
 }
 
 TEST(LinkHighlightImplTest, resetDuringNodeRemoval) {
-  const std::string url = RegisterMockedURLLoad();
+  const std::string url = LinkRegisterMockedURLLoad();
   FrameTestHelpers::WebViewHelper web_view_helper;
   WebViewBase* web_view_impl = web_view_helper.InitializeAndLoad(url);
 
@@ -173,7 +173,7 @@ TEST(LinkHighlightImplTest, resetDuringNodeRemoval) {
 
 // A lifetime test: delete LayerTreeView while running LinkHighlights.
 TEST(LinkHighlightImplTest, resetLayerTreeView) {
-  const std::string url = RegisterMockedURLLoad();
+  const std::string url = LinkRegisterMockedURLLoad();
   FrameTestHelpers::WebViewHelper web_view_helper;
   WebViewBase* web_view_impl = web_view_helper.InitializeAndLoad(url);
 
@@ -208,7 +208,7 @@ TEST(LinkHighlightImplTest, resetLayerTreeView) {
 }
 
 TEST(LinkHighlightImplTest, multipleHighlights) {
-  const std::string url = RegisterMockedURLLoad();
+  const std::string url = LinkRegisterMockedURLLoad();
   FrameTestHelpers::WebViewHelper web_view_helper;
   WebViewBase* web_view_impl = web_view_helper.InitializeAndLoad(url);
 
