@@ -16,44 +16,49 @@
 namespace internal {
 
 const IntelUarchTableEntry kIntelUarchTable[] = {
-  // These were found on various sources on the Internet. Main ones are:
-  // http://instlatx64.atw.hu/ for CPUID to model name and
-  // http://www.cpu-world.com for model name to microarchitecture
-  {"06_09", "Banias"},
-  {"06_0D", "Dothan"},
-  {"06_0F", "Merom"},
-  {"06_16", "Merom"},
-  {"06_17", "Nehalem"},
-  {"06_1A", "Nehalem"},
-  {"06_1C", "Bonnell"},    // Atom
-  {"06_1D", "Nehalem"},
-  {"06_1E", "Nehalem"},
-  {"06_1F", "Nehalem"},
-  {"06_25", "Westmere"},
-  {"06_26", "Bonnell"},    // Atom
-  {"06_2A", "SandyBridge"},
-  {"06_2C", "Westmere"},
-  {"06_2D", "SandyBridge"},
-  {"06_2E", "Nehalem"},
-  {"06_2F", "Westmere"},
-  {"06_36", "Saltwell"},   // Atom
-  {"06_37", "Silvermont"},
-  {"06_3A", "IvyBridge"},
-  {"06_3C", "Haswell"},
-  {"06_3D", "Broadwell"},
-  {"06_3E", "IvyBridge"},
-  {"06_3F", "Haswell"},
-  {"06_45", "Haswell"},
-  {"06_46", "Haswell"},
-  {"06_47", "Broadwell"},  // Broadwell-H
-  {"06_4C", "Airmont"},    // Braswell
-  {"06_4D", "Silvermont"}, // Avoton/Rangely
-  {"06_4E", "Skylake"},
-  {"06_56", "Broadwell"},  // Broadwell-DE
-  {"06_5E", "Skylake"},
-  {"0F_03", "Prescott"},
-  {"0F_04", "Prescott"},
-  {"0F_06", "Presler"},
+    // These were found on various sources on the Internet. Main ones are:
+    // http://instlatx64.atw.hu/ for CPUID to model name and
+    // http://www.cpu-world.com for model name to microarchitecture
+    {"06_09", "Banias"},
+    {"06_0D", "Dothan"},
+    {"06_0F", "Merom"},
+    {"06_16", "Merom"},
+    {"06_17", "Nehalem"},
+    {"06_1A", "Nehalem"},
+    {"06_1C", "Bonnell"},     // Atom
+    {"06_1D", "Nehalem"},
+    {"06_1E", "Nehalem"},
+    {"06_1F", "Nehalem"},
+    {"06_25", "Westmere"},
+    {"06_26", "Bonnell"},     // Atom
+    {"06_2A", "SandyBridge"},
+    {"06_2C", "Westmere"},
+    {"06_2D", "SandyBridge"},
+    {"06_2E", "Nehalem"},
+    {"06_2F", "Westmere"},
+    {"06_36", "Saltwell"},    // Atom
+    {"06_37", "Silvermont"},
+    {"06_3A", "IvyBridge"},
+    {"06_3C", "Haswell"},
+    {"06_3D", "Broadwell"},
+    {"06_3E", "IvyBridge"},
+    {"06_3F", "Haswell"},
+    {"06_45", "Haswell"},
+    {"06_46", "Haswell"},
+    {"06_47", "Broadwell"},   // Broadwell-H
+    {"06_4C", "Airmont"},     // Braswell
+    {"06_4D", "Silvermont"},  // Avoton/Rangely
+    {"06_4E", "Skylake"},
+    {"06_55", "Skylake"},     // Skylake-X
+    {"06_56", "Broadwell"},   // Broadwell-DE
+    {"06_5C", "Goldmont"},
+    {"06_5E", "Skylake"},
+    {"06_5F", "Goldmont"},    // Denverton
+    {"06_8E", "Kabylake"},
+    {"06_9E", "Kabylake"},
+    {"0F_03", "Prescott"},
+    {"0F_04", "Prescott"},
+    {"0F_06", "Presler"},
 };
 
 const IntelUarchTableEntry* kIntelUarchTableEnd =

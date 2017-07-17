@@ -121,7 +121,8 @@ void ExtractVersionNumbers(const std::string& version,
 
 // Returns if a micro-architecture supports LBR callgraph profiling.
 bool MicroarchitectureHasLBRCallgraph(const std::string& uarch) {
-  return uarch == "Haswell" || uarch == "Broadwell" || uarch == "Skylake";
+  return uarch == "Haswell" || uarch == "Broadwell" || uarch == "Skylake" ||
+         uarch == "Kabylake";
 }
 
 // Returns if a kernel release supports LBR callgraph profiling.
@@ -195,7 +196,8 @@ const std::vector<RandomSelector::WeightAndValue> GetDefaultCommands_x86_64(
     cmds.push_back(WeightAndValue(5.0, kPerfRecordCacheMissesCmd));
     return cmds;
   }
-  if (intel_uarch == "SandyBridge" || intel_uarch == "Skylake") {
+  if (intel_uarch == "SandyBridge" || intel_uarch == "Skylake" ||
+      intel_uarch == "Kabylake") {
     cmds.push_back(WeightAndValue(50.0, kPerfRecordCyclesCmd));
     cmds.push_back(WeightAndValue(20.0, callgraph_cmd));
     cmds.push_back(WeightAndValue(15.0, kPerfRecordLBRCmd));
@@ -204,7 +206,8 @@ const std::vector<RandomSelector::WeightAndValue> GetDefaultCommands_x86_64(
     cmds.push_back(WeightAndValue(5.0, kPerfRecordCacheMissesCmd));
     return cmds;
   }
-  if (intel_uarch == "Silvermont" || intel_uarch == "Airmont") {
+  if (intel_uarch == "Silvermont" || intel_uarch == "Airmont" ||
+      intel_uarch == "Goldmont") {
     cmds.push_back(WeightAndValue(50.0, kPerfRecordCyclesCmd));
     cmds.push_back(WeightAndValue(20.0, callgraph_cmd));
     cmds.push_back(WeightAndValue(15.0, kPerfRecordLBRCmdAtom));
