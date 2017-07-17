@@ -59,7 +59,7 @@ static NSString* const kFeedbackContext = @"SideMenuFeedbackContext";
       [[SideMenuItem alloc] initWithTitle:@"Help"
                                      icon:RemotingTheme.helpIcon
                                    action:^{
-                                     NSLog(@"Tapped help");
+                                     [AppDelegate.instance presentHelpCenter];
                                    }],
     ] ];
   });

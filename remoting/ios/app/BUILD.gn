@@ -56,6 +56,8 @@ source_set("common_source_set") {
     "side_menu_items.mm",
     "user_status_presenter.h",
     "user_status_presenter.mm",
+    "web_view_controller.h",
+    "web_view_controller.mm",
   ]
 
   deps = [
