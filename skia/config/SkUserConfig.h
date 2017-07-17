@@ -224,10 +224,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #define SK_SUPPORT_NONSTD_BLENDMODES
 #endif
 
-#ifndef SK_SUPPORT_LEGACY_MASK_BLUR
-#define SK_SUPPORT_LEGACY_MASK_BLUR
-#endif
-
 ///////////////////////// Imported from BUILD.gn and skia_common.gypi
 
 /* In some places Skia can use static initializers for global initialization,
