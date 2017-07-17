@@ -806,11 +806,13 @@ class MetaBuildWrapper(object):
     self.MaybeMakeDirectory(build_dir)
     self.WriteFile(mb_type_path, new_mb_type)
 
-  def RunGNGen(self, vals):
+  def RunGNGen(self, vals, compute_grit_inputs_for_analyze=False):
     build_dir = self.args.path[0]
 
     cmd = self.GNCmd('gen', build_dir, '--check')
     gn_args = self.GNArgs(vals)
+    if compute_grit_inputs_for_analyze:
+      gn_args += ' compute_grit_inputs_for_analyze=true'
 
     # Since GN hasn't run yet, the build directory may not even exist.
     self.MaybeMakeDirectory(self.ToAbsPath(build_dir))
@@ -1233,7 +1235,7 @@ class MetaBuildWrapper(object):
   def RunGNAnalyze(self, vals):
     # Analyze runs before 'gn gen' now, so we need to run gn gen
     # in order to ensure that we have a build directory.
-    ret = self.RunGNGen(vals)
+    ret = self.RunGNGen(vals, compute_grit_inputs_for_analyze=True)
     if ret:
       return ret
 

@@ -35,6 +35,10 @@ grit("ui_unscaled_resources_grd") {
 
 grit("webui_resources_grd") {
   source = "../webui/resources/webui_resources.grd"
+
+  # The .grd contains references to generated files.
+  source_is_generated = true
+
   outputs = [
     "grit/webui_resources.h",
     "grit/webui_resources_map.cc",

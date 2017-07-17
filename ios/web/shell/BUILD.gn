@@ -50,6 +50,10 @@ service_manifest("shell_browser_manifest_overlay") {
 grit("resources") {
   visibility = [ ":*" ]
   source = "shell_resources.grd"
+
+  # The .grd contains references to generated files.
+  source_is_generated = true
+
   grit_flags = [
     "-E",
     "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),

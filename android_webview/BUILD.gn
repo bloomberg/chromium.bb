@@ -261,6 +261,9 @@ grit("generate_aw_strings") {
 grit("generate_webui_resources") {
   source = "../ui/webui/resources/webui_resources.grd"
 
+  # The .grd contains references to generated files.
+  source_is_generated = true
+
   # webui/resources has way too many resources. The whitelist is trim this down
   # to a reasonable size
   whitelist = rebase_path("ui/grit_resources_whitelist.txt")
@@ -282,6 +285,9 @@ grit("generate_webui_resources") {
 grit("generate_components_resources") {
   source = "../components/resources/components_resources.grd"
 
+  # The .grd contains references to generated files.
+  source_is_generated = true
+
   # See :generate_webui_resources for an explanation of the whitelist
   whitelist = rebase_path("ui/grit_resources_whitelist.txt")
   inputs = [
@@ -294,6 +300,10 @@ grit("generate_components_resources") {
   outputs = [
     "grit/components_resources.h",
     "components_resources.pak",
+  ]
+
+  deps = [
+    "//components/resources:components_resources",
   ]
 }
 
