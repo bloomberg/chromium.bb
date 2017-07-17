@@ -161,20 +161,12 @@ void RecordSigninNewAccountUserActionForAccessPoint(
 }
 
 - (void)dealloc {
-  if (_displayedCountPreferenceKey &&
-      _signinPromoViewState == ios::SigninPromoViewState::Unused) {
-    PrefService* prefs = _browserState->GetPrefs();
-    int displayedCount = prefs->GetInteger(_displayedCountPreferenceKey);
-    switch (_histograms) {
-      case ios::SigninPromoViewHistograms::Bookmarks:
-        UMA_HISTOGRAM_COUNTS_100(
-            "MobileSignInPromo.BookmarkManager.ImpressionsTilDismiss",
-            displayedCount);
-        break;
-      case ios::SigninPromoViewHistograms::None:
-        break;
-    }
-  }
+  DCHECK_EQ(ios::SigninPromoViewState::Invalid, _signinPromoViewState);
+}
+
+- (BOOL)isInvalidOrClosed {
+  return _signinPromoViewState == ios::SigninPromoViewState::Closed ||
+         _signinPromoViewState == ios::SigninPromoViewState::Invalid;
 }
 
 - (SigninPromoViewConfigurator*)createConfigurator {
@@ -218,7 +210,7 @@ void RecordSigninNewAccountUserActionForAccessPoint(
 }
 
 - (void)sendImpressionsTillSigninButtonsHistogram {
-  DCHECK(_signinPromoViewState != ios::SigninPromoViewState::Closed ||
+  DCHECK(![self isInvalidOrClosed] ||
          _signinPromoViewState != ios::SigninPromoViewState::Unused);
   _signinPromoViewState = ios::SigninPromoViewState::SigninStarted;
   if (!_displayedCountPreferenceKey)
@@ -237,7 +229,7 @@ void RecordSigninNewAccountUserActionForAccessPoint(
 }
 
 - (void)signinPromoViewVisible {
-  DCHECK_NE(ios::SigninPromoViewState::Closed, _signinPromoViewState);
+  DCHECK(![self isInvalidOrClosed]);
   if (_isSigninPromoViewVisible)
     return;
   _isSigninPromoViewVisible = YES;
@@ -254,13 +246,12 @@ void RecordSigninNewAccountUserActionForAccessPoint(
 }
 
 - (void)signinPromoViewHidden {
-  DCHECK_NE(ios::SigninPromoViewState::Closed, _signinPromoViewState);
+  DCHECK(![self isInvalidOrClosed]);
   _isSigninPromoViewVisible = NO;
 }
 
 - (void)signinPromoViewClosed {
-  DCHECK(_isSigninPromoViewVisible &&
-         _signinPromoViewState != ios::SigninPromoViewState::Closed);
+  DCHECK(_isSigninPromoViewVisible && ![self isInvalidOrClosed]);
   _signinPromoViewState = ios::SigninPromoViewState::Closed;
   if (!_displayedCountPreferenceKey)
     return;
@@ -270,6 +261,27 @@ void RecordSigninNewAccountUserActionForAccessPoint(
     case ios::SigninPromoViewHistograms::Bookmarks:
       UMA_HISTOGRAM_COUNTS_100(
           "MobileSignInPromo.BookmarkManager.ImpressionsTilXButton",
+          displayedCount);
+      break;
+    case ios::SigninPromoViewHistograms::None:
+      break;
+  }
+}
+
+- (void)signinPromoViewRemoved {
+  DCHECK_NE(ios::SigninPromoViewState::Invalid, _signinPromoViewState);
+  BOOL wasUnused = _signinPromoViewState == ios::SigninPromoViewState::Unused;
+  _signinPromoViewState = ios::SigninPromoViewState::Invalid;
+  // If the sign-in promo view has been used at least once, it should not be
+  // counted as dismissed (even if the sign-in has been canceled).
+  if (!_displayedCountPreferenceKey || !wasUnused)
+    return;
+  PrefService* prefs = _browserState->GetPrefs();
+  int displayedCount = prefs->GetInteger(_displayedCountPreferenceKey);
+  switch (_histograms) {
+    case ios::SigninPromoViewHistograms::Bookmarks:
+      UMA_HISTOGRAM_COUNTS_100(
+          "MobileSignInPromo.BookmarkManager.ImpressionsTilDismiss",
           displayedCount);
       break;
     case ios::SigninPromoViewHistograms::None:
@@ -326,8 +338,7 @@ void RecordSigninNewAccountUserActionForAccessPoint(
 
 - (void)signinPromoViewDidTapSigninWithNewAccount:
     (SigninPromoView*)signinPromoView {
-  DCHECK(!_defaultIdentity);
-  DCHECK_NE(ios::SigninPromoViewState::Closed, _signinPromoViewState);
+  DCHECK(!_defaultIdentity && ![self isInvalidOrClosed]);
   [self sendImpressionsTillSigninButtonsHistogram];
   RecordSigninUserActionForAccessPoint(_accessPoint);
   RecordSigninNewAccountUserActionForAccessPoint(_accessPoint);
@@ -345,8 +356,7 @@ void RecordSigninNewAccountUserActionForAccessPoint(
 
 - (void)signinPromoViewDidTapSigninWithDefaultAccount:
     (SigninPromoView*)signinPromoView {
-  DCHECK(_defaultIdentity);
-  DCHECK_NE(ios::SigninPromoViewState::Closed, _signinPromoViewState);
+  DCHECK(_defaultIdentity && ![self isInvalidOrClosed]);
   [self sendImpressionsTillSigninButtonsHistogram];
   RecordSigninUserActionForAccessPoint(_accessPoint);
   RecordSigninDefaultUserActionForAccessPoint(_accessPoint);
@@ -364,8 +374,7 @@ void RecordSigninNewAccountUserActionForAccessPoint(
 
 - (void)signinPromoViewDidTapSigninWithOtherAccount:
     (SigninPromoView*)signinPromoView {
-  DCHECK(_defaultIdentity);
-  DCHECK_NE(ios::SigninPromoViewState::Closed, _signinPromoViewState);
+  DCHECK(_defaultIdentity && ![self isInvalidOrClosed]);
   [self sendImpressionsTillSigninButtonsHistogram];
   RecordSigninNotDefaultUserActionForAccessPoint(_accessPoint);
   RecordSigninUserActionForAccessPoint(_accessPoint);

@@ -227,6 +227,7 @@ const NSTimeInterval kShowEmptyBookmarksBackgroundRefreshDelay = 1.0;
 }
 
 - (void)dealloc {
+  [_signinPromoViewMediator signinPromoViewRemoved];
   _collectionView.dataSource = nil;
   _collectionView.delegate = nil;
   UIView* moi = _collectionView;
@@ -345,6 +346,7 @@ const NSTimeInterval kShowEmptyBookmarksBackgroundRefreshDelay = 1.0;
   if (experimental_flags::IsSigninPromoEnabled()) {
     if (!_promoVisible) {
       _signinPromoViewMediator.consumer = nil;
+      [_signinPromoViewMediator signinPromoViewRemoved];
       _signinPromoViewMediator = nil;
     } else {
       _signinPromoViewMediator =
