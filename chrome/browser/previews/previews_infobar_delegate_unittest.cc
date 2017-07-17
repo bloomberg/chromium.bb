@@ -26,6 +26,7 @@
 #include "chrome/browser/loader/chrome_navigation_data.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
+#include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
 #include "chrome/browser/previews/previews_infobar_tab_helper.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -119,18 +120,34 @@ class TestPreviewsWebContentsObserver
   bool should_have_page_id_;
 };
 
+class TestOptOutObserver : public page_load_metrics::PageLoadMetricsObserver {
+ public:
+  explicit TestOptOutObserver(const base::Callback<void()>& callback)
+      : callback_(callback) {}
+  ~TestOptOutObserver() override {}
+
+  void OnEventOccurred(const void* const event_key) override {
+    if (PreviewsInfoBarDelegate::OptOutEventKey() == event_key)
+      callback_.Run();
+  }
+
+  base::Callback<void()> callback_;
+};
+
 }  // namespace
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(TestPreviewsWebContentsObserver);
 
-class PreviewsInfoBarDelegateUnitTest : public ChromeRenderViewHostTestHarness {
+class PreviewsInfoBarDelegateUnitTest
+    : public page_load_metrics::PageLoadMetricsObserverTestHarness {
  protected:
   PreviewsInfoBarDelegateUnitTest()
-      : field_trial_list_(new base::FieldTrialList(nullptr)),
+      : opt_out_called_(false),
+        field_trial_list_(new base::FieldTrialList(nullptr)),
         tester_(new base::HistogramTester()) {}
 
   void SetUp() override {
-    ChromeRenderViewHostTestHarness::SetUp();
+    PageLoadMetricsObserverTestHarness::SetUp();
     InfoBarService::CreateForWebContents(web_contents());
     PreviewsInfoBarTabHelper::CreateForWebContents(web_contents());
     TestPreviewsWebContentsObserver::CreateForWebContents(web_contents());
@@ -232,6 +249,15 @@ class PreviewsInfoBarDelegateUnitTest : public ChromeRenderViewHostTestHarness {
     return InfoBarService::FromWebContents(web_contents());
   }
 
+  void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) override {
+    tracker->AddObserver(base::MakeUnique<TestOptOutObserver>(base::Bind(
+        &PreviewsInfoBarDelegateUnitTest::OptOut, base::Unretained(this))));
+  }
+
+  void OptOut() { opt_out_called_ = true; }
+
+  bool opt_out_called_;
+
   std::unique_ptr<data_reduction_proxy::DataReductionProxyTestContext>
       drp_test_context_;
 
@@ -303,6 +329,8 @@ TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestReloadDismissal) {
   EXPECT_EQ(0u, data_reduction_proxy_settings->data_reduction_proxy_service()
                     ->pingback_client()
                     ->OptOutsSizeForTesting());
+
+  EXPECT_FALSE(opt_out_called_);
 }
 
 TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestUserDismissal) {
@@ -347,6 +375,7 @@ TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestClickLinkLoFi) {
       {true}, {false},
   };
   for (const auto test : tests) {
+    opt_out_called_ = false;
     tester_.reset(new base::HistogramTester());
     drp_test_context_->config()->ResetLoFiStatusForTest();
     field_trial_list_.reset();
@@ -383,12 +412,16 @@ TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestClickLinkLoFi) {
     EXPECT_EQ(1u, data_reduction_proxy_settings->data_reduction_proxy_service()
                       ->pingback_client()
                       ->OptOutsSizeForTesting());
+    EXPECT_EQ(1u, data_reduction_proxy_settings->data_reduction_proxy_service()
+                      ->pingback_client()
+                      ->OptOutsSizeForTesting());
+
+    EXPECT_TRUE(opt_out_called_);
   }
 }
 
 TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestClickLinkLitePage) {
   NavigateAndCommit(GURL(kTestUrl));
-
   ConfirmInfoBarDelegate* infobar =
       CreateInfoBar(previews::PreviewsType::LITE_PAGE, base::Time(),
                     true /* is_data_saver_user */, false /* is_reload */);
@@ -415,6 +448,7 @@ TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestClickLinkLitePage) {
   EXPECT_EQ(1u, data_reduction_proxy_settings->data_reduction_proxy_service()
                     ->pingback_client()
                     ->OptOutsSizeForTesting());
+  EXPECT_TRUE(opt_out_called_);
 }
 
 TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestShownOncePerNavigation) {
@@ -567,6 +601,8 @@ TEST_F(PreviewsInfoBarDelegateUnitTest, OfflineInfobarDisablesLoFi) {
   EXPECT_EQ(0u, data_reduction_proxy_settings->data_reduction_proxy_service()
                     ->pingback_client()
                     ->OptOutsSizeForTesting());
+
+  EXPECT_TRUE(opt_out_called_);
 }
 
 TEST_F(PreviewsInfoBarDelegateUnitTest, PingbackClientClearedTabClosed) {

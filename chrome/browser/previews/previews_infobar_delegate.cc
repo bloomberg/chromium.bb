@@ -17,6 +17,7 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
+#include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
 #include "chrome/browser/previews/previews_infobar_tab_helper.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_pingback_client.h"
@@ -34,6 +35,8 @@
 #endif
 
 namespace {
+
+const void* const kOptOutEventKey = 0;
 
 const char kMinStalenessParamName[] = "min_staleness_in_minutes";
 const char kMaxStalenessParamName[] = "max_staleness_in_minutes";
@@ -105,6 +108,17 @@ void ReloadWithoutPreviews(previews::PreviewsType previews_type,
     case previews::PreviewsType::LAST:
       break;
   }
+}
+
+void InformPLMOfOptOut(content::WebContents* web_contents) {
+  page_load_metrics::MetricsWebContentsObserver* metrics_web_contents_observer =
+      page_load_metrics::MetricsWebContentsObserver::FromWebContents(
+          web_contents);
+  if (!metrics_web_contents_observer)
+    return;
+
+  metrics_web_contents_observer->BroadcastEventToObservers(
+      PreviewsInfoBarDelegate::OptOutEventKey());
 }
 
 }  // namespace
@@ -240,6 +254,8 @@ bool PreviewsInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
 
   ReportPingbackInformation(web_contents);
 
+  InformPLMOfOptOut(web_contents);
+
   if ((previews_type_ == previews::PreviewsType::LITE_PAGE ||
        previews_type_ == previews::PreviewsType::LOFI) &&
       !data_reduction_proxy::params::IsBlackListEnabledForServerPreviews()) {
@@ -317,4 +333,9 @@ base::string16 PreviewsInfoBarDelegate::GetTimestampText() const {
         IDS_PREVIEWS_INFOBAR_TIMESTAMP_HOURS,
         base::IntToString16(staleness_in_minutes / 60));
   }
+}
+
+// static
+const void* PreviewsInfoBarDelegate::OptOutEventKey() {
+  return &kOptOutEventKey;
 }

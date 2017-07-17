@@ -451,6 +451,10 @@ class PageLoadMetricsObserver {
   // and data uris.
   virtual void OnLoadedResource(
       const ExtraRequestCompleteInfo& extra_request_complete_info) {}
+
+  // Called when the event corresponding to |event_key| occurs in this page
+  // load.
+  virtual void OnEventOccurred(const void* const event_key) {}
 };
 
 }  // namespace page_load_metrics
