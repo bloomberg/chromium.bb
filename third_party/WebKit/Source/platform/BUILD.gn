@@ -834,6 +834,7 @@ component("platform") {
     "graphics/Color.h",
     "graphics/ColorBehavior.cpp",
     "graphics/ColorBehavior.h",
+    "graphics/ColorBlend.h",
     "graphics/ColorSpaceGamut.cpp",
     "graphics/ColorSpaceGamut.h",
     "graphics/ColorSpaceProfileData.cpp",

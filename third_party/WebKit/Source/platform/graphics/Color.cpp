@@ -33,6 +33,7 @@
 #include "platform/wtf/MathExtras.h"
 #include "platform/wtf/dtoa.h"
 #include "platform/wtf/text/StringBuilder.h"
+#include "platform/wtf/text/StringView.h"
 
 namespace blink {
 

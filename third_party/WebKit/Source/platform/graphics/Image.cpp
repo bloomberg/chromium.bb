@@ -216,7 +216,8 @@ void Image::DrawTiledBorder(GraphicsContext& ctxt,
     InterpolationQuality previous_interpolation_quality =
         ctxt.ImageInterpolationQuality();
     ctxt.SetImageInterpolationQuality(kInterpolationLow);
-    DrawPattern(ctxt, src_rect, tile_scale_factor, pattern_phase, op, dst_rect);
+    DrawPattern(ctxt, src_rect, tile_scale_factor, pattern_phase, op, dst_rect,
+                FloatSize());
     ctxt.SetImageInterpolationQuality(previous_interpolation_quality);
   } else {
     DrawPattern(ctxt, src_rect, tile_scale_factor, pattern_phase, op, dst_rect,

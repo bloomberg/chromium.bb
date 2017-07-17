@@ -4,6 +4,7 @@
 
 #include "core/editing/CompositionUnderline.h"
 
+#include <algorithm>
 #include "public/web/WebCompositionUnderline.h"
 
 namespace blink {

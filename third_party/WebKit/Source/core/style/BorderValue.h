@@ -25,6 +25,7 @@
 #ifndef BorderValue_h
 #define BorderValue_h
 
+#include <algorithm>
 #include "core/css/StyleColor.h"
 #include "core/style/ComputedStyleConstants.h"
 #include "platform/graphics/Color.h"

@@ -23,6 +23,7 @@
 #include "core/style/ShadowData.h"
 
 #include "platform/animation/AnimationUtilities.h"
+#include "platform/graphics/ColorBlend.h"
 
 namespace blink {
 
