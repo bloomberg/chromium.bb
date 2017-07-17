@@ -74,14 +74,12 @@ void MediaControlTextTrackListElement::DefaultEventHandler(Event* event) {
     if (!target || !target->IsElementNode())
       return;
 
-    static_cast<MediaControlsImpl&>(GetMediaControls())
-        .DisableShowingTextTracks();
+    GetMediaControls().DisableShowingTextTracks();
     int track_index =
         ToElement(target)->GetIntegralAttribute(TrackIndexAttrName());
     if (track_index != kTrackIndexOffValue) {
       DCHECK_GE(track_index, 0);
-      static_cast<MediaControlsImpl&>(GetMediaControls())
-          .ShowTextTrackAtIndex(track_index);
+      GetMediaControls().ShowTextTrackAtIndex(track_index);
       MediaElement().DisableAutomaticTextTrackSelection();
     }
 
