@@ -232,11 +232,11 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleText(
     item_result->inline_size = item.InlineSize();
     LayoutUnit next_position = position_ + item_result->inline_size;
     if (!auto_wrap_ || next_position <= available_width) {
+      item_result->shape_result = item.TextShapeResult();
       position_ = next_position;
       MoveToNextOf(item);
       if (auto_wrap_ && break_iterator_.IsBreakable(item.EndOffset()))
         return LineBreakState::kIsBreakable;
-      item_result->shape_result = item.TextShapeResult();
       item_result->prohibit_break_after = true;
       return LineBreakState::kNotBreakable;
     }
