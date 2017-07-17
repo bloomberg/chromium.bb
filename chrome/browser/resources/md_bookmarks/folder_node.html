@@ -5,7 +5,6 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://bookmarks/actions.html">
 <link rel="import" href="chrome://bookmarks/command_manager.html">
-<link rel="import" href="chrome://bookmarks/icons.html">
 <link rel="import" href="chrome://bookmarks/shared_style.html">
 <link rel="import" href="chrome://bookmarks/store_client.html">
 
@@ -75,7 +74,7 @@
       }
 
       [no-children] {
-        -webkit-padding-start: 52px; /* The width of the arrow and its margin */
+        -webkit-margin-start: 52px; /* The width of the arrow and its margin */
       }
     </style>
 
@@ -95,9 +94,10 @@
         </button>
       </template>
       <div id="folder-label" class="v-centered">
-        <iron-icon icon="[[getFolderIcon_(isSelectedFolder_)]]"
+        <div class="folder-icon"
+            open$="[[isSelectedFolder_]]"
             no-children$="[[!hasChildFolder_]]">
-        </iron-icon>
+        </div>
         <div class="menu-label">[[item_.title]]</div>
       </div>
     </div>

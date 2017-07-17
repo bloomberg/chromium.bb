@@ -163,6 +163,7 @@ Polymer({
    * @private
    */
   updateFavicon_: function(url) {
-    this.$.icon.style.backgroundImage = cr.icon.getFavicon(url);
+    this.$.icon.className = url ? 'website-icon' : 'folder-icon';
+    this.$.icon.style.backgroundImage = url ? cr.icon.getFavicon(url) : null;
   },
 });

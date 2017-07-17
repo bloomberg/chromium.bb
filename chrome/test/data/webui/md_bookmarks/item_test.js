@@ -32,14 +32,12 @@ suite('<bookmarks-item>', function() {
 
   test('changing to folder hides/unhides the folder/icon', function() {
     // Starts test as an item.
-    assertTrue(item.$['folder-icon'].hidden);
-    assertFalse(item.$.icon.hidden);
+    assertEquals('website-icon', item.$.icon.className);
 
     // Change to a folder.
     item.itemId = '1';
 
-    assertFalse(item.$['folder-icon'].hidden);
-    assertTrue(item.$.icon.hidden);
+    assertEquals('folder-icon', item.$.icon.className);
   });
 
   test('pressing the menu button selects the item', function() {

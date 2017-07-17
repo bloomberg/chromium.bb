@@ -1,8 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/icon.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://bookmarks/actions.html">
 <link rel="import" href="chrome://bookmarks/shared_style.html">
@@ -32,6 +30,7 @@
       }
 
       #website-title {
+        -webkit-margin-start: 20px;
         flex: 1;
         overflow: hidden;
         text-decoration: none;
@@ -39,19 +38,8 @@
         white-space: nowrap;
       }
 
-      #icon-wrapper {
-        -webkit-margin-end: 20px;
-        color: var(--secondary-text-color);
-        display: flex;
-        height: 20px;
-        width: 20px;
-      }
-
       #icon {
-        background-repeat: no-repeat;
-        height: 16px;
-        margin: 2px;
-        width: 16px;
+        color: var(--secondary-text-color);
       }
 
       button.more-vert-button {
@@ -59,11 +47,7 @@
       }
     </style>
     <div id="url">
-      <div id="icon-wrapper">
-        <iron-icon id="folder-icon" icon="cr:folder" hidden$="[[!isFolder_]]">
-        </iron-icon>
-        <div id="icon" hidden$="[[isFolder_]]"></div>
-      </div>
+      <div id="icon"></div>
       <div id="website-title">
         [[item_.title]]
       </div>

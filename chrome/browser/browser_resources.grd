@@ -256,6 +256,8 @@
 
       <if expr="not is_android and not is_ios">
         <!-- MD Bookmarks. -->
+        <include name="IDR_MD_BOOKMARKS_IMAGES_FOLDER_OPEN_SVG" file="resources\md_bookmarks\images\folder_open.svg" type="BINDATA" />
+        <include name="IDR_MD_BOOKMARKS_IMAGES_FOLDER_SVG" file="resources\md_bookmarks\images\folder.svg" type="BINDATA" />
         <if expr="use_vulcanize">
           <then>
             <include name="IDR_MD_BOOKMARKS_VULCANIZED_HTML" file="${root_gen_dir}\chrome\browser\resources\md_bookmarks\vulcanized.html" use_base_dir="false" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
@@ -283,7 +285,6 @@
             <include name="IDR_MD_BOOKMARKS_EDIT_DIALOG_JS" file="resources\md_bookmarks\edit_dialog.js" type="BINDATA" />
             <include name="IDR_MD_BOOKMARKS_FOLDER_NODE_HTML" file="resources\md_bookmarks\folder_node.html" type="BINDATA" />
             <include name="IDR_MD_BOOKMARKS_FOLDER_NODE_JS" file="resources\md_bookmarks\folder_node.js" type="BINDATA" />
-            <include name="IDR_MD_BOOKMARKS_ICONS_HTML" file="resources\md_bookmarks\icons.html" type="BINDATA" />
             <include name="IDR_MD_BOOKMARKS_ITEM_HTML" file="resources\md_bookmarks\item.html" type="BINDATA" />
             <include name="IDR_MD_BOOKMARKS_ITEM_JS" file="resources\md_bookmarks\item.js" type="BINDATA" />
             <include name="IDR_MD_BOOKMARKS_LIST_HTML" file="resources\md_bookmarks\list.html" type="BINDATA" />
