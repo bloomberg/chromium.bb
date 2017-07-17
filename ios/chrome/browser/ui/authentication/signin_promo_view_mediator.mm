@@ -13,6 +13,8 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_browser_provider_observer_bridge.h"
 #include "ios/chrome/browser/pref_names.h"
+#import "ios/chrome/browser/signin/authentication_service.h"
+#include "ios/chrome/browser/signin/authentication_service_factory.h"
 #include "ios/chrome/browser/signin/chrome_identity_service_observer_bridge.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_configurator.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_consumer.h"
@@ -275,6 +277,13 @@ void RecordSigninNewAccountUserActionForAccessPoint(
   // If the sign-in promo view has been used at least once, it should not be
   // counted as dismissed (even if the sign-in has been canceled).
   if (!_displayedCountPreferenceKey || !wasUnused)
+    return;
+  // If the sign-in view is removed when the user is authenticated, then the
+  // sign-in has been done by another view, and this mediator cannot be counted
+  // as being dismissed.
+  AuthenticationService* authService =
+      AuthenticationServiceFactory::GetForBrowserState(_browserState);
+  if (authService->IsAuthenticated())
     return;
   PrefService* prefs = _browserState->GetPrefs();
   int displayedCount = prefs->GetInteger(_displayedCountPreferenceKey);
