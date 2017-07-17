@@ -159,7 +159,7 @@ const char kPerfRecordDataTLBMissesCmd[] =
   "perf record -a -e dTLB-misses -c 2003";
 
 const char kPerfRecordCacheMissesCmd[] =
-  "perf record -a -e cache-misses -c 4001";
+    "perf record -a -e cache-misses -c 10007";
 
 const char kPerfStatMemoryBandwidthCmd[] =
   "perf stat -a -e cycles -e instructions "
