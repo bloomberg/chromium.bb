@@ -279,6 +279,7 @@ int AXPlatformNodeWin::GetIndexInParent() {
 
 STDMETHODIMP AXPlatformNodeWin::accHitTest(
     LONG x_left, LONG y_top, VARIANT* child) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_ACC_HIT_TEST);
   COM_OBJECT_VALIDATE_1_ARG(child);
 
   gfx::Point point(x_left, y_top);
@@ -321,6 +322,7 @@ STDMETHODIMP AXPlatformNodeWin::accHitTest(
 }
 
 HRESULT AXPlatformNodeWin::accDoDefaultAction(VARIANT var_id) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_ACC_DO_DEFAULT_ACTION);
   AXPlatformNodeWin* target;
   COM_OBJECT_VALIDATE_VAR_ID_AND_GET_TARGET(var_id, target);
   AXActionData data;
@@ -333,6 +335,7 @@ HRESULT AXPlatformNodeWin::accDoDefaultAction(VARIANT var_id) {
 
 STDMETHODIMP AXPlatformNodeWin::accLocation(
     LONG* x_left, LONG* y_top, LONG* width, LONG* height, VARIANT var_id) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_ACC_LOCATION);
   AXPlatformNodeWin* target;
   COM_OBJECT_VALIDATE_VAR_ID_4_ARGS_AND_GET_TARGET(var_id, x_left, y_top, width,
                                                    height, target);
@@ -351,6 +354,7 @@ STDMETHODIMP AXPlatformNodeWin::accLocation(
 
 STDMETHODIMP AXPlatformNodeWin::accNavigate(
     LONG nav_dir, VARIANT start, VARIANT* end) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_ACC_NAVIGATE);
   AXPlatformNodeWin* target;
   COM_OBJECT_VALIDATE_VAR_ID_1_ARG_AND_GET_TARGET(start, end, target);
   end->vt = VT_EMPTY;
@@ -462,6 +466,8 @@ STDMETHODIMP AXPlatformNodeWin::accNavigate(
 
 STDMETHODIMP AXPlatformNodeWin::get_accChild(VARIANT var_child,
                                              IDispatch** disp_child) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ACC_CHILD);
+
   *disp_child = nullptr;
   AXPlatformNodeWin* target;
   COM_OBJECT_VALIDATE_VAR_ID_AND_GET_TARGET(var_child, target);
@@ -472,6 +478,8 @@ STDMETHODIMP AXPlatformNodeWin::get_accChild(VARIANT var_child,
 }
 
 STDMETHODIMP AXPlatformNodeWin::get_accChildCount(LONG* child_count) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ACC_CHILD_COUNT);
+
   COM_OBJECT_VALIDATE_1_ARG(child_count);
   *child_count = delegate_->GetChildCount();
   return S_OK;
@@ -479,6 +487,7 @@ STDMETHODIMP AXPlatformNodeWin::get_accChildCount(LONG* child_count) {
 
 STDMETHODIMP AXPlatformNodeWin::get_accDefaultAction(
     VARIANT var_id, BSTR* def_action) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ACC_DEFAULT_ACTION);
   AXPlatformNodeWin* target;
   COM_OBJECT_VALIDATE_VAR_ID_1_ARG_AND_GET_TARGET(var_id, def_action, target);
 
@@ -502,6 +511,7 @@ STDMETHODIMP AXPlatformNodeWin::get_accDefaultAction(
 
 STDMETHODIMP AXPlatformNodeWin::get_accDescription(
     VARIANT var_id, BSTR* desc) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ACC_DESCRIPTION);
   AXPlatformNodeWin* target;
   COM_OBJECT_VALIDATE_VAR_ID_1_ARG_AND_GET_TARGET(var_id, desc, target);
 
@@ -509,6 +519,7 @@ STDMETHODIMP AXPlatformNodeWin::get_accDescription(
 }
 
 STDMETHODIMP AXPlatformNodeWin::get_accFocus(VARIANT* focus_child) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ACC_FOCUS);
   COM_OBJECT_VALIDATE_1_ARG(focus_child);
   gfx::NativeViewAccessible focus_accessible = delegate_->GetFocus();
   if (focus_accessible == this) {
@@ -528,6 +539,7 @@ STDMETHODIMP AXPlatformNodeWin::get_accFocus(VARIANT* focus_child) {
 
 STDMETHODIMP AXPlatformNodeWin::get_accKeyboardShortcut(
     VARIANT var_id, BSTR* acc_key) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ACC_KEYBOARD_SHORTCUT);
   AXPlatformNodeWin* target;
   COM_OBJECT_VALIDATE_VAR_ID_1_ARG_AND_GET_TARGET(var_id, acc_key, target);
 
@@ -536,6 +548,7 @@ STDMETHODIMP AXPlatformNodeWin::get_accKeyboardShortcut(
 
 STDMETHODIMP AXPlatformNodeWin::get_accName(
     VARIANT var_id, BSTR* name) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ACC_NAME);
   AXPlatformNodeWin* target;
   COM_OBJECT_VALIDATE_VAR_ID_1_ARG_AND_GET_TARGET(var_id, name, target);
 
@@ -555,6 +568,7 @@ STDMETHODIMP AXPlatformNodeWin::get_accName(
 
 STDMETHODIMP AXPlatformNodeWin::get_accParent(
     IDispatch** disp_parent) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ACC_PARENT);
   COM_OBJECT_VALIDATE_1_ARG(disp_parent);
   *disp_parent = GetParent();
   if (*disp_parent) {
@@ -567,6 +581,7 @@ STDMETHODIMP AXPlatformNodeWin::get_accParent(
 
 STDMETHODIMP AXPlatformNodeWin::get_accRole(
     VARIANT var_id, VARIANT* role) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ACC_ROLE);
   AXPlatformNodeWin* target;
   COM_OBJECT_VALIDATE_VAR_ID_1_ARG_AND_GET_TARGET(var_id, role, target);
 
@@ -589,6 +604,7 @@ STDMETHODIMP AXPlatformNodeWin::get_accRole(
 
 STDMETHODIMP AXPlatformNodeWin::get_accState(
     VARIANT var_id, VARIANT* state) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ACC_STATE);
   AXPlatformNodeWin* target;
   COM_OBJECT_VALIDATE_VAR_ID_1_ARG_AND_GET_TARGET(var_id, state, target);
   state->vt = VT_I4;
@@ -598,11 +614,13 @@ STDMETHODIMP AXPlatformNodeWin::get_accState(
 
 STDMETHODIMP AXPlatformNodeWin::get_accHelp(
     VARIANT var_id, BSTR* help) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ACC_HELP);
   COM_OBJECT_VALIDATE_1_ARG(help);
   return S_FALSE;
 }
 
 STDMETHODIMP AXPlatformNodeWin::get_accValue(VARIANT var_id, BSTR* value) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ACC_VALUE);
   AXPlatformNodeWin* target;
   COM_OBJECT_VALIDATE_VAR_ID_1_ARG_AND_GET_TARGET(var_id, value, target);
 
@@ -701,6 +719,7 @@ STDMETHODIMP AXPlatformNodeWin::put_accValue(VARIANT var_id,
 }
 
 STDMETHODIMP AXPlatformNodeWin::get_accSelection(VARIANT* selected) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ACC_SELECTION);
   COM_OBJECT_VALIDATE_1_ARG(selected);
 
   if (GetData().role != ui::AX_ROLE_LIST_BOX)
@@ -758,6 +777,7 @@ STDMETHODIMP AXPlatformNodeWin::get_accSelection(VARIANT* selected) {
 
 STDMETHODIMP AXPlatformNodeWin::accSelect(
     LONG flagsSelect, VARIANT var_id) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_ACC_SELECT);
   AXPlatformNodeWin* target;
   COM_OBJECT_VALIDATE_VAR_ID_AND_GET_TARGET(var_id, target);
 
@@ -773,6 +793,7 @@ STDMETHODIMP AXPlatformNodeWin::accSelect(
 
 STDMETHODIMP AXPlatformNodeWin::get_accHelpTopic(
     BSTR* help_file, VARIANT var_id, LONG* topic_id) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ACC_HELP_TOPIC);
   AXPlatformNodeWin* target;
   COM_OBJECT_VALIDATE_VAR_ID_2_ARGS_AND_GET_TARGET(var_id, help_file, topic_id,
                                                    target);
@@ -787,6 +808,7 @@ STDMETHODIMP AXPlatformNodeWin::get_accHelpTopic(
 
 STDMETHODIMP AXPlatformNodeWin::put_accName(
     VARIANT var_id, BSTR put_name) {
+  // TODO(dougt): We may want to collect an API histogram here.
   // Deprecated.
   return E_NOTIMPL;
 }
@@ -796,6 +818,7 @@ STDMETHODIMP AXPlatformNodeWin::put_accName(
 //
 
 STDMETHODIMP AXPlatformNodeWin::role(LONG* role) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_ROLE);
   COM_OBJECT_VALIDATE_1_ARG(role);
 
   *role = IA2Role();
@@ -807,6 +830,7 @@ STDMETHODIMP AXPlatformNodeWin::role(LONG* role) {
 }
 
 STDMETHODIMP AXPlatformNodeWin::get_states(AccessibleStates* states) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_STATES);
   COM_OBJECT_VALIDATE_1_ARG(states);
   *states = IA2State();
   return S_OK;
@@ -968,6 +992,7 @@ STDMETHODIMP AXPlatformNodeWin::get_accessibleWithCaret(IUnknown** accessible,
 STDMETHODIMP AXPlatformNodeWin::get_accessibleAt(long row,
                                                  long column,
                                                  IUnknown** accessible) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ACCESSIBLE_AT);
   if (!accessible)
     return E_INVALIDARG;
 
@@ -986,6 +1011,7 @@ STDMETHODIMP AXPlatformNodeWin::get_accessibleAt(long row,
 }
 
 STDMETHODIMP AXPlatformNodeWin::get_caption(IUnknown** accessible) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_CAPTION);
   if (!accessible)
     return E_INVALIDARG;
 
@@ -997,6 +1023,7 @@ STDMETHODIMP AXPlatformNodeWin::get_caption(IUnknown** accessible) {
 STDMETHODIMP AXPlatformNodeWin::get_childIndex(long row,
                                                long column,
                                                long* cell_index) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_CHILD_INDEX);
   if (!cell_index)
     return E_INVALIDARG;
 
@@ -1012,6 +1039,7 @@ STDMETHODIMP AXPlatformNodeWin::get_childIndex(long row,
 
 STDMETHODIMP AXPlatformNodeWin::get_columnDescription(long column,
                                                       BSTR* description) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_COLUMN_DESCRIPTION);
   if (!description)
     return E_INVALIDARG;
 
@@ -1049,6 +1077,7 @@ STDMETHODIMP AXPlatformNodeWin::get_columnDescription(long column,
 STDMETHODIMP AXPlatformNodeWin::get_columnExtentAt(long row,
                                                    long column,
                                                    long* n_columns_spanned) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_COLUMN_EXTENT_AT);
   if (!n_columns_spanned)
     return E_INVALIDARG;
 
@@ -1063,12 +1092,14 @@ STDMETHODIMP AXPlatformNodeWin::get_columnExtentAt(long row,
 STDMETHODIMP AXPlatformNodeWin::get_columnHeader(
     IAccessibleTable** accessible_table,
     long* starting_row_index) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_COLUMN_HEADER);
   // TODO(dmazzoni): implement
   return E_NOTIMPL;
 }
 
 STDMETHODIMP AXPlatformNodeWin::get_columnIndex(long cell_index,
                                                 long* column_index) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_COLUMN_INDEX);
   if (!column_index)
     return E_INVALIDARG;
 
@@ -1080,6 +1111,7 @@ STDMETHODIMP AXPlatformNodeWin::get_columnIndex(long cell_index,
 }
 
 STDMETHODIMP AXPlatformNodeWin::get_nColumns(long* column_count) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_N_COLUMNS);
   if (!column_count)
     return E_INVALIDARG;
 
@@ -1088,6 +1120,7 @@ STDMETHODIMP AXPlatformNodeWin::get_nColumns(long* column_count) {
 }
 
 STDMETHODIMP AXPlatformNodeWin::get_nRows(long* row_count) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_N_ROWS);
   if (!row_count)
     return E_INVALIDARG;
 
@@ -1096,6 +1129,7 @@ STDMETHODIMP AXPlatformNodeWin::get_nRows(long* row_count) {
 }
 
 STDMETHODIMP AXPlatformNodeWin::get_nSelectedChildren(long* cell_count) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_N_SELECTED_CHILDREN);
   if (!cell_count)
     return E_INVALIDARG;
 
@@ -1105,6 +1139,7 @@ STDMETHODIMP AXPlatformNodeWin::get_nSelectedChildren(long* cell_count) {
 }
 
 STDMETHODIMP AXPlatformNodeWin::get_nSelectedColumns(long* column_count) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_N_SELECTED_COLUMNS);
   if (!column_count)
     return E_INVALIDARG;
 
@@ -1113,6 +1148,7 @@ STDMETHODIMP AXPlatformNodeWin::get_nSelectedColumns(long* column_count) {
 }
 
 STDMETHODIMP AXPlatformNodeWin::get_nSelectedRows(long* row_count) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_N_SELECTED_ROWS);
   if (!row_count)
     return E_INVALIDARG;
 
@@ -1122,6 +1158,7 @@ STDMETHODIMP AXPlatformNodeWin::get_nSelectedRows(long* row_count) {
 
 STDMETHODIMP AXPlatformNodeWin::get_rowDescription(long row,
                                                    BSTR* description) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ROW_DESCRIPTION);
   if (!description)
     return E_INVALIDARG;
 
@@ -1157,6 +1194,7 @@ STDMETHODIMP AXPlatformNodeWin::get_rowDescription(long row,
 STDMETHODIMP AXPlatformNodeWin::get_rowExtentAt(long row,
                                                 long column,
                                                 long* n_rows_spanned) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ROW_EXTENT_AT);
   if (!n_rows_spanned)
     return E_INVALIDARG;
 
@@ -1171,6 +1209,7 @@ STDMETHODIMP AXPlatformNodeWin::get_rowExtentAt(long row,
 STDMETHODIMP AXPlatformNodeWin::get_rowHeader(
     IAccessibleTable** accessible_table,
     long* starting_column_index) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ROW_HEADER);
   // TODO(dmazzoni): implement
   return E_NOTIMPL;
 }
