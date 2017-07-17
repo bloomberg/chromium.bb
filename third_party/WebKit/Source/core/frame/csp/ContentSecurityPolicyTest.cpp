@@ -58,8 +58,8 @@ TEST_F(ContentSecurityPolicyTest, ParseInsecureRequestPolicy) {
 
   // Enforced
   for (const auto& test : cases) {
-    SCOPED_TRACE(testing::Message() << "[Enforce] Header: `" << test.header
-                                    << "`");
+    SCOPED_TRACE(::testing::Message()
+                 << "[Enforce] Header: `" << test.header << "`");
     csp = ContentSecurityPolicy::Create();
     csp->DidReceiveHeader(test.header, kContentSecurityPolicyHeaderTypeEnforce,
                           kContentSecurityPolicyHeaderSourceHTTP);
@@ -79,8 +79,8 @@ TEST_F(ContentSecurityPolicyTest, ParseInsecureRequestPolicy) {
 
   // Report-Only
   for (const auto& test : cases) {
-    SCOPED_TRACE(testing::Message() << "[Report-Only] Header: `" << test.header
-                                    << "`");
+    SCOPED_TRACE(::testing::Message()
+                 << "[Report-Only] Header: `" << test.header << "`");
     csp = ContentSecurityPolicy::Create();
     csp->DidReceiveHeader(test.header, kContentSecurityPolicyHeaderTypeReport,
                           kContentSecurityPolicyHeaderSourceHTTP);
@@ -665,9 +665,9 @@ TEST_F(ContentSecurityPolicyTest, NonceSinglePolicy) {
   };
 
   for (const auto& test : cases) {
-    SCOPED_TRACE(testing::Message() << "Policy: `" << test.policy << "`, URL: `"
-                                    << test.url << "`, Nonce: `" << test.nonce
-                                    << "`");
+    SCOPED_TRACE(::testing::Message()
+                 << "Policy: `" << test.policy << "`, URL: `" << test.url
+                 << "`, Nonce: `" << test.nonce << "`");
     KURL resource = KURL(NullURL(), test.url);
 
     unsigned expected_reports = test.allowed ? 0u : 1u;
@@ -725,8 +725,8 @@ TEST_F(ContentSecurityPolicyTest, NonceInline) {
   document->SetSecurityOrigin(secure_origin);
 
   for (const auto& test : cases) {
-    SCOPED_TRACE(testing::Message() << "Policy: `" << test.policy
-                                    << "`, Nonce: `" << test.nonce << "`");
+    SCOPED_TRACE(::testing::Message() << "Policy: `" << test.policy
+                                      << "`, Nonce: `" << test.nonce << "`");
 
     unsigned expected_reports = test.allowed ? 0u : 1u;
     HTMLScriptElement* element = HTMLScriptElement::Create(*document, true);
@@ -828,9 +828,9 @@ TEST_F(ContentSecurityPolicyTest, NonceMultiplePolicy) {
   };
 
   for (const auto& test : cases) {
-    SCOPED_TRACE(testing::Message() << "Policy: `" << test.policy1 << "`/`"
-                                    << test.policy2 << "`, URL: `" << test.url
-                                    << "`, Nonce: `" << test.nonce << "`");
+    SCOPED_TRACE(::testing::Message() << "Policy: `" << test.policy1 << "`/`"
+                                      << test.policy2 << "`, URL: `" << test.url
+                                      << "`, Nonce: `" << test.nonce << "`");
     KURL resource = KURL(NullURL(), test.url);
 
     unsigned expected_reports =

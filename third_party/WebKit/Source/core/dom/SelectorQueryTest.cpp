@@ -34,10 +34,10 @@ template <unsigned length>
 void RunTests(ContainerNode& scope, const QueryTest (&test_cases)[length]) {
   for (const auto& test_case : test_cases) {
     const char* selector = test_case.selector;
-    SCOPED_TRACE(testing::Message()
-                 << (test_case.query_all ? "querySelectorAll('"
-                                         : "querySelector('")
-                 << selector << "')");
+    SCOPED_TRACE(
+        ::testing::Message()
+        << (test_case.query_all ? "querySelectorAll('" : "querySelector('")
+        << selector << "')");
     if (test_case.query_all) {
       StaticElementList* match_all = scope.QuerySelectorAll(selector);
       EXPECT_EQ(test_case.matches, match_all->length());
