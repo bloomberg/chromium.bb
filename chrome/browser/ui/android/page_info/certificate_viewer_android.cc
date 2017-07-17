@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/android/page_info/certificate_viewer_android.h"
-
 #include "base/android/jni_string.h"
 #include "base/logging.h"
+#include "chrome/browser/certificate_viewer.h"
 #include "chrome/grit/generated_resources.h"
 #include "jni/CertificateViewer_jni.h"
 #include "net/cert/x509_certificate.h"
@@ -104,8 +103,4 @@ static ScopedJavaLocalRef<jstring> GetCertSHA1FingerprintText(
     const JavaParamRef<jclass>&) {
   return ConvertUTF8ToJavaString(
       env, l10n_util::GetStringUTF8(IDS_CERT_INFO_SHA1_FINGERPRINT_LABEL));
-}
-
-bool RegisterCertificateViewer(JNIEnv* env) {
-  return RegisterNativesImpl(env);
 }

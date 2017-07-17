@@ -32,8 +32,6 @@ class ToolbarModelAndroid : public ChromeToolbarModelDelegate {
   // ChromeToolbarModelDelegate:
   content::WebContents* GetActiveWebContents() const override;
 
-  static bool RegisterToolbarModelAndroid(JNIEnv* env);
-
  private:
   std::unique_ptr<ToolbarModel> toolbar_model_;
   JavaObjectWeakGlobalRef weak_java_delegate_;

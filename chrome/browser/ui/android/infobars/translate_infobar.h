@@ -47,8 +47,4 @@ class TranslateInfoBar : public InfoBarAndroid {
 
   DISALLOW_COPY_AND_ASSIGN(TranslateInfoBar);
 };
-
-// Registers the native methods through JNI.
-bool RegisterTranslateInfoBarDelegate(JNIEnv* env);
-
 #endif  // CHROME_BROWSER_UI_ANDROID_INFOBARS_TRANSLATE_INFOBAR_H_

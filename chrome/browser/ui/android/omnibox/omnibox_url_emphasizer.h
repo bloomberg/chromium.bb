@@ -11,9 +11,6 @@
 
 // Helper functions for the Omnibox URL emphasizer on Android.
 class OmniboxUrlEmphasizer {
- public:
-  static bool RegisterOmniboxUrlEmphasizer(JNIEnv* env);
-
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(OmniboxUrlEmphasizer);
 };

@@ -39,11 +39,6 @@ std::unique_ptr<CreditCardScannerView> CreditCardScannerView::Create(
       new CreditCardScannerViewAndroid(delegate, web_contents));
 }
 
-// static
-bool CreditCardScannerViewAndroid::Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 CreditCardScannerViewAndroid::CreditCardScannerViewAndroid(
     const base::WeakPtr<CreditCardScannerViewDelegate>& delegate,
     content::WebContents* web_contents)

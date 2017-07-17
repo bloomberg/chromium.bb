@@ -162,12 +162,6 @@ ScopedJavaLocalRef<jobject> GetCurrentModalDialog(
   return ScopedJavaLocalRef<jobject>(js_dialog->GetDialogObject());
 }
 
-// static
-bool JavascriptAppModalDialogAndroid::RegisterJavascriptAppModalDialog(
-    JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 JavascriptAppModalDialogAndroid::~JavascriptAppModalDialogAndroid() {
   // In case the dialog is still displaying, tell it to close itself.
   // This can happen if you trigger a dialog but close the Tab before it's

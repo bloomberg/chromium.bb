@@ -50,8 +50,6 @@ class CardUnmaskPromptViewAndroid : public CardUnmaskPromptView {
   void GotVerificationResult(const base::string16& error_message,
                              bool allow_retry) override;
 
-  static bool Register(JNIEnv* env);
-
  private:
   ~CardUnmaskPromptViewAndroid() override;
 

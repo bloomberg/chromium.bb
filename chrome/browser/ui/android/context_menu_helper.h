@@ -85,6 +85,4 @@ class ContextMenuHelper
   DISALLOW_COPY_AND_ASSIGN(ContextMenuHelper);
 };
 
-bool RegisterContextMenuHelper(JNIEnv* env);
-
 #endif  // CHROME_BROWSER_UI_ANDROID_CONTEXT_MENU_HELPER_H_

@@ -109,7 +109,3 @@ static jlong Init(JNIEnv* env, const JavaParamRef<jobject>& obj) {
       new InfoBarContainerAndroid(env, obj);
   return reinterpret_cast<intptr_t>(infobar_container);
 }
-
-bool RegisterInfoBarContainer(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}

@@ -11,9 +11,6 @@
 
 // Helper functions for the Omnibox view on Android.
 class OmniboxViewUtil {
- public:
-  static bool RegisterOmniboxViewUtil(JNIEnv* env);
-
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(OmniboxViewUtil);
 };

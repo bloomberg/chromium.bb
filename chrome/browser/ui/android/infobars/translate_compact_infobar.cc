@@ -207,10 +207,3 @@ bool TranslateCompactInfoBar::IsDeclinedByUser() {
   // Whether there is any affirmative action bit.
   return action_flags_ == FLAG_NONE;
 }
-
-// Native JNI methods ---------------------------------------------------------
-
-// static
-bool RegisterTranslateCompactInfoBar(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}

@@ -228,7 +228,3 @@ void ContextMenuHelper::RetrieveImageInternal(
       base::Bind(retrieve_callback, base::Passed(&thumbnail_capturer),
                  base::android::ScopedJavaGlobalRef<jobject>(env, jcallback)));
 }
-
-bool RegisterContextMenuHelper(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}

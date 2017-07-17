@@ -176,11 +176,6 @@ void AutofillPopupViewAndroid::PopupDismissed(
 }
 
 // static
-bool AutofillPopupViewAndroid::RegisterAutofillPopupViewAndroid(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
-// static
 AutofillPopupView* AutofillPopupView::Create(
     AutofillPopupController* controller) {
   if (IsKeyboardAccessoryEnabled())

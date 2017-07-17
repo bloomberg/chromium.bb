@@ -153,10 +153,3 @@ void ConnectionInfoPopupAndroid::SetPermissionInfo(
     ChosenObjectInfoList chosen_object_info_list) {
   NOTIMPLEMENTED();
 }
-
-// static
-bool
-ConnectionInfoPopupAndroid::RegisterConnectionInfoPopupAndroid(
-    JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
