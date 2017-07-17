@@ -26,6 +26,8 @@ class SingleThreadTaskRunner;
 
 namespace media {
 
+static const size_t kMinimumOutputBufferSize = 123456;
+
 class MEDIA_EXPORT FakeVideoEncodeAccelerator : public VideoEncodeAccelerator {
  public:
   explicit FakeVideoEncodeAccelerator(
@@ -50,6 +52,8 @@ class MEDIA_EXPORT FakeVideoEncodeAccelerator : public VideoEncodeAccelerator {
   }
   void SendDummyFrameForTesting(bool key_frame);
   void SetWillInitializationSucceed(bool will_initialization_succeed);
+
+  size_t minimum_output_buffer_size() const { return kMinimumOutputBufferSize; }
 
  private:
   void DoRequireBitstreamBuffers(unsigned int input_count,
