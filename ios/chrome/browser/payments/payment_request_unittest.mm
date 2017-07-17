@@ -151,6 +151,8 @@ TEST_F(PaymentRequestTest, SupportedMethods) {
   method_datum1.supported_methods.push_back("invalid");
   method_datum1.supported_methods.push_back("");
   method_datum1.supported_methods.push_back("visa");
+  method_datum1.supported_methods.push_back("https://bobpay.com");
+  method_datum1.supported_methods.push_back("http://invalidpay.com");
   web_payment_request.method_data.push_back(method_datum1);
 
   TestPaymentRequest payment_request(web_payment_request,
@@ -159,6 +161,9 @@ TEST_F(PaymentRequestTest, SupportedMethods) {
   ASSERT_EQ(2U, payment_request.supported_card_networks().size());
   EXPECT_EQ("visa", payment_request.supported_card_networks()[0]);
   EXPECT_EQ("mastercard", payment_request.supported_card_networks()[1]);
+  ASSERT_EQ(1U, payment_request.url_payment_method_identifiers().size());
+  EXPECT_EQ("https://bobpay.com",
+            payment_request.url_payment_method_identifiers()[0]);
 }
 
 // Test that parsing supported methods in different method data entries (with
@@ -169,15 +174,18 @@ TEST_F(PaymentRequestTest, SupportedMethods_MultipleEntries) {
 
   PaymentMethodData method_datum1;
   method_datum1.supported_methods.push_back("visa");
+  method_datum1.supported_methods.push_back("https://bobpay.com");
   web_payment_request.method_data.push_back(method_datum1);
   PaymentMethodData method_datum2;
   method_datum2.supported_methods.push_back("mastercard");
   web_payment_request.method_data.push_back(method_datum2);
   PaymentMethodData method_datum3;
   method_datum3.supported_methods.push_back("");
+  method_datum3.supported_methods.push_back("http://invalidpay.com");
   web_payment_request.method_data.push_back(method_datum3);
   PaymentMethodData method_datum4;
   method_datum4.supported_methods.push_back("visa");
+  method_datum4.supported_methods.push_back("https://bobpay.com");
   web_payment_request.method_data.push_back(method_datum4);
 
   TestPaymentRequest payment_request(web_payment_request,
@@ -186,6 +194,9 @@ TEST_F(PaymentRequestTest, SupportedMethods_MultipleEntries) {
   ASSERT_EQ(2U, payment_request.supported_card_networks().size());
   EXPECT_EQ("visa", payment_request.supported_card_networks()[0]);
   EXPECT_EQ("mastercard", payment_request.supported_card_networks()[1]);
+  ASSERT_EQ(1U, payment_request.url_payment_method_identifiers().size());
+  EXPECT_EQ("https://bobpay.com",
+            payment_request.url_payment_method_identifiers()[0]);
 }
 
 // Test that only specifying basic-card means that all are supported.
@@ -211,6 +222,8 @@ TEST_F(PaymentRequestTest, SupportedMethods_OnlyBasicCard) {
   EXPECT_EQ("mir", payment_request.supported_card_networks()[5]);
   EXPECT_EQ("unionpay", payment_request.supported_card_networks()[6]);
   EXPECT_EQ("visa", payment_request.supported_card_networks()[7]);
+
+  EXPECT_TRUE(payment_request.url_payment_method_identifiers().empty());
 }
 
 // Test that specifying a method AND basic-card means that all are supported,

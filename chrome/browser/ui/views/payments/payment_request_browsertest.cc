@@ -372,7 +372,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentMethodIdentifierTest,
                        MultiplePaymentMethodIdentifiers) {
   InvokePaymentRequestWithJs(
       "buyHelper([{"
-      "  supportedMethods: ['https://bobpay.xyz']"
+      "  supportedMethods: ['https://bobpay.xyz', 'http://bobpay.xyz']"
       "}, {"
       "  supportedMethods: ['mastercard', 'visa', 'https://alicepay.com']"
       "}, {"
