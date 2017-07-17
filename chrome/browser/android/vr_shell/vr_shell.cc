@@ -364,6 +364,14 @@ bool VrShell::GetWebVrMode(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   return webvr_mode_;
 }
 
+bool VrShell::IsDisplayingUrlForTesting(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  // TODO(tiborg): this should return ShouldDisplayURL when it is available.
+  // crbug.com/738583
+  return true;
+}
+
 void VrShell::OnLoadProgressChanged(JNIEnv* env,
                                     const JavaParamRef<jobject>& obj,
                                     double progress) {
