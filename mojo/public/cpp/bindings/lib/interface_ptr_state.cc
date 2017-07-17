@@ -4,6 +4,8 @@
 
 #include "mojo/public/cpp/bindings/lib/interface_ptr_state.h"
 
+#include "mojo/public/cpp/bindings/lib/task_runner_helper.h"
+
 namespace mojo {
 namespace internal {
 
@@ -44,7 +46,7 @@ void InterfacePtrStateBase::Swap(InterfacePtrStateBase* other) {
 void InterfacePtrStateBase::Bind(
     ScopedMessagePipeHandle handle,
     uint32_t version,
-    scoped_refptr<base::SequencedTaskRunner> task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   DCHECK(!router_);
   DCHECK(!endpoint_client_);
   DCHECK(!handle_.is_valid());
@@ -53,7 +55,8 @@ void InterfacePtrStateBase::Bind(
 
   handle_ = std::move(handle);
   version_ = version;
-  runner_ = std::move(task_runner);
+  runner_ =
+      GetTaskRunnerToUseFromUserProvidedTaskRunner(std::move(task_runner));
 }
 
 void InterfacePtrStateBase::OnQueryVersion(

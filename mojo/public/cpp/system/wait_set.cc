@@ -272,8 +272,8 @@ class WaitSet::State : public base::RefCountedThreadSafe<State> {
               Context* context) {
     base::AutoLock lock(lock_);
 
-    // This notification may have raced with RemoveHandle() from another thread.
-    // We only signal the WaitSet if that's not the case.
+    // This notification may have raced with RemoveHandle() from another
+    // sequence. We only signal the WaitSet if that's not the case.
     if (handle_to_context_.count(handle)) {
       ready_handles_[handle] = {result, signals_state};
       handle_event_.Signal();
@@ -288,13 +288,13 @@ class WaitSet::State : public base::RefCountedThreadSafe<State> {
       // NOTE: We retain a context ref in |cancelled_contexts_| to ensure that
       // this Context's heap address is not reused too soon. For example, it
       // would otherwise be possible for the user to call AddHandle() from the
-      // WaitSet's thread immediately after this notification has fired on
-      // another thread, potentially reusing the same heap address for the newly
-      // added Context; and then they may call RemoveHandle() for this handle
-      // (not knowing its context has just been implicitly cancelled) and
+      // WaitSet's sequence immediately after this notification has fired on
+      // another sequence, potentially reusing the same heap address for the
+      // newly added Context; and then they may call RemoveHandle() for this
+      // handle (not knowing its context has just been implicitly cancelled) and
       // cause the new Context to be incorrectly removed from |contexts_|.
       //
-      // This vector is cleared on the WaitSet's own thread every time
+      // This vector is cleared on the WaitSet's own sequence every time
       // RemoveHandle is called.
       cancelled_contexts_.emplace_back(make_scoped_refptr(context));
 
@@ -314,7 +314,7 @@ class WaitSet::State : public base::RefCountedThreadSafe<State> {
   };
 
   // Not guarded by lock. Must only be accessed from the WaitSet's owning
-  // thread.
+  // sequence.
   ScopedWatcherHandle watcher_handle_;
 
   base::Lock lock_;

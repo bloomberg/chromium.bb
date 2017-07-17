@@ -217,8 +217,8 @@ if (message_pipe.handle0->QuerySignalsState().readable()) {
 The [`mojo::SimpleWatcher`](https://cs.chromium.org/chromium/src/mojo/public/cpp/system/simple_watcher.h)
 class serves as a convenient helper for using the [low-level watcher API](/mojo/public/c/system#Signals-Watchers)
 to watch a handle for signaling state changes. A `SimpleWatcher` is bound to a
-single thread and always dispatches its notifications on a
-`base::SingleThreadTaskRunner`.
+single sequence and always dispatches its notifications on a
+`base::SequencedTaskRunner`.
 
 `SimpleWatcher` has two possible modes of operation, selected at construction
 time by the `mojo::SimpleWatcher::ArmingPolicy` enum:
@@ -280,7 +280,7 @@ WriteABunchOfStuff(pipe.handle1.get());
 
 ## Synchronous Waiting
 
-The C++ System API defines some utilities to block a calling thread while
+The C++ System API defines some utilities to block a calling sequence while
 waiting for one or more handles to change signaling state in an interesting way.
 These threads combine usage of the [low-level Watcher API](/mojo/public/c/system#Signals-Watchers)
 with common synchronization primitives (namely `base::WaitableEvent`.)
@@ -294,8 +294,9 @@ for a more detailed API reference.
 
 ### Waiting On a Single Handle
 
-The `mojo::Wait` function simply blocks the calling thread until a given signal
-mask is either partially satisfied or fully unsatisfiable on a given handle.
+The `mojo::Wait` function simply blocks the calling sequence until a given
+signal mask is either partially satisfied or fully unsatisfiable on a given
+handle.
 
 ``` cpp
 mojo::MessagePipe pipe;
@@ -353,9 +354,9 @@ set of (not-owned) Mojo handles and `base::WaitableEvent`s, which may be
 explicitly added to or removed from the set at any time.
 
 The `WaitSet` may be waited upon repeatedly, each time blocking the calling
-thread until either one of the handles attains an interesting signaling state or
-one of the events is signaled. For example let's suppose we want to wait up to 5
-seconds for either one of two handles to become readable:
+sequence until either one of the handles attains an interesting signaling state
+or one of the events is signaled. For example let's suppose we want to wait up
+to 5 seconds for either one of two handles to become readable:
 
 ``` cpp
 base::WaitableEvent timeout_event(

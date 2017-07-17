@@ -58,12 +58,12 @@ namespace mojo {
 // MOJO_PROPERTY_TYPE_SYNC_CALL_ALLOWED. If the default setting says no but you
 // have a very compelling reason to disregard that (which should be very very
 // rare), you can override it by constructing a ScopedAllowSyncCall object,
-// which allows making sync calls on the current thread during its lifetime.
+// which allows making sync calls on the current sequence during its lifetime.
 class MOJO_CPP_BINDINGS_EXPORT SyncCallRestrictions {
  public:
 #if ENABLE_SYNC_CALL_RESTRICTIONS
-  // Checks whether the current thread is allowed to make sync calls, and causes
-  // a DCHECK if not.
+  // Checks whether the current sequence is allowed to make sync calls, and
+  // causes a DCHECK if not.
   static void AssertSyncCallAllowed();
 #else
   // Inline the empty definitions of functions so that they can be compiled out.
@@ -106,7 +106,7 @@ class MOJO_CPP_BINDINGS_EXPORT SyncCallRestrictions {
 
   // If a process is configured to disallow sync calls in general, constructing
   // a ScopedAllowSyncCall object temporarily allows making sync calls on the
-  // current thread. Doing this is almost always incorrect, which is why we
+  // current sequence. Doing this is almost always incorrect, which is why we
   // limit who can use this through friend. If you find yourself needing to use
   // this, talk to mojo/OWNERS.
   class ScopedAllowSyncCall {

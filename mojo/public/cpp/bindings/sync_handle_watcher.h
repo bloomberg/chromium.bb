@@ -15,15 +15,15 @@
 namespace mojo {
 
 // SyncHandleWatcher supports watching a handle synchronously. It also supports
-// registering the handle with a thread-local storage (SyncHandleRegistry), so
-// that when other SyncHandleWatcher instances on the same thread perform sync
+// registering the handle with a sequence-local storage (SyncHandleRegistry), so
+// that when other SyncHandleWatcher instances on the same sequence perform sync
 // handle watching, this handle will be watched together.
 //
 // SyncHandleWatcher is used for sync methods. While a sync call is waiting for
-// response, we would like to block the thread. On the other hand, we need
-// incoming sync method requests on the same thread to be able to reenter. We
+// response, we would like to block the sequence. On the other hand, we need
+// incoming sync method requests on the same sequence to be able to reenter. We
 // also need master interface endpoints to continue dispatching messages for
-// associated endpoints on different threads.
+// associated endpoints on different sequence.
 //
 // This class is not thread safe.
 class MOJO_CPP_BINDINGS_EXPORT SyncHandleWatcher {
@@ -36,7 +36,7 @@ class MOJO_CPP_BINDINGS_EXPORT SyncHandleWatcher {
   ~SyncHandleWatcher();
 
   // Registers |handle_| with SyncHandleRegistry, so that when others perform
-  // sync handle watching on the same thread, |handle_| will be watched
+  // sync handle watching on the same sequence, |handle_| will be watched
   // together.
   void AllowWokenUpBySyncWatchOnSameThread();
 

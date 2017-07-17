@@ -77,7 +77,7 @@ class MOJO_CPP_BINDINGS_EXPORT BindingStateBase {
 
  protected:
   void BindInternal(ScopedMessagePipeHandle handle,
-                    scoped_refptr<base::SequencedTaskRunner> runner,
+                    scoped_refptr<base::SingleThreadTaskRunner> runner,
                     const char* interface_name,
                     std::unique_ptr<MessageReceiver> request_validator,
                     bool passes_associated_kinds,
@@ -103,7 +103,7 @@ class BindingState : public BindingStateBase {
   ~BindingState() { Close(); }
 
   void Bind(ScopedMessagePipeHandle handle,
-            scoped_refptr<base::SequencedTaskRunner> runner) {
+            scoped_refptr<base::SingleThreadTaskRunner> runner) {
     BindingStateBase::BindInternal(
         std::move(handle), runner, Interface::Name_,
         base::MakeUnique<typename Interface::RequestValidator_>(),

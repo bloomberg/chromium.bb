@@ -53,7 +53,7 @@ class MOJO_CPP_BINDINGS_EXPORT AssociatedGroupController
 
   // Attaches a client to the specified endpoint to send and receive messages.
   // The returned object is still owned by the controller. It must only be used
-  // on the same thread as this call, and only before the client is detached
+  // on the same sequence as this call, and only before the client is detached
   // using DetachEndpointClient().
   virtual InterfaceEndpointController* AttachEndpointClient(
       const ScopedInterfaceEndpointHandle& handle,
@@ -61,7 +61,7 @@ class MOJO_CPP_BINDINGS_EXPORT AssociatedGroupController
       scoped_refptr<base::SequencedTaskRunner> runner) = 0;
 
   // Detaches the client attached to the specified endpoint. It must be called
-  // on the same thread as the corresponding AttachEndpointClient() call.
+  // on the same sequence as the corresponding AttachEndpointClient() call.
   virtual void DetachEndpointClient(
       const ScopedInterfaceEndpointHandle& handle) = 0;
 

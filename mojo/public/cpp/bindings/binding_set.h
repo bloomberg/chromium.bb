@@ -164,7 +164,7 @@ class BindingSetBase {
   // message dispatch, but the returned callback may be called exactly once any
   // time thereafter as long as the binding set itself hasn't been destroyed yet
   // to report the message as bad. This may only be called once per message.
-  // The returned callback must be called on the BindingSet's own thread.
+  // The returned callback must be called on the BindingSet's own sequence.
   ReportBadMessageCallback GetBadMessageCallback() {
     DCHECK(dispatch_context_);
     return base::Bind(

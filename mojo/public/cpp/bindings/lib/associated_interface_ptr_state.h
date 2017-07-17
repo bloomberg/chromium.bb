@@ -81,7 +81,7 @@ class MOJO_CPP_BINDINGS_EXPORT AssociatedInterfacePtrStateBase {
   void Bind(ScopedInterfaceEndpointHandle handle,
             uint32_t version,
             std::unique_ptr<MessageReceiver> validator,
-            scoped_refptr<base::SequencedTaskRunner> runner);
+            scoped_refptr<base::SingleThreadTaskRunner> runner);
   ScopedInterfaceEndpointHandle PassHandle();
 
   InterfaceEndpointClient* endpoint_client() { return endpoint_client_.get(); }
@@ -111,7 +111,7 @@ class AssociatedInterfacePtrState : public AssociatedInterfacePtrStateBase {
   }
 
   void Bind(AssociatedInterfacePtrInfo<Interface> info,
-            scoped_refptr<base::SequencedTaskRunner> runner) {
+            scoped_refptr<base::SingleThreadTaskRunner> runner) {
     DCHECK(!proxy_);
     AssociatedInterfacePtrStateBase::Bind(
         info.PassHandle(), info.version(),

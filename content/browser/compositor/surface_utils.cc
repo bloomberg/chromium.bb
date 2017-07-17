@@ -220,7 +220,7 @@ namespace surface_utils {
 void ConnectWithInProcessFrameSinkManager(
     viz::HostFrameSinkManager* host,
     viz::FrameSinkManagerImpl* manager,
-    scoped_refptr<base::SequencedTaskRunner> task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   // A mojo pointer to |host| which is the FrameSinkManager's client.
   cc::mojom::FrameSinkManagerClientPtr host_mojo;
   // A mojo pointer to |manager|.

@@ -70,7 +70,7 @@ class MOJO_CPP_BINDINGS_EXPORT InterfacePtrStateBase {
   void Swap(InterfacePtrStateBase* other);
   void Bind(ScopedMessagePipeHandle handle,
             uint32_t version,
-            scoped_refptr<base::SequencedTaskRunner> task_runner);
+            scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   ScopedMessagePipeHandle PassMessagePipe() {
     endpoint_client_.reset();
@@ -141,7 +141,7 @@ class InterfacePtrState : public InterfacePtrStateBase {
   }
 
   void Bind(InterfacePtrInfo<Interface> info,
-            scoped_refptr<base::SequencedTaskRunner> runner) {
+            scoped_refptr<base::SingleThreadTaskRunner> runner) {
     DCHECK(!proxy_);
     InterfacePtrStateBase::Bind(info.PassHandle(), info.version(),
                                 std::move(runner));

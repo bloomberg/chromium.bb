@@ -37,7 +37,7 @@ class InterfaceEndpointController;
 
 // InterfaceEndpointClient handles message sending and receiving of an interface
 // endpoint, either the implementation side or the client side.
-// It should only be accessed and destructed on the creating thread.
+// It should only be accessed and destructed on the creating sequence.
 class MOJO_CPP_BINDINGS_EXPORT InterfaceEndpointClient
     : NON_EXPORTED_BASE(public MessageReceiverWithResponder),
       NON_EXPORTED_BASE(private internal::LifeTimeTrackerForDebugging) {

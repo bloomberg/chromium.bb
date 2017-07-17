@@ -10,8 +10,7 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
-#include "base/sequenced_task_runner.h"
-#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/single_thread_task_runner.h"
 #include "mojo/public/cpp/bindings/disconnect_reason.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/bindings/pipe_control_message_proxy.h"
@@ -133,8 +132,7 @@ class InterfaceRequest {
 template <typename Interface>
 InterfaceRequest<Interface> MakeRequest(
     InterfacePtr<Interface>* ptr,
-    scoped_refptr<base::SequencedTaskRunner> runner =
-        base::SequencedTaskRunnerHandle::Get()) {
+    scoped_refptr<base::SingleThreadTaskRunner> runner = nullptr) {
   MessagePipe pipe;
   ptr->Bind(InterfacePtrInfo<Interface>(std::move(pipe.handle0), 0u),
             std::move(runner));

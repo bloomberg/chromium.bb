@@ -55,7 +55,7 @@ class WatchContext : public base::RefCountedThreadSafe<WatchContext> {
   base::WaitableEvent event_;
 
   // NOTE: Although these are modified in Notify() which may be called from any
-  // thread, Notify() is guaranteed to never run concurrently with itself.
+  // sequence, Notify() is guaranteed to never run concurrently with itself.
   // Furthermore, they are only modified once, before |event_| signals; so there
   // is no need for a WatchContext user to synchronize access to these fields
   // apart from waiting on |event()|.

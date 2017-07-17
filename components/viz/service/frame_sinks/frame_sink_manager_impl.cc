@@ -35,7 +35,7 @@ FrameSinkManagerImpl::~FrameSinkManagerImpl() {
 
 void FrameSinkManagerImpl::BindAndSetClient(
     cc::mojom::FrameSinkManagerRequest request,
-    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     cc::mojom::FrameSinkManagerClientPtr client) {
   DCHECK(!client_);
   DCHECK(!binding_.is_bound());

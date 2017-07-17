@@ -177,15 +177,15 @@ This second snippet is equivalent to the first one.
 type, which is a generated alias for `mojo::InterfacePtrInfo<Logger>`. This is
 similar to an `InterfaceRequest<T>` in that it merely holds onto a pipe handle
 and cannot actually read or write messages on the pipe. Both this type and
-`InterfaceRequest<T>` are safe to move freely from thread to thread, whereas a
-bound `InterfacePtr<T>` is bound to a single thread.
+`InterfaceRequest<T>` are safe to move freely from sequence to sequence, whereas
+a bound `InterfacePtr<T>` is bound to a single sequence.
 
 An `InterfacePtr<T>` may be unbound by calling its `PassInterface()` method,
 which returns a new `InterfacePtrInfo<T>`. Conversely, an `InterfacePtr<T>` may
 bind (and thus take ownership of) an `InterfacePtrInfo<T>` so that interface
 calls can be made on the pipe.
 
-The thread-bound nature of `InterfacePtr<T>` is necessary to support safe
+The sequence-bound nature of `InterfacePtr<T>` is necessary to support safe
 dispatch of its [message responses](#Receiving-Responses) and
 [connection error notifications](#Connection-Errors).
 ***
@@ -251,7 +251,7 @@ class LoggerImpl : public sample::mojom::Logger {
 
 Now we can construct a `LoggerImpl` over our pending `LoggerRequest`, and the
 previously queued `Log` message will be dispatched ASAP on the `LoggerImpl`'s
-thread:
+sequence:
 
 ``` cpp
 LoggerImpl impl(std::move(request));
