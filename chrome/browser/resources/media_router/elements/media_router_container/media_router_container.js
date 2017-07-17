@@ -2271,6 +2271,7 @@ Polymer({
    * indicating whether or not route creation was successful.
    * Clearing |currentLaunchingSinkId_| hides the spinner indicating there is
    * a route creation in progress and show the device icon instead.
+   * @param {boolean} creationSuccess Whether route creation succeeded.
    *
    * @private
    */
@@ -2278,6 +2279,12 @@ Polymer({
     this.pseudoSinkSearchState_ = null;
     this.currentLaunchingSinkId_ = '';
     this.pendingCreatedRouteId_ = '';
+    // If it was a search that failed we need to refresh the filtered sinks now
+    // that |pseudoSinkSearchState_| is null.
+    if (!creationSuccess &&
+        this.currentView_ == media_router.MediaRouterView.FILTER) {
+      this.filterSinks_(this.searchInputText_);
+    }
 
     this.fire('report-route-creation', {success: creationSuccess});
   },
