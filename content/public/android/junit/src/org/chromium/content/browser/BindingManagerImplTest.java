@@ -23,6 +23,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLooper;
 
 import org.chromium.base.process_launcher.ChildProcessConnection;
+import org.chromium.base.test.TestChildProcessConnection;
 import org.chromium.base.test.util.Feature;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 

@@ -2,36 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.browser;
+package org.chromium.base.process_launcher;
 
 import android.content.ComponentName;
 
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLooper;
 
+import org.chromium.base.test.TestChildProcessConnection;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 /** Unit tests for ChildProcessConnection. */
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class ChildProcessConnectionTest {
-    @Before
-    public void setUp() {
-        // The tests run on only one thread. Pretend that is the launcher thread so LauncherThread
-        // asserts are not triggered.
-        LauncherThread.setCurrentThreadAsLauncherThread();
-    }
-
-    @After
-    public void tearDown() {
-        LauncherThread.setLauncherThreadAsLauncherThread();
-    }
-
     private TestChildProcessConnection createTestConnection() {
         String packageName = "org.chromium.test";
         String serviceName = "TestService";

@@ -664,4 +664,9 @@ public class ChildProcessConnection {
     public boolean didOnServiceConnectedForTesting() {
         return mDidOnServiceConnected;
     }
+
+    @VisibleForTesting
+    protected Handler getLauncherHandler() {
+        return mLauncherHandler;
+    }
 }
