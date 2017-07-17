@@ -25,10 +25,6 @@ class BotUpdateApi(recipe_api.RecipeApi):
     self._deps_revision_overrides = deps_revision_overrides
     self._fail_patch = fail_patch
 
-    # Controls if we query Gerrit for the destination branch of a change.
-    # TODO(machenbach): Deprecate when default is True.
-    self._enable_destination_branch_check = True
-
     self._last_returned_properties = {}
     super(BotUpdateApi, self).__init__(*args, **kwargs)
 
@@ -327,12 +323,6 @@ class BotUpdateApi(recipe_api.RecipeApi):
 
     return step_result
 
-  # TODO(machenbach): This switch is for a gradual roll-out of the feature.
-  # Downstream recipe's can set this to True. Deprecate it when it's true
-  # everywhere.
-  def enable_destination_branch_check(self):
-    self._enable_destination_branch_check = True
-
   def _destination_branch(self, cfg, path):
     """Returns the destination branch of a CL for the matching project
     if available or HEAD otherwise.
@@ -350,9 +340,8 @@ class BotUpdateApi(recipe_api.RecipeApi):
         A destination branch as understood by bot_update.py if available
         and if different from master, returns 'HEAD' otherwise.
     """
-    # Bail out if the feature is not enabled or if this is not a gerrit issue.
-    if (not self._enable_destination_branch_check or
-        not self.m.tryserver.is_gerrit_issue or
+    # Bail out if this is not a gerrit issue.
+    if (not self.m.tryserver.is_gerrit_issue or
         not self._gerrit or not self._issue):
       return 'HEAD'
 

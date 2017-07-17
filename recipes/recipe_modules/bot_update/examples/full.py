@@ -47,11 +47,6 @@ def RunSteps(api):
   gerrit_no_rebase_patch_ref = bool(
       api.properties.get('gerrit_no_rebase_patch_ref'))
 
-  # TODO(machenbach): Remove this as soon as the feature is on by default.
-  if (api.properties.get('patch_project') == 'v8/v8' or
-      api.properties.get('buildername') == 'feature_rel'):
-    api.bot_update.enable_destination_branch_check()
-
   if api.properties.get('test_apply_gerrit_ref'):
     api.bot_update.apply_gerrit_ref(
         root='/tmp/test/root',
