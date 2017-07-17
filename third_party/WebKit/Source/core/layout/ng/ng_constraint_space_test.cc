@@ -13,7 +13,7 @@ namespace blink {
 
 namespace {
 
-RefPtr<NGConstraintSpace> ConstructConstraintSpace(
+RefPtr<NGConstraintSpace> ConstructTestConstraintSpace(
     NGWritingMode writing_mode,
     TextDirection direction,
     NGLogicalSize size,
@@ -33,8 +33,8 @@ TEST(NGConstraintSpaceTest, LayoutOpportunitiesNoExclusions) {
   NGLogicalSize size;
   size.inline_size = LayoutUnit(600);
   size.block_size = LayoutUnit(400);
-  RefPtr<NGConstraintSpace> space =
-      ConstructConstraintSpace(kHorizontalTopBottom, TextDirection::kLtr, size);
+  RefPtr<NGConstraintSpace> space = ConstructTestConstraintSpace(
+      kHorizontalTopBottom, TextDirection::kLtr, size);
 
   NGLayoutOpportunityIterator iterator(
       space->Exclusions().get(), space->AvailableSize(), NGLogicalOffset());
@@ -50,8 +50,8 @@ TEST(NGConstraintSpaceTest, LayoutOpportunitiesTopRightExclusion) {
   size.inline_size = LayoutUnit(600);
   size.block_size = LayoutUnit(400);
   // Create a space with a 100x100 exclusion in the top right corner.
-  RefPtr<NGConstraintSpace> space =
-      ConstructConstraintSpace(kHorizontalTopBottom, TextDirection::kLtr, size);
+  RefPtr<NGConstraintSpace> space = ConstructTestConstraintSpace(
+      kHorizontalTopBottom, TextDirection::kLtr, size);
   NGExclusion exclusion;
   exclusion.rect.size = {LayoutUnit(100), LayoutUnit(100)};
   exclusion.rect.offset = {LayoutUnit(500), LayoutUnit()};
@@ -77,8 +77,8 @@ TEST(NGConstraintSpaceTest, LayoutOpportunitiesTopLeftExclusion) {
   size.inline_size = LayoutUnit(600);
   size.block_size = LayoutUnit(400);
   // Create a space with a 100x100 exclusion in the top left corner.
-  RefPtr<NGConstraintSpace> space =
-      ConstructConstraintSpace(kHorizontalTopBottom, TextDirection::kLtr, size);
+  RefPtr<NGConstraintSpace> space = ConstructTestConstraintSpace(
+      kHorizontalTopBottom, TextDirection::kLtr, size);
   NGExclusion exclusion;
   exclusion.rect.size = {LayoutUnit(100), LayoutUnit(100)};
   space->AddExclusion(exclusion);
@@ -126,8 +126,8 @@ TEST(NGConstraintSpaceTest, LayoutOpportunitiesTwoInMiddle) {
   NGLogicalSize size;
   size.inline_size = LayoutUnit(600);
   size.block_size = LayoutUnit(400);
-  RefPtr<NGConstraintSpace> space =
-      ConstructConstraintSpace(kHorizontalTopBottom, TextDirection::kLtr, size);
+  RefPtr<NGConstraintSpace> space = ConstructTestConstraintSpace(
+      kHorizontalTopBottom, TextDirection::kLtr, size);
   // Add exclusions
   NGExclusion exclusion1;
   exclusion1.rect.size = {LayoutUnit(100), LayoutUnit(100)};
@@ -189,8 +189,8 @@ TEST(NGConstraintSpaceTest, LayoutOpportunitiesTwoInMiddle) {
 //   available constraint space, i.e. 0,0 600x200
 TEST(NGConstraintSpaceTest, LayoutOpportunitiesWithOutOfBoundsExclusions) {
   NGLogicalSize size = {LayoutUnit(600), LayoutUnit(100)};
-  RefPtr<NGConstraintSpace> space =
-      ConstructConstraintSpace(kHorizontalTopBottom, TextDirection::kLtr, size);
+  RefPtr<NGConstraintSpace> space = ConstructTestConstraintSpace(
+      kHorizontalTopBottom, TextDirection::kLtr, size);
   NGExclusion exclusion;
   exclusion.rect.size = {LayoutUnit(100), LayoutUnit(100)};
   exclusion.rect.offset = {LayoutUnit(), LayoutUnit(150)};
@@ -208,9 +208,9 @@ TEST(NGConstraintSpaceTest, LayoutOpportunitiesWithOutOfBoundsExclusions) {
 // Verifies that we combine 2 adjoining left exclusions into one left exclusion.
 TEST(NGConstraintSpaceTest, TwoLeftExclusionsShadowEachOther) {
   NGLogicalOffset bfc_offset = {LayoutUnit(8), LayoutUnit(8)};
-  RefPtr<NGConstraintSpace> space =
-      ConstructConstraintSpace(kHorizontalTopBottom, TextDirection::kLtr,
-                               {LayoutUnit(200), LayoutUnit(200)}, bfc_offset);
+  RefPtr<NGConstraintSpace> space = ConstructTestConstraintSpace(
+      kHorizontalTopBottom, TextDirection::kLtr,
+      {LayoutUnit(200), LayoutUnit(200)}, bfc_offset);
 
   NGExclusion small_left;
   small_left.rect.size = {LayoutUnit(10), LayoutUnit(10)};
@@ -250,9 +250,9 @@ TEST(NGConstraintSpaceTest, TwoLeftExclusionsShadowEachOther) {
 // exclusion.
 TEST(NGConstraintSpaceTest, TwoRightExclusionsShadowEachOther) {
   NGLogicalOffset bfc_offset = {LayoutUnit(8), LayoutUnit(8)};
-  RefPtr<NGConstraintSpace> space =
-      ConstructConstraintSpace(kHorizontalTopBottom, TextDirection::kLtr,
-                               {LayoutUnit(200), LayoutUnit(200)}, bfc_offset);
+  RefPtr<NGConstraintSpace> space = ConstructTestConstraintSpace(
+      kHorizontalTopBottom, TextDirection::kLtr,
+      {LayoutUnit(200), LayoutUnit(200)}, bfc_offset);
 
   NGExclusion small_right;
   small_right.rect.size = {LayoutUnit(10), LayoutUnit(10)};
