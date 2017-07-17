@@ -48,8 +48,6 @@ constexpr int kMaxNumOfExtrapolations = 2;
 // Distance from the center of the controller to start rendering the laser.
 constexpr float kLaserStartDisplacement = 0.045;
 
-constexpr int microsPerNano = 1000;
-
 void ClampTouchpadPosition(gfx::Vector2dF* position) {
   position->set_x(cc::MathUtil::ClampToRange(position->x(), 0.0f, 1.0f));
   position->set_y(cc::MathUtil::ClampToRange(position->y(), 0.0f, 1.0f));
@@ -146,18 +144,24 @@ float VrController::TouchPosY() {
 }
 
 base::TimeTicks VrController::GetLastOrientationTimestamp() const {
-  return base::TimeTicks::FromInternalValue(
-      controller_state_->GetLastOrientationTimestamp() / microsPerNano);
+  // controller_state_->GetLast*Timestamp() returns timestamps in a
+  // different timebase from base::TimeTicks::Now(), so we can't use the
+  // timestamps in any meaningful way in the rest of Chrome.
+  // TODO(mthiesse): Use controller_state_->GetLastOrientationTimestamp() when
+  // b/62818778 is resolved.
+  return base::TimeTicks::Now();
 }
 
 base::TimeTicks VrController::GetLastTouchTimestamp() const {
-  return base::TimeTicks::FromInternalValue(
-      controller_state_->GetLastTouchTimestamp() / microsPerNano);
+  // TODO(mthiesse): Use controller_state_->GetLastTouchTimestamp() when
+  // b/62818778 is resolved.
+  return base::TimeTicks::Now();
 }
 
 base::TimeTicks VrController::GetLastButtonTimestamp() const {
-  return base::TimeTicks::FromInternalValue(
-      controller_state_->GetLastButtonTimestamp() / microsPerNano);
+  // TODO(mthiesse): Use controller_state_->GetLastButtonTimestamp() when
+  // b/62818778 is resolved.
+  return base::TimeTicks::Now();
 }
 
 gfx::Quaternion VrController::Orientation() const {
