@@ -17,6 +17,8 @@ namespace system_logs {
 
 namespace {
 
+using SupportedSource = SingleLogFileLogSource::SupportedSource;
+
 constexpr char kDefaultSystemLogDirPath[] = "/var/log";
 constexpr int kMaxNumAllowedLogRotationsDuringFileRead = 3;
 
@@ -36,11 +38,11 @@ const base::Time* g_chrome_start_time_for_test = nullptr;
 base::FilePath GetLogFileSourceRelativeFilePath(
     SingleLogFileLogSource::SupportedSource source) {
   switch (source) {
-    case SingleLogFileLogSource::SupportedSource::kMessages:
+    case SupportedSource::kMessages:
       return base::FilePath("messages");
-    case SingleLogFileLogSource::SupportedSource::kUiLatest:
+    case SupportedSource::kUiLatest:
       return base::FilePath("ui/ui.LATEST");
-    case SingleLogFileLogSource::SupportedSource::kAtrusLog:
+    case SupportedSource::kAtrusLog:
       return base::FilePath("atrus.log");
   }
   NOTREACHED();
@@ -75,6 +77,20 @@ base::Time GetChromeStartTime() {
   if (g_chrome_start_time_for_test)
     return *g_chrome_start_time_for_test;
   return base::CurrentProcessInfo::CreationTime();
+}
+
+// Returns true if |source_type| is a log source that should be read starting
+// from a particular timestamp rather than from the beginning of the file.
+bool ShouldReadFromTimestampBasedOffset(SupportedSource source_type) {
+  switch (source_type) {
+    case SupportedSource::kMessages:
+    case SupportedSource::kAtrusLog:
+      return true;
+    case SupportedSource::kUiLatest:
+      return false;
+  }
+  NOTREACHED();
+  return false;
 }
 
 // Returns the file offset into |path| of the first line that starts with a
@@ -178,7 +194,7 @@ void SingleLogFileLogSource::ReadFile(size_t num_rotations_allowed,
       return;
 
     // Determine actual offset from which to start reading.
-    if (source_type_ == SupportedSource::kMessages) {
+    if (ShouldReadFromTimestampBasedOffset(source_type_)) {
       const base::Time earliest_log_time =
           GetChromeStartTime() - kLogCutoffTimeBeforeChromeStart;
 
