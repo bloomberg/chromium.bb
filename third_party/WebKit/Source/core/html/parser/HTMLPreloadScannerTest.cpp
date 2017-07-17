@@ -33,7 +33,7 @@ struct TestCase {
   ClientHintsPreferences preferences;
 };
 
-struct PreconnectTestCase {
+struct HTMLPreconnectTestCase {
   const char* base_url;
   const char* input_html;
   const char* preconnected_host;
@@ -223,7 +223,7 @@ class HTMLPreloadScannerTest : public ::testing::Test {
         test_case.resource_width, test_case.preferences);
   }
 
-  void Test(PreconnectTestCase test_case) {
+  void Test(HTMLPreconnectTestCase test_case) {
     MockHTMLResourcePreloader preloader;
     KURL base_url(kParsedURLString, test_case.base_url);
     scanner_->AppendToEnd(String(test_case.input_html));
@@ -568,7 +568,7 @@ TEST_F(HTMLPreloadScannerTest, testMetaAcceptCH) {
 }
 
 TEST_F(HTMLPreloadScannerTest, testPreconnect) {
-  PreconnectTestCase test_cases[] = {
+  HTMLPreconnectTestCase test_cases[] = {
       {"http://example.test", "<link rel=preconnect href=http://example2.test>",
        "http://example2.test", kCrossOriginAttributeNotSet},
       {"http://example.test",
