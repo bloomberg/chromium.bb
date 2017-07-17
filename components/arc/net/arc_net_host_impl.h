@@ -15,29 +15,36 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "chromeos/network/network_state_handler_observer.h"
-#include "components/arc/arc_service.h"
 #include "components/arc/common/net.mojom.h"
 #include "components/arc/instance_holder.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace base {
-
 class DictionaryValue;
-
 }  // namespace base
+
+namespace content {
+class BrowserContext;
+}  // namespace content
 
 namespace arc {
 
 class ArcBridgeService;
 
 // Private implementation of ArcNetHost.
-class ArcNetHostImpl : public ArcService,
+class ArcNetHostImpl : public KeyedService,
                        public InstanceHolder<mojom::NetInstance>::Observer,
                        public chromeos::NetworkStateHandlerObserver,
                        public mojom::NetHost {
  public:
+  // Returns singleton instance for the given BrowserContext,
+  // or nullptr if the browser |context| is not allowed to use ARC.
+  static ArcNetHostImpl* GetForBrowserContext(content::BrowserContext* context);
+
   // The constructor will register an Observer with ArcBridgeService.
-  explicit ArcNetHostImpl(ArcBridgeService* arc_bridge_service);
+  ArcNetHostImpl(content::BrowserContext* context,
+                 ArcBridgeService* arc_bridge_service);
   ~ArcNetHostImpl() override;
 
   // ARC -> Chrome calls:
@@ -103,6 +110,8 @@ class ArcNetHostImpl : public ArcService,
       const mojom::NetHost::CreateNetworkCallback& mojo_callback,
       const std::string& error_name,
       std::unique_ptr<base::DictionaryValue> error_data);
+
+  ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
 
   // True if the chrome::NetworkStateHandler is currently being observed for
   // state changes.
