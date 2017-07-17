@@ -166,6 +166,7 @@ android_apk("content_shell_apk") {
   android_manifest_dep = ":content_shell_manifest"
   shared_libraries = [ ":libcontent_shell_content_view" ]
   loadable_modules = [ "$root_out_dir/libosmesa.so" ]
+  command_line_flags_file = "content-shell-command-line"
 }
 
 android_library("content_shell_test_java") {
