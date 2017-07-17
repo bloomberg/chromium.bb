@@ -155,6 +155,22 @@ class CIPDApi(recipe_api.RecipeApi):
   """
   PackageDefinition = PackageDefinition
 
+  # Map for architecture mapping. First key is platform module arch, second is
+  # platform module bits.
+  _SUFFIX_ARCH_MAP = {
+      'intel': {
+        32: '386',
+        64: 'amd64',
+      },
+      'mips': {
+        64: 'mips64',
+      },
+      'arm': {
+        32: 'armv6',
+        64: 'arm64',
+      },
+  }
+
   # pylint: disable=attribute-defined-outside-init
   def initialize(self):
     self._cipd_credentials = None
@@ -175,20 +191,32 @@ class CIPDApi(recipe_api.RecipeApi):
     else:
       return '/creds/service_accounts/service-account-cipd-builder.json'
 
-  def platform_suffix(self):
+  def platform_suffix(self, name=None, arch=None, bits=None):
     """Use to get full package name that is platform indepdent.
 
     Example:
       >>> 'my/package/%s' % api.cipd.platform_suffix()
       'my/package/linux-amd64'
+
+    Optional platform bits and architecture may be supplied to generate CIPD
+    suffixes for other platforms. If any are omitted, the current platform
+    parameters will be used.
     """
+    name = name or self.m.platform.name
+    arch = arch or self.m.platform.arch
+    bits = bits or self.m.platform.bits
+
+    arch_map = self._SUFFIX_ARCH_MAP.get(arch)
+    if not arch_map:
+      raise KeyError('No architecture mapped for %r.' % (arch,))
+    arch_str = arch_map.get(bits)
+    if not arch_str:
+      raise KeyError('No architecture mapped for %r with %r bits.' % (
+          arch, bits))
+
     return '%s-%s' % (
-        self.m.platform.name.replace('win', 'windows'),
-        {
-            32: '386',
-            64: 'amd64',
-        }[self.m.platform.bits],
-    )
+        name.replace('win', 'windows'),
+        arch_str)
 
   def build(self, input_dir, output_package, package_name, install_mode=None):
     """Builds, but does not upload, a cipd package from a directory.
