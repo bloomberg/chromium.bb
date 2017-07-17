@@ -22,4 +22,10 @@ public final class CastSysInfoAndroid {
     private static String getSerialNumber() {
         return Build.SERIAL;
     }
+
+    @SuppressLint("HardwareIds")
+    @CalledByNative
+    private static String getBoard() {
+        return Build.BOARD;
+    }
 }
