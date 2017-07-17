@@ -26,9 +26,11 @@ class MockWebMediaPlayer final : public EmptyWebMediaPlayer {
   MOCK_METHOD1(SetIsEffectivelyFullscreen, void(bool));
 };
 
-class StubLocalFrameClient : public EmptyLocalFrameClient {
+class MediaStubLocalFrameClient : public EmptyLocalFrameClient {
  public:
-  static StubLocalFrameClient* Create() { return new StubLocalFrameClient; }
+  static MediaStubLocalFrameClient* Create() {
+    return new MediaStubLocalFrameClient;
+  }
 
   std::unique_ptr<WebMediaPlayer> CreateWebMediaPlayer(
       HTMLMediaElement&,
@@ -47,7 +49,7 @@ class HTMLMediaElementEventListenersTest : public ::testing::Test {
  protected:
   void SetUp() override {
     page_holder_ = DummyPageHolder::Create(IntSize(800, 600), nullptr,
-                                           StubLocalFrameClient::Create());
+                                           MediaStubLocalFrameClient::Create());
   }
 
   Document& GetDocument() { return page_holder_->GetDocument(); }
