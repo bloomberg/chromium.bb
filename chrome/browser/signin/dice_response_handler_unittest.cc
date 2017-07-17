@@ -295,6 +295,76 @@ TEST_F(DiceResponseHandlerTest, SignoutWebOnly) {
   EXPECT_FALSE(signin_manager_.IsAuthenticated());
 }
 
+// Checks that signin in progress is canceled by a signout for the main account.
+TEST_F(DiceResponseHandlerTest, SigninSignoutMainAccount) {
+  DiceResponseParams dice_params = MakeDiceParams(DiceAction::SIGNOUT);
+  // User is signed in to Chrome with a main account.
+  signin_manager_.SignIn(dice_params.signout_info.gaia_id[0],
+                         dice_params.signout_info.email[0], "password");
+  token_service_.UpdateCredentials(dice_params.signout_info.gaia_id[0],
+                                   "token");
+  ASSERT_TRUE(token_service_.RefreshTokenIsAvailable(
+      dice_params.signout_info.gaia_id[0]));
+  // Start Dice signin with a secondary account.
+  DiceResponseParams dice_params_2 = MakeDiceParams(DiceAction::SIGNIN);
+  dice_params_2.signin_info.email = "other_email";
+  dice_params_2.signin_info.gaia_id = "other_gaia_id";
+  dice_response_handler_.ProcessDiceHeader(dice_params_2);
+  // Check that a GaiaAuthFetcher has been created and is pending.
+  ASSERT_THAT(signin_client_.consumer_, testing::NotNull());
+  EXPECT_EQ(
+      1u, dice_response_handler_.GetPendingDiceTokenFetchersCountForTesting());
+  ASSERT_FALSE(token_service_.RefreshTokenIsAvailable(
+      dice_params_2.signin_info.gaia_id));
+  // Signout from main account while signin for the other account is in flight.
+  dice_response_handler_.ProcessDiceHeader(dice_params);
+  // Check that the token fetcher has been canceled and all tokens erased.
+  EXPECT_EQ(
+      0u, dice_response_handler_.GetPendingDiceTokenFetchersCountForTesting());
+  EXPECT_FALSE(
+      token_service_.RefreshTokenIsAvailable(dice_params.signin_info.gaia_id));
+  EXPECT_FALSE(token_service_.RefreshTokenIsAvailable(
+      dice_params_2.signin_info.gaia_id));
+}
+
+// Checks that signin in progress is canceled by a signout for a secondary
+// account.
+TEST_F(DiceResponseHandlerTest, SigninSignoutSecondaryAccount) {
+  // User starts signin in the web with two accounts, and is not signed into
+  // Chrome.
+  DiceResponseParams signout_params_1 = MakeDiceParams(DiceAction::SIGNOUT);
+  DiceResponseParams signin_params_1 = MakeDiceParams(DiceAction::SIGNIN);
+  DiceResponseParams signin_params_2 = MakeDiceParams(DiceAction::SIGNIN);
+  signin_params_2.signin_info.email = "other_email";
+  signin_params_2.signin_info.gaia_id = "other_gaia_id";
+  dice_response_handler_.ProcessDiceHeader(signin_params_1);
+  ASSERT_THAT(signin_client_.consumer_, testing::NotNull());
+  signin_client_.consumer_ = nullptr;
+  dice_response_handler_.ProcessDiceHeader(signin_params_2);
+  ASSERT_THAT(signin_client_.consumer_, testing::NotNull());
+  EXPECT_EQ(
+      2u, dice_response_handler_.GetPendingDiceTokenFetchersCountForTesting());
+  ASSERT_FALSE(token_service_.RefreshTokenIsAvailable(
+      signin_params_1.signin_info.gaia_id));
+  ASSERT_FALSE(token_service_.RefreshTokenIsAvailable(
+      signin_params_2.signin_info.gaia_id));
+  // Signout from one of the accounts while signin is in flight.
+  dice_response_handler_.ProcessDiceHeader(signout_params_1);
+  // Check that one of the fetchers is cancelled.
+  EXPECT_EQ(
+      1u, dice_response_handler_.GetPendingDiceTokenFetchersCountForTesting());
+  // Allow the remaining fetcher to complete.
+  signin_client_.consumer_->OnClientOAuthSuccess(
+      GaiaAuthConsumer::ClientOAuthResult("refresh_token", "access_token", 10));
+  EXPECT_EQ(
+      0u, dice_response_handler_.GetPendingDiceTokenFetchersCountForTesting());
+  // Check that the right token is available.
+  EXPECT_FALSE(token_service_.RefreshTokenIsAvailable(
+      signin_params_1.signin_info.gaia_id));
+  EXPECT_TRUE(token_service_.RefreshTokenIsAvailable(
+      signin_params_2.signin_info.gaia_id));
+}
+
 // Tests that the DiceResponseHandler is created for a normal profile but not
 // for an incognito profile.
 TEST(DiceResponseHandlerFactoryTest, NotInIncognito) {
