@@ -82,7 +82,7 @@ bool ICOImageDecoder::SetSize(unsigned width, unsigned height) {
              : ((IntSize(width, height) == frame_size_) || SetFailed());
 }
 
-bool ICOImageDecoder::FrameIsCompleteAtIndex(size_t index) const {
+bool ICOImageDecoder::FrameIsReceivedAtIndex(size_t index) const {
   if (index >= dir_entries_.size())
     return false;
 

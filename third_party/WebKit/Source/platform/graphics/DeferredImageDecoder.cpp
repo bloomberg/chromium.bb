@@ -46,13 +46,13 @@ struct DeferredFrameData {
   DeferredFrameData()
       : orientation_(kDefaultImageOrientation),
         duration_(0),
-        is_complete_(false),
+        is_received_(false),
         frame_bytes_(0),
         unique_id_(DecodingImageGenerator::kNeedNewImageUniqueID) {}
 
   ImageOrientation orientation_;
   float duration_;
-  bool is_complete_;
+  bool is_received_;
   size_t frame_bytes_;
   uint32_t unique_id_;
 };
@@ -219,11 +219,11 @@ bool DeferredImageDecoder::FrameHasAlphaAtIndex(size_t index) const {
   return true;
 }
 
-bool DeferredImageDecoder::FrameIsCompleteAtIndex(size_t index) const {
+bool DeferredImageDecoder::FrameIsReceivedAtIndex(size_t index) const {
   if (actual_decoder_)
-    return actual_decoder_->FrameIsCompleteAtIndex(index);
+    return actual_decoder_->FrameIsReceivedAtIndex(index);
   if (index < frame_data_.size())
-    return frame_data_[index].is_complete_;
+    return frame_data_[index].is_received_;
   return false;
 }
 
@@ -291,15 +291,15 @@ void DeferredImageDecoder::PrepareLazyDecodedFrames() {
   for (size_t i = previous_size; i < frame_data_.size(); ++i) {
     frame_data_[i].duration_ = actual_decoder_->FrameDurationAtIndex(i);
     frame_data_[i].orientation_ = actual_decoder_->Orientation();
-    frame_data_[i].is_complete_ = actual_decoder_->FrameIsCompleteAtIndex(i);
+    frame_data_[i].is_received_ = actual_decoder_->FrameIsReceivedAtIndex(i);
   }
 
   // The last lazy decoded frame created from previous call might be
   // incomplete so update its state.
   if (previous_size) {
     const size_t last_frame = previous_size - 1;
-    frame_data_[last_frame].is_complete_ =
-        actual_decoder_->FrameIsCompleteAtIndex(last_frame);
+    frame_data_[last_frame].is_received_ =
+        actual_decoder_->FrameIsReceivedAtIndex(last_frame);
   }
 
   if (all_data_received_) {
@@ -336,7 +336,7 @@ sk_sp<SkImage> DeferredImageDecoder::CreateFrameImageAtIndex(
   // We can consider decoded bitmap constant and reuse uniqueID only after all
   // data is received.  We reuse it also for multiframe images when image data
   // is partially received but the frame data is fully received.
-  if (all_data_received_ || frame_data_[index].is_complete_) {
+  if (all_data_received_ || frame_data_[index].is_received_) {
     DCHECK(frame_data_[index].unique_id_ ==
                DecodingImageGenerator::kNeedNewImageUniqueID ||
            frame_data_[index].unique_id_ == image->uniqueID());

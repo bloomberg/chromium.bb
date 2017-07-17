@@ -191,7 +191,7 @@ class PLATFORM_EXPORT ImageDecoder {
   virtual bool FrameHasAlphaAtIndex(size_t) const;
 
   // Whether or not the frame is fully received.
-  virtual bool FrameIsCompleteAtIndex(size_t) const;
+  virtual bool FrameIsReceivedAtIndex(size_t) const;
 
   // Returns true if a cached complete decode is available.
   bool FrameIsDecodedAtIndex(size_t) const;

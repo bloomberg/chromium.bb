@@ -96,7 +96,7 @@ class PLATFORM_EXPORT ImageSource final {
   float FrameDurationAtIndex(size_t) const;
   bool FrameHasAlphaAtIndex(
       size_t) const;  // Whether or not the frame actually used any alpha.
-  bool FrameIsCompleteAtIndex(
+  bool FrameIsReceivedAtIndex(
       size_t) const;  // Whether or not the frame is fully received.
   ImageOrientation OrientationAtIndex(size_t) const;  // EXIF image orientation
 

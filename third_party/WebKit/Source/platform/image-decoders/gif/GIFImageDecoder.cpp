@@ -79,7 +79,7 @@ int GIFImageDecoder::RepetitionCount() const {
   return repetition_count_;
 }
 
-bool GIFImageDecoder::FrameIsCompleteAtIndex(size_t index) const {
+bool GIFImageDecoder::FrameIsReceivedAtIndex(size_t index) const {
   return reader_ && (index < reader_->ImagesCount()) &&
          reader_->FrameContext(index)->IsComplete();
 }

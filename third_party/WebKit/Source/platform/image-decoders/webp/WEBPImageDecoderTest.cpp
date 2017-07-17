@@ -352,18 +352,18 @@ TEST(AnimatedWebPTests, frameIsCompleteAndDuration) {
 
   EXPECT_EQ(2u, decoder->FrameCount());
   EXPECT_FALSE(decoder->Failed());
-  EXPECT_TRUE(decoder->FrameIsCompleteAtIndex(0));
+  EXPECT_TRUE(decoder->FrameIsReceivedAtIndex(0));
   EXPECT_EQ(1000, decoder->FrameDurationAtIndex(0));
-  EXPECT_TRUE(decoder->FrameIsCompleteAtIndex(1));
+  EXPECT_TRUE(decoder->FrameIsReceivedAtIndex(1));
   EXPECT_EQ(500, decoder->FrameDurationAtIndex(1));
 
   decoder->SetData(data_buffer.Get(), true);
   EXPECT_EQ(3u, decoder->FrameCount());
-  EXPECT_TRUE(decoder->FrameIsCompleteAtIndex(0));
+  EXPECT_TRUE(decoder->FrameIsReceivedAtIndex(0));
   EXPECT_EQ(1000, decoder->FrameDurationAtIndex(0));
-  EXPECT_TRUE(decoder->FrameIsCompleteAtIndex(1));
+  EXPECT_TRUE(decoder->FrameIsReceivedAtIndex(1));
   EXPECT_EQ(500, decoder->FrameDurationAtIndex(1));
-  EXPECT_TRUE(decoder->FrameIsCompleteAtIndex(2));
+  EXPECT_TRUE(decoder->FrameIsReceivedAtIndex(2));
   EXPECT_EQ(1000.0, decoder->FrameDurationAtIndex(2));
 }
 

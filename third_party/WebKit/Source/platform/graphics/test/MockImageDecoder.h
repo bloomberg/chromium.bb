@@ -83,7 +83,7 @@ class MockImageDecoder : public ImageDecoder {
 
   int RepetitionCount() const override { return client_->RepetitionCount(); }
 
-  bool FrameIsCompleteAtIndex(size_t) const override {
+  bool FrameIsReceivedAtIndex(size_t) const override {
     return client_->GetStatus() == ImageFrame::kFrameComplete;
   }
 

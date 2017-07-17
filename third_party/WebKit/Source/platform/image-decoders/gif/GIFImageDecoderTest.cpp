@@ -197,8 +197,8 @@ TEST(GIFImageDecoderTest, frameIsComplete) {
 
   EXPECT_EQ(2u, decoder->FrameCount());
   EXPECT_FALSE(decoder->Failed());
-  EXPECT_TRUE(decoder->FrameIsCompleteAtIndex(0));
-  EXPECT_TRUE(decoder->FrameIsCompleteAtIndex(1));
+  EXPECT_TRUE(decoder->FrameIsReceivedAtIndex(0));
+  EXPECT_TRUE(decoder->FrameIsReceivedAtIndex(1));
   EXPECT_EQ(kAnimationLoopInfinite, decoder->RepetitionCount());
 }
 
@@ -217,13 +217,13 @@ TEST(GIFImageDecoderTest, frameIsCompleteLoading) {
 
   EXPECT_EQ(2u, decoder->FrameCount());
   EXPECT_FALSE(decoder->Failed());
-  EXPECT_TRUE(decoder->FrameIsCompleteAtIndex(0));
-  EXPECT_FALSE(decoder->FrameIsCompleteAtIndex(1));
+  EXPECT_TRUE(decoder->FrameIsReceivedAtIndex(0));
+  EXPECT_FALSE(decoder->FrameIsReceivedAtIndex(1));
 
   decoder->SetData(data_buffer.Get(), true);
   EXPECT_EQ(2u, decoder->FrameCount());
-  EXPECT_TRUE(decoder->FrameIsCompleteAtIndex(0));
-  EXPECT_TRUE(decoder->FrameIsCompleteAtIndex(1));
+  EXPECT_TRUE(decoder->FrameIsReceivedAtIndex(0));
+  EXPECT_TRUE(decoder->FrameIsReceivedAtIndex(1));
 }
 
 TEST(GIFImageDecoderTest, badTerminator) {

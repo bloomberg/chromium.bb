@@ -1007,21 +1007,21 @@ TEST(PNGTests, VerifyFrameCompleteBehavior) {
         SharedBuffer::Create(full_data->Data(), rec.offset_in_first_frame);
     decoder->SetData(data.Get(), false);
 
-    EXPECT_FALSE(decoder->FrameIsCompleteAtIndex(0));
+    EXPECT_FALSE(decoder->FrameIsReceivedAtIndex(0));
 
     // Parsing the size is not enough to mark the frame as complete.
     EXPECT_TRUE(decoder->IsSizeAvailable());
-    EXPECT_FALSE(decoder->FrameIsCompleteAtIndex(0));
+    EXPECT_FALSE(decoder->FrameIsReceivedAtIndex(0));
 
     const auto partial_frame_count = decoder->FrameCount();
     EXPECT_EQ(1u, partial_frame_count);
 
     // Frame is not complete, even after decoding partially.
-    EXPECT_FALSE(decoder->FrameIsCompleteAtIndex(0));
+    EXPECT_FALSE(decoder->FrameIsReceivedAtIndex(0));
     auto* frame = decoder->FrameBufferAtIndex(0);
     ASSERT_TRUE(frame);
     EXPECT_NE(ImageFrame::kFrameComplete, frame->GetStatus());
-    EXPECT_FALSE(decoder->FrameIsCompleteAtIndex(0));
+    EXPECT_FALSE(decoder->FrameIsReceivedAtIndex(0));
 
     decoder->SetData(full_data.Get(), true);
 
@@ -1029,21 +1029,21 @@ TEST(PNGTests, VerifyFrameCompleteBehavior) {
     // complete for animated images.
     EXPECT_TRUE(decoder->IsSizeAvailable());
     if (rec.expected_frame_count > 1)
-      EXPECT_FALSE(decoder->FrameIsCompleteAtIndex(0));
+      EXPECT_FALSE(decoder->FrameIsReceivedAtIndex(0));
     else
-      EXPECT_TRUE(decoder->FrameIsCompleteAtIndex(0));
+      EXPECT_TRUE(decoder->FrameIsReceivedAtIndex(0));
 
     const auto frame_count = decoder->FrameCount();
     ASSERT_EQ(rec.expected_frame_count, frame_count);
 
     // After parsing (the full file), all frames are complete.
     for (size_t i = 0; i < frame_count; ++i)
-      EXPECT_TRUE(decoder->FrameIsCompleteAtIndex(i));
+      EXPECT_TRUE(decoder->FrameIsReceivedAtIndex(i));
 
     frame = decoder->FrameBufferAtIndex(0);
     ASSERT_TRUE(frame);
     EXPECT_EQ(ImageFrame::kFrameComplete, frame->GetStatus());
-    EXPECT_TRUE(decoder->FrameIsCompleteAtIndex(0));
+    EXPECT_TRUE(decoder->FrameIsReceivedAtIndex(0));
   }
 }
 
