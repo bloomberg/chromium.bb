@@ -328,37 +328,40 @@ const NSTimeInterval kShowEmptyBookmarksBackgroundRefreshDelay = 1.0;
   [self.delegate bookmarkCollectionViewDidScroll:self];
 }
 
-- (void)promoStateChangedAnimated:(BOOL)animate {
-  BOOL newPromoState =
-      !self.editing && self.folder &&
-      self.folder->type() == BookmarkNode::MOBILE &&
-      [self.delegate bookmarkCollectionViewShouldShowPromoCell:self];
-  if (newPromoState != _promoVisible) {
-    // This is awful, but until the old code to do the refresh when switching
-    // in and out of edit mode is fixed, this is probably the cleanest thing to
-    // do.
-    _promoVisible = newPromoState;
-    if (experimental_flags::IsSigninPromoEnabled()) {
-      if (!_promoVisible) {
-        _signinPromoViewMediator.consumer = nil;
-        _signinPromoViewMediator = nil;
-      } else {
-        _signinPromoViewMediator = [[SigninPromoViewMediator alloc]
-            initWithBrowserState:_browserState];
-        _signinPromoViewMediator.consumer = self;
-        _signinPromoViewMediator.displayedCountPreferenceKey =
-            prefs::kIosBookmarkSigninPromoDisplayedCount;
-        _signinPromoViewMediator.alreadySeenSigninViewPreferenceKey =
-            prefs::kIosBookmarkPromoAlreadySeen;
-        _signinPromoViewMediator.histograms =
-            ios::SigninPromoViewHistograms::Bookmarks;
-        _signinPromoViewMediator.accessPoint =
-            signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_MANAGER;
-        [_signinPromoViewMediator signinPromoViewVisible];
-      }
+- (void)promoStateChangedAnimated:(BOOL)animated {
+  BOOL shouldShowPromo =
+      (!self.editing && self.folder &&
+       self.folder->type() == BookmarkNode::MOBILE &&
+       [self.delegate bookmarkCollectionViewShouldShowPromoCell:self]) ||
+      (_signinPromoViewMediator &&
+       _signinPromoViewMediator.signinPromoViewState ==
+           ios::SigninPromoViewState::SigninStarted);
+  if (shouldShowPromo == _promoVisible)
+    return;
+  // This is awful, but until the old code to do the refresh when switching
+  // in and out of edit mode is fixed, this is probably the cleanest thing to
+  // do.
+  _promoVisible = shouldShowPromo;
+  if (experimental_flags::IsSigninPromoEnabled()) {
+    if (!_promoVisible) {
+      _signinPromoViewMediator.consumer = nil;
+      _signinPromoViewMediator = nil;
+    } else {
+      _signinPromoViewMediator =
+          [[SigninPromoViewMediator alloc] initWithBrowserState:_browserState];
+      _signinPromoViewMediator.consumer = self;
+      _signinPromoViewMediator.displayedCountPreferenceKey =
+          prefs::kIosBookmarkSigninPromoDisplayedCount;
+      _signinPromoViewMediator.alreadySeenSigninViewPreferenceKey =
+          prefs::kIosBookmarkPromoAlreadySeen;
+      _signinPromoViewMediator.histograms =
+          ios::SigninPromoViewHistograms::Bookmarks;
+      _signinPromoViewMediator.accessPoint =
+          signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_MANAGER;
+      [_signinPromoViewMediator signinPromoViewVisible];
     }
-    [self.collectionView reloadData];
   }
+  [self.collectionView reloadData];
 }
 
 - (void)wasShown {
@@ -818,7 +821,7 @@ const NSTimeInterval kShowEmptyBookmarksBackgroundRefreshDelay = 1.0;
 
 // Removes the sign-in promo view.
 - (void)signinPromoCloseButtonAction {
-  [_signinPromoViewMediator signinPromoViewDismissed];
+  [_signinPromoViewMediator signinPromoViewClosed];
   [_delegate bookmarkCollectionViewDismissPromo:self];
 }
 
@@ -885,6 +888,10 @@ const NSTimeInterval kShowEmptyBookmarksBackgroundRefreshDelay = 1.0;
     NSIndexSet* indexSet = [NSIndexSet indexSetWithIndex:self.promoSection];
     [self.collectionView reloadSections:indexSet];
   }
+}
+
+- (void)signinDidFinish {
+  [self promoStateChangedAnimated:NO];
 }
 
 #pragma mark - UIScrollViewDelegate
