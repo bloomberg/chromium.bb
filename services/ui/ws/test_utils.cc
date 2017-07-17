@@ -31,46 +31,6 @@ namespace ws {
 namespace test {
 namespace {
 
-// -----------------------------------------------------------------------------
-// Empty implementation of PlatformDisplay.
-class TestPlatformDisplay : public PlatformDisplay {
- public:
-  explicit TestPlatformDisplay(const display::ViewportMetrics& metrics,
-                               ui::CursorData* cursor_storage)
-      : metrics_(metrics), cursor_storage_(cursor_storage) {}
-  ~TestPlatformDisplay() override {}
-
-  // PlatformDisplay:
-  void Init(PlatformDisplayDelegate* delegate) override {
-    delegate->OnAcceleratedWidgetAvailable();
-  }
-  void SetViewportSize(const gfx::Size& size) override {}
-  void SetTitle(const base::string16& title) override {}
-  void SetCapture() override {}
-  void ReleaseCapture() override {}
-  void SetCursor(const ui::CursorData& cursor) override {
-    *cursor_storage_ = cursor;
-  }
-  void SetCursorSize(const ui::CursorSize& cursor_size) override {}
-  void MoveCursorTo(const gfx::Point& window_pixel_location) override {}
-  void UpdateTextInputState(const ui::TextInputState& state) override {}
-  void SetImeVisibility(bool visible) override {}
-  void UpdateViewportMetrics(const display::ViewportMetrics& metrics) override {
-    metrics_ = metrics;
-  }
-  gfx::AcceleratedWidget GetAcceleratedWidget() const override {
-    return gfx::kNullAcceleratedWidget;
-  }
-  FrameGenerator* GetFrameGenerator() override { return nullptr; }
-  EventSink* GetEventSink() override { return nullptr; }
-
- private:
-  display::ViewportMetrics metrics_;
-  ui::CursorData* cursor_storage_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestPlatformDisplay);
-};
-
 ClientWindowId NextUnusedClientWindowId(WindowTree* tree) {
   ClientWindowId client_id;
   for (ClientSpecificId id = 1;; ++id) {
@@ -718,6 +678,49 @@ void TestDisplayManagerObserver::OnDisplaysChanged(
   if (!observer_calls_.empty())
     observer_calls_ += "\n";
   observer_calls_ += "OnDisplaysChanged " + DisplayIdsToString(displays);
+}
+
+// -----------------------------------------------------------------------------
+TestPlatformDisplay::TestPlatformDisplay(
+    const display::ViewportMetrics& metrics,
+    ui::CursorData* cursor_storage)
+    : metrics_(metrics), cursor_storage_(cursor_storage) {}
+
+TestPlatformDisplay::~TestPlatformDisplay() = default;
+
+// PlatformDisplay:
+void TestPlatformDisplay::Init(PlatformDisplayDelegate* delegate) {
+  delegate->OnAcceleratedWidgetAvailable();
+}
+void TestPlatformDisplay::SetViewportSize(const gfx::Size& size) {}
+void TestPlatformDisplay::SetTitle(const base::string16& title) {}
+void TestPlatformDisplay::SetCapture() {}
+void TestPlatformDisplay::ReleaseCapture() {}
+void TestPlatformDisplay::SetCursor(const ui::CursorData& cursor) {
+  *cursor_storage_ = cursor;
+}
+void TestPlatformDisplay::SetCursorSize(const ui::CursorSize& cursor_size) {}
+void TestPlatformDisplay::MoveCursorTo(
+    const gfx::Point& window_pixel_location) {}
+void TestPlatformDisplay::UpdateTextInputState(
+    const ui::TextInputState& state) {}
+void TestPlatformDisplay::SetImeVisibility(bool visible) {}
+void TestPlatformDisplay::UpdateViewportMetrics(
+    const display::ViewportMetrics& metrics) {
+  metrics_ = metrics;
+}
+gfx::AcceleratedWidget TestPlatformDisplay::GetAcceleratedWidget() const {
+  return gfx::kNullAcceleratedWidget;
+}
+FrameGenerator* TestPlatformDisplay::GetFrameGenerator() {
+  return nullptr;
+}
+EventSink* TestPlatformDisplay::GetEventSink() {
+  return nullptr;
+}
+void TestPlatformDisplay::SetCursorConfig(display::Display::Rotation rotation,
+                                          float scale) {
+  cursor_scale_ = scale;
 }
 
 // -----------------------------------------------------------------------------

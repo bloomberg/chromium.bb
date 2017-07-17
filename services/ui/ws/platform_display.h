@@ -13,6 +13,7 @@
 #include "base/strings/string16.h"
 #include "services/ui/display/viewport_metrics.h"
 #include "services/ui/public/interfaces/cursor/cursor.mojom.h"
+#include "ui/display/display.h"
 #include "ui/events/event_source.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -67,6 +68,9 @@ class PlatformDisplay : public ui::EventSource {
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() const = 0;
 
   virtual FrameGenerator* GetFrameGenerator() = 0;
+
+  virtual void SetCursorConfig(display::Display::Rotation rotation,
+                               float scale) = 0;
 
   // Overrides factory for testing. Default (NULL) value indicates regular
   // (non-test) environment.

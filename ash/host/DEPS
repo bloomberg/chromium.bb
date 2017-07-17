@@ -13,5 +13,8 @@ specific_include_rules = {
   "ash_window_tree_host_platform.cc": [
     "+ash/shell.h",
     "+ash/shell_delegate.h",
+    # AshWindowTreeHostPlatform is only used in classic ash, so it can use
+    # ozone.
+    "+ui/events/ozone/chromeos/cursor_controller.h",
   ],
 }

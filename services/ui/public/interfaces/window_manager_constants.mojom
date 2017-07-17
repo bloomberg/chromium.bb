@@ -72,3 +72,7 @@ struct WmViewportMetrics {
   float device_scale_factor;
   float ui_scale_factor;
 };
+
+// Scale factor applied to cursor movement on external displays.
+// TODO(sky): remove this once classic ash is removed.
+const float kCursorMultiplierForExternalDisplays = 1.2;

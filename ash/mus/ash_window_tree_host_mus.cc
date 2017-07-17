@@ -74,6 +74,16 @@ void AshWindowTreeHostMus::RegisterMirroringHost(
   NOTIMPLEMENTED();
 }
 
+void AshWindowTreeHostMus::SetCursorConfig(
+    const display::Display& display,
+    display::Display::Rotation rotation) {
+  // Nothing to do here, mus takes care of this.
+}
+
+void AshWindowTreeHostMus::ClearCursorConfig() {
+  // Nothing to do here, mus takes care of this.
+}
+
 void AshWindowTreeHostMus::SetRootTransform(const gfx::Transform& transform) {
   transformer_helper_->SetTransform(transform);
 }

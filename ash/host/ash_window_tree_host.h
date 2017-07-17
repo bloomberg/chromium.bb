@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ui/display/display.h"
 
 namespace aura {
 class WindowTreeHost;
@@ -55,6 +56,12 @@ class ASH_EXPORT AshWindowTreeHost {
   virtual void PrepareForShutdown() {}
 
   virtual void RegisterMirroringHost(AshWindowTreeHost* mirroring_ash_host) {}
+
+#if defined(USE_OZONE)
+  virtual void SetCursorConfig(const display::Display& display,
+                               display::Display::Rotation rotation) = 0;
+  virtual void ClearCursorConfig() = 0;
+#endif
 
  protected:
   // Translates the native mouse location into screen coordinates.
