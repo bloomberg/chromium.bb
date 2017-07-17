@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "ash/public/cpp/shelf_types.h"
@@ -26,6 +27,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/app_list/presenter/app_list.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/compositor/callback_layer_animation_observer.h"
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_animation_sequence.h"
@@ -43,6 +45,7 @@
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
+#include "ui/views/animation/ink_drop_painted_layer_delegates.h"
 #include "ui/views/painter.h"
 #include "ui/views/widget/widget.h"
 
@@ -62,27 +65,85 @@ constexpr int kRippleOpacityDurationMs = 100;
 constexpr int kRippleOpacityRetractDurationMs = 200;
 constexpr float kRippleOpacity = 0.2f;
 
-constexpr float kIconInitSizeDip = 24.f;
+constexpr float kIconInitSizeDip = 48.f;
 constexpr float kIconStartSizeDip = 4.f;
 constexpr float kIconSizeDip = 24.f;
+constexpr float kIconEndSizeDip = 48.f;
 constexpr float kIconOffsetDip = 56.f;
 constexpr float kIconOpacity = 1.f;
-constexpr int kIconBurstDurationMs = 100;
 
 constexpr float kBackgroundInitSizeDip = 48.f;
 constexpr float kBackgroundStartSizeDip = 10.f;
 constexpr float kBackgroundSizeDip = 48.f;
 constexpr int kBackgroundOpacityDurationMs = 200;
 constexpr float kBackgroundShadowElevationDip = 24.f;
+// TODO(xiaohuic): this is 2x device size, 1x actually have a different size.
+// Need to figure out a way to dynamically change sizes.
+constexpr float kBackgroundLargeWidthDip = 352.5f;
+constexpr float kBackgroundLargeHeightDip = 540.0f;
+constexpr float kBackgroundCornerRadiusDip = 2.f;
+constexpr float kBackgroundPaddingDip = 6.f;
+constexpr int kBackgroundMorphDurationMs = 300;
+
+constexpr int kHideDurationMs = 200;
+
+// The minimum scale factor to use when scaling rectangle layers. Smaller values
+// were causing visual anomalies.
+constexpr float kMinimumRectScale = 0.0001f;
+
+// The minimum scale factor to use when scaling circle layers. Smaller values
+// were causing visual anomalies.
+constexpr float kMinimumCircleScale = 0.001f;
+
+class VoiceInteractionIcon : public ui::Layer, public ui::LayerDelegate {
+ public:
+  VoiceInteractionIcon() {
+    set_name("VoiceInteractionOverlay:ICON_LAYER");
+    SetBounds(gfx::Rect(0, 0, kIconInitSizeDip, kIconInitSizeDip));
+    SetFillsBoundsOpaquely(false);
+    SetMasksToBounds(false);
+    set_delegate(this);
+  }
+
+ private:
+  // ui::LayerDelegate:
+  void OnPaintLayer(const ui::PaintContext& context) override {
+    ui::PaintRecorder recorder(context, size());
+    gfx::PaintVectorIcon(recorder.canvas(), kShelfVoiceInteractionIcon,
+                         kIconInitSizeDip, 0);
+  }
+
+  void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
+
+  void OnDeviceScaleFactorChanged(float device_scale_factor) override {}
+
+  DISALLOW_COPY_AND_ASSIGN(VoiceInteractionIcon);
+};
+}  // namespace
 
 class VoiceInteractionIconBackground : public ui::Layer,
                                        public ui::LayerDelegate {
  public:
-  VoiceInteractionIconBackground() : Layer(ui::LAYER_NOT_DRAWN) {
+  VoiceInteractionIconBackground()
+      : Layer(ui::LAYER_NOT_DRAWN),
+        large_size_(
+            gfx::Size(kBackgroundLargeWidthDip, kBackgroundLargeHeightDip)),
+        small_size_(gfx::Size(kBackgroundSizeDip, kBackgroundSizeDip)),
+        center_point_(
+            gfx::PointF(kBackgroundSizeDip / 2, kBackgroundSizeDip / 2)),
+        circle_layer_delegate_(base::MakeUnique<views::CircleLayerDelegate>(
+            SK_ColorWHITE,
+            kBackgroundSizeDip / 2)),
+        rect_layer_delegate_(base::MakeUnique<views::RectangleLayerDelegate>(
+            SK_ColorWHITE,
+            gfx::SizeF(small_size_))) {
     set_name("VoiceInteractionOverlay:BACKGROUND_LAYER");
     SetBounds(gfx::Rect(0, 0, kBackgroundInitSizeDip, kBackgroundInitSizeDip));
     SetFillsBoundsOpaquely(false);
     SetMasksToBounds(false);
+
+    for (int i = 0; i < PAINTED_SHAPE_COUNT; ++i)
+      AddPaintLayer(static_cast<PaintedShape>(i));
 
     shadow_values_ =
         gfx::ShadowValue::MakeMdShadowValues(kBackgroundShadowElevationDip);
@@ -100,7 +161,228 @@ class VoiceInteractionIconBackground : public ui::Layer,
   }
   ~VoiceInteractionIconBackground() override{};
 
+  void AnimateToLarge(const gfx::PointF& new_center,
+                      ui::LayerAnimationObserver* animation_observer) {
+    PaintedShapeTransforms transforms;
+    // Setup the painted layers to be the small round size and show it
+    CalculateCircleTransforms(small_size_, &transforms);
+    SetTransforms(transforms);
+    SetPaintedLayersVisible(true);
+
+    // Hide the shadow layer
+    shadow_layer_->SetVisible(false);
+
+    center_point_ = new_center;
+    // Animate the painted layers to the large rectangle size
+    CalculateRectTransforms(large_size_, kBackgroundCornerRadiusDip,
+                            &transforms);
+
+    AnimateToTransforms(
+        transforms,
+        base::TimeDelta::FromMilliseconds(kBackgroundMorphDurationMs),
+        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET,
+        gfx::Tween::LINEAR_OUT_SLOW_IN, animation_observer);
+  }
+
+  void ResetShape() {
+    // This reverts to the original small round shape.
+    shadow_layer_->SetVisible(true);
+    SetPaintedLayersVisible(false);
+    center_point_.SetPoint(small_size_.width() / 2.f,
+                           small_size_.height() / 2.f);
+  }
+
  private:
+  // Enumeration of the different shapes that compose the background.
+  enum PaintedShape {
+    TOP_LEFT_CIRCLE = 0,
+    TOP_RIGHT_CIRCLE,
+    BOTTOM_RIGHT_CIRCLE,
+    BOTTOM_LEFT_CIRCLE,
+    HORIZONTAL_RECT,
+    VERTICAL_RECT,
+    // The total number of shapes, not an actual shape.
+    PAINTED_SHAPE_COUNT
+  };
+
+  typedef gfx::Transform PaintedShapeTransforms[PAINTED_SHAPE_COUNT];
+
+  void AddPaintLayer(PaintedShape painted_shape) {
+    ui::LayerDelegate* delegate = nullptr;
+    switch (painted_shape) {
+      case TOP_LEFT_CIRCLE:
+      case TOP_RIGHT_CIRCLE:
+      case BOTTOM_RIGHT_CIRCLE:
+      case BOTTOM_LEFT_CIRCLE:
+        delegate = circle_layer_delegate_.get();
+        break;
+      case HORIZONTAL_RECT:
+      case VERTICAL_RECT:
+        delegate = rect_layer_delegate_.get();
+        break;
+      case PAINTED_SHAPE_COUNT:
+        NOTREACHED() << "PAINTED_SHAPE_COUNT is not an actual shape type.";
+        break;
+    }
+
+    ui::Layer* layer = new ui::Layer();
+    Add(layer);
+
+    layer->SetBounds(gfx::Rect(small_size_));
+    layer->SetFillsBoundsOpaquely(false);
+    layer->set_delegate(delegate);
+    layer->SetVisible(true);
+    layer->SetOpacity(1.0);
+    layer->SetMasksToBounds(false);
+    layer->set_name("PAINTED_SHAPE_COUNT:" + ToLayerName(painted_shape));
+
+    painted_layers_[static_cast<int>(painted_shape)].reset(layer);
+  }
+
+  void SetTransforms(const PaintedShapeTransforms transforms) {
+    for (int i = 0; i < PAINTED_SHAPE_COUNT; ++i)
+      painted_layers_[i]->SetTransform(transforms[i]);
+  }
+
+  void SetPaintedLayersVisible(bool visible) {
+    for (int i = 0; i < PAINTED_SHAPE_COUNT; ++i)
+      painted_layers_[i]->SetVisible(visible);
+  }
+
+  void CalculateCircleTransforms(const gfx::Size& size,
+                                 PaintedShapeTransforms* transforms_out) const {
+    CalculateRectTransforms(size, std::min(size.width(), size.height()) / 2.0f,
+                            transforms_out);
+  }
+
+  void CalculateRectTransforms(const gfx::Size& desired_size,
+                               float corner_radius,
+                               PaintedShapeTransforms* transforms_out) const {
+    DCHECK_GE(desired_size.width() / 2.0f, corner_radius)
+        << "The circle's diameter should not be greater than the total width.";
+    DCHECK_GE(desired_size.height() / 2.0f, corner_radius)
+        << "The circle's diameter should not be greater than the total height.";
+
+    gfx::SizeF size(desired_size);
+    // This function can be called before the layer's been added to a view,
+    // either at construction time or in tests.
+    if (GetCompositor()) {
+      // Modify |desired_size| so that the ripple aligns to pixel bounds.
+      const float dsf = GetCompositor()->device_scale_factor();
+      gfx::RectF ripple_bounds((gfx::PointF(center_point_)), gfx::SizeF());
+      ripple_bounds.Inset(-gfx::InsetsF(desired_size.height() / 2.0f,
+                                        desired_size.width() / 2.0f));
+      ripple_bounds.Scale(dsf);
+      ripple_bounds = gfx::RectF(gfx::ToEnclosingRect(ripple_bounds));
+      ripple_bounds.Scale(1.0f / dsf);
+      size = ripple_bounds.size();
+    }
+
+    // The shapes are drawn such that their center points are not at the origin.
+    // Thus we use the CalculateCircleTransform() and CalculateRectTransform()
+    // methods to calculate the complex Transforms.
+
+    const float circle_scale = std::max(
+        kMinimumCircleScale,
+        corner_radius / static_cast<float>(circle_layer_delegate_->radius()));
+
+    const float circle_target_x_offset = size.width() / 2.0f - corner_radius;
+    const float circle_target_y_offset = size.height() / 2.0f - corner_radius;
+
+    (*transforms_out)[TOP_LEFT_CIRCLE] = CalculateCircleTransform(
+        circle_scale, -circle_target_x_offset, -circle_target_y_offset);
+    (*transforms_out)[TOP_RIGHT_CIRCLE] = CalculateCircleTransform(
+        circle_scale, circle_target_x_offset, -circle_target_y_offset);
+    (*transforms_out)[BOTTOM_RIGHT_CIRCLE] = CalculateCircleTransform(
+        circle_scale, circle_target_x_offset, circle_target_y_offset);
+    (*transforms_out)[BOTTOM_LEFT_CIRCLE] = CalculateCircleTransform(
+        circle_scale, -circle_target_x_offset, circle_target_y_offset);
+
+    const float rect_delegate_width = rect_layer_delegate_->size().width();
+    const float rect_delegate_height = rect_layer_delegate_->size().height();
+
+    (*transforms_out)[HORIZONTAL_RECT] = CalculateRectTransform(
+        std::max(kMinimumRectScale, size.width() / rect_delegate_width),
+        std::max(kMinimumRectScale, (size.height() - 2.0f * corner_radius) /
+                                        rect_delegate_height));
+
+    (*transforms_out)[VERTICAL_RECT] = CalculateRectTransform(
+        std::max(kMinimumRectScale,
+                 (size.width() - 2.0f * corner_radius) / rect_delegate_width),
+        std::max(kMinimumRectScale, size.height() / rect_delegate_height));
+  }
+
+  gfx::Transform CalculateCircleTransform(float scale,
+                                          float target_center_x,
+                                          float target_center_y) const {
+    gfx::Transform transform;
+    // Offset for the center point of the ripple.
+    transform.Translate(center_point_.x(), center_point_.y());
+    // Move circle to target.
+    transform.Translate(target_center_x, target_center_y);
+    transform.Scale(scale, scale);
+    // Align center point of the painted circle.
+    const gfx::Vector2dF circle_center_offset =
+        circle_layer_delegate_->GetCenteringOffset();
+    transform.Translate(-circle_center_offset.x(), -circle_center_offset.y());
+    return transform;
+  }
+
+  gfx::Transform CalculateRectTransform(float x_scale, float y_scale) const {
+    gfx::Transform transform;
+    transform.Translate(center_point_.x(), center_point_.y());
+    transform.Scale(x_scale, y_scale);
+    const gfx::Vector2dF rect_center_offset =
+        rect_layer_delegate_->GetCenteringOffset();
+    transform.Translate(-rect_center_offset.x(), -rect_center_offset.y());
+    return transform;
+  }
+
+  void AnimateToTransforms(
+      const PaintedShapeTransforms transforms,
+      base::TimeDelta duration,
+      ui::LayerAnimator::PreemptionStrategy preemption_strategy,
+      gfx::Tween::Type tween,
+      ui::LayerAnimationObserver* animation_observer) {
+    for (int i = 0; i < PAINTED_SHAPE_COUNT; ++i) {
+      ui::LayerAnimator* animator = painted_layers_[i]->GetAnimator();
+      ui::ScopedLayerAnimationSettings animation(animator);
+      animation.SetPreemptionStrategy(preemption_strategy);
+      animation.SetTweenType(tween);
+      std::unique_ptr<ui::LayerAnimationElement> element =
+          ui::LayerAnimationElement::CreateTransformElement(transforms[i],
+                                                            duration);
+      ui::LayerAnimationSequence* sequence =
+          new ui::LayerAnimationSequence(std::move(element));
+
+      if (animation_observer)
+        sequence->AddObserver(animation_observer);
+
+      animator->StartAnimation(sequence);
+    }
+  }
+
+  std::string ToLayerName(PaintedShape painted_shape) {
+    switch (painted_shape) {
+      case TOP_LEFT_CIRCLE:
+        return "TOP_LEFT_CIRCLE";
+      case TOP_RIGHT_CIRCLE:
+        return "TOP_RIGHT_CIRCLE";
+      case BOTTOM_RIGHT_CIRCLE:
+        return "BOTTOM_RIGHT_CIRCLE";
+      case BOTTOM_LEFT_CIRCLE:
+        return "BOTTOM_LEFT_CIRCLE";
+      case HORIZONTAL_RECT:
+        return "HORIZONTAL_RECT";
+      case VERTICAL_RECT:
+        return "VERTICAL_RECT";
+      case PAINTED_SHAPE_COUNT:
+        NOTREACHED() << "The PAINTED_SHAPE_COUNT value should never be used.";
+        return "PAINTED_SHAPE_COUNT";
+    }
+    return "UNKNOWN";
+  }
+
   void OnPaintLayer(const ui::PaintContext& context) override {
     // Radius is based on the parent layer size, the shadow layer is expanded
     // to make room for the shadow.
@@ -124,6 +406,23 @@ class VoiceInteractionIconBackground : public ui::Layer,
 
   void OnDeviceScaleFactorChanged(float device_scale_factor) override {}
 
+  // ui::Layers for all of the painted shape layers that compose the morphing
+  // shape.
+  std::unique_ptr<ui::Layer> painted_layers_[PAINTED_SHAPE_COUNT];
+
+  const gfx::Size large_size_;
+
+  const gfx::Size small_size_;
+
+  // The center point of the painted shape.
+  gfx::PointF center_point_;
+
+  // ui::LayerDelegate to paint circles for all the circle layers.
+  std::unique_ptr<views::CircleLayerDelegate> circle_layer_delegate_;
+
+  // ui::LayerDelegate to paint rectangles for all the rectangle layers.
+  std::unique_ptr<views::RectangleLayerDelegate> rect_layer_delegate_;
+
   gfx::ShadowValues shadow_values_;
 
   std::unique_ptr<ui::Layer> shadow_layer_;
@@ -131,37 +430,14 @@ class VoiceInteractionIconBackground : public ui::Layer,
   DISALLOW_COPY_AND_ASSIGN(VoiceInteractionIconBackground);
 };
 
-class VoiceInteractionIcon : public ui::Layer, public ui::LayerDelegate {
- public:
-  VoiceInteractionIcon() {
-    set_name("VoiceInteractionOverlay:ICON_LAYER");
-    SetBounds(gfx::Rect(0, 0, kIconInitSizeDip, kIconInitSizeDip));
-    SetFillsBoundsOpaquely(false);
-    SetMasksToBounds(false);
-    set_delegate(this);
-  }
-
- private:
-  void OnPaintLayer(const ui::PaintContext& context) override {
-    ui::PaintRecorder recorder(context, size());
-    gfx::PaintVectorIcon(recorder.canvas(), kShelfVoiceInteractionIcon,
-                         kIconInitSizeDip, 0);
-  }
-
-  void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
-
-  void OnDeviceScaleFactorChanged(float device_scale_factor) override {}
-
-  DISALLOW_COPY_AND_ASSIGN(VoiceInteractionIcon);
-};
-}  // namespace
-
 VoiceInteractionOverlay::VoiceInteractionOverlay(AppListButton* host_view)
-    : ripple_layer_(new ui::Layer()),
-      icon_layer_(new VoiceInteractionIcon()),
-      background_layer_(new VoiceInteractionIconBackground()),
+    : ripple_layer_(base::MakeUnique<ui::Layer>()),
+      icon_layer_(base::MakeUnique<VoiceInteractionIcon>()),
+      background_layer_(base::MakeUnique<VoiceInteractionIconBackground>()),
       host_view_(host_view),
       is_bursting_(false),
+      show_icon_(false),
+      should_hide_animation_(false),
       circle_layer_delegate_(kRippleColor, kRippleCircleInitRadiusDip) {
   SetPaintToLayer(ui::LAYER_NOT_DRAWN);
   layer()->set_name("VoiceInteractionOverlay:ROOT_LAYER");
@@ -182,8 +458,9 @@ VoiceInteractionOverlay::VoiceInteractionOverlay(AppListButton* host_view)
 
 VoiceInteractionOverlay::~VoiceInteractionOverlay() {}
 
-void VoiceInteractionOverlay::StartAnimation() {
+void VoiceInteractionOverlay::StartAnimation(bool show_icon) {
   is_bursting_ = false;
+  show_icon_ = show_icon;
   SetVisible(true);
 
   // Setup ripple initial state.
@@ -219,14 +496,13 @@ void VoiceInteractionOverlay::StartAnimation() {
     ripple_layer_->SetOpacity(kRippleOpacity);
   }
 
-  // We need to determine the animation direction based on shelf alignment.
-  ShelfAlignment alignment =
-      Shelf::ForWindow(host_view_->GetWidget()->GetNativeWindow())->alignment();
+  icon_layer_->SetOpacity(0);
+  background_layer_->SetOpacity(0);
+  if (!show_icon_)
+    return;
 
   // Setup icon initial state.
-  icon_layer_->SetOpacity(0);
   transform.MakeIdentity();
-
   transform.Translate(center.x() - kIconStartSizeDip / 2.f,
                       center.y() - kIconStartSizeDip / 2.f);
 
@@ -237,18 +513,8 @@ void VoiceInteractionOverlay::StartAnimation() {
   // Setup icon animation.
   scale_factor = kIconSizeDip / kIconInitSizeDip;
   transform.MakeIdentity();
-  if (alignment == SHELF_ALIGNMENT_BOTTOM ||
-      alignment == SHELF_ALIGNMENT_BOTTOM_LOCKED) {
-    transform.Translate(center.x() - kIconSizeDip / 2 + kIconOffsetDip,
-                        center.y() - kIconSizeDip / 2 - kIconOffsetDip);
-  } else if (alignment == SHELF_ALIGNMENT_RIGHT) {
-    transform.Translate(center.x() - kIconSizeDip / 2 - kIconOffsetDip,
-                        center.y() - kIconSizeDip / 2 + kIconOffsetDip);
-  } else {
-    DCHECK_EQ(alignment, SHELF_ALIGNMENT_LEFT);
-    transform.Translate(center.x() - kIconSizeDip / 2 + kIconOffsetDip,
-                        center.y() - kIconSizeDip / 2 + kIconOffsetDip);
-  }
+  transform.Translate(center.x() - kIconSizeDip / 2 + kIconOffsetDip,
+                      center.y() - kIconSizeDip / 2 - kIconOffsetDip);
   transform.Scale(scale_factor, scale_factor);
 
   {
@@ -262,7 +528,7 @@ void VoiceInteractionOverlay::StartAnimation() {
   }
 
   // Setup background initial state.
-  background_layer_->SetOpacity(0);
+  background_layer_->ResetShape();
 
   transform.MakeIdentity();
   transform.Translate(center.x() - kBackgroundStartSizeDip / 2.f,
@@ -275,18 +541,8 @@ void VoiceInteractionOverlay::StartAnimation() {
   // Setup background animation.
   scale_factor = kBackgroundSizeDip / kBackgroundInitSizeDip;
   transform.MakeIdentity();
-  if (alignment == SHELF_ALIGNMENT_BOTTOM ||
-      alignment == SHELF_ALIGNMENT_BOTTOM_LOCKED) {
-    transform.Translate(center.x() - kBackgroundSizeDip / 2 + kIconOffsetDip,
-                        center.y() - kBackgroundSizeDip / 2 - kIconOffsetDip);
-  } else if (alignment == SHELF_ALIGNMENT_RIGHT) {
-    transform.Translate(center.x() - kBackgroundSizeDip / 2 - kIconOffsetDip,
-                        center.y() - kBackgroundSizeDip / 2 + kIconOffsetDip);
-  } else {
-    DCHECK_EQ(alignment, SHELF_ALIGNMENT_LEFT);
-    transform.Translate(center.x() - kBackgroundSizeDip / 2 + kIconOffsetDip,
-                        center.y() - kBackgroundSizeDip / 2 + kIconOffsetDip);
-  }
+  transform.Translate(center.x() - kBackgroundSizeDip / 2 + kIconOffsetDip,
+                      center.y() - kBackgroundSizeDip / 2 - kIconOffsetDip);
   transform.Scale(scale_factor, scale_factor);
 
   {
@@ -310,46 +566,72 @@ void VoiceInteractionOverlay::StartAnimation() {
 
 void VoiceInteractionOverlay::BurstAnimation() {
   is_bursting_ = true;
+  should_hide_animation_ = false;
 
   gfx::Point center = host_view_->GetCenterPoint();
+  gfx::Transform transform;
 
   // Setup ripple animations.
   {
     SkMScalar scale_factor =
         kRippleCircleBurstRadiusDip / kRippleCircleInitRadiusDip;
-    std::unique_ptr<gfx::Transform> transform(new gfx::Transform());
-    transform->Translate(center.x() - kRippleCircleBurstRadiusDip,
-                         center.y() - kRippleCircleBurstRadiusDip);
-    transform->Scale(scale_factor, scale_factor);
+    transform.Translate(center.x() - kRippleCircleBurstRadiusDip,
+                        center.y() - kRippleCircleBurstRadiusDip);
+    transform.Scale(scale_factor, scale_factor);
 
     ui::ScopedLayerAnimationSettings settings(ripple_layer_->GetAnimator());
     settings.SetTransitionDuration(
         base::TimeDelta::FromMilliseconds(kFullBurstDurationMs));
     settings.SetTweenType(gfx::Tween::LINEAR_OUT_SLOW_IN);
+    settings.SetPreemptionStrategy(
+        ui::LayerAnimator::PreemptionStrategy::ENQUEUE_NEW_ANIMATION);
 
-    ripple_layer_->SetTransform(*transform.get());
+    ripple_layer_->SetTransform(transform);
     ripple_layer_->SetOpacity(0);
   }
 
+  if (!show_icon_)
+    return;
+
   // Setup icon animation.
+  // TODO(xiaohuic): Currently the animation does not support RTL.
   {
     ui::ScopedLayerAnimationSettings settings(icon_layer_->GetAnimator());
     settings.SetTransitionDuration(
-        base::TimeDelta::FromMilliseconds(kIconBurstDurationMs));
+        base::TimeDelta::FromMilliseconds(kBackgroundMorphDurationMs));
+    settings.SetPreemptionStrategy(
+        ui::LayerAnimator::PreemptionStrategy::ENQUEUE_NEW_ANIMATION);
     settings.SetTweenType(gfx::Tween::LINEAR_OUT_SLOW_IN);
 
-    icon_layer_->SetOpacity(0);
+    transform.MakeIdentity();
+    transform.Translate(kBackgroundLargeWidthDip / 2 + kBackgroundPaddingDip -
+                            kIconEndSizeDip / 2,
+                        -kBackgroundLargeHeightDip / 2 - kBackgroundPaddingDip -
+                            kIconEndSizeDip / 2);
+    SkMScalar scale_factor = kIconEndSizeDip / kIconInitSizeDip;
+    transform.Scale(scale_factor, scale_factor);
+
+    icon_layer_->SetTransform(transform);
   }
 
   // Setup background animation.
-  {
-    ui::ScopedLayerAnimationSettings settings(background_layer_->GetAnimator());
-    settings.SetTransitionDuration(
-        base::TimeDelta::FromMilliseconds(kIconBurstDurationMs));
-    settings.SetTweenType(gfx::Tween::LINEAR_OUT_SLOW_IN);
+  ui::CallbackLayerAnimationObserver* observer =
+      new ui::CallbackLayerAnimationObserver(
+          base::Bind(&VoiceInteractionOverlay::AnimationEndedCallback,
+                     base::Unretained(this)));
+  // Transform to new shape.
+  // We want to animate from the background's current position into a larger
+  // size. The animation moves the background's center point while morphing from
+  // circle to a rectangle.
+  float x_offset = center.x() - kBackgroundSizeDip / 2 + kIconOffsetDip;
+  float y_offset = center.y() - kBackgroundSizeDip / 2 - kIconOffsetDip;
 
-    background_layer_->SetOpacity(0);
-  }
+  background_layer_->AnimateToLarge(
+      gfx::PointF(
+          kBackgroundLargeWidthDip / 2 + kBackgroundPaddingDip - x_offset,
+          -kBackgroundLargeHeightDip / 2 - kBackgroundPaddingDip - y_offset),
+      observer);
+  observer->SetActive();
 }
 
 void VoiceInteractionOverlay::EndAnimation() {
@@ -384,6 +666,9 @@ void VoiceInteractionOverlay::EndAnimation() {
     ripple_layer_->SetOpacity(0);
   }
 
+  if (!show_icon_)
+    return;
+
   // Setup icon animation.
   transform.MakeIdentity();
 
@@ -425,6 +710,61 @@ void VoiceInteractionOverlay::EndAnimation() {
     background_layer_->SetTransform(transform);
     background_layer_->SetOpacity(0);
   }
+}
+
+void VoiceInteractionOverlay::HideAnimation() {
+  is_bursting_ = false;
+
+  if (background_layer_->GetAnimator()->is_animating()) {
+    // Wait for current animation to finish
+    should_hide_animation_ = true;
+    return;
+  }
+  should_hide_animation_ = false;
+
+  // Setup ripple animations.
+  {
+    ui::ScopedLayerAnimationSettings settings(ripple_layer_->GetAnimator());
+    settings.SetTransitionDuration(
+        base::TimeDelta::FromMilliseconds(kHideDurationMs));
+    settings.SetTweenType(gfx::Tween::LINEAR_OUT_SLOW_IN);
+    settings.SetPreemptionStrategy(
+        ui::LayerAnimator::PreemptionStrategy::ENQUEUE_NEW_ANIMATION);
+
+    ripple_layer_->SetOpacity(0);
+  }
+
+  // Setup icon animation.
+  {
+    ui::ScopedLayerAnimationSettings settings(icon_layer_->GetAnimator());
+    settings.SetTransitionDuration(
+        base::TimeDelta::FromMilliseconds(kHideDurationMs));
+    settings.SetTweenType(gfx::Tween::LINEAR_OUT_SLOW_IN);
+    settings.SetPreemptionStrategy(
+        ui::LayerAnimator::PreemptionStrategy::ENQUEUE_NEW_ANIMATION);
+
+    icon_layer_->SetOpacity(0);
+  }
+
+  // Setup background animation.
+  {
+    ui::ScopedLayerAnimationSettings settings(background_layer_->GetAnimator());
+    settings.SetTransitionDuration(
+        base::TimeDelta::FromMilliseconds(kHideDurationMs));
+    settings.SetTweenType(gfx::Tween::LINEAR_OUT_SLOW_IN);
+    settings.SetPreemptionStrategy(
+        ui::LayerAnimator::PreemptionStrategy::ENQUEUE_NEW_ANIMATION);
+
+    background_layer_->SetOpacity(0);
+  }
+}
+
+bool VoiceInteractionOverlay::AnimationEndedCallback(
+    const ui::CallbackLayerAnimationObserver& observer) {
+  if (should_hide_animation_)
+    HideAnimation();
+
+  return true;
 }
 
 }  // namespace ash

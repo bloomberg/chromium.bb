@@ -13,29 +13,46 @@
 #include "ui/views/animation/ink_drop_painted_layer_delegates.h"
 #include "ui/views/view.h"
 
+namespace ui {
+class CallbackLayerAnimationObserver;
+}  // namespace ui
+
 namespace ash {
 
 class AppListButton;
+class VoiceInteractionIconBackground;
 
 class ASH_EXPORT VoiceInteractionOverlay : public views::View {
  public:
   explicit VoiceInteractionOverlay(AppListButton* host_view);
   ~VoiceInteractionOverlay() override;
 
-  void StartAnimation();
+  void StartAnimation(bool show_icon);
   void EndAnimation();
   void BurstAnimation();
+  void HideAnimation();
+  bool IsBursting() const { return is_bursting_; }
 
  private:
+  bool AnimationEndedCallback(
+      const ui::CallbackLayerAnimationObserver& observer);
+
   std::unique_ptr<ui::Layer> ripple_layer_;
   std::unique_ptr<ui::Layer> icon_layer_;
-  std::unique_ptr<ui::Layer> background_layer_;
+  std::unique_ptr<VoiceInteractionIconBackground> background_layer_;
 
   AppListButton* host_view_;
 
   // Indiates the current animation is in the bursting phase, which means no
   // turning back.
   bool is_bursting_;
+
+  // Whether showing the icon animation or not.
+  bool show_icon_;
+
+  // Whether we should hide the burst animation when the animation ends. This is
+  // used to synchronize the animation and the underlying window's appearance.
+  bool should_hide_animation_;
 
   views::CircleLayerDelegate circle_layer_delegate_;
 

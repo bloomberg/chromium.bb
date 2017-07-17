@@ -45,6 +45,7 @@
 namespace ash {
 namespace {
 constexpr int kVoiceInteractionAnimationDelayMs = 200;
+constexpr int kVoiceInteractionAnimationHideDelayMs = 500;
 }  // namespace
 
 constexpr uint8_t kVoiceInteractionRunningAlpha = 255;     // 100% alpha
@@ -77,6 +78,8 @@ AppListButton::AppListButton(InkDropButtonListener* listener,
     AddChildView(voice_interaction_overlay_);
     voice_interaction_overlay_->SetVisible(false);
     voice_interaction_animation_delay_timer_.reset(new base::OneShotTimer());
+    voice_interaction_animation_hide_delay_timer_.reset(
+        new base::OneShotTimer());
   } else {
     voice_interaction_overlay_ = nullptr;
   }
@@ -84,8 +87,6 @@ AppListButton::AppListButton(InkDropButtonListener* listener,
 
 AppListButton::~AppListButton() {
   Shell::Get()->RemoveShellObserver(this);
-  if (voice_interaction_animation_delay_timer_)
-    voice_interaction_animation_delay_timer_->Stop();
 }
 
 void AppListButton::OnAppListShown() {
@@ -135,8 +136,8 @@ void AppListButton::OnGestureEvent(ui::GestureEvent* event) {
             FROM_HERE,
             base::TimeDelta::FromMilliseconds(
                 kVoiceInteractionAnimationDelayMs),
-            base::Bind(&VoiceInteractionOverlay::StartAnimation,
-                       base::Unretained(voice_interaction_overlay_)));
+            base::Bind(&AppListButton::StartVoiceInteractionAnimation,
+                       base::Unretained(this)));
       }
       if (!Shell::Get()->IsAppListVisible())
         AnimateInkDrop(views::InkDropState::ACTION_PENDING, event);
@@ -320,6 +321,27 @@ void AppListButton::OnAppListVisibilityChanged(bool shown,
 void AppListButton::OnVoiceInteractionStatusChanged(bool running) {
   voice_interaction_running_ = running;
   SchedulePaint();
+
+  // Voice interaction window shows up, we start hiding the animation if it is
+  // running.
+  if (running && voice_interaction_overlay_->IsBursting()) {
+    voice_interaction_animation_hide_delay_timer_->Start(
+        FROM_HERE,
+        base::TimeDelta::FromMilliseconds(
+            kVoiceInteractionAnimationHideDelayMs),
+        base::Bind(&VoiceInteractionOverlay::HideAnimation,
+                   base::Unretained(voice_interaction_overlay_)));
+  }
+}
+
+void AppListButton::StartVoiceInteractionAnimation() {
+  // We only show the voice interaction icon and related animation when the
+  // shelf is at the bottom position and voice interaction is not running.
+  ShelfAlignment alignment = shelf_->alignment();
+  bool show_icon = (alignment == SHELF_ALIGNMENT_BOTTOM ||
+                    alignment == SHELF_ALIGNMENT_BOTTOM_LOCKED) &&
+                   !voice_interaction_running_;
+  voice_interaction_overlay_->StartAnimation(show_icon);
 }
 
 }  // namespace ash
