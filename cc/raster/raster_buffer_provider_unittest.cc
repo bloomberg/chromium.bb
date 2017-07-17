@@ -275,7 +275,7 @@ class RasterBufferProviderTest
     return completed_tasks_;
   }
 
-  void LoseContext(ContextProvider* context_provider) {
+  void LoseContext(viz::ContextProvider* context_provider) {
     if (!context_provider)
       return;
     context_provider->ContextGL()->LoseContextCHROMIUM(

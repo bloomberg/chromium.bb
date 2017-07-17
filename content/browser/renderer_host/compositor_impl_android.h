@@ -134,7 +134,7 @@ class CONTENT_EXPORT CompositorImpl
   void InitializeDisplay(
       std::unique_ptr<cc::OutputSurface> display_output_surface,
       scoped_refptr<cc::VulkanContextProvider> vulkan_context_provider,
-      scoped_refptr<cc::ContextProvider> context_provider);
+      scoped_refptr<viz::ContextProvider> context_provider);
   void DidSwapBuffers();
 
   bool HavePendingReadbacks();

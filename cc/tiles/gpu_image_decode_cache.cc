@@ -18,9 +18,9 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "cc/base/devtools_instrumentation.h"
-#include "cc/output/context_provider.h"
 #include "cc/raster/tile_task.h"
 #include "cc/tiles/mipmap_util.h"
+#include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -392,7 +392,7 @@ GpuImageDecodeCache::ImageData::~ImageData() {
   DCHECK(!upload.image());
 }
 
-GpuImageDecodeCache::GpuImageDecodeCache(ContextProvider* context,
+GpuImageDecodeCache::GpuImageDecodeCache(viz::ContextProvider* context,
                                          viz::ResourceFormat decode_format,
                                          size_t max_working_set_bytes,
                                          size_t max_cache_bytes)
@@ -406,7 +406,7 @@ GpuImageDecodeCache::GpuImageDecodeCache(ContextProvider* context,
   // Acquire the context_lock so that we can safely retrieve the
   // GrContextThreadSafeProxy. This proxy can then be used with no lock held.
   {
-    ContextProvider::ScopedContextLock context_lock(context_);
+    viz::ContextProvider::ScopedContextLock context_lock(context_);
     context_threadsafe_proxy_ = sk_sp<GrContextThreadSafeProxy>(
         context->GrContext()->threadSafeProxy());
   }
@@ -622,7 +622,7 @@ void GpuImageDecodeCache::SetShouldAggressivelyFreeResources(
                "GpuImageDecodeCache::SetShouldAggressivelyFreeResources",
                "agressive_free_resources", aggressively_free_resources);
   if (aggressively_free_resources) {
-    ContextProvider::ScopedContextLock context_lock(context_);
+    viz::ContextProvider::ScopedContextLock context_lock(context_);
     base::AutoLock lock(lock_);
     // We want to keep as little in our cache as possible. Set our memory limit
     // to zero and EnsureCapacity to clean up memory.
@@ -766,7 +766,7 @@ void GpuImageDecodeCache::DecodeImage(const DrawImage& draw_image,
 void GpuImageDecodeCache::UploadImage(const DrawImage& draw_image) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "GpuImageDecodeCache::UploadImage");
-  ContextProvider::ScopedContextLock context_lock(context_);
+  viz::ContextProvider::ScopedContextLock context_lock(context_);
   base::AutoLock lock(lock_);
   ImageData* image_data = GetImageDataForDrawImage(draw_image);
   DCHECK(image_data);

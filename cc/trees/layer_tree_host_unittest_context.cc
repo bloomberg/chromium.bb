@@ -80,8 +80,8 @@ class LayerTreeHostContextTest : public LayerTreeTest {
   std::unique_ptr<viz::TestLayerTreeFrameSink> CreateLayerTreeFrameSink(
       const RendererSettings& renderer_settings,
       double refresh_rate,
-      scoped_refptr<ContextProvider> compositor_context_provider,
-      scoped_refptr<ContextProvider> worker_context_provider) override {
+      scoped_refptr<viz::ContextProvider> compositor_context_provider,
+      scoped_refptr<viz::ContextProvider> worker_context_provider) override {
     base::AutoLock lock(context3d_lock_);
 
     std::unique_ptr<TestWebGraphicsContext3D> compositor_context3d =
@@ -1627,7 +1627,7 @@ class LayerTreeHostContextTestLoseWorkerContextDuringPrepareTiles
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void WillPrepareTilesOnThread(LayerTreeHostImpl* host_impl) override {
-    ContextProvider::ScopedContextLock scoped_context(
+    viz::ContextProvider::ScopedContextLock scoped_context(
         host_impl->layer_tree_frame_sink()->worker_context_provider());
     gpu::gles2::GLES2Interface* gl = scoped_context.ContextGL();
     gl->LoseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,

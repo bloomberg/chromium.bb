@@ -18,7 +18,6 @@
 #include "cc/base/devtools_instrumentation.h"
 #include "cc/benchmarks/benchmark_instrumentation.h"
 #include "cc/input/browser_controls_offset_manager.h"
-#include "cc/output/context_provider.h"
 #include "cc/output/layer_tree_frame_sink.h"
 #include "cc/scheduler/compositor_timing_history.h"
 #include "cc/scheduler/delay_based_time_source.h"
@@ -27,6 +26,7 @@
 #include "cc/trees/mutator_host.h"
 #include "cc/trees/proxy_main.h"
 #include "cc/trees/task_runner_provider.h"
+#include "components/viz/common/gpu/context_provider.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 
 namespace cc {
@@ -209,7 +209,7 @@ void ProxyImpl::FinishGLOnImpl(CompletionEvent* completion) {
   TRACE_EVENT0("cc", "ProxyImpl::FinishGLOnImplThread");
   DCHECK(IsImplThread());
   if (layer_tree_host_impl_->layer_tree_frame_sink()) {
-    ContextProvider* context_provider =
+    viz::ContextProvider* context_provider =
         layer_tree_host_impl_->layer_tree_frame_sink()->context_provider();
     if (context_provider)
       context_provider->ContextGL()->Finish();

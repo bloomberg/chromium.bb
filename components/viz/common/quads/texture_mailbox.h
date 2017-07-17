@@ -12,6 +12,7 @@
 
 #include "base/memory/shared_memory.h"
 #include "build/build_config.h"
+#include "components/viz/common/viz_common_export.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "ui/gfx/color_space.h"
@@ -29,7 +30,7 @@ class SharedBitmap;
 
 // TODO(skaslev, danakj) Rename this class more apropriately since now it
 // can hold a shared memory resource as well as a texture mailbox.
-class TextureMailbox {
+class VIZ_COMMON_EXPORT TextureMailbox {
  public:
   TextureMailbox();
   TextureMailbox(const TextureMailbox& other);

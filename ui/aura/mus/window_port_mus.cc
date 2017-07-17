@@ -105,7 +105,7 @@ void WindowPortMus::Embed(
 
 std::unique_ptr<viz::ClientLayerTreeFrameSink>
 WindowPortMus::RequestLayerTreeFrameSink(
-    scoped_refptr<cc::ContextProvider> context_provider,
+    scoped_refptr<viz::ContextProvider> context_provider,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager) {
   cc::mojom::CompositorFrameSinkPtrInfo sink_info;
   cc::mojom::CompositorFrameSinkRequest sink_request =

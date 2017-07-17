@@ -9,8 +9,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "cc/cc_export.h"
-#include "cc/output/context_provider.h"
 #include "cc/resources/returned_resource.h"
+#include "components/viz/common/gpu/context_provider.h"
 #include "gpu/command_buffer/common/texture_in_use_response.h"
 #include "ui/gfx/geometry/rect.h"
 

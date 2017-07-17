@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "cc/cc_export.h"
-#include "cc/output/context_provider.h"
+#include "components/viz/common/gpu/context_provider.h"
 
 namespace cc {
 
@@ -19,14 +19,14 @@ namespace cc {
 // GL resources while an instance of this class is alive.
 class CC_EXPORT ScopedGpuRaster {
  public:
-  explicit ScopedGpuRaster(ContextProvider* context_provider);
+  explicit ScopedGpuRaster(viz::ContextProvider* context_provider);
   ~ScopedGpuRaster();
 
  private:
   void BeginGpuRaster();
   void EndGpuRaster();
 
-  ContextProvider* context_provider_;
+  viz::ContextProvider* context_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedGpuRaster);
 };

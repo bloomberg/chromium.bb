@@ -18,8 +18,8 @@
 #include "base/time/time.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "base/trace_event/trace_event.h"
-#include "cc/output/context_provider.h"
 #include "cc/resources/resource_provider.h"
+#include "components/viz/common/gpu/context_provider.h"
 
 namespace gpu {
 namespace gles2 {
@@ -56,7 +56,7 @@ class CC_EXPORT StagingBufferPool
   ~StagingBufferPool() final;
 
   StagingBufferPool(base::SequencedTaskRunner* task_runner,
-                    ContextProvider* worker_context_provider,
+                    viz::ContextProvider* worker_context_provider,
                     ResourceProvider* resource_provider,
                     bool use_partial_raster,
                     int max_staging_buffer_usage_in_bytes);
@@ -93,7 +93,7 @@ class CC_EXPORT StagingBufferPool
   void OnPurgeMemory() override;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  ContextProvider* const worker_context_provider_;
+  viz::ContextProvider* const worker_context_provider_;
   ResourceProvider* const resource_provider_;
   const bool use_partial_raster_;
 

@@ -8,10 +8,10 @@
 #include <stdint.h>
 
 #include "base/macros.h"
-#include "cc/output/context_provider.h"
 #include "cc/raster/raster_buffer_provider.h"
 #include "cc/raster/staging_buffer_pool.h"
 #include "cc/resources/resource_provider.h"
+#include "components/viz/common/gpu/context_provider.h"
 #include "gpu/command_buffer/common/sync_token.h"
 
 namespace cc {
@@ -21,8 +21,8 @@ class StagingBufferPool;
 class CC_EXPORT OneCopyRasterBufferProvider : public RasterBufferProvider {
  public:
   OneCopyRasterBufferProvider(base::SequencedTaskRunner* task_runner,
-                              ContextProvider* compositor_context_provider,
-                              ContextProvider* worker_context_provider,
+                              viz::ContextProvider* compositor_context_provider,
+                              viz::ContextProvider* worker_context_provider,
                               ResourceProvider* resource_provider,
                               int max_copy_texture_chromium_size,
                               bool use_partial_raster,
@@ -114,8 +114,8 @@ class CC_EXPORT OneCopyRasterBufferProvider : public RasterBufferProvider {
                           const gfx::Rect& rect_to_copy);
   gfx::BufferUsage StagingBufferUsage() const;
 
-  ContextProvider* const compositor_context_provider_;
-  ContextProvider* const worker_context_provider_;
+  viz::ContextProvider* const compositor_context_provider_;
+  viz::ContextProvider* const worker_context_provider_;
   ResourceProvider* const resource_provider_;
   const int max_bytes_per_copy_operation_;
   const bool use_partial_raster_;

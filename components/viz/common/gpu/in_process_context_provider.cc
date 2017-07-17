@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/output/in_process_context_provider.h"
+#include "components/viz/common/gpu/in_process_context_provider.h"
 
 #include <stdint.h>
 
@@ -31,7 +31,7 @@
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
 #include "ui/gfx/native_widget_types.h"
 
-namespace cc {
+namespace viz {
 
 namespace {
 
@@ -151,4 +151,4 @@ void InProcessContextProvider::SetUpdateVSyncParametersCallback(
   context_->SetUpdateVSyncParametersCallback(callback);
 }
 
-}  // namespace cc
+}  // namespace viz

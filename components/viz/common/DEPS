@@ -4,6 +4,7 @@ specific_include_rules = {
     "+gpu/GLES2",
     "+gpu/command_buffer/client",
     "+gpu/command_buffer/common",
+    "+gpu/command_buffer/service",
     "+gpu/ipc/common",
     "+mojo/public/cpp/bindings",
     "+ui/gfx/geometry",

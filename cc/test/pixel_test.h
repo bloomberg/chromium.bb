@@ -50,7 +50,7 @@ class PixelTest : public testing::Test {
                                              const PixelComparator& comparator,
                                              const gfx::Rect* copy_rect);
 
-  ContextProvider* context_provider() const {
+  viz::ContextProvider* context_provider() const {
     return output_surface_->context_provider();
   }
 

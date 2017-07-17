@@ -13,7 +13,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
-#include "cc/output/context_provider.h"
+#include "components/viz/common/gpu/context_provider.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "services/ui/public/cpp/gpu/client_gpu_memory_buffer_manager.h"
 #include "services/ui/public/interfaces/gpu.mojom.h"
@@ -41,7 +41,7 @@ class Gpu : public gpu::GpuChannelHostFactory,
       const std::string& service_name,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner = nullptr);
 
-  scoped_refptr<cc::ContextProvider> CreateContextProvider(
+  scoped_refptr<viz::ContextProvider> CreateContextProvider(
       scoped_refptr<gpu::GpuChannelHost> gpu_channel);
 
   void CreateJpegDecodeAccelerator(

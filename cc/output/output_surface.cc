@@ -19,7 +19,8 @@
 
 namespace cc {
 
-OutputSurface::OutputSurface(scoped_refptr<ContextProvider> context_provider)
+OutputSurface::OutputSurface(
+    scoped_refptr<viz::ContextProvider> context_provider)
     : context_provider_(std::move(context_provider)) {
   DCHECK(context_provider_);
 }

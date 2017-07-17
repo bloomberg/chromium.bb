@@ -1,0 +1,12 @@
+include_rules = [
+  "+cc/output",
+  "+cc/resources",
+  "+gpu/command_buffer",
+  "+gpu/GLES2/gl2extchromium.h",
+  "+gpu/ipc",
+  "+gpu/skia_bindings",
+  "+ui/gfx",
+  "+third_party/khronos/GLES2/gl2.h",
+  "+third_party/khronos/GLES2/gl2ext.h",
+  "+third_party/skia/include/gpu",
+]

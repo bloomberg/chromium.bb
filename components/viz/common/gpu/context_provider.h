@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_OUTPUT_CONTEXT_PROVIDER_H_
-#define CC_OUTPUT_CONTEXT_PROVIDER_H_
+#ifndef COMPONENTS_VIZ_COMMON_GPU_CONTEXT_PROVIDER_H_
+#define COMPONENTS_VIZ_COMMON_GPU_CONTEXT_PROVIDER_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -11,8 +11,8 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
-#include "cc/cc_export.h"
-#include "cc/output/context_cache_controller.h"
+#include "components/viz/common/gpu/context_cache_controller.h"
+#include "components/viz/common/viz_common_export.h"
 #include "gpu/command_buffer/common/capabilities.h"
 
 class GrContext;
@@ -23,19 +23,22 @@ class Lock;
 
 namespace gpu {
 class ContextSupport;
-namespace gles2 { class GLES2Interface; }
+namespace gles2 {
+class GLES2Interface;
 }
+}  // namespace gpu
 
-namespace cc {
+namespace viz {
 
-class ContextProvider : public base::RefCountedThreadSafe<ContextProvider> {
+class VIZ_COMMON_EXPORT ContextProvider
+    : public base::RefCountedThreadSafe<ContextProvider> {
  public:
   // Hold an instance of this lock while using a context across multiple
   // threads. This only works for ContextProviders that will return a valid
   // lock from GetLock(), so is not always supported. Most use of
   // ContextProvider should be single-thread only on the thread that
   // BindToCurrentThread is run on.
-  class CC_EXPORT ScopedContextLock {
+  class VIZ_COMMON_EXPORT ScopedContextLock {
    public:
     explicit ScopedContextLock(ContextProvider* context_provider);
     ~ScopedContextLock();
@@ -96,6 +99,6 @@ class ContextProvider : public base::RefCountedThreadSafe<ContextProvider> {
   virtual ~ContextProvider() {}
 };
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_OUTPUT_CONTEXT_PROVIDER_H_
+#endif  // COMPONENTS_VIZ_COMMON_GPU_CONTEXT_PROVIDER_H_

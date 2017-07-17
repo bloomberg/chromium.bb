@@ -26,13 +26,13 @@
 #include "base/trace_event/memory_dump_provider.h"
 #include "cc/base/resource_id.h"
 #include "cc/cc_export.h"
-#include "cc/output/context_provider.h"
 #include "cc/output/output_surface.h"
 #include "cc/output/renderer_settings.h"
 #include "cc/resources/release_callback_impl.h"
 #include "cc/resources/return_callback.h"
 #include "cc/resources/single_release_callback_impl.h"
 #include "cc/resources/transferable_resource.h"
+#include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/quads/resource_format.h"
 #include "components/viz/common/quads/shared_bitmap.h"
 #include "components/viz/common/quads/texture_mailbox.h"
@@ -84,7 +84,7 @@ class CC_EXPORT ResourceProvider
     RESOURCE_TYPE_BITMAP,
   };
 
-  ResourceProvider(ContextProvider* compositor_context_provider,
+  ResourceProvider(viz::ContextProvider* compositor_context_provider,
                    viz::SharedBitmapManager* shared_bitmap_manager,
                    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
                    BlockingTaskRunner* blocking_main_thread_task_runner,
@@ -95,7 +95,7 @@ class CC_EXPORT ResourceProvider
 
   void Initialize();
 
-  void DidLoseContextProvider() { lost_context_provider_ = true; }
+  void DidLoseVulkanContextProvider() { lost_context_provider_ = true; }
 
   int max_texture_size() const { return settings_.max_texture_size; }
   viz::ResourceFormat best_texture_format() const {
@@ -343,7 +343,7 @@ class CC_EXPORT ResourceProvider
 
   class CC_EXPORT ScopedSkSurfaceProvider {
    public:
-    ScopedSkSurfaceProvider(ContextProvider* context_provider,
+    ScopedSkSurfaceProvider(viz::ContextProvider* context_provider,
                             ScopedWriteLockGL* resource_lock,
                             bool use_mailbox,
                             bool use_distance_field_text,
@@ -753,7 +753,7 @@ class CC_EXPORT ResourceProvider
   // texture target used. The resource must be locked for reading.
   GLenum BindForSampling(ResourceId resource_id, GLenum unit, GLenum filter);
 
-  // Returns null if we do not have a ContextProvider.
+  // Returns null if we do not have a viz::ContextProvider.
   gpu::gles2::GLES2Interface* ContextGL() const;
   bool IsGLContextLost() const;
 
@@ -766,7 +766,7 @@ class CC_EXPORT ResourceProvider
 
   // Holds const settings for the ResourceProvider. Never changed after init.
   struct Settings {
-    Settings(ContextProvider* compositor_context_provider,
+    Settings(viz::ContextProvider* compositor_context_provider,
              bool delegated_sync_points_needed,
              bool enable_color_correct_rasterization,
              const viz::ResourceSettings& resource_settings);
@@ -785,7 +785,7 @@ class CC_EXPORT ResourceProvider
     bool delegated_sync_points_required = false;
   } const settings_;
 
-  ContextProvider* compositor_context_provider_;
+  viz::ContextProvider* compositor_context_provider_;
   viz::SharedBitmapManager* shared_bitmap_manager_;
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager_;
   BlockingTaskRunner* blocking_main_thread_task_runner_;

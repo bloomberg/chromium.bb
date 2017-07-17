@@ -9,8 +9,8 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "cc/output/context_provider.h"
 #include "cc/output/shader.h"
+#include "components/viz/common/gpu/context_provider.h"
 
 namespace gfx {
 class ColorTransform;
@@ -155,7 +155,8 @@ class Program : public ProgramBindingBase {
  public:
   Program() {}
 
-  void Initialize(ContextProvider* context_provider, const ProgramKey& key) {
+  void Initialize(viz::ContextProvider* context_provider,
+                  const ProgramKey& key) {
     // Set parameters that are common to all sub-classes.
     vertex_shader_.aa_mode_ = key.aa_mode_;
     fragment_shader_.aa_mode_ = key.aa_mode_;
@@ -396,7 +397,7 @@ class Program : public ProgramBindingBase {
     fragment_shader_.uv_texture_mode_ = key.uv_texture_mode_;
   }
 
-  void InitializeInternal(ContextProvider* context_provider) {
+  void InitializeInternal(viz::ContextProvider* context_provider) {
     DCHECK(context_provider);
     DCHECK(!initialized_);
 

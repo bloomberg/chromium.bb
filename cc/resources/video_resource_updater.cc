@@ -180,9 +180,10 @@ VideoFrameExternalResources::VideoFrameExternalResources(
 
 VideoFrameExternalResources::~VideoFrameExternalResources() {}
 
-VideoResourceUpdater::VideoResourceUpdater(ContextProvider* context_provider,
-                                           ResourceProvider* resource_provider,
-                                           bool use_stream_video_draw_quad)
+VideoResourceUpdater::VideoResourceUpdater(
+    viz::ContextProvider* context_provider,
+    ResourceProvider* resource_provider,
+    bool use_stream_video_draw_quad)
     : context_provider_(context_provider),
       resource_provider_(resource_provider),
       use_stream_video_draw_quad_(use_stream_video_draw_quad),
@@ -712,7 +713,7 @@ void VideoResourceUpdater::RecycleResource(
   if (resource_it == updater->all_resources_.end())
     return;
 
-  ContextProvider* context_provider = updater->context_provider_;
+  viz::ContextProvider* context_provider = updater->context_provider_;
   if (context_provider && sync_token.HasData()) {
     context_provider->ContextGL()->WaitSyncTokenCHROMIUM(
         sync_token.GetConstData());

@@ -1391,7 +1391,7 @@ TEST_P(ResourceProviderTest, ReadLockFenceContextLost) {
   EXPECT_EQ(0u, returned_to_child.size());
 
   EXPECT_EQ(2u, resource_provider_->num_resources());
-  resource_provider_->DidLoseContextProvider();
+  resource_provider_->DidLoseVulkanContextProvider();
   resource_provider_ = nullptr;
 
   EXPECT_EQ(2u, returned_to_child.size());
@@ -2435,7 +2435,7 @@ TEST_P(ResourceProviderTest, LostResourceInParent) {
   }
 
   // Lose the output surface in the parent.
-  resource_provider_->DidLoseContextProvider();
+  resource_provider_->DidLoseVulkanContextProvider();
 
   {
     EXPECT_EQ(0u, returned_to_child.size());
@@ -2566,7 +2566,7 @@ TEST_P(ResourceProviderTest, LostMailboxInParent) {
   }
 
   // Lose the output surface in the parent.
-  resource_provider_->DidLoseContextProvider();
+  resource_provider_->DidLoseVulkanContextProvider();
 
   {
     EXPECT_EQ(0u, returned_to_child.size());
@@ -2734,7 +2734,7 @@ TEST_P(ResourceProviderTest, LostContext) {
   EXPECT_FALSE(lost_resource);
   EXPECT_FALSE(main_thread_task_runner);
 
-  resource_provider_->DidLoseContextProvider();
+  resource_provider_->DidLoseVulkanContextProvider();
   resource_provider_ = nullptr;
 
   EXPECT_LE(sync_token.release_count(), release_sync_token.release_count());

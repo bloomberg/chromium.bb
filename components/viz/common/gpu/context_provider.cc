@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/output/context_provider.h"
+#include "components/viz/common/gpu/context_provider.h"
 
-namespace cc {
+namespace viz {
 
 ContextProvider::ScopedContextLock::ScopedContextLock(
     ContextProvider* context_provider)
@@ -23,4 +23,4 @@ ContextProvider::ScopedContextLock::~ScopedContextLock() {
   context_provider_->DetachFromThread();
 }
 
-}  // namespace cc
+}  // namespace viz

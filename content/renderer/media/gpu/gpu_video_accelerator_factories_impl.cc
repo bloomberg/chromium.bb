@@ -11,7 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/unguessable_token.h"
-#include "cc/output/context_provider.h"
+#include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/resources/buffer_to_texture_target_map.h"
 #include "content/child/child_thread_impl.h"
 #include "content/public/common/service_names.mojom.h"
@@ -98,7 +98,7 @@ bool GpuVideoAcceleratorFactoriesImpl::CheckContextLost() {
   if (context_provider_) {
     bool release_context_provider = false;
     {
-      cc::ContextProvider::ScopedContextLock lock(context_provider_);
+      viz::ContextProvider::ScopedContextLock lock(context_provider_);
       if (lock.ContextGL()->GetGraphicsResetStatusKHR() != GL_NO_ERROR) {
         context_provider_ = nullptr;
         release_context_provider = true;
@@ -181,7 +181,7 @@ bool GpuVideoAcceleratorFactoriesImpl::CreateTextures(
 
   if (CheckContextLost())
     return false;
-  cc::ContextProvider::ScopedContextLock lock(context_provider_);
+  viz::ContextProvider::ScopedContextLock lock(context_provider_);
   gpu::gles2::GLES2Interface* gles2 = lock.ContextGL();
   texture_ids->resize(count);
   texture_mailboxes->resize(count);
@@ -217,14 +217,14 @@ void GpuVideoAcceleratorFactoriesImpl::DeleteTexture(uint32_t texture_id) {
   if (CheckContextLost())
     return;
 
-  cc::ContextProvider::ScopedContextLock lock(context_provider_);
+  viz::ContextProvider::ScopedContextLock lock(context_provider_);
   gpu::gles2::GLES2Interface* gles2 = lock.ContextGL();
   gles2->DeleteTextures(1, &texture_id);
   DCHECK_EQ(gles2->GetError(), static_cast<GLenum>(GL_NO_ERROR));
 }
 
 gpu::SyncToken GpuVideoAcceleratorFactoriesImpl::CreateSyncToken() {
-  cc::ContextProvider::ScopedContextLock lock(context_provider_);
+  viz::ContextProvider::ScopedContextLock lock(context_provider_);
   gpu::gles2::GLES2Interface* gl = lock.ContextGL();
   gpu::SyncToken sync_token;
   const GLuint64 fence_sync = gl->InsertFenceSyncCHROMIUM();
@@ -239,7 +239,7 @@ void GpuVideoAcceleratorFactoriesImpl::WaitSyncToken(
   if (CheckContextLost())
     return;
 
-  cc::ContextProvider::ScopedContextLock lock(context_provider_);
+  viz::ContextProvider::ScopedContextLock lock(context_provider_);
   gpu::gles2::GLES2Interface* gles2 = lock.ContextGL();
   gles2->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
 
@@ -253,7 +253,7 @@ void GpuVideoAcceleratorFactoriesImpl::ShallowFlushCHROMIUM() {
   if (CheckContextLost())
     return;
 
-  cc::ContextProvider::ScopedContextLock lock(context_provider_);
+  viz::ContextProvider::ScopedContextLock lock(context_provider_);
   gpu::gles2::GLES2Interface* gles2 = lock.ContextGL();
   gles2->ShallowFlushCHROMIUM();
 }
@@ -286,7 +286,7 @@ GpuVideoAcceleratorFactoriesImpl::VideoFrameOutputFormat() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   if (CheckContextLost())
     return media::GpuVideoAcceleratorFactories::OutputFormat::UNDEFINED;
-  cc::ContextProvider::ScopedContextLock lock(context_provider_);
+  viz::ContextProvider::ScopedContextLock lock(context_provider_);
   auto capabilities = context_provider_->ContextCapabilities();
   if (capabilities.image_ycbcr_420v)
     return media::GpuVideoAcceleratorFactories::OutputFormat::NV12_SINGLE_GMB;
@@ -301,12 +301,12 @@ namespace {
 class ScopedGLContextLockImpl
     : public media::GpuVideoAcceleratorFactories::ScopedGLContextLock {
  public:
-  ScopedGLContextLockImpl(cc::ContextProvider* context_provider)
+  ScopedGLContextLockImpl(viz::ContextProvider* context_provider)
       : lock_(context_provider) {}
   gpu::gles2::GLES2Interface* ContextGL() override { return lock_.ContextGL(); }
 
  private:
-  cc::ContextProvider::ScopedContextLock lock_;
+  viz::ContextProvider::ScopedContextLock lock_;
 };
 }  // namespace
 

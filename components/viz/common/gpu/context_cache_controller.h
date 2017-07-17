@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_OUTPUT_CONTEXT_CACHE_CONTROLLER_H_
-#define CC_OUTPUT_CONTEXT_CACHE_CONTROLLER_H_
+#ifndef COMPONENTS_VIZ_COMMON_GPU_CONTEXT_CACHE_CONTROLLER_H_
+#define COMPONENTS_VIZ_COMMON_GPU_CONTEXT_CACHE_CONTROLLER_H_
 
 #include <cstdint>
 #include <memory>
@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
-#include "cc/cc_export.h"
+#include "components/viz/common/viz_common_export.h"
 
 class GrContext;
 
@@ -24,7 +24,7 @@ namespace gpu {
 class ContextSupport;
 }
 
-namespace cc {
+namespace viz {
 
 // ContextCacheController manages clearing cached data on ContextProvider when
 // appropriate. Currently, cache clearing is triggered when the Context
@@ -32,9 +32,9 @@ namespace cc {
 // ContextProvider may have multiple clients, ContextCacheController tracks
 // visibility and idle status across all clients and only cleans up when
 // appropriate.
-class CC_EXPORT ContextCacheController {
+class VIZ_COMMON_EXPORT ContextCacheController {
  public:
-  class CC_EXPORT ScopedToken {
+  class VIZ_COMMON_EXPORT ScopedToken {
    public:
     ~ScopedToken();
 
@@ -105,6 +105,6 @@ class CC_EXPORT ContextCacheController {
   base::WeakPtrFactory<ContextCacheController> weak_factory_;
 };
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_OUTPUT_CONTEXT_CACHE_CONTROLLER_H_
+#endif  // COMPONENTS_VIZ_COMMON_GPU_CONTEXT_CACHE_CONTROLLER_H_

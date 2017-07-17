@@ -66,7 +66,7 @@ std::unique_ptr<Gpu> Gpu::Create(
   return base::WrapUnique(new Gpu(std::move(factory), std::move(task_runner)));
 }
 
-scoped_refptr<cc::ContextProvider> Gpu::CreateContextProvider(
+scoped_refptr<viz::ContextProvider> Gpu::CreateContextProvider(
     scoped_refptr<gpu::GpuChannelHost> gpu_channel) {
   int32_t stream_id = 0;
   gpu::SchedulingPriority stream_priority = gpu::SchedulingPriority::kNormal;

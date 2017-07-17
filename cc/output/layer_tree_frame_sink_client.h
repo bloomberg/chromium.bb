@@ -9,8 +9,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "cc/cc_export.h"
-#include "cc/output/context_provider.h"
 #include "cc/resources/returned_resource.h"
+#include "components/viz/common/gpu/context_provider.h"
 #include "gpu/command_buffer/common/texture_in_use_response.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -46,9 +46,9 @@ class CC_EXPORT LayerTreeFrameSinkClient {
   // so that frames are submitted only at the rate it can handle them.
   virtual void DidReceiveCompositorFrameAck() = 0;
 
-  // The LayerTreeFrameSink is lost when the ContextProviders held by it
+  // The LayerTreeFrameSink is lost when the viz::ContextProviders held by it
   // encounter an error. In this case the LayerTreeFrameSink (and the
-  // ContextProviders) must be recreated.
+  // viz::ContextProviders) must be recreated.
   virtual void DidLoseLayerTreeFrameSink() = 0;
 
   // For SynchronousCompositor (WebView) to ask the layer compositor to submit

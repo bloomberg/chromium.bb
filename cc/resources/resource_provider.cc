@@ -368,7 +368,7 @@ ResourceProvider::Child::Child(const Child& other) = default;
 ResourceProvider::Child::~Child() {}
 
 ResourceProvider::Settings::Settings(
-    ContextProvider* compositor_context_provider,
+    viz::ContextProvider* compositor_context_provider,
     bool delegated_sync_points_required,
     bool enable_color_correct_rasterization,
     const viz::ResourceSettings& resource_settings)
@@ -412,7 +412,7 @@ ResourceProvider::Settings::Settings(
 }
 
 ResourceProvider::ResourceProvider(
-    ContextProvider* compositor_context_provider,
+    viz::ContextProvider* compositor_context_provider,
     viz::SharedBitmapManager* shared_bitmap_manager,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     BlockingTaskRunner* blocking_main_thread_task_runner,
@@ -1170,7 +1170,7 @@ ResourceProvider::ScopedTextureProvider::~ScopedTextureProvider() {
 }
 
 ResourceProvider::ScopedSkSurfaceProvider::ScopedSkSurfaceProvider(
-    ContextProvider* context_provider,
+    viz::ContextProvider* context_provider,
     ScopedWriteLockGL* resource_lock,
     bool use_mailbox,
     bool use_distance_field_text,
@@ -2053,7 +2053,7 @@ void ResourceProvider::ValidateResource(ResourceId id) const {
 }
 
 GLES2Interface* ResourceProvider::ContextGL() const {
-  ContextProvider* context_provider = compositor_context_provider_;
+  viz::ContextProvider* context_provider = compositor_context_provider_;
   return context_provider ? context_provider->ContextGL() : nullptr;
 }
 

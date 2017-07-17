@@ -25,7 +25,6 @@
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/texture_layer_client.h"
 #include "cc/layers/texture_layer_impl.h"
-#include "cc/output/context_provider.h"
 #include "cc/resources/returned_resource.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_frame_sink.h"
@@ -40,6 +39,7 @@
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/single_thread_proxy.h"
+#include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/test/test_layer_tree_frame_sink.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -639,8 +639,8 @@ class TextureLayerImplWithMailboxThreadedCallback : public LayerTreeTest {
   std::unique_ptr<viz::TestLayerTreeFrameSink> CreateLayerTreeFrameSink(
       const RendererSettings& renderer_settings,
       double refresh_rate,
-      scoped_refptr<ContextProvider> compositor_context_provider,
-      scoped_refptr<ContextProvider> worker_context_provider) override {
+      scoped_refptr<viz::ContextProvider> compositor_context_provider,
+      scoped_refptr<viz::ContextProvider> worker_context_provider) override {
     constexpr bool disable_display_vsync = false;
     bool synchronous_composite =
         !HasImplThread() &&

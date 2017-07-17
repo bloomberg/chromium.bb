@@ -81,8 +81,8 @@ class FakeLayerTreeFrameSink : public LayerTreeFrameSink {
 
  protected:
   FakeLayerTreeFrameSink(
-      scoped_refptr<ContextProvider> context_provider,
-      scoped_refptr<ContextProvider> worker_context_provider);
+      scoped_refptr<viz::ContextProvider> context_provider,
+      scoped_refptr<viz::ContextProvider> worker_context_provider);
 
   TestGpuMemoryBufferManager test_gpu_memory_buffer_manager_;
   TestSharedBitmapManager test_shared_bitmap_manager_;

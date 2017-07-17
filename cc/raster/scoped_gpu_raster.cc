@@ -12,7 +12,7 @@ using gpu::gles2::GLES2Interface;
 
 namespace cc {
 
-ScopedGpuRaster::ScopedGpuRaster(ContextProvider* context_provider)
+ScopedGpuRaster::ScopedGpuRaster(viz::ContextProvider* context_provider)
     : context_provider_(context_provider) {
   BeginGpuRaster();
 }

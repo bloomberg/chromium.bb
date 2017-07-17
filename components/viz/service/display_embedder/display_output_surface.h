@@ -7,8 +7,8 @@
 
 #include <memory>
 
-#include "cc/output/in_process_context_provider.h"
 #include "cc/output/output_surface.h"
+#include "components/viz/common/gpu/in_process_context_provider.h"
 #include "ui/latency/latency_tracker.h"
 
 namespace cc {
@@ -22,7 +22,7 @@ namespace viz {
 class DisplayOutputSurface : public cc::OutputSurface {
  public:
   DisplayOutputSurface(
-      scoped_refptr<cc::InProcessContextProvider> context_provider,
+      scoped_refptr<InProcessContextProvider> context_provider,
       cc::SyntheticBeginFrameSource* synthetic_begin_frame_source);
   ~DisplayOutputSurface() override;
 

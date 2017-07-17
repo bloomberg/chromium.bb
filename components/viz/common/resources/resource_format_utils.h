@@ -6,19 +6,21 @@
 #define COMPONENTS_VIZ_COMMON_RESOURCES_RESOURCE_FORMAT_UTILS_H_
 
 #include "components/viz/common/quads/resource_format.h"
+#include "components/viz/common/viz_common_export.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 
 namespace viz {
 
-SkColorType ResourceFormatToClosestSkColorType(ResourceFormat format);
-int BitsPerPixel(ResourceFormat format);
-GLenum GLDataType(ResourceFormat format);
-GLenum GLDataFormat(ResourceFormat format);
-GLenum GLInternalFormat(ResourceFormat format);
-GLenum GLCopyTextureInternalFormat(ResourceFormat format);
-gfx::BufferFormat BufferFormat(ResourceFormat format);
-bool IsResourceFormatCompressed(ResourceFormat format);
-bool DoesResourceFormatSupportAlpha(ResourceFormat format);
+VIZ_COMMON_EXPORT SkColorType
+ResourceFormatToClosestSkColorType(ResourceFormat format);
+VIZ_COMMON_EXPORT int BitsPerPixel(ResourceFormat format);
+VIZ_COMMON_EXPORT GLenum GLDataType(ResourceFormat format);
+VIZ_COMMON_EXPORT GLenum GLDataFormat(ResourceFormat format);
+VIZ_COMMON_EXPORT GLenum GLInternalFormat(ResourceFormat format);
+VIZ_COMMON_EXPORT GLenum GLCopyTextureInternalFormat(ResourceFormat format);
+VIZ_COMMON_EXPORT gfx::BufferFormat BufferFormat(ResourceFormat format);
+VIZ_COMMON_EXPORT bool IsResourceFormatCompressed(ResourceFormat format);
+VIZ_COMMON_EXPORT bool DoesResourceFormatSupportAlpha(ResourceFormat format);
 
 }  // namespace viz
 

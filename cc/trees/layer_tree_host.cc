@@ -682,7 +682,7 @@ void LayerTreeHost::RecordGpuRasterizationHistogram(
 
   bool gpu_rasterization_enabled = false;
   if (host_impl->layer_tree_frame_sink()) {
-    ContextProvider* compositor_context_provider =
+    viz::ContextProvider* compositor_context_provider =
         host_impl->layer_tree_frame_sink()->context_provider();
     if (compositor_context_provider) {
       gpu_rasterization_enabled =

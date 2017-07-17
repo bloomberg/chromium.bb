@@ -36,7 +36,7 @@ static void RasterizeSource(
     const gfx::Rect& raster_dirty_rect,
     const gfx::AxisTransform2d& transform,
     const RasterSource::PlaybackSettings& playback_settings,
-    ContextProvider* context_provider,
+    viz::ContextProvider* context_provider,
     ResourceProvider::ScopedWriteLockGL* resource_lock,
     bool async_worker_context_enabled,
     bool use_distance_field_text,
@@ -115,8 +115,8 @@ void GpuRasterBufferProvider::RasterBufferImpl::Playback(
 }
 
 GpuRasterBufferProvider::GpuRasterBufferProvider(
-    ContextProvider* compositor_context_provider,
-    ContextProvider* worker_context_provider,
+    viz::ContextProvider* compositor_context_provider,
+    viz::ContextProvider* worker_context_provider,
     ResourceProvider* resource_provider,
     bool use_distance_field_text,
     int gpu_rasterization_msaa_sample_count,
@@ -264,7 +264,8 @@ void GpuRasterBufferProvider::PlaybackOnWorkerThread(
     uint64_t new_content_id,
     const gfx::AxisTransform2d& transform,
     const RasterSource::PlaybackSettings& playback_settings) {
-  ContextProvider::ScopedContextLock scoped_context(worker_context_provider_);
+  viz::ContextProvider::ScopedContextLock scoped_context(
+      worker_context_provider_);
   gpu::gles2::GLES2Interface* gl = scoped_context.ContextGL();
   DCHECK(gl);
 

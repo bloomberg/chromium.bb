@@ -90,7 +90,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
              const ui::mojom::WindowTree::EmbedCallback& callback);
 
   std::unique_ptr<viz::ClientLayerTreeFrameSink> RequestLayerTreeFrameSink(
-      scoped_refptr<cc::ContextProvider> context_provider,
+      scoped_refptr<viz::ContextProvider> context_provider,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager);
 
  private:

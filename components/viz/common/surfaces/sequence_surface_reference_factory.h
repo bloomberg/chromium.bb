@@ -7,11 +7,12 @@
 
 #include "components/viz/common/surfaces/surface_reference_factory.h"
 #include "components/viz/common/surfaces/surface_sequence.h"
+#include "components/viz/common/viz_common_export.h"
 
 namespace viz {
 
 // A surface reference factory that uses SurfaceSequence.
-class SequenceSurfaceReferenceFactory
+class VIZ_COMMON_EXPORT SequenceSurfaceReferenceFactory
     : public NON_EXPORTED_BASE(SurfaceReferenceFactory) {
  public:
   SequenceSurfaceReferenceFactory() = default;

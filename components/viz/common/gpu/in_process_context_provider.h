@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_OUTPUT_IN_PROCESS_CONTEXT_PROVIDER_H_
-#define CC_OUTPUT_IN_PROCESS_CONTEXT_PROVIDER_H_
+#ifndef COMPONENTS_VIZ_COMMON_GPU_IN_PROCESS_CONTEXT_PROVIDER_H_
+#define COMPONENTS_VIZ_COMMON_GPU_IN_PROCESS_CONTEXT_PROVIDER_H_
 
 #include <stdint.h>
 
@@ -11,9 +11,9 @@
 
 #include "base/compiler_specific.h"
 #include "base/synchronization/lock.h"
-#include "cc/cc_export.h"
-#include "cc/output/context_cache_controller.h"
-#include "cc/output/context_provider.h"
+#include "components/viz/common/gpu/context_cache_controller.h"
+#include "components/viz/common/gpu/context_provider.h"
+#include "components/viz/common/viz_common_export.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/ipc/in_process_command_buffer.h"
 #include "ui/gfx/native_widget_types.h"
@@ -25,15 +25,15 @@ class GLInProcessContext;
 class GpuMemoryBufferManager;
 class ImageFactory;
 struct SharedMemoryLimits;
-}
+}  // namespace gpu
 
 namespace skia_bindings {
 class GrContextForGLES2Interface;
 }
 
-namespace cc {
+namespace viz {
 
-class CC_EXPORT InProcessContextProvider
+class VIZ_COMMON_EXPORT InProcessContextProvider
     : public NON_EXPORTED_BASE(ContextProvider) {
  public:
   InProcessContextProvider(
@@ -78,6 +78,6 @@ class CC_EXPORT InProcessContextProvider
   std::unique_ptr<ContextCacheController> cache_controller_;
 };
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_OUTPUT_IN_PROCESS_CONTEXT_PROVIDER_H_
+#endif  // COMPONENTS_VIZ_COMMON_GPU_IN_PROCESS_CONTEXT_PROVIDER_H_
