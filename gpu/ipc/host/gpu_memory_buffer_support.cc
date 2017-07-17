@@ -23,7 +23,7 @@ bool AreNativeGpuMemoryBuffersEnabled() {
     return false;
   }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableNativeGpuMemoryBuffers);
 #else
