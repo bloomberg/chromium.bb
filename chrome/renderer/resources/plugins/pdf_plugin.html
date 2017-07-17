@@ -2,8 +2,13 @@
 <html>
   <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no">
   </head>
   <body>
     <!-- TODO(amberwon): Add html with the finalized UI. -->
+    <div i18n-values="title:name">
+      <p id="fileName">$i18n{fileName}</p>
+      <a href="#" onclick="plugin.openPDF()">View PDF</a>
+    </div>
   </body>
 </html>
