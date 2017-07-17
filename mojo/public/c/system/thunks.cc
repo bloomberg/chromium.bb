@@ -173,11 +173,9 @@ MojoResult MojoFuseMessagePipes(MojoHandle handle0, MojoHandle handle1) {
   return g_thunks.FuseMessagePipes(handle0, handle1);
 }
 
-MojoResult MojoCreateMessage(uintptr_t context,
-                             const MojoMessageOperationThunks* thunks,
-                             MojoMessageHandle* message) {
+MojoResult MojoCreateMessage(MojoMessageHandle* message) {
   assert(g_thunks.CreateMessage);
-  return g_thunks.CreateMessage(context, thunks, message);
+  return g_thunks.CreateMessage(message);
 }
 
 MojoResult MojoDestroyMessage(MojoMessageHandle message) {
@@ -190,6 +188,26 @@ MojoResult MojoSerializeMessage(MojoMessageHandle message) {
   return g_thunks.SerializeMessage(message);
 }
 
+MojoResult MojoAttachSerializedMessageBuffer(MojoMessageHandle message,
+                                             uint32_t payload_size,
+                                             const MojoHandle* handles,
+                                             uint32_t num_handles,
+                                             void** buffer,
+                                             uint32_t* buffer_size) {
+  assert(g_thunks.AttachSerializedMessageBuffer);
+  return g_thunks.AttachSerializedMessageBuffer(
+      message, payload_size, handles, num_handles, buffer, buffer_size);
+}
+
+MojoResult MojoExtendSerializedMessagePayload(MojoMessageHandle message,
+                                              uint32_t new_payload_size,
+                                              void** buffer,
+                                              uint32_t* buffer_size) {
+  assert(g_thunks.ExtendSerializedMessagePayload);
+  return g_thunks.ExtendSerializedMessagePayload(message, new_payload_size,
+                                                 buffer, buffer_size);
+}
+
 MojoResult MojoGetSerializedMessageContents(
     MojoMessageHandle message,
     void** buffer,
@@ -200,6 +218,15 @@ MojoResult MojoGetSerializedMessageContents(
   assert(g_thunks.GetSerializedMessageContents);
   return g_thunks.GetSerializedMessageContents(message, buffer, num_bytes,
                                                handles, num_handles, flags);
+}
+
+MojoResult MojoAttachMessageContext(MojoMessageHandle message,
+                                    uintptr_t context,
+                                    MojoMessageContextSerializer serializer,
+                                    MojoMessageContextDestructor destructor) {
+  assert(g_thunks.AttachMessageContext);
+  return g_thunks.AttachMessageContext(message, context, serializer,
+                                       destructor);
 }
 
 MojoResult MojoGetMessageContext(MojoMessageHandle message,

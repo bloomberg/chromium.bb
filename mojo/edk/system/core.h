@@ -191,11 +191,19 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
                         uintptr_t* ready_contexts,
                         MojoResult* ready_results,
                         MojoHandleSignalsState* ready_signals_states);
-  MojoResult CreateMessage(uintptr_t context,
-                           const MojoMessageOperationThunks* thunks,
-                           MojoMessageHandle* message_handle);
+  MojoResult CreateMessage(MojoMessageHandle* message_handle);
   MojoResult DestroyMessage(MojoMessageHandle message_handle);
   MojoResult SerializeMessage(MojoMessageHandle message_handle);
+  MojoResult AttachSerializedMessageBuffer(MojoMessageHandle message_handle,
+                                           uint32_t payload_size,
+                                           const MojoHandle* handles,
+                                           uint32_t num_handles,
+                                           void** buffer,
+                                           uint32_t* buffer_size);
+  MojoResult ExtendSerializedMessagePayload(MojoMessageHandle message_handle,
+                                            uint32_t new_payload_size,
+                                            void** new_buffer,
+                                            uint32_t* new_buffer_size);
   MojoResult GetSerializedMessageContents(
       MojoMessageHandle message_handle,
       void** buffer,
@@ -203,6 +211,10 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
       MojoHandle* handles,
       uint32_t* num_handles,
       MojoGetSerializedMessageContentsFlags flags);
+  MojoResult AttachMessageContext(MojoMessageHandle message_handle,
+                                  uintptr_t context,
+                                  MojoMessageContextSerializer serializer,
+                                  MojoMessageContextDestructor destructor);
   MojoResult GetMessageContext(MojoMessageHandle message_handle,
                                uintptr_t* context,
                                MojoGetMessageContextFlags flags);

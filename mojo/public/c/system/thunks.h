@@ -86,11 +86,19 @@ struct MojoSystemThunks {
                            MojoResult* ready_results,
                            MojoHandleSignalsState* ready_signals_states);
   MojoResult (*FuseMessagePipes)(MojoHandle handle0, MojoHandle handle1);
-  MojoResult (*CreateMessage)(uintptr_t context,
-                              const struct MojoMessageOperationThunks* thunks,
-                              MojoMessageHandle* message);
+  MojoResult (*CreateMessage)(MojoMessageHandle* message);
   MojoResult (*DestroyMessage)(MojoMessageHandle message);
   MojoResult (*SerializeMessage)(MojoMessageHandle message);
+  MojoResult (*AttachSerializedMessageBuffer)(MojoMessageHandle message,
+                                              uint32_t payload_size,
+                                              const MojoHandle* handles,
+                                              uint32_t num_handles,
+                                              void** buffer,
+                                              uint32_t* buffer_size);
+  MojoResult (*ExtendSerializedMessagePayload)(MojoMessageHandle message,
+                                               uint32_t new_payload_size,
+                                               void** buffer,
+                                               uint32_t* buffer_size);
   MojoResult (*GetSerializedMessageContents)(
       MojoMessageHandle message,
       void** buffer,
@@ -98,6 +106,10 @@ struct MojoSystemThunks {
       MojoHandle* handles,
       uint32_t* num_handles,
       MojoGetSerializedMessageContentsFlags flags);
+  MojoResult (*AttachMessageContext)(MojoMessageHandle message,
+                                     uintptr_t context,
+                                     MojoMessageContextSerializer serializer,
+                                     MojoMessageContextDestructor destructor);
   MojoResult (*GetMessageContext)(MojoMessageHandle message,
                                   uintptr_t* context,
                                   MojoGetMessageContextFlags flags);

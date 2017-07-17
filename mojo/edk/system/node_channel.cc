@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "mojo/edk/system/channel.h"
 #include "mojo/edk/system/request_context.h"
 
@@ -127,9 +128,15 @@ template <typename DataType>
 Channel::MessagePtr CreateMessage(MessageType type,
                                   size_t payload_size,
                                   size_t num_handles,
-                                  DataType** out_data) {
-  Channel::MessagePtr message(
-      new Channel::Message(sizeof(Header) + payload_size, num_handles));
+                                  DataType** out_data,
+                                  size_t capacity = 0) {
+  const size_t total_size = payload_size + sizeof(Header);
+  if (capacity == 0)
+    capacity = total_size;
+  else
+    capacity = std::max(total_size, capacity);
+  auto message =
+      base::MakeUnique<Channel::Message>(capacity, total_size, num_handles);
   Header* header = reinterpret_cast<Header*>(message->mutable_payload());
   header->type = type;
   header->padding = 0;
@@ -167,11 +174,12 @@ scoped_refptr<NodeChannel> NodeChannel::Create(
 }
 
 // static
-Channel::MessagePtr NodeChannel::CreateEventMessage(size_t payload_size,
+Channel::MessagePtr NodeChannel::CreateEventMessage(size_t capacity,
+                                                    size_t payload_size,
                                                     void** payload,
                                                     size_t num_handles) {
   return CreateMessage(MessageType::EVENT_MESSAGE, payload_size, num_handles,
-                       payload);
+                       payload, capacity);
 }
 
 // static
