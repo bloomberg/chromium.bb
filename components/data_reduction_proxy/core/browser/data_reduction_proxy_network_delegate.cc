@@ -54,6 +54,8 @@ enum AcceptTransformEvent {
   EMPTY_IMAGE_REQUESTED = 3,
   EMPTY_IMAGE_TRANSFORM_RECEIVED = 4,
   COMPRESSED_VIDEO_REQUESTED = 5,
+  IDENTITY_TRANSFORM_REQUESTED = 6,
+  IDENTITY_TRANSFORM_RECEIVED = 7,
   ACCEPT_TRANSFORM_EVENT_BOUNDARY
 };
 
@@ -198,6 +200,9 @@ void RecordAcceptTransformSentUMA(
     case TRANSFORM_COMPRESSED_VIDEO:
       RecordAcceptTransformEvent(COMPRESSED_VIDEO_REQUESTED);
       break;
+    case TRANSFORM_IDENTITY:
+      RecordAcceptTransformEvent(IDENTITY_TRANSFORM_REQUESTED);
+      break;
     case TRANSFORM_NONE:
       break;
     case TRANSFORM_PAGE_POLICIES_EMPTY_IMAGE:
@@ -221,6 +226,9 @@ void RecordAcceptTransformReceivedUMA(const net::URLRequest& request) {
       break;
     case TRANSFORM_EMPTY_IMAGE:
       RecordAcceptTransformEvent(EMPTY_IMAGE_TRANSFORM_RECEIVED);
+      break;
+    case TRANSFORM_IDENTITY:
+      RecordAcceptTransformEvent(IDENTITY_TRANSFORM_RECEIVED);
       break;
     case TRANSFORM_NONE:
       break;
