@@ -14,6 +14,7 @@
 #include "components/autofill/core/browser/ui/card_unmask_prompt_controller.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/vector_icons/vector_icons.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
@@ -26,7 +27,6 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/vector_icons/vector_icons.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/bubble/tooltip_icon.h"
@@ -453,7 +453,7 @@ void CardUnmaskPromptViews::InitIfNecessary() {
   error_icon_ = new views::ImageView();
   error_icon_->SetVisible(false);
   error_icon_->SetImage(
-      gfx::CreateVectorIcon(ui::kWarningIcon, 16, kWarningColor));
+      gfx::CreateVectorIcon(vector_icons::kWarningIcon, 16, kWarningColor));
   temporary_error->AddChildView(error_icon_);
 
   // Reserve vertical space for the error label, assuming it's one line.

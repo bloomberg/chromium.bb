@@ -9,6 +9,7 @@
 #include "chrome/browser/vr/color_scheme.h"
 #include "chrome/browser/vr/elements/render_text_wrapper.h"
 #include "components/url_formatter/url_formatter.h"
+#include "components/vector_icons/vector_icons.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/font_list.h"
@@ -16,7 +17,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/render_text.h"
-#include "ui/vector_icons/vector_icons.h"
 
 namespace vr {
 
@@ -210,10 +210,10 @@ void UrlBarTexture::Draw(SkCanvas* canvas, const gfx::Size& texture_size) {
     canvas->save();
     canvas->translate(kBackButtonWidth / 2 + kBackIconOffset, kHeight / 2);
     canvas->translate(-kBackIconHeight / 2, -kBackIconHeight / 2);
-    float icon_scale =
-        kBackIconHeight / GetDefaultSizeOfVectorIcon(ui::kBackArrowIcon);
+    float icon_scale = kBackIconHeight /
+                       GetDefaultSizeOfVectorIcon(vector_icons::kBackArrowIcon);
     canvas->scale(icon_scale, icon_scale);
-    PaintVectorIcon(&gfx_canvas, ui::kBackArrowIcon,
+    PaintVectorIcon(&gfx_canvas, vector_icons::kBackArrowIcon,
                     can_go_back_ ? color_scheme().element_foreground
                                  : color_scheme().disabled);
     canvas->restore();

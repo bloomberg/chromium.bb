@@ -10,13 +10,13 @@
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
 #import "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
+#include "components/vector_icons/vector_icons.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "ui/base/cocoa/nsview_additions.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/image/image_skia_util_mac.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/vector_icons/vector_icons.h"
 
 namespace {
 
@@ -209,9 +209,9 @@ const NSSize kMDButtonIconSize = NSMakeSize(16, 16);
 - (const gfx::VectorIcon*)vectorIcon {
   switch ([self viewID]) {
     case VIEW_ID_BACK_BUTTON:
-      return &ui::kBackArrowIcon;
+      return &vector_icons::kBackArrowIcon;
     case VIEW_ID_FORWARD_BUTTON:
-      return &ui::kForwardArrowIcon;
+      return &vector_icons::kForwardArrowIcon;
     case VIEW_ID_HOME_BUTTON:
       return &kNavigateHomeIcon;
     case VIEW_ID_APP_MENU:

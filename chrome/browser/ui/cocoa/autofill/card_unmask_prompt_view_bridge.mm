@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/cocoa/themed_window.h"
 #include "components/autofill/core/browser/ui/card_unmask_prompt_controller.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/web_contents.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "ui/base/cocoa/controls/hyperlink_button_cell.h"
@@ -32,7 +33,6 @@
 #include "ui/gfx/image/image_skia_util_mac.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/native_theme/native_theme.h"
-#include "ui/vector_icons/vector_icons.h"
 
 namespace {
 
@@ -500,9 +500,10 @@ void CardUnmaskPromptViewBridge::PerformClose() {
       initWithArrowLocation:info_bubble::kTopTrailing]);
   [storageTooltip_ setMaxTooltipWidth:2 * autofill::kFieldWidth +
                                       autofill::kHorizontalFieldPadding];
-  [storageTooltip_ setImage:gfx::NSImageFromImageSkia(gfx::CreateVectorIcon(
-                                ui::kInfoOutlineIcon, autofill::kInfoIconSize,
-                                gfx::kChromeIconGrey))];
+  [storageTooltip_
+      setImage:gfx::NSImageFromImageSkia(gfx::CreateVectorIcon(
+                   vector_icons::kInfoOutlineIcon, autofill::kInfoIconSize,
+                   gfx::kChromeIconGrey))];
   [storageTooltip_
       setMessage:base::SysUTF16ToNSString(l10n_util::GetStringUTF16(
                      IDS_AUTOFILL_CARD_UNMASK_PROMPT_STORAGE_TOOLTIP))];

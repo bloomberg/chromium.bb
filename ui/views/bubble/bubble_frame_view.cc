@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "build/build_config.h"
+#include "components/vector_icons/vector_icons.h"
 #include "ui/base/default_style.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -23,7 +24,6 @@
 #include "ui/native_theme/native_theme.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/strings/grit/ui_strings.h"
-#include "ui/vector_icons/vector_icons.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/controls/button/image_button.h"
@@ -118,7 +118,7 @@ Button* BubbleFrameView::CreateCloseButton(ButtonListener* listener) {
   ImageButton* close_button = nullptr;
   if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
     close_button = CreateVectorImageButton(listener);
-    SetImageFromVectorIcon(close_button, ui::kCloseIcon);
+    SetImageFromVectorIcon(close_button, vector_icons::kCloseIcon);
   } else {
     ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
     close_button = new ImageButton(listener);

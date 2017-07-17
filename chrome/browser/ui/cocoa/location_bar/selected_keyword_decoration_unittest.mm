@@ -8,12 +8,12 @@
 #import "chrome/browser/ui/cocoa/location_bar/selected_keyword_decoration.h"
 #import "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
 #include "components/omnibox/browser/vector_icons.h"
+#include "components/vector_icons/vector_icons.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/image/image_skia_util_mac.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/vector_icons/vector_icons.h"
 
 namespace {
 
@@ -33,7 +33,7 @@ class SelectedKeywordDecorationTest : public CocoaTest {
     // initialize it now.
     const int kDefaultIconSize = 16;
     decoration_.SetImage(NSImageFromImageSkia(gfx::CreateVectorIcon(
-        ui::kSearchIcon, kDefaultIconSize, SK_ColorBLACK)));
+        vector_icons::kSearchIcon, kDefaultIconSize, SK_ColorBLACK)));
   }
 
   SelectedKeywordDecoration decoration_;

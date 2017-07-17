@@ -25,11 +25,11 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/vector_icons/vector_icons.h"
 #include "extensions/common/constants.h"
 #include "ui/base/models/menu_model_delegate.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/vector_icons/vector_icons.h"
 
 // static
 std::unique_ptr<MediaRouterContextualMenu>
@@ -65,7 +65,7 @@ MediaRouterContextualMenu::MediaRouterContextualMenu(Browser* browser,
                                     IDS_MEDIA_ROUTER_SHOWN_BY_POLICY);
     menu_model_.SetIcon(
         menu_model_.GetIndexOfCommandId(IDC_MEDIA_ROUTER_SHOWN_BY_POLICY),
-        gfx::Image(gfx::CreateVectorIcon(ui::kBusinessIcon, 16,
+        gfx::Image(gfx::CreateVectorIcon(vector_icons::kBusinessIcon, 16,
                                          gfx::kChromeIconGrey)));
   } else {
     menu_model_.AddCheckItemWithStringId(

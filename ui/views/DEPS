@@ -1,5 +1,6 @@
 include_rules = [
   "+cc/paint",
+  "+components/vector_icons",
   "+services/ui/public/interfaces",
   "+skia/ext",
   "+third_party/iaccessible2",
@@ -17,7 +18,6 @@ include_rules = [
   "+ui/resources/grit/ui_resources.h",
   "+ui/strings/grit/ui_strings.h",
   "+ui/touch_selection",
-  "+ui/vector_icons",
   "+ui/wm/core",
   "+ui/wm/public",
 

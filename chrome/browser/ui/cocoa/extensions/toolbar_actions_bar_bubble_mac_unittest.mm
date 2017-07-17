@@ -13,9 +13,9 @@
 #include "chrome/browser/ui/cocoa/test/run_loop_testing.h"
 #include "chrome/browser/ui/toolbar/test_toolbar_actions_bar_bubble_delegate.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
-#include "ui/vector_icons/vector_icons.h"
 
 // A simple class to observe when a window is destructing.
 @interface WindowObserver : NSObject {
@@ -281,7 +281,7 @@ TEST_F(ToolbarActionsBarBubbleMacTest, ToolbarActionsBarBubbleLayout) {
     std::unique_ptr<ToolbarActionsBarBubbleDelegate::ExtraViewInfo>
         extra_view_info =
             base::MakeUnique<ToolbarActionsBarBubbleDelegate::ExtraViewInfo>();
-    extra_view_info->resource = &ui::kBusinessIcon;
+    extra_view_info->resource = &vector_icons::kBusinessIcon;
     extra_view_info->text =
         l10n_util::GetStringUTF16(IDS_EXTENSIONS_INSTALLED_BY_ADMIN);
     extra_view_info->is_text_linked = false;

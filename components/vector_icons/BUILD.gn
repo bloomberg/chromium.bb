@@ -2,14 +2,39 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//ui/vector_icons/vector_icons.gni")
+import("//components/vector_icons/vector_icons.gni")
 
 aggregate_vector_icons("components_vector_icons") {
   icon_directory = "."
 
   icons = [
+    "back_arrow.1x.icon",
+    "back_arrow.icon",
     "bluetooth_connected.icon",
+    "business.icon",
+    "check_circle.icon",
+    "close.1x.icon",
+    "close.icon",
+    "edit.icon",
+    "error_circle.icon",
+    "forward_arrow.1x.icon",
+    "forward_arrow.icon",
+    "info_outline.icon",
+    "location_on.icon",
+    "lock.icon",
+    "media_router_active.icon",
+    "media_router_error.icon",
+    "media_router_idle.icon",
+    "media_router_warning.icon",
+    "microphone.icon",
+    "midi.icon",
+    "notifications.icon",
+    "notifications_off.icon",
+    "protocol_handler.icon",
     "screen_share.icon",
+    "search.icon",
+    "videocam.icon",
+    "warning.icon",
   ]
 }
 

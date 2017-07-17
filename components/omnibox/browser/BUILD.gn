@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 import("//third_party/protobuf/proto_library.gni")
-import("//ui/vector_icons/vector_icons.gni")
+import("//components/vector_icons/vector_icons.gni")
 
 if (is_android) {
   import("//build/config/android/rules.gni")
@@ -171,7 +171,7 @@ static_library("browser") {
     sources += get_target_outputs(":omnibox_vector_icons")
     deps += [
       ":omnibox_vector_icons",
-      "//ui/vector_icons",
+      "//components/vector_icons",
     ]
   }
 

@@ -852,6 +852,7 @@ component("ash") {
     "//skia",
 
     # TODO(msw): Remove this; only ash_with_content should depend on webkit.
+    "//components/vector_icons",
     "//third_party/WebKit/public:blink_headers",
     "//third_party/icu",
     "//third_party/qcms",
@@ -882,7 +883,6 @@ component("ash") {
     "//ui/platform_window/stub",
     "//ui/resources",
     "//ui/strings",
-    "//ui/vector_icons",
     "//ui/views",
     "//ui/wm",
     "//ui/wm/public",

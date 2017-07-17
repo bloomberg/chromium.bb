@@ -11,13 +11,13 @@
 #include "chrome/browser/ui/cocoa/passwords/passwords_bubble_utils.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/grit/theme_resources.h"
+#include "components/vector_icons/vector_icons.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_util_mac.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
-#include "ui/vector_icons/vector_icons.h"
 
 namespace {
 constexpr CGFloat kFocusRingInset = 3;
@@ -136,8 +136,8 @@ constexpr CGFloat kHorizontalPaddingBetweenAvatarAndLabel = 10;
   DCHECK(!iconController_);
   iconController_.reset([[AutofillTooltipController alloc]
       initWithArrowLocation:info_bubble::kTopTrailing]);
-  NSImage* image = gfx::NSImageFromImageSkia(
-      gfx::CreateVectorIcon(ui::kInfoOutlineIcon, gfx::kChromeIconGrey));
+  NSImage* image = gfx::NSImageFromImageSkia(gfx::CreateVectorIcon(
+      vector_icons::kInfoOutlineIcon, gfx::kChromeIconGrey));
   [iconController_ setImage:image];
   [iconController_ setMessage:tooltip];
   [self addSubview:[iconController_ view]];

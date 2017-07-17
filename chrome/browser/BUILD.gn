@@ -1716,9 +1716,9 @@ split_static_library("browser") {
     deps += [
       "//chrome/app/vector_icons",
       "//chrome/browser/resources:component_extension_resources",
+      "//components/vector_icons",
       "//components/zoom",
       "//net:net",
-      "//ui/vector_icons",
     ]
     sources += [
       "sync/sessions/browser_list_router_helper.cc",

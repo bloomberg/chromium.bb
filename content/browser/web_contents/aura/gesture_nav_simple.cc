@@ -8,6 +8,7 @@
 
 #include "base/macros.h"
 #include "cc/paint/paint_flags.h"
+#include "components/vector_icons/vector_icons.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/renderer_host/overscroll_controller.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -27,7 +28,6 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/shadow_value.h"
 #include "ui/gfx/skia_paint_util.h"
-#include "ui/vector_icons/vector_icons.h"
 
 namespace content {
 
@@ -158,10 +158,11 @@ Affordance::Affordance(GestureNavSimple* owner,
       mode_(mode),
       root_layer_(base::MakeUnique<ui::Layer>(ui::LAYER_NOT_DRAWN)),
       painted_layer_(base::MakeUnique<ui::Layer>(ui::LAYER_TEXTURED)),
-      image_(gfx::CreateVectorIcon(
-          mode == OVERSCROLL_EAST ? ui::kBackArrowIcon : ui::kForwardArrowIcon,
-          kArrowSize,
-          kArrowColor)) {
+      image_(gfx::CreateVectorIcon(mode == OVERSCROLL_EAST
+                                       ? vector_icons::kBackArrowIcon
+                                       : vector_icons::kForwardArrowIcon,
+                                   kArrowSize,
+                                   kArrowColor)) {
   DCHECK(mode == OVERSCROLL_EAST || mode == OVERSCROLL_WEST);
   DCHECK(!image_.IsEmpty());
 

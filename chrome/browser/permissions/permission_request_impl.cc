@@ -18,7 +18,7 @@
 #include "chrome/browser/android/android_theme_resources.h"
 #else
 #include "chrome/app/vector_icons/vector_icons.h"
-#include "ui/vector_icons/vector_icons.h"
+#include "components/vector_icons/vector_icons.h"
 #endif
 
 PermissionRequestImpl::PermissionRequestImpl(
@@ -76,23 +76,23 @@ PermissionRequest::IconId PermissionRequestImpl::GetIconId() const {
 #else
   switch (content_settings_type_) {
     case CONTENT_SETTINGS_TYPE_GEOLOCATION:
-      return ui::kLocationOnIcon;
+      return vector_icons::kLocationOnIcon;
     case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
     case CONTENT_SETTINGS_TYPE_PUSH_MESSAGING:
-      return ui::kNotificationsIcon;
+      return vector_icons::kNotificationsIcon;
 #if defined(OS_CHROMEOS)
     // TODO(xhwang): fix this icon, see crrev.com/863263007
     case CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
       return kProductIcon;
 #endif
     case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
-      return ui::kMidiIcon;
+      return vector_icons::kMidiIcon;
     case CONTENT_SETTINGS_TYPE_PLUGINS:
       return kExtensionIcon;
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
-      return ui::kMicrophoneIcon;
+      return vector_icons::kMicrophoneIcon;
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
-      return ui::kVideocamIcon;
+      return vector_icons::kVideocamIcon;
     default:
       NOTREACHED();
       return kExtensionIcon;

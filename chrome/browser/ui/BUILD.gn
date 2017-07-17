@@ -1104,12 +1104,12 @@ split_static_library("ui") {
       "//components/proximity_auth/webui",
       "//components/ui_metrics",
       "//components/vector_icons",
+      "//components/vector_icons",
       "//components/web_modal",
       "//components/zoom",
       "//device/bluetooth",
       "//mash/public/interfaces",
       "//services/device/public/interfaces",
-      "//ui/vector_icons",
     ]
 
     if (enable_extensions) {
