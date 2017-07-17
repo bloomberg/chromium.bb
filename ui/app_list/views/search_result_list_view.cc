@@ -11,7 +11,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/app_list/app_list_features.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/search_result.h"
@@ -25,11 +24,10 @@
 
 namespace {
 
-constexpr int kMaxResults = 6;
-constexpr int kMaxResultsFullscreen = 5;
-constexpr int kTimeoutIndicatorHeight = 2;
-constexpr int kTimeoutFramerate = 60;
-constexpr SkColor kTimeoutIndicatorColor = SkColorSetRGB(30, 144, 255);
+const int kMaxResults = 6;
+const int kTimeoutIndicatorHeight = 2;
+const int kTimeoutFramerate = 60;
+const SkColor kTimeoutIndicatorColor = SkColorSetRGB(30, 144, 255);
 
 }  // namespace
 
@@ -45,10 +43,7 @@ SearchResultListView::SearchResultListView(
   results_container_->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kVertical));
 
-  int max_results = features::IsFullscreenAppListEnabled()
-                        ? kMaxResultsFullscreen
-                        : kMaxResults;
-  for (int i = 0; i < max_results; ++i)
+  for (int i = 0; i < kMaxResults; ++i)
     results_container_->AddChildView(new SearchResultView(this));
   AddChildView(results_container_);
 

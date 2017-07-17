@@ -39,7 +39,6 @@ class APP_LIST_EXPORT SearchResultPageView
   // Overridden from views::View:
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   const char* GetClassName() const override;
-  gfx::Size CalculatePreferredSize() const override;
 
   // AppListPage overrides:
   gfx::Rect GetPageBoundsForState(AppListModel::State state) const override;

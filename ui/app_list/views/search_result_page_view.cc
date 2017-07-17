@@ -34,7 +34,6 @@ namespace {
 constexpr int kGroupSpacing = 6;
 constexpr int kTopPadding = 8;
 constexpr int kFullscreenHeight = 440;
-constexpr int kFullscreenWidth = 640;
 
 // The z-height of the search box and cards in this view.
 constexpr int kSearchResultZHeight = 1;
@@ -42,9 +41,6 @@ constexpr int kSearchResultZHeight = 1;
 // The horizontal padding of the separator.
 constexpr int kSeparatorPadding = 12;
 constexpr int kSeparatorThickness = 1;
-
-// The height of the search box in this page.
-constexpr int kSearchBoxHeight = 56;
 
 constexpr SkColor kSeparatorColor = SkColorSetARGBMacro(0x1F, 0x00, 0x00, 0x00);
 
@@ -96,7 +92,7 @@ class SearchResultPageBackground : public views::Background {
     canvas->DrawRoundRect(bounds, corner_radius_, flags);
 
     // Draws a separator between SearchBoxView and SearchResultPageView.
-    bounds.set_y(kSearchBoxHeight);
+    bounds.set_y(kSearchBoxPreferredHeight);
     bounds.set_height(kSeparatorThickness);
     canvas->FillRect(bounds, kSeparatorColor);
   }
@@ -168,7 +164,7 @@ SearchResultPageView::SearchResultPageView()
   if (is_fullscreen_app_list_enabled_) {
     // Leaves a placeholder area for the search box and the separator below it.
     scroller->SetBorder(views::CreateEmptyBorder(
-        gfx::Insets(kSearchBoxHeight + kSeparatorThickness, 0, 0, 0)));
+        gfx::Insets(kSearchBoxPreferredHeight + kSeparatorThickness, 0, 0, 0)));
   }
   scroller->SetContents(contents_view_);
   // Setting clip height is necessary to make ScrollView take into account its
@@ -247,12 +243,6 @@ bool SearchResultPageView::OnKeyPressed(const ui::KeyEvent& event) {
 
 const char* SearchResultPageView::GetClassName() const {
   return "SearchResultPageView";
-}
-
-gfx::Size SearchResultPageView::CalculatePreferredSize() const {
-  if (!is_fullscreen_app_list_enabled_)
-    return GetDefaultContentsBounds().size();
-  return gfx::Size(kFullscreenWidth, kFullscreenHeight);
 }
 
 void SearchResultPageView::ClearSelectedIndex() {
@@ -369,9 +359,9 @@ gfx::Rect SearchResultPageView::GetPageBoundsForState(
     return AppListPage::GetSearchBoxBounds();
   }
 
-  gfx::Rect onscreen_bounds(AppListPage::GetSearchBoxBounds());
-  onscreen_bounds.Offset((onscreen_bounds.width() - kFullscreenWidth) / 2, 0);
-  onscreen_bounds.set_size(GetPreferredSize());
+  gfx::Rect onscreen_bounds(GetDefaultContentsBounds());
+  onscreen_bounds.set_y(AppListPage::GetSearchBoxBounds().y());
+  onscreen_bounds.set_height(kFullscreenHeight);
   return onscreen_bounds;
 }
 
@@ -419,8 +409,9 @@ void SearchResultPageView::OnHidden() {
 gfx::Rect SearchResultPageView::GetSearchBoxBounds() const {
   gfx::Rect rect(AppListPage::GetSearchBoxBounds());
   if (is_fullscreen_app_list_enabled_) {
-    rect.Offset((rect.width() - kFullscreenWidth) / 2, 0);
-    rect.set_size(gfx::Size(kFullscreenWidth, kSearchBoxHeight));
+    gfx::Rect contents_bounds(GetDefaultContentsBounds());
+    rect.set_x(contents_bounds.x());
+    rect.set_width(contents_bounds.width());
   }
   return rect;
 }
