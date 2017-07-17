@@ -84,6 +84,7 @@ class AutofillAgent : public content::RenderFrameObserver,
       int32_t key,
       const PasswordFormFillData& form_data) override;
   void SetUserGestureRequired(bool required) override;
+  void SetSecureContextRequired(bool required) override;
 
   void ShowNotSecureWarning(const blink::WebInputElement& element);
 
@@ -282,6 +283,10 @@ class AutofillAgent : public content::RenderFrameObserver,
   // Whether or not a user gesture is required before notification of a text
   // field change. Default to true.
   bool is_user_gesture_required_;
+
+  // Whether or not the secure context is required to query autofill suggestion.
+  // Default to false.
+  bool is_secure_context_required_;
 
   std::unique_ptr<PageClickTracker> page_click_tracker_;
 

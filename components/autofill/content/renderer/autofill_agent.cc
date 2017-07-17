@@ -37,6 +37,7 @@
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/autofill/core/common/save_password_progress_logger.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/origin_util.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
@@ -153,6 +154,7 @@ AutofillAgent::AutofillAgent(content::RenderFrame* render_frame,
       is_popup_possibly_visible_(false),
       is_generation_popup_possibly_visible_(false),
       is_user_gesture_required_(true),
+      is_secure_context_required_(false),
       page_click_tracker_(new PageClickTracker(render_frame, this)),
       binding_(this),
       weak_ptr_factory_(this) {
@@ -671,6 +673,10 @@ void AutofillAgent::ShowSuggestions(const WebFormControlElement& element,
   QueryAutofillSuggestions(element);
 }
 
+void AutofillAgent::SetSecureContextRequired(bool required) {
+  is_secure_context_required_ = required;
+}
+
 void AutofillAgent::QueryAutofillSuggestions(
     const WebFormControlElement& element) {
   if (!element.GetDocument().GetFrame())
@@ -689,6 +695,15 @@ void AutofillAgent::QueryAutofillSuggestions(
     // at providing suggestions.
     WebFormControlElementToFormField(element, nullptr, form_util::EXTRACT_VALUE,
                                      &field);
+  }
+
+  if (is_secure_context_required_ &&
+      !(element.GetDocument().IsSecureContext() &&
+        content::IsOriginSecure(form.action))) {
+    LOG(WARNING) << "Autofill suggestions are disabled because the document "
+                    "isn't a secure context or the form's action attribute "
+                    "isn't secure.";
+    return;
   }
 
   std::vector<base::string16> data_list_values;

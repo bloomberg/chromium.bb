@@ -60,6 +60,10 @@ interface AutofillAgent {
   // autofill service with the user's consent, so the gesture check is
   // redundant there anyway.
   SetUserGestureRequired(bool required);
+
+  // Configures the render to require, or not, the secure context to query
+  // autofill suggestion, the default is false.
+  SetSecureContextRequired(bool required);
 };
 
 // There is one instance of this interface per render frame in the render
