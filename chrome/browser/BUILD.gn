@@ -2520,6 +2520,7 @@ split_static_library("browser") {
       "sessions/session_restore.h",
       "sessions/session_restore_delegate.cc",
       "sessions/session_restore_delegate.h",
+      "sessions/session_restore_observer.h",
       "sessions/session_restore_stats_collector.cc",
       "sessions/session_restore_stats_collector.h",
       "sessions/session_service.cc",
