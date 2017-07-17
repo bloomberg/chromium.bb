@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/components/tether/persistent_host_scan_cache.h"
+#include "chromeos/components/tether/persistent_host_scan_cache_impl.h"
 
 #include <unordered_set>
 
@@ -11,7 +11,6 @@
 #include "chromeos/components/tether/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
-#include "components/proximity_auth/logging/logging.h"
 
 namespace chromeos {
 
@@ -90,17 +89,18 @@ std::unique_ptr<HostScanCacheEntry> DictionaryToHostScanCacheEntry(
 }  // namespace
 
 // static
-void PersistentHostScanCache::RegisterPrefs(PrefRegistrySimple* registry) {
+void PersistentHostScanCacheImpl::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterListPref(prefs::kHostScanCache);
 }
 
-PersistentHostScanCache::PersistentHostScanCache(PrefService* pref_service)
+PersistentHostScanCacheImpl::PersistentHostScanCacheImpl(
+    PrefService* pref_service)
     : pref_service_(pref_service) {}
 
-PersistentHostScanCache::~PersistentHostScanCache() {}
+PersistentHostScanCacheImpl::~PersistentHostScanCacheImpl() {}
 
 std::unordered_map<std::string, HostScanCacheEntry>
-PersistentHostScanCache::GetStoredCacheEntries() {
+PersistentHostScanCacheImpl::GetStoredCacheEntries() {
   const base::ListValue* cache_entry_list =
       pref_service_->GetList(prefs::kHostScanCache);
   DCHECK(cache_entry_list);
@@ -134,7 +134,7 @@ PersistentHostScanCache::GetStoredCacheEntries() {
   return entries;
 }
 
-void PersistentHostScanCache::SetHostScanResult(
+void PersistentHostScanCacheImpl::SetHostScanResult(
     const HostScanCacheEntry& entry) {
   std::unordered_map<std::string, HostScanCacheEntry> entries =
       GetStoredCacheEntries();
@@ -149,7 +149,7 @@ void PersistentHostScanCache::SetHostScanResult(
   StoreCacheEntriesToPrefs(entries);
 }
 
-bool PersistentHostScanCache::RemoveHostScanResult(
+bool PersistentHostScanCacheImpl::RemoveHostScanResult(
     const std::string& tether_network_guid) {
   std::unordered_map<std::string, HostScanCacheEntry> entries =
       GetStoredCacheEntries();
@@ -165,13 +165,20 @@ bool PersistentHostScanCache::RemoveHostScanResult(
   return result_was_removed;
 }
 
-void PersistentHostScanCache::ClearCacheExceptForActiveHost() {
+bool PersistentHostScanCacheImpl::ExistsInCache(
+    const std::string& tether_network_guid) {
+  std::unordered_map<std::string, HostScanCacheEntry> entries =
+      GetStoredCacheEntries();
+  return entries.find(tether_network_guid) != entries.end();
+}
+
+void PersistentHostScanCacheImpl::ClearCacheExceptForActiveHost() {
   // This function will be removed in a future CL, so it is not implemented
   // here.
   NOTIMPLEMENTED();
 }
 
-bool PersistentHostScanCache::DoesHostRequireSetup(
+bool PersistentHostScanCacheImpl::DoesHostRequireSetup(
     const std::string& tether_network_guid) {
   std::unordered_map<std::string, HostScanCacheEntry> entries =
       GetStoredCacheEntries();
@@ -182,7 +189,7 @@ bool PersistentHostScanCache::DoesHostRequireSetup(
   return it->second.setup_required;
 }
 
-void PersistentHostScanCache::StoreCacheEntriesToPrefs(
+void PersistentHostScanCacheImpl::StoreCacheEntriesToPrefs(
     const std::unordered_map<std::string, HostScanCacheEntry>& entries) {
   base::ListValue entries_list;
 

@@ -9,10 +9,8 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "chromeos/components/tether/active_host.h"
-#include "chromeos/components/tether/device_id_tether_network_guid_map.h"
-#include "chromeos/components/tether/tether_host_response_recorder.h"
+#include "chromeos/components/tether/persistent_host_scan_cache.h"
 #include "chromeos/components/tether/timer_factory.h"
-#include "chromeos/network/network_state_handler.h"
 #include "components/proximity_auth/logging/logging.h"
 
 namespace chromeos {
@@ -20,60 +18,47 @@ namespace chromeos {
 namespace tether {
 
 MasterHostScanCache::MasterHostScanCache(
-    NetworkStateHandler* network_state_handler,
+    std::unique_ptr<TimerFactory> timer_factory,
     ActiveHost* active_host,
-    TetherHostResponseRecorder* tether_host_response_recorder,
-    DeviceIdTetherNetworkGuidMap* device_id_tether_network_guid_map)
-    : timer_factory_(base::MakeUnique<TimerFactory>()),
-      network_state_handler_(network_state_handler),
+    HostScanCache* network_host_scan_cache,
+    PersistentHostScanCache* persistent_host_scan_cache)
+    : timer_factory_(std::move(timer_factory)),
       active_host_(active_host),
-      tether_host_response_recorder_(tether_host_response_recorder),
-      device_id_tether_network_guid_map_(device_id_tether_network_guid_map),
+      network_host_scan_cache_(network_host_scan_cache),
+      persistent_host_scan_cache_(persistent_host_scan_cache),
+      is_initializing_(false),
       weak_ptr_factory_(this) {
-  tether_host_response_recorder_->AddObserver(this);
+  InitializeFromPersistentCache();
 }
 
 MasterHostScanCache::~MasterHostScanCache() {
-  tether_host_response_recorder_->RemoveObserver(this);
+  DCHECK(ActiveHost::ActiveHostStatus::DISCONNECTED ==
+         active_host_->GetActiveHostStatus());
+  ClearCacheExceptForActiveHost();
 }
 
 void MasterHostScanCache::SetHostScanResult(const HostScanCacheEntry& entry) {
   auto found_iter = tether_guid_to_timer_map_.find(entry.tether_network_guid);
-
   if (found_iter == tether_guid_to_timer_map_.end()) {
-    // Add the Tether network to NetworkStateHandler and create an associated
-    // Timer.
-    network_state_handler_->AddTetherNetworkState(
-        entry.tether_network_guid, entry.device_name, entry.carrier,
-        entry.battery_percentage, entry.signal_strength,
-        HasConnectedToHost(entry.tether_network_guid));
+    // Only check whether this entry exists in the cache after intialization
+    // completes; otherwise, this will cause an error when the persistent cache
+    // has entries that the other caches do not have.
+    DCHECK(is_initializing_ || !ExistsInCache(entry.tether_network_guid));
+
+    // If no Timer exists in the map, add one.
     tether_guid_to_timer_map_.emplace(entry.tether_network_guid,
                                       timer_factory_->CreateOneShotTimer());
-
-    PA_LOG(INFO) << "Added scan result for Tether network with GUID "
-                 << entry.tether_network_guid << ". "
-                 << "Device name: " << entry.device_name << ", "
-                 << "carrier: " << entry.carrier << ", "
-                 << "battery percentage: " << entry.battery_percentage << ", "
-                 << "signal strength: " << entry.signal_strength;
   } else {
-    // Update the existing network and stop the associated Timer.
-    network_state_handler_->UpdateTetherNetworkProperties(
-        entry.tether_network_guid, entry.carrier, entry.battery_percentage,
-        entry.signal_strength);
-    found_iter->second->Stop();
+    DCHECK(ExistsInCache(entry.tether_network_guid));
 
-    PA_LOG(INFO) << "Updated scan result for Tether network with GUID "
-                 << entry.tether_network_guid << ". "
-                 << "New carrier: " << entry.carrier << ", "
-                 << "new battery percentage: " << entry.battery_percentage
-                 << ", new signal strength: " << entry.signal_strength;
+    // If a timer was already running for this entry, stop it. It is started
+    // again in the StartTimer() call below since the entry now has fresh data.
+    found_iter->second->Stop();
   }
 
-  if (entry.setup_required)
-    setup_required_tether_guids_.insert(entry.tether_network_guid);
-  else
-    setup_required_tether_guids_.erase(entry.tether_network_guid);
+  // Set the result in the sub-caches.
+  network_host_scan_cache_->SetHostScanResult(entry);
+  persistent_host_scan_cache_->SetHostScanResult(entry);
 
   StartTimer(entry.tether_network_guid);
 }
@@ -82,14 +67,8 @@ bool MasterHostScanCache::RemoveHostScanResult(
     const std::string& tether_network_guid) {
   DCHECK(!tether_network_guid.empty());
 
-  auto it = tether_guid_to_timer_map_.find(tether_network_guid);
-  if (it == tether_guid_to_timer_map_.end()) {
-    PA_LOG(ERROR) << "Attempted to remove a host scan result which does not "
-                  << "exist in the cache. GUID: " << tether_network_guid;
-    return false;
-  }
-
   if (active_host_->GetTetherNetworkGuid() == tether_network_guid) {
+    DCHECK(ExistsInCache(tether_network_guid));
     PA_LOG(ERROR) << "RemoveHostScanResult() called for Tether network with "
                   << "GUID " << tether_network_guid << ", but the "
                   << "corresponding device is the active host. Not removing "
@@ -97,9 +76,32 @@ bool MasterHostScanCache::RemoveHostScanResult(
     return false;
   }
 
-  tether_guid_to_timer_map_.erase(it);
-  setup_required_tether_guids_.erase(tether_network_guid);
-  return network_state_handler_->RemoveTetherNetworkState(tether_network_guid);
+  if (!ExistsInCache(tether_network_guid)) {
+    PA_LOG(ERROR) << "Attempted to remove a host scan result which does not "
+                  << "exist in the cache. GUID: " << tether_network_guid;
+    return false;
+  }
+
+  bool removed_from_network =
+      network_host_scan_cache_->RemoveHostScanResult(tether_network_guid);
+  bool removed_from_persistent =
+      persistent_host_scan_cache_->RemoveHostScanResult(tether_network_guid);
+  bool removed_from_timer_map =
+      tether_guid_to_timer_map_.erase(tether_network_guid) == 1u;
+
+  // The caches are expected to remain in sync, so it should not be possible
+  // for one of them to be removed successfully while the other one fails.
+  DCHECK(removed_from_network && removed_from_persistent &&
+         removed_from_timer_map);
+
+  PA_LOG(INFO) << "Removed cache entry with GUID \"" << tether_network_guid
+               << "\".";
+
+  // We already DCHECK()ed above that this evaluates to true, but we return the
+  // AND'ed value here because without this, release builds (without DCHECK())
+  // will produce a compiler warning of unused variables.
+  return removed_from_network && removed_from_persistent &&
+         removed_from_timer_map;
 }
 
 void MasterHostScanCache::ClearCacheExceptForActiveHost() {
@@ -118,8 +120,8 @@ void MasterHostScanCache::ClearCacheExceptForActiveHost() {
     PA_LOG(INFO) << "Clearing " << (tether_guid_to_timer_map_.size() - 1) << " "
                  << "of the " << tether_guid_to_timer_map_.size() << " "
                  << "entries from the cache. Not removing the entry "
-                 << "corresponding to the Tether network with GUID "
-                 << active_host_tether_guid << " because it represents the "
+                 << "corresponding to the Tether network with GUID \""
+                 << active_host_tether_guid << "\" because it represents the "
                  << "active host.";
   }
 
@@ -137,48 +139,50 @@ void MasterHostScanCache::ClearCacheExceptForActiveHost() {
   }
 }
 
+bool MasterHostScanCache::ExistsInCache(
+    const std::string& tether_network_guid) {
+  bool exists_in_network_cache =
+      network_host_scan_cache_->ExistsInCache(tether_network_guid);
+  bool exists_in_persistent_cache =
+      persistent_host_scan_cache_->ExistsInCache(tether_network_guid);
+  bool exists_in_timer_map =
+      tether_guid_to_timer_map_.find(tether_network_guid) !=
+      tether_guid_to_timer_map_.end();
+
+  // The caches are expected to remain in sync.
+  DCHECK(exists_in_network_cache == exists_in_persistent_cache &&
+         exists_in_persistent_cache == exists_in_timer_map);
+
+  // We already DCHECK()ed above that these are equal, but we return the AND'ed
+  // value here because without this, release builds (without DCHECK())
+  // will produce a compiler warning of unused variables.
+  return exists_in_network_cache && exists_in_persistent_cache &&
+         exists_in_timer_map;
+}
+
 bool MasterHostScanCache::DoesHostRequireSetup(
     const std::string& tether_network_guid) {
-  return setup_required_tether_guids_.find(tether_network_guid) !=
-         setup_required_tether_guids_.end();
+  // |network_host_scan_cache_| does not keep track of this value since the
+  // networking stack does not store it internally. Instead, query
+  // |persistent_host_scan_cache_|.
+  return persistent_host_scan_cache_->DoesHostRequireSetup(tether_network_guid);
 }
 
-void MasterHostScanCache::OnPreviouslyConnectedHostIdsChanged() {
-  for (auto& map_entry : tether_guid_to_timer_map_) {
-    const std::string& tether_network_guid = map_entry.first;
-    if (!HasConnectedToHost(tether_network_guid))
-      continue;
+void MasterHostScanCache::InitializeFromPersistentCache() {
+  is_initializing_ = true;
 
-    // If a the current device has connected to the Tether network with GUID
-    // |tether_network_guid|, alert |network_state_handler_|. Note that this
-    // function is a no-op if it is called on a network which already has its
-    // HasConnectedToHost property set to true.
-    bool update_successful =
-        network_state_handler_->SetTetherNetworkHasConnectedToHost(
-            tether_network_guid);
-
-    if (update_successful) {
-      PA_LOG(INFO) << "Successfully set the HasConnectedToHost property of "
-                   << "the Tether network with GUID " << tether_network_guid
-                   << " to true.";
-    }
+  // If a crash occurs, Tether networks which were previously present will no
+  // longer be available since they are only stored within NetworkStateHandler
+  // and not within Shill. Thus, utilize |persistent_host_scan_cache_| to fetch
+  // metadata about all Tether networks which were present before the crash and
+  // restore |network_host_scan_cache_|.
+  std::unordered_map<std::string, HostScanCacheEntry> persisted_entries =
+      persistent_host_scan_cache_->GetStoredCacheEntries();
+  for (const auto it : persisted_entries) {
+    SetHostScanResult(it.second);
   }
-}
 
-void MasterHostScanCache::SetTimerFactoryForTest(
-    std::unique_ptr<TimerFactory> timer_factory_for_test) {
-  timer_factory_ = std::move(timer_factory_for_test);
-}
-
-bool MasterHostScanCache::HasConnectedToHost(
-    const std::string& tether_network_guid) {
-  std::string device_id =
-      device_id_tether_network_guid_map_->GetDeviceIdForTetherNetworkGuid(
-          tether_network_guid);
-  std::vector<std::string> connected_device_ids =
-      tether_host_response_recorder_->GetPreviouslyConnectedHostIds();
-  return std::find(connected_device_ids.begin(), connected_device_ids.end(),
-                   device_id) != connected_device_ids.end();
+  is_initializing_ = false;
 }
 
 void MasterHostScanCache::StartTimer(const std::string& tether_network_guid) {
@@ -187,7 +191,7 @@ void MasterHostScanCache::StartTimer(const std::string& tether_network_guid) {
   DCHECK(!found_iter->second->IsRunning());
 
   PA_LOG(INFO) << "Starting host scan cache timer for Tether network with GUID "
-               << tether_network_guid << ". Will fire in "
+               << "\"" << tether_network_guid << "\". Will fire in "
                << kNumMinutesBeforeCacheEntryExpires << " minutes.";
 
   found_iter->second->Start(
@@ -202,9 +206,9 @@ void MasterHostScanCache::OnTimerFired(const std::string& tether_network_guid) {
     // Log as a warning. This situation should be uncommon in practice since
     // KeepAliveScheduler should schedule a new keep-alive status update every
     // 4 minutes.
-    PA_LOG(WARNING) << "Timer fired for Tether network GUID "
-                    << tether_network_guid << ", but the corresponding device "
-                    << "is the active host. Restarting timer.";
+    PA_LOG(WARNING) << "Timer fired for Tether network GUID \""
+                    << tether_network_guid << "\", but the corresponding "
+                    << "device is the active host. Restarting timer.";
 
     // If the Timer which fired corresponds to the active host, do not remove
     // the cache entry. The active host must always remain in the cache so that
