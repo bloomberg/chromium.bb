@@ -52,6 +52,7 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/sync/driver/sync_error_controller.h"
+#include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -71,7 +72,6 @@
 #include "ui/gfx/text_elider.h"
 #include "ui/native_theme/common_theme.h"
 #include "ui/native_theme/native_theme.h"
-#include "ui/vector_icons/vector_icons.h"
 #include "ui/views/controls/button/blue_button.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/label_button.h"
@@ -1342,7 +1342,8 @@ views::View* ProfileChooserView::CreateOptionsView(bool display_lock,
   if (display_lock) {
     lock_button_ = new BackgroundColorHoverButton(
         this, l10n_util::GetStringUTF16(IDS_PROFILES_PROFILE_SIGNOUT_BUTTON),
-        gfx::CreateVectorIcon(ui::kLockIcon, kIconSize, gfx::kChromeIconGrey));
+        gfx::CreateVectorIcon(vector_icons::kLockIcon, kIconSize,
+                              gfx::kChromeIconGrey));
     layout->StartRow(1, 0);
     layout->AddView(lock_button_);
   } else if (!is_guest) {
@@ -1451,8 +1452,8 @@ void ProfileChooserView::CreateAccountButton(views::GridLayout* layout,
   int warning_button_width = 0;
   if (reauth_required) {
     const int kIconSize = 18;
-    warning_default_image = gfx::CreateVectorIcon(ui::kWarningIcon, kIconSize,
-                                                  gfx::kChromeIconGrey);
+    warning_default_image = gfx::CreateVectorIcon(
+        vector_icons::kWarningIcon, kIconSize, gfx::kChromeIconGrey);
     warning_button_width =
         kIconSize +
         provider->GetDistanceMetric(views::DISTANCE_RELATED_BUTTON_HORIZONTAL);

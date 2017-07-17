@@ -27,6 +27,7 @@ component("views") {
   deps = [
     "//base",
     "//chrome/app:command_ids",
+    "//components/vector_icons",
     "//content/public/browser",
     "//printing/features",
     "//skia",
@@ -34,7 +35,6 @@ component("views") {
     "//ui/events",
     "//ui/gfx",
     "//ui/gfx/geometry",
-    "//ui/vector_icons",
     "//url",
   ]
 

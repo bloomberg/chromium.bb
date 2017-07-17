@@ -6,6 +6,7 @@
 
 #include "cc/paint/skia_paint_canvas.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
@@ -14,7 +15,6 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/render_text.h"
 #include "ui/gfx/vector_icon_types.h"
-#include "ui/vector_icons/vector_icons.h"
 
 namespace vr {
 
@@ -65,7 +65,7 @@ void InsecureContentPermanentTexture::Draw(SkCanvas* sk_canvas,
       IsRTL() ? 4 * kBorderFactor * size_.height() + text_size.width()
               : size_.height() * kBorderFactor,
       size_.height() * (1.0 - kIconSizeFactor) / 2.0));
-  PaintVectorIcon(canvas, ui::kInfoOutlineIcon,
+  PaintVectorIcon(canvas, vector_icons::kInfoOutlineIcon,
                   size_.height() * kIconSizeFactor,
                   color_scheme().permanent_warning_foreground);
   canvas->Restore();

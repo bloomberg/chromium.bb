@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/vector_icons/vector_icons.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_flags.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -32,7 +33,6 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/native_theme/native_theme.h"
-#include "ui/vector_icons/vector_icons.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/bubble/bubble_border.h"
@@ -421,5 +421,6 @@ void FindBarView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
                                 base_icon_color);
   views::SetImageFromVectorIcon(find_next_button_, kCaretDownIcon,
                                 base_icon_color);
-  views::SetImageFromVectorIcon(close_button_, ui::kCloseIcon, base_icon_color);
+  views::SetImageFromVectorIcon(close_button_, vector_icons::kCloseIcon,
+                                base_icon_color);
 }

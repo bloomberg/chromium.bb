@@ -10,13 +10,13 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/search_engines/template_url_service.h"
+#include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/native_theme/native_theme.h"
-#include "ui/vector_icons/vector_icons.h"
 
 SelectedKeywordView::SelectedKeywordView(const gfx::FontList& font_list,
                                          Profile* profile)
@@ -32,8 +32,8 @@ SelectedKeywordView::~SelectedKeywordView() {
 }
 
 void SelectedKeywordView::ResetImage() {
-  SetImage(gfx::CreateVectorIcon(ui::kSearchIcon, LocationBarView::kIconWidth,
-                                 GetTextColor()));
+  SetImage(gfx::CreateVectorIcon(vector_icons::kSearchIcon,
+                                 LocationBarView::kIconWidth, GetTextColor()));
 }
 
 SkColor SelectedKeywordView::GetTextColor() const {

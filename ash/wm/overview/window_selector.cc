@@ -29,6 +29,7 @@
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
+#include "components/vector_icons/vector_icons.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer.h"
@@ -39,7 +40,6 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/skia_util.h"
-#include "ui/vector_icons/vector_icons.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -294,8 +294,8 @@ void WindowSelector::Init(const WindowList& windows) {
       window_grid->PositionWindows(true);
     }
 
-    search_image_ = gfx::CreateVectorIcon(ui::kSearchIcon, kTextFilterIconSize,
-                                          kTextFilterIconColor);
+    search_image_ = gfx::CreateVectorIcon(
+        vector_icons::kSearchIcon, kTextFilterIconSize, kTextFilterIconColor);
     aura::Window* root_window = Shell::GetPrimaryRootWindow();
     text_filter_widget_.reset(CreateTextFilter(this, root_window, search_image_,
                                                &text_filter_bottom_));

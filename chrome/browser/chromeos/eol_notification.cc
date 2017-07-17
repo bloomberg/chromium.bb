@@ -16,10 +16,10 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/update_engine_client.h"
 #include "components/prefs/pref_service.h"
+#include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/vector_icons/vector_icons.h"
 
 using message_center::MessageCenter;
 
@@ -140,12 +140,12 @@ void EolNotification::OnEolStatus(update_engine::EndOfLifeStatus status) {
 void EolNotification::Update() {
   message_center::ButtonInfo learn_more(
       l10n_util::GetStringUTF16(IDS_EOL_MORE_INFO_BUTTON));
-  learn_more.icon =
-      gfx::Image(CreateVectorIcon(ui::kInfoOutlineIcon, kButtonIconColor));
+  learn_more.icon = gfx::Image(
+      CreateVectorIcon(vector_icons::kInfoOutlineIcon, kButtonIconColor));
   message_center::ButtonInfo dismiss(
       l10n_util::GetStringUTF16(IDS_EOL_DISMISS_BUTTON));
-  dismiss.icon =
-      gfx::Image(CreateVectorIcon(ui::kNotificationsOffIcon, kButtonIconColor));
+  dismiss.icon = gfx::Image(
+      CreateVectorIcon(vector_icons::kNotificationsOffIcon, kButtonIconColor));
 
   message_center::RichNotificationData data;
   data.buttons.push_back(learn_more);

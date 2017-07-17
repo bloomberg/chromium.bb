@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Note that this differs from the one in ui/vector_icons in that it is
+// Note that this differs from the one in components/vector_icons in that it is
 // optimized for display at 20dip.
 CANVAS_DIMENSIONS, 40,
 MOVE_TO, 20, 4,

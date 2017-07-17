@@ -5,7 +5,7 @@
 import("//build/buildflag_header.gni")
 import("//build/config/ui.gni")
 import("//device/vr/features/features.gni")
-import("//ui/vector_icons/vector_icons.gni")
+import("//components/vector_icons/vector_icons.gni")
 
 buildflag_header("build_features") {
   header = "features.h"
@@ -36,9 +36,9 @@ static_library("vector_icons") {
   sources = get_target_outputs(":toolbar_vector_icons")
   deps = [
     ":toolbar_vector_icons",
+    "//components/vector_icons",
     "//skia",
     "//ui/gfx",
-    "//ui/vector_icons",
   ]
 }
 

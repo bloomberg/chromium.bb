@@ -7,13 +7,13 @@
 #include "cc/paint/skia_paint_canvas.h"
 #include "chrome/browser/vr/color_scheme.h"
 #include "chrome/browser/vr/elements/button.h"
+#include "components/vector_icons/vector_icons.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icon_types.h"
-#include "ui/vector_icons/vector_icons.h"
 
 namespace vr {
 
@@ -48,7 +48,8 @@ void CloseButtonTexture::Draw(SkCanvas* sk_canvas,
   canvas->Save();
   canvas->Translate(gfx::Vector2d(size_.height() * (1 - kIconScaleFactor) / 2,
                                   size_.height() * (1 - kIconScaleFactor) / 2));
-  PaintVectorIcon(canvas, ui::kCloseIcon, size_.height() * kIconScaleFactor,
+  PaintVectorIcon(canvas, vector_icons::kCloseIcon,
+                  size_.height() * kIconScaleFactor,
                   color_scheme().close_button_foreground);
   canvas->Restore();
 }

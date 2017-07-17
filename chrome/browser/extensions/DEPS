@@ -8,7 +8,7 @@ include_rules = [
   "+components/user_manager",
   "+extensions/strings/grit/extensions_strings.h",
   "+ui/base",
-  "+ui/vector_icons",
+  "+components/vector_icons",
 
   # For access to testing command line switches.
   "+ppapi/shared_impl",

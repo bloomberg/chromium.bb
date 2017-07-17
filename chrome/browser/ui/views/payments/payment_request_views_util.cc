@@ -24,6 +24,7 @@
 #include "components/payments/core/payments_profile_comparator.h"
 #include "components/payments/core/strings_util.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/vector_icons/vector_icons.h"
 #include "ui/base/default_style.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -33,7 +34,6 @@
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/native_theme/native_theme.h"
-#include "ui/vector_icons/vector_icons.h"
 #include "ui/views/border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/button.h"
@@ -213,7 +213,7 @@ std::unique_ptr<views::View> CreateSheetHeaderView(
     layout->SkipColumns(1);
   } else {
     views::ImageButton* back_arrow = views::CreateVectorImageButton(listener);
-    views::SetImageFromVectorIcon(back_arrow, ui::kBackArrowIcon);
+    views::SetImageFromVectorIcon(back_arrow, vector_icons::kBackArrowIcon);
     constexpr int kBackArrowSize = 16;
     back_arrow->SetSize(gfx::Size(kBackArrowSize, kBackArrowSize));
     back_arrow->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);

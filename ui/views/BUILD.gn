@@ -7,7 +7,7 @@ import("//build/config/ui.gni")
 import("//testing/test.gni")
 import("//ui/base/ui_features.gni")
 import("//ui/ozone/ozone.gni")
-import("//ui/vector_icons/vector_icons.gni")
+import("//components/vector_icons/vector_icons.gni")
 
 config("flags") {
   defines = [ "TOOLKIT_VIEWS=1" ]
@@ -447,6 +447,7 @@ component("views") {
   public_deps = [
     ":views_vector_icons",
     "//base",
+    "//components/vector_icons",
     "//ui/accessibility:ax_gen",
     "//ui/base",
     "//ui/base/ime",
@@ -458,7 +459,6 @@ component("views") {
     "//ui/gfx",
     "//ui/gfx/animation",
     "//ui/gfx/geometry",
-    "//ui/vector_icons",
     "//ui/views/resources",
   ]
 
@@ -963,6 +963,7 @@ source_set("views_unittests_sources") {
     "//base/test:test_support",
     "//cc",
     "//cc/paint",
+    "//components/vector_icons",
     "//services/ui/public/interfaces",
     "//skia",
     "//testing/gtest",
@@ -983,7 +984,6 @@ source_set("views_unittests_sources") {
     "//ui/resources",
     "//ui/resources:ui_test_pak",
     "//ui/strings",
-    "//ui/vector_icons",
     "//url",
   ]
 

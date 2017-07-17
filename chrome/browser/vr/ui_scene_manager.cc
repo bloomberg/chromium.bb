@@ -26,7 +26,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/gfx/transform_util.h"
-#include "ui/vector_icons/vector_icons.h"
 
 namespace vr {
 
@@ -242,16 +241,16 @@ void UiSceneManager::CreateSystemIndicators() {
     int resource_string;
   };
   const std::vector<Indicator> indicators = {
-      {&audio_capture_indicator_, kAudioCaptureIndicator, ui::kMicrophoneIcon,
-       IDS_AUDIO_CALL_NOTIFICATION_TEXT_2},
-      {&video_capture_indicator_, kVideoCaptureIndicator, ui::kVideocamIcon,
-       IDS_VIDEO_CALL_NOTIFICATION_TEXT_2},
+      {&audio_capture_indicator_, kAudioCaptureIndicator,
+       vector_icons::kMicrophoneIcon, IDS_AUDIO_CALL_NOTIFICATION_TEXT_2},
+      {&video_capture_indicator_, kVideoCaptureIndicator,
+       vector_icons::kVideocamIcon, IDS_VIDEO_CALL_NOTIFICATION_TEXT_2},
       {&screen_capture_indicator_, kScreenCaptureIndicator,
        vector_icons::kScreenShareIcon, IDS_SCREEN_CAPTURE_NOTIFICATION_TEXT_2},
       {&bluetooth_connected_indicator_, kBluetoothConnectedIndicator,
        vector_icons::kBluetoothConnectedIcon, 0},
       {&location_access_indicator_, kLocationAccessIndicator,
-       ui::kLocationOnIcon, 0},
+       vector_icons::kLocationOnIcon, 0},
   };
 
   for (const auto& indicator : indicators) {

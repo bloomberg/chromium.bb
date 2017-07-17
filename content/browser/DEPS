@@ -37,7 +37,7 @@ include_rules = [
   "+services",
   "+sql",
   "+ui/aura_extra",
-  "+ui/vector_icons",
+  "+components/vector_icons",
   "+ui/webui",
 
   # In general, //content shouldn't depend on //device.

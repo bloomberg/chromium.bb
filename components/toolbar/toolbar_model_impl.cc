@@ -24,7 +24,7 @@
 
 #if (!defined(OS_ANDROID) || BUILDFLAG(ENABLE_VR)) && !defined(OS_IOS)
 #include "components/toolbar/vector_icons.h"  // nogncheck
-#include "ui/vector_icons/vector_icons.h"     // nogncheck
+#include "components/vector_icons/vector_icons.h"  // nogncheck
 #endif
 
 ToolbarModelImpl::ToolbarModelImpl(ToolbarModelDelegate* delegate,
@@ -93,7 +93,7 @@ const gfx::VectorIcon& ToolbarModelImpl::GetVectorIcon() const {
       // Surface Dubious as Neutral.
       return toolbar::kHttpIcon;
     case security_state::SECURE_WITH_POLICY_INSTALLED_CERT:
-      return ui::kBusinessIcon;
+      return vector_icons::kBusinessIcon;
     case security_state::DANGEROUS:
       return toolbar::kHttpsInvalidIcon;
   }

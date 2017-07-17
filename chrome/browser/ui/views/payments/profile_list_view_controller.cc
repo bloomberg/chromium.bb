@@ -15,11 +15,11 @@
 #include "components/payments/core/payments_profile_comparator.h"
 #include "components/payments/core/strings_util.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/native_theme/native_theme.h"
-#include "ui/vector_icons/vector_icons.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/image_view.h"
@@ -213,7 +213,7 @@ class ShippingProfileViewController : public ProfileListViewController,
       auto warning_icon = base::MakeUnique<views::ImageView>();
       warning_icon->set_can_process_events_within_subtree(false);
       warning_icon->SetImage(gfx::CreateVectorIcon(
-          ui::kWarningIcon, 16,
+          vector_icons::kWarningIcon, 16,
           warning_icon->GetNativeTheme()->GetSystemColor(
               ui::NativeTheme::kColorId_AlertSeverityHigh)));
       header_view->AddChildView(warning_icon.release());

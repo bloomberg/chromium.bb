@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/webui/media_router/media_router_dialog_controller_impl.h"
 #include "chrome/browser/ui/webui/media_router/media_router_web_ui_test.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -19,7 +20,6 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image_unittest_util.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/vector_icons/vector_icons.h"
 
 using content::WebContents;
 using media_router::MediaRouterDialogControllerImpl;
@@ -96,10 +96,10 @@ class MediaRouterActionUnitTest : public MediaRouterWebUITest {
                                     media_router::IssueInfo::Severity::FATAL)),
         fake_source1_("fakeSource1"),
         fake_source2_("fakeSource2"),
-        active_icon_(GetIcon(ui::kMediaRouterActiveIcon)),
-        error_icon_(GetIcon(ui::kMediaRouterErrorIcon)),
-        idle_icon_(GetIcon(ui::kMediaRouterIdleIcon)),
-        warning_icon_(GetIcon(ui::kMediaRouterWarningIcon)) {}
+        active_icon_(GetIcon(vector_icons::kMediaRouterActiveIcon)),
+        error_icon_(GetIcon(vector_icons::kMediaRouterErrorIcon)),
+        idle_icon_(GetIcon(vector_icons::kMediaRouterIdleIcon)),
+        warning_icon_(GetIcon(vector_icons::kMediaRouterWarningIcon)) {}
 
   ~MediaRouterActionUnitTest() override {}
 

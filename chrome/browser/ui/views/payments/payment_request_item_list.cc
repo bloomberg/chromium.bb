@@ -8,11 +8,11 @@
 #include "chrome/browser/ui/views/payments/payment_request_views_util.h"
 #include "components/payments/content/payment_request_state.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/vector_icons/vector_icons.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
@@ -102,9 +102,9 @@ void PaymentRequestItemList::Item::Init() {
     views::ImageButton* edit_button = views::CreateVectorImageButton(this);
     const SkColor icon_color =
         color_utils::DeriveDefaultIconColor(SK_ColorBLACK);
-    edit_button->SetImage(
-        views::Button::STATE_NORMAL,
-        gfx::CreateVectorIcon(ui::kEditIcon, kEditIconSize, icon_color));
+    edit_button->SetImage(views::Button::STATE_NORMAL,
+                          gfx::CreateVectorIcon(vector_icons::kEditIcon,
+                                                kEditIconSize, icon_color));
     edit_button->set_ink_drop_base_color(icon_color);
     edit_button->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
     edit_button->set_id(static_cast<int>(DialogViewID::EDIT_ITEM_BUTTON));

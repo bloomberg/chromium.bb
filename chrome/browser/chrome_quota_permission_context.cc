@@ -32,7 +32,7 @@
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
 #else
-#include "ui/vector_icons/vector_icons.h"
+#include "components/vector_icons/vector_icons.h"
 #endif
 
 namespace {
@@ -95,7 +95,7 @@ PermissionRequest::IconId QuotaPermissionRequest::GetIconId() const {
 #if defined(OS_ANDROID)
   return IDR_ANDROID_INFOBAR_WARNING;
 #else
-  return ui::kWarningIcon;
+  return vector_icons::kWarningIcon;
 #endif
 }
 

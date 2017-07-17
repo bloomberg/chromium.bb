@@ -26,6 +26,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/mime_util/mime_util.h"
 #include "components/url_formatter/elide_url.h"
+#include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_interrupt_reasons.h"
@@ -44,7 +45,6 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_style.h"
-#include "ui/vector_icons/vector_icons.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/note_taking_helper.h"
@@ -497,9 +497,9 @@ void DownloadItemNotification::UpdateNotificationIcon() {
                             ? IDR_DOWNLOAD_NOTIFICATION_WARNING_BAD
                             : IDR_DOWNLOAD_NOTIFICATION_WARNING_UNWANTED);
 #else
-    SetNotificationVectorIcon(ui::kWarningIcon, model.MightBeMalicious()
-                                                    ? gfx::kGoogleRed700
-                                                    : gfx::kGoogleYellow700);
+    SetNotificationVectorIcon(
+        vector_icons::kWarningIcon,
+        model.MightBeMalicious() ? gfx::kGoogleRed700 : gfx::kGoogleYellow700);
 #endif
     return;
   }
@@ -525,7 +525,8 @@ void DownloadItemNotification::UpdateNotificationIcon() {
 #if defined(OS_MACOSX)
       SetNotificationIcon(IDR_DOWNLOAD_NOTIFICATION_ERROR);
 #else
-      SetNotificationVectorIcon(ui::kErrorCircleIcon, gfx::kGoogleRed700);
+      SetNotificationVectorIcon(vector_icons::kErrorCircleIcon,
+                                gfx::kGoogleRed700);
 #endif
       break;
 

@@ -19,12 +19,12 @@
 #include "chrome/common/media_router/issue.h"
 #include "chrome/common/media_router/media_route.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icon_types.h"
-#include "ui/vector_icons/vector_icons.h"
 
 using media_router::MediaRouterDialogControllerImpl;
 
@@ -41,7 +41,7 @@ MediaRouterAction::MediaRouterAction(Browser* browser,
                                      ToolbarActionsBar* toolbar_actions_bar)
     : media_router::IssuesObserver(GetMediaRouter(browser)),
       media_router::MediaRoutesObserver(GetMediaRouter(browser)),
-      current_icon_(&ui::kMediaRouterIdleIcon),
+      current_icon_(&vector_icons::kMediaRouterIdleIcon),
       has_local_display_route_(false),
       has_dialog_(false),
       delegate_(nullptr),
@@ -63,13 +63,13 @@ MediaRouterAction::~MediaRouterAction() {
 
 // static
 SkColor MediaRouterAction::GetIconColor(const gfx::VectorIcon& icon_id) {
-  if (&icon_id == &ui::kMediaRouterIdleIcon)
+  if (&icon_id == &vector_icons::kMediaRouterIdleIcon)
     return gfx::kChromeIconGrey;
-  else if (&icon_id == &ui::kMediaRouterActiveIcon)
+  else if (&icon_id == &vector_icons::kMediaRouterActiveIcon)
     return gfx::kGoogleBlue500;
-  else if (&icon_id == &ui::kMediaRouterWarningIcon)
+  else if (&icon_id == &vector_icons::kMediaRouterWarningIcon)
     return gfx::kGoogleYellow700;
-  else if (&icon_id == &ui::kMediaRouterErrorIcon)
+  else if (&icon_id == &vector_icons::kMediaRouterErrorIcon)
     return gfx::kGoogleRed700;
 
   NOTREACHED();
@@ -285,12 +285,12 @@ const gfx::VectorIcon& MediaRouterAction::GetCurrentIcon() const {
   if (current_issue_) {
     media_router::IssueInfo::Severity severity = current_issue_->severity;
     if (severity == media_router::IssueInfo::Severity::FATAL)
-      return ui::kMediaRouterErrorIcon;
+      return vector_icons::kMediaRouterErrorIcon;
     if (severity == media_router::IssueInfo::Severity::WARNING)
-      return ui::kMediaRouterWarningIcon;
+      return vector_icons::kMediaRouterWarningIcon;
     // Fall through for Severity::NOTIFICATION.
   }
 
-  return has_local_display_route_ ? ui::kMediaRouterActiveIcon
-                                  : ui::kMediaRouterIdleIcon;
+  return has_local_display_route_ ? vector_icons::kMediaRouterActiveIcon
+                                  : vector_icons::kMediaRouterIdleIcon;
 }

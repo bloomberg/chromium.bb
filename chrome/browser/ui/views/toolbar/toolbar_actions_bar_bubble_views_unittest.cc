@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar_bubble_delegate.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/event_utils.h"
@@ -21,7 +22,6 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_unittest_util.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/vector_icons/vector_icons.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/test/test_widget_observer.h"
@@ -331,7 +331,7 @@ TEST_F(ToolbarActionsBarBubbleViewsTest, TestCreateExtraViewIconOnly) {
   std::unique_ptr<ToolbarActionsBarBubbleDelegate::ExtraViewInfo>
       extra_view_info =
           base::MakeUnique<ToolbarActionsBarBubbleDelegate::ExtraViewInfo>();
-  extra_view_info->resource = &ui::kBusinessIcon;
+  extra_view_info->resource = &vector_icons::kBusinessIcon;
   delegate.set_extra_view_info(std::move(extra_view_info));
   ShowBubble(&delegate);
   std::unique_ptr<views::View> extra_view(TestCreateExtraView());
@@ -339,7 +339,7 @@ TEST_F(ToolbarActionsBarBubbleViewsTest, TestCreateExtraViewIconOnly) {
   ASSERT_EQ("ImageView", std::string(extra_view->GetClassName()));
   EXPECT_TRUE(gfx::test::AreImagesEqual(
       gfx::Image(static_cast<views::ImageView*>(extra_view.get())->GetImage()),
-      gfx::Image(gfx::CreateVectorIcon(ui::kBusinessIcon, kIconSize,
+      gfx::Image(gfx::CreateVectorIcon(vector_icons::kBusinessIcon, kIconSize,
                                        gfx::kChromeIconGrey))));
   CloseBubble();
 }
@@ -392,7 +392,7 @@ TEST_F(ToolbarActionsBarBubbleViewsTest, TestCreateExtraViewImageAndText) {
   std::unique_ptr<ToolbarActionsBarBubbleDelegate::ExtraViewInfo>
       extra_view_info =
           base::MakeUnique<ToolbarActionsBarBubbleDelegate::ExtraViewInfo>();
-  extra_view_info->resource = &ui::kBusinessIcon;
+  extra_view_info->resource = &vector_icons::kBusinessIcon;
   extra_view_info->text =
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_INSTALLED_BY_ADMIN);
   extra_view_info->is_text_linked = false;
@@ -415,8 +415,8 @@ TEST_F(ToolbarActionsBarBubbleViewsTest, TestCreateExtraViewImageAndText) {
     } else {
       EXPECT_TRUE(gfx::test::AreImagesEqual(
           gfx::Image(static_cast<const views::ImageView*>(v)->GetImage()),
-          gfx::Image(gfx::CreateVectorIcon(ui::kBusinessIcon, kIconSize,
-                                           gfx::kChromeIconGrey))));
+          gfx::Image(gfx::CreateVectorIcon(vector_icons::kBusinessIcon,
+                                           kIconSize, gfx::kChromeIconGrey))));
     }
   }
 

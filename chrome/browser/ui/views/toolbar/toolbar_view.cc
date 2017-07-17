@@ -51,6 +51,7 @@
 #include "components/omnibox/browser/omnibox_view.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -65,7 +66,6 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/native_theme/native_theme_aura.h"
-#include "ui/vector_icons/vector_icons.h"
 #include "ui/views/widget/tooltip_manager.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
@@ -710,16 +710,18 @@ void ToolbarView::LoadImages() {
   const SkColor disabled_color =
       tp->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON_INACTIVE);
 
-  back_->SetImage(views::Button::STATE_NORMAL,
-                  gfx::CreateVectorIcon(ui::kBackArrowIcon, normal_color));
-  back_->SetImage(views::Button::STATE_DISABLED,
-                  gfx::CreateVectorIcon(ui::kBackArrowIcon, disabled_color));
+  back_->SetImage(
+      views::Button::STATE_NORMAL,
+      gfx::CreateVectorIcon(vector_icons::kBackArrowIcon, normal_color));
+  back_->SetImage(
+      views::Button::STATE_DISABLED,
+      gfx::CreateVectorIcon(vector_icons::kBackArrowIcon, disabled_color));
   forward_->SetImage(
       views::Button::STATE_NORMAL,
-      gfx::CreateVectorIcon(ui::kForwardArrowIcon, normal_color));
+      gfx::CreateVectorIcon(vector_icons::kForwardArrowIcon, normal_color));
   forward_->SetImage(
       views::Button::STATE_DISABLED,
-      gfx::CreateVectorIcon(ui::kForwardArrowIcon, disabled_color));
+      gfx::CreateVectorIcon(vector_icons::kForwardArrowIcon, disabled_color));
   home_->SetImage(views::Button::STATE_NORMAL,
                   gfx::CreateVectorIcon(kNavigateHomeIcon, normal_color));
   app_menu_button_->UpdateIcon(false);

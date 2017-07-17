@@ -28,11 +28,11 @@
 #include "components/signin/core/browser/profile_identity_provider.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/vector_icons/vector_icons.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/combobox/combobox.h"
@@ -257,7 +257,7 @@ void CvcUnmaskViewController::FillContentView(views::View* content_view) {
       base::MakeUnique<views::ImageView>();
   error_icon->set_id(static_cast<int>(DialogViewID::CVC_ERROR_ICON));
   error_icon->SetImage(
-      gfx::CreateVectorIcon(ui::kWarningIcon, 16,
+      gfx::CreateVectorIcon(vector_icons::kWarningIcon, 16,
                             error_icon->GetNativeTheme()->GetSystemColor(
                                 ui::NativeTheme::kColorId_AlertSeverityHigh)));
   error_icon->SetVisible(false);

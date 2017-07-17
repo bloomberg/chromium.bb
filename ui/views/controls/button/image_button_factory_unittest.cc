@@ -4,8 +4,8 @@
 
 #include "ui/views/controls/button/image_button_factory.h"
 
+#include "components/vector_icons/vector_icons.h"
 #include "ui/gfx/color_utils.h"
-#include "ui/vector_icons/vector_icons.h"
 #include "ui/views/animation/test/ink_drop_host_view_test_api.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/image_button.h"
@@ -25,14 +25,14 @@ TEST_F(ImageButtonFactoryTest, CreateVectorImageButton) {
 
 TEST_F(ImageButtonFactoryTest, SetImageFromVectorIcon) {
   ImageButton* button = CreateVectorImageButton(nullptr);
-  SetImageFromVectorIcon(button, ui::kCloseIcon, SK_ColorRED);
+  SetImageFromVectorIcon(button, vector_icons::kCloseIcon, SK_ColorRED);
   EXPECT_FALSE(button->GetImage(CustomButton::STATE_NORMAL).isNull());
   EXPECT_FALSE(button->GetImage(CustomButton::STATE_DISABLED).isNull());
   EXPECT_EQ(color_utils::DeriveDefaultIconColor(SK_ColorRED),
             button->GetInkDropBaseColor());
 
   // Default to black.
-  SetImageFromVectorIcon(button, ui::kCloseIcon);
+  SetImageFromVectorIcon(button, vector_icons::kCloseIcon);
   EXPECT_EQ(color_utils::DeriveDefaultIconColor(SK_ColorBLACK),
             button->GetInkDropBaseColor());
   delete button;
