@@ -54,6 +54,8 @@ android_apk("webview_instrumentation_apk") {
   native_lib_version_arg = "@FileArg($_native_lib_file:full-quoted)"
 
   enable_multidex = true
+
+  command_line_flags_file = "android-webview-command-line"
 }
 
 android_resources("android_webview_apk_resources") {

@@ -91,6 +91,7 @@ template("chrome_public_apk_tmpl") {
         enable_relocation_packing = chrome_public_apk_use_relocation_packer
       }
     }
+    command_line_flags_file = "chrome-command-line"
   }
 }
 

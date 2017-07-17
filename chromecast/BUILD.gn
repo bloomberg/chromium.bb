@@ -515,5 +515,7 @@ if (is_android) {
       "//chromecast/android:libcast_shell_android",
       "//chromecast/browser/android:cast_shell_java",
     ]
+
+    command_line_flags_file = "castshell-command-line"
   }
 }
