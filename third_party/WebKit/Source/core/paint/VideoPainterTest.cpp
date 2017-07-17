@@ -49,7 +49,7 @@ class StubWebMediaPlayer : public EmptyWebMediaPlayer {
   ReadyState ready_state_ = kReadyStateHaveNothing;
 };
 
-class StubLocalFrameClient : public EmptyLocalFrameClient {
+class VideoStubLocalFrameClient : public EmptyLocalFrameClient {
  public:
   // LocalFrameClient
   std::unique_ptr<WebMediaPlayer> CreateWebMediaPlayer(
@@ -68,7 +68,7 @@ class VideoPainterTestForSPv2 : public ::testing::Test,
  protected:
   void SetUp() override {
     chrome_client_ = new StubChromeClientForSPv2();
-    local_frame_client_ = new StubLocalFrameClient;
+    local_frame_client_ = new VideoStubLocalFrameClient;
     Page::PageClients clients;
     FillWithEmptyClients(clients);
     clients.chrome_client = chrome_client_.Get();
@@ -89,7 +89,7 @@ class VideoPainterTestForSPv2 : public ::testing::Test,
 
  private:
   Persistent<StubChromeClientForSPv2> chrome_client_;
-  Persistent<StubLocalFrameClient> local_frame_client_;
+  Persistent<VideoStubLocalFrameClient> local_frame_client_;
   std::unique_ptr<DummyPageHolder> page_holder_;
 };
 
