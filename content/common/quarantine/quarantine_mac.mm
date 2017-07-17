@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/mac/availability.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_logging.h"
 #include "base/mac/mac_util.h"
@@ -76,6 +77,7 @@ bool SetQuarantinePropertiesDeprecated(const base::FilePath& file,
 #pragma clang diagnostic pop
 #endif
 
+API_AVAILABLE(macos(10.10))
 bool GetQuarantineProperties(
     const base::FilePath& file,
     base::scoped_nsobject<NSMutableDictionary>* properties) {
@@ -84,15 +86,11 @@ bool GetQuarantineProperties(
   if (!file_url)
     return false;
 
-// NSURLQuarantinePropertiesKey is only available on macOS 10.10+.
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunguarded-availability"
   NSError* error = nil;
   id quarantine_properties = nil;
   BOOL success = [file_url getResourceValue:&quarantine_properties
                                      forKey:NSURLQuarantinePropertiesKey
                                       error:&error];
-#pragma clang diagnostic pop
   if (!success) {
     std::string error_message(error ? error.description.UTF8String : "");
     LOG(WARNING) << "Unable to get quarantine attributes for file "
@@ -116,6 +114,7 @@ bool GetQuarantineProperties(
   return true;
 }
 
+API_AVAILABLE(macos(10.10))
 bool SetQuarantineProperties(const base::FilePath& file,
                              NSDictionary* properties) {
   base::scoped_nsobject<NSURL> file_url([[NSURL alloc]
@@ -123,14 +122,10 @@ bool SetQuarantineProperties(const base::FilePath& file,
   if (!file_url)
     return false;
 
-// NSURLQuarantinePropertiesKey is only available on macOS 10.10+.
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunguarded-availability"
   NSError* error = nil;
   bool success = [file_url setResourceValue:properties
                                      forKey:NSURLQuarantinePropertiesKey
                                       error:&error];
-#pragma clang diagnostic pop
   if (!success) {
     std::string error_message(error ? error.description.UTF8String : "");
     LOG(WARNING) << "Unable to set quarantine attributes on file "
@@ -241,7 +236,7 @@ bool AddQuarantineMetadataToFile(const base::FilePath& file,
   base::ThreadRestrictions::AssertIOAllowed();
   base::scoped_nsobject<NSMutableDictionary> properties;
   bool success = false;
-  if (base::mac::IsAtLeastOS10_10()) {
+  if (@available(macos 10.10, *)) {
     success = GetQuarantineProperties(file, &properties);
   } else {
     success = GetQuarantinePropertiesDeprecated(file, &properties);
@@ -285,7 +280,7 @@ bool AddQuarantineMetadataToFile(const base::FilePath& file,
     [properties setValue:origin_url forKey:(NSString*)kLSQuarantineDataURLKey];
   }
 
-  if (base::mac::IsAtLeastOS10_10()) {
+  if (@available(macos 10.10, *)) {
     return SetQuarantineProperties(file, properties);
   } else {
     return SetQuarantinePropertiesDeprecated(file, properties);
@@ -319,7 +314,7 @@ bool IsFileQuarantined(const base::FilePath& file,
 
   base::scoped_nsobject<NSMutableDictionary> properties;
   bool success = false;
-  if (base::mac::IsAtLeastOS10_10()) {
+  if (@available(macos 10.10, *)) {
     success = GetQuarantineProperties(file, &properties);
   } else {
     success = GetQuarantinePropertiesDeprecated(file, &properties);
