@@ -53,15 +53,12 @@ void MediaControlToggleClosedCaptionsButtonElement::DefaultEventHandler(
   if (event->type() == EventTypeNames::click) {
     if (MediaElement().textTracks()->length() == 1) {
       // If only one track exists, toggle it on/off
-      if (MediaElement().textTracks()->HasShowingTracks()) {
-        static_cast<MediaControlsImpl&>(GetMediaControls())
-            .DisableShowingTextTracks();
-      } else {
-        static_cast<MediaControlsImpl&>(GetMediaControls())
-            .ShowTextTrackAtIndex(0);
-      }
+      if (MediaElement().textTracks()->HasShowingTracks())
+        GetMediaControls().DisableShowingTextTracks();
+      else
+        GetMediaControls().ShowTextTrackAtIndex(0);
     } else {
-      static_cast<MediaControlsImpl&>(GetMediaControls()).ToggleTextTrackList();
+      GetMediaControls().ToggleTextTrackList();
     }
 
     UpdateDisplayType();

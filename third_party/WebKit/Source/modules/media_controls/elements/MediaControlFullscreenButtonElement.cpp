@@ -51,9 +51,9 @@ void MediaControlFullscreenButtonElement::DefaultEventHandler(Event* event) {
   if (event->type() == EventTypeNames::click) {
     RecordClickMetrics();
     if (MediaElement().IsFullscreen())
-      static_cast<MediaControlsImpl&>(GetMediaControls()).ExitFullscreen();
+      GetMediaControls().ExitFullscreen();
     else
-      static_cast<MediaControlsImpl&>(GetMediaControls()).EnterFullscreen();
+      GetMediaControls().EnterFullscreen();
     event->SetDefaultHandled();
   }
   MediaControlInputElement::DefaultEventHandler(event);
