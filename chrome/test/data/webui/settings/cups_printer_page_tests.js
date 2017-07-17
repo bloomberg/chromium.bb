@@ -107,10 +107,19 @@ suite('CupsAddPrinterDialogTests', function() {
    * to add a printer.
    */
   test('DiscoveryShowing', function() {
-    assertFalse(!!dialog.$$('add-printer-manufacturer-model-dialog'));
-    assertFalse(!!dialog.$$('add-printer-configuring-dialog'));
-    assertFalse(!!dialog.$$('add-printer-manually-dialog'));
-    assertTrue(!!dialog.$$('add-printer-discovery-dialog'));
+    return PolymerTest.flushTasks().then(function() {
+      // Discovery is showing.
+      assertTrue(dialog.showDiscoveryDialog_);
+      assertTrue(!!dialog.$$('add-printer-discovery-dialog'));
+
+      // All other components are hidden.
+      assertFalse(dialog.showManufacturerDialog_);
+      assertFalse(!!dialog.$$('add-printer-manufacturer-model-dialog'));
+      assertFalse(dialog.showConfiguringDialog_);
+      assertFalse(!!dialog.$$('add-printer-configuring-dialog'));
+      assertFalse(dialog.showManuallyAddDialog_);
+      assertFalse(!!dialog.$$('add-printer-manually-dialog'));
+    });
   });
 
   /**
@@ -137,8 +146,17 @@ suite('CupsAddPrinterDialogTests', function() {
     return cupsPrintersBrowserProxy.
         whenCalled('getCupsPrinterManufacturersList').
         then(function() {
-          // TODO(skau): Verify other dialogs are hidden.
+          return PolymerTest.flushTasks();
+        }).
+        then(function() {
+          // Showing model selection.
+          assertFalse(!!dialog.$$('add-printer-configuring-dialog'));
           assertTrue(!!dialog.$$('add-printer-manufacturer-model-dialog'));
+
+          assertTrue(dialog.showManufacturerDialog_);
+          assertFalse(dialog.showConfiguringDialog_);
+          assertFalse(dialog.showManuallyAddDialog_);
+          assertFalse(dialog.showDiscoveryDialog_);
         });
   });
 

@@ -367,16 +367,28 @@ Polymer({
     currentDialog_: String,
 
     /** @private {boolean} */
-    showDiscoveryDialog_: Boolean,
+    showDiscoveryDialog_: {
+      type: Boolean,
+      value: false,
+    },
 
     /** @private {boolean} */
-    showManuallyAddDialog_: Boolean,
+    showManuallyAddDialog_: {
+      type: Boolean,
+      value: false,
+    },
 
     /** @private {boolean} */
-    showConfiguringDialog_: Boolean,
+    showConfiguringDialog_: {
+      type: Boolean,
+      value: false,
+    },
 
     /** @private {boolean} */
-    showManufacturerDialog_: Boolean,
+    showManufacturerDialog_: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   listeners: {
