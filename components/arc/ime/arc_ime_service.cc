@@ -7,7 +7,9 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/memory/singleton.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/ime/arc_ime_bridge_impl.h"
 #include "components/exo/shell_surface.h"
 #include "components/exo/surface.h"
@@ -51,14 +53,39 @@ class ArcWindowDelegateImpl : public ArcImeService::ArcWindowDelegate {
   DISALLOW_COPY_AND_ASSIGN(ArcWindowDelegateImpl);
 };
 
+// Singleton factory for ArcImeService.
+class ArcImeServiceFactory
+    : public internal::ArcBrowserContextKeyedServiceFactoryBase<
+          ArcImeService,
+          ArcImeServiceFactory> {
+ public:
+  // Factory name used by ArcBrowserContextKeyedServiceFactoryBase.
+  static constexpr const char* kName = "ArcImeServiceFactory";
+
+  static ArcImeServiceFactory* GetInstance() {
+    return base::Singleton<ArcImeServiceFactory>::get();
+  }
+
+ private:
+  friend base::DefaultSingletonTraits<ArcImeServiceFactory>;
+  ArcImeServiceFactory() = default;
+  ~ArcImeServiceFactory() override = default;
+};
+
 }  // anonymous namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // ArcImeService main implementation:
 
-ArcImeService::ArcImeService(ArcBridgeService* bridge_service)
-    : ArcService(bridge_service),
-      ime_bridge_(new ArcImeBridgeImpl(this, bridge_service)),
+// static
+ArcImeService* ArcImeService::GetForBrowserContext(
+    content::BrowserContext* context) {
+  return ArcImeServiceFactory::GetForBrowserContext(context);
+}
+
+ArcImeService::ArcImeService(content::BrowserContext* context,
+                             ArcBridgeService* bridge_service)
+    : ime_bridge_(new ArcImeBridgeImpl(this, bridge_service)),
       arc_window_delegate_(new ArcWindowDelegateImpl(this)),
       ime_type_(ui::TEXT_INPUT_TYPE_NONE),
       has_composition_text_(false),
