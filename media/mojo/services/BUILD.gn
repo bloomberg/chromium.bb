@@ -53,6 +53,8 @@ component("services") {
     "mojo_renderer_service.h",
     "mojo_video_decoder_service.cc",
     "mojo_video_decoder_service.h",
+    "mojo_video_encode_accelerator_service.cc",
+    "mojo_video_encode_accelerator_service.h",
     "test_mojo_media_client.cc",
     "test_mojo_media_client.h",
   ]
@@ -65,6 +67,7 @@ component("services") {
   public_deps = [
     "//base",
     "//media",
+    "//media/gpu",
     "//media/mojo:features",
     "//media/mojo/interfaces",
     "//mojo/public/cpp/bindings",

@@ -12,7 +12,6 @@
 namespace media {
 
 static const unsigned int kMinimumInputCount = 1;
-static const size_t kMinimumOutputBufferSize = 123456;
 
 FakeVideoEncodeAccelerator::FakeVideoEncodeAccelerator(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
