@@ -120,7 +120,7 @@ TEST_F(ScriptedIdleTaskControllerTest, RunCallback) {
   EXPECT_TRUE(platform->HasIdleTask());
   EXPECT_NE(0, id);
 
-  EXPECT_CALL(*callback, handleEvent(testing::_));
+  EXPECT_CALL(*callback, handleEvent(::testing::_));
   platform->RunIdleTask();
   ::testing::Mock::VerifyAndClearExpectations(callback);
   EXPECT_FALSE(platform->HasIdleTask());
@@ -138,7 +138,7 @@ TEST_F(ScriptedIdleTaskControllerTest, DontRunCallbackWhenAskedToYield) {
   int id = controller->RegisterCallback(callback, options);
   EXPECT_NE(0, id);
 
-  EXPECT_CALL(*callback, handleEvent(testing::_)).Times(0);
+  EXPECT_CALL(*callback, handleEvent(::testing::_)).Times(0);
   platform->RunIdleTask();
   ::testing::Mock::VerifyAndClearExpectations(callback);
 
