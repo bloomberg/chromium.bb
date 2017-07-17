@@ -962,6 +962,11 @@ void CronetURLRequestContextAdapter::GetCertVerifierDataOnNetworkThread() {
       base::android::ConvertUTF8ToJavaString(env, encoded_data).obj());
 }
 
+int CronetURLRequestContextAdapter::default_load_flags() const {
+  DCHECK(is_context_initialized_);
+  return default_load_flags_;
+}
+
 base::Thread* CronetURLRequestContextAdapter::GetFileThread() {
   DCHECK(GetNetworkTaskRunner()->BelongsToCurrentThread());
   if (!file_thread_) {

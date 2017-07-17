@@ -108,7 +108,7 @@ class CronetURLRequestContextAdapter
                            const base::android::JavaParamRef<jobject>& jcaller);
 
   // Default net::LOAD flags used to create requests.
-  int default_load_flags() const { return default_load_flags_; }
+  int default_load_flags() const;
 
   // Called on init Java thread to initialize URLRequestContext.
   void InitRequestContextOnInitThread();

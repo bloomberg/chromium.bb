@@ -544,11 +544,15 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
 
     private CronetEngine createCronetEngineWithCache(int cacheType) {
         CronetEngine.Builder builder = new CronetEngine.Builder(getContext());
-        if (cacheType == CronetEngine.Builder.HTTP_CACHE_DISK) {
+        if (cacheType == CronetEngine.Builder.HTTP_CACHE_DISK
+                || cacheType == CronetEngine.Builder.HTTP_CACHE_DISK_NO_HTTP) {
             builder.setStoragePath(getTestStorage(getContext()));
         }
         builder.enableHttpCache(cacheType, 100 * 1024);
-        assertTrue(NativeTestServer.startNativeTestServer(getContext()));
+        // Don't check the return value here, because startNativeTestServer() returns false when the
+        // NativeTestServer is already running and this method needs to be called twice without
+        // shutting down the NativeTestServer in between.
+        NativeTestServer.startNativeTestServer(getContext());
         return builder.build();
     }
 
@@ -961,10 +965,17 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     @Feature({"Cronet"})
     @OnlyRunNativeCronet
     public void testEnableHttpCacheDiskNoHttp() throws Exception {
-        // TODO(pauljensen): This should be testing HTTP_CACHE_DISK_NO_HTTP.
         CronetEngine cronetEngine =
-                createCronetEngineWithCache(CronetEngine.Builder.HTTP_CACHE_DISABLED);
+                createCronetEngineWithCache(CronetEngine.Builder.HTTP_CACHE_DISK_NO_HTTP);
         String url = NativeTestServer.getFileURL("/cacheable.txt");
+        checkRequestCaching(cronetEngine, url, false);
+        checkRequestCaching(cronetEngine, url, false);
+        checkRequestCaching(cronetEngine, url, false);
+
+        // Make a new CronetEngine and try again to make sure the response didn't get cached on the
+        // first request. See https://crbug.com/743232.
+        cronetEngine.shutdown();
+        cronetEngine = createCronetEngineWithCache(CronetEngine.Builder.HTTP_CACHE_DISK_NO_HTTP);
         checkRequestCaching(cronetEngine, url, false);
         checkRequestCaching(cronetEngine, url, false);
         checkRequestCaching(cronetEngine, url, false);
