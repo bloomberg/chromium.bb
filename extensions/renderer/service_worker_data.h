@@ -8,20 +8,21 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "extensions/renderer/service_worker_request_sender.h"
 #include "extensions/renderer/v8_schema_registry.h"
 
 namespace extensions {
 class ExtensionBindingsSystem;
+class IPCMessageSender;
+class ScriptContext;
 
 // Per ServiceWorker data in worker thread.
-// Contains: RequestSender, V8SchemaRegistry.
 // TODO(lazyboy): Also put worker ScriptContexts in this.
 class ServiceWorkerData {
  public:
   ServiceWorkerData(int64_t service_worker_version_id,
                     ScriptContext* context,
-                    std::unique_ptr<ExtensionBindingsSystem> bindings_system);
+                    std::unique_ptr<ExtensionBindingsSystem> bindings_system,
+                    std::unique_ptr<IPCMessageSender> ipc_message_sender);
   ~ServiceWorkerData();
 
   V8SchemaRegistry* v8_schema_registry() { return v8_schema_registry_.get(); }
@@ -30,12 +31,14 @@ class ServiceWorkerData {
     return service_worker_version_id_;
   }
   ScriptContext* context() const { return context_; }
+  IPCMessageSender* ipc_message_sender() { return ipc_message_sender_.get(); }
 
  private:
   const int64_t service_worker_version_id_;
   ScriptContext* const context_;
 
   std::unique_ptr<V8SchemaRegistry> v8_schema_registry_;
+  std::unique_ptr<IPCMessageSender> ipc_message_sender_;
   std::unique_ptr<ExtensionBindingsSystem> bindings_system_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerData);

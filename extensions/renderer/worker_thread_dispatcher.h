@@ -24,7 +24,6 @@ namespace extensions {
 class ExtensionBindingsSystem;
 class ResourceBundleSourceMap;
 class ScriptContext;
-class ServiceWorkerRequestSender;
 class V8SchemaRegistry;
 
 // Sends and receives IPC in an extension Service Worker.
@@ -42,7 +41,6 @@ class WorkerThreadDispatcher : public content::RenderThreadObserver,
   // Thread safe.
   static WorkerThreadDispatcher* Get();
   static ExtensionBindingsSystem* GetBindingsSystem();
-  static ServiceWorkerRequestSender* GetRequestSender();
   static V8SchemaRegistry* GetV8SchemaRegistry();
 
   void Init(content::RenderThread* render_thread);

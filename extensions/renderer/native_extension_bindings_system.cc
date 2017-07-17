@@ -721,19 +721,19 @@ void NativeExtensionBindingsSystem::SendRequest(
   else
     url = script_context->url();
 
-  ExtensionHostMsg_Request_Params params;
-  params.name = request->method_name;
-  params.arguments.Swap(request->arguments.get());
-  params.extension_id = script_context->GetExtensionID();
-  params.source_url = url;
-  params.request_id = request->request_id;
-  params.has_callback = request->has_callback;
-  params.user_gesture = request->has_user_gesture;
-  // TODO(devlin): Make this work in ServiceWorkers.
-  params.worker_thread_id = -1;
-  params.service_worker_version_id = kInvalidServiceWorkerVersionId;
+  auto params = base::MakeUnique<ExtensionHostMsg_Request_Params>();
+  params->name = request->method_name;
+  params->arguments.Swap(request->arguments.get());
+  params->extension_id = script_context->GetExtensionID();
+  params->source_url = url;
+  params->request_id = request->request_id;
+  params->has_callback = request->has_callback;
+  params->user_gesture = request->has_user_gesture;
+  // The IPC sender will update these members, if appropriate.
+  params->worker_thread_id = -1;
+  params->service_worker_version_id = kInvalidServiceWorkerVersionId;
 
-  send_request_ipc_.Run(script_context, params, request->thread);
+  send_request_ipc_.Run(script_context, std::move(params), request->thread);
 }
 
 void NativeExtensionBindingsSystem::OnEventListenerChanged(
