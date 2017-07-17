@@ -14,8 +14,29 @@
 <dom-module id="settings-chrome-cleanup-page">
   <template>
     <style include="settings-shared">
+      #files-to-remove-container {
+        /* Use the full available width for file paths to avoid inconsistent
+         *  line breaks when zooming in or out */
+        width: calc(var(--settings-card-max-width) -
+            2 * var(--settings-box-row-padding));
+      }
+
       #files-to-remove-list {
         word-break: break-all;
+      }
+
+      #powered-by-container {
+        align-items: center;
+        display: flex;
+        width: 100%;
+      }
+
+      /* Used by |chromeCleanupPoweredByHTML| */
+      #powered-by-logo {
+        -webkit-padding-end: 2px;
+        -webkit-padding-start: 5px;
+        content: url(chrome://settings/partner-logo.svg);
+        height: 13px;
       }
 
       #show-files-button {
@@ -85,17 +106,23 @@
       </settings-toggle-button>
     </div>
     <div class="settings-box" hidden="[[!showDetails_]]">
-      <div class="show-files-container start" hidden="[[showFilesToRemove_]]">
+      <div class="start" hidden="[[showFilesToRemove_]]">
         <paper-button id="show-files-button" on-tap="showFiles_">
           $i18n{chromeCleanupLinkShowFiles}
         </paper-button>
       </div>
-      <div hidden="[[!showFilesToRemove_]]">
+      <div id="files-to-remove-container" hidden="[[!showFilesToRemove_]]">
         <ul id="files-to-remove-list" class="secondary">
           <template is="dom-repeat" items="[[filesToRemove_]]" as="fileName">
             <li>[[fileName]]</li>
           </template>
         </ul>
+      </div>
+    </div>
+    <div class="settings-box"
+        hidden="[[!showPoweredBy_(showFilesToRemove_, isPartnerPowered_)]]">
+      <div id="powered-by-container" class="secondary">
+        $i18nRaw{chromeCleanupPoweredByHtml}
       </div>
     </div>
   </template>

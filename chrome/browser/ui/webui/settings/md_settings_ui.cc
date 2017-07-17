@@ -50,6 +50,9 @@
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_controller_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_field_trial_win.h"
 #include "chrome/browser/ui/webui/settings/chrome_cleanup_handler.h"
+#if defined(GOOGLE_CHROME_BUILD)
+#include "chrome/grit/chrome_unscaled_resources.h"
+#endif
 #endif  // defined(OS_WIN)
 
 #if defined(OS_WIN) || defined(OS_CHROMEOS)
@@ -110,6 +113,10 @@ void MdSettingsUI::RegisterProfilePrefs(
 MdSettingsUI::MdSettingsUI(content::WebUI* web_ui, const GURL& url)
     : content::WebUIController(web_ui),
       WebContentsObserver(web_ui->GetWebContents()) {
+#if BUILDFLAG(USE_VULCANIZE)
+  std::unordered_set<std::string> exclude_from_gzip;
+#endif
+
   Profile* profile = Profile::FromWebUI(web_ui);
   AddSettingsPageUIHandler(base::MakeUnique<AppearanceHandler>(web_ui));
 
@@ -185,8 +192,21 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui, const GURL& url)
   if (base::FeatureList::IsEnabled(safe_browsing::kInBrowserCleanerUIFeature)) {
     AddSettingsPageUIHandler(base::MakeUnique<ChromeCleanupHandler>(profile));
 
-    if (safe_browsing::ChromeCleanerController::ShouldShowCleanupInSettingsUI())
+    safe_browsing::ChromeCleanerController* cleaner_controller =
+        safe_browsing::ChromeCleanerController::GetInstance();
+    if (cleaner_controller->ShouldShowCleanupInSettingsUI())
       html_source->AddBoolean("chromeCleanupEnabled", true);
+
+#if defined(GOOGLE_CHROME_BUILD)
+    if (cleaner_controller->IsPoweredByPartner())
+      html_source->AddBoolean("cleanupPoweredByPartner", true);
+
+    html_source->AddResourcePath("partner-logo.svg",
+                                 IDR_CHROME_CLEANUP_PARTNER);
+#if BUILDFLAG(USE_VULCANIZE)
+    exclude_from_gzip.insert("partner-logo.svg");
+#endif
+#endif  // defined(GOOGLE_CHROME_BUILD)
   }
 #endif  // defined(OS_WIN)
 
@@ -244,7 +264,7 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui, const GURL& url)
   html_source->AddResourcePath("lazy_load.html",
                                IDR_MD_SETTINGS_LAZY_LOAD_VULCANIZED_HTML);
   html_source->SetDefaultResource(IDR_MD_SETTINGS_VULCANIZED_HTML);
-  html_source->UseGzip(std::unordered_set<std::string>());
+  html_source->UseGzip(exclude_from_gzip);
 #else
   // Add all settings resources.
   for (size_t i = 0; i < kSettingsResourcesSize; ++i) {

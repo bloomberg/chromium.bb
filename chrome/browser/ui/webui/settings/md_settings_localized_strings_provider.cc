@@ -808,6 +808,11 @@ void AddChromeCleanupStrings(content::WebUIDataSource* html_source) {
           g_browser_process->GetApplicationLocale())
           .spec();
   html_source->AddString("chromeCleanupLearnMoreUrl", cleanup_learn_more_url);
+
+  base::string16 powered_by_html = l10n_util::GetStringFUTF16(
+      IDS_CHROME_CLEANUP_WEBUI_FOOTER_POWERED_BY,
+      L"<span id='powered-by-logo'></span><span>®</span>");
+  html_source->AddString("chromeCleanupPoweredByHtml", powered_by_html);
 }
 #endif  // defined(OS_WIN)
 

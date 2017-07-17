@@ -132,8 +132,10 @@ class ChromeCleanerController {
   static ChromeCleanerController* GetInstance();
 
   // Returns whether the Cleanup card in settings should be displayed.
-  // Static to prevent instantiation of the global controller object.
-  static bool ShouldShowCleanupInSettingsUI();
+  bool ShouldShowCleanupInSettingsUI();
+
+  // Returns whether Cleanup is powered by a partner company.
+  bool IsPoweredByPartner();
 
   State state() const { return state_; }
   IdleReason idle_reason() const { return idle_reason_; }
@@ -244,6 +246,8 @@ class ChromeCleanerController {
   // The logs permission checkboxes in the Chrome Cleaner dialog and webui page
   // are opt out.
   bool logs_enabled_ = true;
+  // Whether Cleanup is powered by an external partner.
+  bool powered_by_partner_ = false;
   IdleReason idle_reason_ = IdleReason::kInitial;
   std::unique_ptr<SwReporterInvocation> reporter_invocation_;
   std::unique_ptr<std::set<base::FilePath>> files_to_delete_;
