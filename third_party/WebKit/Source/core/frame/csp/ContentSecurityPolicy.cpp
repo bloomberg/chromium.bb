@@ -1352,7 +1352,7 @@ void ContentSecurityPolicy::DispatchViolationEvents(
   } else if (execution_context_->IsWorkerGlobalScope()) {
     event->SetTarget(ToWorkerGlobalScope(execution_context_));
   }
-  queue->EnqueueEvent(event);
+  queue->EnqueueEvent(BLINK_FROM_HERE, event);
 }
 
 void ContentSecurityPolicy::ReportMixedContent(const KURL& mixed_url,

@@ -417,7 +417,8 @@ void WebPluginContainerImpl::DispatchProgressEvent(const WebString& type,
 void WebPluginContainerImpl::EnqueueMessageEvent(
     const WebDOMMessageEvent& event) {
   static_cast<Event*>(event)->SetTarget(element_);
-  element_->GetExecutionContext()->GetEventQueue()->EnqueueEvent(event);
+  element_->GetExecutionContext()->GetEventQueue()->EnqueueEvent(
+      BLINK_FROM_HERE, event);
 }
 
 void WebPluginContainerImpl::Invalidate() {

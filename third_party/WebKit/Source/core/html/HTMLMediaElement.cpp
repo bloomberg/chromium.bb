@@ -753,7 +753,7 @@ void HTMLMediaElement::ScheduleEvent(Event* event) {
   BLINK_MEDIA_LOG << "ScheduleEvent(" << (void*)this << ")"
                   << " - scheduling '" << event->type() << "'";
 #endif
-  async_event_queue_->EnqueueEvent(event);
+  async_event_queue_->EnqueueEvent(BLINK_FROM_HERE, event);
 }
 
 void HTMLMediaElement::LoadTimerFired(TimerBase*) {

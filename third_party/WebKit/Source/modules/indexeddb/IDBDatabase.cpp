@@ -486,7 +486,7 @@ void IDBDatabase::EnqueueEvent(Event* event) {
   DCHECK(GetExecutionContext());
   EventQueue* event_queue = GetExecutionContext()->GetEventQueue();
   event->SetTarget(this);
-  event_queue->EnqueueEvent(event);
+  event_queue->EnqueueEvent(BLINK_FROM_HERE, event);
   enqueued_events_.push_back(event);
 }
 

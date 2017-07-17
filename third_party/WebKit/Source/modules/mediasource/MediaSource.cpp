@@ -810,7 +810,7 @@ void MediaSource::ScheduleEvent(const AtomicString& event_name) {
   Event* event = Event::Create(event_name);
   event->SetTarget(this);
 
-  async_event_queue_->EnqueueEvent(event);
+  async_event_queue_->EnqueueEvent(BLINK_FROM_HERE, event);
 }
 
 URLRegistry& MediaSource::Registry() const {

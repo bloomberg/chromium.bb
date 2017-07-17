@@ -247,7 +247,8 @@ ExecutionContext* TextTrackList::GetExecutionContext() const {
 
 void TextTrackList::ScheduleTrackEvent(const AtomicString& event_name,
                                        TextTrack* track) {
-  async_event_queue_->EnqueueEvent(TrackEvent::Create(event_name, track));
+  async_event_queue_->EnqueueEvent(BLINK_FROM_HERE,
+                                   TrackEvent::Create(event_name, track));
 }
 
 void TextTrackList::ScheduleAddTrackEvent(TextTrack* track) {
@@ -269,7 +270,8 @@ void TextTrackList::ScheduleChangeEvent() {
   // Fire a simple event named change at the media element's textTracks
   // attribute's TextTrackList object.
 
-  async_event_queue_->EnqueueEvent(Event::Create(EventTypeNames::change));
+  async_event_queue_->EnqueueEvent(BLINK_FROM_HERE,
+                                   Event::Create(EventTypeNames::change));
 }
 
 void TextTrackList::ScheduleRemoveTrackEvent(TextTrack* track) {

@@ -571,7 +571,7 @@ void IDBTransaction::EnqueueEvent(Event* event) {
 
   EventQueue* event_queue = GetExecutionContext()->GetEventQueue();
   event->SetTarget(this);
-  event_queue->EnqueueEvent(event);
+  event_queue->EnqueueEvent(BLINK_FROM_HERE, event);
 }
 
 void IDBTransaction::AbortOutstandingRequests() {
