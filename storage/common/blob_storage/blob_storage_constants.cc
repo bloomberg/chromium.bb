@@ -17,6 +17,7 @@ static_assert(kDefaultMinPageFileSize < kDefaultMaxBlobInMemorySpace,
 
 bool BlobStorageLimits::IsValid() const {
   return max_ipc_memory_size < max_shared_memory_size &&
+         max_ipc_memory_size < max_bytes_data_item_size &&
          min_page_file_size < max_file_size &&
          min_page_file_size < max_blob_in_memory_space &&
          effective_max_disk_space <= desired_max_disk_space;

@@ -9,8 +9,43 @@
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_impl.h"
 #include "storage/browser/blob/blob_storage_context.h"
+#include "storage/browser/blob/blob_transport_strategy.h"
 
 namespace storage {
+
+namespace {
+
+using MemoryStrategy = BlobMemoryController::Strategy;
+
+bool CalculateBlobMemorySize(const std::vector<mojom::DataElementPtr>& elements,
+                             size_t* shortcut_bytes,
+                             uint64_t* total_bytes) {
+  DCHECK(shortcut_bytes);
+  DCHECK(total_bytes);
+
+  base::CheckedNumeric<uint64_t> total_size_checked = 0;
+  base::CheckedNumeric<size_t> shortcut_size_checked = 0;
+  for (const auto& e : elements) {
+    if (e->is_bytes()) {
+      const auto& bytes = e->get_bytes();
+      total_size_checked += bytes->length;
+      if (bytes->embedded_data) {
+        if (bytes->embedded_data->size() != bytes->length)
+          return false;
+        shortcut_size_checked += bytes->length;
+      }
+    } else {
+      continue;
+    }
+    if (!total_size_checked.IsValid() || !shortcut_size_checked.IsValid())
+      return false;
+  }
+  *shortcut_bytes = shortcut_size_checked.ValueOrDie();
+  *total_bytes = total_size_checked.ValueOrDie();
+  return true;
+}
+
+}  // namespace
 
 class BlobRegistryImpl::BlobUnderConstruction {
  public:
@@ -33,7 +68,7 @@ class BlobRegistryImpl::BlobUnderConstruction {
   // referenced by this new blob. This (and any further methods) could end up
   // deleting |this| by removing it from the blobs_under_construction_
   // collection in the blob service.
-  void StartFetchingBlobUUIDs();
+  void StartTransportation();
 
   ~BlobUnderConstruction() {}
 
@@ -48,9 +83,18 @@ class BlobRegistryImpl::BlobUnderConstruction {
   // Also deletes |this| by removing it from the blobs_under_construction_ list.
   void MarkAsBroken(BlobStatus reason,
                     const std::string& bad_message_reason = "") {
-    context()->CancelBuildingBlob(uuid(), reason);
+    DCHECK(BlobStatusIsError(reason));
+    DCHECK_EQ(bad_message_reason.empty(), !BlobStatusIsBadIPC(reason));
+    // The blob might no longer have any references, in which case it may no
+    // longer exist. If that happens just skip calling cancel.
+    if (context()->registry().HasEntry(uuid()))
+      context()->CancelBuildingBlob(uuid(), reason);
     if (!bad_message_reason.empty())
       std::move(bad_message_callback_).Run(bad_message_reason);
+    MarkAsFinishedAndDeleteSelf();
+  }
+
+  void MarkAsFinishedAndDeleteSelf() {
     blob_registry_->blobs_under_construction_.erase(uuid());
   }
 
@@ -74,6 +118,16 @@ class BlobRegistryImpl::BlobUnderConstruction {
   // of the blob, and figures out how to transport any bytes that might need
   // transporting.
   void ResolvedAllBlobDependencies();
+
+  // Called when memory has been reserved for this blob and transport can begin.
+  // Could also be called if something caused the blob to become invalid before
+  // transportation began, in which case we just give up.
+  void OnReadyForTransport(
+      BlobStatus status,
+      std::vector<BlobMemoryController::FileCreationInfo> file_infos);
+
+  // Called when all data has been transported, or transport has failed.
+  void TransportComplete(BlobStatus result);
 
 #if DCHECK_IS_ON()
   // Returns true if the DAG made up by this blob and any other blobs that
@@ -99,6 +153,9 @@ class BlobRegistryImpl::BlobUnderConstruction {
   // called.
   mojo::ReportBadMessageCallback bad_message_callback_;
 
+  // Transport strategy to use when transporting data.
+  std::unique_ptr<BlobTransportStrategy> transport_strategy_;
+
   // List of UUIDs for referenced blobs. Same size as |elements_|. All entries
   // for non-blob elements will remain empty strings.
   std::vector<std::string> referenced_blob_uuids_;
@@ -113,17 +170,11 @@ class BlobRegistryImpl::BlobUnderConstruction {
   DISALLOW_COPY_AND_ASSIGN(BlobUnderConstruction);
 };
 
-void BlobRegistryImpl::BlobUnderConstruction::StartFetchingBlobUUIDs() {
+void BlobRegistryImpl::BlobUnderConstruction::StartTransportation() {
   size_t blob_count = 0;
   for (size_t i = 0; i < elements_.size(); ++i) {
     const auto& element = elements_[i];
     if (element->is_blob()) {
-      if (element->get_blob()->blob.encountered_error()) {
-        // Will delete |this|.
-        MarkAsBroken(BlobStatus::ERR_REFERENCED_BLOB_BROKEN);
-        return;
-      }
-
       // If connection to blob is broken, something bad happened, so mark this
       // new blob as broken, which will delete |this| and keep it from doing
       // unneeded extra work.
@@ -134,6 +185,10 @@ void BlobRegistryImpl::BlobUnderConstruction::StartFetchingBlobUUIDs() {
       element->get_blob()->blob->GetInternalUUID(
           base::BindOnce(&BlobUnderConstruction::ReceivedBlobUUID,
                          weak_ptr_factory_.GetWeakPtr(), blob_count++));
+    } else if (element->is_bytes()) {
+      element->get_bytes()->data.set_connection_error_handler(base::BindOnce(
+          &BlobUnderConstruction::MarkAsBroken, weak_ptr_factory_.GetWeakPtr(),
+          BlobStatus::ERR_SOURCE_DIED_IN_TRANSIT, ""));
     }
   }
   referenced_blob_uuids_.resize(blob_count);
@@ -141,6 +196,32 @@ void BlobRegistryImpl::BlobUnderConstruction::StartFetchingBlobUUIDs() {
   // TODO(mek): Do we need some kind of timeout for fetching the UUIDs?
   // Without it a blob could forever remaing pending if a renderer sends us
   // a BlobPtr connected to a (malicious) non-responding implementation.
+
+  // Do some basic validation of bytes to transport, and determine memory
+  // transport strategy to use later.
+  uint64_t transport_memory_size = 0;
+  size_t shortcut_size = 0;
+  if (!CalculateBlobMemorySize(elements_, &shortcut_size,
+                               &transport_memory_size)) {
+    MarkAsBroken(BlobStatus::ERR_INVALID_CONSTRUCTION_ARGUMENTS,
+                 "Invalid byte element sizes in BlobRegistry::Register");
+    return;
+  }
+
+  const BlobMemoryController& memory_controller =
+      context()->memory_controller();
+  MemoryStrategy memory_strategy =
+      memory_controller.DetermineStrategy(shortcut_size, transport_memory_size);
+  if (memory_strategy == MemoryStrategy::TOO_LARGE) {
+    MarkAsBroken(BlobStatus::ERR_OUT_OF_MEMORY);
+    return;
+  }
+
+  transport_strategy_ = BlobTransportStrategy::Create(
+      memory_strategy, &builder_,
+      base::BindOnce(&BlobUnderConstruction::TransportComplete,
+                     weak_ptr_factory_.GetWeakPtr()),
+      memory_controller.limits());
 
   // If there were no unresolved blobs, immediately proceed to the next step.
   // Currently this will only happen if there are no blobs referenced
@@ -212,10 +293,11 @@ void BlobRegistryImpl::BlobUnderConstruction::ResolvedAllBlobDependencies() {
   DCHECK_EQ(resolved_blob_uuid_count_, referenced_blob_uuids_.size());
   DCHECK_EQ(ready_dependent_blob_count_, referenced_blob_uuids_.size());
 
-  // TODO(mek): Fill BlobDataBuilder with elements_ other than blobs.
   auto blob_uuid_it = referenced_blob_uuids_.begin();
   for (const auto& element : elements_) {
-    if (element->is_file()) {
+    if (element->is_bytes()) {
+      transport_strategy_->AddBytesElement(element->get_bytes().get());
+    } else if (element->is_file()) {
       const auto& f = element->get_file();
       builder_.AppendFile(f->path, f->offset, f->length,
                           f->expected_modification_time.value_or(base::Time()));
@@ -231,14 +313,49 @@ void BlobRegistryImpl::BlobUnderConstruction::ResolvedAllBlobDependencies() {
                           element->get_blob()->length);
     }
   }
+  // OnReadyForTransport can be called synchronously, which can call
+  // MarkAsFinishedAndDeleteSelf synchronously, so don't access any members
+  // after this call.
   std::unique_ptr<BlobDataHandle> new_handle =
       context()->BuildPreregisteredBlob(
-          builder_, BlobStorageContext::TransportAllowedCallback());
+          builder_, base::Bind(&BlobUnderConstruction::OnReadyForTransport,
+                               weak_ptr_factory_.GetWeakPtr()));
 
   // TODO(mek): Update BlobImpl with new BlobDataHandle. Although handles
   // only differ in their size() attribute, which is currently not used by
   // BlobImpl.
-  DCHECK(!BlobStatusIsPending(new_handle->GetBlobStatus()));
+}
+
+void BlobRegistryImpl::BlobUnderConstruction::OnReadyForTransport(
+    BlobStatus status,
+    std::vector<BlobMemoryController::FileCreationInfo> file_infos) {
+  if (!BlobStatusIsPending(status)) {
+    // Done or error.
+    MarkAsFinishedAndDeleteSelf();
+    return;
+  }
+  transport_strategy_->BeginTransport(std::move(file_infos));
+}
+
+void BlobRegistryImpl::BlobUnderConstruction::TransportComplete(
+    BlobStatus result) {
+  // The blob might no longer have any references, in which case it may no
+  // longer exist. If that happens just skip calling Complete.
+  // TODO(mek): Stop building sooner if a blob is no longer referenced.
+  if (context()->registry().HasEntry(uuid())) {
+    if (result == BlobStatus::DONE)
+      context()->NotifyTransportComplete(uuid());
+    else
+      context()->CancelBuildingBlob(uuid(), result);
+  }
+  if (BlobStatusIsBadIPC(result)) {
+    // BlobTransportStrategy might have already reported a BadMessage on the
+    // BytesProvider binding, but just to be safe, also report one on the
+    // BlobRegistry binding itself.
+    std::move(bad_message_callback_)
+        .Run("Received invalid data while transporting blob");
+  }
+  MarkAsFinishedAndDeleteSelf();
 }
 
 #if DCHECK_IS_ON()
@@ -331,7 +448,7 @@ void BlobRegistryImpl::Register(mojom::BlobRequest blob,
       context_->AddFutureBlob(uuid, content_type, content_disposition);
   BlobImpl::Create(std::move(handle), std::move(blob));
 
-  blobs_under_construction_[uuid]->StartFetchingBlobUUIDs();
+  blobs_under_construction_[uuid]->StartTransportation();
 
   std::move(callback).Run();
 }
