@@ -37,6 +37,7 @@ class SigninPromoViewMediatorTest : public PlatformTest {
   }
 
   void TearDown() override {
+    [mediator_ signinPromoViewRemoved];
     mediator_ = nil;
     EXPECT_OCMOCK_VERIFY((id)consumer_);
     EXPECT_OCMOCK_VERIFY((id)signin_promo_view_);

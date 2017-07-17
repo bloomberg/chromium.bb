@@ -182,6 +182,7 @@ enum CellType {
 }
 
 - (void)dealloc {
+  [_signinPromoViewMediator signinPromoViewRemoved];
   [self.tableView removeObserver:self forKeyPath:@"contentSize"];
 }
 
@@ -554,8 +555,10 @@ enum CellType {
                 withRowAnimation:UITableViewRowAnimationFade];
   [self.tableView endUpdates];
 
-  if (_sessionState != SessionsSyncUserState::USER_SIGNED_OUT)
+  if (_sessionState != SessionsSyncUserState::USER_SIGNED_OUT) {
+    [_signinPromoViewMediator signinPromoViewRemoved];
     _signinPromoViewMediator = nil;
+  }
 }
 
 - (NSInteger)numberOfSessionSections {
