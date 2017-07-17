@@ -112,18 +112,6 @@ LayoutUnit NGInlineItem::InlineSize(unsigned start, unsigned end) const {
                         .Width());
 }
 
-void NGInlineItem::GetFallbackFonts(
-    HashSet<const SimpleFontData*>* fallback_fonts,
-    unsigned start,
-    unsigned end) const {
-  DCHECK_GE(start, StartOffset());
-  DCHECK_LE(start, end);
-  DCHECK_LE(end, EndOffset());
-
-  // TODO(kojii): Implement |start| and |end|.
-  shape_result_->FallbackFonts(fallback_fonts);
-}
-
 bool NGInlineItem::HasStartEdge() const {
   DCHECK(Type() == kOpenTag || Type() == kCloseTag);
   // TODO(kojii): Should use break token when NG has its own tree building.

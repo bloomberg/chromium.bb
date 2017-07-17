@@ -161,12 +161,16 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
       DCHECK(!box->text_metrics.IsEmpty());
       text_builder.SetSize(
           {item_result.inline_size, box->text_metrics.LineHeight()});
-      // Take all used fonts into account if 'line-height: normal'.
-      if (box->include_used_fonts && item.Type() == NGInlineItem::kText) {
-        box->AccumulateUsedFonts(item, item_result.start_offset,
-                                 item_result.end_offset, baseline_type_);
+      if (item_result.shape_result) {
+        // Take all used fonts into account if 'line-height: normal'.
+        if (box->include_used_fonts && item.Type() == NGInlineItem::kText) {
+          box->AccumulateUsedFonts(item_result.shape_result.Get(),
+                                   baseline_type_);
+        }
+        text_builder.SetShapeResult(std::move(item_result.shape_result));
+      } else {
+        DCHECK(!item.TextShapeResult());  // kControl or unit tests.
       }
-      text_builder.SetShapeResult(std::move(item_result.shape_result));
       RefPtr<NGPhysicalTextFragment> text_fragment =
           text_builder.ToTextFragment(item_result.item_index,
                                       item_result.start_offset,

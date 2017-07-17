@@ -24,12 +24,10 @@ void NGInlineBoxState::ComputeTextMetrics(const ComputedStyle& style,
   include_used_fonts = style.LineHeight().IsNegative();
 }
 
-void NGInlineBoxState::AccumulateUsedFonts(const NGInlineItem& item,
-                                           unsigned start,
-                                           unsigned end,
+void NGInlineBoxState::AccumulateUsedFonts(const ShapeResult* shape_result,
                                            FontBaseline baseline_type) {
   HashSet<const SimpleFontData*> fallback_fonts;
-  item.GetFallbackFonts(&fallback_fonts, start, end);
+  shape_result->FallbackFonts(&fallback_fonts);
   for (const auto& fallback_font : fallback_fonts) {
     NGLineHeightMetrics fallback_metrics(fallback_font->GetFontMetrics(),
                                          baseline_type);

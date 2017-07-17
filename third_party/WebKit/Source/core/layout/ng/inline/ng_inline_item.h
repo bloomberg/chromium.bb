@@ -87,10 +87,6 @@ class NGInlineItem {
   LayoutUnit InlineSize() const;
   LayoutUnit InlineSize(unsigned start, unsigned end) const;
 
-  void GetFallbackFonts(HashSet<const SimpleFontData*>*,
-                        unsigned start,
-                        unsigned end) const;
-
   bool HasStartEdge() const;
   bool HasEndEdge() const;
 
