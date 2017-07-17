@@ -36,7 +36,7 @@ const char kPerfRecordCallgraphCmd[] =
 const char kPerfRecordLBRCmd[] =
   "perf record -a -e r20c4 -b -c 200011";
 const char kPerfRecordCacheMissesCmd[] =
-  "perf record -a -e cache-misses -c 4001";
+    "perf record -a -e cache-misses -c 10007";
 const char kPerfStatMemoryBandwidthCmd[] =
   "perf stat -a -e cycles -e instructions "
   "-e uncore_imc/data_reads/ -e uncore_imc/data_writes/ "
