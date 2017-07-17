@@ -216,6 +216,10 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #define SK_SUPPORT_LEGACY_TILED_BITMAPS
 #endif
 
+#ifndef SK_SUPPORT_LEGACY_WIN32_JUMPER
+#define SK_SUPPORT_LEGACY_WIN32_JUMPER
+#endif
+
 #ifndef SK_SUPPORT_NONSTD_BLENDMODES
 #define SK_SUPPORT_NONSTD_BLENDMODES
 #endif
