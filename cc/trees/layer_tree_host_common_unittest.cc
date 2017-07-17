@@ -528,13 +528,8 @@ TEST_F(LayerTreeHostCommonTest, TransformsAboutScrollOffset) {
   scroll_layer->SetScrollable(
       gfx::Size(scroll_layer->bounds().width() + kMaxScrollOffset.x(),
                 scroll_layer->bounds().height() + kMaxScrollOffset.y()));
-  SetScrollOffsetDelta(scroll_layer, kScrollDelta);
-  gfx::Transform impl_transform;
+
   scroll_layer->test_properties()->AddChild(std::move(sublayer_scoped_ptr));
-  scroll_layer_scoped_ptr->layer_tree_impl()
-      ->property_trees()
-      ->scroll_tree.UpdateScrollOffsetBaseForTesting(
-          scroll_layer_scoped_ptr->element_id(), kScrollOffset);
 
   std::unique_ptr<LayerImpl> root(
       LayerImpl::Create(host_impl.active_tree(), 3));
@@ -542,6 +537,11 @@ TEST_F(LayerTreeHostCommonTest, TransformsAboutScrollOffset) {
   root->test_properties()->AddChild(std::move(scroll_layer_scoped_ptr));
   LayerImpl* root_layer = root.get();
   host_impl.active_tree()->SetRootLayerForTesting(std::move(root));
+  host_impl.active_tree()->BuildPropertyTreesForTesting();
+  auto& scroll_tree = host_impl.active_tree()->property_trees()->scroll_tree;
+  scroll_tree.UpdateScrollOffsetBaseForTesting(scroll_layer->element_id(),
+                                               kScrollOffset);
+  SetScrollOffsetDelta(scroll_layer, kScrollDelta);
 
   ExecuteCalculateDrawProperties(root_layer, kDeviceScale, page_scale,
                                  scroll_layer->test_properties()->parent,
@@ -5299,7 +5299,6 @@ TEST_F(LayerTreeHostCommonTest, ClipParentScrolledInterveningLayer) {
   clip_parent->SetMasksToBounds(true);
   intervening->SetScrollable(gfx::Size(1, 1));
   intervening->SetElementId(LayerIdToElementIdForTesting(intervening->id()));
-  intervening->SetCurrentScrollOffset(gfx::ScrollOffset(3, 3));
 
   gfx::Transform translation_transform;
   translation_transform.Translate(2, 2);
@@ -5316,6 +5315,8 @@ TEST_F(LayerTreeHostCommonTest, ClipParentScrolledInterveningLayer) {
   render_surface2->test_properties()->force_render_surface = true;
   clip_child->SetPosition(gfx::PointF(-10.f, -10.f));
   clip_child->SetBounds(gfx::Size(60, 60));
+  BuildPropertyTreesForTesting();
+  intervening->SetCurrentScrollOffset(gfx::ScrollOffset(3, 3));
   ExecuteCalculateDrawProperties(root);
 
   EXPECT_TRUE(GetRenderSurface(root));
@@ -6221,6 +6222,7 @@ TEST_F(LayerTreeHostCommonTest,
   AddAnimatedTransformToElementWithPlayer(animated_layer->element_id(),
                                           timeline_impl(), 1.0,
                                           start_operations, end_operations);
+  BuildPropertyTreesForTesting();
   gfx::Vector2dF scroll_delta(5.f, 9.f);
   SetScrollOffsetDelta(scroller, scroll_delta);
 
@@ -8560,7 +8562,6 @@ TEST_F(LayerTreeHostCommonTest, FixedClipsShouldBeAssociatedWithTheRightNode) {
   frame_clip->SetDrawsContent(true);
   scroller->SetBounds(gfx::Size(1000, 1000));
   scroller->SetElementId(LayerIdToElementIdForTesting(scroller->id()));
-  scroller->SetCurrentScrollOffset(gfx::ScrollOffset(100, 100));
   scroller->SetElementId(LayerIdToElementIdForTesting(scroller->id()));
   scroller->SetScrollable(frame_clip->bounds());
   scroller->SetDrawsContent(true);
@@ -8569,6 +8570,9 @@ TEST_F(LayerTreeHostCommonTest, FixedClipsShouldBeAssociatedWithTheRightNode) {
   fixed->SetMasksToBounds(true);
   fixed->SetDrawsContent(true);
   fixed->test_properties()->force_render_surface = true;
+
+  BuildPropertyTreesForTesting();
+  scroller->SetCurrentScrollOffset(gfx::ScrollOffset(100, 100));
 
   LayerPositionConstraint constraint;
   constraint.set_is_fixed_position(true);
@@ -8639,6 +8643,9 @@ TEST_F(LayerTreeHostCommonTest, UpdateScrollChildPosition) {
   scroll_child->SetBounds(gfx::Size(40, 40));
   scroll_child->SetDrawsContent(true);
   scroll_parent->SetBounds(gfx::Size(30, 30));
+  scroll_parent->SetScrollable(gfx::Size(50, 50));
+  scroll_parent->SetElementId(
+      LayerIdToElementIdForTesting(scroll_parent->id()));
   scroll_parent->SetDrawsContent(true);
 
   scroll_child->test_properties()->scroll_parent = scroll_parent;
@@ -8650,12 +8657,13 @@ TEST_F(LayerTreeHostCommonTest, UpdateScrollChildPosition) {
   EXPECT_EQ(gfx::Rect(25, 25), scroll_child->visible_layer_rect());
 
   scroll_child->SetPosition(gfx::PointF(0, -10.f));
-  scroll_parent->SetElementId(
-      LayerIdToElementIdForTesting(scroll_parent->id()));
   scroll_parent->SetCurrentScrollOffset(gfx::ScrollOffset(0.f, 10.f));
-  root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   ExecuteCalculateDrawProperties(root);
   EXPECT_EQ(gfx::Rect(0, 5, 25, 25), scroll_child->visible_layer_rect());
+
+  root->layer_tree_impl()->property_trees()->needs_rebuild = true;
+  ExecuteCalculateDrawProperties(root);
+  EXPECT_EQ(gfx::Rect(0, 10, 25, 25), scroll_child->visible_layer_rect());
 }
 
 static void CopyOutputCallback(std::unique_ptr<CopyOutputResult> result) {}
