@@ -31786,6 +31786,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="MemCache.WriteResult" enum="MemCacheWriteResult">
+  <owner>jkarlin@chromium.org</owner>
+  <summary>The outcome of Entry::WriteData in the memory cache.</summary>
+</histogram>
+
 <histogram name="Memory.BackingStore">
   <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
