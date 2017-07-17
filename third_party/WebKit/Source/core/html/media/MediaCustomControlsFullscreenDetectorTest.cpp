@@ -15,7 +15,7 @@ namespace blink {
 
 namespace {
 
-struct TestParam {
+struct VideoTestParam {
   String description;
   IntRect target_rect;
   bool expected_result;
@@ -90,7 +90,7 @@ TEST_F(MediaCustomControlsFullscreenDetectorTest, computeIsDominantVideo) {
   // TestWithParam cannot be applied here as IntRect needs the memory allocator
   // to be initialized, but the array of parameters is statically initialized,
   // which is before the memory allocation initialization.
-  TestParam test_params[] = {
+  VideoTestParam test_params[] = {
       {"xCompleteFill", {0, 0, 100, 50}, true},
       {"yCompleteFill", {0, 0, 50, 100}, true},
       {"xyCompleteFill", {0, 0, 100, 100}, true},
@@ -106,7 +106,7 @@ TEST_F(MediaCustomControlsFullscreenDetectorTest, computeIsDominantVideo) {
 
   IntRect root_rect(0, 0, 100, 100);
 
-  for (const TestParam& test_param : test_params) {
+  for (const VideoTestParam& test_param : test_params) {
     const IntRect& target_rect = test_param.target_rect;
     IntRect intersection_rect = Intersection(target_rect, root_rect);
     EXPECT_EQ(test_param.expected_result,
