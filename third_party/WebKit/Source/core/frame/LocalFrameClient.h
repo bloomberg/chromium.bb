@@ -144,9 +144,11 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   virtual void ProgressEstimateChanged(double progress_estimate) = 0;
   virtual void DidStopLoading() = 0;
 
+  virtual void DownloadURL(const ResourceRequest&,
+                           const String& suggested_name) = 0;
   virtual void LoadURLExternally(const ResourceRequest&,
                                  NavigationPolicy,
-                                 const String& suggested_name,
+                                 WebTriggeringEventInfo,
                                  bool replaces_current_history_item) = 0;
   virtual void LoadErrorPage(int reason) = 0;
 

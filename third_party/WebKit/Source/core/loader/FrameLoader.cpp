@@ -870,8 +870,7 @@ void FrameLoader::Load(const FrameLoadRequest& passed_request,
 
   if (!target_frame && !request.FrameName().IsEmpty()) {
     if (policy == kNavigationPolicyDownload) {
-      Client()->LoadURLExternally(request.GetResourceRequest(),
-                                  kNavigationPolicyDownload, String(), false);
+      Client()->DownloadURL(request.GetResourceRequest(), String());
       return;  // Navigation/download will be handled by the client.
     } else if (ShouldNavigateTargetFrame(policy)) {
       request.GetResourceRequest().SetFrameType(
@@ -1354,8 +1353,20 @@ NavigationPolicy FrameLoader::ShouldContinueForNavigationPolicy(
     return policy;
   }
 
-  Client()->LoadURLExternally(request, policy, String(),
-                              replaces_current_history_item);
+  // TODO(csharrison,dcheng): The common idiom for the embedder is to process
+  // the navigation in DecidePolicyForNavigation and pass down
+  // kNavigationPolicyIgnore if the embedder wants to handle the navigation.
+  // This has become more common with PlzNavigate.
+  //
+  // It would be nice to standarize that idiom in the API and potentially remove
+  // LoadURLExternally. Additionally, we may be able to move the download logic
+  // here to that method as well.
+  if (policy == kNavigationPolicyDownload) {
+    Client()->DownloadURL(request, String());
+  } else {
+    Client()->LoadURLExternally(request, policy, triggering_event_info,
+                                replaces_current_history_item);
+  }
   return kNavigationPolicyIgnore;
 }
 

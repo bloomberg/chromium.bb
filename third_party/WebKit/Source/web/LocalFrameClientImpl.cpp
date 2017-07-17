@@ -643,18 +643,28 @@ void LocalFrameClientImpl::DidStopLoading() {
     web_frame_->Client()->DidStopLoading();
 }
 
+void LocalFrameClientImpl::DownloadURL(const ResourceRequest& request,
+                                       const String& suggested_name) {
+  if (!web_frame_->Client())
+    return;
+  DCHECK(web_frame_->GetFrame()->GetDocument());
+  web_frame_->Client()->DownloadURL(WrappedResourceRequest(request),
+                                    suggested_name);
+}
+
 void LocalFrameClientImpl::LoadURLExternally(
     const ResourceRequest& request,
     NavigationPolicy policy,
-    const String& suggested_name,
+    WebTriggeringEventInfo triggering_event_info,
     bool should_replace_current_entry) {
+  DCHECK_NE(policy, NavigationPolicy::kNavigationPolicyDownload);
   if (!web_frame_->Client())
     return;
   DCHECK(web_frame_->GetFrame()->GetDocument());
   Fullscreen::FullyExitFullscreen(*web_frame_->GetFrame()->GetDocument());
   web_frame_->Client()->LoadURLExternally(
       WrappedResourceRequest(request), static_cast<WebNavigationPolicy>(policy),
-      suggested_name, should_replace_current_entry);
+      triggering_event_info, should_replace_current_entry);
 }
 
 void LocalFrameClientImpl::LoadErrorPage(int reason) {

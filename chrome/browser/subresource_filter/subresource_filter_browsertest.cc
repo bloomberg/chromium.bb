@@ -1208,6 +1208,31 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, BlockOpenURLFromTab) {
 }
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
+                       BlockOpenURLFromTabInIframe) {
+  Configuration config = Configuration::MakePresetForLiveRunOnPhishingSites();
+  config.activation_options.should_strengthen_popup_blocker = true;
+  ResetConfiguration(std::move(config));
+  const char popup_path[] = "/subresource_filter/iframe_spoof_click_popup.html";
+  GURL a_url(embedded_test_server()->GetURL("a.com", popup_path));
+  // Only configure |a_url| as a phishing URL.
+  ConfigureAsPhishingURL(a_url);
+
+  // Only necessary so we have a valid ruleset.
+  ASSERT_NO_FATAL_FAILURE(SetRulesetWithRules(std::vector<proto::UrlRule>()));
+
+  // Navigate to a_url, should not trigger the popup blocker.
+  ui_test_utils::NavigateToURL(browser(), a_url);
+  bool sent_open = false;
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(web_contents, "openWindow()",
+                                                   &sent_open));
+  EXPECT_TRUE(sent_open);
+  EXPECT_TRUE(TabSpecificContentSettings::FromWebContents(web_contents)
+                  ->IsContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS));
+}
+
+IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
                        TraditionalWindowOpen_NotBlocked) {
   Configuration config = Configuration::MakePresetForLiveRunOnPhishingSites();
   config.activation_options.should_strengthen_popup_blocker = true;

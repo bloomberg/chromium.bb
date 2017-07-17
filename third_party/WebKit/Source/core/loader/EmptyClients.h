@@ -289,9 +289,11 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
   void ProgressEstimateChanged(double) override {}
   void DidStopLoading() override {}
 
+  void DownloadURL(const ResourceRequest&,
+                   const String& suggested_name) override {}
   void LoadURLExternally(const ResourceRequest&,
                          NavigationPolicy,
-                         const String&,
+                         WebTriggeringEventInfo,
                          bool) override {}
   void LoadErrorPage(int reason) override {}
 
