@@ -68,6 +68,7 @@ class MediaRouterMetrics {
   static const char kHistogramIconClickLocation[];
   static const char kHistogramMediaRouterCastingSource[];
   static const char kHistogramMediaRouterFileFormat[];
+  static const char kHistogramMediaRouterFileSize[];
   static const char kHistogramRouteCreationOutcome[];
   static const char kHistogramUiDialogPaint[];
   static const char kHistogramUiDialogLoadedWithData[];
@@ -102,6 +103,9 @@ class MediaRouterMetrics {
   // Records the format of a cast file.
   static void RecordMediaRouterFileFormat(
       media::container_names::MediaContainerName format);
+
+  // Records the size of a cast file.
+  static void RecordMediaRouterFileSize(int64_t size);
 
   // Records device counts.
   // TODO(zhaobin): Move device count specific metrics and state into its own
