@@ -127,11 +127,9 @@ public class WebappActivity extends SingleTabActivity {
 
     protected void initializeUI(Bundle savedInstanceState) {
         // We do not load URL when restoring from saved instance states.
-        if (savedInstanceState == null && mWebappInfo.isInitialized()) {
-            if (TextUtils.isEmpty(getActivityTab().getUrl())) {
-                getActivityTab().loadUrl(new LoadUrlParams(
-                        mWebappInfo.uri().toString(), PageTransition.AUTO_TOPLEVEL));
-            }
+        if (savedInstanceState == null) {
+            getActivityTab().loadUrl(
+                    new LoadUrlParams(mWebappInfo.uri().toString(), PageTransition.AUTO_TOPLEVEL));
         } else {
             if (NetworkChangeNotifier.isOnline()) getActivityTab().reloadIgnoringCache();
         }
