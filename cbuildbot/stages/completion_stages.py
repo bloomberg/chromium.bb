@@ -244,6 +244,18 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
     super(MasterSlaveSyncCompletionStage, self).PerformStage()
 
     statuses = self._FetchSlaveStatuses()
+
+    # Filter out the statuses for builders that are marked experimental through
+    # the tree status.
+    experimental = self._run.attrs.metadata.GetValueWithDefault(
+        constants.METADATA_EXPERIMENTAL_BUILDERS, [])
+    experimental_statuses = {
+        k: v for k, v in statuses.iteritems() if k in experimental
+    }
+    statuses = {
+        k: v for k, v in statuses.iteritems() if k not in experimental
+    }
+
     self._slave_statuses = statuses
     no_stat = set(builder for builder, status in statuses.iteritems()
                   if status.Missing())
@@ -265,8 +277,8 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
       fatal = self._IsFailureFatal(failing, set(), set())
 
     # Always annotate unsuccessful builders.
-    self._AnnotateFailingBuilders(
-        failing, inflight, no_stat, statuses, self_destructed)
+    self._AnnotateFailingBuilders(failing, inflight, no_stat, statuses,
+                                  experimental_statuses, self_destructed)
 
     if fatal:
       self.HandleFailure(failing, inflight, no_stat, self_destructed)
@@ -364,6 +376,7 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
         self._PrintBuildMessage('%s: did not start' % build)
 
   def _AnnotateFailingBuilders(self, failing, inflight, no_stat, statuses,
+                               experimental_statuses,
                                self_destructed):
     """Annotate the failing, inflight and no_stat builds with text and links.
 
@@ -378,6 +391,9 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
       no_stat: Set of builder names of slave builders that had status None.
       statuses: A builder-name->status dictionary, which will provide
                 the dashboard_url values for any links.
+      experimental_statuses: A builder-name->status dictionary for all slaves
+                             that were set as experimental through the tree
+                             status.
       self_destructed: Boolean indicating whether the master build destructed
                        itself and stopped waiting completion of its slaves.
     """
@@ -404,6 +420,11 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
                                 statuses[build].dashboard_url)
 
       self._AnnotateNoStatBuilders(no_stat)
+
+    for build, status in experimental_statuses.items():
+      if not status.Passed():
+        self._PrintBuildMessage('%s: set as experimental through tree status' %
+                                build, status.dashboard_url)
 
   def GetSlaveStatuses(self):
     """Returns cached slave status results.

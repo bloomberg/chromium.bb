@@ -468,7 +468,7 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
     statuses = self._GetBuildersStatus(
         ['build1', 'build2'], status_runs, experimental_builders_runs)
 
-    self.assertNotIn('build1', statuses)
+    self.assertTrue(statuses['build1'].Inflight())
     self.assertTrue(statuses['build2'].Passed())
 
   def testGetBuildersStatusLoop(self):

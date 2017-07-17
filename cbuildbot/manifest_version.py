@@ -581,7 +581,9 @@ class BuildSpecsManager(object):
     This function checks the status of slaves in |builders_array|. It
     queries CIDB for all builds associated with the |master_build_id|,
     then filters out builds that are not in |builders_array| (e.g.,
-    slaves that are not important).
+    slaves that are not important). Any builders in |builders_array| that are
+    marked as experimental through the tree status will also be included in the
+    returned dict.
 
     Args:
       master_build_id: Master build id to check.
@@ -634,13 +636,6 @@ class BuildSpecsManager(object):
       logging.error('Not all builds finished before timeout (%d minutes)'
                     ' reached.', int((timeout / 60) + 0.5))
 
-    if self.metadata:
-      experimental_builders = self.metadata.GetValueWithDefault(
-          constants.METADATA_EXPERIMENTAL_BUILDERS)
-      builders_array = [
-          builder for builder in builders_array
-          if builder not in experimental_builders
-      ]
     return self._GetSlaveBuilderStatus(master_build_id, db, builders_array)
 
   def _GetSlaveBuilderStatus(self, master_build_id, db, builders_array):

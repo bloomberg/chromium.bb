@@ -325,7 +325,7 @@ class MasterSlaveSyncCompletionStageTestWithMasterPaladin(
     with self.assertRaises(completion_stages.ImportantBuilderFailedException):
       stage.PerformStage()
     mock_annotate.assert_called_once_with(
-        set(), {'build_1'}, {'build_2'}, statuses, False)
+        set(), {'build_1'}, {'build_2'}, statuses, {}, False)
     self.mock_handle_failure.assert_called_once_with(
         set(), {'build_1'}, {'build_2'}, False)
 
@@ -336,7 +336,7 @@ class MasterSlaveSyncCompletionStageTestWithMasterPaladin(
     with self.assertRaises(completion_stages.ImportantBuilderFailedException):
       stage.PerformStage()
     mock_annotate.assert_called_once_with(
-        set(), {'build_1'}, {'build_2'}, statuses, True)
+        set(), {'build_1'}, {'build_2'}, statuses, {}, True)
     self.mock_handle_failure.assert_called_once_with(
         set(), {'build_1'}, {'build_2'}, True)
 
@@ -442,14 +442,41 @@ class MasterSlaveSyncCompletionStageTestWithMasterPaladin(
     statuses = {'failing_build' : failed_status,
                 'inflight_build': inflight_status}
 
-    stage._AnnotateFailingBuilders(failing, inflight, set(), statuses, False)
+    stage._AnnotateFailingBuilders(failing, inflight, set(), statuses, {},
+                                   False)
     self.assertEqual(annotate_mock.call_count, 1)
 
-    stage._AnnotateFailingBuilders(failing, inflight, no_stat, statuses, False)
+    stage._AnnotateFailingBuilders(failing, inflight, no_stat, statuses, {},
+                                   False)
     self.assertEqual(annotate_mock.call_count, 2)
 
-    stage._AnnotateFailingBuilders(failing, inflight, no_stat, statuses, True)
+    stage._AnnotateFailingBuilders(failing, inflight, no_stat, statuses, {},
+                                   True)
     self.assertEqual(annotate_mock.call_count, 3)
+
+  def testAnnotateFailingExperimentalBuilders(self):
+    """Tests _AnnotateFailingBuilders with experimental builders."""
+    stage = self.ConstructStage()
+
+    print_build_message_mock = self.PatchObject(
+        completion_stages.MasterSlaveSyncCompletionStage,
+        '_PrintBuildMessage')
+
+    failed_msg = build_failure_message.BuildFailureMessage(
+        'message', [], True, 'reason', 'bot')
+    experimental_statuses = {
+        'passed_experimental' : builder_status_lib.BuilderStatus(
+            constants.BUILDER_STATUS_PASSED, None, 'url'),
+        'failing_experimental' : builder_status_lib.BuilderStatus(
+            constants.BUILDER_STATUS_FAILED, failed_msg, 'url'),
+        'inflight_experimental': builder_status_lib.BuilderStatus(
+            constants.BUILDER_STATUS_INFLIGHT, None, 'url')
+    }
+
+    stage._AnnotateFailingBuilders(set(), set(), set(), {},
+                                   experimental_statuses, False)
+    # Build message should not be printed for the passed builder.
+    self.assertEqual(print_build_message_mock.call_count, 2)
 
   def testPerformStageWithException(self):
     """Test PerformStage with exception."""
@@ -501,6 +528,30 @@ class MasterSlaveSyncCompletionStageTestWithMasterPaladin(
         {constants.SELF_DESTRUCTED_WITH_SUCCESS_BUILD: True})
     stage.PerformStage()
 
+  def testPerformStageWithFailedExperimentalBuilder(self):
+    """Test PerformStage with a failed experimental builder."""
+    stage = self.ConstructStage()
+    stage._run.attrs.manifest_manager = mock.MagicMock()
+    status = {
+        'build_1': builder_status_lib.BuilderStatus(
+            constants.BUILDER_STATUS_PASSED, None)
+    }
+    experimental_status = {
+        'build_2': builder_status_lib.BuilderStatus(
+            constants.BUILDER_STATUS_FAILED, None)
+    }
+    statuses = dict(status.items() + experimental_status.items())
+    self.PatchObject(completion_stages.MasterSlaveSyncCompletionStage,
+                     '_FetchSlaveStatuses', return_value=statuses)
+    mock_annotate = self.PatchObject(
+        completion_stages.MasterSlaveSyncCompletionStage,
+        '_AnnotateFailingBuilders')
+
+    stage._run.attrs.metadata.UpdateWithDict(
+        {constants.METADATA_EXPERIMENTAL_BUILDERS: ['build_2']})
+    stage.PerformStage()
+    mock_annotate.assert_called_once_with(
+        set(), set(), set(), status, experimental_status, False)
 
 class CanaryCompletionStageTest(
     generic_stages_unittest.AbstractStageTestCase):
