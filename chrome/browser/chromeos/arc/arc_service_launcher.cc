@@ -99,8 +99,6 @@ void ArcServiceLauncher::Initialize() {
   arc_service_manager_->AddService(
       base::MakeUnique<ArcSettingsService>(arc_bridge_service));
   arc_service_manager_->AddService(
-      base::MakeUnique<ArcStorageManager>(arc_bridge_service));
-  arc_service_manager_->AddService(
       base::MakeUnique<ArcTtsService>(arc_bridge_service));
   arc_service_manager_->AddService(
       base::MakeUnique<ArcUserSessionService>(arc_bridge_service));
