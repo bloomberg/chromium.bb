@@ -5,10 +5,14 @@
 #ifndef PaintTiming_h
 #define PaintTiming_h
 
+#include <memory>
+
 #include "core/dom/Document.h"
 #include "core/paint/FirstMeaningfulPaintDetector.h"
+#include "core/paint/PaintEvent.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/Functional.h"
 #include "platform/wtf/Noncopyable.h"
 
 namespace blink {
@@ -25,12 +29,6 @@ class CORE_EXPORT PaintTiming final
 
  public:
   virtual ~PaintTiming() {}
-
-  enum class PaintEvent {
-    kFirstPaint,
-    kFirstContentfulPaint,
-    kFirstMeaningfulPaint
-  };
 
   static PaintTiming& From(Document&);
 
@@ -52,6 +50,7 @@ class CORE_EXPORT PaintTiming final
   void SetFirstMeaningfulPaintCandidate(double timestamp);
   void SetFirstMeaningfulPaint(
       double stamp,
+      double swap_stamp,
       FirstMeaningfulPaintDetector::HadUserInput had_input);
   void NotifyPaint(bool is_first_paint, bool text_painted, bool image_painted);
 
@@ -67,6 +66,9 @@ class CORE_EXPORT PaintTiming final
   // painted. For instance, the first time that text or image content was
   // painted.
   double FirstContentfulPaint() const { return first_contentful_paint_; }
+  double FirstContentfulPaintSwap() const {
+    return first_contentful_paint_swap_;
+  }
 
   // firstTextPaint returns the first time that text content was painted.
   double FirstTextPaint() const { return first_text_paint_; }
@@ -90,6 +92,9 @@ class CORE_EXPORT PaintTiming final
     return *fmp_detector_;
   }
 
+  void RegisterNotifySwapTime(
+      PaintEvent,
+      std::unique_ptr<WTF::Function<void(bool, double)>> callback);
   void ReportSwapTime(PaintEvent, bool did_swap, double timestamp);
 
   DECLARE_VIRTUAL_TRACE();
