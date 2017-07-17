@@ -911,6 +911,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'amd'], bug=658842)
     self.Fail('conformance2/rendering/uniform-block-buffer-size.html',
         ['linux', 'amd'], bug=658844)
+    self.Fail('conformance2/uniforms/uniform-blocks-with-arrays.html',
+        ['linux', 'amd'], bug=2103) # angle bug ID
 
     # Linux AMD R7 240
     self.Fail('conformance2/textures/canvas/' +
