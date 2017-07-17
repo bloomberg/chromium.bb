@@ -1951,6 +1951,7 @@ void RendererSchedulerImpl::DidProcessTask(double start_time, double end_time) {
 }
 
 void RendererSchedulerImpl::OnTaskCompleted(MainThreadTaskQueue* queue,
+                                            const TaskQueue::Task& task,
                                             base::TimeTicks start,
                                             base::TimeTicks end) {
   task_queue_throttler()->OnTaskRunTimeReported(queue, start, end);

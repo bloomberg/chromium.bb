@@ -544,6 +544,7 @@ TaskQueueManager::ProcessTaskResult TaskQueueManager::ProcessTaskFromWorkQueue(
       task_end_time = MonotonicTimeInSeconds(*time_after_task);
 
       queue->OnTaskCompleted(
+          pending_task,
           base::TimeTicks() + base::TimeDelta::FromSecondsD(task_start_time),
           base::TimeTicks() + base::TimeDelta::FromSecondsD(task_end_time));
 

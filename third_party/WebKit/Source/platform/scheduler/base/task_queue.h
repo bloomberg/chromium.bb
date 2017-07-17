@@ -115,6 +115,15 @@ class PLATFORM_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
     bool should_report_when_execution_blocked;
   };
 
+  // Interface to pass per-task metadata to RendererScheduler.
+  class PLATFORM_EXPORT Task : public base::PendingTask {
+   public:
+    Task(const tracked_objects::Location& posted_from,
+         base::OnceClosure task,
+         base::TimeTicks desired_run_time,
+         bool nestable);
+  };
+
   // An interface that lets the owner vote on whether or not the associated
   // TaskQueue should be enabled.
   class QueueEnabledVoter {

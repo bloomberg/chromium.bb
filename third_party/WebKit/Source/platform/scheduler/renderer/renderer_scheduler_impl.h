@@ -236,6 +236,7 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   void OnUnregisterTaskQueue(const scoped_refptr<MainThreadTaskQueue>& queue);
 
   void OnTaskCompleted(MainThreadTaskQueue* queue,
+                       const TaskQueue::Task& task,
                        base::TimeTicks start,
                        base::TimeTicks end);
 

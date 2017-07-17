@@ -14,6 +14,12 @@ TaskQueue::TaskQueue(std::unique_ptr<internal::TaskQueueImpl> impl)
 
 TaskQueue::~TaskQueue() {}
 
+TaskQueue::Task::Task(const tracked_objects::Location& posted_from,
+                      base::OnceClosure task,
+                      base::TimeTicks desired_run_time,
+                      bool nestable)
+    : PendingTask(posted_from, std::move(task), desired_run_time, nestable) {}
+
 void TaskQueue::UnregisterTaskQueue() {
   impl_->UnregisterTaskQueue(this);
 }
