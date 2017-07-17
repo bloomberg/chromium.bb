@@ -9,6 +9,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
+#include "build/build_config.h"
 #include "chrome/browser/permissions/mock_permission_request.h"
 #include "chrome/browser/permissions/permission_request.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
@@ -199,12 +200,14 @@ TEST_F(PermissionRequestManagerTest, NoRequests) {
   EXPECT_FALSE(prompt_factory_->is_visible());
 }
 
-TEST_F(PermissionRequestManagerTest, NoView) {
+#if !defined(OS_ANDROID)
+TEST_F(PermissionRequestManagerTest, PermissionRequestWhileTabSwitchedAway) {
   manager_->AddRequest(&request1_);
-  // Don't display the pending requests.
+  // Don't mark the tab as active.
   WaitForBubbleToBeShown();
   EXPECT_FALSE(prompt_factory_->is_visible());
 }
+#endif
 
 TEST_F(PermissionRequestManagerTest, TwoRequestsDoNotCoalesce) {
   manager_->DisplayPendingRequests();
