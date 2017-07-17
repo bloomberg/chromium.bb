@@ -675,7 +675,8 @@ void UiSceneManager::SetFullscreen(bool fullscreen) {
 }
 
 void UiSceneManager::ConfigureSecurityWarnings() {
-  bool enabled = web_vr_mode_ && !secure_origin_;
+  bool enabled =
+      web_vr_mode_ && !secure_origin_ && !waiting_for_first_web_vr_frame_;
   permanent_security_warning_->SetEnabled(enabled);
   transient_security_warning_->SetEnabled(enabled);
 }

@@ -296,6 +296,28 @@ TEST_F(UiSceneManagerTest, UiUpdatesForIncognito) {
   }
 }
 
+TEST_F(UiSceneManagerTest, WebVrAutopresentedInsecureOrigin) {
+  base::ScopedMockTimeMessageLoopTaskRunner task_runner_;
+
+  MakeAutoPresentedManager();
+  manager_->SetWebVrSecureOrigin(false);
+  manager_->SetWebVrMode(true, false);
+  // Initially, the security warnings should not be visible since the first
+  // WebVR frame is not received.
+  VerifyElementsVisible("Initial",
+                        std::set<UiElementDebugId>{kSplashScreenIcon});
+  manager_->OnWebVrFrameAvailable();
+  VerifyElementsVisible("Autopresented", std::set<UiElementDebugId>{
+                                             kWebVrPermanentHttpSecurityWarning,
+                                             kWebVrTransientHttpSecurityWarning,
+                                             kTransientUrlBar});
+
+  // Make sure the transient elements go away.
+  task_runner_->FastForwardUntilNoTasksRemain();
+  VerifyElementsVisible("End state", std::set<UiElementDebugId>{
+                                         kWebVrPermanentHttpSecurityWarning});
+}
+
 TEST_F(UiSceneManagerTest, WebVrAutopresented) {
   base::ScopedMockTimeMessageLoopTaskRunner task_runner_;
 
