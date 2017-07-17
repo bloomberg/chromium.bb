@@ -46,8 +46,6 @@ template <typename CharacterType>
 const char* AtomicCanonicalTextEncodingName(const CharacterType*, size_t);
 const char* AtomicCanonicalTextEncodingName(const String&);
 bool NoExtendedTextEncodingNameUsed();
-bool IsReplacementEncoding(const char* alias);
-bool IsReplacementEncoding(const String& alias);
 
 #ifndef NDEBUG
 void DumpTextEncodingNameMap();

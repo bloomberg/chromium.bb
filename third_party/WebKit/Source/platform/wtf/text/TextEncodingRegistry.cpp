@@ -222,14 +222,6 @@ static void BuildBaseTextCodecMaps() {
   TextCodecUserDefined::RegisterCodecs(AddToTextCodecMap);
 }
 
-bool IsReplacementEncoding(const char* alias) {
-  return alias && !strcasecmp(alias, "replacement");
-}
-
-bool IsReplacementEncoding(const String& alias) {
-  return alias == "replacement";
-}
-
 static void ExtendTextCodecMaps() {
   TextCodecReplacement::RegisterEncodingNames(AddToTextEncodingNameMap);
   TextCodecReplacement::RegisterCodecs(AddToTextCodecMap);

@@ -20,9 +20,8 @@ namespace {
 const char* g_replacement_alias = "iso-2022-kr";
 
 TEST(TextCodecReplacement, Aliases) {
-  // "replacement" is not a valid alias for itself
-  EXPECT_FALSE(TextEncoding("replacement").IsValid());
-  EXPECT_FALSE(TextEncoding("rEpLaCeMeNt").IsValid());
+  EXPECT_TRUE(TextEncoding("replacement").IsValid());
+  EXPECT_TRUE(TextEncoding("rEpLaCeMeNt").IsValid());
 
   EXPECT_TRUE(TextEncoding(g_replacement_alias).IsValid());
   EXPECT_STREQ("replacement", TextEncoding(g_replacement_alias).GetName());
