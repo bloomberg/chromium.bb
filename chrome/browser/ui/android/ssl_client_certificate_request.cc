@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/android/ssl_client_certificate_request.h"
-
 #include <stddef.h>
 #include <utility>
 
@@ -176,10 +174,6 @@ static void NotifyClientCertificatesChangedOnIOThread(
          FROM_HERE,
          base::Bind(&NotifyClientCertificatesChanged));
   }
-}
-
-bool RegisterSSLClientCertificateRequestAndroid(JNIEnv* env) {
-  return RegisterNativesImpl(env);
 }
 
 }  // namespace android

@@ -40,8 +40,6 @@ class ConnectionInfoPopupAndroid : public PageInfoUI {
                          ChosenObjectInfoList chosen_object_info_list) override;
   void SetIdentityInfo(const IdentityInfo& identity_info) override;
 
-  static bool RegisterConnectionInfoPopupAndroid(JNIEnv* env);
-
  private:
   // The presenter that controls the Page Info UI.
   std::unique_ptr<PageInfo> presenter_;

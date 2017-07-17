@@ -45,8 +45,6 @@ class AutofillKeyboardAccessoryView : public AutofillPopupView {
   void ViewDismissed(JNIEnv* env,
                      const base::android::JavaParamRef<jobject>& obj);
 
-  static bool RegisterAutofillKeyboardAccessoryView(JNIEnv* env);
-
  protected:
   // AutofillPopupView implementation.
   void Show() override;

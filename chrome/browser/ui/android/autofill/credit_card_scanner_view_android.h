@@ -24,9 +24,6 @@ class CreditCardScannerViewDelegate;
 // APIs through JNI service.
 class CreditCardScannerViewAndroid : public CreditCardScannerView {
  public:
-  // Registers with JNI services.
-  static bool Register(JNIEnv* env);
-
   CreditCardScannerViewAndroid(
       const base::WeakPtr<CreditCardScannerViewDelegate>& delegate,
       content::WebContents* web_contents);

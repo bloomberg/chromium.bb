@@ -49,8 +49,6 @@ class PageInfoPopupAndroid : public PageInfoUI {
                          ChosenObjectInfoList chosen_object_info_list) override;
   void SetIdentityInfo(const IdentityInfo& identity_info) override;
 
-  static bool RegisterPageInfoPopupAndroid(JNIEnv* env);
-
  private:
   // Returns an optional value which is set if this permission should be
   // displayed in Page Info. Most permissions will only be displayed if they are

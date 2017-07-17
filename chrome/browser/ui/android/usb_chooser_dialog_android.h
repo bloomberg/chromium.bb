@@ -49,8 +49,6 @@ class UsbChooserDialogAndroid : public device::UsbService::Observer {
   void LoadUsbHelpPage(JNIEnv* env,
                        const base::android::JavaParamRef<jobject>& obj);
 
-  static bool Register(JNIEnv* env);
-
  private:
   void GotUsbDeviceList(
       const std::vector<scoped_refptr<device::UsbDevice>>& devices);

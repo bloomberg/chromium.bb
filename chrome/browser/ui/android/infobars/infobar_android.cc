@@ -84,10 +84,3 @@ void InfoBarAndroid::CloseJavaInfoBar() {
 int InfoBarAndroid::GetEnumeratedIconId() {
   return ResourceMapper::MapFromChromiumId(delegate()->GetIconId());
 }
-
-
-// Native JNI methods ---------------------------------------------------------
-
-bool RegisterNativeInfoBar(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}

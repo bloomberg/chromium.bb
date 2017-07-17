@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/android/tab_model/single_tab_model.h"
-
 #include "base/android/jni_android.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/android/webapps/single_tab_mode_tab_helper.h"
@@ -27,9 +25,4 @@ static void PermanentlyBlockAllNewWindows(
   SingleTabModeTabHelper* tab_helper =
       SingleTabModeTabHelper::FromWebContents(web_contents);
   tab_helper->PermanentlyBlockAllNewWindows();
-}
-
-// Register native methods
-bool RegisterSingleTabModel(JNIEnv* env) {
-  return RegisterNativesImpl(env);
 }

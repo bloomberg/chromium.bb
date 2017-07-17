@@ -27,9 +27,6 @@ class AutofillSaveCardInfoBar : public ConfirmInfoBar {
   // Called when a link in the legal message text was clicked.
   void OnLegalMessageLinkClicked(JNIEnv* env, jobject obj, jstring url);
 
-  // Registers the JNI bindings.
-  static bool Register(JNIEnv* env);
-
  private:
   // ConfirmInfoBar:
   base::android::ScopedJavaLocalRef<jobject> CreateRenderInfoBar(

@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/android/page_info/certificate_chain_helper.h"
-
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
@@ -49,9 +47,4 @@ static ScopedJavaLocalRef<jobjectArray> GetCertificateChain(
   }
 
   return base::android::ToJavaArrayOfByteArray(env, cert_chain);
-}
-
-// static
-bool RegisterCertificateChainHelper(JNIEnv* env) {
-  return RegisterNativesImpl(env);
 }

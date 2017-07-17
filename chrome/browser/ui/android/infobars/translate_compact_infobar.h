@@ -93,7 +93,4 @@ class TranslateCompactInfoBar
   DISALLOW_COPY_AND_ASSIGN(TranslateCompactInfoBar);
 };
 
-// Registers the native methods through JNI.
-bool RegisterTranslateCompactInfoBar(JNIEnv* env);
-
 #endif  // CHROME_BROWSER_UI_ANDROID_INFOBARS_TRANSLATE_COMPACT_INFOBAR_H_

@@ -81,7 +81,4 @@ class InfoBarAndroid : public infobars::InfoBar {
   DISALLOW_COPY_AND_ASSIGN(InfoBarAndroid);
 };
 
-// Registers the NativeInfoBar's native methods through JNI.
-bool RegisterNativeInfoBar(JNIEnv* env);
-
 #endif  // CHROME_BROWSER_UI_ANDROID_INFOBARS_INFOBAR_ANDROID_H_

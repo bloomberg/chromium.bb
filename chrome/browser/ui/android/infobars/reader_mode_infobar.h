@@ -35,7 +35,4 @@ class ReaderModeInfoBar : public InfoBarAndroid {
   DISALLOW_COPY_AND_ASSIGN(ReaderModeInfoBar);
 };
 
-// Register native methods.
-bool RegisterReaderModeInfoBar(JNIEnv* env);
-
 #endif  // CHROME_BROWSER_UI_ANDROID_INFOBARS_READER_MODE_INFOBAR_H_

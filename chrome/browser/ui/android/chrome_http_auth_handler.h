@@ -55,8 +55,6 @@ class ChromeHttpAuthHandler {
   base::android::ScopedJavaLocalRef<jstring> GetMessageBody(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>&);
-  // Registers the ChromeHttpAuthHandler native methods.
-  static bool RegisterChromeHttpAuthHandler(JNIEnv* env);
  private:
   LoginHandler* observer_;
   base::android::ScopedJavaGlobalRef<jobject> java_chrome_http_auth_handler_;

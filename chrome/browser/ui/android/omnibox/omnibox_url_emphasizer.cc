@@ -32,8 +32,3 @@ ScopedJavaLocalRef<jintArray> ParseForEmphasizeComponents(
   int emphasize_values[] = {scheme.begin, scheme.len, host.begin, host.len};
   return base::android::ToJavaIntArray(env, emphasize_values, 4);
 }
-
-// static
-bool OmniboxUrlEmphasizer::RegisterOmniboxUrlEmphasizer(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}

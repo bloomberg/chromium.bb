@@ -174,10 +174,4 @@ void AutofillKeyboardAccessoryView::ViewDismissed(
   delete this;
 }
 
-// static
-bool AutofillKeyboardAccessoryView::RegisterAutofillKeyboardAccessoryView(
-    JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace autofill

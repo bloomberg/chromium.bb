@@ -159,11 +159,6 @@ void BluetoothChooserAndroid::ShowNeedLocationPermissionLink(
   event_handler_.Run(Event::SHOW_NEED_LOCATION_HELP, "");
 }
 
-// static
-bool BluetoothChooserAndroid::Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 void BluetoothChooserAndroid::OpenURL(const char* url) {
   web_contents_->OpenURL(content::OpenURLParams(
       GURL(url), content::Referrer(), WindowOpenDisposition::NEW_FOREGROUND_TAB,

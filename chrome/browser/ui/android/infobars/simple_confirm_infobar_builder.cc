@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/android/infobars/simple_confirm_infobar_builder.h"
-
 #include <memory>
 
 #include "base/android/jni_android.h"
@@ -163,8 +161,4 @@ void Create(JNIEnv* env,
       base::MakeUnique<SimpleConfirmInfoBarDelegate>(
           j_listener, infobar_identifier, icon_bitmap, message_str, primary_str,
           secondary_str, auto_expire)));
-}
-
-bool RegisterSimpleConfirmInfoBarBuilder(JNIEnv* env) {
-  return RegisterNativesImpl(env);
 }

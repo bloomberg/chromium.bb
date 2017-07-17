@@ -36,9 +36,6 @@ class PasswordGenerationPopupViewAndroid : public PasswordGenerationPopupView {
   void PasswordSelected(JNIEnv* env,
                         const base::android::JavaParamRef<jobject>& object);
 
-  // Registers the popup with JNI.
-  static bool Register(JNIEnv* env);
-
  private:
   // The popup owns itself.
   virtual ~PasswordGenerationPopupViewAndroid();
