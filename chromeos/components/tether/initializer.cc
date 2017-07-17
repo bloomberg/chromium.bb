@@ -8,6 +8,7 @@
 #include "chromeos/components/tether/active_host.h"
 #include "chromeos/components/tether/active_host_network_state_updater.h"
 #include "chromeos/components/tether/ble_connection_manager.h"
+#include "chromeos/components/tether/crash_recovery_manager.h"
 #include "chromeos/components/tether/device_id_tether_network_guid_map.h"
 #include "chromeos/components/tether/host_connection_metrics_logger.h"
 #include "chromeos/components/tether/host_scan_device_prioritizer_impl.h"
@@ -248,8 +249,18 @@ void Initializer::OnBluetoothAdapterAdvertisingIntervalSet(
           network_connection_handler_, tether_connector_.get(),
           tether_disconnector_.get());
 
-  // Because Initializer is created on each user log in, it's appropriate to
-  // call this method now.
+  crash_recovery_manager_ = base::MakeUnique<CrashRecoveryManager>(
+      network_state_handler_, active_host_.get(),
+      master_host_scan_cache_.get());
+  crash_recovery_manager_->RestorePreCrashStateIfNecessary(base::Bind(
+      &Initializer::OnPreCrashStateRestored, weak_ptr_factory_.GetWeakPtr()));
+}
+
+void Initializer::OnPreCrashStateRestored() {
+  // |crash_recovery_manager_| is no longer needed since it has completed.
+  crash_recovery_manager_.reset();
+
+  // Start a scan now that the Tether module has started up.
   host_scan_scheduler_->UserLoggedIn();
 }
 
