@@ -2727,6 +2727,12 @@ void ChromeContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
   fd = ui::GetLocalePackFd(&region);
   mappings->ShareWithRegion(kAndroidLocalePakDescriptor, fd, region);
 
+  // Optional secondary locale .pak file.
+  fd = ui::GetSecondaryLocalePackFd(&region);
+  if (fd != -1) {
+    mappings->ShareWithRegion(kAndroidSecondaryLocalePakDescriptor, fd, region);
+  }
+
   breakpad::CrashDumpObserver::GetInstance()->BrowserChildProcessStarted(
       child_process_id, mappings);
 

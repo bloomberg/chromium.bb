@@ -62,6 +62,12 @@ def _PrintMain(args):
     print line.encode('utf-8')
 
 
+def _ListMain(args):
+  resources, _ = data_pack.ReadDataPack(args.pak_file)
+  for resource_id in sorted(resources.keys()):
+    args.output.write('%d\n' % resource_id)
+
+
 def main():
   parser = argparse.ArgumentParser(
       description=__doc__, formatter_class=argparse.RawTextHelpFormatter)
@@ -88,6 +94,14 @@ def main():
       help='Prints all pak IDs and contents. Useful for diffing.')
   sub_parser.add_argument('pak_file')
   sub_parser.set_defaults(func=_PrintMain)
+  
+  sub_parser = sub_parsers.add_parser('list-id',
+      help='Outputs all resource IDs to a file.')
+  sub_parser.add_argument('pak_file')
+  sub_parser.add_argument('--output', type=argparse.FileType('w'),
+      default=sys.stdout,
+      help='The resource list path to write (default stdout)')
+  sub_parser.set_defaults(func=_ListMain)
 
   if len(sys.argv) == 1:
     parser.print_help()

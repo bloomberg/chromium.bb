@@ -877,6 +877,16 @@ void ChromeMainDelegate::PreSandboxStartup() {
     ResourceBundle::InitSharedInstanceWithPakFileRegion(base::File(pak_fd),
                                                         pak_region);
 
+    // Load secondary locale .pak file if it exists.
+    pak_fd = global_descriptors->MaybeGet(kAndroidSecondaryLocalePakDescriptor);
+    if (pak_fd != -1) {
+      pak_region = global_descriptors->GetRegion(
+          kAndroidSecondaryLocalePakDescriptor);
+      ResourceBundle::GetSharedInstance().
+          LoadSecondaryLocaleDataWithPakFileRegion(
+              base::File(pak_fd), pak_region);
+    }
+
     int extra_pak_keys[] = {
       kAndroidChrome100PercentPakDescriptor,
       kAndroidUIResourcesPakDescriptor,
