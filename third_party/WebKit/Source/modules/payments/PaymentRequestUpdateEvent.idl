@@ -9,5 +9,5 @@
     Constructor(DOMString type, optional PaymentRequestUpdateEventInit eventInitDict),
     ConstructorCallWith=ExecutionContext
 ] interface PaymentRequestUpdateEvent : Event {
-    [CallWith=ScriptState,RaisesException] void updateWith(Promise<PaymentDetails> d);
+    [CallWith=ScriptState,RaisesException] void updateWith(Promise<PaymentDetailsUpdate> detailsPromise);
 };
