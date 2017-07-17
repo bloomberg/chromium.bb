@@ -14,7 +14,7 @@
 
 #include "./aom_dsp_rtcd.h"
 #include "aom_dsp/inv_txfm.h"
-#if CONFIG_DAALA_DCT4 || CONFIG_DAALA_DCT8
+#if CONFIG_DAALA_DCT4 || CONFIG_DAALA_DCT8 || CONFIG_DAALA_DCT16
 #include "av1/common/daala_tx.h"
 #endif
 
@@ -429,6 +429,18 @@ void aom_idct8x8_12_add_c(const tran_low_t *input, uint8_t *dest, int stride) {
   }
 }
 
+#if CONFIG_DAALA_DCT16
+void aom_idct16_c(const tran_low_t *input, tran_low_t *output) {
+  int i;
+  od_coeff x[16];
+  od_coeff y[16];
+  for (i = 0; i < 16; i++) y[i] = (od_coeff)input[i];
+  od_bin_idct16(x, 1, y);
+  for (i = 0; i < 16; i++) output[i] = (tran_low_t)x[i];
+}
+
+#else
+
 void aom_idct16_c(const tran_low_t *input, tran_low_t *output) {
   tran_low_t step1[16], step2[16];
   tran_high_t temp1, temp2;
@@ -593,6 +605,7 @@ void aom_idct16_c(const tran_low_t *input, tran_low_t *output) {
   output[14] = WRAPLOW(step2[1] - step2[14]);
   output[15] = WRAPLOW(step2[0] - step2[15]);
 }
+#endif  // CONFIG_DAALA_DCT16
 
 void aom_idct16x16_256_add_c(const tran_low_t *input, uint8_t *dest,
                              int stride) {
@@ -618,6 +631,18 @@ void aom_idct16x16_256_add_c(const tran_low_t *input, uint8_t *dest,
     }
   }
 }
+
+#if CONFIG_DAALA_DCT16
+void aom_iadst16_c(const tran_low_t *input, tran_low_t *output) {
+  int i;
+  od_coeff x[16];
+  od_coeff y[16];
+  for (i = 0; i < 16; i++) y[i] = (od_coeff)input[i];
+  od_bin_idst16(x, 1, y);
+  for (i = 0; i < 16; i++) output[i] = (tran_low_t)x[i];
+}
+
+#else
 
 void aom_iadst16_c(const tran_low_t *input, tran_low_t *output) {
   tran_high_t s0, s1, s2, s3, s4, s5, s6, s7, s8;
@@ -789,6 +814,7 @@ void aom_iadst16_c(const tran_low_t *input, tran_low_t *output) {
   output[14] = WRAPLOW(x9);
   output[15] = WRAPLOW(-x1);
 }
+#endif
 
 void aom_idct16x16_38_add_c(const tran_low_t *input, uint8_t *dest,
                             int stride) {

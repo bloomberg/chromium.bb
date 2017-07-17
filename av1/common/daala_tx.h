@@ -9,5 +9,9 @@ void od_bin_fdct8(od_coeff y[8], const od_coeff *x, int xstride);
 void od_bin_idct8(od_coeff *x, int xstride, const od_coeff y[8]);
 void od_bin_fdst8(od_coeff y[8], const od_coeff *x, int xstride);
 void od_bin_idst8(od_coeff *x, int xstride, const od_coeff y[8]);
+void od_bin_fdct16(od_coeff y[16], const od_coeff *x, int xstride);
+void od_bin_idct16(od_coeff *x, int xstride, const od_coeff y[16]);
+void od_bin_fdst16(od_coeff y[16], const od_coeff *x, int xstride);
+void od_bin_idst16(od_coeff *x, int xstride, const od_coeff y[16]);
 
 #endif

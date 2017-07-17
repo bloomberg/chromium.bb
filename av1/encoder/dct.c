@@ -21,7 +21,7 @@
 #include "av1/common/av1_fwd_txfm1d.h"
 #include "av1/common/av1_fwd_txfm1d_cfg.h"
 #include "av1/common/idct.h"
-#if CONFIG_DAALA_DCT4 || CONFIG_DAALA_DCT8
+#if CONFIG_DAALA_DCT4 || CONFIG_DAALA_DCT8 || CONFIG_DAALA_DCT16
 #include "av1/common/daala_tx.h"
 #endif
 
@@ -181,6 +181,18 @@ static void fdct8(const tran_low_t *input, tran_low_t *output) {
   range_check(output, 8, 16);
 }
 #endif
+
+#if CONFIG_DAALA_DCT16
+static void fdct16(const tran_low_t *input, tran_low_t *output) {
+  int i;
+  od_coeff x[16];
+  od_coeff y[16];
+  for (i = 0; i < 16; i++) x[i] = (od_coeff)input[i];
+  od_bin_fdct16(y, x, 1);
+  for (i = 0; i < 16; i++) output[i] = (tran_low_t)y[i];
+}
+
+#else
 
 static void fdct16(const tran_low_t *input, tran_low_t *output) {
   tran_high_t temp;
@@ -355,6 +367,7 @@ static void fdct16(const tran_low_t *input, tran_low_t *output) {
 
   range_check(output, 16, 16);
 }
+#endif
 
 static void fdct32(const tran_low_t *input, tran_low_t *output) {
   tran_high_t temp;
@@ -880,6 +893,18 @@ static void fadst8(const tran_low_t *input, tran_low_t *output) {
 }
 #endif
 
+#if CONFIG_DAALA_DCT16
+static void fadst16(const tran_low_t *input, tran_low_t *output) {
+  int i;
+  od_coeff x[16];
+  od_coeff y[16];
+  for (i = 0; i < 16; i++) x[i] = (od_coeff)input[i];
+  od_bin_fdst16(y, x, 1);
+  for (i = 0; i < 16; i++) output[i] = (tran_low_t)y[i];
+}
+
+#else
+
 static void fadst16(const tran_low_t *input, tran_low_t *output) {
   tran_high_t s0, s1, s2, s3, s4, s5, s6, s7, s8;
   tran_high_t s9, s10, s11, s12, s13, s14, s15;
@@ -1047,6 +1072,7 @@ static void fadst16(const tran_low_t *input, tran_low_t *output) {
   output[14] = (tran_low_t)x9;
   output[15] = (tran_low_t)-x1;
 }
+#endif
 
 // For use in lieu of ADST
 static void fhalfright32(const tran_low_t *input, tran_low_t *output) {
@@ -1169,8 +1195,13 @@ static void fidtx8(const tran_low_t *input, tran_low_t *output) {
 
 static void fidtx16(const tran_low_t *input, tran_low_t *output) {
   int i;
-  for (i = 0; i < 16; ++i)
+  for (i = 0; i < 16; ++i) {
+#if CONFIG_DAALA_DCT16
+    output[i] = input[i];
+#else
     output[i] = (tran_low_t)fdct_round_shift(input[i] * 2 * Sqrt2);
+#endif
+  }
 }
 
 static void fidtx32(const tran_low_t *input, tran_low_t *output) {
@@ -2354,17 +2385,34 @@ void av1_fht16x16_c(const int16_t *input, tran_low_t *output, int stride,
 
   // Columns
   for (i = 0; i < 16; ++i) {
-    for (j = 0; j < 16; ++j) temp_in[j] = input[j * stride + i] * 4;
+    for (j = 0; j < 16; ++j) {
+#if CONFIG_DAALA_DCT16
+      temp_in[j] = input[j * stride + i] * 16;
+#else
+      temp_in[j] = input[j * stride + i] * 4;
+#endif
+    }
     ht.cols(temp_in, temp_out);
-    for (j = 0; j < 16; ++j)
+    for (j = 0; j < 16; ++j) {
+#if CONFIG_DAALA_DCT16
+      out[j * 16 + i] = temp_out[j];
+#else
       out[j * 16 + i] = (temp_out[j] + 1 + (temp_out[j] < 0)) >> 2;
+#endif
+    }
   }
 
   // Rows
   for (i = 0; i < 16; ++i) {
     for (j = 0; j < 16; ++j) temp_in[j] = out[j + i * 16];
     ht.rows(temp_in, temp_out);
-    for (j = 0; j < 16; ++j) output[j + i * 16] = temp_out[j];
+    for (j = 0; j < 16; ++j) {
+#if CONFIG_DAALA_DCT16
+      output[j + i * 16] = (temp_out[j] + (temp_out[j] < 0)) >> 1;
+#else
+      output[j + i * 16] = temp_out[j];
+#endif
+    }
   }
 }
 

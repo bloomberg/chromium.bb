@@ -58,8 +58,13 @@ static void iidtx8_c(const tran_low_t *input, tran_low_t *output) {
 
 static void iidtx16_c(const tran_low_t *input, tran_low_t *output) {
   int i;
-  for (i = 0; i < 16; ++i)
+  for (i = 0; i < 16; ++i) {
+#if CONFIG_DAALA_DCT16
+    output[i] = input[i];
+#else
     output[i] = (tran_low_t)dct_const_round_shift(input[i] * 2 * Sqrt2);
+#endif
+  }
 }
 
 static void iidtx32_c(const tran_low_t *input, tran_low_t *output) {
@@ -1236,7 +1241,13 @@ void av1_iht16x16_256_add_c(const tran_low_t *input, uint8_t *dest, int stride,
 
   // inverse transform row vectors
   for (i = 0; i < 16; ++i) {
+#if CONFIG_DAALA_DCT16
+    tran_low_t temp_in[16];
+    for (j = 0; j < 16; j++) temp_in[j] = input[j] << 1;
+    IHT_16[tx_type].rows(temp_in, out[i]);
+#else
     IHT_16[tx_type].rows(input, out[i]);
+#endif
     input += 16;
   }
 
@@ -1259,7 +1270,11 @@ void av1_iht16x16_256_add_c(const tran_low_t *input, uint8_t *dest, int stride,
     for (j = 0; j < 16; ++j) {
       int d = i * stride + j;
       int s = j * outstride + i;
+#if CONFIG_DAALA_DCT16
+      dest[d] = clip_pixel_add(dest[d], ROUND_POWER_OF_TWO(outp[s], 4));
+#else
       dest[d] = clip_pixel_add(dest[d], ROUND_POWER_OF_TWO(outp[s], 6));
+#endif
     }
   }
 }
@@ -1440,6 +1455,7 @@ static void idct8x8_add(const tran_low_t *input, uint8_t *dest, int stride,
 }
 #endif
 
+#if !CONFIG_DAALA_DCT16
 static void idct16x16_add(const tran_low_t *input, uint8_t *dest, int stride,
                           const TxfmParam *txfm_param) {
 // The calculation can be simplified if there are not many non-zero dct
@@ -1462,6 +1478,7 @@ static void idct16x16_add(const tran_low_t *input, uint8_t *dest, int stride,
   else
     aom_idct16x16_256_add(input, dest, stride);
 }
+#endif
 
 #if CONFIG_MRC_TX
 static void imrc32x32_add_c(const tran_low_t *input, uint8_t *dest, int stride,
@@ -1740,7 +1757,11 @@ static void inv_txfm_add_16x16(const tran_low_t *input, uint8_t *dest,
                                int stride, const TxfmParam *txfm_param) {
   const TX_TYPE tx_type = txfm_param->tx_type;
   switch (tx_type) {
+#if !CONFIG_DAALA_DCT16
     case DCT_DCT: idct16x16_add(input, dest, stride, txfm_param); break;
+#else
+    case DCT_DCT:
+#endif
     case ADST_DCT:
     case DCT_ADST:
     case ADST_ADST:
