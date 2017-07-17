@@ -9,6 +9,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/time/time.h"
 #include "chrome/browser/media/webrtc/webrtc_rtp_dump_writer.h"
 #include "content/public/browser/browser_thread.h"
@@ -52,11 +53,10 @@ WebRtcRtpDumpHandler::WebRtcRtpDumpHandler(const base::FilePath& dump_dir)
       incoming_state_(STATE_NONE),
       outgoing_state_(STATE_NONE),
       weak_ptr_factory_(this) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
 
 WebRtcRtpDumpHandler::~WebRtcRtpDumpHandler() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(main_sequence_);
 
   // Reset dump writer first to stop writing.
   if (dump_writer_) {
@@ -65,15 +65,15 @@ WebRtcRtpDumpHandler::~WebRtcRtpDumpHandler() {
   }
 
   if (incoming_state_ != STATE_NONE && !incoming_dump_path_.empty()) {
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
         base::BindOnce(base::IgnoreResult(&base::DeleteFile),
                        incoming_dump_path_, false));
   }
 
   if (outgoing_state_ != STATE_NONE && !outgoing_dump_path_.empty()) {
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
         base::BindOnce(base::IgnoreResult(&base::DeleteFile),
                        outgoing_dump_path_, false));
   }
@@ -81,7 +81,7 @@ WebRtcRtpDumpHandler::~WebRtcRtpDumpHandler() {
 
 bool WebRtcRtpDumpHandler::StartDump(RtpDumpType type,
                                      std::string* error_message) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(main_sequence_);
 
   if (!dump_writer_ && g_ongoing_rtp_dumps >= kMaxOngoingRtpDumpsAllowed) {
     *error_message = "Max RTP dump limit reached.";
@@ -139,7 +139,7 @@ bool WebRtcRtpDumpHandler::StartDump(RtpDumpType type,
 
 void WebRtcRtpDumpHandler::StopDump(RtpDumpType type,
                                     const GenericDoneCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(main_sequence_);
 
   // Returns an error if any type of dump specified by the caller cannot be
   // stopped.
@@ -177,7 +177,7 @@ void WebRtcRtpDumpHandler::StopDump(RtpDumpType type,
 }
 
 bool WebRtcRtpDumpHandler::ReadyToRelease() const {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(main_sequence_);
 
   return incoming_state_ != STATE_STARTED &&
          incoming_state_ != STATE_STOPPING &&
@@ -185,7 +185,7 @@ bool WebRtcRtpDumpHandler::ReadyToRelease() const {
 }
 
 WebRtcRtpDumpHandler::ReleasedDumps WebRtcRtpDumpHandler::ReleaseDumps() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(main_sequence_);
   DCHECK(ReadyToRelease());
 
   base::FilePath incoming_dump, outgoing_dump;
@@ -210,7 +210,7 @@ void WebRtcRtpDumpHandler::OnRtpPacket(const uint8_t* packet_header,
                                        size_t header_length,
                                        size_t packet_length,
                                        bool incoming) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(main_sequence_);
 
   if ((incoming && incoming_state_ != STATE_STARTED) ||
       (!incoming && outgoing_state_ != STATE_STARTED)) {
@@ -222,7 +222,7 @@ void WebRtcRtpDumpHandler::OnRtpPacket(const uint8_t* packet_header,
 }
 
 void WebRtcRtpDumpHandler::StopOngoingDumps(const base::Closure& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(main_sequence_);
   DCHECK(!callback.is_null());
 
   // No ongoing dumps, return directly.
@@ -232,11 +232,11 @@ void WebRtcRtpDumpHandler::StopOngoingDumps(const base::Closure& callback) {
     return;
   }
 
-  // If the FILE thread is working on stopping the dumps, wait for the FILE
-  // thread to return and check the states again.
+  // If the background task runner is working on stopping the dumps, wait for it
+  // to complete and then check the states again.
   if (incoming_state_ == STATE_STOPPING || outgoing_state_ == STATE_STOPPING) {
-    BrowserThread::PostTaskAndReply(
-        BrowserThread::FILE, FROM_HERE, base::BindOnce(&base::DoNothing),
+    dump_writer_->background_task_runner()->PostTaskAndReply(
+        FROM_HERE, base::BindOnce(&base::DoNothing),
         base::BindOnce(&WebRtcRtpDumpHandler::StopOngoingDumps,
                        weak_ptr_factory_.GetWeakPtr(), callback));
     return;
@@ -266,7 +266,7 @@ void WebRtcRtpDumpHandler::StopOngoingDumps(const base::Closure& callback) {
 
 void WebRtcRtpDumpHandler::SetDumpWriterForTesting(
     std::unique_ptr<WebRtcRtpDumpWriter> writer) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(main_sequence_);
 
   dump_writer_ = std::move(writer);
   ++g_ongoing_rtp_dumps;
@@ -276,7 +276,7 @@ void WebRtcRtpDumpHandler::SetDumpWriterForTesting(
 }
 
 void WebRtcRtpDumpHandler::OnMaxDumpSizeReached() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(main_sequence_);
 
   RtpDumpType type =
       (incoming_state_ == STATE_STARTED)
@@ -290,15 +290,15 @@ void WebRtcRtpDumpHandler::OnDumpEnded(const base::Closure& callback,
                                        RtpDumpType ended_type,
                                        bool incoming_success,
                                        bool outgoing_success) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(main_sequence_);
 
   if (DumpTypeContainsIncoming(ended_type)) {
     DCHECK_EQ(STATE_STOPPING, incoming_state_);
     incoming_state_ = STATE_STOPPED;
 
     if (!incoming_success) {
-      BrowserThread::PostTask(
-          BrowserThread::FILE, FROM_HERE,
+      base::PostTaskWithTraits(
+          FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
           base::BindOnce(base::IgnoreResult(&base::DeleteFile),
                          incoming_dump_path_, false));
 
@@ -313,8 +313,8 @@ void WebRtcRtpDumpHandler::OnDumpEnded(const base::Closure& callback,
     outgoing_state_ = STATE_STOPPED;
 
     if (!outgoing_success) {
-      BrowserThread::PostTask(
-          BrowserThread::FILE, FROM_HERE,
+      base::PostTaskWithTraits(
+          FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
           base::BindOnce(base::IgnoreResult(&base::DeleteFile),
                          outgoing_dump_path_, false));
 

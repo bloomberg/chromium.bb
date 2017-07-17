@@ -10,6 +10,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/task_scheduler/post_task.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/zlib/zlib.h"
 
@@ -90,13 +91,12 @@ void AppendToBuffer(const uint8_t* src,
 
 }  // namespace
 
-// This class is running on the FILE thread for compressing and writing the
+// This class runs on the backround task runner, compresses and writes the
 // dump buffer to disk.
-class WebRtcRtpDumpWriter::FileThreadWorker {
+class WebRtcRtpDumpWriter::FileWorker {
  public:
-  explicit FileThreadWorker(const base::FilePath& dump_path)
-      : dump_path_(dump_path) {
-    thread_checker_.DetachFromThread();
+  explicit FileWorker(const base::FilePath& dump_path) : dump_path_(dump_path) {
+    DETACH_FROM_SEQUENCE(sequence_checker_);
 
     memset(&stream_, 0, sizeof(stream_));
     int result = deflateInit2(&stream_,
@@ -110,8 +110,8 @@ class WebRtcRtpDumpWriter::FileThreadWorker {
     DCHECK_EQ(Z_OK, result);
   }
 
-  ~FileThreadWorker() {
-    DCHECK(thread_checker_.CalledOnValidThread());
+  ~FileWorker() {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
     // Makes sure all allocations are freed.
     deflateEnd(&stream_);
@@ -125,7 +125,7 @@ class WebRtcRtpDumpWriter::FileThreadWorker {
       bool end_stream,
       FlushResult* result,
       size_t* bytes_written) {
-    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
     // This is called either when the in-memory buffer is full or the dump
     // should be ended.
@@ -153,7 +153,7 @@ class WebRtcRtpDumpWriter::FileThreadWorker {
   // dump.
   size_t CompressAndWriteBufferToFile(std::vector<uint8_t>* buffer,
                                       FlushResult* result) {
-    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     DCHECK(buffer->size());
 
     *result = FLUSH_RESULT_SUCCESS;
@@ -193,7 +193,7 @@ class WebRtcRtpDumpWriter::FileThreadWorker {
 
   // Compresses |input| into |output|.
   bool Compress(std::vector<uint8_t>* input, std::vector<uint8_t>* output) {
-    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     int result = Z_OK;
 
     output->resize(std::max(kMinimumGzipOutputBufferSize, input->size()));
@@ -217,7 +217,7 @@ class WebRtcRtpDumpWriter::FileThreadWorker {
 
   // Ends the compression stream and completes the dump file.
   bool EndDumpFile() {
-    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
     std::vector<uint8_t> output_buffer;
     output_buffer.resize(kMinimumGzipOutputBufferSize);
@@ -247,9 +247,9 @@ class WebRtcRtpDumpWriter::FileThreadWorker {
 
   z_stream stream_;
 
-  base::ThreadChecker thread_checker_;
+  SEQUENCE_CHECKER(sequence_checker_);
 
-  DISALLOW_COPY_AND_ASSIGN(FileThreadWorker);
+  DISALLOW_COPY_AND_ASSIGN(FileWorker);
 };
 
 WebRtcRtpDumpWriter::WebRtcRtpDumpWriter(
@@ -260,20 +260,21 @@ WebRtcRtpDumpWriter::WebRtcRtpDumpWriter(
     : max_dump_size_(max_dump_size),
       max_dump_size_reached_callback_(max_dump_size_reached_callback),
       total_dump_size_on_disk_(0),
-      incoming_file_thread_worker_(new FileThreadWorker(incoming_dump_path)),
-      outgoing_file_thread_worker_(new FileThreadWorker(outgoing_dump_path)),
-      weak_ptr_factory_(this) {
-}
+      background_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BACKGROUND})),
+      incoming_file_thread_worker_(new FileWorker(incoming_dump_path)),
+      outgoing_file_thread_worker_(new FileWorker(outgoing_dump_path)),
+      weak_ptr_factory_(this) {}
 
 WebRtcRtpDumpWriter::~WebRtcRtpDumpWriter() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  bool success = BrowserThread::DeleteSoon(
-      BrowserThread::FILE, FROM_HERE, incoming_file_thread_worker_.release());
+  bool success = background_task_runner_->DeleteSoon(
+      FROM_HERE, incoming_file_thread_worker_.release());
   DCHECK(success);
 
-  success = BrowserThread::DeleteSoon(
-      BrowserThread::FILE, FROM_HERE, outgoing_file_thread_worker_.release());
+  success = background_task_runner_->DeleteSoon(
+      FROM_HERE, outgoing_file_thread_worker_.release());
   DCHECK(success);
 }
 
@@ -281,7 +282,7 @@ void WebRtcRtpDumpWriter::WriteRtpPacket(const uint8_t* packet_header,
                                          size_t header_length,
                                          size_t packet_length,
                                          bool incoming) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   static const size_t kMaxInMemoryBufferSize = 65536;
 
@@ -317,7 +318,7 @@ void WebRtcRtpDumpWriter::WriteRtpPacket(const uint8_t* packet_header,
 
 void WebRtcRtpDumpWriter::EndDump(RtpDumpType type,
                                   const EndDumpCallback& finished_callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(type == RTP_DUMP_OUTGOING || incoming_file_thread_worker_ != NULL);
   DCHECK(type == RTP_DUMP_INCOMING || outgoing_file_thread_worker_ != NULL);
 
@@ -335,7 +336,7 @@ void WebRtcRtpDumpWriter::EndDump(RtpDumpType type,
 }
 
 size_t WebRtcRtpDumpWriter::max_dump_size() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return max_dump_size_;
 }
 
@@ -357,7 +358,7 @@ WebRtcRtpDumpWriter::EndDumpContext::~EndDumpContext() {
 void WebRtcRtpDumpWriter::FlushBuffer(bool incoming,
                                       bool end_stream,
                                       const FlushDoneCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   std::unique_ptr<std::vector<uint8_t>> new_buffer(new std::vector<uint8_t>());
 
@@ -373,32 +374,31 @@ void WebRtcRtpDumpWriter::FlushBuffer(bool incoming,
 
   std::unique_ptr<size_t> bytes_written(new size_t(0));
 
-  FileThreadWorker* worker = incoming ? incoming_file_thread_worker_.get()
-                                      : outgoing_file_thread_worker_.get();
+  FileWorker* worker = incoming ? incoming_file_thread_worker_.get()
+                                : outgoing_file_thread_worker_.get();
 
   // Using "Unretained(worker)" because |worker| is owner by this object and it
-  // guaranteed to be deleted on the FILE thread before this object goes away.
-  base::Closure task =
-      base::Bind(&FileThreadWorker::CompressAndWriteToFileOnFileThread,
-                 base::Unretained(worker), base::Passed(&new_buffer),
-                 end_stream, result.get(), bytes_written.get());
+  // guaranteed to be deleted on the backround task runner before this object
+  // goes away.
+  base::OnceClosure task = base::BindOnce(
+      &FileWorker::CompressAndWriteToFileOnFileThread, base::Unretained(worker),
+      std::move(new_buffer), end_stream, result.get(), bytes_written.get());
 
   // OnFlushDone is necessary to avoid running the callback after this
   // object is gone.
-  base::Closure reply = base::Bind(
+  base::OnceClosure reply = base::BindOnce(
       &WebRtcRtpDumpWriter::OnFlushDone, weak_ptr_factory_.GetWeakPtr(),
-      callback, base::Passed(&result), base::Passed(&bytes_written));
+      callback, std::move(result), std::move(bytes_written));
 
   // Define the task and reply outside the method call so that getting and
   // passing the scoped_ptr does not depend on the argument evaluation order.
-  BrowserThread::PostTaskAndReply(BrowserThread::FILE, FROM_HERE, task, reply);
+  background_task_runner_->PostTaskAndReply(FROM_HERE, std::move(task),
+                                            std::move(reply));
 
   if (end_stream) {
-    bool success = BrowserThread::DeleteSoon(
-        BrowserThread::FILE,
-        FROM_HERE,
-        incoming ? incoming_file_thread_worker_.release()
-                 : outgoing_file_thread_worker_.release());
+    bool success = background_task_runner_->DeleteSoon(
+        FROM_HERE, incoming ? incoming_file_thread_worker_.release()
+                            : outgoing_file_thread_worker_.release());
     DCHECK(success);
   }
 }
@@ -407,7 +407,7 @@ void WebRtcRtpDumpWriter::OnFlushDone(
     const FlushDoneCallback& callback,
     const std::unique_ptr<FlushResult>& result,
     const std::unique_ptr<size_t>& bytes_written) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   total_dump_size_on_disk_ += *bytes_written;
 
@@ -427,7 +427,7 @@ void WebRtcRtpDumpWriter::OnFlushDone(
 void WebRtcRtpDumpWriter::OnDumpEnded(EndDumpContext context,
                                       bool incoming,
                                       bool success) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   DVLOG(2) << "Dump ended, incoming = " << incoming
            << ", succeeded = " << success;
