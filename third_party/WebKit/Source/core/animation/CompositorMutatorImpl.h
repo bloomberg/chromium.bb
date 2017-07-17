@@ -6,6 +6,7 @@
 #define CompositorMutatorImpl_h
 
 #include <memory>
+#include "core/animation/CompositorAnimator.h"
 #include "core/animation/CustomCompositorAnimationManager.h"
 #include "platform/graphics/CompositorMutator.h"
 #include "platform/heap/Handle.h"
@@ -14,7 +15,6 @@
 
 namespace blink {
 
-class CompositorAnimator;
 class CompositorMutatorClient;
 
 // Fans out requests from the compositor to all of the registered

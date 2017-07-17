@@ -141,6 +141,7 @@
 #include "core/frame/SuspendableScriptExecutor.h"
 #include "core/frame/UseCounter.h"
 #include "core/frame/VisualViewport.h"
+#include "core/frame/WebFrameWidgetImpl.h"
 #include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLFormElement.h"
@@ -233,7 +234,6 @@
 #include "public/web/WebSerializedScriptValue.h"
 #include "public/web/WebTreeScopeType.h"
 #include "skia/ext/platform_canvas.h"
-#include "web/WebFrameWidgetImpl.h"
 
 namespace blink {
 
