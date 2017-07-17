@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/singleton.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -24,6 +25,7 @@
 #include "chromeos/network/network_util.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "components/arc/arc_bridge_service.h"
+#include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/user_manager/user_manager.h"
 
 namespace {
@@ -288,18 +290,52 @@ void DefaultNetworkFailureCallback(
 }  // namespace
 
 namespace arc {
+namespace {
 
-ArcNetHostImpl::ArcNetHostImpl(ArcBridgeService* bridge_service)
-    : ArcService(bridge_service), binding_(this), weak_factory_(this) {
-  arc_bridge_service()->net()->AddObserver(this);
+// Singleton factory for ArcNetHostImpl.
+class ArcNetHostImplFactory
+    : public internal::ArcBrowserContextKeyedServiceFactoryBase<
+          ArcNetHostImpl,
+          ArcNetHostImplFactory> {
+ public:
+  // Factory name used by ArcBrowserContextKeyedServiceFactoryBase.
+  static constexpr const char* kName = "ArcNetHostImplFactory";
+
+  static ArcNetHostImplFactory* GetInstance() {
+    return base::Singleton<ArcNetHostImplFactory>::get();
+  }
+
+ private:
+  friend base::DefaultSingletonTraits<ArcNetHostImplFactory>;
+  ArcNetHostImplFactory() = default;
+  ~ArcNetHostImplFactory() override = default;
+};
+
+}  // namespace
+
+// static
+ArcNetHostImpl* ArcNetHostImpl::GetForBrowserContext(
+    content::BrowserContext* context) {
+  return ArcNetHostImplFactory::GetForBrowserContext(context);
+}
+
+ArcNetHostImpl::ArcNetHostImpl(content::BrowserContext* context,
+                               ArcBridgeService* bridge_service)
+    : arc_bridge_service_(bridge_service), binding_(this), weak_factory_(this) {
+  arc_bridge_service_->net()->AddObserver(this);
 }
 
 ArcNetHostImpl::~ArcNetHostImpl() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  arc_bridge_service()->net()->RemoveObserver(this);
-  if (observing_network_state_) {
+  if (observing_network_state_)
     GetStateHandler()->RemoveObserver(this, FROM_HERE);
-  }
+
+  // TODO(hidehiko): Currently, the lifetime of ArcBridgeService and
+  // BrowserContextKeyedService is not nested.
+  // If ArcServiceManager::Get() returns nullptr, it is already destructed,
+  // so do not touch it.
+  if (ArcServiceManager::Get())
+    arc_bridge_service_->net()->RemoveObserver(this);
 }
 
 void ArcNetHostImpl::OnInstanceReady() {
@@ -308,7 +344,7 @@ void ArcNetHostImpl::OnInstanceReady() {
   mojom::NetHostPtr host;
   binding_.Bind(MakeRequest(&host));
   auto* instance =
-      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service()->net(), Init);
+      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->net(), Init);
   DCHECK(instance);
   instance->Init(std::move(host));
 
@@ -589,7 +625,7 @@ void ArcNetHostImpl::StartScan() {
 
 void ArcNetHostImpl::ScanCompleted(const chromeos::DeviceState* /*unused*/) {
   auto* net_instance =
-      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service()->net(), ScanCompleted);
+      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->net(), ScanCompleted);
   if (!net_instance)
     return;
 
@@ -617,7 +653,7 @@ void ArcNetHostImpl::GetDefaultNetwork(
 void ArcNetHostImpl::DefaultNetworkSuccessCallback(
     const std::string& service_path,
     const base::DictionaryValue& dictionary) {
-  auto* net_instance = ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service()->net(),
+  auto* net_instance = ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->net(),
                                                    DefaultNetworkChanged);
   if (!net_instance)
     return;
@@ -630,8 +666,8 @@ void ArcNetHostImpl::DefaultNetworkChanged(
     const chromeos::NetworkState* network) {
   if (!network) {
     VLOG(1) << "No default network";
-    auto* net_instance = ARC_GET_INSTANCE_FOR_METHOD(
-        arc_bridge_service()->net(), DefaultNetworkChanged);
+    auto* net_instance = ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->net(),
+                                                     DefaultNetworkChanged);
     if (net_instance)
       net_instance->DefaultNetworkChanged(nullptr, nullptr);
     return;
@@ -647,7 +683,7 @@ void ArcNetHostImpl::DefaultNetworkChanged(
 }
 
 void ArcNetHostImpl::DeviceListChanged() {
-  auto* net_instance = ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service()->net(),
+  auto* net_instance = ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->net(),
                                                    WifiEnabledStateChanged);
   if (!net_instance)
     return;
