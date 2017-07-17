@@ -21,6 +21,8 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.history.HistoryItemView;
+import org.chromium.chrome.browser.history.HistoryPage;
 import org.chromium.chrome.browser.vr_shell.util.VrInfoBarUtils;
 import org.chromium.chrome.browser.vr_shell.util.VrTransitionUtils;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
@@ -31,6 +33,7 @@ import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.WebContents;
 
+import java.util.ArrayList;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -110,7 +113,8 @@ public class VrShellNavigationTest {
     }
 
     /**
-     * Tests navigation from a 2D to a 2D page.
+     * Tests navigation from a 2D to a 2D page. Also tests that this navigation is
+     * properly added to Chrome's history.
      */
     @Test
     @MediumTest
@@ -121,6 +125,22 @@ public class VrShellNavigationTest {
 
         assertState(mVrTestRule.getFirstTabWebContents(), Page.PAGE_2D,
                 PresentationMode.NON_PRESENTING, FullscreenMode.NON_FULLSCREENED);
+
+        // Test that the navigations were added to history
+        VrTransitionUtils.forceExitVr();
+        mVrTestRule.loadUrl("chrome://history", PAGE_LOAD_TIMEOUT_S);
+        HistoryPage historyPage =
+                (HistoryPage) mVrTestRule.getActivity().getActivityTab().getNativePage();
+        ArrayList<HistoryItemView> itemViews = historyPage.getHistoryManagerForTesting()
+                                                       .getAdapterForTests()
+                                                       .getItemViewsForTests();
+        Assert.assertEquals("Two navigations showed up in history", 2, itemViews.size());
+        // History is in reverse chronological order, so the first navigation should actually be
+        // after the second in the list
+        Assert.assertEquals("First navigation is correct", TEST_PAGE_2D_URL,
+                itemViews.get(1).getItem().getUrl());
+        Assert.assertEquals("Second navigation is correct", getUrl(Page.PAGE_2D),
+                itemViews.get(0).getItem().getUrl());
     }
 
     /**

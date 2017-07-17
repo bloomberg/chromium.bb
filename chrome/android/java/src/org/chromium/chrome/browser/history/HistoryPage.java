@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.view.View;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BasicNativePage;
 import org.chromium.chrome.browser.NativePageHost;
@@ -68,5 +69,10 @@ public class HistoryPage extends BasicNativePage {
     @Override
     public int getThemeColor() {
         return mThemeColor;
+    }
+
+    @VisibleForTesting
+    public HistoryManager getHistoryManagerForTesting() {
+        return mHistoryManager;
     }
 }
