@@ -74,7 +74,7 @@ class PLATFORM_EXPORT DeferredImageDecoder final {
   int RepetitionCount() const;
   size_t ClearCacheExceptFrame(size_t index);
   bool FrameHasAlphaAtIndex(size_t index) const;
-  bool FrameIsCompleteAtIndex(size_t index) const;
+  bool FrameIsReceivedAtIndex(size_t index) const;
   float FrameDurationAtIndex(size_t index) const;
   size_t FrameBytesAtIndex(size_t index) const;
   ImageOrientation OrientationAtIndex(size_t index) const;

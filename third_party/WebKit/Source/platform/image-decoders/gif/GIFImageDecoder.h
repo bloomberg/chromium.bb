@@ -50,7 +50,7 @@ class PLATFORM_EXPORT GIFImageDecoder final : public ImageDecoder {
   String FilenameExtension() const override { return "gif"; }
   void OnSetData(SegmentReader* data) override;
   int RepetitionCount() const override;
-  bool FrameIsCompleteAtIndex(size_t) const override;
+  bool FrameIsReceivedAtIndex(size_t) const override;
   float FrameDurationAtIndex(size_t) const override;
   // CAUTION: SetFailed() deletes |reader_|.  Be careful to avoid
   // accessing deleted memory, especially when calling this from inside

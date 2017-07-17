@@ -154,7 +154,7 @@ sk_sp<SkImage> BitmapImage::DecodeAndCacheFrame(size_t index) {
 
   frames_[index].orientation_ = source_.OrientationAtIndex(index);
   frames_[index].have_metadata_ = true;
-  frames_[index].is_complete_ = source_.FrameIsCompleteAtIndex(index);
+  frames_[index].is_complete_ = source_.FrameIsReceivedAtIndex(index);
   if (RepetitionCount(false) != kAnimationNone)
     frames_[index].duration_ = source_.FrameDurationAtIndex(index);
   frames_[index].has_alpha_ = source_.FrameHasAlphaAtIndex(index);
@@ -349,12 +349,12 @@ sk_sp<SkImage> BitmapImage::FrameAtIndex(size_t index) {
   return DecodeAndCacheFrame(index);
 }
 
-bool BitmapImage::FrameIsCompleteAtIndex(size_t index) const {
+bool BitmapImage::FrameIsReceivedAtIndex(size_t index) const {
   if (index < frames_.size() && frames_[index].have_metadata_ &&
       frames_[index].is_complete_)
     return true;
 
-  return source_.FrameIsCompleteAtIndex(index);
+  return source_.FrameIsReceivedAtIndex(index);
 }
 
 float BitmapImage::FrameDurationAtIndex(size_t index) const {
@@ -406,7 +406,7 @@ bool BitmapImage::CurrentFrameKnownToBeOpaque(MetadataMode metadata_mode) {
 }
 
 bool BitmapImage::CurrentFrameIsComplete() {
-  return FrameIsCompleteAtIndex(CurrentFrame());
+  return FrameIsReceivedAtIndex(CurrentFrame());
 }
 
 bool BitmapImage::CurrentFrameIsLazyDecoded() {
@@ -464,7 +464,7 @@ void BitmapImage::StartAnimation(CatchUpAnimation catch_up_if_necessary) {
 
   // Don't advance the animation to an incomplete frame.
   size_t next_frame = (current_frame_ + 1) % FrameCount();
-  if (!all_data_received_ && !FrameIsCompleteAtIndex(next_frame))
+  if (!all_data_received_ && !FrameIsReceivedAtIndex(next_frame))
     return;
 
   // Don't advance past the last frame if we haven't decoded the whole image
@@ -517,7 +517,7 @@ void BitmapImage::StartAnimation(CatchUpAnimation catch_up_if_necessary) {
     // case we need to skip some frames entirely.  Remember not to advance
     // to an incomplete frame.
     for (size_t frame_after_next = (next_frame + 1) % FrameCount();
-         FrameIsCompleteAtIndex(frame_after_next);
+         FrameIsReceivedAtIndex(frame_after_next);
          frame_after_next = (next_frame + 1) % FrameCount()) {
       // Should we skip the next frame?
       double frame_after_next_start_time =

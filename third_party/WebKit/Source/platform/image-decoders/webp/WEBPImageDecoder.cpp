@@ -162,11 +162,11 @@ int WEBPImageDecoder::RepetitionCount() const {
   return Failed() ? kAnimationLoopOnce : repetition_count_;
 }
 
-bool WEBPImageDecoder::FrameIsCompleteAtIndex(size_t index) const {
+bool WEBPImageDecoder::FrameIsReceivedAtIndex(size_t index) const {
   if (!demux_ || demux_state_ <= WEBP_DEMUX_PARSING_HEADER)
     return false;
   if (!(format_flags_ & ANIMATION_FLAG))
-    return ImageDecoder::FrameIsCompleteAtIndex(index);
+    return ImageDecoder::FrameIsReceivedAtIndex(index);
   bool frame_is_received_at_index = index < frame_buffer_cache_.size();
   return frame_is_received_at_index;
 }
@@ -514,7 +514,7 @@ bool WEBPImageDecoder::DecodeSingleFrame(const uint8_t* data_bytes,
       ClearDecoder();
       return true;
     case VP8_STATUS_SUSPENDED:
-      if (!IsAllDataReceived() && !FrameIsCompleteAtIndex(frame_index)) {
+      if (!IsAllDataReceived() && !FrameIsReceivedAtIndex(frame_index)) {
         ApplyPostProcessing(frame_index);
         return false;
       }

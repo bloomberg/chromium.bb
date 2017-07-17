@@ -150,11 +150,11 @@ ImageFrame* ImageDecoder::FrameBufferAtIndex(size_t index) {
 }
 
 bool ImageDecoder::FrameHasAlphaAtIndex(size_t index) const {
-  return !FrameIsCompleteAtIndex(index) ||
+  return !FrameIsReceivedAtIndex(index) ||
          frame_buffer_cache_[index].HasAlpha();
 }
 
-bool ImageDecoder::FrameIsCompleteAtIndex(size_t index) const {
+bool ImageDecoder::FrameIsReceivedAtIndex(size_t index) const {
   // Animated images override this method to return the status based on the data
   // received for the queried frame.
   return IsAllDataReceived();

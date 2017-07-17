@@ -141,8 +141,8 @@ bool ImageSource::FrameHasAlphaAtIndex(size_t index) const {
   return !decoder_ || decoder_->FrameHasAlphaAtIndex(index);
 }
 
-bool ImageSource::FrameIsCompleteAtIndex(size_t index) const {
-  return decoder_ && decoder_->FrameIsCompleteAtIndex(index);
+bool ImageSource::FrameIsReceivedAtIndex(size_t index) const {
+  return decoder_ && decoder_->FrameIsReceivedAtIndex(index);
 }
 
 size_t ImageSource::FrameBytesAtIndex(size_t index) const {

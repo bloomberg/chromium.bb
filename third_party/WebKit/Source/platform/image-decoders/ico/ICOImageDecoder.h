@@ -53,7 +53,7 @@ class PLATFORM_EXPORT ICOImageDecoder final : public ImageDecoder {
   IntSize Size() const override;
   IntSize FrameSizeAtIndex(size_t) const override;
   bool SetSize(unsigned width, unsigned height) override;
-  bool FrameIsCompleteAtIndex(size_t) const override;
+  bool FrameIsReceivedAtIndex(size_t) const override;
   // CAUTION: SetFailed() deletes all readers and decoders.  Be careful to
   // avoid accessing deleted memory, especially when calling this from
   // inside BMPImageReader!
