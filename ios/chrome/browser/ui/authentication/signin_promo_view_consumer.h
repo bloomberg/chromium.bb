@@ -20,6 +20,11 @@
             (SigninPromoViewConfigurator*)configurator
                              identityChanged:(BOOL)identityChanged;
 
+@optional
+
+// Called when the sign-in is finished.
+- (void)signinDidFinish;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_AUTHENTICATION_SIGNIN_PROMO_VIEW_CONSUMER_H_

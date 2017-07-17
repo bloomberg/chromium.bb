@@ -105,7 +105,7 @@ class PrefRegistrySyncable;
 - (void)resetFolder:(const bookmarks::BookmarkNode*)folder;
 
 // Called when something outside the view causes the promo state to change.
-- (void)promoStateChangedAnimated:(BOOL)animate;
+- (void)promoStateChangedAnimated:(BOOL)animated;
 
 @property(nonatomic, assign, readonly) bookmarks::BookmarkModel* bookmarkModel;
 @property(nonatomic, weak, readonly) id<UrlLoader> loader;
