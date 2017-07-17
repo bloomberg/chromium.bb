@@ -5,27 +5,25 @@
 package org.chromium.chrome.browser.webapps;
 
 import android.content.Intent;
-import android.support.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.Config;
 
-import org.chromium.base.test.util.Feature;
 import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.ShortcutSource;
-import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.common.ScreenOrientationValues;
+import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 /**
  * Tests the WebappInfo class's ability to parse various URLs.
  */
-@RunWith(ChromeJUnit4ClassRunner.class)
+@RunWith(LocalRobolectricTestRunner.class)
+@Config(manifest = Config.NONE)
 public class WebappInfoTest {
     @Test
-    @SmallTest
-    @Feature({"Webapps"})
     public void testAbout() {
         String id = "webapp id";
         String name = "longName";
@@ -40,8 +38,6 @@ public class WebappInfoTest {
     }
 
     @Test
-    @SmallTest
-    @Feature({"Webapps"})
     public void testRandomUrl() {
         String id = "webapp id";
         String name = "longName";
@@ -56,8 +52,6 @@ public class WebappInfoTest {
     }
 
     @Test
-    @SmallTest
-    @Feature({"Webapps"})
     public void testSpacesInUrl() {
         String id = "webapp id";
         String name = "longName";
@@ -75,8 +69,6 @@ public class WebappInfoTest {
     }
 
     @Test
-    @SmallTest
-    @Feature({"Webapps"})
     public void testIntentTitleFallBack() {
         String title = "webapp title";
 
@@ -89,8 +81,6 @@ public class WebappInfoTest {
     }
 
     @Test
-    @SmallTest
-    @Feature({"Webapps"})
     public void testIntentNameBlankNoTitle() {
         String shortName = "name";
 
@@ -103,8 +93,6 @@ public class WebappInfoTest {
     }
 
     @Test
-    @SmallTest
-    @Feature({"Webapps"})
     public void testIntentShortNameFallBack() {
         String title = "webapp title";
         String shortName = "name";
@@ -119,8 +107,6 @@ public class WebappInfoTest {
     }
 
     @Test
-    @SmallTest
-    @Feature({"Webapps"})
     public void testIntentNameShortname() {
         String name = "longName";
         String shortName = "name";
@@ -135,8 +121,6 @@ public class WebappInfoTest {
     }
 
     @Test
-    @SmallTest
-    @Feature({"Webapps"})
     public void testDisplayModeAndOrientationAndSource() {
         String id = "webapp id";
         String name = "longName";
@@ -153,8 +137,6 @@ public class WebappInfoTest {
     }
 
     @Test
-    @SmallTest
-    @Feature({"Webapps"})
     public void testNormalColors() {
         String id = "webapp id";
         String name = "longName";
@@ -171,8 +153,6 @@ public class WebappInfoTest {
     }
 
     @Test
-    @SmallTest
-    @Feature({"Webapps"})
     public void testInvalidOrMissingColors() {
         String id = "webapp id";
         String name = "longName";
@@ -189,8 +169,6 @@ public class WebappInfoTest {
     }
 
     @Test
-    @SmallTest
-    @Feature({"Webapps"})
     public void testColorsIntentCreation() {
         long themeColor = 0xFF00FF00L;
         long backgroundColor = 0xFF0000FFL;
@@ -205,8 +183,6 @@ public class WebappInfoTest {
     }
 
     @Test
-    @SmallTest
-    @Feature({"Webapps"})
     public void testScopeIntentCreation() {
         String scope = "https://www.foo.com";
         Intent intent = createIntentWithUrlAndId();
@@ -216,8 +192,6 @@ public class WebappInfoTest {
     }
 
     @Test
-    @SmallTest
-    @Feature({"Webapps"})
     public void testIntentScopeFallback() {
         String url = "https://www.foo.com/homepage.html";
         Intent intent = createIntentWithUrlAndId();
@@ -227,8 +201,6 @@ public class WebappInfoTest {
     }
 
     @Test
-    @SmallTest
-    @Feature({"Webapps"})
     public void testIntentDisplayMode() {
         Intent intent = createIntentWithUrlAndId();
         intent.putExtra(ShortcutHelper.EXTRA_DISPLAY_MODE, WebDisplayMode.MINIMAL_UI);
@@ -237,8 +209,6 @@ public class WebappInfoTest {
     }
 
     @Test
-    @SmallTest
-    @Feature({"Webapps"})
     public void testIntentOrientation() {
         Intent intent = createIntentWithUrlAndId();
         intent.putExtra(ShortcutHelper.EXTRA_ORIENTATION, ScreenOrientationValues.LANDSCAPE);
@@ -247,8 +217,6 @@ public class WebappInfoTest {
     }
 
     @Test
-    @SmallTest
-    @Feature({"Webapps"})
     public void testIntentGeneratedIcon() {
         String id = "webapp id";
         String name = "longName";
