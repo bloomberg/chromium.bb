@@ -11831,11 +11831,13 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "android_devices": "4",
+              "android_devices": "1",
+              "device_os": "MMB29Q",
               "device_type": "bullhead"
             }
           ],
-          "hard_timeout": 960
+          "hard_timeout": 960,
+          "shards": 6
         },
         "test": "content_browsertests"
       },
@@ -11849,11 +11851,13 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "android_devices": "4",
+              "android_devices": "1",
+              "device_os": "MMB29Q",
               "device_type": "bullhead"
             }
           ],
-          "hard_timeout": 960
+          "hard_timeout": 960,
+          "shards": 6
         },
         "test": "content_browsertests"
       },
@@ -11862,7 +11866,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "android_devices": "4",
+              "android_devices": "1",
+              "device_os": "MMB29Q",
               "device_type": "bullhead"
             }
           ]
@@ -11878,10 +11883,12 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "android_devices": "4",
+              "android_devices": "1",
+              "device_os": "MMB29Q",
               "device_type": "bullhead"
             }
-          ]
+          ],
+          "hard_timeout": 960
         },
         "test": "content_unittests"
       },
@@ -11894,10 +11901,12 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "android_devices": "4",
+              "android_devices": "1",
+              "device_os": "MMB29Q",
               "device_type": "bullhead"
             }
-          ]
+          ],
+          "hard_timeout": 960
         },
         "test": "components_browsertests"
       },
@@ -11910,10 +11919,12 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "android_devices": "4",
+              "android_devices": "1",
+              "device_os": "MMB29Q",
               "device_type": "bullhead"
             }
-          ]
+          ],
+          "hard_timeout": 960
         },
         "test": "components_unittests"
       }
