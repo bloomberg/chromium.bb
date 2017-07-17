@@ -5,6 +5,7 @@
 #include "chrome/browser/themes/theme_service.h"
 
 #include "base/macros.h"
+#include "base/task_scheduler/task_scheduler.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -100,7 +101,7 @@ IN_PROC_BROWSER_TEST_F(ThemeServiceBrowserTest, ThemeDataPackInvalid) {
             theme_provider.GetColor(ThemeProperties::COLOR_TOOLBAR));
 
   // TODO(estade): remove when vestigial .pak file deletion is removed.
-  content::BrowserThread::GetBlockingPool()->FlushForTesting();
+  base::TaskScheduler::GetInstance()->FlushForTesting();
   base::FilePath old_path =
       browser()
           ->profile()

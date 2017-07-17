@@ -10,7 +10,6 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_reader.h"
 #include "base/path_service.h"
-#include "base/synchronization/waitable_event.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/themes/theme_properties.h"
@@ -35,9 +34,7 @@ typedef std::map<int, TestScaleFactorToFileMap> TestFilePathMap;
 
 class BrowserThemePackTest : public ::testing::Test {
  public:
-  BrowserThemePackTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD),
-        theme_pack_(new BrowserThemePack()) {
+  BrowserThemePackTest() : theme_pack_(new BrowserThemePack()) {
     std::vector<ui::ScaleFactor> scale_factors;
     scale_factors.push_back(ui::SCALE_FACTOR_100P);
     scale_factors.push_back(ui::SCALE_FACTOR_200P);
@@ -152,14 +149,20 @@ class BrowserThemePackTest : public ::testing::Test {
   // The BrowserThemePack is returned in |pack|.
   void BuildFromUnpackedExtension(const base::FilePath& extension_path,
                                   scoped_refptr<BrowserThemePack>* pack) {
-    io_waiter_.reset(new base::WaitableEvent(
-        base::WaitableEvent::ResetPolicy::AUTOMATIC,
-        base::WaitableEvent::InitialState::NOT_SIGNALED));
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE,
-        base::Bind(&BrowserThemePackTest::DoBuildFromUnpackedExtension,
-                   base::Unretained(this), extension_path, pack));
-    io_waiter_->Wait();
+    base::FilePath manifest_path = extension_path.AppendASCII("manifest.json");
+    std::string error;
+    JSONFileValueDeserializer deserializer(manifest_path);
+    std::unique_ptr<base::DictionaryValue> valid_value =
+        base::DictionaryValue::From(deserializer.Deserialize(NULL, &error));
+    EXPECT_EQ("", error);
+    ASSERT_TRUE(valid_value.get());
+    scoped_refptr<Extension> extension(Extension::Create(
+        extension_path, extensions::Manifest::INVALID_LOCATION, *valid_value,
+        Extension::REQUIRE_KEY, &error));
+    ASSERT_TRUE(extension.get());
+    ASSERT_EQ("", error);
+    *pack = new BrowserThemePack;
+    BrowserThemePack::BuildFromExtension(extension.get(), *pack);
     ASSERT_TRUE((*pack)->is_valid());
   }
 
@@ -344,28 +347,8 @@ class BrowserThemePackTest : public ::testing::Test {
       ScopedSetSupportedScaleFactors;
   ScopedSetSupportedScaleFactors scoped_set_supported_scale_factors_;
 
-  void DoBuildFromUnpackedExtension(const base::FilePath& extension_path,
-                                    scoped_refptr<BrowserThemePack>* pack) {
-    base::FilePath manifest_path = extension_path.AppendASCII("manifest.json");
-    std::string error;
-    JSONFileValueDeserializer deserializer(manifest_path);
-    std::unique_ptr<base::DictionaryValue> valid_value =
-        base::DictionaryValue::From(deserializer.Deserialize(NULL, &error));
-    EXPECT_EQ("", error);
-    ASSERT_TRUE(valid_value.get());
-    scoped_refptr<Extension> extension(Extension::Create(
-        extension_path, extensions::Manifest::INVALID_LOCATION, *valid_value,
-        Extension::REQUIRE_KEY, &error));
-    ASSERT_TRUE(extension.get());
-    ASSERT_EQ("", error);
-    *pack = new BrowserThemePack;
-    BrowserThemePack::BuildFromExtension(extension.get(), *pack);
-    io_waiter_->Signal();
-  }
-
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_refptr<BrowserThemePack> theme_pack_;
-  std::unique_ptr<base::WaitableEvent> io_waiter_;
 };
 
 // 'ntp_section' used to correspond to ThemeProperties::COLOR_NTP_SECTION,
