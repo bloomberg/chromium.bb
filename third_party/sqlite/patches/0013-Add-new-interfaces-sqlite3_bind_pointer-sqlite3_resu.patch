@@ -1,0 +1,420 @@
+From 3dac6f0ce5313f60acc6b7abca1d431001ad0187 Mon Sep 17 00:00:00 2001
+From: Victor Costan <pwnall@chromium.org>
+Date: Sat, 15 Jul 2017 12:30:42 -0700
+Subject: [PATCH 13/13] Add new interfaces sqlite3_bind_pointer(),
+ sqlite3_result_pointer(), and sqlite3_value_pointer() used to safely move
+ pointer values through SQL without exposing underlying memory address
+ information.
+
+---
+ third_party/sqlite/src/ext/fts3/fts3.c     | 13 +++------
+ third_party/sqlite/src/ext/misc/carray.c   | 46 ++++++++++++++++++++++++++----
+ third_party/sqlite/src/ext/misc/remember.c |  6 ++--
+ third_party/sqlite/src/src/sqlite.h.in     | 29 ++++++++++++++++---
+ third_party/sqlite/src/src/vdbeInt.h       |  2 ++
+ third_party/sqlite/src/src/vdbeapi.c       | 24 ++++++++++++++++
+ third_party/sqlite/src/src/vdbemem.c       | 11 +++++++
+ third_party/sqlite/src/test/tabfunc01.test | 25 ++++++++--------
+ 8 files changed, 122 insertions(+), 34 deletions(-)
+
+diff --git a/third_party/sqlite/src/ext/fts3/fts3.c b/third_party/sqlite/src/ext/fts3/fts3.c
+index 827769881616..5d2f21d2937f 100644
+--- a/third_party/sqlite/src/ext/fts3/fts3.c
++++ b/third_party/sqlite/src/ext/fts3/fts3.c
+@@ -3347,9 +3347,8 @@ static int fts3ColumnMethod(
+     sqlite3_result_int64(pCtx, pCsr->iPrevId);
+   }else if( iCol==p->nColumn ){
+     /* The extra column whose name is the same as the table.
+-    ** Return a blob which is a pointer to the cursor.  */
+-    sqlite3_result_blob(pCtx, &pCsr, sizeof(pCsr), SQLITE_TRANSIENT);
+-    sqlite3_result_subtype(pCtx, '3');
++    ** Return a pointer to the cursor.  */
++    sqlite3_result_pointer(pCtx, pCsr);
+   }else if( iCol==p->nColumn+2 && pCsr->pExpr ){
+     sqlite3_result_int64(pCtx, pCsr->iLangid);
+   }else{
+@@ -3561,17 +3560,13 @@ static int fts3FunctionArg(
+   sqlite3_value *pVal,            /* argv[0] passed to function */
+   Fts3Cursor **ppCsr              /* OUT: Store cursor handle here */
+ ){
+-  Fts3Cursor *pRet;
+-  if( sqlite3_value_type(pVal)!=SQLITE_BLOB
+-   || sqlite3_value_subtype(pVal)!='3'
+-   || sqlite3_value_bytes(pVal)!=sizeof(Fts3Cursor *)
+-  ){
++  Fts3Cursor *pRet = (Fts3Cursor*)sqlite3_value_pointer(pVal);
++  if( pRet==0 ){
+     char *zErr = sqlite3_mprintf("illegal first argument to %s", zFunc);
+     sqlite3_result_error(pContext, zErr, -1);
+     sqlite3_free(zErr);
+     return SQLITE_ERROR;
+   }
+-  memcpy(&pRet, sqlite3_value_blob(pVal), sizeof(Fts3Cursor *));
+   *ppCsr = pRet;
+   return SQLITE_OK;
+ }
+diff --git a/third_party/sqlite/src/ext/misc/carray.c b/third_party/sqlite/src/ext/misc/carray.c
+index 025eb5db2c0e..2fdff0cd3afc 100644
+--- a/third_party/sqlite/src/ext/misc/carray.c
++++ b/third_party/sqlite/src/ext/misc/carray.c
+@@ -73,7 +73,7 @@ typedef struct carray_cursor carray_cursor;
+ struct carray_cursor {
+   sqlite3_vtab_cursor base;  /* Base class - must be first */
+   sqlite3_int64 iRowid;      /* The rowid */
+-  sqlite3_int64 iPtr;        /* Pointer to array of values */
++  void* pPtr;                /* Pointer to the array of values */
+   sqlite3_int64 iCnt;        /* Number of integers in the array */
+   unsigned char eType;       /* One of the CARRAY_type values */
+ };
+@@ -167,7 +167,7 @@ static int carrayColumn(
+   carray_cursor *pCur = (carray_cursor*)cur;
+   sqlite3_int64 x = 0;
+   switch( i ){
+-    case CARRAY_COLUMN_POINTER:   x = pCur->iPtr;   break;
++    case CARRAY_COLUMN_POINTER:   return SQLITE_OK;
+     case CARRAY_COLUMN_COUNT:     x = pCur->iCnt;   break;
+     case CARRAY_COLUMN_CTYPE: {
+       sqlite3_result_text(ctx, azType[pCur->eType], -1, SQLITE_STATIC);
+@@ -232,8 +232,8 @@ static int carrayFilter(
+ ){
+   carray_cursor *pCur = (carray_cursor *)pVtabCursor;
+   if( idxNum ){
+-    pCur->iPtr = sqlite3_value_int64(argv[0]);
+-    pCur->iCnt = sqlite3_value_int64(argv[1]);
++    pCur->pPtr = sqlite3_value_pointer(argv[0]);
++    pCur->iCnt = pCur->pPtr ? sqlite3_value_int64(argv[1]) : 0;
+     if( idxNum<3 ){
+       pCur->eType = CARRAY_INT32;
+     }else{
+@@ -251,7 +251,7 @@ static int carrayFilter(
+       }
+     }
+   }else{
+-    pCur->iPtr = 0;
++    pCur->pPtr = 0;
+     pCur->iCnt = 0;
+   }
+   pCur->iRowid = 1;
+@@ -345,6 +345,34 @@ static sqlite3_module carrayModule = {
+   0,                         /* xRename */
+ };
+
++/*
++** For testing purpose in the TCL test harness, we need a method for
++** setting the pointer value.  The inttoptr(X) SQL function accomplishes
++** this.  Tcl script will bind an integer to X and the inttoptr() SQL
++** function will use sqlite3_result_pointer() to convert that integer into
++** a pointer.
++**
++** This is for testing on TCL only.
++*/
++#ifdef SQLITE_TEST
++static void inttoptrFunc(
++  sqlite3_context *context,
++  int argc,
++  sqlite3_value **argv
++){
++  void *p;
++  sqlite3_int64 i64;
++  i64 = sqlite3_value_int64(argv[0]);
++  if( sizeof(i64)==sizeof(p) ){
++    memcpy(&p, &i64, sizeof(p));
++  }else{
++    int i32 = i64 & 0xffffffff;
++    memcpy(&p, &i32, sizeof(p));
++  }
++  sqlite3_result_pointer(context, p);
++}
++#endif /* SQLITE_TEST */
++
+ #endif /* SQLITE_OMIT_VIRTUALTABLE */
+
+ #ifdef _WIN32
+@@ -359,6 +387,12 @@ int sqlite3_carray_init(
+   SQLITE_EXTENSION_INIT2(pApi);
+ #ifndef SQLITE_OMIT_VIRTUALTABLE
+   rc = sqlite3_create_module(db, "carray", &carrayModule, 0);
+-#endif
++#ifdef SQLITE_TEST
++  if( rc==SQLITE_OK ){
++    rc = sqlite3_create_function(db, "inttoptr", 1, SQLITE_UTF8, 0,
++                                 inttoptrFunc, 0, 0);
++  }
++#endif /* SQLITE_TEST */
++#endif /* SQLITE_OMIT_VIRTUALTABLE */
+   return rc;
+ }
+diff --git a/third_party/sqlite/src/ext/misc/remember.c b/third_party/sqlite/src/ext/misc/remember.c
+index aa3eff8a3f8b..587d44a12cdc 100644
+--- a/third_party/sqlite/src/ext/misc/remember.c
++++ b/third_party/sqlite/src/ext/misc/remember.c
+@@ -44,11 +44,11 @@ static void rememberFunc(
+   sqlite3_value **argv
+ ){
+   sqlite3_int64 v;
+-  sqlite3_int64 ptr;
++  sqlite3_int64 *ptr;
+   assert( argc==2 );
+   v = sqlite3_value_int64(argv[0]);
+-  ptr = sqlite3_value_int64(argv[1]);
+-  *((sqlite3_int64*)ptr) = v;
++  ptr = sqlite3_value_pointer(argv[1]);
++  if( ptr ) *ptr = v;
+   sqlite3_result_int64(pCtx, v);
+ }
+
+diff --git a/third_party/sqlite/src/src/sqlite.h.in b/third_party/sqlite/src/src/sqlite.h.in
+index fbbf4b9f2db3..371ae5848bbc 100644
+--- a/third_party/sqlite/src/src/sqlite.h.in
++++ b/third_party/sqlite/src/src/sqlite.h.in
+@@ -3786,6 +3786,15 @@ typedef struct sqlite3_context sqlite3_context;
+ ** [sqlite3_blob_open | incremental BLOB I/O] routines.
+ ** ^A negative value for the zeroblob results in a zero-length BLOB.
+ **
++** ^The sqlite3_bind_pointer(S,I,P) routine causes the I-th parameter in
++** [prepared statement] S to have an SQL value of NULL, but to also be
++** associated with the pointer P.
++** ^The sqlite3_bind_pointer() routine can be used to pass
++** host-language pointers into [application-defined SQL functions].
++** ^A parameter that is initialized using [sqlite3_bind_pointer()] appears
++** to be an ordinary SQL NULL value to everything other than
++** [sqlite3_value_pointer()].
++**
+ ** ^If any of the sqlite3_bind_*() routines are called with a NULL pointer
+ ** for the [prepared statement] or with a prepared statement for which
+ ** [sqlite3_step()] has been called more recently than [sqlite3_reset()],
+@@ -3819,6 +3828,7 @@ int sqlite3_bind_text16(sqlite3_stmt*, int, const void*, int, void(*)(void*));
+ int sqlite3_bind_text64(sqlite3_stmt*, int, const char*, sqlite3_uint64,
+                          void(*)(void*), unsigned char encoding);
+ int sqlite3_bind_value(sqlite3_stmt*, int, const sqlite3_value*);
++int sqlite3_bind_pointer(sqlite3_stmt*, int, void*);
+ int sqlite3_bind_zeroblob(sqlite3_stmt*, int, int n);
+ int sqlite3_bind_zeroblob64(sqlite3_stmt*, int, sqlite3_uint64);
+
+@@ -4588,6 +4598,11 @@ SQLITE_DEPRECATED int sqlite3_memory_alarm(void(*)(void*,sqlite3_int64,int),
+ ** sqlite3_value_text16be() and sqlite3_value_text16le() interfaces
+ ** extract UTF-16 strings as big-endian and little-endian respectively.
+ **
++** ^If [sqlite3_value] object V was initialized
++** using [sqlite3_bind_pointer(S,I,P)] or [sqlite3_result_pointer(C,P)], then
++** sqlite3_value_pointer(V) will return the pointer P.  Otherwise,
++** sqlite3_value_pointer(V) returns a NULL.
++**
+ ** ^(The sqlite3_value_numeric_type() interface attempts to apply
+ ** numeric affinity to the value.  This means that an attempt is
+ ** made to convert the value to an integer or floating point.  If
+@@ -4615,6 +4630,7 @@ const unsigned char *sqlite3_value_text(sqlite3_value*);
+ const void *sqlite3_value_text16(sqlite3_value*);
+ const void *sqlite3_value_text16le(sqlite3_value*);
+ const void *sqlite3_value_text16be(sqlite3_value*);
++void *sqlite3_value_pointer(sqlite3_value*);
+ int sqlite3_value_type(sqlite3_value*);
+ int sqlite3_value_numeric_type(sqlite3_value*);
+
+@@ -4627,10 +4643,6 @@ int sqlite3_value_numeric_type(sqlite3_value*);
+ ** information can be used to pass a limited amount of context from
+ ** one SQL function to another.  Use the [sqlite3_result_subtype()]
+ ** routine to set the subtype for the return value of an SQL function.
+-**
+-** SQLite makes no use of subtype itself.  It merely passes the subtype
+-** from the result of one [application-defined SQL function] into the
+-** input of another.
+ */
+ unsigned int sqlite3_value_subtype(sqlite3_value*);
+
+@@ -4908,6 +4920,14 @@ typedef void (*sqlite3_destructor_type)(void*);
+ ** [unprotected sqlite3_value] object is required, so either
+ ** kind of [sqlite3_value] object can be used with this interface.
+ **
++** ^The sqlite3_result_pointer(C,P) interface sets the result to an
++** SQL NULL value, just like [sqlite3_result_null(C)], except that it
++** also associates the host-language pointer P with that NULL value such
++** that the pointer can be retrieved within an
++** [application-defined SQL function] using [sqlite3_value_pointer()].
++** This mechanism can be used to pass non-SQL values between
++** application-defined functions.
++**
+ ** If these routines are called from within the different thread
+ ** than the one containing the application-defined function that received
+ ** the [sqlite3_context] pointer, the results are undefined.
+@@ -4931,6 +4951,7 @@ void sqlite3_result_text16(sqlite3_context*, const void*, int, void(*)(void*));
+ void sqlite3_result_text16le(sqlite3_context*, const void*, int,void(*)(void*));
+ void sqlite3_result_text16be(sqlite3_context*, const void*, int,void(*)(void*));
+ void sqlite3_result_value(sqlite3_context*, sqlite3_value*);
++void sqlite3_result_pointer(sqlite3_context*, void*);
+ void sqlite3_result_zeroblob(sqlite3_context*, int n);
+ int sqlite3_result_zeroblob64(sqlite3_context*, sqlite3_uint64 n);
+
+diff --git a/third_party/sqlite/src/src/vdbeInt.h b/third_party/sqlite/src/src/vdbeInt.h
+index 989cdfd34617..69eab56bc578 100644
+--- a/third_party/sqlite/src/src/vdbeInt.h
++++ b/third_party/sqlite/src/src/vdbeInt.h
+@@ -189,6 +189,7 @@ struct Mem {
+     double r;           /* Real value used when MEM_Real is set in flags */
+     i64 i;              /* Integer value used when MEM_Int is set in flags */
+     int nZero;          /* Used when bit MEM_Zero is set in flags */
++    void *pPtr;         /* Pointer when flags=MEM_NULL and eSubtype='p' */
+     FuncDef *pDef;      /* Used only when flags==MEM_Agg */
+     RowSet *pRowSet;    /* Used only when flags==MEM_RowSet */
+     VdbeFrame *pFrame;  /* Used when flags==MEM_Frame */
+@@ -474,6 +475,7 @@ void sqlite3VdbeMemSetInt64(Mem*, i64);
+ #else
+   void sqlite3VdbeMemSetDouble(Mem*, double);
+ #endif
++void sqlite3VdbeMemSetPointer(Mem*, void*);
+ void sqlite3VdbeMemInit(Mem*,sqlite3*,u16);
+ void sqlite3VdbeMemSetNull(Mem*);
+ void sqlite3VdbeMemSetZeroBlob(Mem*,int);
+diff --git a/third_party/sqlite/src/src/vdbeapi.c b/third_party/sqlite/src/src/vdbeapi.c
+index 6eb97f1d1ddb..c54490c077cd 100644
+--- a/third_party/sqlite/src/src/vdbeapi.c
++++ b/third_party/sqlite/src/src/vdbeapi.c
+@@ -198,6 +198,14 @@ unsigned int sqlite3_value_subtype(sqlite3_value *pVal){
+   Mem *pMem = (Mem*)pVal;
+   return ((pMem->flags & MEM_Subtype) ? pMem->eSubtype : 0);
+ }
++void *sqlite3_value_pointer(sqlite3_value *pVal){
++  Mem *p = (Mem*)pVal;
++  if( (p->flags & MEM_TypeMask)==(MEM_Null|MEM_Subtype) && p->eSubtype=='p' ){
++    return p->u.pPtr;
++  }else{
++    return 0;
++  }
++}
+ const unsigned char *sqlite3_value_text(sqlite3_value *pVal){
+   return (const unsigned char *)sqlite3ValueText(pVal, SQLITE_UTF8);
+ }
+@@ -376,6 +384,12 @@ void sqlite3_result_null(sqlite3_context *pCtx){
+   assert( sqlite3_mutex_held(pCtx->pOut->db->mutex) );
+   sqlite3VdbeMemSetNull(pCtx->pOut);
+ }
++void sqlite3_result_pointer(sqlite3_context *pCtx, void *pPtr){
++  Mem *pOut = pCtx->pOut;
++  assert( sqlite3_mutex_held(pOut->db->mutex) );
++  sqlite3VdbeMemSetNull(pOut);
++  sqlite3VdbeMemSetPointer(pOut, pPtr);
++}
+ void sqlite3_result_subtype(sqlite3_context *pCtx, unsigned int eSubtype){
+   Mem *pOut = pCtx->pOut;
+   assert( sqlite3_mutex_held(pOut->db->mutex) );
+@@ -1361,6 +1375,16 @@ int sqlite3_bind_null(sqlite3_stmt *pStmt, int i){
+   }
+   return rc;
+ }
++int sqlite3_bind_pointer(sqlite3_stmt *pStmt, int i, void *pPtr){
++  int rc;
++  Vdbe *p = (Vdbe*)pStmt;
++  rc = vdbeUnbind(p, i);
++  if( rc==SQLITE_OK ){
++    sqlite3VdbeMemSetPointer(&p->aVar[i-1], pPtr);
++    sqlite3_mutex_leave(p->db->mutex);
++  }
++  return rc;
++}
+ int sqlite3_bind_text(
+   sqlite3_stmt *pStmt,
+   int i,
+diff --git a/third_party/sqlite/src/src/vdbemem.c b/third_party/sqlite/src/src/vdbemem.c
+index 656e19bfa890..2f7aedb32171 100644
+--- a/third_party/sqlite/src/src/vdbemem.c
++++ b/third_party/sqlite/src/src/vdbemem.c
+@@ -697,6 +697,17 @@ void sqlite3VdbeMemSetInt64(Mem *pMem, i64 val){
+   }
+ }
+
++/*
++** Set the value stored in *pMem should already be a NULL.
++** Also store a pointer to go with it.
++*/
++void sqlite3VdbeMemSetPointer(Mem *pMem, void *pPtr){
++  assert( pMem->flags==MEM_Null );
++  pMem->flags = MEM_Null|MEM_Subtype;
++  pMem->u.pPtr = pPtr;
++  pMem->eSubtype = 'p';
++}
++
+ #ifndef SQLITE_OMIT_FLOATING_POINT
+ /*
+ ** Delete any previous value and set the value stored in *pMem to val,
+diff --git a/third_party/sqlite/src/test/tabfunc01.test b/third_party/sqlite/src/test/tabfunc01.test
+index dcaafa420c25..bb89aec1e706 100644
+--- a/third_party/sqlite/src/test/tabfunc01.test
++++ b/third_party/sqlite/src/test/tabfunc01.test
+@@ -150,62 +150,63 @@ do_execsql_test tabfunc01-600 {
+ do_test tabfunc01-700 {
+   set PTR1 [intarray_addr 5 7 13 17 23]
+   db eval {
+-    SELECT b FROM t600, carray($PTR1,5) WHERE a=value;
++    SELECT b FROM t600, carray(inttoptr($PTR1),5) WHERE a=value;
+   }
+ } {(005) (007) (013) (017) (023)}
+ do_test tabfunc01-701 {
+   db eval {
+-    SELECT b FROM t600 WHERE a IN carray($PTR1,5,'int32');
++    SELECT b FROM t600 WHERE a IN carray(inttoptr($PTR1),5,'int32');
+   }
+ } {(005) (007) (013) (017) (023)}
+ do_test tabfunc01-702 {
+   db eval {
+-    SELECT b FROM t600 WHERE a IN carray($PTR1,4,'int32');
++    SELECT b FROM t600 WHERE a IN carray(inttoptr($PTR1),4,'int32');
+   }
+ } {(005) (007) (013) (017)}
+ do_catchsql_test tabfunc01-710 {
+-  SELECT b FROM t600 WHERE a IN carray($PTR1,5,'int33');
++  SELECT b FROM t600 WHERE a IN carray(inttoptr($PTR1),5,'int33');
+ } {1 {unknown datatype: 'int33'}}
+
+ do_test tabfunc01-720 {
+   set PTR2 [int64array_addr 5 7 13 17 23]
+   db eval {
+-    SELECT b FROM t600, carray($PTR2,5,'int64') WHERE a=value;
++    SELECT b FROM t600, carray(inttoptr($PTR2),5,'int64') WHERE a=value;
+   }
+ } {(005) (007) (013) (017) (023)}
+ do_test tabfunc01-721 {
+   db eval {
+     SELECT remember(123,$PTR2);
+-    SELECT value FROM carray($PTR2,5,'int64');
++    SELECT value FROM carray(inttoptr($PTR2),5,'int64');
+   }
+ } {123 123 7 13 17 23}
+ do_test tabfunc01-722 {
+   set PTR3 [expr {$PTR2+16}]
+   db eval {
+-    SELECT remember(987,$PTR3);
+-    SELECT value FROM carray($PTR2,5,'int64');
++    SELECT remember(987,inttoptr($PTR3));
++    SELECT value FROM carray(inttoptr($PTR2),5,'int64');
+   }
+ } {987 123 7 987 17 23}
+
+ do_test tabfunc01-730 {
+   set PTR4 [doublearray_addr 5.0 7.0 13.0 17.0 23.0]
+   db eval {
+-    SELECT b FROM t600, carray($PTR4,5,'double') WHERE a=value;
++    SELECT b FROM t600, carray(inttoptr($PTR4),5,'double') WHERE a=value;
+   }
+ } {(005) (007) (013) (017) (023)}
+
+ do_test tabfunc01-740 {
+   set PTR5 [textarray_addr x5 x7 x13 x17 x23]
+   db eval {
+-    SELECT b FROM t600, carray($PTR5,5,'char*') WHERE a=trim(value,'x');
++    SELECT b FROM t600, carray(inttoptr($PTR5),5,'char*')
++     WHERE a=trim(value,'x');
+   }
+ } {(005) (007) (013) (017) (023)}
+
+ do_test tabfunc01-750 {
+   db eval {
+     SELECT aa.value, bb.value, '|'
+-      FROM carray($PTR4,5,'double') AS aa
+-      JOIN carray($PTR5,5,'char*') AS bb ON aa.rowid=bb.rowid;
++      FROM carray(inttoptr($PTR4),5,'double') AS aa
++      JOIN carray(inttoptr($PTR5),5,'char*') AS bb ON aa.rowid=bb.rowid;
+   }
+ } {5.0 x5 | 7.0 x7 | 13.0 x13 | 17.0 x17 | 23.0 x23 |}
+
+--
+2.11
