@@ -849,6 +849,15 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         mAutopresentWebVr = true;
     }
 
+    private void onAutopresentUnsupported() {
+        // Auto-presentation is unsupported, but we still need to remove the black overlay before we
+        // exit to Daydream so that the user doesn't see black when they come back to Chrome. The
+        // overlay will be removed when we get paused by Daydream.
+        assert !mInVr;
+        mNeedsAnimationCancel = false;
+        mVrDaydreamApi.launchVrHomescreen();
+    }
+
     private void onVrIntent() {
         // We assume that when we get a VR intent, we're in the headset.
         mNeedsAnimationCancel = true;
@@ -862,9 +871,13 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         VrShellDelegate instance = getInstance(activity);
         if (instance == null) return;
         instance.onVrIntent();
-        if (isTrustedDaydreamIntent(intent)
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.WEBVR_AUTOPRESENT)
-                && activitySupportsAutopresentation(activity)) {
+        if (isTrustedDaydreamIntent(intent)) {
+            if (!ChromeFeatureList.isEnabled(ChromeFeatureList.WEBVR_AUTOPRESENT)
+                    || !activitySupportsPresentation(activity)
+                    || !isVrShellEnabled(instance.mVrSupportLevel)) {
+                instance.onAutopresentUnsupported();
+                return;
+            }
             instance.onAutopresentIntent();
         }
     }
@@ -900,7 +913,8 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
      * @return Whether or not the given intent is a VR-specific intent.
      */
     public static boolean isVrIntent(Intent intent) {
-        return IntentUtils.safeGetBooleanExtra(intent, DAYDREAM_VR_EXTRA, false);
+        // For simplicity, we only return true here if VR is enabled on the platform.
+        return IntentUtils.safeGetBooleanExtra(intent, DAYDREAM_VR_EXTRA, false) && isVrEnabled();
     }
 
     /*
@@ -1101,6 +1115,8 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
 
         if (mInVr) mVSyncEstimator.pause();
 
+        // TODO(ymalik): We should be able to remove this if we handle it for multi-window in
+        // {@link onMultiWindowModeChanged} since we're calling it in onStop.
         if (!mInVr) cancelPendingVrEntry();
 
         // When the active web page has a vrdisplayactivate event handler,
