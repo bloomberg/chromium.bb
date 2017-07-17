@@ -46,8 +46,9 @@ bool MetricsServiceAccessor::RegisterSyntheticMultiGroupFieldTrial(
   if (!metrics_service)
     return false;
 
-  metrics_service->RegisterSyntheticMultiGroupFieldTrial(HashName(trial_name),
-                                                         group_name_hashes);
+  metrics_service->synthetic_trial_registry()
+      ->RegisterSyntheticMultiGroupFieldTrial(HashName(trial_name),
+                                              group_name_hashes);
   return true;
 }
 
@@ -69,7 +70,8 @@ bool MetricsServiceAccessor::RegisterSyntheticFieldTrialWithNameAndGroupHash(
     return false;
 
   variations::SyntheticTrialGroup trial_group(trial_name_hash, group_name_hash);
-  metrics_service->RegisterSyntheticFieldTrial(trial_group);
+  metrics_service->synthetic_trial_registry()->RegisterSyntheticFieldTrial(
+      trial_group);
   return true;
 }
 
