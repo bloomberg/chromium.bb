@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
@@ -11,17 +12,20 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/network_session_configurator/common/network_switches.h"
 #include "components/url_formatter/url_formatter.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "google_apis/gaia/gaia_switches.h"
 #include "net/dns/mock_host_resolver.h"
 
 class ChromeNavigationBrowserTest : public InProcessBrowserTest {
@@ -435,4 +439,71 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
   EXPECT_TRUE(navigation_observer.has_committed());
   EXPECT_FALSE(navigation_observer.was_same_document());
   EXPECT_FALSE(navigation_observer.was_renderer_initiated());
+}
+
+class SignInIsolationBrowserTest : public ChromeNavigationBrowserTest {
+ public:
+  SignInIsolationBrowserTest()
+      : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
+  ~SignInIsolationBrowserTest() override {}
+
+  void SetUp() override {
+    feature_list_.InitAndEnableFeature(features::kSignInProcessIsolation);
+    https_server_.ServeFilesFromSourceDirectory("chrome/test/data");
+    ASSERT_TRUE(https_server_.InitializeAndListen());
+    ChromeNavigationBrowserTest::SetUp();
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // Override the sign-in URL so that it includes correct port from the test
+    // server.
+    command_line->AppendSwitchASCII(
+        ::switches::kGaiaUrl,
+        https_server()->GetURL("accounts.google.com", "/").spec());
+
+    // Ignore cert errors so that the sign-in URL can be loaded from a site
+    // other than localhost (the EmbeddedTestServer serves a certificate that
+    // is valid for localhost).
+    command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
+
+    ChromeNavigationBrowserTest::SetUpCommandLine(command_line);
+  }
+
+  void SetUpOnMainThread() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
+    https_server_.StartAcceptingConnections();
+    ChromeNavigationBrowserTest::SetUpOnMainThread();
+  }
+
+  net::EmbeddedTestServer* https_server() { return &https_server_; }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+  net::EmbeddedTestServer https_server_;
+
+  DISALLOW_COPY_AND_ASSIGN(SignInIsolationBrowserTest);
+};
+
+// This test ensures that the sign-in origin requires a dedicated process.  It
+// only ensures that the corresponding base::Feature works properly;
+// IsolatedOriginTest provides the main test coverage of origins whitelisted
+// for process isolation.  See https://crbug.com/739418.
+IN_PROC_BROWSER_TEST_F(SignInIsolationBrowserTest, NavigateToSignInPage) {
+  const GURL first_url =
+      embedded_test_server()->GetURL("google.com", "/title1.html");
+  const GURL signin_url =
+      https_server()->GetURL("accounts.google.com", "/title1.html");
+  ui_test_utils::NavigateToURL(browser(), first_url);
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  scoped_refptr<content::SiteInstance> first_instance(
+      web_contents->GetMainFrame()->GetSiteInstance());
+
+  // Make sure that a renderer-initiated navigation to the sign-in page swaps
+  // processes.
+  content::TestNavigationManager manager(web_contents, signin_url);
+  EXPECT_TRUE(
+      ExecuteScript(web_contents, "location = '" + signin_url.spec() + "';"));
+  manager.WaitForNavigationFinished();
+  EXPECT_NE(web_contents->GetMainFrame()->GetSiteInstance(), first_instance);
 }

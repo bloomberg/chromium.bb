@@ -131,6 +131,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const GURL& current_url,
       const GURL& new_url) override;
   bool ShouldAssignSiteForURL(const GURL& url) override;
+  std::vector<url::Origin> GetOriginsRequiringDedicatedProcess() override;
   void AppendExtraCommandLineSwitches(base::CommandLine* command_line,
                                       int child_process_id) override;
   std::string GetApplicationLocale() override;

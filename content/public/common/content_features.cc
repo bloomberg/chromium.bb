@@ -265,6 +265,11 @@ const base::Feature kServiceWorkerScriptStreaming{
 const base::Feature kSharedArrayBuffer{"SharedArrayBuffer",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
+// An experiment to require process isolation for the sign-in origin,
+// https://accounts.google.com.  Launch bug: https://crbug.com/739418.
+const base::Feature kSignInProcessIsolation{"sign-in-process-isolation",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 // An experiment for skipping compositing small scrollers.
 const base::Feature kSkipCompositingSmallScrollers{
     "SkipCompositingSmallScrollers", base::FEATURE_DISABLED_BY_DEFAULT};

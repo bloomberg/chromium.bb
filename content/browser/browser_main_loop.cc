@@ -875,6 +875,16 @@ int BrowserMainLoop::PreCreateThreads() {
     RenderProcessHost::SetRunRendererInProcess(true);
 #endif
 
+  // Initialize origins that are whitelisted for process isolation.  Must be
+  // done after base::FeatureList is initialized, but before any navigations
+  // can happen.
+  std::vector<url::Origin> origins =
+      GetContentClient()->browser()->GetOriginsRequiringDedicatedProcess();
+  ChildProcessSecurityPolicyImpl* policy =
+      ChildProcessSecurityPolicyImpl::GetInstance();
+  for (auto origin : origins)
+    policy->AddIsolatedOrigin(origin);
+
   EVP_set_buggy_rsa_parser(
       base::FeatureList::IsEnabled(features::kBuggyRSAParser));
 
