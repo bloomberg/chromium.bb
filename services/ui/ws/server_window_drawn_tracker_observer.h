@@ -30,6 +30,10 @@ class ServerWindowDrawnTrackerObserver {
                                    ServerWindow* window,
                                    bool is_drawn) {}
 
+  // Invoked if the root will change as the result of a child of |ancestor|
+  // being moved to a new root.
+  virtual void OnRootWillChange(ServerWindow* ancestor, ServerWindow* window) {}
+
  protected:
   virtual ~ServerWindowDrawnTrackerObserver() {}
 };

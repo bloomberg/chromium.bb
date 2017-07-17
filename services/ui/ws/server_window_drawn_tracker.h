@@ -8,6 +8,7 @@
 #include <set>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "services/ui/ws/server_window_observer.h"
 
 namespace ui {
@@ -49,11 +50,14 @@ class ServerWindowDrawnTracker : public ServerWindowObserver {
   void OnWillChangeWindowVisibility(ServerWindow* window) override;
   void OnWindowVisibilityChanged(ServerWindow* window) override;
 
+  ServerWindow* root_ = nullptr;
   ServerWindow* window_;
   ServerWindowDrawnTrackerObserver* observer_;
   bool drawn_;
   // Set of windows we're observing. This is |window_| and all its ancestors.
   std::set<ServerWindow*> windows_;
+
+  base::WeakPtrFactory<ServerWindowDrawnTracker> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServerWindowDrawnTracker);
 };

@@ -308,5 +308,57 @@ TEST(FocusControllerTest, NonFocusableWindowNotActivated) {
   EXPECT_EQ(&parent, focus_observer.new_active_window());
 }
 
+namespace {
+
+// ServerWindowDelegate implementation whose GetRootWindow() implementation
+// returns the last ancestor as the root of a window.
+class TestServerWindowDelegate2 : public ServerWindowDelegate {
+ public:
+  TestServerWindowDelegate2() = default;
+  ~TestServerWindowDelegate2() override = default;
+
+  // ServerWindowDelegate:
+  cc::mojom::FrameSinkManager* GetFrameSinkManager() override {
+    return nullptr;
+  }
+  ServerWindow* GetRootWindow(const ServerWindow* window) override {
+    const ServerWindow* root = window;
+    while (root && root->parent())
+      root = root->parent();
+    // TODO(sky): this cast shouldn't be necessary!
+    return const_cast<ServerWindow*>(root);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestServerWindowDelegate2);
+};
+
+}  // namespace
+
+TEST(FocusControllerTest, ActiveWindowMovesToDifferentDisplay) {
+  TestServerWindowDelegate2 server_window_delegate;
+  ServerWindow root1(&server_window_delegate, WindowId());
+  root1.SetVisible(true);
+  ServerWindow root2(&server_window_delegate, WindowId());
+  root2.SetVisible(true);
+
+  ServerWindow child(&server_window_delegate, WindowId());
+  root1.Add(&child);
+  child.SetVisible(true);
+
+  TestFocusControllerObserver focus_observer;
+  focus_observer.set_ignore_explicit(false);
+  FocusController focus_controller(&focus_observer, &root1);
+  focus_controller.AddObserver(&focus_observer);
+
+  focus_controller.SetFocusedWindow(&child);
+  EXPECT_EQ(&child, focus_controller.GetFocusedWindow());
+
+  root2.Add(&child);
+  // As the focused window is moving to a different root focus should move
+  // to the root.
+  EXPECT_EQ(&root1, focus_controller.GetFocusedWindow());
+}
+
 }  // namespace ws
 }  // namespace ui
