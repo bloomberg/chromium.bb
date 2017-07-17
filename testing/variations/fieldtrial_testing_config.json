@@ -2780,7 +2780,7 @@
                 {
                     "name": "AdIdentifiers",
                     "params": {
-                        "tag_attribute_csv": "div,id,iframe,id"
+                        "tag_attribute_csv": "div,data-google-query-id,div,id,iframe,id"
                     },
                     "enable_features": [
                         "ThreatDomDetailsTagAttributes"
