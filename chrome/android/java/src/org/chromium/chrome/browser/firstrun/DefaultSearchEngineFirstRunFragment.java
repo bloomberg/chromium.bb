@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.locale.DefaultSearchEngineDialogHelper;
@@ -43,14 +44,16 @@ public class DefaultSearchEngineFirstRunFragment extends FirstRunPage {
 
         assert TemplateUrlService.getInstance().isLoaded();
         mSearchEnginePromoDialoType = LocaleManager.getInstance().getSearchEnginePromoShowType();
-        Runnable dismissRunnable = new Runnable() {
-            @Override
-            public void run() {
-                advanceToNextPage();
-            }
-        };
-        new DefaultSearchEngineDialogHelper(
-                mSearchEnginePromoDialoType, mEngineLayout, mButton, dismissRunnable);
+        if (mSearchEnginePromoDialoType != LocaleManager.SEARCH_ENGINE_PROMO_DONT_SHOW) {
+            Runnable dismissRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    advanceToNextPage();
+                }
+            };
+            new DefaultSearchEngineDialogHelper(
+                    mSearchEnginePromoDialoType, mEngineLayout, mButton, dismissRunnable);
+        }
 
         return rootView;
     }
@@ -58,7 +61,19 @@ public class DefaultSearchEngineFirstRunFragment extends FirstRunPage {
     @Override
     public void setUserVisibleHint(boolean isVisibleToUser) {
         super.setUserVisibleHint(isVisibleToUser);
-        if (isVisibleToUser) recordShown();
+
+        if (isVisibleToUser) {
+            if (mSearchEnginePromoDialoType == LocaleManager.SEARCH_ENGINE_PROMO_DONT_SHOW) {
+                ThreadUtils.postOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        advanceToNextPage();
+                    }
+                });
+            }
+
+            recordShown();
+        }
     }
 
     private void recordShown() {
