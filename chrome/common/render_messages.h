@@ -341,3 +341,7 @@ IPC_MESSAGE_CONTROL2(ChromeViewMsg_SetSearchURLs,
 IPC_SYNC_MESSAGE_CONTROL0_1(ChromeViewHostMsg_IsCrashReportingEnabled,
                             bool /* enabled */)
 #endif
+
+// Tells the browser to open a PDF file in a new tab. Used when no PDF Viewer is
+// available, and user clicks to view PDF.
+IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_OpenPDF, GURL /* url */)

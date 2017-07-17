@@ -34,7 +34,7 @@ class PDFPluginPlaceholder : public plugins::PluginPlaceholderBase,
   gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
       v8::Isolate* isolate) final;
 
-  void DownloadPDFCallback();
+  void OpenPDFCallback();
 };
 
 #endif  // CHROME_RENDERER_PLUGINS_PDF_PLUGIN_PLACEHOLDER_H_

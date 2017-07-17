@@ -62,6 +62,7 @@ bool ChromeWebViewPermissionHelperDelegate::OnMessageReceived(
                         OnCouldNotLoadPlugin)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_RemovePluginPlaceholderHost,
                         OnRemovePluginPlaceholderHost)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_OpenPDF, OnOpenPDF)
     IPC_MESSAGE_UNHANDLED(return false)
   IPC_END_MESSAGE_MAP()
 
@@ -112,6 +113,10 @@ void ChromeWebViewPermissionHelperDelegate::OnPermissionResponse(
 }
 
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
+
+void ChromeWebViewPermissionHelperDelegate::OnOpenPDF(const GURL& url) {
+  // Intentionally blank since guest views should never trigger PDF downloads.
+}
 
 void ChromeWebViewPermissionHelperDelegate::CanDownload(
     const GURL& url,
