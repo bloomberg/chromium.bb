@@ -21,7 +21,8 @@
 #include "av1/common/av1_fwd_txfm1d.h"
 #include "av1/common/av1_fwd_txfm1d_cfg.h"
 #include "av1/common/idct.h"
-#if CONFIG_DAALA_DCT4 || CONFIG_DAALA_DCT8 || CONFIG_DAALA_DCT16
+#if CONFIG_DAALA_DCT4 || CONFIG_DAALA_DCT8 || CONFIG_DAALA_DCT16 || \
+    CONFIG_DAALA_DCT32
 #include "av1/common/daala_tx.h"
 #endif
 
@@ -368,6 +369,18 @@ static void fdct16(const tran_low_t *input, tran_low_t *output) {
   range_check(output, 16, 16);
 }
 #endif
+
+#if CONFIG_DAALA_DCT32
+static void fdct32(const tran_low_t *input, tran_low_t *output) {
+  int i;
+  od_coeff x[32];
+  od_coeff y[32];
+  for (i = 0; i < 32; i++) x[i] = (od_coeff)input[i];
+  od_bin_fdct32(y, x, 1);
+  for (i = 0; i < 32; i++) output[i] = (tran_low_t)y[i];
+}
+
+#else
 
 static void fdct32(const tran_low_t *input, tran_low_t *output) {
   tran_high_t temp;
@@ -766,6 +779,7 @@ static void fdct32(const tran_low_t *input, tran_low_t *output) {
 
   range_check(output, 32, 18);
 }
+#endif
 
 #ifndef AV1_DCT_GTEST
 
@@ -1075,6 +1089,20 @@ static void fadst16(const tran_low_t *input, tran_low_t *output) {
 #endif
 
 // For use in lieu of ADST
+#if CONFIG_DAALA_DCT32
+static void fhalfright32(const tran_low_t *input, tran_low_t *output) {
+  int i;
+  tran_low_t inputhalf[16];
+  // No scaling within; Daala transforms are all orthonormal
+  for (i = 0; i < 16; ++i) {
+    output[16 + i] = input[i];
+  }
+  for (i = 0; i < 16; ++i) {
+    inputhalf[i] = input[i + 16];
+  }
+  fdct16(inputhalf, output);
+}
+#else
 static void fhalfright32(const tran_low_t *input, tran_low_t *output) {
   int i;
   tran_low_t inputhalf[16];
@@ -1088,6 +1116,7 @@ static void fhalfright32(const tran_low_t *input, tran_low_t *output) {
   fdct16(inputhalf, output);
   // Note overall scaling factor is 4 times orthogonal
 }
+#endif
 
 #if CONFIG_MRC_TX
 static void get_masked_residual32(const int16_t **input, int *input_stride,
@@ -1214,7 +1243,13 @@ static void fidtx16(const tran_low_t *input, tran_low_t *output) {
 
 static void fidtx32(const tran_low_t *input, tran_low_t *output) {
   int i;
-  for (i = 0; i < 32; ++i) output[i] = input[i] * 4;
+  for (i = 0; i < 32; ++i) {
+#if CONFIG_DAALA_DCT32
+    output[i] = input[i];
+#else
+    output[i] = input[i] * 4;
+#endif
+  }
 }
 
 static void copy_block(const int16_t *src, int src_stride, int l, int w,
@@ -2467,17 +2502,30 @@ void av1_fht32x32_c(const int16_t *input, tran_low_t *output, int stride,
 
   // Columns
   for (i = 0; i < 32; ++i) {
-    for (j = 0; j < 32; ++j) temp_in[j] = input[j * stride + i] * 4;
+    for (j = 0; j < 32; ++j) {
+#if CONFIG_DAALA_DCT32
+      temp_in[j] = input[j * stride + i] * 16;
+#else
+      temp_in[j] = input[j * stride + i] * 4;
+#endif
+    }
     ht.cols(temp_in, temp_out);
-    for (j = 0; j < 32; ++j)
+    for (j = 0; j < 32; ++j) {
+#if CONFIG_DAALA_DCT32
+      out[j * 32 + i] = ROUND_POWER_OF_TWO_SIGNED(temp_out[j], 2);
+#else
       out[j * 32 + i] = ROUND_POWER_OF_TWO_SIGNED(temp_out[j], 4);
+#endif
+    }
   }
 
   // Rows
   for (i = 0; i < 32; ++i) {
     for (j = 0; j < 32; ++j) temp_in[j] = out[j + i * 32];
     ht.rows(temp_in, temp_out);
-    for (j = 0; j < 32; ++j) output[j + i * 32] = temp_out[j];
+    for (j = 0; j < 32; ++j) {
+      output[j + i * 32] = temp_out[j];
+    }
   }
 }
 
