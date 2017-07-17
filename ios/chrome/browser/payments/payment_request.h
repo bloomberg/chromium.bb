@@ -182,6 +182,10 @@ class PaymentRequest : public PaymentOptionsProvider,
     return supported_card_networks_;
   }
 
+  const std::vector<std::string>& url_payment_method_identifiers() const {
+    return url_payment_method_identifiers_;
+  }
+
   const std::map<std::string, std::set<std::string>>& stringified_method_data()
       const {
     return stringified_method_data_;
