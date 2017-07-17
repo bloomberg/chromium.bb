@@ -326,7 +326,8 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->scroll_tree_index_ = scroll_tree_index_;
   layer->has_will_change_transform_hint_ = has_will_change_transform_hint_;
   layer->scrollbars_hidden_ = scrollbars_hidden_;
-  layer->needs_show_scrollbars_ = needs_show_scrollbars_;
+  if (needs_show_scrollbars_)
+    layer->needs_show_scrollbars_ = needs_show_scrollbars_;
 
   if (layer_property_changed_) {
     layer->layer_tree_impl()->set_needs_update_draw_properties();
