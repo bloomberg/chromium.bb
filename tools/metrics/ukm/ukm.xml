@@ -870,7 +870,7 @@ be describing additional metrics about the same event.
 
 <event name="PaymentRequest.CheckoutEvents">
   <owner>sebsg@chromium.org</owner>
-  <metric name="CompletionsStatus">
+  <metric name="CompletionStatus">
     <summary>
       How the Payment Request ended. Values defined in the CompletionStatus enum
       of components/payments/core/journey_logger.h.
