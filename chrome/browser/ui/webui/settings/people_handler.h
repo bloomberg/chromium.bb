@@ -98,6 +98,8 @@ class PeopleHandler : public SettingsPageUIHandler,
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerNonCrosTest,
                            SubmitAuthWithInvalidUsername);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerFirstSigninTest, DisplayBasicLogin);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest,
+                           AcquireSyncBlockerWhenLoadingSyncSettingsSubpage);
 
   // SettingsPageUIHandler implementation.
   void RegisterMessages() override;
@@ -173,6 +175,15 @@ class PeopleHandler : public SettingsPageUIHandler,
 
   // Suppresses any further signin promos, since the user has signed in once.
   void MarkFirstSetupComplete();
+
+  // If we're directly loading the sync setup page, we acquire a
+  // SetupInProgressHandle early in order to prevent a lapse in
+  // ProfileSyncService's "SetupInProgress" status. This lapse previously
+  // occured between when the sync confirmation dialog was closed and when the
+  // sync setup page hadn't yet fired the SyncSetupShowSetupUI event.
+  // InitializeSyncBlocker is responsible for checking if we're navigating to
+  // the setup page and acquiring the sync_blocker.
+  void InitializeSyncBlocker();
 
   // Weak pointer.
   Profile* profile_;
