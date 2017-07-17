@@ -128,8 +128,6 @@ class TabContentManager : public ThumbnailCacheObserver {
   DISALLOW_COPY_AND_ASSIGN(TabContentManager);
 };
 
-bool RegisterTabContentManager(JNIEnv* env);
-
 }  // namespace android
 
 #endif  // CHROME_BROWSER_ANDROID_COMPOSITOR_TAB_CONTENT_MANAGER_H_

@@ -62,8 +62,6 @@ class StaticTabSceneLayer : public SceneLayer {
   DISALLOW_COPY_AND_ASSIGN(StaticTabSceneLayer);
 };
 
-bool RegisterStaticTabSceneLayer(JNIEnv* env);
-
 }  // namespace android
 
 #endif  // CHROME_BROWSER_ANDROID_COMPOSITOR_SCENE_LAYER_STATIC_TAB_SCENE_LAYER_H_

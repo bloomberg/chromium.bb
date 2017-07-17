@@ -270,9 +270,4 @@ void CompositorView::BrowserChildProcessCrashed(
   // through here but through BrowserChildProcessHostDisconnected() instead.
 }
 
-// Register native methods
-bool RegisterCompositorView(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace android

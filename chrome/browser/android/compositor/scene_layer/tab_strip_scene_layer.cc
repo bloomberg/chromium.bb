@@ -331,8 +331,4 @@ static jlong Init(JNIEnv* env, const JavaParamRef<jobject>& jobj) {
   return reinterpret_cast<intptr_t>(scene_layer);
 }
 
-bool RegisterTabStripSceneLayer(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace android

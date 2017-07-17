@@ -62,8 +62,4 @@ static jlong Init(JNIEnv* env, const JavaParamRef<jobject>& jobj) {
   return reinterpret_cast<intptr_t>(tree_provider);
 }
 
-bool RegisterSceneLayer(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace android

@@ -117,8 +117,6 @@ class CompositorView : public content::CompositorClient,
   DISALLOW_COPY_AND_ASSIGN(CompositorView);
 };
 
-bool RegisterCompositorView(JNIEnv* env);
-
 }  // namespace android
 
 #endif  // CHROME_BROWSER_ANDROID_COMPOSITOR_COMPOSITOR_VIEW_H_

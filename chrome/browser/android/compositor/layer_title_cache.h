@@ -88,8 +88,6 @@ class LayerTitleCache {
   DISALLOW_COPY_AND_ASSIGN(LayerTitleCache);
 };
 
-bool RegisterLayerTitleCache(JNIEnv* env);
-
 }  // namespace android
 
 #endif  // CHROME_BROWSER_ANDROID_COMPOSITOR_LAYER_TITLE_CACHE_H_
