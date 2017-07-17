@@ -27,7 +27,7 @@ namespace blink {
 const int kPageWidth = 800;
 const int kPageHeight = 600;
 
-class MockCanvas : public SkCanvas {
+class MockPageContextCanvas : public SkCanvas {
  public:
   enum OperationType { kDrawRect, kDrawPoint };
 
@@ -36,8 +36,8 @@ class MockCanvas : public SkCanvas {
     SkRect rect;
   };
 
-  MockCanvas() : SkCanvas(kPageWidth, kPageHeight) {}
-  ~MockCanvas() override {}
+  MockPageContextCanvas() : SkCanvas(kPageWidth, kPageHeight) {}
+  ~MockPageContextCanvas() override {}
 
   void onDrawAnnotation(const SkRect& rect,
                         const char key[],
@@ -80,7 +80,7 @@ class PrintContextTest : public RenderingTest {
     GetDocument().body()->setInnerHTML(body_content);
   }
 
-  void PrintSinglePage(MockCanvas& canvas) {
+  void PrintSinglePage(MockPageContextCanvas& canvas) {
     IntRect page_rect(0, 0, kPageWidth, kPageHeight);
     GetPrintContext().BeginPrintMode(page_rect.Width(), page_rect.Height());
     GetDocument().View()->UpdateAllLifecyclePhases();
@@ -148,23 +148,24 @@ class PrintContextFrameTest : public PrintContextTest {
   EXPECT_EQ(expectedHeight, actualRect.height());
 
 TEST_F(PrintContextTest, LinkTarget) {
-  MockCanvas canvas;
+  MockPageContextCanvas canvas;
   SetBodyInnerHTML(
       AbsoluteBlockHtmlForLink(50, 60, 70, 80, "http://www.google.com") +
       AbsoluteBlockHtmlForLink(150, 160, 170, 180,
                                "http://www.google.com#fragment"));
   PrintSinglePage(canvas);
 
-  const Vector<MockCanvas::Operation>& operations = canvas.RecordedOperations();
+  const Vector<MockPageContextCanvas::Operation>& operations =
+      canvas.RecordedOperations();
   ASSERT_EQ(2u, operations.size());
-  EXPECT_EQ(MockCanvas::kDrawRect, operations[0].type);
+  EXPECT_EQ(MockPageContextCanvas::kDrawRect, operations[0].type);
   EXPECT_SKRECT_EQ(50, 60, 70, 80, operations[0].rect);
-  EXPECT_EQ(MockCanvas::kDrawRect, operations[1].type);
+  EXPECT_EQ(MockPageContextCanvas::kDrawRect, operations[1].type);
   EXPECT_SKRECT_EQ(150, 160, 170, 180, operations[1].rect);
 }
 
 TEST_F(PrintContextTest, LinkTargetUnderAnonymousBlockBeforeBlock) {
-  MockCanvas canvas;
+  MockPageContextCanvas canvas;
   SetBodyInnerHTML("<div style='padding-top: 50px'>" +
                    InlineHtmlForLink("http://www.google.com",
                                      "<img style='width: 111; height: 10'>") +
@@ -173,57 +174,61 @@ TEST_F(PrintContextTest, LinkTargetUnderAnonymousBlockBeforeBlock) {
                                      "<img style='width: 122; height: 20'>") +
                    "</div>" + "</div>");
   PrintSinglePage(canvas);
-  const Vector<MockCanvas::Operation>& operations = canvas.RecordedOperations();
+  const Vector<MockPageContextCanvas::Operation>& operations =
+      canvas.RecordedOperations();
   ASSERT_EQ(2u, operations.size());
-  EXPECT_EQ(MockCanvas::kDrawRect, operations[0].type);
+  EXPECT_EQ(MockPageContextCanvas::kDrawRect, operations[0].type);
   EXPECT_SKRECT_EQ(0, 50, 111, 10, operations[0].rect);
-  EXPECT_EQ(MockCanvas::kDrawRect, operations[1].type);
+  EXPECT_EQ(MockPageContextCanvas::kDrawRect, operations[1].type);
   EXPECT_SKRECT_EQ(0, 60, 122, 20, operations[1].rect);
 }
 
 TEST_F(PrintContextTest, LinkTargetContainingABlock) {
-  MockCanvas canvas;
+  MockPageContextCanvas canvas;
   SetBodyInnerHTML(
       "<div style='padding-top: 50px'>" +
       InlineHtmlForLink("http://www.google2.com",
                         "<div style='width:133; height: 30'>BLOCK</div>") +
       "</div>");
   PrintSinglePage(canvas);
-  const Vector<MockCanvas::Operation>& operations = canvas.RecordedOperations();
+  const Vector<MockPageContextCanvas::Operation>& operations =
+      canvas.RecordedOperations();
   ASSERT_EQ(1u, operations.size());
-  EXPECT_EQ(MockCanvas::kDrawRect, operations[0].type);
+  EXPECT_EQ(MockPageContextCanvas::kDrawRect, operations[0].type);
   EXPECT_SKRECT_EQ(0, 50, 133, 30, operations[0].rect);
 }
 
 TEST_F(PrintContextTest, LinkTargetUnderInInlines) {
-  MockCanvas canvas;
+  MockPageContextCanvas canvas;
   SetBodyInnerHTML(
       "<span><b><i><img style='width: 40px; height: 40px'><br>" +
       InlineHtmlForLink("http://www.google3.com",
                         "<img style='width: 144px; height: 40px'>") +
       "</i></b></span>");
   PrintSinglePage(canvas);
-  const Vector<MockCanvas::Operation>& operations = canvas.RecordedOperations();
+  const Vector<MockPageContextCanvas::Operation>& operations =
+      canvas.RecordedOperations();
   ASSERT_EQ(1u, operations.size());
-  EXPECT_EQ(MockCanvas::kDrawRect, operations[0].type);
+  EXPECT_EQ(MockPageContextCanvas::kDrawRect, operations[0].type);
   EXPECT_SKRECT_EQ(0, 40, 144, 40, operations[0].rect);
 }
 
 TEST_F(PrintContextTest, LinkTargetUnderRelativelyPositionedInline) {
-  MockCanvas canvas;
+  MockPageContextCanvas canvas;
   SetBodyInnerHTML(
         + "<span style='position: relative; top: 50px; left: 50px'><b><i><img style='width: 1px; height: 40px'><br>"
         + InlineHtmlForLink("http://www.google3.com", "<img style='width: 155px; height: 50px'>")
         + "</i></b></span>");
   PrintSinglePage(canvas);
-  const Vector<MockCanvas::Operation>& operations = canvas.RecordedOperations();
+  const Vector<MockPageContextCanvas::Operation>& operations =
+      canvas.RecordedOperations();
   ASSERT_EQ(1u, operations.size());
-  EXPECT_EQ(MockCanvas::kDrawRect, operations[0].type);
+  EXPECT_EQ(MockPageContextCanvas::kDrawRect, operations[0].type);
   EXPECT_SKRECT_EQ(50, 90, 155, 50, operations[0].rect);
 }
 
 TEST_F(PrintContextTest, LinkTargetSvg) {
-  MockCanvas canvas;
+  MockPageContextCanvas canvas;
   SetBodyInnerHTML(
       "<svg width='100' height='100'>"
       "<a xlink:href='http://www.w3.org'><rect x='20' y='20' width='50' "
@@ -233,17 +238,18 @@ TEST_F(PrintContextTest, LinkTargetSvg) {
       "</svg>");
   PrintSinglePage(canvas);
 
-  const Vector<MockCanvas::Operation>& operations = canvas.RecordedOperations();
+  const Vector<MockPageContextCanvas::Operation>& operations =
+      canvas.RecordedOperations();
   ASSERT_EQ(2u, operations.size());
-  EXPECT_EQ(MockCanvas::kDrawRect, operations[0].type);
+  EXPECT_EQ(MockPageContextCanvas::kDrawRect, operations[0].type);
   EXPECT_SKRECT_EQ(20, 20, 50, 50, operations[0].rect);
-  EXPECT_EQ(MockCanvas::kDrawRect, operations[1].type);
+  EXPECT_EQ(MockPageContextCanvas::kDrawRect, operations[1].type);
   EXPECT_EQ(10, operations[1].rect.x());
   EXPECT_GE(90, operations[1].rect.y());
 }
 
 TEST_F(PrintContextTest, LinkedTarget) {
-  MockCanvas canvas;
+  MockPageContextCanvas canvas;
   GetDocument().SetBaseURLOverride(KURL(kParsedURLString, "http://a.com/"));
   SetBodyInnerHTML(
       AbsoluteBlockHtmlForLink(
@@ -258,39 +264,42 @@ TEST_F(PrintContextTest, LinkedTarget) {
                       "fragment-not-used"));  // Generates no annotation
   PrintSinglePage(canvas);
 
-  const Vector<MockCanvas::Operation>& operations = canvas.RecordedOperations();
+  const Vector<MockPageContextCanvas::Operation>& operations =
+      canvas.RecordedOperations();
   ASSERT_EQ(2u, operations.size());
-  EXPECT_EQ(MockCanvas::kDrawRect, operations[0].type);
+  EXPECT_EQ(MockPageContextCanvas::kDrawRect, operations[0].type);
   EXPECT_SKRECT_EQ(50, 60, 70, 80, operations[0].rect);
-  EXPECT_EQ(MockCanvas::kDrawPoint, operations[1].type);
+  EXPECT_EQ(MockPageContextCanvas::kDrawPoint, operations[1].type);
   EXPECT_SKRECT_EQ(250, 260, 0, 0, operations[1].rect);
 }
 
 TEST_F(PrintContextTest, EmptyLinkedTarget) {
-  MockCanvas canvas;
+  MockPageContextCanvas canvas;
   GetDocument().SetBaseURLOverride(KURL(kParsedURLString, "http://a.com/"));
   SetBodyInnerHTML(AbsoluteBlockHtmlForLink(50, 60, 70, 80, "#fragment") +
                    HtmlForAnchor(250, 260, "fragment", ""));
   PrintSinglePage(canvas);
 
-  const Vector<MockCanvas::Operation>& operations = canvas.RecordedOperations();
+  const Vector<MockPageContextCanvas::Operation>& operations =
+      canvas.RecordedOperations();
   ASSERT_EQ(2u, operations.size());
-  EXPECT_EQ(MockCanvas::kDrawRect, operations[0].type);
+  EXPECT_EQ(MockPageContextCanvas::kDrawRect, operations[0].type);
   EXPECT_SKRECT_EQ(50, 60, 70, 80, operations[0].rect);
-  EXPECT_EQ(MockCanvas::kDrawPoint, operations[1].type);
+  EXPECT_EQ(MockPageContextCanvas::kDrawPoint, operations[1].type);
   EXPECT_SKRECT_EQ(250, 260, 0, 0, operations[1].rect);
 }
 
 TEST_F(PrintContextTest, LinkTargetBoundingBox) {
-  MockCanvas canvas;
+  MockPageContextCanvas canvas;
   SetBodyInnerHTML(
       AbsoluteBlockHtmlForLink(50, 60, 70, 20, "http://www.google.com",
                                "<img style='width: 200px; height: 100px'>"));
   PrintSinglePage(canvas);
 
-  const Vector<MockCanvas::Operation>& operations = canvas.RecordedOperations();
+  const Vector<MockPageContextCanvas::Operation>& operations =
+      canvas.RecordedOperations();
   ASSERT_EQ(1u, operations.size());
-  EXPECT_EQ(MockCanvas::kDrawRect, operations[0].type);
+  EXPECT_EQ(MockPageContextCanvas::kDrawRect, operations[0].type);
   EXPECT_SKRECT_EQ(50, 60, 200, 100, operations[0].rect);
 }
 
@@ -307,14 +316,15 @@ TEST_F(PrintContextFrameTest, WithSubframe) {
       AbsoluteBlockHtmlForLink(250, 260, 270, 280,
                                "http://www.google.com#fragment"));
 
-  MockCanvas canvas;
+  MockPageContextCanvas canvas;
   PrintSinglePage(canvas);
 
-  const Vector<MockCanvas::Operation>& operations = canvas.RecordedOperations();
+  const Vector<MockPageContextCanvas::Operation>& operations =
+      canvas.RecordedOperations();
   ASSERT_EQ(2u, operations.size());
-  EXPECT_EQ(MockCanvas::kDrawRect, operations[0].type);
+  EXPECT_EQ(MockPageContextCanvas::kDrawRect, operations[0].type);
   EXPECT_SKRECT_EQ(250, 260, 170, 180, operations[0].rect);
-  EXPECT_EQ(MockCanvas::kDrawRect, operations[1].type);
+  EXPECT_EQ(MockPageContextCanvas::kDrawRect, operations[1].type);
   EXPECT_SKRECT_EQ(350, 360, 270, 280, operations[1].rect);
 }
 
@@ -336,17 +346,18 @@ TEST_F(PrintContextFrameTest, WithScrolledSubframe) {
 
   ChildDocument().domWindow()->scrollTo(100, 100);
 
-  MockCanvas canvas;
+  MockPageContextCanvas canvas;
   PrintSinglePage(canvas);
 
-  const Vector<MockCanvas::Operation>& operations = canvas.RecordedOperations();
+  const Vector<MockPageContextCanvas::Operation>& operations =
+      canvas.RecordedOperations();
   ASSERT_EQ(3u, operations.size());
-  EXPECT_EQ(MockCanvas::kDrawRect, operations[0].type);
+  EXPECT_EQ(MockPageContextCanvas::kDrawRect, operations[0].type);
   EXPECT_SKRECT_EQ(50, 60, 70, 80,
                    operations[0].rect);  // FIXME: the rect should be clipped.
-  EXPECT_EQ(MockCanvas::kDrawRect, operations[1].type);
+  EXPECT_EQ(MockPageContextCanvas::kDrawRect, operations[1].type);
   EXPECT_SKRECT_EQ(150, 160, 170, 180, operations[1].rect);
-  EXPECT_EQ(MockCanvas::kDrawRect, operations[2].type);
+  EXPECT_EQ(MockPageContextCanvas::kDrawRect, operations[2].type);
   EXPECT_SKRECT_EQ(250, 260, 270, 280, operations[2].rect);
 }
 
