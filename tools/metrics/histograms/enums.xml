@@ -7267,12 +7267,14 @@ uploading your change for review.  These are checked by presubmit scripts.
 </enum>
 
 <enum name="DataReductionProxyProtocolAcceptTransformEvent">
-  <int value="0" label="Lite page requested"/>
-  <int value="1" label="Lite page transform received"/>
-  <int value="2" label="Empty image page policy directive received"/>
-  <int value="3" label="Empty image requested"/>
-  <int value="4" label="Empty image transform received"/>
-  <int value="5" label="Compressed-video requested"/>
+  <int value="0" label="Lite page requested (pages)"/>
+  <int value="1" label="Lite page transform received (pages)"/>
+  <int value="2" label="Empty image page policy directive received (pages)"/>
+  <int value="3" label="Empty image requested (resources)"/>
+  <int value="4" label="Empty image transform received (resources)"/>
+  <int value="5" label="Compressed-video requested (resources)"/>
+  <int value="6" label="Original image ('identity') requested (resources)"/>
+  <int value="7" label="Original image ('identity') received (resources)"/>
 </enum>
 
 <enum name="DataReductionProxyProtocolNotAcceptingTransformReason">

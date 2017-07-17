@@ -11227,8 +11227,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Records the sending of accepted transform headers to the data reduction
     proxy and also receiving transforms and policies from the data reduction
-    proxy. Recorded on a per page request basis and possibly on a per image
-    subresource request basis for empty-image transforms.
+    proxy. Recorded on a per page request basis and also on a per image resource
+    request basis for empty-image transforms. Headers for both types of requests
+    (pages and resources) are recorded here for convenience in viewing in a
+    single histogram. In general, the separate groups of request/receive buckets
+    for either page or resource types can be compared.
   </summary>
 </histogram>
 

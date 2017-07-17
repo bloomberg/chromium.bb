@@ -30,6 +30,7 @@ enum TransformDirective {
   TRANSFORM_EMPTY_IMAGE,
   TRANSFORM_COMPRESSED_VIDEO,
   TRANSFORM_PAGE_POLICIES_EMPTY_IMAGE,
+  TRANSFORM_IDENTITY,
 };
 
 // Values of the UMA DataReductionProxy.BypassType{Primary|Fallback} and
