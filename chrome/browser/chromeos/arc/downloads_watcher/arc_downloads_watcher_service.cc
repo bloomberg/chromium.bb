@@ -17,6 +17,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_path_watcher.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/singleton.h"
 #include "base/sequence_checker.h"
 #include "base/strings/string_util.h"
 #include "base/task_scheduler/post_task.h"
@@ -24,9 +25,10 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/download/download_prefs.h"
-#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
 #include "components/arc/arc_bridge_service.h"
+#include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -167,6 +169,25 @@ std::pair<base::TimeTicks, TimestampMap> BuildTimestampMapCallback(
   return std::make_pair(snapshot_time, std::move(current_timestamp_map));
 }
 
+// Singleton factory for ArcDownloadsWatcherService.
+class ArcDownloadsWatcherServiceFactory
+    : public internal::ArcBrowserContextKeyedServiceFactoryBase<
+          ArcDownloadsWatcherService,
+          ArcDownloadsWatcherServiceFactory> {
+ public:
+  // Factory name used by ArcBrowserContextKeyedServiceFactoryBase.
+  static constexpr const char* kName = "ArcDownloadsWatcherServiceFactory";
+
+  static ArcDownloadsWatcherServiceFactory* GetInstance() {
+    return base::Singleton<ArcDownloadsWatcherServiceFactory>::get();
+  }
+
+ private:
+  friend base::DefaultSingletonTraits<ArcDownloadsWatcherServiceFactory>;
+  ArcDownloadsWatcherServiceFactory() = default;
+  ~ArcDownloadsWatcherServiceFactory() override = default;
+};
+
 }  // namespace
 
 bool HasAndroidSupportedMediaExtension(const base::FilePath& path) {
@@ -190,7 +211,7 @@ class ArcDownloadsWatcherService::DownloadsWatcher {
  public:
   using Callback = base::Callback<void(const std::vector<std::string>& paths)>;
 
-  explicit DownloadsWatcher(const Callback& callback);
+  DownloadsWatcher(content::BrowserContext* context, const Callback& callback);
   ~DownloadsWatcher();
 
   // Starts watching Downloads directory.
@@ -230,6 +251,7 @@ class ArcDownloadsWatcherService::DownloadsWatcher {
 };
 
 ArcDownloadsWatcherService::DownloadsWatcher::DownloadsWatcher(
+    content::BrowserContext* context,
     const Callback& callback)
     : callback_(callback),
       last_notify_time_(base::TimeTicks()),
@@ -238,7 +260,7 @@ ArcDownloadsWatcherService::DownloadsWatcher::DownloadsWatcher(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DETACH_FROM_SEQUENCE(sequence_checker_);
 
-  downloads_dir_ = DownloadPrefs(ProfileManager::GetActiveUserProfile())
+  downloads_dir_ = DownloadPrefs(Profile::FromBrowserContext(context))
                        .GetDefaultDownloadDirectoryForProfile()
                        .StripTrailingSeparators();
 }
@@ -314,21 +336,36 @@ void ArcDownloadsWatcherService::DownloadsWatcher::OnBuildTimestampMap(
     outstanding_task_ = false;
 }
 
+// static
+ArcDownloadsWatcherService* ArcDownloadsWatcherService::GetForBrowserContext(
+    content::BrowserContext* context) {
+  return ArcDownloadsWatcherServiceFactory::GetForBrowserContext(context);
+}
+
 ArcDownloadsWatcherService::ArcDownloadsWatcherService(
+    content::BrowserContext* context,
     ArcBridgeService* bridge_service)
-    : ArcService(bridge_service),
+    : context_(context),
+      arc_bridge_service_(bridge_service),
       file_task_runner_(
           base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()})),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  arc_bridge_service()->file_system()->AddObserver(this);
+  arc_bridge_service_->file_system()->AddObserver(this);
 }
 
 ArcDownloadsWatcherService::~ArcDownloadsWatcherService() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  arc_bridge_service()->file_system()->RemoveObserver(this);
+
   StopWatchingDownloads();
   DCHECK(!watcher_);
+
+  // TODO(hidehiko): Currently, the lifetime of ArcBridgeService and
+  // BrowserContextKeyedService is not nested.
+  // If ArcServiceManager::Get() returns nullptr, it is already destructed,
+  // so do not touch it.
+  if (ArcServiceManager::Get())
+    arc_bridge_service_->file_system()->RemoveObserver(this);
 }
 
 void ArcDownloadsWatcherService::OnInstanceReady() {
@@ -346,8 +383,8 @@ void ArcDownloadsWatcherService::StartWatchingDownloads() {
   StopWatchingDownloads();
   DCHECK(!watcher_);
   watcher_ = base::MakeUnique<DownloadsWatcher>(
-      base::Bind(&ArcDownloadsWatcherService::OnDownloadsChanged,
-                 weak_ptr_factory_.GetWeakPtr()));
+      context_, base::Bind(&ArcDownloadsWatcherService::OnDownloadsChanged,
+                           weak_ptr_factory_.GetWeakPtr()));
   file_task_runner_->PostTask(FROM_HERE,
                               base::BindOnce(&DownloadsWatcher::Start,
                                              base::Unretained(watcher_.get())));
@@ -364,7 +401,7 @@ void ArcDownloadsWatcherService::OnDownloadsChanged(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
-      arc_bridge_service()->file_system(), RequestMediaScan);
+      arc_bridge_service_->file_system(), RequestMediaScan);
   if (!instance)
     return;
   instance->RequestMediaScan(paths);
