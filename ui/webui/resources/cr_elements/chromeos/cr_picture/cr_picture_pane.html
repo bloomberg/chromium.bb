@@ -8,24 +8,33 @@
 <dom-module id="cr-picture-pane">
   <template>
     <style include="cr-shared-style">
+      :host {
+        display: inline-block;
+      }
+
+      cr-camera {
+        --cr-camera-image-size: var(--cr-picture-image-size, 228px);
+      }
+
       img {
         display: block;
-        width: 100%;
+        width: var(--cr-picture-image-size, 228px);
       }
 
       #discard {
-        background-color: var(--paper-grey-800);
+        align-items: center;
+        background-color: var(--google-blue-500);
         border-bottom-left-radius: 2px;
         border-bottom-right-radius: 2px;
-        padding: 8px;
+        display: flex;
+        height: 32px;
+        justify-content: center;
+        width: var(--cr-picture-image-size, 228px);
       }
 
       #discard button {
         --iron-icon-fill-color: white;
-        background-color: var(--paper-red-500);
         border-radius: 50%;
-        display: block;
-        margin: 0 auto 0 auto;
       }
     </style>
     <template is="dom-if"

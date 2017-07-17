@@ -10,18 +10,22 @@
 <dom-module id="cr-picture-list">
   <template>
     <style include="cr-shared-style">
+      :host {
+        display: inline-block;
+        margin-top: -6px;
+      }
+
       img {
         border-radius: 4px;
         height: 64px;
-        margin: 8px;
-        padding: 2px;
+        margin: 6px;
         vertical-align: top;
         width: 64px;
       }
 
       img.iron-selected {
         border: 2px solid var(--google-blue-500);
-        padding: 0;
+        margin: 4px;
       }
 
       iron-icon {
@@ -30,17 +34,16 @@
         --iron-icon-width: 32px;
         border: 1px solid var(--google-grey-500);
         border-radius: 4px;
-        margin: 8px;
-        padding: 17px;
+        margin: 6px;
+        padding: 15px;
       }
 
       iron-icon.iron-selected {
         border: 2px solid var(--google-blue-500);
-        padding: 16px;
+        padding: 14px;
       }
 
       #container {
-        margin: -8px;
         outline: none;
       }
     </style>
