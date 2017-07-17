@@ -258,7 +258,7 @@ TEST_F(PasswordDetailsCollectionViewControllerTest, SimplifyOrigin) {
       {GURL("android://"
             "Qllt1FacrB0NYCeSFvmudHvssWBPFfC54EbtHTpFxukvw2wClI1rafcVB3kQOMxfJg"
             "xbVAkGXvC_A52kbPL1EQ==@com.parkingpanda.mobile/"),
-       @"com.parkingpanda.mobile"}};
+       @"mobile.parkingpanda.com"}};
 
   for (const auto& data : test_data) {
     origin_ = base::SysUTF8ToNSString(data.origin.spec());

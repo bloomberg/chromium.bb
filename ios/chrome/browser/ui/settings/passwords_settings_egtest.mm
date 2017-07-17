@@ -396,8 +396,7 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
   [self tapDone];
 
   // Inspect "password details" view.
-  [[EarlGrey
-      selectElementWithMatcher:Entry(@"https://example.com, concrete username")]
+  [[EarlGrey selectElementWithMatcher:Entry(@"example.com, concrete username")]
       performAction:grey_tap()];
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
@@ -419,8 +418,7 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
 
   [self openPasswordSettings];
 
-  [[EarlGrey
-      selectElementWithMatcher:Entry(@"https://example.com, concrete username")]
+  [[EarlGrey selectElementWithMatcher:Entry(@"example.com, concrete username")]
       performAction:grey_tap()];
 
   MockReauthenticationModule* mock_reauthentication_module =
@@ -473,8 +471,7 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
 
   [self openPasswordSettings];
 
-  [[EarlGrey
-      selectElementWithMatcher:Entry(@"https://example.com, concrete username")]
+  [[EarlGrey selectElementWithMatcher:Entry(@"example.com, concrete username")]
       performAction:grey_tap()];
 
   // Check the snackbar.
@@ -508,8 +505,7 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
 
   [self openPasswordSettings];
 
-  [[EarlGrey
-      selectElementWithMatcher:Entry(@"https://example.com, concrete username")]
+  [[EarlGrey selectElementWithMatcher:Entry(@"example.com, concrete username")]
       performAction:grey_tap()];
 
   // Check the snackbar.
@@ -544,8 +540,7 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
 
   [self openPasswordSettings];
 
-  [[EarlGrey
-      selectElementWithMatcher:Entry(@"https://example.com, concrete username")]
+  [[EarlGrey selectElementWithMatcher:Entry(@"example.com, concrete username")]
       performAction:grey_tap()];
 
   // Tap the Delete... button.
@@ -575,8 +570,7 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
                             nullptr)] assertWithMatcher:grey_notNil()];
 
   // Also verify that the removed password is no longer in the list.
-  [[EarlGrey
-      selectElementWithMatcher:Entry(@"https://example.com, concrete username")]
+  [[EarlGrey selectElementWithMatcher:Entry(@"example.com, concrete username")]
       assertWithMatcher:grey_not(grey_sufficientlyVisible())];
 
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
@@ -594,8 +588,7 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
 
   [self openPasswordSettings];
 
-  [[EarlGrey
-      selectElementWithMatcher:Entry(@"https://example.com, concrete username")]
+  [[EarlGrey selectElementWithMatcher:Entry(@"example.com, concrete username")]
       performAction:grey_tap()];
 
   // Tap the Delete... button.
@@ -625,8 +618,7 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
   // list.
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
-  [[EarlGrey
-      selectElementWithMatcher:Entry(@"https://example.com, concrete username")]
+  [[EarlGrey selectElementWithMatcher:Entry(@"example.com, concrete username")]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
@@ -647,8 +639,7 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
 
   [self tapEdit];
 
-  [[EarlGrey
-      selectElementWithMatcher:Entry(@"https://example.com, concrete username")]
+  [[EarlGrey selectElementWithMatcher:Entry(@"example.com, concrete username")]
       performAction:grey_tap()];
 
   // Check that the current view is not the detail view, by failing to locate
@@ -674,7 +665,7 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
 
   [self openPasswordSettings];
 
-  [[EarlGrey selectElementWithMatcher:Entry(@"https://example.com")]
+  [[EarlGrey selectElementWithMatcher:Entry(@"example.com")]
       performAction:grey_tap()];
 
   // Check that the Site section is there as well as the Delete button.
@@ -712,8 +703,7 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
 
   [self openPasswordSettings];
 
-  [[EarlGrey
-      selectElementWithMatcher:Entry(@"https://example.com, concrete username")]
+  [[EarlGrey selectElementWithMatcher:Entry(@"example.com, concrete username")]
       performAction:grey_tap()];
 
   // Tap the site cell to display the context menu.
@@ -755,8 +745,7 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
 
   [self openPasswordSettings];
 
-  [[EarlGrey
-      selectElementWithMatcher:Entry(@"https://example.com, concrete username")]
+  [[EarlGrey selectElementWithMatcher:Entry(@"example.com, concrete username")]
       performAction:grey_tap()];
 
   // Tap the username cell to display the context menu.
@@ -799,8 +788,7 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
 
   [self openPasswordSettings];
 
-  [[EarlGrey
-      selectElementWithMatcher:Entry(@"https://example.com, concrete username")]
+  [[EarlGrey selectElementWithMatcher:Entry(@"example.com, concrete username")]
       performAction:grey_tap()];
 
   // Tap the password cell to display the context menu.
@@ -850,8 +838,7 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
 
   [self openPasswordSettings];
 
-  [[EarlGrey
-      selectElementWithMatcher:Entry(@"https://example.com, concrete username")]
+  [[EarlGrey selectElementWithMatcher:Entry(@"example.com, concrete username")]
       performAction:grey_tap()];
 
   // Tap the password cell to display the context menu.
@@ -923,9 +910,7 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
 
   [self openPasswordSettings];
 
-  [[EarlGrey
-      selectElementWithMatcher:Entry(
-                                   @"https://example.com, federated username")]
+  [[EarlGrey selectElementWithMatcher:Entry(@"example.com, federated username")]
       performAction:grey_tap()];
 
   // Check that the Site, Username, Federation and Delete Saved Password
