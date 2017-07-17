@@ -2,33 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+#include "core/animation/AnimationTestHelper.h"
 #include "core/animation/InterpolableValue.h"
-
 #include "core/animation/LegacyStyleInterpolation.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 namespace blink {
-
-namespace {
-
-class SampleInterpolation : public LegacyStyleInterpolation {
- public:
-  static PassRefPtr<LegacyStyleInterpolation> Create(
-      std::unique_ptr<InterpolableValue> start,
-      std::unique_ptr<InterpolableValue> end) {
-    return AdoptRef(new SampleInterpolation(std::move(start), std::move(end)));
-  }
-
- private:
-  SampleInterpolation(std::unique_ptr<InterpolableValue> start,
-                      std::unique_ptr<InterpolableValue> end)
-      : LegacyStyleInterpolation(std::move(start),
-                                 std::move(end),
-                                 CSSPropertyBackgroundColor) {}
-};
-
-}  // namespace
 
 class AnimationInterpolableValueTest : public ::testing::Test {
  protected:
@@ -38,7 +18,7 @@ class AnimationInterpolableValueTest : public ::testing::Test {
   }
 
   double InterpolateNumbers(double a, double b, double progress) {
-    RefPtr<LegacyStyleInterpolation> i = SampleInterpolation::Create(
+    RefPtr<LegacyStyleInterpolation> i = SampleTestInterpolation::Create(
         InterpolableNumber::Create(a), InterpolableNumber::Create(b));
     i->Interpolate(0, progress);
     return ToInterpolableNumber(InterpolationValue(*i.Get()))->Value();
@@ -55,7 +35,7 @@ class AnimationInterpolableValueTest : public ::testing::Test {
       std::unique_ptr<InterpolableList> list_b,
       double progress) {
     RefPtr<LegacyStyleInterpolation> i =
-        SampleInterpolation::Create(std::move(list_a), std::move(list_b));
+        SampleTestInterpolation::Create(std::move(list_a), std::move(list_b));
     i->Interpolate(0, progress);
     return i;
   }
