@@ -118,10 +118,6 @@ class ArcPolicyBridgeTest : public testing::Test {
 
   void SetUp() override {
     bridge_service_ = base::MakeUnique<ArcBridgeService>();
-    policy_bridge_ = base::MakeUnique<ArcPolicyBridge>(bridge_service_.get(),
-                                                       &policy_service_);
-    policy_bridge_->OverrideIsManagedForTesting(true);
-
     EXPECT_CALL(policy_service_,
                 GetPolicies(policy::PolicyNamespace(
                     policy::POLICY_DOMAIN_CHROME, std::string())))
@@ -146,6 +142,11 @@ class ArcPolicyBridgeTest : public testing::Test {
     ASSERT_TRUE(testing_profile_manager_->SetUp());
     profile_ = testing_profile_manager_->CreateTestingProfile("user@gmail.com");
     ASSERT_TRUE(profile_);
+
+    // TODO(hidehiko): Use Singleton instance tied to BrowserContext.
+    policy_bridge_ = base::MakeUnique<ArcPolicyBridge>(
+        profile_, bridge_service_.get(), &policy_service_);
+    policy_bridge_->OverrideIsManagedForTesting(true);
   }
 
  protected:

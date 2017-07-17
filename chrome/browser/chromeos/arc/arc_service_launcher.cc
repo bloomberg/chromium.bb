@@ -97,8 +97,6 @@ void ArcServiceLauncher::Initialize() {
   arc_service_manager_->AddService(
       base::MakeUnique<ArcIntentHelperBridge>(arc_bridge_service));
   arc_service_manager_->AddService(
-      base::MakeUnique<ArcPolicyBridge>(arc_bridge_service));
-  arc_service_manager_->AddService(
       base::MakeUnique<ArcProcessService>(arc_bridge_service));
   arc_service_manager_->AddService(
       base::MakeUnique<ArcSettingsService>(arc_bridge_service));
@@ -182,6 +180,7 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   ArcMetricsService::GetForBrowserContext(profile);
   ArcNetHostImpl::GetForBrowserContext(profile);
   ArcObbMounterBridge::GetForBrowserContext(profile);
+  ArcPolicyBridge::GetForBrowserContext(profile);
   ArcPowerBridge::GetForBrowserContext(profile);
   ArcPrintService::GetForBrowserContext(profile);
   ArcProvisionNotificationService::GetForBrowserContext(profile);
