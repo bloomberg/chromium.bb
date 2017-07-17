@@ -213,6 +213,13 @@ SSLConfigServiceManagerPref::SSLConfigServiceManagerPref(
     local_state->SetDefaultPrefValue(
         ssl_config::prefs::kSSLVersionMax,
         new base::Value(switches::kSSLVersionTLSv13));
+  } else if (tls13_variant == "record-type") {
+    local_state->SetDefaultPrefValue(
+        ssl_config::prefs::kTLS13Variant,
+        new base::Value(switches::kTLS13VariantRecordTypeExperiment));
+    local_state->SetDefaultPrefValue(
+        ssl_config::prefs::kSSLVersionMax,
+        new base::Value(switches::kSSLVersionTLSv13));
   }
 
   PrefChangeRegistrar::NamedChangeCallback local_state_callback =

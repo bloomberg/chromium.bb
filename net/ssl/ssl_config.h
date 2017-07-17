@@ -38,6 +38,7 @@ enum TokenBindingParam {
 enum TLS13Variant {
   kTLS13VariantDraft = 0,
   kTLS13VariantExperiment = 1,
+  kTLS13VariantRecordTypeExperiment = 2,
 };
 
 // Default minimum protocol version.
