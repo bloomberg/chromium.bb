@@ -255,8 +255,7 @@ class GLES2_UTILS_EXPORT GLES2Util {
   template <typename VALUE_TYPE, unsigned int ELEMENTS_PER_UNIT>
   static bool ComputeDataSize(uint32_t count, uint32_t* dst) {
     constexpr uint32_t element_size = sizeof(VALUE_TYPE) * ELEMENTS_PER_UNIT;
-    return base::CheckMul(count, element_size)
-        .template AssignIfValid<uint32_t>(dst);
+    return base::CheckMul(count, element_size).AssignIfValid(dst);
   }
 
 #include "gpu/command_buffer/common/gles2_cmd_utils_autogen.h"
