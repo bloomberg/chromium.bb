@@ -41,7 +41,7 @@ class CORE_EXPORT CSSSkew final : public CSSTransformComponent {
   void setIs2D(bool is2D) final {}
 
   // Internal methods - from CSSTransformComponent.
-  DOMMatrix* AsMatrix() const override;
+  const DOMMatrix* AsMatrix() const override;
   TransformComponentType GetType() const override { return kSkewType; }
   CSSFunctionValue* ToCSSValue() const override;
 

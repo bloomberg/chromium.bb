@@ -39,7 +39,7 @@ class CORE_EXPORT CSSPerspective final : public CSSTransformComponent {
 
   // Internal methods - from CSSTransformComponent.
   TransformComponentType GetType() const final { return kPerspectiveType; }
-  DOMMatrix* AsMatrix() const final;
+  const DOMMatrix* AsMatrix() const final;
   CSSFunctionValue* ToCSSValue() const final;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {

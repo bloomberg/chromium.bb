@@ -49,7 +49,7 @@ class CORE_EXPORT CSSRotation final : public CSSTransformComponent {
 
   // Internal methods - from CSSTransformComponent.
   TransformComponentType GetType() const final { return kRotationType; }
-  DOMMatrix* AsMatrix() const final;
+  const DOMMatrix* AsMatrix() const final;
   CSSFunctionValue* ToCSSValue() const final;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
