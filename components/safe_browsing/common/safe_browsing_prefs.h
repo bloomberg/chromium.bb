@@ -8,6 +8,7 @@
 #define COMPONENTS_SAFE_BROWSING_COMMON_SAFE_BROWSING_PREFS_H_
 
 #include "base/feature_list.h"
+#include "base/values.h"
 
 class PrefRegistrySimple;
 class PrefService;
@@ -168,6 +169,11 @@ void UpdateMetricsAfterSecurityInterstitial(const PrefService& prefs,
 // user. This may trigger the user to begin seeing the Scout opt-in text
 // depending on their experiment state.
 void UpdatePrefsBeforeSecurityInterstitial(PrefService* prefs);
+
+// Returns a list of preferences to be shown in chrome://safe-browsing. The
+// preferences are passed as an alternating sequence of preference names and
+// values represented as strings.
+base::ListValue GetSafeBrowsingPreferencesList(PrefService* prefs);
 
 }  // namespace safe_browsing
 

@@ -33,18 +33,17 @@ const base::Feature kThreatDomDetailsTagAndAttributeFeature{
 
 namespace {
 // List of experimental features. Boolean value for each list member should be
-// set to True if the experiment is currently running at a probability other
-// than 1 or 0, or to False otherwise.
-std::vector<std::pair<const base::Feature*, bool>>
-
-GetExperimentalFeaturesList() {
-  std::vector<std::pair<const base::Feature*, bool>> experimental_features_list{
-      std::make_pair(&kLocalDatabaseManagerEnabled, true),
-      std::make_pair(&kV4OnlyEnabled, true),
-      std::make_pair(&kThreatDomDetailsTagAndAttributeFeature, false)};
-
-  return experimental_features_list;
-}
+// set to true if the experiment is currently running at a probability other
+// than 1 or 0, or to false otherwise.
+constexpr struct {
+  const base::Feature* feature;
+  // True if the feature is running at a probability other than 1 or 0.
+  bool probabilistically_enabled;
+} kExperimentalFeatures[]{
+    {&kLocalDatabaseManagerEnabled, true},
+    {&kV4OnlyEnabled, true},
+    {&kThreatDomDetailsTagAndAttributeFeature, false},
+};
 
 // Adds the name and the enabled/disabled status of a given feature.
 void AddFeatureAndAvailability(const base::Feature* exp_feature,
@@ -61,16 +60,10 @@ void AddFeatureAndAvailability(const base::Feature* exp_feature,
 // Returns the list of the experimental features that are enabled or disabled,
 // as part of currently running Safe Browsing experiments.
 base::ListValue GetFeatureStatusList() {
-  std::vector<std::pair<const base::Feature*, bool>> features_list =
-      GetExperimentalFeaturesList();
-
   base::ListValue param_list;
-  for (std::vector<std::pair<const base::Feature*, bool>>::iterator it =
-           features_list.begin();
-       it != features_list.end(); ++it) {
-    if ((*it).second) {
-      AddFeatureAndAvailability((*it).first, &param_list);
-    }
+  for (const auto& feature_status : kExperimentalFeatures) {
+    if (feature_status.probabilistically_enabled)
+      AddFeatureAndAvailability(feature_status.feature, &param_list);
   }
   return param_list;
 }

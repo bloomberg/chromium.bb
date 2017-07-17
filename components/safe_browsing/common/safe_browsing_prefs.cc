@@ -470,4 +470,24 @@ void UpdatePrefsBeforeSecurityInterstitial(PrefService* prefs) {
                     true);
 }
 
+base::ListValue GetSafeBrowsingPreferencesList(PrefService* prefs) {
+  base::ListValue preferences_list;
+
+  const char* safe_browsing_preferences[] = {
+      prefs::kSafeBrowsingEnabled,
+      prefs::kSafeBrowsingExtendedReportingOptInAllowed,
+      prefs::kSafeBrowsingExtendedReportingEnabled,
+      prefs::kSafeBrowsingScoutReportingEnabled};
+
+  // Add the status of the preferences if they are Enabled or Disabled for the
+  // user.
+  for (const char* preference : safe_browsing_preferences) {
+    preferences_list.GetList().push_back(base::Value(preference));
+    bool enabled = prefs->GetBoolean(preference);
+    preferences_list.GetList().push_back(
+        base::Value(enabled ? "Enabled" : "Disabled"));
+  }
+  return preferences_list;
+}
+
 }  // namespace safe_browsing
