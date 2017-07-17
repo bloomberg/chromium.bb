@@ -15,11 +15,13 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/os_crypt/ie7_password_win.h"
 #include "components/password_manager/core/browser/password_manager.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/webdata/password_web_data_service_win.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -170,7 +172,14 @@ void PasswordStoreWin::DBHandler::OnWebDataServiceRequestDone(
   }
 
   DCHECK_EQ(PASSWORD_IE7_RESULT, result->GetType());
-  result_callback.Run(GetIE7Results(result.get(), *form));
+  std::vector<std::unique_ptr<PasswordForm>> ie7_results =
+      GetIE7Results(result.get(), *form);
+  UMA_HISTOGRAM_ENUMERATION(
+      "PasswordManager.IE7LookupResult",
+      ie7_results.empty() ? password_manager::metrics_util::IE7_RESULTS_ABSENT
+                          : password_manager::metrics_util::IE7_RESULTS_PRESENT,
+      password_manager::metrics_util::IE7_RESULTS_COUNT);
+  result_callback.Run(std::move(ie7_results));
 }
 
 PasswordStoreWin::PasswordStoreWin(
