@@ -548,7 +548,7 @@ void VrShellGl::HandleControllerInput(const gfx::Vector3dF& head_direction) {
   controller_info_.opacity = controller_->GetOpacity();
   input_manager_->HandleInput(
       controller_direction, controller_info_.laser_origin,
-      controller_info_.touchpad_button_state, gesture_list,
+      controller_info_.touchpad_button_state, &gesture_list,
       &controller_info_.target_point, &controller_info_.reticle_render_target);
 }
 
@@ -626,12 +626,6 @@ void VrShellGl::OnContentLeave() {
 }
 
 void VrShellGl::OnContentMove(const gfx::PointF& normalized_hit_point) {
-  // TODO(mthiesse, vollick): Content is currently way too sensitive to mouse
-  // moves for how noisy the controller is. It's almost impossible to click a
-  // link without unintentionally starting a drag event. For this reason we
-  // disable mouse moves, only delivering a down and up event.
-  if (controller_->ButtonState(gvr::kControllerButtonClick))
-    return;
   SendGestureToContent(
       MakeMouseEvent(blink::WebInputEvent::kMouseMove, normalized_hit_point));
 }

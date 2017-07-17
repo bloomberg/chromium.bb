@@ -5,12 +5,12 @@
 #include "chrome/browser/vr/ui_scene_manager.h"
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/test/scoped_mock_time_message_loop_task_runner.h"
 #include "chrome/browser/vr/elements/ui_element.h"
 #include "chrome/browser/vr/elements/ui_element_debug_id.h"
-#include "chrome/browser/vr/ui_browser_interface.h"
+#include "chrome/browser/vr/test/mock_browser_interface.h"
+#include "chrome/browser/vr/test/ui_scene_manager_test.h"
 #include "chrome/browser/vr/ui_scene.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -18,95 +18,11 @@
 namespace vr {
 
 namespace {
-
-class MockBrowserInterface : public UiBrowserInterface {
- public:
-  MockBrowserInterface() {}
-  ~MockBrowserInterface() override {}
-
-  MOCK_METHOD0(ExitPresent, void());
-  MOCK_METHOD0(ExitFullscreen, void());
-  MOCK_METHOD0(NavigateBack, void());
-  MOCK_METHOD0(ExitCct, void());
-  MOCK_METHOD1(OnUnsupportedMode, void(UiUnsupportedMode mode));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockBrowserInterface);
-};
-
 std::set<UiElementDebugId> kElementsVisibleInBrowsing = {
     kContentQuad, kBackplane, kCeiling, kFloor, kUrlBar};
 std::set<UiElementDebugId> kElementsVisibleWithExitPrompt = {
     kExitPrompt, kExitPromptBackplane, kCeiling, kFloor};
 }  // namespace
-
-class UiSceneManagerTest : public testing::Test {
- public:
-  void SetUp() override { browser_ = base::MakeUnique<MockBrowserInterface>(); }
-
- protected:
-  enum InCct : bool {
-    kNotInCct = false,
-    kInCct = true,
-  };
-
-  enum InWebVr : bool {
-    kNotInWebVr = false,
-    kInWebVr = true,
-  };
-
-  enum WebVrAutopresented : bool {
-    kNotAutopresented = false,
-    kAutopresented = true,
-  };
-
-  void MakeManager(InCct in_cct, InWebVr in_web_vr) {
-    scene_ = base::MakeUnique<UiScene>();
-    manager_ = base::MakeUnique<UiSceneManager>(
-        browser_.get(), scene_.get(), in_cct, in_web_vr, kNotAutopresented);
-  }
-
-  void MakeAutoPresentedManager() {
-    scene_ = base::MakeUnique<UiScene>();
-    manager_ = base::MakeUnique<UiSceneManager>(
-        browser_.get(), scene_.get(), kNotInCct, kNotInWebVr, kAutopresented);
-  }
-
-  bool IsVisible(UiElementDebugId debug_id) {
-    UiElement* element = scene_->GetUiElementByDebugId(debug_id);
-    return element ? element->visible() : false;
-  }
-
-  // Verify that only the elements in the set are visible.
-  void VerifyElementsVisible(const std::string& debug_name,
-                             const std::set<UiElementDebugId>& debug_ids) {
-    SCOPED_TRACE(debug_name);
-    for (const auto& element : scene_->GetUiElements()) {
-      SCOPED_TRACE(element->debug_id());
-      bool should_be_visible =
-          debug_ids.find(element->debug_id()) != debug_ids.end();
-      EXPECT_EQ(should_be_visible, element->visible());
-    }
-  }
-
-  // Return false if not all elements in the set match the specified visibility
-  // state. Other elements are ignored.
-  bool VerifyVisibility(const std::set<UiElementDebugId>& debug_ids,
-                        bool visible) {
-    for (const auto& element : scene_->GetUiElements()) {
-      if (debug_ids.find(element->debug_id()) != debug_ids.end() &&
-          element->visible() != visible) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  base::MessageLoop message_loop_;
-  std::unique_ptr<MockBrowserInterface> browser_;
-  std::unique_ptr<UiScene> scene_;
-  std::unique_ptr<UiSceneManager> manager_;
-};
 
 TEST_F(UiSceneManagerTest, ExitPresentAndFullscreenOnAppButtonClick) {
   MakeManager(kNotInCct, kInWebVr);

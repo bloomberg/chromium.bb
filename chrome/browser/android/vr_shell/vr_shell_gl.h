@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_ANDROID_VR_SHELL_VR_SHELL_GL_H_
 #define CHROME_BROWSER_ANDROID_VR_SHELL_VR_SHELL_GL_H_
 
-#include <chrome/browser/vr/ui_input_manager.h>
 #include <memory>
 #include <queue>
 #include <utility>
@@ -17,6 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "chrome/browser/android/vr_shell/vr_controller.h"
+#include "chrome/browser/vr/ui_input_manager.h"
 #include "chrome/browser/vr/ui_renderer.h"
 #include "chrome/browser/vr/vr_controller_model.h"
 #include "device/vr/vr_service.mojom.h"
