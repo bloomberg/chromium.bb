@@ -21,6 +21,7 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/debug/crash_logging.h"
+#include "base/debug/stack_trace.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/sys_info.h"
@@ -144,9 +145,15 @@ RenderProcessImpl::RenderProcessImpl(
   SetV8FlagIfFeature(features::kAsmJsToWebAssembly, "--validate-asm");
   SetV8FlagIfNotFeature(features::kWebAssembly,
                         "--wasm-disable-structured-cloning");
-  SetV8FlagIfFeature(features::kWebAssemblyTrapHandler, "--wasm-trap-handler");
   SetV8FlagIfFeature(features::kSharedArrayBuffer,
                      "--harmony-sharedarraybuffer");
+
+  SetV8FlagIfFeature(features::kWebAssemblyTrapHandler, "--wasm-trap-handler");
+#if defined(OS_LINUX) && defined(ARCH_CPU_X86_64) && !defined(OS_ANDROID)
+  if (base::FeatureList::IsEnabled(features::kWebAssemblyTrapHandler)) {
+    base::debug::SetStackDumpFirstChanceCallback(v8::V8::TryHandleSignal);
+  }
+#endif
 
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
