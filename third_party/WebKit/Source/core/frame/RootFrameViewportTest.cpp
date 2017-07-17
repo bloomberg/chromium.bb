@@ -4,6 +4,7 @@
 
 #include "core/frame/RootFrameViewport.h"
 
+#include "core/frame/FrameTestHelpers.h"
 #include "core/layout/ScrollAlignment.h"
 #include "platform/geometry/DoubleRect.h"
 #include "platform/geometry/LayoutRect.h"
@@ -12,17 +13,6 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-#define EXPECT_POINT_EQ(expected, actual)    \
-  do {                                       \
-    EXPECT_EQ((expected).X(), (actual).X()); \
-    EXPECT_EQ((expected).Y(), (actual).Y()); \
-  } while (false)
-#define EXPECT_SIZE_EQ(expected, actual)               \
-  do {                                                 \
-    EXPECT_EQ((expected).Width(), (actual).Width());   \
-    EXPECT_EQ((expected).Height(), (actual).Height()); \
-  } while (false)
 
 namespace blink {
 

@@ -53,6 +53,50 @@
 #include "public/web/WebViewClient.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
+#define ASSERT_POINT_EQ(expected, actual)    \
+  do {                                       \
+    ASSERT_EQ((expected).x(), (actual).x()); \
+    ASSERT_EQ((expected).y(), (actual).y()); \
+  } while (false)
+
+#define ASSERT_SIZE_EQ(expected, actual)               \
+  do {                                                 \
+    ASSERT_EQ((expected).Width(), (actual).Width());   \
+    ASSERT_EQ((expected).Height(), (actual).Height()); \
+  } while (false)
+
+#define EXPECT_POINT_EQ(expected, actual)    \
+  do {                                       \
+    EXPECT_EQ((expected).X(), (actual).X()); \
+    EXPECT_EQ((expected).Y(), (actual).Y()); \
+  } while (false)
+
+#define EXPECT_FLOAT_POINT_EQ(expected, actual)    \
+  do {                                             \
+    EXPECT_FLOAT_EQ((expected).X(), (actual).X()); \
+    EXPECT_FLOAT_EQ((expected).Y(), (actual).Y()); \
+  } while (false)
+
+#define EXPECT_SIZE_EQ(expected, actual)               \
+  do {                                                 \
+    EXPECT_EQ((expected).Width(), (actual).Width());   \
+    EXPECT_EQ((expected).Height(), (actual).Height()); \
+  } while (false)
+
+#define EXPECT_FLOAT_SIZE_EQ(expected, actual)               \
+  do {                                                       \
+    EXPECT_FLOAT_EQ((expected).Width(), (actual).Width());   \
+    EXPECT_FLOAT_EQ((expected).Height(), (actual).Height()); \
+  } while (false)
+
+#define EXPECT_FLOAT_RECT_EQ(expected, actual)               \
+  do {                                                       \
+    EXPECT_FLOAT_EQ((expected).X(), (actual).X());           \
+    EXPECT_FLOAT_EQ((expected).Y(), (actual).Y());           \
+    EXPECT_FLOAT_EQ((expected).Width(), (actual).Width());   \
+    EXPECT_FLOAT_EQ((expected).Height(), (actual).Height()); \
+  } while (false)
+
 namespace blink {
 
 class WebFrame;
