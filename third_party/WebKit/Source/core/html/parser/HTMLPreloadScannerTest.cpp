@@ -66,7 +66,7 @@ struct ContextTestCase {
   bool is_image_set;
 };
 
-class MockHTMLResourcePreloader : public ResourcePreloader {
+class HTMLMockHTMLResourcePreloader : public ResourcePreloader {
  public:
   void PreloadRequestVerification(Resource::Type type,
                                   const char* url,
@@ -212,7 +212,7 @@ class HTMLPreloadScannerTest : public ::testing::Test {
   void SetUp() override { RunSetUp(kViewportEnabled); }
 
   void Test(PreloadScannerTestCase test_case) {
-    MockHTMLResourcePreloader preloader;
+    HTMLMockHTMLResourcePreloader preloader;
     KURL base_url(kParsedURLString, test_case.base_url);
     scanner_->AppendToEnd(String(test_case.input_html));
     PreloadRequestStream requests = scanner_->Scan(base_url, nullptr);
@@ -224,7 +224,7 @@ class HTMLPreloadScannerTest : public ::testing::Test {
   }
 
   void Test(HTMLPreconnectTestCase test_case) {
-    MockHTMLResourcePreloader preloader;
+    HTMLMockHTMLResourcePreloader preloader;
     KURL base_url(kParsedURLString, test_case.base_url);
     scanner_->AppendToEnd(String(test_case.input_html));
     PreloadRequestStream requests = scanner_->Scan(base_url, nullptr);
@@ -234,7 +234,7 @@ class HTMLPreloadScannerTest : public ::testing::Test {
   }
 
   void Test(ReferrerPolicyTestCase test_case) {
-    MockHTMLResourcePreloader preloader;
+    HTMLMockHTMLResourcePreloader preloader;
     KURL base_url(kParsedURLString, test_case.base_url);
     scanner_->AppendToEnd(String(test_case.input_html));
     PreloadRequestStream requests = scanner_->Scan(base_url, nullptr);
@@ -253,7 +253,7 @@ class HTMLPreloadScannerTest : public ::testing::Test {
   }
 
   void Test(NonceTestCase test_case) {
-    MockHTMLResourcePreloader preloader;
+    HTMLMockHTMLResourcePreloader preloader;
     KURL base_url(kParsedURLString, test_case.base_url);
     scanner_->AppendToEnd(String(test_case.input_html));
     PreloadRequestStream requests = scanner_->Scan(base_url, nullptr);
@@ -263,7 +263,7 @@ class HTMLPreloadScannerTest : public ::testing::Test {
   }
 
   void Test(ContextTestCase test_case) {
-    MockHTMLResourcePreloader preloader;
+    HTMLMockHTMLResourcePreloader preloader;
     KURL base_url(kParsedURLString, test_case.base_url);
     scanner_->AppendToEnd(String(test_case.input_html));
     PreloadRequestStream requests = scanner_->Scan(base_url, nullptr);
