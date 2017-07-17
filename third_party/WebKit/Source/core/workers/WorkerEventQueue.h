@@ -42,7 +42,7 @@ class WorkerEventQueue final : public EventQueue {
   DECLARE_TRACE();
 
   // EventQueue
-  bool EnqueueEvent(Event*) override;
+  bool EnqueueEvent(const WebTraceLocation&, Event*) override;
   bool CancelEvent(Event*) override;
   void Close() override;
 

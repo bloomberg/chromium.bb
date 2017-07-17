@@ -16,7 +16,7 @@ class NullEventQueue final : public EventQueue {
  public:
   NullEventQueue() {}
   ~NullEventQueue() override {}
-  bool EnqueueEvent(Event*) override { return true; }
+  bool EnqueueEvent(const WebTraceLocation&, Event*) override { return true; }
   bool CancelEvent(Event*) override { return true; }
   void Close() override {}
 };

@@ -375,14 +375,14 @@ void LocalDOMWindow::EnqueueWindowEvent(Event* event) {
   if (!event_queue_)
     return;
   event->SetTarget(this);
-  event_queue_->EnqueueEvent(event);
+  event_queue_->EnqueueEvent(BLINK_FROM_HERE, event);
 }
 
 void LocalDOMWindow::EnqueueDocumentEvent(Event* event) {
   if (!event_queue_)
     return;
   event->SetTarget(document_.Get());
-  event_queue_->EnqueueEvent(event);
+  event_queue_->EnqueueEvent(BLINK_FROM_HERE, event);
 }
 
 void LocalDOMWindow::DispatchWindowLoadEvent() {

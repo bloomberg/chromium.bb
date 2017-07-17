@@ -52,7 +52,8 @@ DEFINE_TRACE(WorkerEventQueue) {
   EventQueue::Trace(visitor);
 }
 
-bool WorkerEventQueue::EnqueueEvent(Event* event) {
+bool WorkerEventQueue::EnqueueEvent(const WebTraceLocation& from_here,
+                                    Event* event) {
   if (is_closed_)
     return false;
   probe::AsyncTaskScheduled(event->target()->GetExecutionContext(),
@@ -65,7 +66,7 @@ bool WorkerEventQueue::EnqueueEvent(Event* event) {
   // DOMWindowEventQueueTimer.
   // TODO(nhiroki): Callers of enqueueEvent() should specify the task type.
   TaskRunnerHelper::Get(TaskType::kUnthrottled, worker_global_scope_.Get())
-      ->PostTask(BLINK_FROM_HERE,
+      ->PostTask(from_here,
                  WTF::Bind(&WorkerEventQueue::DispatchEvent,
                            WrapPersistent(this), WrapWeakPersistent(event)));
   return true;

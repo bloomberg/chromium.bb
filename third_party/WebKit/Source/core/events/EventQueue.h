@@ -31,6 +31,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/HashSet.h"
+#include "public/platform/WebTraceLocation.h"
 
 namespace blink {
 
@@ -40,7 +41,7 @@ class CORE_EXPORT EventQueue : public GarbageCollectedFinalized<EventQueue> {
  public:
   virtual ~EventQueue() {}
   DEFINE_INLINE_VIRTUAL_TRACE() {}
-  virtual bool EnqueueEvent(Event*) = 0;
+  virtual bool EnqueueEvent(const WebTraceLocation&, Event*) = 0;
   virtual bool CancelEvent(Event*) = 0;
   // The accumulated and all the future events will be discarded, no events will
   // be dispatched anymore.

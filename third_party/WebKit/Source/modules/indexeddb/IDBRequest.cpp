@@ -750,7 +750,7 @@ void IDBRequest::EnqueueEvent(Event* event) {
   // Keep track of enqueued events in case we need to abort prior to dispatch,
   // in which case these must be cancelled. If the events not dispatched for
   // other reasons they must be removed from this list via DequeueEvent().
-  if (event_queue->EnqueueEvent(event))
+  if (event_queue->EnqueueEvent(BLINK_FROM_HERE, event))
     enqueued_events_.push_back(event);
 }
 
