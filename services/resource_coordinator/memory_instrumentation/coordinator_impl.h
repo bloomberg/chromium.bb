@@ -129,6 +129,8 @@ class CoordinatorImpl : public Coordinator, public mojom::Coordinator {
   void OnOSMemoryDumpResponse(mojom::ClientProcess*,
                               bool success,
                               const OSMemDumpMap&);
+  void RemovePendingResponse(mojom::ClientProcess*,
+                             QueuedMemoryDumpRequest::PendingResponse::Type);
 
   void PerformNextQueuedGlobalMemoryDump();
   void FinalizeGlobalMemoryDumpIfAllManagersReplied();
