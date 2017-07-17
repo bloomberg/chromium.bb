@@ -32,11 +32,12 @@ namespace {
 class FrameSinkClient : public viz::TestLayerTreeFrameSinkClient {
  public:
   explicit FrameSinkClient(
-      scoped_refptr<cc::ContextProvider> display_context_provider)
+      scoped_refptr<viz::ContextProvider> display_context_provider)
       : display_context_provider_(std::move(display_context_provider)) {}
 
   std::unique_ptr<cc::OutputSurface> CreateDisplayOutputSurface(
-      scoped_refptr<cc::ContextProvider> compositor_context_provider) override {
+      scoped_refptr<viz::ContextProvider> compositor_context_provider)
+      override {
     return cc::FakeOutputSurface::Create3d(
         std::move(display_context_provider_));
   }
@@ -51,7 +52,7 @@ class FrameSinkClient : public viz::TestLayerTreeFrameSinkClient {
   void DisplayDidDrawAndSwap() override {}
 
  private:
-  scoped_refptr<cc::ContextProvider> display_context_provider_;
+  scoped_refptr<viz::ContextProvider> display_context_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameSinkClient);
 };

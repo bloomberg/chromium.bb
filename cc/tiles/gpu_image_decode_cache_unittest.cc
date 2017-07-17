@@ -27,7 +27,7 @@ PaintImage CreatePaintImage(sk_sp<SkImage> image) {
 size_t kGpuMemoryLimitBytes = 96 * 1024 * 1024;
 class TestGpuImageDecodeCache : public GpuImageDecodeCache {
  public:
-  explicit TestGpuImageDecodeCache(ContextProvider* context,
+  explicit TestGpuImageDecodeCache(viz::ContextProvider* context,
                                    viz::ResourceFormat format)
       : GpuImageDecodeCache(context,
                             format,
@@ -651,7 +651,7 @@ TEST_P(GpuImageDecodeCacheTest, GetDecodedImageForDraw) {
 
   // Must hold context lock before calling GetDecodedImageForDraw /
   // DrawWithImageFinished.
-  ContextProvider::ScopedContextLock context_lock(context_provider.get());
+  viz::ContextProvider::ScopedContextLock context_lock(context_provider.get());
   DecodedDrawImage decoded_draw_image =
       cache.GetDecodedImageForDraw(draw_image);
   EXPECT_TRUE(decoded_draw_image.image());
@@ -686,7 +686,7 @@ TEST_P(GpuImageDecodeCacheTest, GetLargeDecodedImageForDraw) {
 
   // Must hold context lock before calling GetDecodedImageForDraw /
   // DrawWithImageFinished.
-  ContextProvider::ScopedContextLock context_lock(context_provider.get());
+  viz::ContextProvider::ScopedContextLock context_lock(context_provider.get());
   DecodedDrawImage decoded_draw_image =
       cache.GetDecodedImageForDraw(draw_image);
   EXPECT_TRUE(decoded_draw_image.image());
@@ -722,7 +722,7 @@ TEST_P(GpuImageDecodeCacheTest, GetDecodedImageForDrawAtRasterDecode) {
 
   // Must hold context lock before calling GetDecodedImageForDraw /
   // DrawWithImageFinished.
-  ContextProvider::ScopedContextLock context_lock(context_provider.get());
+  viz::ContextProvider::ScopedContextLock context_lock(context_provider.get());
   DecodedDrawImage decoded_draw_image =
       cache.GetDecodedImageForDraw(draw_image);
   EXPECT_TRUE(decoded_draw_image.image());
@@ -769,7 +769,7 @@ TEST_P(GpuImageDecodeCacheTest, GetDecodedImageForDrawLargerScale) {
 
   // Must hold context lock before calling GetDecodedImageForDraw /
   // DrawWithImageFinished.
-  ContextProvider::ScopedContextLock context_lock(context_provider.get());
+  viz::ContextProvider::ScopedContextLock context_lock(context_provider.get());
   DecodedDrawImage decoded_draw_image =
       cache.GetDecodedImageForDraw(draw_image);
   EXPECT_TRUE(decoded_draw_image.image());
@@ -826,7 +826,7 @@ TEST_P(GpuImageDecodeCacheTest, GetDecodedImageForDrawHigherQuality) {
 
   // Must hold context lock before calling GetDecodedImageForDraw /
   // DrawWithImageFinished.
-  ContextProvider::ScopedContextLock context_lock(context_provider.get());
+  viz::ContextProvider::ScopedContextLock context_lock(context_provider.get());
   DecodedDrawImage decoded_draw_image =
       cache.GetDecodedImageForDraw(draw_image);
   EXPECT_TRUE(decoded_draw_image.image());
@@ -873,7 +873,7 @@ TEST_P(GpuImageDecodeCacheTest, GetDecodedImageForDrawNegative) {
 
   // Must hold context lock before calling GetDecodedImageForDraw /
   // DrawWithImageFinished.
-  ContextProvider::ScopedContextLock context_lock(context_provider.get());
+  viz::ContextProvider::ScopedContextLock context_lock(context_provider.get());
   DecodedDrawImage decoded_draw_image =
       cache.GetDecodedImageForDraw(draw_image);
   EXPECT_TRUE(decoded_draw_image.image());
@@ -910,7 +910,7 @@ TEST_P(GpuImageDecodeCacheTest, GetLargeScaledDecodedImageForDraw) {
 
   // Must hold context lock before calling GetDecodedImageForDraw /
   // DrawWithImageFinished.
-  ContextProvider::ScopedContextLock context_lock(context_provider.get());
+  viz::ContextProvider::ScopedContextLock context_lock(context_provider.get());
   DecodedDrawImage decoded_draw_image =
       cache.GetDecodedImageForDraw(draw_image);
   EXPECT_TRUE(decoded_draw_image.image());
@@ -949,7 +949,7 @@ TEST_P(GpuImageDecodeCacheTest, AtRasterUsedDirectlyIfSpaceAllows) {
 
   // Must hold context lock before calling GetDecodedImageForDraw /
   // DrawWithImageFinished.
-  ContextProvider::ScopedContextLock context_lock(context_provider.get());
+  viz::ContextProvider::ScopedContextLock context_lock(context_provider.get());
   DecodedDrawImage decoded_draw_image =
       cache.GetDecodedImageForDraw(draw_image);
   EXPECT_TRUE(decoded_draw_image.image());
@@ -989,7 +989,7 @@ TEST_P(GpuImageDecodeCacheTest,
 
   // Must hold context lock before calling GetDecodedImageForDraw /
   // DrawWithImageFinished.
-  ContextProvider::ScopedContextLock context_lock(context_provider.get());
+  viz::ContextProvider::ScopedContextLock context_lock(context_provider.get());
   DecodedDrawImage decoded_draw_image =
       cache.GetDecodedImageForDraw(draw_image);
   EXPECT_TRUE(decoded_draw_image.image());
@@ -1022,7 +1022,7 @@ TEST_P(GpuImageDecodeCacheTest,
 
   // Must hold context lock before calling GetDecodedImageForDraw /
   // DrawWithImageFinished.
-  ContextProvider::ScopedContextLock context_lock(context_provider.get());
+  viz::ContextProvider::ScopedContextLock context_lock(context_provider.get());
   DecodedDrawImage decoded_draw_image =
       cache.GetDecodedImageForDraw(draw_image);
   EXPECT_TRUE(decoded_draw_image.image());
@@ -1065,7 +1065,7 @@ TEST_P(GpuImageDecodeCacheTest, ZeroSizedImagesAreSkipped) {
 
   // Must hold context lock before calling GetDecodedImageForDraw /
   // DrawWithImageFinished.
-  ContextProvider::ScopedContextLock context_lock(context_provider.get());
+  viz::ContextProvider::ScopedContextLock context_lock(context_provider.get());
   DecodedDrawImage decoded_draw_image =
       cache.GetDecodedImageForDraw(draw_image);
   EXPECT_FALSE(decoded_draw_image.image());
@@ -1095,7 +1095,7 @@ TEST_P(GpuImageDecodeCacheTest, NonOverlappingSrcRectImagesAreSkipped) {
 
   // Must hold context lock before calling GetDecodedImageForDraw /
   // DrawWithImageFinished.
-  ContextProvider::ScopedContextLock context_lock(context_provider.get());
+  viz::ContextProvider::ScopedContextLock context_lock(context_provider.get());
   DecodedDrawImage decoded_draw_image =
       cache.GetDecodedImageForDraw(draw_image);
   EXPECT_FALSE(decoded_draw_image.image());
@@ -1389,7 +1389,7 @@ TEST_P(GpuImageDecodeCacheTest, GetDecodedImageForDrawMipUsageChange) {
 
   // Must hold context lock before calling GetDecodedImageForDraw /
   // DrawWithImageFinished.
-  ContextProvider::ScopedContextLock context_lock(context_provider.get());
+  viz::ContextProvider::ScopedContextLock context_lock(context_provider.get());
 
   // Do an at-raster decode of the above image that *does* require mips.
   DrawImage draw_image_mips(

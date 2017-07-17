@@ -10,8 +10,6 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
 #include "cc/base/lap_timer.h"
-#include "cc/output/context_cache_controller.h"
-#include "cc/output/context_provider.h"
 #include "cc/raster/bitmap_raster_buffer_provider.h"
 #include "cc/raster/gpu_raster_buffer_provider.h"
 #include "cc/raster/one_copy_raster_buffer_provider.h"
@@ -28,6 +26,8 @@
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "cc/tiles/tile_task_manager.h"
+#include "components/viz/common/gpu/context_cache_controller.h"
+#include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/resources/platform_color.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -78,7 +78,7 @@ class PerfGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
   }
 };
 
-class PerfContextProvider : public ContextProvider {
+class PerfContextProvider : public viz::ContextProvider {
  public:
   PerfContextProvider()
       : context_gl_(new PerfGLES2Interface),
@@ -103,7 +103,7 @@ class PerfContextProvider : public ContextProvider {
     cache_controller_.SetGrContext(gr_context_.get());
     return gr_context_.get();
   }
-  ContextCacheController* CacheController() override {
+  viz::ContextCacheController* CacheController() override {
     return &cache_controller_;
   }
   void InvalidateGrContext(uint32_t state) override {
@@ -119,7 +119,7 @@ class PerfContextProvider : public ContextProvider {
   std::unique_ptr<PerfGLES2Interface> context_gl_;
   sk_sp<class GrContext> gr_context_;
   TestContextSupport support_;
-  ContextCacheController cache_controller_;
+  viz::ContextCacheController cache_controller_;
   base::Lock context_lock_;
 };
 
@@ -307,8 +307,8 @@ class RasterBufferProviderPerfTestBase {
   }
 
  protected:
-  scoped_refptr<ContextProvider> compositor_context_provider_;
-  scoped_refptr<ContextProvider> worker_context_provider_;
+  scoped_refptr<viz::ContextProvider> compositor_context_provider_;
+  scoped_refptr<viz::ContextProvider> worker_context_provider_;
   std::unique_ptr<ResourceProvider> resource_provider_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   std::unique_ptr<SynchronousTaskGraphRunner> task_graph_runner_;

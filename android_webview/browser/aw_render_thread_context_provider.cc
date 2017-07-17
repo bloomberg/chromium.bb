@@ -9,8 +9,8 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/trace_event/trace_event.h"
-#include "cc/output/context_cache_controller.h"
 #include "cc/output/managed_memory_policy.h"
+#include "components/viz/common/gpu/context_cache_controller.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
 #include "gpu/command_buffer/client/gles2_trace_implementation.h"
@@ -81,7 +81,7 @@ AwRenderThreadContextProvider::AwRenderThreadContextProvider(
   }
 
   cache_controller_.reset(
-      new cc::ContextCacheController(context_->GetImplementation(), nullptr));
+      new viz::ContextCacheController(context_->GetImplementation(), nullptr));
 }
 
 AwRenderThreadContextProvider::~AwRenderThreadContextProvider() {
@@ -135,7 +135,7 @@ class GrContext* AwRenderThreadContextProvider::GrContext() {
   return gr_context_.get();
 }
 
-cc::ContextCacheController* AwRenderThreadContextProvider::CacheController() {
+viz::ContextCacheController* AwRenderThreadContextProvider::CacheController() {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   return cache_controller_.get();
 }

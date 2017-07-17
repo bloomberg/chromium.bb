@@ -50,7 +50,7 @@ class CONTENT_EXPORT BrowserCompositorOutputSurface
  protected:
   // Constructor used by the accelerated implementation.
   BrowserCompositorOutputSurface(
-      scoped_refptr<cc::ContextProvider> context,
+      scoped_refptr<viz::ContextProvider> context,
       const UpdateVSyncParametersCallback& update_vsync_parameters_callback,
       std::unique_ptr<viz::CompositorOverlayCandidateValidator>
           overlay_candidate_validator);

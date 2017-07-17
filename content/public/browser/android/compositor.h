@@ -15,7 +15,6 @@
 #include "ui/gfx/native_widget_types.h"
 
 namespace cc {
-class ContextProvider;
 class Layer;
 }
 
@@ -30,6 +29,10 @@ struct SharedMemoryLimits;
 namespace ui {
 class ResourceManager;
 class UIResourceProvider;
+}
+
+namespace viz {
+class ContextProvider;
 }
 
 namespace content {
@@ -47,7 +50,7 @@ class CONTENT_EXPORT Compositor {
   // Creates a GL context for the provided |handle|. If a null handle is passed,
   // an offscreen context is created. This must be called on the UI thread.
   using ContextProviderCallback =
-      base::Callback<void(scoped_refptr<cc::ContextProvider>)>;
+      base::Callback<void(scoped_refptr<viz::ContextProvider>)>;
   static void CreateContextProvider(
       gpu::SurfaceHandle handle,
       gpu::gles2::ContextCreationAttribHelper attributes,

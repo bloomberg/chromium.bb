@@ -10,9 +10,9 @@
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/base/switches.h"
-#include "cc/output/in_process_context_provider.h"
 #include "cc/output/texture_mailbox_deleter.h"
 #include "cc/scheduler/begin_frame_source.h"
+#include "components/viz/common/gpu/in_process_context_provider.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display/display_scheduler.h"
 #include "components/viz/service/display_embedder/display_output_surface.h"
@@ -59,11 +59,11 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
       base::MakeUnique<cc::DelayBasedBeginFrameSource>(
           base::MakeUnique<cc::DelayBasedTimeSource>(task_runner_.get()));
 
-  scoped_refptr<cc::InProcessContextProvider> context_provider =
-      new cc::InProcessContextProvider(
-          gpu_service_, surface_handle, gpu_memory_buffer_manager_.get(),
-          image_factory_, gpu::SharedMemoryLimits(),
-          nullptr /* shared_context */);
+  scoped_refptr<InProcessContextProvider> context_provider =
+      new InProcessContextProvider(gpu_service_, surface_handle,
+                                   gpu_memory_buffer_manager_.get(),
+                                   image_factory_, gpu::SharedMemoryLimits(),
+                                   nullptr /* shared_context */);
 
   // TODO(rjkroege): If there is something better to do than CHECK, add it.
   CHECK(context_provider->BindToCurrentThread());

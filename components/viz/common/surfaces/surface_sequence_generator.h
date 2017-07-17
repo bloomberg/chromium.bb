@@ -13,11 +13,12 @@
 
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/surface_sequence.h"
+#include "components/viz/common/viz_common_export.h"
 
 namespace viz {
 
 // Generates unique surface sequences for a surface client id.
-class SurfaceSequenceGenerator {
+class VIZ_COMMON_EXPORT SurfaceSequenceGenerator {
  public:
   SurfaceSequenceGenerator();
   ~SurfaceSequenceGenerator();

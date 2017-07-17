@@ -16,8 +16,8 @@
 namespace cc {
 
 FakeLayerTreeFrameSink::FakeLayerTreeFrameSink(
-    scoped_refptr<ContextProvider> context_provider,
-    scoped_refptr<ContextProvider> worker_context_provider)
+    scoped_refptr<viz::ContextProvider> context_provider,
+    scoped_refptr<viz::ContextProvider> worker_context_provider)
     : LayerTreeFrameSink(std::move(context_provider),
                          std::move(worker_context_provider),
                          nullptr,

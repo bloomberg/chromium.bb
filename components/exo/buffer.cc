@@ -21,9 +21,9 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
-#include "cc/output/context_provider.h"
 #include "cc/resources/single_release_callback.h"
 #include "components/exo/layer_tree_frame_sink_holder.h"
+#include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/quads/resource_format.h"
 #include "components/viz/common/quads/texture_mailbox.h"
 #include "gpu/command_buffer/client/context_support.h"
@@ -99,9 +99,9 @@ void CreateGLTextureMailbox(gpu::gles2::GLES2Interface* gles2,
 class Buffer::Texture : public ui::ContextFactoryObserver {
  public:
   Texture(ui::ContextFactory* context_factory,
-          cc::ContextProvider* context_provider);
+          viz::ContextProvider* context_provider);
   Texture(ui::ContextFactory* context_factory,
-          cc::ContextProvider* context_provider,
+          viz::ContextProvider* context_provider,
           gfx::GpuMemoryBuffer* gpu_memory_buffer,
           unsigned texture_target,
           unsigned query_type);
@@ -148,7 +148,7 @@ class Buffer::Texture : public ui::ContextFactoryObserver {
 
   gfx::GpuMemoryBuffer* const gpu_memory_buffer_;
   ui::ContextFactory* context_factory_;
-  scoped_refptr<cc::ContextProvider> context_provider_;
+  scoped_refptr<viz::ContextProvider> context_provider_;
   const unsigned texture_target_;
   const unsigned query_type_;
   const GLenum internalformat_;
@@ -165,7 +165,7 @@ class Buffer::Texture : public ui::ContextFactoryObserver {
 };
 
 Buffer::Texture::Texture(ui::ContextFactory* context_factory,
-                         cc::ContextProvider* context_provider)
+                         viz::ContextProvider* context_provider)
     : gpu_memory_buffer_(nullptr),
       context_factory_(context_factory),
       context_provider_(context_provider),
@@ -182,7 +182,7 @@ Buffer::Texture::Texture(ui::ContextFactory* context_factory,
 }
 
 Buffer::Texture::Texture(ui::ContextFactory* context_factory,
-                         cc::ContextProvider* context_provider,
+                         viz::ContextProvider* context_provider,
                          gfx::GpuMemoryBuffer* gpu_memory_buffer,
                          unsigned texture_target,
                          unsigned query_type)
@@ -429,7 +429,7 @@ bool Buffer::ProduceTransferableResource(
   ui::ContextFactory* context_factory =
       aura::Env::GetInstance()->context_factory();
   // Note: This can fail if GPU acceleration has been disabled.
-  scoped_refptr<cc::ContextProvider> context_provider =
+  scoped_refptr<viz::ContextProvider> context_provider =
       context_factory->SharedMainThreadContextProvider();
   if (!context_provider) {
     DLOG(WARNING) << "Failed to acquire a context provider";

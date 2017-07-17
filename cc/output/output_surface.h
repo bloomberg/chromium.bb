@@ -12,11 +12,11 @@
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
 #include "cc/cc_export.h"
-#include "cc/output/context_provider.h"
 #include "cc/output/overlay_candidate_validator.h"
 #include "cc/output/software_output_device.h"
 #include "cc/output/vulkan_context_provider.h"
 #include "cc/resources/returned_resource.h"
+#include "components/viz/common/gpu/context_provider.h"
 #include "gpu/command_buffer/common/texture_in_use_response.h"
 #include "ui/gfx/color_space.h"
 
@@ -51,7 +51,7 @@ class CC_EXPORT OutputSurface {
   };
 
   // Constructor for GL-based compositing.
-  explicit OutputSurface(scoped_refptr<ContextProvider> context_provider);
+  explicit OutputSurface(scoped_refptr<viz::ContextProvider> context_provider);
   // Constructor for software compositing.
   explicit OutputSurface(std::unique_ptr<SoftwareOutputDevice> software_device);
   // Constructor for Vulkan-based compositing.
@@ -66,7 +66,9 @@ class CC_EXPORT OutputSurface {
   // surface. Either of these may return a null pointer, but not both.
   // In the event of a lost context, the entire output surface should be
   // recreated.
-  ContextProvider* context_provider() const { return context_provider_.get(); }
+  viz::ContextProvider* context_provider() const {
+    return context_provider_.get();
+  }
   VulkanContextProvider* vulkan_context_provider() const {
     return vulkan_context_provider_.get();
   }
@@ -120,7 +122,7 @@ class CC_EXPORT OutputSurface {
 
  protected:
   struct OutputSurface::Capabilities capabilities_;
-  scoped_refptr<ContextProvider> context_provider_;
+  scoped_refptr<viz::ContextProvider> context_provider_;
   scoped_refptr<VulkanContextProvider> vulkan_context_provider_;
   std::unique_ptr<SoftwareOutputDevice> software_device_;
 

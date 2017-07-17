@@ -22,11 +22,11 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/output/compositor_frame.h"
-#include "cc/output/context_provider.h"
 #include "cc/output/layer_tree_frame_sink.h"
 #include "cc/output/layer_tree_frame_sink_client.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/resources/transferable_resource.h"
+#include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/quads/resource_format.h"
 #include "components/viz/common/quads/texture_mailbox.h"
 #include "gpu/command_buffer/client/context_support.h"
@@ -240,7 +240,7 @@ struct LaserResource {
         gles2->DestroyImageCHROMIUM(image);
     }
   }
-  scoped_refptr<cc::ContextProvider> context_provider;
+  scoped_refptr<viz::ContextProvider> context_provider;
   uint32_t texture = 0;
   uint32_t image = 0;
   gpu::Mailbox mailbox;

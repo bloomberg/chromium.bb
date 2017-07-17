@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/output/context_cache_controller.h"
+#include "components/viz/common/gpu/context_cache_controller.h"
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -11,7 +11,7 @@
 #include "gpu/command_buffer/client/context_support.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 
-namespace cc {
+namespace viz {
 namespace {
 static const int kIdleCleanupDelaySeconds = 1;
 }  // namespace
@@ -172,4 +172,4 @@ void ContextCacheController::OnIdle(uint32_t idle_generation) {
     context_lock_->Release();
 }
 
-}  // namespace cc
+}  // namespace viz

@@ -11,7 +11,7 @@
 
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
-#include "cc/output/context_provider.h"
+#include "components/viz/common/gpu/context_provider.h"
 #include "gpu/ipc/in_process_command_buffer.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/gpu/GrContext.h"
@@ -29,7 +29,7 @@ class GLES2TraceImplementation;
 
 namespace android_webview {
 
-class AwRenderThreadContextProvider : public cc::ContextProvider {
+class AwRenderThreadContextProvider : public viz::ContextProvider {
  public:
   static scoped_refptr<AwRenderThreadContextProvider> Create(
       scoped_refptr<gl::GLSurface> surface,
@@ -45,13 +45,13 @@ class AwRenderThreadContextProvider : public cc::ContextProvider {
       scoped_refptr<gpu::InProcessCommandBuffer::Service> service);
   ~AwRenderThreadContextProvider() override;
 
-  // cc::ContextProvider:
+  // viz::ContextProvider:
   bool BindToCurrentThread() override;
   gpu::Capabilities ContextCapabilities() override;
   gpu::gles2::GLES2Interface* ContextGL() override;
   gpu::ContextSupport* ContextSupport() override;
   class GrContext* GrContext() override;
-  cc::ContextCacheController* CacheController() override;
+  viz::ContextCacheController* CacheController() override;
   void InvalidateGrContext(uint32_t state) override;
   base::Lock* GetLock() override;
   void SetLostContextCallback(
@@ -64,7 +64,7 @@ class AwRenderThreadContextProvider : public cc::ContextProvider {
   std::unique_ptr<gpu::GLInProcessContext> context_;
   std::unique_ptr<gpu::gles2::GLES2TraceImplementation> trace_impl_;
   sk_sp<class GrContext> gr_context_;
-  std::unique_ptr<cc::ContextCacheController> cache_controller_;
+  std::unique_ptr<viz::ContextCacheController> cache_controller_;
 
   LostContextCallback lost_context_callback_;
 

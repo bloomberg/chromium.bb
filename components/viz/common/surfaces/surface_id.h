@@ -14,6 +14,7 @@
 #include "base/hash.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
+#include "components/viz/common/viz_common_export.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 
 namespace cc {
@@ -24,7 +25,7 @@ class SurfaceIdDataView;
 
 namespace viz {
 
-class SurfaceId {
+class VIZ_COMMON_EXPORT SurfaceId {
  public:
   constexpr SurfaceId() = default;
 
@@ -75,7 +76,8 @@ class SurfaceId {
   LocalSurfaceId local_surface_id_;
 };
 
-std::ostream& operator<<(std::ostream& out, const SurfaceId& surface_id);
+VIZ_COMMON_EXPORT std::ostream& operator<<(std::ostream& out,
+                                           const SurfaceId& surface_id);
 
 struct SurfaceIdHash {
   size_t operator()(const SurfaceId& key) const { return key.hash(); }

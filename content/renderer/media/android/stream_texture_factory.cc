@@ -6,7 +6,6 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "cc/output/context_provider.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/ipc/client/command_buffer_proxy_impl.h"
 #include "gpu/ipc/client/gpu_channel_host.h"

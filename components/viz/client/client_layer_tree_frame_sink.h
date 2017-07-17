@@ -8,9 +8,9 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "cc/ipc/compositor_frame_sink.mojom.h"
-#include "cc/output/context_provider.h"
 #include "cc/output/layer_tree_frame_sink.h"
 #include "cc/scheduler/begin_frame_source.h"
+#include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -25,8 +25,8 @@ class ClientLayerTreeFrameSink : public cc::LayerTreeFrameSink,
                                  public cc::ExternalBeginFrameSourceClient {
  public:
   ClientLayerTreeFrameSink(
-      scoped_refptr<cc::ContextProvider> context_provider,
-      scoped_refptr<cc::ContextProvider> worker_context_provider,
+      scoped_refptr<ContextProvider> context_provider,
+      scoped_refptr<ContextProvider> worker_context_provider,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       SharedBitmapManager* shared_bitmap_manager,
       std::unique_ptr<cc::SyntheticBeginFrameSource>

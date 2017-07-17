@@ -6,7 +6,7 @@
 
 #include "base/run_loop.h"
 #include "build/build_config.h"
-#include "cc/output/context_provider.h"
+#include "components/viz/common/gpu/context_provider.h"
 #include "content/browser/compositor/owned_mailbox.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/test/content_browser_test.h"

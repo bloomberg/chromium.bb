@@ -8,10 +8,10 @@
 #include <memory>
 
 #include "base/memory/weak_ptr.h"
-#include "cc/output/context_provider.h"
-#include "cc/output/in_process_context_provider.h"
 #include "cc/output/output_surface.h"
 #include "components/viz/common/gl_helper.h"
+#include "components/viz/common/gpu/context_provider.h"
+#include "components/viz/common/gpu/in_process_context_provider.h"
 #include "components/viz/service/display_embedder/display_output_surface.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
@@ -37,7 +37,7 @@ class BufferQueue;
 class DisplayOutputSurfaceOzone : public DisplayOutputSurface {
  public:
   DisplayOutputSurfaceOzone(
-      scoped_refptr<cc::InProcessContextProvider> context_provider,
+      scoped_refptr<InProcessContextProvider> context_provider,
       gfx::AcceleratedWidget widget,
       cc::SyntheticBeginFrameSource* synthetic_begin_frame_source,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,

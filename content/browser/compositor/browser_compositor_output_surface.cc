@@ -20,7 +20,7 @@
 namespace content {
 
 BrowserCompositorOutputSurface::BrowserCompositorOutputSurface(
-    scoped_refptr<cc::ContextProvider> context_provider,
+    scoped_refptr<viz::ContextProvider> context_provider,
     const UpdateVSyncParametersCallback& update_vsync_parameters_callback,
     std::unique_ptr<viz::CompositorOverlayCandidateValidator>
         overlay_candidate_validator)

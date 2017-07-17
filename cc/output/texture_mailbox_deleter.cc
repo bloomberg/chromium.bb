@@ -10,15 +10,15 @@
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
-#include "cc/output/context_provider.h"
 #include "cc/resources/single_release_callback.h"
+#include "components/viz/common/gpu/context_provider.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/sync_token.h"
 
 namespace cc {
 
 static void DeleteTextureOnImplThread(
-    const scoped_refptr<ContextProvider>& context_provider,
+    const scoped_refptr<viz::ContextProvider>& context_provider,
     unsigned texture_id,
     const gpu::SyncToken& sync_token,
     bool is_lost) {
@@ -50,7 +50,7 @@ TextureMailboxDeleter::~TextureMailboxDeleter() {
 
 std::unique_ptr<SingleReleaseCallback>
 TextureMailboxDeleter::GetReleaseCallback(
-    scoped_refptr<ContextProvider> context_provider,
+    scoped_refptr<viz::ContextProvider> context_provider,
     unsigned texture_id) {
   // This callback owns the |context_provider|. It must be destroyed on the impl
   // thread. Upon destruction of this class, the callback must immediately be

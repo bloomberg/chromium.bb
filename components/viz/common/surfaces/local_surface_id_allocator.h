@@ -9,13 +9,14 @@
 
 #include "base/macros.h"
 #include "components/viz/common/surfaces/surface_id.h"
+#include "components/viz/common/viz_common_export.h"
 
 namespace viz {
 
 // This is a helper class for generating local surface IDs for a single
 // FrameSink. This is not threadsafe, to use from multiple threads wrap this
 // class in a mutex.
-class LocalSurfaceIdAllocator {
+class VIZ_COMMON_EXPORT LocalSurfaceIdAllocator {
  public:
   LocalSurfaceIdAllocator();
   ~LocalSurfaceIdAllocator();

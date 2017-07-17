@@ -19,8 +19,8 @@
 namespace cc {
 
 LayerTreeFrameSink::LayerTreeFrameSink(
-    scoped_refptr<ContextProvider> context_provider,
-    scoped_refptr<ContextProvider> worker_context_provider,
+    scoped_refptr<viz::ContextProvider> context_provider,
+    scoped_refptr<viz::ContextProvider> worker_context_provider,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     viz::SharedBitmapManager* shared_bitmap_manager)
     : context_provider_(std::move(context_provider)),
@@ -55,7 +55,7 @@ bool LayerTreeFrameSink::BindToClient(LayerTreeFrameSinkClient* client) {
   }
 
   if (!success) {
-    // Destroy the ContextProvider on the thread attempted to be bound.
+    // Destroy the viz::ContextProvider on the thread attempted to be bound.
     context_provider_ = nullptr;
     client_ = nullptr;
   }
@@ -68,9 +68,9 @@ void LayerTreeFrameSink::DetachFromClient() {
 
   if (context_provider_.get()) {
     context_provider_->SetLostContextCallback(
-        ContextProvider::LostContextCallback());
+        viz::ContextProvider::LostContextCallback());
   }
-  // Destroy the ContextProvider on the bound thread.
+  // Destroy the viz::ContextProvider on the bound thread.
   context_provider_ = nullptr;
   client_ = nullptr;
 }

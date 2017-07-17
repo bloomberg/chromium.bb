@@ -12,10 +12,11 @@
 #include <tuple>
 
 #include "base/hash.h"
+#include "components/viz/common/viz_common_export.h"
 
 namespace viz {
 
-class FrameSinkId {
+class VIZ_COMMON_EXPORT FrameSinkId {
  public:
   constexpr FrameSinkId() : client_id_(0), sink_id_(0) {}
 
@@ -51,7 +52,8 @@ class FrameSinkId {
   uint32_t sink_id_;
 };
 
-std::ostream& operator<<(std::ostream& out, const FrameSinkId& frame_sink_id);
+VIZ_COMMON_EXPORT std::ostream& operator<<(std::ostream& out,
+                                           const FrameSinkId& frame_sink_id);
 
 struct FrameSinkIdHash {
   size_t operator()(const FrameSinkId& key) const { return key.hash(); }

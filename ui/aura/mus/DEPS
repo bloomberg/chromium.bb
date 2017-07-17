@@ -11,6 +11,7 @@ include_rules = [
   "+cc/surfaces/surface_reference_factory.h",
   "+components/discardable_memory/client/client_discardable_shared_memory_manager.h",
   "+components/viz/client",
+  "+components/viz/common/gpu",
   "+gpu/command_buffer/client/gpu_memory_buffer_manager.h",
   "+gpu/ipc/client/gpu_channel_host.h",
   "+mojo/public/cpp/system/buffer.h",

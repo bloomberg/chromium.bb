@@ -67,7 +67,7 @@ void MusContextFactory::CreateLayerTreeFrameSink(
                  weak_ptr_factory_.GetWeakPtr(), compositor));
 }
 
-scoped_refptr<cc::ContextProvider>
+scoped_refptr<viz::ContextProvider>
 MusContextFactory::SharedMainThreadContextProvider() {
   if (!shared_main_thread_context_provider_) {
     scoped_refptr<gpu::GpuChannelHost> gpu_channel =

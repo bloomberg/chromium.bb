@@ -10,7 +10,6 @@ include_rules = [
   "+components/variations/child_process_field_trial_syncer.h",
   "+components/viz/client",
   "+components/viz/common",
-
   "+cc/blink",
   "+content/public/child",
   "+content/public/renderer",

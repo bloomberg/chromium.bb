@@ -6,12 +6,13 @@
 #define COMPONENTS_VIZ_COMMON_RESOURCES_RESOURCE_SETTINGS_H_
 
 #include "components/viz/common/resources/buffer_to_texture_target_map.h"
+#include "components/viz/common/viz_common_export.h"
 
 namespace viz {
 
 // ResourceSettings contains all the settings that are needed to create a
 // ResourceProvider.
-class ResourceSettings {
+class VIZ_COMMON_EXPORT ResourceSettings {
  public:
   ResourceSettings();
   ResourceSettings(const ResourceSettings& other);

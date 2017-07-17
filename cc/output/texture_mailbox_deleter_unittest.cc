@@ -34,7 +34,7 @@ TEST(TextureMailboxDeleterTest, Destroy) {
   EXPECT_EQ(1u, context_provider->TestContext3d()->NumTextures());
 
   // When the deleter is destroyed, it immediately drops its ref on the
-  // ContextProvider, and deletes the texture.
+  // viz::ContextProvider, and deletes the texture.
   deleter = nullptr;
   EXPECT_TRUE(context_provider->HasOneRef());
   EXPECT_EQ(0u, context_provider->TestContext3d()->NumTextures());
@@ -66,7 +66,7 @@ TEST(TextureMailboxDeleterTest, NullTaskRunner) {
   cb->Run(gpu::SyncToken(), false);
 
   // With no task runner the callback will immediately drops its ref on the
-  // ContextProvider and delete the texture.
+  // viz::ContextProvider and delete the texture.
   EXPECT_TRUE(context_provider->HasOneRef());
   EXPECT_EQ(0u, context_provider->TestContext3d()->NumTextures());
 }

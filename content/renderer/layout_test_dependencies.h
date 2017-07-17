@@ -11,7 +11,6 @@
 #include "base/memory/ref_counted.h"
 
 namespace cc {
-class ContextProvider;
 class CopyOutputRequest;
 class LayerTreeFrameSink;
 class SwapPromise;
@@ -20,6 +19,10 @@ class SwapPromise;
 namespace gpu {
 class GpuChannelHost;
 class GpuMemoryBufferManager;
+}
+
+namespace viz {
+class ContextProvider;
 }
 
 namespace content {
@@ -32,8 +35,8 @@ class LayoutTestDependencies {
   virtual std::unique_ptr<cc::LayerTreeFrameSink> CreateLayerTreeFrameSink(
       int32_t routing_id,
       scoped_refptr<gpu::GpuChannelHost> gpu_channel,
-      scoped_refptr<cc::ContextProvider> compositor_context_provider,
-      scoped_refptr<cc::ContextProvider> worker_context_provider,
+      scoped_refptr<viz::ContextProvider> compositor_context_provider,
+      scoped_refptr<viz::ContextProvider> worker_context_provider,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       CompositorDependencies* deps) = 0;
 

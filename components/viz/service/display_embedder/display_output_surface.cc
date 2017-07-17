@@ -9,17 +9,17 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "cc/output/context_provider.h"
 #include "cc/output/output_surface_client.h"
 #include "cc/output/output_surface_frame.h"
 #include "cc/scheduler/begin_frame_source.h"
+#include "components/viz/common/gpu/context_provider.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 
 namespace viz {
 
 DisplayOutputSurface::DisplayOutputSurface(
-    scoped_refptr<cc::InProcessContextProvider> context_provider,
+    scoped_refptr<InProcessContextProvider> context_provider,
     cc::SyntheticBeginFrameSource* synthetic_begin_frame_source)
     : cc::OutputSurface(context_provider),
       synthetic_begin_frame_source_(synthetic_begin_frame_source),
@@ -94,7 +94,7 @@ void DisplayOutputSurface::SwapBuffers(cc::OutputSurfaceFrame frame) {
 
 uint32_t DisplayOutputSurface::GetFramebufferCopyTextureFormat() {
   // TODO(danakj): What attributes are used for the default framebuffer here?
-  // Can it have alpha? cc::InProcessContextProvider doesn't take any
+  // Can it have alpha? InProcessContextProvider doesn't take any
   // attributes.
   return GL_RGB;
 }

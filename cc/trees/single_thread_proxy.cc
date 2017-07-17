@@ -10,7 +10,6 @@
 #include "base/trace_event/trace_event.h"
 #include "cc/base/devtools_instrumentation.h"
 #include "cc/benchmarks/benchmark_instrumentation.h"
-#include "cc/output/context_provider.h"
 #include "cc/output/layer_tree_frame_sink.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/resources/ui_resource_manager.h"
@@ -24,6 +23,7 @@
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/mutator_host.h"
 #include "cc/trees/scoped_abort_remaining_swap_promises.h"
+#include "components/viz/common/gpu/context_provider.h"
 
 namespace cc {
 

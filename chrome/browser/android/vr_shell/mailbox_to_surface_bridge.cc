@@ -10,7 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/sys_info.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "cc/output/context_provider.h"
+#include "components/viz/common/gpu/context_provider.h"
 #include "content/public/browser/android/compositor.h"
 #include "content/public/browser/browser_thread.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -151,13 +151,13 @@ MailboxToSurfaceBridge::~MailboxToSurfaceBridge() {
 
 void MailboxToSurfaceBridge::OnContextAvailable(
     std::unique_ptr<gl::ScopedJavaSurface> surface,
-    scoped_refptr<cc::ContextProvider> provider) {
-  // Must save a reference to the ContextProvider to keep it alive,
+    scoped_refptr<viz::ContextProvider> provider) {
+  // Must save a reference to the viz::ContextProvider to keep it alive,
   // otherwise the GL context created from it becomes invalid.
   context_provider_ = std::move(provider);
 
   if (!context_provider_->BindToCurrentThread()) {
-    DLOG(ERROR) << "Failed to init ContextProvider";
+    DLOG(ERROR) << "Failed to init viz::ContextProvider";
     return;
   }
 
@@ -194,7 +194,7 @@ void MailboxToSurfaceBridge::CreateSurface(
   auto relay_callback = base::Bind(
       [](scoped_refptr<base::SequencedTaskRunner> runner,
          const content::Compositor::ContextProviderCallback& callback,
-         scoped_refptr<cc::ContextProvider> provider) {
+         scoped_refptr<viz::ContextProvider> provider) {
         runner->PostTask(FROM_HERE, base::Bind(callback, std::move(provider)));
 
       },

@@ -15,12 +15,12 @@
 #include "content/browser/compositor/image_transport_factory.h"
 #include "ui/compositor/test/in_process_context_factory.h"
 
-namespace cc {
-class ContextProvider;
-}
-
 namespace ui {
 class InProcessContextFactory;
+}
+
+namespace viz {
+class ContextProvider;
 }
 
 namespace content {
@@ -47,7 +47,7 @@ class NoTransportImageTransportFactory : public ImageTransportFactory {
   viz::FrameSinkManagerImpl frame_sink_manager_;
   viz::HostFrameSinkManager host_frame_sink_manager_;
   ui::InProcessContextFactory context_factory_;
-  scoped_refptr<cc::ContextProvider> context_provider_;
+  scoped_refptr<viz::ContextProvider> context_provider_;
   std::unique_ptr<viz::GLHelper> gl_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(NoTransportImageTransportFactory);

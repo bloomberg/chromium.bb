@@ -15,9 +15,9 @@
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "cc/output/context_cache_controller.h"
 #include "cc/test/test_gles2_interface.h"
 #include "cc/test/test_web_graphics_context_3d.h"
+#include "components/viz/common/gpu/context_cache_controller.h"
 #include "gpu/skia_bindings/grcontext_for_gles2_interface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
@@ -153,10 +153,11 @@ TestContextProvider::TestContextProvider(
   context_thread_checker_.DetachFromThread();
   context_gl_->set_test_context(context3d_.get());
   context3d_->set_test_support(support_.get());
-  // Just pass nullptr to the ContextCacheController for its task runner. Idle
-  // handling is tested directly in ContextCacheController's unittests, and
-  // isn't needed here.
-  cache_controller_.reset(new ContextCacheController(support_.get(), nullptr));
+  // Just pass nullptr to the viz::ContextCacheController for its task runner.
+  // Idle handling is tested directly in viz::ContextCacheController's
+  // unittests, and isn't needed here.
+  cache_controller_.reset(
+      new viz::ContextCacheController(support_.get(), nullptr));
 }
 
 TestContextProvider::~TestContextProvider() {
@@ -223,7 +224,7 @@ class GrContext* TestContextProvider::GrContext() {
   return gr_context_->get();
 }
 
-ContextCacheController* TestContextProvider::CacheController() {
+viz::ContextCacheController* TestContextProvider::CacheController() {
   DCHECK(context_thread_checker_.CalledOnValidThread());
   return cache_controller_.get();
 }

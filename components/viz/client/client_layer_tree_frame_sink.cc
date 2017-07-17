@@ -15,8 +15,8 @@
 namespace viz {
 
 ClientLayerTreeFrameSink::ClientLayerTreeFrameSink(
-    scoped_refptr<cc::ContextProvider> context_provider,
-    scoped_refptr<cc::ContextProvider> worker_context_provider,
+    scoped_refptr<ContextProvider> context_provider,
+    scoped_refptr<ContextProvider> worker_context_provider,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     SharedBitmapManager* shared_bitmap_manager,
     std::unique_ptr<cc::SyntheticBeginFrameSource> synthetic_begin_frame_source,

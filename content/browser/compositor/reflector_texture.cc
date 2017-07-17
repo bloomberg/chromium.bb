@@ -12,7 +12,7 @@
 
 namespace content {
 
-ReflectorTexture::ReflectorTexture(cc::ContextProvider* context_provider)
+ReflectorTexture::ReflectorTexture(viz::ContextProvider* context_provider)
     : texture_id_(0) {
   viz::GLHelper* shared_helper =
       ImageTransportFactory::GetInstance()->GetGLHelper();

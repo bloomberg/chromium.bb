@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "cc/cc_export.h"
 #include "cc/output/color_lut_cache.h"
-#include "cc/output/context_cache_controller.h"
 #include "cc/output/direct_renderer.h"
 #include "cc/output/gl_renderer_draw_cache.h"
 #include "cc/output/program_binding.h"
@@ -22,6 +21,7 @@
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/quads/yuv_video_draw_quad.h"
+#include "components/viz/common/gpu/context_cache_controller.h"
 #include "ui/gfx/geometry/quad_f.h"
 #include "ui/latency/latency_info.h"
 
@@ -309,7 +309,8 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
 
   gpu::gles2::GLES2Interface* gl_;
   gpu::ContextSupport* context_support_;
-  std::unique_ptr<ContextCacheController::ScopedVisibility> context_visibility_;
+  std::unique_ptr<viz::ContextCacheController::ScopedVisibility>
+      context_visibility_;
 
   TextureMailboxDeleter* texture_mailbox_deleter_;
 

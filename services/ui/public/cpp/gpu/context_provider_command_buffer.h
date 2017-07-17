@@ -15,7 +15,7 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "base/trace_event/memory_dump_provider.h"
-#include "cc/output/context_provider.h"
+#include "components/viz/common/gpu/context_provider.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/common/scheduling_priority.h"
@@ -41,10 +41,10 @@ class GrContextForGLES2Interface;
 
 namespace ui {
 
-// Implementation of cc::ContextProvider that provides a GL implementation over
+// Implementation of viz::ContextProvider that provides a GL implementation over
 // command buffer to the GPU process.
 class ContextProviderCommandBuffer
-    : public cc::ContextProvider,
+    : public viz::ContextProvider,
       public base::trace_event::MemoryDumpProvider {
  public:
   ContextProviderCommandBuffer(
@@ -65,13 +65,13 @@ class ContextProviderCommandBuffer
   // on the default framebuffer.
   uint32_t GetCopyTextureInternalFormat();
 
-  // cc::ContextProvider implementation.
+  // viz::ContextProvider implementation.
   bool BindToCurrentThread() override;
   void DetachFromThread() override;
   gpu::gles2::GLES2Interface* ContextGL() override;
   gpu::ContextSupport* ContextSupport() override;
   class GrContext* GrContext() override;
-  cc::ContextCacheController* CacheController() override;
+  viz::ContextCacheController* CacheController() override;
   void InvalidateGrContext(uint32_t state) override;
   base::Lock* GetLock() override;
   gpu::Capabilities ContextCapabilities() override;
@@ -132,7 +132,7 @@ class ContextProviderCommandBuffer
   std::unique_ptr<gpu::gles2::GLES2Implementation> gles2_impl_;
   std::unique_ptr<gpu::gles2::GLES2TraceImplementation> trace_impl_;
   std::unique_ptr<skia_bindings::GrContextForGLES2Interface> gr_context_;
-  std::unique_ptr<cc::ContextCacheController> cache_controller_;
+  std::unique_ptr<viz::ContextCacheController> cache_controller_;
 
   LostContextCallback lost_context_callback_;
 };
