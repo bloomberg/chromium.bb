@@ -35,7 +35,7 @@ class WebMouseEvent;
 
 namespace gl {
 class GLContext;
-class GLFence;
+class GLFenceEGL;
 class GLSurface;
 class ScopedJavaSurface;
 class SurfaceTexture;
@@ -121,7 +121,7 @@ class VrShellGl : public device::mojom::VRPresentationProvider,
   void DrawFrameSubmitWhenReady(int16_t frame_index,
                                 gvr_frame* frame_ptr,
                                 const gfx::Transform& head_pose,
-                                std::unique_ptr<gl::GLFence> fence);
+                                std::unique_ptr<gl::GLFenceEGL> fence);
   bool ShouldDrawWebVr();
   void DrawWebVr();
   bool WebVrPoseByteIsValid(int pose_index_byte);

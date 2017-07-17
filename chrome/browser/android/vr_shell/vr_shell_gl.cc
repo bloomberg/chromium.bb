@@ -79,11 +79,10 @@ static constexpr unsigned kWebVRSlidingAverageSize = 5;
 // controller movement as a gesture.
 static constexpr float kMinAppButtonGestureAngleRad = 0.25;
 
-// Interval for checking for the WebVR rendering GL fence. Ideally we'd want to
-// wait for completion with a short timeout, but GLFenceEGL doesn't currently
-// support that, see TODO(klausw,crbug.com/726026).
-static constexpr base::TimeDelta kWebVRFenceCheckInterval =
-    base::TimeDelta::FromMicroseconds(250);
+// Timeout for checking for the WebVR rendering GL fence. If the timeout is
+// reached, yield to let other tasks execute before rechecking.
+static constexpr base::TimeDelta kWebVRFenceCheckTimeout =
+    base::TimeDelta::FromMicroseconds(2000);
 
 // Provides the direction the head is looking towards as a 3x1 unit vector.
 gfx::Vector3dF GetForwardVector(const gfx::Transform& head_pose) {
@@ -877,13 +876,12 @@ void VrShellGl::DrawFrame(int16_t frame_index) {
   if (ShouldDrawWebVr() && surfaceless_rendering_) {
     // Continue with submit once a GL fence signals that current drawing
     // operations have completed.
-    std::unique_ptr<gl::GLFence> fence = base::MakeUnique<gl::GLFenceEGL>();
-    task_runner_->PostDelayedTask(
+    std::unique_ptr<gl::GLFenceEGL> fence = base::MakeUnique<gl::GLFenceEGL>();
+    task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&VrShellGl::DrawFrameSubmitWhenReady,
                    weak_ptr_factory_.GetWeakPtr(), frame_index, frame.release(),
-                   render_info_primary_.head_pose, base::Passed(&fence)),
-        kWebVRFenceCheckInterval);
+                   render_info_primary_.head_pose, base::Passed(&fence)));
   } else {
     // Continue with submit immediately.
     DrawFrameSubmitWhenReady(frame_index, frame.release(),
@@ -916,18 +914,21 @@ void VrShellGl::UpdateEyeInfos(const gfx::Transform& head_pose,
   }
 }
 
-void VrShellGl::DrawFrameSubmitWhenReady(int16_t frame_index,
-                                         gvr_frame* frame_ptr,
-                                         const gfx::Transform& head_pose,
-                                         std::unique_ptr<gl::GLFence> fence) {
-  if (fence && !fence->HasCompleted()) {
-    task_runner_->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&VrShellGl::DrawFrameSubmitWhenReady,
-                   weak_ptr_factory_.GetWeakPtr(), frame_index, frame_ptr,
-                   head_pose, base::Passed(&fence)),
-        kWebVRFenceCheckInterval);
-    return;
+void VrShellGl::DrawFrameSubmitWhenReady(
+    int16_t frame_index,
+    gvr_frame* frame_ptr,
+    const gfx::Transform& head_pose,
+    std::unique_ptr<gl::GLFenceEGL> fence) {
+  if (fence) {
+    fence->ClientWaitWithTimeoutNanos(kWebVRFenceCheckTimeout.InMicroseconds() *
+                                      1000);
+    if (!fence->HasCompleted()) {
+      task_runner_->PostTask(
+          FROM_HERE, base::Bind(&VrShellGl::DrawFrameSubmitWhenReady,
+                                weak_ptr_factory_.GetWeakPtr(), frame_index,
+                                frame_ptr, head_pose, base::Passed(&fence)));
+      return;
+    }
   }
 
   TRACE_EVENT1("gpu", "VrShellGl::DrawFrameSubmitWhenReady", "frame",
