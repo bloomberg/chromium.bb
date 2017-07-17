@@ -413,6 +413,34 @@ cr.define('media_router_container_search', function() {
         });
       });
 
+      test('route creation failure resets search', function(done) {
+        var searchInput = container.$$('#sink-search-input');
+        searchInput.value = foundSink.name;
+        chainOnAnimationPromise(function() {
+          var searchResults =
+              container.$$('#search-results').querySelectorAll('paper-item');
+          MockInteractions.tap(searchResults[0]);
+
+          // A found sink is added as part of the search but is removed right
+          // before the route failure is reported.  The filter should revert to
+          // showing the pseudo sink when this is done.
+          container.allSinks = fakeSinkListWithPseudoSink.concat([foundSink]);
+          container.onReceiveSearchResult(foundSink.id);
+          container.allSinks = fakeSinkListWithPseudoSink;
+          container.onCreateRouteResponseReceived(pseudoSink.id, null, true);
+          assertEquals(null, container.pseudoSinkSearchState_);
+          setTimeout(function() {
+            checkCurrentView(media_router.MediaRouterView.FILTER);
+            searchResults =
+                container.$$('#search-results').querySelectorAll('paper-item');
+            assertTrue(container.searchResultsToShow_.some(function(sink) {
+                  return sink.sinkItem.id == pseudoSink.id;
+                }));
+            done();
+          });
+        });
+      });
+
       test('pseudo sink with empty domain is not shown', function(done) {
         pseudoSink.domain = '';
         // Trigger |allSinks| observer to be called again with new pseudo sink
