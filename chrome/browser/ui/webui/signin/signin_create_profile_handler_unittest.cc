@@ -13,6 +13,7 @@
 #include "chrome/browser/signin/fake_signin_manager_builder.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/ui/webui/signin/signin_utils.h"
 #include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
@@ -374,9 +375,8 @@ TEST_F(SigninCreateProfileHandlerTest, CreateProfile) {
 }
 
 TEST_F(SigninCreateProfileHandlerTest, CreateProfileWithForceSignin) {
-  g_browser_process->local_state()->SetBoolean(prefs::kForceBrowserSignin,
-                                               true);
-  ASSERT_TRUE(signin::IsForceSigninEnabled());
+  signin_util::SetForceSigninForTesting(true);
+  ASSERT_TRUE(signin_util::IsForceSigninEnabled());
 
   // Expect the call to create the profile.
   EXPECT_CALL(*handler(), DoCreateProfile(_, _, _, _, _))
@@ -422,6 +422,7 @@ TEST_F(SigninCreateProfileHandlerTest, CreateProfileWithForceSignin) {
   bool show_confirmation;
   ASSERT_TRUE(profile->GetBoolean("showConfirmation", &show_confirmation));
   ASSERT_FALSE(show_confirmation);
+  signin_util::SetForceSigninForTesting(false);
 }
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
