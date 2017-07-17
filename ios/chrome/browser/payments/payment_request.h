@@ -109,7 +109,7 @@ class PaymentRequest : public PaymentOptionsProvider,
   }
 
   // Returns the JourneyLogger for this instance.
-  const JourneyLogger& journey_logger() const { return journey_logger_; }
+  JourneyLogger& journey_logger() { return journey_logger_; }
 
   // Updates the payment details of the |web_payment_request_|. It also updates
   // the cached references to the shipping options in |web_payment_request_| as

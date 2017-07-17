@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/payments/payment_request_manager.h"
 
+#include <algorithm>
 #include <memory>
 #include <set>
 #include <string>
@@ -24,6 +25,7 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
 #include "components/payments/core/can_make_payment_query.h"
+#include "components/payments/core/journey_logger.h"
 #include "components/payments/core/payment_address.h"
 #include "components/payments/core/payment_prefs.h"
 #include "components/payments/core/payment_request_base_delegate.h"
@@ -140,13 +142,17 @@ struct PendingPaymentResponse {
 // Object that manages JavaScript injection into the web view.
 @property(nonatomic, weak) JSPaymentRequestManager* paymentRequestJsManager;
 
+// The payments::PaymentRequest instance currently showing, if any.
+@property(nonatomic, assign) payments::PaymentRequest* pendingPaymentRequest;
+
 // Synchronous method executed by -asynchronouslyEnablePaymentRequest:
 - (void)doEnablePaymentRequest:(BOOL)enabled;
 
 // Terminates the pending request with an error message and dismisses the UI.
 // Invokes the callback once the request has been terminated.
-- (void)terminateRequestWithErrorMessage:(NSString*)errorMessage
-                                callback:(ProceduralBlockWithBool)callback;
+- (void)terminatePendingRequestWithErrorMessage:(NSString*)errorMessage
+                                       callback:
+                                           (ProceduralBlockWithBool)callback;
 
 // Handler for injected JavaScript callbacks.
 - (BOOL)handleScriptCommand:(const base::DictionaryValue&)JSONCommand;
@@ -210,6 +216,10 @@ struct PendingPaymentResponse {
 - (void)paymentRequestAddressNormalizationDidCompleteForPaymentRequest:
     (payments::PaymentRequest*)paymentRequest;
 
+// Returns the instance of payments::PaymentRequest for self.activeWebState that
+// has the identifier |paymentRequestId|, if any. Otherwise returns nullptr.
+- (payments::PaymentRequest*)paymentRequestWithId:(std::string)paymentRequestId;
+
 @end
 
 @implementation PaymentRequestManager
@@ -219,6 +229,7 @@ struct PendingPaymentResponse {
 @synthesize enabled = _enabled;
 @synthesize activeWebState = _activeWebState;
 @synthesize paymentRequestJsManager = _paymentRequestJsManager;
+@synthesize pendingPaymentRequest = _pendingPaymentRequest;
 
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                               browserState:
@@ -241,6 +252,8 @@ struct PendingPaymentResponse {
 }
 
 - (void)setActiveWebState:(web::WebState*)webState {
+  // First cancel any pending request.
+  [self cancelRequest];
   [self disconnectActiveWebState];
   if (webState) {
     _paymentRequestJsManager =
@@ -262,6 +275,9 @@ struct PendingPaymentResponse {
 }
 
 - (void)stopTrackingWebState:(web::WebState*)webState {
+  // The lifetime of a PaymentRequest is tied to the WebState it is associated
+  // with and the current URL. Therefore, PaymentRequest instances should get
+  // destroyed when the WebState goes away.
   const auto iterator = _paymentRequests.find(webState);
   DCHECK(iterator != _paymentRequests.end());
   _paymentRequests.erase(iterator);
@@ -289,11 +305,19 @@ struct PendingPaymentResponse {
 }
 
 - (void)cancelRequest {
-  [self terminateRequestWithErrorMessage:kCancelMessage callback:nil];
+  if (!_pendingPaymentRequest)
+    return;
+  _pendingPaymentRequest->journey_logger().SetAborted(
+      payments::JourneyLogger::ABORT_REASON_MERCHANT_NAVIGATION);
+
+  [self terminatePendingRequestWithErrorMessage:kCancelMessage callback:nil];
 }
 
-- (void)terminateRequestWithErrorMessage:(NSString*)errorMessage
-                                callback:(ProceduralBlockWithBool)callback {
+- (void)terminatePendingRequestWithErrorMessage:(NSString*)errorMessage
+                                       callback:
+                                           (ProceduralBlockWithBool)callback {
+  DCHECK(_pendingPaymentRequest);
+  _pendingPaymentRequest = nullptr;
   [self dismissUI];
   [_paymentRequestJsManager rejectRequestPromiseWithErrorMessage:errorMessage
                                                completionHandler:callback];
@@ -425,14 +449,7 @@ struct PendingPaymentResponse {
     return nullptr;
   }
 
-  std::unique_ptr<payments::PaymentRequest> temporaryPaymentRequest =
-      base::MakeUnique<payments::PaymentRequest>(webPaymentRequest,
-                                                 _browserState, _activeWebState,
-                                                 _personalDataManager, self);
-  const auto iterator = _paymentRequests.find(_activeWebState);
-  DCHECK(iterator != _paymentRequests.end());
-  const auto found = iterator->second.find(temporaryPaymentRequest);
-  return found != iterator->second.end() ? found->get() : nullptr;
+  return [self paymentRequestWithId:webPaymentRequest.payment_request_id];
 }
 
 - (BOOL)handleCreatePaymentRequest:(const base::DictionaryValue&)message {
@@ -449,21 +466,49 @@ struct PendingPaymentResponse {
 }
 
 - (BOOL)handleRequestShow:(const base::DictionaryValue&)message {
-  // TODO(crbug.com/602666): check that there's not already a pending request.
-  // TODO(crbug.com/602666): compare our supported payment types (i.e. autofill
-  //   credit card types) against the merchant supported types and return NO
-  //   if the intersection is empty.
-
   payments::PaymentRequest* paymentRequest =
       [self paymentRequestFromMessage:message];
   if (!paymentRequest) {
     // TODO(crbug.com/602666): Reject the promise with an error of
     // "InvalidStateError" type.
     [_paymentRequestJsManager
-        rejectCanMakePaymentPromiseWithErrorMessage:@"Invalid state error"
-                                  completionHandler:nil];
+        rejectRequestPromiseWithErrorMessage:@"Invalid state error"
+                           completionHandler:nil];
     return YES;
   }
+
+  if (_pendingPaymentRequest) {
+    paymentRequest->journey_logger().SetNotShown(
+        payments::JourneyLogger::NOT_SHOWN_REASON_CONCURRENT_REQUESTS);
+    // TODO(crbug.com/602666): Reject the promise with an error of
+    // "InvalidStateError" type.
+    [_paymentRequestJsManager
+        rejectRequestPromiseWithErrorMessage:@"Invalid state error"
+                           completionHandler:nil];
+    return YES;
+  }
+
+  if (paymentRequest->supported_card_networks().empty() &&
+      paymentRequest->url_payment_method_identifiers().empty()) {
+    paymentRequest->journey_logger().SetNotShown(
+        payments::JourneyLogger::NOT_SHOWN_REASON_NO_SUPPORTED_PAYMENT_METHOD);
+    // TODO(crbug.com/602666): Reject the promise with an error of
+    // "InvalidStateError" type.
+    [_paymentRequestJsManager
+        rejectRequestPromiseWithErrorMessage:@"Invalid state error"
+                           completionHandler:nil];
+    return YES;
+  }
+
+  _pendingPaymentRequest = paymentRequest;
+
+  paymentRequest->journey_logger().SetShowCalled();
+  paymentRequest->journey_logger().SetEventOccurred(
+      payments::JourneyLogger::EVENT_SHOWN);
+  paymentRequest->journey_logger().SetRequestedInformation(
+      paymentRequest->request_shipping(), paymentRequest->request_payer_email(),
+      paymentRequest->request_payer_phone(),
+      paymentRequest->request_payer_name());
 
   UIImage* pageFavicon = nil;
   web::NavigationItem* navigationItem =
@@ -495,7 +540,10 @@ struct PendingPaymentResponse {
 }
 
 - (BOOL)handleRequestAbort:(const base::DictionaryValue&)message {
-  // TODO(crbug.com/602666): Check that there is already a pending request.
+  DCHECK(_pendingPaymentRequest);
+
+  _pendingPaymentRequest->journey_logger().SetAborted(
+      payments::JourneyLogger::ABORT_REASON_ABORTED_BY_MERCHANT);
 
   [_unblockEventQueueTimer invalidate];
   [_paymentResponseTimeoutTimer invalidate];
@@ -509,8 +557,8 @@ struct PendingPaymentResponse {
   };
 
   ProceduralBlock callback = ^{
-    [weakSelf terminateRequestWithErrorMessage:kAbortMessage
-                                      callback:cancellationCallback];
+    [weakSelf terminatePendingRequestWithErrorMessage:kAbortMessage
+                                             callback:cancellationCallback];
   };
 
   [_paymentRequestCoordinator displayErrorWithCallback:callback];
@@ -533,6 +581,7 @@ struct PendingPaymentResponse {
   if (paymentRequest->IsIncognito()) {
     [_paymentRequestJsManager resolveCanMakePaymentPromiseWithValue:YES
                                                   completionHandler:nil];
+    paymentRequest->journey_logger().SetCanMakePaymentValue(true);
     return YES;
   }
 
@@ -548,6 +597,7 @@ struct PendingPaymentResponse {
     [_paymentRequestJsManager
         resolveCanMakePaymentPromiseWithValue:canMakePayment
                             completionHandler:nil];
+    paymentRequest->journey_logger().SetCanMakePaymentValue(canMakePayment);
     // TODO(crbug.com/602666): Warn on console if origin is localhost or file.
   } else {
     [_paymentRequestJsManager
@@ -559,7 +609,9 @@ struct PendingPaymentResponse {
 }
 
 - (BOOL)displayErrorThenCancelRequest {
-  // TODO(crbug.com/602666): Check that there is already a pending request.
+  DCHECK(_pendingPaymentRequest);
+  _pendingPaymentRequest->journey_logger().SetAborted(
+      payments::JourneyLogger::ABORT_REASON_ABORTED_BY_USER);
 
   [_unblockEventQueueTimer invalidate];
   [_paymentResponseTimeoutTimer invalidate];
@@ -567,7 +619,8 @@ struct PendingPaymentResponse {
 
   __weak PaymentRequestManager* weakSelf = self;
   ProceduralBlock callback = ^{
-    [weakSelf terminateRequestWithErrorMessage:kCancelMessage callback:nil];
+    [weakSelf terminatePendingRequestWithErrorMessage:kCancelMessage
+                                             callback:nil];
   };
 
   [_paymentRequestCoordinator displayErrorWithCallback:callback];
@@ -582,6 +635,8 @@ struct PendingPaymentResponse {
 }
 
 - (BOOL)handleResponseComplete:(const base::DictionaryValue&)message {
+  DCHECK(_pendingPaymentRequest);
+
   // TODO(crbug.com/602666): Check that there *is* a pending response here.
 
   [_unblockEventQueueTimer invalidate];
@@ -596,6 +651,7 @@ struct PendingPaymentResponse {
 
   __weak PaymentRequestManager* weakSelf = self;
   ProceduralBlock callback = ^{
+    weakSelf.pendingPaymentRequest = nullptr;
     [weakSelf dismissUI];
     [weakSelf.paymentRequestJsManager
         resolveResponsePromiseWithCompletionHandler:nil];
@@ -605,6 +661,10 @@ struct PendingPaymentResponse {
   if (result == "fail") {
     [_paymentRequestCoordinator displayErrorWithCallback:callback];
   } else {
+    _pendingPaymentRequest->journey_logger().SetCompleted();
+    _pendingPaymentRequest->RecordUseStats();
+    _pendingPaymentRequest->GetPrefService()->SetBoolean(
+        payments::kPaymentsFirstTransactionCompleted, true);
     callback();
   }
 
@@ -713,11 +773,17 @@ requestFullCreditCard:(const autofill::CreditCard&)creditCard
 
 - (void)paymentRequestCoordinatorDidCancel:
     (PaymentRequestCoordinator*)coordinator {
-  [self terminateRequestWithErrorMessage:kCancelMessage callback:nil];
+  coordinator.paymentRequest->journey_logger().SetAborted(
+      payments::JourneyLogger::ABORT_REASON_ABORTED_BY_USER);
+
+  [self terminatePendingRequestWithErrorMessage:kCancelMessage callback:nil];
 }
 
 - (void)paymentRequestCoordinatorDidSelectSettings:
     (PaymentRequestCoordinator*)coordinator {
+  coordinator.paymentRequest->journey_logger().SetAborted(
+      payments::JourneyLogger::ABORT_REASON_ABORTED_BY_USER);
+
   ProceduralBlockWithBool callback = ^(BOOL) {
     UIWindow* mainWindow = [[UIApplication sharedApplication] keyWindow];
     DCHECK(mainWindow);
@@ -726,12 +792,16 @@ requestFullCreditCard:(const autofill::CreditCard&)creditCard
     [mainWindow chromeExecuteCommand:command];
   };
 
-  [self terminateRequestWithErrorMessage:kCancelMessage callback:callback];
+  [self terminatePendingRequestWithErrorMessage:kCancelMessage
+                                       callback:callback];
 }
 
 - (void)paymentRequestCoordinator:(PaymentRequestCoordinator*)coordinator
          didReceiveFullMethodName:(const std::string&)methodName
                stringifiedDetails:(const std::string&)stringifiedDetails {
+  coordinator.paymentRequest->journey_logger().SetEventOccurred(
+      payments::JourneyLogger::EVENT_RECEIVED_INSTRUMENT_DETAILS);
+
   _pendingPaymentResponse.methodName = methodName;
   _pendingPaymentResponse.stringifiedDetails = stringifiedDetails;
 
@@ -809,11 +879,6 @@ requestFullCreditCard:(const autofill::CreditCard&)creditCard
             autofill::PHONE_HOME_WHOLE_NUMBER);
   }
 
-  paymentRequest->RecordUseStats();
-
-  paymentRequest->GetPrefService()->SetBoolean(
-      payments::kPaymentsFirstTransactionCompleted, true);
-
   [_paymentRequestJsManager
       resolveRequestPromiseWithPaymentResponse:paymentResponse
                              completionHandler:nil];
@@ -847,15 +912,38 @@ requestFullCreditCard:(const autofill::CreditCard&)creditCard
 - (void)webState:(web::WebState*)webState
     didCommitNavigationWithDetails:
         (const web::LoadCommittedDetails&)load_details {
+  // Reset any pending request.
+  if (_pendingPaymentRequest) {
+    _pendingPaymentRequest->journey_logger().SetAborted(
+        payments::JourneyLogger::ABORT_REASON_MERCHANT_NAVIGATION);
+    _pendingPaymentRequest = nullptr;
+  }
+
   [self dismissUI];
   [self enableActiveWebState];
 
   // The lifetime of a PaymentRequest is tied to the WebState it is associated
-  // with and the current URL. Therefore, the PaymentRequest instance should get
-  // destroyed when the WebState goes away or the user navigates to a new URL.
+  // with and the current URL. Therefore, PaymentRequest instances should get
+  // destroyed when the WebState goes away or the user navigates to a URL.
   const auto iterator = _paymentRequests.find(_activeWebState);
   DCHECK(iterator != _paymentRequests.end());
   iterator->second.clear();
+}
+
+#pragma mark - Helper methods
+
+- (payments::PaymentRequest*)paymentRequestWithId:
+    (std::string)paymentRequestId {
+  const auto iterator = _paymentRequests.find(_activeWebState);
+  DCHECK(iterator != _paymentRequests.end());
+  const auto found = std::find_if(
+      iterator->second.begin(), iterator->second.end(),
+      [&paymentRequestId](
+          const std::unique_ptr<payments::PaymentRequest>& request) {
+        return request.get()->web_payment_request().payment_request_id ==
+               paymentRequestId;
+      });
+  return found != iterator->second.end() ? found->get() : nullptr;
 }
 
 @end
