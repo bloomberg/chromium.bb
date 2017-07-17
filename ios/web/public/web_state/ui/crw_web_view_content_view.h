@@ -11,7 +11,7 @@
 @interface CRWWebViewContentView : CRWContentView
 
 // The webView passed to |-initWithWebView|.
-@property(nonatomic, retain, readonly) UIView* webView;
+@property(nonatomic, strong, readonly) UIView* webView;
 
 // Initializes the CRWWebViewContentView to display |webView|.
 - (instancetype)initWithWebView:(UIView*)webView

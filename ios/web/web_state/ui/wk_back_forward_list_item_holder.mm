@@ -7,6 +7,10 @@
 #include "base/memory/ptr_util.h"
 #import "ios/web/public/navigation_item.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace web {
 
 namespace {
