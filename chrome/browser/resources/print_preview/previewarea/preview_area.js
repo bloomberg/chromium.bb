@@ -523,41 +523,42 @@ cr.define('print_preview', function() {
       if (!this.previewGenerator_)
         return;
       var previewRequest = this.previewGenerator_.requestPreview();
-      if (previewRequest.id > -1) {
-        cr.dispatchSimpleEvent(
-            this, PreviewArea.EventType.PREVIEW_GENERATION_IN_PROGRESS);
-        if (this.loadingTimeout_ == null) {
-          this.loadingTimeout_ = setTimeout(
-              this.showMessage_.bind(
-                  this, print_preview.PreviewAreaMessageId_.LOADING),
-              PreviewArea.LOADING_TIMEOUT_);
-        }
-        previewRequest.request.then(
-            /** @param {number} previewUid The unique id of the preview. */
-            function(previewUid) {
-              this.previewGenerator_.onPreviewGenerationDone(
-                  previewRequest.id, previewUid);
-            }.bind(this),
-            /**
-             * @param {*} type The type of print preview failure that
-             *     occurred.
-             */
-            function(type) {
-              if (/** @type{string} */ (type) == 'CANCELLED')
-                return;  // overriden by a new request, do nothing.
-              else if (/** @type{string} */ (type) == 'SETTINGS_INVALID') {
-                this.cancelTimeout();
-                this.showCustomMessage(
-                    loadTimeData.getString('invalidPrinterSettings'));
-                cr.dispatchSimpleEvent(
-                    this, PreviewArea.EventType.SETTINGS_INVALID);
-              } else {
-                this.onPreviewGenerationFail_();
-              }
-            }.bind(this));
-      } else {
+      if (previewRequest.id <= -1) {
         this.marginControlContainer_.showMarginControlsIfNeeded();
+        return;
       }
+
+      cr.dispatchSimpleEvent(
+          this, PreviewArea.EventType.PREVIEW_GENERATION_IN_PROGRESS);
+      if (this.loadingTimeout_ == null) {
+        this.loadingTimeout_ = setTimeout(
+            this.showMessage_.bind(
+                this, print_preview.PreviewAreaMessageId_.LOADING),
+            PreviewArea.LOADING_TIMEOUT_);
+      }
+      previewRequest.request.then(
+          /** @param {number} previewUid The unique id of the preview. */
+          function(previewUid) {
+            this.previewGenerator_.onPreviewGenerationDone(
+                previewRequest.id, previewUid);
+          }.bind(this),
+          /**
+           * @param {*} type The type of print preview failure that
+           *     occurred.
+           */
+          function(type) {
+            if (/** @type{string} */ (type) == 'CANCELLED')
+              return;  // overriden by a new request, do nothing.
+            if (/** @type{string} */ (type) == 'SETTINGS_INVALID') {
+              this.cancelTimeout();
+              this.showCustomMessage(
+                  loadTimeData.getString('invalidPrinterSettings'));
+              cr.dispatchSimpleEvent(
+                  this, PreviewArea.EventType.SETTINGS_INVALID);
+            } else {
+              this.onPreviewGenerationFail_();
+            }
+          }.bind(this));
     },
 
     /**

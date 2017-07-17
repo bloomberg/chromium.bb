@@ -108,11 +108,11 @@ cr.define('cloudprint', function() {
     if (typeStr == CloudDestinationParser.CloudType_.ANDROID ||
         typeStr == CloudDestinationParser.CloudType_.IOS) {
       return print_preview.DestinationType.MOBILE;
-    } else if (typeStr == CloudDestinationParser.CloudType_.DOCS) {
-      return print_preview.DestinationType.GOOGLE_PROMOTED;
-    } else {
-      return print_preview.DestinationType.GOOGLE;
     }
+    if (typeStr == CloudDestinationParser.CloudType_.DOCS) {
+      return print_preview.DestinationType.GOOGLE_PROMOTED;
+    }
+    return print_preview.DestinationType.GOOGLE;
   };
 
   /** Namespace which contains a method to parse printer sharing invitation. */

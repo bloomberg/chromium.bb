@@ -1341,16 +1341,15 @@ cr.define('print_preview', function() {
         this.destinations_.push(destination);
         this.destinationMap_[key] = destination;
         return true;
-      } else if (
-          existingDestination.connectionStatus ==
+      }
+      if (existingDestination.connectionStatus ==
               print_preview.DestinationConnectionStatus.UNKNOWN &&
           destination.connectionStatus !=
               print_preview.DestinationConnectionStatus.UNKNOWN) {
         existingDestination.connectionStatus = destination.connectionStatus;
         return true;
-      } else {
-        return false;
       }
+      return false;
     },
 
     /**

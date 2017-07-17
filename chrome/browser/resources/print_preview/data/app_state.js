@@ -177,9 +177,8 @@ cr.define('print_preview', function() {
         return this.state_[field] ?
             print_preview.Margins.parse(this.state_[field]) :
             null;
-      } else {
-        return this.state_[field];
       }
+      return this.state_[field];
     },
 
     /**
