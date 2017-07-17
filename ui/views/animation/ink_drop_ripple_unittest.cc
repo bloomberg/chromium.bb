@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/animation/animation.h"
+#include "ui/gfx/animation/animation_test_api.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
@@ -53,11 +54,16 @@ class InkDropRippleTest
 
   std::unique_ptr<InkDropRippleTestApi> test_api_;
 
+  std::unique_ptr<base::AutoReset<gfx::Animation::RichAnimationRenderMode>>
+      animation_mode_reset_;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(InkDropRippleTest);
 };
 
-InkDropRippleTest::InkDropRippleTest() {
+InkDropRippleTest::InkDropRippleTest()
+    : animation_mode_reset_(gfx::AnimationTestApi::SetRichAnimationRenderMode(
+          gfx::Animation::RichAnimationRenderMode::FORCE_DISABLED)) {
   switch (GetParam()) {
     case SQUARE_INK_DROP_RIPPLE: {
       SquareInkDropRipple* square_ink_drop_ripple =

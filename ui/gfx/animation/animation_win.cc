@@ -7,7 +7,7 @@
 namespace gfx {
 
 // static
-bool Animation::ShouldRenderRichAnimation() {
+bool Animation::ShouldRenderRichAnimationImpl() {
   BOOL result;
   // Get "Turn off all unnecessary animations" value.
   if (::SystemParametersInfo(SPI_GETCLIENTAREAANIMATION, 0, &result, 0)) {
