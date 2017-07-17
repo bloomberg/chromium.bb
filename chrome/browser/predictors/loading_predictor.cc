@@ -30,7 +30,6 @@ LoadingPredictor::LoadingPredictor(const LoadingPredictorConfig& config,
           config)),
       observer_(nullptr),
       weak_factory_(this) {
-  resource_prefetch_predictor_->SetStatsCollector(stats_collector_.get());
   preconnect_manager_ = base::MakeUnique<PreconnectManager>(
       GetWeakPtr(), profile_->GetRequestContext());
 }
