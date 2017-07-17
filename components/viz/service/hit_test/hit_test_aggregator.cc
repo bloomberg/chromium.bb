@@ -116,7 +116,7 @@ void HitTestAggregator::PostTaskAggregate(SurfaceId display_surface_id) {
                      weak_ptr_factory_.GetWeakPtr(), display_surface_id));
 }
 
-void HitTestAggregator::Aggregate(SurfaceId display_surface_id) {
+void HitTestAggregator::Aggregate(const SurfaceId& display_surface_id) {
   // Check to ensure that enough memory has been allocated.
   int size = write_size_;
   int max_size = active_region_count_ + active_.size() + 1;
@@ -131,7 +131,7 @@ void HitTestAggregator::Aggregate(SurfaceId display_surface_id) {
   AppendRoot(display_surface_id);
 }
 
-void HitTestAggregator::AppendRoot(SurfaceId surface_id) {
+void HitTestAggregator::AppendRoot(const SurfaceId& surface_id) {
   auto search = active_.find(surface_id);
   DCHECK(search != active_.end());
 
