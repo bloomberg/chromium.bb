@@ -135,7 +135,6 @@ void WorkerThreadDispatcher::OnResponseWorker(int worker_thread_id,
   ServiceWorkerData* data = g_data_tls.Pointer()->Get();
   data->bindings_system()->HandleResponse(request_id, succeeded, response,
                                           error);
-  data->ipc_message_sender()->SendOnRequestResponseReceivedIPC(request_id);
 }
 
 void WorkerThreadDispatcher::OnDispatchEvent(
@@ -165,17 +164,13 @@ void WorkerThreadDispatcher::AddWorkerData(
       // The Unretained below is safe since the IPC message sender outlives the
       // bindings system.
       bindings_system = base::MakeUnique<NativeExtensionBindingsSystem>(
-          base::Bind(&IPCMessageSender::SendRequestIPC,
-                     base::Unretained(ipc_message_sender.get())),
-          base::Bind(&SendEventListenersIPC));
+          std::move(ipc_message_sender), base::Bind(&SendEventListenersIPC));
     } else {
       bindings_system = base::MakeUnique<JsExtensionBindingsSystem>(
-          source_map,
-          base::MakeUnique<RequestSender>(ipc_message_sender.get()));
+          source_map, std::move(ipc_message_sender));
     }
     ServiceWorkerData* new_data = new ServiceWorkerData(
-        service_worker_version_id, context, std::move(bindings_system),
-        std::move(ipc_message_sender));
+        service_worker_version_id, context, std::move(bindings_system));
     g_data_tls.Pointer()->Set(new_data);
   }
 

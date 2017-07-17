@@ -16,9 +16,8 @@
 #include "extensions/renderer/extension_bindings_system.h"
 #include "v8/include/v8.h"
 
-struct ExtensionHostMsg_Request_Params;
-
 namespace extensions {
+class IPCMessageSender;
 class ScriptContext;
 
 // The implementation of the Bindings System for extensions code with native
@@ -29,11 +28,6 @@ class ScriptContext;
 // Designed to be used in a single thread, but for all contexts on that thread.
 class NativeExtensionBindingsSystem : public ExtensionBindingsSystem {
  public:
-  // TODO(devlin): Instead, pass in an IPCMessageSender.
-  using SendRequestIPCMethod =
-      base::Callback<void(ScriptContext*,
-                          std::unique_ptr<ExtensionHostMsg_Request_Params>,
-                          binding::RequestThread)>;
   using SendEventListenerIPCMethod =
       base::Callback<void(binding::EventListenersChanged,
                           ScriptContext*,
@@ -42,7 +36,7 @@ class NativeExtensionBindingsSystem : public ExtensionBindingsSystem {
                           bool was_manual)>;
 
   NativeExtensionBindingsSystem(
-      const SendRequestIPCMethod& send_request_ipc,
+      std::unique_ptr<IPCMessageSender> ipc_message_sender,
       const SendEventListenerIPCMethod& send_event_listener_ipc);
   ~NativeExtensionBindingsSystem() override;
 
@@ -61,6 +55,7 @@ class NativeExtensionBindingsSystem : public ExtensionBindingsSystem {
                       const base::ListValue& response,
                       const std::string& error) override;
   RequestSender* GetRequestSender() override;
+  IPCMessageSender* GetIPCMessageSender() override;
 
   APIBindingsSystem* api_system() { return &api_system_; }
 
@@ -101,8 +96,7 @@ class NativeExtensionBindingsSystem : public ExtensionBindingsSystem {
   void GetJSBindingUtil(v8::Local<v8::Context> context,
                         v8::Local<v8::Value>* binding_util_out);
 
-  // Handler to send request IPCs. Abstracted out for testing purposes.
-  SendRequestIPCMethod send_request_ipc_;
+  std::unique_ptr<IPCMessageSender> ipc_message_sender_;
 
   // Handler to notify the browser of event registrations. Abstracted out for
   // testing purposes.

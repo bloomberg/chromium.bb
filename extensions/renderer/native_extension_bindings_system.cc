@@ -21,6 +21,7 @@
 #include "extensions/renderer/console.h"
 #include "extensions/renderer/content_setting.h"
 #include "extensions/renderer/declarative_content_hooks_delegate.h"
+#include "extensions/renderer/ipc_message_sender.h"
 #include "extensions/renderer/module_system.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_context_set.h"
@@ -349,9 +350,9 @@ v8::Local<v8::Object> CreateFullBinding(
 }  // namespace
 
 NativeExtensionBindingsSystem::NativeExtensionBindingsSystem(
-    const SendRequestIPCMethod& send_request_ipc,
+    std::unique_ptr<IPCMessageSender> ipc_message_sender,
     const SendEventListenerIPCMethod& send_event_listener_ipc)
-    : send_request_ipc_(send_request_ipc),
+    : ipc_message_sender_(std::move(ipc_message_sender)),
       send_event_listener_ipc_(send_event_listener_ipc),
       api_system_(
           base::Bind(&CallJsFunction),
@@ -559,10 +560,15 @@ void NativeExtensionBindingsSystem::HandleResponse(
   api_system_.CompleteRequest(
       request_id, response,
       !success && error.empty() ? "Unknown error." : error);
+  ipc_message_sender_->SendOnRequestResponseReceivedIPC(request_id);
 }
 
 RequestSender* NativeExtensionBindingsSystem::GetRequestSender() {
   return nullptr;
+}
+
+IPCMessageSender* NativeExtensionBindingsSystem::GetIPCMessageSender() {
+  return ipc_message_sender_.get();
 }
 
 void NativeExtensionBindingsSystem::BindingAccessor(
@@ -733,7 +739,8 @@ void NativeExtensionBindingsSystem::SendRequest(
   params->worker_thread_id = -1;
   params->service_worker_version_id = kInvalidServiceWorkerVersionId;
 
-  send_request_ipc_.Run(script_context, std::move(params), request->thread);
+  ipc_message_sender_->SendRequestIPC(script_context, std::move(params),
+                                      request->thread);
 }
 
 void NativeExtensionBindingsSystem::OnEventListenerChanged(

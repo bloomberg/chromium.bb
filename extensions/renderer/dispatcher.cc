@@ -244,25 +244,23 @@ Dispatcher::Dispatcher(DispatcherDelegate* delegate)
       content_watcher_(new ContentWatcher()),
       source_map_(&ResourceBundle::GetSharedInstance()),
       v8_schema_registry_(new V8SchemaRegistry),
-      ipc_message_sender_(IPCMessageSender::CreateMainThreadIPCMessageSender()),
       user_script_set_manager_observer_(this),
       activity_logging_enabled_(false) {
   const base::CommandLine& command_line =
       *(base::CommandLine::ForCurrentProcess());
 
+  std::unique_ptr<IPCMessageSender> ipc_message_sender =
+      IPCMessageSender::CreateMainThreadIPCMessageSender();
   if (FeatureSwitch::native_crx_bindings()->IsEnabled()) {
     // This Unretained is safe because the IPCMessageSender is guaranteed to
     // outlive the bindings system.
     auto system = base::MakeUnique<NativeExtensionBindingsSystem>(
-        base::Bind(&IPCMessageSender::SendRequestIPC,
-                   base::Unretained(ipc_message_sender_.get())),
-        base::Bind(&SendEventListenersIPC));
+        std::move(ipc_message_sender), base::Bind(&SendEventListenersIPC));
     delegate_->InitializeBindingsSystem(this, system->api_system());
     bindings_system_ = std::move(system);
   } else {
     bindings_system_ = base::MakeUnique<JsExtensionBindingsSystem>(
-        &source_map_,
-        base::MakeUnique<RequestSender>(ipc_message_sender_.get()));
+        &source_map_, std::move(ipc_message_sender));
   }
 
   set_idle_notifications_ =
@@ -648,7 +646,6 @@ void Dispatcher::OnExtensionResponse(int request_id,
                                      const base::ListValue& response,
                                      const std::string& error) {
   bindings_system_->HandleResponse(request_id, success, response, error);
-  ipc_message_sender_->SendOnRequestResponseReceivedIPC(request_id);
 }
 
 void Dispatcher::DispatchEvent(const std::string& extension_id,
