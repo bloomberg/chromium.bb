@@ -295,7 +295,8 @@ DesktopAutomationHandler.prototype = {
    */
   onFocus: function(evt) {
     // Invalidate any previous editable text handler state.
-    this.textEditHandler_ = null;
+    if (!this.createTextEditHandlerIfNeeded_(evt.target))
+      this.textEditHandler_ = null;
 
     var node = evt.target;
 

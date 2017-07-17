@@ -296,7 +296,7 @@ AutomationPredicate.root = function(node) {
     case Role.ROOT_WEB_AREA:
       return !node.parent || node.parent.root.role == Role.DESKTOP;
     default:
-      return false;
+      return node.state.richlyEditable && node.state.focused;
   }
 };
 
