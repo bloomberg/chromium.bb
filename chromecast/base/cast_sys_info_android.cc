@@ -82,7 +82,9 @@ std::string CastSysInfoAndroid::GetSystemReleaseChannel() {
 }
 
 std::string CastSysInfoAndroid::GetBoardName() {
-  return "";
+  JNIEnv* env = base::android::AttachCurrentThread();
+  return base::android::ConvertJavaStringToUTF8(
+      Java_CastSysInfoAndroid_getBoard(env));
 }
 
 std::string CastSysInfoAndroid::GetBoardRevision() {
