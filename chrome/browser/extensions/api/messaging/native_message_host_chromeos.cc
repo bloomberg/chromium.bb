@@ -15,6 +15,8 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_traits.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -104,8 +106,8 @@ std::unique_ptr<NativeMessageHost> CreateIt2MeHost() {
               content::BrowserThread::IO),
           content::BrowserThread::GetTaskRunnerForThread(
               content::BrowserThread::UI),
-          content::BrowserThread::GetTaskRunnerForThread(
-              content::BrowserThread::FILE));
+          base::CreateSingleThreadTaskRunnerWithTraits(
+              {base::MayBlock(), base::TaskPriority::BACKGROUND}));
   std::unique_ptr<remoting::PolicyWatcher> policy_watcher =
       remoting::PolicyWatcher::Create(g_browser_process->policy_service(),
                                       context->file_task_runner());
