@@ -845,69 +845,6 @@ bool MetricsService::UmaMetricsProperlyShutdown() {
   return clean_shutdown_status_ == CLEANLY_SHUTDOWN;
 }
 
-void MetricsService::AddSyntheticTrialObserver(
-    variations::SyntheticTrialObserver* observer) {
-  synthetic_trial_observer_list_.AddObserver(observer);
-  if (!synthetic_trial_groups_.empty())
-    observer->OnSyntheticTrialsChanged(synthetic_trial_groups_);
-}
-
-void MetricsService::RemoveSyntheticTrialObserver(
-    variations::SyntheticTrialObserver* observer) {
-  synthetic_trial_observer_list_.RemoveObserver(observer);
-}
-
-void MetricsService::RegisterSyntheticFieldTrial(
-    const variations::SyntheticTrialGroup& trial) {
-  for (size_t i = 0; i < synthetic_trial_groups_.size(); ++i) {
-    if (synthetic_trial_groups_[i].id.name == trial.id.name) {
-      if (synthetic_trial_groups_[i].id.group != trial.id.group) {
-        synthetic_trial_groups_[i].id.group = trial.id.group;
-        synthetic_trial_groups_[i].start_time = base::TimeTicks::Now();
-        NotifySyntheticTrialObservers();
-      }
-      return;
-    }
-  }
-
-  variations::SyntheticTrialGroup trial_group = trial;
-  trial_group.start_time = base::TimeTicks::Now();
-  synthetic_trial_groups_.push_back(trial_group);
-  NotifySyntheticTrialObservers();
-}
-
-void MetricsService::RegisterSyntheticMultiGroupFieldTrial(
-    uint32_t trial_name_hash,
-    const std::vector<uint32_t>& group_name_hashes) {
-  auto has_same_trial_name =
-      [trial_name_hash](const variations::SyntheticTrialGroup& x) {
-        return x.id.name == trial_name_hash;
-      };
-  synthetic_trial_groups_.erase(
-      std::remove_if(synthetic_trial_groups_.begin(),
-                     synthetic_trial_groups_.end(), has_same_trial_name),
-      synthetic_trial_groups_.end());
-
-  if (group_name_hashes.empty())
-    return;
-
-  variations::SyntheticTrialGroup trial_group(trial_name_hash,
-                                              group_name_hashes[0]);
-  trial_group.start_time = base::TimeTicks::Now();
-  for (uint32_t group_name_hash : group_name_hashes) {
-    // Note: Adding the trial group will copy it, so this re-uses the same
-    // |trial_group| struct for convenience (e.g. so start_time's all match).
-    trial_group.id.group = group_name_hash;
-    synthetic_trial_groups_.push_back(trial_group);
-  }
-  NotifySyntheticTrialObservers();
-}
-
-void MetricsService::GetCurrentSyntheticFieldTrialsForTesting(
-    std::vector<variations::ActiveGroupId>* synthetic_trials) {
-  GetSyntheticFieldTrialsOlderThan(base::TimeTicks::Now(), synthetic_trials);
-}
-
 void MetricsService::RegisterMetricsProvider(
     std::unique_ptr<MetricsProvider> provider) {
   DCHECK_EQ(INITIALIZED, state_);
@@ -916,24 +853,6 @@ void MetricsService::RegisterMetricsProvider(
 
 void MetricsService::CheckForClonedInstall() {
   state_manager_->CheckForClonedInstall();
-}
-
-void MetricsService::NotifySyntheticTrialObservers() {
-  for (variations::SyntheticTrialObserver& observer :
-       synthetic_trial_observer_list_) {
-    observer.OnSyntheticTrialsChanged(synthetic_trial_groups_);
-  }
-}
-
-void MetricsService::GetSyntheticFieldTrialsOlderThan(
-    base::TimeTicks time,
-    std::vector<variations::ActiveGroupId>* synthetic_trials) {
-  DCHECK(synthetic_trials);
-  synthetic_trials->clear();
-  for (size_t i = 0; i < synthetic_trial_groups_.size(); ++i) {
-    if (synthetic_trial_groups_[i].start_time <= time)
-      synthetic_trials->push_back(synthetic_trial_groups_[i].id);
-  }
 }
 
 std::unique_ptr<MetricsLog> MetricsService::CreateLog(
@@ -945,7 +864,8 @@ std::unique_ptr<MetricsLog> MetricsService::CreateLog(
 void MetricsService::RecordCurrentEnvironment(MetricsLog* log) {
   DCHECK(client_);
   std::vector<variations::ActiveGroupId> synthetic_trials;
-  GetSyntheticFieldTrialsOlderThan(log->creation_time(), &synthetic_trials);
+  synthetic_trial_registry_.GetSyntheticFieldTrialsOlderThan(
+      log->creation_time(), &synthetic_trials);
   std::string serialized_environment = log->RecordEnvironment(
       metrics_providers_, synthetic_trials, GetInstallDate(),
       GetMetricsReportingEnabledDate());

@@ -770,9 +770,9 @@ void ChromeBrowserMainParts::SetupFieldTrials() {
 void ChromeBrowserMainParts::SetupMetrics() {
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::SetupMetrics");
   metrics::MetricsService* metrics = browser_process_->metrics_service();
-  metrics->AddSyntheticTrialObserver(
+  metrics->synthetic_trial_registry()->AddSyntheticTrialObserver(
       variations::VariationsHttpHeaderProvider::GetInstance());
-  metrics->AddSyntheticTrialObserver(
+  metrics->synthetic_trial_registry()->AddSyntheticTrialObserver(
       variations::SyntheticTrialsActiveGroupIdProvider::GetInstance());
   // Now that field trials have been created, initializes metrics recording.
   metrics->InitializeMetricsRecordingState();

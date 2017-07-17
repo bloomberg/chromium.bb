@@ -18,7 +18,6 @@
 #include "base/metrics/user_metrics.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
-#include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/platform_thread.h"
@@ -33,9 +32,6 @@
 #include "components/metrics/test_metrics_provider.h"
 #include "components/metrics/test_metrics_service_client.h"
 #include "components/prefs/testing_pref_service.h"
-#include "components/variations/active_field_trials.h"
-#include "components/variations/metrics_util.h"
-#include "components/variations/synthetic_trials_active_group_id_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/zlib/google/compression_utils.h"
 
@@ -115,29 +111,6 @@ class MetricsServiceTest : public testing::Test {
   void EnableMetricsReporting() {
     enabled_state_provider_->set_consent(true);
     enabled_state_provider_->set_enabled(true);
-  }
-
-  // Waits until base::TimeTicks::Now() no longer equals |value|. This should
-  // take between 1-15ms per the documented resolution of base::TimeTicks.
-  void WaitUntilTimeChanges(const base::TimeTicks& value) {
-    while (base::TimeTicks::Now() == value) {
-      base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(1));
-    }
-  }
-
-  // Returns true if there is a synthetic trial in the given vector that matches
-  // the given trial name and trial group; returns false otherwise.
-  bool HasSyntheticTrial(
-      const std::vector<variations::ActiveGroupId>& synthetic_trials,
-      const std::string& trial_name,
-      const std::string& trial_group) {
-    uint32_t trial_name_hash = HashName(trial_name);
-    uint32_t trial_group_hash = HashName(trial_group);
-    for (const variations::ActiveGroupId& trial : synthetic_trials) {
-      if (trial.name == trial_name_hash && trial.group == trial_group_hash)
-        return true;
-    }
-    return false;
   }
 
   // Finds a histogram with the specified |name_hash| in |histograms|.
@@ -345,119 +318,6 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAfterCrash) {
   EXPECT_EQ(1, uma_log.system_profile().stability().crash_count());
 }
 
-TEST_F(MetricsServiceTest, RegisterSyntheticTrial) {
-  TestMetricsServiceClient client;
-  MetricsService service(GetMetricsStateManager(), &client, GetLocalState());
-
-  // Add two synthetic trials and confirm that they show up in the list.
-  variations::SyntheticTrialGroup trial1(HashName("TestTrial1"),
-                                         HashName("Group1"));
-  service.RegisterSyntheticFieldTrial(trial1);
-
-  variations::SyntheticTrialGroup trial2(HashName("TestTrial2"),
-                                         HashName("Group2"));
-  service.RegisterSyntheticFieldTrial(trial2);
-  // Ensure that time has advanced by at least a tick before proceeding.
-  WaitUntilTimeChanges(base::TimeTicks::Now());
-
-  service.log_manager_.BeginLoggingWithLog(std::unique_ptr<MetricsLog>(
-      new MetricsLog("clientID", 1, MetricsLog::INITIAL_STABILITY_LOG, &client,
-                     GetLocalState())));
-  // Save the time when the log was started (it's okay for this to be greater
-  // than the time recorded by the above call since it's used to ensure the
-  // value changes).
-  const base::TimeTicks begin_log_time = base::TimeTicks::Now();
-
-  std::vector<variations::ActiveGroupId> synthetic_trials;
-  service.GetSyntheticFieldTrialsOlderThan(base::TimeTicks::Now(),
-                                           &synthetic_trials);
-  EXPECT_EQ(2U, synthetic_trials.size());
-  EXPECT_TRUE(HasSyntheticTrial(synthetic_trials, "TestTrial1", "Group1"));
-  EXPECT_TRUE(HasSyntheticTrial(synthetic_trials, "TestTrial2", "Group2"));
-
-  // Ensure that time has advanced by at least a tick before proceeding.
-  WaitUntilTimeChanges(begin_log_time);
-
-  // Change the group for the first trial after the log started.
-  variations::SyntheticTrialGroup trial3(HashName("TestTrial1"),
-                                         HashName("Group2"));
-  service.RegisterSyntheticFieldTrial(trial3);
-  service.GetSyntheticFieldTrialsOlderThan(begin_log_time, &synthetic_trials);
-  EXPECT_EQ(1U, synthetic_trials.size());
-  EXPECT_TRUE(HasSyntheticTrial(synthetic_trials, "TestTrial2", "Group2"));
-
-  // Add a new trial after the log started and confirm that it doesn't show up.
-  variations::SyntheticTrialGroup trial4(HashName("TestTrial3"),
-                                         HashName("Group3"));
-  service.RegisterSyntheticFieldTrial(trial4);
-  service.GetSyntheticFieldTrialsOlderThan(begin_log_time, &synthetic_trials);
-  EXPECT_EQ(1U, synthetic_trials.size());
-  EXPECT_TRUE(HasSyntheticTrial(synthetic_trials, "TestTrial2", "Group2"));
-
-  // Ensure that time has advanced by at least a tick before proceeding.
-  WaitUntilTimeChanges(base::TimeTicks::Now());
-
-  // Start a new log and ensure all three trials appear in it.
-  service.log_manager_.FinishCurrentLog(service.log_store());
-  service.log_manager_.BeginLoggingWithLog(
-      std::unique_ptr<MetricsLog>(new MetricsLog(
-          "clientID", 1, MetricsLog::ONGOING_LOG, &client, GetLocalState())));
-  service.GetSyntheticFieldTrialsOlderThan(
-      service.log_manager_.current_log()->creation_time(), &synthetic_trials);
-  EXPECT_EQ(3U, synthetic_trials.size());
-  EXPECT_TRUE(HasSyntheticTrial(synthetic_trials, "TestTrial1", "Group2"));
-  EXPECT_TRUE(HasSyntheticTrial(synthetic_trials, "TestTrial2", "Group2"));
-  EXPECT_TRUE(HasSyntheticTrial(synthetic_trials, "TestTrial3", "Group3"));
-  service.log_manager_.FinishCurrentLog(service.log_store());
-}
-
-TEST_F(MetricsServiceTest, RegisterSyntheticMultiGroupFieldTrial) {
-  TestMetricsServiceClient client;
-  MetricsService service(GetMetricsStateManager(), &client, GetLocalState());
-
-  // Register a synthetic trial TestTrial1 with groups A and B.
-  uint32_t trial_name_hash = HashName("TestTrial1");
-  std::vector<uint32_t> group_name_hashes = {HashName("A"), HashName("B")};
-  service.RegisterSyntheticMultiGroupFieldTrial(trial_name_hash,
-                                                group_name_hashes);
-  // Ensure that time has advanced by at least a tick before proceeding.
-  WaitUntilTimeChanges(base::TimeTicks::Now());
-
-  service.log_manager_.BeginLoggingWithLog(std::unique_ptr<MetricsLog>(
-      new MetricsLog("clientID", 1, MetricsLog::INITIAL_STABILITY_LOG, &client,
-                     GetLocalState())));
-
-  std::vector<variations::ActiveGroupId> synthetic_trials;
-  service.GetSyntheticFieldTrialsOlderThan(base::TimeTicks::Now(),
-                                           &synthetic_trials);
-  EXPECT_EQ(2U, synthetic_trials.size());
-  EXPECT_TRUE(HasSyntheticTrial(synthetic_trials, "TestTrial1", "A"));
-  EXPECT_TRUE(HasSyntheticTrial(synthetic_trials, "TestTrial1", "B"));
-
-  // Change the group for the trial to a single group.
-  group_name_hashes = {HashName("X")};
-  service.RegisterSyntheticMultiGroupFieldTrial(trial_name_hash,
-                                                group_name_hashes);
-  // Ensure that time has advanced by at least a tick before proceeding.
-  WaitUntilTimeChanges(base::TimeTicks::Now());
-
-  service.GetSyntheticFieldTrialsOlderThan(base::TimeTicks::Now(),
-                                           &synthetic_trials);
-  EXPECT_EQ(1U, synthetic_trials.size());
-  EXPECT_TRUE(HasSyntheticTrial(synthetic_trials, "TestTrial1", "X"));
-
-  // Register a trial with no groups, which should effectively remove the trial.
-  group_name_hashes.clear();
-  service.RegisterSyntheticMultiGroupFieldTrial(trial_name_hash,
-                                                group_name_hashes);
-  // Ensure that time has advanced by at least a tick before proceeding.
-  WaitUntilTimeChanges(base::TimeTicks::Now());
-
-  service.GetSyntheticFieldTrialsOlderThan(base::TimeTicks::Now(),
-                                           &synthetic_trials);
-  service.log_manager_.FinishCurrentLog(service.log_store());
-}
-
 TEST_F(MetricsServiceTest,
        MetricsProviderOnRecordingDisabledCalledOnInitialStop) {
   TestMetricsServiceClient client;
@@ -536,41 +396,6 @@ TEST_F(MetricsServiceTest, SplitRotation) {
   task_runner_->RunPendingTasks();
   EXPECT_TRUE(client.uploader()->is_uploading());
   EXPECT_EQ(1U, task_runner_->NumPendingTasks());
-}
-
-TEST_F(MetricsServiceTest, GetSyntheticFieldTrialActiveGroups) {
-  TestMetricsServiceClient client;
-  MetricsService service(GetMetricsStateManager(), &client, GetLocalState());
-
-  // Instantiate and setup the corresponding singleton observer which tracks the
-  // creation of all SyntheticTrialGroups.
-  service.AddSyntheticTrialObserver(
-      variations::SyntheticTrialsActiveGroupIdProvider::GetInstance());
-
-  // Add two synthetic trials and confirm that they show up in the list.
-  variations::SyntheticTrialGroup trial1(HashName("TestTrial1"),
-                                         HashName("Group1"));
-  service.RegisterSyntheticFieldTrial(trial1);
-
-  variations::SyntheticTrialGroup trial2(HashName("TestTrial2"),
-                                         HashName("Group2"));
-  service.RegisterSyntheticFieldTrial(trial2);
-
-  // Ensure that time has advanced by at least a tick before proceeding.
-  WaitUntilTimeChanges(base::TimeTicks::Now());
-
-  // Now get the list of currently active groups.
-  std::vector<std::string> output;
-  variations::GetSyntheticTrialGroupIdsAsString(&output);
-  EXPECT_EQ(2U, output.size());
-
-  std::string trial1_hash =
-      base::StringPrintf("%x-%x", trial1.id.name, trial1.id.group);
-  EXPECT_TRUE(base::ContainsValue(output, trial1_hash));
-
-  std::string trial2_hash =
-      base::StringPrintf("%x-%x", trial2.id.name, trial2.id.group);
-  EXPECT_TRUE(base::ContainsValue(output, trial2_hash));
 }
 
 }  // namespace metrics
