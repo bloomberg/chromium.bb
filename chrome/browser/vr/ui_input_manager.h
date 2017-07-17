@@ -66,20 +66,20 @@ class UiInputManager {
   void HandleInput(const gfx::Vector3dF& laser_direction,
                    const gfx::Point3F& laser_origin,
                    ButtonState button_state,
-                   GestureList& gesture_list,
+                   GestureList* gesture_list,
                    gfx::Point3F* out_target_point,
                    UiElement** out_reticle_render_target);
 
  private:
-  void SendFlingCancel(GestureList& gesture_list,
+  void SendFlingCancel(GestureList* gesture_list,
                        const gfx::PointF& target_point);
-  void SendScrollEnd(GestureList& gesture_list,
+  void SendScrollEnd(GestureList* gesture_list,
                      const gfx::PointF& target_point,
                      ButtonState button_state);
   bool SendScrollBegin(UiElement* target,
-                       GestureList& gesture_list,
+                       GestureList* gesture_list,
                        const gfx::PointF& target_point);
-  void SendScrollUpdate(GestureList& gesture_list,
+  void SendScrollUpdate(GestureList* gesture_list,
                         const gfx::PointF& target_point);
   void SendHoverLeave(UiElement* target);
   bool SendHoverEnter(UiElement* target, const gfx::PointF& target_point);

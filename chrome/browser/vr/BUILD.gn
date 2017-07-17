@@ -136,8 +136,13 @@ test("vr_common_unittests") {
     "run_all_unittests.cc",
     "test/animation_utils.cc",
     "test/animation_utils.h",
+    "test/mock_browser_interface.cc",
+    "test/mock_browser_interface.h",
     "test/paths.cc",
     "test/paths.h",
+    "test/ui_scene_manager_test.cc",
+    "test/ui_scene_manager_test.h",
+    "ui_input_manager_unittest.cc",
     "ui_scene_manager_unittest.cc",
     "ui_scene_unittest.cc",
   ]
