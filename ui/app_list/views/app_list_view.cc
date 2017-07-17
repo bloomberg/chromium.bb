@@ -846,9 +846,12 @@ void AppListView::Layout() {
   // Make sure to layout |app_list_main_view_| and |speech_view_| at the
   // center of the widget.
   gfx::Rect centered_bounds = contents_bounds;
-  centered_bounds.ClampToCenteredSize(gfx::Size(
-      app_list_main_view_->contents_view()->GetDefaultContentsBounds().width(),
-      contents_bounds.height()));
+  ContentsView* contents_view = app_list_main_view_->contents_view();
+  centered_bounds.ClampToCenteredSize(
+      gfx::Size(is_fullscreen_app_list_enabled_
+                    ? contents_view->GetMaximumContentsSize().width()
+                    : contents_view->GetDefaultContentsBounds().width(),
+                contents_bounds.height()));
 
   app_list_main_view_->SetBoundsRect(centered_bounds);
 
@@ -863,7 +866,7 @@ void AppListView::Layout() {
   }
 
   if (is_fullscreen_app_list_enabled_) {
-    app_list_main_view_->contents_view()->Layout();
+    contents_view->Layout();
     app_list_background_shield_->SetBoundsRect(contents_bounds);
   }
 }
