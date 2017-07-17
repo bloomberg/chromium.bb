@@ -10,7 +10,6 @@ include_rules = [
   "+components/navigation_interception",
   "+components/offline_items_collection/core/android/java",
   "+components/payments/content/android/java/src/org/chromium/components/payments",
-  "+components/precache/android/javatests",
   "+components/sync/android/java/src/org/chromium/components/sync",
   # We should only depend on the util package of something that lives in
   # javatests.

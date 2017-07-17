@@ -85,7 +85,6 @@
 #include "chrome/browser/android/physical_web/eddystone_encoder_bridge.h"
 #include "chrome/browser/android/physical_web/physical_web_data_source_android.h"
 #include "chrome/browser/android/policy/policy_auditor.h"
-#include "chrome/browser/android/precache/precache_launcher.h"
 #include "chrome/browser/android/preferences/autofill/autofill_profile_bridge.h"
 #include "chrome/browser/android/preferences/pref_service_bridge.h"
 #include "chrome/browser/android/preferences/website_preference_bridge.h"
@@ -342,7 +341,6 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"PhysicalWebDataSourceAndroid",
      PhysicalWebDataSourceAndroid::RegisterPhysicalWebDataSource},
     {"PolicyAuditor", RegisterPolicyAuditor},
-    {"PrecacheLauncher", RegisterPrecacheLauncher},
     {"PrefServiceBridge", PrefServiceBridge::RegisterPrefServiceBridge},
     {"ProfileAndroid", ProfileAndroid::RegisterProfileAndroid},
     {"ProfileDownloader", RegisterProfileDownloader},

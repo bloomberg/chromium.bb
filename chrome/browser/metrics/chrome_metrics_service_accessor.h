@@ -50,10 +50,6 @@ namespace options {
 class BrowserOptionsHandler;
 }
 
-namespace precache {
-void RegisterPrecacheSyntheticFieldTrial(base::Time);
-}
-
 namespace prerender {
 bool IsOmniboxEnabled(Profile* profile);
 }
@@ -115,7 +111,6 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
       bool,
       const OnMetricsReportingCallbackType&);
   friend class options::BrowserOptionsHandler;
-  friend void precache::RegisterPrecacheSyntheticFieldTrial(base::Time);
   friend bool prerender::IsOmniboxEnabled(Profile* profile);
   friend class settings::MetricsReportingHandler;
   friend class speech::ChromeSpeechRecognitionManagerDelegate;
