@@ -12,6 +12,7 @@ class ListValue;
 }
 
 namespace extensions {
+class IPCMessageSender;
 class RequestSender;
 class ScriptContext;
 struct EventFilteringInfo;
@@ -53,6 +54,9 @@ class ExtensionBindingsSystem {
                               bool success,
                               const base::ListValue& response,
                               const std::string& error) = 0;
+
+  // Returns the associated IPC message sender.
+  virtual IPCMessageSender* GetIPCMessageSender() = 0;
 
   // Returns the associated RequestSender, if any.
   // TODO(devlin): Factor this out.

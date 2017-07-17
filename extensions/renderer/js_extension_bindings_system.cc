@@ -5,6 +5,7 @@
 #include "extensions/renderer/js_extension_bindings_system.h"
 
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_split.h"
 #include "content/public/child/v8_value_converter.h"
 #include "content/public/common/content_switches.h"
@@ -18,7 +19,9 @@
 #include "extensions/common/manifest_handlers/externally_connectable.h"
 #include "extensions/renderer/binding_generating_native_handler.h"
 #include "extensions/renderer/event_bindings.h"
+#include "extensions/renderer/ipc_message_sender.h"
 #include "extensions/renderer/renderer_extension_registry.h"
+#include "extensions/renderer/request_sender.h"
 #include "extensions/renderer/resource_bundle_source_map.h"
 #include "extensions/renderer/script_context.h"
 #include "gin/converter.h"
@@ -134,8 +137,11 @@ void MaybeCreateEventBindings(ScriptContext* context) {
 
 JsExtensionBindingsSystem::JsExtensionBindingsSystem(
     ResourceBundleSourceMap* source_map,
-    std::unique_ptr<RequestSender> request_sender)
-    : source_map_(source_map), request_sender_(std::move(request_sender)) {}
+    std::unique_ptr<IPCMessageSender> ipc_message_sender)
+    : source_map_(source_map),
+      ipc_message_sender_(std::move(ipc_message_sender)),
+      request_sender_(
+          base::MakeUnique<RequestSender>(ipc_message_sender_.get())) {}
 
 JsExtensionBindingsSystem::~JsExtensionBindingsSystem() {}
 
@@ -224,10 +230,15 @@ void JsExtensionBindingsSystem::HandleResponse(int request_id,
                                                const base::ListValue& response,
                                                const std::string& error) {
   request_sender_->HandleResponse(request_id, success, response, error);
+  ipc_message_sender_->SendOnRequestResponseReceivedIPC(request_id);
 }
 
 RequestSender* JsExtensionBindingsSystem::GetRequestSender() {
   return request_sender_.get();
+}
+
+IPCMessageSender* JsExtensionBindingsSystem::GetIPCMessageSender() {
+  return ipc_message_sender_.get();
 }
 
 void JsExtensionBindingsSystem::DispatchEventInContext(

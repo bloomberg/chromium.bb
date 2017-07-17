@@ -12,7 +12,6 @@
 
 namespace extensions {
 class ExtensionBindingsSystem;
-class IPCMessageSender;
 class ScriptContext;
 
 // Per ServiceWorker data in worker thread.
@@ -21,8 +20,7 @@ class ServiceWorkerData {
  public:
   ServiceWorkerData(int64_t service_worker_version_id,
                     ScriptContext* context,
-                    std::unique_ptr<ExtensionBindingsSystem> bindings_system,
-                    std::unique_ptr<IPCMessageSender> ipc_message_sender);
+                    std::unique_ptr<ExtensionBindingsSystem> bindings_system);
   ~ServiceWorkerData();
 
   V8SchemaRegistry* v8_schema_registry() { return v8_schema_registry_.get(); }
@@ -31,14 +29,12 @@ class ServiceWorkerData {
     return service_worker_version_id_;
   }
   ScriptContext* context() const { return context_; }
-  IPCMessageSender* ipc_message_sender() { return ipc_message_sender_.get(); }
 
  private:
   const int64_t service_worker_version_id_;
   ScriptContext* const context_;
 
   std::unique_ptr<V8SchemaRegistry> v8_schema_registry_;
-  std::unique_ptr<IPCMessageSender> ipc_message_sender_;
   std::unique_ptr<ExtensionBindingsSystem> bindings_system_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerData);

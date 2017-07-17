@@ -18,6 +18,7 @@
 #include "extensions/renderer/bindings/api_binding_test.h"
 #include "extensions/renderer/bindings/api_binding_test_util.h"
 #include "extensions/renderer/bindings/api_invocation_errors.h"
+#include "extensions/renderer/ipc_message_sender.h"
 #include "extensions/renderer/module_system.h"
 #include "extensions/renderer/safe_builtins.h"
 #include "extensions/renderer/script_context.h"
@@ -88,6 +89,29 @@ bool PropertyExists(v8::Local<v8::Context> context,
   return !value->IsUndefined();
 };
 
+class TestIPCMessageSender : public IPCMessageSender {
+ public:
+  TestIPCMessageSender() {}
+  ~TestIPCMessageSender() override {}
+
+  // IPCMessageSender:
+  void SendRequestIPC(ScriptContext* context,
+                      std::unique_ptr<ExtensionHostMsg_Request_Params> params,
+                      binding::RequestThread thread) override {
+    last_params_ = std::move(params);
+  }
+  void SendOnRequestResponseReceivedIPC(int request_id) override {}
+
+  const ExtensionHostMsg_Request_Params* last_params() const {
+    return last_params_.get();
+  }
+
+ private:
+  std::unique_ptr<ExtensionHostMsg_Request_Params> last_params_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestIPCMessageSender);
+};
+
 }  // namespace
 
 class NativeExtensionBindingsSystemUnittest : public APIBindingTest {
@@ -105,9 +129,10 @@ class NativeExtensionBindingsSystemUnittest : public APIBindingTest {
   void SetUp() override {
     render_thread_ = base::MakeUnique<content::MockRenderThread>();
     script_context_set_ = base::MakeUnique<ScriptContextSet>(&extension_ids_);
+    auto ipc_message_sender = base::MakeUnique<TestIPCMessageSender>();
+    ipc_message_sender_ = ipc_message_sender.get();
     bindings_system_ = base::MakeUnique<NativeExtensionBindingsSystem>(
-        base::Bind(&NativeExtensionBindingsSystemUnittest::MockSendRequestIPC,
-                   base::Unretained(this)),
+        std::move(ipc_message_sender),
         base::Bind(&NativeExtensionBindingsSystemUnittest::MockSendListenerIPC,
                    base::Unretained(this)));
     APIBindingTest::SetUp();
@@ -129,13 +154,6 @@ class NativeExtensionBindingsSystemUnittest : public APIBindingTest {
     bindings_system_.reset();
     render_thread_.reset();
     APIBindingTest::TearDown();
-  }
-
-  void MockSendRequestIPC(
-      ScriptContext* context,
-      std::unique_ptr<ExtensionHostMsg_Request_Params> params,
-      binding::RequestThread thread) {
-    last_params_ = std::move(params);
   }
 
   void MockSendListenerIPC(binding::EventListenersChanged changed,
@@ -187,8 +205,10 @@ class NativeExtensionBindingsSystemUnittest : public APIBindingTest {
   NativeExtensionBindingsSystem* bindings_system() {
     return bindings_system_.get();
   }
-  bool has_last_params() const { return !!last_params_; }
-  const ExtensionHostMsg_Request_Params& last_params() { return *last_params_; }
+  bool has_last_params() const { return !!ipc_message_sender_->last_params(); }
+  const ExtensionHostMsg_Request_Params& last_params() {
+    return *ipc_message_sender_->last_params();
+  }
   StringSourceMap* source_map() { return &source_map_; }
   MockEventChangeHandler* event_change_handler() {
     return event_change_handler_.get();
@@ -200,6 +220,8 @@ class NativeExtensionBindingsSystemUnittest : public APIBindingTest {
   std::unique_ptr<ScriptContextSet> script_context_set_;
   std::vector<ScriptContext*> raw_script_contexts_;
   std::unique_ptr<NativeExtensionBindingsSystem> bindings_system_;
+  // The TestIPCMessageSender; owned by the bindings system.
+  TestIPCMessageSender* ipc_message_sender_ = nullptr;
 
   std::unique_ptr<ExtensionHostMsg_Request_Params> last_params_;
   std::unique_ptr<MockEventChangeHandler> event_change_handler_;
