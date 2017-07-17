@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/feedback/system_logs/system_logs_fetcher.h"
+#include "components/feedback/system_logs/system_logs_fetcher.h"
 
 #include <utility>
 
@@ -20,9 +20,7 @@ namespace {
 // List of keys in the SystemLogsResponse map whose corresponding values will
 // not be anonymized.
 constexpr const char* const kWhitelistedKeysOfUUIDs[] = {
-    "CHROMEOS_BOARD_APPID",
-    "CHROMEOS_CANARY_APPID",
-    "CHROMEOS_RELEASE_APPID",
+    "CHROMEOS_BOARD_APPID", "CHROMEOS_CANARY_APPID", "CHROMEOS_RELEASE_APPID",
     "CLIENT_ID",
 };
 

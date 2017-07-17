@@ -10,7 +10,7 @@
 #include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "chrome/browser/extensions/api/feedback_private/log_source_access_manager.h"
-#include "chrome/browser/feedback/system_logs/system_logs_fetcher.h"
+#include "components/feedback/system_logs/system_logs_fetcher.h"
 #include "extensions/browser/api/api_resource.h"
 #include "extensions/browser/api/api_resource_manager.h"
 

@@ -8,8 +8,8 @@
 #include <memory>
 
 #include "chrome/browser/extensions/chrome_extension_function.h"
-#include "chrome/browser/feedback/system_logs/system_logs_source.h"
 #include "chrome/common/extensions/api/feedback_private.h"
+#include "components/feedback/system_logs/system_logs_source.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_function.h"
 #include "ui/gfx/geometry/rect.h"

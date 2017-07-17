@@ -11,8 +11,8 @@
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/feedback/system_logs/system_logs_source.h"
 #include "components/feedback/anonymizer_tool.h"
+#include "components/feedback/system_logs/system_logs_source.h"
 
 namespace base {
 class Time;

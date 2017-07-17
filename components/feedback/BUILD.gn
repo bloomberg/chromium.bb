@@ -24,6 +24,10 @@ static_library("feedback") {
     "feedback_uploader_factory.h",
     "feedback_util.cc",
     "feedback_util.h",
+    "system_logs/system_logs_fetcher.cc",
+    "system_logs/system_logs_fetcher.h",
+    "system_logs/system_logs_source.cc",
+    "system_logs/system_logs_source.h",
     "tracing_manager.cc",
     "tracing_manager.h",
   ]

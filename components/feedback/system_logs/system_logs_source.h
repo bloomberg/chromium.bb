@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_FEEDBACK_SYSTEM_LOGS_SYSTEM_LOGS_SOURCE_H_
-#define CHROME_BROWSER_FEEDBACK_SYSTEM_LOGS_SYSTEM_LOGS_SOURCE_H_
+#ifndef COMPONENTS_FEEDBACK_SYSTEM_LOGS_SYSTEM_LOGS_SOURCE_H_
+#define COMPONENTS_FEEDBACK_SYSTEM_LOGS_SYSTEM_LOGS_SOURCE_H_
 
 #include <string>
 
@@ -36,4 +36,4 @@ class SystemLogsSource {
 
 }  // namespace system_logs
 
-#endif  // CHROME_BROWSER_FEEDBACK_SYSTEM_LOGS_SYSTEM_LOGS_SOURCE_H_
+#endif  // COMPONENTS_FEEDBACK_SYSTEM_LOGS_SYSTEM_LOGS_SOURCE_H_
