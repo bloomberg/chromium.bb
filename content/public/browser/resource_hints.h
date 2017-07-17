@@ -12,8 +12,8 @@
 
 class GURL;
 
-namespace content {
-class ResourceContext;
+namespace net {
+class URLRequestContextGetter;
 }
 
 namespace content {
@@ -28,7 +28,7 @@ namespace content {
 // Note: This should only be called on the IO thread, with a valid
 // URLRequestContextGetter.
 CONTENT_EXPORT void PreconnectUrl(
-    content::ResourceContext* resource_context,
+    net::URLRequestContextGetter* getter,
     const GURL& url,
     const GURL& first_party_for_cookies,
     int count,
@@ -37,7 +37,7 @@ CONTENT_EXPORT void PreconnectUrl(
 
 // Issues a DNS request to |url|. Note that these requests are sent to the host
 // resolver with priority net::IDLE.
-CONTENT_EXPORT int PreresolveUrl(content::ResourceContext* resource_context,
+CONTENT_EXPORT int PreresolveUrl(net::URLRequestContextGetter* getter,
                                  const GURL& url,
                                  const net::CompletionCallback& callback);
 

@@ -35,7 +35,10 @@ LoadingPredictor::LoadingPredictor(const LoadingPredictorConfig& config,
       GetWeakPtr(), profile_->GetRequestContext());
 }
 
-LoadingPredictor::~LoadingPredictor() = default;
+LoadingPredictor::~LoadingPredictor() {
+  // Ensure that Shutdown() was called.
+  DCHECK(preconnect_manager_ == nullptr);
+}
 
 void LoadingPredictor::PrepareForPageLoad(const GURL& url, HintOrigin origin) {
   if (active_hints_.find(url) != active_hints_.end())
@@ -288,6 +291,7 @@ void LoadingPredictor::MaybeRemovePreconnect(const GURL& url) {
 }
 
 void LoadingPredictor::PreconnectFinished(const GURL& url) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   NOTIMPLEMENTED();
 }
 

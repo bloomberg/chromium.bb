@@ -3252,6 +3252,7 @@ test("unit_tests") {
     "../browser/predictors/loading_stats_collector_unittest.cc",
     "../browser/predictors/loading_test_util.cc",
     "../browser/predictors/loading_test_util.h",
+    "../browser/predictors/preconnect_manager_unittest.cc",
     "../browser/predictors/resource_prefetch_common_unittest.cc",
     "../browser/predictors/resource_prefetch_predictor_tables_unittest.cc",
     "../browser/predictors/resource_prefetch_predictor_unittest.cc",
