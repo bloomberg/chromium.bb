@@ -27,6 +27,8 @@ def RunSteps(api):
     api.gclient.c.got_revision_reverse_mapping['got_cr_revision'] = 'src'
     api.gclient.c.got_revision_reverse_mapping['got_revision'] = 'src'
     api.gclient.c.got_revision_reverse_mapping['got_v8_revision'] = 'src/v8'
+    api.gclient.c.got_revision_reverse_mapping['got_angle_revision'] = (
+        'src/third_party/angle')
   api.gclient.c.patch_projects['v8'] = ('src/v8', 'HEAD')
   api.gclient.c.patch_projects['v8/v8'] = ('src/v8', 'HEAD')
   api.gclient.c.patch_projects['angle/angle'] = ('src/third_party/angle',
