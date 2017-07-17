@@ -310,6 +310,10 @@ class CONTENT_EXPORT ContentBrowserClient {
   // current SiteInstance, if it does not yet have a site.
   virtual bool ShouldAssignSiteForURL(const GURL& url);
 
+  // Allows the embedder to provide a list of origins that require a dedicated
+  // process.
+  virtual std::vector<url::Origin> GetOriginsRequiringDedicatedProcess();
+
   // Allows the embedder to pass extra command line flags.
   // switches::kProcessType will already be set at this point.
   virtual void AppendExtraCommandLineSwitches(base::CommandLine* command_line,

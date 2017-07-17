@@ -195,6 +195,7 @@
 #include "device/usb/public/interfaces/chooser_service.mojom.h"
 #include "device/usb/public/interfaces/device_manager.mojom.h"
 #include "extensions/features/features.h"
+#include "google_apis/gaia/gaia_urls.h"
 #include "gpu/config/gpu_switches.h"
 #include "media/audio/audio_manager.h"
 #include "media/media_features.h"
@@ -1399,6 +1400,16 @@ bool ChromeContentBrowserClient::ShouldSwapProcessesForRedirect(
 
 bool ChromeContentBrowserClient::ShouldAssignSiteForURL(const GURL& url) {
   return !url.SchemeIs(chrome::kChromeNativeScheme);
+}
+
+std::vector<url::Origin>
+ChromeContentBrowserClient::GetOriginsRequiringDedicatedProcess() {
+  std::vector<url::Origin> isolated_origin_list;
+
+  if (base::FeatureList::IsEnabled(features::kSignInProcessIsolation))
+    isolated_origin_list.emplace_back(GaiaUrls::GetInstance()->gaia_url());
+
+  return isolated_origin_list;
 }
 
 namespace {

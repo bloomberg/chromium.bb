@@ -23,6 +23,7 @@
 #include "storage/browser/quota/quota_manager.h"
 #include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -137,6 +138,11 @@ bool ContentBrowserClient::ShouldSwapProcessesForRedirect(
 
 bool ContentBrowserClient::ShouldAssignSiteForURL(const GURL& url) {
   return true;
+}
+
+std::vector<url::Origin>
+ContentBrowserClient::GetOriginsRequiringDedicatedProcess() {
+  return std::vector<url::Origin>();
 }
 
 std::string ContentBrowserClient::GetApplicationLocale() {
