@@ -84,6 +84,7 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
         mHandler = new Handler();
     }
 
+    @CallSuper
     @Override
     protected void onDestroy() {
         mDestroyed = true;
@@ -96,6 +97,7 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
         super.onDestroy();
     }
 
+    @CallSuper
     @Override
     @TargetApi(Build.VERSION_CODES.N)
     protected void attachBaseContext(Context newBase) {
@@ -116,6 +118,7 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
         }
     }
 
+    @CallSuper
     @Override
     public void preInflationStartup() {
         mHadWarmStart = LibraryLoader.isInitialized();
@@ -198,6 +201,7 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
     @Override
     public void initializeState() { }
 
+    @CallSuper
     @Override
     public void finishNativeInitialization() {
         // Set up the initial orientation of the device.
@@ -214,6 +218,7 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
         mNativeInitializationController.onNativeInitializationComplete();
     }
 
+    @CallSuper
     @Override
     public void onStartupFailure() {
         ProcessInitException e =
@@ -280,6 +285,7 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
     /**
      * Call to begin loading the library, if it was delayed.
      */
+    @CallSuper
     protected void startDelayedNativeInitialization() {
         assert mStartupDelayed;
         mStartupDelayed = false;
@@ -357,12 +363,14 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
         mSavedInstanceState = null;
     }
 
+    @CallSuper
     @Override
     public void onStart() {
         super.onStart();
         mNativeInitializationController.onStart();
     }
 
+    @CallSuper
     @Override
     public void onResume() {
         super.onResume();
@@ -372,6 +380,7 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
         mFirstResumePending = false;
     }
 
+    @CallSuper
     @Override
     public void onPause() {
         mNativeInitializationController.onPause();
@@ -379,6 +388,7 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
         if (mLaunchBehindWorkaround != null) mLaunchBehindWorkaround.onPause();
     }
 
+    @CallSuper
     @Override
     public void onStop() {
         super.onStop();
@@ -386,6 +396,7 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
         mNativeInitializationController.onStop();
     }
 
+    @CallSuper
     @Override
     protected void onNewIntent(Intent intent) {
         if (intent == null) return;
@@ -393,11 +404,13 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
         setIntent(intent);
     }
 
+    @CallSuper
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         mNativeInitializationController.onActivityResult(requestCode, resultCode, data);
     }
 
+    @CallSuper
     @Override
     public final void onCreateWithNative() {
         try {
@@ -432,6 +445,7 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
     @Override
     public abstract boolean shouldStartGpuProcess();
 
+    @CallSuper
     @Override
     public void onContextMenuClosed(Menu menu) {
         if (mWindowAndroid != null) mWindowAndroid.onContextMenuClosed();
@@ -469,6 +483,7 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
      * This will handle passing {@link Intent} results back to the {@link WindowAndroid}.  It will
      * return whether or not the {@link WindowAndroid} has consumed the event or not.
      */
+    @CallSuper
     @Override
     public boolean onActivityResultWithNative(int requestCode, int resultCode, Intent intent) {
         if (mWindowAndroid != null) {
@@ -478,6 +493,7 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
         }
     }
 
+    @CallSuper
     @Override
     public void onRequestPermissionsResult(
             int requestCode, String[] permissions, int[] grantResults) {
@@ -489,18 +505,21 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
+    @CallSuper
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         if (mWindowAndroid != null) mWindowAndroid.saveInstanceState(outState);
     }
 
+    @CallSuper
     @Override
     public void onLowMemory() {
         super.onLowMemory();
         if (mMemoryUma != null) mMemoryUma.onLowMemory();
     }
 
+    @CallSuper
     @Override
     public void onTrimMemory(int level) {
         super.onTrimMemory(level);
