@@ -11,7 +11,7 @@
 
 namespace blink {
 
-struct PreconnectTestCase {
+struct HTMLResourcePreconnectTestCase {
   const char* base_url;
   const char* url;
   bool is_cors;
@@ -45,7 +45,7 @@ class HTMLResourcePreloaderTest : public ::testing::Test {
  protected:
   HTMLResourcePreloaderTest() : dummy_page_holder_(DummyPageHolder::Create()) {}
 
-  void Test(PreconnectTestCase test_case) {
+  void Test(HTMLResourcePreconnectTestCase test_case) {
     // TODO(yoav): Need a mock loader here to verify things are happenning
     // beyond preconnect.
     PreloaderNetworkHintsMock network_hints;
@@ -71,7 +71,7 @@ class HTMLResourcePreloaderTest : public ::testing::Test {
 };
 
 TEST_F(HTMLResourcePreloaderTest, testPreconnect) {
-  PreconnectTestCase test_cases[] = {
+  HTMLResourcePreconnectTestCase test_cases[] = {
       {"http://example.test", "http://example.com", false, false},
       {"http://example.test", "http://example.com", true, false},
       {"http://example.test", "https://example.com", true, true},
