@@ -130,6 +130,11 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   bool IsRichTextControl();
   bool IsRangeValueSupported() const;
 
+  // Get the range value text, which might come from aria-valuetext or
+  // a floating-point value. This is different from the value string
+  // attribute used in input controls such as text boxes and combo boxes.
+  base::string16 GetRangeValueText();
+
   // |GetInnerText| recursively includes all the text from descendants such as
   // text found in any embedded object.
   base::string16 GetInnerText();

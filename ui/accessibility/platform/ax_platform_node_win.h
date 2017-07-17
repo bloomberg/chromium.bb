@@ -593,9 +593,11 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   int MSAARole();
   std::string StringOverrideForMSAARole();
 
-  int32_t IA2State();
+  int32_t ComputeIA2State();
 
-  int32_t IA2Role();
+  int32_t ComputeIA2Role();
+
+  std::vector<base::string16> ComputeIA2Attributes();
 
   // AXPlatformNodeBase overrides.
   void Dispose() override;
@@ -609,6 +611,32 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   HRESULT GetStringAttributeAsBstr(
       ui::AXStringAttribute attribute,
       BSTR* value_bstr) const;
+
+  // Escapes characters in string attributes as required by the IA2 Spec.
+  // It's okay for input to be the same as output.
+  static void SanitizeStringAttributeForIA2(const base::string16& input,
+                                            base::string16* output);
+
+  // Sets the selection given a start and end offset in IA2 Hypertext.
+  void SetIA2HypertextSelection(LONG start_offset, LONG end_offset);
+
+  // If the string attribute |attribute| is present, add its value as an
+  // IAccessible2 attribute with the name |ia2_attr|.
+  void StringAttributeToIA2(std::vector<base::string16>& attributes,
+                            ui::AXStringAttribute attribute,
+                            const char* ia2_attr);
+
+  // If the bool attribute |attribute| is present, add its value as an
+  // IAccessible2 attribute with the name |ia2_attr|.
+  void BoolAttributeToIA2(std::vector<base::string16>& attributes,
+                          ui::AXBoolAttribute attribute,
+                          const char* ia2_attr);
+
+  // If the int attribute |attribute| is present, add its value as an
+  // IAccessible2 attribute with the name |ia2_attr|.
+  void IntAttributeToIA2(std::vector<base::string16>& attributes,
+                         ui::AXIntAttribute attribute,
+                         const char* ia2_attr);
 
   void AddAlertTarget();
   void RemoveAlertTarget();

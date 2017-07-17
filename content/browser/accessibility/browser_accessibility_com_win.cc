@@ -374,20 +374,6 @@ STDMETHODIMP BrowserAccessibilityComWin::get_accState(VARIANT var_id,
   return AXPlatformNodeWin::get_accState(var_id, state);
 }
 
-bool BrowserAccessibilityComWin::IsRangeValueSupported() {
-  switch (MSAARole()) {
-    case ROLE_SYSTEM_PROGRESSBAR:
-    case ROLE_SYSTEM_SLIDER:
-    case ROLE_SYSTEM_SPINBUTTON:
-    case ROLE_SYSTEM_SCROLLBAR:
-      return true;
-    case ROLE_SYSTEM_SEPARATOR:
-      return owner()->HasState(ui::AX_STATE_FOCUSABLE);
-    default:
-      return false;
-  }
-}
-
 STDMETHODIMP BrowserAccessibilityComWin::get_accValue(VARIANT var_id,
                                                       BSTR* value) {
   if (!owner())
@@ -2970,168 +2956,34 @@ void BrowserAccessibilityComWin::UpdateStep1ComputeWinAttributes() {
   win_attributes_->ia_state = MSAAState();
   win_attributes_->role_name = base::UTF8ToUTF16(StringOverrideForMSAARole());
 
-  win_attributes_->ia2_role = IA2Role();
+  win_attributes_->ia2_role = ComputeIA2Role();
   // If we didn't explicitly set the IAccessible2 role, make it the same
   // as the MSAA role.
   if (!win_attributes_->ia2_role)
     win_attributes_->ia2_role = win_attributes_->ia_role;
 
-  win_attributes_->ia2_state = IA2State();
-
-  win_attributes_->ia2_attributes.clear();
-
-  // Expose some HTLM and ARIA attributes in the IAccessible2 attributes string.
-  // "display", "tag", and "xml-roles" have somewhat unusual names for
-  // historical reasons. Aside from that virtually every ARIA attribute
-  // is exposed in a really straightforward way, i.e. "aria-foo" is exposed
-  // as "foo".
-  StringAttributeToIA2(ui::AX_ATTR_DISPLAY, "display");
-  StringAttributeToIA2(ui::AX_ATTR_HTML_TAG, "tag");
-  StringAttributeToIA2(ui::AX_ATTR_ROLE, "xml-roles");
-
-  StringAttributeToIA2(ui::AX_ATTR_AUTO_COMPLETE, "autocomplete");
-  StringAttributeToIA2(ui::AX_ATTR_ROLE_DESCRIPTION, "roledescription");
-  StringAttributeToIA2(ui::AX_ATTR_KEY_SHORTCUTS, "keyshortcuts");
-
-  IntAttributeToIA2(ui::AX_ATTR_HIERARCHICAL_LEVEL, "level");
-  IntAttributeToIA2(ui::AX_ATTR_SET_SIZE, "setsize");
-  IntAttributeToIA2(ui::AX_ATTR_POS_IN_SET, "posinset");
-
-  if (owner()->HasIntAttribute(ui::AX_ATTR_CHECKED_STATE))
-    win_attributes_->ia2_attributes.push_back(L"checkable:true");
-
-  // Expose live region attributes.
-  StringAttributeToIA2(ui::AX_ATTR_LIVE_STATUS, "live");
-  StringAttributeToIA2(ui::AX_ATTR_LIVE_RELEVANT, "relevant");
-  BoolAttributeToIA2(ui::AX_ATTR_LIVE_ATOMIC, "atomic");
-  BoolAttributeToIA2(ui::AX_ATTR_LIVE_BUSY, "busy");
-
-  // Expose container live region attributes.
-  StringAttributeToIA2(ui::AX_ATTR_CONTAINER_LIVE_STATUS, "container-live");
-  StringAttributeToIA2(ui::AX_ATTR_CONTAINER_LIVE_RELEVANT,
-                       "container-relevant");
-  BoolAttributeToIA2(ui::AX_ATTR_CONTAINER_LIVE_ATOMIC, "container-atomic");
-  BoolAttributeToIA2(ui::AX_ATTR_CONTAINER_LIVE_BUSY, "container-busy");
-
-  // Expose the non-standard explicit-name IA2 attribute.
-  int name_from;
-  if (owner()->GetIntAttribute(ui::AX_ATTR_NAME_FROM, &name_from) &&
-      name_from != ui::AX_NAME_FROM_CONTENTS) {
-    win_attributes_->ia2_attributes.push_back(L"explicit-name:true");
-  }
-
-  // Expose the aria-current attribute.
-  int32_t aria_current_state;
-  if (owner()->GetIntAttribute(ui::AX_ATTR_ARIA_CURRENT_STATE,
-                               &aria_current_state)) {
-    switch (static_cast<ui::AXAriaCurrentState>(aria_current_state)) {
-      case ui::AX_ARIA_CURRENT_STATE_NONE:
-        break;
-      case ui::AX_ARIA_CURRENT_STATE_FALSE:
-        win_attributes_->ia2_attributes.push_back(L"current:false");
-        break;
-      case ui::AX_ARIA_CURRENT_STATE_TRUE:
-        win_attributes_->ia2_attributes.push_back(L"current:true");
-        break;
-      case ui::AX_ARIA_CURRENT_STATE_PAGE:
-        win_attributes_->ia2_attributes.push_back(L"current:page");
-        break;
-      case ui::AX_ARIA_CURRENT_STATE_STEP:
-        win_attributes_->ia2_attributes.push_back(L"current:step");
-        break;
-      case ui::AX_ARIA_CURRENT_STATE_LOCATION:
-        win_attributes_->ia2_attributes.push_back(L"current:location");
-        break;
-      case ui::AX_ARIA_CURRENT_STATE_DATE:
-        win_attributes_->ia2_attributes.push_back(L"current:date");
-        break;
-      case ui::AX_ARIA_CURRENT_STATE_TIME:
-        win_attributes_->ia2_attributes.push_back(L"current:time");
-        break;
-    }
-  }
-
-  // Expose table cell index.
-  if (ui::IsCellOrTableHeaderRole(owner()->GetRole())) {
-    BrowserAccessibilityWin* win_parent =
-        static_cast<BrowserAccessibilityWin*>(owner()->PlatformGetParent());
-    AXPlatformNodeBase* table = win_parent->GetCOM();
-
-    while (table && !ui::IsTableLikeRole(table->GetData().role))
-      table = FromNativeViewAccessible(table->GetParent());
-
-    if (table) {
-      const std::vector<int32_t>& unique_cell_ids =
-          table->GetIntListAttribute(ui::AX_ATTR_UNIQUE_CELL_IDS);
-      for (size_t i = 0; i < unique_cell_ids.size(); ++i) {
-        if (unique_cell_ids[i] == owner()->GetId()) {
-          win_attributes_->ia2_attributes.push_back(
-              base::string16(L"table-cell-index:") + base::IntToString16(i));
-        }
-      }
-    }
-  }
-
-  // Expose aria-colcount and aria-rowcount in a table, grid or treegrid.
-  if (ui::IsTableLikeRole(owner()->GetRole())) {
-    IntAttributeToIA2(ui::AX_ATTR_ARIA_COLUMN_COUNT, "colcount");
-    IntAttributeToIA2(ui::AX_ATTR_ARIA_ROW_COUNT, "rowcount");
-  }
-
-  // Expose aria-colindex and aria-rowindex in a cell or row.
-  if (ui::IsCellOrTableHeaderRole(owner()->GetRole()) ||
-      owner()->GetRole() == ui::AX_ROLE_ROW) {
-    if (owner()->GetRole() != ui::AX_ROLE_ROW)
-      IntAttributeToIA2(ui::AX_ATTR_ARIA_CELL_COLUMN_INDEX, "colindex");
-    IntAttributeToIA2(ui::AX_ATTR_ARIA_CELL_ROW_INDEX, "rowindex");
-  }
-
-  // Expose row or column header sort direction.
-  int32_t sort_direction;
-  if ((MSAARole() == ROLE_SYSTEM_COLUMNHEADER ||
-       MSAARole() == ROLE_SYSTEM_ROWHEADER) &&
-      owner()->GetIntAttribute(ui::AX_ATTR_SORT_DIRECTION, &sort_direction)) {
-    switch (static_cast<ui::AXSortDirection>(sort_direction)) {
-      case ui::AX_SORT_DIRECTION_NONE:
-        break;
-      case ui::AX_SORT_DIRECTION_UNSORTED:
-        win_attributes_->ia2_attributes.push_back(L"sort:none");
-        break;
-      case ui::AX_SORT_DIRECTION_ASCENDING:
-        win_attributes_->ia2_attributes.push_back(L"sort:ascending");
-        break;
-      case ui::AX_SORT_DIRECTION_DESCENDING:
-        win_attributes_->ia2_attributes.push_back(L"sort:descending");
-        break;
-      case ui::AX_SORT_DIRECTION_OTHER:
-        win_attributes_->ia2_attributes.push_back(L"sort:other");
-        break;
-    }
-  }
+  win_attributes_->ia2_state = ComputeIA2State();
+  win_attributes_->ia2_attributes = ComputeIA2Attributes();
 
   win_attributes_->name = owner()->GetString16Attribute(ui::AX_ATTR_NAME);
+
   win_attributes_->description =
       owner()->GetString16Attribute(ui::AX_ATTR_DESCRIPTION);
-  StringAttributeToIA2(ui::AX_ATTR_PLACEHOLDER, "placeholder");
 
   base::string16 value = owner()->GetValue();
 
   // Expose slider value.
   if (IsRangeValueSupported()) {
     value = GetRangeValueText();
-    SanitizeStringAttributeForIA2(value, &value);
-    win_attributes_->ia2_attributes.push_back(L"valuetext:" + value);
-  } else {
+  } else if (owner()->IsDocument()) {
     // On Windows, the value of a document should be its url.
-    if (owner()->IsDocument()) {
-      value = base::UTF8ToUTF16(Manager()->GetTreeData().url);
-    }
-    // If this doesn't have a value and is linked then set its value to the url
-    // attribute. This allows screen readers to read an empty link's
-    // destination.
-    if (value.empty() && (MSAAState() & STATE_SYSTEM_LINKED))
-      value = owner()->GetString16Attribute(ui::AX_ATTR_URL);
+    value = base::UTF8ToUTF16(Manager()->GetTreeData().url);
   }
+  // If this doesn't have a value and is linked then set its value to the url
+  // attribute. This allows screen readers to read an empty link's
+  // destination.
+  if (value.empty() && (MSAAState() & STATE_SYSTEM_LINKED))
+    value = owner()->GetString16Attribute(ui::AX_ATTR_URL);
 
   win_attributes_->value = value;
 
@@ -3162,8 +3014,6 @@ void BrowserAccessibilityComWin::UpdateStep1ComputeWinAttributes() {
   int error_message_id;
   if (owner()->GetIntAttribute(ui::AX_ATTR_ERRORMESSAGE_ID, &error_message_id))
     AddRelation(IA2_RELATION_ERROR_MESSAGE, error_message_id);
-
-  UpdateRequiredAttributes();
 }
 
 void BrowserAccessibilityComWin::UpdateStep2ComputeHypertext() {
@@ -3614,36 +3464,6 @@ void BrowserAccessibilityComWin::SetIA2HypertextSelection(LONG start_offset,
                                           end_position->AsTextPosition()));
 }
 
-void BrowserAccessibilityComWin::StringAttributeToIA2(
-    ui::AXStringAttribute attribute,
-    const char* ia2_attr) {
-  base::string16 value;
-  if (owner()->GetString16Attribute(attribute, &value)) {
-    SanitizeStringAttributeForIA2(value, &value);
-    win_attributes_->ia2_attributes.push_back(base::ASCIIToUTF16(ia2_attr) +
-                                              L":" + value);
-  }
-}
-
-void BrowserAccessibilityComWin::BoolAttributeToIA2(
-    ui::AXBoolAttribute attribute,
-    const char* ia2_attr) {
-  bool value;
-  if (owner()->GetBoolAttribute(attribute, &value)) {
-    win_attributes_->ia2_attributes.push_back(
-        (base::ASCIIToUTF16(ia2_attr) + L":") + (value ? L"true" : L"false"));
-  }
-}
-
-void BrowserAccessibilityComWin::IntAttributeToIA2(ui::AXIntAttribute attribute,
-                                                   const char* ia2_attr) {
-  int value;
-  if (owner()->GetIntAttribute(attribute, &value)) {
-    win_attributes_->ia2_attributes.push_back(
-        base::ASCIIToUTF16(ia2_attr) + L":" + base::IntToString16(value));
-  }
-}
-
 bool BrowserAccessibilityComWin::IsHyperlink() const {
   int32_t hyperlink_index = -1;
   auto* parent = owner()->PlatformGetParent();
@@ -3891,16 +3711,6 @@ void BrowserAccessibilityComWin::GetSelectionOffsets(int* selection_start,
   DCHECK(SUCCEEDED(hr));
   if (n_selections > 0)
     ++(*largest_offset);
-}
-
-base::string16 BrowserAccessibilityComWin::GetRangeValueText() {
-  float fval;
-  base::string16 result = owner()->GetValue();
-
-  if (result.empty() && GetFloatAttribute(ui::AX_ATTR_VALUE_FOR_RANGE, &fval)) {
-    result = base::UTF8ToUTF16(base::DoubleToString(fval));
-  }
-  return result;
 }
 
 bool BrowserAccessibilityComWin::IsSameHypertextCharacter(
@@ -4261,76 +4071,6 @@ void BrowserAccessibilityComWin::RemoveTargetFromRelation(
     } else {
       ++iter;
     }
-  }
-}
-
-void BrowserAccessibilityComWin::UpdateRequiredAttributes() {
-  if (ui::IsCellOrTableHeaderRole(owner()->GetRole())) {
-    // Expose colspan attribute.
-    base::string16 colspan;
-    if (owner()->GetHtmlAttribute("aria-colspan", &colspan)) {
-      SanitizeStringAttributeForIA2(colspan, &colspan);
-      win_attributes_->ia2_attributes.push_back(L"colspan:" + colspan);
-    }
-    // Expose rowspan attribute.
-    base::string16 rowspan;
-    if (owner()->GetHtmlAttribute("aria-rowspan", &rowspan)) {
-      SanitizeStringAttributeForIA2(rowspan, &rowspan);
-      win_attributes_->ia2_attributes.push_back(L"rowspan:" + rowspan);
-    }
-  }
-
-  // Expose dropeffect attribute.
-  base::string16 drop_effect;
-  if (owner()->GetHtmlAttribute("aria-dropeffect", &drop_effect)) {
-    SanitizeStringAttributeForIA2(drop_effect, &drop_effect);
-    win_attributes_->ia2_attributes.push_back(L"dropeffect:" + drop_effect);
-  }
-
-  // Expose grabbed attribute.
-  base::string16 grabbed;
-  if (owner()->GetHtmlAttribute("aria-grabbed", &grabbed)) {
-    SanitizeStringAttributeForIA2(grabbed, &grabbed);
-    win_attributes_->ia2_attributes.push_back(L"grabbed:" + grabbed);
-  }
-
-  // Expose class attribute.
-  base::string16 class_attr;
-  if (owner()->GetHtmlAttribute("class", &class_attr)) {
-    SanitizeStringAttributeForIA2(class_attr, &class_attr);
-    win_attributes_->ia2_attributes.push_back(L"class:" + class_attr);
-  }
-
-  // Expose datetime attribute.
-  base::string16 datetime;
-  if (owner()->GetRole() == ui::AX_ROLE_TIME &&
-      owner()->GetHtmlAttribute("datetime", &datetime)) {
-    SanitizeStringAttributeForIA2(datetime, &datetime);
-    win_attributes_->ia2_attributes.push_back(L"datetime:" + datetime);
-  }
-
-  // Expose id attribute.
-  base::string16 id;
-  if (owner()->GetHtmlAttribute("id", &id)) {
-    SanitizeStringAttributeForIA2(id, &id);
-    win_attributes_->ia2_attributes.push_back(L"id:" + id);
-  }
-
-  // Expose src attribute.
-  base::string16 src;
-  if (owner()->GetRole() == ui::AX_ROLE_IMAGE &&
-      owner()->GetHtmlAttribute("src", &src)) {
-    SanitizeStringAttributeForIA2(src, &src);
-    win_attributes_->ia2_attributes.push_back(L"src:" + src);
-  }
-
-  // Expose input-text type attribute.
-  base::string16 type;
-  base::string16 html_tag = owner()->GetString16Attribute(ui::AX_ATTR_HTML_TAG);
-  if (owner()->IsSimpleTextControl() && html_tag == L"input" &&
-      owner()->GetHtmlAttribute("type", &type)) {
-    SanitizeStringAttributeForIA2(type, &type);
-    win_attributes_->ia2_attributes.push_back(L"text-input-type:" + type);
   }
 }
 
