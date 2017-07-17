@@ -12,8 +12,11 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.TypedValue;
+import android.view.View;
 
 import org.chromium.webapk.lib.common.WebApkConstants;
 import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
@@ -29,6 +32,7 @@ import java.util.Set;
  */
 public class WebApkUtils {
     public static final String SHARED_PREF_RUNTIME_HOST = "runtime_host";
+    public static final int PADDING_DP = 20;
 
     /**
      * The package names of the channels of Chrome that support WebAPKs. The most preferred one
@@ -225,5 +229,28 @@ public class WebApkUtils {
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putString(SHARED_PREF_RUNTIME_HOST, hostPackage);
         editor.apply();
+    }
+
+    /** Converts a dp value to a px value. */
+    public static int dpToPx(Context context, int value) {
+        return Math.round(TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP, value, context.getResources().getDisplayMetrics()));
+    }
+
+    /**
+     * Android uses padding_left under API level 17 and uses padding_start after that.
+     * If we set the padding in resource file, android will create duplicated resource xml
+     * with the padding to be different.
+     */
+    @SuppressWarnings("deprecation")
+    public static void setPadding(
+            View view, Context context, int start, int top, int end, int bottom) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            view.setPaddingRelative(dpToPx(context, start), dpToPx(context, top),
+                    dpToPx(context, end), dpToPx(context, bottom));
+        } else {
+            view.setPadding(dpToPx(context, start), dpToPx(context, top), dpToPx(context, end),
+                    dpToPx(context, bottom));
+        }
     }
 }

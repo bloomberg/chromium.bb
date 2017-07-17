@@ -13,8 +13,6 @@
         android:id="@+id/desc"
         android:textColor="@android:color/black"
         android:textAppearance="@android:style/TextAppearance.DeviceDefault.Small"
-        android:paddingStart="20dp"
-        android:paddingEnd="20dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 

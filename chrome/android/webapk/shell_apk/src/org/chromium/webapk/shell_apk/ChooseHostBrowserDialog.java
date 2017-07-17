@@ -95,6 +95,7 @@ public class ChooseHostBrowserDialog {
         TextView desc = (TextView) view.findViewById(R.id.desc);
         ListView browserList = (ListView) view.findViewById(R.id.browser_list);
         desc.setText(R.string.choose_host_browser);
+        WebApkUtils.setPadding(desc, context, WebApkUtils.PADDING_DP, 0, WebApkUtils.PADDING_DP, 0);
         browserList.setAdapter(new BrowserArrayAdapter(context, browserItems));
 
         // The context theme wrapper is needed for pre-L.
@@ -177,7 +178,9 @@ public class ChooseHostBrowserDialog {
             }
 
             TextView name = (TextView) convertView.findViewById(R.id.browser_name);
+            WebApkUtils.setPadding(name, mContext, WebApkUtils.PADDING_DP, 0, 0, 0);
             ImageView icon = (ImageView) convertView.findViewById(R.id.browser_icon);
+            WebApkUtils.setPadding(icon, mContext, WebApkUtils.PADDING_DP, 0, 0, 0);
             BrowserItem item = mBrowsers.get(position);
 
             name.setEnabled(item.supportsWebApks());

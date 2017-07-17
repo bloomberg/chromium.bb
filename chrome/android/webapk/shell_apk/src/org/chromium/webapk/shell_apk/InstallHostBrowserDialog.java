@@ -39,7 +39,9 @@ public class InstallHostBrowserDialog {
             int hostBrowserIconId) {
         View view = LayoutInflater.from(context).inflate(R.layout.host_browser_list_item, null);
         TextView name = (TextView) view.findViewById(R.id.browser_name);
+        WebApkUtils.setPadding(name, context, WebApkUtils.PADDING_DP, 0, 0, 0);
         ImageView icon = (ImageView) view.findViewById(R.id.browser_icon);
+        WebApkUtils.setPadding(icon, context, WebApkUtils.PADDING_DP, 0, 0, 0);
 
         name.setText(hostBrowserApplicationName);
         name.setTextColor(Color.BLACK);
