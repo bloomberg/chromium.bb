@@ -138,6 +138,7 @@ viz_source_set("unit_tests") {
     "frame_sinks/direct_layer_tree_frame_sink_unittest.cc",
     "frame_sinks/frame_sink_manager_unittest.cc",
     "frame_sinks/referenced_surface_tracker_unittest.cc",
+    "frame_sinks/surface_synchronization_unittest.cc",
     "hit_test/hit_test_aggregator_unittest.cc",
   ]
 
