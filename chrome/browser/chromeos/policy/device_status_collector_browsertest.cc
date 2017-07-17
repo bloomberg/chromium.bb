@@ -287,6 +287,8 @@ class DeviceStatusCollectorTest : public testing::Test {
                                    std::string() /* kiosk_app_update_url */),
         user_data_dir_override_(chrome::DIR_USER_DATA),
         update_engine_client_(new chromeos::FakeUpdateEngineClient) {
+    EXPECT_CALL(*user_manager_, Shutdown()).Times(1);
+
     // Although this is really a unit test which runs in the browser_tests
     // binary, it doesn't get the unit setup which normally happens in the unit
     // test binary.
@@ -348,14 +350,6 @@ class DeviceStatusCollectorTest : public testing::Test {
     chromeos::LoginState::Initialize();
   }
 
-  void AddMountPoint(const std::string& mount_point) {
-    mount_point_map_.insert(DiskMountManager::MountPointMap::value_type(
-        mount_point,
-        DiskMountManager::MountPointInfo(
-            mount_point, mount_point, chromeos::MOUNT_TYPE_DEVICE,
-            chromeos::disks::MOUNT_CONDITION_NONE)));
-  }
-
   ~DeviceStatusCollectorTest() override {
     chromeos::LoginState::Shutdown();
     chromeos::CrasAudioHandler::Shutdown();
@@ -376,6 +370,14 @@ class DeviceStatusCollectorTest : public testing::Test {
 
   void TearDown() override {
     settings_helper_.RestoreProvider();
+  }
+
+ protected:
+  void AddMountPoint(const std::string& mount_point) {
+    mount_point_map_.insert(DiskMountManager::MountPointMap::value_type(
+        mount_point, DiskMountManager::MountPointInfo(
+                         mount_point, mount_point, chromeos::MOUNT_TYPE_DEVICE,
+                         chromeos::disks::MOUNT_CONDITION_NONE)));
   }
 
   void RestartStatusCollector(
@@ -479,7 +481,6 @@ class DeviceStatusCollectorTest : public testing::Test {
               manager->GetAutoLaunchAppRequiredPlatformVersion());
   }
 
- protected:
   // Convenience method.
   int64_t ActivePeriodMilliseconds() {
     return policy::DeviceStatusCollector::kIdlePollIntervalSeconds * 1000;
@@ -762,8 +763,7 @@ TEST_F(DeviceStatusCollectorTest, ActivityCrossingMidnight) {
 
 TEST_F(DeviceStatusCollectorTest, ActivityTimesKeptUntilSubmittedSuccessfully) {
   ui::IdleState test_states[] = {
-    ui::IDLE_STATE_ACTIVE,
-    ui::IDLE_STATE_ACTIVE,
+      ui::IDLE_STATE_ACTIVE, ui::IDLE_STATE_ACTIVE,
   };
   // Make sure CPU stats get reported in time. If we don't run this, the second
   // call to |GetStatus()| will contain these stats, but the first call won't
@@ -778,10 +778,14 @@ TEST_F(DeviceStatusCollectorTest, ActivityTimesKeptUntilSubmittedSuccessfully) {
             GetActiveMilliseconds(device_status_));
   em::DeviceStatusReportRequest first_status(device_status_);
 
-  // The collector returns the same status again.
+  // The collector returns the same activity times again.
   GetStatus();
-  EXPECT_EQ(first_status.SerializeAsString(),
-            device_status_.SerializeAsString());
+  int period_count = first_status.active_period_size();
+  EXPECT_EQ(period_count, device_status_.active_period_size());
+  for (int n = 0; n < period_count; ++n) {
+    EXPECT_EQ(first_status.active_period(n).SerializeAsString(),
+              device_status_.active_period(n).SerializeAsString());
+  }
 
   // After indicating a successful submit, the submitted status gets cleared,
   // but what got collected meanwhile sticks around.
