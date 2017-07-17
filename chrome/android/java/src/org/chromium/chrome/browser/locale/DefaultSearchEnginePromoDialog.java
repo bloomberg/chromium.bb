@@ -108,14 +108,14 @@ public class DefaultSearchEnginePromoDialog extends PromoDialog {
 
     @Override
     public void onDismiss(DialogInterface dialog) {
-        if (mHelper.getCurrentlySelectedKeyword() == null) {
+        if (mHelper.getConfirmedKeyword() == null) {
             // If no selection, finish the Activity so that the user has to respond to the dialog
             // next time.
             if (getOwnerActivity() != null) getOwnerActivity().finish();
         }
 
         if (mOnSuccessCallback != null) {
-            mOnSuccessCallback.onResult(mHelper.getCurrentlySelectedKeyword() != null);
+            mOnSuccessCallback.onResult(mHelper.getConfirmedKeyword() != null);
         }
 
         if (sCurrentDialog == this) setCurrentDialog(null);
