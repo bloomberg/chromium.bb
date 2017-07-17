@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/webui/chromeos/proxy_settings_ui.h"
 
 #include <memory>
+#include <string>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -14,6 +16,7 @@
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/options/chromeos/core_chromeos_options_handler.h"
+#include "chrome/browser/ui/webui/options/chromeos/internet_options_handler_strings.h"
 #include "chrome/browser/ui/webui/options/chromeos/proxy_handler.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/url_constants.h"
@@ -76,7 +79,6 @@ void ProxySettingsHTMLSource::StartDataRequest(
     const content::URLDataSource::GotDataCallback& callback) {
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
   webui::SetLoadTimeDataDefaults(app_locale, localized_strings_.get());
-
   static const base::StringPiece html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_PROXY_SETTINGS_HTML));
@@ -106,6 +108,7 @@ ProxySettingsUI::ProxySettingsUI(content::WebUI* web_ui)
   web_ui->AddMessageHandler(std::move(proxy_handler));
   proxy_handler_->GetLocalizedValues(localized_strings);
 
+  internet_options_strings::RegisterLocalizedStrings(localized_strings);
   bool keyboard_driven_oobe =
       system::InputDeviceSettings::Get()->ForceKeyboardDrivenUINavigation();
   localized_strings->SetString("highlightStrength",
