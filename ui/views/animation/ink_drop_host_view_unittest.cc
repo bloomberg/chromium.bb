@@ -11,6 +11,7 @@
 #include "ui/events/event_handler.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/animation/animation.h"
+#include "ui/gfx/animation/animation_test_api.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
@@ -55,11 +56,17 @@ class InkDropHostViewTest : public testing::Test {
   // Provides internal access to |host_view_| test target.
   InkDropHostViewTestApi test_api_;
 
+  std::unique_ptr<base::AutoReset<gfx::Animation::RichAnimationRenderMode>>
+      animation_mode_reset_;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(InkDropHostViewTest);
 };
 
-InkDropHostViewTest::InkDropHostViewTest() : test_api_(&host_view_) {}
+InkDropHostViewTest::InkDropHostViewTest()
+    : test_api_(&host_view_),
+      animation_mode_reset_(gfx::AnimationTestApi::SetRichAnimationRenderMode(
+          gfx::Animation::RichAnimationRenderMode::FORCE_DISABLED)) {}
 
 InkDropHostViewTest::~InkDropHostViewTest() {}
 

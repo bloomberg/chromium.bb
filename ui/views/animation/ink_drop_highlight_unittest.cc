@@ -12,6 +12,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/gfx/animation/animation.h"
+#include "ui/gfx/animation/animation_test_api.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/animation/test/ink_drop_highlight_test_api.h"
 #include "ui/views/animation/test/test_ink_drop_highlight_observer.h"
@@ -49,10 +50,15 @@ class InkDropHighlightTest : public testing::Test {
   // Observer of the test target.
   TestInkDropHighlightObserver observer_;
 
+  std::unique_ptr<base::AutoReset<gfx::Animation::RichAnimationRenderMode>>
+      animation_mode_reset_;
+
   DISALLOW_COPY_AND_ASSIGN(InkDropHighlightTest);
 };
 
-InkDropHighlightTest::InkDropHighlightTest() {
+InkDropHighlightTest::InkDropHighlightTest()
+    : animation_mode_reset_(gfx::AnimationTestApi::SetRichAnimationRenderMode(
+          gfx::Animation::RichAnimationRenderMode::FORCE_DISABLED)) {
   InitHighlight(base::MakeUnique<InkDropHighlight>(
       gfx::Size(10, 10), 3, gfx::PointF(), SK_ColorBLACK));
 }
