@@ -21,7 +21,7 @@ GroupedPermissionInfoBarDelegate::~GroupedPermissionInfoBarDelegate() {}
 
 // static
 infobars::InfoBar* GroupedPermissionInfoBarDelegate::Create(
-    PermissionPromptAndroid* permission_prompt,
+    const base::WeakPtr<PermissionPromptAndroid>& permission_prompt,
     InfoBarService* infobar_service,
     const GURL& requesting_origin) {
   return infobar_service->AddInfoBar(base::MakeUnique<GroupedPermissionInfoBar>(
@@ -34,6 +34,8 @@ size_t GroupedPermissionInfoBarDelegate::PermissionCount() const {
 }
 
 bool GroupedPermissionInfoBarDelegate::ShouldShowPersistenceToggle() const {
+  if (!permission_prompt_)
+    return false;
   return permission_prompt_->ShouldShowPersistenceToggle();
 }
 
@@ -78,7 +80,7 @@ base::string16 GroupedPermissionInfoBarDelegate::GetLinkText() const {
 }
 
 GroupedPermissionInfoBarDelegate::GroupedPermissionInfoBarDelegate(
-    PermissionPromptAndroid* permission_prompt,
+    const base::WeakPtr<PermissionPromptAndroid>& permission_prompt,
     const GURL& requesting_origin)
     : requesting_origin_(requesting_origin),
       persist_(true),

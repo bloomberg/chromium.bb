@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/permission_bubble/permission_prompt.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -55,6 +56,8 @@ class PermissionPromptAndroid : public PermissionPrompt {
   Delegate* delegate_;
 
   bool persist_;
+
+  base::WeakPtrFactory<PermissionPromptAndroid> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionPromptAndroid);
 };

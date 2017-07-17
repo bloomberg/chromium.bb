@@ -100,9 +100,9 @@ class PermissionDialogDelegate : public content::WebContentsObserver {
   // delete the PermissionQueueController.
   std::unique_ptr<PermissionInfoBarDelegate> infobar_delegate_;
 
-  // The PermissionPromptAndroid is alive until the tab navigates or is closed.
-  // We close the prompt on DidFinishNavigation and WebContentsDestroyed, so it
-  // should always be safe to use this pointer.
+  // The PermissionPromptAndroid is deleted when either the dialog is resolved
+  // or the tab is navigated/closed. We close the prompt on DidFinishNavigation
+  // and WebContentsDestroyed, so it should always be safe to use this pointer.
   PermissionPromptAndroid* permission_prompt_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionDialogDelegate);
