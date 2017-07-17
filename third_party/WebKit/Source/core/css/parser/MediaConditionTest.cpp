@@ -14,13 +14,13 @@ namespace blink {
 typedef struct {
   const char* input;
   const char* output;
-} TestCase;
+} MediaConditionTestCase;
 
 TEST(MediaConditionParserTest, Basic) {
   // The first string represents the input string.
   // The second string represents the output string, if present.
   // Otherwise, the output string is identical to the first string.
-  TestCase test_cases[] = {
+  MediaConditionTestCase test_cases[] = {
       {"screen", "not all"},
       {"screen and (color)", "not all"},
       {"all and (min-width:500px)", "not all"},
