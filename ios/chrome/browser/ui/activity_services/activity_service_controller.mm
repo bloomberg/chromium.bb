@@ -276,13 +276,21 @@
       activity_type_util::RecordMetricForActivity(type);
       message = activity_type_util::CompletionMessageForActivity(type);
     }
-    [shareToDelegate_ passwordAppExDidFinish:activityResult
-                                    username:username
-                                    password:password
-                           completionMessage:message];
-    // Controller state can be reset only after delegate has processed the
-    // item returned from the App Extension.
-    [self resetUserInterface];
+    // Password autofill uses JavaScript injection which must be executed on
+    // the main thread, however,
+    // loadItemForTypeIdentifier:options:completionHandler: documentation states
+    // that completion block "may  be executed on a background thread", so the
+    // code to do password filling must be re-dispatched back to main thread.
+    // Completion block intentionally retains |self|.
+    dispatch_async(dispatch_get_main_queue(), ^{
+      [shareToDelegate_ passwordAppExDidFinish:activityResult
+                                      username:username
+                                      password:password
+                             completionMessage:message];
+      // Controller state can be reset only after delegate has
+      // processed the item returned from the App Extension.
+      [self resetUserInterface];
+    });
   };
   [itemProvider loadItemForTypeIdentifier:(NSString*)kUTTypePropertyList
                                   options:nil
