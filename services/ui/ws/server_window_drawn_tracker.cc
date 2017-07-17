@@ -14,7 +14,10 @@ namespace ws {
 ServerWindowDrawnTracker::ServerWindowDrawnTracker(
     ServerWindow* window,
     ServerWindowDrawnTrackerObserver* observer)
-    : window_(window), observer_(observer), drawn_(window->IsDrawn()) {
+    : window_(window),
+      observer_(observer),
+      drawn_(window->IsDrawn()),
+      weak_factory_(this) {
   AddObservers();
 }
 
@@ -38,13 +41,19 @@ void ServerWindowDrawnTracker::SetDrawn(ServerWindow* ancestor, bool drawn) {
 }
 
 void ServerWindowDrawnTracker::AddObservers() {
-  if (!window_)
+  if (!window_) {
+    root_ = nullptr;
     return;
+  }
 
+  ServerWindow* last = window_;
   for (ServerWindow* v = window_; v; v = v->parent()) {
     v->AddObserver(this);
     windows_.insert(v);
+    last = v;
   }
+  DCHECK(last);
+  root_ = last;
 }
 
 void ServerWindowDrawnTracker::RemoveObservers() {
@@ -81,9 +90,16 @@ void ServerWindowDrawnTracker::OnWillChangeWindowHierarchy(
     }
   }
   if (drawn_ != new_is_drawn) {
+    auto ref = weak_factory_.GetWeakPtr();
     observer_->OnDrawnStateWillChange(new_is_drawn ? nullptr : old_parent,
                                       window_, new_is_drawn);
+    // Allow for the |observer_| to delete |this|.
+    if (!ref)
+      return;
   }
+
+  if (!root_->Contains(new_parent))
+    observer_->OnRootWillChange(old_parent, window_);
 }
 
 void ServerWindowDrawnTracker::OnWindowHierarchyChanged(

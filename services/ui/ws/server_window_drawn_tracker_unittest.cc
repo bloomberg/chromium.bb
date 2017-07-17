@@ -20,17 +20,17 @@ namespace {
 class TestServerWindowDrawnTrackerObserver
     : public ServerWindowDrawnTrackerObserver {
  public:
-  TestServerWindowDrawnTrackerObserver()
-      : change_count_(0u),
-        ancestor_(nullptr),
-        window_(nullptr),
-        is_drawn_(false) {}
+  TestServerWindowDrawnTrackerObserver() = default;
 
-  void clear_change_count() { change_count_ = 0u; }
+  void clear_change_count() {
+    change_count_ = 0u;
+    root_changed_count_ = 0u;
+  }
   size_t change_count() const { return change_count_; }
   const ServerWindow* ancestor() const { return ancestor_; }
   const ServerWindow* window() const { return window_; }
   bool is_drawn() const { return is_drawn_; }
+  size_t root_changed_count() const { return root_changed_count_; }
 
  private:
   // ServerWindowDrawnTrackerObserver:
@@ -50,11 +50,15 @@ class TestServerWindowDrawnTrackerObserver
     EXPECT_EQ(window_, window);
     EXPECT_EQ(is_drawn_, is_drawn);
   }
+  void OnRootWillChange(ServerWindow* ancestor, ServerWindow* window) override {
+    root_changed_count_++;
+  }
 
-  size_t change_count_;
-  const ServerWindow* ancestor_;
-  const ServerWindow* window_;
-  bool is_drawn_;
+  size_t change_count_ = 0u;
+  size_t root_changed_count_ = 0u;
+  const ServerWindow* ancestor_ = nullptr;
+  const ServerWindow* window_ = nullptr;
+  bool is_drawn_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestServerWindowDrawnTrackerObserver);
 };
@@ -70,6 +74,7 @@ TEST(ServerWindowDrawnTrackerTest, ChangeBecauseOfDeletionAndVisibility) {
   ServerWindowDrawnTracker tracker(window.get(), &drawn_observer);
   window->SetVisible(true);
   EXPECT_EQ(1u, drawn_observer.change_count());
+  EXPECT_EQ(0u, drawn_observer.root_changed_count());
   EXPECT_EQ(window.get(), drawn_observer.window());
   EXPECT_EQ(nullptr, drawn_observer.ancestor());
   EXPECT_TRUE(drawn_observer.is_drawn());
@@ -77,6 +82,7 @@ TEST(ServerWindowDrawnTrackerTest, ChangeBecauseOfDeletionAndVisibility) {
 
   window->SetVisible(false);
   EXPECT_EQ(1u, drawn_observer.change_count());
+  EXPECT_EQ(0u, drawn_observer.root_changed_count());
   EXPECT_EQ(window.get(), drawn_observer.window());
   EXPECT_EQ(nullptr, drawn_observer.ancestor());
   EXPECT_FALSE(drawn_observer.is_drawn());
@@ -84,6 +90,7 @@ TEST(ServerWindowDrawnTrackerTest, ChangeBecauseOfDeletionAndVisibility) {
 
   window->SetVisible(true);
   EXPECT_EQ(1u, drawn_observer.change_count());
+  EXPECT_EQ(0u, drawn_observer.root_changed_count());
   EXPECT_EQ(window.get(), drawn_observer.window());
   EXPECT_EQ(nullptr, drawn_observer.ancestor());
   EXPECT_TRUE(drawn_observer.is_drawn());
@@ -92,6 +99,7 @@ TEST(ServerWindowDrawnTrackerTest, ChangeBecauseOfDeletionAndVisibility) {
   ServerWindow* old_window = window.get();
   window.reset();
   EXPECT_EQ(1u, drawn_observer.change_count());
+  EXPECT_EQ(0u, drawn_observer.root_changed_count());
   EXPECT_EQ(old_window, drawn_observer.window());
   EXPECT_EQ(nullptr, drawn_observer.ancestor());
   EXPECT_FALSE(drawn_observer.is_drawn());
@@ -110,6 +118,7 @@ TEST(ServerWindowDrawnTrackerTest, ChangeBecauseOfRemovingFromRoot) {
   ServerWindowDrawnTracker tracker(&child, &drawn_observer);
   root.Remove(&child);
   EXPECT_EQ(1u, drawn_observer.change_count());
+  EXPECT_EQ(1u, drawn_observer.root_changed_count());
   EXPECT_EQ(&child, drawn_observer.window());
   EXPECT_EQ(&root, drawn_observer.ancestor());
   EXPECT_FALSE(drawn_observer.is_drawn());
@@ -117,6 +126,7 @@ TEST(ServerWindowDrawnTrackerTest, ChangeBecauseOfRemovingFromRoot) {
 
   root.Add(&child);
   EXPECT_EQ(1u, drawn_observer.change_count());
+  EXPECT_EQ(1u, drawn_observer.root_changed_count());
   EXPECT_EQ(&child, drawn_observer.window());
   EXPECT_EQ(nullptr, drawn_observer.ancestor());
   EXPECT_TRUE(drawn_observer.is_drawn());
@@ -139,6 +149,7 @@ TEST(ServerWindowDrawnTrackerTest, ChangeBecauseOfRemovingAncestorFromRoot) {
   ServerWindowDrawnTracker tracker(&child_child, &drawn_observer);
   root.Remove(&child);
   EXPECT_EQ(1u, drawn_observer.change_count());
+  EXPECT_EQ(1u, drawn_observer.root_changed_count());
   EXPECT_EQ(&child_child, drawn_observer.window());
   EXPECT_EQ(&root, drawn_observer.ancestor());
   EXPECT_FALSE(drawn_observer.is_drawn());
@@ -146,6 +157,7 @@ TEST(ServerWindowDrawnTrackerTest, ChangeBecauseOfRemovingAncestorFromRoot) {
 
   root.Add(&child_child);
   EXPECT_EQ(1u, drawn_observer.change_count());
+  EXPECT_EQ(1u, drawn_observer.root_changed_count());
   EXPECT_EQ(&child_child, drawn_observer.window());
   EXPECT_EQ(nullptr, drawn_observer.ancestor());
   EXPECT_TRUE(drawn_observer.is_drawn());
@@ -177,6 +189,7 @@ TEST(ServerWindowDrawnTrackerTest, VisibilityChangeFromNonParentAncestor) {
   // is still invisible.
   child1.SetVisible(true);
   EXPECT_EQ(0u, drawn_observer.change_count());
+  EXPECT_EQ(0u, drawn_observer.root_changed_count());
   EXPECT_EQ(nullptr, drawn_observer.window());
   EXPECT_EQ(nullptr, drawn_observer.ancestor());
   EXPECT_FALSE(drawn_observer.is_drawn());
@@ -184,6 +197,7 @@ TEST(ServerWindowDrawnTrackerTest, VisibilityChangeFromNonParentAncestor) {
 
   child2.SetVisible(true);
   EXPECT_EQ(1u, drawn_observer.change_count());
+  EXPECT_EQ(0u, drawn_observer.root_changed_count());
   EXPECT_EQ(&child3, drawn_observer.window());
   EXPECT_EQ(nullptr, drawn_observer.ancestor());
   EXPECT_TRUE(drawn_observer.is_drawn());
@@ -217,6 +231,7 @@ TEST(ServerWindowDrawnTrackerTest, TreeHierarchyChangeFromNonParentAncestor) {
   // Move |child11| as a child of |child2|. |child111| should remain not drawn.
   child2.Add(&child11);
   EXPECT_EQ(0u, drawn_observer.change_count());
+  EXPECT_EQ(0u, drawn_observer.root_changed_count());
   EXPECT_EQ(nullptr, drawn_observer.window());
   EXPECT_EQ(nullptr, drawn_observer.ancestor());
   EXPECT_FALSE(drawn_observer.is_drawn());
@@ -224,6 +239,7 @@ TEST(ServerWindowDrawnTrackerTest, TreeHierarchyChangeFromNonParentAncestor) {
 
   child11.SetVisible(true);
   EXPECT_EQ(1u, drawn_observer.change_count());
+  EXPECT_EQ(0u, drawn_observer.root_changed_count());
   EXPECT_EQ(&child111, drawn_observer.window());
   EXPECT_EQ(nullptr, drawn_observer.ancestor());
   EXPECT_TRUE(drawn_observer.is_drawn());

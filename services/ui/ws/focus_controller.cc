@@ -238,12 +238,8 @@ bool FocusController::SetFocusedWindowImpl(
   return true;
 }
 
-void FocusController::OnDrawnStateWillChange(ServerWindow* ancestor,
-                                             ServerWindow* window,
-                                             bool is_drawn) {
-  DCHECK(!is_drawn);
-  DCHECK_NE(ancestor, window);
-  DCHECK(root_->Contains(window));
+void FocusController::ProcessDrawnOrRootChange(ServerWindow* ancestor,
+                                               ServerWindow* window) {
   drawn_tracker_.reset();
 
   // Find the window that triggered this state-change notification.
@@ -297,10 +293,24 @@ void FocusController::OnDrawnStateWillChange(ServerWindow* ancestor,
   SetFocusedWindowImpl(FocusControllerChangeSource::DRAWN_STATE_CHANGED, focus);
 }
 
+void FocusController::OnDrawnStateWillChange(ServerWindow* ancestor,
+                                             ServerWindow* window,
+                                             bool is_drawn) {
+  DCHECK(!is_drawn);
+  DCHECK_NE(ancestor, window);
+  DCHECK(root_->Contains(window));
+  ProcessDrawnOrRootChange(ancestor, window);
+}
+
 void FocusController::OnDrawnStateChanged(ServerWindow* ancestor,
                                           ServerWindow* window,
                                           bool is_drawn) {
   // DCHECK(false);  TODO(sadrul):
+}
+
+void FocusController::OnRootWillChange(ServerWindow* ancestor,
+                                       ServerWindow* window) {
+  ProcessDrawnOrRootChange(ancestor, window);
 }
 
 }  // namespace ws
