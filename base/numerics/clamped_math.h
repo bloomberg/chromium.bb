@@ -79,11 +79,11 @@ class ClampedNumeric {
 
   constexpr ClampedNumeric operator-() const {
     return ClampedNumeric<T>(
-        // The negation of two's complement int min is int min, so that's the
-        // only overflow case we have to check for. And in the case of a
-        // run-time variable value_, we can use an optimized code path.
+        // The negation of two's complement int min is int min, so we can
+        // check and just add one to prevent overflow in the constexpr case.
+        // We use an optimized code path for a known run-time variable.
         std::is_signed<T>::value
-            ? (IsCompileTimeConstant(value_)
+            ? (MustTreatAsConstexpr(value_)
                    ? ((std::is_floating_point<T>::value ||
                        NegateWrapper(value_) !=
                            std::numeric_limits<T>::lowest())
