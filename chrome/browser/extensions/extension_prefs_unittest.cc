@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/common/chrome_paths.h"
@@ -34,7 +35,6 @@
 
 using base::Time;
 using base::TimeDelta;
-using content::BrowserThread;
 
 namespace extensions {
 
@@ -44,9 +44,7 @@ static void AddPattern(URLPatternSet* extent, const std::string& pattern) {
 }
 
 ExtensionPrefsTest::ExtensionPrefsTest()
-    : ui_thread_(BrowserThread::UI, &message_loop_),
-      prefs_(message_loop_.task_runner().get()) {
-}
+    : prefs_(base::ThreadTaskRunnerHandle::Get()) {}
 
 ExtensionPrefsTest::~ExtensionPrefsTest() {
 }

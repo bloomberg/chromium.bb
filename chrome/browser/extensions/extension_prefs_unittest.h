@@ -8,9 +8,8 @@
 #include <stddef.h>
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "chrome/browser/extensions/test_extension_prefs.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace user_prefs {
@@ -47,9 +46,7 @@ class ExtensionPrefsTest : public testing::Test {
   ExtensionPrefs* prefs() { return prefs_.prefs(); }
   ChromeAppSorting* app_sorting() { return prefs_.app_sorting(); }
 
-  base::MessageLoop message_loop_;
-  content::TestBrowserThread ui_thread_;
-
+  content::TestBrowserThreadBundle thread_bundle_;
   TestExtensionPrefs prefs_;
 
  private:
