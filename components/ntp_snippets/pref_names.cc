@@ -84,6 +84,9 @@ const char kClickBasedCategoryRankerLastDecayTime[] =
 const char kBreakingNewsSubscriptionDataToken[] =
     "ntp_suggestions.breaking_news_subscription_data.token";
 
+const char kBreakingNewsSubscriptionDataIsAuthenticated[] =
+    "ntp_suggestions.breaking_news_subscription_data.is_authenticated";
+
 const char kBreakingNewsGCMSubscriptionTokenCache[] =
     "ntp_suggestions.breaking_news_gcm_subscription_token_cache";
 

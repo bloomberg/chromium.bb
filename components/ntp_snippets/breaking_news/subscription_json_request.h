@@ -27,10 +27,9 @@ class SubscriptionJsonRequest : public net::URLFetcherDelegate {
  public:
   // A client can expect a message in the status only, if there was any error
   // during the subscription. In successful cases, it will be an empty string.
-  using CompletedCallback =
-      base::OnceCallback<void(const ntp_snippets::Status& status)>;
+  using CompletedCallback = base::OnceCallback<void(const Status& status)>;
 
-  // Builds non-authenticated SubscriptionJsonRequests.
+  // Builds non-authenticated and authenticated SubscriptionJsonRequests.
   class Builder {
    public:
     Builder();
@@ -44,6 +43,7 @@ class SubscriptionJsonRequest : public net::URLFetcherDelegate {
     Builder& SetUrl(const GURL& url);
     Builder& SetUrlRequestContextGetter(
         const scoped_refptr<net::URLRequestContextGetter>& context_getter);
+    Builder& SetAuthenticationHeader(const std::string& auth_header);
 
    private:
     std::string BuildHeaders() const;
@@ -53,18 +53,21 @@ class SubscriptionJsonRequest : public net::URLFetcherDelegate {
         const std::string& headers,
         const std::string& body) const;
 
-    // GCM subscribtion token obtain from GCM driver (instanceID::getToken())
+    // GCM subscription token obtained from GCM driver (instanceID::getToken()).
     std::string token_;
-    // TODO(mamir): Additional fields to be added: country, language
+    // TODO(mamir): Additional fields to be added: country, language.
 
     GURL url_;
     scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
+    std::string auth_header_;
+
+    DISALLOW_COPY_AND_ASSIGN(Builder);
   };
 
   ~SubscriptionJsonRequest() override;
 
-  // Starts an async request. The callback is invoked when the request succeeds,
-  // fails or gets destroyed.
+  // Starts an async request. The callback is invoked when the request succeeds
+  // or fails. The callback is not called if the request is destroyed.
   void Start(CompletedCallback callback);
 
  private:

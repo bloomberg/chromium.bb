@@ -210,6 +210,7 @@ source_set("unit_tests") {
     "//components/signin/core/common",
     "//components/strings",
     "//components/sync:test_support_driver",
+    "//components/sync_preferences:test_support",
     "//components/sync_sessions",
     "//components/variations:test_support",
     "//components/web_resource:web_resource",

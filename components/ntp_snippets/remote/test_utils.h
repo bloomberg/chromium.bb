@@ -7,13 +7,24 @@
 
 #include <memory>
 
+#include "build/build_config.h"
+#include "components/signin/core/browser/fake_signin_manager.h"
 #include "components/sync/driver/fake_sync_service.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class AccountTrackerService;
-class FakeSigninManagerBase;
-class TestingPrefServiceSimple;
+class FakeProfileOAuth2TokenService;
 class TestSigninClient;
+
+using sync_preferences::TestingPrefServiceSyncable;
+
+#if defined(OS_CHROMEOS)
+// ChromeOS doesn't have SigninManager.
+using SigninManagerForTest = FakeSigninManagerBase;
+#else
+using SigninManagerForTest = FakeSigninManager;
+#endif  // OS_CHROMEOS
 
 namespace ntp_snippets {
 namespace test {
@@ -46,15 +57,19 @@ class RemoteSuggestionsTestUtils {
   void ResetSigninManager();
 
   FakeSyncService* fake_sync_service() { return fake_sync_service_.get(); }
-  FakeSigninManagerBase* fake_signin_manager() {
+  SigninManagerForTest* fake_signin_manager() {
     return fake_signin_manager_.get();
   }
-  TestingPrefServiceSimple* pref_service() { return pref_service_.get(); }
+  TestingPrefServiceSyncable* pref_service() { return pref_service_.get(); }
+  FakeProfileOAuth2TokenService* token_service() {
+    return token_service_.get();
+  }
 
  private:
-  std::unique_ptr<FakeSigninManagerBase> fake_signin_manager_;
+  std::unique_ptr<SigninManagerForTest> fake_signin_manager_;
   std::unique_ptr<FakeSyncService> fake_sync_service_;
-  std::unique_ptr<TestingPrefServiceSimple> pref_service_;
+  std::unique_ptr<TestingPrefServiceSyncable> pref_service_;
+  std::unique_ptr<FakeProfileOAuth2TokenService> token_service_;
   std::unique_ptr<TestSigninClient> signin_client_;
   std::unique_ptr<AccountTrackerService> account_tracker_;
 };

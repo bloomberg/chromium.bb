@@ -77,7 +77,7 @@ class BreakingNewsGCMAppHandler : public BreakingNewsListener,
   void Subscribe();
 
   // Called after the subscription is obtained from the GCM server.
-  void DidSubscribe(const std::string& subscription_id,
+  void DidSubscribe(const std::string& subscription_token,
                     instance_id::InstanceID::Result result);
 
   // Called after successfully parsing the received suggestion JSON.
