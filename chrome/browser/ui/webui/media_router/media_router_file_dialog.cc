@@ -154,7 +154,10 @@ void MediaRouterFileDialog::MaybeReportLastSelectedFileInformation() {
         base::BindOnce(&MediaRouterFileDialog::ReportFileFormat,
                        base::Unretained(this), selected_file_->local_path));
 
-    // TODO(paezagon): Report file media length.
+    cancelable_task_tracker_.PostTask(
+        task_runner_.get(), FROM_HERE,
+        base::BindOnce(&MediaRouterFileDialog::ReportFileSize,
+                       base::Unretained(this), selected_file_->local_path));
   } else {
     VLOG(1) << "MediaRouterFileDialog did not report file information; no file "
                "to report.";
@@ -185,6 +188,16 @@ void MediaRouterFileDialog::ReportFileFormat(const base::FilePath& filename) {
   MediaRouterMetrics::RecordMediaRouterFileFormat(
       media::container_names::DetermineContainer(
           reinterpret_cast<const uint8_t*>(buffer), read));
+}
+
+void MediaRouterFileDialog::ReportFileSize(const base::FilePath& filename) {
+  int64_t size;
+  if (base::GetFileSize(filename, &size)) {
+    MediaRouterMetrics::RecordMediaRouterFileSize(size);
+  } else {
+    VLOG(1) << "Can't get file size for file: " << filename.LossyDisplayName()
+            << ".";
+  }
 }
 
 void MediaRouterFileDialog::FileSelected(const base::FilePath& path,
