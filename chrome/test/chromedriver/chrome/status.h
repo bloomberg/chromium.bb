@@ -34,6 +34,7 @@ enum StatusCode {
   kDisconnected,
   kForbidden = 103,
   kTabCrashed,
+  kNoSuchCookie,
 };
 
 // Represents a WebDriver status, which may be an error or ok.

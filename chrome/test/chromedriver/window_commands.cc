@@ -955,6 +955,30 @@ Status ExecuteGetCookies(Session* session,
   return Status(kOk);
 }
 
+Status ExecuteGetNamedCookie(Session* session,
+                             WebView* web_view,
+                             const base::DictionaryValue& params,
+                             std::unique_ptr<base::Value>* value,
+                             Timeout* timeout) {
+  std::string name;
+  if (!params.GetString("name", &name))
+    return Status(kUnknownError, "missing 'cookie name'");
+
+  std::list<Cookie> cookies;
+  Status status = GetVisibleCookies(web_view, &cookies);
+  if (status.IsError())
+    return status;
+
+  for (std::list<Cookie>::const_iterator it = cookies.begin();
+       it != cookies.end(); ++it) {
+    if (name == it->name) {
+      value->reset(CreateDictionaryFrom(*it)->DeepCopy());
+      return Status(kOk);
+    }
+  }
+  return Status(kNoSuchCookie);
+}
+
 Status ExecuteAddCookie(Session* session,
                         WebView* web_view,
                         const base::DictionaryValue& params,

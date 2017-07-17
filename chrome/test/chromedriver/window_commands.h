@@ -287,6 +287,13 @@ Status ExecuteGetCookies(Session* session,
                          std::unique_ptr<base::Value>* value,
                          Timeout* timeout);
 
+// Retrieve a single cookie with the requested name.
+Status ExecuteGetNamedCookie(Session* session,
+                             WebView* web_view,
+                             const base::DictionaryValue& params,
+                             std::unique_ptr<base::Value>* value,
+                             Timeout* timeout);
+
 // Set a cookie. If the cookie path is not specified, it should be set to "/".
 // If the domain is omitted, it should default to the current page's domain.
 Status ExecuteAddCookie(Session* session,
