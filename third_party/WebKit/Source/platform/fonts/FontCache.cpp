@@ -62,8 +62,6 @@
 #include "public/platform/Platform.h"
 #include "ui/gfx/font_list.h"
 
-using namespace WTF;
-
 namespace blink {
 
 #if !defined(OS_WIN) && !defined(OS_LINUX)
@@ -413,11 +411,11 @@ void FontCache::CrashWithFontInfo(const FontDescription* font_description) {
   }
 
   FontDescription font_description_copy = *font_description;
-  debug::Alias(&font_description_copy);
+  WTF::debug::Alias(&font_description_copy);
 
-  debug::Alias(&font_cache);
-  debug::Alias(&font_mgr);
-  debug::Alias(&num_families);
+  WTF::debug::Alias(&font_cache);
+  WTF::debug::Alias(&font_mgr);
+  WTF::debug::Alias(&num_families);
 
   CHECK(false);
 }
