@@ -17,6 +17,7 @@
 #include "services/ui/common/task_runner_test_base.h"
 #include "services/ui/common/types.h"
 #include "services/ui/common/util.h"
+#include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/ws/default_access_policy.h"
 #include "services/ui/ws/display_manager.h"
@@ -1760,12 +1761,16 @@ TEST_F(WindowTreeManualDisplayTest,
   EXPECT_TRUE(display_manager_observer.GetAndClearObserverCalls().empty());
 
   // Add a new display.
-  display::Display display1 = MakeDisplay(0, 0, 1024, 768, 1.0f);
+  // The value for the scale factor doesn't matter, just choosing something
+  // other than 1 to ensure values other than 1 correctly take.
+  const float kDisplay1ScaleFactor = 2.25;
+  display::Display display1 =
+      MakeDisplay(0, 0, 1024, 768, kDisplay1ScaleFactor);
   const int64_t display_id1 = 101;
   display1.set_id(display_id1);
   mojom::WmViewportMetrics metrics1;
   metrics1.bounds_in_pixels = display1.bounds();
-  metrics1.device_scale_factor = 1.5;
+  metrics1.device_scale_factor = kDisplay1ScaleFactor;
   metrics1.ui_scale_factor = 2.5;
   const bool is_primary_display = true;
   ASSERT_TRUE(WindowTreeTestApi(window_manager_tree)
@@ -1784,6 +1789,12 @@ TEST_F(WindowTreeManualDisplayTest,
   RunUntilIdle();
   EXPECT_EQ("OnDisplaysChanged " + std::to_string(display_id1),
             display_manager_observer.GetAndClearObserverCalls());
+  PlatformDisplay* platform_display1 =
+      display_manager->GetDisplayById(display_id1)->platform_display();
+  ASSERT_TRUE(platform_display1);
+  EXPECT_EQ(
+      kDisplay1ScaleFactor * ui::mojom::kCursorMultiplierForExternalDisplays,
+      static_cast<TestPlatformDisplay*>(platform_display1)->cursor_scale());
 
   // Create a window for the windowmanager and set it as the root.
   ClientWindowId display_root_id2 =

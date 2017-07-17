@@ -59,10 +59,6 @@
 #undef RootWindow
 #endif  // defined(USE_X11)
 
-#if defined(USE_OZONE)
-#include "ui/events/ozone/chromeos/cursor_controller.h"
-#endif
-
 namespace ash {
 namespace {
 
@@ -72,11 +68,6 @@ namespace {
 // (one here and another one in display_manager) in sync, which is error prone.
 // This is initialized in the constructor, and then in CreatePrimaryHost().
 int64_t primary_display_id = -1;
-
-#if defined(USE_OZONE)
-// Add 20% more cursor motion on non-integrated displays.
-const float kCursorMultiplierForExternalDisplays = 1.2f;
-#endif
 
 display::DisplayManager* GetDisplayManager() {
   return Shell::Get()->display_manager();
@@ -122,14 +113,7 @@ void SetDisplayPropertiesOnHost(AshWindowTreeHost* ash_host,
   ui::SetIntProperty(xwindow, kScaleFactorProp, kCARDINAL,
                      100 * display.device_scale_factor());
 #elif defined(USE_OZONE)
-  // Scale all motion on High-DPI displays.
-  float scale = display.device_scale_factor();
-
-  if (!display.IsInternal())
-    scale *= kCursorMultiplierForExternalDisplays;
-
-  ui::CursorController::GetInstance()->SetCursorConfigForWindow(
-      host->GetAcceleratedWidget(), info.GetActiveRotation(), scale);
+  ash_host->SetCursorConfig(display, info.GetActiveRotation());
 #endif
   std::unique_ptr<RootWindowTransformer> transformer(
       CreateRootWindowTransformerForDisplay(host->window(), display));
@@ -143,16 +127,14 @@ void SetDisplayPropertiesOnHost(AshWindowTreeHost* ash_host,
                                           mode->refresh_rate()));
   }
 
-  // Just movnig the display requires the full redraw.
+  // Just moving the display requires the full redraw.
   // chrome-os-partner:33558.
   host->compositor()->ScheduleFullRedraw();
 }
 
 void ClearDisplayPropertiesOnHost(AshWindowTreeHost* ash_host) {
 #if defined(USE_OZONE)
-  aura::WindowTreeHost* host = ash_host->AsWindowTreeHost();
-  ui::CursorController::GetInstance()->ClearCursorConfigForWindow(
-      host->GetAcceleratedWidget());
+  ash_host->ClearCursorConfig();
 #endif
 }
 

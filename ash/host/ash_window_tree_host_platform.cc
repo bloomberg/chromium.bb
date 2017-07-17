@@ -21,6 +21,8 @@
 
 #if defined(USE_OZONE)
 #include "services/ui/public/cpp/input_devices/input_device_controller_client.h"
+#include "services/ui/public/interfaces/window_manager.mojom.h"
+#include "ui/events/ozone/chromeos/cursor_controller.h"
 #endif
 
 namespace ash {
@@ -53,6 +55,26 @@ bool AshWindowTreeHostPlatform::ConfineCursorToRootWindow() {
 void AshWindowTreeHostPlatform::UnConfineCursor() {
   NOTIMPLEMENTED();
 }
+
+#if defined(USE_OZONE)
+void AshWindowTreeHostPlatform::SetCursorConfig(
+    const display::Display& display,
+    display::Display::Rotation rotation) {
+  // Scale all motion on High-DPI displays.
+  float scale = display.device_scale_factor();
+
+  if (!display.IsInternal())
+    scale *= ui::mojom::kCursorMultiplierForExternalDisplays;
+
+  ui::CursorController::GetInstance()->SetCursorConfigForWindow(
+      GetAcceleratedWidget(), rotation, scale);
+}
+
+void AshWindowTreeHostPlatform::ClearCursorConfig() {
+  ui::CursorController::GetInstance()->ClearCursorConfigForWindow(
+      GetAcceleratedWidget());
+}
+#endif
 
 void AshWindowTreeHostPlatform::SetRootWindowTransformer(
     std::unique_ptr<RootWindowTransformer> transformer) {

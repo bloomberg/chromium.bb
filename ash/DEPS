@@ -47,6 +47,7 @@ include_rules = [
   "+chromeos/system",
 
   # Ozone does not run in process in mus/mash.
+  "-ui/events/ozone",
   "-ui/ozone",
 ]
 
