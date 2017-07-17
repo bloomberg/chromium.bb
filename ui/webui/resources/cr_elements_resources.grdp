@@ -176,6 +176,9 @@
              file="../../webui/resources/cr_elements/cr_icons_css.html"
              flattenhtml="true"
              type="chrome_html" />
+  <structure name="IDR_CR_ELEMENTS_PAPER_BUTTON_STYLE_CSS_HTML"
+             file="../../webui/resources/cr_elements/paper_button_style_css.html"
+             type="chrome_html" />
   <structure name="IDR_CR_ELEMENTS_CR_SHARED_VARS_CSS_HTML"
              file="../../webui/resources/cr_elements/shared_vars_css.html"
              type="chrome_html" />
