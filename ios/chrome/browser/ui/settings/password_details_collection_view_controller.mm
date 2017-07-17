@@ -10,9 +10,9 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/common/password_form.h"
-#include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_store.h"
+#include "components/password_manager/core/browser/password_ui_utils.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
@@ -126,11 +126,11 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule {
             base::SysUTF8ToNSString(_passwordForm.federation_origin.host());
       }
     }
-    _site = base::SysUTF8ToNSString(_passwordForm.origin.spec());
+    auto name_and_link =
+        password_manager::GetShownOriginAndLinkUrl(_passwordForm);
+    _site = base::SysUTF8ToNSString(name_and_link.second.spec());
     self.title = [PasswordDetailsCollectionViewController
-        simplifyOrigin:base::SysUTF8ToNSString(
-                           password_manager::GetHumanReadableOrigin(
-                               _passwordForm))];
+        simplifyOrigin:base::SysUTF8ToNSString(name_and_link.first)];
     self.collectionViewAccessibilityIdentifier =
         @"PasswordDetailsCollectionViewController";
     NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
