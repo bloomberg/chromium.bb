@@ -347,6 +347,10 @@ SubmenuView* MenuItemView::GetSubmenu() const {
   return submenu_;
 }
 
+bool MenuItemView::SubmenuIsShowing() const {
+  return HasSubmenu() && GetSubmenu()->IsShowing();
+}
+
 void MenuItemView::SetTitle(const base::string16& title) {
   title_ = title;
   invalidate_dimensions();  // Triggers preferred size recalculation.

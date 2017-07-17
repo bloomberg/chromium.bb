@@ -222,6 +222,9 @@ class VIEWS_EXPORT MenuItemView : public View {
   // Returns the view containing child menu items.
   virtual SubmenuView* GetSubmenu() const;
 
+  // Returns true if this menu item has a submenu and it is showing
+  virtual bool SubmenuIsShowing() const;
+
   // Returns the parent menu item.
   MenuItemView* GetParentMenuItem() { return parent_menu_item_; }
   const MenuItemView* GetParentMenuItem() const { return parent_menu_item_; }
