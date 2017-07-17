@@ -38,9 +38,6 @@ void SetInitializedModalHeight(Browser* browser,
                                content::WebUI* web_ui,
                                const base::ListValue* args);
 
-// Return true if force signin is enabled by group policy.
-bool IsForceSigninEnabled();
-
 }  // namespace signin
 
 #endif  // CHROME_BROWSER_UI_WEBUI_SIGNIN_SIGNIN_UTILS_H_

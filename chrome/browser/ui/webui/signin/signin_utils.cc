@@ -7,12 +7,9 @@
 #include <set>
 
 #include "base/bind.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/common/pref_names.h"
 #include "components/guest_view/browser/guest_view_manager.h"
-#include "components/prefs/pref_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
@@ -81,10 +78,4 @@ void SetInitializedModalHeight(Browser* browser,
       static_cast<int>(height));
 #endif
 }
-
-bool IsForceSigninEnabled() {
-  PrefService* prefs = g_browser_process->local_state();
-  return prefs->GetBoolean(prefs::kForceBrowserSignin);
-}
-
 }  // namespace signin
