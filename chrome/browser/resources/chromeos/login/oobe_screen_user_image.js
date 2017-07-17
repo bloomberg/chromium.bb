@@ -34,13 +34,8 @@ login.createScreen('UserImageScreen', 'user-image', function() {
       chrome.send('getImages');
     },
 
-    /**
-     * Header text of the screen.
-     * @type {string}
-     */
-    get header() {
-      return loadTimeData.getString('userImageScreenTitle');
-    },
+    /* @type {string} Unused for change picture dialog. */
+    get header() {},
 
     /**
      * Buttons in oobe wizard's button strip.

@@ -82,13 +82,23 @@ Polymer({
   },
 
   /**
+   * @return {string}
+   * @private
+   */
+  getDescription_: function() {
+    return this.i18nAdvanced(
+        'userImageScreenDescription', {substitutions: [], tags: ['br']});
+  },
+
+  /**
    * selectedImageUrl is set by the host initially and possibly after sync.
    * @param {string} selectedImageUrl
    * @private
    */
   selectedImageUrlChanged_: function(selectedImageUrl) {
-    this.pictureList_.setSelectedImageUrl(selectedImageUrl);
-    this.pictureList_.setFocus();
+    var pictureList = /** @type {CrPictureListElement} */ (this.$.pictureList);
+    pictureList.setSelectedImageUrl(selectedImageUrl);
+    pictureList.setFocus();
   },
 
   /**

@@ -9,28 +9,44 @@
 <dom-module id="oobe-change-picture">
   <template>
     <style>
-      #outer {
+      #description {
+        -webkit-margin-end: 32px;
+        -webkit-margin-start: 8px;
+      }
+
+      #container {
         -webkit-margin-start: 8px;
         align-items: flex-start;
         display: flex;
+        margin-bottom: 32px;
         padding-top: 16px;
       }
 
-      cr-picture-list {
+      #picturePane {
+        --cr-picture-image-size: 288px;
+        -webkit-margin-end: 28px;
+        flex-shrink: 0;
+        width: 288px;
+      }
+
+      #pictureList {
         -webkit-margin-end: 32px;
-        height: 340px;
+        height: 304px;
         overflow-x: hidden;
         overflow-y: auto;
         width: 340px;
       }
-
-      cr-picture-pane {
-        -webkit-margin-end: 10px;
-        flex-shrink: 0;
-        width: 228px;
-      }
     </style>
-    <div id="outer">
+    <div id="description" inner-h-t-m-l="[[getDescription_(locale)]]"></div>
+    <div id="container">
+      <cr-picture-pane id="picturePane"
+          camera-present="[[cameraPresent]]",
+          image-src="[[getImageSrc_(selectedItem_)]]"
+          image-type="[[getImageType_(selectedItem_)]]"
+          discard-image-label="[[i18nDynamic(locale, 'discardPhoto')]]"
+          flip-photo-label="[[i18nDynamic(locale, 'flipPhoto')]]"
+          take-photo-label="[[i18nDynamic(locale, 'takePhoto')]]">
+      </cr-picture-pane>
       <cr-picture-list id="pictureList" tabindex="0"
           camera-present="[[cameraPresent]]"
           default-images="[[defaultImages]]"
@@ -41,14 +57,6 @@
               locale, 'profilePhotoLoading')]]"
           take-photo-label="[[i18nDynamic(locale, 'takePhoto')]]">
       </cr-picture-list>
-      <cr-picture-pane id="picturePane"
-          camera-present="[[cameraPresent]]",
-          image-src="[[getImageSrc_(selectedItem_)]]"
-          image-type="[[getImageType_(selectedItem_)]]"
-          discard-image-label="[[i18nDynamic(locale, 'discardPhoto')]]"
-          flip-photo-label="[[i18nDynamic(locale, 'flipPhoto')]]"
-          take-photo-label="[[i18nDynamic(locale, 'takePhoto')]]">
-      </cr-picture-pane>
     </div>
   </template>
 </dom-module>
