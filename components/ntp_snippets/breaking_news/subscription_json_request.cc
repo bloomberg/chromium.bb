@@ -26,13 +26,7 @@ namespace internal {
 
 SubscriptionJsonRequest::SubscriptionJsonRequest() = default;
 
-SubscriptionJsonRequest::~SubscriptionJsonRequest() {
-  if (!request_completed_callback_.is_null()) {
-    std::move(request_completed_callback_)
-        .Run(ntp_snippets::Status(ntp_snippets::StatusCode::TEMPORARY_ERROR,
-                                  "cancelled"));
-  }
-}
+SubscriptionJsonRequest::~SubscriptionJsonRequest() = default;
 
 void SubscriptionJsonRequest::Start(CompletedCallback callback) {
   DCHECK(request_completed_callback_.is_null()) << "Request already running!";
@@ -49,18 +43,15 @@ void SubscriptionJsonRequest::OnURLFetchComplete(const URLFetcher* source) {
 
   if (!status.is_success()) {
     std::move(request_completed_callback_)
-        .Run(ntp_snippets::Status(
-            ntp_snippets::StatusCode::TEMPORARY_ERROR,
-            base::StringPrintf("Internal Error: %d", status.error())));
+        .Run(Status(StatusCode::TEMPORARY_ERROR,
+                    base::StringPrintf("Network Error: %d", status.error())));
   } else if (response != net::HTTP_OK) {
     std::move(request_completed_callback_)
-        .Run(ntp_snippets::Status(
-            ntp_snippets::StatusCode::PERMANENT_ERROR,
-            base::StringPrintf("HTTP Error: %d", response)));
+        .Run(Status(StatusCode::PERMANENT_ERROR,
+                    base::StringPrintf("HTTP Error: %d", response)));
   } else {
     std::move(request_completed_callback_)
-        .Run(ntp_snippets::Status(ntp_snippets::StatusCode::SUCCESS,
-                                  std::string()));
+        .Run(Status(StatusCode::SUCCESS, std::string()));
   }
 }
 
@@ -80,9 +71,9 @@ SubscriptionJsonRequest::Builder::Build() const {
   request->url_fetcher_ = BuildURLFetcher(request.get(), headers, body);
 
   // Log the request for debugging network issues.
-  VLOG(1) << "Sending a subscription request to " << url_ << ":\n"
-          << headers << "\n"
-          << body;
+  DVLOG(1) << "Building a subscription request to " << url_ << ":\n"
+           << headers << "\n"
+           << body;
 
   return request;
 }
@@ -106,10 +97,20 @@ SubscriptionJsonRequest::Builder::SetUrlRequestContextGetter(
   return *this;
 }
 
+SubscriptionJsonRequest::Builder&
+SubscriptionJsonRequest::Builder::SetAuthenticationHeader(
+    const std::string& auth_header) {
+  auth_header_ = auth_header;
+  return *this;
+}
+
 std::string SubscriptionJsonRequest::Builder::BuildHeaders() const {
   HttpRequestHeaders headers;
-  headers.SetHeader("Content-Type", "application/json; charset=UTF-8");
-
+  headers.SetHeader(HttpRequestHeaders::kContentType,
+                    "application/json; charset=UTF-8");
+  if (!auth_header_.empty()) {
+    headers.SetHeader(HttpRequestHeaders::kAuthorization, auth_header_);
+  }
   // Add X-Client-Data header with experiment IDs from field trials.
   // Note: It's OK to pass |is_signed_in| false if it's unknown, as it does
   // not affect transmission of experiments coming from the variations server.

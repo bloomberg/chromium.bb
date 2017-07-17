@@ -7,16 +7,17 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
+#include "build/build_config.h"
 #include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
 #include "components/ntp_snippets/pref_names.h"
 #include "components/ntp_snippets/remote/test_utils.h"
-#include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_signin_manager.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/signin/core/common/signin_pref_names.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/variations/variations_params_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -48,7 +49,11 @@ TEST_F(RemoteSuggestionsStatusServiceTest, NoSigninNeeded) {
             service->GetStatusFromDeps());
 
   // One can still sign in.
+#if defined(OS_CHROMEOS)
   utils_.fake_signin_manager()->SignIn("foo@bar.com");
+#else
+  utils_.fake_signin_manager()->SignIn("foo@bar.com", "user", "pass");
+#endif
   EXPECT_EQ(RemoteSuggestionsStatus::ENABLED_AND_SIGNED_IN,
             service->GetStatusFromDeps());
 }
@@ -66,7 +71,11 @@ TEST_F(RemoteSuggestionsStatusServiceTest, DisabledViaPref) {
             service->GetStatusFromDeps());
 
   // The other dependencies shouldn't matter anymore.
+#if defined(OS_CHROMEOS)
   utils_.fake_signin_manager()->SignIn("foo@bar.com");
+#else
+  utils_.fake_signin_manager()->SignIn("foo@bar.com", "user", "pass");
+#endif
   EXPECT_EQ(RemoteSuggestionsStatus::EXPLICITLY_DISABLED,
             service->GetStatusFromDeps());
 }

@@ -95,8 +95,6 @@ TEST_F(SubscriptionJsonRequestTest, BuildRequest) {
   GURL url("http://valid-url.test");
 
   base::MockCallback<SubscriptionJsonRequest::CompletedCallback> callback;
-  ntp_snippets::Status status(StatusCode::SUCCESS, "initial");
-  EXPECT_CALL(callback, Run(_)).WillOnce(SaveArg<0>(&status));
 
   SubscriptionJsonRequest::Builder builder;
   std::unique_ptr<SubscriptionJsonRequest> request =
@@ -126,13 +124,12 @@ TEST_F(SubscriptionJsonRequestTest, BuildRequest) {
   EXPECT_THAT(url_fetcher->upload_data(), EqualsJSON(expected_body));
 }
 
-TEST_F(SubscriptionJsonRequestTest, InvokesCallbackWhenCancelled) {
+TEST_F(SubscriptionJsonRequestTest, ShouldNotInvokeCallbackWhenCancelled) {
   std::string token = "1234567890";
   GURL url("http://valid-url.test");
 
   base::MockCallback<SubscriptionJsonRequest::CompletedCallback> callback;
-  ntp_snippets::Status status(StatusCode::SUCCESS, "initial");
-  EXPECT_CALL(callback, Run(_)).WillOnce(SaveArg<0>(&status));
+  EXPECT_CALL(callback, Run(_)).Times(0);
 
   SubscriptionJsonRequest::Builder builder;
   std::unique_ptr<SubscriptionJsonRequest> request =
@@ -144,9 +141,6 @@ TEST_F(SubscriptionJsonRequestTest, InvokesCallbackWhenCancelled) {
 
   // Destroy the request before getting any response.
   request.reset();
-
-  EXPECT_EQ(status.code, StatusCode::TEMPORARY_ERROR);
-  EXPECT_EQ(status.message, "cancelled");
 }
 
 TEST_F(SubscriptionJsonRequestTest, SubscribeWithoutErrors) {

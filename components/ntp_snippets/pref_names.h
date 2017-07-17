@@ -93,10 +93,13 @@ extern const char kClickBasedCategoryRankerLastDecayTime[];
 // The folllowing prefs hold the data used when subscribing for content
 // suggestions via GCM push updates. They are stored in pref such that in case
 // of change (e.g. the token renders invalid), re-subscription is required.
+// They are stored in prefs for persisting them across Chrome restarts.
 ///////////////////////////////////////////////////////////////////////////////
 // The pref name for the subscription token used when subscription for
 // breaking news push updates.
 extern const char kBreakingNewsSubscriptionDataToken[];
+// The pref name for whether the subscription is authenticated or not.
+extern const char kBreakingNewsSubscriptionDataIsAuthenticated[];
 //////////////////////// End of breaking news subscription-related prefs.
 
 // The pref name for the subscription token received from the gcm server. As

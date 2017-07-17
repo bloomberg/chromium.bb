@@ -12,6 +12,9 @@ const base::FilePath::CharType kDatabaseFolder[] =
 const base::FilePath::CharType kBreakingNewsDatabaseFolder[] =
     FILE_PATH_LITERAL("NTPBreakingNews");
 
+const char kContentSuggestionsApiScope[] =
+    "https://www.googleapis.com/auth/chrome-content-suggestions";
+
 const char kContentSuggestionsServer[] =
     "https://chromecontentsuggestions-pa.googleapis.com/v1/suggestions/fetch";
 const char kContentSuggestionsStagingServer[] =

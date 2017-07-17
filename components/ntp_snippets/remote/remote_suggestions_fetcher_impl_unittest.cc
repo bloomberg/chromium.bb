@@ -18,6 +18,7 @@
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
@@ -298,7 +299,13 @@ class RemoteSuggestionsFetcherImplTestBase : public testing::Test {
     fetcher_->SetClockForTesting(mock_task_runner_->GetMockClock());
   }
 
-  void SignIn() { utils_.fake_signin_manager()->SignIn(kTestEmail); }
+  void SignIn() {
+#if defined(OS_CHROMEOS)
+    utils_.fake_signin_manager()->SignIn(kTestEmail);
+#else
+    utils_.fake_signin_manager()->SignIn(kTestEmail, "user", "password");
+#endif
+  }
 
   void IssueRefreshToken() {
     fake_token_service_->GetDelegate()->UpdateCredentials(kTestEmail, "token");

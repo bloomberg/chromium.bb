@@ -376,18 +376,27 @@ void RegisterForeignSessionsProviderIfEnabled(
   service->RegisterProvider(std::move(provider));
 }
 
-void SubscribeForGCMPushUpdates(PrefService* pref_service,
-                                ContentSuggestionsService* service,
-                                Profile* profile) {
+void SubscribeForGCMPushUpdates(
+    PrefService* pref_service,
+    ContentSuggestionsService* content_suggestions_service,
+    Profile* profile) {
+  // TODO(mamir): Either pass all params from outside or pass only profile and
+  // create them inside the method, but be consistent.
   gcm::GCMDriver* gcm_driver =
       gcm::GCMProfileServiceFactory::GetForProfile(profile)->driver();
+
+  OAuth2TokenService* token_service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
+
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfile(profile);
 
   scoped_refptr<net::URLRequestContextGetter> request_context =
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetURLRequestContext();
 
   auto subscription_manager = base::MakeUnique<SubscriptionManager>(
-      request_context, pref_service,
+      request_context, pref_service, signin_manager, token_service,
       GetPushUpdatesSubscriptionEndpoint(chrome::GetChannel()),
       GetPushUpdatesUnsubscriptionEndpoint(chrome::GetChannel()));
 
@@ -411,9 +420,10 @@ void SubscribeForGCMPushUpdates(PrefService* pref_service,
   base::FilePath database_dir(
       profile->GetPath().Append(ntp_snippets::kBreakingNewsDatabaseFolder));
   auto provider = base::MakeUnique<BreakingNewsSuggestionsProvider>(
-      service, std::move(handler), base::MakeUnique<base::DefaultClock>(),
+      content_suggestions_service, std::move(handler),
+      base::MakeUnique<base::DefaultClock>(),
       base::MakeUnique<RemoteSuggestionsDatabase>(database_dir, task_runner));
-  service->RegisterProvider(std::move(provider));
+  content_suggestions_service->RegisterProvider(std::move(provider));
 }
 
 }  // namespace

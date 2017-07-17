@@ -16,6 +16,9 @@ extern const base::FilePath::CharType kDatabaseFolder[];
 // TODO(mamir): Check if the same DB can be used.
 extern const base::FilePath::CharType kBreakingNewsDatabaseFolder[];
 
+// OAuth access token scope.
+extern const char kContentSuggestionsApiScope[];
+
 // Server endpoints for fetching snippets.
 extern const char kContentSuggestionsServer[];         // used on stable/beta
 extern const char kContentSuggestionsStagingServer[];  // used on dev/canary
