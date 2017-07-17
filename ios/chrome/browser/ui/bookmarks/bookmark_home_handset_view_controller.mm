@@ -54,10 +54,6 @@ using bookmarks::BookmarkNode;
   std::unique_ptr<bookmarks::BookmarkModelBridge> _bridge;
 }
 
-// This views holds the primary content of this view controller.
-// Redefined to be readwrite.
-@property(nonatomic, strong, readwrite) NSMutableArray* editIndexPaths;
-
 // Returns the parent, if all the bookmarks are siblings.
 // Otherwise returns the mobile_node.
 + (const BookmarkNode*)
@@ -72,10 +68,6 @@ defaultMoveFolderFromBookmarks:(const std::set<const BookmarkNode*>&)bookmarks
 // property is set to nil after it is used.
 @property(nonatomic, strong) NSNumber* cachedContentPosition;
 
-// The layout code in this class relies on the assumption that the editingBar
-// has the same frame as the navigationBar.
-@property(nonatomic, strong) BookmarkEditingBar* editingBar;
-
 // The action sheet coordinator used when trying to edit a single bookmark.
 @property(nonatomic, strong) ActionSheetCoordinator* actionSheetCoordinator;
 
@@ -88,42 +80,6 @@ defaultMoveFolderFromBookmarks:(const std::set<const BookmarkNode*>&)bookmarks
 // Updates the UI to reflect the new state of 'primaryMenuItem'.
 - (void)updatePrimaryMenuItem:(BookmarkMenuItem*)menuItem
                      animated:(BOOL)animated;
-
-#pragma mark Editing related methods
-// This method statelessly updates the editing top bar from |_editNodes| and
-// |editing|.
-- (void)updateEditingStateAnimated:(BOOL)animated;
-// Shows or hides the editing bar.
-- (void)showEditingBarAnimated:(BOOL)animated;
-- (void)hideEditingBarAnimated:(BOOL)animated;
-// Instaneously updates the shadow of the edit bar.
-// This method should be called anytime:
-//  (1)|editing| property changes.
-//  (2)The primary view changes.
-//  (3)The primary view's collection view is scrolled.
-// (2) is not necessary right now, as it is only possible to switch primary
-// views when |editing| is NO. When |editing| is NO, the shadow is never shown.
-- (void)updateEditBarShadow;
-
-#pragma mark Editing bar callbacks
-// The cancel button was tapped on the editing bar.
-- (void)editingBarCancel;
-// The move button was tapped on the editing bar.
-- (void)editingBarMove;
-// The delete button was tapped on the editing bar.
-- (void)editingBarDelete;
-// The edit button was tapped on the editing bar.
-- (void)editingBarEdit;
-
-#pragma mark Action sheet callbacks
-// Enters into edit mode by selecting the given node and cell.
-- (void)selectFirstNode:(const BookmarkNode*)node
-               withCell:(UICollectionViewCell*)cell;
-
-#pragma mark private utility methods
-// Deletes the nodes, and presents a toast with an undo button.
-- (void)deleteSelectedNodes;
-
 #pragma mark Navigation bar
 // Updates the UI of the navigation bar with the primaryMenuItem.
 // This method should be called anytime:
@@ -162,83 +118,24 @@ defaultMoveFolderFromBookmarks:(const std::set<const BookmarkNode*>&)bookmarks
 // Saves the current position and asks the delegate to open the url.
 - (void)delegateDismiss:(const GURL&)url;
 
-- (NSIndexPath*)indexPathForCell:(UICollectionViewCell*)cell;
-
 @end
 
 @implementation BookmarkHomeHandsetViewController
 @synthesize contentView = _contentView;
 
 @synthesize cachedContentPosition = _cachedContentPosition;
-@synthesize editingBar = _editingBar;
 
 @synthesize actionSheetCoordinator = _actionSheetCoordinator;
 @synthesize delegate = _delegate;
-@synthesize editIndexPaths = _editIndexPaths;
-@synthesize editing = _editing;
 
 - (instancetype)initWithLoader:(id<UrlLoader>)loader
                   browserState:(ios::ChromeBrowserState*)browserState {
   self = [super initWithLoader:loader browserState:browserState];
   if (self) {
-    _editIndexPaths = [[NSMutableArray alloc] init];
-
-    [self resetEditNodes];
-
     _bridge.reset(new bookmarks::BookmarkModelBridge(self, self.bookmarks));
+    self.sideSwipingPossible = YES;
   }
   return self;
-}
-
-- (void)resetEditNodes {
-  _editNodes = std::set<const BookmarkNode*>();
-  _editNodesOrdered = std::vector<const BookmarkNode*>();
-  [self.editIndexPaths removeAllObjects];
-}
-
-- (void)insertEditNode:(const BookmarkNode*)node
-           atIndexPath:(NSIndexPath*)indexPath {
-  if (_editNodes.find(node) != _editNodes.end())
-    return;
-  _editNodes.insert(node);
-  _editNodesOrdered.push_back(node);
-  if (indexPath) {
-    [self.editIndexPaths addObject:indexPath];
-  } else {
-    // We insert null if we don't have the cell to keep the index valid.
-    [self.editIndexPaths addObject:[NSNull null]];
-  }
-}
-
-- (void)removeEditNode:(const BookmarkNode*)node
-           atIndexPath:(NSIndexPath*)indexPath {
-  if (_editNodes.find(node) == _editNodes.end())
-    return;
-
-  _editNodes.erase(node);
-  std::vector<const BookmarkNode*>::iterator it =
-      std::find(_editNodesOrdered.begin(), _editNodesOrdered.end(), node);
-  DCHECK(it != _editNodesOrdered.end());
-  _editNodesOrdered.erase(it);
-  if (indexPath) {
-    [self.editIndexPaths removeObject:indexPath];
-  } else {
-    // If we don't have the cell, we remove it by using its index.
-    const NSUInteger index = std::distance(_editNodesOrdered.begin(), it);
-    if (index < self.editIndexPaths.count) {
-      [self.editIndexPaths removeObjectAtIndex:index];
-    }
-  }
-}
-
-- (void)removeEditNode:(const BookmarkNode*)node
-                  cell:(UICollectionViewCell*)cell {
-  [self removeEditNode:node atIndexPath:[self indexPathForCell:cell]];
-
-  if (_editNodes.size() == 0)
-    [self setEditing:NO animated:YES];
-  else
-    [self updateEditingStateAnimated:YES];
 }
 
 #pragma mark - UIViewController methods
@@ -338,63 +235,10 @@ defaultMoveFolderFromBookmarks:(const std::set<const BookmarkNode*>&)bookmarks
                         orientation:GetInterfaceOrientation()];
 }
 
-#pragma mark - Editing bar methods.
+#pragma mark - Editing bar super methods overrides
 
-- (void)updateEditingStateAnimated:(BOOL)animated {
-  if (!self.editing) {
-    [self hideEditingBarAnimated:animated];
-    [self updateEditBarShadow];
-    [self.panelView enableSideSwiping:YES];
-    return;
-  }
-
-  if (!self.editingBar) {
-    self.editingBar =
-        [[BookmarkEditingBar alloc] initWithFrame:self.navigationBar.frame];
-    [self.editingBar setCancelTarget:self action:@selector(editingBarCancel)];
-    [self.editingBar setDeleteTarget:self action:@selector(editingBarDelete)];
-    [self.editingBar setMoveTarget:self action:@selector(editingBarMove)];
-    [self.editingBar setEditTarget:self action:@selector(editingBarEdit)];
-
-    [self.view addSubview:self.editingBar];
-    self.editingBar.alpha = 0;
-  }
-
-  int bookmarkCount = 0;
-  int folderCount = 0;
-  for (auto* node : _editNodes) {
-    if (node->is_url())
-      ++bookmarkCount;
-    else
-      ++folderCount;
-  }
-  [self.editingBar updateUIWithBookmarkCount:bookmarkCount
-                                 folderCount:folderCount];
-
-  [self showEditingBarAnimated:animated];
-  [self updateEditBarShadow];
-  [self.panelView enableSideSwiping:NO];
-}
-
-- (void)setEditing:(BOOL)editing animated:(BOOL)animated {
-  if (_editing == editing)
-    return;
-
-  _editing = editing;
-
-  // Only reset the editing state when leaving edit mode. This allows subclasses
-  // to add nodes for editing before entering edit mode.
-  if (!editing)
-    [self resetEditNodes];
-
-  [self updateEditingStateAnimated:animated];
-  if ([[self primaryMenuItem] supportsEditing])
-    [[self primaryView] setEditing:editing animated:animated];
-
-  if (editing)
-    self.bookmarkPromoController.promoState = NO;
-  else
-    [self.bookmarkPromoController updatePromoState];
+- (CGRect)editingBarFrame {
+  return self.navigationBar.frame;
 }
 
 - (void)showEditingBarAnimated:(BOOL)animated {
@@ -441,31 +285,6 @@ defaultMoveFolderFromBookmarks:(const std::set<const BookmarkNode*>&)bookmarks
             [self setNeedsStatusBarAppearanceUpdate];
         }
       }];
-}
-
-- (void)updateEditBarShadow {
-  [self.editingBar showShadow:self.editing];
-}
-
-#pragma mark Editing Bar Callbacks
-
-- (void)editingBarCancel {
-  [self setEditing:NO animated:YES];
-}
-
-- (void)editingBarMove {
-  [self moveNodes:_editNodes];
-}
-
-- (void)editingBarDelete {
-  [self deleteSelectedNodes];
-  [self setEditing:NO animated:YES];
-}
-
-- (void)editingBarEdit {
-  DCHECK_EQ(_editNodes.size(), 1u);
-  const BookmarkNode* node = *(_editNodes.begin());
-  [self editNode:node];
 }
 
 #pragma mark - BookmarkMenuViewDelegate
@@ -599,15 +418,6 @@ defaultMoveFolderFromBookmarks:(const std::set<const BookmarkNode*>&)bookmarks
   [self.bookmarkPromoController hidePromoCell];
 }
 
-#pragma mark Action Sheet Callbacks
-
-- (void)selectFirstNode:(const BookmarkNode*)node
-               withCell:(UICollectionViewCell*)cell {
-  DCHECK(!self.editing);
-  [self insertEditNode:node atIndexPath:[self indexPathForCell:cell]];
-  [self setEditing:YES animated:YES];
-}
-
 #pragma mark - BookmarkCollectionViewDelegate
 
 - (void)bookmarkCollectionView:(BookmarkCollectionView*)view
@@ -622,12 +432,6 @@ defaultMoveFolderFromBookmarks:(const std::set<const BookmarkNode*>&)bookmarks
     return;
   }
   [self updatePrimaryMenuItem:menuItem animated:YES];
-}
-
-#pragma mark - Internal Utility Methods
-
-- (void)deleteSelectedNodes {
-  [self deleteNodes:_editNodes];
 }
 
 #pragma mark - Navigation bar
@@ -893,13 +697,6 @@ defaultMoveFolderFromBookmarks:(const std::set<const BookmarkNode*>&)bookmarks
   }
   [self.delegate bookmarkHomeHandsetViewControllerWantsDismissal:self
                                                  navigationToUrl:url];
-}
-
-- (NSIndexPath*)indexPathForCell:(UICollectionViewCell*)cell {
-  DCHECK([self primaryView].collectionView);
-  NSIndexPath* indexPath =
-      [[self primaryView].collectionView indexPathForCell:cell];
-  return indexPath;
 }
 
 + (const BookmarkNode*)

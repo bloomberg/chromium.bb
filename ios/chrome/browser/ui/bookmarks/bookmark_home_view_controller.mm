@@ -7,6 +7,7 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/ui/bookmarks/bars/bookmark_editing_bar.h"
 #import "ios/chrome/browser/ui/bookmarks/bars/bookmark_navigation_bar.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_collection_view.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_edit_view_controller.h"
@@ -45,6 +46,9 @@ const CGFloat kMenuWidth = 264;
 @synthesize bookmarkPromoController = _bookmarkPromoController;
 @synthesize bookmarks = _bookmarks;
 @synthesize browserState = _browserState;
+@synthesize editing = _editing;
+@synthesize editIndexPaths = _editIndexPaths;
+@synthesize editingBar = _editingBar;
 @synthesize editViewController = _editViewController;
 @synthesize folderEditor = _folderEditor;
 @synthesize folderSelector = _folderSelector;
@@ -54,8 +58,9 @@ const CGFloat kMenuWidth = 264;
 @synthesize navigationBar = _navigationBar;
 @synthesize panelView = _panelView;
 @synthesize primaryMenuItem = _primaryMenuItem;
-@synthesize waitForModelView = _waitForModelView;
 @synthesize scrollToTop = _scrollToTop;
+@synthesize sideSwipingPossible = _sideSwipingPossible;
+@synthesize waitForModelView = _waitForModelView;
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -68,6 +73,9 @@ const CGFloat kMenuWidth = 264;
   DCHECK(browserState);
   self = [super initWithNibName:nil bundle:nil];
   if (self) {
+    _editIndexPaths = [[NSMutableArray alloc] init];
+    [self resetEditNodes];
+
     _browserState = browserState->GetOriginalChromeBrowserState();
     _loader = loader;
 
@@ -169,6 +177,13 @@ const CGFloat kMenuWidth = 264;
 }
 
 #pragma mark Action sheet callbacks
+
+- (void)selectFirstNode:(const BookmarkNode*)node
+               withCell:(UICollectionViewCell*)cell {
+  DCHECK(!self.editing);
+  [self insertEditNode:node atIndexPath:[self indexPathForCell:cell]];
+  [self setEditing:YES animated:YES];
+}
 
 - (void)moveNodes:(const std::set<const BookmarkNode*>&)nodes {
   DCHECK(!self.folderSelector);
@@ -306,6 +321,163 @@ const CGFloat kMenuWidth = 264;
   // edit button in edit mode. Either way, after it's dismissed, edit mode
   // should be off.
   [self setEditing:NO animated:NO];
+}
+
+#pragma mark - Edit
+
+- (void)resetEditNodes {
+  _editNodes = std::set<const BookmarkNode*>();
+  _editNodesOrdered = std::vector<const BookmarkNode*>();
+  [self.editIndexPaths removeAllObjects];
+}
+
+- (void)insertEditNode:(const BookmarkNode*)node
+           atIndexPath:(NSIndexPath*)indexPath {
+  if (_editNodes.find(node) != _editNodes.end())
+    return;
+  _editNodes.insert(node);
+  _editNodesOrdered.push_back(node);
+  if (indexPath) {
+    [self.editIndexPaths addObject:indexPath];
+  } else {
+    // Insert null to keep the index valid.
+    [self.editIndexPaths addObject:[NSNull null]];
+  }
+}
+
+- (void)removeEditNode:(const BookmarkNode*)node
+           atIndexPath:(NSIndexPath*)indexPath {
+  if (_editNodes.find(node) == _editNodes.end())
+    return;
+  _editNodes.erase(node);
+  std::vector<const BookmarkNode*>::iterator it =
+      std::find(_editNodesOrdered.begin(), _editNodesOrdered.end(), node);
+  DCHECK(it != _editNodesOrdered.end());
+  _editNodesOrdered.erase(it);
+  if (indexPath) {
+    [self.editIndexPaths removeObject:indexPath];
+  } else {
+    // If we don't have the cell, we remove it by using its index.
+    const NSUInteger index = std::distance(_editNodesOrdered.begin(), it);
+    if (index < self.editIndexPaths.count) {
+      [self.editIndexPaths removeObjectAtIndex:index];
+    }
+  }
+}
+
+- (void)showEditingBarAnimated:(BOOL)animated {
+  NOTREACHED() << "Must be overridden by subclass";
+}
+
+- (void)hideEditingBarAnimated:(BOOL)animated {
+  NOTREACHED() << "Must be overridden by subclass";
+}
+
+- (CGRect)editingBarFrame {
+  NOTREACHED() << "Must be implemented by subclass";
+  return CGRectZero;
+}
+
+- (void)updateEditingStateAnimated:(BOOL)animated {
+  if (!self.editing) {
+    [self hideEditingBarAnimated:animated];
+    [self updateEditBarShadow];
+    [self enableSideSwiping:YES];
+    return;
+  }
+
+  if (!self.editingBar) {
+    self.editingBar =
+        [[BookmarkEditingBar alloc] initWithFrame:[self editingBarFrame]];
+    [self.editingBar setCancelTarget:self action:@selector(editingBarCancel)];
+    [self.editingBar setDeleteTarget:self action:@selector(editingBarDelete)];
+    [self.editingBar setMoveTarget:self action:@selector(editingBarMove)];
+    [self.editingBar setEditTarget:self action:@selector(editingBarEdit)];
+
+    [self.view addSubview:self.editingBar];
+    self.editingBar.alpha = 0;
+    self.editingBar.hidden = YES;
+  }
+
+  int bookmarkCount = 0;
+  int folderCount = 0;
+  for (auto* node : _editNodes) {
+    if (node->is_url())
+      ++bookmarkCount;
+    else
+      ++folderCount;
+  }
+  [self.editingBar updateUIWithBookmarkCount:bookmarkCount
+                                 folderCount:folderCount];
+
+  [self showEditingBarAnimated:animated];
+  [self updateEditBarShadow];
+  [self enableSideSwiping:NO];
+}
+
+- (void)setEditing:(BOOL)editing animated:(BOOL)animated {
+  if (_editing == editing)
+    return;
+
+  _editing = editing;
+
+  if (editing) {
+    self.bookmarkPromoController.promoState = NO;
+  } else {
+    // Only reset the editing state when leaving edit mode. This allows
+    // subclasses to add nodes for editing before entering edit mode.
+    [self resetEditNodes];
+    [self.bookmarkPromoController updatePromoState];
+  }
+
+  [self updateEditingStateAnimated:animated];
+  if ([[self primaryMenuItem] supportsEditing])
+    [[self primaryView] setEditing:editing animated:animated];
+}
+
+- (void)updateEditBarShadow {
+  [self.editingBar showShadow:self.editing];
+}
+
+#pragma mark Editing Bar Callbacks
+
+- (void)editingBarCancel {
+  [self setEditing:NO animated:YES];
+}
+
+- (void)editingBarMove {
+  [self moveNodes:_editNodes];
+}
+
+- (void)editingBarDelete {
+  [self deleteSelectedNodes];
+  [self setEditing:NO animated:YES];
+}
+
+- (void)editingBarEdit {
+  DCHECK_EQ(_editNodes.size(), 1u);
+  const BookmarkNode* node = *(_editNodes.begin());
+  [self editNode:node];
+}
+
+#pragma mark - private
+
+- (void)enableSideSwiping:(BOOL)enable {
+  if (self.sideSwipingPossible) {
+    [self.panelView enableSideSwiping:enable];
+  }
+}
+
+// Deletes the nodes, and presents a toast with an undo button.
+- (void)deleteSelectedNodes {
+  [self deleteNodes:_editNodes];
+}
+
+- (NSIndexPath*)indexPathForCell:(UICollectionViewCell*)cell {
+  DCHECK([self primaryView].collectionView);
+  NSIndexPath* indexPath =
+      [[self primaryView].collectionView indexPathForCell:cell];
+  return indexPath;
 }
 
 @end
