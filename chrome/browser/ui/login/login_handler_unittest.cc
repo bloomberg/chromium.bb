@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/login/login_handler.h"
 #include "net/base/auth.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -16,7 +17,7 @@ namespace {
 const char kHttpUrl[] = "http://example.com/foo/bar";
 const char kBasicAuthScheme[] = "Basic";
 const char kFooRealm[] = "Foo";
-const char kInsecureProxy[] = "Your connection to this site is not secure";
+const char kInsecureProxy[] = "Your connection to this site is not private";
 
 enum TargetType { PROXY, SERVER };
 
@@ -37,75 +38,78 @@ const struct TestCase {
     // Insecure proxy
     {kHttpUrl,
      {PROXY, kBasicAuthScheme, kFooRealm, "http://example.com"},
-     {"The proxy http://example.com requires a username and password.",
-      kInsecureProxy, "example.com:80/Foo"}},
+     {"The proxy http://example.com", kInsecureProxy, "example.com:80/Foo"}},
 
     // Insecure proxy on non-standard port
     {kHttpUrl,
      {PROXY, kBasicAuthScheme, kFooRealm, "http://example.com:8009"},
-     {"The proxy http://example.com:8009 requires a username and password.",
-      kInsecureProxy, "example.com:8009/Foo"}},
+     {"The proxy http://example.com:8009", kInsecureProxy,
+      "example.com:8009/Foo"}},
 
     // Secure proxy
     {kHttpUrl,
      {PROXY, kBasicAuthScheme, kFooRealm, "https://example.com"},
-     {"The proxy https://example.com requires a username and password.", "",
-      "example.com:443/Foo"}},
+     {"The proxy https://example.com", "", "example.com:443/Foo"}},
 
     // Secure proxy on non-standard port
     {kHttpUrl,
      {PROXY, kBasicAuthScheme, kFooRealm, "https://example.com:446"},
-     {"The proxy https://example.com:446 requires a username and password.", "",
-      "example.com:446/Foo"}},
+     {"The proxy https://example.com:446", "", "example.com:446/Foo"}},
 
     // localhost
     {kHttpUrl,
      {PROXY, kBasicAuthScheme, kFooRealm, "http://localhost:7323"},
-     {"The proxy http://localhost:7323 requires a username and password.", "",
-      "localhost:7323/Foo"}},
+     {"The proxy http://localhost:7323", "", "localhost:7323/Foo"}},
 
     // Secure server
     {"https://www.nowhere.org/dir/index.html",
      {SERVER, kBasicAuthScheme, kFooRealm, nullptr},
-     {"https://www.nowhere.org requires a username and password.", "",
-      "https://www.nowhere.org/Foo"}},
+     {"https://www.nowhere.org", "", "https://www.nowhere.org/Foo"}},
 
     // URL uses default port.
     {"https://www.nowhere.org:443/dir/index.html",
      {SERVER, kBasicAuthScheme, kFooRealm, nullptr},
-     {"https://www.nowhere.org requires a username and password.", "",
-      "https://www.nowhere.org/Foo"}},
+     {"https://www.nowhere.org", "", "https://www.nowhere.org/Foo"}},
 
     // URL uses non-default port.
     {"https://www.nowhere.org:8443/dir/index.html",
      {SERVER, kBasicAuthScheme, kFooRealm, nullptr},
-     {"https://www.nowhere.org:8443 requires a username and password.", "",
-      "https://www.nowhere.org:8443/Foo"}},
+     {"https://www.nowhere.org:8443", "", "https://www.nowhere.org:8443/Foo"}},
 
     // URL has no trailing slash.
     {"https://www.nowhere.org",
      {SERVER, kBasicAuthScheme, kFooRealm, nullptr},
-     {"https://www.nowhere.org requires a username and password.", "",
-      "https://www.nowhere.org/Foo"}},
+     {"https://www.nowhere.org", "", "https://www.nowhere.org/Foo"}},
 
     // username:password
     {"https://foo:bar@www.nowhere.org/dir/index.html",
      {SERVER, kBasicAuthScheme, kFooRealm, nullptr},
-     {"https://www.nowhere.org requires a username and password.", "",
-      "https://www.nowhere.org/Foo"}},
+     {"https://www.nowhere.org", "", "https://www.nowhere.org/Foo"}},
 
     // query
     {"https://www.nowhere.org/dir/index.html?id=965362",
      {SERVER, kBasicAuthScheme, kFooRealm, nullptr},
-     {"https://www.nowhere.org requires a username and password.", "",
-      "https://www.nowhere.org/Foo"}},
+     {"https://www.nowhere.org", "", "https://www.nowhere.org/Foo"}},
 
     // reference
     {"https://www.nowhere.org/dir/index.html#toc",
      {SERVER, kBasicAuthScheme, kFooRealm, nullptr},
-     {"https://www.nowhere.org requires a username and password.", "",
-      "https://www.nowhere.org/Foo"}},
+     {"https://www.nowhere.org", "", "https://www.nowhere.org/Foo"}},
 };
+
+base::string16 ExpectedAuthority(bool is_proxy, const char* prefix) {
+  base::string16 str = base::ASCIIToUTF16(prefix);
+  // Proxies and Android have additional surrounding text. Otherwise, only the
+  // host URL is shown.
+  bool extra_text = is_proxy;
+#if defined(OS_ANDROID)
+  extra_text = true;
+#endif
+  if (extra_text)
+    str += base::ASCIIToUTF16(" requires a username and password.");
+
+  return str;
+}
 
 }  // namespace
 
@@ -131,8 +135,9 @@ TEST(LoginHandlerTest, DialogStringsAndRealm) {
 
     LoginHandler::GetDialogStrings(request_url, *auth_info, &authority,
                                    &explanation);
-    EXPECT_STREQ(test_case.expected.authority,
-                 base::UTF16ToASCII(authority).c_str());
+    EXPECT_EQ(ExpectedAuthority(test_case.auth_info.target_type == PROXY,
+                                test_case.expected.authority),
+              authority);
     EXPECT_STREQ(test_case.expected.explanation,
                  base::UTF16ToASCII(explanation).c_str());
 

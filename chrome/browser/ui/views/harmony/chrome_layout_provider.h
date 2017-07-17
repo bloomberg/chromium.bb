@@ -17,6 +17,8 @@ enum ChromeDistanceMetric {
   DISTANCE_BUTTON_MINIMUM_WIDTH = views::VIEWS_DISTANCE_END,
   // Vertical spacing between a list of multiple controls in one column.
   DISTANCE_CONTROL_LIST_VERTICAL,
+  // The combined vertical padding applied to text in a control.
+  DISTANCE_CONTROL_TOTAL_VERTICAL_TEXT_PADDING,
   // Smaller horizontal spacing between other controls that are logically
   // related.
   DISTANCE_RELATED_CONTROL_HORIZONTAL_SMALL,
@@ -46,6 +48,10 @@ class ChromeLayoutProvider : public views::LayoutProvider {
 
   static ChromeLayoutProvider* Get();
   static std::unique_ptr<views::LayoutProvider> CreateLayoutProvider();
+
+  // Calculates the control height based on the |font|'s reported glyph height,
+  // the default line spacing and DISTANCE_CONTROL_TOTAL_VERTICAL_TEXT_PADDING.
+  static int GetControlHeightForFont(const gfx::FontList& font);
 
   // views::LayoutProvider:
   int GetDistanceMetric(int metric) const override;

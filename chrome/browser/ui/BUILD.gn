@@ -1540,6 +1540,8 @@ split_static_library("ui") {
       "views/harmony/harmony_layout_provider.h",
       "views/harmony/harmony_typography_provider.cc",
       "views/harmony/harmony_typography_provider.h",
+      "views/harmony/textfield_layout.cc",
+      "views/harmony/textfield_layout.h",
       "views/importer/import_lock_dialog_view.cc",
       "views/importer/import_lock_dialog_view.h",
       "views/location_bar/location_bar_bubble_delegate_view.cc",

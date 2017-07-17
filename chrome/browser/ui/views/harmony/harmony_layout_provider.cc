@@ -36,6 +36,8 @@ int HarmonyLayoutProvider::GetDistanceMetric(int metric) const {
       // margin we need to subtract out the padding.
       return kVisibleMargin - kHarmonyLayoutUnit / 4;
     }
+    case DISTANCE_CONTROL_TOTAL_VERTICAL_TEXT_PADDING:
+      return kHarmonyLayoutUnit / 2;
     case views::DISTANCE_RELATED_BUTTON_HORIZONTAL:
       return kHarmonyLayoutUnit / 2;
     case views::DISTANCE_RELATED_CONTROL_HORIZONTAL:
