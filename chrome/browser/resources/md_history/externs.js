@@ -35,8 +35,8 @@ var HistoryEntry;
  *     BrowsingHistoryHandler::QueryComplete()
  * @typedef {{finished: boolean,
  *            hasSyncedResults: boolean,
- *            queryInterval: string,
- *            queryStartMonth: string,
+ *            queryEndTime: string,
+ *            queryStartTime: string,
  *            term: string}}
  */
 var HistoryQuery;

@@ -305,10 +305,6 @@ const char kEnableGenericSensorName[] = "Generic Sensor";
 const char kEnableGenericSensorDescription[] =
     "Enable sensor APIs based on Generic Sensor API.";
 
-const char kEnableGroupedHistoryName[] = "Group history by domain";
-const char kEnableGroupedHistoryDescription[] =
-    "Group history by website domain (i.e. google.com) on chrome://history.";
-
 const char kEnableHDRName[] = "HDR mode";
 const char kEnableHDRDescription[] =
     "Enables HDR support on compatible displays.";

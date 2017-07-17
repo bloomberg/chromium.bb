@@ -72,8 +72,6 @@ Polymer({
 
     chrome.send('queryHistory', [
       queryState.searchTerm,
-      0,  // No grouped offset.
-      0,  // Disable grouping.
       lastVisitTime,
       RESULTS_PER_PAGE,
     ]);

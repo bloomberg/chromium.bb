@@ -10,6 +10,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
@@ -18,10 +19,6 @@
 #include "base/values.h"
 #include "chrome/browser/history/browsing_history_service_handler.h"
 #include "content/public/browser/web_ui_message_handler.h"
-
-namespace history {
-struct QueryOptions;
-}  // namespace history
 
 // The handler for Javascript messages related to the "history" view.
 class BrowsingHistoryHandler :
@@ -64,28 +61,10 @@ class BrowsingHistoryHandler :
  private:
   FRIEND_TEST_ALL_PREFIXES(BrowsingHistoryHandlerTest,
                            ObservingWebHistoryDeletions);
-  FRIEND_TEST_ALL_PREFIXES(BrowsingHistoryHandlerTest, SetQueryTimeInWeeks);
-  FRIEND_TEST_ALL_PREFIXES(BrowsingHistoryHandlerTest, SetQueryTimeInMonths);
   FRIEND_TEST_ALL_PREFIXES(BrowsingHistoryHandlerTest, MdTruncatesTitles);
-
-  // The range for which to return results:
-  // - ALLTIME: allows access to all the results in a paginated way.
-  // - WEEK: the last 7 days.
-  // - MONTH: the last calendar month.
-  enum Range {
-    ALL_TIME = 0,
-    WEEK = 1,
-    MONTH = 2
-  };
 
   bool ExtractIntegerValueAtIndex(
       const base::ListValue* value, int index, int* out_int);
-
-  // Sets the query options for a week-wide query, |offset| weeks ago.
-  void SetQueryTimeInWeeks(int offset, history::QueryOptions* options);
-
-  // Sets the query options for a monthly query, |offset| months ago.
-  void SetQueryTimeInMonths(int offset, history::QueryOptions* options);
 
   // The clock used to vend times.
   std::unique_ptr<base::Clock> clock_;
