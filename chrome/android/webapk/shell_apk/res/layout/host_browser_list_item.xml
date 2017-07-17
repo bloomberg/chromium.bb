@@ -16,12 +16,10 @@
         android:contentDescription="@null"
         android:layout_width="48dp"
         android:layout_height="48dp"
-        android:paddingStart="20dp"
         android:layout_gravity="start" />
 
     <TextView
         android:id="@+id/browser_name"
-        android:paddingStart="20dp"
         android:layout_gravity="center"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content" />
