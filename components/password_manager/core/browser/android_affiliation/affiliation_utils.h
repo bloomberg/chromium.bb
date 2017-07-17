@@ -56,10 +56,6 @@
 #include "url/gurl.h"
 #include "url/third_party/mozilla/url_parse.h"
 
-namespace autofill {
-struct PasswordForm;
-}  // namespace autofill
-
 namespace password_manager {
 
 // Encapsulates a facet URI in canonical form.
@@ -203,13 +199,6 @@ bool AreEquivalenceClassesEqual(const AffiliatedFacets& a,
 
 // A shorter way to spell FacetURI::IsValidAndroidFacetURI().
 bool IsValidAndroidFacetURI(const std::string& uri);
-
-// Returns the origin URI in a format which can be presented to a user based of
-// |password_from| field values.
-std::string GetHumanReadableOrigin(const autofill::PasswordForm& password_form);
-
-// Returns the Android origin URI for presenting to a user.
-std::string GetHumanReadableOriginForAndroidUri(const FacetURI facet_uri);
 
 // For logging use only.
 std::ostream& operator<<(std::ostream& os, const FacetURI& facet_uri);
