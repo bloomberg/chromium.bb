@@ -95,7 +95,7 @@ crbug.com/693568 virtual/gpu/fast/canvas/canvas-imageSmoothingQuality.html [ Fai
 # Looks like a filuare to get a paint on time. Test could be changed to use runAfterLayoutAndPaint
 # instead of a timeout, which may fix things.
 crbug.com/713049 images/color-profile-reflection.html [ Failure Pass ]
-crbug.com/713049 virtual/gpu-rasterization/images/color-profile-reflection.html [ Failure Pass ]
+crbug.com/713049 virtual/gpu-rasterization/images/color-profile-reflection.html [ Failure Pass Timeout ]
 crbug.com/713049 virtual/exotic-color-space/images/color-profile-reflection.html [ Failure Pass ]
 
 crbug.com/717389 [ Linux Debug ] virtual/gpu/fast/canvas/canvas-clip-rule.html [ Crash ]
