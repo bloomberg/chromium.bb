@@ -13,13 +13,26 @@ import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.BottomToolbarPhone;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- * A class that handles showing and hiding the Chrome Home new tab UI.
+ * A class that handles showing and hiding the bottom sheet new tab UI.
  */
 public class BottomSheetNewTabController extends EmptyBottomSheetObserver {
+    /** Observe events related to the bottom sheet new tab UI. **/
+    public interface Observer {
+        /** Called when the bottom sheet NTP UI is shown. */
+        void onNewTabShown();
+
+        /** Called when the bottom sheet NTP UI is hidden. */
+        void onNewTabHidden();
+    }
+
     private final BottomSheet mBottomSheet;
     private final BottomToolbarPhone mToolbar;
     private final ChromeActivity mActivity;
+    private final List<Observer> mObservers = new ArrayList<>();
 
     private LayoutManagerChrome mLayoutManager;
     private OverviewModeObserver mOverviewModeObserver;
@@ -43,6 +56,20 @@ public class BottomSheetNewTabController extends EmptyBottomSheetObserver {
         mBottomSheet.addObserver(this);
         mToolbar = toolbar;
         mActivity = activity;
+    }
+
+    /**
+     * @param observer An {@link Observer} to be notified of events related to the new tab UI.
+     */
+    public void addObserver(Observer observer) {
+        mObservers.add(observer);
+    }
+
+    /**
+     * @param observer The {@link Observer} to remove.
+     */
+    public void removeObserver(Observer observer) {
+        mObservers.remove(observer);
     }
 
     /**
@@ -118,6 +145,8 @@ public class BottomSheetNewTabController extends EmptyBottomSheetObserver {
             mBottomSheet.getBottomSheetMetrics().recordSheetOpenReason(
                     BottomSheetMetrics.OPENED_BY_NEW_TAB_CREATION);
         }
+
+        for (Observer observer : mObservers) observer.onNewTabShown();
     }
 
     /**
@@ -195,6 +224,8 @@ public class BottomSheetNewTabController extends EmptyBottomSheetObserver {
         }
 
         mHideOverviewOnClose = false;
+
+        for (Observer observer : mObservers) observer.onNewTabHidden();
     }
 
     private void showTabSwitcherToolbarIfNecessary() {
