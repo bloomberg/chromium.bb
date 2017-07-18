@@ -231,6 +231,9 @@ size_t RegisterChromeCrashKeys() {
     // TEMPORARY: Compositor state for debugging BeginMainFrame renderer hang.
     // TODO(sunnyps): Remove after fixing https://crbug.com/622080
     {kBeginMainFrameHangCompositorState, crash_keys::kSmallSize},
+
+    // TODO(asvitkine): Remove after fixing https://crbug.com/736675
+    {"bad_histogram", kMediumSize},
   };
 
   // This dynamic set of keys is used for sets of key value pairs when gathering
