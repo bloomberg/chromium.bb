@@ -221,6 +221,7 @@ const char kChromeUILargeIconHost[] = "large-icon";
 const char kChromeUILocalStateHost[] = "local-state";
 const char kChromeUIMdPolicyHost[] = "md-policy";
 const char kChromeUIMdSettingsHost[] = "md-settings";
+const char kChromeUIMediaEngagementHost[] = "media-engagement";
 const char kChromeUINaClHost[] = "nacl";
 const char kChromeUINetExportHost[] = "net-export";
 const char kChromeUINetInternalsHost[] = "net-internals";

@@ -62,6 +62,8 @@ extern const char kChromeUIInstantURL[];
 extern const char kChromeUIInterstitialURL[];
 extern const char kChromeUIInvalidationsURL[];
 extern const char kChromeUIMdPolicyURL[];
+extern const char kChromeUIMdSettingsURL[];
+extern const char kChromeUIMediaEngagementHost[];
 extern const char kChromeUINaClURL[];
 extern const char kChromeUINetInternalsURL[];
 extern const char kChromeUINewProfileURL[];
@@ -74,7 +76,6 @@ extern const char kChromeUIMdUserManagerUrl[];
 extern const char kChromeUIPrintURL[];
 extern const char kChromeUIQuitURL[];
 extern const char kChromeUIRestartURL[];
-extern const char kChromeUIMdSettingsURL[];
 extern const char kChromeUISettingsURL[];
 extern const char kChromeUIContentSettingsURL[];
 // TODO(dbeam): remove settings-frame.

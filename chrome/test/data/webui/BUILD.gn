@@ -59,6 +59,7 @@ js2gtest("browser_tests_js_webui") {
     "md_downloads/downloads_browsertest.js",
     "md_history/md_history_browsertest.js",
     "md_user_manager/user_manager_browsertest.js",
+    "media/media_engagement_browsertest.js",
     "media_router/media_router_elements_browsertest.js",
     "mock4js_browsertest.js",
     "net_internals/bandwidth_view.js",

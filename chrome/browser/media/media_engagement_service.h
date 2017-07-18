@@ -62,7 +62,7 @@ class MediaEngagementService : public KeyedService,
 
   // Returns an array of engagement score details for all origins which
   // have a score.
-  std::vector<media::mojom::MediaEngagementScoreDetails> GetAllScoreDetails()
+  std::vector<media::mojom::MediaEngagementScoreDetailsPtr> GetAllScoreDetails()
       const;
 
   // Overridden from history::HistoryServiceObserver:
