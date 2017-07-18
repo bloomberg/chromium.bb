@@ -5,22 +5,15 @@
 #import "ios/chrome/browser/ui/payments/payment_method_selection_coordinator.h"
 
 #include "base/mac/foundation_util.h"
-#include "base/memory/ptr_util.h"
 #include "base/test/ios/wait_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/credit_card.h"
-#include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/payments/core/payment_instrument.h"
-#include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
-#include "ios/chrome/browser/payments/payment_request.h"
 #include "ios/chrome/browser/payments/payment_request_test_util.h"
-#include "ios/chrome/browser/payments/test_payment_request.h"
 #import "ios/chrome/browser/ui/payments/payment_request_selector_view_controller.h"
-#include "ios/web/public/payments/payment_request.h"
-#import "ios/web/public/test/fakes/test_web_state.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#import "ios/chrome/browser/ui/payments/payment_request_unittest_base.h"
 #include "testing/platform_test.h"
 #include "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
@@ -30,35 +23,28 @@
 #endif
 
 class PaymentRequestPaymentMethodSelectionCoordinatorTest
-    : public PlatformTest {
+    : public PaymentRequestUnitTestBase,
+      public PlatformTest {
  protected:
-  PaymentRequestPaymentMethodSelectionCoordinatorTest()
-      : autofill_profile_(autofill::test::GetFullProfile()),
-        credit_card1_(autofill::test::GetCreditCard()),
-        credit_card2_(autofill::test::GetCreditCard2()),
-        chrome_browser_state_(TestChromeBrowserState::Builder().Build()) {
-    // Add testing credit cards to autofill::TestPersonalDataManager. Make the
-    // less frequently used one incomplete.
-    credit_card1_.set_use_count(10U);
-    personal_data_manager_.AddTestingProfile(&autofill_profile_);
-    credit_card1_.set_billing_address_id(autofill_profile_.guid());
-    personal_data_manager_.AddTestingCreditCard(&credit_card1_);
-    credit_card2_.set_use_count(5U);
-    personal_data_manager_.AddTestingCreditCard(&credit_card2_);
-    payment_request_ = base::MakeUnique<payments::TestPaymentRequest>(
-        payment_request_test_util::CreateTestWebPaymentRequest(),
-        chrome_browser_state_.get(), &web_state_, &personal_data_manager_);
+  void SetUp() override {
+    PaymentRequestUnitTestBase::SetUp();
+
+    // Add testing credit cards to the database. Make the less frequently used
+    // one incomplete.
+    autofill::AutofillProfile profile = autofill::test::GetFullProfile();
+    autofill::CreditCard card = autofill::test::GetCreditCard();  // Visa.
+    card.set_use_count(10U);
+    card.set_billing_address_id(profile.guid());
+    AddAutofillProfile(std::move(profile));
+    AddCreditCard(std::move(card));
+    // Incomplete because it's missing a billing address.
+    autofill::CreditCard card2 = autofill::test::GetCreditCard2();  // Amex.
+    AddCreditCard(std::move(card2));
+
+    CreateTestPaymentRequest();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_evironment_;
-
-  autofill::AutofillProfile autofill_profile_;
-  autofill::CreditCard credit_card1_;
-  autofill::CreditCard credit_card2_;
-  web::TestWebState web_state_;
-  autofill::TestPersonalDataManager personal_data_manager_;
-  std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
-  std::unique_ptr<payments::TestPaymentRequest> payment_request_;
+  void TearDown() override { PaymentRequestUnitTestBase::TearDown(); }
 };
 
 // Tests that invoking start and stop on the coordinator presents and dismisses
@@ -72,7 +58,7 @@ TEST_F(PaymentRequestPaymentMethodSelectionCoordinatorTest, StartAndStop) {
   PaymentMethodSelectionCoordinator* coordinator =
       [[PaymentMethodSelectionCoordinator alloc]
           initWithBaseViewController:base_view_controller];
-  [coordinator setPaymentRequest:payment_request_.get()];
+  [coordinator setPaymentRequest:payment_request()];
 
   EXPECT_EQ(1u, navigation_controller.viewControllers.count);
 
@@ -105,17 +91,19 @@ TEST_F(PaymentRequestPaymentMethodSelectionCoordinatorTest,
   PaymentMethodSelectionCoordinator* coordinator =
       [[PaymentMethodSelectionCoordinator alloc]
           initWithBaseViewController:base_view_controller];
-  [coordinator setPaymentRequest:payment_request_.get()];
+  [coordinator setPaymentRequest:payment_request()];
 
   // Mock the coordinator delegate.
   id delegate = [OCMockObject
       mockForProtocol:@protocol(PaymentMethodSelectionCoordinatorDelegate)];
   [[delegate expect]
       paymentMethodSelectionCoordinator:coordinator
-                 didSelectPaymentMethod:payment_request_->payment_methods()[0]];
+                 didSelectPaymentMethod:payment_request()
+                                            ->payment_methods()[0]];
   [[delegate reject]
       paymentMethodSelectionCoordinator:coordinator
-                 didSelectPaymentMethod:payment_request_->payment_methods()[1]];
+                 didSelectPaymentMethod:payment_request()
+                                            ->payment_methods()[1]];
   [coordinator setDelegate:delegate];
 
   EXPECT_EQ(1u, navigation_controller.viewControllers.count);
@@ -151,7 +139,7 @@ TEST_F(PaymentRequestPaymentMethodSelectionCoordinatorTest, DidReturn) {
   PaymentMethodSelectionCoordinator* coordinator =
       [[PaymentMethodSelectionCoordinator alloc]
           initWithBaseViewController:base_view_controller];
-  [coordinator setPaymentRequest:payment_request_.get()];
+  [coordinator setPaymentRequest:payment_request()];
 
   // Mock the coordinator delegate.
   id delegate = [OCMockObject
