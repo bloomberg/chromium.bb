@@ -38,12 +38,12 @@ extern NSString* const kUserInfo;
 // singleton and should only be accessed via the |SharedInstance| method.
 @interface RemotingService : NSObject
 
-// Access to the singleton shared instance from this method.
-+ (RemotingService*)instance;
-
 // Start a request to fetch the host list. This will produce an notification on
 // |kHostsDidUpdate| when a new host is ready.
 - (void)requestHostListFetch;
+
+// Access to the singleton shared instance from this property.
+@property(nonatomic, readonly, class) RemotingService* instance;
 
 // Returns the current host list.
 @property(nonatomic, readonly) NSArray<HostInfo*>* hosts;

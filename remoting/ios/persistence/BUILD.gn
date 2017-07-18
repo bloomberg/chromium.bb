@@ -6,16 +6,15 @@ import("//build/config/chrome_build.gni")
 import("//build/config/ios/rules.gni")
 import("//remoting/build/config/remoting_build.gni")
 
-source_set("domain") {
+source_set("persistence") {
   sources = [
-    "client_session_details.h",
-    "client_session_details.mm",
-    "host_info.h",
-    "host_info.mm",
-    "host_settings.h",
-    "host_settings.mm",
-    "user_info.h",
-    "user_info.mm",
+    "remoting_preferences.h",
+    "remoting_preferences.mm",
+  ]
+
+  deps = [
+    "//base",
+    "//remoting/ios/domain",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
