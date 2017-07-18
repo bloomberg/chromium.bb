@@ -15,6 +15,7 @@
 #import "remoting/ios/app/app_view_controller.h"
 #import "remoting/ios/app/first_launch_view_presenter.h"
 #import "remoting/ios/app/help_and_feedback.h"
+#import "remoting/ios/app/help_view_controller.h"
 #import "remoting/ios/app/remoting_view_controller.h"
 #import "remoting/ios/app/user_status_presenter.h"
 #import "remoting/ios/app/web_view_controller.h"
@@ -26,9 +27,6 @@
 }
 @end
 
-// TODO(nicholss): These urls should come from a global config.
-static NSString* const kHelpCenterUrl =
-    @"https://support.google.com/chrome/answer/1649523?co=GENIE.Platform%3DiOS";
 // TODO(nicholss): There is no FAQ page at the moment.
 static NSString* const kFAQsUrl =
     @"https://support.google.com/chrome/answer/1649523?co=GENIE.Platform%3DiOS";
@@ -123,13 +121,13 @@ static NSString* const kFAQsUrl =
 }
 
 - (void)navigateToHelpCenter:(UINavigationController*)navigationController {
-  [navigationController pushViewController:[self createHelpViewController]
+  [navigationController pushViewController:[[HelpViewController alloc] init]
                                   animated:YES];
 }
 
 - (void)presentHelpCenter {
   UINavigationController* navController = [[UINavigationController alloc]
-      initWithRootViewController:[self createHelpViewController]];
+      initWithRootViewController:[[HelpViewController alloc] init]];
   [AppDelegate.topPresentingVC presentViewController:navController
                                             animated:YES
                                           completion:nil];
@@ -151,22 +149,6 @@ static NSString* const kFAQsUrl =
 }
 
 #pragma mark - Private
-
-- (WebViewController*)createHelpViewController {
-  WebViewController* viewController =
-      [[WebViewController alloc] initWithUrl:kHelpCenterUrl
-                                       title:@"Help Center"];
-  viewController.navigationItem.rightBarButtonItem =
-      [[UIBarButtonItem alloc] initWithTitle:@"Credits"
-                                       style:UIBarButtonItemStylePlain
-                                      target:self
-                                      action:@selector(onTapCredits:)];
-  return viewController;
-}
-
-- (void)onTapCredits:(id)button {
-  NSLog(@"tap credits");
-}
 
 + (UIViewController*)topPresentingVC {
   UIViewController* topController =
