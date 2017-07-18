@@ -74,6 +74,11 @@ class CONTENT_EXPORT Compositor {
   // Tells the view tree to assume a transparent background when rendering.
   virtual void SetHasTransparentBackground(bool flag) = 0;
 
+  // Tells the compositor to allocate an alpha channel.  This won't take effect
+  // until the compositor selects a new egl config, usually when the underlying
+  // Android Surface changes format.
+  virtual void SetRequiresAlphaChannel(bool flag) = 0;
+
   // Request layout and draw. You only need to call this if you need to trigger
   // Composite *without* having modified the layer tree.
   virtual void SetNeedsComposite() = 0;

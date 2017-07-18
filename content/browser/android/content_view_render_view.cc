@@ -112,6 +112,7 @@ void ContentViewRenderView::SetOverlayVideoMode(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     bool enabled) {
+  compositor_->SetRequiresAlphaChannel(enabled);
   compositor_->SetHasTransparentBackground(enabled);
   compositor_->SetNeedsComposite();
 }
