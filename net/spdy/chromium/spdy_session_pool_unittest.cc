@@ -668,7 +668,7 @@ TEST_F(SpdySessionPoolTest, IPPoolingDisabled) {
   // It should be possible to open a new SpdySession, even if a previous call to
   // FindAvailableSession() linked the second key to the first connection in the
   // IP pooled bucket of SpdySessionPool::available_session_map_.
-  session1 = CreateSecureSpdySessionWithIpBasedPoolingDisabled(
+  session1 = CreateSpdySessionWithIpBasedPoolingDisabled(
       http_session_.get(), test_hosts[1].key, NetLogWithSource());
   EXPECT_TRUE(session1);
   EXPECT_NE(session0.get(), session1.get());

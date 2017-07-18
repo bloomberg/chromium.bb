@@ -554,7 +554,7 @@ base::WeakPtr<SpdySession> CreateSpdySession(HttpNetworkSession* http_session,
                                  /* enable_ip_based_pooling = */ true);
 }
 
-base::WeakPtr<SpdySession> CreateSecureSpdySessionWithIpBasedPoolingDisabled(
+base::WeakPtr<SpdySession> CreateSpdySessionWithIpBasedPoolingDisabled(
     HttpNetworkSession* http_session,
     const SpdySessionKey& key,
     const NetLogWithSource& net_log) {
