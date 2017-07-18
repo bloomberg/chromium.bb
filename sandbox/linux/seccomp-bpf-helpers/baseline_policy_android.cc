@@ -88,10 +88,11 @@ ResultExpr BaselinePolicyAndroid::EvaluateSyscall(int sysno) const {
     case __NR_getdents64:
     case __NR_getpriority:
     case __NR_ioctl:
-#if defined(__i386__)
-    // While mincore is on multiple arches, it is only used on Android by x86.
-    case __NR_mincore:  // https://crbug.com/701137
-#endif
+    // TODO(https://crbug.com/739879): Mincore should only be allowed in the
+    // baseline policy for x86 (https://crbug.com/701137), but currently this
+    // policy is used directly by //content, and mincore needs to be allowed per
+    // https://crbug.com/741984.
+    case __NR_mincore:
     case __NR_mremap:
 #if defined(__i386__)
     // Used on pre-N to initialize threads in ART.
