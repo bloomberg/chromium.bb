@@ -53,6 +53,7 @@ const char* const kShowNotificationLanguages[] = {
     "haw",  // Hawaiian
     "he",   // Hebrew
     "hi",   // Hindi
+    "hmn",  // Hmong
     "hr",   // Croatian
     "hu",   // Hungarian
     "hy",   // Armenian
@@ -60,7 +61,7 @@ const char* const kShowNotificationLanguages[] = {
     "id",   // Indonesian
     "is",   // Icelandic
     "ja",   // Japanese
-    "jw",   // Javanese
+    "jv",   // Javanese
     "ka",   // Georgian
     "kk",   // Kazakh
     "km",   // Cambodian
@@ -69,6 +70,7 @@ const char* const kShowNotificationLanguages[] = {
     "ku",   // Kurdish
     "ky",   // Kyrgyz
     "la",   // Latin
+    "lb",   // Luxembourgish
     "ln",   // Lingala
     "lo",   // Laothian
     "lt",   // Lithuanian
@@ -101,6 +103,7 @@ const char* const kShowNotificationLanguages[] = {
     "si",   // Sinhalese
     "sk",   // Slovak
     "sl",   // Slovenian
+    "sm",   // Samoan
     "sn",   // Shona
     "so",   // Somali
     "sq",   // Albanian
