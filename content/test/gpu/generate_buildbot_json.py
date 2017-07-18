@@ -1843,28 +1843,6 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
     ],
     'asan_args': ['--is-asan'],
   },
-  'webgl_conformance_angle_tests': {
-    'tester_configs': [
-      {
-        # Run this on the FYI waterfall and optional tryservers.
-        'predicate': Predicates.FYI_AND_OPTIONAL,
-        'os_types': ['linux'],
-        'disabled_instrumentation_types': ['tsan'],
-      }
-    ],
-    'disabled_tester_configs': [
-      {
-        'names': [
-          'Linux ChromiumOS Ozone (Intel)',
-        ],
-      },
-    ],
-    'target_name': 'webgl_conformance',
-    'extra_browser_args': [
-      '--use-gl=angle',
-    ],
-    'asan_args': ['--is-asan'],
-  },
   'webgl_conformance_d3d11_passthrough': {
     'tester_configs': [
       {
@@ -1952,7 +1930,7 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
       'shards': 15,
     },
   },
-  'webgl2_conformance_angle_tests': {
+  'webgl2_conformance_gl_passthrough_tests': {
     'tester_configs': [
       {
          # The WebGL 2.0 conformance tests take over an hour to run on
@@ -1987,6 +1965,8 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
     'target_name': 'webgl_conformance',
     'extra_browser_args': [
       '--use-gl=angle',
+      '--use-angle=gl',
+      '--use-passthrough-cmd-decoder',
     ],
     'args': [
       '--webgl-conformance-version=2.0.1',
