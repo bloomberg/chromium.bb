@@ -47,8 +47,6 @@ Recipe module to ensure a checkout is consistent on a bot.
 
 Wrapper for easy calling of bot_update.
 
-&mdash; **def [\_\_init\_\_](/recipes/recipe_modules/bot_update/api.py#13)(self, issue, patch_issue, patchset, patch_set, patch_project, repository, patch_repository_url, gerrit_ref, patch_ref, patch_gerrit_url, rietveld, revision, parent_got_revision, deps_revision_overrides, fail_patch, \*args, \*\*kwargs):**
-
 &mdash; **def [apply\_gerrit\_ref](/recipes/recipe_modules/bot_update/api.py#49)(self, root, gerrit_no_reset=False, gerrit_no_rebase_patch_ref=False, \*\*kwargs):**
 
 &mdash; **def [deapply\_patch](/recipes/recipe_modules/bot_update/api.py#427)(self, bot_update_step):**
@@ -222,8 +220,6 @@ Returns (Path): The "depot_tools" root directory.
 &mdash; **def [\_\_call\_\_](/recipes/recipe_modules/gclient/api.py#75)(self, name, cmd, infra_step=True, \*\*kwargs):**
 
 Wrapper for easy calling of gclient steps.
-
-&mdash; **def [\_\_init\_\_](/recipes/recipe_modules/gclient/api.py#70)(self, \*\*kwargs):**
 
 &mdash; **def [break\_locks](/recipes/recipe_modules/gclient/api.py#287)(self):**
 
@@ -485,8 +481,6 @@ remote_name (str): the remote name to rebase from if not origin
 
 #### **class [GitClApi](/recipes/recipe_modules/git_cl/api.py#9)([RecipeApi][recipe_engine/wkt/RecipeApi]):**
 
-&mdash; **def [\_\_call\_\_](/recipes/recipe_modules/git_cl/api.py#10)(self, subcmd, args, name=None, \*\*kwargs):**
-
 &mdash; **def [get\_description](/recipes/recipe_modules/git_cl/api.py#23)(self, patch_url=None, codereview=None, \*\*kwargs):**
 
 DEPRECATED. Consider using gerrit.get_change_description instead.
@@ -663,8 +657,6 @@ Returns:
 
 #### **class [TryserverApi](/recipes/recipe_modules/tryserver/api.py#12)([RecipeApi][recipe_engine/wkt/RecipeApi]):**
 
-&mdash; **def [\_\_init\_\_](/recipes/recipe_modules/tryserver/api.py#13)(self, \*args, \*\*kwargs):**
-
 &mdash; **def [add\_failure\_reason](/recipes/recipe_modules/tryserver/api.py#146)(self, reason):**
 
 Records a more detailed reason why build is failing.
@@ -830,13 +822,13 @@ Move things around in a loop!
 
 &mdash; **def [RunSteps](/recipes/recipe_modules/tryserver/examples/full.py#17)(api):**
 
-[recipe_engine/recipe_modules/context]: https://github.com/luci/recipes-py/blob/de3238ca6d8320585f5dbcf051cd96cbc72d4684/README.recipes.md#recipe_modules--context
-[recipe_engine/recipe_modules/json]: https://github.com/luci/recipes-py/blob/de3238ca6d8320585f5dbcf051cd96cbc72d4684/README.recipes.md#recipe_modules--json
-[recipe_engine/recipe_modules/path]: https://github.com/luci/recipes-py/blob/de3238ca6d8320585f5dbcf051cd96cbc72d4684/README.recipes.md#recipe_modules--path
-[recipe_engine/recipe_modules/platform]: https://github.com/luci/recipes-py/blob/de3238ca6d8320585f5dbcf051cd96cbc72d4684/README.recipes.md#recipe_modules--platform
-[recipe_engine/recipe_modules/properties]: https://github.com/luci/recipes-py/blob/de3238ca6d8320585f5dbcf051cd96cbc72d4684/README.recipes.md#recipe_modules--properties
-[recipe_engine/recipe_modules/python]: https://github.com/luci/recipes-py/blob/de3238ca6d8320585f5dbcf051cd96cbc72d4684/README.recipes.md#recipe_modules--python
-[recipe_engine/recipe_modules/raw_io]: https://github.com/luci/recipes-py/blob/de3238ca6d8320585f5dbcf051cd96cbc72d4684/README.recipes.md#recipe_modules--raw_io
-[recipe_engine/recipe_modules/step]: https://github.com/luci/recipes-py/blob/de3238ca6d8320585f5dbcf051cd96cbc72d4684/README.recipes.md#recipe_modules--step
-[recipe_engine/recipe_modules/url]: https://github.com/luci/recipes-py/blob/de3238ca6d8320585f5dbcf051cd96cbc72d4684/README.recipes.md#recipe_modules--url
-[recipe_engine/wkt/RecipeApi]: https://github.com/luci/recipes-py/blob/de3238ca6d8320585f5dbcf051cd96cbc72d4684/recipe_engine/recipe_api.py#L884
+[recipe_engine/recipe_modules/context]: https://github.com/luci/recipes-py/blob/0ca88ae4d7e3f2ac99528e415a26bdb6d9835d35/README.recipes.md#recipe_modules--context
+[recipe_engine/recipe_modules/json]: https://github.com/luci/recipes-py/blob/0ca88ae4d7e3f2ac99528e415a26bdb6d9835d35/README.recipes.md#recipe_modules--json
+[recipe_engine/recipe_modules/path]: https://github.com/luci/recipes-py/blob/0ca88ae4d7e3f2ac99528e415a26bdb6d9835d35/README.recipes.md#recipe_modules--path
+[recipe_engine/recipe_modules/platform]: https://github.com/luci/recipes-py/blob/0ca88ae4d7e3f2ac99528e415a26bdb6d9835d35/README.recipes.md#recipe_modules--platform
+[recipe_engine/recipe_modules/properties]: https://github.com/luci/recipes-py/blob/0ca88ae4d7e3f2ac99528e415a26bdb6d9835d35/README.recipes.md#recipe_modules--properties
+[recipe_engine/recipe_modules/python]: https://github.com/luci/recipes-py/blob/0ca88ae4d7e3f2ac99528e415a26bdb6d9835d35/README.recipes.md#recipe_modules--python
+[recipe_engine/recipe_modules/raw_io]: https://github.com/luci/recipes-py/blob/0ca88ae4d7e3f2ac99528e415a26bdb6d9835d35/README.recipes.md#recipe_modules--raw_io
+[recipe_engine/recipe_modules/step]: https://github.com/luci/recipes-py/blob/0ca88ae4d7e3f2ac99528e415a26bdb6d9835d35/README.recipes.md#recipe_modules--step
+[recipe_engine/recipe_modules/url]: https://github.com/luci/recipes-py/blob/0ca88ae4d7e3f2ac99528e415a26bdb6d9835d35/README.recipes.md#recipe_modules--url
+[recipe_engine/wkt/RecipeApi]: https://github.com/luci/recipes-py/blob/0ca88ae4d7e3f2ac99528e415a26bdb6d9835d35/recipe_engine/recipe_api.py#L884
