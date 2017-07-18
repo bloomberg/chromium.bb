@@ -336,8 +336,7 @@ void PageLoadMetricsUpdateDispatcher::ShutDown() {
 void PageLoadMetricsUpdateDispatcher::UpdateMetrics(
     content::RenderFrameHost* render_frame_host,
     const mojom::PageLoadTiming& new_timing,
-    const mojom::PageLoadMetadata& new_metadata,
-    const mojom::PageLoadFeatures& new_features) {
+    const mojom::PageLoadMetadata& new_metadata) {
   if (render_frame_host->GetParent() == nullptr) {
     UpdateMainFrameMetadata(new_metadata);
     UpdateMainFrameTiming(new_timing);
@@ -345,7 +344,6 @@ void PageLoadMetricsUpdateDispatcher::UpdateMetrics(
     UpdateSubFrameMetadata(new_metadata);
     UpdateSubFrameTiming(render_frame_host, new_timing);
   }
-  client_->UpdateFeaturesUsage(new_features);
 }
 
 void PageLoadMetricsUpdateDispatcher::DidFinishSubFrameNavigation(
