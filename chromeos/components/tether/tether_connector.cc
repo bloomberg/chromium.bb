@@ -147,8 +147,7 @@ void TetherConnector::OnSuccessfulConnectTetheringResponse(
 
   PA_LOG(INFO) << "Received successful ConnectTetheringResponse from device "
                << "with ID " << remote_device.GetTruncatedDeviceIdForLogs()
-               << ". SSID: \"" << ssid << "\", Password: \"" << password
-               << "\"";
+               << ". SSID: \"" << ssid << "\".";
 
   // Make a copy of the device ID, SSID, and password to pass below before
   // destroying |connect_tethering_operation_|.
