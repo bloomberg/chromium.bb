@@ -367,9 +367,7 @@ bool VrShell::GetWebVrMode(JNIEnv* env, const JavaParamRef<jobject>& obj) {
 bool VrShell::IsDisplayingUrlForTesting(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
-  // TODO(tiborg): this should return ShouldDisplayURL when it is available.
-  // crbug.com/738583
-  return true;
+  return ShouldDisplayURL();
 }
 
 void VrShell::OnLoadProgressChanged(JNIEnv* env,
@@ -736,6 +734,12 @@ bool VrShell::HasDaydreamSupport(JNIEnv* env) {
 
 content::WebContents* VrShell::GetActiveWebContents() const {
   return web_contents_;
+}
+
+bool VrShell::ShouldDisplayURL() const {
+  // It's possible for there to be no web contents, e.g. on the new tab page.
+  return GetActiveWebContents() &&
+         ChromeToolbarModelDelegate::ShouldDisplayURL();
 }
 
 // ----------------------------------------------------------------------------
