@@ -78,6 +78,7 @@ class Sensor : public EventTargetWithInlineData,
   double ReadingValueUnchecked(int index) const;
   bool CanReturnReadings() const;
   bool IsActivated() const { return state_ == SensorState::kActivated; }
+  bool IsIdleOrErrored() const;
 
   // SensorProxy::Observer overrides.
   void OnSensorInitialized() override;
@@ -94,18 +95,17 @@ class Sensor : public EventTargetWithInlineData,
 
   void OnAddConfigurationRequestCompleted(bool);
 
-  void StartListening();
-  void StopListening();
+  void Activate();
+  void Deactivate();
 
   void RequestAddConfiguration();
 
-  void UpdateState(SensorState new_state);
   void HandleError(ExceptionCode = kUnknownError,
                    const String& sanitized_message = String(),
                    const String& unsanitized_message = String());
 
   void NotifyReading();
-  void NotifyActivate();
+  void NotifyActivated();
   void NotifyError(DOMException* error);
 
  private:
@@ -115,7 +115,9 @@ class Sensor : public EventTargetWithInlineData,
   Member<SensorProxy> sensor_proxy_;
   double last_reported_timestamp_;
   SensorConfigurationPtr configuration_;
-  TaskHandle pending_reading_update_;
+  TaskHandle pending_reading_notification_;
+  TaskHandle pending_activated_notification_;
+  TaskHandle pending_error_notification_;
 };
 
 }  // namespace blink
