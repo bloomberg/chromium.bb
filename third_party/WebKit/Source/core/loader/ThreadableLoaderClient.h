@@ -59,9 +59,6 @@ class CORE_EXPORT ThreadableLoaderClient {
   virtual void DidFinishLoading(unsigned long /*identifier*/,
                                 double /*finishTime*/) {}
   virtual void DidFail(const ResourceError&) {}
-  virtual void DidFailAccessControlCheck(const ResourceError& error) {
-    DidFail(error);
-  }
   virtual void DidFailRedirectCheck() {}
   virtual void DidReceiveResourceTiming(const ResourceTimingInfo&) {}
 

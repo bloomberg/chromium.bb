@@ -111,7 +111,6 @@ class MODULES_EXPORT EventSource final
   void DidReceiveData(const char*, unsigned) override;
   void DidFinishLoading(unsigned long, double) override;
   void DidFail(const ResourceError&) override;
-  void DidFailAccessControlCheck(const ResourceError&) override;
   void DidFailRedirectCheck() override;
 
   void OnMessageEvent(const AtomicString& event,

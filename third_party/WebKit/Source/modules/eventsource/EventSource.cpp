@@ -306,19 +306,13 @@ void EventSource::DidFail(const ResourceError& error) {
   DCHECK(loader_);
 
   if (error.IsAccessCheck()) {
-    DidFailAccessControlCheck(error);
+    AbortConnectionAttempt();
     return;
   }
 
   if (error.IsCancellation())
     state_ = kClosed;
   NetworkRequestEnded();
-}
-
-void EventSource::DidFailAccessControlCheck(const ResourceError& error) {
-  DCHECK(loader_);
-
-  AbortConnectionAttempt();
 }
 
 void EventSource::DidFailRedirectCheck() {

@@ -163,7 +163,6 @@ class FetchManager::Loader final
                           std::unique_ptr<WebDataConsumerHandle>) override;
   void DidFinishLoading(unsigned long, double) override;
   void DidFail(const ResourceError&) override;
-  void DidFailAccessControlCheck(const ResourceError&) override;
   void DidFailRedirectCheck() override;
 
   void Start();
@@ -514,16 +513,6 @@ void FetchManager::Loader::DidFinishLoading(unsigned long, double) {
 }
 
 void FetchManager::Loader::DidFail(const ResourceError& error) {
-  if (error.IsCancellation() || error.IsTimeout() ||
-      error.Domain() != kErrorDomainBlinkInternal)
-    Failed(String());
-  else
-    Failed("Fetch API cannot load " + error.FailingURL() + ". " +
-           error.LocalizedDescription());
-}
-
-void FetchManager::Loader::DidFailAccessControlCheck(
-    const ResourceError& error) {
   if (error.IsCancellation() || error.IsTimeout() ||
       error.Domain() != kErrorDomainBlinkInternal)
     Failed(String());
