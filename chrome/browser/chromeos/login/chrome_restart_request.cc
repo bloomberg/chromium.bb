@@ -125,6 +125,8 @@ void DeriveCommandLine(const GURL& start_url,
     ::switches::kEnableViewport,
     ::switches::kEnableZeroCopy,
 #if defined(USE_OZONE)
+    ::switches::kEnableDrmAtomic,
+    ::switches::kEnableHardwareOverlays,
     ::switches::kExtraTouchNoiseFiltering,
     ::switches::kEdgeTouchFiltering,
 #endif
