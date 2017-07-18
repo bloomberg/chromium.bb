@@ -34,7 +34,6 @@
 namespace {
 const int kAutomaticSigninPromoViewDismissCount = 20;
 
-#if DCHECK_IS_ON()
 bool IsSupportedAccessPoint(signin_metrics::AccessPoint access_point) {
   switch (access_point) {
     case signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS:
@@ -46,7 +45,6 @@ bool IsSupportedAccessPoint(signin_metrics::AccessPoint access_point) {
       return false;
   }
 }
-#endif  // DCHECK_IS_ON()
 
 void RecordSigninUserActionForAccessPoint(
     signin_metrics::AccessPoint access_point) {
@@ -208,9 +206,7 @@ const char* AlreadySeenSigninViewPreferenceKey(
                          accessPoint:(signin_metrics::AccessPoint)accessPoint {
   self = [super init];
   if (self) {
-#if DCHECK_IS_ON()
     DCHECK(IsSupportedAccessPoint(accessPoint));
-#endif  // DCHECK_IS_ON()
     _accessPoint = accessPoint;
     _browserState = browserState;
     NSArray* identities = ios::GetChromeBrowserProvider()
