@@ -89,6 +89,8 @@ class PageLoadMetricsUpdateDispatcher {
         const mojom::PageLoadTiming& timing) = 0;
     virtual void OnMainFrameMetadataChanged() = 0;
     virtual void OnSubframeMetadataChanged() = 0;
+    virtual void UpdateFeaturesUsage(
+        const mojom::PageLoadFeatures& new_features) = 0;
   };
 
   // The |client| instance must outlive this object.
@@ -100,7 +102,8 @@ class PageLoadMetricsUpdateDispatcher {
 
   void UpdateMetrics(content::RenderFrameHost* render_frame_host,
                      const mojom::PageLoadTiming& new_timing,
-                     const mojom::PageLoadMetadata& new_metadata);
+                     const mojom::PageLoadMetadata& new_metadata,
+                     const mojom::PageLoadFeatures& new_features);
 
   void DidFinishSubFrameNavigation(
       content::NavigationHandle* navigation_handle);

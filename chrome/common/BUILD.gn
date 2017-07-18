@@ -727,5 +727,6 @@ mojom("page_load_metrics_mojom") {
 
   public_deps = [
     "//mojo/common:common_custom_types",
+    "//third_party/WebKit/public:web_feature_mojo_bindings",
   ]
 }

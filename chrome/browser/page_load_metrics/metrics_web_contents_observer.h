@@ -134,7 +134,8 @@ class MetricsWebContentsObserver
   // public only for testing
   void OnTimingUpdated(content::RenderFrameHost* render_frame_host,
                        const mojom::PageLoadTiming& timing,
-                       const mojom::PageLoadMetadata& metadata);
+                       const mojom::PageLoadMetadata& metadata,
+                       const mojom::PageLoadFeatures& new_features);
 
   // Informs the observers of the currently committed load that the event
   // corresponding to |event_key| has occurred. This should not be called within

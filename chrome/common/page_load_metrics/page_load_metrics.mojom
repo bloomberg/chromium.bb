@@ -5,6 +5,7 @@
 module page_load_metrics.mojom;
 
 import "mojo/common/time.mojom";
+import "third_party/WebKit/public/platform/web_feature.mojom";
 
 // TimeDeltas below relative to navigation start.
 struct DocumentTiming {
@@ -106,6 +107,13 @@ struct PageLoadTiming {
 struct PageLoadMetadata {
   // These are packed blink::WebLoadingBehaviorFlag enums.
   int32 behavior_flags = 0;
+};
+
+// PageLoadFeatures contains a list of unduplicated features newly observed
+// by use counter.
+struct PageLoadFeatures {
+  // These features are defined as blink::mojom::WebFeature enums.
+  array<blink.mojom.WebFeature> features;
 };
 
 // Sent from renderer to browser process when the PageLoadTiming for the
