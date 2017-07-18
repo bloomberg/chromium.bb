@@ -9,7 +9,7 @@
 #include <string>
 #include <tuple>
 
-#include "base/numerics/saturated_arithmetic.h"
+#include "base/numerics/clamped_math.h"
 #include "build/build_config.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/gfx_export.h"
@@ -56,18 +56,18 @@ class GFX_EXPORT Point {
   }
 
   void Offset(int delta_x, int delta_y) {
-    x_ = base::SaturatedAddition(x_, delta_x);
-    y_ = base::SaturatedAddition(y_, delta_y);
+    x_ = base::ClampAdd(x_, delta_x);
+    y_ = base::ClampAdd(y_, delta_y);
   }
 
   void operator+=(const Vector2d& vector) {
-    x_ = base::SaturatedAddition(x_, vector.x());
-    y_ = base::SaturatedAddition(y_, vector.y());
+    x_ = base::ClampAdd(x_, vector.x());
+    y_ = base::ClampAdd(y_, vector.y());
   }
 
   void operator-=(const Vector2d& vector) {
-    x_ = base::SaturatedSubtraction(x_, vector.x());
-    y_ = base::SaturatedSubtraction(y_, vector.y());
+    x_ = base::ClampSub(x_, vector.x());
+    y_ = base::ClampSub(y_, vector.y());
   }
 
   void SetToMin(const Point& other);
@@ -116,8 +116,8 @@ inline Point operator-(const Point& lhs, const Vector2d& rhs) {
 }
 
 inline Vector2d operator-(const Point& lhs, const Point& rhs) {
-  return Vector2d(base::SaturatedSubtraction(lhs.x(), rhs.x()),
-                  base::SaturatedSubtraction(lhs.y(), rhs.y()));
+  return Vector2d(base::ClampSub(lhs.x(), rhs.x()),
+                  base::ClampSub(lhs.y(), rhs.y()));
 }
 
 inline Point PointAtOffsetFromOrigin(const Vector2d& offset_from_origin) {
