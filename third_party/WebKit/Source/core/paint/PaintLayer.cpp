@@ -2709,7 +2709,9 @@ GraphicsLayer* PaintLayer::GraphicsLayerBacking(const LayoutObject* obj) const {
 BackgroundPaintLocation PaintLayer::GetBackgroundPaintLocation(
     uint32_t* reasons) const {
   BackgroundPaintLocation location;
-  if (!ScrollsOverflow()) {
+  bool has_scrolling_layers =
+      scrollable_area_ && scrollable_area_->NeedsCompositedScrolling();
+  if (!ScrollsOverflow() && !has_scrolling_layers) {
     location = kBackgroundPaintInGraphicsLayer;
   } else if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
     location = GetLayoutObject().GetBackgroundPaintLocation(reasons);
