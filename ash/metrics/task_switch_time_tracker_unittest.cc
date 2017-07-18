@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "ash/test/task_switch_time_tracker_test_api.h"
+#include "ash/metrics/task_switch_time_tracker_test_api.h"
 #include "base/test/histogram_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

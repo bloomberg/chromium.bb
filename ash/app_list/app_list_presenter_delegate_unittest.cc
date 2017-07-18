@@ -4,6 +4,7 @@
 
 #include <memory>
 
+#include "ash/app_list/test_app_list_view_presenter_impl.h"
 #include "ash/ash_switches.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shelf_types.h"
@@ -13,7 +14,6 @@
 #include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/test_app_list_view_presenter_impl.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"

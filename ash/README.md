@@ -18,6 +18,10 @@ Tests can bring up most of the ash UI and simulate a login session by deriving
 from AshTestBase. This is often needed to test code that depends on ash::Shell
 and the controllers it owns.
 
+Test support code (TestFooDelegate, FooControllerTestApi, etc.) lives in the
+same directory as the class under test (e.g. //ash/foo rather than //ash/test).
+Test code uses namespace ash; there is no special "test" namespace.
+
 Mus+ash
 ----------
 Ash is transitioning to use the mus window server and gpu process, found in

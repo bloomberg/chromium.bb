@@ -5,11 +5,11 @@
 #include "ash/display/display_configuration_controller.h"
 
 #include "ash/ash_switches.h"
+#include "ash/display/display_configuration_controller_test_api.h"
 #include "ash/public/cpp/config.h"
 #include "ash/rotator/screen_rotation_animator.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/display_configuration_controller_test_api.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "ui/display/manager/display_manager.h"

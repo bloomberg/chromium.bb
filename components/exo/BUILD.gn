@@ -100,8 +100,8 @@ source_set("test_support") {
 
   deps = [
     ":exo",
+    "//ash:test_support_without_content",
     "//ash/public/cpp:ash_public_cpp",
-    "//ash/test:test_support_without_content",
     "//base",
     "//gpu",
     "//skia",
@@ -133,8 +133,8 @@ source_set("unit_tests") {
     ":exo",
     ":test_support",
     "//ash",
+    "//ash:test_support_without_content",
     "//ash/public/cpp:ash_public_cpp",
-    "//ash/test:test_support_without_content",
     "//base",
     "//base/test:test_support",
     "//cc",
@@ -179,8 +179,8 @@ test("exo_unittests") {
 
   deps = [
     ":unit_tests",
+    "//ash:test_support_without_content",
     "//ash/public/cpp:ash_public_cpp",
-    "//ash/test:test_support_without_content",
     "//base",
     "//base/test:test_support",
     "//cc:test_support",

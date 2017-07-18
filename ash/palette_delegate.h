@@ -15,6 +15,7 @@ namespace ash {
 
 // This delegate allows the UI code in ash, e.g. |PaletteTray|, to perform
 // Chrome-specific actions.
+// TODO(jamescook): Move this to //ash/system/palette.
 class PaletteDelegate {
  public:
   using EnableListener = base::Callback<void(bool)>;

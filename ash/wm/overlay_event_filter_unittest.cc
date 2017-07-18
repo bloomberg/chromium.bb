@@ -6,7 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/test_overlay_delegate.h"
+#include "ash/wm/test_overlay_delegate.h"
 
 namespace ash {
 

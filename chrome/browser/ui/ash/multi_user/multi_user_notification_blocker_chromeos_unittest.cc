@@ -7,7 +7,7 @@
 #include "ash/shell.h"
 #include "ash/system/system_notifier.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/test_shell_delegate.h"
+#include "ash/test_shell_delegate.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"

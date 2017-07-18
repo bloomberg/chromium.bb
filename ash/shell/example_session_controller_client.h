@@ -5,7 +5,7 @@
 #ifndef ASH_SHELL_EXAMPLE_SESSION_CONTROLLER_CLIENT_H_
 #define ASH_SHELL_EXAMPLE_SESSION_CONTROLLER_CLIENT_H_
 
-#include "ash/test/test_session_controller_client.h"
+#include "ash/session/test_session_controller_client.h"
 #include "base/macros.h"
 
 namespace ash {

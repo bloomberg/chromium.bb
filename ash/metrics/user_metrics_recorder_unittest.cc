@@ -7,13 +7,13 @@
 #include <memory>
 
 #include "ash/login_status.h"
+#include "ash/metrics/user_metrics_recorder_test_api.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/session/session_controller.h"
+#include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/test_session_controller_client.h"
-#include "ash/test/user_metrics_recorder_test_api.h"
 #include "base/test/histogram_tester.h"
 
 using session_manager::SessionState;

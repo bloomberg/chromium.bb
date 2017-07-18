@@ -10,7 +10,7 @@
 #include "ash/system/tray/system_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
-#include "ash/test/test_shell_delegate.h"
+#include "ash/test_shell_delegate.h"
 #include "base/macros.h"
 #include "components/prefs/testing_pref_service.h"
 

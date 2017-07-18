@@ -4,10 +4,10 @@
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller.h"
+#include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
-#include "ash/test/test_session_controller_client.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"

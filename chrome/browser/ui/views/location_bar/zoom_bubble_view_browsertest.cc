@@ -16,7 +16,7 @@
 typedef InProcessBrowserTest ZoomBubbleBrowserTest;
 
 #if defined(USE_ASH)
-#include "ash/test/immersive_fullscreen_controller_test_api.h"
+#include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller_ash.h"
 #endif
 

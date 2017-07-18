@@ -63,9 +63,9 @@
 
 #if defined(USE_ASH)
 #include "ash/ash_switches.h"
+#include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"
 #include "ash/shell.h"
-#include "ash/test/cursor_manager_test_api.h"
-#include "ash/test/immersive_fullscreen_controller_test_api.h"
+#include "ash/wm/cursor_manager_test_api.h"
 #include "ash/wm/root_window_finder.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
