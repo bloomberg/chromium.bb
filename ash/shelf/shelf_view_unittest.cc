@@ -35,6 +35,7 @@
 #include "ash/test/test_shell_delegate.h"
 #include "ash/test/wallpaper_controller_test_api.h"
 #include "ash/wallpaper/wallpaper_controller.h"
+#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -2564,6 +2565,129 @@ TEST_F(ShelfViewInkDropTest, ShelfButtonWithMenuPressRelease) {
               ElementsAre(views::InkDropState::ACTIVATED,
                           views::InkDropState::DEACTIVATED));
 }
+
+namespace {
+
+// Test fixture to run app list button ink drop tests for both mouse and touch
+// events.
+class AppListButtonInkDropTest
+    : public ShelfViewInkDropTest,
+      public testing::WithParamInterface<ui::EventPointerType> {
+ public:
+  AppListButtonInkDropTest() : pointer_type_(GetParam()) {}
+
+  ~AppListButtonInkDropTest() override {}
+
+  void MovePointerTo(const gfx::Point& point) {
+    if (pointer_type_ == ui::EventPointerType::POINTER_TYPE_MOUSE)
+      GetEventGenerator().MoveMouseTo(point);
+    else if (pointer_type_ == ui::EventPointerType::POINTER_TYPE_TOUCH)
+      GetEventGenerator().MoveTouch(point);
+  }
+
+  void PressPointer() {
+    if (pointer_type_ == ui::EventPointerType::POINTER_TYPE_MOUSE)
+      GetEventGenerator().PressLeftButton();
+    else if (pointer_type_ == ui::EventPointerType::POINTER_TYPE_TOUCH)
+      GetEventGenerator().PressTouch();
+  }
+
+  void ReleasePointer() {
+    if (pointer_type_ == ui::EventPointerType::POINTER_TYPE_MOUSE)
+      GetEventGenerator().ReleaseLeftButton();
+    else if (pointer_type_ == ui::EventPointerType::POINTER_TYPE_TOUCH)
+      GetEventGenerator().ReleaseTouch();
+  }
+
+ private:
+  ui::EventPointerType pointer_type_;
+
+  DISALLOW_COPY_AND_ASSIGN(AppListButtonInkDropTest);
+};
+
+const ui::EventPointerType kPointerTypes[] = {
+    ui::EventPointerType::POINTER_TYPE_MOUSE,
+    ui::EventPointerType::POINTER_TYPE_TOUCH};
+
+}  // namespace
+
+// Tests that clicking/tapping on the app list button in maximized mode (when
+// it has two functionalities), transitions the ink drop state correctly.
+TEST_P(AppListButtonInkDropTest, AppListButtonInMaximizedMode) {
+  // TODO: investigate failure in mash, http://crbug.com/695751.
+  if (Shell::GetAshConfig() == Config::MASH)
+    return;
+
+  InitAppListButtonInkDrop();
+
+  // Verify the app list button bounds change when we enter maximized mode.
+  const gfx::Rect old_bounds = app_list_button_->GetBoundsInScreen();
+  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+      true);
+  gfx::Rect new_bounds = app_list_button_->GetBoundsInScreen();
+  EXPECT_EQ(new_bounds.height(), old_bounds.height());
+  EXPECT_GT(new_bounds.width(), old_bounds.width());
+
+  gfx::Point point_on_circle = app_list_button_->GetAppListButtonCenterPoint();
+  views::View::ConvertPointToScreen(app_list_button_, &point_on_circle);
+  gfx::Point point_on_back_button =
+      app_list_button_->GetBackButtonCenterPoint();
+  views::View::ConvertPointToScreen(app_list_button_, &point_on_back_button);
+
+  // Verify the ink drop state transitions as expected when we press and
+  // release on the app list circle part of the app list button. Taps on the
+  // app list circle, which shows the app list, should end up in the activated
+  // state.
+  MovePointerTo(point_on_circle);
+  PressPointer();
+  EXPECT_EQ(views::InkDropState::ACTION_PENDING,
+            app_list_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
+              ElementsAre(views::InkDropState::ACTION_PENDING));
+  ReleasePointer();
+
+  // Trigger a mock button notification that the app list was shown.
+  app_list_button_->OnAppListShown();
+  FinishAppListVisibilityChange();
+  EXPECT_EQ(views::InkDropState::ACTIVATED,
+            app_list_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
+              ElementsAre(views::InkDropState::ACTIVATED));
+
+  // Trigger a mock button notification that the app list was dismissed.
+  app_list_button_->OnAppListDismissed();
+  FinishAppListVisibilityChange();
+  EXPECT_EQ(views::InkDropState::HIDDEN,
+            app_list_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
+              ElementsAre(views::InkDropState::DEACTIVATED));
+
+  // Verify the ink drop state transitions as expected when we tap on the back
+  // button part of the app list button.
+  MovePointerTo(point_on_back_button);
+  PressPointer();
+  EXPECT_EQ(views::InkDropState::ACTION_PENDING,
+            app_list_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
+              ElementsAre(views::InkDropState::ACTION_PENDING));
+  ReleasePointer();
+  EXPECT_EQ(views::InkDropState::HIDDEN,
+            app_list_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
+              ElementsAre(views::InkDropState::ACTION_TRIGGERED));
+
+  // Verify when we leave maximized mode, the bounds should return to be the
+  // same as they were before we entered maximized mode.
+  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+      false);
+  new_bounds = app_list_button_->GetBoundsInScreen();
+  EXPECT_EQ(new_bounds, old_bounds);
+}
+
+INSTANTIATE_TEST_CASE_P(
+    /* prefix intentionally left blank due to only one parameterization */,
+    AppListButtonInkDropTest,
+    ::testing::ValuesIn(kPointerTypes));
 
 namespace {
 
