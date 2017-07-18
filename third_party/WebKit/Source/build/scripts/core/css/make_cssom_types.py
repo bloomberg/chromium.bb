@@ -3,7 +3,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import os
 import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 
 import css_properties
 import json5_generator
@@ -21,33 +23,33 @@ class CSSOMTypesWriter(css_properties.CSSProperties):
     def __init__(self, json5_file_path):
         super(CSSOMTypesWriter, self).__init__(json5_file_path)
 
-        for property in self._properties.values():
+        for property_ in self._properties.values():
             types = []
             # Expand types
-            for singleType in property['typedom_types']:
-                if singleType == 'Image':
+            for single_type in property_['typedom_types']:
+                if single_type == 'Image':
                     types.append('URLImage')
                 else:
-                    types.append(singleType)
-            property['typedom_types'] = types
+                    types.append(single_type)
+            property_['typedom_types'] = types
 
             # Generate Keyword ID values from keywords.
-            property['keywordIDs'] = map(
-                enum_for_css_keyword, property['keywords'])
+            property_['keywordIDs'] = map(
+                enum_for_css_keyword, property_['keywords'])
 
         self._outputs = {
             'CSSOMTypes.cpp': self.generate_types,
             'CSSOMKeywords.cpp': self.generate_keywords,
         }
 
-    @template_expander.use_jinja('templates/CSSOMTypes.cpp.tmpl')
+    @template_expander.use_jinja('core/css/templates/CSSOMTypes.cpp.tmpl')
     def generate_types(self):
         return {
             'input_files': self._input_files,
             'properties': self._properties,
         }
 
-    @template_expander.use_jinja('templates/CSSOMKeywords.cpp.tmpl')
+    @template_expander.use_jinja('core/css/templates/CSSOMKeywords.cpp.tmpl')
     def generate_keywords(self):
         return {
             'input_files': self._input_files,

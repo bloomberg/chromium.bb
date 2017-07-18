@@ -79,6 +79,8 @@ make_core_generated_deps = [
   "//third_party/WebKit/Source/core:core_event_interfaces",
 ]
 
+# TODO(shend): Remove this once everything that uses this switches over to
+# the 'code_generator' template instead.
 # Template to run most of scripts that process "*.in" files.
 #   script: script to run.
 #   in_files: ".in" files to pass to the script
@@ -107,6 +109,56 @@ template("process_in_files") {
     output_dir = get_path_info(outputs[0], "dir")
 
     args = rebase_path(invoker.in_files, root_build_dir) + [
+             "--output_dir",
+             rebase_path(output_dir, root_build_dir),
+           ]
+    if (is_mac && !use_system_xcode) {
+      args += [
+        "--developer_dir",
+        hermetic_xcode_path,
+      ]
+    }
+    if (defined(invoker.other_args)) {
+      args += invoker.other_args
+    }
+
+    if (defined(invoker.deps)) {
+      deps = invoker.deps
+    } else {
+      deps = make_core_generated_deps
+    }
+    forward_variables_from(invoker, [ "visibility" ])
+  }
+}
+
+# Template to run code generators in build/scripts/.
+#   script: the path to the script to run.
+#   json_inputs: ".json5" files to pass to the generator.
+#   templates: ".tmpl" files that this generator depends on.
+#   other_inputs: (optional) other input files the generator depends on
+#                 defaults to "scripts_for_json5_files" (if specified, we assume
+#                 that the contents of "scripts_for_json5_files" are included in
+#                 this list).
+#   outputs: expected results. Note that the directory of the 0th item in this
+#            list will be taken to be the output path.
+#   other_args: (optional) other arguments to pass to the script.
+#   deps [optional]:
+#     Depenendencies. If unspecified defaults to make_core_generated_deps.
+template("code_generator") {
+  action(target_name) {
+    script = invoker.script
+    inputs = invoker.json_inputs + invoker.templates
+    if (defined(invoker.other_inputs)) {
+      inputs += invoker.other_inputs
+    } else {
+      inputs += scripts_for_json5_files
+    }
+    outputs = invoker.outputs
+
+    # Extract the directory to write files to.
+    output_dir = get_path_info(outputs[0], "dir")
+
+    args = rebase_path(invoker.json_inputs, root_build_dir) + [
              "--output_dir",
              rebase_path(output_dir, root_build_dir),
            ]
