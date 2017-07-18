@@ -139,6 +139,8 @@ const char kChromeUIUserImageURL[] = "chrome://userimage/";
 // TODO(xdai): Change it to chrome://settings/cupsPrinters after M56 since MD
 // settings is going to launch in Chrome OS in M57.
 const char kChromeUIMdCupsSettingsURL[] = "chrome://md-settings/cupsPrinters";
+const char kCupsPrintLearnMoreURL[] =
+    "https://support.google.com/chromebook?p=chromebook_printing";
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_WIN)

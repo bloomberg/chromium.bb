@@ -127,6 +127,7 @@ extern const char kChromeUISystemInfoURL[];
 extern const char kChromeUITermsOemURL[];
 extern const char kChromeUIUserImageURL[];
 extern const char kChromeUIMdCupsSettingsURL[];
+extern const char kCupsPrintLearnMoreURL[];
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_WIN)

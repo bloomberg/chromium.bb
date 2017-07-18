@@ -1505,10 +1505,10 @@ void AddPrintingStrings(content::WebUIDataSource* html_source) {
     {"printingManageCloudPrintDevices",
      IDS_SETTINGS_PRINTING_MANAGE_CLOUD_PRINT_DEVICES},
     {"cloudPrintersTitle", IDS_SETTINGS_PRINTING_CLOUD_PRINTERS},
-    {"cloudPrintersTitleDescription",
-     IDS_SETTINGS_PRINTING_CLOUD_PRINTERS_DESCRIPTION},
 #if defined(OS_CHROMEOS)
     {"cupsPrintersTitle", IDS_SETTINGS_PRINTING_CUPS_PRINTERS},
+    {"cupsPrintersLearnMoreLabel",
+     IDS_SETTINGS_PRINTING_CUPS_PRINTERS_LEARN_MORE_LABEL},
     {"addCupsPrinter", IDS_SETTINGS_PRINTING_CUPS_PRINTERS_ADD_PRINTER},
     {"cupsPrinterDetails", IDS_SETTINGS_PRINTING_CUPS_PRINTERS_DETAILS},
     {"removePrinter", IDS_SETTINGS_PRINTING_CUPS_PRINTERS_REMOVE},
@@ -1577,6 +1577,8 @@ void AddPrintingStrings(content::WebUIDataSource* html_source) {
   html_source->AddBoolean("showCupsPrintingFeatures",
                           !base::CommandLine::ForCurrentProcess()->HasSwitch(
                               ::switches::kDisableNativeCups));
+  html_source->AddString("printingCUPSPrintLearnMoreUrl",
+                         chrome::kCupsPrintLearnMoreURL);
 #endif
 }
 
