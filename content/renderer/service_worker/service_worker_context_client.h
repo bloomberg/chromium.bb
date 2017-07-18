@@ -128,9 +128,8 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
 
   // Called on the main thread.
   void WorkerContextFailedToStart() override;
-  void WorkerScriptLoaded() override;
   bool HasAssociatedRegistration() override;
-
+  void WorkerScriptLoaded() override;
   void WorkerContextStarted(
       blink::WebServiceWorkerContextProxy* proxy) override;
   void DidEvaluateWorkerScript(bool success) override;

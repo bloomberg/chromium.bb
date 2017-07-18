@@ -689,9 +689,6 @@ void ServiceWorkerContextClient::WorkerContextFailedToStart() {
 }
 
 void ServiceWorkerContextClient::WorkerScriptLoaded() {
-  DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
-  DCHECK(!proxy_);
-
   (*instance_host_)->OnScriptLoaded();
 }
 
