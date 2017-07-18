@@ -71,6 +71,10 @@ enum ContentSettingsType {
   // specific origin.
   CONTENT_SETTINGS_TYPE_MEDIA_ENGAGEMENT,
 
+  // Website setting which stores whether or not the site can play audible
+  // sound. This will not block playback but instead the user will not hear it.
+  CONTENT_SETTINGS_TYPE_SOUND,
+
   CONTENT_SETTINGS_NUM_TYPES,
 };
 
