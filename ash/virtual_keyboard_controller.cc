@@ -26,8 +26,8 @@
 namespace ash {
 namespace {
 
-// Checks whether smart deployment is enabled.
-bool IsSmartVirtualKeyboardEnabled() {
+// Checks if virtual keyboard is force-enabled by enable-virtual-keyboard flag.
+bool IsVirtualKeyboardEnabled() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
       keyboard::switches::kEnableVirtualKeyboard);
 }
@@ -80,7 +80,7 @@ VirtualKeyboardController::~VirtualKeyboardController() {
 }
 
 void VirtualKeyboardController::OnMaximizeModeStarted() {
-  if (!IsSmartVirtualKeyboardEnabled()) {
+  if (!IsVirtualKeyboardEnabled()) {
     SetKeyboardEnabled(true);
   } else {
     UpdateKeyboardEnabled();
@@ -88,7 +88,7 @@ void VirtualKeyboardController::OnMaximizeModeStarted() {
 }
 
 void VirtualKeyboardController::OnMaximizeModeEnded() {
-  if (!IsSmartVirtualKeyboardEnabled()) {
+  if (!IsVirtualKeyboardEnabled()) {
     SetKeyboardEnabled(false);
   } else {
     UpdateKeyboardEnabled();
@@ -185,7 +185,7 @@ void VirtualKeyboardController::UpdateDevices() {
 }
 
 void VirtualKeyboardController::UpdateKeyboardEnabled() {
-  if (!IsSmartVirtualKeyboardEnabled()) {
+  if (!IsVirtualKeyboardEnabled()) {
     SetKeyboardEnabled(Shell::Get()
                            ->maximize_mode_controller()
                            ->IsMaximizeModeWindowManagerEnabled());
