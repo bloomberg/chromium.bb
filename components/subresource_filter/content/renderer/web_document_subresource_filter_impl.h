@@ -68,11 +68,16 @@ class WebDocumentSubresourceFilterImpl
   void ReportDisallowedLoad() override;
   bool ShouldLogToConsole() override;
 
+  const ActivationState& activation_state() const {
+    return filter_.activation_state();
+  }
+
  private:
   LoadPolicy getLoadPolicyImpl(
       const blink::WebURL& url,
       url_pattern_index::proto::ElementType element_type);
 
+  ActivationState activation_state_;
   DocumentSubresourceFilter filter_;
   base::OnceClosure first_disallowed_load_callback_;
 

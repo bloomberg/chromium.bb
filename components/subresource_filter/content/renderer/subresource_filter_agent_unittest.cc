@@ -249,6 +249,10 @@ TEST_F(SubresourceFilterAgentTest,
   histogram_tester.ExpectTotalCount(kEvaluationTotalCPUDuration, 0);
 }
 
+// Never inject a filter for main frame about:blank loads, even though we do for
+// subframe loads. Those are tested via browser tests.
+// TODO(csharrison): Refactor these unit tests so it is easier to test with
+// real backing RenderFrames.
 TEST_F(SubresourceFilterAgentTest, EmptyDocumentLoad_NoFilterIsInjected) {
   base::HistogramTester histogram_tester;
   ExpectNoSubresourceFilterGetsInjected();
