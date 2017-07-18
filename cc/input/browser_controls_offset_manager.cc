@@ -223,7 +223,7 @@ void BrowserControlsOffsetManager::SetupAnimation(
   if (has_animation() && animation_direction_ == direction)
     return;
 
-  if (!TopControlsHeight()) {
+  if (!TopControlsHeight() && !BottomControlsHeight()) {
     client_->SetCurrentBrowserControlsShownRatio(
         direction == HIDING_CONTROLS ? 0.f : 1.f);
     return;
