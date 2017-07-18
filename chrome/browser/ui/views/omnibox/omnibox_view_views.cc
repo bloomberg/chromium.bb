@@ -796,6 +796,9 @@ void OmniboxViewViews::OnBlur() {
   // Tell the model to reset itself.
   model()->OnKillFocus();
 
+  // Deselect the text. Ensures the cursor is an I-beam.
+  SelectRange(gfx::Range(0));
+
   // When deselected, elide and reset scroll position. After eliding, the old
   // scroll offset is meaningless (since the string is guaranteed to fit within
   // the view). The scroll must be reset or the text may be rendered partly or

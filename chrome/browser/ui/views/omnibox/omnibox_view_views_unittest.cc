@@ -329,6 +329,8 @@ TEST_F(OmniboxViewViewsTest, OnBlur) {
   // the entire domain fits in 60 pixels. However, 60px is so small it should
   // never happen with any font.
   EXPECT_GT(0, render_text->GetUpdatedDisplayOffset().x());
+  omnibox_view()->SelectAll(false);
+  EXPECT_TRUE(omnibox_view()->IsSelectAll());
 
   // Now enter blurred mode, where the text should be elided to 60px. This means
   // the string itself is truncated. Scrolling would therefore mean the text is
@@ -336,6 +338,7 @@ TEST_F(OmniboxViewViewsTest, OnBlur) {
   omnibox_view()->OnBlur();
   EXPECT_EQ(gfx::ELIDE_TAIL, render_text->elide_behavior());
   EXPECT_EQ(0, render_text->GetUpdatedDisplayOffset().x());
+  EXPECT_FALSE(omnibox_view()->IsSelectAll());
 }
 
 TEST_F(OmniboxViewViewsTest, Emphasis) {
