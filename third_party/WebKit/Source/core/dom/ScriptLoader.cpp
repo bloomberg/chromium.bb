@@ -45,6 +45,7 @@
 #include "core/events/Event.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/SubresourceIntegrity.h"
+#include "core/frame/UseCounter.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/imports/HTMLImport.h"
 #include "core/html/parser/HTMLParserIdioms.h"
@@ -356,6 +357,9 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   //      and "not parser-inserted" otherwise."
   ParserDisposition parser_state =
       IsParserInserted() ? kParserInserted : kNotParserInserted;
+
+  if (GetScriptType() == ScriptType::kModule)
+    UseCounter::Count(*context_document, WebFeature::kPrepareModuleScript);
 
   // 21. "If the element has a src content attribute, run these substeps:"
   if (element_->HasSourceAttribute()) {
