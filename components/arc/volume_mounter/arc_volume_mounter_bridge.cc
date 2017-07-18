@@ -6,9 +6,11 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/memory/singleton.h"
 #include "base/task_scheduler/post_task.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "components/arc/arc_bridge_service.h"
+#include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 
 using chromeos::disks::DiskMountManager;
 
@@ -25,18 +27,49 @@ void SendAllMountEvents(ArcVolumeMounterBridge* bridge) {
   }
 }
 
+// Singleton factory for ArcVolumeMounterBridge.
+class ArcVolumeMounterBridgeFactory
+    : public internal::ArcBrowserContextKeyedServiceFactoryBase<
+          ArcVolumeMounterBridge,
+          ArcVolumeMounterBridgeFactory> {
+ public:
+  // Factory name used by ArcBrowserContextKeyedServiceFactoryBase.
+  static constexpr const char* kName = "ArcVolumeMounterBridgeFactory";
+
+  static ArcVolumeMounterBridgeFactory* GetInstance() {
+    return base::Singleton<ArcVolumeMounterBridgeFactory>::get();
+  }
+
+ private:
+  friend base::DefaultSingletonTraits<ArcVolumeMounterBridgeFactory>;
+  ArcVolumeMounterBridgeFactory() = default;
+  ~ArcVolumeMounterBridgeFactory() override = default;
+};
+
 }  // namespace
 
-ArcVolumeMounterBridge::ArcVolumeMounterBridge(ArcBridgeService* bridge_service)
-    : ArcService(bridge_service) {
-  arc_bridge_service()->volume_mounter()->AddObserver(this);
+// static
+ArcVolumeMounterBridge* ArcVolumeMounterBridge::GetForBrowserContext(
+    content::BrowserContext* context) {
+  return ArcVolumeMounterBridgeFactory::GetForBrowserContext(context);
+}
+
+ArcVolumeMounterBridge::ArcVolumeMounterBridge(content::BrowserContext* context,
+                                               ArcBridgeService* bridge_service)
+    : arc_bridge_service_(bridge_service) {
+  arc_bridge_service_->volume_mounter()->AddObserver(this);
   DCHECK(DiskMountManager::GetInstance());
   DiskMountManager::GetInstance()->AddObserver(this);
 }
 
 ArcVolumeMounterBridge::~ArcVolumeMounterBridge() {
   DiskMountManager::GetInstance()->RemoveObserver(this);
-  arc_bridge_service()->volume_mounter()->RemoveObserver(this);
+  // TODO(hidehiko): Currently, the lifetime of ArcBridgeService and
+  // BrowserContextKeyedService is not nested.
+  // If ArcServiceManager::Get() returns nullptr, it is already destructed,
+  // so do not touch it.
+  if (ArcServiceManager::Get())
+    arc_bridge_service_->volume_mounter()->RemoveObserver(this);
 }
 
 void ArcVolumeMounterBridge::OnInstanceReady() {
@@ -94,7 +127,7 @@ void ArcVolumeMounterBridge::OnMountEvent(
   }
 
   mojom::VolumeMounterInstance* volume_mounter_instance =
-      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service()->volume_mounter(),
+      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->volume_mounter(),
                                   OnMountEvent);
 
   if (!volume_mounter_instance)
