@@ -90,11 +90,7 @@ class CORE_EXPORT ImageBitmap final
       Document*,
       ScriptState*,
       const ImageBitmapOptions& = ImageBitmapOptions());
-  static sk_sp<SkImage> GetSkImageFromDecoder(
-      std::unique_ptr<ImageDecoder>,
-      SkColorType* decoded_color_type = nullptr,
-      sk_sp<SkColorSpace>* decoded_color_space = nullptr,
-      ColorSpaceInfoUpdate = kDontUpdateColorSpaceInformation);
+  static sk_sp<SkImage> GetSkImageFromDecoder(std::unique_ptr<ImageDecoder>);
   static bool IsResizeOptionValid(const ImageBitmapOptions&, ExceptionState&);
   static bool IsSourceSizeValid(int source_width,
                                 int source_height,

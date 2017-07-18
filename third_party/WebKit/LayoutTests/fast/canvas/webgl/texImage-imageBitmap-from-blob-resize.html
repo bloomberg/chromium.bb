@@ -3,7 +3,7 @@
 <head>
 <script src="./resources/webgl-test-utils-full.js"></script>
 <script src="./resources/tex-image-and-sub-image-utils.js"></script>
-<script src="./resources/tex-image-and-sub-image-image-bitmap-utils.js"></script>
+<script src="./resources/tex-image-and-sub-image-image-bitmap-utils-resize.js"></script>
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
 <body>
@@ -14,13 +14,8 @@ var gl = null;
 var internalFormat = "RGBA";
 var pixelFormat = "RGBA";
 var pixelType = "UNSIGNED_BYTE";
-var redColor = [255, 0, 0];
-var greenColor = [0, 255, 0];
-var blackColor = [0, 0, 0];
-var darkRed = [26, 0, 0];
-var darkGreen = [0, 26, 0];
 
-var blob1 = null;
+var blob = null;
 var blob2 = null;
 
 function generateTest()
@@ -28,50 +23,76 @@ function generateTest()
     var bitmaps = [];
 
     var canvas = document.createElement('canvas');
-    canvas.width = 32;
-    canvas.height = 32;
+    canvas.width = 4;
+    canvas.height = 4;
     document.body.appendChild(canvas);
     gl = canvas.getContext("webgl");
 
     gl.clearColor(0,0,0,1);
     gl.clearDepth(1);
 
-    var p1 = createImageBitmap(blob1, {resizeWidth: 4, resizeHeight: 4, resizeQuality: "high"}).then(function(imageBitmap) { bitmaps.defaultOption = imageBitmap });
-    var p2 = createImageBitmap(blob1, {imageOrientation: "none", premultiplyAlpha: "premultiply", resizeWidth: 4, resizeHeight: 4, resizeQuality: "high"}).then(function(imageBitmap) { bitmaps.noFlipYPremul = imageBitmap });
-    var p3 = createImageBitmap(blob1, {imageOrientation: "none", premultiplyAlpha: "default", resizeWidth: 4, resizeHeight: 4, resizeQuality: "high"}).then(function(imageBitmap) { bitmaps.noFlipYDefault = imageBitmap });
-    var p4 = createImageBitmap(blob1, {imageOrientation: "none", premultiplyAlpha: "none", resizeWidth: 4, resizeHeight: 4, resizeQuality: "high"}).then(function(imageBitmap) { bitmaps.noFlipYUnpremul = imageBitmap });
-    var p5 = createImageBitmap(blob1, {imageOrientation: "flipY", premultiplyAlpha: "premultiply", resizeWidth: 4, resizeHeight: 4, resizeQuality: "high"}).then(function(imageBitmap) { bitmaps.flipYPremul = imageBitmap });
-    var p6 = createImageBitmap(blob1, {imageOrientation: "flipY", premultiplyAlpha: "default", resizeWidth: 4, resizeHeight: 4, resizeQuality: "high"}).then(function(imageBitmap) { bitmaps.flipYDefault = imageBitmap });
-    var p7 = createImageBitmap(blob1, {imageOrientation: "flipY", premultiplyAlpha: "none", resizeWidth: 4, resizeHeight: 4, resizeQuality: "high"}).then(function(imageBitmap) { bitmaps.flipYUnpremul = imageBitmap });
-    var p8 = createImageBitmap(blob2, {resizeWidth: 4, resizeHeight: 4, resizeQuality: "high"}).then(function(imageBitmap) { bitmaps.colorSpaceDef = imageBitmap });
-    var p9 = createImageBitmap(blob2, {colorSpaceConversion: "none", resizeWidth: 4, resizeHeight: 4, resizeQuality: "high"}).then(function(imageBitmap) { bitmaps.colorSpaceNone = imageBitmap });
-    var p10 = createImageBitmap(blob2, {colorSpaceConversion: "default", resizeWidth: 4, resizeHeight: 4, resizeQuality: "high"}).then(function(imageBitmap) { bitmaps.colorSpaceDefault = imageBitmap });
-    return Promise.all([p1, p2, p3, p4, p5, p6, p7, p8, p9, p10]).then(t.step_func_done(function() {
-        var alphaVal = 0.5;
-        var testPassed = runTest(bitmaps, alphaVal, true);
-        if (!testPassed)
-            assert_true(false, 'Test failed');
-    }), t.step_func_done(function() {
+    var options = {resizeWidth: 4, resizeHeight: 4, resizeQuality: "high"};
+    var p1 = createImageBitmap(blob, options).then(
+        function(imageBitmap) { bitmaps.defaultOption = imageBitmap });
+
+    options.imageOrientation = "none";
+    options.premultiplyAlpha = "premultiply";
+    var p2 = createImageBitmap(blob, options).then(
+        function(imageBitmap) { bitmaps.noFlipYPremul = imageBitmap });
+
+    options.premultiplyAlpha = "default";
+    var p3 = createImageBitmap(blob, options).then(
+        function(imageBitmap) { bitmaps.noFlipYDefault = imageBitmap });
+
+    options.premultiplyAlpha = "none";
+    var p4 = createImageBitmap(blob, options).then(
+        function(imageBitmap) { bitmaps.noFlipYUnpremul = imageBitmap });
+
+    options.imageOrientation = "flipY";
+    options.premultiplyAlpha = "premultiply";
+    var p5 = createImageBitmap(blob, options).then(
+        function(imageBitmap) { bitmaps.flipYPremul = imageBitmap });
+
+    options.premultiplyAlpha = "default";
+    var p6 = createImageBitmap(blob, options).then(
+        function(imageBitmap) { bitmaps.flipYDefault = imageBitmap });
+
+    options.premultiplyAlpha = "none";
+    var p7 = createImageBitmap(blob, options).then(
+        function(imageBitmap) { bitmaps.flipYUnpremul = imageBitmap });
+
+    options = {resizeWidth: 4, resizeHeight: 4, resizeQuality: "high"};
+    var p8 = createImageBitmap(blob, options).then(
+        function(imageBitmap) { bitmaps.colorSpaceDef = imageBitmap });
+
+    options.colorSpaceConversion = "none";
+    var p9 = createImageBitmap(blob, options).then(
+        function(imageBitmap) { bitmaps.colorSpaceNone = imageBitmap });
+
+    options.colorSpaceConversion = "default";
+    var p10 = createImageBitmap(blob, options).then(
+        function(imageBitmap) { bitmaps.colorSpaceDefault = imageBitmap });
+
+    return Promise.all([p1, p2, p3, p4, p5, p6, p7, p8, p9, p10]).then(
+        t.step_func_done(function() {
+            var alphaVal = 0.5;
+            var testPassed = runTest(bitmaps, alphaVal, true);
+            if (!testPassed)
+                assert_true(false, 'Test failed');
+        }), t.step_func_done(function() {
         assert_true(false, 'Promise rejected');
     }));
 }
 
 var t = async_test("createImageBitmap(Blob) with resize and other options");
 
-var xhr1 = new XMLHttpRequest();
-xhr1.open("GET", 'resources/red-green-semi-transparent.png');
-xhr1.responseType = 'blob';
-xhr1.send();
-xhr1.onload = t.step_func(function() {
-    blob1 = xhr1.response;
-    var xhr2 = new XMLHttpRequest();
-    xhr2.open("GET", 'resources/square-with-colorspin-profile.png');
-    xhr2.responseType = 'blob';
-    xhr2.send();
-    xhr2.onload = t.step_func(function() {
-        blob2 = xhr2.response;
-        generateTest();
-    })
+var xhr = new XMLHttpRequest();
+xhr.open("GET", 'resources/red-green-semi-transparent-2x2.png');
+xhr.responseType = 'blob';
+xhr.send();
+xhr.onload = t.step_func(function() {
+    blob = xhr.response;
+    generateTest();
 })
 </script>
 </body>

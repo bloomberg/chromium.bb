@@ -57,16 +57,28 @@ video.src = "../../compositing/resources/video.ogv";
 
 function videoLoaded() {
     var imageBitmaps = {};
-    var p1 = createImageBitmap(video).then(function (image) { imageBitmaps.noCrop = image });
-    var p2 = createImageBitmap(video, 0, 0, 100, 100).then(function (image) { imageBitmaps.crop = image });
-    var p3 = createImageBitmap(video, 50, 50, 100, 100).then(function (image) { imageBitmaps.cropRight = image });
-    var p4 = createImageBitmap(video, 100, 100, 100, 100).then(function (image) { imageBitmaps.cropCenter = image });
-    var p5 = createImageBitmap(video, -100, -100, 600, 600).then(function (image) { imageBitmaps.overCrop = image });
-    var p6 = createImageBitmap(video, 100, 100, 500, 500).then(function (image) { imageBitmaps.overCropRight = image });
-    var p7 = createImageBitmap(video, 100, 100, -100, -100).then(function (image) { imageBitmaps.negativeCrop = image });
-    var p8 = createImageBitmap(video, -300, -300, 300, 300).then(function (image) { imageBitmaps.empty = image });
-    var p9 = createImageBitmap(video, 400, 300, 300, 300).then(function (image) { imageBitmaps.emptyTwo = image });
-    var p10 = createImageBitmap(video, 0, 0, Math.pow(10, 6), Math.pow(10, 6)).then(function(image) { imageBitmaps.hugeCrop = image });
+    var p1 = createImageBitmap(video).then(
+        function (image) { imageBitmaps.noCrop = image });
+    var p2 = createImageBitmap(video, 0, 0, 100, 100).then(
+        function (image) { imageBitmaps.crop = image });
+    var p3 = createImageBitmap(video, 50, 50, 100, 100).then(
+        function (image) { imageBitmaps.cropRight = image });
+    var p4 = createImageBitmap(video, 100, 100, 100, 100).then(
+        function (image) { imageBitmaps.cropCenter = image });
+    var p5 = createImageBitmap(video, -100, -100, 600, 600).then(
+        function (image) { imageBitmaps.overCrop = image });
+    var p6 = createImageBitmap(video, 100, 100, 500, 500).then(
+        function (image) { imageBitmaps.overCropRight = image });
+    var p7 = createImageBitmap(video, 100, 100, -100, -100).then(
+        function (image) { imageBitmaps.negativeCrop = image });
+    var p8 = createImageBitmap(video, -300, -300, 300, 300).then(
+        function (image) { imageBitmaps.empty = image });
+    var p9 = createImageBitmap(video, 400, 300, 300, 300).then(
+        function (image) { imageBitmaps.emptyTwo = image });
+    var p10 = createImageBitmap(video, 0, 0, Math.pow(10, 6),
+                                Math.pow(10, 6)).then(
+        function(image) { imageBitmaps.hugeCrop = image });
+
     Promise.all([p1, p2, p3, p4, p5, p6, p7, p8, p9]).then(function() {
         checkNoCrop(imageBitmaps.noCrop);
         checkCrop(imageBitmaps.crop, 0, 0, 100, 100);
@@ -167,17 +179,11 @@ function checkOverCrop(imageBitmap) {
 
     var ctx = canvas.getContext("2d");
     var ctx1 = canvas1.getContext("2d");
-    // should be drawn to (100, 100), (452, 388)
+    // should be drawn to (0, 0), (352, 288)
     clearContext(ctx, ctx1);
     ctx.drawImage(imageBitmap, 0, 0);
-    ctx1.drawImage(video, 100, 100, 352, 288);
+    ctx1.drawImage(video, 0, 0, 352, 288);
     compareTwoCanvases(0, 0, 500, 500, ctx, ctx1);
-
-    // should be drawn to (50, 50), (226, 194)
-    clearContext(ctx, ctx1);
-    ctx.drawImage(imageBitmap, 0, 0, 300, 300);
-    ctx1.drawImage(video, 0, 0, 352, 288, 50, 50, 176, 144);
-    compareTwoCanvases(0, 0, 300, 300, ctx, ctx1);
 }
 
 function checkOverCropRight(imageBitmap) {
