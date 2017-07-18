@@ -25,6 +25,8 @@ blink_core_sources("paint") {
     "BoxClipper.h",
     "BoxDecorationData.cpp",
     "BoxDecorationData.h",
+    "BoxModelObjectPainter.cpp",
+    "BoxModelObjectPainter.h",
     "BoxPaintInvalidator.cpp",
     "BoxPaintInvalidator.h",
     "BoxPainter.cpp",
