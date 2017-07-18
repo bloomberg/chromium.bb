@@ -275,13 +275,13 @@ class CAPTURE_EXPORT VideoCaptureDevice
   // levels etc). On success, invokes |callback|. On failure, drops callback
   // without invoking it.
   using GetPhotoStateCallback =
-      ScopedResultCallback<base::Callback<void(mojom::PhotoStatePtr)>>;
+      ScopedResultCallback<base::OnceCallback<void(mojom::PhotoStatePtr)>>;
   virtual void GetPhotoState(GetPhotoStateCallback callback);
 
   // On success, invokes |callback| with value |true|. On failure, drops
   // callback without invoking it.
   using SetPhotoOptionsCallback =
-      ScopedResultCallback<base::Callback<void(bool)>>;
+      ScopedResultCallback<base::OnceCallback<void(bool)>>;
   virtual void SetPhotoOptions(mojom::PhotoSettingsPtr settings,
                                SetPhotoOptionsCallback callback);
 
@@ -290,7 +290,7 @@ class CAPTURE_EXPORT VideoCaptureDevice
   // where TakePhoto() is called, if the photo was successfully taken. On
   // failure, drops callback without invoking it.
   using TakePhotoCallback =
-      ScopedResultCallback<base::Callback<void(mojom::BlobPtr blob)>>;
+      ScopedResultCallback<base::OnceCallback<void(mojom::BlobPtr blob)>>;
   virtual void TakePhoto(TakePhotoCallback callback);
 
   // Gets the power line frequency, either from the params if specified by the

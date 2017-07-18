@@ -28,15 +28,19 @@ class MockDeviceFactory : public video_capture::mojom::DeviceFactory {
  public:
   void CreateDevice(const std::string& device_id,
                     video_capture::mojom::DeviceRequest device_request,
-                    const CreateDeviceCallback& callback) override {
+                    CreateDeviceCallback callback) override {
     DoCreateDevice(device_id, &device_request, callback);
   }
 
-  MOCK_METHOD1(GetDeviceInfos, void(const GetDeviceInfosCallback& callback));
+  void GetDeviceInfos(GetDeviceInfosCallback callback) override {
+    DoGetDeviceInfos(callback);
+  }
+
+  MOCK_METHOD1(DoGetDeviceInfos, void(GetDeviceInfosCallback& callback));
   MOCK_METHOD3(DoCreateDevice,
                void(const std::string& device_id,
                     video_capture::mojom::DeviceRequest* device_request,
-                    const CreateDeviceCallback& callback));
+                    CreateDeviceCallback& callback));
 };
 
 class MockVideoCaptureDeviceLauncherCallbacks
@@ -92,21 +96,21 @@ TEST_F(ServiceVideoCaptureDeviceLauncherTest, LaunchingDeviceSucceeds) {
   EXPECT_CALL(mock_device_factory_, DoCreateDevice(kStubDeviceId, _, _))
       .WillOnce(Invoke([](const std::string& device_id,
                           video_capture::mojom::DeviceRequest* device_request,
-                          const video_capture::mojom::DeviceFactory::
+                          video_capture::mojom::DeviceFactory::
                               CreateDeviceCallback& callback) {
         // Note: We must keep |device_request| alive at least until we have
         // sent out the callback. Otherwise, |launcher_| may interpret this
         // as the connection having been lost before receiving the callback.
         base::ThreadTaskRunnerHandle::Get()->PostTask(
             FROM_HERE,
-            base::Bind(
+            base::BindOnce(
                 [](video_capture::mojom::DeviceRequest device_request,
-                   const video_capture::mojom::DeviceFactory::
-                       CreateDeviceCallback& callback) {
-                  callback.Run(
+                   video_capture::mojom::DeviceFactory::CreateDeviceCallback
+                       callback) {
+                  std::move(callback).Run(
                       video_capture::mojom::DeviceAccessResultCode::SUCCESS);
                 },
-                base::Passed(device_request), callback));
+                std::move(*device_request), std::move(callback)));
       }));
   EXPECT_CALL(mock_callbacks_, DoOnDeviceLaunched(_)).Times(1);
   EXPECT_CALL(mock_callbacks_, OnDeviceLaunchAborted()).Times(0);
@@ -148,24 +152,28 @@ void ServiceVideoCaptureDeviceLauncherTest::RunLaunchingDeviceIsAbortedTest(
   base::RunLoop step_1_run_loop;
   base::RunLoop step_2_run_loop;
 
-  base::Closure create_device_success_answer_cb;
+  base::OnceClosure create_device_success_answer_cb;
   EXPECT_CALL(mock_device_factory_, DoCreateDevice(kStubDeviceId, _, _))
-      .WillOnce(Invoke([&create_device_success_answer_cb, &step_1_run_loop,
-                        service_result_code](
-                           const std::string& device_id,
-                           video_capture::mojom::DeviceRequest* device_request,
-                           const video_capture::mojom::DeviceFactory::
-                               CreateDeviceCallback& callback) {
-        // Prepare the callback, but save it for now instead of invoking it.
-        create_device_success_answer_cb = base::Bind(
-            [](video_capture::mojom::DeviceRequest device_request,
-               const video_capture::mojom::DeviceFactory::CreateDeviceCallback&
-                   callback,
-               video_capture::mojom::DeviceAccessResultCode
-                   service_result_code) { callback.Run(service_result_code); },
-            base::Passed(device_request), callback, service_result_code);
-        step_1_run_loop.Quit();
-      }));
+      .WillOnce(
+          Invoke([&create_device_success_answer_cb, &step_1_run_loop,
+                  service_result_code](
+                     const std::string& device_id,
+                     video_capture::mojom::DeviceRequest* device_request,
+                     video_capture::mojom::DeviceFactory::CreateDeviceCallback&
+                         callback) {
+            // Prepare the callback, but save it for now instead of invoking it.
+            create_device_success_answer_cb = base::BindOnce(
+                [](video_capture::mojom::DeviceRequest device_request,
+                   video_capture::mojom::DeviceFactory::CreateDeviceCallback
+                       callback,
+                   video_capture::mojom::DeviceAccessResultCode
+                       service_result_code) {
+                  std::move(callback).Run(service_result_code);
+                },
+                std::move(*device_request), std::move(callback),
+                service_result_code);
+            step_1_run_loop.Quit();
+          }));
   EXPECT_CALL(mock_callbacks_, DoOnDeviceLaunched(_)).Times(0);
   EXPECT_CALL(mock_callbacks_, OnDeviceLaunchAborted()).Times(1);
   EXPECT_CALL(mock_callbacks_, OnDeviceLaunchFailed()).Times(0);
@@ -182,7 +190,7 @@ void ServiceVideoCaptureDeviceLauncherTest::RunLaunchingDeviceIsAbortedTest(
   step_1_run_loop.Run();
   launcher_->AbortLaunch();
 
-  create_device_success_answer_cb.Run();
+  std::move(create_device_success_answer_cb).Run();
   step_2_run_loop.Run();
 }
 
@@ -191,25 +199,25 @@ TEST_F(ServiceVideoCaptureDeviceLauncherTest,
   base::RunLoop run_loop;
 
   EXPECT_CALL(mock_device_factory_, DoCreateDevice(kStubDeviceId, _, _))
-      .WillOnce(Invoke(
-          [](const std::string& device_id,
-             video_capture::mojom::DeviceRequest* device_request,
-             const video_capture::mojom::DeviceFactory::CreateDeviceCallback&
-                 callback) {
+      .WillOnce(
+          Invoke([](const std::string& device_id,
+                    video_capture::mojom::DeviceRequest* device_request,
+                    video_capture::mojom::DeviceFactory::CreateDeviceCallback&
+                        callback) {
             // Note: We must keep |device_request| alive at least until we have
             // sent out the callback. Otherwise, |launcher_| may interpret this
             // as the connection having been lost before receiving the callback.
             base::ThreadTaskRunnerHandle::Get()->PostTask(
                 FROM_HERE,
-                base::Bind(
+                base::BindOnce(
                     [](video_capture::mojom::DeviceRequest device_request,
-                       const video_capture::mojom::DeviceFactory::
-                           CreateDeviceCallback& callback) {
-                      callback.Run(
+                       video_capture::mojom::DeviceFactory::CreateDeviceCallback
+                           callback) {
+                      std::move(callback).Run(
                           video_capture::mojom::DeviceAccessResultCode::
                               ERROR_DEVICE_NOT_FOUND);
                     },
-                    base::Passed(device_request), callback));
+                    std::move(*device_request), std::move(callback)));
           }));
   EXPECT_CALL(mock_callbacks_, DoOnDeviceLaunched(_)).Times(0);
   EXPECT_CALL(mock_callbacks_, OnDeviceLaunchAborted()).Times(0);
@@ -256,16 +264,16 @@ TEST_F(ServiceVideoCaptureDeviceLauncherTest,
 
   video_capture::mojom::DeviceFactory::CreateDeviceCallback create_device_cb;
   EXPECT_CALL(mock_device_factory_, DoCreateDevice(kStubDeviceId, _, _))
-      .WillOnce(Invoke(
-          [&create_device_cb](
-              const std::string& device_id,
-              video_capture::mojom::DeviceRequest* device_request,
-              const video_capture::mojom::DeviceFactory::CreateDeviceCallback&
-                  callback) {
+      .WillOnce(
+          Invoke([&create_device_cb](
+                     const std::string& device_id,
+                     video_capture::mojom::DeviceRequest* device_request,
+                     video_capture::mojom::DeviceFactory::CreateDeviceCallback&
+                         callback) {
             // Simulate connection lost by not invoking |callback| and releasing
             // |device_request|. We have to save |callback| and invoke it later
             // to avoid hitting a DCHECK.
-            create_device_cb = callback;
+            create_device_cb = std::move(callback);
           }));
   EXPECT_CALL(mock_callbacks_, DoOnDeviceLaunched(_)).Times(0);
   EXPECT_CALL(mock_callbacks_, OnDeviceLaunchAborted()).Times(0);
@@ -291,7 +299,7 @@ TEST_F(ServiceVideoCaptureDeviceLauncherTest,
   // We have to invoke the callback, because not doing so triggers a DCHECK.
   const video_capture::mojom::DeviceAccessResultCode arbitrary_result_code =
       video_capture::mojom::DeviceAccessResultCode::SUCCESS;
-  create_device_cb.Run(arbitrary_result_code);
+  std::move(create_device_cb).Run(arbitrary_result_code);
 }
 
 TEST_F(ServiceVideoCaptureDeviceLauncherTest,
@@ -301,19 +309,19 @@ TEST_F(ServiceVideoCaptureDeviceLauncherTest,
       .WillOnce(Invoke([&device_request_owned_by_service](
                            const std::string& device_id,
                            video_capture::mojom::DeviceRequest* device_request,
-                           const video_capture::mojom::DeviceFactory::
+                           video_capture::mojom::DeviceFactory::
                                CreateDeviceCallback& callback) {
         // The service holds on to the |device_request|.
         device_request_owned_by_service = std::move(*device_request);
         base::ThreadTaskRunnerHandle::Get()->PostTask(
             FROM_HERE,
-            base::Bind(
-                [](const video_capture::mojom::DeviceFactory::
-                       CreateDeviceCallback& callback) {
-                  callback.Run(
+            base::BindOnce(
+                [](video_capture::mojom::DeviceFactory::CreateDeviceCallback
+                       callback) {
+                  std::move(callback).Run(
                       video_capture::mojom::DeviceAccessResultCode::SUCCESS);
                 },
-                callback));
+                std::move(callback)));
       }));
   std::unique_ptr<LaunchedVideoCaptureDevice> launched_device;
   EXPECT_CALL(mock_callbacks_, DoOnDeviceLaunched(_))

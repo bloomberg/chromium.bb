@@ -20,17 +20,17 @@ namespace {
 static const int kMaxBufferCount = 3;
 
 void RunFailedGetPhotoStateCallback(
-    base::Callback<void(media::mojom::PhotoStatePtr)> cb) {
-  cb.Run(nullptr);
+    base::OnceCallback<void(media::mojom::PhotoStatePtr)> cb) {
+  std::move(cb).Run(nullptr);
 }
 
-void RunFailedSetOptionsCallback(base::Callback<void(bool)> cb) {
-  cb.Run(false);
+void RunFailedSetOptionsCallback(base::OnceCallback<void(bool)> cb) {
+  std::move(cb).Run(false);
 }
 
 void RunFailedTakePhotoCallback(
-    base::Callback<void(media::mojom::BlobPtr blob)> cb) {
-  cb.Run(nullptr);
+    base::OnceCallback<void(media::mojom::BlobPtr blob)> cb) {
+  std::move(cb).Run(nullptr);
 }
 
 }  // anonymous namespace
@@ -112,29 +112,29 @@ void DeviceMediaToMojoAdapter::Resume() {
   device_->Resume();
 }
 
-void DeviceMediaToMojoAdapter::GetPhotoState(
-    const GetPhotoStateCallback& callback) {
+void DeviceMediaToMojoAdapter::GetPhotoState(GetPhotoStateCallback callback) {
   media::VideoCaptureDevice::GetPhotoStateCallback scoped_callback(
-      media::BindToCurrentLoop(callback),
-      media::BindToCurrentLoop(base::Bind(&RunFailedGetPhotoStateCallback)));
+      media::BindToCurrentLoop(std::move(callback)),
+      media::BindToCurrentLoop(
+          base::BindOnce(&RunFailedGetPhotoStateCallback)));
   device_->GetPhotoState(std::move(scoped_callback));
 }
 
 void DeviceMediaToMojoAdapter::SetPhotoOptions(
     media::mojom::PhotoSettingsPtr settings,
-    const SetPhotoOptionsCallback& callback) {
+    SetPhotoOptionsCallback callback) {
   media::ScopedResultCallback<media::mojom::ImageCapture::SetOptionsCallback>
-      scoped_callback(
-          media::BindToCurrentLoop(std::move(callback)),
-          media::BindToCurrentLoop(base::Bind(&RunFailedSetOptionsCallback)));
+      scoped_callback(media::BindToCurrentLoop(std::move(callback)),
+                      media::BindToCurrentLoop(
+                          base::BindOnce(&RunFailedSetOptionsCallback)));
   device_->SetPhotoOptions(std::move(settings), std::move(scoped_callback));
 }
 
-void DeviceMediaToMojoAdapter::TakePhoto(const TakePhotoCallback& callback) {
+void DeviceMediaToMojoAdapter::TakePhoto(TakePhotoCallback callback) {
   media::ScopedResultCallback<media::mojom::ImageCapture::TakePhotoCallback>
-      scoped_callback(
-          media::BindToCurrentLoop(callback),
-          media::BindToCurrentLoop(base::Bind(&RunFailedTakePhotoCallback)));
+      scoped_callback(media::BindToCurrentLoop(std::move(callback)),
+                      media::BindToCurrentLoop(
+                          base::BindOnce(&RunFailedTakePhotoCallback)));
   device_->TakePhoto(std::move(scoped_callback));
 }
 

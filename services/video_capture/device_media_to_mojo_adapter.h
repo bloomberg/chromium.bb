@@ -35,10 +35,10 @@ class DeviceMediaToMojoAdapter : public mojom::Device {
   void RequestRefreshFrame() override;
   void MaybeSuspend() override;
   void Resume() override;
-  void GetPhotoState(const GetPhotoStateCallback& callback) override;
+  void GetPhotoState(GetPhotoStateCallback callback) override;
   void SetPhotoOptions(media::mojom::PhotoSettingsPtr settings,
-                       const SetPhotoOptionsCallback& callback) override;
-  void TakePhoto(const TakePhotoCallback& callback) override;
+                       SetPhotoOptionsCallback callback) override;
+  void TakePhoto(TakePhotoCallback callback) override;
 
   void Stop();
   void OnClientConnectionErrorOrClose();

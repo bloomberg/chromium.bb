@@ -31,10 +31,10 @@ class DeviceFactoryMediaToMojoAdapter : public mojom::DeviceFactory {
   ~DeviceFactoryMediaToMojoAdapter() override;
 
   // mojom::DeviceFactory implementation.
-  void GetDeviceInfos(const GetDeviceInfosCallback& callback) override;
+  void GetDeviceInfos(GetDeviceInfosCallback callback) override;
   void CreateDevice(const std::string& device_id,
                     mojom::DeviceRequest device_request,
-                    const CreateDeviceCallback& callback) override;
+                    CreateDeviceCallback callback) override;
 
  private:
   struct ActiveDeviceEntry {
@@ -52,7 +52,7 @@ class DeviceFactoryMediaToMojoAdapter : public mojom::DeviceFactory {
 
   void CreateAndAddNewDevice(const std::string& device_id,
                              mojom::DeviceRequest device_request,
-                             const CreateDeviceCallback& callback);
+                             CreateDeviceCallback callback);
   void OnClientConnectionErrorOrClose(const std::string& device_id);
 
   const std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
