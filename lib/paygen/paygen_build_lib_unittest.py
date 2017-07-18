@@ -9,7 +9,6 @@ from __future__ import print_function
 import json
 import mox
 import os
-import shutil
 import tempfile
 import unittest
 
@@ -92,9 +91,9 @@ class BasePaygenBuildLibTest(cros_test_lib.MoxTempDirTestCase):
 
   def _GetPaygenBuildInstance(self, disable_tests=False):
     """Helper method to create a standard Paygen instance."""
-    return paygen_build_lib._PaygenBuild(self.foo_build, self.tempdir,
-                                         config_lib_unittest.MockSiteConfig(),
-                                         disable_tests=disable_tests)
+    return paygen_build_lib.PaygenBuild(self.foo_build, self.tempdir,
+                                        config_lib_unittest.MockSiteConfig(),
+                                        disable_tests=disable_tests)
 
   def _GetBuildTestImage(self, build):
     """Returns a test image object for the build.
@@ -241,7 +240,7 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
                                            self.special_image))
 
   def testDiscoverImages(self):
-    """Test _DiscoverImages."""
+    """Test _DiscoverSignedImages."""
     paygen = self._GetPaygenBuildInstance()
     uri_base = 'gs://crt/foo-channel/foo-board/1.2.3'
 
@@ -264,13 +263,13 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
     self._TestDiscoverArtifacts(
         os.path.join(uri_base, 'chromeos_*_foo-board_*_*_*.bin'),
         file_list_result,
-        paygen._DiscoverImages,
+        paygen._DiscoverSignedImages,
         [self.foo_build],
         True,
         expected_result)
 
   def testDiscoverTestImageArchives(self):
-    """Test _DiscoverTestImageArchives (success)."""
+    """Test _DiscoverTestImages (success)."""
     paygen = self._GetPaygenBuildInstance()
     uri_base = 'gs://crt/foo-channel/foo-board/1.2.3'
 
@@ -291,13 +290,13 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
     self._TestDiscoverArtifacts(
         os.path.join(uri_base, 'ChromeOS-test-*-1.2.3-foo-board.tar.xz'),
         file_list_result,
-        paygen._DiscoverTestImageArchives,
+        paygen._DiscoverTestImages,
         [self.foo_build],
         True,
         expected_result)
 
   def testDiscoverTestImageArchivesMultipleResults(self):
-    """Test _DiscoverTestImageArchives (fails due to multiple results)."""
+    """Test _DiscoverTestImages (fails due to multiple results)."""
     paygen = self._GetPaygenBuildInstance()
     uri_base = 'gs://crt/foo-channel/foo-board/1.2.3'
 
@@ -310,20 +309,20 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
     self._TestDiscoverArtifacts(
         os.path.join(uri_base, 'ChromeOS-test-*-1.2.3-foo-board.tar.xz'),
         file_list_result,
-        paygen._DiscoverTestImageArchives,
+        paygen._DiscoverTestImages,
         [self.foo_build],
         False,
         paygen_build_lib.BuildCorrupt)
 
   def testDiscoverTestImageArchivesMissing(self):
-    """Test _DiscoverTestImageArchives (fails due to missing images)."""
+    """Test _DiscoverTestImages (fails due to missing images)."""
     paygen = self._GetPaygenBuildInstance()
     uri_base = 'gs://crt/foo-channel/foo-board/1.2.3'
 
     self._TestDiscoverArtifacts(
         os.path.join(uri_base, 'ChromeOS-test-*-1.2.3-foo-board.tar.xz'),
         [],
-        paygen._DiscoverTestImageArchives,
+        paygen._DiscoverTestImages,
         [self.foo_build],
         False,
         paygen_build_lib.ImageMissing)
@@ -354,7 +353,7 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
     self.mox.ReplayAll()
 
     # Test a board with FSI values on stable-channel.
-    paygen = paygen_build_lib._PaygenBuild(
+    paygen = paygen_build_lib.PaygenBuild(
         gspaths.Build(channel='stable-channel', board='valid-board',
                       version='1.2.3'),
         self.tempdir,
@@ -370,7 +369,7 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
                        version='2467.109.0')])
 
     # Test a board without FSI values on stable-channel.
-    paygen = paygen_build_lib._PaygenBuild(
+    paygen = paygen_build_lib.PaygenBuild(
         gspaths.Build(channel='stable-channel', board='no-fsi-board',
                       version='1.2.3'),
         self.tempdir,
@@ -379,7 +378,7 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
     self.assertEqual(paygen._DiscoverFsiBuildsForDeltas(), [])
 
     # Test a board with FSI values on non-stable-channel.
-    paygen = paygen_build_lib._PaygenBuild(
+    paygen = paygen_build_lib.PaygenBuild(
         gspaths.Build(channel='beta-channel', board='valid-board',
                       version='1.2.3'),
         self.tempdir,
@@ -407,7 +406,7 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
     self.mox.ReplayAll()
 
     # Test that only FSIs marked as is_lab_stable are selected.
-    paygen = paygen_build_lib._PaygenBuild(
+    paygen = paygen_build_lib.PaygenBuild(
         gspaths.Build(channel='stable-channel', board='valid-board',
                       version='1.2.3'),
         self.tempdir,
@@ -422,7 +421,7 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
   @cros_test_lib.NetworkTest()
   def testDiscoverAllFsiBuildsForFullTesting(self):
     """With goldeneye values, test _DiscoverAllFsiBuildsForFullTesting."""
-    paygen = paygen_build_lib._PaygenBuild(
+    paygen = paygen_build_lib.PaygenBuild(
         gspaths.Build(channel='stable-channel', board='auron-yuna',
                       version='1.2.3'),
         self.tempdir,
@@ -548,20 +547,11 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
 
     paygen = self._GetPaygenBuildInstance()
 
-    self.mox.StubOutWithMock(paygen, '_DiscoverImages')
+    self.mox.StubOutWithMock(paygen, '_DiscoverSignedImages')
     self.mox.StubOutWithMock(paygen, '_DiscoverNmoBuild')
     self.mox.StubOutWithMock(paygen, '_DiscoverFsiBuildsForDeltas')
 
-    paygen.BUILD_DISCOVER_RETRY_SLEEP = 0
-
-    # Check that we retry 3 times.
-    paygen._DiscoverImages(paygen._build).AndRaise(
-        paygen_build_lib.ImageMissing())
-    paygen._DiscoverImages(paygen._build).AndRaise(
-        paygen_build_lib.ImageMissing())
-    paygen._DiscoverImages(paygen._build).AndRaise(
-        paygen_build_lib.ImageMissing())
-    paygen._DiscoverImages(paygen._build).AndRaise(
+    paygen._DiscoverSignedImages(paygen._build).AndRaise(
         paygen_build_lib.ImageMissing())
 
     # Run the test verification.
@@ -577,8 +567,8 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
 
     output_uri = 'gs://foo'
 
-    self.mox.StubOutWithMock(paygen, '_DiscoverImages')
-    self.mox.StubOutWithMock(paygen, '_DiscoverTestImageArchives')
+    self.mox.StubOutWithMock(paygen, '_DiscoverSignedImages')
+    self.mox.StubOutWithMock(paygen, '_DiscoverTestImages')
     self.mox.StubOutWithMock(paygen, '_DiscoverNmoBuild')
     self.mox.StubOutWithMock(paygen, '_DiscoverFsiBuildsForDeltas')
     self.mox.StubOutWithMock(paygen_payload_lib, 'DefaultPayloadUri')
@@ -603,17 +593,17 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
     fsi2_images = self._GetBuildImages(fsi2_build)
     fsi2_test_image = self._GetBuildTestImage(fsi2_build)
 
-    paygen._DiscoverImages(paygen._build).AndReturn(self.images)
-    paygen._DiscoverTestImageArchives(paygen._build).AndReturn(
+    paygen._DiscoverSignedImages(paygen._build).AndReturn(self.images)
+    paygen._DiscoverTestImages(paygen._build).AndReturn(
         [self.test_image])
     paygen._DiscoverFsiBuildsForDeltas().AndReturn([fsi1_build, fsi2_build])
     paygen._DiscoverNmoBuild().AndReturn([nmo_build])
-    paygen._DiscoverImages(fsi1_build).AndReturn(fsi1_images)
-    paygen._DiscoverTestImageArchives(fsi1_build).AndReturn([fsi1_test_image])
-    paygen._DiscoverImages(fsi2_build).AndReturn(fsi2_images)
-    paygen._DiscoverTestImageArchives(fsi2_build).AndReturn([fsi2_test_image])
-    paygen._DiscoverImages(nmo_build).AndReturn(nmo_images)
-    paygen._DiscoverTestImageArchives(nmo_build).AndReturn([nmo_test_image])
+    paygen._DiscoverSignedImages(fsi1_build).AndReturn(fsi1_images)
+    paygen._DiscoverTestImages(fsi1_build).AndReturn([fsi1_test_image])
+    paygen._DiscoverSignedImages(fsi2_build).AndReturn(fsi2_images)
+    paygen._DiscoverTestImages(fsi2_build).AndReturn([fsi2_test_image])
+    paygen._DiscoverSignedImages(nmo_build).AndReturn(nmo_images)
+    paygen._DiscoverTestImages(nmo_build).AndReturn([nmo_test_image])
 
     # Simplify the output URIs, so it's easy to check them below.
     paygen_payload_lib.DefaultPayloadUri(
@@ -705,8 +695,8 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
 
     output_uri = 'gs://foo'
 
-    self.mox.StubOutWithMock(paygen, '_DiscoverImages')
-    self.mox.StubOutWithMock(paygen, '_DiscoverTestImageArchives')
+    self.mox.StubOutWithMock(paygen, '_DiscoverSignedImages')
+    self.mox.StubOutWithMock(paygen, '_DiscoverTestImages')
     self.mox.StubOutWithMock(paygen, '_DiscoverNmoBuild')
     self.mox.StubOutWithMock(paygen, '_DiscoverFsiBuildsForDeltas')
     self.mox.StubOutWithMock(paygen_payload_lib, 'DefaultPayloadUri')
@@ -729,18 +719,18 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
     fsi2_images = self._GetBuildImages(fsi2_build)
     fsi2_test_image = self._GetBuildTestImage(fsi2_build)
 
-    paygen._DiscoverImages(paygen._build).AndReturn(self.images)
-    paygen._DiscoverTestImageArchives(paygen._build).AndReturn(
+    paygen._DiscoverSignedImages(paygen._build).AndReturn(self.images)
+    paygen._DiscoverTestImages(paygen._build).AndReturn(
         [self.test_image])
     paygen._DiscoverFsiBuildsForDeltas().AndReturn([fsi1_build, fsi2_build])
     paygen._DiscoverNmoBuild().AndReturn([nmo_build])
-    paygen._DiscoverImages(fsi1_build).AndReturn(fsi1_images)
-    paygen._DiscoverTestImageArchives(fsi1_build).AndReturn([fsi1_test_image])
-    paygen._DiscoverImages(fsi2_build).AndReturn(fsi2_images)
-    paygen._DiscoverTestImageArchives(fsi2_build).AndReturn([fsi2_test_image])
-    paygen._DiscoverImages(nmo_build).AndRaise(
+    paygen._DiscoverSignedImages(fsi1_build).AndReturn(fsi1_images)
+    paygen._DiscoverTestImages(fsi1_build).AndReturn([fsi1_test_image])
+    paygen._DiscoverSignedImages(fsi2_build).AndReturn(fsi2_images)
+    paygen._DiscoverTestImages(fsi2_build).AndReturn([fsi2_test_image])
+    paygen._DiscoverSignedImages(nmo_build).AndRaise(
         paygen_build_lib.ImageMissing('nmo build is missing some image'))
-    # _DiscoverTestImageArchives(nmo_build) should NOT be called.
+    # _DiscoverTestImages(nmo_build) should NOT be called.
 
     # Simplify the output URIs, so it's easy to check them below.
     paygen_payload_lib.DefaultPayloadUri(
@@ -804,8 +794,8 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
 
     output_uri = 'gs://foo'
 
-    self.mox.StubOutWithMock(paygen, '_DiscoverImages')
-    self.mox.StubOutWithMock(paygen, '_DiscoverTestImageArchives')
+    self.mox.StubOutWithMock(paygen, '_DiscoverSignedImages')
+    self.mox.StubOutWithMock(paygen, '_DiscoverTestImages')
     self.mox.StubOutWithMock(paygen, '_DiscoverNmoBuild')
     self.mox.StubOutWithMock(paygen, '_DiscoverFsiBuildsForDeltas')
     self.mox.StubOutWithMock(paygen_payload_lib, 'DefaultPayloadUri')
@@ -828,15 +818,15 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
     fsi2_images = self._GetBuildImages(fsi2_build)
     fsi2_test_image = self._GetBuildTestImage(fsi2_build)
 
-    paygen._DiscoverImages(paygen._build).AndReturn(self.images)
-    paygen._DiscoverTestImageArchives(paygen._build).AndReturn(
+    paygen._DiscoverSignedImages(paygen._build).AndReturn(self.images)
+    paygen._DiscoverTestImages(paygen._build).AndReturn(
         [self.test_image])
     paygen._DiscoverFsiBuildsForDeltas().AndReturn([fsi1_build, fsi2_build])
     paygen._DiscoverNmoBuild().AndReturn([nmo_build])
-    paygen._DiscoverImages(fsi1_build).AndReturn(fsi1_images)
-    paygen._DiscoverImages(fsi2_build).AndReturn(fsi2_images)
-    paygen._DiscoverTestImageArchives(fsi1_build).AndReturn([fsi1_test_image])
-    paygen._DiscoverTestImageArchives(fsi2_build).AndReturn([fsi2_test_image])
+    paygen._DiscoverSignedImages(fsi1_build).AndReturn(fsi1_images)
+    paygen._DiscoverSignedImages(fsi2_build).AndReturn(fsi2_images)
+    paygen._DiscoverTestImages(fsi1_build).AndReturn([fsi1_test_image])
+    paygen._DiscoverTestImages(fsi2_build).AndReturn([fsi2_test_image])
 
     # Simplify the output URIs, so it's easy to check them below.
     paygen_payload_lib.DefaultPayloadUri(
@@ -926,13 +916,12 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
         paygen._FindFullTestPayloads('find_channel', 'find_full_version'),
         ['foo', 'bar'])
 
-  def DoGeneratePayloadsTest(self, run_parallel, test_dry_run):
+  def DoGeneratePayloadsTest(self, test_dry_run):
     """Test paygen_build_lib._GeneratePayloads."""
-    paygen = paygen_build_lib._PaygenBuild(
+    paygen = paygen_build_lib.PaygenBuild(
         self.foo_build, self.tempdir,
         config_lib_unittest.MockSiteConfig(),
-        dry_run=test_dry_run,
-        run_parallel=run_parallel)
+        dry_run=test_dry_run)
 
     basic_payload = gspaths.Payload(tgt_image=self.basic_image,
                                     src_image=self.basic_image)
@@ -947,20 +936,13 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
         (premp_payload, mox.IsA(str), True, test_dry_run)
     ]
 
-    if run_parallel:
-      parallel.RunTasksInProcessPool(paygen_build_lib._GenerateSinglePayload,
-                                     expected_payload_args)
-    else:
-      paygen_build_lib._GenerateSinglePayload(basic_payload, mox.IsA(str),
-                                              True, test_dry_run)
-
-      paygen_build_lib._GenerateSinglePayload(premp_payload, mox.IsA(str),
-                                              True, test_dry_run)
+    parallel.RunTasksInProcessPool(paygen_build_lib._GenerateSinglePayload,
+                                   expected_payload_args)
 
     # Run the test verification.
     self.mox.ReplayAll()
 
-    paygen._GeneratePayloads((basic_payload, premp_payload), lock=None)
+    paygen._GeneratePayloads((basic_payload, premp_payload))
 
     self.mox.UnsetStubs()
 
@@ -968,9 +950,8 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
     """Test paygen_build_lib._GeneratePayloads, no dry_run."""
 
     # Test every combination of the boolean arguments.
-    for run_parallel in (True, False):
-      for test_dry_run in (True, False):
-        self.DoGeneratePayloadsTest(run_parallel, test_dry_run)
+    for test_dry_run in (True, False):
+      self.DoGeneratePayloadsTest(test_dry_run)
 
   def testGeneratePayloadInProcess(self):
     """Make sure the _GenerateSinglePayload calls into paygen_payload_lib."""
@@ -995,7 +976,7 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
                                             False, True)
 
   def testCleanupBuild(self):
-    """Test _PaygenBuild._CleanupBuild."""
+    """Test PaygenBuild._CleanupBuild."""
     paygen = self._GetPaygenBuildInstance()
 
     self.mox.StubOutWithMock(gslib, 'Remove')
@@ -1100,7 +1081,7 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
     paygen._DiscoverRequiredPayloads().AndReturn(payload_manager)
     self.mox.StubOutWithMock(paygen_payload_lib, 'FindExistingPayloads')
     paygen_payload_lib.FindExistingPayloads(payload).AndReturn([])
-    paygen._GeneratePayloads(payload_list, lock).AndRaise(mock_exception)
+    paygen._GeneratePayloads(payload_list).AndRaise(mock_exception)
     lock.__exit__(
         mox.IgnoreArg(), mox.IgnoreArg(), mox.IgnoreArg()).AndReturn(None)
 
@@ -1130,7 +1111,7 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
     paygen._DiscoverRequiredPayloads().AndReturn(payload_manager)
     self.mox.StubOutWithMock(paygen_payload_lib, 'FindExistingPayloads')
     paygen_payload_lib.FindExistingPayloads(payload).AndReturn([])
-    paygen._GeneratePayloads(payload_list, lock)
+    paygen._GeneratePayloads(payload_list)
     paygen._MapToArchive('foo-board', '1.2.3').AndReturn(
         ('archive_board', 'archive_build', 'archive_build_uri'))
     paygen._CreatePayloadTests(payload_manager).AndReturn(['Test Payloads'])
@@ -1169,7 +1150,7 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
         [payload_existing])
     paygen_payload_lib.FindExistingPayloads(payload_new).AndReturn([])
     paygen_payload_lib.SetPayloadUri(payload_existing, payload_existing)
-    paygen._GeneratePayloads([payload_new], lock)
+    paygen._GeneratePayloads([payload_new])
     paygen._MapToArchive('foo-board', '1.2.3').AndReturn(
         ('archive_board', 'archive_build', 'archive_build_uri'))
     paygen._CreatePayloadTests(payload_manager).AndReturn(['Test Payloads'])
@@ -1204,7 +1185,7 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
     paygen._DiscoverRequiredPayloads().AndReturn(payload_manager)
     self.mox.StubOutWithMock(paygen_payload_lib, 'FindExistingPayloads')
     paygen_payload_lib.FindExistingPayloads(payload).AndReturn([])
-    paygen._GeneratePayloads(payload_list, lock)
+    paygen._GeneratePayloads(payload_list)
     paygen._CleanupBuild()
     lock.__exit__(
         mox.IgnoreArg(), mox.IgnoreArg(), mox.IgnoreArg()).AndReturn(None)
@@ -1349,21 +1330,6 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
     expected = paygen._CreatePayloadTests(payload_manager)
     self.assertEquals(expected, [])
 
-  def testFindControlFileDir(self):
-    """Test that we find control files in the proper directory."""
-    # Test default dir in /tmp.
-    result = paygen_build_lib._FindControlFileDir(None)
-    self.assertTrue(os.path.isdir(result))
-    tempdir = tempfile.tempdir or '/tmp'
-    self.assertTrue(result.startswith(tempdir + '/'))
-    shutil.rmtree(result)
-
-    # Test in specified dir.
-    result = paygen_build_lib._FindControlFileDir(self.tempdir)
-    self.assertTrue(os.path.isdir(result))
-    self.assertTrue(result.startswith(
-        os.path.join(self.tempdir, 'paygen_build-control_files')))
-
   @unittest.skipIf(not paygen_build_lib.test_control,
                    'Autotest repository needed.')
   @osutils.TempFileDecorator
@@ -1380,7 +1346,7 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
                     boards=['foo_board'])
 
     suite_name = 'paygen_foo'
-    paygen = paygen_build_lib._PaygenBuild(
+    paygen = paygen_build_lib.PaygenBuild(
         self.foo_build, self.tempdir, site_config)
 
     osutils.WriteFile(control_file_name, """
@@ -1415,7 +1381,7 @@ DOC = "Faux doc"
 
     self.mox.ReplayAll()
 
-    payload_test = paygen_build_lib._PaygenBuild.PayloadTest(payload)
+    payload_test = paygen_build_lib.PaygenBuild.PayloadTest(payload)
     cf = paygen._EmitControlFile(payload_test, suite_name, control_dir)
 
     control_contents = osutils.ReadFile(cf)
@@ -1510,8 +1476,8 @@ DOC = "Faux doc"
     site_config.Add('build_to_introduce_boards',
                     boards=['foo_board', 'bar_board', 'bar-board'])
 
-    paygen = paygen_build_lib._PaygenBuild(self.foo_build, self.tempdir,
-                                           site_config)
+    paygen = paygen_build_lib.PaygenBuild(self.foo_build, self.tempdir,
+                                          site_config)
 
     # Case 1: mapping successful.
     self.assertEqual(
@@ -1531,7 +1497,7 @@ class PaygenJsonTests(cros_test_lib.MockTestCase):
   """Test cases that require mocking paygen.json fetching."""
   def setUp(self):
     # Clear json cache.
-    paygen_build_lib._PaygenBuild._cachedPaygenJson = None
+    paygen_build_lib.PaygenBuild._cachedPaygenJson = None
 
     # Mock out the json load with parsed json data.
     paygen_json_file = os.path.join(os.path.dirname(__file__),
@@ -1544,52 +1510,52 @@ class PaygenJsonTests(cros_test_lib.MockTestCase):
 
   def tearDown(self):
     # Clear json cache.
-    paygen_build_lib._PaygenBuild._cachedPaygenJson = None
+    paygen_build_lib.PaygenBuild._cachedPaygenJson = None
 
   def testGetPaygenJsonCaching(self):
-    result = paygen_build_lib._PaygenBuild.GetPaygenJson()
+    result = paygen_build_lib.PaygenBuild.GetPaygenJson()
     self.assertEqual(len(result), 1361)
     self.mockGetJson.assert_called_once()
 
     # Validate caching, by proving we don't refetch.
     self.mockGetJson.reset_mock()
-    result = paygen_build_lib._PaygenBuild.GetPaygenJson()
+    result = paygen_build_lib.PaygenBuild.GetPaygenJson()
     self.assertEqual(len(result), 1361)
     self.mockGetJson.assert_not_called()
 
   def testGetPaygenJsonBoard(self):
-    result = paygen_build_lib._PaygenBuild.GetPaygenJson('unknown-board')
+    result = paygen_build_lib.PaygenBuild.GetPaygenJson('unknown-board')
     self.assertEqual(len(result), 0)
 
-    result = paygen_build_lib._PaygenBuild.GetPaygenJson('auron-yuna')
+    result = paygen_build_lib.PaygenBuild.GetPaygenJson('auron-yuna')
     self.assertEqual(len(result), 13)
 
   def testGetPaygenJsonBoardChannel(self):
-    result = paygen_build_lib._PaygenBuild.GetPaygenJson(
+    result = paygen_build_lib.PaygenBuild.GetPaygenJson(
         'auron-yuna', 'unknown')
     self.assertEqual(len(result), 0)
 
-    result = paygen_build_lib._PaygenBuild.GetPaygenJson(
+    result = paygen_build_lib.PaygenBuild.GetPaygenJson(
         'auron-yuna', 'canary')
     self.assertEqual(len(result), 1)
 
-    result = paygen_build_lib._PaygenBuild.GetPaygenJson(
+    result = paygen_build_lib.PaygenBuild.GetPaygenJson(
         'auron-yuna', 'dev-channel')
     self.assertEqual(len(result), 1)
 
-    result = paygen_build_lib._PaygenBuild.GetPaygenJson(
+    result = paygen_build_lib.PaygenBuild.GetPaygenJson(
         'auron-yuna', 'beta-channel')
     self.assertEqual(len(result), 1)
 
-    result = paygen_build_lib._PaygenBuild.GetPaygenJson(
+    result = paygen_build_lib.PaygenBuild.GetPaygenJson(
         'auron-yuna', 'stable-channel')
     self.assertEqual(len(result), 10)
 
     # Prove that we get the same results in both channel namespaces.
     self.assertEqual(
-        paygen_build_lib._PaygenBuild.GetPaygenJson(
+        paygen_build_lib.PaygenBuild.GetPaygenJson(
             'auron-yuna', 'stable'),
-        paygen_build_lib._PaygenBuild.GetPaygenJson(
+        paygen_build_lib.PaygenBuild.GetPaygenJson(
             'auron-yuna', 'stable-channel'))
 
   def testValidateBoardConfig(self):
@@ -1652,7 +1618,7 @@ class PaygenBuildLibTest_ImageTypes(BasePaygenBuildLibTest):
                       self.prev3_image])
 
   def testDiscoverImages(self):
-    """Test _DiscoverImages."""
+    """Test _DiscoverSignedImages."""
     paygen = self._GetPaygenBuildInstance()
     uri_base = 'gs://crt/foo-channel/foo-board/1.2.3'
 
@@ -1679,7 +1645,7 @@ class PaygenBuildLibTest_ImageTypes(BasePaygenBuildLibTest):
     self._TestDiscoverArtifacts(
         os.path.join(uri_base, 'chromeos_*_foo-board_*_*_*.bin'),
         file_list_result,
-        paygen._DiscoverImages,
+        paygen._DiscoverSignedImages,
         [self.foo_build],
         True,
         expected_result)
@@ -1727,8 +1693,8 @@ class PaygenBuildLibTest_ImageTypes(BasePaygenBuildLibTest):
 
     output_uri = 'gs://foo'
 
-    self.mox.StubOutWithMock(paygen, '_DiscoverImages')
-    self.mox.StubOutWithMock(paygen, '_DiscoverTestImageArchives')
+    self.mox.StubOutWithMock(paygen, '_DiscoverSignedImages')
+    self.mox.StubOutWithMock(paygen, '_DiscoverTestImages')
     self.mox.StubOutWithMock(paygen, '_DiscoverNmoBuild')
     self.mox.StubOutWithMock(paygen, '_DiscoverFsiBuildsForDeltas')
     self.mox.StubOutWithMock(paygen_payload_lib, 'DefaultPayloadUri')
@@ -1752,16 +1718,16 @@ class PaygenBuildLibTest_ImageTypes(BasePaygenBuildLibTest):
     fsi2_images = self._GetBuildImages(fsi2_build)
     fsi2_test_image = self._GetBuildTestImage(fsi2_build)
 
-    paygen._DiscoverImages(paygen._build).AndReturn(self.images)
-    paygen._DiscoverTestImageArchives(paygen._build).AndReturn([])
+    paygen._DiscoverSignedImages(paygen._build).AndReturn(self.images)
+    paygen._DiscoverTestImages(paygen._build).AndReturn([])
     paygen._DiscoverFsiBuildsForDeltas().AndReturn([fsi1_build, fsi2_build])
-    paygen._DiscoverImages(fsi1_build).AndReturn(fsi1_images)
-    paygen._DiscoverTestImageArchives(fsi1_build).AndReturn([fsi1_test_image])
-    paygen._DiscoverImages(fsi2_build).AndReturn(fsi2_images)
-    paygen._DiscoverTestImageArchives(fsi2_build).AndReturn([fsi2_test_image])
+    paygen._DiscoverSignedImages(fsi1_build).AndReturn(fsi1_images)
+    paygen._DiscoverTestImages(fsi1_build).AndReturn([fsi1_test_image])
+    paygen._DiscoverSignedImages(fsi2_build).AndReturn(fsi2_images)
+    paygen._DiscoverTestImages(fsi2_build).AndReturn([fsi2_test_image])
     paygen._DiscoverNmoBuild().AndReturn([nmo_build])
-    paygen._DiscoverImages(nmo_build).AndReturn(nmo_images)
-    paygen._DiscoverTestImageArchives(nmo_build).AndReturn([])
+    paygen._DiscoverSignedImages(nmo_build).AndReturn(nmo_images)
+    paygen._DiscoverTestImages(nmo_build).AndReturn([])
 
     # Simplify the output URIs, so it's easy to check them below.
     paygen_payload_lib.DefaultPayloadUri(

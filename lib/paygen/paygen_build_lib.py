@@ -17,7 +17,6 @@ import json
 import operator
 import os
 import sys
-import tempfile
 import urlparse
 
 from chromite.cbuildbot import commands
@@ -72,6 +71,8 @@ PAYGEN_URI = 'gs://chromeos-build-release-console/paygen.json'
 # Max number of attempts to download and parse a JSON file.
 JSON_PARSE_RETRY_COUNT = 2
 
+# Sleep time used in _DiscoverRequiredPayloads. Export so tests can change.
+BUILD_DISCOVER_RETRY_SLEEP = 90
 
 class Error(Exception):
   """Exception base class for this module."""
@@ -242,7 +243,7 @@ def _GenerateSinglePayload(payload, work_dir, sign, dry_run):
   # own instance of the cache manager to properly coordinate.
   cache_dir = paygen_payload_lib.FindCacheDir()
   with download_cache.DownloadCache(
-      cache_dir, cache_size=_PaygenBuild.CACHE_SIZE) as cache:
+      cache_dir, cache_size=PaygenBuild.CACHE_SIZE) as cache:
     # Actually generate the payload.
     paygen_payload_lib.CreateAndUploadPayload(
         payload,
@@ -304,7 +305,7 @@ class PayloadManager(object):
     return [p for p in self.payloads if set(p['labels']) == labels]
 
 
-class _PaygenBuild(object):
+class PaygenBuild(object):
   """This class is responsible for generating the payloads for a given build.
 
   It operates across a single build at a time, and is responsible for locking
@@ -321,9 +322,6 @@ class _PaygenBuild(object):
 
   # Name of the Autotest control file tarball.
   CONTROL_TARBALL_TEMPLATE = PAYGEN_AU_SUITE_TEMPLATE + '_control.tar.bz2'
-
-  # Sleep time used in _DiscoverRequiredPayloads. Export so tests can change.
-  BUILD_DISCOVER_RETRY_SLEEP = 90
 
   # Cache of full test payloads for a given version.
   _version_to_full_test_payloads = {}
@@ -375,26 +373,21 @@ class _PaygenBuild(object):
               self.src_version == other.src_version)
 
   def __init__(self, build, work_dir, site_config,
-               dry_run=False, ignore_finished=False,
+               dry_run=False,
                skip_delta_payloads=False,
-               disable_tests=False, output_dir=None,
-               run_parallel=False,
+               disable_tests=False,
                skip_duts_check=False):
     """Initializer."""
     self._build = build
     self._work_dir = work_dir
     self._site_config = site_config
     self._drm = dryrun_lib.DryRunMgr(dry_run)
-    self._ignore_finished = dryrun_lib.DryRunMgr(ignore_finished)
     self._skip_delta_payloads = skip_delta_payloads
-    self._output_dir = output_dir
-    self._run_parallel = run_parallel
+    self._disable_tests = disable_tests
     self._archive_board = None
     self._archive_build = None
     self._archive_build_uri = None
     self._skip_duts_check = skip_duts_check
-    self._control_dir = (None if disable_tests else
-                         _FindControlFileDir(self._work_dir))
 
     # Cached goldeneye data.
     self.cachedFsisJson = None
@@ -519,8 +512,8 @@ class _PaygenBuild(object):
   def _ValidateExpectedBuildImages(self, build, images):
     """Validate that we got the expected images for a build.
 
-    We expect that for any given build will have at most the following four
-    builds:
+    We expect that for any given build will have at most the following two
+    signed images:
 
       premp basic build.
       mp basic build.
@@ -552,7 +545,9 @@ class _PaygenBuild(object):
       msg = '%s has no basic images.' % build
       raise ImageMissing(msg)
 
-  def _DiscoverImages(self, build):
+  @retry_util.WithRetry(max_retry=3, exception=ImageMissing,
+                        sleep=BUILD_DISCOVER_RETRY_SLEEP)
+  def _DiscoverSignedImages(self, build):
     """Return a list of images associated with a given build.
 
     Args:
@@ -587,7 +582,7 @@ class _PaygenBuild(object):
 
     return images
 
-  def _DiscoverTestImageArchives(self, build):
+  def _DiscoverTestImages(self, build):
     """Return a list of unsigned image archives associated with a given build.
 
     Args:
@@ -601,12 +596,12 @@ class _PaygenBuild(object):
       BuildCorrupt: Raised if unexpected images are found.
       ImageMissing: Raised if expected images are missing.
     """
-    search_uri = gspaths.ChromeosReleases.UnsignedImageArchiveUri(
+    search_uri = gspaths.ChromeosReleases.UnsignedImageUri(
         build.channel, build.board, build.version, milestone='*',
         image_type='test', bucket=build.bucket)
 
     image_uris = urilib.ListFiles(search_uri)
-    images = [gspaths.ChromeosReleases.ParseUnsignedImageArchiveUri(uri)
+    images = [gspaths.ChromeosReleases.ParseUnsignedImageUri(uri)
               for uri in image_uris]
 
     # Unparsable URIs will result in Nones; filter them out.
@@ -616,7 +611,7 @@ class _PaygenBuild(object):
     if len(images) > 1:
       raise BuildCorrupt('%s has multiple test images: %s' % (build, images))
 
-    if self._control_dir and len(images) < 1:
+    if not self._disable_tests and len(images) < 1:
       raise ImageMissing('%s has no test image' % build)
 
     return images
@@ -856,10 +851,8 @@ class _PaygenBuild(object):
     try:
       # When discovering the images for our current build, they might not be
       # discoverable right away (GS eventual consistency). So, we retry.
-      images = retry_util.RetryException(ImageMissing, 3,
-                                         self._DiscoverImages, self._build,
-                                         sleep=self.BUILD_DISCOVER_RETRY_SLEEP)
-      images += self._DiscoverTestImageArchives(self._build)
+      images = self._DiscoverSignedImages(self._build)
+      images += self._DiscoverTestImages(self._build)
     except ImageMissing as e:
       # If the main build doesn't have the final build images, then it's
       # not ready.
@@ -876,8 +869,8 @@ class _PaygenBuild(object):
       logging.info('No active FSI builds found')
 
     for fsi in fsi_builds:
-      fsi_images += self._DiscoverImages(fsi)
-      fsi_images += self._DiscoverTestImageArchives(fsi)
+      fsi_images += self._DiscoverSignedImages(fsi)
+      fsi_images += self._DiscoverTestImages(fsi)
 
     fsi_images = _FilterForBasic(fsi_images) + _FilterForTest(fsi_images)
 
@@ -892,7 +885,7 @@ class _PaygenBuild(object):
     # Discover and filter previous images.
     for p in previous_builds:
       try:
-        previous_images += self._DiscoverImages(p)
+        previous_images += self._DiscoverSignedImages(p)
       except ImageMissing as e:
         # Temporarily allow generation of delta payloads to fail because of
         # a missing previous build until crbug.com/243916 is addressed.
@@ -903,7 +896,7 @@ class _PaygenBuild(object):
         # signed deltas will be generated from this build, we don't need to
         # generate test deltas from it.
         continue
-      previous_images += self._DiscoverTestImageArchives(p)
+      previous_images += self._DiscoverTestImages(p)
 
     previous_images = (
         _FilterForBasic(previous_images) + _FilterForTest(previous_images))
@@ -952,7 +945,7 @@ class _PaygenBuild(object):
         skip=skip_deltas)
 
     # Discover test payloads if Autotest is not disabled.
-    if self._control_dir:
+    if not self._disable_tests:
       skip_test_deltas = self._skip_delta_payloads
 
       # Full test payloads.
@@ -991,7 +984,7 @@ class _PaygenBuild(object):
 
     return payload_manager
 
-  def _GeneratePayloads(self, payloads, lock=None):
+  def _GeneratePayloads(self, payloads):
     """Generate the payloads called for by a list of payload definitions.
 
     It will keep going, even if there is a failure.
@@ -1009,16 +1002,7 @@ class _PaygenBuild(object):
                       bool(self._drm))
                      for payload in payloads]
 
-    if self._run_parallel:
-      parallel.RunTasksInProcessPool(_GenerateSinglePayload, payloads_args)
-    else:
-      for args in payloads_args:
-        _GenerateSinglePayload(*args)
-
-        # This can raise LockNotAcquired, if the lock timed out during a
-        # single payload generation.
-        if lock:
-          lock.Renew()
+    parallel.RunTasksInProcessPool(_GenerateSinglePayload, payloads_args)
 
   def _FindFullTestPayloads(self, channel, version):
     """Returns a list of full test payloads for a given version.
@@ -1120,8 +1104,8 @@ class _PaygenBuild(object):
       payload_tests: An iterable of PayloadTest objects defining payload tests.
     """
     # Create inner hierarchy for dumping Autotest control files.
-    control_dump_dir = os.path.join(self._control_dir,
-                                    self.CONTROL_FILE_SUBDIR)
+    control_dir = os.path.join(self._work_dir, 'autotests')
+    control_dump_dir = os.path.join(control_dir, self.CONTROL_FILE_SUBDIR)
     os.makedirs(control_dump_dir)
 
     # Customize the test suite's name based on this build's channel.
@@ -1136,13 +1120,13 @@ class _PaygenBuild(object):
     tarball_name = self.CONTROL_TARBALL_TEMPLATE % test_channel
 
     # Must use an absolute tarball path since tar is run in a different cwd.
-    tarball_path = os.path.join(self._control_dir, tarball_name)
+    tarball_path = os.path.join(control_dir, tarball_name)
 
     # Create the tarball.
     logging.info('Packing %s in %s into %s', self.CONTROL_FILE_SUBDIR,
-                 self._control_dir, tarball_path)
+                 control_dir, tarball_path)
     cmd_result = cros_build_lib.CreateTarball(
-        tarball_path, self._control_dir,
+        tarball_path, control_dir,
         compression=cros_build_lib.COMP_BZIP2,
         inputs=[self.CONTROL_FILE_SUBDIR])
     if cmd_result.returncode != 0:
@@ -1311,9 +1295,9 @@ class _PaygenBuild(object):
     logging.info('Examining: %s', self._build)
 
     try:
-      with gslock.Lock(lock_uri, dry_run=bool(self._drm)) as build_lock:
+      with gslock.Lock(lock_uri, dry_run=bool(self._drm)):
         # If the build was already marked as finished, we're finished.
-        if self._ignore_finished(gslib.Exists, finished_uri):
+        if gslib.Exists(finished_uri):
           raise BuildFinished()
 
         logging.info('Starting: %s', self._build)
@@ -1323,30 +1307,19 @@ class _PaygenBuild(object):
         # Assume we can finish the build until we find a reason we can't.
         can_finish = True
 
-        if self._output_dir:
-          can_finish = False
-
         # Find out which payloads already exist, updating the payload object's
         # URI accordingly. In doing so we're creating a list of all payload
         # objects and their skip/exist attributes. We're also recording whether
         # this run will be skipping any actual work.
         for p in payload_manager.Get([]):
-          if self._output_dir:
-            # output_dir means we are forcing all payloads to be generated
-            # with a new destination.
-            result = [os.path.join(self._output_dir,
-                                   os.path.basename(p.uri))]
-            exists = False
-          else:
-            result = paygen_payload_lib.FindExistingPayloads(p)
-            exists = bool(result)
+          result = paygen_payload_lib.FindExistingPayloads(p)
 
           if result:
             paygen_payload_lib.SetPayloadUri(p, result[0])
           elif p['skip']:
             can_finish = False
 
-          p['exists'] = exists
+          p['exists'] = bool(result)
 
         # Display payload generation list, including payload name and whether
         # or not it already exists or will be skipped.
@@ -1366,12 +1339,12 @@ class _PaygenBuild(object):
                         if not (p['skip'] or p['exists'])]
         if new_payloads:
           logging.info('Generating %d new payload(s)', len(new_payloads))
-          self._GeneratePayloads(new_payloads, build_lock)
+          self._GeneratePayloads(new_payloads)
         else:
           logging.info('No new payloads to generate')
 
         # Test payloads.
-        if not self._control_dir:
+        if self._disable_tests:
           logging.info('Payload autotesting disabled.')
         elif not can_finish:
           logging.warning('Not all payloads were generated/uploaded, '
@@ -1421,28 +1394,6 @@ class _PaygenBuild(object):
     return suite_name, self._archive_board, self._archive_build, finished_uri
 
 
-def _FindControlFileDir(work_dir):
-  """Decide the directory for emitting control files.
-
-  If a working directory is passed in, we create a unique directory inside
-  it; otherwise we use Python's default tempdir.
-
-  Args:
-    work_dir: Create the control file directory here (None for the default).
-
-  Returns:
-    Path to a unique directory that the caller is responsible for cleaning up.
-  """
-  # Setup assorted working directories.
-  # It is safe for multiple parallel instances of paygen_payload to share the
-  # same working directory.
-  if work_dir and not os.path.exists(work_dir):
-    os.makedirs(work_dir)
-
-  # If work_dir is None, then mkdtemp will use '/tmp'
-  return tempfile.mkdtemp(prefix='paygen_build-control_files.', dir=work_dir)
-
-
 def ValidateBoardConfig(board):
   """Validate that we have config values for the specified |board|.
 
@@ -1452,40 +1403,9 @@ def ValidateBoardConfig(board):
   Raises:
     BoardNotConfigured if the board is unknown.
   """
-  if not _PaygenBuild.GetPaygenJson(board):
+  if not PaygenBuild.GetPaygenJson(board):
     raise BoardNotConfigured(board)
 
-
-def CreatePayloads(build, work_dir, site_config,
-                   dry_run=False,
-                   ignore_finished=False,
-                   skip_delta_payloads=False,
-                   disable_tests=False,
-                   output_dir=None,
-                   run_parallel=False,
-                   skip_duts_check=False):
-  """Helper method than generates payloads for a given build.
-
-  Args:
-    build: gspaths.Build instance describing the build to generate payloads for.
-    work_dir: Directory to contain both scratch and long-term work files.
-    site_config: A valid SiteConfig. Only used to map board names.
-    dry_run: Do not generate payloads (optional).
-    ignore_finished: Ignore the FINISHED flag (optional).
-    skip_delta_payloads: Do not generate delta payloads.
-    disable_tests: Do not attempt generating test artifacts or running tests.
-    output_dir: Directory for payload files, or None for GS default locations.
-    run_parallel: Generate payloads in parallel processes.
-    skip_duts_check: Do not force checking minimum available DUTs
-  """
-  return _PaygenBuild(build, work_dir, site_config,
-                      dry_run=dry_run,
-                      ignore_finished=ignore_finished,
-                      skip_delta_payloads=skip_delta_payloads,
-                      disable_tests=disable_tests,
-                      output_dir=output_dir,
-                      run_parallel=run_parallel,
-                      skip_duts_check=skip_duts_check).CreatePayloads()
 
 def ScheduleAutotestTests(suite_name, board, build, skip_duts_check,
                           debug, job_keyvals=None):

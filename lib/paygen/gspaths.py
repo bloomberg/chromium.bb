@@ -368,8 +368,8 @@ class ChromeosReleases(object):
                                    image_type))
 
   @staticmethod
-  def UnsignedImageArchiveUri(channel, board, version, milestone, image_type,
-                              bucket=None):
+  def UnsignedImageUri(channel, board, version, milestone, image_type,
+                       bucket=None):
     """Creates the gspath for a given unsigned build image archive.
 
     Args:
@@ -414,7 +414,7 @@ class ChromeosReleases(object):
     return Image(values)
 
   @classmethod
-  def ParseUnsignedImageArchiveUri(cls, image_uri):
+  def ParseUnsignedImageUri(cls, image_uri):
     """Parse the URI of an image into an UnsignedImageArchive object."""
 
     # The named values in this regex must match the arguments to gspaths.Image.

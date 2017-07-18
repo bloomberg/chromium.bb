@@ -451,15 +451,16 @@ class PaygenBuildStage(generic_stages.BoardSpecificBuilderStage):
         # Generate the payloads.
         self._PrintLoudly('Starting %s, %s, %s' % (self.channel, self.version,
                                                    self.board))
-        metadata = paygen_build_lib.CreatePayloads(
+        paygen = paygen_build_lib.PaygenBuild(
             build,
             work_dir=tempdir,
             site_config=self._run.site_config,
             dry_run=self.debug,
-            run_parallel=True,
             skip_delta_payloads=self.skip_delta_payloads,
             disable_tests=self.skip_testing,
             skip_duts_check=self.skip_duts_check)
+
+        metadata = paygen.CreatePayloads()
         suite_name, archive_board, archive_build, finished_uri = metadata
 
         # Now, schedule the payload tests if desired.
