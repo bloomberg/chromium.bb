@@ -25,11 +25,9 @@ class ListValue;
 class Profile;
 
 namespace chromeos {
-namespace printing {
-class PpdProvider;
-}
 
 class CombiningPrinterDetector;
+class PpdProvider;
 
 namespace settings {
 
@@ -89,14 +87,12 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
   void HandleSelectPPDFile(const base::ListValue* args);
 
   // PpdProvider callback handlers.
-  void ResolveManufacturersDone(
-      const std::string& js_callback,
-      printing::PpdProvider::CallbackResultCode result_code,
-      const std::vector<std::string>& available);
-  void ResolvePrintersDone(
-      const std::string& js_callback,
-      printing::PpdProvider::CallbackResultCode result_code,
-      const std::vector<std::string>& available);
+  void ResolveManufacturersDone(const std::string& js_callback,
+                                PpdProvider::CallbackResultCode result_code,
+                                const std::vector<std::string>& available);
+  void ResolvePrintersDone(const std::string& js_callback,
+                           PpdProvider::CallbackResultCode result_code,
+                           const std::vector<std::string>& available);
 
   // ui::SelectFileDialog::Listener override:
   void FileSelected(const base::FilePath& path,
@@ -120,7 +116,7 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
                         bool ipp_everywhere);
 
   std::unique_ptr<CombiningPrinterDetector> printer_detector_;
-  scoped_refptr<printing::PpdProvider> ppd_provider_;
+  scoped_refptr<PpdProvider> ppd_provider_;
   std::unique_ptr<PrinterConfigurer> printer_configurer_;
 
   Profile* profile_;

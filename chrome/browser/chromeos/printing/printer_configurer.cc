@@ -4,7 +4,9 @@
 
 #include "chrome/browser/chromeos/printing/printer_configurer.h"
 
+#include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -43,7 +45,7 @@ namespace {
 class PrinterConfigurerImpl : public PrinterConfigurer {
  public:
   explicit PrinterConfigurerImpl(Profile* profile)
-      : ppd_provider_(printing::CreateProvider(profile)), weak_factory_(this) {}
+      : ppd_provider_(CreatePpdProvider(profile)), weak_factory_(this) {}
 
   PrinterConfigurerImpl(const PrinterConfigurerImpl&) = delete;
   PrinterConfigurerImpl& operator=(const PrinterConfigurerImpl&) = delete;
@@ -64,7 +66,7 @@ class PrinterConfigurerImpl : public PrinterConfigurer {
       return;
     }
 
-    auto* client = chromeos::DBusThreadManager::Get()->GetDebugDaemonClient();
+    auto* client = DBusThreadManager::Get()->GetDebugDaemonClient();
 
     client->CupsAddAutoConfiguredPrinter(
         printer.id(), printer.uri(),
@@ -119,7 +121,7 @@ class PrinterConfigurerImpl : public PrinterConfigurer {
   void AddPrinter(const Printer& printer,
                   const std::string& ppd_contents,
                   const PrinterSetupCallback& cb) {
-    auto* client = chromeos::DBusThreadManager::Get()->GetDebugDaemonClient();
+    auto* client = DBusThreadManager::Get()->GetDebugDaemonClient();
 
     client->CupsAddManuallyConfiguredPrinter(
         printer.id(), printer.uri(), ppd_contents,
@@ -179,31 +181,31 @@ class PrinterConfigurerImpl : public PrinterConfigurer {
 
   void ResolvePpdDone(const Printer& printer,
                       const PrinterSetupCallback& cb,
-                      printing::PpdProvider::CallbackResultCode result,
+                      PpdProvider::CallbackResultCode result,
                       const std::string& ppd_contents,
                       const std::vector<std::string>& ppd_filters) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     switch (result) {
-      case chromeos::printing::PpdProvider::SUCCESS:
+      case PpdProvider::SUCCESS:
         DCHECK(!ppd_contents.empty());
         if (!RequiresComponent(printer, cb, ppd_contents, ppd_filters)) {
           AddPrinter(printer, ppd_contents, cb);
         }
         break;
-      case printing::PpdProvider::CallbackResultCode::NOT_FOUND:
+      case PpdProvider::CallbackResultCode::NOT_FOUND:
         cb.Run(PrinterSetupResult::kPpdNotFound);
         break;
-      case printing::PpdProvider::CallbackResultCode::SERVER_ERROR:
+      case PpdProvider::CallbackResultCode::SERVER_ERROR:
         cb.Run(PrinterSetupResult::kPpdUnretrievable);
         break;
-      case printing::PpdProvider::CallbackResultCode::INTERNAL_ERROR:
+      case PpdProvider::CallbackResultCode::INTERNAL_ERROR:
         // TODO(skau): Add kPpdTooLarge when it's reported by the PpdProvider.
         cb.Run(PrinterSetupResult::kFatalError);
         break;
     }
   }
 
-  scoped_refptr<printing::PpdProvider> ppd_provider_;
+  scoped_refptr<PpdProvider> ppd_provider_;
   base::WeakPtrFactory<PrinterConfigurerImpl> weak_factory_;
 };
 

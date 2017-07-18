@@ -27,7 +27,6 @@
 #include "net/filter/gzip_header.h"
 
 namespace chromeos {
-namespace printing {
 namespace {
 
 // Return the (full) path to the file we expect to find the given key at.
@@ -165,5 +164,4 @@ scoped_refptr<PpdCache> PpdCache::Create(const base::FilePath& cache_base_dir) {
   return scoped_refptr<PpdCache>(new PpdCacheImpl(cache_base_dir));
 }
 
-}  // namespace printing
 }  // namespace chromeos

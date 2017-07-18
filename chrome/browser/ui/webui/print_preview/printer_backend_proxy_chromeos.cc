@@ -185,7 +185,7 @@ class PrinterBackendProxyChromeos : public PrinterBackendProxy {
   }
 
   chromeos::SyncedPrintersManager* prefs_;
-  scoped_refptr<chromeos::printing::PpdProvider> ppd_provider_;
+  scoped_refptr<chromeos::PpdProvider> ppd_provider_;
   std::unique_ptr<chromeos::PrinterConfigurer> printer_configurer_;
   base::WeakPtrFactory<PrinterBackendProxyChromeos> weak_factory_;
 
