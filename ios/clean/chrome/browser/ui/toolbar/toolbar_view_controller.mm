@@ -207,7 +207,11 @@
   [buttonConstraints
       addObject:[self.shareButton.widthAnchor
                     constraintEqualToConstant:kToolbarButtonWidth]];
-  // TODO(crbug.com/683793):Dispatch command once someone is handling it.
+  // TODO(crbug.com/740793): Remove alert once share is implemented.
+  self.shareButton.titleLabel.text = @"Share";
+  [self.shareButton addTarget:self
+                       action:@selector(showAlert:)
+             forControlEvents:UIControlEventTouchUpInside];
 
   // Reload button.
   self.reloadButton = [ToolbarButton reloadToolbarButton];
@@ -400,6 +404,22 @@
     constraint.priority = priority;
   }
   [NSLayoutConstraint activateConstraints:constraintsArray];
+}
+
+// TODO(crbug.com/740793): Remove this method once no item is using it.
+- (void)showAlert:(UIButton*)sender {
+  UIAlertController* alertController =
+      [UIAlertController alertControllerWithTitle:sender.titleLabel.text
+                                          message:nil
+                                   preferredStyle:UIAlertControllerStyleAlert];
+  UIAlertAction* action =
+      [UIAlertAction actionWithTitle:@"Done"
+                               style:UIAlertActionStyleCancel
+                             handler:nil];
+  [alertController addAction:action];
+  [self.parentViewController presentViewController:alertController
+                                          animated:YES
+                                        completion:nil];
 }
 
 @end

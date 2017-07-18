@@ -141,6 +141,11 @@ const CGFloat kCloseButtonHeight = 44.0;
       [menuButton addTarget:self.dispatcher
                      action:item.action
            forControlEvents:UIControlEventTouchUpInside];
+    } else {
+      // TODO(crbug.com/740793): Remove alert once all menu items have actions.
+      [menuButton addTarget:self
+                     action:@selector(showAlert:)
+           forControlEvents:UIControlEventTouchUpInside];
     }
     [buttons addObject:menuButton];
   }
@@ -193,6 +198,20 @@ const CGFloat kCloseButtonHeight = 44.0;
   [self.toolbarOverflowStackView.stopButton
              addTarget:self.dispatcher
                 action:@selector(stopLoadingPage)
+      forControlEvents:UIControlEventTouchUpInside];
+
+  // TODO(crbug.com/740793): Remove alert once share is implemented.
+  self.toolbarOverflowStackView.shareButton.titleLabel.text = @"Share";
+  [self.toolbarOverflowStackView.shareButton
+             addTarget:self
+                action:@selector(showAlert:)
+      forControlEvents:UIControlEventTouchUpInside];
+
+  // TODO(crbug.com/740793): Remove alert once bookmarking is implemented.
+  self.toolbarOverflowStackView.starButton.titleLabel.text = @"Bookmark";
+  [self.toolbarOverflowStackView.starButton
+             addTarget:self
+                action:@selector(showAlert:)
       forControlEvents:UIControlEventTouchUpInside];
 
   [self.menuStackView insertArrangedSubview:self.toolbarOverflowStackView
@@ -263,6 +282,24 @@ const CGFloat kCloseButtonHeight = 44.0;
     self.toolbarOverflowStackView.reloadButton.hidden = currentPageLoading;
     self.toolbarOverflowStackView.stopButton.hidden = !currentPageLoading;
   }
+}
+
+#pragma mark - Private Methods
+
+// TODO(crbug.com/740793): Remove this method once no item is using it.
+- (void)showAlert:(UIButton*)sender {
+  UIAlertController* alertController =
+      [UIAlertController alertControllerWithTitle:sender.titleLabel.text
+                                          message:nil
+                                   preferredStyle:UIAlertControllerStyleAlert];
+  UIAlertAction* action =
+      [UIAlertAction actionWithTitle:@"Done"
+                               style:UIAlertActionStyleCancel
+                             handler:nil];
+  [alertController addAction:action];
+  [self.presentingViewController presentViewController:alertController
+                                              animated:YES
+                                            completion:nil];
 }
 
 @end
