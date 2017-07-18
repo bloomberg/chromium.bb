@@ -92764,6 +92764,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       label="in-document existing page renderer-initiated navigation"/>
   <suffix name="ExistingPageDifferentDocumentRendererInitiated"
       label="existing page renderer-initiated navigation"/>
+  <suffix name="SamePage" label="same page navigation"/>
   <suffix name="NewSubFrame" label="new subframe navigation"/>
   <affected-histogram name="Navigation.SecureSchemeHasSSLStatus"/>
 </histogram_suffixes>
