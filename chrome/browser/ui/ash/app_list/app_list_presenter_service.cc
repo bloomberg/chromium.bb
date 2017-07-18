@@ -9,13 +9,13 @@
 #include "ash/public/interfaces/constants.mojom.h"
 #include "chrome/browser/chromeos/arc/voice_interaction/arc_voice_interaction_framework_service.h"
 #include "chrome/browser/ui/ash/app_list/app_list_service_ash.h"
-#include "components/arc/arc_service_manager.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/app_list/presenter/app_list_presenter_impl.h"
 #include "ui/gfx/geometry/rect.h"
 
-AppListPresenterService::AppListPresenterService() : binding_(this) {
+AppListPresenterService::AppListPresenterService(Profile* profile)
+    : profile_(profile), binding_(this) {
   content::ServiceManagerConnection* connection =
       content::ServiceManagerConnection::GetForProcess();
   if (connection && connection->GetConnector()) {
@@ -47,8 +47,8 @@ void AppListPresenterService::ToggleAppList(int64_t display_id) {
 }
 
 void AppListPresenterService::StartVoiceInteractionSession() {
-  auto* service = arc::ArcServiceManager::Get()
-                      ->GetService<arc::ArcVoiceInteractionFrameworkService>();
+  auto* service =
+      arc::ArcVoiceInteractionFrameworkService::GetForBrowserContext(profile_);
   if (service)
     service->StartSessionFromUserInteraction(gfx::Rect());
 }

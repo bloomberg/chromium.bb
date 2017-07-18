@@ -6,11 +6,15 @@
 #define CHROME_BROWSER_CHROMEOS_ARC_VOICE_INTERACTION_ARC_VOICE_INTERACTION_ARC_HOME_SERVICE_H_
 
 #include "base/macros.h"
-#include "components/arc/arc_service.h"
 #include "components/arc/common/voice_interaction_arc_home.mojom.h"
 #include "components/arc/instance_holder.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/accessibility/ax_tree_update.h"
+
+namespace content {
+class BrowserContext;
+}  // namespace content
 
 namespace ui {
 struct AXSnapshotNodeAndroid;
@@ -18,14 +22,22 @@ struct AXSnapshotNodeAndroid;
 
 namespace arc {
 
+class ArcBridgeService;
+
 // ArcVoiceInteractionArcHomeService provides view hierarchy to to ARC to be
 // used by VoiceInteractionSession. This class lives on the UI thread.
 class ArcVoiceInteractionArcHomeService
-    : public ArcService,
+    : public KeyedService,
       public mojom::VoiceInteractionArcHomeHost,
       public InstanceHolder<mojom::VoiceInteractionArcHomeInstance>::Observer {
  public:
-  explicit ArcVoiceInteractionArcHomeService(ArcBridgeService* bridge_service);
+  // Returns singleton instance for the given BrowserContext,
+  // or nullptr if the browser |context| is not allowed to use ARC.
+  static ArcVoiceInteractionArcHomeService* GetForBrowserContext(
+      content::BrowserContext* context);
+
+  ArcVoiceInteractionArcHomeService(content::BrowserContext* context,
+                                    ArcBridgeService* bridge_service);
   ~ArcVoiceInteractionArcHomeService() override;
 
   // InstanceHolder<mojom::VoiceInteractionArcHomeInstance> overrides;
@@ -41,6 +53,9 @@ class ArcVoiceInteractionArcHomeService
       const ui::AXSnapshotNodeAndroid& view_structure);
 
  private:
+  content::BrowserContext* const context_;
+  ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
+
   mojo::Binding<mojom::VoiceInteractionArcHomeHost> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcVoiceInteractionArcHomeService);

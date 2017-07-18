@@ -36,7 +36,6 @@
 #include "chrome/browser/chromeos/arc/wallpaper/arc_wallpaper_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
-#include "chromeos/chromeos_switches.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_session.h"
 #include "components/arc/arc_session_runner.h"
@@ -96,14 +95,6 @@ void ArcServiceLauncher::Initialize() {
   // List in lexicographical order.
   arc_service_manager_->AddService(
       base::MakeUnique<ArcIntentHelperBridge>(arc_bridge_service));
-  if (chromeos::switches::IsVoiceInteractionEnabled()) {
-    arc_service_manager_->AddService(
-        base::MakeUnique<ArcVoiceInteractionFrameworkService>(
-            arc_bridge_service));
-    arc_service_manager_->AddService(
-        base::MakeUnique<ArcVoiceInteractionArcHomeService>(
-            arc_bridge_service));
-  }
   arc_service_manager_->AddService(
       base::MakeUnique<ArcVolumeMounterBridge>(arc_bridge_service));
   arc_service_manager_->AddService(
@@ -179,6 +170,8 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   ArcTracingBridge::GetForBrowserContext(profile);
   ArcTtsService::GetForBrowserContext(profile);
   ArcUserSessionService::GetForBrowserContext(profile);
+  ArcVoiceInteractionArcHomeService::GetForBrowserContext(profile);
+  ArcVoiceInteractionFrameworkService::GetForBrowserContext(profile);
 
   arc_service_manager_->AddService(base::MakeUnique<ArcBootPhaseMonitorBridge>(
       arc_service_manager_->arc_bridge_service(),
