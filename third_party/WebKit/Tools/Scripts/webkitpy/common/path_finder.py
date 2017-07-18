@@ -75,32 +75,33 @@ def get_webkitpy_thirdparty_dir():
 
 class PathFinder(object):
 
-    def __init__(self, filesystem):
+    def __init__(self, filesystem, sys_path=None, env_path=None):
         self._filesystem = filesystem
         self._dirsep = filesystem.sep
-        self._sys_path = sys.path
-        self._env_path = os.environ['PATH'].split(os.pathsep)
-
-    @memoized
-    def _webkit_base(self):
-        """Returns the absolute path to the top of the WebKit tree.
-
-        Raises an AssertionError if the top dir can't be determined.
-        """
-        # TODO(qyearsley): This code somewhat duplicates the code in
-        # git.find_checkout_root().
-        module_path = self._filesystem.abspath(self._filesystem.path_to_module(self.__module__))
-        tools_index = module_path.rfind('Tools')
-        assert tools_index != -1, 'could not find location of this checkout from %s' % module_path
-        return self._filesystem.normpath(module_path[0:tools_index - 1])
+        self._sys_path = sys_path or sys.path
+        self._env_path = env_path or os.environ['PATH'].split(os.pathsep)
 
     @memoized
     def chromium_base(self):
         return self._filesystem.dirname(self._filesystem.dirname(self._webkit_base()))
 
-    # Do not expose this function in order to make the code robust against
-    # directory structure changes.
+    def layout_tests_dir(self):
+        return self._path_from_webkit_base('LayoutTests')
+
+    def perf_tests_dir(self):
+        return self._path_from_webkit_base('PerformanceTests')
+
+    @memoized
+    def _webkit_base(self):
+        """Returns the absolute path to the top of the Blink directory."""
+        module_path = self._filesystem.path_to_module(self.__module__)
+        tools_index = module_path.rfind('Tools')
+        assert tools_index != -1, 'could not find location of this checkout from %s' % module_path
+        return self._filesystem.normpath(module_path[0:tools_index - 1])
+
     def _path_from_webkit_base(self, *comps):
+        # This function is marked as protected in order to make the code
+        # more robust against directory structure changes.
         return self._filesystem.join(self._webkit_base(), *comps)
 
     def path_from_chromium_base(self, *comps):
@@ -112,14 +113,8 @@ class PathFinder(object):
     def path_from_tools_scripts(self, *comps):
         return self._filesystem.join(self._filesystem.join(self._webkit_base(), 'Tools', 'Scripts'), *comps)
 
-    def layout_tests_dir(self):
-        return self._path_from_webkit_base('LayoutTests')
-
     def path_from_layout_tests(self, *comps):
         return self._filesystem.join(self.layout_tests_dir(), *comps)
-
-    def perf_tests_dir(self):
-        return self._path_from_webkit_base('PerformanceTests')
 
     def layout_test_name(self, file_path):
         """Returns a layout test name, given the path from the repo root.
@@ -127,6 +122,7 @@ class PathFinder(object):
         Note: this appears to not work on Windows; see crbug.com/658795.
         Also, this function duplicates functionality that's in
         Port.relative_test_filename.
+
         TODO(qyearsley): De-duplicate this and Port.relative_test_filename,
         and ensure that it works properly with Windows paths.
 
@@ -145,8 +141,11 @@ class PathFinder(object):
 
     @memoized
     def depot_tools_base(self):
-        # This basically duplicates src/build/find_depot_tools.py without the side effects
-        # (adding the directory to sys.path and importing breakpad).
+        """Returns the path to depot_tools, or None if not found.
+
+        This basically duplicates src/build/find_depot_tools.py without the
+        side effects of adding the directory to sys.path or importing breakpad.
+        """
         return (self._check_paths_for_depot_tools(self._sys_path) or
                 self._check_paths_for_depot_tools(self._env_path) or
                 self._check_upward_for_depot_tools())
@@ -158,6 +157,8 @@ class PathFinder(object):
         return None
 
     def _check_upward_for_depot_tools(self):
+        # TODO(qyearsley): Remove this, since on Chromium developer machines
+        # we generally assume that depot_tools is in PATH.
         fs = self._filesystem
         prev_dir = ''
         current_dir = fs.dirname(self._webkit_base())
