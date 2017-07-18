@@ -110,6 +110,10 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
 
   OfflineEventLogger* GetLogger() override;
 
+  void set_skip_clearing_original_url_for_testing() {
+    skip_clearing_original_url_for_testing_ = true;
+  }
+
  protected:
   // Adding a protected constructor for testing-only purposes in
   // offline_page_storage_manager_unittest.cc
@@ -284,6 +288,9 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
   // Clock for getting time in testing code. The setter is responsible to reset
   // it once it is not longer needed.
   base::Clock* testing_clock_;
+
+  // Don't clear original URL if it is same as final URL. For testing only.
+  bool skip_clearing_original_url_for_testing_;
 
   base::WeakPtrFactory<OfflinePageModelImpl> weak_ptr_factory_;
 

@@ -358,7 +358,13 @@ void SucceededToFindOfflinePage(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // If the match is for original URL, trigger the redirect.
-  if (offline_page && url == offline_page->original_url) {
+  // Note: If the offline page has same orginal URL and final URL, don't trigger
+  // the redirect. Some websites might route the redirect finally back to itself
+  // after intermediate redirects for authentication. Previously this case was
+  // not handled and some pages might be saved with same URLs. Though we fixed
+  // the problem, we still need to support those pages already saved with this
+  if (offline_page && url == offline_page->original_url &&
+      url != offline_page->url) {
     ReportRequestResult(RequestResult::REDIRECTED, network_state);
     NotifyOfflineRedirectOnUI(job, offline_page->url);
     return;
