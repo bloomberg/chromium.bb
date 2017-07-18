@@ -331,7 +331,7 @@ aura::Window* KeyboardController::GetContainerWindowWithoutCreationForTest() {
   return container_.get();
 }
 
-void KeyboardController::NotifyKeyboardBoundsChanging(
+void KeyboardController::NotifyContentsBoundsChanging(
     const gfx::Rect& new_bounds) {
   current_keyboard_bounds_ = new_bounds;
   if (ui_->HasContentsWindow() && ui_->GetContentsWindow()->IsVisible()) {
@@ -346,7 +346,7 @@ void KeyboardController::NotifyKeyboardBoundsChanging(
   }
 }
 
-void KeyboardController::NotifyKeyboardLoadingComplete() {
+void KeyboardController::NotifyContentsLoadingComplete() {
   if (state_ != KeyboardControllerState::LOADING_EXTENSION)
     return;
 
@@ -371,7 +371,7 @@ void KeyboardController::HideKeyboard(HideReason reason) {
           keyboard::KEYBOARD_CONTROL_HIDE_AUTO :
           keyboard::KEYBOARD_CONTROL_HIDE_USER);
 
-  NotifyKeyboardBoundsChanging(gfx::Rect());
+  NotifyContentsBoundsChanging(gfx::Rect());
 
   set_keyboard_locked(false);
 
@@ -423,7 +423,7 @@ void KeyboardController::SetKeyboardMode(KeyboardMode mode) {
   // When keyboard is floating, no overscroll or resize is necessary. Sets
   // keyboard bounds to zero so overscroll or resize is disabled.
   if (keyboard_mode_ == FLOATING) {
-    NotifyKeyboardBoundsChanging(gfx::Rect());
+    NotifyContentsBoundsChanging(gfx::Rect());
   } else if (keyboard_mode_ == FULL_WIDTH) {
     AdjustKeyboardBounds();
     // No animation added, so call ShowAnimationFinished immediately.
@@ -691,7 +691,7 @@ void KeyboardController::ShowAnimationFinished() {
 
   // Notify observers after animation finished to prevent reveal desktop
   // background during animation.
-  NotifyKeyboardBoundsChanging(container_->bounds());
+  NotifyContentsBoundsChanging(container_->bounds());
   ui_->EnsureCaretInWorkArea();
   ChangeState(KeyboardControllerState::SHOWN);
 }

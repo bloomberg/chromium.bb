@@ -105,8 +105,8 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   // when the focus of input field quickly change.
   void HideKeyboard(HideReason reason);
 
-  // Notifies the keyboard observer for keyboard bounds changed.
-  void NotifyKeyboardBoundsChanging(const gfx::Rect& new_bounds);
+  // Notifies the observer for contents bounds changed.
+  void NotifyContentsBoundsChanging(const gfx::Rect& new_bounds);
 
   // Management of the observer list.
   void AddObserver(KeyboardControllerObserver* observer);
@@ -163,7 +163,7 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   // For access to Observer methods for simulation.
   friend class KeyboardControllerTest;
 
-  // For access to NotifyKeyboardLoadingComplete.
+  // For access to NotifyContentsLoadingComplete.
   friend class KeyboardLayoutManager;
 
   // aura::WindowObserver overrides
@@ -184,7 +184,7 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   void OnShowImeIfNeeded() override;
 
   // Notifies that the extension has completed loading
-  void NotifyKeyboardLoadingComplete();
+  void NotifyContentsLoadingComplete();
 
   // Show virtual keyboard immediately with animation.
   void ShowKeyboardInternal(int64_t display_id);
@@ -225,6 +225,8 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   base::ObserverList<KeyboardControllerObserver> observer_list_;
 
   // The currently used keyboard position.
+  // If the contents window is visible, this should be the same size as the
+  // contents window. If not, this should be empty.
   gfx::Rect current_keyboard_bounds_;
 
   KeyboardControllerState state_;

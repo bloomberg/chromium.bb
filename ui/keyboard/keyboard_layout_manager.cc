@@ -14,35 +14,32 @@ namespace keyboard {
 
 // Overridden from aura::LayoutManager
 void KeyboardLayoutManager::OnWindowResized() {
-  if (keyboard_) {
-    // Container window is the top level window of the virtual keyboard window.
-    // To support window.moveTo for the virtual keyboard window, as it actually
-    // moves the top level window, the container window should be set to the
-    // desired bounds before changing the bounds of the virtual keyboard window.
+  if (contents_window_) {
     gfx::Rect container_bounds = controller_->GetContainerWindow()->bounds();
     // Always align container window and keyboard window.
     if (controller_->keyboard_mode() == FULL_WIDTH) {
-      SetChildBounds(keyboard_, gfx::Rect(container_bounds.size()));
+      SetChildBounds(contents_window_, gfx::Rect(container_bounds.size()));
     } else {
-      SetChildBoundsDirect(keyboard_, gfx::Rect(container_bounds.size()));
+      SetChildBoundsDirect(contents_window_,
+                           gfx::Rect(container_bounds.size()));
     }
   }
 }
 
 void KeyboardLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
-  DCHECK(!keyboard_);
-  keyboard_ = child;
+  DCHECK(!contents_window_);
+  contents_window_ = child;
   if (controller_->keyboard_mode() == FULL_WIDTH) {
     controller_->GetContainerWindow()->SetBounds(gfx::Rect());
   } else if (controller_->keyboard_mode() == FLOATING) {
     controller_->GetContainerWindow()->SetBounds(child->bounds());
-    SetChildBoundsDirect(keyboard_, gfx::Rect(child->bounds().size()));
+    SetChildBoundsDirect(contents_window_, gfx::Rect(child->bounds().size()));
   }
 }
 
 void KeyboardLayoutManager::SetChildBounds(aura::Window* child,
                                            const gfx::Rect& requested_bounds) {
-  DCHECK(child == keyboard_);
+  DCHECK(child == contents_window_);
 
   TRACE_EVENT0("vk", "KeyboardLayoutSetChildBounds");
 
@@ -64,10 +61,9 @@ void KeyboardLayoutManager::SetChildBounds(aura::Window* child,
   // Keyboard bounds should only be reset when it actually changes. Otherwise
   // it interrupts the initial animation of showing the keyboard. Described in
   // crbug.com/356753.
-  gfx::Rect old_bounds = keyboard_->GetTargetBounds();
-  aura::Window::ConvertRectToTarget(keyboard_,
-                                    keyboard_->GetRootWindow(),
-                                    &old_bounds);
+  gfx::Rect old_bounds = contents_window_->GetTargetBounds();
+  aura::Window::ConvertRectToTarget(
+      contents_window_, contents_window_->GetRootWindow(), &old_bounds);
   if (new_bounds == old_bounds)
     return;
 
@@ -78,7 +74,7 @@ void KeyboardLayoutManager::SetChildBounds(aura::Window* child,
     animator->StopAnimating();
 
   controller_->GetContainerWindow()->SetBounds(new_bounds);
-  SetChildBoundsDirect(keyboard_, gfx::Rect(new_bounds.size()));
+  SetChildBoundsDirect(contents_window_, gfx::Rect(new_bounds.size()));
 
   const bool container_had_size = old_bounds.height() != 0;
   const bool child_has_size = child->bounds().height() != 0;
@@ -103,16 +99,16 @@ void KeyboardLayoutManager::SetChildBounds(aura::Window* child,
         !controller_->keyboard_visible()) {
       // When the child is layed out, the controller is not shown, but showing
       // is not desired, this is indicative that the pre-load has completed.
-      controller_->NotifyKeyboardLoadingComplete();
+      controller_->NotifyContentsLoadingComplete();
     }
 
     if (controller_->keyboard_mode() == FULL_WIDTH) {
       // We need to send out this notification only if keyboard is visible since
-      // keyboard window is resized even if keyboard is hidden.
+      // the contents window is resized even if keyboard is hidden.
       if (controller_->keyboard_visible())
-        controller_->NotifyKeyboardBoundsChanging(new_bounds);
+        controller_->NotifyContentsBoundsChanging(new_bounds);
     } else if (controller_->keyboard_mode() == FLOATING) {
-      controller_->NotifyKeyboardBoundsChanging(gfx::Rect());
+      controller_->NotifyContentsBoundsChanging(gfx::Rect());
     }
   }
 }
