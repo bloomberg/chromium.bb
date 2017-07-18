@@ -25,23 +25,26 @@ std::unique_ptr<NetworkService> NetworkService::Create() {
 
 class NetworkServiceImpl::MojoNetLog : public net::NetLog {
  public:
-  MojoNetLog() {
-    const base::CommandLine* command_line =
-        base::CommandLine::ForCurrentProcess();
+  MojoNetLog() {}
 
-    // If specified by the command line, stream network events (NetLog) to a
-    // file on disk. This will last for the duration of the process.
-    if (command_line->HasSwitch(switches::kLogNetLog)) {
-      base::FilePath log_path =
-          command_line->GetSwitchValuePath(switches::kLogNetLog);
-      net::NetLogCaptureMode capture_mode =
-          net::NetLogCaptureMode::IncludeCookiesAndCredentials();
+  // If specified by the command line, stream network events (NetLog) to a
+  // file on disk. This will last for the duration of the process.
+  void ProcessCommandLine(const base::CommandLine& command_line) {
+    if (!command_line.HasSwitch(switches::kLogNetLog))
+      return;
 
-      file_net_log_observer_ =
-          net::FileNetLogObserver::CreateUnbounded(log_path, nullptr);
-      file_net_log_observer_->StartObserving(this, capture_mode);
-    }
+    base::FilePath log_path =
+        command_line.GetSwitchValuePath(switches::kLogNetLog);
+
+    // TODO(eroman): Should get capture mode from the command line.
+    net::NetLogCaptureMode capture_mode =
+        net::NetLogCaptureMode::IncludeCookiesAndCredentials();
+
+    file_net_log_observer_ =
+        net::FileNetLogObserver::CreateUnbounded(log_path, nullptr);
+    file_net_log_observer_->StartObserving(this, capture_mode);
   }
+
   ~MojoNetLog() override {
     if (file_net_log_observer_)
       file_net_log_observer_->StopObserving(nullptr, base::OnceClosure());
@@ -62,6 +65,11 @@ NetworkServiceImpl::NetworkServiceImpl(
   if (registry_) {
     registry_->AddInterface<mojom::NetworkService>(
         base::Bind(&NetworkServiceImpl::Create, base::Unretained(this)));
+
+    // Note: The command line switches are only checked when running out of
+    // process, since in in-process mode other code may already be writing to
+    // the destination log file.
+    net_log_->ProcessCommandLine(*base::CommandLine::ForCurrentProcess());
   }
 }
 
