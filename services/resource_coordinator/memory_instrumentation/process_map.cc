@@ -30,23 +30,20 @@ ProcessMap::ProcessMap(service_manager::Connector* connector) : binding_(this) {
 ProcessMap::~ProcessMap() {}
 
 void ProcessMap::OnInit(std::vector<RunningServiceInfoPtr> instances) {
-  for (RunningServiceInfoPtr& instance : instances)
-    OnServiceCreated(std::move(instance));
+  for (const RunningServiceInfoPtr& instance : instances) {
+    if (instance->pid == base::kNullProcessId)
+      continue;
+    const service_manager::Identity& identity = instance->identity;
+    auto it_and_inserted = instances_.emplace(identity, instance->pid);
+    DCHECK(it_and_inserted.second);
+  }
 }
 
 void ProcessMap::OnServiceCreated(RunningServiceInfoPtr instance) {
-  if (instance->pid == base::kNullProcessId)
-    return;
-  const service_manager::Identity& identity = instance->identity;
-  DCHECK_EQ(0u, instances_.count(identity));
-  instances_.emplace(identity, instance->pid);
 }
 
 void ProcessMap::OnServiceStarted(const service_manager::Identity& identity,
                                   uint32_t pid) {
-  if (pid == base::kNullProcessId)
-    return;
-  instances_[identity] = pid;
 }
 
 void ProcessMap::OnServiceFailedToStart(const service_manager::Identity&) {}
@@ -56,7 +53,12 @@ void ProcessMap::OnServiceStopped(const service_manager::Identity& identity) {
 }
 
 void ProcessMap::OnServicePIDReceived(const service_manager::Identity& identity,
-                                      uint32_t pid) {}
+                                      uint32_t pid) {
+  if (pid == base::kNullProcessId)
+    return;
+  auto it_and_inserted = instances_.emplace(identity, pid);
+  DCHECK(it_and_inserted.second);
+}
 
 base::ProcessId ProcessMap::GetProcessId(
     const service_manager::Identity& identity) const {
