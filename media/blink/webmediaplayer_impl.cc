@@ -248,7 +248,6 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       surface_manager_(params->surface_manager()),
       overlay_surface_id_(SurfaceManager::kNoSurfaceID),
       suppress_destruction_errors_(false),
-      suspend_enabled_(params->allow_suspend()),
       is_encrypted_(false),
       preroll_attempt_pending_(false),
       observer_(params->media_observer()),
@@ -2185,10 +2184,6 @@ void WebMediaPlayerImpl::SetMemoryReportingState(
 
 void WebMediaPlayerImpl::SetSuspendState(bool is_suspended) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  if (!suspend_enabled_) {
-    DCHECK(!pipeline_controller_.IsSuspended());
-    return;
-  }
 
   // Do not change the state after an error has occurred.
   // TODO(sandersd): Update PipelineController to remove the need for this.

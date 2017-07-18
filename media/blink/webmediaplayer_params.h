@@ -64,7 +64,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
       base::TimeDelta max_keyframe_distance_to_disable_background_video,
       base::TimeDelta max_keyframe_distance_to_disable_background_video_mse,
       bool enable_instant_source_buffer_gc,
-      bool allow_suspend,
       bool embedded_media_experience_enabled);
 
   ~WebMediaPlayerParams();
@@ -120,8 +119,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
     return enable_instant_source_buffer_gc_;
   }
 
-  bool allow_suspend() const { return allow_suspend_; }
-
   bool embedded_media_experience_enabled() const {
     return embedded_media_experience_enabled_;
   }
@@ -147,7 +144,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
   base::TimeDelta max_keyframe_distance_to_disable_background_video_;
   base::TimeDelta max_keyframe_distance_to_disable_background_video_mse_;
   bool enable_instant_source_buffer_gc_;
-  const bool allow_suspend_;
   const bool embedded_media_experience_enabled_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebMediaPlayerParams);

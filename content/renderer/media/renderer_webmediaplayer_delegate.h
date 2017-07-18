@@ -114,6 +114,10 @@ class CONTENT_EXPORT RendererWebMediaPlayerDelegate
 
   IDMap<Observer*> id_map_;
 
+  // Flag for gating if players should ever transition to a stale state after a
+  // period of inactivity.
+  bool allow_idle_cleanup_ = true;
+
   // Tracks which players have entered an idle state. After some period of
   // inactivity these players will be notified and become stale.
   std::map<int, base::TimeTicks> idle_player_map_;

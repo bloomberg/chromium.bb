@@ -46,7 +46,7 @@ class CastContentRendererClient : public content::ContentRendererClient {
   void DeferMediaLoad(content::RenderFrame* render_frame,
                       bool render_frame_has_played_media_before,
                       const base::Closure& closure) override;
-  bool AllowMediaSuspend() override;
+  bool AllowIdleMediaSuspend() override;
   void SetRuntimeFeaturesDefaultsBeforeBlinkInitialization() override;
 
  protected:

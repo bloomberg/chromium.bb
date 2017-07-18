@@ -688,9 +688,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // unimportant.
   bool suppress_destruction_errors_;
 
-  // If true, the media pipeline can be suspended.
-  const bool suspend_enabled_;
-
   // Used for HLS playback and in certain fallback paths (e.g. on older devices
   // that can't support the unified media pipeline).
   GURL loaded_url_;

@@ -216,7 +216,7 @@ void CastContentRendererClient::RunWhenInForeground(
   new CastRenderFrameActionDeferrer(render_frame, closure);
 }
 
-bool CastContentRendererClient::AllowMediaSuspend() {
+bool CastContentRendererClient::AllowIdleMediaSuspend() {
   return false;
 }
 
