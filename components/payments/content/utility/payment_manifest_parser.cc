@@ -274,7 +274,7 @@ PaymentManifestParser::ParseWebAppManifestIntoVector(const std::string& input) {
       base::DictionaryValue* fingerprint_dict = nullptr;
       std::string fingerprint_type;
       std::string fingerprint_value;
-      if (!fingerprints_list->GetDictionary(i, &fingerprint_dict) ||
+      if (!fingerprints_list->GetDictionary(j, &fingerprint_dict) ||
           !fingerprint_dict ||
           !fingerprint_dict->GetString("type", &fingerprint_type) ||
           fingerprint_type != "sha256_cert" ||

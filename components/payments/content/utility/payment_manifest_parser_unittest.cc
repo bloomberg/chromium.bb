@@ -611,5 +611,80 @@ TEST(PaymentManifestParserTest, DuplicateSignaturesWellFormed) {
         0xB2, 0xB3, 0xB4, 0xB5, 0xB6, 0xB7, 0xB8, 0xB9, 0xC0, 0xC1}});
 }
 
+TEST(PaymentManifestParserTest, TwoDifferentSignaturesWellFormed) {
+  ExpectParsedWebAppManifest(
+      "{"
+      "  \"related_applications\": [{"
+      "    \"platform\": \"play\", "
+      "    \"id\": \"com.bobpay.app\", "
+      "    \"min_version\": \"1\", "
+      "    \"fingerprints\": [{"
+      "      \"type\": \"sha256_cert\", "
+      "      \"value\": \"00:01:02:03:04:05:06:07:08:09:A0:A1:A2:A3:A4:A5:A6:A7"
+      ":A8:A9:B0:B1:B2:B3:B4:B5:B6:B7:B8:B9:C0:C1\""
+      "    }, {"
+      "      \"type\": \"sha256_cert\", "
+      "      \"value\": \"AA:01:02:03:04:05:06:07:08:09:A0:A1:A2:A3:A4:A5:A6:A7"
+      ":A8:A9:B0:B1:B2:B3:B4:B5:B6:B7:B8:B9:C0:C1\""
+      "    }]"
+      "  }]"
+      "}",
+      "com.bobpay.app", 1,
+      {{0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0xA0,
+        0xA1, 0xA2, 0xA3, 0xA4, 0xA5, 0xA6, 0xA7, 0xA8, 0xA9, 0xB0, 0xB1,
+        0xB2, 0xB3, 0xB4, 0xB5, 0xB6, 0xB7, 0xB8, 0xB9, 0xC0, 0xC1},
+       {0xAA, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0xA0,
+        0xA1, 0xA2, 0xA3, 0xA4, 0xA5, 0xA6, 0xA7, 0xA8, 0xA9, 0xB0, 0xB1,
+        0xB2, 0xB3, 0xB4, 0xB5, 0xB6, 0xB7, 0xB8, 0xB9, 0xC0, 0xC1}});
+}
+
+TEST(PaymentManifestParserTest, TwoRelatedApplicationsWellFormed) {
+  std::vector<mojom::WebAppManifestSectionPtr> actual_output =
+      PaymentManifestParser::ParseWebAppManifestIntoVector(
+          "{"
+          "  \"related_applications\": [{"
+          "    \"platform\": \"play\", "
+          "    \"id\": \"com.bobpay.app.dev\", "
+          "    \"min_version\": \"2\", "
+          "    \"fingerprints\": [{"
+          "      \"type\": \"sha256_cert\", "
+          "      \"value\": "
+          "\"00:01:02:03:04:05:06:07:08:09:A0:A1:A2:A3:A4:A5:A6:A7"
+          ":A8:A9:B0:B1:B2:B3:B4:B5:B6:B7:B8:B9:C0:C1\""
+          "    }]"
+          "  }, {"
+          "    \"platform\": \"play\", "
+          "    \"id\": \"com.bobpay.app.prod\", "
+          "    \"min_version\": \"1\", "
+          "    \"fingerprints\": [{"
+          "      \"type\": \"sha256_cert\", "
+          "      \"value\": "
+          "\"AA:01:02:03:04:05:06:07:08:09:A0:A1:A2:A3:A4:A5:A6:A7"
+          ":A8:A9:B0:B1:B2:B3:B4:B5:B6:B7:B8:B9:C0:C1\""
+          "    }]"
+          "  }]"
+          "}");
+
+  ASSERT_EQ(2U, actual_output.size());
+
+  EXPECT_EQ("com.bobpay.app.dev", actual_output.front()->id);
+  EXPECT_EQ(2, actual_output.front()->min_version);
+  EXPECT_EQ(
+      std::vector<std::vector<uint8_t>>(
+          {{0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0xA0,
+            0xA1, 0xA2, 0xA3, 0xA4, 0xA5, 0xA6, 0xA7, 0xA8, 0xA9, 0xB0, 0xB1,
+            0xB2, 0xB3, 0xB4, 0xB5, 0xB6, 0xB7, 0xB8, 0xB9, 0xC0, 0xC1}}),
+      actual_output.front()->fingerprints);
+
+  EXPECT_EQ("com.bobpay.app.prod", actual_output.back()->id);
+  EXPECT_EQ(1, actual_output.back()->min_version);
+  EXPECT_EQ(
+      std::vector<std::vector<uint8_t>>(
+          {{0xAA, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0xA0,
+            0xA1, 0xA2, 0xA3, 0xA4, 0xA5, 0xA6, 0xA7, 0xA8, 0xA9, 0xB0, 0xB1,
+            0xB2, 0xB3, 0xB4, 0xB5, 0xB6, 0xB7, 0xB8, 0xB9, 0xC0, 0xC1}}),
+      actual_output.back()->fingerprints);
+}
+
 }  // namespace
 }  // namespace payments
