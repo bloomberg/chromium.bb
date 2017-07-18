@@ -5,10 +5,13 @@
 #include "tools/traffic_annotation/auditor/traffic_annotation_auditor.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "tools/traffic_annotation/auditor/traffic_annotation_file_filter.h"
 
@@ -55,6 +58,9 @@ class TrafficAnnotationAuditorTest : public ::testing::Test {
   AuditorResult::ResultType Deserialize(const std::string& file_name,
                                         InstanceBase* instance);
 
+  // Creates a complete annotation instance using sample files.
+  std::unique_ptr<AnnotationInstance> CreateAnnotationInstanceSample();
+
  private:
   base::FilePath source_path_;
   base::FilePath build_path_;  // Currently stays empty. Will be set if access
@@ -78,6 +84,17 @@ AuditorResult::ResultType TrafficAnnotationAuditorTest::Deserialize(
   return instance->Deserialize(lines, 0, static_cast<int>(lines.size())).type();
 }
 
+std::unique_ptr<AnnotationInstance>
+TrafficAnnotationAuditorTest::CreateAnnotationInstanceSample() {
+  std::unique_ptr<AnnotationInstance> instance =
+      base::MakeUnique<AnnotationInstance>();
+  if (Deserialize("good_complete_annotation.txt", instance.get()) !=
+      AuditorResult::ResultType::RESULT_OK) {
+    instance.reset();
+  }
+  return instance;
+}
+
 // Tests if the two hash computation functions have the same result.
 TEST_F(TrafficAnnotationAuditorTest, HashFunctionCheck) {
   TEST_HASH_CODE("test");
@@ -93,7 +110,7 @@ TEST_F(TrafficAnnotationAuditorTest, HashFunctionCheck) {
 // TrafficAnnotationFileFilter::IsFileRelevant.
 TEST_F(TrafficAnnotationAuditorTest, GetFilesFromGit) {
   TrafficAnnotationFileFilter filter;
-  filter.SetGitMockFileForTesting(
+  filter.SetGitFileForTest(
       tests_folder().Append(FILE_PATH_LITERAL("git_list.txt")));
   filter.GetFilesFromGit(source_path());
 
@@ -101,13 +118,11 @@ TEST_F(TrafficAnnotationAuditorTest, GetFilesFromGit) {
 
   EXPECT_EQ(git_files.size(), arraysize(kRelevantFiles));
   for (const char* filepath : kRelevantFiles) {
-    EXPECT_NE(std::find(git_files.begin(), git_files.end(), filepath),
-              git_files.end());
+    EXPECT_TRUE(base::ContainsValue(git_files, filepath));
   }
 
   for (const char* filepath : kIrrelevantFiles) {
-    EXPECT_EQ(std::find(git_files.begin(), git_files.end(), filepath),
-              git_files.end());
+    EXPECT_FALSE(base::ContainsValue(git_files, filepath));
   }
 }
 
@@ -115,7 +130,7 @@ TEST_F(TrafficAnnotationAuditorTest, GetFilesFromGit) {
 // of files, given a mock git list file.
 TEST_F(TrafficAnnotationAuditorTest, RelevantFilesReceived) {
   TrafficAnnotationFileFilter filter;
-  filter.SetGitMockFileForTesting(
+  filter.SetGitFileForTest(
       tests_folder().Append(FILE_PATH_LITERAL("git_list.txt")));
   filter.GetFilesFromGit(source_path());
 
@@ -133,8 +148,7 @@ TEST_F(TrafficAnnotationAuditorTest, RelevantFilesReceived) {
   file_paths.clear();
   filter.GetRelevantFiles(base::FilePath(), ignore_list, "", &file_paths);
   EXPECT_EQ(file_paths.size(), git_files_count - 1);
-  EXPECT_EQ(std::find(file_paths.begin(), file_paths.end(), ignore_list[0]),
-            file_paths.end());
+  EXPECT_FALSE(base::ContainsValue(file_paths, ignore_list[0]));
 
   // Check if files are filtered based on given directory.
   ignore_list.clear();
@@ -265,12 +279,32 @@ TEST_F(TrafficAnnotationAuditorTest, CallDeserialization) {
   }
 }
 
+// Tests if TrafficAnnotationAuditor::GetReservedUniqueIDs has all known ids and
+// they have correct text.
+TEST_F(TrafficAnnotationAuditorTest, GetReservedUniqueIDs) {
+  int expected_ids[] = {
+      TRAFFIC_ANNOTATION_FOR_TESTS.unique_id_hash_code,
+      PARTIAL_TRAFFIC_ANNOTATION_FOR_TESTS.unique_id_hash_code,
+      NO_TRAFFIC_ANNOTATION_YET.unique_id_hash_code,
+      NO_PARTIAL_TRAFFIC_ANNOTATION_YET.unique_id_hash_code,
+      MISSING_TRAFFIC_ANNOTATION.unique_id_hash_code};
+
+  std::map<int, std::string> reserved_words =
+      TrafficAnnotationAuditor::GetReservedUniqueIDs();
+
+  for (int id : expected_ids) {
+    EXPECT_TRUE(base::ContainsKey(reserved_words, id));
+    EXPECT_EQ(id, TrafficAnnotationAuditor::ComputeHashValue(
+                      reserved_words.find(id)->second));
+  }
+}
+
 // Tests if TrafficAnnotationAuditor::CheckDuplicateHashes works as expected.
 TEST_F(TrafficAnnotationAuditorTest, CheckDuplicateHashes) {
   // Load a valid annotation.
-  AnnotationInstance test_case;
-  EXPECT_EQ(Deserialize("good_complete_annotation.txt", &test_case),
-            AuditorResult::ResultType::RESULT_OK);
+  std::unique_ptr<AnnotationInstance> instance =
+      CreateAnnotationInstanceSample();
+  EXPECT_TRUE(instance != nullptr);
 
   const std::map<int, std::string>& reserved_words =
       TrafficAnnotationAuditor::GetReservedUniqueIDs();
@@ -280,8 +314,8 @@ TEST_F(TrafficAnnotationAuditorTest, CheckDuplicateHashes) {
 
   // Check for reserved words hash code duplication errors.
   for (const auto& reserved_word : reserved_words) {
-    test_case.unique_id_hash_code = reserved_word.first;
-    annotations.push_back(test_case);
+    instance->unique_id_hash_code = reserved_word.first;
+    annotations.push_back(*instance);
   }
 
   auditor.SetExtractedAnnotationsForTest(annotations);
@@ -296,9 +330,9 @@ TEST_F(TrafficAnnotationAuditorTest, CheckDuplicateHashes) {
   annotations.clear();
   for (int i = 0; i < 10; i++) {
     // Ensure that the test id is not a reserved hash code.
-    EXPECT_EQ(reserved_words.find(i), reserved_words.end());
-    test_case.unique_id_hash_code = i;
-    annotations.push_back(test_case);
+    EXPECT_FALSE(base::ContainsKey(reserved_words, i));
+    instance->unique_id_hash_code = i;
+    annotations.push_back(*instance);
   }
   auditor.SetExtractedAnnotationsForTest(annotations);
   auditor.ClearErrorsForTest();
@@ -308,9 +342,9 @@ TEST_F(TrafficAnnotationAuditorTest, CheckDuplicateHashes) {
   // Check if repeating the same hash codes results in errors.
   annotations.clear();
   for (int i = 0; i < 10; i++) {
-    test_case.unique_id_hash_code = i;
-    annotations.push_back(test_case);
-    annotations.push_back(test_case);
+    instance->unique_id_hash_code = i;
+    annotations.push_back(*instance);
+    annotations.push_back(*instance);
   }
   auditor.SetExtractedAnnotationsForTest(annotations);
   auditor.ClearErrorsForTest();
@@ -319,5 +353,92 @@ TEST_F(TrafficAnnotationAuditorTest, CheckDuplicateHashes) {
   for (const auto& error : auditor.errors()) {
     EXPECT_EQ(error.type(),
               AuditorResult::ResultType::ERROR_DUPLICATE_UNIQUE_ID_HASH_CODE);
+  }
+}
+
+// Tests if TrafficAnnotationAuditor::CheckUniqueIDsFormat results are as
+// expected.
+TEST_F(TrafficAnnotationAuditorTest, CheckUniqueIDsFormat) {
+  std::map<std::string, bool> test_cases = {
+      {"ID1", true},   {"id2", true},   {"Id_3", true},
+      {"ID?4", false}, {"ID:5", false}, {"ID>>6", false},
+  };
+
+  TrafficAnnotationAuditor auditor(source_path(), build_path());
+  std::vector<AnnotationInstance> annotations;
+  std::vector<AnnotationInstance> all_annotations;
+  std::unique_ptr<AnnotationInstance> instance =
+      CreateAnnotationInstanceSample();
+  EXPECT_TRUE(instance != nullptr);
+  unsigned int false_samples_count = 0;
+
+  // Test cases one by one.
+  for (const auto& test_case : test_cases) {
+    instance->proto.set_unique_id(test_case.first);
+    annotations.clear();
+    annotations.push_back(*instance);
+    all_annotations.push_back(*instance);
+    auditor.SetExtractedAnnotationsForTest(annotations);
+    auditor.ClearErrorsForTest();
+    auditor.CheckUniqueIDsFormat();
+    EXPECT_EQ(auditor.errors().size(), test_case.second ? 0u : 1u);
+    if (!test_case.second)
+      false_samples_count++;
+  }
+
+  // Test all cases together.
+  auditor.SetExtractedAnnotationsForTest(all_annotations);
+  auditor.ClearErrorsForTest();
+  auditor.CheckUniqueIDsFormat();
+  EXPECT_EQ(auditor.errors().size(), false_samples_count);
+}
+
+// Tests if TrafficAnnotationAuditor::CheckAllRequiredFunctionsAreAnnotated
+// results are as expected. It also inherently checks
+// TrafficAnnotationAuditor::CheckIfCallCanBeUnannotated.
+TEST_F(TrafficAnnotationAuditorTest, CheckAllRequiredFunctionsAreAnnotated) {
+  std::string file_paths[] = {"net/url_request/url_fetcher.cc",
+                              "net/url_request/url_request_context.cc",
+                              "net/url_request/other_file.cc",
+                              "somewhere_else.cc"};
+  std::string function_names[] = {"net::URLFetcher::Create",
+                                  "net::URLRequestContext::CreateRequest",
+                                  "SSLClientSocket", "Something else", ""};
+
+  TrafficAnnotationAuditor auditor(source_path(), build_path());
+  std::vector<CallInstance> calls(1);
+  CallInstance& call = calls[0];
+
+  for (const std::string& file_path : file_paths) {
+    for (const std::string& function_name : function_names) {
+      for (int annotated = 0; annotated < 2; annotated++) {
+        for (int dependent = 0; dependent < 2; dependent++) {
+          call.file_path = file_path;
+          call.function_name = function_name;
+          call.is_annotated = annotated;
+          auditor.SetGnFileForTest(tests_folder().Append(
+              dependent ? FILE_PATH_LITERAL("gn_list_positive.txt")
+                        : FILE_PATH_LITERAL("gn_list_negative.txt")));
+
+          auditor.ClearErrorsForTest();
+          auditor.SetExtractedCallsForTest(calls);
+          auditor.ClearCheckedDependenciesForTest();
+          auditor.CheckAllRequiredFunctionsAreAnnotated();
+          // Error should be issued if a function is not annotated,
+          // chrome::chrome depends on it, the filepath is not whitelisted, and
+          // function name is either of the two specified ones.
+          EXPECT_EQ(
+              auditor.errors().size() == 1,
+              !annotated && dependent &&
+                  file_path != "net/url_request/url_fetcher.cc" &&
+                  file_path != "net/url_request/url_request_context.cc" &&
+                  (function_name == "net::URLFetcher::Create" ||
+                   function_name == "net::URLRequestContext::CreateRequest"))
+              << "The conditions for generating an error for missing "
+                 "annotation do not match the returned number of errors by "
+                 "auditor.";
+        }
+      }
+    }
   }
 }
