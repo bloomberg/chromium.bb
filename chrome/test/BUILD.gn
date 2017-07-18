@@ -3623,6 +3623,7 @@ test("unit_tests") {
       "../browser/media_galleries/win/mtp_device_object_enumerator_unittest.cc",
       "../browser/resource_coordinator/background_tab_navigation_throttle_unittest.cc",
       "../browser/resource_coordinator/tab_manager_delegate_chromeos_unittest.cc",
+      "../browser/resource_coordinator/tab_manager_stats_collector_unittest.cc",
       "../browser/resource_coordinator/tab_manager_unittest.cc",
       "../browser/resource_coordinator/tab_manager_web_contents_data_unittest.cc",
 

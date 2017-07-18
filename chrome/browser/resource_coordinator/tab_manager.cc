@@ -33,6 +33,7 @@
 #include "chrome/browser/resource_coordinator/resource_coordinator_web_contents_observer.h"
 #include "chrome/browser/resource_coordinator/tab_manager_grc_tab_signal_observer.h"
 #include "chrome/browser/resource_coordinator/tab_manager_observer.h"
+#include "chrome/browser/resource_coordinator/tab_manager_stats_collector.h"
 #include "chrome/browser/resource_coordinator/tab_manager_web_contents_data.h"
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/ui/browser.h"
@@ -155,6 +156,7 @@ TabManager::TabManager()
   if (resource_coordinator::IsResourceCoordinatorEnabled()) {
     grc_tab_signal_observer_.reset(new GRCTabSignalObserver());
   }
+  tab_manager_stats_collector_.reset(new TabManagerStatsCollector(this));
 }
 
 TabManager::~TabManager() {
@@ -825,6 +827,11 @@ void TabManager::ActiveTabChanged(content::WebContents* old_contents,
                                   content::WebContents* new_contents,
                                   int index,
                                   int reason) {
+  // An active tab is not purged.
+  // Calling GetWebContentsData() early ensures that the WebContentsData is
+  // created for |new_contents|, which |tab_manager_stats_collector_| expects.
+  GetWebContentsData(new_contents)->set_is_purged(false);
+
   // If |old_contents| is set, that tab has switched from being active to
   // inactive, so record the time of that transition.
   if (old_contents) {
@@ -835,11 +842,8 @@ void TabManager::ActiveTabChanged(content::WebContents* old_contents,
             GetTimeToPurge(min_time_to_purge_, max_time_to_purge_));
     // Only record switch-to-tab metrics when a switch happens, i.e.
     // |old_contents| is set.
-    RecordSwitchToTab(new_contents);
+    tab_manager_stats_collector_->RecordSwitchToTab(new_contents);
   }
-
-  // An active tab is not purged.
-  GetWebContentsData(new_contents)->set_is_purged(false);
 
   // Reload |web_contents| if it is in an active browser and discarded.
   if (IsActiveWebContentsInActiveBrowser(new_contents)) {
@@ -997,14 +1001,6 @@ std::vector<TabManager::BrowserInfo> TabManager::GetBrowserInfoList() const {
   }
 
   return browser_info_list;
-}
-
-void TabManager::RecordSwitchToTab(content::WebContents* contents) const {
-  if (is_session_restore_loading_tabs_) {
-    UMA_HISTOGRAM_ENUMERATION("TabManager.SessionRestore.SwitchToTab",
-                              GetWebContentsData(contents)->tab_loading_state(),
-                              TAB_LOADING_STATE_MAX);
-  }
 }
 
 content::NavigationThrottle::ThrottleCheckResult
