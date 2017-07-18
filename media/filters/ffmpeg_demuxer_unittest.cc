@@ -1660,4 +1660,32 @@ TEST_F(FFmpegDemuxerTest, StreamStatusNotifications) {
   CheckStreamStatusNotifications(demuxer_.get(), video_stream);
 }
 
+TEST_F(FFmpegDemuxerTest, MultitrackMemoryUsage) {
+  CreateDemuxer("multitrack-3video-2audio.webm");
+  InitializeDemuxer();
+
+  DemuxerStream* audio = GetStream(DemuxerStream::AUDIO);
+
+  // Read from the audio stream to make sure FFmpegDemuxer buffers data for all
+  // streams with available capacity, i.e all enabled streams. By default only
+  // the first audio and the first video stream are enabled, so the memory usage
+  // shouldn't be too high.
+  audio->Read(NewReadCB(FROM_HERE, 304, 0, true));
+  base::RunLoop().Run();
+  EXPECT_EQ(22134, demuxer_->GetMemoryUsage());
+
+  // Now enable all demuxer streams in the file and perform another read, this
+  // will buffer the data for additional streams and memory usage will increase.
+  std::vector<DemuxerStream*> streams = demuxer_->GetAllStreams();
+  for (auto* stream : streams)
+    static_cast<FFmpegDemuxerStream*>(stream)->SetEnabled(true,
+                                                          base::TimeDelta());
+
+  audio->Read(NewReadCB(FROM_HERE, 166, 21000, true));
+  base::RunLoop().Run();
+  // With newly enabled demuxer streams the amount of memory used by the demuxer
+  // is much higher.
+  EXPECT_EQ(156011, demuxer_->GetMemoryUsage());
+}
+
 }  // namespace media
