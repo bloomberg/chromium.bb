@@ -18,6 +18,7 @@ from pylib.constants import host_paths
 from pylib.instrumentation import test_result
 from pylib.instrumentation import instrumentation_parser
 from pylib.utils import dexdump
+from pylib.utils import instrumentation_tracing
 from pylib.utils import proguard
 from pylib.utils import shared_preference_utils
 
@@ -281,6 +282,7 @@ def _GetTestsFromPickle(pickle_path, jar_path):
 
 
 # TODO(yolandyan): remove this once the test listing from java runner lands
+@instrumentation_tracing.no_tracing
 def _GetTestsFromProguard(jar_path):
   p = proguard.Dump(jar_path)
   class_lookup = dict((c['class'], c) for c in p['classes'])
