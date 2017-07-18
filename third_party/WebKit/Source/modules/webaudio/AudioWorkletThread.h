@@ -39,7 +39,7 @@ class MODULES_EXPORT AudioWorkletThread final : public WorkerThread {
 
  protected:
   WorkerOrWorkletGlobalScope* CreateWorkerGlobalScope(
-      std::unique_ptr<WorkerThreadStartupData>) final;
+      std::unique_ptr<GlobalScopeCreationParams>) final;
 
   bool IsOwningBackingThread() const override { return false; }
 

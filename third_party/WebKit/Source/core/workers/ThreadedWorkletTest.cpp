@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "bindings/core/v8/V8CacheOptions.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/inspector/ConsoleMessageStorage.h"
 #include "core/testing/DummyPageHolder.h"
+#include "core/workers/GlobalScopeCreationParams.h"
 #include "core/workers/ThreadedWorkletGlobalScope.h"
 #include "core/workers/ThreadedWorkletMessagingProxy.h"
 #include "core/workers/ThreadedWorkletObjectProxy.h"
 #include "core/workers/WorkerInspectorProxy.h"
 #include "core/workers/WorkerThread.h"
-#include "core/workers/WorkerThreadStartupData.h"
 #include "core/workers/WorkerThreadTestHelper.h"
 #include "core/workers/WorkletThreadHolder.h"
 #include "platform/CrossThreadFunctional.h"
@@ -65,13 +66,13 @@ class ThreadedWorkletThreadForTest : public WorkerThread {
   void ClearWorkerBackingThread() override {}
 
   WorkerOrWorkletGlobalScope* CreateWorkerGlobalScope(
-      std::unique_ptr<WorkerThreadStartupData> startup_data) final {
+      std::unique_ptr<GlobalScopeCreationParams> creation_params) final {
     RefPtr<SecurityOrigin> security_origin =
-        SecurityOrigin::Create(startup_data->script_url_);
+        SecurityOrigin::Create(creation_params->script_url);
     return new ThreadedWorkletGlobalScope(
-        startup_data->script_url_, startup_data->user_agent_,
+        creation_params->script_url, creation_params->user_agent,
         std::move(security_origin), this->GetIsolate(), this,
-        startup_data->worker_clients_);
+        creation_params->worker_clients);
   }
 
   bool IsOwningBackingThread() const final { return false; }
@@ -137,14 +138,14 @@ class ThreadedWorkletMessagingProxyForTest
     Vector<String> origin_trial_tokens;
     std::unique_ptr<WorkerSettings> worker_settings = nullptr;
     InitializeWorkerThread(
-        WorkerThreadStartupData::Create(
+        WTF::MakeUnique<GlobalScopeCreationParams>(
             script_url, "fake user agent", "// fake source code",
             std::move(cached_meta_data), kDontPauseWorkerGlobalScopeOnStart,
             &content_security_policy_headers, referrer_policy,
             security_origin_.Get(), worker_clients, kWebAddressSpaceLocal,
             &origin_trial_tokens, std::move(worker_settings),
-            WorkerV8Settings::Default()),
-        script_url);
+            kV8CacheOptionsDefault),
+        WTF::nullopt, script_url);
   }
 
  private:

@@ -9,8 +9,8 @@
 #include "bindings/core/v8/V8GCController.h"
 #include "bindings/core/v8/V8IdleTaskRunner.h"
 #include "bindings/core/v8/V8Initializer.h"
-#include "bindings/core/v8/WorkerV8Settings.h"
 #include "core/inspector/WorkerThreadDebugger.h"
+#include "core/workers/WorkerBackingThreadStartupData.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/WebThreadSupportingGC.h"
@@ -59,7 +59,7 @@ WorkerBackingThread::WorkerBackingThread(WebThread* thread,
 WorkerBackingThread::~WorkerBackingThread() {}
 
 void WorkerBackingThread::InitializeOnBackingThread(
-    const WorkerV8Settings& settings) {
+    const WorkerBackingThreadStartupData& startup_data) {
   DCHECK(backing_thread_->IsCurrentThread());
   backing_thread_->InitializeOnThread();
 
@@ -86,12 +86,13 @@ void WorkerBackingThread::InitializeOnBackingThread(
   // Optimize for memory usage instead of latency for the worker isolate.
   isolate_->IsolateInBackgroundNotification();
 
-  if (settings.heap_limit_mode_ ==
-      WorkerV8Settings::HeapLimitMode::kIncreasedForDebugging) {
+  if (startup_data.heap_limit_mode ==
+      WorkerBackingThreadStartupData::HeapLimitMode::kIncreasedForDebugging) {
     isolate_->IncreaseHeapLimitForDebugging();
   }
-  isolate_->SetAllowAtomicsWait(settings.atomics_wait_mode_ ==
-                                WorkerV8Settings::AtomicsWaitMode::kAllow);
+  isolate_->SetAllowAtomicsWait(
+      startup_data.atomics_wait_mode ==
+      WorkerBackingThreadStartupData::AtomicsWaitMode::kAllow);
 }
 
 void WorkerBackingThread::ShutdownOnBackingThread() {

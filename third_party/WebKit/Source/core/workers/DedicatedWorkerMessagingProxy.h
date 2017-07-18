@@ -22,6 +22,9 @@ class CORE_EXPORT DedicatedWorkerMessagingProxy final
   bool IsAtomicsWaitAllowed() override;
 
  private:
+  WTF::Optional<WorkerBackingThreadStartupData> CreateBackingThreadStartupData(
+      v8::Isolate*) override;
+
   std::unique_ptr<WorkerThread> CreateWorkerThread(double origin_time) override;
 };
 

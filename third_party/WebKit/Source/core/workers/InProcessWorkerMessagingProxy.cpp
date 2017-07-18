@@ -28,6 +28,7 @@
 #include "core/workers/InProcessWorkerMessagingProxy.h"
 
 #include <memory>
+#include "bindings/core/v8/V8CacheOptions.h"
 #include "core/dom/Document.h"
 #include "core/dom/SecurityContext.h"
 #include "core/dom/TaskRunnerHelper.h"
@@ -38,12 +39,12 @@
 #include "core/loader/DocumentLoadTiming.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/origin_trials/OriginTrialContext.h"
+#include "core/workers/GlobalScopeCreationParams.h"
 #include "core/workers/InProcessWorkerBase.h"
 #include "core/workers/InProcessWorkerObjectProxy.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerInspectorProxy.h"
-#include "core/workers/WorkerThreadStartupData.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/wtf/WTF.h"
@@ -98,23 +99,18 @@ void InProcessWorkerMessagingProxy::StartWorkerGlobalScope(
       GetWorkerInspectorProxy()->WorkerStartMode(document);
   std::unique_ptr<WorkerSettings> worker_settings =
       WTF::WrapUnique(new WorkerSettings(document->GetSettings()));
-  WorkerV8Settings worker_v8_settings(WorkerV8Settings::Default());
-  worker_v8_settings.heap_limit_mode_ =
-      ToIsolate(document)->IsHeapLimitIncreasedForDebugging()
-          ? WorkerV8Settings::HeapLimitMode::kIncreasedForDebugging
-          : WorkerV8Settings::HeapLimitMode::kDefault;
-  worker_v8_settings.atomics_wait_mode_ =
-      IsAtomicsWaitAllowed() ? WorkerV8Settings::AtomicsWaitMode::kAllow
-                             : WorkerV8Settings::AtomicsWaitMode::kDisallow;
-  std::unique_ptr<WorkerThreadStartupData> startup_data =
-      WorkerThreadStartupData::Create(
+
+  auto global_scope_creation_params =
+      WTF::MakeUnique<GlobalScopeCreationParams>(
           script_url, user_agent, source_code, nullptr, start_mode,
           csp->Headers().get(), referrer_policy, starter_origin,
           ReleaseWorkerClients(), document->AddressSpace(),
           OriginTrialContext::GetTokens(document).get(),
-          std::move(worker_settings), worker_v8_settings);
+          std::move(worker_settings), kV8CacheOptionsDefault);
 
-  InitializeWorkerThread(std::move(startup_data), script_url);
+  InitializeWorkerThread(std::move(global_scope_creation_params),
+                         CreateBackingThreadStartupData(ToIsolate(document)),
+                         script_url);
 }
 
 void InProcessWorkerMessagingProxy::PostMessageToWorkerObject(

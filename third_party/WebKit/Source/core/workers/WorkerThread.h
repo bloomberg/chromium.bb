@@ -33,6 +33,7 @@
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/loader/ThreadableLoadingContext.h"
 #include "core/workers/ParentFrameTaskRunners.h"
+#include "core/workers/WorkerBackingThreadStartupData.h"
 #include "core/workers/WorkerThreadLifecycleContext.h"
 #include "core/workers/WorkerThreadLifecycleObserver.h"
 #include "platform/WaitableEvent.h"
@@ -40,6 +41,7 @@
 #include "platform/scheduler/child/worker_global_scope_scheduler.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/Functional.h"
+#include "platform/wtf/Optional.h"
 #include "platform/wtf/PassRefPtr.h"
 #include "public/platform/WebThread.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -54,7 +56,7 @@ class WorkerBackingThread;
 class WorkerInspectorController;
 class WorkerOrWorkletGlobalScope;
 class WorkerReportingProxy;
-class WorkerThreadStartupData;
+struct GlobalScopeCreationParams;
 
 enum WorkerThreadStartMode {
   kDontPauseWorkerGlobalScopeOnStart,
@@ -88,8 +90,20 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
 
   virtual ~WorkerThread();
 
-  // Called on the main thread.
-  void Start(std::unique_ptr<WorkerThreadStartupData>, ParentFrameTaskRunners*);
+  // Starts the underlying thread and creates the global scope. Called on the
+  // main thread.
+  // Startup data for WorkerBackingThread must be WTF::nullopt if |this| doesn't
+  // own the underlying WorkerBackingThread.
+  // TODO(nhiroki): We could separate WorkerBackingThread initialization from
+  // GlobalScope initialization sequence, that is, InitializeOnWorkerThread().
+  // After that, we could remove this startup data for WorkerBackingThread.
+  // (https://crbug.com/710364)
+  void Start(std::unique_ptr<GlobalScopeCreationParams>,
+             const WTF::Optional<WorkerBackingThreadStartupData>&,
+             ParentFrameTaskRunners*);
+
+  // Closes the global scope and terminates the underlying thread. Called on the
+  // main thread.
   void Terminate();
 
   // Called on the main thread for the leak detector. Forcibly terminates the
@@ -173,7 +187,7 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   // Factory method for creating a new worker context for the thread.
   // Called on the worker thread.
   virtual WorkerOrWorkletGlobalScope* CreateWorkerGlobalScope(
-      std::unique_ptr<WorkerThreadStartupData>) = 0;
+      std::unique_ptr<GlobalScopeCreationParams>) = 0;
 
   // Returns true when this WorkerThread owns the associated
   // WorkerBackingThread exclusively. If this function returns true, the
@@ -217,7 +231,9 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   void EnsureScriptExecutionTerminates(ExitCode);
 
   void InitializeSchedulerOnWorkerThread(WaitableEvent*);
-  void InitializeOnWorkerThread(std::unique_ptr<WorkerThreadStartupData>);
+  void InitializeOnWorkerThread(
+      std::unique_ptr<GlobalScopeCreationParams>,
+      const WTF::Optional<WorkerBackingThreadStartupData>&);
   void PrepareForShutdownOnWorkerThread();
   void PerformShutdownOnWorkerThread();
   template <WTF::FunctionThreadAffinity threadAffinity>

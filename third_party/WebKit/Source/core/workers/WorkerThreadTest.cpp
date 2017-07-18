@@ -5,6 +5,8 @@
 #include "core/workers/WorkerThread.h"
 
 #include <memory>
+#include "bindings/core/v8/V8CacheOptions.h"
+#include "core/workers/GlobalScopeCreationParams.h"
 #include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkerThreadTestHelper.h"
 #include "platform/WaitableEvent.h"
@@ -293,17 +295,18 @@ TEST_F(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunningOnInitialization) {
                                    kContentSecurityPolicyHeaderTypeReport);
   headers->push_back(header_and_type);
 
-  // Specify PauseWorkerGlobalScopeOnStart so that the worker thread can pause
-  // on initialziation to run debugger tasks.
-  std::unique_ptr<WorkerThreadStartupData> startup_data =
-      WorkerThreadStartupData::Create(
+  // Specify kPauseWorkerGlobalScopeOnStart so that the worker thread can pause
+  // on initialization to run debugger tasks.
+  auto global_scope_creation_params =
+      WTF::MakeUnique<GlobalScopeCreationParams>(
           KURL(kParsedURLString, "http://fake.url/"), "fake user agent",
           "//fake source code", nullptr, /* cachedMetaData */
           kPauseWorkerGlobalScopeOnStart, headers.get(), "",
           security_origin_.Get(), nullptr, /* workerClients */
           kWebAddressSpaceLocal, nullptr /* originTrialToken */,
-          nullptr /* WorkerSettings */, WorkerV8Settings::Default());
-  worker_thread_->Start(std::move(startup_data),
+          nullptr /* WorkerSettings */, kV8CacheOptionsDefault);
+  worker_thread_->Start(std::move(global_scope_creation_params),
+                        WorkerBackingThreadStartupData::CreateDefault(),
                         ParentFrameTaskRunners::Create());
 
   // Used to wait for worker thread termination in a debugger task on the
