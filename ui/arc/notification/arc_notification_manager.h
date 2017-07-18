@@ -9,12 +9,16 @@
 #include <string>
 #include <unordered_map>
 
-#include "components/arc/arc_service.h"
 #include "components/arc/common/notifications.mojom.h"
 #include "components/arc/instance_holder.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/message_center/message_center.h"
+
+namespace content {
+class BrowserContext;
+}  // namespace content
 
 namespace arc {
 
@@ -22,16 +26,25 @@ class ArcBridgeService;
 class ArcNotificationItem;
 
 class ArcNotificationManager
-    : public ArcService,
+    : public KeyedService,
       public InstanceHolder<mojom::NotificationsInstance>::Observer,
       public mojom::NotificationsHost {
  public:
-  ArcNotificationManager(ArcBridgeService* bridge_service,
-                         const AccountId& main_profile_id);
+  // Returns singleton instance for the given BrowserContext,
+  // or nullptr if the browser |context| is not allowed to use ARC.
+  static ArcNotificationManager* GetForBrowserContext(
+      content::BrowserContext* context);
 
-  ArcNotificationManager(ArcBridgeService* bridge_service,
-                         const AccountId& main_profile_id,
-                         message_center::MessageCenter* message_center);
+  // Returns a created instance for testing.
+  static std::unique_ptr<ArcNotificationManager> CreateForTesting(
+      ArcBridgeService* bridge_service,
+      const AccountId& main_profile_id,
+      message_center::MessageCenter* message_center);
+
+  // TODO(hidehiko): Make ctor private to enforce all service users should
+  // use GetForBrowserContext().
+  ArcNotificationManager(content::BrowserContext* context,
+                         ArcBridgeService* bridge_service);
 
   ~ArcNotificationManager() override;
 
@@ -57,6 +70,11 @@ class ArcNotificationManager
   void SendNotificationToggleExpansionOnChrome(const std::string& key);
 
  private:
+  ArcNotificationManager(ArcBridgeService* bridge_service,
+                         const AccountId& main_profile_id,
+                         message_center::MessageCenter* message_center);
+
+  ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
   const AccountId main_profile_id_;
   message_center::MessageCenter* const message_center_;
 

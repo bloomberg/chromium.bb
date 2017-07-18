@@ -122,6 +122,7 @@ static_library("arc_base") {
     "//base",
     "//chromeos",
     "//components/keyed_service/content",
+    "//components/signin/core/account_id",
     "//components/user_manager",
     "//mojo/edk/system",
   ]
