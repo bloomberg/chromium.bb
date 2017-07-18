@@ -48,6 +48,7 @@ enum class DialogViewID : int {
   ORDER_SUMMARY_LINE_ITEM_2,
   ORDER_SUMMARY_LINE_ITEM_3,
   DATA_SOURCE_LABEL,
+  GOOGLE_PAYMENTS_EDIT_LINK_LABEL,
 
   // This is the title used at the top of each sheet.
   SHEET_TITLE,

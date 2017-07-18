@@ -17,6 +17,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_models.h"
+#include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
+#include "chrome/browser/ui/singleton_tabs.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
 #include "chrome/browser/ui/views/payments/payment_request_views_util.h"
@@ -28,6 +31,7 @@
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/browser/payments/payments_service_url.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_clock.h"
@@ -43,6 +47,7 @@
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/styled_label.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
@@ -188,8 +193,7 @@ CreditCardEditorViewController::CreateHeaderView() {
   constexpr int kRowBottomPadding = 6;
   views::BoxLayout* layout = new views::BoxLayout(
       views::BoxLayout::kVertical,
-      gfx::Insets(kRowBottomPadding,
-                  payments::kPaymentRequestRowHorizontalInsets),
+      gfx::Insets(kRowBottomPadding, kPaymentRequestRowHorizontalInsets),
       kRowVerticalSpacing);
   layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
   layout->set_cross_axis_alignment(
@@ -237,6 +241,35 @@ CreditCardEditorViewController::CreateHeaderView() {
     icons_row->AddChildView(card_icon_view.release());
   }
   view->AddChildView(icons_row.release());
+
+  // If dealing with a server card, we add "From Google Payments" with an edit
+  // link.
+  if (IsEditingServerCard()) {
+    std::unique_ptr<views::View> data_source = base::MakeUnique<views::View>();
+    auto data_source_layout = base::MakeUnique<views::BoxLayout>(
+        views::BoxLayout::kHorizontal, gfx::Insets(), kPaddingBetweenCardIcons);
+    data_source->SetLayoutManager(data_source_layout.release());
+
+    // "From Google Payments".
+    data_source->AddChildView(
+        CreateHintLabel(
+            l10n_util::GetStringUTF16(IDS_AUTOFILL_FROM_GOOGLE_ACCOUNT_LONG))
+            .release());
+
+    // "Edit" link.
+    base::string16 link_text =
+        l10n_util::GetStringUTF16(IDS_AUTOFILL_WALLET_MANAGEMENT_LINK_TEXT);
+    auto edit_link = base::MakeUnique<views::StyledLabel>(link_text, this);
+    edit_link->set_id(
+        static_cast<int>(DialogViewID::GOOGLE_PAYMENTS_EDIT_LINK_LABEL));
+    edit_link->AddStyleRange(
+        gfx::Range(0, link_text.size()),
+        views::StyledLabel::RangeStyleInfo::CreateForLink());
+    edit_link->SizeToFit(0);
+    data_source->AddChildView(edit_link.release());
+
+    view->AddChildView(data_source.release());
+  }
 
   return view;
 }
@@ -500,6 +533,17 @@ CreditCardEditorViewController::GetComboboxModelForType(
       break;
   }
   return std::unique_ptr<ui::ComboboxModel>();
+}
+
+void CreditCardEditorViewController::StyledLabelLinkClicked(
+    views::StyledLabel* label,
+    const gfx::Range& range,
+    int event_flags) {
+  // The only thing that can trigger this is the user clicking on the "edit"
+  // link for a server card.
+  chrome::ScopedTabbedBrowserDisplayer displayer(dialog()->GetProfile());
+  chrome::ShowSingletonTab(displayer.browser(),
+                           autofill::payments::GetManageAddressesUrl(0));
 }
 
 void CreditCardEditorViewController::SelectBasicCardNetworkIcon(

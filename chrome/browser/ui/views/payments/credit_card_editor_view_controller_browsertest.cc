@@ -15,6 +15,7 @@
 #include "components/autofill/core/browser/address_combobox_model.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/browser/payments/payments_service_url.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/autofill/core/browser/test_region_data_loader.h"
@@ -26,6 +27,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/combobox/combobox.h"
+#include "ui/views/controls/styled_label.h"
 
 namespace payments {
 
@@ -295,6 +297,51 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest, EditingMaskedCard) {
                                        request->state()->selected_instrument())
                                        ->credit_card();
   EXPECT_EQ(additional_profile.guid(), selected->billing_address_id());
+}
+
+IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
+                       EditingMaskedCard_ClickOnPaymentsLink) {
+  autofill::TestAutofillClock test_clock;
+  test_clock.SetNow(kJune2017);
+
+  autofill::AutofillProfile billing_profile(autofill::test::GetFullProfile());
+  AddAutofillProfile(billing_profile);
+  // Add a second address profile to the DB.
+  autofill::AutofillProfile additional_profile =
+      autofill::test::GetFullProfile2();
+  AddAutofillProfile(additional_profile);
+  autofill::CreditCard card = autofill::test::GetMaskedServerCard();
+  card.set_billing_address_id(billing_profile.guid());
+  AddCreditCard(card);
+
+  InvokePaymentRequestUI();
+
+  OpenPaymentMethodScreen();
+
+  views::View* list_view = dialog_view()->GetViewByID(
+      static_cast<int>(DialogViewID::PAYMENT_METHOD_SHEET_LIST_VIEW));
+  EXPECT_TRUE(list_view);
+  EXPECT_EQ(1, list_view->child_count());
+
+  views::View* edit_button = list_view->child_at(0)->GetViewByID(
+      static_cast<int>(DialogViewID::EDIT_ITEM_BUTTON));
+
+  ResetEventObserver(DialogEvent::CREDIT_CARD_EDITOR_OPENED);
+  ClickOnDialogViewAndWait(edit_button);
+
+  views::StyledLabel* styled_label =
+      static_cast<views::StyledLabel*>(dialog_view()->GetViewByID(
+          static_cast<int>(DialogViewID::GOOGLE_PAYMENTS_EDIT_LINK_LABEL)));
+  EXPECT_TRUE(styled_label);
+
+  content::WebContentsAddedObserver web_contents_added_observer;
+  styled_label->LinkClicked(nullptr, 0);
+  content::WebContents* new_tab_contents =
+      web_contents_added_observer.GetWebContents();
+
+  // A tab has opened at the Google Payments link.
+  EXPECT_EQ(autofill::payments::GetManageAddressesUrl(0),
+            new_tab_contents->GetVisibleURL());
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
