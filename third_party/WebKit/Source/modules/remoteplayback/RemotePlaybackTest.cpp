@@ -39,9 +39,9 @@ class MockFunction : public ScriptFunction {
       : ScriptFunction(script_state) {}
 };
 
-class MockEventListener : public EventListener {
+class MockEventListenerForRemotePlayback : public EventListener {
  public:
-  MockEventListener() : EventListener(kCPPEventListenerType) {}
+  MockEventListenerForRemotePlayback() : EventListener(kCPPEventListenerType) {}
 
   bool operator==(const EventListener& other) const final {
     return this == &other;
@@ -199,9 +199,12 @@ TEST_F(RemotePlaybackTest, StateChangeEvents) {
   RemotePlayback* remote_playback =
       HTMLMediaElementRemotePlayback::remote(*element);
 
-  auto connecting_handler = new ::testing::StrictMock<MockEventListener>();
-  auto connect_handler = new ::testing::StrictMock<MockEventListener>();
-  auto disconnect_handler = new ::testing::StrictMock<MockEventListener>();
+  auto connecting_handler =
+      new ::testing::StrictMock<MockEventListenerForRemotePlayback>();
+  auto connect_handler =
+      new ::testing::StrictMock<MockEventListenerForRemotePlayback>();
+  auto disconnect_handler =
+      new ::testing::StrictMock<MockEventListenerForRemotePlayback>();
 
   remote_playback->addEventListener(EventTypeNames::connecting,
                                     connecting_handler);
