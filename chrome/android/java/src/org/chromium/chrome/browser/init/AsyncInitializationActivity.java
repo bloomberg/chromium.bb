@@ -35,6 +35,7 @@ import org.chromium.base.library_loader.LoaderErrors;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
 import org.chromium.chrome.browser.metrics.MemoryUma;
@@ -185,14 +186,17 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
 
     @Override
     public void maybePreconnect() {
-        TraceEvent.begin("maybePreconnect");
-        Intent intent = getIntent();
-        if (intent != null && Intent.ACTION_VIEW.equals(intent.getAction())) {
-            final String url = intent.getDataString();
-            WarmupManager.getInstance()
-                .maybePreconnectUrlAndSubResources(Profile.getLastUsedProfile(), url);
+        try {
+            TraceEvent.begin("maybePreconnect");
+            Intent intent = getIntent();
+            if (intent == null || !Intent.ACTION_VIEW.equals(intent.getAction())) return;
+            String url = IntentHandler.getUrlFromIntent(intent);
+            if (url == null) return;
+            WarmupManager.getInstance().maybePreconnectUrlAndSubResources(
+                    Profile.getLastUsedProfile(), url);
+        } finally {
+            TraceEvent.end("maybePreconnect");
         }
-        TraceEvent.end("maybePreconnect");
     }
 
     @Override

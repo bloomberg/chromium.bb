@@ -231,9 +231,11 @@ public final class WarmupManager {
 
         Uri uri = Uri.parse(url);
         if (uri == null) return;
+        String scheme = uri.normalizeScheme().getScheme();
+        boolean isHttp = UrlConstants.HTTP_SCHEME.equals(scheme);
+        if (!isHttp && !UrlConstants.HTTPS_SCHEME.equals(scheme)) return;
         // HTTP connections will not be used when the data reduction proxy is enabled.
-        if (DataReductionProxySettings.getInstance().isDataReductionProxyEnabled()
-                && UrlConstants.HTTP_SCHEME.equals(uri.normalizeScheme().getScheme())) {
+        if (DataReductionProxySettings.getInstance().isDataReductionProxyEnabled() && isHttp) {
             return;
         }
 
