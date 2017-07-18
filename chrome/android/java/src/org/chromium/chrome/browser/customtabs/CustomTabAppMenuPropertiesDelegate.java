@@ -75,52 +75,71 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
                         mActivity, menu.findItem(R.id.direct_share_menu_id));
             }
 
-            MenuItem iconRow = menu.findItem(R.id.icon_row_menu_id);
-            MenuItem openInChromeItem = menu.findItem(R.id.open_in_browser_id);
-            MenuItem bookmarkItem = menu.findItem(R.id.bookmark_this_page_id);
-            MenuItem downloadItem = menu.findItem(R.id.offline_page_id);
-
+            boolean openInChromeItemVisible = true;
+            boolean bookmarkItemVisible = mShowStar;
+            boolean downloadItemVisible = mShowDownload;
             boolean addToHomeScreenVisible = true;
-            updateRequestDesktopSiteMenuItem(menu, currentTab);
+            boolean requestDesktopSiteVisible = true;
 
             if (mUiType == CUSTOM_TABS_UI_TYPE_MEDIA_VIEWER) {
                 // Most of the menu items don't make sense when viewing media.
-                iconRow.setVisible(false);
-                openInChromeItem.setVisible(false);
+                menu.findItem(R.id.icon_row_menu_id).setVisible(false);
                 menu.findItem(R.id.find_in_page_id).setVisible(false);
-                menu.findItem(R.id.request_desktop_site_row_menu_id).setVisible(false);
+                bookmarkItemVisible = false; // Set to skip initialization.
+                downloadItemVisible = false; // Set to skip initialization.
+                openInChromeItemVisible = false;
+                requestDesktopSiteVisible = false;
                 addToHomeScreenVisible = false;
             } else if (mUiType == CUSTOM_TABS_UI_TYPE_PAYMENT_REQUEST) {
                 // Only the icon row and 'find in page' are shown for openning payment request UI
                 // from Chrome.
-                openInChromeItem.setVisible(false);
-                menu.findItem(R.id.request_desktop_site_id).setVisible(false);
+                openInChromeItemVisible = false;
+                requestDesktopSiteVisible = false;
                 addToHomeScreenVisible = false;
-                downloadItem.setVisible(false);
-                bookmarkItem.setVisible(false);
-            } else {
-                openInChromeItem.setTitle(
-                        DefaultBrowserInfo.getTitleOpenInDefaultBrowser(mIsOpenedByChrome));
-                updateBookmarkMenuItem(bookmarkItem, currentTab);
-            }
-            if (!mShowStar) {
-                bookmarkItem.setVisible(false);
-            }
-            downloadItem.setVisible(mShowDownload);
-            if (!FirstRunStatus.getFirstRunFlowComplete()) {
-                openInChromeItem.setVisible(false);
-                bookmarkItem.setVisible(false);
-                downloadItem.setVisible(false);
-                addToHomeScreenVisible = false;
+                downloadItemVisible = false;
+                bookmarkItemVisible = false;
             }
 
-            downloadItem.setEnabled(DownloadUtils.isAllowedToDownloadPage(currentTab));
+            if (!FirstRunStatus.getFirstRunFlowComplete()) {
+                openInChromeItemVisible = false;
+                bookmarkItemVisible = false;
+                downloadItemVisible = false;
+                addToHomeScreenVisible = false;
+            }
 
             String url = currentTab.getUrl();
             boolean isChromeScheme = url.startsWith(UrlConstants.CHROME_URL_PREFIX)
                     || url.startsWith(UrlConstants.CHROME_NATIVE_URL_PREFIX);
             if (isChromeScheme) {
                 addToHomeScreenVisible = false;
+            }
+
+            MenuItem downloadItem = menu.findItem(R.id.offline_page_id);
+            if (downloadItemVisible) {
+                downloadItem.setEnabled(DownloadUtils.isAllowedToDownloadPage(currentTab));
+            } else {
+                downloadItem.setVisible(false);
+            }
+
+            MenuItem bookmarkItem = menu.findItem(R.id.bookmark_this_page_id);
+            if (bookmarkItemVisible) {
+                updateBookmarkMenuItem(bookmarkItem, currentTab);
+            } else {
+                bookmarkItem.setVisible(false);
+            }
+
+            MenuItem openInChromeItem = menu.findItem(R.id.open_in_browser_id);
+            if (openInChromeItemVisible) {
+                openInChromeItem.setTitle(
+                        DefaultBrowserInfo.getTitleOpenInDefaultBrowser(mIsOpenedByChrome));
+            } else {
+                openInChromeItem.setVisible(false);
+            }
+
+            if (requestDesktopSiteVisible) {
+                updateRequestDesktopSiteMenuItem(menu, currentTab);
+            } else {
+                menu.findItem(R.id.request_desktop_site_row_menu_id).setVisible(false);
             }
 
             // Add custom menu items. Make sure they are only added once.
