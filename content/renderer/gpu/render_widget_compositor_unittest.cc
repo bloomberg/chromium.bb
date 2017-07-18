@@ -315,5 +315,36 @@ TEST_F(RenderWidgetLayerTreeFrameSinkTest, FallbackSuccessNormalSuccess) {
 }
 #endif
 
+// Verify desktop memory limit calculations.
+#if !defined(OS_ANDROID)
+TEST(RenderWidgetCompositorTest, IgnoreGivenMemoryPolicy) {
+  auto policy = RenderWidgetCompositor::GetGpuMemoryPolicy(
+      cc::ManagedMemoryPolicy(256), ScreenInfo());
+  EXPECT_EQ(512u * 1024u * 1024u, policy.bytes_limit_when_visible);
+  EXPECT_EQ(gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE,
+            policy.priority_cutoff_when_visible);
+}
+
+TEST(RenderWidgetCompositorTest, LargeScreensUseMoreMemory) {
+  ScreenInfo screen_info;
+
+  screen_info.rect = gfx::Rect(4096, 2160);
+  screen_info.device_scale_factor = 1.f;
+  auto policy = RenderWidgetCompositor::GetGpuMemoryPolicy(
+      cc::ManagedMemoryPolicy(256), screen_info);
+  EXPECT_EQ(2u * 512u * 1024u * 1024u, policy.bytes_limit_when_visible);
+  EXPECT_EQ(gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE,
+            policy.priority_cutoff_when_visible);
+
+  screen_info.rect = gfx::Rect(2048, 1080);
+  screen_info.device_scale_factor = 2.f;
+  policy = RenderWidgetCompositor::GetGpuMemoryPolicy(
+      cc::ManagedMemoryPolicy(256), screen_info);
+  EXPECT_EQ(2u * 512u * 1024u * 1024u, policy.bytes_limit_when_visible);
+  EXPECT_EQ(gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE,
+            policy.priority_cutoff_when_visible);
+}
+#endif  // !defined(OS_ANDROID)
+
 }  // namespace
 }  // namespace content
