@@ -10,9 +10,11 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/singleton.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/arc/arc_bridge_service.h"
+#include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/common/video_decode_accelerator.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/gpu_service_registry.h"
@@ -35,6 +37,25 @@ void ConnectToVideoEncodeAcceleratorOnIOThread(
     mojom::VideoEncodeAcceleratorRequest request) {
   content::BindInterfaceInGpuProcess(std::move(request));
 }
+
+// Singleton factory for GpuArcVideoServiceHost.
+class GpuArcVideoServiceHostFactory
+    : public internal::ArcBrowserContextKeyedServiceFactoryBase<
+          GpuArcVideoServiceHost,
+          GpuArcVideoServiceHostFactory> {
+ public:
+  // Factory name used by ArcBrowserContextKeyedServiceFactoryBase.
+  static constexpr const char* kName = "GpuArcVideoServiceHostFactory";
+
+  static GpuArcVideoServiceHostFactory* GetInstance() {
+    return base::Singleton<GpuArcVideoServiceHostFactory>::get();
+  }
+
+ private:
+  friend base::DefaultSingletonTraits<GpuArcVideoServiceHostFactory>;
+  GpuArcVideoServiceHostFactory() = default;
+  ~GpuArcVideoServiceHostFactory() override = default;
+};
 
 }  // namespace
 
@@ -62,21 +83,33 @@ class VideoAcceleratorFactoryService : public mojom::VideoAcceleratorFactory {
   DISALLOW_COPY_AND_ASSIGN(VideoAcceleratorFactoryService);
 };
 
-GpuArcVideoServiceHost::GpuArcVideoServiceHost(ArcBridgeService* bridge_service)
-    : ArcService(bridge_service), binding_(this) {
+// static
+GpuArcVideoServiceHost* GpuArcVideoServiceHost::GetForBrowserContext(
+    content::BrowserContext* context) {
+  return GpuArcVideoServiceHostFactory::GetForBrowserContext(context);
+}
+
+GpuArcVideoServiceHost::GpuArcVideoServiceHost(content::BrowserContext* context,
+                                               ArcBridgeService* bridge_service)
+    : arc_bridge_service_(bridge_service), binding_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  arc_bridge_service()->video()->AddObserver(this);
+  arc_bridge_service_->video()->AddObserver(this);
 }
 
 GpuArcVideoServiceHost::~GpuArcVideoServiceHost() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  arc_bridge_service()->video()->RemoveObserver(this);
+  // TODO(hidehiko): Currently, the lifetime of ArcBridgeService and
+  // BrowserContextKeyedService is not nested.
+  // If ArcServiceManager::Get() returns nullptr, it is already destructed,
+  // so do not touch it.
+  if (ArcServiceManager::Get())
+    arc_bridge_service_->video()->RemoveObserver(this);
 }
 
 void GpuArcVideoServiceHost::OnInstanceReady() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   auto* video_instance =
-      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service()->video(), Init);
+      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->video(), Init);
   DCHECK(video_instance);
   mojom::VideoHostPtr host_proxy;
   binding_.Bind(mojo::MakeRequest(&host_proxy));

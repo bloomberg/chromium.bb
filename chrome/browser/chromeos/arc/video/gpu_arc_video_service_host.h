@@ -6,10 +6,14 @@
 #define CHROME_BROWSER_CHROMEOS_ARC_VIDEO_GPU_ARC_VIDEO_SERVICE_HOST_H_
 
 #include "base/macros.h"
-#include "components/arc/arc_service.h"
 #include "components/arc/common/video.mojom.h"
 #include "components/arc/instance_holder.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
+
+namespace content {
+class BrowserContext;
+}  // namespace content
 
 namespace arc {
 
@@ -23,11 +27,17 @@ class ArcBridgeService;
 //
 // Lives on the UI thread.
 class GpuArcVideoServiceHost
-    : public ArcService,
+    : public KeyedService,
       public InstanceHolder<mojom::VideoInstance>::Observer,
       public mojom::VideoHost {
  public:
-  explicit GpuArcVideoServiceHost(ArcBridgeService* bridge_service);
+  // Returns singleton instance for the given BrowserContext,
+  // or nullptr if the browser |context| is not allowed to use ARC.
+  static GpuArcVideoServiceHost* GetForBrowserContext(
+      content::BrowserContext* context);
+
+  GpuArcVideoServiceHost(content::BrowserContext* context,
+                         ArcBridgeService* bridge_service);
   ~GpuArcVideoServiceHost() override;
 
   // arc::InstanceHolder<mojom::VideoInstance>::Observer implementation.
@@ -38,6 +48,7 @@ class GpuArcVideoServiceHost
       const OnBootstrapVideoAcceleratorFactoryCallback& callback) override;
 
  private:
+  ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
   mojo::Binding<mojom::VideoHost> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuArcVideoServiceHost);
