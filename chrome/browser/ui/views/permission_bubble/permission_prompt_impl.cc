@@ -249,66 +249,18 @@ void PermissionsBubbleDialogDelegateView::UpdateAnchor(
 //////////////////////////////////////////////////////////////////////////////
 // PermissionPromptImpl
 
-PermissionPromptImpl::PermissionPromptImpl(Browser* browser)
-    : browser_(browser),
-      delegate_(nullptr),
-      bubble_delegate_(nullptr) {}
+PermissionPromptImpl::PermissionPromptImpl(Browser* browser, Delegate* delegate)
+    : browser_(browser), delegate_(delegate), bubble_delegate_(nullptr) {
+  Show();
+}
 
 PermissionPromptImpl::~PermissionPromptImpl() {
-}
-
-void PermissionPromptImpl::SetDelegate(Delegate* delegate) {
-  delegate_ = delegate;
-}
-
-void PermissionPromptImpl::Show() {
-  DCHECK(browser_);
-  DCHECK(browser_->window());
-
   if (bubble_delegate_)
     bubble_delegate_->CloseBubble();
-
-  bubble_delegate_ =
-      new PermissionsBubbleDialogDelegateView(this, delegate_->Requests());
-
-  // Set |parent_window| because some valid anchors can become hidden.
-  bubble_delegate_->set_parent_window(
-      platform_util::GetViewForWindow(browser_->window()->GetNativeWindow()));
-
-  // Compensate for vertical padding in the anchor view's image. Note this is
-  // ignored whenever the anchor view is null.
-  bubble_delegate_->set_anchor_view_insets(gfx::Insets(
-      GetLayoutConstant(LOCATION_BAR_BUBBLE_ANCHOR_VERTICAL_INSET), 0));
-
-  views::Widget* widget =
-      views::BubbleDialogDelegateView::CreateBubble(bubble_delegate_);
-  // If a browser window (or popup) other than the bubble parent has focus,
-  // don't take focus.
-  if (browser_->window()->IsActive())
-    widget->Show();
-  else
-    widget->ShowInactive();
-
-  bubble_delegate_->SizeToContents();
-
-  bubble_delegate_->UpdateAnchor(GetAnchorView(),
-                                 GetAnchorPoint(),
-                                 GetAnchorArrow());
 }
 
 bool PermissionPromptImpl::CanAcceptRequestUpdate() {
   return !(bubble_delegate_ && bubble_delegate_->IsMouseHovered());
-}
-
-bool PermissionPromptImpl::HidesAutomatically() {
-  return false;
-}
-
-void PermissionPromptImpl::Hide() {
-  if (bubble_delegate_) {
-    bubble_delegate_->CloseBubble();
-    bubble_delegate_ = nullptr;
-  }
 }
 
 void PermissionPromptImpl::UpdateAnchorPosition() {
@@ -350,4 +302,35 @@ void PermissionPromptImpl::Accept() {
 void PermissionPromptImpl::Deny() {
   if (delegate_)
     delegate_->Deny();
+}
+
+void PermissionPromptImpl::Show() {
+  DCHECK(browser_);
+  DCHECK(browser_->window());
+
+  bubble_delegate_ =
+      new PermissionsBubbleDialogDelegateView(this, delegate_->Requests());
+
+  // Set |parent_window| because some valid anchors can become hidden.
+  bubble_delegate_->set_parent_window(
+      platform_util::GetViewForWindow(browser_->window()->GetNativeWindow()));
+
+  // Compensate for vertical padding in the anchor view's image. Note this is
+  // ignored whenever the anchor view is null.
+  bubble_delegate_->set_anchor_view_insets(gfx::Insets(
+      GetLayoutConstant(LOCATION_BAR_BUBBLE_ANCHOR_VERTICAL_INSET), 0));
+
+  views::Widget* widget =
+      views::BubbleDialogDelegateView::CreateBubble(bubble_delegate_);
+  // If a browser window (or popup) other than the bubble parent has focus,
+  // don't take focus.
+  if (browser_->window()->IsActive())
+    widget->Show();
+  else
+    widget->ShowInactive();
+
+  bubble_delegate_->SizeToContents();
+
+  bubble_delegate_->UpdateAnchor(GetAnchorView(), GetAnchorPoint(),
+                                 GetAnchorArrow());
 }

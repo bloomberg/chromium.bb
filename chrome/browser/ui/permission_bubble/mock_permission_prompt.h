@@ -8,7 +8,6 @@
 #include "chrome/browser/ui/permission_bubble/permission_prompt.h"
 
 class MockPermissionPromptFactory;
-class PermissionRequestManager;
 
 // Provides a skeleton class for unit and browser testing when trying to test
 // the request manager logic. Should not be used for anything that requires
@@ -19,11 +18,7 @@ class MockPermissionPrompt : public PermissionPrompt {
   ~MockPermissionPrompt() override;
 
   // PermissionPrompt:
-  void SetDelegate(Delegate* delegate) override {}
-  void Show() override;
   bool CanAcceptRequestUpdate() override;
-  bool HidesAutomatically() override;
-  void Hide() override;
   void UpdateAnchorPosition() override;
   gfx::NativeWindow GetNativeWindow() override;
 
@@ -33,12 +28,12 @@ class MockPermissionPrompt : public PermissionPrompt {
   friend class MockPermissionPromptFactory;
 
   MockPermissionPrompt(MockPermissionPromptFactory* factory,
-                       PermissionRequestManager* manager);
+                       Delegate* delegate,
+                       bool can_update_ui);
 
   MockPermissionPromptFactory* factory_;
-  PermissionRequestManager* manager_;
+  Delegate* delegate_;
   bool can_update_ui_;
-  bool is_visible_;
 };
 
 #endif  // CHROME_BROWSER_UI_PERMISSION_BUBBLE_MOCK_PERMISSION_PROMPT_H_

@@ -404,9 +404,7 @@ void PermissionRequestManager::ShowBubble() {
   DCHECK(main_frame_has_fully_loaded_);
   DCHECK(tab_can_show_prompts_);
 
-  view_ = view_factory_.Run(web_contents());
-  view_->SetDelegate(this);
-  view_->Show();
+  view_ = view_factory_.Run(web_contents(), this);
   PermissionUmaUtil::PermissionPromptShown(requests_);
   NotifyBubbleAdded();
 
@@ -417,9 +415,6 @@ void PermissionRequestManager::ShowBubble() {
 
 void PermissionRequestManager::DeleteBubble() {
   DCHECK(view_);
-  if (!view_->HidesAutomatically())
-    view_->Hide();
-  view_->SetDelegate(nullptr);
   view_.reset();
 }
 

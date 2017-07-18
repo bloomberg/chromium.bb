@@ -15,20 +15,15 @@
 #include "ui/base/test/scoped_fake_nswindow_fullscreen.h"
 
 IN_PROC_BROWSER_TEST_F(PermissionBubbleBrowserTest, HasLocationBarByDefault) {
-  PermissionBubbleCocoa bubble(browser());
-  bubble.SetDelegate(test_delegate());
-  bubble.Show();
+  PermissionBubbleCocoa bubble(browser(), test_delegate());
   EXPECT_TRUE([bubble.bubbleController_ hasVisibleLocationBar]);
-  bubble.Hide();
 }
 
 IN_PROC_BROWSER_TEST_F(PermissionBubbleBrowserTest,
                        BrowserFullscreenHasLocationBar) {
   ui::test::ScopedFakeNSWindowFullscreen faker;
 
-  PermissionBubbleCocoa bubble(browser());
-  bubble.SetDelegate(test_delegate());
-  bubble.Show();
+  PermissionBubbleCocoa bubble(browser(), test_delegate());
   EXPECT_TRUE([bubble.bubbleController_ hasVisibleLocationBar]);
 
   FullscreenController* controller =
@@ -52,16 +47,13 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleBrowserTest,
   faker.FinishTransition();
 
   EXPECT_TRUE([bubble.bubbleController_ hasVisibleLocationBar]);
-  bubble.Hide();
 }
 
 IN_PROC_BROWSER_TEST_F(PermissionBubbleBrowserTest,
                        TabFullscreenHasLocationBar) {
   ui::test::ScopedFakeNSWindowFullscreen faker;
 
-  PermissionBubbleCocoa bubble(browser());
-  bubble.SetDelegate(test_delegate());
-  bubble.Show();
+  PermissionBubbleCocoa bubble(browser(), test_delegate());
   EXPECT_TRUE([bubble.bubbleController_ hasVisibleLocationBar]);
 
   FullscreenController* controller =
@@ -76,25 +68,18 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleBrowserTest,
   faker.FinishTransition();
 
   EXPECT_TRUE([bubble.bubbleController_ hasVisibleLocationBar]);
-  bubble.Hide();
 }
 
 IN_PROC_BROWSER_TEST_F(PermissionBubbleBrowserTest, AppHasNoLocationBar) {
   Browser* app_browser = OpenExtensionAppWindow();
-  PermissionBubbleCocoa bubble(app_browser);
-  bubble.SetDelegate(test_delegate());
-  bubble.Show();
+  PermissionBubbleCocoa bubble(app_browser, test_delegate());
   EXPECT_FALSE([bubble.bubbleController_ hasVisibleLocationBar]);
-  bubble.Hide();
 }
 
 // http://crbug.com/470724
 // Kiosk mode on Mac has a location bar but it shouldn't.
 IN_PROC_BROWSER_TEST_F(PermissionBubbleKioskBrowserTest,
                        DISABLED_KioskHasNoLocationBar) {
-  PermissionBubbleCocoa bubble(browser());
-  bubble.SetDelegate(test_delegate());
-  bubble.Show();
+  PermissionBubbleCocoa bubble(browser(), test_delegate());
   EXPECT_FALSE([bubble.bubbleController_ hasVisibleLocationBar]);
-  bubble.Hide();
 }

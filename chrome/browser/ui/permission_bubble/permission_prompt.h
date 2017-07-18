@@ -39,33 +39,20 @@ class PermissionPrompt {
     virtual void Closing() = 0;
   };
 
-  typedef base::Callback<std::unique_ptr<PermissionPrompt>(
-      content::WebContents*)>
+  typedef base::Callback<
+      std::unique_ptr<PermissionPrompt>(content::WebContents*, Delegate*)>
       Factory;
 
-  // Create a platform specific instance.
+  // Create and display a platform specific prompt.
   static std::unique_ptr<PermissionPrompt> Create(
-      content::WebContents* web_contents);
+      content::WebContents* web_contents,
+      Delegate* delegate);
   virtual ~PermissionPrompt() {}
-
-  // Sets the delegate which will receive UI events forwarded from the prompt.
-  virtual void SetDelegate(Delegate* delegate) = 0;
-
-  // Show a prompt with the requests from the delegate. This will only be called
-  // if there is no prompt showing.
-  virtual void Show() = 0;
 
   // Returns true if the view can accept a new Show() command to coalesce
   // requests. Currently the policy is that this should return true if the view
   // is being shown and the mouse is not over the view area (!IsMouseHovered).
   virtual bool CanAcceptRequestUpdate() = 0;
-
-  // Returns true if the prompt UI will manage hiding itself when the user
-  // resolves the prompt, on page navigation/destruction, and on tab switching.
-  virtual bool HidesAutomatically() = 0;
-
-  // Hides the permission prompt.
-  virtual void Hide() = 0;
 
   // Updates where the prompt should be anchored. ex: fullscreen toggle.
   virtual void UpdateAnchorPosition() = 0;
