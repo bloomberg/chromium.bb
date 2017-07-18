@@ -62,6 +62,8 @@ public class ContextualSearchFieldTrial {
     static final String NOT_AN_ENTITY_SUPPRESSION_ENABLED = "enable_not_an_entity_suppression";
     // The threshold for tap suppression based on duration.
     private static final String TAP_DURATION_THRESHOLD_MS = "tap_duration_threshold_ms";
+    // The threshold for tap suppression based on a recent scroll.
+    private static final String RECENT_SCROLL_DURATION_MS = "recent_scroll_duration_ms";
 
     private static final String MINIMUM_SELECTION_LENGTH = "minimum_selection_length";
 
@@ -110,6 +112,7 @@ public class ContextualSearchFieldTrial {
     private static Boolean sIsRankerLoggingDisabled;
     private static Integer sWaitAfterTapDelayMs;
     private static Integer sTapDurationThresholdMs;
+    private static Integer sRecentScrollDurationMs;
 
     /**
      * Don't instantiate.
@@ -397,6 +400,18 @@ public class ContextualSearchFieldTrial {
             sTapDurationThresholdMs = getIntParamValueOrDefault(TAP_DURATION_THRESHOLD_MS, 0);
         }
         return sTapDurationThresholdMs.intValue();
+    }
+
+    /**
+     * Gets the duration to use for suppressing Taps after a recent scroll, or {@code 0} if no
+     * suppression is configured.
+     * @return The period of time after a scroll when tap triggering is suppressed.
+     */
+    static int getRecentScrollDurationMs() {
+        if (sRecentScrollDurationMs == null) {
+            sRecentScrollDurationMs = getIntParamValueOrDefault(RECENT_SCROLL_DURATION_MS, 0);
+        }
+        return sRecentScrollDurationMs.intValue();
     }
 
     // ---------------------------
