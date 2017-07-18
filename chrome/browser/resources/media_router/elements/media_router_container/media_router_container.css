@@ -142,7 +142,7 @@ paper-menu {
   color: rgba(0, 0, 0, 0.87);
   overflow-x: hidden;
   overflow-y: auto;
-  padding-bottom: 12px;
+  padding-bottom: 0;
   padding-top: 4px;
 }
 
@@ -196,13 +196,14 @@ paper-menu {
   /* TODO(crbug/589697): Handle overflow of very long domain names. */
 }
 
-#sink-list-view {
-  position: relative;
-}
-
 #sink-list {
   overflow-x: hidden;
   overflow-y: auto;
+}
+
+#sink-list-view {
+  margin-bottom: 12px;
+  position: relative;
 }
 
 .sink-name {
@@ -216,11 +217,6 @@ paper-menu {
   top: 100%;
   width: 100%;
   z-index: 1;
-}
-
-:host([search-use-bottom-padding]) #sink-search {
-  padding-bottom: 16px;
-  padding-top: 0;
 }
 
 /* Separate icon class is a consequence of box-sizing: border-box set by
