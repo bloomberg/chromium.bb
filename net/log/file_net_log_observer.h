@@ -98,7 +98,6 @@ class NET_EXPORT FileNetLogObserver : public NetLog::ThreadSafeObserver {
  private:
   class WriteQueue;
   class FileWriter;
-  class BoundedFileWriter;
 
   static std::unique_ptr<FileNetLogObserver> CreateBoundedInternal(
       const base::FilePath& log_path,
