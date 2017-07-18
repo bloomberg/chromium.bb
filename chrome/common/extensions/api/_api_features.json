@@ -479,10 +479,6 @@
     "dependencies": ["permission:fileManagerPrivate"],
     "contexts": ["blessed_extension"]
   },
-  "fileSystem": {
-    "dependencies": ["permission:fileSystem"],
-    "contexts": ["blessed_extension"]
-  },
   "fileSystemProvider": {
     "dependencies": ["permission:fileSystemProvider"],
     "contexts": ["blessed_extension"]

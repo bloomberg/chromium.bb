@@ -58,6 +58,19 @@ ExtensionsAPIPermissions::GetAllPermissions() const {
       {APIPermission::kExternallyConnectableAllUrls,
        "externally_connectable.all_urls"},
       {APIPermission::kFullscreen, "app.window.fullscreen"},
+
+      // The permission string for "fileSystem" is only shown when
+      // "write" or "directory" is present. Read-only access is only
+      // granted after the user has been shown a file or directory
+      // chooser dialog and selected a file or directory. Selecting
+      // the file or directory is considered consent to read it.
+      {APIPermission::kFileSystem, "fileSystem"},
+      {APIPermission::kFileSystemDirectory, "fileSystem.directory"},
+      {APIPermission::kFileSystemRequestFileSystem,
+       "fileSystem.requestFileSystem"},
+      {APIPermission::kFileSystemRetainEntries, "fileSystem.retainEntries"},
+      {APIPermission::kFileSystemWrite, "fileSystem.write"},
+
       {APIPermission::kHid, "hid"},
       {APIPermission::kImeWindowEnabled, "app.window.ime"},
       {APIPermission::kOverrideEscFullscreen,
