@@ -20,7 +20,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece.h"
-#include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/system_network_context_manager.h"
@@ -210,8 +209,6 @@ class IOThread : public content::BrowserThreadDelegate {
   // supported for simplicity and requires a browser restart.
   void DisableQuic();
 
-  base::TimeTicks creation_time() const;
-
   // Returns the callback for updating data use prefs.
   metrics::UpdateUsagePrefCallbackType GetMetricsDataUseForwarder();
 
@@ -356,8 +353,6 @@ class IOThread : public content::BrowserThreadDelegate {
 
   // True if HTTP/0.9 is allowed on non-default ports by policy.
   bool http_09_on_non_default_ports_enabled_;
-
-  const base::TimeTicks creation_time_;
 
   base::WeakPtrFactory<IOThread> weak_factory_;
 
