@@ -7,15 +7,18 @@
 #include <stdlib.h>
 
 #include <deque>
+#include <utility>
 
 #include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_controller.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/singleton.h"
 #include "base/task_scheduler/post_task.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/image_decoder.h"
 #include "components/arc/arc_bridge_service.h"
+#include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user_manager.h"
 #include "components/wallpaper/wallpaper_files_id.h"
@@ -60,6 +63,25 @@ ash::WallpaperController* GetWallpaperController() {
     return nullptr;
   return ash::Shell::Get()->wallpaper_controller();
 }
+
+// Singleton factory for ArcWallpaperService.
+class ArcWallpaperServiceFactory
+    : public internal::ArcBrowserContextKeyedServiceFactoryBase<
+          ArcWallpaperService,
+          ArcWallpaperServiceFactory> {
+ public:
+  // Factory name used by ArcBrowserContextKeyedServiceFactoryBase.
+  static constexpr const char* kName = "ArcWallpaperServiceFactory";
+
+  static ArcWallpaperServiceFactory* GetInstance() {
+    return base::Singleton<ArcWallpaperServiceFactory>::get();
+  }
+
+ private:
+  friend base::DefaultSingletonTraits<ArcWallpaperServiceFactory>;
+  ArcWallpaperServiceFactory() = default;
+  ~ArcWallpaperServiceFactory() override = default;
+};
 
 }  // namespace
 
@@ -133,9 +155,16 @@ class ArcWallpaperService::DecodeRequest : public ImageDecoder::ImageRequest {
   DISALLOW_COPY_AND_ASSIGN(DecodeRequest);
 };
 
-ArcWallpaperService::ArcWallpaperService(ArcBridgeService* bridge_service)
-    : ArcService(bridge_service), binding_(this) {
-  arc_bridge_service()->wallpaper()->AddObserver(this);
+// static
+ArcWallpaperService* ArcWallpaperService::GetForBrowserContext(
+    content::BrowserContext* context) {
+  return ArcWallpaperServiceFactory::GetForBrowserContext(context);
+}
+
+ArcWallpaperService::ArcWallpaperService(content::BrowserContext* context,
+                                         ArcBridgeService* bridge_service)
+    : arc_bridge_service_(bridge_service), binding_(this) {
+  arc_bridge_service_->wallpaper()->AddObserver(this);
 }
 
 ArcWallpaperService::~ArcWallpaperService() {
@@ -143,13 +172,19 @@ ArcWallpaperService::~ArcWallpaperService() {
   ash::WallpaperController* wc = GetWallpaperController();
   if (wc)
     wc->RemoveObserver(this);
-  arc_bridge_service()->wallpaper()->RemoveObserver(this);
+
+  // TODO(hidehiko): Currently, the lifetime of ArcBridgeService and
+  // BrowserContextKeyedService is not nested.
+  // If ArcServiceManager::Get() returns nullptr, it is already destructed,
+  // so do not touch it.
+  if (ArcServiceManager::Get())
+    arc_bridge_service_->wallpaper()->RemoveObserver(this);
 }
 
 void ArcWallpaperService::OnInstanceReady() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   mojom::WallpaperInstance* wallpaper_instance =
-      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service()->wallpaper(), Init);
+      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->wallpaper(), Init);
   DCHECK(wallpaper_instance);
   mojom::WallpaperHostPtr host_proxy;
   binding_.Bind(mojo::MakeRequest(&host_proxy));
@@ -236,7 +271,7 @@ void ArcWallpaperService::OnWallpaperDataChanged() {
 
 void ArcWallpaperService::NotifyWallpaperChanged(int android_id) {
   mojom::WallpaperInstance* const wallpaper_instance =
-      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service()->wallpaper(),
+      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->wallpaper(),
                                   OnWallpaperChanged);
   if (wallpaper_instance == nullptr)
     return;
