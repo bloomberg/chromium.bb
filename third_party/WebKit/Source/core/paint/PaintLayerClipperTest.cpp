@@ -30,6 +30,32 @@ class PaintLayerClipperTest : public RenderingTest {
   }
 };
 
+TEST_F(PaintLayerClipperTest, BackgroundClipRectSubpixelAccumulation) {
+  SetBodyInnerHTML(
+      "<!DOCTYPE html>"
+      "<svg id=target width=200 height=300 style='position: relative'>"
+      "  <rect width=400 height=500 fill='blue'/>"
+      "</svg>");
+
+  Element* target = GetDocument().getElementById("target");
+  PaintLayer* target_paint_layer =
+      ToLayoutBoxModelObject(target->GetLayoutObject())->Layer();
+  ClipRectsContext context(
+      GetDocument().GetLayoutView()->Layer(), kUncachedClipRects,
+      kIgnorePlatformOverlayScrollbarSize, LayoutSize(FloatSize(0.25, 0.35)));
+  // When RLS is enabled, the LayoutView will have a composited scrolling layer,
+  // so don't apply an overflow clip.
+  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled())
+    context.SetIgnoreOverflowClip();
+  ClipRect background_rect;
+
+  target_paint_layer->Clipper(PaintLayer::kUseGeometryMapper)
+      .CalculateBackgroundClipRect(context, background_rect);
+
+  EXPECT_EQ(LayoutRect(FloatRect(8.25, 8.35, 200, 300)),
+            background_rect.Rect());
+}
+
 TEST_F(PaintLayerClipperTest, LayoutSVGRoot) {
   SetBodyInnerHTML(
       "<!DOCTYPE html>"
