@@ -7,7 +7,8 @@
 namespace download {
 namespace test {
 
-TestDeviceStatusListener::TestDeviceStatusListener() = default;
+TestDeviceStatusListener::TestDeviceStatusListener()
+    : DeviceStatusListener(base::TimeDelta::FromSeconds(0)) {}
 
 TestDeviceStatusListener::~TestDeviceStatusListener() {
   // Mark |listening_| to false to bypass the remove observer calls in the base

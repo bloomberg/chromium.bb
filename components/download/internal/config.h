@@ -36,6 +36,10 @@ constexpr char kWindowStartTimeConfig[] = "window_start_time_seconds";
 // Configuration name for window end time.
 constexpr char kWindowEndTimeConfig[] = "window_end_time_seconds";
 
+// Configuration name for the delay to notify network status change, measured in
+// milliseconds.
+constexpr char kNetworkChangeDelayConfig[] = "network_change_delay_ms";
+
 // Download service configuration.
 //
 // Loaded based on experiment parameters from the server. Use default values if
@@ -76,6 +80,9 @@ struct Configuration {
   // The end window time in seconds for OS to schedule background task.
   // The OS will trigger the background task in this window.
   uint32_t window_end_time_seconds;
+
+  // The delay to notify network status changes.
+  base::TimeDelta network_change_delay;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Configuration);
