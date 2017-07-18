@@ -704,6 +704,7 @@ std::vector<std::pair<const char*, int>> Dispatcher::GetJsResources() {
       {"extensionViewEvents", IDR_EXTENSION_VIEW_EVENTS_JS},
       {"extensionViewInternal", IDR_EXTENSION_VIEW_INTERNAL_CUSTOM_BINDINGS_JS},
       {"fileEntryBindingUtil", IDR_FILE_ENTRY_BINDING_UTIL_JS},
+      {"fileSystem", IDR_FILE_SYSTEM_CUSTOM_BINDINGS_JS},
       {"guestView", IDR_GUEST_VIEW_JS},
       {"guestViewAttributes", IDR_GUEST_VIEW_ATTRIBUTES_JS},
       {"guestViewContainer", IDR_GUEST_VIEW_CONTAINER_JS},

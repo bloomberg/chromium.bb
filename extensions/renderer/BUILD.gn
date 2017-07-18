@@ -162,6 +162,8 @@ source_set("renderer") {
     "resources/extension.css",
     "resources/extension_custom_bindings.js",
     "resources/extension_fonts.css",
+    "resources/file_entry_binding_util.js",
+    "resources/file_system_custom_bindings.js",
     "resources/greasemonkey_api.js",
     "resources/guest_view/app_view/app_view.js",
     "resources/guest_view/extension_options/extension_options.js",
