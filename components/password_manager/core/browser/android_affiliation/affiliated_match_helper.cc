@@ -63,7 +63,7 @@ void AffiliatedMatchHelper::GetAffiliatedAndroidRealms(
   if (IsValidWebCredential(observed_form)) {
     FacetURI facet_uri(
         FacetURI::FromPotentiallyInvalidSpec(observed_form.signon_realm));
-    affiliation_service_->GetAffiliations(
+    affiliation_service_->GetAffiliationsAndBranding(
         facet_uri, AffiliationService::StrategyOnCacheMiss::FAIL,
         base::Bind(&AffiliatedMatchHelper::CompleteGetAffiliatedAndroidRealms,
                    weak_ptr_factory_.GetWeakPtr(), facet_uri, result_callback));
@@ -76,7 +76,7 @@ void AffiliatedMatchHelper::GetAffiliatedWebRealms(
     const PasswordStore::FormDigest& android_form,
     const AffiliatedRealmsCallback& result_callback) {
   if (IsValidAndroidCredential(android_form)) {
-    affiliation_service_->GetAffiliations(
+    affiliation_service_->GetAffiliationsAndBranding(
         FacetURI::FromPotentiallyInvalidSpec(android_form.signon_realm),
         AffiliationService::StrategyOnCacheMiss::FETCH_OVER_NETWORK,
         base::Bind(&AffiliatedMatchHelper::CompleteGetAffiliatedWebRealms,
@@ -99,9 +99,7 @@ void AffiliatedMatchHelper::InjectAffiliationAndBrandingInformation(
   base::Closure barrier_closure =
       base::BarrierClosure(android_credentials.size(), on_get_all_realms);
   for (auto* form : android_credentials) {
-    // TODO(crbug.com/628988): Rename |GetAffiliations| to
-    // |GetAffiliationsAndBranding|.
-    affiliation_service_->GetAffiliations(
+    affiliation_service_->GetAffiliationsAndBranding(
         FacetURI::FromPotentiallyInvalidSpec(form->signon_realm),
         AffiliationService::StrategyOnCacheMiss::FAIL,
         base::Bind(&AffiliatedMatchHelper::

@@ -39,7 +39,7 @@ class FacetManager {
 
   // Facet-specific implementations for methods in AffiliationService of the
   // same name. See documentation in affiliation_service.h for details:
-  void GetAffiliations(
+  void GetAffiliationsAndBranding(
       StrategyOnCacheMiss cache_miss_strategy,
       const AffiliationService::ResultCallback& callback,
       const scoped_refptr<base::TaskRunner>& callback_task_runner);
@@ -116,8 +116,8 @@ class FacetManager {
   // in the database should match this value; it is stored to reduce disk I/O.
   base::Time last_update_time_;
 
-  // Contains information about the GetAffiliations() requests that are waiting
-  // for the result of looking up this facet.
+  // Contains information about the GetAffiliationsAndBranding() requests that
+  // are waiting for the result of looking up this facet.
   std::vector<RequestInfo> pending_requests_;
 
   // Keeps track of |keep_fresh_until| thresholds corresponding to Prefetch()

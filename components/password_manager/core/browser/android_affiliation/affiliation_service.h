@@ -40,7 +40,8 @@ class AffiliationBackend;
 //       network request to the Affiliation API containing the URI of facet X
 //       is acceptable from the privacy and/or performance perspective.
 //
-//       This mode of operation is achieved by invoking GetAffiliations() with
+//       This mode of operation is achieved by invoking
+//       GetAffiliationsAndBranding() with
 //       StrategyOnCacheMiss::FETCH_OVER_NETWORK.
 //
 //   2.) Proactive fetching: For the compound query that is concerned with
@@ -69,7 +70,7 @@ class AffiliationBackend;
 //         ~ExampleAffiliatedCredentialFiller() { cancel_handle_.Run(); }
 //
 //         void ShouldFillInto(const FacetURI& wi, FillDelegate* delegate) {
-//           service_->GetAffiliations(wi, StrategyOnCacheMiss::FAIL,
+//           service_->GetAffiliationsAndBranding(wi, StrategyOnCacheMiss::FAIL,
 //               base::Bind(
 //                   &ExampleAffiliatedCredentialFiller::OnAffiliationResult,
 //                   AsWeakPtr(),
@@ -107,18 +108,19 @@ class AffiliationService : public KeyedService {
   void Initialize(net::URLRequestContextGetter* request_context_getter,
                   const base::FilePath& db_path);
 
-  // Looks up facets affiliated with the facet identified by |facet_uri|, and
-  // invokes |result_callback| with the results. It is guaranteed that the
-  // results will contain one facet with URI equal to |facet_uri| when
-  // |result_callback| is invoked with success set to true.
+  // Looks up facets affiliated with the facet identified by |facet_uri| and
+  // branding information, and invokes |result_callback| with the results. It is
+  // guaranteed that the results will contain one facet with URI equal to
+  // |facet_uri| when |result_callback| is invoked with success set to true.
   //
-  // If the local cache contains fresh affiliation information for |facet_uri|,
-  // the request will be served from cache. Otherwise, |cache_miss_policy|
-  // controls whether to issue an on-demand network request, or to fail the
-  // request without fetching.
-  virtual void GetAffiliations(const FacetURI& facet_uri,
-                               StrategyOnCacheMiss cache_miss_strategy,
-                               const ResultCallback& result_callback);
+  // If the local cache contains fresh affiliation and branding information for
+  // |facet_uri|, the request will be served from cache. Otherwise,
+  // |cache_miss_policy| controls whether to issue an on-demand network request,
+  // or to fail the request without fetching.
+  virtual void GetAffiliationsAndBranding(
+      const FacetURI& facet_uri,
+      StrategyOnCacheMiss cache_miss_strategy,
+      const ResultCallback& result_callback);
 
   // Prefetches affiliation information for the facet identified by |facet_uri|,
   // and keeps the information fresh by periodic re-fetches (as needed) until

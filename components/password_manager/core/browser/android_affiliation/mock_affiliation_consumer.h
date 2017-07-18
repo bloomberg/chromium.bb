@@ -12,7 +12,7 @@
 
 namespace password_manager {
 
-// A mock consumer of AffiliationService::GetAffiliations().
+// A mock consumer of AffiliationService::GetAffiliationsAndBranding().
 class MockAffiliationConsumer {
  public:
   MockAffiliationConsumer();
