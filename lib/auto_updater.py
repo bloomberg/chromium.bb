@@ -236,7 +236,10 @@ class ChromiumOSFlashUpdater(BaseUpdater):
     self.stateful_update_bin = None
     # autoupdate_EndToEndTest uses exact payload filename for update
     self.payload_filename = payload_filename
-    self.is_au_endtoendtest = self.payload_filename is not None
+
+  @property
+  def is_au_endtoendtest(self):
+    return self.payload_filename is not None
 
   def CheckPayloads(self):
     """Verify that all required payloads are in |self.payload_dir|."""
@@ -1295,15 +1298,16 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
                               'active kernel partition.')
 
     self.inactive_kernel = inactive_kernel
-    # The issue is that certain AU tests leave the TPM in a bad state which
-    # most commonly shows up in provisioning.  Executing this 'crossystem'
-    # command before rebooting clears the problem state during the reboot.
-    # It's also worth mentioning that this isn't a complete fix:  The bad
-    # TPM state in theory might happen some time other than during
-    # provisioning.  Also, the bad TPM state isn't supposed to happen at
-    # all; this change is just papering over the real bug.
-    self._RetryCommand('crossystem clear_tpm_owner_request=1',
-                       **self._cmd_kwargs_omit_error)
+    if not self.is_au_endtoendtest:
+      # The issue is that certain AU tests leave the TPM in a bad state which
+      # most commonly shows up in provisioning.  Executing this 'crossystem'
+      # command before rebooting clears the problem state during the reboot.
+      # It's also worth mentioning that this isn't a complete fix:  The bad
+      # TPM state in theory might happen some time other than during
+      # provisioning.  Also, the bad TPM state isn't supposed to happen at
+      # all; this change is just papering over the real bug.
+      self._RetryCommand('crossystem clear_tpm_owner_request=1',
+                         **self._cmd_kwargs_omit_error)
     self.device.Reboot(timeout_sec=self.REBOOT_TIMEOUT)
 
   def PostCheckCrOSUpdate(self):
