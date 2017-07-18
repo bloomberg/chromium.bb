@@ -107,6 +107,11 @@ class BaseResourceThrottle
       scoped_refptr<BaseUIManager> ui_manager,
       const security_interstitials::UnsafeResource& resource);
 
+  // Starts running |url| through the safe browsing check. Returns true if the
+  // URL is safe to visit. Otherwise returns false and will call
+  // OnBrowseUrlResult() when the check has completed.
+  virtual bool CheckUrl(const GURL& url);
+
   scoped_refptr<BaseUIManager> ui_manager();
 
  private:
@@ -135,11 +140,6 @@ class BaseResourceThrottle
   bool CheckWebUIUrls(const GURL& url);
 
   scoped_refptr<BaseUIManager> ui_manager_;
-
-  // Starts running |url| through the safe browsing check. Returns true if the
-  // URL is safe to visit. Otherwise returns false and will call
-  // OnBrowseUrlResult() when the check has completed.
-  bool CheckUrl(const GURL& url);
 
   // Callback for when the safe browsing check (which was initiated by
   // StartCheckingUrl()) has taken longer than kCheckUrlTimeoutMs.

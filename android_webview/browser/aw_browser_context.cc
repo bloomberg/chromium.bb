@@ -12,6 +12,7 @@
 #include "android_webview/browser/aw_permission_manager.h"
 #include "android_webview/browser/aw_quota_manager_bridge.h"
 #include "android_webview/browser/aw_resource_context.h"
+#include "android_webview/browser/aw_safe_browsing_whitelist_manager.h"
 #include "android_webview/browser/net/aw_url_request_context_getter.h"
 #include "android_webview/common/aw_content_client.h"
 #include "base/base_paths_android.h"
@@ -105,6 +106,18 @@ policy::URLBlacklistManager* CreateURLBlackListManager(
   return new policy::URLBlacklistManager(pref_service, background_task_runner,
                                          io_task_runner,
                                          base::Bind(OverrideBlacklistForURL));
+}
+
+std::unique_ptr<AwSafeBrowsingWhitelistManager>
+CreateSafeBrowsingWhitelistManager() {
+  // Should not be called until the end of PreMainMessageLoopRun,
+  scoped_refptr<base::SequencedTaskRunner> background_task_runner =
+      base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BACKGROUND});
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
+  return base::MakeUnique<AwSafeBrowsingWhitelistManager>(
+      background_task_runner, io_task_runner);
 }
 
 }  // namespace
@@ -208,6 +221,7 @@ void AwBrowserContext::PreMainMessageLoopRun() {
   safe_browsing_trigger_manager_ =
       base::MakeUnique<safe_browsing::TriggerManager>(
           safe_browsing_ui_manager_.get());
+  safe_browsing_whitelist_manager_ = CreateSafeBrowsingWhitelistManager();
 }
 
 void AwBrowserContext::OnWebRestrictionsAuthorityChanged() {
@@ -377,7 +391,7 @@ AwBrowserContext::GetWebRestrictionProvider() {
   return web_restriction_provider_.get();
 }
 
-AwSafeBrowsingUIManager* AwBrowserContext::GetSafeBrowsingUIManager() {
+AwSafeBrowsingUIManager* AwBrowserContext::GetSafeBrowsingUIManager() const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return safe_browsing_ui_manager_.get();
 }
@@ -399,6 +413,12 @@ safe_browsing::TriggerManager* AwBrowserContext::GetSafeBrowsingTriggerManager()
     const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return safe_browsing_trigger_manager_.get();
+}
+
+AwSafeBrowsingWhitelistManager*
+AwBrowserContext::GetSafeBrowsingWhitelistManager() const {
+  // Should not be called until the end of PreMainMessageLoopRun,
+  return safe_browsing_whitelist_manager_.get();
 }
 
 void AwBrowserContext::RebuildTable(

@@ -97,6 +97,10 @@ public class AwContentsStatics {
         nativeSetSafeBrowsingEnabled(enable);
     }
 
+    public static void setSafeBrowsingWhiteList(String[] urls) {
+        nativeSetSafeBrowsingWhiteList(urls);
+    }
+
     @SuppressWarnings("unchecked")
     @TargetApi(19)
     public static void initSafeBrowsing(Context context, ValueCallback<Boolean> callback) {
@@ -159,6 +163,7 @@ public class AwContentsStatics {
             AwContentsIoThreadClient ioThreadClient, AwBrowserContext browserContext);
     private static native boolean nativeGetSafeBrowsingEnabled();
     private static native void nativeSetSafeBrowsingEnabled(boolean enable);
+    private static native void nativeSetSafeBrowsingWhiteList(String[] urls);
     private static native void nativeSetCheckClearTextPermitted(boolean permitted);
     private static native String nativeFindAddress(String addr);
 }
