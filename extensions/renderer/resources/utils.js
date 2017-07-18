@@ -3,8 +3,6 @@
 // found in the LICENSE file.
 
 var nativeDeepCopy = requireNative('utils').deepCopy;
-var DCHECK = requireNative('logging').DCHECK;
-var WARNING = requireNative('logging').WARNING;
 var logActivity = requireNative('activityLogger');
 var exceptionHandler = require('uncaught_exception_handler');
 
@@ -190,38 +188,6 @@ function deepCopy(value) {
   return nativeDeepCopy(value);
 }
 
-/**
- * Wrap an asynchronous API call to a function |func| in a promise. The
- * remaining arguments will be passed to |func|. Returns a promise that will be
- * resolved to the result passed to the callback or rejected if an error occurs
- * (if chrome.runtime.lastError is set). If there are multiple results, the
- * promise will be resolved with an array containing those results.
- *
- * For example,
- * promise(chrome.storage.get, 'a').then(function(result) {
- *   // Use result.
- * }).catch(function(error) {
- *   // Report error.message.
- * });
- */
-function promise(func) {
-  var args = $Array.slice(arguments, 1);
-  DCHECK(typeof func == 'function');
-  return new Promise(function(resolve, reject) {
-    args.push(function() {
-      if (chrome.runtime.lastError) {
-        reject(new Error(chrome.runtime.lastError));
-        return;
-      }
-      if (arguments.length <= 1)
-        resolve(arguments[0]);
-      else
-        resolve($Array.slice(arguments));
-    });
-    $Function.apply(func, null, args);
-  });
-}
-
 // DO NOT USE. This causes problems with safe builtins, and makes migration to
 // native bindings more difficult.
 function handleRequestWithPromiseDoNotUse(
@@ -259,6 +225,5 @@ exports.$set('lookup', lookup);
 exports.$set('defineProperty', defineProperty);
 exports.$set('expose', expose);
 exports.$set('deepCopy', deepCopy);
-exports.$set('promise', promise);
 exports.$set('handleRequestWithPromiseDoNotUse',
              handleRequestWithPromiseDoNotUse);
