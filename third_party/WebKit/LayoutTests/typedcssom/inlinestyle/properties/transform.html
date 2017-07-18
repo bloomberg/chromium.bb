@@ -31,7 +31,10 @@ runInlineStylePropertyMapTests( {
     new CSSTransformValue(
         [new CSSTranslation(CSS.px(-10), CSS.px(-20), CSS.px(-30))]),
     // Scales
-    // TODO(meade)
+    new CSSTransformValue([new CSSScale(1, 2.2)]),
+    new CSSTransformValue([new CSSScale(1, 2.2, 3)]),
+    new CSSTransformValue([new CSSScale(-1, -2.2)]),
+    new CSSTransformValue([new CSSScale(-1, -2.2, -3)]),
     // Skews
     new CSSTransformValue([new CSSSkew(CSS.deg(30), CSS.deg(0))]),
     new CSSTransformValue([new CSSSkew(CSS.rad(10), CSS.deg(0))]),
@@ -67,6 +70,10 @@ runInlineStylePropertyMapTests( {
     'translateZ(30in)':
       new CSSTransformValue(
           [new CSSTranslation(CSS.px(0), CSS.px(0), CSS.in(30))]),
+    // Scales
+    'scale(4)': new CSSTransformValue([new CSSScale(4, 4)]),
+    'scaleX(2)': new CSSTransformValue([new CSSScale(2, 1)]),
+    'scaleY(3)': new CSSTransformValue([new CSSScale(1, 3)]),
     // Skews
     'skew(45deg)':
       new CSSTransformValue([new CSSSkew(CSS.deg(45), CSS.deg(0))]),
