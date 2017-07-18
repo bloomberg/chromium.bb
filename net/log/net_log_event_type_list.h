@@ -1470,6 +1470,7 @@ EVENT_TYPE(HTTP2_SESSION_UPDATE_RECV_WINDOW)
 //   {
 //     "header_name": <The header name>,
 //     "header_value": <The header value>,
+//     "error": <Error message>,
 //   }
 EVENT_TYPE(HTTP2_SESSION_RECV_INVALID_HEADER)
 
