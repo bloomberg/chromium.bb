@@ -671,8 +671,14 @@ class ChromiumOSFlashUpdater(BaseUpdater):
 
       # Loop until update is complete.
       while True:
-        op, progress = self.GetUpdateStatus(self.device,
-                                            ['CURRENT_OP', 'PROGRESS'])
+
+        #TODO(dhaddock): Remove retry when M61 is stable. See crbug.com/744212.
+        op, progress = retry_util.RetryException(cros_build_lib.RunCommandError,
+                                                 MAX_RETRY,
+                                                 self.GetUpdateStatus,
+                                                 self.device,
+                                                 ['CURRENT_OP', 'PROGRESS'],
+                                                 delay_sec=DELAY_SEC_FOR_RETRY)
         logging.info('Waiting for update...status: %s at progress %s',
                      op, progress)
 
