@@ -25,6 +25,7 @@ source_set("facade") {
     "//base",
     "//remoting/base:authorization",
     "//remoting/ios/domain",
+    "//remoting/ios/persistence",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]

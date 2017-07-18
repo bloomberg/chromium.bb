@@ -27,28 +27,16 @@ source_set("ios_core") {
     "client_gestures.mm",
     "client_keyboard.h",
     "client_keyboard.mm",
-    "host_preferences.h",
-    "host_preferences.mm",
-    "host_preferences_persistence.h",
     "keychain_wrapper.h",
     "keychain_wrapper.mm",
   ]
-
-  if (!is_chrome_branded) {
-    sources += [ "host_preferences_persistence_chromium.mm" ]
-  } else {
-    # TODO(nicholss): Until we have a private implementation of this, stub it
-    # with the chromium version. We still want the logic of is_chrome_branded
-    # but to get the release builds building we will just reuse the file.
-    sources += [ "host_preferences_persistence_chromium.mm" ]
-  }
 
   public_deps = [
     "//remoting/ios/domain",
     "//remoting/ios/facade",
     "//remoting/ios/session",
-    "//third_party/webrtc/rtc_base:rtc_base",
     "//third_party/webrtc/modules/desktop_capture:primitives",
+    "//third_party/webrtc/rtc_base:rtc_base",
   ]
 
   deps = [
