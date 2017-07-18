@@ -9,24 +9,26 @@
 #include "base/synchronization/lock.h"
 
 namespace {
-// g_safebrowsing_enabled can be set and read from different threads.
-base::LazyInstance<base::Lock>::Leaky g_safebrowsing_enabled_lock =
+// g_safebrowsing_enabled_by_manifest can be set and read from different
+// threads.
+base::LazyInstance<base::Lock>::Leaky g_safebrowsing_enabled_by_manifest_lock =
     LAZY_INSTANCE_INITIALIZER;
-bool g_safebrowsing_enabled = false;
+bool g_safebrowsing_enabled_by_manifest = false;
 }  // namespace
 
 namespace android_webview {
 
 // static
-void AwSafeBrowsingConfigHelper::SetSafeBrowsingEnabled(bool enabled) {
-  base::AutoLock lock(g_safebrowsing_enabled_lock.Get());
-  g_safebrowsing_enabled = enabled;
+void AwSafeBrowsingConfigHelper::SetSafeBrowsingEnabledByManifest(
+    bool enabled) {
+  base::AutoLock lock(g_safebrowsing_enabled_by_manifest_lock.Get());
+  g_safebrowsing_enabled_by_manifest = enabled;
 }
 
 // static
-bool AwSafeBrowsingConfigHelper::GetSafeBrowsingEnabled() {
-  base::AutoLock lock(g_safebrowsing_enabled_lock.Get());
-  return g_safebrowsing_enabled;
+bool AwSafeBrowsingConfigHelper::GetSafeBrowsingEnabledByManifest() {
+  base::AutoLock lock(g_safebrowsing_enabled_by_manifest_lock.Get());
+  return g_safebrowsing_enabled_by_manifest;
 }
 
 }  // namespace android_webview

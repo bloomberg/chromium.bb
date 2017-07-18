@@ -11,8 +11,8 @@ namespace android_webview {
 
 class AwSafeBrowsingConfigHelper {
  public:
-  static bool GetSafeBrowsingEnabled();
-  static void SetSafeBrowsingEnabled(bool enabled);
+  static bool GetSafeBrowsingEnabledByManifest();
+  static void SetSafeBrowsingEnabledByManifest(bool enabled);
 
  private:
   AwSafeBrowsingConfigHelper();

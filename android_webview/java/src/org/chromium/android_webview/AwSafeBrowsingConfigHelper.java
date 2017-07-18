@@ -21,14 +21,16 @@ public class AwSafeBrowsingConfigHelper {
 
     private static final String OPT_IN_META_DATA_STR = "android.webkit.WebView.EnableSafeBrowsing";
 
+    private static boolean sSafeBrowsingUserOptIn;
+
     public static void maybeInitSafeBrowsingFromSettings(final Context appContext) {
-        if (CommandLine.getInstance().hasSwitch(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
-                || appHasOptedIn(appContext)) {
-            // Assume safebrowsing on by default initially. If GMS is available, we later use
-            // isVerifyAppsEnabled() to check if "Scan device for security threats" has been checked
-            // by the user.
-            AwContentsStatics.setSafeBrowsingEnabled(true);
-        }
+        AwContentsStatics.setSafeBrowsingEnabledByManifest(
+                CommandLine.getInstance().hasSwitch(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
+                || appHasOptedIn(appContext));
+        // Assume safebrowsing on by default initially. If GMS is available, we later use
+        // isVerifyAppsEnabled() to check if "Scan device for security threats" has been checked by
+        // the user.
+        setSafeBrowsingUserOptIn(true);
     }
 
     private static boolean appHasOptedIn(Context appContext) {
@@ -47,6 +49,15 @@ public class AwSafeBrowsingConfigHelper {
             Log.e(TAG, "App could not find itself by package name!");
             return false;
         }
+    }
+
+    // Can be called from any thread.
+    public static boolean getSafeBrowsingUserOptIn() {
+        return sSafeBrowsingUserOptIn;
+    }
+
+    public static void setSafeBrowsingUserOptIn(boolean optin) {
+        sSafeBrowsingUserOptIn = optin;
     }
 
     // Not meant to be instantiated.

@@ -21,6 +21,7 @@ import org.chromium.android_webview.AwContents.NativeDrawGLFunctorFactory;
 import org.chromium.android_webview.AwContentsClient;
 import org.chromium.android_webview.AwContentsClient.AwWebResourceRequest;
 import org.chromium.android_webview.AwContentsStatics;
+import org.chromium.android_webview.AwSafeBrowsingConfigHelper;
 import org.chromium.android_webview.AwSafeBrowsingConversionHelper;
 import org.chromium.android_webview.AwSafeBrowsingResponse;
 import org.chromium.android_webview.AwSettings;
@@ -760,5 +761,27 @@ public class SafeBrowsingTest extends AwTestBase {
         assertEquals(subresourceUrl, mContentsClient.getLastRequest().url);
         assertEquals(AwSafeBrowsingConversionHelper.SAFE_BROWSING_THREAT_MALWARE,
                 mContentsClient.getLastThreatType());
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
+    public void testSafeBrowsingUserOptOutOverridesManifest() throws Throwable {
+        AwSafeBrowsingConfigHelper.setSafeBrowsingUserOptIn(false);
+        loadGreenPage();
+        final String responseUrl = mTestServer.getURL(MALWARE_HTML_PATH);
+        loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), responseUrl);
+        assertTargetPageHasLoaded(MALWARE_PAGE_BACKGROUND_COLOR);
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testSafeBrowsingUserOptOutOverridesPerWebView() throws Throwable {
+        AwSafeBrowsingConfigHelper.setSafeBrowsingUserOptIn(false);
+        getAwSettingsOnUiThread(mAwContents).setSafeBrowsingEnabled(true);
+        loadGreenPage();
+        final String responseUrl = mTestServer.getURL(MALWARE_HTML_PATH);
+        loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), responseUrl);
+        assertTargetPageHasLoaded(MALWARE_PAGE_BACKGROUND_COLOR);
     }
 }
