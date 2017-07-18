@@ -54,6 +54,12 @@ WebRtcMediaStreamTrackAdapterMap::AdapterRef::~AdapterRef() {
   }
 }
 
+std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef>
+WebRtcMediaStreamTrackAdapterMap::AdapterRef::Copy() const {
+  base::AutoLock scoped_lock(map_->lock_);
+  return base::WrapUnique(new AdapterRef(map_, type_, it_));
+}
+
 WebRtcMediaStreamTrackAdapterMap::WebRtcMediaStreamTrackAdapterMap(
     PeerConnectionDependencyFactory* const factory)
     : factory_(factory), main_thread_(base::ThreadTaskRunnerHandle::Get()) {
