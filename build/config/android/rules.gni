@@ -2269,6 +2269,8 @@ if (enable_java_templates) {
                                "exclude_xxxhdpi",
                                "extensions_to_not_compress",
                                "language_splits",
+                               "post_process_package_resources_args",
+                               "post_process_package_resources_script",
                                "public_deps",
                                "secondary_native_libs",
                                "shared_resources",
