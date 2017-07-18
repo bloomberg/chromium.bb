@@ -79,7 +79,7 @@
 #include "components/language/core/browser/url_language_histogram.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/ntp_snippets/breaking_news/breaking_news_gcm_app_handler.h"
-#include "components/ntp_snippets/breaking_news/subscription_manager.h"
+#include "components/ntp_snippets/breaking_news/subscription_manager_impl.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/ntp_snippets/remote/remote_suggestions_provider_impl.h"
 #include "components/ntp_snippets/remote/remote_suggestions_scheduler_impl.h"
@@ -477,7 +477,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   ntp_snippets::RemoteSuggestionsProviderImpl::RegisterProfilePrefs(registry);
   ntp_snippets::RemoteSuggestionsSchedulerImpl::RegisterProfilePrefs(registry);
   ntp_snippets::RequestThrottler::RegisterProfilePrefs(registry);
-  ntp_snippets::SubscriptionManager::RegisterProfilePrefs(registry);
+  ntp_snippets::SubscriptionManagerImpl::RegisterProfilePrefs(registry);
   ntp_snippets::UserClassifier::RegisterProfilePrefs(registry);
   ntp_tiles::MostVisitedSites::RegisterProfilePrefs(registry);
   password_bubble_experiment::RegisterPrefs(registry);

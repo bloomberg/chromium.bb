@@ -42,6 +42,7 @@
 #include "components/ntp_snippets/breaking_news/breaking_news_gcm_app_handler.h"
 #include "components/ntp_snippets/breaking_news/breaking_news_suggestions_provider.h"
 #include "components/ntp_snippets/breaking_news/subscription_manager.h"
+#include "components/ntp_snippets/breaking_news/subscription_manager_impl.h"
 #include "components/ntp_snippets/category_rankers/category_ranker.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/ntp_snippets/features.h"
@@ -114,7 +115,7 @@ using ntp_snippets::RemoteSuggestionsFetcherImpl;
 using ntp_snippets::RemoteSuggestionsProviderImpl;
 using ntp_snippets::RemoteSuggestionsSchedulerImpl;
 using ntp_snippets::RemoteSuggestionsStatusService;
-using ntp_snippets::SubscriptionManager;
+using ntp_snippets::SubscriptionManagerImpl;
 using ntp_snippets::TabDelegateSyncAdapter;
 using ntp_snippets::UserClassifier;
 using suggestions::ImageDecoderImpl;
@@ -404,7 +405,7 @@ void SubscribeForGCMPushUpdates(
                                 : google_apis::GetNonStableAPIKey();
   }
 
-  auto subscription_manager = base::MakeUnique<SubscriptionManager>(
+  auto subscription_manager = base::MakeUnique<SubscriptionManagerImpl>(
       request_context, pref_service, signin_manager, token_service, api_key,
       GetPushUpdatesSubscriptionEndpoint(chrome::GetChannel()),
       GetPushUpdatesUnsubscriptionEndpoint(chrome::GetChannel()));
