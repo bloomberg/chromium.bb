@@ -65,6 +65,8 @@ component("ozone_base") {
     "public/overlay_candidates_ozone.cc",
     "public/overlay_candidates_ozone.h",
     "public/overlay_manager_ozone.h",
+    "public/overlay_surface_candidate.cc",
+    "public/overlay_surface_candidate.h",
     "public/ozone_switches.cc",
     "public/ozone_switches.h",
     "public/surface_factory_ozone.cc",
@@ -97,8 +99,9 @@ component("ozone_base") {
     # things that would otherwise create a cycle.
     "//ui/base",
     "//ui/events/ozone/*",
-    "//ui/ozone/platform/*",
     "//ui/ozone/common/*",
+    "//ui/ozone/public/interfaces",
+    "//ui/ozone/platform/*",
   ]
 }
 
@@ -145,7 +148,6 @@ source_set("platform") {
   deps = [
     ":generate_constructor_list",
     ":generate_ozone_platform_list",
-    "//ui/ozone/public/interfaces",
   ]
 
   deps += ozone_platform_deps
@@ -162,6 +164,7 @@ component("ozone") {
   visibility = [ "*" ]
   public_deps = [
     ":platform",
+    "//ui/ozone/public/interfaces",
   ]
 }
 
@@ -211,15 +214,14 @@ action("generate_constructor_list") {
 }
 
 test("ozone_unittests") {
-  sources = [
-    "run_all_unittests.cc",
-  ]
-
   deps = [
     "//base/test:test_support",
+    "//mojo/edk/test:run_all_unittests",
+    "//mojo/public/cpp/bindings",
     "//testing/gtest",
     "//ui/gfx:test_support",
     "//ui/gfx/geometry",
+    "//ui/ozone/public/interfaces:struct_trait_unit_test",
   ]
 
   # Add tests of platform internals.

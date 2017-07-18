@@ -131,7 +131,7 @@ void SurfacelessGlRenderer::OverlayChecker(int z_order,
   gfx::RectF display_rect(bounds_rect.x(), bounds_rect.y(), bounds_rect.width(),
                           bounds_rect.height());
 
-  OverlayCandidatesOzone::OverlaySurfaceCandidate overlay_candidate;
+  OverlaySurfaceCandidate overlay_candidate;
 
   // The bounds rectangle of the candidate overlay buffer.
   overlay_candidate.buffer_size = bounds_rect.size();

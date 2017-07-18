@@ -10,6 +10,7 @@ mojom("mojo") {
     "buffer_types.mojom",
     "color_space.mojom",
     "icc_profile.mojom",
+    "overlay_transform.mojom",
     "selection_bound.mojom",
     "transform.mojom",
   ]
