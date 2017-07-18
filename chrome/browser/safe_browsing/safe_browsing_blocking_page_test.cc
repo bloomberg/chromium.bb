@@ -40,6 +40,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/browser/threat_details.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/web_ui/constants.h"
 #include "components/safe_browsing_db/database_manager.h"
 #include "components/safe_browsing_db/test_database_manager.h"
 #include "components/safe_browsing_db/util.h"
@@ -800,6 +801,31 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest, RedirectCanceled) {
   // Clicking proceed won't do anything if the main request is cancelled
   // already.  See crbug.com/76460.
   EXPECT_TRUE(YesInterstitial());
+}
+
+IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest, HardcodedUrls) {
+  const GURL urls[] = {GURL(kChromeUISafeBrowsingMatchMalwareUrl),
+                       GURL(kChromeUISafeBrowsingMatchPhishingUrl),
+                       GURL(kChromeUISafeBrowsingMatchUnwantedUrl)};
+
+  for (const GURL& url : urls) {
+    ui_test_utils::NavigateToURL(browser(), url);
+    EXPECT_TRUE(WaitForReady(browser()));
+
+    EXPECT_EQ(VISIBLE, GetVisibility("primary-button"));
+    EXPECT_EQ(HIDDEN, GetVisibility("details"));
+    EXPECT_EQ(HIDDEN, GetVisibility("proceed-link"));
+    EXPECT_EQ(HIDDEN, GetVisibility("error-code"));
+    EXPECT_TRUE(Click("details-button"));
+    EXPECT_EQ(VISIBLE, GetVisibility("details"));
+    EXPECT_EQ(VISIBLE, GetVisibility("proceed-link"));
+    EXPECT_EQ(HIDDEN, GetVisibility("error-code"));
+    EXPECT_TRUE(ClickAndWaitForDetach("primary-button"));
+
+    AssertNoInterstitial(false);          // Assert the interstitial is gone
+    EXPECT_EQ(GURL(url::kAboutBlankURL),  // Back to "about:blank"
+              browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+  }
 }
 
 IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest, DontProceed) {
