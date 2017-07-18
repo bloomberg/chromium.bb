@@ -129,6 +129,11 @@ class BaseResourceThrottle
     DEFERRED_PROCESSING,
   };
 
+  // Checks if |url| is one of the hardcoded WebUI match URLs. Returns true if
+  // the URL is one of the hardcoded URLs and will post a task to
+  // OnCheckBrowseUrlResult.
+  bool CheckWebUIUrls(const GURL& url);
+
   scoped_refptr<BaseUIManager> ui_manager_;
 
   // Starts running |url| through the safe browsing check. Returns true if the

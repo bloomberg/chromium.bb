@@ -28,6 +28,7 @@ source_set("safe_browsing") {
     "//base:base",
     "//base:i18n",
     "//components/safe_browsing/common:safe_browsing_prefs",
+    "//components/safe_browsing/web_ui:constants",
     "//components/safe_browsing_db:database_manager",
     "//components/security_interstitials/core:core",
     "//content/public/browser:browser",

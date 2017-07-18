@@ -10,5 +10,11 @@ const char kChromeUISafeBrowsingURL[] = "chrome://safe-browsing/";
 const char kChromeUISafeBrowsingHost[] = "safe-browsing";
 const char kSbUnderConstruction[] =
     "The safe browsing page is under construction.";
+extern const char kChromeUISafeBrowsingMatchMalwareUrl[] =
+    "chrome://safe-browsing/match?type=malware";
+extern const char kChromeUISafeBrowsingMatchPhishingUrl[] =
+    "chrome://safe-browsing/match?type=phishing";
+extern const char kChromeUISafeBrowsingMatchUnwantedUrl[] =
+    "chrome://safe-browsing/match?type=unwanted";
 
 }  // namespace safe_browsing
