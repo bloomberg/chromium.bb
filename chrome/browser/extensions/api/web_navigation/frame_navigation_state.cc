@@ -69,12 +69,12 @@ bool FrameNavigationState::CanSendEvents(
 void FrameNavigationState::StartTrackingDocumentLoad(
     content::RenderFrameHost* frame_host,
     const GURL& url,
-    bool is_same_page,
+    bool is_same_document,
     bool is_error_page) {
   FrameState& frame_state = frame_host_state_map_[frame_host];
   frame_state.error_occurred = is_error_page;
   frame_state.url = url;
-  if (!is_same_page) {
+  if (!is_same_document) {
     frame_state.is_loading = true;
     frame_state.is_parsing = true;
   }

@@ -41,7 +41,7 @@ class FrameNavigationState {
   // Starts to track a document load in |frame_host| to |url|.
   void StartTrackingDocumentLoad(content::RenderFrameHost* frame_host,
                                  const GURL& url,
-                                 bool is_same_page,
+                                 bool is_same_document,
                                  bool is_error_page);
 
   // Adds the |frame_host| to the set of RenderFrameHosts associated with the
