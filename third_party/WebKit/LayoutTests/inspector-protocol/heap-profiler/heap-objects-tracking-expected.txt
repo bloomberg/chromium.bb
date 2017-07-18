@@ -1,5 +1,4 @@
 Test that heap tracking actually reports data fragments.
-
 SUCCESS: tracking started
 HeapProfiler.heapStatsUpdate has params: true
 HeapProfiler.heapStatsUpdate has statsUpdate: true
