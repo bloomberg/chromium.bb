@@ -29,7 +29,6 @@ class ImageButton;
 namespace ash {
 
 class WindowSelector;
-class WindowGrid;
 
 // This class represents an item in overview mode.
 class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
@@ -48,9 +47,7 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
     DISALLOW_COPY_AND_ASSIGN(OverviewCloseButton);
   };
 
-  WindowSelectorItem(aura::Window* window,
-                     WindowSelector* window_selector,
-                     WindowGrid* window_grid);
+  WindowSelectorItem(aura::Window* window, WindowSelector* window_selector);
   ~WindowSelectorItem() override;
 
   aura::Window* GetWindow();
@@ -123,11 +120,6 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   void OnWindowDestroying(aura::Window* window) override;
   void OnWindowTitleChanged(aura::Window* window) override;
 
-  // Handle the mouse/gesture event and facilitate dragging the item.
-  void HandlePressEvent(const gfx::Point& location_in_screen);
-  void HandleReleaseEvent(const gfx::Point& location_in_screen);
-  void HandleDragEvent(const gfx::Point& location_in_screen);
-
  private:
   class CaptionContainerView;
   class RoundedContainerView;
@@ -173,15 +165,6 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   gfx::SlideAnimation* GetBackgroundViewAnimation();
 
   aura::Window* GetOverviewWindowForMinimizedStateForTest();
-
-  // Called before dragging. Scales up the window a little bit to indicate its
-  // selection and stacks the window at the top of the Z order in order to keep
-  // it visible while dragging around.
-  void StartDrag();
-
-  // Called after dragging. Inserts the window back to its original stacking
-  // order so that the order of windows is the same as when entering overview.
-  void EndDrag();
 
   // True if the item is being shown in the overview, false if it's being
   // filtered.
@@ -231,10 +214,6 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // corners. This view can have its color and opacity animated. It has a layer
   // which is the only textured layer used by the |item_widget_|.
   RoundedContainerView* background_view_;
-
-  // Pointer to the WindowGrid that contains |this|. Guaranteed to be non-null
-  // for the lifetime of |this|.
-  WindowGrid* window_grid_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowSelectorItem);
 };
