@@ -329,7 +329,8 @@ service_manager::InterfaceProvider& WorkerThread::GetInterfaceProvider() {
 
 WorkerThread::WorkerThread(ThreadableLoadingContext* loading_context,
                            WorkerReportingProxy& worker_reporting_proxy)
-    : worker_thread_id_(GetNextWorkerThreadId()),
+    : time_origin_(MonotonicallyIncreasingTime()),
+      worker_thread_id_(GetNextWorkerThreadId()),
       forcible_termination_delay_(kForcibleTerminationDelay),
       inspector_task_runner_(WTF::MakeUnique<InspectorTaskRunner>()),
       loading_context_(loading_context),

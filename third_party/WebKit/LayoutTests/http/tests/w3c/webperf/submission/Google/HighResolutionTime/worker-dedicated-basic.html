@@ -26,7 +26,7 @@ worker.onmessage = function(event) {
     assert_true(results.length == 3);
     test_true(results[0], "self.performance is defined");
     test_true(results[1], "self.performance.now is defined");
-    test_greater_than(results[2], startTime, "Time in the worker should be after the startTime in the main document");
+    test_greater_than(results[2], 0, "Time in the worker should be positive");
     test_greater_than(window.performance.now(), results[2], "Time in the worker should be before the current time in the main document");
     done();
 }

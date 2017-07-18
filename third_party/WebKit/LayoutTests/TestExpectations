@@ -1681,7 +1681,6 @@ crbug.com/694958 virtual/stable/http/tests/navigation/same-and-different-back.ht
 # numbers so a consistent baseline cannot be added. This test could be
 # imported if the test passed or if the results for testharness tests
 # were matched on pass/fail but not exact error messages.
-crbug.com/688854 external/wpt/hr-time/window-worker-time-origin.html [ Failure ]
 crbug.com/626703 external/wpt/resource-timing/resource_TAO_space.htm [ Pass Failure ]
 crbug.com/626703 [ Mac ] external/wpt/web-animations/interfaces/AnimationTimeline/document-timeline.html [ Failure ]
 

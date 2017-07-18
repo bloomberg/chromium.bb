@@ -20,7 +20,7 @@ class AudioWorkletMessagingProxy final : public ThreadedWorkletMessagingProxy {
  private:
   ~AudioWorkletMessagingProxy() override;
 
-  std::unique_ptr<WorkerThread> CreateWorkerThread(double origin_time) override;
+  std::unique_ptr<WorkerThread> CreateWorkerThread() override;
 };
 
 }  // namespace blink

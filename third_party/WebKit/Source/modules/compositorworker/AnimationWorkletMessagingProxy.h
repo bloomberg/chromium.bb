@@ -25,7 +25,7 @@ class AnimationWorkletMessagingProxy final
  private:
   ~AnimationWorkletMessagingProxy() override;
 
-  std::unique_ptr<WorkerThread> CreateWorkerThread(double origin_time) override;
+  std::unique_ptr<WorkerThread> CreateWorkerThread() override;
 };
 
 }  // namespace blink
