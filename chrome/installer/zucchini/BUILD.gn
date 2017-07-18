@@ -21,6 +21,7 @@ static_library("zucchini_lib") {
     "io_utils.h",
     "main_utils.cc",
     "main_utils.h",
+    "patch_utils.h",
     "suffix_array.h",
     "typed_value.h",
   ]
@@ -60,6 +61,7 @@ test("zucchini_unittests") {
     "buffer_view_unittest.cc",
     "crc32_unittest.cc",
     "io_utils_unittest.cc",
+    "patch_utils_unittest.cc",
     "suffix_array_unittest.cc",
     "typed_value_unittest.cc",
   ]
