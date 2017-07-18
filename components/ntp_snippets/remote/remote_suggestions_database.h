@@ -28,6 +28,7 @@ namespace ntp_snippets {
 class SnippetImageProto;
 class SnippetProto;
 
+// TODO(gaschler): implement a Fake version for testing
 class RemoteSuggestionsDatabase {
  public:
   using SnippetsCallback = base::Callback<void(RemoteSuggestion::PtrVector)>;
