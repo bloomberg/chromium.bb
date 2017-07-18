@@ -264,6 +264,7 @@ source_set("unit_tests") {
     "filesystem/DOMFileSystemBaseTest.cpp",
     "indexeddb/IDBKeyPathTest.cpp",
     "indexeddb/IDBRequestTest.cpp",
+    "indexeddb/IDBTestHelper.cpp",
     "indexeddb/IDBTransactionTest.cpp",
     "indexeddb/IDBValueWrappingTest.cpp",
     "indexeddb/MockWebIDBDatabase.cpp",
