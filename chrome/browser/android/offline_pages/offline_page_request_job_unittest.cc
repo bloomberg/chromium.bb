@@ -49,15 +49,18 @@ const GURL kTestUrl2("http://test.org/page2");
 const GURL kTestUrl3("http://test.org/page3");
 const GURL kTestUrl3WithFragment("http://test.org/page3#ref1");
 const GURL kTestUrl4("http://test.org/page4");
+const GURL kTestUrl5("http://test.org/page5");
 const GURL kTestOriginalUrl("http://test.org/first");
 const ClientId kTestClientId = ClientId(kBookmarkNamespace, "1234");
 const ClientId kTestClientId2 = ClientId(kDownloadNamespace, "1a2b3c4d");
 const ClientId kTestClientId3 = ClientId(kDownloadNamespace, "3456abcd");
 const ClientId kTestClientId4 = ClientId(kDownloadNamespace, "5678");
+const ClientId kTestClientId5 = ClientId(kDownloadNamespace, "9999");
 const int kTestFileSize = 444;
 const int kTestFileSize2 = 450;
 const int kTestFileSize3 = 450;
 const int kTestFileSize4 = 111;
+const int kTestFileSize5 = 450;
 const int kTabId = 1;
 const int kBufSize = 1024;
 const char kAggregatedRequestResultHistogram[] =
@@ -257,6 +260,8 @@ class OfflinePageRequestJobTest : public testing::Test {
                 const GURL& original_url,
                 std::unique_ptr<OfflinePageArchiver> archiver);
 
+  OfflinePageItem GetPage(int64_t offline_id);
+
   void InterceptRequest(const GURL& url,
                         const std::string& method,
                         const std::string& extra_header_name,
@@ -289,6 +294,7 @@ class OfflinePageRequestJobTest : public testing::Test {
   int64_t offline_id2() const { return offline_id2_; }
   int64_t offline_id3() const { return offline_id3_; }
   int64_t offline_id4() const { return offline_id4_; }
+  int64_t offline_id5() const { return offline_id5_; }
   int bytes_read() const { return bytes_read_; }
 
   TestPreviewsDecider* test_previews_decider() {
@@ -301,6 +307,7 @@ class OfflinePageRequestJobTest : public testing::Test {
       const GURL& url,
       const std::string& method,
       content::ResourceType resource_type);
+  void OnGetPageByOfflineIdDone(const OfflinePageItem* pages);
   void ReadCompleted(int bytes_read);
 
   // Runs on IO thread.
@@ -331,7 +338,9 @@ class OfflinePageRequestJobTest : public testing::Test {
   int64_t offline_id2_;
   int64_t offline_id3_;
   int64_t offline_id4_;
+  int64_t offline_id5_;
   int bytes_read_;
+  OfflinePageItem page_;
 
   DISALLOW_COPY_AND_ASSIGN(OfflinePageRequestJobTest);
 };
@@ -344,6 +353,7 @@ OfflinePageRequestJobTest::OfflinePageRequestJobTest()
       offline_id2_(-1),
       offline_id3_(-1),
       offline_id4_(-1),
+      offline_id5_(-1),
       bytes_read_(0) {}
 
 void OfflinePageRequestJobTest::SetUp() {
@@ -363,13 +373,19 @@ void OfflinePageRequestJobTest::SetUp() {
       profile(), BuildTestOfflinePageModel);
   RunUntilIdle();
 
-  OfflinePageModel* model =
-      OfflinePageModelFactory::GetForBrowserContext(profile());
+  OfflinePageModelImpl* model = static_cast<OfflinePageModelImpl*>(
+      OfflinePageModelFactory::GetForBrowserContext(profile()));
 
   // Hook up a test clock such that we can control the time when the offline
   // page is created.
   clock_.SetNow(base::Time::Now());
-  static_cast<OfflinePageModelImpl*>(model)->set_testing_clock(&clock_);
+  model->set_testing_clock(&clock_);
+
+  // Skip the logic to clear the original URL if it is same as final URL.
+  // This is needed in order to test that offline page request handler can
+  // omit the redirect under this circumstance, for compatibility with the
+  // metadata already written to the store.
+  model->set_skip_clearing_original_url_for_testing();
 
   // All offline pages being created below will point to real archive files
   // residing in test data directory.
@@ -419,6 +435,20 @@ void OfflinePageRequestJobTest::SetUp() {
                                   kTestFileSize4));
 
   SavePage(kTestUrl4, kTestClientId4, GURL(), std::move(archiver4));
+
+  // Save an offline page with same original URL and final URL.
+  base::FilePath archive_file_path5 =
+      test_data_dir_path.AppendASCII("offline_pages")
+          .AppendASCII("hello.mhtml");
+  std::unique_ptr<TestOfflinePageArchiver> archiver5(
+      new TestOfflinePageArchiver(kTestUrl5, archive_file_path5,
+                                  kTestFileSize5));
+
+  SavePage(kTestUrl5, kTestClientId5, kTestUrl5, std::move(archiver5));
+
+  // Check if the original URL is still present.
+  OfflinePageItem page = GetPage(offline_id5());
+  EXPECT_EQ(kTestUrl5, page.original_url);
 
   // Create a context with delayed initialization.
   test_url_request_context_.reset(new net::TestURLRequestContext(true));
@@ -532,6 +562,23 @@ void OfflinePageRequestJobTest::OnSavePageDone(SavePageResult result,
     offline_id3_ = offline_id;
   else if (offline_id4_ == -1)
     offline_id4_ = offline_id;
+  else if (offline_id5_ == -1)
+    offline_id5_ = offline_id;
+}
+
+OfflinePageItem OfflinePageRequestJobTest::GetPage(int64_t offline_id) {
+  OfflinePageModelFactory::GetForBrowserContext(profile())->GetPageByOfflineId(
+      offline_id,
+      base::Bind(&OfflinePageRequestJobTest::OnGetPageByOfflineIdDone,
+                 base::Unretained(this)));
+  RunUntilIdle();
+  return page_;
+}
+
+void OfflinePageRequestJobTest::OnGetPageByOfflineIdDone(
+    const OfflinePageItem* page) {
+  ASSERT_TRUE(page);
+  page_ = *page;
 }
 
 void OfflinePageRequestJobTest::InterceptRequestOnIO(
@@ -891,6 +938,22 @@ TEST_F(OfflinePageRequestJobTest, LoadOfflinePageAfterRedirect) {
       OfflinePageRequestJob::AggregatedRequestResult::
           REDIRECTED_ON_DISCONNECTED_NETWORK);
   ExpectOneNonuniqueSampleForAggregatedRequestResult(
+      OfflinePageRequestJob::AggregatedRequestResult::
+          SHOW_OFFLINE_ON_DISCONNECTED_NETWORK);
+}
+
+TEST_F(OfflinePageRequestJobTest, NoRedirectForOfflinePageWithSameOriginalURL) {
+  SimulateHasNetworkConnectivity(false);
+
+  // No redirect should be triggered when original URL is same as final URL.
+  InterceptRequest(kTestUrl5, "GET", "", "", content::RESOURCE_TYPE_MAIN_FRAME);
+  base::RunLoop().Run();
+
+  EXPECT_EQ(kTestFileSize5, bytes_read());
+  ASSERT_TRUE(offline_page_tab_helper()->GetOfflinePageForTest());
+  EXPECT_EQ(offline_id5(),
+            offline_page_tab_helper()->GetOfflinePageForTest()->offline_id);
+  ExpectOneUniqueSampleForAggregatedRequestResult(
       OfflinePageRequestJob::AggregatedRequestResult::
           SHOW_OFFLINE_ON_DISCONNECTED_NETWORK);
 }
