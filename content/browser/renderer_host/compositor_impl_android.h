@@ -79,6 +79,7 @@ class CONTENT_EXPORT CompositorImpl
   void SetSurface(jobject surface) override;
   void SetWindowBounds(const gfx::Size& size) override;
   void SetHasTransparentBackground(bool flag) override;
+  void SetRequiresAlphaChannel(bool flag) override;
   void SetNeedsComposite() override;
   ui::UIResourceProvider& GetUIResourceProvider() override;
   ui::ResourceManager& GetResourceManager() override;
@@ -158,7 +159,7 @@ class CONTENT_EXPORT CompositorImpl
 
   gfx::ColorSpace display_color_space_;
   gfx::Size size_;
-  bool has_transparent_background_;
+  bool requires_alpha_channel_ = false;
 
   ANativeWindow* window_;
   gpu::SurfaceHandle surface_handle_;
