@@ -4,31 +4,13 @@
 
 #include "chrome/browser/net/proxy_service_factory.h"
 
-#include <stddef.h>
-#include <string>
-#include <utility>
-
-#include "base/command_line.h"
-#include "base/metrics/field_trial.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/threading/thread.h"
 #include "build/build_config.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/io_thread.h"
-#include "chrome/browser/net/chrome_mojo_proxy_resolver_factory.h"
-#include "chrome/common/chrome_switches.h"
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/content_switches.h"
-#include "net/proxy/dhcp_proxy_script_fetcher_factory.h"
 #include "net/proxy/proxy_config_service.h"
-#include "net/proxy/proxy_script_fetcher_impl.h"
 #include "net/proxy/proxy_service.h"
-#include "net/proxy/proxy_service_mojo.h"
-#include "net/url_request/url_request_context.h"
 
 #if defined(OS_CHROMEOS)
-#include "chromeos/network/dhcp_proxy_script_fetcher_chromeos.h"
 #include "chromeos/network/proxy/proxy_config_service_impl.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -87,54 +69,4 @@ ProxyServiceFactory::CreatePrefProxyConfigTrackerOfLocalState(
       local_state_prefs,
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
 #endif  // defined(OS_CHROMEOS)
-}
-
-// static
-std::unique_ptr<net::ProxyService> ProxyServiceFactory::CreateProxyService(
-    net::NetLog* net_log,
-    net::URLRequestContext* context,
-    net::NetworkDelegate* network_delegate,
-    std::unique_ptr<net::ProxyConfigService> proxy_config_service,
-    const base::CommandLine& command_line,
-    bool quick_check_enabled,
-    bool pac_https_url_stripping_enabled) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  bool use_v8 = !command_line.HasSwitch(switches::kWinHttpProxyResolver);
-  // TODO(eroman): Figure out why this doesn't work in single-process mode.
-  // Should be possible now that a private isolate is used.
-  // http://crbug.com/474654
-  if (use_v8 && command_line.HasSwitch(switches::kSingleProcess)) {
-    LOG(ERROR) << "Cannot use V8 Proxy resolver in single process mode.";
-    use_v8 = false;  // Fallback to non-v8 implementation.
-  }
-
-  std::unique_ptr<net::ProxyService> proxy_service;
-  if (use_v8) {
-    std::unique_ptr<net::DhcpProxyScriptFetcher> dhcp_proxy_script_fetcher;
-#if defined(OS_CHROMEOS)
-    dhcp_proxy_script_fetcher.reset(
-        new chromeos::DhcpProxyScriptFetcherChromeos(context));
-#else
-    net::DhcpProxyScriptFetcherFactory dhcp_factory;
-    dhcp_proxy_script_fetcher = dhcp_factory.Create(context);
-#endif
-
-    proxy_service = net::CreateProxyServiceUsingMojoFactory(
-        ChromeMojoProxyResolverFactory::GetInstance(),
-        std::move(proxy_config_service),
-        new net::ProxyScriptFetcherImpl(context),
-        std::move(dhcp_proxy_script_fetcher), context->host_resolver(), net_log,
-        network_delegate);
-  } else {
-    proxy_service = net::ProxyService::CreateUsingSystemProxyResolver(
-        std::move(proxy_config_service), net_log);
-  }
-
-  proxy_service->set_quick_check_enabled(quick_check_enabled);
-  proxy_service->set_sanitize_url_policy(
-      pac_https_url_stripping_enabled
-          ? net::ProxyService::SanitizeUrlPolicy::SAFE
-          : net::ProxyService::SanitizeUrlPolicy::UNSAFE);
-
-  return proxy_service;
 }
