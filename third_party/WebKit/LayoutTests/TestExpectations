@@ -1240,7 +1240,6 @@ crbug.com/425345 [ Mac ] fast/text/line-break-after-question-mark.html [ Failure
 # By about a quarter or less of a pixel.
 crbug.com/421412 [ Mac ] fast/text/international/bdo-bidi-width.html [ Failure ]
 
-crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollable-area-frame-zero-size-and-border.html [ Failure ]
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollbar-tickmarks-styled.html [ Failure ]
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollbar-tickmarks-styled-after-onload.html [ Failure ]
 
