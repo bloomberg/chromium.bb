@@ -18,7 +18,6 @@
 #include "ui/aura/scoped_window_targeter.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/cursor/cursor_loader_x11.h"
-#include "ui/display/display_observer.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
@@ -45,8 +44,7 @@ class X11DesktopWindowMoveClient;
 class VIEWS_EXPORT DesktopWindowTreeHostX11
     : public DesktopWindowTreeHost,
       public aura::WindowTreeHost,
-      public ui::PlatformEventDispatcher,
-      public display::DisplayObserver {
+      public ui::PlatformEventDispatcher {
  public:
   DesktopWindowTreeHostX11(
       internal::NativeWidgetDelegate* native_widget_delegate,
@@ -171,9 +169,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
       const gfx::Point& location_in_pixels) override;
   void OnCursorVisibilityChangedNative(bool show) override;
 
-  // Overridden from display::DisplayObserver:
-  void OnDisplayAdded(const display::Display& new_display) override;
-  void OnDisplayRemoved(const display::Display& old_display) override;
+  // Overridden from display::DisplayObserver via aura::WindowTreeHost:
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t changed_metrics) override;
 

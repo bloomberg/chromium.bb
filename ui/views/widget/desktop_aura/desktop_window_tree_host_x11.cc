@@ -166,7 +166,6 @@ DesktopWindowTreeHostX11::DesktopWindowTreeHostX11(
       modal_dialog_counter_(0),
       close_widget_factory_(this),
       weak_factory_(this) {
-  display::Screen::GetScreen()->AddObserver(this);
 }
 
 DesktopWindowTreeHostX11::~DesktopWindowTreeHostX11() {
@@ -174,7 +173,6 @@ DesktopWindowTreeHostX11::~DesktopWindowTreeHostX11() {
   wm::SetWindowMoveClient(window(), NULL);
   desktop_native_widget_aura_->OnDesktopWindowTreeHostDestroyed(this);
   DestroyDispatcher();
-  display::Screen::GetScreen()->RemoveObserver(this);
 }
 
 // static
@@ -1302,15 +1300,11 @@ void DesktopWindowTreeHostX11::OnCursorVisibilityChangedNative(bool show) {
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostX11, display::DisplayObserver implementation:
 
-void DesktopWindowTreeHostX11::OnDisplayAdded(
-    const display::Display& new_display) {}
-
-void DesktopWindowTreeHostX11::OnDisplayRemoved(
-    const display::Display& old_display) {}
-
 void DesktopWindowTreeHostX11::OnDisplayMetricsChanged(
     const display::Display& display,
     uint32_t changed_metrics) {
+  aura::WindowTreeHost::OnDisplayMetricsChanged(display, changed_metrics);
+
   if ((changed_metrics & DISPLAY_METRIC_DEVICE_SCALE_FACTOR) &&
       display::Screen::GetScreen()->GetDisplayNearestWindow(window()).id() ==
           display.id()) {
