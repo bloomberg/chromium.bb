@@ -290,13 +290,15 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(
       CHECK_EQ(-1, root_id_) << "Duplicated root";
       root_id_ = id;
     }
+
+    if (GetBooleanProperty(event_data->node_data[i].get(),
+                           arc::mojom::AccessibilityBooleanProperty::FOCUSED)) {
+      focused_node_id_ = id;
+    }
   }
 
   ExtensionMsg_AccessibilityEventParams params;
   params.event_type = ToAXEvent(event_data->event_type);
-
-  if (params.event_type == ui::AX_EVENT_FOCUS)
-    focused_node_id_ = event_data->source_id;
 
   params.tree_id = tree_id();
   params.id = event_data->source_id;
