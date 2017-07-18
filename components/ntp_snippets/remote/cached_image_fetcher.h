@@ -35,7 +35,6 @@ class RemoteSuggestionsDatabase;
 
 // CachedImageFetcher takes care of fetching images from the network and caching
 // them in the database.
-// TODO(gaschler): add unit test
 class CachedImageFetcher : public image_fetcher::ImageFetcherDelegate {
  public:
   // |pref_service| and |database| need to outlive the created image fetcher
