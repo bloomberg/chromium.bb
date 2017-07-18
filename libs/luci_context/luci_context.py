@@ -122,6 +122,19 @@ def _read_full():
   return _CUR_CONTEXT
 
 
+def _mutate(section_values):
+  new_val = read_full()
+  for section, value in section_values.iteritems():
+    if value is None:
+      new_val.pop(section, None)
+    elif isinstance(value, dict):
+      new_val[section] = value
+    else:
+      raise ValueError(
+        'Bad type for LUCI_CONTEXT[%r]: %s', section, type(value).__name__)
+  return new_val
+
+
 def read_full():
   """Returns a copy of the entire current contents of the LUCI_CONTEXT as
   a dict.
@@ -206,15 +219,7 @@ def write(_tmpdir=None, **section_values):
     yield
     return
 
-  new_val = read_full()
-  for section, value in section_values.iteritems():
-    if value is None:
-      new_val.pop(section, None)
-    elif isinstance(value, dict):
-      new_val[section] = value
-    else:
-      raise ValueError(
-        'Bad type for LUCI_CONTEXT[%r]: %s', section, type(value).__name__)
+  new_val = _mutate(section_values)
 
   global _CUR_CONTEXT
   got_lock = _WRITE_LOCK.acquire(blocking=False)
@@ -235,3 +240,21 @@ def write(_tmpdir=None, **section_values):
           del os.environ[_ENV_KEY]
   finally:
     _WRITE_LOCK.release()
+
+
+@contextlib.contextmanager
+def stage(_tmpdir=None, **section_values):
+  """Prepares and writes new LUCI_CONTEXT file, but doesn't replace the env var.
+
+  This is useful when launching new process asynchronously in new LUCI_CONTEXT
+  environment. In this case, modifying the environment of the current process
+  (like 'write' does) may be harmful.
+
+  Calls the body with a path to the new LUCI_CONTEXT file or None if
+  'section_values' is empty (meaning, no changes have been made).
+  """
+  if not section_values:
+    yield None
+    return
+  with _tf(_mutate(section_values), workdir=_tmpdir) as name:
+    yield name
