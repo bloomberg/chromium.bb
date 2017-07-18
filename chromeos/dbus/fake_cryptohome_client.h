@@ -14,6 +14,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/timer/timer.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/cryptohome/key.pb.h"
@@ -250,6 +251,15 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
       const std::string& key_name,
       const std::string& certificate);
 
+  void SetTpmAttestationDeviceCertificate(const std::string& key_name,
+                                          const std::string& certificate);
+
+  base::Optional<std::string> GetTpmAttestationDeviceKeyPayload(
+      const std::string& key_name) const;
+
+  void SetTpmAttestationDeviceKeyPayload(const std::string& key_name,
+                                         const std::string& payload);
+
  private:
   void ReturnProtobufMethodCallback(
       const cryptohome::BaseReply& reply,
@@ -293,6 +303,12 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
   // User attestation certificate mapped by cryptohome_id and key_name.
   std::map<std::pair<cryptohome::Identification, std::string>, std::string>
       user_certificate_map_;
+
+  // Device attestation certificate mapped by key_name.
+  std::map<std::string, std::string> device_certificate_map_;
+
+  // Device key payload data mapped by key_name.
+  std::map<std::string, std::string> device_key_payload_map_;
 
   DircryptoMigrationProgessHandler dircrypto_migration_progress_handler_;
   base::RepeatingTimer dircrypto_migration_progress_timer_;
