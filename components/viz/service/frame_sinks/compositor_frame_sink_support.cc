@@ -53,7 +53,7 @@ CompositorFrameSinkSupport::~CompositorFrameSinkSupport() {
   EvictCurrentSurface();
   frame_sink_manager_->UnregisterFrameSinkManagerClient(frame_sink_id_);
   if (handles_frame_sink_id_invalidation_)
-    frame_sink_manager_->InvalidateFrameSinkId(frame_sink_id_);
+    surface_manager_->InvalidateFrameSinkId(frame_sink_id_);
 }
 
 void CompositorFrameSinkSupport::SetDestructionCallback(
@@ -318,7 +318,7 @@ void CompositorFrameSinkSupport::Init(FrameSinkManager* frame_sink_manager) {
   frame_sink_manager_ = frame_sink_manager;
   surface_manager_ = frame_sink_manager->surface_manager();
   if (handles_frame_sink_id_invalidation_)
-    frame_sink_manager_->RegisterFrameSinkId(frame_sink_id_);
+    surface_manager_->RegisterFrameSinkId(frame_sink_id_);
   frame_sink_manager_->RegisterFrameSinkManagerClient(frame_sink_id_, this);
 }
 

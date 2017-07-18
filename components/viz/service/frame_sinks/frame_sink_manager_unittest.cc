@@ -66,20 +66,9 @@ class FakeFrameSinkManagerClient : public FrameSinkManagerClient {
 
 class FrameSinkManagerTest : public testing::Test {
  public:
-  // These tests don't care about namespace registration, so just preregister
-  // a set of namespaces that tests can use freely without worrying if they're
-  // valid or not.
-  enum { MAX_FRAME_SINK = 10 };
+  FrameSinkManagerTest() = default;
 
-  FrameSinkManagerTest() {
-    for (size_t i = 0; i < MAX_FRAME_SINK; ++i)
-      manager_.RegisterFrameSinkId(FrameSinkId(i, i));
-  }
-
-  ~FrameSinkManagerTest() override {
-    for (size_t i = 0; i < MAX_FRAME_SINK; ++i)
-      manager_.InvalidateFrameSinkId(FrameSinkId(i, i));
-  }
+  ~FrameSinkManagerTest() override = default;
 
  protected:
   FrameSinkManager manager_;

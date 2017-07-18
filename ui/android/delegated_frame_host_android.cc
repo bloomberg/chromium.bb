@@ -65,7 +65,7 @@ DelegatedFrameHostAndroid::DelegatedFrameHostAndroid(
   DCHECK(view_);
   DCHECK(client_);
 
-  frame_sink_manager_->RegisterFrameSinkId(frame_sink_id_);
+  frame_sink_manager_->surface_manager()->RegisterFrameSinkId(frame_sink_id_);
   CreateNewCompositorFrameSinkSupport();
 }
 
@@ -73,7 +73,7 @@ DelegatedFrameHostAndroid::~DelegatedFrameHostAndroid() {
   DestroyDelegatedContent();
   DetachFromCompositor();
   support_.reset();
-  frame_sink_manager_->InvalidateFrameSinkId(frame_sink_id_);
+  frame_sink_manager_->surface_manager()->InvalidateFrameSinkId(frame_sink_id_);
 }
 
 void DelegatedFrameHostAndroid::SubmitCompositorFrame(

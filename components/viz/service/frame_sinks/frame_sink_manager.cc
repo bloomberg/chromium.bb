@@ -34,14 +34,6 @@ FrameSinkManager::~FrameSinkManager() {
   DCHECK_EQ(registered_sources_.size(), 0u);
 }
 
-void FrameSinkManager::RegisterFrameSinkId(const FrameSinkId& frame_sink_id) {
-  surface_manager_.RegisterFrameSinkId(frame_sink_id);
-}
-
-void FrameSinkManager::InvalidateFrameSinkId(const FrameSinkId& frame_sink_id) {
-  surface_manager_.InvalidateFrameSinkId(frame_sink_id);
-}
-
 void FrameSinkManager::RegisterFrameSinkManagerClient(
     const FrameSinkId& frame_sink_id,
     FrameSinkManagerClient* client) {
@@ -235,10 +227,6 @@ void FrameSinkManager::UnregisterFrameSinkHierarchy(
   RecursivelyDetachBeginFrameSource(child_frame_sink_id, parent_source);
   for (auto source_iter : registered_sources_)
     RecursivelyAttachBeginFrameSource(source_iter.second, source_iter.first);
-}
-
-void FrameSinkManager::DropTemporaryReference(const SurfaceId& surface_id) {
-  surface_manager_.DropTemporaryReference(surface_id);
 }
 
 }  // namespace viz

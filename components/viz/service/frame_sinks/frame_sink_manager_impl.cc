@@ -105,7 +105,7 @@ void FrameSinkManagerImpl::UnregisterFrameSinkHierarchy(
 }
 
 void FrameSinkManagerImpl::DropTemporaryReference(const SurfaceId& surface_id) {
-  manager_.DropTemporaryReference(surface_id);
+  manager_.surface_manager()->DropTemporaryReference(surface_id);
 }
 
 void FrameSinkManagerImpl::DestroyCompositorFrameSink(FrameSinkId sink_id) {
