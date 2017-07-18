@@ -64,11 +64,6 @@ static_library("discovery") {
     ]
   }
 
-  if (is_win) {
-    libs = [ "wlanapi.lib" ]
-    ldflags = [ "/DELAYLOAD:wlanapi.dll" ]
-  }
-
   if (is_mac) {
     libs = [ "CoreWLAN.framework" ]
   }
