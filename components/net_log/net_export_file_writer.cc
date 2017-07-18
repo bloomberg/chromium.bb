@@ -101,6 +101,8 @@ base::FilePath GetPathWithAllPermissions(const base::FilePath& path) {
 
 }  // namespace
 
+const size_t NetExportFileWriter::kNoLimit = net::FileNetLogObserver::kNoLimit;
+
 NetExportFileWriter::NetExportFileWriter(ChromeNetLog* chrome_net_log)
     : state_(STATE_UNINITIALIZED),
       log_exists_(false),
@@ -156,6 +158,7 @@ void NetExportFileWriter::Initialize(
 void NetExportFileWriter::StartNetLog(
     const base::FilePath& log_path,
     net::NetLogCaptureMode capture_mode,
+    size_t max_file_size,
     const base::CommandLine::StringType& command_line_string,
     const std::string& channel_string,
     const URLRequestContextGetterList& context_getters) {
@@ -177,8 +180,8 @@ void NetExportFileWriter::StartNetLog(
   std::unique_ptr<base::Value> constants(
       ChromeNetLog::GetConstants(command_line_string, channel_string));
 
-  file_net_log_observer_ =
-      net::FileNetLogObserver::CreateUnbounded(log_path_, std::move(constants));
+  file_net_log_observer_ = net::FileNetLogObserver::CreateBounded(
+      log_path_, max_file_size, std::move(constants));
 
   net_task_runner_->PostTaskAndReply(
       FROM_HERE,

@@ -149,10 +149,12 @@ class NetExportMessageHandler
                  net_log::NetExportFileWriter::StateObserver>
       state_observer_manager_;
 
-  // The capture mode the user chose in the UI when logging started is cached
-  // here and is read after a file path is chosen in the save dialog.
-  // Its value is only valid while the save dialog is open on the desktop UI.
+  // The capture mode and file size bound that the user chose in the UI when
+  // logging started is cached here and is read after a file path is chosen in
+  // the save dialog. Their values are only valid while the save dialog is open
+  // on the desktop UI.
   net::NetLogCaptureMode capture_mode_;
+  size_t max_log_file_size_;
 
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
 
@@ -217,12 +219,21 @@ void NetExportMessageHandler::OnEnableNotifyUIWithState(
 
 void NetExportMessageHandler::OnStartNetLog(const base::ListValue* list) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  std::string capture_mode_string;
-  bool result = list->GetString(0, &capture_mode_string);
-  DCHECK(result);
 
-  capture_mode_ =
-      net_log::NetExportFileWriter::CaptureModeFromString(capture_mode_string);
+  const base::Value::ListStorage& params = list->GetList();
+
+  // Determine the capture mode.
+  capture_mode_ = net::NetLogCaptureMode::Default();
+  if (params.size() > 0 && params[0].is_string()) {
+    capture_mode_ = net_log::NetExportFileWriter::CaptureModeFromString(
+        params[0].GetString());
+  }
+
+  // Determine the max file size.
+  max_log_file_size_ = net_log::NetExportFileWriter::kNoLimit;
+  if (params.size() > 1 && params[1].is_int() && params[1].GetInt() > 0) {
+    max_log_file_size_ = params[1].GetInt();
+  }
 
   if (UsingMobileUI()) {
     StartNetLog(base::FilePath());
@@ -321,7 +332,7 @@ void NetExportMessageHandler::StartNetLog(const base::FilePath& path) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   file_writer_->StartNetLog(
-      path, capture_mode_,
+      path, capture_mode_, max_log_file_size_,
       base::CommandLine::ForCurrentProcess()->GetCommandLineString(),
       chrome::GetChannelString(), GetURLRequestContexts());
 }
