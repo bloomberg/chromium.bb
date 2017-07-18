@@ -50,16 +50,18 @@ if (window.testRunner)
   testRunner.waitUntilDone();
 
 function waitForCompositor() {
-  return footer.animate({opacity: ['1', '1']}, 1).ready;
+  return footer.animate({opacity: ['1', '1']}, 1).finished;
 }
 
 requestAnimationFrame(() => {
   requestAnimationFrame(() => {
     internals.setZoomFactor(2);
     requestAnimationFrame(() => {
-      waitForCompositor().then(() => {
-        if (window.testRunner)
-          testRunner.notifyDone();
+      requestAnimationFrame(() => {
+        waitForCompositor().then(() => {
+          if (window.testRunner)
+            testRunner.notifyDone();
+        });
       });
     });
   });
