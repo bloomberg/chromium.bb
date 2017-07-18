@@ -28,6 +28,9 @@ class BackgroundTabNavigationThrottle : public content::NavigationThrottle {
   const char* GetNameForLogging() override;
   content::NavigationThrottle::ThrottleCheckResult WillStartRequest() override;
 
+  // Virtual to allow unit tests to make this a no-op.
+  virtual void ResumeNavigation();
+
  private:
   DISALLOW_COPY_AND_ASSIGN(BackgroundTabNavigationThrottle);
 };

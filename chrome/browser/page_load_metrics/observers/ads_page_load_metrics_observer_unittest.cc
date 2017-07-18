@@ -72,9 +72,7 @@ class DelayWillProcessResponseThrottle : public content::NavigationThrottle {
     return "DelayWillProcessResponseThrottle";
   }
 
-  void CancelDeferredNavigation() {
-    navigation_handle()->CancelDeferredNavigation(NavigationThrottle::CANCEL);
-  }
+  void Cancel() { CancelDeferredNavigation(NavigationThrottle::CANCEL); }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DelayWillProcessResponseThrottle);
@@ -114,7 +112,7 @@ class DelayWillProcessResponseObserver : public content::WebContentsObserver {
         nullptr /* data_reduction_proxy */, 10 * 1024 /* raw_body_bytes */,
         0 /* original_network_content_length */, base::TimeTicks::Now(), 0);
 
-    throttle_->CancelDeferredNavigation();
+    throttle_->Cancel();
   }
 
  private:

@@ -91,6 +91,22 @@ class CONTENT_EXPORT NavigationThrottle {
   // navigation.
   NavigationHandle* navigation_handle() const { return navigation_handle_; }
 
+ protected:
+  // Resumes a navigation that was previously deferred by this
+  // NavigationThrottle.
+  // Note: this may lead to the deletion of the NavigationHandle and its
+  // associated NavigationThrottles, including this one.
+  virtual void Resume();
+
+  // Cancels a navigation that was previously deferred by this
+  // NavigationThrottle. |result| should be equal to either:
+  //  - NavigationThrottle::CANCEL,
+  //  - NavigationThrottle::CANCEL_AND_IGNORE, or
+  //  - NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE.
+  // Note: this may lead to the deletion of the NavigationHandle and its
+  // associated NavigationThrottles, including this one.
+  virtual void CancelDeferredNavigation(ThrottleCheckResult result);
+
  private:
   NavigationHandle* navigation_handle_;
 };

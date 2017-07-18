@@ -133,7 +133,7 @@ void SubresourceFilterSafeBrowsingActivationThrottle::OnCheckUrlResultOnUI(
   stored_result = result;
   if (!defer_time_.is_null() && request_id == check_results_.size() - 1) {
     NotifyResult();
-    navigation_handle()->Resume();
+    Resume();
   }
 }
 

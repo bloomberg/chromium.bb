@@ -228,7 +228,7 @@ void ArcNavigationThrottle::OnAppCandidatesReceived(
     // iff there are ARC apps which can actually handle the given URL.
     DVLOG(1) << "There are no app candidates for this URL: "
              << navigation_handle()->GetURL();
-    navigation_handle()->Resume();
+    Resume();
     return;
   }
 
@@ -251,7 +251,7 @@ void ArcNavigationThrottle::OnAppCandidatesReceived(
       navigation_handle()->GetWebContents()->GetBrowserContext());
   if (!intent_helper_bridge) {
     LOG(ERROR) << "Cannot get an instance of ArcIntentHelperBridge";
-    navigation_handle()->Resume();
+    Resume();
     return;
   }
   std::vector<ArcIntentHelperBridge::ActivityName> activities;
@@ -322,7 +322,7 @@ void ArcNavigationThrottle::OnIntentPickerClosed(
       // an error or if |selected_app_index| is not a valid index, then resume
       // the navigation in Chrome.
       DVLOG(1) << "User didn't select a valid option, resuming navigation.";
-      handle->Resume();
+      Resume();
       break;
     }
     case CloseReason::ALWAYS_PRESSED: {
@@ -341,10 +341,10 @@ void ArcNavigationThrottle::OnIntentPickerClosed(
     case CloseReason::PREFERRED_ACTIVITY_FOUND: {
       if (ArcIntentHelperBridge::IsIntentHelperPackage(
               handlers[selected_app_index]->package_name)) {
-        handle->Resume();
+        Resume();
       } else {
         instance->HandleUrl(url.spec(), selected_app_package);
-        handle->CancelDeferredNavigation(
+        CancelDeferredNavigation(
             content::NavigationThrottle::CANCEL_AND_IGNORE);
         if (handle->GetWebContents()->GetController().IsInitialNavigation())
           handle->GetWebContents()->Close();

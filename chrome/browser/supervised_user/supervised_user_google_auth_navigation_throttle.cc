@@ -93,12 +93,12 @@ void SupervisedUserGoogleAuthNavigationThrottle::OnGoogleAuthStateChanged(
   switch (result) {
     case content::NavigationThrottle::PROCEED: {
       google_auth_state_subscription_.reset();
-      navigation_handle()->Resume();
+      Resume();
       break;
     }
     case content::NavigationThrottle::CANCEL:
     case content::NavigationThrottle::CANCEL_AND_IGNORE: {
-      navigation_handle()->CancelDeferredNavigation(result);
+      CancelDeferredNavigation(result);
       break;
     }
     case content::NavigationThrottle::DEFER: {
@@ -150,6 +150,5 @@ void SupervisedUserGoogleAuthNavigationThrottle::OnReauthenticationResult(
   }
 
   // Otherwise cancel immediately.
-  navigation_handle()->CancelDeferredNavigation(
-      content::NavigationThrottle::CANCEL_AND_IGNORE);
+  CancelDeferredNavigation(content::NavigationThrottle::CANCEL_AND_IGNORE);
 }

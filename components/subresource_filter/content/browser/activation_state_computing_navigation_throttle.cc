@@ -120,7 +120,7 @@ void ActivationStateComputingNavigationThrottle::OnActivationStateComputed(
         delay, base::TimeDelta::FromMicroseconds(1),
         base::TimeDelta::FromSeconds(10), 50);
   }
-  navigation_handle()->Resume();
+  Resume();
 }
 
 AsyncDocumentSubresourceFilter*

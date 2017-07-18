@@ -20,6 +20,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/resource_coordinator/background_tab_navigation_throttle.h"
 #include "chrome/browser/resource_coordinator/tab_manager_web_contents_data.h"
 #include "chrome/browser/resource_coordinator/tab_stats.h"
 #include "chrome/browser/sessions/tab_loader.h"
@@ -47,6 +48,19 @@ namespace resource_coordinator {
 namespace {
 
 const char kTestUrl[] = "http://www.example.com";
+
+class NonResumingBackgroundTabNavigationThrottle
+    : public BackgroundTabNavigationThrottle {
+ public:
+  explicit NonResumingBackgroundTabNavigationThrottle(
+      content::NavigationHandle* handle)
+      : BackgroundTabNavigationThrottle(handle) {}
+
+  void ResumeNavigation() override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(NonResumingBackgroundTabNavigationThrottle);
+};
 
 class TabStripDummyDelegate : public TestTabStripModelDelegate {
  public:
@@ -134,12 +148,19 @@ class TabManagerTest : public ChromeRenderViewHostTestHarness {
     contents2_ = nav_handle2_->GetWebContents();
     contents3_ = nav_handle3_->GetWebContents();
 
+    throttle1_ = base::MakeUnique<NonResumingBackgroundTabNavigationThrottle>(
+        nav_handle1_.get());
+    throttle2_ = base::MakeUnique<NonResumingBackgroundTabNavigationThrottle>(
+        nav_handle2_.get());
+    throttle3_ = base::MakeUnique<NonResumingBackgroundTabNavigationThrottle>(
+        nav_handle3_.get());
+
     NavigationThrottle::ThrottleCheckResult result1 =
-        tab_manager->MaybeThrottleNavigation(nav_handle1_.get());
+        tab_manager->MaybeThrottleNavigation(throttle1_.get());
     NavigationThrottle::ThrottleCheckResult result2 =
-        tab_manager->MaybeThrottleNavigation(nav_handle2_.get());
+        tab_manager->MaybeThrottleNavigation(throttle2_.get());
     NavigationThrottle::ThrottleCheckResult result3 =
-        tab_manager->MaybeThrottleNavigation(nav_handle3_.get());
+        tab_manager->MaybeThrottleNavigation(throttle3_.get());
 
     // First tab starts navigation right away because there is no tab loading.
     EXPECT_EQ(content::NavigationThrottle::PROCEED, result1);
@@ -150,6 +171,9 @@ class TabManagerTest : public ChromeRenderViewHostTestHarness {
   }
 
  protected:
+  std::unique_ptr<BackgroundTabNavigationThrottle> throttle1_;
+  std::unique_ptr<BackgroundTabNavigationThrottle> throttle2_;
+  std::unique_ptr<BackgroundTabNavigationThrottle> throttle3_;
   std::unique_ptr<NavigationHandle> nav_handle1_;
   std::unique_ptr<NavigationHandle> nav_handle2_;
   std::unique_ptr<NavigationHandle> nav_handle3_;

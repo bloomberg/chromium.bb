@@ -52,10 +52,6 @@ class SupervisedUserNavigationThrottle : public content::NavigationThrottle {
 
   void OnInterstitialResult(bool continue_request);
 
-  void Resume();
-
-  void Cancel();
-
   const SupervisedUserURLFilter* url_filter_;
   bool deferred_;
   SupervisedUserURLFilter::FilteringBehavior behavior_;

@@ -51,5 +51,5 @@ const char* MergeSessionNavigationThrottle::GetNameForLogging() {
 
 void MergeSessionNavigationThrottle::OnBlockingPageComplete() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  navigation_handle()->Resume();
+  Resume();
 }

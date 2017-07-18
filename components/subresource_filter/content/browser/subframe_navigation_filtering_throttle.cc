@@ -110,12 +110,12 @@ void SubframeNavigationFilteringThrottle::OnCalculatedLoadPolicy(
     const bool block_and_collapse_is_supported =
         content::IsBrowserSideNavigationEnabled() ||
         stage == ThrottlingStage::WillStartRequest;
-    navigation_handle()->CancelDeferredNavigation(
+    CancelDeferredNavigation(
         block_and_collapse_is_supported
             ? content::NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE
             : content::NavigationThrottle::CANCEL);
   } else {
-    navigation_handle()->Resume();
+    Resume();
   }
 }
 
