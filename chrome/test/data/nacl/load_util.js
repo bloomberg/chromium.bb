@@ -4,7 +4,6 @@
 
 var load_util = {
   report: function(msg) {
-    domAutomationController.setAutomationId(0);
     // The automation controller seems to choke on Objects, so turn them into
     // strings.
     domAutomationController.send(JSON.stringify(msg));
