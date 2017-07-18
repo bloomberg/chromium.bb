@@ -55,6 +55,7 @@ buildflag_header("features") {
     "ENABLE_REPORTING=$enable_reporting",
     "ENABLE_WEBSOCKETS=$enable_websockets",
     "USE_BYTE_CERTS=$use_byte_certs",
+    "INCLUDE_TRANSPORT_SECURITY_STATE_PRELOAD_LIST=$include_transport_security_state_preload_list",
   ]
 }
 
@@ -285,6 +286,7 @@ component("net") {
     "http/http_vary_data.h",
     "http/transport_security_state.cc",
     "http/transport_security_state.h",
+    "http/transport_security_state_source.cc",
     "http/transport_security_state_source.h",
     "log/net_log.cc",
     "log/net_log.h",
@@ -359,10 +361,13 @@ component("net") {
     "//base",
     "//net/base/registry_controlled_domains",
     "//net/data/ssl/certificate_transparency:ct_log_list",
-    "//net/http:generate_transport_security_state",
     "//third_party/protobuf:protobuf_lite",
     "//url:url_features",
   ]
+
+  if (include_transport_security_state_preload_list) {
+    deps += [ "//net/http:generate_transport_security_state" ]
+  }
 
   public_deps = [
     ":net_quic_proto",
