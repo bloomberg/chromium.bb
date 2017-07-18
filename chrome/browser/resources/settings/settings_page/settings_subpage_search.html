@@ -72,7 +72,7 @@
     <iron-icon id="searchIcon" icon="cr:search"></iron-icon>
     <paper-input-container no-label-float>
       <input id="searchInput" type="search" on-search="onSearchTermSearch"
-          on-input="onSearchTermInput" aria-labelledby="prompt" incremental
+          on-input="onSearchTermInput" aria-label$="[[label]]" incremental
           autofocus$="[[autofocus]]" placeholder="[[label]]">
       <button suffix is="paper-icon-button-light" id="clearSearch"
           class="icon-cancel" on-tap="onTapClear_" title="[[clearLabel]]"
