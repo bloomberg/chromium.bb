@@ -1181,7 +1181,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PrepopulateSameTab) {
   EnsureFindBoxOpen();
 
   EXPECT_EQ(ASCIIToUTF16("page"), GetFindBarText());
-  EXPECT_EQ(ASCIIToUTF16("1 of 1"), GetMatchCountText());
+  EXPECT_EQ(ASCIIToUTF16("1/1"), GetMatchCountText());
 
   // Close the Find box.
   browser()->GetFindBarController()->EndFindSession(
@@ -1194,7 +1194,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PrepopulateSameTab) {
   // After the Find box has been reopened, it should have been prepopulated with
   // the word "page" again.
   EXPECT_EQ(ASCIIToUTF16("page"), GetFindBarText());
-  EXPECT_EQ(ASCIIToUTF16("1 of 1"), GetMatchCountText());
+  EXPECT_EQ(ASCIIToUTF16("1/1"), GetMatchCountText());
 }
 
 // This tests that whenever you open Find in a new tab it should prepopulate
@@ -1211,7 +1211,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PrepopulateInNewTab) {
       browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_EQ(1, FindInPageASCII(web_contents_1, "page",
                                kFwd, kIgnoreCase, &ordinal));
-  EXPECT_EQ(ASCIIToUTF16("1 of 1"), GetMatchCountText());
+  EXPECT_EQ(ASCIIToUTF16("1/1"), GetMatchCountText());
 
   // Now create a second tab and load the same page.
   chrome::AddSelectedTabWithURL(browser(), url, ui::PAGE_TRANSITION_TYPED);
@@ -1474,14 +1474,14 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   GURL url = GetURL(kSimple);
   ui_test_utils::NavigateToURL(browser(), url);
 
-  // Change the match count on the first tab to "1 of 1".
+  // Change the match count on the first tab to "1/1".
   int ordinal = 0;
   WebContents* web_contents_1 =
       browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_EQ(1, FindInPageASCII(web_contents_1, "page",
                                kFwd, kIgnoreCase, &ordinal));
   EnsureFindBoxOpen();
-  EXPECT_EQ(ASCIIToUTF16("1 of 1"), GetMatchCountText());
+  EXPECT_EQ(ASCIIToUTF16("1/1"), GetMatchCountText());
 
   // Next, do a search in a second tab.
   chrome::AddTabAt(browser(), GURL(), -1, true);
@@ -1489,7 +1489,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   WebContents* web_contents_2 =
       browser()->tab_strip_model()->GetActiveWebContents();
   FindInPageASCII(web_contents_2, "text", kFwd, kIgnoreCase, &ordinal);
-  EXPECT_EQ(ASCIIToUTF16("1 of 1"), GetMatchCountText());
+  EXPECT_EQ(ASCIIToUTF16("1/1"), GetMatchCountText());
 
   // Go back to the first tab and verify that the match text is cleared.
   // text to "text".
@@ -1528,8 +1528,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, IncognitoFindNextSecret) {
   FindInPageASCII(web_contents_incognito, "foo", true, kIgnoreCase, NULL);
   EXPECT_EQ(ASCIIToUTF16("foo"),
       GetFindBarTextForBrowser(browser_incognito));
-  EXPECT_EQ(ASCIIToUTF16("1 of 2"),
-      GetFindBarMatchCountTextForBrowser(browser_incognito));
+  EXPECT_EQ(ASCIIToUTF16("1/2"),
+            GetFindBarMatchCountTextForBrowser(browser_incognito));
 
   // Close the find bar.
   FindTabHelper* find_tab_helper =
@@ -1544,7 +1544,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, IncognitoFindNextSecret) {
   observer.Wait();
   EXPECT_EQ(ASCIIToUTF16("foo"),
             GetFindBarTextForBrowser(browser_incognito));
-  EXPECT_EQ(ASCIIToUTF16("2 of 2"),
+  EXPECT_EQ(ASCIIToUTF16("2/2"),
             GetFindBarMatchCountTextForBrowser(browser_incognito));
 }
 

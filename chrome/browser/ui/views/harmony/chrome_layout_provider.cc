@@ -34,6 +34,15 @@ int ChromeLayoutProvider::GetControlHeightForFont(const gfx::FontList& font) {
          Get()->GetDistanceMetric(DISTANCE_CONTROL_TOTAL_VERTICAL_TEXT_PADDING);
 }
 
+gfx::Insets ChromeLayoutProvider::GetInsetsMetric(int metric) const {
+  switch (metric) {
+    case ChromeInsetsMetric::INSETS_TOAST:
+      return gfx::Insets(0, 8);
+    default:
+      return views::LayoutProvider::GetInsetsMetric(metric);
+  }
+}
+
 int ChromeLayoutProvider::GetDistanceMetric(int metric) const {
   switch (metric) {
     case DISTANCE_BUTTON_MINIMUM_WIDTH:
@@ -58,6 +67,10 @@ int ChromeLayoutProvider::GetDistanceMetric(int metric) const {
       return 20;
     case DISTANCE_UNRELATED_CONTROL_VERTICAL_LARGE:
       return 30;
+    case DISTANCE_TOAST_CONTROL_VERTICAL:
+      return 8;
+    case DISTANCE_TOAST_LABEL_VERTICAL:
+      return 12;
     default:
       return views::LayoutProvider::GetDistanceMetric(metric);
   }

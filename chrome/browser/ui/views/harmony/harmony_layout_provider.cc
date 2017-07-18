@@ -18,6 +18,8 @@ gfx::Insets HarmonyLayoutProvider::GetInsetsMetric(int metric) const {
     }
     case views::INSETS_VECTOR_IMAGE_BUTTON:
       return gfx::Insets(kHarmonyLayoutUnit / 4);
+    case INSETS_TOAST:
+      return gfx::Insets(0, kHarmonyLayoutUnit);
     default:
       return ChromeLayoutProvider::GetInsetsMetric(metric);
   }
@@ -73,9 +75,9 @@ int HarmonyLayoutProvider::GetDistanceMetric(int metric) const {
       return kHarmonyLayoutUnit;
     case DISTANCE_UNRELATED_CONTROL_VERTICAL_LARGE:
       return kHarmonyLayoutUnit;
+    default:
+      return ChromeLayoutProvider::GetDistanceMetric(metric);
   }
-  NOTREACHED();
-  return 0;
 }
 
 views::GridLayout::Alignment
