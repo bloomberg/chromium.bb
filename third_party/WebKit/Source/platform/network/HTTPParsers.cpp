@@ -220,6 +220,27 @@ const UChar* ParseSuboriginPolicyOption(const UChar* begin,
   return position + 1;
 }
 
+// Parse a number with ignoring trailing [0-9.].
+// Returns NaN if the source contains invalid characters.
+double ParseRefreshTime(const String& source) {
+  int full_stop_count = 0;
+  unsigned number_end = source.length();
+  for (unsigned i = 0; i < source.length(); ++i) {
+    UChar ch = source[i];
+    if (ch == kFullstopCharacter) {
+      // TODO(tkent): According to the HTML specification, we should support
+      // only integers. However we support fractional numbers.
+      if (++full_stop_count == 2)
+        number_end = i;
+    } else if (!IsASCIIDigit(ch)) {
+      return std::numeric_limits<double>::quiet_NaN();
+    }
+  }
+  bool ok;
+  double time = source.Left(number_end).ToDouble(&ok);
+  return ok ? time : std::numeric_limits<double>::quiet_NaN();
+}
+
 }  // namespace
 
 bool IsValidHTTPHeaderValue(const String& name) {
@@ -248,6 +269,7 @@ bool IsContentDispositionAttachment(const String& content_disposition) {
   return net::HttpContentDisposition(string, std::string()).is_attachment();
 }
 
+// https://html.spec.whatwg.org/multipage/semantics.html#attr-meta-http-equiv-refresh
 bool ParseHTTPRefresh(const String& refresh,
                       WTF::CharacterMatchFunctionPtr matcher,
                       double& delay,
@@ -265,13 +287,11 @@ bool ParseHTTPRefresh(const String& refresh,
 
   if (pos == len) {  // no URL
     url = String();
-    bool ok;
-    delay = refresh.StripWhiteSpace().ToDouble(&ok);
-    return ok;
+    delay = ParseRefreshTime(refresh.StripWhiteSpace());
+    return std::isfinite(delay);
   } else {
-    bool ok;
-    delay = refresh.Left(pos).StripWhiteSpace().ToDouble(&ok);
-    if (!ok)
+    delay = ParseRefreshTime(refresh.Left(pos).StripWhiteSpace());
+    if (!std::isfinite(delay))
       return false;
 
     SkipWhiteSpace(refresh, pos, matcher);

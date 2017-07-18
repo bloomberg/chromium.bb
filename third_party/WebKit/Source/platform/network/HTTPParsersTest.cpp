@@ -393,6 +393,9 @@ TEST(HTTPParsersTest, ParseHTTPRefresh) {
   String url;
   EXPECT_FALSE(ParseHTTPRefresh("", nullptr, delay, url));
   EXPECT_FALSE(ParseHTTPRefresh(" ", nullptr, delay, url));
+  EXPECT_FALSE(ParseHTTPRefresh("1.3xyz url=foo", nullptr, delay, url));
+  EXPECT_FALSE(ParseHTTPRefresh("1.3.4xyz url=foo", nullptr, delay, url));
+  EXPECT_FALSE(ParseHTTPRefresh("1e1 url=foo", nullptr, delay, url));
 
   EXPECT_TRUE(ParseHTTPRefresh("123 ", nullptr, delay, url));
   EXPECT_EQ(123.0, delay);
@@ -416,6 +419,19 @@ TEST(HTTPParsersTest, ParseHTTPRefresh) {
   EXPECT_TRUE(
       ParseHTTPRefresh("10\nurl=dest", IsASCIISpace<UChar>, delay, url));
   EXPECT_EQ(10, delay);
+  EXPECT_EQ("dest", url);
+
+  EXPECT_TRUE(
+      ParseHTTPRefresh("1.5; url=dest", IsASCIISpace<UChar>, delay, url));
+  EXPECT_EQ(1.5, delay);
+  EXPECT_EQ("dest", url);
+  EXPECT_TRUE(
+      ParseHTTPRefresh("1.5.9; url=dest", IsASCIISpace<UChar>, delay, url));
+  EXPECT_EQ(1.5, delay);
+  EXPECT_EQ("dest", url);
+  EXPECT_TRUE(
+      ParseHTTPRefresh("7..; url=dest", IsASCIISpace<UChar>, delay, url));
+  EXPECT_EQ(7, delay);
   EXPECT_EQ("dest", url);
 }
 
