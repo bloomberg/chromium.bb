@@ -452,18 +452,18 @@ void MediaControlsImpl::InitializeControls() {
   // relative to each other.  The first item appended appears at the top of the
   // overflow menu.
   overflow_list_->AppendChild(play_button_->CreateOverflowElement(
-      *this, new MediaControlPlayButtonElement(*this)));
+      new MediaControlPlayButtonElement(*this)));
   overflow_list_->AppendChild(fullscreen_button_->CreateOverflowElement(
-      *this, new MediaControlFullscreenButtonElement(*this)));
+      new MediaControlFullscreenButtonElement(*this)));
   overflow_list_->AppendChild(download_button_->CreateOverflowElement(
-      *this, new MediaControlDownloadButtonElement(*this)));
+      new MediaControlDownloadButtonElement(*this)));
   overflow_list_->AppendChild(mute_button_->CreateOverflowElement(
-      *this, new MediaControlMuteButtonElement(*this)));
+      new MediaControlMuteButtonElement(*this)));
   overflow_list_->AppendChild(cast_button_->CreateOverflowElement(
-      *this, new MediaControlCastButtonElement(*this, false)));
+      new MediaControlCastButtonElement(*this, false)));
   overflow_list_->AppendChild(
       toggle_closed_captions_button_->CreateOverflowElement(
-          *this, new MediaControlToggleClosedCaptionsButtonElement(*this)));
+          new MediaControlToggleClosedCaptionsButtonElement(*this)));
 }
 
 Node::InsertionNotificationRequest MediaControlsImpl::InsertedInto(

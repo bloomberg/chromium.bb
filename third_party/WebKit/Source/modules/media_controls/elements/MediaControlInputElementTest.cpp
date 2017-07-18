@@ -181,7 +181,7 @@ TEST_F(MediaControlInputElementTest, OverflowElement_DisplayFallback) {
 
   Persistent<HTMLElement> overflow_container =
       ControlInputElement().CreateOverflowElement(
-          MediaControls(), new MediaControlInputElementImpl(MediaControls()));
+          new MediaControlInputElementImpl(MediaControls()));
 
   ControlInputElement().SetIsWanted(true);
   ControlInputElement().SetDoesFit(false);
@@ -198,7 +198,7 @@ TEST_F(MediaControlInputElementTest, OverflowElement_DisplayRequiresWanted) {
 
   Persistent<HTMLElement> overflow_container =
       ControlInputElement().CreateOverflowElement(
-          MediaControls(), new MediaControlInputElementImpl(MediaControls()));
+          new MediaControlInputElementImpl(MediaControls()));
 
   ControlInputElement().SetIsWanted(true);
   ControlInputElement().SetDoesFit(false);
@@ -220,7 +220,7 @@ TEST_F(MediaControlInputElementTest, OverflowElement_DisplayAfterInline) {
 
   Persistent<HTMLElement> overflow_container =
       ControlInputElement().CreateOverflowElement(
-          MediaControls(), new MediaControlInputElementImpl(MediaControls()));
+          new MediaControlInputElementImpl(MediaControls()));
 
   ControlInputElement().SetIsWanted(true);
   ControlInputElement().SetDoesFit(true);

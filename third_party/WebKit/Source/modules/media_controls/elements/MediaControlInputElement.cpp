@@ -34,7 +34,6 @@ bool MediaControlInputElement::ShouldRecordDisplayStates(
 }
 
 HTMLElement* MediaControlInputElement::CreateOverflowElement(
-    MediaControlsImpl& media_controls,
     MediaControlInputElement* button) {
   if (!button)
     return nullptr;
@@ -42,11 +41,10 @@ HTMLElement* MediaControlInputElement::CreateOverflowElement(
   // We don't want the button visible within the overflow menu.
   button->SetInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
 
-  overflow_menu_text_ = Text::Create(media_controls.GetDocument(),
-                                     button->GetOverflowMenuString());
+  overflow_menu_text_ =
+      Text::Create(GetDocument(), button->GetOverflowMenuString());
 
-  HTMLLabelElement* element =
-      HTMLLabelElement::Create(media_controls.GetDocument());
+  HTMLLabelElement* element = HTMLLabelElement::Create(GetDocument());
   element->SetShadowPseudoId(
       AtomicString("-internal-media-controls-overflow-menu-list-item"));
   // Appending a button to a label element ensures that clicks on the label
