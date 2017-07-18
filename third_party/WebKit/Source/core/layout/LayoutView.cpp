@@ -327,10 +327,6 @@ LayoutRect LayoutView::VisualOverflowRect() const {
   if (RuntimeEnabledFeatures::RootLayerScrollingEnabled())
     return LayoutBlockFlow::VisualOverflowRect();
 
-  // Ditto when not in compositing mode.
-  if (!UsesCompositing())
-    return LayoutBlockFlow::VisualOverflowRect();
-
   // In normal compositing mode, LayoutView doesn't actually apply clipping
   // on its descendants. Instead their visual overflow is propagated to
   // compositor()->m_rootContentLayer for accelerated scrolling.
