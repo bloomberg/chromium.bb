@@ -5,8 +5,8 @@
 #include "modules/compositorworker/CompositorWorkerThread.h"
 
 #include <memory>
+#include "core/workers/GlobalScopeCreationParams.h"
 #include "core/workers/InProcessWorkerObjectProxy.h"
-#include "core/workers/WorkerThreadStartupData.h"
 #include "modules/compositorworker/CompositorWorkerGlobalScope.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/wtf/Assertions.h"
@@ -35,10 +35,10 @@ CompositorWorkerThread::CompositorWorkerThread(
 CompositorWorkerThread::~CompositorWorkerThread() {}
 
 WorkerOrWorkletGlobalScope* CompositorWorkerThread::CreateWorkerGlobalScope(
-    std::unique_ptr<WorkerThreadStartupData> startup_data) {
+    std::unique_ptr<GlobalScopeCreationParams> creation_params) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("compositor-worker"),
                "CompositorWorkerThread::createWorkerGlobalScope");
-  return CompositorWorkerGlobalScope::Create(this, std::move(startup_data),
+  return CompositorWorkerGlobalScope::Create(this, std::move(creation_params),
                                              time_origin_);
 }
 

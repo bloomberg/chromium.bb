@@ -28,7 +28,7 @@ class MODULES_EXPORT CompositorWorkerThread final
 
  protected:
   WorkerOrWorkletGlobalScope* CreateWorkerGlobalScope(
-      std::unique_ptr<WorkerThreadStartupData>) override;
+      std::unique_ptr<GlobalScopeCreationParams>) override;
 
  private:
   CompositorWorkerThread(ThreadableLoadingContext*,

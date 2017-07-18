@@ -12,8 +12,8 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/ThreadableLoadingContext.h"
 #include "core/loader/WorkerFetchContext.h"
+#include "core/workers/GlobalScopeCreationParams.h"
 #include "core/workers/WorkerInspectorProxy.h"
-#include "core/workers/WorkerThreadStartupData.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/wtf/CurrentTime.h"
@@ -73,7 +73,8 @@ DEFINE_TRACE(ThreadedMessagingProxyBase) {
 }
 
 void ThreadedMessagingProxyBase::InitializeWorkerThread(
-    std::unique_ptr<WorkerThreadStartupData> startup_data,
+    std::unique_ptr<GlobalScopeCreationParams> global_scope_creation_params,
+    const WTF::Optional<WorkerBackingThreadStartupData>& thread_startup_data,
     const KURL& script_url) {
   DCHECK(IsParentContextThread());
 
@@ -84,7 +85,8 @@ void ThreadedMessagingProxyBase::InitializeWorkerThread(
           : MonotonicallyIncreasingTime();
 
   worker_thread_ = CreateWorkerThread(origin_time);
-  worker_thread_->Start(std::move(startup_data), GetParentFrameTaskRunners());
+  worker_thread_->Start(std::move(global_scope_creation_params),
+                        thread_startup_data, GetParentFrameTaskRunners());
   WorkerThreadCreated();
   GetWorkerInspectorProxy()->WorkerThreadCreated(document, GetWorkerThread(),
                                                  script_url);

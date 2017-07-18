@@ -7,11 +7,11 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/V8BindingForCore.h"
+#include "bindings/core/v8/V8CacheOptions.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
-#include "bindings/core/v8/WorkerV8Settings.h"
 #include "core/dom/TaskRunnerHelper.h"
+#include "core/workers/GlobalScopeCreationParams.h"
 #include "core/workers/WorkerReportingProxy.h"
-#include "core/workers/WorkerThreadStartupData.h"
 #include "modules/compositorworker/AnimationWorklet.h"
 #include "modules/compositorworker/AnimationWorkletThread.h"
 #include "modules/compositorworker/Animator.h"
@@ -46,12 +46,12 @@ class AnimationWorkletGlobalScopeTest : public ::testing::Test {
     WorkerClients* clients = WorkerClients::Create();
 
     thread->Start(
-        WorkerThreadStartupData::Create(
+        WTF::MakeUnique<GlobalScopeCreationParams>(
             KURL(kParsedURLString, "http://fake.url/"), "fake user agent", "",
             nullptr, kDontPauseWorkerGlobalScopeOnStart, nullptr, "",
             security_origin_.Get(), clients, kWebAddressSpaceLocal, nullptr,
-            nullptr, WorkerV8Settings::Default()),
-        ParentFrameTaskRunners::Create());
+            nullptr, kV8CacheOptionsDefault),
+        WTF::nullopt, ParentFrameTaskRunners::Create());
     return thread;
   }
 

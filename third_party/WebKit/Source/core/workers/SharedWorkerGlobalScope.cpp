@@ -54,21 +54,19 @@ MessageEvent* CreateConnectEvent(MessagePort* port) {
 SharedWorkerGlobalScope* SharedWorkerGlobalScope::Create(
     const String& name,
     SharedWorkerThread* thread,
-    std::unique_ptr<WorkerThreadStartupData> startup_data) {
-  // Note: startupData is finalized on return. After the relevant parts has been
-  // passed along to the created 'context'.
+    std::unique_ptr<GlobalScopeCreationParams> creation_params) {
   SharedWorkerGlobalScope* context = new SharedWorkerGlobalScope(
-      name, startup_data->script_url_, startup_data->user_agent_, thread,
-      std::move(startup_data->starter_origin_privilege_data_),
-      startup_data->worker_clients_);
+      name, creation_params->script_url, creation_params->user_agent, thread,
+      std::move(creation_params->starter_origin_privilege_data),
+      creation_params->worker_clients);
   context->ApplyContentSecurityPolicyFromVector(
-      *startup_data->content_security_policy_headers_);
-  context->SetWorkerSettings(std::move(startup_data->worker_settings_));
-  if (!startup_data->referrer_policy_.IsNull())
-    context->ParseAndSetReferrerPolicy(startup_data->referrer_policy_);
-  context->SetAddressSpace(startup_data->address_space_);
+      *creation_params->content_security_policy_headers);
+  context->SetWorkerSettings(std::move(creation_params->worker_settings));
+  if (!creation_params->referrer_policy.IsNull())
+    context->ParseAndSetReferrerPolicy(creation_params->referrer_policy);
+  context->SetAddressSpace(creation_params->address_space);
   OriginTrialContext::AddTokens(context,
-                                startup_data->origin_trial_tokens_.get());
+                                creation_params->origin_trial_tokens.get());
   return context;
 }
 

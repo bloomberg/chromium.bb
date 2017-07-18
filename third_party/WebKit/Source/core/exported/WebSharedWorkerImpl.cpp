@@ -31,6 +31,7 @@
 #include "core/exported/WebSharedWorkerImpl.h"
 
 #include <memory>
+#include "bindings/core/v8/V8CacheOptions.h"
 #include "core/dom/Document.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/events/MessageEvent.h"
@@ -44,6 +45,7 @@
 #include "core/loader/ThreadableLoadingContext.h"
 #include "core/loader/WorkerFetchContext.h"
 #include "core/probe/CoreProbes.h"
+#include "core/workers/GlobalScopeCreationParams.h"
 #include "core/workers/ParentFrameTaskRunners.h"
 #include "core/workers/SharedWorkerGlobalScope.h"
 #include "core/workers/SharedWorkerThread.h"
@@ -51,7 +53,6 @@
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerInspectorProxy.h"
 #include "core/workers/WorkerScriptLoader.h"
-#include "core/workers/WorkerThreadStartupData.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/heap/Handle.h"
@@ -357,11 +358,8 @@ void WebSharedWorkerImpl::OnScriptLoaderFinished() {
       worker_inspector_proxy_->WorkerStartMode(loading_document_);
   std::unique_ptr<WorkerSettings> worker_settings = WTF::WrapUnique(
       new WorkerSettings(main_frame_->GetFrame()->GetSettings()));
-  WorkerV8Settings worker_v8_settings = WorkerV8Settings::Default();
-  worker_v8_settings.atomics_wait_mode_ =
-      WorkerV8Settings::AtomicsWaitMode::kAllow;
-  std::unique_ptr<WorkerThreadStartupData> startup_data =
-      WorkerThreadStartupData::Create(
+  auto global_scope_creation_params =
+      WTF::MakeUnique<GlobalScopeCreationParams>(
           url_, loading_document_->UserAgent(),
           main_script_loader_->SourceText(), nullptr, start_mode,
           content_security_policy ? content_security_policy->Headers().get()
@@ -369,7 +367,7 @@ void WebSharedWorkerImpl::OnScriptLoaderFinished() {
           main_script_loader_->GetReferrerPolicy(), starter_origin,
           worker_clients, main_script_loader_->ResponseAddressSpace(),
           main_script_loader_->OriginTrialTokens(), std::move(worker_settings),
-          worker_v8_settings);
+          kV8CacheOptionsDefault);
 
   // SharedWorker can sometimes run tasks that are initiated by/associated with
   // a document's frame but these documents can be from a different process. So
@@ -388,7 +386,12 @@ void WebSharedWorkerImpl::OnScriptLoaderFinished() {
                         main_script_loader_->SourceText());
   main_script_loader_.Clear();
 
-  GetWorkerThread()->Start(std::move(startup_data), task_runners);
+  auto thread_startup_data = WorkerBackingThreadStartupData::CreateDefault();
+  thread_startup_data.atomics_wait_mode =
+      WorkerBackingThreadStartupData::AtomicsWaitMode::kAllow;
+
+  GetWorkerThread()->Start(std::move(global_scope_creation_params),
+                           thread_startup_data, task_runners);
   worker_inspector_proxy_->WorkerThreadCreated(ToDocument(loading_document_),
                                                GetWorkerThread(), url_);
   client_->WorkerScriptLoaded();

@@ -37,13 +37,13 @@
 #include "core/inspector/WorkerThreadDebugger.h"
 #include "core/origin_trials/OriginTrialContext.h"
 #include "core/probe/CoreProbes.h"
+#include "core/workers/GlobalScopeCreationParams.h"
 #include "core/workers/InstalledScriptsManager.h"
 #include "core/workers/ThreadedWorkletGlobalScope.h"
 #include "core/workers/WorkerBackingThread.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerReportingProxy.h"
-#include "core/workers/WorkerThreadStartupData.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/Histogram.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -105,8 +105,10 @@ WorkerThread::~WorkerThread() {
   exit_code_histogram.Count(static_cast<int>(exit_code_));
 }
 
-void WorkerThread::Start(std::unique_ptr<WorkerThreadStartupData> startup_data,
-                         ParentFrameTaskRunners* parent_frame_task_runners) {
+void WorkerThread::Start(
+    std::unique_ptr<GlobalScopeCreationParams> global_scope_creation_params,
+    const WTF::Optional<WorkerBackingThreadStartupData>& thread_startup_data,
+    ParentFrameTaskRunners* parent_frame_task_runners) {
   DCHECK(IsMainThread());
   DCHECK(!parent_frame_task_runners_);
   parent_frame_task_runners_ = parent_frame_task_runners;
@@ -122,9 +124,11 @@ void WorkerThread::Start(std::unique_ptr<WorkerThreadStartupData> startup_data,
   waitable_event.Wait();
 
   GetWorkerBackingThread().BackingThread().PostTask(
-      BLINK_FROM_HERE, CrossThreadBind(&WorkerThread::InitializeOnWorkerThread,
-                                       CrossThreadUnretained(this),
-                                       WTF::Passed(std::move(startup_data))));
+      BLINK_FROM_HERE,
+      CrossThreadBind(&WorkerThread::InitializeOnWorkerThread,
+                      CrossThreadUnretained(this),
+                      WTF::Passed(std::move(global_scope_creation_params)),
+                      thread_startup_data));
 }
 
 void WorkerThread::Terminate() {
@@ -392,28 +396,35 @@ void WorkerThread::InitializeSchedulerOnWorkerThread(
 }
 
 void WorkerThread::InitializeOnWorkerThread(
-    std::unique_ptr<WorkerThreadStartupData> startup_data) {
+    std::unique_ptr<GlobalScopeCreationParams> global_scope_creation_params,
+    const WTF::Optional<WorkerBackingThreadStartupData>& thread_startup_data) {
   DCHECK(IsCurrentThread());
   DCHECK_EQ(ThreadState::kNotStarted, thread_state_);
 
-  KURL script_url = startup_data->script_url_;
-  String given_source_code = startup_data->source_code_;
+  KURL script_url = global_scope_creation_params->script_url;
+  String given_source_code = global_scope_creation_params->source_code;
   std::unique_ptr<Vector<char>> given_cached_meta_data =
-      std::move(startup_data->cached_meta_data_);
-  WorkerThreadStartMode start_mode = startup_data->start_mode_;
+      std::move(global_scope_creation_params->cached_meta_data);
+  // TODO(nhiroki): Rename WorkerThreadStartMode to GlobalScopeStartMode.
+  // (https://crbug.com/710364)
+  WorkerThreadStartMode start_mode = global_scope_creation_params->start_mode;
   V8CacheOptions v8_cache_options =
-      startup_data->worker_v8_settings_.v8_cache_options_;
-  WorkerV8Settings v8_settings = startup_data->worker_v8_settings_;
+      global_scope_creation_params->v8_cache_options;
 
   {
     MutexLocker lock(thread_state_mutex_);
 
-    if (IsOwningBackingThread())
-      GetWorkerBackingThread().InitializeOnBackingThread(v8_settings);
+    if (IsOwningBackingThread()) {
+      DCHECK(thread_startup_data.has_value());
+      GetWorkerBackingThread().InitializeOnBackingThread(*thread_startup_data);
+    } else {
+      DCHECK(!thread_startup_data.has_value());
+    }
     GetWorkerBackingThread().BackingThread().AddTaskObserver(this);
 
     console_message_storage_ = new ConsoleMessageStorage();
-    global_scope_ = CreateWorkerGlobalScope(std::move(startup_data));
+    global_scope_ =
+        CreateWorkerGlobalScope(std::move(global_scope_creation_params));
     worker_reporting_proxy_.DidCreateWorkerGlobalScope(GlobalScope());
     worker_inspector_controller_ = WorkerInspectorController::Create(this);
 
@@ -450,7 +461,7 @@ void WorkerThread::InitializeOnWorkerThread(
       GetInstalledScriptsManager() &&
       GetInstalledScriptsManager()->IsScriptInstalled(script_url)) {
     // TODO(shimazu): Set ContentSecurityPolicy, ReferrerPolicy and
-    // OriginTrialTokens to |startup_data|.
+    // OriginTrialTokens to |global_scope_creation_params|.
     // TODO(shimazu): Add a post task to the main thread for setting
     // ContentSecurityPolicy and ReferrerPolicy.
 

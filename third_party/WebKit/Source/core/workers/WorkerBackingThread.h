@@ -18,7 +18,7 @@ namespace blink {
 
 class WebThread;
 class WebThreadSupportingGC;
-struct WorkerV8Settings;
+struct WorkerBackingThreadStartupData;
 
 // WorkerBackingThread represents a WebThread with Oilpan and V8. A client of
 // WorkerBackingThread (i.e., WorkerThread) needs to call
@@ -48,7 +48,7 @@ class CORE_EXPORT WorkerBackingThread final {
   // detaches Oilpan and V8 to / from the caller worker script, respectively.
   // A worker script must not call any function after calling
   // ShutdownOnBackingThread(). They should be called from |this| thread.
-  void InitializeOnBackingThread(const WorkerV8Settings&);
+  void InitializeOnBackingThread(const WorkerBackingThreadStartupData&);
   void ShutdownOnBackingThread();
 
   WebThreadSupportingGC& BackingThread() {

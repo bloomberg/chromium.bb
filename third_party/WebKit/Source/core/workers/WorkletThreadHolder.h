@@ -5,9 +5,9 @@
 #ifndef WorkletThreadHolder_h
 #define WorkletThreadHolder_h
 
-#include "bindings/core/v8/WorkerV8Settings.h"
 #include "core/CoreExport.h"
 #include "core/workers/WorkerBackingThread.h"
+#include "core/workers/WorkerBackingThreadStartupData.h"
 #include "platform/WaitableEvent.h"
 #include "platform/WebThreadSupportingGC.h"
 #include "platform/wtf/PtrUtil.h"
@@ -92,7 +92,8 @@ class WorkletThreadHolder {
   void InitializeOnWorkletThread() {
     MutexLocker locker(HolderInstanceMutex());
     DCHECK(!initialized_);
-    thread_->InitializeOnBackingThread(WorkerV8Settings::Default());
+    thread_->InitializeOnBackingThread(
+        WorkerBackingThreadStartupData::CreateDefault());
     initialized_ = true;
   }
 

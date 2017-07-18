@@ -36,7 +36,7 @@
 namespace blink {
 
 class InProcessWorkerObjectProxy;
-class WorkerThreadStartupData;
+struct GlobalScopeCreationParams;
 
 class CORE_EXPORT DedicatedWorkerThread : public WorkerThread {
  public:
@@ -59,7 +59,7 @@ class CORE_EXPORT DedicatedWorkerThread : public WorkerThread {
                         InProcessWorkerObjectProxy&,
                         double time_origin);
   WorkerOrWorkletGlobalScope* CreateWorkerGlobalScope(
-      std::unique_ptr<WorkerThreadStartupData>) override;
+      std::unique_ptr<GlobalScopeCreationParams>) override;
 
  private:
   friend class DedicatedWorkerThreadForTest;

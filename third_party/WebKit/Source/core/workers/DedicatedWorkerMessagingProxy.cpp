@@ -21,6 +21,19 @@ bool DedicatedWorkerMessagingProxy::IsAtomicsWaitAllowed() {
   return true;
 }
 
+WTF::Optional<WorkerBackingThreadStartupData>
+DedicatedWorkerMessagingProxy::CreateBackingThreadStartupData(
+    v8::Isolate* isolate) {
+  using HeapLimitMode = WorkerBackingThreadStartupData::HeapLimitMode;
+  using AtomicsWaitMode = WorkerBackingThreadStartupData::AtomicsWaitMode;
+  return WorkerBackingThreadStartupData(
+      isolate->IsHeapLimitIncreasedForDebugging()
+          ? HeapLimitMode::kIncreasedForDebugging
+          : HeapLimitMode::kDefault,
+      IsAtomicsWaitAllowed() ? AtomicsWaitMode::kAllow
+                             : AtomicsWaitMode::kDisallow);
+}
+
 std::unique_ptr<WorkerThread> DedicatedWorkerMessagingProxy::CreateWorkerThread(
     double origin_time) {
   return DedicatedWorkerThread::Create(CreateThreadableLoadingContext(),
