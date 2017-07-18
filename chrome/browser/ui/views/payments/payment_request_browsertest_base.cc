@@ -97,7 +97,7 @@ void PaymentRequestBrowserTestBase::SetUpOnMainThread() {
   host_resolver()->AddRule("a.com", "127.0.0.1");
   host_resolver()->AddRule("b.com", "127.0.0.1");
   ASSERT_TRUE(https_server_->InitializeAndListen());
-  https_server_->ServeFilesFromSourceDirectory("chrome/test/data/payments");
+  https_server_->ServeFilesFromSourceDirectory("components/test/data/payments");
   https_server_->StartAcceptingConnections();
 
   NavigateTo(test_file_path_);

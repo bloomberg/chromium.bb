@@ -1701,6 +1701,7 @@ test("browser_tests") {
       "//chrome/browser/policy/test/policy_testserver.py",
       "//chrome/common/extensions/docs/examples/apps/calculator/",
       "//chrome/third_party/mock4js/",
+      "//components/test/data/payments/",
       "//components/test/data/update_client/",
       "//content/test/data/",
       "//google_apis/test/",

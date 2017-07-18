@@ -124,7 +124,7 @@ public class PaymentManifestDownloaderTest implements ManifestDownloadCallback {
     @Test
     @Feature({"Payments"})
     public void testDownloadWebAppManifest() throws Throwable {
-        final URI uri = new URI(mServer.getURL("/chrome/test/data/payments/app.json"));
+        final URI uri = new URI(mServer.getURL("/components/test/data/payments/app.json"));
         mRule.runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -166,7 +166,7 @@ public class PaymentManifestDownloaderTest implements ManifestDownloadCallback {
     @Test
     @Feature({"Payments"})
     public void testDownloadPaymentMethodManifest() throws Throwable {
-        final URI uri = new URI(mServer.getURL("/chrome/test/data/payments/webpay"));
+        final URI uri = new URI(mServer.getURL("/components/test/data/payments/webpay"));
         mRule.runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -210,9 +210,10 @@ public class PaymentManifestDownloaderTest implements ManifestDownloadCallback {
     @Feature({"Payments"})
     public void testSeveralDownloadsAtOnce() throws Throwable {
         final URI paymentMethodUri1 = new URI(mServer.getURL("/no-such-payment-method-name"));
-        final URI paymentMethodUri2 = new URI(mServer.getURL("/chrome/test/data/payments/webpay"));
+        final URI paymentMethodUri2 =
+                new URI(mServer.getURL("/components/test/data/payments/webpay"));
         final URI webAppUri1 = new URI(mServer.getURL("/no-such-app.json"));
-        final URI webAppUri2 = new URI(mServer.getURL("/chrome/test/data/payments/app.json"));
+        final URI webAppUri2 = new URI(mServer.getURL("/components/test/data/payments/app.json"));
         mRule.runOnUiThread(new Runnable() {
             @Override
             public void run() {

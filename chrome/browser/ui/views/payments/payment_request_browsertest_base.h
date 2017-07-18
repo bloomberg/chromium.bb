@@ -87,7 +87,7 @@ class PaymentRequestBrowserTestBase
 
  protected:
   // Test will open a browser window to |test_file_path| (relative to
-  // chrome/test/data/payments).
+  // components/test/data/payments).
   explicit PaymentRequestBrowserTestBase(const std::string& test_file_path);
   ~PaymentRequestBrowserTestBase() override;
 
