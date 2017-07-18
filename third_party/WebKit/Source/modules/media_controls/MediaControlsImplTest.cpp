@@ -53,7 +53,7 @@ namespace blink {
 
 namespace {
 
-class MockChromeClient : public EmptyChromeClient {
+class MockChromeClientForImpl : public EmptyChromeClient {
  public:
   // EmptyChromeClient overrides:
   WebScreenInfo GetScreenInfo() const override {
@@ -63,7 +63,7 @@ class MockChromeClient : public EmptyChromeClient {
   }
 };
 
-class MockVideoWebMediaPlayer : public EmptyWebMediaPlayer {
+class MockWebMediaPlayerForImpl : public EmptyWebMediaPlayer {
  public:
   // WebMediaPlayer overrides:
   WebTimeRanges Seekable() const override { return seekable_; }
@@ -83,15 +83,17 @@ class MockLayoutObject : public LayoutObject {
   }
 };
 
-class StubLocalFrameClient : public EmptyLocalFrameClient {
+class StubLocalFrameClientForImpl : public EmptyLocalFrameClient {
  public:
-  static StubLocalFrameClient* Create() { return new StubLocalFrameClient; }
+  static StubLocalFrameClientForImpl* Create() {
+    return new StubLocalFrameClientForImpl;
+  }
 
   std::unique_ptr<WebMediaPlayer> CreateWebMediaPlayer(
       HTMLMediaElement&,
       const WebMediaPlayerSource&,
       WebMediaPlayerClient*) override {
-    return WTF::WrapUnique(new MockVideoWebMediaPlayer);
+    return WTF::WrapUnique(new MockWebMediaPlayerForImpl);
   }
 
   WebRemotePlaybackClient* CreateWebRemotePlaybackClient(
@@ -153,9 +155,9 @@ class MediaControlsImplTest : public ::testing::Test {
   void InitializePage() {
     Page::PageClients clients;
     FillWithEmptyClients(clients);
-    clients.chrome_client = new MockChromeClient();
-    page_holder_ = DummyPageHolder::Create(IntSize(800, 600), &clients,
-                                           StubLocalFrameClient::Create());
+    clients.chrome_client = new MockChromeClientForImpl();
+    page_holder_ = DummyPageHolder::Create(
+        IntSize(800, 600), &clients, StubLocalFrameClientForImpl::Create());
 
     GetDocument().write("<video>");
     HTMLVideoElement& video =
@@ -194,8 +196,8 @@ class MediaControlsImplTest : public ::testing::Test {
   MediaControlCurrentTimeDisplayElement* GetCurrentTimeDisplayElement() const {
     return media_controls_->current_time_display_;
   }
-  MockVideoWebMediaPlayer* WebMediaPlayer() {
-    return static_cast<MockVideoWebMediaPlayer*>(
+  MockWebMediaPlayerForImpl* WebMediaPlayer() {
+    return static_cast<MockWebMediaPlayerForImpl*>(
         MediaControls().MediaElement().GetWebMediaPlayer());
   }
   Document& GetDocument() { return page_holder_->GetDocument(); }
