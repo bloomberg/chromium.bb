@@ -20,5 +20,9 @@ specific_include_rules = {
   "run_all_(unit|perf)tests\.cc": [
     "+mojo/edk/embedder",
     "+mojo/edk/test",
-  ]
+  ],
+  "ipc_message_protobuf_utils\.h": [
+    # Support serializing RepeatedField / RepeatedPtrField:
+    "+third_party/protobuf/src/google/protobuf/repeated_field.h",
+  ],
 }

@@ -5,8 +5,8 @@
 // Multiply-included message file, so no include guard.
 
 #include "ipc/ipc_message_macros.h"
+#include "ipc/ipc_message_protobuf_utils.h"
 #include "chrome/common/safe_browsing/ipc_protobuf_message_macros.h"
-#include "chrome/common/safe_browsing/protobuf_message_param_traits.h"
 
 IPC_PROTOBUF_MESSAGE_TRAITS_BEGIN(SubMessage)
   IPC_PROTOBUF_MESSAGE_TRAITS_OPTIONAL_FUNDAMENTAL_MEMBER(foo)
