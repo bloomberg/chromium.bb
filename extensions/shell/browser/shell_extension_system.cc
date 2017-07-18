@@ -42,24 +42,26 @@ ShellExtensionSystem::ShellExtensionSystem(BrowserContext* browser_context)
 ShellExtensionSystem::~ShellExtensionSystem() {
 }
 
-const Extension* ShellExtensionSystem::LoadApp(const base::FilePath& app_dir) {
+const Extension* ShellExtensionSystem::LoadExtension(
+    const base::FilePath& extension_dir) {
   // app_shell only supports unpacked extensions.
   // NOTE: If you add packed extension support consider removing the flag
   // FOLLOW_SYMLINKS_ANYWHERE below. Packed extensions should not have symlinks.
-  CHECK(base::DirectoryExists(app_dir)) << app_dir.AsUTF8Unsafe();
+  CHECK(base::DirectoryExists(extension_dir)) << extension_dir.AsUTF8Unsafe();
   int load_flags = Extension::FOLLOW_SYMLINKS_ANYWHERE;
   std::string load_error;
   scoped_refptr<Extension> extension = file_util::LoadExtension(
-      app_dir, Manifest::COMMAND_LINE, load_flags, &load_error);
+      extension_dir, Manifest::COMMAND_LINE, load_flags, &load_error);
   if (!extension.get()) {
-    LOG(ERROR) << "Loading extension at " << app_dir.value()
+    LOG(ERROR) << "Loading extension at " << extension_dir.value()
                << " failed with: " << load_error;
     return nullptr;
   }
 
   // Log warnings.
   if (extension->install_warnings().size()) {
-    LOG(WARNING) << "Warnings loading extension at " << app_dir.value() << ":";
+    LOG(WARNING) << "Warnings loading extension at " << extension_dir.value()
+                 << ":";
     for (const auto& warning : extension->install_warnings())
       LOG(WARNING) << warning.message;
   }
@@ -82,7 +84,13 @@ const Extension* ShellExtensionSystem::LoadApp(const base::FilePath& app_dir) {
   RendererStartupHelperFactory::GetForBrowserContext(browser_context_)
       ->OnExtensionLoaded(*extension);
 
+  ExtensionRegistry::Get(browser_context_)->TriggerOnLoaded(extension.get());
+
   return extension.get();
+}
+
+const Extension* ShellExtensionSystem::LoadApp(const base::FilePath& app_dir) {
+  return LoadExtension(app_dir);
 }
 
 void ShellExtensionSystem::Init() {
