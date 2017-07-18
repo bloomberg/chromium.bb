@@ -88,16 +88,16 @@ void InlineFlowBoxPainter::PaintFillLayer(const PaintInfo& paint_info,
       (!inline_flow_box_.PrevLineBox() && !inline_flow_box_.NextLineBox()) ||
       !inline_flow_box_.Parent()) {
     box_model_painter.PaintFillLayer(paint_info, c, fill_layer, rect,
-                                     kBackgroundBleedNone, geometry,
-                                     &inline_flow_box_, rect.Size(), op);
+                                     kBackgroundBleedNone, geometry, op,
+                                     &inline_flow_box_, rect.Size());
   } else if (inline_flow_box_.GetLineLayoutItem()
                  .Style()
                  ->BoxDecorationBreak() == EBoxDecorationBreak::kClone) {
     GraphicsContextStateSaver state_saver(paint_info.context);
     paint_info.context.Clip(PixelSnappedIntRect(rect));
     box_model_painter.PaintFillLayer(paint_info, c, fill_layer, rect,
-                                     kBackgroundBleedNone, geometry,
-                                     &inline_flow_box_, rect.Size(), op);
+                                     kBackgroundBleedNone, geometry, op,
+                                     &inline_flow_box_, rect.Size());
   } else {
     // We have a fill image that spans multiple lines.
     // FIXME: frameSize ought to be the same as rect.size().
@@ -110,7 +110,7 @@ void InlineFlowBoxPainter::PaintFillLayer(const PaintInfo& paint_info,
     paint_info.context.Clip(PixelSnappedIntRect(rect));
     box_model_painter.PaintFillLayer(
         paint_info, c, fill_layer, image_strip_paint_rect, kBackgroundBleedNone,
-        geometry, &inline_flow_box_, rect.Size(), op);
+        geometry, op, &inline_flow_box_, rect.Size());
   }
 }
 

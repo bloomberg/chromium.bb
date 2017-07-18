@@ -18,7 +18,6 @@
 #include "core/paint/NinePieceImagePainter.h"
 #include "core/paint/ObjectPainter.h"
 #include "core/paint/PaintInfo.h"
-#include "core/paint/PaintLayer.h"
 #include "core/paint/ScrollRecorder.h"
 #include "core/paint/ThemePainter.h"
 #include "core/style/ShadowList.h"
@@ -194,40 +193,10 @@ void BoxPainter::PaintBackground(const PaintInfo& paint_info,
   if (layout_box_.BackgroundIsKnownToBeObscured())
     return;
   BackgroundImageGeometry geometry(layout_box_);
-  PaintFillLayers(paint_info, background_color,
-                  layout_box_.Style()->BackgroundLayers(), paint_rect, geometry,
-                  bleed_avoidance);
-}
-
-void BoxPainter::PaintFillLayers(const PaintInfo& paint_info,
-                                 const Color& c,
-                                 const FillLayer& fill_layer,
-                                 const LayoutRect& rect,
-                                 BackgroundImageGeometry& geometry,
-                                 BackgroundBleedAvoidance bleed_avoidance,
-                                 SkBlendMode op) {
-  FillLayerOcclusionOutputList reversed_paint_list;
-  bool should_draw_background_in_separate_buffer =
-      CalculateFillLayerOcclusionCulling(reversed_paint_list, fill_layer,
-                                         layout_box_.GetDocument(),
-                                         layout_box_.StyleRef());
-
-  // TODO(trchen): We can optimize out isolation group if we have a
-  // non-transparent background color and the bottom layer encloses all other
-  // layers.
-  GraphicsContext& context = paint_info.context;
-  if (should_draw_background_in_separate_buffer)
-    context.BeginLayer();
-
   BoxModelObjectPainter box_model_painter(layout_box_);
-  for (auto it = reversed_paint_list.rbegin(); it != reversed_paint_list.rend();
-       ++it) {
-    box_model_painter.PaintFillLayer(paint_info, c, **it, rect, bleed_avoidance,
-                                     geometry, 0, LayoutSize(), op);
-  }
-
-  if (should_draw_background_in_separate_buffer)
-    context.EndLayer();
+  box_model_painter.PaintFillLayers(paint_info, background_color,
+                                    layout_box_.Style()->BackgroundLayers(),
+                                    paint_rect, geometry, bleed_avoidance);
 }
 
 void BoxPainter::PaintMask(const PaintInfo& paint_info,
@@ -278,8 +247,10 @@ void BoxPainter::PaintMaskImages(const PaintInfo& paint_info,
 
   if (all_mask_images_loaded) {
     BackgroundImageGeometry geometry(layout_box_);
-    PaintFillLayers(paint_info, Color::kTransparent,
-                    layout_box_.Style()->MaskLayers(), paint_rect, geometry);
+    BoxModelObjectPainter box_model_painter(layout_box_);
+    box_model_painter.PaintFillLayers(paint_info, Color::kTransparent,
+                                      layout_box_.Style()->MaskLayers(),
+                                      paint_rect, geometry);
     NinePieceImagePainter::Paint(paint_info.context, layout_box_,
                                  layout_box_.GetDocument(), GetNode(),
                                  paint_rect, layout_box_.StyleRef(),
