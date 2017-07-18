@@ -298,7 +298,7 @@ class TestImporter(object):
         # First, try on Blink try bots in order to get any new baselines.
         # TODO(qyearsley): Make this faster by triggering all try jobs in
         # one invocation.
-        _log.info('Triggering try jobs.')
+        _log.info('Triggering try jobs for updating expectations.')
         self.git_cl.trigger_try_jobs()
         try_results = self.git_cl.wait_for_try_jobs(
             poll_delay_seconds=POLL_DELAY_SECONDS, timeout_seconds=TIMEOUT_SECONDS)
@@ -316,6 +316,7 @@ class TestImporter(object):
                 self._upload_patchset(message)
 
         # Trigger CQ and wait for CQ try jobs to finish.
+        _log.info('Triggering CQ try jobs.')
         self.git_cl.run(['try'])
         try_results = self.git_cl.wait_for_try_jobs(
             poll_delay_seconds=POLL_DELAY_SECONDS,

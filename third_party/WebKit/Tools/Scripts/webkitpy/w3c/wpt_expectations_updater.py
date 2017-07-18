@@ -394,67 +394,76 @@ class WPTExpectationsUpdater(object):
         return sorted(specifier.capitalize() for specifier in specifiers)
 
     def write_to_test_expectations(self, line_list):
-        """Writes to TestExpectations.
+        """Writes the given lines to the TestExpectations file.
 
-        The place in the file where the new lines are inserted is after a
-        marker comment line. If this marker comment line is not found, it will
-        be added to the end of the file.
+        The place in the file where the new lines are inserted is after a marker
+        comment line. If this marker comment line is not found, then everything
+        including the marker line is appended to the end of the file.
 
         Args:
             line_list: A list of lines to add to the TestExpectations file.
         """
+        if not line_list:
+            _log.info('No lines to write to TestExpectations.')
+            return
         _log.info('Lines to write to TestExpectations:')
         for line in line_list:
             _log.info('  %s', line)
+
         expectations_file_path = self.port.path_to_generic_test_expectations_file()
         file_contents = self.host.filesystem.read_text_file(expectations_file_path)
-        marker_comment_index = file_contents.find(MARKER_COMMENT)
+
         line_list = [line for line in line_list if self._test_name_from_expectation_string(line) not in file_contents]
         if not line_list:
             return
+
+        marker_comment_index = file_contents.find(MARKER_COMMENT)
         if marker_comment_index == -1:
             file_contents += '\n%s\n' % MARKER_COMMENT
             file_contents += '\n'.join(line_list)
         else:
             end_of_marker_line = (file_contents[marker_comment_index:].find('\n')) + marker_comment_index
             file_contents = file_contents[:end_of_marker_line + 1] + '\n'.join(line_list) + file_contents[end_of_marker_line:]
+
         self.host.filesystem.write_text_file(expectations_file_path, file_contents)
 
     @staticmethod
     def _test_name_from_expectation_string(expectation_string):
         return TestExpectationLine.tokenize_line(filename='', expectation_string=expectation_string, line_number=0).name
 
-    def download_text_baselines(self, tests_results):
+    def download_text_baselines(self, test_results):
         """Fetches new baseline files for tests that should be rebaselined.
 
         Invokes `webkit-patch rebaseline-cl` in order to download new baselines
         (-expected.txt files) for testharness.js tests that did not crash or
         time out. Then, the platform-specific test is removed from the overall
-        failure test dictionary.
+        failure test dictionary and the resulting dictionary is returned.
 
         Args:
-            tests_results: A dict mapping test name to platform to test results.
+            test_results: A dict mapping test name to platform to test results.
 
         Returns:
-            An updated tests_results dictionary without the platform-specific
-            testharness.js tests that required new baselines to be downloaded
-            from `webkit-patch rebaseline-cl`.
+            An updated test_results dictionary which should only contain
+            test failures for tests that couldn't be rebaselined.
         """
-        tests_to_rebaseline, tests_results = self.get_tests_to_rebaseline(tests_results)
+        tests_to_rebaseline, test_results = self.get_tests_to_rebaseline(test_results)
+        if not tests_to_rebaseline:
+            _log.info('No tests to rebaseline.')
+            return test_results
         _log.info('Tests to rebaseline:')
         for test in tests_to_rebaseline:
             _log.info('  %s', test)
-        if tests_to_rebaseline:
-            webkit_patch = self.finder.path_from_tools_scripts('webkit-patch')
-            self.host.executive.run_command([
-                'python',
-                webkit_patch,
-                'rebaseline-cl',
-                '--verbose',
-                '--no-trigger-jobs',
-                '--fill-missing',
-            ] + tests_to_rebaseline)
-        return tests_results
+
+        webkit_patch = self.finder.path_from_tools_scripts('webkit-patch')
+        self.host.executive.run_command([
+            'python',
+            webkit_patch,
+            'rebaseline-cl',
+            '--verbose',
+            '--no-trigger-jobs',
+            '--fill-missing',
+        ] + tests_to_rebaseline)
+        return test_results
 
     def get_tests_to_rebaseline(self, test_results):
         """Returns a list of tests to download new baselines for.

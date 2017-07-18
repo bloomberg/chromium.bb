@@ -79,7 +79,7 @@ class TestImporterTest(LoggingTestCase):
             'INFO: Uploading change list.\n',
             'INFO: Gathering directory owners emails to CC.\n',
             'INFO: Issue: mock output\n',
-            'INFO: Triggering try jobs.\n',
+            'INFO: Triggering try jobs for updating expectations.\n',
             'ERROR: No initial try job results, aborting.\n',
         ])
         self.assertEqual(importer.git_cl.calls[-1], ['git', 'cl', 'set-close'])
@@ -98,7 +98,8 @@ class TestImporterTest(LoggingTestCase):
             'INFO: Uploading change list.\n',
             'INFO: Gathering directory owners emails to CC.\n',
             'INFO: Issue: mock output\n',
-            'INFO: Triggering try jobs.\n',
+            'INFO: Triggering try jobs for updating expectations.\n',
+            'INFO: Triggering CQ try jobs.\n',
             'INFO: CQ appears to have passed; trying to commit.\n',
             'INFO: Update completed.\n',
         ])
@@ -119,7 +120,8 @@ class TestImporterTest(LoggingTestCase):
             'INFO: Uploading change list.\n',
             'INFO: Gathering directory owners emails to CC.\n',
             'INFO: Issue: mock output\n',
-            'INFO: Triggering try jobs.\n',
+            'INFO: Triggering try jobs for updating expectations.\n',
+            'INFO: Triggering CQ try jobs.\n',
             'ERROR: CQ appears to have failed; aborting.\n',
         ])
         self.assertEqual(importer.git_cl.calls[-1], ['git', 'cl', 'set-close'])
