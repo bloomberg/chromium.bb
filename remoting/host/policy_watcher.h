@@ -66,22 +66,21 @@ class PolicyWatcher : public policy::PolicyService::Observer {
   static std::unique_ptr<base::DictionaryValue> GetDefaultPolicies();
 
   // Specify a |policy_service| to borrow (on Chrome OS, from the browser
-  // process) or specify nullptr to internally construct and use a new
-  // PolicyService (on other OS-es). PolicyWatcher must be used on the thread on
-  // which it is created. |policy_service| is called on the same thread.
+  // process). PolicyWatcher must be used on the thread on which it is created.
+  // |policy_service| is called on the same thread.
   //
-  // When |policy_service| is null, then |file_task_runner| is used for reading
-  // the policy from files / registry / preferences (which are blocking
-  // operations). |file_task_runner| should be of TYPE_IO type.
+  // When |policy_service| is specified then BrowserThread::UI is used for
+  // PolicyUpdatedCallback and PolicyErrorCallback.
+  static std::unique_ptr<PolicyWatcher> CreateWithPolicyService(
+      policy::PolicyService* policy_service);
+
+  // Construct and a new PolicyService for non-ChromeOS platforms.
+  // PolicyWatcher must be used on the thread on which it is created.
   //
-  // When |policy_service| is specified then |file_task_runner| argument is
-  // ignored and 1) BrowserThread::UI is used for PolicyUpdatedCallback and
-  // PolicyErrorCallback and 2) BrowserThread::FILE is used for reading the
-  // policy from files / registry / preferences (although (2) is just an
-  // implementation detail and should likely be ignored outside of
-  // PolicyWatcher).
-  static std::unique_ptr<PolicyWatcher> Create(
-      policy::PolicyService* policy_service,
+  // |file_task_runner| is used for reading the policy from files / registry /
+  // preferences (which are blocking operations). |file_task_runner| should be
+  // of TYPE_IO type.
+  static std::unique_ptr<PolicyWatcher> CreateWithTaskRunner(
       const scoped_refptr<base::SingleThreadTaskRunner>& file_task_runner);
 
   // Creates a PolicyWatcher from the given loader instead of loading the policy
