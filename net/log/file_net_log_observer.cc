@@ -77,16 +77,24 @@ size_t WriteToFile(FILE* file,
 // Copies all of the data at |source_path| and appends it to |destination_file|,
 // then deletes |source_path|.
 void AppendToFileThenDelete(const base::FilePath& source_path,
-                            FILE* destination_file) {
-  // TODO(eroman): This is a bad implementation, as it reads the entire source
-  // file into memory. Should read it in chunks to bound memory usage, as source
-  // files could be large.
-  std::string contents;
-  if (!base::ReadFileToString(source_path, &contents))
+                            FILE* destination_file,
+                            char* read_buffer,
+                            size_t read_buffer_size) {
+  base::ScopedFILE source_file(base::OpenFile(source_path, "rb"));
+  if (!source_file)
     return;
 
-  // Append the event file contents to the log file.
-  WriteToFile(destination_file, contents);
+  // Read |source_path|'s contents in chunks of read_buffer_size and append
+  // to |destination_file|.
+  size_t num_bytes_read;
+  while ((num_bytes_read =
+              fread(read_buffer, 1, read_buffer_size, source_file.get())) > 0) {
+    WriteToFile(destination_file,
+                base::StringPiece(read_buffer, num_bytes_read));
+  }
+
+  // Now that it has been copied, delete the source file.
+  source_file.reset();
   base::DeleteFile(source_path, false);
 }
 
@@ -707,11 +715,17 @@ void FileNetLogObserver::BoundedFileWriter::StitchFinalLogFile() {
   // Make sure all the events files are flushed (as will read them next).
   current_event_file_.reset();
 
+  // Allocate a 64K buffer used for reading the files. At most kReadBufferSize
+  // bytes will be in memory at a time.
+  const size_t kReadBufferSize = 1 << 16;  // 64KiB
+  std::unique_ptr<char[]> read_buffer(new char[kReadBufferSize]);
+
   // Re-open the final log file in order to truncate it.
   final_log_file_ = OpenFileForWrite(final_log_path_);
 
   // Append the constants file.
-  AppendToFileThenDelete(GetConstantsFilePath(), final_log_file_.get());
+  AppendToFileThenDelete(GetConstantsFilePath(), final_log_file_.get(),
+                         read_buffer.get(), kReadBufferSize);
 
   // Iterate over the events files, from oldest to most recent, and append them
   // to the final destination. Note that "file numbers" start at 1 not 0.
@@ -722,7 +736,8 @@ void FileNetLogObserver::BoundedFileWriter::StitchFinalLogFile() {
   for (size_t filenumber = begin_filenumber; filenumber < end_filenumber;
        ++filenumber) {
     AppendToFileThenDelete(GetEventFilePath(FileNumberToIndex(filenumber)),
-                           final_log_file_.get());
+                           final_log_file_.get(), read_buffer.get(),
+                           kReadBufferSize);
   }
 
   // Account for the final event line ending in a ",\n". Strip it to form valid
@@ -730,7 +745,8 @@ void FileNetLogObserver::BoundedFileWriter::StitchFinalLogFile() {
   RewindIfWroteEventBytes(final_log_file_.get());
 
   // Append the polled data.
-  AppendToFileThenDelete(GetClosingFilePath(), final_log_file_.get());
+  AppendToFileThenDelete(GetClosingFilePath(), final_log_file_.get(),
+                         read_buffer.get(), kReadBufferSize);
 
   // Delete the inprogress directory (and anything that may still be left inside
   // it).
