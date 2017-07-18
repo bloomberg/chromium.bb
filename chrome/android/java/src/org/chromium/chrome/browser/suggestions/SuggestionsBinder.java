@@ -362,7 +362,10 @@ public class SuggestionsBinder {
             // This approach allows us to save the thumbnail in its corresponding SnippetArticle
             // regardless of whether a new suggestion has been bound to the view holder. This way we
             // don't have to cancel fetches and can use the retrieved thumbnail later on.
-            if (!TextUtils.equals(mCapturedSuggestion.getUrl(), mSuggestion.getUrl())) return;
+            if (mSuggestion == null
+                    || !TextUtils.equals(mCapturedSuggestion.getUrl(), mSuggestion.getUrl())) {
+                return;
+            }
 
             fadeThumbnailIn(thumbnail);
         }
@@ -376,5 +379,7 @@ public class SuggestionsBinder {
         // Clear the thumbnail and favicon drawables to allow the bitmap memory to be reclaimed.
         mThumbnailView.setImageDrawable(null);
         mPublisherTextView.setCompoundDrawables(null, null, null, null);
+
+        mSuggestion = null;
     }
 }
