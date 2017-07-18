@@ -337,7 +337,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
     protected DateViewHolder createDateViewHolder(ViewGroup parent) {
         DateViewHolder viewHolder = super.createDateViewHolder(parent);
         if (mUiConfig != null) {
-            MarginResizer.createWithViewAdapter(viewHolder.itemView, mUiConfig,
+            MarginResizer.createAndAttach(viewHolder.itemView, mUiConfig,
                     parent.getResources().getDimensionPixelSize(R.dimen.list_item_default_margin),
                     SelectableListLayout.getDefaultListItemLateralShadowSizePx(
                             parent.getResources()));
@@ -374,7 +374,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
             mSpaceDisplay = new SpaceDisplay(parent, this);
             registerAdapterDataObserver(mSpaceDisplay);
             if (mUiConfig != null) {
-                MarginResizer.createWithViewAdapter(mSpaceDisplay.getView(), mUiConfig,
+                MarginResizer.createAndAttach(mSpaceDisplay.getView(), mUiConfig,
                         parent.getResources().getDimensionPixelSize(
                                 R.dimen.list_item_default_margin),
                         SelectableListLayout.getDefaultListItemLateralShadowSizePx(

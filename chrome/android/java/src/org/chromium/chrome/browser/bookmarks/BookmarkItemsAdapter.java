@@ -202,7 +202,7 @@ class BookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         switch (viewType) {
             case PROMO_HEADER_VIEW:
                 ViewHolder promoView = mPromoHeaderManager.createHolder(parent);
-                MarginResizer.createWithViewAdapter(promoView.itemView,
+                MarginResizer.createAndAttach(promoView.itemView,
                         mDelegate.getSelectableListLayout().getUiConfig(),
                         parent.getResources().getDimensionPixelSize(
                                 R.dimen.signin_and_sync_view_padding),

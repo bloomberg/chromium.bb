@@ -279,6 +279,11 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
         mRecyclerView = (SuggestionsRecyclerView) recyclerView;
     }
 
+    @Override
+    public void onViewRecycled(NewTabPageViewHolder holder) {
+        holder.recycle();
+    }
+
     /**
      * @return the set of item positions that should be dismissed simultaneously when dismissing the
      *         item at the given {@code position} (including the position itself), or an empty set
