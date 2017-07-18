@@ -2198,6 +2198,11 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   cm->reset_frame_context = RESET_FRAME_CONTEXT_NONE;
 
 #if CONFIG_PALETTE || CONFIG_INTRABC
+  if (frame_is_intra_only(cm)) {
+    cm->allow_screen_content_tools = (cpi->oxcf.content == AOM_CONTENT_SCREEN);
+    // Automatically decide if screen content tools should be enabled.
+    cpi->auto_tune_content = (cpi->oxcf.content == AOM_CONTENT_DEFAULT);
+  }
   if (x->palette_buffer == 0) {
     CHECK_MEM_ERROR(cm, x->palette_buffer,
                     aom_memalign(16, sizeof(*x->palette_buffer)));
