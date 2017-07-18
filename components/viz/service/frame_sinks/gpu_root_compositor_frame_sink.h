@@ -14,6 +14,7 @@
 #include "components/viz/service/display/display_client.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support_client.h"
 #include "components/viz/service/frame_sinks/gpu_compositor_frame_sink_delegate.h"
+#include "components/viz/service/hit_test/hit_test_aggregator.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
@@ -100,6 +101,8 @@ class GpuRootCompositorFrameSink
   mojo::Binding<cc::mojom::CompositorFrameSinkPrivate>
       compositor_frame_sink_private_binding_;
   mojo::AssociatedBinding<cc::mojom::DisplayPrivate> display_private_binding_;
+
+  HitTestAggregator hit_test_aggregator_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuRootCompositorFrameSink);
 };

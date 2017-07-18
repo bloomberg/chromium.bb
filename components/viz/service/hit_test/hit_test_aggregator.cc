@@ -133,7 +133,8 @@ void HitTestAggregator::Aggregate(const SurfaceId& display_surface_id) {
 
 void HitTestAggregator::AppendRoot(const SurfaceId& surface_id) {
   auto search = active_.find(surface_id);
-  DCHECK(search != active_.end());
+  if (search == active_.end())
+    return;
 
   mojom::HitTestRegionList* hit_test_region_list = search->second.get();
 
