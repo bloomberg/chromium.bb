@@ -207,4 +207,15 @@ Polymer({
     var activate = type != CrPicture.SelectionTypes.OLD;
     this.selectImage_(event.detail.item, activate);
   },
+
+  /**
+   * Returns the 2x (high dpi) image to use for 'srcset'. Note: 'src' will still
+   * be used as the 1x candidate as per the HTML spec.
+   * @param {string} url
+   * @return {string}
+   * @private
+   */
+  getImgSrc2x_: function(url) {
+    return url + '@2x 2x';
+  },
 });

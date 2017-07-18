@@ -269,7 +269,6 @@ void ChangePictureHandler::HandleSelectImage(const base::ListValue* args) {
 
   UserImageManager* user_image_manager =
       ChromeUserManager::Get()->GetUserImageManager(GetUser()->GetAccountId());
-  int image_index = user_manager::User::USER_IMAGE_INVALID;
   bool waiting_for_camera_photo = false;
 
   if (image_type == "old") {
@@ -284,8 +283,11 @@ void ChangePictureHandler::HandleSelectImage(const base::ListValue* args) {
                                default_user_image::kHistogramImageOld,
                                default_user_image::kHistogramImagesCount);
     VLOG(1) << "Selected old user image";
-  } else if (image_type == "default" &&
-             default_user_image::IsDefaultImageUrl(image_url, &image_index)) {
+  } else if (image_type == "default") {
+    int image_index = user_manager::User::USER_IMAGE_INVALID;
+    if (!default_user_image::IsDefaultImageUrl(image_url, &image_index))
+      LOG(FATAL) << "Invalid image_url for default image type: " << image_url;
+
     // One of the default user images.
     user_image_manager->SaveUserDefaultImageIndex(image_index);
 
