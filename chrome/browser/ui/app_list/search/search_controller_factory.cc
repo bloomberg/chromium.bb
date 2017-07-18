@@ -43,7 +43,7 @@ constexpr size_t kMaxWebstoreResults = 2;
 constexpr size_t kMaxSuggestionsResults = 6;
 constexpr size_t kMaxLauncherSearchResults = 2;
 #if defined(OS_CHROMEOS)
-constexpr size_t kMaxPlayStoreResults = 2;
+constexpr size_t kMaxPlayStoreResults = 6;
 #endif
 
 // Constants related to the SuggestionsService in AppList field trial.
