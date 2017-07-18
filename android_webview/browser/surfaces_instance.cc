@@ -81,6 +81,12 @@ SurfacesInstance::SurfacesInstance()
       std::move(output_surface_holder), std::move(scheduler),
       std::move(texture_mailbox_deleter));
   display_->Initialize(this, frame_sink_manager_->surface_manager());
+  // TODO(ccameron): WebViews that are embedded in WCG windows will want to
+  // specify gfx::ColorSpace::CreateExtendedSRGB(). This situation is not yet
+  // detected.
+  // https://crbug.com/735658
+  gfx::ColorSpace display_color_space = gfx::ColorSpace::CreateSRGB();
+  display_->SetColorSpace(display_color_space, display_color_space);
   frame_sink_manager_->RegisterBeginFrameSource(begin_frame_source_.get(),
                                                 frame_sink_id_);
 

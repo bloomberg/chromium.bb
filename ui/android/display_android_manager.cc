@@ -84,7 +84,8 @@ void DisplayAndroidManager::UpdateDisplay(
     jfloat dipScale,
     jint rotationDegrees,
     jint bitsPerPixel,
-    jint bitsPerComponent) {
+    jint bitsPerComponent,
+    jboolean isWideColorGamut) {
   gfx::Rect bounds_in_pixels = gfx::Rect(width, height);
   const gfx::Rect bounds_in_dip = gfx::Rect(
       gfx::ScaleToCeiledSize(bounds_in_pixels.size(), 1.0f / dipScale));
@@ -92,10 +93,12 @@ void DisplayAndroidManager::UpdateDisplay(
   display::Display display(sdkDisplayId, bounds_in_dip);
   if (!Display::HasForceDeviceScaleFactor())
     display.set_device_scale_factor(dipScale);
-  // TODO(ccameron): Know the ideal color profile to use here.
-  // https://crbug.com/735658
-  if (!Display::HasForceColorProfile())
-    display.set_color_space(gfx::ColorSpace::CreateSRGB());
+  if (!Display::HasForceColorProfile()) {
+    if (isWideColorGamut)
+      display.set_color_space(gfx::ColorSpace::CreateDisplayP3D65());
+    else
+      display.set_color_space(gfx::ColorSpace::CreateSRGB());
+  }
 
   display.set_size_in_pixels(bounds_in_pixels.size());
   display.SetRotationAsDegree(rotationDegrees);

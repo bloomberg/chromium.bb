@@ -93,6 +93,10 @@ uint32_t DisplayList::UpdateDisplay(const Display& display, Type type) {
     local_display->set_device_scale_factor(display.device_scale_factor());
     changed_values |= DisplayObserver::DISPLAY_METRIC_DEVICE_SCALE_FACTOR;
   }
+  if (local_display->color_space() != display.color_space()) {
+    local_display->set_color_space(display.color_space());
+    changed_values |= DisplayObserver::DISPLAY_METRIC_COLOR_SPACE;
+  }
   if (should_notify_observers()) {
     for (DisplayObserver& observer : observers_)
       observer.OnDisplayMetricsChanged(*local_display, changed_values);

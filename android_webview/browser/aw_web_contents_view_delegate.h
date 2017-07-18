@@ -24,6 +24,7 @@ class AwWebContentsViewDelegate : public content::WebContentsViewDelegate {
 
   // content::WebContentsViewDelegate implementation.
   content::WebDragDestDelegate* GetDragDestDelegate() override;
+  void OverrideDisplayColorSpace(gfx::ColorSpace* color_space) override;
 
  private:
   AwWebContentsViewDelegate(content::WebContents* web_contents);

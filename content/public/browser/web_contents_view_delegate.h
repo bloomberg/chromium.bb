@@ -18,6 +18,7 @@
 #endif
 
 namespace gfx {
+class ColorSpace;
 class Size;
 }
 
@@ -52,6 +53,11 @@ class CONTENT_EXPORT WebContentsViewDelegate {
   virtual bool Focus();
   virtual void TakeFocus(bool reverse);
   virtual void SizeChanged(const gfx::Size& size);
+
+  // This method allows the embedder to specify the display color space (instead
+  // of using the color space specified by display::Display) and write it in
+  // |*color_space|. The default behavior is to leave |*color_space| unchanged.
+  virtual void OverrideDisplayColorSpace(gfx::ColorSpace* color_space);
 
   // Returns a newly-created delegate for the RenderWidgetHostViewMac, to handle
   // events on the responder chain.

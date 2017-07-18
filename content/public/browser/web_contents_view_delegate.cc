@@ -40,6 +40,9 @@ void WebContentsViewDelegate::TakeFocus(bool reverse) {
 void WebContentsViewDelegate::SizeChanged(const gfx::Size& size) {
 }
 
+void WebContentsViewDelegate::OverrideDisplayColorSpace(
+    gfx::ColorSpace* color_space) {}
+
 void* WebContentsViewDelegate::CreateRenderWidgetHostViewDelegate(
     RenderWidgetHost* render_widget_host) {
   return nullptr;
