@@ -330,4 +330,23 @@ TEST(PlatformFontMacTest, ValidateFontHeight) {
   }
 }
 
+// Test to ensure we cater for the AppKit quirk that can make the font italic
+// when asking for a fine-grained weight. See http://crbug.com/742261. Note that
+// Appkit's bug was detected on macOS 10.10 which uses Helvetica Neue as the
+// system font.
+TEST(PlatformFontMacTest, DerivedSemiboldFontIsNotItalic) {
+  gfx::Font base_font;
+  {
+    NSFontTraitMask traits = [[NSFontManager sharedFontManager]
+        traitsOfFont:base_font.GetNativeFont()];
+    ASSERT_FALSE(traits & NSItalicFontMask);
+  }
+
+  gfx::Font semibold_font(
+      base_font.Derive(0, gfx::Font::NORMAL, gfx::Font::Weight::SEMIBOLD));
+  NSFontTraitMask traits = [[NSFontManager sharedFontManager]
+      traitsOfFont:semibold_font.GetNativeFont()];
+  EXPECT_FALSE(traits & NSItalicFontMask);
+}
+
 }  // namespace gfx
