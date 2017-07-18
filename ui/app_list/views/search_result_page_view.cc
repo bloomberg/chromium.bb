@@ -377,8 +377,8 @@ void SearchResultPageView::OnAnimationUpdated(double progress,
     const SearchBoxView* search_box =
         AppListPage::contents_view()->GetSearchBoxView();
     const SkColor color = gfx::Tween::ColorValueBetween(
-        progress, search_box->GetSearchBoxColorForState(from_state),
-        search_box->GetSearchBoxColorForState(to_state));
+        progress, search_box->GetBackgroundColorForState(from_state),
+        search_box->GetBackgroundColorForState(to_state));
 
     // Grows this view in the same pace as the search box to make them look
     // like a single view.
