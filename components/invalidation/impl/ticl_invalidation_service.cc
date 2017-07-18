@@ -253,6 +253,11 @@ void TiclInvalidationService::OnGetTokenFailure(
   }
 }
 
+void TiclInvalidationService::OnActiveAccountLogin() {
+  if (!IsStarted() && IsReadyToStart())
+    StartInvalidator(network_channel_type_);
+}
+
 void TiclInvalidationService::OnRefreshTokenAvailable(
     const std::string& account_id) {
   if (!IsStarted() && IsReadyToStart())

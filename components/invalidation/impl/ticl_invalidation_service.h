@@ -98,6 +98,7 @@ class TiclInvalidationService : public InvalidationService,
   void OnRefreshTokenRevoked(const std::string& account_id) override;
 
   // IdentityProvider::Observer implementation.
+  void OnActiveAccountLogin() override;
   void OnActiveAccountLogout() override;
 
   // TiclSettingsProvider::Observer implementation.
