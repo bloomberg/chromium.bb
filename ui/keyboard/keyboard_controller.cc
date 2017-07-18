@@ -729,13 +729,6 @@ void KeyboardController::CheckStateTransition(KeyboardControllerState prev,
     error_message << "Unexpected transition";
   // TODO(oka): Add more condition check.
 
-  // Emit log on release build too for debug.
-  // TODO(oka): Change this to DLOG_IF once enough data is collected.
-  LOG_IF(ERROR, !error_message.str().empty())
-      << "State: " << StateToStr(prev) << " -> " << StateToStr(next) << " "
-      << error_message.str()
-      << "  stack trace: " << base::debug::StackTrace(10).ToString();
-
   // Emit UMA
   const int transition_record =
       (valid_transition ? 1 : -1) *
@@ -744,6 +737,13 @@ void KeyboardController::CheckStateTransition(KeyboardControllerState prev,
                               transition_record);
   UMA_HISTOGRAM_BOOLEAN("VirtualKeyboard.ControllerStateTransitionIsValid",
                         transition_record > 0);
+
+  // Crash on release build too for debug.
+  // TODO(oka): Change this to DCHECK once enough data is collected.
+  CHECK(error_message.str().empty())
+      << "State: " << StateToStr(prev) << " -> " << StateToStr(next) << " "
+      << error_message.str()
+      << "  stack trace: " << base::debug::StackTrace(10).ToString();
 }
 
 void KeyboardController::ChangeState(KeyboardControllerState state) {
