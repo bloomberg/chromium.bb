@@ -164,17 +164,3 @@ TEST_F(MediaStreamDevicePermissionContextTests, TestMicSecureQueryingUrl) {
 TEST_F(MediaStreamDevicePermissionContextTests, TestCameraSecureQueryingUrl) {
   TestSecureQueryingUrl(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
 }
-
-// An embedding origin of about:blank should not be blocked. crbug.com/740540.
-TEST_F(MediaStreamDevicePermissionContextTests, TestAboutBlankNotBlocked) {
-  TestPermissionContext permission_context(
-      profile(), CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
-  GURL secure_url("https://www.example.com");
-
-  EXPECT_EQ(
-      CONTENT_SETTING_ASK,
-      permission_context
-          .GetPermissionStatus(nullptr /* render_frame_host */, secure_url,
-                               GURL("about:blank").GetOrigin())
-          .content_setting);
-}

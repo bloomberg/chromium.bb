@@ -230,17 +230,18 @@ PermissionResult PermissionContextBase::GetPermissionStatus(
   }
 
   if (IsRestrictedToSecureOrigins()) {
-    // TODO(raymes): The secure origin check here in the browser should match
-    // what we do in blink (i.e. what is described in the secure context spec).
-    // Right now, we can't even check IsOriginSecure(embedding_origin) because
-    // the |embedding_origin| is obtained from the WebContents which does match
-    // the origin of the document in blink in all cases. For example, an
-    // about:blank URL may be a secure context in blink, but it is not treated
-    // as such in the browser at present. The |requesting_origin| is passed from
-    // blink and so is accurate under normal circumstances but may be forged by
-    // a compromised renderer so even this check below is not particularly
-    // secure...
     if (!content::IsOriginSecure(requesting_origin)) {
+      return PermissionResult(CONTENT_SETTING_BLOCK,
+                              PermissionStatusSource::UNSPECIFIED);
+    }
+
+    // TODO(raymes): We should check the entire chain of embedders here whenever
+    // possible as this corresponds to the requirements of the secure contexts
+    // spec and matches what is implemented in blink. Right now we just check
+    // the top level and requesting origins. Note: chrome-extension:// origins
+    // are currently exempt from checking the embedder chain. crbug.com/530507.
+    if (!requesting_origin.SchemeIs(extensions::kExtensionScheme) &&
+        !content::IsOriginSecure(embedding_origin)) {
       return PermissionResult(CONTENT_SETTING_BLOCK,
                               PermissionStatusSource::UNSPECIFIED);
     }
