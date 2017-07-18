@@ -114,9 +114,12 @@ bool WebAppManifestSectionTable::AddWebAppManifest(
 
   sql::Statement s1(db_->GetUniqueStatement(
       "DELETE FROM web_app_manifest_section WHERE id=? "));
-  s1.BindString(0, manifest[0]->id);
-  if (!s1.Run())
-    return false;
+  for (const auto& section : manifest) {
+    s1.BindString(0, section->id);
+    if (!s1.Run())
+      return false;
+    s1.Reset(true);
+  }
 
   sql::Statement s2(
       db_->GetUniqueStatement("INSERT INTO web_app_manifest_section "
@@ -125,7 +128,6 @@ bool WebAppManifestSectionTable::AddWebAppManifest(
   const time_t expire_date_in_seconds =
       base::Time::NowFromSystemTime().ToTimeT() + DATA_VALID_TIME_IN_SECONDS;
   for (const auto& section : manifest) {
-    DCHECK_EQ(manifest[0]->id, section->id);
     int index = 0;
     s2.BindInt64(index++, expire_date_in_seconds);
     s2.BindString(index++, section->id);
