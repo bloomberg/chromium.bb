@@ -64,6 +64,8 @@ class APP_LIST_EXPORT StartPageView : public AppListPage {
 
   TileItemView* GetTileItemView(size_t index);
 
+  AppListView* app_list_view_;
+
   // The parent view of ContentsView which is the parent of this view.
   AppListMainView* app_list_main_view_;
 
