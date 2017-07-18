@@ -102,10 +102,10 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
         } catch (GoogleAuthException ex) {
             // This case includes a UserRecoverableNotifiedException, but most clients will have
             // their own retry mechanism anyway.
-            // TODO(bauerb): Investigate integrating the callback with ConnectionRetry.
-            throw new AuthException(false /* isTransientError */, ex);
+            throw new AuthException(AuthException.NONTRANSIENT,
+                    "Error while getting token for scope '" + authTokenScope + "'", ex);
         } catch (IOException ex) {
-            throw new AuthException(true /* isTransientError */, ex);
+            throw new AuthException(AuthException.TRANSIENT, ex);
         }
     }
 
@@ -114,11 +114,11 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
         try {
             GoogleAuthUtil.clearToken(ContextUtils.getApplicationContext(), authToken);
         } catch (GooglePlayServicesAvailabilityException ex) {
-            throw new AuthException(false /* isTransientError */, ex);
+            throw new AuthException(AuthException.NONTRANSIENT, ex);
         } catch (GoogleAuthException ex) {
-            throw new AuthException(false /* isTransientError */, ex);
+            throw new AuthException(AuthException.NONTRANSIENT, ex);
         } catch (IOException ex) {
-            throw new AuthException(true /* isTransientError */, ex);
+            throw new AuthException(AuthException.TRANSIENT, ex);
         }
     }
 
