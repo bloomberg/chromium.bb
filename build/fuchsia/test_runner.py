@@ -9,6 +9,7 @@ dependencies of a test binary, and then uses QEMU from the Fuchsia SDK to run
 it. Does not yet implement running on real hardware."""
 
 import argparse
+import multiprocessing
 import os
 import re
 import subprocess
@@ -190,6 +191,22 @@ def BuildBootfs(output_directory, runtime_deps_path, test_name, child_args,
   return bootfs_name
 
 
+def SymbolizeEntry(entry):
+  addr2line_output = subprocess.check_output(
+      ['addr2line', '-Cipf', '--exe=' + entry[1], entry[2]])
+  prefix = '#%s: ' % entry[0]
+  # addr2line outputs a second line for inlining information, offset
+  # that to align it properly after the frame index.
+  addr2line_filtered = addr2line_output.strip().replace(
+      '(inlined', ' ' * len(prefix) + '(inlined')
+  return '#%s: %s' % (prefix, addr2line_filtered)
+
+
+def ParallelSymbolizeBacktrace(backtrace):
+  p = multiprocessing.Pool(multiprocessing.cpu_count())
+  return p.imap(SymbolizeEntry, backtrace)
+
+
 def main():
   parser = argparse.ArgumentParser()
   parser.add_argument('--dry-run', '-n', action='store_true', default=False,
@@ -297,7 +314,12 @@ def main():
     qemu_popen = subprocess.Popen(
         qemu_command, stdout=subprocess.PIPE, stdin=open(os.devnull))
 
-    processed_lines = []
+    # A buffer of backtrace entries awaiting symbolization, stored as tuples.
+    # Element #0: backtrace frame number (starting at 0).
+    # Element #1: path to executable code corresponding to the current frame.
+    # Element #2: memory offset within the executable.
+    bt_entries = []
+
     success = False
     while True:
       line = qemu_popen.stdout.readline()
@@ -307,23 +329,16 @@ def main():
       if 'SUCCESS: all tests passed.' in line:
         success = True
       if bt_end_re.match(line.strip()):
-        if processed_lines:
+        if bt_entries:
           print '----- start symbolized stack'
-          for processed in processed_lines:
+          for processed in ParallelSymbolizeBacktrace(bt_entries):
             print processed
           print '----- end symbolized stack'
-        processed_lines = []
+        bt_entries = []
       else:
         m = bt_with_offset_re.match(line.strip())
         if m:
-          addr2line_output = subprocess.check_output(
-              ['addr2line', '-Cipf', '--exe=' + args.test_name, m.group(4)])
-          prefix = '#%s: ' % m.group(1)
-          # addr2line outputs a second line for inlining information, offset
-          # that to align it properly after the frame index.
-          addr2line_filtered = addr2line_output.strip().replace(
-              '(inlined', ' ' * len(prefix) + '(inlined')
-          processed_lines.append('%s%s' % (prefix, addr2line_filtered))
+          bt_entries.append((m.group(1), args.test_name, m.group(4)))
     qemu_popen.wait()
 
     return 0 if success else 1
