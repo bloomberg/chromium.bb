@@ -38,13 +38,13 @@ def _InstallApk(install_incremental, inc_install_script, devices_obj,
       from incremental_install import installer
       installer.Install(device, helper, split_globs=params['splits'],
                         native_libs=params['native_libs'],
-                        permissions=None)
+                        dex_files=params['dex_files'], permissions=None)
     devices_obj.pMap(install_incremental_apk)
-    return
-  # Install the regular apk on devices.
-  def install(device):
-    device.Install(apk_to_install)
-  devices_obj.pMap(install)
+  else:
+    # Install the regular apk on devices.
+    def install(device):
+      device.Install(apk_to_install)
+    devices_obj.pMap(install)
 
 
 def _UninstallApk(install_incremental, devices_obj, apk_package):
@@ -316,6 +316,7 @@ def main():
   elif command == 'run':
     _InstallApk(install_incremental, inc_install_script, devices_obj,
                 active_apk)
+    devices_obj.pFinish(None)
     _LaunchUrl(devices_obj, args.args, gn_args.command_line_flags_file,
                args.url, apk_package)
   elif command == 'stop':
@@ -342,6 +343,8 @@ def main():
     args = [adb_path, 'logcat']
     os.execv(adb_path, args)
 
+  # Wait for all threads to finish.
+  devices_obj.pFinish(None)
 
   # Save back to the cache.
   if use_cache:
