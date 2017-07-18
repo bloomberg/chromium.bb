@@ -25,7 +25,7 @@ void WatcherDispatcher::NotifyHandleState(Dispatcher* dispatcher,
   if (it == watched_handles_.end())
     return;
 
-  // Maybe fire a notification to the watch assoicated with this dispatcher,
+  // Maybe fire a notification to the watch associated with this dispatcher,
   // provided we're armed and it cares about the new state.
   if (it->second->NotifyState(state, armed_)) {
     ready_watches_.insert(it->second.get());
@@ -46,6 +46,9 @@ void WatcherDispatcher::NotifyHandleClosed(Dispatcher* dispatcher) {
       return;
 
     watch = std::move(it->second);
+
+    // TODO(crbug.com/740044): Remove this CHECK.
+    CHECK(watch);
 
     // Wipe out all state associated with the closed dispatcher.
     watches_.erase(watch->context());
@@ -119,6 +122,10 @@ MojoResult WatcherDispatcher::WatchDispatcher(
   // after we've updated all our own relevant state and released |lock_|.
   {
     base::AutoLock lock(lock_);
+
+    // TODO(crbug.com/740044): Remove this CHECK.
+    CHECK(!closed_);
+
     if (watches_.count(context) || watched_handles_.count(dispatcher.get()))
       return MOJO_RESULT_ALREADY_EXISTS;
 
@@ -156,6 +163,11 @@ MojoResult WatcherDispatcher::CancelWatch(uintptr_t context) {
     watches_.erase(it);
   }
 
+  // TODO(crbug.com/740044): Remove these CHECKs.
+  CHECK(watch);
+  CHECK(watch->dispatcher());
+  CHECK(this);
+
   // Mark the watch as cancelled so no further notifications get through.
   watch->Cancel();
 
@@ -167,7 +179,12 @@ MojoResult WatcherDispatcher::CancelWatch(uintptr_t context) {
   {
     base::AutoLock lock(lock_);
     auto handle_it = watched_handles_.find(watch->dispatcher().get());
-    DCHECK(handle_it != watched_handles_.end());
+
+    // If another thread races to close this watcher handler, |watched_handles_|
+    // may have been cleared by the time we reach this section.
+    if (handle_it == watched_handles_.end())
+      return MOJO_RESULT_OK;
+
     ready_watches_.erase(handle_it->second.get());
     watched_handles_.erase(handle_it);
   }
@@ -229,7 +246,7 @@ MojoResult WatcherDispatcher::Arm(
 }
 
 WatcherDispatcher::~WatcherDispatcher() {
-  // TODO(crbug.com/74044): Remove this.
+  // TODO(crbug.com/740044): Remove this.
   CHECK(closed_);
 }
 
