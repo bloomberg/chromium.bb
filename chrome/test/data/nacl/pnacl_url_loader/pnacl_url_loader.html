@@ -6,7 +6,6 @@ window.addEventListener('load', function() {
 function init() {
   var embed = document.createElement('embed');
   embed.addEventListener('message', function(message) {
-      window.domAutomationController.setAutomationId(0);
       window.domAutomationController.send(message.data);
     }, false);
   embed.addEventListener('load', function() {
