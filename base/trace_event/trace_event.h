@@ -451,6 +451,9 @@ class BASE_EXPORT TraceID {
   // Can be combined with WithScope.
   class LocalId {
    public:
+    explicit LocalId(const void* raw_id)
+        : raw_id_(static_cast<unsigned long long>(
+              reinterpret_cast<uintptr_t>(raw_id))) {}
     explicit LocalId(unsigned long long raw_id) : raw_id_(raw_id) {}
     unsigned long long raw_id() const { return raw_id_; }
    private:

@@ -89,7 +89,8 @@ void DisplayItemList::EmitTraceSnapshot() const {
       TRACE_DISABLED_BY_DEFAULT("cc.debug.display_items") ","
       TRACE_DISABLED_BY_DEFAULT("cc.debug.picture") ","
       TRACE_DISABLED_BY_DEFAULT("devtools.timeline.picture"),
-      "cc::DisplayItemList", this, CreateTracedValue(include_items));
+      "cc::DisplayItemList", TRACE_ID_LOCAL(this),
+      CreateTracedValue(include_items));
 }
 
 std::unique_ptr<base::trace_event::TracedValue>
