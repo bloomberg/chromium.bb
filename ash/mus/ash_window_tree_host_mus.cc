@@ -74,6 +74,7 @@ void AshWindowTreeHostMus::RegisterMirroringHost(
   NOTIMPLEMENTED();
 }
 
+#if defined(USE_OZONE)
 void AshWindowTreeHostMus::SetCursorConfig(
     const display::Display& display,
     display::Display::Rotation rotation) {
@@ -83,6 +84,7 @@ void AshWindowTreeHostMus::SetCursorConfig(
 void AshWindowTreeHostMus::ClearCursorConfig() {
   // Nothing to do here, mus takes care of this.
 }
+#endif
 
 void AshWindowTreeHostMus::SetRootTransform(const gfx::Transform& transform) {
   transformer_helper_->SetTransform(transform);
