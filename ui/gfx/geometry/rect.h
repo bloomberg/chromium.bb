@@ -227,7 +227,7 @@ class GFX_EXPORT Rect {
 
   // Clamp the size to avoid integer overflow in bottom() and right().
   // This returns the width given an origin and a width.
-  // TODO(enne): this should probably use base::SaturatedAddition, but that
+  // TODO(enne): this should probably use base::ClampAdd, but that
   // function is not a constexpr.
   static constexpr int GetClampedValue(int origin, int size) {
     return AddWouldOverflow(origin, size)

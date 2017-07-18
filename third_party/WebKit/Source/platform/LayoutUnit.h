@@ -53,7 +53,7 @@ namespace blink {
 #define REPORT_OVERFLOW(doesOverflow) ((void)0)
 #endif
 
-static const int kLayoutUnitFractionalBits = 6;
+static const unsigned kLayoutUnitFractionalBits = 6;
 static const int kFixedPointDenominator = 1 << kLayoutUnitFractionalBits;
 
 const int kIntMaxForLayoutUnit = INT_MAX / kFixedPointDenominator;
@@ -154,7 +154,7 @@ class LayoutUnit {
     return ToInt();
   }
   ALWAYS_INLINE int Round() const {
-    return SaturatedAddition(RawValue(), kFixedPointDenominator / 2) >>
+    return ClampAdd(RawValue(), kFixedPointDenominator / 2) >>
            kLayoutUnitFractionalBits;
   }
 
@@ -516,7 +516,7 @@ inline LayoutUnit operator/(unsigned long long a, const LayoutUnit& b) {
 
 ALWAYS_INLINE LayoutUnit operator+(const LayoutUnit& a, const LayoutUnit& b) {
   LayoutUnit return_val;
-  return_val.SetRawValue(SaturatedAddition(a.RawValue(), b.RawValue()));
+  return_val.SetRawValue(ClampAdd(a.RawValue(), b.RawValue()).RawValue());
   return return_val;
 }
 
@@ -546,7 +546,7 @@ inline double operator+(const double a, const LayoutUnit& b) {
 
 ALWAYS_INLINE LayoutUnit operator-(const LayoutUnit& a, const LayoutUnit& b) {
   LayoutUnit return_val;
-  return_val.SetRawValue(SaturatedSubtraction(a.RawValue(), b.RawValue()));
+  return_val.SetRawValue(ClampSub(a.RawValue(), b.RawValue()).RawValue());
   return return_val;
 }
 
@@ -576,7 +576,7 @@ inline float operator-(const float a, const LayoutUnit& b) {
 
 inline LayoutUnit operator-(const LayoutUnit& a) {
   LayoutUnit return_val;
-  return_val.SetRawValue(SaturatedNegative(a.RawValue()));
+  return_val.SetRawValue((-MakeClampedNum(a.RawValue())).RawValue());
   return return_val;
 }
 
@@ -608,7 +608,7 @@ inline LayoutUnit operator%(int a, const LayoutUnit& b) {
 }
 
 inline LayoutUnit& operator+=(LayoutUnit& a, const LayoutUnit& b) {
-  a.SetRawValue(SaturatedAddition(a.RawValue(), b.RawValue()));
+  a.SetRawValue(ClampAdd(a.RawValue(), b.RawValue()).RawValue());
   return a;
 }
 
@@ -633,7 +633,7 @@ inline LayoutUnit& operator-=(LayoutUnit& a, int b) {
 }
 
 inline LayoutUnit& operator-=(LayoutUnit& a, const LayoutUnit& b) {
-  a.SetRawValue(SaturatedSubtraction(a.RawValue(), b.RawValue()));
+  a.SetRawValue(ClampSub(a.RawValue(), b.RawValue()).RawValue());
   return a;
 }
 
