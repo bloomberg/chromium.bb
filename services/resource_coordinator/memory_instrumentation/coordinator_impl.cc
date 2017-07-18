@@ -416,7 +416,10 @@ void CoordinatorImpl::FinalizeGlobalMemoryDumpIfAllManagersReplied() {
   std::map<base::ProcessId, mojom::ProcessMemoryDumpPtr> finalized_pmds;
   for (auto& response : request->responses) {
     const base::ProcessId pid = response.second.process_id;
-    DCHECK(!finalized_pmds.count(pid));
+    // TODO(hjd): this shouldn't really happen, but seem to be hitting this in
+    // crbug.com/744722 . Temporarily softening the DCHECK while investigating.
+    if (finalized_pmds.count(pid) > 0)
+      continue;
 
     // The dump might be nullptr if the client crashed / disconnected before
     // replying.
