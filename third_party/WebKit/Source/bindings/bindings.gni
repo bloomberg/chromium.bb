@@ -23,7 +23,6 @@ bindings_core_v8_files =
                     "core/v8/custom/V8MessageChannelCustom.cpp",
                     "core/v8/custom/V8MessageEventCustom.cpp",
                     "core/v8/custom/V8MutationObserverCustom.cpp",
-                    "core/v8/custom/V8PerformanceObserverCustom.cpp",
                     "core/v8/custom/V8PopStateEventCustom.cpp",
                     "core/v8/custom/V8PromiseRejectionEventCustom.cpp",
                     "core/v8/custom/V8WindowCustom.cpp",
