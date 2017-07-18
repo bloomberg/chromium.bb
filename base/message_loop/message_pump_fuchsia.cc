@@ -28,6 +28,8 @@ MessagePumpFuchsia::FileDescriptorWatcher::~FileDescriptorWatcher() {
 }
 
 bool MessagePumpFuchsia::FileDescriptorWatcher::StopWatchingFileDescriptor() {
+  // If our pump is gone, or we do not have a wait operation active, then there
+  // is nothing to do here.
   if (!weak_pump_ || handle_ == MX_HANDLE_INVALID)
     return true;
 
@@ -42,7 +44,7 @@ bool MessagePumpFuchsia::FileDescriptorWatcher::StopWatchingFileDescriptor() {
 
 MessagePumpFuchsia::MessagePumpFuchsia()
     : keep_running_(true), weak_factory_(this) {
-  CHECK_EQ(0, mx_port_create(0, &port_));
+  CHECK_EQ(MX_OK, mx_port_create(0, &port_));
 }
 
 MessagePumpFuchsia::~MessagePumpFuchsia() {
@@ -150,10 +152,10 @@ void MessagePumpFuchsia::Run(Delegate* delegate) {
     if (did_work)
       continue;
 
-    mx_time_t deadline = delayed_work_time_.is_null()
-                             ? MX_TIME_INFINITE
-                             : mx_time_get(MX_CLOCK_MONOTONIC) +
-                                   delayed_work_time_.ToInternalValue();
+    mx_time_t deadline =
+        delayed_work_time_.is_null()
+            ? MX_TIME_INFINITE
+            : mx_deadline_after(delayed_work_time_.ToInternalValue());
     mx_port_packet_t packet;
     const mx_status_t wait_status = mx_port_wait(port_, deadline, &packet, 0);
     if (wait_status != MX_OK && wait_status != MX_ERR_TIMED_OUT) {
