@@ -80,7 +80,6 @@ void EventDispatcher::Reset() {
 void EventDispatcher::SetMousePointerDisplayLocation(
     const gfx::Point& display_location,
     int64_t display_id) {
-  DCHECK(pointer_targets_.empty());
   SetMousePointerLocation(display_location, display_id);
   UpdateCursorProviderByLastKnownLocation();
   // Write our initial location back to our shared screen coordinate. This
