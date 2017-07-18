@@ -224,7 +224,7 @@ void TabManager::Start() {
   // in the following way:
   // https://docs.google.com/document/d/1hPHkKtXXBTlsZx9s-9U17XC-ofEIzPo9FYbBEc7PPbk/edit?usp=sharing
   std::string purge_and_suspend_time = variations::GetVariationParamValue(
-      "PurgeAndSuspend", "purge-and-suspend-time");
+      "PurgeAndSuspendAggressive", "purge-and-suspend-time");
   unsigned int min_time_to_purge_sec = 0;
   if (purge_and_suspend_time.empty() ||
       !base::StringToUint(purge_and_suspend_time, &min_time_to_purge_sec))
@@ -233,7 +233,7 @@ void TabManager::Start() {
     min_time_to_purge_ = base::TimeDelta::FromSeconds(min_time_to_purge_sec);
 
   std::string max_purge_and_suspend_time = variations::GetVariationParamValue(
-      "PurgeAndSuspend", "max-purge-and-suspend-time");
+      "PurgeAndSuspendAggressive", "max-purge-and-suspend-time");
   unsigned int max_time_to_purge_sec = 0;
   // If max-purge-and-suspend-time is not specified or
   // max-purge-and-suspend-time is not valid (not number or smaller than
