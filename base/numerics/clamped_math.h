@@ -98,13 +98,9 @@ class ClampedNumeric {
   }
 
   constexpr ClampedNumeric Abs() const {
-    return ClampedNumeric<T>(
-        // The negation of two's complement int min is int min, so that's the
-        // only overflow case we have to check for.
-        (!std::is_signed<T>::value || std::is_floating_point<T>::value ||
-         AbsWrapper(value_) != std::numeric_limits<T>::lowest())
-            ? AbsWrapper(value_)
-            : std::numeric_limits<T>::max());
+    // The negation of two's complement int min is int min, so that's the
+    // only overflow case where we will saturate.
+    return ClampedNumeric<T>(SaturatedAbsWrapper(value_));
   }
 
   template <typename U>

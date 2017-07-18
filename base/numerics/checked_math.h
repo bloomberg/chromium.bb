@@ -149,11 +149,7 @@ class CheckedNumeric {
   }
 
   constexpr CheckedNumeric Abs() const {
-    return CheckedNumeric<T>(
-        AbsWrapper(state_.value()),
-        IsValid() &&
-            (!std::is_signed<T>::value || std::is_floating_point<T>::value ||
-             AbsWrapper(state_.value()) != std::numeric_limits<T>::lowest()));
+    return !IsValueNegative(state_.value()) ? *this : -*this;
   }
 
   template <typename U>

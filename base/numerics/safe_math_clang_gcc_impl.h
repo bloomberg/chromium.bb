@@ -216,6 +216,22 @@ struct ClampedMulFastOp {
   }
 };
 
+template <typename T>
+struct ClampedAbsFastOp {
+// The generic code is pretty much optimal on arm, so we use it instead.
+#if defined(__ARMEL__) || defined(__arch64__)
+  static const bool is_supported = false;
+#else
+  static const bool is_supported = std::is_signed<T>::value;
+#endif
+  static T Do(T value) {
+    // This variable assignment is necessary to prevent the compiler from
+    // emitting longer, ugly, branchy code.
+    T negated = ClampedSubFastOp<T, T>::template Do<T>(T(0), value);
+    return IsValueNegative(value) ? negated : value;
+  }
+};
+
 }  // namespace internal
 }  // namespace base
 

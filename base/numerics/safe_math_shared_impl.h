@@ -94,6 +94,15 @@ struct ClampedMulFastOp {
     return CheckOnFailure::template HandleFailure<V>();
   }
 };
+
+template <typename T>
+struct ClampedAbsFastOp {
+  static const bool is_supported = false;
+  static constexpr T Do(T) {
+    // Force a compile failure if instantiated.
+    return CheckOnFailure::template HandleFailure<T>();
+  }
+};
 #endif  // BASE_HAS_OPTIMIZED_SAFE_MATH
 #undef BASE_HAS_OPTIMIZED_SAFE_MATH
 

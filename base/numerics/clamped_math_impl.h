@@ -21,6 +21,30 @@
 namespace base {
 namespace internal {
 
+template <typename T,
+          typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
+constexpr T SaturatedAbsWrapper(T value) {
+  // The calculation below is a static identity for unsigned types, but for
+  // signed integer types it provides a non-branching, saturated absolute value.
+  // This works because SafeUnsignedAbs() returns an unsigned type, which can
+  // represent the absolute value of all negative numbers of an equal-width
+  // integer type. The call to IsValueNegative() then detects overflow in the
+  // special case of numeric_limits<T>::min(), by evaluating the bit pattern as
+  // a signed integer value. If it is the overflow case, we end up subtracting
+  // one from the unsigned result, thus saturating to numeric_limits<T>::max().
+  return MustTreatAsConstexpr(value) && !ClampedAbsFastOp<T>::is_supported
+             ? static_cast<T>(SafeUnsignedAbs(value) -
+                              IsValueNegative<T>(SafeUnsignedAbs(value)))
+             : ClampedAbsFastOp<T>::Do(value);
+}
+
+template <
+    typename T,
+    typename std::enable_if<std::is_floating_point<T>::value>::type* = nullptr>
+constexpr T SaturatedAbsWrapper(T value) {
+  return value < 0 ? -value : value;
+}
+
 template <typename T, typename U, class Enable = void>
 struct ClampedAddOp {};
 
