@@ -9,8 +9,13 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_ui_controller.h"
+
+#if defined(OS_WIN)
+#include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_state_change_observer_win.h"
+#endif
 
 class GURL;
 
@@ -48,6 +53,12 @@ class MdSettingsUI : public content::WebUIController,
   std::unordered_set<SettingsPageUIHandler*> handlers_;
 
   base::Time load_start_time_;
+
+#if defined(OS_WIN)
+  void UpdateCleanupDataSource(bool cleanupEnabled, bool partnerPowered);
+  std::unique_ptr<safe_browsing::ChromeCleanerStateChangeObserver>
+      cleanup_observer_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(MdSettingsUI);
 };

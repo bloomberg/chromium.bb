@@ -278,6 +278,16 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui, const GURL& url)
 
   content::WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),
                                 html_source);
+
+#if defined(OS_WIN)
+  // This needs to be below content::WebUIDataSource::Add to make sure there
+  // is a WebUIDataSource to update if the observer is immediately notified.
+  if (base::FeatureList::IsEnabled(safe_browsing::kInBrowserCleanerUIFeature)) {
+    cleanup_observer_.reset(
+        new safe_browsing::ChromeCleanerStateChangeObserver(base::Bind(
+            &MdSettingsUI::UpdateCleanupDataSource, base::Unretained(this))));
+  }
+#endif  // defined(OS_WIN)
 }
 
 MdSettingsUI::~MdSettingsUI() {
@@ -308,5 +318,20 @@ void MdSettingsUI::DocumentOnLoadCompletedInMainFrame() {
   UMA_HISTOGRAM_TIMES("Settings.LoadCompletedTime.MD",
                       base::Time::Now() - load_start_time_);
 }
+
+#if defined(OS_WIN)
+void MdSettingsUI::UpdateCleanupDataSource(bool cleanupEnabled,
+                                           bool partnerPowered) {
+  DCHECK(web_ui());
+  Profile* profile = Profile::FromWebUI(web_ui());
+
+  std::unique_ptr<base::DictionaryValue> update(new base::DictionaryValue);
+  update->SetBoolean("chromeCleanupEnabled", cleanupEnabled);
+  update->SetBoolean("cleanupPoweredByPartner", partnerPowered);
+
+  content::WebUIDataSource::Update(profile, chrome::kChromeUISettingsHost,
+                                   std::move(update));
+}
+#endif  // defined(OS_WIN)
 
 }  // namespace settings
