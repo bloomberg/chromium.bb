@@ -137,6 +137,8 @@ class DelayableCertReportURLRequestJob : public net::URLRequestJob {
 
 // A job interceptor that returns a failed, succesful or delayed request job.
 // Used to simulate report uploads that fail, succeed or hang.
+// The caller is responsible for guaranteeing that |this| is kept alive for
+// all posted tasks and URLRequestJob objects.
 class CertReportJobInterceptor : public net::URLRequestInterceptor {
  public:
   CertReportJobInterceptor(ReportSendingResult expected_report_result,
@@ -177,9 +179,7 @@ class CertReportJobInterceptor : public net::URLRequestInterceptor {
   mutable RequestObserver request_created_observer_;
   mutable RequestObserver request_destroyed_observer_;
 
-  mutable base::WeakPtr<DelayableCertReportURLRequestJob> delayed_request_ =
-      nullptr;
-  mutable base::WeakPtrFactory<CertReportJobInterceptor> weak_factory_;
+  mutable base::WeakPtr<DelayableCertReportURLRequestJob> delayed_request_;
 
   DISALLOW_COPY_AND_ASSIGN(CertReportJobInterceptor);
 };
