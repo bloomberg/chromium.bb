@@ -46,6 +46,8 @@ source_set("contextual_search") {
     "contextual_search_results_view.mm",
     "contextual_search_web_state_observer.h",
     "contextual_search_web_state_observer.mm",
+    "contextual_search_wrangler.h",
+    "contextual_search_wrangler.mm",
     "js_contextual_search_manager.h",
     "js_contextual_search_manager.mm",
     "panel_configuration.h",

@@ -106,12 +106,6 @@
 #import "ios/chrome/browser/ui/commands/reading_list_add_command.h"
 #import "ios/chrome/browser/ui/commands/show_mail_composer_command.h"
 #import "ios/chrome/browser/ui/context_menu/context_menu_coordinator.h"
-#import "ios/chrome/browser/ui/contextual_search/contextual_search_controller.h"
-#import "ios/chrome/browser/ui/contextual_search/contextual_search_mask_view.h"
-#import "ios/chrome/browser/ui/contextual_search/contextual_search_metrics.h"
-#import "ios/chrome/browser/ui/contextual_search/contextual_search_panel_protocols.h"
-#import "ios/chrome/browser/ui/contextual_search/contextual_search_panel_view.h"
-#import "ios/chrome/browser/ui/contextual_search/touch_to_search_permissions_mediator.h"
 #import "ios/chrome/browser/ui/dialogs/dialog_presenter.h"
 #import "ios/chrome/browser/ui/dialogs/java_script_dialog_presenter_impl.h"
 #import "ios/chrome/browser/ui/elements/activity_overlay_coordinator.h"
@@ -160,7 +154,6 @@
 #import "ios/chrome/browser/web/repost_form_tab_helper.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
-#import "ios/chrome/common/material_timing.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/net/request_tracker.h"
@@ -346,8 +339,6 @@ NSString* const kNativeControllerTemporaryKey = @"NativeControllerTemporaryKey";
 #pragma mark - BVC
 
 @interface BrowserViewController ()<AppRatingPromptDelegate,
-                                    ContextualSearchControllerDelegate,
-                                    ContextualSearchPanelMotionObserver,
                                     CRWNativeContentProvider,
                                     CRWWebStateDelegate,
                                     DialogPresenterDelegate,
@@ -419,15 +410,6 @@ NSString* const kNativeControllerTemporaryKey = @"NativeControllerTemporaryKey";
 
   // Always present on tablet; always nil on phone.
   TabStripController* _tabStripController;
-
-  // The contextual search controller.
-  ContextualSearchController* _contextualSearchController;
-
-  // The contextual search panel (always a subview of |self.view| if it exists).
-  ContextualSearchPanelView* _contextualSearchPanel;
-
-  // The contextual search mask (always a subview of |self.view| if it exists).
-  ContextualSearchMaskView* _contextualSearchMask;
 
   // Used to inject Javascript implementing the PaymentRequest API and to
   // display the UI.
@@ -1055,7 +1037,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   } else {
     [_dialogPresenter cancelAllDialogs];
   }
-  [_contextualSearchController enableContextualSearch:active];
   [_paymentRequestManager enablePaymentRequest:active];
 
   [self setNeedsStatusBarAppearanceUpdate];
@@ -1735,10 +1716,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   // Reset the toolbar opacity in case it was changed for contextual search.
   [self updateToolbarControlsAlpha:1.0];
   [self updateToolbarBackgroundAlpha:1.0];
-  [_contextualSearchController close];
-  _contextualSearchController = nil;
-  [_contextualSearchPanel removeFromSuperview];
-  [_contextualSearchMask removeFromSuperview];
   [_paymentRequestManager close];
   _paymentRequestManager = nil;
   [_toolbarController browserStateDestroyed];
@@ -1831,22 +1808,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   infobars::InfoBarManager* infoBarManager =
       [[_model currentTab] infoBarManager];
   _infoBarContainer->ChangeInfoBarManager(infoBarManager);
-
-  // Create contextual search views and controller.
-  if ([TouchToSearchPermissionsMediator isTouchToSearchAvailableOnDevice] &&
-      !_browserState->IsOffTheRecord()) {
-    _contextualSearchMask = [[ContextualSearchMaskView alloc] init];
-    [self.view insertSubview:_contextualSearchMask
-                belowSubview:[_toolbarController view]];
-    _contextualSearchPanel = [self createPanelView];
-    [self.view insertSubview:_contextualSearchPanel
-                aboveSubview:[_toolbarController view]];
-    _contextualSearchController =
-        [[ContextualSearchController alloc] initWithBrowserState:_browserState
-                                                        delegate:self];
-    [_contextualSearchController setPanel:_contextualSearchPanel];
-    [_contextualSearchController setTab:[_model currentTab]];
-  }
 
   if (base::FeatureList::IsEnabled(payments::features::kWebPayments)) {
     _paymentRequestManager = [[PaymentRequestManager alloc]
@@ -4283,7 +4244,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     }
   }
 
-  [_contextualSearchController movePanelOffscreen];
   [_paymentRequestManager cancelRequest];
   [_printController dismissAnimated:YES];
   _printController = nil;
@@ -4594,11 +4554,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     } else {
       [self.view addSubview:[_toolbarController view]];
     }
-    if (_contextualSearchPanel) {
-      // Move panel back into its correct place.
-      [self.view insertSubview:_contextualSearchPanel
-                  aboveSubview:[_toolbarController view]];
-    }
     _isToolbarControllerRelinquished = NO;
   }
 }
@@ -4614,7 +4569,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [self installDelegatesForTab:tab];
 
   if (fg) {
-    [_contextualSearchController setTab:tab];
     [_paymentRequestManager setActiveWebState:tab.webState];
   }
 }
@@ -4634,7 +4588,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   }
   [self updateVoiceSearchBarVisibilityAnimated:NO];
 
-  [_contextualSearchController setTab:newTab];
   [_paymentRequestManager setActiveWebState:newTab.webState];
 
   [self tabSelected:newTab];
@@ -4647,9 +4600,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   DCHECK(tab && ([_model indexOfTab:tab] != NSNotFound));
   if (tab == [_model currentTab]) {
     [self updateToolbar];
-    // Disable contextual search when |tab| is a voice search result tab.
-    BOOL enableContextualSearch = self.active && !tab.isVoiceSearchResultsTab;
-    [_contextualSearchController enableContextualSearch:enableContextualSearch];
   }
 }
 
@@ -4702,7 +4652,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
   [[UpgradeCenter sharedInstance] tabWillClose:tab.tabId];
   if ([model count] == 1) {  // About to remove the last tab.
-    [_contextualSearchController setTab:nil];
     [_paymentRequestManager setActiveWebState:nullptr];
   }
 }
@@ -4724,169 +4673,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   }
 }
 
-#pragma mark - ContextualSearchControllerDelegate
-
-- (void)createTabFromContextualSearchController:(const GURL&)url {
-  Tab* currentTab = [_model currentTab];
-  DCHECK(currentTab);
-  NSUInteger index = [_model indexOfTab:currentTab];
-  [self addSelectedTabWithURL:url
-                      atIndex:index + 1
-                   transition:ui::PAGE_TRANSITION_LINK];
-}
-
-- (void)promotePanelToTabProvidedBy:(id<ContextualSearchTabProvider>)tabProvider
-                         focusInput:(BOOL)focusInput {
-  // Tell the panel it will be promoted.
-  ContextualSearchPanelView* promotingPanel = _contextualSearchPanel;
-  [promotingPanel prepareForPromotion];
-
-  // Make a new panel and tell the controller about it.
-  _contextualSearchPanel = [self createPanelView];
-  [self.view insertSubview:_contextualSearchPanel belowSubview:promotingPanel];
-  [_contextualSearchController setPanel:_contextualSearchPanel];
-
-  // Figure out vertical offset.
-  CGFloat offset = StatusBarHeight();
-  if (IsIPadIdiom()) {
-    offset = MAX(offset, CGRectGetMaxY([_tabStripController view].frame));
-  }
-
-  // Transition steps: Animate the panel position, fade in the toolbar and
-  // tab strip.
-  ProceduralBlock transition = ^{
-    [promotingPanel promoteToMatchSuperviewWithVerticalOffset:offset];
-    [self updateToolbarControlsAlpha:1.0];
-    [self updateToolbarBackgroundAlpha:1.0];
-    [_tabStripController view].alpha = 1.0;
-  };
-
-  // After the transition animation completes, add the tab to the tab model
-  // (on iPad this triggers the tab strip animation too), then fade out the
-  // transitioning panel and remove it.
-  void (^completion)(BOOL) = ^(BOOL finished) {
-    _contextualSearchMask.alpha = 0;
-    std::unique_ptr<web::WebState> webState = [tabProvider releaseWebState];
-    DCHECK(webState);
-    DCHECK(webState->GetNavigationManager());
-
-    Tab* newTab = LegacyTabHelper::GetTabForWebState(webState.get());
-    WebStateList* webStateList = [_model webStateList];
-
-    // Insert the new tab after the current tab.
-    DCHECK_NE(webStateList->active_index(), WebStateList::kInvalidIndex);
-    DCHECK_NE(webStateList->active_index(), INT_MAX);
-    int insertion_index = webStateList->active_index() + 1;
-    webStateList->InsertWebState(insertion_index, std::move(webState));
-    webStateList->SetOpenerOfWebStateAt(insertion_index,
-                                        [tabProvider webStateOpener]);
-
-    // Set isPrerenderTab to NO after inserting the tab. This will allow the
-    // BrowserViewController to detect that a pre-rendered tab is switched in,
-    // and show the prerendering animation. This needs to happen before the
-    // tab is made the current tab.
-    // This also enables contextual search (if otherwise applicable) on
-    // |newTab|.
-
-    newTab.isPrerenderTab = NO;
-    [_model setCurrentTab:newTab];
-
-    if (newTab.loadFinished)
-      [self tabLoadComplete:newTab withSuccess:YES];
-
-    if (focusInput) {
-      [_toolbarController focusOmnibox];
-    }
-    _infoBarContainer->RestoreInfobars();
-
-    [UIView animateWithDuration:ios::material::kDuration2
-        animations:^{
-          promotingPanel.alpha = 0;
-        }
-        completion:^(BOOL finished) {
-          [promotingPanel removeFromSuperview];
-        }];
-  };
-
-  [UIView animateWithDuration:ios::material::kDuration3
-                   animations:transition
-                   completion:completion];
-}
-
-- (ContextualSearchPanelView*)createPanelView {
-  PanelConfiguration* config;
-  CGSize panelContainerSize = self.view.bounds.size;
-  if (IsIPadIdiom()) {
-    config = [PadPanelConfiguration
-        configurationForContainerSize:panelContainerSize
-                  horizontalSizeClass:self.traitCollection.horizontalSizeClass];
-  } else {
-    config = [PhonePanelConfiguration
-        configurationForContainerSize:panelContainerSize
-                  horizontalSizeClass:self.traitCollection.horizontalSizeClass];
-  }
-  ContextualSearchPanelView* newPanel =
-      [[ContextualSearchPanelView alloc] initWithConfiguration:config];
-  [newPanel addMotionObserver:self];
-  [newPanel addMotionObserver:_contextualSearchMask];
-  return newPanel;
-}
-
-#pragma mark - ContextualSearchPanelMotionObserver
-
-- (void)panel:(ContextualSearchPanelView*)panel
-    didMoveWithMotion:(ContextualSearch::PanelMotion)motion {
-  // If the header is offset, it's offscreen (or moving offscreen) and the
-  // toolbar shouldn't be opacity-adjusted by the contextual search panel.
-  if ([self currentHeaderOffset] != 0)
-    return;
-
-  CGFloat toolbarAlpha;
-
-  if (motion.state == ContextualSearch::PREVIEWING) {
-    // As the panel moves past the previewing position, the toolbar should
-    // become more transparent.
-    toolbarAlpha = 1 - motion.gradation;
-  } else if (motion.state == ContextualSearch::COVERING) {
-    // The toolbar should be totally transparent when the panel is covering.
-    toolbarAlpha = 0.0;
-  } else {
-    return;
-  }
-
-  // On iPad, the toolbar doesn't go fully transparent, so map |toolbarAlpha|'s
-  // [0-1.0] range to [0.5-1.0].
-  if (IsIPadIdiom()) {
-    toolbarAlpha = 0.5 + (toolbarAlpha * 0.5);
-    [_tabStripController view].alpha = toolbarAlpha;
-  }
-
-  [self updateToolbarControlsAlpha:toolbarAlpha];
-  [self updateToolbarBackgroundAlpha:toolbarAlpha];
-}
-
-- (void)panel:(ContextualSearchPanelView*)panel
-    didChangeToState:(ContextualSearch::PanelState)toState
-           fromState:(ContextualSearch::PanelState)fromState {
-  if (toState == ContextualSearch::DISMISSED) {
-    // Panel has become hidden.
-    _infoBarContainer->RestoreInfobars();
-    [self updateToolbarControlsAlpha:1.0];
-    [self updateToolbarBackgroundAlpha:1.0];
-    [_tabStripController view].alpha = 1.0;
-  } else if (fromState == ContextualSearch::DISMISSED) {
-    // Panel has become visible.
-    _infoBarContainer->SuspendInfobars();
-  }
-}
-
-- (void)panelWillPromote:(ContextualSearchPanelView*)panel {
-  [panel removeMotionObserver:self];
-}
-
-- (CGFloat)currentHeaderHeight {
-  return [self headerHeight] - [self currentHeaderOffset];
-}
 
 #pragma mark - InfoBarControllerDelegate
 
@@ -4977,9 +4763,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     return YES;
 
   if (_voiceSearchController && _voiceSearchController->IsVisible())
-    return YES;
-
-  if ([_contextualSearchPanel state] >= ContextualSearch::PEEKING)
     return YES;
 
   if (!self.active)
