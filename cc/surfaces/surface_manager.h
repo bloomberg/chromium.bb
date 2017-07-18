@@ -35,6 +35,7 @@
 
 namespace viz {
 namespace test {
+class SurfaceReferencesTest;
 class SurfaceSynchronizationTest;
 }
 }  // namespace viz
@@ -187,7 +188,7 @@ class CC_SURFACES_EXPORT SurfaceManager {
 
  private:
   friend class viz::test::SurfaceSynchronizationTest;
-  friend class SurfaceManagerRefTest;
+  friend class viz::test::SurfaceReferencesTest;
 
   using SurfaceIdSet = std::unordered_set<viz::SurfaceId, viz::SurfaceIdHash>;
 
