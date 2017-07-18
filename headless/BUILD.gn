@@ -267,6 +267,8 @@ component("headless") {
     "lib/browser/headless_permission_manager.h",
     "lib/browser/headless_platform_event_source.cc",
     "lib/browser/headless_platform_event_source.h",
+    "lib/browser/headless_quota_permission_context.cc",
+    "lib/browser/headless_quota_permission_context.h",
     "lib/browser/headless_resource_dispatcher_host_delegate.cc",
     "lib/browser/headless_resource_dispatcher_host_delegate.h",
     "lib/browser/headless_shell_application_mac.h",
