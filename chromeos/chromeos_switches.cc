@@ -374,6 +374,13 @@ const char kGuestWallpaperSmall[] = "guest-wallpaper-small";
 // for any type of user. Should be used only for testing.
 const char kForceHappinessTrackingSystem[] = "force-happiness-tracking-system";
 
+// If set, the system is a Chromebook with a "standard Chrome OS keyboard",
+// which generally means one with a Search key in the standard Caps Lock
+// location above the Left Shift key. It should be unset for Chromebooks with
+// both Search and Caps Lock keys (e.g. stout) and for devices like Chromeboxes
+// that only use external keyboards.
+const char kHasChromeOSKeyboard[] = "has-chromeos-keyboard";
+
 // If true, the Chromebook has a keyboard with a diamond key.
 const char kHasChromeOSDiamondKey[] = "has-chromeos-diamond-key";
 
