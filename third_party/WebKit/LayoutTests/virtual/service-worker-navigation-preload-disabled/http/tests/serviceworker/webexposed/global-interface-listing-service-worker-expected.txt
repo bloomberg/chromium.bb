@@ -1,4 +1,8 @@
 [INTERFACES]
+interface AbortPaymentEvent : ExtendableEvent
+    attribute @@toStringTag
+    method constructor
+    method respondWith
 interface BackgroundFetchClickEvent : BackgroundFetchEvent
     attribute @@toStringTag
     getter state
@@ -2458,6 +2462,7 @@ interface WritableStream
     attribute console
     attribute internals
     getter clients
+    getter onabortpayment
     getter onactivate
     getter onbackgroundfetchabort
     getter onbackgroundfetchclick
@@ -2477,6 +2482,7 @@ interface WritableStream
     method fetch
     method gc
     method skipWaiting
+    setter onabortpayment
     setter onactivate
     setter onbackgroundfetchabort
     setter onbackgroundfetchclick
