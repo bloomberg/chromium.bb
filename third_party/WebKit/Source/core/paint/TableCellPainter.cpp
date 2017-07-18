@@ -7,6 +7,7 @@
 #include "core/layout/LayoutTableCell.h"
 #include "core/paint/BackgroundImageGeometry.h"
 #include "core/paint/BlockPainter.h"
+#include "core/paint/BoxModelObjectPainter.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/ObjectPainter.h"
@@ -63,7 +64,7 @@ void TableCellPainter::PaintBackground(const PaintInfo& paint_info,
       paint_info.context.Clip(PixelSnappedIntRect(clip_rect));
     }
     BackgroundImageGeometry geometry(layout_table_cell_, &background_object);
-    BoxPainter(layout_table_cell_)
+    BoxModelObjectPainter(layout_table_cell_)
         .PaintFillLayers(paint_info, c, bg_layer, paint_rect, geometry,
                          kBackgroundBleedNone, SkBlendMode::kSrcOver);
   }

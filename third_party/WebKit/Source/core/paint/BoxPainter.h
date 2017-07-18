@@ -14,12 +14,10 @@
 
 namespace blink {
 
-class FillLayer;
 class LayoutPoint;
 class LayoutRect;
 struct PaintInfo;
 class LayoutBox;
-class BackgroundImageGeometry;
 
 class BoxPainter : public BoxPainterBase {
   STACK_ALLOCATED();
@@ -33,13 +31,6 @@ class BoxPainter : public BoxPainterBase {
   void PaintMask(const PaintInfo&, const LayoutPoint&);
   void PaintClippingMask(const PaintInfo&, const LayoutPoint&);
 
-  void PaintFillLayers(const PaintInfo&,
-                       const Color&,
-                       const FillLayer&,
-                       const LayoutRect&,
-                       BackgroundImageGeometry&,
-                       BackgroundBleedAvoidance = kBackgroundBleedNone,
-                       SkBlendMode = SkBlendMode::kSrcOver);
   void PaintMaskImages(const PaintInfo&, const LayoutRect&);
   void PaintBoxDecorationBackgroundWithRect(const PaintInfo&,
                                             const LayoutPoint&,

@@ -29,6 +29,35 @@ bool BoxModelObjectPainter::
          box_model_ == paint_info.PaintContainer();
 }
 
+void BoxModelObjectPainter::PaintFillLayers(const PaintInfo& paint_info,
+                                            const Color& c,
+                                            const FillLayer& fill_layer,
+                                            const LayoutRect& rect,
+                                            BackgroundImageGeometry& geometry,
+                                            BackgroundBleedAvoidance bleed,
+                                            SkBlendMode op) {
+  FillLayerOcclusionOutputList reversed_paint_list;
+  bool should_draw_background_in_separate_buffer =
+      CalculateFillLayerOcclusionCulling(reversed_paint_list, fill_layer,
+                                         box_model_.GetDocument(),
+                                         box_model_.StyleRef());
+
+  // TODO(trchen): We can optimize out isolation group if we have a
+  // non-transparent background color and the bottom layer encloses all other
+  // layers.
+  GraphicsContext& context = paint_info.context;
+  if (should_draw_background_in_separate_buffer)
+    context.BeginLayer();
+
+  for (auto it = reversed_paint_list.rbegin(); it != reversed_paint_list.rend();
+       ++it) {
+    PaintFillLayer(paint_info, c, **it, rect, bleed, geometry, op);
+  }
+
+  if (should_draw_background_in_separate_buffer)
+    context.EndLayer();
+}
+
 namespace {
 
 class InterpolationQualityContext {
@@ -243,9 +272,9 @@ void BoxModelObjectPainter::PaintFillLayer(
     const LayoutRect& rect,
     BackgroundBleedAvoidance bleed_avoidance,
     BackgroundImageGeometry& geometry,
+    SkBlendMode op,
     const InlineFlowBox* box,
-    const LayoutSize& box_size,
-    SkBlendMode op) {
+    const LayoutSize& box_size) {
   GraphicsContext& context = paint_info.context;
   if (rect.IsEmpty())
     return;
