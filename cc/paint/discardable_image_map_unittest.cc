@@ -11,7 +11,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/values.h"
 #include "cc/base/region.h"
-#include "cc/paint/discardable_image_store.h"
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/paint_op_buffer.h"
 #include "cc/paint/paint_recorder.h"
@@ -127,9 +126,7 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectTest) {
       content_layer_client.PaintContentsToDisplayList(
           ContentLayerClient::PAINTING_BEHAVIOR_NORMAL);
   display_list->GenerateDiscardableImagesMetadata();
-
-  const DiscardableImageMap& image_map =
-      display_list->discardable_image_map_for_testing();
+  const DiscardableImageMap& image_map = display_list->discardable_image_map();
 
   for (int y = 0; y < 4; ++y) {
     for (int x = 0; x < 4; ++x) {
@@ -212,9 +209,7 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectNonZeroLayer) {
       content_layer_client.PaintContentsToDisplayList(
           ContentLayerClient::PAINTING_BEHAVIOR_NORMAL);
   display_list->GenerateDiscardableImagesMetadata();
-
-  const DiscardableImageMap& image_map =
-      display_list->discardable_image_map_for_testing();
+  const DiscardableImageMap& image_map = display_list->discardable_image_map();
 
   for (int y = 0; y < 4; ++y) {
     for (int x = 0; x < 4; ++x) {
@@ -326,9 +321,7 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectOnePixelQuery) {
       content_layer_client.PaintContentsToDisplayList(
           ContentLayerClient::PAINTING_BEHAVIOR_NORMAL);
   display_list->GenerateDiscardableImagesMetadata();
-
-  const DiscardableImageMap& image_map =
-      display_list->discardable_image_map_for_testing();
+  const DiscardableImageMap& image_map = display_list->discardable_image_map();
 
   for (int y = 0; y < 4; ++y) {
     for (int x = 0; x < 4; ++x) {
@@ -365,9 +358,8 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectMassiveImage) {
       content_layer_client.PaintContentsToDisplayList(
           ContentLayerClient::PAINTING_BEHAVIOR_NORMAL);
   display_list->GenerateDiscardableImagesMetadata();
+  const DiscardableImageMap& image_map = display_list->discardable_image_map();
 
-  const DiscardableImageMap& image_map =
-      display_list->discardable_image_map_for_testing();
   std::vector<PositionScaleDrawImage> images =
       GetDiscardableImagesInRect(image_map, gfx::Rect(0, 0, 1, 1));
   std::vector<gfx::Rect> inset_rects = InsetImageRects(images);
@@ -386,20 +378,18 @@ TEST_F(DiscardableImageMapTest, PaintDestroyedWhileImageIsDrawn) {
   PaintImage discardable_image = CreateDiscardablePaintImage(gfx::Size(10, 10));
   sk_sp<PaintRecord> record = CreateRecording(discardable_image, visible_rect);
 
-  DiscardableImageMap image_map;
-  {
-    DiscardableImageMap::ScopedMetadataGenerator generator(&image_map,
-                                                           visible_rect.size());
-    DiscardableImageStore* image_store = generator.image_store();
-    {
-      std::unique_ptr<SkPaint> paint(new SkPaint());
-      image_store->GetNoDrawCanvas()->saveLayer(gfx::RectToSkRect(visible_rect),
-                                                paint.get());
-    }
-    image_store->GatherDiscardableImages(record.get());
-    image_store->GetNoDrawCanvas()->restore();
-  }
+  scoped_refptr<DisplayItemList> display_list = new DisplayItemList;
+  PaintFlags paint;
+  PaintOpBuffer* buffer = display_list->StartPaint();
+  SkRect visible_sk_rect(gfx::RectToSkRect(visible_rect));
+  buffer->push<SaveLayerOp>(&visible_sk_rect, &paint);
+  buffer->push<DrawRecordOp>(std::move(record));
+  buffer->push<RestoreOp>();
+  display_list->EndPaintOfUnpaired(visible_rect);
+  display_list->Finalize();
 
+  display_list->GenerateDiscardableImagesMetadata();
+  const DiscardableImageMap& image_map = display_list->discardable_image_map();
   std::vector<PositionScaleDrawImage> images =
       GetDiscardableImagesInRect(image_map, gfx::Rect(0, 0, 1, 1));
   EXPECT_EQ(1u, images.size());
@@ -414,18 +404,17 @@ TEST_F(DiscardableImageMapTest, NullPaintOnSaveLayer) {
   PaintImage discardable_image = CreateDiscardablePaintImage(gfx::Size(10, 10));
   sk_sp<PaintRecord> record = CreateRecording(discardable_image, visible_rect);
 
-  DiscardableImageMap image_map;
-  {
-    DiscardableImageMap::ScopedMetadataGenerator generator(&image_map,
-                                                           visible_rect.size());
-    DiscardableImageStore* image_store = generator.image_store();
-    SkPaint* null_paint = nullptr;
-    image_store->GetNoDrawCanvas()->saveLayer(gfx::RectToSkRect(visible_rect),
-                                              null_paint);
-    image_store->GatherDiscardableImages(record.get());
-    image_store->GetNoDrawCanvas()->restore();
-  }
+  scoped_refptr<DisplayItemList> display_list = new DisplayItemList;
+  PaintOpBuffer* buffer = display_list->StartPaint();
+  SkRect visible_sk_rect(gfx::RectToSkRect(visible_rect));
+  buffer->push<SaveLayerOp>(&visible_sk_rect, nullptr);
+  buffer->push<DrawRecordOp>(std::move(record));
+  buffer->push<RestoreOp>();
+  display_list->EndPaintOfUnpaired(visible_rect);
+  display_list->Finalize();
 
+  display_list->GenerateDiscardableImagesMetadata();
+  const DiscardableImageMap& image_map = display_list->discardable_image_map();
   std::vector<PositionScaleDrawImage> images =
       GetDiscardableImagesInRect(image_map, gfx::Rect(0, 0, 1, 1));
   EXPECT_EQ(1u, images.size());
@@ -448,9 +437,8 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectMaxImage) {
       content_layer_client.PaintContentsToDisplayList(
           ContentLayerClient::PAINTING_BEHAVIOR_NORMAL);
   display_list->GenerateDiscardableImagesMetadata();
+  const DiscardableImageMap& image_map = display_list->discardable_image_map();
 
-  const DiscardableImageMap& image_map =
-      display_list->discardable_image_map_for_testing();
   std::vector<PositionScaleDrawImage> images =
       GetDiscardableImagesInRect(image_map, gfx::Rect(42, 42, 1, 1));
   std::vector<gfx::Rect> inset_rects = InsetImageRects(images);
@@ -492,9 +480,8 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectMaxImageMaxLayer) {
       content_layer_client.PaintContentsToDisplayList(
           ContentLayerClient::PAINTING_BEHAVIOR_NORMAL);
   display_list->GenerateDiscardableImagesMetadata();
+  const DiscardableImageMap& image_map = display_list->discardable_image_map();
 
-  const DiscardableImageMap& image_map =
-      display_list->discardable_image_map_for_testing();
   std::vector<PositionScaleDrawImage> images =
       GetDiscardableImagesInRect(image_map, gfx::Rect(0, 0, 1, 1));
   std::vector<gfx::Rect> inset_rects = InsetImageRects(images);
@@ -543,9 +530,8 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesRectInBounds) {
       content_layer_client.PaintContentsToDisplayList(
           ContentLayerClient::PAINTING_BEHAVIOR_NORMAL);
   display_list->GenerateDiscardableImagesMetadata();
+  const DiscardableImageMap& image_map = display_list->discardable_image_map();
 
-  const DiscardableImageMap& image_map =
-      display_list->discardable_image_map_for_testing();
   std::vector<PositionScaleDrawImage> images =
       GetDiscardableImagesInRect(image_map, gfx::Rect(0, 0, 1, 1));
   std::vector<gfx::Rect> inset_rects = InsetImageRects(images);
@@ -605,9 +591,7 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInShader) {
       content_layer_client.PaintContentsToDisplayList(
           ContentLayerClient::PAINTING_BEHAVIOR_NORMAL);
   display_list->GenerateDiscardableImagesMetadata();
-
-  const DiscardableImageMap& image_map =
-      display_list->discardable_image_map_for_testing();
+  const DiscardableImageMap& image_map = display_list->discardable_image_map();
 
   gfx::ColorSpace target_color_space = gfx::ColorSpace::CreateXYZD50();
   for (int y = 0; y < 4; ++y) {
@@ -656,10 +640,9 @@ TEST_F(DiscardableImageMapTest, ClipsImageRects) {
   display_list->EndPaintOfUnpaired(gfx::Rect(250, 250));
 
   display_list->Finalize();
-  display_list->GenerateDiscardableImagesMetadata();
 
-  const DiscardableImageMap& image_map =
-      display_list->discardable_image_map_for_testing();
+  display_list->GenerateDiscardableImagesMetadata();
+  const DiscardableImageMap& image_map = display_list->discardable_image_map();
   std::vector<PositionScaleDrawImage> images =
       GetDiscardableImagesInRect(image_map, visible_rect);
   std::vector<gfx::Rect> inset_rects = InsetImageRects(images);
@@ -692,23 +675,19 @@ TEST_F(DiscardableImageMapTest, GathersDiscardableImagesFromNestedOps) {
   PaintOpBuffer root_buffer;
   root_buffer.push<DrawRecordOp>(internal_record);
   root_buffer.push<DrawRecordOp>(record2);
-  DiscardableImageMap image_map_;
-  {
-    DiscardableImageMap::ScopedMetadataGenerator generator(&image_map_,
-                                                           gfx::Size(200, 200));
-    generator.image_store()->GatherDiscardableImages(&root_buffer);
-  }
+  DiscardableImageMap image_map;
+  image_map.Generate(&root_buffer, gfx::Rect(200, 200));
 
   gfx::ColorSpace target_color_space;
   std::vector<DrawImage> images;
-  image_map_.GetDiscardableImagesInRect(gfx::Rect(0, 0, 5, 95), 1.f,
-                                        target_color_space, &images);
+  image_map.GetDiscardableImagesInRect(gfx::Rect(0, 0, 5, 95), 1.f,
+                                       target_color_space, &images);
   EXPECT_EQ(1u, images.size());
   EXPECT_TRUE(discardable_image == images[0].paint_image());
 
   images.clear();
-  image_map_.GetDiscardableImagesInRect(gfx::Rect(105, 105, 5, 95), 1.f,
-                                        target_color_space, &images);
+  image_map.GetDiscardableImagesInRect(gfx::Rect(105, 105, 5, 95), 1.f,
+                                       target_color_space, &images);
   EXPECT_EQ(1u, images.size());
   EXPECT_TRUE(discardable_image2 == images[0].paint_image());
 }
