@@ -103,11 +103,6 @@ class PLATFORM_EXPORT Canvas2DLayerBridge
                              std::unique_ptr<cc::SingleReleaseCallback>*
                                  out_release_callback) override;
 
-  // Callback for mailboxes given to the compositor from PrepareTextureMailbox.
-  void MailboxReleased(const gpu::Mailbox&,
-                       const gpu::SyncToken&,
-                       bool lost_resource);
-
   // ImageBufferSurface implementation
   void FinalizeFrame();
   void DoPaintInvalidation(const FloatRect& dirty_rect);
@@ -131,7 +126,6 @@ class PLATFORM_EXPORT Canvas2DLayerBridge
                    int y);
   void Flush();
   void FlushGpu();
-  bool IsHidden() { return is_hidden_; }
   OpacityMode GetOpacityMode() { return opacity_mode_; }
   void DontUseIdleSchedulingForTesting() {
     dont_use_idle_scheduling_for_testing_ = true;
@@ -176,6 +170,12 @@ class PLATFORM_EXPORT Canvas2DLayerBridge
 
  private:
   void ResetSurface();
+
+  // Callback for mailboxes given to the compositor from PrepareTextureMailbox.
+  void MailboxReleased(const gpu::Mailbox&,
+                       const gpu::SyncToken&,
+                       bool lost_resource);
+  bool IsHidden() { return is_hidden_; }
 
 #if USE_IOSURFACE_FOR_2D_CANVAS
   // All information associated with a CHROMIUM image.
