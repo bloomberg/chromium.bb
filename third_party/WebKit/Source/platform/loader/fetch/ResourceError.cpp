@@ -70,9 +70,8 @@ ResourceError ResourceError::CancelledDueToAccessCheckError(
 }
 
 ResourceError ResourceError::CacheMissError(const String& failing_url) {
-  ResourceError error(kErrorDomainBlinkInternal, 0, failing_url, String());
-  error.SetIsCacheMiss(true);
-  return error;
+  return WebURLError(KURL(kParsedURLString, failing_url), false,
+                     net::ERR_CACHE_MISS);
 }
 
 ResourceError ResourceError::Copy() const {
@@ -85,9 +84,7 @@ ResourceError ResourceError::Copy() const {
   error_copy.is_cancellation_ = is_cancellation_;
   error_copy.is_access_check_ = is_access_check_;
   error_copy.is_timeout_ = is_timeout_;
-  error_copy.stale_copy_in_cache_ = stale_copy_in_cache_;
   error_copy.was_ignored_by_handler_ = was_ignored_by_handler_;
-  error_copy.is_cache_miss_ = is_cache_miss_;
   return error_copy;
 }
 
@@ -125,9 +122,6 @@ bool ResourceError::Compare(const ResourceError& a, const ResourceError& b) {
   if (a.WasIgnoredByHandler() != b.WasIgnoredByHandler())
     return false;
 
-  if (a.IsCacheMiss() != b.IsCacheMiss())
-    return false;
-
   return true;
 }
 
@@ -141,8 +135,6 @@ void ResourceError::InitializeWebURLError(WebURLError* error,
   error->unreachable_url = url;
   if (reason == net::ERR_ABORTED) {
     error->is_cancellation = true;
-  } else if (reason == net::ERR_CACHE_MISS) {
-    error->is_cache_miss = true;
   } else if (reason == net::ERR_TEMPORARILY_THROTTLED) {
     error->localized_description =
         WebString::FromASCII(kThrottledErrorDescription);
@@ -150,6 +142,11 @@ void ResourceError::InitializeWebURLError(WebURLError* error,
     error->localized_description =
         WebString::FromASCII(net::ErrorToString(reason));
   }
+}
+
+bool ResourceError::IsCacheMiss() const {
+  return domain_ == String(net::kErrorDomain) &&
+         error_code_ == net::ERR_CACHE_MISS;
 }
 
 }  // namespace blink

@@ -58,7 +58,6 @@ WebURLError& WebURLError::operator=(const ResourceError& error) {
     stale_copy_in_cache = error.StaleCopyInCache();
     localized_description = error.LocalizedDescription();
     was_ignored_by_handler = error.WasIgnoredByHandler();
-    is_cache_miss = error.IsCacheMiss();
     is_web_security_violation = error.IsAccessCheck();
   }
   return *this;
@@ -72,7 +71,6 @@ WebURLError::operator ResourceError() const {
   resource_error.SetIsCancellation(is_cancellation);
   resource_error.SetStaleCopyInCache(stale_copy_in_cache);
   resource_error.SetWasIgnoredByHandler(was_ignored_by_handler);
-  resource_error.SetIsCacheMiss(is_cache_miss);
   resource_error.SetIsAccessCheck(is_web_security_violation);
   return resource_error;
 }
