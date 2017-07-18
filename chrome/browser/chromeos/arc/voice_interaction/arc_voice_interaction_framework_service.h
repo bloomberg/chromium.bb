@@ -115,6 +115,9 @@ class ArcVoiceInteractionFrameworkService
   base::Closure metalayer_closed_callback_;
   bool metalayer_enabled_ = false;
 
+  // Whether there is a pending request to start voice interaction.
+  bool is_request_pending_ = false;
+
   // The time when a user initated an interaction.
   base::TimeTicks user_interaction_start_time_;
 
