@@ -253,14 +253,14 @@ class TestExporter(object):
 
         Returns the pull_request if found, else returns None.
         """
-        # Check for PRs created by commits on master.
-        pull_request = self.wpt_github.pr_with_position(exportable_commit.position)
-        if pull_request:
-            return pull_request
-
         # Check for PRs created by open Gerrit CLs.
         change_id = exportable_commit.change_id()
         if change_id:
             return self.wpt_github.pr_with_change_id(change_id)
+
+        # Check for PRs created by commits on master.
+        pull_request = self.wpt_github.pr_with_position(exportable_commit.position)
+        if pull_request:
+            return pull_request
 
         return None
