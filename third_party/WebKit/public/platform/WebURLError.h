@@ -62,10 +62,6 @@ struct WebURLError {
   // ignored (e.g. through shouldOverrideUrlLoading).
   bool was_ignored_by_handler = false;
 
-  // A flag showing whether this error is a disk cache miss by requesting to
-  // load only from disk cache.
-  bool is_cache_miss = false;
-
   // True if this error is created for a web security violation.
   bool is_web_security_violation = false;
 
