@@ -181,6 +181,9 @@ crbug.com/680307 virtual/mojo-loading/http/tests/security/mixedContent/blob-url-
 crbug.com/650348 http/tests/webaudio/autoplay-crossorigin.html [ Timeout ]
 crbug.com/650348 virtual/mojo-loading/http/tests/webaudio/autoplay-crossorigin.html [ Timeout ]
 
+# https://crbug.com/745881: Image diff in test due to font rendering issues.
+crbug.com/745881 [ Win ] fast/text/ellipsis-in-relative-inline.html [ Failure ]
+
 # TODO(lukasza, alexmos): Triage these failures.
 Bug(none) fast/frames/cached-frame-counter.html [ Timeout ]
 Bug(none) fast/frames/frame-limit.html [ Timeout ]
