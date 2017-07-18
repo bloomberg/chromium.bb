@@ -62,6 +62,7 @@ bool FileImpl::IsValid() const {
   return file_.IsValid();
 }
 
+#if !defined(OS_FUCHSIA)
 base::File::Error FileImpl::RawLockFile() {
   return file_.Lock();
 }
@@ -69,6 +70,7 @@ base::File::Error FileImpl::RawLockFile() {
 base::File::Error FileImpl::RawUnlockFile() {
   return file_.Unlock();
 }
+#endif  // !OS_FUCHSIA
 
 void FileImpl::Close(CloseCallback callback) {
   if (!file_.IsValid()) {
