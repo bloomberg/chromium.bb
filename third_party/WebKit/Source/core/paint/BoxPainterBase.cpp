@@ -358,6 +358,9 @@ FloatRoundedRect BoxPainterBase::RoundedBorderRectForClip(
     bool has_line_box_sibling,
     const LayoutSize& box_size,
     LayoutRectOutsets border_padding_insets) {
+  if (!info.is_rounded_fill)
+    return FloatRoundedRect();
+
   FloatRoundedRect border =
       info.is_border_fill
           ? BackgroundRoundedRectAdjustedForBleedAvoidance(
