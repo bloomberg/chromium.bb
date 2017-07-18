@@ -28,17 +28,27 @@ binding.registerCustomHook(function(bindingsAPI) {
 });
 var apiFunction = binding.generate().getDevices;
 
+function runFunction() {
+  apiFunction(function() {
+    if (shouldSucceed)
+      test.assertNoLastError();
+    else
+      test.assertTrue(!!chrome.runtime.lastError);
+    test.succeed();
+  });
+}
+
 unittestBindings.exportTests([
   // Test that a keep alive is created and destroyed for a successful API call.
   function testKeepAliveWithSuccessfulCall() {
     shouldSucceed = true;
-    utils.promise(apiFunction).then(test.succeed, test.fail);
+    runFunction();
   },
 
   // Test that a keep alive is created and destroyed for an unsuccessful API
   // call.
   function testKeepAliveWithError() {
     shouldSucceed = false;
-    utils.promise(apiFunction).then(test.fail, test.succeed);
+    runFunction();
   },
 ], test.runTests, exports);
