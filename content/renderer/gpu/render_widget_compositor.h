@@ -83,7 +83,8 @@ class CONTENT_EXPORT RenderWidgetCompositor
                   std::unique_ptr<cc::AnimationHost> animation_host);
 
   static cc::ManagedMemoryPolicy GetGpuMemoryPolicy(
-      const cc::ManagedMemoryPolicy& policy);
+      const cc::ManagedMemoryPolicy& policy,
+      const ScreenInfo& screen_info);
 
   void SetNeverVisible();
   const base::WeakPtr<cc::InputHandler>& GetInputHandler();
