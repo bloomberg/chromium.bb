@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/search_box_model_observer.h"
 #include "ui/app_list/speech_ui_model_observer.h"
@@ -112,8 +113,8 @@ class APP_LIST_EXPORT SearchBoxView : public views::View,
   // Returns background border corner radius in the given state.
   static int GetSearchBoxBorderCornerRadiusForState(AppListModel::State state);
 
-  // Returns search box color in the given state.
-  SkColor GetSearchBoxColorForState(AppListModel::State state) const;
+  // Returns background color for the given state.
+  SkColor GetBackgroundColorForState(AppListModel::State state) const;
 
   // Updates the search box's background corner radius and color.
   void UpdateBackground(double progress,
@@ -131,7 +132,16 @@ class APP_LIST_EXPORT SearchBoxView : public views::View,
   void NotifyQueryChanged();
 
   // Updates the search icon.
-  void UpdateSearchIcon(bool is_google, const SkColor& search_box_color);
+  void UpdateSearchIcon();
+
+  // Gets the wallpaper prominent colors, returning empty if there aren't any.
+  const std::vector<SkColor>& GetWallpaperProminentColors() const;
+
+  // Sets the background color.
+  void SetBackgroundColor(SkColor light_vibrant);
+
+  // Sets the search box color.
+  void SetSearchBoxColor(SkColor color);
 
   // Overridden from views::TextfieldController:
   void ContentsChanged(views::Textfield* sender,
@@ -178,6 +188,10 @@ class APP_LIST_EXPORT SearchBoxView : public views::View,
   const bool is_fullscreen_app_list_enabled_;
   // Whether the search box is active.
   bool is_search_box_active_ = false;
+  // The current background color.
+  SkColor background_color_ = kSearchBoxBackgroundDefault;
+  // The current search box color.
+  SkColor search_box_color_ = kDefaultSearchboxColor;
 
   DISALLOW_COPY_AND_ASSIGN(SearchBoxView);
 };
