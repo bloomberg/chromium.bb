@@ -37,7 +37,8 @@ class DisplayAndroidManager : public display::ScreenBase {
                      jfloat dipScale,
                      jint rotationDegrees,
                      jint bitsPerPixel,
-                     jint bitsPerComponent);
+                     jint bitsPerComponent,
+                     jboolean isWideColorGamut);
   void RemoveDisplay(JNIEnv* env,
                      const base::android::JavaParamRef<jobject>& jobject,
                      jint sdkDisplayId);

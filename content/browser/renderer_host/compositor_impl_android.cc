@@ -764,8 +764,6 @@ void CompositorImpl::OnGpuChannelEstablished(
 
   constexpr bool support_locking = false;
   constexpr bool automatic_flushes = false;
-  // TODO(ccameron): Update the display color space based on isWideColorGamut.
-  // https://crbug.com/735658
   display_color_space_ = display::Screen::GetScreen()
                              ->GetDisplayNearestWindow(root_window_)
                              .color_space();

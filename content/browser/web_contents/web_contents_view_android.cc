@@ -172,6 +172,8 @@ void WebContentsViewAndroid::GetScreenInfo(ScreenInfo* result) const {
           ? display::Screen::GetScreen()->GetDisplayNearestView(native_view)
           : display::Screen::GetScreen()->GetPrimaryDisplay();
   DisplayToScreenInfo(display, result);
+  if (delegate_)
+    delegate_->OverrideDisplayColorSpace(&result->color_space);
 }
 
 void WebContentsViewAndroid::GetContainerBounds(gfx::Rect* out) const {
