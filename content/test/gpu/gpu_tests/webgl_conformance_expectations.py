@@ -444,6 +444,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('WebglExtension_EXT_disjoint_timer_query',
         ['linux', 'intel'], bug=687210)
 
+    # Linux Intel HD 630
+    self.Fail('conformance/textures/misc/texture-size-limit.html',
+        ['linux', ('intel', 0x5912)], bug=745888)
+
     ####################
     # Android failures #
     ####################
