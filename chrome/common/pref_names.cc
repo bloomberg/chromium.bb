@@ -63,6 +63,11 @@ const char kVoiceInteractionEnabled[] = "settings.voice_interaction.enabled";
 // voice interaction services.
 const char kVoiceInteractionContextEnabled[] =
     "settings.voice_interaction.context.enabled";
+// A preference indicating whether voice interaction settings have been read
+// from ARC. This synchronization only happens when user goes through the flow
+// to set up voice interaction.
+const char kVoiceInteractionPrefSynced[] =
+    "settings.voice_interaction.context.synced";
 #endif
 
 // A bool pref that keeps whether the child status for this profile was already

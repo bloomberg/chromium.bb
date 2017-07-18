@@ -9,6 +9,8 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "chrome/browser/chromeos/arc/arc_session_manager.h"
+#include "components/arc/arc_service.h"
 #include "components/arc/common/voice_interaction_framework.mojom.h"
 #include "components/arc/instance_holder.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -38,8 +40,8 @@ class ArcVoiceInteractionFrameworkService
       public mojom::VoiceInteractionFrameworkHost,
       public ui::AcceleratorTarget,
       public ui::EventHandler,
-      public InstanceHolder<
-          mojom::VoiceInteractionFrameworkInstance>::Observer {
+      public InstanceHolder<mojom::VoiceInteractionFrameworkInstance>::Observer,
+      public ArcSessionManager::Observer {
  public:
   // Returns singleton instance for the given BrowserContext,
   // or nullptr if the browser |context| is not allowed to use ARC.
@@ -76,6 +78,9 @@ class ArcVoiceInteractionFrameworkService
   void ShowMetalayer(const base::Closure& closed);
   void HideMetalayer();
 
+  // ArcSessionManager::Observer overrides.
+  void OnArcPlayStoreEnabledChanged(bool enabled) override;
+
   // Starts a voice interaction session after user-initiated interaction.
   // Records a timestamp and sets number of allowed requests to 2 since by
   // design, there will be one request for screenshot and the other for
@@ -101,6 +106,13 @@ class ArcVoiceInteractionFrameworkService
 
   // Start the voice interaction setup wizard in container.
   void StartVoiceInteractionSetupWizard();
+
+  // Updates voice interaction flags. These flags are set only once when ARC
+  // container is enabled.
+  void UpdateVoiceInteractionPrefs();
+
+  // For supporting ArcServiceManager::GetService<T>().
+  static const char kArcServiceName[];
 
  private:
   void SetMetalayerVisibility(bool visible);
