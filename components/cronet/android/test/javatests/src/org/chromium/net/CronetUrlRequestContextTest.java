@@ -366,7 +366,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         File netLogDir = new File(directory, "NetLog");
         assertFalse(netLogDir.exists());
         assertTrue(netLogDir.mkdir());
-        File eventFile = new File(netLogDir, "event_file_0.json");
+        File logFile = new File(netLogDir, "netlog.json");
         ExperimentalCronetEngine cronetEngine =
                 new ExperimentalCronetEngine.Builder(context).build();
         // Start NetLog immediately after the request context is created to make
@@ -381,9 +381,9 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         urlRequestBuilder.build().start();
         callback.blockForDone();
         cronetEngine.stopNetLog();
-        assertTrue(eventFile.exists());
-        assertTrue(eventFile.length() != 0);
-        assertFalse(hasBytesInNetLog(eventFile));
+        assertTrue(logFile.exists());
+        assertTrue(logFile.length() != 0);
+        assertFalse(hasBytesInNetLog(logFile));
         FileUtils.recursivelyDeleteFile(netLogDir);
         assertFalse(netLogDir.exists());
     }
@@ -426,7 +426,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         File netLogDir = new File(directory, "NetLog");
         assertFalse(netLogDir.exists());
         assertTrue(netLogDir.mkdir());
-        File eventFile = new File(netLogDir, "event_file_0.json");
+        File logFile = new File(netLogDir, "netlog.json");
         ExperimentalCronetEngine cronetEngine =
                 new ExperimentalCronetEngine.Builder(context).build();
         cronetEngine.startNetLogToDisk(netLogDir.getPath(), false, MAX_FILE_SIZE);
@@ -439,8 +439,8 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         callback.blockForDone();
         // Shut down the engine without calling stopNetLog.
         cronetEngine.shutdown();
-        assertTrue(eventFile.exists());
-        assertTrue(eventFile.length() != 0);
+        assertTrue(logFile.exists());
+        assertTrue(logFile.length() != 0);
 
         FileUtils.recursivelyDeleteFile(netLogDir);
         assertFalse(netLogDir.exists());
@@ -499,8 +499,8 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         File netLogDir2 = new File(directory, "NetLog2");
         assertFalse(netLogDir2.exists());
         assertTrue(netLogDir2.mkdir());
-        File eventFile1 = new File(netLogDir1, "event_file_0.json");
-        File eventFile2 = new File(netLogDir2, "event_file_0.json");
+        File logFile1 = new File(netLogDir1, "netlog.json");
+        File logFile2 = new File(netLogDir2, "netlog.json");
 
         ExperimentalCronetEngine cronetEngine1 =
                 new ExperimentalCronetEngine.Builder(context).build();
@@ -524,17 +524,17 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         cronetEngine1.stopNetLog();
         cronetEngine2.stopNetLog();
 
-        assertTrue(eventFile1.exists());
-        assertTrue(eventFile2.exists());
-        assertTrue(eventFile1.length() != 0);
-        assertTrue(eventFile2.length() != 0);
+        assertTrue(logFile1.exists());
+        assertTrue(logFile2.exists());
+        assertTrue(logFile1.length() != 0);
+        assertTrue(logFile2.length() != 0);
 
         // Make sure both files contain the two requests made separately using
         // different engines.
-        assertTrue(containsStringInNetLog(eventFile1, mUrl404));
-        assertTrue(containsStringInNetLog(eventFile1, mUrl500));
-        assertTrue(containsStringInNetLog(eventFile2, mUrl404));
-        assertTrue(containsStringInNetLog(eventFile2, mUrl500));
+        assertTrue(containsStringInNetLog(logFile1, mUrl404));
+        assertTrue(containsStringInNetLog(logFile1, mUrl500));
+        assertTrue(containsStringInNetLog(logFile2, mUrl404));
+        assertTrue(containsStringInNetLog(logFile2, mUrl500));
 
         FileUtils.recursivelyDeleteFile(netLogDir1);
         assertFalse(netLogDir1.exists());
@@ -698,7 +698,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         File netLogDir = new File(directory, "NetLog");
         assertFalse(netLogDir.exists());
         assertTrue(netLogDir.mkdir());
-        File constantsFile = new File(netLogDir, "constants.json");
+        File logFile = new File(netLogDir, "netlog.json");
         try {
             testFramework.mCronetEngine.startNetLogToDisk(
                     netLogDir.getPath(), false, MAX_FILE_SIZE);
@@ -706,7 +706,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         } catch (Exception e) {
             assertEquals("Engine is shut down.", e.getMessage());
         }
-        assertFalse(constantsFile.exists());
+        assertFalse(logFile.exists());
         FileUtils.recursivelyDeleteFile(netLogDir);
         assertFalse(netLogDir.exists());
     }
@@ -744,7 +744,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         File netLogDir = new File(directory, "NetLog");
         assertFalse(netLogDir.exists());
         assertTrue(netLogDir.mkdir());
-        File eventFile = new File(netLogDir, "event_file_0.json");
+        File logFile = new File(netLogDir, "netlog.json");
         // Start NetLog multiple times. This should be equivalent to starting NetLog
         // once. Each subsequent start (without calling stopNetLog) should be a no-op.
         testFramework.mCronetEngine.startNetLogToDisk(netLogDir.getPath(), false, MAX_FILE_SIZE);
@@ -758,9 +758,9 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         urlRequestBuilder.build().start();
         callback.blockForDone();
         testFramework.mCronetEngine.stopNetLog();
-        assertTrue(eventFile.exists());
-        assertTrue(eventFile.length() != 0);
-        assertFalse(hasBytesInNetLog(eventFile));
+        assertTrue(logFile.exists());
+        assertTrue(logFile.length() != 0);
+        assertFalse(hasBytesInNetLog(logFile));
         FileUtils.recursivelyDeleteFile(netLogDir);
         assertFalse(netLogDir.exists());
     }
@@ -799,7 +799,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         File netLogDir = new File(directory, "NetLog");
         assertFalse(netLogDir.exists());
         assertTrue(netLogDir.mkdir());
-        File eventFile = new File(netLogDir, "event_file_0.json");
+        File logFile = new File(netLogDir, "netlog.json");
         testFramework.mCronetEngine.startNetLogToDisk(netLogDir.getPath(), false, MAX_FILE_SIZE);
         // Start a request.
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
@@ -814,9 +814,9 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         testFramework.mCronetEngine.stopNetLog();
         testFramework.mCronetEngine.stopNetLog();
         testFramework.mCronetEngine.stopNetLog();
-        assertTrue(eventFile.exists());
-        assertTrue(eventFile.length() != 0);
-        assertFalse(hasBytesInNetLog(eventFile));
+        assertTrue(logFile.exists());
+        assertTrue(logFile.length() != 0);
+        assertFalse(hasBytesInNetLog(logFile));
         FileUtils.recursivelyDeleteFile(netLogDir);
         assertFalse(netLogDir.exists());
     }
@@ -854,7 +854,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         File netLogDir = new File(directory, "NetLog");
         assertFalse(netLogDir.exists());
         assertTrue(netLogDir.mkdir());
-        File eventFile = new File(netLogDir, "event_file_0.json");
+        File logFile = new File(netLogDir, "netlog.json");
         ExperimentalCronetEngine cronetEngine =
                 new ExperimentalCronetEngine.Builder(context).build();
         // Start NetLog with logAll as true.
@@ -867,9 +867,9 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         callback.blockForDone();
         cronetEngine.stopNetLog();
 
-        assertTrue(eventFile.exists());
-        assertTrue(eventFile.length() != 0);
-        assertTrue(hasBytesInNetLog(eventFile));
+        assertTrue(logFile.exists());
+        assertTrue(logFile.length() != 0);
+        assertTrue(hasBytesInNetLog(logFile));
         FileUtils.recursivelyDeleteFile(netLogDir);
         assertFalse(netLogDir.exists());
     }
