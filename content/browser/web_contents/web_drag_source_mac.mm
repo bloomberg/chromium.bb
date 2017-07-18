@@ -16,9 +16,9 @@
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
-#include "content/browser/browser_thread_impl.h"
 #include "content/browser/download/drag_download_file.h"
 #include "content/browser/download/drag_download_util.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -318,11 +318,9 @@ void PromiseWriterHelper(const DropData& drop_data,
         dragFileDownloader.get()));
   } else {
     // The writer will take care of closing and deletion.
-    BrowserThread::PostTask(BrowserThread::FILE,
-                            FROM_HERE,
-                            base::Bind(&PromiseWriterHelper,
-                                       *dropData_,
-                                       base::Passed(&file)));
+    base::PostTaskWithTraits(
+        FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
+        base::Bind(&PromiseWriterHelper, *dropData_, base::Passed(&file)));
   }
 
   // The DragDownloadFile constructor may have altered the value of |filePath|
