@@ -18,8 +18,7 @@ class MODULES_EXPORT CompositorWorkerThread final
  public:
   static std::unique_ptr<CompositorWorkerThread> Create(
       ThreadableLoadingContext*,
-      InProcessWorkerObjectProxy&,
-      double time_origin);
+      InProcessWorkerObjectProxy&);
   ~CompositorWorkerThread() override;
 
   InProcessWorkerObjectProxy& WorkerObjectProxy() const {
@@ -32,11 +31,9 @@ class MODULES_EXPORT CompositorWorkerThread final
 
  private:
   CompositorWorkerThread(ThreadableLoadingContext*,
-                         InProcessWorkerObjectProxy&,
-                         double time_origin);
+                         InProcessWorkerObjectProxy&);
 
   InProcessWorkerObjectProxy& worker_object_proxy_;
-  double time_origin_;
 };
 
 }  // namespace blink

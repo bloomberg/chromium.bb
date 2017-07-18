@@ -59,7 +59,8 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final : public WorkerGlobalScope {
  public:
   static ServiceWorkerGlobalScope* Create(
       ServiceWorkerThread*,
-      std::unique_ptr<GlobalScopeCreationParams>);
+      std::unique_ptr<GlobalScopeCreationParams>,
+      double time_origin);
 
   ~ServiceWorkerGlobalScope() override;
   bool IsServiceWorkerGlobalScope() const override { return true; }

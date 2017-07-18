@@ -294,7 +294,7 @@ Bug(none) external/wpt/fullscreen/api/document-exit-fullscreen-active-document.h
 Bug(none) external/wpt/fullscreen/api/document-fullscreen-enabled-active-document.html [ Failure Timeout ]
 Bug(none) external/wpt/fullscreen/api/element-request-fullscreen-active-document.html [ Failure Timeout ]
 Bug(none) external/wpt/hr-time/test_cross_frame_start.html [ Failure Timeout ]
-Bug(none) external/wpt/hr-time/window-worker-time-origin.html [ Failure Timeout ]
+Bug(none) external/wpt/hr-time/window-worker-time-origin.html [ Timeout ]
 Bug(none) external/wpt/html/browsers/browsing-the-web/navigating-across-documents/012.html [ Failure Timeout ]
 Bug(none) external/wpt/html/browsers/browsing-the-web/read-media/pageload-video.html [ Crash Pass Failure Timeout ]
 Bug(none) external/wpt/html/browsers/browsing-the-web/unloading-documents/005.html [ Crash ]

@@ -22,7 +22,7 @@ DEFINE_TRACE(AnimationWorkletMessagingProxy) {
 AnimationWorkletMessagingProxy::~AnimationWorkletMessagingProxy() {}
 
 std::unique_ptr<WorkerThread>
-AnimationWorkletMessagingProxy::CreateWorkerThread(double origin_time) {
+AnimationWorkletMessagingProxy::CreateWorkerThread() {
   return AnimationWorkletThread::Create(CreateThreadableLoadingContext(),
                                         WorkletObjectProxy());
 }

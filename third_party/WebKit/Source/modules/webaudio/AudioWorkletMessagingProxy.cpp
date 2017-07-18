@@ -16,8 +16,7 @@ AudioWorkletMessagingProxy::AudioWorkletMessagingProxy(
 
 AudioWorkletMessagingProxy::~AudioWorkletMessagingProxy() {}
 
-std::unique_ptr<WorkerThread> AudioWorkletMessagingProxy::CreateWorkerThread(
-    double origin_time) {
+std::unique_ptr<WorkerThread> AudioWorkletMessagingProxy::CreateWorkerThread() {
   return AudioWorkletThread::Create(CreateThreadableLoadingContext(),
                                     WorkletObjectProxy());
 }

@@ -91,8 +91,7 @@ class CORE_EXPORT ThreadedMessagingProxyBase
   bool IsParentContextThread() const;
 
  private:
-  virtual std::unique_ptr<WorkerThread> CreateWorkerThread(
-      double origin_time) = 0;
+  virtual std::unique_ptr<WorkerThread> CreateWorkerThread() = 0;
 
   Member<ExecutionContext> execution_context_;
   Member<WorkerClients> worker_clients_;

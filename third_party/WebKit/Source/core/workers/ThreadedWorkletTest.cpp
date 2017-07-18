@@ -151,7 +151,7 @@ class ThreadedWorkletMessagingProxyForTest
  private:
   friend class ThreadedWorkletTest;
 
-  std::unique_ptr<WorkerThread> CreateWorkerThread(double origin_time) final {
+  std::unique_ptr<WorkerThread> CreateWorkerThread() final {
     return WTF::MakeUnique<ThreadedWorkletThreadForTest>(WorkletObjectProxy());
   }
 
