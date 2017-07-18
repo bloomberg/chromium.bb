@@ -4,7 +4,6 @@
 
 module media.mojom;
 
-import "mojo/common/time.mojom";
 import "url/mojo/url.mojom";
 
 struct MediaEngagementScoreDetails {
@@ -14,5 +13,11 @@ struct MediaEngagementScoreDetails {
   // Details of the components which make up |score|.
   int32 visits;
   int32 media_playbacks;
-  mojo.common.mojom.Time last_media_playback_time;
+
+  // Last media playback time in milliseconds since the epoch format.
+  double last_media_playback_time;
+};
+
+interface MediaEngagementScoreDetailsProvider {
+  GetMediaEngagementScoreDetails() => (array<MediaEngagementScoreDetails> info);
 };

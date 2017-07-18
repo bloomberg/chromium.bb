@@ -196,7 +196,7 @@ class MediaEngagementServiceTest : public ChromeRenderViewHostTestHarness {
 
   void SetNow(base::Time now) { test_clock_->SetNow(now); }
 
-  std::vector<media::mojom::MediaEngagementScoreDetails> GetAllScoreDetails()
+  std::vector<media::mojom::MediaEngagementScoreDetailsPtr> GetAllScoreDetails()
       const {
     return service_->GetAllScoreDetails();
   }
