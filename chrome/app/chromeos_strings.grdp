@@ -2156,7 +2156,7 @@ Press any key to continue exploring.
     Type the characters you see in the picture below.
   </message>
   <message name="IDS_LOGIN_NEEDS_DIRCRYPTO_MIGRATION_BANNER" desc="Banner text for users that need to migrate their data to use dircrypto.">
-    You've got a new critical update. Sign in to get started.
+    You've got a new OS update. Sign in to get started.
   </message>
   <message name="IDS_LOGIN_NEW_LOCK_SCREEN_NOTE_BUTTON_TITLE" desc="Title for the button on the Chrome OS lock screen that launches an app for taking notes (the action of creating a new note is delegated to the app). The string is primarily intended to be spoken out by accessibility tools - the button is represented by an icon in the lock screen UI.">
     Create new note
@@ -5061,14 +5061,14 @@ Battery full
   </message>
 
   <!-- Encryption migration dialog -->
-  <message name="IDS_ENCRYPTION_MIGRATION_READY_TITLE" desc="Title shown in encryption migration screen, which asks the user to install a critical update.">
-    Install critical update
+  <message name="IDS_ENCRYPTION_MIGRATION_READY_TITLE" desc="Title shown in encryption migration screen, which asks the user to install an OS update.">
+    Install OS update
   </message>
-  <message name="IDS_ENCRYPTION_MIGRATION_READY_DESCRIPTION" desc="Description shown in encryption migration screen, which asks the user to install a critical update.">
+  <message name="IDS_ENCRYPTION_MIGRATION_READY_DESCRIPTION" desc="Description shown in encryption migration screen, which asks the user to install an OS update.">
     To download and use Android apps, first you need to install an update. While your device is updating, you can’t use it. Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> will restart after installation completes.
   </message>
   <message name="IDS_ENCRYPTION_MIGRATION_MIGRATING_TITLE" desc="Title shown in encryption migration screen when the migration is ongoing.">
-    Installing critical update
+    Installing OS update
   </message>
   <message name="IDS_ENCRYPTION_MIGRATION_MIGRATING_DESCRIPTION" desc="Description shown in encryption migration screen when the migration is ongoing.">
     Don’t turn off or close your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> until the update finishes. Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> will restart after installation completes.
@@ -6097,7 +6097,7 @@ All users must sign out to continue.
     Done
   </message>
   <message name="IDS_ARC_MIGRATE_ENCRYPTION_NOTIFICATION_TITLE" desc="Title of the notification to navigate the user to first update the device encryption before running Android apps.">
-    Install critical update
+    Install OS update
   </message>
   <message name="IDS_ARC_MIGRATE_ENCRYPTION_NOTIFICATION_MESSAGE" desc="Main message of the notification to navigate the user to first update the device encryption before running Android apps.">
     To use Android apps, sign in again and update.
