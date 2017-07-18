@@ -20,13 +20,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.accessibility.FontSizePrefs;
+import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.preferences.website.ContentSetting;
 import org.chromium.chrome.browser.preferences.website.GeolocationInfo;
 import org.chromium.chrome.browser.preferences.website.WebsitePreferenceBridge;
@@ -34,17 +35,24 @@ import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService.LoadListener;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrl;
 import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.util.ActivityUtils;
+import org.chromium.content.browser.test.util.Criteria;
+import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.UiUtils;
+import org.chromium.policy.test.annotations.Policies;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.text.NumberFormat;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Tests for the Settings menu.
  */
-@RunWith(BaseJUnit4ClassRunner.class)
+@RunWith(ChromeJUnit4ClassRunner.class)
 public class PreferencesTest {
     @Rule
     public final ChromeBrowserTestRule mBrowserTestRule = new ChromeBrowserTestRule();
@@ -151,6 +159,57 @@ public class PreferencesTest {
                 pref.setValueForTesting("3");
                 Assert.assertEquals(
                         ContentSetting.ALLOW, locationPermissionForSearchEngine(keyword2));
+            }
+        });
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @Policies.Add({ @Policies.Item(key = "DefaultSearchProviderEnabled", string = "false") })
+    public void testSearchEnginePreference_DisabledIfNoDefaultSearchEngine() throws Exception {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    ChromeBrowserInitializer.getInstance(InstrumentationRegistry.getTargetContext())
+                            .handleSynchronousStartup();
+                } catch (ProcessInitException e) {
+                    Assert.fail("Unable to initialize process: " + e);
+                }
+            }
+        });
+
+        ensureTemplateUrlServiceLoaded();
+        CriteriaHelper.pollUiThread(Criteria.equals(true, new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                return TemplateUrlService.getInstance().isDefaultSearchManaged();
+            }
+        }));
+
+        Preferences preferenceActivity = ActivityUtils.waitForActivity(
+                InstrumentationRegistry.getInstrumentation(), Preferences.class);
+
+        final MainPreferences mainPreferences =
+                ActivityUtils.waitForFragmentToAttach(preferenceActivity, MainPreferences.class);
+
+        final Preference searchEnginePref =
+                waitForPreference(mainPreferences, MainPreferences.PREF_SEARCH_ENGINE);
+
+        CriteriaHelper.pollUiThread(Criteria.equals(null, new Callable<Object>() {
+            @Override
+            public Object call() throws Exception {
+                return searchEnginePref.getFragment();
+            }
+        }));
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                ManagedPreferenceDelegate managedPrefDelegate =
+                        mainPreferences.getManagedPreferenceDelegateForTest();
+                Assert.assertTrue(
+                        managedPrefDelegate.isPreferenceControlledByPolicy(searchEnginePref));
             }
         });
     }
@@ -333,6 +392,23 @@ public class PreferencesTest {
             @Override
             public void run() {
                 accessibilityPref.onPreferenceChange(forceEnableZoomPref, enabled);
+            }
+        });
+    }
+
+    private static Preference waitForPreference(final PreferenceFragment prefFragment,
+            final String preferenceKey) throws ExecutionException {
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return prefFragment.findPreference(preferenceKey) != null;
+            }
+        });
+
+        return ThreadUtils.runOnUiThreadBlocking(new Callable<Preference>() {
+            @Override
+            public Preference call() throws Exception {
+                return prefFragment.findPreference(preferenceKey);
             }
         });
     }

@@ -45,6 +45,7 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.TestTouchUtils;
 import org.chromium.net.test.EmbeddedTestServer;
+import org.chromium.policy.test.annotations.Policies;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -389,6 +390,21 @@ public class ContextMenuTest implements CustomMainActivityStart {
         Integer[] expectedItems = {R.id.contextmenu_save_image,
                 R.id.contextmenu_open_image_in_new_tab, R.id.contextmenu_search_by_image,
                 R.id.contextmenu_share_image};
+        assertMenuItemsAreEqual(menu, expectedItems);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Browser", "ContextMenu"})
+    @Policies.Add({ @Policies.Item(key = "DefaultSearchProviderEnabled", string = "false") })
+    @RetryOnFailure
+    public void testContextMenuRetrievesImageOptions_NoDefaultSearchEngine()
+            throws TimeoutException, InterruptedException {
+        Tab tab = mDownloadTestRule.getActivity().getActivityTab();
+        ContextMenu menu = ContextMenuUtils.openContextMenu(tab, "testImage");
+
+        Integer[] expectedItems = {R.id.contextmenu_save_image,
+                R.id.contextmenu_open_image_in_new_tab, R.id.contextmenu_share_image};
         assertMenuItemsAreEqual(menu, expectedItems);
     }
 
