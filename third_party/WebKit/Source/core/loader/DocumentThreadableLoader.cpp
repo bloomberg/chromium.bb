@@ -37,6 +37,7 @@
 #include "core/frame/FrameConsole.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/InspectorNetworkAgent.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/loader/BaseFetchContext.h"
@@ -380,10 +381,11 @@ void DocumentThreadableLoader::MakeCrossOriginAccessRequest(
           request.Url().Protocol())) {
     probe::documentThreadableLoaderFailedToStartLoadingForClient(GetDocument(),
                                                                  client_);
-    DispatchDidFailAccessControlCheck(ResourceError(
-        kErrorDomainBlinkInternal, 0, request.Url().GetString(),
-        "Cross origin requests are only supported for protocol schemes: " +
-            SchemeRegistry::ListOfCORSEnabledURLSchemes() + "."));
+    DispatchDidFailAccessControlCheck(
+        ResourceError::CancelledDueToAccessCheckError(
+            request.Url(), ResourceRequestBlockedReason::kOther,
+            "Cross origin requests are only supported for protocol schemes: " +
+                SchemeRegistry::ListOfCORSEnabledURLSchemes() + "."));
     return;
   }
 
@@ -394,11 +396,12 @@ void DocumentThreadableLoader::MakeCrossOriginAccessRequest(
           error_message) &&
       request.IsExternalRequest()) {
     DispatchDidFailAccessControlCheck(
-        ResourceError(kErrorDomainBlinkInternal, 0, request.Url().GetString(),
-                      "Requests to internal network resources are not allowed "
-                      "from non-secure contexts (see https://goo.gl/Y0ZkNV). "
-                      "This is an experimental restriction which is part of "
-                      "'https://mikewest.github.io/cors-rfc1918/'."));
+        ResourceError::CancelledDueToAccessCheckError(
+            request.Url(), ResourceRequestBlockedReason::kOrigin,
+            "Requests to internal network resources are not allowed "
+            "from non-secure contexts (see https://goo.gl/Y0ZkNV). "
+            "This is an experimental restriction which is part of "
+            "'https://mikewest.github.io/cors-rfc1918/'."));
     return;
   }
 
@@ -656,9 +659,10 @@ bool DocumentThreadableLoader::RedirectReceived(
   }
 
   if (!allow_redirect) {
-    DispatchDidFailAccessControlCheck(ResourceError(
-        kErrorDomainBlinkInternal, 0, redirect_response.Url().GetString(),
-        access_control_error_description));
+    DispatchDidFailAccessControlCheck(
+        ResourceError::CancelledDueToAccessCheckError(
+            redirect_response.Url(), ResourceRequestBlockedReason::kOther,
+            access_control_error_description));
     return false;
   }
 
@@ -889,8 +893,9 @@ void DocumentThreadableLoader::HandleResponse(
           builder, CrossOriginAccessControl::kInvalidResponse, response,
           GetSecurityOrigin(), request_context_);
       DispatchDidFailAccessControlCheck(
-          ResourceError(kErrorDomainBlinkInternal, 0,
-                        response.Url().GetString(), builder.ToString()));
+          ResourceError::CancelledDueToAccessCheckError(
+              response.Url(), ResourceRequestBlockedReason::kOther,
+              builder.ToString()));
       return;
     }
 
@@ -924,8 +929,9 @@ void DocumentThreadableLoader::HandleResponse(
           builder, cors_status, response, GetSecurityOrigin(),
           request_context_);
       DispatchDidFailAccessControlCheck(
-          ResourceError(kErrorDomainBlinkInternal, 0,
-                        response.Url().GetString(), builder.ToString()));
+          ResourceError::CancelledDueToAccessCheckError(
+              response.Url(), ResourceRequestBlockedReason::kOther,
+              builder.ToString()));
       return;
     }
   }
@@ -1048,16 +1054,21 @@ void DocumentThreadableLoader::LoadActualRequest() {
 void DocumentThreadableLoader::HandlePreflightFailure(
     const String& url,
     const String& error_description) {
-  ResourceError error(kErrorDomainBlinkInternal, 0, url, error_description);
-
   // Prevent handleSuccessfulFinish() from bypassing access check.
   actual_request_ = ResourceRequest();
 
-  DispatchDidFailAccessControlCheck(error);
+  DispatchDidFailAccessControlCheck(
+      ResourceError::CancelledDueToAccessCheckError(
+          url, ResourceRequestBlockedReason::kOther, error_description));
 }
 
 void DocumentThreadableLoader::DispatchDidFailAccessControlCheck(
     const ResourceError& error) {
+  const String message = "Failed to load " + error.FailingURL() + ": " +
+                         error.LocalizedDescription();
+  loading_context_->GetExecutionContext()->AddConsoleMessage(
+      ConsoleMessage::Create(kJSMessageSource, kErrorMessageLevel, message));
+
   ThreadableLoaderClient* client = client_;
   Clear();
   client->DidFailAccessControlCheck(error);

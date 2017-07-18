@@ -1,5 +1,5 @@
-CONSOLE ERROR: EventSource cannot load http://127.0.0.1:8080/eventsource/resources/es-cors-basic.php?count=1. No 'Access-Control-Allow-Origin' header is present on the requested resource. Origin 'http://127.0.0.1:8000' is therefore not allowed access.
-CONSOLE ERROR: EventSource cannot load http://127.0.0.1:8080/eventsource/resources/es-cors-basic.php?count=2. The 'Access-Control-Allow-Origin' header has a value 'http://some.other.origin:80' that is not equal to the supplied origin. Origin 'http://127.0.0.1:8000' is therefore not allowed access.
+CONSOLE ERROR: Failed to load http://127.0.0.1:8080/eventsource/resources/es-cors-basic.php?count=1: No 'Access-Control-Allow-Origin' header is present on the requested resource. Origin 'http://127.0.0.1:8000' is therefore not allowed access.
+CONSOLE ERROR: Failed to load http://127.0.0.1:8080/eventsource/resources/es-cors-basic.php?count=2: The 'Access-Control-Allow-Origin' header has a value 'http://some.other.origin:80' that is not equal to the supplied origin. Origin 'http://127.0.0.1:8000' is therefore not allowed access.
 [Worker] Test that basic EventSource cross-origin requests fail until they are allowed by the Access-Control-Allow-Origin header.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
