@@ -10,8 +10,11 @@
 #include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/wm/mru_window_tracker.h"
+#include "ash/wm/overview/window_grid.h"
 #include "ash/wm/overview/window_selector.h"
+#include "ash/wm/overview/window_selector_item.h"
 #include "ash/wm/screen_pinning_controller.h"
+#include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/window_state.h"
 #include "base/metrics/histogram_macros.h"
 
@@ -54,9 +57,28 @@ bool WindowSelectorController::ToggleOverview() {
                        std::not1(std::ptr_fun(&WindowSelector::IsSelectable)));
     windows.resize(end - windows.begin());
 
-    // Don't enter overview mode with no windows.
-    if (windows.empty())
-      return false;
+    if (!Shell::Get()->IsSplitViewModeActive()) {
+      // Don't enter overview with no window if the split view mode is inactive.
+      if (windows.empty())
+        return false;
+    } else {
+      // Don't enter overview with less than 1 window if the split view mode is
+      // active.
+      if (windows.size() <= 1)
+        return false;
+
+      // Remove the default snapped window from the window list. The default
+      // snapped window occupies one side of the screen, while the other windows
+      // occupy the other side of the screen in overview mode. The default snap
+      // position is the position where the window was first snapped. See
+      // |default_snap_position_| in SplitViewController for more detail.
+      aura::Window* default_snapped_window =
+          Shell::Get()->split_view_controller()->GetDefaultSnappedWindow();
+      auto iter =
+          std::find(windows.begin(), windows.end(), default_snapped_window);
+      DCHECK(iter != windows.end());
+      windows.erase(iter);
+    }
 
     Shell::Get()->NotifyOverviewModeStarting();
     window_selector_.reset(new WindowSelector(this));
@@ -83,6 +105,17 @@ bool WindowSelectorController::AcceptSelection() {
 bool WindowSelectorController::IsRestoringMinimizedWindows() const {
   return window_selector_.get() != NULL &&
          window_selector_->restoring_minimized_windows();
+}
+
+std::vector<aura::Window*>
+WindowSelectorController::GetWindowsListInOverviewGridsForTesting() {
+  std::vector<aura::Window*> windows;
+  for (const std::unique_ptr<WindowGrid>& grid :
+       window_selector_->grid_list_for_testing()) {
+    for (const auto& window_selector_item : grid->window_list())
+      windows.push_back(window_selector_item->GetWindow());
+  }
+  return windows;
 }
 
 // TODO(flackr): Make WindowSelectorController observe the activation of

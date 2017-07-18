@@ -49,6 +49,10 @@ class ASH_EXPORT WindowSelectorController : public WindowSelectorDelegate {
   // are visible during overview mode.
   bool IsRestoringMinimizedWindows() const;
 
+  // Gets the windows list that are shown in the overview windows grids if the
+  // overview mode is active for testing.
+  std::vector<aura::Window*> GetWindowsListInOverviewGridsForTesting();
+
   // WindowSelectorDelegate:
   void OnSelectionEnded() override;
   void AddDelayedAnimationObserver(
