@@ -2,10 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/preferences/autofill/autofill_profile_bridge.h"
-
-#include <jni.h>
-
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
@@ -141,11 +137,6 @@ static ScopedJavaLocalRef<jstring> GetAddressUiComponents(
       env, ToJavaIntArray(env, component_length), j_length_list);
 
   return ConvertUTF8ToJavaString(env, best_language_tag);
-}
-
-// static
-bool RegisterAutofillProfileBridge(JNIEnv* env) {
-  return RegisterNativesImpl(env);
 }
 
 } // namespace autofill

@@ -161,11 +161,6 @@ void ThumbnailProvider::RetrieveThumbnail(JNIEnv* env,
 }
 
 // static
-bool ThumbnailProvider::RegisterThumbnailProvider(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
-// static
 static jlong Init(JNIEnv* env, const JavaParamRef<jobject>& jobj) {
   return reinterpret_cast<intptr_t>(new ThumbnailProvider(jobj));
 }

@@ -67,7 +67,3 @@ static void OnLocationSettingsDialogOutcome(
   // PromptToEnableSystemLocationSetting.
   delete callback;
 }
-
-bool LocationSettingsImpl::Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}

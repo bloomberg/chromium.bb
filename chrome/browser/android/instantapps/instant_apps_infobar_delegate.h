@@ -47,7 +47,4 @@ class InstantAppsInfoBarDelegate : public ConfirmInfoBarDelegate,
   DISALLOW_COPY_AND_ASSIGN(InstantAppsInfoBarDelegate);
 };
 
-// Register native methods.
-bool RegisterInstantAppsInfoBarDelegate(JNIEnv* env);
-
 #endif  // CHROME_BROWSER_ANDROID_INSTANTAPPS_INSTANT_APPS_INFOBAR_DELEGATE_H_

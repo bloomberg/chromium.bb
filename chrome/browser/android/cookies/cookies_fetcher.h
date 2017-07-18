@@ -42,7 +42,4 @@ class CookiesFetcher {
   DISALLOW_COPY_AND_ASSIGN(CookiesFetcher);
 };
 
-// Registers the CookiesFetcher native method.
-bool RegisterCookiesFetcher(JNIEnv* env);
-
 #endif // CHROME_BROWSER_ANDROID_COOKIES_COOKIES_FETCHER_H_

@@ -39,7 +39,3 @@ static void SetIsInMultiWindowMode(JNIEnv* env,
                                    jboolean j_is_in_multi_window_mode) {
   is_in_multi_window_mode = j_is_in_multi_window_mode;
 }
-
-bool RegisterFeatureUtilities(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}

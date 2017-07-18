@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/payments/service_worker_payment_app_bridge.h"
-
 #include <utility>
 
 #include "base/android/jni_array.h"
@@ -186,8 +184,4 @@ static void InvokePaymentApp(
       base::Bind(&OnPaymentAppInvoked,
                  ScopedJavaGlobalRef<jobject>(env, jweb_contents),
                  ScopedJavaGlobalRef<jobject>(env, jcallback)));
-}
-
-bool RegisterServiceWorkerPaymentAppBridge(JNIEnv* env) {
-  return RegisterNativesImpl(env);
 }

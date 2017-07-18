@@ -93,7 +93,3 @@ void Launch(JNIEnv* env,
   base::RecordAction(base::UserMetricsAction(
       "Android.InstantApps.BannerShown"));
 }
-
-bool RegisterInstantAppsInfoBarDelegate(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}

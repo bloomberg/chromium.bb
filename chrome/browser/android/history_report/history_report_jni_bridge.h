@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_ANDROID_HISTORY_REPORT_HISTORY_REPORT_JNI_BRIDGE_H_
 #define CHROME_BROWSER_ANDROID_HISTORY_REPORT_HISTORY_REPORT_JNI_BRIDGE_H_
 
-#include <jni.h>
-
 #include <memory>
 #include <string>
 
@@ -24,8 +22,6 @@ class DataObserver;
 class DataProvider;
 class DeltaFileService;
 class UsageReportsBufferService;
-
-bool RegisterHistoryReportJniBridge(JNIEnv* env);
 
 class HistoryReportJniBridge {
  public:

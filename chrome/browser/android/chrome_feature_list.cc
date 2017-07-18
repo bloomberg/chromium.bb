@@ -333,9 +333,5 @@ static jboolean GetFieldTrialParamByFeatureAsBoolean(
                                                  jdefault_value);
 }
 
-bool RegisterChromeFeatureListJni(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace android
 }  // namespace chrome

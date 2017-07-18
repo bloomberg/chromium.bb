@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/sessions/session_tab_helper_android.h"
-
 #include "base/android/jni_android.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "content/public/browser/web_contents.h"
@@ -19,8 +17,4 @@ jint IdForTab(JNIEnv* env,
       content::WebContents::FromJavaWebContents(java_web_contents);
   CHECK(web_contents);
   return SessionTabHelper::IdForTab(web_contents);
-}
-
-bool RegisterSessionTabHelper(JNIEnv* env) {
-  return RegisterNativesImpl(env);
 }

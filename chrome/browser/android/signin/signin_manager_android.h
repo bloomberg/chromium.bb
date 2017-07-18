@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_ANDROID_SIGNIN_SIGNIN_MANAGER_ANDROID_H_
 #define CHROME_BROWSER_ANDROID_SIGNIN_SIGNIN_MANAGER_ANDROID_H_
 
-#include <jni.h>
-
 #include <memory>
 #include <string>
 
@@ -30,9 +28,6 @@ class Profile;
 class SigninManagerAndroid : public SigninManagerBase::Observer {
  public:
   SigninManagerAndroid(JNIEnv* env, jobject obj);
-
-  // Registers the SigninManagerAndroid's native methods through JNI.
-  static bool Register(JNIEnv* env);
 
   void CheckPolicyBeforeSignIn(
       JNIEnv* env,

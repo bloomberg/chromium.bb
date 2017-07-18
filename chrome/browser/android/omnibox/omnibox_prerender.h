@@ -68,6 +68,4 @@ class OmniboxPrerender {
   DISALLOW_COPY_AND_ASSIGN(OmniboxPrerender);
 };
 
-bool RegisterOmniboxPrerender(JNIEnv* env);
-
 #endif  // CHROME_BROWSER_ANDROID_OMNIBOX_OMNIBOX_PRERENDER_H_

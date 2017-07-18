@@ -40,8 +40,6 @@ class ServiceTabLauncher {
   // the provisional load for the main frame of the navigation.
   void OnTabLaunched(int request_id, content::WebContents* web_contents);
 
-  static bool Register(JNIEnv* env);
-
  private:
   friend struct base::DefaultSingletonTraits<ServiceTabLauncher>;
 

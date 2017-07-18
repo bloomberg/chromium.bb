@@ -173,11 +173,6 @@ static void OnRequestFileAccessResult(
 }
 
 // static
-bool DownloadController::RegisterDownloadController(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
-// static
 DownloadControllerBase* DownloadControllerBase::Get() {
   base::AutoLock lock(g_download_controller_lock_.Get());
   if (!DownloadControllerBase::download_controller_)

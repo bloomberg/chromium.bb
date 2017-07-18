@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/signin/account_tracker_service_android.h"
-
 #include <stddef.h>
 
 #include "base/android/jni_array.h"
@@ -66,10 +64,6 @@ jboolean AreAccountsSeeded(JNIEnv* env,
     }
   }
   return true;
-}
-
-bool RegisterAccountTrackerService(JNIEnv* env) {
-  return RegisterNativesImpl(env);
 }
 
 }  // namespace android

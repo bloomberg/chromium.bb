@@ -262,9 +262,6 @@ class TabAndroid : public CoreTabHelperDelegate,
   void AttachDetachedTab(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& obj);
 
-  // Register the Tab's native methods through JNI.
-  static bool RegisterTabAndroid(JNIEnv* env);
-
  private:
   prerender::PrerenderManager* GetPrerenderManager() const;
 

@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/rappor/rappor_service_bridge.h"
-
 #include "base/android/jni_string.h"
 #include "chrome/browser/browser_process.h"
 #include "components/rappor/public/rappor_utils.h"
@@ -35,10 +33,6 @@ void SampleString(JNIEnv* env,
   std::string value(base::android::ConvertJavaStringToUTF8(env, j_value));
   rappor::SampleString(g_browser_process->rappor_service(),
                        metric, rappor::UMA_RAPPOR_TYPE, value);
-}
-
-bool RegisterRapporServiceBridge(JNIEnv* env) {
-  return RegisterNativesImpl(env);
 }
 
 }  // namespace rappor

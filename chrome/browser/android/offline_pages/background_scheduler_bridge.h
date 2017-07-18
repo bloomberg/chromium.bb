@@ -35,8 +35,6 @@ class BackgroundSchedulerBridge : public Scheduler {
   std::unique_ptr<DeviceConditions> device_conditions_;
 };
 
-bool RegisterBackgroundSchedulerBridge(JNIEnv* env);
-
 }  // namespace android
 }  // namespace offline_pages
 

@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/metrics/variations_session.h"
-
 #include "base/android/jni_string.h"
 #include "chrome/browser/browser_process.h"
 #include "components/variations/service/variations_service.h"
@@ -53,12 +51,3 @@ static base::android::ScopedJavaLocalRef<jstring> GetLatestCountry(
 
   return base::android::ConvertUTF8ToJavaString(env, latest_country);
 }
-
-namespace chrome {
-namespace android {
-
-// Register native methods
-bool RegisterVariationsSession(JNIEnv* env) { return RegisterNativesImpl(env); }
-
-}  // namespace android
-}  // namespace chrome

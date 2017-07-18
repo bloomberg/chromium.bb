@@ -13,7 +13,6 @@ namespace chrome {
 namespace android {
 
 base::Time GetMainEntryPointTime();
-bool RegisterStartupMetricUtils(JNIEnv* env);
 
 }  // namespace android
 }  // namespace chrome

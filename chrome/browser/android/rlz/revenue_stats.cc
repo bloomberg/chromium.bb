@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/rlz/revenue_stats.h"
-
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data_android.h"
@@ -14,11 +12,6 @@ using base::android::JavaParamRef;
 
 namespace chrome {
 namespace android {
-
-// Register native methods
-bool RegisterRevenueStats(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
 
 static void SetSearchClient(JNIEnv* env,
                             const JavaParamRef<jclass>& clazz,

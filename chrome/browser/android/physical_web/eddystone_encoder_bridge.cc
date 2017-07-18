@@ -4,7 +4,6 @@
 
 #include "chrome/browser/android/physical_web/eddystone_encoder_bridge.h"
 
-#include <jni.h>
 #include <vector>
 
 #include "base/android/jni_android.h"
@@ -12,10 +11,6 @@
 #include "base/android/jni_string.h"
 #include "components/physical_web/eddystone/eddystone_encoder.h"
 #include "jni/PhysicalWebBroadcastService_jni.h"
-
-bool RegisterEddystoneEncoderBridge(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
 
 static base::android::ScopedJavaLocalRef<jbyteArray> EncodeUrl(
     JNIEnv* env,

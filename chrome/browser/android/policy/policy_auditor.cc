@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/policy/policy_auditor.h"
-
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/ssl_status.h"
@@ -63,8 +61,4 @@ int GetCertificateFailure(JNIEnv* env,
     }
   }
   return NONE;
-}
-
-bool RegisterPolicyAuditor(JNIEnv* env) {
-  return RegisterNativesImpl(env);
 }

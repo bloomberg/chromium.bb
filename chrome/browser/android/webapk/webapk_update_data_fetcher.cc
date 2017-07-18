@@ -62,11 +62,6 @@ WebApkUpdateDataFetcher::WebApkUpdateDataFetcher(JNIEnv* env,
 
 WebApkUpdateDataFetcher::~WebApkUpdateDataFetcher() {}
 
-// static
-bool WebApkUpdateDataFetcher::Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 void WebApkUpdateDataFetcher::ReplaceWebContents(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,

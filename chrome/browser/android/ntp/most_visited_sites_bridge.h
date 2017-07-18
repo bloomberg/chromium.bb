@@ -58,9 +58,6 @@ class MostVisitedSitesBridge {
       jint tile_type,
       jint source);
 
-  // Registers JNI methods.
-  static bool Register(JNIEnv* env);
-
  private:
   ~MostVisitedSitesBridge();
 

@@ -94,7 +94,3 @@ static jboolean ShouldShowBanner(JNIEnv* env,
       AppBannerSettingsHelper::kInstantAppsKey,
       base::Time::Now()) == InstallableStatusCode::NO_ERROR_DETECTED;
 }
-
-bool RegisterInstantAppsSettings(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}

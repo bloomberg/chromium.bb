@@ -28,9 +28,6 @@ class LocationSettingsImpl : public LocationSettings {
       content::WebContents* web_contents,
       LocationSettingsDialogOutcomeCallback callback) override;
 
-  // Registers the location settings native methods through JNI.
-  static bool Register(JNIEnv* env);
-
  private:
   DISALLOW_COPY_AND_ASSIGN(LocationSettingsImpl);
 };

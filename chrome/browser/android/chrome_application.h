@@ -16,9 +16,6 @@ namespace android {
 // provides functions to request browser side actions, such as opening a
 // settings page.
 class ChromeApplication {
- public:
-  static bool RegisterBindings(JNIEnv* env);
-
  private:
   ChromeApplication() {}
   ~ChromeApplication() {}

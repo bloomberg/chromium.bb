@@ -142,10 +142,5 @@ void StartPing(JNIEnv* env,
   handler->Ping(j_brand, j_language, j_events, j_id, j_callback);
 }
 
-// Register native methods
-bool RegisterRlzPingHandler(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace android
 }  // namespace chrome

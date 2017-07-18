@@ -43,8 +43,6 @@ class RlzPingHandler : public net::URLFetcherDelegate {
   DISALLOW_COPY_AND_ASSIGN(RlzPingHandler);
 };
 
-bool RegisterRlzPingHandler(JNIEnv* env);
-
 }  // namespace android
 }  // namespace chrome
 

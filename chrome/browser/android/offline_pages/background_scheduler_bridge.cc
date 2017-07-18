@@ -131,9 +131,5 @@ BackgroundSchedulerBridge::GetCurrentDeviceConditions() {
   return *device_conditions_;
 }
 
-bool RegisterBackgroundSchedulerBridge(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace android
 }  // namespace offline_pages

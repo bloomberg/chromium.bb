@@ -90,14 +90,3 @@ static void RemoveSessionCookies(JNIEnv* env, const JavaParamRef<jclass>& obj) {
   std::for_each(loaded_profiles.begin(), loaded_profiles.end(),
                 RemoveSessionCookiesForProfile);
 }
-
-namespace chrome {
-namespace android {
-
-// static
-bool ChromeApplication::RegisterBindings(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
-}  // namespace android
-}  // namespace chrome

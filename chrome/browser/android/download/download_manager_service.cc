@@ -66,11 +66,6 @@ ScopedJavaLocalRef<jobject> CreateJavaDownloadItem(
 }  // namespace
 
 // static
-bool DownloadManagerService::RegisterDownloadManagerService(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
-// static
 void DownloadManagerService::OnDownloadCanceled(
     content::DownloadItem* download,
     DownloadController::DownloadCancelReason reason) {

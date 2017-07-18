@@ -199,11 +199,6 @@ RequestCoordinator* GetRequestCoordinator(Profile* profile,
 }
 }  // namespace
 
-// static
-bool OfflinePageEvaluationBridge::Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 static jlong CreateBridgeForProfile(JNIEnv* env,
                                     const JavaParamRef<jobject>& obj,
                                     const JavaParamRef<jobject>& j_profile,

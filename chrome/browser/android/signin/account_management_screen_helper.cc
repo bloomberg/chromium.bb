@@ -4,7 +4,6 @@
 
 #include "chrome/browser/android/signin/account_management_screen_helper.h"
 
-#include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
@@ -33,9 +32,4 @@ static void LogEvent(JNIEnv* env,
   ProfileMetrics::LogProfileAndroidAccountManagementMenu(
       static_cast<ProfileMetrics::ProfileAndroidAccountManagementMenu>(metric),
       static_cast<signin::GAIAServiceType>(gaiaServiceType));
-}
-
-// static
-bool AccountManagementScreenHelper::Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
 }

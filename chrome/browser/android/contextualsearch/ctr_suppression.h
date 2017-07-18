@@ -64,6 +64,4 @@ class CtrSuppression : public contextual_search::WeeklyActivityStorage {
   DISALLOW_COPY_AND_ASSIGN(CtrSuppression);
 };
 
-bool RegisterCtrSuppression(JNIEnv* env);
-
 #endif  // CHROME_BROWSER_ANDROID_CONTEXTUALSEARCH_CTR_SUPPRESSION_H_

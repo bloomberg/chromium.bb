@@ -836,8 +836,3 @@ static void Init(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   // This will automatically bind to the Java object and pass ownership there.
   new TabAndroid(env, obj);
 }
-
-// static
-bool TabAndroid::RegisterTabAndroid(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}

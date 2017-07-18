@@ -81,6 +81,4 @@ class OverlayPanelContent {
   DISALLOW_COPY_AND_ASSIGN(OverlayPanelContent);
 };
 
-bool RegisterOverlayPanelContent(JNIEnv* env);
-
 #endif  // CHROME_BROWSER_ANDROID_BOTTOMBAR_OVERLAY_PANEL_CONTENT_H_

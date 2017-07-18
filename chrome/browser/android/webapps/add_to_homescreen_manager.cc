@@ -54,11 +54,6 @@ AddToHomescreenManager::AddToHomescreenManager(JNIEnv* env, jobject obj)
   java_ref_.Reset(env, obj);
 }
 
-// static
-bool AddToHomescreenManager::Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 void AddToHomescreenManager::Destroy(JNIEnv* env,
                                      const JavaParamRef<jobject>& obj) {
   delete this;

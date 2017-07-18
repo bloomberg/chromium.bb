@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_ANDROID_DOWNLOAD_DOWNLOAD_MANAGER_SERVICE_H_
 #define CHROME_BROWSER_ANDROID_DOWNLOAD_DOWNLOAD_MANAGER_SERVICE_H_
 
-#include <jni.h>
 #include <map>
 #include <string>
 
@@ -31,9 +30,6 @@ class DownloadManagerService
     : public download::AllDownloadItemNotifier::Observer,
       public DownloadHistory::Observer {
  public:
-  // JNI registration.
-  static bool RegisterDownloadManagerService(JNIEnv* env);
-
   static void OnDownloadCanceled(
       content::DownloadItem* download,
       DownloadController::DownloadCancelReason reason);

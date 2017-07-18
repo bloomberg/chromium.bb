@@ -263,7 +263,3 @@ void FaviconHelper::OnFaviconImageResultAvailable(
       base::Bind(&FaviconHelper::OnFaviconDownloaded, j_availability_callback,
                  profile, page_url, icon_type, is_temporary));
 }
-
-bool FaviconHelper::RegisterFaviconHelper(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}

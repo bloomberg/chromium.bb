@@ -16,11 +16,6 @@ using base::android::ConvertJavaStringToUTF8;
 using base::android::JavaParamRef;
 
 // static
-bool SigninInvestigatorAndroid::Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
-// static
 jint Investigate(JNIEnv* env,
                  const JavaParamRef<jclass>& jcaller,
                  const JavaParamRef<jstring>& current_email) {

@@ -921,11 +921,6 @@ GetSupervisedUserSecondCustodianProfileImageURL(
 }
 
 // static
-bool PrefServiceBridge::RegisterPrefServiceBridge(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
-// static
 // This logic should be kept in sync with prependToAcceptLanguagesIfNecessary in
 // chrome/android/java/src/org/chromium/chrome/browser/
 //     physicalweb/PwsClientImpl.java

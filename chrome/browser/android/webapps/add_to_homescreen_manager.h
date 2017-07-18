@@ -27,9 +27,6 @@ class AddToHomescreenManager : public AddToHomescreenDataFetcher::Observer {
  public:
   AddToHomescreenManager(JNIEnv* env, jobject obj);
 
-  // Registers JNI hooks.
-  static bool Register(JNIEnv* env);
-
   // Called by the Java counterpart to destroy its native half.
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 

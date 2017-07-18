@@ -51,11 +51,6 @@ void OnUpdated(const JavaRef<jobject>& java_callback,
 
 }  // anonymous namespace
 
-// static
-bool WebApkUpdateManager::Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 // static JNI method.
 static void BuildUpdateWebApkProto(
     JNIEnv* env,

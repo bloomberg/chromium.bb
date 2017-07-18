@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/download/service/download_background_task.h"
-
 #include "base/android/callback_android.h"
 #include "base/callback_forward.h"
 #include "chrome/browser/download/download_service_factory.h"
@@ -17,11 +15,6 @@ using base::android::JavaParamRef;
 
 namespace download {
 namespace android {
-
-// static
-bool RegisterDownloadBackgroundTask(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
 
 void CallTaskFinishedCallback(const base::android::JavaRef<jobject>& j_callback,
                               bool needs_reschedule) {
