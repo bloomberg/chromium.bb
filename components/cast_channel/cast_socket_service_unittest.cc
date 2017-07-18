@@ -80,9 +80,9 @@ TEST_F(CastSocketServiceTest, TestOpenChannel) {
   mock_socket->SetIPEndpoint(ip_endpoint);
   cast_socket_service_->SetSocketForTest(base::WrapUnique(mock_socket));
 
-  EXPECT_CALL(*mock_socket, Connect(_))
-      .WillOnce(
-          WithArgs<0>(Invoke([&](const CastSocket::OnOpenCallback& callback) {
+  EXPECT_CALL(*mock_socket, ConnectInternal(_))
+      .WillOnce(WithArgs<0>(
+          Invoke([&](const MockCastSocket::MockOnOpenCallback& callback) {
             callback.Run(mock_socket->id(), ChannelError::NONE);
           })));
   EXPECT_CALL(mock_on_open_callback_, Run(_, ChannelError::NONE));

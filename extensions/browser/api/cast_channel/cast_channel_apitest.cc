@@ -108,9 +108,9 @@ class CastChannelAPITest : public ExtensionApiTest {
       InSequence sequence;
 
       EXPECT_CALL(*mock_cast_socket_, AddObserver(_));
-      EXPECT_CALL(*mock_cast_socket_, Connect(_))
+      EXPECT_CALL(*mock_cast_socket_, ConnectInternal(_))
           .WillOnce(WithArgs<0>(
-              Invoke([&](const CastSocket::OnOpenCallback& callback) {
+              Invoke([&](const MockCastSocket::MockOnOpenCallback& callback) {
                 callback.Run(mock_cast_socket_->id(), ChannelError::NONE);
               })));
       EXPECT_CALL(*mock_cast_socket_, ready_state())
@@ -135,9 +135,9 @@ class CastChannelAPITest : public ExtensionApiTest {
       InSequence sequence;
       EXPECT_CALL(*mock_cast_socket_, AddObserver(_))
           .WillOnce(SaveArg<0>(&message_observer_));
-      EXPECT_CALL(*mock_cast_socket_, Connect(_))
+      EXPECT_CALL(*mock_cast_socket_, ConnectInternal(_))
           .WillOnce(WithArgs<0>(
-              Invoke([&](const CastSocket::OnOpenCallback& callback) {
+              Invoke([&](const MockCastSocket::MockOnOpenCallback& callback) {
                 callback.Run(mock_cast_socket_->id(), ChannelError::NONE);
               })));
       EXPECT_CALL(*mock_cast_socket_, ready_state())
@@ -303,9 +303,9 @@ IN_PROC_BROWSER_TEST_F(CastChannelAPITest, MAYBE_TestOpenReceiveClose) {
     InSequence sequence;
     EXPECT_CALL(*mock_cast_socket_, AddObserver(_))
         .WillOnce(SaveArg<0>(&message_observer_));
-    EXPECT_CALL(*mock_cast_socket_, Connect(_))
-        .WillOnce(
-            WithArgs<0>(Invoke([&](const CastSocket::OnOpenCallback& callback) {
+    EXPECT_CALL(*mock_cast_socket_, ConnectInternal(_))
+        .WillOnce(WithArgs<0>(
+            Invoke([&](const MockCastSocket::MockOnOpenCallback& callback) {
               callback.Run(mock_cast_socket_->id(), ChannelError::NONE);
             })));
     EXPECT_CALL(*mock_cast_socket_, ready_state())
@@ -340,9 +340,9 @@ IN_PROC_BROWSER_TEST_F(CastChannelAPITest, MAYBE_TestOpenError) {
   EXPECT_CALL(*mock_cast_socket_, AddObserver(_))
       .WillOnce(DoAll(SaveArg<0>(&message_observer_),
                       InvokeObserverOnError(this, GetCastSocketService())));
-  EXPECT_CALL(*mock_cast_socket_, Connect(_))
-      .WillOnce(
-          WithArgs<0>(Invoke([&](const CastSocket::OnOpenCallback& callback) {
+  EXPECT_CALL(*mock_cast_socket_, ConnectInternal(_))
+      .WillOnce(WithArgs<0>(
+          Invoke([&](const MockCastSocket::MockOnOpenCallback& callback) {
             callback.Run(mock_cast_socket_->id(), ChannelError::CONNECT_ERROR);
           })));
   mock_cast_socket_->SetErrorState(ChannelError::CONNECT_ERROR);
