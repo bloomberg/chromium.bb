@@ -229,6 +229,20 @@ TEST_F(NetworkConnectTest, ShowConfigureUI) {
       kWiFi1Guid, NetworkConnectionHandler::kErrorConnectFailed);
 }
 
+TEST_F(NetworkConnectTest, ConfigureUINotShownForTetherAssociatedWifiNetwork) {
+  // The configure UI should *not* be shown for Wi-Fi networks which serve as
+  // the underlying Wi-Fi hotspot for a Tether network.
+  EXPECT_CALL(*mock_delegate_, ShowNetworkConfigure(kWiFi1Guid)).Times(0);
+
+  AddTetherNetwork(false /* has_connected_to_host */);
+  NetworkHandler::Get()
+      ->network_state_handler()
+      ->AssociateTetherNetworkStateWithWifiNetwork(kTetherGuid, kWiFi1Guid);
+
+  NetworkConnect::Get()->MaybeShowConfigureUI(
+      kWiFi1Guid, NetworkConnectionHandler::kErrorConnectFailed);
+}
+
 TEST_F(NetworkConnectTest, ShowConfigureUI_BadErrorCode) {
   EXPECT_CALL(*mock_delegate_, ShowNetworkConfigure(kWiFi1Guid)).Times(0);
 
