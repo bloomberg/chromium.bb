@@ -14,7 +14,7 @@
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
-#import "ios/chrome/browser/ui/commands/new_tab_command.h"
+#import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
 #import "ios/chrome/browser/ui/context_menu/context_menu_coordinator.h"
 #import "ios/chrome/browser/ui/ntp/google_landing_data_source.h"
@@ -1222,8 +1222,8 @@ const CGFloat kShiftTilesDownAnimationDuration = 0.2;
                    didTriggerAction:(OverscrollAction)action {
   switch (action) {
     case OverscrollAction::NEW_TAB: {
-      NewTabCommand* command = [[NewTabCommand alloc] initWithIncognito:NO];
-      [[self view] chromeExecuteCommand:command];
+      OpenNewTabCommand* command = [OpenNewTabCommand command];
+      [self.dispatcher openNewTab:command];
     } break;
     case OverscrollAction::CLOSE_TAB:
       [self.dispatcher closeCurrentTab];

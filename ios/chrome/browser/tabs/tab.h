@@ -17,8 +17,10 @@
 #import "ios/web/public/web_state/ui/crw_web_delegate.h"
 #include "ui/base/page_transition_types.h"
 
+@protocol ApplicationCommands;
 @class AutofillController;
 @class AutoReloadBridge;
+@protocol BrowserCommands;
 @class CastController;
 @class CRWWebController;
 @class ExternalAppLauncher;
@@ -160,6 +162,10 @@ extern NSString* const kProxyPassthroughHeaderValue;
 
 // |YES| if the tab has finished loading.
 @property(nonatomic, readonly) BOOL loadFinished;
+
+// Dispatcher that the tab can use to send commands. This should be set
+// when other delegates are set.
+@property(nonatomic, weak) id<ApplicationCommands, BrowserCommands> dispatcher;
 
 // Creates a new Tab with the given WebState.
 - (instancetype)initWithWebState:(web::WebState*)webState;

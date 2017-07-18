@@ -7,6 +7,8 @@
 
 #import <Foundation/Foundation.h>
 
+@class OpenNewTabCommand;
+
 // Protocol for commands that will generally be handled by the "current tab",
 // which in practice is the BrowserViewController instance displaying the tab.
 @protocol BrowserCommands<NSObject>
@@ -34,6 +36,9 @@
 
 // Shows the tools menu.
 - (void)showToolsMenu;
+
+// Opens a new tab as specified by |newTabCommand|.
+- (void)openNewTab:(OpenNewTabCommand*)newTabCommand;
 
 @end
 

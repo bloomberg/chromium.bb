@@ -182,10 +182,10 @@ NS_INLINE UIEdgeInsets TabHistoryPopupMenuInsets() {
     case IDC_HELP_PAGE_VIA_MENU:
       base::RecordAction(UserMetricsAction("MobileMenuHelp"));
       break;
-    case IDC_NEW_INCOGNITO_TAB:
+    case TOOLS_NEW_INCOGNITO_TAB_ITEM:
       base::RecordAction(UserMetricsAction("MobileMenuNewIncognitoTab"));
       break;
-    case IDC_NEW_TAB:
+    case TOOLS_NEW_TAB_ITEM:
       base::RecordAction(UserMetricsAction("MobileMenuNewTab"));
       break;
     case TOOLS_SETTINGS_ITEM:

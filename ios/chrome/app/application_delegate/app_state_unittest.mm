@@ -663,12 +663,16 @@ TEST_F(AppStateTest, resumeSessionShouldOpenNTPNoTabSwitcher) {
   id mainTabModel = [OCMockObject mockForClass:[TabModel class]];
   [[mainTabModel expect] resetSessionMetrics];
 
+  id dispatcher = [OCMockObject mockForProtocol:@protocol(BrowserCommands)];
+  [[dispatcher expect] openNewTab:[OCMArg any]];
+
   id currentBVC = [OCMockObject mockForClass:[BrowserViewController class]];
-  [[currentBVC expect] newTab:nil];
   stubNullBrowserState(currentBVC);
+  [[[currentBVC stub] andReturn:dispatcher] dispatcher];
 
   [[[browserViewInformation stub] andReturn:mainTabModel] mainTabModel];
   [[[browserViewInformation stub] andReturn:currentBVC] currentBVC];
+  [[[browserViewInformation stub] andReturn:nil] otrBVC];
 
   // TabSwitcher.
   id tabSwitcher = [OCMockObject mockForProtocol:@protocol(TabSwitching)];

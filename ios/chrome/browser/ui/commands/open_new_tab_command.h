@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_COMMANDS_NEW_TAB_COMMAND_H_
-#define IOS_CHROME_BROWSER_UI_COMMANDS_NEW_TAB_COMMAND_H_
+#ifndef IOS_CHROME_BROWSER_UI_COMMANDS_OPEN_NEW_TAB_COMMAND_H_
+#define IOS_CHROME_BROWSER_UI_COMMANDS_OPEN_NEW_TAB_COMMAND_H_
 
 #import <UIKit/UIKit.h>
 
@@ -11,17 +11,28 @@
 
 // Command sent to open a new tab, optionally including a point (in UIWindow
 // coordinates).
-@interface NewTabCommand : GenericChromeCommand
+@interface OpenNewTabCommand : GenericChromeCommand
 
 - (instancetype)initWithIncognito:(BOOL)incognito
                       originPoint:(CGPoint)originPoint
     NS_DESIGNATED_INITIALIZER;
 
-// Create a NewTabCommand with an OriginPoint of CGPointZero.
-- (instancetype)initWithIncognito:(BOOL)incognito;
-
 // Mark inherited initializer as unavailable to prevent calling it by mistake.
 - (instancetype)initWithTag:(NSInteger)tag NS_UNAVAILABLE;
+
+// Convenience initializers
+
+// Creates an OpenTabCommand with |incognito| and an |originPoint| of
+// CGPointZero.
++ (instancetype)commandWithIncognito:(BOOL)incognito;
+
+// Creates an OpenTabCommand with |incognito| NO and an |originPoint| of
+// CGPointZero.
++ (instancetype)command;
+
+// Creates an OpenTabCommand with |incognito| YES and an |originPoint| of
+// CGPointZero.
++ (instancetype)incognitoTabCommand;
 
 @property(nonatomic, readonly) BOOL incognito;
 
@@ -29,4 +40,4 @@
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_COMMANDS_NEW_TAB_COMMAND_H_
+#endif  // IOS_CHROME_BROWSER_UI_COMMANDS_OPEN_NEW_TAB_COMMAND_H_

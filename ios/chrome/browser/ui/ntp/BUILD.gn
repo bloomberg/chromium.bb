@@ -274,5 +274,6 @@ source_set("perf_tests") {
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/test:perf_test_support",
     "//ios/chrome/browser/ui:ui_internal",
+    "//ios/chrome/browser/ui/commands",
   ]
 }

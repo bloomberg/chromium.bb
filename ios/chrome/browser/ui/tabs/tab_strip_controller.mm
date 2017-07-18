@@ -21,8 +21,9 @@
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/tabs/tab_model_observer.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
+#import "ios/chrome/browser/ui/commands/browser_commands.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
-#import "ios/chrome/browser/ui/commands/new_tab_command.h"
+#import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/fullscreen_controller.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #include "ios/chrome/browser/ui/tab_switcher/tab_switcher_tab_strip_placeholder_view.h"
@@ -326,9 +327,11 @@ const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
 @synthesize highlightsSelectedTab = _highlightsSelectedTab;
 @synthesize tabStripView = _tabStripView;
 @synthesize view = _view;
+@synthesize dispatcher = _dispatcher;
 
 - (instancetype)initWithTabModel:(TabModel*)tabModel
-                           style:(TabStrip::Style)style {
+                           style:(TabStrip::Style)style
+                      dispatcher:(id<BrowserCommands>)dispatcher {
   if ((self = [super init])) {
     _tabArray = [[NSMutableArray alloc] initWithCapacity:10];
     _closingTabs = [[NSMutableSet alloc] initWithCapacity:5];
@@ -336,6 +339,7 @@ const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
     _tabModel = tabModel;
     [_tabModel addObserver:self];
     _style = style;
+    _dispatcher = dispatcher;
 
     // |self.view| setup.
     CGRect tabStripFrame = [UIApplication sharedApplication].keyWindow.bounds;
@@ -583,9 +587,10 @@ const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
 - (void)sendNewTabCommand {
   CGPoint center = [_buttonNewTab.superview convertPoint:_buttonNewTab.center
                                                   toView:_buttonNewTab.window];
-  NewTabCommand* command =
-      [[NewTabCommand alloc] initWithIncognito:_isIncognito originPoint:center];
-  [_view chromeExecuteCommand:command];
+  OpenNewTabCommand* command =
+      [[OpenNewTabCommand alloc] initWithIncognito:_isIncognito
+                                       originPoint:center];
+  [self.dispatcher openNewTab:command];
 }
 
 - (void)tabTapped:(id)sender {

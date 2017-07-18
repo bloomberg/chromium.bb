@@ -15,8 +15,9 @@
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
+#import "ios/chrome/browser/ui/commands/browser_commands.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
-#import "ios/chrome/browser/ui/commands/new_tab_command.h"
+#import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
 #import "ios/chrome/browser/ui/material_components/activity_indicator.h"
 #import "ios/chrome/browser/ui/sync/sync_util.h"
@@ -86,12 +87,15 @@ const CGFloat kSubtitleMinimunLineHeight = 24.0;
 }
 
 @synthesize overlayType = _overlayType;
+@synthesize dispatcher = _dispatcher;
 
 - (instancetype)initWithFrame:(CGRect)frame
-                 browserState:(ios::ChromeBrowserState*)browserState {
+                 browserState:(ios::ChromeBrowserState*)browserState
+                   dispatcher:(id<BrowserCommands>)dispatcher {
   self = [super initWithFrame:frame];
   if (self) {
     _browserState = browserState;
+    _dispatcher = dispatcher;
     // Create and add container. Will be vertically and horizontally centered.
     _container = [[UIView alloc] initWithFrame:CGRectZero];
     [_container setTranslatesAutoresizingMaskIntoConstraints:NO];
@@ -464,17 +468,17 @@ const CGFloat kSubtitleMinimunLineHeight = 24.0;
 - (void)sendNewTabCommand:(id)sender {
   UIView* view = base::mac::ObjCCast<UIView>(sender);
   CGPoint center = [view.superview convertPoint:view.center toView:view.window];
-  NewTabCommand* command =
-      [[NewTabCommand alloc] initWithIncognito:NO originPoint:center];
-  [self chromeExecuteCommand:command];
+  OpenNewTabCommand* command =
+      [[OpenNewTabCommand alloc] initWithIncognito:NO originPoint:center];
+  [self.dispatcher openNewTab:command];
 }
 
 - (void)sendNewIncognitoTabCommand:(id)sender {
   UIView* view = base::mac::ObjCCast<UIView>(sender);
   CGPoint center = [view.superview convertPoint:view.center toView:view.window];
-  NewTabCommand* command =
-      [[NewTabCommand alloc] initWithIncognito:YES originPoint:center];
-  [self chromeExecuteCommand:command];
+  OpenNewTabCommand* command =
+      [[OpenNewTabCommand alloc] initWithIncognito:YES originPoint:center];
+  [self.dispatcher openNewTab:command];
 }
 
 - (void)recordMetrics {

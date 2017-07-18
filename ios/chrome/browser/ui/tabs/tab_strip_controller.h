@@ -7,9 +7,11 @@
 
 #import <UIKit/UIKit.h>
 
+@protocol ApplicationCommands;
+@protocol BrowserCommands;
+@protocol FullScreenControllerDelegate;
 @class TabModel;
 @class TabView;
-@protocol FullScreenControllerDelegate;
 
 namespace TabStrip {
 enum Style { kStyleDark, kStyleIncognito };
@@ -35,6 +37,8 @@ extern NSString* const kTabStripDragEnded;
 @property(nonatomic, assign) BOOL highlightsSelectedTab;
 @property(nonatomic, readonly, retain) UIView* view;
 
+@property(nonatomic, readonly, weak) id<BrowserCommands> dispatcher;
+
 // Used to check if the tabstrip is visible before starting an animation.
 @property(nonatomic, assign) id<FullScreenControllerDelegate>
     fullscreenDelegate;
@@ -42,6 +46,7 @@ extern NSString* const kTabStripDragEnded;
 // Designated initializer.
 - (instancetype)initWithTabModel:(TabModel*)tabModel
                            style:(TabStrip::Style)style
+                      dispatcher:(id<BrowserCommands>)dispatcher
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
