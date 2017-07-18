@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
+#include "chrome/common/features.h"
 
 namespace ash {
 class ShelfModel;
@@ -36,6 +37,10 @@ class SessionControllerClient;
 class SystemTrayClient;
 class VolumeController;
 class VpnListForwarder;
+
+#if BUILDFLAG(ENABLE_WAYLAND_SERVER)
+class ExoParts;
+#endif
 
 // Browser initialization for Ash. Only runs on Chrome OS.
 // TODO(jamescook): Fold this into ChromeBrowserMainPartsChromeOS.
@@ -74,6 +79,10 @@ class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
   // Used only for mash.
   std::unique_ptr<ui::UserActivityDetector> user_activity_detector_;
   std::unique_ptr<aura::UserActivityForwarder> user_activity_forwarder_;
+
+#if BUILDFLAG(ENABLE_WAYLAND_SERVER)
+  std::unique_ptr<ExoParts> exo_parts_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraPartsAsh);
 };
