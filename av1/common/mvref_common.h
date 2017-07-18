@@ -196,11 +196,7 @@ static INLINE int is_inside(const TileInfo *const tile, int mi_col, int mi_row,
   const int dependent_horz_tile_flag = 0;
   (void)cm;
 #endif
-#if CONFIG_TILE_GROUPS
   if (dependent_horz_tile_flag && !tile->tg_horz_boundary) {
-#else
-  if (dependent_horz_tile_flag) {
-#endif
     return !(mi_row + mi_pos->row < 0 ||
              mi_col + mi_pos->col < tile->mi_col_start ||
              mi_row + mi_pos->row >= mi_rows ||

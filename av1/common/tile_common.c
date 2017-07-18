@@ -23,7 +23,7 @@ void av1_tile_set_col(TileInfo *tile, const AV1_COMMON *cm, int col) {
   tile->mi_col_end = AOMMIN(tile->mi_col_start + cm->tile_width, cm->mi_cols);
 }
 
-#if CONFIG_DEPENDENT_HORZTILES && CONFIG_TILE_GROUPS
+#if CONFIG_DEPENDENT_HORZTILES
 void av1_tile_set_tg_boundary(TileInfo *tile, const AV1_COMMON *const cm,
                               int row, int col) {
   if (row < cm->tile_rows - 1) {
@@ -41,7 +41,7 @@ void av1_tile_set_tg_boundary(TileInfo *tile, const AV1_COMMON *const cm,
 void av1_tile_init(TileInfo *tile, const AV1_COMMON *cm, int row, int col) {
   av1_tile_set_row(tile, cm, row);
   av1_tile_set_col(tile, cm, col);
-#if CONFIG_DEPENDENT_HORZTILES && CONFIG_TILE_GROUPS
+#if CONFIG_DEPENDENT_HORZTILES
   av1_tile_set_tg_boundary(tile, cm, row, col);
 #endif
 }
@@ -119,11 +119,7 @@ void av1_setup_across_tile_boundary_info(const AV1_COMMON *const cm,
     int row, col;
 
 #if CONFIG_DEPENDENT_HORZTILES
-#if CONFIG_TILE_GROUPS
     if (!cm->dependent_horz_tiles || tile_info->tg_horz_boundary)
-#else
-    if (!cm->dependent_horz_tiles)
-#endif  // CONFIG_TILE_GROUPS
 #endif  // CONFIG_DEPENDENT_HORZTILES
     {
       mi = mi_start;

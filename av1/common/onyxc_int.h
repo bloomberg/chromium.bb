@@ -365,10 +365,8 @@ typedef struct AV1Common {
 
 #if CONFIG_DEPENDENT_HORZTILES
   int dependent_horz_tiles;
-#if CONFIG_TILE_GROUPS
   int tile_group_start_row[MAX_TILE_ROWS][MAX_TILE_COLS];
   int tile_group_start_col[MAX_TILE_ROWS][MAX_TILE_COLS];
-#endif
 #endif
 #if CONFIG_LOOPFILTERING_ACROSS_TILES
   int loop_filter_across_tiles_enabled;
@@ -427,9 +425,7 @@ typedef struct AV1Common {
   int delta_lf_res;
 #endif
 #endif
-#if CONFIG_TILE_GROUPS
   int num_tg;
-#endif
 #if CONFIG_REFERENCE_BUFFER
   int current_frame_id;
   int ref_frame_id[REF_FRAMES];
@@ -654,11 +650,7 @@ static INLINE void set_mi_row_col(MACROBLOCKD *xd, const TileInfo *const tile,
 
 #if CONFIG_DEPENDENT_HORZTILES
   if (dependent_horz_tile_flag) {
-#if CONFIG_TILE_GROUPS
     xd->up_available = (mi_row > tile->mi_row_start) || !tile->tg_horz_boundary;
-#else
-    xd->up_available = (mi_row > 0);
-#endif  // CONFIG_TILE_GROUPS
   } else {
 #endif  // CONFIG_DEPENDENT_HORZTILES
     // Are edges available for intra prediction?

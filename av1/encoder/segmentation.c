@@ -300,11 +300,7 @@ void av1_choose_segmap_coding_method(AV1_COMMON *cm, MACROBLOCKD *xd) {
   int t_pred_cost = INT_MAX;
 
   int tile_col, tile_row, mi_row, mi_col;
-#if CONFIG_TILE_GROUPS
   const int probwt = cm->num_tg;
-#else
-  const int probwt = 1;
-#endif
 
   unsigned(*temporal_predictor_count)[2] = cm->counts.seg.pred;
   unsigned *no_pred_segcounts = cm->counts.seg.tree_total;
@@ -329,7 +325,7 @@ void av1_choose_segmap_coding_method(AV1_COMMON *cm, MACROBLOCKD *xd) {
     for (tile_col = 0; tile_col < cm->tile_cols; tile_col++) {
       MODE_INFO **mi_ptr;
       av1_tile_set_col(&tile_info, cm, tile_col);
-#if CONFIG_TILE_GROUPS && CONFIG_DEPENDENT_HORZTILES
+#if CONFIG_DEPENDENT_HORZTILES
       av1_tile_set_tg_boundary(&tile_info, cm, tile_row, tile_col);
 #endif
       mi_ptr = cm->mi_grid_visible + tile_info.mi_row_start * cm->mi_stride +

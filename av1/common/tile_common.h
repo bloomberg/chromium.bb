@@ -20,9 +20,7 @@ extern "C" {
 
 struct AV1Common;
 
-#if CONFIG_TILE_GROUPS
 #define DEFAULT_MAX_NUM_TG 1
-#endif
 
 typedef struct TileInfo {
   int mi_row_start, mi_row_end;
@@ -37,7 +35,7 @@ void av1_tile_init(TileInfo *tile, const struct AV1Common *cm, int row,
 
 void av1_tile_set_row(TileInfo *tile, const struct AV1Common *cm, int row);
 void av1_tile_set_col(TileInfo *tile, const struct AV1Common *cm, int col);
-#if CONFIG_DEPENDENT_HORZTILES && CONFIG_TILE_GROUPS
+#if CONFIG_DEPENDENT_HORZTILES
 void av1_tile_set_tg_boundary(TileInfo *tile, const struct AV1Common *const cm,
                               int row, int col);
 #endif

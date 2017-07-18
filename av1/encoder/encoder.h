@@ -202,10 +202,8 @@ typedef struct AV1EncoderConfig {
   int qm_minlevel;
   int qm_maxlevel;
 #endif
-#if CONFIG_TILE_GROUPS
   unsigned int num_tile_groups;
   unsigned int mtu;
-#endif
 
 #if CONFIG_TEMPMV_SIGNALING
   unsigned int disable_tempmv;

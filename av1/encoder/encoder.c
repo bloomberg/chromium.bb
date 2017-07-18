@@ -827,7 +827,7 @@ void av1_new_framerate(AV1_COMP *cpi, double framerate) {
 
 static void set_tile_info(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
-#if CONFIG_TILE_GROUPS && CONFIG_DEPENDENT_HORZTILES
+#if CONFIG_DEPENDENT_HORZTILES
   int tile_row, tile_col, num_tiles_in_tg;
   int tg_row_start, tg_col_start;
 #endif
@@ -901,7 +901,6 @@ static void set_tile_info(AV1_COMP *cpi) {
   }
 #endif  // CONFIG_EXT_TILE
 
-#if CONFIG_TILE_GROUPS
 #if CONFIG_EXT_TILE
   if (!cm->large_scale_tile) {
 #endif  // CONFIG_EXT_TILE
@@ -929,7 +928,6 @@ static void set_tile_info(AV1_COMP *cpi) {
 #if CONFIG_EXT_TILE
   }
 #endif  // CONFIG_EXT_TILE
-#endif
 #endif
 
 #if CONFIG_LOOPFILTERING_ACROSS_TILES
@@ -4733,7 +4731,6 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
       cm->reset_frame_context = RESET_FRAME_CONTEXT_CURRENT;
     }
   }
-#if CONFIG_TILE_GROUPS
   if (cpi->oxcf.mtu == 0) {
     cm->num_tg = cpi->oxcf.num_tile_groups;
   } else {
@@ -4741,7 +4738,6 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
     // updates
     cm->num_tg = DEFAULT_MAX_NUM_TG;
   }
-#endif
 
 #if CONFIG_EXT_TILE
   cm->large_scale_tile = cpi->oxcf.large_scale_tile;

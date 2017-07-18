@@ -3361,16 +3361,12 @@ static void read_tile_info(AV1Decoder *const pbi,
     cm->tile_width = ALIGN_POWER_OF_TWO(cm->tile_width, MAX_MIB_SIZE_LOG2);
     cm->tile_height = ALIGN_POWER_OF_TWO(cm->tile_height, MAX_MIB_SIZE_LOG2);
 
-// tile size magnitude
-#if !CONFIG_TILE_GROUPS
-    if (cm->tile_rows > 1 || cm->tile_cols > 1)
-#endif
-      pbi->tile_size_bytes = aom_rb_read_literal(rb, 2) + 1;
+    // tile size magnitude
+    pbi->tile_size_bytes = aom_rb_read_literal(rb, 2) + 1;
 #if CONFIG_EXT_TILE
   }
 #endif  // CONFIG_EXT_TILE
 
-#if CONFIG_TILE_GROUPS
   // Store an index to the location of the tile group information
   pbi->tg_size_bit_offset = rb->bit_offset;
   pbi->tg_size = 1 << (cm->log2_tile_rows + cm->log2_tile_cols);
@@ -3380,7 +3376,6 @@ static void read_tile_info(AV1Decoder *const pbi,
     pbi->tg_size =
         1 + aom_rb_read_literal(rb, cm->log2_tile_rows + cm->log2_tile_cols);
   }
-#endif
 }
 
 static int mem_get_varsize(const uint8_t *src, int sz) {
@@ -3581,7 +3576,6 @@ static void get_tile_buffers(
     AV1Decoder *pbi, const uint8_t *data, const uint8_t *data_end,
     TileBufferDec (*const tile_buffers)[MAX_TILE_COLS]) {
   AV1_COMMON *const cm = &pbi->common;
-#if CONFIG_TILE_GROUPS
   int r, c;
   const int tile_cols = cm->tile_cols;
   const int tile_rows = cm->tile_rows;
@@ -3628,21 +3622,6 @@ static void get_tile_buffers(
 #endif
     }
   }
-#else
-  int r, c;
-  const int tile_cols = cm->tile_cols;
-  const int tile_rows = cm->tile_rows;
-
-  for (r = 0; r < tile_rows; ++r) {
-    for (c = 0; c < tile_cols; ++c) {
-      const int is_last = (r == tile_rows - 1) && (c == tile_cols - 1);
-      TileBufferDec *const buf = &tile_buffers[r][c];
-      buf->col = c;
-      get_tile_buffer(data_end, pbi->tile_size_bytes, is_last, &cm->error,
-                      &data, pbi->decrypt_cb, pbi->decrypt_state, buf);
-    }
-  }
-#endif
 }
 
 #if CONFIG_PVQ
@@ -3853,13 +3832,9 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
       av1_tile_set_col(&tile_info, cm, col);
 
 #if CONFIG_DEPENDENT_HORZTILES
-#if CONFIG_TILE_GROUPS
       av1_tile_set_tg_boundary(&tile_info, cm, tile_row, tile_col);
       if (!cm->dependent_horz_tiles || tile_row == 0 ||
           tile_info.tg_horz_boundary) {
-#else
-      if (!cm->dependent_horz_tiles || tile_row == 0) {
-#endif
         av1_zero_above_context(cm, tile_info.mi_col_start,
                                tile_info.mi_col_end);
       }
@@ -4004,11 +3979,7 @@ static int tile_worker_hook(TileWorkerData *const tile_data,
   tile_data->error_info.setjmp = 1;
   tile_data->xd.error_info = &tile_data->error_info;
 #if CONFIG_DEPENDENT_HORZTILES
-#if CONFIG_TILE_GROUPS
   if (!cm->dependent_horz_tiles || tile->tg_horz_boundary) {
-#else
-  if (!cm->dependent_horz_tiles) {
-#endif
     av1_zero_above_context(&pbi->common, tile->mi_col_start, tile->mi_col_end);
   }
 #else
@@ -5253,10 +5224,8 @@ void av1_decode_frame(AV1Decoder *pbi, const uint8_t *data,
   }
 #endif  // CONFIG_EXT_TILE
 
-#if CONFIG_TILE_GROUPS
   pbi->first_partition_size = first_partition_size;
   pbi->uncomp_hdr_size = aom_rb_bytes_read(&rb);
-#endif
   new_fb = get_frame_new_buffer(cm);
   xd->cur_buf = new_fb;
 #if CONFIG_INTRABC
