@@ -327,7 +327,7 @@ void RecordSigninNewAccountUserActionForAccessPoint(
   }
 }
 
-- (void)onChromeIdentityServiceWillBeDestroyed {
+- (void)chromeIdentityServiceWillBeDestroyed {
   _identityServiceObserver.reset();
 }
 
