@@ -618,6 +618,7 @@ The CQ <b>correctly rejected {unique_blames_change_count} unique changes</b> thi
 The pre-CQ <b>rejected {bad_cl_precq_rejected} changes this week</b>, which would otherwise have broken a CQ run and affected other developers.<br>
 </p>
 
+<h2>CL handling times</h2>
 <p>
 The CL handling time was <b>{cl_handling_time_50:.2f} hours</b> 50%ile <b>{cl_handling_time_90:.2f} hours</b> 90%ile <a href="http://shortn/_bBdiNj0d83">history</a>.<br>
 Time spent in the CQ was <b>{cq_time_50:.2f} hours</b> 50%ile <b>{cq_time_90:.2f} hours</b> 90%ile <a href="http://shortn/_tuzlLWNWGy">history</a>.<br>
@@ -627,6 +628,7 @@ Pre-cq times available on <a href="http://shortn/_XK6xDPTof1">monarch history</a
 </p>
 
 <h2>Slowest Passing Slaves</h2>
+(this determination based on last-to-complete in otherwise passing builds)
 <table>
   <tr>
     <th>Slave</th>
@@ -638,9 +640,15 @@ Pre-cq times available on <a href="http://shortn/_XK6xDPTof1">monarch history</a
 </table>
 </p>
 
+A more accurate determination (which accounts for CQ self-destruct, relevance detection, and history-aware-submit logic) is available as a <A href="http://shortn/_RBQNer8DDk">monarch history</A>.
+
+
+<h2>False rejections</h2>
 <p>
 The pre-CQ + CQ <b>incorrectly rejected [{patch_flake_rejections}] unique changes a total of [{false_rejection_total}] times</b> this week. (Pre-CQ:[{false_rejection_pre_cq}]; CQ: [{false_rejection_cq}])<br>
 The probability of a good patch being incorrectly rejected by the CQ or Pre-CQ is [{false_rejection_rate[combined]:.2f}]%. (Pre-CQ:[{false_rejection_rate[pre-cq]:.2f}]%; CQ: [{false_rejection_rate[cq]:.2f}])<br>
+
+
 </p>
 
 <h2>Top reasons that good changes were rejected</h2>
@@ -660,11 +668,6 @@ The probability of a good patch being incorrectly rejected by the CQ or Pre-CQ i
 <ul>
 {build_failures_html}
 </ul>
-
-<h2>What was the patch turnaround time?</h2>
-<p id="note"> Copy/Paste in the histogram from the top of <a href="https://chromiumos-build-annotator.googleplex.com/build_annotations/builds_list/master-paladin/?num_builds={total_builds}&latest_build_id={last_build_id}">the completed build annotation page.</a>
-_<replace>IMAGE PLACEHOLDER</replace>_<br></p>
-<br>
 
 <i>Generated on {datetime}</i>
 </body>
