@@ -56,6 +56,10 @@ class PLATFORM_EXPORT ResourceError final {
   static ResourceError CancelledDueToAccessCheckError(
       const String& failing_url,
       ResourceRequestBlockedReason);
+  static ResourceError CancelledDueToAccessCheckError(
+      const String& failing_url,
+      ResourceRequestBlockedReason,
+      const String& localized_description);
 
   // Only for Blink internal usage.
   static ResourceError CacheMissError(const String& failing_url);

@@ -699,8 +699,8 @@ TEST_P(ThreadableLoaderTest, DidFailAccessControlCheck) {
   EXPECT_CALL(GetCheckpoint(), Call(2));
   EXPECT_CALL(
       *Client(),
-      DidFailAccessControlCheck(ResourceError(
-          kErrorDomainBlinkInternal, 0, SuccessURL().GetString(),
+      DidFailAccessControlCheck(ResourceError::CancelledDueToAccessCheckError(
+          SuccessURL(), ResourceRequestBlockedReason::kOther,
           "No 'Access-Control-Allow-Origin' header is present on the requested "
           "resource. Origin 'null' is therefore not allowed access.")));
 

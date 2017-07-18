@@ -78,10 +78,10 @@ void ManifestDownloader::DidFail(const blink::WebURLError& error) {
         pp_nacl_error_ = PP_NACL_ERROR_MANIFEST_NOACCESS_URL;
         break;
     }
-  } else {
-    // It's a WebKit error.
-    pp_nacl_error_ = PP_NACL_ERROR_MANIFEST_NOACCESS_URL;
   }
+
+  if (error.is_web_security_violation)
+    pp_nacl_error_ = PP_NACL_ERROR_MANIFEST_NOACCESS_URL;
 
   Close();
 }

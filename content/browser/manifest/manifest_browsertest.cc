@@ -325,7 +325,8 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, CORSManifest) {
   GetManifestAndWait();
   EXPECT_TRUE(manifest().IsEmpty());
   EXPECT_FALSE(manifest_url().is_empty());
-  EXPECT_EQ(0u, console_error_count());
+  // 1 error for CORS violation
+  EXPECT_EQ(1u, console_error_count());
   expected_manifest_urls.push_back(manifest_url());
   EXPECT_EQ(expected_manifest_urls, reported_manifest_urls());
 
@@ -392,7 +393,8 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, MixedContentManifest) {
   GetManifestAndWait();
   EXPECT_TRUE(manifest().IsEmpty());
   EXPECT_FALSE(manifest_url().is_empty());
-  EXPECT_EQ(0u, console_error_count());
+  // 1 error for mixed-content check violation
+  EXPECT_EQ(1u, console_error_count());
   ASSERT_EQ(1u, reported_manifest_urls().size());
   EXPECT_EQ(manifest_url(), reported_manifest_urls()[0]);
   ASSERT_EQ(1u, manifests_reported_when_favicon_url_updated().size());

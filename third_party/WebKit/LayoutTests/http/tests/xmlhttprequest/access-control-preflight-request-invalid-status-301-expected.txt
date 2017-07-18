@@ -1,4 +1,4 @@
-CONSOLE ERROR: XMLHttpRequest cannot load http://localhost:8000/xmlhttprequest/resources/access-control-preflight-request-invalid-status.php?code=301. Response for preflight has invalid HTTP status code 301
+CONSOLE ERROR: Failed to load http://localhost:8000/xmlhttprequest/resources/access-control-preflight-request-invalid-status.php?code=301: Response for preflight has invalid HTTP status code 301
 Test that preflight requests with invalid status code results in error. Should print PASS.
 
 PASS

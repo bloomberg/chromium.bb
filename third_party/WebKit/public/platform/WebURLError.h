@@ -66,6 +66,9 @@ struct WebURLError {
   // load only from disk cache.
   bool is_cache_miss = false;
 
+  // True if this error is created for a web security violation.
+  bool is_web_security_violation = false;
+
   // The url that failed to load.
   WebURL unreachable_url;
 

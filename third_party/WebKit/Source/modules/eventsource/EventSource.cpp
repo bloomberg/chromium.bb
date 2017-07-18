@@ -318,11 +318,6 @@ void EventSource::DidFail(const ResourceError& error) {
 void EventSource::DidFailAccessControlCheck(const ResourceError& error) {
   DCHECK(loader_);
 
-  String message = "EventSource cannot load " + error.FailingURL() + ". " +
-                   error.LocalizedDescription();
-  GetExecutionContext()->AddConsoleMessage(
-      ConsoleMessage::Create(kJSMessageSource, kErrorMessageLevel, message));
-
   AbortConnectionAttempt();
 }
 

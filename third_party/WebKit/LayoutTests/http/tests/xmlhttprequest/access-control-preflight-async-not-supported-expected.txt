@@ -1,5 +1,5 @@
 CONSOLE WARNING: line 19: Synchronous XMLHttpRequest on the main thread is deprecated because of its detrimental effects to the end user's experience. For more help, check https://xhr.spec.whatwg.org/.
-CONSOLE ERROR: XMLHttpRequest cannot load http://localhost:8000/xmlhttprequest/resources/access-control-preflight-denied-xsrf.php. Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource. Origin 'http://127.0.0.1:8000' is therefore not allowed access.
+CONSOLE ERROR: Failed to load http://localhost:8000/xmlhttprequest/resources/access-control-preflight-denied-xsrf.php: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource. Origin 'http://127.0.0.1:8000' is therefore not allowed access.
 PASS: Request successfully blocked.
 
 

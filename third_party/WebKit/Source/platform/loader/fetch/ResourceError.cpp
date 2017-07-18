@@ -59,6 +59,16 @@ ResourceError ResourceError::CancelledDueToAccessCheckError(
   return error;
 }
 
+ResourceError ResourceError::CancelledDueToAccessCheckError(
+    const String& failing_url,
+    ResourceRequestBlockedReason blocked_reason,
+    const String& localized_description) {
+  ResourceError error =
+      CancelledDueToAccessCheckError(failing_url, blocked_reason);
+  error.localized_description_ = localized_description;
+  return error;
+}
+
 ResourceError ResourceError::CacheMissError(const String& failing_url) {
   ResourceError error(kErrorDomainBlinkInternal, 0, failing_url, String());
   error.SetIsCacheMiss(true);
