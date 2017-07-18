@@ -4,6 +4,7 @@ include_rules = [
   "+components/security_state",
   "+printing",
   "+storage/browser/quota",
+  "+storage/common/quota",
   "+ui/aura",
 ]
 specific_include_rules = {

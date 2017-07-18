@@ -26,6 +26,7 @@
 #include "headless/lib/browser/headless_browser_impl.h"
 #include "headless/lib/browser/headless_browser_main_parts.h"
 #include "headless/lib/browser/headless_devtools_manager_delegate.h"
+#include "headless/lib/browser/headless_quota_permission_context.h"
 #include "headless/lib/headless_macros.h"
 #include "storage/browser/quota/quota_settings.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -176,6 +177,11 @@ HeadlessContentBrowserClient::GetRendererServiceManifestOverlay() {
       ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_HEADLESS_RENDERER_MANIFEST_OVERLAY);
   return base::JSONReader::Read(manifest_template);
+}
+
+content::QuotaPermissionContext*
+HeadlessContentBrowserClient::CreateQuotaPermissionContext() {
+  return new HeadlessQuotaPermissionContext();
 }
 
 void HeadlessContentBrowserClient::GetQuotaSettings(
