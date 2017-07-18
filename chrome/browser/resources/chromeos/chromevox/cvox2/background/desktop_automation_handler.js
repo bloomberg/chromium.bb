@@ -394,14 +394,14 @@ DesktopAutomationHandler.prototype = {
    * @private
    */
   onEditableChanged_: function(evt) {
+    if (!this.createTextEditHandlerIfNeeded_(evt.target))
+      return;
+
     if (!ChromeVoxState.instance.currentRange) {
       this.onEventDefault(evt);
       ChromeVoxState.instance.setCurrentRange(
           cursors.Range.fromNode(evt.target));
     }
-
-    if (!this.createTextEditHandlerIfNeeded_(evt.target))
-      return;
 
     // Sync the ChromeVox range to the editable, if a selection exists.
     var anchorObject = evt.target.root.anchorObject;
@@ -527,7 +527,8 @@ DesktopAutomationHandler.prototype = {
       return false;
 
     var topRoot = AutomationUtil.getTopLevelRoot(node);
-    if (topRoot && topRoot.parent && !topRoot.parent.state.focused)
+    if (!node.state.focused ||
+        (topRoot && topRoot.parent && !topRoot.parent.state.focused))
       return false;
 
     // Re-target the node to the root of the editable.
