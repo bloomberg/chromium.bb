@@ -28,6 +28,7 @@
 #include "chromeos/network/proxy/proxy_config_handler.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
+#include "components/arc/arc_util.h"
 #include "components/arc/test/fake_intent_helper_instance.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
@@ -222,6 +223,10 @@ class ArcSettingsServiceTest : public InProcessBrowserTest {
 
   // InProcessBrowserTest:
   ~ArcSettingsServiceTest() override = default;
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    arc::SetArcAvailableCommandLineForTesting(command_line);
+  }
 
   void SetUpInProcessBrowserTestFixture() override {
     EXPECT_CALL(provider_, IsInitializationComplete(_))

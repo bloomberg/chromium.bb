@@ -96,8 +96,6 @@ void ArcServiceLauncher::Initialize() {
   // List in lexicographical order.
   arc_service_manager_->AddService(
       base::MakeUnique<ArcIntentHelperBridge>(arc_bridge_service));
-  arc_service_manager_->AddService(
-      base::MakeUnique<ArcSettingsService>(arc_bridge_service));
   if (chromeos::switches::IsVoiceInteractionEnabled()) {
     arc_service_manager_->AddService(
         base::MakeUnique<ArcVoiceInteractionFrameworkService>(
@@ -177,6 +175,7 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   ArcPrintService::GetForBrowserContext(profile);
   ArcProcessService::GetForBrowserContext(profile);
   ArcProvisionNotificationService::GetForBrowserContext(profile);
+  ArcSettingsService::GetForBrowserContext(profile);
   ArcTracingBridge::GetForBrowserContext(profile);
   ArcTtsService::GetForBrowserContext(profile);
   ArcUserSessionService::GetForBrowserContext(profile);
