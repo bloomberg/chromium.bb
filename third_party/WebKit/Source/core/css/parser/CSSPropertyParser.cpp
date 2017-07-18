@@ -22,7 +22,6 @@
 #include "core/css/CSSReflectValue.h"
 #include "core/css/CSSShadowValue.h"
 #include "core/css/CSSStringValue.h"
-#include "core/css/CSSTimingFunctionValue.h"
 #include "core/css/CSSURIValue.h"
 #include "core/css/CSSUnicodeRangeValue.h"
 #include "core/css/CSSUnsetValue.h"
@@ -35,8 +34,7 @@
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "core/css/parser/CSSVariableParser.h"
 #include "core/css/properties/CSSPropertyAlignmentUtils.h"
-#include "core/css/properties/CSSPropertyAnimationIterationCountUtils.h"
-#include "core/css/properties/CSSPropertyAnimationNameUtils.h"
+#include "core/css/properties/CSSPropertyAnimationTimingFunctionUtils.h"
 #include "core/css/properties/CSSPropertyBorderImageUtils.h"
 #include "core/css/properties/CSSPropertyBoxShadowUtils.h"
 #include "core/css/properties/CSSPropertyDescriptor.h"
@@ -309,192 +307,6 @@ static CSSValue* ConsumeLocale(CSSParserTokenRange& range) {
   if (range.Peek().Id() == CSSValueAuto)
     return ConsumeIdent(range);
   return ConsumeString(range);
-}
-
-static CSSValue* ConsumeSteps(CSSParserTokenRange& range) {
-  DCHECK_EQ(range.Peek().FunctionId(), CSSValueSteps);
-  CSSParserTokenRange range_copy = range;
-  CSSParserTokenRange args = ConsumeFunction(range_copy);
-
-  CSSPrimitiveValue* steps = ConsumePositiveInteger(args);
-  if (!steps)
-    return nullptr;
-
-  StepsTimingFunction::StepPosition position =
-      StepsTimingFunction::StepPosition::END;
-  if (ConsumeCommaIncludingWhitespace(args)) {
-    switch (args.ConsumeIncludingWhitespace().Id()) {
-      case CSSValueMiddle:
-        if (!RuntimeEnabledFeatures::WebAnimationsAPIEnabled())
-          return nullptr;
-        position = StepsTimingFunction::StepPosition::MIDDLE;
-        break;
-      case CSSValueStart:
-        position = StepsTimingFunction::StepPosition::START;
-        break;
-      case CSSValueEnd:
-        position = StepsTimingFunction::StepPosition::END;
-        break;
-      default:
-        return nullptr;
-    }
-  }
-
-  if (!args.AtEnd())
-    return nullptr;
-
-  range = range_copy;
-  return CSSStepsTimingFunctionValue::Create(steps->GetIntValue(), position);
-}
-
-static CSSValue* ConsumeFrames(CSSParserTokenRange& range) {
-  DCHECK_EQ(range.Peek().FunctionId(), CSSValueFrames);
-  CSSParserTokenRange range_copy = range;
-  CSSParserTokenRange args = ConsumeFunction(range_copy);
-
-  CSSPrimitiveValue* frames = ConsumePositiveInteger(args);
-  if (!frames)
-    return nullptr;
-
-  int frames_int = frames->GetIntValue();
-  if (frames_int <= 1)
-    return nullptr;
-
-  if (!args.AtEnd())
-    return nullptr;
-
-  range = range_copy;
-  return CSSFramesTimingFunctionValue::Create(frames_int);
-}
-
-static CSSValue* ConsumeCubicBezier(CSSParserTokenRange& range) {
-  DCHECK_EQ(range.Peek().FunctionId(), CSSValueCubicBezier);
-  CSSParserTokenRange range_copy = range;
-  CSSParserTokenRange args = ConsumeFunction(range_copy);
-
-  double x1, y1, x2, y2;
-  if (ConsumeNumberRaw(args, x1) && x1 >= 0 && x1 <= 1 &&
-      ConsumeCommaIncludingWhitespace(args) && ConsumeNumberRaw(args, y1) &&
-      ConsumeCommaIncludingWhitespace(args) && ConsumeNumberRaw(args, x2) &&
-      x2 >= 0 && x2 <= 1 && ConsumeCommaIncludingWhitespace(args) &&
-      ConsumeNumberRaw(args, y2) && args.AtEnd()) {
-    range = range_copy;
-    return CSSCubicBezierTimingFunctionValue::Create(x1, y1, x2, y2);
-  }
-
-  return nullptr;
-}
-
-static CSSValue* ConsumeAnimationTimingFunction(CSSParserTokenRange& range) {
-  CSSValueID id = range.Peek().Id();
-  if (id == CSSValueEase || id == CSSValueLinear || id == CSSValueEaseIn ||
-      id == CSSValueEaseOut || id == CSSValueEaseInOut ||
-      id == CSSValueStepStart || id == CSSValueStepEnd ||
-      id == CSSValueStepMiddle)
-    return ConsumeIdent(range);
-
-  CSSValueID function = range.Peek().FunctionId();
-  if (function == CSSValueSteps)
-    return ConsumeSteps(range);
-  if (RuntimeEnabledFeatures::FramesTimingFunctionEnabled() &&
-      function == CSSValueFrames) {
-    return ConsumeFrames(range);
-  }
-  if (function == CSSValueCubicBezier)
-    return ConsumeCubicBezier(range);
-  return nullptr;
-}
-
-static CSSValue* ConsumeAnimationValue(CSSPropertyID property,
-                                       CSSParserTokenRange& range,
-                                       const CSSParserContext* context,
-                                       bool use_legacy_parsing) {
-  switch (property) {
-    case CSSPropertyAnimationDelay:
-    case CSSPropertyTransitionDelay:
-      return ConsumeTime(range, kValueRangeAll);
-    case CSSPropertyAnimationDirection:
-      return ConsumeIdent<CSSValueNormal, CSSValueAlternate, CSSValueReverse,
-                          CSSValueAlternateReverse>(range);
-    case CSSPropertyAnimationDuration:
-    case CSSPropertyTransitionDuration:
-      return ConsumeTime(range, kValueRangeNonNegative);
-    case CSSPropertyAnimationFillMode:
-      return ConsumeIdent<CSSValueNone, CSSValueForwards, CSSValueBackwards,
-                          CSSValueBoth>(range);
-    case CSSPropertyAnimationIterationCount:
-      return CSSPropertyAnimationIterationCountUtils::
-          ConsumeAnimationIterationCount(range);
-    case CSSPropertyAnimationName:
-      return CSSPropertyAnimationNameUtils::ConsumeAnimationName(
-          range, context, use_legacy_parsing);
-    case CSSPropertyAnimationPlayState:
-      return ConsumeIdent<CSSValueRunning, CSSValuePaused>(range);
-    case CSSPropertyTransitionProperty:
-      return CSSPropertyTransitionPropertyUtils::ConsumeTransitionProperty(
-          range);
-    case CSSPropertyAnimationTimingFunction:
-    case CSSPropertyTransitionTimingFunction:
-      return ConsumeAnimationTimingFunction(range);
-    default:
-      NOTREACHED();
-      return nullptr;
-  }
-}
-
-bool CSSPropertyParser::ConsumeAnimationShorthand(
-    const StylePropertyShorthand& shorthand,
-    bool use_legacy_parsing,
-    bool important) {
-  const unsigned longhand_count = shorthand.length();
-  CSSValueList* longhands[8];
-  DCHECK_LE(longhand_count, 8u);
-  for (size_t i = 0; i < longhand_count; ++i)
-    longhands[i] = CSSValueList::CreateCommaSeparated();
-
-  do {
-    bool parsed_longhand[8] = {false};
-    do {
-      bool found_property = false;
-      for (size_t i = 0; i < longhand_count; ++i) {
-        if (parsed_longhand[i])
-          continue;
-
-        if (CSSValue* value =
-                ConsumeAnimationValue(shorthand.properties()[i], range_,
-                                      context_, use_legacy_parsing)) {
-          parsed_longhand[i] = true;
-          found_property = true;
-          longhands[i]->Append(*value);
-          break;
-        }
-      }
-      if (!found_property)
-        return false;
-    } while (!range_.AtEnd() && range_.Peek().GetType() != kCommaToken);
-
-    // TODO(timloh): This will make invalid longhands, see crbug.com/386459
-    for (size_t i = 0; i < longhand_count; ++i) {
-      if (!parsed_longhand[i])
-        longhands[i]->Append(*CSSInitialValue::Create());
-      parsed_longhand[i] = false;
-    }
-  } while (ConsumeCommaIncludingWhitespace(range_));
-
-  for (size_t i = 0; i < longhand_count; ++i) {
-    // TODO(bugsnash): Refactor out the need to check for
-    // CSSPropertyTransitionProperty here when this is method implemented in the
-    // property APIs
-    if (shorthand.properties()[i] == CSSPropertyTransitionProperty &&
-        !CSSPropertyTransitionPropertyUtils::IsValidPropertyList(*longhands[i]))
-      return false;
-  }
-
-  for (size_t i = 0; i < longhand_count; ++i) {
-    AddParsedProperty(shorthand.properties()[i], shorthand.id(), *longhands[i],
-                      important);
-  }
-  return range_.AtEnd();
 }
 
 static CSSFunctionValue* ConsumeFilterFunction(
@@ -1216,7 +1028,9 @@ const CSSValue* CSSPropertyParser::ParseSingleValue(
                                        kValueRangeNonNegative);
     case CSSPropertyAnimationTimingFunction:
     case CSSPropertyTransitionTimingFunction:
-      return ConsumeCommaSeparatedList(ConsumeAnimationTimingFunction, range_);
+      return ConsumeCommaSeparatedList(CSSPropertyAnimationTimingFunctionUtils::
+                                           ConsumeAnimationTimingFunction,
+                                       range_);
     case CSSPropertyGridColumnGap:
     case CSSPropertyGridRowGap:
       return ConsumeLengthOrPercent(range_, context_->Mode(),
@@ -2321,13 +2135,6 @@ bool CSSPropertyParser::ParseShorthand(CSSPropertyID unresolved_property,
   }
 
   switch (property) {
-    case CSSPropertyAnimation:
-      return ConsumeAnimationShorthand(
-          animationShorthandForParsing(),
-          unresolved_property == CSSPropertyAliasWebkitAnimation, important);
-    case CSSPropertyTransition:
-      return ConsumeAnimationShorthand(transitionShorthandForParsing(), false,
-                                       important);
     case CSSPropertyTextDecoration:
       DCHECK(RuntimeEnabledFeatures::CSS3TextDecorationsEnabled());
       return ConsumeShorthandGreedily(textDecorationShorthand(), important);
