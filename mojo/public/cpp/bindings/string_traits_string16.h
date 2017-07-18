@@ -7,6 +7,7 @@
 
 #include "base/strings/string16.h"
 #include "mojo/public/cpp/bindings/bindings_export.h"
+#include "mojo/public/cpp/bindings/string_data_view.h"
 #include "mojo/public/cpp/bindings/string_traits.h"
 
 namespace mojo {

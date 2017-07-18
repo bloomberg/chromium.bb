@@ -5,7 +5,7 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_STRING_TRAITS_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_STRING_TRAITS_H_
 
-#include "mojo/public/cpp/bindings/string_data_view.h"
+#include "mojo/public/cpp/bindings/lib/template_util.h"
 
 namespace mojo {
 
@@ -47,7 +47,11 @@ namespace mojo {
 // so that you can do any necessary cleanup.
 //
 template <typename T>
-struct StringTraits;
+struct StringTraits {
+  static_assert(internal::AlwaysFalse<T>::value,
+                "Cannot find the mojo::StringTraits specialization. Did you "
+                "forget to include the corresponding header file?");
+};
 
 }  // namespace mojo
 
