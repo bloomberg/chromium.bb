@@ -3178,7 +3178,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDelayReloadStopButtonChangeName,
      flag_descriptions::kDelayReloadStopButtonChangeDescription,
      kOsCrOS | kOsWin | kOsLinux,
-     SINGLE_DISABLE_VALUE_TYPE(switches::kDelayReloadStopButtonChange)},
+     SINGLE_VALUE_TYPE(switches::kDelayReloadStopButtonChange)},
 #endif  // TOOLKIT_VIEWS
 
     {"enable-async-image-decoding", flag_descriptions::kAsyncImageDecodingName,
