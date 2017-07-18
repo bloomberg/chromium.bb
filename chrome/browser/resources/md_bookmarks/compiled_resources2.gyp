@@ -27,6 +27,7 @@
     {
       'target_name': 'app',
       'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
         '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:splitter',
         '<(EXTERNS_GYP):chrome_extensions',
         'api_listener',
