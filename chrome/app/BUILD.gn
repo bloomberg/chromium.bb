@@ -335,6 +335,7 @@ static_library("test_support") {
     "//printing/features",
     "//services/service_manager/embedder",
     "//ui/base",
+    "//v8:v8_headers",
   ]
 
   if (is_mac) {
