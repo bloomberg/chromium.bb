@@ -16,11 +16,12 @@ namespace blink {
 
 namespace {
 
-class MockWebAudioDevice : public WebAudioDevice {
+class MockWebAudioDeviceForAudioContext : public WebAudioDevice {
  public:
-  explicit MockWebAudioDevice(double sample_rate, int frames_per_buffer)
+  explicit MockWebAudioDeviceForAudioContext(double sample_rate,
+                                             int frames_per_buffer)
       : sample_rate_(sample_rate), frames_per_buffer_(frames_per_buffer) {}
-  ~MockWebAudioDevice() override = default;
+  ~MockWebAudioDeviceForAudioContext() override = default;
 
   void Start() override {}
   void Stop() override {}
@@ -66,8 +67,8 @@ class AudioContextTestPlatform : public TestingPlatformSupport {
         break;
     }
 
-    return WTF::MakeUnique<MockWebAudioDevice>(AudioHardwareSampleRate(),
-                                               buffer_size);
+    return WTF::MakeUnique<MockWebAudioDeviceForAudioContext>(
+        AudioHardwareSampleRate(), buffer_size);
   }
 
   double AudioHardwareSampleRate() override { return 44100; }

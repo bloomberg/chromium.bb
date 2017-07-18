@@ -50,11 +50,12 @@ class MockCrossOriginLocalFrameClient final : public EmptyLocalFrameClient {
   Member<Frame> parent_;
 };
 
-class MockWebAudioDevice : public WebAudioDevice {
+class MockWebAudioDeviceForBaseAudioContext : public WebAudioDevice {
  public:
-  explicit MockWebAudioDevice(double sample_rate, int frames_per_buffer)
+  explicit MockWebAudioDeviceForBaseAudioContext(double sample_rate,
+                                                 int frames_per_buffer)
       : sample_rate_(sample_rate), frames_per_buffer_(frames_per_buffer) {}
-  ~MockWebAudioDevice() override = default;
+  ~MockWebAudioDeviceForBaseAudioContext() override = default;
 
   void Start() override {}
   void Stop() override {}
@@ -75,8 +76,8 @@ class BaseAudioContextTestPlatform : public TestingPlatformSupport {
       WebAudioDevice::RenderCallback*,
       const WebString& device_id,
       const WebSecurityOrigin&) override {
-    return WTF::MakeUnique<MockWebAudioDevice>(AudioHardwareSampleRate(),
-                                               AudioHardwareBufferSize());
+    return WTF::MakeUnique<MockWebAudioDeviceForBaseAudioContext>(
+        AudioHardwareSampleRate(), AudioHardwareBufferSize());
   }
 
   double AudioHardwareSampleRate() override { return 44100; }
