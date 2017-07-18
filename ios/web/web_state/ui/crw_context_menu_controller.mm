@@ -14,6 +14,7 @@
 #import "ios/web/public/web_state/context_menu_params.h"
 #import "ios/web/public/web_state/js/crw_js_injection_evaluator.h"
 #import "ios/web/public/web_state/ui/crw_context_menu_delegate.h"
+#import "ios/web/web_state/context_menu_constants.h"
 #import "ios/web/web_state/context_menu_params_utils.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -77,8 +78,8 @@ void CancelTouches(UIGestureRecognizer* gesture_recognizer) {
   // DOM element information for the point where the user made the last touch.
   // Can be nil if has not been calculated yet. Precalculation is necessary
   // because retreiving DOM element relies on async API so element info can not
-  // be built on demand. May contain the following keys: @"href", @"src",
-  // @"title", @"referrerPolicy". All values are strings.
+  // be built on demand. May contain the keys defined in
+  // ios/web/web_state/context_menu_constants.h. All values are strings.
   NSDictionary* _DOMElementForLastTouch;
 }
 
