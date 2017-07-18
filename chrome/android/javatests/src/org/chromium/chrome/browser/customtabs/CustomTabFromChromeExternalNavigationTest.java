@@ -187,7 +187,7 @@ public class CustomTabFromChromeExternalNavigationTest {
         Assert.assertFalse(menu.findItem(R.id.open_in_browser_id).isVisible());
         Assert.assertFalse(menu.findItem(R.id.bookmark_this_page_id).isVisible());
         Assert.assertFalse(menu.findItem(R.id.offline_page_id).isVisible());
-        Assert.assertFalse(menu.findItem(R.id.request_desktop_site_id).isVisible());
+        Assert.assertFalse(menu.findItem(R.id.request_desktop_site_row_menu_id).isVisible());
         Assert.assertFalse(menu.findItem(R.id.add_to_homescreen_id).isVisible());
         Assert.assertFalse(menu.findItem(R.id.open_webapk_id).isVisible());
     }
