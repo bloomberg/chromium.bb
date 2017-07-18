@@ -10011,6 +10011,7 @@
     "additional_compile_targets": [
       "d8",
       "gl_unittests",
+      "media_unittests",
       "net_unittests",
       "skia_unittests",
       "ui_base_unittests"
@@ -10076,6 +10077,7 @@
     "additional_compile_targets": [
       "d8",
       "gl_unittests",
+      "media_unittests",
       "net_unittests",
       "skia_unittests",
       "ui_base_unittests"
