@@ -593,6 +593,19 @@
         <item name="android:textSize">14sp</item>
         <item name="android:layout_gravity">start</item>
     </style>
+    <style name="SigninButtonCompat">
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:textSize">14sp</item>
+        <item name="buttonColor">@color/light_active_color</item>
+        <item name="buttonRaised">false</item>
+    </style>
+    <style name="SigninButtonBorderlessRegular">
+        <item name="android:background">?android:attr/selectableItemBackground</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textColor">@color/light_active_color</item>
+        <item name="android:textSize">14sp</item>
+    </style>
 
     <!-- New tab page RecyclerView overscroll color -->
     <style name="NewTabPageRecyclerView">
