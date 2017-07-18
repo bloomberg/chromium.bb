@@ -140,6 +140,61 @@ TEST_F(WebAppManifestSectionTableTest, AddAndGetMultipleManifests) {
   ASSERT_TRUE(alicepay_manifest[0]->fingerprints[1] == fingerprint_four);
 }
 
+// A single manifest can have multiple package names, e.g., one for developer
+// and one for production version of the app. A package name is unique among all
+// the apps on Android, so this means we can define multiple apps in a single
+// manifest.
+TEST_F(WebAppManifestSectionTableTest, AddAndGetSingleManifestWithTwoIds) {
+  std::vector<uint8_t> fingerprint_dev = GenerateFingerprint(1);
+  std::vector<uint8_t> fingerprint_prod = GenerateFingerprint(32);
+
+  WebAppManifestSectionTable* web_app_manifest_section_table =
+      WebAppManifestSectionTable::FromWebDatabase(db_.get());
+
+  std::vector<mojom::WebAppManifestSectionPtr> manifest;
+  {
+    // Adds dev version to the manifest.
+    mojom::WebAppManifestSectionPtr manifest_dev_section =
+        mojom::WebAppManifestSection::New();
+    manifest_dev_section->id = "com.bobpay.dev";
+    manifest_dev_section->min_version = static_cast<int64_t>(2);
+    manifest_dev_section->fingerprints.push_back(fingerprint_dev);
+    manifest.emplace_back(std::move(manifest_dev_section));
+  }
+  {
+    // Adds prod version to the manifest.
+    mojom::WebAppManifestSectionPtr manifest_prod_section =
+        mojom::WebAppManifestSection::New();
+    manifest_prod_section->id = "com.bobpay.prod";
+    manifest_prod_section->min_version = static_cast<int64_t>(1);
+    manifest_prod_section->fingerprints.push_back(fingerprint_prod);
+    manifest.emplace_back(std::move(manifest_prod_section));
+  }
+  ASSERT_TRUE(web_app_manifest_section_table->AddWebAppManifest(manifest));
+
+  {
+    // Verify the dev manifest.
+    std::vector<mojom::WebAppManifestSectionPtr> actual_manifest =
+        web_app_manifest_section_table->GetWebAppManifest("com.bobpay.dev");
+    ASSERT_EQ(actual_manifest.size(), 1U);
+    EXPECT_EQ(actual_manifest[0]->id, "com.bobpay.dev");
+    EXPECT_EQ(actual_manifest[0]->min_version, 2);
+    ASSERT_EQ(actual_manifest[0]->fingerprints.size(), 1U);
+    EXPECT_TRUE(actual_manifest[0]->fingerprints[0] == fingerprint_dev);
+  }
+
+  {
+    // Verify the prod manifest.
+    std::vector<mojom::WebAppManifestSectionPtr> actual_manifest =
+        web_app_manifest_section_table->GetWebAppManifest("com.bobpay.prod");
+    ASSERT_EQ(actual_manifest.size(), 1U);
+    EXPECT_EQ(actual_manifest[0]->id, "com.bobpay.prod");
+    EXPECT_EQ(actual_manifest[0]->min_version, 1);
+    ASSERT_EQ(actual_manifest[0]->fingerprints.size(), 1U);
+    EXPECT_TRUE(actual_manifest[0]->fingerprints[0] == fingerprint_prod);
+  }
+}
+
 }  // namespace
 
 }  // namespace payments
