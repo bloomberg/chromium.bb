@@ -54,18 +54,13 @@ class DownloadServiceImplTest : public testing::Test {
 
 TEST_F(DownloadServiceImplTest, TestGetStatus) {
   StartupStatus startup_status;
-  EXPECT_CALL(*controller_, GetStartupStatus())
-      .WillRepeatedly(Return(&startup_status));
+  EXPECT_CALL(*controller_, GetState())
+      .WillOnce(Return(Controller::State::INITIALIZING))
+      .WillOnce(Return(Controller::State::READY))
+      .WillOnce(Return(Controller::State::UNAVAILABLE));
 
   EXPECT_EQ(DownloadService::ServiceStatus::STARTING_UP, service_->GetStatus());
-
-  startup_status.driver_ok = true;
-  startup_status.model_ok = true;
-  startup_status.file_monitor_ok = true;
   EXPECT_EQ(DownloadService::ServiceStatus::READY, service_->GetStatus());
-
-  startup_status.driver_ok = false;
-  startup_status.model_ok = true;
   EXPECT_EQ(DownloadService::ServiceStatus::UNAVAILABLE, service_->GetStatus());
 }
 

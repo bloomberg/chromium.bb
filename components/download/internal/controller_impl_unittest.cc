@@ -161,7 +161,8 @@ class DownloadServiceControllerImplTest : public testing::Test {
 
  protected:
   void OnInitCompleted() {
-    DCHECK(controller_->GetStartupStatus()->Complete());
+    EXPECT_TRUE(controller_->GetState() == Controller::State::READY ||
+                controller_->GetState() == Controller::State::UNAVAILABLE);
     init_callback_called_ = true;
   }
 
@@ -206,26 +207,24 @@ class DownloadServiceControllerImplTest : public testing::Test {
 }  // namespace
 
 TEST_F(DownloadServiceControllerImplTest, SuccessfulInitModelFirst) {
-  EXPECT_CALL(*client_, OnServiceInitialized(_)).Times(0);
   base::HistogramTester histogram_tester;
+
+  EXPECT_CALL(*client_, OnServiceInitialized(_)).Times(0);
+  EXPECT_EQ(controller_->GetState(), Controller::State::CREATED);
 
   InitializeController();
   EXPECT_TRUE(store_->init_called());
-  EXPECT_FALSE(controller_->GetStartupStatus()->Complete());
+  EXPECT_EQ(controller_->GetState(), Controller::State::INITIALIZING);
 
   store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>());
-  EXPECT_FALSE(controller_->GetStartupStatus()->Complete());
-  EXPECT_FALSE(controller_->GetStartupStatus()->driver_ok.has_value());
-  EXPECT_TRUE(controller_->GetStartupStatus()->model_ok.value());
+  EXPECT_EQ(controller_->GetState(), Controller::State::INITIALIZING);
 
   EXPECT_CALL(*client_, OnServiceInitialized(_)).Times(1);
   EXPECT_CALL(*scheduler_, Next(_, _)).Times(1);
   EXPECT_CALL(*scheduler_, Reschedule(_)).Times(1);
 
   driver_->MakeReady();
-  EXPECT_TRUE(controller_->GetStartupStatus()->Complete());
-  EXPECT_TRUE(controller_->GetStartupStatus()->driver_ok.value());
-  EXPECT_TRUE(controller_->GetStartupStatus()->Ok());
+  EXPECT_EQ(controller_->GetState(), Controller::State::READY);
 
   task_runner_->RunUntilIdle();
 
@@ -237,25 +236,22 @@ TEST_F(DownloadServiceControllerImplTest, SuccessfulInitModelFirst) {
 
 TEST_F(DownloadServiceControllerImplTest, SuccessfulInitDriverFirst) {
   EXPECT_CALL(*client_, OnServiceInitialized(_)).Times(0);
+  EXPECT_EQ(controller_->GetState(), Controller::State::CREATED);
 
   InitializeController();
   EXPECT_TRUE(store_->init_called());
-  EXPECT_FALSE(controller_->GetStartupStatus()->Complete());
+  EXPECT_EQ(controller_->GetState(), Controller::State::INITIALIZING);
 
   driver_->MakeReady();
-  EXPECT_FALSE(controller_->GetStartupStatus()->Complete());
-  EXPECT_FALSE(controller_->GetStartupStatus()->model_ok.has_value());
-  EXPECT_TRUE(controller_->GetStartupStatus()->driver_ok.value());
   EXPECT_FALSE(init_callback_called_);
+  EXPECT_EQ(controller_->GetState(), Controller::State::INITIALIZING);
 
   EXPECT_CALL(*client_, OnServiceInitialized(_)).Times(1);
   EXPECT_CALL(*scheduler_, Next(_, _)).Times(1);
   EXPECT_CALL(*scheduler_, Reschedule(_)).Times(1);
 
   store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>());
-  EXPECT_TRUE(controller_->GetStartupStatus()->Complete());
-  EXPECT_TRUE(controller_->GetStartupStatus()->model_ok.value());
-  EXPECT_TRUE(controller_->GetStartupStatus()->Ok());
+  EXPECT_EQ(controller_->GetState(), Controller::State::READY);
 
   task_runner_->RunUntilIdle();
   EXPECT_TRUE(init_callback_called_);

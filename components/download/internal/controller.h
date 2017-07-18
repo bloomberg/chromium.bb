@@ -16,7 +16,6 @@ namespace download {
 
 struct DownloadParams;
 struct SchedulingParams;
-struct StartupStatus;
 
 // The type of completion when the download entry transits to complete state.
 // TODO(xingliu): Implement timeout and unknown failure types.
@@ -41,6 +40,26 @@ enum class CompletionType {
 // together to manage the active downloads.
 class Controller {
  public:
+  enum class State {
+    // The Controller has been created but has not been initialized yet.  It
+    // cannot be used.
+    CREATED = 1,
+
+    // The Controller has been created and Initialize() has been called but has
+    // not yet finished.  It cannot be used.
+    INITIALIZING = 2,
+
+    // The Controller has been created and initialized.  It can be used.
+    READY = 3,
+
+    // The Controller failed to initialize and is in the process of recovering.
+    // It cannot be used.
+    RECOVERING = 4,
+
+    // The Controller was unable to recover and is unusable this session.
+    UNAVAILABLE = 5,
+  };
+
   Controller() = default;
   virtual ~Controller() = default;
 
@@ -48,7 +67,7 @@ class Controller {
   virtual void Initialize(const base::Closure& callback) = 0;
 
   // Returns the status of Controller.
-  virtual const StartupStatus* GetStartupStatus() = 0;
+  virtual State GetState() = 0;
 
   // Starts a download with |params|.  See DownloadParams::StartCallback and
   // DownloadParams::StartResponse for information on how a caller can determine

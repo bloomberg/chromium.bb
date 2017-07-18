@@ -56,7 +56,7 @@ class ControllerImpl : public Controller,
 
   // Controller implementation.
   void Initialize(const base::Closure& callback) override;
-  const StartupStatus* GetStartupStatus() override;
+  State GetState() override;
   void StartDownload(const DownloadParams& params) override;
   void PauseDownload(const std::string& guid) override;
   void ResumeDownload(const std::string& guid) override;
@@ -200,12 +200,8 @@ class ControllerImpl : public Controller,
   std::unique_ptr<FileMonitor> file_monitor_;
 
   // Internal state.
-  // Is set to true if this class is currently in the process of initializing
-  // it's internal state.  This will be false until |startup_status_| signals it
-  // is complete *and* all internal structures are set up.  This is to prevent
-  // outside signals from triggering state updates before we are ready.
-  bool initializing_internals_;
   base::Closure init_callback_;
+  State controller_state_;
   StartupStatus startup_status_;
   std::set<std::string> externally_active_downloads_;
   std::map<std::string, DownloadParams::StartCallback> start_callbacks_;
