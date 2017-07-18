@@ -655,6 +655,12 @@ bool ChromeContentRendererClient::OverrideCreatePlugin(
   if (orig_mime_type == kPDFMimeType) {
     ReportPDFLoadStatus(
         PDFLoadStatus::kShowedDisabledPluginPlaceholderForEmbeddedPdf);
+    if (base::FeatureList::IsEnabled(features::kClickToOpenPDFPlaceholder)) {
+      PDFPluginPlaceholder* placeholder =
+          PDFPluginPlaceholder::CreatePDFPlaceholder(render_frame, params);
+      *plugin = placeholder->plugin();
+      return true;
+    }
   }
   auto* placeholder = NonLoadablePluginPlaceholder::CreateNotSupportedPlugin(
       render_frame, params);
