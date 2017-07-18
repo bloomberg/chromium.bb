@@ -8,7 +8,6 @@ import static org.chromium.chrome.browser.UrlConstants.BOOKMARKS_FOLDER_URL;
 import static org.chromium.chrome.browser.UrlConstants.BOOKMARKS_UNCATEGORIZED_URL;
 import static org.chromium.chrome.browser.UrlConstants.BOOKMARKS_URL;
 import static org.chromium.chrome.browser.UrlConstants.DOWNLOADS_URL;
-import static org.chromium.chrome.browser.UrlConstants.INTERESTS_URL;
 import static org.chromium.chrome.browser.UrlConstants.NATIVE_HISTORY_URL;
 import static org.chromium.chrome.browser.UrlConstants.NTP_URL;
 import static org.chromium.chrome.browser.UrlConstants.RECENT_TABS_URL;
@@ -45,6 +44,9 @@ public class VrShellNativeUiTest {
     @Rule
     public VrTestRule mVrTestRule = new VrTestRule();
 
+    private static final String TEST_PAGE_2D_URL =
+            VrTestRule.getHtmlTestFile("test_navigation_2d_page");
+
     @Before
     public void setUp() throws Exception {
         VrTransitionUtils.forceEnterVr();
@@ -52,28 +54,43 @@ public class VrShellNativeUiTest {
     }
 
     /**
-     * Tests that URLs are shown for native UI.
-     * TODO(tiborg): Update this. crbug.com/738583
+     * Tests that URLs are not shown for native UI.
      */
     @Test
     @MediumTest
-    public void testURLOnNativeUi()
+    public void testUrlOnNativeUi()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
         mVrTestRule.loadUrl(BOOKMARKS_URL, PAGE_LOAD_TIMEOUT_S);
-        Assert.assertTrue("Should be showing URL", VrShellDelegate.isDisplayingUrlForTesting());
+        Assert.assertFalse(
+                "Should not be showing URL", VrShellDelegate.isDisplayingUrlForTesting());
         mVrTestRule.loadUrl(BOOKMARKS_FOLDER_URL, PAGE_LOAD_TIMEOUT_S);
-        Assert.assertTrue("Should be showing URL", VrShellDelegate.isDisplayingUrlForTesting());
+        Assert.assertFalse(
+                "Should not be showing URL", VrShellDelegate.isDisplayingUrlForTesting());
         mVrTestRule.loadUrl(BOOKMARKS_UNCATEGORIZED_URL, PAGE_LOAD_TIMEOUT_S);
-        Assert.assertTrue("Should be showing URL", VrShellDelegate.isDisplayingUrlForTesting());
+        Assert.assertFalse(
+                "Should not be showing URL", VrShellDelegate.isDisplayingUrlForTesting());
         mVrTestRule.loadUrl(DOWNLOADS_URL, PAGE_LOAD_TIMEOUT_S);
-        Assert.assertTrue("Should be showing URL", VrShellDelegate.isDisplayingUrlForTesting());
-        mVrTestRule.loadUrl(INTERESTS_URL, PAGE_LOAD_TIMEOUT_S);
-        Assert.assertTrue("Should be showing URL", VrShellDelegate.isDisplayingUrlForTesting());
+        Assert.assertFalse(
+                "Should not be showing URL", VrShellDelegate.isDisplayingUrlForTesting());
         mVrTestRule.loadUrl(NTP_URL, PAGE_LOAD_TIMEOUT_S);
-        Assert.assertTrue("Should be showing URL", VrShellDelegate.isDisplayingUrlForTesting());
+        Assert.assertFalse(
+                "Should not be showing URL", VrShellDelegate.isDisplayingUrlForTesting());
         mVrTestRule.loadUrl(NATIVE_HISTORY_URL, PAGE_LOAD_TIMEOUT_S);
-        Assert.assertTrue("Should be showing URL", VrShellDelegate.isDisplayingUrlForTesting());
+        Assert.assertFalse(
+                "Should not be showing URL", VrShellDelegate.isDisplayingUrlForTesting());
         mVrTestRule.loadUrl(RECENT_TABS_URL, PAGE_LOAD_TIMEOUT_S);
+        Assert.assertFalse(
+                "Should not be showing URL", VrShellDelegate.isDisplayingUrlForTesting());
+    }
+
+    /**
+     * Tests that URLs are shown for non-native UI.
+     */
+    @Test
+    @MediumTest
+    public void testUrlOnNonNativeUi()
+            throws IllegalArgumentException, InterruptedException, TimeoutException {
+        mVrTestRule.loadUrl(TEST_PAGE_2D_URL, PAGE_LOAD_TIMEOUT_S);
         Assert.assertTrue("Should be showing URL", VrShellDelegate.isDisplayingUrlForTesting());
     }
 }
