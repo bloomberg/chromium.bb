@@ -53,9 +53,11 @@ using autofill::PasswordForm;
 using autofill::PossibleUsernamePair;
 using base::ASCIIToUTF16;
 using ::testing::_;
+using ::testing::ElementsAre;
 using ::testing::IsEmpty;
 using ::testing::Mock;
 using ::testing::NiceMock;
+using ::testing::Pair;
 using ::testing::Pointee;
 using ::testing::Return;
 using ::testing::SaveArg;
@@ -2285,6 +2287,104 @@ TEST_F(PasswordFormManagerTest, TestUpdateNoUsernameTextfieldPresent) {
   EXPECT_EQ(saved_match()->username_element, new_credentials.username_element);
   EXPECT_EQ(saved_match()->password_element, new_credentials.password_element);
   EXPECT_EQ(saved_match()->submit_element, new_credentials.submit_element);
+}
+
+// Test that when user updates username, the pending credentials is updated
+// accordingly.
+TEST_F(PasswordFormManagerTest, TestUpdateUsernameMethod) {
+  fake_form_fetcher()->SetNonFederated(std::vector<const PasswordForm*>(), 0u);
+
+  // User logs in, edits username.
+  PasswordForm credential(*observed_form());
+  credential.username_value = ASCIIToUTF16("oldusername");
+  credential.password_value = ASCIIToUTF16("password");
+  form_manager()->ProvisionallySave(
+      credential, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  form_manager()->UpdateUsername(ASCIIToUTF16("newusername"));
+  EXPECT_EQ(form_manager()->pending_credentials().username_value,
+            ASCIIToUTF16("newusername"));
+  EXPECT_EQ(form_manager()->pending_credentials().password_value,
+            ASCIIToUTF16("password"));
+  EXPECT_EQ(form_manager()->IsNewLogin(), true);
+
+  // User clicks save, edited username is saved.
+  PasswordForm saved_result;
+  EXPECT_CALL(MockFormSaver::Get(form_manager()), Save(_, IsEmpty(), nullptr))
+      .WillOnce(SaveArg<0>(&saved_result));
+  form_manager()->Save();
+  EXPECT_EQ(ASCIIToUTF16("newusername"), saved_result.username_value);
+  EXPECT_EQ(ASCIIToUTF16("password"), saved_result.password_value);
+}
+
+// Test that when user updates username to an already existing one, is_new_login
+// status is false.
+TEST_F(PasswordFormManagerTest, TestUpdateUsernameToExisting) {
+  // We have an already existing credential.
+  fake_form_fetcher()->SetNonFederated({saved_match()}, 0u);
+
+  // User submits credential to the observed form.
+  PasswordForm credential(*observed_form());
+  credential.username_value = ASCIIToUTF16("different_username");
+  credential.password_value = ASCIIToUTF16("different_pass");
+  credential.preferred = true;
+  form_manager()->ProvisionallySave(
+      credential, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+
+  // User edits the username to the already existing one.
+  form_manager()->UpdateUsername(saved_match()->username_value);
+
+  // The username in credentials is expected to be updated.
+  EXPECT_EQ(saved_match()->username_value,
+            form_manager()->pending_credentials().username_value);
+  EXPECT_EQ(ASCIIToUTF16("different_pass"),
+            form_manager()->pending_credentials().password_value);
+  EXPECT_EQ(form_manager()->IsNewLogin(), false);
+
+  // Create the expected variables for the test.
+  PasswordForm expected_pending(credential);
+  expected_pending.times_used = 1;
+  expected_pending.username_value = saved_match()->username_value;
+
+  // User clicks save, edited username is saved, password updated.
+  PasswordForm saved_result;
+  EXPECT_CALL(MockFormSaver::Get(form_manager()),
+              Update(expected_pending,
+                     ElementsAre(Pair(saved_match()->username_value,
+                                      Pointee(*saved_match()))),
+                     Pointee(IsEmpty()), nullptr));
+  form_manager()->Save();
+}
+
+// Test that when user updates username to a PSL matching credential, we should
+// handle it as a new login.
+TEST_F(PasswordFormManagerTest, TestUpdatePSLUsername) {
+  fake_form_fetcher()->SetNonFederated({psl_saved_match()}, 0u);
+  // User submits credential to the observed form.
+  PasswordForm credential(*observed_form());
+  credential.username_value = ASCIIToUTF16("some_username");
+  credential.password_value = ASCIIToUTF16("some_pass");
+  form_manager()->ProvisionallySave(
+      credential, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+
+  // User edits username to match the PSL.
+  form_manager()->UpdateUsername(psl_saved_match()->username_value);
+  EXPECT_EQ(psl_saved_match()->username_value,
+            form_manager()->pending_credentials().username_value);
+  EXPECT_EQ(true, form_manager()->IsNewLogin());
+  EXPECT_EQ(ASCIIToUTF16("some_pass"),
+            form_manager()->pending_credentials().password_value);
+
+  // User clicks save, edited username is saved.
+  PasswordForm saved_result;
+  EXPECT_CALL(MockFormSaver::Get(form_manager()),
+              Save(_,
+                   ElementsAre(Pair(psl_saved_match()->username_value,
+                                    Pointee(*psl_saved_match()))),
+                   nullptr))
+      .WillOnce(SaveArg<0>(&saved_result));
+  form_manager()->Save();
+  EXPECT_EQ(psl_saved_match()->username_value, saved_result.username_value);
+  EXPECT_EQ(ASCIIToUTF16("some_pass"), saved_result.password_value);
 }
 
 // Test that if WipeStoreCopyIfOutdated is called before password store

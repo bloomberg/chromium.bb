@@ -33,7 +33,7 @@ class ManagePasswordsUIControllerMock : public ManagePasswordsUIController {
   MOCK_METHOD0(OnNoInteraction, void());
   MOCK_METHOD0(OnNopeUpdateClicked, void());
   MOCK_METHOD0(NeverSavePassword, void());
-  MOCK_METHOD0(SavePassword, void());
+  MOCK_METHOD1(SavePassword, void(const base::string16&));
   MOCK_METHOD1(UpdatePassword, void(const autofill::PasswordForm&));
   MOCK_METHOD2(ChooseCredential, void(const autofill::PasswordForm&,
                                       password_manager::CredentialType));

@@ -407,7 +407,7 @@ void ManagePasswordsBubbleModel::OnSaveClicked() {
   interaction_keeper_->set_update_password_submission_event(
       GetUpdateDismissalReason(UPDATE_CLICKED));
   CleanStatisticsForSite(GetProfile(), origin_);
-  delegate_->SavePassword();
+  delegate_->SavePassword(pending_password_.username_value);
 }
 
 void ManagePasswordsBubbleModel::OnNopeUpdateClicked() {

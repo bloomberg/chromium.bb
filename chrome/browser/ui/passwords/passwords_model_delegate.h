@@ -83,8 +83,10 @@ class PasswordsModelDelegate {
   // Called from the model when the user chooses to never save passwords.
   virtual void NeverSavePassword() = 0;
 
-  // Called from the model when the user chooses to save a password.
-  virtual void SavePassword() = 0;
+  // Called from the model when the user chooses to save a password. The
+  // username seen on the ui is sent as a parameter, and handled accordingly if
+  // user had edited it.
+  virtual void SavePassword(const base::string16& username) = 0;
 
   // Called from the model when the user chooses to update a password.
   virtual void UpdatePassword(const autofill::PasswordForm& password_form) = 0;
