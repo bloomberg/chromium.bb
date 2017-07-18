@@ -745,6 +745,7 @@ component("platform") {
     "fonts/shaping/HarfBuzzShaper.h",
     "fonts/shaping/RunSegmenter.cpp",
     "fonts/shaping/RunSegmenter.h",
+    "fonts/shaping/ShapeCache.cpp",
     "fonts/shaping/ShapeCache.h",
     "fonts/shaping/ShapeResult.cpp",
     "fonts/shaping/ShapeResult.h",
