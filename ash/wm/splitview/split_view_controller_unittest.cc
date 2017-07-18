@@ -6,6 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
@@ -25,6 +26,16 @@ class SplitViewControllerTest : public AshTestBase {
   }
 
   void EndSplitView() { split_view_controller()->EndSplitView(); }
+
+  void ToggleOverview() {
+    Shell::Get()->window_selector_controller()->ToggleOverview();
+  }
+
+  std::vector<aura::Window*> GetWindowsInOverviewGrids() {
+    return Shell::Get()
+        ->window_selector_controller()
+        ->GetWindowsListInOverviewGridsForTesting();
+  }
 
   SplitViewController* split_view_controller() {
     return Shell::Get()->split_view_controller();
@@ -53,7 +64,7 @@ TEST_F(SplitViewControllerTest, Basic) {
   EXPECT_EQ(split_view_controller()->IsSplitViewModeActive(), true);
   EXPECT_EQ(window1->GetBoundsInScreen(),
             split_view_controller()->GetSnappedWindowBoundsInScreen(
-                window1.get(), SplitViewController::LEFT_SNAPPED));
+                window1.get(), SplitViewController::LEFT));
 
   split_view_controller()->SnapWindow(window2.get(),
                                       SplitViewController::RIGHT);
@@ -64,7 +75,7 @@ TEST_F(SplitViewControllerTest, Basic) {
   EXPECT_EQ(split_view_controller()->IsSplitViewModeActive(), true);
   EXPECT_EQ(window2->GetBoundsInScreen(),
             split_view_controller()->GetSnappedWindowBoundsInScreen(
-                window2.get(), SplitViewController::RIGHT_SNAPPED));
+                window2.get(), SplitViewController::RIGHT));
 
   EndSplitView();
   EXPECT_EQ(split_view_controller()->state(), SplitViewController::NO_SNAP);
@@ -158,6 +169,55 @@ TEST_F(SplitViewControllerTest, WindowActivationTest) {
   EXPECT_EQ(split_view_controller()->right_window(), window3.get());
   EXPECT_EQ(split_view_controller()->state(),
             SplitViewController::BOTH_SNAPPED);
+}
+
+// Tests that if split view mode and overview mode are active at the same time,
+// i.e., half of the screen is occupied by a snapped window and half of the
+// screen is occupied by the overview windows grid, the next activatable window
+// will be picked to snap when exiting the overview mode.
+TEST_F(SplitViewControllerTest, ExitOverviewTest) {
+  const gfx::Rect bounds(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window3(CreateWindow(bounds));
+  EXPECT_EQ(split_view_controller()->IsSplitViewModeActive(), false);
+
+  ToggleOverview();
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
+  EXPECT_EQ(split_view_controller()->IsSplitViewModeActive(), true);
+  EXPECT_EQ(split_view_controller()->state(),
+            SplitViewController::LEFT_SNAPPED);
+  EXPECT_EQ(split_view_controller()->left_window(), window1.get());
+
+  ToggleOverview();
+  EXPECT_EQ(split_view_controller()->state(),
+            SplitViewController::BOTH_SNAPPED);
+  EXPECT_EQ(split_view_controller()->right_window(), window3.get());
+}
+
+// Tests that if split view mode is active when entering overview, the overview
+// windows grid should show in the non-default side of the screen, and the
+// default snapped window should not be shown in the overview window grid.
+TEST_F(SplitViewControllerTest, EnterOverviewTest) {
+  const gfx::Rect bounds(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window3(CreateWindow(bounds));
+
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(window2.get(),
+                                      SplitViewController::RIGHT);
+  EXPECT_EQ(split_view_controller()->state(),
+            SplitViewController::BOTH_SNAPPED);
+  EXPECT_EQ(split_view_controller()->GetDefaultSnappedWindow(), window1.get());
+
+  ToggleOverview();
+  EXPECT_EQ(split_view_controller()->state(),
+            SplitViewController::LEFT_SNAPPED);
+  std::vector<aura::Window*> windows = GetWindowsInOverviewGrids();
+  auto iter = std::find(windows.begin(), windows.end(),
+                        split_view_controller()->GetDefaultSnappedWindow());
+  EXPECT_TRUE(iter == windows.end());
 }
 
 }  // namespace ash

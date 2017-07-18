@@ -23,6 +23,7 @@
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/overview/window_selector_item.h"
 #include "ash/wm/panels/panel_layout_manager.h"
+#include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
@@ -163,6 +164,10 @@ class WindowSelectorTest : public AshTestBase {
 
   WindowSelector* window_selector() {
     return window_selector_controller()->window_selector_.get();
+  }
+
+  SplitViewController* split_view_controller() {
+    return Shell::Get()->split_view_controller();
   }
 
   void ToggleOverview() { window_selector_controller()->ToggleOverview(); }
@@ -1889,6 +1894,70 @@ TEST_F(WindowSelectorTest, OverviewWhileDragging) {
   resizer->Drag(location, 0);
   ToggleOverview();
   resizer->RevertDrag();
+}
+
+// Tests that dragging a overview window selector item to the edge of the screen
+// snaps the window. If two windows are snapped to left and right side of the
+// screen, exit the overview mode.
+TEST_F(WindowSelectorTest, DragOverviewWindowToSnap) {
+  const gfx::Rect bounds(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window3(CreateWindow(bounds));
+
+  ToggleOverview();
+  EXPECT_TRUE(window_selector_controller()->IsSelecting());
+  EXPECT_EQ(split_view_controller()->IsSplitViewModeActive(), false);
+
+  // Drag |window1| selector item to snap to left.
+  const int grid_index = 0;
+  WindowSelectorItem* selector_item1 =
+      GetWindowItemForWindow(grid_index, window1.get());
+  const gfx::Rect selector_item_bounds1 = selector_item1->target_bounds();
+  // Start drag in the middle of the seletor item.
+  const gfx::Point start_location1(selector_item_bounds1.CenterPoint());
+  window_selector()->InitiateDrag(selector_item1, start_location1);
+  const gfx::Point end_location1(0, 0);
+  window_selector()->Drag(selector_item1, end_location1);
+  window_selector()->CompleteDrag(selector_item1);
+
+  EXPECT_EQ(split_view_controller()->IsSplitViewModeActive(), true);
+  EXPECT_EQ(split_view_controller()->state(),
+            SplitViewController::LEFT_SNAPPED);
+  EXPECT_EQ(split_view_controller()->left_window(), window1.get());
+
+  // Drag |window2| selector item to snap to left.
+  WindowSelectorItem* selector_item2 =
+      GetWindowItemForWindow(grid_index, window2.get());
+  const gfx::Rect selector_item_bounds2 = selector_item2->target_bounds();
+  // Start drag in the middle of the seletor item.
+  const gfx::Point start_location2(selector_item_bounds2.CenterPoint());
+  window_selector()->InitiateDrag(selector_item2, start_location2);
+  const gfx::Point end_location2(0, 0);
+  window_selector()->Drag(selector_item2, end_location2);
+  window_selector()->CompleteDrag(selector_item2);
+
+  EXPECT_EQ(split_view_controller()->state(),
+            SplitViewController::LEFT_SNAPPED);
+  EXPECT_EQ(split_view_controller()->left_window(), window2.get());
+
+  // Drag |window3| selector item to snap to right.
+  WindowSelectorItem* selector_item3 =
+      GetWindowItemForWindow(grid_index, window3.get());
+  const gfx::Rect selector_item_bounds3 = selector_item3->target_bounds();
+  // Start drag in the middle of the seletor item.
+  const gfx::Point start_location3(selector_item_bounds3.CenterPoint());
+  window_selector()->InitiateDrag(selector_item3, start_location3);
+  const gfx::Rect work_area_rect =
+      split_view_controller()->GetDisplayWorkAreaBoundsInScreen(window2.get());
+  const gfx::Point end_location3(work_area_rect.width(), 0);
+  window_selector()->Drag(selector_item3, end_location3);
+  window_selector()->CompleteDrag(selector_item3);
+
+  EXPECT_EQ(split_view_controller()->state(),
+            SplitViewController::BOTH_SNAPPED);
+  EXPECT_EQ(split_view_controller()->right_window(), window3.get());
+  EXPECT_FALSE(window_selector_controller()->IsSelecting());
 }
 
 }  // namespace ash

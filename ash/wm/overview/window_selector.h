@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/wm/splitview/split_view_controller.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "ui/aura/window_observer.h"
@@ -20,6 +21,11 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/wm/public/activation_change_observer.h"
+
+namespace gfx {
+class Point;
+class Rect;
+}  // namespace gfx
 
 namespace views {
 class Textfield;
@@ -31,13 +37,15 @@ class WindowSelectorDelegate;
 class WindowSelectorItem;
 class WindowSelectorTest;
 class WindowGrid;
+class OverviewWindowDragController;
 
 // The WindowSelector shows a grid of all of your windows, allowing to select
 // one by clicking or tapping on it.
 class ASH_EXPORT WindowSelector : public display::DisplayObserver,
                                   public aura::WindowObserver,
                                   public ::wm::ActivationChangeObserver,
-                                  public views::TextfieldController {
+                                  public views::TextfieldController,
+                                  public SplitViewController::Observer {
  public:
   // Returns true if the window can be selected in overview mode.
   static bool IsSelectable(aura::Window* window);
@@ -75,6 +83,20 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   // Called when |window| is about to get closed.
   void WindowClosing(WindowSelectorItem* window);
 
+  // Called to set bounds for window grids. Used for split view.
+  void SetBoundsForWindowGridsInScreen(const gfx::Rect& bounds);
+
+  // Removes the window selector item from the overview window grid.
+  void RemoveWindowSelectorItem(WindowSelectorItem* item);
+
+  void InitiateDrag(WindowSelectorItem* item,
+                    const gfx::Point& location_in_screen);
+  void Drag(WindowSelectorItem* item, const gfx::Point& location_in_screen);
+  void CompleteDrag(WindowSelectorItem* item);
+
+  // Positions all of the windows in the overview.
+  void PositionWindows(bool animate);
+
   WindowSelectorDelegate* delegate() { return delegate_; }
 
   bool restoring_minimized_windows() const {
@@ -84,6 +106,11 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   int text_filter_bottom() const { return text_filter_bottom_; }
 
   bool is_shut_down() const { return is_shut_down_; }
+
+  const std::vector<std::unique_ptr<WindowGrid>>& grid_list_for_testing()
+      const {
+    return grid_list_;
+  }
 
   // display::DisplayObserver:
   void OnDisplayAdded(const display::Display& display) override;
@@ -108,14 +135,15 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   bool HandleKeyEvent(views::Textfield* sender,
                       const ui::KeyEvent& key_event) override;
 
+  // SplitViewController::Observer:
+  void OnSplitViewStateChanged(SplitViewController::State previous_state,
+                               SplitViewController::State state) override;
+
  private:
   friend class WindowSelectorTest;
 
   // Returns the aura::Window for |text_filter_widget_|.
   aura::Window* GetTextFilterWidgetWindow();
-
-  // Position all of the windows in the overview.
-  void PositionWindows(bool animate);
 
   // Repositions and resizes |text_filter_widget_| on
   // DisplayMetricsChanged event.
@@ -192,6 +220,9 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   int text_filter_bottom_;
 
   bool is_shut_down_ = false;
+
+  // The drag controller for a window in the overview mode.
+  std::unique_ptr<OverviewWindowDragController> window_drag_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowSelector);
 };
