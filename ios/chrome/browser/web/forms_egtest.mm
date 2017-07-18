@@ -369,12 +369,13 @@ id<GREYMatcher> GoButtonMatcher() {
 // Tests that pressing the button on a POST-based form with same-page action
 // does not change the page URL and that the back button works as expected
 // afterwards.
-- (void)testPostFormToSamePage {
 // TODO(crbug.com/714303): Re-enable this test on devices.
-#if !TARGET_IPHONE_SIMULATOR
-  EARL_GREY_TEST_DISABLED(@"Test disabled on device.");
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_testPostFormToSamePage testPostFormToSamePage
+#else
+#define MAYBE_testPostFormToSamePage FLAKY_testPostFormToSamePage
 #endif
-
+- (void)MAYBE_testPostFormToSamePage {
   web::test::SetUpHttpServer(base::MakeUnique<TestFormResponseProvider>());
   const GURL formURL = GetFormPostOnSamePageUrl();
 
