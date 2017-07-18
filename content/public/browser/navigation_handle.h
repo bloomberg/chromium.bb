@@ -228,21 +228,6 @@ class CONTENT_EXPORT NavigationHandle {
   // encountering a server redirect).
   virtual net::HttpResponseInfo::ConnectionInfo GetConnectionInfo() = 0;
 
-  // Resumes a navigation that was previously deferred by a NavigationThrottle.
-  // Note: this may lead to the deletion of the NavigationHandle and its
-  // associated NavigationThrottles.
-  virtual void Resume() = 0;
-
-  // Cancels a navigation that was previously deferred by a NavigationThrottle.
-  // |result| should be equal to either:
-  //  - NavigationThrottle::CANCEL,
-  //  - NavigationThrottle::CANCEL_AND_IGNORE, or
-  //  - NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE.
-  // Note: this may lead to the deletion of the NavigationHandle and its
-  // associated NavigationThrottles.
-  virtual void CancelDeferredNavigation(
-      NavigationThrottle::ThrottleCheckResult result) = 0;
-
   // Returns the ID of the URLRequest associated with this navigation. Can only
   // be called from NavigationThrottle::WillProcessResponse and
   // WebContentsObserver::ReadyToCommitNavigation.
@@ -295,6 +280,10 @@ class CONTENT_EXPORT NavigationHandle {
 
   // Simulates the navigation being committed.
   virtual void CallDidCommitNavigationForTesting(const GURL& url) = 0;
+
+  // Simulates the navigation resuming. Most callers should just let the
+  // deferring NavigationThrottle do the resuming.
+  virtual void CallResumeForTesting() = 0;
 
   // The NavigationData that the embedder returned from
   // ResourceDispatcherHostDelegate::GetNavigationData during commit. This will

@@ -58,8 +58,11 @@ BackgroundTabNavigationThrottle::~BackgroundTabNavigationThrottle() {}
 
 content::NavigationThrottle::ThrottleCheckResult
 BackgroundTabNavigationThrottle::WillStartRequest() {
-  return g_browser_process->GetTabManager()->MaybeThrottleNavigation(
-      navigation_handle());
+  return g_browser_process->GetTabManager()->MaybeThrottleNavigation(this);
+}
+
+void BackgroundTabNavigationThrottle::ResumeNavigation() {
+  Resume();
 }
 
 }  // namespace resource_coordinator

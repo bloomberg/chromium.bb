@@ -356,72 +356,20 @@ net::HostPortPair NavigationHandleImpl::GetSocketAddress() {
   return socket_address_;
 }
 
-void NavigationHandleImpl::Resume() {
-  if (state_ != DEFERRING_START && state_ != DEFERRING_REDIRECT &&
-      state_ != DEFERRING_RESPONSE) {
-    return;
-  }
-  TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,
-                               "Resume");
-
-  NavigationThrottle::ThrottleCheckResult result = NavigationThrottle::DEFER;
-  if (state_ == DEFERRING_START) {
-    result = CheckWillStartRequest();
-    if (result == NavigationThrottle::DEFER) {
-      // DO NOT ADD CODE: the NavigationHandle might have been destroyed during
-      // one of the NavigationThrottle checks.
-      return;
-    }
-  } else if (state_ == DEFERRING_REDIRECT) {
-    result = CheckWillRedirectRequest();
-    if (result == NavigationThrottle::DEFER) {
-      // DO NOT ADD CODE: the NavigationHandle might have been destroyed during
-      // one of the NavigationThrottle checks.
-      return;
-    }
-  } else {
-    result = CheckWillProcessResponse();
-    if (result == NavigationThrottle::DEFER) {
-      // DO NOT ADD CODE: the NavigationHandle might have been destroyed during
-      // one of the NavigationThrottle checks.
-      return;
-    }
-
-    // If the navigation is about to proceed after having been deferred while
-    // processing the response, then it's ready to commit. Determine which
-    // RenderFrameHost should render the response, based on its site (after any
-    // redirects).
-    // Note: if MaybeTransferAndProceed returns false, this means that this
-    // NavigationHandle was deleted, so return immediately.
-    if (result == NavigationThrottle::PROCEED && !MaybeTransferAndProceed())
-      return;
-  }
-  DCHECK_NE(NavigationThrottle::DEFER, result);
-
-  TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,
-                               "Resuming");
-  RunCompleteCallback(result);
+void NavigationHandleImpl::Resume(NavigationThrottle* resuming_throttle) {
+  DCHECK(resuming_throttle);
+  // TODO(csharrison): Convert to DCHECK when crbug.com/736249 is resolved.
+  CHECK_EQ(resuming_throttle, GetDeferringThrottle());
+  ResumeInternal();
 }
 
 void NavigationHandleImpl::CancelDeferredNavigation(
+    NavigationThrottle* cancelling_throttle,
     NavigationThrottle::ThrottleCheckResult result) {
-  DCHECK(state_ == DEFERRING_START ||
-         state_ == DEFERRING_REDIRECT ||
-         state_ == DEFERRING_RESPONSE);
-  DCHECK(result == NavigationThrottle::CANCEL_AND_IGNORE ||
-         result == NavigationThrottle::CANCEL ||
-         result == NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE);
-  DCHECK(result != NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE ||
-         state_ == DEFERRING_START ||
-         (state_ == DEFERRING_REDIRECT && IsBrowserSideNavigationEnabled()));
-
-  if (result == NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE)
-    frame_tree_node_->SetCollapsed(true);
-
-  TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,
-                               "CancelDeferredNavigation");
-  state_ = CANCELING;
-  RunCompleteCallback(result);
+  DCHECK(cancelling_throttle);
+  // TODO(csharrison): Convert to DCHECK when crbug.com/736249 is resolved.
+  CHECK_EQ(cancelling_throttle, GetDeferringThrottle());
+  CancelDeferredNavigationInternal(result);
 }
 
 void NavigationHandleImpl::RegisterThrottleForTesting(
@@ -515,6 +463,10 @@ void NavigationHandleImpl::CallDidCommitNavigationForTesting(const GURL& url) {
 
   DidCommitNavigation(params, true, false, GURL(), NAVIGATION_TYPE_NEW_PAGE,
                       render_frame_host_);
+}
+
+void NavigationHandleImpl::CallResumeForTesting() {
+  ResumeInternal();
 }
 
 bool NavigationHandleImpl::WasStartedFromContextMenu() const {
@@ -1018,6 +970,72 @@ NavigationHandleImpl::CheckWillProcessResponse() {
   return NavigationThrottle::PROCEED;
 }
 
+void NavigationHandleImpl::ResumeInternal() {
+  DCHECK(state_ == DEFERRING_START || state_ == DEFERRING_REDIRECT ||
+         state_ == DEFERRING_RESPONSE)
+      << "Called ResumeInternal() in state " << state_;
+  TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,
+                               "Resume");
+
+  NavigationThrottle::ThrottleCheckResult result = NavigationThrottle::DEFER;
+  if (state_ == DEFERRING_START) {
+    result = CheckWillStartRequest();
+    if (result == NavigationThrottle::DEFER) {
+      // DO NOT ADD CODE: the NavigationHandle might have been destroyed during
+      // one of the NavigationThrottle checks.
+      return;
+    }
+  } else if (state_ == DEFERRING_REDIRECT) {
+    result = CheckWillRedirectRequest();
+    if (result == NavigationThrottle::DEFER) {
+      // DO NOT ADD CODE: the NavigationHandle might have been destroyed during
+      // one of the NavigationThrottle checks.
+      return;
+    }
+  } else {
+    result = CheckWillProcessResponse();
+    if (result == NavigationThrottle::DEFER) {
+      // DO NOT ADD CODE: the NavigationHandle might have been destroyed during
+      // one of the NavigationThrottle checks.
+      return;
+    }
+
+    // If the navigation is about to proceed after having been deferred while
+    // processing the response, then it's ready to commit. Determine which
+    // RenderFrameHost should render the response, based on its site (after any
+    // redirects).
+    // Note: if MaybeTransferAndProceed returns false, this means that this
+    // NavigationHandle was deleted, so return immediately.
+    if (result == NavigationThrottle::PROCEED && !MaybeTransferAndProceed())
+      return;
+  }
+  DCHECK_NE(NavigationThrottle::DEFER, result);
+
+  TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,
+                               "Resuming");
+  RunCompleteCallback(result);
+}
+
+void NavigationHandleImpl::CancelDeferredNavigationInternal(
+    NavigationThrottle::ThrottleCheckResult result) {
+  DCHECK(state_ == DEFERRING_START || state_ == DEFERRING_REDIRECT ||
+         state_ == DEFERRING_RESPONSE);
+  DCHECK(result == NavigationThrottle::CANCEL_AND_IGNORE ||
+         result == NavigationThrottle::CANCEL ||
+         result == NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE);
+  DCHECK(result != NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE ||
+         state_ == DEFERRING_START ||
+         (state_ == DEFERRING_REDIRECT && IsBrowserSideNavigationEnabled()));
+
+  if (result == NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE)
+    frame_tree_node_->SetCollapsed(true);
+
+  TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,
+                               "CancelDeferredNavigation");
+  state_ = CANCELING;
+  RunCompleteCallback(result);
+}
+
 bool NavigationHandleImpl::MaybeTransferAndProceed() {
   DCHECK_EQ(WILL_PROCESS_RESPONSE, state_);
 
@@ -1221,6 +1239,12 @@ void NavigationHandleImpl::UpdateSiteURL(
   // Update the site URL and the expected process.
   site_url_ = new_site_url;
   SetExpectedProcess(post_redirect_process);
+}
+
+NavigationThrottle* NavigationHandleImpl::GetDeferringThrottle() const {
+  if (next_index_ == 0)
+    return nullptr;
+  return throttles_[next_index_ - 1].get();
 }
 
 }  // namespace content
