@@ -370,6 +370,8 @@ source_set("browser") {
     "background_fetch/background_fetch_cross_origin_filter.h",
     "background_fetch/background_fetch_data_manager.cc",
     "background_fetch/background_fetch_data_manager.h",
+    "background_fetch/background_fetch_delegate_proxy.cc",
+    "background_fetch/background_fetch_delegate_proxy.h",
     "background_fetch/background_fetch_event_dispatcher.cc",
     "background_fetch/background_fetch_event_dispatcher.h",
     "background_fetch/background_fetch_job_controller.cc",

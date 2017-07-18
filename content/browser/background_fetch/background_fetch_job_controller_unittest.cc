@@ -20,7 +20,6 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/fake_download_item.h"
 #include "content/public/test/mock_download_manager.h"
-#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -87,8 +86,7 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
         browser_context(),
         make_scoped_refptr(storage_partition->GetURLRequestContext()),
         base::BindOnce(&BackgroundFetchJobControllerTest::DidCompleteJob,
-                       base::Unretained(this)),
-        TRAFFIC_ANNOTATION_FOR_TESTS);
+                       base::Unretained(this)));
   }
 
  protected:

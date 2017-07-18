@@ -12,7 +12,6 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/browser/blob_handle.h"
 #include "content/public/browser/browser_context.h"
-#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "url/origin.h"
 
@@ -144,39 +143,12 @@ void BackgroundFetchContext::CreateController(
     const BackgroundFetchOptions& options) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  net::NetworkTrafficAnnotationTag traffic_annotation =
-      net::DefineNetworkTrafficAnnotation("background_fetch_context", R"(
-        semantics {
-          sender: "Background Fetch API"
-          description:
-            "The Background Fetch API enables developers to upload or download "
-            "files on behalf of the user. Such fetches will yield a user "
-            "visible notification to inform the user of the operation, through "
-            "which it can be suspended, resumed and/or cancelled. The "
-            "developer retains control of the file once the fetch is "
-            "completed,  similar to XMLHttpRequest and other mechanisms for "
-            "fetching resources using JavaScript."
-          trigger:
-            "When the website uses the Background Fetch API to request "
-            "fetching a file and/or a list of files. This is a Web Platform "
-            "API for which no express user permission is required."
-          data:
-            "The request headers and data as set by the website's developer."
-          destination: WEBSITE
-        }
-        policy {
-          cookies_allowed: true
-          cookies_store: "user"
-          setting: "This feature cannot be disabled in settings."
-          policy_exception_justification: "Not implemented."
-        })");
   std::unique_ptr<BackgroundFetchJobController> controller =
       base::MakeUnique<BackgroundFetchJobController>(
           registration_id, options, data_manager_.get(), browser_context_,
           request_context_getter_,
           base::BindOnce(&BackgroundFetchContext::DidCompleteJob,
-                         weak_factory_.GetWeakPtr()),
-          traffic_annotation);
+                         weak_factory_.GetWeakPtr()));
 
   // TODO(peter): We should actually be able to use Background Fetch in layout
   // tests. That requires a download manager and a request context.
