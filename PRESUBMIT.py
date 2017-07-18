@@ -2134,8 +2134,9 @@ def _CheckPatchFiles(input_api, output_api):
 
 
 def _CheckBuildConfigMacrosWithoutInclude(input_api, output_api):
-  macro_re = input_api.re.compile(
-      r'^\s*#(el)?if.*\bdefined\(((OS_|COMPILER_|ARCH_CPU_|WCHAR_T_IS_)[^)]*)')
+  # Excludes OS_CHROMEOS, which is not defined in build_config.h.
+  macro_re = input_api.re.compile(r'^\s*#(el)?if.*\bdefined\(((OS_(?!CHROMEOS)|'
+                                  'COMPILER_|ARCH_CPU_|WCHAR_T_IS_)[^)]*)')
   include_re = input_api.re.compile(
       r'^#include\s+"build/build_config.h"', input_api.re.MULTILINE)
   extension_re = input_api.re.compile(r'\.[a-z]+$')
