@@ -39,6 +39,7 @@
 #import "ios/chrome/browser/ui/authentication/signed_in_accounts_view_controller.h"
 #include "ios/chrome/browser/ui/background_generator.h"
 #import "ios/chrome/browser/ui/browser_view_controller.h"
+#import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/main/browser_view_information.h"
 #include "ios/net/cookies/cookie_store_ios.h"
 #include "ios/net/cookies/system_cookie_util.h"
@@ -356,7 +357,11 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
                                                  browserViewInformation]];
   } else if (_shouldOpenNTPTabOnActive &&
              ![tabSwitcher openNewTabFromTabSwitcher]) {
-    [[[_browserLauncher browserViewInformation] currentBVC] newTab:nil];
+    BrowserViewController* bvc =
+        [[_browserLauncher browserViewInformation] currentBVC];
+    BOOL incognito = bvc == [[_browserLauncher browserViewInformation] otrBVC];
+    [bvc.dispatcher
+        openNewTab:[OpenNewTabCommand commandWithIncognito:incognito]];
   }
   _shouldOpenNTPTabOnActive = NO;
 

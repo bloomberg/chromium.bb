@@ -37,10 +37,10 @@ const NSInteger kVisibleNotIncognitoOnly = 1 << 1;
 const MenuItemInfo itemInfoList[kToolsMenuNumberOfItems] = {
     // clang-format off
   { IDS_IOS_TOOLS_MENU_NEW_TAB,           kToolsMenuNewTabId,
-    IDC_NEW_TAB, nullptr,                 ToolbarTypeAll,
+    TOOLS_NEW_TAB_ITEM, nullptr,          ToolbarTypeAll,
     0,                                    [NewTabMenuViewItem class] },
   { IDS_IOS_TOOLS_MENU_NEW_INCOGNITO_TAB, kToolsMenuNewIncognitoTabId,
-    IDC_NEW_INCOGNITO_TAB, nullptr,       ToolbarTypeAll,
+    TOOLS_NEW_INCOGNITO_TAB_ITEM, nullptr,ToolbarTypeAll,
     0,                                    [NewIncognitoTabMenuViewItem class] },
   { IDS_IOS_TOOLS_MENU_CLOSE_ALL_TABS,    kToolsMenuCloseAllTabsId,
     IDC_CLOSE_ALL_TABS, nullptr,          ToolbarTypeSwitcheriPhone,

@@ -86,6 +86,7 @@ source_set("tab_switcher") {
     "//ios/chrome/browser/ui/toolbar",
     "//ios/chrome/common:ios_app_bundle_id_prefix_header",
     "//ios/public/provider/chrome/browser",
+    "//ios/shared/chrome/browser/ui/commands",
     "//ios/third_party/material_components_ios",
     "//ios/third_party/material_roboto_font_loader_ios",
     "//ios/third_party/material_text_accessibility_ios",

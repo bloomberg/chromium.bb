@@ -101,7 +101,7 @@
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
-#import "ios/chrome/browser/ui/commands/new_tab_command.h"
+#import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/commands/open_url_command.h"
 #import "ios/chrome/browser/ui/commands/reading_list_add_command.h"
 #import "ios/chrome/browser/ui/commands/show_mail_composer_command.h"
@@ -790,9 +790,9 @@ NSString* const kNativeControllerTemporaryKey = @"NativeControllerTemporaryKey";
 // to download the image.
 - (void)saveImageAtURL:(const GURL&)url referrer:(const web::Referrer&)referrer;
 
-// Determines the center of |sender| if it's a view or a toolbar item, and save
-// the CGPoint and timestamp.
-- (void)setLastTapPoint:(id)sender;
+// Record the last tap point based on the |originPoint| (if any) passed in
+// |command|.
+- (void)setLastTapPoint:(OpenNewTabCommand*)command;
 // Get return the last stored |_lastTapPoint| if it's been set within the past
 // second.
 - (CGPoint)lastTapPoint;
@@ -1180,34 +1180,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
 - (void)shieldWasTapped:(id)sender {
   [_toolbarController cancelOmniboxEdit];
-}
-
-- (void)newTab:(id)sender {
-  // Observe the timing of the new tab creation, both MainController
-  // and BrowserViewController call into this method on the correct BVC to
-  // create new tabs making it preferable to doing this in
-  // |chromeExecuteCommand:|.
-  NSTimeInterval startTime = [NSDate timeIntervalSinceReferenceDate];
-  BOOL offTheRecord = self.isOffTheRecord;
-  self.foregroundTabWasAddedCompletionBlock = ^{
-    double duration = [NSDate timeIntervalSinceReferenceDate] - startTime;
-    base::TimeDelta timeDelta = base::TimeDelta::FromSecondsD(duration);
-    if (offTheRecord) {
-      UMA_HISTOGRAM_TIMES("Toolbar.Menu.NewIncognitoTabPresentationDuration",
-                          timeDelta);
-    } else {
-      UMA_HISTOGRAM_TIMES("Toolbar.Menu.NewTabPresentationDuration", timeDelta);
-    }
-  };
-
-  [self setLastTapPoint:sender];
-  DCHECK(self.visible || self.dismissingModal);
-  Tab* currentTab = [_model currentTab];
-  if (currentTab) {
-    [currentTab updateSnapshotWithOverlay:YES visibleFrameOnly:YES];
-  }
-  [self addSelectedTabWithURL:GURL(kChromeUINewTabURL)
-                   transition:ui::PAGE_TRANSITION_TYPED];
 }
 
 #pragma mark - UIViewController methods
@@ -1686,6 +1658,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   _browserState = browserState;
   _isOffTheRecord = browserState->IsOffTheRecord() ? YES : NO;
   _model = model;
+
   [_model addObserver:self];
 
   if (!_isOffTheRecord) {
@@ -1783,7 +1756,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   // If needed, create the tabstrip.
   if (IsIPadIdiom()) {
     _tabStripController =
-        [_dependencyFactory newTabStripControllerWithTabModel:_model];
+        [_dependencyFactory newTabStripControllerWithTabModel:_model
+                                                   dispatcher:self.dispatcher];
     _tabStripController.fullscreenDelegate = self;
   }
 
@@ -1978,11 +1952,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
 #pragma mark - Tap handling
 
-- (void)setLastTapPoint:(id)sender {
-  NewTabCommand* command = base::mac::ObjCCast<NewTabCommand>(sender);
-  if (!command)
-    return;
-
+- (void)setLastTapPoint:(OpenNewTabCommand*)command {
   if (CGPointEqualToPoint(command.originPoint, CGPointZero)) {
     _lastTapPoint = CGPointZero;
   } else {
@@ -2120,6 +2090,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
 - (void)installDelegatesForTab:(Tab*)tab {
   // Unregistration happens when the Tab is removed from the TabModel.
+  tab.dispatcher = self.dispatcher;
   tab.dialogDelegate = self;
   tab.snapshotOverlayProvider = self;
   tab.passKitDialogProvider = self;
@@ -2141,6 +2112,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 }
 
 - (void)uninstallDelegatesForTab:(Tab*)tab {
+  tab.dispatcher = nil;
   tab.dialogDelegate = nil;
   tab.snapshotOverlayProvider = nil;
   tab.passKitDialogProvider = nil;
@@ -2932,7 +2904,9 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
                    didTriggerAction:(OverscrollAction)action {
   switch (action) {
     case OverscrollAction::NEW_TAB:
-      [self newTab:nil];
+      [self.dispatcher
+          openNewTab:[OpenNewTabCommand
+                         commandWithIncognito:self.isOffTheRecord]];
       break;
     case OverscrollAction::CLOSE_TAB:
       [self.dispatcher closeCurrentTab];
@@ -3622,7 +3596,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   if (entry->type != sessions::TabRestoreService::TAB)
     return;
 
-  [self chromeExecuteCommand:[[NewTabCommand alloc] initWithIncognito:NO]];
+  [self.dispatcher openNewTab:[OpenNewTabCommand command]];
   TabRestoreServiceDelegateImplIOS* const delegate =
       TabRestoreServiceDelegateImplIOSFactory::GetForBrowserState(
           _browserState);
@@ -4026,6 +4000,36 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   }
 }
 
+- (void)openNewTab:(OpenNewTabCommand*)command {
+  if (self.isOffTheRecord != command.incognito) {
+    // Not for this browser state, send it on its way.
+    [self.dispatcher switchModesAndOpenNewTab:command];
+    return;
+  }
+
+  NSTimeInterval startTime = [NSDate timeIntervalSinceReferenceDate];
+  BOOL offTheRecord = self.isOffTheRecord;
+  self.foregroundTabWasAddedCompletionBlock = ^{
+    double duration = [NSDate timeIntervalSinceReferenceDate] - startTime;
+    base::TimeDelta timeDelta = base::TimeDelta::FromSecondsD(duration);
+    if (offTheRecord) {
+      UMA_HISTOGRAM_TIMES("Toolbar.Menu.NewIncognitoTabPresentationDuration",
+                          timeDelta);
+    } else {
+      UMA_HISTOGRAM_TIMES("Toolbar.Menu.NewTabPresentationDuration", timeDelta);
+    }
+  };
+
+  [self setLastTapPoint:command];
+  DCHECK(self.visible || self.dismissingModal);
+  Tab* currentTab = [_model currentTab];
+  if (currentTab) {
+    [currentTab updateSnapshotWithOverlay:YES visibleFrameOnly:YES];
+  }
+  [self addSelectedTabWithURL:GURL(kChromeUINewTabURL)
+                   transition:ui::PAGE_TRANSITION_TYPED];
+}
+
 #pragma mark - Command Handling
 
 - (IBAction)chromeExecuteCommand:(id)sender {
@@ -4066,27 +4070,11 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     case IDC_HELP_PAGE_VIA_MENU:
       [self showHelpPage];
       break;
-    case IDC_NEW_TAB:
-      if (_isOffTheRecord) {
-        // Not for this browser state, send it on its way.
-        [super chromeExecuteCommand:sender];
-      } else {
-        [self newTab:sender];
-      }
-      break;
     case IDC_PRELOAD_VOICE_SEARCH:
       // Preload VoiceSearchController and views and view controllers needed
       // for voice search.
       [self ensureVoiceSearchControllerCreated];
       _voiceSearchController->PrepareToAppear();
-      break;
-    case IDC_NEW_INCOGNITO_TAB:
-      if (_isOffTheRecord) {
-        [self newTab:sender];
-      } else {
-        // Not for this browser state, send it on its way.
-        [super chromeExecuteCommand:sender];
-      }
       break;
     case IDC_SHOW_MAIL_COMPOSER:
       [self showMailComposer:sender];

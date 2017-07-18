@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
-#import "ios/chrome/browser/ui/commands/new_tab_command.h"
+#import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/image_util.h"
 #import "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -35,10 +35,6 @@ const NSTimeInterval kNewTabButtonTransitionDuration =
 - (instancetype)initWithFrame:(CGRect)frame {
   if (self = [super initWithFrame:frame]) {
     self.incognito = NO;
-
-    [self addTarget:self
-                  action:@selector(sendNewTabCommand)
-        forControlEvents:UIControlEventTouchUpInside];
 
     [self
         setContentEdgeInsets:UIEdgeInsetsMakeDirected(0, kContentInset, 0, 0)];
@@ -83,14 +79,6 @@ const NSTimeInterval kNewTabButtonTransitionDuration =
   } else {
     self.incognito = incognito;
   }
-}
-
-- (void)sendNewTabCommand {
-  CGPoint center = [self.superview convertPoint:self.center toView:self.window];
-  NewTabCommand* command =
-      [[NewTabCommand alloc] initWithIncognito:self.isIncognito
-                                   originPoint:center];
-  [self chromeExecuteCommand:command];
 }
 
 @end

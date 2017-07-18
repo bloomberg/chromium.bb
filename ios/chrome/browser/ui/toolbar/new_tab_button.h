@@ -8,10 +8,7 @@
 #import <UIKit/UIKit.h>
 
 // UIButton subclass used for the New Tab button in the phone switcher toolbar
-// and the tablet no-tabs toolbar. A NewTabButton has a custom background rect
-// and by default will call send a NewTabCommand via its (derived)
-// -chromeExecuteCommand method on |TouchUpInside|. Instances can add further
-// targets.
+// and the tablet no-tabs toolbar. A NewTabButton has a custom background rect.
 @interface NewTabButton : UIButton
 // Whether the button opens incognito tabs or not; setting this property changes
 // the button's behavior, updating its tag to

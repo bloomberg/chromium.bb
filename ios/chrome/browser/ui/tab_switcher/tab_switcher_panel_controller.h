@@ -11,6 +11,9 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_model.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_panel_cell.h"
 
+@protocol ApplicationCommands;
+@protocol BrowserCommands;
+
 namespace ios {
 class ChromeBrowserState;
 }
@@ -54,6 +57,8 @@ class ChromeBrowserState;
 @property(nonatomic, unsafe_unretained) id<TabSwitcherPanelControllerDelegate>
     delegate;
 @property(nonatomic, readonly) TabSwitcherSessionType sessionType;
+@property(nonatomic, readonly, weak) id<ApplicationCommands, BrowserCommands>
+    dispatcher;
 
 // Initializes a controller for a view showing local tabs. |offTheRecord|
 // determines whether the tabs will be shown for the incognito browser state or
@@ -61,13 +66,17 @@ class ChromeBrowserState;
 - (instancetype)initWithModel:(TabSwitcherModel*)model
         forLocalSessionOfType:(TabSwitcherSessionType)type
                     withCache:(TabSwitcherCache*)cache
-                 browserState:(ios::ChromeBrowserState*)browserState;
+                 browserState:(ios::ChromeBrowserState*)browserState
+                   dispatcher:
+                       (id<ApplicationCommands, BrowserCommands>)dispatcher;
 
 // Initializes a controller for a view showing the tabs of a distant session.
 // |model| is used to populate the view and must not be nil.
 - (instancetype)initWithModel:(TabSwitcherModel*)model
      forDistantSessionWithTag:(std::string const&)sessionTag
-                 browserState:(ios::ChromeBrowserState*)browserState;
+                 browserState:(ios::ChromeBrowserState*)browserState
+                   dispatcher:
+                       (id<ApplicationCommands, BrowserCommands>)dispatcher;
 
 // Tells the controller that the collectionview's content may need to be
 // updated.

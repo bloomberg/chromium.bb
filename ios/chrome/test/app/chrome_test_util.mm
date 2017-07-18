@@ -25,6 +25,7 @@
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
 #import "ios/chrome/browser/ui/main/main_view_controller.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_switcher.h"
 #import "ios/web/public/test/native_controller_test_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -137,6 +138,19 @@ id<BrowserCommands> BrowserCommandDispatcherForMainBVC() {
   BrowserViewController* mainBVC =
       GetMainController().browserViewInformation.mainBVC;
   return mainBVC.dispatcher;
+}
+
+id<BrowserCommands> DispatcherForActiveViewController() {
+  UIViewController* vc = GetActiveViewController();
+  BrowserViewController* bvc = base::mac::ObjCCast<BrowserViewController>(vc);
+  if (bvc)
+    return bvc.dispatcher;
+  if ([vc conformsToProtocol:@protocol(TabSwitcher)]) {
+    UIViewController<TabSwitcher>* tabSwitcher =
+        static_cast<UIViewController<TabSwitcher>*>(vc);
+    return tabSwitcher.dispatcher;
+  }
+  return nil;
 }
 
 void RunCommandWithActiveViewController(GenericChromeCommand* command) {

@@ -7,6 +7,8 @@
 
 #import <Foundation/Foundation.h>
 
+@class OpenNewTabCommand;
+
 // Protocol for commands that will generally be handled by the application,
 // rather than a specific tab; in practice this means the MainController
 // instance.
@@ -15,6 +17,11 @@
 
 // Shows the Settings UI.
 - (void)showSettings;
+
+// Switches to show either regular or incognito tabs, and then opens
+// a new oen of those tabs. |newTabCommand|'s |incognito| property inidcates
+// the type of tab to open.
+- (void)switchModesAndOpenNewTab:(OpenNewTabCommand*)newTabCommand;
 
 @end
 

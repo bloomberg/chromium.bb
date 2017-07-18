@@ -83,8 +83,10 @@
 #include "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #import "ios/chrome/browser/u2f/u2f_controller.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
+#import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
+#import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/commands/open_url_command.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
 #import "ios/chrome/browser/ui/downloads/download_manager_controller.h"
@@ -438,6 +440,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 @synthesize tabSnapshottingDelegate = tabSnapshottingDelegate_;
 @synthesize tabHeadersDelegate = tabHeadersDelegate_;
 @synthesize fullScreenControllerDelegate = fullScreenControllerDelegate_;
+@synthesize dispatcher = _dispatcher;
 
 - (instancetype)initWithWebState:(web::WebState*)webState {
   DCHECK(webState);
@@ -1775,9 +1778,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
             appendTo:kLastTab];
     [self.view chromeExecuteCommand:command];
   } else {
-    GenericChromeCommand* command =
-        [[GenericChromeCommand alloc] initWithTag:IDC_NEW_INCOGNITO_TAB];
-    [self.view chromeExecuteCommand:command];
+    [self.dispatcher openNewTab:[OpenNewTabCommand command]];
   }
 }
 

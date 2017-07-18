@@ -106,6 +106,7 @@
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
 #import "ios/chrome/browser/ui/commands/clear_browsing_data_command.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
+#import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/commands/open_url_command.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
 #import "ios/chrome/browser/ui/contextual_search/contextual_search_metrics.h"
@@ -1253,7 +1254,9 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
   if (_tabSwitcherIsActive)
     [self dismissTabSwitcherWithoutAnimationInModel:self.mainTabModel];
   if (firstRun || [self shouldOpenNTPTabOnActivationOfTabModel:tabModel]) {
-    [self.currentBVC newTab:nil];
+    OpenNewTabCommand* command = [OpenNewTabCommand
+        commandWithIncognito:(self.currentBVC == self.otrBVC)];
+    [self.currentBVC.dispatcher openNewTab:command];
   }
 
   if (firstRun) {
@@ -1373,18 +1376,22 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
                            completion:nil];
 }
 
+#pragma mark - ApplicationCommands
+
+- (void)switchModesAndOpenNewTab:(OpenNewTabCommand*)command {
+  BrowserViewController* bvc = command.incognito ? self.otrBVC : self.mainBVC;
+  DCHECK(bvc);
+  [bvc expectNewForegroundTab];
+  self.currentBVC = bvc;
+  [self.currentBVC.dispatcher openNewTab:command];
+}
+
 #pragma mark - chromeExecuteCommand
 
 - (IBAction)chromeExecuteCommand:(id)sender {
   NSInteger command = [sender tag];
 
   switch (command) {
-    case IDC_NEW_TAB:
-      [self createNewTabInBVC:self.mainBVC sender:sender];
-      break;
-    case IDC_NEW_INCOGNITO_TAB:
-      [self createNewTabInBVC:self.otrBVC sender:sender];
-      break;
     case IDC_OPEN_URL:
       [self openUrl:base::mac::ObjCCast<OpenUrlCommand>(sender)];
       break;
@@ -1683,14 +1690,6 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
   [self switchGlobalStateToMode:mode];
 }
 
-// Set |bvc| as the current BVC and then creates a new tab.
-- (void)createNewTabInBVC:(BrowserViewController*)bvc sender:(id)sender {
-  DCHECK(bvc);
-  [bvc expectNewForegroundTab];
-  self.currentBVC = bvc;
-  [self.currentBVC newTab:sender];
-}
-
 - (void)displayCurrentBVC {
   self.mainViewController.activeViewController = self.currentBVC;
 }
@@ -1726,10 +1725,11 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
   if (!_tabSwitcherController) {
     if (IsIPadIdiom()) {
       _tabSwitcherController = [[TabSwitcherController alloc]
-          initWithBrowserState:_mainBrowserState
-                  mainTabModel:self.mainTabModel
-                   otrTabModel:self.otrTabModel
-                activeTabModel:self.currentTabModel];
+                initWithBrowserState:_mainBrowserState
+                        mainTabModel:self.mainTabModel
+                         otrTabModel:self.otrTabModel
+                      activeTabModel:self.currentTabModel
+          applicationCommandEndpoint:self];
     } else {
       _tabSwitcherController =
           [[StackViewController alloc] initWithMainTabModel:self.mainTabModel
@@ -2437,7 +2437,8 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 - (void)closeSettingsAndOpenNewIncognitoTab {
   [self closeSettingsAnimated:NO
                    completion:^{
-                     [self createNewTabInBVC:self.otrBVC sender:nil];
+                     [self switchModesAndOpenNewTab:[OpenNewTabCommand
+                                                        incognitoTabCommand]];
                    }];
 }
 
