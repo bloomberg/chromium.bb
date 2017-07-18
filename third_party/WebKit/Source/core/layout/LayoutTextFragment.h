@@ -92,6 +92,8 @@ class LayoutTextFragment final : public LayoutText {
     return is_remaining_text_layout_object_;
   }
 
+  Text* AssociatedTextNode() const;
+
  protected:
   void WillBeDestroyed() override;
 
@@ -99,7 +101,6 @@ class LayoutTextFragment final : public LayoutText {
   LayoutBlock* BlockForAccompanyingFirstLetter() const;
   UChar PreviousCharacter() const override;
 
-  Text* AssociatedTextNode() const;
   void UpdateHitTestResult(HitTestResult&, const LayoutPoint&) override;
 
   unsigned start_;

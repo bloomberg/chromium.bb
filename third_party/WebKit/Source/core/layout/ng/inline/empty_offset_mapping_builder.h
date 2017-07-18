@@ -18,9 +18,12 @@ class EmptyOffsetMappingBuilder {
 
  public:
   EmptyOffsetMappingBuilder() = default;
+  void Annotate(const void*) {}
   void AppendIdentityMapping(unsigned) {}
   void AppendCollapsedMapping(unsigned) {}
   void CollapseTrailingSpace(unsigned) {}
+  void Composite(const EmptyOffsetMappingBuilder&) {}
+  void Concatenate(const EmptyOffsetMappingBuilder&) {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(EmptyOffsetMappingBuilder);

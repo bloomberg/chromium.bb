@@ -97,11 +97,31 @@ class CORE_TEMPLATE_CLASS_EXPORT NGInlineItemsBuilderTemplate {
   void ExitInline(LayoutObject*);
 
   OffsetMappingBuilder& GetOffsetMappingBuilder() { return mapping_builder_; }
+  OffsetMappingBuilder& GetConcatenatedOffsetMappingBuilder() {
+    return concatenated_mapping_builder_;
+  }
 
  private:
   Vector<NGInlineItem>* items_;
   StringBuilder text_;
+
+  // TODO(xiaochengh): Rename |mapping_builder_| to |collapsed_mapping_builder_|
+  // |collapsed_mapping_builder_| builds the whitespace-collapsed offset mapping
+  // during inline collection. It is updated whenever |text_| is modified or a
+  // white space is collapsed.
   OffsetMappingBuilder mapping_builder_;
+
+  // |concatenated_mapping_builder_| builds the concatenated offset mapping
+  // during inline collection. It is updated whenever a non-text character is
+  // appended to |text_|. User of NGInlineItemsBuilder should also update
+  // |concatenated_mapping_builder_| whenever collecting a text node during
+  // inline collection, by appending the text-transformed offset mapping of the
+  // text node to |concatenated_mapping_builder_|.
+  OffsetMappingBuilder concatenated_mapping_builder_;
+
+  // Indicates whether we are appending a string not, to help updating
+  // |concatenated_mapping_builder_|.
+  bool is_appending_string_ = false;
 
   typedef struct OnExitNode {
     LayoutObject* node;

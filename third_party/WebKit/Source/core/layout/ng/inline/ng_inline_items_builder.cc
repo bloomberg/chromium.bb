@@ -165,6 +165,7 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::Append(
     return;
   text_.ReserveCapacity(string.length());
 
+  AutoReset<bool> appending_string_scope(&is_appending_string_, true);
   EWhiteSpace whitespace = style->WhiteSpace();
   if (!ComputedStyle::CollapseWhiteSpace(whitespace))
     return AppendWithoutWhiteSpaceCollapsing(string, style, layout_object);
@@ -312,6 +313,8 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::Append(
 
   text_.Append(character);
   mapping_builder_.AppendIdentityMapping(1);
+  if (!is_appending_string_)
+    concatenated_mapping_builder_.AppendIdentityMapping(1);
   unsigned end_offset = text_.length();
   AppendItem(items_, type, end_offset - 1, end_offset, style, layout_object);
 
@@ -325,6 +328,7 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendOpaque(
     UChar character) {
   text_.Append(character);
   mapping_builder_.AppendIdentityMapping(1);
+  concatenated_mapping_builder_.AppendIdentityMapping(1);
   unsigned end_offset = text_.length();
   AppendItem(items_, type, end_offset - 1, end_offset, nullptr, nullptr);
 

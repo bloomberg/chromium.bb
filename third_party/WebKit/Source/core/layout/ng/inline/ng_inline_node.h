@@ -28,6 +28,7 @@ class NGInlineItemRange;
 using NGInlineItemsBuilder =
     NGInlineItemsBuilderTemplate<EmptyOffsetMappingBuilder>;
 class NGLayoutResult;
+struct NGOffsetMappingResult;
 
 // Represents an anonymous block box to be laid out, that contains consecutive
 // inline nodes and their descendants.
@@ -63,6 +64,10 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   NGInlineItemRange Items(unsigned start_index, unsigned end_index);
 
   void GetLayoutTextOffsets(Vector<unsigned, 32>*);
+
+  // Returns the DOM to text content offset mapping of this block. Must be
+  // called with clean layout.
+  NGOffsetMappingResult BuildOffsetMapping() const;
 
   bool IsBidiEnabled() const { return Data().is_bidi_enabled_; }
   TextDirection BaseDirection() const { return Data().BaseDirection(); }

@@ -8,6 +8,7 @@
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutText.h"
+#include "core/layout/LayoutTextFragment.h"
 #include "core/layout/api/LineLayoutAPIShim.h"
 #include "core/layout/line/LineInfo.h"
 #include "core/layout/line/RootInlineBox.h"
@@ -18,6 +19,7 @@
 #include "core/layout/ng/inline/ng_inline_layout_algorithm.h"
 #include "core/layout/ng/inline/ng_line_box_fragment.h"
 #include "core/layout/ng/inline/ng_line_breaker.h"
+#include "core/layout/ng/inline/ng_offset_mapping_result.h"
 #include "core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "core/layout/ng/inline/ng_text_fragment.h"
@@ -174,16 +176,105 @@ unsigned PlaceInlineBoxChildren(
   return text_index;
 }
 
-LayoutBox* CollectInlinesInternal(LayoutBlockFlow* block,
-                                  NGInlineItemsBuilder* builder) {
+// Templated helper function for CollectInlinesInternal().
+template <typename OffsetMappingBuilder>
+void ClearNeedsLayoutIfUpdatingLayout(LayoutObject* node) {
+  node->ClearNeedsLayout();
+}
+
+template <>
+void ClearNeedsLayoutIfUpdatingLayout<NGOffsetMappingBuilder>(LayoutObject*) {}
+
+// Templated helper function for CollectInlinesInternal().
+template <typename OffsetMappingBuilder>
+String GetTextForInlineCollection(const LayoutText& node) {
+  return node.GetText();
+}
+
+// This function is a workaround of writing the whitespace-collapsed string back
+// to LayoutText after inline collection, so that we can still recover the
+// original text for building offset mapping.
+// TODO(xiaochengh): Remove this function once we can:
+// - paint inlines directly from the fragment tree, or
+// - perform inline collection directly from DOM instead of LayoutText
+template <>
+String GetTextForInlineCollection<NGOffsetMappingBuilder>(
+    const LayoutText& layout_text) {
+  if (layout_text.Style()->TextSecurity() != ETextSecurity::kNone)
+    return layout_text.GetText();
+
+  // TODO(xiaochengh): Return the text-transformed string instead of DOM data
+  // string.
+
+  // Special handling for first-letter.
+  if (layout_text.IsTextFragment()) {
+    const LayoutTextFragment& text_fragment = ToLayoutTextFragment(layout_text);
+    Text* node = text_fragment.AssociatedTextNode();
+    if (!node) {
+      // Reaches here if the LayoutTextFragment is due to a LayoutQuote.
+      return layout_text.GetText();
+    }
+    unsigned first_letter_length = node->GetLayoutObject()->TextStartOffset();
+    if (text_fragment.IsRemainingTextLayoutObject())
+      return node->data().Substring(first_letter_length);
+    return node->data().Substring(0, first_letter_length);
+  }
+
+  Node* node = layout_text.GetNode();
+  if (!node || !node->IsTextNode())
+    return layout_text.GetText();
+  return ToText(node)->data();
+}
+
+// Templated helper function for CollectInlinesInternal().
+template <typename OffsetMappingBuilder>
+void AppendTextTransformedOffsetMapping(OffsetMappingBuilder*,
+                                        const LayoutText*,
+                                        const String&) {}
+
+template <>
+void AppendTextTransformedOffsetMapping<NGOffsetMappingBuilder>(
+    NGOffsetMappingBuilder* concatenated_mapping_builder,
+    const LayoutText* node,
+    const String& text_transformed_string) {
+  // TODO(xiaochengh): We are assuming that DOM data string and text-transformed
+  // strings have the same length, which is incorrect.
+  NGOffsetMappingBuilder text_transformed_mapping_builder;
+  text_transformed_mapping_builder.AppendIdentityMapping(
+      text_transformed_string.length());
+  text_transformed_mapping_builder.Annotate(node);
+  concatenated_mapping_builder->Concatenate(text_transformed_mapping_builder);
+}
+
+// The function is templated to indicate the purpose of collected inlines:
+// - With EmptyOffsetMappingBuilder: updating layout;
+// - With NGOffsetMappingBuilder: building offset mapping on clean layout.
+//
+// This allows code sharing between the two purposes with slightly different
+// behaviors. For example, we clear a LayoutObject's need layout flags when
+// updating layout, but don't do that when building offset mapping.
+//
+// There are also performance considerations, since template saves the overhead
+// for condition checking and branching.
+template <typename OffsetMappingBuilder>
+LayoutBox* CollectInlinesInternal(
+    LayoutBlockFlow* block,
+    NGInlineItemsBuilderTemplate<OffsetMappingBuilder>* builder) {
   builder->EnterBlock(block->Style());
   LayoutObject* node = block->FirstChild();
   LayoutBox* next_box = nullptr;
   while (node) {
     if (node->IsText()) {
       builder->SetIsSVGText(node->IsSVGInlineText());
-      builder->Append(ToLayoutText(node)->GetText(), node->Style(), node);
-      node->ClearNeedsLayout();
+
+      LayoutText* layout_text = ToLayoutText(node);
+      const String& text =
+          GetTextForInlineCollection<OffsetMappingBuilder>(*layout_text);
+      builder->Append(text, node->Style(), layout_text);
+      ClearNeedsLayoutIfUpdatingLayout<OffsetMappingBuilder>(layout_text);
+
+      AppendTextTransformedOffsetMapping(
+          &builder->GetConcatenatedOffsetMappingBuilder(), layout_text, text);
 
     } else if (node->IsFloating()) {
       // Add floats and positioned objects in the same way as atomic inlines.
@@ -215,7 +306,7 @@ LayoutBox* CollectInlinesInternal(LayoutBlockFlow* block,
 
       } else {
         // An empty inline node.
-        node->ClearNeedsLayout();
+        ClearNeedsLayoutIfUpdatingLayout<OffsetMappingBuilder>(node);
       }
 
       builder->ExitInline(node);
@@ -235,7 +326,7 @@ LayoutBox* CollectInlinesInternal(LayoutBlockFlow* block,
       }
       DCHECK(node->IsInline());
       builder->ExitInline(node);
-      node->ClearNeedsLayout();
+      ClearNeedsLayoutIfUpdatingLayout<OffsetMappingBuilder>(node);
     }
   }
   builder->ExitBlock();
@@ -267,6 +358,25 @@ void NGInlineNode::PrepareLayout() {
   CollectInlines();
   SegmentText();
   ShapeText();
+}
+
+NGOffsetMappingResult NGInlineNode::BuildOffsetMapping() const {
+  DCHECK(!GetLayoutBlockFlow()->GetDocument().NeedsLayoutTreeUpdate());
+
+  // TODO(xiaochengh): BuildOffsetMapping() discards the NGInlineItems and
+  // text content built by |builder|, because they are already there in
+  // NGInlineNodeData. For efficiency, we should make |builder| not construct
+  // items and text content.
+  Vector<NGInlineItem> items;
+  NGInlineItemsBuilderForOffsetMapping builder(&items);
+  CollectInlinesInternal(GetLayoutBlockFlow(), &builder);
+  builder.ToString();
+
+  NGOffsetMappingBuilder& mapping_builder =
+      builder.GetConcatenatedOffsetMappingBuilder();
+  mapping_builder.Composite(builder.GetOffsetMappingBuilder());
+
+  return mapping_builder.Build();
 }
 
 // Depth-first-scan of all LayoutInline and LayoutText nodes that make up this
