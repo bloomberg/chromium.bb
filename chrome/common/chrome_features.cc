@@ -96,6 +96,7 @@ const base::Feature kTabStripKeyboardFocus{"TabStripKeyboardFocus",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_MACOSX)
 
+// Enables Basic/Advanced tabs in ClearBrowsingData.
 const base::Feature kTabsInCbd {
   "TabsInCBD",
 #if defined(OS_ANDROID)
