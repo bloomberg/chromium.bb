@@ -107,7 +107,8 @@ WebDocumentSubresourceFilterImpl::WebDocumentSubresourceFilterImpl(
     ActivationState activation_state,
     scoped_refptr<const MemoryMappedRuleset> ruleset,
     base::OnceClosure first_disallowed_load_callback)
-    : filter_(std::move(document_origin), activation_state, std::move(ruleset)),
+    : activation_state_(activation_state),
+      filter_(std::move(document_origin), activation_state, std::move(ruleset)),
       first_disallowed_load_callback_(
           std::move(first_disallowed_load_callback)) {}
 
@@ -130,7 +131,7 @@ void WebDocumentSubresourceFilterImpl::ReportDisallowedLoad() {
 }
 
 bool WebDocumentSubresourceFilterImpl::ShouldLogToConsole() {
-  return filter_.activation_state().enable_logging;
+  return activation_state().enable_logging;
 }
 
 WebLoadPolicy WebDocumentSubresourceFilterImpl::getLoadPolicyImpl(
