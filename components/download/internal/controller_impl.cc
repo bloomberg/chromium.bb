@@ -326,6 +326,7 @@ void ControllerImpl::OnDownloadCreated(const DriverEntry& download) {
   using ShouldDownload = download::Client::ShouldDownload;
   ShouldDownload should_download = client->OnDownloadStarted(
       download.guid, download.url_chain, download.response_headers);
+  stats::LogStartDownloadResponse(entry->client, should_download);
   if (should_download == ShouldDownload::ABORT) {
     HandleCompleteDownload(CompletionType::ABORT, entry->guid);
   }
@@ -640,6 +641,9 @@ void ControllerImpl::ResolveInitialRequestStates() {
             driver_->Remove(entry->guid);
         }
         break;
+      case Entry::State::COUNT:
+        NOTREACHED();
+        break;
     }
   }
 }
@@ -754,20 +758,24 @@ void ControllerImpl::HandleCompleteDownload(CompletionType type,
                                             const std::string& guid) {
   Entry* entry = model_->Get(guid);
   DCHECK(entry);
-  stats::LogDownloadCompletion(type, entry->attempt_count);
 
   if (entry->state == Entry::State::COMPLETE) {
     DVLOG(1) << "Download is already completed.";
     return;
   }
 
+  auto driver_entry = driver_->Find(guid);
+  uint64_t file_size =
+      driver_entry.has_value() ? driver_entry->bytes_downloaded : 0;
+  stats::LogDownloadCompletion(
+      type, entry->completion_time - entry->create_time, file_size);
+
   if (type == CompletionType::SUCCEED) {
-    auto driver_entry = driver_->Find(guid);
     DCHECK(driver_entry.has_value());
-    if (driver_entry->current_file_path != entry->target_file_path) {
-      stats::LogFilePathsAreStrangelyDifferent();
-      entry->target_file_path = driver_entry->current_file_path;
-    }
+    stats::LogFilePathRenamed(driver_entry->current_file_path !=
+                              entry->target_file_path);
+    entry->target_file_path = driver_entry->current_file_path;
+
     entry->completion_time = driver_entry->completion_time;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&ControllerImpl::SendOnDownloadSucceeded,

@@ -33,6 +33,8 @@ enum class CompletionType {
   UNKNOWN = 4,
   // The download is cancelled by the client.
   CANCEL = 5,
+  // The count of entries for the enum.
+  COUNT = 6,
 };
 
 // The core Controller responsible for gluing various DownloadService components

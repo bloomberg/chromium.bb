@@ -15223,6 +15223,209 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Download.Service.Db.Operation.Failure"
+    enum="Download.Service.ModelAction">
+  <owner>xingliu@chromium.org</owner>
+  <summary>Records a failed database operation.</summary>
+</histogram>
+
+<histogram name="Download.Service.Db.Operation.Success"
+    enum="Download.Service.ModelAction">
+  <owner>xingliu@chromium.org</owner>
+  <summary>Records a successful database operation.</summary>
+</histogram>
+
+<histogram base="true" name="Download.Service.Db.Records" units="records">
+<!-- Name completed by histogram_suffixes
+     name="Download.Service.EntryState" -->
+
+  <owner>xingliu@chromium.org</owner>
+  <summary>
+    The total number of database records used by download service, and the
+    number of records in each entry state.
+  </summary>
+</histogram>
+
+<histogram name="Download.Service.Driver.InterruptReason"
+    enum="InterruptReason">
+  <owner>xingliu@chromium.org</owner>
+  <summary>
+    The interrupt reason for failed downloads in download service.
+  </summary>
+</histogram>
+
+<histogram base="true" name="Download.Service.Files.CleanUp.External"
+    units="files">
+<!-- Name completed by histogram_suffixes
+     name="Download.Service.CleanupReason" -->
+
+  <owner>xingliu@chromium.org</owner>
+  <summary>
+    The number of files that have been deleted by external application or the
+    user, when performing clean up tasks in download service.
+  </summary>
+</histogram>
+
+<histogram base="true" name="Download.Service.Files.CleanUp.Failure"
+    units="attempts">
+<!-- Name completed by histogram_suffixes
+     name="Download.Service.CleanupReason" -->
+
+  <owner>xingliu@chromium.org</owner>
+  <summary>
+    The number of failed file deletion attempts, when performing clean up tasks
+    in download service.
+  </summary>
+</histogram>
+
+<histogram base="true" name="Download.Service.Files.CleanUp.Success"
+    units="files">
+<!-- Name completed by histogram_suffixes
+     name="Download.Service.CleanupReason" -->
+
+  <owner>xingliu@chromium.org</owner>
+  <summary>
+    The number of files successfully deleted, when performing clean up tasks in
+    download service.
+  </summary>
+</histogram>
+
+<histogram name="Download.Service.Files.DirCreationError"
+    enum="PlatformFileError">
+  <owner>xingliu@chromium.org</owner>
+  <summary>
+    The error code when failed to create the download directory.
+  </summary>
+</histogram>
+
+<histogram name="Download.Service.Files.DiskUsed" units="%">
+  <owner>xingliu@chromium.org</owner>
+  <summary>
+    The percentage of disk space used by download service files. Recorded during
+    initialization of the file monitor.
+  </summary>
+</histogram>
+
+<histogram name="Download.Service.Files.FreeDiskSpace" units="%">
+  <owner>xingliu@chromium.org</owner>
+  <summary>
+    The percentage of free disk space to total disk space. Recorded during
+    initialization of the file monitor.
+  </summary>
+</histogram>
+
+<histogram name="Download.Service.Files.LifeTime" units="ms">
+  <owner>xingliu@chromium.org</owner>
+  <summary>
+    The lifestime of a download file, which begins from the download completion
+    to the file being deleted by the clean up task.
+  </summary>
+</histogram>
+
+<histogram name="Download.Service.Files.PathRenamed" enum="BooleanRenamed">
+  <owner>xingliu@chromium.org</owner>
+  <summary>
+    Records if the final file path has been renamed by low level download
+    library after the download is successfully completed.
+  </summary>
+</histogram>
+
+<histogram base="true" name="Download.Service.Finish.FileSize" units="KB">
+<!-- Name completed by histogram_suffixes
+     name="Download.Service.CompletionType" -->
+
+  <owner>xingliu@chromium.org</owner>
+  <summary>
+    The file size of completed download, including failed downloads.
+  </summary>
+</histogram>
+
+<histogram base="true" name="Download.Service.Finish.Time" units="ms">
+<!-- Name completed by histogram_suffixes
+     name="Download.Service.CompletionType" -->
+
+  <owner>xingliu@chromium.org</owner>
+  <summary>The time to complete the download in download service.</summary>
+</histogram>
+
+<histogram name="Download.Service.Finish.Type"
+    enum="Download.Service.CompletionType">
+  <owner>xingliu@chromium.org</owner>
+  <summary>The completion type for downloads in download service.</summary>
+</histogram>
+
+<histogram name="Download.Service.Recovery" enum="Download.Service.EntryStates">
+  <owner>xingliu@chromium.org</owner>
+  <summary>
+    The state that the entry transitions to when recovery operation happens.
+  </summary>
+</histogram>
+
+<histogram name="Download.Service.Request.BatteryRequirement"
+    enum="Download.Service.BatteryRequirements">
+  <owner>xingliu@chromium.org</owner>
+  <summary>The battery requirement of the download request.</summary>
+</histogram>
+
+<histogram base="true" name="Download.Service.Request.ClientAction"
+    enum="Download.Service.ServiceApiAction">
+<!-- Name completed by histogram_suffixes
+     name="Download.Service.Client" -->
+
+  <owner>xingliu@chromium.org</owner>
+  <summary>Records the API calls on download service.</summary>
+</histogram>
+
+<histogram name="Download.Service.Request.NetworkRequirement"
+    enum="Download.Service.NetworkRequirements">
+  <owner>xingliu@chromium.org</owner>
+  <summary>The network requirement of the download request.</summary>
+</histogram>
+
+<histogram name="Download.Service.Request.Priority"
+    enum="Download.Service.Priority">
+  <owner>xingliu@chromium.org</owner>
+  <summary>The priority of the download request.</summary>
+</histogram>
+
+<histogram base="true" name="Download.Service.Request.StartResponse"
+    enum="Download.Service.ShouldDownload">
+<!-- Name completed by histogram_suffixes
+     name="Download.Service.Client" -->
+
+  <owner>xingliu@chromium.org</owner>
+  <summary>The start response of download attempts.</summary>
+</histogram>
+
+<histogram base="true" name="Download.Service.Request.StartResult"
+    enum="Download.Service.StartResult">
+<!-- Name completed by histogram_suffixes
+     name="Download.Service.Client" -->
+
+  <owner>xingliu@chromium.org</owner>
+  <summary>The start result of download attempts.</summary>
+</histogram>
+
+<histogram name="Download.Service.StartUpStatus"
+    enum="Download.Service.StartUpResult">
+  <owner>xingliu@chromium.org</owner>
+  <summary>The start up result of the download service.</summary>
+</histogram>
+
+<histogram base="true" name="Download.Service.TaskScheduler.Status"
+    enum="Download.Service.ScheduledTaskStatus">
+<!-- Name completed by histogram_suffixes
+     name="Download.Service.TaskType" -->
+
+  <owner>xingliu@chromium.org</owner>
+  <summary>
+    The platform background tasks used by download service will invoke native
+    functions after being scheduled. The tasks may be aborted or canceled. This
+    metric records the status of background tasks when native functions are
+    invoked.
+  </summary>
+</histogram>
+
 <histogram name="Download.ShelfInProgressSizeOnAutoClose">
   <owner>asanka@chromium.org</owner>
   <summary>
@@ -90961,6 +91164,48 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="Google" label="only Google cookies are recorded."/>
   <suffix name="Other" label="only NON-Google cookies are recorded."/>
   <affected-histogram name="Cookie.ReinstatedCookies"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="Download.Service.CleanUpReason" separator=".">
+  <suffix name="Timeout" label="File is deleted after timeout."/>
+  <suffix name="Orphaned" label="No client associated with the file."/>
+  <suffix name="Unknown" label="No database entry associated with the file."/>
+  <suffix name="HardRecovery" label="File is deleted in hard recovery."/>
+  <affected-histogram name="Download.Service.Files.CleanUp.External"/>
+  <affected-histogram name="Download.Service.Files.CleanUp.Failure"/>
+  <affected-histogram name="Download.Service.Files.CleanUp.Success"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="Download.Service.Client" separator=".">
+  <suffix name="OfflinePage" label="Offline page prefetch."/>
+  <affected-histogram name="Download.Service.Request.ClientAction"/>
+  <affected-histogram name="Download.Service.Request.StartResponse"/>
+  <affected-histogram name="Download.Service.Request.StartResult"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="Download.Service.CompletionType" separator=".">
+  <suffix name="Succeed" label="Succeed."/>
+  <suffix name="Fail" label="Fail."/>
+  <suffix name="Abort" label="Abort."/>
+  <suffix name="Timeout" label="Timeout."/>
+  <suffix name="Unknown" label="Unknown."/>
+  <suffix name="Cancel" label="Cancel."/>
+  <affected-histogram name="Download.Service.Finish.FileSize"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="Download.Service.EntryState" separator=".">
+  <suffix name="New" label="The initial state."/>
+  <suffix name="Available" label="The available state."/>
+  <suffix name="Active" label="The active state."/>
+  <suffix name="Paused" label="The paused state."/>
+  <suffix name="Complete" label="The complte state."/>
+  <affected-histogram name="Download.Service.Db.Records"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="Download.Service.TaskType" separator=".">
+  <suffix name="DownloadTask" label="Download task."/>
+  <suffix name="CleanUpTask" label="Clean up task."/>
+  <affected-histogram name="Download.Service.TaskScheduler.Status"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="DownloadDangerPromptResponse" separator=".">

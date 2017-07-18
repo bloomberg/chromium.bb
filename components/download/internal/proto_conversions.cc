@@ -23,6 +23,8 @@ protodb::Entry_State ProtoConversions::RequestStateToProto(Entry::State state) {
       return protodb::Entry_State_PAUSED;
     case Entry::State::COMPLETE:
       return protodb::Entry_State_COMPLETE;
+    case Entry::State::COUNT:
+      break;
   }
 
   NOTREACHED();
@@ -116,6 +118,8 @@ ProtoConversions::NetworkRequirementsToProto(
       return protodb::SchedulingParams_NetworkRequirements_OPTIMISTIC;
     case SchedulingParams::NetworkRequirements::UNMETERED:
       return protodb::SchedulingParams_NetworkRequirements_UNMETERED;
+    case SchedulingParams::NetworkRequirements::COUNT:
+      break;
   }
 
   NOTREACHED();
@@ -144,6 +148,8 @@ ProtoConversions::BatteryRequirementsToProto(
       return protodb::SchedulingParams_BatteryRequirements_BATTERY_INSENSITIVE;
     case SchedulingParams::BatteryRequirements::BATTERY_SENSITIVE:
       return protodb::SchedulingParams_BatteryRequirements_BATTERY_SENSITIVE;
+    case SchedulingParams::BatteryRequirements::COUNT:
+      break;
   }
 
   NOTREACHED();
@@ -178,6 +184,8 @@ protodb::SchedulingParams_Priority ProtoConversions::SchedulingPriorityToProto(
       return protodb::SchedulingParams_Priority_HIGH;
     case SchedulingParams::Priority::UI:
       return protodb::SchedulingParams_Priority_UI;
+    case SchedulingParams::Priority::COUNT:
+      break;
   }
 
   NOTREACHED();

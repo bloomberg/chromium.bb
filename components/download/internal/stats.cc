@@ -4,58 +4,300 @@
 
 #include "components/download/internal/stats.h"
 
+#include <map>
+
+#include "base/files/file_enumerator.h"
+#include "base/files/file_util.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "components/download/internal/startup_status.h"
 
 namespace download {
 namespace stats {
+namespace {
+
+// The maximum tracked file size in KB, larger files will fall into overflow
+// bucket.
+const int64_t kMaxFileSizeKB = 4 * 1024 * 1024; /* 4GB */
+
+// Converts DownloadTaskType to histogram suffix.
+// Should maps to suffix string in histograms.xml.
+std::string TaskTypeToHistogramSuffix(DownloadTaskType task_type) {
+  switch (task_type) {
+    case DownloadTaskType::DOWNLOAD_TASK:
+      return "DownloadTask";
+    case DownloadTaskType::CLEANUP_TASK:
+      return "CleanUpTask";
+  }
+  NOTREACHED();
+  return std::string();
+}
+
+// Converts Entry::State to histogram suffix.
+// Should maps to suffix string in histograms.xml.
+std::string EntryStateToHistogramSuffix(Entry::State state) {
+  std::string suffix;
+  switch (state) {
+    case Entry::State::NEW:
+      return "New";
+    case Entry::State::AVAILABLE:
+      return "Available";
+    case Entry::State::ACTIVE:
+      return "Active";
+    case Entry::State::PAUSED:
+      return "Paused";
+    case Entry::State::COMPLETE:
+      return "Complete";
+    case Entry::State::COUNT:
+      break;
+  }
+  NOTREACHED();
+  return std::string();
+}
+
+// Converts DownloadClient to histogram suffix.
+// Should maps to suffix string in histograms.xml.
+std::string ClientToHistogramSuffix(DownloadClient client) {
+  switch (client) {
+    case DownloadClient::TEST:
+    case DownloadClient::TEST_2:
+    case DownloadClient::TEST_3:
+    case DownloadClient::INVALID:
+      return "__Test__";
+    case DownloadClient::OFFLINE_PAGE_PREFETCH:
+      return "OfflinePage";
+    case DownloadClient::BOUNDARY:
+      NOTREACHED();
+      break;
+  }
+  NOTREACHED();
+  return std::string();
+}
+
+// Converts CompletionType to histogram suffix.
+// Should maps to suffix string in histograms.xml.
+std::string CompletionTypeToHistogramSuffix(CompletionType type) {
+  switch (type) {
+    case CompletionType::SUCCEED:
+      return "Succeed";
+    case CompletionType::FAIL:
+      return "Fail";
+    case CompletionType::ABORT:
+      return "Abort";
+    case CompletionType::TIMEOUT:
+      return "Timeout";
+    case CompletionType::UNKNOWN:
+      return "Unknown";
+    case CompletionType::CANCEL:
+      return "Cancel";
+    case CompletionType::COUNT:
+      NOTREACHED();
+  }
+  NOTREACHED();
+  return std::string();
+}
+
+// Converts FileCleanupReason to histogram suffix.
+// Should maps to suffix string in histograms.xml.
+std::string FileCleanupReasonToHistogramSuffix(FileCleanupReason reason) {
+  switch (reason) {
+    case FileCleanupReason::TIMEOUT:
+      return "Timeout";
+    case FileCleanupReason::ORPHANED:
+      return "Orphaned";
+    case FileCleanupReason::UNKNOWN:
+      return "Unknown";
+    case FileCleanupReason::HARD_RECOVERY:
+      return "HardRecovery";
+    case FileCleanupReason::COUNT:
+      NOTREACHED();
+  }
+  NOTREACHED();
+  return std::string();
+}
+
+// Helper method to log StartUpResult.
+void LogStartUpResult(StartUpResult result) {
+  base::UmaHistogramEnumeration("Download.Service.StartUpStatus", result,
+                                StartUpResult::COUNT);
+}
+
+// Helper method to log the number of entries under a particular state.
+void LogDatabaseRecords(Entry::State state, uint32_t record_count) {
+  std::string name("Download.Service.Db.Records");
+  name.append(".").append(EntryStateToHistogramSuffix(state));
+  base::UmaHistogramCustomCounts(name, record_count, 1, 500, 50);
+}
+
+}  // namespace
 
 void LogControllerStartupStatus(const StartupStatus& status) {
   DCHECK(status.Complete());
 
-  // TODO(dtrainor): Log each failure reason.
-  // TODO(dtrainor): Finally, log SUCCESS or FAILURE based on status.Ok().
+  // Total counts for general success/failure rate.
+  LogStartUpResult(status.Ok() ? StartUpResult::SUCCESS
+                               : StartUpResult::FAILURE);
+
+  // Failure reasons.
+  if (!status.driver_ok.value())
+    LogStartUpResult(StartUpResult::FAILURE_REASON_DRIVER);
+  if (!status.model_ok.value())
+    LogStartUpResult(StartUpResult::FAILURE_REASON_MODEL);
+  if (!status.file_monitor_ok.value())
+    LogStartUpResult(StartUpResult::FAILURE_REASON_FILE_MONITOR);
 }
 
 void LogServiceApiAction(DownloadClient client, ServiceApiAction action) {
-  // TODO(dtrainor): Log |action| for |client|.
+  // Total count for each action.
+  std::string name("Download.Service.Request.ClientAction");
+  base::UmaHistogramEnumeration(name, action, ServiceApiAction::COUNT);
+
+  // Total count for each action with client suffix.
+  name.append(".").append(ClientToHistogramSuffix(client));
+  base::UmaHistogramEnumeration(name, action, ServiceApiAction::COUNT);
 }
 
 void LogStartDownloadResult(DownloadClient client,
                             DownloadParams::StartResult result) {
-  // TODO(dtrainor): Log |result| for |client|.
+  // Total count for each start result.
+  std::string name("Download.Service.Request.StartResult");
+  base::UmaHistogramEnumeration(name, result,
+                                DownloadParams::StartResult::COUNT);
+
+  // Total count for each client result with client suffix.
+  name.append(".").append(ClientToHistogramSuffix(client));
+  base::UmaHistogramEnumeration(name, result,
+                                DownloadParams::StartResult::COUNT);
+}
+
+void LogStartDownloadResponse(DownloadClient client,
+                              Client::ShouldDownload should_download) {
+  // Total count for each start response.
+  std::string name("Download.Service.Request.StartResponse");
+  base::UmaHistogramEnumeration(name, should_download,
+                                Client::ShouldDownload::COUNT);
+
+  // Total count for each client response with client suffix.
+  name.append(".").append(ClientToHistogramSuffix(client));
+  base::UmaHistogramEnumeration(name, should_download,
+                                Client::ShouldDownload::COUNT);
+}
+
+void LogDownloadParams(const DownloadParams& params) {
+  UMA_HISTOGRAM_ENUMERATION("Download.Service.Request.BatteryRequirement",
+                            params.scheduling_params.battery_requirements,
+                            SchedulingParams::BatteryRequirements::COUNT);
+  UMA_HISTOGRAM_ENUMERATION("Download.Service.Request.NetworkRequirement",
+                            params.scheduling_params.network_requirements,
+                            SchedulingParams::NetworkRequirements::COUNT);
+  UMA_HISTOGRAM_ENUMERATION("Download.Service.Request.Priority",
+                            params.scheduling_params.priority,
+                            SchedulingParams::Priority::COUNT);
+}
+
+void LogRecoveryOperation(Entry::State to_state) {
+  UMA_HISTOGRAM_ENUMERATION("Download.Service.Recovery", to_state,
+                            Entry::State::COUNT);
+}
+
+void LogDownloadCompletion(CompletionType type,
+                           const base::TimeDelta& time_span,
+                           uint64_t file_size_bytes) {
+  // Records completion type.
+  UMA_HISTOGRAM_ENUMERATION("Download.Service.Finish.Type", type,
+                            CompletionType::COUNT);
+
+  // TODO(xingliu): Use DownloadItem::GetStartTime and DownloadItem::GetEndTime
+  // to record the completion time to histogram "Download.Service.Finish.Time".
+  // Also propagates and records the mime type here.
+
+  // Records the file size.
+  std::string name("Download.Service.Finish.FileSize");
+  uint64_t file_size_kb = file_size_bytes / 1024;
+  base::UmaHistogramCustomCounts(name, file_size_kb, 1, kMaxFileSizeKB, 50);
+
+  name.append(".").append(CompletionTypeToHistogramSuffix(type));
+  base::UmaHistogramCustomCounts(name, file_size_kb, 1, kMaxFileSizeKB, 50);
 }
 
 void LogModelOperationResult(ModelAction action, bool success) {
-  // TODO(dtrainor): Log |action|.
+  if (success) {
+    UMA_HISTOGRAM_ENUMERATION("Download.Service.Db.Operation.Success", action,
+                              ModelAction::COUNT);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("Download.Service.Db.Operation.Failure", action,
+                              ModelAction::COUNT);
+  }
+}
+
+void LogEntries(std::map<Entry::State, uint32_t>& entries_count) {
+  uint32_t total_records = 0;
+  for (const auto& entry_count : entries_count)
+    total_records += entry_count.second;
+
+  // Total number of records in database.
+  base::UmaHistogramCustomCounts("Download.Service.Db.Records", total_records,
+                                 1, 500, 50);
+
+  // Number of records for each Entry::State.
+  for (Entry::State state = Entry::State::NEW; state != Entry::State::COUNT;
+       state = (Entry::State)((int)(state) + 1)) {
+    LogDatabaseRecords(state, entries_count[state]);
+  }
 }
 
 void LogScheduledTaskStatus(DownloadTaskType task_type,
                             ScheduledTaskStatus status) {
-  // TODO(shaktisahu): Log |task_type| and |status|.
+  std::string name("Download.Service.TaskScheduler.Status");
+  base::UmaHistogramEnumeration(name, status, ScheduledTaskStatus::COUNT);
+
+  name.append(".").append(TaskTypeToHistogramSuffix(task_type));
+  base::UmaHistogramEnumeration(name, status, ScheduledTaskStatus::COUNT);
 }
 
-void LogDownloadCompletion(CompletionType type, unsigned int attempt_count) {
-  // TODO(xingliu): Log completion.
-}
-
-void LogRecoveryOperation(Entry::State to_state) {
-  // TODO(dtrainor): Log |to_state|.
+void LogsFileDirectoryCreationError(base::File::Error error) {
+  // Maps to histogram enum PlatformFileError.
+  UMA_HISTOGRAM_ENUMERATION("Download.Service.Files.DirCreationError", -error,
+                            -base::File::Error::FILE_ERROR_MAX);
 }
 
 void LogFileCleanupStatus(FileCleanupReason reason,
-                          int attempted_cleanups,
+                          int succeeded_cleanups,
                           int failed_cleanups,
                           int external_cleanups) {
-  DCHECK_NE(FileCleanupReason::EXTERNAL, reason);
-  // TODO(shaktisahu): Log |status| and |count|.
+  std::string name("Download.Service.Files.CleanUp.Success");
+  base::UmaHistogramCounts100(name, succeeded_cleanups);
+  name.append(".").append(FileCleanupReasonToHistogramSuffix(reason));
+  base::UmaHistogramCounts100(name, succeeded_cleanups);
+
+  name = "Download.Service.Files.CleanUp.Failure";
+  base::UmaHistogramCounts100(name, failed_cleanups);
+  name.append(".").append(FileCleanupReasonToHistogramSuffix(reason));
+  base::UmaHistogramCounts100(name, failed_cleanups);
+
+  name = "Download.Service.Files.CleanUp.External";
+  base::UmaHistogramCounts100(name, external_cleanups);
+  name.append(".").append(FileCleanupReasonToHistogramSuffix(reason));
+  base::UmaHistogramCounts100(name, external_cleanups);
 }
 
-void LogFileDeletionFailed(int count) {
-  // TODO(shaktisahu): Log |count|.
+void LogFileLifeTime(const base::TimeDelta& file_life_time) {
+  UMA_HISTOGRAM_CUSTOM_TIMES("Download.Service.Files.LifeTime", file_life_time,
+                             base::TimeDelta::FromSeconds(1),
+                             base::TimeDelta::FromDays(8), 100);
 }
 
-void LogFilePathsAreStrangelyDifferent() {
-  // TODO(shaktisahu): Log this occurrence.
+void LogFileDirDiskUtilization(int64_t total_disk_space,
+                               int64_t free_disk_space,
+                               int64_t files_size) {
+  UMA_HISTOGRAM_PERCENTAGE("Download.Service.Files.FreeDiskSpace",
+                           (free_disk_space * 100) / total_disk_space);
+  UMA_HISTOGRAM_PERCENTAGE("Download.Service.Files.DiskUsed",
+                           (files_size * 100) / total_disk_space);
+}
+
+void LogFilePathRenamed(bool renamed) {
+  UMA_HISTOGRAM_BOOLEAN("Download.Service.Files.PathRenamed", renamed);
 }
 
 }  // namespace stats

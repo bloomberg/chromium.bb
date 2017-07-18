@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_DOWNLOAD_INTERNAL_STATS_H_
 #define COMPONENTS_DOWNLOAD_INTERNAL_STATS_H_
 
+#include "base/files/file.h"
 #include "components/download/internal/controller.h"
 #include "components/download/internal/entry.h"
 #include "components/download/public/clients.h"
@@ -21,6 +22,29 @@ namespace stats {
 // 1. Keep them in sync with the corresponding entry in enums.xml.
 // 2. Treat them as append only.
 // 3. Do not remove any enums.  Only mark them as deprecated.
+
+// Enum used to track download service start up result and failure reasons.
+// Most of the fields should map to StartupStatus.
+// Failure reasons are not mutually exclusive.
+enum class StartUpResult {
+  // Download service successfully started.
+  SUCCESS = 0,
+
+  // Download service start up failed.
+  FAILURE = 1,
+
+  // Download driver is not ready.
+  FAILURE_REASON_DRIVER = 2,
+
+  // Database layer failed to initialized.
+  FAILURE_REASON_MODEL = 3,
+
+  // File monitor failed to start.
+  FAILURE_REASON_FILE_MONITOR = 4,
+
+  // The count of entries for the enum.
+  COUNT = 5,
+};
 
 // Enum used by UMA metrics to track which actions a Client is taking on the
 // service.
@@ -40,7 +64,7 @@ enum class ServiceApiAction {
   // Represents a call to DownloadService::ChangeCriteria.
   CHANGE_CRITERIA = 4,
 
-  // The last entry for the enum.
+  // The count of entries for the enum.
   COUNT = 5,
 };
 
@@ -59,7 +83,7 @@ enum class ModelAction {
   // Represents an attempt to remove an Entry from the Model.
   REMOVE = 3,
 
-  // The last entry for the enum.
+  // The count of entries for the enum.
   COUNT = 4,
 };
 
@@ -73,6 +97,9 @@ enum class ScheduledTaskStatus {
 
   // Callback was run successfully after completion of the task.
   COMPLETED_NORMALLY = 2,
+
+  // The count of entries for the enum.
+  COUNT = 3,
 };
 
 // Enum used by UMA metrics to track various types of cleanup actions taken by
@@ -89,12 +116,11 @@ enum class FileCleanupReason {
   // driver entry.
   UNKNOWN = 2,
 
-  // The file was cleaned up externally. Shouldn't be used by callers to log as
-  // it will be used only internally by the Stats class.
-  EXTERNAL = 3,
-
   // We're trying to remove all files as part of a hard recovery attempt.
-  HARD_RECOVERY = 4,
+  HARD_RECOVERY = 3,
+
+  // The count of entries for the enum.
+  COUNT = 4,
 };
 
 // Logs the results of starting up the Controller.  Will log each failure reason
@@ -108,30 +134,56 @@ void LogServiceApiAction(DownloadClient client, ServiceApiAction action);
 void LogStartDownloadResult(DownloadClient client,
                             DownloadParams::StartResult result);
 
-// Logs statistics about the result of a Model operation.  Used to track failure
-// cases.
-void LogModelOperationResult(ModelAction action, bool success);
+// Logs the client response to StartDownload() attempt on the service.
+void LogStartDownloadResponse(DownloadClient client,
+                              download::Client::ShouldDownload should_download);
 
-// Log statistics about the status of a TaskFinishedCallback.
-void LogScheduledTaskStatus(DownloadTaskType task_type,
-                            ScheduledTaskStatus status);
-
-// Logs download completion event.
-void LogDownloadCompletion(CompletionType type, unsigned int attempt_count);
+// Logs the download parameters when StartDownload() is called.
+void LogDownloadParams(const DownloadParams& params);
 
 // Logs recovery operations that happened when we had to move from one state
 // to another on startup.
 void LogRecoveryOperation(Entry::State to_state);
 
+// Logs download completion event, download time, and the file size.
+void LogDownloadCompletion(CompletionType type,
+                           const base::TimeDelta& time_span,
+                           uint64_t file_size_bytes);
+
+// Logs statistics about the result of a model operation.  Used to track failure
+// cases.
+void LogModelOperationResult(ModelAction action, bool success);
+
+// Logs the total number of all entries, and the number of entries in each
+// state after the model is initialized.
+void LogEntries(std::map<Entry::State, uint32_t>& entries_count);
+
+// Log statistics about the status of a TaskFinishedCallback.
+void LogScheduledTaskStatus(DownloadTaskType task_type,
+                            ScheduledTaskStatus status);
+
+// Logs download files directory creation error.
+void LogsFileDirectoryCreationError(base::File::Error error);
+
 // Logs statistics about the reasons of a file cleanup.
 void LogFileCleanupStatus(FileCleanupReason reason,
-                          int attempted_cleanups,
+                          int succeeded_cleanups,
                           int failed_cleanups,
                           int external_cleanups);
 
-// Logs the case where the final downloaded file path turned out different from
-// the file path set at the beginning.
-void LogFilePathsAreStrangelyDifferent();
+// Logs the file life time for successfully completed download.
+void LogFileLifeTime(const base::TimeDelta& file_life_time);
+
+// Logs the total disk space utilized by download files.
+// This includes the total size of all the files in |file_dir|.
+// This function is costly and should be called only once.
+void LogFileDirDiskUtilization(int64_t total_disk_space,
+                               int64_t free_disk_space,
+                               int64_t files_size);
+
+// Logs if the final download file path is different from the requested file
+// path.
+void LogFilePathRenamed(bool renamed);
 
 }  // namespace stats
 }  // namespace download

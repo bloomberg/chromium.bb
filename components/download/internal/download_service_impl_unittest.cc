@@ -9,9 +9,11 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/download/internal/startup_status.h"
+#include "components/download/internal/stats.h"
 #include "components/download/internal/test/download_params_utils.h"
 #include "components/download/internal/test/mock_controller.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -84,7 +86,32 @@ TEST_F(DownloadServiceImplTest, TestApiPassThrough) {
   EXPECT_CALL(*controller_, CancelDownload(params.guid)).Times(0);
   EXPECT_CALL(*controller_, ChangeDownloadCriteria(params.guid, _)).Times(0);
 
-  service_->StartDownload(params);
+  {
+    base::HistogramTester histogram_tester;
+
+    service_->StartDownload(params);
+
+    histogram_tester.ExpectBucketCount(
+        "Download.Service.Request.ClientAction",
+        static_cast<base::HistogramBase::Sample>(
+            stats::ServiceApiAction::START_DOWNLOAD),
+        1);
+    histogram_tester.ExpectBucketCount(
+        "Download.Service.Request.ClientAction.__Test__",
+        static_cast<base::HistogramBase::Sample>(
+            stats::ServiceApiAction::START_DOWNLOAD),
+        1);
+    histogram_tester.ExpectBucketCount(
+        "Download.Service.Request.BatteryRequirement",
+        static_cast<base::HistogramBase::Sample>(
+            params.scheduling_params.battery_requirements),
+        1);
+
+    histogram_tester.ExpectTotalCount("Download.Service.Request.ClientAction",
+                                      1);
+    histogram_tester.ExpectTotalCount(
+        "Download.Service.Request.ClientAction.__Test__", 1);
+  }
   service_->PauseDownload(params.guid);
   service_->ResumeDownload(params.guid);
   service_->CancelDownload(params.guid);
