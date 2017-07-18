@@ -813,7 +813,7 @@ class InstrumentationTestInstance(test_instance.TestInstance):
         t['flags'] = [parameters[0]]
         for p in parameters[1:]:
           parameterized_t = copy.copy(t)
-          parameterized_t['flags'] = [p]
+          parameterized_t['flags'] = ['--%s' % p]
           new_tests.append(parameterized_t)
     return tests + new_tests
 
