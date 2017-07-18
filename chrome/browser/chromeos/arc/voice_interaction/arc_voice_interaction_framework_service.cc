@@ -234,6 +234,11 @@ void ArcVoiceInteractionFrameworkService::OnInstanceReady() {
   ash::Shell::Get()->accelerator_controller()->Register(
       {ui::Accelerator(ui::VKEY_A, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN)},
       this);
+
+  if (is_request_pending_) {
+    is_request_pending_ = false;
+    framework_instance->StartVoiceInteractionSession();
+  }
 }
 
 void ArcVoiceInteractionFrameworkService::OnInstanceClosed() {
@@ -444,6 +449,7 @@ void ArcVoiceInteractionFrameworkService::StartSessionFromUserInteraction(
 
   if (!arc_bridge_service_->voice_interaction_framework()->has_instance()) {
     SetArcCpuRestriction(false);
+    is_request_pending_ = true;
     return;
   }
 
