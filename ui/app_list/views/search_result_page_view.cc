@@ -356,7 +356,7 @@ gfx::Rect SearchResultPageView::GetPageBoundsForState(
 
   if (state != AppListModel::STATE_SEARCH_RESULTS) {
     // Hides this view behind the search box by using the same bounds.
-    return AppListPage::GetSearchBoxBounds();
+    return AppListPage::contents_view()->GetSearchBoxBoundsForState(state);
   }
 
   gfx::Rect onscreen_bounds(GetDefaultContentsBounds());

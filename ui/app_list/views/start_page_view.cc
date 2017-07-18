@@ -21,6 +21,7 @@
 #include "ui/app_list/search_result.h"
 #include "ui/app_list/views/all_apps_tile_item_view.h"
 #include "ui/app_list/views/app_list_main_view.h"
+#include "ui/app_list/views/app_list_view.h"
 #include "ui/app_list/views/contents_view.h"
 #include "ui/app_list/views/custom_launcher_page_view.h"
 #include "ui/app_list/views/expand_arrow_view.h"
@@ -50,6 +51,7 @@ constexpr int kInstantContainerSpacing = 24;
 constexpr int kSearchBoxAndTilesSpacing = 35;
 constexpr int kStartPageSearchBoxWidth = 480;
 constexpr int kStartPageSearchBoxWidthFullscreen = 544;
+constexpr int kPreferredHeightFullscreen = 272;
 
 // WebView constants.
 constexpr int kWebViewWidth = 700;
@@ -97,7 +99,8 @@ class CustomLauncherPageBackgroundView : public views::View {
 StartPageView::StartPageView(AppListMainView* app_list_main_view,
                              AppListViewDelegate* view_delegate,
                              AppListView* app_list_view)
-    : app_list_main_view_(app_list_main_view),
+    : app_list_view_(app_list_view),
+      app_list_main_view_(app_list_main_view),
       view_delegate_(view_delegate),
       search_box_spacer_view_(new View()),
       instant_container_(new views::View),
@@ -218,8 +221,22 @@ void StartPageView::OnShown() {
 gfx::Rect StartPageView::GetPageBoundsForState(
     AppListModel::State state) const {
   gfx::Rect onscreen_bounds(GetFullContentsBounds());
-  if (state == AppListModel::STATE_START)
+
+  if (!is_fullscreen_app_list_enabled_) {
+    if (state == AppListModel::STATE_START)
+      return onscreen_bounds;
+    return GetAboveContentsOffscreenBounds(onscreen_bounds.size());
+  }
+
+  if (state == AppListModel::STATE_START) {
+    if (app_list_view_->is_fullscreen()) {
+      // Make this view vertically centered in fullscreen mode.
+      onscreen_bounds.Offset(
+          0, (onscreen_bounds.height() - kPreferredHeightFullscreen) / 2);
+    }
     return onscreen_bounds;
+  }
+  onscreen_bounds.set_height(kPreferredHeightFullscreen);
 
   return GetAboveContentsOffscreenBounds(onscreen_bounds.size());
 }
