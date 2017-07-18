@@ -956,9 +956,6 @@ void ShellSurface::OnPostWindowStateTypeChange(
 void ShellSurface::OnWindowBoundsChanged(aura::Window* window,
                                          const gfx::Rect& old_bounds,
                                          const gfx::Rect& new_bounds) {
-  if (window == host_window())
-    return;
-
   // TODO(domlaskowski): For BoundsMode::CLIENT, the configure callback does not
   // yet support resizing. See crbug.com/699746.
   if (bounds_mode_ == BoundsMode::CLIENT)
@@ -990,23 +987,7 @@ void ShellSurface::OnWindowBoundsChanged(aura::Window* window,
   }
 }
 
-void ShellSurface::OnWindowAddedToRootWindow(aura::Window* window) {
-  if (window == host_window())
-    SurfaceTreeHost::OnWindowAddedToRootWindow(window);
-}
-
-void ShellSurface::OnWindowRemovingFromRootWindow(aura::Window* window,
-                                                  aura::Window* new_root) {
-  if (window == host_window())
-    SurfaceTreeHost::OnWindowRemovingFromRootWindow(window, new_root);
-}
-
 void ShellSurface::OnWindowDestroying(aura::Window* window) {
-  if (window == host_window()) {
-    SurfaceTreeHost::OnWindowDestroying(window);
-    return;
-  }
-
   if (window == parent_) {
     parent_ = nullptr;
     // |parent_| being set to null effects the ability to maximize the window.

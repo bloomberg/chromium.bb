@@ -411,6 +411,7 @@ Buffer::~Buffer() {}
 
 bool Buffer::ProduceTransferableResource(
     LayerTreeFrameSinkHolder* layer_tree_frame_sink_holder,
+    cc::ResourceId resource_id,
     bool secure_output_only,
     bool client_usage,
     cc::TransferableResource* resource) {
@@ -438,7 +439,7 @@ bool Buffer::ProduceTransferableResource(
     return false;
   }
 
-  resource->id = layer_tree_frame_sink_holder->AllocateResourceId();
+  resource->id = resource_id;
   resource->format = viz::RGBA_8888;
   resource->filter = GL_LINEAR;
   resource->size = gpu_memory_buffer_->GetSize();
@@ -472,7 +473,7 @@ bool Buffer::ProduceTransferableResource(
     // The contents texture will be released when no longer used by the
     // compositor.
     layer_tree_frame_sink_holder->SetResourceReleaseCallback(
-        resource->id,
+        resource_id,
         base::Bind(&Buffer::Texture::ReleaseTexImage,
                    base::Unretained(contents_texture),
                    base::Bind(&Buffer::ReleaseContentsTexture, AsWeakPtr(),
@@ -502,7 +503,7 @@ bool Buffer::ProduceTransferableResource(
   // The mailbox texture will be released when no longer used by the
   // compositor.
   layer_tree_frame_sink_holder->SetResourceReleaseCallback(
-      resource->id,
+      resource_id,
       base::Bind(&Buffer::Texture::Release, base::Unretained(texture),
                  base::Bind(&Buffer::ReleaseTexture, AsWeakPtr(),
                             base::Passed(&texture_))));
