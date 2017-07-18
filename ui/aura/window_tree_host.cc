@@ -223,13 +223,17 @@ void WindowTreeHost::Hide() {
 ////////////////////////////////////////////////////////////////////////////////
 // WindowTreeHost, protected:
 
-WindowTreeHost::WindowTreeHost() : WindowTreeHost(nullptr) {}
+WindowTreeHost::WindowTreeHost() : WindowTreeHost(nullptr) {
+  display::Screen::GetScreen()->AddObserver(this);
+}
 
 WindowTreeHost::WindowTreeHost(std::unique_ptr<WindowPort> window_port)
     : window_(new Window(nullptr, std::move(window_port))),
       last_cursor_(ui::CursorType::kNull),
       input_method_(nullptr),
-      owned_input_method_(false) {}
+      owned_input_method_(false) {
+  display::Screen::GetScreen()->RemoveObserver(this);
+}
 
 void WindowTreeHost::DestroyCompositor() {
   compositor_.reset();
@@ -338,6 +342,22 @@ void WindowTreeHost::OnHostLostWindowCapture() {
 
 ui::EventSink* WindowTreeHost::GetEventSink() {
   return dispatcher_.get();
+}
+
+void WindowTreeHost::OnDisplayAdded(const display::Display& new_display) {}
+
+void WindowTreeHost::OnDisplayRemoved(const display::Display& old_display) {}
+
+void WindowTreeHost::OnDisplayMetricsChanged(const display::Display& display,
+                                             uint32_t metrics) {
+  display::Screen* screen = display::Screen::GetScreen();
+  if (display.id() != screen->GetDisplayNearestView(window()).id())
+    return;
+
+  if (metrics & DisplayObserver::DISPLAY_METRIC_COLOR_SPACE) {
+    if (compositor_)
+      compositor_->SetDisplayColorSpace(display.color_space());
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
