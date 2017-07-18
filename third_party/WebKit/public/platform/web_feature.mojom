@@ -1597,6 +1597,7 @@ enum WebFeature {
   kRequestMIDIAccessDisallowedByFeaturePolicyInCrossOriginIframe = 2059,
   kMediaSourceKeyframeTimeGreaterThanDependant = 2060,
   kMediaSourceMuxedSequenceMode = 2061,
+  kPrepareModuleScript = 2062,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
