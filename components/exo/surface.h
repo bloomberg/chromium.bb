@@ -15,10 +15,13 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "cc/resources/transferable_resource.h"
+#include "cc/scheduler/begin_frame_source.h"
 #include "components/exo/layer_tree_frame_sink_holder.h"
 #include "third_party/skia/include/core/SkBlendMode.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_observer.h"
+#include "ui/compositor/compositor_vsync_manager.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -28,17 +31,12 @@ class TracedValue;
 }
 }
 
-namespace cc {
-class CompositorFrame;
-}
-
 namespace gfx {
 class Path;
 }
 
 namespace exo {
 class Buffer;
-class LayerTreeFrameSinkHolder;
 class Pointer;
 class SurfaceDelegate;
 class SurfaceObserver;
@@ -54,17 +52,27 @@ using CursorProvider = Pointer;
 
 // This class represents a rectangular area that is displayed on the screen.
 // It has a location, size and pixel contents.
-class Surface : public ui::PropertyHandler {
+class Surface : public ui::ContextFactoryObserver,
+                public aura::WindowObserver,
+                public ui::PropertyHandler,
+                public ui::CompositorVSyncManager::Observer,
+                public cc::BeginFrameObserverBase {
  public:
   using PropertyDeallocator = void (*)(int64_t value);
 
   Surface();
-  ~Surface();
+  ~Surface() override;
 
   // Type-checking downcast routine.
   static Surface* AsSurface(const aura::Window* window);
 
   aura::Window* window() { return window_.get(); }
+
+  viz::SurfaceId GetSurfaceId() const;
+
+  LayerTreeFrameSinkHolder* layer_tree_frame_sink_holder() {
+    return layer_tree_frame_sink_holder_.get();
+  }
 
   // Set a buffer as the content of this surface. A buffer can only be attached
   // to one surface at a time.
@@ -136,17 +144,7 @@ class Surface : public ui::PropertyHandler {
   // This will synchronously commit all pending state of the surface and its
   // descendants by recursively calling CommitSurfaceHierarchy() for each
   // sub-surface with pending state.
-  enum FrameType {
-    FRAME_TYPE_COMMIT,
-    FRAME_TYPE_RECREATED_RESOURCES,
-  };
-  void CommitSurfaceHierarchy(
-      const gfx::Point& origin,
-      FrameType frame_type,
-      LayerTreeFrameSinkHolder* frame_sink_holder,
-      cc::CompositorFrame* frame,
-      std::list<FrameCallback>* frame_callbacks,
-      std::list<PresentationCallback>* presentation_callbacks);
+  void CommitSurfaceHierarchy();
 
   // Returns true if surface is in synchronized mode.
   bool IsSynchronized() const;
@@ -188,6 +186,10 @@ class Surface : public ui::PropertyHandler {
   // Returns a trace value representing the state of the surface.
   std::unique_ptr<base::trace_event::TracedValue> AsTracedValue() const;
 
+  // Call this to indicate that the previous CompositorFrame is processed and
+  // the surface is being scheduled for a draw.
+  void DidReceiveCompositorFrameAck();
+
   // Called when the begin frame source has changed.
   void SetBeginFrameSource(cc::BeginFrameSource* begin_frame_source);
 
@@ -200,15 +202,25 @@ class Surface : public ui::PropertyHandler {
   // Enables 'stylus-only' mode for the associated window.
   void SetStylusOnly();
 
-  // Recreates resources for the surface and sub surfaces.
-  void RecreateResources(LayerTreeFrameSinkHolder* frame_sink_holder);
+  // Overridden from ui::ContextFactoryObserver:
+  void OnLostResources() override;
 
-  // Returns true if the surface's bounds should be filled opaquely.
-  bool FillsBoundsOpaquely() const;
+  // Overridden from aura::WindowObserver:
+  void OnWindowAddedToRootWindow(aura::Window* window) override;
+  void OnWindowRemovingFromRootWindow(aura::Window* window,
+                                      aura::Window* new_root) override;
+
+  // Overridden from ui::CompositorVSyncManager::Observer:
+  void OnUpdateVSyncParameters(base::TimeTicks timebase,
+                               base::TimeDelta interval) override;
 
   bool HasPendingDamageForTesting(const gfx::Rect& damage) const {
     return pending_damage_.contains(gfx::RectToSkIRect(damage));
   }
+
+  // Overridden from cc::BeginFrameObserverBase:
+  bool OnBeginFrameDerivedImpl(const cc::BeginFrameArgs& args) override;
+  void OnBeginFrameSourcePausedChanged(bool paused) override {}
 
  private:
   struct State {
@@ -257,16 +269,14 @@ class Surface : public ui::PropertyHandler {
   // contents of the attached buffer (or id 0, if no buffer is attached).
   // UpdateSurface must be called afterwards to ensure the release callback
   // will be called.
-  void UpdateResource(LayerTreeFrameSinkHolder* frame_sink_holder,
-                      bool client_usage);
+  void UpdateResource(bool client_usage);
 
-  // Puts the current surface into a draw quad, and appends the draw quads into
-  // the |frame|.
-  void AppendContentsToFrame(const gfx::Point& origin,
-                             FrameType frame_type,
-                             cc::CompositorFrame* frame);
+  // Updates the current Surface with a new frame referring to the resource in
+  // current_resource_.
+  void UpdateSurface(bool full_damage);
 
-  void UpdateContentSize();
+  // Adds/Removes begin frame observer based on state.
+  void UpdateNeedsBeginFrame();
 
   // This returns true when the surface has some contents assigned to it.
   bool has_contents() const { return !!current_buffer_.buffer(); }
@@ -274,8 +284,10 @@ class Surface : public ui::PropertyHandler {
   // This window has the layer which contains the Surface contents.
   std::unique_ptr<aura::Window> window_;
 
-  // This true, if sub_surfaces_ has changes (order, position, etc).
-  bool sub_surfaces_changed_ = false;
+  // This is true if it's possible that the layer properties (size, opacity,
+  // etc.) may have been modified since the last commit. Attaching a new
+  // buffer with the same size as the old shouldn't set this to true.
+  bool has_pending_layer_changes_ = true;
 
   // This is the size of the last committed contents.
   gfx::Size content_size_;
@@ -290,6 +302,8 @@ class Surface : public ui::PropertyHandler {
   // The device scale factor sent in CompositorFrames.
   float device_scale_factor_ = 1.0f;
 
+  std::unique_ptr<LayerTreeFrameSinkHolder> layer_tree_frame_sink_holder_;
+
   // The damage region to schedule paint for when Commit() is called.
   SkRegion pending_damage_;
 
@@ -299,6 +313,8 @@ class Surface : public ui::PropertyHandler {
   // |active_frame_callbacks_| when the effect of the Commit() is scheduled to
   // be drawn. They fire at the first begin frame notification after this.
   std::list<FrameCallback> pending_frame_callbacks_;
+  std::list<FrameCallback> frame_callbacks_;
+  std::list<FrameCallback> active_frame_callbacks_;
 
   // These lists contains the callbacks to notify the client when surface
   // contents have been presented. These callbacks move to
@@ -308,6 +324,9 @@ class Surface : public ui::PropertyHandler {
   // after receiving VSync parameters update for the previous frame. They fire
   // at the next VSync parameters update after that.
   std::list<PresentationCallback> pending_presentation_callbacks_;
+  std::list<PresentationCallback> presentation_callbacks_;
+  std::list<PresentationCallback> swapping_presentation_callbacks_;
+  std::list<PresentationCallback> swapped_presentation_callbacks_;
 
   // This is the state that has yet to be committed.
   State pending_state_;
@@ -321,7 +340,6 @@ class Surface : public ui::PropertyHandler {
   using SubSurfaceEntry = std::pair<Surface*, gfx::Point>;
   using SubSurfaceEntryList = std::list<SubSurfaceEntry>;
   SubSurfaceEntryList pending_sub_surfaces_;
-  SubSurfaceEntryList sub_surfaces_;
 
   // The buffer that is currently set as content of surface.
   BufferAttachment current_buffer_;
@@ -350,6 +368,11 @@ class Surface : public ui::PropertyHandler {
 
   // Surface observer list. Surface does not own the observers.
   base::ObserverList<SurfaceObserver, true> observers_;
+
+  // The begin frame source being observed.
+  cc::BeginFrameSource* begin_frame_source_ = nullptr;
+  bool needs_begin_frame_ = false;
+  cc::BeginFrameAck current_begin_frame_ack_;
 
   DISALLOW_COPY_AND_ASSIGN(Surface);
 };
