@@ -73,7 +73,9 @@ class WebServiceWorkerContextClient {
   virtual void WorkerReadyForInspection() {}
 
   // The worker script is successfully loaded and a new thread is about to
-  // be started. Called on the main thread.
+  // be started. Called on the main thread when the script is served from
+  // ResourceLoader or on the worker thread when the script is served via
+  // WebServiceWorkerInstalledScriptsManager.
   virtual void WorkerScriptLoaded() {}
 
   virtual bool HasAssociatedRegistration() { return false; }
