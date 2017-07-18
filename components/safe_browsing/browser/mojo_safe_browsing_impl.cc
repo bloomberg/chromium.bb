@@ -2,15 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/safe_browsing/mojo_safe_browsing_impl.h"
+#include "components/safe_browsing/browser/mojo_safe_browsing_impl.h"
 
 #include <vector>
 
 #include "base/memory/ptr_util.h"
-#include "chrome/browser/safe_browsing/safe_browsing_url_checker_impl.h"
-#include "chrome/browser/safe_browsing/ui_manager.h"
-#include "components/safe_browsing_db/database_manager.h"
-#include "components/safe_browsing_db/v4_protocol_manager_util.h"
+#include "components/safe_browsing/browser/safe_browsing_url_checker_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -54,28 +51,29 @@ class BooleanCallbackWrapper {
 }  // namespace
 
 MojoSafeBrowsingImpl::MojoSafeBrowsingImpl(
-    scoped_refptr<SafeBrowsingDatabaseManager> database_manager,
-    scoped_refptr<SafeBrowsingUIManager> ui_manager,
+    scoped_refptr<UrlCheckerDelegate> delegate,
     int render_process_id)
-    : database_manager_(std::move(database_manager)),
-      ui_manager_(std::move(ui_manager)),
-      render_process_id_(render_process_id) {}
+    : delegate_(std::move(delegate)), render_process_id_(render_process_id) {}
 
 MojoSafeBrowsingImpl::~MojoSafeBrowsingImpl() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 }
 
 // static
-void MojoSafeBrowsingImpl::Create(
-    scoped_refptr<SafeBrowsingDatabaseManager> database_manager,
-    scoped_refptr<SafeBrowsingUIManager> ui_manager,
+void MojoSafeBrowsingImpl::MaybeCreate(
     int render_process_id,
+    const base::Callback<UrlCheckerDelegate*()>& delegate_getter,
     const service_manager::BindSourceInfo& source_info,
     mojom::SafeBrowsingRequest request) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  mojo::MakeStrongBinding(base::MakeUnique<MojoSafeBrowsingImpl>(
-                              std::move(database_manager),
-                              std::move(ui_manager), render_process_id),
+
+  scoped_refptr<UrlCheckerDelegate> delegate = delegate_getter.Run();
+
+  if (!delegate || !delegate->GetDatabaseManager()->IsSupported())
+    return;
+
+  mojo::MakeStrongBinding(base::WrapUnique(new MojoSafeBrowsingImpl(
+                              std::move(delegate), render_process_id)),
                           std::move(request));
 }
 
@@ -88,8 +86,7 @@ void MojoSafeBrowsingImpl::CreateCheckerAndCheck(
     CreateCheckerAndCheckCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   auto checker_impl = base::MakeUnique<SafeBrowsingUrlCheckerImpl>(
-      static_cast<int>(load_flags), resource_type, database_manager_,
-      ui_manager_,
+      static_cast<int>(load_flags), resource_type, delegate_,
       base::Bind(&GetWebContentsFromID, render_process_id_,
                  static_cast<int>(render_frame_id)));
 

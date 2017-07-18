@@ -24,6 +24,10 @@ source_set("common") {
     "//ipc",
     "//url/ipc:url_ipc",
   ]
+
+  public_deps = [
+    ":interfaces",
+  ]
 }
 
 static_library("safe_browsing_prefs") {

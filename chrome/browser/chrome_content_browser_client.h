@@ -43,6 +43,7 @@ class QuotaPermissionContext;
 
 namespace safe_browsing {
 class SafeBrowsingService;
+class UrlCheckerDelegate;
 }
 
 namespace user_prefs {
@@ -380,6 +381,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   static void SetDefaultQuotaSettingsForTesting(
       const storage::QuotaSettings *settings);
 
+  safe_browsing::UrlCheckerDelegate* GetSafeBrowsingUrlCheckerDelegate();
+
 #if BUILDFLAG(ENABLE_PLUGINS)
   // Set of origins that can use TCP/UDP private APIs from NaCl.
   std::set<std::string> allowed_socket_origins_;
@@ -397,6 +400,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   service_manager::BinderRegistry gpu_binder_registry_;
 
   scoped_refptr<safe_browsing::SafeBrowsingService> safe_browsing_service_;
+  scoped_refptr<safe_browsing::UrlCheckerDelegate>
+      safe_browsing_url_checker_delegate_;
 
   std::unique_ptr<service_manager::BinderRegistry> frame_interfaces_;
   std::unique_ptr<

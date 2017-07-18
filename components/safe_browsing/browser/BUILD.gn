@@ -6,6 +6,12 @@ import("//build/config/features.gni")
 
 source_set("browser") {
   sources = [
+    "browser_url_loader_throttle.cc",
+    "browser_url_loader_throttle.h",
+    "mojo_safe_browsing_impl.cc",
+    "mojo_safe_browsing_impl.h",
+    "safe_browsing_url_checker_impl.cc",
+    "safe_browsing_url_checker_impl.h",
     "safe_browsing_url_request_context_getter.cc",
     "safe_browsing_url_request_context_getter.h",
     "threat_details.cc",
@@ -14,6 +20,7 @@ source_set("browser") {
     "threat_details_cache.h",
     "threat_details_history.cc",
     "threat_details_history.h",
+    "url_checker_delegate.h",
   ]
 
   deps = [
@@ -22,6 +29,7 @@ source_set("browser") {
     "//components/safe_browsing:csd_proto",
     "//components/safe_browsing:safe_browsing",
     "//components/safe_browsing/common:common",
+    "//components/safe_browsing_db:database_manager",
     "//components/security_interstitials/content:security_interstitial_page",
     "//content/public/browser:browser",
     "//net:extras",

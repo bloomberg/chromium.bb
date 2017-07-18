@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_URL_CHECKER_IMPL_H_
-#define CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_URL_CHECKER_IMPL_H_
+#ifndef COMPONENTS_SAFE_BROWSING_BROWSER_SAFE_BROWSING_URL_CHECKER_IMPL_H_
+#define COMPONENTS_SAFE_BROWSING_BROWSER_SAFE_BROWSING_URL_CHECKER_IMPL_H_
 
 #include <vector>
 
@@ -20,14 +20,9 @@ namespace content {
 class WebContents;
 }
 
-namespace security_interstitials {
-struct UnsafeResource;
-}
-
 namespace safe_browsing {
 
-class SafeBrowsingUIManager;
-class BaseUIManager;
+class UrlCheckerDelegate;
 
 // A SafeBrowsingUrlCheckerImpl instance is used to perform SafeBrowsing check
 // for a URL and its redirect URLs. It implements Mojo interface so that it can
@@ -36,9 +31,6 @@ class BaseUIManager;
 // directly instead of through Mojo.
 // Used when --enable-network-service is in effect.
 //
-// TODO(yzshen): Handle the case where SafeBrowsing is not enabled, or
-// !database_manager()->IsSupported().
-// TODO(yzshen): Make sure it also works on Andorid.
 // TODO(yzshen): Do all the logging like what BaseResourceThrottle does.
 class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
                                    public SafeBrowsingDatabaseManager::Client {
@@ -46,8 +38,7 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
   SafeBrowsingUrlCheckerImpl(
       int load_flags,
       content::ResourceType resource_type,
-      scoped_refptr<SafeBrowsingDatabaseManager> database_manager,
-      scoped_refptr<SafeBrowsingUIManager> ui_manager,
+      scoped_refptr<UrlCheckerDelegate> url_checker_delegate,
       const base::Callback<content::WebContents*()>& web_contents_getter);
 
   ~SafeBrowsingUrlCheckerImpl() override;
@@ -60,11 +51,6 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
   void OnCheckBrowseUrlResult(const GURL& url,
                               SBThreatType threat_type,
                               const ThreatMetadata& metadata) override;
-
-  static void StartDisplayingBlockingPage(
-      const base::WeakPtr<SafeBrowsingUrlCheckerImpl>& checker,
-      scoped_refptr<BaseUIManager> ui_manager,
-      const security_interstitials::UnsafeResource& resource);
 
   void OnCheckUrlTimeout();
 
@@ -88,8 +74,8 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
   const int load_flags_;
   const content::ResourceType resource_type_;
   base::Callback<content::WebContents*()> web_contents_getter_;
+  scoped_refptr<UrlCheckerDelegate> url_checker_delegate_;
   scoped_refptr<SafeBrowsingDatabaseManager> database_manager_;
-  scoped_refptr<BaseUIManager> ui_manager_;
 
   // The redirect chain for this resource, including the original URL and
   // subsequent redirect URLs.
@@ -113,4 +99,4 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
 
 }  // namespace safe_browsing
 
-#endif  // CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_URL_CHECKER_IMPL_H_
+#endif  // COMPONENTS_SAFE_BROWSING_BROWSER_SAFE_BROWSING_URL_CHECKER_IMPL_H_
