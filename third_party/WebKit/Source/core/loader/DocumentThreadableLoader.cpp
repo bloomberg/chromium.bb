@@ -1071,7 +1071,7 @@ void DocumentThreadableLoader::DispatchDidFailAccessControlCheck(
 
   ThreadableLoaderClient* client = client_;
   Clear();
-  client->DidFailAccessControlCheck(error);
+  client->DidFail(error);
 }
 
 void DocumentThreadableLoader::DispatchDidFail(const ResourceError& error) {

@@ -70,7 +70,6 @@ class MockThreadableLoaderClient : public ThreadableLoaderClient {
   MOCK_METHOD2(DidReceiveCachedMetadata, void(const char*, int));
   MOCK_METHOD2(DidFinishLoading, void(unsigned long, double));
   MOCK_METHOD1(DidFail, void(const ResourceError&));
-  MOCK_METHOD1(DidFailAccessControlCheck, void(const ResourceError&));
   MOCK_METHOD0(DidFailRedirectCheck, void());
   MOCK_METHOD1(DidReceiveResourceTiming, void(const ResourceTimingInfo&));
   MOCK_METHOD1(DidDownloadData, void(int));
@@ -699,40 +698,10 @@ TEST_P(ThreadableLoaderTest, DidFailAccessControlCheck) {
   EXPECT_CALL(GetCheckpoint(), Call(2));
   EXPECT_CALL(
       *Client(),
-      DidFailAccessControlCheck(ResourceError::CancelledDueToAccessCheckError(
+      DidFail(ResourceError::CancelledDueToAccessCheckError(
           SuccessURL(), ResourceRequestBlockedReason::kOther,
           "No 'Access-Control-Allow-Origin' header is present on the requested "
           "resource. Origin 'null' is therefore not allowed access.")));
-
-  StartLoader(SuccessURL(), WebURLRequest::kFetchRequestModeCORS);
-  CallCheckpoint(2);
-  ServeRequests();
-}
-
-TEST_P(ThreadableLoaderTest, CancelInDidFailAccessControlCheck) {
-  InSequence s;
-  EXPECT_CALL(GetCheckpoint(), Call(1));
-  CreateLoader();
-  CallCheckpoint(1);
-
-  EXPECT_CALL(GetCheckpoint(), Call(2));
-  EXPECT_CALL(*Client(), DidFailAccessControlCheck(_))
-      .WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::CancelLoader));
-
-  StartLoader(SuccessURL(), WebURLRequest::kFetchRequestModeCORS);
-  CallCheckpoint(2);
-  ServeRequests();
-}
-
-TEST_P(ThreadableLoaderTest, ClearInDidFailAccessControlCheck) {
-  InSequence s;
-  EXPECT_CALL(GetCheckpoint(), Call(1));
-  CreateLoader();
-  CallCheckpoint(1);
-
-  EXPECT_CALL(GetCheckpoint(), Call(2));
-  EXPECT_CALL(*Client(), DidFailAccessControlCheck(_))
-      .WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::ClearLoader));
 
   StartLoader(SuccessURL(), WebURLRequest::kFetchRequestModeCORS);
   CallCheckpoint(2);
@@ -844,7 +813,7 @@ TEST_P(ThreadableLoaderTest, GetResponseSynchronously) {
   CreateLoader();
   CallCheckpoint(1);
 
-  EXPECT_CALL(*Client(), DidFailAccessControlCheck(_));
+  EXPECT_CALL(*Client(), DidFail(_));
   EXPECT_CALL(GetCheckpoint(), Call(2));
 
   // Currently didFailAccessControlCheck is dispatched synchronously. This
