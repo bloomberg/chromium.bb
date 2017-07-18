@@ -407,6 +407,7 @@ TEST_F(HarfBuzzShaperTest, ShapeResultCopyRangeIntoLatin) {
 
   EXPECT_EQ(result->NumCharacters(), composite_result->NumCharacters());
   EXPECT_EQ(result->SnappedWidth(), composite_result->SnappedWidth());
+  EXPECT_EQ(result->Bounds(), composite_result->Bounds());
   EXPECT_EQ(result->SnappedStartPositionForOffset(0),
             composite_result->SnappedStartPositionForOffset(0));
   EXPECT_EQ(result->SnappedStartPositionForOffset(15),
@@ -432,6 +433,7 @@ TEST_F(HarfBuzzShaperTest, ShapeResultCopyRangeIntoArabicThaiHanLatin) {
 
   EXPECT_EQ(result->NumCharacters(), composite_result->NumCharacters());
   EXPECT_EQ(result->SnappedWidth(), composite_result->SnappedWidth());
+  EXPECT_EQ(result->Bounds(), composite_result->Bounds());
   EXPECT_EQ(result->SnappedStartPositionForOffset(0),
             composite_result->SnappedStartPositionForOffset(0));
   EXPECT_EQ(result->SnappedStartPositionForOffset(1),
@@ -466,6 +468,24 @@ TEST_F(HarfBuzzShaperTest, ShapeResultCopyRangeAcrossRuns) {
   RefPtr<ShapeResult> target = ShapeResult::Create(&font, 0, direction);
   result->CopyRange(5, 7, target.Get());
   EXPECT_EQ(2u, target->NumCharacters());
+}
+
+TEST_F(HarfBuzzShaperTest, ShapeResultCopyRangeSegmentGlyphBoundingBox) {
+  String string(u"THello worldL");
+  TextDirection direction = TextDirection::kLtr;
+
+  HarfBuzzShaper shaper(string.Characters16(), string.length());
+  RefPtr<ShapeResult> result1 = shaper.Shape(&font, direction, 0, 6);
+  RefPtr<ShapeResult> result2 =
+      shaper.Shape(&font, direction, 6, string.length());
+
+  RefPtr<ShapeResult> composite_result =
+      ShapeResult::Create(&font, 0, direction);
+  result1->CopyRange(0, 6, composite_result.Get());
+  result2->CopyRange(6, string.length(), composite_result.Get());
+
+  RefPtr<ShapeResult> result = shaper.Shape(&font, direction);
+  EXPECT_EQ(result->Bounds(), composite_result->Bounds());
 }
 
 }  // namespace blink
