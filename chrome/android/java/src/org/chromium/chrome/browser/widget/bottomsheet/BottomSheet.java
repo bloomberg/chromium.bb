@@ -778,7 +778,7 @@ public class BottomSheet
         mToolbarHolder = (FrameLayout) mControlContainer.findViewById(R.id.toolbar_holder);
         mDefaultToolbarView = (BottomToolbarPhone) mControlContainer.findViewById(R.id.toolbar);
 
-        mNtpController = new BottomSheetNewTabController(this, mDefaultToolbarView);
+        mNtpController = new BottomSheetNewTabController(this, mDefaultToolbarView, mActivity);
 
         mActivity.getFullscreenManager().addListener(new FullscreenListener() {
             @Override
