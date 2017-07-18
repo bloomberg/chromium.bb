@@ -5,21 +5,13 @@
 #import "ios/chrome/browser/ui/payments/shipping_option_selection_coordinator.h"
 
 #include "base/mac/foundation_util.h"
-#include "base/memory/ptr_util.h"
 #include "base/test/ios/wait_util.h"
-#include "base/test/scoped_task_environment.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
-#include "components/autofill/core/browser/test_personal_data_manager.h"
-#include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
-#include "ios/chrome/browser/payments/payment_request.h"
 #include "ios/chrome/browser/payments/payment_request_test_util.h"
 #include "ios/chrome/browser/payments/test_payment_request.h"
 #import "ios/chrome/browser/ui/payments/payment_request_selector_view_controller.h"
-#include "ios/web/public/payments/payment_request.h"
-#import "ios/web/public/test/fakes/test_web_state.h"
-#include "ios/web/public/test/test_web_thread_bundle.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#import "ios/chrome/browser/ui/payments/payment_request_unittest_base.h"
 #include "testing/platform_test.h"
 #include "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
@@ -29,21 +21,16 @@
 #endif
 
 class PaymentRequestShippingOptionSelectionCoordinatorTest
-    : public PlatformTest {
+    : public PaymentRequestUnitTestBase,
+      public PlatformTest {
  protected:
-  PaymentRequestShippingOptionSelectionCoordinatorTest()
-      : chrome_browser_state_(TestChromeBrowserState::Builder().Build()) {
-    payment_request_ = base::MakeUnique<payments::TestPaymentRequest>(
-        payment_request_test_util::CreateTestWebPaymentRequest(),
-        chrome_browser_state_.get(), &web_state_, &personal_data_manager_);
+  void SetUp() override {
+    PaymentRequestUnitTestBase::SetUp();
+
+    CreateTestPaymentRequest();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_evironment_;
-
-  web::TestWebState web_state_;
-  autofill::TestPersonalDataManager personal_data_manager_;
-  std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
-  std::unique_ptr<payments::TestPaymentRequest> payment_request_;
+  void TearDown() override { PaymentRequestUnitTestBase::TearDown(); }
 };
 
 // Tests that invoking start and stop on the coordinator presents and dismisses
@@ -57,7 +44,7 @@ TEST_F(PaymentRequestShippingOptionSelectionCoordinatorTest, StartAndStop) {
   ShippingOptionSelectionCoordinator* coordinator =
       [[ShippingOptionSelectionCoordinator alloc]
           initWithBaseViewController:base_view_controller];
-  [coordinator setPaymentRequest:payment_request_.get()];
+  [coordinator setPaymentRequest:payment_request()];
 
   EXPECT_EQ(1u, navigation_controller.viewControllers.count);
 
@@ -90,12 +77,12 @@ TEST_F(PaymentRequestShippingOptionSelectionCoordinatorTest,
   ShippingOptionSelectionCoordinator* coordinator =
       [[ShippingOptionSelectionCoordinator alloc]
           initWithBaseViewController:base_view_controller];
-  [coordinator setPaymentRequest:payment_request_.get()];
+  [coordinator setPaymentRequest:payment_request()];
 
   // Mock the coordinator delegate.
   id delegate = [OCMockObject
       mockForProtocol:@protocol(ShippingOptionSelectionCoordinatorDelegate)];
-  web::PaymentShippingOption* option = payment_request_->shipping_options()[1];
+  web::PaymentShippingOption* option = payment_request()->shipping_options()[1];
   [[delegate expect] shippingOptionSelectionCoordinator:coordinator
                                 didSelectShippingOption:option];
   [coordinator setDelegate:delegate];
@@ -132,7 +119,7 @@ TEST_F(PaymentRequestShippingOptionSelectionCoordinatorTest, DidReturn) {
   ShippingOptionSelectionCoordinator* coordinator =
       [[ShippingOptionSelectionCoordinator alloc]
           initWithBaseViewController:base_view_controller];
-  [coordinator setPaymentRequest:payment_request_.get()];
+  [coordinator setPaymentRequest:payment_request()];
 
   // Mock the coordinator delegate.
   id delegate = [OCMockObject

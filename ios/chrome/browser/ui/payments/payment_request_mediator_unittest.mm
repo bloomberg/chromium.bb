@@ -7,35 +7,25 @@
 #import <Foundation/Foundation.h>
 
 #include "base/mac/foundation_util.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_task_environment.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/credit_card.h"
-#include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/payments/core/payment_instrument.h"
 #include "components/payments/core/payment_prefs.h"
-#include "components/payments/core/payments_test_util.h"
 #include "components/payments/core/strings_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/strings/grit/components_strings.h"
-#include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
-#include "ios/chrome/browser/payments/payment_request_test_util.h"
 #include "ios/chrome/browser/payments/payment_request_util.h"
 #include "ios/chrome/browser/payments/test_payment_request.h"
-#include "ios/chrome/browser/signin/fake_signin_manager_builder.h"
-#include "ios/chrome/browser/signin/signin_manager_factory.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_detail_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_footer_item.h"
 #import "ios/chrome/browser/ui/payments/cells/autofill_profile_item.h"
 #import "ios/chrome/browser/ui/payments/cells/payment_method_item.h"
 #import "ios/chrome/browser/ui/payments/cells/payments_text_item.h"
 #import "ios/chrome/browser/ui/payments/cells/price_item.h"
-#include "ios/web/public/payments/payment_request.h"
-#import "ios/web/public/test/fakes/test_web_state.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#import "ios/chrome/browser/ui/payments/payment_request_unittest_base.h"
 #include "testing/platform_test.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -51,114 +41,101 @@ using ::payment_request_util::GetPhoneNumberLabelFromAutofillProfile;
 using ::payment_request_util::GetShippingAddressLabelFromAutofillProfile;
 }  // namespace
 
-class PaymentRequestMediatorTest : public PlatformTest {
+class PaymentRequestMediatorTest : public PaymentRequestUnitTestBase,
+                                   public PlatformTest {
  protected:
-  PaymentRequestMediatorTest()
-      : autofill_profile_(autofill::test::GetFullProfile()),
-        credit_card_(autofill::test::GetCreditCard()),
-        pref_service_(payments::test::PrefServiceForTesting()) {
-    // Add testing profile and credit card to autofill::TestPersonalDataManager.
-    personal_data_manager_.AddTestingProfile(&autofill_profile_);
-    credit_card_.set_billing_address_id(autofill_profile_.guid());
-    personal_data_manager_.AddTestingCreditCard(&credit_card_);
+  void SetUp() override {
+    PaymentRequestUnitTestBase::SetUp();
 
-    TestChromeBrowserState::Builder test_cbs_builder;
-    test_cbs_builder.AddTestingFactory(ios::SigninManagerFactory::GetInstance(),
-                                       &ios::BuildFakeSigninManager);
-    chrome_browser_state_ = test_cbs_builder.Build();
+    autofill::AutofillProfile profile = autofill::test::GetFullProfile();
+    autofill::CreditCard card = autofill::test::GetCreditCard();  // Visa.
+    card.set_billing_address_id(profile.guid());
+    AddAutofillProfile(std::move(profile));
+    AddCreditCard(std::move(card));
 
-    payment_request_ = base::MakeUnique<payments::TestPaymentRequest>(
-        payment_request_test_util::CreateTestWebPaymentRequest(),
-        chrome_browser_state_.get(), &web_state_, &personal_data_manager_);
-    payment_request_->SetPrefService(pref_service_.get());
+    CreateTestPaymentRequest();
 
     mediator_ = [[PaymentRequestMediator alloc]
-        initWithPaymentRequest:payment_request_.get()];
+        initWithPaymentRequest:payment_request()];
   }
 
-  PaymentRequestMediator* GetPaymentRequestMediator() { return mediator_; }
+  void TearDown() override { PaymentRequestUnitTestBase::TearDown(); }
 
-  base::test::ScopedTaskEnvironment scoped_task_evironment_;
+  PaymentRequestMediator* mediator() { return mediator_; }
 
-  autofill::AutofillProfile autofill_profile_;
-  autofill::CreditCard credit_card_;
-  web::TestWebState web_state_;
-  std::unique_ptr<PrefService> pref_service_;
-  autofill::TestPersonalDataManager personal_data_manager_;
-  std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
-  std::unique_ptr<payments::TestPaymentRequest> payment_request_;
+ private:
   PaymentRequestMediator* mediator_;
 };
 
 // Tests whether payment can be completed when expected.
 TEST_F(PaymentRequestMediatorTest, TestCanPay) {
-  EXPECT_TRUE(payment_request_->selected_payment_method());
-  EXPECT_TRUE(payment_request_->selected_shipping_profile());
-  EXPECT_TRUE(payment_request_->selected_shipping_option());
-  EXPECT_TRUE(payment_request_->selected_contact_profile());
-  EXPECT_TRUE([GetPaymentRequestMediator() canPay]);
+  EXPECT_TRUE(payment_request()->selected_payment_method());
+  EXPECT_TRUE(payment_request()->selected_shipping_profile());
+  EXPECT_TRUE(payment_request()->selected_shipping_option());
+  EXPECT_TRUE(payment_request()->selected_contact_profile());
+  EXPECT_TRUE([mediator() canPay]);
 
   // Payment cannot be completed if there is no selected payment method.
   payments::PaymentInstrument* selected_payment_method =
-      payment_request_->selected_payment_method();
-  payment_request_->set_selected_payment_method(nullptr);
-  EXPECT_FALSE([GetPaymentRequestMediator() canPay]);
+      payment_request()->selected_payment_method();
+  payment_request()->set_selected_payment_method(nullptr);
+  EXPECT_FALSE([mediator() canPay]);
 
   // Restore the selected payment method.
-  payment_request_->set_selected_payment_method(selected_payment_method);
-  EXPECT_TRUE([GetPaymentRequestMediator() canPay]);
+  payment_request()->set_selected_payment_method(selected_payment_method);
+  EXPECT_TRUE([mediator() canPay]);
 
   // Payment cannot be completed if there is no selected shipping profile,
   // unless no shipping information is requested.
   autofill::AutofillProfile* selected_shipping_profile =
-      payment_request_->selected_shipping_profile();
-  payment_request_->set_selected_shipping_profile(nullptr);
-  EXPECT_FALSE([GetPaymentRequestMediator() canPay]);
-  payment_request_->web_payment_request().options.request_shipping = false;
-  EXPECT_FALSE([GetPaymentRequestMediator() requestShipping]);
-  EXPECT_TRUE([GetPaymentRequestMediator() canPay]);
+      payment_request()->selected_shipping_profile();
+  payment_request()->set_selected_shipping_profile(nullptr);
+  EXPECT_FALSE([mediator() canPay]);
+  payment_request()->web_payment_request().options.request_shipping = false;
+  EXPECT_FALSE([mediator() requestShipping]);
+  EXPECT_TRUE([mediator() canPay]);
 
   // Restore the selected shipping profile and request for shipping information.
-  payment_request_->set_selected_shipping_profile(selected_shipping_profile);
-  payment_request_->web_payment_request().options.request_shipping = true;
-  EXPECT_TRUE([GetPaymentRequestMediator() requestShipping]);
-  EXPECT_TRUE([GetPaymentRequestMediator() canPay]);
+  payment_request()->set_selected_shipping_profile(selected_shipping_profile);
+  payment_request()->web_payment_request().options.request_shipping = true;
+  EXPECT_TRUE([mediator() requestShipping]);
+  EXPECT_TRUE([mediator() canPay]);
 
   // Payment cannot be completed if there is no selected shipping option,
   // unless no shipping information is requested.
   web::PaymentShippingOption* selected_shipping_option =
-      payment_request_->selected_shipping_option();
-  payment_request_->set_selected_shipping_option(nullptr);
-  EXPECT_FALSE([GetPaymentRequestMediator() canPay]);
-  payment_request_->web_payment_request().options.request_shipping = false;
-  EXPECT_TRUE([GetPaymentRequestMediator() canPay]);
+      payment_request()->selected_shipping_option();
+  payment_request()->set_selected_shipping_option(nullptr);
+  EXPECT_FALSE([mediator() canPay]);
+  payment_request()->web_payment_request().options.request_shipping = false;
+  EXPECT_TRUE([mediator() canPay]);
 
   // Restore the selected shipping option and request for shipping information.
-  payment_request_->set_selected_shipping_option(selected_shipping_option);
-  payment_request_->web_payment_request().options.request_shipping = true;
-  EXPECT_TRUE([GetPaymentRequestMediator() canPay]);
+  payment_request()->set_selected_shipping_option(selected_shipping_option);
+  payment_request()->web_payment_request().options.request_shipping = true;
+  EXPECT_TRUE([mediator() canPay]);
 
   // Payment cannot be completed if there is no selected contact profile, unless
   // no contact information is requested.
-  payment_request_->set_selected_contact_profile(nullptr);
-  EXPECT_FALSE([GetPaymentRequestMediator() canPay]);
-  payment_request_->web_payment_request().options.request_payer_name = false;
-  EXPECT_TRUE([GetPaymentRequestMediator() requestContactInfo]);
-  EXPECT_FALSE([GetPaymentRequestMediator() canPay]);
-  payment_request_->web_payment_request().options.request_payer_phone = false;
-  EXPECT_TRUE([GetPaymentRequestMediator() requestContactInfo]);
-  EXPECT_FALSE([GetPaymentRequestMediator() canPay]);
-  payment_request_->web_payment_request().options.request_payer_email = false;
-  EXPECT_FALSE([GetPaymentRequestMediator() requestContactInfo]);
-  EXPECT_TRUE([GetPaymentRequestMediator() canPay]);
+  payment_request()->set_selected_contact_profile(nullptr);
+  EXPECT_FALSE([mediator() canPay]);
+  payment_request()->web_payment_request().options.request_payer_name = false;
+  EXPECT_TRUE([mediator() requestContactInfo]);
+  EXPECT_FALSE([mediator() canPay]);
+  payment_request()->web_payment_request().options.request_payer_phone = false;
+  EXPECT_TRUE([mediator() requestContactInfo]);
+  EXPECT_FALSE([mediator() canPay]);
+  payment_request()->web_payment_request().options.request_payer_email = false;
+  EXPECT_FALSE([mediator() requestContactInfo]);
+  EXPECT_TRUE([mediator() canPay]);
 }
 
 // Tests that the Payment Summary item is created as expected.
 TEST_F(PaymentRequestMediatorTest, TestPaymentSummaryItem) {
-  EXPECT_TRUE([GetPaymentRequestMediator() hasPaymentItems]);
+  EXPECT_TRUE([mediator() hasPaymentItems]);
 
   // Payment Summary item should be of type PriceItem.
-  id item = [GetPaymentRequestMediator() paymentSummaryItem];
+  id item = [mediator() paymentSummaryItem];
   ASSERT_TRUE([item isMemberOfClass:[PriceItem class]]);
   PriceItem* payment_summary_item = base::mac::ObjCCastStrict<PriceItem>(item);
   EXPECT_TRUE([payment_summary_item.item isEqualToString:@"Total"]);
@@ -168,27 +145,27 @@ TEST_F(PaymentRequestMediatorTest, TestPaymentSummaryItem) {
             payment_summary_item.accessoryType);
 
   // A label should indicate if the total value was changed.
-  GetPaymentRequestMediator().totalValueChanged = YES;
-  item = [GetPaymentRequestMediator() paymentSummaryItem];
+  mediator().totalValueChanged = YES;
+  item = [mediator() paymentSummaryItem];
   payment_summary_item = base::mac::ObjCCastStrict<PriceItem>(item);
   EXPECT_TRUE([payment_summary_item.notification
       isEqualToString:l10n_util::GetNSString(IDS_PAYMENTS_UPDATED_LABEL)]);
 
   // The next time the data source is queried for the Payment Summary item, the
   // label should disappear.
-  item = [GetPaymentRequestMediator() paymentSummaryItem];
+  item = [mediator() paymentSummaryItem];
   payment_summary_item = base::mac::ObjCCastStrict<PriceItem>(item);
   EXPECT_EQ(nil, payment_summary_item.notification);
 
   // Remove the display items.
   web::PaymentRequest web_payment_request =
-      payment_request_->web_payment_request();
+      payment_request()->web_payment_request();
   web_payment_request.details.display_items.clear();
-  payment_request_->UpdatePaymentDetails(web_payment_request.details);
-  EXPECT_FALSE([GetPaymentRequestMediator() hasPaymentItems]);
+  payment_request()->UpdatePaymentDetails(web_payment_request.details);
+  EXPECT_FALSE([mediator() hasPaymentItems]);
 
   // No accessory view indicates there are no display items.
-  item = [GetPaymentRequestMediator() paymentSummaryItem];
+  item = [mediator() paymentSummaryItem];
   payment_summary_item = base::mac::ObjCCastStrict<PriceItem>(item);
   EXPECT_EQ(MDCCollectionViewCellAccessoryNone,
             payment_summary_item.accessoryType);
@@ -197,7 +174,7 @@ TEST_F(PaymentRequestMediatorTest, TestPaymentSummaryItem) {
 // Tests that the Shipping section header item is created as expected.
 TEST_F(PaymentRequestMediatorTest, TestShippingHeaderItem) {
   // Shipping section header item should be of type PaymentsTextItem.
-  id item = [GetPaymentRequestMediator() shippingSectionHeaderItem];
+  id item = [mediator() shippingSectionHeaderItem];
   ASSERT_TRUE([item isMemberOfClass:[PaymentsTextItem class]]);
   PaymentsTextItem* shipping_section_header_item =
       base::mac::ObjCCastStrict<PaymentsTextItem>(item);
@@ -210,28 +187,28 @@ TEST_F(PaymentRequestMediatorTest, TestShippingHeaderItem) {
 // Tests that the Shipping Address item is created as expected.
 TEST_F(PaymentRequestMediatorTest, TestShippingAddressItem) {
   // Shipping Address item should be of type AutofillProfileItem.
-  id item = [GetPaymentRequestMediator() shippingAddressItem];
+  id item = [mediator() shippingAddressItem];
   ASSERT_TRUE([item isMemberOfClass:[AutofillProfileItem class]]);
   AutofillProfileItem* shipping_address_item =
       base::mac::ObjCCastStrict<AutofillProfileItem>(item);
   EXPECT_TRUE([shipping_address_item.name
       isEqualToString:GetNameLabelFromAutofillProfile(
-                          *payment_request_->selected_shipping_profile())]);
+                          *payment_request()->selected_shipping_profile())]);
   EXPECT_TRUE([shipping_address_item.address
       isEqualToString:GetShippingAddressLabelFromAutofillProfile(
-                          *payment_request_->selected_shipping_profile())]);
+                          *payment_request()->selected_shipping_profile())]);
   EXPECT_TRUE([shipping_address_item.phoneNumber
       isEqualToString:GetPhoneNumberLabelFromAutofillProfile(
-                          *payment_request_->selected_shipping_profile())]);
+                          *payment_request()->selected_shipping_profile())]);
   EXPECT_EQ(MDCCollectionViewCellAccessoryDisclosureIndicator,
             shipping_address_item.accessoryType);
 
   // Reset the selected shipping profile.
-  payment_request_->set_selected_shipping_profile(nullptr);
+  payment_request()->set_selected_shipping_profile(nullptr);
 
   // When there is no selected shipping address, the Shipping Address item
   // should be of type CollectionViewDetailItem.
-  item = [GetPaymentRequestMediator() shippingAddressItem];
+  item = [mediator() shippingAddressItem];
   ASSERT_TRUE([item isMemberOfClass:[CollectionViewDetailItem class]]);
   CollectionViewDetailItem* add_shipping_address_item =
       base::mac::ObjCCastStrict<CollectionViewDetailItem>(item);
@@ -243,10 +220,10 @@ TEST_F(PaymentRequestMediatorTest, TestShippingAddressItem) {
             add_shipping_address_item.accessoryType);
 
   // Remove the shipping profiles.
-  payment_request_->ClearShippingProfiles();
+  payment_request()->ClearShippingProfiles();
 
   // No accessory view indicates there are no shipping profiles to choose from.
-  item = [GetPaymentRequestMediator() shippingAddressItem];
+  item = [mediator() shippingAddressItem];
   add_shipping_address_item =
       base::mac::ObjCCastStrict<CollectionViewDetailItem>(item);
   EXPECT_TRUE([add_shipping_address_item.detailText
@@ -259,7 +236,7 @@ TEST_F(PaymentRequestMediatorTest, TestShippingAddressItem) {
 // Tests that the Shipping Option item is created as expected.
 TEST_F(PaymentRequestMediatorTest, TestShippingOptionItem) {
   // Shipping Option item should be of type PaymentsTextItem.
-  id item = [GetPaymentRequestMediator() shippingOptionItem];
+  id item = [mediator() shippingOptionItem];
   ASSERT_TRUE([item isMemberOfClass:[PaymentsTextItem class]]);
   PaymentsTextItem* shipping_option_item =
       base::mac::ObjCCastStrict<PaymentsTextItem>(item);
@@ -269,11 +246,11 @@ TEST_F(PaymentRequestMediatorTest, TestShippingOptionItem) {
             shipping_option_item.accessoryType);
 
   // Reset the selected shipping option.
-  payment_request_->set_selected_shipping_option(nullptr);
+  payment_request()->set_selected_shipping_option(nullptr);
 
   // When there is no selected shipping option, the Shipping Option item should
   // be of type CollectionViewDetailItem.
-  item = [GetPaymentRequestMediator() shippingOptionItem];
+  item = [mediator() shippingOptionItem];
   ASSERT_TRUE([item isMemberOfClass:[CollectionViewDetailItem class]]);
   CollectionViewDetailItem* add_shipping_option_item =
       base::mac::ObjCCastStrict<CollectionViewDetailItem>(item);
@@ -288,7 +265,7 @@ TEST_F(PaymentRequestMediatorTest, TestShippingOptionItem) {
 // Tests that the Payment Method section header item is created as expected.
 TEST_F(PaymentRequestMediatorTest, TestPaymentMethodHeaderItem) {
   // Payment Method section header item should be of type PaymentsTextItem.
-  id item = [GetPaymentRequestMediator() paymentMethodSectionHeaderItem];
+  id item = [mediator() paymentMethodSectionHeaderItem];
   ASSERT_TRUE([item isMemberOfClass:[PaymentsTextItem class]]);
   PaymentsTextItem* payment_method_section_header_item =
       base::mac::ObjCCastStrict<PaymentsTextItem>(item);
@@ -301,7 +278,7 @@ TEST_F(PaymentRequestMediatorTest, TestPaymentMethodHeaderItem) {
 // Tests that the Payment Method item is created as expected.
 TEST_F(PaymentRequestMediatorTest, TestPaymentMethodItem) {
   // Payment Method item should be of type PaymentsTextItem.
-  id item = [GetPaymentRequestMediator() paymentMethodItem];
+  id item = [mediator() paymentMethodItem];
   ASSERT_TRUE([item isMemberOfClass:[PaymentMethodItem class]]);
   PaymentMethodItem* payment_method_item =
       base::mac::ObjCCastStrict<PaymentMethodItem>(item);
@@ -312,11 +289,11 @@ TEST_F(PaymentRequestMediatorTest, TestPaymentMethodItem) {
             payment_method_item.accessoryType);
 
   // Reset the selected payment method.
-  payment_request_->set_selected_payment_method(nullptr);
+  payment_request()->set_selected_payment_method(nullptr);
 
   // When there is no selected payment method, the Payment Method item should be
   // of type CollectionViewDetailItem.
-  item = [GetPaymentRequestMediator() paymentMethodItem];
+  item = [mediator() paymentMethodItem];
   ASSERT_TRUE([item isMemberOfClass:[CollectionViewDetailItem class]]);
   CollectionViewDetailItem* add_payment_method_item =
       base::mac::ObjCCastStrict<CollectionViewDetailItem>(item);
@@ -328,10 +305,10 @@ TEST_F(PaymentRequestMediatorTest, TestPaymentMethodItem) {
             add_payment_method_item.accessoryType);
 
   // Remove the payment methods.
-  payment_request_->ClearPaymentMethods();
+  payment_request()->ClearPaymentMethods();
 
   // No accessory view indicates there are no payment methods to choose from.
-  item = [GetPaymentRequestMediator() paymentMethodItem];
+  item = [mediator() paymentMethodItem];
   add_payment_method_item =
       base::mac::ObjCCastStrict<CollectionViewDetailItem>(item);
   EXPECT_TRUE([add_payment_method_item.detailText
@@ -344,7 +321,7 @@ TEST_F(PaymentRequestMediatorTest, TestPaymentMethodItem) {
 // Tests that the Contact Info section header item is created as expected.
 TEST_F(PaymentRequestMediatorTest, TestContactInfoHeaderItem) {
   // Contact Info section header item should be of type PaymentsTextItem.
-  id item = [GetPaymentRequestMediator() contactInfoSectionHeaderItem];
+  id item = [mediator() contactInfoSectionHeaderItem];
   ASSERT_TRUE([item isMemberOfClass:[PaymentsTextItem class]]);
   PaymentsTextItem* contact_info_section_header_item =
       base::mac::ObjCCastStrict<PaymentsTextItem>(item);
@@ -357,43 +334,43 @@ TEST_F(PaymentRequestMediatorTest, TestContactInfoHeaderItem) {
 // Tests that the Contact Info item is created as expected.
 TEST_F(PaymentRequestMediatorTest, TestContactInfoItem) {
   // Contact Info item should be of type AutofillProfileItem.
-  id item = [GetPaymentRequestMediator() contactInfoItem];
+  id item = [mediator() contactInfoItem];
   ASSERT_TRUE([item isMemberOfClass:[AutofillProfileItem class]]);
   AutofillProfileItem* contact_info_item =
       base::mac::ObjCCastStrict<AutofillProfileItem>(item);
   EXPECT_TRUE([contact_info_item.name
       isEqualToString:GetNameLabelFromAutofillProfile(
-                          *payment_request_->selected_contact_profile())]);
+                          *payment_request()->selected_contact_profile())]);
   EXPECT_TRUE([contact_info_item.phoneNumber
       isEqualToString:GetPhoneNumberLabelFromAutofillProfile(
-                          *payment_request_->selected_contact_profile())]);
+                          *payment_request()->selected_contact_profile())]);
   EXPECT_TRUE([contact_info_item.email
       isEqualToString:GetEmailLabelFromAutofillProfile(
-                          *payment_request_->selected_contact_profile())]);
+                          *payment_request()->selected_contact_profile())]);
   EXPECT_EQ(MDCCollectionViewCellAccessoryDisclosureIndicator,
             contact_info_item.accessoryType);
 
   // Contact Info item should only show requested fields.
-  payment_request_->web_payment_request().options.request_payer_name = false;
-  item = [GetPaymentRequestMediator() contactInfoItem];
+  payment_request()->web_payment_request().options.request_payer_name = false;
+  item = [mediator() contactInfoItem];
   ASSERT_TRUE([item isMemberOfClass:[AutofillProfileItem class]]);
   contact_info_item = base::mac::ObjCCastStrict<AutofillProfileItem>(item);
   EXPECT_EQ(nil, contact_info_item.name);
   EXPECT_NE(nil, contact_info_item.phoneNumber);
   EXPECT_NE(nil, contact_info_item.email);
 
-  payment_request_->web_payment_request().options.request_payer_phone = false;
-  item = [GetPaymentRequestMediator() contactInfoItem];
+  payment_request()->web_payment_request().options.request_payer_phone = false;
+  item = [mediator() contactInfoItem];
   ASSERT_TRUE([item isMemberOfClass:[AutofillProfileItem class]]);
   contact_info_item = base::mac::ObjCCastStrict<AutofillProfileItem>(item);
   EXPECT_EQ(nil, contact_info_item.name);
   EXPECT_EQ(nil, contact_info_item.phoneNumber);
   EXPECT_NE(nil, contact_info_item.email);
 
-  payment_request_->web_payment_request().options.request_payer_name = true;
-  payment_request_->web_payment_request().options.request_payer_phone = false;
-  payment_request_->web_payment_request().options.request_payer_email = false;
-  item = [GetPaymentRequestMediator() contactInfoItem];
+  payment_request()->web_payment_request().options.request_payer_name = true;
+  payment_request()->web_payment_request().options.request_payer_phone = false;
+  payment_request()->web_payment_request().options.request_payer_email = false;
+  item = [mediator() contactInfoItem];
   ASSERT_TRUE([item isMemberOfClass:[AutofillProfileItem class]]);
   contact_info_item = base::mac::ObjCCastStrict<AutofillProfileItem>(item);
   EXPECT_NE(nil, contact_info_item.name);
@@ -401,11 +378,11 @@ TEST_F(PaymentRequestMediatorTest, TestContactInfoItem) {
   EXPECT_EQ(nil, contact_info_item.email);
 
   // Reset the selected contact profile.
-  payment_request_->set_selected_contact_profile(nullptr);
+  payment_request()->set_selected_contact_profile(nullptr);
 
   // When there is no selected contact profile, the Payment Method item should
   // be of type CollectionViewDetailItem.
-  item = [GetPaymentRequestMediator() contactInfoItem];
+  item = [mediator() contactInfoItem];
   ASSERT_TRUE([item isMemberOfClass:[CollectionViewDetailItem class]]);
   CollectionViewDetailItem* add_contact_info_item =
       base::mac::ObjCCastStrict<CollectionViewDetailItem>(item);
@@ -417,10 +394,10 @@ TEST_F(PaymentRequestMediatorTest, TestContactInfoItem) {
             add_contact_info_item.accessoryType);
 
   // Remove the contact profiles.
-  payment_request_->ClearContactProfiles();
+  payment_request()->ClearContactProfiles();
 
   // No accessory view indicates there are no contact profiles to choose from.
-  item = [GetPaymentRequestMediator() contactInfoItem];
+  item = [mediator() contactInfoItem];
   add_contact_info_item =
       base::mac::ObjCCastStrict<CollectionViewDetailItem>(item);
   EXPECT_TRUE([add_contact_info_item.detailText
@@ -433,19 +410,17 @@ TEST_F(PaymentRequestMediatorTest, TestContactInfoItem) {
 // Tests that the Footer item is created as expected.
 TEST_F(PaymentRequestMediatorTest, TestFooterItem) {
   // Make sure the first transaction has not completed yet.
-  pref_service_->SetBoolean(payments::kPaymentsFirstTransactionCompleted,
-                            false);
+  pref_service()->SetBoolean(payments::kPaymentsFirstTransactionCompleted,
+                             false);
 
   // Make sure the user is signed out.
-  SigninManager* signin_manager = ios::SigninManagerFactory::GetForBrowserState(
-      chrome_browser_state_.get());
-  if (signin_manager->IsAuthenticated()) {
-    signin_manager->SignOut(signin_metrics::SIGNOUT_TEST,
-                            signin_metrics::SignoutDelete::IGNORE_METRIC);
+  if (GetSigninManager()->IsAuthenticated()) {
+    GetSigninManager()->SignOut(signin_metrics::SIGNOUT_TEST,
+                                signin_metrics::SignoutDelete::IGNORE_METRIC);
   }
 
   // Footer item should be of type CollectionViewFooterItem.
-  id item = [GetPaymentRequestMediator() footerItem];
+  id item = [mediator() footerItem];
   ASSERT_TRUE([item isMemberOfClass:[CollectionViewFooterItem class]]);
   CollectionViewFooterItem* footer_item =
       base::mac::ObjCCastStrict<CollectionViewFooterItem>(item);
@@ -454,9 +429,10 @@ TEST_F(PaymentRequestMediatorTest, TestFooterItem) {
                           IDS_PAYMENTS_CARD_AND_ADDRESS_SETTINGS_SIGNED_OUT)]);
 
   // Fake a signed in user.
-  signin_manager->SetAuthenticatedAccountInfo("12345", "username@example.com");
+  GetSigninManager()->SetAuthenticatedAccountInfo("12345",
+                                                  "username@example.com");
 
-  item = [GetPaymentRequestMediator() footerItem];
+  item = [mediator() footerItem];
   footer_item = base::mac::ObjCCastStrict<CollectionViewFooterItem>(item);
   EXPECT_TRUE([footer_item.text
       isEqualToString:l10n_util::GetNSStringF(
@@ -464,17 +440,18 @@ TEST_F(PaymentRequestMediatorTest, TestFooterItem) {
                           base::ASCIIToUTF16("username@example.com"))]);
 
   // Record that the first transaction completed.
-  pref_service_->SetBoolean(payments::kPaymentsFirstTransactionCompleted, true);
+  pref_service()->SetBoolean(payments::kPaymentsFirstTransactionCompleted,
+                             true);
 
-  item = [GetPaymentRequestMediator() footerItem];
+  item = [mediator() footerItem];
   footer_item = base::mac::ObjCCastStrict<CollectionViewFooterItem>(item);
   EXPECT_TRUE([footer_item.text
       isEqualToString:l10n_util::GetNSString(
                           IDS_PAYMENTS_CARD_AND_ADDRESS_SETTINGS)]);
 
   // Sign the user out.
-  signin_manager->SignOut(signin_metrics::SIGNOUT_TEST,
-                          signin_metrics::SignoutDelete::IGNORE_METRIC);
+  GetSigninManager()->SignOut(signin_metrics::SIGNOUT_TEST,
+                              signin_metrics::SignoutDelete::IGNORE_METRIC);
 
   // The signed in state has no effect on the footer text if the first
   // transaction has completed.

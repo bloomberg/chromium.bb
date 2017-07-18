@@ -7,17 +7,12 @@
 #import <Foundation/Foundation.h>
 
 #include "base/mac/foundation_util.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_task_environment.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/credit_card.h"
-#include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/strings/grit/components_strings.h"
-#include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/payments/payment_request_test_util.h"
-#include "ios/chrome/browser/payments/test_payment_request.h"
 #import "ios/chrome/browser/ui/autofill/cells/status_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_detail_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_footer_item.h"
@@ -27,11 +22,9 @@
 #import "ios/chrome/browser/ui/payments/cells/payment_method_item.h"
 #import "ios/chrome/browser/ui/payments/cells/payments_text_item.h"
 #import "ios/chrome/browser/ui/payments/cells/price_item.h"
+#import "ios/chrome/browser/ui/payments/payment_request_unittest_base.h"
 #import "ios/chrome/browser/ui/payments/payment_request_view_controller_data_source.h"
 #include "ios/chrome/grit/ios_strings.h"
-#include "ios/web/public/payments/payment_request.h"
-#import "ios/web/public/test/fakes/test_web_state.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -139,22 +132,17 @@
 
 @end
 
-class PaymentRequestViewControllerTest : public CollectionViewControllerTest {
+class PaymentRequestViewControllerTest : public CollectionViewControllerTest,
+                                         public PaymentRequestUnitTestBase {
  protected:
-  PaymentRequestViewControllerTest()
-      : autofill_profile_(autofill::test::GetFullProfile()),
-        credit_card_(autofill::test::GetCreditCard()),
-        chrome_browser_state_(TestChromeBrowserState::Builder().Build()) {
-    // Add testing profile and credit card to autofill::TestPersonalDataManager.
-    personal_data_manager_.AddTestingProfile(&autofill_profile_);
-    personal_data_manager_.AddTestingCreditCard(&credit_card_);
-
-    payment_request_ = base::MakeUnique<payments::TestPaymentRequest>(
-        payment_request_test_util::CreateTestWebPaymentRequest(),
-        chrome_browser_state_.get(), &web_state_, &personal_data_manager_);
+  void SetUp() override {
+    CollectionViewControllerTest::SetUp();
+    PaymentRequestUnitTestBase::SetUp();
 
     mediator_ = [[TestPaymentRequestMediator alloc] init];
   }
+
+  void TearDown() override { PaymentRequestUnitTestBase::TearDown(); }
 
   CollectionViewController* InstantiateController() override {
     PaymentRequestViewController* viewController =
@@ -168,14 +156,6 @@ class PaymentRequestViewControllerTest : public CollectionViewControllerTest {
         controller());
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_evironment_;
-
-  autofill::AutofillProfile autofill_profile_;
-  autofill::CreditCard credit_card_;
-  web::TestWebState web_state_;
-  autofill::TestPersonalDataManager personal_data_manager_;
-  std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
-  std::unique_ptr<payments::TestPaymentRequest> payment_request_;
   TestPaymentRequestMediator* mediator_;
 };
 

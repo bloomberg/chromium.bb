@@ -5,22 +5,15 @@
 #import "ios/chrome/browser/ui/payments/billing_address_selection_coordinator.h"
 
 #include "base/mac/foundation_util.h"
-#include "base/memory/ptr_util.h"
 #include "base/test/ios/wait_util.h"
-#include "base/test/scoped_task_environment.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/field_types.h"
-#include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/autofill/core/browser/test_region_data_loader.h"
-#include "components/prefs/pref_service.h"
-#include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/payments/payment_request_test_util.h"
-#include "ios/chrome/browser/payments/test_payment_request.h"
 #import "ios/chrome/browser/ui/payments/payment_request_selector_view_controller.h"
-#import "ios/web/public/test/fakes/test_web_state.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#import "ios/chrome/browser/ui/payments/payment_request_unittest_base.h"
 #include "testing/platform_test.h"
 #include "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
@@ -30,45 +23,40 @@
 #endif
 
 class PaymentRequestBillingAddressSelectionCoordinatorTest
-    : public PlatformTest {
+    : public PaymentRequestUnitTestBase,
+      public PlatformTest {
  protected:
-  PaymentRequestBillingAddressSelectionCoordinatorTest()
-      : autofill_profile1_(autofill::test::GetFullProfile()),
-        autofill_profile2_(autofill::test::GetFullProfile2()),
-        pref_service_(autofill::test::PrefServiceForTesting()),
-        chrome_browser_state_(TestChromeBrowserState::Builder().Build()) {
-    personal_data_manager_.SetTestingPrefService(pref_service_.get());
-    // Add testing profiles to autofill::TestPersonalDataManager. Make the less
-    // frequently used one incomplete.
-    autofill_profile1_.set_use_count(10U);
-    personal_data_manager_.AddTestingProfile(&autofill_profile1_);
-    autofill_profile2_.set_use_count(5U);
-    autofill_profile2_.SetInfo(
-        autofill::AutofillType(autofill::PHONE_HOME_WHOLE_NUMBER),
-        base::string16(), "en-US");
-    personal_data_manager_.AddTestingProfile(&autofill_profile2_);
+  void SetUp() override {
+    PaymentRequestUnitTestBase::SetUp();
 
-    payment_request_ = base::MakeUnique<payments::TestPaymentRequest>(
-        payment_request_test_util::CreateTestWebPaymentRequest(),
-        chrome_browser_state_.get(), &web_state_, &personal_data_manager_);
+    // Add testing profiles to the database. Make the less frequently used one
+    // incomplete.
+    autofill::AutofillProfile profile = autofill::test::GetFullProfile();
+    profile.set_use_count(10U);
+    AddAutofillProfile(std::move(profile));
+
+    autofill::AutofillProfile profile2 = autofill::test::GetFullProfile2();
+    profile2.set_use_count(5U);
+    profile2.SetInfo(autofill::AutofillType(autofill::PHONE_HOME_WHOLE_NUMBER),
+                     base::string16(), "en-US");
+    AddAutofillProfile(std::move(profile2));
+
+    CreateTestPaymentRequest();
 
     test_region_data_loader_.set_synchronous_callback(true);
-    payment_request_->SetRegionDataLoader(&test_region_data_loader_);
-  }
+    payment_request()->SetRegionDataLoader(&test_region_data_loader_);
 
-  void SetUp() override {
+    // Create the controller and coordinator under test.
     UIViewController* base_view_controller = [[UIViewController alloc] init];
     navigation_controller_ = [[UINavigationController alloc]
         initWithRootViewController:base_view_controller];
 
     coordinator_ = [[BillingAddressSelectionCoordinator alloc]
         initWithBaseViewController:base_view_controller];
-    [coordinator_ setPaymentRequest:payment_request_.get()];
+    [coordinator_ setPaymentRequest:payment_request()];
   }
 
-  void TearDown() override {
-    personal_data_manager_.SetTestingPrefService(nullptr);
-  }
+  void TearDown() override { PaymentRequestUnitTestBase::TearDown(); }
 
   UINavigationController* GetNavigationController() {
     return navigation_controller_;
@@ -76,19 +64,10 @@ class PaymentRequestBillingAddressSelectionCoordinatorTest
 
   BillingAddressSelectionCoordinator* GetCoordinator() { return coordinator_; }
 
-  base::test::ScopedTaskEnvironment scoped_task_evironment_;
-
+ private:
+  autofill::TestRegionDataLoader test_region_data_loader_;
   UINavigationController* navigation_controller_;
   BillingAddressSelectionCoordinator* coordinator_;
-
-  autofill::AutofillProfile autofill_profile1_;
-  autofill::AutofillProfile autofill_profile2_;
-  web::TestWebState web_state_;
-  std::unique_ptr<PrefService> pref_service_;
-  autofill::TestPersonalDataManager personal_data_manager_;
-  autofill::TestRegionDataLoader test_region_data_loader_;
-  std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
-  std::unique_ptr<payments::TestPaymentRequest> payment_request_;
 };
 
 // Tests that invoking start and stop on the coordinator presents and dismisses
@@ -122,11 +101,11 @@ TEST_F(PaymentRequestBillingAddressSelectionCoordinatorTest,
       mockForProtocol:@protocol(BillingAddressSelectionCoordinatorDelegate)];
   [[delegate expect]
       billingAddressSelectionCoordinator:GetCoordinator()
-                 didSelectBillingAddress:payment_request_
+                 didSelectBillingAddress:payment_request()
                                              ->billing_profiles()[0]];
   [[delegate reject]
       billingAddressSelectionCoordinator:GetCoordinator()
-                 didSelectBillingAddress:payment_request_
+                 didSelectBillingAddress:payment_request()
                                              ->billing_profiles()[1]];
   [GetCoordinator() setDelegate:delegate];
 

@@ -5,21 +5,13 @@
 #import "ios/chrome/browser/ui/payments/payment_items_display_view_controller.h"
 
 #include "base/mac/foundation_util.h"
-#include "base/memory/ptr_util.h"
-#include "base/test/scoped_task_environment.h"
-#include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/strings/grit/components_strings.h"
-#include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
-#include "ios/chrome/browser/payments/payment_request.h"
 #import "ios/chrome/browser/payments/payment_request_test_util.h"
-#include "ios/chrome/browser/payments/test_payment_request.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller_test.h"
 #import "ios/chrome/browser/ui/payments/cells/price_item.h"
 #import "ios/chrome/browser/ui/payments/payment_items_display_view_controller_data_source.h"
+#import "ios/chrome/browser/ui/payments/payment_request_unittest_base.h"
 #include "ios/chrome/grit/ios_strings.h"
-#include "ios/web/public/payments/payment_request.h"
-#import "ios/web/public/test/fakes/test_web_state.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -45,15 +37,17 @@
 @end
 
 class PaymentRequestPaymentItemsDisplayViewControllerTest
-    : public CollectionViewControllerTest {
+    : public CollectionViewControllerTest,
+      public PaymentRequestUnitTestBase {
  protected:
-  PaymentRequestPaymentItemsDisplayViewControllerTest()
-      : chrome_browser_state_(TestChromeBrowserState::Builder().Build()) {}
+  void SetUp() override {
+    PaymentRequestUnitTestBase::SetUp();
+    CollectionViewControllerTest::SetUp();
+  }
+
+  void TearDown() override { PaymentRequestUnitTestBase::TearDown(); }
 
   CollectionViewController* InstantiateController() override {
-    payment_request_ = base::MakeUnique<payments::TestPaymentRequest>(
-        payment_request_test_util::CreateTestWebPaymentRequest(),
-        chrome_browser_state_.get(), &web_state_, &personal_data_manager_);
     mediator_ = [[TestPaymentItemsDisplayMediator alloc] init];
     PaymentItemsDisplayViewController* viewController = [
         [PaymentItemsDisplayViewController alloc] initWithPayButtonEnabled:YES];
@@ -66,12 +60,7 @@ class PaymentRequestPaymentItemsDisplayViewControllerTest
         controller());
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_evironment_;
-
-  web::TestWebState web_state_;
-  autofill::TestPersonalDataManager personal_data_manager_;
-  std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
-  std::unique_ptr<payments::TestPaymentRequest> payment_request_;
+ private:
   TestPaymentItemsDisplayMediator* mediator_ = nil;
 };
 
