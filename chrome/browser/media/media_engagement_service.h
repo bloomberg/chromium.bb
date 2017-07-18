@@ -80,10 +80,10 @@ class MediaEngagementService : public KeyedService,
                             const base::Time& delete_end);
 
   // Retrieves the MediaEngagementScore for |url|.
-  MediaEngagementScore* CreateEngagementScore(const GURL& url) const;
+  MediaEngagementScore CreateEngagementScore(const GURL& url) const;
 
   // The name of the histogram that scores are logged to on startup.
-  static const char* kHistogramScoreAtStartupName;
+  static const char kHistogramScoreAtStartupName[];
 
  private:
   friend class MediaEngagementServiceTest;
