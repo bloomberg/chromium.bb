@@ -81,20 +81,10 @@ ArcServiceLauncher* ArcServiceLauncher::Get() {
 }
 
 void ArcServiceLauncher::Initialize() {
-  // Create ARC service manager.
   arc_service_manager_ = base::MakeUnique<ArcServiceManager>();
-
-  ArcBridgeService* arc_bridge_service =
-      arc_service_manager_->arc_bridge_service();
-
-  // Creates ArcSessionManager at first.
-  arc_session_manager_ =
-      base::MakeUnique<ArcSessionManager>(base::MakeUnique<ArcSessionRunner>(
-          base::Bind(ArcSession::Create, arc_bridge_service)));
-
-  // List in lexicographical order.
-  arc_service_manager_->AddService(
-      base::MakeUnique<ArcIntentHelperBridge>(arc_bridge_service));
+  arc_session_manager_ = base::MakeUnique<ArcSessionManager>(
+      base::MakeUnique<ArcSessionRunner>(base::Bind(
+          ArcSession::Create, arc_service_manager_->arc_bridge_service())));
 }
 
 void ArcServiceLauncher::MaybeSetProfile(Profile* profile) {
@@ -153,6 +143,7 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   ArcEnterpriseReportingService::GetForBrowserContext(profile);
   ArcFileSystemMounter::GetForBrowserContext(profile);
   ArcImeService::GetForBrowserContext(profile);
+  ArcIntentHelperBridge::GetForBrowserContext(profile);
   ArcMetricsService::GetForBrowserContext(profile);
   ArcNetHostImpl::GetForBrowserContext(profile);
   ArcObbMounterBridge::GetForBrowserContext(profile);

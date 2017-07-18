@@ -178,8 +178,8 @@ ArcNavigationThrottle::HandleRequest() {
   if (!arc_service_manager)
     return content::NavigationThrottle::PROCEED;
 
-  auto* intent_helper_bridge =
-      arc_service_manager->GetService<ArcIntentHelperBridge>();
+  auto* intent_helper_bridge = ArcIntentHelperBridge::GetForBrowserContext(
+      navigation_handle()->GetWebContents()->GetBrowserContext());
   if (!intent_helper_bridge)
     return content::NavigationThrottle::PROCEED;
 
@@ -247,8 +247,8 @@ void ArcNavigationThrottle::OnAppCandidatesReceived(
   if (IsSwapElementsNeeded(handlers, &indices))
     std::swap(handlers[indices.first], handlers[indices.second]);
 
-  auto* intent_helper_bridge =
-      ArcServiceManager::GetGlobalService<ArcIntentHelperBridge>();
+  auto* intent_helper_bridge = ArcIntentHelperBridge::GetForBrowserContext(
+      navigation_handle()->GetWebContents()->GetBrowserContext());
   if (!intent_helper_bridge) {
     LOG(ERROR) << "Cannot get an instance of ArcIntentHelperBridge";
     navigation_handle()->Resume();

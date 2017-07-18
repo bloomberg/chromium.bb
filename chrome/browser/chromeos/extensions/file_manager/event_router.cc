@@ -414,7 +414,7 @@ void EventRouter::Shutdown() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   auto* intent_helper =
-      arc::ArcServiceManager::GetGlobalService<arc::ArcIntentHelperBridge>();
+      arc::ArcIntentHelperBridge::GetForBrowserContext(profile_);
   if (intent_helper)
     intent_helper->RemoveObserver(this);
 
@@ -509,12 +509,10 @@ void EventRouter::ObserveEvents() {
 
   chromeos::system::TimezoneSettings::GetInstance()->AddObserver(this);
 
-  if (arc::IsArcAllowedForProfile(profile_)) {
-    auto* intent_helper =
-        arc::ArcServiceManager::GetGlobalService<arc::ArcIntentHelperBridge>();
-    if (intent_helper)
-      intent_helper->AddObserver(this);
-  }
+  auto* intent_helper =
+      arc::ArcIntentHelperBridge::GetForBrowserContext(profile_);
+  if (intent_helper)
+    intent_helper->AddObserver(this);
 }
 
 // File watch setup routines.

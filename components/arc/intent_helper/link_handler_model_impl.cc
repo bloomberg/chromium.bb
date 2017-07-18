@@ -47,7 +47,8 @@ bool GetQueryValue(const GURL& url,
 
 }  // namespace
 
-LinkHandlerModelImpl::LinkHandlerModelImpl() : weak_ptr_factory_(this) {}
+LinkHandlerModelImpl::LinkHandlerModelImpl(content::BrowserContext* context)
+    : context_(context), weak_ptr_factory_(this) {}
 
 LinkHandlerModelImpl::~LinkHandlerModelImpl() = default;
 
@@ -97,7 +98,7 @@ void LinkHandlerModelImpl::OnUrlHandlerList(
 
   bool icon_info_notified = false;
   auto* intent_helper_bridge =
-      ArcServiceManager::GetGlobalService<ArcIntentHelperBridge>();
+      ArcIntentHelperBridge::GetForBrowserContext(context_);
   if (intent_helper_bridge) {
     std::vector<ArcIntentHelperBridge::ActivityName> activities;
     for (size_t i = 0; i < handlers_.size(); ++i) {

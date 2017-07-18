@@ -9,6 +9,7 @@
 #include "chrome/browser/chromeos/file_manager/volume_manager_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
@@ -34,6 +35,7 @@ EventRouterFactory::EventRouterFactory()
   DependsOn(
       extensions::ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
   DependsOn(VolumeManagerFactory::GetInstance());
+  DependsOn(arc::ArcIntentHelperBridge::GetFactory());
 }
 
 EventRouterFactory::~EventRouterFactory() {

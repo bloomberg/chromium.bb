@@ -366,8 +366,13 @@ void OnUrlHandlerList(int render_process_host_id,
 
   auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
       arc_service_manager->arc_bridge_service()->intent_helper(), HandleUrl);
+
+  WebContents* web_contents =
+      tab_util::GetWebContentsByID(render_process_host_id, routing_id);
   auto* intent_helper_bridge =
-      ArcServiceManager::GetGlobalService<ArcIntentHelperBridge>();
+      web_contents ? ArcIntentHelperBridge::GetForBrowserContext(
+                         web_contents->GetBrowserContext())
+                   : nullptr;
   if (!instance || !intent_helper_bridge) {
     // ARC is not running anymore. Show the Chrome OS dialog.
     ShowFallbackExternalProtocolDialog(render_process_host_id, routing_id, url);

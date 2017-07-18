@@ -18,8 +18,6 @@ namespace {
 IntentFilter GetIntentFilter(const std::string& host) {
   std::vector<IntentFilter::AuthorityEntry> authorities;
   authorities.emplace_back(host, -1);
-
-  // TODO
   return IntentFilter(std::move(authorities),
                       std::vector<IntentFilter::PatternMatcher>());
 }
@@ -35,8 +33,8 @@ class ArcIntentHelperTest : public testing::Test {
  private:
   void SetUp() override {
     arc_bridge_service_ = base::MakeUnique<ArcBridgeService>();
-    instance_ =
-        base::MakeUnique<ArcIntentHelperBridge>(arc_bridge_service_.get());
+    instance_ = base::MakeUnique<ArcIntentHelperBridge>(
+        nullptr /* context */, arc_bridge_service_.get());
   }
 
   void TearDown() override {
