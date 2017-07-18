@@ -15,6 +15,7 @@ function testBlob(blobURL, blobType, doneFunction) {
             return;
         }
         shouldBeTrue("xhr.response instanceof Blob");
+        // This is checking a value determined by MIME sniffing
         shouldBeEqualToString("xhr.response.type", blobType);
         doneFunction();
     }
@@ -22,7 +23,7 @@ function testBlob(blobURL, blobType, doneFunction) {
 
 testBlob("resources/UTF8.txt", "text/plain", function() {
     testBlob("resources/does_not_exist.txt", "", function() {
-        testBlob("resources/empty-file", "", function() {
+        testBlob("resources/empty-file", "text/plain", function() {
             if (window.testRunner)
                 testRunner.notifyDone();
         })

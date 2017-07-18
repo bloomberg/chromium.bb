@@ -1491,8 +1491,6 @@ AtomicString XMLHttpRequest::FinalResponseMIMETypeWithFallback() const {
   if (!final_type.IsEmpty())
     return final_type;
 
-  // FIXME: This fallback is not specified in the final MIME type algorithm
-  // of the XHR spec. Move this to more appropriate place.
   return AtomicString("text/xml");
 }
 
@@ -1656,11 +1654,8 @@ PassRefPtr<BlobDataHandle> XMLHttpRequest::CreateBlobDataHandleFromResponse() {
   if (!file_path.IsEmpty() && length_downloaded_to_file_) {
     blob_data->AppendFile(file_path, 0, length_downloaded_to_file_,
                           InvalidFileTime());
-    // FIXME: finalResponseMIMETypeWithFallback() defaults to
-    // text/xml which may be incorrect. Replace it with
-    // finalResponseMIMEType() after compatibility investigation.
-    blob_data->SetContentType(FinalResponseMIMETypeWithFallback().LowerASCII());
   }
+  blob_data->SetContentType(FinalResponseMIMETypeWithFallback().LowerASCII());
   return BlobDataHandle::Create(std::move(blob_data),
                                 length_downloaded_to_file_);
 }
