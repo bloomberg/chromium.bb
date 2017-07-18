@@ -2414,7 +2414,6 @@ IN_PROC_BROWSER_TEST_F(SSLUITestWaitForDOMNotification,
   ASSERT_TRUE(content::ExecuteScript(
       tab,
       "var loaded = function () {"
-      "  window.domAutomationController.setAutomationId(0);"
       "  window.domAutomationController.send('mixed-image-loaded');"
       "};"
       "var img = document.createElement('img');"
