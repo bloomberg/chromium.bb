@@ -99,25 +99,31 @@ void PredictorsHandler::RequestResourcePrefetchPredictorDb(
   if (enabled) {
     auto* resource_prefetch_predictor =
         loading_predictor_->resource_prefetch_predictor();
-    // URL table cache.
-    auto db = base::MakeUnique<base::ListValue>();
-    AddPrefetchDataMapToListValue(
-        *resource_prefetch_predictor->url_resource_data_->data_cache_,
-        db.get());
-    dict.Set("url_db", std::move(db));
+    const bool initialized =
+        resource_prefetch_predictor->initialization_state_ ==
+        ResourcePrefetchPredictor::INITIALIZED;
 
-    // Host table cache.
-    db = base::MakeUnique<base::ListValue>();
-    AddPrefetchDataMapToListValue(
-        *resource_prefetch_predictor->host_resource_data_->data_cache_,
-        db.get());
-    dict.Set("host_db", std::move(db));
+    if (initialized) {
+      // URL table cache.
+      auto db = base::MakeUnique<base::ListValue>();
+      AddPrefetchDataMapToListValue(
+          *resource_prefetch_predictor->url_resource_data_->data_cache_,
+          db.get());
+      dict.Set("url_db", std::move(db));
 
-    // Origin table cache.
-    db = base::MakeUnique<base::ListValue>();
-    AddOriginDataMapToListValue(
-        *resource_prefetch_predictor->origin_data_->data_cache_, db.get());
-    dict.Set("origin_db", std::move(db));
+      // Host table cache.
+      db = base::MakeUnique<base::ListValue>();
+      AddPrefetchDataMapToListValue(
+          *resource_prefetch_predictor->host_resource_data_->data_cache_,
+          db.get());
+      dict.Set("host_db", std::move(db));
+
+      // Origin table cache.
+      db = base::MakeUnique<base::ListValue>();
+      AddOriginDataMapToListValue(
+          *resource_prefetch_predictor->origin_data_->data_cache_, db.get());
+      dict.Set("origin_db", std::move(db));
+    }
   }
 
   web_ui()->CallJavascriptFunctionUnsafe("updateResourcePrefetchPredictorDb",

@@ -36,11 +36,6 @@ class MockResourcePrefetchPredictor : public ResourcePrefetchPredictor {
 
   MOCK_CONST_METHOD2(GetPrefetchData,
                      bool(const GURL&, ResourcePrefetchPredictor::Prediction*));
-  MOCK_METHOD0(StartInitialization, void());
-  MOCK_METHOD0(Shutdown, void());
-  MOCK_METHOD2(StartPrefetching,
-               void(const GURL&, const ResourcePrefetchPredictor::Prediction&));
-  MOCK_METHOD1(StopPrefeching, void(const GURL&));
   MOCK_METHOD1(RecordPageRequestSummaryProxy, void(PageRequestSummary*));
 };
 
