@@ -114,6 +114,9 @@ void DesktopWindowTreeHostWin::Init(aura::Window* content_window,
   wants_mouse_events_when_inactive_ = params.wants_mouse_events_when_inactive;
 
   wm::SetAnimationHost(content_window_, this);
+  if (params.type == Widget::InitParams::TYPE_WINDOW &&
+      !params.remove_standard_frame)
+    content_window_->SetProperty(aura::client::kAnimationsDisabledKey, true);
 
   ConfigureWindowStyles(message_handler_.get(), params,
                         GetWidget()->widget_delegate(),
