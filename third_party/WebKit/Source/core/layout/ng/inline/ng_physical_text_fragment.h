@@ -69,6 +69,12 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
     return LineOrientation() == NGLineOrientation::kHorizontal;
   }
 
+  RefPtr<NGPhysicalFragment> CloneWithoutOffset() const {
+    return AdoptRef(new NGPhysicalTextFragment(
+        layout_object_, node_, item_index_, start_offset_, end_offset_, size_,
+        LineOrientation(), shape_result_));
+  }
+
  private:
   // TODO(kojii): NGInlineNode is to access text content and NGLayoutInlineItem.
   // Review if it's better to point them.

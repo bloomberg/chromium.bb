@@ -23,4 +23,13 @@ NGLayoutResult::NGLayoutResult(
   oof_positioned_descendants_.swap(oof_positioned_descendants);
 }
 
+RefPtr<NGLayoutResult> NGLayoutResult::CloneWithoutOffset() const {
+  Vector<NGOutOfFlowPositionedDescendant> oof_positioned_descendants(
+      oof_positioned_descendants_);
+  Vector<RefPtr<NGUnpositionedFloat>> unpositioned_floats(unpositioned_floats_);
+  return AdoptRef(new NGLayoutResult(
+      physical_fragment_->CloneWithoutOffset(), oof_positioned_descendants,
+      unpositioned_floats, bfc_offset_, end_margin_strut_, Status()));
+}
+
 }  // namespace blink
