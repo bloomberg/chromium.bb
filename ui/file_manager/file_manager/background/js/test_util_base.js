@@ -334,17 +334,33 @@ test.util.sync.inputText = function(contentWindow, query, text) {
  * Sends an event to the element specified by |targetQuery| or active element.
  *
  * @param {Window} contentWindow Window to be tested.
- * @param {?string} targetQuery Query to specify the element. If this value is
- *     null, an event is dispatched to active element of the document.
+ * @param {?string|Array<string>} targetQuery Query to specify the element.
+ *     If this value is null, an event is dispatched to active element of the
+ *     document.
+ *     If targetQuery is an array, |targetQuery[0]| specifies the first
+ *     element(s), |targetQuery[1]| specifies elements inside the shadow DOM of
+ *     the first element, and so on.
  * @param {!Event} event Event to be sent.
  * @param {string=} opt_iframeQuery Optional iframe selector.
  * @return {boolean} True if the event is sent to the target, false otherwise.
  */
 test.util.sync.sendEvent = function(
     contentWindow, targetQuery, event, opt_iframeQuery) {
-  var target = targetQuery === null ?
-      contentWindow.document.activeElement :
-      test.util.sync.getElement_(contentWindow, targetQuery, opt_iframeQuery);
+  var target;
+  if (targetQuery === null) {
+    target = contentWindow.document.activeElement;
+  } else if (typeof targetQuery === 'string') {
+    target =
+        test.util.sync.getElement_(contentWindow, targetQuery, opt_iframeQuery);
+  } else if (Array.isArray(targetQuery)) {
+    var doc = test.util.sync.getDocument_(
+        contentWindow, opt_iframeQuery || undefined);
+    if (doc) {
+      var elems = test.util.sync.deepQuerySelectorAll_(doc, targetQuery);
+      if (elems.length > 0)
+        target = elems[0];
+    }
+  }
 
   if (!target)
     return false;
@@ -415,7 +431,10 @@ test.util.sync.fakeKeyDown = function(
  * events in turns.
  *
  * @param {Window} contentWindow Window to be tested.
- * @param {string} targetQuery Query to specify the element.
+ * @param {string|Array<string>} targetQuery Query to specify the element.
+ *     If targetQuery is an array, |targetQuery[0]| specifies the first
+ *     element(s), |targetQuery[1]| specifies elements inside the shadow DOM of
+ *     the first element, and so on.
  * @param {string=} opt_iframeQuery Optional iframe selector.
  * @return {boolean} True if the all events are sent to the target, false
  *     otherwise.
