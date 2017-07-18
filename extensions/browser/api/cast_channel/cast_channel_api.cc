@@ -80,10 +80,8 @@ void FillChannelInfo(const CastSocket& socket, ChannelInfo* channel_info) {
   channel_info->connect_info.port = ip_endpoint.port();
   channel_info->connect_info.auth =
       api::cast_channel::CHANNEL_AUTH_TYPE_SSL_VERIFIED;
-  channel_info->ready_state =
-      api::cast_channel::ToReadyState(socket.ready_state());
-  channel_info->error_state =
-      api::cast_channel::ToChannelError(socket.error_state());
+  channel_info->ready_state = ToReadyState(socket.ready_state());
+  channel_info->error_state = ToChannelError(socket.error_state());
   channel_info->keep_alive = socket.keep_alive();
   channel_info->audio_only = socket.audio_only();
 }
@@ -192,8 +190,7 @@ void CastChannelAsyncApiFunction::SetResultFromSocket(
     const CastSocket& socket) {
   ChannelInfo channel_info;
   FillChannelInfo(socket, &channel_info);
-  api::cast_channel::ChannelError error =
-      api::cast_channel::ToChannelError(socket.error_state());
+  api::cast_channel::ChannelError error = ToChannelError(socket.error_state());
   if (error != api::cast_channel::CHANNEL_ERROR_NONE) {
     SetError("Channel socket error = " + base::IntToString(error));
   }
@@ -445,7 +442,7 @@ void CastChannelAPI::CastMessageHandler::OnError(
 
   ChannelInfo channel_info;
   FillChannelInfo(socket, &channel_info);
-  channel_info.error_state = api::cast_channel::ToChannelError(error_state);
+  channel_info.error_state = ToChannelError(error_state);
   ErrorInfo error_info;
   FillErrorInfo(channel_info.error_state, logger_->GetLastError(socket.id()),
                 &error_info);

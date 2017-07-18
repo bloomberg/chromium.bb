@@ -10,8 +10,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
-namespace api {
-namespace cast_channel {
 
 // Tests parsing of ConnectInfo.
 TEST(CastChannelOpenFunctionTest, TestParseConnectInfo) {
@@ -19,16 +17,14 @@ TEST(CastChannelOpenFunctionTest, TestParseConnectInfo) {
   std::unique_ptr<net::IPEndPoint> ip_endpoint;
 
   // Valid ConnectInfo
-  ConnectInfo connect_info;
+  api::cast_channel::ConnectInfo connect_info;
   connect_info.ip_address = "192.0.0.1";
   connect_info.port = 8009;
-  connect_info.auth = CHANNEL_AUTH_TYPE_SSL_VERIFIED;
+  connect_info.auth = api::cast_channel::CHANNEL_AUTH_TYPE_SSL_VERIFIED;
 
   ip_endpoint.reset(ccof::ParseConnectInfo(connect_info));
   EXPECT_TRUE(ip_endpoint);
   EXPECT_EQ(ip_endpoint->ToString(), "192.0.0.1:8009");
 }
 
-}  // namespace cast_channel
-}  // namespace api
 }  // namespace extensions
