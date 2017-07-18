@@ -173,15 +173,16 @@ static std::unique_ptr<TextResourceDecoder> CreateResourceTextDecoder(
 }
 
 static void MaybeEncodeTextContent(const String& text_content,
-                                   PassRefPtr<const SharedBuffer> buffer,
+                                   const char* buffer_data,
+                                   size_t buffer_size,
                                    String* result,
                                    bool* base64_encoded) {
   if (!text_content.IsNull() &&
       !text_content.Utf8(WTF::kStrictUTF8Conversion).IsNull()) {
     *result = text_content;
     *base64_encoded = false;
-  } else if (buffer) {
-    *result = Base64Encode(buffer->Data(), buffer->size());
+  } else if (buffer_data) {
+    *result = Base64Encode(buffer_data, buffer_size);
     *base64_encoded = true;
   } else if (text_content.IsNull()) {
     *result = "";
@@ -191,6 +192,20 @@ static void MaybeEncodeTextContent(const String& text_content,
     *result = Base64Encode(text_content.Utf8(WTF::kLenientUTF8Conversion));
     *base64_encoded = true;
   }
+}
+
+static void MaybeEncodeTextContent(const String& text_content,
+                                   PassRefPtr<const SharedBuffer> buffer,
+                                   String* result,
+                                   bool* base64_encoded) {
+  if (!buffer) {
+    return MaybeEncodeTextContent(text_content, nullptr, 0, result,
+                                  base64_encoded);
+  }
+
+  const SharedBuffer::DeprecatedFlatData flat_buffer(std::move(buffer));
+  return MaybeEncodeTextContent(text_content, flat_buffer.Data(),
+                                flat_buffer.size(), result, base64_encoded);
 }
 
 // static
@@ -208,15 +223,16 @@ bool InspectorPageAgent::SharedBufferContent(
       CreateResourceTextDecoder(mime_type, text_encoding_name);
   WTF::TextEncoding encoding(text_encoding_name);
 
+  const SharedBuffer::DeprecatedFlatData flat_buffer(std::move(buffer));
   if (decoder) {
-    text_content = decoder->Decode(buffer->Data(), buffer->size());
+    text_content = decoder->Decode(flat_buffer.Data(), flat_buffer.size());
     text_content = text_content + decoder->Flush();
   } else if (encoding.IsValid()) {
-    text_content = encoding.Decode(buffer->Data(), buffer->size());
+    text_content = encoding.Decode(flat_buffer.Data(), flat_buffer.size());
   }
 
-  MaybeEncodeTextContent(text_content, std::move(buffer), result,
-                         base64_encoded);
+  MaybeEncodeTextContent(text_content, flat_buffer.Data(), flat_buffer.size(),
+                         result, base64_encoded);
   return true;
 }
 
@@ -234,7 +250,9 @@ bool InspectorPageAgent::CachedResourceContent(Resource* cached_resource,
                                             : cached_resource->ResourceBuffer();
     if (!buffer)
       return false;
-    *result = Base64Encode(buffer->Data(), buffer->size());
+
+    const SharedBuffer::DeprecatedFlatData flat_buffer(std::move(buffer));
+    *result = Base64Encode(flat_buffer.Data(), flat_buffer.size());
     *base64_encoded = true;
     return true;
   }
