@@ -1589,5 +1589,57 @@ TEST(TransformOperationTest, ScaleComponent) {
   EXPECT_EQ(2.f, scale);
 }
 
+TEST(TransformOperationsTest, Equality) {
+  TransformOperations lhs;
+  TransformOperations rhs;
+
+  // Empty lists of operations are trivially equal.
+  EXPECT_EQ(lhs, rhs);
+
+  rhs.AppendIdentity();
+  rhs.AppendTranslate(0, 0, 0);
+  rhs.AppendRotate(1, 0, 0, 0);
+  rhs.AppendScale(1, 1, 1);
+  rhs.AppendSkew(0, 0);
+  rhs.AppendMatrix(gfx::Transform());
+
+  // Even though both lists operations are effectively the identity matrix, rhs
+  // has a different number of operations and is therefore different.
+  EXPECT_NE(lhs, rhs);
+
+  rhs.AppendPerspective(800);
+
+  // Assignment should produce equal lists of operations.
+  lhs = rhs;
+  EXPECT_EQ(lhs, rhs);
+
+  // Cannot affect identity operations.
+  lhs.at(0).translate.x = 1;
+  EXPECT_EQ(lhs, rhs);
+
+  lhs.at(1).translate.x = 1;
+  EXPECT_NE(lhs, rhs);
+
+  lhs = rhs;
+  lhs.at(2).rotate.angle = 1;
+  EXPECT_NE(lhs, rhs);
+
+  lhs = rhs;
+  lhs.at(3).scale.x = 2;
+  EXPECT_NE(lhs, rhs);
+
+  lhs = rhs;
+  lhs.at(4).skew.x = 2;
+  EXPECT_NE(lhs, rhs);
+
+  lhs = rhs;
+  lhs.at(5).matrix.Translate3d(1, 1, 1);
+  EXPECT_NE(lhs, rhs);
+
+  lhs = rhs;
+  lhs.at(6).perspective_depth = 801;
+  EXPECT_NE(lhs, rhs);
+}
+
 }  // namespace
 }  // namespace cc

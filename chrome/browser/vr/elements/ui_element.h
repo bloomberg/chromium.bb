@@ -125,23 +125,30 @@ class UiElement : public cc::AnimationTarget {
   }
 
   // The size of the object.  This does not affect children.
-  gfx::Vector3dF size() const { return size_; }
-  void set_size(const gfx::Vector3dF& size) { size_ = size; }
+  gfx::SizeF size() const { return size_; }
+  void SetSize(float width, float hight);
 
   // This is the local transform. It is inherited by descendants.
   const cc::TransformOperations& transform_operations() const {
     return transform_operations_;
   }
+  // It is assumed that operations is of size 3 with a component for
+  // translation, rotation and scale, in that order (see constructor and the
+  // DCHECKs in the implementation of this function).
+  void SetTransformOperations(const cc::TransformOperations& operations);
 
-  void set_transform_operations(const cc::TransformOperations& operations) {
-    transform_operations_ = operations;
-  }
+  // These are convenience functions for setting the transform operations. They
+  // will animate if you've set a transition. If you need to animate more than
+  // one operation simultaneously, please use |SetTransformOperations| below.
+  void SetTranslate(float x, float y, float z);
+  void SetRotate(float x, float y, float z, float radians);
+  void SetScale(float x, float y, float z);
 
   AnimationPlayer& animation_player() { return animation_player_; }
 
   // The opacity of the object (between 0.0 and 1.0).
   float opacity() const { return opacity_; }
-  void set_opacity(float opacity) { opacity_ = opacity; }
+  void SetOpacity(float opacity);
 
   // The corner radius of the object. Analogous to CSS's border-radius. This is
   // in meters (same units as |size|).
@@ -273,7 +280,7 @@ class UiElement : public cc::AnimationTarget {
   bool is_overlay_ = false;
 
   // The size of the object.  This does not affect children.
-  gfx::Vector3dF size_ = {1.0f, 1.0f, 1.0f};
+  gfx::SizeF size_ = {1.0f, 1.0f};
 
   // The opacity of the object (between 0.0 and 1.0).
   float opacity_ = 1.0f;
@@ -300,6 +307,10 @@ class UiElement : public cc::AnimationTarget {
   int gridline_count_ = 1;
 
   int draw_phase_ = 1;
+
+  // This is the time as of the last call to |Animate|. It is needed when
+  // reversing transitions.
+  base::TimeTicks last_frame_time_;
 
   // This transform can be used by children to derive position of its parent.
   gfx::Transform inheritable_transform_;

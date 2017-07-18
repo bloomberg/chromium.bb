@@ -97,6 +97,13 @@ class CC_ANIMATION_EXPORT TransformOperations {
     DCHECK_LT(index, size());
     return operations_[index];
   }
+  TransformOperation& at(size_t index) {
+    DCHECK_LT(index, size());
+    return operations_[index];
+  }
+
+  bool operator==(const TransformOperations& other) const;
+  bool operator!=(const TransformOperations& other) const;
 
  private:
   bool BlendInternal(const TransformOperations& from,

@@ -19,8 +19,8 @@ void ExclusiveScreenToast::UpdateElementSize() {
   // Adjust the width of this element according to the texture. The width is
   // decided by the length of the text to show.
   gfx::SizeF drawn_size = GetTexture()->GetDrawnSize();
-  float width = drawn_size.width() / drawn_size.height() * size().y();
-  set_size({width, size().y(), 1});
+  float width = drawn_size.width() / drawn_size.height() * size().height();
+  SetSize(width, size().height());
 }
 
 }  // namespace vr

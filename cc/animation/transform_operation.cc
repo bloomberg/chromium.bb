@@ -116,6 +116,38 @@ void TransformOperation::Bake() {
   }
 }
 
+bool TransformOperation::operator==(const TransformOperation& other) const {
+  if (type != other.type)
+    return false;
+  switch (type) {
+    case TransformOperation::TRANSFORM_OPERATION_TRANSLATE:
+      return translate.x == other.translate.x &&
+             translate.y == other.translate.y &&
+             translate.z == other.translate.z;
+    case TransformOperation::TRANSFORM_OPERATION_ROTATE:
+      return rotate.axis.x == other.rotate.axis.x &&
+             rotate.axis.y == other.rotate.axis.y &&
+             rotate.axis.z == other.rotate.axis.z &&
+             rotate.angle == other.rotate.angle;
+    case TransformOperation::TRANSFORM_OPERATION_SCALE:
+      return scale.x == other.scale.x && scale.y == other.scale.y &&
+             scale.z == other.scale.z;
+    case TransformOperation::TRANSFORM_OPERATION_SKEW:
+      return skew.x == other.skew.x && skew.y == other.skew.y;
+    case TransformOperation::TRANSFORM_OPERATION_PERSPECTIVE:
+      return perspective_depth == other.perspective_depth;
+    case TransformOperation::TRANSFORM_OPERATION_MATRIX:
+    case TransformOperation::TRANSFORM_OPERATION_IDENTITY:
+      return matrix == other.matrix;
+  }
+  NOTREACHED();
+  return false;
+}
+
+bool TransformOperation::operator!=(const TransformOperation& other) const {
+  return !(*this == other);
+}
+
 bool TransformOperation::BlendTransformOperations(
     const TransformOperation* from,
     const TransformOperation* to,

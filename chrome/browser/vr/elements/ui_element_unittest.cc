@@ -17,14 +17,14 @@ namespace vr {
 
 TEST(UiElements, AnimateSize) {
   UiElement rect;
-  rect.set_size({10, 100, 1});
+  rect.SetSize(10, 100);
   rect.animation_player().AddAnimation(CreateBoundsAnimation(
       1, 1, gfx::SizeF(10, 100), gfx::SizeF(20, 200), UsToDelta(10000)));
   base::TimeTicks start_time = UsToTicks(1);
   rect.Animate(start_time);
-  EXPECT_VECTOR3DF_EQ(gfx::Vector3dF(10, 100, 1), rect.size());
+  EXPECT_FLOAT_SIZE_EQ(gfx::SizeF(10, 100), rect.size());
   rect.Animate(start_time + UsToDelta(10000));
-  EXPECT_VECTOR3DF_EQ(gfx::Vector3dF(20, 200, 1), rect.size());
+  EXPECT_FLOAT_SIZE_EQ(gfx::SizeF(20, 200), rect.size());
 }
 
 TEST(UiElements, AnimationAffectsInheritableTransform) {

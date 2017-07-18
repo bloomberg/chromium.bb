@@ -84,6 +84,8 @@ static_library("vr_common") {
     "toolbar_helper.h",
     "toolbar_state.cc",
     "toolbar_state.h",
+    "transition.cc",
+    "transition.h",
     "ui_browser_interface.h",
     "ui_element_renderer.h",
     "ui_input_manager.cc",

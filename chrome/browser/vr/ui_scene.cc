@@ -24,10 +24,10 @@ void ApplyAnchoring(const UiElement& parent,
   float x_offset;
   switch (x_anchoring) {
     case XLEFT:
-      x_offset = -0.5f * parent.size().x();
+      x_offset = -0.5f * parent.size().width();
       break;
     case XRIGHT:
-      x_offset = 0.5f * parent.size().x();
+      x_offset = 0.5f * parent.size().width();
       break;
     case XNONE:
       x_offset = 0.0f;
@@ -36,10 +36,10 @@ void ApplyAnchoring(const UiElement& parent,
   float y_offset;
   switch (y_anchoring) {
     case YTOP:
-      y_offset = 0.5f * parent.size().y();
+      y_offset = 0.5f * parent.size().height();
       break;
     case YBOTTOM:
-      y_offset = -0.5f * parent.size().y();
+      y_offset = -0.5f * parent.size().height();
       break;
     case YNONE:
       y_offset = 0.0f;
@@ -228,8 +228,7 @@ void UiScene::ApplyRecursiveTransforms(UiElement* element) {
   }
 
   gfx::Transform transform;
-  transform.Scale3d(element->size().x(), element->size().y(),
-                    element->size().z());
+  transform.Scale(element->size().width(), element->size().height());
   element->set_computed_opacity(element->opacity());
   element->set_computed_lock_to_fov(element->lock_to_fov());
 

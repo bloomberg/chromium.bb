@@ -8,10 +8,15 @@
 
 #include "base/logging.h"
 #include "base/time/time.h"
+#include "cc/base/math_util.h"
 
 namespace vr {
 
 namespace {
+
+static constexpr size_t kTranslateIndex = 0;
+static constexpr size_t kRotateIndex = 1;
+static constexpr size_t kScaleIndex = 2;
 
 bool GetRayPlaneDistance(const gfx::Point3F& ray_origin,
                          const gfx::Vector3dF& ray_vector,
@@ -31,6 +36,9 @@ bool GetRayPlaneDistance(const gfx::Point3F& ray_origin,
 
 UiElement::UiElement() {
   animation_player_.set_target(this);
+  transform_operations_.AppendTranslate(0, 0, 0);
+  transform_operations_.AppendRotate(1, 0, 0, 0);
+  transform_operations_.AppendScale(1, 1, 1);
 }
 
 UiElement::~UiElement() {
@@ -58,6 +66,7 @@ void UiElement::PrepareToDraw() {}
 
 void UiElement::Animate(const base::TimeTicks& time) {
   animation_player_.Tick(time);
+  last_frame_time_ = time;
 }
 
 bool UiElement::IsVisible() const {
@@ -70,6 +79,56 @@ bool UiElement::IsHitTestable() const {
 
 void UiElement::SetEnabled(bool enabled) {
   visible_ = enabled;
+}
+
+void UiElement::SetSize(float width, float height) {
+  animation_player_.TransitionBoundsTo(last_frame_time_, size_,
+                                       gfx::SizeF(width, height));
+}
+
+void UiElement::SetTransformOperations(
+    const cc::TransformOperations& operations) {
+  DCHECK_EQ(3ul, operations.size());
+  DCHECK_EQ(cc::TransformOperation::TRANSFORM_OPERATION_TRANSLATE,
+            operations.at(kTranslateIndex).type);
+  DCHECK_EQ(cc::TransformOperation::TRANSFORM_OPERATION_ROTATE,
+            operations.at(kRotateIndex).type);
+  DCHECK_EQ(cc::TransformOperation::TRANSFORM_OPERATION_SCALE,
+            operations.at(kScaleIndex).type);
+  animation_player_.TransitionTransformOperationsTo(
+      last_frame_time_, transform_operations_, operations);
+}
+
+void UiElement::SetTranslate(float x, float y, float z) {
+  cc::TransformOperations operations = transform_operations_;
+  cc::TransformOperation& op = operations.at(kTranslateIndex);
+  op.translate = {x, y, z};
+  op.Bake();
+  animation_player_.TransitionTransformOperationsTo(
+      last_frame_time_, transform_operations_, operations);
+}
+
+void UiElement::SetRotate(float x, float y, float z, float radians) {
+  cc::TransformOperations operations = transform_operations_;
+  cc::TransformOperation& op = operations.at(kRotateIndex);
+  op.rotate.axis = {x, y, z};
+  op.rotate.angle = cc::MathUtil::Rad2Deg(radians);
+  op.Bake();
+  animation_player_.TransitionTransformOperationsTo(
+      last_frame_time_, transform_operations_, operations);
+}
+
+void UiElement::SetScale(float x, float y, float z) {
+  cc::TransformOperations operations = transform_operations_;
+  cc::TransformOperation& op = operations.at(kScaleIndex);
+  op.scale = {x, y, z};
+  op.Bake();
+  animation_player_.TransitionTransformOperationsTo(
+      last_frame_time_, transform_operations_, operations);
+}
+
+void UiElement::SetOpacity(float opacity) {
+  animation_player_.TransitionOpacityTo(last_frame_time_, opacity_, opacity);
 }
 
 bool UiElement::HitTest(const gfx::PointF& point) const {
@@ -139,7 +198,7 @@ void UiElement::NotifyClientTransformOperationsAnimated(
 
 void UiElement::NotifyClientBoundsAnimated(const gfx::SizeF& size,
                                            cc::Animation* animation) {
-  set_size({size.width(), size.height(), 1});
+  size_ = size;
 }
 
 }  // namespace vr

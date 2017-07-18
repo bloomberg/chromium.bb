@@ -185,7 +185,7 @@ void UiRenderer::DrawElement(const gfx::Transform& view_proj_matrix,
     case Fill::CONTENT: {
       vr_shell_renderer_->GetExternalTexturedQuadRenderer()->Draw(
           content_texture_id_, transform, content_texture_size,
-          gfx::SizeF(element.size().x(), element.size().y()),
+          gfx::SizeF(element.size().width(), element.size().height()),
           element.computed_opacity(), element.corner_radius());
       break;
     }
