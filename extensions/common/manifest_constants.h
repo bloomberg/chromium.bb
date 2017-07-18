@@ -265,6 +265,7 @@ extern const char kCannotChangeExtensionID[];
 extern const char kCannotClaimAllHostsInExtent[];
 extern const char kCannotClaimAllURLsInExtent[];
 extern const char kCannotScriptGallery[];
+extern const char kCannotScriptNtp[];
 extern const char kCannotScriptSigninPage[];
 extern const char kCannotUninstallManagedExtension[];
 extern const char kChromeVersionTooLow[];

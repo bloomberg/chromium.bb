@@ -18,6 +18,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_with_management_policy_apitest.h"
 #include "chrome/browser/extensions/test_extension_dir.h"
+#include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/javascript_dialogs/javascript_dialog_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -620,6 +621,46 @@ IN_PROC_BROWSER_TEST_P(ContentScriptApiTest,
   LoadExtension(data_dir.AppendASCII("background_page_iframe"));
   iframe_loaded_listener.WaitUntilSatisfied();
   EXPECT_FALSE(content_script_listener.was_satisfied());
+}
+
+IN_PROC_BROWSER_TEST_P(ContentScriptApiTest, CannotScriptTheNewTabPage) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+
+  ExtensionTestMessageListener test_listener("ready", true);
+  LoadExtension(test_data_dir_.AppendASCII("content_scripts/ntp"));
+  ASSERT_TRUE(test_listener.WaitUntilSatisfied());
+
+  auto did_script_inject = [](content::WebContents* web_contents) {
+    bool did_inject = false;
+    EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+        web_contents,
+        "domAutomationController.send(document.title === 'injected');",
+        &did_inject));
+    return did_inject;
+  };
+
+  // First, test the executeScript() method.
+  ResultCatcher catcher;
+  test_listener.Reply(std::string());
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+  EXPECT_EQ(GURL("chrome://newtab"), browser()
+                                         ->tab_strip_model()
+                                         ->GetActiveWebContents()
+                                         ->GetLastCommittedURL());
+  EXPECT_FALSE(
+      did_script_inject(browser()->tab_strip_model()->GetActiveWebContents()));
+
+  // Next, check content script injection.
+  ui_test_utils::NavigateToURL(browser(), search::GetNewTabPageURL(profile()));
+  EXPECT_FALSE(
+      did_script_inject(browser()->tab_strip_model()->GetActiveWebContents()));
+
+  // The extension should inject on "normal" urls.
+  GURL unprotected_url = embedded_test_server()->GetURL(
+      "example.com", "/extensions/test_file.html");
+  ui_test_utils::NavigateToURL(browser(), unprotected_url);
+  EXPECT_TRUE(
+      did_script_inject(browser()->tab_strip_model()->GetActiveWebContents()));
 }
 
 INSTANTIATE_TEST_CASE_P(
