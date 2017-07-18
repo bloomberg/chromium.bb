@@ -1900,6 +1900,8 @@ int HttpCache::Transaction::DoHeadersPhaseCannotProceed(int result) {
   if (network_trans_)
     network_trans_.reset();
 
+  new_response_ = nullptr;
+
   SetRequest(net_log_);
 
   entry_ = nullptr;
