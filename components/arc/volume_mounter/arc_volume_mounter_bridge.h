@@ -9,10 +9,14 @@
 
 #include "base/macros.h"
 #include "chromeos/disks/disk_mount_manager.h"
-#include "components/arc/arc_service.h"
 #include "components/arc/common/volume_mounter.mojom.h"
 #include "components/arc/instance_holder.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
+
+namespace content {
+class BrowserContext;
+}  // namespace content
 
 namespace arc {
 
@@ -21,11 +25,17 @@ class ArcBridgeService;
 // This class handles Volume mount/unmount requests from cros-disks and
 // send them to Android.
 class ArcVolumeMounterBridge
-    : public ArcService,
+    : public KeyedService,
       public chromeos::disks::DiskMountManager::Observer,
       public InstanceHolder<mojom::VolumeMounterInstance>::Observer {
  public:
-  explicit ArcVolumeMounterBridge(ArcBridgeService* bridge_service);
+  // Returns singleton instance for the given BrowserContext,
+  // or nullptr if the browser |context| is not allowed to use ARC.
+  static ArcVolumeMounterBridge* GetForBrowserContext(
+      content::BrowserContext* context);
+
+  ArcVolumeMounterBridge(content::BrowserContext* context,
+                         ArcBridgeService* bridge_service);
   ~ArcVolumeMounterBridge() override;
 
   // InstanceHolder<mojom::VolumeMounterInstance>::Observer overrides:
@@ -46,6 +56,8 @@ class ArcVolumeMounterBridge
                      const std::string& device_path) override;
 
  private:
+  ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
+
   DISALLOW_COPY_AND_ASSIGN(ArcVolumeMounterBridge);
 };
 
