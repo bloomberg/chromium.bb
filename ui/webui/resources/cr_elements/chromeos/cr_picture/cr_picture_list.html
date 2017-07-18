@@ -80,7 +80,8 @@
         <template is="dom-repeat" items="[[defaultImages]]">
           <img role="radio"
               data-type$="[[selectionTypesEnum_.DEFAULT]]"
-              data-index$="[[index]]" src="[[item.url]]" title="[[item.title]]">
+              data-index$="[[index]]" src="[[item.url]]"
+              srcset="[[getImgSrc2x_(item.url)]]" title="[[item.title]]">
         </template>
       </iron-selector>
     </div>
