@@ -61,7 +61,7 @@ GURL LayoutTestDevToolsBindings::GetDevToolsPathAsURL(
 GURL LayoutTestDevToolsBindings::MapTestURLIfNeeded(const GURL& test_url,
                                                     bool* is_devtools_js_test) {
   std::string spec = test_url.spec();
-  *is_devtools_js_test = spec.find("/devtools-js/") != std::string::npos;
+  *is_devtools_js_test = spec.find("/devtools/") != std::string::npos;
   bool is_unit_test = spec.find("/inspector-unit/") != std::string::npos;
   if (!*is_devtools_js_test && !is_unit_test)
     return test_url;
