@@ -6,21 +6,31 @@
 #define CHROME_BROWSER_CHROMEOS_ARC_USER_SESSION_ARC_USER_SESSION_SERVICE_H_
 
 #include "base/macros.h"
-#include "components/arc/arc_service.h"
 #include "components/arc/common/intent_helper.mojom.h"
 #include "components/arc/instance_holder.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "components/session_manager/core/session_manager_observer.h"
+
+namespace content {
+class BrowserContext;
+}  // namespace content
 
 namespace arc {
 
 class ArcBridgeService;
 
 class ArcUserSessionService
-    : public ArcService,
+    : public KeyedService,
       public InstanceHolder<mojom::IntentHelperInstance>::Observer,
       public session_manager::SessionManagerObserver {
  public:
-  explicit ArcUserSessionService(ArcBridgeService* bridge_service);
+  // Returns singleton instance for the given BrowserContext,
+  // or nullptr if the browser |context| is not allowed to use ARC.
+  static ArcUserSessionService* GetForBrowserContext(
+      content::BrowserContext* context);
+
+  ArcUserSessionService(content::BrowserContext* context,
+                        ArcBridgeService* bridge_service);
   ~ArcUserSessionService() override;
 
   // InstanceHolder<mojom::IntentHelperInstance>::Observer
@@ -31,6 +41,8 @@ class ArcUserSessionService
   void OnSessionStateChanged() override;
 
  private:
+  ArcBridgeService* const arc_bridge_service_;
+
   DISALLOW_COPY_AND_ASSIGN(ArcUserSessionService);
 };
 

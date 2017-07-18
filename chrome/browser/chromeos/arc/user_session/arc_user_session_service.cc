@@ -4,18 +4,53 @@
 
 #include "chrome/browser/chromeos/arc/user_session/arc_user_session_service.h"
 
+#include "base/memory/singleton.h"
 #include "components/arc/arc_bridge_service.h"
+#include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/session_manager/core/session_manager.h"
 
 namespace arc {
+namespace {
 
-ArcUserSessionService::ArcUserSessionService(ArcBridgeService* bridge_service)
-    : ArcService(bridge_service) {
-  arc_bridge_service()->intent_helper()->AddObserver(this);
+// Singleton factory for ArcUserSessionService.
+class ArcUserSessionServiceFactory
+    : public internal::ArcBrowserContextKeyedServiceFactoryBase<
+          ArcUserSessionService,
+          ArcUserSessionServiceFactory> {
+ public:
+  // Factory name used by ArcBrowserContextKeyedServiceFactoryBase.
+  static constexpr const char* kName = "ArcUserSessionServiceFactory";
+
+  static ArcUserSessionServiceFactory* GetInstance() {
+    return base::Singleton<ArcUserSessionServiceFactory>::get();
+  }
+
+ private:
+  friend base::DefaultSingletonTraits<ArcUserSessionServiceFactory>;
+  ArcUserSessionServiceFactory() = default;
+  ~ArcUserSessionServiceFactory() override = default;
+};
+
+}  // namespace
+
+ArcUserSessionService* ArcUserSessionService::GetForBrowserContext(
+    content::BrowserContext* context) {
+  return ArcUserSessionServiceFactory::GetForBrowserContext(context);
+}
+
+ArcUserSessionService::ArcUserSessionService(content::BrowserContext* context,
+                                             ArcBridgeService* bridge_service)
+    : arc_bridge_service_(bridge_service) {
+  arc_bridge_service_->intent_helper()->AddObserver(this);
 }
 
 ArcUserSessionService::~ArcUserSessionService() {
-  arc_bridge_service()->intent_helper()->RemoveObserver(this);
+  // TODO(hidehiko): Currently, the lifetime of ArcBridgeService and
+  // BrowserContextKeyedService is not nested.
+  // If ArcServiceManager::Get() returns nullptr, it is already destructed,
+  // so do not touch it.
+  if (ArcServiceManager::Get())
+    arc_bridge_service_->intent_helper()->RemoveObserver(this);
 }
 
 void ArcUserSessionService::OnSessionStateChanged() {
@@ -25,7 +60,7 @@ void ArcUserSessionService::OnSessionStateChanged() {
     return;
 
   auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
-      arc_bridge_service()->intent_helper(), SendBroadcast);
+      arc_bridge_service_->intent_helper(), SendBroadcast);
   if (!instance)
     return;
 
