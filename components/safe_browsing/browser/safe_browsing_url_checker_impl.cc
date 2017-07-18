@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/safe_browsing/safe_browsing_url_checker_impl.h"
+#include "components/safe_browsing/browser/safe_browsing_url_checker_impl.h"
 
-#include "chrome/browser/prerender/prerender_contents.h"
-#include "chrome/browser/safe_browsing/ui_manager.h"
-#include "components/safe_browsing_db/v4_protocol_manager_util.h"
+#include "components/safe_browsing/browser/url_checker_delegate.h"
+#include "components/security_interstitials/content/unsafe_resource.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/load_flags.h"
@@ -25,14 +24,13 @@ const int kCheckUrlTimeoutMs = 5000;
 SafeBrowsingUrlCheckerImpl::SafeBrowsingUrlCheckerImpl(
     int load_flags,
     content::ResourceType resource_type,
-    scoped_refptr<SafeBrowsingDatabaseManager> database_manager,
-    scoped_refptr<SafeBrowsingUIManager> ui_manager,
+    scoped_refptr<UrlCheckerDelegate> url_checker_delegate,
     const base::Callback<content::WebContents*()>& web_contents_getter)
     : load_flags_(load_flags),
       resource_type_(resource_type),
       web_contents_getter_(web_contents_getter),
-      database_manager_(std::move(database_manager)),
-      ui_manager_(std::move(ui_manager)),
+      url_checker_delegate_(std::move(url_checker_delegate)),
+      database_manager_(url_checker_delegate_->GetDatabaseManager()),
       weak_factory_(this) {}
 
 SafeBrowsingUrlCheckerImpl::~SafeBrowsingUrlCheckerImpl() {
@@ -71,8 +69,10 @@ void SafeBrowsingUrlCheckerImpl::OnCheckBrowseUrlResult(
   }
 
   if (load_flags_ & net::LOAD_PREFETCH) {
-    // TODO(yzshen): Destroy prerender contents if necessary.
-
+    // Destroy the prefetch with FINAL_STATUS_SAFEBROSWING.
+    if (resource_type_ == content::RESOURCE_TYPE_MAIN_FRAME)
+      url_checker_delegate_->MaybeDestroyPrerenderContents(
+          web_contents_getter_);
     BlockAndProcessUrls();
     return;
   }
@@ -95,35 +95,7 @@ void SafeBrowsingUrlCheckerImpl::OnCheckBrowseUrlResult(
   resource.threat_source = database_manager_->GetThreatSource();
 
   state_ = STATE_DISPLAYING_BLOCKING_PAGE;
-
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&SafeBrowsingUrlCheckerImpl::StartDisplayingBlockingPage,
-                     weak_factory_.GetWeakPtr(), ui_manager_, resource));
-}
-
-// static
-void SafeBrowsingUrlCheckerImpl::StartDisplayingBlockingPage(
-    const base::WeakPtr<SafeBrowsingUrlCheckerImpl>& checker,
-    scoped_refptr<BaseUIManager> ui_manager,
-    const security_interstitials::UnsafeResource& resource) {
-  content::WebContents* web_contents = resource.web_contents_getter.Run();
-  if (web_contents) {
-    prerender::PrerenderContents* prerender_contents =
-        prerender::PrerenderContents::FromWebContents(web_contents);
-    if (prerender_contents) {
-      prerender_contents->Destroy(prerender::FINAL_STATUS_SAFE_BROWSING);
-    } else {
-      ui_manager->DisplayBlockingPage(resource);
-      return;
-    }
-  }
-
-  // Tab is gone or it's being prerendered.
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&SafeBrowsingUrlCheckerImpl::BlockAndProcessUrls,
-                     checker));
+  url_checker_delegate_->StartDisplayingBlockingPageHelper(resource);
 }
 
 void SafeBrowsingUrlCheckerImpl::OnCheckUrlTimeout() {
@@ -146,14 +118,9 @@ void SafeBrowsingUrlCheckerImpl::ProcessUrls() {
     // TODO(yzshen): Consider moving CanCheckResourceType() to the renderer
     // side. That would save some IPCs. It requires a method on the
     // SafeBrowsing mojo interface to query all supported resource types.
-    // TODO(ricea):  SB_THREAT_TYPE_URL_UNWANTED should not be included for
-    // Android WebView.
     if (!database_manager_->CanCheckResourceType(resource_type_) ||
         database_manager_->CheckBrowseUrl(
-            urls_[next_index_],
-            CreateSBThreatTypeSet({SB_THREAT_TYPE_URL_PHISHING,
-                                   SB_THREAT_TYPE_URL_MALWARE,
-                                   SB_THREAT_TYPE_URL_UNWANTED}),
+            urls_[next_index_], url_checker_delegate_->GetThreatTypes(),
             this)) {
       std::move(callbacks_[next_index_]).Run(true);
       next_index_++;

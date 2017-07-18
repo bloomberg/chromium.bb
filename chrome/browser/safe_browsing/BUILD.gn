@@ -13,8 +13,6 @@ proto_library("chunk_proto") {
 
 static_library("safe_browsing") {
   sources = [
-    "browser_url_loader_throttle.cc",
-    "browser_url_loader_throttle.h",
     "chrome_cleaner/chrome_cleaner_controller_win.cc",
     "chrome_cleaner/chrome_cleaner_controller_win.h",
     "chrome_cleaner/chrome_cleaner_fetcher_win.cc",
@@ -37,12 +35,10 @@ static_library("safe_browsing") {
     "chrome_cleaner/srt_field_trial_win.h",
     "chrome_cleaner/srt_global_error_win.cc",
     "chrome_cleaner/srt_global_error_win.h",
-    "mojo_safe_browsing_impl.cc",
-    "mojo_safe_browsing_impl.h",
     "safe_browsing_tab_observer.cc",
     "safe_browsing_tab_observer.h",
-    "safe_browsing_url_checker_impl.cc",
-    "safe_browsing_url_checker_impl.h",
+    "url_checker_delegate_impl.cc",
+    "url_checker_delegate_impl.h",
   ]
 
   deps = [
