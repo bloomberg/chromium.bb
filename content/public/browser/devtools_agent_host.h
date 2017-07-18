@@ -41,7 +41,6 @@ class CONTENT_EXPORT DevToolsAgentHost
   static char kTypeFrame[];
   static char kTypeSharedWorker[];
   static char kTypeServiceWorker[];
-  static char kTypeExternal[];
   static char kTypeBrowser[];
   static char kTypeGuest[];
   static char kTypeOther[];
