@@ -22,6 +22,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "third_party/skia/include/core/SkPath.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/window.h"
@@ -398,6 +399,9 @@ void DesktopWindowTreeHostX11::Init(aura::Window* content_window,
                                     const Widget::InitParams& params) {
   content_window_ = content_window;
   activatable_ = (params.activatable == Widget::InitParams::ACTIVATABLE_YES);
+
+  if (params.type == Widget::InitParams::TYPE_WINDOW)
+    content_window_->SetProperty(aura::client::kAnimationsDisabledKey, true);
 
   // TODO(erg): Check whether we *should* be building a WindowTreeHost here, or
   // whether we should be proxying requests to another DRWHL.
