@@ -308,7 +308,6 @@ IOThread::IOThread(
       globals_(nullptr),
       is_quic_allowed_by_policy_(true),
       http_09_on_non_default_ports_enabled_(false),
-      creation_time_(base::TimeTicks::Now()),
       weak_factory_(this) {
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_proxy =
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
@@ -748,10 +747,6 @@ void IOThread::DisableQuic() {
     globals_->system_request_context->http_transaction_factory()
         ->GetSession()
         ->DisableQuic();
-}
-
-base::TimeTicks IOThread::creation_time() const {
-  return creation_time_;
 }
 
 net::SSLConfigService* IOThread::GetSSLConfigService() {

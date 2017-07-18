@@ -18,7 +18,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/time/time.h"
 #include "components/prefs/pref_member.h"
 #include "components/ssl_config/ssl_config_service_manager.h"
 #include "ios/web/public/web_thread_delegate.h"
@@ -153,8 +152,6 @@ class IOSIOThread : public web::WebThreadDelegate {
 
   const net::HttpNetworkSession::Params& NetworkSessionParams() const;
 
-  base::TimeTicks creation_time() const;
-
  protected:
   // A string describing the current application version. For example: "stable"
   // or "dev". An empty string is an acceptable value. This string is used to
@@ -224,8 +221,6 @@ class IOSIOThread : public web::WebThreadDelegate {
 
   scoped_refptr<SystemURLRequestContextGetter>
       system_url_request_context_getter_;
-
-  const base::TimeTicks creation_time_;
 
   base::WeakPtrFactory<IOSIOThread> weak_factory_;
 

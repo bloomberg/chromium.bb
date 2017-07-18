@@ -237,7 +237,6 @@ IOSIOThread::IOSIOThread(PrefService* local_state,
                          net_log::ChromeNetLog* net_log)
     : net_log_(net_log),
       globals_(nullptr),
-      creation_time_(base::TimeTicks::Now()),
       weak_factory_(this) {
   pref_proxy_config_tracker_ =
       ProxyServiceFactory::CreatePrefProxyConfigTrackerOfLocalState(
@@ -411,10 +410,6 @@ void IOSIOThread::ClearHostCache() {
 const net::HttpNetworkSession::Params& IOSIOThread::NetworkSessionParams()
     const {
   return params_;
-}
-
-base::TimeTicks IOSIOThread::creation_time() const {
-  return creation_time_;
 }
 
 net::SSLConfigService* IOSIOThread::GetSSLConfigService() {
