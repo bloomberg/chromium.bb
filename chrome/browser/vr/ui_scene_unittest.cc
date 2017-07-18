@@ -73,13 +73,13 @@ TEST(UiScene, ParentTransformAppliesToChild) {
   // Size of the parent should be ignored by the child.
   auto element = base::MakeUnique<UiElement>();
   element->set_id(0);
-  element->set_size({1000, 1000, 1});
+  element->SetSize(1000, 1000);
 
   cc::TransformOperations operations;
   operations.AppendTranslate(6, 1, 0);
   operations.AppendRotate(0, 0, 1, 180 / 2);
   operations.AppendScale(3, 3, 1);
-  element->set_transform_operations(operations);
+  element->SetTransformOperations(operations);
   scene.AddUiElement(std::move(element));
 
   // Add a child to the parent, with different transformations.
@@ -90,7 +90,7 @@ TEST(UiScene, ParentTransformAppliesToChild) {
   child_operations.AppendTranslate(3, 0, 0);
   child_operations.AppendRotate(0, 0, 1, 180 / 2);
   child_operations.AppendScale(2, 2, 1);
-  element->set_transform_operations(child_operations);
+  element->SetTransformOperations(child_operations);
   scene.AddUiElement(std::move(element));
   const UiElement* child = scene.GetUiElementById(1);
 
@@ -109,13 +109,13 @@ TEST(UiScene, Opacity) {
 
   auto element = base::MakeUnique<UiElement>();
   element->set_id(0);
-  element->set_opacity(0.5);
+  element->SetOpacity(0.5);
   scene.AddUiElement(std::move(element));
 
   element = base::MakeUnique<UiElement>();
   element->set_id(1);
   element->set_parent_id(0);
-  element->set_opacity(0.5);
+  element->SetOpacity(0.5);
   scene.AddUiElement(std::move(element));
 
   scene.OnBeginFrame(usToTicks(0));
@@ -157,10 +157,8 @@ TEST_P(AnchoringTest, VerifyCorrectPosition) {
   // Create a parent element with non-unity size and scale.
   auto element = base::MakeUnique<UiElement>();
   element->set_id(0);
-  element->set_size({2, 2, 1});
-  cc::TransformOperations operations;
-  operations.AppendScale(2, 2, 1);
-  element->set_transform_operations(operations);
+  element->SetSize(2, 2);
+  element->SetScale(2, 2, 1);
   scene.AddUiElement(std::move(element));
 
   // Add a child to the parent, with anchoring.

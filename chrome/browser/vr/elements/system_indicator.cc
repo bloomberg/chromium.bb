@@ -24,7 +24,7 @@ SystemIndicator::SystemIndicator(int preferred_width,
 void SystemIndicator::UpdateElementSize() {
   gfx::SizeF drawn_size = GetTexture()->GetDrawnSize();
   float width = height_meters_ * drawn_size.width() / drawn_size.height();
-  set_size({width, height_meters_, 1});
+  SetSize(width, height_meters_);
 }
 
 SystemIndicator::~SystemIndicator() = default;

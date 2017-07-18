@@ -10,10 +10,16 @@
 #include "base/macros.h"
 #include "cc/animation/animation.h"
 #include "cc/trees/target_property.h"
+#include "chrome/browser/vr/transition.h"
 
 namespace cc {
 class AnimationTarget;
+class TransformOperations;
 }  // namespace cc
+
+namespace gfx {
+class SizeF;
+}  // namespace gfx
 
 namespace vr {
 
@@ -29,6 +35,9 @@ class AnimationPlayer final {
   AnimationPlayer();
   ~AnimationPlayer();
 
+  static int GetNextAnimationId();
+  static int GetNextGroupId();
+
   cc::AnimationTarget* target() const { return target_; }
   void set_target(cc::AnimationTarget* target) { target_ = target; }
 
@@ -43,11 +52,32 @@ class AnimationPlayer final {
   using Animations = std::vector<std::unique_ptr<cc::Animation>>;
   const Animations& animations() { return animations_; }
 
+  // The transition is analogous to CSS transitions. When configured, the
+  // transition object will cause subsequent calls the corresponding
+  // TransitionXXXTo functions to induce transition animations.
+  const Transition& transition() const { return transition_; }
+  void set_transition(const Transition& transition) {
+    transition_ = transition;
+  }
+
+  void TransitionOpacityTo(base::TimeTicks monotonic_time,
+                           float current,
+                           float target);
+  void TransitionTransformOperationsTo(base::TimeTicks monotonic_time,
+                                       const cc::TransformOperations& current,
+                                       const cc::TransformOperations& target);
+  void TransitionBoundsTo(base::TimeTicks monotonic_time,
+                          const gfx::SizeF& current,
+                          const gfx::SizeF& target);
+
  private:
   void StartAnimations(base::TimeTicks monotonic_time);
+  cc::Animation* GetRunningAnimationForProperty(
+      cc::TargetProperty::Type target_property);
 
   cc::AnimationTarget* target_ = nullptr;
   Animations animations_;
+  Transition transition_;
 
   DISALLOW_COPY_AND_ASSIGN(AnimationPlayer);
 };

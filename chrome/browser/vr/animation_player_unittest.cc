@@ -5,7 +5,9 @@
 #include "chrome/browser/vr/animation_player.h"
 
 #include "cc/animation/animation_target.h"
+#include "cc/test/geometry_test_utils.h"
 #include "chrome/browser/vr/test/animation_utils.h"
+#include "chrome/browser/vr/transition.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/test/gfx_util.h"
 
@@ -13,12 +15,16 @@ namespace vr {
 
 class TestAnimationTarget : public cc::AnimationTarget {
  public:
-  TestAnimationTarget() {}
+  TestAnimationTarget() {
+    operations_.AppendTranslate(0, 0, 0);
+    operations_.AppendRotate(1, 0, 0, 0);
+    operations_.AppendScale(1, 1, 1);
+  }
 
   const gfx::SizeF& size() const { return size_; }
   const cc::TransformOperations& operations() const { return operations_; }
+  float opacity() const { return opacity_; }
 
- private:
   void NotifyClientBoundsAnimated(const gfx::SizeF& size,
                                   cc::Animation* animation) override {
     size_ = size;
@@ -30,8 +36,15 @@ class TestAnimationTarget : public cc::AnimationTarget {
     operations_ = operations;
   }
 
+  void NotifyClientOpacityAnimated(float opacity,
+                                   cc::Animation* animation) override {
+    opacity_ = opacity;
+  }
+
+ private:
   cc::TransformOperations operations_;
-  gfx::SizeF size_;
+  gfx::SizeF size_ = {10.0f, 10.0f};
+  float opacity_ = 1.0f;
 };
 
 TEST(AnimationPlayerTest, AddRemoveAnimations) {
@@ -151,13 +164,203 @@ TEST(AnimationPlayerTest, AnimationQueue) {
   player.Tick(start_time + UsToDelta(15000));
 
   EXPECT_EQ(1ul, player.animations().size());
-  EXPECT_EQ(cc::Animation::WAITING_FOR_TARGET_AVAILABILITY,
-            player.animations()[0]->run_state());
+  EXPECT_EQ(cc::Animation::RUNNING, player.animations()[0]->run_state());
   EXPECT_EQ(id1, player.animations()[0]->id());
 
   // Tick beyond all animations. There should be none remaining.
   player.Tick(start_time + UsToDelta(30000));
   EXPECT_TRUE(player.animations().empty());
+}
+
+TEST(AnimationPlayerTest, OpacityTransitions) {
+  TestAnimationTarget target;
+  AnimationPlayer player;
+  player.set_target(&target);
+  Transition transition;
+  transition.target_properties[cc::TargetProperty::OPACITY] = true;
+  transition.duration = UsToDelta(10000);
+  player.set_transition(transition);
+
+  base::TimeTicks start_time = UsToTicks(1000000);
+  player.Tick(start_time);
+
+  float from = 1.0f;
+  float to = 0.5f;
+  player.TransitionOpacityTo(start_time, from, to);
+
+  EXPECT_EQ(from, target.opacity());
+  player.Tick(start_time);
+
+  player.Tick(start_time + UsToDelta(5000));
+  EXPECT_GT(from, target.opacity());
+  EXPECT_LT(to, target.opacity());
+
+  player.Tick(start_time + UsToDelta(10000));
+  EXPECT_EQ(to, target.opacity());
+}
+
+TEST(AnimationPlayerTest, ReversedOpacityTransitions) {
+  TestAnimationTarget target;
+  AnimationPlayer player;
+  player.set_target(&target);
+  Transition transition;
+  transition.target_properties[cc::TargetProperty::OPACITY] = true;
+  transition.duration = UsToDelta(10000);
+  player.set_transition(transition);
+
+  base::TimeTicks start_time = UsToTicks(1000000);
+  player.Tick(start_time);
+
+  float from = 1.0f;
+  float to = 0.5f;
+  player.TransitionOpacityTo(start_time, from, to);
+
+  EXPECT_EQ(from, target.opacity());
+  player.Tick(start_time);
+
+  player.Tick(start_time + UsToDelta(1000));
+  float value_before_reversing = target.opacity();
+  EXPECT_GT(from, value_before_reversing);
+  EXPECT_LT(to, value_before_reversing);
+
+  player.TransitionOpacityTo(start_time + UsToDelta(1000), target.opacity(),
+                             from);
+  player.Tick(start_time + UsToDelta(1000));
+  EXPECT_FLOAT_EQ(value_before_reversing, target.opacity());
+
+  player.Tick(start_time + UsToDelta(2000));
+  EXPECT_EQ(from, target.opacity());
+}
+
+TEST(AnimationPlayerTest, TransformTransitions) {
+  TestAnimationTarget target;
+  AnimationPlayer player;
+  player.set_target(&target);
+  Transition transition;
+  transition.target_properties[cc::TargetProperty::TRANSFORM] = true;
+  transition.duration = UsToDelta(10000);
+  player.set_transition(transition);
+  base::TimeTicks start_time = UsToTicks(1000000);
+  player.Tick(start_time);
+
+  cc::TransformOperations from = target.operations();
+
+  cc::TransformOperations to;
+  to.AppendTranslate(8, 0, 0);
+  to.AppendRotate(1, 0, 0, 0);
+  to.AppendScale(1, 1, 1);
+
+  player.TransitionTransformOperationsTo(start_time, from, to);
+
+  EXPECT_EQ(from, target.operations());
+  player.Tick(start_time);
+
+  player.Tick(start_time + UsToDelta(5000));
+  EXPECT_LT(from.at(0).translate.x, target.operations().at(0).translate.x);
+  EXPECT_GT(to.at(0).translate.x, target.operations().at(0).translate.x);
+
+  player.Tick(start_time + UsToDelta(10000));
+  EXPECT_EQ(to, target.operations());
+}
+
+TEST(AnimationPlayerTest, ReversedTransformTransitions) {
+  TestAnimationTarget target;
+  AnimationPlayer player;
+  player.set_target(&target);
+  Transition transition;
+  transition.target_properties[cc::TargetProperty::TRANSFORM] = true;
+  transition.duration = UsToDelta(10000);
+  player.set_transition(transition);
+  base::TimeTicks start_time = UsToTicks(1000000);
+  player.Tick(start_time);
+
+  cc::TransformOperations from = target.operations();
+
+  cc::TransformOperations to;
+  to.AppendTranslate(8, 0, 0);
+  to.AppendRotate(1, 0, 0, 0);
+  to.AppendScale(1, 1, 1);
+
+  player.TransitionTransformOperationsTo(start_time, from, to);
+
+  EXPECT_EQ(from, target.operations());
+  player.Tick(start_time);
+
+  player.Tick(start_time + UsToDelta(1000));
+  cc::TransformOperations value_before_reversing = target.operations();
+  EXPECT_LT(from.at(0).translate.x, target.operations().at(0).translate.x);
+  EXPECT_GT(to.at(0).translate.x, target.operations().at(0).translate.x);
+
+  player.TransitionTransformOperationsTo(start_time + UsToDelta(1000),
+                                         target.operations(), from);
+  player.Tick(start_time + UsToDelta(1000));
+  EXPECT_EQ(value_before_reversing, target.operations());
+
+  player.Tick(start_time + UsToDelta(2000));
+  EXPECT_EQ(from, target.operations());
+}
+
+TEST(AnimationPlayerTest, BoundsTransitions) {
+  TestAnimationTarget target;
+  AnimationPlayer player;
+  player.set_target(&target);
+  Transition transition;
+  transition.target_properties[cc::TargetProperty::BOUNDS] = true;
+  transition.duration = UsToDelta(10000);
+  player.set_transition(transition);
+  base::TimeTicks start_time = UsToTicks(1000000);
+  player.Tick(start_time);
+
+  gfx::SizeF from = target.size();
+  gfx::SizeF to(20.0f, 20.0f);
+
+  player.TransitionBoundsTo(start_time, from, to);
+
+  EXPECT_FLOAT_SIZE_EQ(from, target.size());
+  player.Tick(start_time);
+
+  player.Tick(start_time + UsToDelta(5000));
+  EXPECT_LT(from.width(), target.size().width());
+  EXPECT_GT(to.width(), target.size().width());
+  EXPECT_LT(from.height(), target.size().height());
+  EXPECT_GT(to.height(), target.size().height());
+
+  player.Tick(start_time + UsToDelta(10000));
+  EXPECT_FLOAT_SIZE_EQ(to, target.size());
+}
+
+TEST(AnimationPlayerTest, ReversedBoundsTransitions) {
+  TestAnimationTarget target;
+  AnimationPlayer player;
+  player.set_target(&target);
+  Transition transition;
+  transition.target_properties[cc::TargetProperty::BOUNDS] = true;
+  transition.duration = UsToDelta(10000);
+  player.set_transition(transition);
+  base::TimeTicks start_time = UsToTicks(1000000);
+  player.Tick(start_time);
+
+  gfx::SizeF from = target.size();
+  gfx::SizeF to(20.0f, 20.0f);
+
+  player.TransitionBoundsTo(start_time, from, to);
+
+  EXPECT_FLOAT_SIZE_EQ(from, target.size());
+  player.Tick(start_time);
+
+  player.Tick(start_time + UsToDelta(1000));
+  gfx::SizeF value_before_reversing = target.size();
+  EXPECT_LT(from.width(), target.size().width());
+  EXPECT_GT(to.width(), target.size().width());
+  EXPECT_LT(from.height(), target.size().height());
+  EXPECT_GT(to.height(), target.size().height());
+
+  player.TransitionBoundsTo(start_time + UsToDelta(1000), target.size(), from);
+  player.Tick(start_time + UsToDelta(1000));
+  EXPECT_FLOAT_SIZE_EQ(value_before_reversing, target.size());
+
+  player.Tick(start_time + UsToDelta(2000));
+  EXPECT_FLOAT_SIZE_EQ(from, target.size());
 }
 
 }  // namespace vr
