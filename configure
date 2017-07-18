@@ -282,6 +282,7 @@ EXPERIMENT_LIST="
     warped_motion
     q_adapt_probs
     bitstream_debug
+    inter_stats_only
     alt_intra
     palette
     palette_delta_encoding

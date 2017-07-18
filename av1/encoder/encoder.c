@@ -5296,11 +5296,16 @@ static void adjust_image_stat(double y, double u, double v, double all,
   s->worst = AOMMIN(s->worst, all);
 }
 
-static void compute_internal_stats(AV1_COMP *cpi) {
+static void compute_internal_stats(AV1_COMP *cpi, int frame_bytes) {
   AV1_COMMON *const cm = &cpi->common;
   double samples = 0.0;
   uint32_t in_bit_depth = 8;
   uint32_t bit_depth = 8;
+
+#if CONFIG_INTER_STATS_ONLY
+  if (cm->current_video_frame <= 1) return;  // skip key frame
+#endif
+  cpi->bytes += frame_bytes;
 
 #if CONFIG_HIGHBITDEPTH
   if (cm->use_highbitdepth) {
@@ -5489,8 +5494,7 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
     if (cpi->b_calculate_psnr) generate_psnr_packet(cpi);
 
 #if CONFIG_INTERNAL_STATS
-    compute_internal_stats(cpi);
-    cpi->bytes += (int)(*size);
+    compute_internal_stats(cpi, (int)(*size));
 #endif  // CONFIG_INTERNAL_STATS
 
     // Clear down mmx registers
@@ -5723,8 +5727,7 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
 
 #if CONFIG_INTERNAL_STATS
   if (oxcf->pass != 1) {
-    compute_internal_stats(cpi);
-    cpi->bytes += (int)(*size);
+    compute_internal_stats(cpi, (int)(*size));
   }
 #endif  // CONFIG_INTERNAL_STATS
 
