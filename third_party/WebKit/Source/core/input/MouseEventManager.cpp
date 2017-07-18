@@ -782,12 +782,12 @@ WebInputEventResult MouseEventManager::HandleMouseDraggedEvent(
   if (!mouse_pressed_)
     return WebInputEventResult::kNotHandled;
 
-  if (event.Event().pointer_type ==
-      blink::WebPointerProperties::PointerType::kPen)
-    return WebInputEventResult::kNotHandled;
-
-  if (HandleDrag(event, DragInitiator::kMouse))
+  // We disable the drag and drop actions on pen input.
+  if (event.Event().pointer_type !=
+          blink::WebPointerProperties::PointerType::kPen &&
+      HandleDrag(event, DragInitiator::kMouse)) {
     return WebInputEventResult::kHandledSystem;
+  }
 
   Node* target_node = event.InnerNode();
   if (!target_node)
