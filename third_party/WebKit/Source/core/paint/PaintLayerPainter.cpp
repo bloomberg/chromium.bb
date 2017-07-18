@@ -801,7 +801,8 @@ PaintResult PaintLayerPainter::PaintLayerWithTransform(
           painting_info.root_layer,
           (paint_flags & kPaintLayerUncachedClipRects) ? kUncachedClipRects
                                                        : kPaintingClipRects,
-          kIgnorePlatformOverlayScrollbarSize);
+          kIgnorePlatformOverlayScrollbarSize,
+          painting_info.sub_pixel_accumulation);
       if (ShouldRespectOverflowClip(paint_flags,
                                     paint_layer_.GetLayoutObject()) ==
           kIgnoreOverflowClip)
