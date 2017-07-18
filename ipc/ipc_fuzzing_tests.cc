@@ -126,6 +126,20 @@ TEST(IPCMessageIntegrity, ReadVectorTooLarge2) {
   EXPECT_FALSE(ReadParam(&m, &iter, &vec));
 }
 
+// This test needs ~20 seconds in Debug mode, or ~4 seconds in Release mode.
+// See http://crbug.com/741866 for details.
+TEST(IPCMessageIntegrity, DISABLED_ReadVectorTooLarge3) {
+  base::Pickle pickle;
+  IPC::WriteParam(&pickle, 256 * 1024 * 1024);
+  IPC::WriteParam(&pickle, 0);
+  IPC::WriteParam(&pickle, 1);
+  IPC::WriteParam(&pickle, 2);
+
+  base::PickleIterator iter(pickle);
+  std::vector<int> vec;
+  EXPECT_FALSE(IPC::ReadParam(&pickle, &iter, &vec));
+}
+
 class SimpleListener : public IPC::Listener {
  public:
   SimpleListener() : other_(NULL) {

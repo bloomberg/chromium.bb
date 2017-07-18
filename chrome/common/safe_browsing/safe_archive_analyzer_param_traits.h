@@ -11,8 +11,8 @@
 #include "build/build_config.h"
 #include "chrome/common/safe_browsing/archive_analyzer_results.h"
 #include "chrome/common/safe_browsing/ipc_protobuf_message_macros.h"
-#include "chrome/common/safe_browsing/protobuf_message_param_traits.h"
 #include "ipc/ipc_message_macros.h"
+#include "ipc/ipc_message_protobuf_utils.h"
 
 IPC_ENUM_TRAITS_VALIDATE(
     safe_browsing::ClientDownloadRequest_DownloadType,
