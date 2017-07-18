@@ -113,6 +113,8 @@ void ArcServiceLauncher::MaybeSetProfile(Profile* profile) {
 
   arc_session_manager_->SetProfile(profile);
   arc_service_manager_->set_browser_context(profile);
+  arc_service_manager_->set_account_id(
+      multi_user_util::GetAccountIdFromProfile(profile));
 }
 
 void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
@@ -146,6 +148,7 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   ArcIntentHelperBridge::GetForBrowserContext(profile);
   ArcMetricsService::GetForBrowserContext(profile);
   ArcNetHostImpl::GetForBrowserContext(profile);
+  ArcNotificationManager::GetForBrowserContext(profile);
   ArcObbMounterBridge::GetForBrowserContext(profile);
   ArcPolicyBridge::GetForBrowserContext(profile);
   ArcPowerBridge::GetForBrowserContext(profile);
@@ -165,9 +168,6 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   arc_service_manager_->AddService(
       base::MakeUnique<ArcFileSystemOperationRunner>(
           arc_service_manager_->arc_bridge_service(), profile));
-  arc_service_manager_->AddService(base::MakeUnique<ArcNotificationManager>(
-      arc_service_manager_->arc_bridge_service(),
-      multi_user_util::GetAccountIdFromProfile(profile)));
 
   // Kiosk apps should be run only for kiosk sessions.
   if (user_manager::UserManager::Get()->IsLoggedInAsArcKioskApp()) {

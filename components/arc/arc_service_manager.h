@@ -16,6 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
 #include "components/arc/arc_service.h"
+#include "components/signin/core/account_id/account_id.h"
 
 namespace content {
 class BrowserContext;
@@ -78,6 +79,16 @@ class ArcServiceManager {
     browser_context_ = browser_context;
   }
 
+  // Returns the current AccountID which ARC is allowed.
+  // This is workaround to split the dependency from chrome/.
+  // TODO(hidehiko): Remove this when we move IsArcAllowedForProfile() to
+  // components/arc.
+  const AccountId& account_id() const { return account_id_; }
+
+  // TODO(hidehiko): Remove this when we move IsArcAllowedForProfile() to
+  // components/arc.
+  void set_account_id(const AccountId& account_id) { account_id_ = account_id; }
+
   // |arc_bridge_service| can only be accessed on the thread that this
   // class was created on.
   ArcBridgeService* arc_bridge_service();
@@ -136,6 +147,11 @@ class ArcServiceManager {
   // TODO(hidehiko): Remove this when we move IsArcAllowedForProfile() to
   // components/arc. See browser_context() for details.
   content::BrowserContext* browser_context_ = nullptr;
+
+  // This holds the AccountId corresponding to the |browser_context_|.
+  // TODO(hidehiko): Remove this when we move IsArcAllowedForProfile() to
+  // components/arc. See browser_context() for details.
+  AccountId account_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcServiceManager);
 };

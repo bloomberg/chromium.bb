@@ -32,6 +32,7 @@ static_library("arc") {
     "//base",
     "//components/arc:arc_base",
     "//components/exo",
+    "//components/keyed_service/content:content",
     "//components/signin/core/account_id",
     "//mojo/common:common_base",
     "//skia",

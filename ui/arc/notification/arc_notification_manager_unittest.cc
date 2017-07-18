@@ -119,7 +119,7 @@ class ArcNotificationManagerTest : public testing::Test {
     service_ = base::MakeUnique<ArcBridgeService>();
     message_center_ = base::MakeUnique<MockMessageCenter>();
 
-    arc_notification_manager_ = base::MakeUnique<ArcNotificationManager>(
+    arc_notification_manager_ = ArcNotificationManager::CreateForTesting(
         service_.get(), EmptyAccountId(), message_center_.get());
 
     NotificationsObserver observer;
