@@ -137,6 +137,7 @@ public class CastWebContentsComponent {
     private OnKeyDownHandler mKeyDownHandler;
     private Receiver mReceiver;
     private String mInstanceId;
+    private boolean mStarted = false;
 
     public CastWebContentsComponent(String instanceId,
             OnComponentClosedHandler onComponentClosedHandler, OnKeyDownHandler onKeyDownHandler) {
@@ -164,13 +165,17 @@ public class CastWebContentsComponent {
         LocalBroadcastManager.getInstance(context).registerReceiver(mReceiver, filter);
 
         mDelegate.start(context, webContents);
+
+        mStarted = true;
     }
 
     public void stop(Context context) {
         if (DEBUG) Log.d(TAG, "stop");
-
-        LocalBroadcastManager.getInstance(context).unregisterReceiver(mReceiver);
-        mDelegate.stop(context);
+        if (mStarted) {
+            LocalBroadcastManager.getInstance(context).unregisterReceiver(mReceiver);
+            mDelegate.stop(context);
+            mStarted = false;
+        }
     }
 
     public static void onComponentClosed(Context context, String instanceId) {
