@@ -1382,6 +1382,36 @@ int amdgpu_cs_import_syncobj(amdgpu_device_handle dev,
 			     int shared_fd,
 			     uint32_t *syncobj);
 
+/**
+ *  Submit raw command submission to kernel
+ *
+ * \param   dev	       - \c [in] device handle
+ * \param   context    - \c [in] context handle for context id
+ * \param   bo_list_handle - \c [in] request bo list handle (0 for none)
+ * \param   num_chunks - \c [in] number of CS chunks to submit
+ * \param   chunks     - \c [in] array of CS chunks
+ * \param   seq_no     - \c [out] output sequence number for submission.
+ *
+ * \return   0 on success\n
+ *          <0 - Negative POSIX Error code
+ *
+ */
+struct drm_amdgpu_cs_chunk;
+struct drm_amdgpu_cs_chunk_dep;
+struct drm_amdgpu_cs_chunk_data;
+
+int amdgpu_cs_submit_raw(amdgpu_device_handle dev,
+			 amdgpu_context_handle context,
+			 amdgpu_bo_list_handle bo_list_handle,
+			 int num_chunks,
+			 struct drm_amdgpu_cs_chunk *chunks,
+			 uint64_t *seq_no);
+
+void amdgpu_cs_chunk_fence_to_dep(struct amdgpu_cs_fence *fence,
+				  struct drm_amdgpu_cs_chunk_dep *dep);
+void amdgpu_cs_chunk_fence_info_to_data(struct amdgpu_cs_fence_info *fence_info,
+					struct drm_amdgpu_cs_chunk_data *data);
+
 #ifdef __cplusplus
 }
 #endif

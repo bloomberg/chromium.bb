@@ -634,3 +634,50 @@ int amdgpu_cs_import_syncobj(amdgpu_device_handle dev,
 
 	return drmSyncobjFDToHandle(dev->fd, shared_fd, handle);
 }
+
+int amdgpu_cs_submit_raw(amdgpu_device_handle dev,
+			 amdgpu_context_handle context,
+			 amdgpu_bo_list_handle bo_list_handle,
+			 int num_chunks,
+			 struct drm_amdgpu_cs_chunk *chunks,
+			 uint64_t *seq_no)
+{
+	union drm_amdgpu_cs cs = {0};
+	uint64_t *chunk_array;
+	int i, r;
+	if (num_chunks == 0)
+		return -EINVAL;
+
+	chunk_array = alloca(sizeof(uint64_t) * num_chunks);
+	for (i = 0; i < num_chunks; i++)
+		chunk_array[i] = (uint64_t)(uintptr_t)&chunks[i];
+	cs.in.chunks = (uint64_t)(uintptr_t)chunk_array;
+	cs.in.ctx_id = context->id;
+	cs.in.bo_list_handle = bo_list_handle ? bo_list_handle->handle : 0;
+	cs.in.num_chunks = num_chunks;
+	r = drmCommandWriteRead(dev->fd, DRM_AMDGPU_CS,
+				&cs, sizeof(cs));
+	if (r)
+		return r;
+
+	if (seq_no)
+		*seq_no = cs.out.handle;
+	return 0;
+}
+
+void amdgpu_cs_chunk_fence_info_to_data(struct amdgpu_cs_fence_info *fence_info,
+					struct drm_amdgpu_cs_chunk_data *data)
+{
+	data->fence_data.handle = fence_info->handle->handle;
+	data->fence_data.offset = fence_info->offset * sizeof(uint64_t);
+}
+
+void amdgpu_cs_chunk_fence_to_dep(struct amdgpu_cs_fence *fence,
+				  struct drm_amdgpu_cs_chunk_dep *dep)
+{
+	dep->ip_type = fence->ip_type;
+	dep->ip_instance = fence->ip_instance;
+	dep->ring = fence->ring;
+	dep->ctx_id = fence->context->id;
+	dep->handle = fence->fence;
+}
