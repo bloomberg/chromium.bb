@@ -9,16 +9,12 @@
 #include "extensions/common/api/cast_channel.h"
 
 namespace extensions {
-namespace api {
-namespace cast_channel {
 
 api::cast_channel::ReadyState ToReadyState(
     ::cast_channel::ReadyState ready_state);
 api::cast_channel::ChannelError ToChannelError(
     ::cast_channel::ChannelError channel_error);
 
-}  // namespace cast_channel
-}  // namespace api
 }  // namespace extensions
 
 #endif  // EXTENSIONS_BROWSER_API_CAST_CHANNEL_CAST_CHANNEL_TYPE_UTIL_H_

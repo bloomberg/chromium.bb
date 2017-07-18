@@ -7,47 +7,43 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
-namespace api {
-namespace cast_channel {
-namespace {
 
 TEST(CastChannelEnumUtilTest, TestToReadyState) {
-  EXPECT_EQ(READY_STATE_NONE, ToReadyState(::cast_channel::ReadyState::NONE));
-  EXPECT_EQ(READY_STATE_CONNECTING,
+  EXPECT_EQ(api::cast_channel::READY_STATE_NONE,
+            ToReadyState(::cast_channel::ReadyState::NONE));
+  EXPECT_EQ(api::cast_channel::READY_STATE_CONNECTING,
             ToReadyState(::cast_channel::ReadyState::CONNECTING));
-  EXPECT_EQ(READY_STATE_OPEN, ToReadyState(::cast_channel::ReadyState::OPEN));
-  EXPECT_EQ(READY_STATE_CLOSING,
+  EXPECT_EQ(api::cast_channel::READY_STATE_OPEN,
+            ToReadyState(::cast_channel::ReadyState::OPEN));
+  EXPECT_EQ(api::cast_channel::READY_STATE_CLOSING,
             ToReadyState(::cast_channel::ReadyState::CLOSING));
-  EXPECT_EQ(READY_STATE_CLOSED,
+  EXPECT_EQ(api::cast_channel::READY_STATE_CLOSED,
             ToReadyState(::cast_channel::ReadyState::CLOSED));
 }
 
 TEST(CastChannelEnumUtilTest, TestToChannelError) {
-  EXPECT_EQ(CHANNEL_ERROR_NONE,
+  EXPECT_EQ(api::cast_channel::CHANNEL_ERROR_NONE,
             ToChannelError(::cast_channel::ChannelError::NONE));
-  EXPECT_EQ(CHANNEL_ERROR_CHANNEL_NOT_OPEN,
+  EXPECT_EQ(api::cast_channel::CHANNEL_ERROR_CHANNEL_NOT_OPEN,
             ToChannelError(::cast_channel::ChannelError::CHANNEL_NOT_OPEN));
-  EXPECT_EQ(CHANNEL_ERROR_AUTHENTICATION_ERROR,
+  EXPECT_EQ(api::cast_channel::CHANNEL_ERROR_AUTHENTICATION_ERROR,
             ToChannelError(::cast_channel::ChannelError::AUTHENTICATION_ERROR));
-  EXPECT_EQ(CHANNEL_ERROR_CONNECT_ERROR,
+  EXPECT_EQ(api::cast_channel::CHANNEL_ERROR_CONNECT_ERROR,
             ToChannelError(::cast_channel::ChannelError::CONNECT_ERROR));
-  EXPECT_EQ(CHANNEL_ERROR_SOCKET_ERROR,
+  EXPECT_EQ(api::cast_channel::CHANNEL_ERROR_SOCKET_ERROR,
             ToChannelError(::cast_channel::ChannelError::CAST_SOCKET_ERROR));
-  EXPECT_EQ(CHANNEL_ERROR_TRANSPORT_ERROR,
+  EXPECT_EQ(api::cast_channel::CHANNEL_ERROR_TRANSPORT_ERROR,
             ToChannelError(::cast_channel::ChannelError::TRANSPORT_ERROR));
-  EXPECT_EQ(CHANNEL_ERROR_INVALID_MESSAGE,
+  EXPECT_EQ(api::cast_channel::CHANNEL_ERROR_INVALID_MESSAGE,
             ToChannelError(::cast_channel::ChannelError::INVALID_MESSAGE));
-  EXPECT_EQ(CHANNEL_ERROR_INVALID_CHANNEL_ID,
+  EXPECT_EQ(api::cast_channel::CHANNEL_ERROR_INVALID_CHANNEL_ID,
             ToChannelError(::cast_channel::ChannelError::INVALID_CHANNEL_ID));
-  EXPECT_EQ(CHANNEL_ERROR_CONNECT_TIMEOUT,
+  EXPECT_EQ(api::cast_channel::CHANNEL_ERROR_CONNECT_TIMEOUT,
             ToChannelError(::cast_channel::ChannelError::CONNECT_TIMEOUT));
-  EXPECT_EQ(CHANNEL_ERROR_PING_TIMEOUT,
+  EXPECT_EQ(api::cast_channel::CHANNEL_ERROR_PING_TIMEOUT,
             ToChannelError(::cast_channel::ChannelError::PING_TIMEOUT));
-  EXPECT_EQ(CHANNEL_ERROR_UNKNOWN,
+  EXPECT_EQ(api::cast_channel::CHANNEL_ERROR_UNKNOWN,
             ToChannelError(::cast_channel::ChannelError::UNKNOWN));
 }
 
-}  // namespace
-}  // namespace cast_channel
-}  // namespace api
 }  // namespace extensions
