@@ -24,6 +24,7 @@
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -190,6 +191,15 @@ class ArcVoiceInteractionFrameworkServiceFactory
   }
 };
 
+void SetVoiceInteractionPrefs(mojom::VoiceInteractionStatusPtr status) {
+  PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
+  prefs->SetBoolean(prefs::kVoiceInteractionPrefSynced, status->configured);
+  prefs->SetBoolean(prefs::kVoiceInteractionEnabled,
+                    status->configured && status->voice_interaction_enabled);
+  prefs->SetBoolean(prefs::kVoiceInteractionContextEnabled,
+                    status->configured && status->context_enabled);
+}
+
 }  // namespace
 
 // static
@@ -209,6 +219,7 @@ ArcVoiceInteractionFrameworkService::ArcVoiceInteractionFrameworkService(
     ArcBridgeService* bridge_service)
     : context_(context), arc_bridge_service_(bridge_service), binding_(this) {
   arc_bridge_service_->voice_interaction_framework()->AddObserver(this);
+  ArcSessionManager::Get()->AddObserver(this);
 }
 
 ArcVoiceInteractionFrameworkService::~ArcVoiceInteractionFrameworkService() {
@@ -218,6 +229,8 @@ ArcVoiceInteractionFrameworkService::~ArcVoiceInteractionFrameworkService() {
   // so do not touch it.
   if (ArcServiceManager::Get())
     arc_bridge_service_->voice_interaction_framework()->RemoveObserver(this);
+  ArcSessionManager::Get()->RemoveObserver(this);
+  ArcSessionManager::Get()->AddObserver(this);
 }
 
 void ArcVoiceInteractionFrameworkService::OnInstanceReady() {
@@ -370,6 +383,18 @@ void ArcVoiceInteractionFrameworkService::HideMetalayer() {
   SetMetalayerVisibility(false);
 }
 
+void ArcVoiceInteractionFrameworkService::OnArcPlayStoreEnabledChanged(
+    bool enabled) {
+  if (enabled)
+    return;
+  mojom::VoiceInteractionStatusPtr status =
+      mojom::VoiceInteractionStatus::New();
+  status->configured = false;
+  status->voice_interaction_enabled = false;
+  status->context_enabled = false;
+  SetVoiceInteractionPrefs(std::move(status));
+}
+
 void ArcVoiceInteractionFrameworkService::StartVoiceInteractionSetupWizard() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   arc::mojom::VoiceInteractionFrameworkInstance* framework_instance =
@@ -426,6 +451,21 @@ void ArcVoiceInteractionFrameworkService::SetVoiceInteractionContextEnabled(
   if (!framework_instance)
     return;
   framework_instance->SetVoiceInteractionContextEnabled(enable);
+}
+
+void ArcVoiceInteractionFrameworkService::UpdateVoiceInteractionPrefs() {
+  if (ProfileManager::GetActiveUserProfile()->GetPrefs()->GetBoolean(
+          prefs::kVoiceInteractionPrefSynced)) {
+    return;
+  }
+  mojom::VoiceInteractionFrameworkInstance* framework_instance =
+      ARC_GET_INSTANCE_FOR_METHOD(
+          arc_bridge_service_->voice_interaction_framework(),
+          GetVoiceInteractionSettings);
+  if (!framework_instance)
+    return;
+  framework_instance->GetVoiceInteractionSettings(
+      base::Bind(&SetVoiceInteractionPrefs));
 }
 
 void ArcVoiceInteractionFrameworkService::StartSessionFromUserInteraction(

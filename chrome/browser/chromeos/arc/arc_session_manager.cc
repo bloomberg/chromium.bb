@@ -173,6 +173,9 @@ void ArcSessionManager::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kArcTermsAccepted, false);
   registry->RegisterBooleanPref(prefs::kArcVoiceInteractionValuePropAccepted,
                                 false);
+  registry->RegisterBooleanPref(prefs::kVoiceInteractionEnabled, false);
+  registry->RegisterBooleanPref(prefs::kVoiceInteractionContextEnabled, false);
+  registry->RegisterBooleanPref(prefs::kVoiceInteractionPrefSynced, false);
   // Note that ArcBackupRestoreEnabled and ArcLocationServiceEnabled prefs have
   // to be off by default, until an explicit gesture from the user to enable
   // them is received. This is crucial in the cases when these prefs transition

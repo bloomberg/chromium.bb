@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 7
+// Next MinVersion: 8
 
 module arc.mojom;
 
@@ -30,8 +30,20 @@ interface VoiceInteractionFrameworkHost {
   [MinVersion=6]SetVoiceInteractionRunning@4(bool running);
 };
 
+// Indicates voice interaction configuration status.
+struct VoiceInteractionStatus {
+  // Whether voice interaction is configured during OOBE flow. |false| if
+  // OOBE flow has been skipped.
+  bool configured;
+  // Whether voice interaction service is enabled.
+  bool voice_interaction_enabled;
+  // Whether allow voice interaction service to request screenshot
+  // and screen context.
+  bool context_enabled;
+};
+
 // Connects with Android system server.
-// Next method ID: 7
+// Next method ID: 8
 interface VoiceInteractionFrameworkInstance {
   Init@0(VoiceInteractionFrameworkHost host_ptr);
 
@@ -55,4 +67,8 @@ interface VoiceInteractionFrameworkInstance {
 
   // Starts the voice interaction setup wizard in container.
   [MinVersion=5] StartVoiceInteractionSetupWizard@6();
+
+  // Queries voice interaction settings status.
+  [MinVersion=7] GetVoiceInteractionSettings@7() => 
+    (VoiceInteractionStatus status);
 };
