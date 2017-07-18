@@ -1883,7 +1883,7 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 - (id<ToolbarOwner>)tabSwitcherTransitionToolbarOwner {
   // Request the view to ensure that the view has been loaded and initialized,
   // since it may never have been loaded (or have been swapped out).
-  [self.currentBVC ensureViewCreated];
+  [self.currentBVC loadViewIfNeeded];
   return self.currentBVC;
 }
 
