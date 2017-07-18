@@ -78,8 +78,8 @@ class PermissionBubbleControllerTest : public CocoaProfileTest,
 
   void SetUp() override {
     CocoaProfileTest::SetUp();
-    bridge_.reset(new PermissionBubbleCocoa(browser()));
     AddRequest(kPermissionA);
+    bridge_.reset(new PermissionBubbleCocoa(browser(), this));
     controller_ =
         [[PermissionBubbleController alloc] initWithBrowser:browser()
                                                      bridge:bridge_.get()];

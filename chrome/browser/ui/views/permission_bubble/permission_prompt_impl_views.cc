@@ -50,7 +50,8 @@ views::BubbleBorder::Arrow PermissionPromptImpl::GetAnchorArrow() {
 
 // static
 std::unique_ptr<PermissionPrompt> PermissionPrompt::Create(
-    content::WebContents* web_contents) {
+    content::WebContents* web_contents,
+    Delegate* delegate) {
   return base::WrapUnique(new PermissionPromptImpl(
-      chrome::FindBrowserWithWebContents(web_contents)));
+      chrome::FindBrowserWithWebContents(web_contents), delegate));
 }

@@ -23,15 +23,11 @@ class PermissionsBubbleDialogDelegateView;
 
 class PermissionPromptImpl : public PermissionPrompt {
  public:
-  explicit PermissionPromptImpl(Browser* browser);
+  PermissionPromptImpl(Browser* browser, Delegate* delegate);
   ~PermissionPromptImpl() override;
 
   // PermissionPrompt:
-  void SetDelegate(Delegate* delegate) override;
-  void Show() override;
   bool CanAcceptRequestUpdate() override;
-  bool HidesAutomatically() override;
-  void Hide() override;
   void UpdateAnchorPosition() override;
   gfx::NativeWindow GetNativeWindow() override;
 
@@ -41,6 +37,8 @@ class PermissionPromptImpl : public PermissionPrompt {
   void Deny();
 
  private:
+  void Show();
+
   // These three functions have separate implementations for Views-based and
   // Cocoa-based browsers, to allow this bubble to be used in either.
 

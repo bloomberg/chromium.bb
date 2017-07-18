@@ -19,15 +19,12 @@ class WebContents;
 
 class PermissionPromptAndroid : public PermissionPrompt {
  public:
-  explicit PermissionPromptAndroid(content::WebContents* web_contents);
+  PermissionPromptAndroid(content::WebContents* web_contents,
+                          Delegate* delegate);
   ~PermissionPromptAndroid() override;
 
   // PermissionPrompt:
-  void SetDelegate(Delegate* delegate) override;
-  void Show() override;
   bool CanAcceptRequestUpdate() override;
-  bool HidesAutomatically() override;
-  void Hide() override;
   void UpdateAnchorPosition() override;
   gfx::NativeWindow GetNativeWindow() override;
 
