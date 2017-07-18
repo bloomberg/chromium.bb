@@ -522,6 +522,7 @@ source_set("memory_buffer_sources") {
     "native_pixmap.h",
     "native_pixmap_handle.cc",
     "native_pixmap_handle.h",
+    "overlay_transform.h",
   ]
 
   if (!is_ios) {

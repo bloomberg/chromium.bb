@@ -15,13 +15,13 @@
 #include "ui/ozone/platform/drm/host/drm_overlay_candidates_host.h"
 #include "ui/ozone/platform/drm/host/drm_window_host.h"
 #include "ui/ozone/platform/drm/host/drm_window_host_manager.h"
+#include "ui/ozone/public/overlay_surface_candidate.h"
 #include "ui/ozone/public/ozone_switches.h"
 
 namespace ui {
 
-typedef OverlayCandidatesOzone::OverlaySurfaceCandidateList
-    OverlaySurfaceCandidateList;
-typedef OverlayCandidatesOzone::OverlaySurfaceCandidate OverlaySurfaceCandidate;
+using OverlaySurfaceCandidateList =
+    OverlayCandidatesOzone::OverlaySurfaceCandidateList;
 
 namespace {
 const size_t kMaxCacheSize = 200;

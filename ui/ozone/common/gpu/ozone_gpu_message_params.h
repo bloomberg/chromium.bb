@@ -19,6 +19,7 @@
 #include "ui/ozone/public/overlay_candidates_ozone.h"
 
 namespace ui {
+class OverlaySurfaceCandidate;
 
 struct DisplayMode_Params {
   DisplayMode_Params();
@@ -56,8 +57,7 @@ struct DisplaySnapshot_Params {
 
 struct OverlayCheck_Params {
   OverlayCheck_Params();
-  OverlayCheck_Params(
-      const OverlayCandidatesOzone::OverlaySurfaceCandidate& candidate);
+  OverlayCheck_Params(const OverlaySurfaceCandidate& candidate);
   OverlayCheck_Params(const OverlayCheck_Params& other);
   ~OverlayCheck_Params();
 
