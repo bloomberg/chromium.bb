@@ -2235,6 +2235,15 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_SIGNIN_GMS_UPDATING" desc="Message notifying user that Google Play Services is still updating.">
         Waiting for Google Play Services to finish updating
       </message>
+      <message name="IDS_SIGNIN_PROMO_SETTINGS" desc="Text to inform the user that they can sign in to get personal settings.">
+        Sign in to Chrome to get your bookmarks, passwords, and more on all your devices.
+      </message>
+      <message name="IDS_SIGNIN_PROMO_CONTINUE_AS" desc="Button that the user can press to login without asking the password and continue using Chrome with this acccount.">
+        Continue as <ph name="USER_FULL_NAME">%1$s<ex>John Doe</ex></ph>
+     </message>
+      <message name="IDS_SIGNIN_PROMO_CHOOSE_ACCOUNT" desc="Button that the user can press if they are not the profile that Chrome found (opposite of 'Continue as Joe Doe').">
+        Not <ph name="EMAIL">%1$s<ex>john.doe@example.com</ex></ph>?
+      </message>
 
       <!-- Messages for remote media playback (casting) -->
       <message name="IDS_CAST_CASTING_VIDEO" desc="AtHome text to tell user which screen casting is happening. [CHAR LIMIT=40]">

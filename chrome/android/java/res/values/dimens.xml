@@ -189,6 +189,10 @@
     <dimen name="signin_chooser_padding">16dp</dimen>
     <dimen name="signin_screen_top_padding">50dp</dimen>
 
+    <!-- Signin promo dimensions -->
+    <dimen name="signin_promo_account_image_size">48dp</dimen>
+    <dimen name="signin_promo_cold_state_image_size">24dp</dimen>
+
     <!-- Autofill card unmasking prompt dimensions -->
     <dimen name="autofill_card_unmask_tooltip_horizontal_padding">16dp</dimen>
     <dimen name="autofill_card_unmask_tooltip_vertical_padding">4dp</dimen>

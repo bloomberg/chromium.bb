@@ -1007,6 +1007,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/signin/SigninInvestigator.java",
   "java/src/org/chromium/chrome/browser/signin/SigninManager.java",
   "java/src/org/chromium/chrome/browser/signin/SigninPromoUtil.java",
+  "java/src/org/chromium/chrome/browser/signin/SigninPromoView.java",
   "java/src/org/chromium/chrome/browser/snackbar/BottomContainer.java",
   "java/src/org/chromium/chrome/browser/snackbar/DataReductionPromoSnackbarController.java",
   "java/src/org/chromium/chrome/browser/snackbar/DataUseSnackbarController.java",
