@@ -224,6 +224,16 @@ public class BottomSheetContentController extends BottomNavigationView
     }
 
     /**
+     * @param itemId The id of the MenuItem to select.
+     */
+    public void selectItem(int itemId) {
+        // TODO(twellington): A #setSelectedItemId() method was added to the support library
+        //                    recently. Replace this custom implementation with that method after
+        //                    the support library is rolled.
+        onNavigationItemSelected(getMenu().findItem(itemId));
+    }
+
+    /**
      * Shows the specified {@link BottomSheetContent} and opens the {@link BottomSheet}.
      * @param itemId The menu item id of the {@link BottomSheetContent} to show.
      */
@@ -344,17 +354,6 @@ public class BottomSheetContentController extends BottomNavigationView
                                             : R.color.bottom_nav_tint);
         setItemIconTintList(tint);
         setItemTextColor(tint);
-    }
-
-    /**
-     * @param itemId The id of the MenuItem to select.
-     */
-    @VisibleForTesting
-    public void selectItem(int itemId) {
-        // TODO(twellington): A #setSelectedItemId() method was added to the support library
-        //                    recently. Replace this custom implementation with that method after
-        //                    the support library is rolled.
-        onNavigationItemSelected(getMenu().findItem(itemId));
     }
 
     @VisibleForTesting
