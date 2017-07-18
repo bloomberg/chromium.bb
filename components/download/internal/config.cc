@@ -41,6 +41,11 @@ const uint32_t kDefaultWindowStartTimeSeconds = 300; /* 5 minutes. */
 // Default value for the end window time for OS to schedule background task.
 const uint32_t kDefaultWindowEndTimeSeconds = 3600 * 8; /* 8 hours. */
 
+// The default delay to notify the observer when network changes from
+// disconnected to connected.
+const base::TimeDelta kDefaultNetworkChangeDelay =
+    base::TimeDelta::FromSeconds(5);
+
 // Helper routine to get Finch experiment parameter. If no Finch seed was found,
 // use the |default_value|. The |name| should match an experiment
 // parameter in Finch server configuration.
@@ -74,6 +79,11 @@ std::unique_ptr<Configuration> Configuration::CreateFromFinch() {
       kWindowStartTimeConfig, kDefaultWindowStartTimeSeconds);
   config->window_end_time_seconds =
       GetFinchConfigUInt(kWindowEndTimeConfig, kDefaultWindowEndTimeSeconds);
+  config->network_change_delay =
+      base::TimeDelta::FromMilliseconds(base::saturated_cast<int>(
+          GetFinchConfigUInt(kNetworkChangeDelayConfig,
+                             kDefaultNetworkChangeDelay.InMilliseconds())));
+
   return config;
 }
 
@@ -87,6 +97,7 @@ Configuration::Configuration()
       file_cleanup_window(base::TimeDelta::FromMinutes(
           base::saturated_cast<int>(kDefaultFileCleanupWindowMinutes))),
       window_start_time_seconds(kDefaultWindowStartTimeSeconds),
-      window_end_time_seconds(kDefaultWindowEndTimeSeconds) {}
+      window_end_time_seconds(kDefaultWindowEndTimeSeconds),
+      network_change_delay(kDefaultNetworkChangeDelay) {}
 
 }  // namespace download
