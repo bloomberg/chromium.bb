@@ -465,7 +465,7 @@ CompositorImpl::CompositorImpl(CompositorClient* client,
       num_successive_context_creation_failures_(0),
       layer_tree_frame_sink_request_pending_(false),
       weak_factory_(this) {
-  GetFrameSinkManager()->RegisterFrameSinkId(frame_sink_id_);
+  GetFrameSinkManager()->surface_manager()->RegisterFrameSinkId(frame_sink_id_);
   DCHECK(client);
   DCHECK(root_window);
   DCHECK(root_window->GetLayer() == nullptr);
@@ -483,7 +483,8 @@ CompositorImpl::~CompositorImpl() {
   root_window_->SetLayer(nullptr);
   // Clean-up any surface references.
   SetSurface(NULL);
-  GetFrameSinkManager()->InvalidateFrameSinkId(frame_sink_id_);
+  GetFrameSinkManager()->surface_manager()->InvalidateFrameSinkId(
+      frame_sink_id_);
 }
 
 bool CompositorImpl::IsForSubframe() {

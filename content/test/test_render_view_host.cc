@@ -69,12 +69,13 @@ TestRenderWidgetHostView::TestRenderWidgetHostView(RenderWidgetHost* rwh)
       background_color_(SK_ColorWHITE) {
 #if defined(OS_ANDROID)
   frame_sink_id_ = AllocateFrameSinkId();
-  GetFrameSinkManager()->RegisterFrameSinkId(frame_sink_id_);
+  GetFrameSinkManager()->surface_manager()->RegisterFrameSinkId(frame_sink_id_);
 #else
   // Not all tests initialize or need an image transport factory.
   if (ImageTransportFactory::GetInstance()) {
     frame_sink_id_ = AllocateFrameSinkId();
-    GetFrameSinkManager()->RegisterFrameSinkId(frame_sink_id_);
+    GetFrameSinkManager()->surface_manager()->RegisterFrameSinkId(
+        frame_sink_id_);
   }
 #endif
 
@@ -91,7 +92,7 @@ TestRenderWidgetHostView::TestRenderWidgetHostView(RenderWidgetHost* rwh)
 TestRenderWidgetHostView::~TestRenderWidgetHostView() {
   viz::FrameSinkManager* manager = GetFrameSinkManager();
   if (manager) {
-    manager->InvalidateFrameSinkId(frame_sink_id_);
+    manager->surface_manager()->InvalidateFrameSinkId(frame_sink_id_);
   }
 }
 

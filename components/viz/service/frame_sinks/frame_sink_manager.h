@@ -41,12 +41,6 @@ class VIZ_SERVICE_EXPORT FrameSinkManager {
                                 cc::SurfaceManager::LifetimeType::SEQUENCES);
   ~FrameSinkManager();
 
-  void RegisterFrameSinkId(const FrameSinkId& frame_sink_id);
-
-  // Invalidate a frame_sink_id that might still have associated sequences,
-  // possibly because a renderer process has crashed.
-  void InvalidateFrameSinkId(const FrameSinkId& frame_sink_id);
-
   // CompositorFrameSinkSupport, hierarchy, and BeginFrameSource can be
   // registered and unregistered in any order with respect to each other.
   //
@@ -81,11 +75,6 @@ class VIZ_SERVICE_EXPORT FrameSinkManager {
                                   const FrameSinkId& child_frame_sink_id);
   void UnregisterFrameSinkHierarchy(const FrameSinkId& parent_frame_sink_id,
                                     const FrameSinkId& child_frame_sink_id);
-
-  // Drops the temporary reference for |surface_id|. If a surface reference has
-  // already been added from the parent to |surface_id| then this will do
-  // nothing.
-  void DropTemporaryReference(const SurfaceId& surface_id);
 
   cc::SurfaceManager* surface_manager() { return &surface_manager_; }
 

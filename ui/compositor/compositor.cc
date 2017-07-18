@@ -69,8 +69,9 @@ Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
       weak_ptr_factory_(this),
       lock_timeout_weak_ptr_factory_(this) {
   if (context_factory_private) {
-    context_factory_private->GetFrameSinkManager()->RegisterFrameSinkId(
-        frame_sink_id_);
+    context_factory_private->GetFrameSinkManager()
+        ->surface_manager()
+        ->RegisterFrameSinkId(frame_sink_id_);
   }
   root_web_layer_ = cc::Layer::Create();
 
@@ -217,7 +218,7 @@ Compositor::~Compositor() {
       DCHECK(client.is_valid());
       manager->UnregisterFrameSinkHierarchy(frame_sink_id_, client);
     }
-    manager->InvalidateFrameSinkId(frame_sink_id_);
+    manager->surface_manager()->InvalidateFrameSinkId(frame_sink_id_);
   }
 }
 
