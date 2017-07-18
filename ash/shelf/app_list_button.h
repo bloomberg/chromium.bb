@@ -40,15 +40,19 @@ class ASH_EXPORT AppListButton : public views::ImageButton,
   // Updates background and schedules a paint.
   void UpdateShelfItemBackground(SkColor color);
 
-  // views::ImageButton overrides:
+  // views::ImageButton:
   void OnGestureEvent(ui::GestureEvent* event) override;
 
-  // Get the center point of the app list button used to draw its background and
-  // ink drops.
-  gfx::Point GetCenterPoint() const;
+  // Get the center point of the app list button circle used to draw its
+  // background and ink drops.
+  gfx::Point GetAppListButtonCenterPoint() const;
+
+  // Get the center point of the app list button back arrow. Returns an empty
+  // gfx::Point if the back arrow is not shown.
+  gfx::Point GetBackButtonCenterPoint() const;
 
  protected:
-  // views::ImageButton overrides:
+  // views::ImageButton:
   bool OnMousePressed(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
   void OnMouseCaptureLost() override;
@@ -62,12 +66,17 @@ class ASH_EXPORT AppListButton : public views::ImageButton,
   void PaintButtonContents(gfx::Canvas* canvas) override;
 
  private:
-  // ShellObserver overrides:
+  // ShellObserver:
   void OnAppListVisibilityChanged(bool shown,
                                   aura::Window* root_window) override;
   void OnVoiceInteractionStatusChanged(bool running) override;
 
   void StartVoiceInteractionAnimation();
+
+  // Helper function to determine whether and event at |location| should be
+  // handled by the back button or the app list circle. Returns false if we are
+  // not in maximized mode (there is no back button).
+  bool IsBackEvent(const gfx::Point& location);
 
   // True if the app list is currently showing for this display.
   // This is useful because other IsApplistVisible functions aren't per-display.
@@ -86,6 +95,10 @@ class ASH_EXPORT AppListButton : public views::ImageButton,
       voice_interaction_animation_hide_delay_timer_;
 
   bool voice_interaction_running_ = false;
+
+  // Flag that gets set each time we receive a mouse or gesture event. It is
+  // then used to render the ink drop in the right location.
+  bool last_event_is_back_event_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(AppListButton);
 };
