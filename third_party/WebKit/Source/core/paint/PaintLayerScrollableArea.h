@@ -513,8 +513,6 @@ class CORE_EXPORT PaintLayerScrollableArea final
 
   bool HasHorizontalOverflow() const;
   bool HasVerticalOverflow() const;
-  bool HasScrollableHorizontalOverflow() const;
-  bool HasScrollableVerticalOverflow() const;
   bool VisualViewportSuppliesScrollbars() const;
 
   bool NeedsScrollbarReconstruction() const;
@@ -546,7 +544,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
   void UpdateResizerAreaSet();
   void UpdateResizerStyle();
 
-  void UpdateScrollableAreaSet(bool has_overflow);
+  void UpdateScrollableAreaSet();
 
   void UpdateCompositingLayersAfterScroll();
 

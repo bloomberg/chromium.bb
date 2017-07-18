@@ -907,8 +907,7 @@ void PaintLayerScrollableArea::UpdateAfterLayout() {
   ClampScrollOffsetAfterOverflowChange();
 
   if (!scrollbars_are_frozen) {
-    UpdateScrollableAreaSet(HasScrollableHorizontalOverflow() ||
-                            HasScrollableVerticalOverflow());
+    UpdateScrollableAreaSet();
   }
 
   DisableCompositingQueryAsserts disabler;
@@ -1009,14 +1008,6 @@ bool PaintLayerScrollableArea::HasVerticalOverflow() const {
   return PixelSnappedScrollHeight() > PixelSnappedClientSize().Height();
 }
 
-bool PaintLayerScrollableArea::HasScrollableHorizontalOverflow() const {
-  return HasHorizontalOverflow() && Box().ScrollsOverflowX();
-}
-
-bool PaintLayerScrollableArea::HasScrollableVerticalOverflow() const {
-  return HasVerticalOverflow() && Box().ScrollsOverflowY();
-}
-
 // This function returns true if the given box requires overflow scrollbars (as
 // opposed to the 'viewport' scrollbars managed by the PaintLayerCompositor).
 // FIXME: we should use the same scrolling machinery for both the viewport and
@@ -1032,8 +1023,7 @@ void PaintLayerScrollableArea::UpdateAfterStyleChange(
     const ComputedStyle* old_style) {
   // Don't do this on first style recalc, before layout has ever happened.
   if (!OverflowRect().Size().IsZero()) {
-    UpdateScrollableAreaSet(HasScrollableHorizontalOverflow() ||
-                            HasScrollableVerticalOverflow());
+    UpdateScrollableAreaSet();
   }
 
   // Whenever background changes on the scrollable element, the scroll bar
@@ -1830,7 +1820,7 @@ LayoutRect PaintLayerScrollableArea::ScrollIntoView(
   return intersect;
 }
 
-void PaintLayerScrollableArea::UpdateScrollableAreaSet(bool has_overflow) {
+void PaintLayerScrollableArea::UpdateScrollableAreaSet() {
   LocalFrame* frame = Box().GetFrame();
   if (!frame)
     return;
@@ -1838,6 +1828,10 @@ void PaintLayerScrollableArea::UpdateScrollableAreaSet(bool has_overflow) {
   LocalFrameView* frame_view = frame->View();
   if (!frame_view)
     return;
+
+  bool has_overflow = !Box().Size().IsZero() &&
+                      ((HasHorizontalOverflow() && Box().ScrollsOverflowX()) ||
+                       (HasVerticalOverflow() && Box().ScrollsOverflowY()));
 
   bool is_visible_to_hit_test = Box().Style()->VisibleToHitTesting();
   bool did_scroll_overflow = scrolls_overflow_;
