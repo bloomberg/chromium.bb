@@ -1,5 +1,4 @@
 Test sampling heap profiler.
-
 Sampling started
 Sampling stopped
 size=0   testMain:10:17

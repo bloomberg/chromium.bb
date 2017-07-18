@@ -32,10 +32,10 @@ crbug.com/704360 [ Linux ] shapedetection/detection-HTMLCanvasElement.html [ Tim
 crbug.com/704360 [ Linux ] shapedetection/detection-ImageData.html [ Timeout Pass ]
 
 # Times out on MSAN
-crbug.com/462190 [ Linux ] inspector-protocol/heap-profiler/heap-samples-in-snapshot.html [ Timeout ]
-crbug.com/462190 [ Linux ] inspector-protocol/heap-profiler/heap-snapshot-with-active-dom-object.html [ Timeout ]
-crbug.com/462190 [ Linux ] inspector-protocol/heap-profiler/heap-snapshot-with-detached-dom-tree.html [ Timeout ]
-crbug.com/462190 [ Linux ] inspector-protocol/heap-profiler/heap-snapshot-with-event-listener.html [ Timeout ]
+crbug.com/462190 [ Linux ] inspector-protocol/heap-profiler/heap-samples-in-snapshot.js [ Timeout ]
+crbug.com/462190 [ Linux ] inspector-protocol/heap-profiler/heap-snapshot-with-active-dom-object.js [ Timeout ]
+crbug.com/462190 [ Linux ] inspector-protocol/heap-profiler/heap-snapshot-with-detached-dom-tree.js [ Timeout ]
+crbug.com/462190 [ Linux ] inspector-protocol/heap-profiler/heap-snapshot-with-event-listener.js [ Timeout ]
 
 crbug.com/671556 [ Linux ] virtual/mojo-loading/http/tests/security/xssAuditor/report-script-tag-replace-state.html [ Timeout Pass ]
 crbug.com/671556 [ Linux ] virtual/mojo-loading/http/tests/security/xssAuditor/report-script-tag.html [ Timeout Pass ]
