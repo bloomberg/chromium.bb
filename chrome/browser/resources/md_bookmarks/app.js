@@ -122,6 +122,11 @@ Polymer({
         return node.id;
       });
       this.dispatch(bookmarks.actions.setSearchResults(ids));
+      this.fire('iron-announce', {
+        text: ids.length > 0 ?
+            loadTimeData.getStringF('searchResults', this.searchTerm_) :
+            loadTimeData.getString('noSearchResults')
+      });
     }.bind(this));
   },
 

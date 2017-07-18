@@ -425,6 +425,9 @@
   <message name="IDS_MD_BOOKMARK_MANAGER_ITEMS_SELECTED" desc="Label displayed in bookmark manager toolbar telling the user how many items they have selected.">
     <ph name="NUMBER_OF_ITEMS_SELECTED">$1</ph> selected
   </message>
+  <message name="IDS_MD_BOOKMARK_MANAGER_SEARCH_RESULTS" desc="Message announced by screenreaders when search results are found.">
+    Search results for '<ph name="SEARCH_STRING">$1<ex>reading</ex></ph>'
+  </message>
   <message name="IDS_MD_BOOKMARK_MANAGER_TITLE" desc="Title of the bookmark manager window.">
     Bookmarks
   </message>
