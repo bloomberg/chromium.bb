@@ -56,7 +56,7 @@ void AffiliationBackend::Initialize(const base::FilePath& db_path) {
   cache_->Init(db_path);
 }
 
-void AffiliationBackend::GetAffiliations(
+void AffiliationBackend::GetAffiliationsAndBranding(
     const FacetURI& facet_uri,
     StrategyOnCacheMiss cache_miss_strategy,
     const AffiliationService::ResultCallback& callback,
@@ -65,8 +65,8 @@ void AffiliationBackend::GetAffiliations(
 
   FacetManager* facet_manager = GetOrCreateFacetManager(facet_uri);
   DCHECK(facet_manager);
-  facet_manager->GetAffiliations(cache_miss_strategy, callback,
-                                 callback_task_runner);
+  facet_manager->GetAffiliationsAndBranding(cache_miss_strategy, callback,
+                                            callback_task_runner);
 
   if (facet_manager->CanBeDiscarded())
     facet_managers_.erase(facet_uri);
@@ -101,7 +101,7 @@ void AffiliationBackend::TrimCacheForFacetURI(const FacetURI& facet_uri) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   AffiliatedFacetsWithUpdateTime affiliation;
-  if (cache_->GetAffiliationsForFacetURI(facet_uri, &affiliation))
+  if (cache_->GetAffiliationsAndBrandingForFacetURI(facet_uri, &affiliation))
     DiscardCachedDataIfNoLongerNeeded(affiliation.facets);
 }
 
@@ -135,7 +135,7 @@ void AffiliationBackend::DiscardCachedDataIfNoLongerNeeded(
   }
 
   CHECK(!affiliated_facets.empty());
-  cache_->DeleteAffiliationsForFacetURI(affiliated_facets[0].uri);
+  cache_->DeleteAffiliationsAndBrandingForFacetURI(affiliated_facets[0].uri);
 }
 
 void AffiliationBackend::OnSendNotification(const FacetURI& facet_uri) {
@@ -150,10 +150,10 @@ void AffiliationBackend::OnSendNotification(const FacetURI& facet_uri) {
     facet_managers_.erase(facet_uri);
 }
 
-bool AffiliationBackend::ReadAffiliationsFromDatabase(
+bool AffiliationBackend::ReadAffiliationsAndBrandingFromDatabase(
     const FacetURI& facet_uri,
     AffiliatedFacetsWithUpdateTime* affiliations) {
-  return cache_->GetAffiliationsForFacetURI(facet_uri, affiliations);
+  return cache_->GetAffiliationsAndBrandingForFacetURI(facet_uri, affiliations);
 }
 
 void AffiliationBackend::SignalNeedNetworkRequest() {
@@ -208,8 +208,9 @@ void AffiliationBackend::OnFetchSucceeded(
     }
   }
 
-  // A subsequent fetch may be needed if any additional GetAffiliations()
-  // requests came in while the current fetch was in flight.
+  // A subsequent fetch may be needed if any additional
+  // GetAffiliationsAndBranding() requests came in while the current fetch was
+  // in flight.
   for (const auto& facet_manager_pair : facet_managers_) {
     if (facet_manager_pair.second->DoesRequireFetch()) {
       throttler_->SignalNetworkRequestNeeded();

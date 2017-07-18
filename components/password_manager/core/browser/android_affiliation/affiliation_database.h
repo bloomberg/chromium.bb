@@ -25,8 +25,9 @@ class Statement;
 namespace password_manager {
 
 // Stores equivalence classes of facets, i.e., facets that are affiliated with
-// each other, in an SQLite database. See affiliation_utils.h for a more
-// detailed definition of what this means.
+// each other, in an SQLite database. In addition, relevant branding information
+// is stored. See affiliation_utils.h for a more detailed definition of what
+// this means.
 //
 // Under the assumption that there is most likely not much the caller can do in
 // case of database errors, most methods silently ignore them. Nevertheless, the
@@ -42,33 +43,39 @@ class AffiliationDatabase {
   bool Init(const base::FilePath& path);
 
   // Looks up the equivalence class containing |facet_uri|, and returns true if
-  // such a class is found, in which case it is also stored into |result|.
-  bool GetAffiliationsForFacetURI(const FacetURI& facet_uri,
-                                  AffiliatedFacetsWithUpdateTime* result) const;
+  // such a class is found, in which case it is also stored into |result|
+  // together with branding information, if applicable.
+  bool GetAffiliationsAndBrandingForFacetURI(
+      const FacetURI& facet_uri,
+      AffiliatedFacetsWithUpdateTime* result) const;
 
-  // Retrieves all stored equivalence classes.
-  void GetAllAffiliations(
+  // Retrieves all stored equivalence classes and branding information.
+  void GetAllAffiliationsAndBranding(
       std::vector<AffiliatedFacetsWithUpdateTime>* results) const;
 
-  // Removes the stored equivalence class, if any, containing |facet_uri|.
-  void DeleteAffiliationsForFacetURI(const FacetURI& facet_uri);
+  // Removes the stored equivalence class and branding information, if any,
+  // containing |facet_uri|.
+  void DeleteAffiliationsAndBrandingForFacetURI(const FacetURI& facet_uri);
 
-  // Removes stored equivalence classes that were last updated before the
-  // |cutoff_threshold|.
-  void DeleteAffiliationsOlderThan(const base::Time& cutoff_threshold);
+  // Removes stored equivalence classes and branding information that were last
+  // updated before the |cutoff_threshold|.
+  void DeleteAffiliationsAndBrandingOlderThan(
+      const base::Time& cutoff_threshold);
 
   // Removes all records from all tables of the database.
-  void DeleteAllAffiliations();
+  void DeleteAllAffiliationsAndBranding();
 
-  // Stores the equivalence class defined by |affiliated_facets| to the DB and
-  // returns true unless it has a non-empty subset with a preexisting class, in
-  // which case no changes are made and the function returns false.
+  // Stores the equivalence class and branding information defined by
+  // |affiliated_facets| to the DB and returns true unless it has a non-empty
+  // subset with a preexisting class, in which case no changes are made and the
+  // function returns false.
   bool Store(const AffiliatedFacetsWithUpdateTime& affiliated_facets);
 
-  // Stores the equivalence class defined by |affiliated_facets| to the DB,
-  // database, and removes any other equivalence classes that are in conflict
-  // with |affiliated_facets|, i.e. those that are neither equal nor disjoint to
-  // it. Removed equivalence classes are stored into |removed_affiliations|.
+  // Stores the equivalence class and branding information defined by
+  // |affiliated_facets| to the database, and removes any other equivalence
+  // classes that are in conflict with |affiliated_facets|, i.e. those that are
+  // neither equal nor disjoint to it. Removed equivalence classes are stored
+  // into |removed_affiliations|.
   void StoreAndRemoveConflicting(
       const AffiliatedFacetsWithUpdateTime& affiliated_facets,
       std::vector<AffiliatedFacetsWithUpdateTime>* removed_affiliations);

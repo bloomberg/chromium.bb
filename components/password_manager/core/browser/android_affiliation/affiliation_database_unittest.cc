@@ -144,17 +144,17 @@ TEST_F(AffiliationDatabaseTest, Store) {
   }
 }
 
-TEST_F(AffiliationDatabaseTest, GetAllAffiliations) {
+TEST_F(AffiliationDatabaseTest, GetAllAffiliationsAndBranding) {
   std::vector<AffiliatedFacetsWithUpdateTime> affiliations;
 
   // Empty database should not return any equivalence classes.
-  db().GetAllAffiliations(&affiliations);
+  db().GetAllAffiliationsAndBranding(&affiliations);
   EXPECT_EQ(0u, affiliations.size());
 
   ASSERT_NO_FATAL_FAILURE(StoreInitialTestData());
 
   // The test data should be returned in order.
-  db().GetAllAffiliations(&affiliations);
+  db().GetAllAffiliationsAndBranding(&affiliations);
   ASSERT_EQ(3u, affiliations.size());
   ExpectEquivalenceClassesIncludingBrandingInfoAreEqual(TestEquivalenceClass1(),
                                                         affiliations[0]);
@@ -171,7 +171,8 @@ TEST_F(AffiliationDatabaseTest, GetAffiliationForFacet) {
   // class.
   for (const auto& facet : TestEquivalenceClass1().facets) {
     AffiliatedFacetsWithUpdateTime affiliation;
-    EXPECT_TRUE(db().GetAffiliationsForFacetURI(facet.uri, &affiliation));
+    EXPECT_TRUE(
+        db().GetAffiliationsAndBrandingForFacetURI(facet.uri, &affiliation));
     ExpectEquivalenceClassesIncludingBrandingInfoAreEqual(
         TestEquivalenceClass1(), affiliation);
   }
@@ -180,7 +181,7 @@ TEST_F(AffiliationDatabaseTest, GetAffiliationForFacet) {
   // that class.
   {
     AffiliatedFacetsWithUpdateTime affiliation;
-    EXPECT_TRUE(db().GetAffiliationsForFacetURI(
+    EXPECT_TRUE(db().GetAffiliationsAndBrandingForFacetURI(
         FacetURI::FromCanonicalSpec(kTestAndroidFacetURI), &affiliation));
     ExpectEquivalenceClassesIncludingBrandingInfoAreEqual(
         TestEquivalenceClass3(), affiliation);
@@ -189,7 +190,7 @@ TEST_F(AffiliationDatabaseTest, GetAffiliationForFacet) {
   // Verify that querying a facet not in the database yields no result.
   {
     AffiliatedFacetsWithUpdateTime affiliation;
-    EXPECT_FALSE(db().GetAffiliationsForFacetURI(
+    EXPECT_FALSE(db().GetAffiliationsAndBrandingForFacetURI(
         FacetURI::FromCanonicalSpec(kTestFacetURI6), &affiliation));
     ExpectEquivalenceClassesIncludingBrandingInfoAreEqual(
         AffiliatedFacetsWithUpdateTime(), affiliation);
@@ -210,7 +211,7 @@ TEST_F(AffiliationDatabaseTest, StoreAndRemoveConflicting) {
     EXPECT_EQ(0u, removed.size());
 
     AffiliatedFacetsWithUpdateTime affiliation;
-    EXPECT_TRUE(db().GetAffiliationsForFacetURI(
+    EXPECT_TRUE(db().GetAffiliationsAndBrandingForFacetURI(
         FacetURI::FromCanonicalSpec(kTestFacetURI1), &affiliation));
     ExpectEquivalenceClassesIncludingBrandingInfoAreEqual(updated, affiliation);
   }
@@ -233,7 +234,7 @@ TEST_F(AffiliationDatabaseTest, StoreAndRemoveConflicting) {
         TestEquivalenceClass2(), removed[1]);
 
     std::vector<AffiliatedFacetsWithUpdateTime> affiliations;
-    db().GetAllAffiliations(&affiliations);
+    db().GetAllAffiliationsAndBranding(&affiliations);
     ASSERT_EQ(2u, affiliations.size());
     ExpectEquivalenceClassesIncludingBrandingInfoAreEqual(
         TestEquivalenceClass3(), affiliations[0]);
@@ -242,36 +243,37 @@ TEST_F(AffiliationDatabaseTest, StoreAndRemoveConflicting) {
   }
 }
 
-TEST_F(AffiliationDatabaseTest, DeleteAllAffiliations) {
-  db().DeleteAllAffiliations();
+TEST_F(AffiliationDatabaseTest, DeleteAllAffiliationsAndBranding) {
+  db().DeleteAllAffiliationsAndBranding();
 
   ASSERT_NO_FATAL_FAILURE(StoreInitialTestData());
 
-  db().DeleteAllAffiliations();
+  db().DeleteAllAffiliationsAndBranding();
 
   std::vector<AffiliatedFacetsWithUpdateTime> affiliations;
-  db().GetAllAffiliations(&affiliations);
+  db().GetAllAffiliationsAndBranding(&affiliations);
   ASSERT_EQ(0u, affiliations.size());
 }
 
-TEST_F(AffiliationDatabaseTest, DeleteAffiliationsOlderThan) {
-  db().DeleteAffiliationsOlderThan(base::Time::FromInternalValue(0));
+TEST_F(AffiliationDatabaseTest, DeleteAffiliationsAndBrandingOlderThan) {
+  db().DeleteAffiliationsAndBrandingOlderThan(base::Time::FromInternalValue(0));
 
   ASSERT_NO_FATAL_FAILURE(StoreInitialTestData());
 
-  db().DeleteAffiliationsOlderThan(base::Time::FromInternalValue(kTestTimeUs2));
+  db().DeleteAffiliationsAndBrandingOlderThan(
+      base::Time::FromInternalValue(kTestTimeUs2));
 
   std::vector<AffiliatedFacetsWithUpdateTime> affiliations;
-  db().GetAllAffiliations(&affiliations);
+  db().GetAllAffiliationsAndBranding(&affiliations);
   ASSERT_EQ(2u, affiliations.size());
   ExpectEquivalenceClassesIncludingBrandingInfoAreEqual(TestEquivalenceClass2(),
                                                         affiliations[0]);
   ExpectEquivalenceClassesIncludingBrandingInfoAreEqual(TestEquivalenceClass3(),
                                                         affiliations[1]);
 
-  db().DeleteAffiliationsOlderThan(base::Time::Max());
+  db().DeleteAffiliationsAndBrandingOlderThan(base::Time::Max());
 
-  db().GetAllAffiliations(&affiliations);
+  db().GetAllAffiliationsAndBranding(&affiliations);
   ASSERT_EQ(0u, affiliations.size());
 }
 
@@ -284,7 +286,7 @@ TEST_F(AffiliationDatabaseTest, DBRetainsDataAfterReopening) {
 
   // The test data should be returned in order.
   std::vector<AffiliatedFacetsWithUpdateTime> affiliations;
-  db().GetAllAffiliations(&affiliations);
+  db().GetAllAffiliationsAndBranding(&affiliations);
   ASSERT_EQ(3u, affiliations.size());
   ExpectEquivalenceClassesIncludingBrandingInfoAreEqual(TestEquivalenceClass1(),
                                                         affiliations[0]);
@@ -304,11 +306,11 @@ TEST_F(AffiliationDatabaseTest, CorruptDBIsRazedThenOpened) {
   ASSERT_NO_FATAL_FAILURE(OpenDatabase());
 
   std::vector<AffiliatedFacetsWithUpdateTime> affiliations;
-  db().GetAllAffiliations(&affiliations);
+  db().GetAllAffiliationsAndBranding(&affiliations);
   EXPECT_EQ(0u, affiliations.size());
 
   ASSERT_NO_FATAL_FAILURE(StoreInitialTestData());
-  db().GetAllAffiliations(&affiliations);
+  db().GetAllAffiliationsAndBranding(&affiliations);
   EXPECT_EQ(3u, affiliations.size());
 }
 
@@ -321,7 +323,7 @@ TEST_F(AffiliationDatabaseTest, CorruptDBGetsPoisoned) {
 
   EXPECT_FALSE(db().Store(TestEquivalenceClass2()));
   std::vector<AffiliatedFacetsWithUpdateTime> affiliations;
-  db().GetAllAffiliations(&affiliations);
+  db().GetAllAffiliationsAndBranding(&affiliations);
   EXPECT_EQ(0u, affiliations.size());
 }
 
@@ -354,7 +356,7 @@ TEST_F(AffiliationDatabaseTest, MigrateFromVersion1) {
   // Check that migration was successful and existing data was untouched.
   EXPECT_EQ(2, db().GetDatabaseVersionForTesting());
   std::vector<AffiliatedFacetsWithUpdateTime> affiliations;
-  db().GetAllAffiliations(&affiliations);
+  db().GetAllAffiliationsAndBranding(&affiliations);
   ASSERT_EQ(3u, affiliations.size());
 
   // There was no branding information in version 1, thus we expect it to be
@@ -392,7 +394,7 @@ TEST_F(AffiliationDatabaseTest, InitializeFromVersion2) {
   // Expect the migration to be a no-op that does not modify the existing data.
   OpenDatabase();
   std::vector<AffiliatedFacetsWithUpdateTime> affiliations;
-  db().GetAllAffiliations(&affiliations);
+  db().GetAllAffiliationsAndBranding(&affiliations);
   ASSERT_EQ(3u, affiliations.size());
   ExpectEquivalenceClassesIncludingBrandingInfoAreEqual(TestEquivalenceClass1(),
                                                         affiliations[0]);
