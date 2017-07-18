@@ -13,6 +13,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/sync_file_system/local/canned_syncable_file_system.h"
 #include "chrome/browser/sync_file_system/local/local_file_sync_context.h"
@@ -128,15 +129,14 @@ ACTION(InvokeCompletionClosure) {
 class SyncFileSystemServiceTest : public testing::Test {
  protected:
   SyncFileSystemServiceTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::REAL_FILE_THREAD |
-                       content::TestBrowserThreadBundle::REAL_IO_THREAD) {}
+      : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD) {}
 
   void SetUp() override {
     in_memory_env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
     file_system_.reset(new CannedSyncableFileSystem(
         GURL(kOrigin), in_memory_env_.get(),
         BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
-        BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE)));
+        base::CreateSingleThreadTaskRunnerWithTraits({base::MayBlock()})));
 
     std::unique_ptr<LocalFileSyncService> local_service =
         LocalFileSyncService::CreateForTesting(&profile_, in_memory_env_.get());
@@ -168,7 +168,7 @@ class SyncFileSystemServiceTest : public testing::Test {
     sync_service_->Shutdown();
     file_system_->TearDown();
     RevokeSyncableFileSystem();
-    content::RunAllPendingInMessageLoop(BrowserThread::FILE);
+    base::TaskScheduler::GetInstance()->FlushForTesting();
   }
 
   void InitializeApp() {

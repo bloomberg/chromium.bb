@@ -59,9 +59,7 @@ const char kOrigin2[] = "http://chromium.org";
 class LocalFileSyncContextTest : public testing::Test {
  protected:
   LocalFileSyncContextTest()
-      : thread_bundle_(
-            content::TestBrowserThreadBundle::REAL_FILE_THREAD |
-            content::TestBrowserThreadBundle::REAL_IO_THREAD),
+      : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD),
         status_(SYNC_FILE_ERROR_FAILED),
         file_error_(base::File::FILE_ERROR_FAILED),
         async_modify_finished_(false),
