@@ -212,7 +212,9 @@ class PriorityGetter : public BufferedSpdyFramerVisitorInterface {
   void OnStreamEnd(SpdyStreamId stream_id) override {}
   void OnStreamPadding(SpdyStreamId stream_id, size_t len) override {}
   void OnSettings() override {}
+  void OnSettingsAck() override {}
   void OnSetting(SpdySettingsIds id, uint32_t value) override {}
+  void OnSettingsEnd() override {}
   void OnPing(SpdyPingId unique_id, bool is_ack) override {}
   void OnRstStream(SpdyStreamId stream_id, SpdyErrorCode error_code) override {}
   void OnGoAway(SpdyStreamId last_accepted_stream_id,

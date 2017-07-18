@@ -185,14 +185,6 @@ std::unique_ptr<base::Value> NetLogSpdySendSettingsCallback(
   return std::move(dict);
 }
 
-std::unique_ptr<base::Value> NetLogSpdyRecvSettingsCallback(
-    const HostPortPair& host_port_pair,
-    NetLogCaptureMode /* capture_mode */) {
-  auto dict = base::MakeUnique<base::DictionaryValue>();
-  dict->SetString("host", host_port_pair.ToString());
-  return std::move(dict);
-}
-
 std::unique_ptr<base::Value> NetLogSpdyRecvSettingCallback(
     SpdySettingsIds id,
     uint32_t value,
@@ -2831,9 +2823,8 @@ void SpdySession::OnSettings() {
   CHECK(in_io_loop_);
 
   if (net_log_.IsCapturing()) {
-    net_log_.AddEvent(
-        NetLogEventType::HTTP2_SESSION_RECV_SETTINGS,
-        base::Bind(&NetLogSpdyRecvSettingsCallback, host_port_pair()));
+    net_log_.AddEvent(NetLogEventType::HTTP2_SESSION_RECV_SETTINGS);
+    net_log_.AddEvent(NetLogEventType::HTTP2_SESSION_SEND_SETTINGS_ACK);
   }
 
   // Send an acknowledgment of the setting.
@@ -2842,6 +2833,13 @@ void SpdySession::OnSettings() {
   auto frame = base::MakeUnique<SpdySerializedFrame>(
       buffered_spdy_framer_->SerializeFrame(settings_ir));
   EnqueueSessionWrite(HIGHEST, SpdyFrameType::SETTINGS, std::move(frame));
+}
+
+void SpdySession::OnSettingsAck() {
+  CHECK(in_io_loop_);
+
+  if (net_log_.IsCapturing())
+    net_log_.AddEvent(NetLogEventType::HTTP2_SESSION_RECV_SETTINGS_ACK);
 }
 
 void SpdySession::OnSetting(SpdySettingsIds id, uint32_t value) {
