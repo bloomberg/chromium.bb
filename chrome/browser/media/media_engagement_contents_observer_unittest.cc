@@ -118,20 +118,18 @@ class MediaEngagementContentsObserverTest
     EXPECT_EQ(contents_observer_->service_->GetScoreMapForTesting()[url],
               expected_score);
 
-    MediaEngagementScore* score =
+    MediaEngagementScore score =
         contents_observer_->service_->CreateEngagementScore(url);
-    EXPECT_EQ(score->visits(), expected_visits);
-    EXPECT_EQ(score->media_playbacks(), expected_media_playbacks);
-    delete score;
+    EXPECT_EQ(expected_visits, score.visits());
+    EXPECT_EQ(expected_media_playbacks, score.media_playbacks());
   }
 
   void SetScores(GURL url, int visits, int media_playbacks) {
-    MediaEngagementScore* score =
+    MediaEngagementScore score =
         contents_observer_->service_->CreateEngagementScore(url);
-    score->SetVisits(visits);
-    score->SetMediaPlaybacks(media_playbacks);
-    score->Commit();
-    delete score;
+    score.SetVisits(visits);
+    score.SetMediaPlaybacks(media_playbacks);
+    score.Commit();
   }
 
   void Navigate(GURL url) {

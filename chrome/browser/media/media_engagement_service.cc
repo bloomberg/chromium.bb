@@ -54,15 +54,14 @@ bool MediaEngagementTimeFilterAdapter(
     const ContentSettingsPattern& secondary_pattern) {
   GURL url(primary_pattern.ToString());
   DCHECK(url.is_valid());
-  MediaEngagementScore* score = service->CreateEngagementScore(url);
-  base::Time playback_time = score->last_media_playback_time();
-  delete score;
+  MediaEngagementScore score = service->CreateEngagementScore(url);
+  base::Time playback_time = score.last_media_playback_time();
   return playback_time >= delete_begin && playback_time <= delete_end;
 }
 
 }  // namespace
 
-const char* MediaEngagementService::kHistogramScoreAtStartupName =
+const char MediaEngagementService::kHistogramScoreAtStartupName[] =
     "Media.Engagement.ScoreAtStartup";
 
 // static
@@ -155,22 +154,20 @@ void MediaEngagementService::OnURLsDeleted(
   for (auto const& kv : origins) {
     // Remove the number of visits consistent with the number
     // of URLs from the same origin we are removing.
-    MediaEngagementScore* score = CreateEngagementScore(kv.first);
-    double original_score = score->GetTotalScore();
-    score->SetVisits(score->visits() - kv.second);
+    MediaEngagementScore score = CreateEngagementScore(kv.first);
+    double original_score = score.GetTotalScore();
+    score.SetVisits(score.visits() - kv.second);
 
     // If this results in zero visits then clear the score.
-    if (score->visits() <= 0) {
+    if (score.visits() <= 0) {
       Clear(kv.first);
-      delete score;
       continue;
     }
 
     // Otherwise, recalculate the playbacks to keep the
     // MEI score consistent.
-    score->SetMediaPlaybacks(original_score * score->visits());
-    score->Commit();
-    delete score;
+    score.SetMediaPlaybacks(original_score * score.visits());
+    score.Commit();
   }
 }
 
@@ -182,10 +179,7 @@ void MediaEngagementService::Clear(const GURL& url) {
 }
 
 double MediaEngagementService::GetEngagementScore(const GURL& url) const {
-  MediaEngagementScore* score = CreateEngagementScore(url);
-  double total_score = score->GetTotalScore();
-  delete score;
-  return total_score;
+  return CreateEngagementScore(url).GetTotalScore();
 }
 
 std::map<GURL, double> MediaEngagementService::GetScoreMapForTesting() const {
@@ -202,10 +196,9 @@ void MediaEngagementService::RecordVisit(const GURL& url) {
   if (!ShouldRecordEngagement(url))
     return;
 
-  MediaEngagementScore* score = CreateEngagementScore(url);
-  score->IncrementVisits();
-  score->Commit();
-  delete score;
+  MediaEngagementScore score = CreateEngagementScore(url);
+  score.IncrementVisits();
+  score.Commit();
 }
 
 std::vector<media::mojom::MediaEngagementScoreDetails>
@@ -215,11 +208,11 @@ MediaEngagementService::GetAllScoreDetails() const {
   std::vector<media::mojom::MediaEngagementScoreDetails> details;
   details.reserve(origins.size());
   for (const GURL& origin : origins) {
+    // TODO(beccahughes): Why would an origin not be valid here?
     if (!origin.is_valid())
       continue;
-    MediaEngagementScore* score = CreateEngagementScore(origin);
-    details.push_back(score->GetScoreDetails());
-    delete score;
+    MediaEngagementScore score = CreateEngagementScore(origin);
+    details.push_back(score.GetScoreDetails());
   }
 
   return details;
@@ -229,18 +222,17 @@ void MediaEngagementService::RecordPlayback(const GURL& url) {
   if (!ShouldRecordEngagement(url))
     return;
 
-  MediaEngagementScore* score = CreateEngagementScore(url);
-  score->IncrementMediaPlaybacks();
-  score->Commit();
-  delete score;
+  MediaEngagementScore score = CreateEngagementScore(url);
+  score.IncrementMediaPlaybacks();
+  score.Commit();
 }
 
-MediaEngagementScore* MediaEngagementService::CreateEngagementScore(
+MediaEngagementScore MediaEngagementService::CreateEngagementScore(
     const GURL& url) const {
   // If we are in incognito, |settings| will automatically have the data from
   // the original profile migrated in, so all engagement scores in incognito
   // will be initialised to the values from the original profile.
-  return new MediaEngagementScore(
+  return MediaEngagementScore(
       clock_.get(), url,
       HostContentSettingsMapFactory::GetForProfile(profile_));
 }

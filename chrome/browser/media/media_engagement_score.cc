@@ -9,9 +9,9 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 
-const char* MediaEngagementScore::kVisitsKey = "visits";
-const char* MediaEngagementScore::kMediaPlaybacksKey = "mediaPlaybacks";
-const char* MediaEngagementScore::kLastMediaPlaybackTimeKey =
+const char MediaEngagementScore::kVisitsKey[] = "visits";
+const char MediaEngagementScore::kMediaPlaybacksKey[] = "mediaPlaybacks";
+const char MediaEngagementScore::kLastMediaPlaybackTimeKey[] =
     "lastMediaPlaybackTime";
 
 const int MediaEngagementScore::kScoreMinVisits = 5;
@@ -69,6 +69,10 @@ MediaEngagementScore::GetScoreDetails() const {
 }
 
 MediaEngagementScore::~MediaEngagementScore() = default;
+
+MediaEngagementScore::MediaEngagementScore(MediaEngagementScore&&) = default;
+MediaEngagementScore& MediaEngagementScore::operator=(MediaEngagementScore&&) =
+    default;
 
 double MediaEngagementScore::GetTotalScore() const {
   if (visits() < kScoreMinVisits)

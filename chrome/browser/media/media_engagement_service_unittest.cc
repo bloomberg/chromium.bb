@@ -148,12 +148,11 @@ class MediaEngagementServiceTest : public ChromeRenderViewHostTestHarness {
     EXPECT_EQ(service->GetEngagementScore(url), expected_score);
     EXPECT_EQ(service->GetScoreMapForTesting()[url], expected_score);
 
-    MediaEngagementScore* score = service->CreateEngagementScore(url);
-    EXPECT_EQ(score->visits(), expected_visits);
-    EXPECT_EQ(score->media_playbacks(), expected_media_playbacks);
-    EXPECT_EQ(score->last_media_playback_time(),
-              expected_last_media_playback_time);
-    delete score;
+    MediaEngagementScore score = service->CreateEngagementScore(url);
+    EXPECT_EQ(expected_visits, score.visits());
+    EXPECT_EQ(expected_media_playbacks, score.media_playbacks());
+    EXPECT_EQ(expected_last_media_playback_time,
+              score.last_media_playback_time());
   }
 
   void ExpectScores(GURL url,
@@ -166,26 +165,21 @@ class MediaEngagementServiceTest : public ChromeRenderViewHostTestHarness {
   }
 
   void SetScores(GURL url, int visits, int media_playbacks) {
-    MediaEngagementScore* score = service_->CreateEngagementScore(url);
-    score->SetVisits(visits);
-    score->SetMediaPlaybacks(media_playbacks);
-    score->Commit();
-    delete score;
+    MediaEngagementScore score = service_->CreateEngagementScore(url);
+    score.SetVisits(visits);
+    score.SetMediaPlaybacks(media_playbacks);
+    score.Commit();
   }
 
   void SetLastMediaPlaybackTime(const GURL& url,
                                 base::Time last_media_playback_time) {
-    MediaEngagementScore* score = service_->CreateEngagementScore(url);
-    score->last_media_playback_time_ = last_media_playback_time;
-    score->Commit();
-    delete score;
+    MediaEngagementScore score = service_->CreateEngagementScore(url);
+    score.last_media_playback_time_ = last_media_playback_time;
+    score.Commit();
   }
 
   double GetTotalScore(GURL url) {
-    MediaEngagementScore* score = service_->CreateEngagementScore(url);
-    double total_score = score->GetTotalScore();
-    delete score;
-    return total_score;
+    return service_->CreateEngagementScore(url).GetTotalScore();
   }
 
   std::map<GURL, double> GetScoreMapForTesting() const {
