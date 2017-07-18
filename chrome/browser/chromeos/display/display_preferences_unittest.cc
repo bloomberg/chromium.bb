@@ -61,7 +61,7 @@ bool IsRotationLocked() {
   return ash::Shell::Get()->screen_orientation_controller()->rotation_locked();
 }
 
-class DisplayPreferencesTest : public ash::test::AshTestBase {
+class DisplayPreferencesTest : public ash::AshTestBase {
  protected:
   DisplayPreferencesTest()
       : mock_user_manager_(new MockUserManager),
@@ -74,7 +74,7 @@ class DisplayPreferencesTest : public ash::test::AshTestBase {
     EXPECT_CALL(*mock_user_manager_, IsUserLoggedIn())
         .WillRepeatedly(testing::Return(false));
     EXPECT_CALL(*mock_user_manager_, Shutdown());
-    ash::test::AshTestBase::SetUp();
+    ash::AshTestBase::SetUp();
     RegisterDisplayLocalStatePrefs(local_state_.registry());
     TestingBrowserProcess::GetGlobal()->SetLocalState(&local_state_);
     observer_.reset(new DisplayConfigurationObserver());
@@ -83,7 +83,7 @@ class DisplayPreferencesTest : public ash::test::AshTestBase {
   void TearDown() override {
     observer_.reset();
     TestingBrowserProcess::GetGlobal()->SetLocalState(nullptr);
-    ash::test::AshTestBase::TearDown();
+    ash::AshTestBase::TearDown();
   }
 
   void LoggedInAsUser() {

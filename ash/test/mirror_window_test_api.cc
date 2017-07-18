@@ -13,7 +13,6 @@
 #include "ui/gfx/geometry/point.h"
 
 namespace ash {
-namespace test {
 
 const aura::WindowTreeHost* MirrorWindowTestApi::GetHost() const {
   aura::Window* window = Shell::Get()
@@ -56,5 +55,4 @@ gfx::Point MirrorWindowTestApi::GetCursorLocation() const {
   return point;
 }
 
-}  // namespace test
 }  // namespace ash

@@ -19,7 +19,7 @@
 
 namespace ash {
 
-class ResolutionNotificationControllerTest : public ash::test::AshTestBase {
+class ResolutionNotificationControllerTest : public AshTestBase {
  public:
   ResolutionNotificationControllerTest() : accept_count_(0) {}
 
@@ -46,7 +46,7 @@ class ResolutionNotificationControllerTest : public ash::test::AshTestBase {
 
  protected:
   void SetUp() override {
-    ash::test::AshTestBase::SetUp();
+    AshTestBase::SetUp();
     ResolutionNotificationController::SuppressTimerForTest();
   }
 

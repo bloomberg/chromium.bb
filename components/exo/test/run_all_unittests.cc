@@ -11,7 +11,7 @@
 #endif
 
 int main(int argc, char** argv) {
-  ash::test::AshTestSuite test_suite(argc, argv);
+  ash::AshTestSuite test_suite(argc, argv);
 
 #if !defined(OS_IOS)
   mojo::edk::Init();
@@ -19,5 +19,5 @@ int main(int argc, char** argv) {
 
   return base::LaunchUnitTestsSerially(
       argc, argv,
-      base::Bind(&ash::test::AshTestSuite::Run, base::Unretained(&test_suite)));
+      base::Bind(&ash::AshTestSuite::Run, base::Unretained(&test_suite)));
 }

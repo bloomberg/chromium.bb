@@ -22,7 +22,7 @@
 
 namespace ash {
 
-class TrayIMETest : public test::AshTestBase {
+class TrayIMETest : public AshTestBase {
  public:
   TrayIMETest() {}
   ~TrayIMETest() override {}
@@ -51,7 +51,7 @@ class TrayIMETest : public test::AshTestBase {
   void SuppressKeyboard();
   void RestoreKeyboard();
 
-  // test::AshTestBase:
+  // AshTestBase:
   void SetUp() override;
   void TearDown() override;
 
@@ -140,7 +140,7 @@ void TrayIMETest::RestoreKeyboard() {
 }
 
 void TrayIMETest::SetUp() {
-  test::AshTestBase::SetUp();
+  AshTestBase::SetUp();
   tray_.reset(new TrayIME(GetPrimarySystemTray()));
   default_view_.reset(tray_->CreateDefaultView(LoginStatus::USER));
   detailed_view_.reset(tray_->CreateDetailedView(LoginStatus::USER));
@@ -167,7 +167,7 @@ void TrayIMETest::TearDown() {
   tray_.reset();
   default_view_.reset();
   detailed_view_.reset();
-  test::AshTestBase::TearDown();
+  AshTestBase::TearDown();
 }
 
 // Tests that if the keyboard is not suppressed the default view is hidden

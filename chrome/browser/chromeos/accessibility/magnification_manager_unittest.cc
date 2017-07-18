@@ -35,13 +35,13 @@ void SetMagnifierType(ash::MagnifierType type) {
 
 }  // namespace
 
-class MagnificationManagerTest : public ash::test::AshTestBase {
+class MagnificationManagerTest : public ash::AshTestBase {
  public:
   MagnificationManagerTest() {
   }
 
   void SetUp() override {
-    ash::test::AshTestBase::SetUp();
+    ash::AshTestBase::SetUp();
     MagnificationManager::Initialize();
     ASSERT_TRUE(MagnificationManager::Get());
     MagnificationManager::Get()->SetProfileForTest(&profile_);
@@ -49,7 +49,7 @@ class MagnificationManagerTest : public ash::test::AshTestBase {
 
   void TearDown() override {
     MagnificationManager::Shutdown();
-    ash::test::AshTestBase::TearDown();
+    ash::AshTestBase::TearDown();
   }
 
   TestingProfile profile_;

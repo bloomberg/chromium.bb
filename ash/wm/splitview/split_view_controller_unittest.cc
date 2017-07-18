@@ -13,7 +13,7 @@
 
 namespace ash {
 
-class SplitViewControllerTest : public test::AshTestBase {
+class SplitViewControllerTest : public AshTestBase {
  public:
   SplitViewControllerTest() {}
   ~SplitViewControllerTest() override {}

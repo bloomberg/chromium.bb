@@ -8,7 +8,6 @@
 #include "ash/system/tray/system_tray_item.h"
 
 namespace ash {
-namespace test {
 
 // Trivial item implementation that tracks its views for testing. By default
 // views are created and returned by the Create*View() methods and they are
@@ -46,7 +45,6 @@ class TestSystemTrayItem : public SystemTrayItem {
   DISALLOW_COPY_AND_ASSIGN(TestSystemTrayItem);
 };
 
-}  // namespace test
 }  // namespace ash
 
 #endif  // ASH_COMMON_SYSTEM_TRAY_TEST_TEST_SYSTEM_TRAY_ITEM_H_

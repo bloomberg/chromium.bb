@@ -16,7 +16,6 @@
 #include "base/time/time.h"
 
 namespace ash {
-namespace test {
 
 // A SessionStateAnimator that offers control over the lifetime of active
 // animations.
@@ -158,7 +157,6 @@ class TestSessionStateAnimator : public SessionStateAnimator {
   DISALLOW_COPY_AND_ASSIGN(TestSessionStateAnimator);
 };
 
-}  // namespace test
 }  // namespace ash
 
 #endif  // ASH_TEST_TEST_SESSION_STATE_ANIMATOR_H_

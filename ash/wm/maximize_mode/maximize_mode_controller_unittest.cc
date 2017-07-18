@@ -70,7 +70,7 @@ extern const size_t kAccelerometerVerticalHingeTestDataLength;
 extern const float kAccelerometerVerticalHingeUnstableAnglesTestData[];
 extern const size_t kAccelerometerVerticalHingeUnstableAnglesTestDataLength;
 
-class MaximizeModeControllerTest : public test::AshTestBase {
+class MaximizeModeControllerTest : public AshTestBase {
  public:
   MaximizeModeControllerTest() {}
   ~MaximizeModeControllerTest() override {}
@@ -78,7 +78,7 @@ class MaximizeModeControllerTest : public test::AshTestBase {
   void SetUp() override {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kAshEnableTouchView);
-    test::AshTestBase::SetUp();
+    AshTestBase::SetUp();
     chromeos::AccelerometerReader::GetInstance()->RemoveObserver(
         maximize_mode_controller());
 
@@ -91,7 +91,7 @@ class MaximizeModeControllerTest : public test::AshTestBase {
   void TearDown() override {
     chromeos::AccelerometerReader::GetInstance()->AddObserver(
         maximize_mode_controller());
-    test::AshTestBase::TearDown();
+    AshTestBase::TearDown();
   }
 
   MaximizeModeController* maximize_mode_controller() {

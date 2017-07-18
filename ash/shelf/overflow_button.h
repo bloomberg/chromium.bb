@@ -12,9 +12,6 @@
 #include "ui/views/controls/button/custom_button.h"
 
 namespace ash {
-namespace test {
-class OverflowButtonTestApi;
-}  // namespace test
 
 class Shelf;
 class ShelfView;
@@ -34,7 +31,7 @@ class ASH_EXPORT OverflowButton : public views::CustomButton {
   void UpdateShelfItemBackground(SkColor color);
 
  private:
-  friend class test::OverflowButtonTestApi;
+  friend class OverflowButtonTestApi;
 
   enum class ChevronDirection { UP, DOWN, LEFT, RIGHT };
 

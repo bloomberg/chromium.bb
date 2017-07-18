@@ -51,7 +51,7 @@ BrowserWithTestWindowTest::BrowserWithTestWindowTest(Browser::Type browser_type,
 #if defined(OS_CHROMEOS)
   ash_test_environment_ = base::MakeUnique<AshTestEnvironmentChrome>();
   ash_test_helper_ =
-      base::MakeUnique<ash::test::AshTestHelper>(ash_test_environment_.get());
+      base::MakeUnique<ash::AshTestHelper>(ash_test_environment_.get());
 #endif
 }
 

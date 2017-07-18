@@ -31,10 +31,6 @@ class RootWindowController;
 class BackdropDelegate;
 class BackdropController;
 
-namespace test {
-class WorkspaceControllerTestApi;
-}
-
 namespace wm {
 class WMEvent;
 }
@@ -105,7 +101,7 @@ class ASH_EXPORT WorkspaceLayoutManager
                                      aura::Window* root_window) override;
 
  private:
-  friend class test::WorkspaceControllerTestApi;
+  friend class WorkspaceControllerTestApi;
   typedef std::set<aura::Window*> WindowSet;
 
   // Adjusts the bounds of all managed windows when the display area changes.

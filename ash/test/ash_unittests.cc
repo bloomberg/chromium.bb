@@ -8,10 +8,10 @@
 #include "mojo/edk/embedder/embedder.h"
 
 int main(int argc, char** argv) {
-  ash::test::AshTestSuite test_suite(argc, argv);
+  ash::AshTestSuite test_suite(argc, argv);
 
   mojo::edk::Init();
   return base::LaunchUnitTests(
       argc, argv,
-      base::Bind(&ash::test::AshTestSuite::Run, base::Unretained(&test_suite)));
+      base::Bind(&ash::AshTestSuite::Run, base::Unretained(&test_suite)));
 }

@@ -74,7 +74,7 @@ bool FindTiledContentQuad(const cc::CompositorFrame& frame,
 
 }  // namespace
 
-class NonClientFrameControllerTest : public test::AshTestBase {
+class NonClientFrameControllerTest : public AshTestBase {
  public:
   NonClientFrameControllerTest() = default;
   ~NonClientFrameControllerTest() override = default;
@@ -83,7 +83,7 @@ class NonClientFrameControllerTest : public test::AshTestBase {
     return context_factory_.GetLastCompositorFrame();
   }
 
-  // test::AshTestBase:
+  // AshTestBase:
   void SetUp() override {
     aura::Env* env = aura::Env::GetInstance();
     DCHECK(env);

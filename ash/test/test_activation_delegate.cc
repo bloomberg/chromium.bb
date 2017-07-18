@@ -10,10 +10,6 @@
 #include "ui/events/event.h"
 
 namespace ash {
-namespace test {
-
-////////////////////////////////////////////////////////////////////////////////
-// TestActivationDelegate
 
 TestActivationDelegate::TestActivationDelegate()
     : window_(NULL),
@@ -55,5 +51,4 @@ void TestActivationDelegate::OnWindowActivated(
   }
 }
 
-}  // namespace test
 }  // namespace ash

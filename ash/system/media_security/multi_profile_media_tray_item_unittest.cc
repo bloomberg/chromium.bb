@@ -21,7 +21,7 @@
 
 namespace ash {
 
-class MultiProfileMediaTrayItemTest : public test::AshTestBase {
+class MultiProfileMediaTrayItemTest : public AshTestBase {
  public:
   MultiProfileMediaTrayItemTest() {}
   ~MultiProfileMediaTrayItemTest() override {}

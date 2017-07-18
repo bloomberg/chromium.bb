@@ -17,7 +17,7 @@ namespace ash {
 
 namespace {
 
-class TrayEventFilterTest : public test::AshTestBase {
+class TrayEventFilterTest : public AshTestBase {
  public:
   TrayEventFilterTest() {}
   ~TrayEventFilterTest() override {}

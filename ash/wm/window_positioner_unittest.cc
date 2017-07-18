@@ -20,7 +20,14 @@
 
 namespace ash {
 
-using WindowPositionerTest = test::AshTestBase;
+class WindowPositionerTest : public AshTestBase {
+ public:
+  WindowPositionerTest() = default;
+  ~WindowPositionerTest() override = default;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WindowPositionerTest);
+};
 
 TEST_F(WindowPositionerTest, OpenMaximizedWindowOnSecondDisplay) {
   // Tests that for a screen that is narrower than kForceMaximizeWidthLimit
@@ -145,8 +152,8 @@ TEST_F(WindowPositionerTest, FirstRunMaximizeWindowHighResloution) {
   gfx::Rect bounds_in_out(0, 0, 320, 240);  // Random bounds.
   ui::WindowShowState show_state_out = ui::SHOW_STATE_DEFAULT;
 
-  test::TestShellDelegate* const delegate =
-      static_cast<test::TestShellDelegate*>(Shell::Get()->shell_delegate());
+  TestShellDelegate* const delegate =
+      static_cast<TestShellDelegate*>(Shell::Get()->shell_delegate());
   delegate->SetForceMaximizeOnFirstRun(true);
 
   WindowPositioner::GetBoundsAndShowStateForNewWindow(
@@ -164,8 +171,8 @@ TEST_F(WindowPositionerTest, FirstRunMaximizeWindowLowResolution) {
   gfx::Rect bounds_in_out(0, 0, 320, 240);  // Random bounds.
   ui::WindowShowState show_state_out = ui::SHOW_STATE_DEFAULT;
 
-  test::TestShellDelegate* const delegate =
-      static_cast<test::TestShellDelegate*>(Shell::Get()->shell_delegate());
+  TestShellDelegate* const delegate =
+      static_cast<TestShellDelegate*>(Shell::Get()->shell_delegate());
   delegate->SetForceMaximizeOnFirstRun(true);
 
   WindowPositioner::GetBoundsAndShowStateForNewWindow(

@@ -40,7 +40,7 @@ class TaskSwitchTimeTrackerTest : public testing::Test {
   std::unique_ptr<base::HistogramTester> histogram_tester_;
 
   // A Test API that wraps the test target.
-  std::unique_ptr<test::TaskSwitchTimeTrackerTestAPI> time_tracker_test_api_;
+  std::unique_ptr<TaskSwitchTimeTrackerTestAPI> time_tracker_test_api_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TaskSwitchTimeTrackerTest);
@@ -55,7 +55,7 @@ void TaskSwitchTimeTrackerTest::SetUp() {
 
   histogram_tester_.reset(new base::HistogramTester());
   time_tracker_test_api_.reset(
-      new test::TaskSwitchTimeTrackerTestAPI(kHistogramName));
+      new TaskSwitchTimeTrackerTestAPI(kHistogramName));
   // The TaskSwitchTimeTracker interprets a value of base::TimeTicks() as if the
   // |last_action_time_| has not been set.
   time_tracker_test_api_->Advance(base::TimeDelta::FromMilliseconds(1));

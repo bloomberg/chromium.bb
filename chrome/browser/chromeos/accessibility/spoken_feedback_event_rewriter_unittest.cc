@@ -71,7 +71,7 @@ class TestDelegate : public SpokenFeedbackEventRewriterDelegate {
   DISALLOW_COPY_AND_ASSIGN(TestDelegate);
 };
 
-class SpokenFeedbackEventRewriterTest : public ash::test::AshTestBase {
+class SpokenFeedbackEventRewriterTest : public ash::AshTestBase {
  public:
   SpokenFeedbackEventRewriterTest()
       : generator_(nullptr),
@@ -82,7 +82,7 @@ class SpokenFeedbackEventRewriterTest : public ash::test::AshTestBase {
   }
 
   void SetUp() override {
-    ash::test::AshTestBase::SetUp();
+    ash::AshTestBase::SetUp();
     generator_ = &AshTestBase::GetEventGenerator();
     CurrentContext()->AddPreTargetHandler(&event_capturer_);
     CurrentContext()->GetHost()->GetEventSource()->AddEventRewriter(
@@ -94,7 +94,7 @@ class SpokenFeedbackEventRewriterTest : public ash::test::AshTestBase {
         spoken_feedback_event_rewriter_.get());
     CurrentContext()->RemovePreTargetHandler(&event_capturer_);
     generator_ = nullptr;
-    ash::test::AshTestBase::TearDown();
+    ash::AshTestBase::TearDown();
   }
 
  protected:

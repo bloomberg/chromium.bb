@@ -14,13 +14,13 @@
 
 namespace ash {
 
-class VideoActivityNotifierTest : public test::AshTestBase {
+class VideoActivityNotifierTest : public AshTestBase {
  public:
   VideoActivityNotifierTest() {}
   ~VideoActivityNotifierTest() override {}
 
   void SetUp() override {
-    test::AshTestBase::SetUp();
+    AshTestBase::SetUp();
     power_client_ = static_cast<chromeos::FakePowerManagerClient*>(
         chromeos::DBusThreadManager::Get()->GetPowerManagerClient());
     detector_.reset(new VideoDetector());
@@ -30,7 +30,7 @@ class VideoActivityNotifierTest : public test::AshTestBase {
   void TearDown() override {
     notifier_.reset();
     detector_.reset();
-    test::AshTestBase::TearDown();
+    AshTestBase::TearDown();
   }
 
  protected:

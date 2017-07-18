@@ -33,7 +33,7 @@ using namespace ash;
 
 namespace chromeos {
 
-class WallpaperManagerCacheTest : public test::AshTestBase {
+class WallpaperManagerCacheTest : public AshTestBase {
  public:
   WallpaperManagerCacheTest()
       : fake_user_manager_(new FakeChromeUserManager()),
@@ -45,13 +45,13 @@ class WallpaperManagerCacheTest : public test::AshTestBase {
   FakeChromeUserManager* fake_user_manager() { return fake_user_manager_; }
 
   void SetUp() override {
-    test::AshTestBase::SetUp();
+    AshTestBase::SetUp();
     WallpaperManager::Initialize();
   }
 
   void TearDown() override {
     WallpaperManager::Shutdown();
-    test::AshTestBase::TearDown();
+    AshTestBase::TearDown();
   }
 
   // Creates a test image of size 1x1.

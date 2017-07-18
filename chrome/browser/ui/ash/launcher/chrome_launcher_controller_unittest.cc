@@ -382,7 +382,7 @@ class TestChromeLauncherController : public ChromeLauncherController {
 // A shell delegate that owns a ChromeLauncherController, like production.
 // TODO(msw): Refine ChromeLauncherController lifetime management.
 // TODO(msw): Avoid relying on TestShellDelegate's ShelfInitializer.
-class ChromeLauncherTestShellDelegate : public ash::test::TestShellDelegate {
+class ChromeLauncherTestShellDelegate : public ash::TestShellDelegate {
  public:
   explicit ChromeLauncherTestShellDelegate(ash::ShelfModel* shelf_model)
       : shelf_model_(shelf_model) {}
@@ -394,7 +394,7 @@ class ChromeLauncherTestShellDelegate : public ash::test::TestShellDelegate {
     return launcher_controller_.get();
   }
 
-  // ash::test::TestShellDelegate:
+  // ash::TestShellDelegate:
   void ShelfShutdown() override { launcher_controller_.reset(); }
 
  private:

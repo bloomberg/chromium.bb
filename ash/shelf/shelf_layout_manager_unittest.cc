@@ -61,11 +61,11 @@ void StepWidgetLayerAnimatorToEnd(views::Widget* widget) {
 }
 
 ShelfWidget* GetShelfWidget() {
-  return test::AshTestBase::GetPrimaryShelf()->shelf_widget();
+  return AshTestBase::GetPrimaryShelf()->shelf_widget();
 }
 
 ShelfLayoutManager* GetShelfLayoutManager() {
-  return test::AshTestBase::GetPrimaryShelf()->shelf_layout_manager();
+  return AshTestBase::GetPrimaryShelf()->shelf_layout_manager();
 }
 
 // Class which waits till the shelf finishes animating to the target size and
@@ -155,7 +155,7 @@ class ShelfDragCallback {
     if (type == ui::ET_GESTURE_SCROLL_UPDATE)
       scroll_.Add(delta);
 
-    Shelf* shelf = test::AshTestBase::GetPrimaryShelf();
+    Shelf* shelf = AshTestBase::GetPrimaryShelf();
     gfx::Rect shelf_bounds = GetShelfWidget()->GetWindowBoundsInScreen();
     if (shelf->IsHorizontalAlignment()) {
       EXPECT_EQ(auto_hidden_shelf_widget_bounds_.bottom(),
@@ -239,7 +239,7 @@ class ShelfLayoutObserverTest : public ShelfLayoutManagerObserver {
 
 }  // namespace
 
-class ShelfLayoutManagerTest : public test::AshTestBase {
+class ShelfLayoutManagerTest : public AshTestBase {
  public:
   ShelfLayoutManagerTest() {}
 
@@ -999,7 +999,7 @@ TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfVisibleState) {
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
 
   // The tested behavior relies on the app list presenter implementation.
-  test::TestAppListViewPresenterImpl app_list_presenter_impl;
+  TestAppListViewPresenterImpl app_list_presenter_impl;
 
   // Create a normal unmaximized window; the shelf should be visible.
   aura::Window* window = CreateTestWindow();
@@ -1030,7 +1030,7 @@ TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfAutoHideState) {
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
 
   // The tested behavior relies on the app list presenter implementation.
-  test::TestAppListViewPresenterImpl app_list_presenter_impl;
+  TestAppListViewPresenterImpl app_list_presenter_impl;
 
   // Create a normal unmaximized window; the shelf should be hidden.
   aura::Window* window = CreateTestWindow();
@@ -1097,7 +1097,7 @@ TEST_F(ShelfLayoutManagerTest, DualDisplayOpenAppListWithShelfAutoHideState) {
   wm::ActivateWindow(window_1);
 
   // The tested behavior relies on the app list presenter implementation.
-  test::TestAppListViewPresenterImpl app_list_presenter_impl;
+  TestAppListViewPresenterImpl app_list_presenter_impl;
 
   Shell::Get()->UpdateShelfVisibility();
   EXPECT_FALSE(app_list_presenter_impl.GetTargetVisibility());
@@ -1135,7 +1135,7 @@ TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfHiddenState) {
   Shelf* shelf = GetPrimaryShelf();
 
   // The tested behavior relies on the app list presenter implementation.
-  test::TestAppListViewPresenterImpl app_list_presenter_impl;
+  TestAppListViewPresenterImpl app_list_presenter_impl;
 
   // Create a window and make it full screen; the shelf should be hidden.
   aura::Window* window = CreateTestWindow();
@@ -1793,22 +1793,22 @@ TEST_F(ShelfLayoutManagerTest, ShelfLayoutInUnifiedDesktop) {
   EXPECT_EQ(gfx::Point(500, 400), status_area_bounds.bottom_right());
 }
 
-class ShelfLayoutManagerKeyboardTest : public test::AshTestBase {
+class ShelfLayoutManagerKeyboardTest : public AshTestBase {
  public:
   ShelfLayoutManagerKeyboardTest() {}
   ~ShelfLayoutManagerKeyboardTest() override {}
 
-  // test::AshTestBase:
+  // AshTestBase:
   void SetUp() override {
-    test::AshTestBase::SetUp();
+    AshTestBase::SetUp();
     UpdateDisplay("800x600");
     keyboard::SetAccessibilityKeyboardEnabled(true);
   }
 
-  // test::AshTestBase:
+  // AshTestBase:
   void TearDown() override {
     keyboard::SetAccessibilityKeyboardEnabled(false);
-    test::AshTestBase::TearDown();
+    AshTestBase::TearDown();
   }
 
   void InitKeyboardBounds() {

@@ -50,7 +50,7 @@ class AlwaysMaximizeTestState : public WindowState::State {
 
 }  // namespace
 
-using WindowStateTest = test::AshTestBase;
+using WindowStateTest = AshTestBase;
 
 // Test that a window gets properly snapped to the display's edges in a
 // multi monitor environment.

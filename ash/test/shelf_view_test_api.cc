@@ -36,7 +36,6 @@ class TestAPIAnimationObserver : public views::BoundsAnimatorObserver {
 }  // namespace
 
 namespace ash {
-namespace test {
 
 ShelfViewTestAPI::ShelfViewTestAPI(ShelfView* shelf_view)
     : shelf_view_(shelf_view) {}
@@ -157,5 +156,4 @@ ShelfViewTestAPI::shelf_button_pressed_metric_tracker() {
   return &(shelf_view_->shelf_button_pressed_metric_tracker_);
 }
 
-}  // namespace test
 }  // namespace ash

@@ -37,7 +37,7 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
 
 }  // namespace
 
-class FrameCaptionButtonContainerViewTest : public ash::test::AshTestBase {
+class FrameCaptionButtonContainerViewTest : public AshTestBase {
  public:
   enum MaximizeAllowed { MAXIMIZE_ALLOWED, MAXIMIZE_DISALLOWED };
 

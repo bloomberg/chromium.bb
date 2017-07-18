@@ -12,7 +12,7 @@
 
 namespace ash {
 
-using PointerWatcherAdapterTest = test::AshTestBase;
+using PointerWatcherAdapterTest = AshTestBase;
 
 enum TestPointerCaptureEvents {
   NONE = 0x01,

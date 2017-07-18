@@ -67,7 +67,7 @@ void PerformDoubleTap() {
 
 }  // namespace
 
-class OverviewButtonTrayTest : public test::AshTestBase {
+class OverviewButtonTrayTest : public AshTestBase {
  public:
   OverviewButtonTrayTest() {}
   ~OverviewButtonTrayTest() override {}

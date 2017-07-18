@@ -53,7 +53,7 @@ class TestTrayActionClient : public mojom::TrayActionClient {
   DISALLOW_COPY_AND_ASSIGN(TestTrayActionClient);
 };
 
-class LockScreenActionTrayTest : public test::AshTestBase {
+class LockScreenActionTrayTest : public AshTestBase {
  public:
   LockScreenActionTrayTest() = default;
   ~LockScreenActionTrayTest() override = default;

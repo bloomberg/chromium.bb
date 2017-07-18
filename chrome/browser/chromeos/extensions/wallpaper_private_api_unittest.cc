@@ -27,7 +27,7 @@ namespace {
 const char kTestAccount1[] = "user1@test.com";
 const char kTestAccount2[] = "user2@test.com";
 
-class WallpaperPrivateApiUnittest : public ash::test::AshTestBase {
+class WallpaperPrivateApiUnittest : public ash::AshTestBase {
  public:
   WallpaperPrivateApiUnittest()
       : fake_user_manager_(new FakeChromeUserManager()),

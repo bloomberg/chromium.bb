@@ -21,7 +21,7 @@
 namespace ash {
 namespace accelerators {
 
-typedef test::AshTestBase AcceleratorCommandsTest;
+using AcceleratorCommandsTest = AshTestBase;
 
 TEST_F(AcceleratorCommandsTest, ToggleMinimized) {
   std::unique_ptr<aura::Window> window1(

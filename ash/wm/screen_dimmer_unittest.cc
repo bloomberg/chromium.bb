@@ -16,7 +16,6 @@
 #include "ui/compositor/layer.h"
 
 namespace ash {
-namespace test {
 
 class ScreenDimmerTest : public AshTestBase {
  public:
@@ -133,5 +132,4 @@ class ScreenDimmerShellDestructionTest : public AshTestBase {
 TEST_F(ScreenDimmerShellDestructionTest, DontCrashIfScreenDimmerOutlivesShell) {
 }
 
-}  // namespace test
 }  // namespace ash

@@ -57,7 +57,6 @@
 #include "ui/wm/core/wm_state.h"
 
 namespace ash {
-namespace test {
 
 // static
 Config AshTestHelper::config_ = Config::CLASSIC;
@@ -308,5 +307,4 @@ void AshTestHelper::CreateShell() {
   Shell::CreateInstance(init_params);
 }
 
-}  // namespace test
 }  // namespace ash

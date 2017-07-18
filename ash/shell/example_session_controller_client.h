@@ -14,8 +14,7 @@ class SessionController;
 
 namespace shell {
 
-class ExampleSessionControllerClient
-    : public test::TestSessionControllerClient {
+class ExampleSessionControllerClient : public TestSessionControllerClient {
  public:
   explicit ExampleSessionControllerClient(SessionController* controller);
   ~ExampleSessionControllerClient() override;

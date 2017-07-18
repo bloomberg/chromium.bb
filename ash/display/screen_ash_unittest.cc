@@ -9,7 +9,7 @@
 
 namespace ash {
 
-using ScreenAshTest = test::AshTestBase;
+using ScreenAshTest = AshTestBase;
 
 // Tests that ScreenAsh::GetWindowAtScreenPoint() returns the correct window on
 // the correct display.

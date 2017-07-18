@@ -11,7 +11,6 @@
 #include "ui/aura/window.h"
 
 namespace ash {
-namespace test {
 
 WorkspaceControllerTestApi::WorkspaceControllerTestApi(
     WorkspaceController* controller)
@@ -32,5 +31,4 @@ aura::Window* WorkspaceControllerTestApi::GetBackdropWindow() {
   return controller_->layout_manager_->backdrop_controller_->backdrop_window_;
 }
 
-}  // namespace test
 }  // namespace ash

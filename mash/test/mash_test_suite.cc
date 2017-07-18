@@ -43,7 +43,7 @@ void MashTestSuite::Initialize() {
   resources = resources.Append(FILE_PATH_LITERAL("ash_mus_resources.pak"));
   ui::ResourceBundle::InitSharedInstanceWithPakPath(resources);
 
-  ash::test::AshTestHelper::config_ = ash::Config::MASH;
+  ash::AshTestHelper::config_ = ash::Config::MASH;
 
   base::DiscardableMemoryAllocator::SetInstance(&discardable_memory_allocator_);
   env_ = aura::Env::CreateInstance(aura::Env::Mode::MUS);

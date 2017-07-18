@@ -58,7 +58,7 @@ class TestLayerDelegate : public ui::LayerDelegate {
 
 }  // namespace
 
-class DragWindowResizerTest : public test::AshTestBase {
+class DragWindowResizerTest : public AshTestBase {
  public:
   DragWindowResizerTest() : transient_child_(nullptr) {}
   ~DragWindowResizerTest() override {}
@@ -145,8 +145,8 @@ class DragWindowResizerTest : public test::AshTestBase {
   }
 
   bool TestIfMouseWarpsAt(const gfx::Point& point_in_screen) {
-    return test::AshTestBase::TestIfMouseWarpsAt(GetEventGenerator(),
-                                                 point_in_screen);
+    return AshTestBase::TestIfMouseWarpsAt(GetEventGenerator(),
+                                           point_in_screen);
   }
 
   aura::test::TestWindowDelegate delegate_;
@@ -589,7 +589,7 @@ TEST_F(DragWindowResizerTest, CursorDeviceScaleFactor) {
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   ASSERT_EQ(2U, root_windows.size());
 
-  test::CursorManagerTestApi cursor_test_api(Shell::Get()->cursor_manager());
+  CursorManagerTestApi cursor_test_api(Shell::Get()->cursor_manager());
   // Move window from the root window with 1.0 device scale factor to the root
   // window with 2.0 device scale factor.
   {

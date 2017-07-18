@@ -16,7 +16,7 @@
 
 namespace ash {
 
-using StickyKeysOverlayTest = test::AshTestBase;
+using StickyKeysOverlayTest = AshTestBase;
 
 TEST_F(StickyKeysOverlayTest, OverlayVisibility) {
   StickyKeysOverlay overlay;
