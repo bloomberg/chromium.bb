@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "build/build_config.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/ui/browser.h"
@@ -119,8 +120,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabUtilBrowserTest, OpenExtensionsOptionsPage) {
   EXPECT_EQ(options_url, GetActiveUrl(browser()));
 }
 
+// Flaky on Windows: http://crbug.com/745729
+#if defined(OS_WIN)
+#define MAYBE_OpenSplitModeExtensionOptionsPageIncognito \
+  DISABLED_OpenSplitModeExtensionOptionsPageIncognito
+#else
+#define MAYBE_OpenSplitModeExtensionOptionsPageIncognito \
+  OpenSplitModeExtensionOptionsPageIncognito
+#endif
 IN_PROC_BROWSER_TEST_F(ExtensionTabUtilBrowserTest,
-                       OpenSplitModeExtensionOptionsPageIncognito) {
+                       MAYBE_OpenSplitModeExtensionOptionsPageIncognito) {
   const Extension* options_split_extension = LoadExtensionIncognito(
       test_data_dir_.AppendASCII("options_page_split_incognito"));
   ASSERT_TRUE(options_split_extension);
