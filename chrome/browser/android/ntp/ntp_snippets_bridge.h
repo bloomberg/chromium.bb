@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_ANDROID_NTP_NTP_SNIPPETS_BRIDGE_H_
 #define CHROME_BROWSER_ANDROID_NTP_NTP_SNIPPETS_BRIDGE_H_
 
-#include <jni.h>
-
 #include "base/android/scoped_java_ref.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
@@ -105,8 +103,6 @@ class NTPSnippetsBridge
   void RestoreDismissedCategories(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
-
-  static bool Register(JNIEnv* env);
 
  private:
   ~NTPSnippetsBridge() override;

@@ -27,10 +27,6 @@ void DocumentWebContentsDelegate::AttachContents(
   web_contents->SetDelegate(this);
 }
 
-bool DocumentWebContentsDelegate::Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 void DocumentWebContentsDelegate::AddNewContents(
     content::WebContents* source,
     content::WebContents* new_contents,

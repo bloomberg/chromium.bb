@@ -64,9 +64,6 @@ class PasswordUIViewAndroid : public PasswordUIView {
   // Destroy the native implementation.
   void Destroy(JNIEnv*, const base::android::JavaParamRef<jobject>&);
 
-  // JNI registration
-  static bool RegisterPasswordUIViewAndroid(JNIEnv* env);
-
  private:
   PasswordManagerPresenter password_manager_presenter_;
   // Java side of UI controller.

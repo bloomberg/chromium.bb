@@ -183,8 +183,6 @@ class OfflinePageBridge : public OfflinePageModel::Observer,
   DISALLOW_COPY_AND_ASSIGN(OfflinePageBridge);
 };
 
-bool RegisterOfflinePageBridge(JNIEnv* env);
-
 }  // namespace android
 }  // namespace offline_pages
 

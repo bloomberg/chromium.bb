@@ -18,11 +18,6 @@ const char* kLaunchRendererInWebApkProcess =
 }  // anonymous namespace
 
 // static
-bool ChromeWebApkHost::Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
-// static
 bool ChromeWebApkHost::CanInstallWebApk() {
   return base::FeatureList::IsEnabled(chrome::android::kImprovedA2HS);
 }

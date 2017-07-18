@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_ANDROID_BOOKMARKS_BOOKMARK_BRIDGE_H_
 #define CHROME_BROWSER_ANDROID_BOOKMARKS_BOOKMARK_BRIDGE_H_
 
-#include <jni.h>
-
 #include "base/android/jni_android.h"
 #include "base/android/jni_weak_ref.h"
 #include "base/compiler_specific.h"
@@ -32,8 +30,6 @@ class BookmarkBridge : public bookmarks::BaseBookmarkModelObserver,
  public:
   BookmarkBridge(JNIEnv* env, jobject obj, jobject j_profile);
   void Destroy(JNIEnv*, const base::android::JavaParamRef<jobject>&);
-
-  static bool RegisterBookmarkBridge(JNIEnv* env);
 
   bool IsDoingExtensiveChanges(JNIEnv* env,
                                const base::android::JavaParamRef<jobject>& obj);

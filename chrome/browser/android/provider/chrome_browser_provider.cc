@@ -815,10 +815,6 @@ static jlong Init(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   return reinterpret_cast<intptr_t>(provider);
 }
 
-bool ChromeBrowserProvider::RegisterChromeBrowserProvider(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 ChromeBrowserProvider::ChromeBrowserProvider(JNIEnv* env, jobject obj)
     : weak_java_provider_(env, obj),
       history_service_observer_(this),

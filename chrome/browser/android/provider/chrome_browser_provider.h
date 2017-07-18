@@ -35,9 +35,6 @@ class ChromeBrowserProvider : public bookmarks::BaseBookmarkModelObserver,
   ChromeBrowserProvider(JNIEnv* env, jobject obj);
   void Destroy(JNIEnv*, const base::android::JavaParamRef<jobject>&);
 
-  // JNI registration.
-  static bool RegisterChromeBrowserProvider(JNIEnv* env);
-
   // Adds either a new bookmark or bookmark folder based on |is_folder|.  The
   // bookmark is added to the beginning of the specified parent and if the
   // parent ID is not valid (i.e. < 0) then it will be added to the bookmark

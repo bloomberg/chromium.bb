@@ -5,14 +5,10 @@
 #ifndef CHROME_BROWSER_ANDROID_PHYSICAL_WEB_EDDYSTONE_ENCODER_BRIDGE_H_
 #define CHROME_BROWSER_ANDROID_PHYSICAL_WEB_EDDYSTONE_ENCODER_BRIDGE_H_
 
-#include <jni.h>
-
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
 
 using base::android::JavaParamRef;
-
-bool RegisterEddystoneEncoderBridge(JNIEnv* env);
 
 base::android::ScopedJavaLocalRef<jbyteArray> EncodeUrlForTesting(
     JNIEnv* env,

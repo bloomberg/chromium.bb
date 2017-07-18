@@ -82,7 +82,3 @@ static jlong Init(JNIEnv* env,
   FindInPageBridge* bridge = new FindInPageBridge(env, obj, j_web_contents);
   return reinterpret_cast<intptr_t>(bridge);
 }
-
-bool FindInPageBridge::RegisterFindInPageBridge(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}

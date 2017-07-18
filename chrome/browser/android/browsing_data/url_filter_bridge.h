@@ -31,9 +31,6 @@ class UrlFilterBridge {
     return j_bridge_;
   }
 
-  // JNI registration.
-  static bool Register(JNIEnv* env);
-
  private:
   // The wrapped native filter.
   base::Callback<bool(const GURL&)> url_filter_;

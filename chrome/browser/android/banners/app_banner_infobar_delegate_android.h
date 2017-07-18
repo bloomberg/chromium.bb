@@ -170,9 +170,6 @@ class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
   DISALLOW_COPY_AND_ASSIGN(AppBannerInfoBarDelegateAndroid);
 };
 
-// Register native methods.
-bool RegisterAppBannerInfoBarDelegateAndroid(JNIEnv* env);
-
 }  // namespace banners
 
 #endif  // CHROME_BROWSER_ANDROID_BANNERS_APP_BANNER_INFOBAR_DELEGATE_ANDROID_H_

@@ -33,10 +33,6 @@ static jlong Init(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   return reinterpret_cast<intptr_t>(omnibox);
 }
 
-bool RegisterOmniboxPrerender(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 void OmniboxPrerender::Clear(JNIEnv* env,
                              const JavaParamRef<jobject>& obj,
                              const JavaParamRef<jobject>& j_profile_android) {

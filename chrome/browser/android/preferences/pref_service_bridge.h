@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_ANDROID_PREFERENCES_PREF_SERVICE_BRIDGE_H_
 #define CHROME_BROWSER_ANDROID_PREFERENCES_PREF_SERVICE_BRIDGE_H_
 
-#include <jni.h>
 #include <string>
 #include <vector>
 
@@ -13,8 +12,6 @@
 
 class PrefServiceBridge {
  public:
-  static bool RegisterPrefServiceBridge(JNIEnv* env);
-
   // Use |locale| to create a language-region pair and language code to prepend
   // to the default accept languages. For Malay, we'll end up creating
   // "ms-MY,ms,en-US,en", and for Swiss-German, we will have

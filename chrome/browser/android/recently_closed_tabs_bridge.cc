@@ -179,8 +179,3 @@ static jlong Init(JNIEnv* env,
       ProfileAndroid::FromProfileAndroid(jprofile));
   return reinterpret_cast<intptr_t>(bridge);
 }
-
-// static
-bool RecentlyClosedTabsBridge::Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}

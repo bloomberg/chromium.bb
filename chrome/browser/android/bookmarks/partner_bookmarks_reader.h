@@ -40,9 +40,6 @@ class PartnerBookmarksReader {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
 
-  // JNI registration
-  static bool RegisterPartnerBookmarksReader(JNIEnv* env);
-
  private:
   PartnerBookmarksShim* partner_bookmarks_shim_;
   Profile* profile_;

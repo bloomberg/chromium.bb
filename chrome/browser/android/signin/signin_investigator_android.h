@@ -15,9 +15,6 @@
 // SigninInvestigator.
 class SigninInvestigatorAndroid {
  public:
-  // Registers the SigninInvestigatorAndroid's native methods through JNI.
-  static bool Register(JNIEnv* env);
-
   // Investigates the current signin, and returns an int corresponding to the
   // scenario we are currently in.
   static jint Investigate(

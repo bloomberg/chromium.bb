@@ -214,8 +214,3 @@ void LogoBridge::GetAnimatedLogo(JNIEnv* env,
   GURL url = GURL(ConvertJavaStringToUTF8(env, j_url));
   animated_logo_fetcher_->Start(env, url, j_callback);
 }
-
-// static
-bool RegisterLogoBridge(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}

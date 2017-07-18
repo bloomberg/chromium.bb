@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_ANDROID_OFFLINE_PAGES_EVALUATION_OFFLINE_PAGE_EVALUATION_BRIDGE_H_
 #define CHROME_BROWSER_ANDROID_OFFLINE_PAGES_EVALUATION_OFFLINE_PAGE_EVALUATION_BRIDGE_H_
 
-#include "base/android/jni_android.h"
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
@@ -29,8 +28,6 @@ class OfflinePageEvaluationBridge : public OfflinePageModel::Observer,
                                     public RequestCoordinator::Observer,
                                     public OfflineEventLogger::Client {
  public:
-  static bool Register(JNIEnv* env);
-
   OfflinePageEvaluationBridge(JNIEnv* env,
                               const base::android::JavaParamRef<jobject>& obj,
                               content::BrowserContext* browser_context,

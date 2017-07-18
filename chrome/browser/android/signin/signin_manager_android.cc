@@ -402,8 +402,3 @@ ExtractDomainName(
   std::string domain = gaia::ExtractDomainName(email);
   return base::android::ConvertUTF8ToJavaString(env, domain);
 }
-
-// static
-bool SigninManagerAndroid::Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}

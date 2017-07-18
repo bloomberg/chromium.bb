@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_ANDROID_ACCESSIBILITY_FONT_SIZE_PREFS_ANDROID_H_
 #define CHROME_BROWSER_ANDROID_ACCESSIBILITY_FONT_SIZE_PREFS_ANDROID_H_
 
-#include <jni.h>
-
 #include <memory>
 
 #include "base/android/scoped_java_ref.h"
@@ -34,8 +32,6 @@ class FontSizePrefsAndroid {
                           jboolean enabled);
   bool GetForceEnableZoom(JNIEnv* env,
                           const base::android::JavaRef<jobject>& obj);
-
-  static bool Register(JNIEnv* env);
 
  private:
   // Callback for FontScaleFactor changes from pref change registrar.

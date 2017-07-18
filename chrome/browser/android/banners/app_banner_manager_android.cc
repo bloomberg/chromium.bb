@@ -332,11 +332,6 @@ std::string AppBannerManagerAndroid::ExtractQueryValueForName(
 }
 
 // static
-bool AppBannerManagerAndroid::Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
-// static
 jint GetHomescreenLanguageOption(JNIEnv* env,
                                  const JavaParamRef<jclass>& clazz) {
   return AppBannerSettingsHelper::GetHomescreenLanguageOption();

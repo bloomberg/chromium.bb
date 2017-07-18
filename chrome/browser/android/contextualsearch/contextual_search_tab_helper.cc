@@ -52,7 +52,3 @@ static jlong Init(JNIEnv* env,
       env, obj, profile);
   return reinterpret_cast<intptr_t>(tab);
 }
-
-bool RegisterContextualSearchTabHelper(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}

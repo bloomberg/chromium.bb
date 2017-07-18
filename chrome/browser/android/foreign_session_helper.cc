@@ -320,8 +320,3 @@ void ForeignSessionHelper::DeleteForeignSession(
   if (open_tabs)
     open_tabs->DeleteForeignSession(ConvertJavaStringToUTF8(env, session_tag));
 }
-
-// static
-bool ForeignSessionHelper::RegisterForeignSessionHelper(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}

@@ -724,9 +724,5 @@ ScopedJavaLocalRef<jobject> OfflinePageBridge::CreateClientId(
       ConvertUTF8ToJavaString(env, client_id.id));
 }
 
-bool RegisterOfflinePageBridge(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace android
 }  // namespace offline_pages

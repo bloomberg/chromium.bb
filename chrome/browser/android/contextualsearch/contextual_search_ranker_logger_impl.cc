@@ -77,10 +77,6 @@ void ContextualSearchRankerLoggerImpl::Destroy(
   delete this;
 }
 
-bool RegisterContextualSearchRankerLoggerImpl(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 jlong Init(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj) {
   ContextualSearchRankerLoggerImpl* ranker_logger_impl =
       new ContextualSearchRankerLoggerImpl(env, obj);

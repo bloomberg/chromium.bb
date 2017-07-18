@@ -173,8 +173,3 @@ static void RestoreCookies(JNIEnv* env,
 static jlong Init(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   return reinterpret_cast<intptr_t>(new CookiesFetcher(env, obj, 0));
 }
-
-// Register native methods
-bool RegisterCookiesFetcher(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}

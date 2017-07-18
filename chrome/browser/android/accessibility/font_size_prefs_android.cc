@@ -58,11 +58,6 @@ bool FontSizePrefsAndroid::GetForceEnableZoom(
   return pref_service_->GetBoolean(prefs::kWebKitForceEnableZoom);
 }
 
-// static
-bool FontSizePrefsAndroid::Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 jlong Init(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   FontSizePrefsAndroid* font_size_prefs_android =
       new FontSizePrefsAndroid(env, obj);

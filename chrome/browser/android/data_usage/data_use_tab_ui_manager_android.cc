@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/data_usage/data_use_tab_ui_manager_android.h"
-
 #include <stdint.h>
 #include <string>
 
@@ -186,8 +184,4 @@ jboolean IsNonRoamingCellularConnection(JNIEnv* env,
   return net::NetworkChangeNotifier::IsConnectionCellular(
              net::NetworkChangeNotifier::GetConnectionType()) &&
          !net::android::GetIsRoaming();
-}
-
-bool RegisterDataUseTabUIManager(JNIEnv* env) {
-  return RegisterNativesImpl(env);
 }

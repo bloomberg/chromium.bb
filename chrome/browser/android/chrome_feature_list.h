@@ -63,8 +63,6 @@ extern const base::Feature kWebVrAutopresent;
 extern const base::Feature kWebVRCardboardSupport;
 extern const base::Feature kXGEOVisibleNetworks;
 
-bool RegisterChromeFeatureListJni(JNIEnv* env);
-
 }  // namespace android
 }  // namespace chrome
 

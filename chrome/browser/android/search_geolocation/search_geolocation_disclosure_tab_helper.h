@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_ANDROID_SEARCH_GEOLOCATION_SEARCH_GEOLOCATION_DISCLOSURE_TAB_HELPER_H_
 #define CHROME_BROWSER_ANDROID_SEARCH_GEOLOCATION_SEARCH_GEOLOCATION_DISCLOSURE_TAB_HELPER_H_
 
-#include <jni.h>
-
 #include "base/macros.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -39,9 +37,6 @@ class SearchGeolocationDisclosureTabHelper
   static bool IsDisclosureResetForTests(Profile* profile);
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
-
-  // Registers native methods.
-  static bool Register(JNIEnv* env);
 
  private:
   explicit SearchGeolocationDisclosureTabHelper(content::WebContents* contents);

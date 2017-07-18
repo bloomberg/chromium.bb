@@ -260,11 +260,6 @@ void MostVisitedSitesBridge::RecordOpenedMostVisitedItem(
                                       static_cast<TileVisualType>(tile_type));
 }
 
-// static
-bool MostVisitedSitesBridge::Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 static jlong Init(JNIEnv* env,
                   const JavaParamRef<jobject>& obj,
                   const JavaParamRef<jobject>& jprofile) {

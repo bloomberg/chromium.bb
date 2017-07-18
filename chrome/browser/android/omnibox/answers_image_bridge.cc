@@ -2,10 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/omnibox/answers_image_bridge.h"
-
-#include <jni.h>
-
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
@@ -78,9 +74,4 @@ static int RequestAnswersImage(JNIEnv* env,
   return bitmap_fetcher_service->RequestImage(
       GURL(url), new AnswersImageObserverAndroid(env, java_callback),
       NO_TRAFFIC_ANNOTATION_YET);
-}
-
-// static
-bool RegisterAnswersImageBridge(JNIEnv* env) {
-  return RegisterNativesImpl(env);
 }

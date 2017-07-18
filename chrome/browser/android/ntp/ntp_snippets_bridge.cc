@@ -458,8 +458,3 @@ void NTPSnippetsBridge::OnSuggestionsFetched(
   RunCallbackAndroid(callback,
                      ToJavaSuggestionList(env, category, suggestions));
 }
-
-// static
-bool NTPSnippetsBridge::Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}

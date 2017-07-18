@@ -230,10 +230,6 @@ void ExternalDataUseObserverBridge::RegisterGoogleVariationID(
   }
 }
 
-bool RegisterExternalDataUseObserver(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace android
 
 }  // namespace chrome

@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/preferences/website_preference_bridge.h"
-
 #include <algorithm>
 #include <string>
 #include <vector>
@@ -846,9 +844,4 @@ static jboolean GetAdBlockingActivated(JNIEnv* env,
   GURL url(ConvertJavaStringToUTF8(env, jorigin));
   return !!GetHostContentSettingsMap(false)->GetWebsiteSetting(
       url, GURL(), CONTENT_SETTINGS_TYPE_ADS_DATA, std::string(), nullptr);
-}
-
-// Register native methods
-bool RegisterWebsitePreferenceBridge(JNIEnv* env) {
-  return RegisterNativesImpl(env);
 }

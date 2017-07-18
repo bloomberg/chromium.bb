@@ -33,9 +33,6 @@ class ThumbnailProvider {
   void OnThumbnailRetrieved(const std::string& file_path,
                             const SkBitmap& thumbnail);
 
-  // Registers the JNI bindings.
-  static bool RegisterThumbnailProvider(JNIEnv* env);
-
  private:
   ~ThumbnailProvider();
 

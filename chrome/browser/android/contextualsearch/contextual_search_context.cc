@@ -137,10 +137,6 @@ void ContextualSearchContext::Destroy(
   delete this;
 }
 
-bool RegisterContextualSearchContext(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 jlong Init(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj) {
   ContextualSearchContext* context = new ContextualSearchContext(env, obj);
   return reinterpret_cast<intptr_t>(context);

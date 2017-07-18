@@ -610,8 +610,3 @@ static void PrefetchZeroSuggestResults(JNIEnv* env,
   // ZeroSuggestPrefetcher deletes itself after it's done prefetching.
   new ZeroSuggestPrefetcher(profile);
 }
-
-// Register native methods
-bool RegisterAutocompleteControllerAndroid(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}

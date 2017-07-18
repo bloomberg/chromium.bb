@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/metrics/launch_metrics.h"
-
 #include "base/android/jni_string.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
@@ -28,10 +26,6 @@ enum HomeScreenLaunch {
   HOME_SCREEN_LAUNCH_SHORTCUT = 1,
   HOME_SCREEN_LAUNCH_COUNT = 2
 };
-
-bool RegisterLaunchMetrics(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
 
 static void RecordLaunch(JNIEnv* env,
                          const JavaParamRef<jclass>& caller,

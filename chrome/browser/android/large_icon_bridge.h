@@ -26,7 +26,6 @@ class LargeIconBridge {
       const base::android::JavaParamRef<jstring>& j_page_url,
       jint min_source_size_px,
       const base::android::JavaParamRef<jobject>& j_callback);
-  static bool RegisterLargeIconBridge(JNIEnv* env);
 
  private:
   virtual ~LargeIconBridge();

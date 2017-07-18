@@ -105,11 +105,6 @@ TabWebContentsDelegateAndroid::~TabWebContentsDelegateAndroid() {
   notification_registrar_.RemoveAll();
 }
 
-// Register native methods.
-bool RegisterTabWebContentsDelegateAndroid(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 void TabWebContentsDelegateAndroid::LoadingStateChanged(
     WebContents* source, bool to_different_document) {
   bool has_stopped = source == nullptr || !source->IsLoading();

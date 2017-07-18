@@ -106,6 +106,4 @@ struct ContextualSearchContext {
   DISALLOW_COPY_AND_ASSIGN(ContextualSearchContext);
 };
 
-bool RegisterContextualSearchContext(JNIEnv* env);
-
 #endif  // CHROME_BROWSER_ANDROID_CONTEXTUALSEARCH_CONTEXTUAL_SEARCH_CONTEXT_H_

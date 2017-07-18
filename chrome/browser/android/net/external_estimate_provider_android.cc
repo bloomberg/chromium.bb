@@ -143,9 +143,5 @@ void ExternalEstimateProviderAndroid::NotifyUpdatedEstimateAvailable() const {
   }
 }
 
-bool RegisterExternalEstimateProviderAndroid(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace android
 }  // namespace chrome

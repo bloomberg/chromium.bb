@@ -29,9 +29,6 @@ class ShortcutHelper {
   using WebApkInfoCallback =
       base::Callback<void(const std::vector<WebApkInfo>&)>;
 
-  // Registers JNI hooks.
-  static bool RegisterShortcutHelper(JNIEnv* env);
-
   // Adds a shortcut to the launcher using a SkBitmap. The type of shortcut
   // added depends on the properties in |info|.
   static void AddToLauncherWithSkBitmap(content::WebContents* web_contents,

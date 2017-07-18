@@ -26,8 +26,6 @@ class BrowsingDataCounterBridge {
   // Called by the Java counterpart when it is getting garbage collected.
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 
-  static bool Register(JNIEnv* env);
-
  private:
   void onCounterFinished(
       std::unique_ptr<browsing_data::BrowsingDataCounter::Result> result);

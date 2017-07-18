@@ -175,9 +175,3 @@ static jboolean IsDownloadable(JNIEnv* env,
                                const JavaParamRef<jstring>& url) {
   return CheckSchemeBelongsToList(env, url, g_downloadable_schemes);
 }
-
-
-// Register native methods
-bool RegisterUrlUtilities(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}

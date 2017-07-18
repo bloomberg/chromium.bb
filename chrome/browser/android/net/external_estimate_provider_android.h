@@ -75,8 +75,6 @@ class ExternalEstimateProviderAndroid : public net::ExternalEstimateProvider {
   DISALLOW_COPY_AND_ASSIGN(ExternalEstimateProviderAndroid);
 };
 
-bool RegisterExternalEstimateProviderAndroid(JNIEnv* env);
-
 }  // namespace android
 }  // namespace chrome
 

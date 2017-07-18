@@ -449,8 +449,4 @@ bool AppBannerInfoBarDelegateAndroid::LinkClicked(
   return true;
 }
 
-bool RegisterAppBannerInfoBarDelegateAndroid(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace banners

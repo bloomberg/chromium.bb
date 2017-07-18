@@ -48,7 +48,6 @@ class OriginVerifier {
   DISALLOW_COPY_AND_ASSIGN(OriginVerifier);
 };
 
-bool RegisterOriginVerifier(JNIEnv* env);
 }  // namespace customtabs
 
 #endif  // CHROME_BROWSER_ANDROID_CUSTOMTABS_ORIGIN_VERIFIER_H_

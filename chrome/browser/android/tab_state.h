@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_ANDROID_TAB_STATE_H_
 #define CHROME_BROWSER_ANDROID_TAB_STATE_H_
 
-#include <jni.h>
 #include <vector>
 
 #include "base/android/scoped_java_ref.h"
@@ -66,8 +65,5 @@ class WebContentsState {
                                               jint referrer_policy,
                                               jboolean is_off_the_record);
 };
-
-// Registers methods for JNI.
-bool RegisterTabState(JNIEnv* env);
 
 #endif  // CHROME_BROWSER_ANDROID_TAB_STATE_H_

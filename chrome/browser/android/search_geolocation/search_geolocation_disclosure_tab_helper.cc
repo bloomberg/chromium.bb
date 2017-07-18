@@ -137,11 +137,6 @@ void SearchGeolocationDisclosureTabHelper::RegisterProfilePrefs(
       prefs::kSearchGeolocationPostDisclosureMetricsRecorded, false);
 }
 
-// static
-bool SearchGeolocationDisclosureTabHelper::Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 void SearchGeolocationDisclosureTabHelper::MaybeShowDisclosureForNavigation(
     const GURL& gurl) {
   if (!consistent_geolocation_disclosure_enabled_)

@@ -41,9 +41,5 @@ static void RecordMetricsReportingDefaultOptIn(JNIEnv* env,
                           : metrics::EnableMetricsDefault::OPT_OUT);
 }
 
-bool RegisterStartupMetricUtils(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace android
 }  // namespace chrome

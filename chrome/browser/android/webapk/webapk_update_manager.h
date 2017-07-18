@@ -15,9 +15,6 @@ enum class WebApkInstallResult;
 // request to WebAPK Server.
 class WebApkUpdateManager {
  public:
-  // Registers JNI hooks.
-  static bool Register(JNIEnv* env);
-
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebApkUpdateManager);
 };
