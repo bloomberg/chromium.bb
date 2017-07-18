@@ -94,7 +94,7 @@ int CastSocketService::OpenSocket(const net::IPEndPoint& ip_endpoint,
                                   const base::TimeDelta& liveness_timeout,
                                   const base::TimeDelta& ping_interval,
                                   uint64_t device_capabilities,
-                                  const CastSocket::OnOpenCallback& open_cb,
+                                  CastSocket::OnOpenCallback open_cb,
                                   CastSocket::Observer* observer) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(observer);
@@ -113,21 +113,21 @@ int CastSocketService::OpenSocket(const net::IPEndPoint& ip_endpoint,
   }
 
   socket->AddObserver(observer);
-  socket->Connect(open_cb);
+  socket->Connect(std::move(open_cb));
   return socket->id();
 }
 
 int CastSocketService::OpenSocket(const net::IPEndPoint& ip_endpoint,
                                   net::NetLog* net_log,
-                                  const CastSocket::OnOpenCallback& open_cb,
+                                  CastSocket::OnOpenCallback open_cb,
                                   CastSocket::Observer* observer) {
   auto connect_timeout = base::TimeDelta::FromSeconds(kConnectTimeoutSecs);
   auto ping_interval = base::TimeDelta::FromSeconds(kPingIntervalInSecs);
   auto liveness_timeout =
       base::TimeDelta::FromSeconds(kConnectLivenessTimeoutSecs);
   return OpenSocket(ip_endpoint, net_log, connect_timeout, liveness_timeout,
-                    ping_interval, CastDeviceCapability::NONE, open_cb,
-                    observer);
+                    ping_interval, CastDeviceCapability::NONE,
+                    std::move(open_cb), observer);
 }
 
 void CastSocketService::RemoveObserver(CastSocket::Observer* observer) {

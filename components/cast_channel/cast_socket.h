@@ -57,7 +57,7 @@ enum CastDeviceCapability {
 class CastSocket {
  public:
   using OnOpenCallback =
-      base::Callback<void(int channel_id, ChannelError error_state)>;
+      base::OnceCallback<void(int channel_id, ChannelError error_state)>;
 
   class Observer {
    public:
@@ -85,7 +85,7 @@ class CastSocket {
   // If the CastSocket is destroyed while the connection is pending, |callback|
   // will be invoked with CHANNEL_ERROR_UNKNOWN. In this case, invoking
   // |callback| must not result in any re-entrancy behavior.
-  virtual void Connect(const OnOpenCallback& callback) = 0;
+  virtual void Connect(OnOpenCallback callback) = 0;
 
   // Closes the channel if not already closed. On completion, the channel will
   // be in READY_STATE_CLOSED.
@@ -173,7 +173,7 @@ class CastSocketImpl : public CastSocket {
   ~CastSocketImpl() override;
 
   // CastSocket interface.
-  void Connect(const OnOpenCallback& callback) override;
+  void Connect(OnOpenCallback callback) override;
   CastTransport* transport() const override;
   void Close(const net::CompletionCallback& callback) override;
   const net::IPEndPoint& ip_endpoint() const override;

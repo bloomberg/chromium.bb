@@ -61,7 +61,7 @@ class CastSocketService {
                  const base::TimeDelta& liveness_timeout,
                  const base::TimeDelta& ping_interval,
                  uint64_t device_capabilities,
-                 const CastSocket::OnOpenCallback& open_cb,
+                 CastSocket::OnOpenCallback open_cb,
                  CastSocket::Observer* observer);
 
   // Opens cast socket with |ip_endpoint| and invokes |open_cb| when opening
@@ -74,7 +74,7 @@ class CastSocketService {
   // Does not take ownership of |observer|.
   virtual int OpenSocket(const net::IPEndPoint& ip_endpoint,
                          net::NetLog* net_log,
-                         const CastSocket::OnOpenCallback& open_cb,
+                         CastSocket::OnOpenCallback open_cb,
                          CastSocket::Observer* observer);
 
   // Remove |observer| from each socket in |sockets_|

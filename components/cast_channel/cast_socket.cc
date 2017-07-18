@@ -137,7 +137,7 @@ CastSocketImpl::~CastSocketImpl() {
   CloseInternal();
 
   for (auto& connect_callback : connect_callbacks_)
-    connect_callback.Run(channel_id_, ChannelError::UNKNOWN);
+    std::move(connect_callback).Run(channel_id_, ChannelError::UNKNOWN);
   connect_callbacks_.clear();
 }
 
@@ -241,20 +241,20 @@ void CastSocketImpl::SetTransportForTesting(
   transport_ = std::move(transport);
 }
 
-void CastSocketImpl::Connect(const OnOpenCallback& callback) {
+void CastSocketImpl::Connect(OnOpenCallback callback) {
   switch (ready_state_) {
     case ReadyState::NONE:
-      connect_callbacks_.push_back(callback);
+      connect_callbacks_.push_back(std::move(callback));
       Connect();
       break;
     case ReadyState::CONNECTING:
-      connect_callbacks_.push_back(callback);
+      connect_callbacks_.push_back(std::move(callback));
       break;
     case ReadyState::OPEN:
-      callback.Run(channel_id_, ChannelError::NONE);
+      std::move(callback).Run(channel_id_, ChannelError::NONE);
       break;
     case ReadyState::CLOSED:
-      callback.Run(channel_id_, ChannelError::CONNECT_ERROR);
+      std::move(callback).Run(channel_id_, ChannelError::CONNECT_ERROR);
       break;
     default:
       NOTREACHED() << "Unknown ReadyState: "
@@ -573,7 +573,7 @@ void CastSocketImpl::DoConnectCallback() {
   }
 
   for (auto& connect_callback : connect_callbacks_)
-    connect_callback.Run(channel_id_, error_state_);
+    std::move(connect_callback).Run(channel_id_, error_state_);
   connect_callbacks_.clear();
 }
 
