@@ -9,12 +9,18 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "components/arc/arc_service.h"
 #include "components/arc/common/voice_interaction_framework.mojom.h"
 #include "components/arc/instance_holder.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/events/event_handler.h"
+
+class KeyedServiceBaseFactory;
+
+namespace content {
+class BrowserContext;
+}  // namespace content
 
 namespace gfx {
 class Rect;
@@ -22,19 +28,29 @@ class Rect;
 
 namespace arc {
 
+class ArcBridgeService;
+
 // This provides voice interaction context (currently screenshots)
 // to ARC to be used by VoiceInteractionSession. This class lives on the UI
 // thread.
 class ArcVoiceInteractionFrameworkService
-    : public ArcService,
+    : public KeyedService,
       public mojom::VoiceInteractionFrameworkHost,
       public ui::AcceleratorTarget,
       public ui::EventHandler,
       public InstanceHolder<
           mojom::VoiceInteractionFrameworkInstance>::Observer {
  public:
-  explicit ArcVoiceInteractionFrameworkService(
-      ArcBridgeService* bridge_service);
+  // Returns singleton instance for the given BrowserContext,
+  // or nullptr if the browser |context| is not allowed to use ARC.
+  static ArcVoiceInteractionFrameworkService* GetForBrowserContext(
+      content::BrowserContext* context);
+
+  // Returns factory for ArcVoiceInteractionFrameworkService.
+  static KeyedServiceBaseFactory* GetFactory();
+
+  ArcVoiceInteractionFrameworkService(content::BrowserContext* context,
+                                      ArcBridgeService* bridge_service);
   ~ArcVoiceInteractionFrameworkService() override;
 
   // InstanceHolder<mojom::VoiceInteractionFrameworkInstance> overrides.
@@ -86,9 +102,6 @@ class ArcVoiceInteractionFrameworkService
   // Start the voice interaction setup wizard in container.
   void StartVoiceInteractionSetupWizard();
 
-  // For supporting ArcServiceManager::GetService<T>().
-  static const char kArcServiceName[];
-
  private:
   void SetMetalayerVisibility(bool visible);
 
@@ -96,6 +109,8 @@ class ArcVoiceInteractionFrameworkService
 
   bool InitiateUserInteraction();
 
+  content::BrowserContext* context_;
+  ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager
   mojo::Binding<mojom::VoiceInteractionFrameworkHost> binding_;
   base::Closure metalayer_closed_callback_;
   bool metalayer_enabled_ = false;

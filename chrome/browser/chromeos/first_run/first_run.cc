@@ -15,7 +15,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
-#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/chrome_switches.h"
@@ -111,13 +111,12 @@ class DialogLauncher : public content::NotificationObserver {
 
     // If voice interaction value prop needs to be shown, the tutorial will be
     // shown after the voice interaction OOBE flow.
-    if (arc::IsArcPlayStoreEnabledForProfile(
-            ProfileManager::GetActiveUserProfile()) &&
+    if (arc::IsArcPlayStoreEnabledForProfile(profile_) &&
         !profile_->GetPrefs()->GetBoolean(
             prefs::kArcVoiceInteractionValuePropAccepted)) {
       auto* service =
-          arc::ArcServiceManager::Get()
-              ->GetService<arc::ArcVoiceInteractionFrameworkService>();
+          arc::ArcVoiceInteractionFrameworkService::GetForBrowserContext(
+              profile_);
       if (service)
         service->StartSessionFromUserInteraction(gfx::Rect());
     } else {
