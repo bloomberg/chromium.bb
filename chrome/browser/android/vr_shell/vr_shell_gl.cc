@@ -1067,18 +1067,20 @@ void VrShellGl::OnVSync() {
     return;
 
   base::TimeTicks now = base::TimeTicks::Now();
-  base::TimeTicks target;
-  target = now + vsync_interval_;
-  int64_t intervals = (target - vsync_timebase_) / vsync_interval_;
+  base::TimeTicks target = now + vsync_interval_;
+  double intervalsF =
+      (target - vsync_timebase_).InSecondsF() / vsync_interval_.InSecondsF();
+  uint64_t intervals = std::llround(intervalsF);
   target = vsync_timebase_ + intervals * vsync_interval_;
   task_runner_->PostDelayedTask(FROM_HERE, vsync_task_.callback(),
                                 target - now);
-  base::TimeDelta current = target - vsync_interval_ - base::TimeTicks();
+
+  base::TimeDelta current_time = target - vsync_interval_ - base::TimeTicks();
   if (!callback_.is_null()) {
-    SendVSync(current, base::ResetAndReturn(&callback_));
+    SendVSync(current_time, base::ResetAndReturn(&callback_));
   } else {
     pending_vsync_ = true;
-    pending_time_ = current;
+    pending_time_ = current_time;
   }
   if (!ShouldDrawWebVr()) {
     DrawFrame(-1);
