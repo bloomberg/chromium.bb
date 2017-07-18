@@ -184,10 +184,6 @@ crbug.com/669911 virtual/threaded/animations/responsive/zoom-responsive-transfor
 
 crbug.com/258896 animations/direction-and-fill/animation-direction-reverse-fill-mode.html [ Slow ]
 
-# This test has to generate >250MB of data which takes ~6s in both release and debug.
-crbug.com/420240 http/tests/xmlhttprequest/xmlhttprequest-json-response-overflow.html [ Slow ]
-crbug.com/420240 virtual/mojo-loading/http/tests/xmlhttprequest/xmlhttprequest-json-response-overflow.html [ Slow ]
-
 # These html5lib tests are generated tests that test a huge amount of permutations so they need a bit more time.
 crbug.com/453312 html5lib/generated/run-doctype01-data.html [ Slow ]
 crbug.com/453312 html5lib/generated/run-domjs-unsafe-data.html [ Slow ]

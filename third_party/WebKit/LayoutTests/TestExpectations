@@ -750,8 +750,6 @@ crbug.com/636053 [ Mac Win ] virtual/threaded/printing/thead-repeats-at-top-of-e
 crbug.com/432129 html/marquee/marquee-scroll.html [ Failure Pass ]
 crbug.com/326139 crbug.com/390125 media/video-frame-accurate-seek.html [ Failure Pass ]
 crbug.com/248938 virtual/threaded/animations/stability/animation-iteration-event-destroy-renderer.html [ Pass Timeout ]
-crbug.com/446385 [ Win7 Debug ] http/tests/xmlhttprequest/xmlhttprequest-json-response-overflow.html [ Crash Pass Timeout ]
-crbug.com/446385 [ Win7 Debug ] virtual/mojo-loading/http/tests/xmlhttprequest/xmlhttprequest-json-response-overflow.html [ Crash Pass Timeout ]
 crbug.com/248938 virtual/threaded/animations/dynamic-stylesheet-loading.html [ Pass Failure Timeout ]
 crbug.com/421283 html/marquee/marquee-scrollamount.html [ Pass Failure ]
 
