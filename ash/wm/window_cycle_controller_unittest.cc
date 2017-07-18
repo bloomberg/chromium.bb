@@ -7,19 +7,19 @@
 #include <algorithm>
 #include <memory>
 
+#include "ash/app_list/test_app_list_view_presenter_impl.h"
 #include "ash/focus_cycler.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/scoped_root_window_for_new_windows.h"
 #include "ash/session/session_controller.h"
+#include "ash/session/test_session_controller_client.h"
 #include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_view_test_api.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/shelf_view_test_api.h"
-#include "ash/test/test_app_list_view_presenter_impl.h"
-#include "ash/test/test_session_controller_client.h"
-#include "ash/test/test_shell_delegate.h"
+#include "ash/test_shell_delegate.h"
 #include "ash/wm/window_cycle_list.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"

@@ -6,7 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/cursor_manager_test_api.h"
+#include "ash/wm/cursor_manager_test_api.h"
 #include "ui/aura/env.h"
 #include "ui/display/display_layout.h"
 #include "ui/display/manager/display_manager.h"

@@ -253,7 +253,7 @@ static_library("test_support") {
 
     public_deps += [
       "//ash",
-      "//ash/test:test_support_with_content",
+      "//ash:test_support_with_content",
       "//ui/aura",
       "//ui/aura:test_support",
     ]
@@ -839,7 +839,7 @@ if (!is_android) {
         # Use only the _chromeos version on Ash / Chrome OS.
         "base/view_event_test_platform_part_default.cc",
       ]
-      deps += [ "//ash/test:interactive_ui_test_support" ]
+      deps += [ "//ash:interactive_ui_test_support" ]
     }
 
     if (is_android) {
@@ -2047,7 +2047,7 @@ test("browser_tests") {
         "../browser/ui/views/frame/browser_non_client_frame_view_ash_browsertest.cc",
       ]
       deps += [
-        "//ash/test:test_support_with_content",
+        "//ash:test_support_with_content",
         "//ui/keyboard:test_support",
       ]
 
@@ -4246,9 +4246,9 @@ test("unit_tests") {
       "../browser/ui/window_sizer/window_sizer_ash_unittest.cc",
     ]
     deps += [
+      "//ash:test_support_with_content",
       "//ash/resources",
       "//ash/strings",
-      "//ash/test:test_support_with_content",
     ]
 
     # Chrome OS uses window_sizer_ash_unittest.cc

@@ -8,9 +8,9 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_button.h"
 #include "ash/shelf/shelf_view.h"
+#include "ash/shelf/shelf_view_test_api.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/shelf_view_test_api.h"
 #include "base/strings/string_number_conversions.h"
 
 namespace ash {

@@ -6,6 +6,7 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/accelerators/accelerator_table.h"
+#include "ash/app_list/test_app_list_view_presenter_impl.h"
 #include "ash/focus_cycler.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -21,9 +22,8 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_item.h"
+#include "ash/system/tray/test_system_tray_item.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/test_app_list_view_presenter_impl.h"
-#include "ash/test/test_system_tray_item.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"

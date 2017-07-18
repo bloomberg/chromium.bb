@@ -14,7 +14,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
-#include "ash/test/test_screenshot_delegate.h"
+#include "ash/test_screenshot_delegate.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "testing/gtest/include/gtest/gtest.h"

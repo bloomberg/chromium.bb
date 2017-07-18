@@ -4,11 +4,11 @@
 
 #include "ash/display/mirror_window_controller.h"
 
+#include "ash/display/mirror_window_test_api.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/cursor_manager_test_api.h"
-#include "ash/test/mirror_window_test_api.h"
+#include "ash/wm/cursor_manager_test_api.h"
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
 #include "ui/aura/env.h"

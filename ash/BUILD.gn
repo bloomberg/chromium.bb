@@ -1019,8 +1019,8 @@ static_library("ash_shell_lib") {
 
   deps = [
     ":ash",
+    ":test_support_without_content",
     "//ash/public/cpp:ash_public_cpp",
-    "//ash/test:test_support_without_content",
     "//base",
     "//base:i18n",
     "//components/user_manager",
@@ -1055,8 +1055,8 @@ static_library("ash_shell_lib_with_content") {
   deps = [
     ":ash_shell_lib",
     ":ash_with_content",
+    ":test_support_without_content",
     "//ash/public/cpp:ash_public_cpp",
-    "//ash/test:test_support_without_content",
     "//base:i18n",
     "//chrome:packed_resources",
     "//chromeos",
@@ -1098,8 +1098,8 @@ test("ash_content_unittests") {
   deps = [
     ":ash",
     ":ash_with_content",
+    ":test_support_with_content",
     "//ash/public/cpp:ash_public_cpp",
-    "//ash/test:test_support_with_content",
     "//base",
     "//base/test:test_support",
     "//chromeos",
@@ -1291,12 +1291,12 @@ source_set("common_unittests") {
     "wm/workspace_controller_unittest.cc",
   ]
   deps = [
+    ":test_support_without_content",
     "//ash",
     "//ash/mus:lib",
     "//ash/public/cpp:ash_public_cpp",
     "//ash/public/cpp:unit_tests",
     "//ash/resources/vector_icons",
-    "//ash/test:test_support_without_content",
     "//base",
     "//base/test:test_support",
     "//chromeos",
@@ -1329,7 +1329,7 @@ source_set("common_unittests") {
     "//ui/wm/public",
   ]
   public_deps = [
-    "//ash/test:test_support_without_content",
+    ":test_support_without_content",
   ]
 
   if (use_ozone) {
@@ -1450,12 +1450,12 @@ test("ash_unittests") {
   deps = [
     ":ash",
     ":common_unittests",
+    ":test_support_without_content",
     "//ash/autoclick/common:autoclick",
     "//ash/public/cpp:ash_public_cpp",
     "//ash/resources",
     "//ash/resources/vector_icons",
     "//ash/strings",
-    "//ash/test:test_support_without_content",
     "//ash/touch_hud",
     "//base",
     "//base/test:test_support",
@@ -1535,8 +1535,8 @@ test("ash_perftests") {
   ]
 
   deps = [
+    ":test_support_without_content",
     "//ash/public/cpp:ash_public_cpp",
-    "//ash/test:test_support_without_content",
     "//base/test:test_support",
     "//cc:test_support",
     "//cc/base",
@@ -1572,5 +1572,212 @@ executable("ash_shell_with_content") {
     "//ash/strings:ash_test_strings",
     "//ash/resources:ash_test_resources_with_content_100_percent",
     "//ash/resources:ash_test_resources_200_percent",
+  ]
+}
+
+static_library("test_support_without_content") {
+  testonly = true
+  sources = [
+    "test/ash_test_environment_default.cc",
+  ]
+
+  public_deps = [
+    ":test_support_common",
+  ]
+
+  deps = [
+    "//base",
+    "//base/test:test_support",
+    "//skia",
+  ]
+}
+
+static_library("test_support_with_content") {
+  testonly = true
+  sources = [
+    "test/ash_test_environment_content.cc",
+    "test/ash_test_environment_content.h",
+    "test/content/test_shell_content_state.cc",
+    "test/content/test_shell_content_state.h",
+  ]
+  configs += [ "//build/config:precompiled_headers" ]
+
+  public_deps = [
+    ":test_support_common",
+    "//ash:ash_with_content",
+    "//content/public/browser",
+    "//content/test:test_support",
+    "//skia",
+  ]
+}
+
+# Internal target consumed by |test_support_with_content| and
+# |test_support_without_content|. This target contains all the test support
+# files, with the exception of an implementation of AshTestEnvironment.
+# Consumers of ash should use one of |test_support_with_content| or
+# |test_support_without_content|.
+static_library("test_support_common") {
+  testonly = true
+  visibility = [ ":*" ]
+  sources = [
+    "app_list/test_app_list_view_presenter_impl.cc",
+    "app_list/test_app_list_view_presenter_impl.h",
+    "display/display_configuration_controller_test_api.cc",
+    "display/display_configuration_controller_test_api.h",
+    "display/mirror_window_test_api.cc",
+    "display/mirror_window_test_api.h",
+    "display/screen_orientation_controller_test_api.cc",
+    "display/screen_orientation_controller_test_api.h",
+    "keyboard/test_keyboard_ui.cc",
+    "keyboard/test_keyboard_ui.h",
+    "laser/laser_pointer_controller_test_api.cc",
+    "laser/laser_pointer_controller_test_api.h",
+    "laser/laser_pointer_points_test_api.cc",
+    "laser/laser_pointer_points_test_api.h",
+    "metrics/task_switch_time_tracker_test_api.cc",
+    "metrics/task_switch_time_tracker_test_api.h",
+    "metrics/user_metrics_recorder_test_api.cc",
+    "metrics/user_metrics_recorder_test_api.h",
+
+    # TODO(jamescook): Consider adding a //ash/public/cpp:test_support target.
+    "public/cpp/immersive/immersive_fullscreen_controller_test_api.cc",
+    "public/cpp/immersive/immersive_fullscreen_controller_test_api.h",
+    "rotator/screen_rotation_animator_test_api.cc",
+    "rotator/screen_rotation_animator_test_api.h",
+    "session/test_session_controller_client.cc",
+    "session/test_session_controller_client.h",
+    "shelf/overflow_bubble_view_test_api.cc",
+    "shelf/overflow_bubble_view_test_api.h",
+    "shelf/overflow_button_test_api.cc",
+    "shelf/overflow_button_test_api.h",
+    "shelf/shelf_button_pressed_metric_tracker_test_api.cc",
+    "shelf/shelf_button_pressed_metric_tracker_test_api.h",
+    "shelf/shelf_view_test_api.cc",
+    "shelf/shelf_view_test_api.h",
+    "shell/toplevel_window.cc",
+    "shell/toplevel_window.h",
+    "shell_test_api.cc",
+    "shell_test_api.h",
+    "system/cast/tray_cast_test_api.cc",
+    "system/cast/tray_cast_test_api.h",
+    "system/palette/test_palette_delegate.cc",
+    "system/palette/test_palette_delegate.h",
+    "system/status_area_widget_test_helper.cc",
+    "system/status_area_widget_test_helper.h",
+    "system/tray/system_tray_test_api.h",
+    "system/tray/test_system_tray_item.cc",
+    "system/tray/test_system_tray_item.h",
+    "test/ash_test_base.cc",
+    "test/ash_test_base.h",
+    "test/ash_test_environment.h",
+    "test/ash_test_helper.cc",
+    "test/ash_test_helper.h",
+    "test/ash_test_views_delegate.cc",
+    "test/ash_test_views_delegate.h",
+
+    # TODO(jamescook): Rename to TestChildModalWindow and move to //ash/wm
+    "test/child_modal_window.cc",
+    "test/child_modal_window.h",
+
+    # TODO(jamescook): Create //ash/accessibility for this and other code.
+    "test/test_accessibility_delegate.cc",
+    "test/test_accessibility_delegate.h",
+    "test/ui_controls_factory_ash.cc",
+    "test/ui_controls_factory_ash.h",
+    "test_screenshot_delegate.cc",
+    "test_screenshot_delegate.h",
+    "test_shell_delegate.cc",
+    "test_shell_delegate.h",
+    "wallpaper/test_wallpaper_delegate.cc",
+    "wallpaper/test_wallpaper_delegate.h",
+    "wallpaper/wallpaper_controller_test_api.cc",
+    "wallpaper/wallpaper_controller_test_api.h",
+    "wm/cursor_manager_test_api.cc",
+    "wm/cursor_manager_test_api.h",
+    "wm/lock_state_controller_test_api.cc",
+    "wm/lock_state_controller_test_api.h",
+    "wm/test_activation_delegate.cc",
+    "wm/test_activation_delegate.h",
+    "wm/test_overlay_delegate.cc",
+    "wm/test_overlay_delegate.h",
+    "wm/test_session_state_animator.cc",
+    "wm/test_session_state_animator.h",
+    "wm/workspace/workspace_event_handler_test_helper.cc",
+    "wm/workspace/workspace_event_handler_test_helper.h",
+    "wm/workspace_controller_test_api.cc",
+    "wm/workspace_controller_test_api.h",
+  ]
+  configs += [ "//build/config:precompiled_headers" ]
+
+  public_deps = [
+    "//ash",
+    "//testing/gtest",
+    "//third_party/WebKit/public:blink_headers",
+    "//ui/display:display_manager_test_api",
+  ]
+  deps = [
+    "//ash",
+    "//ash/mus:lib",
+    "//ash/public/cpp:ash_public_cpp",
+    "//ash/resources",
+    "//base",
+    "//base:i18n",
+    "//base/test:test_support",
+    "//chromeos",
+    "//components/prefs:test_support",
+    "//components/signin/core/account_id",
+    "//components/user_manager:user_manager",
+    "//device/bluetooth",
+    "//services/ui/public/cpp/input_devices",
+    "//services/ui/public/interfaces",
+    "//skia",
+    "//testing/gtest",
+    "//ui/accessibility",
+    "//ui/app_list:test_support",
+    "//ui/app_list/presenter",
+    "//ui/app_list/presenter:test_support",
+    "//ui/aura",
+    "//ui/aura:test_support",
+    "//ui/base:test_support",
+    "//ui/compositor:test_support",
+    "//ui/display",
+    "//ui/display/types",
+    "//ui/events:events_base",
+    "//ui/events:test_support",
+    "//ui/events/devices",
+    "//ui/gl",
+    "//ui/gl:test_support",
+    "//ui/keyboard",
+    "//ui/message_center",
+    "//ui/views",
+    "//ui/views:test_support",
+    "//ui/wm",
+    "//ui/wm/public",
+  ]
+
+  if (use_x11) {
+    deps += [ "//ui/gfx/x" ]
+  }
+}
+
+static_library("interactive_ui_test_support") {
+  testonly = true
+  configs += [ "//build/config:precompiled_headers" ]
+  public_deps = [
+    ":test_support_without_content",
+    "//ash",
+  ]
+  sources = [
+    "test/ash_interactive_ui_test_base.cc",
+    "test/ash_interactive_ui_test_base.h",
+  ]
+  deps = [
+    ":test_support_with_content",
+    "//base",
+    "//skia",
+    "//testing/gtest",
+    "//ui/aura",
+    "//ui/base",
+    "//ui/gl:test_support",
   ]
 }

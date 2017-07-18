@@ -12,7 +12,7 @@
 #include <utility>
 #include <vector>
 
-#include "ash/test/test_session_controller_client.h"
+#include "ash/session/test_session_controller_client.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/test/scoped_command_line.h"

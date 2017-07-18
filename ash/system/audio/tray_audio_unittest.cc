@@ -5,9 +5,9 @@
 #include "ash/system/audio/tray_audio.h"
 
 #include "ash/system/status_area_widget.h"
+#include "ash/system/status_area_widget_test_helper.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/status_area_widget_test_helper.h"
 
 namespace ash {
 
