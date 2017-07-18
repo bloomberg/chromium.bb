@@ -6,6 +6,7 @@
 <script src="./resources/tex-image-and-sub-image-image-bitmap-utils-resize.js"></script>
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
+</head>
 <body>
 <script>
 var wtu = WebGLTestUtils;
@@ -15,88 +16,76 @@ var internalFormat = "RGBA";
 var pixelFormat = "RGBA";
 var pixelType = "UNSIGNED_BYTE";
 
-function setCanvasToRedGreen(ctx) {
-    var width = ctx.canvas.width;
-    var halfWidth = Math.floor(width / 2);
-    var height = ctx.canvas.height;
-    var halfHeight = Math.floor(height / 2);
-    ctx.fillStyle = "rgba(255, 0, 0, 1)";
-    ctx.fillRect(0, 0, halfWidth, halfHeight);
-    ctx.fillStyle = "rgba(255, 0, 0, 0.1)";
-    ctx.fillRect(halfWidth, 0, halfWidth, halfHeight);
-    ctx.fillStyle = "rgba(0, 255, 0, 1)";
-    ctx.fillRect(0, halfHeight, halfWidth, halfHeight);
-    ctx.fillStyle = "rgba(0, 255, 0, 0.1)";
-    ctx.fillRect(halfWidth, halfHeight, halfWidth, halfHeight);
-}
-
 promise_test(function() {
     var bitmaps = [];
 
     var canvas = document.createElement('canvas');
     canvas.width = 4;
     canvas.height = 4;
-    document.body.appendChild(canvas);
     gl = canvas.getContext("webgl");
 
     gl.clearColor(0,0,0,1);
     gl.clearDepth(1);
 
-    var testCanvas = document.createElement('canvas');
-    testCanvas.width = 2;
-    testCanvas.height = 2;
-    var ctx = testCanvas.getContext("2d");
-    setCanvasToRedGreen(ctx);
+    var imageData = new ImageData(new Uint8ClampedArray(
+                                  [255, 0, 0, 255,
+                                   255, 0, 0, 26,
+                                   0, 255, 0, 255,
+                                   0, 255, 0, 26]),
+                                   2, 2);
 
     var options = {resizeWidth: 4, resizeHeight: 4, resizeQuality: "high"};
-    var p1 = createImageBitmap(testCanvas, options).then(
+    var p1 = createImageBitmap(imageData, options).then(
         function(imageBitmap) { bitmaps.defaultOption = imageBitmap });
 
     options.imageOrientation = "none";
     options.premultiplyAlpha = "premultiply";
-    var p2 = createImageBitmap(testCanvas, options).then(
+    var p2 = createImageBitmap(imageData, options).then(
         function(imageBitmap) { bitmaps.noFlipYPremul = imageBitmap });
 
     options.premultiplyAlpha = "default";
-    var p3 = createImageBitmap(testCanvas, options).then(
+    var p3 = createImageBitmap(imageData, options).then(
         function(imageBitmap) { bitmaps.noFlipYDefault = imageBitmap });
 
     options.premultiplyAlpha = "none";
-    var p4 = createImageBitmap(testCanvas, options).then(
+    var p4 = createImageBitmap(imageData, options).then(
         function(imageBitmap) { bitmaps.noFlipYUnpremul = imageBitmap });
 
     options.imageOrientation = "flipY";
     options.premultiplyAlpha = "premultiply";
-    var p5 = createImageBitmap(testCanvas, options).then(
+    var p5 = createImageBitmap(imageData, options).then(
         function(imageBitmap) { bitmaps.flipYPremul = imageBitmap });
 
     options.premultiplyAlpha = "default";
-    var p6 = createImageBitmap(testCanvas, options).then(
+    var p6 = createImageBitmap(imageData, options).then(
         function(imageBitmap) { bitmaps.flipYDefault = imageBitmap });
 
     options.premultiplyAlpha = "none";
-    var p7 = createImageBitmap(testCanvas, options).then(
+    var p7 = createImageBitmap(imageData, options).then(
         function(imageBitmap) { bitmaps.flipYUnpremul = imageBitmap });
 
     options = {resizeWidth: 4, resizeHeight: 4, resizeQuality: "high"};
-    var p8 = createImageBitmap(testCanvas, options).then(
+    var p8 = createImageBitmap(imageData, options).then(
         function(imageBitmap) { bitmaps.colorSpaceDef = imageBitmap });
 
     options.colorSpaceConversion = "none";
-    var p9 = createImageBitmap(testCanvas, options).then(
+    var p9 = createImageBitmap(imageData, options).then(
         function(imageBitmap) { bitmaps.colorSpaceNone = imageBitmap });
 
     options.colorSpaceConversion = "default";
-    var p10 = createImageBitmap(testCanvas, options).then(
+    var p10 = createImageBitmap(imageData, options).then(
         function(imageBitmap) { bitmaps.colorSpaceDefault = imageBitmap });
 
-    return Promise.all([p1, p2, p3, p4, p5, p6, p7, p8, p9, p10]).then(function() {
-        var alphaVal = 0.5;
-        var testPassed = runTest(bitmaps, alphaVal, false);
-        if (!testPassed)
-            assert_true(false, 'Test failed');
-    }, function() {
-        assert_true(false, 'Promise rejected');
+    return Promise.all([p1, p2, p3, p4, p5, p6, p7, p8, p9, p10]).then(
+        function() {
+            var alphaVal = 0.5;
+            var testPassed = runTest(bitmaps, alphaVal, false);
+            if (!testPassed)
+                assert_true(false, 'Test failed');
+        }, function() {
+            assert_true(false, 'Promise rejected');
     });
-}, 'createImageBitmap(HTMLCanvasElement) with resize and other options');
+}, 'createImageBitmap(ImageData) with resize and other options');
 </script>
+</body>
+</html>

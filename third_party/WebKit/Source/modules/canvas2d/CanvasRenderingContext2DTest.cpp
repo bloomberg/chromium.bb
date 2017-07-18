@@ -1103,6 +1103,10 @@ TEST_F(CanvasRenderingContext2DTest, ImageBitmapColorSpaceConversion) {
   bool color_canvas_extensions_flag =
       RuntimeEnabledFeatures::ColorCanvasExtensionsEnabled();
 
+  RuntimeEnabledFeatures::SetExperimentalCanvasFeaturesEnabled(true);
+  RuntimeEnabledFeatures::SetColorCorrectRenderingEnabled(true);
+  RuntimeEnabledFeatures::SetColorCanvasExtensionsEnabled(true);
+
   Persistent<HTMLCanvasElement> canvas =
       Persistent<HTMLCanvasElement>(CanvasElement());
   CanvasContextCreationAttributes attributes;
@@ -1122,7 +1126,7 @@ TEST_F(CanvasRenderingContext2DTest, ImageBitmapColorSpaceConversion) {
     std::swap(src_pixel[0], src_pixel[2]);
 
   // Create and test the ImageBitmap objects.
-  Optional<IntRect> crop_rect = IntRect(0, 0, 10, 10);
+  Optional<IntRect> crop_rect = IntRect(0, 0, 300, 150);
   sk_sp<SkColorSpace> color_space = nullptr;
   SkColorType color_type = SkColorType::kN32_SkColorType;
   SkColorSpaceXform::ColorFormat color_format32 =
