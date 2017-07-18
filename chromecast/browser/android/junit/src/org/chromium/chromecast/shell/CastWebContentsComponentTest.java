@@ -6,6 +6,7 @@ package org.chromium.chromecast.shell;
 
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import android.app.Activity;
@@ -140,5 +141,14 @@ public class CastWebContentsComponentTest {
         component.stop(mActivity);
 
         verify(callback).onKeyDown(42);
+    }
+
+    @Test
+    public void testStopDoesNotUnbindServiceIfStartWasNotCalled() {
+        CastWebContentsComponent component = new CastWebContentsComponent(INSTANCE_ID, null, null);
+
+        component.stop(mActivity);
+
+        verify(mActivity, never()).unbindService(any(ServiceConnection.class));
     }
 }
