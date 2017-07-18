@@ -377,8 +377,10 @@ class IPC_EXPORT ChannelProxy : public Sender {
   }
 #endif
 
- protected:
   bool did_init() const { return did_init_; }
+
+  // A Send() which doesn't DCHECK if the message is synchronous.
+  void SendInternal(Message* message);
 
  private:
   friend class IpcSecurityTestUtil;
