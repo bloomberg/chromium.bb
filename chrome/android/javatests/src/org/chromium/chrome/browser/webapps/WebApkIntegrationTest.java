@@ -117,7 +117,7 @@ public class WebApkIntegrationTest {
     public void testLaunchAndNavigateOffOrigin() throws Exception {
         startWebApkActivity("org.chromium.webapk.test",
                 mTestServer.getURL("/chrome/test/data/android/test.html"));
-        waitUntilSplashscreenHides();
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
 
         // We navigate outside origin and expect Custom Tab to open on top of WebApkActivity.
         mActivityTestRule.runJavaScriptCodeInCurrentTab(
