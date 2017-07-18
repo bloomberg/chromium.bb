@@ -271,6 +271,7 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
                     || e.getMessage().contains("net::ERR_CONNECTION_REFUSED")));
         }
         checkExceptionsAreThrown(secondConnection);
+        urlConnection.disconnect();
         // Starts the server to avoid crashing on shutdown in tearDown().
         assertTrue(NativeTestServer.startNativeTestServer(getContext()));
     }
