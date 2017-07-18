@@ -90,12 +90,14 @@ void BoxPainter::PaintBoxDecorationBackgroundWithRect(
   bool painting_overflow_contents = BoxModelObjectPainter::
       IsPaintingBackgroundOfPaintContainerIntoScrollingContentsLayer(
           &layout_box_, paint_info);
+  const ComputedStyle& style = layout_box_.StyleRef();
+
   Optional<DisplayItemCacheSkipper> cache_skipper;
   // Disable cache in under-invalidation checking mode for MediaSliderPart
   // because we always paint using the latest data (buffered ranges, current
   // time and duration) which may be different from the cached data.
   if ((RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() &&
-       layout_box_.StyleRef().Appearance() == kMediaSliderPart)
+       style.Appearance() == kMediaSliderPart)
       // We may paint a delayed-invalidation object before it's actually
       // invalidated. Note this would be handled for us by
       // LayoutObjectDrawingRecorder but we have to use DrawingRecorder as we
@@ -127,12 +129,11 @@ void BoxPainter::PaintBoxDecorationBackgroundWithRect(
     // FIXME: Should eventually give the theme control over whether the box
     // shadow should paint, since controls could have custom shadows of their
     // own.
-    PaintNormalBoxShadow(paint_info, paint_rect, layout_box_.StyleRef());
+    PaintNormalBoxShadow(paint_info, paint_rect, style);
 
     if (BleedAvoidanceIsClipping(box_decoration_data.bleed_avoidance)) {
       state_saver.Save();
-      FloatRoundedRect border =
-          layout_box_.StyleRef().GetRoundedBorderFor(paint_rect);
+      FloatRoundedRect border = style.GetRoundedBorderFor(paint_rect);
       paint_info.context.ClipRoundedRect(border);
 
       if (box_decoration_data.bleed_avoidance == kBackgroundBleedClipLayer)
@@ -162,7 +163,7 @@ void BoxPainter::PaintBoxDecorationBackgroundWithRect(
   }
 
   if (!painting_overflow_contents) {
-    PaintInsetBoxShadow(paint_info, paint_rect, layout_box_.StyleRef());
+    PaintInsetBoxShadow(paint_info, paint_rect, style);
 
     // The theme will tell us whether or not we should also paint the CSS
     // border.
@@ -174,8 +175,7 @@ void BoxPainter::PaintBoxDecorationBackgroundWithRect(
         !(layout_box_.IsTable() &&
           ToLayoutTable(&layout_box_)->ShouldCollapseBorders())) {
       PaintBorder(layout_box_, layout_box_.GetDocument(), GetNode(), paint_info,
-                  paint_rect, layout_box_.StyleRef(),
-                  box_decoration_data.bleed_avoidance);
+                  paint_rect, style, box_decoration_data.bleed_avoidance);
     }
   }
 
