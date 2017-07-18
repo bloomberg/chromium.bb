@@ -41,7 +41,6 @@ char DevToolsAgentHost::kTypePage[] = "page";
 char DevToolsAgentHost::kTypeFrame[] = "iframe";
 char DevToolsAgentHost::kTypeSharedWorker[] = "shared_worker";
 char DevToolsAgentHost::kTypeServiceWorker[] = "service_worker";
-char DevToolsAgentHost::kTypeExternal[] = "external";
 char DevToolsAgentHost::kTypeBrowser[] = "browser";
 char DevToolsAgentHost::kTypeGuest[] = "webview";
 char DevToolsAgentHost::kTypeOther[] = "other";
