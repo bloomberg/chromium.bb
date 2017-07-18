@@ -15,11 +15,15 @@
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "url/gurl.h"
 
+namespace content {
+class BrowserContext;
+}  // namespace content
+
 namespace arc {
 
 class LinkHandlerModelImpl : public ash::LinkHandlerModel {
  public:
-  LinkHandlerModelImpl();
+  explicit LinkHandlerModelImpl(content::BrowserContext* context);
   ~LinkHandlerModelImpl() override;
 
   // ash::LinkHandlerModel overrides:
@@ -44,6 +48,8 @@ class LinkHandlerModelImpl : public ash::LinkHandlerModel {
   // If it does, creates a new GURL object from the <valid_url> and returns it.
   // Otherwise, returns the original |url| as-us.
   static GURL RewriteUrlFromQueryIfAvailable(const GURL& url);
+
+  content::BrowserContext* const context_;
 
   base::ObserverList<Observer> observer_list_;
 

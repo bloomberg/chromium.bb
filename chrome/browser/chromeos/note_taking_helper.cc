@@ -293,18 +293,18 @@ NoteTakingHelper::NoteTakingHelper()
     // IsArcPlayStoreEnabledForProfile() can return true only for the primary
     // profile.
     play_store_enabled_ |= arc::IsArcPlayStoreEnabledForProfile(profile);
+
+    // ArcIntentHelperBridge will notify us about changes to the list of
+    // available Android apps.
+    auto* intent_helper_bridge =
+        arc::ArcIntentHelperBridge::GetForBrowserContext(profile);
+    if (intent_helper_bridge)
+      intent_helper_bridge->AddObserver(this);
   }
 
   // Watch for changes of Google Play Store enabled state.
   auto* session_manager = arc::ArcSessionManager::Get();
   session_manager->AddObserver(this);
-
-  // ArcIntentHelperBridge will notify us about changes to the list of available
-  // Android apps.
-  auto* intent_helper_bridge =
-      arc::ArcServiceManager::GetGlobalService<arc::ArcIntentHelperBridge>();
-  if (intent_helper_bridge)
-    intent_helper_bridge->AddObserver(this);
 
   // If the ARC intent helper is ready, get the Android apps. Otherwise,
   // UpdateAndroidApps() will be called when ArcServiceManager calls
@@ -321,12 +321,15 @@ NoteTakingHelper::~NoteTakingHelper() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // ArcSessionManagerTest shuts down ARC before NoteTakingHelper.
-  auto* intent_helper_bridge =
-      arc::ArcServiceManager::GetGlobalService<arc::ArcIntentHelperBridge>();
-  if (intent_helper_bridge)
-    intent_helper_bridge->RemoveObserver(this);
   if (arc::ArcSessionManager::Get())
     arc::ArcSessionManager::Get()->RemoveObserver(this);
+  for (Profile* profile :
+       g_browser_process->profile_manager()->GetLoadedProfiles()) {
+    auto* intent_helper_bridge =
+        arc::ArcIntentHelperBridge::GetForBrowserContext(profile);
+    if (intent_helper_bridge)
+      intent_helper_bridge->RemoveObserver(this);
+  }
 }
 
 bool NoteTakingHelper::IsWhitelistedChromeApp(

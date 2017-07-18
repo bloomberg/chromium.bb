@@ -83,6 +83,7 @@ arc::mojom::ActivityNamePtr AppIdToActivityName(const std::string& id) {
 
 // Below is the sequence of thread-hopping for loading ARC file tasks.
 void OnArcHandlerList(
+    Profile* profile,
     std::unique_ptr<std::vector<FullTaskDescriptor>> result_list,
     const FindTasksCallback& callback,
     std::vector<arc::mojom::IntentHandlerInfoPtr> handlers);
@@ -95,13 +96,14 @@ void OnArcIconLoaded(
 
 // Called after the handlers from ARC is obtained. Proceeds to OnArcIconLoaded.
 void OnArcHandlerList(
+    Profile* profile,
     std::unique_ptr<std::vector<FullTaskDescriptor>> result_list,
     const FindTasksCallback& callback,
     std::vector<arc::mojom::IntentHandlerInfoPtr> handlers) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   auto* intent_helper_bridge =
-      arc::ArcServiceManager::GetGlobalService<arc::ArcIntentHelperBridge>();
+      arc::ArcIntentHelperBridge::GetForBrowserContext(profile);
   if (!intent_helper_bridge) {
     callback.Run(std::move(result_list));
     return;
@@ -194,9 +196,10 @@ void FindArcTasks(Profile* profile,
     url_with_type->mime_type = entry.mime_type;
     urls.push_back(std::move(url_with_type));
   }
+  // The callback will be invoked on UI thread, so |profile| should be alive.
   arc_intent_helper->RequestUrlListHandlerList(
-      std::move(urls),
-      base::Bind(&OnArcHandlerList, base::Passed(&result_list), callback));
+      std::move(urls), base::Bind(&OnArcHandlerList, base::Unretained(profile),
+                                  base::Passed(&result_list), callback));
 }
 
 bool ExecuteArcTask(Profile* profile,

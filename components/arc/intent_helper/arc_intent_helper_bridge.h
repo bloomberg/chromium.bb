@@ -13,18 +13,22 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
-#include "components/arc/arc_service.h"
 #include "components/arc/common/intent_helper.mojom.h"
 #include "components/arc/instance_holder.h"
 #include "components/arc/intent_helper/activity_icon_loader.h"
 #include "components/arc/intent_helper/arc_intent_helper_observer.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
+class KeyedServiceBaseFactory;
+
 namespace ash {
-
 class LinkHandlerModel;
-
 }  // namespace ash
+
+namespace content {
+class BrowserContext;
+}  // namespace content
 
 namespace arc {
 
@@ -33,12 +37,21 @@ class IntentFilter;
 
 // Receives intents from ARC.
 class ArcIntentHelperBridge
-    : public ArcService,
+    : public KeyedService,
       public InstanceHolder<mojom::IntentHelperInstance>::Observer,
       public mojom::IntentHelperHost,
       public ash::LinkHandlerModelFactory {
  public:
-  explicit ArcIntentHelperBridge(ArcBridgeService* bridge_service);
+  // Returns singleton instance for the given BrowserContext,
+  // or nullptr if the browser |context| is not allowed to use ARC.
+  static ArcIntentHelperBridge* GetForBrowserContext(
+      content::BrowserContext* context);
+
+  // Returns factory for the ArcIntentHelperBridge.
+  static KeyedServiceBaseFactory* GetFactory();
+
+  ArcIntentHelperBridge(content::BrowserContext* context,
+                        ArcBridgeService* bridge_service);
   ~ArcIntentHelperBridge() override;
 
   void AddObserver(ArcIntentHelperObserver* observer);
@@ -88,13 +101,13 @@ class ArcIntentHelperBridge
   static std::vector<mojom::IntentHandlerInfoPtr> FilterOutIntentHelper(
       std::vector<mojom::IntentHandlerInfoPtr> handlers);
 
-  // For supporting ArcServiceManager::GetService<T>().
-  static const char kArcServiceName[];
-
   static const char kArcIntentHelperPackageName[];
 
  private:
   THREAD_CHECKER(thread_checker_);
+
+  content::BrowserContext* const context_;
+  ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
 
   mojo::Binding<mojom::IntentHelperHost> binding_;
   internal::ActivityIconLoader icon_loader_;
