@@ -1047,7 +1047,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     // tab if the caller is about to create one) ends up on screen completely.
     Tab* currentTab = [_model currentTab];
     // Force loading the view in case it was not loaded yet.
-    [self ensureViewCreated];
+    [self loadViewIfNeeded];
     if (_expectingForegroundTab)
       [currentTab.webController setOverlayPreviewMode:YES];
     if (currentTab)
@@ -1730,10 +1730,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   }
 }
 
-- (void)ensureViewCreated {
-  ignore_result([self view]);
-}
-
 - (void)browserStateDestroyed {
   [self setActive:NO];
   // Reset the toolbar opacity in case it was changed for contextual search.
@@ -1934,12 +1930,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
 - (void)displayTab:(Tab*)tab isNewSelection:(BOOL)newSelection {
   DCHECK(tab);
-  // Ensure that self.view is loaded to avoid errors that can otherwise occur
-  // when accessing |_contentArea| below.
-  if (!_contentArea)
-    [self ensureViewCreated];
+  [self loadViewIfNeeded];
 
-  DCHECK(_contentArea);
   if (!self.inNewTabAnimation) {
     // Hide findbar.  |updateToolbar| will restore the findbar later.
     [self hideFindBarWithAnimation:NO];
@@ -4333,11 +4325,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
                   referrer:web::Referrer()
               inBackground:NO
                   appendTo:kCurrentTab];
-}
-
-- (void)resetAllWebViews {
-  [_dialogPresenter cancelAllDialogs];
-  [_model resetAllWebViews];
 }
 
 #pragma mark - Find Bar
