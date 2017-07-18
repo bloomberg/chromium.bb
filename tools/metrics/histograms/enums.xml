@@ -3471,6 +3471,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Registration is a duplicate"/>
 </enum>
 
+<enum name="BooleanRenamed">
+  <int value="0" label="Not Renamed"/>
+  <int value="1" label="Renamed"/>
+</enum>
+
 <enum name="BooleanReported">
   <int value="0" label="Not reported"/>
   <int value="1" label="Reported"/>
@@ -8356,6 +8361,84 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Mouse"/>
   <int value="2" label="Stylus"/>
   <int value="3" label="Touch"/>
+</enum>
+
+<enum name="Download.Service.BatteryRequirements">
+  <int value="0" label="BATTERY_INSENSITIVE"/>
+  <int value="1" label="BATTERY_SENSITIVE"/>
+</enum>
+
+<enum name="Download.Service.CompletionType">
+  <int value="0" label="SUCCEED"/>
+  <int value="1" label="FAIL"/>
+  <int value="2" label="ABORT"/>
+  <int value="3" label="TIMEOUT"/>
+  <int value="4" label="UNKNOWN"/>
+  <int value="5" label="CANCEL"/>
+</enum>
+
+<enum name="Download.Service.EntryStates">
+  <int value="0" label="NEW"/>
+  <int value="1" label="AVAILABLE"/>
+  <int value="2" label="ACTIVE"/>
+  <int value="3" label="PAUSED"/>
+  <int value="4" label="COMPLETE"/>
+</enum>
+
+<enum name="Download.Service.ModelAction">
+  <int value="0" label="INITIALIZE"/>
+  <int value="1" label="ADD"/>
+  <int value="2" label="UPDATE"/>
+  <int value="3" label="REMOVE"/>
+</enum>
+
+<enum name="Download.Service.NetworkRequirements">
+  <int value="0" label="NONE"/>
+  <int value="1" label="OPTIMISTIC"/>
+  <int value="2" label="UNMETERED"/>
+</enum>
+
+<enum name="Download.Service.Priority">
+  <int value="0" label="LOW"/>
+  <int value="1" label="NORMAL"/>
+  <int value="2" label="HIGH"/>
+  <int value="3" label="UI"/>
+</enum>
+
+<enum name="Download.Service.ScheduledTaskStatus">
+  <int value="0" label="ABORTED_ON_FAILED_INIT"/>
+  <int value="1" label="CANCELLED_ON_STOP"/>
+  <int value="2" label="COMPLETED_NORMALLY"/>
+</enum>
+
+<enum name="Download.Service.ServiceApiAction">
+  <int value="0" label="START_DOWNLOAD"/>
+  <int value="1" label="PAUSE_DOWNLOAD"/>
+  <int value="2" label="RESUME_DOWNLOAD"/>
+  <int value="3" label="CANCEL_DOWNLOAD"/>
+  <int value="4" label="CHANGE_CRITERIA"/>
+</enum>
+
+<enum name="Download.Service.ShouldDownload">
+  <int value="0" label="CONTINUE"/>
+  <int value="1" label="ABORT"/>
+</enum>
+
+<enum name="Download.Service.StartResult">
+  <int value="0" label="ACCEPTED"/>
+  <int value="1" label="BACKOFF"/>
+  <int value="2" label="UNEXPECTED_CLIENT"/>
+  <int value="3" label="UNEXPECTED_GUID"/>
+  <int value="4" label="CLIENT_CANCELLED"/>
+  <int value="5" label="INTERNAL_ERROR"/>
+</enum>
+
+<enum name="Download.Service.StartUpResult">
+  <int value="0" label="SUCCESS"/>
+  <int value="1" label="FAILURE"/>
+  <int value="2" label="FAILURE_REASON_DRIVER"/>
+  <int value="3" label="FAILURE_REASON_MODEL"/>
+  <int value="4" label="FAILURE_REASON_FILE_MONITOR"/>
 </enum>
 
 <enum name="DownloadConnectionSecurity">

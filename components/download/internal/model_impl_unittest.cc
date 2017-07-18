@@ -11,7 +11,9 @@
 #include "base/guid.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/test/histogram_tester.h"
 #include "components/download/internal/entry.h"
+#include "components/download/internal/stats.h"
 #include "components/download/internal/test/entry_utils.h"
 #include "components/download/internal/test/mock_model_client.h"
 #include "components/download/internal/test/test_store.h"
@@ -63,6 +65,7 @@ TEST_F(DownloadServiceModelImplTest, SuccessfulInitWithEntries) {
   Entry entry2 = test::BuildBasicEntry();
   std::vector<Entry> entries = {entry1, entry2};
 
+  base::HistogramTester histogram_tester;
   InSequence sequence;
   EXPECT_CALL(client_, OnModelReady(true)).Times(1);
 
@@ -72,6 +75,18 @@ TEST_F(DownloadServiceModelImplTest, SuccessfulInitWithEntries) {
 
   EXPECT_TRUE(test::CompareEntry(&entry1, model_->Get(entry1.guid)));
   EXPECT_TRUE(test::CompareEntry(&entry2, model_->Get(entry2.guid)));
+
+  // Verify histograms.
+  histogram_tester.ExpectBucketCount("Download.Service.Db.Records", 2, 1);
+  histogram_tester.ExpectBucketCount("Download.Service.Db.Records.New", 2, 1);
+  histogram_tester.ExpectBucketCount("Download.Service.Db.Records.Available", 0,
+                                     1);
+  histogram_tester.ExpectBucketCount("Download.Service.Db.Records.Active", 0,
+                                     1);
+  histogram_tester.ExpectBucketCount("Download.Service.Db.Records.Paused", 0,
+                                     1);
+  histogram_tester.ExpectBucketCount("Download.Service.Db.Records.Complete", 0,
+                                     1);
 }
 
 TEST_F(DownloadServiceModelImplTest, BadInit) {

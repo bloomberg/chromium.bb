@@ -30,6 +30,9 @@ struct SchedulingParams {
 
     // The download can occur only if the network isn't metered.
     UNMETERED = 2,
+
+    // Last value of the enum.
+    COUNT = 3,
   };
 
   enum class BatteryRequirements {
@@ -41,6 +44,9 @@ struct SchedulingParams {
     // The download can only occur when charging or in optimal battery
     // conditions.
     BATTERY_SENSITIVE = 1,
+
+    // Last value of the enum.
+    COUNT = 2,
   };
 
   enum class Priority {
@@ -61,6 +67,9 @@ struct SchedulingParams {
 
     // The default priority for all tasks unless overridden.
     DEFAULT = NORMAL,
+
+    // Last value of the enum.
+    COUNT = 4,
   };
 
   SchedulingParams();
@@ -120,6 +129,8 @@ struct DownloadParams {
     INTERNAL_ERROR,
 
     // TODO(dtrainor): Add more error codes.
+    // The count of entries for the enum.
+    COUNT,
   };
 
   using StartCallback = base::Callback<void(const std::string&, StartResult)>;

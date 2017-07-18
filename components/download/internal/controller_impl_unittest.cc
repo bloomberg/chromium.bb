@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/download/internal/client_set.h"
@@ -206,6 +207,7 @@ class DownloadServiceControllerImplTest : public testing::Test {
 
 TEST_F(DownloadServiceControllerImplTest, SuccessfulInitModelFirst) {
   EXPECT_CALL(*client_, OnServiceInitialized(_)).Times(0);
+  base::HistogramTester histogram_tester;
 
   InitializeController();
   EXPECT_TRUE(store_->init_called());
@@ -226,6 +228,11 @@ TEST_F(DownloadServiceControllerImplTest, SuccessfulInitModelFirst) {
   EXPECT_TRUE(controller_->GetStartupStatus()->Ok());
 
   task_runner_->RunUntilIdle();
+
+  histogram_tester.ExpectBucketCount(
+      "Download.Service.StartUpStatus",
+      static_cast<base::HistogramBase::Sample>(stats::StartUpResult::SUCCESS),
+      1);
 }
 
 TEST_F(DownloadServiceControllerImplTest, SuccessfulInitDriverFirst) {
@@ -322,6 +329,7 @@ TEST_F(DownloadServiceControllerImplTest,
 }
 
 TEST_F(DownloadServiceControllerImplTest, FailedInitWithBadModel) {
+  base::HistogramTester histogram_tester;
   EXPECT_CALL(*client_, OnServiceInitialized(_)).Times(0);
   EXPECT_CALL(*client_, OnServiceUnavailable()).Times(1);
 
@@ -330,6 +338,17 @@ TEST_F(DownloadServiceControllerImplTest, FailedInitWithBadModel) {
   driver_->MakeReady();
 
   task_runner_->RunUntilIdle();
+  histogram_tester.ExpectBucketCount(
+      "Download.Service.StartUpStatus",
+      static_cast<base::HistogramBase::Sample>(stats::StartUpResult::FAILURE),
+      1);
+  histogram_tester.ExpectBucketCount(
+      "Download.Service.StartUpStatus",
+      static_cast<base::HistogramBase::Sample>(
+          stats::StartUpResult::FAILURE_REASON_MODEL),
+      1);
+
+  histogram_tester.ExpectTotalCount("Download.Service.StartUpStatus", 2);
 }
 
 TEST_F(DownloadServiceControllerImplTest, GetOwnerOfDownload) {

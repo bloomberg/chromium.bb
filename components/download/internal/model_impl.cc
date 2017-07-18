@@ -4,6 +4,8 @@
 
 #include "components/download/internal/model_impl.h"
 
+#include <map>
+
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "components/download/internal/entry.h"
@@ -96,10 +98,13 @@ void ModelImpl::OnInitializedFinished(
     return;
   }
 
+  std::map<Entry::State, uint32_t> entries_count;
   for (const auto& entry : *entries) {
+    entries_count[entry.state]++;
     entries_.emplace(entry.guid, base::MakeUnique<Entry>(entry));
   }
 
+  stats::LogEntries(entries_count);
   client_->OnModelReady(true);
 }
 
