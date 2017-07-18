@@ -89,9 +89,9 @@ class V8EventListenerHelper {
 
   static V8PrivateProperty::Symbol ListenerProperty(v8::Isolate* isolate,
                                                     bool is_attribute) {
-    return V8PrivateProperty::GetSymbol(
-        isolate, is_attribute ? "EventListenerList::attributeListener"
-                              : "EventListenerList::listener");
+    return is_attribute
+               ? V8PrivateProperty::GetV8EventListenerAttributeListener(isolate)
+               : V8PrivateProperty::GetV8EventListenerListener(isolate);
   }
 };
 
