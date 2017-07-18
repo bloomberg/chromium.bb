@@ -132,8 +132,14 @@ int Node::CreateUninitializedPort(PortRef* port_ref) {
 
   scoped_refptr<Port> port(new Port(kInitialSequenceNum, kInitialSequenceNum));
   int rv = AddPortWithName(port_name, port);
-  if (rv != OK)
+  if (rv != OK) {
+    // TODO(crbug.com/725605): Remove this CHECK. This is testing whether or not
+    // random port name generation is somehow resulting in insufficiently random
+    // and thus colliding names in the wild, which would be one explanation for
+    // some of the weird behavior we're seeing.
+    CHECK(false);
     return rv;
+  }
 
   *port_ref = PortRef(port_name, std::move(port));
   return OK;
