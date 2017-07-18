@@ -354,9 +354,7 @@ int main(int argc, char** argv) {
   base::MessageLoopForUI message_loop;
   base::TaskScheduler::CreateAndStartWithDefaultParams("OzoneDemo");
 
-  ui::OzonePlatform::InitParams params;
-  params.single_process = true;
-  ui::OzonePlatform::InitializeForUI(params);
+  ui::OzonePlatform::InitializeForUI();
   ui::KeyboardLayoutEngineManager::GetKeyboardLayoutEngine()
       ->SetCurrentLayoutByName("us");
 
