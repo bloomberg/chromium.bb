@@ -35,6 +35,8 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
 
   const NGBaseline* Baseline(const NGBaselineRequest&) const;
 
+  RefPtr<NGPhysicalFragment> CloneWithoutOffset() const;
+
  private:
   NGPhysicalSize overflow_;
   Vector<RefPtr<NGPhysicalFragment>> children_;

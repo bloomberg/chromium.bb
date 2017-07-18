@@ -37,4 +37,13 @@ const NGBaseline* NGPhysicalBoxFragment::Baseline(
   return nullptr;
 }
 
+RefPtr<NGPhysicalFragment> NGPhysicalBoxFragment::CloneWithoutOffset() const {
+  Vector<RefPtr<NGPhysicalFragment>> children_copy(children_);
+  Vector<NGBaseline> baselines_copy(baselines_);
+  RefPtr<NGPhysicalFragment> physical_fragment = AdoptRef(
+      new NGPhysicalBoxFragment(layout_object_, size_, overflow_, children_copy,
+                                baselines_copy, border_edge_, break_token_));
+  return physical_fragment;
+}
+
 }  // namespace blink

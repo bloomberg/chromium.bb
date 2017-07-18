@@ -67,6 +67,8 @@ class CORE_EXPORT NGPhysicalFragment : public RefCounted<NGPhysicalFragment> {
   NGBreakToken* BreakToken() const { return break_token_.Get(); }
   const ComputedStyle& Style() const;
 
+  RefPtr<NGPhysicalFragment> CloneWithoutOffset() const;
+
   // GetLayoutObject should only be used when necessary for compatibility
   // with LegacyLayout.
   LayoutObject* GetLayoutObject() const { return layout_object_; }
