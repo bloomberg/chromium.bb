@@ -26,6 +26,7 @@ class BluetoothAdapter;
 
 namespace proximity_auth {
 
+class ProximityAuthPrefManager;
 class ProximityMonitorObserver;
 
 // The concrete implemenation of the proximity monitor interface.
@@ -33,7 +34,8 @@ class ProximityMonitorImpl : public ProximityMonitor {
  public:
   // The |connection| is not owned, and must outlive |this| instance.
   ProximityMonitorImpl(cryptauth::Connection* connection,
-                       std::unique_ptr<base::TickClock> clock);
+                       std::unique_ptr<base::TickClock> clock,
+                       ProximityAuthPrefManager* pref_manager);
   ~ProximityMonitorImpl() override;
 
   // ProximityMonitor:
@@ -82,6 +84,10 @@ class ProximityMonitorImpl : public ProximityMonitor {
   // samples. Notifies |observers_| on a change.
   void CheckForProximityStateChange();
 
+  // Gets the user-selected proximity threshold and converts it to a
+  // RSSI value.
+  void GetRssiThresholdFromPrefs();
+
   // The current connection being monitored. Not owned and must outlive this
   // instance.
   cryptauth::Connection* connection_;
@@ -100,6 +106,9 @@ class ProximityMonitorImpl : public ProximityMonitor {
   // for proximity to the remote device.
   bool is_active_;
 
+  // When the RSSI is below this value the phone the unlock is not allowed.
+  int rssi_threshold_;
+
   // The exponentailly weighted rolling average of the RSSI, used to smooth the
   // RSSI readings. Null if the monitor is inactive, has not recently observed
   // an RSSI reading, or the most recent connection info included an invalid
@@ -108,6 +117,10 @@ class ProximityMonitorImpl : public ProximityMonitor {
 
   // Used to access non-decreasing time measurements.
   std::unique_ptr<base::TickClock> clock_;
+
+  // Contains perferences that outlive the lifetime of this object and across
+  // process restarts. Not owned and must outlive this instance.
+  ProximityAuthPrefManager* pref_manager_;
 
   // Used to vend weak pointers for polling. Using a separate factory for these
   // weak pointers allows the weak pointers to be invalidated when polling

@@ -41,6 +41,7 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/proximity_auth/logging/logging.h"
 #include "components/proximity_auth/proximity_auth_pref_manager.h"
+#include "components/proximity_auth/proximity_auth_pref_names.h"
 #include "components/proximity_auth/proximity_auth_system.h"
 #include "components/proximity_auth/screenlock_bridge.h"
 #include "components/proximity_auth/switches.h"
@@ -454,6 +455,9 @@ void EasyUnlockServiceRegular::InitializeInternal() {
       prefs::kEasyUnlockAllowed,
       base::Bind(&EasyUnlockServiceRegular::OnPrefsChanged,
                  base::Unretained(this)));
+  registrar_.Add(proximity_auth::prefs::kEasyUnlockProximityThreshold,
+                 base::Bind(&EasyUnlockServiceRegular::OnPrefsChanged,
+                            base::Unretained(this)));
 
   OnPrefsChanged();
 
@@ -615,6 +619,10 @@ void EasyUnlockServiceRegular::SyncProfilePrefsToLocalState() {
   // items in the dictionary are the same profile prefs used for Easy Unlock.
   std::unique_ptr<base::DictionaryValue> user_prefs_dict(
       new base::DictionaryValue());
+  user_prefs_dict->SetIntegerWithoutPathExpansion(
+      proximity_auth::prefs::kEasyUnlockProximityThreshold,
+      profile_prefs->GetInteger(
+          proximity_auth::prefs::kEasyUnlockProximityThreshold));
 
   DictionaryPrefUpdate update(local_state,
                               prefs::kEasyUnlockLocalStateUserPrefs);

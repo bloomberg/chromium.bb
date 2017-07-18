@@ -17,7 +17,9 @@
 #include "base/time/time.h"
 #include "components/cryptauth/fake_connection.h"
 #include "components/cryptauth/remote_device.h"
+#include "components/prefs/testing_pref_service.h"
 #include "components/proximity_auth/logging/logging.h"
+#include "components/proximity_auth/proximity_auth_pref_manager.h"
 #include "components/proximity_auth/proximity_monitor_observer.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
@@ -38,6 +40,11 @@ const char kRemoteDevicePublicKey[] = "Remote Public Key";
 const char kRemoteDeviceName[] = "LGE Nexus 5";
 const char kBluetoothAddress[] = "AA:BB:CC:DD:EE:FF";
 const char kPersistentSymmetricKey[] = "PSK";
+
+// The proximity threshold corresponds to a RSSI of -70.
+const ProximityAuthPrefManager::ProximityThreshold
+    kProximityThresholdPrefValue =
+        ProximityAuthPrefManager::ProximityThreshold::kFar;
 const int kRssiThreshold = -70;
 
 class MockProximityMonitorObserver : public ProximityMonitorObserver {
@@ -49,6 +56,18 @@ class MockProximityMonitorObserver : public ProximityMonitorObserver {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockProximityMonitorObserver);
+};
+
+class MockProximityAuthPrefManager : public ProximityAuthPrefManager {
+ public:
+  MockProximityAuthPrefManager() : ProximityAuthPrefManager(nullptr) {}
+  ~MockProximityAuthPrefManager() override {}
+
+  MOCK_CONST_METHOD0(GetProximityThreshold,
+                     ProximityAuthPrefManager::ProximityThreshold(void));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockProximityAuthPrefManager);
 };
 
 // Creates a mock Bluetooth adapter and sets it as the global adapter for
@@ -81,7 +100,8 @@ class ProximityAuthProximityMonitorImplTest : public testing::Test {
                        kPersistentSymmetricKey,
                        std::string()),
         connection_(remote_device_),
-        monitor_(&connection_, base::WrapUnique(clock_)),
+        pref_manager_(new NiceMock<MockProximityAuthPrefManager>()),
+        monitor_(&connection_, base::WrapUnique(clock_), pref_manager_.get()),
         task_runner_(new base::TestSimpleTaskRunner()),
         thread_task_runner_handle_(task_runner_) {
     ON_CALL(*bluetooth_adapter_, GetDevice(kBluetoothAddress))
@@ -89,6 +109,8 @@ class ProximityAuthProximityMonitorImplTest : public testing::Test {
     ON_CALL(remote_bluetooth_device_, GetConnectionInfo(_))
         .WillByDefault(SaveArg<0>(&connection_info_callback_));
     monitor_.AddObserver(&observer_);
+    ON_CALL(*pref_manager_, GetProximityThreshold())
+        .WillByDefault(Return(kProximityThresholdPrefValue));
   }
 
   ~ProximityAuthProximityMonitorImplTest() override {}
@@ -117,6 +139,9 @@ class ProximityAuthProximityMonitorImplTest : public testing::Test {
   NiceMock<device::MockBluetoothDevice> remote_bluetooth_device_;
   cryptauth::RemoteDevice remote_device_;
   cryptauth::FakeConnection connection_;
+
+  // ProximityAuthPrefManager mock.
+  std::unique_ptr<NiceMock<MockProximityAuthPrefManager>> pref_manager_;
 
   // The proximity monitor under test.
   ProximityMonitorImpl monitor_;
@@ -342,7 +367,8 @@ TEST_F(ProximityAuthProximityMonitorImplTest,
   cryptauth::FakeConnection connection(unnamed_remote_device);
 
   std::unique_ptr<base::TickClock> clock(new base::SimpleTestTickClock());
-  ProximityMonitorImpl monitor(&connection, std::move(clock));
+  ProximityMonitorImpl monitor(&connection, std::move(clock),
+                               pref_manager_.get());
   monitor.AddObserver(&observer_);
   monitor.Start();
   ProvideConnectionInfo({127, 127, 127});

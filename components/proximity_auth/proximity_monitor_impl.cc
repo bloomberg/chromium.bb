@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "components/proximity_auth/logging/logging.h"
 #include "components/proximity_auth/metrics.h"
+#include "components/proximity_auth/proximity_auth_pref_manager.h"
 #include "components/proximity_auth/proximity_monitor_observer.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -25,22 +26,22 @@ namespace proximity_auth {
 // The time to wait, in milliseconds, between proximity polling iterations.
 const int kPollingTimeoutMs = 250;
 
-// The RSSI threshold below which we consider the remote device to not be in
-// proximity.
-// Note: Because this threshold is unconfigurable right now, it is set quite
-// conservatively in order to avoid blocking users.
-const int kRssiThreshold = -70;
-
 // The weight of the most recent RSSI sample.
 const double kRssiSampleWeight = 0.3;
 
+// The default RSSI threshold.
+const int kDefaultRssiThreshold = -70;
+
 ProximityMonitorImpl::ProximityMonitorImpl(
     cryptauth::Connection* connection,
-    std::unique_ptr<base::TickClock> clock)
+    std::unique_ptr<base::TickClock> clock,
+    ProximityAuthPrefManager* pref_manager)
     : connection_(connection),
       remote_device_is_in_proximity_(false),
       is_active_(false),
+      rssi_threshold_(kDefaultRssiThreshold),
       clock_(std::move(clock)),
+      pref_manager_(pref_manager),
       polling_weak_ptr_factory_(this),
       weak_ptr_factory_(this) {
   if (device::BluetoothAdapterFactory::IsBluetoothSupported()) {
@@ -58,6 +59,7 @@ ProximityMonitorImpl::~ProximityMonitorImpl() {
 
 void ProximityMonitorImpl::Start() {
   is_active_ = true;
+  GetRssiThresholdFromPrefs();
   UpdatePollingState();
 }
 
@@ -192,7 +194,7 @@ void ProximityMonitorImpl::AddSample(
 
 void ProximityMonitorImpl::CheckForProximityStateChange() {
   bool is_now_in_proximity =
-      rssi_rolling_average_ && *rssi_rolling_average_ > kRssiThreshold;
+      rssi_rolling_average_ && *rssi_rolling_average_ > rssi_threshold_;
 
   if (rssi_rolling_average_)
     PA_LOG(INFO) << "  Rolling RSSI: " << *rssi_rolling_average_;
@@ -204,6 +206,26 @@ void ProximityMonitorImpl::CheckForProximityStateChange() {
     for (auto& observer : observers_)
       observer.OnProximityStateChanged();
   }
+}
+
+void ProximityMonitorImpl::GetRssiThresholdFromPrefs() {
+  ProximityAuthPrefManager::ProximityThreshold threshold =
+      pref_manager_->GetProximityThreshold();
+  switch (threshold) {
+    case ProximityAuthPrefManager::ProximityThreshold::kVeryClose:
+      rssi_threshold_ = -45;
+      return;
+    case ProximityAuthPrefManager::ProximityThreshold::kClose:
+      rssi_threshold_ = -60;
+      return;
+    case ProximityAuthPrefManager::ProximityThreshold::kFar:
+      rssi_threshold_ = -70;
+      return;
+    case ProximityAuthPrefManager::ProximityThreshold::kVeryFar:
+      rssi_threshold_ = -85;
+      return;
+  }
+  NOTREACHED();
 }
 
 }  // namespace proximity_auth

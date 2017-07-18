@@ -10,8 +10,8 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "components/prefs/testing_pref_service.h"
 #include "components/proximity_auth/proximity_auth_pref_names.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -26,6 +26,11 @@ const char kPublicKey2[] = "public key 2";
 
 const int64_t kPasswordEntryTimestampMs1 = 123456789L;
 const int64_t kPasswordEntryTimestampMs2 = 987654321L;
+
+const ProximityAuthPrefManager::ProximityThreshold kProximityThreshold1 =
+    ProximityAuthPrefManager::ProximityThreshold::kFar;
+const ProximityAuthPrefManager::ProximityThreshold kProximityThreshold2 =
+    ProximityAuthPrefManager::ProximityThreshold::kVeryFar;
 
 }  //  namespace
 
@@ -47,14 +52,14 @@ class ProximityAuthProximityAuthPrefManagerTest : public testing::Test {
     EXPECT_EQ(pref_manager.GetDeviceAddress(public_key), bluetooth_address);
   }
 
-  TestingPrefServiceSimple pref_service_;
+  sync_preferences::TestingPrefServiceSyncable pref_service_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ProximityAuthProximityAuthPrefManagerTest);
 };
 
 TEST_F(ProximityAuthProximityAuthPrefManagerTest, RegisterPrefs) {
-  TestingPrefServiceSimple pref_service;
+  sync_preferences::TestingPrefServiceSyncable pref_service;
   ProximityAuthPrefManager::RegisterPrefs(pref_service.registry());
   EXPECT_TRUE(
       pref_service.FindPreference(prefs::kProximityAuthRemoteBleDevices));
@@ -168,6 +173,15 @@ TEST_F(ProximityAuthProximityAuthPrefManagerTest, LastPasswordEntryTimestamp) {
   pref_manager.SetLastPasswordEntryTimestampMs(kPasswordEntryTimestampMs2);
   EXPECT_EQ(kPasswordEntryTimestampMs2,
             pref_manager.GetLastPasswordEntryTimestampMs());
+}
+
+TEST_F(ProximityAuthProximityAuthPrefManagerTest, ProximityThreshold) {
+  ProximityAuthPrefManager pref_manager(&pref_service_);
+  EXPECT_EQ(1, pref_manager.GetProximityThreshold());
+  pref_manager.SetProximityThreshold(kProximityThreshold1);
+  EXPECT_EQ(kProximityThreshold1, pref_manager.GetProximityThreshold());
+  pref_manager.SetProximityThreshold(kProximityThreshold2);
+  EXPECT_EQ(kProximityThreshold2, pref_manager.GetProximityThreshold());
 }
 
 }  // namespace proximity_auth
