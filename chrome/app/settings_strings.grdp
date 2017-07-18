@@ -903,6 +903,9 @@
     <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS" desc="In Printing Settings, the title of the CUPS printers setting section.">
       Printers
     </message>
+    <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS_LEARN_MORE_LABEL" desc="Label for the link that teaches users how to use CUPS printing.">
+      Set up or manage CUPS printers.
+    </message>
     <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS_ADD_PRINTER" desc="In CUPS printing settings subpage, text for the link adding a new CUPS printer.">
       Add Printer
     </message>
@@ -913,7 +916,7 @@
       Remove
     </message>
     <message name="IDS_SETTINGS_PRINTING_CUPS_SEARCH_LABEL" desc="The placeholder text in the printer search field.">
-      printer name
+      Search printers
     </message>
     <message name="IDS_SETTINGS_PRINTING_CUPS_ADD_PRINTERS_NEARBY_TITLE" desc="Text for the title of the dialog that is used to add nearby printers.">
       Add a nearby printer
@@ -1026,9 +1029,6 @@
   </if>
   <message name="IDS_SETTINGS_PRINTING_CLOUD_PRINTERS" desc="In Printing Settings, the title of the google cloud printers setting section.">
     Google Cloud Print
-  </message>
-  <message name="IDS_SETTINGS_PRINTING_CLOUD_PRINTERS_DESCRIPTION" desc="In Printing Settings, the title description of the google cloud printers setting section.">
-    Set up cloud printing devices
   </message>
 
   <!-- Downloads Page -->

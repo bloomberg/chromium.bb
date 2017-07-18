@@ -12,16 +12,17 @@
 <dom-module id="settings-cups-printers">
   <template>
     <style include="settings-shared action-link">
-      .settings-box .start {
-        color: var(--paper-grey-600);
-      }
-
       .settings-box .start .secondary {
         color: var(--paper-grey-800);
         font-size: 92.31%;  /* 12px / 13px */
       }
-      
+
       .settings-box .primary-button {
+        --paper-button-disabled: {
+          background: none;
+          color: black;
+          opacity: 0.26;
+        };
         -webkit-margin-end: 0;
         -webkit-margin-start: auto;
       }
@@ -55,14 +56,19 @@
     </style>
 
     <div class="settings-box first">
+      <div class="start">
+        <span>$i18n{cupsPrintersLearnMoreLabel}</span>
+        <a href="$i18n{printingCUPSPrintLearnMoreUrl}" target="_blank">
+          $i18n{learnMore}
+        </a>
+        <div class="secondary" hidden="[[canAddPrinter_]]">
+          $i18n{requireNetworkMessage}
+        </div>
+      </div>
       <paper-button class="primary-button" id="addPrinter"
-          on-tap="onAddPrinterTap_" hidden="[[!canAddPrinter_]]">
+          on-tap="onAddPrinterTap_" disabled="[[!canAddPrinter_]]">
         $i18n{addCupsPrinter}
       </paper-button>
-      <div class="start" hidden="[[canAddPrinter_]]">
-        <span>$i18n{addCupsPrinter}</span>
-        <div class="secondary">$i18n{requireNetworkMessage}</div>
-      </div>
     </div>
 
     <settings-cups-add-printer-dialog id="addPrinterDialog"
