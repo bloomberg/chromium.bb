@@ -13,7 +13,7 @@
         },
         {
           "object": "LayoutView #document",
-          "rect": [0, 0, 300, 150],
+          "rect": [0, 0, 400, 200],
           "reason": "disappeared"
         },
         {

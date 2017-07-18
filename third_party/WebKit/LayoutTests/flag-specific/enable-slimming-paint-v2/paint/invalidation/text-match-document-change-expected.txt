@@ -35,6 +35,10 @@
       "reason": "scroll control"
     },
     {
+      "object": "LayoutView #document",
+      "reason": "incremental"
+    },
+    {
       "object": "LayoutBlockFlow DIV id='to-be-changed'",
       "reason": "full"
     },

@@ -2,13 +2,13 @@
   "layers": [
     {
       "name": "LayoutView #document",
-      "bounds": [800, 600],
-      "contentsOpaque": true,
+      "bounds": [2011, 2081],
+      "contentsOpaque": false,
       "drawsContent": true,
       "paintInvalidations": [
         {
           "object": "LayoutView #document",
-          "rect": [3, 65, 235, 235],
+          "rect": [3, 65, 2008, 2016],
           "reason": "subtree"
         },
         {

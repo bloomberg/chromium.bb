@@ -510,6 +510,10 @@
       "reason": "scroll control"
     },
     {
+      "object": "LayoutView #document",
+      "reason": "incremental"
+    },
+    {
       "object": "LayoutBlockFlow P",
       "reason": "geometry"
     },

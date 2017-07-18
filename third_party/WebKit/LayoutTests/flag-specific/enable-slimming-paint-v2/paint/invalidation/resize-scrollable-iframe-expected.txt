@@ -2,24 +2,19 @@
   "layers": [
     {
       "name": "LayoutView #document",
-      "bounds": [800, 600],
-      "contentsOpaque": true,
+      "bounds": [1016, 1124],
+      "contentsOpaque": false,
       "drawsContent": true,
       "paintInvalidations": [
         {
           "object": "LayoutView #document",
-          "rect": [8, 193, 285, 200],
-          "reason": "incremental"
+          "rect": [8, 108, 1008, 1016],
+          "reason": "geometry"
         },
         {
           "object": "HorizontalScrollbar",
           "rect": [8, 393, 285, 15],
           "reason": "scroll control"
-        },
-        {
-          "object": "LayoutView #document",
-          "rect": [93, 108, 200, 285],
-          "reason": "incremental"
         },
         {
           "object": "HorizontalScrollbar",
@@ -67,10 +62,6 @@
     {
       "object": "VerticalScrollbar",
       "reason": "scroll control"
-    },
-    {
-      "object": "LayoutView #document",
-      "reason": "incremental"
     }
   ]
 }
