@@ -52,10 +52,9 @@ extern "C" {
 #define UNLIKELY(v) (v)
 #endif
 
-#if CONFIG_AOM_QM
 typedef uint16_t qm_val_t;
 #define AOM_QM_BITS 5
-#endif
+
 #if CONFIG_HIGHBITDEPTH
 // Note:
 // tran_low_t  is the datatype used for final transform coefficients.
