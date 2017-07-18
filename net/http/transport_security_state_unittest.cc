@@ -33,6 +33,7 @@
 #include "net/cert/x509_certificate.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
+#include "net/net_features.h"
 #include "net/ssl/ssl_info.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
@@ -42,6 +43,10 @@
 namespace net {
 
 namespace {
+
+namespace test0 {
+#include "net/http/transport_security_state_static_unittest0.h"
+}
 
 namespace test1 {
 #include "net/http/transport_security_state_static_unittest1.h"
@@ -398,6 +403,12 @@ void CheckExpectStapleReport(TransportSecurityState* state,
 
 class TransportSecurityStateTest : public testing::Test {
  public:
+  TransportSecurityStateTest() {
+#if !BUILDFLAG(INCLUDE_TRANSPORT_SECURITY_STATE_PRELOAD_LIST)
+    SetTransportSecurityStateSourceForTesting(&test0::kHSTSSource);
+#endif
+  }
+
   ~TransportSecurityStateTest() override {
     SetTransportSecurityStateSourceForTesting(nullptr);
   }
@@ -1356,7 +1367,15 @@ static bool AddHash(const std::string& type_and_base64,
   return true;
 }
 
-TEST_F(TransportSecurityStateTest, PinValidationWithoutRejectedCerts) {
+// This test depends on the pinset of tor.
+#if !BUILDFLAG(INCLUDE_TRANSPORT_SECURITY_STATE_PRELOAD_LIST)
+#define MAYBE_PinValidationWithoutRejectedCerts \
+  DISABLED_PinValidationWithoutRejectedCerts
+#else
+#define MAYBE_PinValidationWithoutRejectedCerts \
+  PinValidationWithoutRejectedCerts
+#endif
+TEST_F(TransportSecurityStateTest, MAYBE_PinValidationWithoutRejectedCerts) {
   HashValueVector good_hashes, bad_hashes;
 
   for (size_t i = 0; kGoodPath[i]; i++) {

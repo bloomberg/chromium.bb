@@ -31,4 +31,12 @@ declare_args() {
 
   # Reporting not used on iOS.
   enable_reporting = !is_ios
+
+  # Includes the transport security state preload list. This list includes
+  # mechanisms (e.g. HSTS, HPKP) to enforce trusted connections to a significant
+  # set of hardcoded domains. While this list has a several hundred KB of binary
+  # size footprint, this flag should not be disabled unless the embedder is
+  # willing to take the responsibility to make sure that all important
+  # connections use HTTPS.
+  include_transport_security_state_preload_list = true
 }
