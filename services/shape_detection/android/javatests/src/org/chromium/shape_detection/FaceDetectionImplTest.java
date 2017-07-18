@@ -5,23 +5,15 @@
 package org.chromium.shape_detection;
 
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.support.test.filters.SmallTest;
 import android.test.InstrumentationTestCase;
 
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GoogleApiAvailability;
-
-import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.UrlUtils;
 import org.chromium.shape_detection.mojom.FaceDetection;
 import org.chromium.shape_detection.mojom.FaceDetectionResult;
 import org.chromium.shape_detection.mojom.FaceDetectorOptions;
-import org.chromium.skia.mojom.ColorType;
 
-import java.nio.ByteBuffer;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -30,39 +22,14 @@ import java.util.concurrent.TimeUnit;
  */
 public class FaceDetectionImplTest extends InstrumentationTestCase {
     public static final org.chromium.skia.mojom.Bitmap MONA_LISA_BITMAP =
-            mojoBitmapFromFile("mona_lisa.jpg");
+            TestUtils.mojoBitmapFromFile("mona_lisa.jpg");
     // Different versions of Android have different implementations of FaceDetector.findFaces(), so
     // we have to use a large error threshold.
     public static final double BOUNDING_BOX_POSITION_ERROR = 10.0;
     public static final double BOUNDING_BOX_SIZE_ERROR = 5.0;
     public static enum DetectionProviderType { ANDROID, GMS_CORE }
-    public static final boolean IS_GMS_CORE_SUPPORTED = isGmsCoreSupported();
 
     public FaceDetectionImplTest() {}
-
-    private static boolean isGmsCoreSupported() {
-        return GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(
-                       ContextUtils.getApplicationContext())
-                == ConnectionResult.SUCCESS;
-    }
-
-    private static org.chromium.skia.mojom.Bitmap mojoBitmapFromBitmap(Bitmap bitmap) {
-        ByteBuffer buffer = ByteBuffer.allocate(bitmap.getByteCount());
-        bitmap.copyPixelsToBuffer(buffer);
-
-        org.chromium.skia.mojom.Bitmap mojoBitmap = new org.chromium.skia.mojom.Bitmap();
-        mojoBitmap.width = bitmap.getWidth();
-        mojoBitmap.height = bitmap.getHeight();
-        mojoBitmap.pixelData = buffer.array();
-        mojoBitmap.colorType = ColorType.RGBA_8888;
-        return mojoBitmap;
-    }
-
-    private static org.chromium.skia.mojom.Bitmap mojoBitmapFromFile(String relPath) {
-        String path = UrlUtils.getIsolatedTestFilePath("services/test/data/" + relPath);
-        Bitmap bitmap = BitmapFactory.decodeFile(path);
-        return mojoBitmapFromBitmap(bitmap);
-    }
 
     private static FaceDetectionResult[] detect(
             org.chromium.skia.mojom.Bitmap mojoBitmap, DetectionProviderType api) {
@@ -113,7 +80,7 @@ public class FaceDetectionImplTest extends InstrumentationTestCase {
     @SmallTest
     @Feature({"ShapeDetection"})
     public void testDetectValidImageWithGmsCore() {
-        if (IS_GMS_CORE_SUPPORTED) {
+        if (TestUtils.IS_GMS_CORE_SUPPORTED) {
             detectSucceedsOnValidImage(DetectionProviderType.GMS_CORE);
         }
     }
@@ -126,7 +93,7 @@ public class FaceDetectionImplTest extends InstrumentationTestCase {
                 MONA_LISA_BITMAP.height, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(paddedBitmap);
         canvas.drawBitmap(BitmapUtils.convertToBitmap(MONA_LISA_BITMAP), 0, 0, null);
-        org.chromium.skia.mojom.Bitmap mojoBitmap = mojoBitmapFromBitmap(paddedBitmap);
+        org.chromium.skia.mojom.Bitmap mojoBitmap = TestUtils.mojoBitmapFromBitmap(paddedBitmap);
         assertEquals(1, mojoBitmap.width % 2);
 
         FaceDetectionResult[] results = detect(mojoBitmap, DetectionProviderType.ANDROID);
