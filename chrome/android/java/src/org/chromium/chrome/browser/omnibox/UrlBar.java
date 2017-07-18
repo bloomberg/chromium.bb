@@ -384,14 +384,14 @@ public class UrlBar extends AutocompleteEditText {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if (!mFocused) {
-            mGestureDetector.onTouchEvent(event);
-            return true;
-        }
-
         if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
             getLocationInWindow(mCachedLocation);
             mDownEventViewTop = mCachedLocation[1];
+        }
+
+        if (!mFocused) {
+            mGestureDetector.onTouchEvent(event);
+            return true;
         }
 
         Tab currentTab = mUrlBarDelegate.getCurrentTab();
