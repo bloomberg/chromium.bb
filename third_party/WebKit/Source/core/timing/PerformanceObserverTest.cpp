@@ -34,8 +34,7 @@ class PerformanceObserverTest : public ::testing::Test {
         v8::Function::New(script_state->GetContext(), nullptr).ToLocalChecked();
     base_ = new MockPerformanceBase(script_state);
     cb_ = PerformanceObserverCallback::Create(script_state, callback);
-    observer_ = PerformanceObserver::Create(
-        ExecutionContext::From(script_state), base_, cb_);
+    observer_ = new PerformanceObserver(script_state, base_, cb_);
   }
 
   bool IsRegistered() { return observer_->is_registered_; }

@@ -4,34 +4,48 @@
 
 #include "core/timing/PerformanceObserver.h"
 
+#include <algorithm>
+#include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/PerformanceObserverCallback.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/timing/PerformanceBase.h"
+#include "core/frame/LocalDOMWindow.h"
+#include "core/timing/DOMWindowPerformance.h"
+#include "core/timing/Performance.h"
 #include "core/timing/PerformanceEntry.h"
 #include "core/timing/PerformanceObserverEntryList.h"
 #include "core/timing/PerformanceObserverInit.h"
 #include "platform/Timer.h"
-#include <algorithm>
 
 namespace blink {
 
 PerformanceObserver* PerformanceObserver::Create(
-    ExecutionContext* execution_context,
-    PerformanceBase* performance,
+    ScriptState* script_state,
     PerformanceObserverCallback* callback) {
   DCHECK(IsMainThread());
-  return new PerformanceObserver(execution_context, performance, callback);
+  LocalDOMWindow* window = ToLocalDOMWindow(script_state->GetContext());
+  if (!window) {
+    V8ThrowException::ThrowTypeError(
+        script_state->GetIsolate(),
+        ExceptionMessages::FailedToConstruct(
+            "PerformanceObserver", "No 'window' in current context."));
+    return nullptr;
+  }
+  return new PerformanceObserver(
+      script_state, DOMWindowPerformance::performance(*window), callback);
 }
 
-PerformanceObserver::PerformanceObserver(ExecutionContext* execution_context,
+PerformanceObserver::PerformanceObserver(ScriptState* script_state,
                                          PerformanceBase* performance,
                                          PerformanceObserverCallback* callback)
-    : execution_context_(execution_context),
+    : execution_context_(ExecutionContext::From(script_state)),
       callback_(this, callback),
       performance_(performance),
       filter_options_(PerformanceEntry::kInvalid),
-      is_registered_(false) {}
+      is_registered_(false) {
+  DCHECK(performance_);
+}
 
 void PerformanceObserver::observe(const PerformanceObserverInit& observer_init,
                                   ExceptionState& exception_state) {

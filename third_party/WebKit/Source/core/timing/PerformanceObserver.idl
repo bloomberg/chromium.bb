@@ -7,7 +7,8 @@ callback PerformanceObserverCallback = void (PerformanceObserverEntryList entrie
 
 // https://w3c.github.io/performance-timeline/#the-performance-observer-interface
 [
-    CustomConstructor(PerformanceObserverCallback callback),
+    Constructor(PerformanceObserverCallback callback),
+    ConstructorCallWith=ScriptState,
     RuntimeEnabled=PerformanceObserver
 ] interface PerformanceObserver {
     [RaisesException] void observe(PerformanceObserverInit options);
