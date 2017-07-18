@@ -7,6 +7,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
+#include "components/arc/arc_util.h"
 #include "components/arc/test/fake_intent_helper_instance.h"
 #include "components/session_manager/core/session_manager.h"
 
@@ -42,6 +43,10 @@ class ArcUserSessionServiceTest : public InProcessBrowserTest {
 
   // InProcessBrowserTest:
   ~ArcUserSessionServiceTest() override = default;
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    arc::SetArcAvailableCommandLineForTesting(command_line);
+  }
 
   void SetUpInProcessBrowserTestFixture() override {
     fake_intent_helper_instance_.reset(new FakeIntentHelperInstance());
