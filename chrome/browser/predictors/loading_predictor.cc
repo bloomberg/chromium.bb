@@ -43,11 +43,16 @@ void LoadingPredictor::PrepareForPageLoad(const GURL& url, HintOrigin origin) {
   if (active_hints_.find(url) != active_hints_.end())
     return;
 
+  bool has_prefetch_prediction = false;
+  bool has_preconnect_prediction = false;
   bool hint_activated = false;
 
   {
     ResourcePrefetchPredictor::Prediction prediction;
-    if (resource_prefetch_predictor_->GetPrefetchData(url, &prediction)) {
+    has_prefetch_prediction =
+        resource_prefetch_predictor_->GetPrefetchData(url, &prediction);
+    if (has_prefetch_prediction &&
+        config_.IsPrefetchingEnabledForOrigin(profile_, origin)) {
       MaybeAddPrefetch(url, prediction.subresource_urls, origin);
       hint_activated = true;
     }
@@ -55,15 +60,18 @@ void LoadingPredictor::PrepareForPageLoad(const GURL& url, HintOrigin origin) {
 
   if (!hint_activated) {
     PreconnectPrediction prediction;
-    if (resource_prefetch_predictor_->PredictPreconnectOrigins(url,
-                                                               &prediction)) {
+    has_preconnect_prediction =
+        resource_prefetch_predictor_->PredictPreconnectOrigins(url,
+                                                               &prediction);
+    if (has_preconnect_prediction &&
+        config_.IsPreconnectEnabledForOrigin(profile_, origin)) {
       MaybeAddPreconnect(url, prediction.preconnect_origins,
                          prediction.preresolve_hosts, origin);
       hint_activated = true;
     }
   }
 
-  if (hint_activated) {
+  if (has_prefetch_prediction || has_preconnect_prediction) {
     // To report hint durations and deduplicate hints to the same url.
     active_hints_.emplace(url, base::TimeTicks::Now());
   }
@@ -190,8 +198,6 @@ void LoadingPredictor::CleanupAbandonedHintsAndNavigations(
 void LoadingPredictor::MaybeAddPrefetch(const GURL& url,
                                         const std::vector<GURL>& urls,
                                         HintOrigin origin) {
-  if (!config_.IsPrefetchingEnabledForOrigin(profile_, origin))
-    return;
   std::string host = url.host();
   if (prefetches_.find(host) != prefetches_.end())
     return;
@@ -267,8 +273,6 @@ void LoadingPredictor::MaybeAddPreconnect(
     HintOrigin origin) {
   // In case Shutdown() has been already called.
   if (!preconnect_manager_)
-    return;
-  if (!config_.IsPreconnectEnabledForOrigin(profile_, origin))
     return;
 
   content::BrowserThread::PostTask(
