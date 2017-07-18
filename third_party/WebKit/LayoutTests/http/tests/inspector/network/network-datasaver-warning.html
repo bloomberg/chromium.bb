@@ -1,0 +1,34 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="../console-test.js"></script>
+<script src="../network-test.js"></script>
+<script>
+
+async function test() {
+    InspectorTest.addResult('Console messages:')
+    InspectorTest.dumpConsoleMessages();
+    InspectorTest.addResult('');
+
+    InspectorTest.addResult('Enabling data saver');
+    InspectorTest.evaluateInPagePromise('window.internals.settings.setDataSaverEnabled(true)');
+    InspectorTest.addResult('Reloading Page');
+    await InspectorTest.reloadPagePromise();
+
+    InspectorTest.addResult('Console messages:')
+    InspectorTest.dumpConsoleMessages();
+    InspectorTest.addResult('');
+
+    InspectorTest.addResult('Reloading Page');
+    await InspectorTest.reloadPagePromise();
+    InspectorTest.addResult('Console messages:')
+    InspectorTest.dumpConsoleMessages();
+
+    InspectorTest.completeTest();
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests to ensure datsaver logs warning in console if enabled and only shown once on reloads.</p>
+</body>
+</html>
