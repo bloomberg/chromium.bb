@@ -361,8 +361,9 @@ public class AwContentsClientShouldInterceptRequestTest extends AwTestBase {
 
         @Override
         public long skip(long n) throws IOException {
-            if (n < 0)
+            if (n < 0) {
                 throw new IOException("skipping negative number of bytes");
+            }
             return 0;
         }
     }
