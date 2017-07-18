@@ -46,6 +46,13 @@ struct weston_desktop_xdg_surface_state {
 	bool activated;
 };
 
+struct weston_desktop_xdg_surface_configure {
+	struct wl_list link; /* weston_desktop_xdg_surface::configure_list */
+	uint32_t serial;
+	struct weston_desktop_xdg_surface_state state;
+	struct weston_size size;
+};
+
 struct weston_desktop_xdg_surface {
 	struct wl_resource *resource;
 	struct weston_desktop_surface *surface;
@@ -53,7 +60,7 @@ struct weston_desktop_xdg_surface {
 	bool added;
 	struct wl_event_source *add_idle;
 	struct wl_event_source *configure_idle;
-	uint32_t configure_serial;
+	struct wl_list configure_list; /* weston_desktop_xdg_surface_configure::link */
 	struct {
 		struct weston_desktop_xdg_surface_state state;
 		struct weston_size size;
@@ -94,13 +101,26 @@ static void
 weston_desktop_xdg_surface_send_configure(void *data)
 {
 	struct weston_desktop_xdg_surface *surface = data;
+	struct weston_desktop_xdg_surface_configure *configure;
 	uint32_t *s;
 	struct wl_array states;
 
 	surface->configure_idle = NULL;
 
-	surface->configure_serial =
+	configure = zalloc(sizeof(struct weston_desktop_xdg_surface_configure));
+	if (configure == NULL) {
+		struct weston_desktop_client *client =
+			weston_desktop_surface_get_client(surface->surface);
+		struct wl_client *wl_client =
+			weston_desktop_client_get_client(client);
+		wl_client_post_no_memory(wl_client);
+		return;
+	}
+	wl_list_insert(surface->configure_list.prev, &configure->link);
+	configure->serial =
 		wl_display_next_serial(weston_desktop_get_display(surface->desktop));
+	configure->state = surface->pending.state;
+	configure->size = surface->pending.size;
 
 	wl_array_init(&states);
 	if (surface->pending.state.maximized) {
@@ -124,7 +144,7 @@ weston_desktop_xdg_surface_send_configure(void *data)
 				   surface->pending.size.width,
 				   surface->pending.size.height,
 				   &states,
-				   surface->configure_serial);
+				   configure->serial);
 
 	wl_array_release(&states);
 };
@@ -325,6 +345,7 @@ weston_desktop_xdg_surface_destroy(struct weston_desktop_surface *dsurface,
 				   void *user_data)
 {
 	struct weston_desktop_xdg_surface *surface = user_data;
+	struct weston_desktop_xdg_surface_configure *configure, *temp;
 
 	if (surface->added)
 		weston_desktop_api_surface_removed(surface->desktop,
@@ -335,6 +356,9 @@ weston_desktop_xdg_surface_destroy(struct weston_desktop_surface *dsurface,
 
 	if (surface->configure_idle != NULL)
 		wl_event_source_remove(surface->configure_idle);
+
+	wl_list_for_each_safe(configure, temp, &surface->configure_list, link)
+		free(configure);
 
 	free(surface);
 }
@@ -443,12 +467,34 @@ weston_desktop_xdg_surface_protocol_ack_configure(struct wl_client *wl_client,
 		wl_resource_get_user_data(resource);
 	struct weston_desktop_xdg_surface *surface =
 		weston_desktop_surface_get_implementation_data(dsurface);
+	struct weston_desktop_xdg_surface_configure *configure, *temp;
+	bool found = false;
 
-	if (surface->configure_serial != serial)
+	wl_list_for_each_safe(configure, temp, &surface->configure_list, link) {
+		if (configure->serial < serial) {
+			wl_list_remove(&configure->link);
+			free(configure);
+		} else if (configure->serial == serial) {
+			wl_list_remove(&configure->link);
+			found = true;
+		}
+		break;
+	}
+	if (!found) {
+		struct weston_desktop_client *client =
+			weston_desktop_surface_get_client(dsurface);
+		struct wl_resource *client_resource =
+			weston_desktop_client_get_resource(client);
+		wl_resource_post_error(client_resource,
+				       XDG_SHELL_ERROR_DEFUNCT_SURFACES,
+				       "Wrong configure serial: %u", serial);
 		return;
+	}
 
-	surface->next.state = surface->pending.state;
-	surface->next.size = surface->pending.size;
+	surface->next.state = configure->state;
+	surface->next.size = configure->size;
+
+	free(configure);
 }
 
 static void
