@@ -32056,6 +32056,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Memory.Browser.PrivateMemoryFootprint" units="MB">
+  <owner>erikchen@chromium.org</owner>
+  <summary>
+    A rough estimate of the private memory footprint of the browser process.
+    Recorded once per UMA ping.
+  </summary>
+</histogram>
+
 <histogram name="Memory.CachedFontAndDC">
   <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
@@ -32398,6 +32406,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Memory.Gpu.PrivateMemoryFootprint" units="MB">
+  <owner>erikchen@chromium.org</owner>
+  <summary>
+    A rough estimate of the private memory footprint of the gpu process.
+    Recorded once per UMA ping.
+  </summary>
+</histogram>
+
 <histogram name="Memory.Graphics" units="MB">
   <owner>hajimehoshi@chromium.org</owner>
   <owner>jamescook@chromium.org</owner>
@@ -32688,6 +32704,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The private working set used by each renderer process.  Each renderer
     process provides one sample.  Recorded once per UMA ping.
+  </summary>
+</histogram>
+
+<histogram name="Memory.Renderer.PrivateMemoryFootprint" units="MB">
+  <owner>erikchen@chromium.org</owner>
+  <summary>
+    A rough estimate of the private memory footprint of the renderer process.
+    Recorded once per UMA ping.
   </summary>
 </histogram>
 
@@ -33161,6 +33185,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     The sum of all processes. This is not aware of shared memory so it is just a
     rough estimate. Recorded once per UMA ping. See Memory.Total2 for the same
     metric with higher precision bucketing.
+  </summary>
+</histogram>
+
+<histogram name="Memory.Total.PrivateMemoryFootprint" units="MB">
+  <owner>erikchen@chromium.org</owner>
+  <summary>
+    A rough estimate of the private memory footprint of all processes. Recorded
+    once per UMA ping.
   </summary>
 </histogram>
 
