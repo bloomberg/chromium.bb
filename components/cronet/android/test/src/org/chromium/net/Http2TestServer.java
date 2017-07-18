@@ -120,6 +120,10 @@ public final class Http2TestServer {
                     Protocol.ALPN, SelectorFailureBehavior.NO_ADVERTISE,
                     SelectedListenerFailureBehavior.ACCEPT, ApplicationProtocolNames.HTTP_2);
 
+            // Don't make netty use java.security.KeyStore.getInstance("JKS") as it doesn't
+            // exist.  Just avoid a KeyManagerFactory as it's unnecessary for our testing.
+            System.setProperty("io.netty.handler.ssl.openssl.useKeyManagerFactory", "false");
+
             mSslCtx = new OpenSslServerContext(certFile, keyFile, null, null,
                     Http2SecurityUtil.CIPHERS, SupportedCipherSuiteFilter.INSTANCE,
                     applicationProtocolConfig, 0, 0);
