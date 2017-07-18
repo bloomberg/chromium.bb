@@ -16,5 +16,9 @@ const char kProximityAuthLastPasswordEntryTimestampMs[] =
 const char kProximityAuthRemoteBleDevices[] =
     "proximity_auth.remote_ble_devices";
 
+// How close the remote and the local device should be in order to use Easy
+// Unlock.
+const char kEasyUnlockProximityThreshold[] = "easy_unlock.proximity_threshold";
+
 }  // namespace prefs
 }  // namespace proximity_auth

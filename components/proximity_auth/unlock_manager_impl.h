@@ -27,6 +27,7 @@ namespace proximity_auth {
 
 class Messenger;
 class ProximityAuthClient;
+class ProximityAuthPrefManager;
 class ProximityMonitor;
 
 // The unlock manager is responsible for controlling the lock screen UI based on
@@ -43,7 +44,8 @@ class UnlockManagerImpl : public UnlockManager,
   // The |proximity_auth_client| is not owned and should outlive the constructed
   // unlock manager.
   UnlockManagerImpl(ProximityAuthSystem::ScreenlockType screenlock_type,
-                    ProximityAuthClient* proximity_auth_client);
+                    ProximityAuthClient* proximity_auth_client,
+                    ProximityAuthPrefManager* pref_manager);
   ~UnlockManagerImpl() override;
 
   // UnlockManager:
@@ -56,7 +58,8 @@ class UnlockManagerImpl : public UnlockManager,
   // Creates a ProximityMonitor instance for the given |connection|.
   // Exposed for testing.
   virtual std::unique_ptr<ProximityMonitor> CreateProximityMonitor(
-      cryptauth::Connection* connection);
+      cryptauth::Connection* connection,
+      ProximityAuthPrefManager* pref_manager);
 
  private:
   // The possible lock screen states for the remote device.
@@ -154,6 +157,9 @@ class UnlockManagerImpl : public UnlockManager,
 
   // Used to call into the embedder. Expected to outlive |this| instance.
   ProximityAuthClient* proximity_auth_client_;
+
+  // Used to access the common prefs. Expected to outlive |this| instance.
+  ProximityAuthPrefManager* pref_manager_;
 
   // Whether the screen is currently locked.
   bool is_locked_;

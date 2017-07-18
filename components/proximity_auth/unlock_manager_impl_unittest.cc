@@ -119,7 +119,7 @@ class TestUnlockManager : public UnlockManagerImpl {
  public:
   TestUnlockManager(ProximityAuthSystem::ScreenlockType screenlock_type,
                     ProximityAuthClient* proximity_auth_client)
-      : UnlockManagerImpl(screenlock_type, proximity_auth_client),
+      : UnlockManagerImpl(screenlock_type, proximity_auth_client, nullptr),
         proximity_monitor_(nullptr) {}
   ~TestUnlockManager() override {}
 
@@ -137,7 +137,8 @@ class TestUnlockManager : public UnlockManagerImpl {
 
  private:
   std::unique_ptr<ProximityMonitor> CreateProximityMonitor(
-      cryptauth::Connection* connection) override {
+      cryptauth::Connection* connection,
+      ProximityAuthPrefManager* pref_manager) override {
     EXPECT_EQ(cryptauth::kTestRemoteDevicePublicKey,
               connection->remote_device().public_key);
     std::unique_ptr<MockProximityMonitor> proximity_monitor(

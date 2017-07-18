@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "base/values.h"
-#include "components/prefs/pref_registry_simple.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/proximity_auth/logging/logging.h"
@@ -23,10 +23,14 @@ ProximityAuthPrefManager::ProximityAuthPrefManager(PrefService* pref_service)
 ProximityAuthPrefManager::~ProximityAuthPrefManager() {}
 
 // static
-void ProximityAuthPrefManager::RegisterPrefs(PrefRegistrySimple* registry) {
+void ProximityAuthPrefManager::RegisterPrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterInt64Pref(prefs::kProximityAuthLastPasswordEntryTimestampMs,
                               0L);
   registry->RegisterDictionaryPref(prefs::kProximityAuthRemoteBleDevices);
+  registry->RegisterIntegerPref(
+      prefs::kEasyUnlockProximityThreshold, 1,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
 bool ProximityAuthPrefManager::HasDeviceWithAddress(
@@ -119,6 +123,17 @@ int64_t ProximityAuthPrefManager::GetLastPasswordEntryTimestampMs() const {
 const base::DictionaryValue* ProximityAuthPrefManager::GetRemoteBleDevices()
     const {
   return pref_service_->GetDictionary(prefs::kProximityAuthRemoteBleDevices);
+}
+
+void ProximityAuthPrefManager::SetProximityThreshold(ProximityThreshold value) {
+  pref_service_->SetInteger(prefs::kEasyUnlockProximityThreshold, value);
+}
+
+ProximityAuthPrefManager::ProximityThreshold
+ProximityAuthPrefManager::GetProximityThreshold() const {
+  int pref_value =
+      pref_service_->GetInteger(prefs::kEasyUnlockProximityThreshold);
+  return static_cast<ProximityThreshold>(pref_value);
 }
 
 }  // namespace proximity_auth

@@ -254,9 +254,7 @@ void EasyUnlockService::RegisterProfilePrefs(
   registry->RegisterDictionaryPref(prefs::kEasyUnlockPairing,
                                    base::MakeUnique<base::DictionaryValue>());
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          proximity_auth::switches::kEnableBluetoothLowEnergyDiscovery))
-    proximity_auth::ProximityAuthPrefManager::RegisterPrefs(registry);
+  proximity_auth::ProximityAuthPrefManager::RegisterPrefs(registry);
 }
 
 // static

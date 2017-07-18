@@ -11,12 +11,15 @@
 
 #include "base/macros.h"
 
-class PrefRegistrySimple;
 class PrefService;
 
 namespace base {
 class DictionaryValue;
 }  // namespace base
+
+namespace user_prefs {
+class PrefRegistrySyncable;
+}  // namespace user_prefs
 
 namespace proximity_auth {
 
@@ -33,7 +36,7 @@ class ProximityAuthPrefManager {
   virtual ~ProximityAuthPrefManager();
 
   // Registers the prefs used by this class to the given |pref_service|.
-  static void RegisterPrefs(PrefRegistrySimple* registry);
+  static void RegisterPrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Methods used to handle remote BLE devices stored in prefs
   // (kProximityAuthRemoteBleDevices).
@@ -64,6 +67,22 @@ class ProximityAuthPrefManager {
   // time period has elapsed.
   virtual void SetLastPasswordEntryTimestampMs(int64_t timestamp_ms);
   virtual int64_t GetLastPasswordEntryTimestampMs() const;
+
+  // These are arbitrary labels displayed in the settings page for the user
+  // to select. The actual mapping is done in the ProximityMonitorImpl.
+  enum ProximityThreshold {
+    kVeryClose = 0,
+    kClose = 1,
+    kFar = 2,
+    kVeryFar = 3
+  };
+
+  // Setter and getter for the proximity threshold. This preference is
+  // exposed to the user, allowing him / her to change how close the
+  // phone must for the unlock to be allowed.
+  // Note: These are arbitrary values,
+  virtual void SetProximityThreshold(ProximityThreshold value);
+  virtual ProximityThreshold GetProximityThreshold() const;
 
  private:
   const base::DictionaryValue* GetRemoteBleDevices() const;
