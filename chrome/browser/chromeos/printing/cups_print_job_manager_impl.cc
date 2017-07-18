@@ -20,6 +20,7 @@
 #include "base/task_runner_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/printing/cups_print_job.h"
 #include "chrome/browser/chromeos/printing/synced_printers_manager.h"
@@ -57,6 +58,16 @@ enum JobResultForHistogram {
   PRINTER_CANCEL = 3,  // cancelled by printer
   LOST = 4,            // final state never received
   RESULT_MAX
+};
+
+// Container for results from CUPS queries.
+struct QueryResult {
+  QueryResult() = default;
+  QueryResult(const QueryResult& other) = default;
+  ~QueryResult() = default;
+
+  bool success;
+  std::vector<::printing::QueueStatus> queues;
 };
 
 // Returns the appropriate JobResultForHistogram for a given |state|.  Only
@@ -208,15 +219,6 @@ bool UpdatePrintJob(const ::printing::PrinterStatus& printer_status,
 
 namespace chromeos {
 
-struct QueryResult {
-  QueryResult() = default;
-  QueryResult(const QueryResult& other) = default;
-  ~QueryResult() = default;
-
-  bool success;
-  std::vector<::printing::QueueStatus> queues;
-};
-
 // A wrapper around the CUPS connection to ensure that it's always accessed on
 // the same sequence.
 class CupsWrapper {
@@ -274,6 +276,8 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
         cups_wrapper_(new CupsWrapper(),
                       base::OnTaskRunnerDeleter(query_runner_)),
         weak_ptr_factory_(this) {
+    timer_.SetTaskRunner(content::BrowserThread::GetTaskRunnerForThread(
+        content::BrowserThread::UI));
     registrar_.Add(this, chrome::NOTIFICATION_PRINT_JOB_EVENT,
                    content::NotificationService::AllSources());
   }
@@ -364,29 +368,22 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
     job->set_state(CupsPrintJob::State::STATE_WAITING);
     NotifyJobUpdated(job);
 
-    ScheduleQuery(base::TimeDelta());
+    // Run a query now.
+    content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::UI)
+        ->PostTask(FROM_HERE, base::Bind(&CupsPrintJobManagerImpl::PostQuery,
+                                         weak_ptr_factory_.GetWeakPtr()));
+    // Start the timer for ongoing queries.
+    ScheduleQuery();
 
     return true;
   }
 
-  // Schedule a query of CUPS for print job status with the default delay.
-  void ScheduleQuery() {
-    ScheduleQuery(base::TimeDelta::FromMilliseconds(kPollRate));
-  }
-
   // Schedule a query of CUPS for print job status with a delay of |delay|.
-  void ScheduleQuery(const base::TimeDelta& delay) {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-    if (!in_query_) {
-      in_query_ = true;
-
-      content::BrowserThread::PostDelayedTask(
-          content::BrowserThread::UI, FROM_HERE,
-          base::Bind(&CupsPrintJobManagerImpl::PostQuery,
-                     weak_ptr_factory_.GetWeakPtr()),
-          delay);
-    }
+  void ScheduleQuery(int attempt_count = 1) {
+    const int delay_ms = kPollRate * attempt_count;
+    timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(delay_ms),
+                 base::Bind(&CupsPrintJobManagerImpl::PostQuery,
+                            weak_ptr_factory_.GetWeakPtr()));
   }
 
   // Schedule the CUPS query off the UI thread. Posts results back to UI thread
@@ -420,11 +417,6 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
   void UpdateJobs(std::unique_ptr<QueryResult> result) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-    const std::vector<::printing::QueueStatus>& queues = result->queues;
-
-    // Query has completed.  Allow more queries.
-    in_query_ = false;
-
     // If the query failed, either retry or purge.
     if (!result->success) {
       retry_count_++;
@@ -432,12 +424,12 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
                    << retry_count_ << ")";
       if (retry_count_ > kRetryMax) {
         LOG(ERROR) << "CUPS is unreachable.  Giving up on all jobs.";
+        timer_.Stop();
         PurgeJobs();
       } else {
-        // Schedule another query with a larger delay.
+        // Backoff the polling frequency. Give CUPS a chance to recover.
         DCHECK_GE(1, retry_count_);
-        ScheduleQuery(
-            base::TimeDelta::FromMilliseconds(kPollRate * retry_count_));
+        ScheduleQuery(retry_count_);
       }
       return;
     }
@@ -446,7 +438,7 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
     retry_count_ = 0;
 
     std::vector<std::string> active_jobs;
-    for (const auto& queue : queues) {
+    for (const auto& queue : result->queues) {
       for (auto& job : queue.jobs) {
         std::string key = CupsPrintJob::GetUniqueId(job.printer_id, job.id);
         const auto& entry = jobs_.find(key);
@@ -475,15 +467,15 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
       }
     }
 
-    // Keep polling until all jobs complete or error.
-    if (!active_jobs.empty()) {
-      // During normal operations, we poll at the default rate.
-      ScheduleQuery();
-    } else if (!jobs_.empty()) {
-      // We're tracking jobs that we didn't receive an update for.  Something
-      // bad has happened.
-      LOG(ERROR) << "Lost track of (" << jobs_.size() << ") jobs";
-      PurgeJobs();
+    if (active_jobs.empty()) {
+      // CUPS has stopped reporting jobs.  Stop polling.
+      timer_.Stop();
+      if (!jobs_.empty()) {
+        // We're tracking jobs that we didn't receive an update for.  Something
+        // bad has happened.
+        LOG(ERROR) << "Lost track of (" << jobs_.size() << ") jobs";
+        PurgeJobs();
+      }
     }
   }
 
@@ -540,12 +532,10 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
   // Ongoing print jobs.
   std::map<std::string, std::unique_ptr<CupsPrintJob>> jobs_;
 
-  // Prevents multiple queries from being scheduled simultaneously.
-  bool in_query_ = false;
-
   // Records the number of consecutive times the GetJobs query has failed.
   int retry_count_ = 0;
 
+  base::RepeatingTimer timer_;
   content::NotificationRegistrar registrar_;
   // Task runner for queries to CUPS.
   scoped_refptr<base::SequencedTaskRunner> query_runner_;
