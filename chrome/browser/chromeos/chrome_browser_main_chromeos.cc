@@ -553,10 +553,6 @@ void ChromeBrowserMainPartsChromeos::PreEarlyInitialization() {
     chrome::SetChannel(channel);
 #endif
 
-  // Start monitoring OOM kills.
-  memory_kills_monitor_ = base::MakeUnique<memory::MemoryKillsMonitor::Handle>(
-      memory::MemoryKillsMonitor::StartMonitoring());
-
   ChromeBrowserMainPartsLinux::PreEarlyInitialization();
 }
 
@@ -583,6 +579,9 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
   }
 
   dbus_services_.reset(new internal::DBusServices(parameters()));
+
+  // Need to be done after LoginState has been initialized in DBusServices().
+  memory_kills_monitor_ = memory::MemoryKillsMonitor::Initialize();
 
   ChromeBrowserMainPartsLinux::PostMainMessageLoopStart();
 }
