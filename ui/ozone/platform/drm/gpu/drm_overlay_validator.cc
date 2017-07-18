@@ -56,7 +56,7 @@ std::vector<OverlayCheckReturn_Params> DrmOverlayValidator::TestPageFlip(
   if (!controller) {
     // The controller is not yet installed.
     for (auto& param : returns)
-      param.status = OverlayCheckReturn_Params::Status::NOT;
+      param.status = OVERLAY_STATUS_NOT;
 
     return returns;
   }
@@ -70,7 +70,7 @@ std::vector<OverlayCheckReturn_Params> DrmOverlayValidator::TestPageFlip(
 
   for (size_t i = 0; i < params.size(); ++i) {
     if (!params[i].is_overlay_candidate) {
-      returns[i].status = OverlayCheckReturn_Params::Status::NOT;
+      returns[i].status = OVERLAY_STATUS_NOT;
       continue;
     }
 
@@ -80,7 +80,7 @@ std::vector<OverlayCheckReturn_Params> DrmOverlayValidator::TestPageFlip(
             : GetFourCCFormatForOpaqueFramebuffer(params[i].format);
     if (!controller->IsFormatSupported(original_format,
                                        params[i].plane_z_order)) {
-      returns[i].status = OverlayCheckReturn_Params::Status::NOT;
+      returns[i].status = OVERLAY_STATUS_NOT;
       continue;
     }
 
@@ -93,7 +93,7 @@ std::vector<OverlayCheckReturn_Params> DrmOverlayValidator::TestPageFlip(
     test_list.push_back(plane);
 
     if (buffer && controller->TestPageFlip(test_list)) {
-      returns[i].status = OverlayCheckReturn_Params::Status::ABLE;
+      returns[i].status = OVERLAY_STATUS_ABLE;
     } else {
       // If test failed here, platform cannot support this configuration
       // with current combination of layers. This is usually the case when this
@@ -101,7 +101,7 @@ std::vector<OverlayCheckReturn_Params> DrmOverlayValidator::TestPageFlip(
       // hardware resources and they might be already in use by other planes.
       // For example this plane has requested scaling capabilities and all
       // available scalars are already in use by other planes.
-      returns[i].status = OverlayCheckReturn_Params::Status::NOT;
+      returns[i].status = OVERLAY_STATUS_NOT;
       test_list.pop_back();
     }
   }

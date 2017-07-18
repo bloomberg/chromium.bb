@@ -17,6 +17,7 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/overlay_transform.h"
 #include "ui/ozone/public/overlay_candidates_ozone.h"
+#include "ui/ozone/public/overlay_surface_candidate.h"
 
 namespace ui {
 class OverlaySurfaceCandidate;
@@ -78,8 +79,7 @@ struct OverlayCheckReturn_Params {
   OverlayCheckReturn_Params(const OverlayCheckReturn_Params& other) = default;
   ~OverlayCheckReturn_Params() = default;
 
-  enum Status { PENDING, ABLE, NOT, LAST = NOT };
-  Status status = Status::PENDING;
+  OverlayStatus status = OVERLAY_STATUS_PENDING;
 };
 
 }  // namespace ui
