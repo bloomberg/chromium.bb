@@ -72,7 +72,6 @@ using testing::ElementsAre;
 using testing::IsEmpty;
 
 namespace ash {
-namespace test {
 namespace {
 
 int64_t GetPrimaryDisplayId() {
@@ -1641,7 +1640,7 @@ TEST_F(ShelfViewTest, OverflowBubbleSize) {
 }
 
 TEST_F(ShelfViewTest, OverflowShelfColorIsDerivedFromWallpaper) {
-  test::WallpaperControllerTestApi wallpaper_test_api(
+  WallpaperControllerTestApi wallpaper_test_api(
       Shell::Get()->wallpaper_controller());
   const SkColor opaque_expected_color =
       wallpaper_test_api.ApplyColorProducingWallpaper();
@@ -3204,5 +3203,4 @@ TEST_F(OverflowButtonActiveInkDropTest, TouchContextMenu) {
   ASSERT_TRUE(test_api_->IsShowingOverflowBubble());
 }
 
-}  // namespace test
 }  // namespace ash

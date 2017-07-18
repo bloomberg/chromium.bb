@@ -73,7 +73,7 @@ class TestTrayActionClient : public mojom::TrayActionClient {
   DISALLOW_COPY_AND_ASSIGN(TestTrayActionClient);
 };
 
-using TrayActionTest = test::AshTestBase;
+using TrayActionTest = AshTestBase;
 
 }  // namespace
 

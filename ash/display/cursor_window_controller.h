@@ -14,9 +14,6 @@
 #include "ui/display/display.h"
 
 namespace ash {
-namespace test {
-class MirrorWindowTestApi;
-}
 
 class CursorWindowControllerTest;
 class CursorWindowDelegate;
@@ -55,7 +52,7 @@ class ASH_EXPORT CursorWindowController {
 
  private:
   friend class CursorWindowControllerTest;
-  friend class test::MirrorWindowTestApi;
+  friend class MirrorWindowTestApi;
 
   // Sets the container window for the cursor window controller.
   // Closes the cursor window if |container| is NULL.

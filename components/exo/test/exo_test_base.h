@@ -16,7 +16,7 @@ class WMHelper;
 namespace test {
 class ExoTestHelper;
 
-class ExoTestBase : public ash::test::AshTestBase {
+class ExoTestBase : public ash::AshTestBase {
  public:
   ExoTestBase();
   ~ExoTestBase() override;

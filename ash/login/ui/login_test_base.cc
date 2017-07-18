@@ -72,7 +72,7 @@ void LoginTestBase::TearDown() {
     widget_ = nullptr;
   }
 
-  test::AshTestBase::TearDown();
+  AshTestBase::TearDown();
 }
 
 }  // namespace ash

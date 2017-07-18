@@ -93,7 +93,7 @@ class TestImeControllerClient : public mojom::ImeControllerClient {
   DISALLOW_COPY_AND_ASSIGN(TestImeControllerClient);
 };
 
-using ImeControllerTest = test::AshTestBase;
+using ImeControllerTest = AshTestBase;
 
 TEST_F(ImeControllerTest, RefreshIme) {
   ImeController* controller = Shell::Get()->ime_controller();

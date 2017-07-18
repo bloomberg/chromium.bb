@@ -18,7 +18,6 @@ class KeyboardUI;
 }
 
 namespace ash {
-namespace test {
 
 class ShelfInitializer;
 
@@ -89,7 +88,6 @@ class TestShellDelegate : public ShellDelegate {
   DISALLOW_COPY_AND_ASSIGN(TestShellDelegate);
 };
 
-}  // namespace test
 }  // namespace ash
 
 #endif  // ASH_TEST_TEST_SHELL_DELEGATE_H_

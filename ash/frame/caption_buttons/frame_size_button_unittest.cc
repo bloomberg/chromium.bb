@@ -21,7 +21,6 @@
 #include "ui/views/widget/widget_delegate.h"
 
 namespace ash {
-namespace test {
 
 namespace {
 
@@ -458,5 +457,4 @@ TEST_F(FrameSizeButtonTestRTL, ButtonDrag) {
   EXPECT_EQ(CAPTION_BUTTON_ICON_CLOSE, close_button()->icon());
 }
 
-}  // namespace test
 }  // namespace ash

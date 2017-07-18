@@ -30,7 +30,7 @@ class WindowDeleter : public aura::WindowObserver {
 
 }  // namespace
 
-using RootWindowLayoutManagerTest = test::AshTestBase;
+using RootWindowLayoutManagerTest = AshTestBase;
 
 TEST_F(RootWindowLayoutManagerTest, DeleteChildDuringResize) {
   aura::Window* parent = Shell::GetPrimaryRootWindow()->GetChildById(

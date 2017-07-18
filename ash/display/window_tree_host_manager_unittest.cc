@@ -178,7 +178,7 @@ class TestObserver : public WindowTreeHostManager::Observer,
 
 class TestHelper {
  public:
-  explicit TestHelper(test::AshTestBase* delegate);
+  explicit TestHelper(AshTestBase* delegate);
   ~TestHelper();
 
   void SetSecondaryDisplayLayoutAndOffset(
@@ -192,11 +192,11 @@ class TestHelper {
   float GetStoredUIScale(int64_t id);
 
  private:
-  test::AshTestBase* delegate_;  // Not owned
+  AshTestBase* delegate_;  // Not owned
   DISALLOW_COPY_AND_ASSIGN(TestHelper);
 };
 
-TestHelper::TestHelper(test::AshTestBase* delegate) : delegate_(delegate) {}
+TestHelper::TestHelper(AshTestBase* delegate) : delegate_(delegate) {}
 TestHelper::~TestHelper() {}
 
 void TestHelper::SetSecondaryDisplayLayoutAndOffset(
@@ -225,14 +225,14 @@ float TestHelper::GetStoredUIScale(int64_t id) {
   return delegate_->display_manager()->GetDisplayInfo(id).GetEffectiveUIScale();
 }
 
-class WindowTreeHostManagerShutdownTest : public test::AshTestBase,
+class WindowTreeHostManagerShutdownTest : public AshTestBase,
                                           public TestHelper {
  public:
   WindowTreeHostManagerShutdownTest() : TestHelper(this) {}
   ~WindowTreeHostManagerShutdownTest() override {}
 
   void TearDown() override {
-    test::AshTestBase::TearDown();
+    AshTestBase::TearDown();
 
     // Make sure that primary display is accessible after shutdown.
     display::Display primary =
@@ -245,18 +245,18 @@ class WindowTreeHostManagerShutdownTest : public test::AshTestBase,
   DISALLOW_COPY_AND_ASSIGN(WindowTreeHostManagerShutdownTest);
 };
 
-class StartupHelper : public test::TestShellDelegate,
+class StartupHelper : public TestShellDelegate,
                       public WindowTreeHostManager::Observer {
  public:
   StartupHelper() : displays_initialized_(false) {}
   ~StartupHelper() override {}
 
-  // ash::ShellSelegate:
+  // ShellDelegate:
   void PreInit() override {
     Shell::Get()->window_tree_host_manager()->AddObserver(this);
   }
 
-  // ash::WindowTreeHostManager::Observer:
+  // WindowTreeHostManager::Observer:
   void OnDisplaysInitialized() override {
     DCHECK(!displays_initialized_);
     displays_initialized_ = true;
@@ -270,21 +270,20 @@ class StartupHelper : public test::TestShellDelegate,
   DISALLOW_COPY_AND_ASSIGN(StartupHelper);
 };
 
-class WindowTreeHostManagerStartupTest : public test::AshTestBase,
-                                         public TestHelper {
+class WindowTreeHostManagerStartupTest : public AshTestBase, public TestHelper {
  public:
   WindowTreeHostManagerStartupTest()
       : TestHelper(this), startup_helper_(new StartupHelper) {}
   ~WindowTreeHostManagerStartupTest() override {}
 
-  // ash::test::AshTestBase:
+  // AshTestBase:
   void SetUp() override {
     ash_test_helper()->set_test_shell_delegate(startup_helper_);
-    test::AshTestBase::SetUp();
+    AshTestBase::SetUp();
   }
   void TearDown() override {
     Shell::Get()->window_tree_host_manager()->RemoveObserver(startup_helper_);
-    test::AshTestBase::TearDown();
+    AshTestBase::TearDown();
   }
 
   const StartupHelper* startup_helper() const { return startup_helper_; }
@@ -388,7 +387,7 @@ class TestMouseWatcherListener : public views::MouseWatcherListener {
 
 }  // namespace
 
-class WindowTreeHostManagerTest : public test::AshTestBase, public TestHelper {
+class WindowTreeHostManagerTest : public AshTestBase, public TestHelper {
  public:
   WindowTreeHostManagerTest() : TestHelper(this) {}
   ~WindowTreeHostManagerTest() override {}
@@ -1623,7 +1622,7 @@ TEST_F(WindowTreeHostManagerTest,
   Shell* shell = Shell::Get();
   WindowTreeHostManager* window_tree_host_manager =
       shell->window_tree_host_manager();
-  test::CursorManagerTestApi test_api(shell->cursor_manager());
+  CursorManagerTestApi test_api(shell->cursor_manager());
 
   window_tree_host_manager->GetPrimaryRootWindow()->MoveCursorTo(
       gfx::Point(20, 50));
@@ -1647,7 +1646,7 @@ TEST_F(WindowTreeHostManagerTest,
   Shell* shell = Shell::Get();
   WindowTreeHostManager* window_tree_host_manager =
       shell->window_tree_host_manager();
-  test::CursorManagerTestApi test_api(shell->cursor_manager());
+  CursorManagerTestApi test_api(shell->cursor_manager());
 
   UpdateDisplay("300x300*2/r,200x200");
   // Swap the primary display to make it possible to remove the primary display

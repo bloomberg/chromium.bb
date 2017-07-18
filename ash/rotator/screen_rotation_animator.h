@@ -29,9 +29,6 @@ class LayerTreeOwner;
 }  // namespace ui
 
 namespace ash {
-namespace test {
-class ScreenRotationAnimatorTestApi;
-}  // namespace test
 
 class ScreenRotationAnimatorObserver;
 
@@ -98,7 +95,7 @@ class ASH_EXPORT ScreenRotationAnimator {
       std::unique_ptr<ScreenRotationRequest> rotation_request);
 
  private:
-  friend class ash::test::ScreenRotationAnimatorTestApi;
+  friend class ScreenRotationAnimatorTestApi;
 
   void StartRotationAnimation(
       std::unique_ptr<ScreenRotationRequest> rotation_request);

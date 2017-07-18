@@ -19,12 +19,12 @@
 
 namespace ash {
 
-class CursorWindowControllerTest : public test::AshTestBase {
+class CursorWindowControllerTest : public AshTestBase {
  public:
   CursorWindowControllerTest() {}
   ~CursorWindowControllerTest() override {}
 
-  // test::AshTestBase:
+  // AshTestBase:
   void SetUp() override {
     AshTestBase::SetUp();
     SetCursorCompositionEnabled(true);

@@ -37,7 +37,7 @@ void EnableMaximizeMode(bool enable) {
       ->EnableMaximizeModeWindowManager(enable);
 }
 
-class DisplayInfoProviderChromeosTest : public ash::test::AshTestBase {
+class DisplayInfoProviderChromeosTest : public ash::AshTestBase {
  public:
   DisplayInfoProviderChromeosTest() {}
 
@@ -46,7 +46,7 @@ class DisplayInfoProviderChromeosTest : public ash::test::AshTestBase {
   void SetUp() override {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kUseFirstDisplayAsInternal);
-    ash::test::AshTestBase::SetUp();
+    ash::AshTestBase::SetUp();
   }
 
  protected:
@@ -1049,7 +1049,7 @@ TEST_F(DisplayInfoProviderChromeosTest, SetRotationBeforeMaximizeMode) {
   EXPECT_FALSE(screen_orientation_controller->rotation_locked());
 
   // ScreenOrientationController rotations override display info.
-  ash::test::ScreenOrientationControllerTestApi test_api(
+  ash::ScreenOrientationControllerTestApi test_api(
       screen_orientation_controller);
   test_api.SetDisplayRotation(display::Display::ROTATE_0,
                               display::Display::ROTATION_SOURCE_ACTIVE);

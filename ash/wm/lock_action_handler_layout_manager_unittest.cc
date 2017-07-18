@@ -85,7 +85,7 @@ class TestTrayActionClient : public mojom::TrayActionClient {
 
 }  // namespace
 
-class LockActionHandlerLayoutManagerTest : public test::AshTestBase {
+class LockActionHandlerLayoutManagerTest : public AshTestBase {
  public:
   LockActionHandlerLayoutManagerTest() = default;
   ~LockActionHandlerLayoutManagerTest() override = default;

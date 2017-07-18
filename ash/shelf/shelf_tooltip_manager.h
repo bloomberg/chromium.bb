@@ -21,11 +21,6 @@ class View;
 namespace ash {
 class ShelfView;
 
-namespace test {
-class ShelfTooltipManagerTest;
-class ShelfViewTest;
-}
-
 // ShelfTooltipManager manages the tooltip bubble that appears for shelf items.
 class ASH_EXPORT ShelfTooltipManager : public ui::EventHandler,
                                        public views::PointerWatcher,
@@ -68,8 +63,8 @@ class ASH_EXPORT ShelfTooltipManager : public ui::EventHandler,
 
  private:
   class ShelfTooltipBubble;
-  friend class test::ShelfViewTest;
-  friend class test::ShelfTooltipManagerTest;
+  friend class ShelfViewTest;
+  friend class ShelfTooltipManagerTest;
 
   // A helper function to check for shelf visibility and view validity.
   bool ShouldShowTooltipForView(views::View* view);

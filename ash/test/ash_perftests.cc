@@ -11,7 +11,7 @@
 
 namespace {
 
-int RunHelper(ash::test::AshTestSuite* test_suite) {
+int RunHelper(ash::AshTestSuite* test_suite) {
   // In ash_perftests we want to use hardware GL. By adding this switch we can
   // set |use_software_gl| to false in gl_surface_test_support.cc.
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -22,7 +22,7 @@ int RunHelper(ash::test::AshTestSuite* test_suite) {
 }  // namespace
 
 int main(int argc, char** argv) {
-  ash::test::AshTestSuite test_suite(argc, argv);
+  ash::AshTestSuite test_suite(argc, argv);
 
   mojo::edk::Init();
   return base::LaunchUnitTestsSerially(

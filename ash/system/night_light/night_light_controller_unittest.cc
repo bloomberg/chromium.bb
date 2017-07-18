@@ -109,7 +109,7 @@ class TestDelegate : public NightLightController::Delegate {
   DISALLOW_COPY_AND_ASSIGN(TestDelegate);
 };
 
-class NightLightTest : public test::AshTestBase {
+class NightLightTest : public AshTestBase {
  public:
   NightLightTest() = default;
   ~NightLightTest() override = default;
@@ -123,9 +123,9 @@ class NightLightTest : public test::AshTestBase {
 
   TestDelegate* delegate() const { return delegate_; }
 
-  // ash::test::AshTestBase:
+  // AshTestBase:
   void SetUp() override {
-    test::AshTestBase::SetUp();
+    AshTestBase::SetUp();
     CreateTestUserSessions();
     Shell::RegisterPrefs(user1_pref_service_.registry());
     Shell::RegisterPrefs(user2_pref_service_.registry());

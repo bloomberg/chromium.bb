@@ -18,13 +18,13 @@ namespace ash {
 
 namespace network_icon {
 
-class NetworkIconTest : public test::AshTestBase {
+class NetworkIconTest : public AshTestBase {
  public:
   NetworkIconTest() {}
   ~NetworkIconTest() override {}
 
   void SetUp() override {
-    test::AshTestBase::SetUp();
+    AshTestBase::SetUp();
     chromeos::NetworkHandler::Initialize();
 
     tether_network =
@@ -47,7 +47,7 @@ class NetworkIconTest : public test::AshTestBase {
   void TearDown() override {
     PurgeNetworkIconCache();
     chromeos::NetworkHandler::Shutdown();
-    test::AshTestBase::TearDown();
+    AshTestBase::TearDown();
   }
 
   gfx::Image ImageForNetwork(chromeos::NetworkState* network) {

@@ -23,7 +23,7 @@
 
 namespace ash {
 
-typedef test::AshTestBase WindowModalityControllerTest;
+using WindowModalityControllerTest = AshTestBase;
 
 namespace {
 

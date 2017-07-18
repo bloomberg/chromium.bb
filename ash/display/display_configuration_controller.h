@@ -20,10 +20,6 @@ class DisplayManager;
 
 namespace ash {
 
-namespace test {
-class DisplayConfigurationControllerTestApi;
-}  // namespace test
-
 class DisplayAnimator;
 class ScreenRotationAnimator;
 
@@ -65,7 +61,7 @@ class ASH_EXPORT DisplayConfigurationController
   void OnDisplayConfigurationChanged() override;
 
  protected:
-  friend class ash::test::DisplayConfigurationControllerTestApi;
+  friend class DisplayConfigurationControllerTestApi;
 
   // Allow tests to skip animations.
   void ResetAnimatorForTest();

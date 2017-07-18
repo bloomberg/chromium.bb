@@ -35,7 +35,7 @@ class TestableAccessibilityFocusRingController
   int margin_;
 };
 
-class AccessibilityFocusRingControllerTest : public ash::test::AshTestBase {
+class AccessibilityFocusRingControllerTest : public ash::AshTestBase {
  public:
   AccessibilityFocusRingControllerTest() {}
   ~AccessibilityFocusRingControllerTest() override {}

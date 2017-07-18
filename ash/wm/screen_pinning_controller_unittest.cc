@@ -27,7 +27,7 @@ int FindIndex(const std::vector<aura::Window*>& windows,
 
 }  // namespace
 
-using ScreenPinningControllerTest = test::AshTestBase;
+using ScreenPinningControllerTest = AshTestBase;
 
 TEST_F(ScreenPinningControllerTest, IsPinned) {
   aura::Window* w1 = CreateTestWindowInShellWithId(0);

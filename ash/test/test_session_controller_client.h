@@ -20,8 +20,6 @@ namespace ash {
 
 class SessionController;
 
-namespace test {
-
 // Implement SessionControllerClient mojo interface to simulate chrome behavior
 // in tests. This breaks the ash/chrome dependency to allow testing ash code in
 // isolation. Note that tests that have an instance of SessionControllerClient
@@ -81,7 +79,6 @@ class TestSessionControllerClient : public ash::mojom::SessionControllerClient {
   DISALLOW_COPY_AND_ASSIGN(TestSessionControllerClient);
 };
 
-}  // namespace test
 }  // namespace ash
 
 #endif  // ASH_TEST_TEST_SESSION_CONTROLLER_CLIENT_H_

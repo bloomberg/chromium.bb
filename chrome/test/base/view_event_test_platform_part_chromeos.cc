@@ -59,8 +59,7 @@ ViewEventTestPlatformPartChromeOS::ViewEventTestPlatformPartChromeOS(
   chromeos::NetworkHandler::Initialize();
 
   env_ = aura::Env::CreateInstance();
-  ash::test::TestShellDelegate* shell_delegate =
-      new ash::test::TestShellDelegate();
+  ash::TestShellDelegate* shell_delegate = new ash::TestShellDelegate();
   ash::ShellInitParams init_params;
   init_params.delegate = shell_delegate;
   init_params.context_factory = context_factory;
@@ -68,7 +67,7 @@ ViewEventTestPlatformPartChromeOS::ViewEventTestPlatformPartChromeOS(
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kHostWindowBounds, "0+0-1280x800");
   ash::Shell::CreateInstance(init_params);
-  ash::test::TestSessionControllerClient session_controller_client(
+  ash::TestSessionControllerClient session_controller_client(
       ash::Shell::Get()->session_controller());
   session_controller_client.CreatePredefinedUserSessions(1);
   GetContext()->GetHost()->Show();

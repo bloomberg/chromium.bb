@@ -15,7 +15,6 @@ class CursorManager;
 }
 
 namespace ash {
-namespace test {
 
 // Use the api in this class to test CursorManager.
 class CursorManagerTestApi {
@@ -34,7 +33,6 @@ class CursorManagerTestApi {
   DISALLOW_COPY_AND_ASSIGN(CursorManagerTestApi);
 };
 
-}  // namespace test
 }  // namespace ash
 
 #endif  // ASH_TEST_CURSOR_MANAGER_TEST_API_H_

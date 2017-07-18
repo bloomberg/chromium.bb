@@ -25,7 +25,7 @@ using message_center::NotificationList;
 namespace ash {
 
 // Tests handle creating their own sessions.
-class TraySupervisedUserTest : public test::NoSessionAshTestBase {
+class TraySupervisedUserTest : public NoSessionAshTestBase {
  public:
   TraySupervisedUserTest() {}
   ~TraySupervisedUserTest() override {}
@@ -57,7 +57,7 @@ TEST_F(TraySupervisedUserTest, SupervisedUserHasNotification) {
   ASSERT_FALSE(session->IsActiveUserSessionStarted());
 
   // Simulate a supervised user logging in.
-  test::TestSessionControllerClient* client = GetSessionControllerClient();
+  TestSessionControllerClient* client = GetSessionControllerClient();
   client->Reset();
   client->AddUserSession("child@test.com", user_manager::USER_TYPE_SUPERVISED);
   client->SetSessionState(session_manager::SessionState::ACTIVE);
@@ -108,7 +108,7 @@ TEST_F(TraySupervisedUserTest, CreateDefaultView) {
   EXPECT_FALSE(tray->CreateDefaultView(unused));
 
   // Simulate a supervised user logging in.
-  test::TestSessionControllerClient* client = GetSessionControllerClient();
+  TestSessionControllerClient* client = GetSessionControllerClient();
   client->Reset();
   client->AddUserSession("child@test.com", user_manager::USER_TYPE_SUPERVISED);
   client->SetSessionState(session_manager::SessionState::ACTIVE);

@@ -12,7 +12,7 @@ AshTestEnvironmentChrome::AshTestEnvironmentChrome() {}
 
 AshTestEnvironmentChrome::~AshTestEnvironmentChrome() {}
 
-std::unique_ptr<ash::test::AshTestViewsDelegate>
+std::unique_ptr<ash::AshTestViewsDelegate>
 AshTestEnvironmentChrome::CreateViewsDelegate() {
-  return base::MakeUnique<ash::test::AshTestViewsDelegate>();
+  return base::MakeUnique<ash::AshTestViewsDelegate>();
 }

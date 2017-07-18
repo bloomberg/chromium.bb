@@ -31,7 +31,7 @@
 
 namespace ash {
 
-class PanelWindowResizerTest : public test::AshTestBase {
+class PanelWindowResizerTest : public AshTestBase {
  public:
   PanelWindowResizerTest() {}
   ~PanelWindowResizerTest() override {}
@@ -39,8 +39,8 @@ class PanelWindowResizerTest : public test::AshTestBase {
   void SetUp() override {
     AshTestBase::SetUp();
     UpdateDisplay("600x400");
-    shelf_view_test_.reset(new test::ShelfViewTestAPI(
-        GetPrimaryShelf()->GetShelfViewForTesting()));
+    shelf_view_test_.reset(
+        new ShelfViewTestAPI(GetPrimaryShelf()->GetShelfViewForTesting()));
     shelf_view_test_->SetAnimationDuration(1);
   }
 
@@ -170,7 +170,7 @@ class PanelWindowResizerTest : public test::AshTestBase {
 
  private:
   std::unique_ptr<WindowResizer> resizer_;
-  std::unique_ptr<test::ShelfViewTestAPI> shelf_view_test_;
+  std::unique_ptr<ShelfViewTestAPI> shelf_view_test_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelWindowResizerTest);
 };

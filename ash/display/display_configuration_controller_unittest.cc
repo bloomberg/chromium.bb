@@ -24,8 +24,7 @@ display::Display::Rotation GetDisplayRotation(int64_t display_id) {
       .GetActiveRotation();
 }
 
-class DisplayConfigurationControllerSmoothRotationTest
-    : public test::AshTestBase {
+class DisplayConfigurationControllerSmoothRotationTest : public AshTestBase {
  public:
   DisplayConfigurationControllerSmoothRotationTest() {}
   ~DisplayConfigurationControllerSmoothRotationTest() override {}
@@ -33,7 +32,7 @@ class DisplayConfigurationControllerSmoothRotationTest
   void SetUp() override {
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kAshDisableSmoothScreenRotation, "false");
-    test::AshTestBase::SetUp();
+    AshTestBase::SetUp();
   }
 
  private:
@@ -42,7 +41,7 @@ class DisplayConfigurationControllerSmoothRotationTest
 
 }  // namespace
 
-using DisplayConfigurationControllerTest = test::AshTestBase;
+using DisplayConfigurationControllerTest = AshTestBase;
 
 TEST_F(DisplayConfigurationControllerTest, OnlyHasOneAnimator) {
   // TODO(wutao): needs display_configuration_controller
@@ -51,7 +50,7 @@ TEST_F(DisplayConfigurationControllerTest, OnlyHasOneAnimator) {
     return;
 
   display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
-  test::DisplayConfigurationControllerTestApi testapi(
+  DisplayConfigurationControllerTestApi testapi(
       Shell::Get()->display_configuration_controller());
   ScreenRotationAnimator* old_screen_rotation_animator =
       testapi.GetScreenRotationAnimatorForDisplay(display.id());
@@ -76,7 +75,7 @@ TEST_F(DisplayConfigurationControllerSmoothRotationTest,
   display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
   DisplayConfigurationController* controller =
       Shell::Get()->display_configuration_controller();
-  test::DisplayConfigurationControllerTestApi testapi(controller);
+  DisplayConfigurationControllerTestApi testapi(controller);
   controller->SetDisplayRotation(
       display.id(), display::Display::ROTATE_180,
       display::Display::RotationSource::ROTATION_SOURCE_USER);

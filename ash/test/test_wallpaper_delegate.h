@@ -6,12 +6,10 @@
 #define ASH_TEST_TEST_WALLPAPER_DELEGATE_H_
 
 #include "ash/default_wallpaper_delegate.h"
-
 #include "base/macros.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace ash {
-namespace test {
 
 class TestWallpaperDelegate : public DefaultWallpaperDelegate {
  public:
@@ -38,7 +36,6 @@ class TestWallpaperDelegate : public DefaultWallpaperDelegate {
   DISALLOW_COPY_AND_ASSIGN(TestWallpaperDelegate);
 };
 
-}  // namespace test
 }  // namespace ash
 
 #endif  // ASH_TEST_TEST_WALLPAPER_DELEGATE_H_

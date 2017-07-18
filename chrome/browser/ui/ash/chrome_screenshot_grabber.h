@@ -14,9 +14,7 @@
 class Profile;
 
 namespace ash {
-namespace test {
 class ChromeScreenshotGrabberTest;
-}  // namespace test
 }  // namespace ash
 
 class ChromeScreenshotGrabber : public ash::ScreenshotDelegate,
@@ -48,7 +46,7 @@ class ChromeScreenshotGrabber : public ash::ScreenshotDelegate,
                              const base::FilePath& screenshot_path) override;
 
  private:
-  friend class ash::test::ChromeScreenshotGrabberTest;
+  friend class ash::ChromeScreenshotGrabberTest;
 
   Notification* CreateNotification(
       ui::ScreenshotGrabberObserver::Result screenshot_result,

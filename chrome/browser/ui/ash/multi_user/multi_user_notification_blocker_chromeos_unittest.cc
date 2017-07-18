@@ -23,7 +23,7 @@
 using base::UTF8ToUTF16;
 
 class MultiUserNotificationBlockerChromeOSTest
-    : public ash::test::AshTestBase,
+    : public ash::AshTestBase,
       public message_center::NotificationBlocker::Observer {
  public:
   MultiUserNotificationBlockerChromeOSTest()
@@ -34,17 +34,17 @@ class MultiUserNotificationBlockerChromeOSTest
         user_manager_enabler_(fake_user_manager_) {}
   ~MultiUserNotificationBlockerChromeOSTest() override {}
 
-  // ash::test::AshTestBase overrides:
+  // ash::AshTestBase overrides:
   void SetUp() override {
-    ash::test::AshTestBase::SetUp();
+    ash::AshTestBase::SetUp();
     ASSERT_TRUE(testing_profile_manager_.SetUp());
 
     // MultiUserWindowManager is initialized after the log in.
     testing_profile_manager_.CreateTestingProfile(GetDefaultUserId());
     fake_user_manager_->AddUser(AccountId::FromUserEmail(GetDefaultUserId()));
 
-    ash::test::TestShellDelegate* shell_delegate =
-        static_cast<ash::test::TestShellDelegate*>(
+    ash::TestShellDelegate* shell_delegate =
+        static_cast<ash::TestShellDelegate*>(
             ash::Shell::Get()->shell_delegate());
     shell_delegate->set_multi_profiles_enabled(true);
     chrome::MultiUserWindowManager::CreateInstance();
@@ -65,7 +65,7 @@ class MultiUserNotificationBlockerChromeOSTest
     GetMultiUserWindowManager()->notification_blocker_->RemoveObserver(this);
     if (chrome::MultiUserWindowManager::GetInstance())
       chrome::MultiUserWindowManager::DeleteInstance();
-    ash::test::AshTestBase::TearDown();
+    ash::AshTestBase::TearDown();
     chromeos::WallpaperManager::Shutdown();
   }
 

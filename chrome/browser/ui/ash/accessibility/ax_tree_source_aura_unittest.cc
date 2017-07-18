@@ -47,7 +47,7 @@ size_t GetSize(AXAuraObjWrapper* tree) {
   return count;
 }
 
-class AXTreeSourceAuraTest : public ash::test::AshTestBase {
+class AXTreeSourceAuraTest : public ash::AshTestBase {
  public:
   AXTreeSourceAuraTest() {}
   ~AXTreeSourceAuraTest() override {}

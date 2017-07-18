@@ -19,7 +19,7 @@ namespace ash {
 
 // Base test fixture for testing the views-based login and lock screens. This
 // class provides easy access to types which the login/lock frequently need.
-class LoginTestBase : public test::AshTestBase {
+class LoginTestBase : public AshTestBase {
  public:
   LoginTestBase();
   ~LoginTestBase() override;
@@ -39,7 +39,7 @@ class LoginTestBase : public test::AshTestBase {
 
   LoginDataDispatcher* data_dispatcher() { return &data_dispatcher_; }
 
-  // test::AshTestBase:
+  // AshTestBase:
   void TearDown() override;
 
  private:

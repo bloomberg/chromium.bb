@@ -17,10 +17,6 @@ class Point;
 }
 
 namespace ash {
-namespace test {
-class AshTestBase;
-class DisplayManagerTestApi;
-}
 
 // A MouseWarpController used in unified display mode.
 class ASH_EXPORT UnifiedMouseWarpController : public MouseWarpController {
@@ -33,8 +29,8 @@ class ASH_EXPORT UnifiedMouseWarpController : public MouseWarpController {
   void SetEnabled(bool enabled) override;
 
  private:
-  friend class test::AshTestBase;
-  friend class test::DisplayManagerTestApi;
+  friend class AshTestBase;
+  friend class DisplayManagerTestApi;
   friend class UnifiedMouseWarpControllerTest;
 
   void ComputeBounds();

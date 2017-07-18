@@ -10,7 +10,6 @@
 #include "ui/gfx/image/image_skia.h"
 
 namespace ash {
-namespace test {
 
 class TestAccessibilityDelegate : public DefaultAccessibilityDelegate {
  public:
@@ -28,7 +27,6 @@ class TestAccessibilityDelegate : public DefaultAccessibilityDelegate {
   DISALLOW_COPY_AND_ASSIGN(TestAccessibilityDelegate);
 };
 
-}  // namespace test
 }  // namespace ash
 
 #endif  // ASH_TEST_TEST_ACCESSIBILITY_DELEGATE_H_

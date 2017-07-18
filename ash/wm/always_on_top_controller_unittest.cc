@@ -17,7 +17,6 @@
 #include "ui/keyboard/keyboard_ui.h"
 
 namespace ash {
-namespace test {
 
 class VirtualKeyboardAlwaysOnTopControllerTest : public AshTestBase {
  public:
@@ -27,7 +26,7 @@ class VirtualKeyboardAlwaysOnTopControllerTest : public AshTestBase {
   void SetUp() override {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         keyboard::switches::kEnableVirtualKeyboard);
-    test::AshTestBase::SetUp();
+    AshTestBase::SetUp();
   }
 
  private:
@@ -89,5 +88,4 @@ TEST_F(VirtualKeyboardAlwaysOnTopControllerTest, NotifyKeyboardBoundsChanged) {
   ASSERT_TRUE(manager->keyboard_bounds_changed());
 }
 
-}  // namespace test
 }  // namespace ash

@@ -17,7 +17,6 @@ class TickClock;
 }  // namespace base
 
 namespace ash {
-namespace test {
 
 class ShelfButtonPressedMetricTrackerTestAPI {
  public:
@@ -34,7 +33,6 @@ class ShelfButtonPressedMetricTrackerTestAPI {
   DISALLOW_COPY_AND_ASSIGN(ShelfButtonPressedMetricTrackerTestAPI);
 };
 
-}  // namespace test
 }  // namespace ash
 
 #endif  // ASH_TEST_SHELF_BUTTON_PRESSED_METRIC_TRACKER_TEST_API _H_

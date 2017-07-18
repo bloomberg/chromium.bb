@@ -19,7 +19,7 @@ using views::Widget;
 
 namespace ash {
 
-using DefaultHeaderPainterTest = test::AshTestBase;
+using DefaultHeaderPainterTest = AshTestBase;
 
 // Ensure the title text is vertically aligned with the window icon.
 TEST_F(DefaultHeaderPainterTest, TitleIconAlignment) {

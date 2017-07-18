@@ -19,7 +19,6 @@
 #include "ui/views/widget/widget_delegate.h"
 
 namespace ash {
-namespace test {
 
 namespace {
 
@@ -99,7 +98,7 @@ class ResizeShadowAndCursorTest : public AshTestBase {
 
   // Returns the current cursor type.
   ui::CursorType GetCurrentCursorType() const {
-    CursorManagerTestApi test_api(ash::Shell::Get()->cursor_manager());
+    CursorManagerTestApi test_api(Shell::Get()->cursor_manager());
     return test_api.GetCurrentCursor().native_type();
   }
 
@@ -243,5 +242,4 @@ TEST_F(ResizeShadowAndCursorTest, MaximizeRestore) {
   EXPECT_EQ(ui::CursorType::kEastResize, GetCurrentCursorType());
 }
 
-}  // namespace test
 }  // namespace ash

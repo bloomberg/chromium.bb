@@ -38,18 +38,18 @@ const char kAsh_Shelf_NumberOfUnpinnedItems[] =
 
 // Test fixture for the UserMetricsRecorder class. The tests manage their own
 // session state.
-class UserMetricsRecorderTest : public test::NoSessionAshTestBase {
+class UserMetricsRecorderTest : public NoSessionAshTestBase {
  public:
   UserMetricsRecorderTest() = default;
   ~UserMetricsRecorderTest() override = default;
 
-  test::UserMetricsRecorderTestAPI& test_api() { return test_api_; }
+  UserMetricsRecorderTestAPI& test_api() { return test_api_; }
 
   base::HistogramTester& histograms() { return histograms_; }
 
  private:
   // Test API to access private members of the test target.
-  test::UserMetricsRecorderTestAPI test_api_;
+  UserMetricsRecorderTestAPI test_api_;
 
   // Histogram value verifier.
   base::HistogramTester histograms_;
@@ -72,7 +72,7 @@ TEST_F(UserMetricsRecorderTest, VerifyIsUserInActiveDesktopEnvironmentValues) {
   EXPECT_TRUE(test_api().IsUserInActiveDesktopEnvironment());
 
   // Environment is not active when screen is locked.
-  test::TestSessionControllerClient* client = GetSessionControllerClient();
+  TestSessionControllerClient* client = GetSessionControllerClient();
   client->SetSessionState(SessionState::LOCKED);
   ASSERT_TRUE(session->IsScreenLocked());
   EXPECT_FALSE(test_api().IsUserInActiveDesktopEnvironment());

@@ -18,10 +18,6 @@ namespace ash {
 class DesktopTaskSwitchMetricRecorder;
 class PointerMetricsRecorder;
 
-namespace test {
-class UserMetricsRecorderTestAPI;
-}
-
 // User Metrics Recorder provides a repeating callback (RecordPeriodicMetrics)
 // on a timer to allow recording of state data over time to the UMA records.
 // Any additional states (in ash) that require monitoring can be added to
@@ -49,7 +45,7 @@ class ASH_EXPORT UserMetricsRecorder {
   void OnShellShuttingDown();
 
  private:
-  friend class test::UserMetricsRecorderTestAPI;
+  friend class UserMetricsRecorderTestAPI;
 
   // Creates a UserMetricsRecorder and will only record periodic metrics if
   // |record_periodic_metrics| is true. This is used by tests that do not want

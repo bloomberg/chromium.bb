@@ -100,8 +100,6 @@ aura::LayoutManager* GetLayoutManager(RootWindowController* controller,
 
 }  // namespace
 
-namespace test {
-
 class RootWindowControllerTest : public AshTestBase {
  public:
   views::Widget* CreateTestWidget(const gfx::Rect& bounds) {
@@ -685,14 +683,14 @@ class VirtualKeyboardRootWindowControllerTest
   void SetUp() override {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         keyboard::switches::kEnableVirtualKeyboard);
-    test::AshTestBase::SetUp();
+    AshTestBase::SetUp();
     keyboard::SetTouchKeyboardEnabled(true);
     Shell::Get()->CreateKeyboard();
   }
 
   void TearDown() override {
     keyboard::SetTouchKeyboardEnabled(false);
-    test::AshTestBase::TearDown();
+    AshTestBase::TearDown();
   }
 
  private:
@@ -1226,5 +1224,4 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, DisplayRotation) {
   EXPECT_EQ("0,600 600x200", keyboard_container->bounds().ToString());
 }
 
-}  // namespace test
 }  // namespace ash
