@@ -371,4 +371,12 @@
   <message name="IDS_AUTOFILL_NO_SAVED_ADDRESS" desc="The string to display in comboboxes when no addresses are available.">
     No saved addresses
   </message>
+
+  <!-- Autofill/Wallet integration preferences -->
+  <message name="IDS_AUTOFILL_WALLET_MANAGEMENT_LINK_TEXT" desc="Text for link that allows users to see and edit their Wallet information." formatter_data="android_java">
+    Edit
+  </message>
+  <message name="IDS_AUTOFILL_FROM_GOOGLE_ACCOUNT_LONG" desc="Text that indicates an address or credit card came from Google servers." formatter_data="android_java">
+    From Google Payments
+  </message>
 </grit-part>
