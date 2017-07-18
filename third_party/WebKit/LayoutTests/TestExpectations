@@ -3093,6 +3093,11 @@ crbug.com/736056 external/wpt/encoding/legacy-mb-korean/euc-kr/euckr-encode-form
 # module script lacks XHTML support
 crbug.com/717643 external/wpt/html/semantics/scripting-1/the-script-element/module/module-in-xhtml.xhtml [ Failure ]
 
+# Ganesh dither changes
+crbug.com/745776 virtual/gpu/fast/canvas/canvas-text-alignment.html [ NeedsManualRebaseline ]
+crbug.com/745776 virtual/gpu/fast/canvas/fillrect_gradient.html [ NeedsManualRebaseline ]
+crbug.com/745776 virtual/gpu/fast/canvas/gradient-add-second-start-end-stop.html [ NeedsManualRebaseline ]
+
 # Sheriff failures 2017-07-03
 crbug.com/708994 http/tests/security/cross-frame-mouse-source-capabilities.html [ Timeout Pass ]
 crbug.com/708994 virtual/mojo-loading/http/tests/security/cross-frame-mouse-source-capabilities.html [ Timeout Pass ]
