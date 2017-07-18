@@ -17,14 +17,6 @@
 namespace ios {
 class ChromeBrowserState;
 
-// Enums to choose which histograms is used to record the user actions.
-enum class SigninPromoViewHistograms {
-  // No histograms.
-  None,
-  // Histograms: MobileSignInPromo.BookmarkManager.*.
-  Bookmarks,
-};
-
 // Enums for the sign-in promo view state.
 enum class SigninPromoViewState {
   // None of the buttons has been used yet.
@@ -53,17 +45,6 @@ enum class SigninPromoViewState {
 // contains nil.
 @property(nonatomic, readonly, strong) ChromeIdentity* defaultIdentity;
 
-// Access point used to send user action metrics.
-@property(nonatomic) signin_metrics::AccessPoint accessPoint;
-
-// Preference key to count how many time the sign-in promo view is seen. The
-// value should point to static storage.
-@property(nonatomic) const char* displayedCountPreferenceKey;
-// Preference key, set to true when the sign-in promo view is seen too much. The
-// value should point to static storage.
-@property(nonatomic) const char* alreadySeenSigninViewPreferenceKey;
-// Histograms to use for the user actions.
-@property(nonatomic) ios::SigninPromoViewHistograms histograms;
 // Sign-in promo view state.
 @property(nonatomic) ios::SigninPromoViewState signinPromoViewState;
 
@@ -71,7 +52,11 @@ enum class SigninPromoViewState {
 - (instancetype)init NS_UNAVAILABLE;
 
 // Initialises with browser state.
+// * |browserState| is the current browser state.
+// * |accessPoint| only ACCESS_POINT_SETTINGS, ACCESS_POINT_BOOKMARK_MANAGER,
+// ACCESS_POINT_RECENT_TABS, ACCESS_POINT_TAB_SWITCHER are supported.
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
+                         accessPoint:(signin_metrics::AccessPoint)accessPoint
     NS_DESIGNATED_INITIALIZER;
 
 - (SigninPromoViewConfigurator*)createConfigurator;
