@@ -15,7 +15,7 @@
 
 namespace ash {
 
-using TrayUpdateTest = AshTestBase;
+using TrayUpdateTest = test::AshTestBase;
 
 // Tests that the update icon becomes visible when an update becomes
 // available.

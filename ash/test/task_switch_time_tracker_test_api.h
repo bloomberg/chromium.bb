@@ -19,6 +19,8 @@ namespace ash {
 
 class TaskSwitchTimeTracker;
 
+namespace test {
+
 // Provides access TaskSwitchTimeTracker's internals.
 class TaskSwitchTimeTrackerTestAPI {
  public:
@@ -46,6 +48,7 @@ class TaskSwitchTimeTrackerTestAPI {
   DISALLOW_COPY_AND_ASSIGN(TaskSwitchTimeTrackerTestAPI);
 };
 
+}  // namespace test
 }  // namespace ash
 
 #endif  // ASH_TEST_TASK_SWITCH_TIME_TRACKER_TEST_API_H_

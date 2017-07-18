@@ -23,6 +23,10 @@ class Rect;
 
 namespace ash {
 
+namespace test {
+class WindowPositionerTest;
+}
+
 // WindowPositioner is used by the browser to move new popups automatically to
 // a usable position on the closest work area (of the active window).
 class ASH_EXPORT WindowPositioner {
@@ -85,7 +89,7 @@ class ASH_EXPORT WindowPositioner {
   static void SetMaximizeFirstWindow(bool maximize);
 
  protected:
-  friend class WindowPositionerTest;
+  friend class test::WindowPositionerTest;
 
   // Find a smart way to position the popup window. If there is no space this
   // function will return an empty rectangle.

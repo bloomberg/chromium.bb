@@ -43,13 +43,13 @@ WorkspaceLayoutManager* GetWorkspaceLayoutManager(aura::Window* container) {
 
 }  // namespace
 
-class WorkspaceLayoutManagerKeyboardTest2 : public AshTestBase {
+class WorkspaceLayoutManagerKeyboardTest2 : public test::AshTestBase {
  public:
   WorkspaceLayoutManagerKeyboardTest2() : layout_manager_(nullptr) {}
   ~WorkspaceLayoutManagerKeyboardTest2() override {}
 
   void SetUp() override {
-    AshTestBase::SetUp();
+    test::AshTestBase::SetUp();
     UpdateDisplay("800x600");
     aura::Window* default_container =
         Shell::GetPrimaryRootWindowController()->GetContainer(

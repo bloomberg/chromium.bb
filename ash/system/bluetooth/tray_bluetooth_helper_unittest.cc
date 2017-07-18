@@ -17,7 +17,7 @@ using bluez::FakeBluetoothAdapterClient;
 namespace ash {
 namespace {
 
-using TrayBluetoothHelperTest = AshTestBase;
+using TrayBluetoothHelperTest = test::AshTestBase;
 
 // Tests basic functionality like turning Bluetooth on and off.
 TEST_F(TrayBluetoothHelperTest, Basics) {

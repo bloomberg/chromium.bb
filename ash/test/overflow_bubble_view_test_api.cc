@@ -7,6 +7,7 @@
 #include "ash/shelf/overflow_bubble_view.h"
 
 namespace ash {
+namespace test {
 
 OverflowBubbleViewTestAPI::OverflowBubbleViewTestAPI(
     OverflowBubbleView* bubble_view)
@@ -27,4 +28,5 @@ views::BubbleFrameView* OverflowBubbleViewTestAPI::GetBubbleFrameView() {
   return bubble_view_->GetBubbleFrameView();
 }
 
+}  // namespace test
 }  // namespace ash

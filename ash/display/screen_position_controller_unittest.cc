@@ -22,6 +22,7 @@
 #include "ui/events/test/event_generator.h"
 
 namespace ash {
+namespace test {
 
 namespace {
 
@@ -30,7 +31,7 @@ ScreenPositionController* GetScreenPositionController() {
   return test_api.screen_position_controller();
 }
 
-class ScreenPositionControllerTest : public AshTestBase {
+class ScreenPositionControllerTest : public test::AshTestBase {
  public:
   ScreenPositionControllerTest() {}
   ~ScreenPositionControllerTest() override {}
@@ -338,4 +339,5 @@ TEST_F(ScreenPositionControllerTest,
   EXPECT_TRUE(event_handler->could_convert_to_screen());
 }
 
+}  // namespace test
 }  // namespace ash

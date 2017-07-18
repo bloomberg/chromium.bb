@@ -21,6 +21,7 @@
 #include "ui/views/controls/button/button.h"
 
 namespace ash {
+namespace test {
 namespace {
 
 // A simple light weight test double dummy for a views::Button.
@@ -311,4 +312,5 @@ TEST_F(ShelfButtonPressedMetricTrackerTest,
       kTimeDeltaInMilliseconds, 1);
 }
 
+}  // namespace test
 }  // namespace ash

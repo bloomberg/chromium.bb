@@ -36,19 +36,19 @@ gfx::ImageSkia CreateImageSkiaIcon(SkColor color) {
   return gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
 }
 
-class ShelfWindowWatcherTest : public AshTestBase {
+class ShelfWindowWatcherTest : public test::AshTestBase {
  public:
   ShelfWindowWatcherTest() : model_(nullptr) {}
   ~ShelfWindowWatcherTest() override {}
 
   void SetUp() override {
-    AshTestBase::SetUp();
+    test::AshTestBase::SetUp();
     model_ = Shell::Get()->shelf_model();
   }
 
   void TearDown() override {
     model_ = nullptr;
-    AshTestBase::TearDown();
+    test::AshTestBase::TearDown();
   }
 
   static ShelfID CreateShelfItem(aura::Window* window) {
@@ -441,7 +441,7 @@ TEST_F(ShelfWindowWatcherTest, CreateShelfEntriesForTransientWindows) {
 }
 
 // Ensures ShelfWindowWatcher supports windows opened prior to session start.
-using ShelfWindowWatcherSessionStartTest = NoSessionAshTestBase;
+using ShelfWindowWatcherSessionStartTest = test::NoSessionAshTestBase;
 TEST_F(ShelfWindowWatcherSessionStartTest, PreExistingWindow) {
   ShelfModel* model = Shell::Get()->shelf_model();
   ASSERT_FALSE(

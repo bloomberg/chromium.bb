@@ -26,14 +26,14 @@ class DummyEvent : public ui::Event {
   ~DummyEvent() override {}
 };
 
-class ToastManagerTest : public AshTestBase {
+class ToastManagerTest : public test::AshTestBase {
  public:
   ToastManagerTest() {}
   ~ToastManagerTest() override {}
 
  private:
   void SetUp() override {
-    AshTestBase::SetUp();
+    test::AshTestBase::SetUp();
 
     manager_ = Shell::Get()->toast_manager();
 

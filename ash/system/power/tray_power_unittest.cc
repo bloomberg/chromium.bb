@@ -68,7 +68,7 @@ class MockMessageCenter : public message_center::FakeMessageCenter {
 
 namespace ash {
 
-class TrayPowerTest : public AshTestBase {
+class TrayPowerTest : public test::AshTestBase {
  public:
   TrayPowerTest() {}
   ~TrayPowerTest() override {}
@@ -76,9 +76,9 @@ class TrayPowerTest : public AshTestBase {
   MockMessageCenter* message_center() { return message_center_.get(); }
   TrayPower* tray_power() { return tray_power_.get(); }
 
-  // AshTestBase:
+  // test::AshTestBase::SetUp() overrides:
   void SetUp() override {
-    AshTestBase::SetUp();
+    test::AshTestBase::SetUp();
     message_center_.reset(new MockMessageCenter());
     tray_power_.reset(new TrayPower(NULL, message_center_.get()));
   }
@@ -86,7 +86,7 @@ class TrayPowerTest : public AshTestBase {
   void TearDown() override {
     tray_power_.reset();
     message_center_.reset();
-    AshTestBase::TearDown();
+    test::AshTestBase::TearDown();
   }
 
   TrayPower::NotificationState notification_state() const {

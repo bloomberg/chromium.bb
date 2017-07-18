@@ -18,7 +18,7 @@
 
 namespace ash {
 
-class OverviewGestureHandlerTest : public AshTestBase {
+class OverviewGestureHandlerTest : public test::AshTestBase {
  public:
   OverviewGestureHandlerTest() {}
   ~OverviewGestureHandlerTest() override {}

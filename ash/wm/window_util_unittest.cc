@@ -23,7 +23,7 @@ std::string GetAdjustedBounds(const gfx::Rect& visible,
 
 }  // namespace
 
-using WindowUtilTest = AshTestBase;
+typedef test::AshTestBase WindowUtilTest;
 
 TEST_F(WindowUtilTest, CenterWindow) {
   UpdateDisplay("500x400, 600x400");

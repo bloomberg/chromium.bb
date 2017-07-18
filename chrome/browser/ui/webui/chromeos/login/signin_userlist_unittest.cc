@@ -36,7 +36,7 @@ const char* kUsers[] = {
 
 namespace chromeos {
 
-class SigninPrepareUserListTest : public ash::AshTestBase,
+class SigninPrepareUserListTest : public ash::test::AshTestBase,
                                   public MultiProfileUserControllerDelegate {
  public:
   SigninPrepareUserListTest()
@@ -46,7 +46,7 @@ class SigninPrepareUserListTest : public ash::AshTestBase,
   ~SigninPrepareUserListTest() override {}
 
   void SetUp() override {
-    ash::AshTestBase::SetUp();
+    ash::test::AshTestBase::SetUp();
     profile_manager_.reset(
         new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
     ASSERT_TRUE(profile_manager_->SetUp());
@@ -70,7 +70,7 @@ class SigninPrepareUserListTest : public ash::AshTestBase,
     chromeos::WallpaperManager::Shutdown();
     controller_.reset();
     profile_manager_.reset();
-    ash::AshTestBase::TearDown();
+    ash::test::AshTestBase::TearDown();
   }
 
   // MultiProfileUserControllerDelegate overrides:

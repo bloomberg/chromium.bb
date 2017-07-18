@@ -25,7 +25,7 @@
 
 namespace ash {
 
-class ScreenLayoutObserverTest : public AshTestBase {
+class ScreenLayoutObserverTest : public test::AshTestBase {
  public:
   ScreenLayoutObserverTest();
   ~ScreenLayoutObserverTest() override;

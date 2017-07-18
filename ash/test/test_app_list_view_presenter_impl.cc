@@ -9,6 +9,7 @@
 #include "ui/app_list/presenter/test/test_app_list_view_delegate_factory.h"
 
 namespace ash {
+namespace test {
 
 TestAppListViewPresenterImpl::TestAppListViewPresenterImpl()
     : app_list::AppListPresenterImpl(base::MakeUnique<
@@ -18,4 +19,5 @@ TestAppListViewPresenterImpl::TestAppListViewPresenterImpl()
 
 TestAppListViewPresenterImpl::~TestAppListViewPresenterImpl() {}
 
+}  // namespace test
 }  // namespace ash

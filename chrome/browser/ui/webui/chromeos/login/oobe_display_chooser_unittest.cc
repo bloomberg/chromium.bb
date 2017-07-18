@@ -21,9 +21,9 @@ namespace chromeos {
 
 namespace {
 
-class OobeDisplayChooserTest : public ash::AshTestBase {
+class OobeDisplayChooserTest : public ash::test::AshTestBase {
  public:
-  OobeDisplayChooserTest() : ash::AshTestBase() {}
+  OobeDisplayChooserTest() : ash::test::AshTestBase() {}
 
   void SetUp() override {
     ash::test::AshTestBase::SetUp();

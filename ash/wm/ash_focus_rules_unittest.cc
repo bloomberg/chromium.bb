@@ -20,6 +20,7 @@
 #include "ui/views/widget/widget.h"
 
 namespace ash {
+namespace test {
 
 namespace {
 
@@ -197,4 +198,5 @@ TEST_F(LockScreenAshFocusRulesTest, PreventFocusChangeWithLockScreenPresent) {
   EXPECT_TRUE(delegate.view()->HasFocus());
 }
 
+}  // namespace test
 }  // namespace ash

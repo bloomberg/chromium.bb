@@ -15,6 +15,7 @@ class BrowserContext;
 }
 
 namespace ash {
+namespace test {
 
 class TestShellContentState : public ShellContentState {
  public:
@@ -40,6 +41,7 @@ class TestShellContentState : public ShellContentState {
   DISALLOW_COPY_AND_ASSIGN(TestShellContentState);
 };
 
+}  // namespace test
 }  // namespace ash
 
 #endif  // ASH_TEST_CONTENT_TEST_SHELL_CONTENT_STATE_H_

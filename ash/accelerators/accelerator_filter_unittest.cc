@@ -30,8 +30,9 @@
 #include "ui/gfx/geometry/rect.h"
 
 namespace ash {
+namespace test {
 
-using AcceleratorFilterTest = AshTestBase;
+typedef AshTestBase AcceleratorFilterTest;
 
 // Tests if AcceleratorFilter works without a focused window.
 TEST_F(AcceleratorFilterTest, TestFilterWithoutFocus) {
@@ -208,4 +209,5 @@ TEST_F(AcceleratorFilterTest, ToggleAppListInterruptedByMouseEvent) {
   EXPECT_EQ(1u, test_app_list_presenter.toggle_count());
 }
 
+}  // namespace test
 }  // namespace ash

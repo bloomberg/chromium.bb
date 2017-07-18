@@ -25,6 +25,9 @@ class EventHandler;
 }
 
 namespace ash {
+namespace test {
+class WorkspaceControllerTestApi;
+}
 
 namespace wm {
 class WindowState;
@@ -68,7 +71,7 @@ class BackdropController : public ShellObserver, public AccessibilityObserver {
       AccessibilityNotificationVisibility notify) override;
 
  private:
-  friend class WorkspaceControllerTestApi;
+  friend class test::WorkspaceControllerTestApi;
 
   void EnsureBackdropWidget();
 

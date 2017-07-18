@@ -14,7 +14,7 @@
 namespace ash {
 namespace {
 
-class LaserPointerControllerTest : public AshTestBase {
+class LaserPointerControllerTest : public test::AshTestBase {
  public:
   LaserPointerControllerTest() {}
   ~LaserPointerControllerTest() override {}

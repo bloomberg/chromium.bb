@@ -20,6 +20,10 @@ class Button;
 
 namespace ash {
 
+namespace test {
+class ShelfButtonPressedMetricTrackerTestAPI;
+}  // namespace test
+
 // Tracks UMA metrics based on shelf button press actions. More specifically
 // data is added to the following user actions and histograms:
 //
@@ -46,7 +50,7 @@ class ASH_EXPORT ShelfButtonPressedMetricTracker {
                      ShelfAction performed_action);
 
  private:
-  friend class ShelfButtonPressedMetricTrackerTestAPI;
+  friend class test::ShelfButtonPressedMetricTrackerTestAPI;
 
   // Records UMA metrics for the input source when a button is pressed.
   void RecordButtonPressedSource(const ui::Event& event);

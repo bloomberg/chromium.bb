@@ -15,6 +15,9 @@
 #include "base/timer/timer.h"
 
 namespace ash {
+namespace test {
+class TraySessionLengthLimitTest;
+}
 
 class LabelTrayView;
 
@@ -36,7 +39,7 @@ class ASH_EXPORT TraySessionLengthLimit : public SystemTrayItem,
   void OnSessionLengthLimitChanged() override;
 
  private:
-  friend class TraySessionLengthLimitTest;
+  friend class test::TraySessionLengthLimitTest;
 
   static const char kNotificationId[];
 

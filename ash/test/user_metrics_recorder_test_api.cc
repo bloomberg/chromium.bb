@@ -5,6 +5,7 @@
 #include "ash/test/user_metrics_recorder_test_api.h"
 
 namespace ash {
+namespace test {
 
 UserMetricsRecorderTestAPI::UserMetricsRecorderTestAPI()
     : user_metrics_recorder_(false) {}
@@ -19,4 +20,5 @@ bool UserMetricsRecorderTestAPI::IsUserInActiveDesktopEnvironment() const {
   return user_metrics_recorder_.IsUserInActiveDesktopEnvironment();
 }
 
+}  // namespace test
 }  // namespace ash

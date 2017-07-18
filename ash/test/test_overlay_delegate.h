@@ -9,6 +9,7 @@
 #include "base/macros.h"
 
 namespace ash {
+namespace test {
 
 class TestOverlayDelegate : public OverlayEventFilter::Delegate {
  public:
@@ -28,6 +29,7 @@ class TestOverlayDelegate : public OverlayEventFilter::Delegate {
   DISALLOW_COPY_AND_ASSIGN(TestOverlayDelegate);
 };
 
+}  // namespace test
 }  // namespace ash
 
 #endif  // ASH_TEST_TEST_OVERLAY_DELEGATE_H_

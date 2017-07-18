@@ -10,6 +10,7 @@
 #include "base/test/scoped_task_environment.h"
 
 namespace ash {
+namespace test {
 namespace {
 
 class AshTestEnvironmentDefault : public AshTestEnvironment {
@@ -45,4 +46,5 @@ std::string AshTestEnvironment::Get100PercentResourceFileName() {
   return "ash_test_resources_100_percent.pak";
 }
 
+}  // namespace test
 }  // namespace ash

@@ -33,7 +33,7 @@ class MockDesktopMediaListObserver : public DesktopMediaListObserver {
                void(DesktopMediaList* list, int index));
 };
 
-class DesktopMediaListAshTest : public ash::AshTestBase {
+class DesktopMediaListAshTest : public ash::test::AshTestBase {
  public:
   DesktopMediaListAshTest() {}
   ~DesktopMediaListAshTest() override {}
@@ -41,7 +41,7 @@ class DesktopMediaListAshTest : public ash::AshTestBase {
   void TearDown() override {
     // Reset the unique_ptr so the list stops refreshing.
     list_.reset();
-    ash::AshTestBase::TearDown();
+    ash::test::AshTestBase::TearDown();
   }
 
   void CreateList(content::DesktopMediaID::Type type) {

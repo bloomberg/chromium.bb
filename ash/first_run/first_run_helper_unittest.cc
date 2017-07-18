@@ -14,6 +14,7 @@
 #include "ui/views/window/dialog_delegate.h"
 
 namespace ash {
+namespace test {
 
 namespace {
 
@@ -140,4 +141,5 @@ TEST_F(FirstRunHelperTest, ModalWindowDoesNotBlock) {
   overlay_window->RemovePreTargetHandler(&handler);
 }
 
+}  // namespace test
 }  // namespace ash

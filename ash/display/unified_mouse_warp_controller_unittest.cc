@@ -21,13 +21,13 @@
 
 namespace ash {
 
-class UnifiedMouseWarpControllerTest : public AshTestBase {
+class UnifiedMouseWarpControllerTest : public test::AshTestBase {
  public:
   UnifiedMouseWarpControllerTest() {}
   ~UnifiedMouseWarpControllerTest() override {}
 
   void SetUp() override {
-    AshTestBase::SetUp();
+    test::AshTestBase::SetUp();
     display_manager()->SetUnifiedDesktopEnabled(true);
   }
 

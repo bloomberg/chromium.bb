@@ -37,8 +37,15 @@ class Vector3dF;
 
 namespace ash {
 
+class MaximizeModeControllerTest;
 class ScopedDisableInternalMouseAndKeyboard;
 class MaximizeModeWindowManager;
+class MaximizeModeWindowManagerTest;
+
+namespace test {
+class MultiUserWindowManagerChromeOSTest;
+class VirtualKeyboardControllerTest;
+}
 
 // MaximizeModeController listens to accelerometer events and automatically
 // enters and exits maximize mode when the lid is opened beyond the triggering
@@ -112,8 +119,8 @@ class ASH_EXPORT MaximizeModeController
  private:
   friend class MaximizeModeControllerTest;
   friend class MaximizeModeWindowManagerTest;
-  friend class MultiUserWindowManagerChromeOSTest;
-  friend class VirtualKeyboardControllerTest;
+  friend class test::MultiUserWindowManagerChromeOSTest;
+  friend class test::VirtualKeyboardControllerTest;
 
   // Used for recording metrics for intervals of time spent in
   // and out of TouchView.

@@ -30,7 +30,7 @@ class Data {
 
 }  // namespace
 
-using WindowUserDataTest = AshTestBase;
+using WindowUserDataTest = test::AshTestBase;
 
 // Verifies clear() deletes the data associated with a window.
 TEST_F(WindowUserDataTest, ClearDestroys) {

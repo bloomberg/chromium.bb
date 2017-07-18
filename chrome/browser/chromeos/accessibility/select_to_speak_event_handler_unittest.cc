@@ -73,14 +73,14 @@ class SelectToSpeakMouseEventDelegate
   DISALLOW_COPY_AND_ASSIGN(SelectToSpeakMouseEventDelegate);
 };
 
-class SelectToSpeakEventHandlerTest : public ash::AshTestBase {
+class SelectToSpeakEventHandlerTest : public ash::test::AshTestBase {
  public:
   SelectToSpeakEventHandlerTest()
       : generator_(nullptr),
         select_to_speak_event_handler_(new SelectToSpeakEventHandler()) {}
 
   void SetUp() override {
-    ash::AshTestBase::SetUp();
+    ash::test::AshTestBase::SetUp();
     mouse_event_delegate_.reset(new SelectToSpeakMouseEventDelegate());
     select_to_speak_event_handler_->CaptureForwardedEventsForTesting(
         mouse_event_delegate_.get());
@@ -95,7 +95,7 @@ class SelectToSpeakEventHandlerTest : public ash::AshTestBase {
         select_to_speak_event_handler_.get());
     CurrentContext()->RemovePreTargetHandler(&event_capturer_);
     generator_ = nullptr;
-    ash::AshTestBase::TearDown();
+    ash::test::AshTestBase::TearDown();
   }
 
  protected:

@@ -32,12 +32,12 @@ const unsigned int kTouchPadDeviceId = 1;
 
 }  // namespace
 
-class StickyKeysTest : public AshTestBase {
+class StickyKeysTest : public test::AshTestBase {
  protected:
   StickyKeysTest() : target_(NULL), root_window_(NULL) {}
 
   void SetUp() override {
-    AshTestBase::SetUp();
+    test::AshTestBase::SetUp();
 
     // |target_| owned by root window of shell. It is still safe to delete
     // it ourselves.
@@ -49,7 +49,7 @@ class StickyKeysTest : public AshTestBase {
 #endif
   }
 
-  void TearDown() override { AshTestBase::TearDown(); }
+  void TearDown() override { test::AshTestBase::TearDown(); }
 
   virtual void OnShortcutPressed() {
     if (target_) {

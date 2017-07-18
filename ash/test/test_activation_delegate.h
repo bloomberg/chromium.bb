@@ -17,6 +17,7 @@ class Window;
 }
 
 namespace ash {
+namespace test {
 
 // A test ActivationDelegate that can be used to track activation changes for
 // an aura::Window.
@@ -59,6 +60,7 @@ class TestActivationDelegate : public ::wm::ActivationDelegate,
   DISALLOW_COPY_AND_ASSIGN(TestActivationDelegate);
 };
 
+}  // namespace test
 }  // namespace ash
 
 #endif  // ASH_TEST_TEST_ACTIVATION_DELEGATE_H_

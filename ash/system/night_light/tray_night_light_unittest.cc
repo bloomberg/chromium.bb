@@ -20,14 +20,14 @@ namespace {
 
 constexpr char kFakeUserEmail[] = "fake_user@nightlight";
 
-class TrayNightLightTest : public AshTestBase {
+class TrayNightLightTest : public test::AshTestBase {
  public:
   TrayNightLightTest() = default;
   ~TrayNightLightTest() override = default;
 
-  // AshTestBase:
+  // ash::test::AshTestBase:
   void SetUp() override {
-    AshTestBase::SetUp();
+    test::AshTestBase::SetUp();
     GetSessionControllerClient()->Reset();
     GetSessionControllerClient()->AddUserSession(kFakeUserEmail);
     Shell::RegisterPrefs(pref_service_.registry());

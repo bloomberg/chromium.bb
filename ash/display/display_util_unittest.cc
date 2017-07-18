@@ -10,7 +10,7 @@
 
 namespace ash {
 
-using DisplayUtilTest = AshTestBase;
+typedef test::AshTestBase DisplayUtilTest;
 
 TEST_F(DisplayUtilTest, RotatedDisplay) {
   {

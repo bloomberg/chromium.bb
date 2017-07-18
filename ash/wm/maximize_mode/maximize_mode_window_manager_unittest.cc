@@ -39,7 +39,7 @@
 
 namespace ash {
 
-class MaximizeModeWindowManagerTest : public AshTestBase {
+class MaximizeModeWindowManagerTest : public test::AshTestBase {
  public:
   MaximizeModeWindowManagerTest() {}
   ~MaximizeModeWindowManagerTest() override {}

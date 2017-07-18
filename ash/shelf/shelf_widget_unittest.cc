@@ -26,7 +26,7 @@ namespace ash {
 namespace {
 
 ShelfWidget* GetShelfWidget() {
-  return AshTestBase::GetPrimaryShelf()->shelf_widget();
+  return test::AshTestBase::GetPrimaryShelf()->shelf_widget();
 }
 
 ShelfLayoutManager* GetShelfLayoutManager() {
@@ -43,7 +43,7 @@ void TestLauncherAlignment(aura::Window* root,
                                      .ToString());
 }
 
-using ShelfWidgetTest = AshTestBase;
+using ShelfWidgetTest = test::AshTestBase;
 
 TEST_F(ShelfWidgetTest, TestAlignment) {
   UpdateDisplay("400x400");
@@ -320,7 +320,7 @@ TEST_F(ShelfWidgetTest, HiddenShelfHitTestTouch) {
   }
 }
 
-class ShelfWidgetAfterLoginTest : public AshTestBase {
+class ShelfWidgetAfterLoginTest : public test::AshTestBase {
  public:
   ShelfWidgetAfterLoginTest() { set_start_session(false); }
   ~ShelfWidgetAfterLoginTest() override = default;

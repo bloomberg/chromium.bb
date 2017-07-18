@@ -33,6 +33,10 @@ class DragDropTracker;
 class DragDropTrackerDelegate;
 class DragImageView;
 
+namespace test {
+class DragDropControllerTest;
+}
+
 class ASH_EXPORT DragDropController : public aura::client::DragDropClient,
                                       public ui::EventHandler,
                                       public gfx::AnimationDelegate,
@@ -82,7 +86,7 @@ class ASH_EXPORT DragDropController : public aura::client::DragDropClient,
   virtual void DoDragCancel(int drag_cancel_animation_duration_ms);
 
  private:
-  friend class DragDropControllerTest;
+  friend class ash::test::DragDropControllerTest;
 
   // Overridden from gfx::AnimationDelegate:
   void AnimationEnded(const gfx::Animation* animation) override;

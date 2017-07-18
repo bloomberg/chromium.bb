@@ -21,16 +21,16 @@
 
 namespace ash {
 
-class TouchHudTestBase : public AshTestBase {
+class TouchHudTestBase : public test::AshTestBase {
  public:
   TouchHudTestBase() {}
   ~TouchHudTestBase() override {}
 
   void SetUp() override {
-    AshTestBase::SetUp();
+    test::AshTestBase::SetUp();
 
     // Initialize display infos. They should be initialized after Ash
-    // environment is set up, i.e., after AshTestBase::SetUp().
+    // environment is set up, i.e., after test::AshTestBase::SetUp().
     internal_display_id_ =
         display::test::DisplayManagerTestApi(Shell::Get()->display_manager())
             .SetFirstDisplayAsInternalDisplay();

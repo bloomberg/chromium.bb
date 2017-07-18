@@ -10,6 +10,8 @@ namespace ash {
 
 class WallpaperController;
 
+namespace test {
+
 class ASH_EXPORT WallpaperControllerTestApi {
  public:
   explicit WallpaperControllerTestApi(WallpaperController* controller);
@@ -29,4 +31,5 @@ class ASH_EXPORT WallpaperControllerTestApi {
   DISALLOW_COPY_AND_ASSIGN(WallpaperControllerTestApi);
 };
 
+}  // namespace test
 }  // namespace ash

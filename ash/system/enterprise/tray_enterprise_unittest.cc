@@ -13,7 +13,7 @@
 
 namespace ash {
 
-using TrayEnterpriseTest = AshTestBase;
+using TrayEnterpriseTest = test::AshTestBase;
 
 TEST_F(TrayEnterpriseTest, ItemVisible) {
   SystemTray* system_tray = GetPrimarySystemTray();

@@ -16,6 +16,7 @@
 #include "ui/events/event_constants.h"
 
 namespace ash {
+namespace test {
 
 ui::GestureEvent CreateGestureEvent(ui::GestureEventDetails details) {
   return ui::GestureEvent(0, 0, ui::EF_NONE, base::TimeTicks(), details);
@@ -86,4 +87,5 @@ TEST_F(VoiceInteractionAppListButtonTest,
   EXPECT_EQ(1u, test_app_list_presenter.voice_session_count());
 }
 
+}  // namespace test
 }  // namespace ash

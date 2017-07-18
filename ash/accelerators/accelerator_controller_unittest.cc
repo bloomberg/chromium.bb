@@ -206,13 +206,13 @@ bool TestTarget::CanHandleAccelerators() const {
 
 }  // namespace
 
-class AcceleratorControllerTest : public AshTestBase {
+class AcceleratorControllerTest : public test::AshTestBase {
  public:
   AcceleratorControllerTest() = default;
   ~AcceleratorControllerTest() override = default;
 
   void SetUp() override {
-    AshTestBase::SetUp();
+    test::AshTestBase::SetUp();
     test_input_method_manager_ = new TestInputMethodManager;
     // Takes ownership.
     InputMethodManager::Initialize(test_input_method_manager_);
@@ -220,7 +220,7 @@ class AcceleratorControllerTest : public AshTestBase {
 
   void TearDown() override {
     InputMethodManager::Shutdown();
-    AshTestBase::TearDown();
+    test::AshTestBase::TearDown();
   }
 
  protected:
@@ -685,7 +685,7 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
   // The "Take Screenshot", "Take Partial Screenshot", volume, brightness, and
   // keyboard brightness accelerators are only defined on ChromeOS.
   {
-    TestScreenshotDelegate* delegate = GetScreenshotDelegate();
+    test::TestScreenshotDelegate* delegate = GetScreenshotDelegate();
     delegate->set_can_take_screenshot(false);
     EXPECT_TRUE(ProcessInController(
         ui::Accelerator(ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_CONTROL_DOWN)));
@@ -991,16 +991,16 @@ TEST_F(AcceleratorControllerTest, ToggleCapsLockAccelerators) {
   EXPECT_TRUE(input_method_manager->GetImeKeyboard()->CapsLockIsEnabled());
 }
 
-class PreferredReservedAcceleratorsTest : public AshTestBase {
+class PreferredReservedAcceleratorsTest : public test::AshTestBase {
  public:
   PreferredReservedAcceleratorsTest() {}
   ~PreferredReservedAcceleratorsTest() override {}
 
-  // AshTestBase:
+  // test::AshTestBase:
   void SetUp() override {
     AshTestBase::SetUp();
     Shell::Get()->lock_state_controller()->set_animator_for_test(
-        new TestSessionStateAnimator);
+        new test::TestSessionStateAnimator);
   }
 
  private:
@@ -1026,7 +1026,8 @@ TEST_F(PreferredReservedAcceleratorsTest, AcceleratorsWithFullscreen) {
   ui::test::EventGenerator& generator = GetEventGenerator();
 
   // Power key (reserved) should always be handled.
-  LockStateControllerTestApi test_api(Shell::Get()->lock_state_controller());
+  test::LockStateControllerTestApi test_api(
+      Shell::Get()->lock_state_controller());
   EXPECT_FALSE(test_api.is_animating_lock());
   generator.PressKey(ui::VKEY_POWER, ui::EF_NONE);
   EXPECT_TRUE(test_api.is_animating_lock());
@@ -1077,7 +1078,8 @@ TEST_F(PreferredReservedAcceleratorsTest, AcceleratorsWithPinned) {
   ui::test::EventGenerator& generator = GetEventGenerator();
 
   // Power key (reserved) should always be handled.
-  LockStateControllerTestApi test_api(Shell::Get()->lock_state_controller());
+  test::LockStateControllerTestApi test_api(
+      Shell::Get()->lock_state_controller());
   EXPECT_FALSE(test_api.is_animating_lock());
   generator.PressKey(ui::VKEY_POWER, ui::EF_NONE);
   EXPECT_TRUE(test_api.is_animating_lock());
@@ -1132,7 +1134,7 @@ TEST_F(AcceleratorControllerTest, DisallowedAtModalWindow) {
   //
   // Screenshot
   {
-    TestScreenshotDelegate* delegate = GetScreenshotDelegate();
+    test::TestScreenshotDelegate* delegate = GetScreenshotDelegate();
     delegate->set_can_take_screenshot(false);
     EXPECT_TRUE(ProcessInController(
         ui::Accelerator(ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_CONTROL_DOWN)));

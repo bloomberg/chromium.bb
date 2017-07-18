@@ -22,14 +22,14 @@ const char kTestExtensionId[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 
 }  // namespace
 
-class AppInfoDialogAshTest : public ash::AshTestBase {
+class AppInfoDialogAshTest : public ash::test::AshTestBase {
  public:
   AppInfoDialogAshTest()
       : extension_environment_(base::MessageLoopForUI::current()) {}
 
   // Overridden from testing::Test:
   void SetUp() override {
-    ash::AshTestBase::SetUp();
+    ash::test::AshTestBase::SetUp();
     ash_test_helper()->test_views_delegate()->set_layout_provider(
         base::MakeUnique<ChromeLayoutProvider>());
     widget_ = views::DialogDelegate::CreateDialogWidget(
@@ -43,7 +43,7 @@ class AppInfoDialogAshTest : public ash::AshTestBase {
 
   void TearDown() override {
     widget_->CloseNow();
-    ash::AshTestBase::TearDown();
+    ash::test::AshTestBase::TearDown();
   }
 
  protected:

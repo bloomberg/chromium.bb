@@ -9,6 +9,7 @@
 #include "ui/base/dragdrop/drag_drop_types.h"
 
 namespace ash {
+namespace test {
 
 using DragDropImageTest = AshTestBase;
 
@@ -73,4 +74,5 @@ TEST_F(DragDropImageTest, SetBoundsIgnoresDragHintForMouse) {
             drag_image_view.GetBoundsInScreen());
 }
 
+}  // namespace test
 }  // namespace ash

@@ -63,7 +63,7 @@ class TestWindowDelegate : public aura::test::TestWindowDelegate {
 
 }  // namespace
 
-class WorkspaceWindowResizerTest : public AshTestBase {
+class WorkspaceWindowResizerTest : public test::AshTestBase {
  public:
   WorkspaceWindowResizerTest() : workspace_resizer_(nullptr) {}
   ~WorkspaceWindowResizerTest() override {}

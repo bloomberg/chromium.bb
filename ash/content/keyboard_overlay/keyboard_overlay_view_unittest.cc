@@ -15,7 +15,7 @@
 
 namespace ash {
 
-using KeyboardOverlayViewTest = AshTestBase;
+typedef test::AshTestBase KeyboardOverlayViewTest;
 
 bool operator==(const KeyboardOverlayView::KeyEventData& lhs,
                 const KeyboardOverlayView::KeyEventData& rhs) {

@@ -11,6 +11,7 @@
 #include "content/public/test/web_contents_tester.h"
 
 namespace ash {
+namespace test {
 namespace {
 
 class AshTestViewsDelegateContent : public AshTestViewsDelegate {
@@ -65,4 +66,5 @@ AshTestEnvironmentContent::CreateViewsDelegate() {
   return base::MakeUnique<AshTestViewsDelegateContent>();
 }
 
+}  // namespace test
 }  // namespace ash

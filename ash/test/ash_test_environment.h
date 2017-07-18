@@ -9,6 +9,7 @@
 #include <string>
 
 namespace ash {
+namespace test {
 
 class AshTestViewsDelegate;
 
@@ -41,6 +42,7 @@ class AshTestEnvironment {
   AshTestEnvironment() {}
 };
 
+}  // namespace test
 }  // namespace ash
 
 #endif  // ASH_TEST_ASH_TEST_ENVIRONMENT_H_

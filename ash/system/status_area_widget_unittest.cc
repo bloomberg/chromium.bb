@@ -28,7 +28,7 @@ using session_manager::SessionState;
 
 namespace ash {
 
-using StatusAreaWidgetTest = AshTestBase;
+using StatusAreaWidgetTest = test::AshTestBase;
 
 // Tests that status area trays are constructed.
 TEST_F(StatusAreaWidgetTest, Basics) {
@@ -74,7 +74,7 @@ class StatusAreaFocusTestObserver : public StatusAreaFocusObserver {
   int reverse_focus_out_count() { return reverse_focus_out_count_; }
 
  protected:
-  // StatusAreaFocusObserver:
+  // StatusAreaFocusObserver overridden:
   void OnFocusOut(bool reverse) override {
     reverse ? ++reverse_focus_out_count_ : ++focus_out_count_;
   }
@@ -86,12 +86,12 @@ class StatusAreaFocusTestObserver : public StatusAreaFocusObserver {
   DISALLOW_COPY_AND_ASSIGN(StatusAreaFocusTestObserver);
 };
 
-class StatusAreaWidgetFocusTest : public AshTestBase {
+class StatusAreaWidgetFocusTest : public test::AshTestBase {
  public:
   StatusAreaWidgetFocusTest() {}
   ~StatusAreaWidgetFocusTest() override {}
 
-  // AshTestBase:
+  // test::AshTestBase overridden:
   void SetUp() override {
     AshTestBase::SetUp();
     test_observer_.reset(new StatusAreaFocusTestObserver);
@@ -99,7 +99,7 @@ class StatusAreaWidgetFocusTest : public AshTestBase {
         test_observer_.get());
   }
 
-  // AshTestBase:
+  // test::AshTestBase overridden:
   void TearDown() override {
     Shell::Get()->system_tray_notifier()->RemoveStatusAreaFocusObserver(
         test_observer_.get());
@@ -126,7 +126,7 @@ TEST_F(StatusAreaWidgetFocusTest, FocusOutObserver) {
   // Set session state to LOCKED.
   SessionController* session = Shell::Get()->session_controller();
   ASSERT_TRUE(session->IsActiveUserSessionStarted());
-  TestSessionControllerClient* client = GetSessionControllerClient();
+  test::TestSessionControllerClient* client = GetSessionControllerClient();
   client->SetSessionState(SessionState::LOCKED);
   ASSERT_TRUE(session->IsScreenLocked());
 
@@ -177,7 +177,7 @@ TEST_F(StatusAreaWidgetFocusTest, FocusOutObserver) {
   EXPECT_EQ(1, test_observer_->reverse_focus_out_count());
 }
 
-class StatusAreaWidgetPaletteTest : public AshTestBase {
+class StatusAreaWidgetPaletteTest : public test::AshTestBase {
  public:
   StatusAreaWidgetPaletteTest() {}
   ~StatusAreaWidgetPaletteTest() override {}

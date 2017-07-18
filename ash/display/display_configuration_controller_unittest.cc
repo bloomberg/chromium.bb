@@ -24,7 +24,8 @@ display::Display::Rotation GetDisplayRotation(int64_t display_id) {
       .GetActiveRotation();
 }
 
-class DisplayConfigurationControllerSmoothRotationTest : public AshTestBase {
+class DisplayConfigurationControllerSmoothRotationTest
+    : public test::AshTestBase {
  public:
   DisplayConfigurationControllerSmoothRotationTest() {}
   ~DisplayConfigurationControllerSmoothRotationTest() override {}
@@ -32,7 +33,7 @@ class DisplayConfigurationControllerSmoothRotationTest : public AshTestBase {
   void SetUp() override {
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kAshDisableSmoothScreenRotation, "false");
-    AshTestBase::SetUp();
+    test::AshTestBase::SetUp();
   }
 
  private:
@@ -41,7 +42,7 @@ class DisplayConfigurationControllerSmoothRotationTest : public AshTestBase {
 
 }  // namespace
 
-using DisplayConfigurationControllerTest = AshTestBase;
+using DisplayConfigurationControllerTest = test::AshTestBase;
 
 TEST_F(DisplayConfigurationControllerTest, OnlyHasOneAnimator) {
   // TODO(wutao): needs display_configuration_controller
@@ -50,7 +51,7 @@ TEST_F(DisplayConfigurationControllerTest, OnlyHasOneAnimator) {
     return;
 
   display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
-  DisplayConfigurationControllerTestApi testapi(
+  test::DisplayConfigurationControllerTestApi testapi(
       Shell::Get()->display_configuration_controller());
   ScreenRotationAnimator* old_screen_rotation_animator =
       testapi.GetScreenRotationAnimatorForDisplay(display.id());
@@ -75,7 +76,7 @@ TEST_F(DisplayConfigurationControllerSmoothRotationTest,
   display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
   DisplayConfigurationController* controller =
       Shell::Get()->display_configuration_controller();
-  DisplayConfigurationControllerTestApi testapi(controller);
+  test::DisplayConfigurationControllerTestApi testapi(controller);
   controller->SetDisplayRotation(
       display.id(), display::Display::ROTATE_180,
       display::Display::RotationSource::ROTATION_SOURCE_USER);

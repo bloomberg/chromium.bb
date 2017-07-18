@@ -13,7 +13,7 @@
 
 namespace ash {
 
-class MruWindowTrackerTest : public AshTestBase {
+class MruWindowTrackerTest : public test::AshTestBase {
  public:
   MruWindowTrackerTest() {}
   ~MruWindowTrackerTest() override {}

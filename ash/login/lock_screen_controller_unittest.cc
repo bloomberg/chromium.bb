@@ -14,7 +14,7 @@ using ::testing::_;
 namespace ash {
 
 namespace {
-using LockScreenControllerTest = AshTestBase;
+using LockScreenControllerTest = test::AshTestBase;
 
 TEST_F(LockScreenControllerTest, RequestAuthentication) {
   LockScreenController* controller = Shell::Get()->lock_screen_controller();

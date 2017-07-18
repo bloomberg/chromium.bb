@@ -20,6 +20,7 @@
 #include "ui/base/models/menu_model.h"
 
 namespace ash {
+namespace test {
 
 // A test class for preparing the chrome::MultiUserContextMenu.
 class MultiUserContextMenuChromeOSTest : public AshTestBase {
@@ -119,4 +120,5 @@ TEST_F(MultiUserContextMenuChromeOSTest, OwnedWindow) {
   }
 }
 
+}  // namespace test
 }  // namespace ash

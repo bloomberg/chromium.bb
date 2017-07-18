@@ -14,7 +14,7 @@
 
 namespace ash {
 
-using ContainerFinderTest = AshTestBase;
+using ContainerFinderTest = test::AshTestBase;
 
 TEST_F(ContainerFinderTest, GetContainerForWindow) {
   // Create a normal widget in the default container.

@@ -24,6 +24,9 @@ class Window;
 }
 
 namespace ash {
+namespace test {
+class ScreenOrientationControllerTestApi;
+}
 
 // Implements ChromeOS specific functionality for ScreenOrientationProvider.
 class ASH_EXPORT ScreenOrientationController
@@ -123,7 +126,7 @@ class ASH_EXPORT ScreenOrientationController
   void OnMaximizeModeEnding() override;
 
  private:
-  friend class ScreenOrientationControllerTestApi;
+  friend class test::ScreenOrientationControllerTestApi;
 
   struct LockInfo {
     LockInfo() {}

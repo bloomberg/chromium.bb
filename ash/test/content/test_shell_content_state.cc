@@ -7,6 +7,7 @@
 #include "content/public/test/test_browser_context.h"
 
 namespace ash {
+namespace test {
 
 TestShellContentState::TestShellContentState() {}
 TestShellContentState::~TestShellContentState() {}
@@ -32,4 +33,5 @@ TestShellContentState::GetUserPresentingBrowserContextForWindow(
   return nullptr;
 }
 
+}  // namespace test
 }  // namespace ash

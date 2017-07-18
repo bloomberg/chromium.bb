@@ -36,7 +36,9 @@ class ArcSessionManagerTest;
 }
 
 namespace ash {
+namespace test {
 class MultiUserWindowManagerChromeOSTest;
+}  // namespace test
 }  // namespace ash
 
 namespace policy {
@@ -188,7 +190,7 @@ class ProfileHelper
   friend class ProfileHelperTest;
   friend class ProfileListChromeOSTest;
   friend class SystemTrayDelegateChromeOSTest;
-  friend class ash::MultiUserWindowManagerChromeOSTest;
+  friend class ash::test::MultiUserWindowManagerChromeOSTest;
   friend class arc::ArcSessionManagerTest;
   friend class arc::ArcAuthServiceTest;
   friend class ::ArcAppTest;

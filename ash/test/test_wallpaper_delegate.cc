@@ -8,6 +8,7 @@
 #include "ash/wallpaper/wallpaper_controller.h"
 
 namespace ash {
+namespace test {
 
 TestWallpaperDelegate::TestWallpaperDelegate() : update_wallpaper_count_(0) {}
 
@@ -28,4 +29,5 @@ int TestWallpaperDelegate::GetUpdateWallpaperCountAndReset() {
   return count;
 }
 
+}  // namespace test
 }  // namespace ash

@@ -12,7 +12,7 @@ namespace {
 
 const int kTestPointsLifetimeSeconds = 5;
 
-class LaserPointerPointsTest : public AshTestBase {
+class LaserPointerPointsTest : public test::AshTestBase {
  public:
   LaserPointerPointsTest()
       : points_(base::TimeDelta::FromSeconds(kTestPointsLifetimeSeconds)) {}

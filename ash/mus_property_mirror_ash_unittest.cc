@@ -16,7 +16,7 @@
 
 namespace ash {
 
-using MusPropertyMirrorAshTest = AshTestBase;
+using MusPropertyMirrorAshTest = test::AshTestBase;
 
 // Ensure the property mirror can copy primitive properties between windows.
 TEST_F(MusPropertyMirrorAshTest, PrimitiveProperties) {
