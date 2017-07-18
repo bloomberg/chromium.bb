@@ -10,11 +10,13 @@
 #include "base/process/process_metrics.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/test/perf_time_logger.h"
 #include "base/test/test_io_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "ipc/ipc_channel_mojo.h"
+#include "ipc/ipc_sync_channel.h"
 #include "ipc/ipc_test.mojom.h"
 #include "ipc/ipc_test_base.h"
 #include "mojo/edk/embedder/embedder.h"
@@ -89,7 +91,9 @@ class PerformanceChannelListener : public Listener {
       for (int i = 0; i < count_down_; ++i) {
         std::string response;
         sender_->Send(new TestMsg_SyncPing(payload_, &response));
+        DCHECK_EQ(response, payload_);
       }
+      perf_logger_.reset();
       base::MessageLoop::current()->QuitWhenIdle();
     } else {
       SendPong();
@@ -302,9 +306,12 @@ class MojoChannelPerfTest : public IPCChannelMojoTestBase {
 
     // Set up IPC channel and start client.
     PerformanceChannelListener listener("ChannelProxy");
-    auto channel_proxy = IPC::ChannelProxy::Create(
+    base::WaitableEvent shutdown_event(
+        base::WaitableEvent::ResetPolicy::MANUAL,
+        base::WaitableEvent::InitialState::NOT_SIGNALED);
+    auto channel_proxy = IPC::SyncChannel::Create(
         TakeHandle().release(), IPC::Channel::MODE_SERVER, &listener,
-        io_thread_->task_runner());
+        io_thread_->task_runner(), false, &shutdown_event);
     listener.Init(channel_proxy.get());
 
     LockThreadAffinity thread_locker(kSharedCore);
@@ -468,7 +475,9 @@ class MojoInterfacePerfTest : public mojo::edk::test::MojoTestBase {
       for (int i = 0; i < count_down_; ++i) {
         std::string response;
         ping_receiver_->SyncPing(payload_, &response);
+        DCHECK_EQ(response, payload_);
       }
+      perf_logger_.reset();
       base::MessageLoop::current()->QuitWhenIdle();
     } else {
       ping_receiver_->Ping(payload_, base::Bind(&MojoInterfacePerfTest::OnPong,
