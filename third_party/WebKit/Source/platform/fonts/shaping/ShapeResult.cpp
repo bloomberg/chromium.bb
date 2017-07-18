@@ -456,6 +456,7 @@ void ShapeResult::CopyRange(unsigned start_offset,
                             unsigned end_offset,
                             ShapeResult* target) const {
   unsigned index = target->num_characters_;
+  float total_width = 0;
   for (const auto& run : runs_) {
     unsigned run_start = (*run).start_index_;
     unsigned run_end = run_start + (*run).num_characters_;
@@ -467,10 +468,35 @@ void ShapeResult::CopyRange(unsigned start_offset,
 
       auto sub_run = (*run).CreateSubRun(start, end);
       sub_run->start_index_ = index;
-      target->width_ += sub_run->width_;
+      total_width += sub_run->width_;
       index += sub_run->num_characters_;
       target->runs_.push_back(std::move(sub_run));
     }
+  }
+
+  // Compute new glyph bounding box.
+  // If |start_offset| or |end_offset| are the start/end of |this|, use
+  // |glyph_bounding_box_| from |this| for the side. Otherwise, we cannot
+  // compute accurate glyph bounding box; approximate by assuming there are no
+  // glyph overflow nor underflow.
+  // TODO(kojii): This is not correct for vertical flow since glyphs are in
+  // physical coordinates.
+  float left = target->width_;
+  target->width_ += total_width;
+  float right = target->width_;
+  if (start_offset <= StartIndexForResult())
+    left += glyph_bounding_box_.X();
+  if (end_offset >= EndIndexForResult())
+    right += glyph_bounding_box_.MaxX() - width_;
+  if (right >= left) {
+    FloatRect adjusted_box(left, glyph_bounding_box_.Y(), right - left,
+                           glyph_bounding_box_.Height());
+    target->glyph_bounding_box_.UniteIfNonZero(adjusted_box);
+  } else {
+    FloatRect adjusted_box(left, glyph_bounding_box_.Y(), 0,
+                           glyph_bounding_box_.Height());
+    target->glyph_bounding_box_.UniteIfNonZero(adjusted_box);
+    target->glyph_bounding_box_.ShiftMaxXEdgeTo(right);
   }
 
   DCHECK_EQ(index - target->num_characters_,
