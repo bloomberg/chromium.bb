@@ -12,8 +12,6 @@
 namespace ash {
 class ScreenOrientationController;
 
-namespace test {
-
 class ScreenOrientationControllerTestApi {
  public:
   explicit ScreenOrientationControllerTestApi(
@@ -34,7 +32,6 @@ class ScreenOrientationControllerTestApi {
   DISALLOW_COPY_AND_ASSIGN(ScreenOrientationControllerTestApi);
 };
 
-}  // namespace test
 }  // namespace ash
 
 #endif  // ASH_TEST_SCREEN_ORIENTATION_CONTROLLER_TEST_API_H_

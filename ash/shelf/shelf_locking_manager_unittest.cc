@@ -11,7 +11,7 @@ namespace ash {
 namespace {
 
 // Tests the shelf behavior when the screen or session is locked.
-class ShelfLockingManagerTest : public test::AshTestBase {
+class ShelfLockingManagerTest : public AshTestBase {
  public:
   ShelfLockingManagerTest() {}
 

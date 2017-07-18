@@ -5,9 +5,9 @@
 #include "ash/test/test_overlay_delegate.h"
 
 namespace ash {
-namespace test {
 
 TestOverlayDelegate::TestOverlayDelegate() : cancel_count_(0) {}
+
 TestOverlayDelegate::~TestOverlayDelegate() {}
 
 int TestOverlayDelegate::GetCancelCountAndReset() {
@@ -28,5 +28,4 @@ aura::Window* TestOverlayDelegate::GetWindow() {
   return NULL;
 }
 
-}  // namespace test
 }  // namespace ash

@@ -19,16 +19,15 @@ namespace ash {
 namespace {
 
 // Base class for all metalayer ash tests.
-class MetalayerToolTest : public test::AshTestBase {
+class MetalayerToolTest : public AshTestBase {
  public:
   MetalayerToolTest() {}
   ~MetalayerToolTest() override {}
 
   void SetUp() override {
-    test::AshTestBase::SetUp();
+    AshTestBase::SetUp();
 
-    test::ShellTestApi().SetPaletteDelegate(
-        base::MakeUnique<TestPaletteDelegate>());
+    ShellTestApi().SetPaletteDelegate(base::MakeUnique<TestPaletteDelegate>());
 
     palette_tool_delegate_ = base::MakeUnique<MockPaletteToolDelegate>();
     tool_ = base::MakeUnique<MetalayerMode>(palette_tool_delegate_.get());

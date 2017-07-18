@@ -8,7 +8,6 @@
 #include "base/test/simple_test_tick_clock.h"
 
 namespace ash {
-namespace test {
 
 TaskSwitchTimeTrackerTestAPI::TaskSwitchTimeTrackerTestAPI(
     const std::string& histogram_name) {
@@ -29,5 +28,4 @@ bool TaskSwitchTimeTrackerTestAPI::HasLastActionTime() const {
   return time_tracker_->HasLastActionTime();
 }
 
-}  // namespace test
 }  // namespace ash

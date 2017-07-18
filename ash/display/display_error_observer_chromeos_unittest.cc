@@ -17,14 +17,14 @@
 
 namespace ash {
 
-class DisplayErrorObserverTest : public test::AshTestBase {
+class DisplayErrorObserverTest : public AshTestBase {
  protected:
   DisplayErrorObserverTest() {}
 
   ~DisplayErrorObserverTest() override {}
 
   void SetUp() override {
-    test::AshTestBase::SetUp();
+    AshTestBase::SetUp();
     observer_.reset(new DisplayErrorObserver());
   }
 

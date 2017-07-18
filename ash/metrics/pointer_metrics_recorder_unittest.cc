@@ -26,12 +26,12 @@ const char kInputHistogramName[] = "Event.DownEventCount.PerInput";
 const char kDestinationHistogramName[] = "Event.DownEventCount.PerDestination";
 
 // Test fixture for the PointerMetricsRecorder class.
-class PointerMetricsRecorderTest : public test::AshTestBase {
+class PointerMetricsRecorderTest : public AshTestBase {
  public:
   PointerMetricsRecorderTest();
   ~PointerMetricsRecorderTest() override;
 
-  // test::AshTestBase:
+  // AshTestBase:
   void SetUp() override;
   void TearDown() override;
 
@@ -51,14 +51,14 @@ PointerMetricsRecorderTest::PointerMetricsRecorderTest() {}
 PointerMetricsRecorderTest::~PointerMetricsRecorderTest() {}
 
 void PointerMetricsRecorderTest::SetUp() {
-  test::AshTestBase::SetUp();
+  AshTestBase::SetUp();
   pointer_metrics_recorder_.reset(new PointerMetricsRecorder());
   histogram_tester_.reset(new base::HistogramTester());
 }
 
 void PointerMetricsRecorderTest::TearDown() {
   pointer_metrics_recorder_.reset();
-  test::AshTestBase::TearDown();
+  AshTestBase::TearDown();
 }
 
 }  // namespace

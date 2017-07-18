@@ -51,7 +51,7 @@ aura::Window* CreateFullscreenTestWindow(mus::WindowManager* window_manager,
 
 }  // namespace
 
-using TopLevelWindowFactoryTest = test::AshTestBase;
+using TopLevelWindowFactoryTest = AshTestBase;
 
 TEST_F(TopLevelWindowFactoryTest, CreateFullscreenWindow) {
   std::unique_ptr<aura::Window> window = CreateTestWindow();
@@ -60,7 +60,7 @@ TEST_F(TopLevelWindowFactoryTest, CreateFullscreenWindow) {
   EXPECT_EQ(root_window->bounds(), window->bounds());
 }
 
-using TopLevelWindowFactoryWmTest = test::AshTestBase;
+using TopLevelWindowFactoryWmTest = AshTestBase;
 
 TEST_F(TopLevelWindowFactoryWmTest, IsWindowShownInCorrectDisplay) {
   UpdateDisplay("400x400,400x400");
@@ -80,7 +80,7 @@ TEST_F(TopLevelWindowFactoryWmTest, IsWindowShownInCorrectDisplay) {
             GetDisplayId(window_secondary_display.get()));
 }
 
-using TopLevelWindowFactoryAshTest = test::AshTestBase;
+using TopLevelWindowFactoryAshTest = AshTestBase;
 
 TEST_F(TopLevelWindowFactoryAshTest, TopLevelNotShownOnCreate) {
   std::map<std::string, std::vector<uint8_t>> properties;

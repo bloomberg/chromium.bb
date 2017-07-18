@@ -77,7 +77,7 @@ std::unique_ptr<KeyedService> BuildMockLoginUIService(
   return base::MakeUnique<FakeLoginUIService>();
 }
 
-class SyncErrorNotifierTest : public AshTestBase  {
+class SyncErrorNotifierTest : public AshTestBase {
  public:
   SyncErrorNotifierTest() {}
   ~SyncErrorNotifierTest() override {}

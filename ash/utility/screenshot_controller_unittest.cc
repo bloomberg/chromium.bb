@@ -21,7 +21,7 @@
 
 namespace ash {
 
-class ScreenshotControllerTest : public test::AshTestBase {
+class ScreenshotControllerTest : public AshTestBase {
  public:
   ScreenshotControllerTest() {}
   ~ScreenshotControllerTest() override {}
@@ -32,8 +32,8 @@ class ScreenshotControllerTest : public test::AshTestBase {
   }
 
   bool TestIfMouseWarpsAt(const gfx::Point& point_in_screen) {
-    return test::AshTestBase::TestIfMouseWarpsAt(GetEventGenerator(),
-                                                 point_in_screen);
+    return AshTestBase::TestIfMouseWarpsAt(GetEventGenerator(),
+                                           point_in_screen);
   }
 
   void StartPartialScreenshotSession() {
@@ -73,7 +73,7 @@ using PartialScreenshotControllerTest = ScreenshotControllerTest;
 
 TEST_F(PartialScreenshotControllerTest, BasicMouse) {
   StartPartialScreenshotSession();
-  test::TestScreenshotDelegate* test_delegate = GetScreenshotDelegate();
+  TestScreenshotDelegate* test_delegate = GetScreenshotDelegate();
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
 
   generator.MoveMouseTo(100, 100);
@@ -98,7 +98,7 @@ TEST_F(PartialScreenshotControllerTest, BasicMouse) {
 // crbug.com/581432.
 TEST_F(PartialScreenshotControllerTest, StartSessionWhileMousePressed) {
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
-  test::TestScreenshotDelegate* test_delegate = GetScreenshotDelegate();
+  TestScreenshotDelegate* test_delegate = GetScreenshotDelegate();
 
   generator.MoveMouseTo(100, 100);
   generator.PressLeftButton();
@@ -132,7 +132,7 @@ TEST_F(PartialScreenshotControllerTest, StartSessionWhileMousePressed) {
 
 TEST_F(PartialScreenshotControllerTest, JustClick) {
   StartPartialScreenshotSession();
-  test::TestScreenshotDelegate* test_delegate = GetScreenshotDelegate();
+  TestScreenshotDelegate* test_delegate = GetScreenshotDelegate();
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
 
   generator.MoveMouseTo(100, 100);
@@ -147,7 +147,7 @@ TEST_F(PartialScreenshotControllerTest, JustClick) {
 
 TEST_F(PartialScreenshotControllerTest, BasicTouch) {
   StartPartialScreenshotSession();
-  test::TestScreenshotDelegate* test_delegate = GetScreenshotDelegate();
+  TestScreenshotDelegate* test_delegate = GetScreenshotDelegate();
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
 
   generator.set_current_location(gfx::Point(100, 100));
@@ -173,7 +173,7 @@ TEST_F(PartialScreenshotControllerTest, BasicTouch) {
 TEST_F(PartialScreenshotControllerTest,
        PointerEventsWorkWhenPointerOnlyActive) {
   StartPartialScreenshotSession();
-  test::TestScreenshotDelegate* test_delegate = GetScreenshotDelegate();
+  TestScreenshotDelegate* test_delegate = GetScreenshotDelegate();
   screenshot_controller()->set_pen_events_only(true);
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
 
@@ -202,7 +202,7 @@ TEST_F(PartialScreenshotControllerTest,
        TouchMousePointerHoverIgnoredWithPointerEvents) {
   StartPartialScreenshotSession();
   screenshot_controller()->set_pen_events_only(true);
-  test::TestScreenshotDelegate* test_delegate = GetScreenshotDelegate();
+  TestScreenshotDelegate* test_delegate = GetScreenshotDelegate();
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
   generator.set_current_location(gfx::Point(100, 100));
 
@@ -234,7 +234,7 @@ TEST_F(PartialScreenshotControllerTest,
 
 TEST_F(PartialScreenshotControllerTest, TwoFingerTouch) {
   StartPartialScreenshotSession();
-  test::TestScreenshotDelegate* test_delegate = GetScreenshotDelegate();
+  TestScreenshotDelegate* test_delegate = GetScreenshotDelegate();
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
 
   generator.set_current_location(gfx::Point(100, 100));
@@ -303,7 +303,7 @@ TEST_F(PartialScreenshotControllerTest, LargeCursor) {
       ->SetCursorCompositingEnabled(true);
 
   // Large cursor is represented as cursor window.
-  test::MirrorWindowTestApi test_api;
+  MirrorWindowTestApi test_api;
   ASSERT_NE(nullptr, test_api.GetCursorWindow());
 
   ui::test::EventGenerator event_generator(Shell::GetPrimaryRootWindow());
@@ -333,7 +333,7 @@ TEST_F(PartialScreenshotControllerTest, LargeCursor) {
 
 TEST_F(WindowScreenshotControllerTest, KeyboardOperation) {
   ui::test::EventGenerator& generator(GetEventGenerator());
-  test::TestScreenshotDelegate* test_delegate = GetScreenshotDelegate();
+  TestScreenshotDelegate* test_delegate = GetScreenshotDelegate();
 
   StartWindowScreenshotSession();
   generator.PressKey(ui::VKEY_ESCAPE, 0);
@@ -367,7 +367,7 @@ TEST_F(WindowScreenshotControllerTest, KeyboardOperation) {
 
 TEST_F(WindowScreenshotControllerTest, MouseOperation) {
   ui::test::EventGenerator& generator(GetEventGenerator());
-  test::TestScreenshotDelegate* test_delegate = GetScreenshotDelegate();
+  TestScreenshotDelegate* test_delegate = GetScreenshotDelegate();
   StartWindowScreenshotSession();
   EXPECT_TRUE(IsActive());
   generator.ClickLeftButton();
@@ -418,7 +418,7 @@ TEST_F(WindowScreenshotControllerTest, MultiDisplays) {
   UpdateDisplay("400x400,500x500");
 
   ui::test::EventGenerator& generator(GetEventGenerator());
-  test::TestScreenshotDelegate* test_delegate = GetScreenshotDelegate();
+  TestScreenshotDelegate* test_delegate = GetScreenshotDelegate();
 
   std::unique_ptr<aura::Window> window1(
       CreateSelectableWindow(gfx::Rect(100, 100, 100, 100)));

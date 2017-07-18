@@ -37,7 +37,7 @@ class KeyEventDelegate : public aura::test::TestWindowDelegate {
 
 }  // namespace
 
-typedef ash::test::AshTestBase MagnifierKeyScrollerTest;
+using MagnifierKeyScrollerTest = AshTestBase;
 
 TEST_F(MagnifierKeyScrollerTest, Basic) {
   KeyEventDelegate delegate;

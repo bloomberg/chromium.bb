@@ -15,10 +15,6 @@ namespace ash {
 class ContainerHider;
 class NotificationBlocker;
 
-namespace test {
-class FirstRunHelperTest;
-}
-
 // Class used to "clean" ash desktop, i.e. hide all windows and notifications.
 class ASH_EXPORT DesktopCleaner {
  public:
@@ -26,13 +22,14 @@ class ASH_EXPORT DesktopCleaner {
   ~DesktopCleaner();
 
  private:
+  friend class FirstRunHelperTest;
+
   // Returns the list of containers that DesctopCleaner hides.
   static std::vector<int> GetContainersToHideForTest();
 
   std::vector<std::unique_ptr<ContainerHider>> container_hiders_;
   std::unique_ptr<NotificationBlocker> notification_blocker_;
 
-  friend class ash::test::FirstRunHelperTest;
   DISALLOW_COPY_AND_ASSIGN(DesktopCleaner);
 };
 

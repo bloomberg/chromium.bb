@@ -21,7 +21,6 @@
 #include "ui/base/test/ui_controls.h"
 
 namespace ash {
-namespace test {
 
 namespace {
 
@@ -208,5 +207,4 @@ TEST_F(AcceleratorInteractiveUITest, MAYBE_ToggleAppList) {
   EXPECT_EQ(2u, test_app_list_presenter.toggle_count());
 }
 
-}  // namespace test
 }  // namespace ash

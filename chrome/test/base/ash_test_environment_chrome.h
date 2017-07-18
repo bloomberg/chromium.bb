@@ -8,14 +8,13 @@
 #include "ash/test/ash_test_environment.h"
 #include "base/macros.h"
 
-class AshTestEnvironmentChrome : public ash::test::AshTestEnvironment {
+class AshTestEnvironmentChrome : public ash::AshTestEnvironment {
  public:
   AshTestEnvironmentChrome();
   ~AshTestEnvironmentChrome() override;
 
   // AshTestEnvironment:
-  std::unique_ptr<ash::test::AshTestViewsDelegate> CreateViewsDelegate()
-      override;
+  std::unique_ptr<ash::AshTestViewsDelegate> CreateViewsDelegate() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AshTestEnvironmentChrome);

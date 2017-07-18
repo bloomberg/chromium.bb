@@ -12,7 +12,6 @@
 #include "ui/wm/core/cursor_manager.h"
 
 namespace ash {
-namespace test {
 
 CursorManagerTestApi::CursorManagerTestApi(::wm::CursorManager* cursor_manager)
     : cursor_manager_(cursor_manager) {}
@@ -37,5 +36,4 @@ float CursorManagerTestApi::GetCurrentCursorScale() const {
   return ShellTestApi(Shell::Get()).native_cursor_manager_ash()->GetScale();
 }
 
-}  // namespace test
 }  // namespace ash

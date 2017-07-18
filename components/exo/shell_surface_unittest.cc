@@ -891,8 +891,8 @@ TEST_F(ShellSurfaceTest, ToggleFullscreen) {
 
 TEST_F(ShellSurfaceTest, MaximizedAndImmersiveFullscreenBackdrop) {
   ash::WorkspaceController* wc =
-      ash::test::ShellTestApi(ash::Shell::Get()).workspace_controller();
-  ash::test::WorkspaceControllerTestApi test_helper(wc);
+      ash::ShellTestApi(ash::Shell::Get()).workspace_controller();
+  ash::WorkspaceControllerTestApi test_helper(wc);
 
   const gfx::Size display_size =
       display::Screen::GetScreen()->GetPrimaryDisplay().size();

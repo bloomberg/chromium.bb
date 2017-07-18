@@ -23,10 +23,6 @@ namespace ash {
 class ShutdownController;
 enum class ShutdownReason;
 
-namespace test {
-class LockStateControllerTestApi;
-}
-
 // Displays onscreen animations and locks or suspends the system in response to
 // the power button being pressed or released.
 // Lock workflow:
@@ -118,7 +114,7 @@ class ASH_EXPORT LockStateController : public aura::WindowTreeHostObserver,
   }
 
  private:
-  friend class test::LockStateControllerTestApi;
+  friend class LockStateControllerTestApi;
 
   struct UnlockedStateProperties {
     bool wallpaper_is_hidden;

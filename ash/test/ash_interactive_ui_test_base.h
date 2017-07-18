@@ -16,7 +16,6 @@ class Env;
 }
 
 namespace ash {
-namespace test {
 
 class AshInteractiveUITestBase : public AshTestBase {
  public:
@@ -30,10 +29,10 @@ class AshInteractiveUITestBase : public AshTestBase {
 
  private:
   std::unique_ptr<aura::Env> env_;
+
   DISALLOW_COPY_AND_ASSIGN(AshInteractiveUITestBase);
 };
 
-}  // namespace test
 }  // namespace ash
 
 #endif  // ASH_TEST_ASH_INTERACTIVE_UI_TEST_BASE_H_

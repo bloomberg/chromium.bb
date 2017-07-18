@@ -44,12 +44,8 @@ class WMState;
 }
 
 namespace ash {
-
-enum class Config;
-
-namespace test {
 class AshTestHelper;
-}
+enum class Config;
 
 namespace mus {
 
@@ -106,7 +102,7 @@ class WindowManager : public aura::WindowManagerDelegate,
   display::mojom::DisplayController* GetDisplayController();
 
  private:
-  friend class test::AshTestHelper;
+  friend class ash::AshTestHelper;
 
   // Creates the Shell. This is done after the connection to mus is established.
   void CreateShell();

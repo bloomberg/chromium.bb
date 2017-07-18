@@ -17,7 +17,6 @@
 #include "components/user_manager/user_type.h"
 
 namespace ash {
-namespace test {
 
 namespace {
 
@@ -181,5 +180,4 @@ void TestSessionControllerClient::CycleActiveUser(
 
 void TestSessionControllerClient::ShowMultiProfileLogin() {}
 
-}  // namespace test
 }  // namespace ash

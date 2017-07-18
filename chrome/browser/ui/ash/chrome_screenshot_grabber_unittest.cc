@@ -27,7 +27,6 @@
 #include "ui/snapshot/screenshot_grabber.h"
 
 namespace ash {
-namespace test {
 
 class ChromeScreenshotGrabberTest : public AshTestBase,
                                     public ui::ScreenshotGrabberObserver {
@@ -135,5 +134,4 @@ TEST_F(ChromeScreenshotGrabberTest, DISABLED_TakeScreenshot) {
   chromeos::LoginState::Shutdown();
 }
 
-}  // namespace test
 }  // namespace ash

@@ -121,7 +121,7 @@ void CheckKeyTestCase(
 
 namespace chromeos {
 
-class EventRewriterTest : public ash::test::AshTestBase {
+class EventRewriterTest : public ash::AshTestBase {
  public:
   EventRewriterTest()
       : fake_user_manager_(new chromeos::FakeChromeUserManager),
@@ -2042,7 +2042,7 @@ class TestEventSource : public ui::EventSource {
 };
 
 // Tests of event rewriting that depend on the Ash window manager.
-class EventRewriterAshTest : public ash::test::AshTestBase {
+class EventRewriterAshTest : public ash::AshTestBase {
  public:
   EventRewriterAshTest()
       : source_(&buffer_),

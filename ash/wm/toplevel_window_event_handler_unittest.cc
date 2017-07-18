@@ -34,7 +34,6 @@
 #include "ui/wm/public/window_move_client.h"
 
 namespace ash {
-namespace test {
 
 namespace {
 
@@ -997,5 +996,4 @@ TEST_F(ToplevelWindowEventHandlerTest, DragSnappedWindowToExternalDisplay) {
 // Showing the resize shadows when the mouse is over the window edges is
 // tested in resize_shadow_and_cursor_test.cc
 
-}  // namespace test
 }  // namespace ash

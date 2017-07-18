@@ -13,8 +13,6 @@ namespace ash {
 class MultiWindowResizeController;
 class WorkspaceEventHandler;
 
-namespace test {
-
 class ASH_EXPORT WorkspaceControllerTestApi {
  public:
   explicit WorkspaceControllerTestApi(WorkspaceController* controller);
@@ -30,7 +28,6 @@ class ASH_EXPORT WorkspaceControllerTestApi {
   DISALLOW_COPY_AND_ASSIGN(WorkspaceControllerTestApi);
 };
 
-}  // namespace test
 }  // namespace ash
 
 #endif  // ASH_TEST_WORKSPACE_CONTROLLER_TEST_API_H_

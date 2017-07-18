@@ -5,7 +5,6 @@
 #include "ash/test/test_accessibility_delegate.h"
 
 namespace ash {
-namespace test {
 
 void TestAccessibilityDelegate::PlayEarcon(int sound_key) {
   sound_key_ = sound_key;
@@ -17,5 +16,4 @@ int TestAccessibilityDelegate::GetPlayedEarconAndReset() {
   return tmp;
 }
 
-}  // namespace test
 }  // namespace ash

@@ -11,7 +11,6 @@
 #include "ui/gfx/geometry/rect.h"
 
 namespace ash {
-namespace test {
 
 class TestScreenshotDelegate : public ScreenshotDelegate {
  public:
@@ -51,7 +50,6 @@ class TestScreenshotDelegate : public ScreenshotDelegate {
   DISALLOW_COPY_AND_ASSIGN(TestScreenshotDelegate);
 };
 
-}  // namespace test
 }  // namespace ash
 
 #endif  // ASH_TEST_TEST_SCREENSHOT_DELEGATE_H_

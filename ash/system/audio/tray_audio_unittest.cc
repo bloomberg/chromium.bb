@@ -11,7 +11,7 @@
 
 namespace ash {
 
-using TrayAudioTest = test::AshTestBase;
+using TrayAudioTest = AshTestBase;
 
 // Tests that the volume popup view can be explicitly shown.
 TEST_F(TrayAudioTest, ShowPopUpVolumeView) {

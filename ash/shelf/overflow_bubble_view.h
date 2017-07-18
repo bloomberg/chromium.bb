@@ -18,10 +18,6 @@ class View;
 namespace ash {
 class Shelf;
 
-namespace test {
-class OverflowBubbleViewTestAPI;
-}
-
 // OverflowBubbleView hosts a ShelfView to display overflown items.
 // Exports to access this class from OverflowBubbleViewTestAPI.
 class ASH_EXPORT OverflowBubbleView : public views::BubbleDialogDelegateView,
@@ -39,7 +35,7 @@ class ASH_EXPORT OverflowBubbleView : public views::BubbleDialogDelegateView,
   gfx::Rect GetBubbleBounds() override;
 
  private:
-  friend class test::OverflowBubbleViewTestAPI;
+  friend class OverflowBubbleViewTestAPI;
 
   void ScrollByXOffset(int x_offset);
   void ScrollByYOffset(int y_offset);

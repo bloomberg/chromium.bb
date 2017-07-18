@@ -23,7 +23,6 @@
 #include "ui/views/widget/widget.h"
 
 namespace ash {
-namespace test {
 
 using aura::Window;
 
@@ -402,5 +401,4 @@ TEST_F(FocusCyclerTest, RemoveWidgetOnDisplayRemoved) {
   EXPECT_TRUE(wm::IsActiveWindow(window.get()));
 }
 
-}  // namespace test
 }  // namespace ash

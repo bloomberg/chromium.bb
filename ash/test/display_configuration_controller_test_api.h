@@ -13,8 +13,6 @@ namespace ash {
 class DisplayConfigurationController;
 class ScreenRotationAnimator;
 
-namespace test {
-
 // Accesses private data from a DisplayConfigurationController for testing.
 class DisplayConfigurationControllerTestApi {
  public:
@@ -32,7 +30,6 @@ class DisplayConfigurationControllerTestApi {
   DISALLOW_COPY_AND_ASSIGN(DisplayConfigurationControllerTestApi);
 };
 
-}  // namespace test
 }  // namespace ash
 
 #endif  // ASH_TEST_DISPLAY_CONFIGURATION_CONTROLLER_TEST_API_H_

@@ -49,13 +49,11 @@ class WidgetDelegate;
 }
 
 namespace ash {
-class Shelf;
-class SystemTray;
-
-namespace test {
 
 class AshTestEnvironment;
 class AshTestHelper;
+class Shelf;
+class SystemTray;
 class TestScreenshotDelegate;
 class TestSessionControllerClient;
 
@@ -79,7 +77,7 @@ class AshTestBase : public testing::Test {
   static SystemTray* GetPrimarySystemTray();
 
   // Update the display configuration as given in |display_specs|.
-  // See ash::test::DisplayManagerTestApi::UpdateDisplay for more details.
+  // See ash::DisplayManagerTestApi::UpdateDisplay for more details.
   void UpdateDisplay(const std::string& display_specs);
 
   // Returns a root Window. Usually this is the active root Window, but that
@@ -220,7 +218,6 @@ class NoSessionAshTestBase : public AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(NoSessionAshTestBase);
 };
 
-}  // namespace test
 }  // namespace ash
 
 #endif  // ASH_TEST_ASH_TEST_BASE_H_

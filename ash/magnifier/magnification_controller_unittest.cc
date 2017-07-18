@@ -55,7 +55,7 @@ class TextInputView : public views::WidgetDelegateView {
 
 }  // namespace
 
-class MagnificationControllerTest : public test::AshTestBase {
+class MagnificationControllerTest : public AshTestBase {
  public:
   MagnificationControllerTest() : text_input_view_(NULL) {}
   ~MagnificationControllerTest() override {}

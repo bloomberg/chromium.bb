@@ -16,7 +16,7 @@
 
 namespace ash {
 
-class TrySwitchingUserTest : public ash::test::AshTestBase {
+class TrySwitchingUserTest : public ash::AshTestBase {
  public:
   // The action type to perform / check for upon user switching.
   enum ActionType {
@@ -33,7 +33,7 @@ class TrySwitchingUserTest : public ash::test::AshTestBase {
   ~TrySwitchingUserTest() override {}
 
   void SetUp() override {
-    test::AshTestBase::SetUp();
+    AshTestBase::SetUp();
     TrayItemView::DisableAnimationsForTest();
     SystemTray* system_tray = GetPrimarySystemTray();
     share_item_ = system_tray->GetScreenShareItem();

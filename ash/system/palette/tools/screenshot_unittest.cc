@@ -19,16 +19,15 @@ namespace ash {
 namespace {
 
 // Base class for all create note ash tests.
-class ScreenshotToolTest : public test::AshTestBase {
+class ScreenshotToolTest : public AshTestBase {
  public:
   ScreenshotToolTest() {}
   ~ScreenshotToolTest() override {}
 
   void SetUp() override {
-    test::AshTestBase::SetUp();
+    AshTestBase::SetUp();
 
-    test::ShellTestApi().SetPaletteDelegate(
-        base::MakeUnique<TestPaletteDelegate>());
+    ShellTestApi().SetPaletteDelegate(base::MakeUnique<TestPaletteDelegate>());
 
     palette_tool_delegate_ = base::MakeUnique<MockPaletteToolDelegate>();
   }

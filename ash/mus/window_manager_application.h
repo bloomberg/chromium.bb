@@ -38,10 +38,8 @@ class AuraInit;
 }
 
 namespace ash {
-
-namespace test {
 class AshTestHelper;
-}
+
 namespace mus {
 
 class NetworkConnectDelegateMus;
@@ -64,7 +62,7 @@ class WindowManagerApplication : public service_manager::Service {
   service_manager::Connector* GetConnector();
 
  private:
-  friend class ash::test::AshTestHelper;
+  friend class ash::AshTestHelper;
 
   // If |init_network_handler| is true, chromeos::NetworkHandler is initialized.
   void InitWindowManager(

@@ -14,14 +14,11 @@
 
 namespace ash {
 
+class ScreenDimmerTest;
 class WindowDimmer;
 
 template <typename UserData>
 class WindowUserData;
-
-namespace test {
-class ScreenDimmerTest;
-}
 
 // ScreenDimmer displays a partially-opaque layer above everything
 // else in the given container window to darken the display.  It shouldn't be
@@ -52,7 +49,7 @@ class ASH_EXPORT ScreenDimmer : public ShellObserver {
   static ScreenDimmer* FindForTest(int container_id);
 
  private:
-  friend class test::ScreenDimmerTest;
+  friend class ScreenDimmerTest;
 
   // Returns the aura::Windows (one per display) that correspond to
   // |container_|.

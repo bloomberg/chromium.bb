@@ -9,7 +9,6 @@
 #include "ui/compositor/layer_tree_owner.h"
 
 namespace ash {
-namespace test {
 
 ScreenRotationAnimatorTestApi::ScreenRotationAnimatorTestApi(
     ScreenRotationAnimator* animator)
@@ -35,5 +34,4 @@ ScreenRotationAnimatorTestApi::GetLayerAnimators() {
   return animators;
 }
 
-}  // namespace test
 }  // namespace ash
