@@ -14,7 +14,8 @@ MockTranslateDriver::MockTranslateDriver()
     : on_is_page_translated_changed_called_(false),
       on_translate_enabled_changed_called_(false),
       translate_page_is_called_(false),
-      language_state_(this) {}
+      language_state_(this),
+      last_committed_url_(GURL::EmptyGURL()) {}
 
 void MockTranslateDriver::TranslatePage(int page_seq_no,
                                         const std::string& translate_script,
@@ -50,7 +51,7 @@ const std::string& MockTranslateDriver::GetContentsMimeType() {
 }
 
 const GURL&  MockTranslateDriver::GetLastCommittedURL() {
-  return GURL::EmptyGURL();
+  return last_committed_url_;
 }
 
 const GURL& MockTranslateDriver::GetVisibleURL() {
@@ -59,6 +60,10 @@ const GURL& MockTranslateDriver::GetVisibleURL() {
 
 bool MockTranslateDriver::HasCurrentPage() {
   return true;
+}
+
+void MockTranslateDriver::SetLastCommittedURL(const GURL& url) {
+  last_committed_url_ = url;
 }
 
 }  // namespace testing

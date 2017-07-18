@@ -60,11 +60,14 @@ class MockTranslateDriver : public TranslateDriver {
 
   bool TranslatePage_is_called() const { return translate_page_is_called_; }
 
+  void SetLastCommittedURL(const GURL& url);
+
  private:
   bool on_is_page_translated_changed_called_;
   bool on_translate_enabled_changed_called_;
   bool translate_page_is_called_;
   LanguageState language_state_;
+  GURL last_committed_url_;
 
   DISALLOW_COPY_AND_ASSIGN(MockTranslateDriver);
 };
