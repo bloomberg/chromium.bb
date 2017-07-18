@@ -258,7 +258,7 @@ ContentRendererClient::GetTaskSchedulerInitParams() {
   return nullptr;
 }
 
-bool ContentRendererClient::AllowMediaSuspend() {
+bool ContentRendererClient::AllowIdleMediaSuspend() {
   return true;
 }
 

@@ -11,6 +11,8 @@
 #include "base/metrics/user_metrics_action.h"
 #include "base/sys_info.h"
 #include "content/common/media/media_player_delegate_messages.h"
+#include "content/public/common/content_client.h"
+#include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
@@ -34,6 +36,8 @@ namespace media {
 RendererWebMediaPlayerDelegate::RendererWebMediaPlayerDelegate(
     content::RenderFrame* render_frame)
     : RenderFrameObserver(render_frame),
+      allow_idle_cleanup_(
+          content::GetContentClient()->renderer()->AllowIdleMediaSuspend()),
       default_tick_clock_(new base::DefaultTickClock()),
       tick_clock_(default_tick_clock_.get()) {
   idle_cleanup_interval_ = base::TimeDelta::FromSeconds(5);
@@ -316,6 +320,9 @@ void RendererWebMediaPlayerDelegate::UpdateTask() {
 
   // Record UMAs for background video playback.
   RecordBackgroundVideoPlayback();
+
+  if (!allow_idle_cleanup_)
+    return;
 
   // Clean up idle players.
   bool aggressive_cleanup = false;

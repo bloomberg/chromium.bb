@@ -248,7 +248,6 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
           media_observer, max_keyframe_distance_to_disable_background_video,
           max_keyframe_distance_to_disable_background_video_mse,
           enable_instant_source_buffer_gc,
-          GetContentClient()->renderer()->AllowMediaSuspend(),
           embedded_media_experience_enabled));
 
   media::WebMediaPlayerImpl* media_player = new media::WebMediaPlayerImpl(
