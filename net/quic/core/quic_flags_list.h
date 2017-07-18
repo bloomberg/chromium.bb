@@ -193,3 +193,6 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_packets_based_cc, false)
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_bbr_ack_aggregation_bytes3,
           false)
+
+// When enabled, ack frame uses a deque internally instead of a set.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_frames_deque, false)
