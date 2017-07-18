@@ -30,6 +30,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.download.ui.DownloadFilter;
+import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.widget.TintedImageView;
 
@@ -365,5 +366,15 @@ public class SuggestionsBinder {
 
             fadeThumbnailIn(thumbnail);
         }
+    }
+
+    /**
+     * Called when the containing view holder is recycled, to release unused resources.
+     * @see NewTabPageViewHolder#recycle()
+     */
+    public void recycle() {
+        // Clear the thumbnail and favicon drawables to allow the bitmap memory to be reclaimed.
+        mThumbnailView.setImageDrawable(null);
+        mPublisherTextView.setCompoundDrawables(null, null, null, null);
     }
 }

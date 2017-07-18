@@ -312,7 +312,7 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
             }
         });
         mClearBrowsingDataButtonContainer = (FrameLayout) mClearBrowsingDataButton.getParent();
-        MarginResizer.createWithViewAdapter(mClearBrowsingDataButtonContainer,
+        MarginResizer.createAndAttach(mClearBrowsingDataButtonContainer,
                 mHistoryManager.getSelectableListLayout().getUiConfig(),
                 SelectableListLayout.getDefaultListItemLateralMarginPx(resources), 0);
         updateClearBrowsingDataButtonVisibility();
@@ -322,7 +322,7 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
         mSignedInNotSyncedTextView = (TextView) v.findViewById(R.id.signed_in_not_synced);
         setPrivacyDisclaimerText(mSignedInNotSyncedTextView,
                 R.string.android_history_no_synced_results, LEARN_MORE_LINK);
-        MarginResizer.createWithViewAdapter(mSignedInNotSyncedTextView,
+        MarginResizer.createAndAttach(mSignedInNotSyncedTextView,
                 mHistoryManager.getSelectableListLayout().getUiConfig(),
                 getDefaultTextMargin(resources),
                 SelectableListLayout.getDefaultListItemLateralShadowSizePx(resources));
@@ -330,7 +330,7 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
         mSignedInSyncedTextView = (TextView) v.findViewById(R.id.signed_in_synced);
         setPrivacyDisclaimerText(mSignedInSyncedTextView,
                 R.string.android_history_has_synced_results, LEARN_MORE_LINK);
-        MarginResizer.createWithViewAdapter(mSignedInSyncedTextView,
+        MarginResizer.createAndAttach(mSignedInSyncedTextView,
                 mHistoryManager.getSelectableListLayout().getUiConfig(),
                 getDefaultTextMargin(resources),
                 SelectableListLayout.getDefaultListItemLateralShadowSizePx(resources));
@@ -343,7 +343,7 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
         String disclaimerUrl = flagEnabled ? MY_ACTIVITY_LINK : GOOGLE_HISTORY_LINK;
         setPrivacyDisclaimerText(
                 mOtherFormsOfBrowsingHistoryTextView, disclaimerTextId, disclaimerUrl);
-        MarginResizer.createWithViewAdapter(mOtherFormsOfBrowsingHistoryTextView,
+        MarginResizer.createAndAttach(mOtherFormsOfBrowsingHistoryTextView,
                 mHistoryManager.getSelectableListLayout().getUiConfig(),
                 getDefaultTextMargin(resources),
                 SelectableListLayout.getDefaultListItemLateralShadowSizePx(resources));
@@ -362,7 +362,7 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
     @Override
     protected DateViewHolder createDateViewHolder(ViewGroup parent) {
         DateViewHolder viewHolder = super.createDateViewHolder(parent);
-        MarginResizer.createWithViewAdapter(viewHolder.itemView,
+        MarginResizer.createAndAttach(viewHolder.itemView,
                 mHistoryManager.getSelectableListLayout().getUiConfig(),
                 getDefaultTextMargin(parent.getResources()),
                 SelectableListLayout.getDefaultListItemLateralShadowSizePx(parent.getResources()));

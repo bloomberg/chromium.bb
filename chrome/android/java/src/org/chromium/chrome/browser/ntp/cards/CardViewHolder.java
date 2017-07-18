@@ -70,7 +70,7 @@ public abstract class CardViewHolder
 
     protected final SuggestionsRecyclerView mRecyclerView;
 
-    private final UiConfig mUiConfig;
+    protected final UiConfig mUiConfig;
     private final MarginResizer mMarginResizer;
 
     /**
@@ -133,8 +133,8 @@ public abstract class CardViewHolder
         }
         mWideLateralMargin = resources.getDimensionPixelSize(R.dimen.ntp_wide_card_lateral_margins);
 
-        mMarginResizer = MarginResizer.createWithViewAdapter(itemView, mUiConfig,
-                mDefaultLateralMargin, mWideLateralMargin);
+        mMarginResizer =
+                new MarginResizer(itemView, uiConfig, mDefaultLateralMargin, mWideLateralMargin);
     }
 
     @Override
@@ -198,7 +198,15 @@ public abstract class CardViewHolder
         // Make sure we use the right background.
         updateLayoutParams();
 
+        mMarginResizer.attach();
+
         mRecyclerView.onCardBound(this);
+    }
+
+    @Override
+    public void recycle() {
+        mMarginResizer.detach();
+        super.recycle();
     }
 
     @Override
