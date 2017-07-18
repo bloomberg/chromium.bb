@@ -17,6 +17,7 @@ import android.location.LocationManager;
 import android.support.graphics.drawable.VectorDrawableCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.text.SpannableString;
+import android.text.TextPaint;
 import android.text.TextUtils;
 import android.view.View;
 
@@ -307,6 +308,13 @@ public class BluetoothChooserDialog
         BluetoothClickableSpan(LinkType linkType, Context context) {
             mLinkType = linkType;
             mContext = context;
+        }
+
+        @Override
+        public void updateDrawState(TextPaint textPaint) {
+            super.updateDrawState(textPaint);
+            textPaint.setColor(ApiCompatibilityUtils.getColor(
+                    mContext.getResources(), R.color.google_blue_700));
         }
 
         @Override
