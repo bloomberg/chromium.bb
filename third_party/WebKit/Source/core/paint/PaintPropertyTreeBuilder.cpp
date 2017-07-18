@@ -582,11 +582,6 @@ void PaintPropertyTreeBuilder::UpdateEffect(
                                                 FloatRoundedRect(mask_clip));
         local_clip_added_or_removed |= result.NewNodeCreated();
         output_clip = properties.MaskClip();
-
-        // TODO(crbug.com/683425): PaintArtifactCompositor does not handle
-        // grouping (i.e. descendant-dependent compositing reason) properly
-        // yet. This forces masked subtree always create a layer for now.
-        compositing_reasons |= kCompositingReasonIsolateCompositedDescendants;
       } else {
         force_subtree_update |= properties.ClearMaskClip();
       }
@@ -607,15 +602,10 @@ void PaintPropertyTreeBuilder::UpdateEffect(
               object.UniqueId(), CompositorElementIdNamespace::kPrimary));
       force_subtree_update |= result.NewNodeCreated();
       if (has_mask) {
-        // TODO(crbug.com/683425): PaintArtifactCompositor does not handle
-        // grouping (i.e. descendant-dependent compositing reason) properly
-        // yet. Adding CompositingReasonSquashingDisallowed forces mask not
-        // getting squashed into a child effect. Have no compositing reason
-        // otherwise.
         auto result = properties.UpdateMask(
             properties.Effect(), context.current.transform, output_clip,
             mask_color_filter, CompositorFilterOperations(), 1.f,
-            SkBlendMode::kDstIn, kCompositingReasonSquashingDisallowed,
+            SkBlendMode::kDstIn, kCompositingReasonNone,
             CompositorElementIdFromLayoutObjectId(
                 object.UniqueId(), CompositorElementIdNamespace::kEffectMask));
         force_subtree_update |= result.NewNodeCreated();
