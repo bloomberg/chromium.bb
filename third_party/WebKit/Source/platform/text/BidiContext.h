@@ -25,8 +25,8 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/wtf/Assertions.h"
-#include "platform/wtf/RefCounted.h"
 #include "platform/wtf/RefPtr.h"
+#include "platform/wtf/ThreadSafeRefCounted.h"
 #include "platform/wtf/text/Unicode.h"
 
 namespace blink {
@@ -34,7 +34,7 @@ namespace blink {
 enum BidiEmbeddingSource { kFromStyleOrDOM, kFromUnicode };
 
 // Used to keep track of explicit embeddings.
-class PLATFORM_EXPORT BidiContext : public RefCounted<BidiContext> {
+class PLATFORM_EXPORT BidiContext : public ThreadSafeRefCounted<BidiContext> {
  public:
   static RefPtr<BidiContext> Create(unsigned char level,
                                     WTF::Unicode::CharDirection,
