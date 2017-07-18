@@ -63,20 +63,28 @@ TestBrowserThreadBundle::~TestBrowserThreadBundle() {
   ui_thread_->Stop();
   base::RunLoop().RunUntilIdle();
 
-  // This is required to ensure we run all remaining tasks in an atomic step
-  // (instead of ~ScopedAsyncTaskScheduler() followed by another
-  // RunLoop().RunUntilIdle()). Otherwise If a pending task in
-  // |scoped_async_task_scheduler_| posts to |message_loop_|, that task can then
-  // post back to |scoped_async_task_scheduler_| after the former was destroyed.
-  // This is a bit different than production where the main thread is not
-  // flushed after it's done running but this approach is preferred in unit
-  // tests as running more tasks can merely uncover more issues (e.g. if a bad
-  // tasks is posted but never blocked upon it could make a test flaky whereas
-  // by flushing we guarantee it will blow up).
-  RunAllBlockingPoolTasksUntilIdle();
+  // Skip the following step when TaskScheduler isn't managed by this
+  // TestBrowserThreadBundle, otherwise it can hang (e.g.
+  // RunAllBlockingPoolTasksUntilIdle() hangs when the TaskScheduler is managed
+  // by a ScopedTaskEnvironment with ExecutionMode::QUEUED). This is fine as (1)
+  // it's rare and (2) it mimics production where BrowserThreads are shutdown
+  // before TaskScheduler.
+  if (scoped_async_task_scheduler_) {
+    // This is required to ensure we run all remaining tasks in an atomic step
+    // (instead of ~ScopedAsyncTaskScheduler() followed by another
+    // RunLoop().RunUntilIdle()). Otherwise If a pending task in
+    // |scoped_async_task_scheduler_| posts to |message_loop_|, that task can
+    // then post back to |scoped_async_task_scheduler_| after the former was
+    // destroyed. This is a bit different than production where the main thread
+    // is not flushed after it's done running but this approach is preferred in
+    // unit tests as running more tasks can merely uncover more issues (e.g. if
+    // a bad tasks is posted but never blocked upon it could make a test flaky
+    // whereas by flushing we guarantee it will blow up).
+    RunAllBlockingPoolTasksUntilIdle();
 
-  scoped_async_task_scheduler_.reset();
-  CHECK(base::MessageLoop::current()->IsIdleForTesting());
+    scoped_async_task_scheduler_.reset();
+    CHECK(base::MessageLoop::current()->IsIdleForTesting());
+  }
 
   // |message_loop_| needs to explicitly go away before fake threads in order
   // for DestructionObservers hooked to |message_loop_| to be able to invoke
