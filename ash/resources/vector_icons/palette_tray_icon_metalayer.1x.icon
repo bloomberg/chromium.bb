@@ -24,4 +24,5 @@ CUBIC_TO, 3.3f, 2.34f, 1.77f, 3.87f, 1.77f, 5.75f,
 CUBIC_TO, 1.77f, 7.64f, 3.3f, 9.16f, 5.18f, 9.16f,
 CUBIC_TO, 7.07f, 9.16f, 8.6f, 7.64f, 8.6f, 5.75f,
 CLOSE,
+ROUND_RECT, 0, 0, 16, 16, 0,
 END
