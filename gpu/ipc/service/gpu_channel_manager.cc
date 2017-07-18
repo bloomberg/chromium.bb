@@ -78,6 +78,7 @@ GpuChannelManager::GpuChannelManager(
           base::Bind(&GpuChannelManager::OnApplicationStateChange,
                      base::Unretained(this))),
       is_running_on_low_end_mode_(base::SysInfo::IsLowEndDevice()),
+      is_backgrounded_for_testing_(false),
 #endif
       exiting_for_lost_context_(false),
       activity_flags_(std::move(activity_flags)),
@@ -258,12 +259,30 @@ void GpuChannelManager::OnApplicationStateChange(
     return;
   }
 
-  if (!task_runner_->BelongsToCurrentThread()) {
-    task_runner_->PostTask(
-        FROM_HERE, base::Bind(&GpuChannelManager::OnApplicationStateChange,
-                              weak_factory_.GetWeakPtr(), state));
+  // Clear the GL context on low-end devices after a 5 second delay, so that we
+  // don't clear in case the user pressed the home or recents button by mistake
+  // and got back to Chrome quickly.
+  const int64_t kDelayToClearContextMs = 5000;
+
+  task_runner_->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&GpuChannelManager::OnApplicationBackgrounded,
+                 weak_factory_.GetWeakPtr()),
+      base::TimeDelta::FromMilliseconds(kDelayToClearContextMs));
+  return;
+}
+
+void GpuChannelManager::OnApplicationBackgrounded() {
+  // Check if the app is still in background after the delay.
+  auto state = base::android::ApplicationStatusListener::GetState();
+  if (state != base::android::APPLICATION_STATE_HAS_STOPPED_ACTIVITIES &&
+      state != base::android::APPLICATION_STATE_HAS_DESTROYED_ACTIVITIES &&
+      !is_backgrounded_for_testing_) {
     return;
   }
+
+  if (!is_running_on_low_end_mode_)
+    return;
 
   // Delete all the GL contexts when the channel does not use WebGL and Chrome
   // goes to background on low-end devices.

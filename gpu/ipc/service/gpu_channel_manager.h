@@ -145,12 +145,16 @@ class GPU_EXPORT GpuChannelManager {
   SyncPointManager* sync_point_manager() const { return sync_point_manager_; }
 
  private:
+  friend class GpuChannelManagerTest;
+
   void InternalDestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id, int client_id);
   void InternalDestroyGpuMemoryBufferOnIO(gfx::GpuMemoryBufferId id,
                                           int client_id);
 #if defined(OS_ANDROID)
   void ScheduleWakeUpGpu();
   void DoWakeUpGpu();
+
+  void OnApplicationBackgrounded();
 #endif
 
   void HandleMemoryPressure(
@@ -195,6 +199,7 @@ class GPU_EXPORT GpuChannelManager {
 
   base::android::ApplicationStatusListener application_status_listener_;
   bool is_running_on_low_end_mode_;
+  bool is_backgrounded_for_testing_;
 #endif
 
   // Set during intentional GPU process shutdown.
