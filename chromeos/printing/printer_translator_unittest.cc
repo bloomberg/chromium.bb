@@ -13,7 +13,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
-namespace printing {
 
 // Printer test data
 const char kHash[] = "ABCDEF123456";
@@ -161,5 +160,4 @@ TEST(PrinterTranslatorTest, RecommendedPrinterToPrinterBlankModel) {
   EXPECT_EQ(kMake, printer->make_and_model());
 }
 
-}  // namespace printing
 }  // namespace chromeos

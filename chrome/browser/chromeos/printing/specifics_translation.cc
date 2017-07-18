@@ -16,7 +16,6 @@
 #include "components/sync/protocol/printer_specifics.pb.h"
 
 namespace chromeos {
-namespace printing {
 
 namespace {
 
@@ -125,5 +124,4 @@ void MergePrinterToSpecifics(const Printer& printer,
                             printer.ppd_reference());
 }
 
-}  // namespace printing
 }  // namespace chromeos

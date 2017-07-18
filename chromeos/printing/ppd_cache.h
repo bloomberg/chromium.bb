@@ -15,7 +15,6 @@
 #include "chromeos/chromeos_export.h"
 
 namespace chromeos {
-namespace printing {
 
 // PpdCache manages a cache of locally-stored PPD files.  At its core, it
 // operates like a persistent hash from PpdReference to files.  If you give the
@@ -62,7 +61,6 @@ class CHROMEOS_EXPORT PpdCache : public base::RefCounted<PpdCache> {
   virtual ~PpdCache() {}
 };
 
-}  // namespace printing
 }  // namespace chromeos
 
 #endif  // CHROMEOS_PRINTING_PPD_CACHE_H_

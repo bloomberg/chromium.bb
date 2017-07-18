@@ -27,8 +27,8 @@ namespace chromeos {
 
 namespace {
 
-const char kPrinterId[] = "UUID-UUID-UUID-PRINTER";
-const char kUri[] = "ipps://printer.chromium.org/ipp/print";
+const char kTestPrinterId[] = "UUID-UUID-UUID-PRINTER";
+const char kTestUri[] = "ipps://printer.chromium.org/ipp/print";
 
 const char kLexJson[] = R"json({
         "display_name": "LexaPrint",
@@ -109,11 +109,11 @@ class SyncedPrintersManagerTest : public testing::Test {
 TEST_F(SyncedPrintersManagerTest, AddPrinter) {
   LoggingObserver observer;
   manager_.AddObserver(&observer);
-  manager_.RegisterPrinter(base::MakeUnique<Printer>(kPrinterId));
+  manager_.RegisterPrinter(base::MakeUnique<Printer>(kTestPrinterId));
 
   auto printers = manager_.GetPrinters();
   ASSERT_EQ(1U, printers.size());
-  EXPECT_EQ(kPrinterId, printers[0]->id());
+  EXPECT_EQ(kTestPrinterId, printers[0]->id());
   EXPECT_EQ(Printer::Source::SRC_USER_PREFS, printers[0]->source());
 
   EXPECT_TRUE(observer.AddCalled());
@@ -129,9 +129,9 @@ TEST_F(SyncedPrintersManagerTest, UpdatePrinterAssignsId) {
 }
 
 TEST_F(SyncedPrintersManagerTest, UpdatePrinter) {
-  manager_.RegisterPrinter(base::MakeUnique<Printer>(kPrinterId));
-  auto updated_printer = base::MakeUnique<Printer>(kPrinterId);
-  updated_printer->set_uri(kUri);
+  manager_.RegisterPrinter(base::MakeUnique<Printer>(kTestPrinterId));
+  auto updated_printer = base::MakeUnique<Printer>(kTestPrinterId);
+  updated_printer->set_uri(kTestUri);
 
   // Register observer so it only receives the update event.
   LoggingObserver observer;
@@ -141,7 +141,7 @@ TEST_F(SyncedPrintersManagerTest, UpdatePrinter) {
 
   auto printers = manager_.GetPrinters();
   ASSERT_EQ(1U, printers.size());
-  EXPECT_EQ(kUri, printers[0]->uri());
+  EXPECT_EQ(kTestUri, printers[0]->uri());
 
   EXPECT_TRUE(observer.UpdateCalled());
   EXPECT_FALSE(observer.AddCalled());
@@ -149,15 +149,15 @@ TEST_F(SyncedPrintersManagerTest, UpdatePrinter) {
 
 TEST_F(SyncedPrintersManagerTest, RemovePrinter) {
   manager_.RegisterPrinter(base::MakeUnique<Printer>("OtherUUID"));
-  manager_.RegisterPrinter(base::MakeUnique<Printer>(kPrinterId));
+  manager_.RegisterPrinter(base::MakeUnique<Printer>(kTestPrinterId));
   manager_.RegisterPrinter(base::MakeUnique<Printer>());
 
-  manager_.RemovePrinter(kPrinterId);
+  manager_.RemovePrinter(kTestPrinterId);
 
   auto printers = manager_.GetPrinters();
   ASSERT_EQ(2U, printers.size());
-  EXPECT_NE(kPrinterId, printers.at(0)->id());
-  EXPECT_NE(kPrinterId, printers.at(1)->id());
+  EXPECT_NE(kTestPrinterId, printers.at(0)->id());
+  EXPECT_NE(kTestPrinterId, printers.at(1)->id());
 }
 
 // Tests for policy printers
@@ -216,21 +216,21 @@ TEST_F(SyncedPrintersManagerTest, GetRecommendedPrinter) {
 }
 
 TEST_F(SyncedPrintersManagerTest, PrinterNotInstalled) {
-  Printer printer(kPrinterId, base::Time::FromInternalValue(1000));
+  Printer printer(kTestPrinterId, base::Time::FromInternalValue(1000));
   EXPECT_FALSE(manager_.IsConfigurationCurrent(printer));
 }
 
 TEST_F(SyncedPrintersManagerTest, PrinterIsInstalled) {
-  Printer printer(kPrinterId, base::Time::FromInternalValue(1000));
+  Printer printer(kTestPrinterId, base::Time::FromInternalValue(1000));
   manager_.PrinterInstalled(printer);
   EXPECT_TRUE(manager_.IsConfigurationCurrent(printer));
 }
 
 TEST_F(SyncedPrintersManagerTest, UpdatedPrinterConfiguration) {
-  Printer printer(kPrinterId, base::Time::FromInternalValue(1000));
+  Printer printer(kTestPrinterId, base::Time::FromInternalValue(1000));
   manager_.PrinterInstalled(printer);
 
-  Printer updated_printer(kPrinterId, base::Time::FromInternalValue(2000));
+  Printer updated_printer(kTestPrinterId, base::Time::FromInternalValue(2000));
   EXPECT_FALSE(manager_.IsConfigurationCurrent(updated_printer));
 }
 

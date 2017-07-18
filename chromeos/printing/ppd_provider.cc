@@ -40,7 +40,6 @@
 #include "url/gurl.h"
 
 namespace chromeos {
-namespace printing {
 namespace {
 
 // Extract cupsFilter/cupsFilter2 filter names from the contents
@@ -1020,5 +1019,4 @@ scoped_refptr<PpdProvider> PpdProvider::Create(
   return scoped_refptr<PpdProvider>(new PpdProviderImpl(
       browser_locale, url_context_getter, ppd_cache, options));
 }
-}  // namespace printing
 }  // namespace chromeos

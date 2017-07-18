@@ -10,13 +10,11 @@
 class Profile;
 
 namespace chromeos {
-namespace printing {
 
 class PpdProvider;
 
-scoped_refptr<PpdProvider> CreateProvider(Profile* profile);
+scoped_refptr<PpdProvider> CreatePpdProvider(Profile* profile);
 
-}  // namespace printing
-}  // namsepace chromeos
+}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_PRINTING_PPD_PROVIDER_FACTORY_H_

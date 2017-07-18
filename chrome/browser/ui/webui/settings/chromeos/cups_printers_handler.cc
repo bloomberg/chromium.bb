@@ -131,7 +131,7 @@ CupsPrintersHandler::CupsPrintersHandler(content::WebUI* webui)
     : printer_detector_(nullptr),
       profile_(Profile::FromWebUI(webui)),
       weak_factory_(this) {
-  ppd_provider_ = printing::CreateProvider(profile_);
+  ppd_provider_ = CreatePpdProvider(profile_);
   printer_configurer_ = PrinterConfigurer::Create(profile_);
 }
 
@@ -516,28 +516,28 @@ void CupsPrintersHandler::HandleSelectPPDFile(const base::ListValue* args) {
 
 void CupsPrintersHandler::ResolveManufacturersDone(
     const std::string& js_callback,
-    printing::PpdProvider::CallbackResultCode result_code,
+    PpdProvider::CallbackResultCode result_code,
     const std::vector<std::string>& manufacturers) {
   auto manufacturers_value = base::MakeUnique<base::ListValue>();
-  if (result_code == printing::PpdProvider::SUCCESS) {
+  if (result_code == PpdProvider::SUCCESS) {
     manufacturers_value->AppendStrings(manufacturers);
   }
   base::DictionaryValue response;
-  response.SetBoolean("success", result_code == printing::PpdProvider::SUCCESS);
+  response.SetBoolean("success", result_code == PpdProvider::SUCCESS);
   response.Set("manufacturers", std::move(manufacturers_value));
   ResolveJavascriptCallback(base::Value(js_callback), response);
 }
 
 void CupsPrintersHandler::ResolvePrintersDone(
     const std::string& js_callback,
-    printing::PpdProvider::CallbackResultCode result_code,
+    PpdProvider::CallbackResultCode result_code,
     const std::vector<std::string>& printers) {
   auto printers_value = base::MakeUnique<base::ListValue>();
-  if (result_code == printing::PpdProvider::SUCCESS) {
+  if (result_code == PpdProvider::SUCCESS) {
     printers_value->AppendStrings(printers);
   }
   base::DictionaryValue response;
-  response.SetBoolean("success", result_code == printing::PpdProvider::SUCCESS);
+  response.SetBoolean("success", result_code == PpdProvider::SUCCESS);
   response.Set("models", std::move(printers_value));
   ResolveJavascriptCallback(base::Value(js_callback), response);
 }

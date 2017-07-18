@@ -11,7 +11,6 @@
 #include "components/sync/protocol/printer_specifics.pb.h"
 
 namespace chromeos {
-namespace printing {
 
 // Convert |printer| into its local representation.  Enforces that only one
 // field in PpdReference is filled in.  In order of preference, we populate
@@ -31,7 +30,6 @@ std::unique_ptr<sync_pb::PrinterSpecifics> PrinterToSpecifics(
 void MergePrinterToSpecifics(const Printer& printer,
                              sync_pb::PrinterSpecifics* specifics);
 
-}  // namespace printing
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_PRINTING_SPECIFICS_TRANSLATION_H_

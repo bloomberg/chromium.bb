@@ -36,14 +36,14 @@ bool UpdatePrinterPref(PrintersSyncBridge* sync_bridge,
   base::Optional<sync_pb::PrinterSpecifics> specifics =
       sync_bridge->GetPrinter(id);
   if (!specifics.has_value()) {
-    sync_bridge->AddPrinter(printing::PrinterToSpecifics(printer));
+    sync_bridge->AddPrinter(PrinterToSpecifics(printer));
     return true;
   }
 
   // Preserve fields in the proto which we don't understand.
   std::unique_ptr<sync_pb::PrinterSpecifics> updated_printer =
       base::MakeUnique<sync_pb::PrinterSpecifics>(*specifics);
-  printing::MergePrinterToSpecifics(printer, updated_printer.get());
+  MergePrinterToSpecifics(printer, updated_printer.get());
   sync_bridge->AddPrinter(std::move(updated_printer));
 
   return false;
@@ -80,7 +80,7 @@ std::vector<std::unique_ptr<Printer>> SyncedPrintersManager::GetPrinters()
   std::vector<sync_pb::PrinterSpecifics> values =
       sync_bridge_->GetAllPrinters();
   for (const auto& value : values) {
-    printers.push_back(printing::SpecificsToPrinter(value));
+    printers.push_back(SpecificsToPrinter(value));
   }
 
   return printers;
@@ -112,7 +112,7 @@ std::unique_ptr<Printer> SyncedPrintersManager::GetPrinter(
 
   base::Optional<sync_pb::PrinterSpecifics> printer =
       sync_bridge_->GetPrinter(printer_id);
-  return printer.has_value() ? printing::SpecificsToPrinter(*printer) : nullptr;
+  return printer.has_value() ? SpecificsToPrinter(*printer) : nullptr;
 }
 
 void SyncedPrintersManager::RegisterPrinter(std::unique_ptr<Printer> printer) {
@@ -142,7 +142,7 @@ bool SyncedPrintersManager::RemovePrinter(const std::string& printer_id) {
       sync_bridge_->GetPrinter(printer_id);
   bool success = false;
   if (printer.has_value()) {
-    std::unique_ptr<Printer> p = printing::SpecificsToPrinter(*printer);
+    std::unique_ptr<Printer> p = SpecificsToPrinter(*printer);
     success = sync_bridge_->RemovePrinter(p->id());
     if (success) {
       for (Observer& obs : observers_) {
@@ -201,7 +201,7 @@ void SyncedPrintersManager::UpdateRecommendedPrinters() {
     // unique so we'll hash the record.  This will not collide with the UUIDs
     // generated for user entries.
     std::string id = base::MD5String(printer_json);
-    printer_dictionary->SetString(printing::kPrinterId, id);
+    printer_dictionary->SetString(kPrinterId, id);
 
     if (base::ContainsKey(new_printers, id)) {
       // Skip duplicated entries.
@@ -216,7 +216,7 @@ void SyncedPrintersManager::UpdateRecommendedPrinters() {
       new_printers[id] = std::move(old->second);
     } else {
       auto printer =
-          printing::RecommendedPrinterToPrinter(*printer_dictionary, timestamp);
+          RecommendedPrinterToPrinter(*printer_dictionary, timestamp);
       printer->set_source(Printer::SRC_POLICY);
 
       new_printers[id] = std::move(printer);

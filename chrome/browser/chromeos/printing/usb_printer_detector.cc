@@ -37,8 +37,6 @@
 namespace chromeos {
 namespace {
 
-using printing::PpdProvider;
-
 // Aggregates the information needed for printer setup so it's easier to pass it
 // around.
 struct SetUpPrinterData {
@@ -211,8 +209,7 @@ class UsbPrinterDetectorImpl : public UsbPrinterDetector,
     data->is_new = true;
 
     // Look for an exact match based on USB ids.
-    scoped_refptr<PpdProvider> ppd_provider =
-        printing::CreateProvider(profile_);
+    scoped_refptr<PpdProvider> ppd_provider = CreatePpdProvider(profile_);
     ppd_provider->ResolveUsbIds(
         device->vendor_id(), device->product_id(),
         base::Bind(&UsbPrinterDetectorImpl::ResolveUsbIdsDone,
