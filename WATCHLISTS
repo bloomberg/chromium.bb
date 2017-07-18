@@ -894,7 +894,7 @@
                   '|chrome/android/javatests/src/org/chromium/chrome/browser/payments'\
                   '|chrome/browser/payments'\
                   '|chrome/browser/ui/views/payments'\
-                  '|chrome/test/data/payments'\
+                  '|components/payments/test/data'\
                   '|components/payments'\
                   '|content/browser/payments'\
                   '|content/test/data/payments'\

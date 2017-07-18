@@ -132,7 +132,7 @@ final class PaymentRequestTestCommon implements PaymentRequestObserverForTest,
         mTestFilePath = testFileName.startsWith("data:")
                 ? testFileName
                 : UrlUtils.getIsolatedTestFilePath(
-                          String.format("chrome/test/data/payments/%s", testFileName));
+                          String.format("components/test/data/payments/%s", testFileName));
     }
 
     public void startMainActivity() throws InterruptedException {
