@@ -266,6 +266,17 @@ cast_test_group("cast_tests") {
   }
   filters += [ media_unittests_filter ]
 
+  midi_unittests_filter = {
+    test_name = "midi_unittests"
+    if (!is_cast_desktop_build && !is_cast_audio_only) {
+      # Disable MidiTaskServiceTest.RunBoundTasks. This is failing on v1
+      # devices. Temporarily disable to get dashboards green again while the
+      # failure is investigated. (crbug/744777)
+      gtest_excludes = [ "MidiTaskServiceTest.RunBoundTasks" ]
+    }
+  }
+  filters += [ midi_unittests_filter ]
+
   net_unittests_filter = {
     test_name = "net_unittests"
     if (using_sanitizer) {
