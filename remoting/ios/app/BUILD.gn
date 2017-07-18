@@ -26,6 +26,8 @@ source_set("common_source_set") {
     "first_launch_view_presenter.mm",
     "help_and_feedback.h",
     "help_and_feedback.mm",
+    "help_view_controller.h",
+    "help_view_controller.mm",
     "host_collection_header_view.h",
     "host_collection_header_view.mm",
     "host_collection_view_cell.h",
