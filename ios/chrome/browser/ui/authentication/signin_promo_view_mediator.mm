@@ -208,7 +208,9 @@ const char* AlreadySeenSigninViewPreferenceKey(
                          accessPoint:(signin_metrics::AccessPoint)accessPoint {
   self = [super init];
   if (self) {
+#if DCHECK_IS_ON()
     DCHECK(IsSupportedAccessPoint(accessPoint));
+#endif  // DCHECK_IS_ON()
     _accessPoint = accessPoint;
     _browserState = browserState;
     NSArray* identities = ios::GetChromeBrowserProvider()
