@@ -136,7 +136,7 @@ void TestScreenRotationAnimator::IntersectAfter(
 
 }  // namespace
 
-class ScreenRotationAnimatorSlowAnimationTest : public test::AshTestBase {
+class ScreenRotationAnimatorSlowAnimationTest : public AshTestBase {
  public:
   ScreenRotationAnimatorSlowAnimationTest() {}
   ~ScreenRotationAnimatorSlowAnimationTest() override {}
@@ -149,14 +149,14 @@ class ScreenRotationAnimatorSlowAnimationTest : public test::AshTestBase {
 
   ScreenRotationAnimator* animator() { return animator_.get(); }
 
-  test::ScreenRotationAnimatorTestApi* test_api() { return test_api_.get(); }
+  ScreenRotationAnimatorTestApi* test_api() { return test_api_.get(); }
 
  private:
   display::Display display_;
 
   std::unique_ptr<ScreenRotationAnimator> animator_;
 
-  std::unique_ptr<test::ScreenRotationAnimatorTestApi> test_api_;
+  std::unique_ptr<ScreenRotationAnimatorTestApi> test_api_;
 
   std::unique_ptr<ui::ScopedAnimationDurationScaleMode> non_zero_duration_mode_;
 
@@ -169,15 +169,14 @@ void ScreenRotationAnimatorSlowAnimationTest::SetUp() {
   display_ = display::Screen::GetScreen()->GetPrimaryDisplay();
   animator_ = base::MakeUnique<ScreenRotationAnimator>(
       Shell::GetRootWindowForDisplayId(display_.id()));
-  test_api_ =
-      base::MakeUnique<test::ScreenRotationAnimatorTestApi>(animator_.get());
+  test_api_ = base::MakeUnique<ScreenRotationAnimatorTestApi>(animator_.get());
   test_api()->DisableAnimationTimers();
   non_zero_duration_mode_ =
       base::MakeUnique<ui::ScopedAnimationDurationScaleMode>(
           ui::ScopedAnimationDurationScaleMode::SLOW_DURATION);
 }
 
-class ScreenRotationAnimatorSmoothAnimationTest : public test::AshTestBase {
+class ScreenRotationAnimatorSmoothAnimationTest : public AshTestBase {
  public:
   ScreenRotationAnimatorSmoothAnimationTest() {}
   ~ScreenRotationAnimatorSmoothAnimationTest() override {}
@@ -197,7 +196,7 @@ class ScreenRotationAnimatorSmoothAnimationTest : public test::AshTestBase {
                                  const base::Closure& before_callback,
                                  const base::Closure& after_callback);
 
-  test::ScreenRotationAnimatorTestApi* test_api() { return test_api_.get(); }
+  ScreenRotationAnimatorTestApi* test_api() { return test_api_.get(); }
 
   void WaitForCopyCallback();
 
@@ -208,7 +207,7 @@ class ScreenRotationAnimatorSmoothAnimationTest : public test::AshTestBase {
 
   std::unique_ptr<TestScreenRotationAnimator> animator_;
 
-  std::unique_ptr<test::ScreenRotationAnimatorTestApi> test_api_;
+  std::unique_ptr<ScreenRotationAnimatorTestApi> test_api_;
 
   std::unique_ptr<ui::ScopedAnimationDurationScaleMode> non_zero_duration_mode_;
 
@@ -248,8 +247,7 @@ void ScreenRotationAnimatorSmoothAnimationTest::SetScreenRotationAnimator(
     const base::Closure& after_callback) {
   animator_ = base::MakeUnique<TestScreenRotationAnimator>(
       root_window, before_callback, after_callback);
-  test_api_ =
-      base::MakeUnique<test::ScreenRotationAnimatorTestApi>(animator_.get());
+  test_api_ = base::MakeUnique<ScreenRotationAnimatorTestApi>(animator_.get());
   test_api()->DisableAnimationTimers();
 }
 

@@ -7,7 +7,6 @@
 #include "ash/display/display_configuration_controller.h"
 
 namespace ash {
-namespace test {
 
 DisplayConfigurationControllerTestApi::DisplayConfigurationControllerTestApi(
     DisplayConfigurationController* controller)
@@ -23,5 +22,4 @@ DisplayConfigurationControllerTestApi::GetScreenRotationAnimatorForDisplay(
   return controller_->GetScreenRotationAnimatorForDisplay(display_id);
 }
 
-}  // namespace test
 }  // namespace ash

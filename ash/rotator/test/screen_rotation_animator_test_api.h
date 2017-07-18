@@ -18,8 +18,6 @@ class Layer;
 namespace ash {
 class ScreenRotationAnimator;
 
-namespace test {
-
 // Test API to provide internal access to a ScreenRotationAnimator instance.
 // This can also be used to control the screen rotation animations via the
 // ui::test::MultiLayerAnimatorTestController API.
@@ -43,7 +41,6 @@ class ScreenRotationAnimatorTestApi
   DISALLOW_COPY_AND_ASSIGN(ScreenRotationAnimatorTestApi);
 };
 
-}  // namespace test
 }  // namespace ash
 
 #endif  // ASH_ROTATOR_TEST_SCREEN_ROTATION_ANIMATOR_TEST_API_H_

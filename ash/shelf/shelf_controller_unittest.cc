@@ -63,8 +63,8 @@ class TestShelfObserver : public mojom::ShelfObserver {
   DISALLOW_COPY_AND_ASSIGN(TestShelfObserver);
 };
 
-using ShelfControllerTest = test::AshTestBase;
-using NoSessionShelfControllerTest = test::NoSessionAshTestBase;
+using ShelfControllerTest = AshTestBase;
+using NoSessionShelfControllerTest = NoSessionAshTestBase;
 
 TEST_F(ShelfControllerTest, IntializesAppListItemDelegate) {
   ShelfModel* model = Shell::Get()->shelf_controller()->model();

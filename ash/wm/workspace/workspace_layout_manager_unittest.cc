@@ -133,7 +133,7 @@ class CustomFrameViewAshSizeLock {
   DISALLOW_COPY_AND_ASSIGN(CustomFrameViewAshSizeLock);
 };
 
-using WorkspaceLayoutManagerTest = test::AshTestBase;
+using WorkspaceLayoutManagerTest = AshTestBase;
 
 // Verifies that a window containing a restore coordinate will be restored to
 // to the size prior to minimize, keeping the restore rectangle in tact (if
@@ -360,8 +360,7 @@ class DontClobberRestoreBoundsWindowObserver : public aura::WindowObserver {
       aura::Window* w = window_;
       window_ = nullptr;
 
-      gfx::Rect shelf_bounds(
-          test::AshTestBase::GetPrimaryShelf()->GetIdealBounds());
+      gfx::Rect shelf_bounds(AshTestBase::GetPrimaryShelf()->GetIdealBounds());
       const gfx::Rect& window_bounds(w->bounds());
       w->SetBounds(gfx::Rect(window_bounds.x(), shelf_bounds.y() - 1,
                              window_bounds.width(), window_bounds.height()));
@@ -624,7 +623,7 @@ TEST_F(WorkspaceLayoutManagerTest,
 }
 
 // Following "Solo" tests were originally written for BaseLayoutManager.
-using WorkspaceLayoutManagerSoloTest = test::AshTestBase;
+using WorkspaceLayoutManagerSoloTest = AshTestBase;
 
 // Tests normal->maximize->normal.
 TEST_F(WorkspaceLayoutManagerSoloTest, Maximize) {
@@ -963,7 +962,7 @@ WorkspaceLayoutManager* GetWorkspaceLayoutManager(aura::Window* container) {
   return static_cast<WorkspaceLayoutManager*>(container->layout_manager());
 }
 
-class WorkspaceLayoutManagerBackdropTest : public test::AshTestBase {
+class WorkspaceLayoutManagerBackdropTest : public AshTestBase {
  public:
   WorkspaceLayoutManagerBackdropTest() : default_container_(nullptr) {}
   ~WorkspaceLayoutManagerBackdropTest() override {}
@@ -1149,9 +1148,8 @@ TEST_F(WorkspaceLayoutManagerBackdropTest,
 }
 
 TEST_F(WorkspaceLayoutManagerBackdropTest, BackdropTest) {
-  WorkspaceController* wc =
-      test::ShellTestApi(Shell::Get()).workspace_controller();
-  test::WorkspaceControllerTestApi test_helper(wc);
+  WorkspaceController* wc = ShellTestApi(Shell::Get()).workspace_controller();
+  WorkspaceControllerTestApi test_helper(wc);
 
   std::unique_ptr<aura::Window> window1(
       CreateTestWindow(gfx::Rect(0, 0, 100, 100)));
@@ -1274,11 +1272,10 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, BackdropTest) {
 }
 
 TEST_F(WorkspaceLayoutManagerBackdropTest, SpokenFeedbackFullscreenBackground) {
-  WorkspaceController* wc =
-      test::ShellTestApi(Shell::Get()).workspace_controller();
-  test::WorkspaceControllerTestApi test_helper(wc);
-  test::TestAccessibilityDelegate* accessibility_delegate =
-      static_cast<test::TestAccessibilityDelegate*>(
+  WorkspaceController* wc = ShellTestApi(Shell::Get()).workspace_controller();
+  WorkspaceControllerTestApi test_helper(wc);
+  TestAccessibilityDelegate* accessibility_delegate =
+      static_cast<TestAccessibilityDelegate*>(
           Shell::Get()->accessibility_delegate());
 
   aura::test::TestWindowDelegate delegate;
@@ -1334,11 +1331,10 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, SpokenFeedbackFullscreenBackground) {
 }
 
 TEST_F(WorkspaceLayoutManagerBackdropTest, SpokenFeedbackForArc) {
-  WorkspaceController* wc =
-      test::ShellTestApi(Shell::Get()).workspace_controller();
-  test::WorkspaceControllerTestApi test_helper(wc);
-  test::TestAccessibilityDelegate* accessibility_delegate =
-      static_cast<test::TestAccessibilityDelegate*>(
+  WorkspaceController* wc = ShellTestApi(Shell::Get()).workspace_controller();
+  WorkspaceControllerTestApi test_helper(wc);
+  TestAccessibilityDelegate* accessibility_delegate =
+      static_cast<TestAccessibilityDelegate*>(
           Shell::Get()->accessibility_delegate());
 
   accessibility_delegate->ToggleSpokenFeedback(A11Y_NOTIFICATION_NONE);
@@ -1381,7 +1377,7 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, SpokenFeedbackForArc) {
   EXPECT_EQ(kNoSoundKey, accessibility_delegate->GetPlayedEarconAndReset());
 }
 
-class WorkspaceLayoutManagerKeyboardTest : public test::AshTestBase {
+class WorkspaceLayoutManagerKeyboardTest : public AshTestBase {
  public:
   WorkspaceLayoutManagerKeyboardTest() : layout_manager_(nullptr) {}
   ~WorkspaceLayoutManagerKeyboardTest() override {}

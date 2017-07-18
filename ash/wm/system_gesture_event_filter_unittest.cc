@@ -36,7 +36,6 @@
 #include "ui/views/window/window_button_order_provider.h"
 
 namespace ash {
-namespace test {
 
 namespace {
 
@@ -123,7 +122,7 @@ class SystemGestureEventFilterTest : public AshTestBase {
     views::WindowButtonOrderProvider::GetInstance()->SetWindowButtonOrder(
         leading, trailing);
 
-    test::AshTestBase::SetUp();
+    AshTestBase::SetUp();
     // Enable brightness key.
     display::test::DisplayManagerTestApi(Shell::Get()->display_manager())
         .SetFirstDisplayAsInternalDisplay();
@@ -479,5 +478,4 @@ TEST_F(SystemGestureEventFilterTest,
   aura::Env::GetInstance()->RemovePreTargetHandler(&event_handler);
 }
 
-}  // namespace test
 }  // namespace ash

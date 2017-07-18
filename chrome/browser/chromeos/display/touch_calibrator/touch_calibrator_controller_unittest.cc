@@ -21,7 +21,7 @@ using namespace display;
 
 namespace chromeos {
 
-class TouchCalibratorControllerTest : public ash::test::AshTestBase {
+class TouchCalibratorControllerTest : public ash::AshTestBase {
  public:
   TouchCalibratorControllerTest() {}
 

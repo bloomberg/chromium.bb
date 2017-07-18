@@ -24,8 +24,6 @@ class ShelfButtonPressedMetricTracker;
 class ShelfTooltipManager;
 class ShelfView;
 
-namespace test {
-
 // Use the api in this class to test ShelfView.
 class ShelfViewTestAPI {
  public:
@@ -110,7 +108,6 @@ class ShelfViewTestAPI {
   DISALLOW_COPY_AND_ASSIGN(ShelfViewTestAPI);
 };
 
-}  // namespace test
 }  // namespace ash
 
 #endif  // ASH_TEST_SHELF_VIEW_TEST_API_H_

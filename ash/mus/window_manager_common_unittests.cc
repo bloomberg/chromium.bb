@@ -17,7 +17,7 @@
 namespace ash {
 namespace mus {
 
-using WindowManagerCommonTest = test::AshTestBase;
+using WindowManagerCommonTest = AshTestBase;
 
 TEST_F(WindowManagerCommonTest, Focus) {
   if (Shell::GetAshConfig() == Config::CLASSIC)

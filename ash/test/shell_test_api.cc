@@ -11,7 +11,6 @@
 #include "ash/shell.h"
 
 namespace ash {
-namespace test {
 
 ShellTestApi::ShellTestApi() : ShellTestApi(Shell::Get()) {}
 
@@ -42,5 +41,4 @@ void ShellTestApi::SetPaletteDelegate(
   shell_->palette_delegate_ = std::move(palette_delegate);
 }
 
-}  // namespace test
 }  // namespace ash

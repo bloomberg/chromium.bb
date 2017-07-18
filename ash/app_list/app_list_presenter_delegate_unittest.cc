@@ -39,7 +39,7 @@ int64_t GetPrimaryDisplayId() {
 }
 
 void SetShelfAlignment(ShelfAlignment alignment) {
-  test::AshTestBase::GetPrimaryShelf()->SetAlignment(alignment);
+  AshTestBase::GetPrimaryShelf()->SetAlignment(alignment);
 }
 
 void EnableMaximizeMode(bool enable) {
@@ -49,7 +49,7 @@ void EnableMaximizeMode(bool enable) {
 
 }  // namespace
 
-class AppListPresenterDelegateTest : public test::AshTestBase,
+class AppListPresenterDelegateTest : public AshTestBase,
                                      public testing::WithParamInterface<bool> {
  public:
   AppListPresenterDelegateTest() {}
@@ -78,7 +78,7 @@ class AppListPresenterDelegateTest : public test::AshTestBase,
   }
 
  private:
-  test::TestAppListViewPresenterImpl app_list_presenter_impl_;
+  TestAppListViewPresenterImpl app_list_presenter_impl_;
   base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListPresenterDelegateTest);
@@ -87,7 +87,7 @@ class AppListPresenterDelegateTest : public test::AshTestBase,
 // TODO(Newcomer): Remove FullscreenAppListPresenterDelegateTest when the
 // fullscreen app list becomes default.
 class FullscreenAppListPresenterDelegateTest
-    : public test::AshTestBase,
+    : public AshTestBase,
       public testing::WithParamInterface<bool> {
  public:
   FullscreenAppListPresenterDelegateTest() {}
@@ -123,7 +123,7 @@ class FullscreenAppListPresenterDelegateTest
   }
 
  private:
-  test::TestAppListViewPresenterImpl app_list_presenter_impl_;
+  TestAppListViewPresenterImpl app_list_presenter_impl_;
   base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(FullscreenAppListPresenterDelegateTest);

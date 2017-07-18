@@ -22,7 +22,8 @@ using aura::Window;
 using ui::Layer;
 
 namespace ash {
-class WindowAnimationsTest : public ash::test::AshTestBase {
+
+class WindowAnimationsTest : public AshTestBase {
  public:
   WindowAnimationsTest() {}
 

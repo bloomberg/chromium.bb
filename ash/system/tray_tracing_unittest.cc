@@ -13,7 +13,7 @@
 namespace ash {
 namespace {
 
-using TrayTracingTest = test::AshTestBase;
+using TrayTracingTest = AshTestBase;
 
 // Tests that the icon becomes visible when the tray controller toggles it.
 TEST_F(TrayTracingTest, Visibility) {

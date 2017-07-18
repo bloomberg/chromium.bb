@@ -26,7 +26,6 @@
 #include "ui/gfx/image/image.h"
 
 namespace ash {
-namespace test {
 
 // A ShellObserver that sets the shelf alignment and auto hide behavior when the
 // shelf is created, to simulate ChromeLauncherController's behavior.
@@ -168,5 +167,4 @@ TestShellDelegate::GetInputDeviceControllerClient() {
 }
 #endif
 
-}  // namespace test
 }  // namespace ash

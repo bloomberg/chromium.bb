@@ -316,7 +316,7 @@ class ShelfAppBrowserTest : public ExtensionBrowserTest {
   // Try to rip off |item_index|.
   void RipOffItemIndex(int index,
                        ui::test::EventGenerator* generator,
-                       ash::test::ShelfViewTestAPI* test,
+                       ash::ShelfViewTestAPI* test,
                        RipOffCommand command) {
     ash::ShelfButton* button = test->GetButton(index);
     gfx::Point start_point = button->GetBoundsInScreen().CenterPoint();
@@ -1893,7 +1893,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, DISABLED_DragAndDrop) {
   // Get a number of interfaces we need.
   ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow(),
                                      gfx::Point());
-  ash::test::ShelfViewTestAPI test(shelf_->GetShelfViewForTesting());
+  ash::ShelfViewTestAPI test(shelf_->GetShelfViewForTesting());
   AppListService* service = AppListService::Get();
 
   // There should be two items in our launcher by this time.
@@ -2020,7 +2020,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, MultiDisplayBasicDragAndDrop) {
   ash::Shelf* secondary_shelf = ash::Shelf::ForWindow(secondary_root_window);
 
   ui::test::EventGenerator generator(secondary_root_window, gfx::Point());
-  ash::test::ShelfViewTestAPI test(secondary_shelf->GetShelfViewForTesting());
+  ash::ShelfViewTestAPI test(secondary_shelf->GetShelfViewForTesting());
   AppListService* service = AppListService::Get();
 
   // There should be two items in our shelf by this time.
@@ -2104,7 +2104,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, MultiDisplayBasicDragAndDrop) {
 IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, DISABLED_DragOffShelf) {
   ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow(),
                                      gfx::Point());
-  ash::test::ShelfViewTestAPI test(shelf_->GetShelfViewForTesting());
+  ash::ShelfViewTestAPI test(shelf_->GetShelfViewForTesting());
   test.SetAnimationDuration(1);  // Speed up animations for test.
   // Create a known application and check that we have 3 items in the shelf.
   CreateShortcut("app1");
@@ -2203,7 +2203,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, DISABLED_DragOffShelf) {
 IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, ShelfButtonContextMenu) {
   ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow(),
                                      gfx::Point());
-  ash::test::ShelfViewTestAPI test(shelf_->GetShelfViewForTesting());
+  ash::ShelfViewTestAPI test(shelf_->GetShelfViewForTesting());
   const int browser_index = GetIndexOfShelfItemType(ash::TYPE_BROWSER_SHORTCUT);
   ASSERT_LE(0, browser_index);
   ash::ShelfButton* button = test.GetButton(browser_index);
@@ -2234,7 +2234,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, ClickItem) {
   // Get a number of interfaces we need.
   ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow(),
                                      gfx::Point());
-  ash::test::ShelfViewTestAPI test(shelf_->GetShelfViewForTesting());
+  ash::ShelfViewTestAPI test(shelf_->GetShelfViewForTesting());
   AppListService* service = AppListService::Get();
   // There should be two items in our shelf by this time.
   EXPECT_EQ(2, model_->item_count());
@@ -2343,7 +2343,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, OverflowBubble) {
   // No overflow yet.
   EXPECT_FALSE(shelf_->shelf_widget()->IsShowingOverflowBubble());
 
-  ash::test::ShelfViewTestAPI test(shelf_->GetShelfViewForTesting());
+  ash::ShelfViewTestAPI test(shelf_->GetShelfViewForTesting());
 
   int items_added = 0;
   while (!test.IsOverflowButtonVisible()) {

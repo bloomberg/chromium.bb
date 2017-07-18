@@ -44,21 +44,18 @@ class WMState;
 
 namespace ash {
 
+class AshTestEnvironment;
+class AshTestViewsDelegate;
 class RootWindowController;
+class TestScreenshotDelegate;
+class TestShellDelegate;
+class TestSessionControllerClient;
 
 enum class Config;
 
 namespace mus {
 class WindowManagerApplication;
 }
-
-namespace test {
-
-class AshTestEnvironment;
-class AshTestViewsDelegate;
-class TestScreenshotDelegate;
-class TestShellDelegate;
-class TestSessionControllerClient;
 
 // A helper class that does common initialization required for Ash. Creates a
 // root window and an ash::Shell instance with a test delegate.
@@ -167,7 +164,6 @@ class AshTestHelper {
   DISALLOW_COPY_AND_ASSIGN(AshTestHelper);
 };
 
-}  // namespace test
 }  // namespace ash
 
 #endif  // ASH_TEST_ASH_TEST_HELPER_H_

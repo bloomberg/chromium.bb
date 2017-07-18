@@ -13,8 +13,6 @@
 
 namespace ash {
 
-namespace test {
-
 // Helper class used by tests to access internal state.
 class LockStateControllerTestApi {
  public:
@@ -65,7 +63,6 @@ class LockStateControllerTestApi {
   DISALLOW_COPY_AND_ASSIGN(LockStateControllerTestApi);
 };
 
-}  // namespace test
 }  // namespace ash
 
 #endif  // ASH_TEST_LOCK_STATE_CONTROLLER_TEST_API_H_

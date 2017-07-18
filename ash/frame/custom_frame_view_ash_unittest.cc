@@ -90,7 +90,7 @@ class TestWidgetConstraintsDelegate : public TestWidgetDelegate {
   DISALLOW_COPY_AND_ASSIGN(TestWidgetConstraintsDelegate);
 };
 
-class CustomFrameViewAshTest : public test::AshTestBase {
+class CustomFrameViewAshTest : public AshTestBase {
  public:
   CustomFrameViewAshTest() {}
   ~CustomFrameViewAshTest() override {}

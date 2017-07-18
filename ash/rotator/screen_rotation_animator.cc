@@ -410,8 +410,8 @@ void ScreenRotationAnimator::AnimateRotation(
       base::MakeUnique<ui::LayerAnimationSequence>(
           std::move(old_layer_screen_rotation));
 
-  // In unit test, we can use ash::test::ScreenRotationAnimatorTestApi to
-  // control the animation.
+  // In unit tests, we can use ash::ScreenRotationAnimatorTestApi to control the
+  // animation.
   if (disable_animation_timers_for_test_) {
     if (new_layer_tree_owner_)
       new_layer_animator->set_disable_timer_for_test(true);

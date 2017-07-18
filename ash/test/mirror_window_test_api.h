@@ -22,8 +22,6 @@ enum class CursorType;
 
 namespace ash {
 
-namespace test {
-
 class MirrorWindowTestApi {
  public:
   MirrorWindowTestApi() {}
@@ -48,7 +46,6 @@ class MirrorWindowTestApi {
   DISALLOW_COPY_AND_ASSIGN(MirrorWindowTestApi);
 };
 
-}  // namespace test
 }  // namespace ash
 
 #endif  // ASH_TEST_MIRROR_WINDOW_TEST_API_H_

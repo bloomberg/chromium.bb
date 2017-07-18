@@ -13,13 +13,10 @@
 #include "ui/aura/window_observer.h"
 
 namespace ash {
+
+class BackdropDelegate;
 class WorkspaceEventHandler;
 class WorkspaceLayoutManager;
-class BackdropDelegate;
-
-namespace test {
-class WorkspaceControllerTestApi;
-}
 
 // WorkspaceController acts as a central place that ties together all the
 // various workspace pieces.
@@ -42,7 +39,7 @@ class ASH_EXPORT WorkspaceController : public aura::WindowObserver {
   WorkspaceLayoutManager* layout_manager() { return layout_manager_; }
 
  private:
-  friend class test::WorkspaceControllerTestApi;
+  friend class WorkspaceControllerTestApi;
 
   // aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;

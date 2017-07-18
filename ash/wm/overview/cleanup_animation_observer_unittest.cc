@@ -63,7 +63,7 @@ class TestWindowSelectorDelegate : public WindowSelectorDelegate {
   DISALLOW_COPY_AND_ASSIGN(TestWindowSelectorDelegate);
 };
 
-class CleanupAnimationObserverTest : public test::AshTestBase,
+class CleanupAnimationObserverTest : public AshTestBase,
                                      public views::WidgetObserver {
  public:
   CleanupAnimationObserverTest() = default;

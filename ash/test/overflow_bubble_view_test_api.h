@@ -18,8 +18,6 @@ class BubbleFrameView;
 namespace ash {
 class OverflowBubbleView;
 
-namespace test {
-
 class OverflowBubbleViewTestAPI {
  public:
   explicit OverflowBubbleViewTestAPI(OverflowBubbleView* bubble_view);
@@ -41,7 +39,6 @@ class OverflowBubbleViewTestAPI {
   DISALLOW_COPY_AND_ASSIGN(OverflowBubbleViewTestAPI);
 };
 
-}  // namespace test
 }  // namespace ash
 
 #endif  // ASH_TEST_OVERFLOW_BUBBLE_VIEW_TEST_API_

@@ -111,7 +111,7 @@ void DragDropAcrossMultiDisplay_Step1() {
 
 }  // namespace
 
-using DragDropTest = test::AshInteractiveUITestBase;
+using DragDropTest = AshInteractiveUITestBase;
 
 // Test if the mouse gets moved properly to another display
 // during drag & drop operation.

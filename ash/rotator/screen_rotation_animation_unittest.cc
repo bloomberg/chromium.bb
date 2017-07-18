@@ -20,7 +20,6 @@
 #include "ui/gfx/transform.h"
 
 namespace ash {
-namespace test {
 
 class ScreenRotationAnimationTest : public AshTestBase {
  public:
@@ -95,5 +94,4 @@ TEST_F(ScreenRotationAnimationTest, DestroyLayerDuringAnimation) {
   layer.reset();
 }
 
-}  // namespace test
 }  // namespace ash

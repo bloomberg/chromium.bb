@@ -15,12 +15,12 @@ namespace {
 
 // TODO(wutao): On chromeos_linux builds, the tests only run with
 // use_ozone = false.
-class AshBackgroundFilterBlurPerfTest : public test::AshTestBase {
+class AshBackgroundFilterBlurPerfTest : public AshTestBase {
  public:
   AshBackgroundFilterBlurPerfTest() : timer_(0, base::TimeDelta(), 1) {}
   ~AshBackgroundFilterBlurPerfTest() override {}
 
-  // test::AshTestBase:
+  // AshTestBase:
   void SetUp() override;
 
  protected:

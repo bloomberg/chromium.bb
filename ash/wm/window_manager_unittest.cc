@@ -79,7 +79,7 @@ class CustomEventHandler : public ui::test::TestEventHandler {
 
 namespace ash {
 
-typedef test::AshTestBase WindowManagerTest;
+using WindowManagerTest = AshTestBase;
 
 class NonFocusableDelegate : public aura::test::TestWindowDelegate {
  public:
@@ -199,7 +199,7 @@ TEST_F(WindowManagerTest, Focus) {
             aura::client::GetFocusClient(w12.get())->GetFocusedWindow());
 
   // Set the focus to w123, but make the w1 not activatable.
-  test::TestActivationDelegate activation_delegate(false);
+  TestActivationDelegate activation_delegate(false);
   w123->Focus();
   EXPECT_EQ(w123.get(),
             aura::client::GetFocusClient(w12.get())->GetFocusedWindow());
@@ -240,12 +240,12 @@ TEST_F(WindowManagerTest, Focus) {
 TEST_F(WindowManagerTest, ActivateOnMouse) {
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
 
-  test::TestActivationDelegate d1;
+  TestActivationDelegate d1;
   aura::test::TestWindowDelegate wd;
   std::unique_ptr<aura::Window> w1(
       CreateTestWindowInShellWithDelegate(&wd, -1, gfx::Rect(10, 10, 50, 50)));
   d1.SetWindow(w1.get());
-  test::TestActivationDelegate d2;
+  TestActivationDelegate d2;
   std::unique_ptr<aura::Window> w2(
       CreateTestWindowInShellWithDelegate(&wd, -2, gfx::Rect(70, 70, 50, 50)));
   d2.SetWindow(w2.get());
@@ -431,12 +431,12 @@ TEST_F(WindowManagerTest, PanelActivation) {
 TEST_F(WindowManagerTest, ActivateOnTouch) {
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
 
-  test::TestActivationDelegate d1;
+  TestActivationDelegate d1;
   aura::test::TestWindowDelegate wd;
   std::unique_ptr<aura::Window> w1(
       CreateTestWindowInShellWithDelegate(&wd, -1, gfx::Rect(10, 10, 50, 50)));
   d1.SetWindow(w1.get());
-  test::TestActivationDelegate d2;
+  TestActivationDelegate d2;
   std::unique_ptr<aura::Window> w2(
       CreateTestWindowInShellWithDelegate(&wd, -2, gfx::Rect(70, 70, 50, 50)));
   d2.SetWindow(w2.get());
@@ -637,7 +637,7 @@ TEST_F(WindowManagerTest, TransformActivate) {
   transform.Rotate(90.0f);
   root_window->GetHost()->SetRootTransform(transform);
 
-  test::TestActivationDelegate d1;
+  TestActivationDelegate d1;
   aura::test::TestWindowDelegate wd;
   std::unique_ptr<aura::Window> w1(
       CreateTestWindowInShellWithDelegate(&wd, 1, gfx::Rect(0, 15, 50, 50)));

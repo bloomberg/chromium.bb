@@ -16,9 +16,8 @@
 #include "ui/events/event_utils.h"
 
 namespace ash {
-namespace test {
 
-class DragDropTrackerTest : public test::AshTestBase {
+class DragDropTrackerTest : public AshTestBase {
  public:
   void SetUp() override { AshTestBase::SetUp(); }
 
@@ -175,5 +174,4 @@ TEST_F(DragDropTrackerTest, ConvertEvent) {
   EXPECT_EQ(original11.flags(), converted11->flags());
 }
 
-}  // namespace test
 }  // namespace aura

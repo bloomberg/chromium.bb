@@ -9,7 +9,6 @@
 #include "ui/views/test/test_views_delegate.h"
 
 namespace ash {
-namespace test {
 
 class TestAccessibilityEventDelegate {
  public:
@@ -47,7 +46,6 @@ class AshTestViewsDelegate : public views::TestViewsDelegate {
   DISALLOW_COPY_AND_ASSIGN(AshTestViewsDelegate);
 };
 
-}  // namespace test
 }  // namespace ash
 
 #endif  // ASH_TEST_ASH_TEST_VIEWS_DELEGATE_H_

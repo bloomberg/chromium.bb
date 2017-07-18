@@ -38,14 +38,14 @@
 namespace {
 
 // A shell delegate that owns a ChromeLauncherController, like production.
-class ChromeLauncherTestShellDelegate : public ash::test::TestShellDelegate {
+class ChromeLauncherTestShellDelegate : public ash::TestShellDelegate {
  public:
   explicit ChromeLauncherTestShellDelegate(Profile* profile)
       : profile_(profile) {}
 
   ChromeLauncherController* controller() { return controller_.get(); }
 
-  // ash::test::TestShellDelegate:
+  // ash::TestShellDelegate:
   void ShelfInit() override {
     if (!controller_) {
       controller_ = base::MakeUnique<ChromeLauncherController>(
@@ -62,7 +62,7 @@ class ChromeLauncherTestShellDelegate : public ash::test::TestShellDelegate {
   DISALLOW_COPY_AND_ASSIGN(ChromeLauncherTestShellDelegate);
 };
 
-class LauncherContextMenuTest : public ash::test::AshTestBase {
+class LauncherContextMenuTest : public ash::AshTestBase {
  protected:
   static bool IsItemPresentInMenu(LauncherContextMenu* menu, int command_id) {
     return menu->GetIndexOfCommandId(command_id) != -1;
@@ -75,7 +75,7 @@ class LauncherContextMenuTest : public ash::test::AshTestBase {
     session_manager_ = base::MakeUnique<session_manager::SessionManager>();
     shell_delegate_ = new ChromeLauncherTestShellDelegate(&profile_);
     ash_test_helper()->set_test_shell_delegate(shell_delegate_);
-    ash::test::AshTestBase::SetUp();
+    ash::AshTestBase::SetUp();
   }
 
   ash::Shelf* GetShelf(int64_t display_id) {

@@ -49,10 +49,6 @@ class ShelfModel;
 struct ShelfItem;
 class ShelfWidget;
 
-namespace test {
-class ShelfViewTestAPI;
-}
-
 enum ShelfAlignmentUmaEnumValue {
   SHELF_ALIGNMENT_UMA_ENUM_VALUE_BOTTOM,
   SHELF_ALIGNMENT_UMA_ENUM_VALUE_LEFT,
@@ -172,7 +168,7 @@ class ASH_EXPORT ShelfView : public views::View,
   const ShelfButton* drag_view() const { return drag_view_; }
 
  private:
-  friend class ash::test::ShelfViewTestAPI;
+  friend class ShelfViewTestAPI;
 
   class FadeOutAnimationDelegate;
   class StartFadeAnimationDelegate;

@@ -189,7 +189,7 @@ void ArcAppTest::TearDown() {
   arc_service_manager_.reset();
   if (dbus_thread_manager_initialized_) {
     // DBusThreadManager may be initialized from other testing utility,
-    // such as ash::test::AshTestHelper::SetUp(), so Shutdown() only when
+    // such as ash::AshTestHelper::SetUp(), so Shutdown() only when
     // it is initialized in ArcAppTest::SetUp().
     chromeos::DBusThreadManager::Shutdown();
     dbus_thread_manager_initialized_ = false;

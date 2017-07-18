@@ -37,7 +37,6 @@
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
-namespace test {
 
 namespace {
 
@@ -838,7 +837,7 @@ class InputTestDelegate : public aura::test::TestWindowDelegate {
   InputTestDelegate() {}
   ~InputTestDelegate() override {}
 
-  void RunTest(test::AshTestBase* test_base) {
+  void RunTest(AshTestBase* test_base) {
     std::unique_ptr<aura::Window> window(
         test_base->CreateTestWindowInShellWithDelegate(
             this, 0, gfx::Rect(0, 0, 100, 100)));
@@ -927,5 +926,4 @@ TEST_F(SystemModalContainerLayoutManagerTest, BlockEventsInMultiDisplays) {
   delegate.RunTest(this);
 }
 
-}  // namespace test
 }  // namespace ash
