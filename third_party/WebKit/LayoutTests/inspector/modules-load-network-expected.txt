@@ -6,6 +6,7 @@ Loaded modules:
     data_grid
     diff
     formatter
+    har_importer
     network
     network_priorities
     object_ui
