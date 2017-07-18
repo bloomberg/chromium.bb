@@ -258,6 +258,7 @@ test("android_webview_unittests") {
     "../browser/aw_form_database_service_unittest.cc",
     "../browser/aw_media_url_interceptor_unittest.cc",
     "../browser/aw_permission_manager_unittest.cc",
+    "../browser/aw_safe_browsing_whitelist_manager_unittest.cc",
     "../browser/aw_static_cookie_policy_unittest.cc",
     "../browser/browser_view_renderer_unittest.cc",
     "../browser/command_line_helper_unittest.cc",
