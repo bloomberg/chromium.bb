@@ -226,6 +226,17 @@ command line, you can use `iossim`. For example, to run a debug build of
 $ out/Debug-iphonesimulator/iossim out/Debug-iphonesimulator/Chromium.app
 ```
 
+### Passing arguments
+
+Arguments needed to be passed to the test application through `iossim`, such as
+`--gtest_filter=SomeTest.FooBar` should be passed through the `-c` flag:
+
+```shell
+$ out/Debug-iphonesimulator/iossim -d "iPhone 6s" -s 10.0 \
+    -c "--gtest_filter=SomeTest.FooBar --gtest_repeat=3" \
+    out/Debug-iphonesimulator/base_unittests.app
+```
+
 ### Running EarlGrey tests
 
 EarlGrey tests are run differently than other test targets, as there is an
