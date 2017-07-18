@@ -830,13 +830,13 @@ Move things around in a loop!
 
 &mdash; **def [RunSteps](/recipes/recipe_modules/tryserver/examples/full.py#17)(api):**
 
-[recipe_engine/recipe_modules/context]: https://github.com/luci/recipes-py/blob/9b47d24929f42cd147df04b66db9e493bea1601c/README.recipes.md#recipe_modules--context
-[recipe_engine/recipe_modules/json]: https://github.com/luci/recipes-py/blob/9b47d24929f42cd147df04b66db9e493bea1601c/README.recipes.md#recipe_modules--json
-[recipe_engine/recipe_modules/path]: https://github.com/luci/recipes-py/blob/9b47d24929f42cd147df04b66db9e493bea1601c/README.recipes.md#recipe_modules--path
-[recipe_engine/recipe_modules/platform]: https://github.com/luci/recipes-py/blob/9b47d24929f42cd147df04b66db9e493bea1601c/README.recipes.md#recipe_modules--platform
-[recipe_engine/recipe_modules/properties]: https://github.com/luci/recipes-py/blob/9b47d24929f42cd147df04b66db9e493bea1601c/README.recipes.md#recipe_modules--properties
-[recipe_engine/recipe_modules/python]: https://github.com/luci/recipes-py/blob/9b47d24929f42cd147df04b66db9e493bea1601c/README.recipes.md#recipe_modules--python
-[recipe_engine/recipe_modules/raw_io]: https://github.com/luci/recipes-py/blob/9b47d24929f42cd147df04b66db9e493bea1601c/README.recipes.md#recipe_modules--raw_io
-[recipe_engine/recipe_modules/step]: https://github.com/luci/recipes-py/blob/9b47d24929f42cd147df04b66db9e493bea1601c/README.recipes.md#recipe_modules--step
-[recipe_engine/recipe_modules/url]: https://github.com/luci/recipes-py/blob/9b47d24929f42cd147df04b66db9e493bea1601c/README.recipes.md#recipe_modules--url
-[recipe_engine/wkt/RecipeApi]: https://github.com/luci/recipes-py/blob/9b47d24929f42cd147df04b66db9e493bea1601c/recipe_engine/recipe_api.py#L884
+[recipe_engine/recipe_modules/context]: https://github.com/luci/recipes-py/blob/de3238ca6d8320585f5dbcf051cd96cbc72d4684/README.recipes.md#recipe_modules--context
+[recipe_engine/recipe_modules/json]: https://github.com/luci/recipes-py/blob/de3238ca6d8320585f5dbcf051cd96cbc72d4684/README.recipes.md#recipe_modules--json
+[recipe_engine/recipe_modules/path]: https://github.com/luci/recipes-py/blob/de3238ca6d8320585f5dbcf051cd96cbc72d4684/README.recipes.md#recipe_modules--path
+[recipe_engine/recipe_modules/platform]: https://github.com/luci/recipes-py/blob/de3238ca6d8320585f5dbcf051cd96cbc72d4684/README.recipes.md#recipe_modules--platform
+[recipe_engine/recipe_modules/properties]: https://github.com/luci/recipes-py/blob/de3238ca6d8320585f5dbcf051cd96cbc72d4684/README.recipes.md#recipe_modules--properties
+[recipe_engine/recipe_modules/python]: https://github.com/luci/recipes-py/blob/de3238ca6d8320585f5dbcf051cd96cbc72d4684/README.recipes.md#recipe_modules--python
+[recipe_engine/recipe_modules/raw_io]: https://github.com/luci/recipes-py/blob/de3238ca6d8320585f5dbcf051cd96cbc72d4684/README.recipes.md#recipe_modules--raw_io
+[recipe_engine/recipe_modules/step]: https://github.com/luci/recipes-py/blob/de3238ca6d8320585f5dbcf051cd96cbc72d4684/README.recipes.md#recipe_modules--step
+[recipe_engine/recipe_modules/url]: https://github.com/luci/recipes-py/blob/de3238ca6d8320585f5dbcf051cd96cbc72d4684/README.recipes.md#recipe_modules--url
+[recipe_engine/wkt/RecipeApi]: https://github.com/luci/recipes-py/blob/de3238ca6d8320585f5dbcf051cd96cbc72d4684/recipe_engine/recipe_api.py#L884
