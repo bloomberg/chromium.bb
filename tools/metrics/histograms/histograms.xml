@@ -5850,6 +5850,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </details>
 </histogram>
 
+<histogram name="Blink.UseCounter.Features_TestBrowserProcessLogging"
+    enum="FeatureObserver">
+  <owner>rbyers@chromium.org</owner>
+  <summary>
+    Count of how many page loads use various features across all frames in a
+    page. The PageVisits bucket is incremented for each page load, and the other
+    buckets incremented at most once per PageVisit via the WebCore::UseCounter
+    class. This counter lives in browser process.
+  </summary>
+  <details>
+    This histogram tracks same usage as Blink.UseCounter.Features. Once it is
+    verified this counter is correct. It will replace the current counter.
+  </details>
+</histogram>
+
 <histogram name="Blink.UseCounter.SVGImage.AnimatedCSSProperties"
     enum="MappedCSSProperties">
   <owner>rbyers@chromium.org</owner>

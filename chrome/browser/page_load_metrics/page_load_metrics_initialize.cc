@@ -40,6 +40,7 @@
 #include "chrome/browser/page_load_metrics/observers/subresource_filter_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/tab_restore_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/ukm_page_load_metrics_observer.h"
+#include "chrome/browser/page_load_metrics/observers/use_counter_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_embedder_interface.h"
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
 #include "chrome/browser/prerender/prerender_contents.h"
@@ -109,6 +110,7 @@ void PageLoadMetricsEmbedder::RegisterObservers(
     tracker->AddObserver(base::MakeUnique<CssScanningMetricsObserver>());
     tracker->AddObserver(base::MakeUnique<ProtocolPageLoadMetricsObserver>());
     tracker->AddObserver(base::MakeUnique<TabRestorePageLoadMetricsObserver>());
+    tracker->AddObserver(base::MakeUnique<UseCounterPageLoadMetricsObserver>());
     std::unique_ptr<AdsPageLoadMetricsObserver> ads_observer =
         AdsPageLoadMetricsObserver::CreateIfNeeded();
     if (ads_observer)
