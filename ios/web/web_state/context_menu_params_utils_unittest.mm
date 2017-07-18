@@ -8,6 +8,7 @@
 #include "components/url_formatter/url_formatter.h"
 #include "ios/web/public/referrer_util.h"
 #import "ios/web/public/web_state/context_menu_params.h"
+#import "ios/web/web_state/context_menu_constants.h"
 #import "net/base/mac/url_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
@@ -19,14 +20,16 @@
 
 namespace {
 // Text values for the tapped element triggering the context menu.
-const char* kLinkUrl = "http://link.url/";
-const char* kSrcUrl = "http://src.url/";
-const char* kTitle = "title";
-const char* kReferrerPolicy = "always";
-const char* kLinkText = "link text";
-const char* kJavaScriptLinkUrl = "javascript://src.url/";
-const char* kDataUrl = "data://foo.bar/";
+const char kLinkUrl[] = "http://link.url/";
+const char kSrcUrl[] = "http://src.url/";
+const char kTitle[] = "title";
+const char kReferrerPolicy[] = "always";
+const char kLinkText[] = "link text";
+const char kJavaScriptLinkUrl[] = "javascript://src.url/";
+const char kDataUrl[] = "data://foo.bar/";
 }
+
+namespace web {
 
 // Test fixture for error translation testing.
 typedef PlatformTest ContextMenuParamsUtilsTest;
@@ -46,11 +49,11 @@ TEST_F(ContextMenuParamsUtilsTest, EmptyParams) {
 // Tests the the parsing of the element NSDictionary.
 TEST_F(ContextMenuParamsUtilsTest, DictionaryConstructorTest) {
   web::ContextMenuParams params = web::ContextMenuParamsFromElementDictionary(@{
-    @"href" : @(kLinkUrl),
-    @"src" : @(kSrcUrl),
-    @"title" : @(kTitle),
-    @"referrerPolicy" : @(kReferrerPolicy),
-    @"innerText" : @(kLinkText),
+    kContextMenuElementHyperlink : @(kLinkUrl),
+    kContextMenuElementSource : @(kSrcUrl),
+    kContextMenuElementTitle : @(kTitle),
+    kContextMenuElementReferrerPolicy : @(kReferrerPolicy),
+    kContextMenuElementInnerText : @(kLinkText),
   });
 
   EXPECT_NSEQ(params.menu_title.get(), @(kTitle));
@@ -67,7 +70,7 @@ TEST_F(ContextMenuParamsUtilsTest, DictionaryConstructorTest) {
 // Tests title is set as the formatted URL there is no title.
 TEST_F(ContextMenuParamsUtilsTest, DictionaryConstructorTestNoTitle) {
   web::ContextMenuParams params = web::ContextMenuParamsFromElementDictionary(@{
-    @"href" : @(kLinkUrl),
+    kContextMenuElementHyperlink : @(kLinkUrl),
   });
   base::string16 urlText = url_formatter::FormatUrl(GURL(kLinkUrl));
   NSString* title = base::SysUTF16ToNSString(urlText);
@@ -79,7 +82,7 @@ TEST_F(ContextMenuParamsUtilsTest, DictionaryConstructorTestNoTitle) {
 // JavaScript URL.
 TEST_F(ContextMenuParamsUtilsTest, DictionaryConstructorTestJavascriptTitle) {
   web::ContextMenuParams params = web::ContextMenuParamsFromElementDictionary(@{
-    @"href" : @(kJavaScriptLinkUrl),
+    kContextMenuElementHyperlink : @(kJavaScriptLinkUrl),
   });
   EXPECT_NSEQ(params.menu_title.get(), @"JavaScript");
 }
@@ -87,7 +90,7 @@ TEST_F(ContextMenuParamsUtilsTest, DictionaryConstructorTestJavascriptTitle) {
 // Tests title is set to |src_url| if there is no title.
 TEST_F(ContextMenuParamsUtilsTest, DictionaryConstructorTestSrcTitle) {
   web::ContextMenuParams params = web::ContextMenuParamsFromElementDictionary(@{
-    @"src" : @(kSrcUrl),
+    kContextMenuElementSource : @(kSrcUrl),
   });
   EXPECT_EQ(params.src_url, GURL(kSrcUrl));
   EXPECT_NSEQ(params.menu_title.get(), @(kSrcUrl));
@@ -96,8 +99,10 @@ TEST_F(ContextMenuParamsUtilsTest, DictionaryConstructorTestSrcTitle) {
 // Tests title is set to nil if there is no title and src is a data URL.
 TEST_F(ContextMenuParamsUtilsTest, DictionaryConstructorTestDataTitle) {
   web::ContextMenuParams params = web::ContextMenuParamsFromElementDictionary(@{
-    @"src" : @(kDataUrl),
+    kContextMenuElementSource : @(kDataUrl),
   });
   EXPECT_EQ(params.src_url, GURL(kDataUrl));
   EXPECT_NSEQ(params.menu_title.get(), nil);
 }
+
+}  // namespace web
