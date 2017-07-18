@@ -189,6 +189,43 @@ TEST_P(FrameThrottlingTest, HiddenCrossOriginFramesAreThrottled) {
   EXPECT_TRUE(inner_frame_document->View()->CanThrottleRendering());
 }
 
+TEST_P(FrameThrottlingTest, IntersectionObservationOverridesThrottling) {
+  // Create a document with doubly nested iframes.
+  SimRequest main_resource("https://example.com/", "text/html");
+  SimRequest frame_resource("https://example.com/iframe.html", "text/html");
+
+  LoadURL("https://example.com/");
+  main_resource.Complete("<iframe id=frame src=iframe.html></iframe>");
+  frame_resource.Complete("<iframe id=innerFrame sandbox></iframe>");
+
+  auto* frame_element =
+      toHTMLIFrameElement(GetDocument().getElementById("frame"));
+  auto* frame_document = frame_element->contentDocument();
+
+  auto* inner_frame_element =
+      toHTMLIFrameElement(frame_document->getElementById("innerFrame"));
+  auto* inner_frame_document = inner_frame_element->contentDocument();
+
+  DocumentLifecycle::AllowThrottlingScope throttling_scope(
+      GetDocument().Lifecycle());
+
+  // Hidden cross origin frames are throttled.
+  frame_element->setAttribute(styleAttr, "transform: translateY(480px)");
+  CompositeFrame();
+  EXPECT_FALSE(GetDocument().View()->CanThrottleRendering());
+  EXPECT_FALSE(frame_document->View()->CanThrottleRendering());
+  EXPECT_TRUE(inner_frame_document->View()->ShouldThrottleRendering());
+
+  // An intersection observation overrides...
+  inner_frame_document->View()->SetNeedsIntersectionObservation();
+  EXPECT_FALSE(inner_frame_document->View()->ShouldThrottleRendering());
+  inner_frame_document->View()->ScheduleAnimation();
+
+  CompositeFrame();
+  // ...but only for one frame.
+  EXPECT_TRUE(inner_frame_document->View()->ShouldThrottleRendering());
+}
+
 TEST_P(FrameThrottlingTest, HiddenCrossOriginZeroByZeroFramesAreNotThrottled) {
   // Create a document with doubly nested iframes.
   SimRequest main_resource("https://example.com/", "text/html");
