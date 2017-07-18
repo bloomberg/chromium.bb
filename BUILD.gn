@@ -157,6 +157,7 @@ group("gn_all") {
 
   if (!is_ios) {
     deps += [
+      "//media:media_unittests",
       "//mojo",
       "//mojo/common:mojo_common_unittests",
       "//mojo/edk/system:mojo_system_unittests",
@@ -185,7 +186,6 @@ group("gn_all") {
       "//gpu:gpu_unittests",
       "//gpu/ipc/service:gpu_ipc_service_unittests",
       "//ipc:ipc_tests",
-      "//media:media_unittests",
       "//media/capture:capture_unittests",
       "//media/cast:cast_unittests",
       "//media/midi:midi_unittests",
