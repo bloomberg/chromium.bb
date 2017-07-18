@@ -44,15 +44,6 @@ enum InterpolationSpace {
 
 namespace InterpolationSpaceUtilities {
 
-// Get a pointer to a 8-bit lookup table that will convert color components
-// in the |src_interpolation_space| to the |dst_interpolation_space|.
-// If the conversion cannot be performed, or is a no-op (identity transform),
-// then 0 is returned.
-// (Note that a round-trip - f(B,A)[f(A,B)[x]] - is not lossless in general.)
-const uint8_t* GetConversionLUT(
-    InterpolationSpace dst_interpolation_space,
-    InterpolationSpace src_interpolation_space = kInterpolationSpaceSRGB);
-
 // Convert a Color assumed to be in the |src_interpolation_space| into the
 // |dst_interpolation_space|.
 Color ConvertColor(
