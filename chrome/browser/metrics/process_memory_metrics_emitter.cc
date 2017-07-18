@@ -43,6 +43,8 @@ void EmitBrowserMemoryMetrics(const ProcessMemoryDumpPtr& pmd,
   UMA_HISTOGRAM_MEMORY_LARGE_MB(
       "Memory.Experimental.Browser2.PrivateMemoryFootprint",
       pmd->os_dump->private_footprint_kb / 1024);
+  UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Browser.PrivateMemoryFootprint",
+                                pmd->os_dump->private_footprint_kb / 1024);
   TryAddMetric(builder, "PrivateMemoryFootprint",
                pmd->os_dump->private_footprint_kb / 1024);
 }
@@ -64,6 +66,8 @@ void EmitRendererMemoryMetrics(const ProcessMemoryDumpPtr& pmd,
   UMA_HISTOGRAM_MEMORY_LARGE_MB(
       "Memory.Experimental.Renderer2.PrivateMemoryFootprint",
       pmd->os_dump->private_footprint_kb / 1024);
+  UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Renderer.PrivateMemoryFootprint",
+                                pmd->os_dump->private_footprint_kb / 1024);
   TryAddMetric(builder, "PrivateMemoryFootprint",
                pmd->os_dump->private_footprint_kb / 1024);
 
@@ -105,6 +109,8 @@ void EmitGpuMemoryMetrics(const ProcessMemoryDumpPtr& pmd,
   UMA_HISTOGRAM_MEMORY_LARGE_MB(
       "Memory.Experimental.Gpu2.PrivateMemoryFootprint",
       pmd->os_dump->private_footprint_kb / 1024);
+  UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Gpu.PrivateMemoryFootprint",
+                                pmd->os_dump->private_footprint_kb / 1024);
   TryAddMetric(builder, "PrivateMemoryFootprint",
                pmd->os_dump->private_footprint_kb / 1024);
 }
@@ -180,6 +186,8 @@ void ProcessMemoryMetricsEmitter::ReceivedMemoryDump(
   UMA_HISTOGRAM_MEMORY_LARGE_MB(
       "Memory.Experimental.Total2.PrivateMemoryFootprint",
       private_footprint_total_kb / 1024);
+  UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Total.PrivateMemoryFootprint",
+                                private_footprint_total_kb / 1024);
 
   std::unique_ptr<ukm::UkmEntryBuilder> builder =
       CreateUkmBuilder("Memory.Experimental");
