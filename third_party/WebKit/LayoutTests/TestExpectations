@@ -1957,7 +1957,7 @@ crbug.com/626703 external/wpt/svg/linking/reftests/href-filter-element.html [ Fa
 crbug.com/626703 external/wpt/wasm/wasm_indexeddb_test.html [ Timeout ]
 crbug.com/626703 external/wpt/wasm/wasm_local_iframe_test.html [ Failure ]
 crbug.com/626703 external/wpt/wasm/wasm_serialization_tests.html [ Failure ]
-crbug.com/626703 external/wpt/wasm/wasm_service_worker_test.html [ Failure ]
+crbug.com/626703 external/wpt/wasm/wasm_service_worker_test.https.html [ Failure ]
 crbug.com/626703 external/wpt/web-animations/animation-model/animation-types/accumulation-per-property.html [ Timeout ]
 crbug.com/626703 external/wpt/webaudio/the-audio-api/the-audioparam-interface/idl-test.html [ Timeout ]
 crbug.com/626703 external/wpt/webaudio/the-audio-api/the-audioparam-interface/retrospective-exponentialRampToValueAtTime.html [ Timeout ]
