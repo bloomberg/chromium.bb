@@ -26,7 +26,6 @@
 
 #if CONFIG_CDEF
 #include "av1/common/cdef.h"
-#include "av1/common/clpf.h"
 #endif  // CONFIG_CDEF
 #include "av1/common/entropy.h"
 #include "av1/common/entropymode.h"

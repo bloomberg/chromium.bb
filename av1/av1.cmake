@@ -236,7 +236,6 @@ if (CONFIG_CDEF)
   set(AOM_AV1_COMMON_SOURCES
       ${AOM_AV1_COMMON_SOURCES}
       "${AOM_ROOT}/av1/common/clpf.c"
-      "${AOM_ROOT}/av1/common/clpf.h"
       "${AOM_ROOT}/av1/common/clpf_simd.h"
       "${AOM_ROOT}/av1/common/cdef_simd.h"
       "${AOM_ROOT}/av1/common/cdef.c"

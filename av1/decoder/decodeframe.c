@@ -35,7 +35,6 @@
 #include "av1/common/alloccommon.h"
 #if CONFIG_CDEF
 #include "av1/common/cdef.h"
-#include "av1/common/clpf.h"
 #endif
 #if CONFIG_INSPECTION
 #include "av1/decoder/inspection.h"
