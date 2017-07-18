@@ -33,8 +33,8 @@ class CONTENT_EXPORT AppCacheURLRequest : public AppCacheRequest {
   bool IsError() const override;
   int GetResponseCode() const override;
   std::string GetResponseHeaderByName(const std::string& name) const override;
-
   net::URLRequest* GetURLRequest() override;
+  AppCacheURLRequest* AsURLRequest() override;
 
  protected:
   explicit AppCacheURLRequest(net::URLRequest* url_request);

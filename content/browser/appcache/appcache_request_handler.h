@@ -124,6 +124,10 @@ class CONTENT_EXPORT AppCacheRequestHandler
   std::unique_ptr<AppCacheJob> CreateJob(
       net::NetworkDelegate* network_delegate);
 
+  // Helper method to create an AppCacheJob for fallback responses.
+  std::unique_ptr<AppCacheJob> MaybeCreateJobForFallback(
+      net::NetworkDelegate* network_delegate);
+
   // Helper to retrieve a pointer to the storage object.
   AppCacheStorage* storage() const;
 

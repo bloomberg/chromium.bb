@@ -16,6 +16,8 @@ class URLRequest;
 }
 
 namespace content {
+class AppCacheURLLoaderRequest;
+class AppCacheURLRequest;
 struct ResourceRequest;
 
 // Interface for an AppCache request. Subclasses implement this interface to
@@ -57,6 +59,14 @@ class CONTENT_EXPORT AppCacheRequest {
   // Returns true if the scheme and method are supported for AppCache.
   static bool IsSchemeAndMethodSupportedForAppCache(
       const AppCacheRequest* request);
+
+  // Returns the underlying AppCacheURLRequest if any. This only applies to
+  // AppCache requests loaded via the URLRequest mechanism
+  virtual AppCacheURLRequest* AsURLRequest();
+
+  // Returns the underlying AppCacheURLLoaderRequest if any. This only applies
+  // to AppCache requests loaded via the URLLoader mechanism.
+  virtual AppCacheURLLoaderRequest* AsURLLoaderRequest();
 
  protected:
   friend class AppCacheRequestHandler;
