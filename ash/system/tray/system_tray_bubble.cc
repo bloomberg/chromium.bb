@@ -15,7 +15,6 @@
 #include "ash/system/tray/system_tray_item.h"
 #include "ash/system/tray/tray_bubble_wrapper.h"
 #include "ash/system/tray/tray_constants.h"
-#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/compositor/layer.h"
@@ -68,26 +67,6 @@ class AnimationObserverDeleteLayer : public ui::ImplicitAnimationObserver {
 };
 
 }  // namespace
-
-// CloseBubbleObserver is used to delay closing the system tray bubble until the
-// animation completes.
-class CloseBubbleObserver : public ui::ImplicitAnimationObserver {
- public:
-  explicit CloseBubbleObserver(SystemTrayBubble* system_tray_bubble)
-      : system_tray_bubble_(system_tray_bubble) {}
-
-  ~CloseBubbleObserver() override {}
-
-  void OnImplicitAnimationsCompleted() override {
-    system_tray_bubble_->Close();
-    delete this;
-  }
-
- private:
-  SystemTrayBubble* system_tray_bubble_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(CloseBubbleObserver);
-};
 
 // SystemTrayBubble
 
@@ -221,27 +200,8 @@ void SystemTrayBubble::InitView(views::View* anchor,
   }
 
   init_params->delegate = tray_;
-  // Place the bubble on same display as this system tray if it is not on
-  // maximize mode. Otherwise, create an clipping window to hold the system
-  // bubble. And place the clipping window on the same display as the system
-  // tray.
-  if (Shell::Get()
-          ->maximize_mode_controller()
-          ->IsMaximizeModeWindowManagerEnabled()) {
-    if (!clipping_window_.get()) {
-      clipping_window_ =
-          std::unique_ptr<aura::Window>(new aura::Window(nullptr));
-      clipping_window_->Init(ui::LAYER_NOT_DRAWN);
-      clipping_window_->layer()->SetMasksToBounds(true);
-      tray_->GetBubbleWindowContainer()->AddChild(clipping_window_.get());
-      clipping_window_->Show();
-    }
-    clipping_window_->SetBounds(tray_->GetWorkAreaBoundsInScreen());
-    init_params->parent_window = clipping_window_.get();
-  } else {
-    init_params->parent_window = tray_->GetBubbleWindowContainer();
-  }
-
+  // Place the bubble on same display as this system tray.
+  init_params->parent_window = tray_->GetBubbleWindowContainer();
   init_params->anchor_view = anchor;
   bubble_view_ = new TrayBubbleView(*init_params);
   UpdateBottomPadding();
@@ -328,22 +288,6 @@ void SystemTrayBubble::RecordVisibleRowMetrics() {
                                 pair.first, SystemTrayItem::UMA_COUNT);
     }
   }
-}
-
-void SystemTrayBubble::AnimateToTargetBounds(const gfx::Rect& target_bounds,
-                                             bool close_bubble) {
-  const int kAnimationDurationMS = 200;
-
-  ui::ScopedLayerAnimationSettings settings(
-      bubble_view()->GetWidget()->GetNativeView()->layer()->GetAnimator());
-  settings.SetTransitionDuration(
-      base::TimeDelta::FromMilliseconds(kAnimationDurationMS));
-  settings.SetTweenType(gfx::Tween::EASE_OUT);
-  settings.SetPreemptionStrategy(
-      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-  if (close_bubble)
-    settings.AddObserver(new CloseBubbleObserver(this));
-  bubble_view()->GetWidget()->SetBounds(target_bounds);
 }
 
 void SystemTrayBubble::UpdateBottomPadding() {

@@ -153,6 +153,9 @@ PaletteTray::PaletteTray(Shelf* shelf)
 
   Shell::Get()->AddShellObserver(this);
   ui::InputDeviceManager::GetInstance()->AddObserver(this);
+
+  if (!drag_controller())
+    set_drag_controller(base::MakeUnique<TrayDragController>(shelf));
 }
 
 PaletteTray::~PaletteTray() {
@@ -161,68 +164,6 @@ PaletteTray::~PaletteTray() {
 
   ui::InputDeviceManager::GetInstance()->RemoveObserver(this);
   Shell::Get()->RemoveShellObserver(this);
-}
-
-bool PaletteTray::PerformAction(const ui::Event& event) {
-  if (bubble_) {
-    if (num_actions_in_bubble_ == 0)
-      RecordPaletteOptionsUsage(PaletteTrayOptions::PALETTE_CLOSED_NO_ACTION);
-    HidePalette();
-    return true;
-  }
-
-  return ShowPalette();
-}
-
-bool PaletteTray::ShowPalette() {
-  if (bubble_)
-    return false;
-
-  DCHECK(tray_container());
-
-  views::TrayBubbleView::InitParams init_params;
-  init_params.delegate = this;
-  init_params.parent_window = GetBubbleWindowContainer();
-  init_params.anchor_view = GetBubbleAnchor();
-  init_params.anchor_alignment = GetAnchorAlignment();
-  init_params.min_width = kPaletteWidth;
-  init_params.max_width = kPaletteWidth;
-  init_params.close_on_deactivate = true;
-
-  // TODO(tdanderson): Refactor into common row layout code.
-  // TODO(tdanderson|jdufault): Add material design ripple effects to the menu
-  // rows.
-
-  // Create and customize bubble view.
-  views::TrayBubbleView* bubble_view = new views::TrayBubbleView(init_params);
-  bubble_view->set_anchor_view_insets(GetBubbleAnchorInsets());
-  bubble_view->set_margins(
-      gfx::Insets(kPalettePaddingOnTop, 0, kPalettePaddingOnBottom, 0));
-
-  // Add title.
-  auto* title_view = new TitleView(this);
-  title_view->SetBorder(views::CreateEmptyBorder(
-      gfx::Insets(0, kPaddingBetweenTitleAndLeftEdge, 0, 0)));
-  bubble_view->AddChildView(title_view);
-
-  // Add horizontal separator.
-  views::Separator* separator = new views::Separator();
-  separator->SetColor(kPaletteSeparatorColor);
-  separator->SetBorder(views::CreateEmptyBorder(gfx::Insets(
-      kPaddingBetweenTitleAndSeparator, 0, kMenuSeparatorVerticalPadding, 0)));
-  bubble_view->AddChildView(separator);
-
-  // Add palette tools.
-  // TODO(tdanderson|jdufault): Use SystemMenuButton to get the material design
-  // ripples.
-  std::vector<PaletteToolView> views = palette_tool_manager_->CreateViews();
-  for (const PaletteToolView& view : views)
-    bubble_view->AddChildView(view.view);
-
-  // Show the bubble.
-  bubble_.reset(new ash::TrayBubbleWrapper(this, bubble_view));
-  SetIsActive(true);
-  return true;
 }
 
 bool PaletteTray::ContainsPointInScreen(const gfx::Point& point) {
@@ -280,7 +221,7 @@ void PaletteTray::OnStylusStateChanged(ui::StylusState stylus_state) {
   if (palette_delegate->ShouldAutoOpenPalette()) {
     if (stylus_state == ui::StylusState::REMOVED && !bubble_) {
       is_bubble_auto_opened_ = true;
-      ShowPalette();
+      ShowBubble();
     } else if (stylus_state == ui::StylusState::INSERTED && bubble_) {
       HidePalette();
     }
@@ -383,6 +324,76 @@ void PaletteTray::Initialize() {
   // which will take care of showing the palette.
   palette_enabled_subscription_ = delegate->AddPaletteEnableListener(base::Bind(
       &PaletteTray::OnPaletteEnabledPrefChanged, weak_factory_.GetWeakPtr()));
+}
+
+bool PaletteTray::PerformAction(const ui::Event& event) {
+  if (bubble_) {
+    if (num_actions_in_bubble_ == 0)
+      RecordPaletteOptionsUsage(PaletteTrayOptions::PALETTE_CLOSED_NO_ACTION);
+    HidePalette();
+    return true;
+  }
+
+  ShowBubble();
+  return true;
+}
+
+void PaletteTray::CloseBubble() {
+  HidePalette();
+}
+
+void PaletteTray::ShowBubble() {
+  if (bubble_)
+    return;
+
+  DCHECK(tray_container());
+
+  views::TrayBubbleView::InitParams init_params;
+  init_params.delegate = this;
+  init_params.parent_window = GetBubbleWindowContainer();
+  init_params.anchor_view = GetBubbleAnchor();
+  init_params.anchor_alignment = GetAnchorAlignment();
+  init_params.min_width = kPaletteWidth;
+  init_params.max_width = kPaletteWidth;
+  init_params.close_on_deactivate = true;
+
+  // TODO(tdanderson): Refactor into common row layout code.
+  // TODO(tdanderson|jdufault): Add material design ripple effects to the menu
+  // rows.
+
+  // Create and customize bubble view.
+  views::TrayBubbleView* bubble_view = new views::TrayBubbleView(init_params);
+  bubble_view->set_anchor_view_insets(GetBubbleAnchorInsets());
+  bubble_view->set_margins(
+      gfx::Insets(kPalettePaddingOnTop, 0, kPalettePaddingOnBottom, 0));
+
+  // Add title.
+  auto* title_view = new TitleView(this);
+  title_view->SetBorder(views::CreateEmptyBorder(
+      gfx::Insets(0, kPaddingBetweenTitleAndLeftEdge, 0, 0)));
+  bubble_view->AddChildView(title_view);
+
+  // Add horizontal separator.
+  views::Separator* separator = new views::Separator();
+  separator->SetColor(kPaletteSeparatorColor);
+  separator->SetBorder(views::CreateEmptyBorder(gfx::Insets(
+      kPaddingBetweenTitleAndSeparator, 0, kMenuSeparatorVerticalPadding, 0)));
+  bubble_view->AddChildView(separator);
+
+  // Add palette tools.
+  // TODO(tdanderson|jdufault): Use SystemMenuButton to get the material design
+  // ripples.
+  std::vector<PaletteToolView> views = palette_tool_manager_->CreateViews();
+  for (const PaletteToolView& view : views)
+    bubble_view->AddChildView(view.view);
+
+  // Show the bubble.
+  bubble_ = base::MakeUnique<ash::TrayBubbleWrapper>(this, bubble_view);
+  SetIsActive(true);
+}
+
+views::TrayBubbleView* PaletteTray::GetBubbleView() {
+  return bubble_ ? bubble_->bubble_view() : nullptr;
 }
 
 void PaletteTray::UpdateTrayIcon() {

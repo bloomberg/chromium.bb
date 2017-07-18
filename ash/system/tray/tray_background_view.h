@@ -10,6 +10,7 @@
 #include "ash/ash_export.h"
 #include "ash/shelf/shelf_background_animator_observer.h"
 #include "ash/system/tray/actionable_view.h"
+#include "ash/system/tray_drag_controller.h"
 #include "base/macros.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/gfx/geometry/insets.h"
@@ -27,7 +28,8 @@ class TrayEventFilter;
 // PerformAction when clicked on.
 class ASH_EXPORT TrayBackgroundView : public ActionableView,
                                       public ui::ImplicitAnimationObserver,
-                                      public ShelfBackgroundAnimatorObserver {
+                                      public ShelfBackgroundAnimatorObserver,
+                                      public views::TrayBubbleView::Delegate {
  public:
   static const char kViewClassName[];
 
@@ -43,9 +45,10 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   // views::View:
   void SetVisible(bool visible) override;
   const char* GetClassName() const override;
-  void ChildPreferredSizeChanged(views::View* child) override;
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
   void AboutToRequestFocusFromTabTraversal(bool reverse) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  void ChildPreferredSizeChanged(views::View* child) override;
 
   // ActionableView:
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
@@ -53,17 +56,31 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
       const override;
   void PaintButtonContents(gfx::Canvas* canvas) override;
 
+  // TrayBubbleView::Delegate:
+  void ProcessGestureEventForBubble(ui::GestureEvent* event) override;
+
+  // Returns the associated tray bubble view, if one exists. Otherwise returns
+  // nullptr.
+  virtual views::TrayBubbleView* GetBubbleView();
+
+  // Closes the associated tray bubble view if it exists and is currently
+  // showing.
+  virtual void CloseBubble();
+
+  // Shows the associated tray bubble if one exists.
+  virtual void ShowBubble();
+
   // Called whenever the shelf alignment changes.
   virtual void UpdateAfterShelfAlignmentChange();
 
   // Called when the anchor (tray or bubble) may have moved or changed.
-  virtual void AnchorUpdated() {}
+  virtual void AnchorUpdated();
 
   // Called from GetAccessibleNodeData, must return a valid accessible name.
   virtual base::string16 GetAccessibleNameForTray() = 0;
 
   // Called when the bubble is resized.
-  virtual void BubbleResized(const views::TrayBubbleView* bubble_view) {}
+  virtual void BubbleResized(const views::TrayBubbleView* bubble_view);
 
   // Hides the bubble associated with |bubble_view|. Called when the widget
   // is closed.
@@ -100,7 +117,11 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   gfx::Insets GetBubbleAnchorInsets() const;
 
   // Returns the container window for the bubble (on the proper display).
-  aura::Window* GetBubbleWindowContainer() const;
+  aura::Window* GetBubbleWindowContainer();
+
+  // Update the bounds of the associated tray bubble. Close the bubble if
+  // |close_bubble| is set.
+  void AnimateToTargetBounds(const gfx::Rect& target_bounds, bool close_bubble);
 
  protected:
   // ActionableView:
@@ -109,6 +130,12 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   bool PerformAction(const ui::Event& event) override;
   void HandlePerformActionResult(bool action_performed,
                                  const ui::Event& event) override;
+
+  TrayDragController* drag_controller() { return drag_controller_.get(); }
+  void set_drag_controller(
+      std::unique_ptr<TrayDragController> drag_controller) {
+    drag_controller_ = std::move(drag_controller);
+  }
 
  private:
   class TrayWidgetObserver;
@@ -144,6 +171,13 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   // Visibility of this tray's separator which is a line of 1x32px and 4px to
   // right of tray.
   bool separator_visible_;
+
+  // Handles touch drag gestures on the tray area and its associated bubble.
+  std::unique_ptr<TrayDragController> drag_controller_;
+
+  // Used in maximize mode to make sure the system tray bubble only be shown in
+  // work area.
+  std::unique_ptr<aura::Window> clipping_window_;
 
   std::unique_ptr<TrayWidgetObserver> widget_observer_;
   std::unique_ptr<TrayEventFilter> tray_event_filter_;

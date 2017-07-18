@@ -558,6 +558,8 @@ component("ash") {
     "system/tray_accessibility.h",
     "system/tray_caps_lock.cc",
     "system/tray_caps_lock.h",
+    "system/tray_drag_controller.cc",
+    "system/tray_drag_controller.h",
     "system/tray_tracing.cc",
     "system/tray_tracing.h",
     "system/update/tray_update.cc",

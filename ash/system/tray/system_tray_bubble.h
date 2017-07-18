@@ -6,7 +6,6 @@
 #define ASH_SYSTEM_TRAY_SYSTEM_TRAY_BUBBLE_H_
 
 #include <map>
-#include <memory>
 #include <vector>
 
 #include "ash/login_status.h"
@@ -58,10 +57,6 @@ class SystemTrayBubble {
   // BUBBLE_TYPE_DEFAULT BubbleType.
   void RecordVisibleRowMetrics();
 
-  // Update the bounds of the system tray bubble. Close the bubble if
-  // |close_bubble| is set.
-  void AnimateToTargetBounds(const gfx::Rect& target_bounds, bool close_bubble);
-
  private:
   // Updates the bottom padding of the |bubble_view_| based on the
   // |bubble_type_|.
@@ -78,10 +73,6 @@ class SystemTrayBubble {
 
   int autoclose_delay_;
   base::OneShotTimer autoclose_;
-
-  // Used in maximize mode to make sure the system tray bubble only be shown in
-  // work area.
-  std::unique_ptr<aura::Window> clipping_window_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemTrayBubble);
 };

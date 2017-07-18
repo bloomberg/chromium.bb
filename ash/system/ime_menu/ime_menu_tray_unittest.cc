@@ -76,7 +76,7 @@ class ImeMenuTrayTest : public AshTestBase {
   bool IsTrayBackgroundActive() { return GetTray()->is_active(); }
 
   // Returns true if the IME menu bubble has been shown.
-  bool IsBubbleShown() { return GetTray()->IsImeMenuBubbleShown(); }
+  bool IsBubbleShown() { return GetTray()->GetBubbleView() != nullptr; }
 
   // Returns true if emoji palatte is enabled for the current keyboard.
   bool IsEmojiEnabled() { return GetTray()->emoji_enabled_; }

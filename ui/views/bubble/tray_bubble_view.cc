@@ -169,6 +169,34 @@ class BottomAlignedBoxLayout : public BoxLayout {
 using internal::TrayBubbleContentMask;
 using internal::BottomAlignedBoxLayout;
 
+TrayBubbleView::Delegate::~Delegate() {}
+
+void TrayBubbleView::Delegate::BubbleViewDestroyed() {}
+
+void TrayBubbleView::Delegate::OnMouseEnteredView() {}
+
+void TrayBubbleView::Delegate::OnMouseExitedView() {}
+
+void TrayBubbleView::Delegate::RegisterAccelerators(
+    const std::vector<ui::Accelerator>& accelerators,
+    TrayBubbleView* tray_bubble_view) {}
+
+void TrayBubbleView::Delegate::UnregisterAllAccelerators(
+    TrayBubbleView* tray_bubble_view) {}
+
+base::string16 TrayBubbleView::Delegate::GetAccessibleNameForBubble() {
+  return base::string16();
+}
+
+bool TrayBubbleView::Delegate::ShouldEnableExtraKeyboardAccessibility() {
+  return false;
+}
+
+void TrayBubbleView::Delegate::HideBubble(const TrayBubbleView* bubble_view) {}
+
+void TrayBubbleView::Delegate::ProcessGestureEventForBubble(
+    ui::GestureEvent* event) {}
+
 TrayBubbleView::InitParams::InitParams() = default;
 
 TrayBubbleView::InitParams::InitParams(const InitParams& other) = default;
@@ -391,6 +419,14 @@ void TrayBubbleView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
     node_data->role = ui::AX_ROLE_WINDOW;
     node_data->SetName(delegate_->GetAccessibleNameForBubble());
   }
+}
+
+void TrayBubbleView::OnGestureEvent(ui::GestureEvent* event) {
+  if (delegate_)
+    delegate_->ProcessGestureEventForBubble(event);
+
+  if (!event->handled())
+    BubbleDialogDelegateView::OnGestureEvent(event);
 }
 
 void TrayBubbleView::MouseMovedOutOfHost() {

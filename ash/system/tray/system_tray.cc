@@ -52,7 +52,6 @@
 #include "ash/system/user/tray_user.h"
 #include "ash/system/web_notification/web_notification_tray.h"
 #include "ash/wm/container_finder.h"
-#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/widget_finder.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -198,14 +197,16 @@ class SystemTray::ActivationObserver : public ::wm::ActivationChangeObserver {
 
 // SystemTray
 
-SystemTray::SystemTray(Shelf* shelf)
-    : TrayBackgroundView(shelf), shelf_(shelf) {
+SystemTray::SystemTray(Shelf* shelf) : TrayBackgroundView(shelf) {
   SetInkDropMode(InkDropMode::ON);
 
   // Since user avatar is on the right hand side of System tray of a
   // horizontal shelf and that is sufficient to indicate separation, no
   // separator is required.
   set_separator_visibility(false);
+
+  if (!drag_controller())
+    set_drag_controller(base::MakeUnique<TrayDragController>(shelf));
 }
 
 SystemTray::~SystemTray() {
@@ -558,6 +559,36 @@ void SystemTray::ClickedOutsideBubble() {
   HideBubbleWithView(system_bubble_->bubble_view());
 }
 
+bool SystemTray::PerformAction(const ui::Event& event) {
+  // If we're already showing a full system tray menu, either default or
+  // detailed menu, hide it; otherwise, show it (and hide any popup that's
+  // currently shown).
+  if (HasSystemBubble() && full_system_tray_menu_) {
+    system_bubble_->bubble()->Close();
+  } else {
+    ShowDefaultView(BUBBLE_CREATE_NEW);
+    if (event.IsKeyEvent() || (event.flags() & ui::EF_TOUCH_ACCESSIBILITY))
+      ActivateBubble();
+  }
+  return true;
+}
+
+void SystemTray::CloseBubble() {
+  CloseSystemBubble();
+}
+
+void SystemTray::ShowBubble() {
+  ShowDefaultView(BUBBLE_CREATE_NEW);
+}
+
+views::TrayBubbleView* SystemTray::GetBubbleView() {
+  // Only return the bubble view when it's showing the main system tray bubble,
+  // not the volume or brightness bubbles etc., to avoid client confusion.
+  return system_bubble_ && full_system_tray_menu_
+             ? system_bubble_->bubble_view()
+             : nullptr;
+}
+
 void SystemTray::BubbleViewDestroyed() {
   if (system_bubble_) {
     system_bubble_->bubble()->DestroyItemViews();
@@ -620,125 +651,6 @@ void SystemTray::ActivateBubble() {
     return;
   bubble_view->set_can_activate(true);
   bubble_view->GetWidget()->Activate();
-}
-
-void SystemTray::OnGestureEvent(ui::GestureEvent* event) {
-  if (Shell::Get()
-          ->maximize_mode_controller()
-          ->IsMaximizeModeWindowManagerEnabled() &&
-      shelf_->IsHorizontalAlignment() && ProcessGestureEvent(*event)) {
-    event->SetHandled();
-  } else {
-    TrayBackgroundView::OnGestureEvent(event);
-  }
-}
-
-gfx::Rect SystemTray::GetWorkAreaBoundsInScreen() const {
-  return shelf_->GetUserWorkAreaBounds();
-}
-
-bool SystemTray::PerformAction(const ui::Event& event) {
-  // If we're already showing a full system tray menu, either default or
-  // detailed menu, hide it; otherwise, show it (and hide any popup that's
-  // currently shown).
-  if (HasSystemBubble() && full_system_tray_menu_) {
-    system_bubble_->bubble()->Close();
-  } else {
-    ShowDefaultView(BUBBLE_CREATE_NEW);
-    if (event.IsKeyEvent() || (event.flags() & ui::EF_TOUCH_ACCESSIBILITY))
-      ActivateBubble();
-  }
-  return true;
-}
-
-bool SystemTray::ProcessGestureEvent(const ui::GestureEvent& event) {
-  if (event.type() == ui::ET_GESTURE_SCROLL_BEGIN)
-    return StartGestureDrag(event);
-
-  if (!HasSystemBubble() || !is_in_drag_)
-    return false;
-
-  if (event.type() == ui::ET_GESTURE_SCROLL_UPDATE) {
-    UpdateGestureDrag(event);
-    return true;
-  }
-
-  if (event.type() == ui::ET_GESTURE_SCROLL_END ||
-      event.type() == ui::ET_SCROLL_FLING_START) {
-    CompleteGestureDrag(event);
-    return true;
-  }
-
-  // Unexpected event. Reset the drag state and close the bubble.
-  is_in_drag_ = false;
-  CloseSystemBubble();
-  return false;
-}
-
-bool SystemTray::StartGestureDrag(const ui::GestureEvent& gesture) {
-  // Close the system bubble if there is already a full one opened. And return
-  // false to let shelf handle the event.
-  if (HasSystemBubble() && full_system_tray_menu_) {
-    system_bubble_->bubble()->Close();
-    return false;
-  }
-
-  // If the scroll sequence begins to scroll downward, return false so that the
-  // event will instead by handled by the shelf.
-  if (gesture.details().scroll_y_hint() > 0)
-    return false;
-
-  is_in_drag_ = true;
-  gesture_drag_amount_ = 0.f;
-  ShowDefaultView(BUBBLE_CREATE_NEW);
-  system_tray_bubble_bounds_ =
-      system_bubble_->bubble_view()->GetWidget()->GetWindowBoundsInScreen();
-  SetBubbleBounds(gesture.location());
-  return true;
-}
-
-void SystemTray::UpdateGestureDrag(const ui::GestureEvent& gesture) {
-  SetBubbleBounds(gesture.location());
-  gesture_drag_amount_ += gesture.details().scroll_y();
-}
-
-void SystemTray::CompleteGestureDrag(const ui::GestureEvent& gesture) {
-  const bool hide_bubble = !ShouldShowSystemBubbleAfterScrollSequence(gesture);
-  gfx::Rect target_bounds = system_tray_bubble_bounds_;
-
-  if (hide_bubble)
-    target_bounds.set_y(shelf_->GetIdealBounds().y());
-
-  system_bubble_->bubble()->AnimateToTargetBounds(target_bounds, hide_bubble);
-  is_in_drag_ = false;
-}
-
-void SystemTray::SetBubbleBounds(const gfx::Point& location) {
-  gfx::Point location_in_screen_coordinates(location);
-  View::ConvertPointToScreen(this, &location_in_screen_coordinates);
-
-  // System tray bubble should not be dragged higher than its original height.
-  if (location_in_screen_coordinates.y() < system_tray_bubble_bounds_.y())
-    location_in_screen_coordinates.set_y(system_tray_bubble_bounds_.y());
-
-  gfx::Rect bounds_on_location = system_tray_bubble_bounds_;
-  bounds_on_location.set_y(location_in_screen_coordinates.y());
-  system_bubble_->bubble_view()->GetWidget()->SetBounds(bounds_on_location);
-}
-
-bool SystemTray::ShouldShowSystemBubbleAfterScrollSequence(
-    const ui::GestureEvent& sequence_end) {
-  // If the scroll sequence terminates with a fling, show the system menu if the
-  // fling was fast enough and in the correct direction.
-  if (sequence_end.type() == ui::ET_SCROLL_FLING_START &&
-      fabs(sequence_end.details().velocity_y()) > kFlingVelocity) {
-    return sequence_end.details().velocity_y() < 0;
-  }
-
-  DCHECK(sequence_end.type() == ui::ET_GESTURE_SCROLL_END ||
-         sequence_end.type() == ui::ET_SCROLL_FLING_START);
-  // Show the system menu if it is already at least one-third visible.
-  return -gesture_drag_amount_ >= system_tray_bubble_bounds_.height() / 3.0;
 }
 
 void SystemTray::CloseSystemBubbleAndDeactivateSystemTray() {
