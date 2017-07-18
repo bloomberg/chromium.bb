@@ -58,11 +58,12 @@
 #include "public/web/WebHitTestResult.h"
 #include "public/web/WebLocalFrame.h"
 
-using namespace blink;
+namespace blink {
 
-static NSAttributedString* attributedSubstringFromRange(
-    const EphemeralRange& range,
-    float fontScale) {
+namespace {
+
+NSAttributedString* attributedSubstringFromRange(const EphemeralRange& range,
+                                                 float fontScale) {
   NSMutableAttributedString* string = [[NSMutableAttributedString alloc] init];
   NSMutableDictionary* attrs = [NSMutableDictionary dictionary];
   size_t length = range.EndPosition().ComputeOffsetInContainerNode() -
@@ -149,7 +150,7 @@ WebPoint getBaselinePoint(LocalFrameView* frameView,
   return stringPoint;
 }
 
-namespace blink {
+}  // namespace
 
 NSAttributedString* WebSubstringUtil::AttributedWordAtPoint(
     WebFrameWidget* frame_widget,
