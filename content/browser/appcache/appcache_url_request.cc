@@ -58,6 +58,10 @@ net::URLRequest* AppCacheURLRequest::GetURLRequest() {
   return url_request_;
 }
 
+AppCacheURLRequest* AppCacheURLRequest::AsURLRequest() {
+  return this;
+}
+
 AppCacheURLRequest::AppCacheURLRequest(net::URLRequest* url_request)
     : url_request_(url_request) {}
 

@@ -27,4 +27,12 @@ ResourceRequest* AppCacheRequest::GetResourceRequest() {
   return nullptr;
 }
 
+AppCacheURLRequest* AppCacheRequest::AsURLRequest() {
+  return nullptr;
+}
+
+AppCacheURLLoaderRequest* AppCacheRequest::AsURLLoaderRequest() {
+  return nullptr;
+}
+
 }  // namespace content
