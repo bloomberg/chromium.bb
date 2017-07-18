@@ -46,17 +46,19 @@ bool IsChromePolicy(const std::string& type) {
 }
 
 LicenseType TranslateLicenseType(em::LicenseType type) {
-  switch (type) {
-    case em::CDM_PERPETUAL:
-      return LicenseType::PERPETUAL;
-    case em::CDM_ANNUAL:
-      return LicenseType::ANNUAL;
-    case em::KIOSK:
-      return LicenseType::KIOSK;
-    default:
-      LOG(ERROR) << "Unknown License type: " << type;
+  switch (type.license_type()) {
+    case em::LicenseType::UNDEFINED:
+      LOG(ERROR) << "Unknown License type: " << type.license_type();
       return LicenseType::UNKNOWN;
+    case em::LicenseType::CDM_PERPETUAL:
+      return LicenseType::PERPETUAL;
+    case em::LicenseType::CDM_ANNUAL:
+      return LicenseType::ANNUAL;
+    case em::LicenseType::KIOSK:
+      return LicenseType::KIOSK;
   }
+  NOTREACHED();
+  return LicenseType::UNKNOWN;
 }
 
 void ExtractLicenseMap(const em::CheckDeviceLicenseResponse& license_response,

@@ -8,17 +8,24 @@ option optimize_for = LITE_RUNTIME;
 
 package enterprise_management;
 
-// Enumerates different license types.
-enum LicenseType {
-  // Unknown/undefined
-  UNDEFINED = 0;
-  // Chrome Device Management Perpetual
-  CDM_PERPETUAL = 1;
-  // Chrome Device Management Annual
-  CDM_ANNUAL = 2;
-  // Chrome Kiosk
-  KIOSK = 3;
-};
+// This enum needs to be shared between DeviceRegisterRequest and
+// LicenseAvailability protos. With java_api_version 1, this means that enum
+// needs to be wrapped into a message.
+message LicenseType {
+  // Enumerates different license types.
+  enum LicenseTypeEnum {
+    // Unknown/undefined
+    UNDEFINED = 0;
+    // Chrome Device Management Perpetual
+    CDM_PERPETUAL = 1;
+    // Chrome Device Management Annual
+    CDM_ANNUAL = 2;
+    // Chrome Kiosk
+    KIOSK = 3;
+  }
+
+  optional LicenseTypeEnum license_type = 1;
+}
 
 // Data along with a cryptographic signature verifying their authenticity.
 message SignedData {

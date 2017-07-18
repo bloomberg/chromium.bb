@@ -189,11 +189,13 @@ class CloudPolicyClientTest : public testing::Test {
         em::CheckDeviceLicenseResponse_LicenseSelectionMode_USER_SELECTION);
     em::LicenseAvailability* license_one =
         device_license_response->add_license_availability();
-    license_one->set_license_type(em::CDM_PERPETUAL);
+    license_one->mutable_license_type()->set_license_type(
+        em::LicenseType_LicenseTypeEnum_CDM_PERPETUAL);
     license_one->set_available_licenses(10);
     em::LicenseAvailability* license_two =
         device_license_response->add_license_availability();
-    license_two->set_license_type(em::KIOSK);
+    license_two->mutable_license_type()->set_license_type(
+        em::LicenseType_LicenseTypeEnum_KIOSK);
     license_two->set_available_licenses(0);
   }
 
