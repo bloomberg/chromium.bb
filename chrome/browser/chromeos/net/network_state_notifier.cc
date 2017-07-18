@@ -83,6 +83,31 @@ void ShowErrorNotification(const std::string& service_path,
           ash::system_notifier::kNotifierNetworkError, callback));
 }
 
+bool ShouldConnectFailedNotificationBeShown(const std::string& error_name,
+                                            const NetworkState* network_state) {
+  // Only show a notification for certain errors. Other failures are expected
+  // to be handled by the UI that initiated the connect request.
+  // Note: kErrorConnectFailed may also cause the configure dialog to be
+  // displayed, but we rely on the notification system to show additional
+  // details if available.
+  if (error_name != NetworkConnectionHandler::kErrorConnectFailed &&
+      error_name != NetworkConnectionHandler::kErrorNotFound &&
+      error_name != NetworkConnectionHandler::kErrorConfigureFailed &&
+      error_name != NetworkConnectionHandler::kErrorCertLoadTimeout) {
+    return false;
+  }
+
+  // When a connection to a Tether network fails, the Tether component shows its
+  // own error notification. If this is the case, there is no need to show an
+  // additional notification for the failure to connect to the underlying Wi-Fi
+  // network.
+  if (network_state && !network_state->tether_guid().empty())
+    return false;
+
+  // Otherwise, the connection failed notification should be shown.
+  return true;
+}
+
 }  // namespace
 
 const char NetworkStateNotifier::kNetworkConnectNotificationId[] =
@@ -127,18 +152,11 @@ void NetworkStateNotifier::ConnectSucceeded(const std::string& service_path) {
 
 void NetworkStateNotifier::ConnectFailed(const std::string& service_path,
                                          const std::string& error_name) {
-  // Only show a notification for certain errors. Other failures are expected
-  // to be handled by the UI that initiated the connect request.
-  // Note: kErrorConnectFailed may also cause the configure dialog to be
-  // displayed, but we rely on the notification system to show additional
-  // details if available.
-  if (error_name != NetworkConnectionHandler::kErrorConnectFailed &&
-      error_name != NetworkConnectionHandler::kErrorNotFound &&
-      error_name != NetworkConnectionHandler::kErrorConfigureFailed &&
-      error_name != NetworkConnectionHandler::kErrorCertLoadTimeout) {
-    return;
-  }
-  ShowNetworkConnectError(error_name, service_path);
+  const NetworkState* network =
+      NetworkHandler::Get()->network_state_handler()->GetNetworkState(
+          service_path);
+  if (ShouldConnectFailedNotificationBeShown(error_name, network))
+    ShowNetworkConnectError(error_name, service_path);
 }
 
 void NetworkStateNotifier::DisconnectRequested(
