@@ -399,11 +399,9 @@ class CryptohomeClientImpl : public CryptohomeClient {
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(cryptohome_id.id());
     proxy_->CallMethod(
-        &method_call, kTpmDBusTimeoutMs ,
-        base::Bind(
-            &CryptohomeClientImpl::OnPkcs11GetTpmTokenInfoForUser,
-            weak_ptr_factory_.GetWeakPtr(),
-            callback));
+        &method_call, kTpmDBusTimeoutMs,
+        base::Bind(&CryptohomeClientImpl::OnPkcs11GetTpmTokenInfo,
+                   weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   // CryptohomeClient override.
@@ -1136,29 +1134,10 @@ class CryptohomeClientImpl : public CryptohomeClient {
     callback.Run(DBUS_METHOD_CALL_SUCCESS, true, reply);
   }
 
-  // Handles responses for Pkcs11GetTpmTokenInfo.
+  // Handles responses for Pkcs11GetTpmTokenInfo and
+  // Pkcs11GetTpmTokenInfoForUser.
   void OnPkcs11GetTpmTokenInfo(const Pkcs11GetTpmTokenInfoCallback& callback,
                                dbus::Response* response) {
-    if (!response) {
-      callback.Run(DBUS_METHOD_CALL_FAILURE, std::string(), std::string(), -1);
-      return;
-    }
-    dbus::MessageReader reader(response);
-    std::string label;
-    std::string user_pin;
-    if (!reader.PopString(&label) || !reader.PopString(&user_pin)) {
-      callback.Run(DBUS_METHOD_CALL_FAILURE, std::string(), std::string(), -1);
-      LOG(ERROR) << "Invalid response: " << response->ToString();
-      return;
-    }
-    const int kDefaultSlot = 0;
-    callback.Run(DBUS_METHOD_CALL_SUCCESS, label, user_pin, kDefaultSlot);
-  }
-
-  // Handles responses for Pkcs11GetTpmTokenInfoForUser.
-  void OnPkcs11GetTpmTokenInfoForUser(
-      const Pkcs11GetTpmTokenInfoCallback& callback,
-      dbus::Response* response) {
     if (!response) {
       callback.Run(DBUS_METHOD_CALL_FAILURE, std::string(), std::string(), -1);
       return;
