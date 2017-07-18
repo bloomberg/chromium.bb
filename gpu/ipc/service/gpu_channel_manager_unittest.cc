@@ -47,8 +47,8 @@ class GpuChannelManagerTest : public GpuChannelTestCommon {
     GpuCommandBufferStub* stub = channel->LookupCommandBuffer(kRouteId);
     EXPECT_TRUE(stub);
 
-    channel_manager()->OnApplicationStateChange(
-        base::android::APPLICATION_STATE_HAS_STOPPED_ACTIVITIES);
+    channel_manager()->is_backgrounded_for_testing_ = true;
+    channel_manager()->OnApplicationBackgrounded();
     stub = channel->LookupCommandBuffer(kRouteId);
     if (should_clear_stub) {
       EXPECT_FALSE(stub);
