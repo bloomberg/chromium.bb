@@ -1572,11 +1572,13 @@ void PrintWebViewHelper::DidFinishPrinting(PrintingResult result) {
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
     case FAIL_PREVIEW:
-      if (notify_browser_of_print_failure_) {
-        LOG(ERROR) << "CreatePreviewDocument failed";
-        Send(new PrintHostMsg_PrintPreviewFailed(routing_id(), cookie));
-      } else {
-        Send(new PrintHostMsg_PrintPreviewCancelled(routing_id(), cookie));
+      if (!is_print_ready_metafile_sent_) {
+        if (notify_browser_of_print_failure_) {
+          LOG(ERROR) << "CreatePreviewDocument failed";
+          Send(new PrintHostMsg_PrintPreviewFailed(routing_id(), cookie));
+        } else {
+          Send(new PrintHostMsg_PrintPreviewCancelled(routing_id(), cookie));
+        }
       }
       print_preview_context_.Failed(notify_browser_of_print_failure_);
       break;
