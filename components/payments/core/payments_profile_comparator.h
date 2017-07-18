@@ -108,13 +108,6 @@ class PaymentsProfileComparator : public autofill::AutofillProfileComparator {
   bool AreRequiredAddressFieldsPresent(
       const autofill::AutofillProfile& profile) const;
 
-  // Comparison functions suitable for sorting profiles by completeness
-  // score with std::sort.
-  bool IsContactMoreComplete(const autofill::AutofillProfile* p1,
-                             const autofill::AutofillProfile* p2) const;
-  bool IsShippingMoreComplete(const autofill::AutofillProfile* p1,
-                              const autofill::AutofillProfile* p2) const;
-
   mutable std::map<std::string, ProfileFields> cache_;
   const PaymentOptionsProvider& options_;
 };

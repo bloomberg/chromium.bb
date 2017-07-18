@@ -56,8 +56,10 @@ PaymentsProfileComparator::FilterProfilesForContact(
   // Stable sort, since profiles are expected to be passed in frecency order.
   std::stable_sort(
       processed.begin(), processed.end(),
-      std::bind(&PaymentsProfileComparator::IsContactMoreComplete, this,
-                std::placeholders::_1, std::placeholders::_2));
+      [this](autofill::AutofillProfile* p1, autofill::AutofillProfile* p2) {
+        return GetContactCompletenessScore(p1) >
+               GetContactCompletenessScore(p2);
+      });
 
   auto it = processed.begin();
   while (it != processed.end()) {
@@ -149,8 +151,10 @@ PaymentsProfileComparator::FilterProfilesForShipping(
 
   std::stable_sort(
       processed.begin(), processed.end(),
-      std::bind(&PaymentsProfileComparator::IsShippingMoreComplete, this,
-                std::placeholders::_1, std::placeholders::_2));
+      [this](autofill::AutofillProfile* p1, autofill::AutofillProfile* p2) {
+        return GetShippingCompletenessScore(p1) >
+               GetShippingCompletenessScore(p2);
+      });
 
   // TODO(crbug.com/722949): Remove profiles with no relevant information, or
   // which are subsets of more-complete profiles.
@@ -269,18 +273,6 @@ bool PaymentsProfileComparator::AreRequiredAddressFieldsPresent(
                                                            app_locale());
 
   return autofill::addressinput::HasAllRequiredFields(*data);
-}
-
-bool PaymentsProfileComparator::IsContactMoreComplete(
-    const autofill::AutofillProfile* p1,
-    const autofill::AutofillProfile* p2) const {
-  return GetContactCompletenessScore(p1) > GetContactCompletenessScore(p2);
-}
-
-bool PaymentsProfileComparator::IsShippingMoreComplete(
-    const autofill::AutofillProfile* p1,
-    const autofill::AutofillProfile* p2) const {
-  return GetShippingCompletenessScore(p1) > GetShippingCompletenessScore(p2);
 }
 
 }  // namespace payments
