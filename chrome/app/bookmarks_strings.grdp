@@ -431,17 +431,21 @@
   <message name="IDS_MD_BOOKMARK_MANAGER_TOAST_FOLDER_SORTED" desc="Label displayed in toast popup message when a folder's children are sorted.">
     Folder sorted
   </message>
-  <message name="IDS_MD_BOOKMARK_MANAGER_TOAST_ITEMS_DELETED" desc="Label displayed in toast popup message when several items are deleted.">
+  <message name="IDS_MD_BOOKMARK_MANAGER_TOAST_ITEM_DELETED" desc="Label displayed in toast popup message when a single item is deleted.">
+    '<ph name="DELETED_ITEM_NAME">$1<ex>Bookmark X</ex></ph>' has been deleted
+  </message>
+  <message name="IDS_MD_BOOKMARK_MANAGER_TOAST_ITEMS_DELETED" desc="Label displayed in toast popup message when two or more items are deleted.">
     {COUNT, plural,
-      =1 {'<ph name="DELETED_ITEM_NAME">$1</ph>' has been deleted}
       other {# bookmarks deleted}}
   </message>
   <message name="IDS_MD_BOOKMARK_MANAGER_TOAST_URL_COPIED" desc="Label displayed in toast popup message when a URL is copied.">
     URL copied
   </message>
-  <message name="IDS_MD_BOOKMARK_MANAGER_TOAST_ITEMS_COPIED" desc="Label displayed in a toast popup message when several bookmark items are copied">
+  <message name="IDS_MD_BOOKMARK_MANAGER_TOAST_ITEM_COPIED" desc="Label displayed in toast popup message when a single item is copied.">
+    '<ph name="COPIED_ITEM_NAME">$1<ex>Bookmark X</ex></ph>' copied
+  </message>
+  <message name="IDS_MD_BOOKMARK_MANAGER_TOAST_ITEMS_COPIED" desc="Label displayed in a toast popup message when two or more bookmark items are copied">
     {COUNT, plural,
-      =1 {'<ph name="COPIED_ITEM_NAME">$1</ph>' copied}
       other {# items copied}}
   </message>
   <!-- End of material design Bookmarks Manager strings. -->
