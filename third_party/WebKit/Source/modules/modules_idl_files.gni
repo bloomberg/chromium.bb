@@ -178,6 +178,7 @@ modules_idl_files =
                     "notifications/NotificationEvent.idl",
                     "notifications/NotificationPermissionCallback.idl",
                     "offscreencanvas2d/OffscreenCanvasRenderingContext2D.idl",
+                    "payments/AbortPaymentEvent.idl",
                     "payments/CanMakePaymentEvent.idl",
                     "payments/PaymentAddress.idl",
                     "payments/PaymentInstruments.idl",
