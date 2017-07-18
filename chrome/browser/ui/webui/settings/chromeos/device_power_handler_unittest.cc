@@ -70,7 +70,6 @@ class PowerHandlerTest : public testing::Test {
       const content::TestWebUI::CallData* data = it->get();
       std::string name;
       const base::DictionaryValue* dict = nullptr;
-      data->arg1()->GetAsString(&name);
       if (data->function_name() != "cr.webUIListenerCallback" ||
           !data->arg1()->GetAsString(&name) ||
           name != PowerHandler::kPowerManagementSettingsChangedName) {

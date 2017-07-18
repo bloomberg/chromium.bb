@@ -165,7 +165,7 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui, const GURL& url)
   AddSettingsPageUIHandler(
       base::MakeUnique<chromeos::settings::FingerprintHandler>(profile));
   AddSettingsPageUIHandler(
-      base::MakeUnique<chromeos::settings::KeyboardHandler>(web_ui));
+      base::MakeUnique<chromeos::settings::KeyboardHandler>());
   AddSettingsPageUIHandler(
       base::MakeUnique<chromeos::settings::PointerHandler>());
   AddSettingsPageUIHandler(
