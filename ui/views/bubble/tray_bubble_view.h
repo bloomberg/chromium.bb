@@ -48,17 +48,17 @@ class VIEWS_EXPORT TrayBubbleView : public BubbleDialogDelegateView,
     typedef TrayBubbleView::AnchorAlignment AnchorAlignment;
 
     Delegate() {}
-    virtual ~Delegate() {}
+    virtual ~Delegate();
 
     // Called when the view is destroyed. Any pointers to the view should be
     // cleared when this gets called.
-    virtual void BubbleViewDestroyed() = 0;
+    virtual void BubbleViewDestroyed();
 
     // Called when the mouse enters/exits the view.
     // Note: This event will only be called if the mouse gets actively moved by
     // the user to enter the view.
-    virtual void OnMouseEnteredView() = 0;
-    virtual void OnMouseExitedView() = 0;
+    virtual void OnMouseEnteredView();
+    virtual void OnMouseExitedView();
 
     // Called to register/unregister accelerators for TrayBubbleView.
     // TrayBubbleView wants to register those accelerators at the global level.
@@ -68,22 +68,25 @@ class VIEWS_EXPORT TrayBubbleView : public BubbleDialogDelegateView,
     // not called.
     virtual void RegisterAccelerators(
         const std::vector<ui::Accelerator>& accelerators,
-        TrayBubbleView* tray_bubble_view) = 0;
-    virtual void UnregisterAllAccelerators(
-        TrayBubbleView* tray_bubble_view) = 0;
+        TrayBubbleView* tray_bubble_view);
+    virtual void UnregisterAllAccelerators(TrayBubbleView* tray_bubble_view);
 
     // Called from GetAccessibleNodeData(); should return the appropriate
     // accessible name for the bubble.
-    virtual base::string16 GetAccessibleNameForBubble() = 0;
+    virtual base::string16 GetAccessibleNameForBubble();
 
     // Should return true if extra keyboard accessibility is enabled.
     // TrayBubbleView will put focus on the default item if extra keyboard
     // accessibility is enabled.
-    virtual bool ShouldEnableExtraKeyboardAccessibility() = 0;
+    virtual bool ShouldEnableExtraKeyboardAccessibility();
 
     // Called when a bubble wants to hide/destroy itself (e.g. last visible
     // child view was closed).
-    virtual void HideBubble(const TrayBubbleView* bubble_view) = 0;
+    virtual void HideBubble(const TrayBubbleView* bubble_view);
+
+    // Called to process the gesture events that happened on the TrayBubbleView.
+    // Swiping down on the opened TrayBubbleView to close the bubble.
+    virtual void ProcessGestureEventForBubble(ui::GestureEvent* event);
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Delegate);
@@ -158,6 +161,7 @@ class VIEWS_EXPORT TrayBubbleView : public BubbleDialogDelegateView,
   void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
 
   // Overridden from MouseWatcherListener
   void MouseMovedOutOfHost() override;

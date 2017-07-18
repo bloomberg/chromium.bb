@@ -305,6 +305,9 @@ WebNotificationTray::WebNotificationTray(Shelf* shelf,
   OnMessageCenterTrayChanged();
 
   tray_container()->SetMargin(kTrayMainAxisInset, kTrayCrossAxisInset);
+
+  if (!drag_controller())
+    set_drag_controller(base::MakeUnique<TrayDragController>(shelf));
 }
 
 WebNotificationTray::~WebNotificationTray() {
@@ -399,11 +402,6 @@ bool WebNotificationTray::IsMessageCenterBubbleVisible() const {
           message_center_bubble()->bubble()->IsVisible());
 }
 
-void WebNotificationTray::ShowMessageCenterBubble() {
-  if (!IsMessageCenterBubbleVisible())
-    message_center_tray_->ShowMessageCenterBubble();
-}
-
 void WebNotificationTray::UpdateAfterLoginStatusChange(
     LoginStatus login_status) {
   message_center()->SetLockedState(login_status == LoginStatus::LOCKED);
@@ -436,14 +434,6 @@ void WebNotificationTray::HideBubbleWithView(
   } else if (popup_collection_.get()) {
     message_center_tray_->HidePopupBubble();
   }
-}
-
-bool WebNotificationTray::PerformAction(const ui::Event& event) {
-  if (message_center_bubble())
-    message_center_tray_->HideMessageCenterBubble();
-  else
-    message_center_tray_->ShowMessageCenterBubble();
-  return true;
 }
 
 void WebNotificationTray::BubbleViewDestroyed() {
@@ -600,6 +590,28 @@ void WebNotificationTray::ClickedOutsideBubble() {
     return;
 
   message_center_tray_->HideMessageCenterBubble();
+}
+
+bool WebNotificationTray::PerformAction(const ui::Event& event) {
+  if (message_center_bubble())
+    message_center_tray_->HideMessageCenterBubble();
+  else
+    message_center_tray_->ShowMessageCenterBubble();
+  return true;
+}
+
+void WebNotificationTray::CloseBubble() {
+  message_center_tray_->HideMessageCenterBubble();
+}
+
+void WebNotificationTray::ShowBubble() {
+  if (!IsMessageCenterBubbleVisible())
+    message_center_tray_->ShowMessageCenterBubble();
+}
+
+views::TrayBubbleView* WebNotificationTray::GetBubbleView() {
+  return message_center_bubble_ ? message_center_bubble_->bubble_view()
+                                : nullptr;
 }
 
 message_center::MessageCenter* WebNotificationTray::message_center() const {

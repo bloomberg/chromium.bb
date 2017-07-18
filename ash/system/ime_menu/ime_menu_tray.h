@@ -29,21 +29,11 @@ class ImeListView;
 // for emoji, handwriting, and voice.
 class ASH_EXPORT ImeMenuTray : public TrayBackgroundView,
                                public IMEObserver,
-                               public views::TrayBubbleView::Delegate,
                                public keyboard::KeyboardControllerObserver,
                                public VirtualKeyboardObserver {
  public:
   explicit ImeMenuTray(Shelf* shelf);
   ~ImeMenuTray() override;
-
-  // Shows the IME menu bubble and highlights the button.
-  void ShowImeMenuBubble();
-
-  // Hides the IME menu bubble and lowlights the button.
-  void HideImeMenuBubble();
-
-  // Returns true if the IME menu bubble has been shown.
-  bool IsImeMenuBubbleShown();
 
   // Shows the virtual keyboard with the given keyset: emoji, handwriting or
   // voice.
@@ -63,6 +53,9 @@ class ASH_EXPORT ImeMenuTray : public TrayBackgroundView,
   void HideBubbleWithView(const views::TrayBubbleView* bubble_view) override;
   void ClickedOutsideBubble() override;
   bool PerformAction(const ui::Event& event) override;
+  void CloseBubble() override;
+  void ShowBubble() override;
+  views::TrayBubbleView* GetBubbleView() override;
 
   // IMEObserver:
   void OnIMERefresh() override;

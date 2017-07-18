@@ -380,7 +380,7 @@ void HandleShowMessageCenterBubble() {
     WebNotificationTray* notification_tray =
         status_area_widget->web_notification_tray();
     if (notification_tray->visible())
-      notification_tray->ShowMessageCenterBubble();
+      notification_tray->ShowBubble();
   }
 }
 
@@ -512,8 +512,8 @@ void HandleShowImeMenuBubble() {
   if (status_area_widget) {
     ImeMenuTray* ime_menu_tray = status_area_widget->ime_menu_tray();
     if (ime_menu_tray && ime_menu_tray->visible() &&
-        !ime_menu_tray->IsImeMenuBubbleShown()) {
-      ime_menu_tray->ShowImeMenuBubble();
+        !ime_menu_tray->GetBubbleView()) {
+      ime_menu_tray->ShowBubble();
     }
   }
 }
@@ -572,7 +572,7 @@ void HandleShowStylusTools() {
   Shelf::ForWindow(Shell::GetRootWindowForNewWindows())
       ->GetStatusAreaWidget()
       ->palette_tray()
-      ->ShowPalette();
+      ->ShowBubble();
 }
 
 bool CanHandleShowStylusTools() {
