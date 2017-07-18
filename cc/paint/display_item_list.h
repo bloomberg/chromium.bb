@@ -114,24 +114,14 @@ class CC_PAINT_EXPORT DisplayItemList
   size_t op_count() const { return paint_op_buffer_.size(); }
   size_t BytesUsed() const;
 
-  void EmitTraceSnapshot() const;
-
-  void GenerateDiscardableImagesMetadata();
-  void GetDiscardableImagesInRect(const gfx::Rect& rect,
-                                  float contents_scale,
-                                  const gfx::ColorSpace& target_color_space,
-                                  std::vector<DrawImage>* images);
-  gfx::Rect GetRectForImage(PaintImage::Id image_id) const;
-
-  gfx::Rect VisualRectForTesting(int index) { return visual_rects_[index]; }
-
-  const DiscardableImageMap& discardable_image_map_for_testing() const {
+  const DiscardableImageMap& discardable_image_map() const {
     return image_map_;
   }
 
-  bool HasDiscardableImages() const {
-    return paint_op_buffer_.HasDiscardableImages();
-  }
+  void EmitTraceSnapshot() const;
+  void GenerateDiscardableImagesMetadata();
+
+  gfx::Rect VisualRectForTesting(int index) { return visual_rects_[index]; }
 
   // Generate a PaintRecord from this DisplayItemList, leaving |this| in
   // an empty state.

@@ -228,14 +228,14 @@ void RasterSource::GetDiscardableImagesInRect(
     const gfx::ColorSpace& target_color_space,
     std::vector<DrawImage>* images) const {
   DCHECK_EQ(0u, images->size());
-  display_list_->GetDiscardableImagesInRect(layer_rect, contents_scale,
-                                            target_color_space, images);
+  display_list_->discardable_image_map().GetDiscardableImagesInRect(
+      layer_rect, contents_scale, target_color_space, images);
 }
 
 gfx::Rect RasterSource::GetRectForImage(PaintImage::Id image_id) const {
   if (!display_list_)
     return gfx::Rect();
-  return display_list_->GetRectForImage(image_id);
+  return display_list_->discardable_image_map().GetRectForImage(image_id);
 }
 
 bool RasterSource::CoversRect(const gfx::Rect& layer_rect) const {

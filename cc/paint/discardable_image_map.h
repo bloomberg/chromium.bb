@@ -22,25 +22,13 @@
 
 namespace cc {
 class DiscardableImageStore;
+class PaintOpBuffer;
 
 // This class is used for generating discardable images data (see DrawImage
 // for the type of data it stores). It allows the client to query a particular
 // rect and get back a list of DrawImages in that rect.
 class CC_PAINT_EXPORT DiscardableImageMap {
  public:
-  class CC_PAINT_EXPORT ScopedMetadataGenerator {
-   public:
-    ScopedMetadataGenerator(DiscardableImageMap* image_map,
-                            const gfx::Size& bounds);
-    ~ScopedMetadataGenerator();
-
-    DiscardableImageStore* image_store() { return image_store_.get(); }
-
-   private:
-    DiscardableImageMap* image_map_;
-    std::unique_ptr<DiscardableImageStore> image_store_;
-  };
-
   DiscardableImageMap();
   ~DiscardableImageMap();
 
@@ -52,6 +40,7 @@ class CC_PAINT_EXPORT DiscardableImageMap {
   gfx::Rect GetRectForImage(PaintImage::Id image_id) const;
 
   void Reset();
+  void Generate(const PaintOpBuffer* paint_op_buffer, const gfx::Rect& bounds);
 
  private:
   friend class ScopedMetadataGenerator;

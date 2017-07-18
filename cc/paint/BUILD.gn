@@ -9,8 +9,6 @@ cc_component("paint") {
   sources = [
     "discardable_image_map.cc",
     "discardable_image_map.h",
-    "discardable_image_store.cc",
-    "discardable_image_store.h",
     "display_item_list.cc",
     "display_item_list.h",
     "draw_image.cc",
