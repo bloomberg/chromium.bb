@@ -15,6 +15,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
+#include "net/base/net_errors.h"
 #include "net/base/network_interfaces.h"
 #include "net/log/test_net_log.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -127,6 +128,12 @@ TEST_F(DialServiceTest, TestOnDiscoveryRequest) {
   size_t num_bytes = dial_service_.send_buffer_->size();
   EXPECT_CALL(mock_observer_, OnDiscoveryRequest(A<DialService*>())).Times(1);
   dial_socket_->OnSocketWrite(num_bytes, num_bytes);
+}
+
+TEST_F(DialServiceTest, TestNotifyOnError) {
+  EXPECT_CALL(mock_observer_, OnError(A<DialService*>(),
+                                      DialService::DIAL_SERVICE_NO_INTERFACES));
+  dial_socket_->OnSocketWrite(0, net::ERR_CONNECTION_REFUSED);
 }
 
 TEST_F(DialServiceTest, TestOnDeviceDiscovered) {

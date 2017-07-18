@@ -163,16 +163,10 @@ NetworkInterfaceList GetNetworkList() {
 
 }  // namespace
 
-DialServiceImpl::DialSocket::DialSocket(
-    const base::Closure& discovery_request_cb,
-    const base::Callback<void(const DialDeviceData&)>& device_discovered_cb,
-    const base::Closure& on_error_cb)
-    : discovery_request_cb_(discovery_request_cb),
-      device_discovered_cb_(device_discovered_cb),
-      on_error_cb_(on_error_cb),
-      is_writing_(false),
-      is_reading_(false) {
+DialServiceImpl::DialSocket::DialSocket(DialServiceImpl* dial_service)
+    : is_writing_(false), is_reading_(false), dial_service_(dial_service) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(dial_service_);
 }
 
 DialServiceImpl::DialSocket::~DialSocket() {
@@ -243,7 +237,7 @@ bool DialServiceImpl::DialSocket::CheckResult(const char* operation,
     Close();
     std::string error_str(net::ErrorToString(result));
     VLOG(1) << "dial socket error: " << error_str;
-    on_error_cb_.Run();
+    dial_service_->NotifyOnError();
     return false;
   }
   return true;
@@ -266,7 +260,7 @@ void DialServiceImpl::DialSocket::OnSocketWrite(int send_buffer_size,
     VLOG(1) << "Sent " << result << " chars, expected " << send_buffer_size
             << " chars";
   }
-  discovery_request_cb_.Run();
+  dial_service_->NotifyOnDiscoveryRequest();
 }
 
 bool DialServiceImpl::DialSocket::ReadSocket() {
@@ -328,7 +322,7 @@ void DialServiceImpl::DialSocket::HandleResponse(int bytes_read) {
   // Attempt to parse response, notify observers if successful.
   DialDeviceData parsed_device;
   if (ParseResponse(response, response_time, &parsed_device))
-    device_discovered_cb_.Run(parsed_device);
+    dial_service_->NotifyOnDeviceDiscovered(parsed_device);
 }
 
 // static
@@ -398,8 +392,7 @@ DialServiceImpl::DialServiceImpl(net::NetLog* net_log)
                                                 kDialRequestIntervalMillis) +
                     TimeDelta::FromSeconds(kDialResponseTimeoutSecs)),
       request_interval_(
-          TimeDelta::FromMilliseconds(kDialRequestIntervalMillis)),
-      weak_factory_(this) {
+          TimeDelta::FromMilliseconds(kDialRequestIntervalMillis)) {
   IPAddress address;
   bool success = address.AssignFromIPLiteral(kDialRequestAddress);
   DCHECK(success);
@@ -453,16 +446,17 @@ void DialServiceImpl::StartDiscovery() {
 #if defined(OS_CHROMEOS)
   auto task_runner =
       content::BrowserThread::GetTaskRunnerForThread(BrowserThread::UI);
-  base::PostTaskAndReplyWithResult(
+  task_tracker_.PostTaskAndReplyWithResult(
       task_runner.get(), FROM_HERE,
       base::BindOnce(&GetBestBindAddressOnUIThread),
       base::BindOnce(&DialServiceImpl::DiscoverOnAddresses,
-                     weak_factory_.GetWeakPtr()));
+                     base::Unretained(this)));
 #else
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock()}, base::BindOnce(&GetNetworkList),
+  auto task_runner = base::CreateTaskRunnerWithTraits({base::MayBlock()});
+  task_tracker_.PostTaskAndReplyWithResult(
+      task_runner.get(), FROM_HERE, base::BindOnce(&GetNetworkList),
       base::BindOnce(&DialServiceImpl::SendNetworkList,
-                     weak_factory_.GetWeakPtr()));
+                     base::Unretained(this)));
 #endif
 }
 
@@ -537,12 +531,7 @@ void DialServiceImpl::BindAndAddSocket(const IPAddress& bind_ip_address) {
 
 std::unique_ptr<DialServiceImpl::DialSocket>
 DialServiceImpl::CreateDialSocket() {
-  return base::MakeUnique<DialServiceImpl::DialSocket>(
-      base::Bind(&DialServiceImpl::NotifyOnDiscoveryRequest,
-                 weak_factory_.GetWeakPtr()),
-      base::Bind(&DialServiceImpl::NotifyOnDeviceDiscovered,
-                 weak_factory_.GetWeakPtr()),
-      base::Bind(&DialServiceImpl::NotifyOnError, weak_factory_.GetWeakPtr()));
+  return base::MakeUnique<DialServiceImpl::DialSocket>(this);
 }
 
 void DialServiceImpl::SendOneRequest() {
