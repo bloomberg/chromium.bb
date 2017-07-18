@@ -74,13 +74,12 @@ void NightLightToggleButton::Update() {
 }
 
 void NightLightToggleButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->SetName(
-      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NIGHT_LIGHT));
+  const bool is_enabled = Shell::Get()->night_light_controller()->GetEnabled();
+  node_data->SetName(GetNightLightTooltipText(is_enabled));
   node_data->role = ui::AX_ROLE_TOGGLE_BUTTON;
-  const bool is_pressed = Shell::Get()->night_light_controller()->GetEnabled();
   node_data->AddIntAttribute(
       ui::AX_ATTR_CHECKED_STATE,
-      is_pressed ? ui::AX_CHECKED_STATE_TRUE : ui::AX_CHECKED_STATE_FALSE);
+      is_enabled ? ui::AX_CHECKED_STATE_TRUE : ui::AX_CHECKED_STATE_FALSE);
 }
 
 }  // namespace ash
