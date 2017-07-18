@@ -204,7 +204,7 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardAppWindowTest,
   controller->ui()->GetContentsWindow()->SetBounds(test_bounds);
   gfx::Rect keyboard_bounds = controller->GetContainerWindow()->bounds();
   // Starts overscroll.
-  controller->NotifyKeyboardBoundsChanging(keyboard_bounds);
+  controller->NotifyContentsBoundsChanging(keyboard_bounds);
 
   // Non ime window should have smaller visible view port due to overlap with
   // virtual keyboard.
