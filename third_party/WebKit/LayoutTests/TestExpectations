@@ -3103,3 +3103,4 @@ crbug.com/708994 virtual/mojo-loading/http/tests/security/cross-frame-mouse-sour
 crbug.com/626703 [ Win7 ] external/wpt/html/semantics/tabular-data/processing-model-1/span-limits.html [ Timeout ]
 
 crbug.com/745887 [ Mac Win ] fast/frames/sandboxed-iframe-plugins.html [ Failure Pass ]
+crbug.com/745899 [ Linux ] vr/getFrameData_samewithinframe.html [ Failure Pass ]
