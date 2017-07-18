@@ -32,92 +32,48 @@
 
 #include "platform/graphics/InterpolationSpace.h"
 
-#include <algorithm>
-#include "platform/graphics/skia/SkiaUtils.h"
-#include "platform/wtf/MathExtras.h"
-#include "third_party/skia/include/effects/SkTableColorFilter.h"
+#include "third_party/skia/include/core/SkColorFilter.h"
 
 namespace blink {
 
 namespace InterpolationSpaceUtilities {
 
-static const uint8_t* GetLinearRgbLUT() {
-  static uint8_t linear_rgb_lut[256];
-  static bool initialized;
-  if (!initialized) {
-    for (unsigned i = 0; i < 256; i++) {
-      float color = i / 255.0f;
-      color = (color <= 0.04045f ? color / 12.92f
-                                 : pow((color + 0.055f) / 1.055f, 2.4f));
-      color = std::max(0.0f, color);
-      color = std::min(1.0f, color);
-      linear_rgb_lut[i] = static_cast<uint8_t>(round(color * 255));
-    }
-    initialized = true;
-  }
-  return linear_rgb_lut;
-}
+namespace {
 
-static const uint8_t* GetDeviceRgbLUT() {
-  static uint8_t device_rgb_lut[256];
-  static bool initialized;
-  if (!initialized) {
-    for (unsigned i = 0; i < 256; i++) {
-      float color = i / 255.0f;
-      color = (powf(color, 1.0f / 2.4f) * 1.055f) - 0.055f;
-      color = std::max(0.0f, color);
-      color = std::min(1.0f, color);
-      device_rgb_lut[i] = static_cast<uint8_t>(round(color * 255));
-    }
-    initialized = true;
-  }
-  return device_rgb_lut;
-}
-
-const uint8_t* GetConversionLUT(InterpolationSpace dst_interpolation_space,
-                                InterpolationSpace src_interpolation_space) {
+sk_sp<SkColorFilter> GetConversionFilter(
+    InterpolationSpace dst_interpolation_space,
+    InterpolationSpace src_interpolation_space) {
   // Identity.
   if (src_interpolation_space == dst_interpolation_space)
-    return 0;
+    return nullptr;
 
-  // Only sRGB/DeviceRGB <-> linearRGB are supported at the moment.
-  if ((src_interpolation_space != kInterpolationSpaceLinear &&
-       src_interpolation_space != kInterpolationSpaceSRGB) ||
-      (dst_interpolation_space != kInterpolationSpaceLinear &&
-       dst_interpolation_space != kInterpolationSpaceSRGB))
-    return 0;
-
-  if (dst_interpolation_space == kInterpolationSpaceLinear)
-    return GetLinearRgbLUT();
-  if (dst_interpolation_space == kInterpolationSpaceSRGB)
-    return GetDeviceRgbLUT();
+  switch (dst_interpolation_space) {
+    case kInterpolationSpaceLinear:
+      return SkColorFilter::MakeSRGBToLinearGamma();
+    case kInterpolationSpaceSRGB:
+      return SkColorFilter::MakeLinearToSRGBGamma();
+  }
 
   NOTREACHED();
-  return 0;
+  return nullptr;
 }
+
+}  // namespace
 
 Color ConvertColor(const Color& src_color,
                    InterpolationSpace dst_interpolation_space,
                    InterpolationSpace src_interpolation_space) {
-  const uint8_t* lookup_table =
-      GetConversionLUT(dst_interpolation_space, src_interpolation_space);
-  if (!lookup_table)
-    return src_color;
-
-  return Color(lookup_table[src_color.Red()], lookup_table[src_color.Green()],
-               lookup_table[src_color.Blue()], src_color.Alpha());
+  sk_sp<SkColorFilter> conversion_filter =
+      GetConversionFilter(dst_interpolation_space, src_interpolation_space);
+  return conversion_filter
+             ? Color(conversion_filter->filterColor(src_color.Rgb()))
+             : src_color;
 }
 
 sk_sp<SkColorFilter> CreateInterpolationSpaceFilter(
     InterpolationSpace src_interpolation_space,
     InterpolationSpace dst_interpolation_space) {
-  const uint8_t* lookup_table =
-      GetConversionLUT(dst_interpolation_space, src_interpolation_space);
-  if (!lookup_table)
-    return nullptr;
-
-  return SkTableColorFilter::MakeARGB(0, lookup_table, lookup_table,
-                                      lookup_table);
+  return GetConversionFilter(dst_interpolation_space, src_interpolation_space);
 }
 
 }  // namespace InterpolationSpaceUtilities
