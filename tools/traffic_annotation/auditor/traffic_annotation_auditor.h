@@ -46,10 +46,15 @@ class AuditorResult {
     ERROR_MISSING,        // A function is called without annotation.
     ERROR_NO_ANNOTATION,  // A function is called with NO_ANNOTATION tag.
     ERROR_SYNTAX,         // Annotation syntax is not right.
-    ERROR_RESERVED_UNIQUE_ID_HASH_CODE,  // A unique id has a hash code similar
-                                         // to a reserved word.
-    ERROR_DUPLICATE_UNIQUE_ID_HASH_CODE  // Two unique ids have similar hash
-                                         // codes.
+    ERROR_RESERVED_UNIQUE_ID_HASH_CODE,   // A unique id has a hash code similar
+                                          // to a reserved word.
+    ERROR_DUPLICATE_UNIQUE_ID_HASH_CODE,  // Two unique ids have similar hash
+                                          // codes.
+    ERROR_UNIQUE_ID_INVALID_CHARACTER,    // A unique id contanins a characer
+                                          // which is not alphanumeric or
+                                          // underline.
+    ERROR_MISSING_ANNOTATION  // A function that requires annotation is not
+                              // annotated.
   };
 
   static const int kNoCodeLineSpecified;
@@ -208,6 +213,16 @@ class TrafficAnnotationAuditor {
   // Checks to see if any unique id or its hash code is duplicated.
   void CheckDuplicateHashes();
 
+  // Checks to see if unique ids only include alphanumeric characters and
+  // underline.
+  void CheckUniqueIDsFormat();
+
+  // Checks to see if all functions that need annotations have one.
+  void CheckAllRequiredFunctionsAreAnnotated();
+
+  // Checks if a call instance can stay not annotated.
+  bool CheckIfCallCanBeUnannotated(const CallInstance& call);
+
   // Preforms all checks on extracted annotations and calls, and adds the
   // results to |errors_|.
   void RunAllChecks();
@@ -233,6 +248,10 @@ class TrafficAnnotationAuditor {
     extracted_annotations_ = annotations;
   }
 
+  void SetExtractedCallsForTest(const std::vector<CallInstance>& calls) {
+    extracted_calls_ = calls;
+  }
+
   const std::vector<CallInstance>& extracted_calls() const {
     return extracted_calls_;
   }
@@ -240,6 +259,14 @@ class TrafficAnnotationAuditor {
   const std::vector<AuditorResult>& errors() const { return errors_; }
 
   void ClearErrorsForTest() { errors_.clear(); }
+
+  void ClearCheckedDependenciesForTest() { checked_dependencies_.clear(); }
+
+  // Sets the path to a file that would be used to mock the output of
+  // 'gn refs --all [build directory] [file path]' in tests.
+  void SetGnFileForTest(const base::FilePath& file_path) {
+    gn_file_for_test_ = file_path;
+  }
 
  private:
   const base::FilePath source_path_;
@@ -252,6 +279,9 @@ class TrafficAnnotationAuditor {
 
   std::vector<std::string> ignore_list_[static_cast<int>(
       AuditorException::ExceptionType::EXCEPTION_TYPE_LAST)];
+
+  base::FilePath gn_file_for_test_;
+  std::map<std::string, bool> checked_dependencies_;
 };
 
 #endif  // TOOLS_TRAFFIC_ANNOTATION_AUDITOR_TRAFFIC_ANNOTATION_AUDITOR_H_

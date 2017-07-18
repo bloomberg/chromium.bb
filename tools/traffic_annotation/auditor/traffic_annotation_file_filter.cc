@@ -61,7 +61,7 @@ void TrafficAnnotationFileFilter::GetFilesFromGit(
   base::SetCurrentDirectory(source_path);
 
   std::string git_list;
-  if (git_mock_file_for_testing_.empty()) {
+  if (git_file_for_test_.empty()) {
     const base::CommandLine::CharType* args[] =
 #if defined(OS_WIN)
         {FILE_PATH_LITERAL("git.bat"), FILE_PATH_LITERAL("ls-files")};
@@ -76,9 +76,9 @@ void TrafficAnnotationFileFilter::GetFilesFromGit(
       git_list.clear();
     }
   } else {
-    if (!base::ReadFileToString(git_mock_file_for_testing_, &git_list)) {
+    if (!base::ReadFileToString(git_file_for_test_, &git_list)) {
       LOG(ERROR) << "Could not load mock git list file from "
-                 << git_mock_file_for_testing_.MaybeAsASCII().c_str();
+                 << git_file_for_test_.MaybeAsASCII().c_str();
       git_list.clear();
     }
   }
