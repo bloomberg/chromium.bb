@@ -14,6 +14,13 @@
 
 namespace ui {
 
+enum OverlayStatus {
+  OVERLAY_STATUS_PENDING,
+  OVERLAY_STATUS_ABLE,
+  OVERLAY_STATUS_NOT,
+  OVERLAY_STATUS_LAST = OVERLAY_STATUS_NOT
+};
+
 class OZONE_BASE_EXPORT OverlaySurfaceCandidate {
  public:
   OverlaySurfaceCandidate();

@@ -8,6 +8,13 @@ import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/gfx/mojo/buffer_types.mojom";
 import "ui/gfx/mojo/overlay_transform.mojom";
 
+// ui::OverlayStatus
+enum OverlayStatus {
+  OVERLAY_STATUS_PENDING,
+  OVERLAY_STATUS_ABLE,
+  OVERLAY_STATUS_NOT,
+};
+
 struct OverlaySurfaceCandidate {
   // Transformation to apply to layer during composition.
   gfx.mojom.OverlayTransform transform;

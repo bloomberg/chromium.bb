@@ -14,6 +14,39 @@
 namespace mojo {
 
 template <>
+struct EnumTraits<ui::ozone::mojom::OverlayStatus, ui::OverlayStatus> {
+  static ui::ozone::mojom::OverlayStatus ToMojom(ui::OverlayStatus format) {
+    switch (format) {
+      case ui::OverlayStatus::OVERLAY_STATUS_PENDING:
+        return ui::ozone::mojom::OverlayStatus::OVERLAY_STATUS_PENDING;
+      case ui::OverlayStatus::OVERLAY_STATUS_ABLE:
+        return ui::ozone::mojom::OverlayStatus::OVERLAY_STATUS_ABLE;
+      case ui::OverlayStatus::OVERLAY_STATUS_NOT:
+        return ui::ozone::mojom::OverlayStatus::OVERLAY_STATUS_NOT;
+    }
+    NOTREACHED();
+    return ui::ozone::mojom::OverlayStatus::OVERLAY_STATUS_NOT;
+  }
+
+  static bool FromMojom(ui::ozone::mojom::OverlayStatus input,
+                        ui::OverlayStatus* out) {
+    switch (input) {
+      case ui::ozone::mojom::OverlayStatus::OVERLAY_STATUS_PENDING:
+        *out = ui::OverlayStatus::OVERLAY_STATUS_PENDING;
+        return true;
+      case ui::ozone::mojom::OverlayStatus::OVERLAY_STATUS_ABLE:
+        *out = ui::OverlayStatus::OVERLAY_STATUS_ABLE;
+        return true;
+      case ui::ozone::mojom::OverlayStatus::OVERLAY_STATUS_NOT:
+        *out = ui::OverlayStatus::OVERLAY_STATUS_NOT;
+        return true;
+    }
+    NOTREACHED();
+    return false;
+  }
+};
+
+template <>
 struct StructTraits<ui::ozone::mojom::OverlaySurfaceCandidateDataView,
                     ui::OverlaySurfaceCandidate> {
   static const gfx::OverlayTransform& transform(

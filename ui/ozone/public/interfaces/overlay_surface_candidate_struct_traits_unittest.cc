@@ -70,4 +70,21 @@ TEST_F(OverlaySurfaceCandidateStructTraitsTest, FalseBools) {
   EXPECT_EQ(input.overlay_handled, output.overlay_handled);
 }
 
+TEST_F(OverlaySurfaceCandidateStructTraitsTest, OverlayStatus) {
+  using OverlayStatusTraits =
+      mojo::EnumTraits<ui::ozone::mojom::OverlayStatus, ui::OverlayStatus>;
+
+  std::vector<OverlayStatus> tests = {OVERLAY_STATUS_PENDING,
+                                      OVERLAY_STATUS_ABLE, OVERLAY_STATUS_NOT};
+
+  for (const OverlayStatus& input : tests) {
+    ui::OverlayStatus output;
+    bool success = OverlayStatusTraits::FromMojom(
+        OverlayStatusTraits::ToMojom(input), &output);
+
+    EXPECT_TRUE(success);
+    EXPECT_EQ(input, output);
+  }
+}
+
 }  // namespace ui
