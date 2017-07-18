@@ -341,7 +341,9 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
         displayedCount < kAutomaticSigninPromoViewDismissCount) {
       if (!_signinPromoViewMediator) {
         _signinPromoViewMediator = [[SigninPromoViewMediator alloc]
-            initWithBrowserState:_browserState];
+            initWithBrowserState:_browserState
+                     accessPoint:signin_metrics::AccessPoint::
+                                     ACCESS_POINT_SETTINGS];
         _signinPromoViewMediator.consumer = self;
         prefs->SetInteger(prefs::kIosSettingsSigninPromoDisplayedCount,
                           displayedCount + 1);

@@ -354,17 +354,11 @@ CGFloat minFaviconSizePt = 16;
       [_signinPromoViewMediator signinPromoViewRemoved];
       _signinPromoViewMediator = nil;
     } else {
-      _signinPromoViewMediator =
-          [[SigninPromoViewMediator alloc] initWithBrowserState:_browserState];
+      _signinPromoViewMediator = [[SigninPromoViewMediator alloc]
+          initWithBrowserState:_browserState
+                   accessPoint:signin_metrics::AccessPoint::
+                                   ACCESS_POINT_BOOKMARK_MANAGER];
       _signinPromoViewMediator.consumer = self;
-      _signinPromoViewMediator.displayedCountPreferenceKey =
-          prefs::kIosBookmarkSigninPromoDisplayedCount;
-      _signinPromoViewMediator.alreadySeenSigninViewPreferenceKey =
-          prefs::kIosBookmarkPromoAlreadySeen;
-      _signinPromoViewMediator.histograms =
-          ios::SigninPromoViewHistograms::Bookmarks;
-      _signinPromoViewMediator.accessPoint =
-          signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_MANAGER;
       [_signinPromoViewMediator signinPromoViewVisible];
     }
   }
