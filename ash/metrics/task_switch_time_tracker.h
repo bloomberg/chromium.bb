@@ -19,6 +19,10 @@ class TickClock;
 
 namespace ash {
 
+namespace test {
+class TaskSwitchTimeTrackerTestAPI;
+}  // namespace test
+
 // Tracks time deltas between task switches and records them in a histogram.
 class ASH_EXPORT TaskSwitchTimeTracker {
  public:
@@ -33,9 +37,9 @@ class ASH_EXPORT TaskSwitchTimeTracker {
   void OnTaskSwitch();
 
  private:
-  friend class TaskSwitchTimeTrackerTestAPI;
+  friend class test::TaskSwitchTimeTrackerTestAPI;
 
-  // Private constructor that the TaskSwitchTimeTrackerTestAPI can use to
+  // Private constructor that the test::TaskSwitchTimeTrackerTestAPI can use to
   // inject a custom |tick_clock|.
   TaskSwitchTimeTracker(const std::string& histogram_name,
                         std::unique_ptr<base::TickClock> tick_clock);

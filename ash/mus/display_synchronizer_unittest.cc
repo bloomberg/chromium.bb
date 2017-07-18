@@ -14,7 +14,7 @@
 namespace ash {
 namespace mus {
 
-using DisplaySynchronizerTest = AshTestBase;
+using DisplaySynchronizerTest = test::AshTestBase;
 
 TEST_F(DisplaySynchronizerTest, ChangingWorkAreaNotifesServer) {
   aura::TestWindowManagerClient* test_window_manager_client =

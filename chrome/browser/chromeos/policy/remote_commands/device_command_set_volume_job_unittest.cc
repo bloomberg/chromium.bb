@@ -57,7 +57,7 @@ std::unique_ptr<RemoteCommandJob> CreateSetVolumeJob(
 
 }  // namespace
 
-class DeviceCommandSetVolumeTest : public ash::AshTestBase {
+class DeviceCommandSetVolumeTest : public ash::test::AshTestBase {
  protected:
   DeviceCommandSetVolumeTest();
 
@@ -74,7 +74,7 @@ class DeviceCommandSetVolumeTest : public ash::AshTestBase {
 DeviceCommandSetVolumeTest::DeviceCommandSetVolumeTest() {}
 
 void DeviceCommandSetVolumeTest::SetUp() {
-  ash::AshTestBase::SetUp();
+  ash::test::AshTestBase::SetUp();
   test_start_time_ = base::TimeTicks::Now();
 }
 

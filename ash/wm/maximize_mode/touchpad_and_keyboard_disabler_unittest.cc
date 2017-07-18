@@ -78,19 +78,19 @@ TouchpadAndKeyboardDisabler* CreateDisablerAndDelegate(
 
 }  // namespace
 
-class TouchpadAndKeyboardDisablerTest : public AshTestBase {
+class TouchpadAndKeyboardDisablerTest : public test::AshTestBase {
  public:
   TouchpadAndKeyboardDisablerTest() {}
 
   // AshTestBase:
   void SetUp() override {
-    AshTestBase::SetUp();
+    test::AshTestBase::SetUp();
     disabler_ = CreateDisablerAndDelegate(&counts_, &test_delegate_);
   }
 
   void TearDown() override {
     EXPECT_TRUE(counts_.delegate_destroyed);
-    AshTestBase::TearDown();
+    test::AshTestBase::TearDown();
   }
 
  protected:
@@ -207,10 +207,10 @@ using TouchpadAndKeyboardDisablerTest2 = testing::Test;
 
 TEST_F(TouchpadAndKeyboardDisablerTest2,
        DisableCallbackSucceedsAfterShellDestroyed) {
-  std::unique_ptr<AshTestEnvironment> ash_test_environment =
-      AshTestEnvironment::Create();
-  std::unique_ptr<AshTestHelper> ash_test_helper =
-      base::MakeUnique<AshTestHelper>(ash_test_environment.get());
+  std::unique_ptr<test::AshTestEnvironment> ash_test_environment =
+      test::AshTestEnvironment::Create();
+  std::unique_ptr<test::AshTestHelper> ash_test_helper =
+      base::MakeUnique<test::AshTestHelper>(ash_test_environment.get());
   const bool start_session = true;
   ash_test_helper->SetUp(start_session);
 

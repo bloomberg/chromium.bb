@@ -113,7 +113,7 @@ class TestEventHandler : public ui::EventHandler {
   DISALLOW_COPY_AND_ASSIGN(TestEventHandler);
 };
 
-class RootWindowTransformersTest : public AshTestBase {
+class RootWindowTransformersTest : public test::AshTestBase {
  public:
   RootWindowTransformersTest() {}
   ~RootWindowTransformersTest() override {}
@@ -140,6 +140,8 @@ class RootWindowTransformersTest : public AshTestBase {
 };
 
 }  // namespace
+
+// using RootWindowTransformersTest = test::AshTestBase;
 
 TEST_F(RootWindowTransformersTest, RotateAndMagnify) {
   MagnificationController* magnifier = Shell::Get()->magnification_controller();
@@ -404,7 +406,7 @@ TEST_F(RootWindowTransformersTest, ConvertHostToRootCoords) {
 }
 
 TEST_F(RootWindowTransformersTest, LetterBoxPillarBox) {
-  MirrorWindowTestApi test_api;
+  test::MirrorWindowTestApi test_api;
   display_manager()->SetMultiDisplayMode(display::DisplayManager::MIRRORING);
   UpdateDisplay("400x200,500x500");
   std::unique_ptr<RootWindowTransformer> transformer(

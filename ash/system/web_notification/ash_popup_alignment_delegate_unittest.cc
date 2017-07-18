@@ -25,7 +25,7 @@
 
 namespace ash {
 
-class AshPopupAlignmentDelegateTest : public AshTestBase {
+class AshPopupAlignmentDelegateTest : public test::AshTestBase {
  public:
   AshPopupAlignmentDelegateTest() {}
   ~AshPopupAlignmentDelegateTest() override {}
@@ -33,14 +33,14 @@ class AshPopupAlignmentDelegateTest : public AshTestBase {
   void SetUp() override {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         keyboard::switches::kEnableVirtualKeyboard);
-    AshTestBase::SetUp();
+    test::AshTestBase::SetUp();
     SetAlignmentDelegate(
         base::MakeUnique<AshPopupAlignmentDelegate>(GetPrimaryShelf()));
   }
 
   void TearDown() override {
     alignment_delegate_.reset();
-    AshTestBase::TearDown();
+    test::AshTestBase::TearDown();
   }
 
  protected:

@@ -47,7 +47,7 @@ gfx::ImageSkia CreateImageSkiaWithColor(int width, int height, SkColor color) {
   return gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
 }
 
-class TrayUserTest : public AshTestBase {
+class TrayUserTest : public test::AshTestBase {
  public:
   TrayUserTest() = default;
 
@@ -81,7 +81,7 @@ class TrayUserTest : public AshTestBase {
 };
 
 void TrayUserTest::SetUp() {
-  AshTestBase::SetUp();
+  test::AshTestBase::SetUp();
   tray_ = GetPrimarySystemTray();
 }
 
@@ -97,8 +97,8 @@ void TrayUserTest::InitializeParameters(int users_logged_in,
   GetSessionControllerClient()->SetSessionState(
       session_manager::SessionState::ACTIVE);
 
-  TestShellDelegate* shell_delegate =
-      static_cast<TestShellDelegate*>(Shell::Get()->shell_delegate());
+  test::TestShellDelegate* shell_delegate =
+      static_cast<test::TestShellDelegate*>(Shell::Get()->shell_delegate());
   shell_delegate->set_multi_profiles_enabled(multiprofile);
 
   // Instead of using the existing tray panels we create new ones which makes

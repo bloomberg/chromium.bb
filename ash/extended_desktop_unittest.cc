@@ -133,7 +133,7 @@ class EventLocationHandler : public ui::EventHandler {
 
 }  // namespace
 
-class ExtendedDesktopTest : public AshTestBase {
+class ExtendedDesktopTest : public test::AshTestBase {
  public:
   views::Widget* CreateTestWidget(const gfx::Rect& bounds) {
     return CreateTestWidgetWithParentAndContext(nullptr, CurrentContext(),

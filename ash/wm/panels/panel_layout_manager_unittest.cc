@@ -58,23 +58,23 @@ display::ManagedDisplayInfo CreateDisplayInfo(int64_t id,
 
 using aura::test::WindowIsAbove;
 
-class PanelLayoutManagerTest : public AshTestBase {
+class PanelLayoutManagerTest : public test::AshTestBase {
  public:
   PanelLayoutManagerTest() {}
   ~PanelLayoutManagerTest() override {}
 
   void SetUp() override {
-    AshTestBase::SetUp();
+    test::AshTestBase::SetUp();
 
-    shelf_view_test_.reset(
-        new ShelfViewTestAPI(GetPrimaryShelf()->GetShelfViewForTesting()));
+    shelf_view_test_.reset(new test::ShelfViewTestAPI(
+        GetPrimaryShelf()->GetShelfViewForTesting()));
     shelf_view_test_->SetAnimationDuration(1);
 
     WebNotificationTray::DisableAnimationsForTest(true);
   }
 
   void TearDown() override {
-    AshTestBase::TearDown();
+    test::AshTestBase::TearDown();
 
     WebNotificationTray::DisableAnimationsForTest(false);  // Reenable animation
   }
@@ -208,11 +208,11 @@ class PanelLayoutManagerTest : public AshTestBase {
     return widget->IsVisible();
   }
 
-  ShelfViewTestAPI* shelf_view_test() { return shelf_view_test_.get(); }
+  test::ShelfViewTestAPI* shelf_view_test() { return shelf_view_test_.get(); }
 
   // Clicks the shelf item on |shelf_view| associated with the given |window|.
   void ClickShelfItemForWindow(ShelfView* shelf_view, aura::Window* window) {
-    ShelfViewTestAPI test_api(shelf_view);
+    test::ShelfViewTestAPI test_api(shelf_view);
     test_api.SetAnimationDuration(1);
     test_api.RunMessageLoopUntilAnimationsDone();
     ShelfID shelf_id = ShelfID::Deserialize(window->GetProperty(kShelfIDKey));
@@ -240,7 +240,7 @@ class PanelLayoutManagerTest : public AshTestBase {
                                 ShelfAutoHideBehavior behavior) {
     Shelf* shelf = GetShelfForWindow(window);
     shelf->SetAutoHideBehavior(behavior);
-    ShelfViewTestAPI test_api(shelf->GetShelfViewForTesting());
+    test::ShelfViewTestAPI test_api(shelf->GetShelfViewForTesting());
     test_api.RunMessageLoopUntilAnimationsDone();
   }
 
@@ -251,7 +251,7 @@ class PanelLayoutManagerTest : public AshTestBase {
   }
 
  private:
-  std::unique_ptr<ShelfViewTestAPI> shelf_view_test_;
+  std::unique_ptr<test::ShelfViewTestAPI> shelf_view_test_;
 
   bool IsHorizontal(ShelfAlignment alignment) {
     return alignment == SHELF_ALIGNMENT_BOTTOM;

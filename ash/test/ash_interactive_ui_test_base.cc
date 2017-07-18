@@ -13,6 +13,7 @@
 #include "ui/gl/test/gl_surface_test_support.h"
 
 namespace ash {
+namespace test {
 
 namespace {
 
@@ -50,12 +51,13 @@ void AshInteractiveUITestBase::SetUp() {
       resources_pack_path, ui::SCALE_FACTOR_NONE);
   env_ = aura::Env::CreateInstance();
 
-  AshTestBase::SetUp();
+  test::AshTestBase::SetUp();
 }
 
 void AshInteractiveUITestBase::TearDown() {
-  AshTestBase::TearDown();
+  test::AshTestBase::TearDown();
   env_.reset();
 }
 
+}  // namespace test
 }  // namespace ash

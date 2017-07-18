@@ -28,6 +28,7 @@ using views::corewm::test::TooltipControllerTestHelper;
 // to be installed.
 
 namespace ash {
+namespace test {
 
 namespace {
 
@@ -168,4 +169,5 @@ TEST_F(TooltipControllerTest, TooltipsOnMultiDisplayShouldNotCrash) {
   EXPECT_TRUE(helper_->IsTooltipVisible());
 }
 
+}  // namespace test
 }  // namespace ash

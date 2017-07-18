@@ -26,7 +26,7 @@
 
 namespace ash {
 
-class TrayRotationLockTest : public AshTestBase {
+class TrayRotationLockTest : public test::AshTestBase {
  public:
   TrayRotationLockTest() {}
   ~TrayRotationLockTest() override {}
@@ -55,7 +55,7 @@ class TrayRotationLockTest : public AshTestBase {
   // SetUpForStatusAreaWidget in order to initial the components.
   void TearDownViews();
 
-  // AshTestBase:
+  // test::AshTestBase:
   void SetUp() override;
   void TearDown() override;
 
@@ -99,13 +99,13 @@ void TrayRotationLockTest::SetUp() {
   // visible on internal primary displays.
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       ::switches::kUseFirstDisplayAsInternal);
-  AshTestBase::SetUp();
+  test::AshTestBase::SetUp();
   SetUpForStatusAreaWidget(StatusAreaWidgetTestHelper::GetStatusAreaWidget());
 }
 
 void TrayRotationLockTest::TearDown() {
   TearDownViews();
-  AshTestBase::TearDown();
+  test::AshTestBase::TearDown();
 }
 
 // Tests that when the tray view is initially created, that it is created

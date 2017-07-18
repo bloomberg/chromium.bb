@@ -13,7 +13,7 @@
 
 namespace ash {
 
-using SpokenFeedbackTogglerTest = AshTestBase;
+using SpokenFeedbackTogglerTest = test::AshTestBase;
 
 TEST_F(SpokenFeedbackTogglerTest, Basic) {
   SpokenFeedbackToggler::ScopedEnablerForTest scoped;

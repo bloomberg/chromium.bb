@@ -17,7 +17,7 @@
 
 namespace ash {
 
-class ExtendedMouseWarpControllerTest : public AshTestBase {
+class ExtendedMouseWarpControllerTest : public test::AshTestBase {
  public:
   ExtendedMouseWarpControllerTest() {}
   ~ExtendedMouseWarpControllerTest() override {}

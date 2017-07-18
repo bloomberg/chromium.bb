@@ -21,7 +21,7 @@ using session_manager::SessionManager;
 using session_manager::SessionState;
 
 class LoginStateNotificationBlockerChromeOSTest
-    : public ash::AshTestBase,
+    : public ash::test::AshTestBase,
       public message_center::NotificationBlocker::Observer {
  public:
   LoginStateNotificationBlockerChromeOSTest()
@@ -33,7 +33,7 @@ class LoginStateNotificationBlockerChromeOSTest
     session_manager_ = base::MakeUnique<SessionManager>();
     session_manager_->SetSessionState(SessionState::LOGIN_PRIMARY);
 
-    ash::AshTestBase::SetUp();
+    ash::test::AshTestBase::SetUp();
     blocker_.reset(new LoginStateNotificationBlockerChromeOS(
         message_center::MessageCenter::Get()));
     blocker_->AddObserver(this);
@@ -42,7 +42,7 @@ class LoginStateNotificationBlockerChromeOSTest
   void TearDown() override {
     blocker_->RemoveObserver(this);
     blocker_.reset();
-    ash::AshTestBase::TearDown();
+    ash::test::AshTestBase::TearDown();
   }
 
   // message_center::NotificationBlocker::Observer overrides:

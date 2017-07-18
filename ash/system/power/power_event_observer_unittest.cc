@@ -17,20 +17,20 @@
 
 namespace ash {
 
-class PowerEventObserverTest : public AshTestBase {
+class PowerEventObserverTest : public test::AshTestBase {
  public:
   PowerEventObserverTest() {}
   ~PowerEventObserverTest() override {}
 
-  // AshTestBase:
+  // test::AshTestBase::SetUp() overrides:
   void SetUp() override {
-    AshTestBase::SetUp();
+    test::AshTestBase::SetUp();
     observer_.reset(new PowerEventObserver());
   }
 
   void TearDown() override {
     observer_.reset();
-    AshTestBase::TearDown();
+    test::AshTestBase::TearDown();
   }
 
  protected:

@@ -10,7 +10,7 @@
 namespace ash {
 namespace tray {
 
-class TimeViewTest : public AshTestBase {
+class TimeViewTest : public test::AshTestBase {
  public:
   TimeViewTest() {}
   ~TimeViewTest() override {}

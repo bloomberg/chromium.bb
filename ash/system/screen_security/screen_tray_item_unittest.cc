@@ -36,7 +36,7 @@ void ClickViewCenter(views::View* view) {
       ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE));
 }
 
-class ScreenTrayItemTest : public AshTestBase {
+class ScreenTrayItemTest : public test::AshTestBase {
  public:
   ScreenTrayItemTest() : tray_item_(NULL), stop_callback_hit_count_(0) {}
   ~ScreenTrayItemTest() override {}
@@ -192,7 +192,7 @@ void TestSystemTrayInteraction(ScreenTrayItemTest* test) {
   EXPECT_FALSE(tray_item->tray_view()->visible());
 
   std::vector<SystemTrayItem*> tray_items =
-      AshTestBase::GetPrimarySystemTray()->GetTrayItems();
+      test::AshTestBase::GetPrimarySystemTray()->GetTrayItems();
   EXPECT_NE(std::find(tray_items.begin(), tray_items.end(), tray_item),
             tray_items.end());
 
@@ -200,16 +200,16 @@ void TestSystemTrayInteraction(ScreenTrayItemTest* test) {
   EXPECT_TRUE(tray_item->tray_view()->visible());
 
   // The default view should be created in a new bubble.
-  AshTestBase::GetPrimarySystemTray()->ShowDefaultView(BUBBLE_CREATE_NEW);
+  test::AshTestBase::GetPrimarySystemTray()->ShowDefaultView(BUBBLE_CREATE_NEW);
   EXPECT_TRUE(tray_item->default_view());
-  AshTestBase::GetPrimarySystemTray()->CloseSystemBubble();
+  test::AshTestBase::GetPrimarySystemTray()->CloseSystemBubble();
   EXPECT_FALSE(tray_item->default_view());
 
   test->StopSession();
   EXPECT_FALSE(tray_item->tray_view()->visible());
 
   // The default view should not be visible because session is stopped.
-  AshTestBase::GetPrimarySystemTray()->ShowDefaultView(BUBBLE_CREATE_NEW);
+  test::AshTestBase::GetPrimarySystemTray()->ShowDefaultView(BUBBLE_CREATE_NEW);
   EXPECT_FALSE(tray_item->default_view()->visible());
 }
 

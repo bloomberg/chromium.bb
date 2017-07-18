@@ -104,14 +104,14 @@ void AttachAndActivateWebContents(content::WebContents* web_contents,
 
 }  // namespace
 
-class ScreenOrientationControllerTest : public AshTestBase {
+class ScreenOrientationControllerTest : public test::AshTestBase {
  public:
   ScreenOrientationControllerTest();
   ~ScreenOrientationControllerTest() override;
 
   content::ScreenOrientationDelegate* delegate() {
-    AshTestEnvironmentContent* test_environment_content =
-        static_cast<AshTestEnvironmentContent*>(
+    test::AshTestEnvironmentContent* test_environment_content =
+        static_cast<test::AshTestEnvironmentContent*>(
             ash_test_helper()->ash_test_environment());
     return test_environment_content->test_shell_content_state()
         ->screen_orientation_delegate();
@@ -125,7 +125,7 @@ class ScreenOrientationControllerTest : public AshTestBase {
   // content::BrowserContext.
   content::WebContents* CreateSecondaryWebContents();
 
-  // AshTestBase:
+  // test::AshTestBase:
   void SetUp() override;
 
  protected:
@@ -137,7 +137,7 @@ class ScreenOrientationControllerTest : public AshTestBase {
   }
 
   void SetSystemRotationLocked(bool rotation_locked) {
-    ScreenOrientationControllerTestApi(
+    test::ScreenOrientationControllerTestApi(
         Shell::Get()->screen_orientation_controller())
         .SetRotationLocked(rotation_locked);
   }
@@ -150,7 +150,7 @@ class ScreenOrientationControllerTest : public AshTestBase {
   }
 
   blink::WebScreenOrientationLockType UserLockedOrientation() const {
-    ScreenOrientationControllerTestApi test_api(
+    test::ScreenOrientationControllerTestApi test_api(
         Shell::Get()->screen_orientation_controller());
     return test_api.UserLockedOrientation();
   }
@@ -187,7 +187,7 @@ ScreenOrientationControllerTest::CreateSecondaryWebContents() {
 void ScreenOrientationControllerTest::SetUp() {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       ::switches::kUseFirstDisplayAsInternal);
-  AshTestBase::SetUp();
+  test::AshTestBase::SetUp();
 }
 
 // Tests that a content::WebContents can lock rotation.
@@ -641,7 +641,7 @@ TEST_F(ScreenOrientationControllerTest, RotateInactiveDisplay) {
   ASSERT_NE(kNewRotation, display_manager()
                               ->GetDisplayInfo(kInternalDisplayId)
                               .GetActiveRotation());
-  ScreenOrientationControllerTestApi(
+  test::ScreenOrientationControllerTestApi(
       Shell::Get()->screen_orientation_controller())
       .SetDisplayRotation(kNewRotation,
                           display::Display::ROTATION_SOURCE_ACTIVE);

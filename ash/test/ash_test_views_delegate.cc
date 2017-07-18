@@ -8,6 +8,7 @@
 #include "ash/shell.h"
 
 namespace ash {
+namespace test {
 
 AshTestViewsDelegate::AshTestViewsDelegate() {}
 
@@ -34,4 +35,5 @@ void AshTestViewsDelegate::NotifyAccessibilityEvent(views::View* view,
   }
 }
 
+}  // namespace test
 }  // namespace ash

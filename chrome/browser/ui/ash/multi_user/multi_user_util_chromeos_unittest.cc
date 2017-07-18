@@ -16,6 +16,7 @@
 #include "components/user_manager/user.h"
 
 namespace ash {
+namespace test {
 
 namespace {
 
@@ -126,4 +127,5 @@ TEST_F(MultiUserUtilTest, ReturnValidAccountIdIfTokenRevoked) {
             multi_user_util::GetAccountIdFromProfile(profile()).GetUserEmail());
 }
 
+}  // namespace test
 }  // namespace ash

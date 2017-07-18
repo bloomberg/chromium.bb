@@ -46,7 +46,7 @@ void ClickButtonWithFlags(ui::test::EventGenerator* generator,
 
 }  // namespace
 
-class WorkspaceEventHandlerTest : public AshTestBase {
+class WorkspaceEventHandlerTest : public test::AshTestBase {
  public:
   WorkspaceEventHandlerTest() {}
   ~WorkspaceEventHandlerTest() override {}

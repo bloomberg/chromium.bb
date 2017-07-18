@@ -15,7 +15,7 @@
 
 namespace ash {
 
-class TrayBrightnessTest : public AshTestBase {
+class TrayBrightnessTest : public test::AshTestBase {
  public:
   TrayBrightnessTest() {}
   ~TrayBrightnessTest() override {}

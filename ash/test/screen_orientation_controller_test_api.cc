@@ -7,6 +7,7 @@
 #include "ash/display/screen_orientation_controller_chromeos.h"
 
 namespace ash {
+namespace test {
 
 ScreenOrientationControllerTestApi::ScreenOrientationControllerTestApi(
     ScreenOrientationController* controller)
@@ -32,4 +33,5 @@ ScreenOrientationControllerTestApi::GetCurrentOrientation() const {
   return controller_->GetCurrentOrientationForTest();
 }
 
+}  // namespace test
 }  // namespace ash

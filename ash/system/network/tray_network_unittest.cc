@@ -22,7 +22,7 @@ using message_center::MessageCenter;
 namespace ash {
 namespace {
 
-class TrayNetworkTest : public AshTestBase {
+class TrayNetworkTest : public test::AshTestBase {
  public:
   TrayNetworkTest() = default;
   ~TrayNetworkTest() override = default;
@@ -32,7 +32,7 @@ class TrayNetworkTest : public AshTestBase {
     chromeos::DBusThreadManager::Initialize();
     // Initializing NetworkHandler before ash is more like production.
     chromeos::NetworkHandler::Initialize();
-    AshTestBase::SetUp();
+    test::AshTestBase::SetUp();
     // Mash doesn't do this yet, so don't do it in tests either.
     // http://crbug.com/718072
     if (Shell::GetAshConfig() != Config::MASH) {
@@ -48,7 +48,7 @@ class TrayNetworkTest : public AshTestBase {
     if (Shell::GetAshConfig() != Config::MASH) {
       chromeos::NetworkHandler::Get()->ShutdownPrefServices();
     }
-    AshTestBase::TearDown();
+    test::AshTestBase::TearDown();
     chromeos::NetworkHandler::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
   }

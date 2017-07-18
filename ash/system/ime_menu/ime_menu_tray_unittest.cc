@@ -48,13 +48,13 @@ void SetCurrentIme(const std::string& current_ime_id,
 
 }  // namespace
 
-class ImeMenuTrayTest : public AshTestBase {
+class ImeMenuTrayTest : public test::AshTestBase {
  public:
   ImeMenuTrayTest() {}
   ~ImeMenuTrayTest() override {}
 
   void SetUp() override {
-    AshTestBase::SetUp();
+    test::AshTestBase::SetUp();
     // MockInputMethodManager enables emoji, handwriting and voice input by
     // default.
     InputMethodManager::Initialize(new MockInputMethodManager);
@@ -62,7 +62,7 @@ class ImeMenuTrayTest : public AshTestBase {
 
   void TearDown() override {
     InputMethodManager::Shutdown();
-    AshTestBase::TearDown();
+    test::AshTestBase::TearDown();
   }
 
  protected:

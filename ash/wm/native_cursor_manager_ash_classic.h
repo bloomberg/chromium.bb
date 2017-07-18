@@ -13,6 +13,10 @@ class ImageCursors;
 
 namespace ash {
 
+namespace test {
+class CursorManagerTestApi;
+}
+
 // This does the ash-specific setting of cursor details like cursor
 // visibility. It communicates back with the CursorManager through the
 // NativeCursorManagerDelegate interface, which receives messages about what
@@ -23,7 +27,7 @@ class ASH_EXPORT NativeCursorManagerAshClassic : public NativeCursorManagerAsh {
   ~NativeCursorManagerAshClassic() override;
 
  private:
-  friend class CursorManagerTestApi;
+  friend class test::CursorManagerTestApi;
 
   // Overridden from NativeCursorManagerAsh:
   void SetNativeCursorEnabled(bool enabled) override;

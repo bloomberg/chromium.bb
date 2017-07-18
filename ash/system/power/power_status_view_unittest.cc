@@ -16,20 +16,20 @@ using power_manager::PowerSupplyProperties;
 
 namespace ash {
 
-class PowerStatusViewTest : public AshTestBase {
+class PowerStatusViewTest : public test::AshTestBase {
  public:
   PowerStatusViewTest() {}
   ~PowerStatusViewTest() override {}
 
   // Overridden from testing::Test:
   void SetUp() override {
-    AshTestBase::SetUp();
+    test::AshTestBase::SetUp();
     view_.reset(new PowerStatusView());
   }
 
   void TearDown() override {
     view_.reset();
-    AshTestBase::TearDown();
+    test::AshTestBase::TearDown();
   }
 
  protected:

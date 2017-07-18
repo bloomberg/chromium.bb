@@ -11,7 +11,7 @@
 
 namespace ash {
 
-using AshTouchExplorationManagerTest = AshTestBase;
+typedef test::AshTestBase AshTouchExplorationManagerTest;
 
 TEST_F(AshTouchExplorationManagerTest, AdjustSound) {
   RootWindowController* controller = Shell::GetPrimaryRootWindowController();

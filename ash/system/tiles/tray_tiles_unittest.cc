@@ -18,19 +18,19 @@ using views::Button;
 namespace ash {
 
 // Tests manually control their session state.
-class TrayTilesTest : public NoSessionAshTestBase {
+class TrayTilesTest : public test::NoSessionAshTestBase {
  public:
   TrayTilesTest() {}
   ~TrayTilesTest() override {}
 
   void SetUp() override {
-    NoSessionAshTestBase::SetUp();
+    test::NoSessionAshTestBase::SetUp();
     tray_tiles_.reset(new TrayTiles(GetPrimarySystemTray()));
   }
 
   void TearDown() override {
     tray_tiles_.reset();
-    NoSessionAshTestBase::TearDown();
+    test::NoSessionAshTestBase::TearDown();
   }
 
   views::CustomButton* GetSettingsButton() {

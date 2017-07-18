@@ -19,6 +19,8 @@ class Shell;
 class SystemGestureEventFilter;
 class WorkspaceController;
 
+namespace test {
+
 // Accesses private data from a Shell for testing.
 class ShellTestApi {
  public:
@@ -40,6 +42,7 @@ class ShellTestApi {
   DISALLOW_COPY_AND_ASSIGN(ShellTestApi);
 };
 
+}  // namespace test
 }  // namespace ash
 
 #endif  // ASH_TEST_SHELL_TEST_API_H_

@@ -11,6 +11,7 @@
 #include "ui/views/view.h"
 
 namespace ash {
+namespace test {
 
 TestSystemTrayItem::TestSystemTrayItem() : TestSystemTrayItem(UMA_TEST) {}
 
@@ -75,4 +76,5 @@ void TestSystemTrayItem::OnDetailedViewDestroyed() {
 
 void TestSystemTrayItem::UpdateAfterLoginStatusChange(LoginStatus status) {}
 
+}  // namespace test
 }  // namespace ash

@@ -190,7 +190,7 @@ std::unique_ptr<UploadJob> MockScreenshotDelegate::CreateUploadJob(
 
 }  // namespace
 
-class DeviceCommandScreenshotTest : public ash::AshTestBase {
+class DeviceCommandScreenshotTest : public ash::test::AshTestBase {
  public:
   void VerifyResults(RemoteCommandJob* job,
                      RemoteCommandJob::Status expected_status,
@@ -199,7 +199,7 @@ class DeviceCommandScreenshotTest : public ash::AshTestBase {
  protected:
   DeviceCommandScreenshotTest();
 
-  // ash::AshTestBase:
+  // ash::test::AshTestBase:
   void SetUp() override;
 
   void InitializeScreenshotJob(RemoteCommandJob* job,
@@ -224,7 +224,7 @@ DeviceCommandScreenshotTest::DeviceCommandScreenshotTest()
 }
 
 void DeviceCommandScreenshotTest::SetUp() {
-  ash::AshTestBase::SetUp();
+  ash::test::AshTestBase::SetUp();
   test_start_time_ = base::TimeTicks::Now();
 }
 

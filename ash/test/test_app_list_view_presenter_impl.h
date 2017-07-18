@@ -10,6 +10,7 @@
 #include "ui/app_list/presenter/app_list_presenter_impl.h"
 
 namespace ash {
+namespace test {
 
 // An app list presenter impl subclass that presents a no-op test app list view.
 // Some tests rely on the presenter and delegate implementations' behavior.
@@ -22,6 +23,7 @@ class TestAppListViewPresenterImpl : public app_list::AppListPresenterImpl {
   DISALLOW_COPY_AND_ASSIGN(TestAppListViewPresenterImpl);
 };
 
+}  // namespace test
 }  // namespace ash
 
 #endif  // ASH_TEST_TEST_APP_LIST_VIEW_PRESENTER_IMPL_H_

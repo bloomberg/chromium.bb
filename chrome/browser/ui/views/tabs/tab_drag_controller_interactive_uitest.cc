@@ -2144,7 +2144,7 @@ class DifferentDeviceScaleFactorDisplayTabDragControllerTest
   }
 
   float GetCursorDeviceScaleFactor() const {
-    ash::CursorManagerTestApi cursor_test_api(
+    ash::test::CursorManagerTestApi cursor_test_api(
         ash::Shell::Get()->cursor_manager());
     return cursor_test_api.GetCurrentCursor().device_scale_factor();
   }

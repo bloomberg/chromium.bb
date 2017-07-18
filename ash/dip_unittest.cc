@@ -27,7 +27,7 @@
 
 namespace ash {
 
-using DIPTest = AshTestBase;
+using DIPTest = test::AshTestBase;
 
 // Test if the WM sets correct work area under different density.
 TEST_F(DIPTest, WorkArea) {

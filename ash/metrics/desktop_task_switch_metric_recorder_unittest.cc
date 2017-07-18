@@ -29,12 +29,12 @@ const char kDesktopTaskSwitchUserAction[] = "Desktop_SwitchTask";
 // by the test target can be obtained through Shell::Get()->metrics() and the
 // test target is not the same instance as the one owned by the
 // UserMetricsRecorder instance.
-class DesktopTaskSwitchMetricRecorderTest : public AshTestBase {
+class DesktopTaskSwitchMetricRecorderTest : public test::AshTestBase {
  public:
   DesktopTaskSwitchMetricRecorderTest();
   ~DesktopTaskSwitchMetricRecorderTest() override;
 
-  // AshTestBase:
+  // test::AshTestBase:
   void SetUp() override;
   void TearDown() override;
 
@@ -73,7 +73,7 @@ DesktopTaskSwitchMetricRecorderTest::DesktopTaskSwitchMetricRecorderTest() {}
 DesktopTaskSwitchMetricRecorderTest::~DesktopTaskSwitchMetricRecorderTest() {}
 
 void DesktopTaskSwitchMetricRecorderTest::SetUp() {
-  AshTestBase::SetUp();
+  test::AshTestBase::SetUp();
   metrics_recorder_.reset(new DesktopTaskSwitchMetricRecorder);
   user_action_tester_.reset(new base::UserActionTester);
 }
@@ -81,7 +81,7 @@ void DesktopTaskSwitchMetricRecorderTest::SetUp() {
 void DesktopTaskSwitchMetricRecorderTest::TearDown() {
   user_action_tester_.reset();
   metrics_recorder_.reset();
-  AshTestBase::TearDown();
+  test::AshTestBase::TearDown();
 }
 
 void DesktopTaskSwitchMetricRecorderTest::ActiveTaskWindowWithUserInput(
@@ -259,12 +259,12 @@ TEST_F(DesktopTaskSwitchMetricRecorderTest,
 // Test fixture to test the integration of the DesktopTaskSwitchMetricsRecorder
 // class with ash::Shell environment.
 class DesktopTaskSwitchMetricRecorderWithShellIntegrationTest
-    : public AshTestBase {
+    : public test::AshTestBase {
  public:
   DesktopTaskSwitchMetricRecorderWithShellIntegrationTest();
   ~DesktopTaskSwitchMetricRecorderWithShellIntegrationTest() override;
 
-  // AshTestBase:
+  // test::AshTestBase:
   void SetUp() override;
   void TearDown() override;
 
@@ -297,13 +297,13 @@ DesktopTaskSwitchMetricRecorderWithShellIntegrationTest::
     ~DesktopTaskSwitchMetricRecorderWithShellIntegrationTest() {}
 
 void DesktopTaskSwitchMetricRecorderWithShellIntegrationTest::SetUp() {
-  AshTestBase::SetUp();
+  test::AshTestBase::SetUp();
   user_action_tester_.reset(new base::UserActionTester);
 }
 
 void DesktopTaskSwitchMetricRecorderWithShellIntegrationTest::TearDown() {
   user_action_tester_.reset();
-  AshTestBase::TearDown();
+  test::AshTestBase::TearDown();
 }
 
 int DesktopTaskSwitchMetricRecorderWithShellIntegrationTest::GetActionCount()

@@ -4,7 +4,13 @@
 
 #include "ash/test/lock_state_controller_test_api.h"
 
+#include <memory>
+#include <utility>
+
+#include "ash/public/interfaces/shutdown.mojom.h"
+
 namespace ash {
+namespace test {
 
 LockStateControllerTestApi::LockStateControllerTestApi(
     LockStateController* controller)
@@ -14,4 +20,5 @@ LockStateControllerTestApi::LockStateControllerTestApi(
 
 LockStateControllerTestApi::~LockStateControllerTestApi() {}
 
+}  // namespace test
 }  // namespace ash

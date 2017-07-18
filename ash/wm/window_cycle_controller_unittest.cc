@@ -80,18 +80,18 @@ using aura::test::CreateTestWindowWithId;
 using aura::test::TestWindowDelegate;
 using aura::Window;
 
-class WindowCycleControllerTest : public AshTestBase {
+class WindowCycleControllerTest : public test::AshTestBase {
  public:
   WindowCycleControllerTest() {}
   ~WindowCycleControllerTest() override {}
 
   void SetUp() override {
-    AshTestBase::SetUp();
+    test::AshTestBase::SetUp();
 
     WindowCycleList::DisableInitialDelayForTesting();
 
-    shelf_view_test_.reset(
-        new ShelfViewTestAPI(GetPrimaryShelf()->GetShelfViewForTesting()));
+    shelf_view_test_.reset(new test::ShelfViewTestAPI(
+        GetPrimaryShelf()->GetShelfViewForTesting()));
     shelf_view_test_->SetAnimationDuration(1);
   }
 
@@ -115,7 +115,7 @@ class WindowCycleControllerTest : public AshTestBase {
   }
 
  private:
-  std::unique_ptr<ShelfViewTestAPI> shelf_view_test_;
+  std::unique_ptr<test::ShelfViewTestAPI> shelf_view_test_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowCycleControllerTest);
 };
@@ -481,7 +481,7 @@ TEST_F(WindowCycleControllerTest, SelectingHidesAppList) {
     return;
 
   // The tested behavior relies on the app list presenter implementation.
-  TestAppListViewPresenterImpl app_list_presenter_impl;
+  test::TestAppListViewPresenterImpl app_list_presenter_impl;
 
   WindowCycleController* controller = Shell::Get()->window_cycle_controller();
 

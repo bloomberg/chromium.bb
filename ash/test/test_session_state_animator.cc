@@ -11,6 +11,7 @@
 #include "base/bind.h"
 
 namespace ash {
+namespace test {
 
 namespace {
 // A no-op callback that can be used when managing an animation that didn't
@@ -301,4 +302,5 @@ void TestSessionStateAnimator::AbortAnimation(
   }
 }
 
+}  // namespace test
 }  // namespace ash

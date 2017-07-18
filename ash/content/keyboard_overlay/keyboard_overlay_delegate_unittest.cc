@@ -17,7 +17,7 @@
 namespace ash {
 
 class KeyboardOverlayDelegateTest
-    : public AshTestBase,
+    : public test::AshTestBase,
       public testing::WithParamInterface<ShelfAlignment> {
  public:
   KeyboardOverlayDelegateTest() : shelf_alignment_(GetParam()) {}

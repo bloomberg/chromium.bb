@@ -17,6 +17,7 @@ class ContextFactory;
 }
 
 namespace ash {
+namespace test {
 
 class AshTestSuite : public base::TestSuite {
  public:
@@ -40,6 +41,7 @@ class AshTestSuite : public base::TestSuite {
   DISALLOW_COPY_AND_ASSIGN(AshTestSuite);
 };
 
+}  // namespace test
 }  // namespace ash
 
 #endif  // ASH_TEST_ASH_TEST_SUITE_H_

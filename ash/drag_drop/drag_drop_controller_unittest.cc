@@ -33,6 +33,7 @@
 #include "ui/views/widget/widget.h"
 
 namespace ash {
+namespace test {
 
 namespace {
 
@@ -1100,4 +1101,5 @@ TEST_F(DragDropControllerTest, TouchDragDropCompletesOnFling) {
   EXPECT_TRUE(drag_view->drag_done_received_);
 }
 
+}  // namespace test
 }  // namespace ash

@@ -15,28 +15,28 @@
 
 namespace ash {
 
-class ShelfTest : public AshTestBase {
+class ShelfTest : public test::AshTestBase {
  public:
   ShelfTest() : shelf_model_(nullptr) {}
 
   ~ShelfTest() override {}
 
   void SetUp() override {
-    AshTestBase::SetUp();
+    test::AshTestBase::SetUp();
 
     ShelfView* shelf_view = GetPrimaryShelf()->GetShelfViewForTesting();
     shelf_model_ = shelf_view->model();
 
-    test_.reset(new ShelfViewTestAPI(shelf_view));
+    test_.reset(new test::ShelfViewTestAPI(shelf_view));
   }
 
   ShelfModel* shelf_model() { return shelf_model_; }
 
-  ShelfViewTestAPI* test_api() { return test_.get(); }
+  test::ShelfViewTestAPI* test_api() { return test_.get(); }
 
  private:
   ShelfModel* shelf_model_;
-  std::unique_ptr<ShelfViewTestAPI> test_;
+  std::unique_ptr<test::ShelfViewTestAPI> test_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfTest);
 };

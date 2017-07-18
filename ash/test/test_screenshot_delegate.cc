@@ -5,6 +5,7 @@
 #include "ash/test/test_screenshot_delegate.h"
 
 namespace ash {
+namespace test {
 
 TestScreenshotDelegate::TestScreenshotDelegate()
     : handle_take_screenshot_count_(0),
@@ -39,4 +40,5 @@ const aura::Window* TestScreenshotDelegate::GetSelectedWindowAndReset() {
   return result;
 }
 
+}  // namespace test
 }  // namespace ash

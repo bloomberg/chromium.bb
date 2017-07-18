@@ -9,6 +9,7 @@
 #include "ui/gfx/image/image_skia.h"
 
 namespace ash {
+namespace test {
 
 WallpaperControllerTestApi::WallpaperControllerTestApi(
     WallpaperController* controller)
@@ -28,4 +29,5 @@ SkColor WallpaperControllerTestApi::ApplyColorProducingWallpaper() {
   return expected_color;
 }
 
+}  // namespace test
 }  // namespace ash

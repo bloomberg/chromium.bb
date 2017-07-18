@@ -5,6 +5,7 @@
 #include "ash/test/overflow_button_test_api.h"
 
 namespace ash {
+namespace test {
 namespace {
 
 std::string ToString(OverflowButtonTestApi::ChevronDirection direction) {
@@ -35,4 +36,5 @@ testing::AssertionResult OverflowButtonTestApi::ChevronDirectionMatches(
   return result;
 }
 
+}  // namespace test
 }  // namespace ash

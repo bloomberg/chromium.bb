@@ -38,6 +38,7 @@
 #include "ui/views/widget/widget_delegate.h"
 
 namespace ash {
+namespace test {
 
 namespace {
 
@@ -852,4 +853,5 @@ TEST_F(SystemTrayTest, SeparatorThickness) {
   EXPECT_EQ(kSeparatorWidth, views::Separator::kThickness);
 }
 
+}  // namespace test
 }  // namespace ash

@@ -83,7 +83,7 @@ class TestItem : public SystemTrayItem {
 
 }  // namespace
 
-class WebNotificationTrayTest : public AshTestBase {
+class WebNotificationTrayTest : public test::AshTestBase {
  public:
   WebNotificationTrayTest() {}
   ~WebNotificationTrayTest() override {}
@@ -91,7 +91,7 @@ class WebNotificationTrayTest : public AshTestBase {
   void TearDown() override {
     GetMessageCenter()->RemoveAllNotifications(
         false /* by_user */, message_center::MessageCenter::RemoveType::ALL);
-    AshTestBase::TearDown();
+    test::AshTestBase::TearDown();
   }
 
  protected:

@@ -54,6 +54,7 @@
 #endif
 
 namespace ash {
+namespace test {
 namespace {
 
 class AshEventGeneratorDelegate
@@ -493,4 +494,5 @@ display::Display AshTestBase::GetSecondaryDisplay() {
   return ash_test_helper_->GetSecondaryDisplay();
 }
 
+}  // namespace test
 }  // namespace ash

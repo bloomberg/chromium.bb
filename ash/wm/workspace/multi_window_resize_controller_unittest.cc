@@ -46,16 +46,17 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
 
 }  // namespace
 
-class MultiWindowResizeControllerTest : public AshTestBase {
+class MultiWindowResizeControllerTest : public test::AshTestBase {
  public:
   MultiWindowResizeControllerTest() : resize_controller_(NULL) {}
   ~MultiWindowResizeControllerTest() override {}
 
   void SetUp() override {
-    AshTestBase::SetUp();
-    WorkspaceController* wc = ShellTestApi(Shell::Get()).workspace_controller();
+    test::AshTestBase::SetUp();
+    WorkspaceController* wc =
+        test::ShellTestApi(Shell::Get()).workspace_controller();
     WorkspaceEventHandler* event_handler =
-        WorkspaceControllerTestApi(wc).GetEventHandler();
+        test::WorkspaceControllerTestApi(wc).GetEventHandler();
     resize_controller_ =
         WorkspaceEventHandlerTestHelper(event_handler).resize_controller();
   }

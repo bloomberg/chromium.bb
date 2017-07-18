@@ -23,6 +23,7 @@
 #include "ui/views/widget/widget_delegate.h"
 
 namespace ash {
+namespace test {
 
 namespace {
 
@@ -291,4 +292,5 @@ TEST_F(LockLayoutManagerTest, MultipleMonitors) {
   EXPECT_EQ(screen_bounds.ToString(), window->GetBoundsInScreen().ToString());
 }
 
+}  // namespace test
 }  // namespace ash

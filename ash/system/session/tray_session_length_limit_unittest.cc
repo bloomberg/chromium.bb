@@ -17,6 +17,7 @@
 #include "ui/message_center/notification_types.h"
 
 namespace ash {
+namespace test {
 
 class TraySessionLengthLimitTest : public AshTestBase {
  public:
@@ -182,4 +183,5 @@ TEST_F(TraySessionLengthLimitLoginTest, NotificationShownAfterLogin) {
   EXPECT_TRUE(GetNotification());
 }
 
+}  // namespace test
 }  // namespace ash

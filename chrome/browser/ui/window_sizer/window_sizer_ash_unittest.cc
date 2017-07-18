@@ -27,7 +27,7 @@
 #include "ui/display/screen.h"
 #include "ui/wm/public/activation_client.h"
 
-using WindowSizerAshTest = ash::AshTestBase;
+typedef ash::test::AshTestBase WindowSizerAshTest;
 
 namespace {
 

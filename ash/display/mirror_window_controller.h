@@ -39,7 +39,10 @@ class Reflector;
 
 namespace ash {
 class AshWindowTreeHost;
+
+namespace test {
 class MirrorWindowTestApi;
+}
 
 // An object that copies the content of the primary root window to a
 // mirror window. This also draws a mouse cursor as the mouse cursor
@@ -78,7 +81,7 @@ class ASH_EXPORT MirrorWindowController : public aura::WindowTreeHostObserver {
   aura::Window::Windows GetAllRootWindows() const;
 
  private:
-  friend class MirrorWindowTestApi;
+  friend class test::MirrorWindowTestApi;
 
   struct MirroringHostInfo;
 

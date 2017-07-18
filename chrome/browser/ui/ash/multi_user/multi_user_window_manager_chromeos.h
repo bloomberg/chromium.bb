@@ -33,7 +33,9 @@ class Window;
 }  // namespace aura
 
 namespace ash {
+namespace test {
 class MultiUserWindowManagerChromeOSTest;
+}  // namespace test
 }  // namespace ash
 
 namespace chrome {
@@ -187,7 +189,7 @@ class MultiUserWindowManagerChromeOS
 
  private:
   friend class ::MultiUserNotificationBlockerChromeOSTest;
-  friend class ash::MultiUserWindowManagerChromeOSTest;
+  friend class ash::test::MultiUserWindowManagerChromeOSTest;
 
   typedef std::map<AccountId, AppObserver*> AccountIdToAppWindowObserver;
   typedef std::map<aura::Window*, bool> TransientWindowToVisibility;

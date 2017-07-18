@@ -75,7 +75,7 @@ std::string GetLayerNames(const aura::Window* window) {
   return result;
 }
 
-class WorkspaceControllerTest : public AshTestBase {
+class WorkspaceControllerTest : public test::AshTestBase {
  public:
   WorkspaceControllerTest() {}
   ~WorkspaceControllerTest() override {}

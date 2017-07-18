@@ -12,6 +12,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace ash {
+namespace test {
 
 // Use the api in this class to test OverflowButton.
 class OverflowButtonTestApi {
@@ -28,6 +29,7 @@ class OverflowButtonTestApi {
   DISALLOW_COPY_AND_ASSIGN(OverflowButtonTestApi);
 };
 
+}  // namespace test
 }  // namespace ash
 
 #endif  // ASH_TEST_OVERFLOW_BUTTON_TEST_API_H_

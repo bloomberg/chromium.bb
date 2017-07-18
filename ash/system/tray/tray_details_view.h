@@ -28,6 +28,9 @@ class ScrollView;
 }  // namespace views
 
 namespace ash {
+namespace test {
+class TrayDetailsViewTest;
+}  // namespace test
 
 class HoverHighlightView;
 class ScrollBorder;
@@ -132,7 +135,7 @@ class ASH_EXPORT TrayDetailsView : public views::View,
   views::View* scroll_content() const { return scroll_content_; }
 
  private:
-  friend class TrayDetailsViewTest;
+  friend class test::TrayDetailsViewTest;
 
   // Overridden to handle clicks on subclass-specific views.
   virtual void HandleViewClicked(views::View* view);

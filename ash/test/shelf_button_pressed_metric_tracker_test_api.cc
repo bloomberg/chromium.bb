@@ -7,6 +7,7 @@
 #include "base/time/tick_clock.h"
 
 namespace ash {
+namespace test {
 
 ShelfButtonPressedMetricTrackerTestAPI::ShelfButtonPressedMetricTrackerTestAPI(
     ShelfButtonPressedMetricTracker* shelf_button_pressed_metric_tracker)
@@ -21,4 +22,5 @@ void ShelfButtonPressedMetricTrackerTestAPI::SetTickClock(
   shelf_button_pressed_metric_tracker_->tick_clock_ = std::move(tick_clock);
 }
 
+}  // namespace test
 }  // namespace ash

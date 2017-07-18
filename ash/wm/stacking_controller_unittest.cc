@@ -16,7 +16,7 @@ using aura::Window;
 
 namespace ash {
 
-class StackingControllerTest : public AshTestBase {
+class StackingControllerTest : public test::AshTestBase {
  public:
   StackingControllerTest() {}
   ~StackingControllerTest() override {}

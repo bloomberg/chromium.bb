@@ -22,6 +22,7 @@
 #include "ui/views/widget/widget.h"
 
 namespace ash {
+namespace test {
 
 namespace {
 
@@ -229,4 +230,5 @@ TEST_F(TrayDetailsViewTest, ScrollContentsTest) {
   EXPECT_EQ(view2->layer(), layers[2]);
 }
 
+}  // namespace test
 }  // namespace ash

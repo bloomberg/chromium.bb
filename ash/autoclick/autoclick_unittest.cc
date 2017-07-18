@@ -56,13 +56,13 @@ class MouseEventCapturer : public ui::EventHandler {
   DISALLOW_COPY_AND_ASSIGN(MouseEventCapturer);
 };
 
-class AutoclickTest : public AshTestBase {
+class AutoclickTest : public test::AshTestBase {
  public:
   AutoclickTest() {}
   ~AutoclickTest() override {}
 
   void SetUp() override {
-    AshTestBase::SetUp();
+    test::AshTestBase::SetUp();
     Shell::Get()->AddPreTargetHandler(&mouse_event_capturer_);
     GetAutoclickController()->SetAutoclickDelay(base::TimeDelta());
 
@@ -78,7 +78,7 @@ class AutoclickTest : public AshTestBase {
 
   void TearDown() override {
     Shell::Get()->RemovePreTargetHandler(&mouse_event_capturer_);
-    AshTestBase::TearDown();
+    test::AshTestBase::TearDown();
   }
 
   void MoveMouseWithFlagsTo(int x, int y, ui::EventFlags flags) {

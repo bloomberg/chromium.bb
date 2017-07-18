@@ -35,7 +35,7 @@ class PartialMagnificationControllerTestApi {
   DISALLOW_ASSIGN(PartialMagnificationControllerTestApi);
 };
 
-class PartialMagnificationControllerTest : public AshTestBase {
+class PartialMagnificationControllerTest : public test::AshTestBase {
  public:
   PartialMagnificationControllerTest() {}
   ~PartialMagnificationControllerTest() override {}

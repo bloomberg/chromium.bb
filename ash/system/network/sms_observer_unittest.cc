@@ -38,7 +38,7 @@ std::unique_ptr<base::DictionaryValue> CreateMessage(
 
 }  // namespace
 
-class SmsObserverTest : public AshTestBase {
+class SmsObserverTest : public test::AshTestBase {
  public:
   SmsObserverTest() {}
   ~SmsObserverTest() override {}

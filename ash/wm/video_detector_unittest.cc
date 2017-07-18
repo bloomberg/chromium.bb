@@ -23,6 +23,7 @@
 #include "ui/gfx/geometry/rect.h"
 
 namespace ash {
+namespace test {
 
 // Implementation that just records video state changes.
 class TestObserver : public VideoDetector::Observer {
@@ -293,4 +294,5 @@ TEST_F(VideoDetectorTest, ReportFullscreen) {
   EXPECT_TRUE(observer_->empty());
 }
 
+}  // namespace test
 }  // namespace ash

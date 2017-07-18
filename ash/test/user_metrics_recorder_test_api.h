@@ -9,6 +9,7 @@
 #include "base/macros.h"
 
 namespace ash {
+namespace test {
 
 // Test API to access internals of the UserMetricsRecorder class.
 class UserMetricsRecorderTestAPI {
@@ -29,6 +30,7 @@ class UserMetricsRecorderTestAPI {
   DISALLOW_COPY_AND_ASSIGN(UserMetricsRecorderTestAPI);
 };
 
+}  // namespace test
 }  // namespace ash
 
 #endif  // ASH_TEST_USER_METRICS_RECORDER_TEST_API_H_
