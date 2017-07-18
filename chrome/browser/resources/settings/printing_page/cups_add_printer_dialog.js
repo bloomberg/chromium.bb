@@ -537,6 +537,7 @@ Polymer({
     // "ADD PRINTER" button.
     if (!this.previousDialog_) {
       this.$$('add-printer-discovery-dialog').close();
+      this.newPrinter = getEmptyPrinter_();
       this.openManuallyAddPrinterDialog_();
     }
   },
