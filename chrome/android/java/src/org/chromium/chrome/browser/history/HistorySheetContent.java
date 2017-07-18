@@ -19,7 +19,7 @@ import org.chromium.chrome.browser.widget.selection.SelectableListToolbar;
  */
 public class HistorySheetContent implements BottomSheetContent {
     private final View mContentView;
-    private final SelectableListToolbar<HistoryItem> mToolbarView;
+    private final SelectableListToolbar mToolbarView;
     private HistoryManager mHistoryManager;
 
     /**
@@ -82,10 +82,5 @@ public class HistorySheetContent implements BottomSheetContent {
     @Override
     public int getType() {
         return BottomSheetContentController.TYPE_HISTORY;
-    }
-
-    @Override
-    public boolean applyDefaultTopPadding() {
-        return true;
     }
 }

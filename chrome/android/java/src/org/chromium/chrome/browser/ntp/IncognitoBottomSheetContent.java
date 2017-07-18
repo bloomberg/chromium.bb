@@ -92,9 +92,4 @@ public class IncognitoBottomSheetContent implements BottomSheetContent {
     public int getType() {
         return BottomSheetContentController.TYPE_INCOGNITO_HOME;
     }
-
-    @Override
-    public boolean applyDefaultTopPadding() {
-        return true;
-    }
 }
