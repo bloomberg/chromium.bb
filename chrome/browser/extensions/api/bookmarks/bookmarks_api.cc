@@ -22,6 +22,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_html_writer.h"
@@ -742,36 +743,13 @@ BookmarksIOFunction::~BookmarksIOFunction() {
     select_file_dialog_->ListenerDestroyed();
 }
 
-void BookmarksIOFunction::SelectFile(ui::SelectFileDialog::Type type) {
-  // GetDefaultFilepathForBookmarkExport() might have to touch the filesystem
-  // (stat or access, for example), so this requires a thread with IO allowed.
-  if (!BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        base::BindOnce(&BookmarksIOFunction::SelectFile, this, type));
-    return;
-  }
-
-  // Pre-populating the filename field in case this is a SELECT_SAVEAS_FILE
-  // dialog. If not, there is no filename field in the dialog box.
-  base::FilePath default_path;
-  if (type == ui::SelectFileDialog::SELECT_SAVEAS_FILE)
-    default_path = GetDefaultFilepathForBookmarkExport();
-  else
-    DCHECK(type == ui::SelectFileDialog::SELECT_OPEN_FILE);
-
-  // After getting the |default_path|, ask the UI to display the file dialog.
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&BookmarksIOFunction::ShowSelectFileDialog, this, type,
-                     default_path));
-}
-
 void BookmarksIOFunction::ShowSelectFileDialog(
     ui::SelectFileDialog::Type type,
     const base::FilePath& default_path) {
   if (!dispatcher())
     return;  // Extension was unloaded.
+
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Balanced in one of the three callbacks of SelectFileDialog:
   // either FileSelectionCanceled, MultiFilesSelected, or FileSelected
@@ -813,7 +791,8 @@ void BookmarksIOFunction::MultiFilesSelected(
 bool BookmarksImportFunction::RunOnReady() {
   if (!EditBookmarksEnabled())
     return false;
-  SelectFile(ui::SelectFileDialog::SELECT_OPEN_FILE);
+  ShowSelectFileDialog(ui::SelectFileDialog::SELECT_OPEN_FILE,
+                       base::FilePath());
   return true;
 }
 
@@ -836,7 +815,17 @@ void BookmarksImportFunction::FileSelected(const base::FilePath& path,
 }
 
 bool BookmarksExportFunction::RunOnReady() {
-  SelectFile(ui::SelectFileDialog::SELECT_SAVEAS_FILE);
+  // "bookmarks.export" is exposed to a small number of extensions. These
+  // extensions use user gesture for export, so use USER_VISIBLE priority.
+  // GetDefaultFilepathForBookmarkExport() might have to touch filesystem
+  // (stat or access, for example), so this requires IO.
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+      base::BindOnce(&GetDefaultFilepathForBookmarkExport),
+      base::BindOnce(&BookmarksIOFunction::ShowSelectFileDialog, this,
+                     ui::SelectFileDialog::SELECT_SAVEAS_FILE));
   return true;
 }
 
