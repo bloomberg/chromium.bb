@@ -1750,11 +1750,12 @@ void WebMediaPlayerImpl::OnRemotePlaybackEnded() {
 void WebMediaPlayerImpl::OnDisconnectedFromRemoteDevice(double t) {
   DoSeek(base::TimeDelta::FromSecondsD(t), false);
 
+  // |client_| might destroy us in methods below.
+  UpdatePlayState();
+
   // We already told the delegate we're paused when remoting started.
   client_->PlaybackStateChanged();
   client_->DisconnectedFromRemoteDevice();
-
-  UpdatePlayState();
 }
 
 void WebMediaPlayerImpl::SuspendForRemote() {
