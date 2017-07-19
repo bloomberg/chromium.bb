@@ -475,10 +475,10 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
   // no longer work. The check for |autocompleteLength| reduces the scope of
   // this workaround, without it having introduced crbug.com/740075.
   BOOL updateText = YES;
-  // Before M61 branch point this should also go behind a Japanese flag, e.g.
-  // [self.textInputMode.primaryLanguage isEqualToString:@"ja-JP"] to be as
-  // restrictive as possible.
-  if (experimental_flags::IsThirdPartyKeyboardWorkaroundEnabled()) {
+  // After M61 branch point remove the Japanese keyboard check to make this fix
+  // cover other languages.
+  if (experimental_flags::IsThirdPartyKeyboardWorkaroundEnabled() &&
+      [self.textInputMode.primaryLanguage isEqualToString:@"ja"]) {
     updateText =
         (!self.editing || ![self.text isEqualToString:fieldText.string] ||
          autocompleteLength == 0);
