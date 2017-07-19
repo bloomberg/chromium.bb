@@ -729,6 +729,8 @@ interface CSSPositionValue : CSSStyleValue
     getter x
     getter y
     method constructor
+    setter x
+    setter y
 interface CSSResourceValue : CSSStyleValue
     attribute @@toStringTag
     getter state
