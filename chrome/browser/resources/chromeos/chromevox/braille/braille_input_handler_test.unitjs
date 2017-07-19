@@ -516,13 +516,16 @@ CvoxBrailleInputHandlerUnitTest.prototype = {
   setUp: function() {
     chrome.runtime.onConnectExternal = new FakeChromeEvent();
     this.port = new FakePort();
+    chrome.virtualKeyboardPrivate.getKeyboardConfig = function(callback) {
+      callback({ a11ymode: true });
+    };
+    chrome.virtualKeyboardPrivate.sendKeyEvent =
+        this.storeKeyEvent.bind(this);
     this.translatorManager = new FakeTranslatorManager();
     this.inputHandler = new cvox.BrailleInputHandler(this.translatorManager);
     this.inputHandler.init();
     this.uncontractedTranslator = new FakeTranslator(UNCONTRACTED_TABLE);
     this.contractedTranslator = new FakeTranslator(CONTRACTED_TABLE, true);
-    chrome.virtualKeyboardPrivate.sendKeyEvent =
-      this.storeKeyEvent.bind(this);
     this.keyEvents = [];
   }
 };

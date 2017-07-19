@@ -418,25 +418,35 @@ cvox.BrailleInputHandler.prototype = {
    * @private
    */
   sendKeyEventPair_: function(event) {
-    // Use the virtual keyboard API instead of the IME key event API
-    // so that these keys work even if the Braille IME is not active.
-    var keyName = /** @type {string} */ (event.standardKeyCode);
-    var numericCode = cvox.BrailleKeyEvent.keyCodeToLegacyCode(keyName);
-    if (!goog.isDef(numericCode))
-      throw Error('Unknown key code in event: ' + JSON.stringify(event));
-    var keyEvent = {
-      type: 'keydown',
-      keyCode: numericCode,
-      keyName: keyName,
-      charValue: cvox.BrailleKeyEvent.keyCodeToCharValue(keyName),
-      // See chrome/common/extensions/api/virtual_keyboard_private.json for
-      // these constants.
-      modifiers: (event.shiftKey ? 2 : 0) | (event.ctrlKey ? 4 : 0) |
-          (event.altKey ? 8 : 0)
-    };
-    chrome.virtualKeyboardPrivate.sendKeyEvent(keyEvent);
-    keyEvent.type = 'keyup';
-    chrome.virtualKeyboardPrivate.sendKeyEvent(keyEvent);
+    chrome.virtualKeyboardPrivate.getKeyboardConfig(function(config) {
+      // Use the virtual keyboard API instead of the IME key event API
+      // so that these keys work even if the Braille IME is not active.
+
+      // The virtual keyboard private api fails silently if the a11y keyboard
+      // isn't enabled in settings. Let the user know.
+      if (!config.a11ymode) {
+        new Output().format('@enable_virtual_keyboard').go();
+        return;
+      }
+
+      var keyName = /** @type {string} */ (event.standardKeyCode);
+      var numericCode = cvox.BrailleKeyEvent.keyCodeToLegacyCode(keyName);
+      if (!goog.isDef(numericCode))
+        throw Error('Unknown key code in event: ' + JSON.stringify(event));
+      var keyEvent = {
+        type: 'keydown',
+        keyCode: numericCode,
+        keyName: keyName,
+        charValue: cvox.BrailleKeyEvent.keyCodeToCharValue(keyName),
+        // See chrome/common/extensions/api/virtual_keyboard_private.json for
+        // these constants.
+        modifiers: (event.shiftKey ? 2 : 0) | (event.ctrlKey ? 4 : 0) |
+            (event.altKey ? 8 : 0)
+      };
+      chrome.virtualKeyboardPrivate.sendKeyEvent(keyEvent);
+      keyEvent.type = 'keyup';
+      chrome.virtualKeyboardPrivate.sendKeyEvent(keyEvent);
+    });
   }
 };
 

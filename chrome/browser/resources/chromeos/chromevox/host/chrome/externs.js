@@ -49,6 +49,10 @@ chrome.virtualKeyboardPrivate.VirtualKeyboardEvent;
 chrome.virtualKeyboardPrivate.sendKeyEvent = function(keyEvent, opt_callback) {
 };
 /**
+ * @param {function(!{a11ymode: boolean})} opt_callback
+ */
+chrome.virtualKeyboardPrivate.getKeyboardConfig = function(opt_callback) {};
+/**
  * @type {Object}
  */
 window.speechSynthesis;

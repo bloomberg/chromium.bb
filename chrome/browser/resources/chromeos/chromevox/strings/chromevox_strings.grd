@@ -2781,6 +2781,9 @@ If you're done with the tutorial, use ChromeVox to navigate to the Close button 
       <message desc="Spoken when a user navigates to the end of a link's text." name="IDS_CHROMEVOX_LINK_END">
         Link end
       </message>
+      <message desc="Shown to a user when they press a braille keyboard command that requires on screen keyboard to be enabled." name="IDS_CHROMEVOX_ENABLE_VIRTUAL_KEYBOARD">
+        Please enable the on screen keyboard under status tray, accessibility to use extended braille commands.
+      </message>
     </messages>
   </release>
 </grit>
