@@ -34,7 +34,6 @@
 namespace {
 
 const char kChannelString[] = "SomeChannel";
-const size_t kMaxLogSizeBytes = 100 * 1024 * 1024;  // 100MiB
 
 // Keep this in sync with kLogRelativePath defined in net_export_file_writer.cc.
 base::FilePath::CharType kLogRelativePath[] =
@@ -330,7 +329,7 @@ class NetExportFileWriterTest : public ::testing::Test {
       net::NetLogCaptureMode capture_mode,
       const std::string& expected_capture_mode_string,
       const URLRequestContextGetterList& context_getters) {
-    file_writer_.StartNetLog(custom_log_path, capture_mode, kMaxLogSizeBytes,
+    file_writer_.StartNetLog(custom_log_path, capture_mode,
                              base::CommandLine::StringType(), kChannelString,
                              context_getters);
     std::unique_ptr<base::DictionaryValue> state =
@@ -499,14 +498,14 @@ TEST_F(NetExportFileWriterTest, StartAndStopWithAllCaptureModes) {
     // with various capture modes; they should all be ignored and result in no
     // state change.
     file_writer_.StartNetLog(base::FilePath(), capture_modes[i],
-                             kMaxLogSizeBytes, base::CommandLine::StringType(),
-                             kChannelString, URLRequestContextGetterList());
+                             base::CommandLine::StringType(), kChannelString,
+                             URLRequestContextGetterList());
     file_writer_.StartNetLog(base::FilePath(), capture_modes[(i + 1) % 3],
-                             kMaxLogSizeBytes, base::CommandLine::StringType(),
-                             kChannelString, URLRequestContextGetterList());
+                             base::CommandLine::StringType(), kChannelString,
+                             URLRequestContextGetterList());
     file_writer_.StartNetLog(base::FilePath(), capture_modes[(i + 2) % 3],
-                             kMaxLogSizeBytes, base::CommandLine::StringType(),
-                             kChannelString, URLRequestContextGetterList());
+                             base::CommandLine::StringType(), kChannelString,
+                             URLRequestContextGetterList());
 
     // StopNetLog(), should result in state change. The capture mode should
     // match that of the first StartNetLog() call (called by
@@ -746,8 +745,8 @@ TEST_F(NetExportFileWriterTest, ReceiveStartWhileInitializing) {
   // before |file_writer_| finishes initialization, which means this
   // should be a no-op.
   file_writer_.StartNetLog(base::FilePath(), net::NetLogCaptureMode::Default(),
-                           kMaxLogSizeBytes, base::CommandLine::StringType(),
-                           kChannelString, URLRequestContextGetterList());
+                           base::CommandLine::StringType(), kChannelString,
+                           URLRequestContextGetterList());
 
   // Now run the main message loop. Make sure StartNetLog() was ignored by
   // checking that the next two states are "initializing" followed by
@@ -777,8 +776,8 @@ TEST_F(NetExportFileWriterTest, ReceiveStartWhileStoppingLog) {
   // |file_writer_| finishes stopping, which means this should be a
   // no-op.
   file_writer_.StartNetLog(base::FilePath(), net::NetLogCaptureMode::Default(),
-                           kMaxLogSizeBytes, base::CommandLine::StringType(),
-                           kChannelString, URLRequestContextGetterList());
+                           base::CommandLine::StringType(), kChannelString,
+                           URLRequestContextGetterList());
 
   // Now run the main message loop. Make sure the last StartNetLog() was
   // ignored by checking that the next two states are "stopping-log" followed by

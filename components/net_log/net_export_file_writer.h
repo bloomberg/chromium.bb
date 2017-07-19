@@ -55,9 +55,6 @@ class ChromeNetLog;
 // code on the |file_task_runner_| and |net_task_runner_|.
 class NetExportFileWriter {
  public:
-  // Special value meaning "can use an unlimited number of bytes".
-  static const size_t kNoLimit;
-
   // The observer interface to be implemented by code that wishes to be notified
   // of NetExportFileWriter's state changes.
   class StateObserver {
@@ -102,16 +99,12 @@ class NetExportFileWriter {
   // empty, the default log path is used. If NetExportFileWriter is already
   // logging, this is a no-op and |capture_mode| is ignored.
   //
-  // |max_file_size| places a bound on how large the log file can grow. To make
-  // it grow unboundedly pass kNoLimit.
-  //
   // |context_getters| is an optional list of URLRequestContextGetters used only
   // to add log entries for ongoing events when logging starts. They are not
   // used for retrieving polled data. All the contexts must be bound to the same
   // thread.
   void StartNetLog(const base::FilePath& log_path,
                    net::NetLogCaptureMode capture_mode,
-                   size_t max_file_size,
                    const base::CommandLine::StringType& command_line_string,
                    const std::string& channel_string,
                    const URLRequestContextGetterList& context_getters);
