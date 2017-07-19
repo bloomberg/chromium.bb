@@ -755,7 +755,8 @@
     "gtest_tests": [
       {
         "args": [
-          "--enable-xml-result-parsing"
+          "--enable-xml-result-parsing",
+          "--shard-timeout=300"
         ],
         "name": "angle_deqp_gles2_gles_tests",
         "swarming": {
