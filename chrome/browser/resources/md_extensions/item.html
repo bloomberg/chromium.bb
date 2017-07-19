@@ -1,9 +1,12 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
+<link rel="import" href="chrome://resources/html/action_link.html">
+<link rel="import" href="chrome://resources/html/action_link_css.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/load_time_data.html">
-<link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://extensions/icons.html">
 <link rel="import" href="chrome://extensions/item_util.html">
 <link rel="import" href="chrome://extensions/strings.html">
@@ -16,7 +19,7 @@
 
 <dom-module id="extensions-item">
   <template>
-    <style include="iron-flex cr-hidden-style">
+    <style include="iron-flex cr-hidden-style action-link">
       #icon-wrapper {
         align-self: flex-start;
         display: flex;
@@ -80,13 +83,6 @@
       #inspect-views,
       #button-strip {
         color: var(--paper-grey-600);
-      }
-
-      #inspect-views paper-button {
-        color: var(--google-blue-700);
-        height: 20px;
-        padding: 0;
-        text-transform: none;
       }
 
       #button-strip {
@@ -220,14 +216,14 @@
                 if="[[!computeInspectViewsHidden_(data.views)]]">
               <div id="inspect-views">
                 <span>$i18n{itemInspectViews}</span>
-                <paper-button on-tap="onInspectTap_">
+                <a is="action-link" on-tap="onInspectTap_">
                   [[computeFirstInspectLabel_(data.views)]]
-                </paper-button>
-                <paper-button
+                </a>
+                <a is="action-link"
                     hidden$="[[computeExtraViewsHidden_(data.views)]]"
                     on-tap="onExtraInspectTap_">
                   [[computeExtraInspectLabel_(data.views)]]
-                </paper-button>
+                </a>
               </div>
             </template>
           </template>
