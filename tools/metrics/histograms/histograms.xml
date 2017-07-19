@@ -80324,6 +80324,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="TouchAction.EffectiveTouchAction" enum="TouchActions">
+  <owner>hayleyferr@chromium.org</owner>
+  <owner>xidachen@chromium.org</owner>
+  <summary>
+    Tracks how often each touch action is allowed (AKA the frequency of each
+    effective touch action) at the end of each touch sequence.
+  </summary>
+</histogram>
+
 <histogram name="TouchBar.Default.Metrics" enum="DefaultTouchBarActions">
   <owner>spqchan@chromium.com</owner>
   <summary>Tracks the usage of the default touch bar buttons.</summary>

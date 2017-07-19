@@ -36876,6 +36876,73 @@ from previous Chrome versions.
   <int value="3" label="CLIENT_NO_CHANNEL_ID_SERVICE"/>
 </enum>
 
+<enum name="TouchActions">
+  <int value="0" label="NONE"/>
+  <int value="1" label="PAN_LEFT"/>
+  <int value="2" label="PAN_RIGHT"/>
+  <int value="3" label="PAN_X"/>
+  <int value="4" label="PAN_UP"/>
+  <int value="5" label="PAN_LEFT_PAN_UP"/>
+  <int value="6" label="PAN_RIGHT_PAN_UP"/>
+  <int value="7" label="PAN_X_PAN_UP"/>
+  <int value="8" label="PAN_DOWN"/>
+  <int value="9" label="PAN_LEFT_PAN_DOWN"/>
+  <int value="10" label="PAN_RIGHT_PAN_DOWN"/>
+  <int value="11" label="PAN_X_PAN_DOWN"/>
+  <int value="12" label="PAN_Y"/>
+  <int value="13" label="PAN_LEFT_PAN_Y"/>
+  <int value="14" label="PAN_RIGHT_PAN_Y"/>
+  <int value="15" label="PAN_X_PAN_Y"/>
+  <int value="16" label="PINCH_ZOOM"/>
+  <int value="17" label="PAN_LEFT_PINCH_ZOOM"/>
+  <int value="18" label="PAN_RIGHT_PINCH_ZOOM"/>
+  <int value="19" label="PAN_X_PINCH_ZOOM"/>
+  <int value="20" label="PAN_UP_PINCH_ZOOM"/>
+  <int value="21" label="PAN_LEFT_PAN_UP_PINCH_ZOOM"/>
+  <int value="22" label="PAN_RIGHT_PAN_UP_PINCH_ZOOM"/>
+  <int value="23" label="PAN_X_PAN_UP_PINCH_ZOOM"/>
+  <int value="24" label="PAN_DOWN_PINCH_ZOOM"/>
+  <int value="25" label="PAN_LEFT_PAN_DOWN_PINCH_ZOOM"/>
+  <int value="26" label="PAN_RIGHT_PAN_DOWN_PINCH_ZOOM"/>
+  <int value="27" label="PAN_X_PAN_DOWN_PINCH_ZOOM"/>
+  <int value="28" label="PAN_Y_PINCH_ZOOM"/>
+  <int value="29" label="PAN_LEFT_PAN_Y_PINCH_ZOOM"/>
+  <int value="30" label="PAN_RIGHT_PAN_Y_PINCH_ZOOM"/>
+  <int value="31" label="MANIPULATION"/>
+  <int value="32" label="DOUBLE_TAP_ZOOM"/>
+  <int value="33" label="PAN_LEFT_DOUBLE_TAP_ZOOM"/>
+  <int value="34" label="PAN_RIGHT_DOUBLE_TAP_ZOOM"/>
+  <int value="35" label="PAN_X_DOUBLE_TAP_ZOOM"/>
+  <int value="36" label="PAN_UP_DOUBLE_TAP_ZOOM"/>
+  <int value="37" label="PAN_LEFT_PAN_UP_DOUBLE_TAP_ZOOM"/>
+  <int value="38" label="PAN_RIGHT_PAN_UP_DOUBLE_TAP_ZOOM"/>
+  <int value="39" label="PAN_X_PAN_UP_DOUBLE_TAP_ZOOM"/>
+  <int value="40" label="PAN_DOWN_DOUBLE_TAP_ZOOM"/>
+  <int value="41" label="PAN_LEFT_PAN_DOWN_DOUBLE_TAP_ZOOM"/>
+  <int value="42" label="PAN_RIGHT_PAN_DOWN_DOUBLE_TAP_ZOOM"/>
+  <int value="43" label="PAN_X_PAN_DOWN_DOUBLE_TAP_ZOOM"/>
+  <int value="44" label="PAN_Y_DOUBLE_TAP_ZOOM"/>
+  <int value="45" label="PAN_LEFT_PAN_Y_DOUBLE_TAP_ZOOM"/>
+  <int value="46" label="PAN_RIGHT_PAN_Y_DOUBLE_TAP_ZOOM"/>
+  <int value="47" label="PAN_X_PAN_Y_DOUBLE_TAP_ZOOM"/>
+  <int value="48" label="PINCH_ZOOM_DOUBLE_TAP_ZOOM"/>
+  <int value="49" label="PAN_LEFT_PINCH_ZOOM_DOUBLE_TAP_ZOOM"/>
+  <int value="50" label="PAN_RIGHT_PINCH_ZOOM_DOUBLE_TAP_ZOOM"/>
+  <int value="51" label="PAN_X_PINCH_ZOOM_DOUBLE_TAP_ZOOM"/>
+  <int value="52" label="PAN_UP_PINCH_ZOOM_DOUBLE_TAP_ZOOM"/>
+  <int value="53" label="PAN_LEFT_PAN_UP_PINCH_ZOOM_DOUBLE_TAP_ZOOM"/>
+  <int value="54" label="PAN_RIGHT_PAN_UP_PINCH_ZOOM_DOUBLE_TAP_ZOOM"/>
+  <int value="55" label="PAN_X_PAN_UP_PINCH_ZOOM_DOUBLE_TAP_ZOOM"/>
+  <int value="56" label="PAN_DOWN_PINCH_ZOOM_DOUBLE_TAP_ZOOM"/>
+  <int value="57" label="PAN_LEFT_PAN_DOWN_PINCH_ZOOM_DOUBLE_TAP_ZOOM"/>
+  <int value="58" label="PAN_RIGHT_PAN_DOWN_PINCH_ZOOM_DOUBLE_TAP_ZOOM"/>
+  <int value="59" label="PAN_X_PAN_DOWN_PINCH_ZOOM_DOUBLE_TAP_ZOOM"/>
+  <int value="60" label="PAN_Y_PINCH_ZOOM_DOUBLE_TAP_ZOOM"/>
+  <int value="61" label="PAN_LEFT_PAN_Y_PINCH_ZOOM_DOUBLE_TAP_ZOOM"/>
+  <int value="62" label="PAN_RIGHT_PAN_Y_PINCH_ZOOM_DOUBLE_TAP_ZOOM"/>
+  <int value="63" label="AUTO"/>
+</enum>
+
 <enum name="TouchEventDispatchResultType">
   <int value="0" label="Unhandled touch events"/>
   <int value="1" label="Handled touch events"/>
