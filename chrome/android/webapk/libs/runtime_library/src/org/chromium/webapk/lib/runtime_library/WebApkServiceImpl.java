@@ -44,7 +44,6 @@ public class WebApkServiceImpl extends IWebApkApi.Stub {
         mContext = context;
         mSmallIconId = bundle.getInt(KEY_SMALL_ICON_ID);
         mHostUid = bundle.getInt(KEY_HOST_BROWSER_UID);
-        assert mHostUid >= 0;
     }
 
     @Override
