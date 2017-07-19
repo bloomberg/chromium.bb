@@ -14,7 +14,7 @@
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/signin/authentication_service.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
-#import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
+#import "ios/chrome/browser/ui/commands/application_commands.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 #include "net/base/network_change_notifier.h"
@@ -62,14 +62,17 @@ enum PromoAction {
   BOOL _addAccountOperation;
 }
 
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState {
+- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
+                          dispatcher:
+                              (id<ApplicationSettingsCommands>)dispatcher {
   self = [super initWithBrowserState:browserState
                isPresentedOnSettings:NO
                          accessPoint:signin_metrics::AccessPoint::
                                          ACCESS_POINT_SIGNIN_PROMO
                          promoAction:signin_metrics::PromoAction::
                                          PROMO_ACTION_NO_SIGNIN_PROMO
-                      signInIdentity:nil];
+                      signInIdentity:nil
+                          dispatcher:dispatcher];
   if (self) {
     super.delegate = self;
   }
@@ -90,15 +93,14 @@ enum PromoAction {
 }
 
 - (void)dismissWithSignedIn:(BOOL)signedIn
-             executeCommand:(GenericChromeCommand*)command {
+       showAccountsSettings:(BOOL)showAccountsSettings {
   DCHECK(self.presentingViewController);
   UIViewController* presentingViewController = self.presentingViewController;
   [presentingViewController
       dismissViewControllerAnimated:YES
                          completion:^{
-                           if (command) {
-                             [presentingViewController
-                                 chromeExecuteCommand:command];
+                           if (showAccountsSettings) {
+                             [self.dispatcher showAccountsSettings];
                            }
                          }];
 }
@@ -176,12 +178,6 @@ enum PromoAction {
   return [identities count] > 0;
 }
 
-+ (UIViewController*)controllerToPresentForBrowserState:
-    (ios::ChromeBrowserState*)browserState {
-  UIViewController* controller =
-      [[SigninPromoViewController alloc] initWithBrowserState:browserState];
-  return controller;
-}
 
 #pragma mark - ChromeSigninViewControllerDelegate
 
@@ -199,12 +195,12 @@ enum PromoAction {
   DCHECK_EQ(self, controller);
   UMA_HISTOGRAM_ENUMERATION(kUMASSORecallPromoAction, ACTION_DISMISSED,
                             PROMO_ACTION_COUNT);
-  [self dismissWithSignedIn:NO executeCommand:nil];
+  [self dismissWithSignedIn:NO showAccountsSettings:NO];
 }
 
 - (void)didFailSignIn:(ChromeSigninViewController*)controller {
   DCHECK_EQ(self, controller);
-  [self dismissWithSignedIn:NO executeCommand:nil];
+  [self dismissWithSignedIn:NO showAccountsSettings:NO];
 }
 
 - (void)didSignIn:(ChromeSigninViewController*)controller {
@@ -218,14 +214,14 @@ enum PromoAction {
 }
 
 - (void)didAcceptSignIn:(ChromeSigninViewController*)controller
-         executeCommand:(GenericChromeCommand*)command {
+    showAccountsSettings:(BOOL)showAccountsSettings {
   DCHECK_EQ(self, controller);
   PromoAction promoAction = _addAccountOperation ? ACTION_ADDED_ANOTHER_ACCOUNT
                                                  : ACTION_ENABLED_SSO_ACCOUNT;
   UMA_HISTOGRAM_ENUMERATION(kUMASSORecallPromoAction, promoAction,
                             PROMO_ACTION_COUNT);
 
-  [self dismissWithSignedIn:YES executeCommand:command];
+  [self dismissWithSignedIn:YES showAccountsSettings:showAccountsSettings];
 }
 
 @end

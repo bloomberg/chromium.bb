@@ -10,9 +10,9 @@
 #include "components/signin/core/browser/signin_metrics.h"
 #import "ios/chrome/browser/signin/constants.h"
 
-@class ChromeSigninViewController;
-@class GenericChromeCommand;
+@protocol ApplicationSettingsCommands;
 @class ChromeIdentity;
+@class ChromeSigninViewController;
 
 namespace ios {
 class ChromeBrowserState;
@@ -49,10 +49,11 @@ class ChromeBrowserState;
              identity:(ChromeIdentity*)identity;
 
 // Informs the delegate that the user has accepted the sign-in in |controller|.
-// If |command| is not nil, the delegate is expected to execute it.
+// If |showAccountSettings| is YES, the delegate is expected to cause the
+// account settings to be shown.
 // This marks the end of the sign-in flow.
 - (void)didAcceptSignIn:(ChromeSigninViewController*)controller
-         executeCommand:(GenericChromeCommand*)command;
+    showAccountsSettings:(BOOL)showAccountsSettings;
 
 @end
 
@@ -66,17 +67,23 @@ class ChromeBrowserState;
 // It is valid to set this in the |willStartSignIn:| method of the delegate.
 @property(nonatomic, assign) ShouldClearData shouldClearData;
 
+@property(nonatomic, weak, readonly) id<ApplicationSettingsCommands> dispatcher;
+
 // Designated initializer.
 // * |browserState| is the current browser state.
 // * |isPresentedOnSettings| indicates whether the settings view controller is
 //   part of the presented view controllers stack.
 // * |accessPoint| represents the access point that initiated the sign-in.
 // * |identity| will be signed in without requiring user input if not nil.
+// * |dispatcher| is the dispatcher that can accept commands for displaying
+//   settings views.
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
                isPresentedOnSettings:(BOOL)isPresentedOnSettings
                          accessPoint:(signin_metrics::AccessPoint)accessPoint
                          promoAction:(signin_metrics::PromoAction)promoAction
-                      signInIdentity:(ChromeIdentity*)identity;
+                      signInIdentity:(ChromeIdentity*)identity
+                          dispatcher:
+                              (id<ApplicationSettingsCommands>)dispatcher;
 
 // Cancels the on-going authentication operation (if any). |delegate| will be
 // called with |didFailSignIn|.

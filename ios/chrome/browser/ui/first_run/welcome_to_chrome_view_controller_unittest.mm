@@ -43,7 +43,8 @@ class WelcomeToChromeViewControllerTest : public PlatformTest {
     id tabModel = [OCMockObject mockForClass:[TabModel class]];
     controller_ = [[WelcomeToChromeViewController alloc]
         initWithBrowserState:chrome_browser_state_.get()
-                    tabModel:tabModel];
+                    tabModel:tabModel
+                  dispatcher:nil];
     [controller_ loadView];
   }
 

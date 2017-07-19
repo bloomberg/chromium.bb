@@ -73,6 +73,10 @@ void TraverseCoordinatorHierarchy(BrowserCoordinator* coordinator,
   [static_cast<id>(self.browser->dispatcher()) closeSettings];
 }
 
+- (id)dispatcherForSettings {
+  return nil;
+}
+
 #pragma mark - UINavigationControllerDelegate
 
 - (void)navigationController:(UINavigationController*)navigationController

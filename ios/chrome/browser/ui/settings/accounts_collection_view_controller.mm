@@ -111,12 +111,18 @@ typedef NS_ENUM(NSInteger, ItemType) {
 // phase to avoid observing services for a browser state that is being killed.
 - (void)stopBrowserStateServiceObservers;
 
+@property(nonatomic, readonly, weak) id<ApplicationSettingsCommands> dispatcher;
+
 @end
 
 @implementation AccountsCollectionViewController
 
+@synthesize dispatcher = _dispatcher;
+
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
-           closeSettingsOnAddAccount:(BOOL)closeSettingsOnAddAccount {
+           closeSettingsOnAddAccount:(BOOL)closeSettingsOnAddAccount
+                          dispatcher:
+                              (id<ApplicationSettingsCommands>)dispatcher {
   DCHECK(browserState);
   DCHECK(!browserState->IsOffTheRecord());
   UICollectionViewLayout* layout = [[MDCCollectionViewFlowLayout alloc] init];
@@ -125,6 +131,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   if (self) {
     _browserState = browserState;
     _closeSettingsOnAddAccount = closeSettingsOnAddAccount;
+    _dispatcher = dispatcher;
     browser_sync::ProfileSyncService* syncService =
         IOSChromeProfileSyncServiceFactory::GetForBrowserState(_browserState);
     _syncObserver.reset(new SyncObserverBridge(self, syncService));
@@ -486,7 +493,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
                    accessPoint:signin_metrics::AccessPoint::
                                    ACCESS_POINT_SETTINGS
                    promoAction:signin_metrics::PromoAction::
-                                   PROMO_ACTION_NO_SIGNIN_PROMO];
+                                   PROMO_ACTION_NO_SIGNIN_PROMO
+                    dispatcher:self.dispatcher];
 
   // |_authenticationOperationInProgress| is reset when the signin interaction
   // controller is dismissed.
