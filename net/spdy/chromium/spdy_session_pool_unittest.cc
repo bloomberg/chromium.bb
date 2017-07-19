@@ -800,7 +800,7 @@ TEST_F(SpdySessionPoolTest, IPAddressChanged) {
 }
 
 TEST_F(SpdySessionPoolTest, FindAvailableSession) {
-  SpdySessionKey key(HostPortPair("https://www.example.org", 443),
+  SpdySessionKey key(HostPortPair("www.example.org", 443),
                      ProxyServer::Direct(), PRIVACY_MODE_DISABLED);
 
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING)};
@@ -851,7 +851,7 @@ INSTANTIATE_TEST_CASE_P(
                       base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND));
 
 TEST_P(SpdySessionMemoryDumpTest, DumpMemoryStats) {
-  SpdySessionKey key(HostPortPair("https://www.example.org", 443),
+  SpdySessionKey key(HostPortPair("www.example.org", 443),
                      ProxyServer::Direct(), PRIVACY_MODE_DISABLED);
 
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING)};
