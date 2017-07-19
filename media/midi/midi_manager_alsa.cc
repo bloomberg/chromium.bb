@@ -165,6 +165,8 @@ void SetStringIfNonEmpty(base::DictionaryValue* value,
 MidiManagerAlsa::MidiManagerAlsa(MidiService* service) : MidiManager(service) {}
 
 MidiManagerAlsa::~MidiManagerAlsa() {
+  base::AutoLock lock(lazy_init_member_lock_);
+
   // Extra CHECK to verify all members are already reset.
   CHECK(!in_client_);
   CHECK(!out_client_);
@@ -178,6 +180,8 @@ void MidiManagerAlsa::StartInitialization() {
     NOTREACHED();
     return CompleteInitialization(Result::INITIALIZATION_ERROR);
   }
+
+  base::AutoLock lock(lazy_init_member_lock_);
 
   // Create client handles.
   snd_seq_t* tmp_seq = nullptr;
@@ -297,15 +301,19 @@ void MidiManagerAlsa::StartInitialization() {
 }
 
 void MidiManagerAlsa::Finalize() {
-  // Close the out client. This will trigger the event thread to stop,
-  // because of SND_SEQ_EVENT_CLIENT_EXIT.
-  out_client_.reset();
+  {
+    base::AutoLock lock(out_client_lock_);
+    // Close the out client. This will trigger the event thread to stop,
+    // because of SND_SEQ_EVENT_CLIENT_EXIT.
+    out_client_.reset();
+  }
 
   // Ensure that no task is running any more.
   bool result = service()->task_service()->UnbindInstance();
   CHECK(result);
 
   // Destruct the other stuff we initialized in StartInitialization().
+  base::AutoLock lock(lazy_init_member_lock_);
   udev_monitor_.reset();
   udev_.reset();
   decoder_.reset();
@@ -858,6 +866,9 @@ void MidiManagerAlsa::SendMidiData(MidiManagerClient* client,
       base::AutoLock lock(out_ports_lock_);
       auto it = out_ports_.find(port_index);
       if (it != out_ports_.end()) {
+        base::AutoLock lock(out_client_lock_);
+        if (!out_client_)
+          return;
         snd_seq_ev_set_source(&event, it->second);
         snd_seq_ev_set_subs(&event);
         snd_seq_ev_set_direct(&event);
