@@ -3640,6 +3640,45 @@ TEST_F(ExtensionServiceTest, ComponentExtensionWhitelisted) {
   EXPECT_TRUE(service()->GetExtensionById(good0, false));
 }
 
+// Tests that active permissions are not revoked from component extensions
+// by policy when the policy is updated. https://crbug.com/746017.
+TEST_F(ExtensionServiceTest, ComponentExtensionWhitelistedPermission) {
+  InitializeEmptyExtensionServiceWithTestingPrefs();
+
+  // Install a component extension.
+  base::FilePath path = data_dir()
+                            .AppendASCII("good")
+                            .AppendASCII("Extensions")
+                            .AppendASCII(good0)
+                            .AppendASCII("1.0.0.0");
+  std::string manifest;
+  ASSERT_TRUE(base::ReadFileToString(path.Append(extensions::kManifestFilename),
+                                     &manifest));
+  service()->component_loader()->Add(manifest, path);
+  service()->Init();
+
+  // Extension should have the "tabs" permission.
+  EXPECT_TRUE(service()
+                  ->GetExtensionById(good0, false)
+                  ->permissions_data()
+                  ->active_permissions()
+                  .HasAPIPermission(extensions::APIPermission::kTab));
+
+  // Component should not lose permissions on policy change.
+  {
+    ManagementPrefUpdater pref(profile_->GetTestingPrefService());
+    pref.AddBlockedPermission(good0, "tabs");
+  }
+
+  service()->OnExtensionManagementSettingsChanged();
+  content::RunAllBlockingPoolTasksUntilIdle();
+  EXPECT_TRUE(service()
+                  ->GetExtensionById(good0, false)
+                  ->permissions_data()
+                  ->active_permissions()
+                  .HasAPIPermission(extensions::APIPermission::kTab));
+}
+
 // Tests that policy-installed extensions are not blacklisted by policy.
 TEST_F(ExtensionServiceTest, PolicyInstalledExtensionsWhitelisted) {
   InitializeEmptyExtensionServiceWithTestingPrefs();
