@@ -36836,6 +36836,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.CountOfBrokenAlternativeServices" units="services">
+  <owner>wangyix@chromium.org</owner>
+  <summary>
+    The number of broken alternative services loaded from the prefs file on
+    startup. Alternative services allow an origin server to specify additional
+    means of interacting with it on the network. A broken alternative service is
+    one whose most recent connection attempt failed and whose retry timeout
+    period has not yet expired. Recorded when broken alternative services are
+    loaded from the prefs file on startup.
+  </summary>
+</histogram>
+
 <histogram name="Net.CountOfPipelineCapableServers" units="servers">
   <obsolete>
     Deprecated 05/2014, related field trial already long expired.
@@ -36851,6 +36863,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>zhongyi@chromium.org</owner>
   <summary>
     This counts the number of server configs persisted in prefs file.
+  </summary>
+</histogram>
+
+<histogram name="Net.CountOfRecentlyBrokenAlternativeServices" units="services">
+  <owner>wangyix@chromium.org</owner>
+  <summary>
+    The number of recently broken alternative services loaded from the prefs
+    file on startup. Alternative services allow an origin server to specify
+    additional means of interacting with it on the network. A recently broken
+    alternative service is one whose most recent connection attempt failed.
+    Recorded when broken alternative services are loaded from the prefs file on
+    startup.
   </summary>
 </histogram>
 
