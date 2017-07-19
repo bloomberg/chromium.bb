@@ -145,6 +145,7 @@
 #include "base/tracked_objects.h"
 #include "build/build_config.h"
 #include "components/metrics/environment_recorder.h"
+#include "components/metrics/field_trials_provider.h"
 #include "components/metrics/metrics_log.h"
 #include "components/metrics/metrics_log_manager.h"
 #include "components/metrics/metrics_log_uploader.h"
@@ -231,8 +232,11 @@ MetricsService::MetricsService(MetricsStateManager* state_manager,
   if (install_date == 0)
     local_state_->SetInt64(prefs::kInstallDate, base::Time::Now().ToTimeT());
 
-  RegisterMetricsProvider(std::unique_ptr<metrics::MetricsProvider>(
-      new StabilityMetricsProvider(local_state_)));
+  RegisterMetricsProvider(
+      base::MakeUnique<StabilityMetricsProvider>(local_state_));
+
+  RegisterMetricsProvider(base::MakeUnique<variations::FieldTrialsProvider>(
+      &synthetic_trial_registry_));
 }
 
 MetricsService::~MetricsService() {
@@ -863,12 +867,8 @@ std::unique_ptr<MetricsLog> MetricsService::CreateLog(
 
 void MetricsService::RecordCurrentEnvironment(MetricsLog* log) {
   DCHECK(client_);
-  std::vector<variations::ActiveGroupId> synthetic_trials;
-  synthetic_trial_registry_.GetSyntheticFieldTrialsOlderThan(
-      log->creation_time(), &synthetic_trials);
   std::string serialized_environment = log->RecordEnvironment(
-      metrics_providers_, synthetic_trials, GetInstallDate(),
-      GetMetricsReportingEnabledDate());
+      metrics_providers_, GetInstallDate(), GetMetricsReportingEnabledDate());
   client_->OnEnvironmentUpdate(&serialized_environment);
 }
 

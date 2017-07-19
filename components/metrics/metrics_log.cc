@@ -31,7 +31,6 @@
 #include "components/metrics/proto/user_action_event.pb.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
-#include "components/variations/active_field_trials.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
@@ -42,7 +41,6 @@
 #endif
 
 using base::SampleCountIterator;
-typedef variations::ActiveGroupId ActiveGroupId;
 
 namespace metrics {
 
@@ -79,17 +77,6 @@ class IndependentFlattener : public base::HistogramFlattener {
 // Any id less than 16 bytes is considered to be a testing id.
 bool IsTestingID(const std::string& id) {
   return id.size() < 16;
-}
-
-void WriteFieldTrials(const std::vector<ActiveGroupId>& field_trial_ids,
-                      SystemProfileProto* system_profile) {
-  for (std::vector<ActiveGroupId>::const_iterator it =
-       field_trial_ids.begin(); it != field_trial_ids.end(); ++it) {
-    SystemProfileProto::FieldTrial* field_trial =
-        system_profile->add_field_trial();
-    field_trial->set_name_id(it->name);
-    field_trial->set_group_id(it->group);
-  }
 }
 
 // Round a timestamp measured in seconds since epoch to one with a granularity
@@ -246,11 +233,6 @@ void MetricsLog::RecordGeneralMetrics(
     metrics_providers[i]->ProvideGeneralMetrics(uma_proto());
 }
 
-void MetricsLog::GetFieldTrialIds(
-    std::vector<ActiveGroupId>* field_trial_ids) const {
-  variations::GetFieldTrialActiveGroupIds(field_trial_ids);
-}
-
 bool MetricsLog::HasEnvironment() const {
   return uma_proto()->system_profile().has_uma_enabled_date();
 }
@@ -303,7 +285,6 @@ void MetricsLog::WriteRealtimeStabilityAttributes(
 
 std::string MetricsLog::RecordEnvironment(
     const std::vector<std::unique_ptr<MetricsProvider>>& metrics_providers,
-    const std::vector<variations::ActiveGroupId>& synthetic_trials,
     int64_t install_date,
     int64_t metrics_reporting_enabled_date) {
   DCHECK(!HasEnvironment());
@@ -330,11 +311,6 @@ std::string MetricsLog::RecordEnvironment(
   cpu->set_vendor_name(cpu_info.vendor_name());
   cpu->set_signature(cpu_info.signature());
   cpu->set_num_cores(base::SysInfo::NumberOfProcessors());
-
-  std::vector<ActiveGroupId> field_trial_ids;
-  GetFieldTrialIds(&field_trial_ids);
-  WriteFieldTrials(field_trial_ids, system_profile);
-  WriteFieldTrials(synthetic_trials, system_profile);
 
   for (size_t i = 0; i < metrics_providers.size(); ++i)
     metrics_providers[i]->ProvideSystemProfileMetrics(system_profile);
