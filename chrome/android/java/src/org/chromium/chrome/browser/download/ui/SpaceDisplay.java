@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
@@ -114,7 +115,7 @@ public class SpaceDisplay extends RecyclerView.AdapterDataObserver {
 
     SpaceDisplay(final ViewGroup parent, DownloadHistoryAdapter historyAdapter) {
         mHistoryAdapter = historyAdapter;
-        mView = (ViewGroup) LayoutInflater.from(parent.getContext())
+        mView = LayoutInflater.from(ContextUtils.getApplicationContext())
                         .inflate(R.layout.download_manager_ui_space_widget, parent, false);
         mSpaceUsedByDownloadsTextView = (TextView) mView.findViewById(R.id.size_downloaded);
         mSpaceUsedByOtherAppsTextView = (TextView) mView.findViewById(R.id.size_other_apps);
