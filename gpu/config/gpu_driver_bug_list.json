@@ -1,6 +1,6 @@
 {
   "name": "gpu driver bug list",
-  "version": "10.18",
+  "version": "10.19",
   "entries": [
     {
       "id": 1,
@@ -2454,6 +2454,7 @@
       "vendor_id": "0x8086",
       "device_id": ["0x0412", "0x0d26", "0x0a2e", "0x0a26", "0x0d22", "0x161e",
                     "0x1626", "0x162b", "0x1622"],
+      "multi_gpu_category": "any",
       "features": [
         "avoid_stencil_buffers"
       ]
