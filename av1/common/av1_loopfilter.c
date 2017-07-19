@@ -2031,28 +2031,12 @@ static const uint32_t av1_transform_masks[NUM_EDGE_DIRS][TX_SIZES_ALL] = {
 static TX_SIZE av1_get_transform_size(const MODE_INFO *const pCurr,
                                       const EDGE_DIR edgeDir, const int mi_row,
                                       const int mi_col, const int plane,
+                                      const struct macroblockd_plane *pPlane,
                                       const uint32_t scaleHorz,
                                       const uint32_t scaleVert) {
   const MB_MODE_INFO *mbmi = &pCurr->mbmi;
-  const BLOCK_SIZE sb_type = pCurr->mbmi.sb_type;
-  TX_SIZE tx_size;
-
-  if (plane == PLANE_TYPE_Y) {
-    tx_size = mbmi->tx_size;
-  } else {
-#if CONFIG_CHROMA_2X2
-    assert(mbmi->tx_size > TX_2X2);
-#endif
-
-#if CONFIG_SUPERTX
-    if (supertx_enabled(mbmi))
-      tx_size = uvsupertx_size_lookup[txsize_sqr_map[mbmi->tx_size]][scaleHorz]
-                                     [scaleVert];
-    else
-#endif  // CONFIG_SUPERTX
-      tx_size = uv_txsize_lookup[sb_type][mbmi->tx_size][scaleHorz][scaleVert];
-  }
-
+  TX_SIZE tx_size = (plane == PLANE_TYPE_Y) ? mbmi->tx_size
+                                            : av1_get_uv_tx_size(mbmi, pPlane);
   assert(tx_size < TX_SIZES_ALL);
 
 #if CONFIG_VAR_TX
@@ -2065,6 +2049,7 @@ static TX_SIZE av1_get_transform_size(const MODE_INFO *const pCurr,
   const int idx_r = mi_row & MAX_MIB_MASK;
   const int c = idx_c >> mi_width_log2_lookup[BLOCK_8X8];
   const int r = idx_r >> mi_height_log2_lookup[BLOCK_8X8];
+  const BLOCK_SIZE sb_type = pCurr->mbmi.sb_type;
   const int blk_row = r & (num_8x8_blocks_high_lookup[sb_type] - 1);
   const int blk_col = c & (num_8x8_blocks_wide_lookup[sb_type] - 1);
 
@@ -2092,6 +2077,8 @@ static TX_SIZE av1_get_transform_size(const MODE_INFO *const pCurr,
 #else
   (void)mi_row;
   (void)mi_col;
+  (void)scaleHorz;
+  (void)scaleVert;
 #endif  // CONFIG_VAR_TX
 
   // since in case of chrominance or non-square transorm need to convert
@@ -2119,7 +2106,8 @@ static void set_lpf_parameters(
     const ptrdiff_t modeStep, const AV1_COMMON *const cm,
     const EDGE_DIR edgeDir, const uint32_t x, const uint32_t y,
     const uint32_t width, const uint32_t height, const int plane,
-    const uint32_t scaleHorz, const uint32_t scaleVert) {
+    const struct macroblockd_plane *const pPlane, const uint32_t scaleHorz,
+    const uint32_t scaleVert) {
   // reset to initial values
   pParams->filterLength = 0;
   pParams->filterLengthInternal = 0;
@@ -2133,8 +2121,9 @@ static void set_lpf_parameters(
   const MB_MODE_INFO *mbmi = &ppCurr[0]->mbmi;
 
   {
-    const TX_SIZE ts = av1_get_transform_size(
-        ppCurr[0], edgeDir, mi_row, mi_col, plane, scaleHorz, scaleVert);
+    const TX_SIZE ts =
+        av1_get_transform_size(ppCurr[0], edgeDir, mi_row, mi_col, plane,
+                               pPlane, scaleHorz, scaleVert);
 
 #if CONFIG_EXT_DELTA_Q
     const uint32_t currLevel = get_filter_level(cm, &cm->lf_info, mbmi);
@@ -2164,8 +2153,9 @@ static void set_lpf_parameters(
               (VERT_EDGE == edgeDir) ? (mi_row) : (mi_row - (1 << scaleVert));
           const int pvCol =
               (VERT_EDGE == edgeDir) ? (mi_col - (1 << scaleHorz)) : (mi_col);
-          const TX_SIZE pvTs = av1_get_transform_size(
-              pPrev, edgeDir, pvRow, pvCol, plane, scaleHorz, scaleVert);
+          const TX_SIZE pvTs =
+              av1_get_transform_size(pPrev, edgeDir, pvRow, pvCol, plane,
+                                     pPlane, scaleHorz, scaleVert);
 
 #if CONFIG_EXT_DELTA_Q
           const uint32_t pvLvl =
@@ -2257,7 +2247,7 @@ static void av1_filter_block_plane_vert(const AV1_COMMON *const cm,
 
       set_lpf_parameters(&params, pCurr, ((ptrdiff_t)1 << scaleHorz), cm,
                          VERT_EDGE, cuX + x * MI_SIZE, cuY + y * MI_SIZE, width,
-                         height, plane, scaleHorz, scaleVert);
+                         height, plane, pPlane, scaleHorz, scaleVert);
 
       switch (params.filterLength) {
         // apply 4-tap filtering
@@ -2344,7 +2334,7 @@ static void av1_filter_block_plane_horz(const AV1_COMMON *const cm,
       memset(&params, 0, sizeof(params));
       set_lpf_parameters(&params, pCurr, (cm->mi_stride << scaleVert), cm,
                          HORZ_EDGE, cuX + x * MI_SIZE, cuY + y * MI_SIZE, width,
-                         height, plane, scaleHorz, scaleVert);
+                         height, plane, pPlane, scaleHorz, scaleVert);
       switch (params.filterLength) {
         // apply 4-tap filtering
         case 4:
