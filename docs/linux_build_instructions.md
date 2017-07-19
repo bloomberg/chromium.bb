@@ -155,7 +155,6 @@ In order to use `icecc`, set the following GN args:
 linux_use_bundled_binutils=false
 use_debug_fission=false
 is_clang=false
-use_sysroot=false
 ```
 
 See these links for more on the 
