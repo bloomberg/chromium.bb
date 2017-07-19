@@ -26,6 +26,7 @@
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "components/guest_view/common/guest_view_constants.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -469,14 +470,14 @@ void MessageService::OpenChannelToTab(int source_process_id,
       content::RenderFrameHost::FromID(source_process_id, source_routing_id);
   if (!source)
     return;
-  Profile* profile =
-      Profile::FromBrowserContext(source->GetProcess()->GetBrowserContext());
+  content::BrowserContext* browser_context =
+      source->GetProcess()->GetBrowserContext();
 
   WebContents* contents = NULL;
   std::unique_ptr<MessagePort> receiver;
   PortId receiver_port_id(source_port_id.context_id, source_port_id.port_number,
                           false);
-  if (!ExtensionTabUtil::GetTabById(tab_id, profile, true, NULL, NULL,
+  if (!ExtensionTabUtil::GetTabById(tab_id, browser_context, true, NULL, NULL,
                                     &contents, NULL) ||
       contents->GetController().NeedsReload()) {
     // The tab isn't loaded yet. Don't attempt to connect.
@@ -505,8 +506,9 @@ void MessageService::OpenChannelToTab(int source_process_id,
   if (!extension_id.empty()) {
     // Source extension == target extension so the extension must exist, or
     // where did the IPC come from?
-    extension = ExtensionRegistry::Get(profile)->enabled_extensions().GetByID(
-        extension_id);
+    extension = ExtensionRegistry::Get(browser_context)
+                    ->enabled_extensions()
+                    .GetByID(extension_id);
     DCHECK(extension);
   }
 
@@ -882,7 +884,7 @@ void MessageService::OnOpenChannelAllowed(
     // Capture this reference before params is invalidated by base::Passed().
     const GURL& source_url = params->source_url;
     property_provider_.GetChannelID(
-        Profile::FromBrowserContext(context), source_url,
+        context, source_url,
         base::Bind(&MessageService::GotChannelID, weak_factory_.GetWeakPtr(),
                    base::Passed(&params)));
     return;
