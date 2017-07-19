@@ -15,9 +15,6 @@ mojom("ime") {
     "//ui/gfx/geometry/mojo",
     "//ui/gfx/range/mojo",
   ]
-
-  # TODO(crbug.com/714018): Convert the implementation to use OnceCallback.
-  use_once_callback = false
 }
 
 mojom("test_interfaces") {
@@ -28,7 +25,4 @@ mojom("test_interfaces") {
   public_deps = [
     ":ime",
   ]
-
-  # TODO(crbug.com/714018): Convert the implementation to use OnceCallback.
-  use_once_callback = false
 }

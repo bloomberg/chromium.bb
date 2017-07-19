@@ -4,6 +4,8 @@
 
 #include "services/ui/ime/test_ime_driver/test_ime_driver.h"
 
+#include <utility>
+
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/ui/public/interfaces/ime/ime.mojom.h"
 
@@ -21,14 +23,14 @@ class TestInputMethod : public mojom::InputMethod {
   void OnTextInputTypeChanged(TextInputType text_input_type) override {}
   void OnCaretBoundsChanged(const gfx::Rect& caret_bounds) override {}
   void ProcessKeyEvent(std::unique_ptr<Event> key_event,
-                       const ProcessKeyEventCallback& callback) override {
+                       ProcessKeyEventCallback callback) override {
     DCHECK(key_event->IsKeyEvent());
 
     if (key_event->AsKeyEvent()->is_char()) {
       client_->InsertChar(std::move(key_event));
-      callback.Run(true);
+      std::move(callback).Run(true);
     } else {
-      callback.Run(false);
+      std::move(callback).Run(false);
     }
   }
   void CancelComposition() override {}
