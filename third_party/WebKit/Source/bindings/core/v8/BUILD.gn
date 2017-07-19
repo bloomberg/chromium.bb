@@ -113,6 +113,17 @@ generated_core_callback_function_files = [
   "$bindings_core_v8_output_dir/ResizeObserverCallback.h",
 ]
 
+generate_conditional_features("bindings_core_conditional_features") {
+  sources = core_idl_files + core_idl_with_modules_dependency_files +
+            core_global_constructors_generated_idl_files
+  component = "Core"
+  output_dir = bindings_core_output_dir + "/v8"
+  deps = [
+    "//third_party/WebKit/Source/bindings/core:core_global_constructors_idls",
+    "//third_party/WebKit/Source/bindings/core:interfaces_info_individual_core",
+  ]
+}
+
 if (is_win || use_jumbo_build) {
   # On Windows Official release builds, we try to preserve symbol space.
   bindings_core_generated_interface_files =
@@ -185,9 +196,11 @@ blink_core_sources("bindings_core_impl") {
   _non_testing_sources = get_target_outputs(":bindings_core_impl_generated") -
                          generated_core_testing_dictionary_files -
                          generated_core_testing_callback_function_files
-  sources = _non_testing_sources + bindings_core_generated_interface_files
+  sources = _non_testing_sources + bindings_core_generated_interface_files +
+            get_target_outputs(":bindings_core_conditional_features")
 
   deps = [
+    ":bindings_core_conditional_features",
     ":bindings_core_v8_generated",
   ]
 }

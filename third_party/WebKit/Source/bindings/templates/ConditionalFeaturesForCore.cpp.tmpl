@@ -1,19 +1,12 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
+{% filter format_blink_cpp_source_code %}
+
+{% include 'copyright_block.txt' %}
 
 #include "bindings/core/v8/ConditionalFeaturesForCore.h"
 
-#include "bindings/core/v8/V8Document.h"
-#include "bindings/core/v8/V8HTMLLinkElement.h"
-#include "bindings/core/v8/V8Navigator.h"
-#include "bindings/core/v8/V8Window.h"
-#include "core/context_features/ContextFeatureSettings.h"
-#include "core/dom/ExecutionContext.h"
-#include "core/frame/Frame.h"
-#include "core/origin_trials/OriginTrials.h"
-#include "platform/bindings/ConditionalFeatures.h"
-#include "platform/bindings/ScriptState.h"
+{% for include in includes %}
+#include "{{include}}"
+{% endfor %}
 
 namespace blink {
 
@@ -24,21 +17,21 @@ InstallPendingConditionalFeatureFunction
     g_old_install_pending_conditional_feature_function = nullptr;
 }
 
-void InstallConditionalFeaturesCore(const WrapperTypeInfo* wrapper_type_info,
-                                    const ScriptState* script_state,
-                                    v8::Local<v8::Object> prototype_object,
-                                    v8::Local<v8::Function> interface_object) {
+void InstallConditionalFeaturesForCore(
+    const WrapperTypeInfo* wrapper_type_info,
+    const ScriptState* script_state,
+    v8::Local<v8::Object> prototype_object,
+    v8::Local<v8::Function> interface_object) {
   (*g_old_install_conditional_features_function)(
       wrapper_type_info, script_state, prototype_object, interface_object);
 
-  // TODO(iclelland): Generate all of this logic at compile-time, based on the
-  // configuration of origin trial enabled attributes and interfaces in IDL
-  // files. (crbug.com/615060)
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   if (!execution_context)
     return;
   v8::Isolate* isolate = script_state->GetIsolate();
   const DOMWrapperWorld& world = script_state->World();
+  // TODO(iclelland): Unify ContextFeatureSettings with the rest of the
+  // conditional features.
   if (wrapper_type_info == &V8Window::wrapperTypeInfo) {
     auto* settings = ContextFeatureSettings::From(
         execution_context,
@@ -49,37 +42,50 @@ void InstallConditionalFeaturesCore(const WrapperTypeInfo* wrapper_type_info,
       V8Window::installMojoJS(isolate, world, instance_object, prototype_object,
                               interface_object);
     }
-  } else if (wrapper_type_info == &V8HTMLLinkElement::wrapperTypeInfo) {
-    if (OriginTrials::linkServiceWorkerEnabled(execution_context)) {
-      V8HTMLLinkElement::installLinkServiceWorker(
-          isolate, world, v8::Local<v8::Object>(), prototype_object,
-          interface_object);
-    }
   }
+  // TODO(iclelland): Extract this common code out of ConditionalFeaturesForCore
+  // and ConditionalFeaturesForModules into a block.
+  {% for interface in installers_by_interface %}
+  if (wrapper_type_info == &{{interface.v8_class}}::wrapperTypeInfo) {
+    {% if interface.is_global %}
+    v8::Local<v8::Object> instance_object =
+        script_state->GetContext()->Global();
+    {% endif %}
+    {% for installer in interface.installers %}
+    if ({{installer.condition}}(execution_context)) {
+      {{installer.v8_class_or_partial}}::{{installer.install_method}}(
+          isolate, world, {% if interface.is_global %}instance_object{% else %}v8::Local<v8::Object>(){% endif %}, prototype_object, interface_object);
+    }
+    {% endfor %}
+  }
+  {% endfor %}
 }
 
-void InstallPendingConditionalFeatureCore(const String& feature,
-                                          const ScriptState* script_state) {
+void InstallPendingConditionalFeatureForCore(const String& feature,
+                                             const ScriptState* script_state) {
   (*g_old_install_pending_conditional_feature_function)(feature, script_state);
 
-  // TODO(iclelland): Generate all of this logic at compile-time, based on the
-  // configuration of origin trial enabled attributes and interfaces in IDL
-  // files. (crbug.com/615060)
+  // TODO(iclelland): Extract this common code out of ConditionalFeaturesForCore
+  // and ConditionalFeaturesForModules into a block.
+  {% if installers_by_feature %}
   v8::Local<v8::Object> prototype_object;
   v8::Local<v8::Function> interface_object;
   v8::Isolate* isolate = script_state->GetIsolate();
   const DOMWrapperWorld& world = script_state->World();
   V8PerContextData* context_data = script_state->PerContextData();
-  if (feature == "ForeignFetch") {
+  {% for feature in installers_by_feature %}
+  if (feature == "{{feature.name}}") {
+    {% for installer in feature.installers %}
     if (context_data->GetExistingConstructorAndPrototypeForType(
-            &V8HTMLLinkElement::wrapperTypeInfo, &prototype_object,
-            &interface_object)) {
-      V8HTMLLinkElement::installLinkServiceWorker(
-          isolate, world, v8::Local<v8::Object>(), prototype_object,
-          interface_object);
+            &{{installer.v8_class}}::wrapperTypeInfo, &prototype_object, &interface_object)) {
+      {{installer.v8_class_or_partial}}::{{installer.install_method}}(
+          isolate, world, v8::Local<v8::Object>(), prototype_object, interface_object);
     }
+    {% endfor %}
     return;
   }
+  {% endfor %}
+  {% endif %}
 }
 
 void InstallConditionalFeaturesOnWindow(const ScriptState* script_state) {
@@ -95,10 +101,12 @@ void InstallConditionalFeaturesOnWindow(const ScriptState* script_state) {
 
 void RegisterInstallConditionalFeaturesForCore() {
   g_old_install_conditional_features_function =
-      SetInstallConditionalFeaturesFunction(&InstallConditionalFeaturesCore);
+      SetInstallConditionalFeaturesFunction(&InstallConditionalFeaturesForCore);
   g_old_install_pending_conditional_feature_function =
       SetInstallPendingConditionalFeatureFunction(
-          &InstallPendingConditionalFeatureCore);
+          &InstallPendingConditionalFeatureForCore);
 }
 
 }  // namespace blink
+
+{% endfilter %}{# format_blink_cpp_source_code #}

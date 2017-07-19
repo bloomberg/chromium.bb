@@ -32,8 +32,6 @@ bindings_core_v8_files =
                     "core/v8/BindingSecurity.cpp",
                     "core/v8/BindingSecurity.h",
                     "core/v8/CallbackPromiseAdapter.h",
-                    "core/v8/ConditionalFeaturesForCore.cpp",
-                    "core/v8/ConditionalFeaturesForCore.h",
                     "core/v8/V0CustomElementConstructorBuilder.cpp",
                     "core/v8/V0CustomElementConstructorBuilder.h",
                     "core/v8/DocumentWriteEvaluator.cpp",

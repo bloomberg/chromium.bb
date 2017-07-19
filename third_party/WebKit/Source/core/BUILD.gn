@@ -81,6 +81,7 @@ source_set("generated") {
     ":prerequisites",
     "//gin",
     "//skia",
+    "//third_party/WebKit/Source/bindings/core/v8:bindings_core_conditional_features",
     "//third_party/WebKit/Source/bindings/core/v8:bindings_core_v8_generated",
     "//third_party/WebKit/Source/core/inspector:generated",
     "//third_party/WebKit/Source/core/probe:generated",
