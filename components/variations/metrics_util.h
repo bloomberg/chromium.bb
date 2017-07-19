@@ -9,6 +9,7 @@
 
 #include "base/strings/string_piece.h"
 
+// TODO(rkaplow): Move to variations namespace and rename file hashing.h.
 namespace metrics {
 
 // Computes a uint32_t hash of a given string based on its SHA1 hash. Suitable

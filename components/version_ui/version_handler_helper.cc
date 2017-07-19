@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/metrics/field_trial.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "components/variations/active_field_trials.h"
@@ -30,7 +31,8 @@ std::unique_ptr<base::Value> GetVariationsList() {
   }
 #else
   // In release mode, display the hashes only.
-  variations::GetFieldTrialActiveGroupIdsAsStrings(&variations);
+  variations::GetFieldTrialActiveGroupIdsAsStrings(base::StringPiece(),
+                                                   &variations);
 #endif
 
   std::unique_ptr<base::ListValue> variations_list(new base::ListValue);

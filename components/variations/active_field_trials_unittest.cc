@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/strings/string_piece.h"
 #include "components/variations/metrics_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -39,7 +40,8 @@ TEST(ActiveFieldTrialsTest, GetFieldTrialActiveGroups) {
   expected_groups.insert(name_group_id);
 
   std::vector<ActiveGroupId> active_group_ids;
-  testing::TestGetFieldTrialActiveGroupIds(active_groups, &active_group_ids);
+  testing::TestGetFieldTrialActiveGroupIds(base::StringPiece(), active_groups,
+                                           &active_group_ids);
   EXPECT_EQ(2U, active_group_ids.size());
   for (size_t i = 0; i < active_group_ids.size(); ++i) {
     ActiveGroupIdSet::iterator expected_group =
@@ -48,6 +50,28 @@ TEST(ActiveFieldTrialsTest, GetFieldTrialActiveGroups) {
     expected_groups.erase(expected_group);
   }
   EXPECT_EQ(0U, expected_groups.size());
+}
+
+TEST(ActiveFieldTrialsTest, GetFieldTrialActiveGroupsWithSuffix) {
+  std::string trial_one("trial one");
+  std::string group_one("group one");
+  std::string suffix("some_suffix");
+
+  base::FieldTrial::ActiveGroups active_groups;
+  base::FieldTrial::ActiveGroup active_group;
+  active_group.trial_name = trial_one;
+  active_group.group_name = group_one;
+  active_groups.push_back(active_group);
+
+  std::vector<ActiveGroupId> active_group_ids;
+  testing::TestGetFieldTrialActiveGroupIds(suffix, active_groups,
+                                           &active_group_ids);
+  EXPECT_EQ(1U, active_group_ids.size());
+
+  uint32_t expected_name = metrics::HashName("trial onesome_suffix");
+  uint32_t expected_group = metrics::HashName("group onesome_suffix");
+  EXPECT_EQ(expected_name, active_group_ids[0].name);
+  EXPECT_EQ(expected_group, active_group_ids[0].group);
 }
 
 }  // namespace variations

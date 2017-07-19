@@ -17,6 +17,7 @@
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/histogram_snapshot_manager.h"
 #include "base/metrics/metrics_hashes.h"
+#include "base/strings/string_piece.h"
 #include "base/sys_info.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -248,7 +249,8 @@ void MetricsLog::RecordGeneralMetrics(
 
 void MetricsLog::GetFieldTrialIds(
     std::vector<ActiveGroupId>* field_trial_ids) const {
-  variations::GetFieldTrialActiveGroupIds(field_trial_ids);
+  // We use the default field trial suffixing (no suffix).
+  variations::GetFieldTrialActiveGroupIds(base::StringPiece(), field_trial_ids);
 }
 
 bool MetricsLog::HasEnvironment() const {
