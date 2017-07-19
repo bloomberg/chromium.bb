@@ -47,16 +47,6 @@ class BoxPainterBase {
                                   bool include_logical_left_edge = true,
                                   bool include_logical_right_edge = true);
 
-  // This form is used by callers requiring special computation of the outer
-  // bounds of the shadow. For example, TableCellPainter insets the bounds by
-  // half widths of collapsed borders instead of the default whole widths.
-  static void PaintInsetBoxShadowInBounds(
-      const PaintInfo&,
-      const FloatRoundedRect& bounds,
-      const ComputedStyle&,
-      bool include_logical_left_edge = true,
-      bool include_logical_right_edge = true);
-
   static void PaintBorder(const ImageResourceObserver&,
                           const Document&,
                           Node*,
