@@ -2474,6 +2474,10 @@ void HWNDMessageHandler::OnWindowPosChanging(WINDOWPOS* window_pos) {
     // in that case.
     PostMessage(hwnd(), WM_WINDOWSIZINGFINISHED, ++current_window_size_message_,
                 0);
+    // Copying the old bits can sometimes cause a flash of black when
+    // resizing. See https://crbug.com/739724
+    if (is_translucent_)
+      window_pos->flags |= SWP_NOCOPYBITS;
   }
 
   if (ScopedFullscreenVisibility::IsHiddenForFullscreen(hwnd())) {
