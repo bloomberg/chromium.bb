@@ -2787,11 +2787,8 @@ crbug.com/745345 virtual/mojo-loading/http/tests/inspector-protocol/network/disa
 crbug.com/657748 external/wpt/css/css-display-3/display-contents-before-after-002.html [ Failure ]
 crbug.com/657748 external/wpt/css/css-display-3/display-contents-dynamic-flex-002-inline.html [ Failure ]
 crbug.com/657748 external/wpt/css/css-display-3/display-contents-dynamic-flex-002-none.html [ Failure ]
-crbug.com/657748 external/wpt/css/css-display-3/display-contents-dynamic-flex-003-inline.html [ Failure ]
-crbug.com/657748 external/wpt/css/css-display-3/display-contents-dynamic-flex-003-none.html [ Failure ]
 crbug.com/657748 external/wpt/css/css-display-3/display-contents-dynamic-table-001-inline.html [ Failure ]
 crbug.com/657748 external/wpt/css/css-display-3/display-contents-flex-002.html [ Failure ]
-crbug.com/657748 external/wpt/css/css-display-3/display-contents-flex-003.html [ Failure ]
 
 # ====== End of display: contents tests ======
 
