@@ -34,7 +34,6 @@
 
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8GCController.h"
-#include "controller/BlinkInitializer.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/page/Page.h"
 #include "core/workers/WorkerBackingThread.h"
@@ -47,15 +46,8 @@
 #include "platform/wtf/allocator/Partitions.h"
 #include "platform/wtf/text/AtomicString.h"
 #include "platform/wtf/text/TextEncoding.h"
-#include "web/WebFactoryImpl.h"
 
 namespace blink {
-
-void Initialize(Platform* platform) {
-  InitializeBlink(platform);
-
-  WebFactoryImpl::Initialize();
-}
 
 v8::Isolate* MainThreadIsolate() {
   return V8PerIsolateData::MainThreadIsolate();
