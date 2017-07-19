@@ -2935,11 +2935,9 @@ void ChromeContentBrowserClient::BindInterfaceRequestFromFrame(
   if (!frame_interfaces_.get() && !frame_interfaces_parameterized_.get())
     InitFrameInterfaces();
 
-  if (frame_interfaces_parameterized_->CanBindInterface(interface_name)) {
-    frame_interfaces_parameterized_->BindInterface(
-        interface_name, std::move(interface_pipe), render_frame_host);
-  } else if (frame_interfaces_->CanBindInterface(interface_name)) {
-    frame_interfaces_->BindInterface(interface_name, std::move(interface_pipe));
+  if (!frame_interfaces_parameterized_->TryBindInterface(
+          interface_name, &interface_pipe, render_frame_host)) {
+    frame_interfaces_->TryBindInterface(interface_name, &interface_pipe);
   }
 }
 
@@ -2963,11 +2961,8 @@ void ChromeContentBrowserClient::BindInterfaceRequest(
     const service_manager::BindSourceInfo& source_info,
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle* interface_pipe) {
-  if (source_info.identity.name() == content::mojom::kGpuServiceName &&
-      gpu_binder_registry_.CanBindInterface(interface_name)) {
-    gpu_binder_registry_.BindInterface(interface_name,
-                                       std::move(*interface_pipe));
-  }
+  if (source_info.identity.name() == content::mojom::kGpuServiceName)
+    gpu_binder_registry_.TryBindInterface(interface_name, interface_pipe);
 }
 
 void ChromeContentBrowserClient::RegisterInProcessServices(

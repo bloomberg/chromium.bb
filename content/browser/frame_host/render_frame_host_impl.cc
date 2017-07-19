@@ -4009,11 +4009,8 @@ void RenderFrameHostImpl::BindNFCRequest(device::mojom::NFCRequest request) {
 void RenderFrameHostImpl::GetInterface(
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
-  if (interface_registry_.get() &&
-      interface_registry_->CanBindInterface(interface_name)) {
-    interface_registry_->BindInterface(interface_name,
-                                       std::move(interface_pipe));
-  } else {
+  if (!interface_registry_ ||
+      !interface_registry_->TryBindInterface(interface_name, &interface_pipe)) {
     GetContentClient()->browser()->BindInterfaceRequestFromFrame(
         this, interface_name, std::move(interface_pipe));
   }

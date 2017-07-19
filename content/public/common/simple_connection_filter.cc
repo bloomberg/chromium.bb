@@ -17,8 +17,7 @@ void SimpleConnectionFilter::OnBindInterface(
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle* interface_pipe,
     service_manager::Connector* connector) {
-  if (registry_->CanBindInterface(interface_name))
-    registry_->BindInterface(interface_name, std::move(*interface_pipe));
+  registry_->TryBindInterface(interface_name, interface_pipe);
 }
 
 SimpleConnectionFilterWithSourceInfo::SimpleConnectionFilterWithSourceInfo(
@@ -33,9 +32,7 @@ void SimpleConnectionFilterWithSourceInfo::OnBindInterface(
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle* interface_pipe,
     service_manager::Connector* connector) {
-  if (registry_->CanBindInterface(interface_name))
-    registry_->BindInterface(interface_name, std::move(*interface_pipe),
-                             source_info);
+  registry_->TryBindInterface(interface_name, interface_pipe, source_info);
 }
 
 }  // namespace content

@@ -1099,8 +1099,7 @@ class RenderProcessHostImpl::ConnectionFilterImpl : public ConnectionFilter {
     if (!enabled_)
       return;
 
-    if (registry_->CanBindInterface(interface_name))
-      registry_->BindInterface(interface_name, std::move(*interface_pipe));
+    registry_->TryBindInterface(interface_name, interface_pipe);
   }
 
   base::ThreadChecker thread_checker_;
