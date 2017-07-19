@@ -70,6 +70,14 @@ class DesktopSessionDurationTrackerTest : public testing::Test {
   DesktopSessionDurationTrackerTest()
       : loop_(base::MessageLoop::TYPE_DEFAULT) {}
 
+  void SetUp() override {
+    metrics::DesktopSessionDurationTracker::Initialize();
+  }
+
+  void TearDown() override {
+    metrics::DesktopSessionDurationTracker::CleanupForTesting();
+  }
+
   void ExpectTotalDuration(base::TimeDelta duration) {
     histogram_tester_.ExpectTotalCount("Session.TotalDuration", 1);
     base::Bucket bucket =
