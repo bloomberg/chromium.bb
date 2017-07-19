@@ -63,6 +63,14 @@ void FakeNotificationPresenter::RemoveConnectionToHostFailedNotification() {
   is_connection_failed_notification_shown_ = false;
 }
 
+void FakeNotificationPresenter::NotifyEnableBluetooth() {
+  is_enable_bluetooth_notification_shown_ = true;
+}
+
+void FakeNotificationPresenter::RemoveEnableBluetoothNotification() {
+  is_enable_bluetooth_notification_shown_ = false;
+}
+
 }  // namespace tether
 
 }  // namespace chromeos

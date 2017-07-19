@@ -42,6 +42,10 @@ class FakeNotificationPresenter : public NotificationPresenter {
     return is_connection_failed_notification_shown_;
   }
 
+  bool is_enable_bluetooth_notification_shown() {
+    return is_enable_bluetooth_notification_shown_;
+  }
+
   // NotificationPresenter:
   void NotifyPotentialHotspotNearby(
       const cryptauth::RemoteDevice& remote_device,
@@ -52,12 +56,15 @@ class FakeNotificationPresenter : public NotificationPresenter {
   void RemoveSetupRequiredNotification() override;
   void NotifyConnectionToHostFailed() override;
   void RemoveConnectionToHostFailedNotification() override;
+  void NotifyEnableBluetooth() override;
+  void RemoveEnableBluetoothNotification() override;
 
  private:
   PotentialHotspotNotificationState potential_hotspot_state_;
   cryptauth::RemoteDevice potential_hotspot_remote_device_;
   bool is_setup_required_notification_shown_;
   bool is_connection_failed_notification_shown_;
+  bool is_enable_bluetooth_notification_shown_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeNotificationPresenter);
 };

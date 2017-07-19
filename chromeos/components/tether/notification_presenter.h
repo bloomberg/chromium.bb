@@ -49,6 +49,14 @@ class NotificationPresenter {
   // nothing if that notification is not currently displayed.
   virtual void RemoveConnectionToHostFailedNotification() = 0;
 
+  // Notifies the user that enabling Blueooth allows searching for Tether
+  // networks.
+  virtual void NotifyEnableBluetooth() = 0;
+
+  // Removes the notification created by NotifyEnableBluetooth(), or does
+  // nothign if that notification is not currently displayed.
+  virtual void RemoveEnableBluetoothNotification() = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(NotificationPresenter);
 };
