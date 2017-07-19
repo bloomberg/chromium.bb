@@ -86,7 +86,7 @@ class AppBannerManagerAndroid
   void OnDidPerformInstallableCheck(const InstallableData& result) override;
   void OnAppIconFetched(const SkBitmap& bitmap) override;
   void ResetCurrentPageData() override;
-  void ShowBanner() override;
+  void ShowBannerUi() override;
 
  private:
   friend class content::WebContentsUserData<AppBannerManagerAndroid>;

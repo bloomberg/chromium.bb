@@ -470,6 +470,11 @@ bool AppBannerManager::IsWaitingForData() const {
           state_ == State::PENDING_INSTALLABLE_CHECK);
 }
 
+// static
+bool AppBannerManager::IsExperimentalAppBannersEnabled() {
+  return base::FeatureList::IsEnabled(features::kExperimentalAppBanners);
+}
+
 void AppBannerManager::ResetBindings() {
   weak_factory_.InvalidateWeakPtrs();
   binding_.Close();
@@ -532,7 +537,6 @@ void AppBannerManager::OnBannerPromptReply(
   // We don't need the controller any more, so reset it so the Blink-side object
   // is destroyed.
   controller_.reset();
-  content::WebContents* contents = web_contents();
 
   // The renderer might have requested the prompt to be canceled. They may
   // request that it is redisplayed later, so don't Stop() here. However, log
@@ -545,8 +549,11 @@ void AppBannerManager::OnBannerPromptReply(
   // requested in the beforeinstallprompt event handler), we keep going and show
   // the banner immediately.
   referrer_ = referrer;
-  if (reply == blink::mojom::AppBannerPromptReply::CANCEL) {
+  if (reply == blink::mojom::AppBannerPromptReply::CANCEL)
     TrackBeforeInstallEvent(BEFORE_INSTALL_EVENT_PREVENT_DEFAULT_CALLED);
+
+  if (IsExperimentalAppBannersEnabled() ||
+      reply == blink::mojom::AppBannerPromptReply::CANCEL) {
     if (state_ == State::SENDING_EVENT) {
       UpdateState(State::PENDING_PROMPT);
       return;
@@ -554,9 +561,17 @@ void AppBannerManager::OnBannerPromptReply(
     DCHECK_EQ(State::SENDING_EVENT_GOT_EARLY_PROMPT, state_);
   }
 
+  if (!IsExperimentalAppBannersEnabled())
+    ShowBanner();
+}
+
+void AppBannerManager::ShowBanner() {
   // If we are still in the SENDING_EVENT state, the prompt was never canceled
   // by the page. Otherwise the page requested a delayed showing of the prompt.
   if (state_ == State::SENDING_EVENT) {
+    // In the experimental flow, the banner is only shown if the site explicitly
+    // requests it to be shown.
+    DCHECK(!IsExperimentalAppBannersEnabled());
     TrackBeforeInstallEvent(BEFORE_INSTALL_EVENT_NO_ACTION);
   } else {
     TrackBeforeInstallEvent(
@@ -564,7 +579,7 @@ void AppBannerManager::OnBannerPromptReply(
   }
 
   AppBannerSettingsHelper::RecordMinutesFromFirstVisitToShow(
-      contents, validated_url_, GetAppIdentifier(), GetCurrentTime());
+      web_contents(), validated_url_, GetAppIdentifier(), GetCurrentTime());
 
   DCHECK(!manifest_url_.is_empty());
   DCHECK(!manifest_.IsEmpty());
@@ -572,15 +587,25 @@ void AppBannerManager::OnBannerPromptReply(
   DCHECK(!primary_icon_.drawsNothing());
 
   TrackBeforeInstallEvent(BEFORE_INSTALL_EVENT_COMPLETE);
-  ShowBanner();
+  ShowBannerUi();
   UpdateState(State::COMPLETE);
 }
 
 void AppBannerManager::DisplayAppBanner(bool user_gesture) {
+  if (IsExperimentalAppBannersEnabled() && !user_gesture) {
+    ReportStatus(web_contents(), NO_GESTURE);
+
+    // The state is manually set to COMPLETE before calling Stop, because
+    // otherwise Stop will complain that the status has already been reported.
+    UpdateState(State::COMPLETE);
+    Stop();
+    return;
+  }
+
   if (state_ == State::PENDING_PROMPT) {
-    // Simulate a non-canceled OnBannerPromptReply to show the delayed banner.
-    OnBannerPromptReply(blink::mojom::AppBannerPromptReply::NONE, referrer_);
+    ShowBanner();
   } else if (state_ == State::SENDING_EVENT) {
+    // Log that the prompt request was made for when we get the prompt reply.
     UpdateState(State::SENDING_EVENT_GOT_EARLY_PROMPT);
   }
 }

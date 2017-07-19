@@ -26,6 +26,10 @@ class AppBannerManagerDesktop
 
   static bool IsEnabled();
 
+  // Turn off triggering on engagement notifications or navigates, for testing
+  // purposes only.
+  static void DisableTriggeringForTesting();
+
  private:
   friend class content::WebContentsUserData<AppBannerManagerDesktop>;
 
@@ -38,7 +42,7 @@ class AppBannerManagerDesktop
   bool IsWebAppInstalled(content::BrowserContext* browser_context,
                          const GURL& start_url,
                          const GURL& manifest_url) override;
-  void ShowBanner() override;
+  void ShowBannerUi() override;
 
   // content::WebContentsObserver override.
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,

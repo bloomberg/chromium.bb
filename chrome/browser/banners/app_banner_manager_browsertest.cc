@@ -16,6 +16,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/banners/app_banner_manager.h"
+#include "chrome/browser/banners/app_banner_manager_desktop.h"
 #include "chrome/browser/banners/app_banner_metrics.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/engagement/site_engagement_score.h"
@@ -28,7 +29,21 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+
+namespace {
+
+void ExecuteScript(Browser* browser, std::string script, bool with_gesture) {
+  content::WebContents* web_contents =
+      browser->tab_strip_model()->GetActiveWebContents();
+  if (with_gesture)
+    EXPECT_TRUE(content::ExecuteScript(web_contents, script));
+  else
+    EXPECT_TRUE(content::ExecuteScriptWithoutUserGesture(web_contents, script));
+}
+
+}  // namespace
 
 namespace banners {
 
@@ -69,8 +84,8 @@ class AppBannerManagerTest : public AppBannerManager {
  protected:
   // All calls to RequestAppBanner should terminate in one of Stop() (not
   // showing banner), UpdateState(State::PENDING_ENGAGEMENT) (waiting for
-  // sufficient engagement), or ShowBanner(). Override these methods to capture
-  // test status.
+  // sufficient engagement), or ShowBannerUi(). Override these methods to
+  // capture test status.
   void Stop() override {
     AppBannerManager::Stop();
     ASSERT_FALSE(will_show_.get());
@@ -78,7 +93,7 @@ class AppBannerManagerTest : public AppBannerManager {
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, quit_closure_);
   }
 
-  void ShowBanner() override {
+  void ShowBannerUi() override {
     // Fake the call to ReportStatus here - this is usually called in
     // platform-specific code which is not exposed here.
     ReportStatus(nullptr, SHOWING_WEB_APP_BANNER);
@@ -92,8 +107,11 @@ class AppBannerManagerTest : public AppBannerManager {
   void UpdateState(AppBannerManager::State state) override {
     AppBannerManager::UpdateState(state);
 
-    if (state == AppBannerManager::State::PENDING_ENGAGEMENT)
+    if (state == AppBannerManager::State::PENDING_ENGAGEMENT ||
+        (AppBannerManager::IsExperimentalAppBannersEnabled() &&
+         state == AppBannerManager::State::PENDING_PROMPT)) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, quit_closure_);
+    }
   }
 
  private:
@@ -114,7 +132,7 @@ class AppBannerManagerBrowserTest : public InProcessBrowserTest {
 
     // Make sure app banners are disabled in the browser, otherwise they will
     // interfere with the test.
-    feature_list_.InitAndDisableFeature(features::kAppBanners);
+    AppBannerManagerDesktop::DisableTriggeringForTesting();
     InProcessBrowserTest::SetUpOnMainThread();
   }
 
@@ -257,8 +275,6 @@ class AppBannerManagerBrowserTest : public InProcessBrowserTest {
     EXPECT_EQ(expected_need_to_log_status, manager->need_to_log_status());
     EXPECT_EQ(expected_state, manager->state());
   }
-
-  base::test::ScopedFeatureList feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest, WebAppBannerCreated) {
@@ -432,8 +448,8 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest, DoesNotShowInIncognito) {
 IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
                        CheckOnLoadWithSufficientEngagement) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures({features::kCheckInstallabilityForBannerOnLoad},
-                                {features::kAppBanners});
+  feature_list.InitAndEnableFeature(
+      features::kCheckInstallabilityForBannerOnLoad);
   std::unique_ptr<AppBannerManagerTest> manager(
       CreateAppBannerManager(browser()));
   std::vector<double> engagement_scores{10};
@@ -444,8 +460,8 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
 IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
                        CheckOnLoadWithSufficientEngagementCancelDirect) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures({features::kCheckInstallabilityForBannerOnLoad},
-                                {features::kAppBanners});
+  feature_list.InitAndEnableFeature(
+      features::kCheckInstallabilityForBannerOnLoad);
   std::unique_ptr<AppBannerManagerTest> manager(
       CreateAppBannerManager(browser()));
   std::vector<double> engagement_scores{10};
@@ -457,8 +473,8 @@ IN_PROC_BROWSER_TEST_F(
     AppBannerManagerBrowserTest,
     CheckOnLoadWithSufficientEngagementCancelBannerAfterPromptInHandler) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures({features::kCheckInstallabilityForBannerOnLoad},
-                                {features::kAppBanners});
+  feature_list.InitAndEnableFeature(
+      features::kCheckInstallabilityForBannerOnLoad);
   std::unique_ptr<AppBannerManagerTest> manager(
       CreateAppBannerManager(browser()));
   std::vector<double> engagement_scores{10};
@@ -478,8 +494,8 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
   SiteEngagementService* service =
       SiteEngagementService::Get(browser()->profile());
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures({features::kCheckInstallabilityForBannerOnLoad},
-                                {features::kAppBanners});
+  feature_list.InitAndEnableFeature(
+      features::kCheckInstallabilityForBannerOnLoad);
   std::unique_ptr<AppBannerManagerTest> manager(
       CreateAppBannerManager(browser()));
 
@@ -512,8 +528,8 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest, CheckOnLoadThenNavigate) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures({features::kCheckInstallabilityForBannerOnLoad},
-                                {features::kAppBanners});
+  feature_list.InitAndEnableFeature(
+      features::kCheckInstallabilityForBannerOnLoad);
   std::unique_ptr<AppBannerManagerTest> manager(
       CreateAppBannerManager(browser()));
 
@@ -536,6 +552,100 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest, CheckOnLoadThenNavigate) {
   histograms.ExpectTotalCount(banners::kMinutesHistogram, 0);
   histograms.ExpectUniqueSample(banners::kInstallableStatusCodeHistogram,
                                 INSUFFICIENT_ENGAGEMENT, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
+                       ExperimentalFlowWebAppBannerNotCreated) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kExperimentalAppBanners);
+  std::unique_ptr<AppBannerManagerTest> manager(
+      CreateAppBannerManager(browser()));
+  base::HistogramTester histograms;
+
+  SiteEngagementService* service =
+      SiteEngagementService::Get(browser()->profile());
+  GURL test_url =
+      embedded_test_server()->GetURL("/banners/manifest_test_page.html");
+  service->ResetBaseScoreForURL(test_url, 10);
+
+  // Navigate and expect the manager to end up waiting for prompt to be called.
+  TriggerBannerFlowWithNavigation(
+      browser(), manager.get(), test_url, false /* expected_will_show */,
+      true /* expected_need_to_log_status */, State::PENDING_PROMPT);
+
+  // Navigate and expect Stop() to be called.
+  TriggerBannerFlowWithNavigation(browser(), manager.get(), GURL("about:blank"),
+                                  false /* expected_will_show */,
+                                  false /* expected_need_to_log_status */,
+                                  State::INACTIVE);
+
+  histograms.ExpectTotalCount(banners::kMinutesHistogram, 0);
+  histograms.ExpectUniqueSample(banners::kInstallableStatusCodeHistogram,
+                                RENDERER_CANCELLED, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
+                       ExperimentalFlowWebAppBannerPromptNeedsGesture) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kExperimentalAppBanners);
+  std::unique_ptr<AppBannerManagerTest> manager(
+      CreateAppBannerManager(browser()));
+  base::HistogramTester histograms;
+
+  SiteEngagementService* service =
+      SiteEngagementService::Get(browser()->profile());
+  GURL test_url = embedded_test_server()->GetURL(
+      "/banners/prompt_no_preventdefault_test_page.html");
+  service->ResetBaseScoreForURL(test_url, 10);
+
+  // Navigate to page and get the pipeline started.
+  TriggerBannerFlowWithNavigation(
+      browser(), manager.get(), test_url, false /* expected_will_show */,
+      true /* expected_need_to_log_status */, State::PENDING_PROMPT);
+
+  // Now let the page call prompt without a gesture, an error should be
+  // generated.
+  TriggerBannerFlow(browser(), manager.get(),
+                    base::BindOnce(&ExecuteScript, browser(), "callPrompt();",
+                                   false /* with_gesture */),
+                    false /* expected_will_show */,
+                    false /* expected_need_to_log_status */, State::COMPLETE);
+
+  histograms.ExpectTotalCount(banners::kMinutesHistogram, 0);
+  histograms.ExpectUniqueSample(banners::kInstallableStatusCodeHistogram,
+                                NO_GESTURE, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
+                       ExperimentalFlowWebAppBannerPromptWithGesture) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kExperimentalAppBanners);
+  std::unique_ptr<AppBannerManagerTest> manager(
+      CreateAppBannerManager(browser()));
+  base::HistogramTester histograms;
+
+  SiteEngagementService* service =
+      SiteEngagementService::Get(browser()->profile());
+  GURL test_url = embedded_test_server()->GetURL(
+      "/banners/prompt_no_preventdefault_test_page.html");
+  service->ResetBaseScoreForURL(test_url, 10);
+
+  // Navigate to page and get the pipeline started.
+  TriggerBannerFlowWithNavigation(
+      browser(), manager.get(), test_url, false /* expected_will_show */,
+      true /* expected_need_to_log_status */, State::PENDING_PROMPT);
+
+  // Now let the page call prompt without a gesture, an error should be
+  // generated.
+  TriggerBannerFlow(browser(), manager.get(),
+                    base::BindOnce(&ExecuteScript, browser(), "callPrompt();",
+                                   true /* with_gesture */),
+                    true /* expected_will_show */,
+                    false /* expected_need_to_log_status */, State::COMPLETE);
+
+  histograms.ExpectTotalCount(banners::kMinutesHistogram, 1);
+  histograms.ExpectUniqueSample(banners::kInstallableStatusCodeHistogram,
+                                SHOWING_WEB_APP_BANNER, 1);
 }
 
 }  // namespace banners

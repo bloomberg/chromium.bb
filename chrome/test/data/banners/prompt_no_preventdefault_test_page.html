@@ -1,0 +1,20 @@
+<html>
+  <head>
+    <title>Web app banner test page</title>
+    <link rel="manifest" href="manifest.json" />
+    <script src="main.js"></script>
+    <script>
+      var e = 1;
+
+      function callPrompt() {
+        e.prompt();
+      }
+
+      window.addEventListener('beforeinstallprompt', function(event) {
+        e = event;
+      });
+
+    </script>
+  </head>
+  <body onload="initialize()"></body>
+</html>
