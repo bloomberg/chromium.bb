@@ -284,6 +284,10 @@ _OS_NEGATIVE_FILTER['android:chromium'] = (
         'ClickScrollingTest.testShouldBeAbleToClickElementThatIsOutOfViewInANestedFrameThatIsOutOfView',
         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1878
         'CombinedInputActionsTest.testSelectingMultipleItems',
+        'CombinedInputActionsTest.testHoldingDownShiftKeyWhileClicking',
+        'BasicMouseInterfaceTest.testDoubleClick',
+        'BasicMouseInterfaceTest.testContextClick',
+        'CorrectEventFiringTest.testShouldFireMouseUpEventWhenClicking',
     ]
 )
 _OS_NEGATIVE_FILTER['android:chrome_beta'] = (
