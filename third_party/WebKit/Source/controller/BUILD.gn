@@ -19,6 +19,7 @@ component("controller") {
     "//third_party/WebKit/Source/core",
     "//third_party/WebKit/Source/modules",
     "//third_party/WebKit/Source/platform",
+    "//third_party/WebKit/Source/web",
     "//v8",
   ]
 
@@ -34,7 +35,6 @@ component("controller") {
 
   sources = [
     "BlinkInitializer.cpp",
-    "BlinkInitializer.h",
     "ControllerExport.h",
   ]
 

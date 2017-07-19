@@ -16,7 +16,6 @@ component("web") {
 
   deps = [
     "//skia",
-    "//third_party/WebKit/Source/controller",
     "//third_party/WebKit/Source/core",
     "//third_party/WebKit/Source/modules",
     "//third_party/WebKit/Source/platform",

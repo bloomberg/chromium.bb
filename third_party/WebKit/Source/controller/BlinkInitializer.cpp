@@ -28,8 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "controller/BlinkInitializer.h"
-
 #include "bindings/core/v8/V8Initializer.h"
 #include "core/animation/AnimationClock.h"
 #include "modules/ModulesInitializer.h"
@@ -41,7 +39,9 @@
 #include "platform/wtf/WTF.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
+#include "public/web/WebKit.h"
 #include "v8/include/v8.h"
+#include "web/WebFactoryImpl.h"
 
 namespace blink {
 
@@ -66,12 +66,14 @@ static ModulesInitializer& GetModulesInitializer() {
   return *initializer;
 }
 
-void InitializeBlink(Platform* platform) {
+void Initialize(Platform* platform) {
   Platform::Initialize(platform);
 
   V8Initializer::InitializeMainThread();
 
   GetModulesInitializer().Initialize();
+
+  WebFactoryImpl::Initialize();
 
   // currentThread is null if we are running on a thread without a message loop.
   if (WebThread* current_thread = platform->CurrentThread()) {
