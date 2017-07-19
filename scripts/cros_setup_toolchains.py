@@ -75,7 +75,6 @@ TARGET_LLVM_PKGS_ENABLED = (
 )
 
 LLVM_PKGS_TABLE = {
-    'ex_llvm-libunwind' : ['--ex-pkg', 'sys-libs/llvm-libunwind'],
     'ex_libcxxabi' : ['--ex-pkg', 'sys-libs/libcxxabi'],
     'ex_libcxx' : ['--ex-pkg', 'sys-libs/libcxx'],
 }
