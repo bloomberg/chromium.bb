@@ -87,7 +87,6 @@ UserCloudPolicyManagerChromeOS::UserCloudPolicyManagerChromeOS(
     std::unique_ptr<CloudPolicyStore> store,
     std::unique_ptr<CloudExternalDataManager> external_data_manager,
     const base::FilePath& component_policy_cache_path,
-    bool wait_for_policy_fetch,
     base::TimeDelta initial_policy_fetch_timeout,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
     const scoped_refptr<base::SequencedTaskRunner>& file_task_runner,
@@ -101,18 +100,16 @@ UserCloudPolicyManagerChromeOS::UserCloudPolicyManagerChromeOS(
       store_(std::move(store)),
       external_data_manager_(std::move(external_data_manager)),
       component_policy_cache_path_(component_policy_cache_path),
-      wait_for_policy_fetch_(wait_for_policy_fetch) {
+      waiting_for_initial_policy_fetch_(
+          !initial_policy_fetch_timeout.is_zero()) {
   time_init_started_ = base::Time::Now();
 
-  // Caller must pass a non-zero policy_fetch_timeout iff
-  // |wait_for_policy_fetch| is true.
-  DCHECK_NE(wait_for_policy_fetch_, initial_policy_fetch_timeout.is_zero());
-  allow_failed_policy_fetches_ =
+  initial_policy_fetch_may_fail_ =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kAllowFailedPolicyFetchForTest) ||
       !initial_policy_fetch_timeout.is_max();
   // No need to set the timer when the timeout is infinite.
-  if (wait_for_policy_fetch_ && !initial_policy_fetch_timeout.is_max()) {
+  if (waiting_for_initial_policy_fetch_ && initial_policy_fetch_may_fail_) {
     policy_fetch_timeout_.Start(
         FROM_HERE,
         initial_policy_fetch_timeout,
@@ -174,10 +171,10 @@ void UserCloudPolicyManagerChromeOS::Connect(
     // store has already been loaded and contains a valid policy - the
     // registration setup in this case is performed by the CloudPolicyService
     // that is instantiated inside the CloudPolicyCore::Connect() method call.
-    // If that's the case and |wait_for_policy_fetch_| is true, then the policy
-    // fetch needs to be issued (it happens otherwise after the client
-    // registration is finished, in OnRegistrationStateChanged()).
-    if (client()->is_registered() && wait_for_policy_fetch_) {
+    // If that's the case and |waiting_for_initial_policy_fetch_| is true, then
+    // the policy fetch needs to be issued (it happens otherwise after the
+    // client registration is finished, in OnRegistrationStateChanged()).
+    if (client()->is_registered() && waiting_for_initial_policy_fetch_) {
       service()->RefreshPolicy(
           base::Bind(&UserCloudPolicyManagerChromeOS::CancelWaitForPolicyFetch,
                      base::Unretained(this)));
@@ -230,7 +227,7 @@ bool UserCloudPolicyManagerChromeOS::IsInitializationComplete(
   if (!CloudPolicyManager::IsInitializationComplete(domain))
     return false;
   if (domain == POLICY_DOMAIN_CHROME)
-    return !wait_for_policy_fetch_;
+    return !waiting_for_initial_policy_fetch_;
   return true;
 }
 
@@ -246,25 +243,27 @@ void UserCloudPolicyManagerChromeOS::OnInitializationCompleted(
   // If the CloudPolicyClient isn't registered at this stage then it needs an
   // OAuth token for the initial registration.
   //
-  // If |wait_for_policy_fetch_| is true then Profile initialization is blocking
-  // on the initial policy fetch, so the token must be fetched immediately.
-  // In that case, the signin Profile is used to authenticate a Gaia request to
-  // fetch a refresh token, and then the policy token is fetched.
+  // If |waiting_for_initial_policy_fetch_| is true then Profile initialization
+  // is blocking on the initial policy fetch, so the token must be fetched
+  // immediately. In that case, the signin Profile is used to authenticate a
+  // Gaia request to fetch a refresh token, and then the policy token is
+  // fetched.
   //
-  // If |wait_for_policy_fetch_| is false then the UserCloudPolicyTokenForwarder
-  // service will eventually call OnAccessTokenAvailable() once an access token
-  // is available. That call may have already happened while waiting for
-  // initialization of the CloudPolicyService, so in that case check if an
-  // access token is already available.
+  // If |waiting_for_initial_policy_fetch_| is false then the
+  // UserCloudPolicyTokenForwarder service will eventually call
+  // OnAccessTokenAvailable() once an access token is available. That call may
+  // have already happened while waiting for initialization of the
+  // CloudPolicyService, so in that case check if an access token is already
+  // available.
   if (!client()->is_registered()) {
-    if (wait_for_policy_fetch_) {
+    if (waiting_for_initial_policy_fetch_) {
       FetchPolicyOAuthToken();
     } else if (!access_token_.empty()) {
       OnAccessTokenAvailable(access_token_);
     }
   }
 
-  if (!wait_for_policy_fetch_) {
+  if (!waiting_for_initial_policy_fetch_) {
     // If this isn't blocking on a policy fetch then
     // CloudPolicyManager::OnStoreLoaded() already published the cached policy.
     // Start the refresh scheduler now, which will eventually refresh the
@@ -285,7 +284,7 @@ void UserCloudPolicyManagerChromeOS::OnRegistrationStateChanged(
     CloudPolicyClient* cloud_policy_client) {
   DCHECK_EQ(client(), cloud_policy_client);
 
-  if (wait_for_policy_fetch_) {
+  if (waiting_for_initial_policy_fetch_) {
     time_client_registered_ = base::Time::Now();
     if (!time_token_available_.is_null()) {
       UMA_HISTOGRAM_MEDIUM_TIMES(
@@ -310,7 +309,7 @@ void UserCloudPolicyManagerChromeOS::OnRegistrationStateChanged(
 void UserCloudPolicyManagerChromeOS::OnClientError(
     CloudPolicyClient* cloud_policy_client) {
   DCHECK_EQ(client(), cloud_policy_client);
-  if (wait_for_policy_fetch_) {
+  if (waiting_for_initial_policy_fetch_) {
     UMA_HISTOGRAM_SPARSE_SLOWLY(kUMAInitialFetchClientError,
                                 cloud_policy_client->status());
   }
@@ -404,7 +403,7 @@ void UserCloudPolicyManagerChromeOS::OnOAuth2PolicyTokenFetched(
     const GoogleServiceAuthError& error) {
   DCHECK(!client()->is_registered());
   time_token_available_ = base::Time::Now();
-  if (wait_for_policy_fetch_) {
+  if (waiting_for_initial_policy_fetch_) {
     UMA_HISTOGRAM_MEDIUM_TIMES(kUMAInitialFetchDelayOAuth2Token,
                                time_token_available_ - time_init_completed_);
   }
@@ -445,14 +444,14 @@ void UserCloudPolicyManagerChromeOS::OnInitialPolicyFetchComplete(
 }
 
 void UserCloudPolicyManagerChromeOS::OnBlockingFetchTimeout() {
-  DCHECK(wait_for_policy_fetch_);
+  DCHECK(waiting_for_initial_policy_fetch_);
   LOG(WARNING) << "Timed out while waiting for the policy fetch. "
                << "The session will start with the cached policy.";
   CancelWaitForPolicyFetch(false);
 }
 
 void UserCloudPolicyManagerChromeOS::CancelWaitForPolicyFetch(bool success) {
-  if (!wait_for_policy_fetch_)
+  if (!waiting_for_initial_policy_fetch_)
     return;
 
   policy_fetch_timeout_.Stop();
@@ -461,7 +460,7 @@ void UserCloudPolicyManagerChromeOS::CancelWaitForPolicyFetch(bool success) {
   // to go forward after a failed policy fetch, then just return (profile
   // initialization will not complete).
   // TODO(atwilson): Add code to retry policy fetching.
-  if (!success && !allow_failed_policy_fetches_) {
+  if (!success && !initial_policy_fetch_may_fail_) {
     LOG(ERROR) << "Policy fetch failed for the user. "
                   "Aborting profile initialization";
     // Need to exit the current user, because we've already started this user's
@@ -470,10 +469,11 @@ void UserCloudPolicyManagerChromeOS::CancelWaitForPolicyFetch(bool success) {
     return;
   }
 
-  wait_for_policy_fetch_ = false;
+  waiting_for_initial_policy_fetch_ = false;
+
   CheckAndPublishPolicy();
-  // Now that |wait_for_policy_fetch_| is guaranteed to be false, the scheduler
-  // can be started.
+  // Now that |waiting_for_initial_policy_fetch_| is guaranteed to be false, the
+  // scheduler can be started.
   StartRefreshSchedulerIfReady();
 }
 
@@ -481,7 +481,7 @@ void UserCloudPolicyManagerChromeOS::StartRefreshSchedulerIfReady() {
   if (core()->refresh_scheduler())
     return;  // Already started.
 
-  if (wait_for_policy_fetch_)
+  if (waiting_for_initial_policy_fetch_)
     return;  // Still waiting for the initial, blocking fetch.
 
   if (!service() || !local_state_)

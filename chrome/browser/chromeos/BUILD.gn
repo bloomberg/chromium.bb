@@ -1812,6 +1812,7 @@ source_set("unit_tests") {
     "ownership/fake_owner_settings_service.cc",
     "ownership/fake_owner_settings_service.h",
     "ownership/owner_settings_service_chromeos_unittest.cc",
+    "policy/active_directory_policy_manager_unittest.cc",
     "policy/affiliated_cloud_policy_invalidator_unittest.cc",
     "policy/affiliated_invalidation_service_provider_impl_unittest.cc",
     "policy/android_management_client_unittest.cc",

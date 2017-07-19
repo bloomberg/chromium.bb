@@ -309,6 +309,12 @@ DBusThreadManagerSetter::DBusThreadManagerSetter() {}
 
 DBusThreadManagerSetter::~DBusThreadManagerSetter() {}
 
+void DBusThreadManagerSetter::SetAuthPolicyClient(
+    std::unique_ptr<AuthPolicyClient> client) {
+  DBusThreadManager::Get()->clients_browser_->auth_policy_client_ =
+      std::move(client);
+}
+
 void DBusThreadManagerSetter::SetBiodClient(
     std::unique_ptr<BiodClient> client) {
   DBusThreadManager::Get()->clients_common_->biod_client_ = std::move(client);

@@ -26,6 +26,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/install_attributes.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/policy/schema_registry_service.h"
 #include "chrome/browser/policy/schema_registry_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -261,8 +262,9 @@ UserPolicyManagerFactoryChromeOS::CreateManagerForProfile(
 
   if (is_active_directory) {
     std::unique_ptr<ActiveDirectoryPolicyManager> manager =
-        ActiveDirectoryPolicyManager::CreateForUserPolicy(account_id,
-                                                          std::move(store));
+        ActiveDirectoryPolicyManager::CreateForUserPolicy(
+            account_id, initial_policy_fetch_timeout,
+            base::BindOnce(&chrome::AttemptUserExit), std::move(store));
     manager->Init(
         SchemaRegistryServiceFactory::GetForContext(profile)->registry());
 
@@ -272,9 +274,9 @@ UserPolicyManagerFactoryChromeOS::CreateManagerForProfile(
     std::unique_ptr<UserCloudPolicyManagerChromeOS> manager =
         base::MakeUnique<UserCloudPolicyManagerChromeOS>(
             std::move(store), std::move(external_data_manager),
-            component_policy_cache_dir, wait_for_policy_fetch,
-            initial_policy_fetch_timeout, base::ThreadTaskRunnerHandle::Get(),
-            file_task_runner, io_task_runner);
+            component_policy_cache_dir, initial_policy_fetch_timeout,
+            base::ThreadTaskRunnerHandle::Get(), file_task_runner,
+            io_task_runner);
 
     // TODO(tnagel): Enable whitelist for Active Directory.
     bool wildcard_match = false;
