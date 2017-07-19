@@ -250,6 +250,7 @@ class PersonalDataManagerTestBase {
   bool ImportAddressProfiles(const FormStructure& form) {
     return personal_data_->ImportAddressProfiles(form);
   }
+
   bool ImportCreditCard(
       const FormStructure& form,
       bool should_return_local_card,
@@ -6596,6 +6597,42 @@ TEST_F(PersonalDataManagerTest, RemoveByGUID_ResetsBillingAddress) {
       EXPECT_EQ(profile1.guid(), card->billing_address_id());
     }
   }
+}
+
+TEST_F(PersonalDataManagerTest, LogStoredProfileMetrics) {
+  // Add a recently used (3 days ago) profile.
+  AutofillProfile profile0(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(&profile0, "Bob", "", "Doe", "", "Fox", "1212 Center.",
+                       "Bld. 5", "Orlando", "FL", "32801", "US", "19482937549");
+  profile0.set_use_date(AutofillClock::Now() - base::TimeDelta::FromDays(3));
+  personal_data_->AddProfile(profile0);
+
+  // Add a profile used a long time (200 days) ago.
+  AutofillProfile profile1(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(&profile1, "Seb", "", "Doe", "", "ACME",
+                       "1234 Evergreen Terrace", "Bld. 5", "Springfield", "IL",
+                       "32801", "US", "15151231234");
+  profile1.set_use_date(AutofillClock::Now() - base::TimeDelta::FromDays(200));
+  personal_data_->AddProfile(profile1);
+
+  // Reload the database, which will log the stored profile counts.
+  base::HistogramTester histogram_tester;
+  ResetPersonalDataManager(USER_MODE_NORMAL);
+
+  EXPECT_EQ(2u, personal_data_->GetProfiles().size());
+  histogram_tester.ExpectTotalCount("Autofill.StoredProfileCount", 1);
+  histogram_tester.ExpectBucketCount("Autofill.StoredProfileCount", 2, 1);
+
+  histogram_tester.ExpectTotalCount("Autofill.StoredProfileDisusedCount", 1);
+  histogram_tester.ExpectBucketCount("Autofill.StoredProfileDisusedCount", 1,
+                                     1);
+
+  histogram_tester.ExpectTotalCount("Autofill.DaysSinceLastUse.StoredProfile",
+                                    2);
+  histogram_tester.ExpectBucketCount("Autofill.DaysSinceLastUse.StoredProfile",
+                                     3, 1);
+  histogram_tester.ExpectBucketCount("Autofill.DaysSinceLastUse.StoredProfile",
+                                     200, 1);
 }
 
 }  // namespace autofill

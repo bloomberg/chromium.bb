@@ -810,6 +810,16 @@ void AutofillMetrics::LogStoredProfileCount(size_t num_profiles) {
 }
 
 // static
+void AutofillMetrics::LogStoredProfileDisusedCount(size_t num_profiles) {
+  UMA_HISTOGRAM_COUNTS_1000("Autofill.StoredProfileDisusedCount", num_profiles);
+}
+
+// static
+void AutofillMetrics::LogStoredProfileDaysSinceLastUse(size_t days) {
+  UMA_HISTOGRAM_COUNTS_1000("Autofill.DaysSinceLastUse.StoredProfile", days);
+}
+
+// static
 void AutofillMetrics::LogStoredLocalCreditCardCount(size_t num_local_cards) {
   UMA_HISTOGRAM_COUNTS("Autofill.StoredLocalCreditCardCount", num_local_cards);
 }
