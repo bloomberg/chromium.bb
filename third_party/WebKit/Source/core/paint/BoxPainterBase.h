@@ -17,7 +17,6 @@ namespace blink {
 class ComputedStyle;
 class Document;
 class FloatRoundedRect;
-class LayoutPoint;
 class LayoutRect;
 class FillLayer;
 class LayoutRectOutsets;
@@ -59,9 +58,6 @@ class BoxPainterBase {
 
   static bool ShouldForceWhiteBackgroundForPrintEconomy(const Document&,
                                                         const ComputedStyle&);
-
-  LayoutRect BoundsForDrawingRecorder(const PaintInfo&,
-                                      const LayoutPoint& adjusted_paint_offset);
 
   typedef Vector<const FillLayer*, 8> FillLayerOcclusionOutputList;
   // Returns true if the result fill layers have non-associative blending or
