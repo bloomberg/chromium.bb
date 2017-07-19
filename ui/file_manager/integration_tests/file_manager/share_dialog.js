@@ -24,15 +24,29 @@ function share(path) {
     // Wait for the share button.
     function(result) {
       chrome.test.assertTrue(result);
-      remoteCall.waitForElement(appId, '#share-button:not([disabled])').
-          then(this.next);
+      remoteCall.waitForElement(appId, '#share-menu-button:not([disabled])')
+          .then(this.next);
+    },
+    // Open share options menu
+    function(result) {
+      chrome.test.assertTrue(!!result);
+      remoteCall.callRemoteTestUtil(
+          'fakeMouseClick', appId, ['#share-menu-button'], this.next);
+    },
+    // Wait until the "Share with others" item is shown.
+    function(result) {
+      chrome.test.assertTrue(result);
+      remoteCall
+          .waitForElement(
+              appId, 'cr-menu-item[command="#share"]:not([disabled]')
+          .then(this.next);
     },
     // Invoke the share dialog.
     function(result) {
-      remoteCall.callRemoteTestUtil('fakeMouseClick',
-                                    appId,
-                                    ['#share-button'],
-                                    this.next);
+      chrome.test.assertTrue(!!result);
+      remoteCall.callRemoteTestUtil(
+          'fakeMouseClick', appId, ['cr-menu-item[command="#share"]'],
+          this.next);
     },
     // Wait until the share dialog's contents are shown.
     function(result) {

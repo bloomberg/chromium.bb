@@ -164,47 +164,61 @@ testcase.tabindexFocusDirectorySelected = function() {
     },
     function(elements) {
       remoteCall.callRemoteTestUtil('getActiveElement', appId, [], this.next);
-    }, function(element) {
+    },
+    function(element) {
       chrome.test.assertEq('list', element.attributes['class']);
       // Select the directory named 'photos'.
       remoteCall.callRemoteTestUtil(
           'selectFile', appId, ['photos']).then(this.next);
-    }, function(result) {
+    },
+    function(result) {
       chrome.test.assertTrue(result);
-      Promise.all([
-        remoteCall.waitForElement(
-            appId, ['#share-button:not([hidden]):not([disabled])']),
-        remoteCall.waitForElement(
-            appId, ['#delete-button:not([hidden]):not([disabled])']),
-     ]).then(this.next);
-    // Press the Tab key.
-    }, function(elements) {
-      remoteCall.checkNextTabFocus(appId, 'share-button').then(this.next);
-    }, function(result) {
+      Promise
+          .all([
+            remoteCall.waitForElement(
+                appId, ['#share-menu-button:not([hidden]):not([disabled])']),
+            remoteCall.waitForElement(
+                appId, ['#delete-button:not([hidden]):not([disabled])']),
+          ])
+          .then(this.next);
+      // Press the Tab key.
+    },
+    function(elements) {
+      remoteCall.checkNextTabFocus(appId, 'share-menu-button').then(this.next);
+    },
+    function(result) {
       chrome.test.assertTrue(result);
       remoteCall.checkNextTabFocus(appId, 'delete-button').then(this.next);
-    }, function(result) {
+    },
+    function(result) {
       chrome.test.assertTrue(result);
       remoteCall.checkNextTabFocus(appId, 'search-button').then(this.next);
-    }, function(result) {
+    },
+    function(result) {
       chrome.test.assertTrue(result);
       remoteCall.checkNextTabFocus(appId, 'view-button').then(this.next);
-    }, function(result) {
+    },
+    function(result) {
       chrome.test.assertTrue(result);
       remoteCall.checkNextTabFocus(appId, 'sort-button').then(this.next);
-    }, function(result) {
+    },
+    function(result) {
       chrome.test.assertTrue(result);
       remoteCall.checkNextTabFocus(appId, 'gear-button').then(this.next);
-    }, function(result) {
+    },
+    function(result) {
       chrome.test.assertTrue(result);
       remoteCall.checkNextTabFocus(appId, 'directory-tree').then(this.next);
-    }, function(result) {
+    },
+    function(result) {
       chrome.test.assertTrue(result);
       remoteCall.checkNextTabFocus(appId, 'drive-welcome-link').then(this.next);
-    }, function(result) {
+    },
+    function(result) {
       chrome.test.assertTrue(result);
       remoteCall.checkNextTabFocus(appId, 'file-list').then(this.next);
-    }, function(result) {
+    },
+    function(result) {
       chrome.test.assertTrue(result);
       checkIfNoErrorsOccured(this.next);
     }
