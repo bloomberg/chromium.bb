@@ -44,6 +44,7 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.net.test.EmbeddedTestServer;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.Callable;
 
@@ -261,6 +262,15 @@ public class SafeBrowsingTest extends AwTestBase {
         }
     }
 
+    private static class WhitelistHelper extends CallbackHelper implements ValueCallback<Boolean> {
+        public boolean success;
+
+        public void onReceiveValue(Boolean success) {
+            this.success = success;
+            notifyCalled();
+        }
+    }
+
     @Override
     public void setUp() throws Exception {
         super.setUp();
@@ -446,12 +456,42 @@ public class SafeBrowsingTest extends AwTestBase {
             @Override
             public void run() {
                 String host = Uri.parse(responseUrl).getHost();
-                String[] s = new String[] {host};
-                AwContentsStatics.setSafeBrowsingWhiteList(s);
+                ArrayList<String> s = new ArrayList<String>();
+                s.add(host);
+                AwContentsStatics.setSafeBrowsingWhitelist(s, null);
             }
         });
         loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), responseUrl);
         assertTargetPageHasLoaded(MALWARE_PAGE_BACKGROUND_COLOR);
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
+    public void testCallbackCalledOnSafeBrowsingBadWhitelistRule() throws Throwable {
+        verifyWhiteListRule("http://www.google.com", false);
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
+    public void testCallbackCalledOnSafeBrowsingGoodWhitelistRule() throws Throwable {
+        verifyWhiteListRule("www.google.com", true);
+    }
+
+    private void verifyWhiteListRule(final String rule, boolean expected) throws Throwable {
+        final WhitelistHelper helper = new WhitelistHelper();
+        final int count = helper.getCallCount();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                ArrayList<String> s = new ArrayList<String>();
+                s.add(rule);
+                AwContentsStatics.setSafeBrowsingWhitelist(s, helper);
+            }
+        });
+        helper.waitForCallback(count);
+        assertEquals(expected, helper.success);
     }
 
     @SmallTest

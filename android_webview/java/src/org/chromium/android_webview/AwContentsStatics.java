@@ -13,6 +13,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 
 import java.lang.reflect.Method;
+import java.util.List;
 
 /**
  * Implementations of various static methods, and also a home for static
@@ -107,8 +108,23 @@ public class AwContentsStatics {
         setSafeBrowsingEnabledByManifest(enable);
     }
 
-    public static void setSafeBrowsingWhiteList(String[] urls) {
-        nativeSetSafeBrowsingWhiteList(urls);
+    @CalledByNative
+    private static void safeBrowsingWhitelistAssigned(
+            ValueCallback<Boolean> callback, boolean success) {
+        if (callback == null) return;
+        callback.onReceiveValue(success);
+    }
+
+    public static void setSafeBrowsingWhitelist(
+            List<String> urls, ValueCallback<Boolean> callback) {
+        String[] urlArray = urls.toArray(new String[urls.size()]);
+        if (callback == null) {
+            callback = new ValueCallback<Boolean>() {
+                @Override
+                public void onReceiveValue(Boolean b) {}
+            };
+        }
+        nativeSetSafeBrowsingWhitelist(urlArray, callback);
     }
 
     @SuppressWarnings("unchecked")
@@ -173,7 +189,8 @@ public class AwContentsStatics {
             AwContentsIoThreadClient ioThreadClient, AwBrowserContext browserContext);
     private static native boolean nativeGetSafeBrowsingEnabledByManifest();
     private static native void nativeSetSafeBrowsingEnabledByManifest(boolean enable);
-    private static native void nativeSetSafeBrowsingWhiteList(String[] urls);
+    private static native void nativeSetSafeBrowsingWhitelist(
+            String[] urls, ValueCallback<Boolean> callback);
     private static native void nativeSetCheckClearTextPermitted(boolean permitted);
     private static native String nativeFindAddress(String addr);
 }

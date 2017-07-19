@@ -27,14 +27,27 @@ class AwSafeBrowsingWhitelistManagerTest : public testing::Test {
 
   void TearDown() override { wm_.reset(); }
 
+  void SetWhitelist(std::vector<std::string>&& whitelist, bool expected);
+
   base::MessageLoopForIO loop_;
   std::unique_ptr<AwSafeBrowsingWhitelistManager> wm_;
 };
 
+void VerifyWhitelistCallback(bool expected, bool success) {
+  EXPECT_EQ(expected, success);
+}
+
+void AwSafeBrowsingWhitelistManagerTest::SetWhitelist(
+    std::vector<std::string>&& whitelist,
+    bool expected) {
+  wm_->SetWhitelistOnUIThread(std::move(whitelist),
+                              base::Bind(&VerifyWhitelistCallback, expected));
+}
+
 TEST_F(AwSafeBrowsingWhitelistManagerTest, WsSchemeCanBeWhitelisted) {
   std::vector<std::string> whitelist;
   whitelist.push_back("google.com");
-  wm_->SetWhitelistOnUIThread(std::move(whitelist));
+  SetWhitelist(std::move(whitelist), true);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(wm_->IsURLWhitelisted(GURL("ws://google.com")));
   EXPECT_TRUE(wm_->IsURLWhitelisted(GURL("wss://google.com")));
@@ -43,7 +56,7 @@ TEST_F(AwSafeBrowsingWhitelistManagerTest, WsSchemeCanBeWhitelisted) {
 TEST_F(AwSafeBrowsingWhitelistManagerTest, HttpSchemeCanBeWhitelisted) {
   std::vector<std::string> whitelist;
   whitelist.push_back("google.com");
-  wm_->SetWhitelistOnUIThread(std::move(whitelist));
+  SetWhitelist(std::move(whitelist), true);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(wm_->IsURLWhitelisted(GURL("http://google.com")));
   EXPECT_TRUE(wm_->IsURLWhitelisted(GURL("https://google.com")));
@@ -55,7 +68,7 @@ TEST_F(AwSafeBrowsingWhitelistManagerTest, HttpSchemeCanBeWhitelisted) {
 TEST_F(AwSafeBrowsingWhitelistManagerTest, WsSchemeCanBeWhitelistedExactMatch) {
   std::vector<std::string> whitelist;
   whitelist.push_back(".google.com");
-  wm_->SetWhitelistOnUIThread(std::move(whitelist));
+  SetWhitelist(std::move(whitelist), true);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(wm_->IsURLWhitelisted(GURL("ws://google.com")));
   EXPECT_TRUE(wm_->IsURLWhitelisted(GURL("wss://google.com")));
@@ -67,7 +80,7 @@ TEST_F(AwSafeBrowsingWhitelistManagerTest, WsSchemeCanBeWhitelistedExactMatch) {
 TEST_F(AwSafeBrowsingWhitelistManagerTest, ExactMatchWorks) {
   std::vector<std::string> whitelist;
   whitelist.push_back(".google.com");
-  wm_->SetWhitelistOnUIThread(std::move(whitelist));
+  SetWhitelist(std::move(whitelist), true);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(wm_->IsURLWhitelisted(GURL("http://google.com")));
   EXPECT_TRUE(wm_->IsURLWhitelisted(GURL("https://google.com")));
@@ -82,7 +95,7 @@ TEST_F(AwSafeBrowsingWhitelistManagerTest, ExactMatchWorks) {
 TEST_F(AwSafeBrowsingWhitelistManagerTest, SchemeInWhitelistIsInvalid) {
   std::vector<std::string> whitelist;
   whitelist.push_back("http://google.com");
-  wm_->SetWhitelistOnUIThread(std::move(whitelist));
+  SetWhitelist(std::move(whitelist), false);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(wm_->IsURLWhitelisted(GURL("http://google.com")));
 }
@@ -92,7 +105,7 @@ TEST_F(AwSafeBrowsingWhitelistManagerTest,
   std::vector<std::string> whitelist;
   whitelist.push_back("data:google.com");
   whitelist.push_back("mailto:google.com");
-  wm_->SetWhitelistOnUIThread(std::move(whitelist));
+  SetWhitelist(std::move(whitelist), false);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(wm_->IsURLWhitelisted(GURL("http://google.com")));
 }
@@ -100,7 +113,7 @@ TEST_F(AwSafeBrowsingWhitelistManagerTest,
 TEST_F(AwSafeBrowsingWhitelistManagerTest, PortInWhitelistIsInvalid) {
   std::vector<std::string> whitelist;
   whitelist.push_back("www.google.com:123");
-  wm_->SetWhitelistOnUIThread(std::move(whitelist));
+  SetWhitelist(std::move(whitelist), false);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(wm_->IsURLWhitelisted(GURL("http://www.google.com")));
   EXPECT_FALSE(wm_->IsURLWhitelisted(GURL("http://www.google.com:123")));
@@ -109,7 +122,7 @@ TEST_F(AwSafeBrowsingWhitelistManagerTest, PortInWhitelistIsInvalid) {
 TEST_F(AwSafeBrowsingWhitelistManagerTest, PathInWhitelistIsInvalid) {
   std::vector<std::string> whitelist;
   whitelist.push_back("www.google.com/123");
-  wm_->SetWhitelistOnUIThread(std::move(whitelist));
+  SetWhitelist(std::move(whitelist), false);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(wm_->IsURLWhitelisted(GURL("http://www.google.com/123")));
   EXPECT_FALSE(wm_->IsURLWhitelisted(GURL("http://www.google.com")));
@@ -118,7 +131,7 @@ TEST_F(AwSafeBrowsingWhitelistManagerTest, PathInWhitelistIsInvalid) {
 TEST_F(AwSafeBrowsingWhitelistManagerTest, PathQueryAndReferenceWorks) {
   std::vector<std::string> whitelist;
   whitelist.push_back("google.com");
-  wm_->SetWhitelistOnUIThread(std::move(whitelist));
+  SetWhitelist(std::move(whitelist), true);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(wm_->IsURLWhitelisted(GURL("http://google.com/a")));
   EXPECT_TRUE(wm_->IsURLWhitelisted(GURL("http://google.com/a/b")));
@@ -130,7 +143,7 @@ TEST_F(AwSafeBrowsingWhitelistManagerTest, TrailingDotInRuleWorks) {
   std::vector<std::string> whitelist;
   whitelist.push_back("google.com.");
   whitelist.push_back("example.com");
-  wm_->SetWhitelistOnUIThread(std::move(whitelist));
+  SetWhitelist(std::move(whitelist), true);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(wm_->IsURLWhitelisted(GURL("http://google.com")));
   EXPECT_TRUE(wm_->IsURLWhitelisted(GURL("http://example.com.")));
@@ -139,7 +152,7 @@ TEST_F(AwSafeBrowsingWhitelistManagerTest, TrailingDotInRuleWorks) {
 TEST_F(AwSafeBrowsingWhitelistManagerTest, DomainNameEmbeddedInPathIsIgnored) {
   std::vector<std::string> whitelist;
   whitelist.push_back("google.com");
-  wm_->SetWhitelistOnUIThread(std::move(whitelist));
+  SetWhitelist(std::move(whitelist), true);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(wm_->IsURLWhitelisted(GURL("http://example.com/google.com")));
   EXPECT_TRUE(wm_->IsURLWhitelisted(GURL("http://google.com")));
@@ -148,7 +161,7 @@ TEST_F(AwSafeBrowsingWhitelistManagerTest, DomainNameEmbeddedInPathIsIgnored) {
 TEST_F(AwSafeBrowsingWhitelistManagerTest, URLsWithEmbeddedUserNamePassword) {
   std::vector<std::string> whitelist;
   whitelist.push_back("google.com");
-  wm_->SetWhitelistOnUIThread(std::move(whitelist));
+  SetWhitelist(std::move(whitelist), true);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(wm_->IsURLWhitelisted(GURL("http://user1:pass@google.com")));
 }
@@ -157,7 +170,7 @@ TEST_F(AwSafeBrowsingWhitelistManagerTest,
        PathQueryAndReferenceWorksWithLeadingDot) {
   std::vector<std::string> whitelist;
   whitelist.push_back(".google.com");
-  wm_->SetWhitelistOnUIThread(std::move(whitelist));
+  SetWhitelist(std::move(whitelist), true);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(wm_->IsURLWhitelisted(GURL("http://google.com/")));
   EXPECT_TRUE(wm_->IsURLWhitelisted(GURL("http://google.com/a")));
@@ -170,7 +183,7 @@ TEST_F(AwSafeBrowsingWhitelistManagerTest,
        SubdomainsAreAllowedWhenNoLeadingDots) {
   std::vector<std::string> whitelist;
   whitelist.push_back("google.com");
-  wm_->SetWhitelistOnUIThread(std::move(whitelist));
+  SetWhitelist(std::move(whitelist), true);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(wm_->IsURLWhitelisted(GURL("http://com/")));
   EXPECT_TRUE(wm_->IsURLWhitelisted(GURL("http://google.com")));
@@ -182,7 +195,7 @@ TEST_F(AwSafeBrowsingWhitelistManagerTest,
        SubdomainsAreNotAllowedWhenLeadingDots) {
   std::vector<std::string> whitelist;
   whitelist.push_back(".google.com");
-  wm_->SetWhitelistOnUIThread(std::move(whitelist));
+  SetWhitelist(std::move(whitelist), true);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(wm_->IsURLWhitelisted(GURL("http://com/")));
   EXPECT_TRUE(wm_->IsURLWhitelisted(GURL("http://google.com")));
@@ -190,20 +203,12 @@ TEST_F(AwSafeBrowsingWhitelistManagerTest,
   EXPECT_FALSE(wm_->IsURLWhitelisted(GURL("http://b.a.google.com/")));
 }
 
-TEST_F(AwSafeBrowsingWhitelistManagerTest, WildCardNotAccepted) {
-  std::vector<std::string> whitelist;
-  whitelist.push_back("*");
-  wm_->SetWhitelistOnUIThread(std::move(whitelist));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(wm_->IsURLWhitelisted(GURL("http://a.google.com/")));
-}
-
 TEST_F(AwSafeBrowsingWhitelistManagerTest,
        MatchSubdomainsInMultipleWhitelists) {
   std::vector<std::string> whitelist;
   whitelist.push_back("a.google.com");
   whitelist.push_back(".google.com");
-  wm_->SetWhitelistOnUIThread(std::move(whitelist));
+  SetWhitelist(std::move(whitelist), true);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(wm_->IsURLWhitelisted(GURL("http://a.google.com/")));
   EXPECT_TRUE(wm_->IsURLWhitelisted(GURL("http://b.a.google.com/")));
@@ -215,7 +220,7 @@ TEST_F(AwSafeBrowsingWhitelistManagerTest, TestLeadingDotInGURL) {
   std::vector<std::string> whitelist;
   whitelist.push_back("a.google.com");
   whitelist.push_back(".google.com");
-  wm_->SetWhitelistOnUIThread(std::move(whitelist));
+  SetWhitelist(std::move(whitelist), true);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(wm_->IsURLWhitelisted(GURL("http://.a.google.com/")));
   EXPECT_TRUE(wm_->IsURLWhitelisted(GURL("http://.b.a.google.com/")));
@@ -227,14 +232,17 @@ TEST_F(AwSafeBrowsingWhitelistManagerTest, VerifyTLDsAreNotSpecial) {
   std::vector<std::string> whitelist;
   whitelist.push_back(".com");
   whitelist.push_back("co");
-  wm_->SetWhitelistOnUIThread(std::move(whitelist));
+  SetWhitelist(std::move(whitelist), true);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(wm_->IsURLWhitelisted(GURL("http://a.google.com/")));
   EXPECT_TRUE(wm_->IsURLWhitelisted(GURL("http://b.a.google.co/")));
   EXPECT_TRUE(wm_->IsURLWhitelisted(GURL("http://com/")));
 }
 
-TEST_F(AwSafeBrowsingWhitelistManagerTest, VerifyRandomWildcardsAreIgnored) {
+// It seems GURL is happy to accept "*" in hostname literal. Since we rely
+// on GURL host validation, just be consistent on that but make sure
+// that does not wildcard all the domains.
+TEST_F(AwSafeBrowsingWhitelistManagerTest, VerifyStarDoesNotWildcardDomains) {
   std::vector<std::string> whitelist;
   whitelist.push_back("*.com");
   whitelist.push_back("*co");
@@ -242,17 +250,24 @@ TEST_F(AwSafeBrowsingWhitelistManagerTest, VerifyRandomWildcardsAreIgnored) {
   whitelist.push_back("b.*.*.co");
   whitelist.push_back("b.*");
   whitelist.push_back("c*");
-  wm_->SetWhitelistOnUIThread(std::move(whitelist));
+  SetWhitelist(std::move(whitelist), true);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(wm_->IsURLWhitelisted(GURL("http://a.google.com/")));
   EXPECT_FALSE(wm_->IsURLWhitelisted(GURL("http://b.a.google.co/")));
   EXPECT_FALSE(wm_->IsURLWhitelisted(GURL("http://com/")));
+
+  whitelist.clear();
+  whitelist.push_back("*");
+  SetWhitelist(std::move(whitelist), true);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(wm_->IsURLWhitelisted(GURL("http://a.google.com/")));
+  EXPECT_TRUE(wm_->IsURLWhitelisted(GURL("http://*/")));
 }
 
 TEST_F(AwSafeBrowsingWhitelistManagerTest, VerifyPrefixOrSuffixOfDomains) {
   std::vector<std::string> whitelist;
   whitelist.push_back("google.com");
-  wm_->SetWhitelistOnUIThread(std::move(whitelist));
+  SetWhitelist(std::move(whitelist), true);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(wm_->IsURLWhitelisted(GURL("http://ogle.com/")));
   EXPECT_FALSE(wm_->IsURLWhitelisted(GURL("http://agoogle.com/")));
@@ -262,7 +277,7 @@ TEST_F(AwSafeBrowsingWhitelistManagerTest, VerifyIPV4CanBeWhitelisted) {
   std::vector<std::string> whitelist;
   whitelist.push_back("google.com");
   whitelist.push_back("192.168.1.1");
-  wm_->SetWhitelistOnUIThread(std::move(whitelist));
+  SetWhitelist(std::move(whitelist), true);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(wm_->IsURLWhitelisted(GURL("http://google.com/")));
   EXPECT_TRUE(wm_->IsURLWhitelisted(GURL("http://192.168.1.1/")));
@@ -271,7 +286,7 @@ TEST_F(AwSafeBrowsingWhitelistManagerTest, VerifyIPV4CanBeWhitelisted) {
 TEST_F(AwSafeBrowsingWhitelistManagerTest, VerifyIPV4IsNotSegmented) {
   std::vector<std::string> whitelist;
   whitelist.push_back("192.168.1.1");
-  wm_->SetWhitelistOnUIThread(std::move(whitelist));
+  SetWhitelist(std::move(whitelist), true);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(wm_->IsURLWhitelisted(GURL("http://192.168.1.1/")));
   EXPECT_FALSE(wm_->IsURLWhitelisted(GURL("http://1.192.168.1.1/")));
@@ -281,7 +296,7 @@ TEST_F(AwSafeBrowsingWhitelistManagerTest, VerifyIPV4IsNotSegmented) {
 TEST_F(AwSafeBrowsingWhitelistManagerTest, VerifyLeadingDotInIPV4IsNotValid) {
   std::vector<std::string> whitelist;
   whitelist.push_back(".192.168.1.1");
-  wm_->SetWhitelistOnUIThread(std::move(whitelist));
+  SetWhitelist(std::move(whitelist), false);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(wm_->IsURLWhitelisted(GURL("http://192.168.1.1/")));
   EXPECT_FALSE(wm_->IsURLWhitelisted(GURL("http://1.192.168.1.1/")));
@@ -292,7 +307,7 @@ TEST_F(AwSafeBrowsingWhitelistManagerTest, VerifyMultipleIPV4Works) {
   whitelist.push_back("192.168.1.1");
   whitelist.push_back("192.168.1.2");
   whitelist.push_back("194.168.1.1");
-  wm_->SetWhitelistOnUIThread(std::move(whitelist));
+  SetWhitelist(std::move(whitelist), true);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(wm_->IsURLWhitelisted(GURL("http://192.168.1.1/")));
   EXPECT_TRUE(wm_->IsURLWhitelisted(GURL("http://192.168.1.2/")));
@@ -304,7 +319,7 @@ TEST_F(AwSafeBrowsingWhitelistManagerTest, VerifyMultipleIPV4Works) {
 TEST_F(AwSafeBrowsingWhitelistManagerTest, VerifyIPV6CanBeWhitelisted) {
   std::vector<std::string> whitelist;
   whitelist.push_back("[10:20:30:40:50:60:70:80]");
-  wm_->SetWhitelistOnUIThread(std::move(whitelist));
+  SetWhitelist(std::move(whitelist), true);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(wm_->IsURLWhitelisted(GURL("http://[10:20:30:40:50:60:70:80]")));
 }
@@ -313,7 +328,7 @@ TEST_F(AwSafeBrowsingWhitelistManagerTest,
        VerifyIPV6CannotBeWhitelistedIfBroken) {
   std::vector<std::string> whitelist;
   whitelist.push_back("[10:20:30:40:50:60:]");
-  wm_->SetWhitelistOnUIThread(std::move(whitelist));
+  SetWhitelist(std::move(whitelist), false);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(wm_->IsURLWhitelisted(GURL("http://[10:20:30:40:50:60:70:80]")));
 }
@@ -322,7 +337,7 @@ TEST_F(AwSafeBrowsingWhitelistManagerTest,
        VerifyIPV6WithZerosCanBeWhitelisted) {
   std::vector<std::string> whitelist;
   whitelist.push_back("[20:0:0:0:0:0:0:0]");
-  wm_->SetWhitelistOnUIThread(std::move(whitelist));
+  SetWhitelist(std::move(whitelist), true);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(wm_->IsURLWhitelisted(GURL("http://[20:0:0:0:0:0:0:0]")));
 }
@@ -331,7 +346,7 @@ TEST_F(AwSafeBrowsingWhitelistManagerTest, VerifyCapitalizationDoesNotMatter) {
   std::vector<std::string> whitelist;
   whitelist.push_back("A.goOGle.Com");
   whitelist.push_back(".GOOGLE.COM");
-  wm_->SetWhitelistOnUIThread(std::move(whitelist));
+  SetWhitelist(std::move(whitelist), true);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(wm_->IsURLWhitelisted(GURL("http://a.google.com/")));
   EXPECT_TRUE(wm_->IsURLWhitelisted(GURL("http://b.a.google.com/")));
@@ -344,7 +359,7 @@ TEST_F(AwSafeBrowsingWhitelistManagerTest,
   std::vector<std::string> whitelist;
   whitelist.push_back("com");
   whitelist.push_back("example.com");
-  wm_->SetWhitelistOnUIThread(std::move(whitelist));
+  SetWhitelist(std::move(whitelist), true);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(wm_->IsURLWhitelisted(GURL("http://a.google.com/")));
   EXPECT_TRUE(wm_->IsURLWhitelisted(GURL("http://example.com/")));
@@ -358,7 +373,7 @@ TEST_F(AwSafeBrowsingWhitelistManagerTest,
   std::vector<std::string> whitelist;
   whitelist.push_back("example.com");
   whitelist.push_back("com");
-  wm_->SetWhitelistOnUIThread(std::move(whitelist));
+  SetWhitelist(std::move(whitelist), true);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(wm_->IsURLWhitelisted(GURL("http://a.google.com/")));
   EXPECT_TRUE(wm_->IsURLWhitelisted(GURL("http://example.com/")));
@@ -371,7 +386,7 @@ TEST_F(AwSafeBrowsingWhitelistManagerTest,
   std::vector<std::string> whitelist;
   whitelist.push_back(".com");
   whitelist.push_back("example.com");
-  wm_->SetWhitelistOnUIThread(std::move(whitelist));
+  SetWhitelist(std::move(whitelist), true);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(wm_->IsURLWhitelisted(GURL("http://a.google.com/")));
   EXPECT_TRUE(wm_->IsURLWhitelisted(GURL("http://example.com/")));
@@ -386,7 +401,7 @@ TEST_F(AwSafeBrowsingWhitelistManagerTest,
   std::vector<std::string> whitelist;
   whitelist.push_back("example.com");
   whitelist.push_back(".com");
-  wm_->SetWhitelistOnUIThread(std::move(whitelist));
+  SetWhitelist(std::move(whitelist), true);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(wm_->IsURLWhitelisted(GURL("http://a.google.com/")));
   EXPECT_TRUE(wm_->IsURLWhitelisted(GURL("http://example.com/")));
@@ -403,7 +418,7 @@ TEST_F(AwSafeBrowsingWhitelistManagerTest,
   std::vector<std::string> whitelist;
   whitelist.push_back("com");
   whitelist.push_back(".example.com");
-  wm_->SetWhitelistOnUIThread(std::move(whitelist));
+  SetWhitelist(std::move(whitelist), true);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(wm_->IsURLWhitelisted(GURL("http://a.example.com/")));
 }
@@ -413,14 +428,14 @@ TEST_F(AwSafeBrowsingWhitelistManagerTest,
   std::vector<std::string> whitelist;
   whitelist.push_back("example.com");
   whitelist.push_back(".example.com");
-  wm_->SetWhitelistOnUIThread(std::move(whitelist));
+  SetWhitelist(std::move(whitelist), true);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(wm_->IsURLWhitelisted(GURL("http://a.example.com/")));
 
   whitelist = std::vector<std::string>();
   whitelist.push_back(".example.com");
   whitelist.push_back("example.com");
-  wm_->SetWhitelistOnUIThread(std::move(whitelist));
+  SetWhitelist(std::move(whitelist), true);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(wm_->IsURLWhitelisted(GURL("http://a.example.com/")));
 }
@@ -432,7 +447,7 @@ TEST_F(AwSafeBrowsingWhitelistManagerTest,
   whitelist.push_back(".example.com");
   whitelist.push_back("example.com");
   whitelist.push_back("a.example.com");
-  wm_->SetWhitelistOnUIThread(std::move(whitelist));
+  SetWhitelist(std::move(whitelist), true);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(wm_->IsURLWhitelisted(GURL("http://a.example.com/")));
   EXPECT_TRUE(wm_->IsURLWhitelisted(GURL("http://b.example.com/")));
@@ -444,7 +459,7 @@ TEST_F(AwSafeBrowsingWhitelistManagerTest,
   whitelist.push_back("example.com");
   whitelist.push_back(".example.com");
   whitelist.push_back("b.example.com");
-  wm_->SetWhitelistOnUIThread(std::move(whitelist));
+  SetWhitelist(std::move(whitelist), true);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(wm_->IsURLWhitelisted(GURL("http://a.example.com/")));
   EXPECT_TRUE(wm_->IsURLWhitelisted(GURL("http://b.example.com/")));
