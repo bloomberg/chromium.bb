@@ -7,16 +7,11 @@
 
 #include "services/shape_detection/public/interfaces/textdetection.mojom.h"
 
-namespace service_manager {
-struct BindSourceInfo;
-}
-
 namespace shape_detection {
 
 class TextDetectionImpl {
  public:
-  static void Create(const service_manager::BindSourceInfo& source_info,
-                     mojom::TextDetectionRequest request);
+  static void Create(mojom::TextDetectionRequest request);
 
  private:
   ~TextDetectionImpl() = default;

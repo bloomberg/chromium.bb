@@ -14,10 +14,6 @@
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/modules/payments/payment_app.mojom.h"
 
-namespace service_manager {
-struct BindSourceInfo;
-}
-
 namespace content {
 
 class PaymentAppDatabase;
@@ -58,8 +54,7 @@ class CONTENT_EXPORT PaymentAppContextImpl
 
   // Create a PaymentManager that is owned by this. Call on the UI
   // thread.
-  void CreatePaymentManager(const service_manager::BindSourceInfo& source_info,
-                            payments::mojom::PaymentManagerRequest request);
+  void CreatePaymentManager(payments::mojom::PaymentManagerRequest request);
 
   // Called by PaymentManager objects so that they can
   // be deleted. Call on the IO thread.

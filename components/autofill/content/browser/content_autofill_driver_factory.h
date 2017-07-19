@@ -12,7 +12,6 @@
 #include "components/autofill/core/browser/autofill_driver_factory.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "services/service_manager/public/cpp/bind_source_info.h"
 
 namespace content {
 class RenderFrameHost;
@@ -47,7 +46,6 @@ class ContentAutofillDriverFactory : public AutofillDriverFactory,
   static ContentAutofillDriverFactory* FromWebContents(
       content::WebContents* contents);
   static void BindAutofillDriver(
-      const service_manager::BindSourceInfo& source_info,
       mojom::AutofillDriverRequest request,
       content::RenderFrameHost* render_frame_host);
 

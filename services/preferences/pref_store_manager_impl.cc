@@ -101,8 +101,8 @@ base::OnceClosure PrefStoreManagerImpl::ShutDownClosure() {
 }
 
 void PrefStoreManagerImpl::BindPrefStoreConnectorRequest(
-    const service_manager::BindSourceInfo& source_info,
-    prefs::mojom::PrefStoreConnectorRequest request) {
+    prefs::mojom::PrefStoreConnectorRequest request,
+    const service_manager::BindSourceInfo& source_info) {
   connector_bindings_.AddBinding(
       base::MakeUnique<ConnectorConnection>(this, source_info),
       std::move(request));
@@ -114,8 +114,8 @@ void PrefStoreManagerImpl::OnBindInterface(
     const service_manager::BindSourceInfo& source_info,
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
-  registry_.BindInterface(source_info, interface_name,
-                          std::move(interface_pipe));
+  registry_.BindInterface(interface_name, std::move(interface_pipe),
+                          source_info);
 }
 
 void PrefStoreManagerImpl::OnPersistentPrefStoreReady() {

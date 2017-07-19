@@ -126,7 +126,6 @@ void PlatformNotificationContextImpl::ShutdownOnIO() {
 
 void PlatformNotificationContextImpl::CreateService(
     int render_process_id,
-    const service_manager::BindSourceInfo& source_info,
     blink::mojom::NotificationServiceRequest request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(

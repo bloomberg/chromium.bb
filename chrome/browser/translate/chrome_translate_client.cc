@@ -219,7 +219,6 @@ void ChromeTranslateClient::RecordTranslateEvent(
 
 // static
 void ChromeTranslateClient::BindContentTranslateDriver(
-    const service_manager::BindSourceInfo& source_info,
     translate::mojom::ContentTranslateDriverRequest request,
     content::RenderFrameHost* render_frame_host) {
   // Only valid for the main frame.

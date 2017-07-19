@@ -30,10 +30,6 @@ struct WebTextCheckingResult;
 template <typename T> class WebVector;
 }
 
-namespace service_manager {
-struct BindSourceInfo;
-}
-
 // TODO(morrita): Needs reorg with SpellCheckProvider.
 // See http://crbug.com/73699.
 // Shared spellchecking logic/data for a RenderProcess. All RenderViews use
@@ -124,8 +120,7 @@ class SpellCheck : public content::RenderThreadObserver,
        std::vector<base::string16>* optional_suggestions);
 
    // Binds requests for the SpellChecker interface.
-   void SpellCheckerRequest(const service_manager::BindSourceInfo& source_info,
-                            spellcheck::mojom::SpellCheckerRequest request);
+   void SpellCheckerRequest(spellcheck::mojom::SpellCheckerRequest request);
 
    // spellcheck::mojom::SpellChecker:
    void Initialize(

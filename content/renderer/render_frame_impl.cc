@@ -1355,8 +1355,7 @@ void RenderFrameImpl::GetInterface(
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
   // TODO(beng): We should be getting this info from the frame factory request.
-  interface_registry_->BindInterface(browser_info_, interface_name,
-                                     std::move(interface_pipe));
+  interface_registry_->BindInterface(interface_name, std::move(interface_pipe));
 }
 
 RenderWidget* RenderFrameImpl::GetRenderWidget() {

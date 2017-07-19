@@ -25,15 +25,12 @@ void LevelDBApp::OnBindInterface(
     const service_manager::BindSourceInfo& source_info,
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
-  registry_.BindInterface(source_info, interface_name,
-                          std::move(interface_pipe));
+  registry_.BindInterface(interface_name, std::move(interface_pipe));
 }
 
-void LevelDBApp::Create(const service_manager::BindSourceInfo& source_info,
-                        leveldb::mojom::LevelDBServiceRequest request) {
-  if (!service_) {
+void LevelDBApp::Create(leveldb::mojom::LevelDBServiceRequest request) {
+  if (!service_)
     service_.reset(new LevelDBServiceImpl(file_task_runner_));
-  }
   bindings_.AddBinding(service_.get(), std::move(request));
 }
 

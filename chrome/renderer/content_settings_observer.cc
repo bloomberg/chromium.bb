@@ -218,7 +218,6 @@ void ContentSettingsObserver::SetAllowRunningInsecureContent() {
 }
 
 void ContentSettingsObserver::OnInsecureContentRendererRequest(
-    const service_manager::BindSourceInfo& source_info,
     chrome::mojom::InsecureContentRendererRequest request) {
   insecure_content_renderer_bindings_.AddBinding(this, std::move(request));
 }

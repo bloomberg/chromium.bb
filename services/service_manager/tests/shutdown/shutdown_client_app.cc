@@ -31,12 +31,10 @@ class ShutdownClientApp : public Service,
   void OnBindInterface(const BindSourceInfo& source_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override {
-    registry_.BindInterface(source_info, interface_name,
-                            std::move(interface_pipe));
+    registry_.BindInterface(interface_name, std::move(interface_pipe));
   }
 
-  void Create(const BindSourceInfo& create,
-              mojom::ShutdownTestClientControllerRequest request) {
+  void Create(mojom::ShutdownTestClientControllerRequest request) {
     bindings_.AddBinding(this, std::move(request));
   }
 

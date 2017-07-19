@@ -43,7 +43,6 @@
 #include "components/spellcheck/common/spellcheck.mojom.h"
 #include "components/spellcheck/common/spellcheck_messages.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #if BUILDFLAG(HAS_SPELLCHECK_PANEL)
 #include "components/spellcheck/common/spellcheck_panel.mojom.h"
@@ -601,8 +600,7 @@ class TestSpellCheckMessageFilter : public content::BrowserMessageFilter,
   }
 
 #if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
-  void ShellCheckHostRequest(const service_manager::BindSourceInfo& source_info,
-                             spellcheck::mojom::SpellCheckHostRequest request) {
+  void ShellCheckHostRequest(spellcheck::mojom::SpellCheckHostRequest request) {
     EXPECT_FALSE(binding_.is_bound());
     binding_.Bind(std::move(request));
   }
@@ -753,7 +751,6 @@ class TestSpellCheckPanelHost : public spellcheck::mojom::SpellCheckPanelHost {
   }
 
   void SpellCheckPanelHostRequest(
-      const service_manager::BindSourceInfo& source_info,
       spellcheck::mojom::SpellCheckPanelHostRequest request) {
     bindings_.AddBinding(this, std::move(request));
   }

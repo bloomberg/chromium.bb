@@ -10,7 +10,6 @@
 #include "components/contextual_search/common/overlay_page_notifier_service.mojom.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_frame_observer.h"
-#include "services/service_manager/public/cpp/bind_source_info.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "v8/include/v8.h"
 
@@ -43,7 +42,6 @@ class OverlayJsRenderFrameObserver : public content::RenderFrameObserver {
   // Creates the OverlayPageNotifierService connecting the browser to this
   // observer.
   void CreateOverlayPageNotifierService(
-      const service_manager::BindSourceInfo& source_info,
       mojom::OverlayPageNotifierServiceRequest request);
   // Destroys the OverlayPageNotifierService.
   void DestroyOverlayPageNotifierService();

@@ -31,7 +31,6 @@
 #include "chrome/common/media_router/route_request_result.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/service_manager/public/cpp/bind_source_info.h"
 
 namespace content {
 class BrowserContext;
@@ -67,7 +66,6 @@ class MediaRouterMojoImpl : public MediaRouterBase,
   // |request|: The Mojo connection request used for binding.
   static void BindToRequest(const extensions::Extension* extension,
                             content::BrowserContext* context,
-                            const service_manager::BindSourceInfo& source_info,
                             mojom::MediaRouterRequest request);
 
   // MediaRouter implementation.

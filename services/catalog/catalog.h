@@ -65,11 +65,11 @@ class Catalog {
  private:
   class ServiceImpl;
 
-  void BindCatalogRequest(const service_manager::BindSourceInfo& source_info,
-                          mojom::CatalogRequest request);
+  void BindCatalogRequest(mojom::CatalogRequest request,
+                          const service_manager::BindSourceInfo& source_info);
 
-  void BindDirectoryRequest(const service_manager::BindSourceInfo& source_info,
-                            filesystem::mojom::DirectoryRequest request);
+  void BindDirectoryRequest(filesystem::mojom::DirectoryRequest request,
+                            const service_manager::BindSourceInfo& source_info);
 
   service_manager::mojom::ServicePtr service_;
   std::unique_ptr<service_manager::ServiceContext> service_context_;

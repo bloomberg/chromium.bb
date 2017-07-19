@@ -77,7 +77,6 @@ void InitializeSingleSampleMetricsFactory(CreateProviderCB create_provider_cb) {
 
 // static
 void CreateSingleSampleMetricsProvider(
-    const service_manager::BindSourceInfo& source_info,
     mojom::SingleSampleMetricsProviderRequest request) {
   mojo::MakeStrongBinding(base::MakeUnique<MojoSingleSampleMetricsProvider>(),
                           std::move(request));

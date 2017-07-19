@@ -13,8 +13,7 @@
 
 namespace payments {
 
-void CreatePaymentRequest(const service_manager::BindSourceInfo& source_info,
-                          mojom::PaymentRequestRequest request,
+void CreatePaymentRequest(mojom::PaymentRequestRequest request,
                           content::RenderFrameHost* render_frame_host) {
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host);

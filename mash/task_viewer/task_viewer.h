@@ -41,8 +41,7 @@ class TaskViewer : public service_manager::Service,
   // ::mash::mojom::Launchable:
   void Launch(uint32_t what, ::mash::mojom::LaunchMode how) override;
 
-  void Create(const service_manager::BindSourceInfo& source_info,
-              ::mash::mojom::LaunchableRequest request);
+  void Create(::mash::mojom::LaunchableRequest request);
 
   mojo::BindingSet<::mash::mojom::Launchable> bindings_;
   std::vector<views::Widget*> windows_;

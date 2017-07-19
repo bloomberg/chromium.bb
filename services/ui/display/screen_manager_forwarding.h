@@ -16,10 +16,6 @@
 #include "ui/display/mojo/native_display_delegate.mojom.h"
 #include "ui/display/types/native_display_observer.h"
 
-namespace service_manager {
-struct BindSourceInfo;
-}
-
 namespace display {
 
 class FakeDisplayController;
@@ -44,7 +40,9 @@ class ScreenManagerForwarding : public ScreenManager,
   ~ScreenManagerForwarding() override;
 
   // ScreenManager:
-  void AddInterfaces(service_manager::BinderRegistry* registry) override;
+  void AddInterfaces(
+      service_manager::BinderRegistryWithArgs<
+          const service_manager::BindSourceInfo&>* registry) override;
   void Init(ScreenManagerDelegate* delegate) override;
   void RequestCloseDisplay(int64_t display_id) override;
   display::ScreenBase* GetScreen() override;
@@ -80,11 +78,11 @@ class ScreenManagerForwarding : public ScreenManager,
 
  private:
   void BindNativeDisplayDelegateRequest(
-      const service_manager::BindSourceInfo& source_info,
-      mojom::NativeDisplayDelegateRequest request);
+      mojom::NativeDisplayDelegateRequest request,
+      const service_manager::BindSourceInfo& source_info);
   void BindTestDisplayControllerRequest(
-      const service_manager::BindSourceInfo& source_info,
-      mojom::TestDisplayControllerRequest request);
+      mojom::TestDisplayControllerRequest request,
+      const service_manager::BindSourceInfo& source_info);
 
   // Forwards results from GetDisplays() back with |callback|.
   void ForwardGetDisplays(const GetDisplaysCallback& callback,

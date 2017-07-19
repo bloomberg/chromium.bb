@@ -29,10 +29,6 @@
 #include "third_party/WebKit/public/platform/modules/presentation/presentation.mojom.h"
 #include "url/gurl.h"
 
-namespace service_manager {
-struct BindSourceInfo;
-}
-
 namespace content {
 
 struct PresentationConnectionMessage;
@@ -62,7 +58,6 @@ class CONTENT_EXPORT PresentationServiceImpl
   // |request|: The instance will be bound to this request. Used for Mojo setup.
   static void CreateMojoService(
       RenderFrameHost* render_frame_host,
-      const service_manager::BindSourceInfo& source_info,
       mojo::InterfaceRequest<blink::mojom::PresentationService> request);
 
   // PresentationService implementation.

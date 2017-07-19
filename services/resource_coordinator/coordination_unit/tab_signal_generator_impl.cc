@@ -42,7 +42,6 @@ void TabSignalGeneratorImpl::OnPropertyChanged(
 }
 
 void TabSignalGeneratorImpl::BindToInterface(
-    const service_manager::BindSourceInfo& source_info,
     resource_coordinator::mojom::TabSignalGeneratorRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }

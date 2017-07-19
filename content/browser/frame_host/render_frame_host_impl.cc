@@ -261,7 +261,6 @@ class RemoterFactoryImpl final : public media::mojom::RemoterFactory {
 
   static void Bind(int process_id,
                    int routing_id,
-                   const service_manager::BindSourceInfo& source_info,
                    media::mojom::RemoterFactoryRequest request) {
     mojo::MakeStrongBinding(
         base::MakeUnique<RemoterFactoryImpl>(process_id, routing_id),
@@ -286,15 +285,13 @@ class RemoterFactoryImpl final : public media::mojom::RemoterFactory {
 
 void CreateResourceCoordinatorFrameInterface(
     RenderFrameHostImpl* render_frame_host,
-    const service_manager::BindSourceInfo& source_info,
     resource_coordinator::mojom::CoordinationUnitRequest request) {
   render_frame_host->GetFrameResourceCoordinator()->service()->AddBinding(
       std::move(request));
 }
 
 template <typename Interface>
-void IgnoreInterfaceRequest(const service_manager::BindSourceInfo& source_info,
-                            mojo::InterfaceRequest<Interface> request) {
+void IgnoreInterfaceRequest(mojo::InterfaceRequest<Interface> request) {
   // Intentionally ignore the interface request.
 }
 
@@ -354,7 +351,6 @@ void LookupRenderFrameHostOrProxy(int process_id,
 // Forwards service requests to Service Manager.
 template <typename Interface>
 void ForwardRequest(const char* service_name,
-                    const service_manager::BindSourceInfo&,
                     mojo::InterfaceRequest<Interface> request) {
   // TODO(beng): This should really be using the per-profile connector.
   service_manager::Connector* connector =
@@ -363,13 +359,12 @@ void ForwardRequest(const char* service_name,
 }
 
 void CreatePaymentManager(RenderFrameHostImpl* rfh,
-                          const service_manager::BindSourceInfo& source_info,
                           payments::mojom::PaymentManagerRequest request) {
   StoragePartitionImpl* storage_partition =
       static_cast<StoragePartitionImpl*>(BrowserContext::GetStoragePartition(
           rfh->GetSiteInstance()->GetBrowserContext(), rfh->GetSiteInstance()));
   storage_partition->GetPaymentAppContext()->CreatePaymentManager(
-      source_info, std::move(request));
+      std::move(request));
 }
 
 }  // namespace
@@ -399,7 +394,6 @@ bool RenderFrameHost::IsDataUrlNavigationAllowedForAndroidWebView() {
 void CreateMediaPlayerRenderer(
     int process_id,
     int routing_id,
-    const service_manager::BindSourceInfo& source_info,
     media::mojom::RendererRequest request) {
   std::unique_ptr<MediaPlayerRenderer> renderer =
       base::MakeUnique<MediaPlayerRenderer>(process_id, routing_id);
@@ -3935,7 +3929,6 @@ void RenderFrameHostImpl::AXContentTreeDataToAXTreeData(
 }
 
 WebBluetoothServiceImpl* RenderFrameHostImpl::CreateWebBluetoothService(
-    const service_manager::BindSourceInfo& source_info,
     blink::mojom::WebBluetoothServiceRequest request) {
   // RFHI owns |web_bluetooth_services_| and |web_bluetooth_service| owns the
   // |binding_| which may run the error handler. |binding_| can't run the error
@@ -3972,7 +3965,6 @@ void RenderFrameHostImpl::ResetFeaturePolicy() {
 }
 
 void RenderFrameHostImpl::CreateAudioOutputStreamFactory(
-    const service_manager::BindSourceInfo& source_info,
     mojom::RendererAudioOutputStreamFactoryRequest request) {
   RendererAudioOutputStreamFactoryContext* factory_context =
       GetProcess()->GetRendererAudioOutputStreamFactoryContext();
@@ -3983,7 +3975,6 @@ void RenderFrameHostImpl::CreateAudioOutputStreamFactory(
 }
 
 void RenderFrameHostImpl::BindMediaInterfaceFactoryRequest(
-    const service_manager::BindSourceInfo& source_info,
     media::mojom::InterfaceFactoryRequest request) {
   DCHECK(!media_interface_proxy_);
   media_interface_proxy_.reset(new MediaInterfaceProxy(
@@ -3998,7 +3989,6 @@ void RenderFrameHostImpl::OnMediaInterfaceFactoryConnectionError() {
 }
 
 void RenderFrameHostImpl::BindWakeLockRequest(
-    const service_manager::BindSourceInfo& source_info,
     device::mojom::WakeLockRequest request) {
   device::mojom::WakeLock* renderer_wake_lock =
       delegate_ ? delegate_->GetRendererWakeLock() : nullptr;
@@ -4007,9 +3997,7 @@ void RenderFrameHostImpl::BindWakeLockRequest(
 }
 
 #if defined(OS_ANDROID)
-void RenderFrameHostImpl::BindNFCRequest(
-    const service_manager::BindSourceInfo& source_info,
-    device::mojom::NFCRequest request) {
+void RenderFrameHostImpl::BindNFCRequest(device::mojom::NFCRequest request) {
   if (delegate_)
     delegate_->GetNFC(std::move(request));
 }
@@ -4018,15 +4006,13 @@ void RenderFrameHostImpl::BindNFCRequest(
 void RenderFrameHostImpl::GetInterface(
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
-  service_manager::BindSourceInfo source_info(GetProcess()->GetChildIdentity(),
-                                              service_manager::CapabilitySet());
   if (interface_registry_.get() &&
       interface_registry_->CanBindInterface(interface_name)) {
-    interface_registry_->BindInterface(source_info, interface_name,
+    interface_registry_->BindInterface(interface_name,
                                        std::move(interface_pipe));
   } else {
     GetContentClient()->browser()->BindInterfaceRequestFromFrame(
-        this, source_info, interface_name, std::move(interface_pipe));
+        this, interface_name, std::move(interface_pipe));
   }
 }
 

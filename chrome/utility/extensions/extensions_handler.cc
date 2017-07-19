@@ -20,7 +20,6 @@
 #include "content/public/utility/utility_thread.h"
 #include "media/base/media.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "services/service_manager/public/cpp/bind_source_info.h"
 #include "ui/base/ui_base_switches.h"
 
 #if !defined(MEDIA_DISABLE_FFMPEG)
@@ -47,8 +46,7 @@ class MediaParserImpl : public extensions::mojom::MediaParser {
   MediaParserImpl() = default;
   ~MediaParserImpl() override = default;
 
-  static void Create(const service_manager::BindSourceInfo& source_info,
-                     extensions::mojom::MediaParserRequest request) {
+  static void Create(extensions::mojom::MediaParserRequest request) {
     mojo::MakeStrongBinding(base::MakeUnique<MediaParserImpl>(),
                             std::move(request));
   }
@@ -97,8 +95,7 @@ class RemovableStorageWriterImpl
   RemovableStorageWriterImpl() = default;
   ~RemovableStorageWriterImpl() override = default;
 
-  static void Create(const service_manager::BindSourceInfo& source_info,
-                     extensions::mojom::RemovableStorageWriterRequest request) {
+  static void Create(extensions::mojom::RemovableStorageWriterRequest request) {
     mojo::MakeStrongBinding(base::MakeUnique<RemovableStorageWriterImpl>(),
                             std::move(request));
   }
@@ -130,8 +127,7 @@ class WiFiCredentialsGetterImpl
   WiFiCredentialsGetterImpl() = default;
   ~WiFiCredentialsGetterImpl() override = default;
 
-  static void Create(const service_manager::BindSourceInfo& source_info,
-                     extensions::mojom::WiFiCredentialsGetterRequest request) {
+  static void Create(extensions::mojom::WiFiCredentialsGetterRequest request) {
     mojo::MakeStrongBinding(base::MakeUnique<WiFiCredentialsGetterImpl>(),
                             std::move(request));
   }

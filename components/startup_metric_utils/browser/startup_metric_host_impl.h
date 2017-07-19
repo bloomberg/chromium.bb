@@ -11,10 +11,6 @@
 #include "base/time/time.h"
 #include "components/startup_metric_utils/common/startup_metric.mojom.h"
 
-namespace service_manager {
-struct BindSourceInfo;
-}
-
 namespace startup_metric_utils {
 
 class StartupMetricHostImpl : public mojom::StartupMetricHost {
@@ -22,8 +18,7 @@ class StartupMetricHostImpl : public mojom::StartupMetricHost {
   StartupMetricHostImpl();
   ~StartupMetricHostImpl() override;
 
-  static void Create(const service_manager::BindSourceInfo& source_info,
-                     mojom::StartupMetricHostRequest request);
+  static void Create(mojom::StartupMetricHostRequest request);
 
  private:
   void RecordRendererMainEntryTime(

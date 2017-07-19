@@ -19,8 +19,7 @@ class MediaEngagementUI
 
  private:
   // MojoWebUIController overrides:
-  void BindUIHandler(const service_manager::BindSourceInfo& source_info,
-                     media::mojom::MediaEngagementScoreDetailsProviderRequest
+  void BindUIHandler(media::mojom::MediaEngagementScoreDetailsProviderRequest
                          request) override;
 
   std::unique_ptr<media::mojom::MediaEngagementScoreDetailsProvider>

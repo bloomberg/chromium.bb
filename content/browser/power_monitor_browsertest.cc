@@ -102,9 +102,9 @@ class PowerMonitorTest : public ContentBrowserTest {
     ContentBrowserTest::SetUp();
   }
 
-  void BindPowerMonitor(const service_manager::BindSourceInfo& source_info,
-                        const std::string& interface_name,
-                        mojo::ScopedMessagePipeHandle handle) {
+  void BindPowerMonitor(const std::string& interface_name,
+                        mojo::ScopedMessagePipeHandle handle,
+                        const service_manager::BindSourceInfo& source_info) {
     if (source_info.identity.name() == mojom::kRendererServiceName) {
       ++request_count_from_renderer_;
 

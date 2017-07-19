@@ -8,7 +8,6 @@
 #include "base/macros.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/net_benchmarking.mojom.h"
-#include "services/service_manager/public/cpp/bind_source_info.h"
 
 namespace net {
 class URLRequestContextGetter;
@@ -26,7 +25,6 @@ class NetBenchmarking : public chrome::mojom::NetBenchmarking {
 
   static void Create(Profile* profile,
                      net::URLRequestContextGetter* request_context,
-                     const service_manager::BindSourceInfo& source_info,
                      chrome::mojom::NetBenchmarkingRequest request);
   static bool CheckBenchmarkingEnabled();
 

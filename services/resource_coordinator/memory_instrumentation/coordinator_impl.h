@@ -40,8 +40,8 @@ class CoordinatorImpl : public Coordinator, public mojom::Coordinator {
 
   // Binds a client library to this coordinator instance.
   void BindCoordinatorRequest(
-      const service_manager::BindSourceInfo& source_info,
-      mojom::CoordinatorRequest) override;
+      mojom::CoordinatorRequest,
+      const service_manager::BindSourceInfo& source_info) override;
 
   // mojom::Coordinator implementation.
   void RegisterClientProcess(mojom::ClientProcessPtr,

@@ -37,8 +37,7 @@ class ActiveProfilePrefService : public prefs::mojom::PrefStoreConnector,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
 
-  void Create(const service_manager::BindSourceInfo& source_info,
-              prefs::mojom::PrefStoreConnectorRequest request);
+  void Create(prefs::mojom::PrefStoreConnectorRequest request);
 
   // Called if forwarding the connection request to the per-profile service
   // instance failed.

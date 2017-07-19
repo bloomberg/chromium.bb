@@ -36,8 +36,7 @@ class IdentityService : public service_manager::Service,
   // OAuth2TokenService::Observer:
   void OnRefreshTokensLoaded() override;
 
-  void Create(const service_manager::BindSourceInfo& source_info,
-              mojom::IdentityManagerRequest request);
+  void Create(mojom::IdentityManagerRequest request);
 
   // Shuts down this instance, blocking it from serving any pending or future
   // requests. Safe to call multiple times; will be a no-op after the first

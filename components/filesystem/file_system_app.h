@@ -30,10 +30,12 @@ class FileSystemApp : public service_manager::Service {
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
 
-  void Create(const service_manager::BindSourceInfo& source_info,
-              mojom::FileSystemRequest request);
+  void Create(mojom::FileSystemRequest request,
+              const service_manager::BindSourceInfo& source_info);
 
-  service_manager::BinderRegistry registry_;
+  service_manager::BinderRegistryWithArgs<
+      const service_manager::BindSourceInfo&>
+      registry_;
 
   scoped_refptr<LockTable> lock_table_;
 

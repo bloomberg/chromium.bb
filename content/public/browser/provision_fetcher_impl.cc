@@ -14,7 +14,6 @@ namespace content {
 // static
 void ProvisionFetcherImpl::Create(
     net::URLRequestContextGetter* context_getter,
-    const service_manager::BindSourceInfo& source_info,
     media::mojom::ProvisionFetcherRequest request) {
   DCHECK(context_getter);
   mojo::MakeStrongBinding(base::MakeUnique<ProvisionFetcherImpl>(

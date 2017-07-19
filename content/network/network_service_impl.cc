@@ -15,7 +15,6 @@
 #include "net/log/file_net_log_observer.h"
 #include "net/log/net_log_util.h"
 #include "net/url_request/url_request_context_builder.h"
-#include "services/service_manager/public/cpp/bind_source_info.h"
 
 namespace content {
 
@@ -122,13 +121,10 @@ void NetworkServiceImpl::OnBindInterface(
     const service_manager::BindSourceInfo& source_info,
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
-  registry_->BindInterface(source_info, interface_name,
-                           std::move(interface_pipe));
+  registry_->BindInterface(interface_name, std::move(interface_pipe));
 }
 
-void NetworkServiceImpl::Create(
-    const service_manager::BindSourceInfo& source_info,
-    mojom::NetworkServiceRequest request) {
+void NetworkServiceImpl::Create(mojom::NetworkServiceRequest request) {
   DCHECK(!binding_.is_bound());
   binding_.Bind(std::move(request));
 }

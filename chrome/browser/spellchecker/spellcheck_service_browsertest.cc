@@ -34,7 +34,6 @@
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_utils.h"
-#include "services/service_manager/public/cpp/bind_source_info.h"
 
 using content::BrowserContext;
 using content::RenderProcessHost;
@@ -258,7 +257,6 @@ class SpellcheckServiceHostBrowserTest : public SpellcheckServiceBrowserTest {
  private:
   void RequestSpellCheckHost(spellcheck::mojom::SpellCheckHostPtr* interface) {
     SpellCheckHostImpl::Create(GetRenderer()->GetID(),
-                               service_manager::BindSourceInfo(),
                                mojo::MakeRequest(interface));
   }
 

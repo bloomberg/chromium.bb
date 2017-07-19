@@ -46,7 +46,6 @@ FrameInputHandlerImpl::~FrameInputHandlerImpl() {}
 // static
 void FrameInputHandlerImpl::CreateMojoService(
     base::WeakPtr<RenderFrameImpl> render_frame,
-    const service_manager::BindSourceInfo& source_info,
     mojom::FrameInputHandlerRequest request) {
   DCHECK(render_frame);
 

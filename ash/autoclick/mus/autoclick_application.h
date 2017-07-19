@@ -46,11 +46,9 @@ class AutoclickApplication : public service_manager::Service,
   // mojom::AutoclickController:
   void SetAutoclickDelay(uint32_t delay_in_milliseconds) override;
 
-  void BindLaunchableRequest(const service_manager::BindSourceInfo& source_info,
-                             mash::mojom::LaunchableRequest request);
+  void BindLaunchableRequest(mash::mojom::LaunchableRequest request);
 
   void BindAutoclickControllerRequest(
-      const service_manager::BindSourceInfo& source_info,
       mojom::AutoclickControllerRequest request);
 
   // AutoclickControllerCommonDelegate:

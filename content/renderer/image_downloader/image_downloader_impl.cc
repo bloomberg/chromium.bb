@@ -99,7 +99,6 @@ ImageDownloaderImpl::~ImageDownloaderImpl() {}
 // static
 void ImageDownloaderImpl::CreateMojoService(
     RenderFrame* render_frame,
-    const service_manager::BindSourceInfo& source_info,
     mojom::ImageDownloaderRequest request) {
   DVLOG(1) << "ImageDownloaderImpl::CreateMojoService";
   DCHECK(render_frame);

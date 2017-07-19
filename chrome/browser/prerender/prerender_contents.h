@@ -26,7 +26,6 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/referrer.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/service_manager/public/cpp/bind_source_info.h"
 #include "ui/gfx/geometry/rect.h"
 
 class Profile;
@@ -312,7 +311,6 @@ class PrerenderContents : public content::NotificationObserver,
   void CancelPrerenderForPrinting() override;
 
   void OnPrerenderCancelerRequest(
-      const service_manager::BindSourceInfo& source_info,
       chrome::mojom::PrerenderCancelerRequest request);
 
   mojo::Binding<chrome::mojom::PrerenderCanceler> prerender_canceler_binding_;

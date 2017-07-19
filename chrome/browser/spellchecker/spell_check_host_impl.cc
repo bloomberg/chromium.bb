@@ -24,7 +24,6 @@ SpellCheckHostImpl::~SpellCheckHostImpl() = default;
 // static
 void SpellCheckHostImpl::Create(
     int render_process_id,
-    const service_manager::BindSourceInfo& source_info,
     spellcheck::mojom::SpellCheckHostRequest request) {
   mojo::MakeStrongBinding(
       base::MakeUnique<SpellCheckHostImpl>(render_process_id),

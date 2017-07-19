@@ -135,7 +135,6 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       base::StringPiece name) override;
   void BindInterfaceRequestFromFrame(
       content::RenderFrameHost* render_frame_host,
-      const service_manager::BindSourceInfo& source_info,
       const std::string& interface_name,
       mojo::ScopedMessagePipeHandle interface_pipe) override;
 
@@ -144,7 +143,7 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
   // context.
   std::unique_ptr<AwBrowserContext> browser_context_;
 
-  service_manager::BinderRegistryWithParams<content::RenderFrameHost*>
+  service_manager::BinderRegistryWithArgs<content::RenderFrameHost*>
       frame_interfaces_;
 
   DISALLOW_COPY_AND_ASSIGN(AwContentBrowserClient);

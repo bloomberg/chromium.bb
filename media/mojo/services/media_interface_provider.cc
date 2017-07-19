@@ -4,8 +4,6 @@
 
 #include "media/mojo/services/media_interface_provider.h"
 
-#include "services/service_manager/public/cpp/bind_source_info.h"
-
 namespace media {
 
 MediaInterfaceProvider::MediaInterfaceProvider(
@@ -17,8 +15,7 @@ MediaInterfaceProvider::~MediaInterfaceProvider() = default;
 void MediaInterfaceProvider::GetInterface(
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle handle) {
-  registry_.BindInterface(service_manager::BindSourceInfo(), interface_name,
-                          std::move(handle));
+  registry_.BindInterface(interface_name, std::move(handle));
 }
 
 }  // namespace media

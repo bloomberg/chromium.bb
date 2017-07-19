@@ -32,7 +32,6 @@ MediaSessionServiceImpl::~MediaSessionServiceImpl() {
 // static
 void MediaSessionServiceImpl::Create(
     RenderFrameHost* render_frame_host,
-    const service_manager::BindSourceInfo& source_info,
     blink::mojom::MediaSessionServiceRequest request) {
   MediaSessionServiceImpl* impl =
       new MediaSessionServiceImpl(render_frame_host);

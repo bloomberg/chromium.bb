@@ -46,8 +46,7 @@ void ServiceImpl::OnBindInterface(
     mojo::ScopedMessagePipeHandle interface_pipe) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(thread_checker_.CalledOnValidThread());
-  registry_.BindInterface(source_info, interface_name,
-                          std::move(interface_pipe));
+  registry_.BindInterface(interface_name, std::move(interface_pipe));
 }
 
 bool ServiceImpl::OnServiceManagerConnectionLost() {
@@ -56,7 +55,6 @@ bool ServiceImpl::OnServiceManagerConnectionLost() {
 }
 
 void ServiceImpl::OnDeviceFactoryProviderRequest(
-    const service_manager::BindSourceInfo& source_info,
     mojom::DeviceFactoryProviderRequest request) {
   DCHECK(thread_checker_.CalledOnValidThread());
   mojo::MakeStrongBinding(
@@ -71,7 +69,6 @@ void ServiceImpl::OnDeviceFactoryProviderRequest(
 }
 
 void ServiceImpl::OnTestingControlsRequest(
-    const service_manager::BindSourceInfo& source_info,
     mojom::TestingControlsRequest request) {
   DCHECK(thread_checker_.CalledOnValidThread());
   mojo::MakeStrongBinding(

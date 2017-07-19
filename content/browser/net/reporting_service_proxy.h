@@ -7,17 +7,12 @@
 
 #include "third_party/WebKit/public/platform/reporting.mojom.h"
 
-namespace service_manager {
-struct BindSourceInfo;
-}  // namespace service_manager
-
 namespace content {
 
 class StoragePartition;
 
 void CreateReportingServiceProxy(
     StoragePartition* storage_partition,
-    const service_manager::BindSourceInfo& source_info,
     mojom::ReportingServiceProxyRequest request);
 
 }  // namespace content

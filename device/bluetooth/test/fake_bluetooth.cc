@@ -21,8 +21,7 @@ FakeBluetooth::FakeBluetooth()
 FakeBluetooth::~FakeBluetooth() {}
 
 // static
-void FakeBluetooth::Create(const service_manager::BindSourceInfo& source_info,
-                           mojom::FakeBluetoothRequest request) {
+void FakeBluetooth::Create(mojom::FakeBluetoothRequest request) {
   mojo::MakeStrongBinding(base::MakeUnique<FakeBluetooth>(),
                           std::move(request));
 }

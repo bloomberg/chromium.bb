@@ -33,8 +33,7 @@ void IdentityService::OnBindInterface(
     const service_manager::BindSourceInfo& source_info,
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
-  registry_.BindInterface(source_info, interface_name,
-                          std::move(interface_pipe));
+  registry_.BindInterface(interface_name, std::move(interface_pipe));
 }
 
 void IdentityService::OnRefreshTokensLoaded() {
@@ -72,8 +71,7 @@ void IdentityService::BindIdentityManagerRequest(
                           token_service_);
 }
 
-void IdentityService::Create(const service_manager::BindSourceInfo& source_info,
-                             mojom::IdentityManagerRequest request) {
+void IdentityService::Create(mojom::IdentityManagerRequest request) {
   // This instance cannot service requests if it has already been shut down.
   if (IsShutDown())
     return;

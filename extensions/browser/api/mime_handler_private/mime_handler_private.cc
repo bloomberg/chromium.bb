@@ -58,7 +58,6 @@ MimeHandlerServiceImpl::~MimeHandlerServiceImpl() {}
 // static
 void MimeHandlerServiceImpl::Create(
     base::WeakPtr<StreamContainer> stream_container,
-    const service_manager::BindSourceInfo& source_info,
     mime_handler::MimeHandlerServiceRequest request) {
   mojo::MakeStrongBinding(
       base::MakeUnique<MimeHandlerServiceImpl>(stream_container),

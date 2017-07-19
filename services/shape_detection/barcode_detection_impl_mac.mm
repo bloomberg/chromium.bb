@@ -26,7 +26,6 @@ void RunCallbackWithNoBarcodes(
 
 // static
 void BarcodeDetectionImpl::Create(
-    const service_manager::BindSourceInfo& source_info,
     shape_detection::mojom::BarcodeDetectionRequest request) {
   // Barcode detection needs at least MAC OS X 10.10.
   if (@available(macOS 10.10, *)) {

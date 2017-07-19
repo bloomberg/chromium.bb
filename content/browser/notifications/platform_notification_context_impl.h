@@ -29,10 +29,6 @@ namespace base {
 class SequencedTaskRunner;
 }
 
-namespace service_manager {
-struct BindSourceInfo;
-}
-
 namespace content {
 
 class BlinkNotificationServiceImpl;
@@ -68,7 +64,6 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
   // be called on the UI thread, although the service will be created on and
   // bound to the IO thread.
   void CreateService(int render_process_id,
-                     const service_manager::BindSourceInfo& source_info,
                      blink::mojom::NotificationServiceRequest request);
 
   // Removes |service| from the list of owned services, for example because the

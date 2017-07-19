@@ -41,10 +41,6 @@ namespace gpu {
 class GpuWatchdogThread;
 }
 
-namespace service_manager {
-struct BindSourceInfo;
-}
-
 namespace content {
 class GpuServiceFactory;
 
@@ -109,7 +105,6 @@ class GpuChildThread : public ChildThreadImpl,
                                   const std::string& group_name) override;
 
   void BindServiceFactoryRequest(
-      const service_manager::BindSourceInfo& source_info,
       service_manager::mojom::ServiceFactoryRequest request);
 
   gpu::GpuChannelManager* gpu_channel_manager() {

@@ -24,7 +24,6 @@
 #include "content/shell/common/shell_messages.h"
 #include "content/shell/renderer/layout_test/blink_test_helpers.h"
 #include "device/bluetooth/test/fake_bluetooth.h"
-#include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 
 namespace content {

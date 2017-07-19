@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_MEDIA_ANDROID_CDM_MEDIA_DRM_STORAGE_FACTORY_H_
 
 #include "media/mojo/interfaces/media_drm_storage.mojom.h"
-#include "services/service_manager/public/cpp/bind_source_info.h"
 
 namespace content {
 class RenderFrameHost;
@@ -15,7 +14,6 @@ class RenderFrameHost;
 namespace chrome {
 
 void CreateMediaDrmStorage(content::RenderFrameHost* render_frame_host,
-                           const service_manager::BindSourceInfo& source_info,
                            media::mojom::MediaDrmStorageRequest request);
 
 }  // namespace chrome

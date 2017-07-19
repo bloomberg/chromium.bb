@@ -20,8 +20,7 @@ VisitedLinkSlave::~VisitedLinkSlave() {
   FreeTable();
 }
 
-base::Callback<void(const service_manager::BindSourceInfo&,
-                    mojom::VisitedLinkNotificationSinkRequest)>
+base::Callback<void(mojom::VisitedLinkNotificationSinkRequest)>
 VisitedLinkSlave::GetBindCallback() {
   return base::Bind(&VisitedLinkSlave::Bind, weak_factory_.GetWeakPtr());
 }
@@ -80,8 +79,7 @@ void VisitedLinkSlave::FreeTable() {
   table_length_ = 0;
 }
 
-void VisitedLinkSlave::Bind(const service_manager::BindSourceInfo& source_info,
-                            mojom::VisitedLinkNotificationSinkRequest request) {
+void VisitedLinkSlave::Bind(mojom::VisitedLinkNotificationSinkRequest request) {
   binding_.Bind(std::move(request));
 }
 

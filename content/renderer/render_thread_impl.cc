@@ -365,8 +365,8 @@ class FrameFactoryImpl : public mojom::FrameFactory {
   int32_t routing_id_highmark_;
 };
 
-void CreateFrameFactory(const service_manager::BindSourceInfo& source_info,
-                        mojom::FrameFactoryRequest request) {
+void CreateFrameFactory(mojom::FrameFactoryRequest request,
+                        const service_manager::BindSourceInfo& source_info) {
   mojo::MakeStrongBinding(base::MakeUnique<FrameFactoryImpl>(source_info),
                           std::move(request));
 }
@@ -760,14 +760,16 @@ void RenderThreadImpl::Init(
   }
 #endif
 
-  auto registry = base::MakeUnique<service_manager::BinderRegistry>();
+  auto registry = base::MakeUnique<service_manager::BinderRegistryWithArgs<
+      const service_manager::BindSourceInfo&>>();
   registry->AddInterface(base::Bind(&CreateFrameFactory),
                          base::ThreadTaskRunnerHandle::Get());
   registry->AddInterface(base::Bind(&EmbeddedWorkerInstanceClientImpl::Create,
                                     base::TimeTicks::Now(), GetIOTaskRunner()),
                          base::ThreadTaskRunnerHandle::Get());
   GetServiceManagerConnection()->AddConnectionFilter(
-      base::MakeUnique<SimpleConnectionFilter>(std::move(registry)));
+      base::MakeUnique<SimpleConnectionFilterWithSourceInfo>(
+          std::move(registry)));
 
   GetContentClient()->renderer()->RenderThreadStarted();
 

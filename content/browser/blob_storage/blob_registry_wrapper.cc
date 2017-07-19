@@ -55,7 +55,6 @@ BlobRegistryWrapper::BlobRegistryWrapper() {
 
 void BlobRegistryWrapper::Bind(
     int process_id,
-    const service_manager::BindSourceInfo& source_info,
     storage::mojom::BlobRegistryRequest request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   blob_registry_->Bind(std::move(request),

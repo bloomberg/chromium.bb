@@ -34,10 +34,6 @@ namespace content {
 class WebContents;
 }  // namespace content
 
-namespace service_manager {
-struct BindSourceInfo;
-}
-
 namespace payments {
 
 enum class DialogViewID;
@@ -161,7 +157,6 @@ class PaymentRequestBrowserTestBase
 
   void CreatePaymentRequestForTest(
       content::WebContents* web_contents,
-      const service_manager::BindSourceInfo& source_info,
       payments::mojom::PaymentRequestRequest request);
 
   // Click on a view from within the dialog and waits for an observed event

@@ -22,10 +22,6 @@
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/types/display_constants.h"
 
-namespace service_manager {
-struct BindSourceInfo;
-}
-
 namespace display {
 
 class DisplayChangeObserver;
@@ -48,7 +44,9 @@ class ScreenManagerOzoneInternal : public ScreenManager,
   void SetPrimaryDisplayId(int64_t display_id);
 
   // ScreenManager:
-  void AddInterfaces(service_manager::BinderRegistry* registry) override;
+  void AddInterfaces(
+      service_manager::BinderRegistryWithArgs<
+          const service_manager::BindSourceInfo&>* registry) override;
   void Init(ScreenManagerDelegate* delegate) override;
   void RequestCloseDisplay(int64_t display_id) override;
   display::ScreenBase* GetScreen() override;
@@ -90,16 +88,16 @@ class ScreenManagerOzoneInternal : public ScreenManager,
   DisplayConfigurator* display_configurator() override;
 
   void BindDisplayControllerRequest(
-      const service_manager::BindSourceInfo& source_info,
-      mojom::DisplayControllerRequest request);
+      mojom::DisplayControllerRequest request,
+      const service_manager::BindSourceInfo& source_info);
 
   void BindOutputProtectionRequest(
-      const service_manager::BindSourceInfo& source_info,
-      mojom::OutputProtectionRequest request);
+      mojom::OutputProtectionRequest request,
+      const service_manager::BindSourceInfo& source_info);
 
   void BindTestDisplayControllerRequest(
-      const service_manager::BindSourceInfo& source_info,
-      mojom::TestDisplayControllerRequest request);
+      mojom::TestDisplayControllerRequest request,
+      const service_manager::BindSourceInfo& source_info);
 
   DisplayConfigurator display_configurator_;
   std::unique_ptr<DisplayManager> display_manager_;

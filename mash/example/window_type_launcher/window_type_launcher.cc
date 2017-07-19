@@ -464,8 +464,7 @@ void WindowTypeLauncher::OnBindInterface(
     const service_manager::BindSourceInfo& source_info,
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
-  registry_.BindInterface(source_info, interface_name,
-                          std::move(interface_pipe));
+  registry_.BindInterface(interface_name, std::move(interface_pipe));
 }
 
 void WindowTypeLauncher::Launch(uint32_t what, mash::mojom::LaunchMode how) {
@@ -483,9 +482,7 @@ void WindowTypeLauncher::Launch(uint32_t what, mash::mojom::LaunchMode how) {
   windows_.push_back(window);
 }
 
-void WindowTypeLauncher::Create(
-    const service_manager::BindSourceInfo& source_info,
-    mash::mojom::LaunchableRequest request) {
+void WindowTypeLauncher::Create(mash::mojom::LaunchableRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 

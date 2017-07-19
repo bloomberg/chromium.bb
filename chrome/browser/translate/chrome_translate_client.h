@@ -18,7 +18,6 @@
 #include "components/translate/core/common/translate_errors.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
-#include "services/service_manager/public/cpp/bind_source_info.h"
 
 namespace content {
 class BrowserContext;
@@ -79,7 +78,6 @@ class ChromeTranslateClient
                                     std::string* target);
 
   static void BindContentTranslateDriver(
-      const service_manager::BindSourceInfo& source_info,
       translate::mojom::ContentTranslateDriverRequest request,
       content::RenderFrameHost* render_frame_host);
 

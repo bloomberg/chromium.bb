@@ -54,6 +54,7 @@
 #include "mojo/public/cpp/bindings/thread_safe_interface_ptr.h"
 #include "net/base/network_change_notifier.h"
 #include "net/nqe/effective_connection_type.h"
+#include "services/service_manager/public/cpp/bind_source_info.h"
 #include "third_party/WebKit/public/platform/WebConnectionType.h"
 #include "third_party/WebKit/public/platform/scheduler/renderer/renderer_scheduler.h"
 #include "third_party/WebKit/public/web/WebMemoryStatistics.h"

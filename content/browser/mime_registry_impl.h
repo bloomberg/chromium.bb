@@ -9,10 +9,6 @@
 #include "base/sequence_checker.h"
 #include "third_party/WebKit/public/platform/mime_registry.mojom.h"
 
-namespace service_manager {
-struct BindSourceInfo;
-}
-
 namespace content {
 
 class MimeRegistryImpl : public blink::mojom::MimeRegistry {
@@ -20,8 +16,7 @@ class MimeRegistryImpl : public blink::mojom::MimeRegistry {
   MimeRegistryImpl();
   ~MimeRegistryImpl() override;
 
-  static void Create(const service_manager::BindSourceInfo& source_info,
-                     blink::mojom::MimeRegistryRequest request);
+  static void Create(blink::mojom::MimeRegistryRequest request);
 
  private:
   void GetMimeTypeFromExtension(

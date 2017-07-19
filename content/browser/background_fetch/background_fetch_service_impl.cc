@@ -34,7 +34,6 @@ constexpr size_t kMaxTitleLength = 1024 * 1024;
 void BackgroundFetchServiceImpl::Create(
     int render_process_id,
     scoped_refptr<BackgroundFetchContext> background_fetch_context,
-    const service_manager::BindSourceInfo& source_info,
     blink::mojom::BackgroundFetchServiceRequest request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   mojo::MakeStrongBinding(

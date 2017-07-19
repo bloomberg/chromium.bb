@@ -19,7 +19,6 @@ RapporRecorderImpl::~RapporRecorderImpl() = default;
 // static
 void RapporRecorderImpl::Create(
     RapporServiceImpl* rappor_service,
-    const service_manager::BindSourceInfo& source_info,
     mojom::RapporRecorderRequest request) {
   mojo::MakeStrongBinding(base::MakeUnique<RapporRecorderImpl>(rappor_service),
                           std::move(request));

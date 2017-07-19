@@ -284,7 +284,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::RenderFrameHost* render_frame_host) override;
   void BindInterfaceRequestFromFrame(
       content::RenderFrameHost* render_frame_host,
-      const service_manager::BindSourceInfo& source_info,
       const std::string& interface_name,
       mojo::ScopedMessagePipeHandle interface_pipe) override;
   bool BindAssociatedInterfaceRequestFromFrame(
@@ -405,7 +404,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 
   std::unique_ptr<service_manager::BinderRegistry> frame_interfaces_;
   std::unique_ptr<
-      service_manager::BinderRegistryWithParams<content::RenderFrameHost*>>
+      service_manager::BinderRegistryWithArgs<content::RenderFrameHost*>>
       frame_interfaces_parameterized_;
 
   base::WeakPtrFactory<ChromeContentBrowserClient> weak_factory_;

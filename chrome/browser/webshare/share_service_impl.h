@@ -14,7 +14,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "services/service_manager/public/cpp/bind_source_info.h"
 #include "third_party/WebKit/public/platform/modules/webshare/webshare.mojom.h"
 #include "third_party/WebKit/public/platform/site_engagement.mojom.h"
 
@@ -28,8 +27,7 @@ class ShareServiceImpl : public blink::mojom::ShareService {
   ShareServiceImpl();
   ~ShareServiceImpl() override;
 
-  static void Create(const service_manager::BindSourceInfo& source_info,
-                     mojo::InterfaceRequest<ShareService> request);
+  static void Create(mojo::InterfaceRequest<ShareService> request);
 
   // blink::mojom::ShareService overrides:
   void Share(const std::string& title,

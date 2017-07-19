@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_BUDGET_SERVICE_BUDGET_SERVICE_IMPL_H_
 
 #include "base/macros.h"
-#include "services/service_manager/public/cpp/bind_source_info.h"
 #include "third_party/WebKit/public/platform/modules/budget_service/budget_service.mojom.h"
 
 // Implementation of the BudgetService Mojo service provided by the browser
@@ -18,7 +17,6 @@ class BudgetServiceImpl : public blink::mojom::BudgetService {
   ~BudgetServiceImpl() override;
 
   static void Create(int render_process_id,
-                     const service_manager::BindSourceInfo& source_info,
                      blink::mojom::BudgetServiceRequest request);
 
   // blink::mojom::BudgetService implementation.

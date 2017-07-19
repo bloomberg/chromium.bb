@@ -135,7 +135,6 @@ bool ParseSupportedOrigins(base::DictionaryValue* dict,
 
 // static
 void PaymentManifestParser::Create(
-    const service_manager::BindSourceInfo& source_info,
     mojom::PaymentManifestParserRequest request) {
   mojo::MakeStrongBinding(base::MakeUnique<PaymentManifestParser>(),
                           std::move(request));

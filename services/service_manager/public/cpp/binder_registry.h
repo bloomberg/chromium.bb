@@ -18,26 +18,21 @@
 
 namespace service_manager {
 
-struct BindSourceInfo;
-
 template <typename... BinderArgs>
-class BinderRegistryWithParams {
+class BinderRegistryWithArgs {
  public:
-  using Binder = base::Callback<void(const BindSourceInfo&,
-                                     const std::string&,
-                                     mojo::ScopedMessagePipeHandle,
-                                     BinderArgs...)>;
+  using Binder = base::Callback<
+      void(const std::string&, mojo::ScopedMessagePipeHandle, BinderArgs...)>;
 
-  BinderRegistryWithParams() : weak_factory_(this) {}
-  ~BinderRegistryWithParams() = default;
+  BinderRegistryWithArgs() : weak_factory_(this) {}
+  ~BinderRegistryWithArgs() = default;
 
   // Adds an interface inferring the interface name via the templated
   // parameter Interface::Name_
   // Usage example: //services/service_manager/README.md#OnBindInterface
   template <typename Interface>
   void AddInterface(
-      const base::Callback<void(const BindSourceInfo&,
-                                mojo::InterfaceRequest<Interface>,
+      const base::Callback<void(mojo::InterfaceRequest<Interface>,
                                 BinderArgs...)>& callback,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner = nullptr) {
     SetInterfaceBinder(
@@ -83,21 +78,20 @@ class BinderRegistryWithParams {
 
   // Completes binding the request for |interface_name| on |interface_pipe|, by
   // invoking the corresponding InterfaceBinder.
-  void BindInterface(const BindSourceInfo& source_info,
-                     const std::string& interface_name,
+  void BindInterface(const std::string& interface_name,
                      mojo::ScopedMessagePipeHandle interface_pipe,
                      BinderArgs... args) {
     auto it = binders_.find(interface_name);
     if (it != binders_.end()) {
-      it->second->BindInterface(source_info, interface_name,
-                                std::move(interface_pipe), args...);
+      it->second->BindInterface(interface_name, std::move(interface_pipe),
+                                args...);
     } else {
       LOG(ERROR) << "Failed to locate a binder for interface: "
                  << interface_name;
     }
   }
 
-  base::WeakPtr<BinderRegistryWithParams> GetWeakPtr() {
+  base::WeakPtr<BinderRegistryWithArgs> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();
   }
 
@@ -115,12 +109,12 @@ class BinderRegistryWithParams {
 
   InterfaceNameToBinderMap binders_;
 
-  base::WeakPtrFactory<BinderRegistryWithParams> weak_factory_;
+  base::WeakPtrFactory<BinderRegistryWithArgs> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(BinderRegistryWithParams);
+  DISALLOW_COPY_AND_ASSIGN(BinderRegistryWithArgs);
 };
 
-using BinderRegistry = BinderRegistryWithParams<>;
+using BinderRegistry = BinderRegistryWithArgs<>;
 
 }  // namespace service_manager
 

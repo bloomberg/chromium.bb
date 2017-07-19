@@ -17,10 +17,6 @@
 #include "components/arc/common/video_encode_accelerator.mojom.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 
-namespace service_manager {
-struct BindSourceInfo;
-}
-
 #endif
 
 class ChromeContentGpuClient : public content::ContentGpuClient {
@@ -37,11 +33,9 @@ class ChromeContentGpuClient : public content::ContentGpuClient {
  private:
 #if defined(OS_CHROMEOS)
   void CreateArcVideoDecodeAccelerator(
-      const service_manager::BindSourceInfo& source_info,
       ::arc::mojom::VideoDecodeAcceleratorRequest request);
 
   void CreateArcVideoEncodeAccelerator(
-      const service_manager::BindSourceInfo& source_info,
       ::arc::mojom::VideoEncodeAcceleratorRequest request);
 #endif
 

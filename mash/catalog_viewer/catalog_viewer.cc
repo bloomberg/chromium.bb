@@ -233,8 +233,7 @@ void CatalogViewer::OnBindInterface(
     const service_manager::BindSourceInfo& source_info,
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
-  registry_.BindInterface(source_info, interface_name,
-                          std::move(interface_pipe));
+  registry_.BindInterface(interface_name, std::move(interface_pipe));
 }
 
 void CatalogViewer::Launch(uint32_t what, mojom::LaunchMode how) {
@@ -254,8 +253,7 @@ void CatalogViewer::Launch(uint32_t what, mojom::LaunchMode how) {
   windows_.push_back(window);
 }
 
-void CatalogViewer::Create(const service_manager::BindSourceInfo& source_info,
-                           mojom::LaunchableRequest request) {
+void CatalogViewer::Create(mojom::LaunchableRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 

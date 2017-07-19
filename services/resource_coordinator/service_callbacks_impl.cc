@@ -27,7 +27,6 @@ ServiceCallbacksImpl::~ServiceCallbacksImpl() = default;
 void ServiceCallbacksImpl::Create(
     service_manager::ServiceContextRefFactory* service_ref_factory,
     ResourceCoordinatorService* resource_coordinator_service,
-    const service_manager::BindSourceInfo& source_info,
     resource_coordinator::mojom::ServiceCallbacksRequest request) {
   mojo::MakeStrongBinding(
       base::MakeUnique<ServiceCallbacksImpl>(service_ref_factory,

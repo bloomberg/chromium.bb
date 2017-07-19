@@ -55,7 +55,6 @@ void SpellCheckPanel::UpdateSpellingUIWithMisspelledWord(
 }
 
 void SpellCheckPanel::SpellCheckPanelRequest(
-    const service_manager::BindSourceInfo& source_info,
     spellcheck::mojom::SpellCheckPanelRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }

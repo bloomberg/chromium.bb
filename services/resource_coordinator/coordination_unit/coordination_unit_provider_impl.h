@@ -12,7 +12,6 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_manager.h"
 #include "services/resource_coordinator/public/interfaces/coordination_unit_provider.mojom.h"
-#include "services/service_manager/public/cpp/bind_source_info.h"
 
 namespace service_manager {
 class ServiceContextRefFactory;
@@ -31,7 +30,6 @@ class CoordinationUnitProviderImpl : public mojom::CoordinationUnitProvider {
   static void Create(
       service_manager::ServiceContextRefFactory* service_ref_factory,
       CoordinationUnitManager* coordination_unit_manager,
-      const service_manager::BindSourceInfo& source_info,
       resource_coordinator::mojom::CoordinationUnitProviderRequest request);
 
   // Overridden from mojom::CoordinationUnitProvider:

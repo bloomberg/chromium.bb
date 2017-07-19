@@ -7,7 +7,6 @@
 
 #include "base/callback.h"
 #include "components/metrics/public/interfaces/single_sample_metrics.mojom.h"
-#include "services/service_manager/public/cpp/bind_source_info.h"
 
 namespace metrics {
 
@@ -35,7 +34,6 @@ extern void InitializeSingleSampleMetricsFactory(
 // that has a deterministic shutdown path and which serves as a stable endpoint
 // for the factory created by the above initialize method in another process.
 extern void CreateSingleSampleMetricsProvider(
-    const service_manager::BindSourceInfo& source_info,
     mojom::SingleSampleMetricsProviderRequest request);
 
 }  // namespace metrics

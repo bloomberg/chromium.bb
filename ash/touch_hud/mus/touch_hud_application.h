@@ -37,8 +37,7 @@ class TouchHudApplication : public service_manager::Service,
   // mojom::Launchable:
   void Launch(uint32_t what, mash::mojom::LaunchMode how) override;
 
-  void Create(const service_manager::BindSourceInfo& source_info,
-              mash::mojom::LaunchableRequest request);
+  void Create(mash::mojom::LaunchableRequest request);
 
   service_manager::BinderRegistry registry_;
   mojo::Binding<mash::mojom::Launchable> binding_;

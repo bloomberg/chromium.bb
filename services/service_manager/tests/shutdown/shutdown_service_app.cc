@@ -5,7 +5,6 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/c/main.h"
-#include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_runner.h"
@@ -29,16 +28,14 @@ class ShutdownServiceApp : public Service, public mojom::ShutdownTestService {
   void OnBindInterface(const BindSourceInfo& source_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override {
-    registry_.BindInterface(source_info, interface_name,
-                            std::move(interface_pipe));
+    registry_.BindInterface(interface_name, std::move(interface_pipe));
   }
 
   // mojom::ShutdownTestService:
   void SetClient(mojom::ShutdownTestClientPtr client) override {}
   void ShutDown() override { g_app->Quit(); }
 
-  void Create(const BindSourceInfo& source_info,
-              mojom::ShutdownTestServiceRequest request) {
+  void Create(mojom::ShutdownTestServiceRequest request) {
     bindings_.AddBinding(this, std::move(request));
   }
 

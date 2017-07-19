@@ -30,7 +30,6 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_frame_visitor.h"
 #include "content/public/renderer/render_thread.h"
-#include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
@@ -220,7 +219,6 @@ void SpellCheck::FillSuggestions(
 }
 
 void SpellCheck::SpellCheckerRequest(
-    const service_manager::BindSourceInfo& source_info,
     spellcheck::mojom::SpellCheckerRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }

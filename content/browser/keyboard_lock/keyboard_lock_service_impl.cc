@@ -18,7 +18,6 @@ KeyboardLockServiceImpl::~KeyboardLockServiceImpl() = default;
 
 // static
 void KeyboardLockServiceImpl::CreateMojoService(
-    const service_manager::BindSourceInfo& source_info,
     blink::mojom::KeyboardLockServiceRequest request) {
   mojo::MakeStrongBinding(
         base::MakeUnique<KeyboardLockServiceImpl>(),

@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "ui/ozone/ozone_export.h"
 
@@ -127,7 +128,8 @@ class OZONE_EXPORT OzonePlatform {
   //
   // A default do-nothing implementation is provided to permit platform
   // implementations to opt out of implementing any Mojo interfaces.
-  virtual void AddInterfaces(service_manager::BinderRegistry* registry);
+  virtual void AddInterfaces(service_manager::BinderRegistryWithArgs<
+                             const service_manager::BindSourceInfo&>* registry);
 
  private:
   virtual void InitializeUI(const InitParams& params) = 0;

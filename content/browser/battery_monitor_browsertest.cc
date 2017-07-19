@@ -27,9 +27,9 @@ class MockBatteryMonitor : public device::mojom::BatteryMonitor {
   MockBatteryMonitor() : binding_(this) {}
   ~MockBatteryMonitor() override = default;
 
-  void Bind(const service_manager::BindSourceInfo& source_info,
-            const std::string& interface_name,
-            mojo::ScopedMessagePipeHandle handle) {
+  void Bind(const std::string& interface_name,
+            mojo::ScopedMessagePipeHandle handle,
+            const service_manager::BindSourceInfo& source_info) {
     DCHECK(!binding_.is_bound());
     binding_.Bind(device::mojom::BatteryMonitorRequest(std::move(handle)));
   }

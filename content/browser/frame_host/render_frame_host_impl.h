@@ -923,7 +923,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Creates Web Bluetooth Service owned by the frame. Returns a raw pointer
   // to it.
   WebBluetoothServiceImpl* CreateWebBluetoothService(
-      const service_manager::BindSourceInfo& source_info,
       blink::mojom::WebBluetoothServiceRequest request);
 
   // Deletes the Web Bluetooth Service owned by the frame.
@@ -931,22 +930,18 @@ class CONTENT_EXPORT RenderFrameHostImpl
       WebBluetoothServiceImpl* web_bluetooth_service);
 
   void CreateAudioOutputStreamFactory(
-      const service_manager::BindSourceInfo& source_info,
       mojom::RendererAudioOutputStreamFactoryRequest request);
 
   void BindMediaInterfaceFactoryRequest(
-      const service_manager::BindSourceInfo& source_info,
       media::mojom::InterfaceFactoryRequest request);
 
   // Callback for connection error on the media::mojom::InterfaceFactory client.
   void OnMediaInterfaceFactoryConnectionError();
 
-  void BindWakeLockRequest(const service_manager::BindSourceInfo& source_info,
-                           device::mojom::WakeLockRequest request);
+  void BindWakeLockRequest(device::mojom::WakeLockRequest request);
 
 #if defined(OS_ANDROID)
-  void BindNFCRequest(const service_manager::BindSourceInfo& source_info,
-                      device::mojom::NFCRequest request);
+  void BindNFCRequest(device::mojom::NFCRequest request);
 #endif
 
   // service_manager::mojom::InterfaceProvider:
@@ -956,9 +951,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Allows tests to disable the swapout event timer to simulate bugs that
   // happen before it fires (to avoid flakiness).
   void DisableSwapOutTimerForTesting();
-
-  void OnRendererConnect(const service_manager::BindSourceInfo& local_info,
-                         const service_manager::BindSourceInfo& remote_info);
 
   void SendJavaScriptDialogReply(IPC::Message* reply_msg,
                                  bool success,

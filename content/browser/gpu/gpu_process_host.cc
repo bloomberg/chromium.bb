@@ -325,8 +325,7 @@ class GpuSandboxedProcessLauncherDelegate
 
 #if defined(OS_ANDROID)
 template <typename Interface>
-void BindJavaInterface(const service_manager::BindSourceInfo& source_info,
-                       mojo::InterfaceRequest<Interface> request) {
+void BindJavaInterface(mojo::InterfaceRequest<Interface> request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   content::GetGlobalJavaInterfaces()->GetInterface(std::move(request));
 }
@@ -354,8 +353,7 @@ class GpuProcessHost::ConnectionFilterImpl : public ConnectionFilter {
                        mojo::ScopedMessagePipeHandle* interface_pipe,
                        service_manager::Connector* connector) override {
     if (registry_.CanBindInterface(interface_name)) {
-      registry_.BindInterface(source_info, interface_name,
-                              std::move(*interface_pipe));
+      registry_.BindInterface(interface_name, std::move(*interface_pipe));
     } else {
       GetContentClient()->browser()->BindInterfaceRequest(
           source_info, interface_name, interface_pipe);

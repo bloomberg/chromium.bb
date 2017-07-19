@@ -21,7 +21,6 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "services/service_manager/public/cpp/bind_source_info.h"
 
 namespace content {
 
@@ -133,8 +132,7 @@ PaymentManager* PaymentAppContentUnitTestBase::CreatePaymentManager(
   mojo::InterfaceRequest<payments::mojom::PaymentManager> request =
       mojo::MakeRequest(&manager);
   payment_managers_.push_back(std::move(manager));
-  payment_app_context()->CreatePaymentManager(service_manager::BindSourceInfo(),
-                                              std::move(request));
+  payment_app_context()->CreatePaymentManager(std::move(request));
   base::RunLoop().RunUntilIdle();
 
   // Find a last registered payment manager.

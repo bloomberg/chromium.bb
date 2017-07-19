@@ -27,7 +27,6 @@ VideoCaptureHost::VideoCaptureHost(MediaStreamManager* media_stream_manager)
 // static
 void VideoCaptureHost::Create(
     MediaStreamManager* media_stream_manager,
-    const service_manager::BindSourceInfo& source_info,
     mojom::VideoCaptureHostRequest request) {
   DVLOG(1) << __func__;
   DCHECK_CURRENTLY_ON(BrowserThread::IO);

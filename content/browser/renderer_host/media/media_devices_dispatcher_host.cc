@@ -126,7 +126,6 @@ void MediaDevicesDispatcherHost::Create(
     int render_frame_id,
     const std::string& device_id_salt,
     MediaStreamManager* media_stream_manager,
-    const service_manager::BindSourceInfo& source_info,
     ::mojom::MediaDevicesDispatcherHostRequest request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   mojo::MakeStrongBinding(base::MakeUnique<MediaDevicesDispatcherHost>(

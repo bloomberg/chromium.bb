@@ -23,7 +23,6 @@ LayoutTestBluetoothFakeAdapterSetterImpl::
 
 // static
 void LayoutTestBluetoothFakeAdapterSetterImpl::Create(
-    const service_manager::BindSourceInfo& source_info,
     mojom::LayoutTestBluetoothFakeAdapterSetterRequest request) {
   mojo::MakeStrongBinding(
       base::MakeUnique<LayoutTestBluetoothFakeAdapterSetterImpl>(),

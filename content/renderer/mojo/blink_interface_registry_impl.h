@@ -7,7 +7,6 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "third_party/WebKit/public/platform/InterfaceRegistry.h"
 

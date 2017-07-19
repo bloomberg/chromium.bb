@@ -19,17 +19,12 @@ class SpellcheckService;
 
 struct SpellCheckResult;
 
-namespace service_manager {
-struct BindSourceInfo;
-}
-
 class SpellCheckHostImpl : public spellcheck::mojom::SpellCheckHost {
  public:
   explicit SpellCheckHostImpl(int render_process_id);
   ~SpellCheckHostImpl() override;
 
   static void Create(int render_process_id,
-                     const service_manager::BindSourceInfo& source_info,
                      spellcheck::mojom::SpellCheckHostRequest request);
 
  private:

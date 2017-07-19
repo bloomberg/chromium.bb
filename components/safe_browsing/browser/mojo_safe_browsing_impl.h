@@ -11,10 +11,6 @@
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "ipc/ipc_message.h"
 
-namespace service_manager {
-struct BindSourceInfo;
-}
-
 namespace safe_browsing {
 
 // This class implements the Mojo interface for renderers to perform
@@ -26,7 +22,6 @@ class MojoSafeBrowsingImpl : public mojom::SafeBrowsing {
   static void MaybeCreate(
       int render_process_id,
       const base::Callback<UrlCheckerDelegate*()>& delegate_getter,
-      const service_manager::BindSourceInfo& source_info,
       mojom::SafeBrowsingRequest request);
 
  private:

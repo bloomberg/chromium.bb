@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "chromeos/system/devicemode.h"
-#include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "ui/display/screen_base.h"
 #include "ui/display/types/display_constants.h"
@@ -56,7 +55,8 @@ ScreenManagerForwarding::~ScreenManagerForwarding() {
 }
 
 void ScreenManagerForwarding::AddInterfaces(
-    service_manager::BinderRegistry* registry) {
+    service_manager::BinderRegistryWithArgs<
+        const service_manager::BindSourceInfo&>* registry) {
   registry->AddInterface<mojom::NativeDisplayDelegate>(
       base::Bind(&ScreenManagerForwarding::BindNativeDisplayDelegateRequest,
                  base::Unretained(this)));
@@ -229,15 +229,15 @@ void ScreenManagerForwarding::ToggleAddRemoveDisplay() {
 }
 
 void ScreenManagerForwarding::BindNativeDisplayDelegateRequest(
-    const service_manager::BindSourceInfo& source_info,
-    mojom::NativeDisplayDelegateRequest request) {
+    mojom::NativeDisplayDelegateRequest request,
+    const service_manager::BindSourceInfo& source_info) {
   DCHECK(!binding_.is_bound());
   binding_.Bind(std::move(request));
 }
 
 void ScreenManagerForwarding::BindTestDisplayControllerRequest(
-    const service_manager::BindSourceInfo& source_info,
-    mojom::TestDisplayControllerRequest request) {
+    mojom::TestDisplayControllerRequest request,
+    const service_manager::BindSourceInfo& source_info) {
   DCHECK(!test_controller_binding_.is_bound());
   test_controller_binding_.Bind(std::move(request));
 }

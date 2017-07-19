@@ -21,7 +21,6 @@
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #import "ios/web/web_state/web_state_impl.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/service_manager/public/cpp/bind_source_info.h"
 #include "url/gurl.h"
 #include "url/scheme_host_port.h"
 
@@ -73,9 +72,7 @@ class TestUIHandler : public TestUIHandlerMojo {
     }
   }
 
-  void BindTestUIHandlerMojoRequest(
-      const service_manager::BindSourceInfo& souce_info,
-      TestUIHandlerMojoRequest request) {
+  void BindTestUIHandlerMojoRequest(TestUIHandlerMojoRequest request) {
     bindings_.AddBinding(this, std::move(request));
   }
 

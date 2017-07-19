@@ -564,7 +564,6 @@ class WindowTreeClientFactory {
   }
 
   void BindWindowTreeClientRequest(
-      const service_manager::BindSourceInfo& source_info,
       mojom::WindowTreeClientRequest request) {
     client_impl_ = base::MakeUnique<TestWindowTreeClient>();
     client_impl_->Bind(std::move(request));
@@ -680,8 +679,7 @@ class WindowTreeClientTest : public WindowServerServiceTestBase {
   void OnBindInterface(const service_manager::BindSourceInfo& source_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override {
-    registry_.BindInterface(source_info, interface_name,
-                            std::move(interface_pipe));
+    registry_.BindInterface(interface_name, std::move(interface_pipe));
   }
 
   void SetUp() override {

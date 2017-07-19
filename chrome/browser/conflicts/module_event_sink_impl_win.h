@@ -11,7 +11,6 @@
 #include "base/process/process_handle.h"
 #include "chrome/common/conflicts/module_event_sink_win.mojom.h"
 #include "content/public/common/process_type.h"
-#include "services/service_manager/public/cpp/bind_source_info.h"
 
 class ModuleDatabase;
 
@@ -39,7 +38,6 @@ class ModuleEventSinkImpl : public mojom::ModuleEventSink {
   static void Create(GetProcessHandleCallback get_process_handle,
                      content::ProcessType process_type,
                      ModuleDatabase* module_database,
-                     const service_manager::BindSourceInfo& source_info,
                      mojom::ModuleEventSinkRequest request);
 
   // mojom::ModuleEventSink implementation:

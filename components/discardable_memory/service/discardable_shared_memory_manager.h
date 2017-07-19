@@ -49,8 +49,8 @@ class DISCARDABLE_MEMORY_EXPORT DiscardableSharedMemoryManager
   ~DiscardableSharedMemoryManager() override;
 
   // Bind the manager to a mojo interface request.
-  void Bind(const service_manager::BindSourceInfo& source_info,
-            mojom::DiscardableSharedMemoryManagerRequest request);
+  void Bind(mojom::DiscardableSharedMemoryManagerRequest request,
+            const service_manager::BindSourceInfo& source_info);
 
   // Overridden from base::DiscardableMemoryAllocator:
   std::unique_ptr<base::DiscardableMemory> AllocateLockedDiscardableMemory(

@@ -19,10 +19,6 @@
 
 using ::mojom::MediaDeviceType;
 
-namespace service_manager {
-struct BindSourceInfo;
-}
-
 namespace content {
 
 class MediaStreamManager;
@@ -41,7 +37,6 @@ class CONTENT_EXPORT MediaDevicesDispatcherHost
                      int render_frame_id,
                      const std::string& device_id_salt,
                      MediaStreamManager* media_stream_manager,
-                     const service_manager::BindSourceInfo& source_info,
                      ::mojom::MediaDevicesDispatcherHostRequest request);
 
   // ::mojom::MediaDevicesDispatcherHost implementation.
