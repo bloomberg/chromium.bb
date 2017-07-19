@@ -4,6 +4,7 @@
 
 #include "content/renderer/render_frame_impl.h"
 
+#include <string.h>
 #include <algorithm>
 #include <map>
 #include <string>
@@ -1232,6 +1233,8 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
 #endif
 
   manifest_manager_ = new ManifestManager(this);
+  memset(&peak_memory_metrics_, 0,
+         sizeof(RenderThreadImpl::RendererMemoryMetrics));
 }
 
 mojom::FrameHostAssociatedPtr RenderFrameImpl::GetFrameHost() {
@@ -3976,6 +3979,7 @@ void RenderFrameImpl::DidFinishLoad() {
   WebDataSource* ds = frame_->DataSource();
   Send(new FrameHostMsg_DidFinishLoad(routing_id_, ds->GetRequest().Url()));
 
+  ReportPeakMemoryStats();
   if (RenderThreadImpl::current()) {
     RenderThreadImpl::RendererMemoryMetrics memory_metrics;
     if (!RenderThreadImpl::current()->GetRendererMemoryMetrics(&memory_metrics))
@@ -6727,6 +6731,8 @@ blink::WebPageVisibilityState RenderFrameImpl::VisibilityState() const {
 std::unique_ptr<blink::WebURLLoader> RenderFrameImpl::CreateURLLoader(
     const blink::WebURLRequest& request,
     base::SingleThreadTaskRunner* task_runner) {
+  UpdatePeakMemoryStats();
+
   ChildThreadImpl* child_thread = ChildThreadImpl::current();
   if (base::FeatureList::IsEnabled(features::kNetworkService) && child_thread) {
     // Use if per-frame or per-scheme URLLoaderFactory is given.
@@ -6908,6 +6914,97 @@ void RenderFrameImpl::RenderWidgetWillHandleMouseEvent() {
   // |pepper_last_mouse_event_target_|.
   pepper_last_mouse_event_target_ = nullptr;
 #endif
+}
+
+void RenderFrameImpl::UpdatePeakMemoryStats() {
+  if (!base::FeatureList::IsEnabled(features::kReportRendererPeakMemoryStats))
+    return;
+
+  RenderThreadImpl::RendererMemoryMetrics memory_metrics;
+  if (!RenderThreadImpl::current()->GetRendererMemoryMetrics(&memory_metrics))
+    return;
+  peak_memory_metrics_.partition_alloc_kb =
+      std::max(peak_memory_metrics_.partition_alloc_kb,
+               memory_metrics.partition_alloc_kb);
+  peak_memory_metrics_.blink_gc_kb =
+      std::max(peak_memory_metrics_.blink_gc_kb, memory_metrics.blink_gc_kb);
+  peak_memory_metrics_.malloc_mb =
+      std::max(peak_memory_metrics_.malloc_mb, memory_metrics.malloc_mb);
+  peak_memory_metrics_.discardable_kb = std::max(
+      peak_memory_metrics_.discardable_kb, memory_metrics.discardable_kb);
+  peak_memory_metrics_.v8_main_thread_isolate_mb =
+      std::max(peak_memory_metrics_.v8_main_thread_isolate_mb,
+               memory_metrics.v8_main_thread_isolate_mb);
+  peak_memory_metrics_.total_allocated_mb =
+      std::max(peak_memory_metrics_.total_allocated_mb,
+               memory_metrics.total_allocated_mb);
+  peak_memory_metrics_.non_discardable_total_allocated_mb =
+      std::max(peak_memory_metrics_.non_discardable_total_allocated_mb,
+               memory_metrics.non_discardable_total_allocated_mb);
+  peak_memory_metrics_.total_allocated_per_render_view_mb =
+      std::max(peak_memory_metrics_.total_allocated_per_render_view_mb,
+               memory_metrics.total_allocated_per_render_view_mb);
+}
+
+void RenderFrameImpl::ReportPeakMemoryStats() {
+  if (!base::FeatureList::IsEnabled(features::kReportRendererPeakMemoryStats))
+    return;
+
+  UMA_HISTOGRAM_MEMORY_MB(
+      "Memory.Experimental.Renderer.PartitionAlloc.PeakDuringLoad",
+      peak_memory_metrics_.partition_alloc_kb / 1024);
+  UMA_HISTOGRAM_MEMORY_MB("Memory.Experimental.Renderer.BlinkGC.PeakDuringLoad",
+                          peak_memory_metrics_.blink_gc_kb / 1024);
+  UMA_HISTOGRAM_MEMORY_MB("Memory.Experimental.Renderer.Malloc.PeakDuringLoad",
+                          peak_memory_metrics_.malloc_mb);
+  UMA_HISTOGRAM_MEMORY_MB(
+      "Memory.Experimental.Renderer.Discardable.PeakDuringLoad",
+      peak_memory_metrics_.discardable_kb / 1024);
+  UMA_HISTOGRAM_MEMORY_MB(
+      "Memory.Experimental.Renderer.V8MainThreadIsolate.PeakDuringLoad",
+      peak_memory_metrics_.v8_main_thread_isolate_mb);
+  UMA_HISTOGRAM_MEMORY_MB(
+      "Memory.Experimental.Renderer.TotalAllocated.PeakDuringLoad",
+      peak_memory_metrics_.total_allocated_mb);
+  UMA_HISTOGRAM_MEMORY_MB(
+      "Memory.Experimental.Renderer.NonDiscardableTotalAllocated."
+      "PeakDuringLoad",
+      peak_memory_metrics_.non_discardable_total_allocated_mb);
+  UMA_HISTOGRAM_MEMORY_MB(
+      "Memory.Experimental.Renderer.TotalAllocatedPerRenderView."
+      "PeakDuringLoad",
+      peak_memory_metrics_.total_allocated_per_render_view_mb);
+  if (IsMainFrame()) {
+    UMA_HISTOGRAM_MEMORY_MB(
+        "Memory.Experimental.Renderer.PartitionAlloc."
+        "MainFrame.PeakDuringLoad",
+        peak_memory_metrics_.partition_alloc_kb / 1024);
+    UMA_HISTOGRAM_MEMORY_MB(
+        "Memory.Experimental.Renderer.BlinkGC.MainFrame.PeakDuringLoad",
+        peak_memory_metrics_.blink_gc_kb / 1024);
+    UMA_HISTOGRAM_MEMORY_MB(
+        "Memory.Experimental.Renderer.Malloc.MainFrame.PeakDuringLoad",
+        peak_memory_metrics_.malloc_mb);
+    UMA_HISTOGRAM_MEMORY_MB(
+        "Memory.Experimental.Renderer.Discardable.MainFrame.PeakDuringLoad",
+        peak_memory_metrics_.discardable_kb / 1024);
+    UMA_HISTOGRAM_MEMORY_MB(
+        "Memory.Experimental.Renderer.V8MainThreadIsolate."
+        "MainFrame.PeakDuringLoad",
+        peak_memory_metrics_.v8_main_thread_isolate_mb);
+    UMA_HISTOGRAM_MEMORY_MB(
+        "Memory.Experimental.Renderer.TotalAllocated."
+        "MainFrame.PeakDuringLoad",
+        peak_memory_metrics_.total_allocated_mb);
+    UMA_HISTOGRAM_MEMORY_MB(
+        "Memory.Experimental.Renderer.NonDiscardableTotalAllocated."
+        "MainFrame.PeakDuringLoad",
+        peak_memory_metrics_.non_discardable_total_allocated_mb);
+    UMA_HISTOGRAM_MEMORY_MB(
+        "Memory.Experimental.Renderer.TotalAllocatedPerRenderView."
+        "MainFrame.PeakDuringLoad",
+        peak_memory_metrics_.total_allocated_per_render_view_mb);
+  }
 }
 
 RenderFrameImpl::PendingNavigationInfo::PendingNavigationInfo(

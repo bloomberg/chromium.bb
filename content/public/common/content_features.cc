@@ -239,6 +239,10 @@ const base::Feature kPepper3DImageChromium {
 const base::Feature kRenderingPipelineThrottling{
     "RenderingPipelineThrottling", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Collect renderer peak memory usage during page loads.
+const base::Feature kReportRendererPeakMemoryStats{
+    "ReportRendererPeakMemoryStats", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Require camera/mic requests from pepper plugins to be made from secure
 // origins.
 const base::Feature kRequireSecureOriginsForPepperMediaRequests{

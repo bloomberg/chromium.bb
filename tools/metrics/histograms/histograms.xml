@@ -97038,6 +97038,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       label="Recorded 10 minutes after backgrounded."/>
   <suffix name="AfterBackgrounded.15min"
       label="Recorded 15 minutes after backgrounded."/>
+  <suffix name="PeakDuringLoad"
+      label="Polled each time CreateURLLoader is called, and the maximum
+             value is recorded when DidFinishLoad is called."/>
+  <suffix name="MainFrame.PeakDuringLoad"
+      label="In the main frame, polled each time CreateURLLoader is called,
+             and the maximum value is recorded when DidFinishLoad is called."/>
   <affected-histogram name="Memory.Experimental.Renderer.BlinkGC"/>
   <affected-histogram name="Memory.Experimental.Renderer.Discardable"/>
   <affected-histogram name="Memory.Experimental.Renderer.Malloc"/>
