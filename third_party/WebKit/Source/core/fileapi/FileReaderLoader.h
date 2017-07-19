@@ -148,9 +148,6 @@ class CORE_EXPORT FileReaderLoader final : public ThreadableLoaderClient {
   // even when extra data is appeneded.
   long long total_bytes_ = -1;
   int64_t memory_usage_reported_to_v8_ = 0;
-  bool has_range_ = false;
-  unsigned range_start_ = 0;
-  unsigned range_end_ = 0;
 
   FileError::ErrorCode error_code_ = FileError::kOK;
 };

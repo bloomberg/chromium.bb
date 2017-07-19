@@ -93,10 +93,6 @@ void FileReaderLoader::Start(ExecutionContext* execution_context,
   request.SetFetchRequestMode(WebURLRequest::kFetchRequestModeSameOrigin);
 
   request.SetHTTPMethod(HTTPNames::GET);
-  if (has_range_)
-    request.SetHTTPHeaderField(
-        HTTPNames::Range,
-        AtomicString(String::Format("bytes=%d-%d", range_start_, range_end_)));
 
   ThreadableLoaderOptions options;
 
@@ -170,10 +166,6 @@ void FileReaderLoader::DidReceiveResponse(
   long long initial_buffer_length = -1;
 
   if (total_bytes_ >= 0) {
-    initial_buffer_length = total_bytes_;
-  } else if (has_range_) {
-    // Set m_totalBytes and allocate a buffer based on the specified range.
-    total_bytes_ = 1LL + range_end_ - range_start_;
     initial_buffer_length = total_bytes_;
   } else {
     // Nothing is known about the size of the resource. Normalize
