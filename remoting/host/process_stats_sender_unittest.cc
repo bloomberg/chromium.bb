@@ -73,19 +73,19 @@ class FakeProcessStatsAgent : public ProcessStatsAgent {
   }
 
   // Checks the expected usage based on index.
-  static void AssertExpected(
-      const protocol::AggregatedProcessResourceUsage& usage,
-      size_t index) {
+  static void AssertExpected(const protocol::ProcessResourceUsage& usage,
+                             size_t index) {
+    ASSERT_EQ(usage.process_name(), "FakeProcessStatsAgent");
     ASSERT_EQ(usage.processor_usage(), index);
     ASSERT_EQ(usage.working_set_size(), index);
     ASSERT_EQ(usage.pagefile_size(), index);
   }
 
-  static void AssertExpected(const protocol::ProcessResourceUsage& usage,
-                             size_t index) {
-    ASSERT_EQ(usage.processor_usage(), index);
-    ASSERT_EQ(usage.working_set_size(), index);
-    ASSERT_EQ(usage.pagefile_size(), index);
+  static void AssertExpected(
+      const protocol::AggregatedProcessResourceUsage& usage,
+      size_t index) {
+    ASSERT_EQ(usage.usages_size(), 1);
+    AssertExpected(usage.usages().Get(0), index);
   }
 
   size_t issued_times() const { return index_; }
@@ -169,7 +169,7 @@ TEST(ProcessStatsSenderTest, MergeUsage) {
 
   ASSERT_EQ(stub.received().size(), 10U);
   for (size_t i = 0; i < stub.received().size(); i++) {
-    FakeProcessStatsAgent::AssertExpected(stub.received()[i], i * 2);
+    ASSERT_EQ(stub.received()[i].usages_size(), 2);
     for (int j = 0; j < stub.received()[i].usages_size(); j++) {
       FakeProcessStatsAgent::AssertExpected(
           stub.received()[i].usages().Get(j), i);

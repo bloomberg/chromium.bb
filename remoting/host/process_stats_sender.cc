@@ -9,9 +9,17 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "remoting/host/process_stats_agent.h"
-#include "remoting/host/process_stats_util.h"
 
 namespace remoting {
+
+namespace {
+
+bool IsProcessResourceUsageValid(const protocol::ProcessResourceUsage& usage) {
+  return usage.has_process_name() && usage.has_processor_usage() &&
+         usage.has_working_set_size() && usage.has_pagefile_size();
+}
+
+}  // namespace
 
 ProcessStatsSender::ProcessStatsSender(
     protocol::ProcessStatsStub* host_stats_stub,
@@ -41,16 +49,20 @@ base::TimeDelta ProcessStatsSender::interval() const {
 void ProcessStatsSender::ReportUsage() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  std::vector<protocol::ProcessResourceUsage> usages;
+  protocol::AggregatedProcessResourceUsage aggregated;
   for (auto* const agent : agents_) {
     DCHECK(agent);
     protocol::ProcessResourceUsage usage = agent->GetResourceUsage();
-    if (!IsEmptyProcessResourceUsage(usage)) {
-      usages.push_back(std::move(usage));
+    if (IsProcessResourceUsageValid(usage)) {
+      *aggregated.add_usages() = usage;
+    } else {
+      LOG(ERROR) << "Invalid ProcessResourceUsage "
+                 << usage.process_name()
+                 << " received.";
     }
   }
 
-  host_stats_stub_->OnProcessStats(AggregateProcessResourceUsage(usages));
+  host_stats_stub_->OnProcessStats(aggregated);
 }
 
 }  // namespace remoting

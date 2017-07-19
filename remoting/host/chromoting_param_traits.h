@@ -92,11 +92,21 @@ struct ParamTraits<remoting::DesktopEnvironmentOptions> {
   static void Log(const param_type& p, std::string* l);
 };
 
-// Serializes and deserializes AggregatedProcessResourceUsage. This ParamTraits
-// specialization does not handle AggregatedProcessResourceUsage::usages().
+template <>
+struct ParamTraits<remoting::protocol::ProcessResourceUsage> {
+  typedef remoting::protocol::ProcessResourceUsage param_type;
+  static void GetSize(base::PickleSizer* s, const param_type& p);
+  static void Write(base::Pickle* m, const param_type& p);
+  static bool Read(const base::Pickle* m,
+                   base::PickleIterator* iter,
+                   param_type* p);
+  static void Log(const param_type& p, std::string* l);
+};
+
 template <>
 struct ParamTraits<remoting::protocol::AggregatedProcessResourceUsage> {
   typedef remoting::protocol::AggregatedProcessResourceUsage param_type;
+  static void GetSize(base::PickleSizer* s, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
