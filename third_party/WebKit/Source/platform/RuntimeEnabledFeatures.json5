@@ -793,10 +793,6 @@
       status: "experimental",
     },
     {
-      name: "PaymentDetailsError",
-      status: "stable",
-    },
-    {
       name: "PaymentDetailsModifierData",
       status: "experimental",
     },
