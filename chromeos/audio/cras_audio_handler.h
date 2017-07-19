@@ -164,6 +164,11 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
 
   bool GetPrimaryActiveOutputDevice(AudioDevice* device) const;
 
+  // Returns the device matched with |type|. Assuming there is only one device
+  // matched the |type|, if there is more than one matched devices, it will
+  // return the first one found.
+  const AudioDevice* GetDeviceByType(AudioDeviceType type);
+
   // Whether there is alternative input/output audio device.
   bool has_alternative_input() const;
   bool has_alternative_output() const;
@@ -460,11 +465,6 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
 
   // Returns the microphone for the camera with |camera_facing|.
   const AudioDevice* GetMicForCamera(media::VideoFacingMode camera_facing);
-
-  // Returns the device matched with |type|. Assuming there is only one device
-  // matched the |type|, if there is more than one matched devices, it will
-  // return the first one found.
-  const AudioDevice* GetDeviceByType(AudioDeviceType type);
 
   bool IsCameraOn() const;
 
