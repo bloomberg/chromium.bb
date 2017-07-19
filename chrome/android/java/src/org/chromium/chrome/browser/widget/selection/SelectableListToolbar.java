@@ -594,6 +594,7 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
     private void showSearchViewInternal() {
         getMenu().setGroupVisible(mNormalGroupResId, false);
         getMenu().setGroupVisible(mSelectedGroupResId, false);
+        mNumberRollView.setVisibility(View.GONE);
         mSearchView.setVisibility(View.VISIBLE);
 
         setNavigationButton(NAVIGATION_BUTTON_BACK);
