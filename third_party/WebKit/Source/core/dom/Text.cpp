@@ -282,7 +282,8 @@ bool Text::TextLayoutObjectIsNeeded(const AttachContext& context,
   if (!ContainsOnlyWhitespace())
     return true;
 
-  if (!CanHaveWhitespaceChildren(parent))
+  if (style.Display() != EDisplay::kContents &&
+      !CanHaveWhitespaceChildren(parent))
     return false;
 
   // pre-wrap in SVG never makes layoutObject.
