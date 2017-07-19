@@ -25,6 +25,7 @@ enum class AOMStringProperty {
   kAutocomplete,
   kChecked,
   kCurrent,
+  kHasPopUp,
   kInvalid,
   kKeyShortcuts,
   kLabel,
@@ -227,6 +228,9 @@ class CORE_EXPORT AccessibleNode
 
   AccessibleNodeList* flowTo() const;
   void setFlowTo(AccessibleNodeList*);
+
+  AtomicString hasPopUp() const;
+  void setHasPopUp(const AtomicString&);
 
   bool hidden(bool& is_null) const;
   void setHidden(bool, bool is_null);
