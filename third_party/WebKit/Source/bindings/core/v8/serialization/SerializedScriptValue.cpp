@@ -192,6 +192,15 @@ inline static bool IsByteSwappedWiredData(const char* data, size_t length) {
   return true;
 }
 
+static void SwapWiredDataIfNeeded(StringBuffer<UChar>& buffer) {
+  UChar* uchars = buffer.Characters();
+  if (IsByteSwappedWiredData(reinterpret_cast<char*>(uchars),
+                             buffer.length() * sizeof(UChar))) {
+    for (size_t i = 0; i < buffer.length(); ++i)
+      uchars[i] = ntohs(uchars[i]);
+  }
+}
+
 PassRefPtr<SerializedScriptValue> SerializedScriptValue::Create(
     const char* data,
     size_t length) {
@@ -199,20 +208,34 @@ PassRefPtr<SerializedScriptValue> SerializedScriptValue::Create(
     return Create();
 
   DCHECK(!(length % sizeof(UChar)));
-  const UChar* src = reinterpret_cast<const UChar*>(data);
   size_t string_length = length / sizeof(UChar);
+  StringBuffer<UChar> string_buffer(string_length);
 
-  if (IsByteSwappedWiredData(data, length)) {
-    // Decode wire data from big endian to host byte order.
-    StringBuffer<UChar> buffer(string_length);
-    UChar* dst = buffer.Characters();
-    for (size_t i = 0; i < string_length; ++i)
-      dst[i] = ntohs(src[i]);
+  std::copy(data, data + length,
+            reinterpret_cast<char*>(string_buffer.Characters()));
+  SwapWiredDataIfNeeded(string_buffer);
 
-    return AdoptRef(new SerializedScriptValue(String::Adopt(buffer)));
-  }
+  return AdoptRef(new SerializedScriptValue(String::Adopt(string_buffer)));
+}
 
-  return AdoptRef(new SerializedScriptValue(String(src, string_length)));
+PassRefPtr<SerializedScriptValue> SerializedScriptValue::Create(
+    RefPtr<const SharedBuffer> buffer) {
+  if (!buffer)
+    return Create();
+
+  DCHECK(!(buffer->size() % sizeof(UChar)));
+  const size_t string_length = buffer->size() / sizeof(UChar);
+  StringBuffer<UChar> string_buffer(string_length);
+  char* char_buffer = reinterpret_cast<char*>(string_buffer.Characters());
+  buffer->ForEachSegment([&char_buffer](const char* segment,
+                                        size_t segment_size,
+                                        size_t segment_offset) {
+    std::copy(segment, segment + segment_size, char_buffer + segment_offset);
+    return true;
+  });
+  SwapWiredDataIfNeeded(string_buffer);
+
+  return AdoptRef(new SerializedScriptValue(String::Adopt(string_buffer)));
 }
 
 SerializedScriptValue::SerializedScriptValue()
