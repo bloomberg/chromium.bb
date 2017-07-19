@@ -6,8 +6,8 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "chrome/browser/chromeos/arc/kiosk/arc_kiosk_bridge.h"
 #include "components/arc/arc_bridge_service.h"
-#include "components/arc/kiosk/arc_kiosk_bridge.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -30,7 +30,7 @@ class ArcKioskBridgeTest : public testing::Test {
   ArcKioskBridgeTest()
       : bridge_service_(base::MakeUnique<ArcBridgeService>()),
         delegate_(base::MakeUnique<MockArcKioskBridgeDelegate>()),
-        kiosk_bridge_(base::MakeUnique<ArcKioskBridge>(bridge_service_.get(),
+        kiosk_bridge_(ArcKioskBridge::CreateForTesting(bridge_service_.get(),
                                                        delegate_.get())) {}
 
  protected:
