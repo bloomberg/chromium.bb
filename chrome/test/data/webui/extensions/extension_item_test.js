@@ -25,8 +25,8 @@ cr.define('extension_item_tests', function() {
     {selector: '#version', text: extensionData.version},
     {selector: '#extension-id', text: 'ID:' + extensionData.id},
     {selector: '#inspect-views'},
-    {selector: '#inspect-views paper-button', text: 'foo.html,'},
-    {selector: '#inspect-views paper-button:nth-of-type(2)',
+    {selector: '#inspect-views a[is="action-link"]', text: 'foo.html,'},
+    {selector: '#inspect-views a[is="action-link"]:nth-of-type(2)',
      text: '1 more…'},
   ];
 
@@ -128,7 +128,7 @@ cr.define('extension_item_tests', function() {
         mockDelegate.testClickingCalls(
             item.$['enable-toggle'], 'setItemEnabled', [item.data.id, false]);
         mockDelegate.testClickingCalls(
-            item.$$('#inspect-views paper-button'),
+            item.$$('#inspect-views a[is="action-link"]'),
             'inspectItemView', [item.data.id, item.data.views[0]]);
 
         var listener1 = new extension_test_util.ListenerMock();
@@ -141,7 +141,7 @@ cr.define('extension_item_tests', function() {
         listener2.addListener(item, 'extension-item-show-details',
                              {data: item.data});
         MockInteractions.tap(
-            item.$$('#inspect-views paper-button:nth-of-type(2)'));
+            item.$$('#inspect-views a[is="action-link"]:nth-of-type(2)'));
         listener2.verify();
 
         item.set('data.disableReasons.corruptInstall', true);
