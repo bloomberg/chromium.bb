@@ -12,23 +12,40 @@ function log()
     console.log("three");
 }
 
-log();
-
-function foo()
+function clearConsoleFromPage()
 {
     console.clear();
 }
 
 async function test()
 {
-    InspectorTest.addResult("=== Before clear ===");
-    InspectorTest.dumpConsoleMessages();
+    InspectorTest.runTestSuite([
+        async function clearFromConsoleAPI(next) {
+            await InspectorTest.RuntimeAgent.evaluate("log();");
+            InspectorTest.addResult("=== Before clear ===");
+            InspectorTest.dumpConsoleMessages();
 
-    await InspectorTest.RuntimeAgent.evaluate("foo();");
+            await InspectorTest.RuntimeAgent.evaluate("clearConsoleFromPage();");
 
-    InspectorTest.addResult("=== After clear ===");
-    InspectorTest.dumpConsoleMessages();
-    InspectorTest.completeTest();
+            InspectorTest.addResult("=== After clear ===");
+            InspectorTest.dumpConsoleMessages();
+            next();
+        },
+
+        async function shouldNotClearWithPreserveLog(next) {
+            await InspectorTest.RuntimeAgent.evaluate("log();");
+            InspectorTest.addResult("=== Before clear ===");
+            InspectorTest.dumpConsoleMessages();
+            Common.moduleSetting("preserveConsoleLog").set(true);
+
+            await InspectorTest.RuntimeAgent.evaluate("clearConsoleFromPage();");
+
+            InspectorTest.addResult("=== After clear ===");
+            InspectorTest.dumpConsoleMessages();
+            Common.moduleSetting("preserveConsoleLog").set(false);
+            next();
+        }
+    ]);
 }
 
 </script>
@@ -38,7 +55,7 @@ async function test()
 <p>
 Tests that console is cleared via console.clear() method
 </p>
-<a href="https://bugs.webkit.org/show_bug.cgi?id=101021">Bug 101021 </a>
+<a href="https://bugs.webkit.org/show_bug.cgi?id=101021">Bug 101021</a>
 
 </body>
 </html>
