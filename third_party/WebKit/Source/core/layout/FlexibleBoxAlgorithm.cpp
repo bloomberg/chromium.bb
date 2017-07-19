@@ -55,41 +55,33 @@ FlexLayoutAlgorithm::FlexLayoutAlgorithm(const ComputedStyle* style,
       line_break_length_(line_break_length),
       all_items_(all_items) {}
 
-bool FlexLayoutAlgorithm::ComputeNextFlexLine(
-    size_t& next_index,
-    Vector<FlexItem>& line_items,
-    LayoutUnit& sum_flex_base_size,
-    double& total_flex_grow,
-    double& total_flex_shrink,
-    double& total_weighted_flex_shrink,
-    LayoutUnit& sum_hypothetical_main_size) {
-  line_items.clear();
-  sum_flex_base_size = LayoutUnit();
-  total_flex_grow = total_flex_shrink = total_weighted_flex_shrink = 0;
-  sum_hypothetical_main_size = LayoutUnit();
+bool FlexLayoutAlgorithm::ComputeNextFlexLine(size_t* next_index,
+                                              FlexLine* line) {
+  line->Reset();
 
   bool line_has_in_flow_item = false;
 
-  for (; next_index < all_items_.size(); ++next_index) {
-    const FlexItem& flex_item = all_items_[next_index];
+  for (; *next_index < all_items_.size(); ++*next_index) {
+    const FlexItem& flex_item = all_items_[*next_index];
     DCHECK(!flex_item.box->IsOutOfFlowPositioned());
     if (IsMultiline() &&
-        sum_hypothetical_main_size +
+        line->sum_hypothetical_main_size +
                 flex_item.HypotheticalMainAxisMarginBoxSize() >
             line_break_length_ &&
         line_has_in_flow_item)
       break;
-    line_items.push_back(flex_item);
+    line->line_items.push_back(flex_item);
     line_has_in_flow_item = true;
-    sum_flex_base_size += flex_item.FlexBaseMarginBoxSize();
-    total_flex_grow += flex_item.box->Style()->FlexGrow();
-    total_flex_shrink += flex_item.box->Style()->FlexShrink();
-    total_weighted_flex_shrink +=
+    line->sum_flex_base_size += flex_item.FlexBaseMarginBoxSize();
+    line->total_flex_grow += flex_item.box->Style()->FlexGrow();
+    line->total_flex_shrink += flex_item.box->Style()->FlexShrink();
+    line->total_weighted_flex_shrink +=
         flex_item.box->Style()->FlexShrink() * flex_item.flex_base_content_size;
-    sum_hypothetical_main_size += flex_item.HypotheticalMainAxisMarginBoxSize();
+    line->sum_hypothetical_main_size +=
+        flex_item.HypotheticalMainAxisMarginBoxSize();
   }
-  DCHECK(line_items.size() > 0 || next_index == all_items_.size());
-  return line_items.size() > 0;
+  DCHECK(line->line_items.size() > 0 || *next_index == all_items_.size());
+  return line->line_items.size() > 0;
 }
 
 }  // namespace blink
