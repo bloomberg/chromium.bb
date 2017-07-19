@@ -2555,6 +2555,13 @@ const char kForceEnableStylusToolsDescription[] =
     "Forces display of the stylus tools menu in the shelf and the stylus "
     "section in settings, even if there is no attached stylus device.";
 
+const char kEnableLockScreenAppsName[] = "Enable lock screen note taking";
+
+const char kEnableLockScreenAppsDescription[] =
+    "Enable new-note action handler apps on the lock screen. The user will be "
+    "able to launch the preferred note-taking action from the lock screen, "
+    "provided that the app supports lock screen note taking.";
+
 //  Network portal notification
 
 const char kNetworkPortalNotificationName[] =

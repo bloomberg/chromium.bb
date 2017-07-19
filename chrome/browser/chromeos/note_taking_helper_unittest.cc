@@ -584,12 +584,12 @@ TEST_P(NoteTakingHelperTest,
                       lock_enabled_action_handler->CreateDeepCopy());
   InstallExtension(dev_extension.get(), profile());
 
-  // Install third-party app that supports lock screen note taking.
+  // Install third-party app that doesn't support lock screen note taking.
   const extensions::ExtensionId kNewNoteId = crx_file::id_util::GenerateId("a");
   const std::string kName = "Some App";
-  scoped_refptr<const extensions::Extension> has_new_note = CreateExtension(
-      kNewNoteId, kName, extensions::ListBuilder().Append("lockScreen").Build(),
-      lock_enabled_action_handler->CreateDeepCopy());
+  scoped_refptr<const extensions::Extension> has_new_note =
+      CreateExtension(kNewNoteId, kName, extensions::ListBuilder().Build(),
+                      lock_enabled_action_handler->CreateDeepCopy());
   InstallExtension(has_new_note.get(), profile());
 
   // Verify that only Keep app is reported to support lock screen note taking.
