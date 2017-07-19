@@ -10,15 +10,14 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "base/timer/timer.h"
 #include "components/browsing_data/core/counters/browsing_data_counter.h"
+#include "components/browsing_data/core/counters/sync_tracker.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/web_history_service.h"
 #include "components/sync/driver/sync_service.h"
-#include "components/sync/driver/sync_service_observer.h"
 
 namespace browsing_data {
 
-class HistoryCounter : public browsing_data::BrowsingDataCounter,
-                       public syncer::SyncServiceObserver {
+class HistoryCounter : public browsing_data::BrowsingDataCounter {
  public:
   typedef base::Callback<history::WebHistoryService*()>
       GetUpdatedWebHistoryServiceCallback;
@@ -60,14 +59,13 @@ class HistoryCounter : public browsing_data::BrowsingDataCounter,
 
   history::WebHistoryService* GetWebHistoryService();
 
-  // SyncServiceObserver implementation.
-  void OnStateChanged(syncer::SyncService* sync) override;
+  bool IsHistorySyncEnabled(const syncer::SyncService* sync_service);
 
   history::HistoryService* history_service_;
 
   GetUpdatedWebHistoryServiceCallback web_history_service_callback_;
 
-  syncer::SyncService* sync_service_;
+  SyncTracker sync_tracker_;
 
   bool has_synced_visits_;
 
@@ -81,8 +79,6 @@ class HistoryCounter : public browsing_data::BrowsingDataCounter,
   base::ThreadChecker thread_checker_;
 
   BrowsingDataCounter::ResultInt local_result_;
-
-  bool history_sync_enabled_;
 
   base::WeakPtrFactory<HistoryCounter> weak_ptr_factory_;
 };
