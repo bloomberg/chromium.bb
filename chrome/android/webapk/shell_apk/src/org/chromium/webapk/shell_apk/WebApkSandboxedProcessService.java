@@ -62,7 +62,6 @@ public class WebApkSandboxedProcessService extends Service {
             Method bindMethod =
                     mWebApkChildProcessServiceImplClass.getMethod("bind", Intent.class, int.class);
             int hostBrowserUid = WebApkUtils.getHostBrowserUid(this);
-            assert hostBrowserUid >= 0;
             return (IBinder) bindMethod.invoke(
                     mWebApkChildProcessServiceImplInstance, intent, hostBrowserUid);
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {

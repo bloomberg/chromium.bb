@@ -7,7 +7,6 @@ package org.chromium.webapk.shell_apk;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.os.Looper;
 import android.util.Log;
 
 import org.chromium.webapk.lib.common.WebApkConstants;
@@ -51,7 +50,6 @@ public class HostBrowserClassLoader {
      * @return The ClassLoader.
      */
     public static ClassLoader getClassLoaderInstance(Context context, String canaryClassName) {
-        assertRunningOnUiThread();
         Context remoteContext = WebApkUtils.getHostBrowserContext(context);
         if (remoteContext == null) {
             Log.w(TAG, "Failed to get remote context.");
@@ -172,12 +170,5 @@ public class HostBrowserClassLoader {
             }
         }
         return value;
-    }
-
-    /**
-     * Asserts that current thread is the UI thread.
-     */
-    private static void assertRunningOnUiThread() {
-        assert Looper.getMainLooper().equals(Looper.myLooper());
     }
 }
