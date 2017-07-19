@@ -1932,13 +1932,6 @@ void RTCPeerConnectionHandler::OnIceGatheringChange(
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::OnIceGatheringChange");
 
   if (new_state == webrtc::PeerConnectionInterface::kIceGatheringComplete) {
-    // If ICE gathering is completed, generate a NULL ICE candidate,
-    // to signal end of candidates.
-    if (!is_closed_) {
-      blink::WebRTCICECandidate null_candidate;
-      client_->DidGenerateICECandidate(null_candidate);
-    }
-
     UMA_HISTOGRAM_COUNTS_100("WebRTC.PeerConnection.IPv4LocalCandidates",
                              num_local_candidates_ipv4_);
 
