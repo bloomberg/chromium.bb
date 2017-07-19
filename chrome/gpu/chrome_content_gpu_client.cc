@@ -51,19 +51,7 @@ ChromeContentGpuClient::ChromeContentGpuClient()
 ChromeContentGpuClient::~ChromeContentGpuClient() {}
 
 void ChromeContentGpuClient::Initialize(
-    base::FieldTrialList::Observer* observer,
     service_manager::BinderRegistry* registry) {
-  DCHECK(!field_trial_syncer_);
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  // No need for field trial syncer if we're in the browser process.
-  if (!command_line.HasSwitch(switches::kInProcessGPU)) {
-    field_trial_syncer_.reset(
-        new variations::ChildProcessFieldTrialSyncer(observer));
-    field_trial_syncer_->InitFieldTrialObserving(command_line,
-                                                 switches::kSingleProcess);
-  }
-
 #if defined(OS_CHROMEOS)
   registry->AddInterface(
       base::Bind(&ChromeContentGpuClient::CreateArcVideoDecodeAccelerator,

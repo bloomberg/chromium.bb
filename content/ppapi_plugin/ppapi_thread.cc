@@ -107,8 +107,7 @@ PpapiThread::PpapiThread(const base::CommandLine& command_line, bool is_broker)
       plugin_globals_(GetIOTaskRunner()),
       connect_instance_func_(NULL),
       local_pp_module_(base::RandInt(0, std::numeric_limits<PP_Module>::max())),
-      next_plugin_dispatcher_id_(1),
-      field_trial_syncer_(this) {
+      next_plugin_dispatcher_id_(1) {
   plugin_globals_.SetPluginProxyDelegate(this);
   plugin_globals_.set_command_line(
       command_line.GetSwitchValueASCII(switches::kPpapiFlashArgs));
@@ -145,8 +144,6 @@ PpapiThread::PpapiThread(const base::CommandLine& command_line, bool is_broker)
     base::DiscardableMemoryAllocator::SetInstance(
         discardable_shared_memory_manager_.get());
   }
-  field_trial_syncer_.InitFieldTrialObserving(command_line,
-                                              switches::kSingleProcess);
 }
 
 PpapiThread::~PpapiThread() {
@@ -544,12 +541,6 @@ void PpapiThread::OnHang() {
   // Intentionally hang upon the request of the browser.
   for (;;)
     base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(1));
-}
-
-void PpapiThread::OnFieldTrialGroupFinalized(const std::string& trial_name,
-                                             const std::string& group_name) {
-  // IPC to the browser process to tell it the specified trial was activated.
-  Send(new PpapiHostMsg_FieldTrialActivated(trial_name));
 }
 
 bool PpapiThread::SetupChannel(base::ProcessId renderer_pid,

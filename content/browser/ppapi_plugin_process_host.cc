@@ -471,8 +471,6 @@ bool PpapiPluginProcessHost::OnMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(PpapiPluginProcessHost, msg)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_ChannelCreated,
                         OnRendererPluginChannelCreated)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_FieldTrialActivated,
-                        OnFieldTrialActivated);
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   DCHECK(handled);
@@ -490,14 +488,6 @@ void PpapiPluginProcessHost::OnChannelConnected(int32_t peer_pid) {
   for (size_t i = 0; i < pending_requests_.size(); i++)
     RequestPluginChannel(pending_requests_[i]);
   pending_requests_.clear();
-}
-
-void PpapiPluginProcessHost::OnFieldTrialActivated(
-    const std::string& trial_name) {
-  // Activate the trial in the browser process to match its state in the
-  // PPAPI process. This is done by calling FindFullName which finalizes the
-  // group and activates the trial.
-  base::FieldTrialList::FindFullName(trial_name);
 }
 
 // Called when the browser <--> plugin channel has an error. This normally

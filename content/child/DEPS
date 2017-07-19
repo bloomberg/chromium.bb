@@ -5,6 +5,7 @@ include_rules = [
   "+components/scheduler/child",
   "+components/scheduler/common",
   "+components/tracing",
+  "+components/variations/child_process_field_trial_syncer.h",
   "+components/webcrypto",
 
   "+content/app/strings/grit",  # For generated headers

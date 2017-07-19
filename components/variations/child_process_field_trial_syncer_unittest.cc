@@ -76,8 +76,7 @@ TEST(ChildProcessFieldTrialSyncerTest, FieldTrialState) {
 
   TestFieldTrialObserver observer;
   ChildProcessFieldTrialSyncer syncer(&observer);
-  syncer.InitFieldTrialObserving(*base::CommandLine::ForCurrentProcess(),
-                                 "single_process");
+  syncer.InitFieldTrialObserving(*base::CommandLine::ForCurrentProcess());
 
   // The observer should be notified of activated entries that were not activate
   // on the command line. In this case, trial 2. (Trial 1 was already active via

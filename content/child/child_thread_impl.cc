@@ -48,6 +48,7 @@
 #include "content/child/service_worker/service_worker_message_filter.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/child_process_messages.h"
+#include "content/common/field_trial_recorder.mojom.h"
 #include "content/common/in_process_child_thread_params.h"
 #include "content/public/common/connection_filter.h"
 #include "content/public/common/content_switches.h"
@@ -390,6 +391,21 @@ scoped_refptr<base::SingleThreadTaskRunner> ChildThreadImpl::GetIOTaskRunner() {
   return ChildProcess::current()->io_task_runner();
 }
 
+void ChildThreadImpl::SetFieldTrialGroup(const std::string& trial_name,
+                                         const std::string& group_name) {
+  if (field_trial_syncer_)
+    field_trial_syncer_->OnSetFieldTrialGroup(trial_name, group_name);
+}
+
+void ChildThreadImpl::OnFieldTrialGroupFinalized(
+    const std::string& trial_name,
+    const std::string& group_name) {
+  mojom::FieldTrialRecorderPtr field_trial_recorder;
+  GetConnector()->BindInterface(mojom::kBrowserServiceName,
+                                &field_trial_recorder);
+  field_trial_recorder->FieldTrialActivated(trial_name);
+}
+
 void ChildThreadImpl::ConnectChannel(
     mojo::edk::IncomingBrokerClientInvitation* invitation) {
   std::string channel_token;
@@ -579,6 +595,15 @@ void ChildThreadImpl::Init(const Options& options) {
 #if defined(OS_ANDROID)
   g_quit_closure.Get().BindToMainThread();
 #endif
+
+  // In single-process mode, there is no need to synchronize trials to the
+  // browser process (because it's the same process).
+  if (!IsInBrowserProcess()) {
+    field_trial_syncer_.reset(
+        new variations::ChildProcessFieldTrialSyncer(this));
+    field_trial_syncer_->InitFieldTrialObserving(
+        *base::CommandLine::ForCurrentProcess());
+  }
 }
 
 ChildThreadImpl::~ChildThreadImpl() {

@@ -31,11 +31,8 @@ class ChildProcessFieldTrialSyncer {
   ~ChildProcessFieldTrialSyncer();
 
   // Initializes field trial state change observation and notifies the browser
-  // of any field trials that might have already been activated. Takes the
-  // switch name for single process mode as a parameter, since that's not
-  // visible to the component.
-  void InitFieldTrialObserving(const base::CommandLine& command_line,
-                               const char* single_process_switch_name);
+  // of any field trials that might have already been activated.
+  void InitFieldTrialObserving(const base::CommandLine& command_line);
 
   // Handler for messages from the browser process notifying the child process
   // that a field trial was activated.

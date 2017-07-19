@@ -20,13 +20,7 @@ ChildProcessFieldTrialSyncer::ChildProcessFieldTrialSyncer(
 ChildProcessFieldTrialSyncer::~ChildProcessFieldTrialSyncer() {}
 
 void ChildProcessFieldTrialSyncer::InitFieldTrialObserving(
-    const base::CommandLine& command_line,
-    const char* single_process_switch_name) {
-  // In single-process mode, there is no need to synchronize trials to the
-  // browser process (because it's the same process), so this class is a no-op.
-  if (command_line.HasSwitch(single_process_switch_name))
-    return;
-
+    const base::CommandLine& command_line) {
   // Set up initial set of crash dump data for field trials in this process.
   SetVariationListCrashKeys();
 

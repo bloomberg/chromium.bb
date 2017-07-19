@@ -21,17 +21,13 @@ class CONTENT_EXPORT ContentGpuClient {
  public:
   virtual ~ContentGpuClient() {}
 
-  // Initializes the client. This sets up the field trial synchronization
-  // mechanism, which will notify |observer| when a field trial is activated,
-  // which should be used to inform the browser process of this state.
-  // |registry| will be passed to a ConnectionFilter (which lives on the IO
-  // thread). Unlike other childthreads, the client must register additional
-  // interfaces on this registry rather than just creating more
-  // ConnectionFilters as the ConnectionFilter that wraps this registry
+  // Initializes the client. |registry| will be passed to a ConnectionFilter
+  // (which lives on the IO thread). Unlike other childthreads, the client must
+  // register additional interfaces on this registry rather than just creating
+  // more ConnectionFilters as the ConnectionFilter that wraps this registry
   // specifically does not bind any interface requests until after the Gpu
   // process receives CreateGpuService() from the browser.
-  virtual void Initialize(base::FieldTrialList::Observer* observer,
-                          service_manager::BinderRegistry* registry) {}
+  virtual void Initialize(service_manager::BinderRegistry* registry) {}
 
   // Called during initialization once the GpuService has been initialized.
   virtual void GpuServiceInitialized(

@@ -15,7 +15,6 @@
 #include "base/threading/thread_checker.h"
 #include "build/build_config.h"
 #include "content/child/child_process.h"
-#include "content/common/field_trial_recorder.mojom.h"
 #include "content/gpu/gpu_service_factory.h"
 #include "content/public/common/connection_filter.h"
 #include "content/public/common/content_client.h"
@@ -206,7 +205,7 @@ void GpuChildThread::Init(const base::Time& process_start_time) {
                                     weak_factory_.GetWeakPtr()),
                          base::ThreadTaskRunnerHandle::Get());
   if (GetContentClient()->gpu())  // NULL in tests.
-    GetContentClient()->gpu()->Initialize(this, registry.get());
+    GetContentClient()->gpu()->Initialize(registry.get());
 
   std::unique_ptr<QueueingConnectionFilter> filter =
       base::MakeUnique<QueueingConnectionFilter>(GetIOTaskRunner(),
@@ -215,14 +214,6 @@ void GpuChildThread::Init(const base::Time& process_start_time) {
   GetServiceManagerConnection()->AddConnectionFilter(std::move(filter));
 
   StartServiceManagerConnection();
-}
-
-void GpuChildThread::OnFieldTrialGroupFinalized(const std::string& trial_name,
-                                                const std::string& group_name) {
-  mojom::FieldTrialRecorderPtr field_trial_recorder;
-  GetConnector()->BindInterface(mojom::kBrowserServiceName,
-                                &field_trial_recorder);
-  field_trial_recorder->FieldTrialActivated(trial_name);
 }
 
 void GpuChildThread::CreateGpuMainService(

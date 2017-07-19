@@ -14,10 +14,12 @@
 #include "base/macros.h"
 #include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/field_trial.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/single_thread_task_runner.h"
 #include "base/tracked_objects.h"
 #include "build/build_config.h"
+#include "components/variations/child_process_field_trial_syncer.h"
 #include "content/common/associated_interfaces.mojom.h"
 #include "content/common/content_export.h"
 #include "content/public/child/child_thread.h"
@@ -66,6 +68,7 @@ class AppNapActivity;
 class CONTENT_EXPORT ChildThreadImpl
     : public IPC::Listener,
       virtual public ChildThread,
+      private base::FieldTrialList::Observer,
       NON_EXPORTED_BASE(public mojom::RouteProvider),
       NON_EXPORTED_BASE(public mojom::AssociatedInterfaceProvider) {
  public:
@@ -99,6 +102,12 @@ class CONTENT_EXPORT ChildThreadImpl
   ServiceManagerConnection* GetServiceManagerConnection() override;
   service_manager::Connector* GetConnector() override;
   scoped_refptr<base::SingleThreadTaskRunner> GetIOTaskRunner() override;
+  void SetFieldTrialGroup(const std::string& trial_name,
+                          const std::string& group_name) override;
+
+  // base::FieldTrialList::Observer:
+  void OnFieldTrialGroupFinalized(const std::string& trial_name,
+                                  const std::string& group_name) override;
 
   IPC::SyncChannel* channel() { return channel_.get(); }
 
@@ -287,6 +296,8 @@ class CONTENT_EXPORT ChildThreadImpl
 #if defined(OS_MACOSX)
   std::unique_ptr<AppNapActivity> app_nap_activity_;
 #endif  // defined(OS_MACOSX)
+
+  std::unique_ptr<variations::ChildProcessFieldTrialSyncer> field_trial_syncer_;
 
   std::unique_ptr<base::WeakPtrFactory<ChildThreadImpl>>
       channel_connected_factory_;
