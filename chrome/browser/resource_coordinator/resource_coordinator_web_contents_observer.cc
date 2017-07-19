@@ -78,7 +78,9 @@ ResourceCoordinatorWebContentsObserver::
 
 // static
 bool ResourceCoordinatorWebContentsObserver::IsEnabled() {
-  return base::FeatureList::IsEnabled(features::kGlobalResourceCoordinator);
+  // Check that service_manager is active and GRC is enabled.
+  return content::ServiceManagerConnection::GetForProcess() != nullptr &&
+         resource_coordinator::IsResourceCoordinatorEnabled();
 }
 
 void ResourceCoordinatorWebContentsObserver::WasShown() {

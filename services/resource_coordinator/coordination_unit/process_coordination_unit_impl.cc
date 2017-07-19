@@ -4,52 +4,14 @@
 
 #include "services/resource_coordinator/coordination_unit/process_coordination_unit_impl.h"
 
-#include "base/process/process.h"
-#include "base/process/process_handle.h"
-#include "base/time/time.h"
 #include "base/values.h"
 
-#if defined(OS_MACOSX)
-#include "services/service_manager/public/cpp/standalone_service/mach_broker.h"
-#endif
-
-#if defined(OS_WIN)
-#include <windows.h>
-#endif
-
 namespace resource_coordinator {
-
-namespace {
-
-const int kCPUProfilingIntervalInSeconds = 5;
-
-}  // namespace
 
 ProcessCoordinationUnitImpl::ProcessCoordinationUnitImpl(
     const CoordinationUnitID& id,
     std::unique_ptr<service_manager::ServiceContextRef> service_ref)
-    : CoordinationUnitImpl(id, std::move(service_ref)) {
-  // ProcessCoordinationUnit ids should correspond to its pid
-  base::ProcessId pid = id.id;
-#if defined(OS_WIN)
-  base::Process process =
-      base::Process::OpenWithAccess(pid, PROCESS_QUERY_INFORMATION);
-#else
-  base::Process process = base::Process::Open(pid);
-#endif
-  base::ProcessHandle process_handle = process.Handle();
-
-#if defined(OS_MACOSX)
-  process_metrics_ = base::ProcessMetrics::CreateProcessMetrics(
-      process_handle,
-      service_manager::MachBroker::GetInstance()->port_provider());
-#else
-  process_metrics_ = base::ProcessMetrics::CreateProcessMetrics(process_handle);
-#endif
-
-  repeating_timer_.Start(FROM_HERE, base::TimeDelta(), this,
-                         &ProcessCoordinationUnitImpl::MeasureProcessCPUUsage);
-}
+    : CoordinationUnitImpl(id, std::move(service_ref)) {}
 
 ProcessCoordinationUnitImpl::~ProcessCoordinationUnitImpl() = default;
 
@@ -94,17 +56,6 @@ void ProcessCoordinationUnitImpl::PropagateProperty(
           mojom::PropertyType::kCPUUsage);
     }
   }
-}
-
-void ProcessCoordinationUnitImpl::MeasureProcessCPUUsage() {
-  double cpu_usage = process_metrics_->GetPlatformIndependentCPUUsage();
-
-  SetProperty(mojom::PropertyType::kCPUUsage,
-              base::MakeUnique<base::Value>(cpu_usage));
-
-  repeating_timer_.Start(
-      FROM_HERE, base::TimeDelta::FromSeconds(kCPUProfilingIntervalInSeconds),
-      this, &ProcessCoordinationUnitImpl::MeasureProcessCPUUsage);
 }
 
 }  // namespace resource_coordinator

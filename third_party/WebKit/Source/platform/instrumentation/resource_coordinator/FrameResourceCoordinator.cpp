@@ -4,7 +4,6 @@
 
 #include "platform/instrumentation/resource_coordinator/FrameResourceCoordinator.h"
 
-#include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 #include "services/resource_coordinator/public/interfaces/coordination_unit_provider.mojom-blink.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
@@ -18,7 +17,8 @@ void onConnectionError() {}
 
 // static
 bool FrameResourceCoordinator::IsEnabled() {
-  return base::FeatureList::IsEnabled(features::kGlobalResourceCoordinator);
+  // TODO(lpy) crbug.com/743314, enable once 'Shadow Page' issue is resolved.
+  return false;
 }
 
 // static

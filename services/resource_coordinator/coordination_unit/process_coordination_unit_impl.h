@@ -8,8 +8,6 @@
 #include <set>
 
 #include "base/macros.h"
-#include "base/process/process_metrics.h"
-#include "base/timer/timer.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_impl.h"
 
 namespace resource_coordinator {
@@ -29,11 +27,6 @@ class ProcessCoordinationUnitImpl : public CoordinationUnitImpl {
   // CoordinationUnitImpl implementation.
   void PropagateProperty(mojom::PropertyType property_type,
                          const base::Value& value) override;
-
-  void MeasureProcessCPUUsage();
-
-  std::unique_ptr<base::ProcessMetrics> process_metrics_;
-  base::OneShotTimer repeating_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(ProcessCoordinationUnitImpl);
 };

@@ -8,7 +8,7 @@ namespace features {
 
 // Globally enable the GRC.
 const base::Feature kGlobalResourceCoordinator{
-    "GlobalResourceCoordinator", base::FEATURE_DISABLED_BY_DEFAULT};
+    "GlobalResourceCoordinator", base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace features
 

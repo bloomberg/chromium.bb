@@ -7,24 +7,36 @@
 #include "chrome/browser/resource_coordinator/tab_manager_web_contents_data.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/resource_coordinator/public/cpp/coordination_unit_id.h"
+#include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 #include "services/resource_coordinator/public/interfaces/service_constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace resource_coordinator {
 
 TabManager::GRCTabSignalObserver::GRCTabSignalObserver() : binding_(this) {
-  service_manager::Connector* connector =
-      content::ServiceManagerConnection::GetForProcess()->GetConnector();
-  mojom::TabSignalGeneratorPtr tab_signal_generator_ptr;
-  connector->BindInterface(mojom::kServiceName,
-                           mojo::MakeRequest(&tab_signal_generator_ptr));
-
-  mojom::TabSignalObserverPtr tab_signal_observer_ptr;
-  binding_.Bind(mojo::MakeRequest(&tab_signal_observer_ptr));
-  tab_signal_generator_ptr->AddObserver(std::move(tab_signal_observer_ptr));
+  content::ServiceManagerConnection* service_manager_connection =
+      content::ServiceManagerConnection::GetForProcess();
+  // Ensure service_manager is active before trying to connect to it.
+  if (service_manager_connection) {
+    service_manager::Connector* connector =
+        service_manager_connection->GetConnector();
+    mojom::TabSignalGeneratorPtr tab_signal_generator_ptr;
+    connector->BindInterface(mojom::kServiceName,
+                             mojo::MakeRequest(&tab_signal_generator_ptr));
+    mojom::TabSignalObserverPtr tab_signal_observer_ptr;
+    binding_.Bind(mojo::MakeRequest(&tab_signal_observer_ptr));
+    tab_signal_generator_ptr->AddObserver(std::move(tab_signal_observer_ptr));
+  }
 }
 
 TabManager::GRCTabSignalObserver::~GRCTabSignalObserver() = default;
+
+// static
+bool TabManager::GRCTabSignalObserver::IsEnabled() {
+  // Check that service_manager is active and GRC is enabled.
+  return content::ServiceManagerConnection::GetForProcess() != nullptr &&
+         resource_coordinator::IsResourceCoordinatorEnabled();
+}
 
 void TabManager::GRCTabSignalObserver::OnEventReceived(
     const CoordinationUnitID& cu_id,
