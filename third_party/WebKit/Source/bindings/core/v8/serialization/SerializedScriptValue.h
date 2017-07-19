@@ -235,7 +235,9 @@ class CORE_EXPORT SerializedScriptValue
   using DataBufferPtr = std::unique_ptr<uint8_t[], BufferDeleter>;
 
   SerializedScriptValue();
-  explicit SerializedScriptValue(const String& wire_data);
+  SerializedScriptValue(DataBufferPtr, size_t data_size);
+
+  static DataBufferPtr AllocateBuffer(size_t);
 
   void SetData(DataBufferPtr data, size_t size) {
     data_buffer_ = std::move(data);
