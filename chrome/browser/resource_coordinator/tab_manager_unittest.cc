@@ -685,26 +685,6 @@ TEST_F(TabManagerTest, DiscardTabWithNonVisibleTabs) {
   tab_strip2.CloseAllTabs();
 }
 
-TEST_F(TabManagerTest, OnSessionRestoreStartedAndFinishedLoadingTabs) {
-  std::unique_ptr<content::WebContents> test_contents(
-      WebContentsTester::CreateTestWebContents(browser_context(), nullptr));
-
-  std::vector<SessionRestoreDelegate::RestoredTab> restored_tabs{
-      SessionRestoreDelegate::RestoredTab(test_contents.get(), false, false,
-                                          false)};
-
-  TabManager* tab_manager = g_browser_process->GetTabManager();
-  EXPECT_FALSE(tab_manager->IsSessionRestoreLoadingTabs());
-
-  TabLoader::RestoreTabs(restored_tabs, base::TimeTicks());
-  EXPECT_TRUE(tab_manager->IsSessionRestoreLoadingTabs());
-
-  WebContentsTester::For(test_contents.get())
-      ->NavigateAndCommit(GURL("about:blank"));
-  WebContentsTester::For(test_contents.get())->TestSetIsLoading(false);
-  EXPECT_FALSE(tab_manager->IsSessionRestoreLoadingTabs());
-}
-
 TEST_F(TabManagerTest, MaybeThrottleNavigation) {
   TabManager* tab_manager = g_browser_process->GetTabManager();
   MaybeThrottleNavigations(tab_manager);
