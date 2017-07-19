@@ -63,10 +63,7 @@ class ConnectionFilterImpl : public ConnectionFilter {
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle* interface_pipe,
                        service_manager::Connector* connector) override {
-    if (registry_.CanBindInterface(interface_name)) {
-      registry_.BindInterface(interface_name, std::move(*interface_pipe),
-                              source_info);
-    }
+    registry_.TryBindInterface(interface_name, interface_pipe, source_info);
   }
 
   template <typename Interface>

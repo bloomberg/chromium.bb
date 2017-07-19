@@ -547,10 +547,8 @@ void AwContentBrowserClient::BindInterfaceRequestFromFrame(
     content::RenderFrameHost* render_frame_host,
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
-  if (frame_interfaces_.CanBindInterface(interface_name)) {
-    frame_interfaces_.BindInterface(interface_name, std::move(interface_pipe),
-                                    render_frame_host);
-  }
+  frame_interfaces_.TryBindInterface(interface_name, &interface_pipe,
+                                     render_frame_host);
 }
 
 }  // namespace android_webview

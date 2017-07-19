@@ -91,6 +91,19 @@ class BinderRegistryWithArgs {
     }
   }
 
+  // Attempts to bind a request for |interface_name| on |interface_pipe|.
+  // If the request can be bound, |interface_pipe| is taken and this function
+  // returns true. If the request cannot be bound, |interface_pipe| is
+  // unmodified and this function returns false.
+  bool TryBindInterface(const std::string& interface_name,
+                        mojo::ScopedMessagePipeHandle* interface_pipe,
+                        BinderArgs... args) {
+    bool can_bind = CanBindInterface(interface_name);
+    if (can_bind)
+      BindInterface(interface_name, std::move(*interface_pipe), args...);
+    return can_bind;
+  }
+
   base::WeakPtr<BinderRegistryWithArgs> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();
   }

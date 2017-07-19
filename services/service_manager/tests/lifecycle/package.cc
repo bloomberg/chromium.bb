@@ -105,9 +105,7 @@ class Package : public service_manager::ForwardingService,
   void OnBindInterface(const service_manager::BindSourceInfo& source_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override {
-    if (registry_.CanBindInterface(interface_name)) {
-      registry_.BindInterface(interface_name, std::move(interface_pipe));
-    } else {
+    if (!registry_.TryBindInterface(interface_name, &interface_pipe)) {
       ForwardingService::OnBindInterface(source_info, interface_name,
                                          std::move(interface_pipe));
     }
