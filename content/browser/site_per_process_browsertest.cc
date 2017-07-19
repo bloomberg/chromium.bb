@@ -774,7 +774,14 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHighDPIBrowserTest,
 
 // Ensure that navigating subframes in --site-per-process mode works and the
 // correct documents are committed.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteIframe) {
+
+// Crashes on Win only. https://crbug.com/746055
+#if defined(OS_WIN)
+#define MAYBE_CrossSiteIframe DISABLED_CrossSiteIframe
+#else
+#define MAYBE_CrossSiteIframe CrossSiteIframe
+#endif
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_CrossSiteIframe) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(a,a(a,a(a)))"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -1885,7 +1892,15 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 }
 
 // Ensure that OOPIFs are deleted after navigating to a new main frame.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CleanupCrossSiteIframe) {
+
+// Crashes on Win only. https://crbug.com/746055
+#if defined(OS_WIN)
+#define MAYBE_CleanupCrossSiteIframe DISABLED_CleanupCrossSiteIframe
+#else
+#define MAYBE_CleanupCrossSiteIframe CleanupCrossSiteIframe
+#endif
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       MAYBE_CleanupCrossSiteIframe) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(a,a(a,a(a)))"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -1942,7 +1957,14 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CleanupCrossSiteIframe) {
 }
 
 // Ensure that root frames cannot be detached.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, RestrictFrameDetach) {
+
+// Crashes on Win only. https://crbug.com/746055
+#if defined(OS_WIN)
+#define MAYBE_RestrictFrameDetach DISABLED_RestrictFrameDetach
+#else
+#define MAYBE_RestrictFrameDetach RestrictFrameDetach
+#endif
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_RestrictFrameDetach) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(a,a(a,a(a)))"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -2004,7 +2026,13 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, RestrictFrameDetach) {
       DepictFrameTree(root));
 }
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, NavigateRemoteFrame) {
+// Crashes on Win only. https://crbug.com/746055
+#if defined(OS_WIN)
+#define MAYBE_NavigateRemoteFrame DISABLED_NavigateRemoteFrame
+#else
+#define MAYBE_NavigateRemoteFrame NavigateRemoteFrame
+#endif
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_NavigateRemoteFrame) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(a,a(a,a(a)))"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -3210,8 +3238,15 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 // Ensure that when navigating a frame cross-process RenderFrameProxyHosts are
 // created in the FrameTree skipping the subtree of the navigating frame.
+
+// Crashes on Win only. https://crbug.com/746055
+#if defined(OS_WIN)
+#define MAYBE_ProxyCreationSkipsSubtree DISABLED_ProxyCreationSkipsSubtree
+#else
+#define MAYBE_ProxyCreationSkipsSubtree ProxyCreationSkipsSubtree
+#endif
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       ProxyCreationSkipsSubtree) {
+                       MAYBE_ProxyCreationSkipsSubtree) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(a,a(a,a(a)))"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -8380,7 +8415,14 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // 2. Attribute injected dynamically via JavaScript
 // 3. Multiple levels of nesting (A-embed-B-embed-C)
 // 4. Cross-site subframe navigation
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, AllowFullscreen) {
+
+// Crashes on Win only. https://crbug.com/746055
+#if defined(OS_WIN)
+#define MAYBE_AllowFullscreen DISABLED_AllowFullscreen
+#else
+#define MAYBE_AllowFullscreen AllowFullscreen
+#endif
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_AllowFullscreen) {
   // Load a page with a cross-site <iframe allowFullscreen>.
   GURL url_1(embedded_test_server()->GetURL(
       "a.com", "/page_with_allowfullscreen_frame.html"));
@@ -10464,8 +10506,17 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // Check that subframes for the same site rendering in unrelated tabs start
 // sharing processes that are already dedicated to that site when over process
 // limit. See https://crbug.com/513036.
+
+// Crashes on Win only. https://crbug.com/746055
+#if defined(OS_WIN)
+#define MAYBE_SubframeProcessReuseWhenOverLimit \
+  DISABLED_SubframeProcessReuseWhenOverLimit
+#else
+#define MAYBE_SubframeProcessReuseWhenOverLimit \
+  SubframeProcessReuseWhenOverLimit
+#endif
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       SubframeProcessReuseWhenOverLimit) {
+                       MAYBE_SubframeProcessReuseWhenOverLimit) {
   // Set the process limit to 1.
   RenderProcessHost::SetMaxRendererProcessCount(1);
 
