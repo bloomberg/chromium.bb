@@ -133,7 +133,6 @@
 #import "ios/net/crn_http_protocol_handler.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/distribution/app_distribution_provider.h"
-#import "ios/public/provider/chrome/browser/native_app_launcher/native_app_whitelist_manager.h"
 #include "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 #import "ios/public/provider/chrome/browser/user_feedback/user_feedback_provider.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"

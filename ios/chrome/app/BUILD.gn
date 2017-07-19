@@ -224,7 +224,6 @@ source_set("app_internal") {
     "//ios/net",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/distribution",
-    "//ios/public/provider/chrome/browser/native_app_launcher",
     "//ios/public/provider/chrome/browser/signin",
     "//ios/public/provider/chrome/browser/user_feedback",
     "//ios/third_party/material_roboto_font_loader_ios",
