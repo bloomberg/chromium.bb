@@ -34,8 +34,7 @@ void InputMethodBridge::ProcessKeyEvent(
   DCHECK(event->IsKeyEvent());
   ui::KeyEvent* key_event = event->AsKeyEvent();
   if (!key_event->is_char()) {
-    input_method_chromeos_->DispatchKeyEvent(
-        key_event, base::MakeUnique<base::Callback<void(bool)>>(callback));
+    input_method_chromeos_->DispatchKeyEvent(key_event, std::move(callback));
   } else {
     const bool handled = false;
     callback.Run(handled);
