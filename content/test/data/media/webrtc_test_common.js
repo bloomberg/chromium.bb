@@ -117,16 +117,24 @@ function receiveAnswer_(answerSdp, caller) {
  * @private
  */
 function connectOnIceCandidate_(caller, callee) {
-  caller.onicecandidate = function(event) { onIceCandidate_(event, callee); }
-  callee.onicecandidate = function(event) { onIceCandidate_(event, caller); }
+  caller.onicecandidate = function(event) {
+    onIceCandidate_(event, caller, callee);
+  }
+  callee.onicecandidate = function(event) {
+    onIceCandidate_(event, callee, caller);
+  }
 }
 
 /**
  * @private
  */
-function onIceCandidate_(event, target) {
+function onIceCandidate_(event, originator, target) {
   if (event.candidate) {
     var candidate = new RTCIceCandidate(event.candidate);
     target.addIceCandidate(candidate);
+  } else {
+    // The spec guarantees that the special "null" candidate will be fired
+    // *after* changing the gathering state to "complete".
+    assertEquals('complete', originator.iceGatheringState);
   }
 }
