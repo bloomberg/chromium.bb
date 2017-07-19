@@ -1927,23 +1927,28 @@ void RenderFrameImpl::OnRedo() {
 }
 
 void RenderFrameImpl::OnCut() {
-  base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
+  AutoResetMember<bool> handling_select_range(
+      this, &RenderFrameImpl::handling_select_range_, true);
   frame_->ExecuteCommand(WebString::FromUTF8("Cut"));
 }
 
 void RenderFrameImpl::OnCopy() {
-  base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
+  AutoResetMember<bool> handling_select_range(
+      this, &RenderFrameImpl::handling_select_range_, true);
   frame_->ExecuteCommand(WebString::FromUTF8("Copy"));
 }
 
 void RenderFrameImpl::OnPaste() {
-  base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
-  base::AutoReset<bool> handling_paste(&is_pasting_, true);
+  AutoResetMember<bool> handling_select_range(
+      this, &RenderFrameImpl::handling_select_range_, true);
+  AutoResetMember<bool> handling_paste(this, &RenderFrameImpl::is_pasting_,
+                                       true);
   frame_->ExecuteCommand(WebString::FromUTF8("Paste"));
 }
 
 void RenderFrameImpl::OnPasteAndMatchStyle() {
-  base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
+  AutoResetMember<bool> handling_select_range(
+      this, &RenderFrameImpl::handling_select_range_, true);
   frame_->ExecuteCommand(WebString::FromUTF8("PasteAndMatchStyle"));
 }
 
@@ -1964,7 +1969,8 @@ void RenderFrameImpl::OnDelete() {
 }
 
 void RenderFrameImpl::OnSelectAll() {
-  base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
+  AutoResetMember<bool> handling_select_range(
+      this, &RenderFrameImpl::handling_select_range_, true);
   frame_->ExecuteCommand(WebString::FromUTF8("SelectAll"));
 }
 
@@ -1973,7 +1979,8 @@ void RenderFrameImpl::OnSelectRange(const gfx::Point& base,
   // This IPC is dispatched by RenderWidgetHost, so use its routing id.
   Send(new InputHostMsg_SelectRange_ACK(GetRenderWidget()->routing_id()));
 
-  base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
+  AutoResetMember<bool> handling_select_range(
+      this, &RenderFrameImpl::handling_select_range_, true);
   frame_->SelectRange(render_view_->ConvertWindowPointToViewport(base),
                       render_view_->ConvertWindowPointToViewport(extent));
 }
@@ -1989,7 +1996,8 @@ void RenderFrameImpl::OnAdjustSelectionByCharacterOffset(int start_adjust,
       range.StartOffset() + start_adjust < 0)
     return;
 
-  base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
+  AutoResetMember<bool> handling_select_range(
+      this, &RenderFrameImpl::handling_select_range_, true);
 
   // A negative adjust amount moves the selection towards the beginning of
   // the document, a positive amount moves the selection towards the end of
@@ -2005,7 +2013,8 @@ void RenderFrameImpl::OnCollapseSelection() {
   if (range.IsNull())
     return;
 
-  base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
+  AutoResetMember<bool> handling_select_range(
+      this, &RenderFrameImpl::handling_select_range_, true);
   frame_->SelectRange(WebRange(range.EndOffset(), 0));
 }
 
@@ -2014,7 +2023,8 @@ void RenderFrameImpl::OnMoveRangeSelectionExtent(const gfx::Point& point) {
   Send(new InputHostMsg_MoveRangeSelectionExtent_ACK(
       GetRenderWidget()->routing_id()));
 
-  base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
+  AutoResetMember<bool> handling_select_range(
+      this, &RenderFrameImpl::handling_select_range_, true);
   frame_->MoveRangeSelectionExtent(
       render_view_->ConvertWindowPointToViewport(point));
 }
@@ -2190,7 +2200,8 @@ void RenderFrameImpl::OnVisualStateRequest(uint64_t id) {
 }
 
 void RenderFrameImpl::OnSetEditableSelectionOffsets(int start, int end) {
-  base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
+  AutoResetMember<bool> handling_select_range(
+      this, &RenderFrameImpl::handling_select_range_, true);
   ImeEventGuard guard(GetRenderWidget());
   frame_->SetEditableSelectionOffsets(start, end);
 }

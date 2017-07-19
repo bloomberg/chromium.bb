@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<body>
+<iframe></iframe>
+<script>
+window[0].addEventListener('copy', (e) => {
+  document.querySelector('iframe').remove();
+  // TODO(dcheng): We really shouldn't do this but it turns out there are bugs
+  // in editing code. See https://crbug.com/746181 ^_^
+  e.preventDefault();
+  // Finish asynchronously, to make sure the renderer doesn't crash.
+  window.setTimeout(() => { document.title = 'done'; });
+});
+</script>
+</body>
+</html>
