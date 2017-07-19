@@ -224,7 +224,7 @@ HeadlessWebContentsImpl::HeadlessWebContentsImpl(
       render_process_host_(web_contents->GetRenderProcessHost()),
       weak_ptr_factory_(this) {
 #if BUILDFLAG(ENABLE_BASIC_PRINTING) && !defined(CHROME_MULTIPLE_DLL_CHILD)
-  printing::HeadlessPrintManager::CreateForWebContents(web_contents);
+  HeadlessPrintManager::CreateForWebContents(web_contents);
 #endif
   web_contents_->SetDelegate(web_contents_delegate_.get());
   render_process_host_->AddObserver(this);

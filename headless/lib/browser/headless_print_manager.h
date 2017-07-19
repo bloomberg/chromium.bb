@@ -14,23 +14,19 @@
 #include "content/public/browser/web_contents_user_data.h"
 #include "headless/public/headless_export.h"
 #include "printing/print_settings.h"
-#include "printing/printing_export.h"
 
 struct PrintHostMsg_DidPrintPage_Params;
 struct PrintHostMsg_ScriptedPrint_Params;
 struct PrintMsg_PrintPages_Params;
 
-namespace printing {
+namespace headless {
 
-struct HeadlessPrintSettings {
-  HeadlessPrintSettings()
-      : landscape(false),
-        display_header_footer(false),
-        should_print_backgrounds(false),
-        scale(1) {}
+// Exported for tests.
+struct HEADLESS_EXPORT HeadlessPrintSettings {
+  HeadlessPrintSettings();
 
   gfx::Size paper_size_in_points;
-  PageMargins margins_in_points;
+  printing::PageMargins margins_in_points;
 
   bool landscape;
   bool display_header_footer;
@@ -39,10 +35,11 @@ struct HeadlessPrintSettings {
   double scale;
 
   std::string page_ranges;
+  bool ignore_invalid_page_ranges;
 };
 
 class HeadlessPrintManager
-    : public PrintManager,
+    : public printing::PrintManager,
       public content::WebContentsUserData<HeadlessPrintManager> {
  public:
   enum PrintResult {
@@ -75,6 +72,7 @@ class HeadlessPrintManager
   // Exported for tests.
   HEADLESS_EXPORT static PageRangeStatus PageRangeTextToPages(
       base::StringPiece page_range_text,
+      bool ignore_invalid_page_ranges,
       int pages_count,
       std::vector<int>* pages);
 
@@ -108,18 +106,19 @@ class HeadlessPrintManager
   void Reset();
   void ReleaseJob(PrintResult result);
 
-  content::RenderFrameHost* printing_rfh_;
+  content::RenderFrameHost* printing_rfh_ = nullptr;
   GetPDFCallback callback_;
   std::unique_ptr<PrintMsg_PrintPages_Params> print_params_;
   std::string page_ranges_text_;
+  bool ignore_invalid_page_ranges_ = false;
   std::string data_;
 
   // Set to true when OnDidPrintPage() should be expecting the first page.
-  bool expecting_first_page_;
+  bool expecting_first_page_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessPrintManager);
 };
 
-}  // namespace printing
+}  // namespace headless
 
 #endif  // HEADLESS_LIB_BROWSER_HEADLESS_PRINT_MANAGER_H_
