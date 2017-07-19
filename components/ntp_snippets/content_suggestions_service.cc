@@ -441,7 +441,8 @@ void ContentSuggestionsService::SetRemoteSuggestionsEnabled(bool enabled) {
 }
 
 bool ContentSuggestionsService::AreRemoteSuggestionsEnabled() const {
-  return !remote_suggestions_provider_->IsDisabled();
+  return remote_suggestions_provider_ &&
+         !remote_suggestions_provider_->IsDisabled();
 }
 
 bool ContentSuggestionsService::AreRemoteSuggestionsManaged() const {

@@ -86,6 +86,7 @@ public class SnippetsBridge implements SuggestionsSource {
 
     @Override
     public boolean areRemoteSuggestionsEnabled() {
+        assert mNativeSnippetsBridge != 0;
         return nativeAreRemoteSuggestionsEnabled(mNativeSnippetsBridge);
     }
 
