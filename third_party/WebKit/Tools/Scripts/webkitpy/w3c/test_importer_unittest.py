@@ -28,7 +28,7 @@ class TestImporterTest(LoggingTestCase):
         importer.exportable_but_not_exported_commits = lambda _: [
             MockChromiumCommit(host, change_id='Iba5eba11')
         ]
-        importer.checkout_is_okay = lambda _: True
+        importer.checkout_is_okay = lambda: True
         return_code = importer.main(['--credentials-json=/tmp/creds.json'])
         self.assertEqual(return_code, 0)
         self.assertLog([
@@ -52,7 +52,7 @@ class TestImporterTest(LoggingTestCase):
         importer.exportable_but_not_exported_commits = lambda _: [
             MockChromiumCommit(host, position='refs/heads/master@{#431}')
         ]
-        importer.checkout_is_okay = lambda _: True
+        importer.checkout_is_okay = lambda: True
         return_code = importer.main(['--credentials-json=/tmp/creds.json'])
         self.assertEqual(return_code, 0)
         self.assertLog([
