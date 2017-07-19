@@ -20,6 +20,18 @@ They are the main wrapper of pipeline steps and interact with different
 abstracted components (Downloads, persistent store, GCM, etc) to execute them.
 They implement TaskQueue's Task API so that they can be exclusively executed.
 
+## Prefetch store
+
+* The PrefetchStore depends publicly on SQL and acts as a gateway to the SQLite
+  database.
+* It defines specific method signatures used to create callbacks that are passed
+  to the store for the proper execution of SQL commands.
+* SQL access resources are granted to those callbacks only when needed and in an
+  appropriate environment (correct thread, etc).
+* Pipeline tasks define methods following those signatures that contain the SQL
+  commands they require to do their work.
+* Tasks receive a pointer to the store to be able to execute their SQL commands.
+
 ## Development guidelines
 
 * Implementations that are injected dependencies during service creation should
