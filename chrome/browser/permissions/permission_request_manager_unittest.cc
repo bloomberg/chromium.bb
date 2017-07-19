@@ -194,6 +194,17 @@ TEST_F(PermissionRequestManagerTest, TwoRequestsTabSwitch) {
   EXPECT_TRUE(request_camera_.granted());
 }
 
+TEST_F(PermissionRequestManagerTest, CancelAfterTabSwitch) {
+  manager_->AddRequest(&request1_);
+  manager_->DisplayPendingRequests();
+  WaitForBubbleToBeShown();
+  EXPECT_TRUE(prompt_factory_->is_visible());
+  MockTabSwitchAway();
+  EXPECT_FALSE(prompt_factory_->is_visible());
+  manager_->CancelRequest(&request1_);
+  EXPECT_TRUE(request1_.finished());
+}
+
 TEST_F(PermissionRequestManagerTest, NoRequests) {
   manager_->DisplayPendingRequests();
   WaitForBubbleToBeShown();
