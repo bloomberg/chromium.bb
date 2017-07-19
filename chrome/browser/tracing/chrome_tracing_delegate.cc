@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -168,7 +169,8 @@ void ChromeTracingDelegate::GenerateMetadataDict(
     base::DictionaryValue* metadata_dict) {
   DCHECK(metadata_dict);
   std::vector<std::string> variations;
-  variations::GetFieldTrialActiveGroupIdsAsStrings(&variations);
+  variations::GetFieldTrialActiveGroupIdsAsStrings(base::StringPiece(),
+                                                   &variations);
 
   std::unique_ptr<base::ListValue> variations_list(new base::ListValue());
   for (const auto& it : variations)

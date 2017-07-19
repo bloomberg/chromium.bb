@@ -8,6 +8,7 @@
 
 #include "base/hash.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/string_piece.h"
 #include "base/time/default_clock.h"
 #include "chrome/browser/permissions/permission_request.h"
 #include "chrome/common/safe_browsing/permission_report.pb.h"
@@ -242,7 +243,8 @@ bool PermissionReporter::BuildReport(const PermissionReportInfo& report_info,
 
   // Collect field trial data.
   std::vector<variations::ActiveGroupId> active_group_ids;
-  variations::GetFieldTrialActiveGroupIds(&active_group_ids);
+  variations::GetFieldTrialActiveGroupIds(base::StringPiece(),
+                                          &active_group_ids);
   for (auto active_group_id : active_group_ids) {
     PermissionReport::FieldTrial* field_trial = report.add_field_trials();
     field_trial->set_name_id(active_group_id.name);
