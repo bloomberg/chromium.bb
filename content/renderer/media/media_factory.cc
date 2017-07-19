@@ -196,15 +196,15 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
       webkit_preferences.embedded_media_experience_enabled;
 #endif  // defined(OS_ANDROID)
 
+  // Enable background optimizations based on field trial for src= content, but
+  // always enable for MSE content. See http://crbug.com/709302.
   base::TimeDelta max_keyframe_distance_to_disable_background_video =
       base::TimeDelta::FromMilliseconds(base::GetFieldTrialParamByFeatureAsInt(
           media::kBackgroundVideoTrackOptimization, "max_keyframe_distance_ms",
-          base::TimeDelta::FromSeconds(10).InMilliseconds()));
+          0));
   base::TimeDelta max_keyframe_distance_to_disable_background_video_mse =
-      base::TimeDelta::FromMilliseconds(base::GetFieldTrialParamByFeatureAsInt(
-          media::kBackgroundVideoTrackOptimization,
-          "max_keyframe_distance_media_source_ms",
-          base::TimeDelta::FromSeconds(10).InMilliseconds()));
+      base::TimeDelta::FromSeconds(5);
+
   // When memory pressure based garbage collection is enabled for MSE, the
   // |enable_instant_source_buffer_gc| flag controls whether the GC is done
   // immediately on memory pressure notification or during the next SourceBuffer

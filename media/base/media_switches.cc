@@ -207,11 +207,11 @@ const base::Feature kUseAndroidOverlay{"use-android_overlay",
 
 // Let video track be unselected when video is playing in the background.
 const base::Feature kBackgroundVideoTrackOptimization{
-    "BackgroundVideoTrackOptimization", base::FEATURE_DISABLED_BY_DEFAULT};
+    "BackgroundVideoTrackOptimization", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Let video without audio be paused when it is playing in the background.
 const base::Feature kBackgroundVideoPauseOptimization{
-    "BackgroundVideoPauseOptimization", base::FEATURE_DISABLED_BY_DEFAULT};
+    "BackgroundVideoPauseOptimization", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kComplexityBasedVideoBuffering{
     "ComplexityBasedVideoBuffering", base::FEATURE_DISABLED_BY_DEFAULT};
