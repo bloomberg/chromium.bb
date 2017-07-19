@@ -15,7 +15,14 @@
 #include "base/trace_event/sharded_allocation_register.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "base/unguessable_token.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_WIN)
+#include "winbase.h"
+#elif defined(OS_POSIX)
+#include <sys/mman.h>
+#endif
 
 namespace base {
 namespace trace_event {
@@ -30,6 +37,28 @@ const char* const kTestDumpNameWhitelist[] = {
 TracedValue* GetHeapDump(const ProcessMemoryDump& pmd, const char* name) {
   auto it = pmd.heap_dumps().find(name);
   return it == pmd.heap_dumps().end() ? nullptr : it->second.get();
+}
+
+void* Map(size_t size) {
+#if defined(OS_WIN)
+  return ::VirtualAlloc(nullptr, size, MEM_RESERVE | MEM_COMMIT,
+                        PAGE_READWRITE);
+#elif defined(OS_POSIX)
+  return ::mmap(nullptr, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON,
+                0, 0);
+#else
+#error This architecture is not (yet) supported.
+#endif
+}
+
+void Unmap(void* addr, size_t size) {
+#if defined(OS_WIN)
+  ::VirtualFree(addr, 0, MEM_DECOMMIT);
+#elif defined(OS_POSIX)
+  ::munmap(addr, size);
+#else
+#error This architecture is not (yet) supported.
+#endif
 }
 
 }  // namespace
@@ -414,20 +443,20 @@ TEST(ProcessMemoryDumpTest, CountResidentBytes) {
 
   // Allocate few page of dirty memory and check if it is resident.
   const size_t size1 = 5 * page_size;
-  std::unique_ptr<char, base::AlignedFreeDeleter> memory1(
-      static_cast<char*>(base::AlignedAlloc(size1, page_size)));
-  memset(memory1.get(), 0, size1);
-  size_t res1 = ProcessMemoryDump::CountResidentBytes(memory1.get(), size1);
+  void* memory1 = Map(size1);
+  memset(memory1, 0, size1);
+  size_t res1 = ProcessMemoryDump::CountResidentBytes(memory1, size1);
   ASSERT_EQ(res1, size1);
+  Unmap(memory1, size1);
 
   // Allocate a large memory segment (> 8Mib).
   const size_t kVeryLargeMemorySize = 15 * 1024 * 1024;
-  std::unique_ptr<char, base::AlignedFreeDeleter> memory2(
-      static_cast<char*>(base::AlignedAlloc(kVeryLargeMemorySize, page_size)));
-  memset(memory2.get(), 0, kVeryLargeMemorySize);
-  size_t res2 = ProcessMemoryDump::CountResidentBytes(memory2.get(),
-                                                      kVeryLargeMemorySize);
+  void* memory2 = Map(kVeryLargeMemorySize);
+  memset(memory2, 0, kVeryLargeMemorySize);
+  size_t res2 =
+      ProcessMemoryDump::CountResidentBytes(memory2, kVeryLargeMemorySize);
   ASSERT_EQ(res2, kVeryLargeMemorySize);
+  Unmap(memory2, kVeryLargeMemorySize);
 }
 #endif  // defined(COUNT_RESIDENT_BYTES_SUPPORTED)
 
