@@ -269,8 +269,8 @@ size_t CalculatePositionsInFrame(
 
   // Decorations which are not visible should have been filtered out
   // at the top, but return |NSZeroRect| rather than a 0-width rect
-  // for consistency.
-  NOTREACHED();
+  // for consistency. This can happen while a window is being resized, if it
+  // becomes too small to contain a decoration in the process of shrinking.
   return NSZeroRect;
 }
 
