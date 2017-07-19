@@ -145,4 +145,37 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, NonSyncCheck) {
   ChromeMetricsServiceAccessor::SetMetricsAndCrashReportingForTesting(nullptr);
 }
 
+// Make sure that UKM is disabled when metrics consent is revoked.
+IN_PROC_BROWSER_TEST_F(UkmBrowserTest, MetricsConsentCheck) {
+  // Enable metrics recording and update MetricsServicesManager.
+  bool metrics_enabled = true;
+  ChromeMetricsServiceAccessor::SetMetricsAndCrashReportingForTesting(
+      &metrics_enabled);
+  g_browser_process->GetMetricsServicesManager()->UpdateUploadPermissions(true);
+
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  std::unique_ptr<ProfileSyncServiceHarness> harness =
+      EnableSyncForProfile(profile);
+
+  Browser* sync_browser = CreateBrowser(profile);
+  EXPECT_TRUE(ukm_enabled());
+  uint64_t original_client_id = client_id();
+
+  metrics_enabled = false;
+  g_browser_process->GetMetricsServicesManager()->UpdateUploadPermissions(true);
+
+  EXPECT_FALSE(ukm_enabled());
+
+  metrics_enabled = true;
+  g_browser_process->GetMetricsServicesManager()->UpdateUploadPermissions(true);
+
+  EXPECT_TRUE(ukm_enabled());
+  // Client ID should have been reset.
+  EXPECT_NE(original_client_id, client_id());
+
+  harness->service()->RequestStop(browser_sync::ProfileSyncService::CLEAR_DATA);
+  CloseBrowserSynchronously(sync_browser);
+  ChromeMetricsServiceAccessor::SetMetricsAndCrashReportingForTesting(nullptr);
+}
+
 }  // namespace metrics
