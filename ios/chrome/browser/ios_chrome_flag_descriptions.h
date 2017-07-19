@@ -39,6 +39,10 @@ extern const char kPhysicalWebDescription[];
 extern const char kWebPaymentsName[];
 extern const char kWebPaymentsDescription[];
 
+// Title and description for the flag to enable Captive Portal Login.
+extern const char kIosCaptivePortalName[];
+extern const char kIosCaptivePortalDescription[];
+
 }  // namespace flag_descriptions
 
 #endif  // IOS_CHROME_BROWSER_IOS_CHROME_FLAG_DESCRIPTIONS_H_
