@@ -36,6 +36,10 @@ namespace blink {
 
 using namespace HTMLNames;
 
+namespace {
+const unsigned kDefaultSpan = 1;
+}  // namespace
+
 inline HTMLTableColElement::HTMLTableColElement(const QualifiedName& tag_name,
                                                 Document& document)
     : HTMLTablePartElement(tag_name, document), span_(1) {}
@@ -69,7 +73,7 @@ void HTMLTableColElement::ParseAttribute(
         new_span < 1) {
       // If the value of span is not a valid non-negative integer greater than
       // zero, set it to 1.
-      new_span = 1;
+      new_span = kDefaultSpan;
     }
     new_span = std::min(new_span, HTMLTableCellElement::MaxColSpan());
     span_ = new_span;
@@ -100,7 +104,7 @@ HTMLTableColElement::AdditionalPresentationAttributeStyle() {
 }
 
 void HTMLTableColElement::setSpan(unsigned n) {
-  SetUnsignedIntegralAttribute(spanAttr, n);
+  SetUnsignedIntegralAttribute(spanAttr, n, kDefaultSpan);
 }
 
 const AtomicString& HTMLTableColElement::Width() const {

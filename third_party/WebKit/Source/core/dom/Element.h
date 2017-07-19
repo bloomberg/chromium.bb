@@ -156,7 +156,8 @@ class CORE_EXPORT Element : public ContainerNode {
   int GetIntegralAttribute(const QualifiedName& attribute_name) const;
   void SetIntegralAttribute(const QualifiedName& attribute_name, int value);
   void SetUnsignedIntegralAttribute(const QualifiedName& attribute_name,
-                                    unsigned value);
+                                    unsigned value,
+                                    unsigned default_value = 0);
   double GetFloatingPointAttribute(
       const QualifiedName& attribute_name,
       double fallback_value = std::numeric_limits<double>::quiet_NaN()) const;
