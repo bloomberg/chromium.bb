@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # Copyright 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -10,10 +8,10 @@ import logging
 import os
 import pipes
 import shlex
-import sys
 
 import devil_chromium
 from devil.android import apk_helper
+from devil.android import device_errors
 from devil.android import device_utils
 from devil.android import flag_changer
 from devil.android.sdk import intent
@@ -53,11 +51,11 @@ def _UninstallApk(install_incremental, devices_obj, apk_package):
       from incremental_install import installer
       installer.Uninstall(device, apk_package)
     devices_obj.pMap(uninstall_incremental_apk)
-    return
-  # Uninstall the regular apk on devices.
-  def uninstall(device):
-    device.Uninstall(apk_package)
-  devices_obj.pMap(uninstall)
+  else:
+    # Uninstall the regular apk on devices.
+    def uninstall(device):
+      device.Uninstall(apk_package)
+    devices_obj.pMap(uninstall)
 
 
 def _LaunchUrl(devices_obj, input_args, device_args_file, url, apk_package):
@@ -105,7 +103,7 @@ def _GenerateMissingAllFlagMessage(devices, devices_obj):
 
 
 def _DisplayArgs(devices, device_args_file):
-  print 'Current flags (in {%s}):' % device_args_file
+  print 'Existing flags per-device (via /data/local/tmp/%s):' % device_args_file
   for d in devices:
     changer = flag_changer.FlagChanger(d, device_args_file)
     flags = changer.GetCurrentFlags()
@@ -121,7 +119,8 @@ def _AddCommonOptions(parser):
                       action='store_true',
                       default=False,
                       help='Operate on all connected devices.',)
-  parser.add_argument('--device',
+  parser.add_argument('-d',
+                      '--device',
                       action='append',
                       default=[],
                       dest='devices',
@@ -161,22 +160,9 @@ def _DeviceCachePath(device):
   return os.path.join(constants.GetOutDirectory(), file_name)
 
 
-def main():
-  # This is used to parse args passed by the gn template.
-  gn_parser = argparse.ArgumentParser()
-  gn_parser.add_argument('--apk-path',
-                         help='The path to the apk.')
-  gn_parser.add_argument('--inc-apk-path',
-                         help='The path to the incremental apk.')
-  gn_parser.add_argument('--inc-install-script',
-                         help='The path to the incremental install script.')
-  gn_parser.add_argument('--output-directory', required=True,
-                         help='Path to the directory where build files are.')
-  gn_parser.add_argument('--command-line-flags-file',
-                         help='The file storing flags on the device.')
-
-  gn_args, sub_argv = gn_parser.parse_known_args()
-  constants.SetOutputDirectory(gn_args.output_directory)
+def Run(output_directory, apk_path, inc_apk_path, inc_install_script,
+         command_line_flags_file):
+  constants.SetOutputDirectory(output_directory)
 
   parser = argparse.ArgumentParser()
   command_parsers = parser.add_subparsers(title='Apk operations',
@@ -221,21 +207,18 @@ def main():
                                     help='Run the shell command "adb logcat".')
   _AddCommonOptions(subp)
 
-  args = parser.parse_args(sub_argv)
+  args = parser.parse_args()
   run_tests_helper.SetLogLevel(args.verbose_count)
   command = args.command
-  devices = []
-  devices_obj = None
 
   devil_chromium.Initialize()
 
-  # HealthyDevices causes the cmd of "adb devices" output more instances, which
-  # leads to an issue of adb_gdb cmd.
-  if command != 'gdb':
-    devices = device_utils.DeviceUtils.HealthyDevices(device_arg=args.devices,
-                                                      default_retries=0)
-    devices_obj = device_utils.DeviceUtils.parallel(devices)
+  devices = device_utils.DeviceUtils.HealthyDevices(device_arg=args.devices,
+                                                    default_retries=0)
+  devices_obj = device_utils.DeviceUtils.parallel(devices)
 
+  if command in {'gdb', 'logcat'} and len(devices) > 1:
+    raise device_errors.MultipleDevicesError(devices)
   if command in {'argv', 'stop', 'clear-data'} or len(args.devices) > 0:
     args.all = True
   if len(devices) > 1 and not args.all:
@@ -247,7 +230,7 @@ def main():
   install_incremental = False
   active_apk = None
   apk_package = None
-  apk_path = gn_args.apk_path
+  apk_name = os.path.basename(apk_path)
   if apk_path and not os.path.exists(apk_path):
     apk_path = None
 
@@ -258,10 +241,8 @@ def main():
     else:
       raise Exception("No regular apk is available.")
 
-  inc_apk_path = gn_args.inc_apk_path
   if inc_apk_path and not os.path.exists(inc_apk_path):
     inc_apk_path = None
-  inc_install_script = gn_args.inc_install_script
 
   if args.incremental:
     if inc_apk_path:
@@ -271,7 +252,8 @@ def main():
     else:
       raise Exception("No incremental apk is available.")
 
-  if not args.incremental and not args.non_incremental and command != 'argv':
+  if not args.incremental and not args.non_incremental and command in {
+      'install', 'run'}:
     if apk_path and inc_apk_path:
       raise Exception('Both incremental and non-incremental apks exist, please '
                       'use --incremental or --non-incremental to select one.')
@@ -285,8 +267,11 @@ def main():
       active_apk = inc_apk_path
       install_incremental = True
       logging.info('Use the incremental apk.')
-  if active_apk is not None:
-    apk_package = apk_helper.GetPackageName(active_apk)
+
+  if apk_path is not None:
+    apk_package = apk_helper.GetPackageName(apk_path)
+  elif inc_apk_path is not None:
+    apk_package = apk_helper.GetPackageName(inc_apk_path)
 
   # Use the cache if possible.
   use_cache = True
@@ -311,13 +296,13 @@ def main():
   elif command == 'uninstall':
     _UninstallApk(install_incremental, devices_obj, apk_package)
   elif command == 'launch':
-    _LaunchUrl(devices_obj, args.args, gn_args.command_line_flags_file,
+    _LaunchUrl(devices_obj, args.args, command_line_flags_file,
                args.url, apk_package)
   elif command == 'run':
     _InstallApk(install_incremental, inc_install_script, devices_obj,
                 active_apk)
     devices_obj.pFinish(None)
-    _LaunchUrl(devices_obj, args.args, gn_args.command_line_flags_file,
+    _LaunchUrl(devices_obj, args.args, command_line_flags_file,
                args.url, apk_package)
   elif command == 'stop':
     devices_obj.ForceStop(apk_package)
@@ -325,23 +310,29 @@ def main():
     devices_obj.ClearApplicationState(apk_package)
   elif command == 'argv':
     _ChangeFlags(devices, devices_obj, args.args,
-                 gn_args.command_line_flags_file)
+                 command_line_flags_file)
   elif command == 'gdb':
     gdb_script_path = os.path.dirname(__file__) + '/adb_gdb'
-    base_name = os.path.basename(gn_args.apk_path)
-    program_name = '--program-name=%s' % os.path.splitext(base_name)[0]
+    program_name = '--program-name=%s' % os.path.splitext(apk_name)[0]
     package_name = '--package-name=%s' % apk_package
     # The output directory is the one including lib* files.
     output_dir = '--output-directory=%s' % os.path.abspath(
-        os.path.join(gn_args.output_directory, os.pardir))
-    flags = [gdb_script_path, program_name, package_name, output_dir]
+        os.path.join(output_directory, os.pardir))
+    adb_path = '--adb=%s' % adb_wrapper.AdbWrapper.GetAdbPath()
+    device = '--device=%s' % devices[0].adb.GetDeviceSerial()
+    flags = [gdb_script_path, program_name, package_name, output_dir, adb_path,
+             device]
     if args.args:
       flags += shlex.split(args.args)
+    # Enable verbose output of adb_gdb if it's set for this script.
+    if args.verbose_count > 0:
+      flags.append('--verbose')
+    logging.warning('Running: %s', ' '.join(pipes.quote(f) for f in flags))
     os.execv(gdb_script_path, flags)
   elif command == 'logcat':
     adb_path = adb_wrapper.AdbWrapper.GetAdbPath()
-    args = [adb_path, 'logcat']
-    os.execv(adb_path, args)
+    flags = [adb_path, '-s', devices[0].adb.GetDeviceSerial(), 'logcat']
+    os.execv(adb_path, flags)
 
   # Wait for all threads to finish.
   devices_obj.pFinish(None)
@@ -353,7 +344,3 @@ def main():
       with open(cache_path, 'w') as f:
         f.write(d.DumpCacheData())
         logging.info('Wrote device cache: %s', cache_path)
-
-
-if __name__ == '__main__':
-  sys.exit(main())
