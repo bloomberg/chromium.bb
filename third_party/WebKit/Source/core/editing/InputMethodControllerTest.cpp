@@ -2287,4 +2287,18 @@ TEST_F(InputMethodControllerTest, TextInputTypeAtBeforeEditable) {
   EXPECT_EQ(kWebTextInputTypeContentEditable, Controller().TextInputType());
 }
 
+// http://crbug.com/721666
+TEST_F(InputMethodControllerTest, MaxLength) {
+  HTMLInputElement* input = toHTMLInputElement(
+      InsertHTMLElement("<input id='a' maxlength='4'/>", "a"));
+
+  EXPECT_EQ(kWebTextInputTypeText, Controller().TextInputType());
+
+  Controller().SetComposition("abcde", Vector<CompositionUnderline>(), 4, 4);
+  EXPECT_STREQ("abcde", input->value().Utf8().data());
+
+  Controller().FinishComposingText(InputMethodController::kKeepSelection);
+  EXPECT_STREQ("abcd", input->value().Utf8().data());
+}
+
 }  // namespace blink
