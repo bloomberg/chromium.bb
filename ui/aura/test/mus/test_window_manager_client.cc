@@ -57,6 +57,11 @@ void TestWindowManagerClient::SetDisplayConfiguration(
   changes_.push_back(WindowManagerClientChangeType::SET_DISPLAY_CONFIGURATION);
 }
 
+void TestWindowManagerClient::SwapDisplayRoots(
+    int64_t display_id1,
+    int64_t display_id2,
+    const SwapDisplayRootsCallback& callback) {}
+
 void TestWindowManagerClient::WmResponse(uint32_t change_id, bool response) {}
 
 void TestWindowManagerClient::WmSetBoundsResponse(uint32_t change_id) {}
