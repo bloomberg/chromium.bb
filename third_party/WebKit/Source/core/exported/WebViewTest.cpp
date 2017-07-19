@@ -2402,7 +2402,9 @@ TEST_P(WebViewTest, LongPressImageTextarea) {
   WebString image = WebString::FromUTF8("purpleimage");
 
   EXPECT_TRUE(TapElementById(WebInputEvent::kGestureLongPress, image));
-  WebRange range = web_view->CaretOrSelectionRange();
+  WebRange range = web_view->MainFrameImpl()
+                       ->GetInputMethodController()
+                       ->GetSelectionOffsets();
   EXPECT_FALSE(range.IsNull());
   EXPECT_EQ(0, range.StartOffset());
   EXPECT_EQ(1, range.length());
@@ -2471,7 +2473,9 @@ TEST_P(WebViewTest, SelectionOnReadOnlyInput) {
   WebLocalFrameBase* frame = web_view->MainFrameImpl();
   EXPECT_EQ(test_word, std::string(frame->SelectionAsText().Utf8().data()));
 
-  WebRange range = web_view->CaretOrSelectionRange();
+  WebRange range = web_view->MainFrameImpl()
+                       ->GetInputMethodController()
+                       ->GetSelectionOffsets();
   EXPECT_FALSE(range.IsNull());
   EXPECT_EQ(0, range.StartOffset());
   EXPECT_EQ(static_cast<int>(test_word.length()), range.length());

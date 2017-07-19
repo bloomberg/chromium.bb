@@ -2453,20 +2453,6 @@ WebPagePopupImpl* WebViewImpl::GetPagePopup() const {
 
 // TODO(ekaramad):This method is almost duplicated in WebFrameWidgetImpl as
 // well. This code needs to be refactored  (http://crbug.com/629721).
-WebRange WebViewImpl::CaretOrSelectionRange() {
-  const LocalFrame* focused = FocusedLocalFrameInWidget();
-  if (!focused)
-    return WebRange();
-
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
-  // needs to be audited.  See http://crbug.com/590369 for more details.
-  focused->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
-
-  return focused->GetInputMethodController().GetSelectionOffsets();
-}
-
-// TODO(ekaramad):This method is almost duplicated in WebFrameWidgetImpl as
-// well. This code needs to be refactored  (http://crbug.com/629721).
 void WebViewImpl::SetTextDirection(WebTextDirection direction) {
   // The Editor::setBaseWritingDirection() function checks if we can change
   // the text direction of the selected node and updates its DOM "dir"

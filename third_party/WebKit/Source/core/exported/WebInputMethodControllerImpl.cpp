@@ -5,6 +5,7 @@
 #include "core/exported/WebInputMethodControllerImpl.h"
 
 #include "core/InputTypeNames.h"
+#include "core/dom/Document.h"
 #include "core/dom/UserGestureIndicator.h"
 #include "core/editing/CompositionUnderlineVectorBuilder.h"
 #include "core/editing/EditingUtilities.h"
@@ -136,6 +137,14 @@ WebTextInputInfo WebInputMethodControllerImpl::TextInputInfo() {
 
 WebTextInputType WebInputMethodControllerImpl::TextInputType() {
   return GetFrame()->GetInputMethodController().TextInputType();
+}
+
+WebRange WebInputMethodControllerImpl::GetSelectionOffsets() const {
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  GetFrame()->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+
+  return GetFrame()->GetInputMethodController().GetSelectionOffsets();
 }
 
 LocalFrame* WebInputMethodControllerImpl::GetFrame() const {
