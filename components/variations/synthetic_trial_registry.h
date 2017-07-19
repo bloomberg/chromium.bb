@@ -12,13 +12,12 @@
 
 namespace metrics {
 class MetricsServiceAccessor;
+class MetricsService;
 }  // namespace metrics
 
 namespace variations {
 
 struct ActiveGroupId;
-class FieldTrialsProvider;
-class FieldTrialsProviderTest;
 
 class SyntheticTrialRegistry {
  public:
@@ -33,8 +32,7 @@ class SyntheticTrialRegistry {
 
  private:
   friend metrics::MetricsServiceAccessor;
-  friend FieldTrialsProvider;
-  friend FieldTrialsProviderTest;
+  friend metrics::MetricsService;
   FRIEND_TEST_ALL_PREFIXES(SyntheticTrialRegistryTest, RegisterSyntheticTrial);
   FRIEND_TEST_ALL_PREFIXES(SyntheticTrialRegistryTest,
                            RegisterSyntheticMultiGroupFieldTrial);
