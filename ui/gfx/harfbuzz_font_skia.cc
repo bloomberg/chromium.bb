@@ -56,7 +56,7 @@ void GetGlyphWidthAndExtents(cc::PaintFlags* flags,
                              hb_codepoint_t codepoint,
                              hb_position_t* width,
                              hb_glyph_extents_t* extents) {
-  SkPaint paint(cc::ToSkPaint(*flags));
+  SkPaint paint = flags->ToSkPaint();
 
   DCHECK_LE(codepoint, std::numeric_limits<uint16_t>::max());
   paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
@@ -92,7 +92,7 @@ hb_bool_t GetGlyph(hb_font_t* font,
   bool exists = cache->count(unicode) != 0;
   if (!exists) {
     font_data->flags_.setTextEncoding(cc::PaintFlags::kUTF32_TextEncoding);
-    SkPaint paint(cc::ToSkPaint(font_data->flags_));
+    SkPaint paint = font_data->flags_.ToSkPaint();
     paint.textToGlyphs(&unicode, sizeof(hb_codepoint_t), &(*cache)[unicode]);
   }
   *glyph = (*cache)[unicode];
@@ -124,7 +124,7 @@ hb_bool_t GetGlyphHorizontalOrigin(hb_font_t* font,
 hb_position_t GetGlyphKerning(FontData* font_data,
                               hb_codepoint_t first_glyph,
                               hb_codepoint_t second_glyph) {
-  SkTypeface* typeface = font_data->flags_.getTypeface();
+  SkTypeface* typeface = font_data->flags_.getTypeface().get();
   const uint16_t glyphs[2] = { static_cast<uint16_t>(first_glyph),
                                static_cast<uint16_t>(second_glyph) };
   int32_t kerning_adjustments[1] = { 0 };

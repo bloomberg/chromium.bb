@@ -9,7 +9,6 @@
 
 namespace blink {
 using cc::PaintFlags;
-using cc::ToSkPaint;
 }
 
 #endif  // PaintFlags_h
