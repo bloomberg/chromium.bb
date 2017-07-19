@@ -195,6 +195,12 @@ bool ChromePermissionMessageProvider::IsAPIOrManifestPrivilegeIncrease(
     DropPermissionParameter(id, &new_ids);
   }
 
+  // For M62, we added a new permission ID for new tab page overrides. Consider
+  // the addition of this permission to not result in a privilege increase for
+  // the time being.
+  // TODO(robertshield): Remove this once most of the population is on M62+
+  new_ids.erase(APIPermission::kNewTabPageOverride);
+
   // If all the IDs were already there, it's not a privilege increase.
   if (old_ids.Includes(new_ids))
     return false;

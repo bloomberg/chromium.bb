@@ -31,7 +31,7 @@ std::vector<std::unique_ptr<APIPermissionInfo>>
 ExtensionsAPIPermissions::GetAllPermissions() const {
   // WARNING: If you are modifying a permission message in this list, be sure to
   // add the corresponding permission message rule to
-  // ChromePermissionMessageProvider::GetPermissionMessages as well.
+  // ChromePermissionMessageRule::GetAllRules as well.
   APIPermissionInfo::InitInfo permissions_to_register[] = {
       {APIPermission::kAlarms, "alarms"},
       {APIPermission::kAlphaEnabled, "app.window.alpha"},
@@ -83,6 +83,8 @@ ExtensionsAPIPermissions::GetAllPermissions() const {
       {APIPermission::kNetworkingConfig, "networking.config"},
       {APIPermission::kNetworkingOnc, "networking.onc"},
       {APIPermission::kNetworkingPrivate, "networkingPrivate",
+       APIPermissionInfo::kFlagCannotBeOptional},
+      {APIPermission::kNewTabPageOverride, "newTabPageOverride",
        APIPermissionInfo::kFlagCannotBeOptional},
       {APIPermission::kPower, "power"},
       {APIPermission::kPrinterProvider, "printerProvider"},
