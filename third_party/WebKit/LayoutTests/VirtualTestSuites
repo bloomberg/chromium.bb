@@ -537,5 +537,10 @@
     "prefix": "high-contrast-mode",
     "base": "paint/high-contrast-mode/image-filter-none",
     "args": ["--blink-settings=highContrastMode=3,highContrastImagePolicy=1"]
+  },
+  {
+    "prefix": "outofblink-cors",
+    "base": "webexposed",
+    "args": ["--enable-blink-features=OutOfBlinkCORS"]
   }
 ]

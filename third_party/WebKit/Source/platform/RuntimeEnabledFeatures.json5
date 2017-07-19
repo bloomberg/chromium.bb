@@ -770,6 +770,9 @@
       origin_trial_feature_name: "Frobulate",
     },
     {
+      name: "OutOfBlinkCORS",
+    },
+    {
       name: "OverlayScrollbars",
       settable_from_internals: true,
     },
