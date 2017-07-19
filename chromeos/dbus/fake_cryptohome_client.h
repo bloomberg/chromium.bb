@@ -246,6 +246,10 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
     tpm_attestation_is_prepared_ = prepared;
   }
 
+  void set_tpm_attestation_does_key_exist_should_succeed(bool should_succeed) {
+    tpm_attestation_does_key_exist_should_succeed_ = should_succeed;
+  }
+
   void SetTpmAttestationUserCertificate(
       const cryptohome::Identification& cryptohome_id,
       const std::string& key_name,
@@ -317,6 +321,7 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
   bool needs_dircrypto_migration_ = false;
   bool tpm_attestation_is_enrolled_ = true;
   bool tpm_attestation_is_prepared_ = true;
+  bool tpm_attestation_does_key_exist_should_succeed_ = true;
 
   base::WeakPtrFactory<FakeCryptohomeClient> weak_ptr_factory_;
 
