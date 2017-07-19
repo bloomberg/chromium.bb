@@ -25,10 +25,6 @@ namespace base {
 class HistogramSamples;
 }
 
-namespace variations {
-struct ActiveGroupId;
-}
-
 namespace metrics {
 
 namespace internal {
@@ -102,7 +98,6 @@ class MetricsLog {
   // current environment is returned serialized as a string.
   std::string RecordEnvironment(
       const std::vector<std::unique_ptr<MetricsProvider>>& metrics_providers,
-      const std::vector<variations::ActiveGroupId>& synthetic_trials,
       int64_t install_date,
       int64_t metrics_reporting_enabled_date);
 
@@ -155,11 +150,6 @@ class MetricsLog {
 
  protected:
   // Exposed for the sake of mocking/accessing in test code.
-
-  // Fills |field_trial_ids| with the list of initialized field trials name and
-  // group ids.
-  virtual void GetFieldTrialIds(
-      std::vector<variations::ActiveGroupId>* field_trial_ids) const;
 
   ChromeUserMetricsExtension* uma_proto() { return &uma_proto_; }
 
