@@ -118,10 +118,7 @@ class LockStateControllerTest : public AshTestBase {
 
   void AdvancePartially(SessionStateAnimator::AnimationSpeed speed,
                         float factor) {
-    base::TimeDelta duration = test_animator_->GetDuration(speed);
-    base::TimeDelta partial_duration =
-        base::TimeDelta::FromInternalValue(duration.ToInternalValue() * factor);
-    test_animator_->Advance(partial_duration);
+    test_animator_->Advance(test_animator_->GetDuration(speed) * factor);
   }
 
   void ExpectPreLockAnimationStarted() {

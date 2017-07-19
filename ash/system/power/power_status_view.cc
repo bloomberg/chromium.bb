@@ -79,7 +79,7 @@ void PowerStatusView::UpdateText() {
         base::string16 duration;
         if (!base::TimeDurationFormat(time, base::DURATION_WIDTH_NUMERIC,
                                       &duration))
-          LOG(ERROR) << "Failed to format duration " << time.ToInternalValue();
+          LOG(ERROR) << "Failed to format duration " << time;
         battery_time_status = l10n_util::GetStringFUTF16(
             status.IsBatteryCharging()
                 ? IDS_ASH_STATUS_TRAY_BATTERY_TIME_UNTIL_FULL_SHORT
