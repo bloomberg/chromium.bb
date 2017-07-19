@@ -106,8 +106,6 @@ class PLATFORM_EXPORT Canvas2DLayerBridge
   // ImageBufferSurface implementation
   void FinalizeFrame();
   void DoPaintInvalidation(const FloatRect& dirty_rect);
-  void WillWritePixels();
-  void WillOverwriteAllPixels();
   void WillOverwriteCanvas();
   PaintCanvas* Canvas();
   void DisableDeferral(DisableDeferralReason);
