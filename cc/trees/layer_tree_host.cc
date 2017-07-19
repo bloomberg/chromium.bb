@@ -63,29 +63,6 @@ static base::StaticAtomicSequenceNumber s_layer_tree_host_sequence_number;
 }
 
 namespace cc {
-namespace {
-
-void EnsureValidIndicesOnLayer(Layer* layer, PropertyTrees* property_trees) {
-  CHECK_EQ(property_trees->sequence_number,
-           layer->property_tree_sequence_number());
-  CHECK(property_trees->transform_tree.Node(layer->transform_tree_index()));
-  CHECK(property_trees->clip_tree.Node(layer->clip_tree_index()));
-  CHECK(property_trees->effect_tree.Node(layer->effect_tree_index()));
-  CHECK(property_trees->scroll_tree.Node(layer->scroll_tree_index()));
-}
-
-void EnsureValidPropertyTreeState(LayerTreeHost* host) {
-  // Temporary check to debug crbug.com/726423. The property tree indices on
-  // the LayerTreeImpl should be valid after all state synchronization has
-  // finished.
-  for (auto* layer : *host)
-    EnsureValidIndicesOnLayer(layer, host->property_trees());
-
-  for (auto id : host->property_trees()->effect_tree.mask_layer_ids())
-    EnsureValidIndicesOnLayer(host->LayerById(id), host->property_trees());
-}
-
-}  // namespace
 
 LayerTreeHost::InitParams::InitParams() {}
 
@@ -326,8 +303,6 @@ void LayerTreeHost::FinishCommitOnImplThread(
 
   sync_tree->set_source_frame_number(SourceFrameNumber());
 
-  EnsureValidPropertyTreeState(this);
-
   if (needs_full_tree_sync_)
     TreeSynchronizer::SynchronizeTrees(root_layer(), sync_tree);
 
@@ -379,20 +354,6 @@ void LayerTreeHost::FinishCommitOnImplThread(
     mutator_host_->PushPropertiesTo(host_impl->mutator_host());
 
     sync_tree->lifecycle().AdvanceTo(LayerTreeLifecycle::kNotSyncing);
-  }
-
-  // Temporary check to debug crbug.com/726423. The property tree indices on the
-  // LayerTree should be valid after the PropertyTree update above.
-  for (auto* layer_impl : *sync_tree) {
-    CHECK(layer_impl);
-    CHECK(sync_tree->property_trees()->transform_tree.Node(
-        layer_impl->transform_tree_index()));
-    CHECK(sync_tree->property_trees()->clip_tree.Node(
-        layer_impl->clip_tree_index()));
-    CHECK(sync_tree->property_trees()->effect_tree.Node(
-        layer_impl->effect_tree_index()));
-    CHECK(sync_tree->property_trees()->scroll_tree.Node(
-        layer_impl->scroll_tree_index()));
   }
 
   // Transfer image decode requests to the impl thread.
@@ -774,8 +735,6 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
     draw_property_utils::FindLayersThatNeedUpdates(this, property_trees,
                                                    &update_layer_list);
   }
-
-  EnsureValidPropertyTreeState(this);
 
   bool content_has_slow_paths = false;
   bool content_has_non_aa_paint = false;

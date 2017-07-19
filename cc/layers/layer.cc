@@ -933,7 +933,7 @@ void Layer::Set3dSortingContextId(int id) {
 }
 
 void Layer::SetTransformTreeIndex(int index) {
-  CHECK(IsPropertyChangeAllowed());
+  DCHECK(IsPropertyChangeAllowed());
   if (transform_tree_index_ == index)
     return;
   if (index == TransformTree::kInvalidNodeId)
@@ -952,7 +952,7 @@ int Layer::transform_tree_index() const {
 }
 
 void Layer::SetClipTreeIndex(int index) {
-  CHECK(IsPropertyChangeAllowed());
+  DCHECK(IsPropertyChangeAllowed());
   if (clip_tree_index_ == index)
     return;
   clip_tree_index_ = index;
@@ -969,7 +969,7 @@ int Layer::clip_tree_index() const {
 }
 
 void Layer::SetEffectTreeIndex(int index) {
-  CHECK(IsPropertyChangeAllowed());
+  DCHECK(IsPropertyChangeAllowed());
   if (effect_tree_index_ == index)
     return;
   effect_tree_index_ = index;
@@ -986,7 +986,7 @@ int Layer::effect_tree_index() const {
 }
 
 void Layer::SetScrollTreeIndex(int index) {
-  CHECK(IsPropertyChangeAllowed());
+  DCHECK(IsPropertyChangeAllowed());
   if (scroll_tree_index_ == index)
     return;
   scroll_tree_index_ = index;
