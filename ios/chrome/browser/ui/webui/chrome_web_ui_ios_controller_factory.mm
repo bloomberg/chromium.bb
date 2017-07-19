@@ -89,8 +89,6 @@ WebUIIOSFactoryFunction GetWebUIIOSFactoryFunction(WebUIIOS* web_ui,
     return &NewWebUIIOS<VersionUI>;
   if (url_host == kChromeUIFlagsHost)
     return &NewWebUIIOS<FlagsUI>;
-  if (url_host == kChromeUIAppleFlagsHost)
-    return &NewWebUIIOS<AppleFlagsUI>;
 
   return nullptr;
 }

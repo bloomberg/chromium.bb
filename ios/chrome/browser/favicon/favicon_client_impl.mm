@@ -32,8 +32,6 @@ int GetFaviconResourceIdForNativeURL(const GURL& url) {
     return IDR_CRASH_SAD_FAVICON;
   if (url.host_piece() == kChromeUIFlagsHost)
     return IDR_FLAGS_FAVICON;
-  if (url.host_piece() == kChromeUIAppleFlagsHost)
-    return IDR_FLAGS_FAVICON;
   return -1;
 }
 
