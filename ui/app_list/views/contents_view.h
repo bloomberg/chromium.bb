@@ -119,6 +119,9 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   // specify their own custom layout.
   gfx::Rect GetDefaultContentsBounds() const;
 
+  // Returns the maximum preferred size of the all pages.
+  gfx::Size GetMaximumContentsSize() const;
+
   // Performs the 'back' action for the active page. Returns whether the action
   // was handled.
   bool Back();

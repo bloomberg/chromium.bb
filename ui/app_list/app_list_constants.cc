@@ -127,9 +127,6 @@ const int kSearchBoxPadding = 16;
 const int kSearchBoxTopPadding = 24;
 const int kSearchBoxBottomPadding = 21;
 
-// The preferred height of the search box.
-const int kSearchBoxPreferredHeight = 48;
-
 // The background border corner radius of the search box in fullscreen mode.
 const int kSearchBoxBorderCornerRadiusFullscreen = 24;
 
@@ -164,7 +161,7 @@ const char kSearchResultDistanceFromOrigin[] =
     "Apps.AppListSearchResultDistanceFromOrigin";
 
 // The height of tiles in search result.
-const int kSearchTileHeight = 92;
+const int kSearchTileHeight = 90;
 
 // The size of the search icon in the search box.
 const int kSearchIconSize = 24;
