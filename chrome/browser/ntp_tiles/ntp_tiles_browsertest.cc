@@ -4,6 +4,7 @@
 //
 
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/ntp_tiles/chrome_most_visited_sites_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -85,6 +86,12 @@ class NTPTilesTest : public InProcessBrowserTest {
 };
 
 // Tests that after navigating to a URL, ntp tiles will include the URL.
+// Flaky on Windows bots (http://crbug.com/746088).
+#if defined(OS_WIN)
+#define MAYBE_LoadURL DISABLED_LoadURL
+#else
+#define MAYBE_LoadURL LoadURL
+#endif
 IN_PROC_BROWSER_TEST_F(NTPTilesTest, LoadURL) {
   ASSERT_TRUE(embedded_test_server()->Start());
   const GURL page_url = embedded_test_server()->GetURL("/simple.html");
