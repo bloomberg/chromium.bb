@@ -42,9 +42,7 @@ static long long GenerateSequenceNumber() {
 }
 
 HistoryItem::HistoryItem()
-    : did_save_scroll_or_scale_state_(false),
-      page_scale_factor_(0),
-      item_sequence_number_(GenerateSequenceNumber()),
+    : item_sequence_number_(GenerateSequenceNumber()),
       document_sequence_number_(GenerateSequenceNumber()),
       scroll_restoration_type_(kScrollRestorationAuto) {}
 
@@ -77,31 +75,22 @@ void HistoryItem::SetReferrer(const Referrer& referrer) {
                                                referrer.referrer);
 }
 
-const ScrollOffset& HistoryItem::VisualViewportScrollOffset() const {
-  return visual_viewport_scroll_offset_;
-}
-
 void HistoryItem::SetVisualViewportScrollOffset(const ScrollOffset& offset) {
-  visual_viewport_scroll_offset_ = offset;
-  SetDidSaveScrollOrScaleState(true);
-}
-
-const ScrollOffset& HistoryItem::GetScrollOffset() const {
-  return scroll_offset_;
+  if (!view_state_)
+    view_state_ = WTF::MakeUnique<ViewState>();
+  view_state_->visual_viewport_scroll_offset_ = offset;
 }
 
 void HistoryItem::SetScrollOffset(const ScrollOffset& offset) {
-  scroll_offset_ = offset;
-  SetDidSaveScrollOrScaleState(true);
-}
-
-float HistoryItem::PageScaleFactor() const {
-  return page_scale_factor_;
+  if (!view_state_)
+    view_state_ = WTF::MakeUnique<ViewState>();
+  view_state_->scroll_offset_ = offset;
 }
 
 void HistoryItem::SetPageScaleFactor(float scale_factor) {
-  page_scale_factor_ = scale_factor;
-  SetDidSaveScrollOrScaleState(true);
+  if (!view_state_)
+    view_state_ = WTF::MakeUnique<ViewState>();
+  view_state_->page_scale_factor_ = scale_factor;
 }
 
 void HistoryItem::SetDocumentState(const Vector<String>& state) {

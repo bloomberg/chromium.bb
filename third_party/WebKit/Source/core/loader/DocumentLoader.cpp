@@ -355,12 +355,8 @@ void DocumentLoader::SetHistoryItemStateForCommit(
        !EqualIgnoringFragmentIdentifier(old_item->Url(), history_item_->Url())))
     return;
   history_item_->SetDocumentSequenceNumber(old_item->DocumentSequenceNumber());
-  history_item_->SetScrollOffset(old_item->GetScrollOffset());
-  history_item_->SetDidSaveScrollOrScaleState(
-      old_item->DidSaveScrollOrScaleState());
-  history_item_->SetVisualViewportScrollOffset(
-      old_item->VisualViewportScrollOffset());
-  history_item_->SetPageScaleFactor(old_item->PageScaleFactor());
+
+  history_item_->CopyViewStateFrom(old_item);
   history_item_->SetScrollRestorationType(old_item->ScrollRestorationType());
 
   // The item sequence number determines whether items are "the same", such

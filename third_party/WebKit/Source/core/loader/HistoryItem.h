@@ -59,20 +59,27 @@ class CORE_EXPORT HistoryItem final
   EncodedFormData* FormData();
   const AtomicString& FormContentType() const;
 
-  void SetDidSaveScrollOrScaleState(bool did_save_scroll_or_scale_state) {
-    did_save_scroll_or_scale_state_ = did_save_scroll_or_scale_state;
+  class ViewState {
+   public:
+    ViewState() : page_scale_factor_(0) {}
+    ViewState(const ViewState&) = default;
+
+    ScrollOffset visual_viewport_scroll_offset_;
+    ScrollOffset scroll_offset_;
+    float page_scale_factor_;
+  };
+
+  ViewState* GetViewState() const { return view_state_.get(); }
+  void ClearViewState() { view_state_.reset(); }
+  void CopyViewStateFrom(HistoryItem* other) {
+    if (other->view_state_)
+      view_state_ = WTF::MakeUnique<ViewState>(*other->view_state_.get());
+    else
+      view_state_.reset();
   }
 
-  bool DidSaveScrollOrScaleState() const {
-    return did_save_scroll_or_scale_state_;
-  }
-
-  const ScrollOffset& VisualViewportScrollOffset() const;
   void SetVisualViewportScrollOffset(const ScrollOffset&);
-  const ScrollOffset& GetScrollOffset() const;
   void SetScrollOffset(const ScrollOffset&);
-
-  float PageScaleFactor() const;
   void SetPageScaleFactor(float);
 
   Vector<String> GetReferencedFilePaths();
@@ -119,12 +126,10 @@ class CORE_EXPORT HistoryItem final
   String url_string_;
   Referrer referrer_;
 
-  bool did_save_scroll_or_scale_state_;
-  ScrollOffset visual_viewport_scroll_offset_;
-  ScrollOffset scroll_offset_;
-  float page_scale_factor_;
   Vector<String> document_state_vector_;
   Member<DocumentState> document_state_;
+
+  std::unique_ptr<ViewState> view_state_;
 
   // If two HistoryItems have the same item sequence number, then they are
   // clones of one another. Traversing history from one such HistoryItem to

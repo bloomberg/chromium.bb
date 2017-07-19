@@ -99,10 +99,12 @@ void RecursivelyGenerateHistoryItem(const ExplodedFrameState& state,
                  });
   item.SetDocumentState(document_state);
   item.SetScrollRestorationType(state.scroll_restoration_type);
-  item.SetVisualViewportScrollOffset(state.visual_viewport_scroll_offset);
-  item.SetScrollOffset(state.scroll_offset);
-  item.SetPageScaleFactor(state.page_scale_factor);
-  item.SetDidSaveScrollOrScaleState(state.did_save_scroll_or_scale_state);
+
+  if (state.did_save_scroll_or_scale_state) {
+    item.SetVisualViewportScrollOffset(state.visual_viewport_scroll_offset);
+    item.SetScrollOffset(state.scroll_offset);
+    item.SetPageScaleFactor(state.page_scale_factor);
+  }
 
   // These values are generated at WebHistoryItem construction time, and we
   // only want to override those new values with old values if the old values
