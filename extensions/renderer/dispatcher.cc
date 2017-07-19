@@ -185,53 +185,6 @@ class ChromeNativeHandler : public ObjectBackedNativeHandler {
   }
 };
 
-// Sends a notification to the browser that an event either has or no longer has
-// listeners associated with it. Note that we only do this for the first added/
-// last removed listener, rather than for each subsequent listener; the browser
-// only cares if an event has >0 associated listeners.
-// TODO(devlin): Use this in EventBindings, too, and add logic for lazy
-// background pages.
-void SendEventListenersIPC(binding::EventListenersChanged changed,
-                           ScriptContext* context,
-                           const std::string& event_name,
-                           const base::DictionaryValue* filter,
-                           bool was_manual) {
-  bool lazy = ExtensionFrameHelper::IsContextForEventPage(context);
-  // TODO(lazyboy): For service workers, use worker specific IPC::Sender
-  // instead of |render_thread|.
-  const int worker_thread_id = content::WorkerThread::GetCurrentId();
-  std::string extension_id = context->GetExtensionID();
-  content::RenderThread* render_thread = content::RenderThread::Get();
-
-  if (filter) {
-    if (changed == binding::EventListenersChanged::HAS_LISTENERS) {
-      render_thread->Send(new ExtensionHostMsg_AddFilteredListener(
-          extension_id, event_name, *filter, lazy));
-    } else {
-      DCHECK_EQ(binding::EventListenersChanged::NO_LISTENERS, changed);
-      render_thread->Send(new ExtensionHostMsg_RemoveFilteredListener(
-          extension_id, event_name, *filter, lazy));
-    }
-  } else {
-    if (changed == binding::EventListenersChanged::HAS_LISTENERS) {
-      render_thread->Send(new ExtensionHostMsg_AddListener(
-          extension_id, context->url(), event_name, worker_thread_id));
-      if (lazy) {
-        render_thread->Send(
-            new ExtensionHostMsg_AddLazyListener(extension_id, event_name));
-      }
-    } else {
-      DCHECK_EQ(binding::EventListenersChanged::NO_LISTENERS, changed);
-      render_thread->Send(new ExtensionHostMsg_RemoveListener(
-          extension_id, context->url(), event_name, worker_thread_id));
-      if (lazy && was_manual) {
-        render_thread->Send(
-            new ExtensionHostMsg_RemoveLazyListener(extension_id, event_name));
-      }
-    }
-  }
-}
-
 base::LazyInstance<WorkerScriptContextSet>::DestructorAtExit
     g_worker_script_context_set = LAZY_INSTANCE_INITIALIZER;
 
@@ -255,7 +208,7 @@ Dispatcher::Dispatcher(DispatcherDelegate* delegate)
     // This Unretained is safe because the IPCMessageSender is guaranteed to
     // outlive the bindings system.
     auto system = base::MakeUnique<NativeExtensionBindingsSystem>(
-        std::move(ipc_message_sender), base::Bind(&SendEventListenersIPC));
+        std::move(ipc_message_sender));
     delegate_->InitializeBindingsSystem(this, system->api_system());
     bindings_system_ = std::move(system);
   } else {
@@ -833,7 +786,10 @@ void Dispatcher::RegisterNativeHandlers(
       std::unique_ptr<NativeHandler>(new V8ContextNativeHandler(context)));
   module_system->RegisterNativeHandler(
       "event_natives",
-      std::unique_ptr<NativeHandler>(new EventBindings(context)));
+      base::MakeUnique<EventBindings>(
+          context,
+          // Note: |bindings_system| can be null in unit tests.
+          bindings_system ? bindings_system->GetIPCMessageSender() : nullptr));
   module_system->RegisterNativeHandler(
       "messaging_natives", base::MakeUnique<MessagingBindings>(context));
   module_system->RegisterNativeHandler(

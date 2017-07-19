@@ -13,21 +13,18 @@
 #include "extensions/renderer/object_backed_native_handler.h"
 #include "v8/include/v8.h"
 
-namespace IPC {
-class Sender;
-}
-
 namespace base {
 class ListValue;
 }
 
 namespace extensions {
+class IPCMessageSender;
 struct EventFilteringInfo;
 
 // This class deals with the javascript bindings related to Event objects.
 class EventBindings : public ObjectBackedNativeHandler {
  public:
-  explicit EventBindings(ScriptContext* context);
+  EventBindings(ScriptContext* context, IPCMessageSender* ipc_message_sender);
   ~EventBindings() override;
 
   // Returns true if there is a listener for the given |event| in the given
@@ -87,10 +84,11 @@ class EventBindings : public ObjectBackedNativeHandler {
   void AttachUnmanagedEvent(const v8::FunctionCallbackInfo<v8::Value>& args);
   void DetachUnmanagedEvent(const v8::FunctionCallbackInfo<v8::Value>& args);
 
-  IPC::Sender* GetIPCSender();
-
   // Called when our context, and therefore us, is invalidated. Run any cleanup.
   void OnInvalidated();
+
+  // The associated message sender. Guaranteed to outlive this object.
+  IPCMessageSender* const ipc_message_sender_;
 
   // The set of attached events and filtered events. Maintain these so that we
   // can detch them on unload.
