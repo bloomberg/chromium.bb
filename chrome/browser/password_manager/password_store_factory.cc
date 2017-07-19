@@ -43,8 +43,6 @@
 #include "components/password_manager/core/browser/webdata/password_web_data_service_win.h"
 #elif defined(OS_MACOSX)
 #include "chrome/browser/password_manager/password_store_mac.h"
-#include "crypto/apple_keychain.h"
-#include "crypto/mock_apple_keychain.h"
 #elif defined(OS_CHROMEOS) || defined(OS_ANDROID)
 // Don't do anything. We're going to use the default store.
 #elif defined(USE_X11)
@@ -170,11 +168,6 @@ PasswordStoreFactory::BuildServiceInstanceFor(
                             WebDataServiceFactory::GetPasswordWebDataForProfile(
                                 profile, ServiceAccessType::EXPLICIT_ACCESS));
 #elif defined(OS_MACOSX)
-  std::unique_ptr<crypto::AppleKeychain> keychain(
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          os_crypt::switches::kUseMockKeychain)
-          ? new crypto::MockAppleKeychain()
-          : new crypto::AppleKeychain());
   ps = new PasswordStoreMac(main_thread_runner, std::move(login_db),
                             profile->GetPrefs());
 #elif defined(OS_CHROMEOS) || defined(OS_ANDROID)
