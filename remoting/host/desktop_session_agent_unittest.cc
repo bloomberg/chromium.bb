@@ -14,6 +14,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_listener.h"
 #include "remoting/base/auto_thread_task_runner.h"
@@ -193,6 +194,74 @@ TEST_F(DesktopSessionAgentTest, StartThenStopProcessStatsReport) {
       base::Unretained(&delegate),
       base::Unretained(&proxy)),
       base::TimeDelta::FromMilliseconds(1));
+  run_loop_.Run();
+}
+
+TEST_F(DesktopSessionAgentTest, SendAggregatedProcessResourceUsage) {
+  std::unique_ptr<IPC::Channel> receiver;
+  std::unique_ptr<IPC::Channel> sender;
+  ProcessStatsListener listener(base::Bind([](
+          DesktopSessionAgentTest* test,
+          std::unique_ptr<IPC::Channel>* receiver,
+          std::unique_ptr<IPC::Channel>* sender) {
+        test->Shutdown();
+        base::ThreadTaskRunnerHandle::Get()->DeleteSoon(
+            FROM_HERE, receiver->release());
+        base::ThreadTaskRunnerHandle::Get()->DeleteSoon(
+            FROM_HERE, sender->release());
+      },
+      base::Unretained(this),
+      base::Unretained(&receiver),
+      base::Unretained(&sender)));
+  mojo::MessagePipe pipe;
+  receiver = IPC::Channel::CreateServer(
+      pipe.handle1.release(),
+      &listener,
+      task_runner_);
+  ASSERT_TRUE(receiver->Connect());
+  sender = IPC::Channel::CreateClient(
+      pipe.handle0.release(),
+      &listener,
+      task_runner_);
+  ASSERT_TRUE(sender->Connect());
+  protocol::AggregatedProcessResourceUsage aggregated;
+  for (int i = 0; i < 2; i++) {
+    *aggregated.add_usages() = protocol::ProcessResourceUsage();
+  }
+  ASSERT_TRUE(sender->Send(
+      new ChromotingAnyToNetworkMsg_ReportProcessStats(aggregated)));
+  run_loop_.Run();
+}
+
+TEST_F(DesktopSessionAgentTest, SendEmptyAggregatedProcessResourceUsage) {
+  std::unique_ptr<IPC::Channel> receiver;
+  std::unique_ptr<IPC::Channel> sender;
+  ProcessStatsListener listener(base::Bind([](
+          DesktopSessionAgentTest* test,
+          std::unique_ptr<IPC::Channel>* receiver,
+          std::unique_ptr<IPC::Channel>* sender) {
+        test->Shutdown();
+        base::ThreadTaskRunnerHandle::Get()->DeleteSoon(
+            FROM_HERE, receiver->release());
+        base::ThreadTaskRunnerHandle::Get()->DeleteSoon(
+            FROM_HERE, sender->release());
+      },
+      base::Unretained(this),
+      base::Unretained(&receiver),
+      base::Unretained(&sender)));
+  mojo::MessagePipe pipe;
+  receiver = IPC::Channel::CreateServer(
+      pipe.handle1.release(),
+      &listener,
+      task_runner_);
+  ASSERT_TRUE(receiver->Connect());
+  sender = IPC::Channel::CreateClient(
+      pipe.handle0.release(),
+      &listener,
+      task_runner_);
+  ASSERT_TRUE(sender->Connect());
+  ASSERT_TRUE(sender->Send(new ChromotingAnyToNetworkMsg_ReportProcessStats(
+      protocol::AggregatedProcessResourceUsage())));
   run_loop_.Run();
 }
 

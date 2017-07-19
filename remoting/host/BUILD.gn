@@ -234,8 +234,6 @@ static_library("host") {
     "process_stats_agent.h",
     "process_stats_sender.cc",
     "process_stats_sender.h",
-    "process_stats_util.cc",
-    "process_stats_util.h",
     "register_support_host_request.cc",
     "register_support_host_request.h",
     "remote_input_filter.cc",
