@@ -7,6 +7,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
+#include "content/public/child/worker_thread.h"
 #include "content/public/common/console_message_level.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/common/constants.h"
@@ -29,6 +30,7 @@
 #include "extensions/renderer/script_context_set.h"
 #include "extensions/renderer/storage_area.h"
 #include "extensions/renderer/web_request_hooks.h"
+#include "extensions/renderer/worker_thread_dispatcher.h"
 #include "gin/converter.h"
 #include "gin/handle.h"
 #include "gin/per_context_data.h"
@@ -145,13 +147,26 @@ BindingsSystemPerContextData* GetBindingsDataFromContext(
   return data;
 }
 
+// Returns the ScriptContext associated with the given v8::Context.
+// TODO(devlin): Does this belong here, or should it be curried in as a
+// callback? This is the only place we have knowledge of worker vs. non-worker
+// threads here.
+ScriptContext* GetScriptContext(v8::Local<v8::Context> context) {
+  ScriptContext* script_context =
+      content::WorkerThread::GetCurrentId() > 0
+          ? WorkerThreadDispatcher::GetScriptContext()
+          : ScriptContextSet::GetContextByV8Context(context);
+  CHECK(script_context);
+  DCHECK(script_context->v8_context() == context);
+  return script_context;
+}
+
 // Handler for calling safely into JS.
 void CallJsFunction(v8::Local<v8::Function> function,
                     v8::Local<v8::Context> context,
                     int argc,
                     v8::Local<v8::Value> argv[]) {
-  ScriptContext* script_context =
-      ScriptContextSet::GetContextByV8Context(context);
+  ScriptContext* script_context = GetScriptContext(context);
   CHECK(script_context);
   script_context->SafeCallFunction(function, argc, argv);
 }
@@ -175,8 +190,7 @@ v8::Global<v8::Value> CallJsFunctionSync(v8::Local<v8::Function> function,
   }, base::Unretained(context->GetIsolate()),
      base::Unretained(&did_complete), base::Unretained(&result));
 
-  ScriptContext* script_context =
-      ScriptContextSet::GetContextByV8Context(context);
+  ScriptContext* script_context = GetScriptContext(context);
   CHECK(script_context);
   script_context->SafeCallFunction(function, argc, argv, callback);
   CHECK(did_complete) << "expected script to execute synchronously";
@@ -184,8 +198,7 @@ v8::Global<v8::Value> CallJsFunctionSync(v8::Local<v8::Function> function,
 }
 
 void AddConsoleError(v8::Local<v8::Context> context, const std::string& error) {
-  ScriptContext* script_context =
-      ScriptContextSet::GetContextByV8Context(context);
+  ScriptContext* script_context = GetScriptContext(context);
   CHECK(script_context);
   console::AddMessage(script_context, content::CONSOLE_MESSAGE_LEVEL_ERROR,
                       error);
@@ -203,8 +216,7 @@ const base::DictionaryValue& GetAPISchema(const std::string& api_name) {
 // |context|.
 bool IsAPIFeatureAvailable(v8::Local<v8::Context> context,
                            const std::string& name) {
-  ScriptContext* script_context =
-      ScriptContextSet::GetContextByV8Context(context);
+  ScriptContext* script_context = GetScriptContext(context);
   DCHECK(script_context);
   return script_context->GetAvailability(name).is_available();
 }
@@ -614,8 +626,7 @@ v8::Local<v8::Object> NativeExtensionBindingsSystem::GetAPIHelper(
     return value.As<v8::Object>();
   }
 
-  ScriptContext* script_context =
-      ScriptContextSet::GetContextByV8Context(context);
+  ScriptContext* script_context = GetScriptContext(context);
   std::string api_name_string;
   CHECK(
       gin::Converter<std::string>::FromV8(isolate, api_name, &api_name_string));
@@ -684,8 +695,7 @@ void NativeExtensionBindingsSystem::GetInternalAPI(
 
   std::string api_name = gin::V8ToString(info[0]);
   const Feature* feature = FeatureProvider::GetAPIFeature(api_name);
-  ScriptContext* script_context =
-      ScriptContextSet::GetContextByV8Context(context);
+  ScriptContext* script_context = GetScriptContext(context);
   if (!feature ||
       !script_context->IsAnyFeatureAvailableToContext(
           *feature, CheckAliasStatus::NOT_ALLOWED)) {
@@ -717,8 +727,7 @@ void NativeExtensionBindingsSystem::GetInternalAPI(
 void NativeExtensionBindingsSystem::SendRequest(
     std::unique_ptr<APIRequestHandler::Request> request,
     v8::Local<v8::Context> context) {
-  ScriptContext* script_context =
-      ScriptContextSet::GetContextByV8Context(context);
+  ScriptContext* script_context = GetScriptContext(context);
 
   GURL url;
   blink::WebLocalFrame* frame = script_context->web_frame();
@@ -749,8 +758,7 @@ void NativeExtensionBindingsSystem::OnEventListenerChanged(
     const base::DictionaryValue* filter,
     bool was_manual,
     v8::Local<v8::Context> context) {
-  ScriptContext* script_context =
-      ScriptContextSet::GetContextByV8Context(context);
+  ScriptContext* script_context = GetScriptContext(context);
   // Note: Check context_type() first to avoid accessing ExtensionFrameHelper on
   // a worker thread.
   bool is_lazy =

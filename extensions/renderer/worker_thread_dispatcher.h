@@ -42,6 +42,7 @@ class WorkerThreadDispatcher : public content::RenderThreadObserver,
   static WorkerThreadDispatcher* Get();
   static ExtensionBindingsSystem* GetBindingsSystem();
   static V8SchemaRegistry* GetV8SchemaRegistry();
+  static ScriptContext* GetScriptContext();
 
   void Init(content::RenderThread* render_thread);
 
