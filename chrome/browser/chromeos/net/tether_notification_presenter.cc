@@ -9,6 +9,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/proximity_auth/logging/logging.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -74,8 +75,13 @@ constexpr const char
         "cros_tether_notification_ids.setup_required";
 
 // static
+constexpr const char
+    TetherNotificationPresenter::kEnableBluetoothNotificationId[] =
+        "cros_tether_notification_ids.enable_bluetooth";
+
+// static
 constexpr const char* const
-    TetherNotificationPresenter::kIdsWhichOpenSettingsOnClick[] = {
+    TetherNotificationPresenter::kIdsWhichOpenTetherSettingsOnClick[] = {
         TetherNotificationPresenter::kTetherNotifierId,
         TetherNotificationPresenter::kActiveHostNotificationId,
         TetherNotificationPresenter::kPotentialHotspotNotificationId,
@@ -144,7 +150,7 @@ void TetherNotificationPresenter::NotifyPotentialHotspotNearby(
       message_center::ButtonInfo(l10n_util::GetStringUTF16(
           IDS_TETHER_NOTIFICATION_WIFI_AVAILABLE_ONE_DEVICE_CONNECT)));
   ShowNotification(CreateNotification(
-      std::string(kPotentialHotspotNotificationId),
+      kPotentialHotspotNotificationId,
       l10n_util::GetStringUTF16(
           IDS_TETHER_NOTIFICATION_WIFI_AVAILABLE_ONE_DEVICE_TITLE),
       l10n_util::GetStringFUTF16(
@@ -159,7 +165,7 @@ void TetherNotificationPresenter::NotifyMultiplePotentialHotspotsNearby() {
                << kPotentialHotspotNotificationId;
 
   ShowNotification(CreateNotificationWithMediumSignalStrengthIcon(
-      std::string(kPotentialHotspotNotificationId),
+      kPotentialHotspotNotificationId,
       l10n_util::GetStringUTF16(
           IDS_TETHER_NOTIFICATION_WIFI_AVAILABLE_MULTIPLE_DEVICES_TITLE),
       l10n_util::GetStringUTF16(
@@ -170,8 +176,8 @@ void TetherNotificationPresenter::RemovePotentialHotspotNotification() {
   PA_LOG(INFO) << "Removing \"potential hotspot nearby\" dialog. "
                << "Notification ID = " << kPotentialHotspotNotificationId;
 
-  message_center_->RemoveNotification(
-      std::string(kPotentialHotspotNotificationId), false /* by_user */);
+  message_center_->RemoveNotification(kPotentialHotspotNotificationId,
+                                      false /* by_user */);
 }
 
 void TetherNotificationPresenter::NotifySetupRequired(
@@ -180,7 +186,7 @@ void TetherNotificationPresenter::NotifySetupRequired(
                << "ID = " << kSetupRequiredNotificationId;
 
   ShowNotification(CreateNotificationWithMediumSignalStrengthIcon(
-      std::string(kSetupRequiredNotificationId),
+      kSetupRequiredNotificationId,
       l10n_util::GetStringFUTF16(IDS_TETHER_NOTIFICATION_SETUP_REQUIRED_TITLE,
                                  base::ASCIIToUTF16(device_name)),
       l10n_util::GetStringFUTF16(IDS_TETHER_NOTIFICATION_SETUP_REQUIRED_MESSAGE,
@@ -191,7 +197,7 @@ void TetherNotificationPresenter::RemoveSetupRequiredNotification() {
   PA_LOG(INFO) << "Removing \"setup required\" dialog. "
                << "Notification ID = " << kSetupRequiredNotificationId;
 
-  message_center_->RemoveNotification(std::string(kSetupRequiredNotificationId),
+  message_center_->RemoveNotification(kSetupRequiredNotificationId,
                                       false /* by_user */);
 }
 
@@ -200,7 +206,7 @@ void TetherNotificationPresenter::NotifyConnectionToHostFailed() {
                << "Notification ID = " << kActiveHostNotificationId;
 
   ShowNotification(CreateNotificationWithMediumSignalStrengthIcon(
-      std::string(kActiveHostNotificationId),
+      kActiveHostNotificationId,
       l10n_util::GetStringUTF16(
           IDS_TETHER_NOTIFICATION_CONNECTION_FAILED_TITLE),
       l10n_util::GetStringUTF16(
@@ -211,23 +217,44 @@ void TetherNotificationPresenter::RemoveConnectionToHostFailedNotification() {
   PA_LOG(INFO) << "Removing \"connection attempt failed\" dialog. "
                << "Notification ID = " << kActiveHostNotificationId;
 
-  message_center_->RemoveNotification(std::string(kActiveHostNotificationId),
+  message_center_->RemoveNotification(kActiveHostNotificationId,
+                                      false /* by_user */);
+}
+
+void TetherNotificationPresenter::NotifyEnableBluetooth() {
+  PA_LOG(INFO) << "Displaying \"enable Bluetooth\" notification. "
+               << "Notification ID = " << kEnableBluetoothNotificationId;
+
+  ShowNotification(CreateNotificationWithMediumSignalStrengthIcon(
+      kEnableBluetoothNotificationId,
+      l10n_util::GetStringUTF16(IDS_TETHER_NOTIFICATION_ENABLE_BLUETOOTH_TITLE),
+      base::string16()));
+}
+
+void TetherNotificationPresenter::RemoveEnableBluetoothNotification() {
+  PA_LOG(INFO) << "Removing \"enable Bluetooth\" notification. "
+               << "Notification ID = " << kEnableBluetoothNotificationId;
+
+  message_center_->RemoveNotification(kEnableBluetoothNotificationId,
                                       false /* by_user */);
 }
 
 void TetherNotificationPresenter::OnNotificationClicked(
     const std::string& notification_id) {
+  if (notification_id == kEnableBluetoothNotificationId) {
+    OpenSettingsAndRemoveNotification(chrome::kBluetoothSubPage,
+                                      notification_id);
+    return;
+  }
+
   // Iterate through all IDs corresponding to notifications which should open
-  // the settings page when clicked. If the notification ID provided exists
-  // in |kIdsWhichOpenSettingsOnClick|, open settings.
-  for (size_t i = 0; i < arraysize(kIdsWhichOpenSettingsOnClick); ++i) {
-    const char* const curr_clickable_id = kIdsWhichOpenSettingsOnClick[i];
+  // the Tether settings page when clicked. If the notification ID provided
+  // exists in |kIdsWhichOpenTetherSettingsOnClick|, open settings.
+  for (size_t i = 0; i < arraysize(kIdsWhichOpenTetherSettingsOnClick); ++i) {
+    const char* const curr_clickable_id = kIdsWhichOpenTetherSettingsOnClick[i];
     if (notification_id == curr_clickable_id) {
-      PA_LOG(INFO) << "Notification with ID " << notification_id
-                   << " was clicked.";
-      settings_ui_delegate_->ShowSettingsSubPageForProfile(
-          profile_, kTetherSettingsSubpage);
-      message_center_->RemoveNotification(notification_id, true /* by_user */);
+      OpenSettingsAndRemoveNotification(kTetherSettingsSubpage,
+                                        notification_id);
       return;
     }
   }
@@ -263,6 +290,17 @@ void TetherNotificationPresenter::ShowNotification(
   } else {
     message_center_->AddNotification(std::move(notification));
   }
+}
+
+void TetherNotificationPresenter::OpenSettingsAndRemoveNotification(
+    const std::string& settings_subpage,
+    const std::string& notification_id) {
+  PA_LOG(INFO) << "Notification with ID " << notification_id << " was clicked. "
+               << "Opening settings subpage: " << settings_subpage;
+
+  settings_ui_delegate_->ShowSettingsSubPageForProfile(profile_,
+                                                       settings_subpage);
+  message_center_->RemoveNotification(notification_id, true /* by_user */);
 }
 
 }  // namespace tether

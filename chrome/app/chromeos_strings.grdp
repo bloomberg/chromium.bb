@@ -2371,6 +2371,9 @@ Press any key to continue exploring.
   <message name="IDS_TETHER_NOTIFICATION_SETUP_REQUIRED_MESSAGE" desc="Message shown as part of the notification shown to the user when set up is needed on another device to start tethering.">
     Tap the notification on your <ph name="PHONE_NAME">$1<ex>Google Pixel XL</ex></ph> to set up the mobile hotspot that can be used by this device.
   </message>
+  <message name="IDS_TETHER_NOTIFICATION_ENABLE_BLUETOOTH_TITLE" desc="Title of the notification shown to the user when disconnected from the Internet when Bluetooth is off; this notification alerts users to enable Bluetooth to search for Tether networks.">
+    To use Instant Tethering, turn on Bluetooth
+  </message>
 
   <!-- Options strings -->
   <message name="IDS_OPTIONS_SETTINGS_NETWORK_DISABLED" desc="Message displayed when a type of network connection is disabled">
