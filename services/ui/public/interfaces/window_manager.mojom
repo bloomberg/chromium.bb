@@ -310,6 +310,9 @@ interface WindowManagerClient {
                           array<WmViewportMetrics> viewport_metrics,
                           int64 primary_display_id) => (bool success);
 
+  // Swaps the display roots of the two displays.
+  SwapDisplayRoots(int64 display_id1, int64 display_id2) => (bool success);
+
   // The window manager has completed a request with the specific change id.
   WmResponse(uint32 change_id, bool response);
 

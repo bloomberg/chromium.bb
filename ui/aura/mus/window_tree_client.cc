@@ -1944,11 +1944,33 @@ void WindowTreeClient::AddDisplayReusingWindowTreeHost(
   }
 }
 
+void WindowTreeClient::SwapDisplayRoots(WindowTreeHostMus* window_tree_host1,
+                                        WindowTreeHostMus* window_tree_host2) {
+  DCHECK_NE(window_tree_host1, window_tree_host2);
+  const int64_t display_id1 = window_tree_host1->display_id();
+  const int64_t display_id2 = window_tree_host2->display_id();
+  DCHECK_NE(display_id1, display_id2);
+  window_tree_host1->set_display_id(display_id2);
+  window_tree_host2->set_display_id(display_id1);
+  if (window_manager_client_) {
+    window_manager_client_->SwapDisplayRoots(display_id1, display_id2,
+                                             base::Bind(&OnAckMustSucceed));
+  }
+}
+
 void WindowTreeClient::OnWindowTreeHostBoundsWillChange(
     WindowTreeHostMus* window_tree_host,
     const gfx::Rect& bounds) {
+  gfx::Rect old_bounds = window_tree_host->GetBoundsInPixels();
+  gfx::Rect new_bounds = bounds;
+  if (window_manager_delegate_) {
+    // The window manager origins should always be 0x0. The real origin is
+    // communicated by way of SetDisplayConfiguration().
+    old_bounds.set_origin(gfx::Point());
+    new_bounds.set_origin(gfx::Point());
+  }
   ScheduleInFlightBoundsChange(WindowMus::Get(window_tree_host->window()),
-                               window_tree_host->GetBoundsInPixels(), bounds);
+                               old_bounds, new_bounds);
 }
 
 void WindowTreeClient::OnWindowTreeHostClientAreaWillChange(

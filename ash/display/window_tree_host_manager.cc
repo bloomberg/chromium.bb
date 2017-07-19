@@ -411,6 +411,9 @@ void WindowTreeHostManager::SetPrimaryDisplayId(int64_t id) {
   primary_window->SetTitle(non_primary_window->GetTitle());
   non_primary_window->SetTitle(old_primary_title);
 
+  for (auto& observer : observers_)
+    observer.OnWindowTreeHostsSwappedDisplays(primary_host, non_primary_host);
+
   const display::DisplayLayout& layout =
       GetDisplayManager()->GetCurrentDisplayLayout();
   // The requested primary id can be same as one in the stored layout
@@ -658,6 +661,9 @@ void WindowTreeHostManager::OnDisplayRemoved(const display::Display& display) {
     window_tree_hosts_[primary_display_id] = primary_host;
     GetRootWindowSettings(GetWindow(primary_host))->display_id =
         primary_display_id;
+
+    for (auto& observer : observers_)
+      observer.OnWindowTreeHostsSwappedDisplays(host_to_delete, primary_host);
 
     OnDisplayMetricsChanged(
         GetDisplayManager()->GetDisplayForId(primary_display_id),

@@ -406,6 +406,8 @@ class WindowTree : public mojom::WindowTree,
       bool is_primary_display,
       const ClientWindowId& client_window_id);
 
+  bool ProcessSwapDisplayRoots(int64_t display_id1, int64_t display_id2);
+
   // WindowTree:
   void NewWindow(uint32_t change_id,
                  Id transport_window_id,
@@ -533,6 +535,9 @@ class WindowTree : public mojom::WindowTree,
       std::vector<ui::mojom::WmViewportMetricsPtr> viewport_metrics,
       int64_t primary_display_id,
       const SetDisplayConfigurationCallback& callback) override;
+  void SwapDisplayRoots(int64_t display_id1,
+                        int64_t display_id2,
+                        const SwapDisplayRootsCallback& callback) override;
   void WmResponse(uint32_t change_id, bool response) override;
   void WmSetBoundsResponse(uint32_t change_id) override;
   void WmRequestClose(Id transport_window_id) override;

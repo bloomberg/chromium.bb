@@ -47,6 +47,16 @@ void FrameGenerator::OnSurfaceCreated(const viz::SurfaceInfo& surface_info) {
   }
 }
 
+void FrameGenerator::SwapSurfaceWith(FrameGenerator* other) {
+  viz::SurfaceInfo window_manager_surface_info = window_manager_surface_info_;
+  window_manager_surface_info_ = other->window_manager_surface_info_;
+  other->window_manager_surface_info_ = window_manager_surface_info;
+  if (window_manager_surface_info_.is_valid())
+    SetNeedsBeginFrame(true);
+  if (other->window_manager_surface_info_.is_valid())
+    other->SetNeedsBeginFrame(true);
+}
+
 void FrameGenerator::OnWindowDamaged() {
   SetNeedsBeginFrame(true);
 }

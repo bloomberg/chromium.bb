@@ -52,6 +52,9 @@ class TestWindowManagerClient : public ui::mojom::WindowManagerClient {
       std::vector<::ui::mojom::WmViewportMetricsPtr> viewport_metrics,
       int64_t primary_display_id,
       const SetDisplayConfigurationCallback& callback) override;
+  void SwapDisplayRoots(int64_t display_id1,
+                        int64_t display_id2,
+                        const SwapDisplayRootsCallback& callback) override;
   void WmResponse(uint32_t change_id, bool response) override;
   void WmSetBoundsResponse(uint32_t change_id) override;
   void WmRequestClose(Id transport_window_id) override;

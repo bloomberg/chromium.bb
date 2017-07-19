@@ -140,6 +140,10 @@ class WindowTreeTestApi {
                                         is_primary_display, client_window_id);
   }
 
+  bool ProcessSwapDisplayRoots(int64_t display_id1, int64_t display_id2) {
+    return tree_->ProcessSwapDisplayRoots(display_id1, display_id2);
+  }
+
  private:
   WindowTree* tree_;
 

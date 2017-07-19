@@ -13,6 +13,13 @@
 #include "ui/display/manager/managed_display_info.h"
 
 namespace ash {
+namespace {
+
+aura::WindowTreeHostMus* ToWindowTreeHostMus(AshWindowTreeHost* ash_host) {
+  return static_cast<aura::WindowTreeHostMus*>(ash_host->AsWindowTreeHost());
+}
+
+}  // namespace
 
 DisplaySynchronizer::DisplaySynchronizer(
     aura::WindowManagerClient* window_manager_client)
@@ -68,8 +75,7 @@ void DisplaySynchronizer::OnWindowTreeHostReusedForDisplay(
     AshWindowTreeHost* window_tree_host,
     const display::Display& display) {
   aura::WindowTreeHostMus* window_tree_host_mus =
-      static_cast<aura::WindowTreeHostMus*>(
-          window_tree_host->AsWindowTreeHost());
+      ToWindowTreeHostMus(window_tree_host);
   if (window_tree_host_mus->display_id() == display.id())
     return;
   const display::ManagedDisplayInfo& display_info =
@@ -80,9 +86,17 @@ void DisplaySynchronizer::OnWindowTreeHostReusedForDisplay(
   viewport_metrics->device_scale_factor = display.device_scale_factor();
   viewport_metrics->ui_scale_factor = display_info.configured_ui_scale();
   window_manager_client_->AddDisplayReusingWindowTreeHost(
-      static_cast<aura::WindowTreeHostMus*>(
-          window_tree_host->AsWindowTreeHost()),
-      display, std::move(viewport_metrics));
+      ToWindowTreeHostMus(window_tree_host), display,
+      std::move(viewport_metrics));
+}
+
+void DisplaySynchronizer::OnWindowTreeHostsSwappedDisplays(
+    AshWindowTreeHost* host1,
+    AshWindowTreeHost* host2) {
+  DCHECK(host1);
+  DCHECK(host2);
+  window_manager_client_->SwapDisplayRoots(ToWindowTreeHostMus(host1),
+                                           ToWindowTreeHostMus(host2));
 }
 
 void DisplaySynchronizer::OnWillProcessDisplayChanges() {

@@ -1867,6 +1867,64 @@ TEST_F(WindowTreeManualDisplayTest,
   EXPECT_EQ(display_id1, display_list.GetPrimaryDisplayIterator()->id());
 }
 
+TEST_F(WindowTreeManualDisplayTest, SwapDisplayRoots) {
+  const bool automatically_create_display_roots = false;
+  AddWindowManager(window_server(), kTestUserId1,
+                   automatically_create_display_roots);
+
+  WindowManagerState* window_manager_state =
+      window_server()->GetWindowManagerStateForUser(kTestUserId1);
+  ASSERT_TRUE(window_manager_state);
+  WindowTree* window_manager_tree = window_manager_state->window_tree();
+  window_manager_state->SetFrameDecorationValues(
+      mojom::FrameDecorationValues::New());
+
+  // Add two windows for the two displays.
+  ClientWindowId display_root_id1 =
+      BuildClientWindowId(window_manager_tree, 10);
+  ASSERT_TRUE(window_manager_tree->NewWindow(display_root_id1,
+                                             ServerWindow::Properties()));
+  ServerWindow* display_root1 =
+      window_manager_tree->GetWindowByClientId(display_root_id1);
+  ASSERT_TRUE(display_root1);
+
+  ClientWindowId display_root_id2 =
+      BuildClientWindowId(window_manager_tree, 20);
+  ASSERT_TRUE(window_manager_tree->NewWindow(display_root_id2,
+                                             ServerWindow::Properties()));
+  ServerWindow* display_root2 =
+      window_manager_tree->GetWindowByClientId(display_root_id2);
+  ASSERT_TRUE(display_root2);
+  EXPECT_NE(display_root1, display_root2);
+
+  // Add two displays.
+  const int64_t display_id1 = 101;
+  display::Display display1 = MakeDisplay(0, 0, 1024, 768, 1.0f);
+  display1.set_id(display_id1);
+  mojom::WmViewportMetrics metrics;
+  metrics.bounds_in_pixels = display1.bounds();
+  metrics.device_scale_factor = 1.5;
+  metrics.ui_scale_factor = 2.5;
+  const bool is_primary_display = true;
+  ASSERT_TRUE(WindowTreeTestApi(window_manager_tree)
+                  .ProcessSetDisplayRoot(display1, metrics, is_primary_display,
+                                         display_root_id1));
+
+  display::Display display2 = MakeDisplay(0, 0, 1024, 768, 1.0f);
+  const int64_t display_id2 = 102;
+  display2.set_id(display_id2);
+  ASSERT_TRUE(WindowTreeTestApi(window_manager_tree)
+                  .ProcessSetDisplayRoot(display2, metrics, is_primary_display,
+                                         display_root_id2));
+
+  ServerWindow* display_root1_parent = display_root1->parent();
+  ServerWindow* display_root2_parent = display_root2->parent();
+  ASSERT_TRUE(WindowTreeTestApi(window_manager_tree)
+                  .ProcessSwapDisplayRoots(display_id1, display_id2));
+  EXPECT_EQ(display_root1_parent, display_root2->parent());
+  EXPECT_EQ(display_root2_parent, display_root1->parent());
+}
+
 }  // namespace test
 }  // namespace ws
 }  // namespace ui

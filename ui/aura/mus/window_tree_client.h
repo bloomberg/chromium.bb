@@ -502,6 +502,8 @@ class AURA_EXPORT WindowTreeClient
       WindowTreeHostMus* window_tree_host,
       const display::Display& display,
       ui::mojom::WmViewportMetricsPtr viewport_metrics) override;
+  void SwapDisplayRoots(WindowTreeHostMus* window_tree_host1,
+                        WindowTreeHostMus* window_tree_host2) override;
 
   // Overriden from WindowTreeHostMusDelegate:
   void OnWindowTreeHostBoundsWillChange(WindowTreeHostMus* window_tree_host,

@@ -20,6 +20,7 @@
 #include "services/ui/ws/display_manager.h"
 #include "services/ui/ws/event_matcher.h"
 #include "services/ui/ws/focus_controller.h"
+#include "services/ui/ws/frame_generator.h"
 #include "services/ui/ws/operation.h"
 #include "services/ui/ws/platform_display.h"
 #include "services/ui/ws/server_window.h"
@@ -49,6 +50,12 @@ namespace {
 bool HasPositiveInset(const gfx::Insets& insets) {
   return insets.width() > 0 || insets.height() > 0 || insets.left() > 0 ||
          insets.right() > 0;
+}
+
+FrameGenerator* GetFrameGenerator(WindowManagerDisplayRoot* display_root) {
+  return display_root->display()->platform_display()
+             ? display_root->display()->platform_display()->GetFrameGenerator()
+             : nullptr;
 }
 
 }  // namespace
@@ -344,6 +351,49 @@ ServerWindow* WindowTree::ProcessSetDisplayRoot(
     window_manager_state_->DeleteWindowManagerDisplayRoot(old_parent);
   }
   return window;
+}
+
+bool WindowTree::ProcessSwapDisplayRoots(int64_t display_id1,
+                                         int64_t display_id2) {
+  DCHECK(window_manager_state_);  // Can only be called by the window manager.
+  DVLOG(3) << "SwapDisplayRoots display_id1=" << display_id2
+           << " display_id2=" << display_id2;
+  if (automatically_create_display_roots_) {
+    DVLOG(1) << "SwapDisplayRoots only applicable when window-manager creates "
+             << "display roots";
+    return false;
+  }
+  Display* display1 = display_manager()->GetDisplayById(display_id1);
+  Display* display2 = display_manager()->GetDisplayById(display_id2);
+  if (!display1 || !display2) {
+    DVLOG(1) << "SwapDisplayRoots called with unknown display ids";
+    return false;
+  }
+
+  WindowManagerDisplayRoot* display_root1 =
+      display1->GetWindowManagerDisplayRootForUser(
+          window_manager_state_->user_id());
+  WindowManagerDisplayRoot* display_root2 =
+      display2->GetWindowManagerDisplayRootForUser(
+          window_manager_state_->user_id());
+
+  if (!display_root1->GetClientVisibleRoot() ||
+      !display_root2->GetClientVisibleRoot()) {
+    DVLOG(1) << "SetDisplayRoot called with displays that have not been "
+             << "configured";
+    return false;
+  }
+
+  display_root1->root()->Add(display_root2->GetClientVisibleRoot());
+  display_root2->root()->Add(display_root1->GetClientVisibleRoot());
+
+  // TODO(sky): this is race condition here if one is valid and one null.
+  FrameGenerator* frame_generator1 = GetFrameGenerator(display_root1);
+  FrameGenerator* frame_generator2 = GetFrameGenerator(display_root2);
+  if (frame_generator1 && frame_generator2)
+    frame_generator1->SwapSurfaceWith(frame_generator2);
+
+  return true;
 }
 
 bool WindowTree::SetCapture(const ClientWindowId& client_window_id) {
@@ -2303,6 +2353,13 @@ void WindowTree::SetDisplayConfiguration(
     const SetDisplayConfigurationCallback& callback) {
   callback.Run(display_manager()->SetDisplayConfiguration(
       displays, std::move(viewport_metrics), primary_display_id));
+}
+
+void WindowTree::SwapDisplayRoots(int64_t display_id1,
+                                  int64_t display_id2,
+                                  const SwapDisplayRootsCallback& callback) {
+  DCHECK(window_manager_state_);  // Only applicable to the window manager.
+  callback.Run(ProcessSwapDisplayRoots(display_id1, display_id2));
 }
 
 void WindowTree::WmResponse(uint32_t change_id, bool response) {
