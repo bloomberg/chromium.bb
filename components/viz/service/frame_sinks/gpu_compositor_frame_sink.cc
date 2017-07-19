@@ -6,18 +6,18 @@
 
 #include <utility>
 
+#include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
+
 namespace viz {
 
 GpuCompositorFrameSink::GpuCompositorFrameSink(
-    GpuCompositorFrameSinkDelegate* delegate,
-    FrameSinkManager* frame_sink_manager,
+    FrameSinkManagerImpl* frame_sink_manager,
     const FrameSinkId& frame_sink_id,
     cc::mojom::CompositorFrameSinkRequest request,
     cc::mojom::CompositorFrameSinkPrivateRequest
         compositor_frame_sink_private_request,
     cc::mojom::CompositorFrameSinkClientPtr client)
-    : delegate_(delegate),
-      support_(CompositorFrameSinkSupport::Create(
+    : support_(CompositorFrameSinkSupport::Create(
           this,
           frame_sink_manager,
           frame_sink_id,
@@ -89,11 +89,13 @@ void GpuCompositorFrameSink::WillDrawSurface(
     const gfx::Rect& damage_rect) {}
 
 void GpuCompositorFrameSink::OnClientConnectionLost() {
-  delegate_->OnClientConnectionLost(support_->frame_sink_id());
+  support_->frame_sink_manager()->OnClientConnectionLost(
+      support_->frame_sink_id());
 }
 
 void GpuCompositorFrameSink::OnPrivateConnectionLost() {
-  delegate_->OnPrivateConnectionLost(support_->frame_sink_id());
+  support_->frame_sink_manager()->OnPrivateConnectionLost(
+      support_->frame_sink_id());
 }
 
 }  // namespace viz

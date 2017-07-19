@@ -41,7 +41,6 @@ TestLayerTreeFrameSink::TestLayerTreeFrameSink(
       refresh_rate_(refresh_rate),
       task_runner_(std::move(task_runner)),
       frame_sink_id_(kLayerTreeFrameSinkId),
-      frame_sink_manager_(new FrameSinkManager),
       local_surface_id_allocator_(new LocalSurfaceIdAllocator),
       external_begin_frame_source_(this),
       weak_ptr_factory_(this) {
@@ -63,6 +62,8 @@ bool TestLayerTreeFrameSink::BindToClient(
     cc::LayerTreeFrameSinkClient* client) {
   if (!LayerTreeFrameSink::BindToClient(client))
     return false;
+
+  frame_sink_manager_ = base::MakeUnique<FrameSinkManagerImpl>();
 
   std::unique_ptr<cc::OutputSurface> display_output_surface =
       test_client_->CreateDisplayOutputSurface(context_provider());

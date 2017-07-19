@@ -13,7 +13,6 @@
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/service/display/display_client.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support_client.h"
-#include "components/viz/service/frame_sinks/gpu_compositor_frame_sink_delegate.h"
 #include "components/viz/service/hit_test/hit_test_aggregator.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -23,11 +22,9 @@ class BeginFrameSource;
 }
 
 namespace viz {
-class FrameSinkManager;
 class CompositorFrameSinkSupport;
 class Display;
-
-class GpuCompositorFrameSinkDelegate;
+class FrameSinkManagerImpl;
 
 class GpuRootCompositorFrameSink
     : public NON_EXPORTED_BASE(CompositorFrameSinkSupportClient),
@@ -37,8 +34,7 @@ class GpuRootCompositorFrameSink
       public NON_EXPORTED_BASE(DisplayClient) {
  public:
   GpuRootCompositorFrameSink(
-      GpuCompositorFrameSinkDelegate* delegate,
-      FrameSinkManager* frame_sink_manager,
+      FrameSinkManagerImpl* frame_sink_manager,
       const FrameSinkId& frame_sink_id,
       std::unique_ptr<Display> display,
       std::unique_ptr<cc::BeginFrameSource> begin_frame_source,
@@ -87,7 +83,6 @@ class GpuRootCompositorFrameSink
   void OnClientConnectionLost();
   void OnPrivateConnectionLost();
 
-  GpuCompositorFrameSinkDelegate* const delegate_;
   std::unique_ptr<CompositorFrameSinkSupport> support_;
 
   // GpuRootCompositorFrameSink holds a Display and its BeginFrameSource if

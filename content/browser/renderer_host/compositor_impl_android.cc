@@ -102,8 +102,7 @@ struct CompositorDependencies {
   CompositorDependencies() : frame_sink_id_allocator(kDefaultClientId) {
     // TODO(danakj): Don't make a FrameSinkManagerImpl when display is in the
     // Gpu process, instead get the mojo pointer from the Gpu process.
-    frame_sink_manager_impl =
-        base::MakeUnique<viz::FrameSinkManagerImpl>(false, nullptr);
+    frame_sink_manager_impl = base::MakeUnique<viz::FrameSinkManagerImpl>();
     surface_utils::ConnectWithLocalFrameSinkManager(
         &host_frame_sink_manager, frame_sink_manager_impl.get());
   }
@@ -431,9 +430,8 @@ void Compositor::CreateContextProvider(
 }
 
 // static
-viz::FrameSinkManager* CompositorImpl::GetFrameSinkManager() {
-  return g_compositor_dependencies.Get()
-      .frame_sink_manager_impl->frame_sink_manager();
+viz::FrameSinkManagerImpl* CompositorImpl::GetFrameSinkManager() {
+  return g_compositor_dependencies.Get().frame_sink_manager_impl.get();
 }
 
 // static
@@ -813,7 +811,7 @@ void CompositorImpl::InitializeDisplay(
     // TODO(danakj): Populate gpu_capabilities_ for VulkanContextProvider.
   }
 
-  viz::FrameSinkManager* manager = GetFrameSinkManager();
+  viz::FrameSinkManagerImpl* manager = GetFrameSinkManager();
   auto* task_runner = base::ThreadTaskRunnerHandle::Get().get();
   auto scheduler = base::MakeUnique<viz::DisplayScheduler>(
       root_window_->GetBeginFrameSource(), task_runner,

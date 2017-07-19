@@ -24,7 +24,7 @@
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display/display_scheduler.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support_manager.h"
-#include "components/viz/service/frame_sinks/frame_sink_manager.h"
+#include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace viz {
@@ -43,7 +43,7 @@ class TestCompositorFrameSinkSupportManager
     : public CompositorFrameSinkSupportManager {
  public:
   explicit TestCompositorFrameSinkSupportManager(
-      FrameSinkManager* frame_sink_manager)
+      FrameSinkManagerImpl* frame_sink_manager)
       : frame_sink_manager_(frame_sink_manager) {}
   ~TestCompositorFrameSinkSupportManager() override = default;
 
@@ -59,7 +59,7 @@ class TestCompositorFrameSinkSupportManager
   }
 
  private:
-  FrameSinkManager* const frame_sink_manager_;
+  FrameSinkManagerImpl* const frame_sink_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(TestCompositorFrameSinkSupportManager);
 };
@@ -131,7 +131,7 @@ class DirectLayerTreeFrameSinkTest : public testing::Test {
 
   const gfx::Size display_size_;
   const gfx::Rect display_rect_;
-  FrameSinkManager frame_sink_manager_;
+  FrameSinkManagerImpl frame_sink_manager_;
   TestCompositorFrameSinkSupportManager support_manager_;
   cc::TestSharedBitmapManager bitmap_manager_;
   cc::TestGpuMemoryBufferManager gpu_memory_buffer_manager_;

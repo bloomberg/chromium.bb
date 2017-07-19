@@ -15,7 +15,6 @@
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support_client.h"
-#include "components/viz/service/frame_sinks/gpu_compositor_frame_sink_delegate.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace viz {
@@ -27,8 +26,7 @@ class GpuCompositorFrameSink
       public NON_EXPORTED_BASE(cc::mojom::CompositorFrameSinkPrivate) {
  public:
   GpuCompositorFrameSink(
-      GpuCompositorFrameSinkDelegate* delegate,
-      FrameSinkManager* frame_sink_manager,
+      FrameSinkManagerImpl* frame_sink_manager,
       const FrameSinkId& frame_sink_id,
       cc::mojom::CompositorFrameSinkRequest request,
       cc::mojom::CompositorFrameSinkPrivateRequest private_request,
@@ -60,7 +58,6 @@ class GpuCompositorFrameSink
   void OnClientConnectionLost();
   void OnPrivateConnectionLost();
 
-  GpuCompositorFrameSinkDelegate* const delegate_;
   std::unique_ptr<CompositorFrameSinkSupport> support_;
 
   cc::mojom::CompositorFrameSinkClientPtr client_;

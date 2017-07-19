@@ -151,9 +151,8 @@ class OffscreenCanvasProviderImplTest : public testing::Test {
 #endif
     host_frame_sink_manager_ = base::MakeUnique<viz::HostFrameSinkManager>();
 
-    // The FrameSinkManager implementation is in-process here for tests.
-    frame_sink_manager_ =
-        base::MakeUnique<viz::FrameSinkManagerImpl>(false, nullptr);
+    // The FrameSinkManagerImpl implementation is in-process here for tests.
+    frame_sink_manager_ = base::MakeUnique<viz::FrameSinkManagerImpl>();
     surface_utils::ConnectWithLocalFrameSinkManager(
         host_frame_sink_manager_.get(), frame_sink_manager_.get());
 

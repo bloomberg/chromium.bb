@@ -15,12 +15,12 @@
 #include "cc/test/test_task_graph_runner.h"
 #include "components/viz/common/surfaces/frame_sink_id_allocator.h"
 #include "components/viz/service/display/display.h"
-#include "components/viz/service/frame_sinks/frame_sink_manager.h"
+#include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "ui/compositor/compositor.h"
 
 namespace cc {
-class FrameSinkManager;
+class FrameSinkManagerImpl;
 class ResourceSettings;
 }
 
@@ -39,7 +39,7 @@ class InProcessContextFactory : public ContextFactory,
   // TODO(crbug.com/657959): |frame_sink_manager| should go away and we should
   // use the LayerTreeFrameSink from the HostFrameSinkManager.
   InProcessContextFactory(viz::HostFrameSinkManager* host_frame_sink_manager,
-                          viz::FrameSinkManager* frame_sink_manager);
+                          viz::FrameSinkManagerImpl* frame_sink_manager);
   ~InProcessContextFactory() override;
 
   // If true (the default) an OutputSurface is created that does not display
@@ -87,7 +87,7 @@ class InProcessContextFactory : public ContextFactory,
   const viz::ResourceSettings& GetResourceSettings() const override;
   void AddObserver(ContextFactoryObserver* observer) override;
   void RemoveObserver(ContextFactoryObserver* observer) override;
-  viz::FrameSinkManager* GetFrameSinkManager() override;
+  viz::FrameSinkManagerImpl* GetFrameSinkManager() override;
 
  private:
   struct PerCompositorData;
@@ -104,7 +104,7 @@ class InProcessContextFactory : public ContextFactory,
   bool use_test_surface_;
   double refresh_rate_ = 60.0;
   viz::HostFrameSinkManager* const host_frame_sink_manager_;
-  viz::FrameSinkManager* const frame_sink_manager_;
+  viz::FrameSinkManagerImpl* const frame_sink_manager_;
   base::ObserverList<ContextFactoryObserver> observer_list_;
 
   cc::RendererSettings renderer_settings_;

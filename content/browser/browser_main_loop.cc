@@ -1383,8 +1383,8 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
 }
 
 #if !defined(OS_ANDROID)
-viz::FrameSinkManager* BrowserMainLoop::GetFrameSinkManager() const {
-  return frame_sink_manager_impl_->frame_sink_manager();
+viz::FrameSinkManagerImpl* BrowserMainLoop::GetFrameSinkManager() const {
+  return frame_sink_manager_impl_.get();
 }
 #endif
 
@@ -1474,8 +1474,7 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   }
 #if !defined(OS_ANDROID)
   if (!service_manager::ServiceManagerIsRemote()) {
-    frame_sink_manager_impl_ =
-        base::MakeUnique<viz::FrameSinkManagerImpl>(false, nullptr);
+    frame_sink_manager_impl_ = base::MakeUnique<viz::FrameSinkManagerImpl>();
 
     host_frame_sink_manager_ = base::MakeUnique<viz::HostFrameSinkManager>();
 

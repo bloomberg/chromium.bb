@@ -17,7 +17,7 @@
 
 namespace cc {
 class LocalSurfaceIdAllocator;
-class FrameSinkManager;
+class FrameSinkManagerImpl;
 }  // namespace cc
 
 namespace viz {
@@ -32,12 +32,12 @@ class VIZ_SERVICE_EXPORT DirectLayerTreeFrameSink
       public cc::ExternalBeginFrameSourceClient,
       public NON_EXPORTED_BASE(DisplayClient) {
  public:
-  // The underlying Display, FrameSinkManager, and LocalSurfaceIdAllocator must
-  // outlive this class.
+  // The underlying Display, FrameSinkManagerImpl, and LocalSurfaceIdAllocator
+  // must outlive this class.
   DirectLayerTreeFrameSink(
       const FrameSinkId& frame_sink_id,
       CompositorFrameSinkSupportManager* support_manager,
-      FrameSinkManager* frame_sink_manager,
+      FrameSinkManagerImpl* frame_sink_manager,
       Display* display,
       scoped_refptr<ContextProvider> context_provider,
       scoped_refptr<ContextProvider> worker_context_provider,
@@ -46,7 +46,7 @@ class VIZ_SERVICE_EXPORT DirectLayerTreeFrameSink
   DirectLayerTreeFrameSink(
       const FrameSinkId& frame_sink_id,
       CompositorFrameSinkSupportManager* support_manager,
-      FrameSinkManager* frame_sink_manager,
+      FrameSinkManagerImpl* frame_sink_manager,
       Display* display,
       scoped_refptr<cc::VulkanContextProvider> vulkan_context_provider);
   ~DirectLayerTreeFrameSink() override;
@@ -85,7 +85,7 @@ class VIZ_SERVICE_EXPORT DirectLayerTreeFrameSink
   const FrameSinkId frame_sink_id_;
   LocalSurfaceId local_surface_id_;
   CompositorFrameSinkSupportManager* const support_manager_;
-  FrameSinkManager* frame_sink_manager_;
+  FrameSinkManagerImpl* frame_sink_manager_;
   LocalSurfaceIdAllocator local_surface_id_allocator_;
   Display* display_;
   gfx::Size last_swap_frame_size_;
