@@ -827,7 +827,11 @@ std::unique_ptr<protocol::Page::Frame> InspectorPageAgent::BuildObjectForFrame(
       name = frame->DeprecatedLocalOwner()->getAttribute(HTMLNames::idAttr);
     frame_object->setName(name);
   }
-
+  if (frame->GetDocument() && frame->GetDocument()->Loader() &&
+      !frame->GetDocument()->Loader()->UnreachableURL().IsEmpty()) {
+    frame_object->setUnreachableUrl(
+        frame->GetDocument()->Loader()->UnreachableURL().GetString());
+  }
   return frame_object;
 }
 
