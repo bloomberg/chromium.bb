@@ -27,11 +27,8 @@ cr.define('extensions', function() {
     /** @param {extensions.Manager} manager */
     managerReady(manager) {
       this.manager_ = manager;
-      this.manager_.toolbar.setDelegate(this);
-      this.manager_.set('itemDelegate', this);
-      this.manager_.packDialog.set('delegate', this);
-      this.manager_.loadError.set('delegate', this);
-      this.manager_.errorPage.delegate = this;
+      this.manager_.set('delegate', this);
+
       var keyboardShortcuts = this.manager_.keyboardShortcuts;
       keyboardShortcuts.addEventListener(
           'shortcut-updated', this.onExtensionCommandUpdated_.bind(this));

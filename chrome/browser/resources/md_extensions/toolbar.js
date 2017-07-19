@@ -28,26 +28,23 @@ cr.define('extensions', function() {
     behaviors: [I18nBehavior],
 
     properties: {
+      /** @type {extensions.ToolbarDelegate} */
+      delegate: Object,
+
       inDevMode: {
         type: Boolean,
         value: false,
       },
     },
 
-    /** @param {extensions.ToolbarDelegate} delegate */
-    setDelegate: function(delegate) {
-      /** @private {extensions.ToolbarDelegate} */
-      this.delegate_ = delegate;
-    },
-
     /** @private */
     onDevModeChange_: function() {
-      this.delegate_.setProfileInDevMode(this.$['dev-mode'].checked);
+      this.delegate.setProfileInDevMode(this.$['dev-mode'].checked);
     },
 
     /** @private */
     onLoadUnpackedTap_: function() {
-      this.delegate_.loadUnpacked();
+      this.delegate.loadUnpacked();
     },
 
     /** @private */
@@ -57,7 +54,7 @@ cr.define('extensions', function() {
 
     /** @private */
     onUpdateNowTap_: function() {
-      this.delegate_.updateAllExtensions();
+      this.delegate.updateAllExtensions();
     },
   });
 

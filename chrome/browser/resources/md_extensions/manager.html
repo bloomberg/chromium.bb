@@ -72,7 +72,7 @@
     <extensions-drop-overlay></extensions-drop-overlay>
     <paper-header-panel id="panel">
       <extensions-toolbar class="paper-header" in-dev-mode="[[inDevMode]]"
-          on-pack-tap="onPackTap_"
+          on-pack-tap="onPackTap_" delegate="[[delegate]]"
           on-cr-toolbar-menu-tap="onMenuButtonTap_"
           on-search-changed="onFilterChanged_">
       </extensions-toolbar>
@@ -84,10 +84,10 @@
       <neon-animated-pages id="pages" attr-for-selected="id"
           selected="items-list">
         <extensions-item-list id="items-list" items="[[extensions]]"
-            delegate="[[itemDelegate]]" in-dev-mode="[[inDevMode]]"
+            delegate="[[delegate]]" in-dev-mode="[[inDevMode]]"
             filter="[[filter]]" hidden$="[[!didInitPage_]]">
         </extensions-item-list>
-        <extensions-detail-view id="details-view" delegate="[[itemDelegate]]"
+        <extensions-detail-view id="details-view" delegate="[[delegate]]"
             in-dev-mode="[[inDevMode]]" data="[[detailViewItem_]]"
             on-close="onDetailsViewClose_">
         </extensions-detail-view>
@@ -95,13 +95,15 @@
             items="[[extensions]]">
         </extensions-keyboard-shortcuts>
         <extensions-error-page id="error-page" on-close="onErrorPageClose_"
-            data="[[errorPageItem_]]">
+            data="[[errorPageItem_]]" delegate="[[delegate]]">
         </extensions-error-page>
       </neon-animated-pages>
       <extensions-options-dialog id="options-dialog">
       </extensions-options-dialog>
-      <extensions-pack-dialog id="pack-dialog"></extensions-pack-dialog>
-      <extensions-load-error id="load-error"></extensions-load-error>
+      <extensions-pack-dialog id="pack-dialog" delegate="[[delegate]]">
+      </extensions-pack-dialog>
+      <extensions-load-error id="load-error" delegate="[[delegate]]">
+      </extensions-load-error>
     </paper-header-panel>
   </template>
   <script src="chrome://extensions/manager.js"></script>
