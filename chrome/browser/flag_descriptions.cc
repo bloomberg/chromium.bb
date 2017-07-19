@@ -2309,6 +2309,10 @@ const char kEnableTouchSupportForScreenMagnifierName[] =
 const char kEnableTouchSupportForScreenMagnifierDescription[] =
     "Enables touch support for screen magnifier";
 
+const char kFileManagerTouchModeName[] = "Files App. touch mode";
+const char kFileManagerTouchModeDescription[] =
+    "Touchscreen-specific interactions of the Files app.";
+
 const char kEnableZipArchiverOnFileManagerName[] = "ZIP archiver for Drive";
 
 const char kEnableZipArchiverOnFileManagerDescription[] =
