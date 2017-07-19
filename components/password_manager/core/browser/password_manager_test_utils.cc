@@ -46,7 +46,6 @@ std::unique_ptr<PasswordForm> CreatePasswordFormFromDataForTesting(
   if (form_data.username_value) {
     form->username_value = base::WideToUTF16(form_data.username_value);
     form->display_name = form->username_value;
-    form->skip_zero_click = true;
     if (form_data.password_value) {
       if (wcscmp(form_data.password_value, kTestingFederatedLoginMarker) == 0)
         form->federation_origin = url::Origin(GURL(kTestingFederationUrlSpec));
