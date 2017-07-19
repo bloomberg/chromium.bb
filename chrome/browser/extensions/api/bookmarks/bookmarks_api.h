@@ -324,17 +324,13 @@ class BookmarksIOFunction : public BookmarksFunction,
                           void* params) override;
   void FileSelectionCanceled(void* params) override;
 
-  void SelectFile(ui::SelectFileDialog::Type type);
-
- protected:
-  ~BookmarksIOFunction() override;
-
- private:
   void ShowSelectFileDialog(
       ui::SelectFileDialog::Type type,
       const base::FilePath& default_path);
 
  protected:
+  ~BookmarksIOFunction() override;
+
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
 };
 
