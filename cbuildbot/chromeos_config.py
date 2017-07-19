@@ -8,6 +8,7 @@ from __future__ import print_function
 
 import copy
 
+from chromite.lib.const import waterfall
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import factory
@@ -29,17 +30,17 @@ def GetDefaultWaterfall(build_config, is_release_branch):
     #   waterfall.
     # - Otherwise, it belongs on the internal waterfall.
     if is_release_branch:
-      return constants.WATERFALL_RELEASE
+      return waterfall.WATERFALL_RELEASE
     else:
-      return constants.WATERFALL_INTERNAL
+      return waterfall.WATERFALL_INTERNAL
   elif config_lib.IsCQType(b_type):
     # A Paladin can appear on the public or internal waterfall depending on its
     # 'internal' status.
-    return (constants.WATERFALL_INTERNAL if build_config['internal'] else
-            constants.WATERFALL_EXTERNAL)
+    return (waterfall.WATERFALL_INTERNAL if build_config['internal'] else
+            waterfall.WATERFALL_EXTERNAL)
   elif config_lib.IsPFQType(b_type) or b_type in INTERNAL_TYPES:
     # These builder types belong on the internal waterfall.
-    return constants.WATERFALL_INTERNAL
+    return waterfall.WATERFALL_INTERNAL
   else:
     # No default active waterfall.
     return None
@@ -721,7 +722,7 @@ _cheets_vmtest_boards = frozenset([
 # aren't included by default (see IsDefaultMainWaterfall). This loosely
 # corresponds to the set of experimental or self-standing configs.
 _waterfall_config_map = {
-    constants.WATERFALL_EXTERNAL: frozenset([
+    waterfall.WATERFALL_EXTERNAL: frozenset([
         # Full
         'amd64-generic-full',
         'arm-generic-full',
@@ -733,7 +734,7 @@ _waterfall_config_map = {
         'amd64-generic-asan',
     ]),
 
-    constants.WATERFALL_INTERNAL: frozenset([
+    waterfall.WATERFALL_INTERNAL: frozenset([
         # Firmware Builders.
         'link-depthcharge-full-firmware',
     ]),
@@ -1335,7 +1336,7 @@ def GeneralTemplates(site_config, ge_build_config):
       trybot_list=False,
       doc='http://www.chromium.org/chromium-os/build/builder-overview#'
           'TOC-Chrome-PFQ',
-      active_waterfall=constants.WATERFALL_RELEASE)
+      active_waterfall=waterfall.WATERFALL_RELEASE)
 
   site_config.AddTemplate(
       'internal_paladin',
@@ -1391,7 +1392,7 @@ def GeneralTemplates(site_config, ge_build_config):
       description='Run Unittests repeatedly to look for flake.',
 
       builder_class_name='test_builders.UnittestStressBuilder',
-      active_waterfall=constants.WATERFALL_TRYBOT,
+      active_waterfall=waterfall.WATERFALL_TRYBOT,
 
       # Make this available, so we can stress a previous build.
       manifest_version=True,
@@ -1599,7 +1600,7 @@ def GeneralTemplates(site_config, ge_build_config):
       # This is the actual work we want to do.
       paygen=True,
       upload_hw_test_artifacts=False,
-      active_waterfall=constants.WATERFALL_TRYBOT,
+      active_waterfall=waterfall.WATERFALL_TRYBOT,
   )
 
   site_config.AddTemplate(
@@ -1764,7 +1765,7 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       health_threshold=1,
       afdo_use=False,
       important=True,
-      active_waterfall=constants.WATERFALL_INTERNAL,
+      active_waterfall=waterfall.WATERFALL_INTERNAL,
       buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
       slave_configs=[],
   )
@@ -1777,7 +1778,7 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
             *args,
             boards=['peppy' if name == 'amd64' else board],
             important=True,
-            active_waterfall=constants.WATERFALL_INTERNAL,
+            active_waterfall=waterfall.WATERFALL_INTERNAL,
             **kwargs
         ),
         site_config.Add(
@@ -1786,7 +1787,7 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
             *args,
             boards=[board],
             important=True,
-            active_waterfall=constants.WATERFALL_INTERNAL,
+            active_waterfall=waterfall.WATERFALL_INTERNAL,
             hw_tests=hw_test_list.ToolchainTestMedium(
                 constants.HWTEST_MACH_POOL),
             hw_tests_override=hw_test_list.ToolchainTestMedium(
@@ -1855,7 +1856,7 @@ def PreCqBuilders(site_config, boards_dict, ge_build_config):
   site_config.AddTemplate(
       'pre_cq',
       site_config.templates.paladin,
-      active_waterfall=constants.WATERFALL_TRYBOT,
+      active_waterfall=waterfall.WATERFALL_TRYBOT,
       build_type=constants.PRE_CQ_TYPE,
       build_packages_in_background=True,
       pre_cq=True,
@@ -1909,7 +1910,7 @@ def PreCqBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.no_hwtest_builder,
       boards=[],
       build_type=constants.PRE_CQ_LAUNCHER_TYPE,
-      active_waterfall=constants.WATERFALL_INTERNAL,
+      active_waterfall=waterfall.WATERFALL_INTERNAL,
       buildslave_type=constants.GCE_WIMPY_BUILD_SLAVE_TYPE,
       description='Launcher for Pre-CQ builders',
       trybot_list=False,
@@ -2369,7 +2370,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
           do_not_apply_cq_patches=True,
           prebuilts=False,
           hw_tests=hw_test_list.SharedPoolCQ(),
-          active_waterfall=constants.WATERFALL_INTERNAL,
+          active_waterfall=waterfall.WATERFALL_INTERNAL,
       )
   )
 
@@ -2441,9 +2442,9 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
 
     if board in _paladin_active:
       if base_config.get('internal'):
-        customizations.update(active_waterfall=constants.WATERFALL_INTERNAL)
+        customizations.update(active_waterfall=waterfall.WATERFALL_INTERNAL)
       else:
-        customizations.update(active_waterfall=constants.WATERFALL_EXTERNAL)
+        customizations.update(active_waterfall=waterfall.WATERFALL_EXTERNAL)
 
     if board in _lakitu_boards:
       customizations.update(
@@ -2512,7 +2513,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
           site_config.templates.paladin,
           site_config.templates.internal_nowithdebug_paladin,
           boards=['chell'],
-          active_waterfall=constants.WATERFALL_INTERNAL,
+          active_waterfall=waterfall.WATERFALL_INTERNAL,
       ),
 
       site_config.Add(
@@ -2525,7 +2526,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
           compilecheck=True,
           unittests=False,
           important=False,
-          active_waterfall=constants.WATERFALL_INTERNAL,
+          active_waterfall=waterfall.WATERFALL_INTERNAL,
       ),
   ])
 
@@ -2547,7 +2548,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
           unittests=False,
           upload_hw_test_artifacts=False,
           vm_tests=[],
-          active_waterfall=constants.WATERFALL_INTERNAL,
+          active_waterfall=waterfall.WATERFALL_INTERNAL,
       )
   )
 
@@ -2599,7 +2600,7 @@ def IncrementalBuilders(site_config, boards_dict, ge_build_config):
       'x86-generic-incremental',
       site_config.templates.incremental,
       board_configs['x86-generic'],
-      active_waterfall=constants.WATERFALL_EXTERNAL,
+      active_waterfall=waterfall.WATERFALL_EXTERNAL,
   )
 
   # Build external source, for an internal board.
@@ -2609,7 +2610,7 @@ def IncrementalBuilders(site_config, boards_dict, ge_build_config):
       board_configs['daisy'],
       site_config.templates.external,
       useflags=append_useflags(['-chrome_internal']),
-      active_waterfall=constants.WATERFALL_EXTERNAL,
+      active_waterfall=waterfall.WATERFALL_EXTERNAL,
   )
 
   site_config.Add(
@@ -2618,7 +2619,7 @@ def IncrementalBuilders(site_config, boards_dict, ge_build_config):
       board_configs['amd64-generic'],
       # This builder runs on a VM, so it can't run VM tests.
       vm_tests=[],
-      active_waterfall=constants.WATERFALL_EXTERNAL,
+      active_waterfall=waterfall.WATERFALL_EXTERNAL,
   )
 
   site_config.Add(
@@ -2634,7 +2635,7 @@ def IncrementalBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.incremental,
       site_config.templates.internal_incremental,
       boards=['chell'],
-      active_waterfall=constants.WATERFALL_INTERNAL,
+      active_waterfall=waterfall.WATERFALL_INTERNAL,
   )
 
   site_config.Add(
@@ -2644,7 +2645,7 @@ def IncrementalBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.lakitu_notification_emails,
       board_configs['lakitu'],
       site_config.templates.lakitu_test_customizations,
-      active_waterfall=constants.WATERFALL_INTERNAL,
+      active_waterfall=waterfall.WATERFALL_INTERNAL,
   )
 
   site_config.Add(
@@ -2945,7 +2946,7 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
           internal_board_configs,
           site_config.templates.chrome_pfq,
           important=True,
-          active_waterfall=constants.WATERFALL_INTERNAL,
+          active_waterfall=waterfall.WATERFALL_INTERNAL,
       )
   )
   master_config.AddSlaves(
@@ -2955,7 +2956,7 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
           internal_board_configs,
           site_config.templates.chrome_pfq,
           important=False,
-          active_waterfall=constants.WATERFALL_INTERNAL,
+          active_waterfall=waterfall.WATERFALL_INTERNAL,
       )
   )
   # Define the result of the build configs for tryjob purposes.
@@ -3098,9 +3099,9 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
   def _GetConfigWaterfall(builder):
     if builder == config_lib.CONFIG_TEMPLATE_RELEASE:
       if is_release_branch:
-        return constants.WATERFALL_RELEASE
+        return waterfall.WATERFALL_RELEASE
       else:
-        return constants.WATERFALL_INTERNAL
+        return waterfall.WATERFALL_INTERNAL
     else:
       # Currently just support RELEASE builders
       raise ValueError('Do not support builder %s.' % builder)
@@ -3274,9 +3275,9 @@ def InsertWaterfallDefaults(site_config, ge_build_config):
 
   # Apply manual configs, not used for release branches.
   if not is_release_branch:
-    for waterfall, names in _waterfall_config_map.iteritems():
+    for wfall, names in _waterfall_config_map.iteritems():
       for name in names:
-        site_config[name]['active_waterfall'] = waterfall
+        site_config[name]['active_waterfall'] = wfall
 
 
 def ApplyCustomOverrides(site_config, ge_build_config):
@@ -3436,7 +3437,7 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
           'lumpy', 'arm-generic', 'amd64-generic'
       ],
       build_type=constants.CHROOT_BUILDER_TYPE,
-      active_waterfall=constants.WATERFALL_EXTERNAL,
+      active_waterfall=waterfall.WATERFALL_EXTERNAL,
       buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
       builder_class_name='sdk_builders.ChrootSdkBuilder',
       use_sdk=False,
@@ -3471,7 +3472,7 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       build_type=constants.GENERIC_TYPE,
       boards=[],
       builder_class_name='config_builders.UpdateConfigBuilder',
-      active_waterfall=constants.WATERFALL_INFRA,
+      active_waterfall=waterfall.WATERFALL_INFRA,
       buildslave_type=constants.GCE_WIMPY_BUILD_SLAVE_TYPE,
   )
 
@@ -3492,7 +3493,7 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       build_type=None,
       builder_class_name='release_builders.CreateBranchBuilder',
       description='Used for creating/deleting branches (TPMs only)',
-      active_waterfall=constants.WATERFALL_TRYBOT,
+      active_waterfall=waterfall.WATERFALL_TRYBOT,
   )
 
   site_config.AddWithoutTemplate(
@@ -3503,7 +3504,7 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       builder_class_name='test_builders.ManifestVersionedSyncBuilder',
       chroot_replace=True,
       description='Sync tryjob to help with cbuildbot development',
-      active_waterfall=constants.WATERFALL_TRYBOT,
+      active_waterfall=waterfall.WATERFALL_TRYBOT,
   )
 
   site_config.AddWithoutTemplate(

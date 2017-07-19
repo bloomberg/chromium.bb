@@ -10,7 +10,7 @@ full and pre-flight-queue builds.
 
 from __future__ import print_function
 
-import distutils.version
+import distutils.version # pylint: disable=import-error,no-name-in-module
 import glob
 import json
 import mock
@@ -27,6 +27,7 @@ from chromite.cbuildbot import tee
 from chromite.cbuildbot import topology
 from chromite.cbuildbot import trybot_patch_pool
 from chromite.cbuildbot.stages import completion_stages
+from chromite.lib.const import waterfall
 from chromite.lib import builder_status_lib
 from chromite.lib import cidb
 from chromite.lib import cgroups
@@ -1017,8 +1018,8 @@ def _GetRunEnvironment(options, build_config):
   # is not used on waterfalls that the db schema does not support (in particular
   # the chromeos.chrome waterfall).
   # See crbug.com/406940
-  waterfall = os.environ.get('BUILDBOT_MASTERNAME', '')
-  if not waterfall in constants.CIDB_KNOWN_WATERFALLS:
+  wfall = os.environ.get('BUILDBOT_MASTERNAME', '')
+  if not wfall in waterfall.CIDB_KNOWN_WATERFALLS:
     return _ENVIRONMENT_STANDALONE
 
   # TODO(akeshet): Clean up this code once we have better defined flags to

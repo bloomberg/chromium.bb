@@ -11,11 +11,11 @@ import mock
 from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.cbuildbot.stages import scheduler_stages
+from chromite.lib.const import waterfall
 from chromite.lib import auth
 from chromite.lib import buildbucket_lib
 from chromite.lib import cidb
 from chromite.lib import config_lib
-from chromite.lib import constants
 from chromite.lib import fake_cidb
 
 
@@ -63,7 +63,7 @@ class ScheduleSalvesStageTest(generic_stages_unittest.AbstractStageTestCase):
 
     slave_config_map_1 = {
         'slave_external': config_lib.BuildConfig(
-            important=True, active_waterfall=constants.WATERFALL_EXTERNAL)}
+            important=True, active_waterfall=waterfall.WATERFALL_EXTERNAL)}
     self.PatchObject(generic_stages.BuilderStage, '_GetSlaveConfigMap',
                      return_value=slave_config_map_1)
     self.assertRaises(
@@ -73,7 +73,7 @@ class ScheduleSalvesStageTest(generic_stages_unittest.AbstractStageTestCase):
 
     slave_config_map_2 = {
         'slave_internal': config_lib.BuildConfig(
-            important=True, active_waterfall=constants.WATERFALL_INTERNAL)}
+            important=True, active_waterfall=waterfall.WATERFALL_INTERNAL)}
     self.PatchObject(generic_stages.BuilderStage, '_GetSlaveConfigMap',
                      return_value=slave_config_map_2)
     self.assertRaises(
@@ -90,9 +90,9 @@ class ScheduleSalvesStageTest(generic_stages_unittest.AbstractStageTestCase):
 
     slave_config_map = {
         'slave_external': config_lib.BuildConfig(
-            important=False, active_waterfall=constants.WATERFALL_EXTERNAL),
+            important=False, active_waterfall=waterfall.WATERFALL_EXTERNAL),
         'slave_internal': config_lib.BuildConfig(
-            important=False, active_waterfall=constants.WATERFALL_INTERNAL),}
+            important=False, active_waterfall=waterfall.WATERFALL_INTERNAL),}
     self.PatchObject(generic_stages.BuilderStage, '_GetSlaveConfigMap',
                      return_value=slave_config_map)
     stage.ScheduleSlaveBuildsViaBuildbucket(important_only=False, dryrun=True)
@@ -111,9 +111,9 @@ class ScheduleSalvesStageTest(generic_stages_unittest.AbstractStageTestCase):
 
     slave_config_map = {
         'slave_external': config_lib.BuildConfig(
-            important=False, active_waterfall=constants.WATERFALL_EXTERNAL),
+            important=False, active_waterfall=waterfall.WATERFALL_EXTERNAL),
         'slave_internal': config_lib.BuildConfig(
-            important=True, active_waterfall=constants.WATERFALL_INTERNAL)}
+            important=True, active_waterfall=waterfall.WATERFALL_INTERNAL)}
     self.PatchObject(generic_stages.BuilderStage, '_GetSlaveConfigMap',
                      return_value=slave_config_map)
     self.assertRaises(
@@ -131,9 +131,9 @@ class ScheduleSalvesStageTest(generic_stages_unittest.AbstractStageTestCase):
 
     slave_config_map = {
         'slave_external': config_lib.BuildConfig(
-            important=False, active_waterfall=constants.WATERFALL_EXTERNAL),
+            important=False, active_waterfall=waterfall.WATERFALL_EXTERNAL),
         'slave_internal': config_lib.BuildConfig(
-            important=True, active_waterfall=constants.WATERFALL_INTERNAL)}
+            important=True, active_waterfall=waterfall.WATERFALL_INTERNAL)}
     self.PatchObject(generic_stages.BuilderStage, '_GetSlaveConfigMap',
                      return_value=slave_config_map)
 
@@ -173,7 +173,7 @@ class ScheduleSalvesStageTest(generic_stages_unittest.AbstractStageTestCase):
                      return_value=content)
     slave_config = config_lib.BuildConfig(
         name='slave',
-        important=True, active_waterfall=constants.WATERFALL_INTERNAL,
+        important=True, active_waterfall=waterfall.WATERFALL_INTERNAL,
         boards=['board_A'], build_type='paladin')
 
     stage = self.ConstructStage()
@@ -190,7 +190,7 @@ class ScheduleSalvesStageTest(generic_stages_unittest.AbstractStageTestCase):
                      return_value=content)
     slave_config = config_lib.BuildConfig(
         name='slave',
-        important=True, active_waterfall=constants.WATERFALL_INTERNAL,
+        important=True, active_waterfall=waterfall.WATERFALL_INTERNAL,
         boards=['board_A', 'board_B'], build_type='paladin')
 
     stage = self.ConstructStage()

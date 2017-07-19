@@ -36,6 +36,7 @@ except ImportError:
 import types
 
 from chromite.cbuildbot import archive_lib
+from chromite.lib.const import waterfall
 from chromite.lib import constants
 from chromite.lib import metadata_lib
 from chromite.lib import cidb
@@ -669,7 +670,7 @@ class _BuilderRunBase(object):
     # waterfall if no waterfall can be found.
     return (self.attrs.metadata.GetDict().get('buildbot-master-name') or
             os.environ.get('BUILDBOT_MASTERNAME') or
-            constants.WATERFALL_TRYBOT)
+            waterfall.WATERFALL_TRYBOT)
 
   def GetBuildbotUrl(self):
     """Gets the URL of the waterfall hosting the current build."""
@@ -754,7 +755,7 @@ class _BuilderRunBase(object):
 
   def InEmailReportingEnvironment(self):
     """Return True if this run should send reporting emails.."""
-    in_email_waterfall = self.GetWaterfall() in constants.EMAIL_WATERFALLS
+    in_email_waterfall = self.GetWaterfall() in waterfall.EMAIL_WATERFALLS
     return self.InProduction() or in_email_waterfall
 
   def GetVersionInfo(self):

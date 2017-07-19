@@ -11,6 +11,7 @@ import itertools
 import json
 import os
 
+from chromite.lib.const import waterfall
 from chromite.lib import constants
 from chromite.lib import osutils
 
@@ -125,9 +126,9 @@ def IsMasterBuild(config):
 
 def UseBuildbucketScheduler(config):
   """Returns True if this build uses Buildbucket to schedule builds."""
-  return (config.active_waterfall in (constants.WATERFALL_INTERNAL,
-                                      constants.WATERFALL_EXTERNAL,
-                                      constants.WATERFALL_TRYBOT) and
+  return (config.active_waterfall in (waterfall.WATERFALL_INTERNAL,
+                                      waterfall.WATERFALL_EXTERNAL,
+                                      waterfall.WATERFALL_TRYBOT) and
           config.name in (constants.CQ_MASTER,
                           constants.CANARY_MASTER,
                           constants.PFQ_MASTER,
@@ -960,7 +961,7 @@ def DefaultSettings():
       # on its waterfall.
       buildbot_waterfall_name=None,
 
-      # If not None, the name (in constants.CIDB_KNOWN_WATERFALLS) of the
+      # If not None, the name (in waterfall.CIDB_KNOWN_WATERFALLS) of the
       # waterfall that this target should be active on.
       active_waterfall=None,
 

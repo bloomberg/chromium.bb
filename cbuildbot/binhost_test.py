@@ -13,6 +13,7 @@ import unittest
 import warnings
 
 from chromite.cbuildbot import binhost
+from chromite.lib.const import waterfall
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
@@ -187,7 +188,7 @@ class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
       production_config = (
           (config.build_type == config_lib.CONFIG_TYPE_PRECQ) or
           (config.active_waterfall and
-           config.active_waterfall != constants.WATERFALL_TRYBOT)
+           config.active_waterfall != waterfall.WATERFALL_TRYBOT)
       )
 
       if builds_chrome and production_config:

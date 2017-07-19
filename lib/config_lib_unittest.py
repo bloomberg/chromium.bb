@@ -11,6 +11,7 @@ import cPickle
 import json
 import mock
 
+from chromite.lib.const import waterfall
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_test_lib
@@ -911,37 +912,37 @@ class ConfigLibHelperTests(cros_test_lib.TestCase):
     """Test UseBuildbucketScheduler."""
     cq_master_config = config_lib.BuildConfig(
         name=constants.CQ_MASTER,
-        active_waterfall=constants.WATERFALL_INTERNAL)
+        active_waterfall=waterfall.WATERFALL_INTERNAL)
     self.assertTrue(config_lib.UseBuildbucketScheduler(
         cq_master_config))
 
     pre_cq_config = config_lib.BuildConfig(
         name=constants.PRE_CQ_LAUNCHER_NAME,
-        active_waterfall=constants.WATERFALL_INTERNAL)
+        active_waterfall=waterfall.WATERFALL_INTERNAL)
     self.assertTrue(config_lib.UseBuildbucketScheduler(
         pre_cq_config))
 
     pfq_master_config = config_lib.BuildConfig(
         name=constants.PFQ_MASTER,
-        active_waterfall=constants.WATERFALL_INTERNAL)
+        active_waterfall=waterfall.WATERFALL_INTERNAL)
     self.assertTrue(config_lib.UseBuildbucketScheduler(
         pfq_master_config))
 
     toolchain_master = config_lib.BuildConfig(
         name=constants.TOOLCHAIN_MASTTER,
-        active_waterfall=constants.WATERFALL_INTERNAL)
+        active_waterfall=waterfall.WATERFALL_INTERNAL)
     self.assertTrue(config_lib.UseBuildbucketScheduler(
         toolchain_master))
 
     pre_cq_config = config_lib.BuildConfig(
         name=constants.BINHOST_PRE_CQ,
-        active_waterfall=constants.WATERFALL_TRYBOT)
+        active_waterfall=waterfall.WATERFALL_TRYBOT)
     self.assertFalse(config_lib.UseBuildbucketScheduler(
         pre_cq_config))
 
     release_branch_config = config_lib.BuildConfig(
         name=constants.CANARY_MASTER,
-        active_waterfall=constants.WATERFALL_RELEASE)
+        active_waterfall=waterfall.WATERFALL_RELEASE)
     self.assertFalse(config_lib.UseBuildbucketScheduler(
         release_branch_config))
 

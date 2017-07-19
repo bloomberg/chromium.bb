@@ -13,6 +13,7 @@ import cPickle
 
 from chromite.cbuildbot import builders
 from chromite.cbuildbot import chromeos_config
+from chromite.lib.const import waterfall
 from chromite.lib import config_lib
 from chromite.lib import config_lib_unittest
 from chromite.lib import constants
@@ -343,7 +344,7 @@ class CBuildBotTest(ChromeosConfigTestBase):
           self.assertIn(slave_name, self.site_config)
           self.assertTrue(self.site_config[slave_name].active_waterfall)
           self.assertNotEqual(self.site_config[slave_name].active_waterfall,
-                              constants.WATERFALL_TRYBOT)
+                              waterfall.WATERFALL_TRYBOT)
       else:
         self.assertIsNone(config.slave_configs)
 
@@ -1104,7 +1105,7 @@ class OverrideForTrybotTest(ChromeosConfigTestBase):
     all_build_names = set(self.site_config.iterkeys())
     redundant = set()
     seen = set()
-    for waterfall, names in chromeos_config._waterfall_config_map.iteritems():
+    for wfall, names in chromeos_config._waterfall_config_map.iteritems():
       for build_name in names:
         # Every build in the configuration map must be valid.
         self.assertTrue(build_name in all_build_names,
@@ -1119,7 +1120,7 @@ class OverrideForTrybotTest(ChromeosConfigTestBase):
         # The manual configuration must be applied and override any default
         # configuration.
         config = self.site_config[build_name]
-        self.assertEqual(config['active_waterfall'], waterfall,
+        self.assertEqual(config['active_waterfall'], wfall,
                          "Manual waterfall membership is not in the "
                          "configuration for: %s" % (build_name,))
 
@@ -1137,18 +1138,18 @@ class OverrideForTrybotTest(ChromeosConfigTestBase):
   def testNoDuplicateCanaryBuildersOnWaterfall(self):
     seen = {}
     for config in self.site_config.itervalues():
-      waterfall = config['active_waterfall']
+      wfall = config['active_waterfall']
       btype = config['build_type']
-      if not (waterfall and config_lib.IsCanaryType(btype)):
+      if not (wfall and config_lib.IsCanaryType(btype)):
         continue
 
-      waterfall_seen = seen.setdefault(waterfall, set())
+      waterfall_seen = seen.setdefault(wfall, set())
       stack = [config]
       while stack:
         current_config = stack.pop()
         self.assertNotIn(current_config['name'], waterfall_seen,
                          "Multiple builders for '%s' on '%s' waterfall" % (
-                             current_config['name'], waterfall))
+                             current_config['name'], wfall))
         waterfall_seen.add(current_config['name'])
         stack += current_config['child_configs']
 

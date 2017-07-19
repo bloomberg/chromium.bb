@@ -9,6 +9,7 @@ from __future__ import print_function
 import mock
 
 from chromite.cbuildbot import build_status_unittest
+from chromite.lib.const import waterfall
 from chromite.lib import buildbucket_lib
 from chromite.lib import builder_status_lib
 from chromite.lib import config_lib
@@ -82,7 +83,7 @@ class BuilderStatusManagerTest(cros_test_lib.MockTestCase):
     """Test GetBuilderStatusFromCIDB On Failed Status."""
     build_config = 'master-release'
     build_id = self.db.InsertBuild(
-        build_config, constants.WATERFALL_INTERNAL, 1, build_config, 'host1',
+        build_config, waterfall.WATERFALL_INTERNAL, 1, build_config, 'host1',
         status=constants.BUILDER_STATUS_FAILED, milestone_version='60',
         platform_version='9462.0.0')
     stage_id = self.db.InsertBuildStage(
@@ -109,7 +110,7 @@ class BuilderStatusManagerTest(cros_test_lib.MockTestCase):
     """Test GetBuilderStatusFromCIDB On Passed Status."""
     build_config = 'master-release'
     self.db.InsertBuild(
-        build_config, constants.WATERFALL_INTERNAL, 1, build_config, 'host1',
+        build_config, waterfall.WATERFALL_INTERNAL, 1, build_config, 'host1',
         status=constants.BUILDER_STATUS_PASSED, milestone_version='60',
         platform_version='9462.0.0')
     builder_status = (
@@ -208,12 +209,12 @@ class SlaveBuilderStatusTest(cros_test_lib.MockTestCase):
 
   def _InsertMasterSlaveBuildsToCIDB(self):
     """Insert master and slave builds into fake_cidb."""
-    master = self.db.InsertBuild('master', constants.WATERFALL_INTERNAL, 1,
+    master = self.db.InsertBuild('master', waterfall.WATERFALL_INTERNAL, 1,
                                  'master', 'host1')
-    slave1 = self.db.InsertBuild('slave1', constants.WATERFALL_INTERNAL, 2,
+    slave1 = self.db.InsertBuild('slave1', waterfall.WATERFALL_INTERNAL, 2,
                                  'slave1', 'host1', master_build_id=0,
                                  buildbucket_id='id_1', status='fail')
-    slave2 = self.db.InsertBuild('slave2', constants.WATERFALL_INTERNAL, 3,
+    slave2 = self.db.InsertBuild('slave2', waterfall.WATERFALL_INTERNAL, 3,
                                  'slave2', 'host1', master_build_id=0,
                                  buildbucket_id='id_2', status='fail')
     return master, slave1, slave2
@@ -266,7 +267,7 @@ class SlaveBuilderStatusTest(cros_test_lib.MockTestCase):
   def testGetAllSlaveCIDBStatusInfoWithRetriedBuilds(self):
     """GetAllSlaveCIDBStatusInfo doesn't return retried builds."""
     self._InsertMasterSlaveBuildsToCIDB()
-    self.db.InsertBuild('slave1', constants.WATERFALL_INTERNAL, 3,
+    self.db.InsertBuild('slave1', waterfall.WATERFALL_INTERNAL, 3,
                         'slave1', 'host1', master_build_id=0,
                         buildbucket_id='id_3', status='inflight')
 

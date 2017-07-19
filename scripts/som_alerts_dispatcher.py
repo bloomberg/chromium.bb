@@ -12,6 +12,7 @@ import json
 import re
 
 from chromite.cbuildbot import topology
+from chromite.lib.const import waterfall
 from chromite.lib import cidb
 from chromite.lib import classifier
 from chromite.lib import commandline
@@ -108,19 +109,19 @@ def MapCIDBToSOMStatus(status, message_type=None, message_subtype=None):
 
 
 def AddLogsLink(logdog_client, name,
-                waterfall, logdog_prefix, annotation_stream, logs_links):
+                wfall, logdog_prefix, annotation_stream, logs_links):
   """Helper to add a Logdog link.
 
   Args:
     logdog_client: logdog.LogdogClient object.
     name: A name for the the link.
-    waterfall: Waterfall for the Logdog stream
+    wfall: Waterfall for the Logdog stream
     logdog_prefix: Logdog prefix of the stream.
     annotation_stream: Logdog annotation for the stream.
     logs_links: List to add to if the stream is valid.
   """
   if annotation_stream and annotation_stream['name']:
-    url = logdog_client.ConstructViewerURL(waterfall,
+    url = logdog_client.ConstructViewerURL(wfall,
                                            logdog_prefix,
                                            annotation_stream['name'])
     logs_links.append(som.Link(name, url))
@@ -269,7 +270,7 @@ def SummarizeHistory(build, db):
   start_date = now - datetime.timedelta(days=MAX_HISTORY_DAYS)
   history = db.GetBuildHistory(
       build['build_config'], MAX_CONSECUTIVE_BUILDS, start_date=start_date,
-      ending_build_number=build['build_number'], waterfall=build['waterfall'],
+      ending_build_number=build['build_number'], wfall=build['waterfall'],
       buildbot_generation=build['buildbot_generation'])
   history = sorted(history, key=lambda s: s['build_number'], reverse=True)
 
@@ -381,7 +382,7 @@ def GenerateBuildAlert(build, slave_stages, exceptions, messages, annotations,
                tree_status.ConstructViceroyBuildDetailsURL(build['id'])),
       som.Link('buildbot',
                tree_status.ConstructBuildStageURL(
-                   constants.WATERFALL_TO_DASHBOARD[build['waterfall']],
+                   waterfall.WATERFALL_TO_DASHBOARD[build['waterfall']],
                    build['builder_name'], build['build_number'])),
   ]
 
@@ -473,11 +474,11 @@ def GenerateAlertsSummary(db, builds=None,
       build_id, severity = build_tuple
       # pylint: enable=unbalanced-tuple-unpacking
       master = db.GetBuildStatus(build_id)
-      waterfall = master['waterfall']
+      wfall = master['waterfall']
       build_config = master['build_config']
     elif len(build_tuple) == 3:
-      waterfall, build_config, severity = build_tuple
-      master = db.GetMostRecentBuild(waterfall, build_config)
+      wfall, build_config, severity = build_tuple
+      master = db.GetMostRecentBuild(wfall, build_config)
     else:
       logging.error('Invalid build tuple: %s' % str(build_tuple))
       continue
@@ -492,7 +493,7 @@ def GenerateAlertsSummary(db, builds=None,
           [master['id']]).get(master['id'], [])
       logging.info(('%s %s (id %d): %d slaves, %d slave stages, '
                     '%d messages, %d annotations'),
-                   waterfall, build_config, master['id'],
+                   wfall, build_config, master['id'],
                    len(statuses), len(stages), len(messages),
                    len(annotations))
     else:
@@ -502,7 +503,7 @@ def GenerateAlertsSummary(db, builds=None,
       exceptions = db.GetBuildsFailures([master['id']])
       annotations = []
       logging.info('%s %s (id %d): single build, %d stages, %d messages',
-                   waterfall, build_config, master['id'],
+                   wfall, build_config, master['id'],
                    len(stages), len(messages))
 
     # Look for failing and inflight (signifying timeouts) slave builds.

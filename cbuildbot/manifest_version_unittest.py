@@ -14,6 +14,7 @@ from chromite.cbuildbot import build_status
 from chromite.cbuildbot import build_status_unittest
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import repository
+from chromite.lib.const import waterfall
 from chromite.lib import builder_status_lib
 from chromite.lib import buildbucket_lib
 from chromite.lib import build_failure_message
@@ -504,7 +505,7 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
     if config is None:
       config = config_lib.BuildConfig(
           name='master-release', master=True,
-          active_waterfall=constants.WATERFALL_INTERNAL)
+          active_waterfall=waterfall.WATERFALL_INTERNAL)
 
     if metadata is None:
       metadata = metadata_lib.CBuildbotMetadata()

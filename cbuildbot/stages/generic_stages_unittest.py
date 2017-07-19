@@ -17,6 +17,7 @@ from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot import chromeos_config
 from chromite.cbuildbot import commands
 from chromite.cbuildbot.stages import generic_stages
+from chromite.lib.const import waterfall
 from chromite.lib import auth
 from chromite.lib import buildbucket_lib
 from chromite.lib import config_lib
@@ -77,7 +78,7 @@ class StageTestCase(cros_test_lib.MockOutputTestCase,
 
   def _Prepare(self, bot_id=None, extra_config=None, cmd_args=None,
                extra_cmd_args=None, build_id=DEFAULT_BUILD_ID,
-               waterfall=constants.WATERFALL_INTERNAL,
+               wfall=waterfall.WATERFALL_INTERNAL,
                waterfall_url=constants.BUILD_INT_DASHBOARD,
                master_build_id=None,
                site_config=None):
@@ -105,8 +106,8 @@ class StageTestCase(cros_test_lib.MockOutputTestCase,
         Example: ['branch-name', 'some-branch-name'] will effectively cause
         self._run.options.branch_name to be set to 'some-branch-name'.
       build_id: mock build id
-      waterfall: Name of the current waterfall.
-                 Possibly from constants.CIDB_KNOWN_WATERFALLS.
+      wfall: Name of the current waterfall.
+             Possibly from waterfall.CIDB_KNOWN_WATERFALLS.
       waterfall_url: Url for the current waterfall.
       master_build_id: mock build id of master build.
       site_config: SiteConfig to use (or MockSiteConfig)
@@ -166,7 +167,7 @@ class StageTestCase(cros_test_lib.MockOutputTestCase,
     if master_build_id is not None:
       self._run.options.master_build_id = master_build_id
 
-    self._run.attrs.metadata.UpdateWithDict({'buildbot-master-name': waterfall})
+    self._run.attrs.metadata.UpdateWithDict({'buildbot-master-name': wfall})
     self._run.attrs.metadata.UpdateWithDict({'buildbot-url': waterfall_url})
 
     if self.RELEASE_TAG is not None:
@@ -283,7 +284,7 @@ class BuilderStageTest(AbstractStageTestCase):
   """Tests for BuilderStage class."""
 
   def setUp(self):
-    self._Prepare(waterfall=constants.WATERFALL_EXTERNAL)
+    self._Prepare(wfall=waterfall.WATERFALL_EXTERNAL)
     self.mock_cidb = mock.MagicMock()
     cidb.CIDBConnectionFactory.SetupMockCidb(self.mock_cidb)
     # Many tests modify the global results_lib.Results instance.
@@ -504,7 +505,7 @@ class BuilderStageGetBuildFailureMessage(AbstractStageTestCase):
   """Test GetBuildFailureMessage in BuilderStage."""
 
   def setUp(self):
-    self._Prepare(waterfall=constants.WATERFALL_EXTERNAL)
+    self._Prepare(wfall=waterfall.WATERFALL_EXTERNAL)
     # Many tests modify the global results_lib.Results instance.
     results_lib.Results.Clear()
 
@@ -519,7 +520,7 @@ class BuilderStageGetBuildFailureMessage(AbstractStageTestCase):
     db = fake_cidb.FakeCIDBConnection()
     cidb.CIDBConnectionFactory.SetupMockCidb(db)
 
-    build_id = db.InsertBuild('lumpy-pre-cq', constants.WATERFALL_INTERNAL, 1,
+    build_id = db.InsertBuild('lumpy-pre-cq', waterfall.WATERFALL_INTERNAL, 1,
                               'lumpy-pre-cq', 'bot_hostname',
                               status=constants.BUILDER_STATUS_INFLIGHT)
     stage_id = db.InsertBuildStage(build_id, 'BuildPackages', status='fail')
@@ -600,7 +601,7 @@ class MasterConfigBuilderStageTest(AbstractStageTestCase):
   BOT_ID = 'master-paladin'
 
   def setUp(self):
-    self._Prepare(waterfall=constants.WATERFALL_EXTERNAL)
+    self._Prepare(wfall=waterfall.WATERFALL_EXTERNAL)
     self.mock_cidb = mock.MagicMock()
     cidb.CIDBConnectionFactory.SetupMockCidb(self.mock_cidb)
     results_lib.Results.Clear()

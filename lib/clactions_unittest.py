@@ -10,6 +10,7 @@ import datetime
 import itertools
 import random
 
+from chromite.lib.const import waterfall
 from chromite.lib import constants
 from chromite.lib import metadata_lib
 from chromite.cbuildbot import validation_pool
@@ -35,16 +36,16 @@ class TestCLActionHistory(cros_test_lib.TestCase):
     """Test that we correctly compute a CL's handling time."""
     change = metadata_lib.GerritPatchTuple(1, 1, False)
     launcher_id = self.fake_db.InsertBuild(
-        'launcher', constants.WATERFALL_INTERNAL, 1,
+        'launcher', waterfall.WATERFALL_INTERNAL, 1,
         constants.PRE_CQ_LAUNCHER_CONFIG, 'hostname')
     trybot_id = self.fake_db.InsertBuild(
-        'banana pre cq', constants.WATERFALL_INTERNAL, 1,
+        'banana pre cq', waterfall.WATERFALL_INTERNAL, 1,
         'banana-pre-cq', 'hostname')
     master_id = self.fake_db.InsertBuild(
-        'CQ master', constants.WATERFALL_INTERNAL, 1,
+        'CQ master', waterfall.WATERFALL_INTERNAL, 1,
         constants.CQ_MASTER, 'hostname')
     slave_id = self.fake_db.InsertBuild(
-        'banana paladin', constants.WATERFALL_INTERNAL, 1,
+        'banana paladin', waterfall.WATERFALL_INTERNAL, 1,
         'banana-paladin', 'hostname')
 
     start_time = datetime.datetime.now()
@@ -266,7 +267,7 @@ class TestCLActionHistory(cros_test_lib.TestCase):
 
     # Builders can update the CL's pre-CQ status.
     build_id = self.fake_db.InsertBuild(
-        constants.PRE_CQ_LAUNCHER_NAME, constants.WATERFALL_INTERNAL, 1,
+        constants.PRE_CQ_LAUNCHER_NAME, waterfall.WATERFALL_INTERNAL, 1,
         constants.PRE_CQ_LAUNCHER_CONFIG, 'bot-hostname')
 
     self._Act(build_id, change, constants.CL_ACTION_PRE_CQ_WAITING)
@@ -293,7 +294,7 @@ class TestCLActionHistory(cros_test_lib.TestCase):
     # Simulate the pre-cq-launcher screening changes for pre-cq configs
     # to test with.
     launcher_build_id = self.fake_db.InsertBuild(
-        constants.PRE_CQ_LAUNCHER_NAME, constants.WATERFALL_INTERNAL,
+        constants.PRE_CQ_LAUNCHER_NAME, waterfall.WATERFALL_INTERNAL,
         1, constants.PRE_CQ_LAUNCHER_CONFIG, 'bot hostname 1')
 
     self._Act(launcher_build_id, change,
@@ -327,10 +328,10 @@ class TestCLActionHistory(cros_test_lib.TestCase):
 
     # Simulate the tryjobs launching, and picking up the changes.
     banana_build_id = self.fake_db.InsertBuild(
-        'banana', constants.WATERFALL_TRYBOT, 12, 'banana-pre-cq',
+        'banana', waterfall.WATERFALL_TRYBOT, 12, 'banana-pre-cq',
         'banana hostname')
     pineapple_build_id = self.fake_db.InsertBuild(
-        'pineapple', constants.WATERFALL_TRYBOT, 87, 'pineapple-pre-cq',
+        'pineapple', waterfall.WATERFALL_TRYBOT, 87, 'pineapple-pre-cq',
         'pineapple hostname')
 
     self._Act(banana_build_id, change, constants.CL_ACTION_PICKED_UP)
@@ -373,13 +374,13 @@ class TestCLActionHistory(cros_test_lib.TestCase):
     c5 = metadata_lib.GerritPatchTuple(5, 5, False)
 
     launcher_build_id = self.fake_db.InsertBuild(
-        constants.PRE_CQ_LAUNCHER_NAME, constants.WATERFALL_INTERNAL,
+        constants.PRE_CQ_LAUNCHER_NAME, waterfall.WATERFALL_INTERNAL,
         1, constants.PRE_CQ_LAUNCHER_CONFIG, 'bot hostname 1')
     pineapple_build_id = self.fake_db.InsertBuild(
-        'pineapple', constants.WATERFALL_TRYBOT, 87, 'pineapple-pre-cq',
+        'pineapple', waterfall.WATERFALL_TRYBOT, 87, 'pineapple-pre-cq',
         'pineapple hostname')
     guava_build_id = self.fake_db.InsertBuild(
-        'guava', constants.WATERFALL_TRYBOT, 7, 'guava-pre-cq',
+        'guava', waterfall.WATERFALL_TRYBOT, 7, 'guava-pre-cq',
         'guava hostname')
 
     # c1 has 3 pending verifications, but only 1 inflight and 1
@@ -462,10 +463,10 @@ class TestCLStatusCounter(cros_test_lib.TestCase):
     c1p1 = metadata_lib.GerritPatchTuple(1, 1, False)
     c1p2 = metadata_lib.GerritPatchTuple(1, 2, False)
     precq_build_id = self.fake_db.InsertBuild(
-        constants.PRE_CQ_LAUNCHER_NAME, constants.WATERFALL_INTERNAL, 1,
+        constants.PRE_CQ_LAUNCHER_NAME, waterfall.WATERFALL_INTERNAL, 1,
         constants.PRE_CQ_LAUNCHER_CONFIG, 'bot-hostname')
     melon_build_id = self.fake_db.InsertBuild(
-        'melon builder name', constants.WATERFALL_INTERNAL, 1,
+        'melon builder name', waterfall.WATERFALL_INTERNAL, 1,
         'melon-config-name', 'grape-bot-hostname')
 
     # Count should be zero before any actions are recorded.

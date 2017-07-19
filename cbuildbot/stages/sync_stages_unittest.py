@@ -25,6 +25,7 @@ from chromite.cbuildbot import trybot_patch_pool
 from chromite.cbuildbot import validation_pool
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.cbuildbot.stages import sync_stages
+from chromite.lib.const import waterfall
 from chromite.lib import auth
 from chromite.lib import buildbucket_lib
 from chromite.lib import cidb
@@ -390,7 +391,7 @@ class BaseCQTestCase(generic_stages_unittest.StageTestCase):
 
     # BuildStart stage would have seeded the build.
     build_id = self.fake_db.InsertBuild(
-        'test_builder', constants.WATERFALL_TRYBOT, 666, 'test_config',
+        'test_builder', waterfall.WATERFALL_TRYBOT, 666, 'test_config',
         'test_hostname',
         timeout_seconds=23456)
     self._run.attrs.metadata.UpdateWithDict({'build_id': build_id})
@@ -434,7 +435,7 @@ class BaseCQTestCase(generic_stages_unittest.StageTestCase):
     if pre_cq_status is not None:
       config = constants.PRE_CQ_DEFAULT_CONFIGS[0]
       new_build_id = self.fake_db.InsertBuild('Pre cq group',
-                                              constants.WATERFALL_TRYBOT,
+                                              waterfall.WATERFALL_TRYBOT,
                                               1,
                                               config,
                                               'bot-hostname')
@@ -654,7 +655,7 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
 
   def _Prepare(self, bot_id=None, **kwargs):
     build_id = self.fake_db.InsertBuild(
-        constants.PRE_CQ_LAUNCHER_NAME, constants.WATERFALL_INTERNAL, 1,
+        constants.PRE_CQ_LAUNCHER_NAME, waterfall.WATERFALL_INTERNAL, 1,
         constants.PRE_CQ_LAUNCHER_CONFIG, 'bot-hostname')
 
     super(PreCQLauncherStageTest, self)._Prepare(
@@ -782,7 +783,7 @@ pre-cq-configs: link-pre-cq
 
     for config in constants.PRE_CQ_DEFAULT_CONFIGS:
       build_id = self.fake_db.InsertBuild(
-          'builder name', constants.WATERFALL_TRYBOT, 2, config,
+          'builder name', waterfall.WATERFALL_TRYBOT, 2, config,
           'bot hostname')
       self.fake_db.InsertCLActions(
           build_id,
@@ -1115,7 +1116,7 @@ pre-cq-configs: link-pre-cq
         if status == constants.CL_PRECQ_CONFIG_STATUS_LAUNCHED:
           if not config in build_ids_per_config:
             build_ids_per_config[config] = self.fake_db.InsertBuild(
-                config, constants.WATERFALL_TRYBOT, 1, config, config)
+                config, waterfall.WATERFALL_TRYBOT, 1, config, config)
           self.fake_db.InsertCLActions(
               build_ids_per_config[config],
               [clactions.CLAction.FromGerritPatchAndAction(
@@ -1151,7 +1152,7 @@ pre-cq-configs: link-pre-cq
     """Test that a previously rejected patch gets marked as requeued."""
     p = MockPatch()
     previous_build_id = self.fake_db.InsertBuild(
-        'some name', constants.WATERFALL_TRYBOT, 1, 'some_config',
+        'some name', waterfall.WATERFALL_TRYBOT, 1, 'some_config',
         'some_hostname')
     action = clactions.CLAction.FromGerritPatchAndAction(
         p, constants.CL_ACTION_KICKED_OUT)
@@ -1208,10 +1209,10 @@ pre-cq-configs: link-pre-cq
                                    'CancelBuildRequest',
                                    return_value=cancel_content)
     pre_cq_launcher_id = self.fake_db.InsertBuild(
-        'pre-cq-launcher', constants.WATERFALL_INTERNAL, 1,
+        'pre-cq-launcher', waterfall.WATERFALL_INTERNAL, 1,
         'pre-cq-launcher', 'test_hostname')
     pre_cq_id = self.fake_db.InsertBuild(
-        'binhost-pre-cq', constants.WATERFALL_INTERNAL, 2,
+        'binhost-pre-cq', waterfall.WATERFALL_INTERNAL, 2,
         'binhost-pre-cq', 'test_hostname', buildbucket_id='100')
     c = clactions.GerritPatchTuple(1, 1, True)
     old_build_action = clactions.CLAction(
@@ -1244,7 +1245,7 @@ pre-cq-configs: link-pre-cq
                                    'CancelBuildRequest',
                                    return_value=cancel_content)
     pre_cq_id = self.fake_db.InsertBuild(
-        'binhost-pre-cq', constants.WATERFALL_INTERNAL, 2,
+        'binhost-pre-cq', waterfall.WATERFALL_INTERNAL, 2,
         'binhost-pre-cq', 'test_hostname', buildbucket_id='100')
     old_build_action = mock.Mock()
     self.sync_stage._CancelPreCQIfNeeded(self.fake_db, old_build_action)
@@ -1384,13 +1385,13 @@ class MasterSlaveLKGMSyncTest(generic_stages_unittest.StageTestCase):
     """Test GetLastChromeOSVersion"""
     id1 = self.fake_db.InsertBuild(
         builder_name='test_builder',
-        waterfall=constants.WATERFALL_TRYBOT,
+        waterfall=waterfall.WATERFALL_TRYBOT,
         build_number=666,
         build_config='master-chromium-pfq',
         bot_hostname='test_hostname')
     id2 = self.fake_db.InsertBuild(
         builder_name='test_builder',
-        waterfall=constants.WATERFALL_TRYBOT,
+        waterfall=waterfall.WATERFALL_TRYBOT,
         build_number=667,
         build_config='master-chromium-pfq',
         bot_hostname='test_hostname')

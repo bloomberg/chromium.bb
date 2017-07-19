@@ -9,6 +9,7 @@ from __future__ import print_function
 import os
 import time
 
+from chromite.lib.const import waterfall
 from chromite.lib import builder_status_lib
 from chromite.lib import constants
 from chromite.lib import cros_build_lib_unittest
@@ -44,22 +45,22 @@ class ChromeGSTest(BaseChromeCommitterTest):
   def testGetLatestCanaryVersionsFromCIDB(self):
     """Test that we correctly filter out non-canary and older versions."""
     builder = 'master-release'
-    self.db.InsertBuild(builder, constants.WATERFALL_INTERNAL, 1, builder,
+    self.db.InsertBuild(builder, waterfall.WATERFALL_INTERNAL, 1, builder,
                         'host', milestone_version='60',
                         platform_version='2905.0.0')
-    self.db.InsertBuild(builder, constants.WATERFALL_INTERNAL, 1, builder,
+    self.db.InsertBuild(builder, waterfall.WATERFALL_INTERNAL, 1, builder,
                         'host', milestone_version='60',
                         platform_version='2910.0.1')
-    self.db.InsertBuild(builder, constants.WATERFALL_INTERNAL, 1, builder,
+    self.db.InsertBuild(builder, waterfall.WATERFALL_INTERNAL, 1, builder,
                         'host', milestone_version='60',
                         platform_version='2900.0.0')
-    self.db.InsertBuild(builder, constants.WATERFALL_INTERNAL, 1, builder,
+    self.db.InsertBuild(builder, waterfall.WATERFALL_INTERNAL, 1, builder,
                         'host', milestone_version='60',
                         platform_version='2908.0.0')
-    self.db.InsertBuild(builder, constants.WATERFALL_INTERNAL, 1, builder,
+    self.db.InsertBuild(builder, waterfall.WATERFALL_INTERNAL, 1, builder,
                         'host',
                         milestone_version='60', platform_version='2909.0.0')
-    self.db.InsertBuild(builder, constants.WATERFALL_INTERNAL, 1, builder,
+    self.db.InsertBuild(builder, waterfall.WATERFALL_INTERNAL, 1, builder,
                         'host', milestone_version='60',
                         platform_version='2910.0.0')
 

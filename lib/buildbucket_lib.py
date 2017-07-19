@@ -21,6 +21,7 @@ import os
 import urllib
 
 from chromite.cbuildbot import topology
+from chromite.lib.const import waterfall
 from chromite.lib import auth
 from chromite.lib import constants
 from chromite.lib import cros_logging as logging
@@ -40,9 +41,9 @@ MAX_BUILDS_LIMIT = 100
 MAX_BUILDS_DEFAULT = 10
 
 WATERFALL_BUCKET_MAP = {
-    constants.WATERFALL_INTERNAL:
+    waterfall.WATERFALL_INTERNAL:
         constants.CHROMEOS_BUILDBUCKET_BUCKET,
-    constants.WATERFALL_EXTERNAL:
+    waterfall.WATERFALL_EXTERNAL:
         constants.CHROMIUMOS_BUILDBUCKET_BUCKET,
 }
 
