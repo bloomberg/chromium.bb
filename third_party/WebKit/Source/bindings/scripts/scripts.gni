@@ -434,3 +434,55 @@ template("generate_global_constructors") {
     deps = invoker.deps
   }
 }
+
+# Calls the generate_conditional_features script.
+#
+# Parameters:
+#   sources = a list of source IDL files.
+#   component = component for which to generate conditional feature bindings
+#       ("Core" or "Modules")
+#   output_dir = output directory to generate cpp file and header file.
+#   deps = dependencies
+#
+template("generate_conditional_features") {
+  action(target_name) {
+    script = "//third_party/WebKit/Source/bindings/scripts/generate_conditional_features.py"
+
+    # Write the file list to a unique temp file to avoid blowing out the
+    # command line length limit.
+    idl_files_list = "$target_gen_dir/${target_name}_file_list.tmp"
+    write_file(idl_files_list, rebase_path(invoker.sources, root_build_dir))
+
+    inputs = [
+               "//third_party/WebKit/Source/bindings/scripts/utilities.py",
+               "//third_party/WebKit/Source/bindings/templates/ConditionalFeaturesFor${invoker.component}.cpp.tmpl",
+               "//third_party/WebKit/Source/bindings/templates/ConditionalFeaturesFor${invoker.component}.h.tmpl",
+               idl_files_list,
+             ] + invoker.sources
+
+    args = [
+      "--output-directory",
+      rebase_path(invoker.output_dir, root_build_dir),
+      "--info-dir",
+      "gen/blink/bindings",
+      "--cache-dir",
+      rebase_path(bindings_scripts_output_dir, root_build_dir),
+      "--target-component",
+      invoker.component,
+      "--idl-files-list",
+      rebase_path(idl_files_list, root_build_dir),
+    ]
+
+    outputs = [
+      "${invoker.output_dir}/ConditionalFeaturesFor${invoker.component}.cpp",
+      "${invoker.output_dir}/ConditionalFeaturesFor${invoker.component}.h",
+    ]
+
+    # TODO: This should not always require modules; For core features, this
+    # should be interfaces_info_core (w/o modules). This is the same issue as
+    # above in the idl_compiler template.
+    # http://crbug.com/358074
+    deps = invoker.deps +
+           [ "//third_party/WebKit/Source/bindings/modules:interfaces_info" ]
+  }
+}

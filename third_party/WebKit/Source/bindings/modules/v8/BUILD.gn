@@ -48,6 +48,17 @@ idl_compiler("generate_bindings_modules_v8_partial_interfaces_for_testing") {
   target_component = "modules"
 }
 
+generate_conditional_features("bindings_modules_conditional_features") {
+  sources =
+      modules_idl_files + modules_global_constructors_generated_idl_files +
+      modules_dependency_idl_files
+  component = "Modules"
+  output_dir = bindings_modules_output_dir + "/v8"
+  deps = [
+    "//third_party/WebKit/Source/bindings/modules:modules_global_constructors_idls",
+  ]
+}
+
 action("bindings_modules_v8_generated_init_partial") {
   script = "$bindings_scripts_dir/generate_init_partial_interfaces.py"
 
@@ -82,9 +93,11 @@ blink_modules_sources("bindings_modules_impl") {
       get_target_outputs(":generate_bindings_modules_v8_interfaces") +
       get_target_outputs(":bindings_modules_impl_generated") +
       get_target_outputs(":generate_bindings_modules_v8_partial_interfaces") +
-      get_target_outputs(":bindings_modules_v8_generated_init_partial")
+      get_target_outputs(":bindings_modules_v8_generated_init_partial") +
+      get_target_outputs(":bindings_modules_conditional_features")
 
   deps = [
+    ":bindings_modules_conditional_features",
     ":bindings_modules_v8_generated",
   ]
 

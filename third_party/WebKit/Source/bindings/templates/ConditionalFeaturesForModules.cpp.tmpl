@@ -1,0 +1,95 @@
+{% filter format_blink_cpp_source_code %}
+
+{% include 'copyright_block.txt' %}
+
+#include "bindings/modules/v8/ConditionalFeaturesForModules.h"
+
+#include "bindings/core/v8/ConditionalFeaturesForCore.h"
+{% for include in includes %}
+#include "{{include}}"
+{% endfor %}
+
+namespace blink {
+
+namespace {
+InstallConditionalFeaturesFunction
+    g_original_install_conditional_features_function = nullptr;
+InstallPendingConditionalFeatureFunction
+    g_original_install_pending_conditional_feature_function = nullptr;
+}
+
+void InstallConditionalFeaturesForModules(
+    const WrapperTypeInfo* wrapper_type_info,
+    const ScriptState* script_state,
+    v8::Local<v8::Object> prototype_object,
+    v8::Local<v8::Function> interface_object) {
+  (*g_original_install_conditional_features_function)(
+      wrapper_type_info, script_state, prototype_object, interface_object);
+
+  {% if installers_by_interface %}
+  ExecutionContext* execution_context = ExecutionContext::From(script_state);
+  if (!execution_context)
+    return;
+  v8::Isolate* isolate = script_state->GetIsolate();
+  const DOMWrapperWorld& world = script_state->World();
+  // TODO(iclelland): Extract this common code out of ConditionalFeaturesForCore
+  // and ConditionalFeaturesForModules into a block.
+  {% for interface in installers_by_interface %}
+  if (wrapper_type_info == &{{interface.v8_class}}::wrapperTypeInfo) {
+    {% if interface.is_global %}
+    v8::Local<v8::Object> instance_object =
+        script_state->GetContext()->Global();
+    {% endif %}
+    {% for installer in interface.installers %}
+    if ({{installer.condition}}(execution_context)) {
+      {{installer.v8_class_or_partial}}::{{installer.install_method}}(
+          isolate, world, {% if interface.is_global %}instance_object{% else %}v8::Local<v8::Object>(){% endif %}, prototype_object, interface_object);
+    }
+    {% endfor %}
+  }
+  {% endfor %}
+  {% endif %}
+}
+
+void InstallPendingConditionalFeatureForModules(
+    const String& feature,
+    const ScriptState* script_state) {
+  (*g_original_install_pending_conditional_feature_function)(feature,
+                                                             script_state);
+
+  // TODO(iclelland): Extract this common code out of ConditionalFeaturesForCore
+  // and ConditionalFeaturesForModules into a block.
+  {% if installers_by_feature %}
+  v8::Local<v8::Object> prototype_object;
+  v8::Local<v8::Function> interface_object;
+  v8::Isolate* isolate = script_state->GetIsolate();
+  const DOMWrapperWorld& world = script_state->World();
+  V8PerContextData* context_data = script_state->PerContextData();
+  {% for feature in installers_by_feature %}
+  if (feature == "{{feature.name}}") {
+    {% for installer in feature.installers %}
+    if (context_data->GetExistingConstructorAndPrototypeForType(
+            &{{installer.v8_class}}::wrapperTypeInfo, &prototype_object, &interface_object)) {
+      {{installer.v8_class_or_partial}}::{{installer.install_method}}(
+          isolate, world, v8::Local<v8::Object>(), prototype_object, interface_object);
+    }
+    {% endfor %}
+    return;
+  }
+  {% endfor %}
+  {% endif %}
+}
+
+void RegisterInstallConditionalFeaturesForModules() {
+  RegisterInstallConditionalFeaturesForCore();
+  g_original_install_conditional_features_function =
+      SetInstallConditionalFeaturesFunction(
+          &InstallConditionalFeaturesForModules);
+  g_original_install_pending_conditional_feature_function =
+      SetInstallPendingConditionalFeatureFunction(
+          &InstallPendingConditionalFeatureForModules);
+}
+
+}  // namespace blink
+
+{% endfilter %}{# format_blink_cpp_source_code #}
