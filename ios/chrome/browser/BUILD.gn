@@ -117,6 +117,7 @@ source_set("browser") {
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/sync/glue",
     "//ios/chrome/common",
+    "//ios/components/captive_portal",
     "//ios/components/io_thread",
     "//ios/net",
     "//ios/public/provider/chrome/browser",
