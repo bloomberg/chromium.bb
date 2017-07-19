@@ -200,9 +200,9 @@ TextIteratorAlgorithm<Strategy>::TextIteratorAlgorithm(
   // TODO(dglazkov): TextIterator should not be created for documents that don't
   // have a frame, but it currently still happens in some cases. See
   // http://crbug.com/591877 for details.
-  CHECK(!start.GetDocument()->View() ||
-        !start.GetDocument()->View()->NeedsLayout());
-  CHECK(!start.GetDocument()->NeedsLayoutTreeUpdate());
+  DCHECK(!start.GetDocument()->View() ||
+         !start.GetDocument()->View()->NeedsLayout());
+  DCHECK(!start.GetDocument()->NeedsLayoutTreeUpdate());
   // To avoid renderer hang, we use |CHECK_LE()| to catch the bad callers
   // in release build.
   CHECK_LE(start, end);
