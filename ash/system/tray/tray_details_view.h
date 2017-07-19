@@ -22,7 +22,6 @@ struct VectorIcon;
 namespace views {
 class BoxLayout;
 class CustomButton;
-class Label;
 class ProgressBar;
 class ScrollView;
 }  // namespace views
@@ -52,22 +51,6 @@ class ASH_EXPORT TrayDetailsView : public views::View,
   SystemTrayItem* owner() { return owner_; }
 
  protected:
-  // A view containing only a label, which is to be inserted as a non-targetable
-  // row within a system menu detailed view (e.g., the "Scanning for devices..."
-  // message that can appear at the top of the Bluetooth detailed view).
-  class InfoLabel : public View {
-   public:
-    explicit InfoLabel(int message_id);
-    ~InfoLabel() override;
-
-    void SetMessage(int message_id);
-
-   private:
-    views::Label* const label_;
-
-    DISALLOW_COPY_AND_ASSIGN(InfoLabel);
-  };
-
   // views::View:
   void Layout() override;
   int GetHeightForWidth(int width) const override;
