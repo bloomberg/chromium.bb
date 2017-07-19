@@ -19,7 +19,7 @@
 #include "ash/system/system_notifier.h"
 #include "ash/system/tray/system_tray_controller.h"
 #include "ash/system/tray/tray_constants.h"
-#include "ash/wm/maximize_mode/maximize_mode_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/bind.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -282,8 +282,8 @@ bool ScreenLayoutObserver::GetDisplayMessageForNotification(
     }
     // c) if the device is in tablet mode, and source is not user.
     if (Shell::Get()
-            ->maximize_mode_controller()
-            ->IsMaximizeModeWindowManagerEnabled() &&
+            ->tablet_mode_controller()
+            ->IsTabletModeWindowManagerEnabled() &&
         iter.second.active_rotation_source() !=
             display::Display::ROTATION_SOURCE_USER) {
       continue;

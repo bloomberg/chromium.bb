@@ -143,7 +143,7 @@ TEST_F(WindowPositionerTest, EnsureMinimumVisibility) {
 // opened being not maximized. To enforce maximization for all screen
 // resolutions, one can set "ForceMaximizeBrowserWindowOnFirstRun"
 // policy. In the following tests we check if the window will be opened in
-// maximized mode for low and high resolution when this policy is set.
+// tablet mode for low and high resolution when this policy is set.
 TEST_F(WindowPositionerTest, FirstRunMaximizeWindowHighResloution) {
   const int width = ash::WindowPositioner::GetForceMaximizedWidthLimit() + 100;
   // Set resolution to 1466x300.

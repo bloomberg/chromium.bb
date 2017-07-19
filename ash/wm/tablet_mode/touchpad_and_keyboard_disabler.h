@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_MAXIMIZE_MODE_TOUCHPAD_AND_KEYBOARD_DISABLER_H_
-#define ASH_WM_MAXIMIZE_MODE_TOUCHPAD_AND_KEYBOARD_DISABLER_H_
+#ifndef ASH_WM_TABLET_MODE_TOUCHPAD_AND_KEYBOARD_DISABLER_H_
+#define ASH_WM_TABLET_MODE_TOUCHPAD_AND_KEYBOARD_DISABLER_H_
 
 #include <memory>
 
@@ -79,4 +79,4 @@ class ASH_EXPORT TouchpadAndKeyboardDisabler : public ShellObserver {
 
 }  // namespace ash
 
-#endif  // ASH_WM_MAXIMIZE_MODE_TOUCHPAD_AND_KEYBOARD_DISABLER_H_
+#endif  // ASH_WM_TABLET_MODE_TOUCHPAD_AND_KEYBOARD_DISABLER_H_

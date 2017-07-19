@@ -170,7 +170,7 @@ int OpaqueBrowserFrameViewLayout::NonClientTopHeight(bool restored) const {
 
   int thickness = FrameBorderThickness(restored);
   // The tab top inset is equal to the height of any shadow region above the
-  // tabs, plus a 1 px top stroke.  In maximized mode, we want to push the
+  // tabs, plus a 1 px top stroke.  In tablet mode, we want to push the
   // shadow region off the top of the screen but leave the top stroke.
   if (!restored && delegate_->IsTabStripVisible() && IsTitleBarCondensed())
     thickness -= GetLayoutInsets(TAB).top() - 1;
@@ -346,7 +346,7 @@ void OpaqueBrowserFrameViewLayout::LayoutNewStyleAvatar(views::View* host) {
   minimum_size_for_buttons_ += button_width_with_offset;
   trailing_button_start_ += button_width_with_offset;
 
-  // In non-maximized mode, allow the new tab button to completely slide under
+  // In non-tablet mode, allow the new tab button to completely slide under
   // the avatar button.
   if (!IsTitleBarCondensed()) {
     trailing_button_start_ -=
@@ -451,7 +451,7 @@ void OpaqueBrowserFrameViewLayout::SetBoundsForButton(
       views::ImageButton::ALIGN_BOTTOM);
 
   // There should always be the same number of non-shadow pixels visible to the
-  // side of the caption buttons.  In maximized mode we extend buttons to the
+  // side of the caption buttons.  In tablet mode we extend buttons to the
   // screen top and the rightmost button to the screen right (or leftmost button
   // to the screen left, for left-aligned buttons) to obey Fitts' Law.
   bool title_bar_condensed = IsTitleBarCondensed();

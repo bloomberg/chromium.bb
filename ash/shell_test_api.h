@@ -12,7 +12,7 @@
 namespace ash {
 class NativeCursorManagerAsh;
 class DragDropController;
-class MaximizeModeWindowManager;
+class TabletModeWindowManager;
 class PaletteDelegate;
 class ScreenPositionController;
 class Shell;
@@ -30,7 +30,7 @@ class ShellTestApi {
   ScreenPositionController* screen_position_controller();
   NativeCursorManagerAsh* native_cursor_manager_ash();
   DragDropController* drag_drop_controller();
-  MaximizeModeWindowManager* maximize_mode_window_manager();
+  TabletModeWindowManager* tablet_mode_window_manager();
 
   void SetPaletteDelegate(std::unique_ptr<PaletteDelegate> palette_delegate);
 

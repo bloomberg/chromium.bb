@@ -1591,7 +1591,7 @@ void ShellSurface::UpdateShadow() {
 
   // Enable the black backdrop layer behind the window if the window
   // is in immersive fullscreen, maximized, yet the window can control
-  // the bounds of the window in fullscreen/maximize mode (thus the
+  // the bounds of the window in fullscreen/tablet mode (thus the
   // background can be visible).
   bool enable_backdrop =
       (widget_->IsFullscreen() || widget_->IsMaximized()) &&

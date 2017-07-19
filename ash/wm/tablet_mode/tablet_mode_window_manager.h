@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_MAXIMIZE_MODE_MAXIMIZE_MODE_WINDOW_MANAGER_H_
-#define ASH_WM_MAXIMIZE_MODE_MAXIMIZE_MODE_WINDOW_MANAGER_H_
+#ifndef ASH_WM_TABLET_MODE_TABLET_MODE_WINDOW_MANAGER_H_
+#define ASH_WM_TABLET_MODE_TABLET_MODE_WINDOW_MANAGER_H_
 
 #include <stdint.h>
 
@@ -22,11 +22,11 @@ class Window;
 }
 
 namespace ash {
-class MaximizeModeController;
-class MaximizeModeWindowState;
+class TabletModeController;
+class TabletModeWindowState;
 
 namespace wm {
-class MaximizeModeEventHandler;
+class TabletModeEventHandler;
 }
 
 // A window manager which - when created - will force all windows into maximized
@@ -35,12 +35,12 @@ class MaximizeModeEventHandler;
 // behind the window so that no other windows are visible and/or obscured.
 // With the destruction of the manager all windows will be restored to their
 // original state.
-class ASH_EXPORT MaximizeModeWindowManager : public aura::WindowObserver,
-                                             public display::DisplayObserver,
-                                             public ShellObserver {
+class ASH_EXPORT TabletModeWindowManager : public aura::WindowObserver,
+                                           public display::DisplayObserver,
+                                           public ShellObserver {
  public:
   // This should only be deleted by the creator (ash::Shell).
-  ~MaximizeModeWindowManager() override;
+  ~TabletModeWindowManager() override;
 
   // Returns the number of maximized & tracked windows by this manager.
   int GetNumberOfManagedWindows();
@@ -80,13 +80,13 @@ class ASH_EXPORT MaximizeModeWindowManager : public aura::WindowObserver,
   void SetIgnoreWmEventsForExit();
 
  protected:
-  friend class MaximizeModeController;
+  friend class TabletModeController;
 
   // The object should only be created by the ash::Shell.
-  MaximizeModeWindowManager();
+  TabletModeWindowManager();
 
  private:
-  using WindowToState = std::map<aura::Window*, MaximizeModeWindowState*>;
+  using WindowToState = std::map<aura::Window*, TabletModeWindowState*>;
 
   // Maximize all windows and restore their current state.
   void MaximizeAllWindows();
@@ -136,11 +136,11 @@ class ASH_EXPORT MaximizeModeWindowManager : public aura::WindowObserver,
   // Windows added to the container, but not yet shown.
   std::unordered_set<aura::Window*> added_windows_;
 
-  std::unique_ptr<wm::MaximizeModeEventHandler> event_handler_;
+  std::unique_ptr<wm::TabletModeEventHandler> event_handler_;
 
-  DISALLOW_COPY_AND_ASSIGN(MaximizeModeWindowManager);
+  DISALLOW_COPY_AND_ASSIGN(TabletModeWindowManager);
 };
 
 }  // namespace ash
 
-#endif  // ASH_WM_MAXIMIZE_MODE_MAXIMIZE_MODE_WINDOW_MANAGER_H_
+#endif  // ASH_WM_TABLET_MODE_TABLET_MODE_WINDOW_MANAGER_H_

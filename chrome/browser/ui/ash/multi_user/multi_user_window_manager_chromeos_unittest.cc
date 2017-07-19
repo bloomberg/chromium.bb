@@ -17,9 +17,9 @@
 #include "ash/test/ash_test_environment_content.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/test_shell_delegate.h"
-#include "ash/wm/maximize_mode/maximize_mode_controller.h"
-#include "ash/wm/maximize_mode/maximize_mode_window_manager.h"
 #include "ash/wm/mru_window_tracker.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_window_manager.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
@@ -270,18 +270,17 @@ class MultiUserWindowManagerChromeOSTest : public AshTestBase {
     return chrome::UserSwitchAnimatorChromeOS::CoversScreen(window);
   }
 
-  // Create a maximize mode window manager.
-  MaximizeModeWindowManager* CreateMaximizeModeWindowManager() {
-    EXPECT_FALSE(maximize_mode_window_manager());
-    Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
-        true);
-    return maximize_mode_window_manager();
+  // Create a tablet mode window manager.
+  TabletModeWindowManager* CreateTabletModeWindowManager() {
+    EXPECT_FALSE(tablet_mode_window_manager());
+    Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+    return tablet_mode_window_manager();
   }
 
-  MaximizeModeWindowManager* maximize_mode_window_manager() {
+  TabletModeWindowManager* tablet_mode_window_manager() {
     return Shell::Get()
-        ->maximize_mode_controller()
-        ->maximize_mode_window_manager_.get();
+        ->tablet_mode_controller()
+        ->tablet_mode_window_manager_.get();
   }
 
  private:
@@ -299,7 +298,7 @@ class MultiUserWindowManagerChromeOSTest : public AshTestBase {
   chromeos::ScopedUserManagerEnabler user_manager_enabler_;
 
   // The maximized window manager (if enabled).
-  std::unique_ptr<MaximizeModeWindowManager> maximize_mode_window_manager_;
+  std::unique_ptr<TabletModeWindowManager> tablet_mode_window_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiUserWindowManagerChromeOSTest);
 };
@@ -855,9 +854,9 @@ TEST_F(MultiUserWindowManagerChromeOSTest, PreserveInitialVisibility) {
   EXPECT_EQ("H[A,B], H[A,B], S[B,A], H[B,A]", GetStatus());
 }
 
-// Test that in case of an activated maximize mode, windows from other users get
+// Test that in case of an activated tablet mode, windows from other users get
 // maximized after a user switch.
-TEST_F(MultiUserWindowManagerChromeOSTest, MaximizeModeInteraction) {
+TEST_F(MultiUserWindowManagerChromeOSTest, TabletModeInteraction) {
   SetUpForThisManyWindows(2);
 
   const AccountId account_id_A(AccountId::FromUserEmail("A"));
@@ -869,7 +868,7 @@ TEST_F(MultiUserWindowManagerChromeOSTest, MaximizeModeInteraction) {
   EXPECT_FALSE(wm::GetWindowState(window(0))->IsMaximized());
   EXPECT_FALSE(wm::GetWindowState(window(1))->IsMaximized());
 
-  MaximizeModeWindowManager* manager = CreateMaximizeModeWindowManager();
+  TabletModeWindowManager* manager = CreateTabletModeWindowManager();
   ASSERT_TRUE(manager);
 
   EXPECT_TRUE(wm::GetWindowState(window(0))->IsMaximized());

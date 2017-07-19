@@ -553,9 +553,9 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
 
   // Do not animate the background when:
   // - Going from a hidden / auto hidden shelf in fullscreen to a visible shelf
-  //   in maximized mode.
-  // - Going from an auto hidden shelf in maximized mode to a visible shelf in
-  //   maximized mode.
+  //   in tablet mode.
+  // - Going from an auto hidden shelf in tablet mode to a visible shelf in
+  //   tablet mode.
   if (state.visibility_state == SHELF_VISIBLE &&
       state.window_state == wm::WORKSPACE_WINDOW_STATE_MAXIMIZED &&
       old_state.visibility_state != SHELF_VISIBLE) {

@@ -11,7 +11,7 @@
 #include "ash/shell_delegate.h"
 #include "ash/shutdown_reason.h"
 #include "ash/wm/lock_state_controller.h"
-#include "ash/wm/maximize_mode/maximize_mode_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
@@ -48,18 +48,17 @@ constexpr int kIgnoreRepeatedButtonUpMs = 500;
 
 // Returns true if device is a convertible/tablet device, otherwise false.
 bool IsTabletModeSupported() {
-  MaximizeModeController* maximize_mode_controller =
-      Shell::Get()->maximize_mode_controller();
-  return maximize_mode_controller &&
-         maximize_mode_controller->CanEnterMaximizeMode();
+  TabletModeController* tablet_mode_controller =
+      Shell::Get()->tablet_mode_controller();
+  return tablet_mode_controller && tablet_mode_controller->CanEnterTabletMode();
 }
 
-// Returns true if device is currently in tablet/maximize mode, otherwise false.
+// Returns true if device is currently in tablet/tablet mode, otherwise false.
 bool IsTabletModeActive() {
-  MaximizeModeController* maximize_mode_controller =
-      Shell::Get()->maximize_mode_controller();
-  return maximize_mode_controller &&
-         maximize_mode_controller->IsMaximizeModeWindowManagerEnabled();
+  TabletModeController* tablet_mode_controller =
+      Shell::Get()->tablet_mode_controller();
+  return tablet_mode_controller &&
+         tablet_mode_controller->IsTabletModeWindowManagerEnabled();
 }
 
 // Returns the value for the command-line switch identified by |name|. Returns 0
@@ -271,13 +270,13 @@ void TabletPowerButtonController::LidEventReceived(
   SetDisplayForcedOff(false);
 }
 
-void TabletPowerButtonController::OnMaximizeModeStarted() {
+void TabletPowerButtonController::OnTabletModeStarted() {
   shutdown_timer_.Stop();
   if (controller_->CanCancelShutdownAnimation())
     controller_->CancelShutdownAnimation();
 }
 
-void TabletPowerButtonController::OnMaximizeModeEnded() {
+void TabletPowerButtonController::OnTabletModeEnded() {
   shutdown_timer_.Stop();
   if (controller_->CanCancelShutdownAnimation())
     controller_->CancelShutdownAnimation();

@@ -60,8 +60,8 @@ class ArcAppWindowLauncherController : public AppWindowLauncherController,
                          aura::Window* lost_active) override;
 
   // ash::ShellObserver:
-  void OnMaximizeModeStarted() override;
-  void OnMaximizeModeEnded() override;
+  void OnTabletModeStarted() override;
+  void OnTabletModeEnded() override;
 
   // ArcAppListPrefs::Observer:
   void OnAppReadyChanged(const std::string& app_id, bool ready) override;

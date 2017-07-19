@@ -46,13 +46,13 @@ ASH_EXPORT extern const aura::WindowProperty<bool>* const kLockedToRootKey;
 
 // A property key which stores the bounds to restore a window to. These take
 // preference over the current bounds/state. This is used by e.g. the always
-// maximized mode window manager.
+// tablet mode window manager.
 ASH_EXPORT extern const aura::WindowProperty<gfx::Rect*>* const
     kRestoreBoundsOverrideKey;
 
 // A property key which stores the bounds to restore a window to. These take
 // preference over the current bounds/state if |kRestoreBoundsOverrideKey| is
-// set. This is used by e.g. the always maximized mode window manager.
+// set. This is used by e.g. the always tablet mode window manager.
 ASH_EXPORT extern const aura::WindowProperty<ui::WindowShowState>* const
     kRestoreShowStateOverrideKey;
 

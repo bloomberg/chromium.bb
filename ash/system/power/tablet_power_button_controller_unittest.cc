@@ -15,8 +15,8 @@
 #include "ash/test_shell_delegate.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/lock_state_controller_test_api.h"
-#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/power_button_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ptr_util.h"
@@ -143,8 +143,8 @@ class TabletPowerButtonControllerTest : public AshTestBase {
     SetUserLoggedIn(status != LoginStatus::NOT_LOGGED_IN);
   }
 
-  void EnableMaximizeMode(bool enabled) {
-    Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+  void EnableTabletMode(bool enabled) {
+    Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(
         enabled);
   }
 
@@ -333,7 +333,7 @@ TEST_F(TabletPowerButtonControllerTest,
 // For convertible device working on laptop mode, tests keyboard/mouse event
 // when screen is off.
 TEST_F(TabletPowerButtonControllerTest, ConvertibleOnLaptopMode) {
-  EnableMaximizeMode(false);
+  EnableTabletMode(false);
 
   // KeyEvent should SetBacklightsForcedOff(false).
   PressPowerButton();
@@ -366,8 +366,8 @@ TEST_F(TabletPowerButtonControllerTest, ConvertibleOnLaptopMode) {
 
 // For convertible device working on tablet mode, keyboard/mouse event should
 // not SetBacklightsForcedOff(false) when screen is off.
-TEST_F(TabletPowerButtonControllerTest, ConvertibleOnMaximizeMode) {
-  EnableMaximizeMode(true);
+TEST_F(TabletPowerButtonControllerTest, ConvertibleOnTabletMode) {
+  EnableTabletMode(true);
 
   PressPowerButton();
   ReleasePowerButton();
@@ -420,7 +420,7 @@ TEST_F(TabletPowerButtonControllerTest, DisableTouchscreenWhileForcedOff) {
   ReleasePowerButton();
   EXPECT_TRUE(shell_delegate_->IsTouchscreenEnabledInPrefs(true));
 
-  EnableMaximizeMode(false);
+  EnableTabletMode(false);
   // KeyEvent on laptop mode when screen is off.
   PressPowerButton();
   ReleasePowerButton();
@@ -462,14 +462,14 @@ TEST_F(TabletPowerButtonControllerTest, DisableTouchscreenForInactivity) {
 // When user switches convertible device between laptop mode and tablet mode,
 // power button may be pressed and held, which may cause unwanted shutdown.
 TEST_F(TabletPowerButtonControllerTest,
-       EnterOrLeaveMaximizeModeWhilePressingPowerButton) {
+       EnterOrLeaveTabletModeWhilePressingPowerButton) {
   Initialize(LoginStatus::USER);
   SetShouldLockScreenAutomatically(true);
   ASSERT_FALSE(GetLockedState());
 
   power_manager_client_->SendPowerButtonEvent(true, tick_clock_->NowTicks());
   EXPECT_TRUE(test_api_->ShutdownTimerIsRunning());
-  tablet_controller_->OnMaximizeModeStarted();
+  tablet_controller_->OnTabletModeStarted();
   EXPECT_FALSE(test_api_->ShutdownTimerIsRunning());
   tick_clock_->Advance(base::TimeDelta::FromMilliseconds(1500));
   power_manager_client_->SendPowerButtonEvent(false, tick_clock_->NowTicks());
@@ -479,7 +479,7 @@ TEST_F(TabletPowerButtonControllerTest,
   power_manager_client_->SendPowerButtonEvent(true, tick_clock_->NowTicks());
   test_api_->TriggerShutdownTimeout();
   EXPECT_TRUE(lock_state_test_api_->shutdown_timer_is_running());
-  tablet_controller_->OnMaximizeModeStarted();
+  tablet_controller_->OnTabletModeStarted();
   EXPECT_FALSE(lock_state_test_api_->shutdown_timer_is_running());
   tick_clock_->Advance(base::TimeDelta::FromMilliseconds(2500));
   power_manager_client_->SendPowerButtonEvent(false, tick_clock_->NowTicks());
@@ -488,7 +488,7 @@ TEST_F(TabletPowerButtonControllerTest,
 
   power_manager_client_->SendPowerButtonEvent(true, tick_clock_->NowTicks());
   EXPECT_TRUE(test_api_->ShutdownTimerIsRunning());
-  tablet_controller_->OnMaximizeModeEnded();
+  tablet_controller_->OnTabletModeEnded();
   EXPECT_FALSE(test_api_->ShutdownTimerIsRunning());
   tick_clock_->Advance(base::TimeDelta::FromMilliseconds(3500));
   power_manager_client_->SendPowerButtonEvent(false, tick_clock_->NowTicks());
@@ -498,7 +498,7 @@ TEST_F(TabletPowerButtonControllerTest,
   power_manager_client_->SendPowerButtonEvent(true, tick_clock_->NowTicks());
   test_api_->TriggerShutdownTimeout();
   EXPECT_TRUE(lock_state_test_api_->shutdown_timer_is_running());
-  tablet_controller_->OnMaximizeModeEnded();
+  tablet_controller_->OnTabletModeEnded();
   EXPECT_FALSE(lock_state_test_api_->shutdown_timer_is_running());
   tick_clock_->Advance(base::TimeDelta::FromMilliseconds(4500));
   power_manager_client_->SendPowerButtonEvent(false, tick_clock_->NowTicks());

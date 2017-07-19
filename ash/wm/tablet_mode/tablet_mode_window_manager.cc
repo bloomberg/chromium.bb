@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/maximize_mode/maximize_mode_window_manager.h"
+#include "ash/wm/tablet_mode/tablet_mode_window_manager.h"
 
 #include "ash/ash_switches.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
-#include "ash/wm/maximize_mode/maximize_mode_backdrop_delegate_impl.h"
-#include "ash/wm/maximize_mode/maximize_mode_event_handler.h"
-#include "ash/wm/maximize_mode/maximize_mode_window_state.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/window_selector_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_backdrop_delegate_impl.h"
+#include "ash/wm/tablet_mode/tablet_mode_event_handler.h"
+#include "ash/wm/tablet_mode/tablet_mode_window_state.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
 #include "ash/wm/workspace_controller.h"
@@ -37,8 +37,8 @@ void CancelOverview() {
 
 }  // namespace
 
-MaximizeModeWindowManager::~MaximizeModeWindowManager() {
-  // Overview mode needs to be ended before exiting maximize mode to prevent
+TabletModeWindowManager::~TabletModeWindowManager() {
+  // Overview mode needs to be ended before exiting tablet mode to prevent
   // transforming windows which are currently in
   // overview: http://crbug.com/366605
   CancelOverview();
@@ -52,11 +52,11 @@ MaximizeModeWindowManager::~MaximizeModeWindowManager() {
   RestoreAllWindows();
 }
 
-int MaximizeModeWindowManager::GetNumberOfManagedWindows() {
+int TabletModeWindowManager::GetNumberOfManagedWindows() {
   return window_state_map_.size();
 }
 
-void MaximizeModeWindowManager::AddWindow(aura::Window* window) {
+void TabletModeWindowManager::AddWindow(aura::Window* window) {
   // Only add the window if it is a direct dependent of a container window
   // and not yet tracked.
   if (!ShouldHandleWindow(window) ||
@@ -68,7 +68,7 @@ void MaximizeModeWindowManager::AddWindow(aura::Window* window) {
   MaximizeAndTrackWindow(window);
 }
 
-void MaximizeModeWindowManager::WindowStateDestroyed(aura::Window* window) {
+void TabletModeWindowManager::WindowStateDestroyed(aura::Window* window) {
   // At this time ForgetWindow() should already have been called. If not,
   // someone else must have replaced the "window manager's state object".
   DCHECK(!window->HasObserver(this));
@@ -78,15 +78,15 @@ void MaximizeModeWindowManager::WindowStateDestroyed(aura::Window* window) {
   window_state_map_.erase(it);
 }
 
-void MaximizeModeWindowManager::OnOverviewModeStarting() {
+void TabletModeWindowManager::OnOverviewModeStarting() {
   SetDeferBoundsUpdates(true);
 }
 
-void MaximizeModeWindowManager::OnOverviewModeEnded() {
+void TabletModeWindowManager::OnOverviewModeEnded() {
   SetDeferBoundsUpdates(false);
 }
 
-void MaximizeModeWindowManager::OnSplitViewModeEnded() {
+void TabletModeWindowManager::OnSplitViewModeEnded() {
   // Maximize all snapped windows upon exiting split view mode.
   for (auto& pair : window_state_map_) {
     if (pair.second->GetType() == wm::WINDOW_STATE_TYPE_LEFT_SNAPPED ||
@@ -97,7 +97,7 @@ void MaximizeModeWindowManager::OnSplitViewModeEnded() {
   }
 }
 
-void MaximizeModeWindowManager::OnWindowDestroying(aura::Window* window) {
+void TabletModeWindowManager::OnWindowDestroying(aura::Window* window) {
   if (IsContainerWindow(window)) {
     // container window can be removed on display destruction.
     window->RemoveObserver(this);
@@ -113,7 +113,7 @@ void MaximizeModeWindowManager::OnWindowDestroying(aura::Window* window) {
   }
 }
 
-void MaximizeModeWindowManager::OnWindowHierarchyChanged(
+void TabletModeWindowManager::OnWindowHierarchyChanged(
     const HierarchyChangeParams& params) {
   // A window can get removed and then re-added by a drag and drop operation.
   if (params.new_parent && IsContainerWindow(params.new_parent) &&
@@ -138,9 +138,9 @@ void MaximizeModeWindowManager::OnWindowHierarchyChanged(
   }
 }
 
-void MaximizeModeWindowManager::OnWindowPropertyChanged(aura::Window* window,
-                                                        const void* key,
-                                                        intptr_t old) {
+void TabletModeWindowManager::OnWindowPropertyChanged(aura::Window* window,
+                                                      const void* key,
+                                                      intptr_t old) {
   // Stop managing |window| if the always-on-top property is added.
   if (key == aura::client::kAlwaysOnTopKey &&
       window->GetProperty(aura::client::kAlwaysOnTopKey)) {
@@ -148,7 +148,7 @@ void MaximizeModeWindowManager::OnWindowPropertyChanged(aura::Window* window,
   }
 }
 
-void MaximizeModeWindowManager::OnWindowBoundsChanged(
+void TabletModeWindowManager::OnWindowBoundsChanged(
     aura::Window* window,
     const gfx::Rect& old_bounds,
     const gfx::Rect& new_bounds) {
@@ -159,8 +159,8 @@ void MaximizeModeWindowManager::OnWindowBoundsChanged(
     pair.second->UpdateWindowPosition(wm::GetWindowState(pair.first));
 }
 
-void MaximizeModeWindowManager::OnWindowVisibilityChanged(aura::Window* window,
-                                                          bool visible) {
+void TabletModeWindowManager::OnWindowVisibilityChanged(aura::Window* window,
+                                                        bool visible) {
   // Skip if it's already managed.
   if (base::ContainsKey(window_state_map_, window))
     return;
@@ -179,29 +179,28 @@ void MaximizeModeWindowManager::OnWindowVisibilityChanged(aura::Window* window,
   }
 }
 
-void MaximizeModeWindowManager::OnDisplayAdded(
+void TabletModeWindowManager::OnDisplayAdded(const display::Display& display) {
+  DisplayConfigurationChanged();
+}
+
+void TabletModeWindowManager::OnDisplayRemoved(
     const display::Display& display) {
   DisplayConfigurationChanged();
 }
 
-void MaximizeModeWindowManager::OnDisplayRemoved(
-    const display::Display& display) {
-  DisplayConfigurationChanged();
-}
-
-void MaximizeModeWindowManager::OnDisplayMetricsChanged(const display::Display&,
-                                                        uint32_t) {
+void TabletModeWindowManager::OnDisplayMetricsChanged(const display::Display&,
+                                                      uint32_t) {
   // Nothing to do here.
 }
 
-void MaximizeModeWindowManager::SetIgnoreWmEventsForExit() {
+void TabletModeWindowManager::SetIgnoreWmEventsForExit() {
   for (auto& pair : window_state_map_) {
     pair.second->set_ignore_wm_events(true);
   }
 }
 
-MaximizeModeWindowManager::MaximizeModeWindowManager() {
-  // The overview mode needs to be ended before the maximize mode is started. To
+TabletModeWindowManager::TabletModeWindowManager() {
+  // The overview mode needs to be ended before the tablet mode is started. To
   // guarantee the proper order, it will be turned off from here.
   CancelOverview();
 
@@ -210,10 +209,10 @@ MaximizeModeWindowManager::MaximizeModeWindowManager() {
   EnableBackdropBehindTopWindowOnEachDisplay(true);
   display::Screen::GetScreen()->AddObserver(this);
   Shell::Get()->AddShellObserver(this);
-  event_handler_ = ShellPort::Get()->CreateMaximizeModeEventHandler();
+  event_handler_ = ShellPort::Get()->CreateTabletModeEventHandler();
 }
 
-void MaximizeModeWindowManager::MaximizeAllWindows() {
+void TabletModeWindowManager::MaximizeAllWindows() {
   MruWindowTracker::WindowList windows =
       Shell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal();
   // Add all existing MRU windows.
@@ -221,30 +220,29 @@ void MaximizeModeWindowManager::MaximizeAllWindows() {
     MaximizeAndTrackWindow(window);
 }
 
-void MaximizeModeWindowManager::RestoreAllWindows() {
+void TabletModeWindowManager::RestoreAllWindows() {
   while (window_state_map_.size())
     ForgetWindow(window_state_map_.begin()->first);
 }
 
-void MaximizeModeWindowManager::SetDeferBoundsUpdates(
-    bool defer_bounds_updates) {
+void TabletModeWindowManager::SetDeferBoundsUpdates(bool defer_bounds_updates) {
   for (auto& pair : window_state_map_)
     pair.second->SetDeferBoundsUpdates(defer_bounds_updates);
 }
 
-void MaximizeModeWindowManager::MaximizeAndTrackWindow(aura::Window* window) {
+void TabletModeWindowManager::MaximizeAndTrackWindow(aura::Window* window) {
   if (!ShouldHandleWindow(window))
     return;
 
   DCHECK(!base::ContainsKey(window_state_map_, window));
   window->AddObserver(this);
 
-  // We create and remember a maximize mode state which will attach itself to
+  // We create and remember a tablet mode state which will attach itself to
   // the provided state object.
-  window_state_map_[window] = new MaximizeModeWindowState(window, this);
+  window_state_map_[window] = new TabletModeWindowState(window, this);
 }
 
-void MaximizeModeWindowManager::ForgetWindow(aura::Window* window) {
+void TabletModeWindowManager::ForgetWindow(aura::Window* window) {
   WindowToState::iterator it = window_state_map_.find(window);
 
   // The following DCHECK could fail if our window state object was destroyed
@@ -255,11 +253,11 @@ void MaximizeModeWindowManager::ForgetWindow(aura::Window* window) {
 
   // By telling the state object to revert, it will switch back the old
   // State object and destroy itself, calling WindowStateDestroyed().
-  it->second->LeaveMaximizeMode(wm::GetWindowState(it->first));
+  it->second->LeaveTabletMode(wm::GetWindowState(it->first));
   DCHECK(!base::ContainsKey(window_state_map_, window));
 }
 
-bool MaximizeModeWindowManager::ShouldHandleWindow(aura::Window* window) {
+bool TabletModeWindowManager::ShouldHandleWindow(aura::Window* window) {
   DCHECK(window);
 
   // Windows with the always-on-top property should be free-floating and thus
@@ -268,14 +266,14 @@ bool MaximizeModeWindowManager::ShouldHandleWindow(aura::Window* window) {
     return false;
 
   // If the changing bounds in the maximized/fullscreen is allowed, then
-  // let the client manage it even in maximized mode.
+  // let the client manage it even in tablet mode.
   if (wm::GetWindowState(window)->allow_set_bounds_direct())
     return false;
 
   return window->type() == aura::client::WINDOW_TYPE_NORMAL;
 }
 
-void MaximizeModeWindowManager::AddWindowCreationObservers() {
+void TabletModeWindowManager::AddWindowCreationObservers() {
   DCHECK(observed_container_windows_.empty());
   // Observe window activations/creations in the default containers on all root
   // windows.
@@ -288,31 +286,30 @@ void MaximizeModeWindowManager::AddWindowCreationObservers() {
   }
 }
 
-void MaximizeModeWindowManager::RemoveWindowCreationObservers() {
+void TabletModeWindowManager::RemoveWindowCreationObservers() {
   for (aura::Window* window : observed_container_windows_)
     window->RemoveObserver(this);
   observed_container_windows_.clear();
 }
 
-void MaximizeModeWindowManager::DisplayConfigurationChanged() {
+void TabletModeWindowManager::DisplayConfigurationChanged() {
   EnableBackdropBehindTopWindowOnEachDisplay(false);
   RemoveWindowCreationObservers();
   AddWindowCreationObservers();
   EnableBackdropBehindTopWindowOnEachDisplay(true);
 }
 
-bool MaximizeModeWindowManager::IsContainerWindow(aura::Window* window) {
+bool TabletModeWindowManager::IsContainerWindow(aura::Window* window) {
   return base::ContainsKey(observed_container_windows_, window);
 }
 
-void MaximizeModeWindowManager::EnableBackdropBehindTopWindowOnEachDisplay(
+void TabletModeWindowManager::EnableBackdropBehindTopWindowOnEachDisplay(
     bool enable) {
   // Inform the WorkspaceLayoutManager that we want to show a backdrop behind
   // the topmost window of its container.
   for (auto* controller : Shell::GetAllRootWindowControllers()) {
     controller->workspace_controller()->SetBackdropDelegate(
-        enable ? base::MakeUnique<MaximizeModeBackdropDelegateImpl>()
-               : nullptr);
+        enable ? base::MakeUnique<TabletModeBackdropDelegateImpl>() : nullptr);
   }
 }
 

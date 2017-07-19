@@ -75,8 +75,8 @@ bool ConsumedByIme(Surface* focus, const ui::KeyEvent* event) {
 }
 
 bool IsPhysicalKeyboardEnabled() {
-  // The internal keyboard is enabled if maximize mode is not enabled.
-  if (!WMHelper::GetInstance()->IsMaximizeModeWindowManagerEnabled())
+  // The internal keyboard is enabled if tablet mode is not enabled.
+  if (!WMHelper::GetInstance()->IsTabletModeWindowManagerEnabled())
     return true;
 
   for (auto& keyboard :
@@ -96,7 +96,7 @@ Keyboard::Keyboard(KeyboardDelegate* delegate) : delegate_(delegate) {
   auto* helper = WMHelper::GetInstance();
   helper->AddPostTargetHandler(this);
   helper->AddFocusObserver(this);
-  helper->AddMaximizeModeObserver(this);
+  helper->AddTabletModeObserver(this);
   helper->AddInputDeviceEventObserver(this);
   OnWindowFocused(helper->GetFocusedWindow(), nullptr);
 }
@@ -109,7 +109,7 @@ Keyboard::~Keyboard() {
   auto* helper = WMHelper::GetInstance();
   helper->RemoveFocusObserver(this);
   helper->RemovePostTargetHandler(this);
-  helper->RemoveMaximizeModeObserver(this);
+  helper->RemoveTabletModeObserver(this);
   helper->RemoveInputDeviceEventObserver(this);
 }
 
@@ -238,15 +238,15 @@ void Keyboard::OnKeyboardDeviceConfigurationChanged() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// WMHelper::MaximizeModeObserver overrides:
+// WMHelper::TabletModeObserver overrides:
 
-void Keyboard::OnMaximizeModeStarted() {
+void Keyboard::OnTabletModeStarted() {
   OnKeyboardDeviceConfigurationChanged();
 }
 
-void Keyboard::OnMaximizeModeEnding() {}
+void Keyboard::OnTabletModeEnding() {}
 
-void Keyboard::OnMaximizeModeEnded() {
+void Keyboard::OnTabletModeEnded() {
   OnKeyboardDeviceConfigurationChanged();
 }
 

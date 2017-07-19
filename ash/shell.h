@@ -114,7 +114,7 @@ class LockStateController;
 class LogoutConfirmationController;
 class LockScreenController;
 class MagnificationController;
-class MaximizeModeController;
+class TabletModeController;
 class MediaController;
 class MouseCursorEventFilter;
 class MruWindowTracker;
@@ -277,8 +277,8 @@ class ASH_EXPORT Shell : public SessionObserver,
   // Destroys the virtual keyboard.
   void DestroyKeyboard();
 
-  // Test if MaximizeModeWindowManager is not enabled, and if
-  // MaximizeModeController is not currently setting a display rotation. Or if
+  // Test if TabletModeWindowManager is not enabled, and if
+  // TabletModeController is not currently setting a display rotation. Or if
   // the |resolution_notification_controller_| is not showing its confirmation
   // dialog. If true then changes to display settings can be saved.
   bool ShouldSaveDisplaySettings();
@@ -317,8 +317,8 @@ class ASH_EXPORT Shell : public SessionObserver,
   LockScreenController* lock_screen_controller() {
     return lock_screen_controller_.get();
   }
-  MaximizeModeController* maximize_mode_controller() {
-    return maximize_mode_controller_.get();
+  TabletModeController* tablet_mode_controller() {
+    return tablet_mode_controller_.get();
   }
   MediaController* media_controller() { return media_controller_.get(); }
   MruWindowTracker* mru_window_tracker() { return mru_window_tracker_.get(); }
@@ -555,16 +555,16 @@ class ASH_EXPORT Shell : public SessionObserver,
   // TODO(oshima): Investigate if we can merge this and |OnLoginStateChanged|.
   void UpdateAfterLoginStatusChange(LoginStatus status);
 
-  // Notifies observers that maximize mode has started, windows might still
+  // Notifies observers that tablet mode has started, windows might still
   // animate.
-  void NotifyMaximizeModeStarted();
+  void NotifyTabletModeStarted();
 
-  // Notifies observers that maximize mode is about to end.
-  void NotifyMaximizeModeEnding();
+  // Notifies observers that tablet mode is about to end.
+  void NotifyTabletModeEnding();
 
-  // Notifies observers that maximize mode has ended, windows might still be
+  // Notifies observers that tablet mode has ended, windows might still be
   // returning to their original position.
-  void NotifyMaximizeModeEnded();
+  void NotifyTabletModeEnded();
 
   // Notifies observers that overview mode is about to be started (before the
   // windows get re-arranged).
@@ -695,7 +695,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<LocaleNotificationController> locale_notification_controller_;
   std::unique_ptr<LockScreenController> lock_screen_controller_;
   std::unique_ptr<LogoutConfirmationController> logout_confirmation_controller_;
-  std::unique_ptr<MaximizeModeController> maximize_mode_controller_;
+  std::unique_ptr<TabletModeController> tablet_mode_controller_;
   std::unique_ptr<MediaController> media_controller_;
   std::unique_ptr<MruWindowTracker> mru_window_tracker_;
   std::unique_ptr<NewWindowController> new_window_controller_;

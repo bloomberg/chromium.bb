@@ -90,7 +90,7 @@ void WMHelperMus::RemovePostTargetHandler(ui::EventHandler* handler) {
   aura::Env::GetInstance()->RemovePostTargetHandler(handler);
 }
 
-bool WMHelperMus::IsMaximizeModeWindowManagerEnabled() const {
+bool WMHelperMus::IsTabletModeWindowManagerEnabled() const {
   NOTIMPLEMENTED();
   return false;
 }

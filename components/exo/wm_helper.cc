@@ -54,12 +54,12 @@ void WMHelper::RemoveCursorObserver(CursorObserver* observer) {
   cursor_observers_.RemoveObserver(observer);
 }
 
-void WMHelper::AddMaximizeModeObserver(MaximizeModeObserver* observer) {
-  maximize_mode_observers_.AddObserver(observer);
+void WMHelper::AddTabletModeObserver(TabletModeObserver* observer) {
+  tablet_mode_observers_.AddObserver(observer);
 }
 
-void WMHelper::RemoveMaximizeModeObserver(MaximizeModeObserver* observer) {
-  maximize_mode_observers_.RemoveObserver(observer);
+void WMHelper::RemoveTabletModeObserver(TabletModeObserver* observer) {
+  tablet_mode_observers_.RemoveObserver(observer);
 }
 
 void WMHelper::AddInputDeviceEventObserver(InputDeviceEventObserver* observer) {
@@ -108,19 +108,19 @@ void WMHelper::NotifyCursorDisplayChanged(const display::Display& display) {
     observer.OnCursorDisplayChanged(display);
 }
 
-void WMHelper::NotifyMaximizeModeStarted() {
-  for (MaximizeModeObserver& observer : maximize_mode_observers_)
-    observer.OnMaximizeModeStarted();
+void WMHelper::NotifyTabletModeStarted() {
+  for (TabletModeObserver& observer : tablet_mode_observers_)
+    observer.OnTabletModeStarted();
 }
 
-void WMHelper::NotifyMaximizeModeEnding() {
-  for (MaximizeModeObserver& observer : maximize_mode_observers_)
-    observer.OnMaximizeModeEnding();
+void WMHelper::NotifyTabletModeEnding() {
+  for (TabletModeObserver& observer : tablet_mode_observers_)
+    observer.OnTabletModeEnding();
 }
 
-void WMHelper::NotifyMaximizeModeEnded() {
-  for (MaximizeModeObserver& observer : maximize_mode_observers_)
-    observer.OnMaximizeModeEnded();
+void WMHelper::NotifyTabletModeEnded() {
+  for (TabletModeObserver& observer : tablet_mode_observers_)
+    observer.OnTabletModeEnded();
 }
 
 void WMHelper::NotifyKeyboardDeviceConfigurationChanged() {

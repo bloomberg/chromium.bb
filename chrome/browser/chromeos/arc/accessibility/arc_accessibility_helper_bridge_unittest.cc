@@ -49,7 +49,7 @@ class ArcAccessibilityHelperBridgeTest : public testing::Test {
     void RemovePreTargetHandler(ui::EventHandler* handler) override {}
     void AddPostTargetHandler(ui::EventHandler* handler) override {}
     void RemovePostTargetHandler(ui::EventHandler* handler) override {}
-    bool IsMaximizeModeWindowManagerEnabled() const override { return false; }
+    bool IsTabletModeWindowManagerEnabled() const override { return false; }
 
     DISALLOW_COPY_AND_ASSIGN(FakeWMHelper);
   };

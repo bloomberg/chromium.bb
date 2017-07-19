@@ -24,7 +24,7 @@
 #include "ash/system/tray/system_tray_controller.h"
 #include "ash/tray_action/tray_action.h"
 #include "ash/wallpaper/wallpaper_controller.h"
-#include "ash/wm/maximize_mode/maximize_mode_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
 #include "ui/app_list/presenter/app_list.h"
@@ -100,7 +100,7 @@ void BindSystemTrayRequestOnMainThread(mojom::SystemTrayRequest request) {
 }
 
 void BindTouchViewRequestOnMainThread(mojom::TouchViewManagerRequest request) {
-  Shell::Get()->maximize_mode_controller()->BindRequest(std::move(request));
+  Shell::Get()->tablet_mode_controller()->BindRequest(std::move(request));
 }
 
 void BindTrayActionRequestOnMainThread(mojom::TrayActionRequest request) {

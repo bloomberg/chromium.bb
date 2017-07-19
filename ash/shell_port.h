@@ -55,7 +55,7 @@ enum class Config;
 enum class TaskSwitchSource;
 
 namespace wm {
-class MaximizeModeEventHandler;
+class TabletModeEventHandler;
 class WindowState;
 }
 
@@ -122,8 +122,8 @@ class ASH_EXPORT ShellPort {
   virtual std::unique_ptr<WindowCycleEventFilter>
   CreateWindowCycleEventFilter() = 0;
 
-  virtual std::unique_ptr<wm::MaximizeModeEventHandler>
-  CreateMaximizeModeEventHandler() = 0;
+  virtual std::unique_ptr<wm::TabletModeEventHandler>
+  CreateTabletModeEventHandler() = 0;
 
   virtual std::unique_ptr<WorkspaceEventHandler> CreateWorkspaceEventHandler(
       aura::Window* workspace_window) = 0;

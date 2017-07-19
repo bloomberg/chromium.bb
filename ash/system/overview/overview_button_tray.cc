@@ -12,9 +12,9 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_container.h"
-#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/window_selector_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -90,11 +90,11 @@ void OverviewButtonTray::OnSessionStateChanged(
   UpdateIconVisibility();
 }
 
-void OverviewButtonTray::OnMaximizeModeStarted() {
+void OverviewButtonTray::OnTabletModeStarted() {
   UpdateIconVisibility();
 }
 
-void OverviewButtonTray::OnMaximizeModeEnded() {
+void OverviewButtonTray::OnTabletModeEnded() {
   UpdateIconVisibility();
 }
 
@@ -126,7 +126,7 @@ void OverviewButtonTray::UpdateIconVisibility() {
 
   Shell* shell = Shell::Get();
   SetVisible(
-      shell->maximize_mode_controller()->IsMaximizeModeWindowManagerEnabled() &&
+      shell->tablet_mode_controller()->IsTabletModeWindowManagerEnabled() &&
       session_controller->IsActiveUserSessionStarted() &&
       !session_controller->IsScreenLocked() &&
       session_controller->GetSessionState() ==

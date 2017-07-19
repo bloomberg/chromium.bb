@@ -32,9 +32,9 @@
 #include "ash/virtual_keyboard_controller.h"
 #include "ash/wallpaper/wallpaper_delegate.h"
 #include "ash/wm/drag_window_resizer.h"
-#include "ash/wm/maximize_mode/maximize_mode_event_handler.h"
-#include "ash/wm/maximize_mode/maximize_mode_event_handler_aura.h"
 #include "ash/wm/mru_window_tracker.h"
+#include "ash/wm/tablet_mode/tablet_mode_event_handler.h"
+#include "ash/wm/tablet_mode/tablet_mode_event_handler_aura.h"
 #include "ash/wm/window_cycle_event_filter.h"
 #include "ash/wm/window_cycle_event_filter_aura.h"
 #include "ash/wm/window_resizer.h"
@@ -203,10 +203,10 @@ ShellPortMash::CreateWindowCycleEventFilter() {
   return nullptr;
 }
 
-std::unique_ptr<wm::MaximizeModeEventHandler>
-ShellPortMash::CreateMaximizeModeEventHandler() {
+std::unique_ptr<wm::TabletModeEventHandler>
+ShellPortMash::CreateTabletModeEventHandler() {
   if (GetAshConfig() == Config::MUS)
-    return base::MakeUnique<wm::MaximizeModeEventHandlerAura>();
+    return base::MakeUnique<wm::TabletModeEventHandlerAura>();
 
   // TODO: need support for window manager to get events before client:
   // http://crbug.com/624157.

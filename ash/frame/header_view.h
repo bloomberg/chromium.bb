@@ -79,8 +79,8 @@ class ASH_EXPORT HeaderView : public views::View,
   // ShellObserver:
   void OnOverviewModeStarting() override;
   void OnOverviewModeEnded() override;
-  void OnMaximizeModeStarted() override;
-  void OnMaximizeModeEnded() override;
+  void OnTabletModeStarted() override;
+  void OnTabletModeEnded() override;
 
   FrameCaptionButtonContainerView* caption_button_container() {
     return caption_button_container_;

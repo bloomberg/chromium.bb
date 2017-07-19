@@ -56,7 +56,7 @@ const int kContentEdgeShadowThickness = 2;
 // buttons, but the space will look cluttered if it actually slides under them,
 // so we stop it when the gap between the two is down to 5 px.
 const int kNewTabCaptionRestoredSpacing = 5;
-// In maximized mode, where the New Tab button and the caption buttons are at
+// In tablet mode, where the New Tab button and the caption buttons are at
 // similar vertical coordinates, we need to reserve a larger, 16 px gap to avoid
 // looking too cluttered.
 const int kNewTabCaptionMaximizedSpacing = 16;
@@ -149,7 +149,7 @@ gfx::Rect GlassBrowserFrameView::GetBoundsForTabStrip(
       const int old_end_x = end_x;
       end_x -= profile_switcher->width() + kProfileSwitcherButtonOffset;
 
-      // In non-maximized mode, allow the new tab button to slide completely
+      // In non-tablet mode, allow the new tab button to slide completely
       // under the profile switcher button.
       if (!IsMaximized()) {
         end_x = std::min(end_x + GetLayoutSize(NEW_TAB_BUTTON).width() +
@@ -512,7 +512,7 @@ int GlassBrowserFrameView::TopAreaHeight(bool restored) const {
 
   const int top = FrameTopBorderThickness(restored);
   // The tab top inset is equal to the height of any shadow region above the
-  // tabs, plus a 1 px top stroke.  In maximized mode, we want to push the
+  // tabs, plus a 1 px top stroke.  In tablet mode, we want to push the
   // shadow region off the top of the screen but leave the top stroke.
   return (IsMaximized() && !restored)
              ? (top - GetLayoutInsets(TAB).top() + 1)
@@ -527,7 +527,7 @@ int GlassBrowserFrameView::TitlebarHeight(bool restored) const {
   if (frame()->IsFullscreen() && !restored)
     return 0;
   // The titlebar's actual height is the same in restored and maximized, but
-  // some of it is above the screen in maximized mode. See the comment in
+  // some of it is above the screen in tablet mode. See the comment in
   // FrameTopBorderThicknessPx().
   return TitlebarMaximizedVisualHeight() + FrameTopBorderThickness(false);
 }
@@ -762,7 +762,7 @@ void GlassBrowserFrameView::LayoutProfileSwitcher() {
 
   int button_y = WindowTopY();
   if (IsMaximized()) {
-    // In maximized mode the caption buttons appear only 19 pixels high, but
+    // In tablet mode the caption buttons appear only 19 pixels high, but
     // their contents are aligned as if they were 20 pixels high and extended
     // 1 pixel off the top of the screen. We position the profile switcher
     // button the same way to match.

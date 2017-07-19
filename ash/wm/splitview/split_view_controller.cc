@@ -8,8 +8,8 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
-#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/mru_window_tracker.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
@@ -48,8 +48,8 @@ bool SplitViewController::ShouldAllowSplitView() {
     return false;
   }
   if (!Shell::Get()
-           ->maximize_mode_controller()
-           ->IsMaximizeModeWindowManagerEnabled()) {
+           ->tablet_mode_controller()
+           ->IsTabletModeWindowManagerEnabled()) {
     return false;
   }
   return true;

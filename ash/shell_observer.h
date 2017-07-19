@@ -59,16 +59,16 @@ class ASH_EXPORT ShellObserver {
   // Called after split view mode has ended.
   virtual void OnSplitViewModeEnded() {}
 
-  // Called when the always maximize mode has started. Windows might still
+  // Called when the always tablet mode has started. Windows might still
   // animate though.
-  virtual void OnMaximizeModeStarted() {}
+  virtual void OnTabletModeStarted() {}
 
-  // Called when the maximize mode is about to end.
-  virtual void OnMaximizeModeEnding() {}
+  // Called when the tablet mode is about to end.
+  virtual void OnTabletModeEnding() {}
 
-  // Called when the maximize mode has ended. Windows may still be
+  // Called when the tablet mode has ended. Windows may still be
   // animating but have been restored.
-  virtual void OnMaximizeModeEnded() {}
+  virtual void OnTabletModeEnded() {}
 
   // Called when keyboard is activated/deactivated in |root_window|.
   virtual void OnVirtualKeyboardStateChanged(bool activated,

@@ -41,7 +41,7 @@ class WMHelperAsh : public WMHelper,
   void RemovePreTargetHandler(ui::EventHandler* handler) override;
   void AddPostTargetHandler(ui::EventHandler* handler) override;
   void RemovePostTargetHandler(ui::EventHandler* handler) override;
-  bool IsMaximizeModeWindowManagerEnabled() const override;
+  bool IsTabletModeWindowManagerEnabled() const override;
 
   // Overridden from wm::ActivationChangeObserver:
   void OnWindowActivated(wm::ActivationChangeObserver::ActivationReason reason,
@@ -58,9 +58,9 @@ class WMHelperAsh : public WMHelper,
   void OnCursorDisplayChanged(const display::Display& display) override;
 
   // Overridden from ash::ShellObserver:
-  void OnMaximizeModeStarted() override;
-  void OnMaximizeModeEnding() override;
-  void OnMaximizeModeEnded() override;
+  void OnTabletModeStarted() override;
+  void OnTabletModeEnding() override;
+  void OnTabletModeEnded() override;
 
   // WindowTreeHostManager::Observer:
   void OnDisplayConfigurationChanged() override;

@@ -52,6 +52,7 @@
 #include "ash/system/user/tray_user.h"
 #include "ash/system/web_notification/web_notification_tray.h"
 #include "ash/wm/container_finder.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/widget_finder.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"

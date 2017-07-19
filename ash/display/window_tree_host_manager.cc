@@ -497,7 +497,7 @@ void WindowTreeHostManager::UpdateMouseLocationAfterDisplayChange() {
   // Do not move the cursor if the cursor's location did not change. This avoids
   // moving (and showing) the cursor:
   // - At startup.
-  // - When the device is rotated in maximized mode.
+  // - When the device is rotated in tablet mode.
   // |cursor_display_id_for_restore_| is checked to ensure that the cursor is
   // moved when the cursor's native position does not change but the display
   // that it is on has changed. This occurs when swapping the primary display.

@@ -14,7 +14,7 @@
 #include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/wm/maximize_mode/maximize_mode_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -42,9 +42,8 @@ void SetShelfAlignment(ShelfAlignment alignment) {
   AshTestBase::GetPrimaryShelf()->SetAlignment(alignment);
 }
 
-void EnableMaximizeMode(bool enable) {
-  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
-      enable);
+void EnableTabletMode(bool enable) {
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(enable);
 }
 
 }  // namespace
@@ -305,12 +304,11 @@ TEST_F(FullscreenAppListPresenterDelegateTest,
   EXPECT_EQ(app_list->app_list_state(), app_list::AppListView::PEEKING);
 }
 
-// Tests that the app list initializes in fullscreen with maximize mode active
+// Tests that the app list initializes in fullscreen with tablet mode active
 // and that the state transitions via text input act properly.
-TEST_F(FullscreenAppListPresenterDelegateTest,
-       MaximizeModeTextStateTransitions) {
+TEST_F(FullscreenAppListPresenterDelegateTest, TabletModeTextStateTransitions) {
   // TODO(newcomer): Investigate mash failures crbug.com/726838
-  EnableMaximizeMode(true);
+  EnableTabletMode(true);
   app_list_presenter_impl()->Show(GetPrimaryDisplayId());
   app_list::AppListView* app_list = app_list_presenter_impl()->GetView();
   EXPECT_EQ(app_list->app_list_state(),
@@ -330,21 +328,21 @@ TEST_F(FullscreenAppListPresenterDelegateTest,
             app_list::AppListView::FULLSCREEN_ALL_APPS);
 }
 
-// Tests that the app list state responds correctly to maximize mode being
+// Tests that the app list state responds correctly to tablet mode being
 // enabled while the app list is being shown.
 TEST_F(FullscreenAppListPresenterDelegateTest,
-       PeekingToFullscreenWhenMaximizeModeIsActive) {
+       PeekingToFullscreenWhenTabletModeIsActive) {
   // TODO(newcomer): Investigate mash failures crbug.com/726838
   app_list_presenter_impl()->Show(GetPrimaryDisplayId());
   app_list::AppListView* app_list = app_list_presenter_impl()->GetView();
   EXPECT_EQ(app_list->app_list_state(), app_list::AppListView::PEEKING);
-  // Enable maximize mode, this should force the app list to switch to the
+  // Enable tablet mode, this should force the app list to switch to the
   // fullscreen equivalent of the current state.
-  EnableMaximizeMode(true);
+  EnableTabletMode(true);
   EXPECT_EQ(app_list->app_list_state(),
             app_list::AppListView::FULLSCREEN_ALL_APPS);
-  // Disable maximize mode, the state of the app list should not change.
-  EnableMaximizeMode(false);
+  // Disable tablet mode, the state of the app list should not change.
+  EnableTabletMode(false);
   EXPECT_EQ(app_list->app_list_state(),
             app_list::AppListView::FULLSCREEN_ALL_APPS);
   // Enter text in the searchbox, the app list should transition to fullscreen
@@ -361,10 +359,10 @@ TEST_F(FullscreenAppListPresenterDelegateTest,
             app_list::AppListView::FULLSCREEN_ALL_APPS);
 }
 
-// Tests that the app list state responds correctly to maximize mode being
+// Tests that the app list state responds correctly to tablet mode being
 // enabled while the app list is being shown with half launcher.
 TEST_F(FullscreenAppListPresenterDelegateTest,
-       HalfToFullscreenWhenMaximizeModeIsActive) {
+       HalfToFullscreenWhenTabletModeIsActive) {
   // TODO(newcomer): Investigate mash failures crbug.com/726838
   app_list_presenter_impl()->Show(GetPrimaryDisplayId());
   app_list::AppListView* app_list = app_list_presenter_impl()->GetView();
@@ -375,9 +373,9 @@ TEST_F(FullscreenAppListPresenterDelegateTest,
   generator.PressKey(ui::KeyboardCode::VKEY_0, 0);
   EXPECT_EQ(app_list->app_list_state(), app_list::AppListView::HALF);
 
-  // Enable maximize mode and force the app list to transition to the fullscreen
+  // Enable tablet mode and force the app list to transition to the fullscreen
   // equivalent of the current state.
-  EnableMaximizeMode(true);
+  EnableTabletMode(true);
   EXPECT_EQ(app_list->app_list_state(),
             app_list::AppListView::FULLSCREEN_SEARCH);
   generator.PressKey(ui::KeyboardCode::VKEY_BACK, 0);
@@ -447,11 +445,11 @@ TEST_F(FullscreenAppListPresenterDelegateTest, AppListViewDragHandler) {
   EXPECT_EQ(app_list->app_list_state(), app_list::AppListView::CLOSED);
 }
 
-// Tests that the app list view handles drag properly in maximize mode.
+// Tests that the app list view handles drag properly in tablet mode.
 TEST_F(FullscreenAppListPresenterDelegateTest,
-       AppListViewDragHandlerMaximizeModeFromAllApps) {
+       AppListViewDragHandlerTabletModeFromAllApps) {
   // TODO(newcomer): Investigate mash failures crbug.com/726838
-  EnableMaximizeMode(true);
+  EnableTabletMode(true);
   app_list_presenter_impl()->Show(GetPrimaryDisplayId());
   app_list::AppListView* app_list = app_list_presenter_impl()->GetView();
   EXPECT_EQ(app_list->app_list_state(),
@@ -467,9 +465,9 @@ TEST_F(FullscreenAppListPresenterDelegateTest,
 // Tests that the state of the app list changes properly with drag input from
 // fullscreen search.
 TEST_F(FullscreenAppListPresenterDelegateTest,
-       AppListViewDragHandlerMaximizeModeFromSearch) {
+       AppListViewDragHandlerTabletModeFromSearch) {
   // TODO(newcomer): Investigate mash failures crbug.com/726838
-  EnableMaximizeMode(true);
+  EnableTabletMode(true);
   app_list_presenter_impl()->Show(GetPrimaryDisplayId());
   app_list::AppListView* app_list = app_list_presenter_impl()->GetView();
   EXPECT_EQ(app_list->app_list_state(),

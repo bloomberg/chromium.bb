@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/maximize_mode/maximize_mode_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 
 #include <math.h>
 #include <utility>
@@ -70,17 +70,17 @@ extern const size_t kAccelerometerVerticalHingeTestDataLength;
 extern const float kAccelerometerVerticalHingeUnstableAnglesTestData[];
 extern const size_t kAccelerometerVerticalHingeUnstableAnglesTestDataLength;
 
-class MaximizeModeControllerTest : public AshTestBase {
+class TabletModeControllerTest : public AshTestBase {
  public:
-  MaximizeModeControllerTest() {}
-  ~MaximizeModeControllerTest() override {}
+  TabletModeControllerTest() {}
+  ~TabletModeControllerTest() override {}
 
   void SetUp() override {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kAshEnableTouchView);
     AshTestBase::SetUp();
     chromeos::AccelerometerReader::GetInstance()->RemoveObserver(
-        maximize_mode_controller());
+        tablet_mode_controller());
 
     // Set the first display to be the internal display for the accelerometer
     // screen rotation tests.
@@ -90,12 +90,12 @@ class MaximizeModeControllerTest : public AshTestBase {
 
   void TearDown() override {
     chromeos::AccelerometerReader::GetInstance()->AddObserver(
-        maximize_mode_controller());
+        tablet_mode_controller());
     AshTestBase::TearDown();
   }
 
-  MaximizeModeController* maximize_mode_controller() {
-    return Shell::Get()->maximize_mode_controller();
+  TabletModeController* tablet_mode_controller() {
+    return Shell::Get()->tablet_mode_controller();
   }
 
   void TriggerLidUpdate(const gfx::Vector3dF& lid) {
@@ -103,7 +103,7 @@ class MaximizeModeControllerTest : public AshTestBase {
         new chromeos::AccelerometerUpdate());
     update->Set(chromeos::ACCELEROMETER_SOURCE_SCREEN, lid.x(), lid.y(),
                 lid.z());
-    maximize_mode_controller()->OnAccelerometerUpdated(update);
+    tablet_mode_controller()->OnAccelerometerUpdated(update);
   }
 
   void TriggerBaseAndLidUpdate(const gfx::Vector3dF& base,
@@ -114,20 +114,20 @@ class MaximizeModeControllerTest : public AshTestBase {
                 base.y(), base.z());
     update->Set(chromeos::ACCELEROMETER_SOURCE_SCREEN, lid.x(), lid.y(),
                 lid.z());
-    maximize_mode_controller()->OnAccelerometerUpdated(update);
+    tablet_mode_controller()->OnAccelerometerUpdated(update);
   }
 
-  bool IsMaximizeModeStarted() {
-    return maximize_mode_controller()->IsMaximizeModeWindowManagerEnabled();
+  bool IsTabletModeStarted() {
+    return tablet_mode_controller()->IsTabletModeWindowManagerEnabled();
   }
 
-  // Attaches a SimpleTestTickClock to the MaximizeModeController with a non
+  // Attaches a SimpleTestTickClock to the TabletModeController with a non
   // null value initial value.
   void AttachTickClockForTest() {
     std::unique_ptr<base::TickClock> tick_clock(
         test_tick_clock_ = new base::SimpleTestTickClock());
     test_tick_clock_->Advance(base::TimeDelta::FromSeconds(1));
-    maximize_mode_controller()->SetTickClockForTest(std::move(tick_clock));
+    tablet_mode_controller()->SetTickClockForTest(std::move(tick_clock));
   }
 
   void AdvanceTickClock(const base::TimeDelta& delta) {
@@ -153,34 +153,34 @@ class MaximizeModeControllerTest : public AshTestBase {
   }
 
   void OpenLid() {
-    maximize_mode_controller()->LidEventReceived(
+    tablet_mode_controller()->LidEventReceived(
         chromeos::PowerManagerClient::LidState::OPEN,
-        maximize_mode_controller()->tick_clock_->NowTicks());
+        tablet_mode_controller()->tick_clock_->NowTicks());
   }
 
   void CloseLid() {
-    maximize_mode_controller()->LidEventReceived(
+    tablet_mode_controller()->LidEventReceived(
         chromeos::PowerManagerClient::LidState::CLOSED,
-        maximize_mode_controller()->tick_clock_->NowTicks());
+        tablet_mode_controller()->tick_clock_->NowTicks());
   }
 
   bool WasLidOpenedRecently() {
-    return maximize_mode_controller()->WasLidOpenedRecently();
+    return tablet_mode_controller()->WasLidOpenedRecently();
   }
 
   void SetTabletMode(bool on) {
-    maximize_mode_controller()->TabletModeEventReceived(
+    tablet_mode_controller()->TabletModeEventReceived(
         on ? chromeos::PowerManagerClient::TabletMode::ON
            : chromeos::PowerManagerClient::TabletMode::OFF,
-        maximize_mode_controller()->tick_clock_->NowTicks());
+        tablet_mode_controller()->tick_clock_->NowTicks());
   }
 
   bool AreEventsBlocked() {
-    return !!maximize_mode_controller()->event_blocker_.get();
+    return !!tablet_mode_controller()->event_blocker_.get();
   }
 
-  MaximizeModeController::ForceTabletMode forced_tablet_mode() {
-    return maximize_mode_controller()->force_tablet_mode_;
+  TabletModeController::ForceTabletMode forced_tablet_mode() {
+    return tablet_mode_controller()->force_tablet_mode_;
   }
 
   base::UserActionTester* user_action_tester() { return &user_action_tester_; }
@@ -191,83 +191,83 @@ class MaximizeModeControllerTest : public AshTestBase {
   // Tracks user action counts.
   base::UserActionTester user_action_tester_;
 
-  DISALLOW_COPY_AND_ASSIGN(MaximizeModeControllerTest);
+  DISALLOW_COPY_AND_ASSIGN(TabletModeControllerTest);
 };
 
 // Verify TouchView enabled/disabled user action metrics are recorded.
-TEST_F(MaximizeModeControllerTest, VerifyTouchViewEnabledDisabledCounts) {
+TEST_F(TabletModeControllerTest, VerifyTouchViewEnabledDisabledCounts) {
   ASSERT_EQ(1,
             user_action_tester()->GetActionCount(kTouchViewInitiallyDisabled));
   ASSERT_EQ(0, user_action_tester()->GetActionCount(kTouchViewEnabled));
   ASSERT_EQ(0, user_action_tester()->GetActionCount(kTouchViewDisabled));
 
   user_action_tester()->ResetCounts();
-  maximize_mode_controller()->EnableMaximizeModeWindowManager(true);
+  tablet_mode_controller()->EnableTabletModeWindowManager(true);
   EXPECT_EQ(1, user_action_tester()->GetActionCount(kTouchViewEnabled));
   EXPECT_EQ(0, user_action_tester()->GetActionCount(kTouchViewDisabled));
-  maximize_mode_controller()->EnableMaximizeModeWindowManager(true);
+  tablet_mode_controller()->EnableTabletModeWindowManager(true);
   EXPECT_EQ(1, user_action_tester()->GetActionCount(kTouchViewEnabled));
   EXPECT_EQ(0, user_action_tester()->GetActionCount(kTouchViewDisabled));
 
   user_action_tester()->ResetCounts();
-  maximize_mode_controller()->EnableMaximizeModeWindowManager(false);
+  tablet_mode_controller()->EnableTabletModeWindowManager(false);
   EXPECT_EQ(0, user_action_tester()->GetActionCount(kTouchViewEnabled));
   EXPECT_EQ(1, user_action_tester()->GetActionCount(kTouchViewDisabled));
-  maximize_mode_controller()->EnableMaximizeModeWindowManager(false);
+  tablet_mode_controller()->EnableTabletModeWindowManager(false);
   EXPECT_EQ(0, user_action_tester()->GetActionCount(kTouchViewEnabled));
   EXPECT_EQ(1, user_action_tester()->GetActionCount(kTouchViewDisabled));
 }
 
-// Verify that closing the lid will exit maximize mode.
-TEST_F(MaximizeModeControllerTest, CloseLidWhileInMaximizeMode) {
+// Verify that closing the lid will exit tablet mode.
+TEST_F(TabletModeControllerTest, CloseLidWhileInTabletMode) {
   OpenLidToAngle(315.0f);
-  ASSERT_TRUE(IsMaximizeModeStarted());
+  ASSERT_TRUE(IsTabletModeStarted());
 
   CloseLid();
-  EXPECT_FALSE(IsMaximizeModeStarted());
+  EXPECT_FALSE(IsTabletModeStarted());
 }
 
-// Verify that maximize mode will not be entered when the lid is closed.
-TEST_F(MaximizeModeControllerTest, HingeAnglesWithLidClosed) {
+// Verify that tablet mode will not be entered when the lid is closed.
+TEST_F(TabletModeControllerTest, HingeAnglesWithLidClosed) {
   AttachTickClockForTest();
 
   CloseLid();
 
   OpenLidToAngle(270.0f);
-  EXPECT_FALSE(IsMaximizeModeStarted());
+  EXPECT_FALSE(IsTabletModeStarted());
 
   OpenLidToAngle(315.0f);
-  EXPECT_FALSE(IsMaximizeModeStarted());
+  EXPECT_FALSE(IsTabletModeStarted());
 
   OpenLidToAngle(355.0f);
-  EXPECT_FALSE(IsMaximizeModeStarted());
+  EXPECT_FALSE(IsTabletModeStarted());
 }
 
-// Verify the maximize mode state for unstable hinge angles when the lid was
+// Verify the tablet mode state for unstable hinge angles when the lid was
 // recently open.
-TEST_F(MaximizeModeControllerTest, UnstableHingeAnglesWhenLidRecentlyOpened) {
+TEST_F(TabletModeControllerTest, UnstableHingeAnglesWhenLidRecentlyOpened) {
   AttachTickClockForTest();
 
   OpenLid();
   ASSERT_TRUE(WasLidOpenedRecently());
 
   OpenLidToAngle(5.0f);
-  EXPECT_FALSE(IsMaximizeModeStarted());
+  EXPECT_FALSE(IsTabletModeStarted());
 
   OpenLidToAngle(355.0f);
-  EXPECT_FALSE(IsMaximizeModeStarted());
+  EXPECT_FALSE(IsTabletModeStarted());
 
   // This is a stable reading and should clear the last lid opened time.
   OpenLidToAngle(45.0f);
-  EXPECT_FALSE(IsMaximizeModeStarted());
+  EXPECT_FALSE(IsTabletModeStarted());
   EXPECT_FALSE(WasLidOpenedRecently());
 
   OpenLidToAngle(355.0f);
-  EXPECT_TRUE(IsMaximizeModeStarted());
+  EXPECT_TRUE(IsTabletModeStarted());
 }
 
 // Verify the WasLidOpenedRecently signal with respect to time.
-TEST_F(MaximizeModeControllerTest, WasLidOpenedRecentlyOverTime) {
+TEST_F(TabletModeControllerTest, WasLidOpenedRecentlyOverTime) {
   AttachTickClockForTest();
 
   // No lid open time initially.
@@ -288,128 +288,127 @@ TEST_F(MaximizeModeControllerTest, WasLidOpenedRecentlyOverTime) {
   EXPECT_FALSE(WasLidOpenedRecently());
 }
 
-TEST_F(MaximizeModeControllerTest, TabletModeTransition) {
+TEST_F(TabletModeControllerTest, TabletModeTransition) {
   OpenLidToAngle(90.0f);
-  EXPECT_FALSE(IsMaximizeModeStarted());
+  EXPECT_FALSE(IsTabletModeStarted());
 
-  // Unstable reading. This should not trigger maximize mode.
+  // Unstable reading. This should not trigger tablet mode.
   HoldDeviceVertical();
-  EXPECT_FALSE(IsMaximizeModeStarted());
+  EXPECT_FALSE(IsTabletModeStarted());
 
-  // When tablet mode switch is on it should force maximize mode even if the
+  // When tablet mode switch is on it should force tablet mode even if the
   // reading is not stable.
   SetTabletMode(true);
-  EXPECT_TRUE(IsMaximizeModeStarted());
+  EXPECT_TRUE(IsTabletModeStarted());
 
-  // After tablet mode switch is off it should stay in maximize mode if the
+  // After tablet mode switch is off it should stay in tablet mode if the
   // reading is not stable.
   SetTabletMode(false);
-  EXPECT_TRUE(IsMaximizeModeStarted());
+  EXPECT_TRUE(IsTabletModeStarted());
 
-  // Should leave maximize mode when the lid angle is small enough.
+  // Should leave tablet mode when the lid angle is small enough.
   OpenLidToAngle(90.0f);
-  EXPECT_FALSE(IsMaximizeModeStarted());
+  EXPECT_FALSE(IsTabletModeStarted());
 
   OpenLidToAngle(300.0f);
-  EXPECT_TRUE(IsMaximizeModeStarted());
+  EXPECT_TRUE(IsTabletModeStarted());
 }
 
-// When there is no keyboard accelerometer available maximize mode should solely
+// When there is no keyboard accelerometer available tablet mode should solely
 // rely on the tablet mode switch.
-TEST_F(MaximizeModeControllerTest,
-       TabletModeTransitionNoKeyboardAccelerometer) {
-  ASSERT_FALSE(IsMaximizeModeStarted());
+TEST_F(TabletModeControllerTest, TabletModeTransitionNoKeyboardAccelerometer) {
+  ASSERT_FALSE(IsTabletModeStarted());
   TriggerLidUpdate(gfx::Vector3dF(0.0f, 0.0f, kMeanGravity));
-  ASSERT_FALSE(IsMaximizeModeStarted());
+  ASSERT_FALSE(IsTabletModeStarted());
 
   SetTabletMode(true);
-  EXPECT_TRUE(IsMaximizeModeStarted());
+  EXPECT_TRUE(IsTabletModeStarted());
 
   // Single sensor reading should not change mode.
   TriggerLidUpdate(gfx::Vector3dF(0.0f, 0.0f, kMeanGravity));
-  EXPECT_TRUE(IsMaximizeModeStarted());
+  EXPECT_TRUE(IsTabletModeStarted());
 
   // With a single sensor we should exit immediately on the tablet mode switch
   // rather than waiting for stabilized accelerometer readings.
   SetTabletMode(false);
-  EXPECT_FALSE(IsMaximizeModeStarted());
+  EXPECT_FALSE(IsTabletModeStarted());
 }
 
-// Verify the maximize mode enter/exit thresholds for stable angles.
-TEST_F(MaximizeModeControllerTest, StableHingeAnglesWithLidOpened) {
-  ASSERT_FALSE(IsMaximizeModeStarted());
+// Verify the tablet mode enter/exit thresholds for stable angles.
+TEST_F(TabletModeControllerTest, StableHingeAnglesWithLidOpened) {
+  ASSERT_FALSE(IsTabletModeStarted());
   ASSERT_FALSE(WasLidOpenedRecently());
 
   OpenLidToAngle(180.0f);
-  EXPECT_FALSE(IsMaximizeModeStarted());
+  EXPECT_FALSE(IsTabletModeStarted());
 
   OpenLidToAngle(315.0f);
-  EXPECT_TRUE(IsMaximizeModeStarted());
+  EXPECT_TRUE(IsTabletModeStarted());
 
   OpenLidToAngle(180.0f);
-  EXPECT_TRUE(IsMaximizeModeStarted());
+  EXPECT_TRUE(IsTabletModeStarted());
 
   OpenLidToAngle(45.0f);
-  EXPECT_FALSE(IsMaximizeModeStarted());
+  EXPECT_FALSE(IsTabletModeStarted());
 
   OpenLidToAngle(270.0f);
-  EXPECT_TRUE(IsMaximizeModeStarted());
+  EXPECT_TRUE(IsTabletModeStarted());
 
   OpenLidToAngle(90.0f);
-  EXPECT_FALSE(IsMaximizeModeStarted());
+  EXPECT_FALSE(IsTabletModeStarted());
 }
 
-// Verify the maximize mode state for unstable hinge angles when the lid is open
+// Verify the tablet mode state for unstable hinge angles when the lid is open
 // but not recently.
-TEST_F(MaximizeModeControllerTest, UnstableHingeAnglesWithLidOpened) {
+TEST_F(TabletModeControllerTest, UnstableHingeAnglesWithLidOpened) {
   AttachTickClockForTest();
 
   ASSERT_FALSE(WasLidOpenedRecently());
-  ASSERT_FALSE(IsMaximizeModeStarted());
+  ASSERT_FALSE(IsTabletModeStarted());
 
   OpenLidToAngle(5.0f);
-  EXPECT_FALSE(IsMaximizeModeStarted());
+  EXPECT_FALSE(IsTabletModeStarted());
 
   OpenLidToAngle(355.0f);
-  EXPECT_TRUE(IsMaximizeModeStarted());
+  EXPECT_TRUE(IsTabletModeStarted());
 
   OpenLidToAngle(5.0f);
-  EXPECT_TRUE(IsMaximizeModeStarted());
+  EXPECT_TRUE(IsTabletModeStarted());
 }
 
 // Tests that when the hinge is nearly vertically aligned, the current state
 // persists as the computed angle is highly inaccurate in this orientation.
-TEST_F(MaximizeModeControllerTest, HingeAligned) {
+TEST_F(TabletModeControllerTest, HingeAligned) {
   // Laptop in normal orientation lid open 90 degrees.
   TriggerBaseAndLidUpdate(gfx::Vector3dF(0.0f, 0.0f, -kMeanGravity),
                           gfx::Vector3dF(0.0f, -kMeanGravity, 0.0f));
-  EXPECT_FALSE(IsMaximizeModeStarted());
+  EXPECT_FALSE(IsTabletModeStarted());
 
   // Completely vertical.
   TriggerBaseAndLidUpdate(gfx::Vector3dF(kMeanGravity, 0.0f, 0.0f),
                           gfx::Vector3dF(kMeanGravity, 0.0f, 0.0f));
-  EXPECT_FALSE(IsMaximizeModeStarted());
+  EXPECT_FALSE(IsTabletModeStarted());
 
   // Close to vertical but with hinge appearing to be open 270 degrees.
   TriggerBaseAndLidUpdate(gfx::Vector3dF(kMeanGravity, 0.0f, -0.1f),
                           gfx::Vector3dF(kMeanGravity, 0.1f, 0.0f));
-  EXPECT_FALSE(IsMaximizeModeStarted());
+  EXPECT_FALSE(IsTabletModeStarted());
 
-  // Flat and open 270 degrees should start maximize mode.
+  // Flat and open 270 degrees should start tablet mode.
   TriggerBaseAndLidUpdate(gfx::Vector3dF(0.0f, 0.0f, -kMeanGravity),
                           gfx::Vector3dF(0.0f, kMeanGravity, 0.0f));
-  EXPECT_TRUE(IsMaximizeModeStarted());
+  EXPECT_TRUE(IsTabletModeStarted());
 
   // Normal 90 degree orientation but near vertical should stay in maximize
   // mode.
   TriggerBaseAndLidUpdate(gfx::Vector3dF(kMeanGravity, 0.0f, -0.1f),
                           gfx::Vector3dF(kMeanGravity, -0.1f, 0.0f));
-  EXPECT_TRUE(IsMaximizeModeStarted());
+  EXPECT_TRUE(IsTabletModeStarted());
 }
 
-TEST_F(MaximizeModeControllerTest, LaptopTest) {
+TEST_F(TabletModeControllerTest, LaptopTest) {
   // Feeds in sample accelerometer data and verifies that there are no
-  // transitions into touchview / maximize mode while shaking the device around
+  // transitions into touchview / tablet mode while shaking the device around
   // with the hinge at less than 180 degrees. Note the conversion from device
   // data to accelerometer updates consistent with accelerometer_reader.cc.
   ASSERT_EQ(0u, kAccelerometerLaptopModeTestDataLength % 6);
@@ -425,18 +424,18 @@ TEST_F(MaximizeModeControllerTest, LaptopTest) {
     TriggerBaseAndLidUpdate(base, lid);
     // There are a lot of samples, so ASSERT rather than EXPECT to only generate
     // one failure rather than potentially hundreds.
-    ASSERT_FALSE(IsMaximizeModeStarted());
+    ASSERT_FALSE(IsTabletModeStarted());
   }
 }
 
-TEST_F(MaximizeModeControllerTest, MaximizeModeTest) {
-  // Trigger maximize mode by opening to 270 to begin the test in maximize mode.
+TEST_F(TabletModeControllerTest, TabletModeTest) {
+  // Trigger tablet mode by opening to 270 to begin the test in tablet mode.
   TriggerBaseAndLidUpdate(gfx::Vector3dF(0.0f, 0.0f, kMeanGravity),
                           gfx::Vector3dF(0.0f, -kMeanGravity, 0.0f));
-  ASSERT_TRUE(IsMaximizeModeStarted());
+  ASSERT_TRUE(IsTabletModeStarted());
 
   // Feeds in sample accelerometer data and verifies that there are no
-  // transitions out of touchview / maximize mode while shaking the device
+  // transitions out of touchview / tablet mode while shaking the device
   // around. Note the conversion from device data to accelerometer updates
   // consistent with accelerometer_reader.cc.
   ASSERT_EQ(0u, kAccelerometerFullyOpenTestDataLength % 6);
@@ -452,13 +451,13 @@ TEST_F(MaximizeModeControllerTest, MaximizeModeTest) {
     TriggerBaseAndLidUpdate(base, lid);
     // There are a lot of samples, so ASSERT rather than EXPECT to only generate
     // one failure rather than potentially hundreds.
-    ASSERT_TRUE(IsMaximizeModeStarted());
+    ASSERT_TRUE(IsTabletModeStarted());
   }
 }
 
-TEST_F(MaximizeModeControllerTest, VerticalHingeTest) {
+TEST_F(TabletModeControllerTest, VerticalHingeTest) {
   // Feeds in sample accelerometer data and verifies that there are no
-  // transitions out of touchview / maximize mode while shaking the device
+  // transitions out of touchview / tablet mode while shaking the device
   // around, while the hinge is nearly vertical. The data was captured from
   // maxmimize_mode_controller.cc and does not require conversion.
   ASSERT_EQ(0u, kAccelerometerVerticalHingeTestDataLength % 6);
@@ -472,12 +471,12 @@ TEST_F(MaximizeModeControllerTest, VerticalHingeTest) {
     TriggerBaseAndLidUpdate(base, lid);
     // There are a lot of samples, so ASSERT rather than EXPECT to only generate
     // one failure rather than potentially hundreds.
-    ASSERT_TRUE(IsMaximizeModeStarted());
+    ASSERT_TRUE(IsTabletModeStarted());
   }
 }
 
 // Test if this case does not crash. See http://crbug.com/462806
-TEST_F(MaximizeModeControllerTest, DisplayDisconnectionDuringOverview) {
+TEST_F(TabletModeControllerTest, DisplayDisconnectionDuringOverview) {
   UpdateDisplay("800x600,800x600");
   std::unique_ptr<aura::Window> w1(
       CreateTestWindowInShellWithBounds(gfx::Rect(0, 0, 100, 100)));
@@ -485,7 +484,7 @@ TEST_F(MaximizeModeControllerTest, DisplayDisconnectionDuringOverview) {
       CreateTestWindowInShellWithBounds(gfx::Rect(800, 0, 100, 100)));
   ASSERT_NE(w1->GetRootWindow(), w2->GetRootWindow());
 
-  maximize_mode_controller()->EnableMaximizeModeWindowManager(true);
+  tablet_mode_controller()->EnableTabletModeWindowManager(true);
   EXPECT_TRUE(Shell::Get()->window_selector_controller()->ToggleOverview());
 
   UpdateDisplay("800x600");
@@ -493,17 +492,17 @@ TEST_F(MaximizeModeControllerTest, DisplayDisconnectionDuringOverview) {
   EXPECT_EQ(w1->GetRootWindow(), w2->GetRootWindow());
 }
 
-// Test that the disabling of the internal display exits maximize mode, and that
-// while disabled we do not re-enter maximize mode.
-TEST_F(MaximizeModeControllerTest, NoMaximizeModeWithDisabledInternalDisplay) {
+// Test that the disabling of the internal display exits tablet mode, and that
+// while disabled we do not re-enter tablet mode.
+TEST_F(TabletModeControllerTest, NoTabletModeWithDisabledInternalDisplay) {
   UpdateDisplay("200x200, 200x200");
   const int64_t internal_display_id =
       display::test::DisplayManagerTestApi(display_manager())
           .SetFirstDisplayAsInternalDisplay();
-  ASSERT_FALSE(IsMaximizeModeStarted());
+  ASSERT_FALSE(IsTabletModeStarted());
 
   OpenLidToAngle(270.0f);
-  EXPECT_TRUE(IsMaximizeModeStarted());
+  EXPECT_TRUE(IsTabletModeStarted());
   EXPECT_TRUE(AreEventsBlocked());
 
   // Deactivate internal display to simulate Docked Mode.
@@ -512,27 +511,27 @@ TEST_F(MaximizeModeControllerTest, NoMaximizeModeWithDisabledInternalDisplay) {
       display_manager()->GetDisplayAt(1).id()));
   display_manager()->OnNativeDisplaysChanged(secondary_only);
   ASSERT_FALSE(display_manager()->IsActiveDisplayId(internal_display_id));
-  EXPECT_FALSE(IsMaximizeModeStarted());
+  EXPECT_FALSE(IsTabletModeStarted());
   EXPECT_FALSE(AreEventsBlocked());
 
   OpenLidToAngle(270.0f);
-  EXPECT_FALSE(IsMaximizeModeStarted());
+  EXPECT_FALSE(IsTabletModeStarted());
   EXPECT_FALSE(AreEventsBlocked());
 
   // Tablet mode signal should also be ignored.
   SetTabletMode(true);
-  EXPECT_FALSE(IsMaximizeModeStarted());
+  EXPECT_FALSE(IsTabletModeStarted());
   EXPECT_FALSE(AreEventsBlocked());
 }
 
 // Tests that is a tablet mode signal is received while docked, that maximize
 // mode is enabled upon exiting docked mode.
-TEST_F(MaximizeModeControllerTest, MaximizeModeAfterExitingDockedMode) {
+TEST_F(TabletModeControllerTest, TabletModeAfterExitingDockedMode) {
   UpdateDisplay("200x200, 200x200");
   const int64_t internal_display_id =
       display::test::DisplayManagerTestApi(display_manager())
           .SetFirstDisplayAsInternalDisplay();
-  ASSERT_FALSE(IsMaximizeModeStarted());
+  ASSERT_FALSE(IsTabletModeStarted());
 
   // Deactivate internal display to simulate Docked Mode.
   std::vector<display::ManagedDisplayInfo> all_displays;
@@ -549,26 +548,26 @@ TEST_F(MaximizeModeControllerTest, MaximizeModeAfterExitingDockedMode) {
 
   // Tablet mode signal should also be ignored.
   SetTabletMode(true);
-  EXPECT_FALSE(IsMaximizeModeStarted());
+  EXPECT_FALSE(IsTabletModeStarted());
   EXPECT_FALSE(AreEventsBlocked());
 
   // Exiting docked state
   display_manager()->OnNativeDisplaysChanged(all_displays);
   display::test::DisplayManagerTestApi(display_manager())
       .SetFirstDisplayAsInternalDisplay();
-  EXPECT_TRUE(IsMaximizeModeStarted());
+  EXPECT_TRUE(IsTabletModeStarted());
 }
 
-// Verify that the device won't exit touchview / maximize mode for unstable
+// Verify that the device won't exit touchview / tablet mode for unstable
 // angles when hinge is nearly vertical
-TEST_F(MaximizeModeControllerTest, VerticalHingeUnstableAnglesTest) {
-  // Trigger maximize mode by opening to 270 to begin the test in maximize mode.
+TEST_F(TabletModeControllerTest, VerticalHingeUnstableAnglesTest) {
+  // Trigger tablet mode by opening to 270 to begin the test in tablet mode.
   TriggerBaseAndLidUpdate(gfx::Vector3dF(0.0f, 0.0f, kMeanGravity),
                           gfx::Vector3dF(0.0f, -kMeanGravity, 0.0f));
-  ASSERT_TRUE(IsMaximizeModeStarted());
+  ASSERT_TRUE(IsTabletModeStarted());
 
   // Feeds in sample accelerometer data and verifies that there are no
-  // transitions out of touchview / maximize mode while shaking the device
+  // transitions out of touchview / tablet mode while shaking the device
   // around, while the hinge is nearly vertical. The data was captured
   // from maxmimize_mode_controller.cc and does not require conversion.
   ASSERT_EQ(0u, kAccelerometerVerticalHingeUnstableAnglesTestDataLength % 6);
@@ -585,13 +584,13 @@ TEST_F(MaximizeModeControllerTest, VerticalHingeUnstableAnglesTest) {
     TriggerBaseAndLidUpdate(base, lid);
     // There are a lot of samples, so ASSERT rather than EXPECT to only generate
     // one failure rather than potentially hundreds.
-    ASSERT_TRUE(IsMaximizeModeStarted());
+    ASSERT_TRUE(IsTabletModeStarted());
   }
 }
 
-// Tests that when a MaximizeModeController is created that cached tablet mode
+// Tests that when a TabletModeController is created that cached tablet mode
 // state will trigger a mode update.
-TEST_F(MaximizeModeControllerTest, InitializedWhileTabletModeSwitchOn) {
+TEST_F(TabletModeControllerTest, InitializedWhileTabletModeSwitchOn) {
   base::RunLoop().RunUntilIdle();
   // FakePowerManagerClient is always installed for tests
   chromeos::FakePowerManagerClient* power_manager_client =
@@ -599,64 +598,64 @@ TEST_F(MaximizeModeControllerTest, InitializedWhileTabletModeSwitchOn) {
           chromeos::DBusThreadManager::Get()->GetPowerManagerClient());
   power_manager_client->set_tablet_mode(
       chromeos::PowerManagerClient::TabletMode::ON);
-  MaximizeModeController controller;
-  EXPECT_FALSE(controller.IsMaximizeModeWindowManagerEnabled());
+  TabletModeController controller;
+  EXPECT_FALSE(controller.IsTabletModeWindowManagerEnabled());
   // PowerManagerClient callback is a posted task.
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(controller.IsMaximizeModeWindowManagerEnabled());
+  EXPECT_TRUE(controller.IsTabletModeWindowManagerEnabled());
 }
 
 // Verify when the force clamshell mode flag is turned on, opening the lid past
-// 180 degrees or setting tablet mode to true will no turn on maximize mode.
-TEST_F(MaximizeModeControllerTest, ForceClamshellModeTest) {
+// 180 degrees or setting tablet mode to true will no turn on tablet mode.
+TEST_F(TabletModeControllerTest, ForceClamshellModeTest) {
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kAshForceTabletMode, switches::kAshForceTabletModeClamshell);
-  maximize_mode_controller()->OnShellInitialized();
-  EXPECT_EQ(MaximizeModeController::ForceTabletMode::CLAMSHELL,
+  tablet_mode_controller()->OnShellInitialized();
+  EXPECT_EQ(TabletModeController::ForceTabletMode::CLAMSHELL,
             forced_tablet_mode());
-  EXPECT_FALSE(IsMaximizeModeStarted());
+  EXPECT_FALSE(IsTabletModeStarted());
 
   OpenLidToAngle(300.0f);
-  EXPECT_FALSE(IsMaximizeModeStarted());
+  EXPECT_FALSE(IsTabletModeStarted());
   EXPECT_FALSE(AreEventsBlocked());
 
   SetTabletMode(true);
-  EXPECT_FALSE(IsMaximizeModeStarted());
+  EXPECT_FALSE(IsTabletModeStarted());
   EXPECT_FALSE(AreEventsBlocked());
 }
 
-// Verify when the force touch view mode flag is turned on, maximize mode is on
+// Verify when the force touch view mode flag is turned on, tablet mode is on
 // intially, and opening the lid to less than 180 degress or setting tablet mode
-// to off will not turn off maximize mode.
-TEST_F(MaximizeModeControllerTest, ForceTouchViewModeTest) {
+// to off will not turn off tablet mode.
+TEST_F(TabletModeControllerTest, ForceTouchViewModeTest) {
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kAshForceTabletMode, switches::kAshForceTabletModeTouchView);
-  maximize_mode_controller()->OnShellInitialized();
-  EXPECT_EQ(MaximizeModeController::ForceTabletMode::TOUCHVIEW,
+  tablet_mode_controller()->OnShellInitialized();
+  EXPECT_EQ(TabletModeController::ForceTabletMode::TOUCHVIEW,
             forced_tablet_mode());
-  EXPECT_TRUE(IsMaximizeModeStarted());
+  EXPECT_TRUE(IsTabletModeStarted());
   EXPECT_TRUE(AreEventsBlocked());
 
   OpenLidToAngle(30.0f);
-  EXPECT_TRUE(IsMaximizeModeStarted());
+  EXPECT_TRUE(IsTabletModeStarted());
   EXPECT_TRUE(AreEventsBlocked());
 
   SetTabletMode(false);
-  EXPECT_TRUE(IsMaximizeModeStarted());
+  EXPECT_TRUE(IsTabletModeStarted());
   EXPECT_TRUE(AreEventsBlocked());
 }
 
-TEST_F(MaximizeModeControllerTest, RestoreAfterExit) {
+TEST_F(TabletModeControllerTest, RestoreAfterExit) {
   UpdateDisplay("1000x600");
   std::unique_ptr<aura::Window> w1(
       CreateTestWindowInShellWithBounds(gfx::Rect(10, 10, 900, 300)));
-  maximize_mode_controller()->EnableMaximizeModeWindowManager(true);
+  tablet_mode_controller()->EnableTabletModeWindowManager(true);
   Shell::Get()->screen_orientation_controller()->SetLockToRotation(
       display::Display::ROTATE_90);
   display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
   EXPECT_EQ(display::Display::ROTATE_90, display.rotation());
   EXPECT_LT(display.size().width(), display.size().height());
-  maximize_mode_controller()->EnableMaximizeModeWindowManager(false);
+  tablet_mode_controller()->EnableTabletModeWindowManager(false);
   display = display::Screen::GetScreen()->GetPrimaryDisplay();
   // Sanity checks.
   EXPECT_EQ(display::Display::ROTATE_0, display.rotation());

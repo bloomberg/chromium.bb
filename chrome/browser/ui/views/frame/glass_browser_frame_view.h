@@ -112,7 +112,7 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   // don't have tabs.
   int TitlebarHeight(bool restored) const;
 
-  // Returns the y coordinate for the top of the frame, which in maximized mode
+  // Returns the y coordinate for the top of the frame, which in tablet mode
   // is the top of the screen and in restored mode is 1 pixel below the top of
   // the window to leave room for the visual border that Windows draws.
   int WindowTopY() const;

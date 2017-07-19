@@ -35,7 +35,7 @@ const int WindowPositioner::kMaximumWindowWidth = 1100;
 namespace {
 
 // When a window gets opened in default mode and the screen is less than or
-// equal to this width, the window will get opened in maximized mode. This value
+// equal to this width, the window will get opened in tablet mode. This value
 // can be reduced to a "tame" number if the feature is disabled.
 const int kForceMaximizeWidthLimit = 1366;
 

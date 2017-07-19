@@ -7,7 +7,7 @@
 #include "ash/public/cpp/app_types.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
-#include "ash/wm/maximize_mode/maximize_mode_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/metrics/histogram_macros.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -48,8 +48,8 @@ int GetDestination(views::Widget* target) {
 void RecordUMA(ui::EventPointerType type, views::Widget* target) {
   DownEventFormFactor form_factor = DownEventFormFactor::CLAMSHELL;
   if (Shell::Get()
-          ->maximize_mode_controller()
-          ->IsMaximizeModeWindowManagerEnabled()) {
+          ->tablet_mode_controller()
+          ->IsTabletModeWindowManagerEnabled()) {
     form_factor = DownEventFormFactor::TOUCH_VIEW;
   }
   UMA_HISTOGRAM_ENUMERATION(
