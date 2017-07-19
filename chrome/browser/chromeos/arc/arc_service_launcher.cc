@@ -144,6 +144,7 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   ArcDownloadsWatcherService::GetForBrowserContext(profile);
   ArcEnterpriseReportingService::GetForBrowserContext(profile);
   ArcFileSystemMounter::GetForBrowserContext(profile);
+  ArcFileSystemOperationRunner::GetForBrowserContext(profile);
   ArcImeService::GetForBrowserContext(profile);
   ArcIntentHelperBridge::GetForBrowserContext(profile);
   ArcMetricsService::GetForBrowserContext(profile);
@@ -164,10 +165,6 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   ArcVolumeMounterBridge::GetForBrowserContext(profile);
   ArcWallpaperService::GetForBrowserContext(profile);
   GpuArcVideoServiceHost::GetForBrowserContext(profile);
-
-  arc_service_manager_->AddService(
-      base::MakeUnique<ArcFileSystemOperationRunner>(
-          arc_service_manager_->arc_bridge_service(), profile));
 
   // Kiosk apps should be run only for kiosk sessions.
   if (user_manager::UserManager::Get()->IsLoggedInAsArcKioskApp()) {

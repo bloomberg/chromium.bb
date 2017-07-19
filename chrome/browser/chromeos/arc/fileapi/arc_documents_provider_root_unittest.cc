@@ -14,10 +14,12 @@
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_root.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_util.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_file_system_operation_runner.h"
+#include "chrome/test/base/testing_profile.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/common/file_system.mojom.h"
 #include "components/arc/test/fake_file_system_instance.h"
+#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "storage/browser/fileapi/watcher_manager.h"
 #include "storage/common/fileapi/directory_entry.h"
@@ -106,6 +108,12 @@ void ExpectMatchesSpec(const base::File::Info& info, const DocumentSpec& spec) {
             static_cast<uint64_t>(info.creation_time.ToJavaTime()));
 }
 
+std::unique_ptr<KeyedService> CreateFileSystemOperationRunnerForTesting(
+    content::BrowserContext* context) {
+  return ArcFileSystemOperationRunner::CreateForTesting(
+      ArcServiceManager::Get()->arc_bridge_service());
+}
+
 class ArcDocumentsProviderRootTest : public testing::Test {
  public:
   ArcDocumentsProviderRootTest() = default;
@@ -117,9 +125,9 @@ class ArcDocumentsProviderRootTest : public testing::Test {
     }
 
     arc_service_manager_ = base::MakeUnique<ArcServiceManager>();
-    arc_service_manager_->AddService(
-        ArcFileSystemOperationRunner::CreateForTesting(
-            arc_service_manager_->arc_bridge_service()));
+    arc_service_manager_->set_browser_context(&profile_);
+    ArcFileSystemOperationRunner::GetFactory()->SetTestingFactoryAndUse(
+        &profile_, &CreateFileSystemOperationRunnerForTesting);
     arc_service_manager_->arc_bridge_service()->file_system()->SetInstance(
         &fake_file_system_);
 
@@ -131,8 +139,15 @@ class ArcDocumentsProviderRootTest : public testing::Test {
                                                        kRootSpec.document_id);
   }
 
+  void TearDown() override {
+    root_.reset();
+    // Run all pending tasks before destroying testing profile.
+    base::RunLoop().RunUntilIdle();
+  }
+
  protected:
   content::TestBrowserThreadBundle thread_bundle_;
+  TestingProfile profile_;
   FakeFileSystemInstance fake_file_system_;
   std::unique_ptr<ArcServiceManager> arc_service_manager_;
   std::unique_ptr<ArcDocumentsProviderRoot> root_;
