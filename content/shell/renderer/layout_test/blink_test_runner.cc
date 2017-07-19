@@ -405,37 +405,6 @@ void BlinkTestRunner::SetPopupBlockingEnabled(bool block_popups) {
       new ShellViewHostMsg_SetPopupBlockingEnabled(routing_id(), block_popups));
 }
 
-std::string BlinkTestRunner::makeURLErrorDescription(const WebURLError& error) {
-  std::string domain = error.domain.Utf8();
-  int code = error.reason;
-
-  if (domain == net::kErrorDomain) {
-    domain = "NSURLErrorDomain";
-    switch (error.reason) {
-    case net::ERR_ABORTED:
-      code = -999;  // NSURLErrorCancelled
-      break;
-    case net::ERR_UNSAFE_PORT:
-      // Our unsafe port checking happens at the network stack level, but we
-      // make this translation here to match the behavior of stock WebKit.
-      domain = "WebKitErrorDomain";
-      code = 103;
-      break;
-    case net::ERR_ADDRESS_INVALID:
-    case net::ERR_ADDRESS_UNREACHABLE:
-    case net::ERR_NETWORK_ACCESS_DENIED:
-      code = -1004;  // NSURLErrorCannotConnectToHost
-      break;
-    }
-  } else {
-    DLOG(WARNING) << "Unknown error domain";
-  }
-
-  return base::StringPrintf("<NSError domain %s, code %d, failing URL \"%s\">",
-                            domain.c_str(), code,
-                            error.unreachable_url.GetString().Utf8().data());
-}
-
 void BlinkTestRunner::UseUnfortunateSynchronousResizeMode(bool enable) {
   UseSynchronousResizeModeVisitor visitor(enable);
   RenderView::ForEach(&visitor);
