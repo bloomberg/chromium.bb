@@ -34,7 +34,6 @@ enum TextBoundaryType;
 
 namespace content {
 class BrowserAccessibilityWin;
-class BrowserAccessibilityRelation;
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -778,25 +777,6 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
   // or a menu list option with a parent of type menu list popup.
   bool IsListBoxOptionOrMenuListOption();
 
-  // For adding / removing IA2 relations.
-
-  void AddRelation(const base::string16& relation_type, int target_id);
-  void AddBidirectionalRelations(const base::string16& relation_type,
-                                 const base::string16& reverse_relation_type,
-                                 ui::AXIntListAttribute attribute);
-  void AddBidirectionalRelations(const base::string16& relation_type,
-                                 const base::string16& reverse_relation_type,
-                                 const std::vector<int32_t>& target_ids);
-  // Clears all the forward relations from this object to any other object and
-  // the associated  reverse relations on the other objects, but leaves any
-  // reverse relations on this object alone.
-  void ClearOwnRelations();
-  void RemoveBidirectionalRelationsOfType(
-      const base::string16& relation_type,
-      const base::string16& reverse_relation_type);
-  void RemoveTargetFromRelation(const base::string16& relation_type,
-                                int target_id);
-
   // Fire a Windows-specific accessibility event notification on this node.
   void FireNativeEvent(LONG win_event_type) const;
   struct WinAttributes {
@@ -845,9 +825,6 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
   // IA2_EVENT_TEXT_INSERTED event.
   std::unique_ptr<WinAttributes> old_win_attributes_;
 
-  // Relationships between this node and other nodes.
-  std::vector<BrowserAccessibilityRelation*> relations_;
-
   // The previous scroll position, so we can tell if this object scrolled.
   int previous_scroll_x_;
   int previous_scroll_y_;
@@ -855,7 +832,6 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
   // Give BrowserAccessibility::Create access to our constructor.
   friend class BrowserAccessibility;
   friend class BrowserAccessibilityWin;
-  friend class BrowserAccessibilityRelation;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityComWin);
 };

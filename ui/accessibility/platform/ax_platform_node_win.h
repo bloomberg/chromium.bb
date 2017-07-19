@@ -8,10 +8,12 @@
 #include <atlbase.h>
 #include <atlcom.h>
 #include <oleacc.h>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/observer_list.h"
+#include "base/win/scoped_comptr.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
 #include "ui/accessibility/ax_export.h"
 #include "ui/accessibility/ax_text_utils.h"
@@ -189,6 +191,7 @@ enum {
   UMA_HISTOGRAM_ENUMERATION("Accessibility.WinAPIs", enum_value, UMA_API_MAX)
 
 namespace ui {
+class AXPlatformNodeWin;
 
 // A simple interface for a class that wants to be notified when IAccessible2
 // is used by a client, a strong indication that full accessibility support
@@ -204,6 +207,45 @@ class AX_EXPORT IAccessible2UsageObserver {
 // listen to when usage of IAccessible2 is detected.
 extern AX_EXPORT base::ObserverList<IAccessible2UsageObserver>&
     GetIAccessible2UsageObserverList();
+
+//
+// AXPlatformNodeRelationWin
+//
+// A simple implementation of IAccessibleRelation, used to represent
+// a relationship between two accessible nodes in the tree.
+//
+class AXPlatformNodeRelationWin : public CComObjectRootEx<CComMultiThreadModel>,
+                                  public IAccessibleRelation {
+ public:
+  BEGIN_COM_MAP(AXPlatformNodeRelationWin)
+  COM_INTERFACE_ENTRY(IAccessibleRelation)
+  END_COM_MAP()
+
+  AXPlatformNodeRelationWin();
+  virtual ~AXPlatformNodeRelationWin();
+
+  void Initialize(ui::AXPlatformNodeWin* owner, const base::string16& type);
+  void AddTarget(int target_id);
+  void RemoveTarget(int target_id);
+
+  // IAccessibleRelation methods.
+  STDMETHODIMP get_relationType(BSTR* relation_type) override;
+  STDMETHODIMP get_nTargets(long* n_targets) override;
+  STDMETHODIMP get_target(long target_index, IUnknown** target) override;
+  STDMETHODIMP get_targets(long max_targets,
+                           IUnknown** targets,
+                           long* n_targets) override;
+  STDMETHODIMP get_localizedRelationType(BSTR* relation_type) override;
+
+  // Accessors.
+  const base::string16& get_type() const { return type_; }
+  const std::vector<int>& get_target_ids() const { return target_ids_; }
+
+ private:
+  base::string16 type_;
+  base::win::ScopedComPtr<ui::AXPlatformNodeWin> owner_;
+  std::vector<int> target_ids_;
+};
 
 class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
     AXPlatformNodeWin
@@ -232,6 +274,9 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   END_COM_MAP()
 
   ~AXPlatformNodeWin() override;
+
+  // Clear node's current relationships and set them to the default values.
+  void CalculateRelationships();
 
   // AXPlatformNode overrides.
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
@@ -331,18 +376,20 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
 
   STDMETHODIMP get_indexInParent(LONG* index_in_parent) override;
 
+  STDMETHODIMP get_nRelations(LONG* n_relations) override;
+
+  STDMETHODIMP get_relation(LONG relation_index,
+                            IAccessibleRelation** relation) override;
+
+  STDMETHODIMP get_relations(LONG max_relations,
+                             IAccessibleRelation** relations,
+                             LONG* n_relations) override;
   //
   // IAccessible2 methods not implemented.
   //
 
   STDMETHODIMP get_attribute(BSTR name, VARIANT* attribute) override;
   STDMETHODIMP get_extendedRole(BSTR* extended_role) override;
-  STDMETHODIMP get_nRelations(LONG* n_relations) override;
-  STDMETHODIMP get_relation(LONG relation_index,
-                            IAccessibleRelation** relation) override;
-  STDMETHODIMP get_relations(LONG max_relations,
-                             IAccessibleRelation** relations,
-                             LONG* n_relations) override;
   STDMETHODIMP scrollTo(enum IA2ScrollType scroll_type) override;
   STDMETHODIMP scrollToPoint(enum IA2CoordinateType coordinate_type,
                              LONG x,
@@ -668,6 +715,29 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
 
   // Returns true if this node is in a treegrid.
   bool IsInTreeGrid();
+
+  //
+  // For adding / removing IA2 relations.
+  //
+  void AddRelation(const base::string16& relation_type, int target_id);
+  void AddBidirectionalRelations(const base::string16& relation_type,
+                                 const base::string16& reverse_relation_type,
+                                 ui::AXIntListAttribute attribute);
+  void AddBidirectionalRelations(const base::string16& relation_type,
+                                 const base::string16& reverse_relation_type,
+                                 const std::vector<int32_t>& target_ids);
+  // Clears all the forward relations from this object to any other object and
+  // the associated  reverse relations on the other objects, but leaves any
+  // reverse relations on this object alone.
+  void ClearOwnRelations();
+  void RemoveBidirectionalRelationsOfType(
+      const base::string16& relation_type,
+      const base::string16& reverse_relation_type);
+  void RemoveTargetFromRelation(const base::string16& relation_type,
+                                int target_id);
+
+  // Relationships between this node and other nodes.
+  std::vector<ui::AXPlatformNodeRelationWin*> relations_;
 };
 
 }  // namespace ui
