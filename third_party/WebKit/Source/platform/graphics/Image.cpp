@@ -42,6 +42,7 @@
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/network/mime/MIMETypeRegistry.h"
 #include "platform/wtf/StdLibExtras.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebData.h"
 #include "third_party/skia/include/core/SkImage.h"
@@ -90,6 +91,10 @@ Image::SizeAvailability Image::SetData(RefPtr<SharedBuffer> data,
     return kSizeAvailable;
 
   return DataChanged(all_data_received);
+}
+
+String Image::FilenameExtension() const {
+  return String();
 }
 
 void Image::DrawTiledBackground(GraphicsContext& ctxt,
