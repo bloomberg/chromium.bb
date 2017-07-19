@@ -49,6 +49,7 @@ struct WebWindowFeatures {
   // string, we don't distinguish between the two.
   bool tool_bar_visible = true;
   bool scrollbars_visible = true;
+  bool resizable = true;
 
   bool noopener = false;
   bool background = false;

@@ -57,7 +57,7 @@ void CreateWindowForRequest(const FrameLoadRequest&,
 CORE_EXPORT NavigationPolicy
 EffectiveNavigationPolicy(NavigationPolicy,
                           const WebInputEvent* current_event,
-                          bool toolbar_visible);
+                          const WebWindowFeatures&);
 
 // Exposed for testing
 CORE_EXPORT WebWindowFeatures GetWindowFeaturesFromString(const String&);

@@ -32,6 +32,7 @@
 #include "core/page/CreateWindow.h"
 #include "public/platform/WebInputEvent.h"
 #include "public/platform/WebMouseEvent.h"
+#include "public/web/WebWindowFeatures.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -45,9 +46,12 @@ class EffectiveNavigationPolicyTest : public ::testing::Test {
     WebMouseEvent event(WebInputEvent::kMouseUp, modifiers,
                         WebInputEvent::kTimeStampForTesting);
     event.button = button;
-    return EffectiveNavigationPolicy(kNavigationPolicyIgnore, &event,
-                                     !as_popup);
+    if (as_popup)
+      features.tool_bar_visible = false;
+    return EffectiveNavigationPolicy(kNavigationPolicyIgnore, &event, features);
   }
+
+  WebWindowFeatures features;
 };
 
 TEST_F(EffectiveNavigationPolicyTest, LeftClick) {
@@ -149,10 +153,47 @@ TEST_F(EffectiveNavigationPolicyTest, MiddleClickPopup) {
 }
 
 TEST_F(EffectiveNavigationPolicyTest, NoToolbarsForcesPopup) {
-  EXPECT_EQ(kNavigationPolicyNewPopup,
-            EffectiveNavigationPolicy(kNavigationPolicyIgnore, nullptr, false));
-  EXPECT_EQ(kNavigationPolicyNewForegroundTab,
-            EffectiveNavigationPolicy(kNavigationPolicyIgnore, nullptr, true));
+  features.tool_bar_visible = false;
+  EXPECT_EQ(
+      kNavigationPolicyNewPopup,
+      EffectiveNavigationPolicy(kNavigationPolicyIgnore, nullptr, features));
+  features.tool_bar_visible = true;
+  EXPECT_EQ(
+      kNavigationPolicyNewForegroundTab,
+      EffectiveNavigationPolicy(kNavigationPolicyIgnore, nullptr, features));
+}
+
+TEST_F(EffectiveNavigationPolicyTest, NoStatusBarForcesPopup) {
+  features.status_bar_visible = false;
+  EXPECT_EQ(
+      kNavigationPolicyNewPopup,
+      EffectiveNavigationPolicy(kNavigationPolicyIgnore, nullptr, features));
+  features.status_bar_visible = true;
+  EXPECT_EQ(
+      kNavigationPolicyNewForegroundTab,
+      EffectiveNavigationPolicy(kNavigationPolicyIgnore, nullptr, features));
+}
+
+TEST_F(EffectiveNavigationPolicyTest, NoMenuBarForcesPopup) {
+  features.menu_bar_visible = false;
+  EXPECT_EQ(
+      kNavigationPolicyNewPopup,
+      EffectiveNavigationPolicy(kNavigationPolicyIgnore, nullptr, features));
+  features.menu_bar_visible = true;
+  EXPECT_EQ(
+      kNavigationPolicyNewForegroundTab,
+      EffectiveNavigationPolicy(kNavigationPolicyIgnore, nullptr, features));
+}
+
+TEST_F(EffectiveNavigationPolicyTest, NotResizableForcesPopup) {
+  features.resizable = false;
+  EXPECT_EQ(
+      kNavigationPolicyNewPopup,
+      EffectiveNavigationPolicy(kNavigationPolicyIgnore, nullptr, features));
+  features.resizable = true;
+  EXPECT_EQ(
+      kNavigationPolicyNewForegroundTab,
+      EffectiveNavigationPolicy(kNavigationPolicyIgnore, nullptr, features));
 }
 
 }  // namespace blink
