@@ -45,7 +45,7 @@ void CopyOutputRequestCallback(
     cc::CopyOutputRequest::CopyOutputRequestCallback result_callback,
     std::unique_ptr<cc::CopyOutputResult> copy_output_result) {
   readback_layer->RemoveFromParent();
-  result_callback.Run(std::move(copy_output_result));
+  std::move(result_callback).Run(std::move(copy_output_result));
 }
 
 }  // namespace
@@ -124,8 +124,9 @@ void DelegatedFrameHostAndroid::RequestCopyOfSurface(
   readback_layer->SetHideLayerAndSubtree(true);
   compositor->AttachLayerForReadback(readback_layer);
   std::unique_ptr<cc::CopyOutputRequest> copy_output_request =
-      cc::CopyOutputRequest::CreateRequest(base::Bind(
-          &CopyOutputRequestCallback, readback_layer, result_callback));
+      cc::CopyOutputRequest::CreateRequest(
+          base::BindOnce(&CopyOutputRequestCallback, readback_layer,
+                         std::move(result_callback)));
 
   if (!src_subrect_in_pixel.IsEmpty())
     copy_output_request->set_area(src_subrect_in_pixel);

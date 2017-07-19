@@ -31,9 +31,9 @@ bool GrabWindowSnapshotAura(aura::Window* window,
 static void MakeAsyncCopyRequest(
     Layer* layer,
     const gfx::Rect& source_rect,
-    const cc::CopyOutputRequest::CopyOutputRequestCallback& callback) {
+    cc::CopyOutputRequest::CopyOutputRequestCallback callback) {
   std::unique_ptr<cc::CopyOutputRequest> request =
-      cc::CopyOutputRequest::CreateBitmapRequest(callback);
+      cc::CopyOutputRequest::CreateBitmapRequest(std::move(callback));
   request->set_area(source_rect);
   layer->RequestCopyOfOutput(std::move(request));
 }
@@ -41,7 +41,7 @@ static void MakeAsyncCopyRequest(
 static void FinishedAsyncCopyRequest(
     std::unique_ptr<aura::WindowTracker> tracker,
     const gfx::Rect& source_rect,
-    const cc::CopyOutputRequest::CopyOutputRequestCallback& callback,
+    cc::CopyOutputRequest::CopyOutputRequestCallback callback,
     int retry_count,
     std::unique_ptr<cc::CopyOutputResult> result) {
   static const int kMaxRetries = 5;
@@ -56,24 +56,24 @@ static void FinishedAsyncCopyRequest(
     aura::Window* window = tracker->windows()[0];
     MakeAsyncCopyRequest(
         window->layer(), source_rect,
-        base::Bind(&FinishedAsyncCopyRequest, base::Passed(&tracker),
-                   source_rect, callback, retry_count + 1));
+        base::BindOnce(&FinishedAsyncCopyRequest, base::Passed(&tracker),
+                       source_rect, std::move(callback), retry_count + 1));
     return;
   }
 
-  callback.Run(std::move(result));
+  std::move(callback).Run(std::move(result));
 }
 
 static void MakeInitialAsyncCopyRequest(
     aura::Window* window,
     const gfx::Rect& source_rect,
-    const cc::CopyOutputRequest::CopyOutputRequestCallback& callback) {
+    cc::CopyOutputRequest::CopyOutputRequestCallback callback) {
   auto tracker = base::MakeUnique<aura::WindowTracker>();
   tracker->Add(window);
   MakeAsyncCopyRequest(
       window->layer(), source_rect,
-      base::Bind(&FinishedAsyncCopyRequest, base::Passed(&tracker), source_rect,
-                 callback, 0));
+      base::BindOnce(&FinishedAsyncCopyRequest, base::Passed(&tracker),
+                     source_rect, std::move(callback), 0));
 }
 
 void GrabWindowSnapshotAndScaleAsyncAura(
@@ -84,8 +84,8 @@ void GrabWindowSnapshotAndScaleAsyncAura(
     const GrabWindowSnapshotAsyncCallback& callback) {
   MakeInitialAsyncCopyRequest(
       window, source_rect,
-      base::Bind(&SnapshotAsync::ScaleCopyOutputResult, callback, target_size,
-                 background_task_runner));
+      base::BindOnce(&SnapshotAsync::ScaleCopyOutputResult, callback,
+                     target_size, background_task_runner));
 }
 
 void GrabWindowSnapshotAsyncAura(
@@ -94,7 +94,8 @@ void GrabWindowSnapshotAsyncAura(
     const GrabWindowSnapshotAsyncCallback& callback) {
   MakeInitialAsyncCopyRequest(
       window, source_rect,
-      base::Bind(&SnapshotAsync::RunCallbackWithCopyOutputResult, callback));
+      base::BindOnce(&SnapshotAsync::RunCallbackWithCopyOutputResult,
+                     callback));
 }
 
 #if !defined(OS_WIN)
@@ -138,7 +139,8 @@ void GrabLayerSnapshotAsync(ui::Layer* layer,
                             const GrabLayerSnapshotCallback& callback) {
   MakeAsyncCopyRequest(
       layer, source_rect,
-      base::Bind(&SnapshotAsync::RunCallbackWithCopyOutputResult, callback));
+      base::BindOnce(&SnapshotAsync::RunCallbackWithCopyOutputResult,
+                     callback));
 }
 
 #endif

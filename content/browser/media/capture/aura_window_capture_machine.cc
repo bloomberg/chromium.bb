@@ -229,9 +229,9 @@ void AuraWindowCaptureMachine::Capture(base::TimeTicks event_time) {
           event, gfx::Rect(), event_time, &frame, &capture_frame_cb)) {
     std::unique_ptr<cc::CopyOutputRequest> request =
         cc::CopyOutputRequest::CreateRequest(
-            base::Bind(&AuraWindowCaptureMachine::DidCopyOutput,
-                       weak_factory_.GetWeakPtr(), std::move(frame), event_time,
-                       start_time, capture_frame_cb));
+            base::BindOnce(&AuraWindowCaptureMachine::DidCopyOutput,
+                           weak_factory_.GetWeakPtr(), std::move(frame),
+                           event_time, start_time, capture_frame_cb));
     gfx::Rect window_rect = gfx::Rect(desktop_window_->bounds().width(),
                                       desktop_window_->bounds().height());
     request->set_area(window_rect);

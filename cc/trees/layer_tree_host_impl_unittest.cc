@@ -3757,7 +3757,7 @@ class DidDrawCheckLayer : public LayerImpl {
 
   void AddCopyRequest() {
     test_properties()->copy_requests.push_back(
-        CopyOutputRequest::CreateRequest(base::Bind(&IgnoreResult)));
+        CopyOutputRequest::CreateRequest(base::BindOnce(&IgnoreResult)));
   }
 
  protected:
@@ -8826,7 +8826,7 @@ TEST_F(LayerTreeHostImplTest, ShutdownReleasesContext) {
   LayerImpl* root = host_impl_->active_tree()->root_layer_for_testing();
   root->test_properties()->copy_requests.push_back(
       CopyOutputRequest::CreateRequest(
-          base::Bind(&ShutdownReleasesContext_Callback)));
+          base::BindOnce(&ShutdownReleasesContext_Callback)));
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
   TestFrameData frame;

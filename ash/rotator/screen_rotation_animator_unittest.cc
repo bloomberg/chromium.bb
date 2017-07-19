@@ -106,8 +106,8 @@ TestScreenRotationAnimator::CreateAfterCopyCallbackBeforeRotation(
   CopyCallback next_callback =
       ScreenRotationAnimator::CreateAfterCopyCallbackBeforeRotation(
           std::move(rotation_request));
-  return base::Bind(&TestScreenRotationAnimator::IntersectBefore,
-                    base::Unretained(this), next_callback);
+  return base::BindOnce(&TestScreenRotationAnimator::IntersectBefore,
+                        base::Unretained(this), std::move(next_callback));
 }
 
 ScreenRotationAnimator::CopyCallback
@@ -116,22 +116,22 @@ TestScreenRotationAnimator::CreateAfterCopyCallbackAfterRotation(
   CopyCallback next_callback =
       ScreenRotationAnimator::CreateAfterCopyCallbackAfterRotation(
           std::move(rotation_request));
-  return base::Bind(&TestScreenRotationAnimator::IntersectAfter,
-                    base::Unretained(this), next_callback);
+  return base::BindOnce(&TestScreenRotationAnimator::IntersectAfter,
+                        base::Unretained(this), std::move(next_callback));
 }
 
 void TestScreenRotationAnimator::IntersectBefore(
     CopyCallback next_callback,
     std::unique_ptr<cc::CopyOutputResult> result) {
   intersect_before_callback_.Run();
-  next_callback.Run(std::move(result));
+  std::move(next_callback).Run(std::move(result));
 }
 
 void TestScreenRotationAnimator::IntersectAfter(
     CopyCallback next_callback,
     std::unique_ptr<cc::CopyOutputResult> result) {
   intersect_after_callback_.Run();
-  next_callback.Run(std::move(result));
+  std::move(next_callback).Run(std::move(result));
 }
 
 }  // namespace

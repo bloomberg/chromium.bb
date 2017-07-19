@@ -331,7 +331,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     pass->damage_rect = gfx::Rect(10, 10, 0, 0);
     bool copy_called = false;
     pass->copy_requests.push_back(cc::CopyOutputRequest::CreateRequest(
-        base::Bind(&CopyCallback, &copy_called)));
+        base::BindOnce(&CopyCallback, &copy_called)));
     pass->id = 1u;
 
     pass_list.push_back(std::move(pass));

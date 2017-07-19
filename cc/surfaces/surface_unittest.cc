@@ -72,7 +72,7 @@ TEST(SurfaceTest, CopyRequestLifetime) {
 
   bool copy_called = false;
   support->RequestCopyOfSurface(CopyOutputRequest::CreateRequest(
-      base::Bind(&TestCopyResultCallback, &copy_called)));
+      base::BindOnce(&TestCopyResultCallback, &copy_called)));
   EXPECT_TRUE(surface_manager->GetSurfaceForId(surface_id));
   EXPECT_FALSE(copy_called);
 

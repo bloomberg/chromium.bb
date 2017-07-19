@@ -246,19 +246,19 @@ void ScreenRotationAnimator::RequestCopyScreenRotationContainerLayer(
 ScreenRotationAnimator::CopyCallback
 ScreenRotationAnimator::CreateAfterCopyCallbackBeforeRotation(
     std::unique_ptr<ScreenRotationRequest> rotation_request) {
-  return base::Bind(&ScreenRotationAnimator::
-                        OnScreenRotationContainerLayerCopiedBeforeRotation,
-                    weak_factory_.GetWeakPtr(),
-                    base::Passed(&rotation_request));
+  return base::BindOnce(&ScreenRotationAnimator::
+                            OnScreenRotationContainerLayerCopiedBeforeRotation,
+                        weak_factory_.GetWeakPtr(),
+                        base::Passed(&rotation_request));
 }
 
 ScreenRotationAnimator::CopyCallback
 ScreenRotationAnimator::CreateAfterCopyCallbackAfterRotation(
     std::unique_ptr<ScreenRotationRequest> rotation_request) {
-  return base::Bind(&ScreenRotationAnimator::
-                        OnScreenRotationContainerLayerCopiedAfterRotation,
-                    weak_factory_.GetWeakPtr(),
-                    base::Passed(&rotation_request));
+  return base::BindOnce(&ScreenRotationAnimator::
+                            OnScreenRotationContainerLayerCopiedAfterRotation,
+                        weak_factory_.GetWeakPtr(),
+                        base::Passed(&rotation_request));
 }
 
 void ScreenRotationAnimator::OnScreenRotationContainerLayerCopiedBeforeRotation(

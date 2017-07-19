@@ -67,7 +67,7 @@ class ASH_EXPORT ScreenRotationAnimator {
 
  protected:
   using CopyCallback =
-      base::Callback<void(std::unique_ptr<cc::CopyOutputResult> result)>;
+      base::OnceCallback<void(std::unique_ptr<cc::CopyOutputResult> result)>;
   struct ScreenRotationRequest {
     ScreenRotationRequest(int64_t id,
                           int64_t display_id,

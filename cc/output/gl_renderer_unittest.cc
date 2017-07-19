@@ -1795,7 +1795,7 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
                     gfx::Transform(), FilterOperations());
   root_pass->has_transparent_background = false;
   root_pass->copy_requests.push_back(
-      CopyOutputRequest::CreateRequest(base::Bind(&IgnoreCopyResult)));
+      CopyOutputRequest::CreateRequest(base::BindOnce(&IgnoreCopyResult)));
 
   viz::TextureMailbox mailbox =
       viz::TextureMailbox(gpu::Mailbox::Generate(), gpu::SyncToken(),

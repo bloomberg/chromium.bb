@@ -90,8 +90,8 @@ LayerTreePixelTest::CreateDisplayOutputSurfaceOnThread(
 
 std::unique_ptr<CopyOutputRequest>
 LayerTreePixelTest::CreateCopyOutputRequest() {
-  return CopyOutputRequest::CreateBitmapRequest(
-      base::Bind(&LayerTreePixelTest::ReadbackResult, base::Unretained(this)));
+  return CopyOutputRequest::CreateBitmapRequest(base::BindOnce(
+      &LayerTreePixelTest::ReadbackResult, base::Unretained(this)));
 }
 
 void LayerTreePixelTest::ReadbackResult(
