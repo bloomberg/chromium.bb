@@ -703,11 +703,6 @@ void VisibleSelectionTemplate<
       start_ = next.DeepEquivalent();
     }
   }
-
-  // Correct the extent if necessary.
-  if (base_editable_ancestor !=
-      LowestEditableAncestor(extent_.ComputeContainerNode()))
-    extent_ = base_is_first_ ? end_ : start_;
 }
 
 template <typename Strategy>
