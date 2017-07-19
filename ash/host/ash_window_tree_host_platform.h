@@ -25,7 +25,6 @@ class ASH_EXPORT AshWindowTreeHostPlatform
   AshWindowTreeHostPlatform();
 
   // AshWindowTreeHost:
-  void ToggleFullScreen() override;
   bool ConfineCursorToRootWindow() override;
   void UnConfineCursor() override;
   void SetRootWindowTransformer(

@@ -124,7 +124,6 @@ bool AcceleratorControllerDelegateAura::HandlesAction(
     case DEBUG_TOGGLE_SHOW_FPS_COUNTER:
     case DEBUG_TOGGLE_SHOW_PAINT_RECTS:
     case DEV_ADD_REMOVE_DISPLAY:
-    case DEV_TOGGLE_ROOT_WINDOW_FULL_SCREEN:
     case LOCK_PRESSED:
     case LOCK_RELEASED:
     case MAGNIFY_SCREEN_ZOOM_IN:
@@ -157,8 +156,6 @@ bool AcceleratorControllerDelegateAura::CanPerformAction(
     case DEBUG_TOGGLE_SHOW_PAINT_RECTS:
       return debug::DebugAcceleratorsEnabled();
     case DEV_ADD_REMOVE_DISPLAY:
-    case DEV_TOGGLE_ROOT_WINDOW_FULL_SCREEN:
-      return debug::DeveloperAcceleratorsEnabled();
     case MAGNIFY_SCREEN_ZOOM_IN:
     case MAGNIFY_SCREEN_ZOOM_OUT:
       return CanHandleMagnifyScreen();
@@ -202,9 +199,6 @@ void AcceleratorControllerDelegateAura::PerformAction(
       break;
     case DEV_ADD_REMOVE_DISPLAY:
       Shell::Get()->display_manager()->AddRemoveDisplay();
-      break;
-    case DEV_TOGGLE_ROOT_WINDOW_FULL_SCREEN:
-      Shell::GetPrimaryRootWindowController()->ash_host()->ToggleFullScreen();
       break;
     case LOCK_PRESSED:
     case LOCK_RELEASED:
