@@ -21,7 +21,6 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -164,8 +163,7 @@ public class BottomSheetNewTabControllerTest {
 
     @Test
     @SmallTest
-    @FlakyTest(message = "crbug.com/744710")
-    public void testNTPOverTabSwitcher_Incognito_FromTab() {
+    public void testNTPOverTabSwitcher_Incognito_FromTab_CloseSheet() {
         LayoutManagerChrome layoutManager = mActivity.getLayoutManager();
         TabModel incognitoTabModel = mTabModelSelector.getModel(true);
         ToolbarDataProvider toolbarDataProvider =
@@ -204,10 +202,29 @@ public class BottomSheetNewTabControllerTest {
         assertFalse("Overview mode should not be showing.", layoutManager.overviewVisible());
         assertEquals("Incorrect tab selected.", originalTab, mTabModelSelector.getCurrentTab());
         assertFalse("Toolbar should be normal.", toolbarDataProvider.isIncognito());
+    }
 
-        // Select "New incognito tab" from the menu and load a URL.
+    @Test
+    @SmallTest
+    public void testNTPOverTabSwitcher_Incognito_FromTab_LoadUrl() {
+        LayoutManagerChrome layoutManager = mActivity.getLayoutManager();
+        TabModel incognitoTabModel = mTabModelSelector.getModel(true);
+        ToolbarDataProvider toolbarDataProvider =
+                mActivity.getToolbarManager().getToolbarDataProviderForTests();
+
+        assertFalse("Normal model should be selected.", mTabModelSelector.isIncognitoSelected());
+        assertFalse("Incognito model should not be pending tab addition.",
+                incognitoTabModel.isPendingTabAdd());
+
+        // Select "New incognito tab" from the menu.
         MenuUtils.invokeCustomMenuActionSync(InstrumentationRegistry.getInstrumentation(),
                 mActivity, R.id.new_incognito_tab_menu_id);
+        validateState(false, BottomSheet.SHEET_STATE_FULL);
+        assertTrue("Incognito model should be selected.", mTabModelSelector.isIncognitoSelected());
+        assertTrue("Incognito model should be pending tab addition.",
+                incognitoTabModel.isPendingTabAdd());
+
+        // Load an URL in the incognito tab.
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
