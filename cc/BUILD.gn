@@ -935,7 +935,7 @@ cc_test("cc_perftests") {
   assert_no_deps = [ "//chrome" ]
 
   data = [
-    "test/data/",
+    "//components/viz/test/data/",
 
     # Needed for isolate script to execute.
     "//testing/scripts/common.py",
