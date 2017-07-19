@@ -1063,7 +1063,7 @@ void BaseRenderingContext2D::DrawImageInternal(PaintCanvas* c,
     ctm.mapRect(&bounds);
     PaintFlags layer_flags;
     layer_flags.setBlendMode(flags->getBlendMode());
-    layer_flags.setImageFilter(flags->refImageFilter());
+    layer_flags.setImageFilter(flags->getImageFilter());
 
     c->saveLayer(&bounds, &layer_flags);
     c->concat(ctm);

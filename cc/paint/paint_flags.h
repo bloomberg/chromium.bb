@@ -18,51 +18,60 @@
 #include "third_party/skia/include/core/SkShader.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 
+class SkPaint;
+
 namespace cc {
 
 class CC_PAINT_EXPORT PaintFlags {
  public:
+  PaintFlags();
+  PaintFlags(const PaintFlags& flags);
+  ~PaintFlags();
+
   enum Style {
     kFill_Style = SkPaint::kFill_Style,
     kStroke_Style = SkPaint::kStroke_Style,
     kStrokeAndFill_Style = SkPaint::kStrokeAndFill_Style,
   };
-  ALWAYS_INLINE bool nothingToDraw() const { return paint_.nothingToDraw(); }
-  ALWAYS_INLINE Style getStyle() const {
-    return static_cast<Style>(paint_.getStyle());
+  bool nothingToDraw() const;
+  ALWAYS_INLINE Style getStyle() const { return static_cast<Style>(style_); }
+  ALWAYS_INLINE void setStyle(Style style) { style_ = style; }
+  ALWAYS_INLINE SkColor getColor() const { return color_; }
+  ALWAYS_INLINE void setColor(SkColor color) { color_ = color; }
+  ALWAYS_INLINE uint8_t getAlpha() const { return SkColorGetA(color_); }
+  ALWAYS_INLINE void setAlpha(uint8_t a) {
+    color_ = SkColorSetARGB(a, SkColorGetR(color_), SkColorGetG(color_),
+                            SkColorGetB(color_));
   }
-  ALWAYS_INLINE void setStyle(Style style) {
-    paint_.setStyle(static_cast<SkPaint::Style>(style));
-  }
-  ALWAYS_INLINE SkColor getColor() const { return paint_.getColor(); }
-  ALWAYS_INLINE void setColor(SkColor color) { paint_.setColor(color); }
-  ALWAYS_INLINE void setARGB(U8CPU a, U8CPU r, U8CPU g, U8CPU b) {
-    paint_.setARGB(a, r, g, b);
-  }
-  ALWAYS_INLINE uint8_t getAlpha() const { return paint_.getAlpha(); }
-  ALWAYS_INLINE void setAlpha(U8CPU a) { paint_.setAlpha(a); }
   ALWAYS_INLINE void setBlendMode(SkBlendMode mode) {
-    paint_.setBlendMode(mode);
+    blend_mode_ = static_cast<uint32_t>(mode);
   }
   ALWAYS_INLINE SkBlendMode getBlendMode() const {
-    return paint_.getBlendMode();
+    return static_cast<SkBlendMode>(blend_mode_);
   }
-  ALWAYS_INLINE bool isSrcOver() const { return paint_.isSrcOver(); }
-  ALWAYS_INLINE bool isAntiAlias() const { return paint_.isAntiAlias(); }
-  ALWAYS_INLINE void setAntiAlias(bool aa) { paint_.setAntiAlias(aa); }
-  ALWAYS_INLINE bool isVerticalText() const { return paint_.isVerticalText(); }
+  ALWAYS_INLINE bool isAntiAlias() const {
+    return !!(flags_ & SkPaint::kAntiAlias_Flag);
+  }
+  ALWAYS_INLINE void setAntiAlias(bool aa) {
+    SetInternalFlag(aa, SkPaint::kAntiAlias_Flag);
+  }
+  ALWAYS_INLINE bool isVerticalText() const {
+    return !!(flags_ & SkPaint::kVerticalText_Flag);
+  }
   ALWAYS_INLINE void setVerticalText(bool vertical) {
-    paint_.setVerticalText(vertical);
+    SetInternalFlag(vertical, SkPaint::kVerticalText_Flag);
   }
-  ALWAYS_INLINE bool isSubpixelText() const { return paint_.isSubpixelText(); }
+  ALWAYS_INLINE bool isSubpixelText() const {
+    return !!(flags_ & SkPaint::kSubpixelText_Flag);
+  }
   ALWAYS_INLINE void setSubpixelText(bool subpixel_text) {
-    paint_.setSubpixelText(subpixel_text);
+    SetInternalFlag(subpixel_text, SkPaint::kSubpixelText_Flag);
   }
   ALWAYS_INLINE bool isLCDRenderText() const {
-    return paint_.isLCDRenderText();
+    return !!(flags_ & SkPaint::kLCDRenderText_Flag);
   }
   ALWAYS_INLINE void setLCDRenderText(bool lcd_text) {
-    paint_.setLCDRenderText(lcd_text);
+    SetInternalFlag(lcd_text, SkPaint::kLCDRenderText_Flag);
   }
   enum Hinting {
     kNo_Hinting = SkPaint::kNo_Hinting,
@@ -71,17 +80,21 @@ class CC_PAINT_EXPORT PaintFlags {
     kFull_Hinting = SkPaint::kFull_Hinting
   };
   ALWAYS_INLINE Hinting getHinting() const {
-    return static_cast<Hinting>(paint_.getHinting());
+    return static_cast<Hinting>(hinting_);
   }
-  ALWAYS_INLINE void setHinting(Hinting hinting_level) {
-    paint_.setHinting(static_cast<SkPaint::Hinting>(hinting_level));
+  ALWAYS_INLINE void setHinting(Hinting hinting) { hinting_ = hinting; }
+  ALWAYS_INLINE bool isAutohinted() const {
+    return !!(flags_ & SkPaint::kAutoHinting_Flag);
   }
-  ALWAYS_INLINE bool isAutohinted() const { return paint_.isAutohinted(); }
   ALWAYS_INLINE void setAutohinted(bool use_auto_hinter) {
-    paint_.setAutohinted(use_auto_hinter);
+    SetInternalFlag(use_auto_hinter, SkPaint::kAutoHinting_Flag);
   }
-  ALWAYS_INLINE bool isDither() const { return paint_.isDither(); }
-  ALWAYS_INLINE void setDither(bool dither) { paint_.setDither(dither); }
+  ALWAYS_INLINE bool isDither() const {
+    return !!(flags_ & SkPaint::kDither_Flag);
+  }
+  ALWAYS_INLINE void setDither(bool dither) {
+    SetInternalFlag(dither, SkPaint::kDither_Flag);
+  }
   enum TextEncoding {
     kUTF8_TextEncoding = SkPaint::kUTF8_TextEncoding,
     kUTF16_TextEncoding = SkPaint::kUTF16_TextEncoding,
@@ -89,33 +102,23 @@ class CC_PAINT_EXPORT PaintFlags {
     kGlyphID_TextEncoding = SkPaint::kGlyphID_TextEncoding
   };
   ALWAYS_INLINE TextEncoding getTextEncoding() const {
-    return static_cast<TextEncoding>(paint_.getTextEncoding());
+    return static_cast<TextEncoding>(text_encoding_);
   }
   ALWAYS_INLINE void setTextEncoding(TextEncoding encoding) {
-    paint_.setTextEncoding(static_cast<SkPaint::TextEncoding>(encoding));
+    text_encoding_ = encoding;
   }
-  ALWAYS_INLINE SkScalar getTextSize() const { return paint_.getTextSize(); }
-  ALWAYS_INLINE void setTextSize(SkScalar textSize) {
-    paint_.setTextSize(textSize);
-  }
+  ALWAYS_INLINE SkScalar getTextSize() const { return text_size_; }
+  ALWAYS_INLINE void setTextSize(SkScalar text_size) { text_size_ = text_size; }
   ALWAYS_INLINE void setFilterQuality(SkFilterQuality quality) {
-    paint_.setFilterQuality(quality);
+    filter_quality_ = quality;
   }
   ALWAYS_INLINE SkFilterQuality getFilterQuality() const {
-    return paint_.getFilterQuality();
+    return static_cast<SkFilterQuality>(filter_quality_);
   }
-  ALWAYS_INLINE SkScalar getStrokeWidth() const {
-    return paint_.getStrokeWidth();
-  }
-  ALWAYS_INLINE void setStrokeWidth(SkScalar width) {
-    paint_.setStrokeWidth(width);
-  }
-  ALWAYS_INLINE SkScalar getStrokeMiter() const {
-    return paint_.getStrokeMiter();
-  }
-  ALWAYS_INLINE void setStrokeMiter(SkScalar miter) {
-    paint_.setStrokeMiter(miter);
-  }
+  ALWAYS_INLINE SkScalar getStrokeWidth() const { return width_; }
+  ALWAYS_INLINE void setStrokeWidth(SkScalar width) { width_ = width; }
+  ALWAYS_INLINE SkScalar getStrokeMiter() const { return miter_limit_; }
+  ALWAYS_INLINE void setStrokeMiter(SkScalar miter) { miter_limit_ = miter; }
   enum Cap {
     kButt_Cap = SkPaint::kButt_Cap,    //!< begin/end contours with no extension
     kRound_Cap = SkPaint::kRound_Cap,  //!< begin/end contours with a
@@ -125,12 +128,8 @@ class CC_PAINT_EXPORT PaintFlags {
     kLast_Cap = kSquare_Cap,
     kDefault_Cap = kButt_Cap
   };
-  ALWAYS_INLINE Cap getStrokeCap() const {
-    return static_cast<Cap>(paint_.getStrokeCap());
-  }
-  ALWAYS_INLINE void setStrokeCap(Cap cap) {
-    paint_.setStrokeCap(static_cast<SkPaint::Cap>(cap));
-  }
+  ALWAYS_INLINE Cap getStrokeCap() const { return static_cast<Cap>(cap_type_); }
+  ALWAYS_INLINE void setStrokeCap(Cap cap) { cap_type_ = cap; }
   enum Join {
     kMiter_Join = SkPaint::kMiter_Join,
     kRound_Join = SkPaint::kRound_Join,
@@ -139,107 +138,114 @@ class CC_PAINT_EXPORT PaintFlags {
     kDefault_Join = kMiter_Join
   };
   ALWAYS_INLINE Join getStrokeJoin() const {
-    return static_cast<Join>(paint_.getStrokeJoin());
+    return static_cast<Join>(join_type_);
   }
-  ALWAYS_INLINE void setStrokeJoin(Join join) {
-    paint_.setStrokeJoin(static_cast<SkPaint::Join>(join));
+  ALWAYS_INLINE void setStrokeJoin(Join join) { join_type_ = join; }
+
+  ALWAYS_INLINE const sk_sp<SkTypeface>& getTypeface() const {
+    return typeface_;
   }
-  ALWAYS_INLINE SkTypeface* getTypeface() const { return paint_.getTypeface(); }
   ALWAYS_INLINE void setTypeface(sk_sp<SkTypeface> typeface) {
-    paint_.setTypeface(std::move(typeface));
+    typeface_ = std::move(typeface);
   }
-  ALWAYS_INLINE SkColorFilter* getColorFilter() const {
-    return paint_.getColorFilter();
-  }
-  ALWAYS_INLINE sk_sp<SkColorFilter> refColorFilter() const {
-    return paint_.refColorFilter();
+  ALWAYS_INLINE const sk_sp<SkColorFilter>& getColorFilter() const {
+    return color_filter_;
   }
   ALWAYS_INLINE void setColorFilter(sk_sp<SkColorFilter> filter) {
-    paint_.setColorFilter(std::move(filter));
+    color_filter_ = std::move(filter);
   }
-  ALWAYS_INLINE SkMaskFilter* getMaskFilter() const {
-    return paint_.getMaskFilter();
+  ALWAYS_INLINE const sk_sp<SkMaskFilter>& getMaskFilter() const {
+    return mask_filter_;
   }
   ALWAYS_INLINE void setMaskFilter(sk_sp<SkMaskFilter> mask) {
-    paint_.setMaskFilter(std::move(mask));
+    mask_filter_ = std::move(mask);
   }
   // TODO(vmpstr): Remove this from recording calls, since we want to avoid
   // constructing the shader until rasterization.
-  ALWAYS_INLINE SkShader* getSkShader() const { return paint_.getShader(); }
+  ALWAYS_INLINE SkShader* getSkShader() const {
+    return shader_ ? shader_->GetSkShader().get() : nullptr;
+  }
 
   // Returns true if the shader has been set on the flags.
-  ALWAYS_INLINE bool HasShader() const { return !!paint_.getShader(); }
+  ALWAYS_INLINE bool HasShader() const { return !!shader_; }
 
   // Returns whether the shader is opaque. Note that it is only valid to call
   // this function if HasShader() returns true.
-  ALWAYS_INLINE bool ShaderIsOpaque() const {
-    return paint_.getShader()->isOpaque();
-  }
+  ALWAYS_INLINE bool ShaderIsOpaque() const { return shader_->IsOpaque(); }
 
   ALWAYS_INLINE void setShader(sk_sp<PaintShader> shader) {
-    paint_.setShader(shader ? shader->GetSkShader() : nullptr);
-  }
-  ALWAYS_INLINE SkPathEffect* getPathEffect() const {
-    return paint_.getPathEffect();
-  }
-  ALWAYS_INLINE void setPathEffect(sk_sp<SkPathEffect> effect) {
-    paint_.setPathEffect(std::move(effect));
-  }
-  ALWAYS_INLINE bool getFillPath(const SkPath& src,
-                                 SkPath* dst,
-                                 const SkRect* cullRect = nullptr,
-                                 SkScalar resScale = 1) const {
-    return paint_.getFillPath(src, dst, cullRect, resScale);
-  }
-  ALWAYS_INLINE sk_sp<SkImageFilter> refImageFilter() const {
-    return paint_.refImageFilter();
-  }
-  ALWAYS_INLINE SkImageFilter* getImageFilter() const {
-    return paint_.getImageFilter();
-  }
-  void setImageFilter(sk_sp<SkImageFilter> filter) {
-    paint_.setImageFilter(std::move(filter));
-  }
-  ALWAYS_INLINE SkDrawLooper* getDrawLooper() const {
-    return paint_.getDrawLooper();
-  }
-  ALWAYS_INLINE SkDrawLooper* getLooper() const { return paint_.getLooper(); }
-  ALWAYS_INLINE void setLooper(sk_sp<SkDrawLooper> looper) {
-    paint_.setLooper(std::move(looper));
-  }
-  ALWAYS_INLINE bool canComputeFastBounds() const {
-    return paint_.canComputeFastBounds();
-  }
-  ALWAYS_INLINE const SkRect& computeFastBounds(const SkRect& orig,
-                                                SkRect* storage) const {
-    return paint_.computeFastBounds(orig, storage);
+    shader_ = std::move(shader);
   }
 
-  bool operator==(const PaintFlags& flags) { return flags.paint_ == paint_; }
-  bool operator!=(const PaintFlags& flags) { return flags.paint_ != paint_; }
+  ALWAYS_INLINE const sk_sp<SkPathEffect>& getPathEffect() const {
+    return path_effect_;
+  }
+  ALWAYS_INLINE void setPathEffect(sk_sp<SkPathEffect> effect) {
+    path_effect_ = std::move(effect);
+  }
+  bool getFillPath(const SkPath& src,
+                   SkPath* dst,
+                   const SkRect* cull_rect = nullptr,
+                   SkScalar res_scale = 1) const;
+
+  ALWAYS_INLINE const sk_sp<SkImageFilter>& getImageFilter() const {
+    return image_filter_;
+  }
+  void setImageFilter(sk_sp<SkImageFilter> filter) {
+    image_filter_ = std::move(filter);
+  }
+
+  ALWAYS_INLINE const sk_sp<SkDrawLooper>& getLooper() const {
+    return draw_looper_;
+  }
+  ALWAYS_INLINE void setLooper(sk_sp<SkDrawLooper> looper) {
+    draw_looper_ = std::move(looper);
+  }
 
   // Returns true if this just represents an opacity blend when
   // used as saveLayer flags.
   bool IsSimpleOpacity() const;
   bool SupportsFoldingAlpha() const;
 
+  SkPaint ToSkPaint() const;
+
  private:
   friend class PaintOpReader;
   friend class PaintOpWriter;
 
-  friend const SkPaint& ToSkPaint(const PaintFlags& flags);
-  friend const SkPaint* ToSkPaint(const PaintFlags* flags);
+  ALWAYS_INLINE void SetInternalFlag(bool value, uint32_t mask) {
+    if (value)
+      flags_ |= mask;
+    else
+      flags_ &= ~mask;
+  }
 
-  SkPaint paint_;
+  sk_sp<SkTypeface> typeface_;
+  sk_sp<SkPathEffect> path_effect_;
+  sk_sp<PaintShader> shader_;
+  sk_sp<SkMaskFilter> mask_filter_;
+  sk_sp<SkColorFilter> color_filter_;
+  sk_sp<SkDrawLooper> draw_looper_;
+  sk_sp<SkImageFilter> image_filter_;
+
+  // Match(ish) SkPaint defaults.  SkPaintDefaults is not public, so this
+  // just uses these values and ignores any SkUserConfig overrides.
+  float text_size_ = 12.f;
+  float text_scale_x_ = 1.f;
+  float text_skew_x_ = 0.f;
+  SkColor color_ = SK_ColorBLACK;
+  float width_ = 0.f;
+  float miter_limit_ = 4.f;
+  uint32_t blend_mode_ = static_cast<uint32_t>(SkBlendMode::kSrcOver);
+
+  uint32_t flags_ : 16;
+  uint32_t cap_type_ : 2;
+  uint32_t join_type_ : 2;
+  uint32_t style_ : 2;
+  uint32_t text_encoding_ : 2;
+  uint32_t hinting_ : 2;
+  uint32_t filter_quality_ : 2;
 };
-
-ALWAYS_INLINE const SkPaint& ToSkPaint(const PaintFlags& flags) {
-  return flags.paint_;
-}
-
-ALWAYS_INLINE const SkPaint* ToSkPaint(const PaintFlags* flags) {
-  return &flags->paint_;
-}
 
 }  // namespace cc
 

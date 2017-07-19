@@ -214,4 +214,9 @@ void PaintShader::SetFlagsAndFallback(uint32_t flags, SkColor fallback_color) {
   fallback_color_ = fallback_color;
 }
 
+bool PaintShader::IsOpaque() const {
+  // TODO(enne): don't create a shader to answer this.
+  return GetSkShader()->isOpaque();
+}
+
 }  // namespace cc
