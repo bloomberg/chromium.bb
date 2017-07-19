@@ -132,15 +132,6 @@ utf-16be { MIME* HTML* }
 utf-16le { MIME* HTML* }
     utf-16
 
-# Keep UTF-32 entries for now until we sort out Blink's behavior when
-# UTF-32 is dropped.
-UTF-32 { IANA* MIME* }          ISO-10646-UCS-4 { IANA }
-                                csUCS4
-                                ucs-4
-# Until we kill UTF-32 in Blink, add MIME tag here.
-UTF-32BE { MIME* IANA* }              UTF32_BigEndian
-UTF-32LE { MIME* IANA* }              UTF32_LittleEndian
-
 ibm866-html
     IBM866 { MIME* HTML* }
     866
