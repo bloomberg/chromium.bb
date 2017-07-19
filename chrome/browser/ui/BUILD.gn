@@ -2713,6 +2713,8 @@ split_static_library("ui") {
         "cocoa/constrained_window/constrained_window_sheet_info.mm",
         "cocoa/constrained_window/constrained_window_web_dialog_sheet.h",
         "cocoa/constrained_window/constrained_window_web_dialog_sheet.mm",
+        "cocoa/content_settings/blocked_plugin_bubble_controller.h",
+        "cocoa/content_settings/blocked_plugin_bubble_controller.mm",
         "cocoa/content_settings/collected_cookies_mac.h",
         "cocoa/content_settings/collected_cookies_mac.mm",
         "cocoa/content_settings/content_setting_bubble_cocoa.h",

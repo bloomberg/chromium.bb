@@ -16,6 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/plugins/plugin_finder.h"
 #include "chrome/browser/plugins/plugin_metadata.h"
+#import "chrome/browser/ui/cocoa/content_settings/blocked_plugin_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/location_bar/content_setting_decoration.h"
@@ -232,7 +233,6 @@ class ContentSettingBubbleWebContentsObserverBridge
                                 title:(NSString*)title
                                  icon:(NSImage*)icon
                        referenceFrame:(NSRect)referenceFrame;
-- (void)initializeBlockedPluginsList;
 - (void)initializeTitle;
 - (void)initializeMessage;
 - (void)initializeRadioGroup;
@@ -240,7 +240,6 @@ class ContentSettingBubbleWebContentsObserverBridge
 - (void)initializeGeoLists;
 - (void)initializeMediaMenus;
 - (void)initializeMIDISysExLists;
-- (void)sizeToFitLoadButton;
 - (void)initManageDoneButtons;
 - (void)removeInfoButton;
 - (void)popupLinkClicked:(id)sender;
@@ -279,7 +278,6 @@ const ContentTypeToNibPath kNibPaths[] = {
     {CONTENT_SETTINGS_TYPE_IMAGES, @"ContentBlockedSimple"},
     {CONTENT_SETTINGS_TYPE_JAVASCRIPT, @"ContentBlockedSimple"},
     {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, @"ContentBlockedSimple"},
-    {CONTENT_SETTINGS_TYPE_PLUGINS, @"ContentBlockedPlugins"},
     {CONTENT_SETTINGS_TYPE_POPUPS, @"ContentBlockedPopups"},
     {CONTENT_SETTINGS_TYPE_GEOLOCATION, @"ContentBlockedGeolocation"},
     {CONTENT_SETTINGS_TYPE_MIXEDSCRIPT, @"ContentBlockedMixedScript"},
@@ -371,6 +369,12 @@ const ContentTypeToNibPath kNibPaths[] = {
 
   if (model->AsSubresourceFilterBubbleModel())
     return [SubresourceFilterBubbleController alloc];
+
+  if (model->AsSimpleBubbleModel() &&
+      model->AsSimpleBubbleModel()->content_type() ==
+          CONTENT_SETTINGS_TYPE_PLUGINS) {
+    return [BlockedPluginBubbleController alloc];
+  }
 
   return nil;
 }
@@ -503,16 +507,6 @@ const ContentTypeToNibPath kNibPaths[] = {
   [button setTarget:self];
   [button setAction:@selector(popupLinkClicked:)];
   return button;
-}
-
-- (void)initializeBlockedPluginsList {
-  // Hide the empty label at the top of the dialog.
-  int delta =
-      NSMinY([titleLabel_ frame]) - NSMinY([blockedResourcesField_ frame]);
-  [blockedResourcesField_ removeFromSuperview];
-  NSRect frame = [[self window] frame];
-  frame.size.height -= delta;
-  [[self window] setFrame:frame display:NO];
 }
 
 - (void)initializeItemList {
@@ -823,21 +817,6 @@ const ContentTypeToNibPath kNibPaths[] = {
   [contentsContainer_ setFrame:containerFrame];
 }
 
-- (void)sizeToFitLoadButton {
-  const ContentSettingBubbleModel::BubbleContent& content =
-      contentSettingBubbleModel_->bubble_content();
-  [loadButton_ setEnabled:content.custom_link_enabled];
-
-  // Resize horizontally to fit button if necessary.
-  NSRect windowFrame = [[self window] frame];
-  int widthNeeded = NSWidth([loadButton_ frame]) +
-      2 * NSMinX([loadButton_ frame]);
-  if (NSWidth(windowFrame) < widthNeeded) {
-    windowFrame.size.width = widthNeeded;
-    [[self window] setFrame:windowFrame display:NO];
-  }
-}
-
 - (void)initManageDoneButtons {
   if (!manageButton_ && !doneButton_)
     return;
@@ -950,25 +929,13 @@ const ContentTypeToNibPath kNibPaths[] = {
   [self initializeTitle];
   [self initializeMessage];
 
-  // Note that the per-content-type methods and |initializeRadioGroup| below
-  // must be kept in the correct order, as they make interdependent adjustments
-  // of the bubble's height.
-  if (simple_bubble &&
-      simple_bubble->content_type() == CONTENT_SETTINGS_TYPE_PLUGINS) {
-    if (!simple_bubble->bubble_content().custom_link.empty())
-      [self sizeToFitLoadButton];
-
-    [self initializeBlockedPluginsList];
-  }
-
   if (allowBlockRadioGroup_)  // Some xibs do not bind |allowBlockRadioGroup_|.
     [self initializeRadioGroup];
 
   if (simple_bubble) {
     ContentSettingsType type = simple_bubble->content_type();
 
-    if (type == CONTENT_SETTINGS_TYPE_POPUPS ||
-        type == CONTENT_SETTINGS_TYPE_PLUGINS)
+    if (type == CONTENT_SETTINGS_TYPE_POPUPS)
       [self initializeItemList];
     if (type == CONTENT_SETTINGS_TYPE_GEOLOCATION)
       [self initializeGeoLists];
@@ -1051,7 +1018,7 @@ const ContentTypeToNibPath kNibPaths[] = {
 }
 
 - (IBAction)learnMoreLinkClicked:(id)sender {
-  contentSettingBubbleModel_->OnManageLinkClicked();
+  contentSettingBubbleModel_->OnLearnMoreLinkClicked();
 }
 
 - (IBAction)manageBlocking:(id)sender {
