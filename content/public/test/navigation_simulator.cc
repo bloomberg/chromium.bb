@@ -101,6 +101,10 @@ NavigationSimulator::NavigationSimulator(const GURL& original_url,
       navigation_url_(original_url),
       socket_address_("2001:db8::1", 80),
       weak_factory_(this) {
+  // Since this is a renderer-initiated navigation, the RenderFrame must be
+  // initialized. Do it if it hasn't happened yet.
+  render_frame_host->InitializeRenderFrameIfNeeded();
+
   if (render_frame_host->GetParent()) {
     if (!render_frame_host->frame_tree_node()->has_committed_real_load())
       transition_ = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
