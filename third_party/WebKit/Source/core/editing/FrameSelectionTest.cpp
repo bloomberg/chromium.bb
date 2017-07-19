@@ -12,6 +12,7 @@
 #include "core/editing/EditingTestBase.h"
 #include "core/editing/FrameCaret.h"
 #include "core/editing/SelectionController.h"
+#include "core/editing/SelectionModifier.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/html/HTMLBodyElement.h"
 #include "core/input/EventHandler.h"
@@ -171,7 +172,7 @@ TEST_F(FrameSelectionTest, ModifyExtendWithFlatTree) {
           .Extend(
               ToPositionInDOMTree(PositionInFlatTree(GetDocument().body(), 2)))
           .Build());
-  Selection().Modify(FrameSelection::kAlterationExtend, kDirectionForward,
+  Selection().Modify(SelectionModifyAlteration::kExtend, kDirectionForward,
                      TextGranularity::kWord);
   EXPECT_EQ(Position(two, 0), VisibleSelectionInDOMTree().Start());
   EXPECT_EQ(Position(two, 3), VisibleSelectionInDOMTree().End());
@@ -188,7 +189,7 @@ TEST_F(FrameSelectionTest, ModifyWithUserTriggered) {
       SelectionInDOMTree::Builder().Collapse(end_of_text).Build());
 
   EXPECT_FALSE(
-      Selection().Modify(FrameSelection::kAlterationMove, kDirectionForward,
+      Selection().Modify(SelectionModifyAlteration::kMove, kDirectionForward,
                          TextGranularity::kCharacter, kNotUserTriggered))
       << "Selection.modify() returns false for non-user-triggered call when "
          "selection isn't modified.";
@@ -196,7 +197,7 @@ TEST_F(FrameSelectionTest, ModifyWithUserTriggered) {
             Selection().ComputeVisibleSelectionInDOMTreeDeprecated().Start())
       << "Selection isn't modified";
 
-  EXPECT_TRUE(Selection().Modify(FrameSelection::kAlterationMove,
+  EXPECT_TRUE(Selection().Modify(SelectionModifyAlteration::kMove,
                                  kDirectionForward, TextGranularity::kCharacter,
                                  kUserTriggered))
       << "Selection.modify() returns true for user-triggered call";

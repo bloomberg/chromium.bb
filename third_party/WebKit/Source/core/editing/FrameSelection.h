@@ -50,6 +50,7 @@ class GraphicsContext;
 class Range;
 class SelectionEditor;
 class LayoutSelection;
+enum class SelectionModifyAlteration;
 class TextIteratorBehavior;
 struct PaintInvalidatorContext;
 
@@ -77,7 +78,6 @@ class CORE_EXPORT FrameSelection final
   }
   ~FrameSelection();
 
-  enum EAlteration { kAlterationMove, kAlterationExtend };
   enum SetSelectionOption {
     // 1 << 0 is reserved for EUserTriggered
     kCloseTyping = 1 << 1,
@@ -137,7 +137,7 @@ class CORE_EXPORT FrameSelection final
 
   bool Contains(const LayoutPoint&);
 
-  bool Modify(EAlteration,
+  bool Modify(SelectionModifyAlteration,
               SelectionDirection,
               TextGranularity,
               EUserTriggered = kNotUserTriggered);
