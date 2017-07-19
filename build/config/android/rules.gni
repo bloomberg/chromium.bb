@@ -1828,6 +1828,7 @@ if (enable_java_templates) {
 
       deps = _android_root_manifest_deps
 
+      possible_config_deps = []
       if (defined(invoker.deps)) {
         possible_config_deps = invoker.deps
       }
