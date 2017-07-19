@@ -68,6 +68,7 @@ import org.chromium.content.browser.input.LGEmailActionModeWorkaround;
 import org.chromium.net.NetworkChangeNotifier;
 
 import java.io.File;
+import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -574,6 +575,12 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
                     // TODO(ntfschr): add @Override once next android SDK rolls
                     public void shutdownSafeBrowsing() {
                         AwContentsStatics.shutdownSafeBrowsing();
+                    }
+
+                    // TODO(ntfschr): add @Override once next android SDK rolls
+                    public void setSafeBrowsingWhitelist(
+                            List<String> urls, ValueCallback<Boolean> callback) {
+                        AwContentsStatics.setSafeBrowsingWhitelist(urls, callback);
                     }
 
                 };

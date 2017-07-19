@@ -65,11 +65,13 @@ class AwSafeBrowsingWhitelistManager {
   bool IsURLWhitelisted(const GURL& url) const;
 
   // Replace the current host whitelist with a new one.
-  void SetWhitelistOnUIThread(std::vector<std::string>&& rules);
+  void SetWhitelistOnUIThread(std::vector<std::string>&& rules,
+                              const base::Callback<void(bool)>& callback);
 
  private:
   // Builds whitelist on background thread.
-  void BuildWhitelist(const std::vector<std::string>& rules);
+  void BuildWhitelist(const std::vector<std::string>& rules,
+                      const base::Callback<void(bool)>& callback);
   // Replaces the current whitelist. Must be called on the IO thread.
   void SetWhitelist(std::unique_ptr<TrieNode> whitelist);
 

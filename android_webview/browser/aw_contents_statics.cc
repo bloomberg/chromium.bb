@@ -44,6 +44,13 @@ void NotifyClientCertificatesChanged() {
   net::CertDatabase::GetInstance()->OnAndroidKeyStoreChanged();
 }
 
+void SafeBrowsingWhitelistAssigned(const JavaRef<jobject>& callback,
+                                   bool success) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  JNIEnv* env = AttachCurrentThread();
+  Java_AwContentsStatics_safeBrowsingWhitelistAssigned(env, callback, success);
+}
+
 }  // namespace
 
 // static
@@ -93,14 +100,18 @@ void SetSafeBrowsingEnabledByManifest(JNIEnv* env,
 }
 
 // static
-void SetSafeBrowsingWhiteList(JNIEnv* env,
+void SetSafeBrowsingWhitelist(JNIEnv* env,
                               const JavaParamRef<jclass>&,
-                              const JavaParamRef<jobjectArray>& jrules) {
+                              const JavaParamRef<jobjectArray>& jrules,
+                              const JavaParamRef<jobject>& callback) {
   std::vector<std::string> rules;
   base::android::AppendJavaStringArrayToStringVector(env, jrules, &rules);
   AwSafeBrowsingWhitelistManager* whitelist_manager =
       AwBrowserContext::GetDefault()->GetSafeBrowsingWhitelistManager();
-  whitelist_manager->SetWhitelistOnUIThread(std::move(rules));
+  whitelist_manager->SetWhitelistOnUIThread(
+      std::move(rules),
+      base::Bind(&SafeBrowsingWhitelistAssigned,
+                 ScopedJavaGlobalRef<jobject>(env, callback)));
 }
 
 // static
