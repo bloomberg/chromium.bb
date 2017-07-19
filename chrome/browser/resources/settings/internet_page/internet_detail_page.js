@@ -146,12 +146,6 @@ Polymer({
   shouldShowConfigureWhenNetworkLoaded_: false,
 
   /**
-   * Whether the previous route was also the network detail page.
-   * @private {boolean}
-   */
-  wasPreviousRouteNetworkDetailPage_: false,
-
-  /**
    * settings.RouteObserverBehavior
    * @param {!settings.Route} route
    * @param {!settings.Route} oldRoute
@@ -177,15 +171,15 @@ Polymer({
       console.error('No guid specified for page:' + route);
       this.close_();
     }
+
     // Set basic networkProperties until they are loaded.
     this.networkPropertiesReceived_ = false;
+    this.shouldShowConfigureWhenNetworkLoaded_ =
+        queryParams.get('showConfigure') == 'true';
+
     var type = /** @type {!chrome.networkingPrivate.NetworkType} */ (
                    queryParams.get('type')) ||
         CrOnc.Type.WI_FI;
-    this.shouldShowConfigureWhenNetworkLoaded_ =
-        queryParams.get('showConfigure') == 'true';
-    this.wasPreviousRouteNetworkDetailPage_ =
-        oldRoute == settings.routes.NETWORK_DETAIL;
     var name = queryParams.get('name') || type;
     this.networkProperties = {
       GUID: this.guid,
@@ -244,6 +238,9 @@ Polymer({
 
     if (this.shouldShowConfigureWhenNetworkLoaded_ &&
         this.networkProperties.Tether) {
+      // Set |this.shouldShowConfigureWhenNetworkLoaded_| back to false to
+      // ensure that the Tether dialog is only shown once.
+      this.shouldShowConfigureWhenNetworkLoaded_ = false;
       this.showTetherDialog_();
     }
   },
@@ -561,6 +558,11 @@ Polymer({
 
   /** @private */
   onConnectTap_: function() {
+    if (CrOnc.shouldShowTetherDialogBeforeConnection(this.networkProperties)) {
+      this.showTetherDialog_();
+      return;
+    }
+
     this.fire('network-connect', {networkProperties: this.networkProperties});
   },
 
@@ -571,17 +573,6 @@ Polymer({
       networkProperties: this.networkProperties,
       bypassConnectionDialog: true
     });
-  },
-
-  /** @private */
-  onTetherDialogClose_: function() {
-    // The tether dialog is opened by specifying "showConfigure=true"
-    // in the query params. This may lead to the previous route also
-    // being the detail page, in which case we should navigate back to
-    // the previous route here so that when the user navigates back
-    // they will navigate to the previous non-detail page.
-    if (this.wasPreviousRouteNetworkDetailPage_)
-      settings.navigateToPreviousRoute();
   },
 
   /** @private */
