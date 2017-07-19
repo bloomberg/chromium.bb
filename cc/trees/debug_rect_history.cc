@@ -135,14 +135,17 @@ void DebugRectHistory::SaveTouchEventHandlerRects(LayerTreeImpl* tree_impl) {
 }
 
 void DebugRectHistory::SaveTouchEventHandlerRectsCallback(LayerImpl* layer) {
-  // TODO(hayleyferr): Iterate each of the TouchActions and show their
-  // individual regions separately instead of combining them all.
-  for (Region::Iterator iter(layer->touch_action_region().region());
-       iter.has_rect(); iter.next()) {
-    debug_rects_.push_back(
-        DebugRect(TOUCH_EVENT_HANDLER_RECT_TYPE,
-                  MathUtil::MapEnclosingClippedRect(
-                      layer->ScreenSpaceTransform(), iter.rect())));
+  const TouchActionRegion& touch_action_region = layer->touch_action_region();
+  for (int touch_action_index = kTouchActionNone;
+       touch_action_index != kTouchActionMax; ++touch_action_index) {
+    auto touch_action = static_cast<TouchAction>(touch_action_index);
+    Region region = touch_action_region.GetRegionForTouchAction(touch_action);
+    for (Region::Iterator iter(region); iter.has_rect(); iter.next()) {
+      debug_rects_.emplace_back(TOUCH_EVENT_HANDLER_RECT_TYPE,
+                                MathUtil::MapEnclosingClippedRect(
+                                    layer->ScreenSpaceTransform(), iter.rect()),
+                                touch_action);
+    }
   }
 }
 
