@@ -2194,6 +2194,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"background-loader", flag_descriptions::kNewBackgroundLoaderName,
      flag_descriptions::kNewBackgroundLoaderDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(offline_pages::kNewBackgroundLoaderFeature)},
+    {"offline-pages-renovations",
+     flag_descriptions::kOfflinePagesRenovationsName,
+     flag_descriptions::kOfflinePagesRenovationsDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(offline_pages::kOfflinePagesRenovationsFeature)},
 #endif  // OS_ANDROID
     {"disallow-doc-written-script-loads",
      flag_descriptions::kDisallowDocWrittenScriptsUiName,

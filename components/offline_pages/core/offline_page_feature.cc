@@ -39,6 +39,9 @@ const base::Feature kOfflinePagesSvelteConcurrentLoadingFeature{
 const base::Feature kOfflinePagesLoadSignalCollectingFeature{
     "OfflinePagesLoadSignalCollecting", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kOfflinePagesRenovationsFeature{
+    "OfflinePagesRenovations", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kBackgroundLoaderForDownloadsFeature{
     "BackgroundLoadingForDownloads", base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -90,6 +93,10 @@ bool IsPrefetchingOfflinePagesEnabled() {
 
 bool IsOfflinePagesLoadSignalCollectingEnabled() {
   return base::FeatureList::IsEnabled(kOfflinePagesLoadSignalCollectingFeature);
+}
+
+bool IsOfflinePagesRenovationsEnabled() {
+  return base::FeatureList::IsEnabled(kOfflinePagesRenovationsFeature);
 }
 
 bool ShouldUseNewBackgroundLoader() {
