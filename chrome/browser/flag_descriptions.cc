@@ -381,6 +381,11 @@ const char kEnableSuggestionsHomeModernLayoutDescription[] =
 const char kEnableTokenBindingName[] = "Token Binding.";
 const char kEnableTokenBindingDescription[] = "Enable Token Binding support.";
 
+const char kEnableUsernameCorrectionName[] = "Enable username correction";
+const char kEnableUsernameCorrectionDescription[] =
+    "While on the pending password state, add an edit button to the bubble so "
+    "that user can edit the username.";
+
 const char kEnableUseZoomForDsfName[] =
     "Use Blink's zoom for device scale factor.";
 const char kEnableUseZoomForDsfDescription[] =
