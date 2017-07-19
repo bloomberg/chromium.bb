@@ -3105,3 +3105,7 @@ crbug.com/626703 [ Win7 ] external/wpt/html/semantics/tabular-data/processing-mo
 
 crbug.com/745887 [ Mac Win ] fast/frames/sandboxed-iframe-plugins.html [ Failure Pass ]
 crbug.com/745899 [ Linux ] vr/getFrameData_samewithinframe.html [ Failure Pass ]
+
+crbug.com/626703 [ Win7 ] external/wpt/domxpath/xml_xpath_runner.html [ Timeout Pass ]
+crbug.com/626703 [ Win7 ] external/wpt/html/semantics/document-metadata/the-meta-element/pragma-directives/attr-meta-http-equiv-refresh/parsing.html [ Failure Pass ]
+crbug.com/626703 [ Win7 ] external/wpt/html/syntax/parsing/html5lib_tests16.html?run_type=uri [ Timeout Pass ]
