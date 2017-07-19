@@ -1043,6 +1043,8 @@ double LocalDOMWindow::scrollX() const {
 
   document()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
+  // TODO(bokan): This is wrong when the document.rootScroller is non-default.
+  // crbug.com/505516.
   double viewport_x =
       view->LayoutViewportScrollableArea()->GetScrollOffset().Width();
   return AdjustScrollForAbsoluteZoom(viewport_x, GetFrame()->PageZoomFactor());
@@ -1061,6 +1063,8 @@ double LocalDOMWindow::scrollY() const {
 
   document()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
+  // TODO(bokan): This is wrong when the document.rootScroller is non-default.
+  // crbug.com/505516.
   double viewport_y =
       view->LayoutViewportScrollableArea()->GetScrollOffset().Height();
   return AdjustScrollForAbsoluteZoom(viewport_y, GetFrame()->PageZoomFactor());

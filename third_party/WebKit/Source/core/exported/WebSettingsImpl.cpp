@@ -169,10 +169,6 @@ void WebSettingsImpl::SetInlineTextBoxAccessibilityEnabled(bool enabled) {
   settings_->SetInlineTextBoxAccessibilityEnabled(enabled);
 }
 
-void WebSettingsImpl::SetInertVisualViewport(bool enabled) {
-  settings_->SetInertVisualViewport(enabled);
-}
-
 void WebSettingsImpl::SetDeviceScaleAdjustment(float device_scale_adjustment) {
   dev_tools_emulator_->SetDeviceScaleAdjustment(device_scale_adjustment);
 }

@@ -11,7 +11,9 @@
 
       function scroll() {
           // Fully scroll to bring the fixed pos rect into view.
-          window.scrollTo(500, 1700);
+          window.scrollTo(100, 1400);
+          if (window.internals)
+            internals.setVisualViewportOffset(400, 300);
       }
 
       function scaleWithEventSender() {

@@ -194,7 +194,6 @@ class WebSettings {
   virtual void SetImageAnimationPolicy(ImageAnimationPolicy) = 0;
   virtual void SetImagesEnabled(bool) = 0;
   virtual void SetInlineTextBoxAccessibilityEnabled(bool) = 0;
-  virtual void SetInertVisualViewport(bool) = 0;
   virtual void SetJavaScriptCanAccessClipboard(bool) = 0;
   virtual void SetJavaScriptEnabled(bool) = 0;
   virtual void SetLoadsImagesAutomatically(bool) = 0;
