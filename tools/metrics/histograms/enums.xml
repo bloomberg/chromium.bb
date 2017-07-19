@@ -20567,6 +20567,14 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="35" label="Ran by google.com/intl/ (deprecated)"/>
 </enum>
 
+<enum name="InsignificantPlaybackReason">
+  <int value="0" label="Frame size too small"/>
+  <int value="1" label="Audio muted"/>
+  <int value="2" label="Media is paused"/>
+  <int value="3" label="No audio track"/>
+  <int value="4" label="Number of events"/>
+</enum>
+
 <enum name="InstallabilityCheckStatus">
   <int value="0" label="Check not started"/>
   <int value="1" label="Check terminated before it could finish"/>
