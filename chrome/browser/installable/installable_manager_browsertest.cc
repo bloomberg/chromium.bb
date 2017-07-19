@@ -7,11 +7,10 @@
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/banners/app_banner_manager_desktop.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/browser_test_utils.h"
@@ -181,7 +180,7 @@ class InstallableManagerBrowserTest : public InProcessBrowserTest {
 
     // Make sure app banners are disabled in the browser so they do not
     // interfere with the test.
-    feature_list_.InitAndDisableFeature(features::kAppBanners);
+    banners::AppBannerManagerDesktop::DisableTriggeringForTesting();
   }
 
   // Returns a test server URL to a page controlled by a service worker with
@@ -220,9 +219,6 @@ class InstallableManagerBrowserTest : public InProcessBrowserTest {
   }
 
   InstallabilityCheckStatus GetStatus() { return GetManager()->page_status_; }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
