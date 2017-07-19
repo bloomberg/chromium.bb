@@ -28,5 +28,6 @@ const char kTLS13VariantDisabled[] = "disabled";
 const char kTLS13VariantDraft[] = "draft";
 const char kTLS13VariantExperiment[] = "experiment";
 const char kTLS13VariantRecordTypeExperiment[] = "record-type";
+const char kTLS13VariantNoSessionIDExperiment[] = "no-session-id";
 
 }  // namespace switches

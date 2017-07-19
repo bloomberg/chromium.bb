@@ -714,6 +714,7 @@ extern const char kTLS13VariantDisabled[];
 extern const char kTLS13VariantDraft[];
 extern const char kTLS13VariantExperiment[];
 extern const char kTLS13VariantRecordTypeExperiment[];
+extern const char kTLS13VariantNoSessionIDExperiment[];
 
 extern const char kSuggestionsWithSubStringMatchName[];
 extern const char kSuggestionsWithSubStringMatchDescription[];
