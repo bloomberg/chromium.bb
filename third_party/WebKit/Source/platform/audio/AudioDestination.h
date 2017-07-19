@@ -36,7 +36,6 @@
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebAudioDevice.h"
-#include "public/platform/WebThread.h"
 #include "public/platform/WebVector.h"
 
 namespace blink {
@@ -44,6 +43,7 @@ namespace blink {
 class PushPullFIFO;
 class SecurityOrigin;
 class WebAudioLatencyHint;
+class WebThread;
 
 // The AudioDestination class is an audio sink interface between the media
 // renderer and the Blink's WebAudio module. It has a FIFO to adapt the
@@ -85,9 +85,6 @@ class PLATFORM_EXPORT AudioDestination : public WebAudioDevice::RenderCallback {
   virtual void Start();
   virtual void Stop();
 
-  // For AudioWorklet experimental threading.
-  void StartWithWorkletThread(WebThread* worklet_backing_thread);
-
   // Getters must be accessed from the main thread.
   size_t CallbackBufferSize() const;
   bool IsPlaying();
@@ -111,12 +108,6 @@ class PLATFORM_EXPORT AudioDestination : public WebAudioDevice::RenderCallback {
 
   bool IsRenderingThread();
 
-  // Because the alternative thread can exist, this method returns what is
-  // currently valid/available.
-  WebThread* GetRenderingThread();
-
-  void ClearRenderingThread();
-
   // Accessed by the main thread.
   std::unique_ptr<WebAudioDevice> web_audio_device_;
   const unsigned number_of_output_channels_;
@@ -125,9 +116,6 @@ class PLATFORM_EXPORT AudioDestination : public WebAudioDevice::RenderCallback {
 
   // Accessed by the device thread. Rendering thread for WebAudio graph.
   std::unique_ptr<WebThread> rendering_thread_;
-
-  // The experimental worklet rendering thread.
-  WebThread* worklet_backing_thread_ = nullptr;
 
   // Accessed by both threads: resolves the buffer size mismatch between the
   // WebAudio engine and the callback function from the actual audio device.
