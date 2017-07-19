@@ -95,6 +95,13 @@ base::string16 ChromeCleanerDialog::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_CHROME_CLEANUP_PROMPT_TITLE);
 }
 
+views::View* ChromeCleanerDialog::GetInitiallyFocusedView() {
+  // Set focus away from the Remove/OK button to prevent accidental prompt
+  // acceptance if the user is typing as the dialog appears.
+  DCHECK(details_button_);
+  return details_button_;
+}
+
 // DialogDelegate overrides.
 
 views::View* ChromeCleanerDialog::CreateFootnoteView() {
