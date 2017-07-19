@@ -298,15 +298,21 @@
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app", "platform_app"]
   },
-  "lockScreen": {
-    "channel": "trunk",
+  "lockScreen": [{
+    "channel": "dev",
     "extension_types": ["platform_app"],
     "platforms": ["chromeos"],
     "whitelist":  [
       "6F9C741B8E0E546652134F1138DF0284A7C9B21E",  // http://crbug.com/728309
       "47448626CB266C60AA2404E4EB426E025DF497DF"   // http://crbug.com/728309
     ]
-  },
+  }, {
+    // TODO(tbarzic): Remove this once the apps in the white-list can be used
+    // to test lock screen note taking.
+    "channel": "dev",
+    "extension_types": ["platform_app"],
+    "platforms": ["chromeos"]
+  }],
   "mediaPerceptionPrivate": [{
     "channel": "stable",
     "extension_types": ["platform_app"],

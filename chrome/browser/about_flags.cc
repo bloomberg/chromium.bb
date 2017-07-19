@@ -3208,6 +3208,12 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(midi::features::kMidiManagerCros)},
 #endif  // defined(OS_CHROMEOS)
 
+#if defined(OS_CHROMEOS)
+    {"enable-lock-screen-apps", flag_descriptions::kEnableLockScreenAppsName,
+     flag_descriptions::kEnableLockScreenAppsDescription, kOsCrOS,
+     SINGLE_VALUE_TYPE(chromeos::switches::kEnableLockScreenApps)},
+#endif  // defined(OS_CHROMEOS)
+
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms/enums.xml. See note in
     // enums.xml and don't forget to run AboutFlagsHistogramTest unit test.

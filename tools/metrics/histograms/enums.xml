@@ -23418,6 +23418,7 @@ from previous Chrome versions.
   <int value="841343322" label="disable-new-korean-ime"/>
   <int value="842432903" label="CaptureThumbnailOnNavigatingAway:enabled"/>
   <int value="846951416" label="CopylessPaste:enabled"/>
+  <int value="848324390" label="enable-lock-screen-apps"/>
   <int value="851085848" label="enable-settings-window"/>
   <int value="854730848" label="disable-app-info-dialog-mac"/>
   <int value="855746780" label="disable-physical-keyboard-autocorrect"/>
