@@ -56,6 +56,9 @@ void SyncConfirmationHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("undo",
       base::Bind(&SyncConfirmationHandler::HandleUndo, base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "goToSettings", base::Bind(&SyncConfirmationHandler::HandleGoToSettings,
+                                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback("initializedWithSize",
       base::Bind(&SyncConfirmationHandler::HandleInitializedWithSize,
                  base::Unretained(this)));
@@ -63,11 +66,12 @@ void SyncConfirmationHandler::RegisterMessages() {
 
 void SyncConfirmationHandler::HandleConfirm(const base::ListValue* args) {
   did_user_explicitly_interact = true;
-  bool configure_sync_first = false;
-  CHECK(args->GetBoolean(0, &configure_sync_first));
-  CloseModalSigninWindow(configure_sync_first
-                             ? LoginUIService::CONFIGURE_SYNC_FIRST
-                             : LoginUIService::SYNC_WITH_DEFAULT_SETTINGS);
+  CloseModalSigninWindow(LoginUIService::SYNC_WITH_DEFAULT_SETTINGS);
+}
+
+void SyncConfirmationHandler::HandleGoToSettings(const base::ListValue* args) {
+  did_user_explicitly_interact = true;
+  CloseModalSigninWindow(LoginUIService::CONFIGURE_SYNC_FIRST);
 }
 
 void SyncConfirmationHandler::HandleUndo(const base::ListValue* args) {
