@@ -21,6 +21,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/common/permissions/permissions_data.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -43,7 +44,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionLoadingTest,
   ASSERT_TRUE(embedded_test_server()->Start());
 
   TestExtensionDir extension_dir;
-  const char manifest_template[] =
+  const char kManifestTemplate[] =
       "{"
       "  'name': 'Overrides New Tab',"
       "  'version': '%d',"
@@ -58,7 +59,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionLoadingTest,
       "  }"
       "}";
   extension_dir.WriteManifestWithSingleQuotes(
-      base::StringPrintf(manifest_template, 1));
+      base::StringPrintf(kManifestTemplate, 1));
   extension_dir.WriteFile(FILE_PATH_LITERAL("event.js"), "");
   extension_dir.WriteFile(FILE_PATH_LITERAL("newtab.html"),
                           "<h1>Overridden New Tab Page</h1>");
@@ -81,7 +82,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionLoadingTest,
 
   // Increase the extension's version.
   extension_dir.WriteManifestWithSingleQuotes(
-      base::StringPrintf(manifest_template, 2));
+      base::StringPrintf(kManifestTemplate, 2));
 
   // Upgrade the extension.
   new_tab_extension = UpdateExtension(
@@ -99,6 +100,67 @@ IN_PROC_BROWSER_TEST_F(ExtensionLoadingTest,
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
   EXPECT_EQ(0U, registry->terminated_extensions().size());
   EXPECT_TRUE(registry->enabled_extensions().Contains(new_tab_extension->id()));
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionLoadingTest,
+                       UpgradeAddingNewTabPagePermissionNoPrompt) {
+  embedded_test_server()->ServeFilesFromDirectory(
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  TestExtensionDir extension_dir;
+  const char kManifestTemplate[] =
+      "{"
+      "  'name': 'Overrides New Tab',"
+      "  'version': '%d',"
+      "  'description': 'Will override New Tab soon',"
+      "  %s"  // Placeholder for future NTP url override block.
+      "  'manifest_version': 2"
+      "}";
+  extension_dir.WriteManifestWithSingleQuotes(
+      base::StringPrintf(kManifestTemplate, 1, ""));
+  extension_dir.WriteFile(FILE_PATH_LITERAL("event.js"), "");
+  extension_dir.WriteFile(FILE_PATH_LITERAL("newtab.html"),
+                          "<h1>Overridden New Tab Page</h1>");
+
+  const Extension* new_tab_extension =
+      InstallExtension(extension_dir.Pack(), 1 /*new install*/);
+  ASSERT_TRUE(new_tab_extension);
+
+  EXPECT_FALSE(new_tab_extension->permissions_data()->HasAPIPermission(
+      APIPermission::kNewTabPageOverride));
+
+  // Navigate that tab to a non-extension URL to swap out the extension's
+  // renderer.
+  const GURL test_link_from_ntp =
+      embedded_test_server()->GetURL("/README.chromium");
+  EXPECT_THAT(test_link_from_ntp.spec(), testing::EndsWith("/README.chromium"))
+      << "Check that the test server started.";
+  NavigateInRenderer(browser()->tab_strip_model()->GetActiveWebContents(),
+                     test_link_from_ntp);
+
+  // Increase the extension's version and add the NTP url override which will
+  // add the kNewTabPageOverride permission.
+  const char ntp_override_string[] =
+      "  'chrome_url_overrides': {"
+      "    'newtab': 'newtab.html'"
+      "  },";
+  extension_dir.WriteManifestWithSingleQuotes(
+      base::StringPrintf(kManifestTemplate, 2, ntp_override_string));
+
+  // Upgrade the extension, ensure that the upgrade 'worked' in the sense that
+  // the extension is still present and not disabled and that it now has the
+  // new API permission.
+  // TODO(robertshield): Update this once most of the population is on M62+
+  // and adding NTP permissions implies a permission upgrade.
+  new_tab_extension = UpdateExtension(
+      new_tab_extension->id(), extension_dir.Pack(), 0 /*expected upgrade*/);
+  ASSERT_NE(nullptr, new_tab_extension);
+
+  EXPECT_TRUE(new_tab_extension->permissions_data()->HasAPIPermission(
+      APIPermission::kNewTabPageOverride));
+  EXPECT_THAT(new_tab_extension->version()->components(),
+              testing::ElementsAre(2));
 }
 
 // Tests the behavior described in http://crbug.com/532088.

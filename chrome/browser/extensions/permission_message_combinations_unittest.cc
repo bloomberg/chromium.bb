@@ -1187,6 +1187,19 @@ TEST_F(PermissionMessageCombinationsUnittest, ClipboardPermissionMessages) {
       CheckManifestProducesPermissions("Modify data you copy and paste"));
 }
 
+TEST_F(PermissionMessageCombinationsUnittest, NewTabPagePermissionMessages) {
+  const char kManifest[] =
+      "{"
+      "  'chrome_url_overrides': {"
+      "    'newtab': 'newtab.html'"
+      "  }"
+      "}";
+
+  CreateAndInstall(kManifest);
+  ASSERT_TRUE(CheckManifestProducesPermissions(
+      "Replace the page you see when opening a new tab"));
+}
+
 // TODO(sashab): Add a test that checks that messages are generated correctly
 // for withheld permissions, when an app is granted the 'all sites' permission.
 

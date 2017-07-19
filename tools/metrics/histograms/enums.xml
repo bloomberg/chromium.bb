@@ -13580,6 +13580,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="203" label="kNetworkingCastPrivate"/>
   <int value="204" label="kMediaPerceptionPrivate"/>
   <int value="205" label="kLockScreen"/>
+  <int value="206" label="kNewTabPageOverride"/>
 </enum>
 
 <enum name="ExtensionServiceVerifyAllSuccess">
