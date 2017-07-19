@@ -294,6 +294,7 @@ public class CompositorViewHolder extends FrameLayout
         setTab(null);
         if (mLayerTitleCache != null) mLayerTitleCache.shutDown();
         mCompositorView.shutDown();
+        if (mLayoutManager != null) mLayoutManager.destroy();
     }
 
     /**
@@ -741,7 +742,6 @@ public class CompositorViewHolder extends FrameLayout
 
     @Override
     public void onDetachedFromWindow() {
-        if (mLayoutManager != null) mLayoutManager.destroy();
         flushInvalidation();
         mInvalidator.set(null);
         super.onDetachedFromWindow();
