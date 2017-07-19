@@ -177,7 +177,7 @@ def _MyUserInfo():
   return [git.GetProjectUserEmail(constants.CHROMITE_DIR)]
 
 
-def _Query(opts, query, raw=True):
+def _Query(opts, query, raw=True, helper=None):
   """Queries Gerrit with a query string built from the commandline options"""
   if opts.branch is not None:
     query += ' branch:%s' % opts.branch
@@ -186,16 +186,17 @@ def _Query(opts, query, raw=True):
   if opts.topic is not None:
     query += ' topic: %s' % opts.topic
 
-  helper, _ = GetGerrit(opts)
+  if helper is None:
+    helper, _ = GetGerrit(opts)
   return helper.Query(query, raw=raw, bypass_cache=False)
 
 
-def FilteredQuery(opts, query):
+def FilteredQuery(opts, query, helper=None):
   """Query gerrit and filter/clean up the results"""
   ret = []
 
   logging.debug('Running query: %s', query)
-  for cl in _Query(opts, query, raw=True):
+  for cl in _Query(opts, query, raw=True, helper=helper):
     # Gerrit likes to return a stats record too.
     if not 'project' in cl:
       continue
@@ -317,9 +318,10 @@ def UserActInspect(opts, *args):
   """Inspect CL number <n> [n ...]"""
   cls = []
   for arg in args:
-    cl = FilteredQuery(opts, arg)
-    if cl:
-      cls.extend(cl)
+    helper, cl = GetGerrit(opts, arg)
+    change = FilteredQuery(opts, 'change:%s' % cl, helper=helper)
+    if change:
+      cls.extend(change)
     else:
       logging.warning('no results found for CL %s', arg)
   PrintCls(opts, cls)
