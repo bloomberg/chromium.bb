@@ -410,6 +410,12 @@ TEST_F(TetherNotificationPresenterTest,
   VerifySettingsNotOpened();
 }
 
+TEST_F(TetherNotificationPresenterTest,
+       TestDoesNotOpenSettingsWhenOtherNotificationClicked) {
+  test_message_center_->NotifyNotificationTapped("otherNotificationId");
+  VerifySettingsNotOpened();
+}
+
 }  // namespace tether
 
 }  // namespace chromeos

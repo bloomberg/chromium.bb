@@ -74,6 +74,14 @@ constexpr const char
         "cros_tether_notification_ids.setup_required";
 
 // static
+constexpr const char* const
+    TetherNotificationPresenter::kIdsWhichOpenSettingsOnClick[] = {
+        TetherNotificationPresenter::kTetherNotifierId,
+        TetherNotificationPresenter::kActiveHostNotificationId,
+        TetherNotificationPresenter::kPotentialHotspotNotificationId,
+        TetherNotificationPresenter::kSetupRequiredNotificationId};
+
+// static
 std::unique_ptr<message_center::Notification>
 TetherNotificationPresenter::CreateNotificationWithMediumSignalStrengthIcon(
     const std::string& id,
@@ -209,10 +217,23 @@ void TetherNotificationPresenter::RemoveConnectionToHostFailedNotification() {
 
 void TetherNotificationPresenter::OnNotificationClicked(
     const std::string& notification_id) {
-  PA_LOG(INFO) << "Notification with ID " << notification_id << " was clicked.";
-  settings_ui_delegate_->ShowSettingsSubPageForProfile(profile_,
-                                                       kTetherSettingsSubpage);
-  message_center_->RemoveNotification(notification_id, true /* by_user */);
+  // Iterate through all IDs corresponding to notifications which should open
+  // the settings page when clicked. If the notification ID provided exists
+  // in |kIdsWhichOpenSettingsOnClick|, open settings.
+  for (size_t i = 0; i < arraysize(kIdsWhichOpenSettingsOnClick); ++i) {
+    const char* const curr_clickable_id = kIdsWhichOpenSettingsOnClick[i];
+    if (notification_id == curr_clickable_id) {
+      PA_LOG(INFO) << "Notification with ID " << notification_id
+                   << " was clicked.";
+      settings_ui_delegate_->ShowSettingsSubPageForProfile(
+          profile_, kTetherSettingsSubpage);
+      message_center_->RemoveNotification(notification_id, true /* by_user */);
+      return;
+    }
+  }
+
+  // Otherwise, ignore this click since it is not in the list of clickable IDs
+  // (e.g., it could have been created by another feature/application).
 }
 
 void TetherNotificationPresenter::OnNotificationButtonClicked(
