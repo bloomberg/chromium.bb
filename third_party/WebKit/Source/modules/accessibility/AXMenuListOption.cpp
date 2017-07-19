@@ -98,12 +98,6 @@ AXObject* AXMenuListOption::ComputeParent() const {
   return parent_.Get();
 }
 
-bool AXMenuListOption::IsEnabled() const {
-  // isDisabledFormControl() returns true if the parent <select> element is
-  // disabled, which we don't want.
-  return element_ && !element_->OwnElementDisabled();
-}
-
 bool AXMenuListOption::IsVisible() const {
   if (!parent_)
     return false;
@@ -130,24 +124,6 @@ void AXMenuListOption::SetSelected(bool b) {
     return;
 
   element_->SetSelected(b);
-}
-
-bool AXMenuListOption::CanSetFocusAttribute() const {
-  return CanSetSelectedAttribute();
-}
-
-bool AXMenuListOption::CanSetSelectedAttribute() const {
-  if (!isHTMLOptionElement(GetNode()))
-    return false;
-
-  if (toHTMLOptionElement(GetNode())->IsDisabledFormControl())
-    return false;
-
-  HTMLSelectElement* select_element = ParentSelectNode();
-  if (!select_element || select_element->IsDisabledFormControl())
-    return false;
-
-  return IsEnabled();
 }
 
 bool AXMenuListOption::ComputeAccessibilityIsIgnored(

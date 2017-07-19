@@ -871,6 +871,58 @@ bool AXObject::CanReceiveAccessibilityFocus() const {
   return elem->FastHasAttribute(idAttr) && AncestorExposesActiveDescendant();
 }
 
+bool AXObject::CanSetValueAttribute() const {
+  switch (RoleValue()) {
+    case kColorWellRole:
+    case kComboBoxRole:
+    case kDateRole:
+    case kDateTimeRole:
+    case kListBoxRole:
+    case kMenuButtonRole:
+    case kScrollBarRole:
+    case kSliderRole:
+    case kSpinButtonRole:
+    case kSplitterRole:
+    case kTextFieldRole:
+    case kTimeRole:
+    case kSearchBoxRole:
+      return Restriction() == kNone;
+    default:
+      break;
+  }
+  return false;
+}
+
+bool AXObject::CanSetFocusAttribute() const {
+  Node* node = GetNode();
+  if (!node)
+    return false;
+
+  if (IsWebArea())
+    return true;
+
+  // Children of elements with an aria-activedescendant attribute should be
+  // focusable if they have a (non-presentational) ARIA role.
+  if (!IsPresentational() && AriaRoleAttribute() != kUnknownRole &&
+      AncestorExposesActiveDescendant())
+    return true;
+
+  // NOTE: It would be more accurate to ask the document whether
+  // setFocusedNode() would do anything. For example, setFocusedNode() will do
+  // nothing if the current focused node will not relinquish the focus.
+  if (IsDisabledFormControl(node))
+    return false;
+
+  // Check for options here because AXListBoxOption and AXMenuListOption
+  // don't help when the <option> is canvas fallback, and because
+  // a common case for aria-owns from a textbox that points to a list
+  // does not change the hierarchy (textboxes don't support children)
+  if (RoleValue() == kListBoxOptionRole || RoleValue() == kMenuListOptionRole)
+    return true;
+
+  return node->IsElementNode() && ToElement(node)->SupportsFocus();
+}
+
 bool AXObject::AncestorExposesActiveDescendant() const {
   UpdateCachedAttributeValuesIfNeeded();
   return cached_ancestor_exposes_active_descendant_;
@@ -888,6 +940,29 @@ bool AXObject::ComputeAncestorExposesActiveDescendant() const {
   }
 
   return parent->AncestorExposesActiveDescendant();
+}
+
+bool AXObject::CanSetSelectedAttribute() const {
+  // Sub-widget elements can be selected if not disabled (native or ARIA)
+  return IsSubWidget(RoleValue()) && Restriction() != kDisabled;
+}
+
+bool AXObject::IsSubWidget(AccessibilityRole role) {
+  switch (role) {
+    case kCellRole:
+    case kColumnHeaderRole:
+    case kColumnRole:
+    case kListBoxOptionRole:
+    case kMenuListOptionRole:
+    case kRowHeaderRole:
+    case kRowRole:
+    case kTabRole:
+    case kTreeItemRole:
+      return true;
+    default:
+      break;
+  }
+  return false;
 }
 
 // Simplify whitespace, but preserve a single leading and trailing whitespace

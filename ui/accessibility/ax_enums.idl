@@ -216,7 +216,6 @@
     busy,
     collapsed,
     default,
-    disabled,
     editable,
     expanded,
     focusable,
@@ -230,7 +229,6 @@
     multiselectable,
     offscreen,
     protected,
-    read_only,
     required,
     richly_editable,
     selectable,
@@ -416,6 +414,11 @@
     // Identifies a child tree which this node hosts.
     child_tree_id,
 
+    // Input restriction, if any, such as readonly or disabled.
+    // Of type AXRestriction, see below.
+    // No value or enabled control or other object that is not disabled.
+    restriction,
+
     // Position or Number of items in current set of listitems or treeitems
     set_size,
     pos_in_set,
@@ -467,9 +470,6 @@
 
     // If a dialog box is marked as explicitly modal
     modal,
-
-    // ARIA readonly flag.
-    aria_readonly,
 
     // If this is set, all of the other fields in this struct should
     // be ignored and only the locations should change.
@@ -613,6 +613,15 @@
     spelling,
     grammar,
     other
+  };
+
+  // Input restriction associated with an object.
+  // No value for a control means it is enabled.
+  // Use read_only for a textbox that allows focus/selection but not input.
+  // Use disabled for a control or group of controls that disallows input.
+  enum AXRestriction {
+    read_only,
+    disabled
   };
 
   enum AXCheckedState {

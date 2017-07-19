@@ -1,20 +1,20 @@
 rootWebArea
 ++tree
-++++treeItem name='Animals ' hierarchicalLevel=1 setSize=2 posInSet=1 checkedState=3
+++++treeItem selectable name='Animals ' hierarchicalLevel=1 setSize=2 posInSet=1 checkedState=3
 ++++++staticText name='Animals'
 ++++++++inlineTextBox name='Animals'
-++++++treeItem name='Domesticated ' hierarchicalLevel=2 setSize=2 posInSet=1
+++++++treeItem selectable name='Domesticated ' hierarchicalLevel=2 setSize=2 posInSet=1
 ++++++++staticText name='Domesticated'
 ++++++++++inlineTextBox name='Domesticated'
-++++++++treeItem name='Dog' hierarchicalLevel=3 setSize=2 posInSet=1 checkedState=2
+++++++++treeItem selectable name='Dog' hierarchicalLevel=3 setSize=2 posInSet=1 checkedState=2
 ++++++++++staticText name='Dog'
 ++++++++++++inlineTextBox name='Dog'
-++++++++treeItem name='Cat' hierarchicalLevel=3 setSize=2 posInSet=2 checkedState=1
+++++++++treeItem selectable name='Cat' hierarchicalLevel=3 setSize=2 posInSet=2 checkedState=1
 ++++++++++staticText name='Cat'
 ++++++++++++inlineTextBox name='Cat'
-++++++treeItem name='Wild' hierarchicalLevel=2 setSize=2 posInSet=2
+++++++treeItem selectable name='Wild' hierarchicalLevel=2 setSize=2 posInSet=2
 ++++++++staticText name='Wild'
 ++++++++++inlineTextBox name='Wild'
-++++treeItem name='Plants' hierarchicalLevel=1 setSize=2 posInSet=2
+++++treeItem selectable name='Plants' hierarchicalLevel=1 setSize=2 posInSet=2
 ++++++staticText name='Plants'
 ++++++++inlineTextBox name='Plants'

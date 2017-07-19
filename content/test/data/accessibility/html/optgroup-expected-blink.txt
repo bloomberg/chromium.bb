@@ -11,7 +11,7 @@ rootWebArea
 ++++++group name='Disabled'
 ++++++++staticText name='Disabled'
 ++++++++++inlineTextBox name='Disabled'
-++++++listBoxOption name='One'
-++++++listBoxOption name='Two'
-++++++listBoxOption name='Three'
-++++++listBoxOption name='Four'
+++++++listBoxOption name='One' restriction=disabled
+++++++listBoxOption name='Two' restriction=disabled
+++++++listBoxOption name='Three' restriction=disabled
+++++++listBoxOption name='Four' restriction=disabled

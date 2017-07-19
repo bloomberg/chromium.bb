@@ -142,7 +142,6 @@ STATIC_ASSERT_ENUM(kWebAXRoleWebArea, kWebAreaRole);
 STATIC_ASSERT_ENUM(kWebAXRoleWindow, kWindowRole);
 
 STATIC_ASSERT_ENUM(kWebAXStateBusy, kAXBusyState);
-STATIC_ASSERT_ENUM(kWebAXStateEnabled, kAXEnabledState);
 STATIC_ASSERT_ENUM(kWebAXStateExpanded, kAXExpandedState);
 STATIC_ASSERT_ENUM(kWebAXStateFocusable, kAXFocusableState);
 STATIC_ASSERT_ENUM(kWebAXStateFocused, kAXFocusedState);
@@ -154,7 +153,6 @@ STATIC_ASSERT_ENUM(kWebAXStateMultiline, kAXMultilineState);
 STATIC_ASSERT_ENUM(kWebAXStateMultiselectable, kAXMultiselectableState);
 STATIC_ASSERT_ENUM(kWebAXStateOffscreen, kAXOffscreenState);
 STATIC_ASSERT_ENUM(kWebAXStateProtected, kAXProtectedState);
-STATIC_ASSERT_ENUM(kWebAXStateReadonly, kAXReadonlyState);
 STATIC_ASSERT_ENUM(kWebAXStateRequired, kAXRequiredState);
 STATIC_ASSERT_ENUM(kWebAXStateSelectable, kAXSelectableState);
 STATIC_ASSERT_ENUM(kWebAXStateSelected, kAXSelectedState);

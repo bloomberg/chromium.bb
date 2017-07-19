@@ -27,34 +27,34 @@
     if (window.accessibilityController) {
 
           var textField = accessibilityController.accessibleElementById("text1");
-          shouldBe("textField.isEnabled", "false");
+          shouldBeEqualToString("textField.restriction", "disabled");
 
           textField = accessibilityController.accessibleElementById("text2");
-          shouldBe("textField.isEnabled", "true");
+          shouldBeEqualToString("textField.restriction", "none");
 
           var group = accessibilityController.accessibleElementById("group1");
-          shouldBe("group.isEnabled", "false");
+          shouldBeEqualToString("group.restriction", "disabled");
 
           var link = accessibilityController.accessibleElementById("link1");
-          shouldBe("link.isEnabled", "false");
+          shouldBeEqualToString("link.restriction", "disabled");
 
           var button = accessibilityController.accessibleElementById("button1");
-          shouldBe("button.isEnabled", "true");
+          shouldBeEqualToString("button.restriction", "none");
 
           var treeitem = accessibilityController.accessibleElementById("treeitem1");
-          shouldBe("treeitem.isEnabled", "false");
+          shouldBeEqualToString("treeitem.restriction", "disabled");
 
           var option = accessibilityController.accessibleElementById("option1");
-          shouldBe("option.isEnabled", "false");
+          shouldBeEqualToString("option.restriction", "disabled");
 
           var tab = accessibilityController.accessibleElementById("tab1");
-          shouldBe("tab.isEnabled", "false");
+          shouldBeEqualToString("tab.restriction", "disabled");
 
           var gridcell = accessibilityController.accessibleElementById("gridcell1");
-          shouldBe("gridcell.isEnabled", "false");
+          shouldBeEqualToString("gridcell.restriction", "disabled");
 
           var checkbox = accessibilityController.accessibleElementById("checkbox1");
-          shouldBe("checkbox.isEnabled", "false");
+          shouldBeEqualToString("checkbox.restriction", "disabled");
 
       }
 </script>

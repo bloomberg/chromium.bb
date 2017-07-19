@@ -727,7 +727,8 @@ void OmniboxViewViews::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->AddIntAttribute(ui::AX_ATTR_TEXT_SEL_END, entry_end);
 
   if (popup_window_mode_) {
-    node_data->AddState(ui::AX_STATE_READ_ONLY);
+    node_data->AddIntAttribute(ui::AX_ATTR_RESTRICTION,
+                               ui::AX_RESTRICTION_READ_ONLY);
   } else {
     node_data->AddState(ui::AX_STATE_EDITABLE);
   }

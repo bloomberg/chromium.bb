@@ -62,9 +62,9 @@ test(function(t) {
 test(function(t) {
     var node = document.getElementById("disabled");
     var axNode = accessibilityController.accessibleElementById("disabled");
-    assert_equals(axNode.isEnabled, true);
+    assert_equals(axNode.restriction, "none");
     node.accessibleNode.disabled = true;
-    assert_equals(axNode.isEnabled, false);
+    assert_equals(axNode.restriction, "disabled");
 }, "AccessibleNode.disabled");
 </script>
 
@@ -129,7 +129,7 @@ test(function(t) {
 }, "AccessibleNode.multiselectable");
 </script>
 
-<div role="textbox" id="readOnly"></div>
+<div role="textbox" id="readOnly" tabindex="0"></div>
 
 <script>
 test(function(t) {

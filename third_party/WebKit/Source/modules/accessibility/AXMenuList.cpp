@@ -109,13 +109,6 @@ AccessibilityExpanded AXMenuList::IsExpanded() const {
   return kExpandedExpanded;
 }
 
-bool AXMenuList::CanSetFocusAttribute() const {
-  if (!GetNode())
-    return false;
-
-  return !ToElement(GetNode())->IsDisabledFormControl();
-}
-
 void AXMenuList::DidUpdateActiveOption(int option_index) {
   bool suppress_notifications =
       (GetNode() && !GetNode()->IsFinishedParsingChildren());

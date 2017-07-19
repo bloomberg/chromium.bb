@@ -61,6 +61,8 @@ class MODULES_EXPORT AXTableRow : public AXLayoutObject {
   unsigned AriaColumnIndex() const;
   unsigned AriaRowIndex() const;
 
+  virtual bool CanSetSelectedAttribute() const { return false; }
+
  protected:
   AccessibilityRole DetermineAccessibilityRole() final;
 

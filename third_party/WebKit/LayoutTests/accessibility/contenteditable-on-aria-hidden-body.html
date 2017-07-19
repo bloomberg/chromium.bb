@@ -10,7 +10,6 @@
     var axDocument = accessibilityController.rootElement;;
     assert_equals(axDocument.childrenCount, 0);
 
-    assert_true(axDocument.isReadOnly);
     assert_false(axDocument.isEditable);
     assert_false(axDocument.isRichlyEditable);
   }, 'The document should not be marked editable because the body is aria-hidden.');
@@ -20,7 +19,6 @@
     var axDocument = accessibilityController.rootElement;
     assert_equals(axDocument.childrenCount, 1);
 
-    assert_false(axDocument.isReadOnly);
     assert_true(axDocument.isEditable);
     assert_true(axDocument.isRichlyEditable);
   }, 'The document should be marked editable because the body is aria-hidden="false".');

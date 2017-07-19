@@ -608,6 +608,13 @@ TEST_F(NativeWidgetMacAccessibilityTest, TextfieldWritableAttributes) {
   EXPECT_TRUE([ax_node accessibilityIsAttributeSettable:
                            NSAccessibilitySelectedTextRangeAttribute]);
 
+  // Check whether it's possible to change text in a selection when read-only.
+  textfield->SetReadOnly(true);
+  EXPECT_FALSE([ax_node
+      accessibilityIsAttributeSettable:NSAccessibilitySelectedTextAttribute]);
+  textfield->SetReadOnly(false);
+  EXPECT_TRUE([ax_node
+      accessibilityIsAttributeSettable:NSAccessibilitySelectedTextAttribute]);
   // Change the selection to a valid range within the text.
   [ax_node accessibilitySetValue:[NSValue valueWithRange:NSMakeRange(2, 5)]
                     forAttribute:NSAccessibilitySelectedTextRangeAttribute];

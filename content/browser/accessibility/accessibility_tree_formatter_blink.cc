@@ -10,9 +10,11 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "content/browser/accessibility/accessibility_tree_formatter_blink.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
+#include "ui/accessibility/ax_enums.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/transform.h"
 
@@ -43,6 +45,24 @@ BrowserAccessibility* AccessibilityTreeFormatterBlink::GetChild(
     return node.PlatformGetChild(i);
   else
     return node.InternalGetChild(i);
+}
+
+// TODO(aleventhal) Convert ax enums to friendly strings, e.g. AXCheckedState.
+std::string AccessibilityTreeFormatterBlink::IntAttrToString(
+    const BrowserAccessibility& node,
+    ui::AXIntAttribute attr,
+    int value) const {
+  if (ui::IsNodeIdIntAttribute(attr)) {
+    // Relation
+    BrowserAccessibility* target = node.manager()->GetFromID(value);
+    return target ? ui::ToString(target->GetData().role) : std::string("null");
+  }
+
+  if (attr == ui::AX_ATTR_RESTRICTION)
+    return ui::ToString(static_cast<ui::AXRestriction>(value));
+
+  // Just return the number
+  return std::to_string(value);
 }
 
 void AccessibilityTreeFormatterBlink::AddProperties(
@@ -91,17 +111,7 @@ void AccessibilityTreeFormatterBlink::AddProperties(
     auto attr = static_cast<ui::AXIntAttribute>(attr_index);
     if (node.HasIntAttribute(attr)) {
       int value = node.GetIntAttribute(attr);
-      if (ui::IsNodeIdIntAttribute(attr)) {
-        BrowserAccessibility* target = node.manager()->GetFromID(value);
-        if (target) {
-          dict->SetString(ui::ToString(attr),
-                          ui::ToString(target->GetData().role));
-        } else {
-          dict->SetString(ui::ToString(attr), "null");
-        }
-      } else {
-        dict->SetInteger(ui::ToString(attr), value);
-      }
+      dict->SetString(ui::ToString(attr), IntAttrToString(node, attr, value));
     }
   }
 
@@ -231,27 +241,13 @@ base::string16 AccessibilityTreeFormatterBlink::ToString(
        attr_index <= ui::AX_INT_ATTRIBUTE_LAST;
        ++attr_index) {
     auto attr = static_cast<ui::AXIntAttribute>(attr_index);
-    if (ui::IsNodeIdIntAttribute(attr)) {
-      std::string string_value;
-      if (!dict.GetString(ui::ToString(attr), &string_value))
-        continue;
-      WriteAttribute(false,
-                     base::StringPrintf(
-                         "%s=%s",
-                         ui::ToString(attr).c_str(),
-                         string_value.c_str()),
-                     &line);
-    } else {
-      int int_value;
-      if (!dict.GetInteger(ui::ToString(attr), &int_value))
-        continue;
-      WriteAttribute(false,
-                     base::StringPrintf(
-                         "%s=%d",
-                         ui::ToString(attr).c_str(),
-                         int_value),
-                     &line);
-    }
+    std::string string_value;
+    if (!dict.GetString(ui::ToString(attr), &string_value))
+      continue;
+    WriteAttribute(false,
+                   base::StringPrintf("%s=%s", ui::ToString(attr).c_str(),
+                                      string_value.c_str()),
+                   &line);
   }
 
   for (int attr_index = ui::AX_BOOL_ATTRIBUTE_NONE;

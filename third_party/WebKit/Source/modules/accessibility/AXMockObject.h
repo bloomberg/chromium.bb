@@ -44,7 +44,7 @@ class MODULES_EXPORT AXMockObject : public AXObject {
 
   // AXObject overrides.
   AXObject* ComputeParent() const override { return parent_; }
-  bool IsEnabled() const override { return true; }
+  AXRestriction Restriction() const override { return kNone; }
 
  private:
   bool IsMockObject() const final { return true; }

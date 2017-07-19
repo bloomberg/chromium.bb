@@ -46,6 +46,9 @@ class AXARIAGridRow final : public AXTableRow {
   ~AXARIAGridRow() override;
 
   void HeaderObjectsForRow(AXObjectVector&) override;
+  bool CanSetSelectedAttribute() const final {
+    return Restriction() != kDisabled;
+  }
 
  private:
   bool IsARIATreeGridRow() const override;

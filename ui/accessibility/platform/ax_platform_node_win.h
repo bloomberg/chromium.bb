@@ -605,7 +605,7 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
  private:
   int MSAAEvent(ui::AXEvent event);
   bool IsWebAreaForPresentationalIframe();
-  bool ShouldNodeHaveReadonlyState(const AXNodeData& data) const;
+  bool ShouldNodeHaveReadonlyStateByDefault(const AXNodeData& data) const;
   bool ShouldNodeHaveFocusableState(const AXNodeData& data) const;
 
   HRESULT GetStringAttributeAsBstr(

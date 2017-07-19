@@ -56,6 +56,7 @@ class MODULES_EXPORT AXTableColumn final : public AXMockObject {
 
   void SetColumnIndex(int column_index) { column_index_ = column_index; }
   int ColumnIndex() const { return column_index_; }
+  virtual bool CanSetSelectedAttribute() const { return false; }
 
   void AddChildren() override;
   void SetParent(AXObject*) override;

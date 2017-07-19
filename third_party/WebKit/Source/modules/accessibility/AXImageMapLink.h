@@ -53,7 +53,6 @@ class AXImageMapLink final : public AXNodeObject {
   HTMLMapElement* MapElement() const;
 
   AccessibilityRole RoleValue() const override;
-  bool IsEnabled() const override { return true; }
   bool ComputeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 
   Element* AnchorElement() const override;

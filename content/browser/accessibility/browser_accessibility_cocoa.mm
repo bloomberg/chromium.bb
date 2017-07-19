@@ -971,8 +971,9 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 - (NSNumber*)enabled {
   if (![self instanceActive])
     return nil;
-  return [NSNumber numberWithBool:
-      !GetState(browserAccessibility_, ui::AX_STATE_DISABLED)];
+  return [NSNumber numberWithBool:browserAccessibility_->GetIntAttribute(
+                                      ui::AX_ATTR_RESTRICTION) !=
+                                  ui::AX_RESTRICTION_DISABLED];
 }
 
 // Returns a text marker that points to the last character in the document that

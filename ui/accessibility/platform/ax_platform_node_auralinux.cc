@@ -470,16 +470,16 @@ void AXPlatformNodeAuraLinux::GetAtkState(AtkStateSet* atk_state_set) {
     atk_state_set_add_state(atk_state_set, ATK_STATE_DEFAULT);
   if (data.HasState(ui::AX_STATE_EDITABLE))
     atk_state_set_add_state(atk_state_set, ATK_STATE_EDITABLE);
-  if (!data.HasState(ui::AX_STATE_DISABLED))
-    atk_state_set_add_state(atk_state_set, ATK_STATE_ENABLED);
   if (data.HasState(ui::AX_STATE_EXPANDED))
     atk_state_set_add_state(atk_state_set, ATK_STATE_EXPANDED);
   if (data.HasState(ui::AX_STATE_FOCUSABLE))
     atk_state_set_add_state(atk_state_set, ATK_STATE_FOCUSABLE);
-  if (data.HasState(ui::AX_STATE_SELECTABLE))
-    atk_state_set_add_state(atk_state_set, ATK_STATE_SELECTABLE);
+  if (data.HasState(ui::AX_STATE_HASPOPUP))
+    atk_state_set_add_state(atk_state_set, ATK_STATE_HAS_POPUP);
   if (data.HasState(ui::AX_STATE_SELECTED))
     atk_state_set_add_state(atk_state_set, ATK_STATE_SELECTED);
+  if (data.HasState(ui::AX_STATE_SELECTABLE))
+    atk_state_set_add_state(atk_state_set, ATK_STATE_SELECTABLE);
 
   // Checked state
   const auto checked_state = static_cast<ui::AXCheckedState>(
@@ -495,6 +495,18 @@ void AXPlatformNodeAuraLinux::GetAtkState(AtkStateSet* atk_state_set) {
                                   : ATK_STATE_CHECKED);
       break;
     default:
+      break;
+  }
+
+  switch (GetIntAttribute(ui::AX_ATTR_RESTRICTION)) {
+    case ui::AX_RESTRICTION_NONE:
+      atk_state_set_add_state(atk_state_set, ATK_STATE_ENABLED);
+      break;
+    case ui::AX_RESTRICTION_READ_ONLY:
+      // The following would require ATK 2.16 or later, which many
+      // systems do not have. Since we aren't officially supporting ATK
+      // it's best to leave this out rather than break people's builds:
+      // atk_state_set_add_state(atk_state_set, ATK_STATE_READ_ONLY);
       break;
   }
 

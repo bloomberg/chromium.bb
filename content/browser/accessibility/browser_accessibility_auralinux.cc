@@ -561,8 +561,24 @@ static AtkStateSet* browser_accessibility_ref_state_set(AtkObject* atk_object) {
     atk_state_set_add_state(state_set, ATK_STATE_FOCUSABLE);
   if (obj->manager()->GetFocus() == obj)
     atk_state_set_add_state(state_set, ATK_STATE_FOCUSED);
-  if (!(state & (1 << ui::AX_STATE_DISABLED)))
-    atk_state_set_add_state(state_set, ATK_STATE_ENABLED);
+
+  switch (obj->GetIntAttribute(ui::AX_ATTR_RESTRICTION)) {
+    case ui::AX_RESTRICTION_DISABLED:
+      break;
+    case ui::AX_RESTRICTION_READ_ONLY:
+// The following would require ATK 2.16 or later, which many
+// systems do not have. Since we aren't officially supporting ATK
+// it's best to leave this out rather than break people's builds:
+#if defined(ATK_CHECK_VERSION)
+#if ATK_CHECK_VERSION(2, 16, 0)
+      atk_state_set_add_state(atk_state_set, ATK_STATE_READ_ONLY);
+#endif
+#endif
+      break;
+    default:
+      atk_state_set_add_state(state_set, ATK_STATE_ENABLED);
+      break;
+  }
 
   return state_set;
 }
