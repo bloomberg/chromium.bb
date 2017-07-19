@@ -938,6 +938,57 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
 }
 
 namespace {
+void NavigateToDataURLAndCheckForTerminationDisabler(
+    Shell* shell,
+    const std::string& html,
+    bool expect_onunload,
+    bool expect_onbeforeunload) {
+  NavigateToURL(shell, GURL("data:text/html," + html));
+  RenderFrameHostImpl* rfh =
+      static_cast<RenderFrameHostImpl*>(shell->web_contents()->GetMainFrame());
+  EXPECT_EQ(expect_onunload,
+            rfh->GetSuddenTerminationDisablerState(blink::kUnloadHandler));
+  EXPECT_EQ(expect_onbeforeunload, rfh->GetSuddenTerminationDisablerState(
+                                       blink::kBeforeUnloadHandler));
+}
+}  // namespace
+
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       SuddenTerminationDisablerNone) {
+  const std::string NO_HANDLERS_HTML = "<html><body>foo</body></html>";
+  NavigateToDataURLAndCheckForTerminationDisabler(shell(), NO_HANDLERS_HTML,
+                                                  false, false);
+}
+
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       SuddenTerminationDisablerOnUnload) {
+  const std::string UNLOAD_HTML =
+      "<html><body><script>window.onunload=function(e) {}</script>"
+      "</body></html>";
+  NavigateToDataURLAndCheckForTerminationDisabler(shell(), UNLOAD_HTML, true,
+                                                  false);
+}
+
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       SuddenTerminationDisablerOnBeforeUnload) {
+  const std::string BEFORE_UNLOAD_HTML =
+      "<html><body><script>window.onbeforeunload=function(e) {}</script>"
+      "</body></html>";
+  NavigateToDataURLAndCheckForTerminationDisabler(shell(), BEFORE_UNLOAD_HTML,
+                                                  false, true);
+}
+
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       SuddenTerminationDisablerOnUnloadAndBeforeUnload) {
+  const std::string UNLOAD_AND_BEFORE_UNLOAD_HTML =
+      "<html><body><script>window.onunload=function(e) {};"
+      "window.onbeforeunload=function(e) {}</script>"
+      "</body></html>";
+  NavigateToDataURLAndCheckForTerminationDisabler(
+      shell(), UNLOAD_AND_BEFORE_UNLOAD_HTML, true, true);
+}
+
+namespace {
 
 class TestJavaScriptDialogManager : public JavaScriptDialogManager,
                                     public WebContentsDelegate {

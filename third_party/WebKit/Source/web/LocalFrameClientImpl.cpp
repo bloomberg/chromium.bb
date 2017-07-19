@@ -989,11 +989,9 @@ unsigned LocalFrameClientImpl::BackForwardLength() {
 
 void LocalFrameClientImpl::SuddenTerminationDisablerChanged(
     bool present,
-    SuddenTerminationDisablerType type) {
+    WebSuddenTerminationDisablerType type) {
   if (web_frame_->Client()) {
-    web_frame_->Client()->SuddenTerminationDisablerChanged(
-        present,
-        static_cast<WebFrameClient::SuddenTerminationDisablerType>(type));
+    web_frame_->Client()->SuddenTerminationDisablerChanged(present, type);
   }
 }
 

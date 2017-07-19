@@ -81,6 +81,7 @@ include_rules = [
   "+third_party/WebKit/public/platform/WebReferrerPolicy.h",
   "+third_party/WebKit/public/platform/WebScreenInfo.h",
   "+third_party/WebKit/public/platform/WebSecurityStyle.h",
+  "+third_party/WebKit/public/platform/WebSuddenTerminationDisablerType.h",
   "+third_party/WebKit/public/platform/WebTouchEvent.h",
   "+third_party/WebKit/public/platform/WebTextInputType.h",
   "+third_party/WebKit/public/platform/mac/WebScrollbarTheme.h",
