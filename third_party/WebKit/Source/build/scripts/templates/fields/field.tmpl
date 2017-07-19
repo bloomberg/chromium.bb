@@ -91,7 +91,7 @@ const {{field.type_name}}&
     {{boolean_and()}}{{subgroup.member_name}} == o.{{subgroup.member_name}}
   {# Otherwise, we would have to recursively generate comparison operations
      on fields in the subgroup. #}
-  {% elif subgroup.fields|rejectattr("custom_compare")|select("in", fields_to_compare)|list|length > 0 -%}
+  {% elif subgroup.all_fields|rejectattr("custom_compare")|select("in", fields_to_compare)|list|length > 0 -%}
     {{fieldwise_compare(subgroup, fields_to_compare, boolean_and)}}
   {% endif %}
 {% endfor %}
@@ -104,7 +104,7 @@ const {{field.type_name}}&
 {% for subgroup in group.subgroups %}
   {% if subgroup.all_fields|rejectattr("custom_copy")|reject("in", fields_to_copy)|list|length == 0 -%}
     {{subgroup.member_name}} = other.{{subgroup.member_name}};
-  {% elif subgroup.fields|rejectattr("custom_copy")|select("in", fields_to_copy)|list|length > 0 -%}
+  {% elif subgroup.all_fields|rejectattr("custom_copy")|select("in", fields_to_copy)|list|length > 0 -%}
     {{fieldwise_copy(subgroup, fields_to_copy)}}
   {% endif %}
 {% endfor %}
@@ -122,7 +122,7 @@ const {{field.type_name}}&
     {{boolean_and()}}{{subgroup.member_name}}.Get() == o.{{subgroup.member_name}}.Get()
   {# Otherwise, we would have to recursively generate comparison operations
      on fields in the subgroup. #}
-  {% elif subgroup.fields|selectattr("is_inherited")|list|length > 0 -%}
+  {% elif subgroup.all_fields|selectattr("is_inherited")|list|length > 0 -%}
     {{fieldwise_pointer_compare_inherited(fields_to_compare, boolean_and)}}
   {% endif %}
 {% endfor %}
