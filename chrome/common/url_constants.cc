@@ -627,6 +627,8 @@ const char kLearnMoreEnterpriseURL[] =
     "https://support.google.com/chromebook/?p=managed";
 const char kAndroidAppsLearnMoreURL[] =
     "https://support.google.com/chromebook/?p=playapps";
+const char kInstantTetheringLearnMoreURL[] =
+    "https://support.google.com/pixelphone/answer/2812516";
 #endif
 
 const char kRemoveNonCWSExtensionURL[] =

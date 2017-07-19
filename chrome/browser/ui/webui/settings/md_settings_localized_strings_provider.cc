@@ -1088,6 +1088,11 @@ void AddInternetStrings(content::WebUIDataSource* html_source) {
   html_source->AddBoolean("networkSettingsConfig",
                           base::CommandLine::ForCurrentProcess()->HasSwitch(
                               chromeos::switches::kNetworkSettingsConfig));
+  html_source->AddString(
+      "internetNoNetworksMobileData",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_INTERNET_NO_NETWORKS_MOBILE_DATA,
+          base::ASCIIToUTF16(chrome::kInstantTetheringLearnMoreURL)));
 }
 #endif
 

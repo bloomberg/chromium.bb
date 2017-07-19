@@ -518,8 +518,11 @@ extern const char kNaturalScrollHelpURL[];
 // The URL for the Learn More page about enterprise enrolled devices.
 extern const char kLearnMoreEnterpriseURL[];
 
-// The URL fo the "learn more" link for Google Play Store (ARC) settings.
+// The URL for the "learn more" link for Google Play Store (ARC) settings.
 extern const char kAndroidAppsLearnMoreURL[];
+
+// The URL for the "learn more" link for Instant Tethering.
+extern const char kInstantTetheringLearnMoreURL[];
 #endif
 
 // The URL for the Learn More link of the non-CWS bubble.
