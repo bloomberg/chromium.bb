@@ -51,6 +51,7 @@ namespace blink {
 class BlobDataHandle;
 class Transferables;
 class ExceptionState;
+class SharedBuffer;
 class StaticBitmapImage;
 class UnpackedSerializedScriptValue;
 class WebBlobInfo;
@@ -135,6 +136,7 @@ class CORE_EXPORT SerializedScriptValue
 
   static PassRefPtr<SerializedScriptValue> Create();
   static PassRefPtr<SerializedScriptValue> Create(const String&);
+  static PassRefPtr<SerializedScriptValue> Create(RefPtr<const SharedBuffer>);
   static PassRefPtr<SerializedScriptValue> Create(const char* data,
                                                   size_t length);
 
