@@ -362,7 +362,7 @@ std::unique_ptr<FileNetLogObserver> FileNetLogObserver::CreateUnbounded(
 FileNetLogObserver::~FileNetLogObserver() {
   if (net_log()) {
     // StopObserving was not called.
-    net_log()->DeprecatedRemoveObserver(this);
+    net_log()->RemoveObserver(this);
     file_task_runner_->PostTask(
         FROM_HERE, base::Bind(&FileNetLogObserver::FileWriter::DeleteAllFiles,
                               base::Unretained(file_writer_.get())));
@@ -372,12 +372,12 @@ FileNetLogObserver::~FileNetLogObserver() {
 
 void FileNetLogObserver::StartObserving(NetLog* net_log,
                                         NetLogCaptureMode capture_mode) {
-  net_log->DeprecatedAddObserver(this, capture_mode);
+  net_log->AddObserver(this, capture_mode);
 }
 
 void FileNetLogObserver::StopObserving(std::unique_ptr<base::Value> polled_data,
                                        base::OnceClosure optional_callback) {
-  net_log()->DeprecatedRemoveObserver(this);
+  net_log()->RemoveObserver(this);
 
   base::OnceClosure bound_flush_then_stop =
       base::Bind(&FileNetLogObserver::FileWriter::FlushThenStop,

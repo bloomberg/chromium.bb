@@ -167,7 +167,7 @@ void NetLogObserver::Attach(net::NetLog* net_log) {
   io_thread_checker_.Get().reset(new base::ThreadChecker());
   if (net_log) {
     instance_ = new NetLogObserver();
-    net_log->DeprecatedAddObserver(
+    net_log->AddObserver(
         instance_, net::NetLogCaptureMode::IncludeCookiesAndCredentials());
   }
 }
@@ -179,7 +179,7 @@ void NetLogObserver::Detach() {
   if (instance_) {
     // Safest not to do this in the destructor to maintain thread safety across
     // refactorings.
-    instance_->net_log()->DeprecatedRemoveObserver(instance_);
+    instance_->net_log()->RemoveObserver(instance_);
     delete instance_;
     instance_ = NULL;
   }

@@ -45,12 +45,12 @@ void VlogNetLog::Observer::OnAddEntry(const net::NetLogEntry& entry) {
 
 VlogNetLog::VlogNetLog()
     : observer_(new Observer()) {
-  DeprecatedAddObserver(observer_.get(),
-                        net::NetLogCaptureMode::IncludeCookiesAndCredentials());
+  AddObserver(observer_.get(),
+              net::NetLogCaptureMode::IncludeCookiesAndCredentials());
 }
 
 VlogNetLog::~VlogNetLog() {
-  DeprecatedRemoveObserver(observer_.get());
+  RemoveObserver(observer_.get());
 }
 
 }  // namespace remoting
