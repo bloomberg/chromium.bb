@@ -439,6 +439,7 @@
   </message>
   <message name="IDS_MD_BOOKMARK_MANAGER_TOAST_ITEMS_DELETED" desc="Label displayed in toast popup message when two or more items are deleted.">
     {COUNT, plural,
+      =1 {1 bookmark deleted}
       other {# bookmarks deleted}}
   </message>
   <message name="IDS_MD_BOOKMARK_MANAGER_TOAST_URL_COPIED" desc="Label displayed in toast popup message when a URL is copied.">
@@ -449,6 +450,7 @@
   </message>
   <message name="IDS_MD_BOOKMARK_MANAGER_TOAST_ITEMS_COPIED" desc="Label displayed in a toast popup message when two or more bookmark items are copied">
     {COUNT, plural,
+      =1 {1 item copied}
       other {# items copied}}
   </message>
   <!-- End of material design Bookmarks Manager strings. -->
