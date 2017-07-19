@@ -131,14 +131,13 @@ const CSSValue* ParseLonghandViaAPI(CSSPropertyID unresolved_property,
                                     CSSParserTokenRange&,
                                     bool& needs_legacy_parsing);
 
-// ConsumeShorthandVia2LonghandAPIs, ConsumeShorthandVia4LonghandAPIs and
-// ConsumeShorthandGreedilyViaLonghandAPIs are based on CSSPropertyParsers'
-// Consume2Values, Consume4Values and ConsumeShorthandGreedily.
+// ConsumeShorthandVia2LonghandAPIs and ConsumeShorthandGreedilyViaLonghandAPIs
+// are based on CSSPropertyParsers' Consume2Values and ConsumeShorthandGreedily.
 // They all delegate parsing of a shorthand property to its respective longhand
 // components. The difference is the functions in this Helpers file expect
 // component longhands to have API implementations already because each
 // shorthand will call its component longhand APIs' parseShorthand method.
-// Consume4Values and ConsumeShorthandGreedily will be removed soon, when
+// Consume2Values and ConsumeShorthandGreedily will be removed soon, when
 // shorthand properties are ribbonised (i.e. have their own APIs). Until then,
 // there is a slight code duplication between the two versions for the following
 // reasons:
