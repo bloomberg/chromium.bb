@@ -138,10 +138,13 @@ The main labels that apply to bugs include:
 
 | Label | Description |
 | --- | --- |
-| Performance-Browser | Bugs that affect performance. |
+| Hotlist-OmniboxFocus | Bugs about focus, including not having focus when it should, focussing on the wrong end of the URL, etc. (Note: label does not appear in the Hotlist completion dropdown.) |
+| Hotlist-OmniboxKeyboardShortcuts | Bugs related to handling of keyboard shortcuts, including both incorrectly handling real omnibox shortcuts and preventing other Chrome shortcuts from working when focus is in the omnibox. (Note: label does not appear in the Hotlist completion dropdown.) |
+| Hotlist-OmniboxRanking | Bugs related to which suggestions are considered matches against the input and how relevance scores are assigned. (Note: label does not appear in the Hotlist completion dropdown.) |
 | Hotlist-CodeHealth | Bugs about the making the code base easy to work with such as quality of comments.  Refactoring efforts can also be included when for that purpose. |
 | Hotlist-Polish | Bugs about how a feature looks and feels: not whether the feature works or not; instead, more of whether it appears the feature was created with attention to detail.  Often user-visible edge cases fit in this category. |
 | Hotlist-Refactoring | Bugs related to restructuring existing code without changing its behavior. |
+| Performance-Browser | Bugs that affect performance. |
 
 The components that additionally apply to bugs include:
 
