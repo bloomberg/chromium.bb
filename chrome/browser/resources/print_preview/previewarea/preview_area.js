@@ -56,14 +56,11 @@ cr.define('print_preview', function() {
    *     currently selected destination.
    * @param {!print_preview.PrintTicketStore} printTicketStore Used to get
    *     information about how the preview should be displayed.
-   * @param {!print_preview.NativeLayer} nativeLayer Needed to communicate with
-   *     Chromium's preview generation system.
    * @param {!print_preview.DocumentInfo} documentInfo Document data model.
    * @constructor
    * @extends {print_preview.Component}
    */
-  function PreviewArea(
-      destinationStore, printTicketStore, nativeLayer, documentInfo) {
+  function PreviewArea(destinationStore, printTicketStore, documentInfo) {
     print_preview.Component.call(this);
     // TODO(rltoscano): Understand the dependencies of printTicketStore needed
     // here, and add only those here (not the entire print ticket store).
@@ -87,7 +84,7 @@ cr.define('print_preview', function() {
      * @type {!print_preview.NativeLayer}
      * @private
      */
-    this.nativeLayer_ = nativeLayer;
+    this.nativeLayer_ = print_preview.NativeLayer.getInstance();
 
     /**
      * Document data model.

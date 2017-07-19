@@ -125,10 +125,11 @@ TEST_F('PrintPreviewDestinationSearchTest', 'Select', function() {
 
     setup(function() {
       nativeLayer_ = new print_preview.NativeLayerStub();
+      print_preview.NativeLayer.setInstance(nativeLayer_);
       invitationStore_ = new print_preview.InvitationStore();
       destinationStore_ = new print_preview.DestinationStore(
-          nativeLayer_, new print_preview.UserInfo(),
-          new print_preview.AppState(), new WebUIListenerTracker());
+          new print_preview.UserInfo(), new print_preview.AppState(),
+          new WebUIListenerTracker());
       userInfo_ = new print_preview.UserInfo();
 
       destinationSearch_ = new print_preview.DestinationSearch(
