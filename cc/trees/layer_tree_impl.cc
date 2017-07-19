@@ -1646,16 +1646,28 @@ void LayerTreeImpl::RegisterScrollbar(ScrollbarLayerImplBase* scrollbar_layer) {
   if (!scroll_element_id)
     return;
 
-  auto& scrollbar_ids = element_id_to_scrollbar_layer_ids_[scroll_element_id];
-  if (scrollbar_layer->orientation() == HORIZONTAL) {
-    DCHECK_EQ(scrollbar_ids.horizontal, Layer::INVALID_ID)
-        << "Existing scrollbar should have been unregistered.";
-    scrollbar_ids.horizontal = scrollbar_layer->id();
-  } else {
-    DCHECK_EQ(scrollbar_ids.vertical, Layer::INVALID_ID)
-        << "Existing scrollbar should have been unregistered.";
-    scrollbar_ids.vertical = scrollbar_layer->id();
+  auto* scrollbar_ids = &element_id_to_scrollbar_layer_ids_[scroll_element_id];
+  int* scrollbar_layer_id = scrollbar_layer->orientation() == HORIZONTAL
+                                ? &scrollbar_ids->horizontal
+                                : &scrollbar_ids->vertical;
+
+  // We used to DCHECK this was not the case but this can occur on Android: as
+  // the visual viewport supplies scrollbars for the outer viewport, if the
+  // outer viewport is changed, we race between updating the visual viewport
+  // scrollbars and registering new scrollbars on the old outer viewport. It'd
+  // be nice if we could fix this to be cleaner but its harmless to just
+  // unregister here.
+  if (*scrollbar_layer_id != Layer::INVALID_ID) {
+    UnregisterScrollbar(scrollbar_layer);
+
+    // The scrollbar_ids could have been erased above so get it again.
+    scrollbar_ids = &element_id_to_scrollbar_layer_ids_[scroll_element_id];
+    scrollbar_layer_id = scrollbar_layer->orientation() == HORIZONTAL
+                             ? &scrollbar_ids->horizontal
+                             : &scrollbar_ids->vertical;
   }
+
+  *scrollbar_layer_id = scrollbar_layer->id();
 
   if (IsActiveTree() && scrollbar_layer->is_overlay_scrollbar() &&
       scrollbar_layer->GetScrollbarAnimator() !=
