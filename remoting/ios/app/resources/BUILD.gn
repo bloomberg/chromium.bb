@@ -30,11 +30,7 @@ group("assets") {
     "//third_party/material_design_icons:ic_fullscreen",
     "//third_party/material_design_icons:ic_fullscreen_exit",
     "//third_party/material_design_icons:ic_mouse",
-
-    # Note: this imageset is incorrect (miss the Contents.json file) but it
-    # appears to be unused, so for the moment keep it commented out. See
-    # https://github.com/google/material-design-icons/issues/630 for progress.
-    # "//third_party/material_design_icons:ic_touch_app",
+    "//third_party/material_design_icons:ic_touch_app",
   ]
 }
 

@@ -23,6 +23,7 @@ _image_sets = [
   "action/ic_report_problem",
   "action/ic_search",
   "action/ic_settings_white",
+  "action/ic_touch_app",
   "communication/ic_comment",
   "communication/ic_email",
   "communication/ic_message",
@@ -53,11 +54,6 @@ _image_sets = [
   "toggle/ic_check_box_white",
   "toggle/ic_radio_button_checked_white",
   "toggle/ic_radio_button_unchecked_white",
-
-  # Note: this imageset is incorrect (miss the Contents.json file) but it
-  # appears to be unused, so for the moment keep it commented out. See
-  # https://github.com/google/material-design-icons/issues/630 for progress.
-  # "action/ic_touch_app",
 ]
 
 # Define all the imagesets using the description from _image_sets variable.
