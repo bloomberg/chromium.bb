@@ -1533,6 +1533,11 @@ crbug.com/353746 virtual/android/fullscreen/video-specified-size.html [ Failure 
 
 crbug.com/527270 accessibility/name-calc-img.html [ Failure Pass Timeout ]
 
+crbug.com/746578 fast/css/transformed-mask.html [ NeedsManualRebaseline ]
+crbug.com/746578 fast/reflections/reflection-masks-opacity.html [ NeedsManualRebaseline ]
+crbug.com/746578 fast/reflections/reflection-masks.html [ NeedsManualRebaseline ]
+crbug.com/746578 svg/filters/feImage-preserveAspectratio.svg [ NeedsManualRebaseline ]
+
 # Win7 does not support the needed DirectWrite APIs for font fallback
 crbug.com/459056 [ Win7 ] fast/text/font-fallback-win.html [ Failure ]
 
