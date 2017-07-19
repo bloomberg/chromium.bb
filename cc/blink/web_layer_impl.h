@@ -129,6 +129,8 @@ class CC_BLINK_EXPORT WebLayerImpl : public NON_EXPORTED_BASE(blink::WebLayer) {
   uint32_t CompositorMutableProperties() const override;
   void SetHasWillChangeTransformHint(bool has_will_change) override;
   void ShowScrollbars() override;
+  void SetScrollBoundaryBehavior(
+      const blink::WebScrollBoundaryBehavior&) override;
 
   void SetScrollParent(blink::WebLayer* parent) override;
   void SetClipParent(blink::WebLayer* parent) override;

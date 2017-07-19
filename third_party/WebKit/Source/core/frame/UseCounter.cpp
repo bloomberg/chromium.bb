@@ -46,7 +46,7 @@ int totalPagesMeasuredCSSSampleId() {
 }
 
 // Make sure update_use_counter_css.py was run which updates histograms.xml.
-constexpr int kMaximumCSSSampleId = 584;
+constexpr int kMaximumCSSSampleId = 587;
 
 }  // namespace
 
@@ -1128,6 +1128,12 @@ int UseCounter::MapCSSPropertyIdToCSSSampleIdForHistogram(
       return 583;
     case CSSPropertyScrollSnapStop:
       return 584;
+    case CSSPropertyScrollBoundaryBehavior:
+      return 585;
+    case CSSPropertyScrollBoundaryBehaviorX:
+      return 586;
+    case CSSPropertyScrollBoundaryBehaviorY:
+      return 587;
     // 1. Add new features above this line (don't change the assigned numbers of
     // the existing items).
     // 2. Update kMaximumCSSSampleId with the new maximum value.

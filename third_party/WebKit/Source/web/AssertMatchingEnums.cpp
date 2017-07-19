@@ -91,6 +91,7 @@
 #include "public/platform/WebMouseWheelEvent.h"
 #include "public/platform/WebPageVisibilityState.h"
 #include "public/platform/WebReferrerPolicy.h"
+#include "public/platform/WebScrollBoundaryBehavior.h"
 #include "public/platform/WebScrollbar.h"
 #include "public/platform/WebScrollbarBehavior.h"
 #include "public/platform/WebSelectionBound.h"
@@ -458,6 +459,14 @@ STATIC_ASSERT_ENUM(
     AutoplayPolicy::Type::kUserGestureRequiredForCrossOrigin);
 STATIC_ASSERT_ENUM(WebSettings::AutoplayPolicy::kDocumentUserActivationRequired,
                    AutoplayPolicy::Type::kDocumentUserActivationRequired);
+
+STATIC_ASSERT_ENUM(WebScrollBoundaryBehavior::kScrollBoundaryBehaviorTypeAuto,
+                   EScrollBoundaryBehavior::kAuto);
+STATIC_ASSERT_ENUM(
+    WebScrollBoundaryBehavior::kScrollBoundaryBehaviorTypeContain,
+    EScrollBoundaryBehavior::kContain);
+STATIC_ASSERT_ENUM(WebScrollBoundaryBehavior::kScrollBoundaryBehaviorTypeNone,
+                   EScrollBoundaryBehavior::kNone);
 
 // This ensures that the version number published in
 // WebSerializedScriptValueVersion.h matches the serializer's understanding.

@@ -6,6 +6,7 @@
 
 #include <memory>
 #include "core/dom/DOMNodeIds.h"
+#include "core/dom/NodeComputedStyle.h"
 #include "core/events/GestureEvent.h"
 #include "core/frame/BrowserControls.h"
 #include "core/frame/LocalFrameView.h"
@@ -84,6 +85,23 @@ AutoscrollController* ScrollManager::GetAutoscrollController() const {
   return nullptr;
 }
 
+static bool CanPropagate(const ScrollState& scroll_state,
+                         const Element& element) {
+  // ScrollBoundaryBehavior may have different values on x-axis and y-axis.
+  // We need to find out the dominant axis of user's intended scroll to decide
+  // which node's ScrollBoundaryBehavior should be applied, i.e. which the
+  // scroll should be propagated from this node given its relevant*
+  // ScrollBoundaryBehavior value. * relevant here depends on the dominant
+  // axis of scroll gesture.
+  bool x_dominant =
+      std::abs(scroll_state.deltaXHint()) > std::abs(scroll_state.deltaYHint());
+  return (x_dominant && element.GetComputedStyle()->ScrollBoundaryBehaviorX() ==
+                            EScrollBoundaryBehavior::kAuto) ||
+         (!x_dominant &&
+          element.GetComputedStyle()->ScrollBoundaryBehaviorY() ==
+              EScrollBoundaryBehavior::kAuto);
+}
+
 void ScrollManager::RecomputeScrollChain(const Node& start_node,
                                          const ScrollState& scroll_state,
                                          std::deque<int>& scroll_chain) {
@@ -116,6 +134,9 @@ void ScrollManager::RecomputeScrollChain(const Node& start_node,
         scroll_chain.push_front(DOMNodeIds::IdForNode(cur_element));
       if (IsViewportScrollingElement(*cur_element) ||
           cur_element == document_element)
+        break;
+
+      if (!CanPropagate(scroll_state, *cur_element))
         break;
     }
 

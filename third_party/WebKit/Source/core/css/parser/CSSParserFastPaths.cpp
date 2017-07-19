@@ -864,6 +864,12 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
     case CSSPropertyScrollSnapStop:
       DCHECK(RuntimeEnabledFeatures::CSSScrollSnapPointsEnabled());
       return value_id == CSSValueNormal || value_id == CSSValueAlways;
+    case CSSPropertyScrollBoundaryBehaviorX:
+      return value_id == CSSValueAuto || value_id == CSSValueContain ||
+             value_id == CSSValueNone;
+    case CSSPropertyScrollBoundaryBehaviorY:
+      return value_id == CSSValueAuto || value_id == CSSValueContain ||
+             value_id == CSSValueNone;
     default:
       NOTREACHED();
       return false;
@@ -917,6 +923,8 @@ bool CSSParserFastPaths::IsKeywordPropertyID(CSSPropertyID property_id) {
     case CSSPropertyPosition:
     case CSSPropertyResize:
     case CSSPropertyScrollBehavior:
+    case CSSPropertyScrollBoundaryBehaviorX:
+    case CSSPropertyScrollBoundaryBehaviorY:
     case CSSPropertyShapeRendering:
     case CSSPropertySpeak:
     case CSSPropertyStrokeLinecap:

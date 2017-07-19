@@ -2109,6 +2109,22 @@
       default_generated_functions: ["getter", "setter"],
     },
     {
+      name: "scroll-boundary-behavior-x",
+      default_value: "auto",
+      field_template: "keyword",
+      keywords: ["auto", "contain", "none"],
+      type_name: "EScrollBoundaryBehavior",
+      runtime_flag: "CSSScrollBoundaryBehavior",
+    },
+    {
+      name: "scroll-boundary-behavior-y",
+      default_value: "auto",
+      field_template: "keyword",
+      keywords: ["auto", "contain", "none"],
+      type_name: "EScrollBoundaryBehavior",
+      runtime_flag: "CSSScrollBoundaryBehavior",
+    },
+    {
       name: "scroll-snap-type",
       api_class: true,
       api_methods: ["parseSingleValue"],
@@ -3829,6 +3845,11 @@
       longhands: ["overflow-x", "overflow-y"],
       api_class: true,
       api_methods: ["parseShorthand"],
+    },
+    {
+      name: "scroll-boundary-behavior",
+      longhands: ["scroll-boundary-behavior-x", "scroll-boundary-behavior-y"],
+      runtime_flag: "CSSScrollBoundaryBehavior",
     },
     {
       name: "padding",
