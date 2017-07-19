@@ -117,6 +117,9 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
     private static VrShellDelegate sInstance;
     private static VrBroadcastReceiver sVrBroadcastReceiver;
     private static boolean sRegisteredDaydreamHook = false;
+
+    // TODO(crbug.com/746409): Remove this suppression after this lint error is fixed.
+    @SuppressWarnings("StaticFieldLeak")
     private static View sBlackOverlayView;
 
     private ChromeActivity mActivity;
