@@ -1,5 +1,4 @@
 Tests canceling an HTTP auth challenge via DevTools protocol.
-
 Test started
 Network agent enabled
 Request interception enabled

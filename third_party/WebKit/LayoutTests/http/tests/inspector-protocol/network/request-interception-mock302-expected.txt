@@ -1,6 +1,4 @@
-CONSOLE MESSAGE: line 1: Hello from final.js!
 Tests a mock 302 resource.
-
 Test started
 Network agent enabled
 Request interception enabled
@@ -13,4 +11,5 @@ Network.requestIntercepted ID 2 GET redirect1.pl type: Script
 mockResponse ID 2
 Network.responseReceived final.js 200 application/x-javascript
 Page.frameStoppedLoading
+Hello from final.js!
 

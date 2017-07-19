@@ -1,5 +1,4 @@
 Tests a mock 404 resource.
-
 Test started
 Network agent enabled
 Request interception enabled

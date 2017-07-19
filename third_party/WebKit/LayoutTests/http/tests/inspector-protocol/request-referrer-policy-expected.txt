@@ -1,5 +1,4 @@
 Tests that network requests are annotated with the correct referrer policy.
-
 Network agent enabled
 PASS: Request with expected policy unsafe-url observed
 PASS: Request with expected policy no-referrer-when-downgrade observed

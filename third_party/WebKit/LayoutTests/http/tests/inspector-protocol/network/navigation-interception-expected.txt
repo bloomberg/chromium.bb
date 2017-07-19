@@ -1,6 +1,4 @@
-CONSOLE MESSAGE: line 1: Hello from the mocked iframe.
 Tests a mocking of a navigation fetch.
-
 Test started
 Network agent enabled
 Request interception enabled
@@ -10,4 +8,5 @@ Network.requestIntercepted ID 1 GET redirect-iframe.html type: Document
 mockResponse ID 1
 Network.responseReceived redirect-iframe.html 200 text/html
 Page.frameStoppedLoading
+Hello from the mocked iframe.
 

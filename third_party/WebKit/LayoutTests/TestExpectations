@@ -2784,8 +2784,8 @@ crbug.com/709227 external/wpt/offscreen-canvas/fill-and-stroke-styles/2d.pattern
 
 # ====== Tests from enabling .any.js/.worker.js tests end here ========
 
-crbug.com/745345 http/tests/inspector-protocol/network/disable-interception-midway.html [ Failure Pass ]
-crbug.com/745345 virtual/mojo-loading/http/tests/inspector-protocol/network/disable-interception-midway.html [ Failure Pass ]
+crbug.com/745345 http/tests/inspector-protocol/network/disable-interception-midway.js [ Failure Pass ]
+crbug.com/745345 virtual/mojo-loading/http/tests/inspector-protocol/network/disable-interception-midway.js [ Failure Pass ]
 
 # ====== Begin of display: contents tests ======
 
