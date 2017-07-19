@@ -208,6 +208,9 @@ class OutOfProcessInstance : public pp::Instance,
   // Load the next available preview page into the blank page.
   void LoadAvailablePreviewPage();
 
+  // Called after a preview page has loaded or failed to load.
+  void LoadNextPreviewPage();
+
   // Bound the given scroll offset to the document.
   pp::FloatPoint BoundScrollOffsetToDocument(
       const pp::FloatPoint& scroll_offset);
@@ -331,9 +334,12 @@ class OutOfProcessInstance : public pp::Instance,
   std::vector<int> print_preview_page_numbers_;
 
   // Used to manage loaded print preview page information. A |PreviewPageInfo|
-  // consists of data source url string and the page index in the destination
+  // consists of data source URL string and the page index in the destination
   // document.
-  typedef std::pair<std::string, int> PreviewPageInfo;
+  // The URL string embeds a page number that can be found with
+  // ExtractPrintPreviewPageIndex(). This page number is always greater than 0.
+  // The page index is always in the range of [0, print_preview_page_count_).
+  using PreviewPageInfo = std::pair<std::string, int>;
   std::queue<PreviewPageInfo> preview_pages_info_;
 
   // Used to signal the browser about focus changes to trigger the OSK.
