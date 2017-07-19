@@ -166,9 +166,10 @@ TEST_F(FrameSelectionTest, ModifyExtendWithFlatTree) {
   // Select "two" for selection in DOM tree
   // Select "twoone" for selection in Flat tree
   Selection().SetSelection(
-      SelectionInFlatTree::Builder()
-          .Collapse(PositionInFlatTree(host, 0))
-          .Extend(PositionInFlatTree(GetDocument().body(), 2))
+      SelectionInDOMTree::Builder()
+          .Collapse(ToPositionInDOMTree(PositionInFlatTree(host, 0)))
+          .Extend(
+              ToPositionInDOMTree(PositionInFlatTree(GetDocument().body(), 2)))
           .Build());
   Selection().Modify(FrameSelection::kAlterationExtend, kDirectionForward,
                      TextGranularity::kWord);
@@ -450,9 +451,8 @@ TEST_F(FrameSelectionTest, RangeInShadowTree) {
 
   Node* text_node = shadow_root->firstChild();
   Selection().SetSelection(
-      SelectionInFlatTree::Builder()
-          .SetBaseAndExtent(PositionInFlatTree(text_node, 0),
-                            PositionInFlatTree(text_node, 3))
+      SelectionInDOMTree::Builder()
+          .SetBaseAndExtent(Position(text_node, 0), Position(text_node, 3))
           .Build());
   EXPECT_EQ_SELECTED_TEXT("hey");
   EXPECT_TRUE(Selection().GetSelectionInDOMTree().IsRange());
