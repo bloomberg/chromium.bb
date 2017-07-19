@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/exo_parts.h"
+#include "chrome/browser/chrome_browser_main_extra_parts_exo.h"
 
 #include "base/memory/ptr_util.h"
 
@@ -12,7 +12,6 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/common/chrome_switches.h"
@@ -57,7 +56,7 @@ GSourceFuncs g_wayland_source_funcs = {WaylandSourcePrepare, WaylandSourceCheck,
 
 }  // namespace
 
-class ExoParts::WaylandWatcher {
+class ChromeBrowserMainExtraPartsExo::WaylandWatcher {
  public:
   explicit WaylandWatcher(exo::wayland::Server* server)
       : wayland_poll_(new GPollFD),
@@ -88,7 +87,8 @@ class ExoParts::WaylandWatcher {
   DISALLOW_COPY_AND_ASSIGN(WaylandWatcher);
 };
 #else
-class ExoParts::WaylandWatcher : public base::MessagePumpLibevent::Watcher {
+class ChromeBrowserMainExtraPartsExo::WaylandWatcher
+    : public base::MessagePumpLibevent::Watcher {
  public:
   explicit WaylandWatcher(exo::wayland::Server* server)
       : controller_(FROM_HERE), server_(server) {
@@ -113,24 +113,15 @@ class ExoParts::WaylandWatcher : public base::MessagePumpLibevent::Watcher {
 };
 #endif
 
-// static
-std::unique_ptr<ExoParts> ExoParts::CreateIfNecessary() {
+ChromeBrowserMainExtraPartsExo::ChromeBrowserMainExtraPartsExo() {}
+
+ChromeBrowserMainExtraPartsExo::~ChromeBrowserMainExtraPartsExo() {}
+
+void ChromeBrowserMainExtraPartsExo::PreProfileInit() {
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableWaylandServer)) {
-    return nullptr;
-  }
+          switches::kEnableWaylandServer))
+    return;
 
-  return base::WrapUnique(new ExoParts());
-}
-
-ExoParts::~ExoParts() {
-  wayland_watcher_.reset();
-  wayland_server_.reset();
-  exo::WMHelper::SetInstance(nullptr);
-  wm_helper_.reset();
-}
-
-ExoParts::ExoParts() {
   arc_notification_surface_manager_ =
       base::MakeUnique<arc::ArcNotificationSurfaceManagerImpl>();
   if (ash_util::IsRunningInMash())
@@ -144,4 +135,13 @@ ExoParts::ExoParts() {
   // Wayland server creation can fail if XDG_RUNTIME_DIR is not set correctly.
   if (wayland_server_)
     wayland_watcher_ = base::MakeUnique<WaylandWatcher>(wayland_server_.get());
+}
+
+void ChromeBrowserMainExtraPartsExo::PostMainMessageLoopRun() {
+  wayland_watcher_.reset();
+  wayland_server_.reset();
+  if (wm_helper_) {
+    exo::WMHelper::SetInstance(nullptr);
+    wm_helper_.reset();
+  }
 }

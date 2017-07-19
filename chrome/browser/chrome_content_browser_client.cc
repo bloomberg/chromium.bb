@@ -387,6 +387,10 @@
 #include "components/printing/service/public/interfaces/pdf_compositor.mojom.h"
 #endif
 
+#if BUILDFLAG(ENABLE_WAYLAND_SERVER)
+#include "chrome/browser/chrome_browser_main_extra_parts_exo.h"
+#endif
+
 #if BUILDFLAG(ENABLE_MOJO_MEDIA)
 #include "chrome/browser/media/output_protection_impl.h"
 #if BUILDFLAG(ENABLE_MOJO_CDM) && defined(OS_ANDROID)
@@ -902,6 +906,10 @@ content::BrowserMainParts* ChromeContentBrowserClient::CreateBrowserMainParts(
 
 #if defined(USE_X11)
   main_parts->AddParts(new ChromeBrowserMainExtraPartsX11());
+#endif
+
+#if BUILDFLAG(ENABLE_WAYLAND_SERVER)
+  main_parts->AddParts(new ChromeBrowserMainExtraPartsExo());
 #endif
 
   chrome::AddMetricsExtraParts(main_parts);
