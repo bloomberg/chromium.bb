@@ -16,27 +16,11 @@
 
 using bookmarks::BookmarkNode;
 
-// A partial mock subclass that doesn't load any heavy weight subclasses.
-@interface MockBookmarkHomeHandsetViewController
-    : BookmarkHomeHandsetViewController
-@end
-
-@implementation MockBookmarkHomeHandsetViewController
-
-- (void)hideEditingBarAnimated:(BOOL)animated {
-  // Do nothing.
-  // The animation would delay the release of the
-  // BookmarkHomeHandsetViewController and make the test fail by keeping
-  // the view controller alive after the test is shutdown leading
-  // to DCHECK failure on the sign in manager.
-}
-
-- (void)ensureAllViewExists {
-  // Do nothing.
-}
-- (void)loadImageService {
-  // Do nothing.
-}
+// Redeclares the private methods used for testing, to avoid compilation error.
+@interface BookmarkHomeViewController (Testing)
+- (void)resetEditNodes;
+- (void)insertEditNode:(const bookmarks::BookmarkNode*)node
+           atIndexPath:(NSIndexPath*)indexPath;
 @end
 
 namespace {
@@ -63,8 +47,8 @@ TEST_F(BookmarkHomeHandsetViewControllerTest, DeleteNodesUpdatesEditNodes) {
     toDelete.insert(f1);
     toDelete.insert(f2a);
 
-    MockBookmarkHomeHandsetViewController* controller =
-        [[MockBookmarkHomeHandsetViewController alloc]
+    BookmarkHomeHandsetViewController* controller =
+        [[BookmarkHomeHandsetViewController alloc]
             initWithLoader:nil
               browserState:chrome_browser_state_.get()];
 

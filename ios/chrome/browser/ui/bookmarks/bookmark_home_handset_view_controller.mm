@@ -27,7 +27,6 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_waiting_view.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_menu_item.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_menu_view.h"
-#include "ios/chrome/browser/ui/bookmarks/bookmark_model_bridge_observer.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_navigation_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_panel_view.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_position_cache.h"
@@ -45,14 +44,8 @@
 
 using bookmarks::BookmarkNode;
 
-@interface BookmarkHomeHandsetViewController ()<
-    BookmarkCollectionViewDelegate,
-    BookmarkMenuViewDelegate,
-    BookmarkModelBridgeObserver,
-    BookmarkPanelViewDelegate> {
-  // Bridge to register for bookmark changes.
-  std::unique_ptr<bookmarks::BookmarkModelBridge> _bridge;
-}
+@interface BookmarkHomeHandsetViewController ()<BookmarkMenuViewDelegate,
+                                                BookmarkPanelViewDelegate>
 
 // Returns the parent, if all the bookmarks are siblings.
 // Otherwise returns the mobile_node.
@@ -68,41 +61,21 @@ defaultMoveFolderFromBookmarks:(const std::set<const BookmarkNode*>&)bookmarks
 // property is set to nil after it is used.
 @property(nonatomic, strong) NSNumber* cachedContentPosition;
 
-// The action sheet coordinator used when trying to edit a single bookmark.
-@property(nonatomic, strong) ActionSheetCoordinator* actionSheetCoordinator;
-
 #pragma mark View loading and switching
 // This method should be called at most once in the life-cycle of the
 // class. It should be called at the soonest possible time after the
 // view has been loaded, and the bookmark model is loaded.
 - (void)loadBookmarkViews;
-// Updates the property 'primaryMenuItem'.
-// Updates the UI to reflect the new state of 'primaryMenuItem'.
-- (void)updatePrimaryMenuItem:(BookmarkMenuItem*)menuItem
-                     animated:(BOOL)animated;
+
 #pragma mark Navigation bar
-// Updates the UI of the navigation bar with the primaryMenuItem.
-// This method should be called anytime:
-//  (1)The primary view changes.
-//  (2)The menu is shown or hidden.
-//  (3)The primary view has type folder, and the relevant folder has changed.
-//  (4)The interface orientation changes.
-//  (5)viewWillAppear, as the interface orientation may have changed.
-- (void)updateNavigationBarAnimated:(BOOL)animated
-                        orientation:(UIInterfaceOrientation)orientation;
 - (void)updateNavigationBarWithDuration:(CGFloat)duration
                             orientation:(UIInterfaceOrientation)orientation;
 // Whether the edit button on the navigation bar should be shown.
 - (BOOL)shouldShowEditButtonWithMenuVisibility:(BOOL)visible;
-// Whether the back button on the navigation bar should be preferred to the menu
-// button.
-- (BOOL)shouldShowBackButtonInsteadOfMenuButton;
 // Called when the cancel button is pressed on the navigation bar.
 - (void)navigationBarCancel:(id)sender;
 // Called when the menu button is pressed on the navigation bar.
 - (void)navigationBarToggledMenu:(id)sender;
-// Called when the back button is pressed on the navigation bar.
-- (void)navigationBarBack:(id)sender;
 
 #pragma mark private methods
 // Returns the size of the primary view.
@@ -122,17 +95,13 @@ defaultMoveFolderFromBookmarks:(const std::set<const BookmarkNode*>&)bookmarks
 
 @implementation BookmarkHomeHandsetViewController
 @synthesize contentView = _contentView;
-
 @synthesize cachedContentPosition = _cachedContentPosition;
-
-@synthesize actionSheetCoordinator = _actionSheetCoordinator;
 @synthesize delegate = _delegate;
 
 - (instancetype)initWithLoader:(id<UrlLoader>)loader
                   browserState:(ios::ChromeBrowserState*)browserState {
   self = [super initWithLoader:loader browserState:browserState];
   if (self) {
-    _bridge.reset(new bookmarks::BookmarkModelBridge(self, self.bookmarks));
     self.sideSwipingPossible = YES;
   }
   return self;
@@ -144,14 +113,10 @@ defaultMoveFolderFromBookmarks:(const std::set<const BookmarkNode*>&)bookmarks
   [super viewDidLoad];
 
   self.navigationBar.frame = [self navigationBarFrame];
-  [self.navigationBar setEditTarget:self
-                             action:@selector(navigationBarWantsEditing:)];
   [self.navigationBar setMenuTarget:self
                              action:@selector(navigationBarToggledMenu:)];
-  [self.navigationBar setBackTarget:self action:@selector(navigationBarBack:)];
   [self.navigationBar setCancelTarget:self
                                action:@selector(navigationBarCancel:)];
-
   [self.view addSubview:self.navigationBar];
   [self.view bringSubviewToFront:self.navigationBar];
 
@@ -172,14 +137,14 @@ defaultMoveFolderFromBookmarks:(const std::set<const BookmarkNode*>&)bookmarks
   return YES;
 }
 
-#pragma mark - Methods duplicated from BookmarkHomeTabletNTPController.
+#pragma mark - Superclass overrides
 
 - (void)loadBookmarkViews {
   [super loadBookmarkViews];
   DCHECK(self.bookmarks->loaded());
   DCHECK([self isViewLoaded]);
 
-  self.folderView.delegate = self;
+  self.menuView.delegate = self;
   [self.folderView setFrame:[self frameForPrimaryView]];
 
   [self.panelView setFrame:[self frameForPrimaryView]];
@@ -192,7 +157,6 @@ defaultMoveFolderFromBookmarks:(const std::set<const BookmarkNode*>&)bookmarks
       UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
   [self.panelView.contentView addSubview:self.contentView];
 
-  self.menuView.delegate = self;
   [self.panelView.menuView addSubview:self.menuView];
 
   // Load the last primary menu item which the user had active.
@@ -220,7 +184,7 @@ defaultMoveFolderFromBookmarks:(const std::set<const BookmarkNode*>&)bookmarks
 
 - (void)updatePrimaryMenuItem:(BookmarkMenuItem*)menuItem
                      animated:(BOOL)animated {
-  [super updatePrimaryMenuItem:menuItem];
+  [super updatePrimaryMenuItem:menuItem animated:animated];
 
   // Disable editing on previous primary view before dismissing it. No need to
   // animate because this view is immediately removed from hierarchy.
@@ -234,8 +198,6 @@ defaultMoveFolderFromBookmarks:(const std::set<const BookmarkNode*>&)bookmarks
   [self updateNavigationBarAnimated:animated
                         orientation:GetInterfaceOrientation()];
 }
-
-#pragma mark - Editing bar super methods overrides
 
 - (CGRect)editingBarFrame {
   return self.navigationBar.frame;
@@ -287,6 +249,18 @@ defaultMoveFolderFromBookmarks:(const std::set<const BookmarkNode*>&)bookmarks
       }];
 }
 
+- (void)navigateToBookmarkURL:(const GURL&)url {
+  [self delegateDismiss:url];
+}
+
+- (ActionSheetCoordinator*)createActionSheetCoordinatorOnView:(UIView*)view {
+  return [[ActionSheetCoordinator alloc] initWithBaseViewController:self
+                                                              title:nil
+                                                            message:nil
+                                                               rect:CGRectZero
+                                                               view:nil];
+}
+
 #pragma mark - BookmarkMenuViewDelegate
 
 - (void)bookmarkMenuView:(BookmarkMenuView*)view
@@ -298,140 +272,6 @@ defaultMoveFolderFromBookmarks:(const std::set<const BookmarkNode*>&)bookmarks
   [self hideMenuAnimated:YES updateNavigationBar:!menuItemChanged];
   if (menuItemChanged)
     [self updatePrimaryMenuItem:menuItem animated:YES];
-}
-
-#pragma mark - BookmarkCollectionViewDelegate
-// This class owns multiple views that have a delegate that conforms to
-// BookmarkCollectionViewDelegate, or a subprotocol of
-// BookmarkCollectionViewDelegate.
-- (void)bookmarkCollectionView:(BookmarkCollectionView*)view
-                          cell:(UICollectionViewCell*)cell
-             addNodeForEditing:(const BookmarkNode*)node {
-  [self insertEditNode:node atIndexPath:[self indexPathForCell:cell]];
-  [self updateEditingStateAnimated:YES];
-}
-
-- (void)bookmarkCollectionView:(BookmarkCollectionView*)view
-                          cell:(UICollectionViewCell*)cell
-          removeNodeForEditing:(const BookmarkNode*)node {
-  [self removeEditNode:node atIndexPath:[self indexPathForCell:cell]];
-  if (_editNodes.size() == 0)
-    [self setEditing:NO animated:YES];
-  else
-    [self updateEditingStateAnimated:YES];
-}
-
-- (const std::set<const BookmarkNode*>&)nodesBeingEdited {
-  return _editNodes;
-}
-
-- (void)bookmarkCollectionViewDidScroll:(BookmarkCollectionView*)view {
-  [self updateEditBarShadow];
-}
-
-- (void)bookmarkCollectionView:(BookmarkCollectionView*)view
-      selectedUrlForNavigation:(const GURL&)url {
-  [self delegateDismiss:url];
-}
-
-- (void)bookmarkCollectionView:(BookmarkCollectionView*)collectionView
-          wantsMenuForBookmark:(const BookmarkNode*)node
-                        onView:(UIView*)view
-                       forCell:(BookmarkItemCell*)cell {
-  DCHECK(!self.editViewController);
-  DCHECK(!self.actionSheetCoordinator);
-  self.actionSheetCoordinator =
-      [[ActionSheetCoordinator alloc] initWithBaseViewController:self
-                                                           title:nil
-                                                         message:nil
-                                                            rect:CGRectZero
-                                                            view:nil];
-  __weak BookmarkHomeHandsetViewController* weakSelf = self;
-
-  // Select action.
-  [self.actionSheetCoordinator
-      addItemWithTitle:l10n_util::GetNSString(IDS_IOS_BOOKMARK_ACTION_SELECT)
-                action:^{
-                  [weakSelf selectFirstNode:node withCell:cell];
-                  weakSelf.actionSheetCoordinator = nil;
-                }
-                 style:UIAlertActionStyleDefault];
-
-  // Edit action.
-  [self.actionSheetCoordinator
-      addItemWithTitle:l10n_util::GetNSString(IDS_IOS_BOOKMARK_ACTION_EDIT)
-                action:^{
-                  [weakSelf editNode:node];
-                  weakSelf.actionSheetCoordinator = nil;
-                }
-                 style:UIAlertActionStyleDefault];
-
-  // Move action.
-  [self.actionSheetCoordinator
-      addItemWithTitle:l10n_util::GetNSString(IDS_IOS_BOOKMARK_ACTION_MOVE)
-                action:^{
-                  std::set<const BookmarkNode*> nodes;
-                  nodes.insert(node);
-                  [weakSelf moveNodes:nodes];
-                  weakSelf.actionSheetCoordinator = nil;
-                }
-                 style:UIAlertActionStyleDefault];
-
-  // Delete action.
-  [self.actionSheetCoordinator
-      addItemWithTitle:l10n_util::GetNSString(IDS_IOS_BOOKMARK_ACTION_DELETE)
-                action:^{
-                  std::set<const BookmarkNode*> nodes;
-                  nodes.insert(node);
-                  [weakSelf deleteNodes:nodes];
-                  weakSelf.actionSheetCoordinator = nil;
-                }
-                 style:UIAlertActionStyleDestructive];
-
-  // Cancel action.
-  [self.actionSheetCoordinator
-      addItemWithTitle:l10n_util::GetNSString(IDS_CANCEL)
-                action:^{
-                  weakSelf.actionSheetCoordinator = nil;
-                }
-                 style:UIAlertActionStyleCancel];
-
-  [self.actionSheetCoordinator start];
-}
-
-- (void)bookmarkCollectionView:(BookmarkCollectionView*)view
-              didLongPressCell:(UICollectionViewCell*)cell
-                   forBookmark:(const BookmarkNode*)node {
-  [self selectFirstNode:node withCell:cell];
-}
-
-- (BOOL)bookmarkCollectionViewShouldShowPromoCell:
-    (BookmarkCollectionView*)collectionView {
-  return self.bookmarkPromoController.promoState;
-}
-
-- (void)bookmarkCollectionViewShowSignIn:(BookmarkCollectionView*)view {
-  [self.bookmarkPromoController showSignIn];
-}
-
-- (void)bookmarkCollectionViewDismissPromo:(BookmarkCollectionView*)view {
-  [self.bookmarkPromoController hidePromoCell];
-}
-
-#pragma mark - BookmarkCollectionViewDelegate
-
-- (void)bookmarkCollectionView:(BookmarkCollectionView*)view
-    selectedFolderForNavigation:(const BookmarkNode*)folder {
-  BookmarkMenuItem* menuItem = nil;
-  if (view == self.folderView) {
-    const BookmarkNode* parent = RootLevelFolderForNode(folder, self.bookmarks);
-    menuItem =
-        [BookmarkMenuItem folderMenuItemForNode:folder rootAncestor:parent];
-  } else {
-    NOTREACHED();
-    return;
-  }
-  [self updatePrimaryMenuItem:menuItem animated:YES];
 }
 
 #pragma mark - Navigation bar
@@ -460,7 +300,7 @@ defaultMoveFolderFromBookmarks:(const std::set<const BookmarkNode*>&)bookmarks
   else
     [self.navigationBar hideEditButtonWithAnimationDuration:duration];
 
-  if ([self shouldShowBackButtonInsteadOfMenuButton])
+  if ([self shouldShowBackButtonOnNavigationBar])
     [self.navigationBar showBackButtonInsteadOfMenuButton:duration];
   else
     [self.navigationBar showMenuButtonInsteadOfBackButton:duration];
@@ -473,18 +313,6 @@ defaultMoveFolderFromBookmarks:(const std::set<const BookmarkNode*>&)bookmarks
     return NO;
   // The type is MenuItemFolder, so it is safe to access |folder|.
   return !self.bookmarks->is_permanent_node(self.primaryMenuItem.folder);
-}
-
-- (BOOL)shouldShowBackButtonInsteadOfMenuButton {
-  if (self.primaryMenuItem.type != bookmarks::MenuItemFolder)
-    return NO;
-  // The type is MenuItemFolder, so it is safe to access |folder|.
-  const BookmarkNode* folder = self.primaryMenuItem.folder;
-  // Show the back button iff the folder or its immediate parent is a permanent
-  // primary folder.
-  BOOL isTopFolder = IsPrimaryPermanentNode(folder, self.bookmarks) ||
-                     IsPrimaryPermanentNode(folder->parent(), self.bookmarks);
-  return !isTopFolder;
 }
 
 #pragma mark Navigation Bar Callbacks
@@ -501,20 +329,6 @@ defaultMoveFolderFromBookmarks:(const std::set<const BookmarkNode*>&)bookmarks
     [self hideMenuAnimated:YES updateNavigationBar:YES];
   else
     [self showMenuAnimated:YES];
-}
-
-- (void)navigationBarBack:(id)sender {
-  DCHECK([self shouldShowBackButtonInsteadOfMenuButton]);
-
-  // Go to the parent folder.
-  DCHECK(self.primaryMenuItem.type == bookmarks::MenuItemFolder);
-  const BookmarkNode* parentFolder = self.primaryMenuItem.folder->parent();
-  const BookmarkNode* rootAncestor =
-      RootLevelFolderForNode(parentFolder, self.bookmarks);
-  BookmarkMenuItem* menuItem =
-      [BookmarkMenuItem folderMenuItemForNode:parentFolder
-                                 rootAncestor:rootAncestor];
-  [self updatePrimaryMenuItem:menuItem animated:YES];
 }
 
 #pragma mark - Other internal methods.
@@ -591,61 +405,6 @@ defaultMoveFolderFromBookmarks:(const std::set<const BookmarkNode*>&)bookmarks
     [self.navigationBar updateEditButtonVisibility:0];
 }
 
-#pragma mark - BookmarkModelBridgeObserver
-
-- (void)bookmarkModelLoaded {
-  if (![self isViewLoaded])
-    return;
-
-  DCHECK(self.waitForModelView);
-  __weak BookmarkHomeHandsetViewController* weakSelf = self;
-  [self.waitForModelView stopWaitingWithCompletion:^{
-    BookmarkHomeHandsetViewController* strongSelf = weakSelf;
-    // Early return if the controller has been deallocated.
-    if (!strongSelf)
-      return;
-    [UIView animateWithDuration:0.2
-        animations:^{
-          strongSelf.waitForModelView.alpha = 0.0;
-        }
-        completion:^(BOOL finished) {
-          [strongSelf.waitForModelView removeFromSuperview];
-          strongSelf.waitForModelView = nil;
-        }];
-    [strongSelf loadBookmarkViews];
-  }];
-}
-
-- (void)bookmarkNodeChanged:(const BookmarkNode*)node {
-  // The title of the folder may have changed.
-  if (self.primaryMenuItem.type == bookmarks::MenuItemFolder &&
-      self.primaryMenuItem.folder == node) {
-    UIInterfaceOrientation orient = GetInterfaceOrientation();
-    [self updateNavigationBarAnimated:NO orientation:orient];
-  }
-}
-
-- (void)bookmarkNodeChildrenChanged:(const BookmarkNode*)bookmarkNode {
-  // The node has not changed, but the ordering and existence of its children
-  // have changed.
-}
-
-- (void)bookmarkNode:(const BookmarkNode*)bookmarkNode
-     movedFromParent:(const BookmarkNode*)oldParent
-            toParent:(const BookmarkNode*)newParent {
-  // The node has moved to a new parent folder.
-}
-
-- (void)bookmarkNodeDeleted:(const BookmarkNode*)node
-                 fromFolder:(const BookmarkNode*)folder {
-  [self removeEditNode:node atIndexPath:nil];
-}
-
-- (void)bookmarkModelRemovedAllNodes {
-  // All non-permanent nodes have been removed.
-  [self setEditing:NO animated:YES];
-}
-
 - (UIStatusBarStyle)preferredStatusBarStyle {
   return self.editing ? UIStatusBarStyleLightContent : UIStatusBarStyleDefault;
 }
@@ -690,11 +449,7 @@ defaultMoveFolderFromBookmarks:(const std::set<const BookmarkNode*>&)bookmarks
 #pragma mark - Internal non-UI Methods
 
 - (void)delegateDismiss:(const GURL&)url {
-  if ([self primaryView]) {
-    bookmark_utils_ios::CachePosition(
-        [[self primaryView] contentPositionInPortraitOrientation],
-        [self primaryMenuItem]);
-  }
+  [self cachePosition];
   [self.delegate bookmarkHomeHandsetViewControllerWantsDismissal:self
                                                  navigationToUrl:url];
 }
@@ -715,18 +470,3 @@ defaultMoveFolderFromBookmarks:(const std::set<const BookmarkNode*>&)bookmarks
 
 @end
 
-@implementation BookmarkHomeHandsetViewController (ExposedForTesting)
-
-- (void)ensureAllViewExists {
-  // Do nothing.
-}
-
-- (const std::set<const BookmarkNode*>&)editNodes {
-  return _editNodes;
-}
-
-- (void)setEditNodes:(const std::set<const BookmarkNode*>&)editNodes {
-  _editNodes = editNodes;
-}
-
-@end

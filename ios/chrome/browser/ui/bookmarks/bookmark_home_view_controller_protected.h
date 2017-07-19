@@ -12,6 +12,7 @@ class BookmarkModel;
 class BookmarkNode;
 }  // namespace bookmarks
 
+@class ActionSheetCoordinator;
 @class BookmarkCollectionView;
 @class BookmarkEditingBar;
 @class BookmarkEditViewController;
@@ -88,6 +89,9 @@ class BookmarkNode;
 // Whether the panel view can be brought into view and hidden by swipe gesture.
 @property(nonatomic, assign) BOOL sideSwipingPossible;
 
+// The action sheet coordinator used when trying to edit a single bookmark.
+@property(nonatomic, strong) ActionSheetCoordinator* actionSheetCoordinator;
+
 // This method should be called at most once in the life-cycle of the class.
 // It should be called at the soonest possible time after the view has been
 // loaded, and the bookmark model is loaded.
@@ -102,54 +106,27 @@ class BookmarkNode;
 
 // Updates the property 'primaryMenuItem'.
 // Updates the UI to reflect the new state of 'primaryMenuItem'.
-- (void)updatePrimaryMenuItem:(BookmarkMenuItem*)menuItem;
+- (void)updatePrimaryMenuItem:(BookmarkMenuItem*)menuItem
+                     animated:(BOOL)animated;
 
 // The active collection view that corresponds to primaryMenuItem.
 - (UIView<BookmarkHomePrimaryView>*)primaryView;
 
-// Returns NSIndexPath for a given cell.
-- (NSIndexPath*)indexPathForCell:(UICollectionViewCell*)cell;
+// Caches the position in the collection view.
+- (void)cachePosition;
 
-#pragma mark - Navigation bar callbacks.
+// Whether the back button on the navigation bar should be shown.
+- (BOOL)shouldShowBackButtonOnNavigationBar;
 
-// Called when the edit button is pressed on the navigation bar.
-- (void)navigationBarWantsEditing:(id)sender;
+#pragma mark - Subclass overrides
 
-#pragma mark - Action sheet callbacks
+// Navigates to the bookmark URL that was tapped. MUST be overridden
+// by subclasses.
+- (void)navigateToBookmarkURL:(const GURL&)url;
 
-// Enters into edit mode by selecting the given node corresponding to the
-// given cell.
-- (void)selectFirstNode:(const bookmarks::BookmarkNode*)node
-               withCell:(UICollectionViewCell*)cell;
-
-// Opens the folder move editor for the given node.
-- (void)moveNodes:(const std::set<const bookmarks::BookmarkNode*>&)nodes;
-
-// Deletes the current node.
-- (void)deleteNodes:(const std::set<const bookmarks::BookmarkNode*>&)nodes;
-
-// Opens the editor on the given node.
-- (void)editNode:(const bookmarks::BookmarkNode*)node;
-
-#pragma mark - Edit
-
-// Replaces |_editNodes| and |_editNodesOrdered| with new container objects.
-- (void)resetEditNodes;
-
-// Adds |node| corresponding to a |cell| if it isn't already present.
-- (void)insertEditNode:(const bookmarks::BookmarkNode*)node
-           atIndexPath:(NSIndexPath*)indexPath;
-
-// Removes |node| corresponding to a |cell| if it's present.
-- (void)removeEditNode:(const bookmarks::BookmarkNode*)node
-           atIndexPath:(NSIndexPath*)indexPath;
-
-// This method updates the property, and resets the edit nodes.
-- (void)setEditing:(BOOL)editing animated:(BOOL)animated;
-
-// This method statelessly updates the editing top bar from |_editNodes| and
-// |editing|.
-- (void)updateEditingStateAnimated:(BOOL)animated;
+// Creates and returns actionSheetCoordinator. MUST
+// be overridden by subclass.
+- (ActionSheetCoordinator*)createActionSheetCoordinatorOnView:(UIView*)view;
 
 // Shows the editing bar, this method MUST be overridden by subclass to
 // tailor the behaviour according to device.
@@ -162,6 +139,22 @@ class BookmarkNode;
 // Returns the frame for editingBar, MUST be overridden by subclass.
 - (CGRect)editingBarFrame;
 
+#pragma mark - Navigation bar.
+
+// Updates the UI of the navigation bar with the primaryMenuItem.
+// This method should be called anytime:
+//  (1)The primary view changes.
+//  (2)The primary view has type folder, and the relevant folder has changed.
+//  (3)The interface orientation changes.
+//  (4)viewWillAppear, as the interface orientation may have changed.
+- (void)updateNavigationBarAnimated:(BOOL)animated
+                        orientation:(UIInterfaceOrientation)orientation;
+
+#pragma mark - Edit
+
+// This method updates the property, and resets the edit nodes.
+- (void)setEditing:(BOOL)editing animated:(BOOL)animated;
+
 // Instaneously updates the shadow of the edit bar.
 // This method should be called anytime:
 //  (1)|editing| property changes.
@@ -170,16 +163,6 @@ class BookmarkNode;
 // (2) is not necessary right now, as it is only possible to switch primary
 // views when |editing| is NO. When |editing| is NO, the shadow is never shown.
 - (void)updateEditBarShadow;
-
-#pragma mark - Editing bar callbacks
-// The cancel button was tapped on the editing bar.
-- (void)editingBarCancel;
-// The move button was tapped on the editing bar.
-- (void)editingBarMove;
-// The delete button was tapped on the editing bar.
-- (void)editingBarDelete;
-// The edit button was tapped on the editing bar.
-- (void)editingBarEdit;
 
 @end
 
