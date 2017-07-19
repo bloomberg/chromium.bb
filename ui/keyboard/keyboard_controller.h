@@ -163,7 +163,7 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   // For access to Observer methods for simulation.
   friend class KeyboardControllerTest;
 
-  // For access to NotifyContentsLoadingComplete.
+  // For access to SetContainerBounds.
   friend class KeyboardLayoutManager;
 
   // aura::WindowObserver overrides
@@ -183,8 +183,11 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   void OnTextInputStateChanged(const ui::TextInputClient* client) override;
   void OnShowImeIfNeeded() override;
 
-  // Notifies that the extension has completed loading
-  void NotifyContentsLoadingComplete();
+  // Sets the bounds of the container window. Shows the keyboard if contents
+  // is first loaded and show_on_resize() is true. Called by
+  // KayboardLayoutManager.
+  void SetContainerBounds(const gfx::Rect& new_bounds,
+                          const bool contents_loaded);
 
   // Show virtual keyboard immediately with animation.
   void ShowKeyboardInternal(int64_t display_id);
