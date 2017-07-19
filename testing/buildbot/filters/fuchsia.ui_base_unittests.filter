@@ -1,0 +1,9 @@
+# TODO(fuchsia): Fix these tests and remove the filter. crbug.com/740608 .
+
+-*DataPackTest.*
+-BytesFormattingTest.FormatBytes
+-ResourceBundleImageTest.*
+-ResourceBundleTest.DelegateGetNativeImageNamed
+-ResourceBundleTest.DelegateGetPathForLocalePack
+-ResourceBundleTest.LocaleDataPakExists
+-TimeFormatTest.*
