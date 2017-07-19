@@ -1,8 +1,8 @@
 <?php
-    $device_ram = $_SERVER["HTTP_DEVICE_RAM"];
+    $device_memory = $_SERVER["HTTP_DEVICE_MEMORY"];
 
-    if(isset($device_ram) && $device_ram != 0
-    	 && ($device_ram & ($device_ram - 1)) == 0) {
+    if(isset($device_memory) && $device_memory != 0
+    	 && ($device_memory & ($device_memory - 1)) == 0) {
         $fn = fopen("compass.jpg", "r");
         fpassthru($fn);
         fclose($fn);

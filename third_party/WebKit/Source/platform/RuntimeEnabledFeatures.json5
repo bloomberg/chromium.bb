@@ -363,7 +363,7 @@
       status: "experimental",
     },
     {
-      name: "DeviceRAMHeader",
+      name: "DeviceMemoryHeader",
       status: "experimental",
     },
     {
