@@ -216,7 +216,7 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
         return mTestCommon.getContactDetailsButtonState();
     }
 
-    /**  Returns the label corresponding to the payment instrument at the specified |index|. */
+    /** Returns the label corresponding to the payment instrument at the specified |index|. */
     protected String getPaymentInstrumentLabel(final int index) throws ExecutionException {
         return mTestCommon.getPaymentInstrumentLabel(index);
     }
@@ -226,33 +226,33 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
         return mTestCommon.getSelectedPaymentInstrumentLabel();
     }
 
-    /**  Returns the total amount in order summary section. */
+    /** Returns the total amount in order summary section. */
     protected String getOrderSummaryTotal() throws ExecutionException {
         return mTestCommon.getOrderSummaryTotal();
     }
 
     /**
-     *  Returns the label corresponding to the contact detail suggestion at the specified
-     *  |suggestionIndex|.
+     * Returns the label corresponding to the contact detail suggestion at the specified
+     * |suggestionIndex|.
      */
     protected String getContactDetailsSuggestionLabel(final int suggestionIndex)
             throws ExecutionException {
         return mTestCommon.getContactDetailsSuggestionLabel(suggestionIndex);
     }
 
-    /**  Returns the number of payment instruments. */
+    /** Returns the number of payment instruments. */
     protected int getNumberOfPaymentInstruments() throws ExecutionException {
         return mTestCommon.getNumberOfPaymentInstruments();
     }
 
-    /**  Returns the number of contact detail suggestions. */
+    /** Returns the number of contact detail suggestions. */
     protected int getNumberOfContactDetailSuggestions() throws ExecutionException {
         return mTestCommon.getNumberOfContactDetailSuggestions();
     }
 
     /**
-     *  Returns the label corresponding to the shipping address suggestion at the specified
-     *  |suggestionIndex|.
+     * Returns the label corresponding to the shipping address suggestion at the specified
+     * |suggestionIndex|.
      */
     protected String getShippingAddressSuggestionLabel(final int suggestionIndex)
             throws ExecutionException {
@@ -260,21 +260,21 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
     }
 
     /**
-     *  Returns the summary text of the shipping address section.
+     * Returns the summary text of the shipping address section.
      */
     protected String getShippingAddressSummaryLabel() throws ExecutionException {
         return mTestCommon.getShippingAddressSummary();
     }
 
     /**
-     *  Returns the summary text of the shipping option section.
+     * Returns the summary text of the shipping option section.
      */
     protected String getShippingOptionSummaryLabel() throws ExecutionException {
         return mTestCommon.getShippingOptionSummary();
     }
 
     /**
-     *  Returns the cost text of the shipping option section on the bottom sheet.
+     * Returns the cost text of the shipping option section on the bottom sheet.
      */
     protected String getShippingOptionCostSummaryLabelOnBottomSheet() throws ExecutionException {
         return mTestCommon.getShippingOptionCostSummaryOnBottomSheet();
@@ -286,8 +286,8 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
     }
 
     /**
-     *  Clicks on the label corresponding to the shipping address suggestion at the specified
-     *  |suggestionIndex|.
+     * Clicks on the label corresponding to the shipping address suggestion at the specified
+     * |suggestionIndex|.
      * @throws InterruptedException
      */
     protected void clickOnShippingAddressSuggestionOptionAndWait(
@@ -297,8 +297,8 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
     }
 
     /**
-     *  Clicks on the label corresponding to the payment method suggestion at the specified
-     *  |suggestionIndex|.
+     * Clicks on the label corresponding to the payment method suggestion at the specified
+     * |suggestionIndex|.
      * @throws InterruptedException
      */
     protected void clickOnPaymentMethodSuggestionOptionAndWait(
@@ -308,8 +308,19 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
     }
 
     /**
-     *  Clicks on the edit icon corresponding to the payment method suggestion at the specified
-     *  |suggestionIndex|.
+     * Clicks on the label corresponding to the contact info suggestion at the specified
+     * |suggestionIndex|.
+     * @throws InterruptedException
+     */
+    protected void clickOnContactInfoSuggestionOptionAndWait(
+            final int suggestionIndex, CallbackHelper helper)
+            throws ExecutionException, TimeoutException, InterruptedException {
+        mTestCommon.clickOnContactInfoSuggestionOptionAndWait(suggestionIndex, helper);
+    }
+
+    /**
+     * Clicks on the edit icon corresponding to the payment method suggestion at the specified
+     * |suggestionIndex|.
      */
     protected void clickOnPaymentMethodSuggestionEditIconAndWait(
             final int suggestionIndex, CallbackHelper helper)
@@ -318,7 +329,7 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
     }
 
     /**
-     *  Returns the number of shipping address suggestions.
+     * Returns the number of shipping address suggestions.
      */
     protected int getNumberOfShippingAddressSuggestions() throws ExecutionException {
         return mTestCommon.getNumberOfShippingAddressSuggestions();
@@ -407,17 +418,17 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
         mTestCommon.expectResultContains(contents);
     }
 
-    /**  Will fail if the OptionRow at |index| is not selected in Contact Details.*/
+    /** Will fail if the OptionRow at |index| is not selected in Contact Details.*/
     protected void expectContactDetailsRowIsSelected(final int index) {
         mTestCommon.expectContactDetailsRowIsSelected(index);
     }
 
-    /**  Will fail if the OptionRow at |index| is not selected in Shipping Address section.*/
+    /** Will fail if the OptionRow at |index| is not selected in Shipping Address section.*/
     protected void expectShippingAddressRowIsSelected(final int index) {
         mTestCommon.expectShippingAddressRowIsSelected(index);
     }
 
-    /**  Will fail if the OptionRow at |index| is not selected in PaymentMethod section.*/
+    /** Will fail if the OptionRow at |index| is not selected in PaymentMethod section.*/
     protected void expectPaymentMethodRowIsSelected(final int index) {
         mTestCommon.expectPaymentMethodRowIsSelected(index);
     }

@@ -53857,12 +53857,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram
-    name="PaymentRequest.UserDidNotHaveInitialFormOfPayment.EffectOnCompletion"
+    name="PaymentRequest.UserDidNotHaveCompleteSuggestionsForEverything.EffectOnCompletion"
     enum="PaymentRequestFlowCompletionStatus">
   <owner>sebsg@chromium.org</owner>
   <summary>
-    Whether the flow was completed when the user did not have a form of payment
-    on file when the Payment Request was shown.
+    Whether the flow was completed when the user did not have a complete
+    suggestion offered for each requested information.
+  </summary>
+</histogram>
+
+<histogram
+    name="PaymentRequest.UserDidNotHaveInitialFormOfPayment.EffectOnCompletion"
+    enum="PaymentRequestFlowCompletionStatus">
+  <obsolete>
+    Replaced by PaymentRequest.NumberOfSuggestionsShown.PaymentMethod on July
+    19th 2017.
+  </obsolete>
+  <owner>sebsg@chromium.org</owner>
+  <summary>
+    Whether the flow was completed when the user did not have a a form of
+    payment on file when the Payment Request was shown.
   </summary>
 </histogram>
 
@@ -53876,12 +53890,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="PaymentRequest.UserHadInitialFormOfPayment.EffectOnCompletion"
+<histogram
+    name="PaymentRequest.UserHadCompleteSuggestionsForEverything.EffectOnCompletion"
     enum="PaymentRequestFlowCompletionStatus">
   <owner>sebsg@chromium.org</owner>
   <summary>
-    Whether the flow was completed when the user had an a form of payment on
-    file when the Payment Request was shown.
+    Whether the flow was completed when the user had at least one complete
+    suggestion offered for each requested information.
+  </summary>
+</histogram>
+
+<histogram name="PaymentRequest.UserHadInitialFormOfPayment.EffectOnCompletion"
+    enum="PaymentRequestFlowCompletionStatus">
+  <obsolete>
+    Replaced by PaymentRequest.NumberOfSuggestionsShown.PaymentMethod on July
+    19th 2017.
+  </obsolete>
+  <owner>sebsg@chromium.org</owner>
+  <summary>
+    Whether the flow was completed when the user had a form of payment on file
+    when the Payment Request was shown.
   </summary>
 </histogram>
 

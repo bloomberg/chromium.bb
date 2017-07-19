@@ -222,7 +222,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestJourneyLoggerAllSectionStatsTest,
 
   // Expect the appropriate number of suggestions shown to be logged.
   histogram_tester.ExpectUniqueSample(
-      "PaymentRequest.NumberOfSuggestionsShown.CreditCards.Completed", 1, 1);
+      "PaymentRequest.NumberOfSuggestionsShown.PaymentMethod.Completed", 1, 1);
   histogram_tester.ExpectUniqueSample(
       "PaymentRequest.NumberOfSuggestionsShown.ShippingAddress.Completed", 2,
       1);
@@ -252,7 +252,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestJourneyLoggerAllSectionStatsTest,
 
   // Expect the appropriate number of suggestions shown to be logged.
   histogram_tester.ExpectUniqueSample(
-      "PaymentRequest.NumberOfSuggestionsShown.CreditCards.UserAborted", 1, 1);
+      "PaymentRequest.NumberOfSuggestionsShown.PaymentMethod.UserAborted", 1,
+      1);
   histogram_tester.ExpectUniqueSample(
       "PaymentRequest.NumberOfSuggestionsShown.ShippingAddress.UserAborted", 2,
       1);
@@ -295,7 +296,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestJourneyLoggerNoShippingSectionStatsTest,
 
   // Expect the appropriate number of suggestions shown to be logged.
   histogram_tester.ExpectUniqueSample(
-      "PaymentRequest.NumberOfSuggestionsShown.CreditCards.Completed", 1, 1);
+      "PaymentRequest.NumberOfSuggestionsShown.PaymentMethod.Completed", 1, 1);
   histogram_tester.ExpectUniqueSample(
       "PaymentRequest.NumberOfSuggestionsShown.ContactInfo.Completed", 2, 1);
 
@@ -326,7 +327,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestJourneyLoggerNoShippingSectionStatsTest,
 
   // Expect the appropriate number of suggestions shown to be logged.
   histogram_tester.ExpectUniqueSample(
-      "PaymentRequest.NumberOfSuggestionsShown.CreditCards.UserAborted", 1, 1);
+      "PaymentRequest.NumberOfSuggestionsShown.PaymentMethod.UserAborted", 1,
+      1);
   histogram_tester.ExpectUniqueSample(
       "PaymentRequest.NumberOfSuggestionsShown.ContactInfo.UserAborted", 2, 1);
 
@@ -371,7 +373,7 @@ IN_PROC_BROWSER_TEST_F(
 
   // Expect the appropriate number of suggestions shown to be logged.
   histogram_tester.ExpectUniqueSample(
-      "PaymentRequest.NumberOfSuggestionsShown.CreditCards.Completed", 1, 1);
+      "PaymentRequest.NumberOfSuggestionsShown.PaymentMethod.Completed", 1, 1);
   histogram_tester.ExpectUniqueSample(
       "PaymentRequest.NumberOfSuggestionsShown.ShippingAddress.Completed", 2,
       1);
@@ -404,7 +406,8 @@ IN_PROC_BROWSER_TEST_F(
 
   // Expect the appropriate number of suggestions shown to be logged.
   histogram_tester.ExpectUniqueSample(
-      "PaymentRequest.NumberOfSuggestionsShown.CreditCards.UserAborted", 1, 1);
+      "PaymentRequest.NumberOfSuggestionsShown.PaymentMethod.UserAborted", 1,
+      1);
   histogram_tester.ExpectUniqueSample(
       "PaymentRequest.NumberOfSuggestionsShown.ShippingAddress.UserAborted", 2,
       1);
@@ -458,21 +461,21 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestNotShownTest, OnlyNotShownMetricsLogged) {
   histogram_tester.ExpectTotalCount(
       "PaymentRequest.UserHadInitialFormOfPayment", 0);
   histogram_tester.ExpectTotalCount(
-      "PaymentRequest.UserDidNotHaveInitialFormOfPayment", 0);
+      "PaymentRequest.UserHadSuggestionsForEverything", 0);
 }
 
-class PaymentRequestInitialFormOfPaymentTest
+class PaymentRequestCompleteSuggestionsForEverythingTest
     : public PaymentRequestBrowserTestBase {
  protected:
-  PaymentRequestInitialFormOfPaymentTest()
+  PaymentRequestCompleteSuggestionsForEverythingTest()
       : PaymentRequestBrowserTestBase("/payment_request_email_test.html") {}
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(PaymentRequestInitialFormOfPaymentTest);
+  DISALLOW_COPY_AND_ASSIGN(PaymentRequestCompleteSuggestionsForEverythingTest);
 };
 
-IN_PROC_BROWSER_TEST_F(PaymentRequestInitialFormOfPaymentTest,
-                       UserHadInitialFormOfPayment) {
+IN_PROC_BROWSER_TEST_F(PaymentRequestCompleteSuggestionsForEverythingTest,
+                       UserHadCompleteSuggestionsForEverything) {
   base::HistogramTester histogram_tester;
 
   // Add an address and a credit card on file.
@@ -490,16 +493,21 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestInitialFormOfPaymentTest,
 
   // The fact that the user had a form of payment on file should be recorded.
   histogram_tester.ExpectUniqueSample(
-      "PaymentRequest.UserHadInitialFormOfPayment.EffectOnCompletion",
+      "PaymentRequest.UserHadCompleteSuggestionsForEverything."
+      "EffectOnCompletion",
       JourneyLogger::COMPLETION_STATUS_USER_ABORTED, 1);
   histogram_tester.ExpectTotalCount(
-      "PaymentRequest.UserDidNotHaveInitialFormOfPayment.EffectOnCompletion",
+      "PaymentRequest.UserDidNotHaveCompleteSuggestionsForEverything."
+      "EffectOnCompletion",
       0);
 }
 
-IN_PROC_BROWSER_TEST_F(PaymentRequestInitialFormOfPaymentTest,
-                       UserDidNotHaveInitialFormOfPayment_NoCard) {
+IN_PROC_BROWSER_TEST_F(PaymentRequestCompleteSuggestionsForEverythingTest,
+                       UserDidNotHaveCompleteSuggestionsForEverything_NoCard) {
   base::HistogramTester histogram_tester;
+
+  // Add an address.
+  AddAutofillProfile(autofill::test::GetFullProfile());
 
   // Show a Payment Request. The user has no form of payment on file.
   InvokePaymentRequestUI();
@@ -509,15 +517,18 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestInitialFormOfPaymentTest,
 
   // The fact that the user had no form of payment on file should be recorded.
   histogram_tester.ExpectUniqueSample(
-      "PaymentRequest.UserDidNotHaveInitialFormOfPayment.EffectOnCompletion",
+      "PaymentRequest.UserDidNotHaveCompleteSuggestionsForEverything."
+      "EffectOnCompletion",
       JourneyLogger::COMPLETION_STATUS_USER_ABORTED, 1);
   histogram_tester.ExpectTotalCount(
-      "PaymentRequest.UserHadInitialFormOfPayment.EffectOnCompletion", 0);
+      "PaymentRequest.UserHadCompleteSuggestionsForEverything."
+      "EffectOnCompletion",
+      0);
 }
 
 IN_PROC_BROWSER_TEST_F(
-    PaymentRequestInitialFormOfPaymentTest,
-    UserDidNotHaveInitialFormOfPayment_CardNetworkNotSupported) {
+    PaymentRequestCompleteSuggestionsForEverythingTest,
+    UserDidNotHaveCompleteSuggestionsForEverything_CardNetworkNotSupported) {
   base::HistogramTester histogram_tester;
 
   // Add an address and an AMEX credit card on file. AMEX is not supported by
@@ -536,10 +547,13 @@ IN_PROC_BROWSER_TEST_F(
 
   // The fact that the user had no form of payment on file should be recorded.
   histogram_tester.ExpectUniqueSample(
-      "PaymentRequest.UserDidNotHaveInitialFormOfPayment.EffectOnCompletion",
+      "PaymentRequest.UserDidNotHaveCompleteSuggestionsForEverything."
+      "EffectOnCompletion",
       JourneyLogger::COMPLETION_STATUS_USER_ABORTED, 1);
   histogram_tester.ExpectTotalCount(
-      "PaymentRequest.UserHadInitialFormOfPayment.EffectOnCompletion", 0);
+      "PaymentRequest.UserHadCompleteSuggestionsForEverything."
+      "EffectOnCompletion",
+      0);
 }
 
 }  // namespace payments
