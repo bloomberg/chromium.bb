@@ -1491,6 +1491,9 @@ static void rd_pick_sb_modes(const AV1_COMP *const cpi, TileDataEnc *tile_data,
   if ((rd_cost->rate != INT_MAX) && (aq_mode == COMPLEXITY_AQ) &&
       (bsize >= BLOCK_16X16) &&
       (cm->frame_type == KEY_FRAME || cpi->refresh_alt_ref_frame ||
+#if CONFIG_EXT_REFS && CONFIG_ALTREF2
+       cpi->refresh_alt2_ref_frame ||
+#endif  // CONFIG_EXT_REFS && CONFIG_ALTREF2
        (cpi->refresh_golden_frame && !cpi->rc.is_src_frame_alt_ref))) {
     av1_caq_select_segment(cpi, x, bsize, mi_row, mi_col, rd_cost->rate);
   }
@@ -1664,6 +1667,11 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
 
             counts->comp_bwdref[av1_get_pred_context_comp_bwdref_p(cm, xd)][0]
                                [ref1 == ALTREF_FRAME]++;
+#if CONFIG_ALTREF2
+            if (ref1 != ALTREF_FRAME)
+              counts->comp_bwdref[av1_get_pred_context_comp_bwdref_p1(cm, xd)]
+                                 [1][ref1 == ALTREF2_FRAME]++;
+#endif  // CONFIG_ALTREF2
 #else   // !CONFIG_EXT_REFS
           counts->comp_ref[av1_get_pred_context_comp_ref_p(cm, xd)][0]
                           [ref0 == GOLDEN_FRAME]++;
@@ -1673,12 +1681,18 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
 #endif  // CONFIG_EXT_COMP_REFS
         } else {
 #if CONFIG_EXT_REFS
-          const int bit = (ref0 == ALTREF_FRAME || ref0 == BWDREF_FRAME);
+          const int bit = (ref0 >= BWDREF_FRAME);
 
           counts->single_ref[av1_get_pred_context_single_ref_p1(xd)][0][bit]++;
           if (bit) {
+            assert(ref0 <= ALTREF_FRAME);
             counts->single_ref[av1_get_pred_context_single_ref_p2(xd)][1]
-                              [ref0 != BWDREF_FRAME]++;
+                              [ref0 == ALTREF_FRAME]++;
+#if CONFIG_ALTREF2
+            if (ref0 != ALTREF_FRAME)
+              counts->single_ref[av1_get_pred_context_single_ref_p6(xd)][5]
+                                [ref0 == ALTREF2_FRAME]++;
+#endif  // CONFIG_ALTREF2
           } else {
             const int bit1 = !(ref0 == LAST2_FRAME || ref0 == LAST_FRAME);
             counts
@@ -4671,6 +4685,9 @@ static int check_dual_ref_flags(AV1_COMP *cpi) {
 #if CONFIG_EXT_REFS
             !!(ref_flags & AOM_LAST2_FLAG) + !!(ref_flags & AOM_LAST3_FLAG) +
             !!(ref_flags & AOM_BWD_FLAG) +
+#if CONFIG_ALTREF2
+            !!(ref_flags & AOM_ALT2_FLAG) +
+#endif  // CONFIG_ALTREF2
 #endif  // CONFIG_EXT_REFS
             !!(ref_flags & AOM_ALT_FLAG)) >= 2;
   }
@@ -4702,7 +4719,11 @@ static MV_REFERENCE_FRAME get_frame_type(const AV1_COMP *cpi) {
   else if (cpi->rc.is_src_frame_alt_ref && cpi->refresh_golden_frame)
 #endif
     return ALTREF_FRAME;
-  else if (cpi->refresh_golden_frame || cpi->refresh_alt_ref_frame)
+  else if (cpi->refresh_golden_frame ||
+#if CONFIG_EXT_REFS && CONFIG_ALTREF2
+           cpi->refresh_alt2_ref_frame ||
+#endif  // CONFIG_EXT_REFS && CONFIG_ALTREF2
+           cpi->refresh_alt_ref_frame)
     return GOLDEN_FRAME;
   else
     // TODO(zoeliu): To investigate whether a frame_type other than
@@ -5389,8 +5410,13 @@ void av1_encode_frame(AV1_COMP *cpi) {
       cm->comp_fwd_ref[2] = LAST3_FRAME;
       cm->comp_fwd_ref[3] = GOLDEN_FRAME;
       cm->comp_bwd_ref[0] = BWDREF_FRAME;
+#if CONFIG_ALTREF2
+      cm->comp_bwd_ref[1] = ALTREF2_FRAME;
+      cm->comp_bwd_ref[2] = ALTREF_FRAME;
+#else   // !CONFIG_ALTREF2
       cm->comp_bwd_ref[1] = ALTREF_FRAME;
-#else
+#endif  // CONFIG_ALTREF2
+#else   // CONFIG_EXT_REFS
     cm->comp_fixed_ref = ALTREF_FRAME;
     cm->comp_var_ref[0] = LAST_FRAME;
     cm->comp_var_ref[1] = GOLDEN_FRAME;

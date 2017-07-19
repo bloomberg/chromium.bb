@@ -1666,7 +1666,7 @@ static void get_arf_buffer_indices(unsigned char *arf_buffer_indices) {
   arf_buffer_indices[0] = ARF_SLOT1;
   arf_buffer_indices[1] = ARF_SLOT2;
 }
-#endif
+#endif  // !CONFIG_EXT_REFS
 
 static void allocate_gf_group_bits(AV1_COMP *cpi, int64_t gf_group_bits,
                                    double group_error, int gf_arf_bits) {
@@ -1726,6 +1726,7 @@ static void allocate_gf_group_bits(AV1_COMP *cpi, int64_t gf_group_bits,
 
   // For key frames the frame target rate is already set and it
   // is also the golden frame.
+  // === [frame_index == 0] ===
   if (!key_frame) {
     if (rc->source_alt_ref_active) {
       gf_group->update_type[frame_index] = OVERLAY_UPDATE;
@@ -1763,6 +1764,7 @@ static void allocate_gf_group_bits(AV1_COMP *cpi, int64_t gf_group_bits,
 #endif  // CONFIG_EXT_REFS
 
   // Store the bits to spend on the ARF if there is one.
+  // === [frame_index == 1] ===
   if (rc->source_alt_ref_pending) {
     gf_group->update_type[frame_index] = ARF_UPDATE;
     gf_group->rf_level[frame_index] = GF_ARF_STD;
@@ -1792,8 +1794,8 @@ static void allocate_gf_group_bits(AV1_COMP *cpi, int64_t gf_group_bits,
     // We index ALTREF's as: KEY ----- ALT2 ----- ALT1 ----- ALT0
     // but code them in the following order:
     // KEY-ALT0-ALT2 ----- OVERLAY2-ALT1 ----- OVERLAY1 ----- OVERLAY0
-    arf_pos[0] =
-        frame_index + cpi->num_extra_arfs + gf_group->arf_src_offset[1] + 1;
+    arf_pos[0] = frame_index + cpi->num_extra_arfs +
+                 gf_group->arf_src_offset[frame_index] + 1;
     for (i = 0; i < cpi->num_extra_arfs; ++i) {
       arf_pos[i + 1] =
           frame_index + (cpi->num_extra_arfs - i) * (ext_arf_interval + 2);
@@ -1808,10 +1810,15 @@ static void allocate_gf_group_bits(AV1_COMP *cpi, int64_t gf_group_bits,
 
 #if CONFIG_EXT_REFS
     // Insert an extra ARF
+    // === [frame_index == 2] ===
     if (cpi->num_extra_arfs) {
+#if CONFIG_ALTREF2
+      gf_group->update_type[frame_index] = INTNL_ARF_UPDATE;
+#else   // !CONFIG_ALTREF2
       gf_group->update_type[frame_index] = ARF_UPDATE;
-      // Note (weitinglin): GF_ARF_LOW is also used as an identifier
-      //                    for internal ALT_REF's:
+// Note (weitinglin): GF_ARF_LOW is also used as an identifier
+//                    for internal ALT_REF's:
+#endif  // CONFIG_ALTREF2
       gf_group->rf_level[frame_index] = GF_ARF_LOW;
       gf_group->arf_src_offset[frame_index] = ext_arf_interval;
       gf_group->arf_update_idx[frame_index] = which_arf;
@@ -1819,7 +1826,7 @@ static void allocate_gf_group_bits(AV1_COMP *cpi, int64_t gf_group_bits,
       ++frame_index;
     }
     accumulative_subgroup_interval += subgroup_interval[cpi->num_extra_arfs];
-#else
+#else   // !CONFIG_EXT_ARFS
     if (cpi->multi_arf_enabled) {
       // Set aside a slot for a level 1 arf.
       gf_group->update_type[frame_index] = ARF_UPDATE;
@@ -1875,8 +1882,11 @@ static void allocate_gf_group_bits(AV1_COMP *cpi, int64_t gf_group_bits,
         clamp(target_frame_size, 0, AOMMIN(max_bits, (int)total_group_bits));
 
 #if CONFIG_EXT_REFS
-    // If we are going to have ARFs, check if we can have BWDREF in this
-    // subgroup.
+    // If we are going to have ARFs, check whether we can have BWDREF in this
+    // subgroup, and further, whether we can have ARF subgroup which contains
+    // the BWDREF subgroup but contained within the GF group:
+    //
+    // GF group --> ARF subgroup --> BWDREF subgroup
     if (rc->source_alt_ref_pending) {
       is_sg_bipred_enabled =
           is_bipred_enabled &&
@@ -1953,16 +1963,20 @@ static void allocate_gf_group_bits(AV1_COMP *cpi, int64_t gf_group_bits,
     ++frame_index;
 
 #if CONFIG_EXT_REFS
-    // Check if we need to update the ARF
+    // Check if we need to update the ARF.
     if (is_sg_bipred_enabled && cpi->num_extra_arfs && which_arf > 0 &&
         frame_index > arf_pos[which_arf]) {
       --which_arf;
       accumulative_subgroup_interval += subgroup_interval[which_arf] + 1;
-      // Meet the new subgroup. Reset the bipred_group_end flag;
+      // Meet the new subgroup; Reset the bipred_group_end flag.
       bipred_group_end = 0;
       // Insert another extra ARF after the overlay frame
       if (which_arf) {
+#if CONFIG_ALTREF2
+        gf_group->update_type[frame_index] = INTNL_ARF_UPDATE;
+#else  // !CONFIG_ALTREF2
         gf_group->update_type[frame_index] = ARF_UPDATE;
+#endif  // CONFIG_ALTREF2
         gf_group->rf_level[frame_index] = GF_ARF_LOW;
         gf_group->arf_src_offset[frame_index] = ext_arf_interval;
         gf_group->arf_update_idx[frame_index] = which_arf;
@@ -1991,11 +2005,15 @@ static void allocate_gf_group_bits(AV1_COMP *cpi, int64_t gf_group_bits,
 
 #if CONFIG_EXT_REFS
     if (cpi->num_extra_arfs) {
+      // Overwrite the update_type for internal ARF's:
+      //   Change from LF_UPDATE to INTNL_OVERLAY_UPDATE.
       for (i = cpi->num_extra_arfs; i > 0; --i) {
         int arf_pos_in_gf = (i == cpi->num_extra_arfs ? 2 : arf_pos[i + 1] + 1);
         gf_group->bit_allocation[arf_pos_in_gf] =
             gf_group->bit_allocation[arf_pos[i]];
         gf_group->update_type[arf_pos[i]] = INTNL_OVERLAY_UPDATE;
+        // Encoder's choice: Set show_existing_frame == 1 for both internal
+        // ARF's, and hence allocate zero bit for both internal OVERLAY frames.
         gf_group->bit_allocation[arf_pos[i]] = 0;
         gf_group->rf_level[arf_pos[i]] = INTER_NORMAL;
       }
@@ -2702,7 +2720,7 @@ static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
 static void configure_buffer_updates(AV1_COMP *cpi) {
   TWO_PASS *const twopass = &cpi->twopass;
 
-  // Wei-Ting: Should we define another function to take care of
+  // NOTE(weitinglin): Should we define another function to take care of
   // cpi->rc.is_$Source_Type to make this function as it is in the comment?
 
   cpi->rc.is_src_frame_alt_ref = 0;
@@ -2714,19 +2732,29 @@ static void configure_buffer_updates(AV1_COMP *cpi) {
 #endif  // CONFIG_EXT_REFS
 
   switch (twopass->gf_group.update_type[twopass->gf_group.index]) {
-    case KF_UPDATE:
+    case KF_UPDATE: cpi->refresh_last_frame = 1; cpi->refresh_golden_frame = 1;
 #if CONFIG_EXT_REFS
       cpi->refresh_bwd_ref_frame = 1;
+#if CONFIG_ALTREF2
+      cpi->refresh_alt2_ref_frame = 1;
+#endif  // CONFIG_ALTREF2
 #endif  // CONFIG_EXT_REFS
-      cpi->refresh_last_frame = 1;
-      cpi->refresh_golden_frame = 1;
       cpi->refresh_alt_ref_frame = 1;
       break;
 
-    case LF_UPDATE:
+    case LF_UPDATE: cpi->refresh_last_frame = 1; cpi->refresh_golden_frame = 0;
 #if CONFIG_EXT_REFS
-      // If we have extra ALT_REFs, we can use the farthest ALT (ALT0) as
-      // the BWD_REF.
+      cpi->refresh_bwd_ref_frame = 0;
+#if CONFIG_ALTREF2
+      cpi->refresh_alt2_ref_frame = 0;
+#endif  // CONFIG_ALTREF2
+#endif  // CONFIG_EXT_REFS
+      cpi->refresh_alt_ref_frame = 0;
+
+#if CONFIG_EXT_REFS && !CONFIG_ALTREF2
+      // If we have extra ALT_REFs, we may use the farthest ALT (ALT0) as
+      // the BWDREF_FRAME, as LF_UPDATE frames do not have BWDREF_FRAME
+      // available as their reference.
       if (cpi->num_extra_arfs) {
         int tmp = cpi->bwd_fb_idx;
 
@@ -2735,21 +2763,21 @@ static void configure_buffer_updates(AV1_COMP *cpi) {
         cpi->arf_map[0] = tmp;
 
         cpi->rc.is_bwd_ref_frame = 1;
-      } else {
-        cpi->rc.is_bwd_ref_frame = 0;
       }
-#endif  // CONFIG_EXT_REFS
-      cpi->refresh_last_frame = 1;
-      cpi->refresh_golden_frame = 0;
-      cpi->refresh_alt_ref_frame = 0;
+#endif  // CONFIG_EXT_REFS && !CONFIG_ALTREF2
       break;
 
     case GF_UPDATE:
-#if CONFIG_EXT_REFS
-      cpi->refresh_bwd_ref_frame = 0;
-#endif  // CONFIG_EXT_REFS
+      // TODO(zoeliu): To further investigate whether 'refresh_last_frame' is
+      //               needed.
       cpi->refresh_last_frame = 1;
       cpi->refresh_golden_frame = 1;
+#if CONFIG_EXT_REFS
+      cpi->refresh_bwd_ref_frame = 0;
+#if CONFIG_ALTREF2
+      cpi->refresh_alt2_ref_frame = 0;
+#endif  // CONFIG_ALTREF2
+#endif  // CONFIG_EXT_REFS
       cpi->refresh_alt_ref_frame = 0;
       break;
 
@@ -2758,17 +2786,25 @@ static void configure_buffer_updates(AV1_COMP *cpi) {
       cpi->refresh_golden_frame = 1;
 #if CONFIG_EXT_REFS
       cpi->refresh_bwd_ref_frame = 0;
+#if CONFIG_ALTREF2
+      cpi->refresh_alt2_ref_frame = 0;
+#endif  // CONFIG_ALTREF2
 #endif  // CONFIG_EXT_REFS
       cpi->refresh_alt_ref_frame = 0;
+
       cpi->rc.is_src_frame_alt_ref = 1;
       break;
 
-    case ARF_UPDATE:
+    case ARF_UPDATE: cpi->refresh_last_frame = 0; cpi->refresh_golden_frame = 0;
 #if CONFIG_EXT_REFS
+#if CONFIG_ALTREF2
+      // NOTE: BWDREF does not get updated along with ALTREF_FRAME.
+      cpi->refresh_bwd_ref_frame = 0;
+      cpi->refresh_alt2_ref_frame = 0;
+#else   // !CONFIG_ALTREF2
       cpi->refresh_bwd_ref_frame = 1;
+#endif  // CONFIG_ALTREF2
 #endif  // CONFIG_EXT_REFS
-      cpi->refresh_last_frame = 0;
-      cpi->refresh_golden_frame = 0;
       cpi->refresh_alt_ref_frame = 1;
       break;
 
@@ -2777,8 +2813,12 @@ static void configure_buffer_updates(AV1_COMP *cpi) {
       cpi->refresh_last_frame = 0;
       cpi->refresh_golden_frame = 0;
       cpi->refresh_bwd_ref_frame = 1;
+#if CONFIG_ALTREF2
+      cpi->refresh_alt2_ref_frame = 0;
+#endif  // CONFIG_ALTREF2
       cpi->refresh_alt_ref_frame = 0;
-      cpi->rc.is_bwd_ref_frame = 1;
+
+#if !CONFIG_ALTREF2
       if (cpi->num_extra_arfs) {
         // Allow BRF use the farthest ALT_REF (ALT0) as BWD_REF by swapping
         // the virtual indices.
@@ -2790,13 +2830,19 @@ static void configure_buffer_updates(AV1_COMP *cpi) {
         cpi->alt_fb_idx = cpi->arf_map[0];
         cpi->arf_map[0] = tmp;
       }
+#endif  // !CONFIG_ALTREF2
+      cpi->rc.is_bwd_ref_frame = 1;
       break;
 
     case LAST_BIPRED_UPDATE:
       cpi->refresh_last_frame = 1;
       cpi->refresh_golden_frame = 0;
       cpi->refresh_bwd_ref_frame = 0;
+#if CONFIG_ALTREF2
+      cpi->refresh_alt2_ref_frame = 0;
+#endif  // CONFIG_ALTREF2
       cpi->refresh_alt_ref_frame = 0;
+
       cpi->rc.is_last_bipred_frame = 1;
       break;
 
@@ -2804,7 +2850,11 @@ static void configure_buffer_updates(AV1_COMP *cpi) {
       cpi->refresh_last_frame = 1;
       cpi->refresh_golden_frame = 0;
       cpi->refresh_bwd_ref_frame = 0;
+#if CONFIG_ALTREF2
+      cpi->refresh_alt2_ref_frame = 0;
+#endif  // CONFIG_ALTREF2
       cpi->refresh_alt_ref_frame = 0;
+
       cpi->rc.is_bipred_frame = 1;
       break;
 
@@ -2812,10 +2862,24 @@ static void configure_buffer_updates(AV1_COMP *cpi) {
       cpi->refresh_last_frame = 1;
       cpi->refresh_golden_frame = 0;
       cpi->refresh_bwd_ref_frame = 0;
+#if CONFIG_ALTREF2
+      cpi->refresh_alt2_ref_frame = 0;
+#endif  // CONFIG_ALTREF2
       cpi->refresh_alt_ref_frame = 0;
+
       cpi->rc.is_src_frame_alt_ref = 1;
       cpi->rc.is_src_frame_ext_arf = 1;
       break;
+
+#if CONFIG_ALTREF2
+    case INTNL_ARF_UPDATE:
+      cpi->refresh_last_frame = 0;
+      cpi->refresh_golden_frame = 0;
+      cpi->refresh_bwd_ref_frame = 0;
+      cpi->refresh_alt2_ref_frame = 1;
+      cpi->refresh_alt_ref_frame = 0;
+      break;
+#endif  // CONFIG_ALTREF2
 #endif  // CONFIG_EXT_REFS
 
     default: assert(0); break;
@@ -2857,7 +2921,11 @@ void av1_rc_get_second_pass_params(AV1_COMP *cpi) {
 
   // If this is an arf frame then we dont want to read the stats file or
   // advance the input pointer as we already have what we need.
-  if (gf_group->update_type[gf_group->index] == ARF_UPDATE) {
+  if (gf_group->update_type[gf_group->index] == ARF_UPDATE
+#if CONFIG_EXT_REFS && CONFIG_ALTREF2
+      || gf_group->update_type[gf_group->index] == INTNL_ARF_UPDATE
+#endif  // CONFIG_EXT_REFS && CONFIG_ALTREF2
+      ) {
     configure_buffer_updates(cpi);
     target_rate = gf_group->bit_allocation[gf_group->index];
     target_rate = av1_rc_clamp_pframe_target_size(cpi, target_rate);

@@ -1590,12 +1590,22 @@ static void read_ref_frames(AV1_COMMON *const cm, MACROBLOCKD *const xd,
       const int ctx0 = av1_get_pred_context_single_ref_p1(xd);
 #if CONFIG_VAR_REFS
       int bit0;
+#if CONFIG_ALTREF2
+      // Test need to explicitly code (L,L2,L3,G) vs (BWD,ALT2,ALT) branch node
+      // in tree
+      if ((L_OR_L2(cm) || L3_OR_G(cm)) &&
+          (BWD_OR_ALT2(cm) || ALTREF_IS_VALID(cm)))
+        bit0 = READ_REF_BIT(single_ref_p1);
+      else
+        bit0 = (BWD_OR_ALT2(cm) || ALTREF_IS_VALID(cm));
+#else   // !CONFIG_ALTREF2
       // Test need to explicitly code (L,L2,L3,G) vs (BWD,ALT) branch node in
       // tree
       if ((L_OR_L2(cm) || L3_OR_G(cm)) && BWD_OR_ALT(cm))
         bit0 = READ_REF_BIT(single_ref_p1);
       else
         bit0 = BWD_OR_ALT(cm);
+#endif  // CONFIG_ALTREF2
 #else   // !CONFIG_VAR_REFS
       const int bit0 = READ_REF_BIT(single_ref_p1);
 #endif  // CONFIG_VAR_REFS
@@ -1605,10 +1615,11 @@ static void read_ref_frames(AV1_COMMON *const cm, MACROBLOCKD *const xd,
         const int ctx1 = av1_get_pred_context_single_ref_p2(xd);
 #if CONFIG_VAR_REFS
         int bit1;
-// Test need to explicitly code (BWD/ALT2) vs (ALT) branch node in tree
 #if CONFIG_ALTREF2
+        // Test need to explicitly code (BWD/ALT2) vs (ALT) branch node in tree
         const int bit1_uncertain = BWD_OR_ALT2(cm) && ALTREF_IS_VALID(cm);
 #else   // !CONFIG_ALTREF2
+        // Test need to explicitly code (BWD) vs (ALT) branch node in tree
         const int bit1_uncertain = BWD_AND_ALT(cm);
 #endif  // CONFIG_ALTREF2
         if (bit1_uncertain)
