@@ -2493,6 +2493,7 @@ if (enable_java_templates) {
         deps = [
           ":${target_name}_incremental",
         ]
+        assert(_apk_operations != [] || true)  # Prevent "unused variable".
       } else {
         forward_variables_from(invoker,
                                [
