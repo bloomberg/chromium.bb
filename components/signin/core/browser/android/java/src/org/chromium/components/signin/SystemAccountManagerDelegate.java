@@ -95,7 +95,7 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
     @Override
     public String getAuthToken(Account account, String authTokenScope) throws AuthException {
         assert !ThreadUtils.runningOnUiThread();
-        assert AccountManagerHelper.GOOGLE_ACCOUNT_TYPE.equals(account.type);
+        assert AccountManagerFacade.GOOGLE_ACCOUNT_TYPE.equals(account.type);
         try {
             return GoogleAuthUtil.getTokenWithNotification(
                     ContextUtils.getApplicationContext(), account, authTokenScope, null);

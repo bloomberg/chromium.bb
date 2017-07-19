@@ -15,7 +15,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.components.signin.AccountManagerHelper;
+import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.test.util.AccountHolder;
 import org.chromium.components.signin.test.util.FakeAccountManagerDelegate;
@@ -125,13 +125,13 @@ public class AndroidSyncSettingsTest extends InstrumentationTestCase {
 
     private void setupTestAccounts(Context context) {
         mAccountManager = new FakeAccountManagerDelegate(context);
-        AccountManagerHelper.overrideAccountManagerHelperForTests(context, mAccountManager);
+        AccountManagerFacade.overrideAccountManagerFacadeForTests(context, mAccountManager);
         mAccount = setupTestAccount("account@example.com");
         mAlternateAccount = setupTestAccount("alternate@example.com");
     }
 
     private Account setupTestAccount(String accountName) {
-        Account account = AccountManagerHelper.createAccountFromName(accountName);
+        Account account = AccountManagerFacade.createAccountFromName(accountName);
         AccountHolder.Builder accountHolder =
                 AccountHolder.builder(account).password("password").alwaysAccept(true);
         mAccountManager.addAccountHolderExplicitly(accountHolder.build());
@@ -142,7 +142,7 @@ public class AndroidSyncSettingsTest extends InstrumentationTestCase {
     protected void tearDown() throws Exception {
         super.tearDown();
         if (mNumberOfCallsToWait > 0) mCallbackHelper.waitForCallback(0, mNumberOfCallsToWait);
-        AccountManagerHelper.resetAccountManagerHelperForTests();
+        AccountManagerFacade.resetAccountManagerFacadeForTests();
     }
 
     private void enableChromeSyncOnUiThread() {

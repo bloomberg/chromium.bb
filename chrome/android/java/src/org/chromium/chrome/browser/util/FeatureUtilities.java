@@ -29,7 +29,7 @@ import org.chromium.chrome.browser.firstrun.FirstRunGlueImpl;
 import org.chromium.chrome.browser.omnibox.OmniboxPlaceholderFieldTrial;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.tabmodel.DocumentModeAssassin;
-import org.chromium.components.signin.AccountManagerHelper;
+import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.ui.base.DeviceFormFactor;
 
 import java.util.List;
@@ -89,7 +89,7 @@ public class FeatureUtilities {
     @VisibleForTesting
     static boolean hasGoogleAccountAuthenticator(Context context) {
         if (sHasGoogleAccountAuthenticator == null) {
-            AccountManagerHelper accountHelper = AccountManagerHelper.get();
+            AccountManagerFacade accountHelper = AccountManagerFacade.get();
             sHasGoogleAccountAuthenticator = accountHelper.hasGoogleAccountAuthenticator();
         }
         return sHasGoogleAccountAuthenticator;
@@ -97,7 +97,7 @@ public class FeatureUtilities {
 
     @VisibleForTesting
     static boolean hasGoogleAccounts(Context context) {
-        return AccountManagerHelper.get().hasGoogleAccounts();
+        return AccountManagerFacade.get().hasGoogleAccounts();
     }
 
     @SuppressLint("InlinedApi")

@@ -57,7 +57,7 @@ import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.ProfileSyncService.SyncStateChangedListener;
 import org.chromium.chrome.browser.sync.ui.SyncCustomizationFragment;
 import org.chromium.chrome.browser.util.IntentUtils;
-import org.chromium.components.signin.AccountManagerHelper;
+import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
 
 import java.util.HashMap;
@@ -195,7 +195,7 @@ public class AccountManagementFragment extends PreferenceFragment
      * @param profile Profile to use.
      */
     private static void startFetchingAccountsInformation(Context context, Profile profile) {
-        Account[] accounts = AccountManagerHelper.get().tryGetGoogleAccounts();
+        Account[] accounts = AccountManagerFacade.get().tryGetGoogleAccounts();
         for (Account account : accounts) {
             startFetchingAccountInformation(context, profile, account.name);
         }
@@ -381,7 +381,7 @@ public class AccountManagementFragment extends PreferenceFragment
         accountsCategory.removeAll();
 
         boolean isChildAccount = mProfile.isChild();
-        Account[] accounts = AccountManagerHelper.get().tryGetGoogleAccounts();
+        Account[] accounts = AccountManagerFacade.get().tryGetGoogleAccounts();
         for (final Account account : accounts) {
             Preference pref = new Preference(getActivity());
             pref.setLayoutResource(R.layout.account_management_account_row);

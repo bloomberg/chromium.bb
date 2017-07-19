@@ -7,8 +7,8 @@ package org.chromium.components.signin;
 import android.support.annotation.MainThread;
 
 /**
- * Observer that receives account change notifications. Use {@link AccountManagerHelper#addObserver}
- * and {@link AccountManagerHelper#removeObserver} to update registrations.
+ * Observer that receives account change notifications. Use {@link AccountManagerFacade#addObserver}
+ * and {@link AccountManagerFacade#removeObserver} to update registrations.
  */
 public interface AccountsChangeObserver {
     /**

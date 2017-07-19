@@ -72,7 +72,7 @@ import org.chromium.chrome.browser.webapps.WebApkVersionManager;
 import org.chromium.chrome.browser.webapps.WebappRegistry;
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
 import org.chromium.components.minidump_uploader.CrashFileManager;
-import org.chromium.components.signin.AccountManagerHelper;
+import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.content.browser.ChildProcessLauncherHelper;
 import org.chromium.content.common.ContentSwitches;
 import org.chromium.device.geolocation.LocationProviderFactory;
@@ -161,10 +161,10 @@ public class ProcessInitializationHandler {
             }
         });
 
-        // Initialize the AccountManagerHelper with the correct AccountManagerDelegate. Must be done
+        // Initialize the AccountManagerFacade with the correct AccountManagerDelegate. Must be done
         // only once and before AccountMangerHelper.get(...) is called to avoid using the
         // default AccountManagerDelegate.
-        AccountManagerHelper.initializeAccountManagerHelper(
+        AccountManagerFacade.initializeAccountManagerFacade(
                 AppHooks.get().createAccountManagerDelegate());
 
         // Set the unique identification generator for invalidations.  The

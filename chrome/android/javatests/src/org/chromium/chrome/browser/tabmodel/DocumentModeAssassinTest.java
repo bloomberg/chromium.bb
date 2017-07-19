@@ -401,7 +401,7 @@ public class DocumentModeAssassinTest {
      * Tests that the {@link DocumentTabModel}'s data is properly saved out for a
      * {@link TabModelImpl}.
      */
-    // TODO (thildebr): Test disabled for now, used to crash because of AccountManagerHelper, but
+    // TODO (thildebr): Test disabled for now, used to crash because of AccountManagerFacade, but
     // now fails because the tab model metadata file is actually incorrect.
     @Test
     @MediumTest

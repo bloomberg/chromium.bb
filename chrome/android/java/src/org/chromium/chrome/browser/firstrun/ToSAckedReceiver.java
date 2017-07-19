@@ -12,7 +12,7 @@ import android.os.Build;
 import android.os.Bundle;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.components.signin.AccountManagerHelper;
+import org.chromium.components.signin.AccountManagerFacade;
 
 import java.util.HashSet;
 import java.util.List;
@@ -56,7 +56,7 @@ public class ToSAckedReceiver extends BroadcastReceiver {
                 ContextUtils.getAppSharedPreferences().getStringSet(
                         TOS_ACKED_ACCOUNTS, null);
         if (toSAckedAccounts == null || toSAckedAccounts.isEmpty()) return false;
-        AccountManagerHelper accountHelper = AccountManagerHelper.get();
+        AccountManagerFacade accountHelper = AccountManagerFacade.get();
         List<String> accountNames = accountHelper.tryGetGoogleAccountNames();
         if (accountNames.isEmpty()) return false;
         for (int k = 0; k < accountNames.size(); k++) {

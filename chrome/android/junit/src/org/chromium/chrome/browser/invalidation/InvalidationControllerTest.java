@@ -31,7 +31,7 @@ import org.chromium.base.CollectionUtil;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
-import org.chromium.components.signin.AccountManagerHelper;
+import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.SystemAccountManagerDelegate;
 import org.chromium.components.sync.AndroidSyncSettings;
@@ -114,7 +114,7 @@ public class InvalidationControllerTest {
 
         ContextUtils.initApplicationContextForTests(mContext.getApplicationContext());
 
-        AccountManagerHelper.overrideAccountManagerHelperForTests(
+        AccountManagerFacade.overrideAccountManagerFacadeForTests(
                 mContext, new SystemAccountManagerDelegate());
 
         ModelTypeHelper.setTestDelegate(new ModelTypeHelper.TestDelegate() {
@@ -147,7 +147,7 @@ public class InvalidationControllerTest {
 
     @After
     public void tearDown() {
-        AccountManagerHelper.resetAccountManagerHelperForTests();
+        AccountManagerFacade.resetAccountManagerFacadeForTests();
     }
 
     /**

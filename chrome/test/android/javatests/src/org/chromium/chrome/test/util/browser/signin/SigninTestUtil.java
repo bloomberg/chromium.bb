@@ -15,7 +15,7 @@ import org.chromium.chrome.browser.init.ProcessInitializationHandler;
 import org.chromium.chrome.browser.signin.AccountIdProvider;
 import org.chromium.chrome.browser.signin.AccountTrackerService;
 import org.chromium.chrome.browser.signin.OAuth2TokenService;
-import org.chromium.components.signin.AccountManagerHelper;
+import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.test.util.AccountHolder;
 import org.chromium.components.signin.test.util.FakeAccountManagerDelegate;
@@ -54,7 +54,7 @@ public final class SigninTestUtil {
             }
         });
         sAccountManager = new FakeAccountManagerDelegate(sContext);
-        AccountManagerHelper.overrideAccountManagerHelperForTests(sContext, sAccountManager);
+        AccountManagerFacade.overrideAccountManagerFacadeForTests(sContext, sAccountManager);
         overrideAccountIdProvider();
         resetSigninState();
     }
@@ -116,7 +116,7 @@ public final class SigninTestUtil {
 
     private static Account createTestAccount(String accountName) {
         assert sContext != null;
-        Account account = AccountManagerHelper.createAccountFromName(accountName);
+        Account account = AccountManagerFacade.createAccountFromName(accountName);
         AccountHolder accountHolder = AccountHolder.builder(account).alwaysAccept(true).build();
         sAccountManager.addAccountHolderExplicitly(accountHolder);
         sAddedAccounts.add(accountHolder);
