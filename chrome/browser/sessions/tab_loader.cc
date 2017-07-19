@@ -103,8 +103,6 @@ TabLoader::TabLoader(base::TimeTicks restore_started)
   shared_tab_loader_ = this;
   this_retainer_ = this;
   base::MemoryCoordinatorClientRegistry::GetInstance()->Register(this);
-  for (auto& observer : SessionRestore::observers())
-    observer.OnSessionRestoreStartedLoadingTabs();
 }
 
 TabLoader::~TabLoader() {
@@ -112,8 +110,7 @@ TabLoader::~TabLoader() {
   DCHECK(shared_tab_loader_ == this);
   shared_tab_loader_ = nullptr;
   base::MemoryCoordinatorClientRegistry::GetInstance()->Unregister(this);
-  for (auto& observer : SessionRestore::observers())
-    observer.OnSessionRestoreFinishedLoadingTabs();
+  SessionRestore::OnTabLoaderFinishedLoadingTabs();
 }
 
 void TabLoader::StartLoading(const std::vector<RestoredTab>& tabs) {
