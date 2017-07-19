@@ -590,6 +590,9 @@ void HandleStartVoiceInteraction(const ui::Accelerator& accelerator) {
   } else if (accelerator.IsCmdDown() && accelerator.key_code() == ui::VKEY_A) {
     base::RecordAction(
         base::UserMetricsAction("VoiceInteraction.Started.Search_A"));
+  } else if (accelerator.key_code() == ui::VKEY_ASSISTANT) {
+    base::RecordAction(
+        base::UserMetricsAction("VoiceInteraction.Started.Assistant"));
   }
   Shell::Get()->app_list()->StartVoiceInteractionSession();
 }
