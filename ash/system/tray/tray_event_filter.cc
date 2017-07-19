@@ -10,7 +10,7 @@
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/system/tray/tray_bubble_wrapper.h"
 #include "ash/wm/container_finder.h"
-#include "ash/wm/maximize_mode/maximize_mode_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/widget/widget.h"
@@ -84,7 +84,7 @@ void TrayEventFilter::ProcessPressedEvent(const gfx::Point& location_in_screen,
 
     gfx::Rect bounds = bubble_widget->GetWindowBoundsInScreen();
     bounds.Inset(wrapper->bubble_view()->GetBorderInsets());
-    // System tray can be dragged to show the bubble if it is in maximize mode.
+    // System tray can be dragged to show the bubble if it is in tablet mode.
     // During the drag, the bubble's logical bounds can extend outside of the
     // work area, but its visual bounds are only within the work area. Restrict
     // |bounds| so that events located outside the bubble's visual bounds are
@@ -92,8 +92,8 @@ void TrayEventFilter::ProcessPressedEvent(const gfx::Point& location_in_screen,
     int bubble_container_id =
         wm::GetContainerForWindow(bubble_widget->GetNativeWindow())->id();
     if (Shell::Get()
-            ->maximize_mode_controller()
-            ->IsMaximizeModeWindowManagerEnabled() &&
+            ->tablet_mode_controller()
+            ->IsTabletModeWindowManagerEnabled() &&
         bubble_container_id == kShellWindowId_SettingBubbleContainer) {
       bounds.Intersect(bubble_widget->GetWorkAreaBoundsInScreen());
     }

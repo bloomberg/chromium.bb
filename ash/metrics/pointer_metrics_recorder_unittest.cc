@@ -8,7 +8,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/wm/maximize_mode/maximize_mode_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/test/histogram_tester.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -135,16 +135,14 @@ TEST_F(PointerMetricsRecorderTest, DownEventPerFormFactor) {
       ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_MOUSE),
       base::TimeTicks());
 
-  // Enable maximize mode
-  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
-      true);
+  // Enable tablet mode
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
   pointer_metrics_recorder_->OnPointerEventObserved(pointer_event, gfx::Point(),
                                                     target->GetNativeView());
   histogram_tester_->ExpectBucketCount(kFormFactorHistogramName, 1, 1);
 
-  // Disable maximize mode
-  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
-      false);
+  // Disable tablet mode
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
   pointer_metrics_recorder_->OnPointerEventObserved(pointer_event, gfx::Point(),
                                                     target->GetNativeView());
   histogram_tester_->ExpectBucketCount(kFormFactorHistogramName, 0, 1);

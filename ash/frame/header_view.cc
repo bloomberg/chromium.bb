@@ -138,12 +138,12 @@ void HeaderView::OnOverviewModeEnded() {
   caption_button_container_->SetVisible(true);
 }
 
-void HeaderView::OnMaximizeModeStarted() {
+void HeaderView::OnTabletModeStarted() {
   caption_button_container_->UpdateSizeButtonVisibility();
   parent()->Layout();
 }
 
-void HeaderView::OnMaximizeModeEnded() {
+void HeaderView::OnTabletModeEnded() {
   caption_button_container_->UpdateSizeButtonVisibility();
   parent()->Layout();
 }

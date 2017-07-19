@@ -40,7 +40,7 @@ class WMHelperMus : public WMHelper,
   void RemovePreTargetHandler(ui::EventHandler* handler) override;
   void AddPostTargetHandler(ui::EventHandler* handler) override;
   void RemovePostTargetHandler(ui::EventHandler* handler) override;
-  bool IsMaximizeModeWindowManagerEnabled() const override;
+  bool IsTabletModeWindowManagerEnabled() const override;
 
   // Overridden from aura::FocusSynchronizerObserver:
   void OnActiveFocusClientChanged(aura::client::FocusClient* focus_client,

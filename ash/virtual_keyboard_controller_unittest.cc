@@ -11,8 +11,8 @@
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/virtual_keyboard/virtual_keyboard_observer.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/wm/maximize_mode/maximize_mode_controller.h"
-#include "ash/wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard.h"
+#include "ash/wm/tablet_mode/scoped_disable_internal_mouse_and_keyboard.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/command_line.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/device_hotplug_event_observer.h"
@@ -45,8 +45,7 @@ class VirtualKeyboardControllerTest : public AshTestBase {
   // Sets the event blocker on the maximized window controller.
   void SetEventBlocker(
       std::unique_ptr<ScopedDisableInternalMouseAndKeyboard> blocker) {
-    Shell::Get()->maximize_mode_controller()->event_blocker_ =
-        std::move(blocker);
+    Shell::Get()->tablet_mode_controller()->event_blocker_ = std::move(blocker);
   }
 
   void SetUp() override {
@@ -80,9 +79,8 @@ class MockEventBlocker : public ScopedDisableInternalMouseAndKeyboard {
 // Tests that reenabling keyboard devices while shutting down does not
 // cause the Virtual Keyboard Controller to crash. See crbug.com/446204.
 TEST_F(VirtualKeyboardControllerTest, RestoreKeyboardDevices) {
-  // Toggle maximized mode on.
-  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
-      true);
+  // Toggle tablet mode on.
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
   std::unique_ptr<ScopedDisableInternalMouseAndKeyboard> blocker(
       new MockEventBlocker);
   SetEventBlocker(std::move(blocker));
@@ -133,7 +131,7 @@ class VirtualKeyboardControllerAutoTest : public VirtualKeyboardControllerTest,
 };
 
 // Tests that the onscreen keyboard is disabled if an internal keyboard is
-// present and maximized mode is disabled.
+// present and tablet mode is disabled.
 TEST_F(VirtualKeyboardControllerAutoTest, DisabledIfInternalKeyboardPresent) {
   std::vector<ui::TouchscreenDevice> screens;
   screens.push_back(
@@ -213,8 +211,8 @@ TEST_F(VirtualKeyboardControllerAutoTest, HandleMultipleKeyboardsPresent) {
   ASSERT_FALSE(keyboard::IsKeyboardEnabled());
 }
 
-// Tests maximized mode interaction without disabling the internal keyboard.
-TEST_F(VirtualKeyboardControllerAutoTest, EnabledDuringMaximizeMode) {
+// Tests tablet mode interaction without disabling the internal keyboard.
+TEST_F(VirtualKeyboardControllerAutoTest, EnabledDuringTabletMode) {
   std::vector<ui::TouchscreenDevice> screens;
   screens.push_back(
       ui::TouchscreenDevice(1, ui::InputDeviceType::INPUT_DEVICE_INTERNAL,
@@ -225,17 +223,15 @@ TEST_F(VirtualKeyboardControllerAutoTest, EnabledDuringMaximizeMode) {
       1, ui::InputDeviceType::INPUT_DEVICE_INTERNAL, "Keyboard"));
   UpdateKeyboardDevices(keyboard_devices);
   ASSERT_FALSE(keyboard::IsKeyboardEnabled());
-  // Toggle maximized mode on.
-  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
-      true);
+  // Toggle tablet mode on.
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
   ASSERT_TRUE(keyboard::IsKeyboardEnabled());
-  // Toggle maximized mode off.
-  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
-      false);
+  // Toggle tablet mode off.
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
   ASSERT_FALSE(keyboard::IsKeyboardEnabled());
 }
 
-// Tests that keyboard gets suppressed in maximized mode.
+// Tests that keyboard gets suppressed in tablet mode.
 TEST_F(VirtualKeyboardControllerAutoTest, SuppressedInMaximizedMode) {
   std::vector<ui::TouchscreenDevice> screens;
   screens.push_back(
@@ -248,9 +244,8 @@ TEST_F(VirtualKeyboardControllerAutoTest, SuppressedInMaximizedMode) {
   keyboard_devices.push_back(ui::InputDevice(
       2, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL, "Keyboard"));
   UpdateKeyboardDevices(keyboard_devices);
-  // Toggle maximized mode on.
-  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
-      true);
+  // Toggle tablet mode on.
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
   ASSERT_FALSE(keyboard::IsKeyboardEnabled());
   ASSERT_TRUE(notified());
   ASSERT_TRUE(IsVirtualKeyboardSuppressed());
@@ -274,9 +269,8 @@ TEST_F(VirtualKeyboardControllerAutoTest, SuppressedInMaximizedMode) {
   ASSERT_TRUE(keyboard::IsKeyboardEnabled());
   ASSERT_TRUE(notified());
   ASSERT_FALSE(IsVirtualKeyboardSuppressed());
-  // Toggle maximized mode oFF.
-  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
-      false);
+  // Toggle tablet mode oFF.
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
   ASSERT_FALSE(keyboard::IsKeyboardEnabled());
 }
 

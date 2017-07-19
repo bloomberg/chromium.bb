@@ -9,7 +9,7 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/wm/maximize_mode/maximize_mode_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -164,8 +164,7 @@ TEST_F(FrameCaptionButtonContainerViewTest,
 
   // Hidden size button should result in minimize button animating to the
   // right. The size button should not be visible, but should not have moved.
-  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
-      true);
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
   container.UpdateSizeButtonVisibility();
   test.EndAnimations();
   // Parent needs to layout in response to size change.
@@ -184,8 +183,7 @@ TEST_F(FrameCaptionButtonContainerViewTest,
 
   // Revealing the size button should cause the minimize button to return to its
   // original position.
-  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
-      false);
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
   container.UpdateSizeButtonVisibility();
   // Calling code needs to layout in response to size change.
   container.Layout();

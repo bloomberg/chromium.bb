@@ -16,7 +16,7 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_container.h"
 #include "ash/system/tray/tray_event_filter.h"
-#include "ash/wm/maximize_mode/maximize_mode_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/memory/ptr_util.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/compositor/layer.h"
@@ -447,8 +447,8 @@ aura::Window* TrayBackgroundView::GetBubbleWindowContainer() {
   // Place the bubble in |container|, or in a window clipped to the work area
   // in maximize mode, to avoid tray bubble and shelf overlap.
   if (Shell::Get()
-          ->maximize_mode_controller()
-          ->IsMaximizeModeWindowManagerEnabled()) {
+          ->tablet_mode_controller()
+          ->IsTabletModeWindowManagerEnabled()) {
     if (!clipping_window_.get()) {
       clipping_window_ = base::MakeUnique<aura::Window>(nullptr);
       clipping_window_->Init(ui::LAYER_NOT_DRAWN);

@@ -15,7 +15,7 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tri_view.h"
-#include "ash/wm/maximize_mode/maximize_mode_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -56,8 +56,8 @@ class BrightnessView : public ShellObserver,
   void SetBrightnessPercent(double percent);
 
   // ShellObserver:
-  void OnMaximizeModeStarted() override;
-  void OnMaximizeModeEnded() override;
+  void OnTabletModeStarted() override;
+  void OnTabletModeEnded() override;
 
  private:
   // views::View:
@@ -114,8 +114,8 @@ BrightnessView::BrightnessView(bool default_view, double initial_percent)
   if (is_default_view_) {
     Shell::Get()->AddShellObserver(this);
     SetVisible(Shell::Get()
-                   ->maximize_mode_controller()
-                   ->IsMaximizeModeWindowManagerEnabled());
+                   ->tablet_mode_controller()
+                   ->IsTabletModeWindowManagerEnabled());
   }
   tri_view->SetContainerVisible(TriView::Container::END, false);
 }
@@ -131,11 +131,11 @@ void BrightnessView::SetBrightnessPercent(double percent) {
     slider_->SetValue(static_cast<float>(percent / 100.0));
 }
 
-void BrightnessView::OnMaximizeModeStarted() {
+void BrightnessView::OnTabletModeStarted() {
   SetVisible(true);
 }
 
-void BrightnessView::OnMaximizeModeEnded() {
+void BrightnessView::OnTabletModeEnded() {
   SetVisible(false);
 }
 

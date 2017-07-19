@@ -224,10 +224,10 @@ AppListView::~AppListView() {
 
 void AppListView::Initialize(gfx::NativeView parent,
                              int initial_apps_page,
-                             bool is_maximize_mode,
+                             bool is_tablet_mode,
                              bool is_side_shelf) {
   base::Time start_time = base::Time::Now();
-  is_maximize_mode_ = is_maximize_mode;
+  is_tablet_mode_ = is_tablet_mode;
   is_side_shelf_ = is_side_shelf;
   InitContents(parent, initial_apps_page);
   AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
@@ -560,7 +560,7 @@ void AppListView::EndDrag(const gfx::Point& location) {
           SetState(CLOSED);
           break;
         case FULLSCREEN_ALL_APPS:
-          SetState(is_maximize_mode_ || is_side_shelf_ ? CLOSED : PEEKING);
+          SetState(is_tablet_mode_ || is_side_shelf_ ? CLOSED : PEEKING);
           break;
         case CLOSED:
           NOTREACHED();
@@ -616,7 +616,7 @@ void AppListView::EndDrag(const gfx::Point& location) {
     switch (app_list_state_) {
       case FULLSCREEN_ALL_APPS:
         if (std::abs(drag_delta) > app_list_threshold)
-          SetState(is_maximize_mode_ || is_side_shelf_ ? CLOSED : PEEKING);
+          SetState(is_tablet_mode_ || is_side_shelf_ ? CLOSED : PEEKING);
         else
           SetState(app_list_state_);
         break;
@@ -682,10 +682,10 @@ void AppListView::SetStateFromSearchBoxView(bool search_box_is_empty) {
   }
 }
 
-void AppListView::OnMaximizeModeChanged(bool started) {
-  is_maximize_mode_ = started;
-  if (is_maximize_mode_ && !is_fullscreen()) {
-    // Set |app_list_state_| to a maximize mode friendly state.
+void AppListView::OnTabletModeChanged(bool started) {
+  is_tablet_mode_ = started;
+  if (is_tablet_mode_ && !is_fullscreen()) {
+    // Set |app_list_state_| to a tablet mode friendly state.
     SetState(app_list_state_ == PEEKING ? FULLSCREEN_ALL_APPS
                                         : FULLSCREEN_SEARCH);
   }
@@ -879,9 +879,9 @@ void AppListView::SchedulePaintInRect(const gfx::Rect& rect) {
 
 void AppListView::SetState(AppListState new_state) {
   AppListState new_state_override = new_state;
-  if (is_side_shelf_ || is_maximize_mode_) {
-    // If side shelf or maximize mode are active, all transitions should be
-    // made to the maximize mode/side shelf friendly versions.
+  if (is_side_shelf_ || is_tablet_mode_) {
+    // If side shelf or tablet mode are active, all transitions should be
+    // made to the tablet mode/side shelf friendly versions.
     if (new_state == PEEKING)
       new_state_override = FULLSCREEN_ALL_APPS;
     else if (new_state == HALF)

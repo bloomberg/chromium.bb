@@ -6,7 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/system/tray/tray_background_view.h"
-#include "ash/wm/maximize_mode/maximize_mode_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 
 namespace ash {
 
@@ -15,8 +15,8 @@ TrayDragController::TrayDragController(Shelf* shelf) : shelf_(shelf) {}
 void TrayDragController::ProcessGestureEvent(ui::GestureEvent* event,
                                              TrayBackgroundView* tray_view) {
   if (!Shell::Get()
-           ->maximize_mode_controller()
-           ->IsMaximizeModeWindowManagerEnabled() ||
+           ->tablet_mode_controller()
+           ->IsTabletModeWindowManagerEnabled() ||
       !shelf_->IsHorizontalAlignment()) {
     return;
   }

@@ -72,7 +72,7 @@ class ShellPortMash : public ShellPort {
       wm::WindowState* window_state) override;
   std::unique_ptr<WindowCycleEventFilter> CreateWindowCycleEventFilter()
       override;
-  std::unique_ptr<wm::MaximizeModeEventHandler> CreateMaximizeModeEventHandler()
+  std::unique_ptr<wm::TabletModeEventHandler> CreateTabletModeEventHandler()
       override;
   std::unique_ptr<WorkspaceEventHandler> CreateWorkspaceEventHandler(
       aura::Window* workspace_window) override;

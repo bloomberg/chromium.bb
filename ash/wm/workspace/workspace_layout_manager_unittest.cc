@@ -26,8 +26,8 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_accessibility_delegate.h"
 #include "ash/wm/fullscreen_window_finder.h"
-#include "ash/wm/maximize_mode/maximize_mode_backdrop_delegate_impl.h"
 #include "ash/wm/overview/window_selector_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_backdrop_delegate_impl.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
@@ -978,7 +978,7 @@ class WorkspaceLayoutManagerBackdropTest : public AshTestBase {
   void ShowTopWindowBackdrop(bool show) {
     std::unique_ptr<BackdropDelegate> backdrop;
     if (show) {
-      backdrop = base::MakeUnique<MaximizeModeBackdropDelegateImpl>();
+      backdrop = base::MakeUnique<TabletModeBackdropDelegateImpl>();
     }
     GetWorkspaceLayoutManager(default_container_)
         ->SetBackdropDelegate(std::move(backdrop));
@@ -1234,7 +1234,7 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, BackdropTest) {
     EXPECT_EQ(children[3], window3.get());
   }
 
-  // Enabling the backdrop delegate for maximized mode will put the
+  // Enabling the backdrop delegate for tablet mode will put the
   // backdrop on the top most window.
   ShowTopWindowBackdrop(true);
   {

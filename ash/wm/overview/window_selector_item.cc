@@ -12,13 +12,13 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
-#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/overview/cleanup_animation_observer.h"
 #include "ash/wm/overview/overview_animation_type.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
 #include "ash/wm/overview/scoped_transform_overview_window.h"
 #include "ash/wm/overview/window_selector.h"
 #include "ash/wm/overview/window_selector_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "base/auto_reset.h"
 #include "base/strings/string_util.h"
@@ -533,8 +533,8 @@ void WindowSelectorItem::ButtonPressed(views::Button* sender,
     Shell::Get()->metrics()->RecordUserMetricsAction(
         UMA_WINDOW_OVERVIEW_CLOSE_BUTTON);
     if (ash::Shell::Get()
-            ->maximize_mode_controller()
-            ->IsMaximizeModeWindowManagerEnabled()) {
+            ->tablet_mode_controller()
+            ->IsTabletModeWindowManagerEnabled()) {
       ash::Shell::Get()->metrics()->RecordUserMetricsAction(
           ash::UMA_TABLET_WINDOW_CLOSE_THROUGH_OVERVIEW_CLOSE_BUTTON);
     }

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard_x11.h"
+#include "ash/wm/tablet_mode/scoped_disable_internal_mouse_and_keyboard_x11.h"
 
-#include <X11/extensions/XInput2.h>
 #include <X11/Xlib.h>
+#include <X11/extensions/XInput2.h>
 
 #include <memory>
 #include <set>

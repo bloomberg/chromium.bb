@@ -12,7 +12,7 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/wallpaper/wallpaper_delegate.h"
-#include "ash/wm/maximize_mode/maximize_mode_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/metrics/user_metrics.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/fullscreen.h"
@@ -126,8 +126,8 @@ void LauncherContextMenu::ExecuteCommand(int command_id, int event_flags) {
       }
       base::RecordAction(base::UserMetricsAction("CloseFromContextMenu"));
       if (ash::Shell::Get()
-              ->maximize_mode_controller()
-              ->IsMaximizeModeWindowManagerEnabled()) {
+              ->tablet_mode_controller()
+              ->IsTabletModeWindowManagerEnabled()) {
         base::RecordAction(
             base::UserMetricsAction("Tablet_WindowCloseFromContextMenu"));
       }

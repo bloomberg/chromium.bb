@@ -22,7 +22,7 @@ class Rect;
 
 namespace ash {
 class LockWindowState;
-class MaximizeModeWindowState;
+class TabletModeWindowState;
 
 namespace mojom {
 enum class WindowPinType;
@@ -326,7 +326,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
  private:
   friend class DefaultState;
   friend class ash::LockWindowState;
-  friend class ash::MaximizeModeWindowState;
+  friend class ash::TabletModeWindowState;
   friend WindowState* GetWindowState(aura::Window*);
   FRIEND_TEST_ALL_PREFIXES(WindowAnimationsTest, CrossFadeToBounds);
   FRIEND_TEST_ALL_PREFIXES(WindowAnimationsTest,

@@ -94,8 +94,8 @@ class ASH_EXPORT TabletPowerButtonController
                         const base::TimeTicks& timestamp) override;
 
   // Overridden from ShellObserver:
-  void OnMaximizeModeStarted() override;
-  void OnMaximizeModeEnded() override;
+  void OnTabletModeStarted() override;
+  void OnTabletModeEnded() override;
 
   // Overridden from ui::EventHandler:
   void OnKeyEvent(ui::KeyEvent* event) override;

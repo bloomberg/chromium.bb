@@ -16,7 +16,7 @@
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/wm/maximize_mode/maximize_mode_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
@@ -810,9 +810,9 @@ TEST_F(DisplayPreferencesTest, DontSaveAndRestoreAllOff) {
             shell->display_configurator()->requested_power_state());
 }
 
-// Tests that display configuration changes caused by MaximizeModeController
+// Tests that display configuration changes caused by TabletModeController
 // are not saved.
-TEST_F(DisplayPreferencesTest, DontSaveMaximizeModeControllerRotations) {
+TEST_F(DisplayPreferencesTest, DontSaveTabletModeControllerRotations) {
   ash::Shell* shell = ash::Shell::Get();
   display::Display::SetInternalDisplayId(
       display::Screen::GetScreen()->GetPrimaryDisplay().id());
@@ -826,16 +826,16 @@ TEST_F(DisplayPreferencesTest, DontSaveMaximizeModeControllerRotations) {
                                         display::Display::ROTATE_0,
                                         display::Display::ROTATION_SOURCE_USER);
 
-  // Open up 270 degrees to trigger maximize mode
+  // Open up 270 degrees to trigger tablet mode
   scoped_refptr<chromeos::AccelerometerUpdate> update(
       new chromeos::AccelerometerUpdate());
   update->Set(chromeos::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD, 0.0f, 0.0f,
              kMeanGravity);
   update->Set(chromeos::ACCELEROMETER_SOURCE_SCREEN, 0.0f, -kMeanGravity, 0.0f);
-  ash::MaximizeModeController* controller =
-      ash::Shell::Get()->maximize_mode_controller();
+  ash::TabletModeController* controller =
+      ash::Shell::Get()->tablet_mode_controller();
   controller->OnAccelerometerUpdated(update);
-  EXPECT_TRUE(controller->IsMaximizeModeWindowManagerEnabled());
+  EXPECT_TRUE(controller->IsTabletModeWindowManagerEnabled());
 
   // Trigger 90 degree rotation
   update->Set(chromeos::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD, -kMeanGravity,
@@ -938,7 +938,7 @@ TEST_F(DisplayPreferencesTest, StoreRotationStateNormalUser) {
 }
 
 // Tests that rotation state is loaded without a user being logged in, and that
-// entering maximize mode applies the state.
+// entering tablet mode applies the state.
 TEST_F(DisplayPreferencesTest, LoadRotationNoLogin) {
   display::Display::SetInternalDisplayId(
       display::Screen::GetScreen()->GetPrimaryDisplay().id());
@@ -964,28 +964,28 @@ TEST_F(DisplayPreferencesTest, LoadRotationNoLogin) {
   EXPECT_EQ(display::Display::ROTATE_90, display_rotation);
 
   bool rotation_lock = IsRotationLocked();
-  display::Display::Rotation before_maximize_mode_rotation =
+  display::Display::Rotation before_tablet_mode_rotation =
       GetCurrentInternalDisplayRotation();
 
-  // Settings should not be applied until maximize mode activates
+  // Settings should not be applied until tablet mode activates
   EXPECT_FALSE(rotation_lock);
-  EXPECT_EQ(display::Display::ROTATE_0, before_maximize_mode_rotation);
+  EXPECT_EQ(display::Display::ROTATE_0, before_tablet_mode_rotation);
 
-  // Open up 270 degrees to trigger maximize mode
+  // Open up 270 degrees to trigger tablet mode
   scoped_refptr<chromeos::AccelerometerUpdate> update(
       new chromeos::AccelerometerUpdate());
   update->Set(chromeos::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD, 0.0f, 0.0f,
              kMeanGravity);
   update->Set(chromeos::ACCELEROMETER_SOURCE_SCREEN, 0.0f, -kMeanGravity, 0.0f);
-  ash::MaximizeModeController* maximize_mode_controller =
-      ash::Shell::Get()->maximize_mode_controller();
-  maximize_mode_controller->OnAccelerometerUpdated(update);
-  EXPECT_TRUE(maximize_mode_controller->IsMaximizeModeWindowManagerEnabled());
+  ash::TabletModeController* tablet_mode_controller =
+      ash::Shell::Get()->tablet_mode_controller();
+  tablet_mode_controller->OnAccelerometerUpdated(update);
+  EXPECT_TRUE(tablet_mode_controller->IsTabletModeWindowManagerEnabled());
   bool screen_orientation_rotation_lock = IsRotationLocked();
-  display::Display::Rotation maximize_mode_rotation =
+  display::Display::Rotation tablet_mode_rotation =
       GetCurrentInternalDisplayRotation();
   EXPECT_TRUE(screen_orientation_rotation_lock);
-  EXPECT_EQ(display::Display::ROTATE_90, maximize_mode_rotation);
+  EXPECT_EQ(display::Display::ROTATE_90, tablet_mode_rotation);
 }
 
 // Tests that rotation lock being set causes the rotation state to be saved.

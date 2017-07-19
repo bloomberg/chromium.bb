@@ -932,11 +932,11 @@ TEST_F(ShellSurfaceTest, MaximizedAndImmersiveFullscreenBackdrop) {
 
   ash::wm::WMEvent maximize_event(ash::wm::WM_EVENT_TOGGLE_MAXIMIZE);
 
-  // Enter maximized mode.
+  // Enter tablet mode.
   ash::wm::GetWindowState(window)->OnWMEvent(&maximize_event);
   EXPECT_TRUE(test_helper.GetBackdropWindow());
 
-  // Leave maximized mode.
+  // Leave tablet mode.
   ash::wm::GetWindowState(window)->OnWMEvent(&maximize_event);
   EXPECT_FALSE(test_helper.GetBackdropWindow());
 }

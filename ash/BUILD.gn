@@ -656,21 +656,6 @@ component("ash") {
     "wm/lock_state_observer.h",
     "wm/lock_window_state.cc",
     "wm/lock_window_state.h",
-    "wm/maximize_mode/maximize_mode_backdrop_delegate_impl.cc",
-    "wm/maximize_mode/maximize_mode_backdrop_delegate_impl.h",
-    "wm/maximize_mode/maximize_mode_controller.cc",
-    "wm/maximize_mode/maximize_mode_controller.h",
-    "wm/maximize_mode/maximize_mode_event_handler.cc",
-    "wm/maximize_mode/maximize_mode_event_handler.h",
-    "wm/maximize_mode/maximize_mode_event_handler_aura.cc",
-    "wm/maximize_mode/maximize_mode_event_handler_aura.h",
-    "wm/maximize_mode/maximize_mode_window_manager.cc",
-    "wm/maximize_mode/maximize_mode_window_manager.h",
-    "wm/maximize_mode/maximize_mode_window_state.cc",
-    "wm/maximize_mode/maximize_mode_window_state.h",
-    "wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard.h",
-    "wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard_x11.cc",
-    "wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard_x11.h",
     "wm/mru_window_tracker.cc",
     "wm/mru_window_tracker.h",
     "wm/native_cursor_manager_ash.h",
@@ -741,6 +726,21 @@ component("ash") {
     "wm/system_modal_container_layout_manager.h",
     "wm/system_wallpaper_controller.cc",
     "wm/system_wallpaper_controller.h",
+    "wm/tablet_mode/scoped_disable_internal_mouse_and_keyboard.h",
+    "wm/tablet_mode/scoped_disable_internal_mouse_and_keyboard_x11.cc",
+    "wm/tablet_mode/scoped_disable_internal_mouse_and_keyboard_x11.h",
+    "wm/tablet_mode/tablet_mode_backdrop_delegate_impl.cc",
+    "wm/tablet_mode/tablet_mode_backdrop_delegate_impl.h",
+    "wm/tablet_mode/tablet_mode_controller.cc",
+    "wm/tablet_mode/tablet_mode_controller.h",
+    "wm/tablet_mode/tablet_mode_event_handler.cc",
+    "wm/tablet_mode/tablet_mode_event_handler.h",
+    "wm/tablet_mode/tablet_mode_event_handler_aura.cc",
+    "wm/tablet_mode/tablet_mode_event_handler_aura.h",
+    "wm/tablet_mode/tablet_mode_window_manager.cc",
+    "wm/tablet_mode/tablet_mode_window_manager.h",
+    "wm/tablet_mode/tablet_mode_window_state.cc",
+    "wm/tablet_mode/tablet_mode_window_state.h",
     "wm/toplevel_window_event_handler.cc",
     "wm/toplevel_window_event_handler.h",
     "wm/video_detector.cc",
@@ -910,8 +910,8 @@ component("ash") {
     sources -= [
       "host/ash_window_tree_host_x11.cc",
       "host/ash_window_tree_host_x11.h",
-      "wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard_x11.cc",
-      "wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard_x11.h",
+      "wm/tablet_mode/scoped_disable_internal_mouse_and_keyboard_x11.cc",
+      "wm/tablet_mode/scoped_disable_internal_mouse_and_keyboard_x11.h",
     ]
   }
 
@@ -922,10 +922,10 @@ component("ash") {
       "//ui/ozone",
     ]
     sources += [
-      "wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard_ozone.cc",
-      "wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard_ozone.h",
-      "wm/maximize_mode/touchpad_and_keyboard_disabler.cc",
-      "wm/maximize_mode/touchpad_and_keyboard_disabler.h",
+      "wm/tablet_mode/scoped_disable_internal_mouse_and_keyboard_ozone.cc",
+      "wm/tablet_mode/scoped_disable_internal_mouse_and_keyboard_ozone.h",
+      "wm/tablet_mode/touchpad_and_keyboard_disabler.cc",
+      "wm/tablet_mode/touchpad_and_keyboard_disabler.h",
     ]
   }
 
@@ -1260,8 +1260,6 @@ source_set("common_unittests") {
     "wm/container_finder_unittest.cc",
     "wm/immersive_fullscreen_controller_unittest.cc",
     "wm/lock_state_controller_unittest.cc",
-    "wm/maximize_mode/accelerometer_test_data_literals.cc",
-    "wm/maximize_mode/maximize_mode_window_manager_unittest.cc",
     "wm/mru_window_tracker_unittest.cc",
     "wm/overlay_event_filter_unittest.cc",
     "wm/overview/cleanup_animation_observer_unittest.cc",
@@ -1275,6 +1273,8 @@ source_set("common_unittests") {
     "wm/splitview/split_view_controller_unittest.cc",
     "wm/stacking_controller_unittest.cc",
     "wm/system_modal_container_layout_manager_unittest.cc",
+    "wm/tablet_mode/accelerometer_test_data_literals.cc",
+    "wm/tablet_mode/tablet_mode_window_manager_unittest.cc",
     "wm/toplevel_window_event_handler_unittest.cc",
     "wm/video_detector_unittest.cc",
     "wm/window_animations_unittest.cc",
@@ -1333,7 +1333,7 @@ source_set("common_unittests") {
   ]
 
   if (use_ozone) {
-    sources += [ "wm/maximize_mode/touchpad_and_keyboard_disabler_unittest.cc" ]
+    sources += [ "wm/tablet_mode/touchpad_and_keyboard_disabler_unittest.cc" ]
   }
 }
 
@@ -1425,7 +1425,7 @@ test("ash_unittests") {
     "wm/lock_layout_manager_unittest.cc",
 
     # TODO: investigate failures in mash. http://crbug.com/698092.
-    "wm/maximize_mode/maximize_mode_controller_unittest.cc",
+    "wm/tablet_mode/tablet_mode_controller_unittest.cc",
 
     # TODO: mash doesn't support CursorManager. http://crbug.com/631103.
     "wm/resize_shadow_and_cursor_unittest.cc",

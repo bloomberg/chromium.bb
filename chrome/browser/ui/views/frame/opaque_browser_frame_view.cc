@@ -198,7 +198,7 @@ int OpaqueBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
   // See if we're in the sysmenu region.  We still have to check the tabstrip
   // first so that clicks in a tab don't get treated as sysmenu clicks.
   gfx::Rect sysmenu_rect(IconBounds());
-  // In maximized mode we extend the rect to the screen corner to take advantage
+  // In tablet mode we extend the rect to the screen corner to take advantage
   // of Fitts' Law.
   if (layout_->IsTitleBarCondensed())
     sysmenu_rect.SetRect(0, 0, sysmenu_rect.right(), sysmenu_rect.bottom());
@@ -603,7 +603,7 @@ void OpaqueBrowserFrameView::PaintClientEdge(gfx::Canvas* canvas) const {
                                         client_bounds, true);
   }
 
-  // In maximized mode, the only edge to draw is the top one, so we're done.
+  // In tablet mode, the only edge to draw is the top one, so we're done.
   if (layout_->IsTitleBarCondensed())
     return;
 

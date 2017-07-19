@@ -40,7 +40,7 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   ~SplitViewController() override;
 
   // Returns true if split view mode is supported. Currently the split view
-  // mode is only supported in maximized mode (tablet mode).
+  // mode is only supported in tablet mode (tablet mode).
   static bool ShouldAllowSplitView();
 
   // Returns true if split view mode is active.

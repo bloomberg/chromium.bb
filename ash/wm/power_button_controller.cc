@@ -14,8 +14,8 @@
 #include "ash/system/power/tablet_power_button_controller.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/wm/lock_state_controller.h"
-#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/session_state_animator.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/command_line.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -60,8 +60,8 @@ void PowerButtonController::OnPowerButtonEvent(
 
   bool should_take_screenshot = down && volume_down_pressed_ &&
                                 Shell::Get()
-                                    ->maximize_mode_controller()
-                                    ->IsMaximizeModeWindowManagerEnabled();
+                                    ->tablet_mode_controller()
+                                    ->IsTabletModeWindowManagerEnabled();
 
   if (!has_legacy_power_button_ && !should_take_screenshot &&
       tablet_controller_ &&

@@ -10,7 +10,7 @@
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/wm/maximize_mode/maximize_mode_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ui/views/view.h"
 
 namespace ash {
@@ -38,27 +38,23 @@ TEST_F(TrayKeyboardBrightnessTest, CreateDetailedView) {
   EXPECT_TRUE(tray->visible());
 }
 
-// Tests that when the detailed view is created during MaximizeMode that its
+// Tests that when the detailed view is created during TabletMode that its
 // KeyboardBrightnessView is visible.
-TEST_F(TrayKeyboardBrightnessTest, CreateDetailedViewDuringMaximizeMode) {
-  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
-      true);
+TEST_F(TrayKeyboardBrightnessTest, CreateDetailedViewDuringTabletMode) {
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
   std::unique_ptr<views::View> tray(CreateDetailedView());
   EXPECT_TRUE(tray->visible());
-  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
-      false);
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
 }
 
-// Tests that the enabling of MaximizeMode has no affect on the visibility of a
+// Tests that the enabling of TabletMode has no affect on the visibility of a
 // previously created KeyboardBrightnessView that belongs to a detailed view.
 TEST_F(TrayKeyboardBrightnessTest,
-       DetailedViewVisibilityChangesDuringMaximizeMode) {
+       DetailedViewVisibilityChangesDuringTabletMode) {
   std::unique_ptr<views::View> tray(CreateDetailedView());
-  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
-      true);
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
   EXPECT_TRUE(tray->visible());
-  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
-      false);
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
   EXPECT_TRUE(tray->visible());
 }
 

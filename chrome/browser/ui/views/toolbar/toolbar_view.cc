@@ -574,7 +574,7 @@ void ToolbarView::Layout() {
   //                required.
   browser_actions_->Layout();
 
-  // Extend the app menu to the screen's right edge in maximized mode just like
+  // Extend the app menu to the screen's right edge in tablet mode just like
   // we extend the back button to the left edge.
   if (maximized)
     app_menu_width += end_padding;

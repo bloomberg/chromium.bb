@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/maximize_mode/touchpad_and_keyboard_disabler.h"
+#include "ash/wm/tablet_mode/touchpad_and_keyboard_disabler.h"
 
 #include <memory>
 #include <utility>

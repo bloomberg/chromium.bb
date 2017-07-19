@@ -10,7 +10,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_notifier.h"
-#include "ash/wm/maximize_mode/maximize_mode_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/strings/string_util.h"
@@ -79,7 +79,7 @@ VirtualKeyboardController::~VirtualKeyboardController() {
   ui::InputDeviceManager::GetInstance()->RemoveObserver(this);
 }
 
-void VirtualKeyboardController::OnMaximizeModeStarted() {
+void VirtualKeyboardController::OnTabletModeStarted() {
   if (!IsVirtualKeyboardEnabled()) {
     SetKeyboardEnabled(true);
   } else {
@@ -87,7 +87,7 @@ void VirtualKeyboardController::OnMaximizeModeStarted() {
   }
 }
 
-void VirtualKeyboardController::OnMaximizeModeEnded() {
+void VirtualKeyboardController::OnTabletModeEnded() {
   if (!IsVirtualKeyboardEnabled()) {
     SetKeyboardEnabled(false);
   } else {
@@ -187,13 +187,13 @@ void VirtualKeyboardController::UpdateDevices() {
 void VirtualKeyboardController::UpdateKeyboardEnabled() {
   if (!IsVirtualKeyboardEnabled()) {
     SetKeyboardEnabled(Shell::Get()
-                           ->maximize_mode_controller()
-                           ->IsMaximizeModeWindowManagerEnabled());
+                           ->tablet_mode_controller()
+                           ->IsTabletModeWindowManagerEnabled());
     return;
   }
   bool ignore_internal_keyboard = Shell::Get()
-                                      ->maximize_mode_controller()
-                                      ->IsMaximizeModeWindowManagerEnabled();
+                                      ->tablet_mode_controller()
+                                      ->IsTabletModeWindowManagerEnabled();
   bool is_internal_keyboard_active =
       has_internal_keyboard_ && !ignore_internal_keyboard;
   SetKeyboardEnabled(!is_internal_keyboard_active && has_touchscreen_ &&

@@ -12,7 +12,7 @@
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shell.h"
 #include "ash/touch/touch_uma.h"
-#include "ash/wm/maximize_mode/maximize_mode_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -36,11 +36,11 @@ const int kPositionAnimationDurationMs = 500;
 // Duration of the animation of the alpha of |size_button_|.
 const int kAlphaAnimationDurationMs = 250;
 
-// Delay during |maximize_mode_animation_| hide to wait before beginning to
+// Delay during |tablet_mode_animation_| hide to wait before beginning to
 // animate the position of |minimize_button_|.
 const int kHidePositionDelayMs = 100;
 
-// Duration of |maximize_mode_animation_| hiding.
+// Duration of |tablet_mode_animation_| hiding.
 // Hiding size button 250
 // |------------------------|
 // Delay 100      Slide minimize button 500
@@ -48,39 +48,39 @@ const int kHidePositionDelayMs = 100;
 const int kHideAnimationDurationMs =
     kHidePositionDelayMs + kPositionAnimationDurationMs;
 
-// Delay during |maximize_mode_animation_| show to wait before beginning to
+// Delay during |tablet_mode_animation_| show to wait before beginning to
 // animate the alpha of |size_button_|.
 const int kShowAnimationAlphaDelayMs = 100;
 
-// Duration of |maximize_mode_animation_| showing.
+// Duration of |tablet_mode_animation_| showing.
 // Slide minimize button 500
 // |-------------------------------------------------|
 // Delay 100   Show size button 250
 // |---------|-----------------------|
 const int kShowAnimationDurationMs = kPositionAnimationDurationMs;
 
-// Value of |maximize_mode_animation_| showing to begin animating alpha of
+// Value of |tablet_mode_animation_| showing to begin animating alpha of
 // |size_button_|.
 float SizeButtonShowStartValue() {
   return static_cast<float>(kShowAnimationAlphaDelayMs) /
          kShowAnimationDurationMs;
 }
 
-// Amount of |maximize_mode_animation_| showing to animate the alpha of
+// Amount of |tablet_mode_animation_| showing to animate the alpha of
 // |size_button_|.
 float SizeButtonShowDuration() {
   return static_cast<float>(kAlphaAnimationDurationMs) /
          kShowAnimationDurationMs;
 }
 
-// Amount of |maximize_mode_animation_| hiding to animate the alpha of
+// Amount of |tablet_mode_animation_| hiding to animate the alpha of
 // |size_button_|.
 float SizeButtonHideDuration() {
   return static_cast<float>(kAlphaAnimationDurationMs) /
          kHideAnimationDurationMs;
 }
 
-// Value of |maximize_mode_animation_| hiding to begin animating the position of
+// Value of |tablet_mode_animation_| hiding to begin animating the position of
 // |minimize_button_|.
 float HidePositionStartValue() {
   return 1.0f -
@@ -116,12 +116,12 @@ FrameCaptionButtonContainerView::FrameCaptionButtonContainerView(
       size_button_(NULL),
       close_button_(NULL) {
   bool size_button_visibility = ShouldSizeButtonBeVisible();
-  maximize_mode_animation_.reset(new gfx::SlideAnimation(this));
-  maximize_mode_animation_->SetTweenType(gfx::Tween::LINEAR);
+  tablet_mode_animation_.reset(new gfx::SlideAnimation(this));
+  tablet_mode_animation_->SetTweenType(gfx::Tween::LINEAR);
 
   // Ensure animation tracks visibility of size button.
   if (size_button_visibility)
-    maximize_mode_animation_->Reset(1.0f);
+    tablet_mode_animation_->Reset(1.0f);
 
   // Insert the buttons left to right.
   minimize_button_ = new FrameCaptionButton(this, CAPTION_BUTTON_ICON_MINIMIZE);
@@ -145,7 +145,7 @@ FrameCaptionButtonContainerView::FrameCaptionButtonContainerView(
 FrameCaptionButtonContainerView::~FrameCaptionButtonContainerView() {}
 
 void FrameCaptionButtonContainerView::TestApi::EndAnimations() {
-  container_view_->maximize_mode_animation_->End();
+  container_view_->tablet_mode_animation_->End();
 }
 
 void FrameCaptionButtonContainerView::SetButtonImage(
@@ -197,11 +197,11 @@ void FrameCaptionButtonContainerView::UpdateSizeButtonVisibility() {
   bool visible = ShouldSizeButtonBeVisible();
   if (visible) {
     size_button_->SetVisible(true);
-    maximize_mode_animation_->SetSlideDuration(kShowAnimationDurationMs);
-    maximize_mode_animation_->Show();
+    tablet_mode_animation_->SetSlideDuration(kShowAnimationDurationMs);
+    tablet_mode_animation_->Show();
   } else {
-    maximize_mode_animation_->SetSlideDuration(kHideAnimationDurationMs);
-    maximize_mode_animation_->Hide();
+    tablet_mode_animation_->SetSlideDuration(kHideAnimationDurationMs);
+    tablet_mode_animation_->Hide();
   }
 }
 
@@ -232,8 +232,8 @@ void FrameCaptionButtonContainerView::Layout() {
     child->SetBounds(x, 0, size.width(), size.height());
     x += size.width();
   }
-  if (maximize_mode_animation_->is_animating()) {
-    AnimationProgressed(maximize_mode_animation_.get());
+  if (tablet_mode_animation_->is_animating()) {
+    AnimationProgressed(tablet_mode_animation_.get());
   }
 }
 
@@ -246,7 +246,7 @@ void FrameCaptionButtonContainerView::AnimationEnded(
   // Ensure that position is calculated at least once.
   AnimationProgressed(animation);
 
-  double current_value = maximize_mode_animation_->GetCurrentValue();
+  double current_value = tablet_mode_animation_->GetCurrentValue();
   if (current_value == 0.0) {
     size_button_->SetVisible(false);
     PreferredSizeChanged();
@@ -258,7 +258,7 @@ void FrameCaptionButtonContainerView::AnimationProgressed(
   double current_value = animation->GetCurrentValue();
   int size_alpha = 0;
   int minimize_x = 0;
-  if (maximize_mode_animation_->IsShowing()) {
+  if (tablet_mode_animation_->IsShowing()) {
     double scaled_value =
         CapAnimationValue((current_value - SizeButtonShowStartValue()) /
                           SizeButtonShowDuration());
@@ -309,8 +309,8 @@ void FrameCaptionButtonContainerView::SetButtonIcon(FrameCaptionButton* button,
 
 bool FrameCaptionButtonContainerView::ShouldSizeButtonBeVisible() const {
   return !Shell::Get()
-              ->maximize_mode_controller()
-              ->IsMaximizeModeWindowManagerEnabled() &&
+              ->tablet_mode_controller()
+              ->IsTabletModeWindowManagerEnabled() &&
          frame_->widget_delegate()->CanMaximize();
 }
 
@@ -340,8 +340,8 @@ void FrameCaptionButtonContainerView::ButtonPressed(views::Button* sender,
     frame_->Close();
     action = UMA_WINDOW_CLOSE_BUTTON_CLICK;
     if (ash::Shell::Get()
-            ->maximize_mode_controller()
-            ->IsMaximizeModeWindowManagerEnabled()) {
+            ->tablet_mode_controller()
+            ->IsTabletModeWindowManagerEnabled()) {
       action = UMA_TABLET_WINDOW_CLOSE_THROUGH_CAPTION_BUTTON;
     }
   } else {

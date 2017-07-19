@@ -32,8 +32,8 @@ class ASH_EXPORT TrayRotationLock
   views::View* CreateDefaultView(LoginStatus status) override;
 
   // ShellObserver:
-  void OnMaximizeModeStarted() override;
-  void OnMaximizeModeEnded() override;
+  void OnTabletModeStarted() override;
+  void OnTabletModeEnded() override;
 
   // TrayImageItem:
   void OnTrayViewDestroyed() override;
@@ -48,7 +48,7 @@ class ASH_EXPORT TrayRotationLock
   // Update tray image based on whether user rotation lock is enabled.
   void UpdateTrayImage();
 
-  // True if |on_primary_display_|, maximize mode is enabled.
+  // True if |on_primary_display_|, tablet mode is enabled.
   bool ShouldBeVisible();
 
   // True if this is owned by a SystemTray on the primary display.

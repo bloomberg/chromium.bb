@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/maximize_mode/maximize_mode_event_handler.h"
+#include "ash/wm/tablet_mode/tablet_mode_event_handler.h"
 
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
@@ -22,11 +22,11 @@ const int kLeaveFullScreenAreaHeightInPixel = 2;
 
 }  // namespace
 
-MaximizeModeEventHandler::MaximizeModeEventHandler() {}
+TabletModeEventHandler::TabletModeEventHandler() {}
 
-MaximizeModeEventHandler::~MaximizeModeEventHandler() {}
+TabletModeEventHandler::~TabletModeEventHandler() {}
 
-bool MaximizeModeEventHandler::ToggleFullscreen(const ui::TouchEvent& event) {
+bool TabletModeEventHandler::ToggleFullscreen(const ui::TouchEvent& event) {
   if (event.type() != ui::ET_TOUCH_PRESSED)
     return false;
 

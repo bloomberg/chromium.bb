@@ -119,8 +119,8 @@ class ASH_EXPORT ScreenOrientationController
   void OnDisplayConfigurationChanged() override;
 
   // ShellObserver:
-  void OnMaximizeModeStarted() override;
-  void OnMaximizeModeEnding() override;
+  void OnTabletModeStarted() override;
+  void OnTabletModeEnding() override;
 
  private:
   friend class ScreenOrientationControllerTestApi;
@@ -217,7 +217,7 @@ class ASH_EXPORT ScreenOrientationController
   blink::WebScreenOrientationLockType rotation_locked_orientation_;
 
   // The rotation of the display set by the user. This rotation will be
-  // restored upon exiting maximize mode.
+  // restored upon exiting tablet mode.
   display::Display::Rotation user_rotation_;
 
   // The orientation of the device locked by the user.
