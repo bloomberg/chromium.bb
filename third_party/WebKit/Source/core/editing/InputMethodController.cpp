@@ -34,6 +34,7 @@
 #include "core/dom/Text.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/Editor.h"
+#include "core/editing/FrameSelection.h"
 #include "core/editing/commands/TypingCommand.h"
 #include "core/editing/markers/DocumentMarkerController.h"
 #include "core/editing/state_machines/BackwardCodePointStateMachine.h"
@@ -709,7 +710,7 @@ void InputMethodController::SetComposition(
   GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   // We shouldn't close typing in the middle of setComposition.
-  SetEditableSelectionOffsets(selected_range, kNotUserTriggered);
+  SetEditableSelectionOffsets(selected_range, TypingContinuation::kContinue);
 
   if (underlines.IsEmpty()) {
     GetDocument().Markers().AddCompositionMarker(
@@ -820,23 +821,37 @@ EphemeralRange InputMethodController::EphemeralRangeForOffsets(
 }
 
 bool InputMethodController::SetSelectionOffsets(
+    const PlainTextRange& selection_offsets) {
+  return SetSelectionOffsets(selection_offsets, TypingContinuation::kEnd);
+}
+
+bool InputMethodController::SetSelectionOffsets(
     const PlainTextRange& selection_offsets,
-    FrameSelection::SetSelectionOptions options) {
+    TypingContinuation Typing_continuation) {
   const EphemeralRange range = EphemeralRangeForOffsets(selection_offsets);
   if (range.IsNull())
     return false;
 
   GetFrame().Selection().SetSelection(
-      SelectionInDOMTree::Builder().SetBaseAndExtent(range).Build(), options);
+      SelectionInDOMTree::Builder().SetBaseAndExtent(range).Build(),
+      Typing_continuation == TypingContinuation::kEnd
+          ? FrameSelection::kCloseTyping
+          : 0);
   return true;
 }
 
 bool InputMethodController::SetEditableSelectionOffsets(
+    const PlainTextRange& selection_offsets) {
+  return SetEditableSelectionOffsets(selection_offsets,
+                                     TypingContinuation::kEnd);
+}
+
+bool InputMethodController::SetEditableSelectionOffsets(
     const PlainTextRange& selection_offsets,
-    FrameSelection::SetSelectionOptions options) {
+    TypingContinuation typing_continuation) {
   if (!GetEditor().CanEdit())
     return false;
-  return SetSelectionOffsets(selection_offsets, options);
+  return SetSelectionOffsets(selection_offsets, typing_continuation);
 }
 
 PlainTextRange InputMethodController::CreateRangeForSelection(

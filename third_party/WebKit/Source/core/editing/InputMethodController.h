@@ -30,7 +30,6 @@
 #include "core/dom/SynchronousMutationObserver.h"
 #include "core/editing/CompositionUnderline.h"
 #include "core/editing/EphemeralRange.h"
-#include "core/editing/FrameSelection.h"
 #include "core/editing/PlainTextRange.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Vector.h"
@@ -42,6 +41,7 @@ namespace blink {
 class Editor;
 class LocalFrame;
 class Range;
+enum class TypingContinuation;
 
 class CORE_EXPORT InputMethodController final
     : public GarbageCollectedFinalized<InputMethodController>,
@@ -92,9 +92,7 @@ class CORE_EXPORT InputMethodController final
 
   PlainTextRange GetSelectionOffsets() const;
   // Returns true if setting selection to specified offsets, otherwise false.
-  bool SetEditableSelectionOffsets(
-      const PlainTextRange&,
-      FrameSelection::SetSelectionOptions = FrameSelection::kCloseTyping);
+  bool SetEditableSelectionOffsets(const PlainTextRange&);
   void ExtendSelectionAndDelete(int before, int after);
   PlainTextRange CreateRangeForSelection(int start,
                                          int end,
@@ -129,9 +127,7 @@ class CORE_EXPORT InputMethodController final
   EphemeralRange EphemeralRangeForOffsets(const PlainTextRange&) const;
 
   // Returns true if selection offsets were successfully set.
-  bool SetSelectionOffsets(
-      const PlainTextRange&,
-      FrameSelection::SetSelectionOptions = FrameSelection::kCloseTyping);
+  bool SetSelectionOffsets(const PlainTextRange&);
 
   void AddCompositionUnderlines(const Vector<CompositionUnderline>& underlines,
                                 ContainerNode* base_element,
@@ -164,6 +160,12 @@ class CORE_EXPORT InputMethodController final
 
   // Implements |SynchronousMutationObserver|.
   void ContextDestroyed(Document*) final;
+
+  // Returns true if setting selection to specified offsets, otherwise false.
+  bool SetEditableSelectionOffsets(const PlainTextRange&, TypingContinuation);
+
+  // Returns true if selection offsets were successfully set.
+  bool SetSelectionOffsets(const PlainTextRange&, TypingContinuation);
 };
 
 }  // namespace blink
