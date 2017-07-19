@@ -25,6 +25,8 @@ class TabManager::GRCTabSignalObserver : public mojom::TabSignalObserver {
   GRCTabSignalObserver();
   ~GRCTabSignalObserver() override;
 
+  static bool IsEnabled();
+
   // mojom::TabSignalObserver implementation.
   void OnEventReceived(const CoordinationUnitID& cu_id,
                        mojom::TabEvent event) override;

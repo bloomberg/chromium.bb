@@ -121,6 +121,7 @@
 #include "services/device/public/interfaces/sensor_provider.mojom.h"
 #include "services/device/public/interfaces/wake_lock.mojom.h"
 #include "services/device/public/interfaces/wake_lock_context.mojom.h"
+#include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_interface.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -2925,8 +2926,10 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
         base::Unretained(this)));
   }
 
-  GetInterfaceRegistry()->AddInterface(base::Bind(
-      &CreateResourceCoordinatorFrameInterface, base::Unretained(this)));
+  if (resource_coordinator::IsResourceCoordinatorEnabled()) {
+    GetInterfaceRegistry()->AddInterface(base::Bind(
+        &CreateResourceCoordinatorFrameInterface, base::Unretained(this)));
+  }
 
 #if BUILDFLAG(ENABLE_WEBRTC)
   // BrowserMainLoop::GetInstance() may be null on unit tests.

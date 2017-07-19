@@ -75,7 +75,6 @@ source_set("tests") {
     "coordination_unit/coordination_unit_impl_unittest_util.h",
     "coordination_unit/mock_coordination_unit_graphs.cc",
     "coordination_unit/mock_coordination_unit_graphs.h",
-    "coordination_unit/process_coordination_unit_impl_unittest.cc",
     "coordination_unit/web_contents_coordination_unit_impl_unittest.cc",
     "memory_instrumentation/coordinator_impl_unittest.cc",
     "memory_instrumentation/process_map_unittest.cc",

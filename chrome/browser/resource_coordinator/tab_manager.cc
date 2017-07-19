@@ -55,7 +55,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/page_importance_signals.h"
-#include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 
 #if defined(OS_CHROMEOS)
 #include "ash/multi_profile_uma.h"
@@ -154,7 +153,7 @@ TabManager::TabManager()
 #endif
   browser_tab_strip_tracker_.Init();
   session_restore_observer_.reset(new TabManagerSessionRestoreObserver(this));
-  if (resource_coordinator::IsResourceCoordinatorEnabled()) {
+  if (GRCTabSignalObserver::IsEnabled()) {
     grc_tab_signal_observer_.reset(new GRCTabSignalObserver());
   }
   tab_manager_stats_collector_.reset(new TabManagerStatsCollector(this));
