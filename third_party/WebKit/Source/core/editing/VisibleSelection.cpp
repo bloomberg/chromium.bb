@@ -574,6 +574,40 @@ static Element* LowestEditableAncestor(Node* node) {
   return nullptr;
 }
 
+// The selection ends in editable content or non-editable content inside a
+// different editable ancestor, move backward until non-editable content inside
+// the same lowest editable ancestor is reached.
+template <typename Strategy>
+PositionTemplate<Strategy> AdjustSelectionEndToAvoidCrossingEditingBoundaries(
+    const PositionTemplate<Strategy>& end,
+    ContainerNode* end_root,
+    Element* base_editable_ancestor) {
+  Element* const end_editable_ancestor =
+      LowestEditableAncestor(end.ComputeContainerNode());
+  if (end_root || end_editable_ancestor != base_editable_ancestor) {
+    PositionTemplate<Strategy> position =
+        PreviousVisuallyDistinctCandidate(end);
+    Element* shadow_ancestor = end_root ? end_root->OwnerShadowHost() : nullptr;
+    if (position.IsNull() && shadow_ancestor)
+      position = PositionTemplate<Strategy>::AfterNode(*shadow_ancestor);
+    while (position.IsNotNull() &&
+           !(LowestEditableAncestor(position.ComputeContainerNode()) ==
+                 base_editable_ancestor &&
+             !IsEditablePosition(position))) {
+      Element* root = RootEditableElementOf(position);
+      shadow_ancestor = root ? root->OwnerShadowHost() : nullptr;
+      position = IsAtomicNode(position.ComputeContainerNode())
+                     ? PositionTemplate<Strategy>::InParentBeforeNode(
+                           *position.ComputeContainerNode())
+                     : PreviousVisuallyDistinctCandidate(position);
+      if (position.IsNull() && shadow_ancestor)
+        position = PositionTemplate<Strategy>::AfterNode(*shadow_ancestor);
+    }
+    return CreateVisiblePosition(position).DeepEquivalent();
+  }
+  return end;
+}
+
 template <typename Strategy>
 void VisibleSelectionTemplate<
     Strategy>::AdjustSelectionToAvoidCrossingEditingBoundaries() {
@@ -623,42 +657,14 @@ void VisibleSelectionTemplate<
   } else {
     // FIXME: Non-editable pieces inside editable content should be atomic, in
     // the same way that editable pieces in non-editable content are atomic.
-
-    // The selection ends in editable content or non-editable content inside a
-    // different editable ancestor, move backward until non-editable content
-    // inside the same lowest editable ancestor is reached.
-    Element* end_editable_ancestor =
-        LowestEditableAncestor(end_.ComputeContainerNode());
-    if (end_root || end_editable_ancestor != base_editable_ancestor) {
-      PositionTemplate<Strategy> p = PreviousVisuallyDistinctCandidate(end_);
-      Element* shadow_ancestor =
-          end_root ? end_root->OwnerShadowHost() : nullptr;
-      if (p.IsNull() && shadow_ancestor)
-        p = PositionTemplate<Strategy>::AfterNode(*shadow_ancestor);
-      while (p.IsNotNull() &&
-             !(LowestEditableAncestor(p.ComputeContainerNode()) ==
-                   base_editable_ancestor &&
-               !IsEditablePosition(p))) {
-        Element* root = RootEditableElementOf(p);
-        shadow_ancestor = root ? root->OwnerShadowHost() : nullptr;
-        p = IsAtomicNode(p.ComputeContainerNode())
-                ? PositionTemplate<Strategy>::InParentBeforeNode(
-                      *p.ComputeContainerNode())
-                : PreviousVisuallyDistinctCandidate(p);
-        if (p.IsNull() && shadow_ancestor)
-          p = PositionTemplate<Strategy>::AfterNode(*shadow_ancestor);
-      }
-      const VisiblePositionTemplate<Strategy> previous =
-          CreateVisiblePosition(p);
-
-      if (previous.IsNull()) {
-        // The selection crosses an Editing boundary.  This is a
-        // programmer error in the editing code.  Happy debugging!
-        NOTREACHED();
-        *this = VisibleSelectionTemplate<Strategy>();
-        return;
-      }
-      end_ = previous.DeepEquivalent();
+    end_ = AdjustSelectionEndToAvoidCrossingEditingBoundaries(
+        end_, end_root, base_editable_ancestor);
+    if (end_.IsNull()) {
+      // The selection crosses an Editing boundary.  This is a
+      // programmer error in the editing code.  Happy debugging!
+      NOTREACHED();
+      *this = VisibleSelectionTemplate<Strategy>();
+      return;
     }
 
     // The selection starts in editable content or non-editable content inside a
