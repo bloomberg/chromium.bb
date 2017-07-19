@@ -8,13 +8,12 @@
 
 #import <UIKit/UIKit.h>
 
+#import "remoting/ios/app/app_delegate.h"
+#import "remoting/ios/app/app_initializer.h"
+
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/i18n/icu_util.h"
-#import "remoting/ios/app/app_delegate.h"
-#import "remoting/ios/app/help_and_feedback.h"
-#import "remoting/ios/facade/remoting_oauth_authentication.h"
-#import "remoting/ios/facade/remoting_service.h"
 
 int main(int argc, char* argv[]) {
   // This class is designed to fulfill the dependents needs when it goes out of
@@ -34,9 +33,7 @@ int main(int argc, char* argv[]) {
 #endif
 
   @autoreleasepool {
-    RemotingService.instance.authentication =
-        [[RemotingOAuthAuthentication alloc] init];
-    HelpAndFeedback.instance = [[HelpAndFeedback alloc] init];
+    [AppInitializer initializeApp];
     return UIApplicationMain(
         argc, argv, nil, NSStringFromClass([AppDelegate class]));
   }
