@@ -121,6 +121,15 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
                       atIndex:(NSUInteger)position
                    transition:(ui::PageTransition)transition;
 
+// Add a new tab with the given url, at the given |position|,
+// and makes it the selected tab. The selected tab is returned.
+// If |position| == NSNotFound the tab will be added at the end of the stack.
+// |tabAddedCompletion| is called after the tab is added (if not nil).
+- (Tab*)addSelectedTabWithURL:(const GURL&)url
+                      atIndex:(NSUInteger)position
+                   transition:(ui::PageTransition)transition
+           tabAddedCompletion:(ProceduralBlock)tabAddedCompletion;
+
 // Informs the BVC that a new foreground tab is about to be opened. This is
 // intended to be called before setWebUsageSuspended:NO in cases where a new tab
 // is about to appear in order to allow the BVC to avoid doing unnecessary work
