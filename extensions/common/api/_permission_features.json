@@ -247,16 +247,13 @@
     ]
   }],
   "fileSystem.directory": {
-    "channel": "stable",
-    "extension_types": ["platform_app"]
+    // Inherit from fileSystem's default_parent.
   },
   "fileSystem.retainEntries": {
-    "channel": "stable",
-    "extension_types": ["platform_app"]
+    // Inherit from fileSystem's default_parent.
   },
   "fileSystem.write": [{
-    "channel": "stable",
-    "extension_types": ["platform_app"]
+    // Inherit from fileSystem's default_parent.
   },{
     "channel": "stable",
     "extension_types": ["extension"],
@@ -270,8 +267,6 @@
     ]
   }],
   "fileSystem.requestFileSystem": {
-    "channel": "stable",
-    "extension_types": ["platform_app"],
     "platforms": ["chromeos"]
   },
   "hid": [
