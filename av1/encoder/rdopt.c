@@ -682,6 +682,52 @@ static INLINE int write_uniform_cost(int n, int v) {
 #define FAST_EXT_TX_CORR_MARGIN 0.5
 #define FAST_EXT_TX_EDST_MARGIN 0.3
 
+#if CONFIG_CDEF_DIST
+static uint64_t cdef_dist_8x8_16bit(uint16_t *dst, int dstride, uint16_t *src,
+                                    int sstride, int coeff_shift) {
+  uint64_t svar = 0;
+  uint64_t dvar = 0;
+  uint64_t sum_s = 0;
+  uint64_t sum_d = 0;
+  uint64_t sum_s2 = 0;
+  uint64_t sum_d2 = 0;
+  uint64_t sum_sd = 0;
+  uint64_t dist = 0;
+
+  int i, j;
+  for (i = 0; i < 8; i++) {
+    for (j = 0; j < 8; j++) {
+      sum_s += src[i * sstride + j];
+      sum_d += dst[i * dstride + j];
+      sum_s2 += src[i * sstride + j] * src[i * sstride + j];
+      sum_d2 += dst[i * dstride + j] * dst[i * dstride + j];
+      sum_sd += src[i * sstride + j] * dst[i * dstride + j];
+    }
+  }
+  /* Compute the variance -- the calculation cannot go negative. */
+  svar = sum_s2 - ((sum_s * sum_s + 32) >> 6);
+  dvar = sum_d2 - ((sum_d * sum_d + 32) >> 6);
+
+  // Tuning of jm's original dering distortion metric used in CDEF tool,
+  // suggested by jm
+  const uint64_t a = 4;
+  const uint64_t b = 2;
+  const uint64_t c1 = (400 * a << 2 * coeff_shift);
+  const uint64_t c2 = (b * 20000 * a * a << 4 * coeff_shift);
+
+  dist =
+      (uint64_t)floor(.5 +
+                      (sum_d2 + sum_s2 - 2 * sum_sd) * .5 * (svar + dvar + c1) /
+                          (sqrt(svar * (double)dvar + c2)));
+
+  // Calibrate dist to have similar rate for the same QP with MSE only
+  // distortion (as in master branch)
+  dist = (uint64_t)((float)dist * 0.75);
+
+  return dist;
+}
+#endif  // CONFIG_CDEF_DIST
+
 #if CONFIG_DAALA_DIST
 static int od_compute_var_4x4(uint16_t *x, int stride) {
   int sum;
@@ -896,7 +942,7 @@ int64_t av1_dist_8x8(const AV1_COMP *const cpi, const MACROBLOCKD *xd,
                      int bsh, int visible_w, int visible_h, int qindex) {
   int64_t d = 0;
 
-#if CONFIG_DAALA_DIST || NEW_FUTURE_DIST
+#if CONFIG_DAALA_DIST || NEW_FUTURE_DIST || CONFIG_CDEF_DIST
   int i, j;
 
   DECLARE_ALIGNED(16, uint16_t, orig[MAX_TX_SQUARE]);
@@ -919,7 +965,10 @@ int64_t av1_dist_8x8(const AV1_COMP *const cpi, const MACROBLOCKD *xd,
   (void)visible_w, (void)visible_h;
 #endif
 
-#if CONFIG_DAALA_DIST || NEW_FUTURE_DIST
+#if CONFIG_DAALA_DIST || NEW_FUTURE_DIST || CONFIG_CDEF_DIST
+  assert((bsw & 0x07) == 0);
+  assert((bsh & 0x07) == 0);
+
 #if CONFIG_HIGHBITDEPTH
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
     for (j = 0; j < bsh; j++)
@@ -978,6 +1027,21 @@ int64_t av1_dist_8x8(const AV1_COMP *const cpi, const MACROBLOCKD *xd,
 
 #if CONFIG_DAALA_DIST
   d = (int64_t)od_compute_dist(orig, rec, bsw, bsh, qindex);
+#elif CONFIG_CDEF_DIST
+  {
+    int coeff_shift = AOMMAX(xd->bd - 8, 0);
+
+    for (i = 0; i < bsh; i += 8) {
+      for (j = 0; j < bsw; j += 8) {
+        d += cdef_dist_8x8_16bit(&rec[i * bsw + j], bsw, &orig[i * bsw + j],
+                                 bsw, coeff_shift);
+      }
+    }
+#if CONFIG_HIGHBITDEPTH
+    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
+      d = ((uint64_t)d) >> 2 * coeff_shift;
+#endif
+  }
 #elif NEW_FUTURE_DIST
   // Call new 8x8-wise distortion function here, for example
   for (i = 0; i < bsh; i += 8) {
@@ -1003,7 +1067,7 @@ static int64_t av1_dist_8x8_diff(const MACROBLOCKD *xd, const uint8_t *src,
                                  int visible_w, int visible_h, int qindex) {
   int64_t d = 0;
 
-#if CONFIG_DAALA_DIST || NEW_FUTURE_DIST
+#if CONFIG_DAALA_DIST || NEW_FUTURE_DIST || CONFIG_CDEF_DIST
   int i, j;
 
   DECLARE_ALIGNED(16, uint16_t, orig[MAX_TX_SQUARE]);
@@ -1025,7 +1089,10 @@ static int64_t av1_dist_8x8_diff(const MACROBLOCKD *xd, const uint8_t *src,
   (void)visible_w, (void)visible_h;
 #endif
 
-#if CONFIG_DAALA_DIST || NEW_FUTURE_DIST
+#if CONFIG_DAALA_DIST || NEW_FUTURE_DIST || CONFIG_CDEF_DIST
+  assert((bsw & 0x07) == 0);
+  assert((bsh & 0x07) == 0);
+
 #if CONFIG_HIGHBITDEPTH
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
     for (j = 0; j < bsh; j++)
@@ -1061,6 +1128,26 @@ static int64_t av1_dist_8x8_diff(const MACROBLOCKD *xd, const uint8_t *src,
 
 #if CONFIG_DAALA_DIST
   d = (int64_t)od_compute_dist_diff(orig, diff16, bsw, bsh, qindex);
+#elif CONFIG_CDEF_DIST
+  {
+    int coeff_shift = AOMMAX(xd->bd - 8, 0);
+    DECLARE_ALIGNED(16, uint16_t, dst16[MAX_TX_SQUARE]);
+
+    for (i = 0; i < bsh; i++) {
+      for (j = 0; j < bsw; j++) {
+        dst16[i * bsw + j] = orig[i * bsw + j] - diff16[i * bsw + j];
+      }
+    }
+
+    for (i = 0; i < bsh; i += 8) {
+      for (j = 0; j < bsw; j += 8) {
+        d += cdef_dist_8x8_16bit(&dst16[i * bsw + j], bsw, &orig[i * bsw + j],
+                                 bsw, coeff_shift);
+      }
+    }
+    // Don't scale 'd' for HBD since it will be done by caller side for diff
+    // input
+  }
 #elif NEW_FUTURE_DIST
   // Call new 8x8-wise distortion function (with diff inpu) here, for example
   for (i = 0; i < bsh; i += 8) {
