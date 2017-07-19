@@ -90,7 +90,8 @@
       function(listener) {
     // Only attach / detach on the first / last listener removed.
     if (this.event_.listeners.length == 0)
-      eventNatives.AttachEvent(this.event_.eventName);
+      eventNatives.AttachEvent(this.event_.eventName,
+                               this.event_.eventOptions.supportsLazyListeners);
   };
 
   UnfilteredAttachmentStrategy.prototype.onRemovedListener =
@@ -100,7 +101,8 @@
   };
 
   UnfilteredAttachmentStrategy.prototype.detach = function(manual) {
-    eventNatives.DetachEvent(this.event_.eventName, manual);
+    eventNatives.DetachEvent(this.event_.eventName, manual,
+                             this.event_.eventOptions.supportsLazyListeners);
   };
 
   UnfilteredAttachmentStrategy.prototype.getListenersByIDs = function(ids) {
@@ -118,8 +120,9 @@
       {__proto__: null});
 
   FilteredAttachmentStrategy.prototype.onAddedListener = function(listener) {
-    var id = eventNatives.AttachFilteredEvent(this.event_.eventName,
-                                              listener.filters || {});
+    var id = eventNatives.AttachFilteredEvent(
+                 this.event_.eventName, listener.filters || {},
+                 this.event_.eventOptions.supportsLazyListeners);
     if (id == -1)
       throw new Error("Can't add listener");
     listener.id = id;
@@ -138,7 +141,8 @@
     var id = listener.id;
     delete this.listenerMap_[id];
     delete FilteredAttachmentStrategy.idToEventMap[id];
-    eventNatives.DetachFilteredEvent(id, manual);
+    eventNatives.DetachFilteredEvent(
+        id, manual, this.event_.eventOptions.supportsLazyListeners);
   };
 
   FilteredAttachmentStrategy.prototype.detach = function(manual) {
@@ -167,6 +171,10 @@
       //
       // event.addListener(listener);
       supportsListeners: true,
+
+      // Event supports lazy listeners, where an extension can register a
+      // listener to be used to "wake up" a lazy context.
+      supportsLazyListeners: true,
 
       // Event supports adding rules ("declarative events") rather than
       // listeners, for example as used in the declarativeWebRequest API.

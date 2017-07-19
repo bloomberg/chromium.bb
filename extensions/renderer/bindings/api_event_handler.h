@@ -28,15 +28,17 @@ struct EventFilteringInfo;
 // single thread.
 class APIEventHandler {
  public:
-  // The callback to be called when event listeners change. |was_manual|
-  // indicates that the change was due to an extension calling addListener or
-  // removeListener, rather than through something like context destruction.
+  // The callback to be called when event listeners change.
+  // |update_lazy_listeners| indicates that the change was due to an extension
+  // calling addListener or removeListener on an event that supports lazy
+  // listeners, rather than through something like context destruction or
+  // removing a listener from an event that doesn't support lazy listeners.
   // See also APIEventListeners.
   using EventListenersChangedMethod =
       base::Callback<void(const std::string& event_name,
                           binding::EventListenersChanged,
                           const base::DictionaryValue* filter,
-                          bool was_manual,
+                          bool update_lazy_listeners,
                           v8::Local<v8::Context>)>;
 
   APIEventHandler(const binding::RunJSFunction& call_js,
@@ -47,8 +49,11 @@ class APIEventHandler {
 
   // Returns a new v8::Object for an event with the given |event_name|. If
   // |notify_on_change| is true, notifies whenever listeners state is changed.
+  // TODO(devlin): Maybe worth creating a Params struct to hold the event
+  // information?
   v8::Local<v8::Object> CreateEventInstance(const std::string& event_name,
                                             bool supports_filters,
+                                            bool supports_lazy_listeners,
                                             int max_listeners,
                                             bool notify_on_change,
                                             v8::Local<v8::Context> context);

@@ -46,7 +46,7 @@ class EventBindings : public ObjectBackedNativeHandler {
 
   // Attach an event name to an object.
   // |event_name| The name of the event to attach.
-  void AttachEvent(const std::string& event_name);
+  void AttachEvent(const std::string& event_name, bool supports_lazy_listeners);
 
   // JavaScript handler which forwards to DetachEvent().
   // args[0] forwards to |event_name|.
@@ -58,7 +58,7 @@ class EventBindings : public ObjectBackedNativeHandler {
   // |is_manual| True if this detach was done by the user via removeListener()
   // as opposed to automatically during shutdown, in which case we should inform
   // the browser we are no longer interested in that event.
-  void DetachEvent(const std::string& event_name, bool is_manual);
+  void DetachEvent(const std::string& event_name, bool remove_lazy_listener);
 
   // MatcherID AttachFilteredEvent(string event_name, object filter)
   // |event_name| Name of the event to attach.
@@ -79,7 +79,7 @@ class EventBindings : public ObjectBackedNativeHandler {
   // |matcher_id| The ID of the filtered event.
   // |is_manual| false if this is part of the extension unload process where all
   // listeners are automatically detached.
-  void DetachFilteredEvent(int matcher_id, bool is_manual);
+  void DetachFilteredEvent(int matcher_id, bool remove_lazy_listener);
 
   void AttachUnmanagedEvent(const v8::FunctionCallbackInfo<v8::Value>& args);
   void DetachUnmanagedEvent(const v8::FunctionCallbackInfo<v8::Value>& args);

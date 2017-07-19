@@ -23,6 +23,11 @@ namespace extensions {
 
 namespace {
 
+const char kAddListenerFunction[] =
+    "(function(event, listener) { event.addListener(listener); })";
+const char kRemoveListenerFunction[] =
+    "(function(event, listener) { event.removeListener(listener); })";
+
 using MockEventChangeHandler = ::testing::StrictMock<
     base::MockCallback<APIEventHandler::EventListenersChangedMethod>>;
 
@@ -78,7 +83,7 @@ TEST_F(APIEventHandlerTest, AddingRemovingAndQueryingEventListeners) {
   v8::Local<v8::Context> context = MainContext();
 
   v8::Local<v8::Object> event = handler()->CreateEventInstance(
-      kEventName, false, binding::kNoListenerMax, true, context);
+      kEventName, false, true, binding::kNoListenerMax, true, context);
   ASSERT_FALSE(event.IsEmpty());
 
   EXPECT_EQ(0u, handler()->GetNumEventListenersForTesting(kEventName, context));
@@ -88,8 +93,6 @@ TEST_F(APIEventHandlerTest, AddingRemovingAndQueryingEventListeners) {
       FunctionFromString(context, kListenerFunction);
   ASSERT_FALSE(listener_function.IsEmpty());
 
-  const char kAddListenerFunction[] =
-      "(function(event, listener) { event.addListener(listener); })";
   v8::Local<v8::Function> add_listener_function =
       FunctionFromString(context, kAddListenerFunction);
 
@@ -148,8 +151,6 @@ TEST_F(APIEventHandlerTest, AddingRemovingAndQueryingEventListeners) {
     EXPECT_TRUE(has_listeners);
   }
 
-  const char kRemoveListenerFunction[] =
-      "(function(event, listener) { event.removeListener(listener); })";
   v8::Local<v8::Function> remove_listener_function =
       FunctionFromString(context, kRemoveListenerFunction);
   {
@@ -177,9 +178,9 @@ TEST_F(APIEventHandlerTest, FiringEvents) {
   v8::Local<v8::Context> context = MainContext();
 
   v8::Local<v8::Object> alpha_event = handler()->CreateEventInstance(
-      kAlphaName, false, binding::kNoListenerMax, true, context);
+      kAlphaName, false, true, binding::kNoListenerMax, true, context);
   v8::Local<v8::Object> beta_event = handler()->CreateEventInstance(
-      kBetaName, false, binding::kNoListenerMax, true, context);
+      kBetaName, false, true, binding::kNoListenerMax, true, context);
   ASSERT_FALSE(alpha_event.IsEmpty());
   ASSERT_FALSE(beta_event.IsEmpty());
 
@@ -209,8 +210,6 @@ TEST_F(APIEventHandlerTest, FiringEvents) {
   ASSERT_FALSE(beta_listener.IsEmpty());
 
   {
-    const char kAddListenerFunction[] =
-        "(function(event, listener) { event.addListener(listener); })";
     v8::Local<v8::Function> add_listener_function =
         FunctionFromString(context, kAddListenerFunction);
     {
@@ -274,7 +273,7 @@ TEST_F(APIEventHandlerTest, EventArguments) {
 
   const char kEventName[] = "alpha";
   v8::Local<v8::Object> event = handler()->CreateEventInstance(
-      kEventName, false, binding::kNoListenerMax, true, context);
+      kEventName, false, true, binding::kNoListenerMax, true, context);
   ASSERT_FALSE(event.IsEmpty());
 
   const char kListenerFunction[] =
@@ -284,8 +283,6 @@ TEST_F(APIEventHandlerTest, EventArguments) {
   ASSERT_FALSE(listener_function.IsEmpty());
 
   {
-    const char kAddListenerFunction[] =
-        "(function(event, listener) { event.addListener(listener); })";
     v8::Local<v8::Function> add_listener_function =
         FunctionFromString(context, kAddListenerFunction);
     v8::Local<v8::Value> argv[] = {event, listener_function};
@@ -321,15 +318,13 @@ TEST_F(APIEventHandlerTest, MultipleContexts) {
 
   // Create two instances of the same event in different contexts.
   v8::Local<v8::Object> event_a = handler()->CreateEventInstance(
-      kEventName, false, binding::kNoListenerMax, true, context_a);
+      kEventName, false, true, binding::kNoListenerMax, true, context_a);
   ASSERT_FALSE(event_a.IsEmpty());
   v8::Local<v8::Object> event_b = handler()->CreateEventInstance(
-      kEventName, false, binding::kNoListenerMax, true, context_b);
+      kEventName, false, true, binding::kNoListenerMax, true, context_b);
   ASSERT_FALSE(event_b.IsEmpty());
 
   // Add two separate listeners to the event, one in each context.
-  const char kAddListenerFunction[] =
-      "(function(event, listener) { event.addListener(listener); })";
   {
     v8::Local<v8::Function> add_listener_a =
         FunctionFromString(context_a, kAddListenerFunction);
@@ -393,7 +388,7 @@ TEST_F(APIEventHandlerTest, DifferentCallingMethods) {
 
   const char kEventName[] = "alpha";
   v8::Local<v8::Object> event = handler()->CreateEventInstance(
-      kEventName, false, binding::kNoListenerMax, true, context);
+      kEventName, false, true, binding::kNoListenerMax, true, context);
   ASSERT_FALSE(event.IsEmpty());
 
   const char kAddListenerOnNull[] =
@@ -445,7 +440,7 @@ TEST_F(APIEventHandlerTest, TestDispatchFromJs) {
   v8::Local<v8::Context> context = MainContext();
 
   v8::Local<v8::Object> event = handler()->CreateEventInstance(
-      "alpha", false, binding::kNoListenerMax, true, context);
+      "alpha", false, true, binding::kNoListenerMax, true, context);
   ASSERT_FALSE(event.IsEmpty());
 
   const char kListenerFunction[] =
@@ -455,8 +450,6 @@ TEST_F(APIEventHandlerTest, TestDispatchFromJs) {
   v8::Local<v8::Function> listener =
       FunctionFromString(context, kListenerFunction);
 
-  const char kAddListenerFunction[] =
-      "(function(event, listener) { event.addListener(listener); })";
   v8::Local<v8::Function> add_listener_function =
       FunctionFromString(context, kAddListenerFunction);
 
@@ -486,7 +479,7 @@ TEST_F(APIEventHandlerTest, RemovingListenersWhileHandlingEvent) {
 
   const char kEventName[] = "alpha";
   v8::Local<v8::Object> event = handler()->CreateEventInstance(
-      kEventName, false, binding::kNoListenerMax, true, context);
+      kEventName, false, true, binding::kNoListenerMax, true, context);
   ASSERT_FALSE(event.IsEmpty());
   {
     // Cache the event object on the global in order to allow for easy removal.
@@ -515,8 +508,6 @@ TEST_F(APIEventHandlerTest, RemovingListenersWhileHandlingEvent) {
   for (size_t i = 0; i < kNumListeners; ++i)
     listeners.push_back(FunctionFromString(context, kListenerFunction));
 
-  const char kAddListenerFunction[] =
-      "(function(event, listener) { event.addListener(listener); })";
   v8::Local<v8::Function> add_listener_function =
       FunctionFromString(context, kAddListenerFunction);
 
@@ -570,7 +561,7 @@ TEST_F(APIEventHandlerTest, TestEventListenersThrowingExceptions) {
 
   const char kEventName[] = "alpha";
   v8::Local<v8::Object> event = handler()->CreateEventInstance(
-      kEventName, false, binding::kNoListenerMax, true, context);
+      kEventName, false, true, binding::kNoListenerMax, true, context);
   ASSERT_FALSE(event.IsEmpty());
 
   // A listener that will throw an exception. We guarantee that we throw the
@@ -584,8 +575,6 @@ TEST_F(APIEventHandlerTest, TestEventListenersThrowingExceptions) {
       "  this.eventArgs = Array.from(arguments);\n"
       "});";
 
-  const char kAddListenerFunction[] =
-      "(function(event, listener) { event.addListener(listener); })";
   v8::Local<v8::Function> add_listener_function =
       FunctionFromString(context, kAddListenerFunction);
 
@@ -628,19 +617,14 @@ TEST_F(APIEventHandlerTest, CallbackNotifications) {
   const char kEventName1[] = "onFoo";
   const char kEventName2[] = "onBar";
   v8::Local<v8::Object> event1_a = handler()->CreateEventInstance(
-      kEventName1, false, binding::kNoListenerMax, true, context_a);
+      kEventName1, false, true, binding::kNoListenerMax, true, context_a);
   ASSERT_FALSE(event1_a.IsEmpty());
   v8::Local<v8::Object> event2_a = handler()->CreateEventInstance(
-      kEventName2, false, binding::kNoListenerMax, true, context_a);
+      kEventName2, false, true, binding::kNoListenerMax, true, context_a);
   ASSERT_FALSE(event2_a.IsEmpty());
   v8::Local<v8::Object> event1_b = handler()->CreateEventInstance(
-      kEventName1, false, binding::kNoListenerMax, true, context_b);
+      kEventName1, false, true, binding::kNoListenerMax, true, context_b);
   ASSERT_FALSE(event1_b.IsEmpty());
-
-  const char kAddListenerFunction[] =
-      "(function(event, listener) { event.addListener(listener); })";
-  const char kRemoveListenerFunction[] =
-      "(function(event, listener) { event.removeListener(listener); })";
 
   // Add a listener to the first event. The APIEventHandler should notify
   // since it's a change in state (no listeners -> listeners).
@@ -756,7 +740,7 @@ TEST_F(APIEventHandlerTest, TestArgumentMassagers) {
 
   const char kEventName[] = "alpha";
   v8::Local<v8::Object> event = handler()->CreateEventInstance(
-      kEventName, false, binding::kNoListenerMax, true, context);
+      kEventName, false, true, binding::kNoListenerMax, true, context);
   ASSERT_FALSE(event.IsEmpty());
 
   const char kArgumentMassager[] =
@@ -775,8 +759,6 @@ TEST_F(APIEventHandlerTest, TestArgumentMassagers) {
   ASSERT_FALSE(listener_function.IsEmpty());
 
   {
-    const char kAddListenerFunction[] =
-        "(function(event, listener) { event.addListener(listener); })";
     v8::Local<v8::Function> add_listener_function =
         FunctionFromString(context, kAddListenerFunction);
     v8::Local<v8::Value> argv[] = {event, listener_function};
@@ -804,7 +786,7 @@ TEST_F(APIEventHandlerTest, TestArgumentMassagersAsyncDispatch) {
 
   const char kEventName[] = "alpha";
   v8::Local<v8::Object> event = handler()->CreateEventInstance(
-      kEventName, false, binding::kNoListenerMax, true, context);
+      kEventName, false, true, binding::kNoListenerMax, true, context);
   ASSERT_FALSE(event.IsEmpty());
 
   const char kArgumentMassager[] =
@@ -823,8 +805,6 @@ TEST_F(APIEventHandlerTest, TestArgumentMassagersAsyncDispatch) {
   ASSERT_FALSE(listener_function.IsEmpty());
 
   {
-    const char kAddListenerFunction[] =
-        "(function(event, listener) { event.addListener(listener); })";
     v8::Local<v8::Function> add_listener_function =
         FunctionFromString(context, kAddListenerFunction);
     v8::Local<v8::Value> argv[] = {event, listener_function};
@@ -867,7 +847,7 @@ TEST_F(APIEventHandlerTest, TestArgumentMassagersNeverDispatch) {
 
   const char kEventName[] = "alpha";
   v8::Local<v8::Object> event = handler()->CreateEventInstance(
-      kEventName, false, binding::kNoListenerMax, true, context);
+      kEventName, false, true, binding::kNoListenerMax, true, context);
   ASSERT_FALSE(event.IsEmpty());
 
   // A massager that never dispatches.
@@ -881,8 +861,6 @@ TEST_F(APIEventHandlerTest, TestArgumentMassagersNeverDispatch) {
       FunctionFromString(context, kListenerFunction);
   ASSERT_FALSE(listener_function.IsEmpty());
 
-  const char kAddListenerFunction[] =
-      "(function(event, listener) { event.addListener(listener); })";
   v8::Local<v8::Function> add_listener_function =
       FunctionFromString(context, kAddListenerFunction);
   v8::Local<v8::Value> argv[] = {event, listener_function};
@@ -984,7 +962,7 @@ TEST_F(APIEventHandlerTest, TestUnmanagedEvents) {
 
   const char kEventName[] = "alpha";
   v8::Local<v8::Object> event = handler.CreateEventInstance(
-      kEventName, false, binding::kNoListenerMax, false, context);
+      kEventName, false, true, binding::kNoListenerMax, false, context);
 
   const char kListener[] =
       "(function() {\n"
@@ -1017,6 +995,79 @@ TEST_F(APIEventHandlerTest, TestUnmanagedEvents) {
   }
 
   EXPECT_EQ(0u, handler.GetNumEventListenersForTesting(kEventName, context));
+}
+
+// Test callback notifications for events that don't support lazy listeners.
+TEST_F(APIEventHandlerTest, TestEventsWithoutLazyListeners) {
+  MockEventChangeHandler change_handler;
+  APIEventHandler handler(base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
+                          base::Bind(&RunFunctionOnGlobalAndReturnHandle),
+                          change_handler.Get(), nullptr);
+
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = MainContext();
+
+  const char kLazyListenersSupported[] = "supportsLazyListeners";
+  const char kLazyListenersNotSupported[] = "noLazyListeners";
+  v8::Local<v8::Object> lazy_listeners_supported =
+      handler.CreateEventInstance(kLazyListenersSupported, false, true,
+                                  binding::kNoListenerMax, true, context);
+  v8::Local<v8::Object> lazy_listeners_not_supported =
+      handler.CreateEventInstance(kLazyListenersNotSupported, false, false,
+                                  binding::kNoListenerMax, true, context);
+  ASSERT_FALSE(lazy_listeners_not_supported.IsEmpty());
+
+  v8::Local<v8::Function> add_listener =
+      FunctionFromString(context, kAddListenerFunction);
+  v8::Local<v8::Function> listener =
+      FunctionFromString(context, "(function() {})");
+  {
+    EXPECT_CALL(change_handler,
+                Run(kLazyListenersSupported,
+                    binding::EventListenersChanged::HAS_LISTENERS, nullptr,
+                    true, context))
+        .Times(1);
+    v8::Local<v8::Value> argv[] = {lazy_listeners_supported, listener};
+    RunFunction(add_listener, context, arraysize(argv), argv);
+    ::testing::Mock::VerifyAndClearExpectations(&change_handler);
+  }
+
+  {
+    EXPECT_CALL(change_handler,
+                Run(kLazyListenersNotSupported,
+                    binding::EventListenersChanged::HAS_LISTENERS, nullptr,
+                    false, context))
+        .Times(1);
+    v8::Local<v8::Value> argv[] = {lazy_listeners_not_supported, listener};
+    RunFunction(add_listener, context, arraysize(argv), argv);
+    ::testing::Mock::VerifyAndClearExpectations(&change_handler);
+  }
+
+  v8::Local<v8::Function> remove_listener =
+      FunctionFromString(context, kRemoveListenerFunction);
+  {
+    EXPECT_CALL(change_handler,
+                Run(kLazyListenersSupported,
+                    binding::EventListenersChanged::NO_LISTENERS, nullptr, true,
+                    context))
+        .Times(1);
+    v8::Local<v8::Value> argv[] = {lazy_listeners_supported, listener};
+    RunFunction(remove_listener, context, arraysize(argv), argv);
+    ::testing::Mock::VerifyAndClearExpectations(&change_handler);
+  }
+
+  {
+    EXPECT_CALL(change_handler,
+                Run(kLazyListenersNotSupported,
+                    binding::EventListenersChanged::NO_LISTENERS, nullptr,
+                    false, context))
+        .Times(1);
+    v8::Local<v8::Value> argv[] = {lazy_listeners_not_supported, listener};
+    RunFunction(remove_listener, context, arraysize(argv), argv);
+    ::testing::Mock::VerifyAndClearExpectations(&change_handler);
+  }
+
+  DisposeContext(context);
 }
 
 }  // namespace extensions

@@ -15,14 +15,22 @@ var hasLastError = bindingUtil ?
     require('lastError').hasError;
 
 var jsEvent;
-function createNewEvent(name) {
+function createNewEvent(name, isWebview) {
+  var supportsLazyListeners = !isWebview;
+  var supportsFilters = false;
   if (bindingUtil) {
     // Native custom events ignore schema.
-    return bindingUtil.createCustomEvent(name, undefined, undefined);
+    return bindingUtil.createCustomEvent(name, undefined, supportsFilters,
+                                         supportsLazyListeners);
   }
   if (!jsEvent)
     jsEvent = require('event_bindings').Event;
-  return new jsEvent(name);
+  var eventOpts = {
+    __proto__: null,
+    supportsLazyListeners: supportsLazyListeners,
+    supportsFilters: supportsFilters,
+  };
+  return new jsEvent(name, null, eventOpts);
 }
 
 // Add the bindings to the contextMenus API.
@@ -53,7 +61,7 @@ function createContextMenusHandlers(isWebview) {
 
   var contextMenus = { __proto__: null };
   contextMenus.handlers = { __proto__: null };
-  contextMenus.event = createNewEvent(eventName);
+  contextMenus.event = createNewEvent(eventName, isWebview);
 
   contextMenus.getIdFromCreateProperties = function(createProperties) {
     if (typeof createProperties.id !== 'undefined')

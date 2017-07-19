@@ -234,6 +234,10 @@ class EventRouter : public KeyedService,
     return &lazy_event_dispatch_util_;
   }
 
+  // Returns true if there is a registered lazy listener for the given
+  // |event_name|.
+  bool HasLazyEventListenerForTesting(const std::string& event_name);
+
  private:
   friend class EventRouterFilterTest;
   friend class EventRouterTest;

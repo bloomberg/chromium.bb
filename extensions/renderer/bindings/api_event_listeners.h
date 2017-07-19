@@ -27,14 +27,15 @@ struct EventFilteringInfo;
 // transitioning from 0 -> 1 or 1 -> 0 listeners.
 class APIEventListeners {
  public:
-  // The callback called when listeners change. |was_manual| indicates that the
-  // listener change was triggered by a direct call from the extension to add
-  // or remove listeners, rather than something like the context being
-  // destroyed.
+  // The callback called when listeners change. |update_lazy_listeners|
+  // indicates that the lazy listener count for the event should potentially be
+  // updated. This is true if a) the event supports lazy listeners and b) the
+  // change was "manual" (i.e., triggered by a direct call from the extension
+  // rather than something like the context being destroyed).
   using ListenersUpdated =
       base::Callback<void(binding::EventListenersChanged,
                           const base::DictionaryValue* filter,
-                          bool was_manual,
+                          bool update_lazy_listeners,
                           v8::Local<v8::Context> context)>;
 
   virtual ~APIEventListeners() = default;
@@ -79,7 +80,8 @@ class APIEventListeners {
 class UnfilteredEventListeners final : public APIEventListeners {
  public:
   UnfilteredEventListeners(const ListenersUpdated& listeners_updated,
-                           int max_listeners);
+                           int max_listeners,
+                           bool supports_lazy_listeners);
   ~UnfilteredEventListeners() override;
 
   bool AddListener(v8::Local<v8::Function> listener,
@@ -111,6 +113,9 @@ class UnfilteredEventListeners final : public APIEventListeners {
   // The maximum number of supported listeners.
   int max_listeners_;
 
+  // Whether the event supports lazy listeners.
+  bool supports_lazy_listeners_;
+
   DISALLOW_COPY_AND_ASSIGN(UnfilteredEventListeners);
 };
 
@@ -123,6 +128,7 @@ class FilteredEventListeners final : public APIEventListeners {
   FilteredEventListeners(const ListenersUpdated& listeners_updated,
                          const std::string& event_name,
                          int max_listeners,
+                         bool supports_lazy_listeners,
                          EventFilter* event_filter);
   ~FilteredEventListeners() override;
 
@@ -155,6 +161,9 @@ class FilteredEventListeners final : public APIEventListeners {
 
   // The maximum number of supported listeners.
   int max_listeners_;
+
+  // Whether the event supports lazy listeners.
+  bool supports_lazy_listeners_;
 
   // The associated EventFilter; required to outlive this object.
   EventFilter* event_filter_ = nullptr;

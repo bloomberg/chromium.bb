@@ -30,7 +30,7 @@ TEST_F(EventEmitterUnittest, TestDispatchMethod) {
   v8::Local<v8::Context> context = MainContext();
 
   auto listeners = base::MakeUnique<UnfilteredEventListeners>(
-      base::Bind(&DoNothingOnListenerChange), binding::kNoListenerMax);
+      base::Bind(&DoNothingOnListenerChange), binding::kNoListenerMax, true);
 
   // The test util methods enforce that functions always throw or always don't
   // throw, but we test listeners that do both. Provide implementations for

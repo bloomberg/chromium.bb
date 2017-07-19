@@ -108,6 +108,7 @@ struct APIBinding::EventData {
             std::string full_name,
             bool supports_filters,
             bool supports_rules,
+            bool supports_lazy_listeners,
             int max_listeners,
             bool notify_on_change,
             std::vector<std::string> actions,
@@ -117,6 +118,7 @@ struct APIBinding::EventData {
         full_name(std::move(full_name)),
         supports_filters(supports_filters),
         supports_rules(supports_rules),
+        supports_lazy_listeners(supports_lazy_listeners),
         max_listeners(max_listeners),
         notify_on_change(notify_on_change),
         actions(std::move(actions)),
@@ -134,6 +136,9 @@ struct APIBinding::EventData {
 
   // Whether the event supports rules.
   bool supports_rules;
+
+  // Whether the event supports lazy listeners.
+  bool supports_lazy_listeners;
 
   // The maximum number of listeners this event supports.
   int max_listeners;
@@ -285,6 +290,7 @@ APIBinding::APIBinding(const std::string& api_name,
       const base::DictionaryValue* options = nullptr;
       bool supports_rules = false;
       bool notify_on_change = true;
+      bool supports_lazy_listeners = true;
       int max_listeners = binding::kNoListenerMax;
       if (event_dict->GetDictionary("options", &options)) {
         bool temp_supports_filters = false;
@@ -317,12 +323,18 @@ APIBinding::APIBinding(const std::string& api_name,
         bool unmanaged = false;
         if (options->GetBoolean("unmanaged", &unmanaged))
           notify_on_change = !unmanaged;
+        if (options->GetBoolean("supportsLazyListeners",
+                                &supports_lazy_listeners)) {
+          DCHECK(!supports_lazy_listeners)
+              << "Don't specify supportsLazyListeners: true; it's the default.";
+        }
       }
 
       events_.push_back(base::MakeUnique<EventData>(
           std::move(name), std::move(full_name), supports_filters,
-          supports_rules, max_listeners, notify_on_change,
-          std::move(rule_actions), std::move(rule_conditions), this));
+          supports_rules, supports_lazy_listeners, max_listeners,
+          notify_on_change, std::move(rule_actions), std::move(rule_conditions),
+          this));
     }
   }
 }
@@ -521,7 +533,8 @@ void APIBinding::GetEventObject(
   } else {
     retval = event_data->binding->event_handler_->CreateEventInstance(
         event_data->full_name, event_data->supports_filters,
-        event_data->max_listeners, event_data->notify_on_change, context);
+        event_data->supports_lazy_listeners, event_data->max_listeners,
+        event_data->notify_on_change, context);
   }
   info.GetReturnValue().Set(retval);
 }

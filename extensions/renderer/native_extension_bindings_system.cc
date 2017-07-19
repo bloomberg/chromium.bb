@@ -756,17 +756,17 @@ void NativeExtensionBindingsSystem::OnEventListenerChanged(
     const std::string& event_name,
     binding::EventListenersChanged change,
     const base::DictionaryValue* filter,
-    bool was_manual,
+    bool update_lazy_listeners,
     v8::Local<v8::Context> context) {
   ScriptContext* script_context = GetScriptContext(context);
   // Note: Check context_type() first to avoid accessing ExtensionFrameHelper on
   // a worker thread.
   bool is_lazy =
-      script_context->context_type() == Feature::SERVICE_WORKER_CONTEXT ||
-      ExtensionFrameHelper::IsContextForEventPage(script_context);
+      update_lazy_listeners &&
+      (script_context->context_type() == Feature::SERVICE_WORKER_CONTEXT ||
+       ExtensionFrameHelper::IsContextForEventPage(script_context));
   // We only remove a lazy listener if the listener removal was triggered
   // manually by the extension.
-  bool remove_lazy_listener = is_lazy && was_manual;
 
   if (filter) {  // Filtered event listeners.
     DCHECK(filter);
@@ -776,7 +776,7 @@ void NativeExtensionBindingsSystem::OnEventListenerChanged(
     } else {
       DCHECK_EQ(binding::EventListenersChanged::NO_LISTENERS, change);
       ipc_message_sender_->SendRemoveFilteredEventListenerIPC(
-          script_context, event_name, *filter, remove_lazy_listener);
+          script_context, event_name, *filter, is_lazy);
     }
   } else {  // Unfiltered event listeners.
     if (change == binding::EventListenersChanged::HAS_LISTENERS) {
@@ -796,7 +796,7 @@ void NativeExtensionBindingsSystem::OnEventListenerChanged(
       DCHECK_EQ(binding::EventListenersChanged::NO_LISTENERS, change);
       ipc_message_sender_->SendRemoveUnfilteredEventListenerIPC(script_context,
                                                                 event_name);
-      if (remove_lazy_listener) {
+      if (is_lazy) {
         ipc_message_sender_->SendRemoveUnfilteredLazyEventListenerIPC(
             script_context, event_name);
       }

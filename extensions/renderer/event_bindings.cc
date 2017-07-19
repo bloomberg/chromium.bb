@@ -238,12 +238,14 @@ void EventBindings::DispatchEventInContext(
 
 void EventBindings::AttachEventHandler(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  CHECK_EQ(1, args.Length());
+  CHECK_EQ(2, args.Length());
   CHECK(args[0]->IsString());
-  AttachEvent(*v8::String::Utf8Value(args[0]));
+  CHECK(args[1]->IsBoolean());
+  AttachEvent(*v8::String::Utf8Value(args[0]), args[1]->BooleanValue());
 }
 
-void EventBindings::AttachEvent(const std::string& event_name) {
+void EventBindings::AttachEvent(const std::string& event_name,
+                                bool supports_lazy_listeners) {
   if (!context()->HasAccessOrThrowError(event_name))
     return;
 
@@ -264,7 +266,7 @@ void EventBindings::AttachEvent(const std::string& event_name) {
   // This is called the first time the page has added a listener. Since
   // the background page is the only lazy page, we know this is the first
   // time this listener has been registered.
-  if (IsLazyContext(context())) {
+  if (IsLazyContext(context()) && supports_lazy_listeners) {
     ipc_message_sender_->SendAddUnfilteredLazyEventListenerIPC(context(),
                                                                event_name);
   }
@@ -272,13 +274,18 @@ void EventBindings::AttachEvent(const std::string& event_name) {
 
 void EventBindings::DetachEventHandler(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  CHECK_EQ(2, args.Length());
+  CHECK_EQ(3, args.Length());
   CHECK(args[0]->IsString());
   CHECK(args[1]->IsBoolean());
-  DetachEvent(*v8::String::Utf8Value(args[0]), args[1]->BooleanValue());
+  CHECK(args[2]->IsBoolean());
+  bool was_manual = args[1]->BooleanValue();
+  bool supports_lazy_listeners = args[2]->BooleanValue();
+  DetachEvent(*v8::String::Utf8Value(args[0]),
+              was_manual && supports_lazy_listeners);
 }
 
-void EventBindings::DetachEvent(const std::string& event_name, bool is_manual) {
+void EventBindings::DetachEvent(const std::string& event_name,
+                                bool remove_lazy_listener) {
   // See comment in AttachEvent().
   attached_event_names_.erase(event_name);
 
@@ -291,7 +298,7 @@ void EventBindings::DetachEvent(const std::string& event_name, bool is_manual) {
   // removed. If the context is the background page or service worker, and it
   // removes the last listener manually, then we assume that it is no longer
   // interested in being awakened for this event.
-  if (is_manual && IsLazyContext(context())) {
+  if (remove_lazy_listener && IsLazyContext(context())) {
     ipc_message_sender_->SendRemoveUnfilteredLazyEventListenerIPC(context(),
                                                                   event_name);
   }
@@ -304,9 +311,10 @@ void EventBindings::DetachEvent(const std::string& event_name, bool is_manual) {
 // dispatchEvent().
 void EventBindings::AttachFilteredEvent(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  CHECK_EQ(2, args.Length());
+  CHECK_EQ(3, args.Length());
   CHECK(args[0]->IsString());
   CHECK(args[1]->IsObject());
+  CHECK(args[2]->IsBoolean());
 
   std::string event_name = *v8::String::Utf8Value(args[0]);
   if (!context()->HasAccessOrThrowError(event_name))
@@ -324,6 +332,8 @@ void EventBindings::AttachFilteredEvent(
     filter = base::DictionaryValue::From(std::move(filter_value));
   }
 
+  bool supports_lazy_listeners = args[2]->BooleanValue();
+
   int id = g_event_filter.Get().AddEventMatcher(
       event_name,
       base::MakeUnique<EventMatcher>(
@@ -340,7 +350,8 @@ void EventBindings::AttachFilteredEvent(
   base::DictionaryValue* filter_weak = matcher->value();
   const ExtensionId& extension_id = context()->GetExtensionID();
   if (AddFilter(event_name, extension_id, *filter_weak)) {
-    bool lazy = ExtensionFrameHelper::IsContextForEventPage(context());
+    bool lazy = supports_lazy_listeners &&
+                ExtensionFrameHelper::IsContextForEventPage(context());
     ipc_message_sender_->SendAddFilteredEventListenerIPC(context(), event_name,
                                                          *filter_weak, lazy);
   }
@@ -350,13 +361,18 @@ void EventBindings::AttachFilteredEvent(
 
 void EventBindings::DetachFilteredEventHandler(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  CHECK_EQ(2, args.Length());
+  CHECK_EQ(3, args.Length());
   CHECK(args[0]->IsInt32());
   CHECK(args[1]->IsBoolean());
-  DetachFilteredEvent(args[0]->Int32Value(), args[1]->BooleanValue());
+  CHECK(args[2]->IsBoolean());
+  bool was_manual = args[1]->BooleanValue();
+  bool supports_lazy_listeners = args[2]->BooleanValue();
+  DetachFilteredEvent(args[0]->Int32Value(),
+                      was_manual && supports_lazy_listeners);
 }
 
-void EventBindings::DetachFilteredEvent(int matcher_id, bool is_manual) {
+void EventBindings::DetachFilteredEvent(int matcher_id,
+                                        bool remove_lazy_event) {
   EventFilter& event_filter = g_event_filter.Get();
   EventMatcher* event_matcher = event_filter.GetEventMatcher(matcher_id);
 
@@ -365,8 +381,8 @@ void EventBindings::DetachFilteredEvent(int matcher_id, bool is_manual) {
   // Only send IPCs the last time a filter gets removed.
   const ExtensionId& extension_id = context()->GetExtensionID();
   if (RemoveFilter(event_name, extension_id, event_matcher->value())) {
-    bool remove_lazy =
-        is_manual && ExtensionFrameHelper::IsContextForEventPage(context());
+    bool remove_lazy = remove_lazy_event &&
+                       ExtensionFrameHelper::IsContextForEventPage(context());
     ipc_message_sender_->SendRemoveFilteredEventListenerIPC(
         context(), event_name, *event_matcher->value(), remove_lazy);
   }
