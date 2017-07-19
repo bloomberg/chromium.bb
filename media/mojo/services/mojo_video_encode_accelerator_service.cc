@@ -17,7 +17,7 @@ namespace media {
 
 // static
 void MojoVideoEncodeAcceleratorService::Create(
-    media::mojom::VideoEncodeAcceleratorRequest request,
+    mojom::VideoEncodeAcceleratorRequest request,
     const CreateAndInitializeVideoEncodeAcceleratorCallback&
         create_vea_callback,
     const gpu::GpuPreferences& gpu_preferences) {
@@ -44,9 +44,9 @@ MojoVideoEncodeAcceleratorService::~MojoVideoEncodeAcceleratorService() {
 }
 
 void MojoVideoEncodeAcceleratorService::Initialize(
-    media::VideoPixelFormat input_format,
+    VideoPixelFormat input_format,
     const gfx::Size& input_visible_size,
-    media::VideoCodecProfile output_profile,
+    VideoCodecProfile output_profile,
     uint32_t initial_bitrate,
     mojom::VideoEncodeAcceleratorClientPtr client) {
   DVLOG(1) << __func__
@@ -205,20 +205,7 @@ void MojoVideoEncodeAcceleratorService::NotifyError(
   if (!vea_client_)
     return;
 
-  // TODO(mcasas): Use EnumTraits, https://crbug.com/736517
-  Error mojo_error = Error::PLATFORM_FAILURE_ERROR;
-  switch (error) {
-    case ::media::VideoEncodeAccelerator::kIllegalStateError:
-      mojo_error = Error::ILLEGAL_STATE_ERROR;
-      break;
-    case ::media::VideoEncodeAccelerator::kInvalidArgumentError:
-      mojo_error = Error::INVALID_ARGUMENT_ERROR;
-      break;
-    case ::media::VideoEncodeAccelerator::kPlatformFailureError:
-      mojo_error = Error::PLATFORM_FAILURE_ERROR;
-      break;
-  }
-  vea_client_->NotifyError(mojo_error);
+  vea_client_->NotifyError(error);
 }
 
 }  // namespace media
