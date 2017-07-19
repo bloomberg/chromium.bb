@@ -1057,7 +1057,10 @@ COMMON_GTESTS = {
       '--test-launcher-batch-limit=400',
       '--deqp-egl-display-type=angle-gles'
     ],
-    'android_args': ['--enable-xml-result-parsing']
+    'android_args': [
+      '--enable-xml-result-parsing',
+      '--shard-timeout=300'
+    ],
   },
 
   'angle_deqp_gles3_gles_tests': {
