@@ -98,9 +98,10 @@ void LayoutAnalyzer::Pop(const LayoutObject& o) {
 std::unique_ptr<TracedValue> LayoutAnalyzer::ToTracedValue() {
   std::unique_ptr<TracedValue> traced_value(TracedValue::Create());
   for (size_t i = 0; i < kNumCounters; ++i) {
-    if (counters_[i] > 0)
-      traced_value->SetInteger(NameForCounter(static_cast<Counter>(i)),
-                               counters_[i]);
+    if (counters_[i] > 0) {
+      traced_value->SetIntegerWithCopiedName(
+          NameForCounter(static_cast<Counter>(i)), counters_[i]);
+    }
   }
   return traced_value;
 }
