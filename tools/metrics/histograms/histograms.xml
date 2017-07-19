@@ -15406,8 +15406,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>The start result of download attempts.</summary>
 </histogram>
 
-<histogram name="Download.Service.StartUpStatus"
+<histogram base="true" name="Download.Service.StartUpStatus"
     enum="Download.Service.StartUpResult">
+<!-- Name completed by histogram_suffixes
+     name="Download.Service.StartUpStep" -->
+
   <owner>xingliu@chromium.org</owner>
   <summary>The start up result of the download service.</summary>
 </histogram>
@@ -91234,6 +91237,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="Paused" label="The paused state."/>
   <suffix name="Complete" label="The complte state."/>
   <affected-histogram name="Download.Service.Db.Records"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="Download.Service.StartUpStep" separator=".">
+  <suffix name="Initialization" label="The initialization start up step."/>
+  <suffix name="Recovery" label="The recovery start up step."/>
+  <affected-histogram name="Download.Service.StartUpStatus"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="Download.Service.TaskType" separator=".">

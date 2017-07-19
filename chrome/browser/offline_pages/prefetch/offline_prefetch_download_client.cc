@@ -19,8 +19,11 @@ OfflinePrefetchDownloadClient::OfflinePrefetchDownloadClient(
 OfflinePrefetchDownloadClient::~OfflinePrefetchDownloadClient() = default;
 
 void OfflinePrefetchDownloadClient::OnServiceInitialized(
+    bool state_lost,
     const std::vector<std::string>& outstanding_download_guids) {
   // TODO(jianli): Remove orphaned downloads.
+  // TODO(jianli, dtrainor): Handle service corruption and recovery if
+  // |state_lost| is |true|.
   PrefetchDownloader* downloader = GetPrefetchDownloader();
   if (downloader)
     downloader->OnDownloadServiceReady();

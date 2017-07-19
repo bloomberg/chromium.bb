@@ -117,9 +117,15 @@ std::string FileCleanupReasonToHistogramSuffix(FileCleanupReason reason) {
 }
 
 // Helper method to log StartUpResult.
-void LogStartUpResult(StartUpResult result) {
-  base::UmaHistogramEnumeration("Download.Service.StartUpStatus", result,
-                                StartUpResult::COUNT);
+void LogStartUpResult(bool in_recovery, StartUpResult result) {
+  if (in_recovery) {
+    base::UmaHistogramEnumeration("Download.Service.StartUpStatus.Recovery",
+                                  result, StartUpResult::COUNT);
+  } else {
+    base::UmaHistogramEnumeration(
+        "Download.Service.StartUpStatus.Initialization", result,
+        StartUpResult::COUNT);
+  }
 }
 
 // Helper method to log the number of entries under a particular state.
@@ -131,20 +137,20 @@ void LogDatabaseRecords(Entry::State state, uint32_t record_count) {
 
 }  // namespace
 
-void LogControllerStartupStatus(const StartupStatus& status) {
+void LogControllerStartupStatus(bool in_recovery, const StartupStatus& status) {
   DCHECK(status.Complete());
 
   // Total counts for general success/failure rate.
-  LogStartUpResult(status.Ok() ? StartUpResult::SUCCESS
-                               : StartUpResult::FAILURE);
+  LogStartUpResult(in_recovery, status.Ok() ? StartUpResult::SUCCESS
+                                            : StartUpResult::FAILURE);
 
   // Failure reasons.
   if (!status.driver_ok.value())
-    LogStartUpResult(StartUpResult::FAILURE_REASON_DRIVER);
+    LogStartUpResult(in_recovery, StartUpResult::FAILURE_REASON_DRIVER);
   if (!status.model_ok.value())
-    LogStartUpResult(StartUpResult::FAILURE_REASON_MODEL);
+    LogStartUpResult(in_recovery, StartUpResult::FAILURE_REASON_MODEL);
   if (!status.file_monitor_ok.value())
-    LogStartUpResult(StartUpResult::FAILURE_REASON_FILE_MONITOR);
+    LogStartUpResult(in_recovery, StartUpResult::FAILURE_REASON_FILE_MONITOR);
 }
 
 void LogServiceApiAction(DownloadClient client, ServiceApiAction action) {

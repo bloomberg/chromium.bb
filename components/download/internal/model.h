@@ -35,7 +35,7 @@ class Model {
     // Called asynchronously in response to a Model::HardRecover call.  If
     // |success| is |false|, recovery of the Model and/or the underlying Store
     // failed.  After this call there should be no entries stored in this Model.
-    virtual void OnHardRecoverComplete(bool success) = 0;
+    virtual void OnModelHardRecoverComplete(bool success) = 0;
 
     // Called when an Entry addition is complete.  |success| determines whether
     // or not the entry has been successfully persisted to the Store.
