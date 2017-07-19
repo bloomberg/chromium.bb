@@ -63,10 +63,9 @@ class SoftwareRendererTest : public testing::Test {
     base::RunLoop loop;
 
     list->back()->copy_requests.push_back(
-        CopyOutputRequest::CreateBitmapRequest(
-            base::Bind(&SoftwareRendererTest::SaveBitmapResult,
-                       base::Unretained(&bitmap_result),
-                       loop.QuitClosure())));
+        CopyOutputRequest::CreateBitmapRequest(base::BindOnce(
+            &SoftwareRendererTest::SaveBitmapResult,
+            base::Unretained(&bitmap_result), loop.QuitClosure())));
 
     renderer()->DrawFrame(list, device_scale_factor, viewport_size);
     loop.Run();

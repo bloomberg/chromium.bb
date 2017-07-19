@@ -442,11 +442,9 @@ TEST_F(StructTraitsTest, CopyOutputRequest_BitmapRequest) {
   auto bitmap = base::MakeUnique<SkBitmap>();
   bitmap->allocN32Pixels(size.width(), size.height());
   base::RunLoop run_loop;
-  auto callback =
-      base::Bind(CopyOutputRequestCallback, run_loop.QuitClosure(), size);
-
-  std::unique_ptr<CopyOutputRequest> input;
-  input = CopyOutputRequest::CreateBitmapRequest(callback);
+  std::unique_ptr<CopyOutputRequest> input =
+      CopyOutputRequest::CreateBitmapRequest(base::BindOnce(
+          CopyOutputRequestCallback, run_loop.QuitClosure(), size));
   input->set_area(area);
   input->set_source(source);
   mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
@@ -472,10 +470,9 @@ TEST_F(StructTraitsTest, CopyOutputRequest_TextureRequest) {
   mailbox.SetName(mailbox_name);
   viz::TextureMailbox texture_mailbox(mailbox, gpu::SyncToken(), target);
   base::RunLoop run_loop;
-  auto callback = base::Bind(CopyOutputRequestCallback, run_loop.QuitClosure(),
-                             gfx::Size());
-
-  auto input = CopyOutputRequest::CreateRequest(callback);
+  std::unique_ptr<CopyOutputRequest> input =
+      CopyOutputRequest::CreateRequest(base::BindOnce(
+          CopyOutputRequestCallback, run_loop.QuitClosure(), gfx::Size()));
   input->SetTextureMailbox(texture_mailbox);
 
   mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
@@ -496,7 +493,7 @@ TEST_F(StructTraitsTest, CopyOutputRequest_TextureRequest) {
 TEST_F(StructTraitsTest, CopyOutputRequest_CallbackRunsOnce) {
   int n_called = 0;
   auto request = CopyOutputRequest::CreateRequest(
-      base::Bind(CopyOutputRequestCallbackRunsOnceCallback, &n_called));
+      base::BindOnce(CopyOutputRequestCallbackRunsOnceCallback, &n_called));
   auto result_sender = mojo::StructTraits<
       mojom::CopyOutputRequestDataView,
       std::unique_ptr<CopyOutputRequest>>::result_sender(request);
@@ -509,7 +506,7 @@ TEST_F(StructTraitsTest, CopyOutputRequest_CallbackRunsOnce) {
 
 TEST_F(StructTraitsTest, CopyOutputRequest_MessagePipeBroken) {
   base::RunLoop run_loop;
-  auto request = CopyOutputRequest::CreateRequest(base::Bind(
+  auto request = CopyOutputRequest::CreateRequest(base::BindOnce(
       CopyOutputRequestMessagePipeBrokenCallback, run_loop.QuitClosure()));
   auto result_sender = mojo::StructTraits<
       mojom::CopyOutputRequestDataView,

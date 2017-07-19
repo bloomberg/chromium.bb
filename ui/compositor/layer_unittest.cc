@@ -199,7 +199,7 @@ class LayerWithRealCompositorTest : public testing::Test {
     scoped_refptr<ReadbackHolder> holder(new ReadbackHolder);
     std::unique_ptr<cc::CopyOutputRequest> request =
         cc::CopyOutputRequest::CreateBitmapRequest(
-            base::Bind(&ReadbackHolder::OutputRequestCallback, holder));
+            base::BindOnce(&ReadbackHolder::OutputRequestCallback, holder));
     request->set_area(source_rect);
 
     GetCompositor()->root_layer()->RequestCopyOfOutput(std::move(request));

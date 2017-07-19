@@ -4884,7 +4884,8 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
   copy_grand_child_layer->test_properties()->hide_layer_and_subtree = true;
 
   copy_layer->test_properties()->copy_requests.push_back(
-      CopyOutputRequest::CreateRequest(base::Bind(&EmptyCopyOutputCallback)));
+      CopyOutputRequest::CreateRequest(
+          base::BindOnce(&EmptyCopyOutputCallback)));
 
   RenderSurfaceList render_surface_list;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
@@ -4980,7 +4981,8 @@ TEST_F(LayerTreeHostCommonTest, ClippedOutCopyRequest) {
   copy_child->SetDrawsContent(true);
 
   copy_layer->test_properties()->copy_requests.push_back(
-      CopyOutputRequest::CreateRequest(base::Bind(&EmptyCopyOutputCallback)));
+      CopyOutputRequest::CreateRequest(
+          base::BindOnce(&EmptyCopyOutputCallback)));
 
   copy_layer->test_properties()->AddChild(std::move(copy_child));
   copy_parent->test_properties()->AddChild(std::move(copy_layer));
@@ -5021,7 +5023,8 @@ TEST_F(LayerTreeHostCommonTest, SingularTransformAndCopyRequests) {
   copy_layer->SetBounds(gfx::Size(100, 100));
   copy_layer->SetDrawsContent(true);
   copy_layer->test_properties()->copy_requests.push_back(
-      CopyOutputRequest::CreateRequest(base::Bind(&EmptyCopyOutputCallback)));
+      CopyOutputRequest::CreateRequest(
+          base::BindOnce(&EmptyCopyOutputCallback)));
 
   LayerImpl* copy_child = AddChild<LayerImpl>(copy_layer);
   copy_child->SetBounds(gfx::Size(100, 100));
@@ -5081,7 +5084,8 @@ TEST_F(LayerTreeHostCommonTest, VisibleRectInNonRootCopyRequest) {
   copy_surface->test_properties()->force_render_surface = true;
 
   copy_layer->test_properties()->copy_requests.push_back(
-      CopyOutputRequest::CreateRequest(base::Bind(&EmptyCopyOutputCallback)));
+      CopyOutputRequest::CreateRequest(
+          base::BindOnce(&EmptyCopyOutputCallback)));
 
   DCHECK(!copy_layer->test_properties()->copy_requests.empty());
   ExecuteCalculateDrawProperties(root);
@@ -5096,7 +5100,8 @@ TEST_F(LayerTreeHostCommonTest, VisibleRectInNonRootCopyRequest) {
   copy_layer->SetBounds(gfx::Size(50, 50));
   copy_layer->SetMasksToBounds(true);
   copy_layer->test_properties()->copy_requests.push_back(
-      CopyOutputRequest::CreateRequest(base::Bind(&EmptyCopyOutputCallback)));
+      CopyOutputRequest::CreateRequest(
+          base::BindOnce(&EmptyCopyOutputCallback)));
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
 
   DCHECK(!copy_layer->test_properties()->copy_requests.empty());
@@ -5111,7 +5116,8 @@ TEST_F(LayerTreeHostCommonTest, VisibleRectInNonRootCopyRequest) {
   // Case 3: When there is device scale factor.
   float device_scale_factor = 2.f;
   copy_layer->test_properties()->copy_requests.push_back(
-      CopyOutputRequest::CreateRequest(base::Bind(&EmptyCopyOutputCallback)));
+      CopyOutputRequest::CreateRequest(
+          base::BindOnce(&EmptyCopyOutputCallback)));
 
   DCHECK(!copy_layer->test_properties()->copy_requests.empty());
   ExecuteCalculateDrawProperties(root, device_scale_factor);
@@ -8681,10 +8687,10 @@ TEST_F(LayerTreeHostCommonTest, HasCopyRequestsInTargetSubtree) {
   grandchild->AddChild(greatgrandchild);
   host()->SetRootLayer(root);
 
-  child1->RequestCopyOfOutput(
-      CopyOutputRequest::CreateBitmapRequest(base::Bind(&CopyOutputCallback)));
-  greatgrandchild->RequestCopyOfOutput(
-      CopyOutputRequest::CreateBitmapRequest(base::Bind(&CopyOutputCallback)));
+  child1->RequestCopyOfOutput(CopyOutputRequest::CreateBitmapRequest(
+      base::BindOnce(&CopyOutputCallback)));
+  greatgrandchild->RequestCopyOfOutput(CopyOutputRequest::CreateBitmapRequest(
+      base::BindOnce(&CopyOutputCallback)));
   child2->SetOpacity(0.f);
   ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root.get());
 
@@ -8770,8 +8776,8 @@ TEST_F(LayerTreeHostCommonTest, SkippingSubtreeMain) {
   // Now, even though child has zero opacity, we will configure |grandchild| and
   // |greatgrandchild| in several ways that should force the subtree to be
   // processed anyhow.
-  grandchild->RequestCopyOfOutput(
-      CopyOutputRequest::CreateBitmapRequest(base::Bind(&CopyOutputCallback)));
+  grandchild->RequestCopyOfOutput(CopyOutputRequest::CreateBitmapRequest(
+      base::BindOnce(&CopyOutputCallback)));
   ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root.get());
   update_list = GetUpdateLayerList();
   EXPECT_TRUE(VerifyLayerInList(grandchild, update_list));
@@ -9093,8 +9099,8 @@ TEST_F(LayerTreeHostCommonTest, LayerTreeRebuildTest) {
   parent->AddChild(child);
   host()->SetRootLayer(root);
 
-  child->RequestCopyOfOutput(
-      CopyOutputRequest::CreateRequest(base::Bind(&EmptyCopyOutputCallback)));
+  child->RequestCopyOfOutput(CopyOutputRequest::CreateRequest(
+      base::BindOnce(&EmptyCopyOutputCallback)));
 
   ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root.get());
   EXPECT_TRUE(root->has_copy_requests_in_target_subtree());

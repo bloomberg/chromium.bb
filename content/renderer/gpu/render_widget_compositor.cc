@@ -1013,7 +1013,7 @@ void RenderWidgetCompositor::CompositeAndReadbackAsync(
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner =
       layer_tree_host_->GetTaskRunnerProvider()->MainThreadTaskRunner();
   std::unique_ptr<cc::CopyOutputRequest> request =
-      cc::CopyOutputRequest::CreateBitmapRequest(base::Bind(
+      cc::CopyOutputRequest::CreateBitmapRequest(base::BindOnce(
           [](blink::WebCompositeAndReadbackAsyncCallback* callback,
              scoped_refptr<base::SingleThreadTaskRunner> task_runner,
              std::unique_ptr<cc::CopyOutputResult> result) {

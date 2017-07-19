@@ -6852,7 +6852,7 @@ class LayerTreeHostTestUpdateCopyRequests : public LayerTreeHostTest {
     switch (layer_tree_host()->SourceFrameNumber()) {
       case 1:
         child->RequestCopyOfOutput(CopyOutputRequest::CreateBitmapRequest(
-            base::Bind(CopyOutputCallback)));
+            base::BindOnce(CopyOutputCallback)));
         transform.Scale(2.0, 2.0);
         child->SetTransform(transform);
         break;

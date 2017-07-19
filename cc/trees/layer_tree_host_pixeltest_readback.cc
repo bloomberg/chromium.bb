@@ -64,20 +64,20 @@ class LayerTreeHostReadbackPixelTest
     std::unique_ptr<CopyOutputRequest> request;
 
     if (readback_type_ == READBACK_BITMAP) {
-      request = CopyOutputRequest::CreateBitmapRequest(
-          base::Bind(&LayerTreeHostReadbackPixelTest::ReadbackResultAsBitmap,
-                     base::Unretained(this)));
+      request = CopyOutputRequest::CreateBitmapRequest(base::BindOnce(
+          &LayerTreeHostReadbackPixelTest::ReadbackResultAsBitmap,
+          base::Unretained(this)));
     } else {
       DCHECK_EQ(readback_type_, READBACK_DEFAULT);
       if (test_type_ == PIXEL_TEST_SOFTWARE) {
-        request = CopyOutputRequest::CreateRequest(
-            base::Bind(&LayerTreeHostReadbackPixelTest::ReadbackResultAsBitmap,
-                       base::Unretained(this)));
+        request = CopyOutputRequest::CreateRequest(base::BindOnce(
+            &LayerTreeHostReadbackPixelTest::ReadbackResultAsBitmap,
+            base::Unretained(this)));
       } else {
         DCHECK_EQ(test_type_, PIXEL_TEST_GL);
-        request = CopyOutputRequest::CreateRequest(
-            base::Bind(&LayerTreeHostReadbackPixelTest::ReadbackResultAsTexture,
-                       base::Unretained(this)));
+        request = CopyOutputRequest::CreateRequest(base::BindOnce(
+            &LayerTreeHostReadbackPixelTest::ReadbackResultAsTexture,
+            base::Unretained(this)));
       }
     }
 
@@ -290,7 +290,7 @@ TEST_P(LayerTreeHostReadbackPixelTest,
   hidden_target->AddChild(blue);
 
   hidden_target->RequestCopyOfOutput(CopyOutputRequest::CreateBitmapRequest(
-      base::Bind(&IgnoreReadbackResult)));
+      base::BindOnce(&IgnoreReadbackResult)));
   RunReadbackTest(GetParam().pixel_test_type, GetParam().readback_type,
                   background, base::FilePath(FILE_PATH_LITERAL("black.png")));
 }
@@ -415,7 +415,7 @@ TEST_P(LayerTreeHostReadbackPixelTest, ReadbackNonRootOrFirstLayer) {
   scoped_refptr<SolidColorLayer> blue =
       CreateSolidColorLayer(gfx::Rect(150, 150, 50, 50), SK_ColorBLUE);
   blue->RequestCopyOfOutput(CopyOutputRequest::CreateBitmapRequest(
-      base::Bind(&IgnoreReadbackResult)));
+      base::BindOnce(&IgnoreReadbackResult)));
   background->AddChild(blue);
 
   RunReadbackTestWithReadbackTarget(
@@ -435,7 +435,7 @@ TEST_P(LayerTreeHostReadbackPixelTest, MultipleReadbacksOnLayer) {
       CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorGREEN);
 
   background->RequestCopyOfOutput(CopyOutputRequest::CreateBitmapRequest(
-      base::Bind(&IgnoreReadbackResult)));
+      base::BindOnce(&IgnoreReadbackResult)));
 
   RunReadbackTestWithReadbackTarget(
       GetParam().pixel_test_type, GetParam().readback_type, background,

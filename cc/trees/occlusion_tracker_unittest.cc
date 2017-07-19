@@ -199,15 +199,15 @@ class OcclusionTrackerTest : public testing::Test {
 
   void AddCopyRequest(Layer* layer) {
     layer->RequestCopyOfOutput(CopyOutputRequest::CreateBitmapRequest(
-        base::Bind(&OcclusionTrackerTest::CopyOutputCallback,
-                   base::Unretained(this))));
+        base::BindOnce(&OcclusionTrackerTest::CopyOutputCallback,
+                       base::Unretained(this))));
   }
 
   void AddCopyRequest(LayerImpl* layer) {
     layer->test_properties()->copy_requests.push_back(
         CopyOutputRequest::CreateBitmapRequest(
-            base::Bind(&OcclusionTrackerTest::CopyOutputCallback,
-                       base::Unretained(this))));
+            base::BindOnce(&OcclusionTrackerTest::CopyOutputCallback,
+                           base::Unretained(this))));
   }
 
   void CalcDrawEtc(TestContentLayerImpl* root) {

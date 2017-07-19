@@ -4,7 +4,9 @@
 
 #include "cc/ipc/copy_output_request_struct_traits.h"
 
-#include "base/callback_helpers.h"
+#include <utility>
+
+#include "base/bind.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace {
@@ -16,20 +18,22 @@ class CopyOutputResultSenderImpl : public cc::mojom::CopyOutputResultSender {
  public:
   CopyOutputResultSenderImpl(
       cc::CopyOutputRequest::CopyOutputRequestCallback result_callback)
-      : result_callback_(result_callback) {
+      : result_callback_(std::move(result_callback)) {
     DCHECK(result_callback_);
   }
 
   ~CopyOutputResultSenderImpl() override {
-    if (result_callback_)
-      result_callback_.Run(cc::CopyOutputResult::CreateEmptyResult());
+    if (result_callback_) {
+      std::move(result_callback_)
+          .Run(cc::CopyOutputResult::CreateEmptyResult());
+    }
   }
 
   // mojom::TextureMailboxReleaser implementation:
   void SendResult(std::unique_ptr<cc::CopyOutputResult> result) override {
     if (!result_callback_)
       return;
-    base::ResetAndReturn(&result_callback_).Run(std::move(result));
+    std::move(result_callback_).Run(std::move(result));
   }
 
  private:
@@ -78,7 +82,7 @@ bool StructTraits<cc::mojom::CopyOutputRequestDataView,
   auto result_sender =
       data.TakeResultSender<cc::mojom::CopyOutputResultSenderPtr>();
   request->result_callback_ =
-      base::Bind(SendResult, base::Passed(&result_sender));
+      base::BindOnce(SendResult, base::Passed(&result_sender));
 
   *out_p = std::move(request);
 

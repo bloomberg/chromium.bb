@@ -5,7 +5,6 @@
 #include "cc/output/copy_output_request.h"
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/output/copy_output_result.h"
@@ -16,11 +15,10 @@ namespace cc {
 
 CopyOutputRequest::CopyOutputRequest() : force_bitmap_result_(false) {}
 
-CopyOutputRequest::CopyOutputRequest(
-    bool force_bitmap_result,
-    const CopyOutputRequestCallback& result_callback)
+CopyOutputRequest::CopyOutputRequest(bool force_bitmap_result,
+                                     CopyOutputRequestCallback result_callback)
     : force_bitmap_result_(force_bitmap_result),
-      result_callback_(result_callback) {
+      result_callback_(std::move(result_callback)) {
   DCHECK(!result_callback_.is_null());
   TRACE_EVENT_ASYNC_BEGIN0("cc", "CopyOutputRequest", this);
 }
@@ -35,11 +33,11 @@ void CopyOutputRequest::SendResult(std::unique_ptr<CopyOutputResult> result) {
                          !result->IsEmpty());
   if (result_task_runner_) {
     result_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(base::ResetAndReturn(&result_callback_),
-                                  std::move(result)));
+        FROM_HERE,
+        base::BindOnce(std::move(result_callback_), std::move(result)));
     result_task_runner_ = nullptr;
   } else {
-    base::ResetAndReturn(&result_callback_).Run(std::move(result));
+    std::move(result_callback_).Run(std::move(result));
   }
 }
 

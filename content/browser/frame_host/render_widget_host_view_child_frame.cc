@@ -735,8 +735,8 @@ void RenderWidgetHostViewChildFrame::SubmitSurfaceCopyRequest(
 
   std::unique_ptr<cc::CopyOutputRequest> request =
       cc::CopyOutputRequest::CreateRequest(
-          base::Bind(&CopyFromCompositingSurfaceHasResult, output_size,
-                     preferred_color_type, callback));
+          base::BindOnce(&CopyFromCompositingSurfaceHasResult, output_size,
+                         preferred_color_type, callback));
   if (!src_subrect.IsEmpty())
     request->set_area(src_subrect);
 

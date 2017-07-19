@@ -360,9 +360,9 @@ void Pointer::CaptureCursor(const gfx::Point& hotspot) {
   host_window()->SetTransform(gfx::GetScaleTransform(gfx::Point(), scale));
 
   std::unique_ptr<cc::CopyOutputRequest> request =
-      cc::CopyOutputRequest::CreateBitmapRequest(
-          base::Bind(&Pointer::OnCursorCaptured,
-                     cursor_capture_weak_ptr_factory_.GetWeakPtr(), hotspot));
+      cc::CopyOutputRequest::CreateBitmapRequest(base::BindOnce(
+          &Pointer::OnCursorCaptured,
+          cursor_capture_weak_ptr_factory_.GetWeakPtr(), hotspot));
 
   request->set_source(cursor_capture_source_id_);
   host_window()->layer()->RequestCopyOfOutput(std::move(request));

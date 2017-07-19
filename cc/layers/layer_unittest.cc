@@ -1325,11 +1325,11 @@ TEST_F(LayerTest, DedupesCopyOutputRequestsBySource) {
   // Create identical requests without the source being set, and expect the
   // layer does not abort either one.
   std::unique_ptr<CopyOutputRequest> request = CopyOutputRequest::CreateRequest(
-      base::Bind(&ReceiveCopyOutputResult, &result_count));
+      base::BindOnce(&ReceiveCopyOutputResult, &result_count));
   layer->RequestCopyOfOutput(std::move(request));
   EXPECT_EQ(0, result_count);
   request = CopyOutputRequest::CreateRequest(
-      base::Bind(&ReceiveCopyOutputResult, &result_count));
+      base::BindOnce(&ReceiveCopyOutputResult, &result_count));
   layer->RequestCopyOfOutput(std::move(request));
   EXPECT_EQ(0, result_count);
 
@@ -1344,27 +1344,27 @@ TEST_F(LayerTest, DedupesCopyOutputRequestsBySource) {
   // the first request using |kArbitrarySourceId1| aborts immediately when
   // the second request using |kArbitrarySourceId1| is made.
   int did_receive_first_result_from_this_source = 0;
-  request = CopyOutputRequest::CreateRequest(base::Bind(
+  request = CopyOutputRequest::CreateRequest(base::BindOnce(
       &ReceiveCopyOutputResult, &did_receive_first_result_from_this_source));
   request->set_source(kArbitrarySourceId1);
   layer->RequestCopyOfOutput(std::move(request));
   EXPECT_EQ(0, did_receive_first_result_from_this_source);
   // Make a request from a different source.
   int did_receive_result_from_different_source = 0;
-  request = CopyOutputRequest::CreateRequest(base::Bind(
+  request = CopyOutputRequest::CreateRequest(base::BindOnce(
       &ReceiveCopyOutputResult, &did_receive_result_from_different_source));
   request->set_source(kArbitrarySourceId2);
   layer->RequestCopyOfOutput(std::move(request));
   EXPECT_EQ(0, did_receive_result_from_different_source);
   // Make a request without specifying the source.
   int did_receive_result_from_anonymous_source = 0;
-  request = CopyOutputRequest::CreateRequest(base::Bind(
+  request = CopyOutputRequest::CreateRequest(base::BindOnce(
       &ReceiveCopyOutputResult, &did_receive_result_from_anonymous_source));
   layer->RequestCopyOfOutput(std::move(request));
   EXPECT_EQ(0, did_receive_result_from_anonymous_source);
   // Make the second request from |kArbitrarySourceId1|.
   int did_receive_second_result_from_this_source = 0;
-  request = CopyOutputRequest::CreateRequest(base::Bind(
+  request = CopyOutputRequest::CreateRequest(base::BindOnce(
       &ReceiveCopyOutputResult, &did_receive_second_result_from_this_source));
   request->set_source(kArbitrarySourceId1);
   layer->RequestCopyOfOutput(

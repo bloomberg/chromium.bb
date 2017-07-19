@@ -68,8 +68,8 @@ bool PixelTest::RunPixelTestWithReadbackTargetAndArea(
 
   std::unique_ptr<CopyOutputRequest> request =
       CopyOutputRequest::CreateBitmapRequest(
-          base::Bind(&PixelTest::ReadbackResult, base::Unretained(this),
-                     run_loop.QuitClosure()));
+          base::BindOnce(&PixelTest::ReadbackResult, base::Unretained(this),
+                         run_loop.QuitClosure()));
   if (copy_rect)
     request->set_area(*copy_rect);
   target->copy_requests.push_back(std::move(request));
@@ -99,8 +99,8 @@ bool PixelTest::RunPixelTest(RenderPassList* pass_list,
 
   std::unique_ptr<CopyOutputRequest> request =
       CopyOutputRequest::CreateBitmapRequest(
-          base::Bind(&PixelTest::ReadbackResult, base::Unretained(this),
-                     run_loop.QuitClosure()));
+          base::BindOnce(&PixelTest::ReadbackResult, base::Unretained(this),
+                         run_loop.QuitClosure()));
   target->copy_requests.push_back(std::move(request));
 
   if (software_renderer_) {
