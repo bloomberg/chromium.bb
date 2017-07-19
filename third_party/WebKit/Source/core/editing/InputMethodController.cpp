@@ -344,10 +344,23 @@ void InputMethodController::SelectComposition() const {
       SelectionInDOMTree::Builder().SetBaseAndExtent(range).Build(), 0);
 }
 
+bool IsCompositionTooLong(const Element& element) {
+  if (isHTMLInputElement(element))
+    return toHTMLInputElement(element).TooLong();
+  if (isHTMLTextAreaElement(element))
+    return toHTMLTextAreaElement(element).TooLong();
+  return false;
+}
+
 bool InputMethodController::FinishComposingText(
     ConfirmCompositionBehavior confirm_behavior) {
   if (!HasComposition())
     return false;
+
+  // If text is longer than maxlength, give input/textarea's handler a chance to
+  // clamp the text by replacing the composition with the same value.
+  const bool is_too_long =
+      IsCompositionTooLong(*GetDocument().FocusedElement());
 
   const String& composing = ComposingText();
 
@@ -359,8 +372,12 @@ bool InputMethodController::FinishComposingText(
     const PlainTextRange& old_offsets = GetSelectionOffsets();
     Editor::RevealSelectionScope reveal_selection_scope(&GetEditor());
 
-    Clear();
-    DispatchCompositionEndEvent(GetFrame(), composing);
+    if (is_too_long) {
+      ReplaceComposition(ComposingText());
+    } else {
+      Clear();
+      DispatchCompositionEndEvent(GetFrame(), composing);
+    }
 
     // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets
     // needs to be audited. see http://crbug.com/590369 for more details.
@@ -392,7 +409,11 @@ bool InputMethodController::FinishComposingText(
   if (composition_range.IsNull())
     return false;
 
-  Clear();
+  if (is_too_long) {
+    ReplaceComposition(ComposingText());
+  } else {
+    Clear();
+  }
 
   if (!MoveCaret(composition_range.End()))
     return false;
