@@ -67,8 +67,8 @@
     </style>
     <dialog is="cr-dialog" id="dialog" on-cancel="onDialogCanceled_"
         close-text="$i18n{close}" on-closed="onDialogCanceled_">
-      <div class="title">$i18n{tetherConnectionDialogTitle}</div>
-      <div class="body">
+      <div class="title" slot="title">$i18n{tetherConnectionDialogTitle}</div>
+      <div class="body" slot="body">
         <span id="availability-title">
           $i18n{tetherConnectionAvailableDeviceTitle}
         </span>
@@ -102,7 +102,7 @@
           </li>
         </ul>
       </div>
-      <div class="button-container">
+      <div class="button-container" slot="button-container">
         <paper-button class="cancel-button" on-tap="onNotNowTap_">
           $i18n{tetherConnectionNotNowButton}
         </paper-button>

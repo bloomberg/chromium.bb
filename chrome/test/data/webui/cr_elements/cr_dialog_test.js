@@ -14,8 +14,8 @@ suite('cr-dialog', function() {
   test('focuses title on show', function() {
     document.body.innerHTML = `
       <dialog is="cr-dialog">
-        <div class="title">title</div>
-        <div class="body"><button>button</button></div>
+        <div slot="title">title</div>
+        <div slot="body"><button>button</button></div>
       </dialog>`;
 
     var dialog = document.body.querySelector('dialog');
@@ -33,8 +33,8 @@ suite('cr-dialog', function() {
   test('enter keys should trigger action buttons once', function() {
     document.body.innerHTML = `
       <dialog is="cr-dialog">
-        <div class="title">title</div>
-        <div class="body">
+        <div slot="title">title</div>
+        <div slot="body">
           <button class="action-button">button</button>
           <button id="other-button">other button</button>
         </div>
@@ -70,8 +70,8 @@ suite('cr-dialog', function() {
   test('enter keys find the first non-hidden non-disabled button', function() {
     document.body.innerHTML = `
       <dialog is="cr-dialog">
-        <div class="title">title</div>
-        <div class="body">
+        <div slot="title">title</div>
+        <div slot="body">
           <button id="hidden" class="action-button" hidden>hidden</button>
           <button class="action-button" disabled>disabled</button>
           <button class="action-button" disabled hidden>disabled hidden</button>
@@ -100,8 +100,8 @@ suite('cr-dialog', function() {
   test('enter keys from paper-inputs (only) are processed', function() {
     document.body.innerHTML = `
       <dialog is="cr-dialog">
-        <div class="title">title</div>
-        <div class="body">
+        <div slot="title">title</div>
+        <div slot="body">
           <paper-input></paper-input>
           <foobar></foobar>
           <button class="action-button">active</button>
@@ -133,8 +133,8 @@ suite('cr-dialog', function() {
   test('focuses [autofocus] instead of title when present', function() {
     document.body.innerHTML = `
       <dialog is="cr-dialog">
-        <div class="title">title</div>
-        <div class="body"><button autofocus>button</button></div>
+        <div slot="title">title</div>
+        <div slot="body"><button autofocus>button</button></div>
       </dialog>`;
 
     var dialog = document.body.querySelector('dialog');
@@ -154,8 +154,8 @@ suite('cr-dialog', function() {
   test('body scrollable border not added before modal shown', function(done) {
     document.body.innerHTML = `
       <dialog is="cr-dialog">
-        <div class="title">title</div>
-        <div class="body">body</div>
+        <div slot="title">title</div>
+        <div slot="body">body</div>
       </dialog>`;
 
     var dialog = document.body.querySelector('dialog');
@@ -175,8 +175,8 @@ suite('cr-dialog', function() {
   test('dialog body scrollable border when appropriate', function(done) {
     document.body.innerHTML = `
       <dialog is="cr-dialog">
-        <div class="title">title</div>
-        <div class="body">
+        <div slot="title">title</div>
+        <div slot="body">
           <div style="height: 100px">tall content</div>
         </div>
       </dialog>`;
@@ -226,7 +226,7 @@ suite('cr-dialog', function() {
   test('dialog cannot be cancelled when `no-cancel` is set', function() {
     document.body.innerHTML = `
       <dialog is="cr-dialog" no-cancel>
-        <div class="title">title</div>
+        <div slot="title">title</div>
       </dialog>`;
 
     var dialog = document.body.querySelector('dialog');

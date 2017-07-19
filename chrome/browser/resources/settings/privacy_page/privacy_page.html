@@ -49,9 +49,9 @@
       <dialog is="cr-dialog" id="confirmDoNotTrackDialog"
           close-text="$i18n{close}" on-cancel="onDoNotTrackDialogCancel_"
           on-close="onDoNotTrackDialogClosed_">
-        <div class="title">$i18n{doNotTrackDialogTitle}</div>
-        <div class="body">$i18nRaw{doNotTrackDialogMessage}</div>
-        <div class="button-container">
+        <div class="title" slot="title">$i18n{doNotTrackDialogTitle}</div>
+        <div class="body" slot="body">$i18nRaw{doNotTrackDialogMessage}</div>
+        <div class="button-container" slot="button-container">
           <paper-button class="cancel-button"
               on-tap="onDoNotTrackDialogCancel_">
             $i18n{cancel}
