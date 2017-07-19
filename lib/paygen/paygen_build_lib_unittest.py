@@ -423,14 +423,14 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
   def testDiscoverAllFsiBuildsForFullTesting(self):
     """With goldeneye values, test _DiscoverAllFsiBuildsForFullTesting."""
     paygen = paygen_build_lib._PaygenBuild(
-        gspaths.Build(channel='stable-channel', board='x86-alex-he',
+        gspaths.Build(channel='stable-channel', board='auron-yuna',
                       version='1.2.3'),
         self.tempdir,
         config_lib_unittest.MockSiteConfig())
 
     # Search for real FSIs for an older/live board.
     self.assertEqual(paygen._DiscoverAllFsiBuildsForFullTesting(),
-                     ['0.12.433.257', '0.14.811.132', '1412.205.0'])
+                     ['8530.96.0'])
 
   def testDiscoverNmoBuild(self):
     """Test _DiscoverNmoBuild (N minus One)."""
