@@ -2442,7 +2442,8 @@ TEST_P(ParameterizedWebFrameTest, pageScaleFactorWrittenToHistoryItem) {
                    ->Loader()
                    .GetDocumentLoader()
                    ->GetHistoryItem()
-                   ->PageScaleFactor());
+                   ->GetViewState()
+                   ->page_scale_factor_);
 }
 
 TEST_P(ParameterizedWebFrameTest, initialScaleWrittenToHistoryItem) {
@@ -2468,7 +2469,8 @@ TEST_P(ParameterizedWebFrameTest, initialScaleWrittenToHistoryItem) {
                 ->Loader()
                 .GetDocumentLoader()
                 ->GetHistoryItem()
-                ->PageScaleFactor());
+                ->GetViewState()
+                ->page_scale_factor_);
 }
 
 TEST_P(ParameterizedWebFrameTest, pageScaleFactorDoesntShrinkFrameView) {

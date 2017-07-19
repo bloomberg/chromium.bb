@@ -90,7 +90,11 @@ void WebHistoryItem::SetTarget(const WebString& target) {
 }
 
 WebFloatPoint WebHistoryItem::VisualViewportScrollOffset() const {
-  ScrollOffset offset = private_->VisualViewportScrollOffset();
+  HistoryItem::ViewState* scroll_and_view_state = private_->GetViewState();
+  ScrollOffset offset =
+      scroll_and_view_state
+          ? scroll_and_view_state->visual_viewport_scroll_offset_
+          : ScrollOffset();
   return WebFloatPoint(offset.Width(), offset.Height());
 }
 
@@ -100,7 +104,10 @@ void WebHistoryItem::SetVisualViewportScrollOffset(
 }
 
 WebPoint WebHistoryItem::GetScrollOffset() const {
-  ScrollOffset offset = private_->GetScrollOffset();
+  HistoryItem::ViewState* scroll_and_view_state = private_->GetViewState();
+  ScrollOffset offset = scroll_and_view_state
+                            ? scroll_and_view_state->scroll_offset_
+                            : ScrollOffset();
   return WebPoint(offset.Width(), offset.Height());
 }
 
@@ -109,7 +116,8 @@ void WebHistoryItem::SetScrollOffset(const WebPoint& scroll_offset) {
 }
 
 float WebHistoryItem::PageScaleFactor() const {
-  return private_->PageScaleFactor();
+  HistoryItem::ViewState* scroll_and_view_state = private_->GetViewState();
+  return scroll_and_view_state ? scroll_and_view_state->page_scale_factor_ : 0;
 }
 
 void WebHistoryItem::SetPageScaleFactor(float scale) {
@@ -202,12 +210,7 @@ WebVector<WebString> WebHistoryItem::GetReferencedFilePaths() const {
 }
 
 bool WebHistoryItem::DidSaveScrollOrScaleState() const {
-  return private_->DidSaveScrollOrScaleState();
-}
-
-void WebHistoryItem::SetDidSaveScrollOrScaleState(
-    bool has_save_scroll_or_scale_state) {
-  private_->SetDidSaveScrollOrScaleState(has_save_scroll_or_scale_state);
+  return private_->GetViewState();
 }
 
 WebHistoryItem::WebHistoryItem(HistoryItem* item) : private_(item) {}

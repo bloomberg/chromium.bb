@@ -1678,37 +1678,28 @@ TEST_P(WebViewTest, HistoryResetScrollAndScaleState) {
   EXPECT_EQ(2.0f, main_frame_local->Loader()
                       .GetDocumentLoader()
                       ->GetHistoryItem()
-                      ->PageScaleFactor());
+                      ->GetViewState()
+                      ->page_scale_factor_);
   EXPECT_EQ(94, main_frame_local->Loader()
                     .GetDocumentLoader()
                     ->GetHistoryItem()
-                    ->GetScrollOffset()
-                    .Width());
+                    ->GetViewState()
+                    ->scroll_offset_.Width());
   EXPECT_EQ(111, main_frame_local->Loader()
                      .GetDocumentLoader()
                      ->GetHistoryItem()
-                     ->GetScrollOffset()
-                     .Height());
+                     ->GetViewState()
+                     ->scroll_offset_.Height());
 
   // Confirm that resetting the page state resets the saved scroll position.
   web_view_impl->ResetScrollAndScaleState();
   EXPECT_EQ(1.0f, web_view_impl->PageScaleFactor());
   EXPECT_EQ(0, web_view_impl->MainFrameImpl()->GetScrollOffset().width);
   EXPECT_EQ(0, web_view_impl->MainFrameImpl()->GetScrollOffset().height);
-  EXPECT_EQ(1.0f, main_frame_local->Loader()
-                      .GetDocumentLoader()
-                      ->GetHistoryItem()
-                      ->PageScaleFactor());
-  EXPECT_EQ(0, main_frame_local->Loader()
-                   .GetDocumentLoader()
-                   ->GetHistoryItem()
-                   ->GetScrollOffset()
-                   .Width());
-  EXPECT_EQ(0, main_frame_local->Loader()
-                   .GetDocumentLoader()
-                   ->GetHistoryItem()
-                   ->GetScrollOffset()
-                   .Height());
+  EXPECT_EQ(nullptr, main_frame_local->Loader()
+                         .GetDocumentLoader()
+                         ->GetHistoryItem()
+                         ->GetViewState());
 }
 
 TEST_P(WebViewTest, BackForwardRestoreScroll) {

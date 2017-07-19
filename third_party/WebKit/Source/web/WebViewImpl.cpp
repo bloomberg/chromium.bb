@@ -3286,7 +3286,7 @@ void WebViewImpl::ResetScrollAndScaleState() {
           ToLocalFrame(GetPage()->MainFrame())->GetDocument()) {
     if (DocumentLoader* loader = document->Loader()) {
       if (HistoryItem* item = loader->GetHistoryItem())
-        item->SetDidSaveScrollOrScaleState(false);
+        item->ClearViewState();
     }
   }
 

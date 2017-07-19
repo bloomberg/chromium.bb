@@ -835,12 +835,11 @@ TEST_P(VisualViewportTest, TestSavedToHistoryItem) {
   RegisterMockedHttpURLLoad("200-by-300.html");
   NavigateTo(base_url_ + "200-by-300.html");
 
-  EXPECT_SIZE_EQ(ScrollOffset(0, 0),
-                 ToLocalFrame(WebViewImpl()->GetPage()->MainFrame())
-                     ->Loader()
-                     .GetDocumentLoader()
-                     ->GetHistoryItem()
-                     ->VisualViewportScrollOffset());
+  EXPECT_EQ(nullptr, ToLocalFrame(WebViewImpl()->GetPage()->MainFrame())
+                         ->Loader()
+                         .GetDocumentLoader()
+                         ->GetHistoryItem()
+                         ->GetViewState());
 
   VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
   visual_viewport.SetScale(2);
@@ -849,7 +848,8 @@ TEST_P(VisualViewportTest, TestSavedToHistoryItem) {
                    ->Loader()
                    .GetDocumentLoader()
                    ->GetHistoryItem()
-                   ->PageScaleFactor());
+                   ->GetViewState()
+                   ->page_scale_factor_);
 
   visual_viewport.SetLocation(FloatPoint(10, 20));
 
@@ -858,7 +858,8 @@ TEST_P(VisualViewportTest, TestSavedToHistoryItem) {
                      ->Loader()
                      .GetDocumentLoader()
                      ->GetHistoryItem()
-                     ->VisualViewportScrollOffset());
+                     ->GetViewState()
+                     ->visual_viewport_scroll_offset_);
 }
 
 // Test restoring a HistoryItem properly restores the visual viewport's state.
@@ -946,7 +947,8 @@ TEST_P(VisualViewportTest,
                                           ->Loader()
                                           .GetDocumentLoader()
                                           ->GetHistoryItem();
-  EXPECT_SIZE_EQ(ScrollOffset(0, 1000), firstItem->GetScrollOffset());
+  EXPECT_SIZE_EQ(ScrollOffset(0, 1000),
+                 firstItem->GetViewState()->scroll_offset_);
 
   // Now navigate to a page which causes a smaller frame_view. Make sure that
   // navigating doesn't cause the history item to set a new scroll offset
@@ -961,7 +963,8 @@ TEST_P(VisualViewportTest,
                            .GetDocumentLoader()
                            ->GetHistoryItem());
   EXPECT_LT(frame_view->FrameRect().Size().Width(), 1000);
-  EXPECT_SIZE_EQ(ScrollOffset(0, 1000), firstItem->GetScrollOffset());
+  EXPECT_SIZE_EQ(ScrollOffset(0, 1000),
+                 firstItem->GetViewState()->scroll_offset_);
 }
 
 // Test that the coordinates sent into moveRangeSelection are offset by the
