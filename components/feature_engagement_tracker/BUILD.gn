@@ -22,6 +22,9 @@ group("unit_tests") {
 
   deps = [
     "//components/feature_engagement_tracker/internal:unit_tests",
+
+    # TODO(crbug.com/744694 - following line will soon be removed)
+    "//components/feature_engagement_tracker/test:test_support",
   ]
 
   data_deps = [

@@ -11,6 +11,7 @@ static_library("internal") {
   visibility = [
     ":*",
     "//components/feature_engagement_tracker",
+    "//components/feature_engagement_tracker/test:test_support",
   ]
 
   sources = [
