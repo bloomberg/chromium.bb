@@ -897,95 +897,91 @@ void TypingCommand::ForwardDeleteKeyPressed(TextGranularity granularity,
 
   frame->GetSpellChecker().UpdateMarkersForWordsAffectedByEditing(false);
 
-  switch (EndingSelection().GetSelectionType()) {
-    case kRangeSelection:
-      ForwardDeleteKeyPressedInternal(EndingSelection(), EndingSelection(),
-                                      kill_ring, editing_state);
-      return;
-    case kCaretSelection: {
-      smart_delete_ = false;
-      GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
-
-      // Handle delete at beginning-of-block case.
-      // Do nothing in the case that the caret is at the start of a
-      // root editable element or at the start of a document.
-      SelectionModifier selection_modifier(*frame, EndingSelection());
-      selection_modifier.Modify(FrameSelection::kAlterationExtend,
-                                kDirectionForward, granularity);
-      if (kill_ring && selection_modifier.Selection().IsCaret() &&
-          granularity != TextGranularity::kCharacter) {
-        selection_modifier.Modify(FrameSelection::kAlterationExtend,
-                                  kDirectionForward,
-                                  TextGranularity::kCharacter);
-      }
-
-      Position downstream_end =
-          MostForwardCaretPosition(EndingSelection().End());
-      VisiblePosition visible_end = EndingSelection().VisibleEnd();
-      Node* enclosing_table_cell =
-          EnclosingNodeOfType(visible_end.DeepEquivalent(), &IsTableCell);
-      if (enclosing_table_cell &&
-          visible_end.DeepEquivalent() ==
-              VisiblePosition::LastPositionInNode(*enclosing_table_cell)
-                  .DeepEquivalent())
-        return;
-      if (visible_end.DeepEquivalent() ==
-          EndOfParagraph(visible_end).DeepEquivalent())
-        downstream_end = MostForwardCaretPosition(
-            NextPositionOf(visible_end, kCannotCrossEditingBoundary)
-                .DeepEquivalent());
-      // When deleting tables: Select the table first, then perform the deletion
-      if (IsDisplayInsideTable(downstream_end.ComputeContainerNode()) &&
-          downstream_end.ComputeOffsetInContainerNode() <=
-              CaretMinOffset(downstream_end.ComputeContainerNode())) {
-        SetEndingSelection(
-            SelectionInDOMTree::Builder()
-                .SetBaseAndExtentDeprecated(
-                    EndingSelection().End(),
-                    Position::AfterNode(*downstream_end.ComputeContainerNode()))
-                .SetIsDirectional(EndingSelection().IsDirectional())
-                .Build());
-        TypingAddedToOpenCommand(kForwardDeleteKey);
-        return;
-      }
-
-      // deleting to end of paragraph when at end of paragraph needs to merge
-      // the next paragraph (if any)
-      if (granularity == TextGranularity::kParagraphBoundary &&
-          selection_modifier.Selection().IsCaret() &&
-          IsEndOfParagraph(selection_modifier.Selection().VisibleEnd())) {
-        selection_modifier.Modify(FrameSelection::kAlterationExtend,
-                                  kDirectionForward,
-                                  TextGranularity::kCharacter);
-      }
-
-      const VisibleSelection& selection_to_delete =
-          selection_modifier.Selection();
-      if (!StartingSelection().IsRange() ||
-          MostBackwardCaretPosition(selection_to_delete.Base()) !=
-              StartingSelection().Start()) {
-        ForwardDeleteKeyPressedInternal(
-            selection_to_delete, selection_to_delete, kill_ring, editing_state);
-        return;
-      }
-      // It's a little tricky to compute what the starting selection would
-      // have been in the original document. We can't let the VisibleSelection
-      // class's validation kick in or it'll adjust for us based on the
-      // current state of the document and we'll get the wrong result.
-      const VisibleSelection& selection_after_undo =
-          VisibleSelection::CreateWithoutValidationDeprecated(
-              StartingSelection().Start(),
-              ComputeExtentForForwardDeleteUndo(selection_to_delete,
-                                                StartingSelection().End()),
-              TextAffinity::kDownstream);
-      ForwardDeleteKeyPressedInternal(selection_to_delete, selection_after_undo,
-                                      kill_ring, editing_state);
-      return;
-    }
-    case kNoSelection:
-      NOTREACHED();
-      break;
+  if (EndingSelection().IsRange()) {
+    ForwardDeleteKeyPressedInternal(EndingSelection(), EndingSelection(),
+                                    kill_ring, editing_state);
+    return;
   }
+
+  if (!EndingSelection().IsCaret()) {
+    NOTREACHED();
+    return;
+  }
+
+  smart_delete_ = false;
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+
+  // Handle delete at beginning-of-block case.
+  // Do nothing in the case that the caret is at the start of a
+  // root editable element or at the start of a document.
+  SelectionModifier selection_modifier(*frame, EndingSelection());
+  selection_modifier.Modify(FrameSelection::kAlterationExtend,
+                            kDirectionForward, granularity);
+  if (kill_ring && selection_modifier.Selection().IsCaret() &&
+      granularity != TextGranularity::kCharacter) {
+    selection_modifier.Modify(FrameSelection::kAlterationExtend,
+                              kDirectionForward, TextGranularity::kCharacter);
+  }
+
+  Position downstream_end = MostForwardCaretPosition(EndingSelection().End());
+  VisiblePosition visible_end = EndingSelection().VisibleEnd();
+  Node* enclosing_table_cell =
+      EnclosingNodeOfType(visible_end.DeepEquivalent(), &IsTableCell);
+  if (enclosing_table_cell &&
+      visible_end.DeepEquivalent() ==
+          VisiblePosition::LastPositionInNode(*enclosing_table_cell)
+              .DeepEquivalent())
+    return;
+  if (visible_end.DeepEquivalent() ==
+      EndOfParagraph(visible_end).DeepEquivalent()) {
+    downstream_end = MostForwardCaretPosition(
+        NextPositionOf(visible_end, kCannotCrossEditingBoundary)
+            .DeepEquivalent());
+  }
+  // When deleting tables: Select the table first, then perform the deletion
+  if (IsDisplayInsideTable(downstream_end.ComputeContainerNode()) &&
+      downstream_end.ComputeOffsetInContainerNode() <=
+          CaretMinOffset(downstream_end.ComputeContainerNode())) {
+    SetEndingSelection(
+        SelectionInDOMTree::Builder()
+            .SetBaseAndExtentDeprecated(
+                EndingSelection().End(),
+                Position::AfterNode(*downstream_end.ComputeContainerNode()))
+            .SetIsDirectional(EndingSelection().IsDirectional())
+            .Build());
+    TypingAddedToOpenCommand(kForwardDeleteKey);
+    return;
+  }
+
+  // deleting to end of paragraph when at end of paragraph needs to merge
+  // the next paragraph (if any)
+  if (granularity == TextGranularity::kParagraphBoundary &&
+      selection_modifier.Selection().IsCaret() &&
+      IsEndOfParagraph(selection_modifier.Selection().VisibleEnd())) {
+    selection_modifier.Modify(FrameSelection::kAlterationExtend,
+                              kDirectionForward, TextGranularity::kCharacter);
+  }
+
+  const VisibleSelection& selection_to_delete = selection_modifier.Selection();
+  if (!StartingSelection().IsRange() ||
+      MostBackwardCaretPosition(selection_to_delete.Base()) !=
+          StartingSelection().Start()) {
+    ForwardDeleteKeyPressedInternal(selection_to_delete, selection_to_delete,
+                                    kill_ring, editing_state);
+    return;
+  }
+  // It's a little tricky to compute what the starting selection would
+  // have been in the original document. We can't let the VisibleSelection
+  // class's validation kick in or it'll adjust for us based on the
+  // current state of the document and we'll get the wrong result.
+  const VisibleSelection& selection_after_undo =
+      VisibleSelection::CreateWithoutValidationDeprecated(
+          StartingSelection().Start(),
+          ComputeExtentForForwardDeleteUndo(selection_to_delete,
+                                            StartingSelection().End()),
+          TextAffinity::kDownstream);
+  ForwardDeleteKeyPressedInternal(selection_to_delete, selection_after_undo,
+                                  kill_ring, editing_state);
 }
 
 void TypingCommand::ForwardDeleteKeyPressedInternal(
