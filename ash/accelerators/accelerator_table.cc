@@ -286,8 +286,6 @@ const AcceleratorData kDeveloperAcceleratorData[] = {
     {true, ui::VKEY_R, kDebugModifier, ROTATE_SCREEN},
     // For testing on systems where Alt-Tab is already mapped.
     {true, ui::VKEY_W, ui::EF_ALT_DOWN, CYCLE_FORWARD_MRU},
-    {true, ui::VKEY_F11, ui::EF_CONTROL_DOWN,
-     DEV_TOGGLE_ROOT_WINDOW_FULL_SCREEN},
     {true, ui::VKEY_W, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, CYCLE_BACKWARD_MRU},
     {true, ui::VKEY_F, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
      TOGGLE_FULLSCREEN},

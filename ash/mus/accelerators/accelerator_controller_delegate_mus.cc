@@ -34,7 +34,6 @@ bool AcceleratorControllerDelegateMus::HandlesAction(AcceleratorAction action) {
     case DEBUG_TOGGLE_SHOW_DEBUG_BORDERS:
     case DEBUG_TOGGLE_SHOW_FPS_COUNTER:
     case DEBUG_TOGGLE_SHOW_PAINT_RECTS:
-    case DEV_TOGGLE_ROOT_WINDOW_FULL_SCREEN:
     case LOCK_PRESSED:
     case LOCK_RELEASED:
     case MAGNIFY_SCREEN_ZOOM_IN:

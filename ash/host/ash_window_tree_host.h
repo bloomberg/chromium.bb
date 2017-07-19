@@ -34,9 +34,6 @@ class ASH_EXPORT AshWindowTreeHost {
   static std::unique_ptr<AshWindowTreeHost> Create(
       const AshWindowTreeHostInitParams& init_params);
 
-  // Toggles the host's full screen state.
-  virtual void ToggleFullScreen() = 0;
-
   // Clips the cursor to the bounds of the root window until UnConfineCursor().
   // We would like to be able to confine the cursor to that window. However,
   // currently, we do not have such functionality in X. So we just confine

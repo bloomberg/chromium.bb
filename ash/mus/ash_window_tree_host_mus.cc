@@ -29,11 +29,6 @@ AshWindowTreeHostMus::AshWindowTreeHostMus(
 
 AshWindowTreeHostMus::~AshWindowTreeHostMus() {}
 
-void AshWindowTreeHostMus::ToggleFullScreen() {
-  // TODO: this function should be removed entirely as it's not used.
-  NOTREACHED();
-}
-
 bool AshWindowTreeHostMus::ConfineCursorToRootWindow() {
   // TODO: when implementing see implementation in AshWindowTreeHostPlatform
   // for how it uses |transformer_helper_|. http://crbug.com/746054.

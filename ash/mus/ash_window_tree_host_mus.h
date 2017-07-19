@@ -20,7 +20,6 @@ class AshWindowTreeHostMus : public AshWindowTreeHost,
   ~AshWindowTreeHostMus() override;
 
   // AshWindowTreeHost:
-  void ToggleFullScreen() override;
   bool ConfineCursorToRootWindow() override;
   void UnConfineCursor() override;
   void SetRootWindowTransformer(
