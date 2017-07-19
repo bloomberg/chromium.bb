@@ -3689,6 +3689,8 @@
     {
       name: "background-position",
       longhands: ["background-position-x", "background-position-y"],
+      api_class: true,
+      api_methods: ["parseShorthand"],
     },
     {
       name: "background-repeat",
@@ -3976,6 +3978,8 @@
     {
       name: "-webkit-mask-position",
       longhands: ["-webkit-mask-position-x", "-webkit-mask-position-y"],
+      api_class: true,
+      api_methods: ["parseShorthand"],
     },
     {
       name: "-webkit-mask-repeat",
