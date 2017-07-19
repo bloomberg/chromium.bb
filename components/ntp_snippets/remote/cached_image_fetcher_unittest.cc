@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
+#include "base/test/mock_callback.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/image_fetcher/core/image_decoder.h"
@@ -25,9 +26,11 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_unittest_util.h"
 
 using testing::_;
 using testing::Eq;
+using testing::Property;
 
 namespace ntp_snippets {
 
@@ -37,12 +40,19 @@ const char kImageData[] = "data";
 const char kImageURL[] = "http://image.test/test.png";
 const char kSnippetID[] = "http://localhost";
 
-class MockImageDecoder : public image_fetcher::ImageDecoder {
+// Always decodes a valid image for all non-empty input.
+class FakeImageDecoder : public image_fetcher::ImageDecoder {
  public:
-  MOCK_METHOD3(DecodeImage,
-               void(const std::string& image_data,
-                    const gfx::Size& desired_image_frame_size,
-                    const image_fetcher::ImageDecodedCallback& callback));
+  void DecodeImage(
+      const std::string& image_data,
+      const gfx::Size& desired_image_frame_size,
+      const image_fetcher::ImageDecodedCallback& callback) override {
+    gfx::Image image;
+    if (!image_data.empty()) {
+      image = gfx::test::CreateImage();
+    }
+    callback.Run(image);
+  }
 };
 
 }  // namespace
@@ -61,8 +71,8 @@ class CachedImageFetcherTest : public testing::Test {
     request_context_getter_ = scoped_refptr<net::TestURLRequestContextGetter>(
         new net::TestURLRequestContextGetter(mock_task_runner_.get()));
 
-    auto decoder = base::MakeUnique<MockImageDecoder>();
-    mock_image_decoder_ = decoder.get();
+    auto decoder = base::MakeUnique<FakeImageDecoder>();
+    fake_image_decoder_ = decoder.get();
     cached_image_fetcher_ = base::MakeUnique<ntp_snippets::CachedImageFetcher>(
         base::MakeUnique<image_fetcher::ImageFetcherImpl>(
             std::move(decoder), request_context_getter_.get()),
@@ -71,32 +81,27 @@ class CachedImageFetcherTest : public testing::Test {
     EXPECT_TRUE(database_->IsInitialized());
   }
 
-  void FetchImage() {
+  void FetchImage(const ImageFetchedCallback& callback) {
     ContentSuggestion::ID content_suggestion_id(
         Category::FromKnownCategory(KnownCategories::ARTICLES), kSnippetID);
-    cached_image_fetcher_->FetchSuggestionImage(
-        content_suggestion_id, GURL(kImageURL),
-        base::Bind(&CachedImageFetcherTest::OnImageFetched,
-                   base::Unretained(this)));
+    cached_image_fetcher_->FetchSuggestionImage(content_suggestion_id,
+                                                GURL(kImageURL), callback);
   }
-
-  // TODO(gaschler): add a test where decoder runs this callback
-  void OnImageFetched(const gfx::Image&) {}
 
   void RunUntilIdle() { mock_task_runner_->RunUntilIdle(); }
 
   RemoteSuggestionsDatabase* database() { return database_.get(); }
+  FakeImageDecoder* fake_image_decoder() { return fake_image_decoder_; }
   net::FakeURLFetcherFactory* fake_url_fetcher_factory() {
     return &fake_url_fetcher_factory_;
   }
-  MockImageDecoder* mock_image_decoder() { return mock_image_decoder_; }
 
  private:
   std::unique_ptr<CachedImageFetcher> cached_image_fetcher_;
   std::unique_ptr<RemoteSuggestionsDatabase> database_;
   base::ScopedTempDir database_dir_;
+  FakeImageDecoder* fake_image_decoder_;
   net::FakeURLFetcherFactory fake_url_fetcher_factory_;
-  MockImageDecoder* mock_image_decoder_;
   scoped_refptr<base::TestSimpleTaskRunner> mock_task_runner_;
   base::ThreadTaskRunnerHandle mock_task_runner_handle_;
   TestingPrefServiceSimple pref_service_;
@@ -112,8 +117,10 @@ TEST_F(CachedImageFetcherTest, FetchImageFromCache) {
 
   // Do not provide any URL responses and expect that the image is fetched (from
   // cache).
-  EXPECT_CALL(*mock_image_decoder(), DecodeImage(kImageData, _, _));
-  FetchImage();
+  base::MockCallback<ImageFetchedCallback> mock_image_fetched_callback;
+  EXPECT_CALL(mock_image_fetched_callback,
+              Run(Property(&gfx::Image::IsEmpty, Eq(false))));
+  FetchImage(mock_image_fetched_callback.Get());
   RunUntilIdle();
 }
 
@@ -122,8 +129,10 @@ TEST_F(CachedImageFetcherTest, FetchImageNotInCache) {
   fake_url_fetcher_factory()->SetFakeResponse(GURL(kImageURL), kImageData,
                                               net::HTTP_OK,
                                               net::URLRequestStatus::SUCCESS);
-  EXPECT_CALL(*mock_image_decoder(), DecodeImage(kImageData, _, _));
-  FetchImage();
+  base::MockCallback<ImageFetchedCallback> mock_image_fetched_callback;
+  EXPECT_CALL(mock_image_fetched_callback,
+              Run(Property(&gfx::Image::IsEmpty, Eq(false))));
+  FetchImage(mock_image_fetched_callback.Get());
   RunUntilIdle();
 }
 
@@ -132,11 +141,12 @@ TEST_F(CachedImageFetcherTest, FetchNonExistingImage) {
   fake_url_fetcher_factory()->SetFakeResponse(GURL(kImageURL), kErrorResponse,
                                               net::HTTP_NOT_FOUND,
                                               net::URLRequestStatus::FAILED);
-  // Expect that decoder is called even if URL cannot be requested,
-  // then with empty image data.
+  // Expect an empty image is fetched if the URL cannot be requested.
   const std::string kEmptyImageData;
-  EXPECT_CALL(*mock_image_decoder(), DecodeImage(kEmptyImageData, _, _));
-  FetchImage();
+  base::MockCallback<ImageFetchedCallback> mock_image_fetched_callback;
+  EXPECT_CALL(mock_image_fetched_callback,
+              Run(Property(&gfx::Image::IsEmpty, Eq(true))));
+  FetchImage(mock_image_fetched_callback.Get());
   RunUntilIdle();
 }
 
