@@ -2837,6 +2837,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"team-drives", flag_descriptions::kTeamDrivesName,
      flag_descriptions::kTeamDrivesDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(google_apis::kEnableTeamDrives)},
+    {"file-manager-touch-mode", flag_descriptions::kFileManagerTouchModeName,
+     flag_descriptions::kFileManagerTouchModeDescription, kOsCrOS,
+     ENABLE_DISABLE_VALUE_TYPE(
+         chromeos::switches::kEnableFileManagerTouchMode,
+         chromeos::switches::kDisableFileManagerTouchMode)},
 #endif  // OS_CHROMEOS
 
 #if defined(OS_WIN)
