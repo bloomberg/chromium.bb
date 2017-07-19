@@ -52,6 +52,11 @@ class TapWordEdgeSuppression extends ContextualSearchHeuristic {
         return mIsConditionSatisfied;
     }
 
+    @Override
+    protected void logRankerTapSuppression(ContextualSearchRankerLogger logger) {
+        logger.logFeature(ContextualSearchRankerLogger.Feature.IS_WORD_EDGE, mIsConditionSatisfied);
+    }
+
     /**
      * Whether the tap is near the word edge and not a second-tap (tap following a suppressed tap).
      * @param contextualSearchContext The {@link ContextualSearchContext}, used to determine how

@@ -1644,6 +1644,11 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
         return mInternalStateController;
     }
 
+    @VisibleForTesting
+    ContextualSearchRankerLogger getRankerLogger() {
+        return mTapSuppressionRankerLogger;
+    }
+
     // ============================================================================================
     // Native calls
     // ============================================================================================

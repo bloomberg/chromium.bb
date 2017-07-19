@@ -80,6 +80,12 @@ class ContextualSearchEntityHeuristic extends ContextualSearchHeuristic {
         }
     }
 
+    @Override
+    protected void logRankerTapSuppression(ContextualSearchRankerLogger logger) {
+        logger.logFeature(
+                ContextualSearchRankerLogger.Feature.IS_ENTITY, mIsProbablyEnglishProperNoun);
+    }
+
     @VisibleForTesting
     protected boolean isProbablyEnglishProperNoun() {
         return mIsProbablyEnglishProperNoun;

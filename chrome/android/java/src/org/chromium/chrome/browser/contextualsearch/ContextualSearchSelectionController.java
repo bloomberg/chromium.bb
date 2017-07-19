@@ -10,6 +10,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
+import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.GestureStateListener;
@@ -377,6 +378,10 @@ public class ContextualSearchSelectionController {
             mLastTapState = null;
         }
 
+        // Log features that don't require heuristics.
+        logNonHeuristicFeatures(rankerLogger);
+
+        // Make the suppression decision and act upon it.
         boolean shouldSuppressTapBasedOnRanker = rankerLogger.inferUiSuppression();
         if (shouldSuppressTapBasedOnHeuristics || shouldSuppressTapBasedOnRanker) {
             mHandler.handleSuppressedTap();
@@ -422,6 +427,16 @@ public class ContextualSearchSelectionController {
             basePageWebContents.adjustSelectionByCharacterOffset(
                     selectionStartAdjust, selectionEndAdjust);
         }
+    }
+
+    /**
+     * Logs all the features that we can obtain without accessing heuristics, i.e. from global
+     * state.
+     * @param rankerLogger The {@link ContextualSearchRankerLogger} to log the features to.
+     */
+    private void logNonHeuristicFeatures(ContextualSearchRankerLogger rankerLogger) {
+        boolean didOptIn = !PrefServiceBridge.getInstance().isContextualSearchUninitialized();
+        rankerLogger.logFeature(ContextualSearchRankerLogger.Feature.DID_OPT_IN, didOptIn);
     }
 
     // ============================================================================================
