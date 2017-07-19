@@ -114,11 +114,6 @@ class CORE_EXPORT FrameSelection final
                     SetSelectionOptions = kCloseTyping | kClearTypingStyle,
                     CursorAlignOnScroll = CursorAlignOnScroll::kIfNeeded,
                     TextGranularity = TextGranularity::kCharacter);
-
-  void SetSelection(const SelectionInFlatTree&,
-                    SetSelectionOptions = kCloseTyping | kClearTypingStyle,
-                    CursorAlignOnScroll = CursorAlignOnScroll::kIfNeeded,
-                    TextGranularity = TextGranularity::kCharacter);
   void SelectAll(EUserTriggered = kNotUserTriggered);
   void Clear();
   bool IsHidden() const;
