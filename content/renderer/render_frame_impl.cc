@@ -1986,7 +1986,7 @@ void RenderFrameImpl::OnSelectRange(const gfx::Point& base,
 
 void RenderFrameImpl::OnAdjustSelectionByCharacterOffset(int start_adjust,
                                                          int end_adjust) {
-  WebRange range = GetRenderWidget()->GetWebWidget()->CaretOrSelectionRange();
+  WebRange range = frame_->GetInputMethodController()->GetSelectionOffsets();
   if (range.IsNull())
     return;
 
@@ -2008,7 +2008,7 @@ void RenderFrameImpl::OnAdjustSelectionByCharacterOffset(int start_adjust,
 
 void RenderFrameImpl::OnCollapseSelection() {
   const WebRange& range =
-      GetRenderWidget()->GetWebWidget()->CaretOrSelectionRange();
+      frame_->GetInputMethodController()->GetSelectionOffsets();
   if (range.IsNull())
     return;
 
@@ -6243,7 +6243,7 @@ void RenderFrameImpl::SyncSelectionIfRequired() {
 #endif
   {
     WebRange selection =
-        GetRenderWidget()->GetWebWidget()->CaretOrSelectionRange();
+        frame_->GetInputMethodController()->GetSelectionOffsets();
     if (selection.IsNull())
       return;
 
@@ -6266,9 +6266,8 @@ void RenderFrameImpl::SyncSelectionIfRequired() {
       text = frame_->SelectionAsText().Utf16();
       // http://crbug.com/101435
       // In some case, frame->selectionAsText() returned text's length is not
-      // equal to the length returned from
-      // GetWebWidget()->caretOrSelectionRange().
-      // So we have to set the range according to text.length().
+      // equal to the length returned from frame_->GetSelectionOffsets(). So we
+      // have to set the range according to text.length().
       range.set_end(range.start() + text.length());
     }
   }

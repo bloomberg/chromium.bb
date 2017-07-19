@@ -146,7 +146,6 @@ class WEB_EXPORT WebViewImpl final
   bool SelectionTextDirection(WebTextDirection& start,
                               WebTextDirection& end) const override;
   bool IsSelectionAnchorFirst() const override;
-  WebRange CaretOrSelectionRange() override;
   void SetTextDirection(WebTextDirection) override;
   bool IsAcceleratedCompositingActive() const override;
   void WillCloseLayerTreeView() override;

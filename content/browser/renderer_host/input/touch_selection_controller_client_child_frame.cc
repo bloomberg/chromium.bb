@@ -125,19 +125,10 @@ bool TouchSelectionControllerClientChildFrame::IsCommandIdEnabled(
     int command_id) const {
   bool editable = rwhv_->GetTextInputType() != ui::TEXT_INPUT_TYPE_NONE;
   bool readable = rwhv_->GetTextInputType() != ui::TEXT_INPUT_TYPE_PASSWORD;
-  // TODO(wjmaclean): The test for has_selection should be changed to
-  //
-  //  rwhv_->GetSelectionRange(&selection_range);
-  //  bool has_selection = !selection_range.is_empty();
-  //
-  // like in TouchSelectionControllerClientAura. Unfortunately this fails here
-  // due to https://crbug.com/723790, which means that the first text
-  // selected in an oopif subframe when it acquires focus will fail to send
-  // a FrameHostMsg_SelectionChanged, meaning the TextInputManager won't
-  // know about the new selection.
-  bool has_selection = selection_start_.type() != gfx::SelectionBound::EMPTY &&
-                       selection_end_.type() != gfx::SelectionBound::EMPTY &&
-                       selection_start_ != selection_end_;
+
+  gfx::Range selection_range;
+  bool has_selection =
+      rwhv_->GetSelectionRange(&selection_range) && !selection_range.is_empty();
   switch (command_id) {
     case IDS_APP_CUT:
       return editable && readable && has_selection;

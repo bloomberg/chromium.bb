@@ -13,6 +13,7 @@
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/render_widget.h"
+#include "third_party/WebKit/public/web/WebInputMethodController.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 namespace content {
@@ -255,8 +256,9 @@ void FrameInputHandlerImpl::CollapseSelection() {
 
   if (!render_frame_)
     return;
-  const blink::WebRange& range =
-      render_frame_->GetRenderWidget()->GetWebWidget()->CaretOrSelectionRange();
+  const blink::WebRange& range = render_frame_->GetWebFrame()
+                                     ->GetInputMethodController()
+                                     ->GetSelectionOffsets();
   if (range.IsNull())
     return;
 
@@ -298,8 +300,9 @@ void FrameInputHandlerImpl::AdjustSelectionByCharacterOffset(int32_t start,
 
   if (!render_frame_)
     return;
-  blink::WebRange range =
-      render_frame_->GetRenderWidget()->GetWebWidget()->CaretOrSelectionRange();
+  blink::WebRange range = render_frame_->GetWebFrame()
+                              ->GetInputMethodController()
+                              ->GetSelectionOffsets();
   if (range.IsNull())
     return;
 

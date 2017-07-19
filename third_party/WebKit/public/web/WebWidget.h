@@ -168,9 +168,6 @@ class WebWidget {
   // (i.e its anchor is its start).
   virtual bool IsSelectionAnchorFirst() const { return false; }
 
-  // Fetch the current selection range of this WebWidget.
-  virtual WebRange CaretOrSelectionRange() { return WebRange(); }
-
   // Changes the text direction of the selected input node.
   virtual void SetTextDirection(WebTextDirection) {}
 

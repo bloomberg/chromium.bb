@@ -677,20 +677,6 @@ bool WebFrameWidgetImpl::IsSelectionAnchorFirst() const {
   return false;
 }
 
-// TODO(ekaramad):This method is almost duplicated in WebViewImpl as well. This
-// code needs to be refactored  (http://crbug.com/629721).
-WebRange WebFrameWidgetImpl::CaretOrSelectionRange() {
-  LocalFrame* focused = FocusedLocalFrameInWidget();
-  if (!focused)
-    return WebRange();
-
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
-  // needs to be audited.  See http://crbug.com/590369 for more details.
-  focused->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
-
-  return focused->GetInputMethodController().GetSelectionOffsets();
-}
-
 void WebFrameWidgetImpl::SetTextDirection(WebTextDirection direction) {
   // The Editor::setBaseWritingDirection() function checks if we can change
   // the text direction of the selected node and updates its DOM "dir"

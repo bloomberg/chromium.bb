@@ -43,6 +43,7 @@ class CORE_EXPORT WebInputMethodControllerImpl
       ConfirmCompositionBehavior selection_behavior) override;
   WebTextInputInfo TextInputInfo() override;
   WebTextInputType TextInputType() override;
+  WebRange GetSelectionOffsets() const;
 
   DECLARE_TRACE();
 

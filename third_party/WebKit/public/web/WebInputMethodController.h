@@ -60,6 +60,9 @@ class WebInputMethodController {
 
   // Returns the type of current text input of this controller.
   virtual WebTextInputType TextInputType() { return kWebTextInputTypeNone; }
+
+  // Fetch the current selection range of this frame.
+  virtual WebRange GetSelectionOffsets() const = 0;
 };
 
 }  // namespace blink

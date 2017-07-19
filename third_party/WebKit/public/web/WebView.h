@@ -100,7 +100,6 @@ class WebView : protected WebWidget {
   using WebWidget::SelectionBounds;
   using WebWidget::SelectionTextDirection;
   using WebWidget::IsSelectionAnchorFirst;
-  using WebWidget::CaretOrSelectionRange;
   using WebWidget::SetTextDirection;
   using WebWidget::IsAcceleratedCompositingActive;
   using WebWidget::IsWebView;
