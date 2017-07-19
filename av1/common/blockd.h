@@ -1085,8 +1085,10 @@ static INLINE int is_rect_tx_allowed(const MACROBLOCKD *xd,
   return is_rect_tx_allowed_bsize(mbmi->sb_type) &&
          !xd->lossless[mbmi->segment_id];
 }
+#endif  // CONFIG_RECT_TX
+#endif  // CONFIG_EXT_TX
 
-#if CONFIG_RECT_TX_EXT
+#if CONFIG_RECT_TX_EXT && (CONFIG_EXT_TX || CONFIG_VAR_TX)
 static INLINE int is_quarter_tx_allowed_bsize(BLOCK_SIZE bsize) {
   static const char LUT_QTTX[BLOCK_SIZES_ALL] = {
 #if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
@@ -1127,9 +1129,7 @@ static INLINE int is_quarter_tx_allowed(const MACROBLOCKD *xd,
   return is_quarter_tx_allowed_bsize(mbmi->sb_type) && is_inter &&
          !xd->lossless[mbmi->segment_id];
 }
-#endif  // CONFIG_RECT_TX_EXT
-#endif  // CONFIG_RECT_TX
-#endif  // CONFIG_EXT_TX
+#endif
 
 static INLINE TX_SIZE tx_size_from_tx_mode(BLOCK_SIZE bsize, TX_MODE tx_mode,
                                            int is_inter) {

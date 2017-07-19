@@ -597,16 +597,31 @@ void tokenize_vartx(ThreadData *td, TOKENEXTRA **t, RUN_TYPE dry_run,
       cost_coeffs_b(plane, block, blk_row, blk_col, plane_bsize, tx_size, arg);
 #endif
   } else {
+#if CONFIG_RECT_TX_EXT
+    int is_qttx = plane_tx_size == quarter_txsize_lookup[plane_bsize];
+    const TX_SIZE sub_txs = is_qttx ? plane_tx_size : sub_tx_size_map[tx_size];
+#else
     // Half the block size in transform block unit.
     const TX_SIZE sub_txs = sub_tx_size_map[tx_size];
+#endif
     const int bsl = tx_size_wide_unit[sub_txs];
     int i;
 
     assert(bsl > 0);
 
     for (i = 0; i < 4; ++i) {
+#if CONFIG_RECT_TX_EXT
+      int is_wide_tx = tx_size_wide_unit[sub_txs] > tx_size_high_unit[sub_txs];
+      const int offsetr =
+          is_qttx ? (is_wide_tx ? i * tx_size_high_unit[sub_txs] : 0)
+                  : blk_row + ((i >> 1) * bsl);
+      const int offsetc =
+          is_qttx ? (is_wide_tx ? 0 : i * tx_size_wide_unit[sub_txs])
+                  : blk_col + ((i & 0x01) * bsl);
+#else
       const int offsetr = blk_row + ((i >> 1) * bsl);
       const int offsetc = blk_col + ((i & 0x01) * bsl);
+#endif
 
       int step = tx_size_wide_unit[sub_txs] * tx_size_high_unit[sub_txs];
 
