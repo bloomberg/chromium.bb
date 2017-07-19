@@ -138,7 +138,10 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
     return device_;
   }
 
-  void Close() override { device_ = nullptr; }
+  void Close() override {
+    device_->set_open(false);
+    device_ = nullptr;
+  }
 
   void SetConfiguration(int configuration_value,
                         const ResultCallback& callback) override {
@@ -422,12 +425,21 @@ class MockUsbDevice : public UsbDevice {
   }
 
   void Open(const OpenCallback& callback) override {
+    // While most operating systems allow multiple applications to open a
+    // device simultaneously so that they may claim separate interfaces DevTools
+    // will always be trying to claim the same interface and so multiple
+    // connections are more likely to cause problems. https://crbug.com/725320
+    EXPECT_FALSE(open_);
+    open_ = true;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(callback,
                        make_scoped_refptr(new MockUsbDeviceHandle<T>(this))));
   }
 
+  void set_open(bool open) { open_ = open; }
+
+  bool open_ = false;
   std::set<int> claimed_interfaces_;
 
  protected:
