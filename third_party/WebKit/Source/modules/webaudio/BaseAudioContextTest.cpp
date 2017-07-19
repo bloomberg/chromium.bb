@@ -16,11 +16,9 @@
 #include "core/loader/EmptyClients.h"
 #include "core/testing/DummyPageHolder.h"
 #include "modules/webaudio/AudioContextOptions.h"
-#include "modules/webaudio/AudioWorkletThread.h"
 #include "platform/testing/HistogramTester.h"
 #include "platform/testing/TestingPlatformSupport.h"
 #include "platform/wtf/PtrUtil.h"
-#include "public/platform/Platform.h"
 #include "public/platform/WebAudioDevice.h"
 #include "public/platform/WebAudioLatencyHint.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -82,10 +80,6 @@ class BaseAudioContextTestPlatform : public TestingPlatformSupport {
         AudioHardwareSampleRate(), AudioHardwareBufferSize());
   }
 
-  std::unique_ptr<WebThread> CreateThread(const char* name) override {
-    return old_platform_->CreateThread(name);
-  }
-
   double AudioHardwareSampleRate() override { return 44100; }
   size_t AudioHardwareBufferSize() override { return 128; }
 };
@@ -107,12 +101,9 @@ class BaseAudioContextAutoplayTest
 
     GetDocument().GetSettings()->SetAutoplayPolicy(GetParam());
     ChildDocument().GetSettings()->SetAutoplayPolicy(GetParam());
-
-    AudioWorkletThread::CreateSharedBackingThreadForTest();
   }
 
   void TearDown() override {
-    AudioWorkletThread::ClearSharedBackingThread();
     if (child_frame_)
       child_frame_->Detach(FrameDetachType::kRemove);
   }
