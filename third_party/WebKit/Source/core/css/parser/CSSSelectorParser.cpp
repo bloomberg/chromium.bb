@@ -442,7 +442,7 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumePseudo(
 
   AtomicString value = token.Value().ToAtomicString().LowerASCII();
   bool has_arguments = token.GetType() == kFunctionToken;
-  selector->UpdatePseudoType(value, has_arguments, context_->Mode());
+  selector->UpdatePseudoType(value, *context_, has_arguments, context_->Mode());
 
   if (!RuntimeEnabledFeatures::CSSSelectorsFocusWithinEnabled() &&
       selector->GetPseudoType() == CSSSelector::kPseudoFocusWithin)
@@ -582,7 +582,8 @@ CSSSelector::RelationType CSSSelectorParser::ConsumeCombinator(
       const CSSParserToken& slash = range.ConsumeIncludingWhitespace();
       if (slash.GetType() != kDelimiterToken || slash.Delimiter() != '/')
         failed_parsing_ = true;
-      return CSSSelector::kShadowDeep;
+      return context_->IsDynamicProfile() ? CSSSelector::kShadowDeepAsDescendant
+                                          : CSSSelector::kShadowDeep;
     }
 
     default:
