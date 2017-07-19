@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <jni.h>
-
 #include <iterator>
 #include <string>
 #include <vector>
@@ -94,10 +92,6 @@ namespace android {
 std::vector<std::string> GetBackupPrefNames() {
   return std::vector<std::string>(std::begin(backed_up_preferences_),
                                   std::end(backed_up_preferences_));
-}
-
-bool RegisterBackupAgent(JNIEnv* env) {
-  return RegisterNativesImpl(env);
 }
 
 base::android::ScopedJavaLocalRef<jobjectArray> GetBoolBackupNamesForTesting(

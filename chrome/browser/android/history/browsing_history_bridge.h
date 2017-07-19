@@ -5,12 +5,9 @@
 #ifndef CHROME_BROWSER_ANDROID_HISTORY_BROWSING_HISTORY_BRIDGE_H_
 #define CHROME_BROWSER_ANDROID_HISTORY_BROWSING_HISTORY_BRIDGE_H_
 
-#include <jni.h>
-
 #include <memory>
 #include <vector>
 
-#include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "chrome/browser/history/browsing_history_service_handler.h"
@@ -68,7 +65,5 @@ class BrowsingHistoryBridge : public BrowsingHistoryServiceHandler {
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingHistoryBridge);
 };
-
-bool RegisterBrowsingHistoryBridge(JNIEnv* env);
 
 #endif  // CHROME_BROWSER_ANDROID_HISTORY_BROWSING_HISTORY_BRIDGE_H_
