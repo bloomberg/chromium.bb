@@ -22,7 +22,7 @@ MainThreadSchedulerHelper::MainThreadSchedulerHelper(
       control_task_queue_(
           NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(
                            MainThreadTaskQueue::QueueType::CONTROL)
-                           .SetShouldNotifyObservers(true))) {
+                           .SetShouldNotifyObservers(false))) {
   InitDefaultQueues(default_task_queue_, control_task_queue_);
 }
 

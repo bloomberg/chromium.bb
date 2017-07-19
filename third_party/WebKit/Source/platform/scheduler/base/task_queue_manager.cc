@@ -543,11 +543,6 @@ TaskQueueManager::ProcessTaskResult TaskQueueManager::ProcessTaskFromWorkQueue(
       *time_after_task = real_time_domain()->Now();
       task_end_time = MonotonicTimeInSeconds(*time_after_task);
 
-      queue->OnTaskCompleted(
-          pending_task,
-          base::TimeTicks() + base::TimeDelta::FromSecondsD(task_start_time),
-          base::TimeTicks() + base::TimeDelta::FromSecondsD(task_end_time));
-
       for (auto& observer : task_time_observers_)
         observer.DidProcessTask(task_start_time, task_end_time);
     }
@@ -555,6 +550,13 @@ TaskQueueManager::ProcessTaskResult TaskQueueManager::ProcessTaskFromWorkQueue(
     for (auto& observer : task_observers_)
       observer.DidProcessTask(pending_task);
     queue->NotifyDidProcessTask(pending_task);
+  }
+
+  if (task_start_time && task_end_time) {
+    queue->OnTaskCompleted(
+        pending_task,
+        base::TimeTicks() + base::TimeDelta::FromSecondsD(task_start_time),
+        base::TimeTicks() + base::TimeDelta::FromSecondsD(task_end_time));
   }
 
   if (task_start_time && task_end_time &&
