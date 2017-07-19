@@ -23,6 +23,8 @@ static_library("core") {
     "counters/passwords_counter.h",
     "counters/site_settings_counter.cc",
     "counters/site_settings_counter.h",
+    "counters/sync_tracker.cc",
+    "counters/sync_tracker.h",
     "history_notice_utils.cc",
     "history_notice_utils.h",
     "pref_names.cc",

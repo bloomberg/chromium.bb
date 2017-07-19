@@ -23,24 +23,19 @@ HistoryCounter::HistoryCounter(
     syncer::SyncService* sync_service)
     : history_service_(history_service),
       web_history_service_callback_(callback),
-      sync_service_(sync_service),
+      sync_tracker_(this, sync_service),
       has_synced_visits_(false),
       local_counting_finished_(false),
       web_counting_finished_(false),
-      history_sync_enabled_(false),
       weak_ptr_factory_(this) {
   DCHECK(history_service_);
 }
 
-HistoryCounter::~HistoryCounter() {
-  if (sync_service_)
-    sync_service_->RemoveObserver(this);
-}
+HistoryCounter::~HistoryCounter() {}
 
 void HistoryCounter::OnInitialized() {
-  if (sync_service_)
-    sync_service_->AddObserver(this);
-  history_sync_enabled_ = !!GetWebHistoryService();
+  sync_tracker_.OnInitialized(base::Bind(&HistoryCounter::IsHistorySyncEnabled,
+                                         base::Unretained(this)));
 }
 
 bool HistoryCounter::HasTrackedTasks() {
@@ -182,18 +177,12 @@ void HistoryCounter::MergeResults() {
     return;
 
   ReportResult(base::MakeUnique<HistoryResult>(
-      this, local_result_, history_sync_enabled_, has_synced_visits_));
+      this, local_result_, sync_tracker_.IsSyncActive(), has_synced_visits_));
 }
 
-void HistoryCounter::OnStateChanged(syncer::SyncService* sync) {
-  bool history_sync_enabled_new_state = !!GetWebHistoryService();
-
-  // If the history sync was just enabled or disabled, restart the counter
-  // so that we update the result accordingly.
-  if (history_sync_enabled_ != history_sync_enabled_new_state) {
-    history_sync_enabled_ = history_sync_enabled_new_state;
-    Restart();
-  }
+bool HistoryCounter::IsHistorySyncEnabled(
+    const syncer::SyncService* sync_service) {
+  return !!GetWebHistoryService();
 }
 
 HistoryCounter::HistoryResult::HistoryResult(const HistoryCounter* source,

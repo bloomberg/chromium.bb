@@ -31,26 +31,21 @@ AutofillCounter::AutofillCounter(
     scoped_refptr<autofill::AutofillWebDataService> web_data_service,
     syncer::SyncService* sync_service)
     : web_data_service_(web_data_service),
-      sync_service_(sync_service),
+      sync_tracker_(this, sync_service),
       suggestions_query_(0),
       credit_cards_query_(0),
       addresses_query_(0),
       num_suggestions_(0),
       num_credit_cards_(0),
-      num_addresses_(0),
-      autofill_sync_enabled_() {}
+      num_addresses_(0) {}
 
 AutofillCounter::~AutofillCounter() {
   CancelAllRequests();
-  if (sync_service_)
-    sync_service_->RemoveObserver(this);
 }
 
 void AutofillCounter::OnInitialized() {
   DCHECK(web_data_service_);
-  if (sync_service_)
-    sync_service_->AddObserver(this);
-  autofill_sync_enabled_ = IsAutofillSyncEnabled(sync_service_);
+  sync_tracker_.OnInitialized(base::Bind(&IsAutofillSyncEnabled));
 }
 
 const char* AutofillCounter::GetPrefName() const {
@@ -172,7 +167,7 @@ void AutofillCounter::OnWebDataServiceRequestDone(
 
   auto reported_result = base::MakeUnique<AutofillResult>(
       this, num_suggestions_, num_credit_cards_, num_addresses_,
-      autofill_sync_enabled_);
+      sync_tracker_.IsSyncActive());
   ReportResult(std::move(reported_result));
 }
 
@@ -183,14 +178,6 @@ void AutofillCounter::CancelAllRequests() {
     web_data_service_->CancelRequest(credit_cards_query_);
   if (addresses_query_)
     web_data_service_->CancelRequest(addresses_query_);
-}
-
-void AutofillCounter::OnStateChanged(syncer::SyncService* sync) {
-  bool sync_enabled_new = IsAutofillSyncEnabled(sync);
-  if (autofill_sync_enabled_ != sync_enabled_new) {
-    autofill_sync_enabled_ = sync_enabled_new;
-    Restart();
-  }
 }
 
 // AutofillCounter::AutofillResult ---------------------------------------------
