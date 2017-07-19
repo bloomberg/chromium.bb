@@ -23,7 +23,8 @@ class PrefetchServiceImpl : public PrefetchService {
       std::unique_ptr<PrefetchNetworkRequestFactory> network_request_factory,
       std::unique_ptr<PrefetchStore> prefetch_store,
       std::unique_ptr<SuggestedArticlesObserver> suggested_articles_observer,
-      std::unique_ptr<PrefetchDownloader> prefetch_downloader);
+      std::unique_ptr<PrefetchDownloader> prefetch_downloader,
+      std::unique_ptr<PrefetchImporter> prefetch_importer);
   ~PrefetchServiceImpl() override;
 
   // PrefetchService implementation:
@@ -35,6 +36,7 @@ class PrefetchServiceImpl : public PrefetchService {
   SuggestedArticlesObserver* GetSuggestedArticlesObserver() override;
   OfflineEventLogger* GetLogger() override;
   PrefetchDownloader* GetPrefetchDownloader() override;
+  PrefetchImporter* GetPrefetchImporter() override;
 
   // KeyedService implementation:
   void Shutdown() override;
@@ -52,6 +54,7 @@ class PrefetchServiceImpl : public PrefetchService {
   std::unique_ptr<PrefetchStore> prefetch_store_;
   std::unique_ptr<SuggestedArticlesObserver> suggested_articles_observer_;
   std::unique_ptr<PrefetchDownloader> prefetch_downloader_;
+  std::unique_ptr<PrefetchImporter> prefetch_importer_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefetchServiceImpl);
 };

@@ -28,6 +28,7 @@ static_library("prefetch") {
     "prefetch_gcm_app_handler.cc",
     "prefetch_gcm_app_handler.h",
     "prefetch_gcm_handler.h",
+    "prefetch_importer.h",
     "prefetch_item.cc",
     "prefetch_item.h",
     "prefetch_network_request_factory.h",
@@ -90,6 +91,7 @@ static_library("test_support") {
     "test_prefetch_dispatcher.h",
     "test_prefetch_gcm_handler.cc",
     "test_prefetch_gcm_handler.h",
+    "test_prefetch_importer.h",
     "test_prefetch_network_request_factory.cc",
     "test_prefetch_network_request_factory.h",
   ]

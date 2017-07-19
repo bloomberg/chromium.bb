@@ -396,6 +396,20 @@ void OfflinePageModelImpl::SavePage(
   pending_archivers_.push_back(std::move(archiver));
 }
 
+void OfflinePageModelImpl::AddPage(const OfflinePageItem& page,
+                                   const AddPageCallback& callback) {
+  RunWhenLoaded(base::Bind(&OfflinePageModelImpl::AddPageWhenLoadDone,
+                           weak_ptr_factory_.GetWeakPtr(), page, callback));
+}
+
+void OfflinePageModelImpl::AddPageWhenLoadDone(
+    const OfflinePageItem& page,
+    const AddPageCallback& callback) {
+  store_->AddOfflinePage(
+      page, base::Bind(&OfflinePageModelImpl::OnAddPageDone,
+                       weak_ptr_factory_.GetWeakPtr(), page, callback));
+}
+
 void OfflinePageModelImpl::MarkPageAccessed(int64_t offline_id) {
   RunWhenLoaded(base::Bind(&OfflinePageModelImpl::MarkPageAccessedWhenLoadDone,
                            weak_ptr_factory_.GetWeakPtr(), offline_id));
@@ -716,11 +730,12 @@ void OfflinePageModelImpl::OnCreateArchiveDone(
     const base::FilePath& file_path,
     const base::string16& title,
     int64_t file_size) {
+  DeletePendingArchiver(archiver);
+
   if (archiver_result != ArchiverResult::SUCCESSFULLY_CREATED) {
     SavePageResult result = ToSavePageResult(archiver_result);
     InformSavePageDone(
         callback, result, save_page_params.client_id, offline_id);
-    DeletePendingArchiver(archiver);
     return;
   }
 
@@ -728,41 +743,34 @@ void OfflinePageModelImpl::OnCreateArchiveDone(
     DVLOG(1) << "Saved URL does not match requested URL.";
     InformSavePageDone(callback, SavePageResult::ARCHIVE_CREATION_FAILED,
                        save_page_params.client_id, offline_id);
-    DeletePendingArchiver(archiver);
     return;
   }
 
-  OfflinePageItem offline_page_item(saved_url, offline_id,
-                                    save_page_params.client_id, file_path,
-                                    file_size, start_time);
-  offline_page_item.title = title;
-
+  OfflinePageItem offline_page(saved_url, offline_id,
+                               save_page_params.client_id, file_path, file_size,
+                               start_time);
+  offline_page.title = title;
   // Don't record the original URL if it is identical to the final URL. This is
   // because some websites might route the redirect finally back to itself upon
   // the completion of certain action, i.e., authentication, in the middle.
   if (skip_clearing_original_url_for_testing_ ||
-      save_page_params.original_url != offline_page_item.url) {
-    offline_page_item.original_url = save_page_params.original_url;
+      save_page_params.original_url != offline_page.url) {
+    offline_page.original_url = save_page_params.original_url;
   }
-
-  offline_page_item.request_origin = save_page_params.request_origin;
-  store_->AddOfflinePage(offline_page_item,
-                         base::Bind(&OfflinePageModelImpl::OnAddOfflinePageDone,
-                                    weak_ptr_factory_.GetWeakPtr(), archiver,
-                                    file_path, callback, offline_page_item));
+  offline_page.request_origin = save_page_params.request_origin;
+  AddPageWhenLoadDone(
+      offline_page,
+      base::Bind(&OfflinePageModelImpl::OnAddSavedPageDone,
+                 weak_ptr_factory_.GetWeakPtr(), offline_page, callback));
 }
 
-void OfflinePageModelImpl::OnAddOfflinePageDone(
-    OfflinePageArchiver* archiver,
-    const base::FilePath& file_path,
-    const SavePageCallback& callback,
-    const OfflinePageItem& offline_page,
-    ItemActionStatus status) {
-  SavePageResult result;
-
+void OfflinePageModelImpl::OnAddPageDone(const OfflinePageItem& offline_page,
+                                         const AddPageCallback& callback,
+                                         ItemActionStatus status) {
+  AddPageResult result;
   if (status == ItemActionStatus::SUCCESS) {
     offline_pages_[offline_page.offline_id] = offline_page;
-    result = SavePageResult::SUCCESS;
+    result = AddPageResult::SUCCESS;
     ReportPageHistogramAfterSave(policy_controller_.get(), offline_pages_,
                                  offline_page, GetCurrentTime());
     offline_event_logger_.RecordPageSaved(offline_page.client_id.name_space,
@@ -770,27 +778,44 @@ void OfflinePageModelImpl::OnAddOfflinePageDone(
                                           offline_page.offline_id);
   } else if (status == ItemActionStatus::ALREADY_EXISTS) {
     // Remove the orphaned archive.  No callback necessary.
-    archive_manager_->DeleteArchive(file_path, base::Bind([](bool) {}));
-    result = SavePageResult::ALREADY_EXISTS;
+    archive_manager_->DeleteArchive(offline_page.file_path,
+                                    base::Bind([](bool) {}));
+    result = AddPageResult::ALREADY_EXISTS;
   } else {
-    result = SavePageResult::STORE_FAILURE;
+    result = AddPageResult::STORE_FAILURE;
   }
-  InformSavePageDone(callback, result, offline_page.client_id,
-                     offline_page.offline_id);
-  if (result == SavePageResult::SUCCESS) {
+
+  callback.Run(result, offline_page.offline_id);
+
+  // We don't want to notify observers if the add failed.
+  if (status == ItemActionStatus::SUCCESS) {
+    for (Observer& observer : observers_)
+      observer.OfflinePageAdded(this, offline_page);
+  }
+}
+
+void OfflinePageModelImpl::OnAddSavedPageDone(
+    const OfflinePageItem& offline_page,
+    const SavePageCallback& callback,
+    AddPageResult add_result,
+    int64_t offline_id) {
+  SavePageResult save_result;
+  if (add_result == AddPageResult::SUCCESS) {
+    save_result = SavePageResult::SUCCESS;
+  } else if (add_result == AddPageResult::ALREADY_EXISTS) {
+    save_result = SavePageResult::ALREADY_EXISTS;
+  } else if (add_result == AddPageResult::STORE_FAILURE) {
+    save_result = SavePageResult::STORE_FAILURE;
+  } else {
+    NOTREACHED();
+    save_result = SavePageResult::STORE_FAILURE;
+  }
+  InformSavePageDone(callback, save_result, offline_page.client_id, offline_id);
+  if (save_result == SavePageResult::SUCCESS) {
     DeleteExistingPagesWithSameURL(offline_page);
   } else {
     PostClearStorageIfNeededTask(false /* delayed */);
   }
-
-  DeletePendingArchiver(archiver);
-
-  // We don't want to notify observers if the add failed.
-  if (result != SavePageResult::SUCCESS)
-    return;
-
-  for (Observer& observer : observers_)
-    observer.OfflinePageAdded(this, offline_page);
 }
 
 void OfflinePageModelImpl::OnMarkPageAccesseDone(

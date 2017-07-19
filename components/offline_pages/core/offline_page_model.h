@@ -137,6 +137,10 @@ class OfflinePageModel : public base::SupportsUserData {
                         std::unique_ptr<OfflinePageArchiver> archiver,
                         const SavePageCallback& callback) = 0;
 
+  // Adds a page entry to the metadata store.
+  virtual void AddPage(const OfflinePageItem& page,
+                       const AddPageCallback& callback) = 0;
+
   // Marks that the offline page related to the passed |offline_id| has been
   // accessed. Its access info, including last access time and access count,
   // will be updated. Requires that the model is loaded.

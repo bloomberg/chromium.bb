@@ -54,9 +54,13 @@ void OfflinePageTestStore::AddOfflinePage(const OfflinePageItem& offline_page,
   ItemActionStatus result;
   if (store_state_ == StoreState::LOADED &&
       scenario_ != TestScenario::WRITE_FAILED) {
-    offline_pages_[offline_page.offline_id] = offline_page;
-    last_saved_page_ = offline_page;
-    result = ItemActionStatus::SUCCESS;
+    if (offline_pages_.count(offline_page.offline_id)) {
+      result = ItemActionStatus::ALREADY_EXISTS;
+    } else {
+      offline_pages_[offline_page.offline_id] = offline_page;
+      last_saved_page_ = offline_page;
+      result = ItemActionStatus::SUCCESS;
+    }
   } else {
     result = ItemActionStatus::STORE_ERROR;
   }
