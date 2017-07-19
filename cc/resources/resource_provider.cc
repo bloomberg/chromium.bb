@@ -1292,7 +1292,6 @@ ResourceProvider::ScopedReadLockSkImage::ScopedReadLockSkImage(
     GrBackendTexture backend_texture(
         resource->size.width(), resource->size.height(),
         ToGrPixelConfig(resource->format), texture_info);
-    GrBackendTextureDesc desc;
     sk_image_ = SkImage::MakeFromTexture(
         resource_provider->compositor_context_provider_->GrContext(),
         backend_texture, kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType,
