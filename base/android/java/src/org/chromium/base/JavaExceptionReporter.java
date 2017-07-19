@@ -54,13 +54,6 @@ public class JavaExceptionReporter implements Thread.UncaughtExceptionHandler {
         nativeReportJavaStackTrace(stackTrace);
     }
 
-    /**
-     * Handle AssertionError, decide whether throw or report without crashing base on gn arg.
-     */
-    public static void assertFailureHandler(AssertionError assertionError) throws AssertionError {
-        throw assertionError;
-    }
-
     @CalledByNative
     private static void installHandler(boolean crashAfterReport) {
         Thread.setDefaultUncaughtExceptionHandler(new JavaExceptionReporter(

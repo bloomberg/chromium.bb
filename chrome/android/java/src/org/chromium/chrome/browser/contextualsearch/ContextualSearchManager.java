@@ -1555,6 +1555,7 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
                 if (mContext == null) return;
 
                 // Update the UI to show the resolve is in progress.
+                assert mContext.getTextContentFollowingSelection() != null;
                 mSearchPanel.setContextDetails(
                         selection, mContext.getTextContentFollowingSelection());
             }
