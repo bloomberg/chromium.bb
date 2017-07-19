@@ -57,7 +57,7 @@ const char kSwitchDisableBackgroundDownloads[] = "disable-background-downloads";
 #endif  // defined(OS_WIN)
 
 const base::Feature kAlternateComponentUrls{"AlternateComponentUrls",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If there is an element of |vec| of the form |test|=.*, returns the right-
 // hand side of that assignment. Otherwise, returns an empty string.
