@@ -18,16 +18,14 @@ class NotificationPermissionContext : public PermissionContextBase {
   ~NotificationPermissionContext() override;
 
   // PermissionContextBase implementation.
-  ContentSetting GetPermissionStatusInternal(
-      content::RenderFrameHost* render_frame_host,
-      const GURL& requesting_origin,
-      const GURL& embedding_origin) const override;
   void ResetPermission(const GURL& requesting_origin,
                        const GURL& embedder_origin) override;
   void CancelPermissionRequest(content::WebContents* web_contents,
                                const PermissionRequestID& id) override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(NotificationPermissionContextTest,
+                           PushTopLevelOriginOnly);
   friend class NotificationPermissionContextTest;
 
   // PermissionContextBase implementation.

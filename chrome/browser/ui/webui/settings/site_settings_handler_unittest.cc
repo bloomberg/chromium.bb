@@ -254,7 +254,7 @@ TEST_F(SiteSettingsHandlerTest, GetAndSetDefault) {
 TEST_F(SiteSettingsHandlerTest, Origins) {
   // Test the JS -> C++ -> JS callback path for configuring origins, by setting
   // Google.com to blocked.
-  const std::string google("http://www.google.com");
+  const std::string google("https://www.google.com");
   const std::string kUmaBase("WebsiteSettings.Menu.PermissionChanged");
   {
     base::ListValue set_args;
