@@ -279,6 +279,23 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/integerstatequery.html',
         ['passthrough', 'opengl'], bug=602688)
 
+    # Passthrough command decoder / OpenGL / Intel
+    self.Fail('conformance2/textures/video/tex-2d-rgb32f-rgb-float.html',
+        ['passthrough', 'opengl', 'intel'], bug=602688)
+    self.Fail('conformance2/textures/video/' +
+        'tex-2d-rgb8ui-rgb_integer-unsigned_byte.html',
+        ['passthrough', 'opengl', 'intel'], bug=602688)
+    self.Fail('conformance/misc/uninitialized-test.html',
+        ['passthrough', 'opengl', 'intel'], bug=602688)
+    self.Fail('conformance/textures/image_bitmap_from_video/' +
+        'tex-2d-luminance-luminance-unsigned_byte.html',
+        ['passthrough', 'opengl', 'intel'], bug=602688)
+    self.Fail('conformance/textures/image_bitmap_from_video/' +
+        'tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html',
+        ['passthrough', 'opengl', 'intel'], bug=602688)
+    self.Fail('conformance/textures/misc/texture-attachment-formats.html',
+        ['passthrough', 'opengl', 'intel'], bug=602688)
+
     # Mac only.
     self.Fail('conformance2/renderbuffers/' +
         'multisampled-depth-renderbuffer-initialization.html',
