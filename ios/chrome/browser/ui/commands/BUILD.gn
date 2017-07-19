@@ -29,6 +29,7 @@ source_set("commands") {
     "//base",
     "//components/browsing_data/core",
     "//components/signin/core/browser",
+    "//ios/shared/chrome/browser/ui/commands",
     "//ios/web",
     "//net",
     "//url",

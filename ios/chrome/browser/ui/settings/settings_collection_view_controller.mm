@@ -53,6 +53,7 @@
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
+#import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/settings/about_chrome_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/accounts_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/autofill_collection_view_controller.h"
@@ -158,11 +159,11 @@ SigninObserverBridge::SigninObserverBridge(
     SettingsCollectionViewController* owner)
     : owner_(owner), observer_(this) {
   DCHECK(owner_);
-  SigninManager* sigin_manager =
+  SigninManager* signin_manager =
       ios::SigninManagerFactory::GetForBrowserState(browserState);
-  if (!sigin_manager)
+  if (!signin_manager)
     return;
-  observer_.Add(sigin_manager);
+  observer_.Add(signin_manager);
 }
 
 void SigninObserverBridge::GoogleSigninSucceeded(const std::string& account_id,
@@ -231,6 +232,8 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
   BOOL _signinStarted;
 }
 
+@property(nonatomic, readonly, weak) id<ApplicationCommands> dispatcher;
+
 // Stops observing browser state services. This is required during the shutdown
 // phase to avoid observing services for a profile that is being killed.
 - (void)stopBrowserStateServiceObservers;
@@ -238,11 +241,13 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
 @end
 
 @implementation SettingsCollectionViewController
+@synthesize settingsMainPageDispatcher = _settingsMainPageDispatcher;
 @synthesize dispatcher = _dispatcher;
 
 #pragma mark Initialization
 
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState {
+- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
+                          dispatcher:(id<ApplicationCommands>)dispatcher {
   DCHECK(!browserState->IsOffTheRecord());
   UICollectionViewLayout* layout = [[MDCCollectionViewFlowLayout alloc] init];
   self =
@@ -283,7 +288,8 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
     _prefObserverBridge->ObserveChangesForPreference(
         autofill::prefs::kAutofillEnabled, &_prefChangeRegistrar);
 
-    _dispatcher = self;
+    _settingsMainPageDispatcher = self;
+    _dispatcher = dispatcher;
 
     [self loadModel];
   }
@@ -740,7 +746,8 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
     case ItemTypeAccount:
       controller = [[AccountsCollectionViewController alloc]
                initWithBrowserState:_browserState
-          closeSettingsOnAddAccount:NO];
+          closeSettingsOnAddAccount:NO
+                         dispatcher:self.dispatcher];
       break;
     case ItemTypeSearchEngine:
       controller = [[SearchEngineSettingsCollectionViewController alloc]
@@ -782,7 +789,7 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
       // and only the switch is tappable.
       break;
     case ItemTypeCellCatalog:
-      [self.dispatcher showMaterialCellCatalog];
+      [self.settingsMainPageDispatcher showMaterialCellCatalog];
       break;
     default:
       break;
@@ -985,7 +992,8 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
          isPresentedOnSettings:YES
                    accessPoint:signin_metrics::AccessPoint::
                                    ACCESS_POINT_SETTINGS
-                   promoAction:promoAction];
+                   promoAction:promoAction
+                    dispatcher:self.dispatcher];
 
   __weak SettingsCollectionViewController* weakSelf = self;
   [_signinInteractionController

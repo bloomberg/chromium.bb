@@ -365,8 +365,6 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 - (void)activateBVCAndMakeCurrentBVCPrimary;
 // Sets |currentBVC| as the root view controller for the window.
 - (void)displayCurrentBVC;
-// Shows the accounts settings UI.
-- (void)showAccountsSettings;
 // Shows the Sync settings UI.
 - (void)showSyncSettings;
 // Shows the Save Passwords settings.
@@ -1283,7 +1281,8 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
   WelcomeToChromeViewController* welcomeToChrome =
       [[WelcomeToChromeViewController alloc]
           initWithBrowserState:_mainBrowserState
-                      tabModel:self.mainTabModel];
+                      tabModel:self.mainTabModel
+                    dispatcher:self.mainBVC.dispatcher];
   UINavigationController* navController =
       [[OrientationLimitingNavigationController alloc]
           initWithRootViewController:welcomeToChrome];
@@ -1320,31 +1319,18 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
   if (_startupParameters)
     return;
 
-  // This array should contain Class objects - one for each promo class.
-  // New PromoViewController subclasses should be added here.
-  // Note that ordering matters -- only the first promo in the array that
-  // returns true to +shouldBePresentedForProfile: will be shown.
-  // TODO(crbug.com/516154): Now that there's only one promo class, this
-  // implementation is overkill.
-  NSArray* possiblePromos = @[ [SigninPromoViewController class] ];
-  for (id promoController in possiblePromos) {
-    Class promoClass = (Class)promoController;
-    DCHECK(class_isMetaClass(object_getClass(promoClass)));
-    DCHECK(class_getClassMethod(object_getClass(promoClass),
-                                @selector(shouldBePresentedForBrowserState:)));
-    if ([promoClass shouldBePresentedForBrowserState:_mainBrowserState]) {
-      UIViewController* promoController =
-          [promoClass controllerToPresentForBrowserState:_mainBrowserState];
+  // Show the sign-in promo if needed
+  if ([SigninPromoViewController
+          shouldBePresentedForBrowserState:_mainBrowserState]) {
+    UIViewController* promoController = [[SigninPromoViewController alloc]
+        initWithBrowserState:_mainBrowserState
+                  dispatcher:self.mainBVC.dispatcher];
 
-      dispatch_after(
-          dispatch_time(DISPATCH_TIME_NOW,
-                        (int64_t)(kDisplayPromoDelay * NSEC_PER_SEC)),
-          dispatch_get_main_queue(), ^{
-            [self showPromo:promoController];
-          });
-
-      break;
-    }
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW,
+                                 (int64_t)(kDisplayPromoDelay * NSEC_PER_SEC)),
+                   dispatch_get_main_queue(), ^{
+                     [self showPromo:promoController];
+                   });
   }
 }
 
@@ -1411,10 +1397,6 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
                           promoAction:command.promoAction
                              callback:command.callback];
       }
-      break;
-    }
-    case IDC_SHOW_ACCOUNTS_SETTINGS: {
-      [self showAccountsSettings];
       break;
     }
     case IDC_SHOW_SYNC_SETTINGS:
@@ -1916,8 +1898,10 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 
 - (void)presentSignedInAccountsViewControllerForBrowserState:
     (ios::ChromeBrowserState*)browserState {
-  UIViewController* accountsViewController = [
-      [SignedInAccountsViewController alloc] initWithBrowserState:browserState];
+  UIViewController* accountsViewController =
+      [[SignedInAccountsViewController alloc]
+          initWithBrowserState:browserState
+                    dispatcher:self.mainBVC.dispatcher];
   [[self topPresentedViewController]
       presentViewController:accountsViewController
                    animated:YES
@@ -1940,10 +1924,12 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 }
 
 - (void)showAccountsSettings {
-  if (_settingsNavigationController)
-    return;
   if ([self currentBrowserState]->IsOffTheRecord()) {
     NOTREACHED();
+    return;
+  }
+  if (_settingsNavigationController) {
+    [_settingsNavigationController showAccountsSettings];
     return;
   }
   _settingsNavigationController = [SettingsNavigationController
@@ -2060,7 +2046,8 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
       presentingViewController:[self topPresentedViewController]
          isPresentedOnSettings:areSettingsPresented
                    accessPoint:accessPoint
-                   promoAction:promoAction];
+                   promoAction:promoAction
+                    dispatcher:self.mainBVC.dispatcher];
 
   signin_ui::CompletionCallback completion = ^(BOOL success) {
     _signinInteractionController = nil;
@@ -2101,7 +2088,8 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
          isPresentedOnSettings:areSettingsPresented
                    accessPoint:signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN
                    promoAction:signin_metrics::PromoAction::
-                                   PROMO_ACTION_NO_SIGNIN_PROMO];
+                                   PROMO_ACTION_NO_SIGNIN_PROMO
+                    dispatcher:self.mainBVC.dispatcher];
 
   [_signinInteractionController
       addAccountWithCompletion:^(BOOL success) {
@@ -2439,6 +2427,11 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
                      [self switchModesAndOpenNewTab:[OpenNewTabCommand
                                                         incognitoTabCommand]];
                    }];
+}
+
+- (id<ApplicationCommands, BrowserCommands>)dispatcherForSettings {
+  // Assume that settings always wants the dispatcher from the main BVC.
+  return self.mainBVC.dispatcher;
 }
 
 #pragma mark - UserFeedbackDataSource

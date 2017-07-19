@@ -7,6 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
+@protocol ApplicationSettingsCommands;
 namespace ios {
 class ChromeBrowserState;
 }  // namespace ios
@@ -20,6 +21,7 @@ class ChromeBrowserState;
 + (BOOL)shouldBePresentedForBrowserState:(ios::ChromeBrowserState*)browserState;
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
+                          dispatcher:(id<ApplicationSettingsCommands>)dispatcher
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithNibName:(NSString*)name

@@ -61,6 +61,7 @@ source_set("authentication") {
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/images",
     "//ios/public/provider/chrome/browser/signin",
+    "//ios/shared/chrome/browser/ui/commands",
     "//ios/third_party/material_components_ios",
     "//ios/third_party/material_roboto_font_loader_ios",
     "//ui/base",

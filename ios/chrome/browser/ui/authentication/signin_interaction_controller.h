@@ -11,10 +11,10 @@
 #include "components/signin/core/browser/signin_metrics.h"
 #include "ios/chrome/browser/signin/constants.h"
 
+@protocol ApplicationSettingsCommands;
 namespace ios {
 class ChromeBrowserState;
 }
-
 @class ChromeIdentity;
 
 // Interaction controller for sign-in related operations. This class is mainly a
@@ -32,7 +32,9 @@ class ChromeBrowserState;
             presentingViewController:(UIViewController*)presentingViewController
                isPresentedOnSettings:(BOOL)isPresentedOnSettings
                          accessPoint:(signin_metrics::AccessPoint)accessPoint
-                         promoAction:(signin_metrics::PromoAction)promoAction;
+                         promoAction:(signin_metrics::PromoAction)promoAction
+                          dispatcher:
+                              (id<ApplicationSettingsCommands>)dispatcher;
 
 // Starts user sign-in.
 // * |viewController| is the current view controller.

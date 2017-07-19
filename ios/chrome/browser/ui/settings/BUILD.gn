@@ -163,7 +163,7 @@ source_set("settings") {
     "//ios/public/provider/chrome/browser/signin",
     "//ios/public/provider/chrome/browser/user_feedback",
     "//ios/public/provider/chrome/browser/voice",
-    "//ios/shared/chrome/browser/ui/settings",
+    "//ios/shared/chrome/browser/ui/commands",
     "//ios/third_party/material_components_ios",
     "//ios/third_party/material_roboto_font_loader_ios",
     "//ios/web",

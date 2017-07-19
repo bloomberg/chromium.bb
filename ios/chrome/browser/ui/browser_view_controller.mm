@@ -951,6 +951,16 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
                               forProtocol:@protocol(BrowserCommands)];
     [_dispatcher startDispatchingToTarget:applicationCommandEndpoint
                               forProtocol:@protocol(ApplicationCommands)];
+    // -startDispatchingToTarget:forProtocol: doesn't pick up protocols the
+    // passed protocol conforms to, so ApplicationSettingsCommands is explicitly
+    // dispatched to the endpoint as well. Since this is potentially
+    // fragile, DCHECK that it should still work (if the endpoint is nonnull).
+    DCHECK(!applicationCommandEndpoint ||
+           [applicationCommandEndpoint
+               conformsToProtocol:@protocol(ApplicationSettingsCommands)]);
+    [_dispatcher
+        startDispatchingToTarget:applicationCommandEndpoint
+                     forProtocol:@protocol(ApplicationSettingsCommands)];
 
     _javaScriptDialogPresenter.reset(
         new JavaScriptDialogPresenterImpl(_dialogPresenter));

@@ -18,6 +18,7 @@ extern NSString* const kSettingsAccountsSignoutCellId;
 // The accessibility identifier of the sync account cell.
 extern NSString* const kSettingsAccountsSyncCellId;
 
+@protocol ApplicationSettingsCommands;
 namespace ios {
 class ChromeBrowserState;
 }  // namespace ios
@@ -33,6 +34,7 @@ class ChromeBrowserState;
 // controller will close the setting screen when an account is added.
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
            closeSettingsOnAddAccount:(BOOL)closeSettingsOnAddAccount
+                          dispatcher:(id<ApplicationSettingsCommands>)dispatcher
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithLayout:(UICollectionViewLayout*)layout

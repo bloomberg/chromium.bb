@@ -47,7 +47,6 @@
 #define IDC_PRELOAD_VOICE_SEARCH                       40937
 #define IDC_SHOW_BACK_HISTORY                          40938
 #define IDC_SHOW_FORWARD_HISTORY                       40939
-#define IDC_SHOW_ACCOUNTS_SETTINGS                     40943
 #define IDC_CLOSE_SETTINGS                             40944
 #define IDC_SHOW_SAVE_PASSWORDS_SETTINGS               40945
 #define IDC_READER_MODE                                40947

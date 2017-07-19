@@ -8,10 +8,8 @@
 #import <UIKit/UIKit.h>
 
 #import "ios/chrome/browser/ui/authentication/chrome_signin_view_controller.h"
-#import "ios/chrome/browser/ui/promos/promo_view_controller.h"
 
-@class SigninPromoViewController;
-
+@protocol ApplicationSettingsCommands;
 namespace ios {
 class ChromeBrowserState;
 }
@@ -26,11 +24,15 @@ extern NSString* kDisplayedSSORecallForMajorVersionKey;
 //
 // Note: On iPhone, this controller supports portrait orientation only. It
 // should always be presented in an |OrientationLimitingNavigationController|.
-@interface SigninPromoViewController
-    : ChromeSigninViewController<PromoViewController>
+@interface SigninPromoViewController : ChromeSigninViewController
+
+// YES if this promo should be shown for |browserState|
++ (BOOL)shouldBePresentedForBrowserState:(ios::ChromeBrowserState*)browserState;
 
 // Designated initializer.  |browserState| must not be nil.
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState;
+- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
+                          dispatcher:
+                              (id<ApplicationSettingsCommands>)dispatcher;
 
 // Records in user defaults that the promo has been shown along with the current
 // version number.

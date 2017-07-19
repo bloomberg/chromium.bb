@@ -9,8 +9,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/first_run/first_run_configuration.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
-#import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
-#import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
+#import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/first_run/first_run_util.h"
 #import "ios/chrome/browser/ui/promos/signin_promo_view_controller.h"
 #include "ios/chrome/browser/ui/ui_util.h"
@@ -45,14 +44,17 @@ NSString* const kSignInSkipButtonAccessibilityIdentifier =
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
                             tabModel:(TabModel*)tabModel
                       firstRunConfig:(FirstRunConfiguration*)firstRunConfig
-                      signInIdentity:(ChromeIdentity*)identity {
+                      signInIdentity:(ChromeIdentity*)identity
+                          dispatcher:
+                              (id<ApplicationSettingsCommands>)dispatcher {
   self = [super
        initWithBrowserState:browserState
       isPresentedOnSettings:NO
                 accessPoint:signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE
                 promoAction:signin_metrics::PromoAction::
                                 PROMO_ACTION_NO_SIGNIN_PROMO
-             signInIdentity:identity];
+             signInIdentity:identity
+                 dispatcher:dispatcher];
   if (self) {
     _tabModel = tabModel;
     _firstRunConfig = firstRunConfig;
@@ -154,12 +156,14 @@ NSString* const kSignInSkipButtonAccessibilityIdentifier =
 }
 
 - (void)didAcceptSignIn:(ChromeSigninViewController*)controller
-         executeCommand:(GenericChromeCommand*)command {
+    showAccountsSettings:(BOOL)showAccountsSettings {
   DCHECK_EQ(self, controller);
 
   // User is done with First Run after explicit sign-in accept.
   [self finishFirstRunAndDismiss];
-  [command executeOnMainWindow];
+  if (showAccountsSettings) {
+    [self.dispatcher showAccountsSettings];
+  }
 }
 
 #pragma mark ChromeSigninViewController

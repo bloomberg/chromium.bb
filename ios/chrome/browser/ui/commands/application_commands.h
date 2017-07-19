@@ -9,11 +9,23 @@
 
 @class OpenNewTabCommand;
 
+// This protocol groups commands that are part of ApplicationCommands, but
+// may also be forwarded directly to a settings navigation controller.
+@protocol ApplicationSettingsCommands
+
+// Shows the accounts settings.
+- (void)showAccountsSettings;
+
+@end
+
 // Protocol for commands that will generally be handled by the application,
 // rather than a specific tab; in practice this means the MainController
 // instance.
+// This protocol includes all of the methods in ApplicationSettingsCommands; an
+// object that implements the methods in this protocol should be able to forward
+// ApplicationSettingsCommands to the settings view controller if necessary.
 
-@protocol ApplicationCommands<NSObject>
+@protocol ApplicationCommands<NSObject, ApplicationSettingsCommands>
 
 // Shows the Settings UI.
 - (void)showSettings;
