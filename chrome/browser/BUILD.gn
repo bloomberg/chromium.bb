@@ -3920,8 +3920,8 @@ split_static_library("browser") {
       "//components/exo/wayland",
     ]
     sources += [
-      "exo_parts.cc",
-      "exo_parts.h",
+      "chrome_browser_main_extra_parts_exo.cc",
+      "chrome_browser_main_extra_parts_exo.h",
     ]
   }
 
