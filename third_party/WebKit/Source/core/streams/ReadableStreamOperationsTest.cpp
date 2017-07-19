@@ -77,11 +77,11 @@ class Iteration final : public GarbageCollectedFinalized<Iteration> {
   String value_;
 };
 
-class Function : public ScriptFunction {
+class ReaderFunction : public ScriptFunction {
  public:
   static v8::Local<v8::Function> CreateFunction(ScriptState* script_state,
                                                 Iteration* iteration) {
-    Function* self = new Function(script_state, iteration);
+    ReaderFunction* self = new ReaderFunction(script_state, iteration);
     return self->BindToV8Function();
   }
 
@@ -91,7 +91,7 @@ class Function : public ScriptFunction {
   }
 
  private:
-  Function(ScriptState* script_state, Iteration* iteration)
+  ReaderFunction(ScriptState* script_state, Iteration* iteration)
       : ScriptFunction(script_state), iteration_(iteration) {}
 
   ScriptValue Call(ScriptValue value) override {
@@ -262,10 +262,10 @@ TEST(ReadableStreamOperationsTest, Read) {
   Iteration* it1 = new Iteration();
   Iteration* it2 = new Iteration();
   ReadableStreamOperations::DefaultReaderRead(scope.GetScriptState(), reader)
-      .Then(Function::CreateFunction(scope.GetScriptState(), it1),
+      .Then(ReaderFunction::CreateFunction(scope.GetScriptState(), it1),
             NotReached::CreateFunction(scope.GetScriptState()));
   ReadableStreamOperations::DefaultReaderRead(scope.GetScriptState(), reader)
-      .Then(Function::CreateFunction(scope.GetScriptState(), it2),
+      .Then(ReaderFunction::CreateFunction(scope.GetScriptState(), it2),
             NotReached::CreateFunction(scope.GetScriptState()));
 
   v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
@@ -327,13 +327,13 @@ TEST(ReadableStreamOperationsTest,
   Iteration* it2 = new Iteration();
   Iteration* it3 = new Iteration();
   ReadableStreamOperations::DefaultReaderRead(scope.GetScriptState(), reader)
-      .Then(Function::CreateFunction(scope.GetScriptState(), it1),
+      .Then(ReaderFunction::CreateFunction(scope.GetScriptState(), it1),
             NotReached::CreateFunction(scope.GetScriptState()));
   ReadableStreamOperations::DefaultReaderRead(scope.GetScriptState(), reader)
-      .Then(Function::CreateFunction(scope.GetScriptState(), it2),
+      .Then(ReaderFunction::CreateFunction(scope.GetScriptState(), it2),
             NotReached::CreateFunction(scope.GetScriptState()));
   ReadableStreamOperations::DefaultReaderRead(scope.GetScriptState(), reader)
-      .Then(Function::CreateFunction(scope.GetScriptState(), it3),
+      .Then(ReaderFunction::CreateFunction(scope.GetScriptState(), it3),
             NotReached::CreateFunction(scope.GetScriptState()));
 
   v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
@@ -474,10 +474,10 @@ TEST(ReadableStreamOperationsTest, Tee) {
   Iteration* it1 = new Iteration();
   Iteration* it2 = new Iteration();
   ReadableStreamOperations::DefaultReaderRead(scope.GetScriptState(), reader1)
-      .Then(Function::CreateFunction(scope.GetScriptState(), it1),
+      .Then(ReaderFunction::CreateFunction(scope.GetScriptState(), it1),
             NotReached::CreateFunction(scope.GetScriptState()));
   ReadableStreamOperations::DefaultReaderRead(scope.GetScriptState(), reader2)
-      .Then(Function::CreateFunction(scope.GetScriptState(), it2),
+      .Then(ReaderFunction::CreateFunction(scope.GetScriptState(), it2),
             NotReached::CreateFunction(scope.GetScriptState()));
 
   v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
