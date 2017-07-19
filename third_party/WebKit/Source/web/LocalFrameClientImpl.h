@@ -33,6 +33,7 @@
 #define LocalFrameClientImpl_h
 
 #include "core/frame/LocalFrameClient.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/RefPtr.h"
@@ -54,7 +55,7 @@ class LocalFrameClientImpl final : public LocalFrameClient {
 
   DECLARE_VIRTUAL_TRACE();
 
-  WebLocalFrameBase* GetWebFrame() const { return web_frame_.Get(); }
+  WebLocalFrameBase* GetWebFrame() const override;
 
   // LocalFrameClient ----------------------------------------------
 
