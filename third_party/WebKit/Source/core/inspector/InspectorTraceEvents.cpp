@@ -219,9 +219,9 @@ void SetNodeInfo(TracedValue* value,
                  Node* node,
                  const char* id_field_name,
                  const char* name_field_name = nullptr) {
-  value->SetInteger(id_field_name, DOMNodeIds::IdForNode(node));
+  value->SetIntegerWithCopiedName(id_field_name, DOMNodeIds::IdForNode(node));
   if (name_field_name)
-    value->SetString(name_field_name, node->DebugName());
+    value->SetStringWithCopiedName(name_field_name, node->DebugName());
 }
 
 const char* PseudoTypeToString(CSSSelector::PseudoType pseudo_type) {
@@ -1003,7 +1003,7 @@ std::unique_ptr<TracedValue> FillLocation(const String& url,
   value->SetInteger("columnNumber", text_position.column_.OneBasedInt());
   return value;
 }
-}
+}  // namespace
 
 std::unique_ptr<TracedValue> InspectorEvaluateScriptEvent::Data(
     LocalFrame* frame,
@@ -1043,9 +1043,10 @@ std::unique_ptr<TracedValue> InspectorFunctionCallEvent::Data(
 
   v8::Local<v8::Function> original_function = GetBoundFunction(function);
   v8::Local<v8::Value> function_name = original_function->GetDebugName();
-  if (!function_name.IsEmpty() && function_name->IsString())
+  if (!function_name.IsEmpty() && function_name->IsString()) {
     value->SetString("functionName",
                      ToCoreString(function_name.As<v8::String>()));
+  }
   std::unique_ptr<SourceLocation> location =
       SourceLocation::FromFunction(original_function);
   value->SetString("scriptId", String::Number(location->ScriptId()));

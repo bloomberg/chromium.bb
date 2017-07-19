@@ -18,27 +18,53 @@ TracedValue::TracedValue() {}
 TracedValue::~TracedValue() {}
 
 void TracedValue::SetInteger(const char* name, int value) {
+  traced_value_.SetInteger(name, value);
+}
+
+void TracedValue::SetIntegerWithCopiedName(const char* name, int value) {
   traced_value_.SetIntegerWithCopiedName(name, value);
 }
 
 void TracedValue::SetDouble(const char* name, double value) {
+  traced_value_.SetDouble(name, value);
+}
+
+void TracedValue::SetDoubleWithCopiedName(const char* name, double value) {
   traced_value_.SetDoubleWithCopiedName(name, value);
 }
 
 void TracedValue::SetBoolean(const char* name, bool value) {
+  traced_value_.SetBoolean(name, value);
+}
+
+void TracedValue::SetBooleanWithCopiedName(const char* name, bool value) {
   traced_value_.SetBooleanWithCopiedName(name, value);
 }
 
 void TracedValue::SetString(const char* name, const String& value) {
   StringUTF8Adaptor adaptor(value);
+  traced_value_.SetString(name, adaptor.AsStringPiece());
+}
+
+void TracedValue::SetStringWithCopiedName(const char* name,
+                                          const String& value) {
+  StringUTF8Adaptor adaptor(value);
   traced_value_.SetStringWithCopiedName(name, adaptor.AsStringPiece());
 }
 
 void TracedValue::BeginDictionary(const char* name) {
+  traced_value_.BeginDictionary(name);
+}
+
+void TracedValue::BeginDictionaryWithCopiedName(const char* name) {
   traced_value_.BeginDictionaryWithCopiedName(name);
 }
 
 void TracedValue::BeginArray(const char* name) {
+  traced_value_.BeginArray(name);
+}
+
+void TracedValue::BeginArrayWithCopiedName(const char* name) {
   traced_value_.BeginArrayWithCopiedName(name);
 }
 
