@@ -154,27 +154,6 @@ const Target* FindXCTestApplicationTarget(
   return nullptr;
 }
 
-// TODO(crbug.com/741147) Remove this function and switch to use
-// test_application_name once the bug is fixed and GN has rolled past it.
-// Given XCTest module targets, find the corresponding application targets and
-// the mappings between them.
-void FindXCTestApplicationTargets(
-    const std::vector<const Target*>& xctest_module_targets,
-    const std::vector<const Target*>& targets,
-    std::vector<const Target*>* xctest_application_targets,
-    TargetToTarget* xctest_module_to_application_target) {
-  for (const Target* xctest_module_target : xctest_module_targets) {
-    xctest_application_targets->push_back(
-        FindXCTestApplicationTarget(xctest_module_target, targets));
-    xctest_module_to_application_target->insert(std::make_pair(
-        xctest_module_target, xctest_application_targets->back()));
-  }
-
-  DCHECK_EQ(xctest_module_targets.size(), xctest_application_targets->size());
-  DCHECK_EQ(xctest_module_targets.size(),
-            xctest_module_to_application_target->size());
-}
-
 // Adds |base_pbxtarget| as a dependency of |dependent_pbxtarget| in the
 // generated Xcode project.
 void AddPBXTargetDependency(const PBXTarget* base_pbxtarget,
@@ -212,8 +191,8 @@ void AddDependencyTargetForXCModuleTargets(
 }
 
 // Searches the list of xctest files recursively under |target|.
-void SearchXCTestFiles(const Target* target,
-                       TargetToFileList* xctest_files_per_target) {
+void SearchXCTestFilesForTarget(const Target* target,
+                                TargetToFileList* xctest_files_per_target) {
   // Early return if already visited and processed.
   if (xctest_files_per_target->find(target) != xctest_files_per_target->end())
     return;
@@ -227,7 +206,7 @@ void SearchXCTestFiles(const Target* target,
 
   // Call recursively on public and private deps.
   for (const auto& t : target->public_deps()) {
-    SearchXCTestFiles(t.ptr, xctest_files_per_target);
+    SearchXCTestFilesForTarget(t.ptr, xctest_files_per_target);
     const Target::FileList& deps_xctest_files =
         (*xctest_files_per_target)[t.ptr];
     xctest_files.insert(xctest_files.end(), deps_xctest_files.begin(),
@@ -235,7 +214,7 @@ void SearchXCTestFiles(const Target* target,
   }
 
   for (const auto& t : target->private_deps()) {
-    SearchXCTestFiles(t.ptr, xctest_files_per_target);
+    SearchXCTestFilesForTarget(t.ptr, xctest_files_per_target);
     const Target::FileList& deps_xctest_files =
         (*xctest_files_per_target)[t.ptr];
     xctest_files.insert(xctest_files.end(), deps_xctest_files.begin(),
@@ -248,22 +227,6 @@ void SearchXCTestFiles(const Target* target,
                      xctest_files.end());
 
   xctest_files_per_target->insert(std::make_pair(target, xctest_files));
-}
-
-// Finds the list of xctest files recursively under each of the application
-// targets.
-void FindXCTestFilesForApplicationTargets(
-    const std::vector<const Target*>& application_targets,
-    TargetToFileList* xctest_files_per_application_target) {
-  TargetToFileList xctest_files_per_target;
-  for (const Target* target : application_targets) {
-    DCHECK(IsApplicationTarget(target));
-    SearchXCTestFiles(target, &xctest_files_per_target);
-    xctest_files_per_application_target->insert(
-        std::make_pair(target, xctest_files_per_target[target]));
-  }
-  DCHECK_EQ(application_targets.size(),
-            xctest_files_per_application_target->size());
 }
 
 // Add all source files for indexing, both private and public.
@@ -503,18 +466,6 @@ bool XcodeWriter::FilterTargets(const BuildSettings* build_settings,
   return true;
 }
 
-// static
-void XcodeWriter::FilterXCTestModuleTargets(
-    const std::vector<const Target*>& targets,
-    std::vector<const Target*>* xctest_module_targets) {
-  for (const Target* target : targets) {
-    if (!IsXCTestModuleTarget(target))
-      continue;
-
-    xctest_module_targets->push_back(target);
-  }
-}
-
 void XcodeWriter::CreateProductsProject(
     const std::vector<const Target*>& targets,
     const std::vector<const Target*>& all_targets,
@@ -528,24 +479,6 @@ void XcodeWriter::CreateProductsProject(
   std::unique_ptr<PBXProject> main_project(
       new PBXProject("products", config_name, source_path, attributes));
 
-  // Filter xctest module and application targets.
-  std::vector<const Target*> xctest_module_targets;
-  FilterXCTestModuleTargets(targets, &xctest_module_targets);
-
-  // There is a 1 on 1 mapping between |xctest_module_targets| and
-  // |xctest_application_targets|.
-  std::vector<const Target*> xctest_application_targets;
-  TargetToTarget xctest_module_to_application_target;
-  FindXCTestApplicationTargets(xctest_module_targets, targets,
-                               &xctest_application_targets,
-                               &xctest_module_to_application_target);
-
-  // Find list of xctest files recursively under them, and the files will be
-  // used for proper indexing and for discovery of tests function for XCTest.
-  TargetToFileList xctest_files_per_application_target;
-  FindXCTestFilesForApplicationTargets(xctest_application_targets,
-                                       &xctest_files_per_application_target);
-
   std::vector<const Target*> bundle_targets;
   TargetToPBXTarget bundle_target_to_pbxtarget;
 
@@ -556,6 +489,11 @@ void XcodeWriter::CreateProductsProject(
                                      source_dir, build_settings);
   main_project->AddAggregateTarget(
       "All", GetBuildScript(root_target, ninja_extra_args, env.get()));
+
+  // Needs to search for xctest files under the application targets, and this
+  // variable is used to store the results of visited targets, thus making the
+  // search more efficient.
+  TargetToFileList xctest_files_per_target;
 
   for (const Target* target : targets) {
     switch (target->output_type()) {
@@ -621,12 +559,17 @@ void XcodeWriter::CreateProductsProject(
         if (!IsXCTestModuleTarget(target))
           continue;
 
+        // For XCTest, test files are compiled into the application bundle.
+        const Target* test_application_target =
+            FindXCTestApplicationTarget(target, targets);
+        SearchXCTestFilesForTarget(test_application_target,
+                                   &xctest_files_per_target);
+        const Target::FileList& xctest_file_list =
+            xctest_files_per_target[test_application_target];
+
         // Add xctest files to the "Compiler Sources" of corresponding xctest
         // native targets for proper indexing and for discovery of tests
         // function for XCTest.
-        const Target::FileList& xctest_file_list =
-            xctest_files_per_application_target
-                [xctest_module_to_application_target[target]];
         AddXCTestFilesToXCTestModuleTarget(xctest_file_list, native_target,
                                            main_project.get(), source_dir,
                                            build_settings);
