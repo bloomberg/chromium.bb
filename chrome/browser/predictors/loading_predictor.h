@@ -131,6 +131,7 @@ class LoadingPredictor : public KeyedService,
   std::map<std::string, std::pair<std::unique_ptr<ResourcePrefetcher>, bool>>
       prefetches_;
   TestLoadingObserver* observer_;
+  bool shutdown_ = false;
 
   friend class LoadingPredictorTest;
   FRIEND_TEST_ALL_PREFIXES(LoadingPredictorTest,
