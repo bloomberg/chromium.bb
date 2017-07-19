@@ -5,5 +5,5 @@ GERRIT_HOST: True
 CC_LIST: chromium-reviews@chromium.org
 VIEW_VC: https://chromium.googlesource.com/chromium/src/+/
 STATUS: http://chromium-status.appspot.com/status
-TRY_ON_UPLOAD: True
+RUN_POST_UPLOAD_HOOK: True
 LINT_IGNORE_REGEX: webkit/api/.*
