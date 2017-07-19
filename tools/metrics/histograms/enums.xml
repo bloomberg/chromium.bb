@@ -31057,15 +31057,19 @@ from previous Chrome versions.
 </enum>
 
 <enum name="ProvisionalSaveFailure">
+  <summary>
+    Reason why a provisional save failed. Note that the labeling is off for data
+    recorded before Nov 4, 2014 due to a re-assignment of enum values to
+    different meanings.
+  </summary>
   <int value="0" label="SAVING_DISABLED"/>
   <int value="1" label="EMPTY_PASSWORD"/>
   <int value="2" label="NO_MATCHING_FORM"/>
   <int value="3" label="MATCHING_NOT_COMPLETE"/>
   <int value="4" label="FORM_BLACKLISTED"/>
   <int value="5" label="INVALID_FORM"/>
-  <int value="6" label="AUTOCOMPLETE_OFF"/>
-  <int value="7" label="SYNC_CREDENTIALS"/>
-  <int value="8" label="SAVING_ON_HTTP_AFTER_HTTPS"/>
+  <int value="6" label="SYNC_CREDENTIALS"/>
+  <int value="7" label="SAVING_ON_HTTP_AFTER_HTTPS"/>
 </enum>
 
 <enum name="ProxyStatus">
