@@ -44,10 +44,6 @@
 #include "net/http/http_response_headers.h"
 #include "ui/gfx/image/image.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace web {
 
 /* static */
@@ -177,7 +173,7 @@ CRWWebController* WebStateImpl::GetWebController() {
 
 void WebStateImpl::SetWebController(CRWWebController* web_controller) {
   [web_controller_ close];
-  web_controller_.reset(web_controller);
+  web_controller_.reset([web_controller retain]);
 }
 
 void WebStateImpl::OnTitleChanged() {
