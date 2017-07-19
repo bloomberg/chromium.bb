@@ -37,6 +37,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.engagement.SiteEngagementService;
 import org.chromium.chrome.browser.infobar.AppBannerInfoBarAndroid;
+import org.chromium.chrome.browser.infobar.AppBannerInfoBarDelegateAndroid;
 import org.chromium.chrome.browser.infobar.InfoBar;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.infobar.InfoBarContainer.InfoBarAnimationListener;
@@ -198,7 +199,7 @@ public class AppBannerManagerTest {
     public void setUp() throws Exception {
         mPackageManager = new TestPackageManager();
         AppBannerManager.setIsSupported(true);
-        InstallerDelegate.setPackageManagerForTesting(mPackageManager);
+        AppBannerInfoBarDelegateAndroid.setPackageManagerForTesting(mPackageManager);
         ShortcutHelper.setDelegateForTests(new ShortcutHelper.Delegate() {
             @Override
             public void addShortcutToHomescreen(String title, Bitmap icon, Intent shortcutIntent) {
