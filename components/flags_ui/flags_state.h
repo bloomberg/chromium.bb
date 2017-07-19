@@ -43,7 +43,6 @@ enum {
   kOsAndroid = 1 << 4,
   kOsCrOSOwnerOnly = 1 << 5,
   kOsIos = 1 << 6,
-  kOsIosAppleReview = 1 << 7,
 };
 
 // A flag controlling the behavior of the |ConvertFlagsToSwitches| function -
@@ -54,10 +53,7 @@ enum SentinelsMode { kNoSentinels, kAddSentinels };
 // that influence the whole machine and can be said by the admin only. This flag
 // is relevant for ChromeOS for now only and dictates whether entries marked
 // with the |kOsCrOSOwnerOnly| label should be enabled in the UI or not.
-// On iOS, |kAppleReviewAccessToFlags| indicates that the flags shown should
-// be the ones marked for Apple review (which otherwise will not be shown).
-enum FlagAccess { kGeneralAccessFlagsOnly, kOwnerAccessToFlags,
-                  kAppleReviewAccessToFlags };
+enum FlagAccess { kGeneralAccessFlagsOnly, kOwnerAccessToFlags };
 
 // Stores and encapsulates the little state that about:flags has.
 class FlagsState {

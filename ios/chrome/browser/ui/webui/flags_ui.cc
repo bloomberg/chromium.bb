@@ -34,24 +34,14 @@
 
 namespace {
 
-web::WebUIIOSDataSource* CreateFlagsUIHTMLSource(
-    BaseFlagsUI::FlagsUIKind flags_ui_kind) {
-  web::WebUIIOSDataSource* source = web::WebUIIOSDataSource::Create(
-      flags_ui_kind == BaseFlagsUI::FLAGS_UI_APPLE ? kChromeUIAppleFlagsHost
-                                                   : kChromeUIFlagsHost);
+web::WebUIIOSDataSource* CreateFlagsUIHTMLSource() {
+  web::WebUIIOSDataSource* source =
+      web::WebUIIOSDataSource::Create(kChromeUIFlagsHost);
 
-  if (flags_ui_kind == BaseFlagsUI::FLAGS_UI_APPLE) {
-    source->AddLocalizedString(flags_ui::kFlagsTableTitle,
-                               IDS_FLAGS_UI_ALTERNATIVES_UI_TABLE_TITLE);
-    source->AddLocalizedString(
-        flags_ui::kFlagsNoExperimentsAvailable,
-        IDS_FLAGS_UI_ALTERNATIVES_UI_NO_EXPERIMENTS_AVAILABLE);
-  } else {
-    source->AddLocalizedString(flags_ui::kFlagsLongTitle,
-                               IDS_FLAGS_UI_LONG_TITLE);
-    source->AddLocalizedString(flags_ui::kFlagsTableTitle,
-                               IDS_FLAGS_UI_TABLE_TITLE);
-  }
+  source->AddLocalizedString(flags_ui::kFlagsLongTitle,
+                             IDS_FLAGS_UI_LONG_TITLE);
+  source->AddLocalizedString(flags_ui::kFlagsTableTitle,
+                             IDS_FLAGS_UI_TABLE_TITLE);
   source->AddLocalizedString(flags_ui::kFlagsWarningHeader,
                              IDS_FLAGS_UI_WARNING_HEADER);
   source->AddLocalizedString(flags_ui::kFlagsBlurb, IDS_FLAGS_UI_WARNING_TEXT);
@@ -74,9 +64,7 @@ web::WebUIIOSDataSource* CreateFlagsUIHTMLSource(
 
   source->SetJsonPath("strings.js");
   source->AddResourcePath(flags_ui::kFlagsJS, IDR_FLAGS_UI_FLAGS_JS);
-  source->SetDefaultResource(flags_ui_kind == BaseFlagsUI::FLAGS_UI_APPLE
-                                 ? IDR_APPLE_FLAGS_HTML
-                                 : IDR_FLAGS_UI_FLAGS_HTML);
+  source->SetDefaultResource(IDR_FLAGS_UI_FLAGS_HTML);
   return source;
 }
 
@@ -97,7 +85,8 @@ class FlagsDOMHandler : public web::WebUIIOSMessageHandler {
   // Initializes the DOM handler with the provided flags storage and flags
   // access. If there were flags experiments requested from javascript before
   // this was called, it calls |HandleRequestExperimentalFeatures| again.
-  void Init(flags_ui::FlagsStorage* flags_storage, flags_ui::FlagAccess access);
+  void Init(std::unique_ptr<flags_ui::FlagsStorage> flags_storage,
+            flags_ui::FlagAccess access);
 
   // WebUIMessageHandler implementation.
   void RegisterMessages() override;
@@ -141,9 +130,10 @@ void FlagsDOMHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-void FlagsDOMHandler::Init(flags_ui::FlagsStorage* flags_storage,
-                           flags_ui::FlagAccess access) {
-  flags_storage_.reset(flags_storage);
+void FlagsDOMHandler::Init(
+    std::unique_ptr<flags_ui::FlagsStorage> flags_storage,
+    flags_ui::FlagAccess access) {
+  flags_storage_ = std::move(flags_storage);
   access_ = access;
 
   if (experimental_features_requested_)
@@ -207,51 +197,23 @@ void FlagsDOMHandler::HandleResetAllFlags(const base::ListValue* args) {
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// BaseFlagsUI
-//
-///////////////////////////////////////////////////////////////////////////////
-
-BaseFlagsUI::BaseFlagsUI(web::WebUIIOS* web_ui, FlagsUIKind flags_ui_kind)
-    : web::WebUIIOSController(web_ui), weak_factory_(this) {
-  Initialize(web_ui, flags_ui_kind);
-}
-
-void BaseFlagsUI::Initialize(web::WebUIIOS* web_ui, FlagsUIKind flags_ui_kind) {
-  FlagsDOMHandler* handler = new FlagsDOMHandler();
-  web_ui->AddMessageHandler(base::WrapUnique(handler));
-
-  flags_ui::FlagAccess flag_access = flags_ui::kOwnerAccessToFlags;
-  if (flags_ui_kind == FLAGS_UI_APPLE)
-    flag_access = flags_ui::kAppleReviewAccessToFlags;
-  handler->Init(new flags_ui::PrefServiceFlagsStorage(
-                    GetApplicationContext()->GetLocalState()),
-                flag_access);
-
-  // Set up the about:flags source.
-  web::WebUIIOSDataSource::Add(ios::ChromeBrowserState::FromWebUIIOS(web_ui),
-                               CreateFlagsUIHTMLSource(flags_ui_kind));
-}
-
-BaseFlagsUI::~BaseFlagsUI() {}
-
-///////////////////////////////////////////////////////////////////////////////
-//
 // FlagsUI
 //
 ///////////////////////////////////////////////////////////////////////////////
 
 FlagsUI::FlagsUI(web::WebUIIOS* web_ui)
-    : BaseFlagsUI(web_ui, BaseFlagsUI::FLAGS_UI_GENERIC) {}
+    : web::WebUIIOSController(web_ui), weak_factory_(this) {
+  FlagsDOMHandler* handler = new FlagsDOMHandler();
+  web_ui->AddMessageHandler(base::WrapUnique(handler));
+
+  flags_ui::FlagAccess flag_access = flags_ui::kOwnerAccessToFlags;
+  handler->Init(base::MakeUnique<flags_ui::PrefServiceFlagsStorage>(
+                    GetApplicationContext()->GetLocalState()),
+                flag_access);
+
+  // Set up the about:flags source.
+  web::WebUIIOSDataSource::Add(ios::ChromeBrowserState::FromWebUIIOS(web_ui),
+                               CreateFlagsUIHTMLSource());
+}
 
 FlagsUI::~FlagsUI() {}
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// AppleFlagsUI
-//
-///////////////////////////////////////////////////////////////////////////////
-
-AppleFlagsUI::AppleFlagsUI(web::WebUIIOS* web_ui)
-    : BaseFlagsUI(web_ui, BaseFlagsUI::FLAGS_UI_APPLE) {}
-
-AppleFlagsUI::~AppleFlagsUI() {}

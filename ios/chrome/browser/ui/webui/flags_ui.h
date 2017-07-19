@@ -9,40 +9,14 @@
 #include "base/memory/weak_ptr.h"
 #include "ios/web/public/webui/web_ui_ios_controller.h"
 
-class BaseFlagsUI : public web::WebUIIOSController {
- public:
-  enum FlagsUIKind {
-    FLAGS_UI_GENERIC,
-    FLAGS_UI_APPLE,
-  };
-
-  BaseFlagsUI(web::WebUIIOS* web_ui, FlagsUIKind flags_ui_kind);
-  ~BaseFlagsUI() override;
-
- private:
-  void Initialize(web::WebUIIOS* web_ui, FlagsUIKind flags_ui_kind);
-
-  base::WeakPtrFactory<BaseFlagsUI> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(BaseFlagsUI);
-};
-
-class FlagsUI : public BaseFlagsUI {
+class FlagsUI : public web::WebUIIOSController {
  public:
   explicit FlagsUI(web::WebUIIOS* web_ui);
   ~FlagsUI() override;
 
  private:
+  base::WeakPtrFactory<FlagsUI> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(FlagsUI);
-};
-
-class AppleFlagsUI : public BaseFlagsUI {
- public:
-  explicit AppleFlagsUI(web::WebUIIOS* web_ui);
-  ~AppleFlagsUI() override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AppleFlagsUI);
 };
 
 #endif  // IOS_CHROME_BROWSER_UI_WEBUI_FLAGS_UI_H_
