@@ -19,6 +19,7 @@
 #include "net/cert/signed_certificate_timestamp_and_status.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/test_data_directory.h"
 #include "net/test/url_request/url_request_failed_job.h"
@@ -337,26 +338,34 @@ class ChromeExpectCTReporterTest : public ::testing::Test {
 
   std::unique_ptr<net::test_server::HttpResponse> HandleReportPreflight(
       const net::test_server::HttpRequest& request) {
-    num_requests_++;
-    if (!requests_callback_.is_null()) {
-      requests_callback_.Run();
-    }
+    handled_preflight_ = true;
     std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
         new net::test_server::BasicHttpResponse());
     http_response->set_code(net::HTTP_OK);
     for (const auto& cors_header : cors_headers_) {
       http_response->AddCustomHeader(cors_header.first, cors_header.second);
     }
+
+    // If WaitForReportPreflight() has been called, signal that a preflight has
+    // been handled. Do this after copying |cors_headers_| to the response,
+    // because tests can mutate |cors_headers_| immediately after
+    // |preflight_run_loop_| quits.
+    if (preflight_run_loop_) {
+      preflight_run_loop_->Quit();
+    }
+
     return http_response;
   }
 
+  // Can only be called once per test to wait for a single preflight.
   void WaitForReportPreflight() {
-    if (num_requests_ >= 1) {
+    DCHECK(!preflight_run_loop_)
+        << "WaitForReportPreflight should only be called once per test";
+    if (handled_preflight_) {
       return;
     }
-    base::RunLoop run_loop;
-    requests_callback_ = run_loop.QuitClosure();
-    run_loop.Run();
+    preflight_run_loop_ = base::MakeUnique<base::RunLoop>();
+    preflight_run_loop_->Run();
   }
 
  protected:
@@ -399,8 +408,11 @@ class ChromeExpectCTReporterTest : public ::testing::Test {
  private:
   content::TestBrowserThreadBundle thread_bundle_;
   net::EmbeddedTestServer report_server_;
-  uint32_t num_requests_ = 0;
-  base::Closure requests_callback_;
+  // Set to true when HandleReportPreflight() has been called. Used by
+  // WaitForReportPreflight() to determine when to just return immediately
+  // because a preflight has already been handled.
+  bool handled_preflight_ = false;
+  std::unique_ptr<base::RunLoop> preflight_run_loop_;
   std::map<std::string, std::string> cors_headers_{
       {"Access-Control-Allow-Origin", "*"},
       {"Access-Control-Allow-Methods", "GET,POST"},
