@@ -4,7 +4,7 @@
 
 #include "ui/aura/local/window_port_local.h"
 
-#include "components/viz/service/frame_sinks/frame_sink_manager.h"
+#include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/local/layer_tree_frame_sink_local.h"

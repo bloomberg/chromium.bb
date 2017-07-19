@@ -36,7 +36,7 @@
 #include "components/viz/common/quads/resource_format.h"
 #include "components/viz/common/resources/resource_settings.h"
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
-#include "components/viz/service/frame_sinks/frame_sink_manager.h"
+#include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/compositor/compositor_observer.h"
 #include "ui/compositor/compositor_switches.h"

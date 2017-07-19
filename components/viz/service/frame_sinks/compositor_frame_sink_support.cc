@@ -14,14 +14,14 @@
 #include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support_client.h"
-#include "components/viz/service/frame_sinks/frame_sink_manager.h"
+#include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 
 namespace viz {
 
 // static
 std::unique_ptr<CompositorFrameSinkSupport> CompositorFrameSinkSupport::Create(
     CompositorFrameSinkSupportClient* client,
-    FrameSinkManager* frame_sink_manager,
+    FrameSinkManagerImpl* frame_sink_manager,
     const FrameSinkId& frame_sink_id,
     bool is_root,
     bool handles_frame_sink_id_invalidation,
@@ -314,7 +314,8 @@ CompositorFrameSinkSupport::CompositorFrameSinkSupport(
       handles_frame_sink_id_invalidation_(handles_frame_sink_id_invalidation),
       weak_factory_(this) {}
 
-void CompositorFrameSinkSupport::Init(FrameSinkManager* frame_sink_manager) {
+void CompositorFrameSinkSupport::Init(
+    FrameSinkManagerImpl* frame_sink_manager) {
   frame_sink_manager_ = frame_sink_manager;
   surface_manager_ = frame_sink_manager->surface_manager();
   if (handles_frame_sink_id_invalidation_)

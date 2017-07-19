@@ -23,7 +23,7 @@
 #include "components/viz/common/quads/texture_mailbox.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
-#include "components/viz/service/frame_sinks/frame_sink_manager.h"
+#include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/renderer_host/compositor_resize_lock.h"
@@ -442,7 +442,7 @@ void DelegatedFrameHost::SubmitCompositorFrame(
     EvictDelegatedFrame();
   } else {
     ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-    viz::FrameSinkManager* manager =
+    viz::FrameSinkManagerImpl* manager =
         factory->GetContextFactoryPrivate()->GetFrameSinkManager();
 
     frame.metadata.latency_info.insert(frame.metadata.latency_info.end(),

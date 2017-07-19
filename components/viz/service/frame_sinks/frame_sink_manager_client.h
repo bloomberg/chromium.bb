@@ -17,7 +17,7 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerClient {
  public:
   virtual ~FrameSinkManagerClient() = default;
 
-  // This allows the FrameSinkManager to pass a BeginFrameSource to use.
+  // This allows the FrameSinkManagerImpl to pass a BeginFrameSource to use.
   virtual void SetBeginFrameSource(
       cc::BeginFrameSource* begin_frame_source) = 0;
 };

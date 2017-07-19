@@ -42,7 +42,7 @@ class VulkanContextProvider;
 namespace viz {
 class Display;
 class FrameSinkId;
-class FrameSinkManager;
+class FrameSinkManagerImpl;
 class HostFrameSinkManager;
 }
 
@@ -64,7 +64,7 @@ class CONTENT_EXPORT CompositorImpl
 
   static bool IsInitialized();
 
-  static viz::FrameSinkManager* GetFrameSinkManager();
+  static viz::FrameSinkManagerImpl* GetFrameSinkManager();
   static viz::HostFrameSinkManager* GetHostFrameSinkManager();
   static viz::FrameSinkId AllocateFrameSinkId();
 

@@ -23,7 +23,7 @@ class CopyOutputResult;
 }  // namespace cc
 
 namespace viz {
-class FrameSinkManager;
+class FrameSinkManagerImpl;
 class HostFrameSinkManager;
 class FrameSinkManagerImpl;
 }
@@ -32,7 +32,7 @@ namespace content {
 
 CONTENT_EXPORT viz::FrameSinkId AllocateFrameSinkId();
 
-CONTENT_EXPORT viz::FrameSinkManager* GetFrameSinkManager();
+CONTENT_EXPORT viz::FrameSinkManagerImpl* GetFrameSinkManager();
 
 CONTENT_EXPORT viz::HostFrameSinkManager* GetHostFrameSinkManager();
 

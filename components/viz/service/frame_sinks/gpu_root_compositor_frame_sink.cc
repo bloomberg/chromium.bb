@@ -9,13 +9,12 @@
 #include "base/command_line.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
-#include "components/viz/service/frame_sinks/frame_sink_manager.h"
+#include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 
 namespace viz {
 
 GpuRootCompositorFrameSink::GpuRootCompositorFrameSink(
-    GpuCompositorFrameSinkDelegate* delegate,
-    FrameSinkManager* frame_sink_manager,
+    FrameSinkManagerImpl* frame_sink_manager,
     const FrameSinkId& frame_sink_id,
     std::unique_ptr<Display> display,
     std::unique_ptr<cc::BeginFrameSource> begin_frame_source,
@@ -24,8 +23,7 @@ GpuRootCompositorFrameSink::GpuRootCompositorFrameSink(
         compositor_frame_sink_private_request,
     cc::mojom::CompositorFrameSinkClientPtr client,
     cc::mojom::DisplayPrivateAssociatedRequest display_private_request)
-    : delegate_(delegate),
-      support_(CompositorFrameSinkSupport::Create(
+    : support_(CompositorFrameSinkSupport::Create(
           this,
           frame_sink_manager,
           frame_sink_id,
@@ -148,11 +146,13 @@ void GpuRootCompositorFrameSink::WillDrawSurface(
     const gfx::Rect& damage_rect) {}
 
 void GpuRootCompositorFrameSink::OnClientConnectionLost() {
-  delegate_->OnClientConnectionLost(support_->frame_sink_id());
+  support_->frame_sink_manager()->OnClientConnectionLost(
+      support_->frame_sink_id());
 }
 
 void GpuRootCompositorFrameSink::OnPrivateConnectionLost() {
-  delegate_->OnPrivateConnectionLost(support_->frame_sink_id());
+  support_->frame_sink_manager()->OnPrivateConnectionLost(
+      support_->frame_sink_id());
 }
 
 }  // namespace viz

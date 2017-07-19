@@ -190,7 +190,7 @@ void GpuMain::CreateFrameSinkManagerOnCompositorThread(
       gpu_command_service_, gpu_service_->gpu_channel_manager());
 
   frame_sink_manager_ = base::MakeUnique<viz::FrameSinkManagerImpl>(
-      true, display_provider_.get());
+      display_provider_.get(), cc::SurfaceManager::LifetimeType::REFERENCES);
   frame_sink_manager_->BindAndSetClient(std::move(request), nullptr,
                                         std::move(client));
 }

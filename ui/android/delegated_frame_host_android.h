@@ -23,7 +23,7 @@ enum class SurfaceDrawStatus;
 }  // namespace cc
 
 namespace viz {
-class FrameSinkManager;
+class FrameSinkManagerImpl;
 class HostFrameSinkManager;
 }  // namespace viz
 
@@ -45,7 +45,7 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
 
   DelegatedFrameHostAndroid(ViewAndroid* view,
                             viz::HostFrameSinkManager* host_frame_sink_manager,
-                            viz::FrameSinkManager* frame_sink_manager,
+                            viz::FrameSinkManagerImpl* frame_sink_manager,
                             Client* client,
                             const viz::FrameSinkId& frame_sink_id);
 
@@ -97,7 +97,7 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
   ViewAndroid* view_;
 
   viz::HostFrameSinkManager* const host_frame_sink_manager_;
-  viz::FrameSinkManager* const frame_sink_manager_;
+  viz::FrameSinkManagerImpl* const frame_sink_manager_;
   WindowAndroidCompositor* registered_parent_compositor_ = nullptr;
   Client* client_;
 

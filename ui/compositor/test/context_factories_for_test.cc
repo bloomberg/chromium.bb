@@ -16,15 +16,15 @@
 namespace {
 
 static viz::HostFrameSinkManager* g_host_frame_sink_manager = nullptr;
-static viz::FrameSinkManagerImpl* g_frame_sink_manager_impl = nullptr;
+static viz::FrameSinkManagerImpl* g_frame_sink_manager = nullptr;
 static ui::InProcessContextFactory* g_implicit_factory = nullptr;
 static gl::DisableNullDrawGLBindings* g_disable_null_draw = nullptr;
 
 // Connect HostFrameSinkManager to FrameSinkManagerImpl.
 void ConnectFrameSinkManager() {
   // Directly connect without using Mojo.
-  g_frame_sink_manager_impl->SetLocalClient(g_host_frame_sink_manager);
-  g_host_frame_sink_manager->SetLocalManager(g_frame_sink_manager_impl);
+  g_frame_sink_manager->SetLocalClient(g_host_frame_sink_manager);
+  g_host_frame_sink_manager->SetLocalManager(g_frame_sink_manager);
 }
 
 }  // namespace
@@ -44,10 +44,9 @@ void InitializeContextFactoryForTests(
   if (enable_pixel_output)
     g_disable_null_draw = new gl::DisableNullDrawGLBindings;
   g_host_frame_sink_manager = new viz::HostFrameSinkManager;
-  g_frame_sink_manager_impl = new viz::FrameSinkManagerImpl(false, nullptr);
-  g_implicit_factory = new InProcessContextFactory(
-      g_host_frame_sink_manager,
-      g_frame_sink_manager_impl->frame_sink_manager());
+  g_frame_sink_manager = new viz::FrameSinkManagerImpl;
+  g_implicit_factory = new InProcessContextFactory(g_host_frame_sink_manager,
+                                                   g_frame_sink_manager);
   g_implicit_factory->SetUseFastRefreshRateForTests();
   *context_factory = g_implicit_factory;
   *context_factory_private = g_implicit_factory;
@@ -63,8 +62,8 @@ void TerminateContextFactoryForTests() {
   }
   delete g_host_frame_sink_manager;
   g_host_frame_sink_manager = nullptr;
-  delete g_frame_sink_manager_impl;
-  g_frame_sink_manager_impl = nullptr;
+  delete g_frame_sink_manager;
+  g_frame_sink_manager = nullptr;
   delete g_disable_null_draw;
   g_disable_null_draw = nullptr;
 }

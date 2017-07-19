@@ -24,7 +24,7 @@
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display/display_scheduler.h"
 #include "components/viz/service/frame_sinks/direct_layer_tree_frame_sink.h"
-#include "components/viz/service/frame_sinks/frame_sink_manager.h"
+#include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
@@ -137,7 +137,7 @@ struct InProcessContextFactory::PerCompositorData {
 
 InProcessContextFactory::InProcessContextFactory(
     viz::HostFrameSinkManager* host_frame_sink_manager,
-    viz::FrameSinkManager* frame_sink_manager)
+    viz::FrameSinkManagerImpl* frame_sink_manager)
     : frame_sink_id_allocator_(kDefaultClientId),
       use_test_surface_(true),
       host_frame_sink_manager_(host_frame_sink_manager),
@@ -350,7 +350,7 @@ void InProcessContextFactory::RemoveObserver(ContextFactoryObserver* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-viz::FrameSinkManager* InProcessContextFactory::GetFrameSinkManager() {
+viz::FrameSinkManagerImpl* InProcessContextFactory::GetFrameSinkManager() {
   return frame_sink_manager_;
 }
 

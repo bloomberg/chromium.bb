@@ -33,7 +33,7 @@
 #include "components/viz/service/display_embedder/compositor_overlay_candidate_validator.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "components/viz/service/frame_sinks/direct_layer_tree_frame_sink.h"
-#include "components/viz/service/frame_sinks/frame_sink_manager.h"
+#include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/compositor/browser_compositor_output_surface.h"
 #include "content/browser/compositor/gpu_browser_compositor_output_surface.h"
@@ -824,7 +824,7 @@ void GpuProcessTransportFactory::RemoveObserver(
   observer_list_.RemoveObserver(observer);
 }
 
-viz::FrameSinkManager* GpuProcessTransportFactory::GetFrameSinkManager() {
+viz::FrameSinkManagerImpl* GpuProcessTransportFactory::GetFrameSinkManager() {
   return BrowserMainLoop::GetInstance()->GetFrameSinkManager();
 }
 

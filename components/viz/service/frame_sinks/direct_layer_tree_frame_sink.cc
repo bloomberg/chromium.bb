@@ -12,14 +12,14 @@
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support_manager.h"
-#include "components/viz/service/frame_sinks/frame_sink_manager.h"
+#include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 
 namespace viz {
 
 DirectLayerTreeFrameSink::DirectLayerTreeFrameSink(
     const FrameSinkId& frame_sink_id,
     CompositorFrameSinkSupportManager* support_manager,
-    FrameSinkManager* frame_sink_manager,
+    FrameSinkManagerImpl* frame_sink_manager,
     Display* display,
     scoped_refptr<ContextProvider> context_provider,
     scoped_refptr<ContextProvider> worker_context_provider,
@@ -43,7 +43,7 @@ DirectLayerTreeFrameSink::DirectLayerTreeFrameSink(
 DirectLayerTreeFrameSink::DirectLayerTreeFrameSink(
     const FrameSinkId& frame_sink_id,
     CompositorFrameSinkSupportManager* support_manager,
-    FrameSinkManager* frame_sink_manager,
+    FrameSinkManagerImpl* frame_sink_manager,
     Display* display,
     scoped_refptr<cc::VulkanContextProvider> vulkan_context_provider)
     : LayerTreeFrameSink(std::move(vulkan_context_provider)),

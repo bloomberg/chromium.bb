@@ -29,7 +29,7 @@ class SurfaceManager;
 
 namespace viz {
 
-class FrameSinkManager;
+class FrameSinkManagerImpl;
 class CompositorFrameSinkSupportClient;
 
 class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
@@ -40,7 +40,7 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
  public:
   static std::unique_ptr<CompositorFrameSinkSupport> Create(
       CompositorFrameSinkSupportClient* client,
-      FrameSinkManager* frame_sink_manager,
+      FrameSinkManagerImpl* frame_sink_manager,
       const FrameSinkId& frame_sink_id,
       bool is_root,
       bool handles_frame_sink_id_invalidation,
@@ -50,7 +50,7 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
 
   const FrameSinkId& frame_sink_id() const { return frame_sink_id_; }
 
-  FrameSinkManager* frame_sink_manager() { return frame_sink_manager_; }
+  FrameSinkManagerImpl* frame_sink_manager() { return frame_sink_manager_; }
   cc::SurfaceManager* surface_manager() { return surface_manager_; }
 
   void SetDestructionCallback(base::OnceCallback<void()> callback);
@@ -86,7 +86,7 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
                              bool handles_frame_sink_id_invalidation,
                              bool needs_sync_tokens);
 
-  void Init(FrameSinkManager* frame_sink_manager);
+  void Init(FrameSinkManagerImpl* frame_sink_manager);
 
  private:
   // Updates surface references using |active_referenced_surfaces| from the most
@@ -114,7 +114,7 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
 
   CompositorFrameSinkSupportClient* const client_;
 
-  FrameSinkManager* frame_sink_manager_ = nullptr;
+  FrameSinkManagerImpl* frame_sink_manager_ = nullptr;
   cc::SurfaceManager* surface_manager_ = nullptr;
 
   const FrameSinkId frame_sink_id_;

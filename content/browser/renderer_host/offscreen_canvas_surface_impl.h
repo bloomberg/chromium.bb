@@ -44,7 +44,7 @@ class CONTENT_EXPORT OffscreenCanvasSurfaceImpl
     return local_surface_id_;
   }
 
-  // Creates a CompositorFrameSink connection to FrameSinkManager for an
+  // Creates a CompositorFrameSink connection to FrameSinkManagerImpl for an
   // offscreen canvas client. The corresponding private interface will be owned
   // here to control CompositorFrameSink lifetime. This should only ever be
   // called once.

@@ -57,7 +57,7 @@ class StubCompositorFrameSinkClient
 // A mock implementation of mojom::FrameSinkManager.
 class MockFrameSinkManagerImpl : public FrameSinkManagerImpl {
  public:
-  MockFrameSinkManagerImpl() : FrameSinkManagerImpl(false, nullptr) {}
+  MockFrameSinkManagerImpl() = default;
   ~MockFrameSinkManagerImpl() override = default;
 
   // cc::mojom::FrameSinkManager:

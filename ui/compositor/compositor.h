@@ -58,7 +58,7 @@ class GpuMemoryBufferManager;
 }
 
 namespace viz {
-class FrameSinkManager;
+class FrameSinkManagerImpl;
 class ContextProvider;
 class HostFrameSinkManager;
 class LocalSurfaceId;
@@ -106,9 +106,7 @@ class COMPOSITOR_EXPORT ContextFactoryPrivate {
   virtual viz::FrameSinkId AllocateFrameSinkId() = 0;
 
   // Gets the frame sink manager.
-  // TODO(staraz): Remove GetFrameSinkManager once FrameSinkManager is merged
-  // into FrameSinkManagerImpl.
-  virtual viz::FrameSinkManager* GetFrameSinkManager() = 0;
+  virtual viz::FrameSinkManagerImpl* GetFrameSinkManager() = 0;
 
   // Gets the frame sink manager host instance.
   virtual viz::HostFrameSinkManager* GetHostFrameSinkManager() = 0;
