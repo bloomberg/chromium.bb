@@ -10,10 +10,15 @@
 #include "extensions/shell/browser/shell_extension_web_contents_observer.h"
 #include "extensions/shell/browser/shell_virtual_keyboard_delegate.h"
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#include "extensions/shell/browser/api/file_system/shell_file_system_delegate.h"
+#endif
+
 namespace extensions {
 
-ShellExtensionsAPIClient::ShellExtensionsAPIClient() {
-}
+ShellExtensionsAPIClient::ShellExtensionsAPIClient() {}
+
+ShellExtensionsAPIClient::~ShellExtensionsAPIClient() {}
 
 void ShellExtensionsAPIClient::AttachWebContentsHelpers(
     content::WebContents* web_contents) const {
@@ -29,5 +34,13 @@ std::unique_ptr<VirtualKeyboardDelegate>
 ShellExtensionsAPIClient::CreateVirtualKeyboardDelegate() const {
   return base::MakeUnique<ShellVirtualKeyboardDelegate>();
 }
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+FileSystemDelegate* ShellExtensionsAPIClient::GetFileSystemDelegate() {
+  if (!file_system_delegate_)
+    file_system_delegate_ = base::MakeUnique<ShellFileSystemDelegate>();
+  return file_system_delegate_.get();
+}
+#endif
 
 }  // namespace extensions

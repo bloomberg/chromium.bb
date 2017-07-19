@@ -188,6 +188,13 @@ source_set("app_shell_lib") {
     ]
   }
 
+  if (is_desktop_linux) {
+    sources += [
+      "browser/api/file_system/shell_file_system_delegate.cc",
+      "browser/api/file_system/shell_file_system_delegate.h",
+    ]
+  }
+
   if (is_chromeos) {
     sources += [
       "browser/api/vpn_provider/vpn_service_factory.cc",

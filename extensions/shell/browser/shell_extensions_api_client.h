@@ -9,6 +9,8 @@
 
 #include "extensions/browser/api/extensions_api_client.h"
 
+#include "build/build_config.h"
+
 namespace extensions {
 
 class VirtualKeyboardDelegate;
@@ -16,6 +18,7 @@ class VirtualKeyboardDelegate;
 class ShellExtensionsAPIClient : public ExtensionsAPIClient {
  public:
   ShellExtensionsAPIClient();
+  ~ShellExtensionsAPIClient() override;
 
   // ExtensionsAPIClient implementation.
   void AttachWebContentsHelpers(content::WebContents* web_contents) const
@@ -23,6 +26,16 @@ class ShellExtensionsAPIClient : public ExtensionsAPIClient {
   AppViewGuestDelegate* CreateAppViewGuestDelegate() const override;
   std::unique_ptr<VirtualKeyboardDelegate> CreateVirtualKeyboardDelegate()
       const override;
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  FileSystemDelegate* GetFileSystemDelegate() override;
+#endif
+
+ private:
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  std::unique_ptr<FileSystemDelegate> file_system_delegate_;
+#endif
+
+  DISALLOW_COPY_AND_ASSIGN(ShellExtensionsAPIClient);
 };
 
 }  // namespace extensions
