@@ -32,6 +32,7 @@ interface AccessibleNode
     getter errorMessage
     getter expanded
     getter flowTo
+    getter hasPopUp
     getter hidden
     getter invalid
     getter keyShortcuts
@@ -79,6 +80,7 @@ interface AccessibleNode
     setter errorMessage
     setter expanded
     setter flowTo
+    setter hasPopUp
     setter hidden
     setter invalid
     setter keyShortcuts

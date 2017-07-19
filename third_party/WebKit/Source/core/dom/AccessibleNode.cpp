@@ -24,6 +24,8 @@ QualifiedName GetCorrespondingARIAAttribute(AOMStringProperty property) {
       return aria_checkedAttr;
     case AOMStringProperty::kCurrent:
       return aria_currentAttr;
+    case AOMStringProperty::kHasPopUp:
+      return aria_haspopupAttr;
     case AOMStringProperty::kInvalid:
       return aria_invalidAttr;
     case AOMStringProperty::kKeyShortcuts:
@@ -683,6 +685,15 @@ AccessibleNodeList* AccessibleNode::flowTo() const {
 void AccessibleNode::setFlowTo(AccessibleNodeList* flow_to) {
   SetRelationListProperty(AOMRelationListProperty::kFlowTo, flow_to);
   NotifyAttributeChanged(aria_flowtoAttr);
+}
+
+AtomicString AccessibleNode::hasPopUp() const {
+  return GetProperty(element_, AOMStringProperty::kHasPopUp);
+}
+
+void AccessibleNode::setHasPopUp(const AtomicString& has_popup) {
+  SetStringProperty(AOMStringProperty::kHasPopUp, has_popup);
+  NotifyAttributeChanged(aria_haspopupAttr);
 }
 
 bool AccessibleNode::hidden(bool& is_null) const {
