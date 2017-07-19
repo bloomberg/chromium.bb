@@ -43,6 +43,8 @@ API_PATH = "/v1/suggestions/fetch"
 
 
 def main():
+  default_lang = os.environ.get("LANG", "en_US").split(".")[0]
+
   parser = argparse.ArgumentParser(
       description="fetch articles from server",
       parents=[oauth2client.tools.argparser])
@@ -51,6 +53,9 @@ def main():
                       help="component to fetch from (default: prod)")
   parser.add_argument("-x", "--experiment", action="append", type=int,
                       help="include an experiment ID")
+  parser.add_argument("-l", "--ui-language", default=default_lang,
+                      help="language code (default: %s)" % default_lang)
+  parser.add_argument("--ip", help="fake IP address")
   parser.add_argument("--api-key", type=str,
                       help="API key to use for unauthenticated requests"
                       " (default: use official key)")
@@ -167,6 +172,9 @@ def PostRequest(args):
   if args.experiment:
     headers["X-Client-Data"] = EncodeExperiments(args.experiment)
 
+  if args.ip is not None:
+    headers["X-User-IP"] = args.ip
+
   if args.signed_in:
     if args.client:
       client_id, client_secret = args.client.split(",")
@@ -180,7 +188,11 @@ def PostRequest(args):
       api_key = GetAPIKey()
     url += "?key=" + api_key
 
-  return requests.post(url, headers=headers)
+  data = {
+    "uiLanguage": args.ui_language,
+  }
+
+  return requests.post(url, headers=headers, data=data)
 
 
 def Authenticate(args, headers, client_id, client_secret):
@@ -199,7 +211,7 @@ def PrintShortResponse(j):
   now = datetime.datetime.now()
   for category in j["categories"]:
     print("%s: " % category["localizedTitle"])
-    for suggestion in category["suggestions"]:
+    for suggestion in category.get("suggestions", []):
       attribution = suggestion["attribution"]
       title = suggestion["title"]
       full_url = suggestion["fullPageUrl"]
