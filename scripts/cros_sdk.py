@@ -631,8 +631,9 @@ def main(argv):
     parser.error("Trying to enter the chroot when --delete "
                  "was specified makes no sense.")
 
-  # Finally, discern if we need to create the chroot.
-  chroot_exists = os.path.exists(options.chroot)
+  # Discern if we need to create the chroot.
+  chroot_exists = os.path.exists(os.path.join(
+      options.chroot, 'etc', 'cros_chroot_version'))
   if options.create or options.enter:
     # Only create if it's being wiped, or if it doesn't exist.
     if not options.delete and chroot_exists:
