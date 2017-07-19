@@ -84100,6 +84100,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="VRAutopresentedWebVR" enum="Boolean">
+  <owner>ymalik@chromium.org</owner>
+  <summary>
+    Whether we're auto-presenting the first time we enter WebVR mode.
+  </summary>
+</histogram>
+
 <histogram name="VRDisplayPresentResult" enum="PresentationResult">
   <owner>billorr@chromium.org</owner>
   <summary>

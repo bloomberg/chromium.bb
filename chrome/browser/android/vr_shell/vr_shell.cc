@@ -125,6 +125,9 @@ VrShell::VrShell(JNIEnv* env,
   base::Thread::Options options(base::MessageLoop::TYPE_DEFAULT, 0);
   options.priority = base::ThreadPriority::DISPLAY;
   gl_thread_->StartWithOptions(options);
+
+  if (for_web_vr || web_vr_autopresentation_expected)
+    UMA_HISTOGRAM_BOOLEAN("VRAutopresentedWebVR", !for_web_vr);
 }
 
 void VrShell::SetSplashScreenIcon(JNIEnv* env,
