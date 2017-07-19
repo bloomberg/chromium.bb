@@ -417,10 +417,15 @@ class MIDI_EXPORT MidiManagerAlsa final : public MidiManager {
   // wait for our information from ALSA and udev to get back in sync.
   int alsa_card_midi_count_ = 0;
 
+  // Guards members below. They are initialized before posting any tasks running
+  // on TaskRunner, and finalized after all posted tasks run.
+  base::Lock lazy_init_member_lock_;
+
   // ALSA seq handles and ids.
   ScopedSndSeqPtr in_client_;
   int in_client_id_;
-  ScopedSndSeqPtr out_client_;
+  base::Lock out_client_lock_;  // guards out_client_
+  ScopedSndSeqPtr out_client_;  // guarded by out_client_lock_
   int out_client_id_;
   int in_port_id_;
 
