@@ -37,14 +37,12 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/WebFrameWidgetBase.h"
 #include "core/frame/WebLocalFrameBase.h"
-#include "modules/mediastream/UserMediaClientImpl.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/heap/SelfKeepAlive.h"
 #include "platform/wtf/Compiler.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebFileSystemType.h"
 #include "public/web/WebLocalFrame.h"
-#include "web/LocalFrameClientImpl.h"
 #include "web/WebExport.h"
 
 #include <memory>
@@ -54,6 +52,7 @@ namespace blink {
 class ChromePrintContext;
 class IntSize;
 class KURL;
+class LocalFrameClient;
 class ScrollableArea;
 class SharedWorkerRepositoryClientImpl;
 class TextCheckerClient;
@@ -450,7 +449,6 @@ class WEB_EXPORT WebLocalFrameImpl final
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  friend class LocalFrameClientImpl;
 
   WebLocalFrameImpl(WebTreeScopeType,
                     WebFrameClient*,
@@ -479,7 +477,7 @@ class WEB_EXPORT WebLocalFrameImpl final
   // Returns true if the frame is focused.
   bool IsFocused() const;
 
-  Member<LocalFrameClientImpl> local_frame_client_impl_;
+  Member<LocalFrameClient> local_frame_client_;
 
   // The embedder retains a reference to the WebCore LocalFrame while it is
   // active in the DOM. This reference is released when the frame is removed

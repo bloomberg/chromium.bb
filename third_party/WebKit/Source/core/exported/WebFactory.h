@@ -12,6 +12,7 @@
 namespace blink {
 
 class ChromeClient;
+class LocalFrameClient;
 class WebView;
 class WebViewBase;
 class WebLocalFrameBase;
@@ -40,6 +41,8 @@ class CORE_EXPORT WebFactory {
       WebFrameClient*,
       InterfaceRegistry*,
       WebFrame* opener) const = 0;
+  virtual LocalFrameClient* CreateLocalFrameClient(
+      WebLocalFrameBase*) const = 0;
 
  protected:
   // Takes ownership of |factory|.

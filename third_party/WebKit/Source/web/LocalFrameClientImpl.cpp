@@ -164,6 +164,10 @@ DEFINE_TRACE(LocalFrameClientImpl) {
   LocalFrameClient::Trace(visitor);
 }
 
+WebLocalFrameBase* LocalFrameClientImpl::GetWebFrame() const {
+  return web_frame_.Get();
+}
+
 void LocalFrameClientImpl::DidCreateNewDocument() {
   if (web_frame_->Client())
     web_frame_->Client()->DidCreateNewDocument(web_frame_);

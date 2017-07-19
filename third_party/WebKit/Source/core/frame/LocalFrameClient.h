@@ -85,6 +85,7 @@ class TextCheckerClient;
 class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
 class WebCookieJar;
+class WebFrame;
 class WebMediaPlayer;
 class WebMediaPlayerClient;
 class WebMediaPlayerSource;
@@ -98,6 +99,8 @@ class WebURLLoader;
 class CORE_EXPORT LocalFrameClient : public FrameClient {
  public:
   ~LocalFrameClient() override {}
+
+  virtual WebFrame* GetWebFrame() const { return nullptr; }
 
   virtual bool HasWebView() const = 0;  // mainly for assertions
 

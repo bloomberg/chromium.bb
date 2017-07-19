@@ -127,6 +127,7 @@
 #include "core/exported/WebAssociatedURLLoaderImpl.h"
 #include "core/exported/WebDataSourceImpl.h"
 #include "core/exported/WebDevToolsAgentImpl.h"
+#include "core/exported/WebFactory.h"
 #include "core/exported/WebPluginContainerImpl.h"
 #include "core/exported/WebRemoteFrameImpl.h"
 #include "core/exported/WebViewBase.h"
@@ -1597,7 +1598,8 @@ WebLocalFrameImpl::WebLocalFrameImpl(
     WebFrameClient* client,
     blink::InterfaceRegistry* interface_registry)
     : WebLocalFrameBase(scope),
-      local_frame_client_impl_(LocalFrameClientImpl::Create(this)),
+      local_frame_client_(
+          WebFactory::GetInstance().CreateLocalFrameClient(this)),
       client_(client),
       autofill_client_(0),
       input_events_scale_factor_for_emulation_(1),
@@ -1629,7 +1631,7 @@ WebLocalFrameImpl::~WebLocalFrameImpl() {
 }
 
 DEFINE_TRACE(WebLocalFrameImpl) {
-  visitor->Trace(local_frame_client_impl_);
+  visitor->Trace(local_frame_client_);
   visitor->Trace(frame_);
   visitor->Trace(dev_tools_agent_);
   visitor->Trace(frame_widget_);
@@ -1650,7 +1652,7 @@ void WebLocalFrameImpl::SetCoreFrame(LocalFrame* frame) {
 void WebLocalFrameImpl::InitializeCoreFrame(Page& page,
                                             FrameOwner* owner,
                                             const AtomicString& name) {
-  SetCoreFrame(LocalFrame::Create(local_frame_client_impl_.Get(), page, owner,
+  SetCoreFrame(LocalFrame::Create(local_frame_client_.Get(), page, owner,
                                   interface_registry_));
   frame_->Tree().SetName(name);
   // We must call init() after frame_ is assigned because it is referenced
@@ -1756,7 +1758,7 @@ WebLocalFrameImpl* WebLocalFrameImpl::FromFrame(LocalFrame& frame) {
   LocalFrameClient* client = frame.Client();
   if (!client || !client->IsLocalFrameClientImpl())
     return nullptr;
-  return ToWebLocalFrameImpl(ToLocalFrameClientImpl(client)->GetWebFrame());
+  return ToWebLocalFrameImpl(client->GetWebFrame());
 }
 
 WebLocalFrameImpl* WebLocalFrameImpl::FromFrameOwnerElement(Element* element) {
