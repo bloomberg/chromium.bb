@@ -6,47 +6,54 @@
 // Run with browser_tests --gtest_filter=ExtensionPreferenceApiTest.Standard
 
 var pn = chrome.privacy.network;
+// The collection of preferences to test, split into objects with a "root"
+// (the root object they preferences are exposed on) and a dictionary of
+// preference name -> default value.
 var preferences_to_test = [
   {
     root: chrome.privacy.network,
-    preferences: [
-      'networkPredictionEnabled',
-      'webRTCMultipleRoutesEnabled',
-      'webRTCNonProxiedUdpEnabled'
-    ]
+    preferences: {
+      networkPredictionEnabled: false,
+      webRTCMultipleRoutesEnabled: false,
+      webRTCNonProxiedUdpEnabled: false,
+    }
   },
   {
     root: chrome.privacy.websites,
-    preferences: [
-      'thirdPartyCookiesAllowed',
-      'hyperlinkAuditingEnabled',
-      'referrersEnabled',
-      'protectedContentEnabled'
-    ]
+    preferences: {
+      thirdPartyCookiesAllowed: false,
+      hyperlinkAuditingEnabled: false,
+      referrersEnabled: false,
+      protectedContentEnabled: true,
+    }
   },
   {
     root: chrome.privacy.services,
-    preferences: [
-      'alternateErrorPagesEnabled',
-      'autofillEnabled',
-      'hotwordSearchEnabled',
-      'passwordSavingEnabled',
-      'safeBrowsingEnabled',
-      'safeBrowsingExtendedReportingEnabled',
-      'searchSuggestEnabled',
-      'spellingServiceEnabled',
-      'translationServiceEnabled'
-    ]
+    preferences: {
+      alternateErrorPagesEnabled: false,
+      autofillEnabled: false,
+      hotwordSearchEnabled: false,
+      passwordSavingEnabled: false,
+      safeBrowsingEnabled: false,
+      safeBrowsingExtendedReportingEnabled: false,
+      searchSuggestEnabled: false,
+      spellingServiceEnabled: false,
+      translationServiceEnabled: false,
+    }
   },
 ];
 
 // Some preferences are only present on certain platforms or are hidden
 // behind flags and might not be present when this test runs.
 var possibly_missing_preferences = new Set([
-  'protectedContentEnabled',             // Windows/ChromeOS only
   'webRTCMultipleRoutesEnabled',         // requires ENABLE_WEBRTC=1
-  'webRTCNonProxiedUdpEnabled'           // requires ENABLE_WEBRTC=1
+  'webRTCNonProxiedUdpEnabled',          // requires ENABLE_WEBRTC=1
 ]);
+
+if (!navigator.userAgent.includes('Windows') &&
+    !navigator.userAgent.includes('CrOS')) {
+  possibly_missing_preferences.add('protectedContentEnabled');
+}
 
 function expect(expected, message) {
   return chrome.test.callbackPass(function(value) {
@@ -54,38 +61,59 @@ function expect(expected, message) {
   });
 }
 
-function expectFalse(pref) {
+// Verifies that the preference has the expected default value.
+function expectDefault(prefName, defaultValue) {
   return expect({
-    value: false,
+    value: defaultValue,
     levelOfControl: 'controllable_by_this_extension'
-  }, '`' + pref + '` is expected to be false.');
+  }, '`' + prefName + '` is expected to be the default, which is ' +
+     defaultValue);
 }
 
-function prefGetter(pref) {
-  if (possibly_missing_preferences.has(pref) && !this[pref]) {
-    return true;
-  }
-  this[pref].get({}, expectFalse(pref));
+// Verifies that the preference is properly controlled by the extension.
+function expectControlled(prefName, newValue) {
+  return expect({
+    value: newValue,
+    levelOfControl: 'controlled_by_this_extension',
+  }, '`' + prefName + '` is expected to be controlled by this extension.');
 }
 
-function prefSetter(pref) {
-  if (possibly_missing_preferences.has(pref) && !this[pref]) {
-    return true;
+// Tests getting the preference value (which should be uncontrolled and at its
+// default value).
+function prefGetter(prefName, defaultValue) {
+  if (possibly_missing_preferences.has(prefName) && !this[prefName]) {
+    return;
   }
-  this[pref].set({value: true}, chrome.test.callbackPass());
+  this[prefName].get({}, expectDefault(prefName, defaultValue));
+}
+
+// Tests setting the preference value (to the inverse of the default, so that
+// it should be controlled by this extension).
+function prefSetter(prefName, defaultValue) {
+  if (possibly_missing_preferences.has(prefName) && !this[prefName]) {
+    return;
+  }
+  this[prefName].set({value: !defaultValue},
+                     chrome.test.callbackPass(function() {
+    this[prefName].get({}, expectControlled(prefName, !defaultValue));
+  }.bind(this)));
 }
 
 chrome.test.runTests([
   function getPreferences() {
-    for (var i = 0; i < preferences_to_test.length; i++) {
-      preferences_to_test[i].preferences.forEach(
-          prefGetter.bind(preferences_to_test[i].root));
+    for (let preferenceSet of preferences_to_test) {
+      for (let key in preferenceSet.preferences) {
+        prefGetter.call(preferenceSet.root, key,
+                        preferenceSet.preferences[key]);
+      }
     }
   },
   function setGlobals() {
-    for (var i = 0; i < preferences_to_test.length; i++) {
-      preferences_to_test[i].preferences.forEach(
-          prefSetter.bind(preferences_to_test[i].root));
+    for (let preferenceSet of preferences_to_test) {
+      for (let key in preferenceSet.preferences) {
+        prefSetter.call(preferenceSet.root, key,
+                        preferenceSet.preferences[key]);
+      }
     }
   },
   // Set the WebRTCIPHhandlingPolicy and verify it in the get function.
