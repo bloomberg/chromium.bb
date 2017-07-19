@@ -20,5 +20,10 @@ const char kProximityAuthRemoteBleDevices[] =
 // Unlock.
 const char kEasyUnlockProximityThreshold[] = "easy_unlock.proximity_threshold";
 
+// Whether or not EasyUnlock is enabled on the ChromeOS login screen (in
+// addition to the lock screen).
+extern const char kProximityAuthIsChromeOSLoginEnabled[] =
+    "proximity_auth.is_chromeos_login_enabled";
+
 }  // namespace prefs
 }  // namespace proximity_auth

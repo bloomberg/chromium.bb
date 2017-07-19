@@ -184,4 +184,15 @@ TEST_F(ProximityAuthProximityAuthPrefManagerTest, ProximityThreshold) {
   EXPECT_EQ(kProximityThreshold2, pref_manager.GetProximityThreshold());
 }
 
+TEST_F(ProximityAuthProximityAuthPrefManagerTest, IsChromeOSLoginEnabled) {
+  ProximityAuthPrefManager pref_manager(&pref_service_);
+  EXPECT_TRUE(pref_manager.IsChromeOSLoginEnabled());
+
+  pref_manager.SetIsChromeOSLoginEnabled(false);
+  EXPECT_FALSE(pref_manager.IsChromeOSLoginEnabled());
+
+  pref_manager.SetIsChromeOSLoginEnabled(true);
+  EXPECT_TRUE(pref_manager.IsChromeOSLoginEnabled());
+}
+
 }  // namespace proximity_auth
