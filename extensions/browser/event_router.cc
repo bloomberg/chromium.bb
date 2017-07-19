@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <utility>
 
 #include "base/atomic_sequence_num.h"
@@ -403,6 +404,16 @@ void EventRouter::ClearRegisteredEventsForTest(
                       RegisteredEventType::kLazy);
   SetRegisteredEvents(extension_id, std::set<std::string>(),
                       RegisteredEventType::kServiceWorker);
+}
+
+bool EventRouter::HasLazyEventListenerForTesting(
+    const std::string& event_name) {
+  const EventListenerMap::ListenerList& listeners =
+      listeners_.GetEventListenersByName(event_name);
+  return std::any_of(listeners.begin(), listeners.end(),
+                     [](const std::unique_ptr<EventListener>& listener) {
+                       return listener->IsLazy();
+                     });
 }
 
 void EventRouter::RemoveFilterFromEvent(const std::string& event_name,

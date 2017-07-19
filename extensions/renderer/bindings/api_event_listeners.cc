@@ -79,8 +79,11 @@ bool ValidateFilter(v8::Local<v8::Context> context,
 
 UnfilteredEventListeners::UnfilteredEventListeners(
     const ListenersUpdated& listeners_updated,
-    int max_listeners)
-    : listeners_updated_(listeners_updated), max_listeners_(max_listeners) {
+    int max_listeners,
+    bool supports_lazy_listeners)
+    : listeners_updated_(listeners_updated),
+      max_listeners_(max_listeners),
+      supports_lazy_listeners_(supports_lazy_listeners) {
   DCHECK(max_listeners_ == binding::kNoListenerMax || max_listeners_ > 0);
 }
 UnfilteredEventListeners::~UnfilteredEventListeners() = default;
@@ -106,7 +109,7 @@ bool UnfilteredEventListeners::AddListener(v8::Local<v8::Function> listener,
       v8::Global<v8::Function>(context->GetIsolate(), listener));
   if (listeners_.size() == 1) {
     listeners_updated_.Run(binding::EventListenersChanged::HAS_LISTENERS,
-                           nullptr, true, context);
+                           nullptr, supports_lazy_listeners_, context);
   }
 
   return true;
@@ -121,7 +124,7 @@ void UnfilteredEventListeners::RemoveListener(v8::Local<v8::Function> listener,
   listeners_.erase(iter);
   if (listeners_.empty()) {
     listeners_updated_.Run(binding::EventListenersChanged::NO_LISTENERS,
-                           nullptr, true, context);
+                           nullptr, supports_lazy_listeners_, context);
   }
 }
 
@@ -147,8 +150,11 @@ std::vector<v8::Local<v8::Function>> UnfilteredEventListeners::GetListeners(
 void UnfilteredEventListeners::Invalidate(v8::Local<v8::Context> context) {
   if (!listeners_.empty()) {
     listeners_.clear();
+    // We don't want to update stored lazy listeners in this case, since the
+    // extension didn't unregister interest in the event.
+    bool update_lazy_listeners = false;
     listeners_updated_.Run(binding::EventListenersChanged::NO_LISTENERS,
-                           nullptr, false, context);
+                           nullptr, update_lazy_listeners, context);
   }
 }
 
@@ -169,10 +175,12 @@ FilteredEventListeners::FilteredEventListeners(
     const ListenersUpdated& listeners_updated,
     const std::string& event_name,
     int max_listeners,
+    bool supports_lazy_listeners,
     EventFilter* event_filter)
     : listeners_updated_(listeners_updated),
       event_name_(event_name),
       max_listeners_(max_listeners),
+      supports_lazy_listeners_(supports_lazy_listeners),
       event_filter_(event_filter) {}
 FilteredEventListeners::~FilteredEventListeners() = default;
 
@@ -208,7 +216,7 @@ bool FilteredEventListeners::AddListener(v8::Local<v8::Function> listener,
       {v8::Global<v8::Function>(context->GetIsolate(), listener), filter_id});
   if (value_counter_.Add(*matcher->value())) {
     listeners_updated_.Run(binding::EventListenersChanged::HAS_LISTENERS,
-                           matcher->value(), true, context);
+                           matcher->value(), supports_lazy_listeners_, context);
   }
 
   return true;
@@ -264,7 +272,8 @@ void FilteredEventListeners::InvalidateListener(
   DCHECK(matcher);
   if (value_counter_.Remove(*matcher->value())) {
     listeners_updated_.Run(binding::EventListenersChanged::NO_LISTENERS,
-                           matcher->value(), was_manual, context);
+                           matcher->value(),
+                           was_manual && supports_lazy_listeners_, context);
   }
 
   event_filter_->RemoveEventMatcher(listener.filter_id);

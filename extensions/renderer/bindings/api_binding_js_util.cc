@@ -117,7 +117,8 @@ void APIBindingJSUtil::RegisterEventArgumentMassager(
 void APIBindingJSUtil::CreateCustomEvent(gin::Arguments* arguments,
                                          v8::Local<v8::Value> v8_event_name,
                                          v8::Local<v8::Value> unused_schema,
-                                         bool supports_filters) {
+                                         bool supports_filters,
+                                         bool supports_lazy_listeners) {
   v8::Isolate* isolate = arguments->isolate();
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Context> context = arguments->GetHolderCreationContext();
@@ -133,15 +134,17 @@ void APIBindingJSUtil::CreateCustomEvent(gin::Arguments* arguments,
 
   DCHECK(!supports_filters || !event_name.empty())
       << "Events that support filters cannot be anonymous.";
+  DCHECK(!supports_lazy_listeners || !event_name.empty())
+      << "Events that support lazy listeners cannot be anonymous.";
 
   v8::Local<v8::Value> event;
   if (event_name.empty()) {
     event = event_handler_->CreateAnonymousEventInstance(context);
   } else {
     bool notify_on_change = true;
-    event = event_handler_->CreateEventInstance(event_name, supports_filters,
-                                                binding::kNoListenerMax,
-                                                notify_on_change, context);
+    event = event_handler_->CreateEventInstance(
+        event_name, supports_filters, supports_lazy_listeners,
+        binding::kNoListenerMax, notify_on_change, context);
   }
 
   arguments->Return(event);

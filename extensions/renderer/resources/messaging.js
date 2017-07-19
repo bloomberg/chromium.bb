@@ -24,10 +24,12 @@
   var jsEvent;
   function createAnonymousEvent(schema) {
     if (bindingUtil) {
-      // Native custom events ignore schema.
       var supportsFilters = false;
+      var supportsLazyListeners = false;
+      // Native custom events ignore schema.
       return bindingUtil.createCustomEvent(undefined, undefined,
-                                           supportsFilters);
+                                           supportsFilters,
+                                           supportsLazyListeners);
     }
     var options = {
       __proto__: null,

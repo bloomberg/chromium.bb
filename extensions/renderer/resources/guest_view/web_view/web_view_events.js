@@ -5,6 +5,7 @@
 // Event management for WebView.
 
 var CreateEvent = require('guestViewEvents').CreateEvent;
+var DCHECK = requireNative('logging').DCHECK;
 var DeclarativeWebRequestSchema =
     requireNative('schema_registry').GetSchema('declarativeWebRequest');
 var GuestViewEvents = require('guestViewEvents').GuestViewEvents;
@@ -37,10 +38,17 @@ function createCustomDeclarativeEvent(name, schema, options, webviewId) {
 }
 
 function createCustomEvent(name, schema, options) {
-  if (bindingUtil)
-    return bindingUtil.createCustomEvent(name, undefined, false);
+  var supportsLazyListeners = false;
+  if (bindingUtil) {
+    return bindingUtil.createCustomEvent(name, undefined, false,
+                                         supportsLazyListeners);
+  }
   if (!jsEvent)
     jsEvent = require('event_bindings').Event;
+
+  if (!options)
+    options = {__proto__: null, supportsLazyListeners: false};
+  DCHECK(!options.supportsLazyListeners);
   return new jsEvent(name, schema, options);
 }
 

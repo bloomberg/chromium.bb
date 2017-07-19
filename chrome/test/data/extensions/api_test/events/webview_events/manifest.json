@@ -1,0 +1,10 @@
+{
+  "name": "Test webview events",
+  "version": "1",
+  "app": {
+    "background": {
+      "scripts": ["test.js"]
+    }
+  },
+  "permissions": ["webview"]
+}

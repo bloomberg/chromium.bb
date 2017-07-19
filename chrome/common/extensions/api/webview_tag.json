@@ -1083,13 +1083,13 @@
     "events": [
       {
         "name": "close",
-        "options": { "supportsDom": true },
+        "options": { "supportsDom": true, "supportsLazyListeners": false },
         "description": "Fired when the guest window attempts to close itself.<p>The following example code navigates the <code>webview</code> to <code>about:blank</code> when the guest attempts to close itself.</p><pre>webview.addEventListener('close', function() {\r  webview.src = 'about:blank';\r});</pre>",
         "parameters": []
       },
       {
         "name": "consolemessage",
-        "options": { "supportsDom": true },
+        "options": { "supportsDom": true, "supportsLazyListeners": false },
         "description": "Fired when the guest window logs a console message.<p>The following example code forwards all log messages to the embedder's console without regard for log level or other properties.</p><pre>webview.addEventListener('consolemessage', function(e) {\r  console.log('Guest page logged a message: ', e.message);\r});</pre>",
         "parameters": [
           {
@@ -1116,13 +1116,13 @@
       },
       {
         "name": "contentload",
-        "options": { "supportsDom": true },
+        "options": { "supportsDom": true, "supportsLazyListeners": false},
         "description": "Fired when the guest window fires a <code>load</code> event, i.e., when a new document is loaded. This does <em>not</em> include page navigation within the current document or asynchronous resource loads. <p>The following example code modifies the default font size of the guest's <code>body</code> element after the page loads:</p><pre>webview.addEventListener('contentload', function() {\r  webview.executeScript({ code: 'document.body.style.fontSize = \"42px\"' });\r});</pre>",
         "parameters": []
       },
       {
         "name": "dialog",
-        "options": { "supportsDom": true },
+        "options": { "supportsDom": true, "supportsLazyListeners": false },
         "description": "Fired when the guest window attempts to open a modal dialog via <code>window.alert</code>, <code>window.confirm</code>, or <code>window.prompt</code>.<p>Handling this event will block the guest process until each event listener returns or the <code>dialog</code> object becomes unreachable (if <code>preventDefault()</code> was called.)</p><p>The default behavior is to cancel the dialog.</p>",
         "parameters": [
           {
@@ -1145,7 +1145,7 @@
       },
       {
         "name": "exit",
-        "options": { "supportsDom": true },
+        "options": { "supportsDom": true, "supportsLazyListeners": false },
         "description": "Fired when the process rendering the guest web content has exited.<p>The following example code will show a farewell message whenever the guest page crashes:</p><pre>webview.addEventListener('exit', function(e) {\r  if (e.reason === 'crash') {\r    webview.src = 'data:text/plain,Goodbye, world!';\r  }\r});</pre>",
         "parameters": [
           {
@@ -1163,7 +1163,7 @@
       },
       {
         "name": "findupdate",
-        "options": { "supportsDom": true },
+        "options": { "supportsDom": true, "supportsLazyListeners": false },
         "description": "Fired when new find results are available for an active find request. This might happen multiple times for a single find request as matches are found.",
         "parameters": [
           {
@@ -1200,7 +1200,7 @@
       },
       {
         "name": "loadabort",
-        "options": { "supportsDom": true },
+        "options": { "supportsDom": true, "supportsLazyListeners": false },
         "description": "Fired when a top-level load has aborted without committing. An error message will be printed to the console unless the event is default-prevented. <p class=\"note\"><strong>Note:</strong> When a resource load is aborted, a <code>loadabort</code> event will eventually be followed by a <code>loadstop</code> event, even if all committed loads since the last <code>loadstop</code> event (if any) were aborted.</p><p class=\"note\"><strong>Note:</strong> When the load of either an about URL or a JavaScript URL is aborted, <code>loadabort</code> will be fired and then the <code>webview</code> will be navigated to 'about:blank'.</p>",
         "parameters": [
           {
@@ -1228,7 +1228,7 @@
       },
       {
         "name": "loadcommit",
-        "options": { "supportsDom": true },
+        "options": { "supportsDom": true, "supportsLazyListeners": false },
         "description": "Fired when a load has committed. This includes navigation within the current document as well as subframe document-level loads, but does <em>not</em> include asynchronous resource loads.",
         "parameters": [
           {
@@ -1245,7 +1245,7 @@
       },
       {
         "name": "loadredirect",
-        "options": { "supportsDom": true },
+        "options": { "supportsDom": true, "supportsLazyListeners": false },
         "description": "Fired when a top-level load request has redirected to a different URL.",
         "parameters": [
           {
@@ -1267,7 +1267,7 @@
       },
       {
         "name": "loadstart",
-        "options": { "supportsDom": true },
+        "options": { "supportsDom": true, "supportsLazyListeners": false },
         "description": "Fired when a load has begun.",
         "parameters": [
           {
@@ -1284,13 +1284,13 @@
       },
       {
         "name": "loadstop",
-        "options": { "supportsDom": true },
+        "options": { "supportsDom": true, "supportsLazyListeners": false },
         "description": "Fired when all frame-level loads in a guest page (including all its subframes) have completed. This includes navigation within the current document as well as subframe document-level loads, but does <em>not</em> include asynchronous resource loads. This event fires every time the number of document-level loads transitions from one (or more) to zero. For example, if a page that has already finished loading (i.e., <code>loadstop</code> already fired once) creates a new iframe which loads a page, then a second <code>loadstop</code> will fire when the iframe page load completes. This pattern is commonly observed on pages that load ads. <p class=\"note\"><strong>Note:</strong> When a committed load is aborted, a <code>loadstop</code> event will eventually follow a <code>loadabort</code> event, even if all committed loads since the last <code>loadstop</code> event (if any) were aborted.</p>",
         "parameters": []
       },
       {
         "name": "newwindow",
-        "options": { "supportsDom": true },
+        "options": { "supportsDom": true, "supportsLazyListeners": false },
         "description": "Fired when the guest page attempts to open a new browser window.<p>The following example code will create and navigate a new <code>webview</code> in the embedder for each requested new window:</p><pre>webview.addEventListener('newwindow', function(e) {\r  var newWebview = document.createElement('webview');\r  document.body.appendChild(newWebview);\r  e.window.attach(newWebview);\r});</pre>",
         "parameters": [
           {
@@ -1328,7 +1328,7 @@
       },
       {
         "name": "permissionrequest",
-        "options": { "supportsDom": true },
+        "options": { "supportsDom": true, "supportsLazyListeners": false },
         "description": "Fired when the guest page needs to request special permission from the embedder.<p>The following example code will grant the guest page access to the <code>webkitGetUserMedia</code> API. Note that an app using this example code must itself specify <code>audioCapture</code> and/or <code>videoCapture</code> manifest permissions:</p><pre>webview.addEventListener('permissionrequest', function(e) {\r  if (e.permission === 'media') {\r    e.request.allow();\r  }\r});</pre>",
         "parameters": [
           {
@@ -1347,7 +1347,7 @@
       },
       {
         "name": "responsive",
-        "options": { "supportsDom": true },
+        "options": { "supportsDom": true, "supportsLazyListeners": false },
         "description": "Fired when the process rendering the guest web content has become responsive again after being unresponsive.<p>The following example code will fade the <code>webview</code> element in or out as it becomes responsive or unresponsive:</p><pre>webview.style.webkitTransition = 'opacity 250ms';\rwebview.addEventListener('unresponsive', function() {\r  webview.style.opacity = '0.5';\r});\rwebview.addEventListener('responsive', function() {\r  webview.style.opacity = '1';\r});</pre>",
         "parameters": [
           {
@@ -1359,7 +1359,7 @@
       },
       {
         "name": "sizechanged",
-        "options": { "supportsDom": true },
+        "options": { "supportsDom": true, "supportsLazyListeners": false },
         "description": "Fired when the embedded web content has been resized via <code>autosize</code>. Only fires if <code>autosize</code> is enabled.",
         "parameters": [
           {
@@ -1386,7 +1386,7 @@
       },
       {
         "name": "unresponsive",
-        "options": { "supportsDom": true },
+        "options": { "supportsDom": true, "supportsLazyListeners": false },
         "description": "Fired when the process rendering the guest web content has become unresponsive. This event will be generated once with a matching responsive event if the guest begins to respond again.",
         "parameters": [
           {
@@ -1398,7 +1398,7 @@
       },
       {
         "name": "zoomchange",
-        "options": { "supportsDom": true },
+        "options": { "supportsDom": true, "supportsLazyListeners": false },
         "description": "Fired when the page's zoom changes.",
         "parameters": [
           {

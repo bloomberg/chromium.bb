@@ -75,6 +75,39 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, EventsAreUnregistered) {
       event_router->ExtensionHasEventListener(id, "webNavigation.onCompleted"));
 }
 
+// Test that listeners for webview-related events are not stored (even for lazy
+// contexts). See crbug.com/736381.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebViewEventRegistration) {
+  ASSERT_TRUE(RunPlatformAppTest("events/webview_events")) << message_;
+  EventRouter* event_router = EventRouter::Get(profile());
+  // We should not register lazy listeners for any webview-related events.
+  EXPECT_FALSE(
+      event_router->HasLazyEventListenerForTesting("webViewInternal.onClose"));
+  EXPECT_FALSE(event_router->HasLazyEventListenerForTesting("webview.close"));
+  EXPECT_FALSE(event_router->HasLazyEventListenerForTesting(
+      "chromeWebViewInternal.onContextMenuShow"));
+  EXPECT_FALSE(event_router->HasLazyEventListenerForTesting(
+      "chromeWebViewInternal.onClicked"));
+  EXPECT_FALSE(event_router->HasLazyEventListenerForTesting(
+      "webViewInternal.contextMenus"));
+  // Chrome webview context menu events also use a "subevent" pattern, so we
+  // need to look for suffixed events. These seem to always be suffixed with
+  // "3" and "4", but look for the first 10 to be a bit safer.
+  for (int i = 0; i < 10; ++i) {
+    EXPECT_FALSE(event_router->HasLazyEventListenerForTesting(
+        base::StringPrintf("chromeWebViewInternal.onClicked/%d", i)));
+    EXPECT_FALSE(event_router->HasLazyEventListenerForTesting(
+        base::StringPrintf("chromeWebViewInternal.onContextMenuShow/%d", i)));
+    EXPECT_FALSE(
+        event_router->HasLazyEventListenerForTesting(base::StringPrintf(
+            "webViewInternal.declarativeWebRequest.onMessage/%d", i)));
+  }
+
+  // Sanity check: app.runtime.onLaunched should have a lazy listener.
+  EXPECT_TRUE(
+      event_router->HasLazyEventListenerForTesting("app.runtime.onLaunched"));
+}
+
 class EventsApiTest : public ExtensionApiTest {
  public:
   EventsApiTest() {}

@@ -26,7 +26,7 @@ namespace {
 
 void DoNothingOnListenersChanged(binding::EventListenersChanged change,
                                  const base::DictionaryValue* filter,
-                                 bool was_manual,
+                                 bool update_lazy_listeners,
                                  v8::Local<v8::Context> context) {}
 
 const char kExtensionAPIEventPerContextKey[] = "extension_api_events";
@@ -120,6 +120,7 @@ APIEventHandler::~APIEventHandler() {}
 v8::Local<v8::Object> APIEventHandler::CreateEventInstance(
     const std::string& event_name,
     bool supports_filters,
+    bool supports_lazy_listeners,
     int max_listeners,
     bool notify_on_change,
     v8::Local<v8::Context> context) {
@@ -138,10 +139,11 @@ v8::Local<v8::Object> APIEventHandler::CreateEventInstance(
   std::unique_ptr<APIEventListeners> listeners;
   if (supports_filters) {
     listeners = base::MakeUnique<FilteredEventListeners>(
-        updated, event_name, max_listeners, &event_filter_);
+        updated, event_name, max_listeners, supports_lazy_listeners,
+        &event_filter_);
   } else {
-    listeners =
-        base::MakeUnique<UnfilteredEventListeners>(updated, max_listeners);
+    listeners = base::MakeUnique<UnfilteredEventListeners>(
+        updated, max_listeners, supports_lazy_listeners);
   }
 
   gin::Handle<EventEmitter> emitter_handle = gin::CreateHandle(
@@ -166,7 +168,8 @@ v8::Local<v8::Object> APIEventHandler::CreateAnonymousEventInstance(
   bool supports_filters = false;
   std::unique_ptr<APIEventListeners> listeners =
       base::MakeUnique<UnfilteredEventListeners>(
-          base::Bind(&DoNothingOnListenersChanged), binding::kNoListenerMax);
+          base::Bind(&DoNothingOnListenersChanged), binding::kNoListenerMax,
+          false);
   gin::Handle<EventEmitter> emitter_handle = gin::CreateHandle(
       context->GetIsolate(),
       new EventEmitter(supports_filters, std::move(listeners), call_js_,
