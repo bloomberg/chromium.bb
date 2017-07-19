@@ -473,6 +473,23 @@ final class PaymentRequestTestCommon implements PaymentRequestObserverForTest,
         helper.waitForCallback(callCount);
     }
 
+    protected void clickOnContactInfoSuggestionOptionAndWait(
+            final int suggestionIndex, CallbackHelper helper)
+            throws ExecutionException, TimeoutException, InterruptedException {
+        Assert.assertTrue(suggestionIndex < getNumberOfContactDetailSuggestions());
+
+        int callCount = helper.getCallCount();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                ((OptionSection) mUI.getContactDetailsSectionForTest())
+                        .getOptionLabelsForTest(suggestionIndex)
+                        .performClick();
+            }
+        });
+        helper.waitForCallback(callCount);
+    }
+
     protected void clickOnPaymentMethodSuggestionEditIconAndWait(
             final int suggestionIndex, CallbackHelper helper)
             throws ExecutionException, TimeoutException, InterruptedException {

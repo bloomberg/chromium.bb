@@ -234,10 +234,45 @@ function cardsAndBobPayBuy() {  // eslint-disable-line no-unused-vars
         });
     request.show()
         .then(function(resp) {
-          return resp.complete('success');
+          resp.complete('success')
+              .then(function() {
+                print(resp.methodName + '<br>' +
+                      JSON.stringify(resp.details, undefined, 2));
+              })
+              .catch(function(error) {
+                print(error.message);
+              });
         })
-        .then(function() {
-          print(JSON.stringify(resp, undefined, 2));
+        .catch(function(error) {
+          print(error.message);
+        });
+  } catch (error) {
+    print(error.message);
+  }
+}
+
+/**
+ * Launches the PaymentRequest UI that requests contact information.
+ */
+function contactInfoBuy() {  // eslint-disable-line no-unused-vars
+  try {
+    new PaymentRequest(
+        [{supportedMethods: ['https://bobpay.com', 'amex', 'visa']}],
+        {total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}}},
+        {requestPayerName: true, requestPayerEmail: true,
+         requestPayerPhone: true})
+        .show()
+        .then(function(resp) {
+          resp.complete('success')
+              .then(function() {
+                print(
+                    resp.payerName + '<br>' + resp.payerEmail + '<br>' +
+                    resp.payerPhone + '<br>' + resp.methodName + '<br>' +
+                    JSON.stringify(resp.details, undefined, 2));
+              })
+              .catch(function(error) {
+                print(error);
+              });
         })
         .catch(function(error) {
           print(error);

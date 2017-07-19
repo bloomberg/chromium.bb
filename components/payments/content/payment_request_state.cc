@@ -279,13 +279,22 @@ void PaymentRequestState::PopulateProfileCache() {
   // merchant.
   if (spec_->request_payer_name() || spec_->request_payer_phone() ||
       spec_->request_payer_email()) {
+    bool has_complete_contact =
+        contact_profiles_.empty()
+            ? false
+            : profile_comparator()->IsContactInfoComplete(contact_profiles_[0]);
     journey_logger_->SetNumberOfSuggestionsShown(
-        JourneyLogger::Section::SECTION_CONTACT_INFO, contact_profiles_.size());
+        JourneyLogger::Section::SECTION_CONTACT_INFO, contact_profiles_.size(),
+        has_complete_contact);
   }
   if (spec_->request_shipping()) {
+    bool has_complete_shipping =
+        shipping_profiles_.empty()
+            ? false
+            : profile_comparator()->IsShippingComplete(shipping_profiles_[0]);
     journey_logger_->SetNumberOfSuggestionsShown(
         JourneyLogger::Section::SECTION_SHIPPING_ADDRESS,
-        shipping_profiles_.size());
+        shipping_profiles_.size(), has_complete_shipping);
   }
 
   // Create the list of available instruments. A copy of each card will be made
@@ -295,12 +304,14 @@ void PaymentRequestState::PopulateProfileCache() {
   for (autofill::CreditCard* card : cards)
     AddAutofillPaymentInstrument(/*selected=*/false, *card);
 
-  journey_logger_->SetNumberOfSuggestionsShown(
-      JourneyLogger::Section::SECTION_CREDIT_CARDS,
-      available_instruments().size());
+  bool has_complete_instrument =
+      available_instruments().empty()
+          ? false
+          : available_instruments()[0]->IsCompleteForPayment();
 
-  if (!available_instruments().empty())
-    journey_logger_->SetUserHadInitialFormOfPayment();
+  journey_logger_->SetNumberOfSuggestionsShown(
+      JourneyLogger::Section::SECTION_PAYMENT_METHOD,
+      available_instruments().size(), has_complete_instrument);
 }
 
 void PaymentRequestState::SetDefaultProfileSelections() {

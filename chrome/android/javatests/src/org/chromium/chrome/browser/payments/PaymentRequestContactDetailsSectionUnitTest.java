@@ -42,7 +42,7 @@ public class PaymentRequestContactDetailsSectionUnitTest {
         mContactEditor = new ContactEditor(requestPayerName, requestPayerPhone, requestPayerEmail);
         mContactDetailsSection = new ContactDetailsSection(
                 InstrumentationRegistry.getInstrumentation().getTargetContext(), autofillProfiles,
-                mContactEditor);
+                mContactEditor, null);
     }
 
     /** Tests the creation of the contact list, with most complete first. */

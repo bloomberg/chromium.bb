@@ -38,7 +38,7 @@ class JourneyLogger {
   // GENERATED_JAVA_CLASS_NAME_OVERRIDE: Section
   enum Section {
     SECTION_CONTACT_INFO = 0,
-    SECTION_CREDIT_CARDS = 1,
+    SECTION_PAYMENT_METHOD = 1,
     SECTION_SHIPPING_ADDRESS = 2,
     SECTION_MAX,
   };
@@ -153,7 +153,9 @@ class JourneyLogger {
   void IncrementSelectionEdits(Section section);
 
   // Sets the number of suggestions shown for the specified section.
-  void SetNumberOfSuggestionsShown(Section section, int number);
+  void SetNumberOfSuggestionsShown(Section section,
+                                   int number,
+                                   bool has_valid_suggestion);
 
   // Records the fact that the merchant called CanMakePayment and records it's
   // return value.
@@ -186,10 +188,6 @@ class JourneyLogger {
   // reason.
   void SetNotShown(NotShownReason reason);
 
-  // Records the fact that the user had a Payment Method on file at the start of
-  // the Payment Request.
-  void SetUserHadInitialFormOfPayment();
-
  private:
   static const int NUMBER_OF_SECTIONS = 3;
 
@@ -208,13 +206,15 @@ class JourneyLogger {
           number_selection_changes_(0),
           number_selection_edits_(0),
           number_suggestions_shown_(0),
-          is_requested_(false) {}
+          is_requested_(false),
+          has_complete_suggestion_(false) {}
 
     int number_selection_adds_;
     int number_selection_changes_;
     int number_selection_edits_;
     int number_suggestions_shown_;
     bool is_requested_;
+    bool has_complete_suggestion_;
   };
 
   // Records the histograms for all the sections that were requested by the
@@ -258,7 +258,6 @@ class JourneyLogger {
   bool was_can_make_payments_used_ = false;
   bool could_make_payment_ = false;
   bool was_show_called_ = false;
-  bool user_had_initial_form_of_payment_ = false;
   bool is_incognito_;
 
   // Accumulates the many events that have happened during the Payment Request.
