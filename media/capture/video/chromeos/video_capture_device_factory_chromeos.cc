@@ -14,11 +14,52 @@ namespace media {
 VideoCaptureDeviceFactoryChromeOS::VideoCaptureDeviceFactoryChromeOS(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner_for_screen_observer)
     : task_runner_for_screen_observer_(task_runner_for_screen_observer),
-      camera_hal_ipc_thread_("CameraHalIpcThread") {}
+      camera_hal_ipc_thread_("CameraHalIpcThread"),
+      initialized_(Init()) {}
 
 VideoCaptureDeviceFactoryChromeOS::~VideoCaptureDeviceFactoryChromeOS() {
   camera_hal_delegate_->Reset();
   camera_hal_ipc_thread_.Stop();
+}
+
+std::unique_ptr<VideoCaptureDevice>
+VideoCaptureDeviceFactoryChromeOS::CreateDevice(
+    const VideoCaptureDeviceDescriptor& device_descriptor) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!initialized_) {
+    return std::unique_ptr<VideoCaptureDevice>();
+  }
+  return camera_hal_delegate_->CreateDevice(task_runner_for_screen_observer_,
+                                            device_descriptor);
+}
+
+void VideoCaptureDeviceFactoryChromeOS::GetSupportedFormats(
+    const VideoCaptureDeviceDescriptor& device_descriptor,
+    VideoCaptureFormats* supported_formats) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!initialized_) {
+    return;
+  }
+  camera_hal_delegate_->GetSupportedFormats(device_descriptor,
+                                            supported_formats);
+}
+
+void VideoCaptureDeviceFactoryChromeOS::GetDeviceDescriptors(
+    VideoCaptureDeviceDescriptors* device_descriptors) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!initialized_) {
+    return;
+  }
+  camera_hal_delegate_->GetDeviceDescriptors(device_descriptors);
+}
+
+// static
+bool VideoCaptureDeviceFactoryChromeOS::ShouldEnable() {
+  // Checks whether the Chrome OS binary which provides the HAL v3 camera
+  // service is installed on the device.  If the binary exists we assume the
+  // device is using the new camera HAL v3 stack.
+  const base::FilePath kArcCamera3Service("/usr/bin/arc_camera3_service");
+  return base::PathExists(kArcCamera3Service);
 }
 
 bool VideoCaptureDeviceFactoryChromeOS::Init() {
@@ -39,40 +80,6 @@ bool VideoCaptureDeviceFactoryChromeOS::Init() {
   return true;
 }
 
-std::unique_ptr<VideoCaptureDevice>
-VideoCaptureDeviceFactoryChromeOS::CreateDevice(
-    const VideoCaptureDeviceDescriptor& device_descriptor) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(camera_hal_delegate_);
-  return camera_hal_delegate_->CreateDevice(task_runner_for_screen_observer_,
-                                            device_descriptor);
-}
-
-void VideoCaptureDeviceFactoryChromeOS::GetSupportedFormats(
-    const VideoCaptureDeviceDescriptor& device_descriptor,
-    VideoCaptureFormats* supported_formats) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(camera_hal_delegate_);
-  camera_hal_delegate_->GetSupportedFormats(device_descriptor,
-                                            supported_formats);
-}
-
-void VideoCaptureDeviceFactoryChromeOS::GetDeviceDescriptors(
-    VideoCaptureDeviceDescriptors* device_descriptors) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(camera_hal_delegate_);
-  camera_hal_delegate_->GetDeviceDescriptors(device_descriptors);
-}
-
-// static
-bool VideoCaptureDeviceFactoryChromeOS::ShouldEnable() {
-  // Checks whether the Chrome OS binary which provides the HAL v3 camera
-  // service is installed on the device.  If the binary exists we assume the
-  // device is using the new camera HAL v3 stack.
-  const base::FilePath kArcCamera3Service("/usr/bin/arc_camera3_service");
-  return base::PathExists(kArcCamera3Service);
-}
-
 #if defined(OS_CHROMEOS)
 // static
 VideoCaptureDeviceFactory*
@@ -89,12 +96,8 @@ VideoCaptureDeviceFactory::CreateVideoCaptureDeviceFactory(
   //    some special devices that may never be able to implement a camera HAL
   //    v3.
   if (VideoCaptureDeviceFactoryChromeOS::ShouldEnable()) {
-    auto factory = base::MakeUnique<VideoCaptureDeviceFactoryChromeOS>(
+    return new VideoCaptureDeviceFactoryChromeOS(
         task_runner_for_screen_observer);
-    if (!factory->Init()) {
-      return nullptr;
-    }
-    return factory.release();
   } else {
     return new VideoCaptureDeviceFactoryLinux(task_runner_for_screen_observer);
   }

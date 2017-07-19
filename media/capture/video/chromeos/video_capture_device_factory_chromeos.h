@@ -31,15 +31,15 @@ class CAPTURE_EXPORT VideoCaptureDeviceFactoryChromeOS final
   void GetDeviceDescriptors(
       VideoCaptureDeviceDescriptors* device_descriptors) final;
 
-  // Initializes the factory. The factory is functional only after this call
-  // succeeds.
-  bool Init();
-
   // A run-time check for whether we should enable
   // VideoCaptureDeviceFactoryChromeOS on the device.
   static bool ShouldEnable();
 
  private:
+  // Initializes the factory. The factory is functional only after this call
+  // succeeds.
+  bool Init();
+
   const scoped_refptr<base::SingleThreadTaskRunner>
       task_runner_for_screen_observer_;
 
@@ -52,6 +52,8 @@ class CAPTURE_EXPORT VideoCaptureDeviceFactoryChromeOS final
   // that |camera_hal_delegate_| issues and receives must be sequenced through
   // |camera_hal_ipc_thread_|.
   scoped_refptr<CameraHalDelegate> camera_hal_delegate_;
+
+  bool initialized_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureDeviceFactoryChromeOS);
 };
