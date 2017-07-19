@@ -164,7 +164,6 @@ set(AOM_AV1_COMMON_INTRIN_SSE4_1
     "${AOM_ROOT}/av1/common/x86/highbd_inv_txfm_sse4.c")
 
 set(AOM_AV1_COMMON_INTRIN_AVX2
-    "${AOM_ROOT}/av1/common/x86/convolve_avx2.c"
     "${AOM_ROOT}/av1/common/x86/highbd_inv_txfm_avx2.c"
     "${AOM_ROOT}/av1/common/x86/hybrid_inv_txfm_avx2.c")
 
@@ -267,6 +266,12 @@ if (CONFIG_CDEF)
       ${AOM_AV1_COMMON_INTRIN_NEON}
       "${AOM_ROOT}/av1/common/clpf_neon.c"
       "${AOM_ROOT}/av1/common/od_dering_neon.c")
+endif ()
+
+if (CONFIG_CONVOLVE_ROUND)
+  set(AOM_AV1_COMMON_INTRIN_AVX2
+      ${AOM_AV1_COMMON_INTRIN_AVX2}
+      "${AOM_ROOT}/av1/common/x86/convolve_avx2.c")
 endif ()
 
 if (CONFIG_EXT_INTER)
