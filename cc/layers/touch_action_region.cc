@@ -24,7 +24,7 @@ void TouchActionRegion::Union(TouchAction touch_action, const gfx::Rect& rect) {
 }
 
 const Region& TouchActionRegion::GetRegionForTouchAction(
-    TouchAction touch_action) {
+    TouchAction touch_action) const {
   static const Region* empty_region = new Region;
   auto it = map_.find(touch_action);
   if (it == map_.end())
