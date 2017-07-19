@@ -483,7 +483,15 @@ void VisibleSelectionTemplate<Strategy>::Validate(
       granularity);
   end_ = new_end.IsNotNull() ? new_end : end;
 
-  AdjustSelectionToAvoidCrossingShadowBoundaries();
+  if (base_is_first_) {
+    end_ = SelectionAdjuster::AdjustSelectionEndToAvoidCrossingShadowBoundaries(
+        EphemeralRangeTemplate<Strategy>(start_, end_));
+  } else {
+    start_ =
+        SelectionAdjuster::AdjustSelectionStartToAvoidCrossingShadowBoundaries(
+            EphemeralRangeTemplate<Strategy>(start_, end_));
+  }
+
   AdjustSelectionToAvoidCrossingEditingBoundaries();
   UpdateSelectionType();
 
@@ -552,14 +560,6 @@ VisibleSelectionTemplate<Strategy>::CreateWithoutValidationDeprecated(
   visible_selection.selection_type_ = kRangeSelection;
   visible_selection.affinity_ = TextAffinity::kDownstream;
   return visible_selection;
-}
-
-template <typename Strategy>
-void VisibleSelectionTemplate<
-    Strategy>::AdjustSelectionToAvoidCrossingShadowBoundaries() {
-  if (base_.IsNull() || start_.IsNull() || base_.IsNull())
-    return;
-  SelectionAdjuster::AdjustSelectionToAvoidCrossingShadowBoundaries(this);
 }
 
 static Element* LowestEditableAncestor(Node* node) {

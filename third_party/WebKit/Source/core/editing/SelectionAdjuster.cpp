@@ -151,62 +151,58 @@ Position AdjustPositionForStart(const Position& current_position,
   return Position();
 }
 
-}  // namespace
-
-void SelectionAdjuster::AdjustSelectionToAvoidCrossingShadowBoundaries(
-    VisibleSelection* selection) {
-  // Note: |m_selectionType| isn't computed yet.
-  DCHECK(selection->Base().IsNotNull());
-  DCHECK(selection->Extent().IsNotNull());
-  DCHECK(selection->Start().IsNotNull());
-  DCHECK(selection->End().IsNotNull());
-
-  // TODO(hajimehoshi): Checking treeScope is wrong when a node is
-  // distributed, but we leave it as it is for backward compatibility.
-  if (selection->Start().AnchorNode()->GetTreeScope() ==
-      selection->End().AnchorNode()->GetTreeScope())
-    return;
-
-  if (selection->IsBaseFirst()) {
-    const Position& new_end = AdjustPositionForEnd(
-        selection->End(), selection->Start().ComputeContainerNode());
-    selection->extent_ = new_end;
-    selection->end_ = new_end;
-    return;
-  }
-
-  const Position& new_start = AdjustPositionForStart(
-      selection->Start(), selection->End().ComputeContainerNode());
-  selection->extent_ = new_start;
-  selection->start_ = new_start;
+// TODO(hajimehoshi): Checking treeScope is wrong when a node is
+// distributed, but we leave it as it is for backward compatibility.
+bool IsCrossingShadowBoundaries(const EphemeralRange& range) {
+  DCHECK(range.IsNotNull());
+  return range.StartPosition().AnchorNode()->GetTreeScope() !=
+         range.EndPosition().AnchorNode()->GetTreeScope();
 }
 
-// This function is called twice. The first is called when |m_start| and |m_end|
-// or |m_extent| are same, and the second when |m_start| and |m_end| are changed
-// after downstream/upstream.
-void SelectionAdjuster::AdjustSelectionToAvoidCrossingShadowBoundaries(
-    VisibleSelectionInFlatTree* selection) {
-  Node* const shadow_host_start =
-      EnclosingShadowHostForStart(selection->Start());
-  Node* const shadow_host_end = EnclosingShadowHostForEnd(selection->End());
-  if (shadow_host_start == shadow_host_end)
-    return;
+}  // namespace
 
-  if (selection->IsBaseFirst()) {
-    Node* const shadow_host =
-        shadow_host_start ? shadow_host_start : shadow_host_end;
-    const PositionInFlatTree& new_end =
-        AdjustPositionInFlatTreeForEnd(selection->End(), shadow_host);
-    selection->extent_ = new_end;
-    selection->end_ = new_end;
-    return;
-  }
+Position SelectionAdjuster::AdjustSelectionStartToAvoidCrossingShadowBoundaries(
+    const EphemeralRange& range) {
+  DCHECK(range.IsNotNull());
+  if (!IsCrossingShadowBoundaries(range))
+    return range.StartPosition();
+  return AdjustPositionForStart(range.StartPosition(),
+                                range.EndPosition().ComputeContainerNode());
+}
+
+Position SelectionAdjuster::AdjustSelectionEndToAvoidCrossingShadowBoundaries(
+    const EphemeralRange& range) {
+  DCHECK(range.IsNotNull());
+  if (!IsCrossingShadowBoundaries(range))
+    return range.EndPosition();
+  return AdjustPositionForEnd(range.EndPosition(),
+                              range.StartPosition().ComputeContainerNode());
+}
+
+PositionInFlatTree
+SelectionAdjuster::AdjustSelectionStartToAvoidCrossingShadowBoundaries(
+    const EphemeralRangeInFlatTree& range) {
+  Node* const shadow_host_start =
+      EnclosingShadowHostForStart(range.StartPosition());
+  Node* const shadow_host_end = EnclosingShadowHostForEnd(range.EndPosition());
+  if (shadow_host_start == shadow_host_end)
+    return range.StartPosition();
   Node* const shadow_host =
       shadow_host_end ? shadow_host_end : shadow_host_start;
-  const PositionInFlatTree& new_start =
-      AdjustPositionInFlatTreeForStart(selection->Start(), shadow_host);
-  selection->extent_ = new_start;
-  selection->start_ = new_start;
+  return AdjustPositionInFlatTreeForStart(range.StartPosition(), shadow_host);
+}
+
+PositionInFlatTree
+SelectionAdjuster::AdjustSelectionEndToAvoidCrossingShadowBoundaries(
+    const EphemeralRangeInFlatTree& range) {
+  Node* const shadow_host_start =
+      EnclosingShadowHostForStart(range.StartPosition());
+  Node* const shadow_host_end = EnclosingShadowHostForEnd(range.EndPosition());
+  if (shadow_host_start == shadow_host_end)
+    return range.EndPosition();
+  Node* const shadow_host =
+      shadow_host_start ? shadow_host_start : shadow_host_end;
+  return AdjustPositionInFlatTreeForEnd(range.EndPosition(), shadow_host);
 }
 
 }  // namespace blink
