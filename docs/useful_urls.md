@@ -13,15 +13,13 @@ This page aims to be a repository of useful links that people may find useful.
 * [Tree uptime stats](https://chromium-status.appspot.com/status_viewer)
 * [Commit queue status](https://chromium-cq-status.appspot.com)
 * [Pending commit queue jobs](https://codereview.chromium.org/search?closed=3&commit=2&limit=50)
-* [Search for historical test failures by test name](https://chromium-build-logs.appspot.com/)
-* [Filterable list of most recent build logs](https://chromium-build-logs.appspot.com/list)
 
 ## For Sheriffs
 
+* https://sheriff-o-matic.appspot.com/ : Sheriff-o-Matic
 * https://build.chromium.org/p/chromium.chromiumos/waterfall?show_events=true&reload=120&failures_only=true : List of failing bots for a waterfall(chromium.chromiumos as an example)
 * https://build.chromium.org/p/chromium.linux/waterfall?show_events=true&reload=120&builder=Linux%20Builder%20x64&builder=Linux%20Builder%20(dbg) : Monitor one or multiple bots(Linux Builder x64 and Linux Builder (dbg) on chromium.linux as an example)
 * https://build.chromium.org/p/chromium.win/waterfall/help : Customize the waterfall view for a waterfall(using chromium.win as an example)
-* [Alternate waterfall view that helps with test failure triage](https://chromium-sheriffing.appspot.com)
 * [Lists historical test results for the bots](https://test-results.appspot.com/dashboards/flakiness_dashboard.html)
 
 ## Release Information
