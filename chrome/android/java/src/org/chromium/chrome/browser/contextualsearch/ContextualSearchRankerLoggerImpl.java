@@ -4,10 +4,14 @@
 
 package org.chromium.chrome.browser.contextualsearch;
 
+import org.chromium.base.VisibleForTesting;
+
 import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.annotation.Nullable;
 
 /**
  * Implements the UMA logging for Ranker that's used for Contextual Search Tap Suppression.
@@ -15,21 +19,42 @@ import java.util.Map;
 public class ContextualSearchRankerLoggerImpl implements ContextualSearchRankerLogger {
     private static final String TAG = "ContextualSearch";
 
-    // Names for our features.
-    private static final Map<Feature, String> FEATURE_NAMES;
+    // Names for all our features and labels.
+    private static final Map<Feature, String> ALL_NAMES;
+    @VisibleForTesting
+    static final Map<Feature, String> OUTCOMES;
+    @VisibleForTesting
+    static final Map<Feature, String> FEATURES;
     static {
-        Map<Feature, String> names = new HashMap<Feature, String>();
-        names.put(Feature.OUTCOME_WAS_PANEL_OPENED, "OutcomeWasPanelOpened");
-        names.put(Feature.OUTCOME_WAS_QUICK_ACTION_CLICKED, "OutcomeWasQuickActionClicked");
-        names.put(Feature.OUTCOME_WAS_QUICK_ANSWER_SEEN, "OutcomeWasQuickAnswerSeen");
-        names.put(Feature.DURATION_AFTER_SCROLL_MS, "DurationAfterScrollMs");
-        names.put(Feature.SCREEN_TOP_DPS, "ScreenTopDps");
-        names.put(Feature.WAS_SCREEN_BOTTOM, "WasScreenBottom");
-        names.put(Feature.PREVIOUS_WEEK_IMPRESSIONS_COUNT, "PreviousWeekImpressionsCount");
-        names.put(Feature.PREVIOUS_WEEK_CTR_PERCENT, "PreviousWeekCtrPercent");
-        names.put(Feature.PREVIOUS_28DAY_IMPRESSIONS_COUNT, "Previous28DayImpressionsCount");
-        names.put(Feature.PREVIOUS_28DAY_CTR_PERCENT, "Previous28DayCtrPercent");
-        FEATURE_NAMES = Collections.unmodifiableMap(names);
+        Map<Feature, String> outcomes = new HashMap<Feature, String>();
+        outcomes.put(Feature.OUTCOME_WAS_PANEL_OPENED, "OutcomeWasPanelOpened");
+        outcomes.put(Feature.OUTCOME_WAS_QUICK_ACTION_CLICKED, "OutcomeWasQuickActionClicked");
+        outcomes.put(Feature.OUTCOME_WAS_QUICK_ANSWER_SEEN, "OutcomeWasQuickAnswerSeen");
+        // UKM CS v2 outcomes.
+        outcomes.put(Feature.OUTCOME_WAS_CARDS_DATA_SHOWN, "OutcomeWasCardsDataShown");
+        OUTCOMES = Collections.unmodifiableMap(outcomes);
+
+        Map<Feature, String> features = new HashMap<Feature, String>();
+        features.put(Feature.DURATION_AFTER_SCROLL_MS, "DurationAfterScrollMs");
+        features.put(Feature.SCREEN_TOP_DPS, "ScreenTopDps");
+        features.put(Feature.WAS_SCREEN_BOTTOM, "WasScreenBottom");
+        features.put(Feature.PREVIOUS_WEEK_IMPRESSIONS_COUNT, "PreviousWeekImpressionsCount");
+        features.put(Feature.PREVIOUS_WEEK_CTR_PERCENT, "PreviousWeekCtrPercent");
+        features.put(Feature.PREVIOUS_28DAY_IMPRESSIONS_COUNT, "Previous28DayImpressionsCount");
+        features.put(Feature.PREVIOUS_28DAY_CTR_PERCENT, "Previous28DayCtrPercent");
+        // UKM CS v2 features.
+        features.put(Feature.DID_OPT_IN, "DidOptIn");
+        features.put(Feature.IS_SHORT_WORD, "IsShortWord");
+        features.put(Feature.IS_LONG_WORD, "IsLongWord");
+        features.put(Feature.IS_WORD_EDGE, "IsWordEdge");
+        features.put(Feature.IS_ENTITY, "IsEntity");
+        features.put(Feature.TAP_DURATION, "TapDuration");
+        FEATURES = Collections.unmodifiableMap(features);
+
+        Map<Feature, String> allNames = new HashMap<Feature, String>();
+        allNames.putAll(outcomes);
+        allNames.putAll(features);
+        ALL_NAMES = Collections.unmodifiableMap(allNames);
     }
 
     // Pointer to the native instance of this class.
@@ -50,6 +75,9 @@ public class ContextualSearchRankerLoggerImpl implements ContextualSearchRankerL
 
     // Map that accumulates all of the Features to log for a specific user-interaction.
     private Map<Feature, Object> mFeaturesToLog;
+
+    // A for-testing copy of all the features to log setup so that it will survive a {@link #reset}.
+    private Map<Feature, Object> mFeaturesAndOutcomesForTesting;
 
     /**
      * Constructs a Ranker Logger and associated native implementation to write Contextual Search
@@ -131,6 +159,7 @@ public class ContextualSearchRankerLoggerImpl implements ContextualSearchRankerL
             for (Map.Entry<Feature, Object> entry : mFeaturesToLog.entrySet()) {
                 logObject(entry.getKey(), entry.getValue());
             }
+            mFeaturesAndOutcomesForTesting = mFeaturesToLog;
             nativeWriteLogAndReset(mNativePointer);
         }
         reset();
@@ -179,14 +208,27 @@ public class ContextualSearchRankerLoggerImpl implements ContextualSearchRankerL
      * @param value The value to log.
      */
     private void logToNative(Feature feature, long value) {
-        nativeLogLong(mNativePointer, getFeatureName(feature), value);
+        String featureName = getFeatureName(feature);
+        assert featureName != null : "No Name for feature " + feature;
+        nativeLogLong(mNativePointer, featureName, value);
     }
 
     /**
      * @return The name of the given feature.
      */
     private String getFeatureName(Feature feature) {
-        return FEATURE_NAMES.get(feature);
+        return ALL_NAMES.get(feature);
+    }
+
+    /**
+     * Gets the current set of features to log or that have been logged.  Should only be used for
+     * testing purposes!
+     * @return The current set of features to log or that have been logged, or {@code null}.
+     */
+    @VisibleForTesting
+    @Nullable
+    Map<Feature, Object> getFeaturesLogged() {
+        return mFeaturesToLog != null ? mFeaturesToLog : mFeaturesAndOutcomesForTesting;
     }
 
     // ============================================================================================

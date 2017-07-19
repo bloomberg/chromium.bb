@@ -16,6 +16,7 @@ public interface ContextualSearchRankerLogger {
         OUTCOME_WAS_PANEL_OPENED,
         OUTCOME_WAS_QUICK_ACTION_CLICKED,
         OUTCOME_WAS_QUICK_ANSWER_SEEN,
+        OUTCOME_WAS_CARDS_DATA_SHOWN, // a UKM CS v2 label.
         // Features:
         DURATION_AFTER_SCROLL_MS,
         SCREEN_TOP_DPS,
@@ -24,7 +25,14 @@ public interface ContextualSearchRankerLogger {
         PREVIOUS_WEEK_IMPRESSIONS_COUNT,
         PREVIOUS_WEEK_CTR_PERCENT,
         PREVIOUS_28DAY_IMPRESSIONS_COUNT,
-        PREVIOUS_28DAY_CTR_PERCENT
+        PREVIOUS_28DAY_CTR_PERCENT,
+        // UKM CS v2 features (see go/ukm-cs-2).
+        DID_OPT_IN,
+        IS_SHORT_WORD,
+        IS_LONG_WORD,
+        IS_WORD_EDGE,
+        IS_ENTITY,
+        TAP_DURATION
     }
 
     /**

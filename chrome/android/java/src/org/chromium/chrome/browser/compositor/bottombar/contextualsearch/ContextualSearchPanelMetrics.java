@@ -103,6 +103,11 @@ public class ContextualSearchPanelMetrics {
             if (mWasContextualCardsDataShown) {
                 ContextualSearchUma.logContextualCardsResultsSeen(mWasSearchContentViewSeen);
             }
+            if (mRankerLogger != null) {
+                mRankerLogger.logOutcome(
+                        ContextualSearchRankerLogger.Feature.OUTCOME_WAS_CARDS_DATA_SHOWN,
+                        mWasContextualCardsDataShown);
+            }
             if (mWasQuickActionShown) {
                 ContextualSearchUma.logQuickActionResultsSeen(mWasSearchContentViewSeen,
                         mQuickActionCategory);

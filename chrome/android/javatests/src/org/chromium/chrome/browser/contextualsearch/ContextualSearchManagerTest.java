@@ -81,6 +81,9 @@ import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.touch_selection.SelectionEventType;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
 
@@ -120,6 +123,32 @@ public class ContextualSearchManagerTest {
     private static final String CONTEXTUAL_SEARCH_PREFETCH_PARAM = "&pf=c";
     // The number of ms to delay startup for all tests.
     private static final int ACTIVITY_STARTUP_DELAY_MS = 1000;
+
+    // Ranker data that's expected to be logged.
+    private static final Set<ContextualSearchRankerLogger.Feature> EXPECTED_RANKER_OUTCOMES;
+    static {
+        Set<ContextualSearchRankerLogger.Feature> expectedOutcomes =
+                new HashSet<ContextualSearchRankerLogger.Feature>(
+                        ContextualSearchRankerLoggerImpl.OUTCOMES.keySet());
+        // We don't log whether the quick action was clicked unless we actually have a quick action.
+        expectedOutcomes.remove(
+                ContextualSearchRankerLogger.Feature.OUTCOME_WAS_QUICK_ACTION_CLICKED);
+        EXPECTED_RANKER_OUTCOMES = Collections.unmodifiableSet(expectedOutcomes);
+    }
+    private static final Set<ContextualSearchRankerLogger.Feature> EXPECTED_RANKER_FEATURES;
+    static {
+        Set<ContextualSearchRankerLogger.Feature> expectedFeatures =
+                new HashSet<ContextualSearchRankerLogger.Feature>(
+                        ContextualSearchRankerLoggerImpl.FEATURES.keySet());
+        // We don't log previous user impressions and CTR if not available for the current user.
+        expectedFeatures.remove(ContextualSearchRankerLogger.Feature.PREVIOUS_WEEK_CTR_PERCENT);
+        expectedFeatures.remove(
+                ContextualSearchRankerLogger.Feature.PREVIOUS_WEEK_IMPRESSIONS_COUNT);
+        expectedFeatures.remove(ContextualSearchRankerLogger.Feature.PREVIOUS_28DAY_CTR_PERCENT);
+        expectedFeatures.remove(
+                ContextualSearchRankerLogger.Feature.PREVIOUS_28DAY_IMPRESSIONS_COUNT);
+        EXPECTED_RANKER_FEATURES = Collections.unmodifiableSet(expectedFeatures);
+    }
 
     private ActivityMonitor mActivityMonitor;
     private ContextualSearchFakeServer mFakeServer;
@@ -1110,6 +1139,33 @@ public class ContextualSearchManagerTest {
         assertWaitForSelectActionBarVisible(true);
     }
 
+    /** @return The value of the given logged feature, or {@code null} if not logged. */
+    private Object loggedToRanker(ContextualSearchRankerLogger.Feature feature) {
+        ContextualSearchRankerLoggerImpl rankerLogger =
+                (ContextualSearchRankerLoggerImpl) mManager.getRankerLogger();
+        Assert.assertNotNull(rankerLogger);
+        return rankerLogger.getFeaturesLogged().get(feature);
+    }
+
+    /** Asserts that the given feature has been logged to Ranker. **/
+    private void assertLoggedToRanker(ContextualSearchRankerLogger.Feature feature) {
+        Assert.assertNotNull(loggedToRanker(feature));
+    }
+
+    /** Asserts that all the expected features have been logged to Ranker. **/
+    private void assertLoggedAllExpectedFeaturesToRanker() {
+        for (ContextualSearchRankerLogger.Feature feature : EXPECTED_RANKER_FEATURES) {
+            assertLoggedToRanker(feature);
+        }
+    }
+
+    /** Asserts that all the expected outcomes have been logged to Ranker. **/
+    private void assertLoggedAllExpectedOutcomesToRanker() {
+        for (ContextualSearchRankerLogger.Feature feature : EXPECTED_RANKER_OUTCOMES) {
+            assertLoggedToRanker(feature);
+        }
+    }
+
     //============================================================================================
     // Test Cases
     //============================================================================================
@@ -1192,6 +1248,13 @@ public class ContextualSearchManagerTest {
         assertContainsParameters("Intelligence", "alternate-term");
         waitForPanelToPeek();
         assertLoadedLowPriorityUrl();
+
+        assertLoggedAllExpectedFeaturesToRanker();
+        Assert.assertEquals(
+                true, loggedToRanker(ContextualSearchRankerLogger.Feature.IS_LONG_WORD));
+        // The panel must be closed for outcomes to be logged.
+        closePanel();
+        assertLoggedAllExpectedOutcomesToRanker();
     }
 
     /**
