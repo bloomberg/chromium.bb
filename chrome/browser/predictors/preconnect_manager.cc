@@ -40,6 +40,7 @@ PreconnectManager::PreconnectManager(
       inflight_preresolves_count_(0),
       weak_factory_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(context_getter_);
 }
 
 PreconnectManager::~PreconnectManager() {
