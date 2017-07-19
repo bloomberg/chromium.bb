@@ -13,7 +13,6 @@
 #include "extensions/browser/extensions_test.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/extension_builder.h"
-#include "services/service_manager/public/cpp/bind_source_info.h"
 
 namespace extensions {
 
@@ -55,7 +54,6 @@ class KeepAliveTest : public ExtensionsTest {
 
   void CreateKeepAlive(mojo::InterfaceRequest<KeepAlive> request) {
     KeepAliveImpl::Create(browser_context(), extension_.get(),
-                          service_manager::BindSourceInfo(),
                           std::move(request));
   }
 

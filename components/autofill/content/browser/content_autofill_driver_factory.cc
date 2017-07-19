@@ -78,7 +78,6 @@ ContentAutofillDriverFactory* ContentAutofillDriverFactory::FromWebContents(
 
 // static
 void ContentAutofillDriverFactory::BindAutofillDriver(
-    const service_manager::BindSourceInfo& source_info,
     mojom::AutofillDriverRequest request,
     content::RenderFrameHost* render_frame_host) {
   content::WebContents* web_contents =

@@ -20,7 +20,6 @@
 namespace chrome {
 
 void CreateMediaDrmStorage(content::RenderFrameHost* render_frame_host,
-                           const service_manager::BindSourceInfo& source_info,
                            media::mojom::MediaDrmStorageRequest request) {
   DVLOG(1) << __func__;
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);

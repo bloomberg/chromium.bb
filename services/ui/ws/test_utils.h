@@ -14,6 +14,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/ui/display/screen_manager.h"
 #include "services/ui/display/viewport_metrics.h"
 #include "services/ui/public/interfaces/display_manager.mojom.h"
@@ -66,7 +67,9 @@ class TestScreenManager : public display::ScreenManager {
   void RemoveDisplay(int64_t id);
 
   // display::ScreenManager:
-  void AddInterfaces(service_manager::BinderRegistry* registry) override {}
+  void AddInterfaces(
+      service_manager::BinderRegistryWithArgs<
+          const service_manager::BindSourceInfo&>* registry) override {}
   void Init(display::ScreenManagerDelegate* delegate) override;
   void RequestCloseDisplay(int64_t display_id) override {}
   display::ScreenBase* GetScreen() override;

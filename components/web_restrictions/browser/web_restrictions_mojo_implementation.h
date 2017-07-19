@@ -10,10 +10,6 @@
 #include "base/macros.h"
 #include "components/web_restrictions/interfaces/web_restrictions.mojom.h"
 
-namespace service_manager {
-struct BindSourceInfo;
-}
-
 namespace web_restrictions {
 
 class WebRestrictionsClient;
@@ -24,7 +20,6 @@ class WebRestrictionsMojoImplementation : public mojom::WebRestrictions {
   ~WebRestrictionsMojoImplementation() override;
 
   static void Create(WebRestrictionsClient* client,
-                     const service_manager::BindSourceInfo& source_info,
                      mojom::WebRestrictionsRequest request);
 
  private:

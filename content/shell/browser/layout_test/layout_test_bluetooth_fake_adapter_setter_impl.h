@@ -8,10 +8,6 @@
 #include "base/macros.h"
 #include "content/shell/common/layout_test/layout_test_bluetooth_fake_adapter_setter.mojom.h"
 
-namespace service_manager {
-struct BindSourceInfo;
-}
-
 namespace content {
 
 class LayoutTestBluetoothFakeAdapterSetterImpl
@@ -21,7 +17,6 @@ class LayoutTestBluetoothFakeAdapterSetterImpl
   ~LayoutTestBluetoothFakeAdapterSetterImpl() override;
 
   static void Create(
-      const service_manager::BindSourceInfo& source_info,
       mojom::LayoutTestBluetoothFakeAdapterSetterRequest request);
 
  private:

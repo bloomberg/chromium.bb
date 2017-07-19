@@ -41,8 +41,7 @@ class ViewsExamples : public service_manager::Service,
   void OnBindInterface(const service_manager::BindSourceInfo& source_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override {
-    registry_.BindInterface(source_info, interface_name,
-                            std::move(interface_pipe));
+    registry_.BindInterface(interface_name, std::move(interface_pipe));
   }
 
   // mash::mojom::Launchable:
@@ -50,8 +49,7 @@ class ViewsExamples : public service_manager::Service,
     views::examples::ShowExamplesWindow(views::examples::QUIT_ON_CLOSE);
   }
 
-  void Create(const service_manager::BindSourceInfo& source_info,
-              mash::mojom::LaunchableRequest request) {
+  void Create(mash::mojom::LaunchableRequest request) {
     bindings_.AddBinding(this, std::move(request));
   }
 

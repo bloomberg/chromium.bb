@@ -63,7 +63,6 @@ MojoSafeBrowsingImpl::~MojoSafeBrowsingImpl() {
 void MojoSafeBrowsingImpl::MaybeCreate(
     int render_process_id,
     const base::Callback<UrlCheckerDelegate*()>& delegate_getter,
-    const service_manager::BindSourceInfo& source_info,
     mojom::SafeBrowsingRequest request) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 

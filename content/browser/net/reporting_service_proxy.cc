@@ -73,7 +73,6 @@ void CreateReportingServiceProxyOnNetworkTaskRunner(
 // static
 void CreateReportingServiceProxy(
     StoragePartition* storage_partition,
-    const service_manager::BindSourceInfo& source_info,
     mojom::ReportingServiceProxyRequest request) {
   scoped_refptr<net::URLRequestContextGetter> request_context_getter(
       storage_partition->GetURLRequestContext());

@@ -15,9 +15,7 @@ GeolocationContext::GeolocationContext() {}
 
 GeolocationContext::~GeolocationContext() {}
 
-void GeolocationContext::Bind(
-    const service_manager::BindSourceInfo& source_info,
-    mojom::GeolocationRequest request) {
+void GeolocationContext::Bind(mojom::GeolocationRequest request) {
   GeolocationImpl* impl = new GeolocationImpl(std::move(request), this);
   impls_.push_back(base::WrapUnique<GeolocationImpl>(impl));
   if (geoposition_override_)

@@ -8,17 +8,12 @@
 #include "base/macros.h"
 #include "chrome/common/shell_handler_win.mojom.h"
 
-namespace service_manager {
-struct BindSourceInfo;
-}
-
 class ShellHandlerImpl : public chrome::mojom::ShellHandler {
  public:
   ShellHandlerImpl();
   ~ShellHandlerImpl() override;
 
-  static void Create(const service_manager::BindSourceInfo& source_info,
-                     chrome::mojom::ShellHandlerRequest request);
+  static void Create(chrome::mojom::ShellHandlerRequest request);
 
  private:
   // chrome::mojom::ShellHandler:

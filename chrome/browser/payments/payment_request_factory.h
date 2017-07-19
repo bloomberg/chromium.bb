@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_PAYMENTS_PAYMENT_REQUEST_FACTORY_H_
 #define CHROME_BROWSER_PAYMENTS_PAYMENT_REQUEST_FACTORY_H_
 
-#include "services/service_manager/public/cpp/bind_source_info.h"
 #include "third_party/WebKit/public/platform/modules/payments/payment_request.mojom.h"
 
 namespace content {
@@ -18,8 +17,7 @@ namespace payments {
 // |request| was initiated by the frame hosted by |render_frame_host|, which is
 // inside of |web_contents|. This function is called every time a new instance
 // of PaymentRequest is created in the renderer.
-void CreatePaymentRequest(const service_manager::BindSourceInfo& source_info,
-                          mojom::PaymentRequestRequest request,
+void CreatePaymentRequest(mojom::PaymentRequestRequest request,
                           content::RenderFrameHost* render_frame_host);
 
 }  // namespace payments

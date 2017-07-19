@@ -5,7 +5,6 @@
 #include "headless/lib/renderer/headless_render_frame_controller_impl.h"
 
 #include "content/public/common/isolated_world_ids.h"
-#include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "v8/include/v8-inspector.h"
@@ -25,7 +24,6 @@ HeadlessRenderFrameControllerImpl::HeadlessRenderFrameControllerImpl(
 HeadlessRenderFrameControllerImpl::~HeadlessRenderFrameControllerImpl() {}
 
 void HeadlessRenderFrameControllerImpl::OnRenderFrameControllerRequest(
-    const service_manager::BindSourceInfo& source_info,
     headless::HeadlessRenderFrameControllerRequest request) {
   headless_render_frame_controller_bindings_.AddBinding(this,
                                                         std::move(request));

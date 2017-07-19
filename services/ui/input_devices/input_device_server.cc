@@ -7,7 +7,6 @@
 #include <utility>
 #include <vector>
 
-#include "services/service_manager/public/cpp/bind_source_info.h"
 #include "ui/events/devices/input_device.h"
 #include "ui/events/devices/touchscreen_device.h"
 
@@ -42,7 +41,8 @@ bool InputDeviceServer::IsRegisteredAsObserver() const {
 }
 
 void InputDeviceServer::AddInterface(
-    service_manager::BinderRegistry* registry) {
+    service_manager::BinderRegistryWithArgs<
+        const service_manager::BindSourceInfo&>* registry) {
   DCHECK(IsRegisteredAsObserver());
   registry->AddInterface<mojom::InputDeviceServer>(
       base::Bind(&InputDeviceServer::BindInputDeviceServerRequest,
@@ -123,8 +123,8 @@ void InputDeviceServer::SendDeviceListsComplete(
 }
 
 void InputDeviceServer::BindInputDeviceServerRequest(
-    const service_manager::BindSourceInfo& source_info,
-    mojom::InputDeviceServerRequest request) {
+    mojom::InputDeviceServerRequest request,
+    const service_manager::BindSourceInfo& source_info) {
   bindings_.AddBinding(this, std::move(request));
 }
 

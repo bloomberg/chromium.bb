@@ -676,7 +676,6 @@ class DefaultSubframeProcessHostHolder : public base::SupportsUserData::Data,
 
 void CreateMemoryCoordinatorHandle(
     int render_process_id,
-    const service_manager::BindSourceInfo& source_info,
     mojom::MemoryCoordinatorHandleRequest request) {
   MemoryCoordinatorImpl::GetInstance()->CreateHandle(render_process_id,
                                                      std::move(request));
@@ -684,7 +683,6 @@ void CreateMemoryCoordinatorHandle(
 
 void CreateResourceCoordinatorProcessInterface(
     RenderProcessHostImpl* render_process_host,
-    const service_manager::BindSourceInfo& source_info,
     resource_coordinator::mojom::CoordinationUnitRequest request) {
   render_process_host->GetProcessResourceCoordinator()->service()->AddBinding(
       std::move(request));
@@ -693,8 +691,7 @@ void CreateResourceCoordinatorProcessInterface(
 // Forwards service requests to Service Manager since the renderer cannot launch
 // out-of-process services on is own.
 template <typename R>
-void ForwardShapeDetectionRequest(const service_manager::BindSourceInfo&,
-                                  R request) {
+void ForwardShapeDetectionRequest(R request) {
   // TODO(beng): This should really be using the per-profile connector.
   service_manager::Connector* connector =
       ServiceManagerConnection::GetForProcess()->GetConnector();
@@ -709,7 +706,6 @@ class WorkerURLLoaderFactoryProviderImpl
       int render_process_id,
       scoped_refptr<ResourceMessageFilter> resource_message_filter,
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
-      const service_manager::BindSourceInfo& source_info,
       mojom::WorkerURLLoaderFactoryProviderRequest request) {
     DCHECK(base::FeatureList::IsEnabled(features::kOffMainThreadFetch));
     mojo::MakeStrongBinding(
@@ -1103,10 +1099,8 @@ class RenderProcessHostImpl::ConnectionFilterImpl : public ConnectionFilter {
     if (!enabled_)
       return;
 
-    if (registry_->CanBindInterface(interface_name)) {
-      registry_->BindInterface(source_info, interface_name,
-                               std::move(*interface_pipe));
-    }
+    if (registry_->CanBindInterface(interface_name))
+      registry_->BindInterface(interface_name, std::move(*interface_pipe));
   }
 
   base::ThreadChecker thread_checker_;
@@ -1967,9 +1961,7 @@ void RenderProcessHostImpl::GetBlobURLLoaderFactory(
       std::move(request));
 }
 
-void RenderProcessHostImpl::CreateMusGpuRequest(
-    const service_manager::BindSourceInfo& source_info,
-    ui::mojom::GpuRequest request) {
+void RenderProcessHostImpl::CreateMusGpuRequest(ui::mojom::GpuRequest request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!gpu_client_)
     gpu_client_.reset(new GpuClient(GetID()));
@@ -1977,7 +1969,6 @@ void RenderProcessHostImpl::CreateMusGpuRequest(
 }
 
 void RenderProcessHostImpl::CreateOffscreenCanvasProvider(
-    const service_manager::BindSourceInfo& source_info,
     blink::mojom::OffscreenCanvasProviderRequest request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!offscreen_canvas_provider_) {
@@ -1990,19 +1981,16 @@ void RenderProcessHostImpl::CreateOffscreenCanvasProvider(
 }
 
 void RenderProcessHostImpl::BindFrameSinkProvider(
-    const service_manager::BindSourceInfo& source_info,
     mojom::FrameSinkProviderRequest request) {
   frame_sink_provider_.Bind(std::move(request));
 }
 
 void RenderProcessHostImpl::BindSharedBitmapAllocationNotifier(
-    const service_manager::BindSourceInfo& source_info,
     cc::mojom::SharedBitmapAllocationNotifierRequest request) {
   shared_bitmap_allocation_notifier_impl_.Bind(std::move(request));
 }
 
 void RenderProcessHostImpl::CreateStoragePartitionService(
-    const service_manager::BindSourceInfo& source_info,
     mojom::StoragePartitionServiceRequest request) {
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableMojoLocalStorage)) {
@@ -2011,13 +1999,11 @@ void RenderProcessHostImpl::CreateStoragePartitionService(
 }
 
 void RenderProcessHostImpl::CreateRendererHost(
-    const service_manager::BindSourceInfo& source_info,
     mojom::RendererHostRequest request) {
   renderer_host_binding_.Bind(std::move(request));
 }
 
 void RenderProcessHostImpl::CreateURLLoaderFactory(
-    const service_manager::BindSourceInfo& source_info,
     mojom::URLLoaderFactoryRequest request) {
   if (!base::FeatureList::IsEnabled(features::kNetworkService)) {
     NOTREACHED();

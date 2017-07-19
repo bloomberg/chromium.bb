@@ -30,8 +30,7 @@ class EchoService : public service_manager::Service, public mojom::Echo {
   void EchoString(const std::string& input,
                   EchoStringCallback callback) override;
 
-  void BindEchoRequest(const service_manager::BindSourceInfo& source_info,
-                       mojom::EchoRequest request);
+  void BindEchoRequest(mojom::EchoRequest request);
 
   service_manager::BinderRegistry registry_;
   mojo::BindingSet<mojom::Echo> bindings_;

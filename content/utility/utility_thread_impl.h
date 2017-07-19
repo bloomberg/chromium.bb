@@ -14,10 +14,6 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/interfaces/service_factory.mojom.h"
 
-namespace service_manager {
-struct BindSourceInfo;
-}
-
 namespace content {
 class UtilityBlinkPlatformImpl;
 class UtilityServiceFactory;
@@ -50,7 +46,6 @@ class UtilityThreadImpl : public UtilityThread,
 
   // Binds requests to our |service factory_|.
   void BindServiceFactoryRequest(
-      const service_manager::BindSourceInfo& source_info,
       service_manager::mojom::ServiceFactoryRequest request);
 
   // blink::Platform implementation if needed.

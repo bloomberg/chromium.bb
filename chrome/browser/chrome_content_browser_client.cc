@@ -713,8 +713,7 @@ AppLoadedInTabSource ClassifyAppLoadedInTabSource(
 }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
-void CreateUsbDeviceManager(const service_manager::BindSourceInfo& source_info,
-                            device::mojom::UsbDeviceManagerRequest request,
+void CreateUsbDeviceManager(device::mojom::UsbDeviceManagerRequest request,
                             content::RenderFrameHost* render_frame_host) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   if (render_frame_host->GetSiteInstance()->GetSiteURL().SchemeIs(
@@ -736,7 +735,6 @@ void CreateUsbDeviceManager(const service_manager::BindSourceInfo& source_info,
 }
 
 void CreateWebUsbChooserService(
-    const service_manager::BindSourceInfo& source_info,
     device::mojom::UsbChooserServiceRequest request,
     content::RenderFrameHost* render_frame_host) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -758,11 +756,10 @@ void CreateWebUsbChooserService(
   tab_helper->CreateChooserService(render_frame_host, std::move(request));
 }
 
-void CreateBudgetService(const service_manager::BindSourceInfo& source_info,
-                         blink::mojom::BudgetServiceRequest request,
+void CreateBudgetService(blink::mojom::BudgetServiceRequest request,
                          content::RenderFrameHost* render_frame_host) {
   BudgetServiceImpl::Create(render_frame_host->GetProcess()->GetID(),
-                            source_info, std::move(request));
+                            std::move(request));
 }
 
 bool GetDataSaverEnabledPref(const PrefService* prefs) {
@@ -1518,7 +1515,6 @@ void MaybeAppendBlinkSettingsSwitchForFieldTrial(
 #if defined(OS_ANDROID)
 template <typename Interface>
 void ForwardToJavaFrameRegistry(
-    const service_manager::BindSourceInfo& source_info,
     mojo::InterfaceRequest<Interface> request,
     content::RenderFrameHost* render_frame_host) {
   render_frame_host->GetJavaInterfaces()->GetInterface(std::move(request));
@@ -1526,7 +1522,6 @@ void ForwardToJavaFrameRegistry(
 
 template <typename Interface>
 void ForwardToJavaWebContentsRegistry(
-    const service_manager::BindSourceInfo& source_info,
     mojo::InterfaceRequest<Interface> request,
     content::RenderFrameHost* render_frame_host) {
   content::WebContents* contents =
@@ -2935,19 +2930,16 @@ void ChromeContentBrowserClient::ExposeInterfacesToMediaService(
 
 void ChromeContentBrowserClient::BindInterfaceRequestFromFrame(
     content::RenderFrameHost* render_frame_host,
-    const service_manager::BindSourceInfo& source_info,
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
   if (!frame_interfaces_.get() && !frame_interfaces_parameterized_.get())
     InitFrameInterfaces();
 
   if (frame_interfaces_parameterized_->CanBindInterface(interface_name)) {
-    frame_interfaces_parameterized_->BindInterface(source_info, interface_name,
-                                                   std::move(interface_pipe),
-                                                   render_frame_host);
+    frame_interfaces_parameterized_->BindInterface(
+        interface_name, std::move(interface_pipe), render_frame_host);
   } else if (frame_interfaces_->CanBindInterface(interface_name)) {
-    frame_interfaces_->BindInterface(source_info, interface_name,
-                                     std::move(interface_pipe));
+    frame_interfaces_->BindInterface(interface_name, std::move(interface_pipe));
   }
 }
 
@@ -2973,7 +2965,7 @@ void ChromeContentBrowserClient::BindInterfaceRequest(
     mojo::ScopedMessagePipeHandle* interface_pipe) {
   if (source_info.identity.name() == content::mojom::kGpuServiceName &&
       gpu_binder_registry_.CanBindInterface(interface_name)) {
-    gpu_binder_registry_.BindInterface(source_info, interface_name,
+    gpu_binder_registry_.BindInterface(interface_name,
                                        std::move(*interface_pipe));
   }
 }
@@ -3284,7 +3276,7 @@ void ChromeContentBrowserClient::OverridePageVisibilityState(
 void ChromeContentBrowserClient::InitFrameInterfaces() {
   frame_interfaces_ = base::MakeUnique<service_manager::BinderRegistry>();
   frame_interfaces_parameterized_ = base::MakeUnique<
-      service_manager::BinderRegistryWithParams<content::RenderFrameHost*>>();
+      service_manager::BinderRegistryWithArgs<content::RenderFrameHost*>>();
 
   if (base::FeatureList::IsEnabled(features::kWebUsb)) {
     frame_interfaces_parameterized_->AddInterface(

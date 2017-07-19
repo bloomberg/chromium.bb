@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/ui/display/screen_manager_delegate.h"
 
@@ -27,7 +28,9 @@ class ScreenManager {
   static ScreenManager* GetInstance();
 
   // Registers Mojo interfaces provided.
-  virtual void AddInterfaces(service_manager::BinderRegistry* registry) = 0;
+  virtual void AddInterfaces(
+      service_manager::BinderRegistryWithArgs<
+          const service_manager::BindSourceInfo&>* registry) = 0;
 
   // Triggers initial display configuration to start. On device this will
   // configuration the connected displays. Off device this will create one or

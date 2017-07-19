@@ -10,7 +10,6 @@
 #include "extensions/common/mojo/wifi_display_session_service.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "services/service_manager/public/cpp/bind_source_info.h"
 
 namespace content {
 class BrowserContext;
@@ -26,7 +25,6 @@ class WiFiDisplaySessionServiceImpl
  public:
   ~WiFiDisplaySessionServiceImpl() override;
   static void BindToRequest(content::BrowserContext* context,
-                            const service_manager::BindSourceInfo& source_info,
                             mojom::WiFiDisplaySessionServiceRequest request);
 
  private:

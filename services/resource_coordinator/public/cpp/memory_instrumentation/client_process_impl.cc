@@ -16,6 +16,7 @@
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/tracing_observer.h"
 #include "services/resource_coordinator/public/interfaces/memory_instrumentation/memory_instrumentation.mojom.h"
+#include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace memory_instrumentation {
@@ -111,7 +112,7 @@ ClientProcessImpl::ClientProcessImpl(const Config& config)
                                           config.service_name);
   } else {
     config.coordinator_for_testing->BindCoordinatorRequest(
-        service_manager::BindSourceInfo(), mojo::MakeRequest(&coordinator_));
+        mojo::MakeRequest(&coordinator_), service_manager::BindSourceInfo());
   }
 
   task_runner_ = base::ThreadTaskRunnerHandle::Get();

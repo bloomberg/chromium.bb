@@ -7,7 +7,6 @@
 
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/browser_thread.h"
-#include "services/service_manager/public/cpp/bind_source_info.h"
 #include "storage/public/interfaces/blobs.mojom.h"
 
 namespace storage {
@@ -33,7 +32,6 @@ class BlobRegistryWrapper
       scoped_refptr<storage::FileSystemContext> file_system_context);
 
   void Bind(int process_id,
-            const service_manager::BindSourceInfo& source_info,
             storage::mojom::BlobRegistryRequest request);
 
  private:

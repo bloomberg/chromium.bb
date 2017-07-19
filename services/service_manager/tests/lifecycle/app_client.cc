@@ -21,8 +21,7 @@ AppClient::~AppClient() {}
 void AppClient::OnBindInterface(const BindSourceInfo& source_info,
                                 const std::string& interface_name,
                                 mojo::ScopedMessagePipeHandle interface_pipe) {
-  registry_.BindInterface(source_info, interface_name,
-                          std::move(interface_pipe));
+  registry_.BindInterface(interface_name, std::move(interface_pipe));
 }
 
 bool AppClient::OnServiceManagerConnectionLost() {
@@ -30,8 +29,7 @@ bool AppClient::OnServiceManagerConnectionLost() {
   return true;
 }
 
-void AppClient::Create(const BindSourceInfo& source_info,
-                       mojom::LifecycleControlRequest request) {
+void AppClient::Create(mojom::LifecycleControlRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 

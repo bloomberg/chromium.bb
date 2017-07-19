@@ -70,7 +70,6 @@ MediaEngagementUI::MediaEngagementUI(content::WebUI* web_ui)
 MediaEngagementUI::~MediaEngagementUI() = default;
 
 void MediaEngagementUI::BindUIHandler(
-    const service_manager::BindSourceInfo& source_info,
     media::mojom::MediaEngagementScoreDetailsProviderRequest request) {
   ui_handler_ = base::MakeUnique<MediaEngagementScoreDetailsProviderImpl>(
       Profile::FromWebUI(web_ui()), std::move(request));

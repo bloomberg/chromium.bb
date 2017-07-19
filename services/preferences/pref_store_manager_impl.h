@@ -22,6 +22,10 @@
 
 class PrefRegistry;
 
+namespace service_manager {
+struct BindSourceInfo;
+}
+
 namespace prefs {
 class SharedPrefRegistry;
 class PersistentPrefStoreImpl;
@@ -50,8 +54,8 @@ class PrefStoreManagerImpl : public service_manager::Service {
   class ConnectorConnection;
 
   void BindPrefStoreConnectorRequest(
-      const service_manager::BindSourceInfo& source_info,
-      prefs::mojom::PrefStoreConnectorRequest request);
+      prefs::mojom::PrefStoreConnectorRequest request,
+      const service_manager::BindSourceInfo& source_info);
 
   // service_manager::Service:
   void OnStart() override;
@@ -83,7 +87,9 @@ class PrefStoreManagerImpl : public service_manager::Service {
   std::vector<scoped_refptr<ScopedPrefConnectionBuilder>>
       pending_persistent_incognito_connections_;
 
-  service_manager::BinderRegistry registry_;
+  service_manager::BinderRegistryWithArgs<
+      const service_manager::BindSourceInfo&>
+      registry_;
 
   base::WeakPtrFactory<PrefStoreManagerImpl> weak_factory_;
 

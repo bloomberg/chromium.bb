@@ -50,7 +50,6 @@ NetBenchmarking::~NetBenchmarking() {}
 // static
 void NetBenchmarking::Create(Profile* profile,
                              net::URLRequestContextGetter* request_context,
-                             const service_manager::BindSourceInfo& source_info,
                              chrome::mojom::NetBenchmarkingRequest request) {
   mojo::MakeStrongBinding(
       base::MakeUnique<NetBenchmarking>(profile, request_context),

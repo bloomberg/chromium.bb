@@ -24,7 +24,6 @@
 #include "content/public/browser/web_contents.h"
 #include "jni/ContextualSearchManager_jni.h"
 #include "net/url_request/url_fetcher_impl.h"
-#include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 

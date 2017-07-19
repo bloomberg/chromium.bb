@@ -8,14 +8,11 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/ui/public/interfaces/input_devices/input_device_server.mojom.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/input_device_event_observer.h"
-
-namespace service_manager {
-struct BindSourceInfo;
-}
 
 namespace ui {
 
@@ -38,7 +35,8 @@ class InputDeviceServer : public mojom::InputDeviceServer,
   // connect. You should have already called RegisterAsObserver() to get local
   // input-device event updates and checked it was successful by calling
   // IsRegisteredAsObserver().
-  void AddInterface(service_manager::BinderRegistry* registry);
+  void AddInterface(service_manager::BinderRegistryWithArgs<
+                    const service_manager::BindSourceInfo&>* registry);
 
   // mojom::InputDeviceServer:
   void AddObserver(mojom::InputDeviceObserverMojoPtr observer) override;
@@ -56,8 +54,8 @@ class InputDeviceServer : public mojom::InputDeviceServer,
   void SendDeviceListsComplete(mojom::InputDeviceObserverMojo* observer);
 
   void BindInputDeviceServerRequest(
-      const service_manager::BindSourceInfo& source_info,
-      mojom::InputDeviceServerRequest request);
+      mojom::InputDeviceServerRequest request,
+      const service_manager::BindSourceInfo& source_info);
 
   mojo::BindingSet<mojom::InputDeviceServer> bindings_;
   mojo::InterfacePtrSet<mojom::InputDeviceObserverMojo> observers_;

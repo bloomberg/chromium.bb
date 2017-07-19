@@ -16,10 +16,6 @@
 #include "content/common/content_export.h"
 #include "content/common/video_capture.mojom.h"
 
-namespace service_manager {
-struct BindSourceInfo;
-}
-
 namespace content {
 class MediaStreamManager;
 
@@ -35,7 +31,6 @@ class CONTENT_EXPORT VideoCaptureHost
   explicit VideoCaptureHost(MediaStreamManager* media_stream_manager);
 
   static void Create(MediaStreamManager* media_stream_manager,
-                     const service_manager::BindSourceInfo& source_info,
                      mojom::VideoCaptureHostRequest request);
 
   ~VideoCaptureHost() override;

@@ -44,7 +44,6 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/ssl/client_cert_identity.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "services/service_manager/public/cpp/bind_source_info.h"
 #include "storage/browser/quota/quota_settings.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
@@ -143,8 +142,7 @@ class MojoLayoutTestHelper : public mojom::MojoLayoutTestHelper {
   DISALLOW_COPY_AND_ASSIGN(MojoLayoutTestHelper);
 };
 
-void BindLayoutTestHelper(const service_manager::BindSourceInfo& source_info,
-                          mojom::MojoLayoutTestHelperRequest request,
+void BindLayoutTestHelper(mojom::MojoLayoutTestHelperRequest request,
                           RenderFrameHost* render_frame_host) {
   mojo::MakeStrongBinding(base::MakeUnique<MojoLayoutTestHelper>(),
                           std::move(request));
@@ -223,12 +221,10 @@ bool ShellContentBrowserClient::IsHandledURL(const GURL& url) {
 
 void ShellContentBrowserClient::BindInterfaceRequestFromFrame(
     RenderFrameHost* render_frame_host,
-    const service_manager::BindSourceInfo& source_info,
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
   if (frame_interfaces_.CanBindInterface(interface_name)) {
-    frame_interfaces_.BindInterface(source_info, interface_name,
-                                    std::move(interface_pipe),
+    frame_interfaces_.BindInterface(interface_name, std::move(interface_pipe),
                                     render_frame_host);
   }
 }

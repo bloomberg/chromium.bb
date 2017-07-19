@@ -92,7 +92,6 @@ void ChromeContentGpuClient::GpuServiceInitialized(
 #if defined(OS_CHROMEOS)
 
 void ChromeContentGpuClient::CreateArcVideoDecodeAccelerator(
-    const service_manager::BindSourceInfo& source_info,
     ::arc::mojom::VideoDecodeAcceleratorRequest request) {
   mojo::MakeStrongBinding(
       base::MakeUnique<chromeos::arc::GpuArcVideoDecodeAccelerator>(
@@ -101,7 +100,6 @@ void ChromeContentGpuClient::CreateArcVideoDecodeAccelerator(
 }
 
 void ChromeContentGpuClient::CreateArcVideoEncodeAccelerator(
-    const service_manager::BindSourceInfo& source_info,
     ::arc::mojom::VideoEncodeAcceleratorRequest request) {
   mojo::MakeStrongBinding(
       base::MakeUnique<chromeos::arc::GpuArcVideoEncodeAccelerator>(

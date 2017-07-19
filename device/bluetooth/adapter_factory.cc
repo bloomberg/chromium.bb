@@ -16,8 +16,7 @@ AdapterFactory::AdapterFactory() : weak_ptr_factory_(this) {}
 AdapterFactory::~AdapterFactory() {}
 
 // static
-void AdapterFactory::Create(const service_manager::BindSourceInfo& source_info,
-                            mojom::AdapterFactoryRequest request) {
+void AdapterFactory::Create(mojom::AdapterFactoryRequest request) {
   mojo::MakeStrongBinding(base::MakeUnique<AdapterFactory>(),
                           std::move(request));
 }

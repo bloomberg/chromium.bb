@@ -31,8 +31,7 @@ namespace {
 
 class TestServiceImpl : public mojom::TestService {
  public:
-  static void Create(const service_manager::BindSourceInfo&,
-                     mojom::TestServiceRequest request) {
+  static void Create(mojom::TestServiceRequest request) {
     mojo::MakeStrongBinding(base::WrapUnique(new TestServiceImpl),
                             std::move(request));
   }
@@ -143,7 +142,6 @@ void ShellContentUtilityClient::RegisterNetworkBinders(
 }
 
 void ShellContentUtilityClient::BindNetworkServiceTestRequest(
-    const service_manager::BindSourceInfo& source_info,
     mojom::NetworkServiceTestRequest request) {
   DCHECK(!network_service_test_);
   network_service_test_ =

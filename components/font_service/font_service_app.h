@@ -36,8 +36,7 @@ class FontServiceApp : public service_manager::Service,
                        MatchFamilyNameCallback callback) override;
   void OpenStream(uint32_t id_number, OpenStreamCallback callback) override;
 
-  void Create(const service_manager::BindSourceInfo& source_info,
-              mojom::FontServiceRequest request);
+  void Create(mojom::FontServiceRequest request);
 
   int FindOrAddPath(const SkString& path);
 

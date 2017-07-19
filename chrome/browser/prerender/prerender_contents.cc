@@ -773,7 +773,6 @@ void PrerenderContents::CancelPrerenderForPrinting() {
 }
 
 void PrerenderContents::OnPrerenderCancelerRequest(
-    const service_manager::BindSourceInfo& source_info,
     chrome::mojom::PrerenderCancelerRequest request) {
   if (!prerender_canceler_binding_.is_bound())
     prerender_canceler_binding_.Bind(std::move(request));

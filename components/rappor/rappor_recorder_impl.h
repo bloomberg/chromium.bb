@@ -10,10 +10,6 @@
 
 class GURL;
 
-namespace service_manager {
-struct BindSourceInfo;
-}
-
 namespace rappor {
 
 class RapporServiceImpl;
@@ -26,7 +22,6 @@ class RapporRecorderImpl : public mojom::RapporRecorder {
   ~RapporRecorderImpl() override;
 
   static void Create(RapporServiceImpl* rappor_service,
-                     const service_manager::BindSourceInfo& source_info,
                      mojom::RapporRecorderRequest request);
 
  private:

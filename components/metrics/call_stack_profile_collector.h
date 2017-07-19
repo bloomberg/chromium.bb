@@ -8,10 +8,6 @@
 #include "base/macros.h"
 #include "components/metrics/public/interfaces/call_stack_profile_collector.mojom.h"
 
-namespace service_manager {
-struct BindSourceInfo;
-}
-
 namespace metrics {
 
 class CallStackProfileCollector : public mojom::CallStackProfileCollector {
@@ -24,7 +20,6 @@ class CallStackProfileCollector : public mojom::CallStackProfileCollector {
 
   // Create a collector to receive profiles from |expected_process|.
   static void Create(CallStackProfileParams::Process expected_process,
-                     const service_manager::BindSourceInfo& source_info,
                      mojom::CallStackProfileCollectorRequest request);
 
   // mojom::CallStackProfileCollector:

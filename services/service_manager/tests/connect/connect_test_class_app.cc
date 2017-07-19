@@ -46,19 +46,16 @@ class ConnectTestClassApp : public Service,
   void OnBindInterface(const BindSourceInfo& source_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override {
-    registry_.BindInterface(source_info, interface_name,
-                            std::move(interface_pipe));
+    registry_.BindInterface(interface_name, std::move(interface_pipe));
   }
 
   void BindConnectTestServiceRequest(
-      const BindSourceInfo& source_info,
       test::mojom::ConnectTestServiceRequest request) {
     refs_.push_back(ref_factory_.CreateRef());
     bindings_.AddBinding(this, std::move(request));
   }
 
-  void BindClassInterfaceRequest(const BindSourceInfo& source_info,
-                                 test::mojom::ClassInterfaceRequest request) {
+  void BindClassInterfaceRequest(test::mojom::ClassInterfaceRequest request) {
     refs_.push_back(ref_factory_.CreateRef());
     class_interface_bindings_.AddBinding(this, std::move(request));
   }

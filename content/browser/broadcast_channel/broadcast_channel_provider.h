@@ -12,10 +12,6 @@
 #include "third_party/WebKit/public/platform/modules/broadcastchannel/broadcast_channel.mojom.h"
 #include "url/origin.h"
 
-namespace service_manager {
-struct BindSourceInfo;
-}
-
 namespace content {
 
 class BroadcastChannelProvider
@@ -23,8 +19,7 @@ class BroadcastChannelProvider
   public blink::mojom::BroadcastChannelProvider {
  public:
   BroadcastChannelProvider();
-  void Connect(const service_manager::BindSourceInfo& source_info,
-               blink::mojom::BroadcastChannelProviderRequest request);
+  void Connect(blink::mojom::BroadcastChannelProviderRequest request);
 
   void ConnectToChannel(
       const url::Origin& origin,

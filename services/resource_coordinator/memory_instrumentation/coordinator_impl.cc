@@ -114,8 +114,8 @@ service_manager::Identity CoordinatorImpl::GetClientIdentityForCurrentRequest()
 }
 
 void CoordinatorImpl::BindCoordinatorRequest(
-    const service_manager::BindSourceInfo& source_info,
-    mojom::CoordinatorRequest request) {
+    mojom::CoordinatorRequest request,
+    const service_manager::BindSourceInfo& source_info) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   bindings_.AddBinding(this, std::move(request), source_info.identity);
 }
@@ -238,7 +238,6 @@ void CoordinatorImpl::PerformNextQueuedGlobalMemoryDump() {
       // TODO(hjd): Change to NOTREACHED when crbug.com/739710 is fixed.
       VLOG(1) << "Couldn't find a PID for client \"" << client_identity.name()
               << "." << client_identity.instance() << "\"";
-      continue;
     }
     request->responses[client].process_id = pid;
     request->responses[client].process_type = kv.second->process_type;
@@ -266,12 +265,6 @@ void CoordinatorImpl::PerformNextQueuedGlobalMemoryDump() {
   for (const auto& kv : clients_) {
     service_manager::Identity client_identity = kv.second->identity;
     const base::ProcessId pid = GetProcessIdForClientIdentity(client_identity);
-    if (pid == base::kNullProcessId) {
-      // TODO(hjd): Change to NOTREACHED when crbug.com/739710 is fixed.
-      VLOG(1) << "Couldn't find a PID for client \"" << client_identity.name()
-              << "." << client_identity.instance() << "\"";
-      continue;
-    }
     pids.push_back(pid);
     if (kv.second->process_type == mojom::ProcessType::BROWSER) {
       browser_client = kv.first;
@@ -423,8 +416,7 @@ void CoordinatorImpl::FinalizeGlobalMemoryDumpIfAllManagersReplied() {
   std::map<base::ProcessId, mojom::ProcessMemoryDumpPtr> finalized_pmds;
   for (auto& response : request->responses) {
     const base::ProcessId pid = response.second.process_id;
-    DCHECK(!finalized_pmds.count(pid))
-        << "Received PID: " << pid << " more than once.";
+    DCHECK(!finalized_pmds.count(pid));
 
     // The dump might be nullptr if the client crashed / disconnected before
     // replying.

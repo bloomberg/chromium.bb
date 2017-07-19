@@ -13,10 +13,6 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
-namespace service_manager {
-struct BindSourceInfo;
-}
-
 namespace payments {
 
 // Parser for payment method manifests and web app manifests. Should be used
@@ -54,8 +50,7 @@ namespace payments {
 // https://docs.google.com/document/d/1izV4uC-tiRJG3JLooqY3YRLU22tYOsLTNq0P_InPJeE
 class PaymentManifestParser : public mojom::PaymentManifestParser {
  public:
-  static void Create(const service_manager::BindSourceInfo& source_info,
-                     mojom::PaymentManifestParserRequest request);
+  static void Create(mojom::PaymentManifestParserRequest request);
 
   static void ParsePaymentMethodManifestIntoVectors(
       const std::string& input,

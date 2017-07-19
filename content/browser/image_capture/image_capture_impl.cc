@@ -110,7 +110,6 @@ ImageCaptureImpl::~ImageCaptureImpl() {}
 
 // static
 void ImageCaptureImpl::Create(
-    const service_manager::BindSourceInfo& source_info,
     media::mojom::ImageCaptureRequest request) {
   if (!base::FeatureList::IsEnabled(features::kImageCaptureAPI))
     return;

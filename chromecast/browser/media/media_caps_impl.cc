@@ -40,7 +40,6 @@ void MediaCapsImpl::Initialize() {
 }
 
 void MediaCapsImpl::AddBinding(
-    const service_manager::BindSourceInfo& source_info,
     mojom::MediaCapsRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }

@@ -51,7 +51,6 @@ void CoordinationUnitProviderImpl::CreateCoordinationUnit(
 void CoordinationUnitProviderImpl::Create(
     service_manager::ServiceContextRefFactory* service_ref_factory,
     CoordinationUnitManager* coordination_unit_manager,
-    const service_manager::BindSourceInfo& source_info,
     resource_coordinator::mojom::CoordinationUnitProviderRequest request) {
   mojo::MakeStrongBinding(base::MakeUnique<CoordinationUnitProviderImpl>(
                               service_ref_factory, coordination_unit_manager),

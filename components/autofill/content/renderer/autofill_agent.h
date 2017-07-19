@@ -20,7 +20,6 @@
 #include "components/autofill/content/renderer/page_click_tracker.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/service_manager/public/cpp/bind_source_info.h"
 #include "third_party/WebKit/public/web/WebAutofillClient.h"
 #include "third_party/WebKit/public/web/WebFormControlElement.h"
 #include "third_party/WebKit/public/web/WebFormElement.h"
@@ -59,8 +58,7 @@ class AutofillAgent : public content::RenderFrameObserver,
                 PasswordGenerationAgent* password_generation_agent);
   ~AutofillAgent() override;
 
-  void BindRequest(const service_manager::BindSourceInfo& source_info,
-                   mojom::AutofillAgentRequest request);
+  void BindRequest(mojom::AutofillAgentRequest request);
 
   const mojom::AutofillDriverPtr& GetAutofillDriver();
 

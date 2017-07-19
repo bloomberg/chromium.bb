@@ -9,10 +9,6 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/WebKit/public/platform/modules/keyboard_lock/keyboard_lock.mojom.h"
 
-namespace service_manager {
-struct BindSourceInfo;
-}
-
 namespace content {
 
 class CONTENT_EXPORT KeyboardLockServiceImpl
@@ -22,7 +18,6 @@ class CONTENT_EXPORT KeyboardLockServiceImpl
   ~KeyboardLockServiceImpl() override;
 
   static void CreateMojoService(
-      const service_manager::BindSourceInfo& source_info,
       blink::mojom::KeyboardLockServiceRequest request);
 
   // blink::mojom::KeyboardLockService implementations.

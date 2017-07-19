@@ -98,6 +98,8 @@ base::MessageLoop::Type OzonePlatform::GetMessageLoopTypeForGpu() {
   return base::MessageLoop::TYPE_DEFAULT;
 }
 
-void OzonePlatform::AddInterfaces(service_manager::BinderRegistry* registry) {}
+void OzonePlatform::AddInterfaces(
+    service_manager::BinderRegistryWithArgs<
+        const service_manager::BindSourceInfo&>* registry) {}
 
 }  // namespace ui

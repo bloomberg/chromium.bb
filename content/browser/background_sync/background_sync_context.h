@@ -13,10 +13,6 @@
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/modules/background_sync/background_sync.mojom.h"
 
-namespace service_manager {
-struct BindSourceInfo;
-}
-
 namespace content {
 
 class BackgroundSyncManager;
@@ -40,8 +36,7 @@ class CONTENT_EXPORT BackgroundSyncContext
 
   // Create a BackgroundSyncServiceImpl that is owned by this. Call on the UI
   // thread.
-  void CreateService(const service_manager::BindSourceInfo& source_info,
-                     blink::mojom::BackgroundSyncServiceRequest request);
+  void CreateService(blink::mojom::BackgroundSyncServiceRequest request);
 
   // Called by BackgroundSyncServiceImpl objects so that they can
   // be deleted. Call on the IO thread.

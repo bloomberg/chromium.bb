@@ -8,7 +8,6 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "extensions/common/api/mime_handler.mojom.h"
-#include "services/service_manager/public/cpp/bind_source_info.h"
 
 namespace extensions {
 class StreamContainer;
@@ -21,7 +20,6 @@ class MimeHandlerServiceImpl : public mime_handler::MimeHandlerService {
   ~MimeHandlerServiceImpl() override;
 
   static void Create(base::WeakPtr<StreamContainer> stream_container,
-                     const service_manager::BindSourceInfo& source_info,
                      mime_handler::MimeHandlerServiceRequest request);
 
  private:

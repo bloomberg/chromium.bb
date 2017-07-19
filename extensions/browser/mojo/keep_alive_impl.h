@@ -11,7 +11,6 @@
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/mojo/keep_alive.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/service_manager/public/cpp/bind_source_info.h"
 
 namespace content {
 class BrowserContext;
@@ -28,7 +27,6 @@ class KeepAliveImpl : public KeepAlive, public ExtensionRegistryObserver {
   // |request|. When the requester closes its pipe, the keep alive ends.
   static void Create(content::BrowserContext* context,
                      const Extension* extension,
-                     const service_manager::BindSourceInfo& source_info,
                      KeepAliveRequest request);
 
  private:

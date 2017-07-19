@@ -419,13 +419,11 @@ void ChromeRenderFrameObserver::OnDestruct() {
 }
 
 void ChromeRenderFrameObserver::OnImageContextMenuRendererRequest(
-    const service_manager::BindSourceInfo& source_info,
     chrome::mojom::ImageContextMenuRendererRequest request) {
   image_context_menu_renderer_bindings_.AddBinding(this, std::move(request));
 }
 
 void ChromeRenderFrameObserver::OnThumbnailCapturerRequest(
-    const service_manager::BindSourceInfo& source_info,
     chrome::mojom::ThumbnailCapturerRequest request) {
   thumbnail_capturer_bindings_.AddBinding(this, std::move(request));
 }

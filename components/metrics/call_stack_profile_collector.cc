@@ -23,7 +23,6 @@ CallStackProfileCollector::~CallStackProfileCollector() {}
 // static
 void CallStackProfileCollector::Create(
     CallStackProfileParams::Process expected_process,
-    const service_manager::BindSourceInfo& source_info,
     mojom::CallStackProfileCollectorRequest request) {
   mojo::MakeStrongBinding(
       base::MakeUnique<CallStackProfileCollector>(expected_process),

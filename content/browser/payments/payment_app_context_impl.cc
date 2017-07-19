@@ -39,7 +39,6 @@ void PaymentAppContextImpl::Shutdown() {
 }
 
 void PaymentAppContextImpl::CreatePaymentManager(
-    const service_manager::BindSourceInfo& source_info,
     payments::mojom::PaymentManagerRequest request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 

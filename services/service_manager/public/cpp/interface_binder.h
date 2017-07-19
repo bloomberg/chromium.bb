@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/system/message_pipe.h"
-#include "services/service_manager/public/cpp/bind_source_info.h"
 
 namespace service_manager {
 
@@ -19,7 +18,6 @@ template <typename... BinderArgs>
 void BindCallbackAdapter(
     const base::Callback<void(mojo::ScopedMessagePipeHandle, BinderArgs...)>&
         callback,
-    const BindSourceInfo& source_info,
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle handle,
     BinderArgs... args) {
@@ -34,8 +32,7 @@ class InterfaceBinder {
   // Asks the InterfaceBinder to bind an implementation of the specified
   // interface to the request passed via |handle|. If the InterfaceBinder binds
   // an implementation it must take ownership of the request handle.
-  virtual void BindInterface(const BindSourceInfo& source_info,
-                             const std::string& interface_name,
+  virtual void BindInterface(const std::string& interface_name,
                              mojo::ScopedMessagePipeHandle handle,
                              BinderArgs... args) = 0;
 };
@@ -43,9 +40,8 @@ class InterfaceBinder {
 template <typename Interface, typename... BinderArgs>
 class CallbackBinder : public InterfaceBinder<BinderArgs...> {
  public:
-  using BindCallback = base::Callback<void(const BindSourceInfo&,
-                                           mojo::InterfaceRequest<Interface>,
-                                           BinderArgs...)>;
+  using BindCallback =
+      base::Callback<void(mojo::InterfaceRequest<Interface>, BinderArgs...)>;
 
   CallbackBinder(const BindCallback& callback,
                  const scoped_refptr<base::SequencedTaskRunner>& task_runner)
@@ -54,25 +50,23 @@ class CallbackBinder : public InterfaceBinder<BinderArgs...> {
 
  private:
   // InterfaceBinder:
-  void BindInterface(const BindSourceInfo& source_info,
-                     const std::string& interface_name,
+  void BindInterface(const std::string& interface_name,
                      mojo::ScopedMessagePipeHandle handle,
                      BinderArgs... args) override {
     mojo::InterfaceRequest<Interface> request(std::move(handle));
     if (task_runner_) {
       task_runner_->PostTask(
           FROM_HERE, base::BindOnce(&CallbackBinder::RunCallback, callback_,
-                                    source_info, std::move(request), args...));
+                                    std::move(request), args...));
     } else {
-      RunCallback(callback_, source_info, std::move(request), args...);
+      RunCallback(callback_, std::move(request), args...);
     }
   }
 
   static void RunCallback(const BindCallback& callback,
-                          const BindSourceInfo& source_info,
                           mojo::InterfaceRequest<Interface> request,
                           BinderArgs... args) {
-    callback.Run(source_info, std::move(request), args...);
+    callback.Run(std::move(request), args...);
   }
 
   const BindCallback callback_;
@@ -83,10 +77,8 @@ class CallbackBinder : public InterfaceBinder<BinderArgs...> {
 template <typename... BinderArgs>
 class GenericCallbackBinder : public InterfaceBinder<BinderArgs...> {
  public:
-  using BindCallback = base::Callback<void(const BindSourceInfo&,
-                                           const std::string&,
-                                           mojo::ScopedMessagePipeHandle,
-                                           BinderArgs...)>;
+  using BindCallback = base::Callback<
+      void(const std::string&, mojo::ScopedMessagePipeHandle, BinderArgs...)>;
 
   GenericCallbackBinder(
       const BindCallback& callback,
@@ -102,27 +94,24 @@ class GenericCallbackBinder : public InterfaceBinder<BinderArgs...> {
 
  private:
   // InterfaceBinder:
-  void BindInterface(const BindSourceInfo& source_info,
-                     const std::string& interface_name,
+  void BindInterface(const std::string& interface_name,
                      mojo::ScopedMessagePipeHandle handle,
                      BinderArgs... args) override {
     if (task_runner_) {
       task_runner_->PostTask(
-          FROM_HERE, base::Bind(&GenericCallbackBinder::RunCallback, callback_,
-                                source_info, interface_name,
-                                base::Passed(&handle), args...));
+          FROM_HERE,
+          base::Bind(&GenericCallbackBinder::RunCallback, callback_,
+                     interface_name, base::Passed(&handle), args...));
       return;
     }
-    RunCallback(callback_, source_info, interface_name, std::move(handle),
-                args...);
+    RunCallback(callback_, interface_name, std::move(handle), args...);
   }
 
   static void RunCallback(const BindCallback& callback,
-                          const BindSourceInfo& source_info,
                           const std::string& interface_name,
                           mojo::ScopedMessagePipeHandle handle,
                           BinderArgs... args) {
-    callback.Run(source_info, interface_name, std::move(handle), args...);
+    callback.Run(interface_name, std::move(handle), args...);
   }
 
   const BindCallback callback_;

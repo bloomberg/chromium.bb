@@ -18,7 +18,6 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
 #include "ui/base/ui_features.h"
@@ -107,13 +106,15 @@ class OzonePlatformGbm : public OzonePlatform {
   std::unique_ptr<SystemInputInjector> CreateSystemInputInjector() override {
     return event_factory_ozone_->CreateSystemInputInjector();
   }
-  void AddInterfaces(service_manager::BinderRegistry* registry) override {
+  void AddInterfaces(
+      service_manager::BinderRegistryWithArgs<
+          const service_manager::BindSourceInfo&>* registry) override {
     registry->AddInterface<ozone::mojom::DeviceCursor>(
         base::Bind(&OzonePlatformGbm::Create, base::Unretained(this)),
         gpu_task_runner_);
   }
-  void Create(const service_manager::BindSourceInfo& source_info,
-              ozone::mojom::DeviceCursorRequest request) {
+  void Create(ozone::mojom::DeviceCursorRequest request,
+              const service_manager::BindSourceInfo& source_info) {
     if (drm_thread_proxy_)
       drm_thread_proxy_->AddBinding(std::move(request));
     else

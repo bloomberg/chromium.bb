@@ -105,8 +105,7 @@ void AutoclickApplication::OnBindInterface(
     const service_manager::BindSourceInfo& remote_info,
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
-  registry_.BindInterface(remote_info, interface_name,
-                          std::move(interface_pipe));
+  registry_.BindInterface(interface_name, std::move(interface_pipe));
 }
 
 void AutoclickApplication::Launch(uint32_t what, mash::mojom::LaunchMode how) {
@@ -137,14 +136,12 @@ void AutoclickApplication::SetAutoclickDelay(uint32_t delay_in_milliseconds) {
 }
 
 void AutoclickApplication::BindLaunchableRequest(
-    const service_manager::BindSourceInfo& source_info,
     mash::mojom::LaunchableRequest request) {
   launchable_binding_.Close();
   launchable_binding_.Bind(std::move(request));
 }
 
 void AutoclickApplication::BindAutoclickControllerRequest(
-    const service_manager::BindSourceInfo& source_info,
     mojom::AutoclickControllerRequest request) {
   autoclick_binding_.Close();
   autoclick_binding_.Bind(std::move(request));

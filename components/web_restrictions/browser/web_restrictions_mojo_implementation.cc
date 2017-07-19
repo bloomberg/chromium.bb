@@ -31,7 +31,6 @@ WebRestrictionsMojoImplementation::~WebRestrictionsMojoImplementation() {}
 
 void WebRestrictionsMojoImplementation::Create(
     WebRestrictionsClient* client,
-    const service_manager::BindSourceInfo& source_info,
     mojom::WebRestrictionsRequest request) {
   mojo::MakeStrongBinding(
       base::MakeUnique<WebRestrictionsMojoImplementation>(client),

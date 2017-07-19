@@ -14,7 +14,6 @@
 #include "chrome/common/importer/profile_import.mojom.h"
 #include "chrome/utility/utility_message_handler.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "services/service_manager/public/cpp/bind_source_info.h"
 
 class ExternalProcessImporterBridge;
 class Importer;
@@ -34,8 +33,7 @@ class ProfileImportHandler : public chrome::mojom::ProfileImport {
   ProfileImportHandler();
   ~ProfileImportHandler() override;
 
-  static void Create(const service_manager::BindSourceInfo& source_info,
-                     chrome::mojom::ProfileImportRequest request);
+  static void Create(chrome::mojom::ProfileImportRequest request);
 
  private:
   // chrome::mojom::ProfileImport:

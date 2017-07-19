@@ -8,10 +8,6 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/shape_detection/public/interfaces/facedetection_provider.mojom.h"
 
-namespace service_manager {
-struct BindSourceInfo;
-}
-
 namespace shape_detection {
 
 class FaceDetectionProviderImpl
@@ -20,7 +16,6 @@ class FaceDetectionProviderImpl
   ~FaceDetectionProviderImpl() override = default;
 
   static void Create(
-      const service_manager::BindSourceInfo& source_info,
       shape_detection::mojom::FaceDetectionProviderRequest request) {
     mojo::MakeStrongBinding(base::MakeUnique<FaceDetectionProviderImpl>(),
                             std::move(request));

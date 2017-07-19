@@ -7,16 +7,11 @@
 
 #include "services/shape_detection/public/interfaces/barcodedetection.mojom.h"
 
-namespace service_manager {
-struct BindSourceInfo;
-}
-
 namespace shape_detection {
 
 class BarcodeDetectionImpl {
  public:
-  static void Create(const service_manager::BindSourceInfo& source_info,
-                     shape_detection::mojom::BarcodeDetectionRequest request);
+  static void Create(shape_detection::mojom::BarcodeDetectionRequest request);
 
  private:
   ~BarcodeDetectionImpl() = default;

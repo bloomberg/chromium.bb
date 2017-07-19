@@ -13,17 +13,12 @@
 #error "Spellcheck panel should be enabled."
 #endif
 
-namespace service_manager {
-struct BindSourceInfo;
-}
-
 class SpellCheckPanelHostImpl : public spellcheck::mojom::SpellCheckPanelHost {
  public:
   SpellCheckPanelHostImpl();
   ~SpellCheckPanelHostImpl() override;
 
-  static void Create(const service_manager::BindSourceInfo& source_info,
-                     spellcheck::mojom::SpellCheckPanelHostRequest request);
+  static void Create(spellcheck::mojom::SpellCheckPanelHostRequest request);
 
  private:
   // spellcheck::mojom::SpellCheckPanelHost:

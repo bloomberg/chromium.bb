@@ -25,7 +25,6 @@
 #include "content/public/browser/web_contents_binding_set.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
-#include "services/service_manager/public/cpp/bind_source_info.h"
 #include "ui/gfx/geometry/rect.h"
 
 class Profile;

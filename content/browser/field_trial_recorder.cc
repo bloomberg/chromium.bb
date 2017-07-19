@@ -16,7 +16,6 @@ FieldTrialRecorder::~FieldTrialRecorder() = default;
 
 // static
 void FieldTrialRecorder::Create(
-    const service_manager::BindSourceInfo& source_info,
     mojom::FieldTrialRecorderRequest request) {
   mojo::MakeStrongBinding(base::MakeUnique<FieldTrialRecorder>(),
                           std::move(request));

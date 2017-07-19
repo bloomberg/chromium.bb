@@ -12,6 +12,10 @@
 #include "content/public/common/connection_filter.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 
+namespace service_manager {
+struct BindSourceInfo;
+}
+
 namespace content {
 
 class CONTENT_EXPORT SimpleConnectionFilter : public ConnectionFilter {
@@ -30,6 +34,28 @@ class CONTENT_EXPORT SimpleConnectionFilter : public ConnectionFilter {
   std::unique_ptr<service_manager::BinderRegistry> registry_;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleConnectionFilter);
+};
+
+class CONTENT_EXPORT SimpleConnectionFilterWithSourceInfo
+    : public ConnectionFilter {
+ public:
+  explicit SimpleConnectionFilterWithSourceInfo(
+      std::unique_ptr<service_manager::BinderRegistryWithArgs<
+          const service_manager::BindSourceInfo&>> registry);
+  ~SimpleConnectionFilterWithSourceInfo() override;
+
+  // ConnectionFilter:
+  void OnBindInterface(const service_manager::BindSourceInfo& source_info,
+                       const std::string& interface_name,
+                       mojo::ScopedMessagePipeHandle* interface_pipe,
+                       service_manager::Connector* connector) override;
+
+ private:
+  std::unique_ptr<service_manager::BinderRegistryWithArgs<
+      const service_manager::BindSourceInfo&>>
+      registry_;
+
+  DISALLOW_COPY_AND_ASSIGN(SimpleConnectionFilterWithSourceInfo);
 };
 
 }  // namespace content

@@ -22,7 +22,6 @@ void InstalledAppProviderImplDefault::FilterInstalledApps(
 
 // static
 void InstalledAppProviderImplDefault::Create(
-    const service_manager::BindSourceInfo& source_info,
     blink::mojom::InstalledAppProviderRequest request) {
   mojo::MakeStrongBinding(base::MakeUnique<InstalledAppProviderImplDefault>(),
                           std::move(request));

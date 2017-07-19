@@ -75,7 +75,6 @@ ContentPasswordManagerDriverFactory::FromWebContents(
 
 // static
 void ContentPasswordManagerDriverFactory::BindPasswordManagerDriver(
-    const service_manager::BindSourceInfo& source_info,
     autofill::mojom::PasswordManagerDriverRequest request,
     content::RenderFrameHost* render_frame_host) {
   content::WebContents* web_contents =
@@ -100,7 +99,6 @@ void ContentPasswordManagerDriverFactory::BindPasswordManagerDriver(
 
 // static
 void ContentPasswordManagerDriverFactory::BindSensitiveInputVisibilityService(
-    const service_manager::BindSourceInfo& source_info,
     blink::mojom::SensitiveInputVisibilityServiceRequest request,
     content::RenderFrameHost* render_frame_host) {
   content::WebContents* web_contents =

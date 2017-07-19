@@ -79,7 +79,6 @@ PresentationServiceImpl::~PresentationServiceImpl() {
 // static
 void PresentationServiceImpl::CreateMojoService(
     RenderFrameHost* render_frame_host,
-    const service_manager::BindSourceInfo& source_info,
     blink::mojom::PresentationServiceRequest request) {
   DVLOG(2) << "CreateMojoService";
   WebContents* web_contents =

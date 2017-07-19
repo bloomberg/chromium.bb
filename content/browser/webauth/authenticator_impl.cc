@@ -37,7 +37,6 @@ std::string SerializeValueToJson(const base::Value& value) {
 // static
 void AuthenticatorImpl::Create(
     RenderFrameHost* render_frame_host,
-    const service_manager::BindSourceInfo& source_info,
     webauth::mojom::AuthenticatorRequest request) {
   auto authenticator_impl =
       base::WrapUnique(new AuthenticatorImpl(render_frame_host));

@@ -434,24 +434,16 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   void BindRouteProvider(mojom::RouteProviderAssociatedRequest request);
 
-  void CreateMusGpuRequest(const service_manager::BindSourceInfo& source_info,
-                           ui::mojom::GpuRequest request);
+  void CreateMusGpuRequest(ui::mojom::GpuRequest request);
   void CreateOffscreenCanvasProvider(
-      const service_manager::BindSourceInfo& source_info,
       blink::mojom::OffscreenCanvasProviderRequest request);
-  void BindFrameSinkProvider(const service_manager::BindSourceInfo& source_info,
-                             mojom::FrameSinkProviderRequest request);
+  void BindFrameSinkProvider(mojom::FrameSinkProviderRequest request);
   void BindSharedBitmapAllocationNotifier(
-      const service_manager::BindSourceInfo& source_info,
       cc::mojom::SharedBitmapAllocationNotifierRequest request);
   void CreateStoragePartitionService(
-      const service_manager::BindSourceInfo& source_info,
       mojom::StoragePartitionServiceRequest request);
-  void CreateRendererHost(const service_manager::BindSourceInfo& source_info,
-                          mojom::RendererHostRequest request);
-  void CreateURLLoaderFactory(
-      const service_manager::BindSourceInfo& source_info,
-      mojom::URLLoaderFactoryRequest request);
+  void CreateRendererHost(mojom::RendererHostRequest request);
+  void CreateURLLoaderFactory(mojom::URLLoaderFactoryRequest request);
 
   // Control message handlers.
   void OnShutdownRequest();
@@ -517,8 +509,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   template <typename InterfaceType>
   using AddInterfaceCallback =
-      base::Callback<void(const service_manager::BindSourceInfo&,
-                          mojo::InterfaceRequest<InterfaceType>)>;
+      base::Callback<void(mojo::InterfaceRequest<InterfaceType>)>;
 
   template <typename CallbackType>
   struct InterfaceGetter;
@@ -528,11 +519,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
     static void GetInterfaceOnUIThread(
         base::WeakPtr<RenderProcessHostImpl> weak_host,
         const AddInterfaceCallback<InterfaceType>& callback,
-        const service_manager::BindSourceInfo& source_info,
         mojo::InterfaceRequest<InterfaceType> request) {
       if (!weak_host)
         return;
-      callback.Run(source_info, std::move(request));
+      callback.Run(std::move(request));
     }
   };
 

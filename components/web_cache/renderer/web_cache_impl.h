@@ -13,10 +13,6 @@
 #include "components/web_cache/public/interfaces/web_cache.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 
-namespace service_manager {
-struct BindSourceInfo;
-}
-
 namespace web_cache {
 
 // This class implements the Mojo interface mojom::WebCache.
@@ -25,8 +21,7 @@ class WebCacheImpl : public mojom::WebCache {
   WebCacheImpl();
   ~WebCacheImpl() override;
 
-  void BindRequest(const service_manager::BindSourceInfo& source_info,
-                   mojom::WebCacheRequest web_cache_request);
+  void BindRequest(mojom::WebCacheRequest web_cache_request);
 
   // Needs to be called by RenderViews in case of navigations to execute
   // any 'clear cache' commands that were delayed until the next navigation.

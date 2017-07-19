@@ -39,7 +39,6 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   bool IsHandledURL(const GURL& url) override;
   void BindInterfaceRequestFromFrame(
       content::RenderFrameHost* render_frame_host,
-      const service_manager::BindSourceInfo& source_info,
       const std::string& interface_name,
       mojo::ScopedMessagePipeHandle interface_pipe) override;
   void RegisterInProcessServices(StaticServiceMap* services) override;
@@ -115,7 +114,7 @@ class ShellContentBrowserClient : public ContentBrowserClient {
 
   base::Closure select_client_certificate_callback_;
 
-  service_manager::BinderRegistryWithParams<content::RenderFrameHost*>
+  service_manager::BinderRegistryWithArgs<content::RenderFrameHost*>
       frame_interfaces_;
 
   ShellBrowserMainParts* shell_browser_main_parts_;

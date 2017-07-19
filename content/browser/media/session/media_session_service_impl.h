@@ -10,10 +10,6 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/WebKit/public/platform/modules/mediasession/media_session.mojom.h"
 
-namespace service_manager {
-struct BindSourceInfo;
-}
-
 namespace content {
 
 class RenderFrameHost;
@@ -28,7 +24,6 @@ class CONTENT_EXPORT MediaSessionServiceImpl
   ~MediaSessionServiceImpl() override;
 
   static void Create(RenderFrameHost* render_frame_host,
-                     const service_manager::BindSourceInfo& source_info,
                      blink::mojom::MediaSessionServiceRequest request);
   const blink::mojom::MediaSessionClientPtr& GetClient() { return client_; }
   RenderFrameHost* GetRenderFrameHost();

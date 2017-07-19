@@ -22,7 +22,6 @@
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/service_manager/public/cpp/bind_source_info.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
 
 namespace blink {
@@ -46,8 +45,7 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   explicit PasswordAutofillAgent(content::RenderFrame* render_frame);
   ~PasswordAutofillAgent() override;
 
-  void BindRequest(const service_manager::BindSourceInfo& source_info,
-                   mojom::PasswordAutofillAgentRequest request);
+  void BindRequest(mojom::PasswordAutofillAgentRequest request);
 
   void SetAutofillAgent(AutofillAgent* autofill_agent);
 

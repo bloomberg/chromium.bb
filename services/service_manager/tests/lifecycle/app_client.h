@@ -33,8 +33,7 @@ class AppClient : public Service,
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
   bool OnServiceManagerConnectionLost() override;
 
-  void Create(const BindSourceInfo& source_info,
-              mojom::LifecycleControlRequest request);
+  void Create(mojom::LifecycleControlRequest request);
 
   // LifecycleControl:
   void Ping(PingCallback callback) override;

@@ -75,14 +75,14 @@ class ConnectTestApp : public Service,
   void OnBindInterface(const BindSourceInfo& source_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override {
-    registry_.BindInterface(source_info, interface_name,
-                            std::move(interface_pipe));
+    registry_.BindInterface(interface_name, std::move(interface_pipe),
+                            source_info);
   }
 
   // InterfaceFactory<test::mojom::ConnectTestService>:
   void BindConnectTestServiceRequest(
-      const BindSourceInfo& source_info,
-      test::mojom::ConnectTestServiceRequest request) {
+      test::mojom::ConnectTestServiceRequest request,
+      const BindSourceInfo& source_info) {
     bindings_.AddBinding(this, std::move(request));
     test::mojom::ConnectionStatePtr state(test::mojom::ConnectionState::New());
     state->connection_remote_name = source_info.identity.name();
@@ -94,19 +94,18 @@ class ConnectTestApp : public Service,
     caller_->ConnectionAccepted(std::move(state));
   }
 
-  void BindStandaloneAppRequest(const BindSourceInfo& source_info,
-                                test::mojom::StandaloneAppRequest request) {
+  void BindStandaloneAppRequest(test::mojom::StandaloneAppRequest request,
+                                const BindSourceInfo& source_info) {
     standalone_bindings_.AddBinding(this, std::move(request));
   }
 
-  void BindBlockedInterfaceRequest(
-      const BindSourceInfo& source_info,
-      test::mojom::BlockedInterfaceRequest request) {
+  void BindBlockedInterfaceRequest(test::mojom::BlockedInterfaceRequest request,
+                                   const BindSourceInfo& source_info) {
     blocked_bindings_.AddBinding(this, std::move(request));
   }
 
-  void BindUserIdTestRequest(const BindSourceInfo& source_info,
-                             test::mojom::UserIdTestRequest request) {
+  void BindUserIdTestRequest(test::mojom::UserIdTestRequest request,
+                             const BindSourceInfo& source_info) {
     user_id_test_bindings_.AddBinding(this, std::move(request));
   }
 
@@ -207,7 +206,7 @@ class ConnectTestApp : public Service,
       base::MessageLoop::current()->QuitWhenIdle();
   }
 
-  BinderRegistry registry_;
+  BinderRegistryWithArgs<const BindSourceInfo&> registry_;
   mojo::BindingSet<test::mojom::ConnectTestService> bindings_;
   mojo::BindingSet<test::mojom::StandaloneApp> standalone_bindings_;
   mojo::BindingSet<test::mojom::BlockedInterface> blocked_bindings_;

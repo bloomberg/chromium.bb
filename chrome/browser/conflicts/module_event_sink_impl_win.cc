@@ -120,7 +120,6 @@ void ModuleEventSinkImpl::Create(
     GetProcessHandleCallback get_process_handle,
     content::ProcessType process_type,
     ModuleDatabase* module_database,
-    const service_manager::BindSourceInfo& source_info,
     mojom::ModuleEventSinkRequest request) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   base::ProcessHandle process = get_process_handle.Run();

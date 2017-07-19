@@ -11,10 +11,6 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 
-namespace service_manager {
-struct BindSourceInfo;
-}
-
 namespace chromecast {
 
 class MemoryPressureControllerImpl : public mojom::MemoryPressureController {
@@ -22,8 +18,7 @@ class MemoryPressureControllerImpl : public mojom::MemoryPressureController {
   MemoryPressureControllerImpl();
   ~MemoryPressureControllerImpl() override;
 
-  void AddBinding(const service_manager::BindSourceInfo& source_info,
-                  mojom::MemoryPressureControllerRequest request);
+  void AddBinding(mojom::MemoryPressureControllerRequest request);
 
  private:
   // chromecast::mojom::MemoryPressure implementation.

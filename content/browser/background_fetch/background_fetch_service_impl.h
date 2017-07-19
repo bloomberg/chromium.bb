@@ -15,10 +15,6 @@
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/modules/background_fetch/background_fetch.mojom.h"
 
-namespace service_manager {
-struct BindSourceInfo;
-}
-
 namespace url {
 class Origin;
 }
@@ -40,7 +36,6 @@ class CONTENT_EXPORT BackgroundFetchServiceImpl
   static void Create(
       int render_process_id,
       scoped_refptr<BackgroundFetchContext> background_fetch_context,
-      const service_manager::BindSourceInfo& source_info,
       blink::mojom::BackgroundFetchServiceRequest request);
 
   // blink::mojom::BackgroundFetchService implementation.

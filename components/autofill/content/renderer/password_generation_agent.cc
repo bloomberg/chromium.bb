@@ -174,7 +174,6 @@ PasswordGenerationAgent::PasswordGenerationAgent(
 PasswordGenerationAgent::~PasswordGenerationAgent() {}
 
 void PasswordGenerationAgent::BindRequest(
-    const service_manager::BindSourceInfo& source_info,
     mojom::PasswordGenerationAgentRequest request) {
   binding_.Bind(std::move(request));
 }

@@ -51,7 +51,6 @@ void WiFiDisplayMediaServiceImpl::Create(
 
 // static
 void WiFiDisplayMediaServiceImpl::BindToRequest(
-    const service_manager::BindSourceInfo& source_info,
     mojom::WiFiDisplayMediaServiceRequest request) {
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::Bind(WiFiDisplayMediaServiceImpl::Create,
