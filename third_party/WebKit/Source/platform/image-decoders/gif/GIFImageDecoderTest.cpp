@@ -416,9 +416,7 @@ namespace {
 // Needed to exercise ImageDecoder::SetMemoryAllocator, but still does the
 // default allocation.
 class Allocator final : public SkBitmap::Allocator {
-  bool allocPixelRef(SkBitmap* dst, SkColorTable* ctable) override {
-    return dst->tryAllocPixels(ctable);
-  }
+  bool allocPixelRef(SkBitmap* dst) override { return dst->tryAllocPixels(); }
 };
 }
 

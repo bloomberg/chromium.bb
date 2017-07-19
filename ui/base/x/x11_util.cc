@@ -1103,7 +1103,7 @@ bool CopyAreaToCanvas(XID drawable,
     SkBitmap bitmap;
     bitmap.installPixels(
         SkImageInfo::MakeN32Premul(image->width, image->height), image->data,
-        image->bytes_per_line, nullptr, &ReleaseXImage, image.release());
+        image->bytes_per_line, &ReleaseXImage, image.release());
     gfx::ImageSkia image_skia;
     gfx::ImageSkiaRep image_rep(bitmap, canvas->image_scale());
     image_skia.AddRepresentation(image_rep);

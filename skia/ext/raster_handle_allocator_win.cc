@@ -139,8 +139,8 @@ std::unique_ptr<SkCanvas> CreatePlatformCanvasWithSharedSection(
         MapViewOfFile(shared_section, FILE_MAP_WRITE, 0, 0, row_bytes * height);
     if (pixels) {
       SkBitmap bitmap;
-      if (bitmap.installPixels(info, pixels, row_bytes, nullptr,
-                               unmap_view_proc, nullptr)) {
+      if (bitmap.installPixels(info, pixels, row_bytes, unmap_view_proc,
+                               nullptr)) {
         return base::MakeUnique<SkCanvas>(bitmap);
       }
     }

@@ -78,7 +78,7 @@ class ExternalMemoryAllocator final : public SkBitmap::Allocator {
                           size_t row_bytes)
       : info_(info), pixels_(pixels), row_bytes_(row_bytes) {}
 
-  bool allocPixelRef(SkBitmap* dst, SkColorTable* ctable) override {
+  bool allocPixelRef(SkBitmap* dst) override {
     const SkImageInfo& info = dst->info();
     if (kUnknown_SkColorType == info.colorType())
       return false;

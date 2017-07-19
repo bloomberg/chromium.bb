@@ -375,7 +375,7 @@ SkBitmap ImageOperations::Resize(const SkBitmap& source,
   // Convolve into the result.
   SkBitmap result;
   result.setInfo(SkImageInfo::MakeN32(dest_subset.width(), dest_subset.height(), source.alphaType()));
-  result.allocPixels(allocator, NULL);
+  result.allocPixels(allocator);
   if (!result.readyToDraw())
     return SkBitmap();
 
