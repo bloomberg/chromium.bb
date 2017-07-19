@@ -24,8 +24,6 @@
 #include "net/log/net_log_util.h"
 #include "net/url_request/url_request_context.h"
 
-// TODO(eroman): Move implementations to match declaration order.
-
 namespace {
 
 // Number of events that can build up in |write_queue_| before a task is posted
@@ -314,42 +312,6 @@ std::unique_ptr<FileNetLogObserver> FileNetLogObserver::CreateBounded(
                                std::move(constants));
 }
 
-std::unique_ptr<FileNetLogObserver> FileNetLogObserver::CreateBoundedInternal(
-    const base::FilePath& log_path,
-    size_t max_total_size,
-    size_t total_num_event_files,
-    std::unique_ptr<base::Value> constants) {
-  DCHECK_GT(total_num_event_files, 0u);
-
-  scoped_refptr<base::SequencedTaskRunner> file_task_runner =
-      CreateFileTaskRunner();
-
-  const size_t max_event_file_size =
-      max_total_size == kNoLimit ? kNoLimit
-                                 : max_total_size / total_num_event_files;
-
-  // The FileWriter uses a soft limit to write events to file that allows
-  // the size of the file to exceed the limit, but the WriteQueue uses a hard
-  // limit which the size of |WriteQueue::queue_| cannot exceed. Thus, the
-  // FileWriter may write more events to file than can be contained by
-  // the WriteQueue if they have the same size limit. The maximum size of the
-  // WriteQueue is doubled to allow |WriteQueue::queue_| to hold enough events
-  // for the FileWriter to fill all files. As long as all events have
-  // sizes <= the size of an individual event file, the discrepancy between the
-  // hard limit and the soft limit will not cause an issue.
-  // TODO(dconnol): Handle the case when the WriteQueue  still doesn't
-  // contain enough events to fill all files, because of very large events
-  // relative to file size.
-  std::unique_ptr<FileWriter> file_writer(new FileWriter(
-      log_path, max_event_file_size, total_num_event_files, file_task_runner));
-
-  scoped_refptr<WriteQueue> write_queue(new WriteQueue(max_total_size * 2));
-
-  return std::unique_ptr<FileNetLogObserver>(
-      new FileNetLogObserver(file_task_runner, std::move(file_writer),
-                             std::move(write_queue), std::move(constants)));
-}
-
 std::unique_ptr<FileNetLogObserver> FileNetLogObserver::CreateUnbounded(
     const base::FilePath& log_path,
     std::unique_ptr<base::Value> constants) {
@@ -421,6 +383,42 @@ std::unique_ptr<FileNetLogObserver> FileNetLogObserver::CreateBoundedForTests(
                                std::move(constants));
 }
 
+std::unique_ptr<FileNetLogObserver> FileNetLogObserver::CreateBoundedInternal(
+    const base::FilePath& log_path,
+    size_t max_total_size,
+    size_t total_num_event_files,
+    std::unique_ptr<base::Value> constants) {
+  DCHECK_GT(total_num_event_files, 0u);
+
+  scoped_refptr<base::SequencedTaskRunner> file_task_runner =
+      CreateFileTaskRunner();
+
+  const size_t max_event_file_size =
+      max_total_size == kNoLimit ? kNoLimit
+                                 : max_total_size / total_num_event_files;
+
+  // The FileWriter uses a soft limit to write events to file that allows
+  // the size of the file to exceed the limit, but the WriteQueue uses a hard
+  // limit which the size of |WriteQueue::queue_| cannot exceed. Thus, the
+  // FileWriter may write more events to file than can be contained by
+  // the WriteQueue if they have the same size limit. The maximum size of the
+  // WriteQueue is doubled to allow |WriteQueue::queue_| to hold enough events
+  // for the FileWriter to fill all files. As long as all events have
+  // sizes <= the size of an individual event file, the discrepancy between the
+  // hard limit and the soft limit will not cause an issue.
+  // TODO(dconnol): Handle the case when the WriteQueue  still doesn't
+  // contain enough events to fill all files, because of very large events
+  // relative to file size.
+  std::unique_ptr<FileWriter> file_writer(new FileWriter(
+      log_path, max_event_file_size, total_num_event_files, file_task_runner));
+
+  scoped_refptr<WriteQueue> write_queue(new WriteQueue(max_total_size * 2));
+
+  return std::unique_ptr<FileNetLogObserver>(
+      new FileNetLogObserver(file_task_runner, std::move(file_writer),
+                             std::move(write_queue), std::move(constants)));
+}
+
 FileNetLogObserver::FileNetLogObserver(
     scoped_refptr<base::SequencedTaskRunner> file_task_runner,
     std::unique_ptr<FileWriter> file_writer,
@@ -466,13 +464,6 @@ void FileNetLogObserver::WriteQueue::SwapQueue(EventQueue* local_queue) {
 
 FileNetLogObserver::WriteQueue::~WriteQueue() {}
 
-void FileNetLogObserver::FileWriter::FlushThenStop(
-    scoped_refptr<FileNetLogObserver::WriteQueue> write_queue,
-    std::unique_ptr<base::Value> polled_data) {
-  Flush(write_queue);
-  Stop(std::move(polled_data));
-}
-
 FileNetLogObserver::FileWriter::FileWriter(
     const base::FilePath& log_path,
     size_t max_event_file_size,
@@ -504,57 +495,6 @@ void FileNetLogObserver::FileWriter::Initialize(
   }
 }
 
-void FileNetLogObserver::FileWriter::WriteConstantsToFile(
-    std::unique_ptr<base::Value> constants_value,
-    FILE* file) {
-  // Print constants to file and open events array.
-  std::string json;
-
-  // It should always be possible to convert constants to JSON.
-  if (!base::JSONWriter::Write(*constants_value, &json))
-    DCHECK(false);
-  WriteToFile(file, "{\"constants\":", json, ",\n\"events\": [\n");
-}
-
-void FileNetLogObserver::FileWriter::CreateInprogressDirectory() const {
-  DCHECK(IsBounded());
-
-  // base::CreateDirectory() creates missing parent directories. Since the
-  // target directory is a sibling to |final_log_path_|, if that file couldn't
-  // be opened don't attempt to create the directory either.
-  if (!final_log_file_)
-    return;
-
-  if (!base::CreateDirectory(GetInprogressDirectory())) {
-    LOG(WARNING) << "Failed creating directory: "
-                 << GetInprogressDirectory().value();
-    return;
-  }
-
-  // It is OK if the path is wrong due to encoding - this is really just a
-  // convenience display for the user in understanding what the file means.
-  std::string in_progress_path = GetInprogressDirectory().AsUTF8Unsafe();
-
-  // Since |final_log_file_| will not be written to until the very end, leave
-  // some data in it explaining that the real data is currently in the
-  // .inprogress directory. This ordinarily won't be visible (overwritten when
-  // stopping) however if logging does not end gracefully the comments are
-  // useful for recovery.
-  WriteToFile(
-      final_log_file_.get(), "Logging is in progress writing data to:\n    ",
-      in_progress_path,
-      "\n\n"
-      "That data will be stitched into a single file (this one) once logging\n"
-      "has stopped.\n"
-      "\n"
-      "If logging was interrupted, you can stitch a NetLog file out of the\n"
-      ".inprogress directory manually using:\n"
-      "\n"
-      "https://chromium.googlesource.com/chromium/src/+/master/net/tools/"
-      "stitch_net_log_files.py\n");
-  fflush(final_log_file_.get());
-}
-
 void FileNetLogObserver::FileWriter::Stop(
     std::unique_ptr<base::Value> polled_data) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
@@ -576,62 +516,6 @@ void FileNetLogObserver::FileWriter::Stop(
 
   // Ensure the final log file has been flushed.
   final_log_file_.reset();
-}
-
-void FileNetLogObserver::FileWriter::WritePolledDataToFile(
-    std::unique_ptr<base::Value> polled_data,
-    FILE* file) {
-  // Close the events array.
-  WriteToFile(file, "]");
-
-  // Write the polled data (if any).
-  if (polled_data) {
-    std::string polled_data_json;
-    base::JSONWriter::Write(*polled_data, &polled_data_json);
-    if (!polled_data_json.empty())
-      WriteToFile(file, ",\n\"polledData\": ", polled_data_json, "\n");
-  }
-
-  // Close the log.
-  WriteToFile(file, "}\n");
-}
-
-bool FileNetLogObserver::FileWriter::IsUnbounded() const {
-  return max_event_file_size_ == kNoLimit;
-}
-
-bool FileNetLogObserver::FileWriter::IsBounded() const {
-  return !IsUnbounded();
-}
-
-void FileNetLogObserver::FileWriter::IncrementCurrentEventFile() {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  DCHECK(IsBounded());
-
-  current_event_file_number_++;
-  current_event_file_ = OpenFileForWrite(
-      GetEventFilePath(FileNumberToIndex(current_event_file_number_)));
-  current_event_file_size_ = 0;
-}
-
-base::FilePath FileNetLogObserver::FileWriter::GetInprogressDirectory() const {
-  return final_log_path_.AddExtension(FILE_PATH_LITERAL(".inprogress"));
-}
-
-base::FilePath FileNetLogObserver::FileWriter::GetEventFilePath(
-    size_t index) const {
-  DCHECK_LT(index, total_num_event_files_);
-  DCHECK(IsBounded());
-  return GetInprogressDirectory().AppendASCII(
-      "event_file_" + base::SizeTToString(index) + ".json");
-}
-
-base::FilePath FileNetLogObserver::FileWriter::GetConstantsFilePath() const {
-  return GetInprogressDirectory().AppendASCII("constants.json");
-}
-
-base::FilePath FileNetLogObserver::FileWriter::GetClosingFilePath() const {
-  return GetInprogressDirectory().AppendASCII("end_netlog.json");
 }
 
 void FileNetLogObserver::FileWriter::Flush(
@@ -682,11 +566,86 @@ void FileNetLogObserver::FileWriter::DeleteAllFiles() {
   base::DeleteFile(final_log_path_, false);
 }
 
+void FileNetLogObserver::FileWriter::FlushThenStop(
+    scoped_refptr<FileNetLogObserver::WriteQueue> write_queue,
+    std::unique_ptr<base::Value> polled_data) {
+  Flush(write_queue);
+  Stop(std::move(polled_data));
+}
+
+bool FileNetLogObserver::FileWriter::IsUnbounded() const {
+  return max_event_file_size_ == kNoLimit;
+}
+
+bool FileNetLogObserver::FileWriter::IsBounded() const {
+  return !IsUnbounded();
+}
+
+void FileNetLogObserver::FileWriter::IncrementCurrentEventFile() {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(IsBounded());
+
+  current_event_file_number_++;
+  current_event_file_ = OpenFileForWrite(
+      GetEventFilePath(FileNumberToIndex(current_event_file_number_)));
+  current_event_file_size_ = 0;
+}
+
+base::FilePath FileNetLogObserver::FileWriter::GetInprogressDirectory() const {
+  return final_log_path_.AddExtension(FILE_PATH_LITERAL(".inprogress"));
+}
+
+base::FilePath FileNetLogObserver::FileWriter::GetEventFilePath(
+    size_t index) const {
+  DCHECK_LT(index, total_num_event_files_);
+  DCHECK(IsBounded());
+  return GetInprogressDirectory().AppendASCII(
+      "event_file_" + base::SizeTToString(index) + ".json");
+}
+
+base::FilePath FileNetLogObserver::FileWriter::GetConstantsFilePath() const {
+  return GetInprogressDirectory().AppendASCII("constants.json");
+}
+
+base::FilePath FileNetLogObserver::FileWriter::GetClosingFilePath() const {
+  return GetInprogressDirectory().AppendASCII("end_netlog.json");
+}
+
 size_t FileNetLogObserver::FileWriter::FileNumberToIndex(
     size_t file_number) const {
   DCHECK_GT(file_number, 0u);
   // Note that "file numbers" start at 1 not 0.
   return (file_number - 1) % total_num_event_files_;
+}
+
+void FileNetLogObserver::FileWriter::WriteConstantsToFile(
+    std::unique_ptr<base::Value> constants_value,
+    FILE* file) {
+  // Print constants to file and open events array.
+  std::string json;
+
+  // It should always be possible to convert constants to JSON.
+  if (!base::JSONWriter::Write(*constants_value, &json))
+    DCHECK(false);
+  WriteToFile(file, "{\"constants\":", json, ",\n\"events\": [\n");
+}
+
+void FileNetLogObserver::FileWriter::WritePolledDataToFile(
+    std::unique_ptr<base::Value> polled_data,
+    FILE* file) {
+  // Close the events array.
+  WriteToFile(file, "]");
+
+  // Write the polled data (if any).
+  if (polled_data) {
+    std::string polled_data_json;
+    base::JSONWriter::Write(*polled_data, &polled_data_json);
+    if (!polled_data_json.empty())
+      WriteToFile(file, ",\n\"polledData\": ", polled_data_json, "\n");
+  }
+
+  // Close the log.
+  WriteToFile(file, "}\n");
 }
 
 void FileNetLogObserver::FileWriter::RewindIfWroteEventBytes(FILE* file) const {
@@ -738,6 +697,45 @@ void FileNetLogObserver::FileWriter::StitchFinalLogFile() {
   // Delete the inprogress directory (and anything that may still be left inside
   // it).
   base::DeleteFile(GetInprogressDirectory(), true);
+}
+
+void FileNetLogObserver::FileWriter::CreateInprogressDirectory() const {
+  DCHECK(IsBounded());
+
+  // base::CreateDirectory() creates missing parent directories. Since the
+  // target directory is a sibling to |final_log_path_|, if that file couldn't
+  // be opened don't attempt to create the directory either.
+  if (!final_log_file_)
+    return;
+
+  if (!base::CreateDirectory(GetInprogressDirectory())) {
+    LOG(WARNING) << "Failed creating directory: "
+                 << GetInprogressDirectory().value();
+    return;
+  }
+
+  // It is OK if the path is wrong due to encoding - this is really just a
+  // convenience display for the user in understanding what the file means.
+  std::string in_progress_path = GetInprogressDirectory().AsUTF8Unsafe();
+
+  // Since |final_log_file_| will not be written to until the very end, leave
+  // some data in it explaining that the real data is currently in the
+  // .inprogress directory. This ordinarily won't be visible (overwritten when
+  // stopping) however if logging does not end gracefully the comments are
+  // useful for recovery.
+  WriteToFile(
+      final_log_file_.get(), "Logging is in progress writing data to:\n    ",
+      in_progress_path,
+      "\n\n"
+      "That data will be stitched into a single file (this one) once logging\n"
+      "has stopped.\n"
+      "\n"
+      "If logging was interrupted, you can stitch a NetLog file out of the\n"
+      ".inprogress directory manually using:\n"
+      "\n"
+      "https://chromium.googlesource.com/chromium/src/+/master/net/tools/"
+      "stitch_net_log_files.py\n");
+  fflush(final_log_file_.get());
 }
 
 }  // namespace net
