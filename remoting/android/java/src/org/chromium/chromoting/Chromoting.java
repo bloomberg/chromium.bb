@@ -119,6 +119,13 @@ public class Chromoting extends AppCompatActivity implements ConnectionListener,
     /** The currently-connected Client, if any. */
     private Client mClient;
 
+    /**
+     * Set in onActivityResult() if a child Activity for user sign-in reported failure or
+     * cancellation. The flag is used to avoid triggering the sign-in infinitely often, when this
+     * Activity is brought to the foreground.
+     */
+    private boolean mSignInCancelled;
+
     /** Shows a warning explaining that a Google account is required, then closes the activity. */
     private void showNoAccountsDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -346,6 +353,21 @@ public class Chromoting extends AppCompatActivity implements ConnectionListener,
 
         String[] recentsArray = recents.toArray(new String[recents.size()]);
         mAccountSwitcher.setSelectedAndRecentAccounts(selected, recentsArray);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        // Trigger this in onResume() instead of onStart(), so that it happens after any
+        // onActivityResult() notification which computes the mSignInCancelled flag.
+        // If the user had just backed out of a sign-in screen, it is important not to re-trigger
+        // the sign-in screen otherwise the application is placed in an infinite loop (if the user
+        // is unable or unwilling to sign in to the account). This gives the user an opportunity to
+        // open the navigation drawer and switch accounts if needed.
+        // Note that reloadAccounts() is called here unconditionally, but the resulting call to
+        // refreshHostList() (from onAccountSelected()) is conditional on mSignInCancelled being
+        // false. This is to ensure the accounts list is always up to date.
         mAccountSwitcher.reloadAccounts();
     }
 
@@ -387,6 +409,8 @@ public class Chromoting extends AppCompatActivity implements ConnectionListener,
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         mAccountSwitcher.onActivityResult(requestCode, resultCode, data);
 
+        mSignInCancelled = false;
+
         if (requestCode == OAuthTokenFetcher.REQUEST_CODE_RECOVER_FROM_OAUTH_ERROR) {
             if (resultCode == RESULT_OK) {
                 // User gave OAuth permission to this app (or recovered from any OAuth failure),
@@ -398,6 +422,7 @@ public class Chromoting extends AppCompatActivity implements ConnectionListener,
                 refreshHostList();
             } else {
                 // User denied permission or cancelled the dialog, so cancel the request.
+                mSignInCancelled = true;
                 updateHostListView();
             }
         }
@@ -598,7 +623,14 @@ public class Chromoting extends AppCompatActivity implements ConnectionListener,
         // The current host list is no longer valid for the new account, so clear the list.
         mHosts = new HostInfo[0];
         updateUi();
-        refreshHostList();
+
+        // refreshHostList() can trigger an account sign-in screen, so avoid calling it again if
+        // the user had previously cancelled sign-in (or sign-in failed).
+        if (mSignInCancelled) {
+            mSignInCancelled = false;
+        } else {
+            refreshHostList();
+        }
     }
 
     @Override
