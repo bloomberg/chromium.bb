@@ -743,11 +743,29 @@ FileTasks.prototype.updateOpenComboButton_ = function(combobutton, tasks) {
  * @param {!Array<!Object>} tasks
  */
 FileTasks.prototype.updateShareMenuButton_ = function(shareMenuButton, tasks) {
-  shareMenuButton.hidden = tasks.length == 0;
-  if (tasks.length == 0)
-    return;
+  var driveShareCommand =
+      shareMenuButton.menu.querySelector('cr-menu-item[command="#share"]');
+  var driveShareCommandSeparator =
+      shareMenuButton.menu.querySelector('#drive-share-separator');
 
-  shareMenuButton.menu.clear();
+  shareMenuButton.hidden = driveShareCommand.disabled && tasks.length == 0;
+
+  // Show the separator if Drive share command is enabled and there is at least
+  // one other share actions.
+  driveShareCommandSeparator.hidden =
+      driveShareCommand.disabled || tasks.length == 0;
+
+  // Clear menu items except for drive share menu and a separator for it.
+  // As querySelectorAll() returns live NodeList, we need to copy elements to
+  // Array object to modify DOM in the for loop.
+  var itemsToRemove = [].slice.call(
+      shareMenuButton.menu.querySelectorAll('cr-menu-item[command~="share"]'));
+  for (var i = 0; i < itemsToRemove.length; i++) {
+    var item = itemsToRemove[i];
+    item.parentNode.removeChild(item);
+  }
+
+  // Add menu items for the new tasks.
   var items = this.createItems_(tasks);
   for (var i = 0; i < items.length; i++) {
     var menuitem = shareMenuButton.menu.addMenuItem(items[i]);

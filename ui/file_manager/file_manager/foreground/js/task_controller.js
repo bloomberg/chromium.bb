@@ -148,6 +148,11 @@ TaskController.createTemporaryDisabledTaskItem_ = function() {
  * @private
  */
 TaskController.prototype.onTaskItemClicked_ = function(event) {
+  // If the clicked target has an associated command, the click event should not
+  // be handled here since it is handled as a command.
+  if (event.target && event.target.command)
+    return;
+
   // 'select' event from ComboButton has the item as event.item.
   // 'activate' event from cr.ui.MenuButton has the item as event.target.data.
   var item = event.item || event.target.data;

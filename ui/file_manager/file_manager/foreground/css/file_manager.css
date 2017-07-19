@@ -363,18 +363,6 @@ body.check-select #share-menu-button > .icon {
       url(../images/files/ui/2x/share.png) 2x);
 }
 
-#share-button > .icon {
-  background-image: -webkit-image-set(
-      url(../images/files/ui/person_add_white.png) 1x,
-      url(../images/files/ui/2x/person_add_white.png) 2x);
-}
-
-body.check-select #share-button > .icon {
-  background-image: -webkit-image-set(
-      url(../images/files/ui/person_add.png) 1x,
-      url(../images/files/ui/2x/person_add.png) 2x);
-}
-
 #delete-button > .icon {
   background-image: -webkit-image-set(
       url(../images/files/ui/delete_white.png) 1x,
@@ -1653,6 +1641,12 @@ body.check-select #list-container list li[selected] .detail-thumbnail
 #tasks-menu cr-menu-item:not(.change-default) {
   background-position: left 10px center;
   padding-left: 32px;
+}
+
+#share-menu cr-menu-item[command='#share'] {
+  background-image: -webkit-image-set(
+      url(../images/files/ui/person_add.png) 1x,
+      url(../images/files/ui/2x/person_add.png) 2x);
 }
 
 .detail-name > * {
