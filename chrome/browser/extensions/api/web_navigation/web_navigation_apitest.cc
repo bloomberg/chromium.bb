@@ -487,7 +487,9 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, SimpleLoad) {
   ASSERT_TRUE(RunExtensionTest("webnavigation/simpleLoad")) << message_;
 }
 
-#if defined(OS_WIN)  // http://crbug.com/477840
+// Flaky on Windows and Mac. See http://crbug.com/477480 (Windows) and
+// https://crbug.com/746407 (Mac).
+#if defined(OS_WIN) || defined(OS_MACOSX)
 #define MAYBE_Failures DISABLED_Failures
 #else
 #define MAYBE_Failures Failures
