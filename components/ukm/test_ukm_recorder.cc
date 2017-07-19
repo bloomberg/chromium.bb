@@ -240,4 +240,12 @@ void TestUkmRecorder::ExpectMetrics(
       << "Failed to find expected_values for metric: " << metric_name;
 }
 
+std::vector<int64_t> TestUkmRecorder::GetMetrics(
+    const UkmSource& source,
+    const char* event_name,
+    const char* metric_name) const {
+  mojom::UkmEntryPtr entry = GetMergedEntryForSourceID(source.id(), event_name);
+  return GetValuesForMetric(entry.get(), metric_name);
+}
+
 }  // namespace ukm

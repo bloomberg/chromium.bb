@@ -565,4 +565,29 @@ TEST(PasswordFormMetricsRecorder, SequencesOfBubbles) {
       static_cast<int64_t>(BubbleTrigger::kPasswordManagerSuggestionManual));
 }
 
+// Verify that one-time actions are only recorded once per life-cycle of a
+// PasswordFormMetricsRecorder.
+TEST(PasswordFormMetricsRecorder, RecordDetailedUserAction) {
+  using DetailedUserAction = PasswordFormMetricsRecorder::DetailedUserAction;
+  const DetailedUserAction kOneTimeAction =
+      DetailedUserAction::kEditedUsernameInBubble;
+  const DetailedUserAction kRepeatedAction = DetailedUserAction::kUnknown;
+  ukm::TestUkmRecorder test_ukm_recorder;
+  {
+    auto recorder = base::MakeRefCounted<PasswordFormMetricsRecorder>(
+        true /*is_main_frame_secure*/,
+        CreateUkmEntryBuilder(&test_ukm_recorder));
+    recorder->RecordDetailedUserAction(kOneTimeAction);
+    recorder->RecordDetailedUserAction(kOneTimeAction);
+    recorder->RecordDetailedUserAction(kRepeatedAction);
+    recorder->RecordDetailedUserAction(kRepeatedAction);
+  }
+  const ukm::UkmSource* source = test_ukm_recorder.GetSourceForUrl(kTestUrl);
+  ASSERT_TRUE(source);
+  test_ukm_recorder.ExpectMetrics(*source, "PasswordForm", kUkmUserAction,
+                                  {static_cast<int64_t>(kOneTimeAction),
+                                   static_cast<int64_t>(kRepeatedAction),
+                                   static_cast<int64_t>(kRepeatedAction)});
+}
+
 }  // namespace password_manager

@@ -28,6 +28,7 @@ const char kUkmSavingPromptTrigger[] = "Saving.Prompt.Trigger";
 const char kUkmSavingPromptInteraction[] = "Saving.Prompt.Interaction";
 const char kUkmManagerFillEvent[] = "ManagerFill.Action";
 const char kUkmUserActionSimplified[] = "User.ActionSimplified";
+const char kUkmUserAction[] = "User.Action";
 
 PasswordFormMetricsRecorder::PasswordFormMetricsRecorder(
     bool is_main_frame_secure,
@@ -72,6 +73,9 @@ PasswordFormMetricsRecorder::~PasswordFormMetricsRecorder() {
 
   RecordUkmMetric(kUkmUpdatingPromptShown, update_prompt_shown_);
   RecordUkmMetric(kUkmSavingPromptShown, save_prompt_shown_);
+
+  for (const DetailedUserAction& action : one_time_report_user_actions_)
+    RecordUkmMetric(kUkmUserAction, static_cast<int64_t>(action));
 }
 
 // static
@@ -163,6 +167,18 @@ int PasswordFormMetricsRecorder::GetActionsTakenNew() const {
   return static_cast<int>(user_action_) +
          static_cast<int>(UserAction::kMax) *
              (manager_action_new + kManagerActionNewMax * submit_result_);
+}
+
+void PasswordFormMetricsRecorder::RecordDetailedUserAction(
+    PasswordFormMetricsRecorder::DetailedUserAction action) {
+  // One-time actions are collected and reported during destruction of the
+  // PasswordFormMetricsRecorder.
+  if (!IsRepeatedUserAction(action)) {
+    one_time_report_user_actions_.insert(action);
+    return;
+  }
+  // Repeated actions can be reported immediately.
+  RecordUkmMetric(kUkmUserAction, static_cast<int64_t>(action));
 }
 
 int PasswordFormMetricsRecorder::GetActionsTaken() const {
@@ -397,6 +413,19 @@ void PasswordFormMetricsRecorder::RecordUkmMetric(const char* metric_name,
                                                   int64_t value) {
   if (ukm_entry_builder_)
     ukm_entry_builder_->AddMetric(metric_name, value);
+}
+
+// static
+bool PasswordFormMetricsRecorder::IsRepeatedUserAction(
+    DetailedUserAction action) {
+  switch (action) {
+    case DetailedUserAction::kUnknown:
+      return true;
+    case DetailedUserAction::kEditedUsernameInBubble:
+      return false;
+  }
+  NOTREACHED();
+  return true;
 }
 
 }  // namespace password_manager

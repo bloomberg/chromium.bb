@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <set>
 #include <vector>
 
 #include "base/macros.h"
@@ -69,6 +70,13 @@ extern const char kUkmManagerFillEvent[];
 // This metric records what the user does with a form. Values correspond to the
 // enum UserAction.
 extern const char kUkmUserActionSimplified[];
+
+// This metric records what the user does with all UI entry points of the
+// password manager, like bubbles, context menus, forms, form fields, etc.
+// in relation to a given form. Values correspond to the enum
+// DetailedUserAction. In contrast to kUkmUserActionSimplified, ths metric is
+// intended to be extensible with new user action types.
+extern const char kUkmUserAction[];
 
 class FormFetcher;
 
@@ -198,6 +206,17 @@ class PasswordFormMetricsRecorder
     kIgnored = 3
   };
 
+  // This enum is a designed to be able to collect all kinds of potentially
+  // interesting user interactions with sites and password manager UI in
+  // relation to a given form. In contrast to UserAction, it is intended to be
+  // extensible.
+  enum class DetailedUserAction {
+    kUnknown = 0,
+
+    // Interactions with password bubble.
+    kEditedUsernameInBubble = 100,
+  };
+
   // The maximum number of combinations of the ManagerAction, UserAction and
   // SubmitResult enums.
   // This is used when recording the actions taken by the form in UMA.
@@ -262,6 +281,9 @@ class PasswordFormMetricsRecorder
   // Public for testing.
   int GetActionsTakenNew() const;
 
+  // Records a DetailedUserAction UKM metric.
+  void RecordDetailedUserAction(DetailedUserAction action);
+
  private:
   friend class base::RefCounted<PasswordFormMetricsRecorder>;
 
@@ -310,6 +332,10 @@ class PasswordFormMetricsRecorder
   // Records a metric into |ukm_entry_builder_| if it is not nullptr.
   void RecordUkmMetric(const char* metric_name, int64_t value);
 
+  // Returns true if an |action| should be recorded multiple times per life-cyle
+  // of a PasswordFormMetricsRecorder.
+  static bool IsRepeatedUserAction(DetailedUserAction action);
+
   // True if the main frame's visible URL, at the time this PasswordFormManager
   // was created, is secure.
   const bool is_main_frame_secure_;
@@ -344,6 +370,10 @@ class PasswordFormMetricsRecorder
   // Records URL keyed metrics (UKMs) and submits them on its destruction. May
   // be a nullptr in which case no recording is expected.
   std::unique_ptr<ukm::UkmEntryBuilder> ukm_entry_builder_;
+
+  // Set of observed user actions that are only recorded once for the lifetime
+  // of a PasswordFormMetricsRecorder.
+  std::set<DetailedUserAction> one_time_report_user_actions_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordFormMetricsRecorder);
 };
