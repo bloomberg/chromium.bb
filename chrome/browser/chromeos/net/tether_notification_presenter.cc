@@ -74,14 +74,6 @@ constexpr const char
         "cros_tether_notification_ids.setup_required";
 
 // static
-constexpr const std::array<const char* const, 4>
-    TetherNotificationPresenter::kIdsWhichOpenSettingsOnClick{
-        {TetherNotificationPresenter::kTetherNotifierId,
-         TetherNotificationPresenter::kActiveHostNotificationId,
-         TetherNotificationPresenter::kPotentialHotspotNotificationId,
-         TetherNotificationPresenter::kSetupRequiredNotificationId}};
-
-// static
 std::unique_ptr<message_center::Notification>
 TetherNotificationPresenter::CreateNotificationWithMediumSignalStrengthIcon(
     const std::string& id,
@@ -217,13 +209,7 @@ void TetherNotificationPresenter::RemoveConnectionToHostFailedNotification() {
 
 void TetherNotificationPresenter::OnNotificationClicked(
     const std::string& notification_id) {
-  auto* const* const it = std::find_if(
-      kIdsWhichOpenSettingsOnClick.begin(), kIdsWhichOpenSettingsOnClick.end(),
-      [notification_id](const char* id) { return notification_id == id; });
-  if (it == kIdsWhichOpenSettingsOnClick.end()) {
-    return;
-  }
-
+  PA_LOG(INFO) << "Notification with ID " << notification_id << " was clicked.";
   settings_ui_delegate_->ShowSettingsSubPageForProfile(profile_,
                                                        kTetherSettingsSubpage);
   message_center_->RemoveNotification(notification_id, true /* by_user */);
