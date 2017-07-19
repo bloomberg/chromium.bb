@@ -29,6 +29,8 @@ CONSOLE MESSAGE: line 147: interface CSSPositionValue : CSSStyleValue
 CONSOLE MESSAGE: line 147:     getter x
 CONSOLE MESSAGE: line 147:     getter y
 CONSOLE MESSAGE: line 147:     method constructor
+CONSOLE MESSAGE: line 147:     setter x
+CONSOLE MESSAGE: line 147:     setter y
 CONSOLE MESSAGE: line 147: interface CSSResourceValue : CSSStyleValue
 CONSOLE MESSAGE: line 147:     getter state
 CONSOLE MESSAGE: line 147:     method constructor

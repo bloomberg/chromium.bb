@@ -6,9 +6,10 @@
 // background-position.
 // Spec: https://drafts.css-houdini.org/css-typed-om/#positionvalue-objects
 [
-    Constructor(CSSNumericValue x, CSSNumericValue y),
-    Exposed(Window CSSTypedOM, PaintWorklet CSSPaintAPI)
+  Constructor(CSSNumericValue x, CSSNumericValue y),
+  Exposed(Window CSSTypedOM, PaintWorklet CSSPaintAPI),
+  RaisesException=Constructor
 ] interface CSSPositionValue : CSSStyleValue {
-    readonly attribute CSSNumericValue x;
-    readonly attribute CSSNumericValue y;
+  [RaisesException=Setter] attribute CSSNumericValue x;
+  [RaisesException=Setter] attribute CSSNumericValue y;
 };
