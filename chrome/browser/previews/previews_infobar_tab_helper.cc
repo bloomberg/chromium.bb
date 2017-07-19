@@ -17,6 +17,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
+#include "components/offline_pages/features/features.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_ui_service.h"
 #include "content/public/browser/browser_context.h"
@@ -27,9 +28,9 @@
 #include "net/http/http_response_headers.h"
 #include "url/gurl.h"
 
-#if defined(OS_ANDROID)
-#include "chrome/browser/android/offline_pages/offline_page_tab_helper.h"
-#endif  // defined(OS_ANDROID)
+#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
+#include "chrome/browser/offline_pages/offline_page_tab_helper.h"
+#endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
 
 namespace {
 
@@ -98,7 +99,7 @@ void PreviewsInfoBarTabHelper::DidFinishNavigation(
     }
   }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
   offline_pages::OfflinePageTabHelper* tab_helper =
       offline_pages::OfflinePageTabHelper::FromWebContents(web_contents());
 
@@ -122,7 +123,7 @@ void PreviewsInfoBarTabHelper::DidFinishNavigation(
     // Don't try to show other infobars if this is an offline preview.
     return;
   }
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
 
   const net::HttpResponseHeaders* headers =
       navigation_handle->GetResponseHeaders();

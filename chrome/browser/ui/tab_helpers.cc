@@ -66,6 +66,7 @@
 #include "components/dom_distiller/core/dom_distiller_switches.h"
 #include "components/history/content/browser/web_contents_top_sites_observer.h"
 #include "components/history/core/browser/top_sites.h"
+#include "components/offline_pages/features/features.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_driver_factory.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
@@ -78,8 +79,6 @@
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/banners/app_banner_manager_android.h"
 #include "chrome/browser/android/data_usage/data_use_tab_helper.h"
-#include "chrome/browser/android/offline_pages/offline_page_tab_helper.h"
-#include "chrome/browser/android/offline_pages/recent_tab_helper.h"
 #include "chrome/browser/android/search_geolocation/search_geolocation_disclosure_tab_helper.h"
 #include "chrome/browser/android/voice_search_tab_helper.h"
 #include "chrome/browser/android/webapps/single_tab_mode_tab_helper.h"
@@ -100,6 +99,11 @@
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "components/zoom/zoom_controller.h"
 #endif  // defined(OS_ANDROID)
+
+#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
+#include "chrome/browser/offline_pages/offline_page_tab_helper.h"
+#include "chrome/browser/offline_pages/recent_tab_helper.h"
+#endif
 
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
 #include "chrome/browser/captive_portal/captive_portal_tab_helper.h"
@@ -233,9 +237,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   ContextMenuHelper::CreateForWebContents(web_contents);
   DataUseTabHelper::CreateForWebContents(web_contents);
 
-  offline_pages::OfflinePageTabHelper::CreateForWebContents(web_contents);
-  offline_pages::RecentTabHelper::CreateForWebContents(web_contents);
-
   SearchGeolocationDisclosureTabHelper::CreateForWebContents(web_contents);
   SingleTabModeTabHelper::CreateForWebContents(web_contents);
   ViewAndroidHelper::CreateForWebContents(web_contents);
@@ -271,6 +272,11 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
 #endif
 
 // --- Feature tab helpers behind flags ---
+
+#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
+offline_pages::OfflinePageTabHelper::CreateForWebContents(web_contents);
+offline_pages::RecentTabHelper::CreateForWebContents(web_contents);
+#endif
 
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
   CaptivePortalTabHelper::CreateForWebContents(web_contents);

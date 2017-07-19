@@ -3547,22 +3547,26 @@ test("unit_tests") {
 
   if (enable_offline_pages) {
     sources += [
-      "../browser/android/offline_pages/offline_page_mhtml_archiver_unittest.cc",
-      "../browser/android/offline_pages/offline_page_request_job_unittest.cc",
-      "../browser/android/offline_pages/offline_page_tab_helper_unittest.cc",
-      "../browser/android/offline_pages/offline_page_utils_unittest.cc",
-      "../browser/android/offline_pages/prerender_adapter_unittest.cc",
-      "../browser/android/offline_pages/prerendering_loader_unittest.cc",
-      "../browser/android/offline_pages/prerendering_offliner_unittest.cc",
-      "../browser/android/offline_pages/recent_tab_helper_unittest.cc",
-      "../browser/android/offline_pages/test_offline_page_model_builder.cc",
-      "../browser/android/offline_pages/test_offline_page_model_builder.h",
-      "../browser/android/offline_pages/test_request_coordinator_builder.cc",
-      "../browser/android/offline_pages/test_request_coordinator_builder.h",
       "../browser/offline_pages/background_loader_offliner_unittest.cc",
+      "../browser/offline_pages/offline_page_mhtml_archiver_unittest.cc",
+      "../browser/offline_pages/offline_page_request_job_unittest.cc",
+      "../browser/offline_pages/offline_page_tab_helper_unittest.cc",
+      "../browser/offline_pages/offline_page_utils_unittest.cc",
       "../browser/offline_pages/prefetch/offline_metrics_collector_impl_unittest.cc",
       "../browser/offline_pages/prefetch/prefetch_instance_id_proxy_unittest.cc",
+      "../browser/offline_pages/prerender_adapter_unittest.cc",
+      "../browser/offline_pages/prerendering_loader_unittest.cc",
+      "../browser/offline_pages/recent_tab_helper_unittest.cc",
+      "../browser/offline_pages/test_offline_page_model_builder.cc",
+      "../browser/offline_pages/test_offline_page_model_builder.h",
+      "../browser/offline_pages/test_request_coordinator_builder.cc",
+      "../browser/offline_pages/test_request_coordinator_builder.h",
     ]
+    if (is_android) {
+      sources += [
+        "../browser/offline_pages/android/prerendering_offliner_unittest.cc",
+      ]
+    }
     deps += [
       "//components/offline_pages/content/background_loader:test_support",
       "//components/offline_pages/core:test_support",
