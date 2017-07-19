@@ -177,7 +177,6 @@ CONTENT_EXPORT extern const char kGpuStartupDialog[];
 CONTENT_EXPORT extern const char kHistoryEntryRequiresUserGesture[];
 CONTENT_EXPORT extern const char kHostResolverRules[];
 CONTENT_EXPORT extern const char kIgnoreCertificateErrorsSPKIList[];
-CONTENT_EXPORT extern const char kInertVisualViewport[];
 CONTENT_EXPORT extern const char kInProcessGPU[];
 CONTENT_EXPORT extern const char kIPCConnectionTimeout[];
 CONTENT_EXPORT extern const char kIsolateOrigins[];

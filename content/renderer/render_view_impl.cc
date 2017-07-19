@@ -890,8 +890,6 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
 
   settings->SetSupportsMultipleWindows(prefs.supports_multiple_windows);
 
-  settings->SetInertVisualViewport(prefs.inert_visual_viewport);
-
   settings->SetMainFrameClipsContent(!prefs.record_whole_document);
 
   settings->SetSmartInsertDeleteEnabled(prefs.smart_insert_delete_enabled);

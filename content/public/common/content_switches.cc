@@ -593,9 +593,6 @@ const char kHostResolverRules[]             = "host-resolver-rules";
 const char kIgnoreCertificateErrorsSPKIList[] =
     "ignore-certificate-errors-spki-list";
 
-// Makes all APIs reflect the layout viewport.
-const char kInertVisualViewport[]           = "inert-visual-viewport";
-
 // Run the GPU process as a thread in the browser process.
 const char kInProcessGPU[]                  = "in-process-gpu";
 

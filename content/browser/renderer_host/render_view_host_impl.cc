@@ -428,9 +428,6 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
       atoi(command_line.GetSwitchValueASCII(
       switches::kAcceleratedCanvas2dMSAASampleCount).c_str());
 
-  prefs.inert_visual_viewport =
-      command_line.HasSwitch(switches::kInertVisualViewport);
-
   prefs.use_solid_color_scrollbars = false;
 
   prefs.history_entry_requires_user_gesture =

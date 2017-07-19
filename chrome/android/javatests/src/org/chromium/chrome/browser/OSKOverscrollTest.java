@@ -94,7 +94,7 @@ public class OSKOverscrollTest {
     private int getViewportHeight(WebContents webContents) {
         try {
             String jsonText = JavaScriptUtils.executeJavaScriptAndWaitForResult(
-                    webContents, "window.innerHeight");
+                    webContents, "window.visualViewport.height");
             MoreAsserts.assertNotEqual(jsonText.trim().toLowerCase(Locale.US), "null");
             return Integer.parseInt(jsonText);
         } catch (Exception ex) {

@@ -2539,7 +2539,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kForceOverlayFullscreenVideo,
     switches::kFullMemoryCrashReport,
     switches::kIgnoreAutoplayRestrictionsForTests,
-    switches::kInertVisualViewport,
     switches::kIPCConnectionTimeout,
     switches::kIsolateOrigins,
     switches::kIsRunningInMash,
