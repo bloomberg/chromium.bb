@@ -48,6 +48,7 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/frame_blame_context.h"
 #include "content/renderer/media/media_factory.h"
+#include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_webcookiejar_impl.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_platform_file.h"
@@ -1125,6 +1126,9 @@ class CONTENT_EXPORT RenderFrameImpl
 
   void SendUpdateFaviconURL(blink::WebIconURL::Type icon_types_mask);
 
+  void UpdatePeakMemoryStats();
+  void ReportPeakMemoryStats();
+
   // Stores the WebLocalFrame we are associated with.  This is null from the
   // constructor until BindToFrame() is called, and it is null after
   // FrameDetached() is called until destruction (which is asynchronous in the
@@ -1425,6 +1429,8 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // Callbacks that we should call when we get a routing token.
   std::vector<media::RoutingTokenCallback> pending_routing_token_callbacks_;
+
+  RenderThreadImpl::RendererMemoryMetrics peak_memory_metrics_;
 
   base::WeakPtrFactory<RenderFrameImpl> weak_factory_;
 
