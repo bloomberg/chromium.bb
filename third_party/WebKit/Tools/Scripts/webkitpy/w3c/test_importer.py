@@ -86,7 +86,37 @@ class TestImporter(object):
                 _log.info('Aborting import to prevent clobbering commits.')
                 return 0
 
-        import_commit = self.update(local_wpt.path, options.revision)
+        if options.revision is not None:
+            _log.info('Checking out %s', options.revision)
+            self.run(['git', 'checkout', options.revision], cwd=local_wpt.path)
+
+        self.run(['git', 'submodule', 'update', '--init', '--recursive'], cwd=local_wpt.path)
+
+        _log.info('Noting the revision we are importing.')
+        _, show_ref_output = self.run(['git', 'show-ref', 'origin/master'], cwd=local_wpt.path)
+        import_commit = 'wpt@%s' % show_ref_output.split()[0]
+
+        dest_path = self.finder.path_from_layout_tests('external', 'wpt')
+
+        self._clear_out_dest_path(dest_path)
+
+        _log.info('Copying the tests from the temp repo to the destination.')
+        test_copier = TestCopier(self.host, local_wpt.path)
+        test_copier.do_import()
+
+        self.run(['git', 'add', '--all', 'external/wpt'])
+
+        self._delete_orphaned_baselines(dest_path)
+
+        # TODO(qyearsley): Consider updating manifest after adding baselines.
+        self._generate_manifest(dest_path)
+
+        # TODO(qyearsley): Consider running the imported tests with
+        # `run-webkit-tests --reset-results external/wpt` to get some baselines
+        # before the try jobs are started.
+
+        _log.info('Updating TestExpectations for any removed or renamed tests.')
+        self.update_all_test_expectations_files(self._list_deleted_tests(), self._list_renamed_tests())
 
         has_changes = self._has_changes()
         if not has_changes:
@@ -95,34 +125,101 @@ class TestImporter(object):
 
         commit_message = self._commit_message(chromium_commit, import_commit)
         self._commit_changes(commit_message)
-        _log.info('Done: changes imported and committed.')
+        _log.info('Changes imported and committed.')
 
-        if options.auto_update:
-            commit_successful = self.do_auto_update()
-            if not commit_successful:
-                return 1
+        if not options.auto_update:
+            return 0
+
+        self._upload_cl()
+        _log.info('Issue: %s', self.git_cl.run(['issue']).strip())
+
+        if not self.update_expectations_for_cl():
+            return 1
+
+        if not self.run_commit_queue_for_cl():
+            return 1
+
         return 0
+
+    def update_expectations_for_cl(self):
+        """Performs the expectation-updating part of an auto-import job.
+
+        This includes triggering try jobs and waiting; then, if applicable,
+        writing new baselines and TestExpectation lines, committing, and
+        uploading a new patchset.
+
+        This assumes that there is CL associated with the current branch.
+
+        Returns True if everything is OK to continue, or False on failure.
+        """
+        _log.info('Triggering try jobs for updating expectations.')
+        self.git_cl.trigger_try_jobs()
+        try_results = self.git_cl.wait_for_try_jobs(
+            poll_delay_seconds=POLL_DELAY_SECONDS,
+            timeout_seconds=TIMEOUT_SECONDS)
+
+        if not try_results:
+            _log.error('No initial try job results, aborting.')
+            self.git_cl.run(['set-close'])
+            return False
+
+        if try_results and self.git_cl.has_failing_try_results(try_results):
+            self.fetch_new_expectations_and_baselines()
+            if self.host.git().has_working_directory_changes():
+                message = 'Update test expectations and baselines.'
+                self.check_run(['git', 'commit', '-a', '-m', message])
+                self._upload_patchset(message)
+        return True
+
+    def run_commit_queue_for_cl(self):
+        """Triggers CQ and either commits or aborts; returns True on success."""
+        _log.info('Triggering CQ try jobs.')
+        self.git_cl.run(['try'])
+        try_results = self.git_cl.wait_for_try_jobs(
+            poll_delay_seconds=POLL_DELAY_SECONDS,
+            timeout_seconds=TIMEOUT_SECONDS)
+
+        if not try_results:
+            self.git_cl.run(['set-close'])
+            _log.error('No CQ try job results, aborting.')
+            return False
+
+        # TODO(qyearsley): Change this to look only at the latest try jobs; crbug.com/739119
+        if try_results and all(s == TryJobStatus('COMPLETED', 'SUCCESS') for _, s in try_results.iteritems()):
+            _log.info('CQ appears to have passed; trying to commit.')
+            self.git_cl.run(['upload', '-f', '--send-mail'])  # Turn off WIP mode.
+            self.git_cl.run(['set-commit'])
+            _log.info('Update completed.')
+            return True
+
+        self.git_cl.run(['set-close'])
+        _log.error('CQ appears to have failed; aborting.')
+        return False
 
     def parse_args(self, argv):
         parser = argparse.ArgumentParser()
         parser.description = __doc__
-        parser.add_argument('-v', '--verbose', action='store_true',
-                            help='log what we are doing')
-        parser.add_argument('--allow-local-commits', action='store_true',
-                            help='allow script to run even if we have local commits')
-        parser.add_argument('-r', dest='revision', action='store',
-                            help='Target revision.')
-        parser.add_argument('--auto-update', action='store_true',
-                            help='uploads CL and initiates commit queue.')
-        parser.add_argument('--auth-refresh-token-json',
-                            help='authentication refresh token JSON file, '
-                                 'used for authentication for try jobs, '
-                                 'generally not necessary on developer machines')
-        parser.add_argument('--credentials-json',
-                            help='A JSON file with an object containing zero or more of the '
-                                 'following keys: GH_USER, GH_TOKEN')
-        parser.add_argument('--ignore-exportable-commits', action='store_true',
-                            help='Continue even if there are exportable commits that may be overwritten.')
+        parser.add_argument(
+            '-v', '--verbose', action='store_true',
+            help='log extra details that may be helpful when debugging')
+        parser.add_argument(
+            '--allow-local-commits', action='store_true',
+            help='allow script to run even if we have local commits')
+        parser.add_argument(
+            '--ignore-exportable-commits', action='store_true',
+            help='do not check for exportable commits that would be clobbered')
+        parser.add_argument('-r', '--revision', help='target wpt revision')
+        parser.add_argument(
+            '--auto-update', action='store_true',
+            help='upload a CL, update expectations, and trigger CQ')
+        parser.add_argument(
+            '--auth-refresh-token-json',
+            help='authentication refresh token JSON file used for try jobs, '
+                 'generally not necessary on developer machines')
+        parser.add_argument(
+            '--credentials-json',
+            help='A JSON file with GitHub credentials, '
+                 'generally not necessary on developer machines')
 
         return parser.parse_args(argv)
 
@@ -160,51 +257,6 @@ class TestImporter(object):
             self.fs.join(dest_path, '..', 'WPT_BASE_MANIFEST.json'))
         self.copyfile(manifest_path, manifest_base_path)
         self.run(['git', 'add', manifest_base_path])
-
-    def update(self, local_wpt_path, revision):
-        """Updates an imported repository.
-
-        Args:
-            local_wpt_path: Path to local checkout of wpt.
-            revision: A wpt commit hash to check out, or None.
-
-        Returns:
-            A string for the commit description "<destination>@<commitish>".
-        """
-        if revision is not None:
-            _log.info('Checking out %s', revision)
-            self.run(['git', 'checkout', revision], cwd=local_wpt_path)
-
-        self.run(['git', 'submodule', 'update', '--init', '--recursive'], cwd=local_wpt_path)
-
-        _log.info('Noting the revision we are importing.')
-        _, show_ref_output = self.run(['git', 'show-ref', 'origin/master'], cwd=local_wpt_path)
-        master_commitish = show_ref_output.split()[0]
-
-        dest_path = self.finder.path_from_layout_tests('external', 'wpt')
-        self._clear_out_dest_path(dest_path)
-
-        _log.info('Importing the tests.')
-        test_copier = TestCopier(self.host, local_wpt_path)
-        test_copier.do_import()
-
-        self.run(['git', 'add', '--all', 'external/wpt'])
-
-        self._delete_orphaned_baselines(dest_path)
-
-        self._generate_manifest(dest_path)
-
-        # TODO(qyearsley): Consider running the imported tests with
-        # `run-webkit-tests --reset-results external/wpt` to get most of
-        # the cross-platform baselines without having to wait for try jobs.
-        # TODO(qyearsley): Consider updating manifest after adding baselines.
-        # TODO(qyearsley): Consider starting CQ at the same time as the
-        # initial try jobs.
-
-        _log.info('Updating TestExpectations for any removed or renamed tests.')
-        self.update_all_test_expectations_files(self._list_deleted_tests(), self._list_renamed_tests())
-
-        return 'wpt@%s' % master_commitish
 
     def _clear_out_dest_path(self, dest_path):
         _log.info('Cleaning out tests from %s.', dest_path)
@@ -281,62 +333,8 @@ class TestImporter(object):
         _log.debug('rm %s', dest)
         self.fs.remove(dest)
 
-    def do_auto_update(self):
-        """Attempts to upload a CL, make any required adjustments, and commit.
-
-        This function assumes that the imported repo has already been updated,
-        and that change has been committed. There may be newly-failing tests,
-        so before being able to commit these new changes, we may need to update
-        TestExpectations or download new baselines.
-
-        Returns:
-            True if successfully committed, False otherwise.
-        """
-        self._upload_cl()
-        _log.info('Issue: %s', self.git_cl.run(['issue']).strip())
-
-        # First, try on Blink try bots in order to get any new baselines.
-        # TODO(qyearsley): Make this faster by triggering all try jobs in
-        # one invocation.
-        _log.info('Triggering try jobs for updating expectations.')
-        self.git_cl.trigger_try_jobs()
-        try_results = self.git_cl.wait_for_try_jobs(
-            poll_delay_seconds=POLL_DELAY_SECONDS, timeout_seconds=TIMEOUT_SECONDS)
-
-        if not try_results:
-            _log.error('No initial try job results, aborting.')
-            self.git_cl.run(['set-close'])
-            return False
-
-        if try_results and self.git_cl.has_failing_try_results(try_results):
-            self.fetch_new_expectations_and_baselines()
-            if self.host.git().has_working_directory_changes():
-                message = 'Update test expectations and baselines.'
-                self.check_run(['git', 'commit', '-a', '-m', message])
-                self._upload_patchset(message)
-
-        # Trigger CQ and wait for CQ try jobs to finish.
-        _log.info('Triggering CQ try jobs.')
-        self.git_cl.run(['try'])
-        try_results = self.git_cl.wait_for_try_jobs(
-            poll_delay_seconds=POLL_DELAY_SECONDS,
-            timeout_seconds=TIMEOUT_SECONDS)
-
-        if not try_results:
-            self.git_cl.run(['set-close'])
-            _log.error('No CQ try job results, aborting.')
-            return False
-
-        if try_results and all(s == TryJobStatus('COMPLETED', 'SUCCESS') for _, s in try_results.iteritems()):
-            _log.info('CQ appears to have passed; trying to commit.')
-            self.git_cl.run(['upload', '-f', '--send-mail'])  # Turn off WIP mode.
-            self.git_cl.run(['set-commit'])
-            _log.info('Update completed.')
-            return True
-
-        self.git_cl.run(['set-close'])
-        _log.error('CQ appears to have failed; aborting.')
-        return False
+    def _upload_patchset(self, message):
+        self.git_cl.run(['upload', '-f', '-t', message, '--gerrit'])
 
     def _upload_cl(self):
         _log.info('Uploading change list.')
@@ -351,9 +349,6 @@ class TestImporter(object):
             '--tbrs',
             'qyearsley@chromium.org',
         ] + self._cc_part(directory_owners))
-
-    def _upload_patchset(self, message):
-        self.git_cl.run(['upload', '-f', '-t', message, '--gerrit'])
 
     @staticmethod
     def _cc_part(directory_owners):
@@ -433,8 +428,8 @@ class TestImporter(object):
 
     def _update_single_test_expectations_file(self, path, expectation_lines, deleted_tests, renamed_tests):
         """Updates a single test expectations file."""
-        # FIXME: This won't work for removed or renamed directories with test expectations
-        # that are directories rather than individual tests.
+        # FIXME: This won't work for removed or renamed directories with test
+        # expectations that are directories rather than individual tests.
         new_lines = []
         changed_lines = []
         for expectation_line in expectation_lines:
