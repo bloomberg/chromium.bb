@@ -304,12 +304,6 @@ static CSSValue* ConsumeFontVariantList(CSSParserTokenRange& range) {
   return nullptr;
 }
 
-static CSSValue* ConsumeLocale(CSSParserTokenRange& range) {
-  if (range.Peek().Id() == CSSValueAuto)
-    return ConsumeIdent(range);
-  return ConsumeString(range);
-}
-
 static CSSFunctionValue* ConsumeFilterFunction(
     CSSParserTokenRange& range,
     const CSSParserContext* context) {
@@ -1003,9 +997,6 @@ const CSSValue* CSSPropertyParser::ParseSingleValue(
     case CSSPropertyWebkitLogicalWidth:
     case CSSPropertyWebkitLogicalHeight:
       return CSSPropertyLengthUtils::ConsumeWidthOrHeight(range_, *context_);
-    case CSSPropertyWebkitHyphenateCharacter:
-    case CSSPropertyWebkitLocale:
-      return ConsumeLocale(range_);
     case CSSPropertyAnimationDelay:
     case CSSPropertyTransitionDelay:
       return ConsumeCommaSeparatedList(ConsumeTime, range_, kValueRangeAll);

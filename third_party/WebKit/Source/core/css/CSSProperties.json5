@@ -559,6 +559,8 @@
     },
     {
       name: "-webkit-locale",
+      api_class: "CSSPropertyAPIAutoOrString",
+      api_methods: ["parseSingleValue"],
       custom_value: true,
       font: true,
       inherited: true,
@@ -2552,7 +2554,6 @@
       name: "text-decoration-line",
       api_class: "CSSPropertyAPITextDecorationLine",
       api_methods: ["parseSingleValue"],
-      api_class: "CSSPropertyAPITextDecorationLine",
       converter: "ConvertFlags<TextDecoration>",
       name_for_methods: "TextDecoration",
       runtime_flag: "CSS3TextDecorations",
@@ -3053,6 +3054,8 @@
     },
     {
       name: "-webkit-hyphenate-character",
+      api_class: "CSSPropertyAPIAutoOrString",
+      api_methods: ["parseSingleValue"],
       converter: "ConvertString<CSSValueAuto>",
       inherited: true,
       name_for_methods: "HyphenationString",
@@ -3630,7 +3633,6 @@
       name: "-webkit-text-decorations-in-effect",
       api_class: "CSSPropertyAPITextDecorationLine",
       api_methods: ["parseSingleValue"],
-      api_class: "CSSPropertyAPITextDecorationLine",
       builder_skip: true,
       inherited: true,
     },
