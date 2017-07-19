@@ -25,8 +25,9 @@ declare_args() {
   jumbo_file_merge_limit = 200
 }
 
-# Use one of the targets jumbo_target or jumbo_component to generate a
-# target which merges sources if possible to compile much faster.
+# Use one of the targets jumbo_source_set, jumbo_static_library,
+# jumbo_split_static_library or jumbo_component to generate a target
+# which merges sources if possible to compile much faster.
 #
 # Special values.
 #
@@ -178,13 +179,44 @@ template("internal_jumbo_target") {
 }
 
 # See documentation above by "internal_jumbo_target".
-template("jumbo_target") {
+template("jumbo_source_set") {
   internal_jumbo_target(target_name) {
+    target_type = "source_set"
     forward_variables_from(invoker, "*")
   }
 }
 
-set_defaults("jumbo_target") {
+set_defaults("jumbo_source_set") {
+  # This sets the default list of configs when the content_source_set target
+  # is defined. The default_compiler_configs comes from BUILDCONFIG.gn and
+  # is the list normally applied to static libraries and source sets.
+  configs = default_compiler_configs
+}
+
+# See documentation above by "internal_jumbo_target".
+template("jumbo_static_library") {
+  internal_jumbo_target(target_name) {
+    target_type = "static_library"
+    forward_variables_from(invoker, "*")
+  }
+}
+
+set_defaults("jumbo_static_library") {
+  # This sets the default list of configs when the content_source_set target
+  # is defined. The default_compiler_configs comes from BUILDCONFIG.gn and
+  # is the list normally applied to static libraries and source sets.
+  configs = default_compiler_configs
+}
+
+# See documentation above by "internal_jumbo_target".
+template("jumbo_split_static_library") {
+  internal_jumbo_target(target_name) {
+    target_type = "split_static_library"
+    forward_variables_from(invoker, "*")
+  }
+}
+
+set_defaults("jumbo_split_static_library") {
   # This sets the default list of configs when the content_source_set target
   # is defined. The default_compiler_configs comes from BUILDCONFIG.gn and
   # is the list normally applied to static libraries and source sets.
@@ -194,6 +226,7 @@ set_defaults("jumbo_target") {
 # See documentation above by "internal_jumbo_target".
 template("jumbo_component") {
   internal_jumbo_target(target_name) {
+    target_type = "component"
     forward_variables_from(invoker, "*")
   }
 }

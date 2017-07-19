@@ -15,9 +15,9 @@ If jumbo isn't already enabled, you enable it in `gn` by setting
 
 Jumbo is currently implemented as a combined `gn` template and a
 python script. Eventually it may become a native `gn` feature. By
-using the template `jumbo_target`, each target will split into one
-action to "merge" the files and one action to compile the merged files
-and any files left outside the merge.
+(indirectly) using the template `internal_jumbo_target`, each target
+will split into one action to "merge" the files and one action to
+compile the merged files and any files left outside the merge.
 
 Template file: `//build/config/jumbo.gni`
 Merge script: `//build/config/merge_for_jumbo.py`
@@ -65,15 +65,15 @@ system in another browser engine.
 ## Want to make your favourite piece of code jumbo?
 
 1. Add `import("//build/config/jumbo.gni")` to `BUILD.gn`.
-2. Change your target, for instance `static_library`, to `jumbo_target`
-3. Add a local variable `target_type` with the name of the
-   final target/template. For instance `target_type = "static_library"`
-4. Recompile and test.
+2. Change your target, for instance `static_library`, to
+   `jumbo_static_library`. So far `source_set`, `component`,
+   `static_library` and `split_static_library` are supported.
+3. Recompile and test.
 
 ### Example
 Change from:
 
-    static_library("foothing") {
+    source_set("foothing") {
       sources = [
         "foothing.cc"
         "fooutil.cc"
@@ -83,8 +83,7 @@ Change from:
 to:
 
     import("//build/config/jumbo.gni")  # ADDED LINE
-    jumbo_target("foothing") {          # CHANGED LINE
-      target_type = "static_library"    # ADDED LINE
+    jumbo_source_set("foothing") {      # CHANGED LINE
       sources = [
         "foothing.cc"
         "fooutil.cc"

@@ -74,23 +74,22 @@ if (is_component_build) {
 #   visibility
 #      Normal meaning if defined. If undefined, defaults to everything in core.
 template("blink_core_sources") {
-  jumbo_target(target_name) {
-    if (is_component_build) {
-      target_type = "source_set"
+  if (is_component_build) {
+    target_type = "jumbo_source_set"
 
-      # This assert avoids an unused variable warning.
-      assert(!defined(invoker.split_count) || invoker.split_count != 0)
-    } else if (!defined(invoker.split_count)) {
-      target_type = "static_library"
-    } else {
-      target_type = "split_static_library"
-    }
-
+    # This assert avoids an unused variable warning.
+    assert(!defined(invoker.split_count) || invoker.split_count != 0)
+  } else if (!defined(invoker.split_count)) {
+    target_type = "jumbo_static_library"
+  } else {
+    target_type = "jumbo_split_static_library"
+  }
+  target(target_type, target_name) {
     # The visibility will get overridden by forward_variables_from below if the
     # invoker defined it.
     visibility = [ "//third_party/WebKit/Source/core/*" ]
 
-    if (target_type == "split_static_library") {
+    if (target_type == "jumbo_split_static_library") {
       split_count = invoker.split_count
     }
 
