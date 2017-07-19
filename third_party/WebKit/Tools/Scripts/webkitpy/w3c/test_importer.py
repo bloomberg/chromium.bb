@@ -52,7 +52,7 @@ class TestImporter(object):
         log_level = logging.DEBUG if self.verbose else logging.INFO
         logging.basicConfig(level=log_level, format='%(message)s')
 
-        if not self.checkout_is_okay(options.allow_local_commits):
+        if not self.checkout_is_okay():
             return 1
 
         credentials = read_credentials(self.host, options.credentials_json)
@@ -203,9 +203,6 @@ class TestImporter(object):
             '-v', '--verbose', action='store_true',
             help='log extra details that may be helpful when debugging')
         parser.add_argument(
-            '--allow-local-commits', action='store_true',
-            help='allow script to run even if we have local commits')
-        parser.add_argument(
             '--ignore-exportable-commits', action='store_true',
             help='do not check for exportable commits that would be clobbered')
         parser.add_argument('-r', '--revision', help='target wpt revision')
@@ -223,17 +220,16 @@ class TestImporter(object):
 
         return parser.parse_args(argv)
 
-    def checkout_is_okay(self, allow_local_commits):
-        git_diff_retcode, _ = self.run(['git', 'diff', '--quiet', 'HEAD'], exit_on_failure=False)
+    def checkout_is_okay(self):
+        git_diff_retcode, _ = self.run(
+            ['git', 'diff', '--quiet', 'HEAD'], exit_on_failure=False)
         if git_diff_retcode:
             _log.warning('Checkout is dirty; aborting.')
             return False
-
-        local_commits = self.run(['git', 'log', '--oneline', 'origin/master..HEAD'])[1]
-        if local_commits and not allow_local_commits:
-            _log.warning('Checkout has local commits; aborting. Use --allow-local-commits to allow this.')
-            return False
-
+        _, local_commits = self.run(
+            ['git', 'log', '--oneline', 'origin/master..HEAD'])[1]
+        if local_commits:
+            _log.warning('Checkout has local commits before import.')
         return True
 
     def exportable_but_not_exported_commits(self, local_wpt):
