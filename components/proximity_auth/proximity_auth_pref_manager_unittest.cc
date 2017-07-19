@@ -27,6 +27,9 @@ const char kPublicKey2[] = "public key 2";
 const int64_t kPasswordEntryTimestampMs1 = 123456789L;
 const int64_t kPasswordEntryTimestampMs2 = 987654321L;
 
+const int64_t kPromotionCheckTimestampMs1 = 1111111111L;
+const int64_t kPromotionCheckTimestampMs2 = 2222222222L;
+
 const ProximityAuthPrefManager::ProximityThreshold kProximityThreshold1 =
     ProximityAuthPrefManager::ProximityThreshold::kFar;
 const ProximityAuthPrefManager::ProximityThreshold kProximityThreshold2 =
@@ -173,6 +176,17 @@ TEST_F(ProximityAuthProximityAuthPrefManagerTest, LastPasswordEntryTimestamp) {
   pref_manager.SetLastPasswordEntryTimestampMs(kPasswordEntryTimestampMs2);
   EXPECT_EQ(kPasswordEntryTimestampMs2,
             pref_manager.GetLastPasswordEntryTimestampMs());
+}
+
+TEST_F(ProximityAuthProximityAuthPrefManagerTest, LastPromotionCheckTimestamp) {
+  ProximityAuthPrefManager pref_manager(&pref_service_);
+  EXPECT_EQ(0L, pref_manager.GetLastPromotionCheckTimestampMs());
+  pref_manager.SetLastPromotionCheckTimestampMs(kPromotionCheckTimestampMs1);
+  EXPECT_EQ(kPromotionCheckTimestampMs1,
+            pref_manager.GetLastPromotionCheckTimestampMs());
+  pref_manager.SetLastPromotionCheckTimestampMs(kPromotionCheckTimestampMs2);
+  EXPECT_EQ(kPromotionCheckTimestampMs2,
+            pref_manager.GetLastPromotionCheckTimestampMs());
 }
 
 TEST_F(ProximityAuthProximityAuthPrefManagerTest, ProximityThreshold) {
