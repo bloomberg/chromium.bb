@@ -463,6 +463,24 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="Media.Engagement.SessionFinished">
+  <owner>beccahughes@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
+  <summary>
+    The Media Engagement index stores the number of significant media playbacks
+    per origin and the number of visits. From that we calculate a Media
+    Engagement Score.
+
+    To tweak the scoring function we are logging the total number of significant
+    media playbacks, the total number of visits, the calculated engagement score
+    and the new number of significant media playbacks that occured this visit.
+  </summary>
+  <metric name="Engagement.Score"/>
+  <metric name="Playbacks.Delta"/>
+  <metric name="Playbacks.Total"/>
+  <metric name="Visits.Total"/>
+</event>
+
 <event name="Media.WatchTime">
   <owner>dalecurtis@chromium.org</owner>
   <summary>
