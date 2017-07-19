@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "extensions/renderer/bindings/api_binding_types.h"
 #include "extensions/renderer/bindings/api_bindings_system.h"
@@ -28,16 +27,8 @@ class ScriptContext;
 // Designed to be used in a single thread, but for all contexts on that thread.
 class NativeExtensionBindingsSystem : public ExtensionBindingsSystem {
  public:
-  using SendEventListenerIPCMethod =
-      base::Callback<void(binding::EventListenersChanged,
-                          ScriptContext*,
-                          const std::string& event_name,
-                          const base::DictionaryValue* filter,
-                          bool was_manual)>;
-
-  NativeExtensionBindingsSystem(
-      std::unique_ptr<IPCMessageSender> ipc_message_sender,
-      const SendEventListenerIPCMethod& send_event_listener_ipc);
+  explicit NativeExtensionBindingsSystem(
+      std::unique_ptr<IPCMessageSender> ipc_message_sender);
   ~NativeExtensionBindingsSystem() override;
 
   // ExtensionBindingsSystem:
@@ -97,10 +88,6 @@ class NativeExtensionBindingsSystem : public ExtensionBindingsSystem {
                         v8::Local<v8::Value>* binding_util_out);
 
   std::unique_ptr<IPCMessageSender> ipc_message_sender_;
-
-  // Handler to notify the browser of event registrations. Abstracted out for
-  // testing purposes.
-  SendEventListenerIPCMethod send_event_listener_ipc_;
 
   // The APIBindingsSystem associated with this class.
   APIBindingsSystem api_system_;

@@ -4,6 +4,7 @@
 
 #include "extensions/renderer/native_extension_bindings_system.h"
 
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "content/public/common/console_message_level.h"
@@ -21,6 +22,7 @@
 #include "extensions/renderer/console.h"
 #include "extensions/renderer/content_setting.h"
 #include "extensions/renderer/declarative_content_hooks_delegate.h"
+#include "extensions/renderer/extension_frame_helper.h"
 #include "extensions/renderer/ipc_message_sender.h"
 #include "extensions/renderer/module_system.h"
 #include "extensions/renderer/script_context.h"
@@ -350,10 +352,8 @@ v8::Local<v8::Object> CreateFullBinding(
 }  // namespace
 
 NativeExtensionBindingsSystem::NativeExtensionBindingsSystem(
-    std::unique_ptr<IPCMessageSender> ipc_message_sender,
-    const SendEventListenerIPCMethod& send_event_listener_ipc)
+    std::unique_ptr<IPCMessageSender> ipc_message_sender)
     : ipc_message_sender_(std::move(ipc_message_sender)),
-      send_event_listener_ipc_(send_event_listener_ipc),
       api_system_(
           base::Bind(&CallJsFunction),
           base::Bind(&CallJsFunctionSync),
@@ -749,9 +749,51 @@ void NativeExtensionBindingsSystem::OnEventListenerChanged(
     const base::DictionaryValue* filter,
     bool was_manual,
     v8::Local<v8::Context> context) {
-  send_event_listener_ipc_.Run(change,
-                               ScriptContextSet::GetContextByV8Context(context),
-                               event_name, filter, was_manual);
+  ScriptContext* script_context =
+      ScriptContextSet::GetContextByV8Context(context);
+  // Note: Check context_type() first to avoid accessing ExtensionFrameHelper on
+  // a worker thread.
+  bool is_lazy =
+      script_context->context_type() == Feature::SERVICE_WORKER_CONTEXT ||
+      ExtensionFrameHelper::IsContextForEventPage(script_context);
+  // We only remove a lazy listener if the listener removal was triggered
+  // manually by the extension.
+  bool remove_lazy_listener = is_lazy && was_manual;
+
+  if (filter) {  // Filtered event listeners.
+    DCHECK(filter);
+    if (change == binding::EventListenersChanged::HAS_LISTENERS) {
+      ipc_message_sender_->SendAddFilteredEventListenerIPC(
+          script_context, event_name, *filter, is_lazy);
+    } else {
+      DCHECK_EQ(binding::EventListenersChanged::NO_LISTENERS, change);
+      ipc_message_sender_->SendRemoveFilteredEventListenerIPC(
+          script_context, event_name, *filter, remove_lazy_listener);
+    }
+  } else {  // Unfiltered event listeners.
+    if (change == binding::EventListenersChanged::HAS_LISTENERS) {
+      // TODO(devlin): The JS bindings code only adds one listener per extension
+      // per event per process, whereas this is one listener per context per
+      // event per process. Typically, this won't make a difference, but it
+      // could if there are multiple contexts for the same extension (e.g.,
+      // multiple frames). In that case, it would result in extra IPCs being
+      // sent. I'm not sure it's a big enough deal to warrant refactoring.
+      ipc_message_sender_->SendAddUnfilteredEventListenerIPC(script_context,
+                                                             event_name);
+      if (is_lazy) {
+        ipc_message_sender_->SendAddUnfilteredLazyEventListenerIPC(
+            script_context, event_name);
+      }
+    } else {
+      DCHECK_EQ(binding::EventListenersChanged::NO_LISTENERS, change);
+      ipc_message_sender_->SendRemoveUnfilteredEventListenerIPC(script_context,
+                                                                event_name);
+      if (remove_lazy_listener) {
+        ipc_message_sender_->SendRemoveUnfilteredLazyEventListenerIPC(
+            script_context, event_name);
+      }
+    }
+  }
 }
 
 void NativeExtensionBindingsSystem::GetJSBindingUtil(

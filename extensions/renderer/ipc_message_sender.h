@@ -14,6 +14,10 @@
 
 struct ExtensionHostMsg_Request_Params;
 
+namespace base {
+class DictionaryValue;
+}
+
 namespace extensions {
 class ScriptContext;
 class WorkerThreadDispatcher;
@@ -34,7 +38,33 @@ class IPCMessageSender {
   // to a request.
   virtual void SendOnRequestResponseReceivedIPC(int request_id) = 0;
 
-  // TODO(devlin): Move event IPC messaging here, too.
+  // Send a message to add/remove an unfiltered listener.
+  virtual void SendAddUnfilteredEventListenerIPC(
+      ScriptContext* context,
+      const std::string& event_name) = 0;
+  virtual void SendRemoveUnfilteredEventListenerIPC(
+      ScriptContext* context,
+      const std::string& event_name) = 0;
+
+  // Send a message to add/remove a lazy unfiltered listener.
+  virtual void SendAddUnfilteredLazyEventListenerIPC(
+      ScriptContext* context,
+      const std::string& event_name) = 0;
+  virtual void SendRemoveUnfilteredLazyEventListenerIPC(
+      ScriptContext* context,
+      const std::string& event_name) = 0;
+
+  // Send a message to add/remove a filtered listener.
+  virtual void SendAddFilteredEventListenerIPC(
+      ScriptContext* context,
+      const std::string& event_name,
+      const base::DictionaryValue& filter,
+      bool is_lazy) = 0;
+  virtual void SendRemoveFilteredEventListenerIPC(
+      ScriptContext* context,
+      const std::string& event_name,
+      const base::DictionaryValue& filter,
+      bool remove_lazy_listener) = 0;
 
   // Creates an IPCMessageSender for use on the main thread.
   static std::unique_ptr<IPCMessageSender> CreateMainThreadIPCMessageSender();

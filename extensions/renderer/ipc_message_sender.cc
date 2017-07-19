@@ -9,6 +9,7 @@
 #include "base/guid.h"
 #include "content/public/child/worker_thread.h"
 #include "content/public/renderer/render_frame.h"
+#include "content/public/renderer/render_thread.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/renderer/script_context.h"
@@ -22,7 +23,7 @@ const int kMainThreadId = 0;
 
 class MainThreadIPCMessageSender : public IPCMessageSender {
  public:
-  MainThreadIPCMessageSender() {}
+  MainThreadIPCMessageSender() : render_thread_(content::RenderThread::Get()) {}
   ~MainThreadIPCMessageSender() override {}
 
   void SendRequestIPC(ScriptContext* context,
@@ -46,7 +47,71 @@ class MainThreadIPCMessageSender : public IPCMessageSender {
 
   void SendOnRequestResponseReceivedIPC(int request_id) override {}
 
+  void SendAddUnfilteredEventListenerIPC(
+      ScriptContext* context,
+      const std::string& event_name) override {
+    DCHECK_NE(Feature::SERVICE_WORKER_CONTEXT, context->context_type());
+    DCHECK_EQ(kMainThreadId, content::WorkerThread::GetCurrentId());
+
+    render_thread_->Send(new ExtensionHostMsg_AddListener(
+        context->GetExtensionID(), context->url(), event_name, kMainThreadId));
+  }
+
+  void SendRemoveUnfilteredEventListenerIPC(
+      ScriptContext* context,
+      const std::string& event_name) override {
+    DCHECK_NE(Feature::SERVICE_WORKER_CONTEXT, context->context_type());
+    DCHECK_EQ(kMainThreadId, content::WorkerThread::GetCurrentId());
+
+    render_thread_->Send(new ExtensionHostMsg_RemoveListener(
+        context->GetExtensionID(), context->url(), event_name, kMainThreadId));
+  }
+
+  void SendAddUnfilteredLazyEventListenerIPC(
+      ScriptContext* context,
+      const std::string& event_name) override {
+    DCHECK_NE(Feature::SERVICE_WORKER_CONTEXT, context->context_type());
+    DCHECK_EQ(kMainThreadId, content::WorkerThread::GetCurrentId());
+
+    render_thread_->Send(new ExtensionHostMsg_AddLazyListener(
+        context->GetExtensionID(), event_name));
+  }
+
+  void SendRemoveUnfilteredLazyEventListenerIPC(
+      ScriptContext* context,
+      const std::string& event_name) override {
+    DCHECK_NE(Feature::SERVICE_WORKER_CONTEXT, context->context_type());
+    DCHECK_EQ(kMainThreadId, content::WorkerThread::GetCurrentId());
+
+    render_thread_->Send(new ExtensionHostMsg_RemoveLazyListener(
+        context->GetExtensionID(), event_name));
+  }
+
+  void SendAddFilteredEventListenerIPC(ScriptContext* context,
+                                       const std::string& event_name,
+                                       const base::DictionaryValue& filter,
+                                       bool is_lazy) override {
+    DCHECK_NE(Feature::SERVICE_WORKER_CONTEXT, context->context_type());
+    DCHECK_EQ(kMainThreadId, content::WorkerThread::GetCurrentId());
+
+    render_thread_->Send(new ExtensionHostMsg_AddFilteredListener(
+        context->GetExtensionID(), event_name, filter, is_lazy));
+  }
+
+  void SendRemoveFilteredEventListenerIPC(ScriptContext* context,
+                                          const std::string& event_name,
+                                          const base::DictionaryValue& filter,
+                                          bool remove_lazy_listener) override {
+    DCHECK_NE(Feature::SERVICE_WORKER_CONTEXT, context->context_type());
+    DCHECK_EQ(kMainThreadId, content::WorkerThread::GetCurrentId());
+
+    render_thread_->Send(new ExtensionHostMsg_RemoveFilteredListener(
+        context->GetExtensionID(), event_name, filter, remove_lazy_listener));
+  }
+
  private:
+  content::RenderThread* const render_thread_;
+
   DISALLOW_COPY_AND_ASSIGN(MainThreadIPCMessageSender);
 };
 
@@ -88,6 +153,68 @@ class WorkerThreadIPCMessageSender : public IPCMessageSender {
     dispatcher_->Send(new ExtensionHostMsg_DecrementServiceWorkerActivity(
         service_worker_version_id_, iter->second));
     request_id_to_guid_.erase(iter);
+  }
+
+  void SendAddUnfilteredEventListenerIPC(
+      ScriptContext* context,
+      const std::string& event_name) override {
+    DCHECK_EQ(Feature::SERVICE_WORKER_CONTEXT, context->context_type());
+    DCHECK_NE(kMainThreadId, content::WorkerThread::GetCurrentId());
+
+    dispatcher_->Send(new ExtensionHostMsg_AddListener(
+        context->GetExtensionID(), context->service_worker_scope(), event_name,
+        content::WorkerThread::GetCurrentId()));
+  }
+
+  void SendRemoveUnfilteredEventListenerIPC(
+      ScriptContext* context,
+      const std::string& event_name) override {
+    DCHECK_EQ(Feature::SERVICE_WORKER_CONTEXT, context->context_type());
+    DCHECK_NE(kMainThreadId, content::WorkerThread::GetCurrentId());
+
+    dispatcher_->Send(new ExtensionHostMsg_RemoveListener(
+        context->GetExtensionID(), context->service_worker_scope(), event_name,
+        content::WorkerThread::GetCurrentId()));
+  }
+
+  void SendAddUnfilteredLazyEventListenerIPC(
+      ScriptContext* context,
+      const std::string& event_name) override {
+    DCHECK_EQ(Feature::SERVICE_WORKER_CONTEXT, context->context_type());
+    DCHECK_NE(kMainThreadId, content::WorkerThread::GetCurrentId());
+
+    dispatcher_->Send(new ExtensionHostMsg_AddLazyServiceWorkerListener(
+        context->GetExtensionID(), event_name,
+        context->service_worker_scope()));
+  }
+
+  void SendRemoveUnfilteredLazyEventListenerIPC(
+      ScriptContext* context,
+      const std::string& event_name) override {
+    DCHECK_EQ(Feature::SERVICE_WORKER_CONTEXT, context->context_type());
+    DCHECK_NE(kMainThreadId, content::WorkerThread::GetCurrentId());
+
+    dispatcher_->Send(new ExtensionHostMsg_RemoveLazyServiceWorkerListener(
+        context->GetExtensionID(), event_name,
+        context->service_worker_scope()));
+  }
+
+  void SendAddFilteredEventListenerIPC(ScriptContext* context,
+                                       const std::string& event_name,
+                                       const base::DictionaryValue& filter,
+                                       bool is_lazy) override {
+    DCHECK_EQ(Feature::SERVICE_WORKER_CONTEXT, context->context_type());
+    DCHECK_NE(kMainThreadId, content::WorkerThread::GetCurrentId());
+    NOTIMPLEMENTED();
+  }
+
+  void SendRemoveFilteredEventListenerIPC(ScriptContext* context,
+                                          const std::string& event_name,
+                                          const base::DictionaryValue& filter,
+                                          bool remove_lazy_listener) override {
+    DCHECK_EQ(Feature::SERVICE_WORKER_CONTEXT, context->context_type());
+    DCHECK_NE(kMainThreadId, content::WorkerThread::GetCurrentId());
+    NOTIMPLEMENTED();
   }
 
  private:
