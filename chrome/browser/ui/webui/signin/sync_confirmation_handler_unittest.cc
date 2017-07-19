@@ -43,6 +43,7 @@ class TestingSyncConfirmationHandler : public SyncConfirmationHandler {
   using SyncConfirmationHandler::HandleConfirm;
   using SyncConfirmationHandler::HandleUndo;
   using SyncConfirmationHandler::HandleInitializedWithSize;
+  using SyncConfirmationHandler::HandleGoToSettings;
   using SyncConfirmationHandler::SetUserImageURL;
 
  private:
@@ -91,7 +92,6 @@ class SyncConfirmationHandlerTest : public BrowserWithTestWindowTest {
  public:
   SyncConfirmationHandlerTest()
       : did_user_explicitly_interact(false), web_ui_(new content::TestWebUI) {}
-
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
     chrome::NewTab(browser());
@@ -119,10 +119,11 @@ class SyncConfirmationHandlerTest : public BrowserWithTestWindowTest {
     web_ui_.reset();
     BrowserWithTestWindowTest::TearDown();
 
-    if (did_user_explicitly_interact)
+    if (did_user_explicitly_interact) {
       EXPECT_EQ(0, user_action_tester()->GetActionCount("Signin_Abort_Signin"));
-    else
+    } else {
       EXPECT_EQ(1, user_action_tester()->GetActionCount("Signin_Abort_Signin"));
+    }
   }
 
   TestingSyncConfirmationHandler* handler() {
@@ -316,9 +317,7 @@ TEST_F(SyncConfirmationHandlerTest, TestHandleConfirm) {
   EXPECT_FALSE(sync()->IsFirstSetupComplete());
   EXPECT_TRUE(sync()->IsFirstSetupInProgress());
 
-  base::ListValue args;
-  args.AppendBoolean(false /* show advanced */);
-  handler()->HandleConfirm(&args);
+  handler()->HandleConfirm(nullptr);
   did_user_explicitly_interact = true;
 
   EXPECT_FALSE(sync()->IsFirstSetupInProgress());
@@ -336,9 +335,7 @@ TEST_F(SyncConfirmationHandlerTest, TestHandleConfirmWithAdvancedSyncSettings) {
   EXPECT_FALSE(sync()->IsFirstSetupComplete());
   EXPECT_TRUE(sync()->IsFirstSetupInProgress());
 
-  base::ListValue args;
-  args.AppendBoolean(true /* show advanced */);
-  handler()->HandleConfirm(&args);
+  handler()->HandleGoToSettings(nullptr);
   did_user_explicitly_interact = true;
 
   EXPECT_FALSE(sync()->IsFirstSetupInProgress());

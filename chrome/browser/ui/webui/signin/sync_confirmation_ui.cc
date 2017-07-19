@@ -38,8 +38,8 @@ SyncConfirmationUI::SyncConfirmationUI(content::WebUI* web_ui)
       IDS_SYNC_CONFIRMATION_PERSONALIZE_SERVICES_TITLE);
   source->AddLocalizedString("syncConfirmationPersonalizeServicesBody",
       IDS_SYNC_CONFIRMATION_PERSONALIZE_SERVICES_BODY);
-  source->AddLocalizedString("syncConfirmationSyncSettingsLabel",
-                             IDS_SYNC_CONFIRMATION_SYNC_SETTINGS_LABEL);
+  source->AddLocalizedString("syncConfirmationSyncSettingsLinkBody",
+                             IDS_SYNC_CONFIRMATION_SYNC_SETTINGS_LINK_BODY);
   source->AddLocalizedString("syncDisabledConfirmationDetails",
                              IDS_SYNC_DISABLED_CONFIRMATION_DETAILS);
 
