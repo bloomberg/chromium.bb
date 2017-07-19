@@ -13,8 +13,6 @@
 #import "ios/web/public/web_state/web_state.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 
-const char kTabUsageHistogramPrefix[] = "Tab";
-
 // The histogram recording the state of the tab the user switches to.
 const char kSelectedTabHistogramName[] =
     "Tab.StatusWhenSwitchedBackToForeground";
