@@ -380,6 +380,7 @@ blink_core_sources("css") {
     "properties/CSSPropertyAPIAnimationIterationCount.cpp",
     "properties/CSSPropertyAPIAnimationName.cpp",
     "properties/CSSPropertyAPIAnimationPlayState.cpp",
+    "properties/CSSPropertyAPIAutoOrString.cpp",
     "properties/CSSPropertyAPIBaselineShift.cpp",
     "properties/CSSPropertyAPIBorderColor.cpp",
     "properties/CSSPropertyAPIBorderImageOutset.cpp",
