@@ -123,7 +123,6 @@ source_set("bookmarks") {
     "//ios/chrome/browser/ui/keyboard",
     "//ios/chrome/browser/ui/material_components",
     "//ios/chrome/browser/ui/ntp",
-    "//ios/chrome/browser/ui/sync",
     "//ios/chrome/browser/undo",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/ui",

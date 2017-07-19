@@ -45,19 +45,11 @@ class SyncedSessionsObserverBridge : public SyncObserverBridge,
   // Returns true if the first sync cycle that contains session information is
   // completed. Returns false otherwise.
   bool IsFirstSyncCycleCompleted();
-  // Returns true if user is signed in.
-  bool IsSignedIn();
-  // Returns true if it is undergoing the first sync cycle.
-  bool IsSyncing();
-  // Check if the first sync cycle is completed.  This keeps
-  // IsFirstSyncCycleCompleted() and first_sync_cycle_is_completed_ updated.
-  void CheckIfFirstSyncIsCompleted();
 
  private:
   base::WeakNSProtocol<id<SyncedSessionsObserver>> owner_;
   SigninManager* signin_manager_;
   syncer::SyncService* sync_service_;
-  ios::ChromeBrowserState* browser_state_;
   ScopedObserver<SigninManagerBase, SigninManagerBase::Observer>
       signin_manager_observer_;
   // Stores whether the first sync cycle that contains session information is
