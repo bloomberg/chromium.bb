@@ -219,4 +219,8 @@ id<GREYMatcher> SettingsMenuPrivacyButton() {
       IDS_OPTIONS_ADVANCED_SECTION_TITLE_PRIVACY);
 }
 
+id<GREYMatcher> SettingsMenuPasswordsButton() {
+  return ButtonWithAccessibilityLabelId(IDS_IOS_SAVE_PASSWORDS);
+}
+
 }  // namespace chrome_test_util

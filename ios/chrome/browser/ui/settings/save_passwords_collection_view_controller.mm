@@ -161,6 +161,8 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
     reauthenticationModule_ = [[ReauthenticationModule alloc]
         initWithSuccessfulReauthTimeAccessor:self];
     self.title = l10n_util::GetNSString(IDS_IOS_SAVE_PASSWORDS);
+    self.collectionViewAccessibilityIdentifier =
+        @"SavePasswordsCollectionViewController";
     self.shouldHideDoneButton = YES;
     passwordStore_ = IOSChromePasswordStoreFactory::GetForBrowserState(
         browserState_, ServiceAccessType::EXPLICIT_ACCESS);

@@ -123,6 +123,9 @@ id<GREYMatcher> SettingsMenuBackButton();
 // Returns matcher for the Privacy cell on the main Settings screen.
 id<GREYMatcher> SettingsMenuPrivacyButton();
 
+// Returns matcher for the Save passwords cell on the main Settings screen.
+id<GREYMatcher> SettingsMenuPasswordsButton();
+
 }  // namespace chrome_test_util
 
 #endif  // IOS_CHROME_TEST_EARL_GREY_CHROME_MATCHERS_H_
