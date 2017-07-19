@@ -1732,6 +1732,11 @@ const char kOfflinePagesPrefetchingDescription[] =
     "Enables suggested offline pages to be prefetched, so useful content is "
     "available while offline.";
 
+const char kOfflinePagesRenovationsName[] = "Enables offline page renovations.";
+const char kOfflinePagesRenovationsDescription[] =
+    "Enables offline page renovations which correct issues with dynamic "
+    "content that occur when offlining pages that use JavaScript.";
+
 const char kOfflinePagesSharingName[] = "Enables offline pages to be shared.";
 const char kOfflinePagesSharingDescription[] =
     "Enables the saved offline pages to be shared via other applications.";
