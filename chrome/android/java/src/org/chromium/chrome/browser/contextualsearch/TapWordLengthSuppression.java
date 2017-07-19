@@ -13,12 +13,13 @@ import android.text.TextUtils;
  */
 class TapWordLengthSuppression extends ContextualSearchHeuristic {
     private static final int MAXIMUM_SHORT_WORD_LENGTH = 3;
-    private static final int MAXIMUM_NOT_LONG_WORD_LENGTH = 9;
+    private static final int MINIMUM_LONG_WORD_LENGTH = 10;
 
     private final boolean mIsShortWordSuppressionEnabled;
     private final boolean mIsNotLongWordSuppressionEnabled;
     private final boolean mIsShortWordConditionSatisfied;
-    private final boolean mIsNotLongWordConditionSatisfied;
+    private final boolean mIsLongWordConditionSatisfied;
+    private final String mWordTapped;
 
     /**
      * Constructs a heuristic to categorize the Tap based on word length of the tapped word.
@@ -26,19 +27,18 @@ class TapWordLengthSuppression extends ContextualSearchHeuristic {
      *        the word tapped.
      */
     TapWordLengthSuppression(ContextualSearchContext contextualSearchContext) {
+        mWordTapped = contextualSearchContext.getWordTapped();
         mIsShortWordSuppressionEnabled = ContextualSearchFieldTrial.isShortWordSuppressionEnabled();
         mIsNotLongWordSuppressionEnabled =
                 ContextualSearchFieldTrial.isNotLongWordSuppressionEnabled();
-        mIsShortWordConditionSatisfied =
-                !isTapOnWordLongerThan(MAXIMUM_SHORT_WORD_LENGTH, contextualSearchContext);
-        mIsNotLongWordConditionSatisfied =
-                !isTapOnWordLongerThan(MAXIMUM_NOT_LONG_WORD_LENGTH, contextualSearchContext);
+        mIsShortWordConditionSatisfied = isTapOnShortWord();
+        mIsLongWordConditionSatisfied = isTapOnLongWord();
     }
 
     @Override
     protected boolean isConditionSatisfiedAndEnabled() {
         return mIsShortWordSuppressionEnabled && mIsShortWordConditionSatisfied
-                || mIsNotLongWordSuppressionEnabled && mIsNotLongWordConditionSatisfied;
+                || mIsNotLongWordSuppressionEnabled && !mIsLongWordConditionSatisfied;
     }
 
     @Override
@@ -48,7 +48,7 @@ class TapWordLengthSuppression extends ContextualSearchHeuristic {
                     wasSearchContentViewSeen, mIsShortWordConditionSatisfied);
             // Log CTR of long words, since not-long word CTR is probably not useful.
             ContextualSearchUma.logTapLongWordSeen(
-                    wasSearchContentViewSeen, !mIsNotLongWordConditionSatisfied);
+                    wasSearchContentViewSeen, mIsLongWordConditionSatisfied);
         }
     }
 
@@ -64,12 +64,18 @@ class TapWordLengthSuppression extends ContextualSearchHeuristic {
     }
 
     /**
-     * @return Whether the tap is on a word longer than the given word length maximum.
+     * @return Whether the tap is on a word whose length is considered short.
      */
-    private boolean isTapOnWordLongerThan(
-            int maxWordLength, ContextualSearchContext contextualSearchContext) {
-        // If setup failed, don't suppress.
-        String wordTapped = contextualSearchContext.getWordTapped();
-        return !TextUtils.isEmpty(wordTapped) && wordTapped.length() > maxWordLength;
+    private boolean isTapOnShortWord() {
+        // If setup failed, return false.
+        return !TextUtils.isEmpty(mWordTapped) && mWordTapped.length() <= MAXIMUM_SHORT_WORD_LENGTH;
+    }
+
+    /**
+     * @return Whether the tap is on a word whose length is considered long.
+     */
+    private boolean isTapOnLongWord() {
+        // If setup failed, return false.
+        return !TextUtils.isEmpty(mWordTapped) && mWordTapped.length() >= MINIMUM_LONG_WORD_LENGTH;
     }
 }

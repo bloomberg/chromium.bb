@@ -193,14 +193,7 @@ class ContextualSearchEntityHeuristic extends ContextualSearchHeuristic {
      */
     private boolean hasCharWithUnreliableWordBreak(
             ContextualSearchContext contextualSearchContext, String word) {
-        for (int index = 0; index < word.length(); index++) {
-            if (contextualSearchContext.isCharFromAlphabetWithUnreliableWordBreakAtIndex(
-                        word, index)) {
-                return true;
-            }
-        }
-
-        return false;
+        return contextualSearchContext.hasCharFromAlphabetWithUnreliableWordBreak(word);
     }
 
     /**
