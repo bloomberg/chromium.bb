@@ -14,8 +14,8 @@ namespace {
 // Mapping from WebClientHintsType to the header value for enabling the
 // corresponding client hint. The ordering should match the ordering of enums in
 // WebClientHintsType.
-static constexpr const char* kHeaderMapping[] = {"device-ram", "dpr", "width",
-                                                 "viewport-width"};
+static constexpr const char* kHeaderMapping[] = {"device-memory", "dpr",
+                                                 "width", "viewport-width"};
 
 static_assert(kWebClientHintsTypeLast + 1 == arraysize(kHeaderMapping),
               "unhandled client hint type");
@@ -28,9 +28,9 @@ void ParseAcceptChHeader(const String& header_value,
   for (size_t i = 0; i < kWebClientHintsTypeLast + 1; ++i)
     enabled_types[i] = accept_client_hints_header.Contains(kHeaderMapping[i]);
 
-  enabled_types[kWebClientHintsTypeDeviceRam] =
-      enabled_types[kWebClientHintsTypeDeviceRam] &&
-      RuntimeEnabledFeatures::DeviceRAMHeaderEnabled();
+  enabled_types[kWebClientHintsTypeDeviceMemory] =
+      enabled_types[kWebClientHintsTypeDeviceMemory] &&
+      RuntimeEnabledFeatures::DeviceMemoryHeaderEnabled();
 }
 
 }  // namespace

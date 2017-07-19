@@ -15863,7 +15863,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2014" label="V8SpeechRecognition_Start_Method"/>
   <int value="2015" label="TableRowDirectionDifferentFromTable"/>
   <int value="2016" label="TableSectionDirectionDifferentFromTable"/>
-  <int value="2017" label="ClientHintsDeviceRAM"/>
+  <int value="2017" label="ClientHintsDeviceMemory"/>
   <int value="2018" label="CSSRegisterProperty"/>
   <int value="2019" label="RelativeOrientationSensorConstructor"/>
   <int value="2020" label="SmoothScrollJSInterventionActivated"/>

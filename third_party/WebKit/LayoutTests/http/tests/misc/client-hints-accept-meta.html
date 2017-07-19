@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<meta http-equiv="Accept-CH" content="DPR, Width, Viewport-Width, Device-RAM">
+<meta http-equiv="Accept-CH" content="DPR, Width, Viewport-Width, Device-Memory">
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <body>
@@ -9,9 +9,9 @@
             assert_unreached("Image should have loaded.");
         };
 
-        var loadDeviceRAMImage = function() {
+        var loadDeviceMemoryImage = function() {
             var img = new Image();
-            img.src = 'resources/image-checks-for-device-ram.php';
+            img.src = 'resources/image-checks-for-device-memory.php';
             img.onload = t.step_func(function(){ t.done(); });
             img.onerror = t.step_func(unreached);
             document.body.appendChild(img);
@@ -20,7 +20,7 @@
             var img = new Image();
             img.src = 'resources/image-checks-for-width.php';
             img.sizes = '100vw';
-            img.onload = t.step_func(loadDeviceRAMImage);
+            img.onload = t.step_func(loadDeviceMemoryImage);
             img.onerror = t.step_func(unreached);
             document.body.appendChild(img);
         };

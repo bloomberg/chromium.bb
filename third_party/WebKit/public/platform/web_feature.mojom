@@ -1552,7 +1552,7 @@ enum WebFeature {
   kTableSectionDirectionDifferentFromTable = 2016,
   // The above items are available in M60 branch.
 
-  kClientHintsDeviceRAM = 2017,
+  kClientHintsDeviceMemory = 2017,
   kCSSRegisterProperty = 2018,
   kRelativeOrientationSensorConstructor = 2019,
   kSmoothScrollJSInterventionActivated = 2020,

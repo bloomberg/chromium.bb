@@ -11,7 +11,7 @@ enum WebClientHintsType {
   // The order of the enums or the values must not be changed. New values should
   // only be added after the last value, and kWebClientHintsTypeLast should be
   // updated accordingly.
-  kWebClientHintsTypeDeviceRam,
+  kWebClientHintsTypeDeviceMemory,
   kWebClientHintsTypeDpr,
   kWebClientHintsTypeResourceWidth,
   kWebClientHintsTypeViewportWidth,
