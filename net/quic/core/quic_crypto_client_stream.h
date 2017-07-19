@@ -84,9 +84,6 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientStream
     // to handshake confirmation.
     virtual int num_scup_messages_received() const = 0;
 
-    // TODO(nharper): Move this to QuicCryptoClientHandshaker.
-    virtual void OnHandshakeMessage(const CryptoHandshakeMessage& message) = 0;
-
     // Returns true if a channel ID was sent on this connection.
     virtual bool WasChannelIDSent() const = 0;
 
@@ -106,6 +103,9 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientStream
     // Returns the parameters negotiated in the crypto handshake.
     virtual const QuicCryptoNegotiatedParameters& crypto_negotiated_params()
         const = 0;
+
+    // Used by QuicCryptoStream to parse data received on this stream.
+    virtual CryptoMessageParser* crypto_message_parser() = 0;
   };
 
   // ProofHandler is an interface that handles callbacks from the crypto
@@ -146,9 +146,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientStream
   bool handshake_confirmed() const override;
   const QuicCryptoNegotiatedParameters& crypto_negotiated_params()
       const override;
-
-  // CryptoFramerVisitorInterface implementation
-  void OnHandshakeMessage(const CryptoHandshakeMessage& message) override;
+  CryptoMessageParser* crypto_message_parser() override;
 
   // Returns true if a channel ID was sent on this connection.
   bool WasChannelIDSent() const;
@@ -168,7 +166,8 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientStream
 // An implementation of QuicCryptoClientStream::HandshakerDelegate which uses
 // QUIC crypto as the crypto handshake protocol.
 class QUIC_EXPORT_PRIVATE QuicCryptoClientHandshaker
-    : public QuicCryptoClientStream::HandshakerDelegate {
+    : public QuicCryptoClientStream::HandshakerDelegate,
+      public QuicCryptoHandshaker {
  public:
   QuicCryptoClientHandshaker(
       const QuicServerId& server_id,
@@ -184,7 +183,6 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientHandshaker
   bool CryptoConnect() override;
   int num_sent_client_hellos() const override;
   int num_scup_messages_received() const override;
-  void OnHandshakeMessage(const CryptoHandshakeMessage& message) override;
   bool WasChannelIDSent() const override;
   bool WasChannelIDSourceCallbackRun() const override;
   std::string chlo_hash() const override;
@@ -192,6 +190,10 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientHandshaker
   bool handshake_confirmed() const override;
   const QuicCryptoNegotiatedParameters& crypto_negotiated_params()
       const override;
+  CryptoMessageParser* crypto_message_parser() override;
+
+  // From QuicCryptoHandshaker
+  void OnHandshakeMessage(const CryptoHandshakeMessage& message) override;
 
  private:
   // ChannelIDSourceCallbackImpl is passed as the callback method to

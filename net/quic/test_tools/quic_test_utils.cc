@@ -412,6 +412,10 @@ MockQuicCryptoStream::crypto_negotiated_params() const {
   return *params_;
 }
 
+CryptoMessageParser* MockQuicCryptoStream::crypto_message_parser() {
+  return &crypto_framer_;
+}
+
 MockQuicSpdySession::MockQuicSpdySession(QuicConnection* connection)
     : QuicSpdySession(connection, nullptr, DefaultQuicConfig()) {
   crypto_stream_.reset(new MockQuicCryptoStream(this));

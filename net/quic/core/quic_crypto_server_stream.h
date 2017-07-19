@@ -92,9 +92,6 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerStream
     // client hello.
     virtual void CancelOutstandingCallbacks() = 0;
 
-    // TODO(nharper): Move this to QuicCryptoServerHandshaker.
-    virtual void OnHandshakeMessage(const CryptoHandshakeMessage& message) = 0;
-
     // GetBase64SHA256ClientChannelID sets |*output| to the base64 encoded,
     // SHA-256 hash of the client's ChannelID key and returns true, if the
     // client presented a ChannelID. Otherwise it returns false.
@@ -135,6 +132,9 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerStream
     // Returns the parameters negotiated in the crypto handshake.
     virtual const QuicCryptoNegotiatedParameters& crypto_negotiated_params()
         const = 0;
+
+    // Used by QuicCryptoStream to parse data received on this stream.
+    virtual CryptoMessageParser* crypto_message_parser() = 0;
   };
 
   class Helper {
@@ -167,7 +167,6 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerStream
 
   // From QuicCryptoServerStreamBase
   void CancelOutstandingCallbacks() override;
-  void OnHandshakeMessage(const CryptoHandshakeMessage& message) override;
   bool GetBase64SHA256ClientChannelID(std::string* output) const override;
   void SendServerConfigUpdate(
       const CachedNetworkParameters* cached_network_params) override;
@@ -194,6 +193,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerStream
   bool handshake_confirmed() const override;
   const QuicCryptoNegotiatedParameters& crypto_negotiated_params()
       const override;
+  CryptoMessageParser* crypto_message_parser() override;
 
  protected:
   // Provided so that subclasses can provide their own handshaker.
@@ -206,7 +206,8 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerStream
 };
 
 class QUIC_EXPORT_PRIVATE QuicCryptoServerHandshaker
-    : public QuicCryptoServerStream::HandshakerDelegate {
+    : public QuicCryptoServerStream::HandshakerDelegate,
+      public QuicCryptoHandshaker {
  public:
   // |crypto_config| must outlive the stream.
   // |session| must outlive the stream.
@@ -222,7 +223,6 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerHandshaker
 
   // From HandshakerDelegate
   void CancelOutstandingCallbacks() override;
-  void OnHandshakeMessage(const CryptoHandshakeMessage& message) override;
   bool GetBase64SHA256ClientChannelID(std::string* output) const override;
   void SendServerConfigUpdate(
       const CachedNetworkParameters* cached_network_params) override;
@@ -239,10 +239,15 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerHandshaker
       CachedNetworkParameters cached_network_params) override;
   bool ShouldSendExpectCTHeader() const override;
 
+  // From QuicCryptoStream
   bool encryption_established() const override;
   bool handshake_confirmed() const override;
   const QuicCryptoNegotiatedParameters& crypto_negotiated_params()
       const override;
+  CryptoMessageParser* crypto_message_parser() override;
+
+  // From QuicCryptoHandshaker
+  void OnHandshakeMessage(const CryptoHandshakeMessage& message) override;
 
  protected:
   virtual void ProcessClientHello(

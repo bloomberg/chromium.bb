@@ -96,12 +96,6 @@ void QuicCryptoServerStream::CancelOutstandingCallbacks() {
   handshaker()->CancelOutstandingCallbacks();
 }
 
-void QuicCryptoServerStream::OnHandshakeMessage(
-    const CryptoHandshakeMessage& message) {
-  QuicCryptoServerStreamBase::OnHandshakeMessage(message);
-  handshaker()->OnHandshakeMessage(message);
-}
-
 bool QuicCryptoServerStream::GetBase64SHA256ClientChannelID(
     string* output) const {
   return handshaker()->GetBase64SHA256ClientChannelID(output);
@@ -169,6 +163,10 @@ QuicCryptoServerStream::crypto_negotiated_params() const {
   return handshaker()->crypto_negotiated_params();
 }
 
+CryptoMessageParser* QuicCryptoServerStream::crypto_message_parser() {
+  return handshaker()->crypto_message_parser();
+}
+
 QuicCryptoServerStream::HandshakerDelegate* QuicCryptoServerStream::handshaker()
     const {
   return handshaker_.get();
@@ -181,7 +179,8 @@ QuicCryptoServerHandshaker::QuicCryptoServerHandshaker(
     bool use_stateless_rejects_if_peer_supported,
     QuicSession* session,
     QuicCryptoServerStream::Helper* helper)
-    : stream_(stream),
+    : QuicCryptoHandshaker(stream, session),
+      stream_(stream),
       session_(session),
       crypto_config_(crypto_config),
       compressed_certs_cache_(compressed_certs_cache),
@@ -224,6 +223,7 @@ void QuicCryptoServerHandshaker::CancelOutstandingCallbacks() {
 
 void QuicCryptoServerHandshaker::OnHandshakeMessage(
     const CryptoHandshakeMessage& message) {
+  QuicCryptoHandshaker::OnHandshakeMessage(message);
   ++num_handshake_messages_;
   chlo_packet_size_ = session()->connection()->GetCurrentPacket().length();
 
@@ -315,7 +315,7 @@ void QuicCryptoServerHandshaker::
       // retransmitted.
       session()->connection()->EnableSavingCryptoPackets();
     }
-    stream_->SendHandshakeMessage(*reply);
+    SendHandshakeMessage(*reply);
 
     if (reply->tag() == kSREJ) {
       DCHECK(use_stateless_rejects_if_peer_supported_);
@@ -364,7 +364,7 @@ void QuicCryptoServerHandshaker::
       crypto_negotiated_params_->initial_crypters.decrypter.release());
   session()->connection()->SetDiversificationNonce(*diversification_nonce);
 
-  stream_->SendHandshakeMessage(*reply);
+  SendHandshakeMessage(*reply);
 
   session()->connection()->SetEncrypter(
       ENCRYPTION_FORWARD_SECURE,
@@ -520,6 +520,10 @@ bool QuicCryptoServerHandshaker::handshake_confirmed() const {
 const QuicCryptoNegotiatedParameters&
 QuicCryptoServerHandshaker::crypto_negotiated_params() const {
   return *crypto_negotiated_params_;
+}
+
+CryptoMessageParser* QuicCryptoServerHandshaker::crypto_message_parser() {
+  return QuicCryptoHandshaker::crypto_message_parser();
 }
 
 void QuicCryptoServerHandshaker::ProcessClientHello(
