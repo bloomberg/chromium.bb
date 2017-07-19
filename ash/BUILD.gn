@@ -129,6 +129,8 @@ component("ash") {
     "drag_drop/drag_drop_tracker.h",
     "drag_drop/drag_image_view.cc",
     "drag_drop/drag_image_view.h",
+    "fast_ink/fast_ink_view.cc",
+    "fast_ink/fast_ink_view.h",
     "first_run/desktop_cleaner.cc",
     "first_run/desktop_cleaner.h",
     "first_run/first_run_helper.cc",
