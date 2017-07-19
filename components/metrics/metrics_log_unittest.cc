@@ -46,6 +46,15 @@ const int64_t kInstallDateExpected = 1373050800;  // Computed from kInstallDate.
 const int64_t kEnabledDate = 1373001211;
 const int64_t kEnabledDateExpected = 1373000400;  // Computed from kEnabledDate.
 const int kSessionId = 127;
+const variations::ActiveGroupId kFieldTrialIds[] = {
+  {37, 43},
+  {13, 47},
+  {23, 17}
+};
+const variations::ActiveGroupId kSyntheticTrials[] = {
+  {55, 15},
+  {66, 16}
+};
 
 class TestMetricsLog : public MetricsLog {
  public:
@@ -79,6 +88,15 @@ class TestMetricsLog : public MetricsLog {
                       base::Int64ToString(kEnabledDate));
   }
 
+  void GetFieldTrialIds(
+      std::vector<variations::ActiveGroupId>* field_trial_ids) const override {
+    ASSERT_TRUE(field_trial_ids->empty());
+
+    for (size_t i = 0; i < arraysize(kFieldTrialIds); ++i) {
+      field_trial_ids->push_back(kFieldTrialIds[i]);
+    }
+  }
+
   // Weak pointer to the PrefsService used by this log.
   TestingPrefServiceSimple* prefs_;
 
@@ -102,6 +120,22 @@ class MetricsLogTest : public testing::Test {
   void CheckSystemProfile(const SystemProfileProto& system_profile) {
     EXPECT_EQ(kInstallDateExpected, system_profile.install_date());
     EXPECT_EQ(kEnabledDateExpected, system_profile.uma_enabled_date());
+
+    ASSERT_EQ(arraysize(kFieldTrialIds) + arraysize(kSyntheticTrials),
+              static_cast<size_t>(system_profile.field_trial_size()));
+    for (size_t i = 0; i < arraysize(kFieldTrialIds); ++i) {
+      const SystemProfileProto::FieldTrial& field_trial =
+          system_profile.field_trial(i);
+      EXPECT_EQ(kFieldTrialIds[i].name, field_trial.name_id());
+      EXPECT_EQ(kFieldTrialIds[i].group, field_trial.group_id());
+    }
+    // Verify the right data is present for the synthetic trials.
+    for (size_t i = 0; i < arraysize(kSyntheticTrials); ++i) {
+      const SystemProfileProto::FieldTrial& field_trial =
+          system_profile.field_trial(i + arraysize(kFieldTrialIds));
+      EXPECT_EQ(kSyntheticTrials[i].name, field_trial.name_id());
+      EXPECT_EQ(kSyntheticTrials[i].group, field_trial.group_id());
+    }
 
     EXPECT_EQ(TestMetricsServiceClient::kBrandForTesting,
               system_profile.brand_code());
@@ -255,8 +289,13 @@ TEST_F(MetricsLogTest, RecordEnvironment) {
   TestMetricsLog log(
       kClientId, kSessionId, MetricsLog::ONGOING_LOG, &client, &prefs_);
 
+  std::vector<variations::ActiveGroupId> synthetic_trials;
+  // Add two synthetic trials.
+  synthetic_trials.push_back(kSyntheticTrials[0]);
+  synthetic_trials.push_back(kSyntheticTrials[1]);
+
   log.RecordEnvironment(std::vector<std::unique_ptr<MetricsProvider>>(),
-                        kInstallDate, kEnabledDate);
+                        synthetic_trials, kInstallDate, kEnabledDate);
   // Check that the system profile on the log has the correct values set.
   CheckSystemProfile(log.system_profile());
 
@@ -272,15 +311,17 @@ TEST_F(MetricsLogTest, RecordEnvironmentEnableDefault) {
   TestMetricsLog log_unknown(kClientId, kSessionId, MetricsLog::ONGOING_LOG,
                              &client, &prefs_);
 
+  std::vector<variations::ActiveGroupId> synthetic_trials;
+
   log_unknown.RecordEnvironment(std::vector<std::unique_ptr<MetricsProvider>>(),
-                                kInstallDate, kEnabledDate);
+                                synthetic_trials, kInstallDate, kEnabledDate);
   EXPECT_FALSE(log_unknown.system_profile().has_uma_default_state());
 
   client.set_enable_default(EnableMetricsDefault::OPT_IN);
   TestMetricsLog log_opt_in(kClientId, kSessionId, MetricsLog::ONGOING_LOG,
                             &client, &prefs_);
   log_opt_in.RecordEnvironment(std::vector<std::unique_ptr<MetricsProvider>>(),
-                               kInstallDate, kEnabledDate);
+                               synthetic_trials, kInstallDate, kEnabledDate);
   EXPECT_TRUE(log_opt_in.system_profile().has_uma_default_state());
   EXPECT_EQ(SystemProfileProto_UmaDefaultState_OPT_IN,
             log_opt_in.system_profile().uma_default_state());
@@ -289,7 +330,7 @@ TEST_F(MetricsLogTest, RecordEnvironmentEnableDefault) {
   TestMetricsLog log_opt_out(kClientId, kSessionId, MetricsLog::ONGOING_LOG,
                              &client, &prefs_);
   log_opt_out.RecordEnvironment(std::vector<std::unique_ptr<MetricsProvider>>(),
-                                kInstallDate, kEnabledDate);
+                                synthetic_trials, kInstallDate, kEnabledDate);
   EXPECT_TRUE(log_opt_out.system_profile().has_uma_default_state());
   EXPECT_EQ(SystemProfileProto_UmaDefaultState_OPT_OUT,
             log_opt_out.system_profile().uma_default_state());
@@ -298,7 +339,7 @@ TEST_F(MetricsLogTest, RecordEnvironmentEnableDefault) {
   TestMetricsLog log_managed(kClientId, kSessionId, MetricsLog::ONGOING_LOG,
                              &client, &prefs_);
   log_managed.RecordEnvironment(std::vector<std::unique_ptr<MetricsProvider>>(),
-                                kInstallDate, kEnabledDate);
+                                synthetic_trials, kInstallDate, kEnabledDate);
   EXPECT_TRUE(log_managed.system_profile().has_uma_default_state());
   EXPECT_EQ(SystemProfileProto_UmaDefaultState_POLICY_FORCED_ENABLED,
             log_managed.system_profile().uma_default_state());
@@ -314,7 +355,9 @@ TEST_F(MetricsLogTest, InitialLogStabilityMetrics) {
   TestMetricsProvider* test_provider = new TestMetricsProvider();
   std::vector<std::unique_ptr<MetricsProvider>> metrics_providers;
   metrics_providers.push_back(base::WrapUnique<MetricsProvider>(test_provider));
-  log.RecordEnvironment(metrics_providers, kInstallDate, kEnabledDate);
+  log.RecordEnvironment(metrics_providers,
+                        std::vector<variations::ActiveGroupId>(), kInstallDate,
+                        kEnabledDate);
   log.RecordStabilityMetrics(metrics_providers, base::TimeDelta(),
                              base::TimeDelta());
 
@@ -331,7 +374,9 @@ TEST_F(MetricsLogTest, OngoingLogStabilityMetrics) {
   TestMetricsProvider* test_provider = new TestMetricsProvider();
   std::vector<std::unique_ptr<MetricsProvider>> metrics_providers;
   metrics_providers.push_back(base::WrapUnique<MetricsProvider>(test_provider));
-  log.RecordEnvironment(metrics_providers, kInstallDate, kEnabledDate);
+  log.RecordEnvironment(metrics_providers,
+                        std::vector<variations::ActiveGroupId>(), kInstallDate,
+                        kEnabledDate);
   log.RecordStabilityMetrics(metrics_providers, base::TimeDelta(),
                              base::TimeDelta());
 

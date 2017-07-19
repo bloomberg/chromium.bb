@@ -250,7 +250,8 @@ bool TodayMetricsLogger::CreateNewLog() {
 
   log_->RecordEnvironment(
       std::vector<std::unique_ptr<metrics::MetricsProvider>>(),
-      [install_date longLongValue], [enabled_date longLongValue]);
+      std::vector<variations::ActiveGroupId>(), [install_date longLongValue],
+      [enabled_date longLongValue]);
 
   return true;
 }
