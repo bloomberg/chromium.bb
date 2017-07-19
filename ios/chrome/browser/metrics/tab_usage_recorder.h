@@ -18,9 +18,6 @@
 
 // Histogram names (visible for testing only).
 
-// The prefix of the histogram names.  Used to create a HistogramRecorder.
-extern const char kTabUsageHistogramPrefix[];
-
 // The name of the histogram that records the state of the selected tab
 // (i.e. the tab being switched to).
 extern const char kSelectedTabHistogramName[];
