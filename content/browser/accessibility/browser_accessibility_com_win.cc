@@ -39,10 +39,6 @@ const uint32_t kScreenReaderAndHTMLAccessibilityModes =
     content::AccessibilityMode::kScreenReader |
     content::AccessibilityMode::kHTML;
 
-const WCHAR* const IA2_RELATION_DETAILS = L"details";
-const WCHAR* const IA2_RELATION_DETAILS_FOR = L"detailsFor";
-const WCHAR* const IA2_RELATION_ERROR_MESSAGE = L"errorMessage";
-
 namespace content {
 
 using AXPlatformPositionInstance = AXPlatformPosition::AXPositionInstance;
@@ -69,153 +65,6 @@ void AddAccessibilityModeFlags(AccessibilityMode mode_flags) {
 }
 
 //
-// BrowserAccessibilityRelation
-//
-// A simple implementation of IAccessibleRelation, used to represent
-// a relationship between two accessible nodes in the tree.
-//
-
-class BrowserAccessibilityRelation
-    : public CComObjectRootEx<CComMultiThreadModel>,
-      public IAccessibleRelation {
-  BEGIN_COM_MAP(BrowserAccessibilityRelation)
-  COM_INTERFACE_ENTRY(IAccessibleRelation)
-  END_COM_MAP()
-
-  CONTENT_EXPORT BrowserAccessibilityRelation() {}
-  CONTENT_EXPORT virtual ~BrowserAccessibilityRelation() {}
-
-  CONTENT_EXPORT void Initialize(BrowserAccessibilityComWin* owner,
-                                 const base::string16& type);
-  CONTENT_EXPORT void AddTarget(int target_id);
-  CONTENT_EXPORT void RemoveTarget(int target_id);
-
-  // Accessors.
-  const base::string16& get_type() const { return type_; }
-  const std::vector<int>& get_target_ids() const { return target_ids_; }
-
-  // IAccessibleRelation methods.
-  CONTENT_EXPORT STDMETHODIMP get_relationType(BSTR* relation_type) override;
-  CONTENT_EXPORT STDMETHODIMP get_nTargets(long* n_targets) override;
-  CONTENT_EXPORT STDMETHODIMP get_target(long target_index,
-                                         IUnknown** target) override;
-  CONTENT_EXPORT STDMETHODIMP get_targets(long max_targets,
-                                          IUnknown** targets,
-                                          long* n_targets) override;
-
-  // IAccessibleRelation methods not implemented.
-  CONTENT_EXPORT STDMETHODIMP
-  get_localizedRelationType(BSTR* relation_type) override {
-    return E_NOTIMPL;
-  }
-
- private:
-  base::string16 type_;
-  base::win::ScopedComPtr<BrowserAccessibilityComWin> owner_;
-  std::vector<int> target_ids_;
-};
-
-void BrowserAccessibilityRelation::Initialize(BrowserAccessibilityComWin* owner,
-                                              const base::string16& type) {
-  owner_ = owner;
-  type_ = type;
-}
-
-void BrowserAccessibilityRelation::AddTarget(int target_id) {
-  target_ids_.push_back(target_id);
-}
-
-void BrowserAccessibilityRelation::RemoveTarget(int target_id) {
-  target_ids_.erase(
-      std::remove(target_ids_.begin(), target_ids_.end(), target_id),
-      target_ids_.end());
-}
-
-STDMETHODIMP BrowserAccessibilityRelation::get_relationType(
-    BSTR* relation_type) {
-  if (!relation_type)
-    return E_INVALIDARG;
-
-  if (!owner_->owner())
-    return E_FAIL;
-
-  *relation_type = SysAllocString(type_.c_str());
-  DCHECK(*relation_type);
-  return S_OK;
-}
-
-STDMETHODIMP BrowserAccessibilityRelation::get_nTargets(long* n_targets) {
-  if (!n_targets)
-    return E_INVALIDARG;
-
-  if (!owner_->owner())
-    return E_FAIL;
-
-  *n_targets = static_cast<long>(target_ids_.size());
-
-  for (long i = *n_targets - 1; i >= 0; --i) {
-    BrowserAccessibilityComWin* result = owner_->GetFromID(target_ids_[i]);
-    if (!result || !result->owner()) {
-      *n_targets = 0;
-      break;
-    }
-  }
-  return S_OK;
-}
-
-STDMETHODIMP BrowserAccessibilityRelation::get_target(long target_index,
-                                                      IUnknown** target) {
-  if (!target)
-    return E_INVALIDARG;
-
-  if (!owner_->owner())
-    return E_FAIL;
-
-  auto* manager = owner_->Manager();
-  if (!manager)
-    return E_FAIL;
-
-  if (target_index < 0 ||
-      target_index >= static_cast<long>(target_ids_.size())) {
-    return E_INVALIDARG;
-  }
-
-  BrowserAccessibility* result = manager->GetFromID(target_ids_[target_index]);
-  if (!result || !result->instance_active())
-    return E_FAIL;
-
-  *target = static_cast<IAccessible*>(
-      ToBrowserAccessibilityComWin(result)->NewReference());
-  return S_OK;
-}
-
-STDMETHODIMP BrowserAccessibilityRelation::get_targets(long max_targets,
-                                                       IUnknown** targets,
-                                                       long* n_targets) {
-  if (!targets || !n_targets)
-    return E_INVALIDARG;
-
-  if (!owner_->owner())
-    return E_FAIL;
-
-  long count = static_cast<long>(target_ids_.size());
-  if (count > max_targets)
-    count = max_targets;
-
-  *n_targets = count;
-  if (count == 0)
-    return S_FALSE;
-
-  for (long i = 0; i < count; ++i) {
-    HRESULT result = get_target(i, &targets[i]);
-    if (result != S_OK)
-      return result;
-  }
-
-  return S_OK;
-}
-
-//
 // BrowserAccessibilityComWin::WinAttributes
 //
 
@@ -234,8 +83,6 @@ BrowserAccessibilityComWin::BrowserAccessibilityComWin()
       previous_scroll_y_(0) {}
 
 BrowserAccessibilityComWin::~BrowserAccessibilityComWin() {
-  for (BrowserAccessibilityRelation* relation : relations_)
-    relation->Release();
 }
 
 //
@@ -326,14 +173,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_indexInParent(
 STDMETHODIMP BrowserAccessibilityComWin::get_nRelations(LONG* n_relations) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_N_RELATIONS);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!owner())
-    return E_FAIL;
-
-  if (!n_relations)
-    return E_INVALIDARG;
-
-  *n_relations = relations_.size();
-  return S_OK;
+  return AXPlatformNodeWin::get_nRelations(n_relations);
 }
 
 STDMETHODIMP BrowserAccessibilityComWin::get_relation(
@@ -341,20 +181,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_relation(
     IAccessibleRelation** relation) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_RELATION);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!owner())
-    return E_FAIL;
-
-  if (relation_index < 0 ||
-      relation_index >= static_cast<long>(relations_.size())) {
-    return E_INVALIDARG;
-  }
-
-  if (!relation)
-    return E_INVALIDARG;
-
-  relations_[relation_index]->AddRef();
-  *relation = relations_[relation_index];
-  return S_OK;
+  return AXPlatformNodeWin::get_relation(relation_index, relation);
 }
 
 STDMETHODIMP BrowserAccessibilityComWin::get_relations(
@@ -363,23 +190,8 @@ STDMETHODIMP BrowserAccessibilityComWin::get_relations(
     LONG* n_relations) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_RELATIONS);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!owner())
-    return E_FAIL;
-
-  if (!relations || !n_relations)
-    return E_INVALIDARG;
-
-  long count = static_cast<long>(relations_.size());
-  *n_relations = count;
-  if (count == 0)
-    return S_FALSE;
-
-  for (long i = 0; i < count; ++i) {
-    relations_[i]->AddRef();
-    relations[i] = relations_[i];
-  }
-
-  return S_OK;
+  return AXPlatformNodeWin::get_relations(max_relations, relations,
+                                          n_relations);
 }
 
 STDMETHODIMP BrowserAccessibilityComWin::scrollTo(IA2ScrollType scroll_type) {
@@ -2640,33 +2452,7 @@ void BrowserAccessibilityComWin::UpdateStep1ComputeWinAttributes() {
 
   win_attributes_->value = value;
 
-  ClearOwnRelations();
-  AddBidirectionalRelations(IA2_RELATION_CONTROLLER_FOR,
-                            IA2_RELATION_CONTROLLED_BY,
-                            ui::AX_ATTR_CONTROLS_IDS);
-  AddBidirectionalRelations(IA2_RELATION_DESCRIBED_BY,
-                            IA2_RELATION_DESCRIPTION_FOR,
-                            ui::AX_ATTR_DESCRIBEDBY_IDS);
-  AddBidirectionalRelations(IA2_RELATION_FLOWS_TO, IA2_RELATION_FLOWS_FROM,
-                            ui::AX_ATTR_FLOWTO_IDS);
-  AddBidirectionalRelations(IA2_RELATION_LABELLED_BY, IA2_RELATION_LABEL_FOR,
-                            ui::AX_ATTR_LABELLEDBY_IDS);
-
-  int32_t details_id;
-  if (GetIntAttribute(ui::AX_ATTR_DETAILS_ID, &details_id)) {
-    std::vector<int32_t> details_ids;
-    details_ids.push_back(details_id);
-    AddBidirectionalRelations(IA2_RELATION_DETAILS, IA2_RELATION_DETAILS_FOR,
-                              details_ids);
-  }
-
-  int member_of_id;
-  if (owner()->GetIntAttribute(ui::AX_ATTR_MEMBER_OF_ID, &member_of_id))
-    AddRelation(IA2_RELATION_MEMBER_OF, member_of_id);
-
-  int error_message_id;
-  if (owner()->GetIntAttribute(ui::AX_ATTR_ERRORMESSAGE_ID, &error_message_id))
-    AddRelation(IA2_RELATION_ERROR_MESSAGE, error_message_id);
+  CalculateRelationships();
 }
 
 void BrowserAccessibilityComWin::UpdateStep2ComputeHypertext() {
@@ -3596,135 +3382,6 @@ bool BrowserAccessibilityComWin::IsListBoxOptionOrMenuListOption() {
   }
 
   return false;
-}
-
-void BrowserAccessibilityComWin::AddRelation(
-    const base::string16& relation_type,
-    int target_id) {
-  // Reflexive relations don't need to be exposed through IA2.
-  if (target_id == owner()->GetId())
-    return;
-
-  CComObject<BrowserAccessibilityRelation>* relation;
-  HRESULT hr =
-      CComObject<BrowserAccessibilityRelation>::CreateInstance(&relation);
-  DCHECK(SUCCEEDED(hr));
-  relation->AddRef();
-  relation->Initialize(this, relation_type);
-  relation->AddTarget(target_id);
-  relations_.push_back(relation);
-}
-
-void BrowserAccessibilityComWin::AddBidirectionalRelations(
-    const base::string16& relation_type,
-    const base::string16& reverse_relation_type,
-    ui::AXIntListAttribute attribute) {
-  if (!owner()->HasIntListAttribute(attribute))
-    return;
-
-  const std::vector<int32_t>& target_ids =
-      owner()->GetIntListAttribute(attribute);
-  AddBidirectionalRelations(relation_type, reverse_relation_type, target_ids);
-}
-
-void BrowserAccessibilityComWin::AddBidirectionalRelations(
-    const base::string16& relation_type,
-    const base::string16& reverse_relation_type,
-    const std::vector<int32_t>& target_ids) {
-  // Reflexive relations don't need to be exposed through IA2.
-  std::vector<int32_t> filtered_target_ids;
-  int32_t current_id = owner()->GetId();
-  std::copy_if(target_ids.begin(), target_ids.end(),
-               std::back_inserter(filtered_target_ids),
-               [current_id](int32_t id) { return id != current_id; });
-  if (filtered_target_ids.empty())
-    return;
-
-  CComObject<BrowserAccessibilityRelation>* relation;
-  HRESULT hr =
-      CComObject<BrowserAccessibilityRelation>::CreateInstance(&relation);
-  DCHECK(SUCCEEDED(hr));
-  relation->AddRef();
-  relation->Initialize(this, relation_type);
-
-  for (int target_id : filtered_target_ids) {
-    BrowserAccessibilityComWin* target =
-        GetFromID(static_cast<int32_t>(target_id));
-    if (!target || !target->owner())
-      continue;
-    relation->AddTarget(target_id);
-    target->AddRelation(reverse_relation_type, owner()->GetId());
-  }
-
-  relations_.push_back(relation);
-}
-
-// Clears all the forward relations from this object to any other object and the
-// associated  reverse relations on the other objects, but leaves any reverse
-// relations on this object alone.
-void BrowserAccessibilityComWin::ClearOwnRelations() {
-  RemoveBidirectionalRelationsOfType(IA2_RELATION_CONTROLLER_FOR,
-                                     IA2_RELATION_CONTROLLED_BY);
-  RemoveBidirectionalRelationsOfType(IA2_RELATION_DESCRIBED_BY,
-                                     IA2_RELATION_DESCRIPTION_FOR);
-  RemoveBidirectionalRelationsOfType(IA2_RELATION_FLOWS_TO,
-                                     IA2_RELATION_FLOWS_FROM);
-  RemoveBidirectionalRelationsOfType(IA2_RELATION_LABELLED_BY,
-                                     IA2_RELATION_LABEL_FOR);
-
-  relations_.erase(
-      std::remove_if(relations_.begin(), relations_.end(),
-                     [](BrowserAccessibilityRelation* relation) {
-                       if (relation->get_type() == IA2_RELATION_MEMBER_OF) {
-                         relation->Release();
-                         return true;
-                       }
-                       return false;
-                     }),
-      relations_.end());
-}
-
-void BrowserAccessibilityComWin::RemoveBidirectionalRelationsOfType(
-    const base::string16& relation_type,
-    const base::string16& reverse_relation_type) {
-  for (auto iter = relations_.begin(); iter != relations_.end();) {
-    BrowserAccessibilityRelation* relation = *iter;
-    DCHECK(relation);
-    if (relation->get_type() == relation_type) {
-      for (int target_id : relation->get_target_ids()) {
-        BrowserAccessibilityComWin* target =
-            GetFromID(static_cast<int32_t>(target_id));
-        if (!target || !target->owner())
-          continue;
-        DCHECK_NE(target, this);
-        target->RemoveTargetFromRelation(reverse_relation_type,
-                                         owner()->GetId());
-      }
-      iter = relations_.erase(iter);
-      relation->Release();
-    } else {
-      ++iter;
-    }
-  }
-}
-
-void BrowserAccessibilityComWin::RemoveTargetFromRelation(
-    const base::string16& relation_type,
-    int target_id) {
-  for (auto iter = relations_.begin(); iter != relations_.end();) {
-    BrowserAccessibilityRelation* relation = *iter;
-    DCHECK(relation);
-    if (relation->get_type() == relation_type) {
-      // If |target_id| is not present, |RemoveTarget| will do nothing.
-      relation->RemoveTarget(target_id);
-    }
-    if (relation->get_target_ids().empty()) {
-      iter = relations_.erase(iter);
-      relation->Release();
-    } else {
-      ++iter;
-    }
-  }
 }
 
 void BrowserAccessibilityComWin::FireNativeEvent(LONG win_event_type) const {

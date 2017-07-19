@@ -135,6 +135,10 @@
   if (!target->delegate_)                                                    \
     return E_INVALIDARG;
 
+const WCHAR* const IA2_RELATION_DETAILS = L"details";
+const WCHAR* const IA2_RELATION_DETAILS_FOR = L"detailsFor";
+const WCHAR* const IA2_RELATION_ERROR_MESSAGE = L"errorMessage";
+
 namespace ui {
 
 namespace {
@@ -165,6 +169,114 @@ IAccessible2UsageObserver::~IAccessible2UsageObserver() {
 base::ObserverList<IAccessible2UsageObserver>&
     GetIAccessible2UsageObserverList() {
   return g_iaccessible2_usage_observer_list.Get();
+}
+
+AXPlatformNodeRelationWin::AXPlatformNodeRelationWin() {
+  ui::win::CreateATLModuleIfNeeded();
+}
+
+AXPlatformNodeRelationWin::~AXPlatformNodeRelationWin() {}
+
+void AXPlatformNodeRelationWin::Initialize(AXPlatformNodeWin* owner,
+                                           const base::string16& type) {
+  owner_ = owner;
+  type_ = type;
+}
+
+void AXPlatformNodeRelationWin::AddTarget(int target_id) {
+  target_ids_.push_back(target_id);
+}
+
+void AXPlatformNodeRelationWin::RemoveTarget(int target_id) {
+  target_ids_.erase(
+      std::remove(target_ids_.begin(), target_ids_.end(), target_id),
+      target_ids_.end());
+}
+
+STDMETHODIMP AXPlatformNodeRelationWin::get_relationType(BSTR* relation_type) {
+  if (!relation_type)
+    return E_INVALIDARG;
+
+  if (!owner_->delegate_)
+    return E_FAIL;
+
+  *relation_type = SysAllocString(type_.c_str());
+  DCHECK(*relation_type);
+  return S_OK;
+}
+
+STDMETHODIMP AXPlatformNodeRelationWin::get_nTargets(long* n_targets) {
+  if (!n_targets)
+    return E_INVALIDARG;
+
+  if (!owner_->delegate_)
+    return E_FAIL;
+
+  *n_targets = static_cast<long>(target_ids_.size());
+
+  for (long i = *n_targets - 1; i >= 0; --i) {
+    AXPlatformNodeWin* result = static_cast<AXPlatformNodeWin*>(
+        owner_->delegate_->GetFromNodeID(target_ids_[i]));
+    if (!result || !result->delegate_) {
+      *n_targets = 0;
+      break;
+    }
+  }
+  return S_OK;
+}
+
+STDMETHODIMP AXPlatformNodeRelationWin::get_target(long target_index,
+                                                   IUnknown** target) {
+  if (!target)
+    return E_INVALIDARG;
+
+  if (!owner_->delegate_)
+    return E_FAIL;
+
+  if (target_index < 0 ||
+      target_index >= static_cast<long>(target_ids_.size())) {
+    return E_INVALIDARG;
+  }
+
+  AXPlatformNodeWin* result = static_cast<AXPlatformNodeWin*>(
+      owner_->delegate_->GetFromNodeID(target_ids_[target_index]));
+  if (!result || !result->delegate_)
+    return E_FAIL;
+
+  result->AddRef();
+  *target = static_cast<IAccessible*>(result);
+  return S_OK;
+}
+
+STDMETHODIMP AXPlatformNodeRelationWin::get_targets(long max_targets,
+                                                    IUnknown** targets,
+                                                    long* n_targets) {
+  if (!targets || !n_targets)
+    return E_INVALIDARG;
+
+  if (!owner_->delegate_)
+    return E_FAIL;
+
+  long count = static_cast<long>(target_ids_.size());
+  if (count > max_targets)
+    count = max_targets;
+
+  *n_targets = count;
+  if (count == 0)
+    return S_FALSE;
+
+  for (long i = 0; i < count; ++i) {
+    HRESULT result = get_target(i, &targets[i]);
+    if (result != S_OK)
+      return result;
+  }
+
+  return S_OK;
+}
+
+STDMETHODIMP
+AXPlatformNodeRelationWin::get_localizedRelationType(BSTR* relation_type) {
+  return E_NOTIMPL;
 }
 
 //
@@ -202,6 +314,165 @@ AXPlatformNodeWin::AXPlatformNodeWin() {
 }
 
 AXPlatformNodeWin::~AXPlatformNodeWin() {
+  for (ui::AXPlatformNodeRelationWin* relation : relations_)
+    relation->Release();
+}
+
+void AXPlatformNodeWin::CalculateRelationships() {
+  ClearOwnRelations();
+  AddBidirectionalRelations(IA2_RELATION_CONTROLLER_FOR,
+                            IA2_RELATION_CONTROLLED_BY,
+                            ui::AX_ATTR_CONTROLS_IDS);
+  AddBidirectionalRelations(IA2_RELATION_DESCRIBED_BY,
+                            IA2_RELATION_DESCRIPTION_FOR,
+                            ui::AX_ATTR_DESCRIBEDBY_IDS);
+  AddBidirectionalRelations(IA2_RELATION_FLOWS_TO, IA2_RELATION_FLOWS_FROM,
+                            ui::AX_ATTR_FLOWTO_IDS);
+  AddBidirectionalRelations(IA2_RELATION_LABELLED_BY, IA2_RELATION_LABEL_FOR,
+                            ui::AX_ATTR_LABELLEDBY_IDS);
+
+  int32_t details_id;
+  if (GetIntAttribute(ui::AX_ATTR_DETAILS_ID, &details_id)) {
+    std::vector<int32_t> details_ids;
+    details_ids.push_back(details_id);
+    AddBidirectionalRelations(IA2_RELATION_DETAILS, IA2_RELATION_DETAILS_FOR,
+                              details_ids);
+  }
+
+  int member_of_id;
+  if (GetIntAttribute(ui::AX_ATTR_MEMBER_OF_ID, &member_of_id))
+    AddRelation(IA2_RELATION_MEMBER_OF, member_of_id);
+
+  int error_message_id;
+  if (GetIntAttribute(ui::AX_ATTR_ERRORMESSAGE_ID, &error_message_id))
+    AddRelation(IA2_RELATION_ERROR_MESSAGE, error_message_id);
+}
+
+void AXPlatformNodeWin::AddRelation(const base::string16& relation_type,
+                                    int target_id) {
+  // Reflexive relations don't need to be exposed through IA2.
+  if (target_id == GetData().id)
+    return;
+
+  CComObject<ui::AXPlatformNodeRelationWin>* relation;
+  HRESULT hr =
+      CComObject<ui::AXPlatformNodeRelationWin>::CreateInstance(&relation);
+  DCHECK(SUCCEEDED(hr));
+  relation->AddRef();
+  relation->Initialize(this, relation_type);
+  relation->AddTarget(target_id);
+  relations_.push_back(relation);
+}
+
+void AXPlatformNodeWin::AddBidirectionalRelations(
+    const base::string16& relation_type,
+    const base::string16& reverse_relation_type,
+    ui::AXIntListAttribute attribute) {
+  if (!HasIntListAttribute(attribute))
+    return;
+
+  const std::vector<int32_t>& target_ids = GetIntListAttribute(attribute);
+  AddBidirectionalRelations(relation_type, reverse_relation_type, target_ids);
+}
+
+void AXPlatformNodeWin::AddBidirectionalRelations(
+    const base::string16& relation_type,
+    const base::string16& reverse_relation_type,
+    const std::vector<int32_t>& target_ids) {
+  // Reflexive relations don't need to be exposed through IA2.
+  std::vector<int32_t> filtered_target_ids;
+  int32_t current_id = GetData().id;
+  std::copy_if(target_ids.begin(), target_ids.end(),
+               std::back_inserter(filtered_target_ids),
+               [current_id](int32_t id) { return id != current_id; });
+  if (filtered_target_ids.empty())
+    return;
+
+  CComObject<ui::AXPlatformNodeRelationWin>* relation;
+  HRESULT hr =
+      CComObject<ui::AXPlatformNodeRelationWin>::CreateInstance(&relation);
+  DCHECK(SUCCEEDED(hr));
+  relation->AddRef();
+  relation->Initialize(this, relation_type);
+
+  for (int target_id : filtered_target_ids) {
+    AXPlatformNodeWin* target = static_cast<AXPlatformNodeWin*>(
+        delegate_->GetFromNodeID(static_cast<int32_t>(target_id)));
+
+    if (!target)
+      continue;
+    relation->AddTarget(target_id);
+    target->AddRelation(reverse_relation_type, GetData().id);
+  }
+
+  relations_.push_back(relation);
+}
+
+// Clears all the forward relations from this object to any other object and the
+// associated  reverse relations on the other objects, but leaves any reverse
+// relations on this object alone.
+void AXPlatformNodeWin::ClearOwnRelations() {
+  RemoveBidirectionalRelationsOfType(IA2_RELATION_CONTROLLER_FOR,
+                                     IA2_RELATION_CONTROLLED_BY);
+  RemoveBidirectionalRelationsOfType(IA2_RELATION_DESCRIBED_BY,
+                                     IA2_RELATION_DESCRIPTION_FOR);
+  RemoveBidirectionalRelationsOfType(IA2_RELATION_FLOWS_TO,
+                                     IA2_RELATION_FLOWS_FROM);
+  RemoveBidirectionalRelationsOfType(IA2_RELATION_LABELLED_BY,
+                                     IA2_RELATION_LABEL_FOR);
+
+  relations_.erase(
+      std::remove_if(relations_.begin(), relations_.end(),
+                     [](ui::AXPlatformNodeRelationWin* relation) {
+                       if (relation->get_type() == IA2_RELATION_MEMBER_OF) {
+                         relation->Release();
+                         return true;
+                       }
+                       return false;
+                     }),
+      relations_.end());
+}
+
+void AXPlatformNodeWin::RemoveBidirectionalRelationsOfType(
+    const base::string16& relation_type,
+    const base::string16& reverse_relation_type) {
+  for (auto iter = relations_.begin(); iter != relations_.end();) {
+    ui::AXPlatformNodeRelationWin* relation = *iter;
+    DCHECK(relation);
+    if (relation->get_type() == relation_type) {
+      for (int target_id : relation->get_target_ids()) {
+        AXPlatformNodeWin* target = static_cast<AXPlatformNodeWin*>(
+            delegate_->GetFromNodeID(static_cast<int32_t>(target_id)));
+        if (!target)
+          continue;
+        DCHECK_NE(target, this);
+        target->RemoveTargetFromRelation(reverse_relation_type, GetData().id);
+      }
+      iter = relations_.erase(iter);
+      relation->Release();
+    } else {
+      ++iter;
+    }
+  }
+}
+
+void AXPlatformNodeWin::RemoveTargetFromRelation(
+    const base::string16& relation_type,
+    int target_id) {
+  for (auto iter = relations_.begin(); iter != relations_.end();) {
+    ui::AXPlatformNodeRelationWin* relation = *iter;
+    DCHECK(relation);
+    if (relation->get_type() == relation_type) {
+      // If |target_id| is not present, |RemoveTarget| will do nothing.
+      relation->RemoveTarget(target_id);
+    }
+    if (relation->get_target_ids().empty()) {
+      iter = relations_.erase(iter);
+      relation->Release();
+    } else {
+      ++iter;
+    }
+  }
 }
 
 // Static
@@ -971,6 +1242,42 @@ STDMETHODIMP AXPlatformNodeWin::get_indexInParent(LONG* index_in_parent) {
   return S_OK;
 }
 
+STDMETHODIMP AXPlatformNodeWin::get_nRelations(LONG* n_relations) {
+  COM_OBJECT_VALIDATE_1_ARG(n_relations);
+  *n_relations = static_cast<LONG>(relations_.size());
+  return S_OK;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_relation(LONG relation_index,
+                                             IAccessibleRelation** relation) {
+  COM_OBJECT_VALIDATE_1_ARG(relation);
+  if (relation_index < 0 ||
+      relation_index >= static_cast<long>(relations_.size())) {
+    return E_INVALIDARG;
+  }
+
+  relations_[relation_index]->AddRef();
+  *relation = relations_[relation_index];
+  return S_OK;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_relations(LONG max_relations,
+                                              IAccessibleRelation** relations,
+                                              LONG* n_relations) {
+  COM_OBJECT_VALIDATE_2_ARGS(relations, n_relations);
+  long count = static_cast<long>(relations_.size());
+  *n_relations = count;
+  if (count == 0)
+    return S_FALSE;
+
+  for (long i = 0; i < count; ++i) {
+    relations_[i]->AddRef();
+    relations[i] = relations_[i];
+  }
+
+  return S_OK;
+}
+
 //
 // IAccessible2 methods not implemented.
 //
@@ -978,24 +1285,7 @@ STDMETHODIMP AXPlatformNodeWin::get_indexInParent(LONG* index_in_parent) {
 STDMETHODIMP AXPlatformNodeWin::get_attribute(BSTR name, VARIANT* attribute) {
   return E_NOTIMPL;
 }
-
 STDMETHODIMP AXPlatformNodeWin::get_extendedRole(BSTR* extended_role) {
-  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_EXTENDED_ROLE);
-  return E_NOTIMPL;
-}
-
-STDMETHODIMP AXPlatformNodeWin::get_nRelations(LONG* n_relations) {
-  return E_NOTIMPL;
-}
-
-STDMETHODIMP AXPlatformNodeWin::get_relation(LONG relation_index,
-                                             IAccessibleRelation** relation) {
-  return E_NOTIMPL;
-}
-
-STDMETHODIMP AXPlatformNodeWin::get_relations(LONG max_relations,
-                                              IAccessibleRelation** relations,
-                                              LONG* n_relations) {
   return E_NOTIMPL;
 }
 

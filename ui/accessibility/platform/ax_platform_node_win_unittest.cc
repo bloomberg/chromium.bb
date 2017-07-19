@@ -16,6 +16,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/platform/ax_platform_node_win.h"
 #include "ui/accessibility/platform/test_ax_node_wrapper.h"
 #include "ui/base/win/atl_module.h"
 
@@ -90,6 +91,12 @@ class AXPlatformNodeWinTest : public testing::Test {
  protected:
   AXNode* GetRootNode() {
     return tree_->root();
+  }
+
+  void BuildRelationships(ScopedComPtr<IAccessible2> accessible) {
+    CHECK(accessible);
+    AXPlatformNodeWin* node = static_cast<AXPlatformNodeWin*>(accessible.Get());
+    node->CalculateRelationships();
   }
 
   ScopedComPtr<IAccessible> IAccessibleFromNode(AXNode* node) {
@@ -1291,6 +1298,119 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableCellGetTable) {
   ScopedComPtr<IUnknown> cell_1;
   EXPECT_EQ(S_OK, result->get_accessibleAt(1, 1, cell_1.GetAddressOf()));
   CheckIUnknownHasName(cell_1, L"1");
+}
+
+TEST_F(AXPlatformNodeWinTest, TestIAccessible2GetNRelations) {
+  // This is is a duplicated of
+  // BrowserAccessibilityTest::TestIAccessible2Relations but without the
+  // specific COM/BrowserAccessibility knowledge.
+  ui::AXNodeData root;
+  root.id = 1;
+  root.role = ui::AX_ROLE_ROOT_WEB_AREA;
+
+  std::vector<int32_t> describedby_ids = {1, 2, 3};
+  root.AddIntListAttribute(ui::AX_ATTR_DESCRIBEDBY_IDS, describedby_ids);
+
+  ui::AXNodeData child1;
+  child1.id = 2;
+  child1.role = ui::AX_ROLE_STATIC_TEXT;
+
+  root.child_ids.push_back(2);
+
+  ui::AXNodeData child2;
+  child2.id = 3;
+  child2.role = ui::AX_ROLE_STATIC_TEXT;
+
+  root.child_ids.push_back(3);
+
+  Init(root, child1, child2);
+  ScopedComPtr<IAccessible> root_iaccessible(GetRootIAccessible());
+  ScopedComPtr<IAccessible2> root_iaccessible2 =
+      ToIAccessible2(root_iaccessible);
+
+  ScopedComPtr<IDispatch> result;
+  EXPECT_EQ(S_OK, root_iaccessible2->get_accChild(ScopedVariant(1),
+                                                  result.GetAddressOf()));
+  ScopedComPtr<IAccessible2> ax_child1;
+  EXPECT_EQ(S_OK, result.CopyTo(ax_child1.GetAddressOf()));
+  result.Reset();
+
+  EXPECT_EQ(S_OK, root_iaccessible2->get_accChild(ScopedVariant(2),
+                                                  result.GetAddressOf()));
+  ScopedComPtr<IAccessible2> ax_child2;
+  EXPECT_EQ(S_OK, result.CopyTo(ax_child2.GetAddressOf()));
+  result.Reset();
+
+  BuildRelationships(root_iaccessible2);
+  BuildRelationships(ax_child1);
+  BuildRelationships(ax_child2);
+
+  LONG n_relations = 0;
+  LONG n_targets = 0;
+  ScopedBstr relation_type;
+  ScopedComPtr<IAccessibleRelation> describedby_relation;
+  ScopedComPtr<IAccessibleRelation> description_for_relation;
+  ScopedComPtr<IUnknown> target;
+
+  EXPECT_HRESULT_SUCCEEDED(root_iaccessible2->get_nRelations(&n_relations));
+  EXPECT_EQ(1, n_relations);
+
+  EXPECT_HRESULT_SUCCEEDED(
+      root_iaccessible2->get_relation(0, describedby_relation.GetAddressOf()));
+  EXPECT_HRESULT_SUCCEEDED(
+      describedby_relation->get_relationType(relation_type.Receive()));
+  EXPECT_EQ(L"describedBy", base::string16(relation_type));
+  relation_type.Reset();
+
+  EXPECT_HRESULT_SUCCEEDED(describedby_relation->get_nTargets(&n_targets));
+  EXPECT_EQ(2, n_targets);
+
+  EXPECT_HRESULT_SUCCEEDED(
+      describedby_relation->get_target(0, target.GetAddressOf()));
+  target.Reset();
+
+  EXPECT_HRESULT_SUCCEEDED(
+      describedby_relation->get_target(1, target.GetAddressOf()));
+  target.Reset();
+  describedby_relation.Reset();
+
+  // Test the reverse relations.
+  EXPECT_HRESULT_SUCCEEDED(ax_child1->get_nRelations(&n_relations));
+  EXPECT_EQ(1, n_relations);
+
+  EXPECT_HRESULT_SUCCEEDED(
+      ax_child1->get_relation(0, description_for_relation.GetAddressOf()));
+  EXPECT_HRESULT_SUCCEEDED(
+      description_for_relation->get_relationType(relation_type.Receive()));
+  EXPECT_EQ(L"descriptionFor", base::string16(relation_type));
+  relation_type.Reset();
+
+  EXPECT_HRESULT_SUCCEEDED(description_for_relation->get_nTargets(&n_targets));
+  EXPECT_EQ(1, n_targets);
+
+  EXPECT_HRESULT_SUCCEEDED(
+      description_for_relation->get_target(0, target.GetAddressOf()));
+  target.Reset();
+  description_for_relation.Reset();
+
+  EXPECT_HRESULT_SUCCEEDED(ax_child2->get_nRelations(&n_relations));
+  EXPECT_EQ(1, n_relations);
+
+  EXPECT_HRESULT_SUCCEEDED(
+      ax_child2->get_relation(0, description_for_relation.GetAddressOf()));
+  EXPECT_HRESULT_SUCCEEDED(
+      description_for_relation->get_relationType(relation_type.Receive()));
+  EXPECT_EQ(L"descriptionFor", base::string16(relation_type));
+  relation_type.Reset();
+
+  EXPECT_HRESULT_SUCCEEDED(description_for_relation->get_nTargets(&n_targets));
+  EXPECT_EQ(1, n_targets);
+
+  EXPECT_HRESULT_SUCCEEDED(
+      description_for_relation->get_target(0, target.GetAddressOf()));
+  target.Reset();
+
+  // TODO(dougt): Try adding one more relation.
 }
 
 }  // namespace ui
