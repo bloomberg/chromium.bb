@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_service.h"
 #include "chrome/browser/chromeos/arc/accessibility/arc_accessibility_helper_bridge.h"
 #include "chrome/browser/chromeos/arc/arc_play_store_enabled_preference_handler.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
@@ -21,6 +20,7 @@
 #include "chrome/browser/chromeos/arc/fileapi/arc_file_system_mounter.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_file_system_operation_runner.h"
 #include "chrome/browser/chromeos/arc/intent_helper/arc_settings_service.h"
+#include "chrome/browser/chromeos/arc/kiosk/arc_kiosk_bridge.h"
 #include "chrome/browser/chromeos/arc/notification/arc_boot_error_notification.h"
 #include "chrome/browser/chromeos/arc/notification/arc_provision_notification_service.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_bridge.h"
@@ -45,7 +45,6 @@
 #include "components/arc/crash_collector/arc_crash_collector_bridge.h"
 #include "components/arc/ime/arc_ime_service.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
-#include "components/arc/kiosk/arc_kiosk_bridge.h"
 #include "components/arc/metrics/arc_metrics_service.h"
 #include "components/arc/net/arc_net_host_impl.h"
 #include "components/arc/obb_mounter/arc_obb_mounter_bridge.h"
@@ -53,7 +52,6 @@
 #include "components/arc/storage_manager/arc_storage_manager.h"
 #include "components/arc/volume_mounter/arc_volume_mounter_bridge.h"
 #include "components/prefs/pref_member.h"
-#include "components/user_manager/user_manager.h"
 #include "ui/arc/notification/arc_notification_manager.h"
 
 namespace arc {
@@ -147,6 +145,7 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   ArcFileSystemOperationRunner::GetForBrowserContext(profile);
   ArcImeService::GetForBrowserContext(profile);
   ArcIntentHelperBridge::GetForBrowserContext(profile);
+  ArcKioskBridge::GetForBrowserContext(profile);
   ArcMetricsService::GetForBrowserContext(profile);
   ArcNetHostImpl::GetForBrowserContext(profile);
   ArcNotificationManager::GetForBrowserContext(profile);
@@ -165,15 +164,6 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   ArcVolumeMounterBridge::GetForBrowserContext(profile);
   ArcWallpaperService::GetForBrowserContext(profile);
   GpuArcVideoServiceHost::GetForBrowserContext(profile);
-
-  // Kiosk apps should be run only for kiosk sessions.
-  if (user_manager::UserManager::Get()->IsLoggedInAsArcKioskApp()) {
-    // ArcKioskAppService is BrowserContextKeyedService so that it's destroyed
-    // on destroying the Profile, that is after ArcServiceLauncher::Shutdown().
-    arc_service_manager_->AddService(base::MakeUnique<ArcKioskBridge>(
-        arc_service_manager_->arc_bridge_service(),
-        chromeos::ArcKioskAppService::Get(profile)));
-  }
 
   arc_session_manager_->Initialize();
   arc_play_store_enabled_preference_handler_ =

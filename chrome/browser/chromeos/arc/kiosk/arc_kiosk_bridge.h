@@ -2,22 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_ARC_KIOSK_ARC_KIOSK_BRIDGE_H_
-#define COMPONENTS_ARC_KIOSK_ARC_KIOSK_BRIDGE_H_
+#ifndef CHROME_BROWSER_CHROMEOS_ARC_KIOSK_ARC_KIOSK_BRIDGE_H_
+#define CHROME_BROWSER_CHROMEOS_ARC_KIOSK_ARC_KIOSK_BRIDGE_H_
 
-#include <map>
+#include <memory>
 
 #include "base/macros.h"
-#include "components/arc/arc_service.h"
 #include "components/arc/common/kiosk.mojom.h"
 #include "components/arc/instance_holder.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
+
+namespace content {
+class BrowserContext;
+}  // namespace content
 
 namespace arc {
 
 class ArcBridgeService;
 
-class ArcKioskBridge : public ArcService,
+// TODO(hidehiko): Consider to migrate this class into ArcKioskAppService.
+class ArcKioskBridge : public KeyedService,
                        public InstanceHolder<mojom::KioskInstance>::Observer,
                        public mojom::KioskHost {
  public:
@@ -29,8 +34,17 @@ class ArcKioskBridge : public ArcService,
     virtual void OnMaintenanceSessionFinished() = 0;
   };
 
-  // |delegate| should be alive while the ArcKioskBridge instance is alive.
-  ArcKioskBridge(ArcBridgeService* bridge_service, Delegate* delegate);
+  // Returns singleton instance for the given BrowserContext,
+  // or nullptr if the browser |context| is not allowed to use ARC.
+  static ArcKioskBridge* GetForBrowserContext(content::BrowserContext* context);
+
+  // Returns a created instance for testing.
+  static std::unique_ptr<ArcKioskBridge> CreateForTesting(
+      ArcBridgeService* bridge_service,
+      Delegate* delegate);
+
+  ArcKioskBridge(content::BrowserContext* context,
+                 ArcBridgeService* bridge_service);
   ~ArcKioskBridge() override;
 
   // InstanceHolder<mojom::KioskInstance>::Observer overrides.
@@ -41,6 +55,11 @@ class ArcKioskBridge : public ArcService,
   void OnMaintenanceSessionFinished(int32_t session_id, bool success) override;
 
  private:
+  // |delegate| should be alive while the ArcKioskBridge instance is alive.
+  ArcKioskBridge(ArcBridgeService* bridge_service, Delegate* delegate);
+
+  ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
+
   mojo::Binding<mojom::KioskHost> binding_;
   Delegate* const delegate_;
 
@@ -52,4 +71,4 @@ class ArcKioskBridge : public ArcService,
 
 }  // namespace arc
 
-#endif  // COMPONENTS_ARC_KIOSK_ARC_KIOSK_BRIDGE_H_
+#endif  // CHROME_BROWSER_CHROMEOS_ARC_KIOSK_ARC_KIOSK_BRIDGE_H_
