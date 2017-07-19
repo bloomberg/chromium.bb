@@ -633,6 +633,7 @@ FYI_WATERFALL = {
     'Android Release (Nexus 5X)': {
       'swarming_dimensions': [
         {
+          'android_devices': '1',
           'device_type': 'bullhead',
           'device_os': 'M',
           'os': 'Android'
@@ -904,6 +905,7 @@ V8_FYI_WATERFALL = {
     'Android Release (Nexus 5X)': {
       'swarming_dimensions': [
         {
+          'android_devices': '1',
           'device_type': 'bullhead',
           'device_os': 'M',
           'os': 'Android'
@@ -1032,6 +1034,7 @@ COMMON_GTESTS = {
         'swarming_dimension_sets': [
           # Nexus 5X
           {
+            'android_devices': '1',
             'device_type': 'bullhead',
             'device_os': 'M',
             'os': 'Android'
@@ -1067,6 +1070,7 @@ COMMON_GTESTS = {
         'swarming_dimension_sets': [
           # Nexus 5X
           {
+            'android_devices': '1',
             'device_type': 'bullhead',
             'device_os': 'M',
             'os': 'Android'
@@ -1081,6 +1085,9 @@ COMMON_GTESTS = {
         ],
       },
     ],
+    'swarming': {
+      'shards': 4,
+    },
     'test': 'angle_deqp_gles3_tests',
     # Only pass the display type to desktop. The Android runner doesn't support
     # passing args to the executable but only one display type is supported on
