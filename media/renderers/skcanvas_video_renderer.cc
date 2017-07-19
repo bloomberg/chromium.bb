@@ -176,20 +176,6 @@ sk_sp<SkImage> NewSkImageFromVideoFrameYUVTextures(
   return img;
 }
 
-bool VideoTextureNeedsClipping(const VideoFrame* video_frame) {
-  // There are multiple reasons that the size of the video frame's
-  // visible rectangle may differ from the coded size, including the
-  // encoder rounding up to the size of a macroblock, or use of
-  // non-square pixels.
-  //
-  // Some callers of these APIs (HTMLVideoElement and the 2D canvas
-  // context) already clip to the video frame's visible rectangle.
-  // WebGL on the other hand assumes that only the valid pixels are
-  // contained in the destination texture. This helper function
-  // determines whether this slower path is needed.
-  return video_frame->visible_rect().size() != video_frame->coded_size();
-}
-
 // Creates a SkImage from a |video_frame| backed by native resources.
 // The SkImage will take ownership of the underlying resource.
 sk_sp<SkImage> NewSkImageFromVideoFrameNative(VideoFrame* video_frame,
@@ -216,7 +202,6 @@ sk_sp<SkImage> NewSkImageFromVideoFrameNative(VideoFrame* video_frame,
     gl->BindTexture(GL_TEXTURE_2D, source_texture);
     SkCanvasVideoRenderer::CopyVideoFrameSingleTextureToGLTexture(
         gl, video_frame,
-        SkCanvasVideoRenderer::SingleFrameForVideoElementOrCanvas,
         GL_TEXTURE_2D, source_texture, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, 0,
         true, false);
     context_3d.gr_context->resetContext(kTextureBinding_GrGLBackendState);
@@ -814,7 +799,6 @@ void SkCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
 void SkCanvasVideoRenderer::CopyVideoFrameSingleTextureToGLTexture(
     gpu::gles2::GLES2Interface* gl,
     VideoFrame* video_frame,
-    SingleFrameCopyMode copy_mode,
     unsigned int target,
     unsigned int texture,
     unsigned int internal_format,
@@ -843,34 +827,20 @@ void SkCanvasVideoRenderer::CopyVideoFrameSingleTextureToGLTexture(
   // "flip_y == true" means to reverse the video orientation while
   // "flip_y == false" means to keep the intrinsic orientation.
 
-  if (copy_mode == SingleFrameForVideoElementOrCanvas ||
-      !VideoTextureNeedsClipping(video_frame)) {
-    // No need to clip the source video texture.
-    gl->CopyTextureCHROMIUM(source_texture, 0, target, texture, level,
-                            internal_format, type, flip_y, premultiply_alpha,
-                            false);
-  } else {
-    // Must reallocate the destination texture and copy only a sub-portion.
-    gfx::Rect dest_rect = video_frame->visible_rect();
+  // Must reallocate the destination texture and copy only a sub-portion.
+  gfx::Rect dest_rect = video_frame->visible_rect();
 #if DCHECK_IS_ON()
-    // The caller should have bound _texture_ to the GL_TEXTURE_2D
-    // binding point already.
-    GLuint current_texture = 0;
-    gl->GetIntegerv(GL_TEXTURE_BINDING_2D,
-                    reinterpret_cast<GLint*>(&current_texture));
-    DCHECK_EQ(current_texture, texture);
-    // There should always be enough data in the source texture to
-    // cover this copy.
-    DCHECK_LE(dest_rect.width(), video_frame->coded_size().width());
-    DCHECK_LE(dest_rect.height(), video_frame->coded_size().height());
+  // There should always be enough data in the source texture to
+  // cover this copy.
+  DCHECK_LE(dest_rect.width(), video_frame->coded_size().width());
+  DCHECK_LE(dest_rect.height(), video_frame->coded_size().height());
 #endif
-    gl->TexImage2D(target, level, internal_format, dest_rect.width(),
-                   dest_rect.height(), 0, format, type, nullptr);
-    gl->CopySubTextureCHROMIUM(source_texture, 0, target, texture, level, 0, 0,
-                               dest_rect.x(), dest_rect.y(), dest_rect.width(),
-                               dest_rect.height(), flip_y, premultiply_alpha,
-                               false);
-  }
+  gl->TexImage2D(target, level, internal_format, dest_rect.width(),
+                 dest_rect.height(), 0, format, type, nullptr);
+  gl->CopySubTextureCHROMIUM(source_texture, 0, target, texture, level, 0, 0,
+                             dest_rect.x(), dest_rect.y(), dest_rect.width(),
+                             dest_rect.height(), flip_y, premultiply_alpha,
+                             false);
 
   gl->DeleteTextures(1, &source_texture);
   gl->Flush();
@@ -925,34 +895,21 @@ bool SkCanvasVideoRenderer::CopyVideoFrameTexturesToGLTexture(
         destination_gl->CreateAndConsumeTextureCHROMIUM(
             mailbox_holder.texture_target, mailbox_holder.mailbox.name);
 
-    // See whether the source video texture must be clipped.
-    if (VideoTextureNeedsClipping(video_frame.get())) {
-      // Reallocate destination texture and copy only valid region.
-      gfx::Rect dest_rect = video_frame->visible_rect();
+    // Reallocate destination texture and copy only valid region.
+    gfx::Rect dest_rect = video_frame->visible_rect();
 #if DCHECK_IS_ON()
-      // The caller should have bound _texture_ to the GL_TEXTURE_2D
-      // binding point already.
-      GLuint current_texture = 0;
-      destination_gl->GetIntegerv(GL_TEXTURE_BINDING_2D,
-                                  reinterpret_cast<GLint*>(&current_texture));
-      DCHECK_EQ(current_texture, texture);
-      // There should always be enough data in the source texture to
-      // cover this copy.
-      DCHECK_LE(dest_rect.width(), video_frame->coded_size().width());
-      DCHECK_LE(dest_rect.height(), video_frame->coded_size().height());
+    // There should always be enough data in the source texture to
+    // cover this copy.
+    DCHECK_LE(dest_rect.width(), video_frame->coded_size().width());
+    DCHECK_LE(dest_rect.height(), video_frame->coded_size().height());
 #endif
-      destination_gl->TexImage2D(target, level, internal_format,
-                                 dest_rect.width(), dest_rect.height(), 0,
-                                 format, type, nullptr);
-      destination_gl->CopySubTextureCHROMIUM(
-          intermediate_texture, 0, target, texture, level, 0, 0, dest_rect.x(),
-          dest_rect.y(), dest_rect.width(), dest_rect.height(), flip_y,
-          premultiply_alpha, false);
-    } else {
-      destination_gl->CopyTextureCHROMIUM(intermediate_texture, 0, target,
-                                          texture, level, internal_format, type,
-                                          flip_y, premultiply_alpha, false);
-    }
+    destination_gl->TexImage2D(target, level, internal_format,
+                               dest_rect.width(), dest_rect.height(), 0, format,
+                               type, nullptr);
+    destination_gl->CopySubTextureCHROMIUM(
+        intermediate_texture, 0, target, texture, level, 0, 0, dest_rect.x(),
+        dest_rect.y(), dest_rect.width(), dest_rect.height(), flip_y,
+        premultiply_alpha, false);
 
     destination_gl->DeleteTextures(1, &intermediate_texture);
 
@@ -969,8 +926,8 @@ bool SkCanvasVideoRenderer::CopyVideoFrameTexturesToGLTexture(
     video_frame->UpdateReleaseSyncToken(&client);
   } else {
     CopyVideoFrameSingleTextureToGLTexture(
-        destination_gl, video_frame.get(), SingleFrameForWebGL, target, texture,
-        internal_format, format, type, level, premultiply_alpha, flip_y);
+        destination_gl, video_frame.get(), target, texture, internal_format,
+        format, type, level, premultiply_alpha, flip_y);
   }
 
   return true;
