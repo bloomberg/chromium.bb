@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/android/offline_pages/request_coordinator_factory.h"
+#include "chrome/browser/offline_pages/request_coordinator_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/offline_pages/core/background/device_conditions.h"

@@ -25,10 +25,10 @@
 #include "net/base/net_errors.h"
 #include "url/gurl.h"
 
-#if defined(OS_ANDROID)
-#include "chrome/browser/android/offline_pages/offline_page_utils.h"
+#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
+#include "chrome/browser/offline_pages/offline_page_utils.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
 
 using content::BrowserContext;
 using content::BrowserThread;
@@ -126,9 +126,9 @@ void NetErrorTabHelper::DidFinishNavigation(
              !navigation_handle->IsErrorPage()) {
     dns_error_active_ = false;
     dns_error_page_committed_ = false;
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
     is_showing_download_button_in_error_page_ = false;
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
   }
 }
 
@@ -137,7 +137,7 @@ bool NetErrorTabHelper::OnMessageReceived(
     content::RenderFrameHost* render_frame_host) {
   if (render_frame_host != web_contents()->GetMainFrame())
     return false;
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(NetErrorTabHelper, message)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_DownloadPageLater,
@@ -150,7 +150,7 @@ bool NetErrorTabHelper::OnMessageReceived(
   return handled;
 #else
   return false;
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
 }
 
 NetErrorTabHelper::NetErrorTabHelper(WebContents* contents)
@@ -159,9 +159,9 @@ NetErrorTabHelper::NetErrorTabHelper(WebContents* contents)
       is_error_page_(false),
       dns_error_active_(false),
       dns_error_page_committed_(false),
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
       is_showing_download_button_in_error_page_(false),
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
       dns_probe_status_(error_page::DNS_PROBE_POSSIBLE),
       weak_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -212,7 +212,7 @@ void NetErrorTabHelper::OnDnsProbeFinished(DnsProbeStatus result) {
     SendInfo();
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
 void NetErrorTabHelper::OnDownloadPageLater() {
   // Makes sure that this is coming from an error page.
   content::NavigationEntry* entry =
@@ -232,7 +232,7 @@ void NetErrorTabHelper::OnSetIsShowingDownloadButtonInErrorPage(
     bool is_showing_download_button) {
   is_showing_download_button_in_error_page_ = is_showing_download_button;
 }
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
 
 void NetErrorTabHelper::InitializePref(WebContents* contents) {
   DCHECK(contents);
@@ -285,12 +285,12 @@ void NetErrorTabHelper::RunNetworkDiagnosticsHelper(
   ShowNetworkDiagnosticsDialog(web_contents(), sanitized_url);
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
 void NetErrorTabHelper::DownloadPageLaterHelper(const GURL& page_url) {
   offline_pages::OfflinePageUtils::ScheduleDownload(
       web_contents(), offline_pages::kAsyncNamespace, page_url,
       offline_pages::OfflinePageUtils::DownloadUIActionFlags::PROMPT_DUPLICATE);
 }
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
 
 }  // namespace chrome_browser_net

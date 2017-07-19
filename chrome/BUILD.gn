@@ -1718,7 +1718,7 @@ if (is_android) {
 
   java_cpp_enum("offline_pages_enum_javagen") {
     sources = [
-      "browser/android/offline_pages/offline_page_utils.h",
+      "browser/offline_pages/offline_page_utils.h",
     ]
   }
 

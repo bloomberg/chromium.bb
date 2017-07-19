@@ -5,5 +5,5 @@ include_rules = [
   # Android. OS-specific subfolders should have their own DEPS enabling specific
   # dependencies.
   "-base/android",
-  "!chrome/browser/android",
+  "-chrome/browser/android",
 ]

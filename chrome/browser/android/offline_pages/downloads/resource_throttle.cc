@@ -5,7 +5,7 @@
 #include "chrome/browser/android/offline_pages/downloads/resource_throttle.h"
 
 #include "base/logging.h"
-#include "chrome/browser/android/offline_pages/offline_page_utils.h"
+#include "chrome/browser/offline_pages/offline_page_utils.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_request_info.h"

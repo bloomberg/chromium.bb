@@ -45,6 +45,7 @@
 #include "components/data_reduction_proxy/core/browser/data_store_impl.h"
 #include "components/domain_reliability/monitor.h"
 #include "components/net_log/chrome_net_log.h"
+#include "components/offline_pages/features/features.h"
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_filter.h"
 #include "components/prefs/pref_member.h"
@@ -73,9 +74,9 @@
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "storage/browser/quota/special_storage_policy.h"
 
-#if defined(OS_ANDROID)
-#include "chrome/browser/android/offline_pages/offline_page_request_interceptor.h"
-#endif  // defined(OS_ANDROID)
+#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
+#include "chrome/browser/offline_pages/offline_page_request_interceptor.h"
+#endif
 
 namespace {
 
@@ -541,7 +542,7 @@ void ProfileImplIOData::InitializeInternal(
   AddProtocolHandlersToBuilder(builder, protocol_handlers);
 
   // Install the Offline Page Interceptor.
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
   request_interceptors.push_back(
       base::MakeUnique<offline_pages::OfflinePageRequestInterceptor>(
           previews_io_data()));
