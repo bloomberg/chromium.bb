@@ -694,18 +694,6 @@ TEST_F(TransportSecurityStateTest, Expiration) {
   EXPECT_TRUE(state.HasPublicKeyPins("example2.test"));
 }
 
-TEST_F(TransportSecurityStateTest, InvalidDomains) {
-  TransportSecurityState state;
-  const base::Time current_time(base::Time::Now());
-  const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
-
-  EXPECT_FALSE(state.ShouldUpgradeToSSL("example.test"));
-  bool include_subdomains = true;
-  state.AddHSTS("example.test", expiry, include_subdomains);
-  EXPECT_TRUE(state.ShouldUpgradeToSSL("www-.foo.example.test"));
-  EXPECT_TRUE(state.ShouldUpgradeToSSL("2\x01.foo.example.test"));
-}
-
 // Tests that HPKP and HSTS state are queried independently for subdomain
 // matches.
 TEST_F(TransportSecurityStateTest, IndependentSubdomain) {

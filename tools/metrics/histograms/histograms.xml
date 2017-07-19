@@ -37367,6 +37367,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.DNSNameCompliantIfValid" enum="Boolean">
+  <obsolete>
+    Deprecated 07/2017, not necessary to determine deprecation for invalid DNS
+    names.
+  </obsolete>
   <owner>palmer@chromium.org</owner>
   <summary>
     True if |net::IsCanonicalizedHostCompliant| returns true. Used to see if
@@ -42617,6 +42621,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.ValidDNSName" enum="Boolean">
+  <obsolete>
+    Deprecated 07/2017, not necessary to determine deprecation for invalid DNS
+    names.
+  </obsolete>
   <owner>palmer@chromium.org</owner>
   <summary>
     True if a DNS name contains only characters for which
