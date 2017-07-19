@@ -490,7 +490,7 @@ Polymer({
   /**
    * @param {!CrOnc.DeviceStateProperties|undefined} deviceState
    * @param {!CrOnc.DeviceStateProperties|undefined} tetherDeviceState
-   * @return {boolean}
+   * @return {string}
    * @private
    */
   getNoNetworksString_: function(deviceState, tetherDeviceState) {
