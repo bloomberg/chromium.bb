@@ -818,6 +818,31 @@ class CONTENT_EXPORT RenderFrameImpl
     DISALLOW_COPY_AND_ASSIGN(JavaScriptIsolatedWorldRequest);
   };
 
+  // Similar to base::AutoReset, but skips restoration of the original value if
+  // |this| is already destroyed.
+  template <typename T>
+  class AutoResetMember {
+   public:
+    AutoResetMember(RenderFrameImpl* frame,
+                    T RenderFrameImpl::*member,
+                    T new_value)
+        : weak_frame_(frame->weak_factory_.GetWeakPtr()),
+          scoped_variable_(&(frame->*member)),
+          original_value_(*scoped_variable_) {
+      *scoped_variable_ = new_value;
+    }
+
+    ~AutoResetMember() {
+      if (weak_frame_)
+        *scoped_variable_ = original_value_;
+    }
+
+   private:
+    base::WeakPtr<RenderFrameImpl> weak_frame_;
+    T* scoped_variable_;
+    T original_value_;
+  };
+
   typedef std::map<GURL, double> HostZoomLevels;
   typedef std::pair<url::Origin, blink::mojom::EngagementLevel>
       EngagementOriginAndLevel;

@@ -1592,4 +1592,26 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   bubble_delegate.WaitUntilHidden();
 }
 
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       FrameDetachInCopyDoesNotCrash) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  EXPECT_TRUE(NavigateToURL(
+      shell(),
+      embedded_test_server()->GetURL("a.com", "/detach_frame_in_copy.html")));
+
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  // Focus the child frame before sending it a copy command: the child frame
+  // will detach itself upon getting a 'copy' event.
+  ASSERT_TRUE(ExecuteScript(web_contents, "window[0].focus();"));
+  FrameTree* frame_tree = web_contents->GetFrameTree();
+  FrameTreeNode* root = frame_tree->root();
+  ASSERT_EQ(root->child_at(0), frame_tree->GetFocusedFrame());
+  shell()->web_contents()->Copy();
+
+  TitleWatcher title_watcher(web_contents, base::ASCIIToUTF16("done"));
+  base::string16 title = title_watcher.WaitAndGetTitle();
+  ASSERT_EQ(title, base::ASCIIToUTF16("done"));
+}
+
 }  // namespace content
