@@ -359,15 +359,10 @@ static void ComputeInitialRenderSurfaceList(
   // surface's accumulated content rect.
   for (LayerImpl* layer : *layer_tree_impl) {
     DCHECK(layer);
-    // TODO(crbug.com/726423): LayerImpls should never have invalid PropertyTree
-    // indices.
-    if (!layer)
-      continue;
+    layer->EnsureValidPropertyTreeIndices();
+
     layer->set_contributes_to_drawn_render_surface(false);
     layer->set_raster_even_if_not_drawn(false);
-
-    if (!layer->HasValidPropertyTreeIndices())
-      continue;
 
     bool is_root = layer_tree_impl->IsRootLayer(layer);
 

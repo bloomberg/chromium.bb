@@ -823,11 +823,7 @@ void FindLayersThatNeedUpdates(LayerTreeImpl* layer_tree_impl,
   for (auto* layer_impl : *layer_tree_impl) {
     DCHECK(layer_impl);
     DCHECK(layer_impl->layer_tree_impl());
-    // TODO(crbug.com/726423) : This is a workaround for crbug.com/725851 to
-    // avoid crashing when layer_impl is nullptr. This workaround should be
-    // removed as layer_impl should not be nullptr here.
-    if (!layer_impl || !layer_impl->HasValidPropertyTreeIndices())
-      continue;
+    layer_impl->EnsureValidPropertyTreeIndices();
 
     if (!IsRootLayer(layer_impl) &&
         LayerShouldBeSkippedForDrawPropertiesComputation(
