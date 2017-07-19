@@ -180,6 +180,7 @@ class CHROMEOS_EXPORT DBusThreadManagerSetter {
  public:
   ~DBusThreadManagerSetter();
 
+  void SetAuthPolicyClient(std::unique_ptr<AuthPolicyClient> client);
   void SetBiodClient(std::unique_ptr<BiodClient> client);
   void SetCrasAudioClient(std::unique_ptr<CrasAudioClient> client);
   void SetCrosDisksClient(std::unique_ptr<CrosDisksClient> client);
