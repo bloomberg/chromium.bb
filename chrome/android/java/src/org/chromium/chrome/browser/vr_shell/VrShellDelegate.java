@@ -56,6 +56,8 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.webapps.WebappActivity;
+import org.chromium.content_public.browser.ScreenOrientationDelegate;
+import org.chromium.content_public.browser.ScreenOrientationDelegateManager;
 import org.chromium.ui.UiUtils;
 
 import java.lang.annotation.Retention;
@@ -68,8 +70,9 @@ import java.lang.reflect.InvocationTargetException;
  * Manages interactions with the VR Shell.
  */
 @JNINamespace("vr_shell")
-public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
-                                        View.OnSystemUiVisibilityChangeListener {
+public class VrShellDelegate
+        implements ApplicationStatus.ActivityStateListener, View.OnSystemUiVisibilityChangeListener,
+                   ScreenOrientationDelegate {
     private static final String TAG = "VrShellDelegate";
 
     // Pseudo-random number to avoid request id collisions.
@@ -783,6 +786,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
 
         // Lock orientation to landscape after enter VR.
         mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        ScreenOrientationDelegateManager.setOrientationDelegate(this);
 
         addVrViews();
         boolean webVrMode = mRequestedWebVr || tentativeWebVrMode && !mAutopresentWebVr;
@@ -944,6 +948,20 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         }
     }
 
+    @Override
+    public boolean canUnlockOrientation(Activity activity, int defaultOrientation) {
+        if (mActivity == activity && mRestoreOrientation != null) {
+            mRestoreOrientation = defaultOrientation;
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public boolean canLockOrientation() {
+        return false;
+    }
+
     private boolean isWindowModeCorrectForVr() {
         int flags = mActivity.getWindow().getDecorView().getSystemUiVisibility();
         int orientation = mActivity.getResources().getConfiguration().orientation;
@@ -957,11 +975,13 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
             mRestoreOrientation = mActivity.getRequestedOrientation();
         }
         mActivity.setRequestedOrientation(requestedOrientation);
+        ScreenOrientationDelegateManager.setOrientationDelegate(this);
         setupVrModeWindowFlags();
     }
 
     private void restoreWindowMode() {
         if (mRestoreOrientation != null) mActivity.setRequestedOrientation(mRestoreOrientation);
+        ScreenOrientationDelegateManager.setOrientationDelegate(null);
         mRestoreOrientation = null;
         clearVrModeWindowFlags();
     }
