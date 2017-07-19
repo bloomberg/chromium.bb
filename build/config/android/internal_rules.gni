@@ -1633,8 +1633,7 @@ if (enable_java_templates) {
     template("package_resources_helper") {
       _resource_packaged_apk_path = invoker.resource_packaged_apk_path
       _package_resources_target = target_name
-      _post_process = defined(invoker.post_process_package_resources_script) &&
-                      defined(invoker.post_process_package_resources_args)
+      _post_process = defined(invoker.post_process_package_resources_script)
       if (_post_process) {
         _package_resources_target = "${_package_resources_target}__intermediate"
         _post_processed_resource_packaged_apk_path = _resource_packaged_apk_path
@@ -1752,7 +1751,6 @@ if (enable_java_templates) {
             rebase_path(_post_processed_resource_packaged_apk_path,
                         root_build_dir),
           ]
-          args += invoker.post_process_package_resources_args
           inputs = [
             _resource_packaged_apk_path,
           ]
@@ -1773,10 +1771,9 @@ if (enable_java_templates) {
                                "aapt_locale_whitelist",
                                "alternative_android_sdk_jar",
                                "android_aapt_path",
-                               "png_to_webp",
                                "exclude_xxxhdpi",
                                "extensions_to_not_compress",
-                               "post_process_package_resources_args",
+                               "png_to_webp",
                                "post_process_package_resources_script",
                                "xxxhdpi_whitelist",
                              ])
@@ -1827,10 +1824,9 @@ if (enable_java_templates) {
                                "aapt_locale_whitelist",
                                "alternative_android_sdk_jar",
                                "android_aapt_path",
-                               "png_to_webp",
                                "exclude_xxxhdpi",
                                "extensions_to_not_compress",
-                               "post_process_package_resources_args",
+                               "png_to_webp",
                                "post_process_package_resources_script",
                                "xxxhdpi_whitelist",
                              ])
