@@ -257,6 +257,27 @@ public final class WarmupManager {
     }
 
     /**
+     * Warms up a spare, empty RenderProcessHost that may be used for subsequent navigations.
+     *
+     * The spare RenderProcessHost will be used automatically in subsequent navigations.
+     * There is nothing further the WarmupManager needs to do to enable that use.
+     *
+     * This uses a different mechanism than createSpareWebContents, below, and is subject
+     * to fewer restrictions.
+     *
+     * This must be called from the UI thread.
+     */
+    public void createSpareRenderProcessHost(Profile profile) {
+        ThreadUtils.assertOnUiThread();
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.OMNIBOX_SPARE_RENDERER)) {
+            // Spare WebContents should not be used with spare RenderProcessHosts, but if one
+            // has been created, destroy it in order not to consume too many processes.
+            destroySpareWebContents();
+            nativeWarmupSpareRenderer(profile);
+        }
+    }
+
+    /**
      * Creates and initializes a spare WebContents, to be used in a subsequent navigation.
      *
      * This creates a renderer that is suitable for any navigation. It can be picked up by any tab.
@@ -322,4 +343,5 @@ public final class WarmupManager {
     }
 
     private static native void nativePreconnectUrlAndSubresources(Profile profile, String url);
+    private static native void nativeWarmupSpareRenderer(Profile profile);
 }

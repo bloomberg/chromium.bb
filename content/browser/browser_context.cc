@@ -368,8 +368,10 @@ void BrowserContext::NotifyWillBeDestroyed(BrowserContext* browser_context) {
            RenderProcessHost::AllHostsIterator();
        !host_iterator.IsAtEnd(); host_iterator.Advance()) {
     RenderProcessHost* host = host_iterator.GetCurrentValue();
-    if (host->GetBrowserContext() == browser_context)
+    if (host->GetBrowserContext() == browser_context) {
+      // This will also clean up spare RPH references.
       host->ForceReleaseWorkerRefCounts();
+    }
   }
 }
 

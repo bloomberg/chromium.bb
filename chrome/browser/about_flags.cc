@@ -3178,6 +3178,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kResourceLoadSchedulerDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kResourceLoadScheduler)},
 
+#if defined(OS_ANDROID)
+    {"omnibox-spare-renderer", flag_descriptions::kOmniboxSpareRendererName,
+     flag_descriptions::kOmniboxSpareRendererDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kOmniboxSpareRenderer)},
+#endif
+
 #if defined(TOOLKIT_VIEWS)
     {"delay-reload-stop-button-change",
      flag_descriptions::kDelayReloadStopButtonChangeName,

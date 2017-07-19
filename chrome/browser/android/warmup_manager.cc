@@ -7,6 +7,7 @@
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
+#include "content/public/browser/render_process_host.h"
 #include "jni/WarmupManager_jni.h"
 #include "url/gurl.h"
 
@@ -22,5 +23,14 @@ static void PreconnectUrlAndSubresources(JNIEnv* env,
     if (profile) {
       profile->GetNetworkPredictor()->PreconnectUrlAndSubresources(url, GURL());
     }
+  }
+}
+
+static void WarmupSpareRenderer(JNIEnv* env,
+                                const JavaParamRef<jclass>& clazz,
+                                const JavaParamRef<jobject>& jprofile) {
+  Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
+  if (profile) {
+    content::RenderProcessHost::WarmupSpareRenderProcessHost(profile);
   }
 }
