@@ -152,11 +152,11 @@ void MessagePumpFuchsia::Run(Delegate* delegate) {
     if (did_work)
       continue;
 
-    mx_time_t deadline =
-        delayed_work_time_.is_null()
-            ? MX_TIME_INFINITE
-            : mx_deadline_after(delayed_work_time_.ToInternalValue());
+    mx_time_t deadline = delayed_work_time_.is_null()
+                             ? MX_TIME_INFINITE
+                             : delayed_work_time_.ToMXTime();
     mx_port_packet_t packet;
+
     const mx_status_t wait_status = mx_port_wait(port_, deadline, &packet, 0);
     if (wait_status != MX_OK && wait_status != MX_ERR_TIMED_OUT) {
       NOTREACHED() << "unexpected wait status: "

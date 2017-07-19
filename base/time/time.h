@@ -762,9 +762,9 @@ class BASE_EXPORT TimeTicks : public time_internal::TimeBase<TimeTicks> {
   static bool IsConsistentAcrossProcesses() WARN_UNUSED_RESULT;
 
 #if defined(OS_FUCHSIA)
-  // Creates a TimeTicks from a mx_time_t value. Note that the mx_time_t value
-  // is interpreted in terms of the MX_CLOCK_MONOTONIC clock.
+  // Converts between TimeTicks and an MX_CLOCK_MONOTONIC mx_time_t value.
   static TimeTicks FromMXTime(mx_time_t nanos_since_boot);
+  mx_time_t ToMXTime() const;
 #endif
 
 #if defined(OS_WIN)
