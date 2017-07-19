@@ -2672,13 +2672,23 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
         const TX_SIZE tx = av1_get_tx_size(plane, xd);
         const int bkw = tx_size_wide_unit[tx];
         const int bkh = tx_size_high_unit[tx];
-        for (row = 0; row < num_4x4_h; row += bkh) {
-          for (col = 0; col < num_4x4_w; col += bkw) {
+        int blk_row, blk_col;
+
+        for (row = 0; row < num_4x4_h; row += mu_blocks_high) {
+          for (col = 0; col < num_4x4_w; col += mu_blocks_wide) {
+            const int unit_height = AOMMIN(mu_blocks_high + row, num_4x4_h);
+            const int unit_width = AOMMIN(mu_blocks_wide + col, num_4x4_w);
+
+            for (blk_row = row; blk_row < unit_height; blk_row += bkh) {
+              for (blk_col = col; blk_col < unit_width; blk_col += bkw) {
 #if !CONFIG_PVQ
-            pack_mb_tokens(w, tok, tok_end, cm->bit_depth, tx, &token_stats);
+                pack_mb_tokens(w, tok, tok_end, cm->bit_depth, tx,
+                               &token_stats);
 #else
-            pack_pvq_tokens(w, x, xd, plane, bsize, tx);
+                pack_pvq_tokens(w, x, xd, plane, bsize, tx);
 #endif
+              }
+            }
           }
         }
 #endif  // CONFIG_LV_MAP

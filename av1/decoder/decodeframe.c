@@ -1988,11 +1988,26 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
                                pd->subsampling_y))
         continue;
 #endif
+      int blk_row, blk_col;
+      const BLOCK_SIZE max_unit_bsize = get_plane_block_size(BLOCK_64X64, pd);
+      int mu_blocks_wide =
+          block_size_wide[max_unit_bsize] >> tx_size_wide_log2[0];
+      int mu_blocks_high =
+          block_size_high[max_unit_bsize] >> tx_size_high_log2[0];
+      mu_blocks_wide = AOMMIN(max_blocks_wide, mu_blocks_wide);
+      mu_blocks_high = AOMMIN(max_blocks_high, mu_blocks_high);
 
-      for (row = 0; row < max_blocks_high; row += stepr)
-        for (col = 0; col < max_blocks_wide; col += stepc)
-          predict_and_reconstruct_intra_block(cm, xd, r, mbmi, plane, row, col,
-                                              tx_size);
+      for (row = 0; row < max_blocks_high; row += mu_blocks_high) {
+        for (col = 0; col < max_blocks_wide; col += mu_blocks_wide) {
+          const int unit_height = AOMMIN(mu_blocks_high + row, max_blocks_high);
+          const int unit_width = AOMMIN(mu_blocks_wide + col, max_blocks_wide);
+
+          for (blk_row = row; blk_row < unit_height; blk_row += stepr)
+            for (blk_col = col; blk_col < unit_width; blk_col += stepc)
+              predict_and_reconstruct_intra_block(cm, xd, r, mbmi, plane,
+                                                  blk_row, blk_col, tx_size);
+        }
+      }
     }
   } else {
     int ref;
