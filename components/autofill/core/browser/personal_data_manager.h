@@ -390,9 +390,9 @@ class PersonalDataManager : public KeyedService,
   // Notifies observers that personal data has changed.
   void NotifyPersonalDataChanged();
 
-  // The first time this is called, logs an UMA metric for the number of
-  // profiles the user has. On subsequent calls, does nothing.
-  void LogProfileCount() const;
+  // The first time this is called, logs a UMA metrics about the user's profile.
+  // On subsequent calls, does nothing.
+  void LogStoredProfileMetrics() const;
 
   // The first time this is called, logs an UMA metric for the number of local
   // credit cards the user has. On subsequent calls, does nothing.
@@ -592,8 +592,8 @@ class PersonalDataManager : public KeyedService,
   // Default value is false.
   bool is_off_the_record_;
 
-  // Whether we have already logged the number of profiles this session.
-  mutable bool has_logged_profile_count_;
+  // Whether we have already logged the stored profile metrics this session.
+  mutable bool has_logged_stored_profile_metrics_;
 
   // Whether we have already logged the number of local credit cards this
   // session.

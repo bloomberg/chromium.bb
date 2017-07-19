@@ -865,16 +865,25 @@ class AutofillMetrics {
   // This should be called each time a page containing forms is loaded.
   static void LogIsAutofillEnabledAtPageLoad(bool enabled);
 
-  // This should be called each time a new profile is launched.
+  // This should be called each time a new chrome profile is launched.
   static void LogIsAutofillEnabledAtStartup(bool enabled);
 
-  // This should be called each time a new profile is launched.
+  // Records the number of stored address profiles. This is be called each time
+  // a new chrome profile is launched.
   static void LogStoredProfileCount(size_t num_profiles);
 
-  // This should be called each time a new profile is launched.
+  // Records the number of stored address profiles which have not been used in
+  // a long time. This is be called each time a new chrome profile is launched.
+  static void LogStoredProfileDisusedCount(size_t num_profiles);
+
+  // Records the number of days since an address profile was last used. This is
+  // called once per address profile each time a new chrome profile is launched.
+  static void LogStoredProfileDaysSinceLastUse(size_t days);
+
+  // This should be called each time a new chrome profile is launched.
   static void LogStoredLocalCreditCardCount(size_t num_local_cards);
 
-  // This should be called each time a new profile is launched.
+  // This should be called each time a new chrome profile is launched.
   static void LogStoredServerCreditCardCounts(size_t num_masked_cards,
                                               size_t num_unmasked_cards);
 

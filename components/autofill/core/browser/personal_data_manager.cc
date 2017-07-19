@@ -59,6 +59,9 @@ using ::i18n::addressinput::STREET_ADDRESS;
 // The length of a local profile GUID.
 const int LOCAL_GUID_LENGTH = 36;
 
+constexpr base::TimeDelta kDisusedProfileTimeDelta =
+    base::TimeDelta::FromDays(180);
+
 template<typename T>
 class FormGroupMatchesByGUIDFunctor {
  public:
@@ -269,7 +272,7 @@ PersonalDataManager::PersonalDataManager(const std::string& app_locale)
       pref_service_(nullptr),
       account_tracker_(nullptr),
       is_off_the_record_(false),
-      has_logged_profile_count_(false),
+      has_logged_stored_profile_metrics_(false),
       has_logged_local_credit_card_count_(false),
       has_logged_server_credit_card_counts_(false) {}
 
@@ -374,7 +377,7 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
       if (h == pending_profiles_query_) {
         ReceiveLoadedDbValues(h, result.get(), &pending_profiles_query_,
                               &web_profiles_);
-        LogProfileCount();  // This only logs local profiles.
+        LogStoredProfileMetrics();  // This only logs local profiles.
       } else {
         ReceiveLoadedDbValues(h, result.get(), &pending_server_profiles_query_,
                               &server_profiles_);
@@ -1339,10 +1342,28 @@ std::string PersonalDataManager::SaveImportedCreditCard(
   return guid;
 }
 
-void PersonalDataManager::LogProfileCount() const {
-  if (!has_logged_profile_count_) {
+void PersonalDataManager::LogStoredProfileMetrics() const {
+  if (!has_logged_stored_profile_metrics_) {
+    // Update the histogram of how many addresses the user has stored.
     AutofillMetrics::LogStoredProfileCount(web_profiles_.size());
-    has_logged_profile_count_ = true;
+
+    // Update the histogram of how many addresses would be considered disused.
+    const base::Time now = AutofillClock::Now();
+    const base::Time min_use_date = now - kDisusedProfileTimeDelta;
+    AutofillMetrics::LogStoredProfileDisusedCount(std::count_if(
+        web_profiles_.begin(), web_profiles_.end(),
+        [min_use_date](const std::unique_ptr<AutofillProfile>& p) {
+          return p->use_date() > min_use_date;
+        }));
+
+    // Update the histogram of days since last use for each address.
+    for (const std::unique_ptr<AutofillProfile>& profile : web_profiles_) {
+      AutofillMetrics::LogStoredProfileDaysSinceLastUse(
+          (now - profile->use_date()).InDays());
+    }
+
+    // Only log this info once per chrome user profile load.
+    has_logged_stored_profile_metrics_ = true;
   }
 }
 
