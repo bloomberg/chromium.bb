@@ -7,6 +7,7 @@
 
 #include "cc/base/filter_operation.h"
 #include "cc/ipc/filter_operation.mojom-shared.h"
+#include "skia/public/interfaces/blur_image_filter_tile_mode_struct_traits.h"
 #include "skia/public/interfaces/image_filter_struct_traits.h"
 
 namespace mojo {
@@ -141,6 +142,14 @@ struct StructTraits<cc::mojom::FilterOperationDataView, cc::FilterOperation> {
     return operation.zoom_inset();
   }
 
+  static skia::mojom::BlurTileMode blur_tile_mode(
+      const cc::FilterOperation& operation) {
+    if (operation.type() != cc::FilterOperation::BLUR)
+      return skia::mojom::BlurTileMode::CLAMP_TO_BLACK;
+    return EnumTraits<skia::mojom::BlurTileMode, SkBlurImageFilter::TileMode>::
+        ToMojom(operation.blur_tile_mode());
+  }
+
   static bool Read(cc::mojom::FilterOperationDataView data,
                    cc::FilterOperation* out) {
     out->set_type(MojoFilterTypeToCC(data.type()));
@@ -154,8 +163,14 @@ struct StructTraits<cc::mojom::FilterOperationDataView, cc::FilterOperation> {
       case cc::FilterOperation::SATURATING_BRIGHTNESS:
       case cc::FilterOperation::CONTRAST:
       case cc::FilterOperation::OPACITY:
+        out->set_amount(data.amount());
+        return true;
       case cc::FilterOperation::BLUR:
         out->set_amount(data.amount());
+        SkBlurImageFilter::TileMode tile_mode;
+        if (!data.ReadBlurTileMode(&tile_mode))
+          return false;
+        out->set_blur_tile_mode(tile_mode);
         return true;
       case cc::FilterOperation::DROP_SHADOW: {
         out->set_amount(data.amount());
