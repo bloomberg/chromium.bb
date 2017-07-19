@@ -136,26 +136,15 @@ void WorkerThread::Terminate() {
 
   {
     MutexLocker lock(thread_state_mutex_);
-
     if (requested_to_terminate_)
       return;
     requested_to_terminate_ = true;
-
-    if (ShouldScheduleToTerminateExecution(lock)) {
-      // Schedule a task to forcibly terminate the script execution in case that
-      // the shutdown sequence does not start on the worker thread in a certain
-      // time period.
-      DCHECK(!forcible_termination_task_handle_.IsActive());
-      forcible_termination_task_handle_ =
-          parent_frame_task_runners_->Get(TaskType::kUnspecedTimer)
-              ->PostDelayedCancellableTask(
-                  BLINK_FROM_HERE,
-                  WTF::Bind(&WorkerThread::EnsureScriptExecutionTerminates,
-                            WTF::Unretained(this),
-                            ExitCode::kAsyncForciblyTerminated),
-                  forcible_termination_delay_);
-    }
   }
+
+  // Schedule a task to forcibly terminate the script execution in case that the
+  // shutdown sequence does not start on the worker thread in a certain time
+  // period.
+  ScheduleToTerminateScriptExecution();
 
   worker_thread_lifecycle_context_->NotifyContextDestroyed();
   inspector_task_runner_->Kill();
@@ -346,7 +335,19 @@ WorkerThread::WorkerThread(ThreadableLoadingContext* loading_context,
       ConvertToBaseCallback(WTF::Bind(&ForwardInterfaceRequest)));
 }
 
-bool WorkerThread::ShouldScheduleToTerminateExecution(const MutexLocker& lock) {
+void WorkerThread::ScheduleToTerminateScriptExecution() {
+  DCHECK(!forcible_termination_task_handle_.IsActive());
+  forcible_termination_task_handle_ =
+      parent_frame_task_runners_->Get(TaskType::kUnspecedTimer)
+          ->PostDelayedCancellableTask(
+              BLINK_FROM_HERE,
+              WTF::Bind(&WorkerThread::EnsureScriptExecutionTerminates,
+                        WTF::Unretained(this),
+                        ExitCode::kAsyncForciblyTerminated),
+              forcible_termination_delay_);
+}
+
+bool WorkerThread::ShouldTerminateScriptExecution(const MutexLocker& lock) {
   DCHECK(IsMainThread());
   DCHECK(IsThreadStateMutexLocked(lock));
 
@@ -372,7 +373,7 @@ bool WorkerThread::ShouldScheduleToTerminateExecution(const MutexLocker& lock) {
 void WorkerThread::EnsureScriptExecutionTerminates(ExitCode exit_code) {
   DCHECK(IsMainThread());
   MutexLocker lock(thread_state_mutex_);
-  if (!ShouldScheduleToTerminateExecution(lock))
+  if (!ShouldTerminateScriptExecution(lock))
     return;
 
   DCHECK(exit_code == ExitCode::kSyncForciblyTerminated ||

@@ -144,22 +144,22 @@ class WorkerThreadTest : public ::testing::Test {
   Persistent<MockWorkerThreadLifecycleObserver> lifecycle_observer_;
 };
 
-TEST_F(WorkerThreadTest, ShouldScheduleToTerminateExecution) {
+TEST_F(WorkerThreadTest, ShouldTerminateScriptExecution) {
   using ThreadState = WorkerThread::ThreadState;
   MutexLocker dummy_lock(worker_thread_->thread_state_mutex_);
 
   EXPECT_EQ(ThreadState::kNotStarted, worker_thread_->thread_state_);
-  EXPECT_FALSE(worker_thread_->ShouldScheduleToTerminateExecution(dummy_lock));
+  EXPECT_FALSE(worker_thread_->ShouldTerminateScriptExecution(dummy_lock));
 
   worker_thread_->SetThreadState(dummy_lock, ThreadState::kRunning);
   EXPECT_FALSE(worker_thread_->running_debugger_task_);
-  EXPECT_TRUE(worker_thread_->ShouldScheduleToTerminateExecution(dummy_lock));
+  EXPECT_TRUE(worker_thread_->ShouldTerminateScriptExecution(dummy_lock));
 
   worker_thread_->running_debugger_task_ = true;
-  EXPECT_FALSE(worker_thread_->ShouldScheduleToTerminateExecution(dummy_lock));
+  EXPECT_FALSE(worker_thread_->ShouldTerminateScriptExecution(dummy_lock));
 
   worker_thread_->SetThreadState(dummy_lock, ThreadState::kReadyToShutdown);
-  EXPECT_FALSE(worker_thread_->ShouldScheduleToTerminateExecution(dummy_lock));
+  EXPECT_FALSE(worker_thread_->ShouldTerminateScriptExecution(dummy_lock));
 
   // This is necessary to satisfy DCHECK in the dtor of WorkerThread.
   worker_thread_->SetExitCode(dummy_lock, ExitCode::kGracefullyTerminated);
@@ -215,14 +215,11 @@ TEST_F(WorkerThreadTest, SyncTerminate_ImmediatelyAfterStart) {
 
   // There are two possible cases depending on timing:
   // (1) If the thread hasn't been initialized on the worker thread yet,
-  // terminateAndWait() should wait for initialization and shut down the
-  // thread immediately after that.
+  // TerminateAllWorkersForTesting() should wait for initialization and shut
+  // down the thread immediately after that.
   // (2) If the thread has already been initialized on the worker thread,
-  // terminateAndWait() should synchronously forcibly terminates the worker
-  // execution.
-  // TODO(nhiroki): Make this test deterministically pass through the case 1),
-  // that is, terminateAndWait() is called before initializeOnWorkerThread().
-  // Then, rename this test to SyncTerminate_BeforeInitialization.
+  // TerminateAllWorkersForTesting() should synchronously forcibly terminates
+  // the worker execution.
   WorkerThread::TerminateAllWorkersForTesting();
   ExitCode exit_code = GetExitCode();
   EXPECT_TRUE(ExitCode::kGracefullyTerminated == exit_code ||
@@ -237,17 +234,17 @@ TEST_F(WorkerThreadTest, AsyncTerminate_WhileTaskIsRunning) {
   StartWithSourceCodeNotToFinish();
   reporting_proxy_->WaitUntilScriptEvaluation();
 
-  // terminate() schedules a force termination task.
+  // Terminate() schedules a forcible termination task.
   worker_thread_->Terminate();
   EXPECT_TRUE(IsForcibleTerminationTaskScheduled());
   EXPECT_EQ(ExitCode::kNotTerminated, GetExitCode());
 
-  // Multiple terminate() calls should not take effect.
+  // Multiple Terminate() calls should not take effect.
   worker_thread_->Terminate();
   worker_thread_->Terminate();
   EXPECT_EQ(ExitCode::kNotTerminated, GetExitCode());
 
-  // Wait until the force termination task runs.
+  // Wait until the forcible termination task runs.
   testing::RunDelayedTasks(kDelay);
   worker_thread_->WaitForShutdownForTesting();
   EXPECT_EQ(ExitCode::kAsyncForciblyTerminated, GetExitCode());
@@ -258,7 +255,8 @@ TEST_F(WorkerThreadTest, SyncTerminate_WhileTaskIsRunning) {
   StartWithSourceCodeNotToFinish();
   reporting_proxy_->WaitUntilScriptEvaluation();
 
-  // terminateAndWait() synchronously terminates the worker execution.
+  // TerminateAllWorkersForTesting() synchronously terminates the worker
+  // execution.
   WorkerThread::TerminateAllWorkersForTesting();
   EXPECT_EQ(ExitCode::kSyncForciblyTerminated, GetExitCode());
 }
@@ -271,18 +269,22 @@ TEST_F(WorkerThreadTest,
   StartWithSourceCodeNotToFinish();
   reporting_proxy_->WaitUntilScriptEvaluation();
 
-  // terminate() schedules a force termination task.
+  // Terminate() schedules a forcible termination task.
   worker_thread_->Terminate();
   EXPECT_TRUE(IsForcibleTerminationTaskScheduled());
   EXPECT_EQ(ExitCode::kNotTerminated, GetExitCode());
 
-  // terminateAndWait() should overtake the scheduled force termination task.
+  // TerminateAllWorkersForTesting() should overtake the scheduled forcible
+  // termination task.
   WorkerThread::TerminateAllWorkersForTesting();
   EXPECT_FALSE(IsForcibleTerminationTaskScheduled());
   EXPECT_EQ(ExitCode::kSyncForciblyTerminated, GetExitCode());
 }
 
 TEST_F(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunningOnInitialization) {
+  constexpr TimeDelta kDelay = TimeDelta::FromMilliseconds(10);
+  SetForcibleTerminationDelay(kDelay);
+
   EXPECT_CALL(*reporting_proxy_, DidCreateWorkerGlobalScope(_)).Times(1);
   EXPECT_CALL(*reporting_proxy_, DidInitializeWorkerContext()).Times(1);
   EXPECT_CALL(*reporting_proxy_, WillDestroyWorkerGlobalScope()).Times(1);
@@ -320,20 +322,19 @@ TEST_F(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunningOnInitialization) {
   testing::EnterRunLoop();
   EXPECT_TRUE(worker_thread_->running_debugger_task_);
 
-  // terminate() should not schedule a force termination task because there is
-  // a running debugger task.
+  // Terminate() schedules a forcible termination task.
   worker_thread_->Terminate();
+  EXPECT_TRUE(IsForcibleTerminationTaskScheduled());
+  EXPECT_EQ(ExitCode::kNotTerminated, GetExitCode());
+
+  // Wait until the task runs. It shouldn't terminate the script execution
+  // because of the running debugger task.
+  testing::RunDelayedTasks(kDelay);
   EXPECT_FALSE(IsForcibleTerminationTaskScheduled());
   EXPECT_EQ(ExitCode::kNotTerminated, GetExitCode());
 
-  // Multiple terminate() calls should not take effect.
-  worker_thread_->Terminate();
-  worker_thread_->Terminate();
-  EXPECT_FALSE(IsForcibleTerminationTaskScheduled());
-  EXPECT_EQ(ExitCode::kNotTerminated, GetExitCode());
-
-  // Focible script termination request should also respect the running debugger
-  // task.
+  // Forcible script termination request should also respect the running
+  // debugger task.
   worker_thread_->EnsureScriptExecutionTerminates(
       ExitCode::kSyncForciblyTerminated);
   EXPECT_EQ(ExitCode::kNotTerminated, GetExitCode());
@@ -345,6 +346,9 @@ TEST_F(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunningOnInitialization) {
 }
 
 TEST_F(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunning) {
+  constexpr TimeDelta kDelay = TimeDelta::FromMilliseconds(10);
+  SetForcibleTerminationDelay(kDelay);
+
   ExpectReportingCalls();
   Start();
   worker_thread_->WaitForInit();
@@ -360,20 +364,19 @@ TEST_F(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunning) {
   testing::EnterRunLoop();
   EXPECT_TRUE(worker_thread_->running_debugger_task_);
 
-  // terminate() should not schedule a force termination task because there is
-  // a running debugger task.
+  // Terminate() schedules a forcible termination task.
   worker_thread_->Terminate();
+  EXPECT_TRUE(IsForcibleTerminationTaskScheduled());
+  EXPECT_EQ(ExitCode::kNotTerminated, GetExitCode());
+
+  // Wait until the task runs. It shouldn't terminate the script execution
+  // because of the running debugger task.
+  testing::RunDelayedTasks(kDelay);
   EXPECT_FALSE(IsForcibleTerminationTaskScheduled());
   EXPECT_EQ(ExitCode::kNotTerminated, GetExitCode());
 
-  // Multiple terminate() calls should not take effect.
-  worker_thread_->Terminate();
-  worker_thread_->Terminate();
-  EXPECT_FALSE(IsForcibleTerminationTaskScheduled());
-  EXPECT_EQ(ExitCode::kNotTerminated, GetExitCode());
-
-  // Focible script termination request should also respect the running debugger
-  // task.
+  // Forcible script termination request should also respect the running
+  // debugger task.
   worker_thread_->EnsureScriptExecutionTerminates(
       ExitCode::kSyncForciblyTerminated);
   EXPECT_EQ(ExitCode::kNotTerminated, GetExitCode());
