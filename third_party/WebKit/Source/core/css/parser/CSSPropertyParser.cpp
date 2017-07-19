@@ -1438,38 +1438,6 @@ bool CSSPropertyParser::Consume2Values(const StylePropertyShorthand& shorthand,
   return range_.AtEnd();
 }
 
-bool CSSPropertyParser::Consume4Values(const StylePropertyShorthand& shorthand,
-                                       bool important) {
-  DCHECK_EQ(shorthand.length(), 4u);
-  const CSSPropertyID* longhands = shorthand.properties();
-  const CSSValue* top = ParseSingleValue(longhands[0], shorthand.id());
-  if (!top)
-    return false;
-
-  const CSSValue* right = ParseSingleValue(longhands[1], shorthand.id());
-  const CSSValue* bottom = nullptr;
-  const CSSValue* left = nullptr;
-  if (right) {
-    bottom = ParseSingleValue(longhands[2], shorthand.id());
-    if (bottom)
-      left = ParseSingleValue(longhands[3], shorthand.id());
-  }
-
-  if (!right)
-    right = top;
-  if (!bottom)
-    bottom = top;
-  if (!left)
-    left = right;
-
-  AddParsedProperty(longhands[0], shorthand.id(), *top, important);
-  AddParsedProperty(longhands[1], shorthand.id(), *right, important);
-  AddParsedProperty(longhands[2], shorthand.id(), *bottom, important);
-  AddParsedProperty(longhands[3], shorthand.id(), *left, important);
-
-  return range_.AtEnd();
-}
-
 static inline CSSValueID MapFromPageBreakBetween(CSSValueID value) {
   if (value == CSSValueAlways)
     return CSSValuePage;
@@ -2102,8 +2070,6 @@ bool CSSPropertyParser::ParseShorthand(CSSPropertyID unresolved_property,
     case CSSPropertyTextDecoration:
       DCHECK(RuntimeEnabledFeatures::CSS3TextDecorationsEnabled());
       return ConsumeShorthandGreedily(textDecorationShorthand(), important);
-    case CSSPropertyPadding:
-      return Consume4Values(paddingShorthand(), important);
     case CSSPropertyMarker: {
       const CSSValue* marker = ParseSingleValue(CSSPropertyMarkerStart);
       if (!marker || !range_.AtEnd())
@@ -2122,12 +2088,6 @@ bool CSSPropertyParser::ParseShorthand(CSSPropertyID unresolved_property,
       return ConsumeShorthandGreedily(columnRuleShorthand(), important);
     case CSSPropertyListStyle:
       return ConsumeShorthandGreedily(listStyleShorthand(), important);
-    case CSSPropertyBorderColor:
-      return Consume4Values(borderColorShorthand(), important);
-    case CSSPropertyBorderStyle:
-      return Consume4Values(borderStyleShorthand(), important);
-    case CSSPropertyBorderWidth:
-      return Consume4Values(borderWidthShorthand(), important);
     case CSSPropertyBorderTop:
       return ConsumeShorthandGreedily(borderTopShorthand(), important);
     case CSSPropertyBorderRight:
@@ -2199,10 +2159,6 @@ bool CSSPropertyParser::ParseShorthand(CSSPropertyID unresolved_property,
       return ConsumePlaceItemsShorthand(important);
     case CSSPropertyPlaceSelf:
       return ConsumePlaceSelfShorthand(important);
-    case CSSPropertyScrollPadding:
-      return Consume4Values(scrollPaddingShorthand(), important);
-    case CSSPropertyScrollSnapMargin:
-      return Consume4Values(scrollSnapMarginShorthand(), important);
     case CSSPropertyScrollBoundaryBehavior:
       return Consume2Values(scrollBoundaryBehaviorShorthand(), important);
     default:

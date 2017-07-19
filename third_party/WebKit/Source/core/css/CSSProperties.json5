@@ -3709,6 +3709,8 @@
     {
       name: "border-color",
       longhands: ["border-top-color", "border-right-color", "border-bottom-color", "border-left-color"],
+      api_class: true,
+      api_methods: ["parseShorthand"],
     },
     {
       name: "border-image",
@@ -3739,6 +3741,8 @@
     {
       name: "border-style",
       longhands: ["border-top-style", "border-right-style", "border-bottom-style", "border-left-style"],
+      api_class: true,
+      api_methods: ["parseShorthand"],
       keywords: ["none"],
       typedom_types: ["Image"],
     },
@@ -3749,6 +3753,8 @@
     {
       name: "border-width",
       longhands: ["border-top-width", "border-right-width", "border-bottom-width", "border-left-width"],
+      api_class: true,
+      api_methods: ["parseShorthand"],
     },
     {
       name: "flex",
@@ -3858,6 +3864,8 @@
     {
       name: "padding",
       longhands: ["padding-top", "padding-right", "padding-bottom", "padding-left"],
+      api_class: true,
+      api_methods: ["parseShorthand"],
     },
     {
       name: "page-break-after",
@@ -3874,6 +3882,8 @@
     {
       name: "scroll-padding",
       longhands: ["scroll-padding-top", "scroll-padding-right", "scroll-padding-bottom", "scroll-padding-left"],
+      api_class: true,
+      api_methods: ["parseShorthand"],
       runtime_flag: "CSSScrollSnapPoints",
     },
     {
@@ -3893,6 +3903,8 @@
     {
       name: "scroll-snap-margin",
       longhands: ["scroll-snap-margin-top", "scroll-snap-margin-right", "scroll-snap-margin-bottom", "scroll-snap-margin-left"],
+      api_class: true,
+      api_methods: ["parseShorthand"],
       runtime_flag: "CSSScrollSnapPoints",
     },
     {
