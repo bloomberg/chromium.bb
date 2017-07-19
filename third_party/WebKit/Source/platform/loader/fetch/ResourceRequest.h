@@ -285,6 +285,11 @@ class PLATFORM_EXPORT ResourceRequest final {
     fetch_redirect_mode_ = redirect;
   }
 
+  const String& GetFetchIntegrity() const { return fetch_integrity_; }
+  void SetFetchIntegrity(const String& integrity) {
+    fetch_integrity_ = integrity;
+  }
+
   WebURLRequest::PreviewsState GetPreviewsState() const {
     return previews_state_;
   }
@@ -374,6 +379,7 @@ class PLATFORM_EXPORT ResourceRequest final {
   WebURLRequest::FetchRequestMode fetch_request_mode_;
   WebURLRequest::FetchCredentialsMode fetch_credentials_mode_;
   WebURLRequest::FetchRedirectMode fetch_redirect_mode_;
+  String fetch_integrity_;
   ReferrerPolicy referrer_policy_;
   bool did_set_http_referrer_;
   bool check_for_browser_side_navigation_;
@@ -434,6 +440,7 @@ struct CrossThreadResourceRequestData {
   WebURLRequest::FetchRequestMode fetch_request_mode_;
   WebURLRequest::FetchCredentialsMode fetch_credentials_mode_;
   WebURLRequest::FetchRedirectMode fetch_redirect_mode_;
+  String fetch_integrity_;
   WebURLRequest::PreviewsState previews_state_;
   ReferrerPolicy referrer_policy_;
   bool did_set_http_referrer_;

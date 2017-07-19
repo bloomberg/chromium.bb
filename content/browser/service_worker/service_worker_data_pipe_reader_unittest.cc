@@ -36,6 +36,7 @@ class MockServiceWorkerURLRequestJob : public ServiceWorkerURLRequestJob {
                                    FETCH_REQUEST_MODE_NO_CORS,
                                    FETCH_CREDENTIALS_MODE_OMIT,
                                    FetchRedirectMode::FOLLOW_MODE,
+                                   std::string() /* integrity */,
                                    RESOURCE_TYPE_MAIN_FRAME,
                                    REQUEST_CONTEXT_TYPE_HYPERLINK,
                                    REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL,

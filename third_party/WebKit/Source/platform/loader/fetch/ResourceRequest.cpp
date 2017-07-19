@@ -114,6 +114,7 @@ ResourceRequest::ResourceRequest(CrossThreadResourceRequestData* data)
   SetFetchRequestMode(data->fetch_request_mode_);
   SetFetchCredentialsMode(data->fetch_credentials_mode_);
   SetFetchRedirectMode(data->fetch_redirect_mode_);
+  SetFetchIntegrity(data->fetch_integrity_.IsolatedCopy());
   referrer_policy_ = data->referrer_policy_;
   did_set_http_referrer_ = data->did_set_http_referrer_;
   check_for_browser_side_navigation_ = data->check_for_browser_side_navigation_;
@@ -164,6 +165,7 @@ std::unique_ptr<CrossThreadResourceRequestData> ResourceRequest::CopyData()
   data->fetch_request_mode_ = fetch_request_mode_;
   data->fetch_credentials_mode_ = fetch_credentials_mode_;
   data->fetch_redirect_mode_ = fetch_redirect_mode_;
+  data->fetch_integrity_ = fetch_integrity_.IsolatedCopy();
   data->referrer_policy_ = referrer_policy_;
   data->did_set_http_referrer_ = did_set_http_referrer_;
   data->check_for_browser_side_navigation_ = check_for_browser_side_navigation_;

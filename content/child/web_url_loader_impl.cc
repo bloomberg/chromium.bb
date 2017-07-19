@@ -596,6 +596,8 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
       GetFetchCredentialsModeForWebURLRequest(request);
   resource_request->fetch_redirect_mode =
       GetFetchRedirectModeForWebURLRequest(request);
+  resource_request->fetch_integrity =
+      GetFetchIntegrityForWebURLRequest(request);
   resource_request->fetch_request_context_type =
       GetRequestContextTypeForWebURLRequest(request);
   resource_request->fetch_mixed_content_context_type =

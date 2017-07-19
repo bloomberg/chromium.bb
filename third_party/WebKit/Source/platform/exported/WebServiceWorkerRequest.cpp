@@ -38,6 +38,7 @@ class WebServiceWorkerRequestPrivate
   WebURLRequest::FetchRedirectMode redirect_mode_;
   WebURLRequest::RequestContext request_context_;
   WebURLRequest::FrameType frame_type_;
+  WebString integrity_;
   WebString client_id_;
   bool is_reload_;
 };
@@ -55,6 +56,10 @@ void WebServiceWorkerRequest::Assign(const WebServiceWorkerRequest& other) {
 
 void WebServiceWorkerRequest::SetURL(const WebURL& url) {
   private_->url_ = url;
+}
+
+const WebString& WebServiceWorkerRequest::Integrity() const {
+  return private_->integrity_;
 }
 
 const WebURL& WebServiceWorkerRequest::Url() const {
@@ -149,6 +154,10 @@ bool WebServiceWorkerRequest::IsMainResourceLoad() const {
 void WebServiceWorkerRequest::SetCredentialsMode(
     WebURLRequest::FetchCredentialsMode credentials_mode) {
   private_->credentials_mode_ = credentials_mode;
+}
+
+void WebServiceWorkerRequest::SetIntegrity(const WebString& integrity) {
+  private_->integrity_ = integrity;
 }
 
 WebURLRequest::FetchCredentialsMode WebServiceWorkerRequest::CredentialsMode()

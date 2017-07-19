@@ -116,6 +116,7 @@ struct StructTraits<blink::mojom::FetchAPIRequestDataView,
     return request.RedirectMode();
   }
 
+  static WTF::String integrity(const blink::WebServiceWorkerRequest&);
   static WTF::String client_id(const blink::WebServiceWorkerRequest&);
 
   static bool is_reload(const blink::WebServiceWorkerRequest& request) {

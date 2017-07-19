@@ -99,6 +99,7 @@ struct FetchAPIRequest {
   Referrer referrer;
   FetchCredentialsMode credentials_mode;
   FetchRedirectMode redirect_mode;
+  string? integrity;
   string? client_id;
   bool is_reload;
   ServiceWorkerFetchType fetch_type;

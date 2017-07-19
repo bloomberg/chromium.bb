@@ -65,6 +65,7 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
               fetch_type,
               FETCH_CREDENTIALS_MODE_OMIT,
               FetchRedirectMode::FOLLOW_MODE,
+              std::string() /* integrity */,
               type,
               REQUEST_CONTEXT_TYPE_HYPERLINK,
               REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL,

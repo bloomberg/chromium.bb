@@ -325,6 +325,7 @@ ServiceWorkerURLRequestJob::ServiceWorkerURLRequestJob(
     FetchRequestMode request_mode,
     FetchCredentialsMode credentials_mode,
     FetchRedirectMode redirect_mode,
+    const std::string& integrity,
     ResourceType resource_type,
     RequestContextType request_context_type,
     RequestContextFrameType frame_type,
@@ -344,6 +345,7 @@ ServiceWorkerURLRequestJob::ServiceWorkerURLRequestJob(
       request_mode_(request_mode),
       credentials_mode_(credentials_mode),
       redirect_mode_(redirect_mode),
+      integrity_(integrity),
       resource_type_(resource_type),
       request_context_type_(request_context_type),
       frame_type_(frame_type),
@@ -581,6 +583,7 @@ ServiceWorkerURLRequestJob::CreateFetchRequest() {
   request->blob_size = blob_size;
   request->credentials_mode = credentials_mode_;
   request->redirect_mode = redirect_mode_;
+  request->integrity = integrity_;
   request->client_id = client_id_;
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request_);
   if (info) {

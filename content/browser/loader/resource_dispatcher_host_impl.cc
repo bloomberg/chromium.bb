@@ -1465,18 +1465,18 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
         blob_context, child_id, request_data.service_worker_provider_id,
         service_worker_mode != ServiceWorkerMode::ALL,
         request_data.fetch_request_mode, request_data.fetch_credentials_mode,
-        request_data.fetch_redirect_mode, request_data.resource_type,
-        request_data.fetch_request_context_type, request_data.fetch_frame_type,
-        request_data.request_body);
+        request_data.fetch_redirect_mode, request_data.fetch_integrity,
+        request_data.resource_type, request_data.fetch_request_context_type,
+        request_data.fetch_frame_type, request_data.request_body);
 
     ForeignFetchRequestHandler::InitializeHandler(
         new_request.get(), requester_info->service_worker_context(),
         blob_context, child_id, request_data.service_worker_provider_id,
         service_worker_mode, request_data.fetch_request_mode,
         request_data.fetch_credentials_mode, request_data.fetch_redirect_mode,
-        request_data.resource_type, request_data.fetch_request_context_type,
-        request_data.fetch_frame_type, request_data.request_body,
-        request_data.initiated_in_secure_context);
+        request_data.fetch_integrity, request_data.resource_type,
+        request_data.fetch_request_context_type, request_data.fetch_frame_type,
+        request_data.request_body, request_data.initiated_in_secure_context);
 
     // Have the appcache associate its extra info with the request.
     AppCacheInterceptor::SetExtraRequestInfo(

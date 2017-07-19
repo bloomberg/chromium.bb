@@ -375,6 +375,11 @@ FetchRedirectMode GetFetchRedirectModeForWebURLRequest(
   return static_cast<FetchRedirectMode>(request.GetFetchRedirectMode());
 }
 
+std::string GetFetchIntegrityForWebURLRequest(
+    const blink::WebURLRequest& request) {
+  return request.GetFetchIntegrity().Utf8();
+}
+
 STATIC_ASSERT_ENUM(REQUEST_CONTEXT_FRAME_TYPE_AUXILIARY,
                    WebURLRequest::kFrameTypeAuxiliary);
 STATIC_ASSERT_ENUM(REQUEST_CONTEXT_FRAME_TYPE_NESTED,
