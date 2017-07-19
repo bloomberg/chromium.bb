@@ -18,7 +18,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.components.signin.AccountManagerDelegate;
 import org.chromium.components.signin.AccountManagerDelegateException;
-import org.chromium.components.signin.AccountManagerHelper;
+import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountsChangeObserver;
 
 import java.util.ArrayList;
@@ -27,7 +27,7 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * The FakeAccountManagerDelegate is intended for testing components that use AccountManagerHelper.
+ * The FakeAccountManagerDelegate is intended for testing components that use AccountManagerFacade.
  *
  * You should provide a set of accounts as a constructor argument, or use the more direct approach
  * and provide an array of AccountHolder objects.
@@ -142,7 +142,7 @@ public class FakeAccountManagerDelegate implements AccountManagerDelegate {
     @Override
     public AuthenticatorDescription[] getAuthenticatorTypes() {
         AuthenticatorDescription googleAuthenticator = new AuthenticatorDescription(
-                AccountManagerHelper.GOOGLE_ACCOUNT_TYPE, "p1", 0, 0, 0, 0);
+                AccountManagerFacade.GOOGLE_ACCOUNT_TYPE, "p1", 0, 0, 0, 0);
 
         return new AuthenticatorDescription[] {googleAuthenticator};
     }

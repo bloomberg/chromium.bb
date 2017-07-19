@@ -23,7 +23,7 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
-import org.chromium.components.signin.AccountManagerHelper;
+import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.sync.ModelType;
 import org.chromium.components.sync.ModelTypeHelper;
 import org.chromium.components.sync.notifier.InvalidationIntentProtocol;
@@ -528,7 +528,7 @@ public class InvalidationClientServiceTest extends
         // Send register Intent.
         Set<Integer> desiredRegistrations = CollectionUtil.newHashSet(
                 ModelType.BOOKMARKS, ModelType.SESSIONS);
-        Account account = AccountManagerHelper.createAccountFromName("test@example.com");
+        Account account = AccountManagerFacade.createAccountFromName("test@example.com");
         Intent registrationIntent = createRegisterIntent(account, desiredRegistrations);
         getService().onHandleIntent(registrationIntent);
 
@@ -553,7 +553,7 @@ public class InvalidationClientServiceTest extends
         // Finally, send one more registration-change intent, this time with a different account,
         // and verify that it both updates the account, stops the existing client, and
         // starts a new client.
-        Account account2 = AccountManagerHelper.createAccountFromName("test2@example.com");
+        Account account2 = AccountManagerFacade.createAccountFromName("test2@example.com");
         getService().onHandleIntent(createRegisterIntent(account2, desiredRegistrations));
         assertEquals(account2, invPrefs.getSavedSyncedAccount());
         assertEquals(3, mStartServiceIntents.size());
@@ -609,7 +609,7 @@ public class InvalidationClientServiceTest extends
         getService().setShouldRunStates(true, true);
         getService().onCreate();
 
-        Account account = AccountManagerHelper.createAccountFromName("test@example.com");
+        Account account = AccountManagerFacade.createAccountFromName("test@example.com");
         Set<ObjectId> objectIds = new HashSet<>();
         Set<Integer> types = new HashSet<>();
 
@@ -679,7 +679,7 @@ public class InvalidationClientServiceTest extends
         getService().onCreate();
 
         // Send register Intent.
-        Account account = AccountManagerHelper.createAccountFromName("test@example.com");
+        Account account = AccountManagerFacade.createAccountFromName("test@example.com");
         Intent registrationIntent = createRegisterIntent(
                 account, CollectionUtil.newHashSet(ModelType.PROXY_TABS, ModelType.SESSIONS));
         getService().onHandleIntent(registrationIntent);
@@ -711,7 +711,7 @@ public class InvalidationClientServiceTest extends
         getService().onCreate();
 
         // Send register Intent with no desired types.
-        Account account = AccountManagerHelper.createAccountFromName("test@example.com");
+        Account account = AccountManagerFacade.createAccountFromName("test@example.com");
         Intent registrationIntent = createRegisterIntent(account, new HashSet<Integer>());
         getService().onHandleIntent(registrationIntent);
 
@@ -749,7 +749,7 @@ public class InvalidationClientServiceTest extends
         getService().onCreate();
 
         // Send register Intent.
-        Account account = AccountManagerHelper.createAccountFromName("test@example.com");
+        Account account = AccountManagerFacade.createAccountFromName("test@example.com");
         Set<Integer> desiredRegistrations = CollectionUtil.newHashSet(
                 ModelType.BOOKMARKS, ModelType.SESSIONS);
         Intent registrationIntent = createRegisterIntent(account, desiredRegistrations);
@@ -776,7 +776,7 @@ public class InvalidationClientServiceTest extends
         getService().onCreate();
 
         // Send register Intent. Verify client started but no registrations issued.
-        Account account = AccountManagerHelper.createAccountFromName("test@example.com");
+        Account account = AccountManagerFacade.createAccountFromName("test@example.com");
         Set<Integer> desiredRegistrations = CollectionUtil.newHashSet(
                 ModelType.BOOKMARKS, ModelType.SESSIONS);
         Set<ObjectId> desiredObjectIds = modelTypesToObjectIds(desiredRegistrations);

@@ -30,7 +30,7 @@ import org.chromium.chrome.browser.firstrun.ProfileDataCache;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.signin.AccountTrackerService.OnSystemAccountsSeededListener;
 import org.chromium.chrome.browser.signin.ConfirmImportSyncDataDialog.ImportSyncType;
-import org.chromium.components.signin.AccountManagerHelper;
+import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
@@ -105,7 +105,7 @@ public class AccountSigninView extends FrameLayout {
     private static final String SETTINGS_LINK_OPEN = "<LINK1>";
     private static final String SETTINGS_LINK_CLOSE = "</LINK1>";
 
-    private AccountManagerHelper mAccountManagerHelper;
+    private AccountManagerFacade mAccountManagerFacade;
     private List<String> mAccountNames;
     private AccountSigninChooseView mSigninChooseView;
     private ButtonCompat mPositiveButton;
@@ -130,7 +130,7 @@ public class AccountSigninView extends FrameLayout {
 
     public AccountSigninView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        mAccountManagerHelper = AccountManagerHelper.get();
+        mAccountManagerFacade = AccountManagerFacade.get();
     }
 
     /**
@@ -254,7 +254,7 @@ public class AccountSigninView extends FrameLayout {
             updatingGmsDialog = null;
         }
 
-        mAccountManagerHelper.tryGetGoogleAccountNames(new Callback<List<String>>() {
+        mAccountManagerFacade.tryGetGoogleAccountNames(new Callback<List<String>>() {
             @Override
             public void onResult(List<String> result) {
                 if (updatingGmsDialog != null) {

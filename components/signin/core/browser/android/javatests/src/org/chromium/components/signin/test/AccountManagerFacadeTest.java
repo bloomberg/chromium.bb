@@ -10,17 +10,17 @@ import android.support.test.filters.SmallTest;
 import android.test.InstrumentationTestCase;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.components.signin.AccountManagerHelper;
+import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.test.util.AccountHolder;
 import org.chromium.components.signin.test.util.FakeAccountManagerDelegate;
 import org.chromium.components.signin.test.util.SimpleFuture;
 
 /**
- * Test class for {@link AccountManagerHelper}.
+ * Test class for {@link AccountManagerFacade}.
  */
-public class AccountManagerHelperTest extends InstrumentationTestCase {
+public class AccountManagerFacadeTest extends InstrumentationTestCase {
     private FakeAccountManagerDelegate mDelegate;
-    private AccountManagerHelper mHelper;
+    private AccountManagerFacade mHelper;
 
     @Override
     protected void setUp() throws Exception {
@@ -28,13 +28,13 @@ public class AccountManagerHelperTest extends InstrumentationTestCase {
 
         Context context = getInstrumentation().getTargetContext();
         mDelegate = new FakeAccountManagerDelegate(context);
-        AccountManagerHelper.overrideAccountManagerHelperForTests(context, mDelegate);
-        mHelper = AccountManagerHelper.get();
+        AccountManagerFacade.overrideAccountManagerFacadeForTests(context, mDelegate);
+        mHelper = AccountManagerFacade.get();
     }
 
     @Override
     protected void tearDown() throws Exception {
-        AccountManagerHelper.resetAccountManagerHelperForTests();
+        AccountManagerFacade.resetAccountManagerFacadeForTests();
         super.tearDown();
     }
 
@@ -60,7 +60,7 @@ public class AccountManagerHelperTest extends InstrumentationTestCase {
     }
 
     private Account addTestAccount(String accountName, String password) {
-        Account account = AccountManagerHelper.createAccountFromName(accountName);
+        Account account = AccountManagerFacade.createAccountFromName(accountName);
         AccountHolder.Builder accountHolder =
                 AccountHolder.builder(account).password(password).alwaysAccept(true);
         mDelegate.addAccountHolderExplicitly(accountHolder.build());

@@ -30,7 +30,7 @@ import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
-import org.chromium.components.signin.AccountManagerHelper;
+import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
 
 import java.lang.ref.WeakReference;
@@ -111,7 +111,7 @@ public abstract class FirstRunFlowSequencer  {
 
     @VisibleForTesting
     protected Account[] getGoogleAccounts() {
-        return AccountManagerHelper.get().tryGetGoogleAccounts();
+        return AccountManagerFacade.get().tryGetGoogleAccounts();
     }
 
     @VisibleForTesting

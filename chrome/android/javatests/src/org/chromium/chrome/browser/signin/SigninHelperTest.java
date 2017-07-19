@@ -19,7 +19,7 @@ import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.signin.MockChangeEventChecker;
-import org.chromium.components.signin.AccountManagerHelper;
+import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.test.util.AccountHolder;
 import org.chromium.components.signin.test.util.FakeAccountManagerDelegate;
@@ -40,12 +40,12 @@ public class SigninHelperTest {
         mEventChecker = new MockChangeEventChecker();
 
         mAccountManager = new FakeAccountManagerDelegate(mContext);
-        AccountManagerHelper.overrideAccountManagerHelperForTests(mContext, mAccountManager);
+        AccountManagerFacade.overrideAccountManagerFacadeForTests(mContext, mAccountManager);
     }
 
     @After
     public void tearDown() {
-        AccountManagerHelper.resetAccountManagerHelperForTests();
+        AccountManagerFacade.resetAccountManagerFacadeForTests();
     }
 
     @Test
@@ -146,7 +146,7 @@ public class SigninHelperTest {
         mEventChecker.insertRenameEvent("B", "C");
         mEventChecker.insertRenameEvent("C", "D");
         mEventChecker.insertRenameEvent("D", "A"); // Looped.
-        Account account = AccountManagerHelper.createAccountFromName("D");
+        Account account = AccountManagerFacade.createAccountFromName("D");
         AccountHolder accountHolder = AccountHolder.builder(account).build();
         mAccountManager.addAccountHolderExplicitly(accountHolder);
         SigninHelper.updateAccountRenameData(mContext, mEventChecker);

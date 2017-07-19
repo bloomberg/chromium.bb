@@ -16,7 +16,7 @@ import org.chromium.content.browser.test.NativeLibraryTestRule;
 
 /**
  * JUnit test rule that takes care of important initialization for Chrome-specific tests, such as
- * initializing the AccountManagerHelper.
+ * initializing the AccountManagerFacade.
  */
 public class ChromeBrowserTestRule extends NativeLibraryTestRule {
     private void setUp(Instrumentation instrumentation) {

@@ -25,7 +25,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.externalauth.UserRecoverableErrorHandler;
 import org.chromium.chrome.browser.sync.SyncUserDataWiper;
-import org.chromium.components.signin.AccountManagerHelper;
+import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.sync.AndroidSyncSettings;
 
@@ -368,7 +368,7 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
      */
     public void signIn(String accountName, @Nullable final Activity activity,
             @Nullable final SignInCallback callback) {
-        AccountManagerHelper.get().getAccountFromName(accountName, new Callback<Account>() {
+        AccountManagerFacade.get().getAccountFromName(accountName, new Callback<Account>() {
             @Override
             public void onResult(Account account) {
                 signIn(account, activity, callback);

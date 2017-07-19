@@ -21,6 +21,7 @@ android_library("java") {
 
   java_files = [
     "java/src/org/chromium/components/signin/AccountManagerDelegate.java",
+    "java/src/org/chromium/components/signin/AccountManagerFacade.java",
     "java/src/org/chromium/components/signin/AccountManagerHelper.java",
     "java/src/org/chromium/components/signin/AccountsChangeObserver.java",
     "java/src/org/chromium/components/signin/AuthException.java",
@@ -41,7 +42,7 @@ android_library("javatests") {
     "//third_party/android_support_test_runner:runner_java",
   ]
 
-  java_files = [ "javatests/src/org/chromium/components/signin/test/AccountManagerHelperTest.java" ]
+  java_files = [ "javatests/src/org/chromium/components/signin/test/AccountManagerFacadeTest.java" ]
 }
 
 android_library("signin_java_test_support") {

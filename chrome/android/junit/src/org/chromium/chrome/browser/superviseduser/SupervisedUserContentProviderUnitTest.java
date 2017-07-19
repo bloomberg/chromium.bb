@@ -39,7 +39,7 @@ import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.superviseduser.SupervisedUserContentProvider.SupervisedUserQueryReply;
 import org.chromium.components.signin.AccountManagerDelegate;
 import org.chromium.components.signin.AccountManagerDelegateException;
-import org.chromium.components.signin.AccountManagerHelper;
+import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.webrestrictions.browser.WebRestrictionsContentProvider.WebRestrictionsResult;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
@@ -221,7 +221,7 @@ public class SupervisedUserContentProviderUnitTest {
         ChromeBrowserInitializer mockBrowserInitializer = mock(ChromeBrowserInitializer.class);
         ChromeBrowserInitializer.setForTesting(mockBrowserInitializer);
         AccountManagerDelegate mockDelegate = mock(AccountManagerDelegate.class);
-        AccountManagerHelper.overrideAccountManagerHelperForTests(
+        AccountManagerFacade.overrideAccountManagerFacadeForTests(
                 RuntimeEnvironment.application, mockDelegate);
         Account account = new Account("Google", "Dummy");
         when(mockDelegate.getAccountsSync()).thenReturn(new Account[] {account});
@@ -240,7 +240,7 @@ public class SupervisedUserContentProviderUnitTest {
                         any(SupervisedUserContentProvider.SupervisedUserQueryReply.class),
                         eq("url"));
 
-        AccountManagerHelper.resetAccountManagerHelperForTests();
+        AccountManagerFacade.resetAccountManagerFacadeForTests();
     }
 
     @Test
@@ -249,7 +249,7 @@ public class SupervisedUserContentProviderUnitTest {
         ChromeBrowserInitializer mockBrowserInitializer = mock(ChromeBrowserInitializer.class);
         ChromeBrowserInitializer.setForTesting(mockBrowserInitializer);
         AccountManagerDelegate mockDelegate = mock(AccountManagerDelegate.class);
-        AccountManagerHelper.overrideAccountManagerHelperForTests(
+        AccountManagerFacade.overrideAccountManagerFacadeForTests(
                 RuntimeEnvironment.application, mockDelegate);
         Account account = new Account("Google", "Dummy");
         when(mockDelegate.getAccountsSync()).thenReturn(new Account[] {account});
@@ -271,7 +271,7 @@ public class SupervisedUserContentProviderUnitTest {
         assertThat(result.shouldProceed(), is(false));
         assertThat(result.getErrorInt(0), is(5));
 
-        AccountManagerHelper.resetAccountManagerHelperForTests();
+        AccountManagerFacade.resetAccountManagerFacadeForTests();
     }
 
     @Test

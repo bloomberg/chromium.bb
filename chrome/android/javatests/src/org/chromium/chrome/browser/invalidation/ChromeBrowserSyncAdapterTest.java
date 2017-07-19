@@ -32,7 +32,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.invalidation.PendingInvalidation;
-import org.chromium.components.signin.AccountManagerHelper;
+import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -49,7 +49,7 @@ public class ChromeBrowserSyncAdapterTest {
             new ChromeActivityTestRule<>(ChromeActivity.class);
 
     private static final Account TEST_ACCOUNT =
-            AccountManagerHelper.createAccountFromName("test@gmail.com");
+            AccountManagerFacade.createAccountFromName("test@gmail.com");
     private static final long WAIT_FOR_LAUNCHER_MS = ScalableTimeout.scaleTimeout(10 * 1000);
     private static final long POLL_INTERVAL_MS = 100;
 

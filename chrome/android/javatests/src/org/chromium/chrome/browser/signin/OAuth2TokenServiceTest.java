@@ -18,7 +18,7 @@ import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.components.signin.AccountManagerHelper;
+import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.test.util.AccountHolder;
 import org.chromium.components.signin.test.util.FakeAccountManagerDelegate;
 
@@ -36,12 +36,12 @@ public class OAuth2TokenServiceTest {
         mContext = new AdvancedMockContext(
                 InstrumentationRegistry.getInstrumentation().getTargetContext());
         mAccountManager = new FakeAccountManagerDelegate(mContext);
-        AccountManagerHelper.overrideAccountManagerHelperForTests(mContext, mAccountManager);
+        AccountManagerFacade.overrideAccountManagerFacadeForTests(mContext, mAccountManager);
     }
 
     @After
     public void tearDown() {
-        AccountManagerHelper.resetAccountManagerHelperForTests();
+        AccountManagerFacade.resetAccountManagerFacadeForTests();
     }
 
     /*
@@ -60,7 +60,7 @@ public class OAuth2TokenServiceTest {
     @Test
     @DisabledTest(message = "crbug.com/527852")
     public void testGetAccountsOneAccountRegistered() {
-        Account account1 = AccountManagerHelper.createAccountFromName("foo@gmail.com");
+        Account account1 = AccountManagerFacade.createAccountFromName("foo@gmail.com");
         AccountHolder accountHolder1 = AccountHolder.builder(account1).build();
         mAccountManager.addAccountHolderExplicitly(accountHolder1);
 
@@ -77,10 +77,10 @@ public class OAuth2TokenServiceTest {
     @Test
     @DisabledTest(message = "crbug.com/527852")
     public void testGetAccountsTwoAccountsRegistered() {
-        Account account1 = AccountManagerHelper.createAccountFromName("foo@gmail.com");
+        Account account1 = AccountManagerFacade.createAccountFromName("foo@gmail.com");
         AccountHolder accountHolder1 = AccountHolder.builder(account1).build();
         mAccountManager.addAccountHolderExplicitly(accountHolder1);
-        Account account2 = AccountManagerHelper.createAccountFromName("bar@gmail.com");
+        Account account2 = AccountManagerFacade.createAccountFromName("bar@gmail.com");
         AccountHolder accountHolder2 = AccountHolder.builder(account2).build();
         mAccountManager.addAccountHolderExplicitly(accountHolder2);
 
@@ -117,7 +117,7 @@ public class OAuth2TokenServiceTest {
 
     private void runTestOfGetOAuth2AccessTokenWithTimeout(String expectedToken) {
         String scope = "http://example.com/scope";
-        Account account = AccountManagerHelper.createAccountFromName("test@gmail.com");
+        Account account = AccountManagerFacade.createAccountFromName("test@gmail.com");
         String oauth2Scope = "oauth2:" + scope;
 
         // Add an account with given auth token for the given scope, already accepted auth popup.

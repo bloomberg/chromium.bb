@@ -25,7 +25,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.preferences.password.SavePasswordsPreferences;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
-import org.chromium.components.signin.AccountManagerHelper;
+import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.test.util.AccountHolder;
 import org.chromium.components.signin.test.util.FakeAccountManagerDelegate;
 import org.chromium.components.sync.AndroidSyncSettings;
@@ -70,8 +70,8 @@ public class PasswordViewingTypeTest {
 
     private void setupTestAccount(Context context) {
         mAccountManager = new FakeAccountManagerDelegate(context);
-        AccountManagerHelper.overrideAccountManagerHelperForTests(context, mAccountManager);
-        mAccount = AccountManagerHelper.createAccountFromName("account@example.com");
+        AccountManagerFacade.overrideAccountManagerFacadeForTests(context, mAccountManager);
+        mAccount = AccountManagerFacade.createAccountFromName("account@example.com");
         AccountHolder.Builder accountHolder =
                 AccountHolder.builder(mAccount).password("password").alwaysAccept(true);
         mAccountManager.addAccountHolderExplicitly(accountHolder.build());
@@ -79,7 +79,7 @@ public class PasswordViewingTypeTest {
 
     @After
     public void tearDown() {
-        AccountManagerHelper.resetAccountManagerHelperForTests();
+        AccountManagerFacade.resetAccountManagerFacadeForTests();
     }
 
     /**

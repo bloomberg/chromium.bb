@@ -24,7 +24,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.util.ApplicationData;
-import org.chromium.components.signin.AccountManagerHelper;
+import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.test.util.AccountHolder;
 import org.chromium.components.signin.test.util.FakeAccountManagerDelegate;
@@ -46,9 +46,9 @@ public class OAuth2TokenServiceIntegrationTest {
     public UiThreadTestRule mUiThreadTestRule = new UiThreadTestRule();
 
     private static final Account TEST_ACCOUNT1 =
-            AccountManagerHelper.createAccountFromName("foo@gmail.com");
+            AccountManagerFacade.createAccountFromName("foo@gmail.com");
     private static final Account TEST_ACCOUNT2 =
-            AccountManagerHelper.createAccountFromName("bar@gmail.com");
+            AccountManagerFacade.createAccountFromName("bar@gmail.com");
     private static final AccountHolder TEST_ACCOUNT_HOLDER_1 =
             AccountHolder.builder(TEST_ACCOUNT1).alwaysAccept(true).build();
     private static final AccountHolder TEST_ACCOUNT_HOLDER_2 =
@@ -66,12 +66,12 @@ public class OAuth2TokenServiceIntegrationTest {
         ApplicationData.clearAppData(
                 InstrumentationRegistry.getInstrumentation().getTargetContext());
 
-        // loadNativeLibraryAndInitBrowserProcess will access AccountManagerHelper, so it should
+        // loadNativeLibraryAndInitBrowserProcess will access AccountManagerFacade, so it should
         // be initialized beforehand.
         mContext = new AdvancedMockContext(
                 InstrumentationRegistry.getInstrumentation().getTargetContext());
         mAccountManager = new FakeAccountManagerDelegate(mContext);
-        AccountManagerHelper.overrideAccountManagerHelperForTests(mContext, mAccountManager);
+        AccountManagerFacade.overrideAccountManagerFacadeForTests(mContext, mAccountManager);
 
         mActivityTestRule.loadNativeLibraryAndInitBrowserProcess();
 
@@ -99,7 +99,7 @@ public class OAuth2TokenServiceIntegrationTest {
                 mOAuth2TokenService.validateAccounts(false);
             }
         });
-        AccountManagerHelper.resetAccountManagerHelperForTests();
+        AccountManagerFacade.resetAccountManagerFacadeForTests();
     }
 
     private void mapAccountNamesToIds() {

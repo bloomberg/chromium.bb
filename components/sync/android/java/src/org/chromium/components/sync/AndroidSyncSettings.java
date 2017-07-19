@@ -16,7 +16,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.components.signin.AccountManagerHelper;
+import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
 
 import javax.annotation.Nullable;
@@ -252,7 +252,7 @@ public class AndroidSyncSettings {
         ThreadUtils.postOnUiThread(new Runnable() {
             @Override
             public void run() {
-                AccountManagerHelper.get().tryGetGoogleAccounts(new Callback<Account[]>() {
+                AccountManagerFacade.get().tryGetGoogleAccounts(new Callback<Account[]>() {
                     @Override
                     public void onResult(Account[] accounts) {
                         synchronized (mLock) {
