@@ -1863,6 +1863,7 @@ crbug.com/626703 virtual/threaded/inspector/tracing/timeline-js/timeline-runtime
 crbug.com/626703 virtual/threaded/transitions/transition-end-event-multiple-03.html [ Pass Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/webrtc/RTCDtlsTransport-getRemoteCertificates.html [ Timeout ]
 crbug.com/626703 [ Win10 ] external/wpt/preload/delaying-onload-link-preload-after-discovery.html [ Timeout ]
 crbug.com/626703 external/wpt/2dcontext/building-paths/canvas_complexshapes_arcto_001.htm [ Failure ]
 crbug.com/626703 external/wpt/2dcontext/building-paths/canvas_complexshapes_beziercurveto_001.htm [ Failure ]
