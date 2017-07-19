@@ -4,12 +4,12 @@
 
 package org.chromium.chrome.browser.contextualsearch;
 
-import android.annotation.SuppressLint;
-import android.os.Build;
 import android.text.TextUtils;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
+
+import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 
@@ -22,8 +22,15 @@ import javax.annotation.Nullable;
 public abstract class ContextualSearchContext {
     static final int INVALID_OFFSET = -1;
 
+    // Pattern that checks for any character outside the basic Latin scripts.
+    private static final String UNRELIABLE_WORD_BREAK_PATTERN = "[\\P{block=basic_latin}]";
+
     // Non-visible word-break marker.
     private static final int SOFT_HYPHEN_CHAR = '\u00AD';
+
+    // Compiled pattern for finding any character in an alphabet that might have an unreliable
+    // word break (non basic Latin).
+    private final Pattern mUnreliableWordBreakPattern;
 
     // Pointer to the native instance of this class.
     private long mNativePointer;
@@ -74,6 +81,7 @@ public abstract class ContextualSearchContext {
     ContextualSearchContext() {
         mNativePointer = nativeInit();
         mHasSetResolveProperties = false;
+        mUnreliableWordBreakPattern = Pattern.compile(UNRELIABLE_WORD_BREAK_PATTERN);
     }
 
     /**
@@ -252,7 +260,8 @@ public abstract class ContextualSearchContext {
 
     /**
      * @return The word tapped, or {@code null} if the word that was tapped cannot be identified by
-     *         the current limited parsing capability.
+     *         the current limited parsing capability, or has any character in an alphabet
+     *         with unreliable word breaks.
      * @see #analyzeTap(int)
      */
     String getWordTapped() {
@@ -261,7 +270,8 @@ public abstract class ContextualSearchContext {
 
     /**
      * @return The offset of the start of the tapped word, or {@code INVALID_OFFSET} if the tapped
-     *         word cannot be identified by the current parsing capability.
+     *         word cannot be identified by the current parsing capability or has any character in
+     *         an alphabet with unreliable word breaks.
      * @see #analyzeTap(int)
      */
     int getWordTappedOffset() {
@@ -270,7 +280,8 @@ public abstract class ContextualSearchContext {
 
     /**
      * @return The offset of the tap within the tapped word, or {@code INVALID_OFFSET} if the tapped
-     *         word cannot be identified by the current parsing capability.
+     *         word cannot be identified by the current parsing capability or has any character in
+     *         an alphabet with unreliable word breaks.
      * @see #analyzeTap(int)
      */
     int getTapOffsetWithinTappedWord() {
@@ -400,7 +411,7 @@ public abstract class ContextualSearchContext {
      *         text.
      */
     private int findWordEndOffset(int initial) {
-        // Scan after, aborting if we hit any CJKN letter.
+        // Scan after, aborting if we hit any CJKV letter.
         for (int offset = initial; offset < mSurroundingText.length(); offset++) {
             if (isCharFromAlphabetWithUnreliableWordBreakAtIndex(offset)) return INVALID_OFFSET;
 
@@ -413,17 +424,11 @@ public abstract class ContextualSearchContext {
     }
 
     /**
-     * @return Whether the character at the given index in the text might be in an alphabet that has
-     *         unreliable word breaks, such as CKJV languages.  Returns {@code true} on older
-     *         platforms where we can't know for sure.
+     * @return Whether the given string has any characters that might be in an alphabet that has
+     *         unreliable word breaks, such as CKJV languages.
      */
-    @SuppressLint("NewApi")
-    boolean isCharFromAlphabetWithUnreliableWordBreakAtIndex(String text, int index) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            return Character.isIdeographic(text.charAt(index));
-        } else {
-            return true; // Assume the worst if we can't check.
-        }
+    boolean hasCharFromAlphabetWithUnreliableWordBreak(String text) {
+        return mUnreliableWordBreakPattern.matcher(text).find();
     }
 
     /**
@@ -432,7 +437,8 @@ public abstract class ContextualSearchContext {
      *         {@code true} on older platforms where we can't know for sure.
      */
     private boolean isCharFromAlphabetWithUnreliableWordBreakAtIndex(int index) {
-        return isCharFromAlphabetWithUnreliableWordBreakAtIndex(mSurroundingText, index);
+        return hasCharFromAlphabetWithUnreliableWordBreak(
+                mSurroundingText.substring(index, index + 1));
     }
 
     /**
