@@ -28,10 +28,9 @@ class UI_BASE_IME_EXPORT InputMethodChromeOS : public InputMethodBase {
   explicit InputMethodChromeOS(internal::InputMethodDelegate* delegate);
   ~InputMethodChromeOS() override;
 
-  using AckCallback = base::Callback<void(bool)>;
-  ui::EventDispatchDetails DispatchKeyEvent(
-      ui::KeyEvent* event,
-      std::unique_ptr<AckCallback> ack_callback);
+  using AckCallback = base::OnceCallback<void(bool)>;
+  ui::EventDispatchDetails DispatchKeyEvent(ui::KeyEvent* event,
+                                            AckCallback ack_callback);
 
   // Overridden from InputMethod:
   bool OnUntranslatedIMEMessage(const base::NativeEvent& event,
@@ -110,12 +109,12 @@ class UI_BASE_IME_EXPORT InputMethodChromeOS : public InputMethodBase {
 
   // Callback function for IMEEngineHandlerInterface::ProcessKeyEvent.
   void KeyEventDoneCallback(ui::KeyEvent* event,
-                            std::unique_ptr<AckCallback> ack_callback,
+                            AckCallback ack_callback,
                             bool is_handled);
-  ui::EventDispatchDetails ProcessKeyEventDone(
-      ui::KeyEvent* event,
-      std::unique_ptr<AckCallback> ack_callback,
-      bool is_handled) WARN_UNUSED_RESULT;
+  ui::EventDispatchDetails ProcessKeyEventDone(ui::KeyEvent* event,
+                                               AckCallback ack_callback,
+                                               bool is_handled)
+      WARN_UNUSED_RESULT;
 
   // Returns whether an non-password input field is focused.
   bool IsNonPasswordInputFieldFocused();

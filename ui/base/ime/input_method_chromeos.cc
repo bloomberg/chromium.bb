@@ -59,7 +59,7 @@ InputMethodChromeOS::~InputMethodChromeOS() {
 
 ui::EventDispatchDetails InputMethodChromeOS::DispatchKeyEvent(
     ui::KeyEvent* event,
-    std::unique_ptr<AckCallback> ack_callback) {
+    AckCallback ack_callback) {
   DCHECK(event->IsKeyEvent());
   DCHECK(!(event->flags() & ui::EF_IS_SYNTHESIZED));
 
@@ -80,7 +80,7 @@ ui::EventDispatchDetails InputMethodChromeOS::DispatchKeyEvent(
         // generates some IME event,
         dispatch_details = ProcessKeyEventPostIME(event, true);
         if (ack_callback)
-          ack_callback->Run(true);
+          std::move(ack_callback).Run(true);
         return dispatch_details;
       }
       dispatch_details = ProcessUnfilteredKeyPressEvent(event);
@@ -88,7 +88,7 @@ ui::EventDispatchDetails InputMethodChromeOS::DispatchKeyEvent(
       dispatch_details = DispatchKeyEventPostIME(event);
     }
     if (ack_callback)
-      ack_callback->Run(false);
+      std::move(ack_callback).Run(false);
     return dispatch_details;
   }
 
@@ -112,17 +112,16 @@ bool InputMethodChromeOS::OnUntranslatedIMEMessage(
   return false;
 }
 
-void InputMethodChromeOS::KeyEventDoneCallback(
-    ui::KeyEvent* event,
-    std::unique_ptr<AckCallback> ack_callback,
-    bool is_handled) {
+void InputMethodChromeOS::KeyEventDoneCallback(ui::KeyEvent* event,
+                                               AckCallback ack_callback,
+                                               bool is_handled) {
   ignore_result(
       ProcessKeyEventDone(event, std::move(ack_callback), is_handled));
 }
 
 ui::EventDispatchDetails InputMethodChromeOS::ProcessKeyEventDone(
     ui::KeyEvent* event,
-    std::unique_ptr<AckCallback> ack_callback,
+    AckCallback ack_callback,
     bool is_handled) {
   DCHECK(event);
   if (event->type() == ET_KEY_PRESSED) {
@@ -138,7 +137,7 @@ ui::EventDispatchDetails InputMethodChromeOS::ProcessKeyEventDone(
   }
 
   if (ack_callback)
-    ack_callback->Run(is_handled);
+    std::move(ack_callback).Run(is_handled);
 
   ui::EventDispatchDetails details;
   if (event->type() == ET_KEY_PRESSED || event->type() == ET_KEY_RELEASED)
@@ -150,7 +149,7 @@ ui::EventDispatchDetails InputMethodChromeOS::ProcessKeyEventDone(
 
 ui::EventDispatchDetails InputMethodChromeOS::DispatchKeyEvent(
     ui::KeyEvent* event) {
-  return DispatchKeyEvent(event, nullptr);
+  return DispatchKeyEvent(event, AckCallback());
 }
 
 void InputMethodChromeOS::OnTextInputTypeChanged(
