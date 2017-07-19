@@ -3671,6 +3671,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="AuthPolicy.TimeToRunNetAdsGpo" units="ms">
+  <owner>ljusten@chromium.org</owner>
+  <summary>
+    Time in milliseconds to call 'net ads gpo list' (list Active Directory group
+    policy objects). The value is recorded no matter if the operation was
+    successful or not.
+  </summary>
+</histogram>
+
 <histogram name="AuthPolicy.TimeToRunNetAdsInfo" units="ms">
   <owner>ljusten@chromium.org</owner>
   <summary>
