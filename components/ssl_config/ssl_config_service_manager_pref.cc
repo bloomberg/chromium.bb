@@ -220,6 +220,13 @@ SSLConfigServiceManagerPref::SSLConfigServiceManagerPref(
     local_state->SetDefaultPrefValue(
         ssl_config::prefs::kSSLVersionMax,
         new base::Value(switches::kSSLVersionTLSv13));
+  } else if (tls13_variant == "no-session-id") {
+    local_state->SetDefaultPrefValue(
+        ssl_config::prefs::kTLS13Variant,
+        new base::Value(switches::kTLS13VariantNoSessionIDExperiment));
+    local_state->SetDefaultPrefValue(
+        ssl_config::prefs::kSSLVersionMax,
+        new base::Value(switches::kSSLVersionTLSv13));
   }
 
   PrefChangeRegistrar::NamedChangeCallback local_state_callback =
