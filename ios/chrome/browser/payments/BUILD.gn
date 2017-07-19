@@ -9,10 +9,14 @@ source_set("payments") {
   sources = [
     "ios_can_make_payment_query_factory.cc",
     "ios_can_make_payment_query_factory.h",
+    "ios_payment_request_cache_factory.h",
+    "ios_payment_request_cache_factory.mm",
     "itunes_json_request.cc",
     "itunes_json_request.h",
     "payment_request.h",
     "payment_request.mm",
+    "payment_request_cache.h",
+    "payment_request_cache.mm",
     "payment_request_util.h",
     "payment_request_util.mm",
   ]
