@@ -7,6 +7,7 @@
 
 #include "cc/layers/texture_layer_client.h"
 #include "platform/PlatformExport.h"
+#include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/StaticBitmapImage.h"
 #include "platform/heap/Heap.h"
 

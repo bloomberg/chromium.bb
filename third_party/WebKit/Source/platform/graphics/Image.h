@@ -30,26 +30,25 @@
 #include "platform/PlatformExport.h"
 #include "platform/SharedBuffer.h"
 #include "platform/geometry/IntRect.h"
-#include "platform/graphics/Color.h"
-#include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/ImageAnimationPolicy.h"
 #include "platform/graphics/ImageObserver.h"
 #include "platform/graphics/ImageOrientation.h"
-#include "platform/graphics/paint/PaintCanvas.h"
-#include "platform/graphics/paint/PaintFlags.h"
 #include "platform/graphics/paint/PaintImage.h"
 #include "platform/graphics/paint/PaintRecord.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/Assertions.h"
+#include "platform/wtf/Forward.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefPtr.h"
 #include "platform/wtf/ThreadSafeRefCounted.h"
-#include "platform/wtf/text/WTFString.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 class SkImage;
 class SkMatrix;
+
+namespace cc {
+class PaintCanvas;
+class PaintFlags;
+}  // namespace cc
 
 namespace blink {
 
@@ -58,6 +57,10 @@ class FloatRect;
 class FloatSize;
 class GraphicsContext;
 class Image;
+class KURL;
+
+using cc::PaintCanvas;
+using cc::PaintFlags;
 
 class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
   friend class GeneratedImage;
@@ -124,9 +127,8 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
     return kSizeUnavailable;
   }
 
-  virtual String FilenameExtension() const {
-    return String();
-  }  // null string if unknown
+  // null string if unknown
+  virtual String FilenameExtension() const;
 
   virtual void DestroyDecodedData() = 0;
 
