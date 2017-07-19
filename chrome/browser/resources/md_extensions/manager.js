@@ -41,8 +41,9 @@ cr.define('extensions', function() {
       /** @type {extensions.Toolbar} */
       toolbar: Object,
 
-      /** @type {extensions.ItemDelegate} */
-      itemDelegate: Object,
+      // This is not typed because it implements multiple interfaces, and is
+      // passed to different elements as different types.
+      delegate: Object,
 
       inDevMode: {
         type: Boolean,
