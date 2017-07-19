@@ -17,13 +17,17 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.banners.AppBannerManager;
 import org.chromium.chrome.browser.banners.AppData;
-import org.chromium.chrome.browser.banners.InstallerDelegate;
 import org.chromium.chrome.browser.widget.DualControlLayout;
 
 /**
  * Infobar informing the user about an app related to this page.
  */
 public class AppBannerInfoBarAndroid extends ConfirmInfoBar implements View.OnClickListener {
+    // Installation states.
+    public static final int INSTALL_STATE_NOT_INSTALLED = 0;
+    public static final int INSTALL_STATE_INSTALLING = 1;
+    public static final int INSTALL_STATE_INSTALLED = 2;
+
     // Views composing the infobar.
     private Button mButton;
     private InfoBarControlLayout mMessageLayout;
@@ -34,7 +38,7 @@ public class AppBannerInfoBarAndroid extends ConfirmInfoBar implements View.OnCl
 
     // Data for native app installs.
     private final AppData mAppData;
-    private @InstallerDelegate.InstallState int mInstallState;
+    private int mInstallState;
 
     // Data for web app installs.
     private final String mAppUrl;
@@ -48,7 +52,7 @@ public class AppBannerInfoBarAndroid extends ConfirmInfoBar implements View.OnCl
         mAppTitle = appTitle;
         mAppData = data;
         mAppUrl = null;
-        mInstallState = InstallerDelegate.INSTALL_STATE_NOT_INSTALLED;
+        mInstallState = INSTALL_STATE_NOT_INSTALLED;
     }
 
     // Banner for web apps.
@@ -59,7 +63,7 @@ public class AppBannerInfoBarAndroid extends ConfirmInfoBar implements View.OnCl
         mAppData = null;
         mAppUrl = url;
         mIsWebApk = isWebApk;
-        mInstallState = InstallerDelegate.INSTALL_STATE_NOT_INSTALLED;
+        mInstallState = INSTALL_STATE_NOT_INSTALLED;
     }
 
     @Override
@@ -121,7 +125,7 @@ public class AppBannerInfoBarAndroid extends ConfirmInfoBar implements View.OnCl
 
     @Override
     public void onButtonClicked(boolean isPrimaryButton) {
-        if (isPrimaryButton && mInstallState == InstallerDelegate.INSTALL_STATE_INSTALLING) {
+        if (isPrimaryButton && mInstallState == INSTALL_STATE_INSTALLING) {
             setControlsEnabled(true);
             updateButton();
             return;
@@ -143,7 +147,7 @@ public class AppBannerInfoBarAndroid extends ConfirmInfoBar implements View.OnCl
         String accessibilityText = null;
         boolean enabled = true;
         Context context = getContext();
-        if (mInstallState == InstallerDelegate.INSTALL_STATE_NOT_INSTALLED) {
+        if (mInstallState == INSTALL_STATE_NOT_INSTALLED) {
             if (mIsWebApk) {
                 // If the installation of the WebAPK fails, the banner will disappear and
                 // a failure toast will be shown.
@@ -152,7 +156,7 @@ public class AppBannerInfoBarAndroid extends ConfirmInfoBar implements View.OnCl
             text = mAppData.installButtonText();
             accessibilityText = context.getString(
                     R.string.app_banner_view_native_app_install_accessibility, text);
-        } else if (mInstallState == InstallerDelegate.INSTALL_STATE_INSTALLING) {
+        } else if (mInstallState == INSTALL_STATE_INSTALLING) {
             text = mIsWebApk ? context.getString(R.string.app_banner_installing_webapk)
                     : context.getString(R.string.app_banner_installing);
             mButton.announceForAccessibility(text);
