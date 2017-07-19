@@ -68,6 +68,9 @@ class ProximityAuthPrefManager {
   virtual void SetLastPasswordEntryTimestampMs(int64_t timestamp_ms);
   virtual int64_t GetLastPasswordEntryTimestampMs() const;
 
+  virtual void SetLastPromotionCheckTimestampMs(int64_t timestamp_ms);
+  virtual int64_t GetLastPromotionCheckTimestampMs() const;
+
   // These are arbitrary labels displayed in the settings page for the user
   // to select. The actual mapping is done in the ProximityMonitorImpl.
   enum ProximityThreshold {

@@ -27,6 +27,8 @@ void ProximityAuthPrefManager::RegisterPrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterInt64Pref(prefs::kProximityAuthLastPasswordEntryTimestampMs,
                               0L);
+  registry->RegisterInt64Pref(
+      prefs::kProximityAuthLastPromotionCheckTimestampMs, 0L);
   registry->RegisterDictionaryPref(prefs::kProximityAuthRemoteBleDevices);
   registry->RegisterIntegerPref(
       prefs::kEasyUnlockProximityThreshold, 1,
@@ -132,6 +134,17 @@ int64_t ProximityAuthPrefManager::GetLastPasswordEntryTimestampMs() const {
 const base::DictionaryValue* ProximityAuthPrefManager::GetRemoteBleDevices()
     const {
   return pref_service_->GetDictionary(prefs::kProximityAuthRemoteBleDevices);
+}
+
+void ProximityAuthPrefManager::SetLastPromotionCheckTimestampMs(
+    int64_t timestamp_ms) {
+  pref_service_->SetInt64(prefs::kProximityAuthLastPasswordEntryTimestampMs,
+                          timestamp_ms);
+}
+
+int64_t ProximityAuthPrefManager::GetLastPromotionCheckTimestampMs() const {
+  return pref_service_->GetInt64(
+      prefs::kProximityAuthLastPasswordEntryTimestampMs);
 }
 
 void ProximityAuthPrefManager::SetProximityThreshold(ProximityThreshold value) {
