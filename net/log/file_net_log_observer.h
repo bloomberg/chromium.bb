@@ -5,6 +5,7 @@
 #ifndef NET_LOG_FILE_NET_LOG_OBSERVER_H_
 #define NET_LOG_FILE_NET_LOG_OBSERVER_H_
 
+#include <limits>
 #include <memory>
 
 #include "base/macros.h"
@@ -36,7 +37,7 @@ class NetLogCaptureMode;
 class NET_EXPORT FileNetLogObserver : public NetLog::ThreadSafeObserver {
  public:
   // Special value meaning "can use an unlimited number of bytes".
-  static const size_t kNoLimit;
+  static constexpr size_t kNoLimit = std::numeric_limits<size_t>::max();
 
   // Creates an instance of FileNetLogObserver that writes observed netlog
   // events to |log_path|.

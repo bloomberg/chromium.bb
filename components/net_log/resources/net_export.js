@@ -37,6 +37,7 @@ var NetExportView = (function() {
   var kIdPrivacyReadMoreDiv = 'privacy-read-more'
   var kIdTooBigReadMoreLink = 'toobig-read-more-link';
   var kIdTooBigReadMoreDiv = 'toobig-read-more'
+  var kIdLogMaxFileSizeInput = 'log-max-filesize'
 
   /**
    * @constructor
@@ -56,9 +57,21 @@ var NetExportView = (function() {
      * Starts saving NetLog data to a file.
      */
     onStartLogging_: function() {
+      // Determine the capture mode to use.
       var logMode =
           document.querySelector('input[name="log-mode"]:checked').value;
-      chrome.send('startNetLog', [logMode]);
+
+      // Determine the maximum file size, as the number of bytes (or -1 to mean
+      // no limit)
+      var maxLogFileSizeBytes = -1;
+      var fileSizeString = $(kIdLogMaxFileSizeInput).value;
+      var numMegabytes = parseFloat(fileSizeString);
+      if (!isNaN(numMegabytes)) {
+        // Convert to an integral number of bytes.
+        maxLogFileSizeBytes = Math.round(numMegabytes * 1024 * 1024);
+      }
+
+      chrome.send('startNetLog', [logMode, maxLogFileSizeBytes]);
     },
 
     /**
