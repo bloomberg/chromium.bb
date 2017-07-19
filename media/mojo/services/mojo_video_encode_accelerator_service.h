@@ -40,7 +40,7 @@ class MEDIA_MOJO_EXPORT MojoVideoEncodeAcceleratorService
           Client* client,
           const gpu::GpuPreferences& gpu_preferences)>;
 
-  static void Create(media::mojom::VideoEncodeAcceleratorRequest request,
+  static void Create(mojom::VideoEncodeAcceleratorRequest request,
                      const CreateAndInitializeVideoEncodeAcceleratorCallback&
                          create_vea_callback,
                      const gpu::GpuPreferences& gpu_preferences);
@@ -52,9 +52,9 @@ class MEDIA_MOJO_EXPORT MojoVideoEncodeAcceleratorService
   ~MojoVideoEncodeAcceleratorService() override;
 
   // mojom::VideoEncodeAccelerator impl.
-  void Initialize(media::VideoPixelFormat input_format,
+  void Initialize(VideoPixelFormat input_format,
                   const gfx::Size& input_visible_size,
-                  media::VideoCodecProfile output_profile,
+                  VideoCodecProfile output_profile,
                   uint32_t initial_bitrate,
                   mojom::VideoEncodeAcceleratorClientPtr client) override;
   void Encode(const scoped_refptr<VideoFrame>& frame,
