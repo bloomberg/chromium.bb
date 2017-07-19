@@ -4,6 +4,7 @@
 
 #include "components/ui_devtools/views/ui_devtools_dom_agent.h"
 
+#include "base/memory/ptr_util.h"
 #include "components/ui_devtools/devtools_server.h"
 #include "components/ui_devtools/views/ui_element.h"
 #include "components/ui_devtools/views/view_element.h"

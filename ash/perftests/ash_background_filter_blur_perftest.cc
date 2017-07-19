@@ -4,6 +4,7 @@
 
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "base/memory/ptr_util.h"
 #include "cc/base/lap_timer.h"
 #include "testing/perf/perf_test.h"
 #include "ui/aura/window.h"

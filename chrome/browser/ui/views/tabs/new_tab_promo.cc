@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/tabs/new_tab_promo.h"
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
