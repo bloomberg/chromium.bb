@@ -23,6 +23,7 @@
 #include "ash/system/tray/system_tray_controller.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_constants.h"
+#include "ash/system/tray/tray_info_label.h"
 #include "ash/system/tray/tray_popup_item_style.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tri_view.h"
@@ -630,8 +631,8 @@ void NetworkListView::PlaceViewAtIndex(views::View* view, int index) {
 
 void NetworkListView::UpdateInfoLabel(int message_id,
                                       int insertion_index,
-                                      InfoLabel** info_label_ptr) {
-  InfoLabel* info_label = *info_label_ptr;
+                                      TrayInfoLabel** info_label_ptr) {
+  TrayInfoLabel* info_label = *info_label_ptr;
   if (!message_id) {
     if (info_label) {
       needs_relayout_ = true;
@@ -641,11 +642,21 @@ void NetworkListView::UpdateInfoLabel(int message_id,
     return;
   }
   if (!info_label)
-    info_label = new InfoLabel(message_id);
+    info_label = new TrayInfoLabel(this /* delegate */, message_id);
   else
-    info_label->SetMessage(message_id);
+    info_label->Update(message_id);
+
   PlaceViewAtIndex(info_label, insertion_index);
   *info_label_ptr = info_label;
+}
+
+void NetworkListView::OnLabelClicked(int message_id) {
+  if (message_id == IDS_ASH_STATUS_TRAY_ENABLE_BLUETOOTH)
+    Shell::Get()->system_tray_controller()->ShowBluetoothSettings();
+}
+
+bool NetworkListView::IsLabelClickable(int message_id) const {
+  return message_id == IDS_ASH_STATUS_TRAY_ENABLE_BLUETOOTH;
 }
 
 int NetworkListView::UpdateSectionHeaderRow(NetworkTypePattern pattern,
