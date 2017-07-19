@@ -29,6 +29,7 @@ const char kSessionManagerRetrieveDeviceLocalAccountPolicy[] =
     "RetrieveDeviceLocalAccountPolicy";
 const char kSessionManagerRetrieveSessionState[] = "RetrieveSessionState";
 const char kSessionManagerRetrieveActiveSessions[] = "RetrieveActiveSessions";
+const char kSessionManagerStartTPMFirmwareUpdate[] = "StartTPMFirmwareUpdate";
 const char kSessionManagerStartDeviceWipe[] = "StartDeviceWipe";
 const char kSessionManagerHandleSupervisedUserCreationStarting[] =
     "HandleSupervisedUserCreationStarting";
@@ -69,6 +70,7 @@ namespace dbus_error {
 #define INTERFACE "org.chromium.SessionManagerInterface"
 
 const char kNone[] = INTERFACE ".None";
+const char kInvalidParameter[] = INTERFACE ".InvalidParameter";
 const char kArcCpuCgroupFail[] = INTERFACE ".ArcCpuCgroupFail";
 const char kArcInstanceRunning[] = INTERFACE ".ArcInstanceRunning";
 const char kContainerStartupFail[] = INTERFACE ".ContainerStartupFail";
