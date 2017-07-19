@@ -80,7 +80,7 @@ class ControllerImpl : public Controller,
 
   // Model::Client implementation.
   void OnModelReady(bool success) override;
-  void OnHardRecoverComplete(bool success) override;
+  void OnModelHardRecoverComplete(bool success) override;
   void OnItemAdded(bool success,
                    DownloadClient client,
                    const std::string& guid) override;
@@ -94,12 +94,23 @@ class ControllerImpl : public Controller,
   // Called when the file monitor and download file directory are initialized.
   void OnFileMonitorReady(bool success);
 
+  // Called when the file monitor finishes attempting to recover itself.
+  void OnFileMonitorHardRecoverComplete(bool success);
+
   // DeviceStatusListener::Observer implementation.
   void OnDeviceStatusChanged(const DeviceStatus& device_status) override;
 
   // Checks if initialization is complete and successful.  If so, completes the
   // internal state initialization.
   void AttemptToFinalizeSetup();
+
+  // Called when setup and recovery failed.  Shuts down the service and notifies
+  // the Clients.
+  void HandleUnrecoverableSetup();
+
+  // If initialization failed, try to reset the state of all components and
+  // restart them.  If that attempt fails the service will be unavailable.
+  void StartHardRecoveryAttempt();
 
   // Checks for all the currently active driver downloads.  This lets us know
   // which ones are active that we haven't tracked.
@@ -127,7 +138,7 @@ class ControllerImpl : public Controller,
   // Notifies all Client in |clients_| that this controller is initialized and
   // lets them know which download requests we are aware of for their
   // DownloadClient.
-  void NotifyClientsOfStartup();
+  void NotifyClientsOfStartup(bool state_lost);
 
   // Notifies the service that the startup has completed so that it can start
   // processing any pending requests.
@@ -161,6 +172,7 @@ class ControllerImpl : public Controller,
   // Postable methods meant to just be pass throughs to Client APIs.  This is
   // meant to help prevent reentrancy.
   void SendOnServiceInitialized(DownloadClient client_id,
+                                bool state_lost,
                                 const std::vector<std::string>& guids);
   void SendOnServiceUnavailable();
   void SendOnDownloadUpdated(DownloadClient client_id,

@@ -20,6 +20,9 @@ struct StartupStatus {
   base::Optional<bool> model_ok;
   base::Optional<bool> file_monitor_ok;
 
+  // Resets all startup state tracking.
+  void Reset();
+
   // Whether or not all components have finished initialization.  Note that this
   // does not mean that all components were initialized successfully.
   bool Complete() const;

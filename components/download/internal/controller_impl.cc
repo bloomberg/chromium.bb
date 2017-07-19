@@ -322,7 +322,11 @@ void ControllerImpl::OnDriverReady(bool success) {
   AttemptToFinalizeSetup();
 }
 
-void ControllerImpl::OnDriverHardRecoverComplete(bool success) {}
+void ControllerImpl::OnDriverHardRecoverComplete(bool success) {
+  DCHECK(!startup_status_.driver_ok.has_value());
+  startup_status_.driver_ok = success;
+  AttemptToFinalizeSetup();
+}
 
 void ControllerImpl::OnDownloadCreated(const DriverEntry& download) {
   if (controller_state_ != State::READY)
@@ -404,14 +408,22 @@ void ControllerImpl::OnFileMonitorReady(bool success) {
   AttemptToFinalizeSetup();
 }
 
+void ControllerImpl::OnFileMonitorHardRecoverComplete(bool success) {
+  DCHECK(!startup_status_.file_monitor_ok.has_value());
+  startup_status_.file_monitor_ok = success;
+  AttemptToFinalizeSetup();
+}
+
 void ControllerImpl::OnModelReady(bool success) {
   DCHECK(!startup_status_.model_ok.has_value());
   startup_status_.model_ok = success;
   AttemptToFinalizeSetup();
 }
 
-void ControllerImpl::OnHardRecoverComplete(bool success) {
-  // TODO(dtrainor): Support recovery.
+void ControllerImpl::OnModelHardRecoverComplete(bool success) {
+  DCHECK(!startup_status_.model_ok.has_value());
+  startup_status_.model_ok = success;
+  AttemptToFinalizeSetup();
 }
 
 void ControllerImpl::OnItemAdded(bool success,
@@ -469,23 +481,23 @@ void ControllerImpl::OnDeviceStatusChanged(const DeviceStatus& device_status) {
 }
 
 void ControllerImpl::AttemptToFinalizeSetup() {
-  DCHECK_EQ(controller_state_, State::INITIALIZING);
+  DCHECK(controller_state_ == State::INITIALIZING ||
+         controller_state_ == State::RECOVERING);
 
   if (!startup_status_.Complete())
     return;
 
-  stats::LogControllerStartupStatus(startup_status_);
+  bool in_recovery = controller_state_ == State::RECOVERING;
+
+  stats::LogControllerStartupStatus(in_recovery, startup_status_);
   if (!startup_status_.Ok()) {
-    // TODO(dtrainor): Recover here.  Try to clean up any disk state and, if
-    // possible, any DownloadDriver data and continue with initialization?
-    controller_state_ = State::UNAVAILABLE;
+    if (in_recovery) {
+      HandleUnrecoverableSetup();
+      NotifyServiceOfStartup();
+    } else {
+      StartHardRecoveryAttempt();
+    }
 
-    // If we cannot recover, notify Clients that the service is unavailable.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&ControllerImpl::SendOnServiceUnavailable,
-                              weak_ptr_factory_.GetWeakPtr()));
-
-    NotifyServiceOfStartup();
     return;
   }
 
@@ -496,7 +508,7 @@ void ControllerImpl::AttemptToFinalizeSetup() {
   RemoveCleanupEligibleDownloads();
   ResolveInitialRequestStates();
 
-  NotifyClientsOfStartup();
+  NotifyClientsOfStartup(in_recovery);
 
   controller_state_ = State::READY;
 
@@ -509,8 +521,29 @@ void ControllerImpl::AttemptToFinalizeSetup() {
   ActivateMoreDownloads();
 }
 
+void ControllerImpl::HandleUnrecoverableSetup() {
+  controller_state_ = State::UNAVAILABLE;
+
+  // If we cannot recover, notify Clients that the service is unavailable.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&ControllerImpl::SendOnServiceUnavailable,
+                            weak_ptr_factory_.GetWeakPtr()));
+}
+
+void ControllerImpl::StartHardRecoveryAttempt() {
+  startup_status_.Reset();
+  controller_state_ = State::RECOVERING;
+
+  driver_->HardRecover();
+  model_->HardRecover();
+  file_monitor_->HardRecover(
+      base::Bind(&ControllerImpl::OnFileMonitorHardRecoverComplete,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
 void ControllerImpl::PollActiveDriverDownloads() {
-  DCHECK_EQ(controller_state_, State::INITIALIZING);
+  DCHECK(controller_state_ == State::INITIALIZING ||
+         controller_state_ == State::RECOVERING);
 
   std::set<std::string> guids = driver_->GetActiveDownloads();
 
@@ -521,7 +554,8 @@ void ControllerImpl::PollActiveDriverDownloads() {
 }
 
 void ControllerImpl::CancelOrphanedRequests() {
-  DCHECK_EQ(controller_state_, State::INITIALIZING);
+  DCHECK(controller_state_ == State::INITIALIZING ||
+         controller_state_ == State::RECOVERING);
 
   auto entries = model_->PeekEntries();
 
@@ -544,7 +578,8 @@ void ControllerImpl::CancelOrphanedRequests() {
 }
 
 void ControllerImpl::CleanupUnknownFiles() {
-  DCHECK_EQ(controller_state_, State::INITIALIZING);
+  DCHECK(controller_state_ == State::INITIALIZING ||
+         controller_state_ == State::RECOVERING);
 
   auto entries = model_->PeekEntries();
   std::vector<DriverEntry> driver_entries;
@@ -558,7 +593,8 @@ void ControllerImpl::CleanupUnknownFiles() {
 }
 
 void ControllerImpl::ResolveInitialRequestStates() {
-  DCHECK_EQ(controller_state_, State::INITIALIZING);
+  DCHECK(controller_state_ == State::INITIALIZING ||
+         controller_state_ == State::RECOVERING);
 
   auto entries = model_->PeekEntries();
   for (auto* entry : entries) {
@@ -731,7 +767,7 @@ void ControllerImpl::UpdateDriverState(Entry* entry) {
   }
 }
 
-void ControllerImpl::NotifyClientsOfStartup() {
+void ControllerImpl::NotifyClientsOfStartup(bool state_lost) {
   std::set<Entry::State> ignored_states = {Entry::State::COMPLETE};
   auto categorized = util::MapEntriesToClients(
       clients_->GetRegisteredClients(), model_->PeekEntries(), ignored_states);
@@ -740,7 +776,7 @@ void ControllerImpl::NotifyClientsOfStartup() {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&ControllerImpl::SendOnServiceInitialized,
                               weak_ptr_factory_.GetWeakPtr(), client_id,
-                              categorized[client_id]));
+                              state_lost, categorized[client_id]));
   }
 }
 
@@ -938,10 +974,11 @@ void ControllerImpl::HandleExternalDownload(const std::string& guid,
 
 void ControllerImpl::SendOnServiceInitialized(
     DownloadClient client_id,
+    bool state_lost,
     const std::vector<std::string>& guids) {
   auto* client = clients_->GetClient(client_id);
   DCHECK(client);
-  client->OnServiceInitialized(guids);
+  client->OnServiceInitialized(state_lost, guids);
 }
 
 void ControllerImpl::SendOnServiceUnavailable() {

@@ -61,8 +61,12 @@ class Client {
 
   // Called when the DownloadService is initialized and ready to be interacted
   // with.  |outstanding_download_guids| is a list of all downloads the
-  // DownloadService is aware of that are associated with this Client.
+  // DownloadService is aware of that are associated with this Client.  If
+  // |state_lost| is |true|, the service ran into an error initializing and had
+  // to destroy all internal persisted state.  At this point any saved files
+  // might not be available and any previously scheduled downloads are gone.
   virtual void OnServiceInitialized(
+      bool state_lost,
       const std::vector<std::string>& outstanding_download_guids) = 0;
 
   // Called when the DownloadService fails to initialize and should not be used.

@@ -9,6 +9,12 @@ namespace download {
 StartupStatus::StartupStatus() = default;
 StartupStatus::~StartupStatus() = default;
 
+void StartupStatus::Reset() {
+  driver_ok.reset();
+  model_ok.reset();
+  file_monitor_ok.reset();
+}
+
 bool StartupStatus::Complete() const {
   return driver_ok.has_value() && model_ok.has_value() &&
          file_monitor_ok.has_value();

@@ -109,7 +109,7 @@ void ModelImpl::OnInitializedFinished(
 }
 
 void ModelImpl::OnHardRecoverFinished(bool success) {
-  client_->OnHardRecoverComplete(success);
+  client_->OnModelHardRecoverComplete(success);
 }
 
 void ModelImpl::OnAddFinished(DownloadClient client,

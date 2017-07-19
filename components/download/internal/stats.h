@@ -125,7 +125,7 @@ enum class FileCleanupReason {
 
 // Logs the results of starting up the Controller.  Will log each failure reason
 // if |status| contains more than one initialization failure.
-void LogControllerStartupStatus(const StartupStatus& status);
+void LogControllerStartupStatus(bool in_recovery, const StartupStatus& status);
 
 // Logs an action taken on the service API.
 void LogServiceApiAction(DownloadClient client, ServiceApiAction action);

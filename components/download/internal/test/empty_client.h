@@ -18,6 +18,7 @@ class EmptyClient : public Client {
 
   // Client implementation.
   void OnServiceInitialized(
+      bool state_lost,
       const std::vector<std::string>& outstanding_download_guids) override;
   void OnServiceUnavailable() override;
   ShouldDownload OnDownloadStarted(

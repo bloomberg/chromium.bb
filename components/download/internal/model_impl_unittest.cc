@@ -108,7 +108,7 @@ TEST_F(DownloadServiceModelImplTest, HardRecoverGoodModel) {
   EXPECT_TRUE(store_->init_called());
   store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
 
-  EXPECT_CALL(client_, OnHardRecoverComplete(true));
+  EXPECT_CALL(client_, OnModelHardRecoverComplete(true));
 
   model_->HardRecover();
   store_->TriggerHardRecover(true);
@@ -122,7 +122,7 @@ TEST_F(DownloadServiceModelImplTest, HardRecoverBadModel) {
   EXPECT_TRUE(store_->init_called());
   store_->TriggerInit(false, base::MakeUnique<std::vector<Entry>>());
 
-  EXPECT_CALL(client_, OnHardRecoverComplete(true));
+  EXPECT_CALL(client_, OnModelHardRecoverComplete(true));
 
   model_->HardRecover();
   store_->TriggerHardRecover(true);
@@ -140,7 +140,7 @@ TEST_F(DownloadServiceModelImplTest, HardRecoverFailsGoodModel) {
   EXPECT_TRUE(store_->init_called());
   store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
 
-  EXPECT_CALL(client_, OnHardRecoverComplete(false));
+  EXPECT_CALL(client_, OnModelHardRecoverComplete(false));
 
   model_->HardRecover();
   store_->TriggerHardRecover(false);
@@ -154,7 +154,7 @@ TEST_F(DownloadServiceModelImplTest, HardRecoverFailsBadModel) {
   EXPECT_TRUE(store_->init_called());
   store_->TriggerInit(false, base::MakeUnique<std::vector<Entry>>());
 
-  EXPECT_CALL(client_, OnHardRecoverComplete(false));
+  EXPECT_CALL(client_, OnModelHardRecoverComplete(false));
 
   model_->HardRecover();
   store_->TriggerHardRecover(false);
