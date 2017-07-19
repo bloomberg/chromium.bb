@@ -179,6 +179,7 @@ initWithPopupView:(OmniboxPopupViewIOS*)view
   self.automaticallyAdjustsScrollViewInsets = NO;
   [self.tableView setContentInset:UIEdgeInsetsMake(kTopAndBottomPadding, 0,
                                                    kTopAndBottomPadding, 0)];
+  self.tableView.estimatedRowHeight = kRowHeight;
 }
 
 - (void)didReceiveMemoryWarning {
