@@ -6176,12 +6176,8 @@ void GLES2Implementation::VerifySyncTokensCHROMIUM(GLbyte **sync_tokens,
         }
         requires_synchronization = true;
         DCHECK(sync_token.verified_flush());
+        memcpy(sync_tokens[i], &sync_token, sizeof(sync_token));
       }
-
-      // Set verify bit on empty sync tokens too.
-      sync_token.SetVerifyFlush();
-
-      memcpy(sync_tokens[i], &sync_token, sizeof(sync_token));
     }
   }
 

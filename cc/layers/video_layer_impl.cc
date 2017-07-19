@@ -137,6 +137,7 @@ bool VideoLayerImpl::WillDraw(DrawMode draw_mode,
         external_resources.mailboxes[i].is_overlay_candidate()));
     resource_ids.push_back(resource_id);
   }
+  resource_provider->GenerateSyncTokenForResources(resource_ids);
 
   return true;
 }

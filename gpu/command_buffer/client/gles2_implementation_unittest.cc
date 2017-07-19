@@ -4146,30 +4146,6 @@ TEST_F(GLES2ImplementationTest, VerifySyncTokensCHROMIUM_Sequence) {
   EXPECT_TRUE(sync_token2.verified_flush());
 }
 
-TEST_F(GLES2ImplementationTest, VerifySyncTokensCHROMIUM_EmptySyncToken) {
-  // To verify sync tokens, the sync tokens must all be verified after
-  // CanWaitUnverifiedSyncTokens() are called. This test ensures the right
-  // sequence.
-  ExpectedMemoryInfo result =
-      GetExpectedResultMemory(sizeof(cmds::GetError::Result));
-  EXPECT_CALL(*command_buffer(), OnFlush())
-      .WillRepeatedly(SetMemory(result.ptr, GLuint(GL_NO_ERROR)))
-      .RetiresOnSaturation();
-
-  gpu::SyncToken sync_token1, sync_token2;
-  GLbyte* sync_token_datas[] = {sync_token1.GetData(), sync_token2.GetData()};
-
-  // Ensure proper sequence of checking and validating.
-  EXPECT_CALL(*gpu_control_, CanWaitUnverifiedSyncToken(_)).Times(0);
-  EXPECT_CALL(*gpu_control_, EnsureWorkVisible()).Times(0);
-  gl_->VerifySyncTokensCHROMIUM(sync_token_datas, arraysize(sync_token_datas));
-  EXPECT_TRUE(NoCommandsWritten());
-  EXPECT_EQ(GL_NO_ERROR, CheckError());
-
-  EXPECT_TRUE(sync_token1.verified_flush());
-  EXPECT_TRUE(sync_token2.verified_flush());
-}
-
 TEST_F(GLES2ImplementationTest, WaitSyncTokenCHROMIUM) {
   CommandBufferNamespace kNamespaceId = CommandBufferNamespace::GPU_IO;
   CommandBufferId kCommandBufferId = CommandBufferId::FromUnsafeValue(234u);

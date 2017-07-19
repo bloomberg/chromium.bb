@@ -137,6 +137,8 @@ bool TextureLayerImpl::WillDraw(DrawMode draw_mode,
 
       resource_provider->CopyToResource(texture_copy_->id(), pixels,
                                         texture_mailbox_.size_in_pixels());
+      resource_provider->GenerateSyncTokenForResource(texture_copy_->id());
+
       valid_texture_copy_ = true;
     }
   }
