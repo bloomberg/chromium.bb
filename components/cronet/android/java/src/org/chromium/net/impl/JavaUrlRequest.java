@@ -100,6 +100,7 @@ final class JavaUrlRequest extends UrlRequestBase {
     private UrlResponseInfoImpl mUrlResponseInfo;
     private String mPendingRedirectUrl;
     private HttpURLConnection mCurrentUrlConnection; // Only accessed on mExecutor.
+    private OutputStreamDataSink mOutputStreamDataSink; // Only accessed on mExecutor.
 
     /**
      *             /- AWAITING_FOLLOW_REDIRECT <-  REDIRECT_RECEIVED <-\     /- READING <--\
@@ -314,6 +315,7 @@ final class JavaUrlRequest extends UrlRequestBase {
         final Executor mUserUploadExecutor;
         final Executor mExecutor;
         final HttpURLConnection mUrlConnection;
+        final AtomicBoolean mOutputChannelClosed = new AtomicBoolean(false);
         WritableByteChannel mOutputChannel;
         OutputStream mUrlConnectionOutputStream;
         final VersionSafeCallbacks.UploadDataProviderWrapper mUploadProvider;
@@ -436,10 +438,14 @@ final class JavaUrlRequest extends UrlRequestBase {
             }
         }
 
-        void finish() throws IOException {
-            if (mOutputChannel != null) {
+        void closeOutputChannel() throws IOException {
+            if (mOutputChannel != null && mOutputChannelClosed.compareAndSet(false, true)) {
                 mOutputChannel.close();
             }
+        }
+
+        void finish() throws IOException {
+            closeOutputChannel();
             fireGetHeaders();
         }
 
@@ -682,9 +688,9 @@ final class JavaUrlRequest extends UrlRequestBase {
                 }
                 mCurrentUrlConnection.setRequestMethod(mInitialMethod);
                 if (mUploadDataProvider != null) {
-                    OutputStreamDataSink dataSink = new OutputStreamDataSink(
+                    mOutputStreamDataSink = new OutputStreamDataSink(
                             mUploadExecutor, mExecutor, mCurrentUrlConnection, mUploadDataProvider);
-                    dataSink.start(mUrlChain.size() == 1);
+                    mOutputStreamDataSink.start(mUrlChain.size() == 1);
                 } else {
                     mAdditionalStatusDetails = Status.CONNECTING;
                     mCurrentUrlConnection.connect();
@@ -769,6 +775,13 @@ final class JavaUrlRequest extends UrlRequestBase {
         mExecutor.execute(new Runnable() {
             @Override
             public void run() {
+                if (mOutputStreamDataSink != null) {
+                    try {
+                        mOutputStreamDataSink.closeOutputChannel();
+                    } catch (IOException e) {
+                        Log.e(TAG, "Exception when closing OutputChannel", e);
+                    }
+                }
                 if (mCurrentUrlConnection != null) {
                     mCurrentUrlConnection.disconnect();
                     mCurrentUrlConnection = null;
