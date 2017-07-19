@@ -1122,8 +1122,8 @@ Handoff must also be enabled in the General section of Settings, and your device
       <message name="IDS_IOS_SETTINGS_PASSWORD_COPY_MENU_ITEM" desc="Context menu item available on the password cell in detailed view of a stored credential. The user can select it to copy the password to clipboard. [Length: should be one short word, is under 5em in English]">
         Copy
       </message>
-      <message name="IDS_IOS_SETTINGS_PASSWORD_DELETE_BUTTON" desc="Button that the user can press to delete the saved password. [Length: 31em]">
-        Delete Saved Password
+      <message name="IDS_IOS_SETTINGS_PASSWORD_DELETE_BUTTON" desc="Button that the user can press to delete a saved password or a site-bound exception preventing saving passwords. [Length: single line available]">
+        Delete
       </message>
       <message name="IDS_IOS_SETTINGS_PASSWORD_HIDDEN_LABEL" desc="Accessibility label stating that the element is displaying a hidden password.">
         Hidden, Password
@@ -1146,17 +1146,17 @@ Handoff must also be enabled in the General section of Settings, and your device
       <message name="IDS_IOS_SETTINGS_PASSWORD_SHOW_MENU_ITEM" desc="Context menu item available on the password cell in detailed view of a stored password. The user can select it to show the password to clipboard. [Length: should be one short word, is under 5em in English]">
         Show
       </message>
-      <message name="IDS_IOS_SETTINGS_SITE_WAS_COPIED_MESSAGE" desc="Confirmation that the site URL of a saved credential was copied. This is shown alone in an infobar at the bottom of the screen. [Length: 40em]">
-        The site URL was copied.
+      <message name="IDS_IOS_SETTINGS_SITE_WAS_COPIED_MESSAGE" desc="Confirmation that the site URL of a saved credential was copied. This is shown alone in an infobar at the bottom of the screen. [Length: one line]">
+        Site address copied
       </message>
-      <message name="IDS_IOS_SETTINGS_USERNAME_WAS_COPIED_MESSAGE" desc="Confirmation that the username was copied. This is shown alone in an infobar at the bottom of the screen. [Length: 40em]">
-        Your username was copied.
+      <message name="IDS_IOS_SETTINGS_USERNAME_WAS_COPIED_MESSAGE" desc="Confirmation that the username was copied. This is shown alone in an infobar at the bottom of the screen. [Length: one line]">
+        Username copied
       </message>
-      <message name="IDS_IOS_SETTINGS_PASSWORD_WAS_COPIED_MESSAGE" desc="Confirmation that the password was copied. This is shown alone in an infobar at the bottom of the screen after the user successfully reauthenticates with Touch ID or PIN. [Length: 40em]">
-        Your password was copied.
+      <message name="IDS_IOS_SETTINGS_PASSWORD_WAS_COPIED_MESSAGE" desc="Confirmation that the password was copied. This is shown alone in an infobar at the bottom of the screen after the user successfully reauthenticates with Touch ID or PIN. [Length: one line]">
+        Password copied
       </message>
-      <message name="IDS_IOS_SETTINGS_PASSWORD_WAS_NOT_COPIED_MESSAGE" desc="Message informing the user that the password was not copied because the authentication failed. This is shown alone in an infobar at the bottom of the screen after the user tries to reauthenticate with Touch ID or PIN to copy the password and fails. [Length: 53em]">
-        Authentication failed. Your password was not copied.
+      <message name="IDS_IOS_SETTINGS_PASSWORD_WAS_NOT_COPIED_MESSAGE" desc="Message informing the user that the password was not copied because the authentication failed. This is shown alone in an infobar at the bottom of the screen after the user tries to reauthenticate with Touch ID or PIN to copy the password and fails. [Length: one line]">
+        Can't verify your identity. Password not copied.
       </message>
       <message name="IDS_IOS_SETTINGS_TITLE" desc="Title for the settings panel [iOS].">
         Settings
@@ -1222,13 +1222,13 @@ Handoff must also be enabled in the General section of Settings, and your device
         Username
       </message>
       <message name="IDS_IOS_SHOW_PASSWORD_VIEW_FEDERATION" desc="Label indicating that the text displayed below is the hostname of the identity provider used for the displayed credential. [Length: to fit on one line] [iOS only]">
-        With Federation
+        Signed In With
       </message>
       <message name="IDS_IOS_CANCEL_PASSWORD_DELETION" desc="Label of a confirmation dialogue button which allows the user to cancel deletion of a stored password. [Length: one line] [iOS only]">
         Cancel
       </message>
       <message name="IDS_IOS_CONFIRM_PASSWORD_DELETION" desc="Label of a confirmation dialogue button which allows the user to confirm deletion of a stored password. [Length: one line] [iOS only]">
-        Delete Saved Password
+        Delete
       </message>
       <message name="IDS_IOS_SETTINGS_PASSWORDS_SAVED_HEADING" desc="The title for a list of username/site/password items. These items are already saved by the browser and can be deleted/edited. [Length: one line] [iOS only]">
       Saved Passwords
