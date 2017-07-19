@@ -32,8 +32,8 @@ void InitializeColorSchemes() {
       normal_scheme.element_background_hover;
   normal_scheme.close_button_background_down =
       normal_scheme.element_background_down;
-  normal_scheme.loading_indicator_foreground = normal_scheme.element_foreground;
-  normal_scheme.loading_indicator_background = normal_scheme.floor;
+  normal_scheme.loading_indicator_foreground = 0xFF2979FF;
+  normal_scheme.loading_indicator_background = 0xFF454545;
   normal_scheme.exit_warning_foreground = SK_ColorWHITE;
   normal_scheme.exit_warning_background = 0xCC1A1A1A;
   normal_scheme.transient_warning_foreground =
@@ -104,8 +104,6 @@ void InitializeColorSchemes() {
       fullscreen_scheme.element_background_hover;
   incognito_scheme.close_button_background_down =
       fullscreen_scheme.element_background_down;
-  incognito_scheme.loading_indicator_foreground = 0xFF8A8A8A;
-  incognito_scheme.loading_indicator_background = 0xFF454545;
   incognito_scheme.separator = 0xFF474747;
   incognito_scheme.secure = 0xFFEDEDED;
   incognito_scheme.insecure = incognito_scheme.secure;
