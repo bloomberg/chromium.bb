@@ -191,7 +191,8 @@ public class ChromeLauncherActivity extends Activity
         }
 
         // Check if we should push the user through First Run.
-        if (FirstRunFlowSequencer.launch(this, getIntent(), false)) {
+        if (FirstRunFlowSequencer.launch(this, getIntent(), false /* requiresBroadcast */,
+                    false /* preferLightweightFre */)) {
             finish();
             return;
         }

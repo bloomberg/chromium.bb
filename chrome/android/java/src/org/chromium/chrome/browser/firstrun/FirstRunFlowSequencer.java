@@ -19,8 +19,6 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.IntentHandler;
-import org.chromium.chrome.browser.IntentHandler.ExternalAppId;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -258,12 +256,14 @@ public abstract class FirstRunFlowSequencer  {
      * Checks if the First Run needs to be launched.
      * @param context The context.
      * @param fromIntent The intent that was used to launch Chrome.
-     * @param forLightweightFre Whether this is a check for the Lightweight First Run Experience.
-     * @return The intent to launch the First Run Experience if necessary, or null.
+     * @param preferLightweightFre Whether to prefer the Lightweight First Run Experience.
+     * @return The intent to launch the First Run Experience if it needs to be launched, or null.
+     *         The intent is for the preferred (Lightweight or non-Lightweight) First Run
+     *         Experience.
      */
     @Nullable
     public static Intent checkIfFirstRunIsNecessary(
-            Context context, Intent fromIntent, boolean forLightweightFre) {
+            Context context, Intent fromIntent, boolean preferLightweightFre) {
         // If FRE is disabled (e.g. in tests), proceed directly to the intent handling.
         if (CommandLine.getInstance().hasSwitch(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
                 || ApiCompatibilityUtils.isDemoUser(context)) {
@@ -279,7 +279,7 @@ public abstract class FirstRunFlowSequencer  {
 
         final boolean baseFreComplete = FirstRunStatus.getFirstRunFlowComplete();
         if (!baseFreComplete) {
-            if (forLightweightFre
+            if (preferLightweightFre
                     && CommandLine.getInstance().hasSwitch(
                                ChromeSwitches.ENABLE_LIGHTWEIGHT_FIRST_RUN_EXPERIENCE)) {
                 if (!FirstRunStatus.shouldSkipWelcomePage()
@@ -343,12 +343,14 @@ public abstract class FirstRunFlowSequencer  {
      * Tries to launch the First Run Experience.  If the Activity was launched with the wrong Intent
      * flags, we first relaunch it to make sure it runs in its own task, then trigger First Run.
      *
-     * @param caller            Activity instance that is checking if first run is necessary.
-     * @param intent            Intent used to launch the caller.
-     * @param requiresBroadcast Whether or not the Intent triggers a BroadcastReceiver.
+     * @param caller               Activity instance that is checking if first run is necessary.
+     * @param intent               Intent used to launch the caller.
+     * @param requiresBroadcast    Whether or not the Intent triggers a BroadcastReceiver.
+     * @param preferLightweightFre Whether to prefer the Lightweight First Run Experience.
      * @return Whether startup must be blocked (e.g. via Activity#finish or dropping the Intent).
      */
-    public static boolean launch(Context caller, Intent intent, boolean requiresBroadcast) {
+    public static boolean launch(Context caller, Intent intent, boolean requiresBroadcast,
+            boolean preferLightweightFre) {
         // Check if the user just came back from the FRE.
         boolean firstRunActivityResult = IntentUtils.safeGetBooleanExtra(
                 intent, FirstRunActivity.EXTRA_FIRST_RUN_ACTIVITY_RESULT, false);
@@ -359,35 +361,27 @@ public abstract class FirstRunFlowSequencer  {
             return true;
         }
 
-        // Tries to launch the Generic First Run Experience for intent from GSA.
-        boolean showLightweightFre =
-                IntentHandler.determineExternalIntentSource(caller.getPackageName(), intent)
-                != ExternalAppId.GSA;
-
         // Check if the user needs to go through First Run at all.
-        Intent freIntent = checkIfFirstRunIsNecessary(caller, intent, showLightweightFre);
+        Intent freIntent = checkIfFirstRunIsNecessary(caller, intent, preferLightweightFre);
         if (freIntent == null) return false;
 
         Log.d(TAG, "Redirecting user through FRE.");
         if ((intent.getFlags() & Intent.FLAG_ACTIVITY_NEW_TASK) != 0) {
-            if (CommandLine.getInstance().hasSwitch(
-                        ChromeSwitches.ENABLE_LIGHTWEIGHT_FIRST_RUN_EXPERIENCE)) {
-                boolean isGenericFreActive = false;
-                List<WeakReference<Activity>> activities = ApplicationStatus.getRunningActivities();
-                for (WeakReference<Activity> weakActivity : activities) {
-                    Activity activity = weakActivity.get();
-                    if (activity instanceof FirstRunActivity
-                            && !(activity instanceof LightweightFirstRunActivity)) {
-                        isGenericFreActive = true;
-                        break;
-                    }
+            boolean isGenericFreActive = false;
+            List<WeakReference<Activity>> activities = ApplicationStatus.getRunningActivities();
+            for (WeakReference<Activity> weakActivity : activities) {
+                Activity activity = weakActivity.get();
+                if (activity instanceof FirstRunActivity
+                        && !(activity instanceof LightweightFirstRunActivity)) {
+                    isGenericFreActive = true;
+                    break;
                 }
+            }
 
-                if (isGenericFreActive) {
-                    // Launch the Generic First Run Experience if it was previously active.
-                    freIntent = createGenericFirstRunIntent(
-                            caller, TextUtils.equals(intent.getAction(), Intent.ACTION_MAIN));
-                }
+            if (isGenericFreActive) {
+                // Launch the Generic First Run Experience if it was previously active.
+                freIntent = createGenericFirstRunIntent(
+                        caller, TextUtils.equals(intent.getAction(), Intent.ACTION_MAIN));
             }
 
             boolean isVrIntent = VrShellDelegate.isVrIntent(intent);
