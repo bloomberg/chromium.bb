@@ -324,8 +324,9 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest, TestSuccessfulHead) {
   socket_factory_.AddSocketDataProvider(&socket_data);
 
   TestDelegate delegate;
-  std::unique_ptr<URLRequest> request = context_->CreateRequest(
-      GURL("http://www.example.com"), DEFAULT_PRIORITY, &delegate);
+  std::unique_ptr<URLRequest> request =
+      context_->CreateRequest(GURL("http://www.example.com"), DEFAULT_PRIORITY,
+                              &delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
 
   request->set_method("HEAD");
   request->Start();
@@ -357,8 +358,9 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest, TestSuccessfulHeadWithContent) {
   socket_factory_.AddSocketDataProvider(&socket_data);
 
   TestDelegate delegate;
-  std::unique_ptr<URLRequest> request = context_->CreateRequest(
-      GURL("http://www.example.com"), DEFAULT_PRIORITY, &delegate);
+  std::unique_ptr<URLRequest> request =
+      context_->CreateRequest(GURL("http://www.example.com"), DEFAULT_PRIORITY,
+                              &delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
 
   request->set_method("HEAD");
   request->Start();
@@ -391,7 +393,8 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest, TestSuccessfulCachedHeadRequest) {
 
     TestDelegate delegate;
     std::unique_ptr<URLRequest> request = context_->CreateRequest(
-        GURL("http://www.example.com"), DEFAULT_PRIORITY, &delegate);
+        GURL("http://www.example.com"), DEFAULT_PRIORITY, &delegate,
+        TRAFFIC_ANNOTATION_FOR_TESTS);
 
     request->Start();
     ASSERT_TRUE(request->is_pending());
@@ -422,7 +425,8 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest, TestSuccessfulCachedHeadRequest) {
 
     TestDelegate delegate;
     std::unique_ptr<URLRequest> request = context_->CreateRequest(
-        GURL("http://www.example.com"), DEFAULT_PRIORITY, &delegate);
+        GURL("http://www.example.com"), DEFAULT_PRIORITY, &delegate,
+        TRAFFIC_ANNOTATION_FOR_TESTS);
 
     // Use the cached version.
     request->SetLoadFlags(LOAD_SKIP_CACHE_VALIDATION);

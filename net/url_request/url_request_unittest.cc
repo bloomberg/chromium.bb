@@ -1215,8 +1215,8 @@ TEST_F(URLRequestTest, SymlinksToFiles) {
   {
     TestDelegate d;
     default_context_.set_network_delegate(&network_delegate);
-    std::unique_ptr<URLRequest> r(
-        default_context_.CreateRequest(good_file_url, DEFAULT_PRIORITY, &d));
+    std::unique_ptr<URLRequest> r(default_context_.CreateRequest(
+        good_file_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
     r->Start();
     base::RunLoop().Run();
     // good_file_url should be allowed.
@@ -1227,8 +1227,8 @@ TEST_F(URLRequestTest, SymlinksToFiles) {
   {
     TestDelegate d;
     default_context_.set_network_delegate(&network_delegate);
-    std::unique_ptr<URLRequest> r(
-        default_context_.CreateRequest(bad_file_url, DEFAULT_PRIORITY, &d));
+    std::unique_ptr<URLRequest> r(default_context_.CreateRequest(
+        bad_file_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
     r->Start();
     base::RunLoop().Run();
     // bad_file_url should be rejected.
@@ -1271,8 +1271,8 @@ TEST_F(URLRequestTest, SymlinksToDirs) {
   {
     TestDelegate d;
     default_context_.set_network_delegate(&network_delegate);
-    std::unique_ptr<URLRequest> r(
-        default_context_.CreateRequest(good_file_url, DEFAULT_PRIORITY, &d));
+    std::unique_ptr<URLRequest> r(default_context_.CreateRequest(
+        good_file_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
     r->Start();
     base::RunLoop().Run();
     // good_file_url should be allowed.
@@ -1283,8 +1283,8 @@ TEST_F(URLRequestTest, SymlinksToDirs) {
   {
     TestDelegate d;
     default_context_.set_network_delegate(&network_delegate);
-    std::unique_ptr<URLRequest> r(
-        default_context_.CreateRequest(bad_file_url, DEFAULT_PRIORITY, &d));
+    std::unique_ptr<URLRequest> r(default_context_.CreateRequest(
+        bad_file_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
     r->Start();
     base::RunLoop().Run();
     // bad_file_url should be rejected.
