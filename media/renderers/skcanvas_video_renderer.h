@@ -69,11 +69,6 @@ class MEDIA_EXPORT SkCanvasVideoRenderer {
                                            void* rgb_pixels,
                                            size_t row_bytes);
 
-  enum SingleFrameCopyMode {
-    SingleFrameForVideoElementOrCanvas,
-    SingleFrameForWebGL
-  };
-
   // Copy the contents of texture of |video_frame| to texture |texture|.
   // |level|, |internal_format|, |type| specify target texture |texture|.
   // The format of |video_frame| must be VideoFrame::NATIVE_TEXTURE.
@@ -83,7 +78,6 @@ class MEDIA_EXPORT SkCanvasVideoRenderer {
   static void CopyVideoFrameSingleTextureToGLTexture(
       gpu::gles2::GLES2Interface* gl,
       VideoFrame* video_frame,
-      SingleFrameCopyMode copy_mode,
       unsigned int target,
       unsigned int texture,
       unsigned int internal_format,

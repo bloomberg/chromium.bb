@@ -4878,13 +4878,6 @@ bool WebGLRenderingContextBase::CanUseTexImageByGPU(GLenum format,
   if (type == GL_UNSIGNED_SHORT_5_5_5_1)
     return false;
 #endif
-  // TODO(kbr): bugs were observed when using CopyTextureCHROMIUM to
-  // copy hardware-accelerated video textures to red-channel textures.
-  // These bugs were seen on macOS but may indicate more general
-  // problems. Investigate the root cause of this and fix it.
-  // crbug.com/710673
-  if (format == GL_RED || format == GL_RED_INTEGER)
-    return false;
 
 #if defined(OS_ANDROID)
   // TODO(kbr): bugs were seen on Android devices with NVIDIA GPUs
