@@ -32,8 +32,8 @@
 
       /* When needing to flex, force .body-container alone to shrink. */
       .top-container,
-      :host ::content .button-container,
-      :host ::content .footer {
+      :host ::slotted([slot=button-container]),
+      :host ::slotted([slot=footer]) {
         flex-shrink: 0;
       }
 
@@ -46,31 +46,31 @@
         top: 0;
       }
 
-      :host ::content .body {
+      :host ::slotted([slot=body]) {
         padding: 12px 16px;
       }
 
-      :host ::content .title {
+      :host ::slotted([slot=title]) {
         flex: 1;
         font-size: calc(15 / 13 * 100%);
         line-height: 1;
         padding: 16px 16px;
       }
 
-      :host ::content .button-container {
+      :host ::slotted([slot=button-container]) {
         display: flex;
         justify-content: flex-end;
         padding: 16px;
       }
 
-      :host ::content .footer {
+      :host ::slotted([slot=footer]) {
         border-bottom-left-radius: inherit;
         border-bottom-right-radius: inherit;
         margin: 0;
         padding: 16px 20px;
       }
 
-      :host ::content .border-top-divider {
+      :host ::slotted([slot=border-top-divider]) {
         border-top: 1px solid var(--divider-color);
       }
 
@@ -120,7 +120,7 @@
     </style>
     <div class="top-container">
       <div class="title-container" tabindex="-1">
-        <content select=".title"></content>
+        <slot name="title"></slot>
       </div>
       <button is="paper-icon-button-light" class="icon-clear" id="close"
           aria-label$="[[closeText]]" hidden$="[[noCancel]]" on-tap="cancel"
@@ -129,11 +129,11 @@
     </div>
     <div class="body-container">
       <span id="bodyTopMarker"></span>
-      <content select=".body"></content>
+      <slot name="body"></slot>
       <span id="bodyBottomMarker"></span>
     </div>
-    <content select=".button-container"></content>
-    <content select=".footer"></content>
+    <slot name="button-container"></slot>
+    <slot name="footer"></slot>
   </template>
   <script src="cr_dialog.js"></script>
 </dom-module>

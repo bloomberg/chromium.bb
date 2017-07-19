@@ -13,11 +13,12 @@
   <template>
     <style include="settings-shared"></style>
     <dialog is="cr-dialog" id="dialog" close-text="$i18n{close}">
-      <div class="title">[[getTitleText_(status_)]]</div>
-      <div class="body">
+      <div class="title" slot="title">[[getTitleText_(status_)]]</div>
+      <div class="body" slot="body">
         [[getDescriptionText_(status_)]]
       </div>
-      <div class="button-container" hidden="[[isButtonBarHidden_(status_)]]">
+      <div class="button-container" slot="button-container"
+          hidden="[[isButtonBarHidden_(status_)]]">
         <paper-spinner active="[[isSpinnerActive_(status_)]]">
         </paper-spinner>
         <paper-button class="cancel-button" on-tap="onCancelTap_"
