@@ -257,6 +257,9 @@ extern const char kEnableSuggestionsHomeModernLayoutDescription[];
 extern const char kEnableTokenBindingName[];
 extern const char kEnableTokenBindingDescription[];
 
+extern const char kEnableUsernameCorrectionName[];
+extern const char kEnableUsernameCorrectionDescription[];
+
 extern const char kEnableUseZoomForDsfName[];
 extern const char kEnableUseZoomForDsfDescription[];
 extern const char kEnableUseZoomForDsfChoiceDefault[];

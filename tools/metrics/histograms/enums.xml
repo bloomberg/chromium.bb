@@ -23123,6 +23123,7 @@ from previous Chrome versions.
   <int value="-216219963" label="ash-shelf-color-scheme"/>
   <int value="-213518852" label="protect-sync-credential:enabled"/>
   <int value="-213214894" label="enable-chromevox-arc-support"/>
+  <int value="-208435024" label="EnableUsernameCorrection:enabled"/>
   <int value="-206393363" label="enable-scroll-prediction"/>
   <int value="-204355195" label="secondary-ui-md"/>
   <int value="-202007318" label="AndroidAIAFetching:enabled"/>
@@ -23779,6 +23780,7 @@ from previous Chrome versions.
   <int value="2014331873" label="NTPDownloadSuggestions:disabled"/>
   <int value="2020107447" label="AndroidPayIntegrationV1:enabled"/>
   <int value="2037756154" label="enable-impl-side-painting"/>
+  <int value="2056572020" label="EnableUsernameCorrection:disabled"/>
   <int value="2059322877" label="new-avatar-menu"/>
   <int value="2063091429" label="OfflinePagesSharing:enabled"/>
   <int value="2067634730" label="LsdPermissionPrompt:disabled"/>
