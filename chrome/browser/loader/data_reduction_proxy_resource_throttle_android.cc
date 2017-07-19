@@ -31,8 +31,11 @@ using safe_browsing::SBThreatType;
 // checking whether the headers are injected correctly and the SPDY proxy
 // origin is tested properly.
 
-const char* DataReductionProxyResourceThrottle::kUnsafeUrlProceedHeader =
-      "X-Unsafe-Url-Proceed";
+namespace {
+
+const char kUnsafeUrlProceedHeader[] = "X-Unsafe-Url-Proceed";
+
+}  // namespace
 
 // static
 DataReductionProxyResourceThrottle*

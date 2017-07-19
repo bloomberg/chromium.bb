@@ -4,6 +4,7 @@
 
 #include "chrome/browser/engagement/site_engagement_score.h"
 
+#include <algorithm>
 #include <cmath>
 #include <utility>
 

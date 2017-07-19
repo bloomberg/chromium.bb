@@ -84,7 +84,8 @@ class DesktopMediaSourceView : public views::View {
   bool OnMousePressed(const ui::MouseEvent& event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
-  static const char* kDesktopMediaSourceViewClassName;
+
+  static const char kDesktopMediaSourceViewClassName[];
 
  private:
   // Updates selection state of the element. If |selected| is true then also

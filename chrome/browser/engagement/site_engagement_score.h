@@ -7,6 +7,8 @@
 
 #include <array>
 #include <memory>
+#include <string>
+#include <utility>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
