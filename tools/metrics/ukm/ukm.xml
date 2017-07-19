@@ -862,6 +862,15 @@ be describing additional metrics about the same event.
       correspond to the enum PasswordFormMetricsRecorder::BubbleTrigger.
     </summary>
   </metric>
+  <metric name="User.Action">
+    <summary>
+      Records what the user does with all UI entry points of the password
+      manager UI, like bubbles, context menus, forms, form fields, etc. in
+      relation to a given form. Recorded values correspond to the enum
+      PasswordFormMetricsRecorder::DetailedUserAction. In contrast to
+      User.ActionSimplified, this metric is intended to be extended over time.
+    </summary>
+  </metric>
   <metric name="User.ActionSimplified">
     <summary>
       Records what the user does with a form. Recorded values correspond to the

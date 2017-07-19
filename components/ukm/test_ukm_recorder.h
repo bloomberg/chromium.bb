@@ -74,6 +74,12 @@ class TestUkmRecorder : public UkmRecorderImpl {
                      const char* metric_name,
                      const std::vector<int64_t>& expected_values) const;
 
+  // Returns all collected metrics for the given |source|, |event_name| and
+  // |metric_name|. The order of values is not specified.
+  std::vector<int64_t> GetMetrics(const UkmSource& source,
+                                  const char* event_name,
+                                  const char* metric_name) const;
+
   // UKM entries that may be recorded multiple times for a single source may
   // need to verify that an expected number of UKM entries were logged. The
   // utility methods below can be used to verify expected entries. UKM entries

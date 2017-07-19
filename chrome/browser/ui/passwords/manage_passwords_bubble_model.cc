@@ -398,6 +398,13 @@ void ManagePasswordsBubbleModel::OnNeverForThisSiteClicked() {
 
 void ManagePasswordsBubbleModel::OnUsernameEdited(base::string16 new_username) {
   DCHECK_EQ(password_manager::ui::PENDING_PASSWORD_STATE, state_);
+  if (pending_password_.username_value != new_username) {
+    if (delegate_ && delegate_->GetPasswordFormMetricsRecorder()) {
+      delegate_->GetPasswordFormMetricsRecorder()->RecordDetailedUserAction(
+          password_manager::PasswordFormMetricsRecorder::DetailedUserAction::
+              kEditedUsernameInBubble);
+    }
+  }
   pending_password_.username_value = std::move(new_username);
 }
 
