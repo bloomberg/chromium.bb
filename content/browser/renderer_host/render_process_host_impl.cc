@@ -464,6 +464,159 @@ class SessionStorageHolder : public base::SupportsUserData::Data {
   DISALLOW_COPY_AND_ASSIGN(SessionStorageHolder);
 };
 
+// This class manages spare RenderProcessHosts.
+//
+// There is a singleton instance of this class which manages a single spare
+// renderer (g_spare_render_process_host_manager, below). This class
+// encapsulates the implementation of
+// RenderProcessHost::WarmupSpareRenderProcessHost()
+//
+// RenderProcessHostImpl should call
+// SpareRenderProcessHostManager::MaybeTakeSpareRenderProcessHost when creating
+// a new RPH. In this implementation, the spare renderer is bound to a
+// BrowserContext and its default StoragePartition. If
+// MaybeTakeSpareRenderProcessHost is called with a BrowserContext and
+// StoragePartition that does not match, the spare renderer is discarded. In
+// particular, only the default StoragePartition will be able to use a spare
+// renderer. The spare renderer will also not be used as a guest renderer
+// (is_for_guests_ == true).
+//
+// It is safe to call WarmupSpareRenderProcessHost multiple times, although if
+// called in a context where the spare renderer is not likely to be used
+// performance may suffer due to the unnecessary RPH creation.
+class SpareRenderProcessHostManager : public RenderProcessHostObserver {
+ public:
+  SpareRenderProcessHostManager() {}
+
+  void WarmupSpareRenderProcessHost(BrowserContext* browser_context) {
+    StoragePartitionImpl* current_partition =
+        static_cast<StoragePartitionImpl*>(
+            BrowserContext::GetStoragePartition(browser_context, nullptr));
+
+    if (spare_render_process_host_ &&
+        matching_browser_context_ == browser_context &&
+        matching_storage_partition_ == current_partition)
+      return;  // Nothing to warm up.
+
+    CleanupSpareRenderProcessHost();
+
+    // Don't create a spare renderer if we're using --single-process or if we've
+    // got too many processes. See also ShouldTryToUseExistingProcessHost in
+    // this file.
+    if (RenderProcessHost::run_renderer_in_process() ||
+        g_all_hosts.Get().size() >=
+            RenderProcessHostImpl::GetMaxRendererProcessCount())
+      return;
+
+    matching_browser_context_ = browser_context;
+    matching_storage_partition_ = current_partition;
+
+    spare_render_process_host_ = RenderProcessHostImpl::CreateRenderProcessHost(
+        browser_context, current_partition, nullptr,
+        false /* is_for_guests_only */);
+    spare_render_process_host_->AddObserver(this);
+    spare_render_process_host_->Init();
+  }
+
+  // If |partition| is null, this gets the default partition from the browser
+  // context.
+  RenderProcessHost* MaybeTakeSpareRenderProcessHost(
+      BrowserContext* browser_context,
+      StoragePartition* partition,
+      SiteInstance* site_instance,
+      bool is_for_guests_only) {
+    if (spare_render_process_host_ &&
+        browser_context == matching_browser_context_ && !is_for_guests_only &&
+        !partition) {
+      // If the spare renderer matches for everything but possibly the storage
+      // partition, and the passed-in partition is null, get the default storage
+      // partition. If this is the case, the default storage partition will
+      // already have been created and there is no possibility of breaking tests
+      // by GetDefaultStoragePartition prematurely creating one.
+      partition =
+          BrowserContext::GetStoragePartition(browser_context, site_instance);
+    }
+
+    if (!spare_render_process_host_ ||
+        browser_context != matching_browser_context_ ||
+        partition != matching_storage_partition_ || is_for_guests_only) {
+      // As a new RenderProcessHost will almost certainly be created, we cleanup
+      // the non-matching one so as not to waste resources.
+      CleanupSpareRenderProcessHost();
+      return nullptr;
+    }
+
+    CHECK(spare_render_process_host_->HostHasNotBeenUsed());
+    RenderProcessHost* rph = spare_render_process_host_;
+    DropSpareRenderProcessHost(spare_render_process_host_);
+    return rph;
+  }
+
+  // Remove |host| as a possible spare renderer. Does not shut it down cleanly;
+  // the assumption is that the host was shutdown somewhere else and has
+  // notifying the SpareRenderProcessHostManager.
+  void DropSpareRenderProcessHost(RenderProcessHost* host) {
+    if (spare_render_process_host_ && spare_render_process_host_ == host) {
+      spare_render_process_host_->RemoveObserver(this);
+      spare_render_process_host_ = nullptr;
+    }
+  }
+
+  // Remove |host| as a possible spare renderer. If |host| is not the spare
+  // renderer, then shut down the spare renderer. The idea is that a navigation
+  // was just made to |host|, and we do not expect another immediate navigation,
+  // so that the spare renderer can be dropped in order to free up resources.
+  void DropSpareOnProcessCreation(RenderProcessHost* new_host) {
+    if (spare_render_process_host_ == new_host) {
+      DropSpareRenderProcessHost(new_host);
+    } else {
+      CleanupSpareRenderProcessHost();
+    }
+  }
+
+  // Gracefully remove and cleanup a spare RenderProcessHost if it exists.
+  void CleanupSpareRenderProcessHost() {
+    if (spare_render_process_host_) {
+      spare_render_process_host_->Cleanup();
+      DropSpareRenderProcessHost(spare_render_process_host_);
+    }
+  }
+
+  RenderProcessHost* spare_render_process_host() {
+    return spare_render_process_host_;
+  }
+
+ private:
+  // RenderProcessHostObserver
+  void RenderProcessWillExit(RenderProcessHost* host) override {
+    DropSpareRenderProcessHost(host);
+  }
+
+  void RenderProcessExited(RenderProcessHost* host,
+                           base::TerminationStatus unused_status,
+                           int unused_exit_code) override {
+    DropSpareRenderProcessHost(host);
+  }
+
+  void RenderProcessHostDestroyed(RenderProcessHost* host) override {
+    DropSpareRenderProcessHost(host);
+  }
+
+  // This is a bare pointer, because RenderProcessHost manages the lifetime of
+  // all its instances; see g_all_hosts, above.
+  RenderProcessHost* spare_render_process_host_ = nullptr;
+
+  // Used only to check if a creation request matches the spare, and not
+  // accessed.
+  const BrowserContext* matching_browser_context_ = nullptr;
+  const StoragePartition* matching_storage_partition_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(SpareRenderProcessHostManager);
+};
+
+base::LazyInstance<SpareRenderProcessHostManager>::Leaky
+    g_spare_render_process_host_manager = LAZY_INSTANCE_INITIALIZER;
+
 const void* const kDefaultSubframeProcessHostHolderKey =
     &kDefaultSubframeProcessHostHolderKey;
 
@@ -477,17 +630,17 @@ class DefaultSubframeProcessHostHolder : public base::SupportsUserData::Data,
   // Gets the correct render process to use for this SiteInstance.
   RenderProcessHost* GetProcessHost(SiteInstance* site_instance,
                                     bool is_for_guests_only) {
-    StoragePartition* default_partition =
-        BrowserContext::GetDefaultStoragePartition(browser_context_);
-    StoragePartition* partition =
-        BrowserContext::GetStoragePartition(browser_context_, site_instance);
+    StoragePartitionImpl* default_partition =
+        static_cast<StoragePartitionImpl*>(
+            BrowserContext::GetDefaultStoragePartition(browser_context_));
+    StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
+        BrowserContext::GetStoragePartition(browser_context_, site_instance));
 
     // Is this the default storage partition? If it isn't, then just give it its
     // own non-shared process.
     if (partition != default_partition || is_for_guests_only) {
-      RenderProcessHostImpl* host = new RenderProcessHostImpl(
-          browser_context_, static_cast<StoragePartitionImpl*>(partition),
-          is_for_guests_only);
+      RenderProcessHost* host = RenderProcessHostImpl::CreateRenderProcessHost(
+          browser_context_, partition, site_instance, is_for_guests_only);
       host->SetIsNeverSuitableForReuse();
       return host;
     }
@@ -497,9 +650,9 @@ class DefaultSubframeProcessHostHolder : public base::SupportsUserData::Data,
     if (host_)
       return host_;
 
-    host_ = new RenderProcessHostImpl(
-        browser_context_, static_cast<StoragePartitionImpl*>(partition),
-        false /* for guests only */);
+    host_ = RenderProcessHostImpl::CreateOrUseSpareRenderProcessHost(
+        browser_context_, partition, site_instance,
+        false /* is for guests only */);
     host_->SetIsNeverSuitableForReuse();
     host_->AddObserver(this);
 
@@ -518,7 +671,7 @@ class DefaultSubframeProcessHostHolder : public base::SupportsUserData::Data,
 
   // The default subframe render process used for the default storage partition
   // of this BrowserContext.
-  RenderProcessHostImpl* host_ = nullptr;
+  RenderProcessHost* host_ = nullptr;
 };
 
 void CreateMemoryCoordinatorHandle(
@@ -1036,6 +1189,47 @@ size_t RenderProcessHost::GetMaxRendererProcessCount() {
 // static
 void RenderProcessHost::SetMaxRendererProcessCount(size_t count) {
   g_max_renderer_count_override = count;
+}
+
+// static
+RenderProcessHost* RenderProcessHostImpl::CreateRenderProcessHost(
+    BrowserContext* browser_context,
+    StoragePartitionImpl* storage_partition_impl,
+    SiteInstance* site_instance,
+    bool is_for_guests_only) {
+  if (g_render_process_host_factory_) {
+    return g_render_process_host_factory_->CreateRenderProcessHost(
+        browser_context);
+  }
+
+  if (!storage_partition_impl) {
+    storage_partition_impl = static_cast<StoragePartitionImpl*>(
+        BrowserContext::GetStoragePartition(browser_context, site_instance));
+  }
+
+  return new RenderProcessHostImpl(browser_context, storage_partition_impl,
+                                   is_for_guests_only);
+}
+
+// static
+RenderProcessHost* RenderProcessHostImpl::CreateOrUseSpareRenderProcessHost(
+    BrowserContext* browser_context,
+    StoragePartitionImpl* storage_partition_impl,
+    SiteInstance* site_instance,
+    bool is_for_guests_only) {
+  RenderProcessHost* render_process_host =
+      g_spare_render_process_host_manager.Get().MaybeTakeSpareRenderProcessHost(
+          browser_context, storage_partition_impl, site_instance,
+          is_for_guests_only);
+
+  if (!render_process_host) {
+    render_process_host =
+        CreateRenderProcessHost(browser_context, storage_partition_impl,
+                                site_instance, is_for_guests_only);
+  }
+
+  DCHECK(render_process_host);
+  return render_process_host;
 }
 
 RenderProcessHostImpl::RenderProcessHostImpl(
@@ -1910,6 +2104,7 @@ void RenderProcessHostImpl::ForceReleaseWorkerRefCounts() {
     return;
   service_worker_ref_count_ = 0;
   shared_worker_ref_count_ = 0;
+  // Cleaning up will also remove this from the SpareRenderProcessHostManager.
   Cleanup();
 }
 
@@ -2139,6 +2334,22 @@ void RenderProcessHostImpl::RemoveExpectedNavigationToSite(
                                  base::WrapUnique(tracker));
   }
   tracker->DecrementSiteProcessCount(site_url, render_process_host->GetID());
+}
+
+// static
+void RenderProcessHostImpl::CleanupSpareRenderProcessHost() {
+  g_spare_render_process_host_manager.Get().CleanupSpareRenderProcessHost();
+}
+
+// static
+RenderProcessHost*
+RenderProcessHostImpl::GetSpareRenderProcessHostForTesting() {
+  return g_spare_render_process_host_manager.Get().spare_render_process_host();
+}
+
+bool RenderProcessHostImpl::HostHasNotBeenUsed() {
+  return IsUnused() && listeners_.IsEmpty() && GetWorkerRefCount() == 0 &&
+         pending_views_ == 0;
 }
 
 bool RenderProcessHostImpl::IsForGuestsOnly() const {
@@ -3087,6 +3298,13 @@ bool RenderProcessHostImpl::IsSuitableHost(RenderProcessHost* host,
 }
 
 // static
+void RenderProcessHost::WarmupSpareRenderProcessHost(
+    content::BrowserContext* browser_context) {
+  g_spare_render_process_host_manager.Get().WarmupSpareRenderProcessHost(
+      browser_context);
+}
+
+// static
 bool RenderProcessHost::run_renderer_in_process() {
   return g_run_renderer_in_process_;
 }
@@ -3164,6 +3382,10 @@ RenderProcessHost* RenderProcessHost::GetExistingProcessHost(
   if (!suitable_renderers.empty()) {
     int suitable_count = static_cast<int>(suitable_renderers.size());
     int random_index = base::RandInt(0, suitable_count - 1);
+    // If the process chosen was the spare RenderProcessHost, ensure it won't be
+    // used as a spare in the future, or drop the spare if it wasn't used.
+    g_spare_render_process_host_manager.Get().DropSpareOnProcessCreation(
+        suitable_renderers[random_index]);
     return suitable_renderers[random_index];
   }
 
@@ -3290,18 +3512,14 @@ RenderProcessHost* RenderProcessHostImpl::GetProcessHostForSiteInstance(
     render_process_host = GetExistingProcessHost(browser_context, site_url);
   }
 
-  // Otherwise (or if that fails), create a new one.
+  // Otherwise, use the spare RenderProcessHost or create a new one.
   if (!render_process_host) {
-    if (g_render_process_host_factory_) {
-      render_process_host =
-          g_render_process_host_factory_->CreateRenderProcessHost(
-              browser_context);
-    } else {
-      StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
-          BrowserContext::GetStoragePartition(browser_context, site_instance));
-      render_process_host = new RenderProcessHostImpl(
-          browser_context, partition, is_for_guests_only);
-    }
+    // Pass a null StoragePartition. Tests with TestBrowserContext using a
+    // RenderProcessHostFactory may not instantiate a StoragePartition, and
+    // creating one here with GetStoragePartition() can run into cross-thread
+    // issues as TestBrowserContext initialization is done on the main thread.
+    render_process_host = CreateOrUseSpareRenderProcessHost(
+        browser_context, nullptr, site_instance, is_for_guests_only);
   }
 
   if (is_unmatched_service_worker) {

@@ -382,6 +382,14 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   virtual bool IsUnused() = 0;
   virtual void SetIsUsed() = 0;
 
+  // Return true if the host has not been used. This is stronger than IsUnused()
+  // in that it checks if this RPH has ever been used to render at all, rather
+  // than just no being suitable to host a URL that requires a dedicated
+  // process.
+  // TODO(alexmos): can this be unified with IsUnused()? See also
+  // crbug.com/738634.
+  virtual bool HostHasNotBeenUsed() = 0;
+
   // Returns the current number of active views in this process.  Excludes
   // any RenderViewHosts that are swapped out.
   size_t GetActiveViewCount();
@@ -400,6 +408,23 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   GetSharedBitmapAllocationNotifier() = 0;
 
   // Static management functions -----------------------------------------------
+
+  // Possibly start an unbound, spare RenderProcessHost. A subsequent creation
+  // of a RenderProcessHost with a matching browser_context may use this
+  // preinitialized RenderProcessHost, improving performance.
+  //
+  // It is safe to call this multiple times or when it is not certain that the
+  // spare renderer will be used, although calling this too eagerly may reduce
+  // performance as unnecessary RenderProcessHosts are created. The spare
+  // renderer will only be used if it using the default StoragePartition of a
+  // matching BrowserContext.
+  //
+  // The spare RenderProcessHost is meant to be created in a situation where a
+  // navigation is imminent and it is unlikely an existing RenderProcessHost
+  // will be used, for example in a cross-site navigation when a Service Worker
+  // will need to be started.
+  static void WarmupSpareRenderProcessHost(
+      content::BrowserContext* browser_context);
 
   // Flag to run the renderer in process.  This is primarily
   // for debugging purposes.  When running "in process", the

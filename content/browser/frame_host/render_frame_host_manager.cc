@@ -1200,6 +1200,12 @@ RenderFrameHostManager::GetSiteInstanceForNavigation(
   if (force_swap)
     CHECK_NE(new_instance, current_instance);
 
+  if (new_instance == current_instance) {
+    // If we're navigating to the same site instance, we won't need to use any
+    // spare RenderProcessHost.
+    RenderProcessHostImpl::CleanupSpareRenderProcessHost();
+  }
+
   // Double-check that the new SiteInstance is associated with the right
   // BrowserContext.
   DCHECK_EQ(new_instance->GetBrowserContext(), browser_context);

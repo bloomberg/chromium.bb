@@ -831,6 +831,12 @@ const char kOmniboxUIElideSuggestionUrlAfterHostDescription[] =
     "Elides the path, query, and ref of suggested URLs in the Omnibox "
     "dropdown.";
 
+const char kOmniboxSpareRendererName[] =
+    "Start spare renderer on omnibox focus";
+const char kOmniboxSpareRendererDescription[] =
+    "When the omnibox is focused, start an empty spare renderer. This can "
+    "speed up the load of the navigation from the omnibox.";
+
 const char kOmniboxUIHideSuggestionUrlSchemeName[] =
     "Omnibox UI Hide Suggestion URL Scheme";
 const char kOmniboxUIHideSuggestionUrlSchemeDescription[] =
