@@ -13,7 +13,7 @@
 namespace headless {
 
 TEST(ParsePrintSettingsTest, Landscape) {
-  printing::HeadlessPrintSettings settings;
+  HeadlessPrintSettings settings;
   EXPECT_FALSE(settings.landscape);
 
   auto params = base::MakeUnique<base::DictionaryValue>();
@@ -25,7 +25,7 @@ TEST(ParsePrintSettingsTest, Landscape) {
 }
 
 TEST(ParsePrintSettingsTest, HeaderFooter) {
-  printing::HeadlessPrintSettings settings;
+  HeadlessPrintSettings settings;
   EXPECT_FALSE(settings.display_header_footer);
 
   auto params = base::MakeUnique<base::DictionaryValue>();
@@ -37,7 +37,7 @@ TEST(ParsePrintSettingsTest, HeaderFooter) {
 }
 
 TEST(ParsePrintSettingsTest, PrintBackground) {
-  printing::HeadlessPrintSettings settings;
+  HeadlessPrintSettings settings;
   EXPECT_FALSE(settings.should_print_backgrounds);
 
   auto params = base::MakeUnique<base::DictionaryValue>();
@@ -49,7 +49,7 @@ TEST(ParsePrintSettingsTest, PrintBackground) {
 }
 
 TEST(ParsePrintSettingsTest, Scale) {
-  printing::HeadlessPrintSettings settings;
+  HeadlessPrintSettings settings;
   EXPECT_DOUBLE_EQ(1, settings.scale);
 
   auto params = base::MakeUnique<base::DictionaryValue>();
@@ -69,22 +69,24 @@ TEST(ParsePrintSettingsTest, Scale) {
 }
 
 TEST(ParsePrintSettingsTest, PageRanges) {
-  printing::HeadlessPrintSettings settings;
+  HeadlessPrintSettings settings;
   EXPECT_EQ("", settings.page_ranges);
 
   auto params = base::MakeUnique<base::DictionaryValue>();
   params->SetString("pageRanges", "abcd");
+  params->SetBoolean("ignoreInvalidPageRanges", true);
   std::unique_ptr<base::DictionaryValue> response =
       ParsePrintSettings(0, params.get(), &settings);
   // Pass pageRanges text to settings directly and return no error, even if
   // it is invalid. The validation is deferred to HeadlessPrintMangager once the
   // total page count is available. See the PageRangeTextToPagesTest.
   EXPECT_EQ("abcd", settings.page_ranges);
+  EXPECT_TRUE(settings.ignore_invalid_page_ranges);
   EXPECT_EQ(nullptr, response);
 }
 
 TEST(ParsePrintSettingsTest, Paper) {
-  printing::HeadlessPrintSettings settings;
+  HeadlessPrintSettings settings;
 
   auto params = base::MakeUnique<base::DictionaryValue>();
   std::unique_ptr<base::DictionaryValue> response =
@@ -116,7 +118,7 @@ TEST(ParsePrintSettingsTest, Paper) {
 }
 
 TEST(ParsePrintSettingsTest, Margin) {
-  printing::HeadlessPrintSettings settings;
+  HeadlessPrintSettings settings;
 
   auto params = base::MakeUnique<base::DictionaryValue>();
   std::unique_ptr<base::DictionaryValue> response =
@@ -150,56 +152,62 @@ TEST(ParsePrintSettingsTest, Margin) {
 }
 
 TEST(PageRangeTextToPagesTest, General) {
-  using PM = printing::HeadlessPrintManager;
+  using PM = HeadlessPrintManager;
   std::vector<int> pages;
   std::vector<int> expected_pages;
 
   // "-" is full range of pages.
-  PM::PageRangeStatus status = PM::PageRangeTextToPages("-", 10, &pages);
+  PM::PageRangeStatus status = PM::PageRangeTextToPages("-", false, 10, &pages);
   expected_pages = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
   EXPECT_EQ(expected_pages, pages);
   EXPECT_EQ(PM::PRINT_NO_ERROR, status);
 
   // If no start page is specified, we start at first page.
-  status = PM::PageRangeTextToPages("-5", 10, &pages);
+  status = PM::PageRangeTextToPages("-5", false, 10, &pages);
   expected_pages = {0, 1, 2, 3, 4};
   EXPECT_EQ(expected_pages, pages);
   EXPECT_EQ(PM::PRINT_NO_ERROR, status);
 
   // If no end page is specified, we end at last page.
-  status = PM::PageRangeTextToPages("5-", 10, &pages);
+  status = PM::PageRangeTextToPages("5-", false, 10, &pages);
   expected_pages = {4, 5, 6, 7, 8, 9};
   EXPECT_EQ(expected_pages, pages);
   EXPECT_EQ(PM::PRINT_NO_ERROR, status);
 
   // Multiple ranges are separated by commas.
-  status = PM::PageRangeTextToPages("1-3,9-10,4-6", 10, &pages);
+  status = PM::PageRangeTextToPages("1-3,9-10,4-6", false, 10, &pages);
   expected_pages = {0, 1, 2, 3, 4, 5, 8, 9};
   EXPECT_EQ(expected_pages, pages);
   EXPECT_EQ(PM::PRINT_NO_ERROR, status);
 
   // White space is ignored.
-  status = PM::PageRangeTextToPages("1- 3, 9-10,4 -6", 10, &pages);
+  status = PM::PageRangeTextToPages("1- 3, 9-10,4 -6", false, 10, &pages);
   expected_pages = {0, 1, 2, 3, 4, 5, 8, 9};
   EXPECT_EQ(expected_pages, pages);
   EXPECT_EQ(PM::PRINT_NO_ERROR, status);
 
   // End page beyond number of pages is supported and capped to number of pages.
-  status = PM::PageRangeTextToPages("1-10", 5, &pages);
+  status = PM::PageRangeTextToPages("1-10", false, 5, &pages);
   expected_pages = {0, 1, 2, 3, 4};
   EXPECT_EQ(expected_pages, pages);
   EXPECT_EQ(PM::PRINT_NO_ERROR, status);
 
   // Start page beyond number of pages results in error.
-  status = PM::PageRangeTextToPages("1-3,9-10,4-6", 5, &pages);
+  status = PM::PageRangeTextToPages("1-3,9-10,4-6", false, 5, &pages);
   EXPECT_EQ(PM::LIMIT_ERROR, status);
 
+  // Invalid page ranges are ignored if |ignore_invalid_page_ranges| is true.
+  status = PM::PageRangeTextToPages("9-10,4-6,3-1", true, 5, &pages);
+  expected_pages = {3, 4};
+  EXPECT_EQ(expected_pages, pages);
+  EXPECT_EQ(PM::PRINT_NO_ERROR, status);
+
   // Invalid input results in error.
-  status = PM::PageRangeTextToPages("abcd", 10, &pages);
+  status = PM::PageRangeTextToPages("abcd", false, 10, &pages);
   EXPECT_EQ(PM::SYNTAX_ERROR, status);
 
   // Invalid input results in error.
-  status = PM::PageRangeTextToPages("1-3,9-a10,4-6", 10, &pages);
+  status = PM::PageRangeTextToPages("1-3,9-a10,4-6", false, 10, &pages);
   EXPECT_EQ(PM::SYNTAX_ERROR, status);
 }
 
