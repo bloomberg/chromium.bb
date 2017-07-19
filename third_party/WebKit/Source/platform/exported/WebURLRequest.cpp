@@ -31,6 +31,7 @@
 #include "public/platform/WebURLRequest.h"
 
 #include <memory>
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Noncopyable.h"
@@ -424,6 +425,10 @@ WebURLRequest::LoadingIPCType WebURLRequest::GetLoadingIPCType() const {
 
 void WebURLRequest::SetNavigationStartTime(double navigation_start_seconds) {
   resource_request_->SetNavigationStartTime(navigation_start_seconds);
+}
+
+bool WebURLRequest::ShouldProcessCORSOutOfBlink() const {
+  return RuntimeEnabledFeatures::OutOfBlinkCORSEnabled();
 }
 
 void WebURLRequest::SetIsSameDocumentNavigation(bool is_same_document) {

@@ -361,6 +361,8 @@ class WebURLRequest {
 
   BLINK_PLATFORM_EXPORT void SetNavigationStartTime(double);
 
+  BLINK_PLATFORM_EXPORT bool ShouldProcessCORSOutOfBlink() const;
+
   // PlzNavigate: specify that the request was intended to be loaded as a same
   // document navigation. No network requests should be made and the request
   // should be dropped if a different document was loaded in the frame
