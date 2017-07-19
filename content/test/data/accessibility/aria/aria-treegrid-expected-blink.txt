@@ -1,18 +1,18 @@
 rootWebArea
 ++treeGrid
-++++row hierarchicalLevel=1
-++++++cell name='Cell at level 1'
+++++row selectable hierarchicalLevel=1
+++++++cell selectable name='Cell at level 1'
 ++++++++staticText name='Cell at level 1'
 ++++++++++inlineTextBox name='Cell at level 1'
-++++row hierarchicalLevel=2
-++++++cell name='Cell at level 2'
+++++row selectable hierarchicalLevel=2
+++++++cell selectable name='Cell at level 2'
 ++++++++staticText name='Cell at level 2'
 ++++++++++inlineTextBox name='Cell at level 2'
 ++++column
 ++++tableHeaderContainer
 ++treeGrid
-++++row hierarchicalLevel=1
-++++++cell name='Cell at level 1'
+++++row selectable hierarchicalLevel=1
+++++++cell selectable name='Cell at level 1'
 ++++++++staticText name='Cell at level 1'
 ++++++++++inlineTextBox name='Cell at level 1'
 ++++column

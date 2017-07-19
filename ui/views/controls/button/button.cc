@@ -65,8 +65,10 @@ bool Button::GetTooltipText(const gfx::Point& p,
 void Button::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ui::AX_ROLE_BUTTON;
   node_data->SetName(accessible_name_);
-  if (!enabled())
-    node_data->AddState(ui::AX_STATE_DISABLED);
+  if (!enabled()) {
+    node_data->AddIntAttribute(ui::AX_ATTR_RESTRICTION,
+                               ui::AX_RESTRICTION_DISABLED);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

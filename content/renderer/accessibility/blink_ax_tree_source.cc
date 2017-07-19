@@ -429,8 +429,20 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
     dst->AddStringAttribute(ui::AX_ATTR_VALUE, src.StringValue().Utf8());
   }
 
-  if (src.CanSetValueAttribute())
-    dst->AddAction(ui::AX_ACTION_SET_VALUE);
+  switch (src.Restriction()) {
+    case blink::kWebAXRestrictionReadOnly:
+      dst->AddIntAttribute(ui::AX_ATTR_RESTRICTION,
+                           ui::AX_RESTRICTION_READ_ONLY);
+      break;
+    case blink::kWebAXRestrictionDisabled:
+      dst->AddIntAttribute(ui::AX_ATTR_RESTRICTION,
+                           ui::AX_RESTRICTION_DISABLED);
+      break;
+    case blink::kWebAXRestrictionNone:
+      if (src.CanSetValueAttribute())
+        dst->AddAction(ui::AX_ACTION_SET_VALUE);
+      break;
+  }
 
   if (!src.Url().IsEmpty())
     dst->AddStringAttribute(ui::AX_ATTR_URL, src.Url().GetString().Utf8());
@@ -545,9 +557,6 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
       dst->AddIntAttribute(ui::AX_ATTR_DEFAULT_ACTION_VERB,
                            AXDefaultActionVerbFromBlink(src.Action()));
     }
-
-    if (src.IsAriaReadOnly())
-      dst->AddBoolAttribute(ui::AX_ATTR_ARIA_READONLY, true);
 
     if (src.HasComputedStyle()) {
       dst->AddStringAttribute(ui::AX_ATTR_DISPLAY,
@@ -799,7 +808,6 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
         dst->AddIntAttribute(ui::AX_ATTR_TEXT_SEL_START, src.SelectionStart());
         dst->AddIntAttribute(ui::AX_ATTR_TEXT_SEL_END, src.SelectionEnd());
       }
-
 #if defined(OS_CHROMEOS)
       // This attribute will soon be deprecated; see crbug.com/669134.
       WebVector<int> src_line_breaks;

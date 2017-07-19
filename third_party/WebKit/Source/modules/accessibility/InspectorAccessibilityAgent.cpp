@@ -72,7 +72,7 @@ void FillLiveRegionProperties(AXObject& ax_object,
 
 void FillGlobalStates(AXObject& ax_object,
                       protocol::Array<AXProperty>& properties) {
-  if (!ax_object.IsEnabled())
+  if (ax_object.Restriction() == kDisabled)
     properties.addItem(
         CreateProperty(AXGlobalStatesEnum::Disabled, CreateBooleanValue(true)));
 
@@ -214,9 +214,9 @@ void FillWidgetProperties(AXObject& ax_object,
   }
 
   if (RoleAllowsReadonly(role)) {
-    properties.addItem(
-        CreateProperty(AXWidgetAttributesEnum::Readonly,
-                       CreateBooleanValue(ax_object.IsReadOnly())));
+    properties.addItem(CreateProperty(
+        AXWidgetAttributesEnum::Readonly,
+        CreateBooleanValue(ax_object.Restriction() == kReadOnly)));
   }
 
   if (RoleAllowsRequired(role)) {

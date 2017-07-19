@@ -46,9 +46,6 @@ uint32_t AXStateFromBlink(const blink::WebAXObject& o) {
   if (o.IsPasswordField())
     state |= (1 << ui::AX_STATE_PROTECTED);
 
-  if (o.IsReadOnly())
-    state |= (1 << ui::AX_STATE_READ_ONLY);
-
   if (o.IsRequired())
     state |= (1 << ui::AX_STATE_REQUIRED);
 
@@ -57,9 +54,6 @@ uint32_t AXStateFromBlink(const blink::WebAXObject& o) {
 
   if (o.IsEditable())
     state |= (1 << ui::AX_STATE_EDITABLE);
-
-  if (!o.IsEnabled())
-    state |= (1 << ui::AX_STATE_DISABLED);
 
   if (o.IsSelected())
     state |= (1 << ui::AX_STATE_SELECTED);

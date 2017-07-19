@@ -401,7 +401,6 @@ WordLookupClient* Label::GetWordLookupClient() {
 
 void Label::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ui::AX_ROLE_STATIC_TEXT;
-  node_data->AddState(ui::AX_STATE_READ_ONLY);
   // Note that |render_text_| is never elided (see the comment in Init() too).
   node_data->SetName(render_text_->GetDisplayText());
 }

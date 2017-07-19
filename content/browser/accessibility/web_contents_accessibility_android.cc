@@ -1031,7 +1031,8 @@ void WebContentsAccessibilityAndroid::OnAutofillPopupDisplayed(
   ui::AXNodeData ax_node_data;
   ax_node_data.role = ui::AX_ROLE_MENU;
   ax_node_data.SetName("Autofill");
-  ax_node_data.AddState(ui::AX_STATE_READ_ONLY);
+  ax_node_data.AddIntAttribute(ui::AX_ATTR_RESTRICTION,
+                               ui::AX_RESTRICTION_READ_ONLY);
   ax_node_data.AddState(ui::AX_STATE_FOCUSABLE);
   ax_node_data.AddState(ui::AX_STATE_SELECTABLE);
   g_autofill_popup_proxy_node_ax_node->SetData(ax_node_data);

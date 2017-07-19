@@ -1286,15 +1286,69 @@ bool AXNodeObject::IsClickable() const {
   return AXObject::IsClickable();
 }
 
-bool AXNodeObject::IsEnabled() const {
-  if (IsDescendantOfDisabledNode())
-    return false;
+bool AXNodeObject::CanSupportAriaReadOnly() const {
+  switch (RoleValue()) {
+    case kCellRole:
+    case kCheckBoxRole:
+    case kComboBoxRole:
+    case kGridRole:
+    case kListBoxRole:
+    case kMenuButtonRole:
+    case kRadioGroupRole:
+    case kSliderRole:
+    case kSpinButtonRole:
+    case kTextFieldRole:
+      return true;
+    default:
+      break;
+  }
+  return false;
+}
 
-  Node* node = this->GetNode();
-  if (!node || !node->IsElementNode())
-    return true;
+AXRestriction AXNodeObject::Restriction() const {
+  Element* elem = GetElement();
+  if (!elem)
+    return kNone;
 
-  return !ToElement(node)->IsDisabledFormControl();
+  // An <optgroup> is not exposed directly in the AX tree.
+  if (isHTMLOptGroupElement(elem))
+    return kNone;
+
+  // According to ARIA, all elements of the base markup can be disabled.
+  // According to CORE-AAM, any focusable descendant of aria-disabled
+  // ancestor is also disabled.
+  bool is_disabled;
+  if (HasAOMPropertyOrARIAAttribute(AOMBooleanProperty::kDisabled,
+                                    is_disabled)) {
+    // Has aria-disabled, overrides native markup determining disabled.
+    if (is_disabled)
+      return kDisabled;
+  } else if (elem->IsDisabledFormControl() ||
+             (CanSetFocusAttribute() && IsDescendantOfDisabledNode())) {
+    // No aria-disabled, but other markup says it's disabled.
+    return kDisabled;
+  }
+
+  // Check aria-readonly if supported by current role.
+  bool is_read_only;
+  if (CanSupportAriaReadOnly() &&
+      HasAOMPropertyOrARIAAttribute(AOMBooleanProperty::kReadOnly,
+                                    is_read_only)) {
+    // ARIA overrides other readonly state markup.
+    return is_read_only ? kReadOnly : kNone;
+  }
+
+  // Only editable fields can be marked @readonly (unlike @aria-readonly).
+  if (isHTMLTextAreaElement(*elem) && toHTMLTextAreaElement(*elem).IsReadOnly())
+    return kReadOnly;
+  if (isHTMLInputElement(*elem)) {
+    HTMLInputElement& input = toHTMLInputElement(*elem);
+    if (input.IsTextField() && input.IsReadOnly())
+      return kReadOnly;
+  }
+
+  // This is a node that is not readonly and not disabled.
+  return kNone;
 }
 
 AccessibilityExpanded AXNodeObject::IsExpanded() const {
@@ -1328,23 +1382,6 @@ bool AXNodeObject::IsModal() const {
   return false;
 }
 
-bool AXNodeObject::IsReadOnly() const {
-  Node* node = this->GetNode();
-  if (!node)
-    return true;
-
-  if (isHTMLTextAreaElement(*node))
-    return toHTMLTextAreaElement(*node).IsReadOnly();
-
-  if (isHTMLInputElement(*node)) {
-    HTMLInputElement& input = toHTMLInputElement(*node);
-    if (input.IsTextField())
-      return input.IsReadOnly();
-  }
-
-  return !HasEditableStyle(*node);
-}
-
 bool AXNodeObject::IsRequired() const {
   Node* n = this->GetNode();
   if (n && (n->IsElementNode() && ToElement(n)->IsFormControlElement()) &&
@@ -1355,66 +1392,6 @@ bool AXNodeObject::IsRequired() const {
     return true;
 
   return false;
-}
-
-bool AXNodeObject::CanSetFocusAttribute() const {
-  Node* node = GetNode();
-  if (!node)
-    return false;
-
-  if (IsWebArea())
-    return true;
-
-  // Children of elements with an aria-activedescendant attribute should be
-  // focusable if they have a (non-presentational) role.
-  if (!IsPresentational() && RoleValue() != kUnknownRole &&
-      AncestorExposesActiveDescendant())
-    return true;
-
-  // NOTE: It would be more accurate to ask the document whether
-  // setFocusedNode() would do anything. For example, setFocusedNode() will do
-  // nothing if the current focused node will not relinquish the focus.
-  if (IsDisabledFormControl(node))
-    return false;
-
-  // Check for options here because AXListBoxOption and AXMenuListOption
-  // don't help when the <option> is canvas fallback, and because
-  // a common case for aria-owns from a textbox that points to a list
-  // does not change the hierarchy (textboxes don't suport children)
-  if ((RoleValue() == kListBoxOptionRole ||
-       RoleValue() == kMenuListOptionRole) &&
-      IsEnabled())
-    return true;
-
-  return node->IsElementNode() && ToElement(node)->SupportsFocus();
-}
-
-bool AXNodeObject::CanSetValueAttribute() const {
-  if (AOMPropertyOrARIAAttributeIsTrue(AOMBooleanProperty::kReadOnly))
-    return false;
-
-  if (IsProgressIndicator() || IsSlider())
-    return true;
-
-  if (IsTextControl() && !IsNativeTextControl())
-    return true;
-
-  // Any node could be contenteditable, so isReadOnly should be relied upon
-  // for this information for all elements.
-  return !IsReadOnly();
-}
-
-bool AXNodeObject::CanSetSelectedAttribute() const {
-  const AccessibilityRole role = RoleValue();
-  // These elements can be selected if not disabled (native or ARIA).
-  if ((role == kListBoxOptionRole || role == kMenuListOptionRole ||
-       role == kTreeItemRole || role == kCellRole || role == kTabRole ||
-       role == kRowRole || role == kColumnRole || role == kRowHeaderRole ||
-       role == kColumnHeaderRole) &&
-      IsEnabled() && CanSetFocusAttribute()) {
-    return true;
-  }
-  return AXObject::CanSetSelectedAttribute();
 }
 
 bool AXNodeObject::CanvasHasFallbackContent() const {
@@ -1946,9 +1923,8 @@ String AXNodeObject::TextAlternative(bool recursive,
   if (found_text_alternative && !name_sources)
     return text_alternative;
 
-  // Step 2E from: http://www.w3.org/TR/accname-aam-1.1
-  if (recursive && !in_aria_labelled_by_traversal && IsControl() &&
-      !IsButton()) {
+  // Step 2E from: http://www.w3.org/TR/accname-aam-1.1 -- value from control
+  if (recursive && !in_aria_labelled_by_traversal && CanSetValueAttribute()) {
     // No need to set any name source info in a recursive call.
     if (IsTextControl())
       return GetText();
@@ -1976,7 +1952,7 @@ String AXNodeObject::TextAlternative(bool recursive,
 
   // Step 2F / 2G from: http://www.w3.org/TR/accname-aam-1.1
   if (in_aria_labelled_by_traversal || NameFromContents(recursive)) {
-    Node* node = this->GetNode();
+    Node* node = GetNode();
     if (!isHTMLSelectElement(node)) {  // Avoid option descendant text
       name_from = kAXNameFromContents;
       if (name_sources) {

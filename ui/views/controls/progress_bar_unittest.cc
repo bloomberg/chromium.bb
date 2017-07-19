@@ -18,7 +18,7 @@ TEST(ProgressBarTest, Accessibility) {
   bar.GetAccessibleNodeData(&node_data);
   EXPECT_EQ(ui::AX_ROLE_PROGRESS_INDICATOR, node_data.role);
   EXPECT_EQ(base::string16(), node_data.GetString16Attribute(ui::AX_ATTR_NAME));
-  EXPECT_TRUE(node_data.HasState(ui::AX_STATE_READ_ONLY));
+  EXPECT_FALSE(node_data.HasIntAttribute(ui::AX_ATTR_RESTRICTION));
 }
 
 }  // namespace views

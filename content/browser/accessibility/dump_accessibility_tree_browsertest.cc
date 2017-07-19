@@ -161,9 +161,9 @@ void DumpAccessibilityTreeTest::AddDefaultFilters(
   AddFilter(filters, "MIXED");
   AddFilter(filters, "MOVEABLE");
   AddFilter(filters, "MULTISELECTABLE");
-  AddFilter(filters, "READONLY");
   AddFilter(filters, "PRESSED");
   AddFilter(filters, "PROTECTED");
+  AddFilter(filters, "READONLY");
   AddFilter(filters, "SELECTED");
   AddFilter(filters, "SIZEABLE");
   AddFilter(filters, "TRAVERSED");
@@ -201,7 +201,6 @@ void DumpAccessibilityTreeTest::AddDefaultFilters(
   AddFilter(filters, "multiline");
   AddFilter(filters, "multiselectable");
   AddFilter(filters, "protected");
-  // TODO(aleventhal) Add readonly support back after control mode refactor
   AddFilter(filters, "required");
   AddFilter(filters, "select*");
   AddFilter(filters, "visited");
@@ -212,6 +211,7 @@ void DumpAccessibilityTreeTest::AddDefaultFilters(
   AddFilter(filters, "hierarchicalLevel*");
   AddFilter(filters, "aria*");  // ariaCurrentState, ariaInvalidValue, etc.
   AddFilter(filters, "autoComplete*");
+  AddFilter(filters, "restriction*");
   AddFilter(filters, "keyShortcuts*");
   AddFilter(filters, "activedescendantId*");
   AddFilter(filters, "controlsIds*");

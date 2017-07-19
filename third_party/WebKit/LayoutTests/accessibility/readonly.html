@@ -6,22 +6,32 @@
 <div>
   <a id="link1" href="#">Link</a>
   <button id="button1">Button</button>
-  <input id="text1" type="text" value="Value">
-  <input id="checkbox1" type="checkbox" checked>
-  <input id="number1" type="number" value="123">
-  <input id="radio1" type="radio" checked>
-  <input id="slider1" type="range" min="1" max="10" value="5">
-  <input id="submit1" type="submit">
-  <select id="combobox1"><option>1<option selected>2</select>
-  <select multiple id="listbox1"><option>1<option selected>2</select>
-  <textarea id="textarea1">Textarea</textarea>
-  <div id="focusable1" tabindex="0">Focusable</div>
+  A<input id="text1" type="text" value="Value">
+  B<input id="text-readonly1" type="text" value="Value" readonly>
+  C<input id="text-readonly2" type="text" value="Value" readonly aria-readonly="false">
+  D<input id="checkbox1" type="checkbox" checked>
+  E<input id="number1" type="number" value="123">
+  F<input id="radio1" type="radio" checked>
+  G<input id="slider1" type="range" min="1" max="10" value="5">
+  H<input id="submit1" type="submit">
+  I<select id="combobox1"><option>1<option selected>2</select>
+  J<select multiple id="listbox1"><option>1<option selected>2</select>
+  K<textarea id="textarea1">Textarea</textarea>
+  L<textarea id="textarea-readonly1" readonly>Textarea</textarea>
+  M<div id="focusable1" tabindex="0">Focusable</div>
   <h5 id="heading1" tabindex="0">Heading</h5>
-  <div id="aria-button1" tabindex="0" role="button">ARIA button</div>
+  <div id="div1" tabindex="0" aria-readonly="true">Plain div can't be readonly</div>
+  <div id="aria-button1" tabindex="0" role="button" aria-readonly="false">ARIA button</div>
   <div id="aria-togglebutton1" tabindex="0" role="button" aria-pressed="false">ARIA toggle button</div>
   <div id="aria-link1" tabindex="0" role="link">ARIA link</div>
+  <div id="aria-slider1" tabindex="0" role="slider" aria-readonly="true">ARIA slider</div>
+  <div id="aria-progress1" tabindex="0" role="progressbar" aria-readonly="true">ARIA progress meter</div>
   <div id="contenteditable_root1" contentEditable>
     <button id="contenteditable_button1">Button</button>
+  </div>
+  <div id="contenteditable_root-readonly1" contentEditable aria-readonly="true">
+  </div>
+  <div id="contenteditable_root-readonly2" role="textbox" contentEditable aria-readonly="true">
   </div>
 
 </div>
@@ -44,24 +54,34 @@ if (window.testRunner && window.accessibilityController) {
         debug("");
     }
 
-    check("link1", true);
-    check("button1", true);
+    check("link1", false);
+    check("button1", false);
     check("text1", false);
-    check("checkbox1", true);
+    check("text-readonly1", true);
+    check("text-readonly2", false);
+    check("checkbox1", false);
     check("number1", false);
-    check("radio1", true);
-    check("slider1", true);
-    check("submit1", true);
-    check("combobox1", true);
-    check("listbox1", true);
+    check("radio1", false);
+    check("slider1", false);
+    check("submit1", false);
+    check("combobox1", false);
+    check("listbox1", false);
     check("textarea1", false);
-    check("focusable1", true);
-    check("heading1", true);
-    check("aria-button1", true);
-    check("aria-togglebutton1", true);
-    check("aria-link1", true);
+    check("textarea-readonly1", true);
+    check("focusable1", false);
+    check("heading1", false);
+    check("div1", false);
+    check("aria-button1", false);
+    check("aria-togglebutton1", false);
+    check("aria-link1", false);
+    check("aria-slider1", true);
+    check("aria-progress1", false);
     check("contenteditable_root1", false);
     check("contenteditable_button1", false);
+    // This is correct according to ARIA spec, as aria-readonly is supported
+    // on specific roles only -- it is not a universal ARIA property.
+    check("contenteditable_root-readonly1", false);
+    check("contenteditable_root-readonly2", true);
 }
 
 </script>

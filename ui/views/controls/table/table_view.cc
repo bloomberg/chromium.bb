@@ -445,7 +445,8 @@ bool TableView::GetTooltipTextOrigin(const gfx::Point& p,
 
 void TableView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ui::AX_ROLE_TABLE;
-  node_data->AddState(ui::AX_STATE_READ_ONLY);
+  node_data->AddIntAttribute(ui::AX_ATTR_RESTRICTION,
+                             ui::AX_RESTRICTION_READ_ONLY);
   node_data->AddIntAttribute(ui::AX_ATTR_SET_SIZE, RowCount());
 
   if (selection_model_.active() != ui::ListSelectionModel::kUnselectedIndex) {

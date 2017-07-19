@@ -58,6 +58,7 @@ class MODULES_EXPORT AXTableCell : public AXLayoutObject {
   unsigned AriaColumnIndex() const;
   unsigned AriaRowIndex() const;
   void SetARIAColIndexFromRow(int index) { aria_col_index_from_row_ = index; }
+  virtual bool CanSetSelectedAttribute() const { return false; }
 
  protected:
   virtual AXObject* ParentTable() const;

@@ -1,16 +1,16 @@
 rootWebArea
 ++table
-++++row
-++++++columnHeader name='Browser'
+++++row selectable
+++++++columnHeader selectable name='Browser'
 ++++++++staticText name='Browser'
 ++++++++++inlineTextBox name='Browser'
-++++++columnHeader name='Rendering Engine'
+++++++columnHeader selectable name='Rendering Engine'
 ++++++++staticText name='Rendering Engine'
 ++++++++++inlineTextBox name='Rendering Engine'
-++++row
-++++++cell name='Chrome'
+++++row selectable
+++++++cell selectable name='Chrome'
 ++++++++staticText name='Chrome'
 ++++++++++inlineTextBox name='Chrome'
-++++++cell name='Blink'
+++++++cell selectable name='Blink'
 ++++++++staticText name='Blink'
 ++++++++++inlineTextBox name='Blink'

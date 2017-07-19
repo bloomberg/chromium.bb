@@ -923,14 +923,18 @@ void Textfield::OnDragDone() {
 void Textfield::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ui::AX_ROLE_TEXT_FIELD;
   node_data->SetName(accessible_name_);
+  // Editable state indicates support of editable interface, and is always set
+  // for a textfield, even if disabled or readonly.
+  node_data->AddState(ui::AX_STATE_EDITABLE);
   if (enabled()) {
     node_data->AddIntAttribute(ui::AX_ATTR_DEFAULT_ACTION_VERB,
                                ui::AX_DEFAULT_ACTION_VERB_ACTIVATE);
+    // Only readonly if enabled. Don't overwrite the disabled restriction.
+    if (read_only()) {
+      node_data->AddIntAttribute(ui::AX_ATTR_RESTRICTION,
+                                 ui::AX_RESTRICTION_READ_ONLY);
+    }
   }
-  if (read_only())
-    node_data->AddState(ui::AX_STATE_READ_ONLY);
-  else
-    node_data->AddState(ui::AX_STATE_EDITABLE);
   if (text_input_type_ == ui::TEXT_INPUT_TYPE_PASSWORD) {
     node_data->AddState(ui::AX_STATE_PROTECTED);
     node_data->SetValue(base::string16(

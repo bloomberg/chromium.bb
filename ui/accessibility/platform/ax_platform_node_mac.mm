@@ -488,7 +488,9 @@ bool AlsoUseShowMenuActionForDefaultAction(const ui::AXNodeData& data) {
   if (!node_)
     return NO;
 
-  if (node_->GetData().HasState(ui::AX_STATE_DISABLED))
+  const int restriction =
+      node_->GetData().GetIntAttribute(ui::AX_ATTR_RESTRICTION);
+  if (restriction == ui::AX_RESTRICTION_DISABLED)
     return NO;
 
   // Allow certain attributes to be written via an accessibility client. A
@@ -506,14 +508,18 @@ bool AlsoUseShowMenuActionForDefaultAction(const ui::AXNodeData& data) {
     // them is via the value attribute rather than the selected attribute.
     if (node_->GetData().role == ui::AX_ROLE_TAB)
       return !node_->GetData().HasState(ui::AX_STATE_SELECTED);
+
+    return restriction != ui::AX_RESTRICTION_READ_ONLY;
   }
 
-  if ([attributeName isEqualToString:NSAccessibilityValueAttribute] ||
-      [attributeName isEqualToString:NSAccessibilitySelectedTextAttribute] ||
-      [attributeName
-          isEqualToString:NSAccessibilitySelectedTextRangeAttribute]) {
-    return !node_->GetData().HasState(ui::AX_STATE_READ_ONLY);
-  }
+  // Readonly fields and selected text operations:
+  // - Selecting different text via NSAccessibilitySelectedTextRangeAttribute
+  //   should work but it does not - see http://crbug.com/692362 .
+  // - Changing the actual text contents in the selection via
+  //   NSAccessibilitySelectedTextAttribute is prevented, which is correct.
+  if ([attributeName isEqualToString:NSAccessibilitySelectedTextAttribute] ||
+      [attributeName isEqualToString:NSAccessibilitySelectedTextRangeAttribute])
+    return restriction != ui::AX_RESTRICTION_READ_ONLY;
 
   if ([attributeName isEqualToString:NSAccessibilityFocusedAttribute]) {
     return node_->GetData().HasState(ui::AX_STATE_FOCUSABLE);
@@ -642,7 +648,8 @@ bool AlsoUseShowMenuActionForDefaultAction(const ui::AXNodeData& data) {
 }
 
 - (NSNumber*)AXEnabled {
-  return @(!node_->GetData().HasState(ui::AX_STATE_DISABLED));
+  return @(node_->GetData().GetIntAttribute(ui::AX_ATTR_RESTRICTION) !=
+           ui::AX_RESTRICTION_DISABLED);
 }
 
 - (NSNumber*)AXFocused {

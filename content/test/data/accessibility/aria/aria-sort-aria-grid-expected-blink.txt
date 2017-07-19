@@ -1,103 +1,88 @@
 rootWebArea
 ++grid
-++++row
-++++++columnHeader name='Alphabet'
+++++row selectable
+++++++columnHeader selectable name='Alphabet'
 ++++++++staticText name='Alphabet'
 ++++++++++inlineTextBox name='Alphabet'
-++++row
-++++++cell name='A'
+++++row selectable
+++++++cell selectable name='A'
 ++++++++staticText name='A'
 ++++++++++inlineTextBox name='A'
-++++row
-++++++cell name='B'
+++++row selectable
+++++++cell selectable name='B'
 ++++++++staticText name='B'
 ++++++++++inlineTextBox name='B'
 ++++column
 ++++tableHeaderContainer
 ++grid
-++++row
-++++++columnHeader name='Alphabet'
+++++row selectable
+++++++columnHeader selectable name='Alphabet'
 ++++++++staticText name='Alphabet'
 ++++++++++inlineTextBox name='Alphabet'
-++++row
-++++++cell name='A'
+++++row selectable
+++++++cell selectable name='A'
 ++++++++staticText name='A'
 ++++++++++inlineTextBox name='A'
-++++row
-++++++cell name='B'
+++++row selectable
+++++++cell selectable name='B'
 ++++++++staticText name='B'
 ++++++++++inlineTextBox name='B'
 ++++column
 ++++tableHeaderContainer
 ++grid
-++++row
-++++++columnHeader name='Alphabet'
+++++row selectable
+++++++columnHeader selectable name='Alphabet'
 ++++++++staticText name='Alphabet'
 ++++++++++inlineTextBox name='Alphabet'
-++++row
-++++++cell name='A'
+++++row selectable
+++++++cell selectable name='A'
 ++++++++staticText name='A'
 ++++++++++inlineTextBox name='A'
-++++row
-++++++cell name='B'
+++++row selectable
+++++++cell selectable name='B'
 ++++++++staticText name='B'
 ++++++++++inlineTextBox name='B'
 ++++column
 ++++tableHeaderContainer
 ++grid
-++++row
-++++++columnHeader name='Alphabet'
+++++row selectable
+++++++columnHeader selectable name='Alphabet'
 ++++++++staticText name='Alphabet'
 ++++++++++inlineTextBox name='Alphabet'
-++++row
-++++++cell name='B'
+++++row selectable
+++++++cell selectable name='B'
 ++++++++staticText name='B'
 ++++++++++inlineTextBox name='B'
-++++row
-++++++cell name='A'
+++++row selectable
+++++++cell selectable name='A'
 ++++++++staticText name='A'
 ++++++++++inlineTextBox name='A'
 ++++column
 ++++tableHeaderContainer
 ++grid
-++++row
-++++++columnHeader name='Alphabet'
+++++row selectable
+++++++columnHeader selectable name='Alphabet'
 ++++++++staticText name='Alphabet'
 ++++++++++inlineTextBox name='Alphabet'
-++++row
-++++++cell name='A'
+++++row selectable
+++++++cell selectable name='A'
 ++++++++staticText name='A'
 ++++++++++inlineTextBox name='A'
-++++row
-++++++cell name='A'
+++++row selectable
+++++++cell selectable name='A'
 ++++++++staticText name='A'
 ++++++++++inlineTextBox name='A'
 ++++column
 ++++tableHeaderContainer
 ++grid
-++++row
-++++++rowHeader name='Alphabet'
+++++row selectable
+++++++rowHeader selectable name='Alphabet'
 ++++++++staticText name='Alphabet'
 ++++++++++inlineTextBox name='Alphabet'
-++++++cell name='A'
+++++++cell selectable name='A'
 ++++++++staticText name='A'
 ++++++++++inlineTextBox name='A'
-++++++cell name='B'
-++++++++staticText name='B'
-++++++++++inlineTextBox name='B'
-++++column
-++++column
-++++column
-++++tableHeaderContainer
-++grid
-++++row
-++++++rowHeader name='Alphabet'
-++++++++staticText name='Alphabet'
-++++++++++inlineTextBox name='Alphabet'
-++++++cell name='A'
-++++++++staticText name='A'
-++++++++++inlineTextBox name='A'
-++++++cell name='B'
+++++++cell selectable name='B'
 ++++++++staticText name='B'
 ++++++++++inlineTextBox name='B'
 ++++column
@@ -105,14 +90,14 @@ rootWebArea
 ++++column
 ++++tableHeaderContainer
 ++grid
-++++row
-++++++rowHeader name='Alphabet'
+++++row selectable
+++++++rowHeader selectable name='Alphabet'
 ++++++++staticText name='Alphabet'
 ++++++++++inlineTextBox name='Alphabet'
-++++++cell name='A'
+++++++cell selectable name='A'
 ++++++++staticText name='A'
 ++++++++++inlineTextBox name='A'
-++++++cell name='B'
+++++++cell selectable name='B'
 ++++++++staticText name='B'
 ++++++++++inlineTextBox name='B'
 ++++column
@@ -120,14 +105,29 @@ rootWebArea
 ++++column
 ++++tableHeaderContainer
 ++grid
-++++row
-++++++rowHeader name='Alphabet'
+++++row selectable
+++++++rowHeader selectable name='Alphabet'
 ++++++++staticText name='Alphabet'
 ++++++++++inlineTextBox name='Alphabet'
-++++++cell name='B'
+++++++cell selectable name='A'
+++++++++staticText name='A'
+++++++++++inlineTextBox name='A'
+++++++cell selectable name='B'
 ++++++++staticText name='B'
 ++++++++++inlineTextBox name='B'
-++++++cell name='A'
+++++column
+++++column
+++++column
+++++tableHeaderContainer
+++grid
+++++row selectable
+++++++rowHeader selectable name='Alphabet'
+++++++++staticText name='Alphabet'
+++++++++++inlineTextBox name='Alphabet'
+++++++cell selectable name='B'
+++++++++staticText name='B'
+++++++++++inlineTextBox name='B'
+++++++cell selectable name='A'
 ++++++++staticText name='A'
 ++++++++++inlineTextBox name='A'
 ++++column
@@ -135,14 +135,14 @@ rootWebArea
 ++++column
 ++++tableHeaderContainer
 ++grid
-++++row
-++++++rowHeader name='Alphabet'
+++++row selectable
+++++++rowHeader selectable name='Alphabet'
 ++++++++staticText name='Alphabet'
 ++++++++++inlineTextBox name='Alphabet'
-++++++cell name='A'
+++++++cell selectable name='A'
 ++++++++staticText name='A'
 ++++++++++inlineTextBox name='A'
-++++++cell name='A'
+++++++cell selectable name='A'
 ++++++++staticText name='A'
 ++++++++++inlineTextBox name='A'
 ++++column

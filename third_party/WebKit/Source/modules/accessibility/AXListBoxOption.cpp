@@ -79,19 +79,6 @@ bool AXListBoxOption::IsParentPresentationalRole() const {
   return false;
 }
 
-bool AXListBoxOption::IsEnabled() const {
-  if (!GetNode())
-    return false;
-
-  if (AOMPropertyOrARIAAttributeIsTrue(AOMBooleanProperty::kDisabled))
-    return false;
-
-  if (ToElement(GetNode())->hasAttribute(disabledAttr))
-    return false;
-
-  return true;
-}
-
 bool AXListBoxOption::IsSelected() const {
   return isHTMLOptionElement(GetNode()) &&
          toHTMLOptionElement(GetNode())->Selected();
@@ -114,24 +101,6 @@ bool AXListBoxOption::ComputeAccessibilityIsIgnored(
     return true;
 
   return false;
-}
-
-bool AXListBoxOption::CanSetFocusAttribute() const {
-  return CanSetSelectedAttribute();
-}
-
-bool AXListBoxOption::CanSetSelectedAttribute() const {
-  if (!isHTMLOptionElement(GetNode()))
-    return false;
-
-  if (toHTMLOptionElement(GetNode())->IsDisabledFormControl())
-    return false;
-
-  HTMLSelectElement* select_element = ListBoxOptionParentNode();
-  if (!select_element || select_element->IsDisabledFormControl())
-    return false;
-
-  return IsEnabled();
 }
 
 String AXListBoxOption::TextAlternative(bool recursive,

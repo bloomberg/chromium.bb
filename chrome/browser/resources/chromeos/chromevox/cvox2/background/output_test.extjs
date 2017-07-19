@@ -788,10 +788,12 @@ TEST_F('OutputE2ETest', 'RoleDescription', function() {
   });
 });
 
-SYNC_TEST_F('OutputE2ETest', 'ValidateStateAndDescription', function() {
+SYNC_TEST_F('OutputE2ETest', 'ValidateCommonProperties', function() {
   var stateStr = '$state';
+  var restrictionStr = '$restriction';
   var descStr = '$description';
   var missingState = [];
+  var missingRestriction = [];
   var missingDescription = [];
   for (var key in Output.RULES.navigate) {
     var speak = Output.RULES.navigate[key].speak;
@@ -800,6 +802,8 @@ SYNC_TEST_F('OutputE2ETest', 'ValidateStateAndDescription', function() {
 
     if (speak.indexOf(stateStr) == -1)
       missingState.push(key);
+    if (speak.indexOf(restrictionStr) == -1)
+      missingRestriction.push(key);
     if (speak.indexOf(descStr) == -1)
       missingDescription.push(key);
   }
@@ -809,11 +813,20 @@ SYNC_TEST_F('OutputE2ETest', 'ValidateStateAndDescription', function() {
       RoleType.INLINE_TEXT_BOX, RoleType.LIST_MARKER,
       RoleType.PARAGRAPH, RoleType.ROOT_WEB_AREA,
       RoleType.STATIC_TEXT, RoleType.WINDOW];
+  var notRestricted = [RoleType.ALERT, RoleType.ALERT_DIALOG, RoleType.CELL,
+      RoleType.CLIENT, RoleType.EMBEDDED_OBJECT, RoleType.GENERIC_CONTAINER,
+      RoleType.IMAGE, RoleType.INLINE_TEXT_BOX, RoleType.LIST,
+      RoleType.LIST_MARKER, RoleType.PARAGRAPH, RoleType.REGION,
+      RoleType.ROOT_WEB_AREA, RoleType.ROW_HEADER, RoleType.STATIC_TEXT,
+      RoleType.TABLE_HEADER_CONTAINER, RoleType.TIMER, RoleType.WINDOW];
   var notDescribed = [RoleType.CLIENT, RoleType.EMBEDDED_OBJECT,
       RoleType.INLINE_TEXT_BOX, RoleType.LIST_MARKER, RoleType.PARAGRAPH,
       RoleType.ROOT_WEB_AREA, RoleType.STATIC_TEXT, RoleType.WINDOW];
   missingState = missingState.filter(function(state) {
     return notStated.indexOf(state) == -1;
+  });
+  missingRestriction = missingRestriction.filter(function(restriction) {
+    return notRestricted.indexOf(restriction) == -1;
   });
   missingDescription = missingDescription.filter(function(desc) {
     return notDescribed.indexOf(desc) == -1;
@@ -822,14 +835,18 @@ SYNC_TEST_F('OutputE2ETest', 'ValidateStateAndDescription', function() {
   assertEquals(0, missingState.length,
                'Unexpected missing states for output rules ' +
                    missingState.join(' '));
+  assertEquals(0, missingRestriction.length,
+               'Unexpected missing rectriction for output rules ' +
+                   missingRestriction.join(' '));
   assertEquals(0, missingDescription.length,
                'Unexpected missing descriptions for output rules ' +
                    missingDescription.join(' '));
 
-  // If you fail this test, you likely need to insert a $state or $description
-  // into the output rules for the printed roles. Typically, $description goes
-  // towards the end of the output rule, though this depends on the role. For
-  // example, it could make sense to put $description before $value or $state.
+  // If you fail this test, you likely need to insert a $state, $restriction or
+  // $description into the output rules for the printed roles. Typically,
+  // $description goes towards the end of the output rule, though this depends
+  // on the role. For example, it could make sense to put $description before
+  // $value or $state.
 
   // You can also add the role to be excluded from this check. You are
   // encouraged to write a more intelligent output rule to provide friendlier

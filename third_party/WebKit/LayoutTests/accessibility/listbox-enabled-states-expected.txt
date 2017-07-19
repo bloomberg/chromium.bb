@@ -2,12 +2,12 @@
 This tests that we report the correct enabled state on a listbox.
 
 
-PASS axSelectElement.isEnabled is true
-PASS axSelectElement.childAtIndex(0).isEnabled is true
-PASS axSelectElement.childAtIndex(1).isEnabled is true
-PASS axSelectElement.childAtIndex(2).isEnabled is false
-PASS axSelectElement.childAtIndex(3).isEnabled is false
-PASS axSelectElement.childAtIndex(4).isEnabled is true
+PASS axSelectElement.restriction is "none"
+PASS axSelectElement.childAtIndex(0).restriction is "none"
+PASS axSelectElement.childAtIndex(1).restriction is "none"
+PASS axSelectElement.childAtIndex(2).restriction is "disabled"
+PASS axSelectElement.childAtIndex(3).restriction is "disabled"
+PASS axSelectElement.childAtIndex(4).restriction is "none"
 PASS successfullyParsed is true
 
 TEST COMPLETE
