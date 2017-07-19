@@ -385,7 +385,7 @@ deps_os = {
 
     'src/third_party/material_design_icons/src':
       Var('chromium_git') + '/external/github.com/google/material-design-icons.git' + '@' +
-      'a6145e167b4a3a65640dd6279319cbc77a7e4e96',
+      '5ab428852e35dc177a8c37a2df9dc9ccf768c65a',
   },
   'mac': {
     'src/chrome/installer/mac/third_party/xz/xz':
