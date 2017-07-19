@@ -52,7 +52,7 @@ class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
       const base::string16& app_title,
       const base::android::ScopedJavaGlobalRef<jobject>& native_app_data,
       const SkBitmap& icon,
-      const std::string& native_app_package,
+      const std::string& native_app_package_name,
       const std::string& referrer);
 
   ~AppBannerInfoBarDelegateAndroid() override;
@@ -74,9 +74,6 @@ class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
 
   // ConfirmInfoBarDelegate:
   bool Accept() override;
-
-  // Update the AppBannerInfoBarAndroid with installed WebAPK's information.
-  void UpdateStateForInstalledWebAPK(const std::string& webapk_package_name);
 
  private:
   // The states of a WebAPK installation, where the infobar is displayed during
@@ -102,7 +99,7 @@ class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
       const base::string16& app_title,
       const base::android::ScopedJavaGlobalRef<jobject>& native_app_data,
       const SkBitmap& icon,
-      const std::string& native_app_package,
+      const std::string& native_app_package_name,
       const std::string& referrer);
 
   void CreateJavaDelegate();
@@ -152,7 +149,7 @@ class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
   const SkBitmap primary_icon_;
   const SkBitmap badge_icon_;
 
-  std::string native_app_package_;
+  std::string package_name_;
   std::string referrer_;
   bool has_user_interaction_;
 
