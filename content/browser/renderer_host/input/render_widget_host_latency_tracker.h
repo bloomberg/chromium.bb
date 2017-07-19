@@ -26,7 +26,7 @@ class RenderWidgetHostDelegate;
 class CONTENT_EXPORT RenderWidgetHostLatencyTracker
     : NON_EXPORTED_BASE(public ui::LatencyTracker) {
  public:
-  explicit RenderWidgetHostLatencyTracker();
+  explicit RenderWidgetHostLatencyTracker(bool metric_sampling);
   ~RenderWidgetHostLatencyTracker();
 
   // Associates the latency tracker with a given route and process.
@@ -98,6 +98,12 @@ class CONTENT_EXPORT RenderWidgetHostLatencyTracker
   // Whether the touch start for the current stream of touch events had its
   // default action prevented. Only valid for single finger gestures.
   bool touch_start_default_prevented_;
+
+  // Whether the sampling is needed for high volume metrics. This will be off
+  // when we are in unit tests. This is a temporary field so we can come up with
+  // a more permanent solution for crbug.com/739169.
+  bool metric_sampling_;
+  int metric_sampling_events_since_last_sample_;
 
   RenderWidgetHostDelegate* render_widget_host_delegate_;
 
