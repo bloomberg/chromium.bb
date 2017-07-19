@@ -374,6 +374,7 @@ void NotifyUIThreadOfRequestStarted(
     const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
     ResourceType resource_type) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  CHECK(!web_contents_getter.is_null());
   content::WebContents* web_contents = web_contents_getter.Run();
   if (!web_contents)
     return;
@@ -514,15 +515,18 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
     safe_browsing_->OnResourceRequest(request);
 
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
+  // TODO(742370): remove when bug is resolved.
+  CHECK(info);
+  CHECK(!info->GetWebContentsGetterForRequest().is_null());
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
   // TODO(petewil): Unify the safe browsing request and the metrics observer
   // request if possible so we only have to cross to the main thread once.
   // http://crbug.com/712312.
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(&NotifyUIThreadOfRequestStarted,
-                                     info->GetWebContentsGetterForRequest(),
-                                     info->GetResourceType()));
+                          base::BindOnce(&NotifyUIThreadOfRequestStarted,
+                                         info->GetWebContentsGetterForRequest(),
+                                         info->GetResourceType()));
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
 
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(
