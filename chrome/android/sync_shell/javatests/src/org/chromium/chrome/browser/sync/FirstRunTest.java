@@ -94,7 +94,8 @@ public class FirstRunTest extends SyncTestBase {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                FirstRunFlowSequencer.launch(context, intent, false);
+                FirstRunFlowSequencer.launch(context, intent, false /* requiresBroadcast */,
+                        false /* preferLightweightFre */);
             }
         });
 
