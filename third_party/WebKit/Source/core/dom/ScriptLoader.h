@@ -244,6 +244,11 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
 
   TraceWrapperMember<PendingScript> pending_script_;
   TraceWrapperMember<ModulePendingScriptTreeClient> module_tree_client_;
+
+  // The context document at the time when PrepareScript() is executed.
+  // This is only used to check whether the script element is moved between
+  // documents and thus doesn't retain a strong reference.
+  WeakMember<Document> original_document_;
 };
 
 }  // namespace blink
