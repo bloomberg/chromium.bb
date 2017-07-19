@@ -7,6 +7,7 @@
 #include "ash/ash_constants.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "base/callback.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
