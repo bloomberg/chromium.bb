@@ -390,11 +390,11 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
     timestamp_ = timestamp;
   }
 
-  // It uses |client| to insert a new sync token and potentially waits on an
-  // older sync token. The final sync point will be used to release this
-  // VideoFrame. Also returns the new sync token.
+  // It uses |client| to insert a new sync point and potentially waits on a
+  // older sync point. The final sync point will be used to release this
+  // VideoFrame.
   // This method is thread safe. Both blink and compositor threads can call it.
-  gpu::SyncToken UpdateReleaseSyncToken(SyncTokenClient* client);
+  void UpdateReleaseSyncToken(SyncTokenClient* client);
 
   // Returns a human-readable string describing |*this|.
   std::string AsHumanReadableString();

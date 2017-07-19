@@ -171,6 +171,10 @@ class CC_EXPORT ResourceProvider
                       const uint8_t* image,
                       const gfx::Size& image_size);
 
+  // Generates sync tokesn for resources which need a sync token.
+  void GenerateSyncTokenForResource(ResourceId resource_id);
+  void GenerateSyncTokenForResources(const ResourceIdArray& resource_ids);
+
   // Gets the most recent sync token from the indicated resources.
   gpu::SyncToken GetSyncTokenForResources(const ResourceIdArray& resource_ids);
 
@@ -603,17 +607,14 @@ class CC_EXPORT ResourceProvider
              GLenum filter);
     Resource(Resource&& other);
 
-    bool needs_sync_token() const {
-      return type != RESOURCE_TYPE_BITMAP &&
-             synchronization_state_ == LOCALLY_USED;
-    }
+    bool needs_sync_token() const { return needs_sync_token_; }
 
     SynchronizationState synchronization_state() const {
       return synchronization_state_;
     }
 
     const viz::TextureMailbox& mailbox() const { return mailbox_; }
-    void SetMailbox(const viz::TextureMailbox& mailbox);
+    void set_mailbox(const viz::TextureMailbox& mailbox);
 
     void SetLocallyUsed();
     void SetSynchronized();
@@ -687,6 +688,7 @@ class CC_EXPORT ResourceProvider
 
    private:
     SynchronizationState synchronization_state_ = SYNCHRONIZED;
+    bool needs_sync_token_ = false;
     viz::TextureMailbox mailbox_;
 
     DISALLOW_COPY_AND_ASSIGN(Resource);
