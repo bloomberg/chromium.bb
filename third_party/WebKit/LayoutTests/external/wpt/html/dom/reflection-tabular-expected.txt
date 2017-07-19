@@ -32,10 +32,7 @@ PASS colgroup.accessKey: 32 tests
 PASS colgroup.tabIndex: 24 tests
 PASS colgroup.span: 11 tests
 FAIL colgroup.span: setAttribute() to 4294967296 assert_equals: IDL get expected 1000 but got 1
-PASS colgroup.span: 49 tests
-FAIL colgroup.span: IDL set to 2147483648 assert_equals: getAttribute() expected "1" but got "0"
-FAIL colgroup.span: IDL set to 4294967295 assert_equals: getAttribute() expected "1" but got "0"
-PASS colgroup.span: 2 tests
+PASS colgroup.span: 53 tests
 PASS colgroup.align: 32 tests
 PASS colgroup.ch (<colgroup char>): 32 tests
 PASS colgroup.chOff (<colgroup charoff>): 32 tests
@@ -50,10 +47,7 @@ PASS col.accessKey: 32 tests
 PASS col.tabIndex: 24 tests
 PASS col.span: 11 tests
 FAIL col.span: setAttribute() to 4294967296 assert_equals: IDL get expected 1000 but got 1
-PASS col.span: 49 tests
-FAIL col.span: IDL set to 2147483648 assert_equals: getAttribute() expected "1" but got "0"
-FAIL col.span: IDL set to 4294967295 assert_equals: getAttribute() expected "1" but got "0"
-PASS col.span: 2 tests
+PASS col.span: 53 tests
 PASS col.align: 32 tests
 PASS col.ch (<col char>): 32 tests
 PASS col.chOff (<col charoff>): 32 tests
@@ -113,10 +107,7 @@ PASS td.accessKey: 32 tests
 PASS td.tabIndex: 24 tests
 PASS td.colSpan: 11 tests
 FAIL td.colSpan: setAttribute() to 4294967296 assert_equals: IDL get expected 1000 but got 1
-PASS td.colSpan: 49 tests
-FAIL td.colSpan: IDL set to 2147483648 assert_equals: getAttribute() expected "1" but got "0"
-FAIL td.colSpan: IDL set to 4294967295 assert_equals: getAttribute() expected "1" but got "0"
-PASS td.colSpan: 2 tests
+PASS td.colSpan: 53 tests
 PASS td.rowSpan: 6 tests
 FAIL td.rowSpan: setAttribute() to 0 assert_equals: IDL get expected 0 but got 1
 PASS td.rowSpan: 4 tests
@@ -128,9 +119,7 @@ PASS td.rowSpan: 40 tests
 FAIL td.rowSpan: IDL set to 0 assert_equals: IDL get expected 0 but got 1
 PASS td.rowSpan: 3 tests
 FAIL td.rowSpan: IDL set to "-0" assert_equals: IDL get expected 0 but got 1
-FAIL td.rowSpan: IDL set to 2147483648 assert_equals: getAttribute() expected "1" but got "0"
-FAIL td.rowSpan: IDL set to 4294967295 assert_equals: getAttribute() expected "1" but got "0"
-PASS td.rowSpan: 2 tests
+PASS td.rowSpan: 4 tests
 PASS td.scope: 72 tests
 PASS td.abbr: 32 tests
 PASS td.align: 32 tests
@@ -151,10 +140,7 @@ PASS th.accessKey: 32 tests
 PASS th.tabIndex: 24 tests
 PASS th.colSpan: 11 tests
 FAIL th.colSpan: setAttribute() to 4294967296 assert_equals: IDL get expected 1000 but got 1
-PASS th.colSpan: 49 tests
-FAIL th.colSpan: IDL set to 2147483648 assert_equals: getAttribute() expected "1" but got "0"
-FAIL th.colSpan: IDL set to 4294967295 assert_equals: getAttribute() expected "1" but got "0"
-PASS th.colSpan: 2 tests
+PASS th.colSpan: 53 tests
 PASS th.rowSpan: 6 tests
 FAIL th.rowSpan: setAttribute() to 0 assert_equals: IDL get expected 0 but got 1
 PASS th.rowSpan: 4 tests
@@ -166,9 +152,7 @@ PASS th.rowSpan: 40 tests
 FAIL th.rowSpan: IDL set to 0 assert_equals: IDL get expected 0 but got 1
 PASS th.rowSpan: 3 tests
 FAIL th.rowSpan: IDL set to "-0" assert_equals: IDL get expected 0 but got 1
-FAIL th.rowSpan: IDL set to 2147483648 assert_equals: getAttribute() expected "1" but got "0"
-FAIL th.rowSpan: IDL set to 4294967295 assert_equals: getAttribute() expected "1" but got "0"
-PASS th.rowSpan: 2 tests
+PASS th.rowSpan: 4 tests
 PASS th.scope: 72 tests
 PASS th.abbr: 32 tests
 PASS th.align: 32 tests
