@@ -9,6 +9,7 @@
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/core/SkString.h"
+#include "third_party/skia/include/effects/SkBlurImageFilter.h"
 #include "third_party/skia/include/effects/SkColorFilterImageFilter.h"
 #include "third_party/skia/include/effects/SkDropShadowImageFilter.h"
 #include "ui/gfx/skia_util.h"
@@ -32,6 +33,12 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
   // TraitsTestService:
   void EchoBitmap(const SkBitmap& b, EchoBitmapCallback callback) override {
     std::move(callback).Run(b);
+  }
+
+  void EchoBlurImageFilterTileMode(
+      SkBlurImageFilter::TileMode t,
+      EchoBlurImageFilterTileModeCallback callback) override {
+    std::move(callback).Run(t);
   }
 
   void EchoImageFilter(const sk_sp<SkImageFilter>& i,
@@ -124,6 +131,14 @@ TEST_F(StructTraitsTest, DropShadowImageFilter) {
   SkString output_str;
   output->toString(&output_str);
   EXPECT_EQ(input_str, output_str);
+}
+
+TEST_F(StructTraitsTest, BlurImageFilterTileMode) {
+  SkBlurImageFilter::TileMode input(SkBlurImageFilter::kClamp_TileMode);
+  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  SkBlurImageFilter::TileMode output;
+  proxy->EchoBlurImageFilterTileMode(input, &output);
+  EXPECT_EQ(input, output);
 }
 
 }  // namespace skia

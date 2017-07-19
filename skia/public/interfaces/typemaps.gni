@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 typemaps = [
+  "//skia/public/interfaces/blur_image_filter_tile_mode.typemap",
   "//skia/public/interfaces/image_filter.typemap",
   "//skia/public/interfaces/skbitmap.typemap",
 ]

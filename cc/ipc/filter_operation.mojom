@@ -5,6 +5,7 @@
 module cc.mojom;
 
 import "skia/public/interfaces/image_filter.mojom";
+import "skia/public/interfaces/blur_image_filter_tile_mode.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
 enum FilterType {
@@ -35,6 +36,7 @@ struct FilterOperation {
   skia.mojom.ImageFilter image_filter;
   array<float, 20>? matrix;
   int32 zoom_inset;
+  skia.mojom.BlurTileMode blur_tile_mode;
   // Note: SkRegion is currently not needed for serialization.
 };
 

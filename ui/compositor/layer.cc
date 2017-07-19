@@ -92,7 +92,7 @@ Layer::Layer()
       visible_(true),
       fills_bounds_opaquely_(true),
       fills_bounds_completely_(false),
-      background_blur_radius_(0),
+      background_blur_sigma_(0.0f),
       layer_saturation_(0.0f),
       layer_brightness_(0.0f),
       layer_grayscale_(0.0f),
@@ -118,7 +118,7 @@ Layer::Layer(LayerType type)
       visible_(true),
       fills_bounds_opaquely_(true),
       fills_bounds_completely_(false),
-      background_blur_radius_(0),
+      background_blur_sigma_(0.0f),
       layer_saturation_(0.0f),
       layer_brightness_(0.0f),
       layer_grayscale_(0.0f),
@@ -165,7 +165,7 @@ std::unique_ptr<Layer> Layer::Clone() const {
   auto clone = base::MakeUnique<Layer>(type_);
 
   // Background filters.
-  clone->SetBackgroundBlur(background_blur_radius_);
+  clone->SetBackgroundBlur(background_blur_sigma_);
   clone->SetBackgroundZoom(zoom_, zoom_inset_);
 
   // Filters.
@@ -395,8 +395,8 @@ float Layer::GetTargetTemperature() const {
   return layer_temperature();
 }
 
-void Layer::SetBackgroundBlur(int blur_radius) {
-  background_blur_radius_ = blur_radius;
+void Layer::SetBackgroundBlur(float blur_sigma) {
+  background_blur_sigma_ = blur_sigma;
 
   SetLayerBackgroundFilters();
 }
@@ -512,9 +512,9 @@ void Layer::SetLayerBackgroundFilters() {
   if (zoom_ != 1)
     filters.Append(cc::FilterOperation::CreateZoomFilter(zoom_, zoom_inset_));
 
-  if (background_blur_radius_) {
+  if (background_blur_sigma_) {
     filters.Append(cc::FilterOperation::CreateBlurFilter(
-        background_blur_radius_));
+        background_blur_sigma_, SkBlurImageFilter::kClamp_TileMode));
   }
 
   cc_layer_->SetBackgroundFilters(filters);
