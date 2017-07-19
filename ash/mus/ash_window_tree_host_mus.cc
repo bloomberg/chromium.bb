@@ -30,12 +30,13 @@ AshWindowTreeHostMus::AshWindowTreeHostMus(
 AshWindowTreeHostMus::~AshWindowTreeHostMus() {}
 
 void AshWindowTreeHostMus::ToggleFullScreen() {
-  NOTIMPLEMENTED();
+  // TODO: this function should be removed entirely as it's not used.
+  NOTREACHED();
 }
 
 bool AshWindowTreeHostMus::ConfineCursorToRootWindow() {
   // TODO: when implementing see implementation in AshWindowTreeHostPlatform
-  // for how it uses |transformer_helper_|.
+  // for how it uses |transformer_helper_|. http://crbug.com/746054.
   NOTIMPLEMENTED();
   return true;
 }
@@ -71,6 +72,8 @@ void AshWindowTreeHostMus::PrepareForShutdown() {
 
 void AshWindowTreeHostMus::RegisterMirroringHost(
     AshWindowTreeHost* mirroring_ash_host) {
+  // This should not be called, but it is because mirroring isn't wired up for
+  // mus. Once that is done, this should be converted to a NOTREACHED.
   NOTIMPLEMENTED();
 }
 
