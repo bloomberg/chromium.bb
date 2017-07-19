@@ -15,6 +15,8 @@ void StubOfflinePageModel::SavePage(
     const SavePageParams& save_page_params,
     std::unique_ptr<OfflinePageArchiver> archiver,
     const SavePageCallback& callback) {}
+void StubOfflinePageModel::AddPage(const OfflinePageItem& page,
+                                   const AddPageCallback& callback) {}
 void StubOfflinePageModel::MarkPageAccessed(int64_t offline_id) {}
 void StubOfflinePageModel::DeletePagesByOfflineId(
     const std::vector<int64_t>& offline_ids,
