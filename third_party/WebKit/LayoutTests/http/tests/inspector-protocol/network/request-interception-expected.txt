@@ -1,7 +1,4 @@
-CONSOLE MESSAGE: line 1: Hello from the mock resource
-CONSOLE MESSAGE: line 13: Post - ECHO SUCCESS!
 Tests interception blocking, modification of network fetches.
-
 Test started
 Network agent enabled
 Request interception enabled
@@ -23,4 +20,6 @@ Network.requestIntercepted ID 5 POST post-echo.pl type: XHR
 allowRequest ID 5
 Network.responseReceived post-echo.pl 200 text/plain
 Page.frameStoppedLoading
+Hello from the mock resource
+Post - ECHO SUCCESS!
 

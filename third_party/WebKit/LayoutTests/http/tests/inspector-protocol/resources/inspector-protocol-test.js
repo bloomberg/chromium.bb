@@ -1,164 +1,485 @@
-/*
- * Copyright (C) 2012 Samsung Electronics. All rights reserved.
- * Copyright (C) 2013 Google Inc. All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * 1.  Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer.
- * 2.  Redistributions in binary form must reproduce the above copyright
- *     notice, this list of conditions and the following disclaimer in the
- *     documentation and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY APPLE AND ITS CONTRIBUTORS "AS IS" AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL APPLE OR ITS CONTRIBUTORS BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
- * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-var initialize_InspectorTest = function() {
+var TestRunner = class {
+  constructor(baseURL, log, completeTest, fetch) {
+    this._dumpInspectorProtocolMessages = false;
+    this._baseURL = baseURL;
+    this._log = log;
+    this._completeTest = completeTest;
+    this._fetch = fetch;
+  }
 
-InspectorTest.evaluateInInspectedPage = function(expression, callback)
-{
-    InspectorTest.sendCommand("Runtime.evaluate", { expression: expression }, callback);
-}
+  startDumpingProtocolMessages() {
+    this._dumpInspectorProtocolMessages = true;
+  };
 
-InspectorTest.parseURL = function(url)
-{
-    var result = {};
-    var match = url.match(/^([^:]+):\/\/([^\/:]*)(?::([\d]+))?(?:(\/[^#]*)(?:#(.*))?)?$/i);
-    if (!match)
-        return result;
-    result.scheme = match[1].toLowerCase();
-    result.host = match[2];
-    result.port = match[3];
-    result.path = match[4] || "/";
-    result.fragment = match[5];
-    return result;
-}
+  completeTest() {
+    this._completeTest.call(null);
+  }
 
-}
+  log(text) {
+    this._log.call(null, text);
+  }
 
-var outputElement;
-
-/**
- * Logs message to process stdout via alert (hopefully implemented with immediate flush).
- * @param {string} text
- */
-function debugLog(text)
-{
-    alert(text);
-}
-
-/**
- * @param {string} text
- */
-function log(text)
-{
-    if (!outputElement) {
-        var intermediate = document.createElement("div");
-        document.body.appendChild(intermediate);
-
-        var intermediate2 = document.createElement("div");
-        intermediate.appendChild(intermediate2);
-
-        outputElement = document.createElement("div");
-        outputElement.className = "output";
-        outputElement.id = "output";
-        outputElement.style.whiteSpace = "pre";
-        intermediate2.appendChild(outputElement);
+  logMessage(originalMessage, title) {
+    var message = JSON.parse(JSON.stringify(originalMessage));
+    if (message.id)
+      message.id = '<messageId>';
+    const nonStableFields = new Set(['nodeId', 'objectId', 'scriptId', 'timestamp', 'backendNodeId', 'parentId', 'frameId', 'baseURL', 'documentURL']);
+    var objects = [message];
+    while (objects.length) {
+      var object = objects.shift();
+      for (var key in object) {
+        if (nonStableFields.has(key))
+          object[key] = `<${key}>`;
+        else if (typeof object[key] === 'string' && object[key].match(/\d+:\d+:\d+:debug/))
+          object[key] = object[key].replace(/\d+/, '<scriptId>');
+        else if (typeof object[key] === 'object')
+          objects.push(object[key]);
+      }
     }
-    outputElement.appendChild(document.createTextNode(text));
-    outputElement.appendChild(document.createElement("br"));
-}
+    this.logObject(message, title);
+    return originalMessage;
+  }
 
-function closeTest()
-{
-    closeInspector();
-    testRunner.notifyDone();
-}
+  logObject(object, title) {
+    var lines = [];
 
-var reloadParam = "__protocol__test__reload__";
+    function dumpValue(value, prefix, prefixWithName) {
+      if (typeof value === 'object' && value !== null) {
+        if (value instanceof Array)
+          dumpItems(value, prefix, prefixWithName);
+        else
+          dumpProperties(value, prefix, prefixWithName);
+      } else {
+        lines.push(prefixWithName + String(value).replace(/\n/g, ' '));
+      }
+    }
 
-function runTest()
-{
-    if (!window.testRunner) {
-        console.error("This test requires DumpRenderTree");
+    function dumpProperties(object, prefix, firstLinePrefix) {
+      prefix = prefix || '';
+      firstLinePrefix = firstLinePrefix || prefix;
+      lines.push(firstLinePrefix + '{');
+
+      var propertyNames = Object.keys(object);
+      propertyNames.sort();
+      for (var i = 0; i < propertyNames.length; ++i) {
+        var name = propertyNames[i];
+        if (!object.hasOwnProperty(name))
+          continue;
+        var prefixWithName = '    ' + prefix + name + ' : ';
+        dumpValue(object[name], '    ' + prefix, prefixWithName);
+      }
+      lines.push(prefix + '}');
+    }
+
+    function dumpItems(object, prefix, firstLinePrefix) {
+      prefix = prefix || '';
+      firstLinePrefix = firstLinePrefix || prefix;
+      lines.push(firstLinePrefix + '[');
+      for (var i = 0; i < object.length; ++i)
+        dumpValue(object[i], '    ' + prefix, '    ' + prefix + '[' + i + '] : ');
+      lines.push(prefix + ']');
+    }
+
+    dumpValue(object, '', title || '');
+    this.log(lines.join('\n'));
+  }
+
+  url(relative) {
+    return this._baseURL + relative;
+  }
+
+  async runTestSuite(testSuite) {
+    for (var test of testSuite) {
+      this.log('\nRunning test: ' + test.name);
+      try {
+        await test();
+      } catch (e) {
+        this.log(`Error during test: ${e}\n${e.stack}`);
+      }
+    }
+    this.completeTest();
+  }
+
+  _checkExpectation(fail, name, messageObject) {
+    if (fail === !!messageObject.error) {
+      this.log('PASS: ' + name);
+      return true;
+    }
+
+    this.log('FAIL: ' + name + ': ' + JSON.stringify(messageObject));
+    this.completeTest();
+    return false;
+  }
+
+  expectedSuccess(name, messageObject) {
+    return this._checkExpectation(false, name, messageObject);
+  }
+
+  expectedError(name, messageObject) {
+    return this._checkExpectation(true, name, messageObject);
+  }
+
+  die(message, error) {
+    this.log(`${message}: ${error}\n${error.stack}`);
+    this.completeTest();
+    throw new Error(message);
+  }
+
+  fail(message) {
+    this.log('FAIL: ' + message);
+    this.completeTest();
+  }
+
+  async loadScript(url) {
+    var source = await this._fetch(this.url(url));
+    return eval(`${source}\n//# sourceURL=${url}`);
+  };
+
+  async createPage() {
+    var targetId = (await DevToolsAPI._sendCommandOrDie('Target.createTarget', {url: 'about:blank'})).targetId;
+    await DevToolsAPI._sendCommandOrDie('Target.activateTarget', {targetId});
+    var page = new TestRunner.Page(this, targetId);
+    var dummyURL = window.location.href;
+    dummyURL = dummyURL.substring(0, dummyURL.indexOf('inspector-protocol-test.html')) + 'inspector-protocol-page.html';
+    await page._navigate(dummyURL);
+    return page;
+  }
+
+  async _start(description, html, url) {
+    try {
+      this.log(description);
+      var page = await this.createPage();
+      if (url)
+        await page.navigate(url);
+      if (html)
+        await page.loadHTML(html);
+      var session = await page.createSession();
+      return { page: page, session: session, dp: session.protocol };
+    } catch (e) {
+      this.die('Error starting the test', e);
+    }
+  };
+
+  startBlank(description) {
+    return this._start(description, null, null);
+  }
+
+  startHTML(html, description) {
+    return this._start(description, html, null);
+  }
+
+  startURL(url, description) {
+    return this._start(description, null, url);
+  }
+};
+
+TestRunner.Page = class {
+  constructor(testRunner, targetId) {
+    this._testRunner = testRunner;
+    this._targetId = targetId;
+  }
+
+  async createSession() {
+    await DevToolsAPI._sendCommandOrDie('Target.attachToTarget', {targetId: this._targetId});
+    var session = new TestRunner.Session(this);
+    DevToolsAPI._sessions.set(this._targetId, session);
+    return session;
+  }
+
+  navigate(url) {
+    return this._navigate(this._testRunner.url(url));
+  }
+
+  async _navigate(url) {
+    if (DevToolsAPI._sessions.get(this._targetId))
+      this._testRunner.die(`Cannot navigate to ${url} with active session`, new Error());
+
+    var session = await this.createSession();
+    await session._navigate(url);
+    await session.disconnect();
+  }
+
+  async loadHTML(html) {
+    if (DevToolsAPI._sessions.get(this._targetId))
+      this._testRunner.die('Cannot loadHTML with active session', new Error());
+
+    html = html.replace(/'/g, "\\'").replace(/\n/g, '\\n');
+    var session = await this.createSession();
+    await session.protocol.Runtime.evaluate({expression: `document.write('${html}');document.close();`});
+    await session.disconnect();
+  }
+};
+
+TestRunner.Session = class {
+  constructor(page) {
+    this._testRunner = page._testRunner;
+    this._page = page;
+    this._requestId = 0;
+    this._dispatchTable = new Map();
+    this._eventHandlers = new Map();
+    this.protocol = this._setupProtocol();
+  }
+
+  async disconnect() {
+    await DevToolsAPI._sendCommandOrDie('Target.detachFromTarget', {targetId: this._page._targetId});
+    DevToolsAPI._sessions.delete(this._page._targetId);
+  }
+
+  sendRawCommand(requestId, message) {
+    DevToolsAPI._sendCommandOrDie('Target.sendMessageToTarget', {targetId: this._page._targetId, message: message});
+    return new Promise(f => this._dispatchTable.set(requestId, f));
+  }
+
+  sendCommand(method, params) {
+    var requestId = ++this._requestId;
+    var messageObject = {'id': requestId, 'method': method, 'params': params};
+    if (this._testRunner._dumpInspectorProtocolMessages)
+      this._testRunner.log(`frontend => backend: ${JSON.stringify(messageObject)}`);
+    return this.sendRawCommand(requestId, JSON.stringify(messageObject));
+  }
+
+  async evaluate(code) {
+    if (typeof code === 'function')
+      code = `(${code.toString()})()`;
+    var response = await this.protocol.Runtime.evaluate({expression: code, returnByValue: true});
+    if (response.error) {
+      this._testRunner.log(`Error while evaluating '${code}': ${response.error}`);
+      this._testRunner.completeTest();
+    } else {
+      return response.result.result.value;
+    }
+  }
+
+  async evaluateAsync(code) {
+    if (typeof code === 'function')
+      code = `(${code.toString()})()`;
+    var response = await this.protocol.Runtime.evaluate({expression: code, returnByValue: true, awaitPromise: true});
+    if (response.error) {
+      this._testRunner.log(`Error while evaluating async '${code}': ${response.error}`);
+      this._testRunner.completeTest();
+    } else {
+      return response.result.result.value;
+    }
+  }
+
+  navigate(url) {
+    return this._navigate(this._testRunner.url(url));
+  }
+
+  async _navigate(url) {
+    this.protocol.Page.enable();
+    this.protocol.Page.navigate({url: url});
+
+    var callback;
+    var promise = new Promise(f => callback = f);
+    this.protocol.Page.onFrameNavigated(message => {
+      if (!message.params.frame.parentId)
+        callback();
+    });
+    await Promise.all([
+      promise,
+      this.protocol.Page.onceLoadEventFired()
+    ]);
+  }
+
+  _dispatchMessage(message) {
+    if (this._testRunner._dumpInspectorProtocolMessages)
+      this._testRunner.log(`backend => frontend: ${JSON.stringify(message)}`);
+    if (typeof message.id === 'number') {
+      var handler = this._dispatchTable.get(message.id);
+      if (handler) {
+        this._dispatchTable.delete(message.id);
+        handler(message);
+      }
+    } else {
+      var eventName = message.method;
+      for (var handler of (this._eventHandlers.get(eventName) || []))
+        handler(message);
+    }
+  }
+
+  _setupProtocol() {
+    return new Proxy({}, { get: (target, agentName, receiver) => new Proxy({}, {
+      get: (target, methodName, receiver) => {
+        const eventPattern = /^(on(ce)?|off)([A-Z][A-Za-z0-9]+)/;
+        var match = eventPattern.exec(methodName);
+        if (!match)
+          return args => this.sendCommand(`${agentName}.${methodName}`, args || {});
+        var eventName = match[3];
+        eventName = eventName.charAt(0).toLowerCase() + eventName.slice(1);
+        if (match[1] === 'once')
+          return eventMatcher => this._waitForEvent(`${agentName}.${eventName}`, eventMatcher);
+        if (match[1] === 'off')
+          return listener => this._removeEventHandler(`${agentName}.${eventName}`, listener);
+        return listener => this._addEventHandler(`${agentName}.${eventName}`, listener);
+      }
+    })});
+  }
+
+  _addEventHandler(eventName, handler) {
+    var handlers = this._eventHandlers.get(eventName) || [];
+    handlers.push(handler);
+    this._eventHandlers.set(eventName, handlers);
+  }
+
+  _removeEventHandler(eventName, handler) {
+    var handlers = this._eventHandlers.get(eventName) || [];
+    var index = handlers.indexOf(handler);
+    if (index === -1)
+      return;
+    handlers.splice(index, 1);
+    this._eventHandlers.set(eventName, handlers);
+  }
+
+  _waitForEvent(eventName, eventMatcher) {
+    return new Promise(callback => {
+      var handler = result => {
+        if (eventMatcher && !eventMatcher(result))
+          return;
+        this._removeEventHandler(eventName, handler);
+        callback(result);
+      };
+      this._addEventHandler(eventName, handler);
+    });
+  }
+};
+
+var DevToolsAPI = {};
+DevToolsAPI._requestId = 0;
+DevToolsAPI._embedderMessageId = 0;
+DevToolsAPI._dispatchTable = new Map();
+DevToolsAPI._sessions = new Map();
+DevToolsAPI._outputElement = null;
+
+DevToolsAPI._log = function(text) {
+  if (!DevToolsAPI._outputElement) {
+    var intermediate = document.createElement('div');
+    document.body.appendChild(intermediate);
+    var intermediate2 = document.createElement('div');
+    intermediate.appendChild(intermediate2);
+    DevToolsAPI._outputElement = document.createElement('div');
+    DevToolsAPI._outputElement.className = 'output';
+    DevToolsAPI._outputElement.id = 'output';
+    DevToolsAPI._outputElement.style.whiteSpace = 'pre';
+    intermediate2.appendChild(DevToolsAPI._outputElement);
+  }
+  DevToolsAPI._outputElement.appendChild(document.createTextNode(text));
+  DevToolsAPI._outputElement.appendChild(document.createElement('br'));
+};
+
+DevToolsAPI._completeTest = function() {
+  window.testRunner.notifyDone();
+};
+
+DevToolsAPI._die = function(message, error) {
+  DevToolsAPI._log(`${message}: ${error}\n${error.stack}`);
+  DevToolsAPI._completeTest();
+  throw new Error();
+};
+
+DevToolsAPI.dispatchMessage = function(messageOrObject) {
+  var messageObject = (typeof messageOrObject === 'string' ? JSON.parse(messageOrObject) : messageOrObject);
+  var messageId = messageObject.id;
+  try {
+    if (typeof messageId === 'number') {
+      var handler = DevToolsAPI._dispatchTable.get(messageId);
+      if (handler) {
+        DevToolsAPI._dispatchTable.delete(messageId);
+        handler(messageObject);
+      }
+    } else {
+      var eventName = messageObject.method;
+      if (eventName === 'Target.receivedMessageFromTarget') {
+        var targetId = messageObject.params.targetId;
+        var message = messageObject.params.message;
+        var session = DevToolsAPI._sessions.get(targetId);
+        if (session)
+          session._dispatchMessage(JSON.parse(message));
+      }
+    }
+  } catch(e) {
+    DevToolsAPI._die(`Exception when dispatching message\n${JSON.stringify(messageObject)}`, e);
+  }
+};
+
+DevToolsAPI._sendCommand = function(method, params) {
+  var requestId = ++DevToolsAPI._requestId;
+  var messageObject = {'id': requestId, 'method': method, 'params': params};
+  var embedderMessage = {'id': ++DevToolsAPI._embedderMessageId, 'method': 'dispatchProtocolMessage', 'params': [JSON.stringify(messageObject)]};
+  DevToolsHost.sendMessageToEmbedder(JSON.stringify(embedderMessage));
+  return new Promise(f => DevToolsAPI._dispatchTable.set(requestId, f));
+};
+
+DevToolsAPI._sendCommandOrDie = function(method, params) {
+  return DevToolsAPI._sendCommand(method, params).then(message => {
+    if (message.error)
+      DevToolsAPI._die('Error communicating with harness', new Error(message.error));
+    return message.result;
+  });
+};
+
+function debugTest(testFunction) {
+  var dispatch = DevToolsAPI.dispatchMessage;
+  var messages = [];
+  DevToolsAPI.dispatchMessage = message => {
+    if (!messages.length) {
+      setTimeout(() => {
+        for (var message of messages.splice(0))
+          dispatch(message);
+      }, 0);
+    }
+    messages.push(message);
+  };
+  return testRunner => {
+    testRunner.log = console.log;
+    testRunner.completeTest = () => console.log('Test completed');
+    window.test = () => testFunction(testRunner);
+  };
+};
+
+DevToolsAPI._fetch = function(url) {
+  return new Promise(fulfill => {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.onreadystatechange = e => {
+      if (xhr.readyState !== XMLHttpRequest.DONE)
         return;
-    }
+      if ([0, 200, 304].indexOf(xhr.status) === -1)  // Testing harness file:/// results in 0.
+        DevToolsAPI._die(`${xhr.status} while fetching ${url}`, new Error());
+      else
+        fulfill(e.target.response);
+    };
+    xhr.send(null);
+  });
+};
 
-    var reloadIndex = window.location.href.lastIndexOf(reloadParam);
-    if (reloadIndex !== -1) {
-        var lastId = window.location.href.substring(reloadIndex + reloadParam.length);
-        window.lastFrontendEvalId = parseInt(lastId, 10);
-        evaluateInFrontend("InspectorTest.pageReloaded();");
-        return;
-    }
+window.testRunner.dumpAsText();
+window.testRunner.waitUntilDone();
+window.testRunner.setCanOpenWindows(true);
 
-    testRunner.dumpAsText();
-    testRunner.waitUntilDone();
-    testRunner.setCanOpenWindows(true);
+window.addEventListener('load', () => {
+  var testScriptURL = window.location.search.substring(1);
+  var baseURL = testScriptURL.substring(0, testScriptURL.lastIndexOf('/') + 1);
+  DevToolsAPI._fetch(testScriptURL).then(testScript => {
+    var testRunner = new TestRunner(baseURL, DevToolsAPI._log, DevToolsAPI._completeTest, DevToolsAPI._fetch);
+    var testFunction = eval(`${testScript}\n//# sourceURL=${testScriptURL}`);
+    return testFunction(testRunner);
+  }).catch(reason => {
+    DevToolsAPI._log(`Error while executing test script: ${reason}\n${reason.stack}`);
+    DevToolsAPI._completeTest();
+  });
+}, false);
 
-    openInspector();
-}
+window['onerror'] = (message, source, lineno, colno, error) => {
+  DevToolsAPI._log(`${error}\n${error.stack}`);
+  DevToolsAPI._completeTest();
+};
 
-function closeInspector()
-{
-    testRunner.closeWebInspector();
-}
-
-var lastFrontendEvalId = 0;
-function evaluateInFrontend(script)
-{
-    testRunner.evaluateInWebInspector(++lastFrontendEvalId, script);
-}
-
-function navigateProtocolTest(url)
-{
-    url += (url.indexOf("?") === -1 ? "?" : "&") + reloadParam + lastFrontendEvalId;
-    window.location.replace(url);
-}
-
-function prepareForReload()
-{
-    window.location += "#" + reloadParam + lastFrontendEvalId;
-}
-
-function openInspector()
-{
-    var scriptTags = document.getElementsByTagName("script");
-    var scriptUrlBasePath = "";
-    for (var i = 0; i < scriptTags.length; ++i) {
-        var index = scriptTags[i].src.lastIndexOf("/resources/inspector-protocol-test.js");
-        if (index > -1 ) {
-            scriptUrlBasePath = scriptTags[i].src.slice(0, index);
-            break;
-        }
-    }
-
-    var dummyFrontendURL = scriptUrlBasePath + "/resources/protocol-test.html";
-    testRunner.showWebInspector("", dummyFrontendURL);
-    // FIXME: rename this 'test' global field across all tests.
-    var testFunction = window.test;
-    if (typeof testFunction === "function") {
-        var initializers = "";
-        for (var symbol in window) {
-            if (!/^initialize_/.test(symbol) || typeof window[symbol] !== "function")
-                continue;
-            initializers += "(" + window[symbol].toString() + ")();\n";
-        }
-        evaluateInFrontend(initializers + "(" + testFunction.toString() +")();");
-        return;
-    }
-    // Kill waiting process if failed to send.
-    alert("Failed to send test function");
-    testRunner.notifyDone();
-}
+window.addEventListener('unhandledrejection', e => {
+  DevToolsAPI._log(`Promise rejection: ${e.reason}\n${e.reason ? e.reason.stack : ''}`);
+  DevToolsAPI._completeTest();
+}, false);

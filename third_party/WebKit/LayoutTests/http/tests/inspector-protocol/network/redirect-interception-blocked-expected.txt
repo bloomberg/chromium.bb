@@ -1,5 +1,4 @@
 Tests interception of redirects.
-
 Test started
 Network agent enabled
 Request interception enabled

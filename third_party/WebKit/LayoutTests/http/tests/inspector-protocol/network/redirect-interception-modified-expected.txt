@@ -1,6 +1,4 @@
-CONSOLE MESSAGE: line 1: Hello from alternative.js!
 Tests interception of redirects.
-
 Test started
 Network agent enabled
 Request interception enabled
@@ -19,4 +17,5 @@ Network.requestIntercepted ID 2 301 redirect redirect3.pl -> final.js
 modifyRequest ID 2: url final.js -> alternative.js
 Network.responseReceived alternative.js 200 application/x-javascript
 Page.frameStoppedLoading
+Hello from alternative.js!
 

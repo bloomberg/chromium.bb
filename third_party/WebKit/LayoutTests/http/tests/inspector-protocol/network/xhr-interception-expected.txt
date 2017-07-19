@@ -1,6 +1,4 @@
-CONSOLE MESSAGE: line 8: xhr.responseText = Payload for the Mock XHR response;
 Tests interception of an XHR request.
-
 Test started
 Network agent enabled
 Request interception enabled
@@ -13,4 +11,5 @@ Network.requestIntercepted ID 2 GET example.txt type: XHR
 mockResponse ID 2
 Network.responseReceived example.txt 200 text/plain
 Page.frameStoppedLoading
+xhr.responseText = Payload for the Mock XHR response;
 

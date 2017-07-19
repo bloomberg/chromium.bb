@@ -1,6 +1,4 @@
-CONSOLE MESSAGE: line 1: Hello from the mock resource
 Tests interception of redirects.
-
 Test started
 Network agent enabled
 Request interception enabled
@@ -19,4 +17,5 @@ Network.requestIntercepted ID 2 301 redirect redirect3.pl -> final.js
 mockResponse ID 2
 Network.responseReceived redirect3.pl 200 application/javascript
 Page.frameStoppedLoading
+Hello from the mock resource
 

@@ -1,6 +1,4 @@
-CONSOLE MESSAGE: line 7: xhr.status = 401
 Tests interception of an XHR request that fails due to lack of credentials.
-
 Test started
 Network agent enabled
 Request interception enabled
@@ -15,4 +13,5 @@ Auth required for ID 2
 ----- Use Default Auth -----
 Network.responseReceived unauthorised.pl 401 text/plain
 Page.frameStoppedLoading
+xhr.status = 401
 

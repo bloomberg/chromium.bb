@@ -1,6 +1,4 @@
-CONSOLE MESSAGE: line 13: Post - ECHO SUCCESS!
 Tests interception blocking, modification of network fetches.
-
 Test started
 Network agent enabled
 Request interception enabled
@@ -21,4 +19,5 @@ Network.responseReceived script2.js 404 text/html
 Network.loadingFailed script2.js 
 Page.frameStoppedLoading
 Network.responseReceived post-echo.pl 200 text/plain
+Post - ECHO SUCCESS!
 

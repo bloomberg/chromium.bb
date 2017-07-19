@@ -1,295 +1,210 @@
-var initialize_InterceptionTest = function() {
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-var interceptionRequestParams = {};
-var requestIdToFilename = {};
-var filenameToInterceptionId = {};
-var loggedMessages = {};
-var InterceptionIdToCanonicalInterceptionId = {};
-var idToCanoncalId = {};
-var nextId = 1;
+(class InterceptionHelper {
+  constructor(testRunner, session) {
+    this._testRunner = testRunner;
+    this._session = session;
+    this._interceptionRequestParams = {};
+    this._requestIdToFilename = {};
+    this._filenameToInterceptionId = {};
+    this._loggedMessages = {};
+    this._consoleLogs = [];
+    this._idToCanoncalId = {};
+    this._nextId = 1;
+  }
 
-function getNextId()
-{
-    return "ID " + nextId++;
-}
+  _getNextId() {
+    return 'ID ' + this._nextId++;
+  }
 
-function canonicalId(id)
-{
-    if (!idToCanoncalId.hasOwnProperty(id))
-        idToCanoncalId[id] = getNextId();
-    return idToCanoncalId[id];
-}
+  _canonicalId(id) {
+    if (!this._idToCanoncalId.hasOwnProperty(id))
+      this._idToCanoncalId[id] = this._getNextId();
+    return this._idToCanoncalId[id];
+  }
 
-function log(id, message)
-{
-    testRunner.logToStderr("id " + id + " " + message);
-    if (!loggedMessages.hasOwnProperty(id))
-        loggedMessages[id] = [];
-    loggedMessages[id].push(message);
-}
+  _log(id, message) {
+    if (!this._loggedMessages.hasOwnProperty(id))
+      this._loggedMessages[id] = [];
+    this._loggedMessages[id].push(message);
+  }
 
-function completeTest(message)
-{
+  _completeTest(message) {
     // The order in which network events occur is not fully deterministic so we
     // sort based on the interception ID to try and make the test non-flaky.
-    for (var property in loggedMessages) {
-        if (loggedMessages.hasOwnProperty(property)) {
-            var messages = loggedMessages[property];
-            for (var i = 0; i < messages.length; i++) {
-                InspectorTest.log(messages[i]);
-            }
-        }
+    for (var property in this._loggedMessages) {
+      if (this._loggedMessages.hasOwnProperty(property)) {
+        var messages = this._loggedMessages[property];
+        for (var i = 0; i < messages.length; i++)
+          this._testRunner.log(messages[i]);
+      }
     }
-
+    for (var consoleLog of this._consoleLogs)
+      this._testRunner.log(consoleLog);
     if (message)
-        InspectorTest.log(message);
+      this._testRunner.log(message);
+    this._testRunner.completeTest();
+  }
 
-    InspectorTest.completeTest();
-}
-
-InspectorTest.startInterceptionTest = function(requestInterceptedDict,
-                                               numConsoleLogsToWaitFor) {
-    if (typeof numConsoleLogsToWaitFor === "undefined")
-        numConsoleLogsToWaitFor = 0;
-
-    InspectorTest.eventHandler["Network.requestIntercepted"] = onRequestIntercepted;
-    InspectorTest.eventHandler["Network.loadingFailed"] = onLoadingFailed;
-    InspectorTest.eventHandler["Network.requestWillBeSent"] = onRequestWillBeSent;
-    InspectorTest.eventHandler["Network.responseReceived"] = onResponseReceived;
-    InspectorTest.eventHandler["Runtime.consoleAPICalled"] = onConsoleAPICalled;
-    InspectorTest.eventHandler["Page.frameStoppedLoading"] = onStop;
-
+  async startInterceptionTest(requestInterceptedDict, numConsoleLogsToWaitFor) {
+    if (typeof numConsoleLogsToWaitFor === 'undefined')
+      numConsoleLogsToWaitFor = 0;
     var frameStoppedLoading = false;
 
-    function getInterceptionId(filename) {
-        if (!filenameToInterceptionId.hasOwnProperty(filename)) {
-            filenameToInterceptionId[filename] = getNextId()
-        }
-        return filenameToInterceptionId[filename];
-    }
-
-    function enableNetwork()
-    {
-        InspectorTest.log("Test started");
-        InspectorTest.sendCommand("Network.enable", {}, didEnableNetwork);
-    }
-
-    function didEnableNetwork(messageObject)
-    {
-        if (messageObject.error) {
-            completeTest("FAIL: Couldn't enable network agent" +
-                                  messageObject.error.message);
-            return;
-        }
-        InspectorTest.log("Network agent enabled");
-        InspectorTest.sendCommand(
-            "Network.setRequestInterceptionEnabled", {"enabled": true},
-            didSetRequestInterceptionEnabled);
-    }
-
-    function didSetRequestInterceptionEnabled(messageObject)
-    {
-        if (messageObject.error) {
-            completeTest("FAIL: Couldn't enable fetch interception " +
-                                    messageObject.error.message);
-            return;
-        }
-        InspectorTest.log("Request interception enabled");
-        InspectorTest.sendCommand("Page.enable", {}, didEnablePage);
-    }
-
-    function didEnablePage(messageObject)
-    {
-        if (messageObject.error) {
-            completeTest("FAIL: Couldn't enable page agent" +
-                                    messageObject.error.message);
-            return;
-        }
-        InspectorTest.log("Page agent enabled");
-
-        InspectorTest.sendCommand("Runtime.enable", {}, didEnableRuntime);
-    }
-
-    function didEnableRuntime(messageObject)
-    {
-        if (messageObject.error) {
-            completeTest("FAIL: Couldn't enable runtime agent" +
-                                    messageObject.error.message);
-            return;
-        }
-        InspectorTest.log("Runtime agent enabled");
-
-        InspectorTest.sendCommand(
-            "Runtime.evaluate", { "expression": "appendIframe()"});
-    }
-
-    function onRequestIntercepted(event)
-    {
-        var filename = event.params.request.url.split('/').pop();
-        var id = canonicalId(event.params.interceptionId);
-        filenameToInterceptionId[filename] = id;
-        if (!requestInterceptedDict.hasOwnProperty(filename)) {
-            completeTest("FAILED: unexpected request interception " +
-                             JSON.stringify(event.params));
-            return;
-        }
-        if (event.params.hasOwnProperty("authChallenge")) {
-            log(id, "Auth required for " + id);
-            requestInterceptedDict[filename + '+Auth'](event);
-            return;
-        } else if (event.params.hasOwnProperty("redirectUrl")) {
-            log(id, "Network.requestIntercepted " + id + " " +
-                    event.params.redirectStatusCode + " redirect " +
-                    interceptionRequestParams[id].url.split('/').pop() +
-                    " -> " + event.params.redirectUrl.split('/').pop());
-            interceptionRequestParams[id].url = event.params.redirectUrl;
-        } else {
-            interceptionRequestParams[id] = event.params.request;
-            log(id, "Network.requestIntercepted " + id + " " +
-                    event.params.request.method + " " + filename + " type: " +
-                    event.params.resourceType);
-        }
-        requestInterceptedDict[filename](event);
-    }
-
-    function onLoadingFailed(event)
-    {
-        var filename = requestIdToFilename[event.params.requestId];
-        var id = getInterceptionId(filename);
-        log(id, "Network.loadingFailed " + filename + " " +
-                event.params.errorText);
-    }
-
-    function onRequestWillBeSent(event)
-    {
-        var filename = event.params.request.url.split('/').pop();
-        requestIdToFilename[event.params.requestId] = filename;
-    }
-
-    function onResponseReceived(event)
-    {
-        var response = event.params.response;
-        var filename = response.url.split('/').pop();
-        var id = getInterceptionId(filename);
-        log(id, "Network.responseReceived " + filename + " " + response.status +
-                " " + response.mimeType);
-    }
-
-    function onStop()
-    {
-        frameStoppedLoading = true;
-        log(getNextId(), "Page.frameStoppedLoading");
-
-        maybeCompleteTest();
-    }
-
-    function onConsoleAPICalled(messageObject)
-    {
-        if (messageObject.params.type !== "log")
-            return;
-
-        numConsoleLogsToWaitFor--;
-        maybeCompleteTest();
-    }
+    var getInterceptionId = filename => {
+      if (!this._filenameToInterceptionId.hasOwnProperty(filename))
+        this._filenameToInterceptionId[filename] = this._getNextId();
+      return this._filenameToInterceptionId[filename];
+    };
 
     // Wait until we've seen Page.frameStoppedLoading and the expected number of
     // console logs.
-    function maybeCompleteTest() {
-        if (numConsoleLogsToWaitFor === 0 && frameStoppedLoading)
-            completeTest();
-    }
+    var maybeCompleteTest = () => {
+      if (numConsoleLogsToWaitFor === 0 && frameStoppedLoading)
+        this._completeTest();
+    };
 
-    enableNetwork();
-}
-
-InspectorTest.allowRequest = function(event) {
-    var id = canonicalId(event.params.interceptionId);
-    log(id, "allowRequest " + id);
-    InspectorTest.sendCommand("Network.continueInterceptedRequest", {
-        "interceptionId": event.params.interceptionId
+    this._session.protocol.Network.onRequestIntercepted(event => {
+      var filename = event.params.request.url.split('/').pop();
+      var id = this._canonicalId(event.params.interceptionId);
+      this._filenameToInterceptionId[filename] = id;
+      if (!requestInterceptedDict.hasOwnProperty(filename)) {
+        this._completeTest('FAILED: unexpected request interception ' +
+            JSON.stringify(event.params));
+        return;
+      }
+      if (event.params.hasOwnProperty('authChallenge')) {
+        this._log(id, 'Auth required for ' + id);
+        requestInterceptedDict[filename + '+Auth'](event);
+        return;
+      } else if (event.params.hasOwnProperty('redirectUrl')) {
+        this._log(id, 'Network.requestIntercepted ' + id + ' ' +
+            event.params.redirectStatusCode + ' redirect ' +
+            this._interceptionRequestParams[id].url.split('/').pop() +
+            ' -> ' + event.params.redirectUrl.split('/').pop());
+        this._interceptionRequestParams[id].url = event.params.redirectUrl;
+      } else {
+        this._interceptionRequestParams[id] = event.params.request;
+        this._log(id, 'Network.requestIntercepted ' + id + ' ' +
+            event.params.request.method + ' ' + filename + ' type: ' +
+            event.params.resourceType);
+      }
+      requestInterceptedDict[filename](event);
     });
-}
 
-InspectorTest.modifyRequest = function(event, params) {
-    var id = canonicalId(event.params.interceptionId);
+    this._session.protocol.Network.onLoadingFailed(event => {
+      var filename = this._requestIdToFilename[event.params.requestId];
+      var id = getInterceptionId(filename);
+      this._log(id, 'Network.loadingFailed ' + filename + ' ' +
+          event.params.errorText);
+    });
+
+    this._session.protocol.Network.onRequestWillBeSent(event => {
+      var filename = event.params.request.url.split('/').pop();
+      this._requestIdToFilename[event.params.requestId] = filename;
+    });
+
+    this._session.protocol.Network.onResponseReceived(event => {
+      var response = event.params.response;
+      var filename = response.url.split('/').pop();
+      var id = getInterceptionId(filename);
+      this._log(id, 'Network.responseReceived ' + filename + ' ' + response.status + ' ' + response.mimeType);
+    });
+
+    this._session.protocol.Runtime.onConsoleAPICalled(messageObject => {
+      if (messageObject.params.type !== 'log')
+        return;
+      this._consoleLogs.push(messageObject.params.args[0].value);
+      numConsoleLogsToWaitFor--;
+      maybeCompleteTest();
+    });
+
+    this._session.protocol.Page.onFrameStoppedLoading(() => {
+      frameStoppedLoading = true;
+      this._log(this._getNextId(), 'Page.frameStoppedLoading');
+      maybeCompleteTest();
+    });
+
+    this._testRunner.log('Test started');
+    this._session.protocol.Network.enable();
+    this._testRunner.log('Network agent enabled');
+    await this._session.protocol.Network.setRequestInterceptionEnabled({enabled: true});
+    this._testRunner.log('Request interception enabled');
+    await this._session.protocol.Page.enable();
+    this._testRunner.log('Page agent enabled');
+    await this._session.protocol.Runtime.enable();
+    this._testRunner.log('Runtime agent enabled');
+  }
+
+  allowRequest(event) {
+    var id = this._canonicalId(event.params.interceptionId);
+    this._log(id, 'allowRequest ' + id);
+    this._session.protocol.Network.continueInterceptedRequest({interceptionId: event.params.interceptionId});
+  }
+
+  modifyRequest(event, params) {
+    var id = this._canonicalId(event.params.interceptionId);
     var mods = [];
-    for (property in params) {
-        if (!params.hasOwnProperty(property))
-            continue;
-        if (property === "url") {
-            var newUrl = params["url"];
-            var filename = interceptionRequestParams[id].url;
-            mods.push("url " + filename.split('/').pop() + " -> " + newUrl);
-            var directoryPath =
-                filename.substring(0, filename.lastIndexOf('/') + 1);
-            params["url"] = directoryPath + newUrl;
-        } else {
-            mods.push(property + " " +
-                      JSON.stringify(interceptionRequestParams[id][property]) +
-                      " -> " + JSON.stringify(params[property]));
-        }
+    for (var property in params) {
+      if (!params.hasOwnProperty(property))
+        continue;
+      if (property === 'url') {
+        var newUrl = params['url'];
+        var filename = this._interceptionRequestParams[id].url;
+        mods.push('url ' + filename.split('/').pop() + ' -> ' + newUrl);
+        var directoryPath = filename.substring(0, filename.lastIndexOf('/') + 1);
+        params['url'] = directoryPath + newUrl;
+      } else {
+        mods.push(property + ' ' +
+            JSON.stringify(this._interceptionRequestParams[id][property]) +
+            ' -> ' + JSON.stringify(params[property]));
+      }
     }
 
-    log(id, "modifyRequest " + id + ": " + mods.join("; "));
-    params["interceptionId"] = event.params.interceptionId;
-    InspectorTest.sendCommand("Network.continueInterceptedRequest", params);
-}
+    this._log(id, 'modifyRequest ' + id + ': ' + mods.join('; '));
+    params['interceptionId'] = event.params.interceptionId;
+    this._session.protocol.Network.continueInterceptedRequest(params);
+  }
 
-InspectorTest.blockRequest = function(event, errorReason) {
-    var id = canonicalId(event.params.interceptionId);
-    log(id, "blockRequest " + id + " " + errorReason);
-    InspectorTest.sendCommand("Network.continueInterceptedRequest", {
-        "interceptionId": event.params.interceptionId,
-        "errorReason": errorReason
+  blockRequest(event, errorReason) {
+    var id = this._canonicalId(event.params.interceptionId);
+    this._log(id, 'blockRequest ' + id + ' ' + errorReason);
+    this._session.protocol.Network.continueInterceptedRequest({interceptionId: event.params.interceptionId, errorReason});
+  }
+
+  mockResponse(event, rawResponse) {
+    var id = this._canonicalId(event.params.interceptionId);
+    this._log(id, 'mockResponse ' + id);
+    rawResponse = btoa(rawResponse);
+    this._session.protocol.Network.continueInterceptedRequest({interceptionId: event.params.interceptionId, rawResponse});
+  }
+
+  disableRequestInterception(event) {
+    var id = this._canonicalId(event.params.interceptionId);
+    this._log(id, '----- disableRequestInterception -----');
+    this._session.protocol.Network.setRequestInterceptionEnabled({enabled: false});
+  }
+
+  cancelAuth(event) {
+    var id = this._canonicalId(event.params.interceptionId);
+    this._log(id, '----- Cancel Auth -----');
+    this._session.protocol.Network.continueInterceptedRequest({interceptionId: event.params.interceptionId, authChallengeResponse: {response: 'CancelAuth'}});
+  }
+
+  defaultAuth(event) {
+    var id = this._canonicalId(event.params.interceptionId);
+    this._log(id, '----- Use Default Auth -----');
+    this._session.protocol.Network.continueInterceptedRequest({interceptionId: event.params.interceptionId, authChallengeResponse: {response: 'Default'}});
+  }
+
+  provideAuthCredentials(event, username, password) {
+    var id = this._canonicalId(event.params.interceptionId);
+    this._log(id, '----- Provide Auth Credentials -----');
+    this._session.protocol.Network.continueInterceptedRequest({
+      interceptionId: event.params.interceptionId,
+      authChallengeResponse: { response: 'ProvideCredentials', username: username, password: password }
     });
-}
-
-InspectorTest.mockResponse = function(event, rawResponse) {
-    var id = canonicalId(event.params.interceptionId);
-    log(id, "mockResponse " + id);
-    InspectorTest.sendCommand("Network.continueInterceptedRequest", {
-        "interceptionId": event.params.interceptionId,
-        "rawResponse": btoa(rawResponse)
-    });
-}
-
-InspectorTest.disableRequestInterception = function(event) {
-    var id = canonicalId(event.params.interceptionId);
-    log(id, "----- disableRequestInterception -----");
-    InspectorTest.sendCommand("Network.setRequestInterceptionEnabled", {
-        "enabled": false,
-    });
-}
-
-InspectorTest.cancelAuth = function(event) {
-    var id = canonicalId(event.params.interceptionId);
-    log(id, "----- Cancel Auth -----");
-    InspectorTest.sendCommand("Network.continueInterceptedRequest", {
-        "interceptionId": event.params.interceptionId,
-        "authChallengeResponse": {"response": "CancelAuth"}
-    });
-}
-
-InspectorTest.defaultAuth = function(event) {
-    var id = canonicalId(event.params.interceptionId);
-    log(id, "----- Use Default Auth -----");
-    InspectorTest.sendCommand("Network.continueInterceptedRequest", {
-        "interceptionId": event.params.interceptionId,
-        "authChallengeResponse": {"response": "Default"}
-    });
-}
-
-InspectorTest.provideAuthCredentials = function(event, username, password) {
-    var id = canonicalId(event.params.interceptionId);
-    log(id, "----- Provide Auth Credentials -----");
-    InspectorTest.sendCommand("Network.continueInterceptedRequest", {
-        "interceptionId": event.params.interceptionId,
-        "authChallengeResponse": {
-            "response": "ProvideCredentials",
-            "username": username,
-            "password": password
-        }
-    });
-}
-
-}
+  }
+})
