@@ -147,9 +147,9 @@ class LinkHeaderServiceWorkerTest : public ::testing::Test {
         request.get(), context_wrapper(), &blob_storage_context_,
         render_process_id(), provider_id, false /* skip_service_worker */,
         FETCH_REQUEST_MODE_NO_CORS, FETCH_CREDENTIALS_MODE_OMIT,
-        FetchRedirectMode::FOLLOW_MODE, resource_type,
-        REQUEST_CONTEXT_TYPE_HYPERLINK, REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL,
-        nullptr);
+        FetchRedirectMode::FOLLOW_MODE, std::string() /* integrity */,
+        resource_type, REQUEST_CONTEXT_TYPE_HYPERLINK,
+        REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL, nullptr);
 
     return request;
   }

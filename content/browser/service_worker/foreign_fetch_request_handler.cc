@@ -76,6 +76,7 @@ void ForeignFetchRequestHandler::InitializeHandler(
     FetchRequestMode request_mode,
     FetchCredentialsMode credentials_mode,
     FetchRedirectMode redirect_mode,
+    const std::string& integrity,
     ResourceType resource_type,
     RequestContextType request_context_type,
     RequestContextFrameType frame_type,
@@ -129,8 +130,8 @@ void ForeignFetchRequestHandler::InitializeHandler(
   std::unique_ptr<ForeignFetchRequestHandler> handler =
       base::WrapUnique(new ForeignFetchRequestHandler(
           context_wrapper, blob_storage_context->AsWeakPtr(), request_mode,
-          credentials_mode, redirect_mode, resource_type, request_context_type,
-          frame_type, body, timeout));
+          credentials_mode, redirect_mode, integrity, resource_type,
+          request_context_type, frame_type, body, timeout));
   request->SetUserData(&kUserDataKey, std::move(handler));
 }
 
@@ -182,7 +183,7 @@ net::URLRequestJob* ForeignFetchRequestHandler::MaybeCreateJob(
   ServiceWorkerURLRequestJob* job = new ServiceWorkerURLRequestJob(
       request, network_delegate, std::string(), blob_storage_context_,
       resource_context, request_mode_, credentials_mode_, redirect_mode_,
-      resource_type_, request_context_type_, frame_type_, body_,
+      integrity_, resource_type_, request_context_type_, frame_type_, body_,
       ServiceWorkerFetchType::FOREIGN_FETCH, timeout_, this);
   job_ = job->GetWeakPtr();
   resource_context_ = resource_context;
@@ -201,6 +202,7 @@ ForeignFetchRequestHandler::ForeignFetchRequestHandler(
     FetchRequestMode request_mode,
     FetchCredentialsMode credentials_mode,
     FetchRedirectMode redirect_mode,
+    const std::string& integrity,
     ResourceType resource_type,
     RequestContextType request_context_type,
     RequestContextFrameType frame_type,
@@ -212,6 +214,7 @@ ForeignFetchRequestHandler::ForeignFetchRequestHandler(
       request_mode_(request_mode),
       credentials_mode_(credentials_mode),
       redirect_mode_(redirect_mode),
+      integrity_(integrity),
       request_context_type_(request_context_type),
       frame_type_(frame_type),
       body_(body),

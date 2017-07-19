@@ -114,6 +114,9 @@ struct CONTENT_EXPORT ResourceRequest {
   // The redirect mode used in Fetch API.
   FetchRedirectMode fetch_redirect_mode = FetchRedirectMode::FOLLOW_MODE;
 
+  // The integrity used in Fetch API.
+  std::string fetch_integrity;
+
   // The request context passed to the ServiceWorker.
   RequestContextType fetch_request_context_type =
       REQUEST_CONTEXT_TYPE_UNSPECIFIED;

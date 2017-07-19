@@ -123,6 +123,7 @@ struct CONTENT_EXPORT ServiceWorkerFetchRequest {
   Referrer referrer;
   FetchCredentialsMode credentials_mode;
   FetchRedirectMode redirect_mode;
+  std::string integrity;
   std::string client_id;
   bool is_reload;
   ServiceWorkerFetchType fetch_type;

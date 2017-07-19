@@ -315,6 +315,10 @@ class WebURLRequest {
   BLINK_PLATFORM_EXPORT FetchRedirectMode GetFetchRedirectMode() const;
   BLINK_PLATFORM_EXPORT void SetFetchRedirectMode(FetchRedirectMode);
 
+  // The integrity which is used in Fetch API.
+  BLINK_PLATFORM_EXPORT WebString GetFetchIntegrity() const;
+  BLINK_PLATFORM_EXPORT void SetFetchIntegrity(const WebString&);
+
   // The PreviewsState which determines whether to request a Preview version of
   // the resource. The PreviewsState is a bitmask of potentially several
   // Previews optimizations.

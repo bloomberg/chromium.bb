@@ -354,6 +354,14 @@ void WebURLRequest::SetFetchRedirectMode(
   return resource_request_->SetFetchRedirectMode(redirect);
 }
 
+WebString WebURLRequest::GetFetchIntegrity() const {
+  return resource_request_->GetFetchIntegrity();
+}
+
+void WebURLRequest::SetFetchIntegrity(const WebString& integrity) {
+  return resource_request_->SetFetchIntegrity(integrity);
+}
+
 WebURLRequest::PreviewsState WebURLRequest::GetPreviewsState() const {
   return resource_request_->GetPreviewsState();
 }

@@ -732,6 +732,10 @@ bool ScriptLoader::FetchClassicScript(
   // "... integrity metadata, ..."
   params.SetIntegrityMetadata(integrity_metadata);
 
+  // "... integrity value, ..."
+  params.MutableResourceRequest().SetFetchIntegrity(
+      element_->IntegrityAttributeValue());
+
   // "... parser state, ..."
   params.SetParserDisposition(parser_state);
 

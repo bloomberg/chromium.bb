@@ -452,6 +452,13 @@ uint64_t StructTraits<blink::mojom::FetchAPIRequestDataView,
 // static
 WTF::String StructTraits<blink::mojom::FetchAPIRequestDataView,
                          blink::WebServiceWorkerRequest>::
+    integrity(const blink::WebServiceWorkerRequest& request) {
+  return request.Integrity();
+}
+
+// static
+WTF::String StructTraits<blink::mojom::FetchAPIRequestDataView,
+                         blink::WebServiceWorkerRequest>::
     client_id(const blink::WebServiceWorkerRequest& request) {
   return request.ClientId();
 }
@@ -471,6 +478,7 @@ bool StructTraits<blink::mojom::FetchAPIRequestDataView,
   blink::Referrer referrer;
   blink::WebURLRequest::FetchCredentialsMode credentialsMode;
   blink::WebURLRequest::FetchRedirectMode redirectMode;
+  WTF::String integrity;
   WTF::String clientId;
 
   if (!data.ReadMode(&mode) || !data.ReadRequestContextType(&requestContext) ||
@@ -478,7 +486,8 @@ bool StructTraits<blink::mojom::FetchAPIRequestDataView,
       !data.ReadMethod(&method) || !data.ReadHeaders(&headers) ||
       !data.ReadBlobUuid(&blobUuid) || !data.ReadReferrer(&referrer) ||
       !data.ReadCredentialsMode(&credentialsMode) ||
-      !data.ReadRedirectMode(&redirectMode) || !data.ReadClientId(&clientId)) {
+      !data.ReadRedirectMode(&redirectMode) || !data.ReadClientId(&clientId) ||
+      !data.ReadIntegrity(&integrity)) {
     return false;
   }
 
@@ -495,6 +504,7 @@ bool StructTraits<blink::mojom::FetchAPIRequestDataView,
                                           referrer.referrer_policy));
   out->SetCredentialsMode(credentialsMode);
   out->SetRedirectMode(redirectMode);
+  out->SetIntegrity(integrity);
   out->SetClientId(clientId);
   out->SetIsReload(data.is_reload());
   return true;

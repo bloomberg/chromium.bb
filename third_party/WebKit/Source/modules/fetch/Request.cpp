@@ -729,6 +729,7 @@ void Request::PopulateWebServiceWorkerRequest(
   web_request.SetCredentialsMode(request_->Credentials());
   web_request.SetCacheMode(request_->CacheMode());
   web_request.SetRedirectMode(request_->Redirect());
+  web_request.SetIntegrity(request_->Integrity());
   web_request.SetRequestContext(request_->Context());
 
   // Strip off the fragment part of URL. So far, all users of

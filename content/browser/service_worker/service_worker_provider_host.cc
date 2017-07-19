@@ -600,6 +600,7 @@ ServiceWorkerProviderHost::CreateRequestHandler(
     FetchRequestMode request_mode,
     FetchCredentialsMode credentials_mode,
     FetchRedirectMode redirect_mode,
+    const std::string& integrity,
     ResourceType resource_type,
     RequestContextType request_context_type,
     RequestContextFrameType frame_type,
@@ -634,8 +635,8 @@ ServiceWorkerProviderHost::CreateRequestHandler(
       controlling_version()) {
     return base::MakeUnique<ServiceWorkerControlleeRequestHandler>(
         context_, AsWeakPtr(), blob_storage_context, request_mode,
-        credentials_mode, redirect_mode, resource_type, request_context_type,
-        frame_type, body);
+        credentials_mode, redirect_mode, integrity, resource_type,
+        request_context_type, frame_type, body);
   }
   return std::unique_ptr<ServiceWorkerRequestHandler>();
 }

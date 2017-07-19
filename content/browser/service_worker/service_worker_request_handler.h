@@ -96,6 +96,7 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
       FetchRequestMode request_mode,
       FetchCredentialsMode credentials_mode,
       FetchRedirectMode redirect_mode,
+      const std::string& integrity,
       ResourceType resource_type,
       RequestContextType request_context_type,
       RequestContextFrameType frame_type,
