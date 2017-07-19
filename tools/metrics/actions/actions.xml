@@ -15536,6 +15536,74 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Signin_ImpressionWithAccount_FromBookmarkManager">
+  <owner>jlebel@chromium.org</owner>
+  <description>
+    Recorded when starting sign-in using the promo view, with a default account,
+    from bookmarks manager
+    (signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_MANAGER).
+  </description>
+</action>
+
+<action name="Signin_ImpressionWithAccount_FromRecentTabs">
+  <owner>jlebel@chromium.org</owner>
+  <description>
+    Recorded when starting sign-in using the promo view, with a default account,
+    from recent tabs (signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS).
+  </description>
+</action>
+
+<action name="Signin_ImpressionWithAccount_FromSettings">
+  <owner>jlebel@chromium.org</owner>
+  <description>
+    Recorded when starting sign-in using the promo view, with a default account,
+    from settings (signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS).
+  </description>
+</action>
+
+<action name="Signin_ImpressionWithAccount_FromTabSwitcher">
+  <owner>jlebel@chromium.org</owner>
+  <description>
+    Recorded when starting sign-in using the promo view, with a default account,
+    from tab switcher (signin_metrics::AccessPoint::ACCESS_POINT_TAB_SWITCHER).
+  </description>
+</action>
+
+<action name="Signin_ImpressionWithNoAccount_FromBookmarkManager">
+  <owner>jlebel@chromium.org</owner>
+  <description>
+    Recorded when starting sign-in using the promo view, with no default
+    account, from bookmarks manager
+    (signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_MANAGER).
+  </description>
+</action>
+
+<action name="Signin_ImpressionWithNoAccount_FromRecentTabs">
+  <owner>jlebel@chromium.org</owner>
+  <description>
+    Recorded when starting sign-in using the promo view, with no default
+    account, from recent tabs
+    (signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS).
+  </description>
+</action>
+
+<action name="Signin_ImpressionWithNoAccount_FromSettings">
+  <owner>jlebel@chromium.org</owner>
+  <description>
+    Recorded when starting sign-in using the promo view, with no default
+    account, from settings (signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS).
+  </description>
+</action>
+
+<action name="Signin_ImpressionWithNoAccount_FromTabSwitcher">
+  <owner>jlebel@chromium.org</owner>
+  <description>
+    Recorded when starting sign-in using the promo view, with no default
+    account, from tab switcher
+    (signin_metrics::AccessPoint::ACCESS_POINT_TAB_SWITCHER).
+  </description>
+</action>
+
 <action name="Signin_Impression_FromAppsPageLink">
   <owner>gogerald@chromium.org</owner>
   <description>
