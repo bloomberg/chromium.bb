@@ -63,6 +63,11 @@ V8SchemaRegistry* WorkerThreadDispatcher::GetV8SchemaRegistry() {
 }
 
 // static
+ScriptContext* WorkerThreadDispatcher::GetScriptContext() {
+  return GetServiceWorkerData()->context();
+}
+
+// static
 bool WorkerThreadDispatcher::HandlesMessageOnWorkerThread(
     const IPC::Message& message) {
   return message.type() == ExtensionMsg_ResponseWorker::ID ||
