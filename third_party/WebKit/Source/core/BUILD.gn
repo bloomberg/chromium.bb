@@ -593,6 +593,7 @@ css_properties("make_core_generated_css_property_apis") {
     "$blink_core_output_dir/css/properties/CSSPropertyDescriptor.cpp",
     "$blink_core_output_dir/css/properties/CSSPropertyDescriptor.h",
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIAnimation.h",
+    "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIBackgroundPosition.h",
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIBorderImage.h",
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIBorderRadius.h",
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIBorderSpacing.h",
@@ -616,6 +617,7 @@ css_properties("make_core_generated_css_property_apis") {
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIWebkitBorderStart.h",
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIWebkitMarginCollapse.h",
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIWebkitMaskBoxImage.h",
+    "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIWebkitMaskPosition.h",
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIWebkitTextEmphasis.h",
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIWebkitTextStroke.h",
   ]
