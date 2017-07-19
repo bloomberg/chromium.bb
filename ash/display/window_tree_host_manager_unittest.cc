@@ -34,6 +34,7 @@
 #include "ui/display/screen.h"
 #include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/event_handler.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/mouse_watcher.h"
 #include "ui/views/mouse_watcher_view_host.h"
@@ -1699,6 +1700,19 @@ TEST_F(WindowTreeHostManagerTest,
   watcher.Stop();
 
   widget->CloseNow();
+}
+
+TEST_F(WindowTreeHostManagerTest, KeyEventFromSecondaryDisplay) {
+  UpdateDisplay("300x300,200x200");
+  ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_RETURN, 0);
+  ui::Event::DispatcherApi dispatcher_api(&key_event);
+  // Set the target to the second display. WindowTreeHostManager will end up
+  // targetting the primary display.
+  dispatcher_api.set_target(
+      Shell::Get()->window_tree_host_manager()->GetRootWindowForDisplayId(
+          GetSecondaryDisplay().id()));
+  Shell::Get()->window_tree_host_manager()->DispatchKeyEventPostIME(&key_event);
+  // As long as nothing crashes, we're good.
 }
 
 }  // namespace ash

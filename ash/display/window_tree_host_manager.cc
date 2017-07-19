@@ -785,12 +785,18 @@ display::DisplayConfigurator* WindowTreeHostManager::display_configurator() {
 
 ui::EventDispatchDetails WindowTreeHostManager::DispatchKeyEventPostIME(
     ui::KeyEvent* event) {
-  // Getting the active root window to dispatch the event. This isn't
-  // significant as the event will be sent to the window resolved by
-  // aura::client::FocusClient which is FocusController in ash.
-  aura::Window* active_window = wm::GetActiveWindow();
-  aura::Window* root_window = active_window ? active_window->GetRootWindow()
-                                            : Shell::GetPrimaryRootWindow();
+  aura::Window* root_window = nullptr;
+  if (event->target()) {
+    root_window = static_cast<aura::Window*>(event->target())->GetRootWindow();
+    DCHECK(root_window);
+  } else {
+    // Getting the active root window to dispatch the event. This isn't
+    // significant as the event will be sent to the window resolved by
+    // aura::client::FocusClient which is FocusController in ash.
+    aura::Window* active_window = wm::GetActiveWindow();
+    root_window = active_window ? active_window->GetRootWindow()
+                                : Shell::GetPrimaryRootWindow();
+  }
   return root_window->GetHost()->DispatchKeyEventPostIME(event);
 }
 
