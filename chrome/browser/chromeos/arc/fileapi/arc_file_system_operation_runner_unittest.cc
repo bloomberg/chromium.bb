@@ -36,17 +36,14 @@ class ArcFileSystemOperationRunnerTest : public testing::Test {
 
   void SetUp() override {
     arc_service_manager_ = base::MakeUnique<ArcServiceManager>();
+    runner_ = ArcFileSystemOperationRunner::CreateForTesting(
+        arc_service_manager_->arc_bridge_service());
     arc_service_manager_->arc_bridge_service()->file_system()->SetInstance(
         &file_system_instance_);
-    arc_service_manager_->AddService(
-        ArcFileSystemOperationRunner::CreateForTesting(
-            arc_service_manager_->arc_bridge_service()));
 
     // Run the message loop until FileSystemInstance::Init() is called.
     base::RunLoop().RunUntilIdle();
     ASSERT_TRUE(file_system_instance_.InitCalled());
-
-    runner_ = arc_service_manager_->GetService<ArcFileSystemOperationRunner>();
   }
 
  protected:
@@ -100,8 +97,7 @@ class ArcFileSystemOperationRunnerTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   FakeFileSystemInstance file_system_instance_;
   std::unique_ptr<ArcServiceManager> arc_service_manager_;
-  // Owned by |arc_service_manager_|.
-  ArcFileSystemOperationRunner* runner_;
+  std::unique_ptr<ArcFileSystemOperationRunner> runner_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ArcFileSystemOperationRunnerTest);

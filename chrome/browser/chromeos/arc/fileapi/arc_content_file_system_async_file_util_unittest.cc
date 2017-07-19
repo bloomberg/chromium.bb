@@ -15,9 +15,11 @@
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_url_util.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_file_system_operation_runner.h"
 #include "chrome/browser/chromeos/fileapi/external_file_url_util.h"
+#include "chrome/test/base/testing_profile.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/test/fake_file_system_instance.h"
+#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -33,6 +35,12 @@ constexpr char kArcUrl[] = "content://org.chromium.foo/bar";
 constexpr char kData[] = "abcdef";
 constexpr char kMimeType[] = "application/octet-stream";
 
+std::unique_ptr<KeyedService> CreateArcFileSystemOperationRunnerForTesting(
+    content::BrowserContext* context) {
+  return ArcFileSystemOperationRunner::CreateForTesting(
+      ArcServiceManager::Get()->arc_bridge_service());
+}
+
 class ArcContentFileSystemAsyncFileUtilTest : public testing::Test {
  public:
   ArcContentFileSystemAsyncFileUtilTest() = default;
@@ -43,11 +51,13 @@ class ArcContentFileSystemAsyncFileUtilTest : public testing::Test {
         File(kArcUrl, kData, kMimeType, File::Seekable::NO));
 
     arc_service_manager_ = base::MakeUnique<ArcServiceManager>();
-    arc_service_manager_->AddService(
-        ArcFileSystemOperationRunner::CreateForTesting(
-            arc_service_manager_->arc_bridge_service()));
+    arc_service_manager_->set_browser_context(&profile_);
+    ArcFileSystemOperationRunner::GetFactory()->SetTestingFactoryAndUse(
+        &profile_, &CreateArcFileSystemOperationRunnerForTesting);
     arc_service_manager_->arc_bridge_service()->file_system()->SetInstance(
         &fake_file_system_);
+
+    async_file_util_ = base::MakeUnique<ArcContentFileSystemAsyncFileUtil>();
   }
 
  protected:
@@ -64,9 +74,10 @@ class ArcContentFileSystemAsyncFileUtilTest : public testing::Test {
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
+  TestingProfile profile_;
   FakeFileSystemInstance fake_file_system_;
   std::unique_ptr<ArcServiceManager> arc_service_manager_;
-  ArcContentFileSystemAsyncFileUtil async_file_util_;
+  std::unique_ptr<ArcContentFileSystemAsyncFileUtil> async_file_util_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ArcContentFileSystemAsyncFileUtilTest);
@@ -78,7 +89,7 @@ TEST_F(ArcContentFileSystemAsyncFileUtilTest, GetFileInfo) {
   GURL externalfile_url = ArcUrlToExternalFileUrl(GURL(kArcUrl));
 
   base::RunLoop run_loop;
-  async_file_util_.GetFileInfo(
+  async_file_util_->GetFileInfo(
       std::unique_ptr<storage::FileSystemOperationContext>(),
       ExternalFileURLToFileSystemURL(externalfile_url),
       -1,  // fields
