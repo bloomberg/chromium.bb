@@ -1,0 +1,4 @@
+Tests that the unreachable url is reported when navigating to a nonexistent page.
+Page navigated, url = data:text/html,chromewebdata
+UnreachableUrl = idont_exist.html
+
