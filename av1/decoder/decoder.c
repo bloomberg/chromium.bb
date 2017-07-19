@@ -232,7 +232,12 @@ aom_codec_err_t av1_set_reference_dec(AV1_COMMON *cm,
   //   cpi->lst3_fb_idx = 2;
   //   cpi->gld_fb_idx = 3;
   //   cpi->bwd_fb_idx = 4;
+  // #if CONFIG_ALTREF2
+  //   cpi->alt2_fb_idx = 5;
+  //   cpi->alt_fb_idx = 6;
+  // #else  // !CONFIG_ALTREF2
   //   cpi->alt_fb_idx = 5;
+  // #endif  // CONFIG_ALTREF2
   // #else  // CONFIG_EXT_REFS
   //   cpi->gld_fb_idx = 1;
   //   cpi->alt_fb_idx = 2;
@@ -251,9 +256,16 @@ aom_codec_err_t av1_set_reference_dec(AV1_COMMON *cm,
     idx = cm->ref_frame_map[3];
   } else if (ref_frame_flag == AOM_BWD_FLAG) {
     idx = cm->ref_frame_map[4];
+#if CONFIG_ALTREF2
+  } else if (ref_frame_flag == AOM_ALT2_FLAG) {
+    idx = cm->ref_frame_map[5];
+  } else if (ref_frame_flag == AOM_ALT_FLAG) {
+    idx = cm->ref_frame_map[6];
+#else   // !CONFIG_ALTREF2
   } else if (ref_frame_flag == AOM_ALT_FLAG) {
     idx = cm->ref_frame_map[5];
-#else
+#endif  // CONFIG_ALTREF2
+#else   // !CONFIG_EXT_REFS
   } else if (ref_frame_flag == AOM_GOLD_FLAG) {
     idx = cm->ref_frame_map[1];
   } else if (ref_frame_flag == AOM_ALT_FLAG) {
