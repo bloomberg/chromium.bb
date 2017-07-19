@@ -228,12 +228,11 @@ ExtensionFunction::ResponseAction EasyUnlockPrivateGetStringsFunction::Run() {
   // Step 1: Intro.
   strings->SetString(
       "setupIntroHeaderTitle",
-      l10n_util::GetStringUTF16(IDS_EASY_UNLOCK_SETUP_INTRO_HEADER_TITLE));
+      l10n_util::GetStringFUTF16(IDS_EASY_UNLOCK_SETUP_INTRO_HEADER_TITLE,
+                                 device_type));
   strings->SetString(
       "setupIntroHeaderText",
-      l10n_util::GetStringFUTF16(IDS_EASY_UNLOCK_SETUP_INTRO_HEADER_TEXT,
-                                 device_type,
-                                 user_email));
+      l10n_util::GetStringUTF16(IDS_EASY_UNLOCK_SETUP_INTRO_HEADER_TEXT));
   strings->SetString(
       "setupIntroFindPhoneButtonLabel",
       l10n_util::GetStringUTF16(
@@ -312,12 +311,11 @@ ExtensionFunction::ResponseAction EasyUnlockPrivateGetStringsFunction::Run() {
   // Step 3: Setup completed successfully.
   strings->SetString(
       "setupCompleteHeaderTitle",
-      l10n_util::GetStringUTF16(
-          IDS_EASY_UNLOCK_SETUP_COMPLETE_HEADER_TITLE));
+      l10n_util::GetStringUTF16(IDS_EASY_UNLOCK_SETUP_COMPLETE_HEADER_TITLE));
   strings->SetString(
       "setupCompleteHeaderText",
-      l10n_util::GetStringUTF16(
-          IDS_EASY_UNLOCK_SETUP_COMPLETE_HEADER_TEXT));
+      l10n_util::GetStringFUTF16(IDS_EASY_UNLOCK_SETUP_COMPLETE_HEADER_TEXT,
+                                 device_type));
   strings->SetString(
       "setupCompleteTryItOutButtonLabel",
       l10n_util::GetStringUTF16(

@@ -310,12 +310,12 @@ void EasyUnlockScreenlockStateHandler::ShowHardlockUI() {
     tooltip = l10n_util::GetStringFUTF16(
         IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_HARDLOCK_USER, device_name);
   } else if (hardlock_state_ == PAIRING_CHANGED) {
-    tooltip = l10n_util::GetStringUTF16(
-        IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_HARDLOCK_PAIRING_CHANGED);
+    tooltip = l10n_util::GetStringFUTF16(
+        IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_HARDLOCK_PAIRING_CHANGED,
+        device_name);
   } else if (hardlock_state_ == PAIRING_ADDED) {
     tooltip = l10n_util::GetStringFUTF16(
-        IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_HARDLOCK_PAIRING_ADDED, device_name,
-        device_name);
+        IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_HARDLOCK_PAIRING_ADDED, device_name);
   } else if (hardlock_state_ == LOGIN_FAILED) {
     tooltip = l10n_util::GetStringUTF16(
         IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_LOGIN_FAILURE);
