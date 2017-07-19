@@ -268,8 +268,8 @@ views::ImageButton* SearchBoxView::back_button() {
   return static_cast<views::ImageButton*>(back_button_);
 }
 
-bool SearchBoxView::IsCloseButtonVisible() const {
-  return close_button_ && close_button_->visible();
+views::ImageButton* SearchBoxView::close_button() {
+  return static_cast<views::ImageButton*>(close_button_);
 }
 
 // Returns true if set internally, i.e. if focused_view_ != CONTENTS_VIEW.
@@ -493,6 +493,20 @@ void SearchBoxView::UpdateBackground(double progress,
   search_box_->SetBackgroundColor(color);
 }
 
+void SearchBoxView::ButtonPressed(views::Button* sender,
+                                  const ui::Event& event) {
+  if (back_button_ && sender == back_button_) {
+    delegate_->BackButtonPressed();
+  } else if (speech_button_ && sender == speech_button_) {
+    view_delegate_->StartSpeechRecognition();
+  } else if (close_button_ && sender == close_button_) {
+    ClearSearch();
+    app_list_view_->SetStateFromSearchBoxView(true);
+  } else {
+    NOTREACHED();
+  }
+}
+
 void SearchBoxView::UpdateModel() {
   // Temporarily remove from observer to ignore notifications caused by us.
   model_->search_box()->RemoveObserver(this);
@@ -592,18 +606,6 @@ bool SearchBoxView::HandleMouseEvent(views::Textfield* sender,
 bool SearchBoxView::HandleGestureEvent(views::Textfield* sender,
                                        const ui::GestureEvent& gesture_event) {
   return OnTextfieldEvent();
-}
-
-void SearchBoxView::ButtonPressed(views::Button* sender,
-                                  const ui::Event& event) {
-  if (back_button_ && sender == back_button_)
-    delegate_->BackButtonPressed();
-  else if (speech_button_ && sender == speech_button_)
-    view_delegate_->StartSpeechRecognition();
-  else if (close_button_ && sender == close_button_)
-    ClearSearch();
-  else
-    NOTREACHED();
 }
 
 void SearchBoxView::SpeechRecognitionButtonPropChanged() {

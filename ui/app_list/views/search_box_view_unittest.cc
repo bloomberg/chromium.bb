@@ -191,6 +191,7 @@ class SearchBoxViewFullscreenTest : public views::test::WidgetTest,
   }
 
  protected:
+  views::Widget* widget() { return widget_; }
   SearchBoxView* view() { return view_.get(); }
   AppListView* app_list_view() { return app_list_view_; }
 
@@ -270,11 +271,21 @@ TEST_P(SearchBoxViewTest, CancelAutoLaunch) {
 }
 
 TEST_F(SearchBoxViewFullscreenTest, CloseButtonTest) {
-  KeyPress(ui::VKEY_A);
-  EXPECT_TRUE(view()->IsCloseButtonVisible());
+  EXPECT_FALSE(view()->close_button()->visible());
+  EXPECT_EQ(AppListView::PEEKING, app_list_view()->app_list_state());
 
-  view()->ClearSearch();
-  EXPECT_FALSE(view()->IsCloseButtonVisible());
+  KeyPress(ui::VKEY_A);
+  EXPECT_TRUE(view()->close_button()->visible());
+  EXPECT_EQ(AppListView::HALF, app_list_view()->app_list_state());
+
+  // Click the close button in search box view.
+  view()->ButtonPressed(
+      view()->close_button(),
+      ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                     base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON,
+                     ui::EF_LEFT_MOUSE_BUTTON));
+  EXPECT_FALSE(view()->close_button()->visible());
+  EXPECT_EQ(AppListView::PEEKING, app_list_view()->app_list_state());
 }
 
 // Tests that the search box is inactive by default.
