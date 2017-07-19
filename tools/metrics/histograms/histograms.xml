@@ -54666,6 +54666,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Platform.Emmc.LifeUsed" enum="EmmcLifeUsed">
+  <owner>gwendal@google.com</owner>
+  <summary>
+    eMMC [5.0] Device life time estimation for flash. This field provides an
+    estimated indication about the device life time that is reflected by the
+    averaged wear out of memory of a given type relative to its maximum
+    estimated lifetime.
+  </summary>
+</histogram>
+
 <histogram name="Platform.IntelMaxMicroArchitecture"
     enum="IntelMaxMicroArchitecture">
   <owner>fbarchard@chromium.org</owner>
@@ -96293,6 +96303,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="EC" label="Embedded Controller firmware"/>
   <suffix name="PD" label="USB Power Delivery controller firmware"/>
   <affected-histogram name="Platform.BootMode.FirmwareWriteProtect"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="PlatformEmmcLifeUsed" separator=".">
+  <suffix name="TypeA" label="Memory Type A"/>
+  <suffix name="TypeB" label="Memory Type B"/>
+  <affected-histogram name="Platform.Emmc.LifeUsed"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="PlatformMeminfoPercentage" separator="">

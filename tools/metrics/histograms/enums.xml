@@ -9256,6 +9256,21 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="9" label="SCRIPT_READ_FINISHED"/>
 </enum>
 
+<enum name="EmmcLifeUsed">
+  <int value="0" label="Not defined"/>
+  <int value="1" label="0% - 10% device life time used"/>
+  <int value="2" label="10% -20% device life time used"/>
+  <int value="3" label="20% -30% device life time used"/>
+  <int value="4" label="30% - 40% device life time used"/>
+  <int value="5" label="40% - 50% device life time used"/>
+  <int value="6" label="50% - 60% device life time used"/>
+  <int value="7" label="60% - 70% device life time used"/>
+  <int value="8" label="70% - 80% device life time used"/>
+  <int value="9" label="80% - 90% device life time used"/>
+  <int value="10" label="90% - 100% device life time used"/>
+  <int value="11" label="Exceeded its maximum estimated device life time"/>
+</enum>
+
 <enum name="EncodingMethod">
   <int value="0" label="UNKNOWN"/>
   <int value="1" label="Big5"/>
