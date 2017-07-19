@@ -910,8 +910,6 @@ class ClearReportingCacheTester {
     if (create_service)
       service_ = base::MakeUnique<MockReportingService>();
 
-    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-
     net::URLRequestContext* request_context =
         profile_->GetRequestContext()->GetURLRequestContext();
     old_service_ = request_context->reporting_service();
@@ -919,8 +917,6 @@ class ClearReportingCacheTester {
   }
 
   ~ClearReportingCacheTester() {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-
     net::URLRequestContext* request_context =
         profile_->GetRequestContext()->GetURLRequestContext();
     DCHECK_EQ(service_.get(), request_context->reporting_service());
@@ -930,7 +926,6 @@ class ClearReportingCacheTester {
   void GetMockInfo(int* remove_calls_out,
                    int* last_data_type_mask_out,
                    base::Callback<bool(const GURL&)>* last_origin_filter_out) {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     DCHECK_NE(nullptr, service_.get());
 
     *remove_calls_out = service_->remove_calls();

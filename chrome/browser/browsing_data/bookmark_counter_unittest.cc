@@ -42,7 +42,6 @@ class BookmarkCounterTest : public testing::Test {
 
   void Callback(
       std::unique_ptr<browsing_data::BrowsingDataCounter::Result> result) {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     DCHECK(result->Finished());
     finished_ = result->Finished();
     result_ = static_cast<browsing_data::BrowsingDataCounter::FinishedResult*>(
@@ -52,7 +51,6 @@ class BookmarkCounterTest : public testing::Test {
   }
 
   void WaitForResult() {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     run_loop_->Run();
     run_loop_.reset(new base::RunLoop());
   }
