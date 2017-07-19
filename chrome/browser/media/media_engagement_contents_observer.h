@@ -36,12 +36,51 @@ class MediaEngagementContentsObserver : public content::WebContentsObserver {
   static const char* kHistogramScoreAtPlaybackName;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(MediaEngagementContentsObserverTest,
+                           RecordInsignificantReason);
+  FRIEND_TEST_ALL_PREFIXES(MediaEngagementContentsObserverTest,
+                           RecordInsignificantReason_NotAdded_AfterFirstTime);
   // Only MediaEngagementService can create a MediaEngagementContentsObserver.
   friend MediaEngagementService;
   friend MediaEngagementContentsObserverTest;
 
   MediaEngagementContentsObserver(content::WebContents* web_contents,
                                   MediaEngagementService* service);
+
+  // This enum is used to record a histogram and should not be renumbered.
+  enum class InsignificantPlaybackReason {
+    // The frame size of the video is too small.
+    kFrameSizeTooSmall = 0,
+
+    // The player was muted.
+    kAudioMuted,
+
+    // The media is paused.
+    kMediaPaused,
+
+    // No audio track was present on the media.
+    kNoAudioTrack,
+
+    // This is always recorded to the histogram so we can see the number
+    // of events that occured.
+    kCount,
+
+    // Add new items before this one, always keep this one at the end.
+    kReasonMax,
+  };
+
+  enum class InsignificantHistogram {
+    // The player isn't currently significant and can't be because it
+    // doesn't meet all the criteria (first time only).
+    kPlayerNotAddedFirstTime = 0,
+
+    // The player isn't currently significant and can't be because it
+    // doesn't meet all the critera (after the first time).
+    kPlayerNotAddedAfterFirstTime,
+
+    // The player was significant but no longer meets the criteria.
+    kPlayerRemoved,
+  };
 
   void OnSignificantMediaPlaybackTime();
   bool AreConditionsMet() const;
@@ -63,23 +102,56 @@ class MediaEngagementContentsObserver : public content::WebContentsObserver {
 
   // A structure containing all the information we have about a player's state.
   struct PlayerState {
-    bool muted = true;
-    bool playing = false;           // Currently playing.
-    bool significant_size = false;  // The video track has at least a certain
-                                    // frame size.
-    bool has_audio = false;         // The media has an audio track.
-    bool score_recorded = false;    // The player has logged the engagement
-                                    // score on playback.
+    base::Optional<bool> muted;
+    base::Optional<bool> playing;           // Currently playing.
+    base::Optional<bool> significant_size;  // The video track has at least
+                                            // a certain frame size.
+    base::Optional<bool> has_audio;         // The media has an audio track.
+
+    // The engagement score of the origin at playback has been recorded
+    // to a histogram.
+    bool score_recorded = false;
+
+    // The reasons why the player was not significant have been recorded
+    // to a histogram.
+    bool reasons_recorded = false;
+
+    PlayerState();
+    PlayerState& operator=(const PlayerState&);
   };
-  std::map<MediaPlayerId, PlayerState*> player_states_;
-  PlayerState* GetPlayerState(const MediaPlayerId& id);
+  std::map<MediaPlayerId, PlayerState> player_states_;
+  PlayerState& GetPlayerState(const MediaPlayerId& id);
   void ClearPlayerStates();
 
-  // Inserts/removes players from significant_players_ based on their volume,
-  // play state and size.
-  void MaybeInsertSignificantPlayer(const MediaPlayerId& id);
-  void MaybeRemoveSignificantPlayer(const MediaPlayerId& id);
-  bool IsSignificantPlayer(const MediaPlayerId& id);
+  // Inserts/removes players from significant_players_ based on whether
+  // they are considered significant by GetInsignificantPlayerReason.
+  void MaybeInsertRemoveSignificantPlayer(const MediaPlayerId& id);
+
+  // Returns a vector containing InsignificantPlaybackReason's why a player
+  // would not be considered significant.
+  std::vector<MediaEngagementContentsObserver::InsignificantPlaybackReason>
+  GetInsignificantPlayerReasons(const PlayerState& state);
+
+  // Records why a player is not significant to a historgram.
+  void RecordInsignificantReasons(
+      std::vector<InsignificantPlaybackReason> reasons,
+      const PlayerState& state,
+      InsignificantHistogram histogram);
+
+  // Returns whether we have recieved all the state information about a
+  // player in order to be able to make a decision about it.
+  bool IsPlayerStateComplete(const PlayerState& state);
+
+  // Returns whether the player is considered to be significant and record
+  // any reasons why not to a histogram.
+  bool IsSignificantPlayerAndRecord(
+      const MediaPlayerId& id,
+      MediaEngagementContentsObserver::InsignificantHistogram histogram);
+
+  static const char* kHistogramSignificantNotAddedAfterFirstTimeName;
+  static const char* kHistogramSignificantNotAddedFirstTimeName;
+  static const char* kHistogramSignificantRemovedName;
+  static const int kMaxInsignificantPlaybackReason;
 
   // Record the score and change in score to UKM.
   void RecordUkmMetrics();

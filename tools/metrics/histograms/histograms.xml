@@ -30038,6 +30038,56 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram
+    name="Media.Engagement.SignificantPlayers.PlayerNotAdded.AfterFirstTime"
+    enum="InsignificantPlaybackReason">
+  <owner>beccahughes@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
+  <summary>
+    Recorded when the Media Engagement service doesn't determine a player to be
+    significant. If a player is not significant the reasons why will be
+    individually recorded to this histogram each time except for the first time
+    which is recorded to a different histogram.
+
+    The significant state of a player is reevaluated any time the state of the
+    player changes (e.g. muted, playing/paused). If the player was not
+    considered signficiant and still is not then we will record the reasons why
+    in this histogram.
+  </summary>
+</histogram>
+
+<histogram name="Media.Engagement.SignificantPlayers.PlayerNotAdded.FirstTime"
+    enum="InsignificantPlaybackReason">
+  <owner>beccahughes@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
+  <summary>
+    Recorded when the Media Engagement service doesn't determine a player to be
+    significant. If a player is not significant the reasons why will be
+    individually recorded to this histogram the first time only.
+
+    The significant state of a player is reevaluated any time the state of the
+    player changes (e.g. muted, playing/paused). If the player was not
+    considered signficiant and still is not then we will record the reasons why
+    in this histogram.
+  </summary>
+</histogram>
+
+<histogram name="Media.Engagement.SignificantPlayers.PlayerRemoved"
+    enum="InsignificantPlaybackReason">
+  <owner>beccahughes@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
+  <summary>
+    Recorded when the Media Engagement service no longer determines a player to
+    be significant. If a player is no longer significant, the reasons why will
+    be individually recorded to this histogram.
+
+    The significant state of a player is re-evaluted any time the state of the
+    player changes (e.g. muted, playing/paused). If the player was previously
+    considered significant and is no longer considered that we will record the
+    reasons why in this histogram.
+  </summary>
+</histogram>
+
 <histogram name="Media.FallbackHardwareAudioBitsPerChannel">
   <owner>dalecurtis@chromium.org</owner>
   <summary>
