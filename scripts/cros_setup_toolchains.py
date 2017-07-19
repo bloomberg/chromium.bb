@@ -103,6 +103,8 @@ class Crossdev(object):
   # crossdev.
   MANUAL_PKGS = {
       'llvm': 'sys-devel',
+      'libcxxabi': 'sys-libs',
+      'libcxx': 'sys-libs',
   }
 
   @classmethod
