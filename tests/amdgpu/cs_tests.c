@@ -90,7 +90,7 @@ int suite_cs_tests_init(void)
 	chip_rev = device_handle->info.chip_rev;
 	chip_id = device_handle->info.chip_external_rev;
 
-	if (family_id >= AMDGPU_FAMILY_RV) {
+	if (family_id >= AMDGPU_FAMILY_RV || family_id == AMDGPU_FAMILY_SI) {
 		printf("\n\nThe ASIC NOT support UVD, all sub-tests will pass\n");
 		return CUE_SUCCESS;
 	}
@@ -119,21 +119,24 @@ int suite_cs_tests_clean(void)
 {
 	int r;
 
-	if (family_id >= AMDGPU_FAMILY_RV)
-		return CUE_SUCCESS;
+	if (family_id >= AMDGPU_FAMILY_RV || family_id == AMDGPU_FAMILY_SI) {
+		r = amdgpu_device_deinitialize(device_handle);
+		if (r)
+			return CUE_SCLEAN_FAILED;
+	} else {
+		r = amdgpu_bo_unmap_and_free(ib_handle, ib_va_handle,
+					     ib_mc_address, IB_SIZE);
+		if (r)
+			return CUE_SCLEAN_FAILED;
 
-	r = amdgpu_bo_unmap_and_free(ib_handle, ib_va_handle,
-				     ib_mc_address, IB_SIZE);
-	if (r)
-		return CUE_SCLEAN_FAILED;
+		r = amdgpu_cs_ctx_free(context_handle);
+		if (r)
+			return CUE_SCLEAN_FAILED;
 
-	r = amdgpu_cs_ctx_free(context_handle);
-	if (r)
-		return CUE_SCLEAN_FAILED;
-
-	r = amdgpu_device_deinitialize(device_handle);
-	if (r)
-		return CUE_SCLEAN_FAILED;
+		r = amdgpu_device_deinitialize(device_handle);
+		if (r)
+			return CUE_SCLEAN_FAILED;
+	}
 
 	return CUE_SUCCESS;
 }
@@ -200,7 +203,7 @@ static void amdgpu_cs_uvd_create(void)
 	void *msg;
 	int i, r;
 
-	if (family_id >= AMDGPU_FAMILY_RV)
+	if (family_id >= AMDGPU_FAMILY_RV || family_id == AMDGPU_FAMILY_SI)
 		return;
 
 	req.alloc_size = 4*1024;
@@ -274,7 +277,7 @@ static void amdgpu_cs_uvd_decode(void)
 	uint8_t *ptr;
 	int i, r;
 
-	if (family_id >= AMDGPU_FAMILY_RV)
+	if (family_id >= AMDGPU_FAMILY_RV || family_id == AMDGPU_FAMILY_SI)
                 return;
 
 	req.alloc_size = 4*1024; /* msg */
@@ -416,7 +419,7 @@ static void amdgpu_cs_uvd_destroy(void)
 	void *msg;
 	int i, r;
 
-	if (family_id >= AMDGPU_FAMILY_RV)
+	if (family_id >= AMDGPU_FAMILY_RV || family_id == AMDGPU_FAMILY_SI)
                 return;
 
 	req.alloc_size = 4*1024;
