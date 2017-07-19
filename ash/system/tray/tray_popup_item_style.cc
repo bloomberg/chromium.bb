@@ -89,13 +89,6 @@ void TrayPopupItemStyle::SetupLabel(views::Label* label) const {
       label->SetFontList(base_font_list.Derive(1, gfx::Font::NORMAL,
                                                gfx::Font::Weight::NORMAL));
       break;
-    case FontStyle::CLICKABLE_SYSTEM_INFO:
-      label->SetFontList(base_font_list.Derive(1, gfx::Font::NORMAL,
-                                               gfx::Font::Weight::NORMAL));
-      label->SetEnabledColor(label->GetNativeTheme()->GetSystemColor(
-          ui::NativeTheme::kColorId_ProminentButtonColor));
-      label->SetAutoColorReadabilityEnabled(false);
-      break;
     case FontStyle::BUTTON:
       label->SetFontList(base_font_list.Derive(0, gfx::Font::NORMAL,
                                                gfx::Font::Weight::MEDIUM));
