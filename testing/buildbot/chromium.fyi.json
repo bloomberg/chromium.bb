@@ -10012,7 +10012,6 @@
       "d8",
       "gl_unittests",
       "media_unittests",
-      "net_unittests",
       "skia_unittests",
       "ui_base_unittests"
     ],
@@ -10070,6 +10069,15 @@
           "can_use_on_swarming_builders": false
         },
         "test": "mojo_system_unittests"
+      },
+      {
+        "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.net_unittests.filter"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
+        "test": "net_unittests"
       }
     ]
   },
@@ -10078,7 +10086,6 @@
       "d8",
       "gl_unittests",
       "media_unittests",
-      "net_unittests",
       "skia_unittests",
       "ui_base_unittests"
     ],
@@ -10136,6 +10143,15 @@
           "can_use_on_swarming_builders": false
         },
         "test": "mojo_system_unittests"
+      },
+      {
+        "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.net_unittests.filter"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
+        "test": "net_unittests"
       }
     ]
   },
