@@ -64,7 +64,7 @@ std::unique_ptr<Notification> CreateNotification(
     if (status.IsBatteryCharging()) {
       base::string16 duration;
       if (!TimeDurationFormat(time, base::DURATION_WIDTH_NARROW, &duration))
-        LOG(ERROR) << "Failed to format duration " << time.ToInternalValue();
+        LOG(ERROR) << "Failed to format duration " << time;
       time_message = l10n_util::GetStringFUTF16(
           IDS_ASH_STATUS_TRAY_BATTERY_TIME_UNTIL_FULL, duration);
     } else {
