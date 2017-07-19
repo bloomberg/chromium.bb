@@ -114,8 +114,7 @@ class BASE_EXPORT WeakReference {
         DCHECK(!is_valid_);
         return 0;
       }
-      DCHECK(sequence_checker_.CalledOnValidSequence())
-          << "WeakPtrs must be checked on the same sequenced thread.";
+      DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 #endif
       return is_valid_;
     }
@@ -129,11 +128,7 @@ class BASE_EXPORT WeakReference {
     ~Flag();
 
     uintptr_t is_valid_;
-#if DCHECK_IS_ON()
-    // Even if SequenceChecker is an empty class in non-dcheck builds, it still
-    // takes up space in the class.
-    SequenceChecker sequence_checker_;
-#endif
+    SEQUENCE_CHECKER(sequence_checker_);
   };
 
   WeakReference();
