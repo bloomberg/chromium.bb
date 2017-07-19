@@ -528,11 +528,20 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
              dict.Get(pp::Var(kJSPrintPreviewUrl)).is_string() &&
              dict.Get(pp::Var(kJSPrintPreviewGrayscale)).is_bool() &&
              dict.Get(pp::Var(kJSPrintPreviewPageCount)).is_int()) {
+    int print_preview_page_count =
+        std::max(dict.Get(pp::Var(kJSPrintPreviewPageCount)).AsInt(), 0);
+    if (print_preview_page_count <= 0) {
+      NOTREACHED();
+      return;
+    }
+
+    print_preview_page_count_ = print_preview_page_count;
     url_ = dict.Get(pp::Var(kJSPrintPreviewUrl)).AsString();
     // For security reasons we crash if the URL that is trying to be loaded here
     // isn't a print preview one.
     CHECK(IsPrintPreview());
     CHECK(IsPrintPreviewUrl(url_));
+
     preview_pages_info_ = std::queue<PreviewPageInfo>();
     preview_document_load_state_ = LOAD_STATE_COMPLETE;
     document_load_state_ = LOAD_STATE_LOADING;
@@ -541,9 +550,6 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
     engine_ = PDFEngine::Create(this);
     engine_->SetGrayscale(dict.Get(pp::Var(kJSPrintPreviewGrayscale)).AsBool());
     engine_->New(url_.c_str(), nullptr /* empty header */);
-
-    print_preview_page_count_ =
-        std::max(dict.Get(pp::Var(kJSPrintPreviewPageCount)).AsInt(), 0);
 
     paint_manager_.InvalidateRect(pp::Rect(pp::Point(), plugin_size_));
   } else if (type == kJSLoadPreviewPageType &&
@@ -1387,20 +1393,12 @@ void OutOfProcessInstance::PreviewDocumentLoadComplete() {
 
   preview_document_load_state_ = LOAD_STATE_COMPLETE;
 
-  const std::string& url = preview_pages_info_.front().first;
   int dest_page_index = preview_pages_info_.front().second;
-  int src_page_index = ExtractPrintPreviewPageIndex(url);
-  if (src_page_index > 0 && dest_page_index > -1 && preview_engine_)
-    engine_->AppendPage(preview_engine_.get(), dest_page_index);
+  DCHECK_GE(dest_page_index, 0);
+  DCHECK(preview_engine_);
+  engine_->AppendPage(preview_engine_.get(), dest_page_index);
 
-  preview_pages_info_.pop();
-  // |print_preview_page_count_| is not updated yet. Do not load any
-  // other preview pages until this information is available.
-  if (print_preview_page_count_ == 0)
-    return;
-
-  if (!preview_pages_info_.empty())
-    LoadAvailablePreviewPage();
+  LoadNextPreviewPage();
 }
 
 void OutOfProcessInstance::DocumentLoadFailed() {
@@ -1437,10 +1435,7 @@ void OutOfProcessInstance::PreviewDocumentLoadFailed() {
   }
 
   preview_document_load_state_ = LOAD_STATE_FAILED;
-  preview_pages_info_.pop();
-
-  if (!preview_pages_info_.empty())
-    LoadAvailablePreviewPage();
+  LoadNextPreviewPage();
 }
 
 pp::Instance* OutOfProcessInstance::GetPluginInstance() {
@@ -1602,8 +1597,20 @@ void OutOfProcessInstance::ProcessPreviewPageInfo(const std::string& url,
                                                   int dest_page_index) {
   DCHECK(IsPrintPreview());
 
+  if (dest_page_index < 0 || dest_page_index >= print_preview_page_count_) {
+    NOTREACHED();
+    return;
+  }
+
   int src_page_index = ExtractPrintPreviewPageIndex(url);
-  if (src_page_index < 1)
+  if (src_page_index < 0) {
+    NOTREACHED();
+    return;
+  }
+
+  // Print Preview JS will call loadPreviewPage() for every page, including
+  // page 0. Just ignore it.
+  if (src_page_index == 0)
     return;
 
   preview_pages_info_.push(std::make_pair(url, dest_page_index));
@@ -1612,20 +1619,22 @@ void OutOfProcessInstance::ProcessPreviewPageInfo(const std::string& url,
 
 void OutOfProcessInstance::LoadAvailablePreviewPage() {
   if (preview_pages_info_.empty() ||
-      document_load_state_ != LOAD_STATE_COMPLETE) {
-    return;
-  }
-
-  const std::string& url = preview_pages_info_.front().first;
-  int dest_page_index = preview_pages_info_.front().second;
-  int src_page_index = ExtractPrintPreviewPageIndex(url);
-  if (src_page_index < 1 || dest_page_index >= print_preview_page_count_ ||
+      document_load_state_ != LOAD_STATE_COMPLETE ||
       preview_document_load_state_ == LOAD_STATE_LOADING) {
     return;
   }
 
   preview_document_load_state_ = LOAD_STATE_LOADING;
+  const std::string& url = preview_pages_info_.front().first;
   LoadUrl(url, /*is_print_preview=*/true);
+}
+
+void OutOfProcessInstance::LoadNextPreviewPage() {
+  DCHECK(!preview_pages_info_.empty());
+  preview_pages_info_.pop();
+
+  if (!preview_pages_info_.empty())
+    LoadAvailablePreviewPage();
 }
 
 void OutOfProcessInstance::UserMetricsRecordAction(const std::string& action) {
