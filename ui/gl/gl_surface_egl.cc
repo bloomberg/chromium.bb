@@ -760,7 +760,7 @@ NativeViewGLSurfaceEGL::NativeViewGLSurfaceEGL(
     std::unique_ptr<gfx::VSyncProvider> vsync_provider)
     : window_(window),
       size_(1, 1),
-      enable_fixed_size_angle_(false),
+      enable_fixed_size_angle_(true),
       surface_(NULL),
       supports_post_sub_buffer_(false),
       supports_swap_buffer_with_damage_(false),
