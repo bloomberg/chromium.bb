@@ -50,6 +50,7 @@
 #include "public/platform/WebContentLayer.h"
 #include "public/platform/WebImageLayer.h"
 #include "public/platform/WebLayerStickyPositionConstraint.h"
+#include "public/platform/WebScrollBoundaryBehavior.h"
 #include "third_party/skia/include/core/SkFilterQuality.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
@@ -278,6 +279,8 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   LayoutRect VisualRect() const override;
 
   void SetHasWillChangeTransformHint(bool);
+
+  void SetScrollBoundaryBehavior(const WebScrollBoundaryBehavior&);
 
  protected:
   String DebugName(cc::Layer*) const;

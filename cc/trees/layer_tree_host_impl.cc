@@ -3057,6 +3057,22 @@ bool LayerTreeHostImpl::ScrollAnimationCreate(ScrollNode* scroll_node,
   return true;
 }
 
+static bool CanPropagate(ScrollNode* scroll_node, float x, float y) {
+  // ScrollBoundaryBehavior may have different values on x-axis and y-axis.
+  // We need to find out the dominant axis of user's intended scroll to decide
+  // which node's ScrollBoundaryBehavior should be applied, i.e. which the
+  // scroll should be propagated from this node given its relevant*
+  // ScrollBoundaryBehavior value. * relevant here depends on the dominant
+  // axis of scroll gesture.
+  bool x_dominant = std::abs(x) > std::abs(y);
+  return (x_dominant &&
+          scroll_node->scroll_boundary_behavior.x ==
+              ScrollBoundaryBehavior::kScrollBoundaryBehaviorTypeAuto) ||
+         (!x_dominant &&
+          scroll_node->scroll_boundary_behavior.y ==
+              ScrollBoundaryBehavior::kScrollBoundaryBehaviorTypeAuto);
+}
+
 InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
     const gfx::Point& viewport_point,
     const gfx::Vector2dF& scroll_delta,
@@ -3145,6 +3161,9 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
       }
 
       pending_delta -= scroll_delta;
+
+      if (!CanPropagate(scroll_node, pending_delta.x(), pending_delta.y()))
+        break;
     }
   }
   scroll_state.set_is_ending(true);
@@ -3399,6 +3418,16 @@ void LayerTreeHostImpl::DistributeScrollDelta(ScrollState* scroll_state) {
 
       if (CanConsumeDelta(scroll_node, *scroll_state))
         current_scroll_chain.push_front(scroll_node);
+
+      float delta_x = scroll_state->is_beginning()
+                          ? scroll_state->delta_x_hint()
+                          : scroll_state->delta_x();
+      float delta_y = scroll_state->is_beginning()
+                          ? scroll_state->delta_y_hint()
+                          : scroll_state->delta_y();
+
+      if (!CanPropagate(scroll_node, delta_x, delta_y))
+        break;
     }
   }
   active_tree_->SetCurrentlyScrollingNode(

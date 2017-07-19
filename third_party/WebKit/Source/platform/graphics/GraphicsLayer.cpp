@@ -149,6 +149,11 @@ void GraphicsLayer::SetHasWillChangeTransformHint(
   layer_->Layer()->SetHasWillChangeTransformHint(has_will_change_transform);
 }
 
+void GraphicsLayer::SetScrollBoundaryBehavior(
+    const WebScrollBoundaryBehavior& behavior) {
+  layer_->Layer()->SetScrollBoundaryBehavior(behavior);
+}
+
 void GraphicsLayer::SetParent(GraphicsLayer* layer) {
 #if DCHECK_IS_ON()
   DCHECK(!layer || !layer->HasAncestor(this));

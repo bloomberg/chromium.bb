@@ -65,7 +65,9 @@ Layer::Inputs::Inputs(int layer_id)
       clip_parent(nullptr),
       has_will_change_transform_hint(false),
       hide_layer_and_subtree(false),
-      client(nullptr) {}
+      client(nullptr),
+      scroll_boundary_behavior(
+          ScrollBoundaryBehavior::kScrollBoundaryBehaviorTypeAuto) {}
 
 Layer::Inputs::~Inputs() {}
 
@@ -299,6 +301,25 @@ void Layer::SetBounds(const gfx::Size& size) {
     auto& scroll_tree = layer_tree_host_->property_trees()->scroll_tree;
     if (auto* scroll_node = scroll_tree.Node(scroll_tree_index_))
       scroll_node->bounds = inputs_.bounds;
+    else
+      SetPropertyTreesNeedRebuild();
+  }
+
+  SetNeedsCommit();
+}
+
+void Layer::SetScrollBoundaryBehavior(const ScrollBoundaryBehavior& behavior) {
+  DCHECK(IsPropertyChangeAllowed());
+  if (scroll_boundary_behavior() == behavior)
+    return;
+  inputs_.scroll_boundary_behavior = behavior;
+  if (!layer_tree_host_)
+    return;
+
+  if (scrollable()) {
+    auto& scroll_tree = layer_tree_host_->property_trees()->scroll_tree;
+    if (auto* scroll_node = scroll_tree.Node(scroll_tree_index_))
+      scroll_node->scroll_boundary_behavior = behavior;
     else
       SetPropertyTreesNeedRebuild();
   }
