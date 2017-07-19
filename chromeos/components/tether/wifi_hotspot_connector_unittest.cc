@@ -70,6 +70,16 @@ class WifiHotspotConnectorTest : public NetworkStateTest {
 
     uint32_t num_connection_attempts() { return num_connection_attempts_; }
 
+    // Finish configuring the last specified Wi-Fi network config.
+    void ConfigureServiceWithLastNetworkConfig() {
+      std::string wifi_guid;
+      EXPECT_TRUE(
+          last_configuration_->GetString(shill::kGuidProperty, &wifi_guid));
+
+      last_service_path_created_ = network_state_test_->ConfigureService(
+          CreateConfigurationJsonString(wifi_guid));
+    }
+
     // NetworkConnect:
     void DisconnectFromNetworkId(const std::string& network_id) override {}
     bool MaybeShowConfigureUI(const std::string& network_id,
@@ -92,12 +102,13 @@ class WifiHotspotConnectorTest : public NetworkStateTest {
       last_configuration_ =
           base::MakeUnique<base::DictionaryValue>(*shill_properties);
 
-      std::string wifi_guid;
-      EXPECT_TRUE(
-          last_configuration_->GetString(shill::kGuidProperty, &wifi_guid));
-
-      last_service_path_created_ = network_state_test_->ConfigureService(
-          CreateConfigurationJsonString(wifi_guid));
+      // Prevent nested RunLoops when ConfigureServiceWithLastNetworkConfig()
+      // calls NetworkStateTest::ConfigureService(); that causes threading
+      // issues. If a RunLoop is running right now, the client which was running
+      // the RunLoop can manually call ConfigureServiceWithLastNetworkConfig()
+      // once done.
+      if (!base::RunLoop::IsRunningOnCurrentThread())
+        ConfigureServiceWithLastNetworkConfig();
     }
 
     void ConnectToNetworkId(const std::string& network_id) override {
@@ -124,6 +135,10 @@ class WifiHotspotConnectorTest : public NetworkStateTest {
     NetworkStateTest::SetUp();
     network_state_handler()->SetTetherTechnologyState(
         NetworkStateHandler::TechnologyState::TECHNOLOGY_ENABLED);
+    network_state_handler()->SetTechnologyEnabled(
+        NetworkTypePattern::WiFi(), true /* enabled */,
+        chromeos::network_handler::ErrorCallback());
+    base::RunLoop().RunUntilIdle();
 
     SetUpShillState();
 
@@ -483,6 +498,193 @@ TEST_F(WifiHotspotConnectorTest,
   VerifyTetherAndWifiNetworkAssociation(
       wifi_guid2, kTetherNetworkGuid2,
       2u /* expected_num_connection_attempts */);
+  EXPECT_EQ(wifi_guid2, test_network_connect_->network_id_to_connect());
+  EXPECT_EQ(1u, connection_callback_responses_.size());
+
+  // Connection to network successful.
+  NotifyConnected(service_path2);
+  EXPECT_EQ(2u, connection_callback_responses_.size());
+  EXPECT_EQ(wifi_guid2, connection_callback_responses_[1]);
+  VerifyTimerStopped();
+}
+
+TEST_F(WifiHotspotConnectorTest, TestConnect_WifiDisabled_Success) {
+  network_state_handler()->SetTechnologyEnabled(
+      NetworkTypePattern::WiFi(), false /* enabled */,
+      chromeos::network_handler::ErrorCallback());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(
+      network_state_handler()->IsTechnologyEnabled(NetworkTypePattern::WiFi()));
+
+  wifi_hotspot_connector_->ConnectToWifiHotspot(
+      std::string(kSsid), std::string(kPassword), kTetherNetworkGuid,
+      base::Bind(&WifiHotspotConnectorTest::WifiConnectionCallback,
+                 base::Unretained(this)));
+
+  // Allow the asyncronous call to NetworkStateHandler::SetTechnologyEnabled()
+  // within WifiHotspotConnector::ConnectToWifiHotspot() to synchronously
+  // run. After this call, Wi-Fi should be enabled and WifiHotspotConnector
+  // will have called TestNetworkConnect::CreateConfiguration().
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(
+      network_state_handler()->IsTechnologyEnabled(NetworkTypePattern::WiFi()));
+
+  // Letting the RunLoop run-until-idle above indirectly led to
+  // TestNetworkConnect::CreateConfiguration being called with a running
+  // RunLoop. A RunLoop cannot be running when finishing work in
+  // TestNetworkConnect::CreateConfiguration; now that the RunLoop has stopped,
+  // finish the work it started.
+  test_network_connect_->ConfigureServiceWithLastNetworkConfig();
+
+  std::string wifi_guid =
+      VerifyLastConfiguration(std::string(kSsid), std::string(kPassword));
+  EXPECT_FALSE(wifi_guid.empty());
+
+  // Network becomes connectable.
+  NotifyConnectable(test_network_connect_->last_service_path_created());
+  VerifyTetherAndWifiNetworkAssociation(
+      wifi_guid, kTetherNetworkGuid, 1u /* expected_num_connection_attempts */);
+  EXPECT_EQ(wifi_guid, test_network_connect_->network_id_to_connect());
+  EXPECT_EQ(0u, connection_callback_responses_.size());
+
+  // Connection to network successful.
+  NotifyConnected(test_network_connect_->last_service_path_created());
+  EXPECT_EQ(1u, connection_callback_responses_.size());
+  EXPECT_EQ(wifi_guid, connection_callback_responses_[0]);
+  VerifyTimerStopped();
+}
+
+TEST_F(WifiHotspotConnectorTest,
+       TestConnect_WifiDisabled_Success_OtherDeviceStatesChange) {
+  network_state_handler()->SetTechnologyEnabled(
+      NetworkTypePattern::WiFi(), false /* enabled */,
+      chromeos::network_handler::ErrorCallback());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(
+      network_state_handler()->IsTechnologyEnabled(NetworkTypePattern::WiFi()));
+
+  wifi_hotspot_connector_->ConnectToWifiHotspot(
+      std::string(kSsid), std::string(kPassword), kTetherNetworkGuid,
+      base::Bind(&WifiHotspotConnectorTest::WifiConnectionCallback,
+                 base::Unretained(this)));
+
+  // Ensure that WifiHotspotConnector only begins configuring the Wi-Fi network
+  // once Wi-Fi is enabled.
+  wifi_hotspot_connector_->DeviceListChanged();
+  wifi_hotspot_connector_->DeviceListChanged();
+  EXPECT_FALSE(test_network_connect_->last_configuration());
+
+  // Allow the asyncronous call to NetworkStateHandler::SetTechnologyEnabled()
+  // within WifiHotspotConnector::ConnectToWifiHotspot() to synchronously
+  // run. After this call, Wi-Fi should be enabled and WifiHotspotConnector
+  // will have called TestNetworkConnect::CreateConfiguration().
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(
+      network_state_handler()->IsTechnologyEnabled(NetworkTypePattern::WiFi()));
+
+  // Letting the RunLoop run-until-idle above indirectly led to
+  // TestNetworkConnect::CreateConfiguration being called with a running
+  // RunLoop. A RunLoop cannot be running when finishing work in
+  // TestNetworkConnect::CreateConfiguration; now that the RunLoop has stopped,
+  // finish the work it started.
+  test_network_connect_->ConfigureServiceWithLastNetworkConfig();
+
+  std::string wifi_guid =
+      VerifyLastConfiguration(std::string(kSsid), std::string(kPassword));
+  EXPECT_FALSE(wifi_guid.empty());
+
+  // Network becomes connectable.
+  NotifyConnectable(test_network_connect_->last_service_path_created());
+  VerifyTetherAndWifiNetworkAssociation(
+      wifi_guid, kTetherNetworkGuid, 1u /* expected_num_connection_attempts */);
+  EXPECT_EQ(wifi_guid, test_network_connect_->network_id_to_connect());
+  EXPECT_EQ(0u, connection_callback_responses_.size());
+
+  // Connection to network successful.
+  NotifyConnected(test_network_connect_->last_service_path_created());
+  EXPECT_EQ(1u, connection_callback_responses_.size());
+  EXPECT_EQ(wifi_guid, connection_callback_responses_[0]);
+  VerifyTimerStopped();
+}
+
+TEST_F(WifiHotspotConnectorTest, TestConnect_WifiDisabled_AttemptTimesOut) {
+  network_state_handler()->SetTechnologyEnabled(
+      NetworkTypePattern::WiFi(), false /* enabled */,
+      chromeos::network_handler::ErrorCallback());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(
+      network_state_handler()->IsTechnologyEnabled(NetworkTypePattern::WiFi()));
+
+  wifi_hotspot_connector_->ConnectToWifiHotspot(
+      std::string(kSsid), std::string(kPassword), kTetherNetworkGuid,
+      base::Bind(&WifiHotspotConnectorTest::WifiConnectionCallback,
+                 base::Unretained(this)));
+
+  // Timeout timer fires.
+  InvokeTimerTask();
+  EXPECT_EQ(1u, connection_callback_responses_.size());
+  EXPECT_EQ("", connection_callback_responses_[0]);
+
+  // Allow the asyncronous call to NetworkStateHandler::SetTechnologyEnabled()
+  // within WifiHotspotConnector::ConnectToWifiHotspot() to synchronously
+  // run. After this call, Wi-Fi should be enabled, but the connection attempt
+  // has timed out and therefore a new Wi-Fi configuration should not exist.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(
+      network_state_handler()->IsTechnologyEnabled(NetworkTypePattern::WiFi()));
+
+  // No configuration should have been created since the connection attempt
+  // timed out before Wi-Fi was successfully enabled.
+  EXPECT_FALSE(test_network_connect_->last_configuration());
+}
+
+TEST_F(WifiHotspotConnectorTest,
+       TestConnect_WifiDisabled_SecondConnectionWhileWaitingForWifiEnabled) {
+  network_state_handler()->SetTechnologyEnabled(
+      NetworkTypePattern::WiFi(), false /* enabled */,
+      chromeos::network_handler::ErrorCallback());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(
+      network_state_handler()->IsTechnologyEnabled(NetworkTypePattern::WiFi()));
+
+  wifi_hotspot_connector_->ConnectToWifiHotspot(
+      "ssid1", "password1", kTetherNetworkGuid,
+      base::Bind(&WifiHotspotConnectorTest::WifiConnectionCallback,
+                 base::Unretained(this)));
+
+  EXPECT_FALSE(test_network_connect_->last_configuration());
+
+  wifi_hotspot_connector_->ConnectToWifiHotspot(
+      "ssid2", "password2", kTetherNetworkGuid2,
+      base::Bind(&WifiHotspotConnectorTest::WifiConnectionCallback,
+                 base::Unretained(this)));
+
+  // Allow the asyncronous call to NetworkStateHandler::SetTechnologyEnabled()
+  // within WifiHotspotConnector::ConnectToWifiHotspot() to synchronously
+  // run. After this call, Wi-Fi should be enabled and WifiHotspotConnector
+  // will have called TestNetworkConnect::CreateConfiguration().
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(
+      network_state_handler()->IsTechnologyEnabled(NetworkTypePattern::WiFi()));
+
+  // Letting the RunLoop run-until-idle above indirectly led to
+  // TestNetworkConnect::CreateConfiguration being called with a running
+  // RunLoop. A RunLoop cannot be running when finishing work in
+  // TestNetworkConnect::CreateConfiguration; now that the RunLoop has stopped,
+  // finish the work it started.
+  test_network_connect_->ConfigureServiceWithLastNetworkConfig();
+
+  std::string wifi_guid2 = VerifyLastConfiguration("ssid2", "password2");
+  EXPECT_FALSE(wifi_guid2.empty());
+  std::string service_path2 =
+      test_network_connect_->last_service_path_created();
+  EXPECT_FALSE(service_path2.empty());
+
+  // Second network becomes connectable.
+  NotifyConnectable(service_path2);
+  VerifyTetherAndWifiNetworkAssociation(
+      wifi_guid2, kTetherNetworkGuid2,
+      1u /* expected_num_connection_attempts */);
   EXPECT_EQ(wifi_guid2, test_network_connect_->network_id_to_connect());
   EXPECT_EQ(1u, connection_callback_responses_.size());
 
