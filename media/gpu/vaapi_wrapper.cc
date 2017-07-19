@@ -27,6 +27,7 @@
 #elif defined(USE_OZONE)
 #include "third_party/libva/va/drm/va_drm.h"
 #include "third_party/libva/va/va_drmcommon.h"
+#include "third_party/libva/va/va_version.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
@@ -1200,8 +1201,12 @@ bool VaapiWrapper::VADisplayState::Initialize() {
     DVLOG(1) << "VAAPI version: " << major_version_ << "." << minor_version_;
   }
 
-  if (VAAPIVersionLessThan(0, 39)) {
-    LOG(ERROR) << "VAAPI version < 0.39 is not supported.";
+  if (major_version_ != VA_MAJOR_VERSION ||
+      minor_version_ != VA_MINOR_VERSION) {
+    LOG(ERROR) << "This build of Chromium requires VA-API version "
+               << VA_MAJOR_VERSION << "." << VA_MINOR_VERSION
+               << ", system version: " << major_version_ << "."
+               << minor_version_;
     return false;
   }
   return true;
@@ -1229,10 +1234,5 @@ void VaapiWrapper::VADisplayState::SetDrmFd(base::PlatformFile fd) {
   drm_fd_.reset(HANDLE_EINTR(dup(fd)));
 }
 #endif  // USE_OZONE
-
-bool VaapiWrapper::VADisplayState::VAAPIVersionLessThan(int major, int minor) {
-  return (major_version_ < major) ||
-         (major_version_ == major && minor_version_ < minor);
-}
 
 }  // namespace media
