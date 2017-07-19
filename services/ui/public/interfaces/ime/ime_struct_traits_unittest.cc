@@ -4,6 +4,8 @@
 
 #include "services/ui/public/interfaces/ime/ime_struct_traits.h"
 
+#include <utility>
+
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -32,12 +34,12 @@ class IMEStructTraitsTest : public testing::Test,
  private:
   // mojom::IMEStructTraitsTest:
   void EchoTextInputMode(TextInputMode in,
-                         const EchoTextInputModeCallback& callback) override {
-    callback.Run(in);
+                         EchoTextInputModeCallback callback) override {
+    std::move(callback).Run(in);
   }
   void EchoTextInputType(TextInputType in,
-                         const EchoTextInputTypeCallback& callback) override {
-    callback.Run(in);
+                         EchoTextInputTypeCallback callback) override {
+    std::move(callback).Run(in);
   }
 
   base::MessageLoop loop_;  // A MessageLoop is needed for Mojo IPC to work.

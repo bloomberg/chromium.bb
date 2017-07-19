@@ -20,7 +20,7 @@ class InputMethodBridge : public ui::mojom::InputMethod {
   void OnTextInputTypeChanged(ui::TextInputType text_input_type) override;
   void OnCaretBoundsChanged(const gfx::Rect& caret_bounds) override;
   void ProcessKeyEvent(std::unique_ptr<ui::Event> key_event,
-                       const ProcessKeyEventCallback& callback) override;
+                       ProcessKeyEventCallback callback) override;
   void CancelComposition() override;
 
  private:
