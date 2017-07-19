@@ -18,6 +18,11 @@ const base::Feature kMidiManagerWinrt{"MidiManagerWinrt",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
+#if defined(OS_CHROMEOS)
+const base::Feature kMidiManagerCros{"MidiManagerCros",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 const base::Feature kMidiManagerDynamicInstantiation{
     "MidiManagerDynamicInstantiation", base::FEATURE_DISABLED_BY_DEFAULT};
 

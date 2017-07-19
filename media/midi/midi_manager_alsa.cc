@@ -25,6 +25,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "crypto/sha2.h"
 #include "media/midi/midi_port_info.h"
 #include "media/midi/midi_service.h"
@@ -1377,8 +1378,10 @@ bool MidiManagerAlsa::Subscribe(uint32_t port_index,
   return true;
 }
 
+#if !defined(OS_CHROMEOS)
 MidiManager* MidiManager::Create(MidiService* service) {
   return new MidiManagerAlsa(service);
 }
+#endif
 
 }  // namespace midi
