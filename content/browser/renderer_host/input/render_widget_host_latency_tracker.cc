@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/rand_util.h"
 #include "build/build_config.h"
 #include "components/rappor/public/rappor_utils.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
@@ -28,6 +29,8 @@ using ui::LatencyInfo;
 
 namespace content {
 namespace {
+
+constexpr int kSamplingInterval = 10;
 
 std::string WebInputEventTypeToInputModalityString(WebInputEvent::Type type) {
   if (type == blink::WebInputEvent::kMouseWheel) {
@@ -138,7 +141,8 @@ void RecordEQTAccuracy(base::TimeDelta queueing_time,
 
 }  // namespace
 
-RenderWidgetHostLatencyTracker::RenderWidgetHostLatencyTracker()
+RenderWidgetHostLatencyTracker::RenderWidgetHostLatencyTracker(
+    bool metric_sampling)
     : ukm_source_id_(-1),
       last_event_id_(0),
       latency_component_id_(0),
@@ -146,7 +150,13 @@ RenderWidgetHostLatencyTracker::RenderWidgetHostLatencyTracker()
       has_seen_first_gesture_scroll_update_(false),
       active_multi_finger_gesture_(false),
       touch_start_default_prevented_(false),
-      render_widget_host_delegate_(nullptr) {}
+      metric_sampling_(metric_sampling),
+      metric_sampling_events_since_last_sample_(-1),
+      render_widget_host_delegate_(nullptr) {
+  if (metric_sampling)
+    metric_sampling_events_since_last_sample_ =
+        base::RandUint64() % kSamplingInterval;
+}
 
 RenderWidgetHostLatencyTracker::~RenderWidgetHostLatencyTracker() {}
 
@@ -413,6 +423,14 @@ void RenderWidgetHostLatencyTracker::ReportUkmScrollLatency(
     const LatencyInfo::LatencyComponent& start_component,
     const LatencyInfo::LatencyComponent& end_component) {
   CONFIRM_VALID_TIMING(start_component, end_component)
+
+  // Only report a subset of this metric as the volume is too high.
+  if (event_name == "Event.ScrollUpdate.Touch") {
+    metric_sampling_events_since_last_sample_++;
+    metric_sampling_events_since_last_sample_ %= kSamplingInterval;
+    if (metric_sampling_ && metric_sampling_events_since_last_sample_)
+      return;
+  }
 
   ukm::SourceId ukm_source_id = GetUkmSourceId();
   ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
