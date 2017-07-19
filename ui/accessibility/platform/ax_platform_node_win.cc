@@ -978,56 +978,75 @@ STDMETHODIMP AXPlatformNodeWin::get_indexInParent(LONG* index_in_parent) {
 STDMETHODIMP AXPlatformNodeWin::get_attribute(BSTR name, VARIANT* attribute) {
   return E_NOTIMPL;
 }
+
 STDMETHODIMP AXPlatformNodeWin::get_extendedRole(BSTR* extended_role) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_EXTENDED_ROLE);
   return E_NOTIMPL;
 }
+
 STDMETHODIMP AXPlatformNodeWin::get_nRelations(LONG* n_relations) {
   return E_NOTIMPL;
 }
+
 STDMETHODIMP AXPlatformNodeWin::get_relation(LONG relation_index,
                                              IAccessibleRelation** relation) {
   return E_NOTIMPL;
 }
+
 STDMETHODIMP AXPlatformNodeWin::get_relations(LONG max_relations,
                                               IAccessibleRelation** relations,
                                               LONG* n_relations) {
   return E_NOTIMPL;
 }
+
 STDMETHODIMP AXPlatformNodeWin::scrollTo(enum IA2ScrollType scroll_type) {
   return E_NOTIMPL;
 }
+
 STDMETHODIMP AXPlatformNodeWin::scrollToPoint(
     enum IA2CoordinateType coordinate_type,
     LONG x,
     LONG y) {
   return E_NOTIMPL;
 }
+
 STDMETHODIMP AXPlatformNodeWin::get_groupPosition(LONG* group_level,
                                                   LONG* similar_items_in_group,
                                                   LONG* position_in_group) {
   return E_NOTIMPL;
 }
+
 STDMETHODIMP AXPlatformNodeWin::get_localizedExtendedRole(
     BSTR* localized_extended_role) {
   return E_NOTIMPL;
 }
+
 STDMETHODIMP AXPlatformNodeWin::get_nExtendedStates(LONG* n_extended_states) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_N_EXTENDED_STATES);
   return E_NOTIMPL;
 }
+
 STDMETHODIMP AXPlatformNodeWin::get_extendedStates(LONG max_extended_states,
                                                    BSTR** extended_states,
                                                    LONG* n_extended_states) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_EXTENDED_STATES);
   return E_NOTIMPL;
 }
+
 STDMETHODIMP AXPlatformNodeWin::get_localizedExtendedStates(
     LONG max_localized_extended_states,
     BSTR** localized_extended_states,
     LONG* n_localized_extended_states) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_LOCALIZED_EXTENDED_STATES);
+
   return E_NOTIMPL;
 }
+
 STDMETHODIMP AXPlatformNodeWin::get_locale(IA2Locale* locale) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_LOCALE);
   return E_NOTIMPL;
 }
+
 STDMETHODIMP AXPlatformNodeWin::get_accessibleWithCaret(IUnknown** accessible,
                                                         long* caret_offset) {
   return E_NOTIMPL;
@@ -1876,9 +1895,11 @@ STDMETHODIMP AXPlatformNodeWin::QueryService(
     }
   }
 
-  if (guidService == IID_IAccessible ||
-      guidService == IID_IAccessible2 ||
+  if (guidService == IID_IAccessible || guidService == IID_IAccessible2 ||
       guidService == IID_IAccessible2_2 ||
+      guidService == IID_IAccessibleTable ||
+      guidService == IID_IAccessibleTable2 ||
+      guidService == IID_IAccessibleTableCell ||
       guidService == IID_IAccessibleText) {
     return QueryInterface(riid, object);
   }
