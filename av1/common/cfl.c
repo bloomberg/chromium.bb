@@ -227,17 +227,14 @@ static void cfl_compute_averages(CFL_CTX *cfl, TX_SIZE tx_size) {
   assert(a <= MAX_NUM_TXB);
 }
 
-static INLINE int cfl_idx_to_alpha(int alpha_idx, CFL_SIGN_TYPE alpha_sign,
+static INLINE int cfl_idx_to_alpha(int alpha_idx, int joint_sign,
                                    CFL_PRED_TYPE pred_type) {
-  const int mag_idx = cfl_alpha_codes[alpha_idx][pred_type];
-  const int abs_alpha_q3 = cfl_alpha_mags_q3[mag_idx];
-  if (alpha_sign == CFL_SIGN_POS) {
-    return abs_alpha_q3;
-  } else {
-    assert(abs_alpha_q3 != 0);
-    assert(cfl_alpha_mags_q3[mag_idx + 1] == -abs_alpha_q3);
-    return -abs_alpha_q3;
-  }
+  const int alpha_sign = (pred_type == CFL_PRED_U) ? CFL_SIGN_U(joint_sign)
+                                                   : CFL_SIGN_V(joint_sign);
+  if (alpha_sign == CFL_SIGN_ZERO) return 0;
+  const int abs_alpha_q3 =
+      (pred_type == CFL_PRED_U) ? CFL_IDX_U(alpha_idx) : CFL_IDX_V(alpha_idx);
+  return (alpha_sign == CFL_SIGN_POS) ? abs_alpha_q3 + 1 : -abs_alpha_q3 - 1;
 }
 
 // Predict the current transform block using CfL.
@@ -255,8 +252,8 @@ void cfl_predict_block(MACROBLOCKD *const xd, uint8_t *dst, int dst_stride,
   const uint8_t *y_pix = cfl->y_down_pix;
 
   const int dc_pred = cfl->dc_pred[plane - 1];
-  const int alpha_q3 = cfl_idx_to_alpha(
-      mbmi->cfl_alpha_idx, mbmi->cfl_alpha_signs[plane - 1], plane - 1);
+  const int alpha_q3 =
+      cfl_idx_to_alpha(mbmi->cfl_alpha_idx, mbmi->cfl_alpha_signs, plane - 1);
 
   const int avg_row =
       (row << tx_size_wide_log2[0]) >> tx_size_wide_log2[tx_size];

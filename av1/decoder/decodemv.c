@@ -156,20 +156,22 @@ static UV_PREDICTION_MODE read_intra_mode_uv(FRAME_CONTEXT *ec_ctx,
 
 #if CONFIG_CFL
 static int read_cfl_alphas(FRAME_CONTEXT *const ec_ctx, aom_reader *r,
-                           CFL_SIGN_TYPE signs_out[CFL_PRED_PLANES]) {
-  const int ind =
-      aom_read_symbol(r, ec_ctx->cfl_alpha_cdf, CFL_ALPHABET_SIZE, "cfl:alpha");
-  // Signs are only coded for nonzero values
-  // sign == 0 implies negative alpha
-  // sign == 1 implies positive alpha
-  signs_out[CFL_PRED_U] = cfl_alpha_codes[ind][CFL_PRED_U]
-                              ? aom_read_bit(r, "cfl:sign")
-                              : CFL_SIGN_POS;
-  signs_out[CFL_PRED_V] = cfl_alpha_codes[ind][CFL_PRED_V]
-                              ? aom_read_bit(r, "cfl:sign")
-                              : CFL_SIGN_POS;
-
-  return ind;
+                           int *signs_out) {
+  const int joint_sign =
+      aom_read_symbol(r, ec_ctx->cfl_sign_cdf, CFL_JOINT_SIGNS, "cfl:signs");
+  int idx = 0;
+  // Magnitudes are only coded for nonzero values
+  if (CFL_SIGN_U(joint_sign) != CFL_SIGN_ZERO) {
+    aom_cdf_prob *cdf_u = ec_ctx->cfl_alpha_cdf[CFL_CONTEXT_U(joint_sign)];
+    idx = aom_read_symbol(r, cdf_u, CFL_ALPHABET_SIZE, "cfl:alpha_u")
+          << CFL_ALPHABET_SIZE_LOG2;
+  }
+  if (CFL_SIGN_V(joint_sign) != CFL_SIGN_ZERO) {
+    aom_cdf_prob *cdf_v = ec_ctx->cfl_alpha_cdf[CFL_CONTEXT_V(joint_sign)];
+    idx += aom_read_symbol(r, cdf_v, CFL_ALPHABET_SIZE, "cfl:alpha_v");
+  }
+  *signs_out = joint_sign;
+  return idx;
 }
 #endif
 
@@ -1214,7 +1216,7 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
 #if CONFIG_CFL
     // TODO(ltrudeau) support PALETTE
     if (mbmi->uv_mode == UV_CFL_PRED) {
-      mbmi->cfl_alpha_idx = read_cfl_alphas(ec_ctx, r, mbmi->cfl_alpha_signs);
+      mbmi->cfl_alpha_idx = read_cfl_alphas(ec_ctx, r, &mbmi->cfl_alpha_signs);
     }
 #endif  // CONFIG_CFL
 
@@ -1809,7 +1811,7 @@ static void read_intra_block_mode_info(AV1_COMMON *const cm, const int mi_row,
 #if CONFIG_CFL
     if (mbmi->uv_mode == UV_CFL_PRED) {
       mbmi->cfl_alpha_idx =
-          read_cfl_alphas(xd->tile_ctx, r, mbmi->cfl_alpha_signs);
+          read_cfl_alphas(xd->tile_ctx, r, &mbmi->cfl_alpha_signs);
     }
 #endif  // CONFIG_CFL
 

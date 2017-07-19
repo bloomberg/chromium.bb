@@ -366,7 +366,8 @@ typedef struct frame_contexts {
   od_adapt_ctx pvq_context;
 #endif  // CONFIG_PVQ
 #if CONFIG_CFL
-  aom_cdf_prob cfl_alpha_cdf[CDF_SIZE(CFL_ALPHABET_SIZE)];
+  aom_cdf_prob cfl_sign_cdf[CDF_SIZE(CFL_JOINT_SIGNS)];
+  aom_cdf_prob cfl_alpha_cdf[CFL_ALPHA_CONTEXTS][CDF_SIZE(CFL_ALPHABET_SIZE)];
 #endif
 } FRAME_CONTEXT;
 
