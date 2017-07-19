@@ -1345,7 +1345,7 @@ cr.define('print_preview_test', function() {
             expectEquals(
                 mediaDefault.height_microns,
                 printTicketStore.mediaSize.getValue().height_microns);
-            return nativeLayer.whenCalled('startHideDialog');
+            return nativeLayer.whenCalled('hidePreview');
           });
     });
 
@@ -1447,7 +1447,7 @@ cr.define('print_preview_test', function() {
                  */
                 function(args) {
                   expectTrue(args.openPdfInPreview);
-                  return nativeLayer.whenCalled('startHideDialog');
+                  return nativeLayer.whenCalled('hidePreview');
                 });
       });
     }
@@ -1480,7 +1480,7 @@ cr.define('print_preview_test', function() {
                  */
                 function(args) {
                   expectTrue(args.showSystemDialog);
-                  return nativeLayer.whenCalled('startHideDialog');
+                  return nativeLayer.whenCalled('hidePreview');
                 });
       });
     }

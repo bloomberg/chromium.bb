@@ -105,6 +105,9 @@ cr.define('print_preview', function() {
 
     /** @private {number} */
     this.maxBucket_ = maxBucket;
+
+    /** @private {!print_preview.NativeLayer} */
+    this.nativeLayer_ = print_preview.NativeLayer.getInstance();
   }
 
   MetricsContext.prototype = {
@@ -114,10 +117,10 @@ cr.define('print_preview', function() {
      * @param {number} bucket Value to record.
      */
     record: function(bucket) {
-      chrome.send('metricsHandler:recordInHistogram', [
-        this.histogram_,
-        ((bucket > this.maxBucket_) ? this.maxBucket_ : bucket), this.maxBucket_
-      ]);
+      this.nativeLayer_.recordInHistogram(
+          this.histogram_,
+          (bucket > this.maxBucket_) ? this.maxBucket_ : bucket,
+          this.maxBucket_);
     }
   };
 
