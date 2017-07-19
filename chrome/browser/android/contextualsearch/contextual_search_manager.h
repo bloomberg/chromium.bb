@@ -7,7 +7,6 @@
 
 #include <stddef.h>
 
-#include "base/android/jni_android.h"
 #include "base/macros.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/android/contextualsearch/contextual_search_context.h"
@@ -87,7 +86,5 @@ class ContextualSearchManager
 
   DISALLOW_COPY_AND_ASSIGN(ContextualSearchManager);
 };
-
-bool RegisterContextualSearchManager(JNIEnv* env);
 
 #endif  // CHROME_BROWSER_ANDROID_CONTEXTUALSEARCH_CONTEXTUAL_SEARCH_MANAGER_H_

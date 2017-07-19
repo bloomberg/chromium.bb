@@ -70,8 +70,6 @@ class PrefetchBackgroundTask : public PrefetchDispatcher::ScopedBackgroundTask {
   std::unique_ptr<net::BackoffEntry> backoff_;
 };
 
-bool RegisterPrefetchBackgroundTask(JNIEnv* env);
-
 void RegisterPrefetchBackgroundTaskPrefs(PrefRegistrySimple* registry);
 
 }  // namespace offline_pages

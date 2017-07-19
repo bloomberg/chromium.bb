@@ -2743,7 +2743,6 @@ split_static_library("browser") {
       "android/favicon_helper.cc",
       "android/favicon_helper.h",
       "android/feature_engagement_tracker/feature_engagement_tracker_factory_android.cc",
-      "android/feature_engagement_tracker/feature_engagement_tracker_factory_android.h",
       "android/feature_utilities.cc",
       "android/feature_utilities.h",
       "android/feedback/connectivity_checker.cc",

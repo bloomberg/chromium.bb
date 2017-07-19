@@ -4,8 +4,6 @@
 
 #include "chrome/browser/android/physical_web/physical_web_data_source_android.h"
 
-#include <jni.h>
-
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/memory/ptr_util.h"
@@ -115,11 +113,6 @@ void PhysicalWebDataSourceAndroid::OnDistanceChanged(
     jdouble distance_estimate) {
   NotifyOnDistanceChanged(GURL(ConvertJavaStringToUTF8(env, j_url)),
                           distance_estimate);
-}
-
-// static
-bool PhysicalWebDataSourceAndroid::RegisterPhysicalWebDataSource(JNIEnv* env) {
-  return RegisterNativesImpl(env);
 }
 
 static jlong Init(JNIEnv* env, const JavaParamRef<jobject>& obj) {

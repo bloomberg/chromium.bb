@@ -4,8 +4,6 @@
 
 #include "chrome/browser/android/history/browsing_history_bridge.h"
 
-#include <jni.h>
-
 #include <utility>
 
 #include "base/android/jni_android.h"
@@ -143,10 +141,6 @@ void BrowsingHistoryBridge::HasOtherFormsOfBrowsingHistory(
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_BrowsingHistoryBridge_hasOtherFormsOfBrowsingData(
       env, j_history_service_obj_.obj(), has_other_forms, has_synced_results);
-}
-
-bool RegisterBrowsingHistoryBridge(JNIEnv* env) {
-  return RegisterNativesImpl(env);
 }
 
 static jlong Init(JNIEnv* env,

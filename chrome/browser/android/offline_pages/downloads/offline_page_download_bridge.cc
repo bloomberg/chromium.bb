@@ -341,11 +341,6 @@ OfflinePageDownloadBridge::OfflinePageDownloadBridge(
 
 OfflinePageDownloadBridge::~OfflinePageDownloadBridge() {}
 
-// static
-bool OfflinePageDownloadBridge::Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 void OfflinePageDownloadBridge::Destroy(JNIEnv* env,
                                         const JavaParamRef<jobject>&) {
   download_ui_adapter_->RemoveObserver(this);

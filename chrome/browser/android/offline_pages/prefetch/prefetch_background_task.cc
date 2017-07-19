@@ -153,8 +153,4 @@ int PrefetchBackgroundTask::GetAdditionalBackoffSeconds() const {
   return static_cast<int>(backoff_->GetTimeUntilRelease().InSeconds());
 }
 
-bool RegisterPrefetchBackgroundTask(JNIEnv* env) {
-  return prefetch::RegisterNativesImpl(env);
-}
-
 }  // namespace offline_pages
