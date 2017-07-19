@@ -16,7 +16,7 @@ class PluginsFieldTrial {
  public:
   // The name of the variations parameter used for updating the amount of site
   // engagement required to permit Flash.
-  static const char* kSiteEngagementThresholdForFlashKey;
+  static const char kSiteEngagementThresholdForFlashKey[];
 
   // Returns the effective content setting for plugins. Passes non-plugin
   // content settings through without modification.

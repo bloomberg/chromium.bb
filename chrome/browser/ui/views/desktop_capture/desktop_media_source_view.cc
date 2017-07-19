@@ -59,7 +59,7 @@ DesktopMediaSourceView::DesktopMediaSourceView(
 
 DesktopMediaSourceView::~DesktopMediaSourceView() {}
 
-const char* DesktopMediaSourceView::kDesktopMediaSourceViewClassName =
+const char DesktopMediaSourceView::kDesktopMediaSourceViewClassName[] =
     "DesktopMediaPicker_DesktopMediaSourceView";
 
 void DesktopMediaSourceView::SetName(const base::string16& name) {

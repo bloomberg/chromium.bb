@@ -4,6 +4,8 @@
 
 #include "chrome/browser/plugins/plugins_field_trial.h"
 
+#include <string>
+
 #include "base/feature_list.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/plugins/plugin_utils.h"
@@ -20,7 +22,7 @@ const double kDefaultSiteEngagementThresholdForFlash = 30.0;
 }  // namespace
 
 // static
-const char* PluginsFieldTrial::kSiteEngagementThresholdForFlashKey =
+const char PluginsFieldTrial::kSiteEngagementThresholdForFlashKey[] =
     "engagement_threshold_for_flash";
 
 // static

@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_MEDIA_MEDIA_ENGAGEMENT_SCORE_H_
 #define CHROME_BROWSER_MEDIA_MEDIA_ENGAGEMENT_SCORE_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/time/clock.h"
