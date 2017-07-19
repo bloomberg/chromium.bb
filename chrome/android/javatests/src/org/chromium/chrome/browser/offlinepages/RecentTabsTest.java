@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 /** Integration tests for the Last 1 feature of Offline Pages. */
 @RunWith(ChromeJUnit4ClassRunner.class)
@@ -45,11 +46,13 @@ public class RecentTabsTest {
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
     private static final String TEST_PAGE = "/chrome/test/data/android/about.html";
+    private static final String TEST_PAGE_2 = "/chrome/test/data/android/simple.html";
     private static final int TIMEOUT_MS = 5000;
 
     private OfflinePageBridge mOfflinePageBridge;
     private EmbeddedTestServer mTestServer;
     private String mTestPage;
+    private String mTestPage2;
 
     private void initializeBridgeForProfile(final boolean incognitoProfile)
             throws InterruptedException {
@@ -76,7 +79,7 @@ public class RecentTabsTest {
                 });
             }
         });
-        Assert.assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertAcquire(semaphore);
     }
 
     @Before
@@ -85,11 +88,10 @@ public class RecentTabsTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                // Ensure we start in an offline state.
-                NetworkChangeNotifier.forceConnectivityState(false);
                 if (!NetworkChangeNotifier.isInitialized()) {
                     NetworkChangeNotifier.init();
                 }
+                NetworkChangeNotifier.forceConnectivityState(true);
             }
         });
 
@@ -98,6 +100,7 @@ public class RecentTabsTest {
         mTestServer = EmbeddedTestServer.createAndStartServer(
                 InstrumentationRegistry.getInstrumentation().getContext());
         mTestPage = mTestServer.getURL(TEST_PAGE);
+        mTestPage2 = mTestServer.getURL(TEST_PAGE_2);
     }
 
     @After
@@ -118,9 +121,9 @@ public class RecentTabsTest {
         // The tab should be foreground and so no snapshot should exist.
         Assert.assertNull(getPageByClientId(firstTabClientId));
 
-        // Note, that switching to a new tab must occur after the SnapshotController believes the
-        // page quality is good enough.  With the debug flag, the delay after DomContentLoaded is 0
-        // so we can definitely snapshot after onload (which is what |loadUrlInNewTab| waits for).
+        // Note: switching to a new tab must occur after the SnapshotController believes the page
+        // quality is good enough.  With the debug flag, the delay after DomContentLoaded is 0 so we
+        // can definitely snapshot after onload (which is what |loadUrlInNewTab| waits for).
 
         // Switch to a new tab to cause the WebContents hidden event.
         mActivityTestRule.loadUrlInNewTab("about:blank");
@@ -129,10 +132,10 @@ public class RecentTabsTest {
     }
 
     /**
-     * Note: this test relies on a sleeping period because some of the taking actions are
-     * complicated to track otherwise, so there is the possibility of flakiness. I chose 100ms from
-     * local testing and I expect it to be "safe" but it flakiness is detected it might have to be
-     * further increased.
+     * Note: this test relies on a sleeping period because some of the monitored actions are
+     * difficult to track deterministically. A sleep time of 100 ms was chosen based on local
+     * testing and is expected to be "safe". Nevertheless if flakiness is detected it might have to
+     * be further increased.
      */
     @Test
     @CommandLineFlags.Add("short-offline-page-snapshot-delay-for-test")
@@ -188,10 +191,94 @@ public class RecentTabsTest {
         waitForPageWithClientId(firstTabClientId);
     }
 
-    private void waitForPageWithClientId(final ClientId clientId) throws InterruptedException {
-        if (getPageByClientId(clientId) != null) return;
+    /**
+     * Verifies that a snapshot created by last_n is properly deleted when the tab is navigated to
+     * another page. The deletion of snapshots for pages that should not be available anymore is a
+     * privacy requirement for last_n.
+     */
+    @Test
+    @CommandLineFlags.Add("short-offline-page-snapshot-delay-for-test")
+    @MediumTest
+    public void testLastNPageIsDeletedUponNavigation() throws Exception {
+        // The tab of interest.
+        final Tab tab = mActivityTestRule.loadUrlInNewTab(mTestPage);
+        final TabModelSelector tabModelSelector = tab.getTabModelSelector();
+
+        final ClientId firstTabClientId =
+                new ClientId(OfflinePageBridge.LAST_N_NAMESPACE, Integer.toString(tab.getId()));
+
+        // Switch to a new tab and wait for the snapshot to be created.
+        mActivityTestRule.loadUrlInNewTab("about:blank");
+        Assert.assertFalse(tab.equals(tabModelSelector.getCurrentTab()));
+        OfflinePageItem offlinePage = waitForPageWithClientId(firstTabClientId);
+
+        // Switch back to the initial tab.
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                TabModel tabModel = tabModelSelector.getModelForTabId(tab.getId());
+                int tabIndex = TabModelUtils.getTabIndexById(tabModel, tab.getId());
+                TabModelUtils.setIndex(tabModel, tabIndex);
+            }
+        });
+        Assert.assertEquals(tabModelSelector.getCurrentTab(), tab);
+
+        // Navigate to a new page and confirm that the previously created snapshot has been deleted.
+        Semaphore deletionSemaphore = installPageDeletionSemaphore(offlinePage.getOfflineId());
+        mActivityTestRule.loadUrl(mTestPage2);
+        assertAcquire(deletionSemaphore);
+    }
+
+    /**
+     * Verifies that a snapshot created by last_n is properly deleted when the tab is closed. The
+     * deletion of snapshots for pages that should not be available anymore is a privacy requirement
+     * for last_n.
+     */
+    @Test
+    @CommandLineFlags.Add("short-offline-page-snapshot-delay-for-test")
+    @MediumTest
+    public void testLastNPageIsDeletedUponClosure() throws Exception {
+        // The tab of interest.
+        final Tab tab = mActivityTestRule.loadUrlInNewTab(mTestPage);
+        final TabModelSelector tabModelSelector = tab.getTabModelSelector();
+
+        final ClientId firstTabClientId =
+                new ClientId(OfflinePageBridge.LAST_N_NAMESPACE, Integer.toString(tab.getId()));
+
+        // Switch to a new tab and wait for the snapshot to be created.
+        mActivityTestRule.loadUrlInNewTab("about:blank");
+        OfflinePageItem offlinePage = waitForPageWithClientId(firstTabClientId);
+
+        // Requests closing the tab allowing for undo -- so to exercise the subscribed notification
+        // -- but immediately requests final closure.
+        final int tabId = tab.getId();
+        Semaphore deletionSemaphore = installPageDeletionSemaphore(offlinePage.getOfflineId());
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                TabModel tabModel = tabModelSelector.getModelForTabId(tabId);
+                tabModel.closeTab(tab, false, false, true);
+                tabModel.commitTabClosure(tabId);
+            }
+        });
+
+        // Checks that the tab is no more and that the snapshot was deleted.
+        Assert.assertNull(tabModelSelector.getTabById(tabId));
+        assertAcquire(deletionSemaphore);
+    }
+
+    private void assertAcquire(Semaphore semaphore) throws InterruptedException {
+        Assert.assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    private OfflinePageItem waitForPageWithClientId(final ClientId clientId)
+            throws InterruptedException {
+        OfflinePageItem item = getPageByClientId(clientId);
+        if (item != null) return item;
 
         final Semaphore semaphore = new Semaphore(0);
+        final AtomicReference<OfflinePageItem> itemReference =
+                new AtomicReference<OfflinePageItem>();
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -199,6 +286,7 @@ public class RecentTabsTest {
                     @Override
                     public void offlinePageAdded(OfflinePageItem newPage) {
                         if (newPage.getClientId().equals(clientId)) {
+                            itemReference.set(newPage);
                             mOfflinePageBridge.removeObserver(this);
                             semaphore.release();
                         }
@@ -206,7 +294,27 @@ public class RecentTabsTest {
                 });
             }
         });
-        Assert.assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertAcquire(semaphore);
+        return itemReference.get();
+    }
+
+    private Semaphore installPageDeletionSemaphore(final long offlineId) {
+        final Semaphore semaphore = new Semaphore(0);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mOfflinePageBridge.addObserver(new OfflinePageModelObserver() {
+                    @Override
+                    public void offlinePageDeleted(DeletedPageInfo deletedPage) {
+                        if (deletedPage.getOfflineId() == offlineId) {
+                            mOfflinePageBridge.removeObserver(this);
+                            semaphore.release();
+                        }
+                    }
+                });
+            }
+        });
+        return semaphore;
     }
 
     private OfflinePageItem getPageByClientId(ClientId clientId) throws InterruptedException {
@@ -230,7 +338,27 @@ public class RecentTabsTest {
                         });
             }
         });
-        Assert.assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertAcquire(semaphore);
+        return result[0];
+    }
+
+    private OfflinePageItem getPageByOfflineId(final long offlineId) throws InterruptedException {
+        final OfflinePageItem[] result = {null};
+        final Semaphore semaphore = new Semaphore(0);
+
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mOfflinePageBridge.getPageByOfflineId(offlineId, new Callback<OfflinePageItem>() {
+                    @Override
+                    public void onResult(OfflinePageItem item) {
+                        result[0] = item;
+                        semaphore.release();
+                    }
+                });
+            }
+        });
+        assertAcquire(semaphore);
         return result[0];
     }
 }
