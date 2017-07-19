@@ -53,6 +53,7 @@
 #include "services/device/public/interfaces/wake_lock_context.mojom.h"
 #include "third_party/WebKit/public/platform/WebFocusType.h"
 #include "third_party/WebKit/public/platform/WebInsecureRequestPolicy.h"
+#include "third_party/WebKit/public/platform/WebSuddenTerminationDisablerType.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/web_bluetooth.mojom.h"
 #include "third_party/WebKit/public/web/WebTextDirection.h"
 #include "third_party/WebKit/public/web/WebTreeScopeType.h"
@@ -193,6 +194,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void ResumeBlockedRequestsForFrame() override;
   void DisableBeforeUnloadHangMonitorForTesting() override;
   bool IsBeforeUnloadHangMonitorDisabledForTesting() override;
+  bool GetSuddenTerminationDisablerState(
+      blink::WebSuddenTerminationDisablerType disabler_type) override;
+
   bool IsFeatureEnabled(blink::WebFeaturePolicyFeature feature) override;
 
   // mojom::FrameHostInterfaceBroker
@@ -788,6 +792,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
                                 base::string16 text,
                                 base::string16 html);
   void OnToggleFullscreen(bool enter_fullscreen);
+  void OnSuddenTerminationDisablerChanged(
+      bool present,
+      blink::WebSuddenTerminationDisablerType disabler_type);
   void OnDidStartLoading(bool to_different_document);
   void OnDidStopLoading();
   void OnDidChangeLoadProgress(double load_progress);
@@ -1219,6 +1226,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   typedef std::pair<CommonNavigationParams, BeginNavigationParams>
       PendingNavigation;
   std::unique_ptr<PendingNavigation> pendinging_navigate_;
+
+  // Bitfield for renderer-side state that blocks fast shutdown of the frame.
+  blink::WebSuddenTerminationDisablerType
+      sudden_termination_disabler_types_enabled_ = 0;
 
   // Callback for responding when
   // |FrameHostMsg_TextSurroundingSelectionResponse| message comes.

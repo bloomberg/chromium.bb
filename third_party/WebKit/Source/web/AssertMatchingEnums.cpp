@@ -419,11 +419,6 @@ STATIC_ASSERT_ENUM(WebSandboxFlags::kPropagatesToAuxiliaryBrowsingContexts,
                    kSandboxPropagatesToAuxiliaryBrowsingContexts);
 STATIC_ASSERT_ENUM(WebSandboxFlags::kModals, kSandboxModals);
 
-STATIC_ASSERT_ENUM(LocalFrameClient::kBeforeUnloadHandler,
-                   WebFrameClient::kBeforeUnloadHandler);
-STATIC_ASSERT_ENUM(LocalFrameClient::kUnloadHandler,
-                   WebFrameClient::kUnloadHandler);
-
 STATIC_ASSERT_ENUM(WebFrameLoadType::kStandard, kFrameLoadTypeStandard);
 STATIC_ASSERT_ENUM(WebFrameLoadType::kBackForward, kFrameLoadTypeBackForward);
 STATIC_ASSERT_ENUM(WebFrameLoadType::kReload, kFrameLoadTypeReload);

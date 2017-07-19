@@ -906,6 +906,8 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(AccessibilityHostMsg_SnapshotResponse,
                         OnAccessibilitySnapshotResponse)
     IPC_MESSAGE_HANDLER(FrameHostMsg_ToggleFullscreen, OnToggleFullscreen)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_SuddenTerminationDisablerChanged,
+                        OnSuddenTerminationDisablerChanged)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidStartLoading, OnDidStartLoading)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidStopLoading, OnDidStopLoading)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeLoadProgress,
@@ -2574,6 +2576,22 @@ void RenderFrameHostImpl::OnDidStartLoading(bool to_different_document) {
     frame_tree_node_->DidStartLoading(to_different_document,
                                       was_previously_loading);
   }
+}
+
+void RenderFrameHostImpl::OnSuddenTerminationDisablerChanged(
+    bool present,
+    blink::WebSuddenTerminationDisablerType disabler_type) {
+  DCHECK_NE(GetSuddenTerminationDisablerState(disabler_type), present);
+  if (present) {
+    sudden_termination_disabler_types_enabled_ |= disabler_type;
+  } else {
+    sudden_termination_disabler_types_enabled_ &= ~disabler_type;
+  }
+}
+
+bool RenderFrameHostImpl::GetSuddenTerminationDisablerState(
+    blink::WebSuddenTerminationDisablerType disabler_type) {
+  return (sudden_termination_disabler_types_enabled_ & disabler_type) != 0;
 }
 
 void RenderFrameHostImpl::OnDidStopLoading() {
