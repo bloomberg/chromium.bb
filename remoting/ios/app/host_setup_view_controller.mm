@@ -34,7 +34,7 @@ static NSArray<NSString*>* const kSetupSteps = @[
 #pragma clang diagnostic pop
 
 static const CGFloat kHeaderHeight = 80.f;
-static const CGFloat kFooterHeight = 80.f;
+static const CGFloat kFooterHeight = 15.f;  // 80.0f for HostSetupFooterView
 
 @implementation HostSetupViewController
 
@@ -51,7 +51,9 @@ static const CGFloat kFooterHeight = 80.f;
             forSupplementaryViewOfKind:UICollectionElementKindSectionHeader
                    withReuseIdentifier:UICollectionElementKindSectionHeader];
 
-    [self.collectionView registerClass:[HostSetupFooterView class]
+    // TODO(yuweih): Use HostSetupFooterView once we have the email instructions
+    // feature.
+    [self.collectionView registerClass:[UICollectionReusableView class]
             forSupplementaryViewOfKind:UICollectionElementKindSectionFooter
                    withReuseIdentifier:UICollectionElementKindSectionFooter];
   }
@@ -86,9 +88,15 @@ static const CGFloat kFooterHeight = 80.f;
 - (UICollectionReusableView*)collectionView:(UICollectionView*)collectionView
           viewForSupplementaryElementOfKind:(NSString*)kind
                                 atIndexPath:(NSIndexPath*)indexPath {
-  return [collectionView dequeueReusableSupplementaryViewOfKind:kind
-                                            withReuseIdentifier:kind
-                                                   forIndexPath:indexPath];
+  UICollectionReusableView* view =
+      [collectionView dequeueReusableSupplementaryViewOfKind:kind
+                                         withReuseIdentifier:kind
+                                                forIndexPath:indexPath];
+  if (kind == UICollectionElementKindSectionFooter) {
+    // TODO(yuweih): No longer necessary once we use HostSetupFooterView.
+    view.backgroundColor = RemotingTheme.setupListBackgroundColor;
+  }
+  return view;
 }
 
 #pragma mark - MDCCollectionViewStylingDelegate
