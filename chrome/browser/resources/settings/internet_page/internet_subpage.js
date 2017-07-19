@@ -472,8 +472,34 @@ Polymer({
    * @param {*} lhs
    * @param {*} rhs
    * @return {boolean}
+   * @private
    */
   isEqual_: function(lhs, rhs) {
     return lhs === rhs;
+  },
+
+  /**
+   * @param {!Array<!CrOnc.NetworkStateProperties>} networkStateList
+   * @return {boolean}
+   * @private
+   */
+  shouldShowNetworkList_: function(networkStateList) {
+    return networkStateList.length > 0;
+  },
+
+  /**
+   * @param {!CrOnc.DeviceStateProperties|undefined} deviceState
+   * @param {!CrOnc.DeviceStateProperties|undefined} tetherDeviceState
+   * @return {boolean}
+   * @private
+   */
+  getNoNetworksString_: function(deviceState, tetherDeviceState) {
+    var type = deviceState.Type;
+    if (type == CrOnc.Type.TETHER ||
+        (type == CrOnc.Type.CELLULAR && this.tetherDeviceState)) {
+      return this.i18nAdvanced('internetNoNetworksMobileData');
+    }
+
+    return this.i18n('internetNoNetworks');
   },
 });

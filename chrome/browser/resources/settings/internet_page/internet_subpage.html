@@ -92,12 +92,14 @@
 
         <!-- List of networks or 'None'. -->
         <cr-network-list id="networkList" show-buttons
-            hidden$="[[!networkStateList_.length]]"
+            hidden$="[[!shouldShowNetworkList_(networkStateList_)]]"
             networks="[[networkStateList_]]"
             on-selected="onNetworkSelected_">
         </cr-network-list>
-        <div hidden$="[[networkStateList_.length]]" class="no-networks">
-          $i18n{internetNoNetworks}
+        <div hidden$="[[shouldShowNetworkList_(networkStateList_)]]"
+            inner-h-t-m-l=
+                "[[getNoNetworksString_(deviceState, tetherDeviceState)]]"
+            class="no-networks">
         </div>
 
         <!-- Third party VPNs. -->
