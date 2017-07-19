@@ -1471,12 +1471,6 @@ class Changelist(object):
             self._codereview_impl.CodereviewServerConfigKey(),
             codereview_server)
     else:
-      desc = self.GetDescription()
-      if desc and git_footers.get_footer_change_id(desc):
-        print('WARNING: The change patched into this branch has a Change-Id. '
-              'Removing it.')
-        RunGit(['commit', '--amend', '-m',
-                git_footers.remove_footer(desc, 'Change-Id')])
       # Reset all of these just to be clean.
       reset_suffixes = [
           'last-upload-hash',
@@ -1486,6 +1480,12 @@ class Changelist(object):
       ] + self._PostUnsetIssueProperties()
       for prop in reset_suffixes:
         self._GitSetBranchConfigValue(prop, None, error_ok=True)
+      msg = RunGit(['log', '-1', '--format=%B']).strip()
+      if msg and git_footers.get_footer_change_id(msg):
+        print('WARNING: The change patched into this branch has a Change-Id. '
+              'Removing it.')
+        RunGit(['commit', '--amend', '-m',
+                git_footers.remove_footer(msg, 'Change-Id')])
       self.issue = None
       self.patchset = None
 
