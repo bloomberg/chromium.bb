@@ -27,6 +27,7 @@ class ServiceWorkerPageLoadMetricsObserver;
 class SubresourceFilterMetricsObserver;
 class UkmPageLoadMetricsObserver;
 class LocalNetworkRequestsPageLoadMetricsObserver;
+class MediaEngagementContentsObserver;
 
 namespace autofill {
 class AutofillMetrics;
@@ -116,6 +117,7 @@ class METRICS_EXPORT UkmRecorder {
   friend password_manager::PasswordFormMetricsRecorder;
   friend previews::PreviewsUKMObserver;
   friend resource_coordinator::CoordinationUnitManager;
+  friend MediaEngagementContentsObserver;
   FRIEND_TEST_ALL_PREFIXES(UkmServiceTest, AddEntryWithEmptyMetrics);
   FRIEND_TEST_ALL_PREFIXES(UkmServiceTest, EntryBuilderAndSerialization);
   FRIEND_TEST_ALL_PREFIXES(UkmServiceTest,
