@@ -33,6 +33,18 @@ source_set("trigger_throttler") {
   ]
 }
 
+source_set("ad_sampler_trigger") {
+  sources = [
+    "ad_sampler_trigger.cc",
+    "ad_sampler_trigger.h",
+  ]
+  deps = [
+    "//base:base",
+    "//components/safe_browsing:features",
+    "//content/public/browser",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
   sources = [
