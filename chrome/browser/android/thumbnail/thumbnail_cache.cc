@@ -589,8 +589,8 @@ void ThumbnailCache::CompressionTask(
                                          kUnknown_SkColorType,
                                          kUnpremul_SkAlphaType);
     sk_sp<SkData> etc1_pixel_data(SkData::MakeUninitialized(encoded_bytes));
-    sk_sp<SkPixelRef> etc1_pixel_ref(SkMallocPixelRef::MakeWithData(
-        info, 0, NULL, std::move(etc1_pixel_data)));
+    sk_sp<SkPixelRef> etc1_pixel_ref(
+        SkMallocPixelRef::MakeWithData(info, 0, std::move(etc1_pixel_data)));
 
     bool success = etc1_encode_image(
         reinterpret_cast<unsigned char*>(raw_data.getPixels()),
@@ -722,7 +722,7 @@ bool ReadFromFile(base::File& file,
                                        kUnpremul_SkAlphaType);
 
   *out_pixels =
-      SkMallocPixelRef::MakeWithData(info, 0, NULL, std::move(etc1_pixel_data));
+      SkMallocPixelRef::MakeWithData(info, 0, std::move(etc1_pixel_data));
 
   int extra_data_version = 0;
   if (!ReadBigEndianFromFile(file, &extra_data_version))
