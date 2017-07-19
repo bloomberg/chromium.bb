@@ -534,16 +534,27 @@ void FileNetLogObserver::FileWriter::CreateInprogressDirectory() const {
     return;
   }
 
+  // It is OK if the path is wrong due to encoding - this is really just a
+  // convenience display for the user in understanding what the file means.
+  std::string in_progress_path = GetInprogressDirectory().AsUTF8Unsafe();
+
   // Since |final_log_file_| will not be written to until the very end, leave
   // some data in it explaining that the real data is currently in the
   // .inprogress directory. This ordinarily won't be visible (overwritten when
   // stopping) however if logging does not end gracefully the comments are
   // useful for recovery.
-  //
-  // TODO(eroman): Give a better description, including instructions on how
-  // to stitch the files manually if logging did not end gracefully.
-  WriteToFile(final_log_file_.get(),
-              "Log data is being written to the XXX.inprogress directory");
+  WriteToFile(
+      final_log_file_.get(), "Logging is in progress writing data to:\n    ",
+      in_progress_path,
+      "\n\n"
+      "That data will be stitched into a single file (this one) once logging\n"
+      "has stopped.\n"
+      "\n"
+      "If logging was interrupted, you can stitch a NetLog file out of the\n"
+      ".inprogress directory manually using:\n"
+      "\n"
+      "https://chromium.googlesource.com/chromium/src/+/master/net/tools/"
+      "stitch_net_log_files.py\n");
   fflush(final_log_file_.get());
 }
 
