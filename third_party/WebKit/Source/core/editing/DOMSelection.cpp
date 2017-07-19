@@ -38,6 +38,7 @@
 #include "core/dom/TreeScope.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/FrameSelection.h"
+#include "core/editing/SelectionModifier.h"
 #include "core/editing/iterators/TextIterator.h"
 #include "core/frame/Deprecation.h"
 #include "core/frame/LocalFrame.h"
@@ -414,11 +415,11 @@ void DOMSelection::modify(const String& alter_string,
   if (!IsAvailable())
     return;
 
-  FrameSelection::EAlteration alter;
+  SelectionModifyAlteration alter;
   if (DeprecatedEqualIgnoringCase(alter_string, "extend"))
-    alter = FrameSelection::kAlterationExtend;
+    alter = SelectionModifyAlteration::kExtend;
   else if (DeprecatedEqualIgnoringCase(alter_string, "move"))
-    alter = FrameSelection::kAlterationMove;
+    alter = SelectionModifyAlteration::kMove;
   else
     return;
 

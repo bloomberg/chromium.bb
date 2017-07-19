@@ -340,7 +340,7 @@ static DispatchEventResult DispatchSelectStart(
 // "selectstart" event is dispatched and canceled, otherwise returns true.
 // When |userTriggered| is |NotUserTrigged|, return value specifies whether
 // selection is modified or not.
-bool FrameSelection::Modify(EAlteration alter,
+bool FrameSelection::Modify(SelectionModifyAlteration alter,
                             SelectionDirection direction,
                             TextGranularity granularity,
                             EUserTriggered user_triggered) {
