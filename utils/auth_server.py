@@ -118,12 +118,16 @@ class LocalAuthServer(object):
       self._server = server
       self._accept_thread = threading.Thread(target=self._server.serve_forever)
       self._accept_thread.start()
-      return {
+      local_auth = {
         'rpc_port': self._server.server_port,
         'secret': self._rpc_secret,
         'accounts': [{'id': acc} for acc in accounts],
-        'default_account_id': default_account_id,
       }
+      # TODO(vadimsh): Some clients don't understand 'null' value for
+      # default_account_id, so just omit it completely for now.
+      if default_account_id:
+        local_auth['default_account_id'] = default_account_id
+      return local_auth
 
   def stop(self):
     """Stops the server and resets the state."""
