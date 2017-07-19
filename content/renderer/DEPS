@@ -7,7 +7,6 @@ include_rules = [
   "+components/payments",
   "+components/scheduler",
   "+components/url_formatter",
-  "+components/variations/child_process_field_trial_syncer.h",
   "+components/viz/client",
   "+components/viz/common",
   "+cc/blink",

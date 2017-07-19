@@ -76,6 +76,10 @@ class CONTENT_EXPORT ChildThread : public IPC::Sender {
   virtual service_manager::Connector* GetConnector() = 0;
 
   virtual scoped_refptr<base::SingleThreadTaskRunner> GetIOTaskRunner() = 0;
+
+  // Tells the child process that a field trial was activated.
+  virtual void SetFieldTrialGroup(const std::string& trial_name,
+                                  const std::string& group_name) = 0;
 };
 
 }  // namespace content
