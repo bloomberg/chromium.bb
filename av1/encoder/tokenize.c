@@ -689,14 +689,30 @@ void av1_tokenize_sb_vartx(const AV1_COMP *cpi, ThreadData *td, TOKENEXTRA **t,
     int idx, idy;
     int block = 0;
     int step = tx_size_wide_unit[max_tx_size] * tx_size_high_unit[max_tx_size];
-    for (idy = 0; idy < mi_height; idy += bh) {
-      for (idx = 0; idx < mi_width; idx += bw) {
-        tokenize_vartx(td, t, dry_run, max_tx_size, plane_bsize, idy, idx,
-                       block, plane, &arg);
-        block += step;
+
+    const BLOCK_SIZE max_unit_bsize = get_plane_block_size(BLOCK_64X64, pd);
+    int mu_blocks_wide =
+        block_size_wide[max_unit_bsize] >> tx_size_wide_log2[0];
+    int mu_blocks_high =
+        block_size_high[max_unit_bsize] >> tx_size_high_log2[0];
+
+    mu_blocks_wide = AOMMIN(mi_width, mu_blocks_wide);
+    mu_blocks_high = AOMMIN(mi_height, mu_blocks_high);
+
+    for (idy = 0; idy < mi_height; idy += mu_blocks_high) {
+      for (idx = 0; idx < mi_width; idx += mu_blocks_wide) {
+        int blk_row, blk_col;
+        const int unit_height = AOMMIN(mu_blocks_high + idy, mi_height);
+        const int unit_width = AOMMIN(mu_blocks_wide + idx, mi_width);
+        for (blk_row = idy; blk_row < unit_height; blk_row += bh) {
+          for (blk_col = idx; blk_col < unit_width; blk_col += bw) {
+            tokenize_vartx(td, t, dry_run, max_tx_size, plane_bsize, blk_row,
+                           blk_col, block, plane, &arg);
+            block += step;
+          }
+        }
       }
     }
-
 #if !CONFIG_LV_MAP
     if (!dry_run) {
       (*t)->token = EOSB_TOKEN;

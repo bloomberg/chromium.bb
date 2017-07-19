@@ -2069,17 +2069,37 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
 #endif
 
 #if CONFIG_VAR_TX
+        const BLOCK_SIZE max_unit_bsize = get_plane_block_size(BLOCK_64X64, pd);
+        int mu_blocks_wide =
+            block_size_wide[max_unit_bsize] >> tx_size_wide_log2[0];
+        int mu_blocks_high =
+            block_size_high[max_unit_bsize] >> tx_size_high_log2[0];
+
+        mu_blocks_wide = AOMMIN(max_blocks_wide, mu_blocks_wide);
+        mu_blocks_high = AOMMIN(max_blocks_high, mu_blocks_high);
+
         const TX_SIZE max_tx_size = get_vartx_max_txsize(mbmi, plane_bsize);
         const int bh_var_tx = tx_size_high_unit[max_tx_size];
         const int bw_var_tx = tx_size_wide_unit[max_tx_size];
         int block = 0;
         int step =
             tx_size_wide_unit[max_tx_size] * tx_size_high_unit[max_tx_size];
-        for (row = 0; row < max_blocks_high; row += bh_var_tx) {
-          for (col = 0; col < max_blocks_wide; col += bw_var_tx) {
-            decode_reconstruct_tx(cm, xd, r, mbmi, plane, plane_bsize, row, col,
-                                  block, max_tx_size, &eobtotal);
-            block += step;
+
+        for (row = 0; row < max_blocks_high; row += mu_blocks_high) {
+          for (col = 0; col < max_blocks_wide; col += mu_blocks_wide) {
+            int blk_row, blk_col;
+            const int unit_height =
+                AOMMIN(mu_blocks_high + row, max_blocks_high);
+            const int unit_width =
+                AOMMIN(mu_blocks_wide + col, max_blocks_wide);
+            for (blk_row = row; blk_row < unit_height; blk_row += bh_var_tx) {
+              for (blk_col = col; blk_col < unit_width; blk_col += bw_var_tx) {
+                decode_reconstruct_tx(cm, xd, r, mbmi, plane, plane_bsize,
+                                      blk_row, blk_col, block, max_tx_size,
+                                      &eobtotal);
+                block += step;
+              }
+            }
           }
         }
 #else
