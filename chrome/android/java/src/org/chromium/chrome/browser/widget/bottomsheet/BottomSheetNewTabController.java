@@ -85,6 +85,11 @@ public class BottomSheetNewTabController extends EmptyBottomSheetObserver {
         mSelectIncognitoModelOnClose = mTabModelSelector.isIncognitoSelected()
                 && mTabModelSelector.getModel(true).getCount() > 0;
 
+        if (mActivity.getFullscreenManager() != null
+                && mActivity.getFullscreenManager().getPersistentFullscreenMode()) {
+            mActivity.getFullscreenManager().setPersistentFullscreenMode(false);
+        }
+
         // Show the tab switcher if needed. The overview should be shown before the sheet is opened
         // to ensure the toolbar ends up in the correct state.
         if (!mLayoutManager.overviewVisible()) mLayoutManager.showOverview(true);
