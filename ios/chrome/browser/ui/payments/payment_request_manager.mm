@@ -35,7 +35,9 @@
 #include "ios/chrome/browser/autofill/validation_rules_storage_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/payments/ios_can_make_payment_query_factory.h"
+#include "ios/chrome/browser/payments/ios_payment_request_cache_factory.h"
 #include "ios/chrome/browser/payments/payment_request.h"
+#import "ios/chrome/browser/payments/payment_request_cache.h"
 #include "ios/chrome/browser/procedural_block_types.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
@@ -96,12 +98,9 @@ struct PendingPaymentResponse {
   // PersonalDataManager used to manage user credit cards and addresses.
   autofill::PersonalDataManager* _personalDataManager;
 
-  // The of map WebState to the list of payments::PaymentRequest instances
-  // maintained for that WebState.
-  std::unordered_map<web::WebState*,
-                     std::set<std::unique_ptr<payments::PaymentRequest>,
-                              payments::PaymentRequest::Compare>>
-      _paymentRequests;
+  // Maintains a map of web::WebState to a list of payments::PaymentRequest
+  // instances maintained for that WebState.
+  payments::PaymentRequestCache* _paymentRequestCache;
 
   // The observer for |_activeWebState|.
   std::unique_ptr<web::WebStateObserverBridge> _activeWebStateObserver;
@@ -242,6 +241,10 @@ struct PendingPaymentResponse {
     _personalDataManager =
         autofill::PersonalDataManagerFactory::GetForBrowserState(
             browserState->GetOriginalChromeBrowserState());
+
+    _paymentRequestCache =
+        payments::IOSPaymentRequestCacheFactory::GetForBrowserState(
+            browserState->GetOriginalChromeBrowserState());
   }
   return self;
 }
@@ -261,11 +264,6 @@ struct PendingPaymentResponse {
             [webState->GetJSInjectionReceiver()
                 instanceOfClass:[JSPaymentRequestManager class]]);
     _activeWebState = webState;
-    if (_paymentRequests.find(webState) == _paymentRequests.end()) {
-      _paymentRequests[webState] =
-          std::set<std::unique_ptr<payments::PaymentRequest>,
-                   payments::PaymentRequest::Compare>();
-    }
     _activeWebStateObserver =
         base::MakeUnique<web::WebStateObserverBridge>(webState, self);
     [self enableActiveWebState];
@@ -278,9 +276,7 @@ struct PendingPaymentResponse {
   // The lifetime of a PaymentRequest is tied to the WebState it is associated
   // with and the current URL. Therefore, PaymentRequest instances should get
   // destroyed when the WebState goes away.
-  const auto iterator = _paymentRequests.find(webState);
-  DCHECK(iterator != _paymentRequests.end());
-  _paymentRequests.erase(iterator);
+  _paymentRequestCache->ClearPaymentRequests(webState);
 }
 
 - (void)enablePaymentRequest:(BOOL)enabled {
@@ -419,15 +415,10 @@ struct PendingPaymentResponse {
     DLOG(ERROR) << "JS message parameter 'payment_request' is invalid";
     return nullptr;
   }
-
-  const auto iterator = _paymentRequests.find(_activeWebState);
-  DCHECK(iterator != _paymentRequests.end());
-  const auto result =
-      iterator->second.insert(base::MakeUnique<payments::PaymentRequest>(
-          webPaymentRequest, _browserState, _activeWebState,
-          _personalDataManager, self));
-  DCHECK(result.first != iterator->second.end());
-  return result.first->get();
+  return _paymentRequestCache->AddPaymentRequest(
+      _activeWebState, base::MakeUnique<payments::PaymentRequest>(
+                           webPaymentRequest, _browserState, _activeWebState,
+                           _personalDataManager, self));
 }
 
 // Extracts a web::PaymentRequest from |message|. Returns the cached instance of
@@ -925,25 +916,23 @@ requestFullCreditCard:(const autofill::CreditCard&)creditCard
   // The lifetime of a PaymentRequest is tied to the WebState it is associated
   // with and the current URL. Therefore, PaymentRequest instances should get
   // destroyed when the WebState goes away or the user navigates to a URL.
-  const auto iterator = _paymentRequests.find(_activeWebState);
-  DCHECK(iterator != _paymentRequests.end());
-  iterator->second.clear();
+  _paymentRequestCache->ClearPaymentRequests(_activeWebState);
 }
 
 #pragma mark - Helper methods
 
 - (payments::PaymentRequest*)paymentRequestWithId:
     (std::string)paymentRequestId {
-  const auto iterator = _paymentRequests.find(_activeWebState);
-  DCHECK(iterator != _paymentRequests.end());
+  const payments::PaymentRequestCache::PaymentRequestSet& paymentRequests =
+      _paymentRequestCache->GetPaymentRequests(_activeWebState);
   const auto found = std::find_if(
-      iterator->second.begin(), iterator->second.end(),
+      paymentRequests.begin(), paymentRequests.end(),
       [&paymentRequestId](
           const std::unique_ptr<payments::PaymentRequest>& request) {
         return request.get()->web_payment_request().payment_request_id ==
                paymentRequestId;
       });
-  return found != iterator->second.end() ? found->get() : nullptr;
+  return found != paymentRequests.end() ? found->get() : nullptr;
 }
 
 @end
