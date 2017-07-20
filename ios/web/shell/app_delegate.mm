@@ -35,6 +35,7 @@
   _window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
   [self.window makeKeyAndVisible];
   self.window.backgroundColor = [UIColor whiteColor];
+  self.window.tintColor = [UIColor darkGrayColor];
 
   _delegate.reset(new web::ShellMainDelegate());
 
