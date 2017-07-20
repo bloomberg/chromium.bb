@@ -15,9 +15,11 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.support.annotation.MainThread;
 import android.support.v7.content.res.AppCompatResources;
 
 import org.chromium.base.ObserverList;
+import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileDownloader;
@@ -30,6 +32,7 @@ import java.util.List;
  * ProfileDataCache doesn't observe account list changes by itself, so account list
  * should be provided by calling {@link #update(List)}
  */
+@MainThread
 public class ProfileDataCache implements ProfileDownloader.Observer {
     /**
      * Observer to get notifications about changes in profile data.
@@ -68,15 +71,17 @@ public class ProfileDataCache implements ProfileDownloader.Observer {
 
         mPlaceholderImage =
                 AppCompatResources.getDrawable(context, R.drawable.logo_avatar_anonymous);
-
-        ProfileDownloader.addObserver(this);
     }
 
     /**
-     * Initiate fetching the user accounts data (images and the full name).
-     * Fetched data will be sent to observers of ProfileDownloader.
+     * Initiate fetching the user accounts data (images and the full name). Fetched data will be
+     * sent to observers of ProfileDownloader. The instance must have at least one observer (see
+     * {@link #addObserver}) when this method is called.
      */
     public void update(List<String> accounts) {
+        ThreadUtils.assertOnUiThread();
+        assert !mObservers.isEmpty();
+
         int imageSizePx =
                 mContext.getResources().getDimensionPixelSize(R.dimen.signin_account_image_size);
         for (int i = 0; i < accounts.size(); i++) {
@@ -120,15 +125,14 @@ public class ProfileDataCache implements ProfileDownloader.Observer {
         return cacheEntry.givenName;
     }
 
-    public void destroy() {
-        ProfileDownloader.removeObserver(this);
-        mObservers.clear();
-    }
-
     /**
      * @param observer Observer that should be notified when new profile images are available.
      */
     public void addObserver(Observer observer) {
+        ThreadUtils.assertOnUiThread();
+        if (mObservers.isEmpty()) {
+            ProfileDownloader.addObserver(this);
+        }
         mObservers.addObserver(observer);
     }
 
@@ -136,12 +140,17 @@ public class ProfileDataCache implements ProfileDownloader.Observer {
      * @param observer Observer that was added by {@link #addObserver} and should be removed.
      */
     public void removeObserver(Observer observer) {
+        ThreadUtils.assertOnUiThread();
         mObservers.removeObserver(observer);
+        if (mObservers.isEmpty()) {
+            ProfileDownloader.removeObserver(this);
+        }
     }
 
     @Override
     public void onProfileDownloaded(String accountId, String fullName, String givenName,
             Bitmap bitmap) {
+        ThreadUtils.assertOnUiThread();
         Drawable drawable = bitmap != null ? getCroppedAvatar(bitmap) : mPlaceholderImage;
         mCacheEntries.put(accountId, new CacheEntry(drawable, fullName, givenName));
         for (Observer observer : mObservers) {

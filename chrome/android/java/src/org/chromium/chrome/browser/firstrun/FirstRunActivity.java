@@ -28,7 +28,6 @@ import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionPromoUtils;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionProxyUma;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.searchwidget.SearchWidgetProvider;
 import org.chromium.chrome.browser.util.IntentUtils;
@@ -134,7 +133,6 @@ public class FirstRunActivity extends AsyncInitializationActivity implements Fir
     private Set<FirstRunPage> mPagesToNotifyOfNativeInit;
     private boolean mDeferredCompleteFRE;
 
-    private ProfileDataCache mProfileDataCache;
     private FirstRunViewPager mPager;
 
     private FirstRunFlowSequencer mFirstRunFlowSequencer;
@@ -366,12 +364,6 @@ public class FirstRunActivity extends AsyncInitializationActivity implements Fir
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if (mProfileDataCache != null) mProfileDataCache.destroy();
-    }
-
-    @Override
     public void onStart() {
         super.onStart();
         // Since the FRE may be shown before any tab is shown, mark that this is the point at
@@ -412,16 +404,6 @@ public class FirstRunActivity extends AsyncInitializationActivity implements Fir
     }
 
     // FirstRunPageDelegate:
-
-    @Override
-    public ProfileDataCache getProfileDataCache() {
-        if (mProfileDataCache == null) {
-            mProfileDataCache =
-                    new ProfileDataCache(FirstRunActivity.this, Profile.getLastUsedProfile());
-        }
-        return mProfileDataCache;
-    }
-
     @Override
     public void advanceToNextPage() {
         jumpToPage(mPager.getCurrentItem() + 1);
