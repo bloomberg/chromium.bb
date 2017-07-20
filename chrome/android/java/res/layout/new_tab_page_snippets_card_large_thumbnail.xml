@@ -113,12 +113,12 @@
 
     <ImageView
         android:id="@+id/article_thumbnail_video_overlay"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_alignTop="@+id/article_thumbnail"
-        android:layout_alignStart="@+id/article_thumbnail"
-        android:layout_marginStart="38dp"
-        android:layout_marginTop="38dp"
+        android:layout_width="@dimen/content_suggestions_card_video_overlay_size"
+        android:layout_height="@dimen/content_suggestions_card_video_overlay_size"
+        android:layout_alignTop="@id/article_thumbnail"
+        android:layout_alignStart="@id/article_thumbnail"
+        android:layout_marginStart="@dimen/content_suggestions_card_video_overlay_margin_start"
+        android:layout_marginTop="@dimen/content_suggestions_card_video_overlay_margin_top"
         android:contentDescription="@null"
         app:srcCompat="@drawable/ic_play_circle_filled" />
 </RelativeLayout>

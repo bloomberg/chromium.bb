@@ -344,6 +344,10 @@
     <dimen name="chrome_home_suggestions_footer_padding_bottom">24dp</dimen>
     <dimen name="content_suggestions_card_modern_margin">16dp</dimen>
     <dimen name="content_suggestions_card_modern_corner_radius">10dp</dimen>
+    <dimen name="content_suggestions_card_video_overlay_size">48dp</dimen>
+    <dimen name="content_suggestions_card_video_overlay_margin_start">38dp</dimen>
+    <dimen name="content_suggestions_card_video_overlay_margin_top">38dp</dimen>
+    <dimen name="contextual_carousel_space_between_cards">8dp</dimen>
 
     <!-- Recent tabs page -->
     <dimen name="recent_tabs_visible_separator_padding">8dp</dimen>
