@@ -6,9 +6,11 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/views/payments/payment_request_browsertest_base.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
+#include "components/payments/core/features.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
@@ -28,7 +30,16 @@ class PaymentRequestModifiersTest : public PaymentRequestBrowserTestBase {
         switches::kEnableExperimentalWebPlatformFeatures);
   }
 
+  void SetUpInProcessBrowserTestFixture() override {
+    PaymentRequestBrowserTestBase::SetUpInProcessBrowserTestFixture();
+
+    // Enable browser-side modifiers support.
+    feature_list_.InitAndEnableFeature(features::kWebPaymentsModifiers);
+  }
+
  private:
+  base::test::ScopedFeatureList feature_list_;
+
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestModifiersTest);
 };
 

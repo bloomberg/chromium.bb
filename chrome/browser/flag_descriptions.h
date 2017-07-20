@@ -818,6 +818,9 @@ extern const char kWebMidiDescription[];
 extern const char kWebPaymentsName[];
 extern const char kWebPaymentsDescription[];
 
+extern const char kWebPaymentsModifiersName[];
+extern const char kWebPaymentsModifiersDescription[];
+
 extern const char kWebrtcEchoCanceller3Name[];
 extern const char kWebrtcEchoCanceller3Description[];
 
@@ -1131,9 +1134,6 @@ extern const char kUseAndroidMidiApiDescription[];
 
 extern const char kUseDdljsonApiName[];
 extern const char kUseDdljsonApiDescription[];
-
-extern const char kWebPaymentsModifiersName[];
-extern const char kWebPaymentsModifiersDescription[];
 
 extern const char kXGEOVisibleNetworksName[];
 extern const char kXGEOVisibleNetworksDescription[];
