@@ -18,18 +18,25 @@ enum VideoCaptureServiceEvent {
   BROWSER_USING_LEGACY_CAPTURE = 0,
   BROWSER_CONNECTING_TO_SERVICE = 1,
   SERVICE_STARTED = 2,
-  SERVICE_CLOSING_BECAUSE_NO_CLIENT = 3,
+  SERVICE_SHUTTING_DOWN_BECAUSE_NO_CLIENT = 3,
   SERVICE_LOST_CONNECTION_TO_BROWSER = 4,
   BROWSER_LOST_CONNECTION_TO_SERVICE = 5,
-  BROWSER_CLOSING_CONNECTION_TO_SERVICE = 6,
+  BROWSER_CLOSING_CONNECTION_TO_SERVICE = 6,  // No longer in use
+  BROWSER_CLOSING_CONNECTION_TO_SERVICE_AFTER_ENUMERATION_ONLY = 7,
+  BROWSER_CLOSING_CONNECTION_TO_SERVICE_AFTER_CAPTURE = 8,
+  SERVICE_SHUTDOWN_TIMEOUT_CANCELED = 9,
   NUM_VIDEO_CAPTURE_SERVICE_EVENT
 };
 
 void LogVideoCaptureServiceEvent(VideoCaptureServiceEvent event);
 
-void LogDurationFromLastConnectToClosingConnection(base::TimeDelta duration);
+void LogDurationFromLastConnectToClosingConnectionAfterEnumerationOnly(
+    base::TimeDelta duration);
+void LogDurationFromLastConnectToClosingConnectionAfterCapture(
+    base::TimeDelta duration);
 void LogDurationFromLastConnectToConnectionLost(base::TimeDelta duration);
-void LogDurationUntilReconnect(base::TimeDelta duration);
+void LogDurationUntilReconnectAfterEnumerationOnly(base::TimeDelta duration);
+void LogDurationUntilReconnectAfterCapture(base::TimeDelta duration);
 
 }  // namespace uma
 }  // namespace video_capture
