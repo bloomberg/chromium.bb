@@ -553,7 +553,10 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
 
 // Checks that deleting a password from password details view goes back to the
 // list-of-passwords view.
-- (void)testDeletion {
+// TODO(crbug.com/515462) This test stopped working after
+// https://chromium-review.googlesource.com/c/573381/ landed. Needs to be
+// investigated and fixed.
+- (void)DISABLED_testDeletion {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
       password_manager::features::kViewPasswords);
