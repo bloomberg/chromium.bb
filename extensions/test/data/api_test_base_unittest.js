@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var test = require('test').binding;
+var test = requireNative('apiGetter').get('test');
 var unittestBindings = require('test_environment_specific_bindings');
 
 unittestBindings.exportTests([
@@ -19,16 +19,20 @@ unittestBindings.exportTests([
     test.assertTrue(!!requireNative);
     test.assertTrue(!!requireAsync);
     test.assertEq(undefined, chrome.runtime.lastError);
-    test.assertEq(undefined, chrome.extension.lastError);
+    // chrome.extension is defined at the //chrome layer, and so won't be
+    // available.
+    test.assertEq(undefined, chrome.extension);
     test.succeed();
   },
   function testPromisesRun() {
     Promise.resolve().then(test.callbackPass());
   },
   function testCommonModulesAreAvailable() {
-    var binding = require('binding');
-    var sendRequest = require('sendRequest');
-    var lastError = require('lastError');
+    var binding = bindingUtil || require('binding');
+    var sendRequest =
+        bindingUtil ? bindingUtil.sendRequest : require('sendRequest');
+    var lastError =
+        bindingUtil ? bindingUtil.setLastError : require('lastError');
     test.assertTrue(!!binding);
     test.assertTrue(!!sendRequest);
     test.assertTrue(!!lastError);

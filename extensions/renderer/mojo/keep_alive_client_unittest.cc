@@ -9,6 +9,7 @@
 #include "extensions/common/mojo/keep_alive.mojom.h"
 #include "extensions/grit/extensions_renderer_resources.h"
 #include "extensions/renderer/api_test_base.h"
+#include "extensions/renderer/string_source_map.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 // A test launcher for tests for the stash client defined in
@@ -38,6 +39,26 @@ class TestKeepAlive : public KeepAlive {
   const base::Closure on_destruction_;
 };
 
+const char kFakeSerialBindings[] =
+    R"(
+      var binding = apiBridge || require('binding').Binding.create('serial');
+      var utils = require('utils');
+      binding.registerCustomHook(function(bindingsAPI) {
+        utils.handleRequestWithPromiseDoNotUse(bindingsAPI.apiFunctions,
+                                               'serial', 'getDevices',
+                                               function() {
+          if (bindingsAPI.compiledApi.shouldSucceed) {
+            return Promise.resolve([]);
+          } else {
+            return Promise.reject();
+          }
+        });
+      });
+
+      if (!apiBridge)
+        exports.$set('binding', binding.generate());
+    )";
+
 }  // namespace
 
 class KeepAliveClientTest : public ApiTestBase {
@@ -52,8 +73,10 @@ class KeepAliveClientTest : public ApiTestBase {
                               base::Unretained(this)),
                    base::Bind(&KeepAliveClientTest::KeepAliveDestroyed,
                               base::Unretained(this))));
-    created_keep_alive_ = false;
-    destroyed_keep_alive_ = false;
+
+    // We register fake custom bindings for the serial API to use
+    // handleRequestWithPromiseDoNotUse().
+    env()->source_map()->RegisterModule("serial", kFakeSerialBindings);
   }
 
   void WaitForKeepAlive() {
@@ -79,8 +102,8 @@ class KeepAliveClientTest : public ApiTestBase {
       stop_run_loop_.Run();
   }
 
-  bool created_keep_alive_;
-  bool destroyed_keep_alive_;
+  bool created_keep_alive_ = false;
+  bool destroyed_keep_alive_ = false;
   base::Closure stop_run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(KeepAliveClientTest);

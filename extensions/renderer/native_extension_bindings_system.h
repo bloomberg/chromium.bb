@@ -50,6 +50,11 @@ class NativeExtensionBindingsSystem : public ExtensionBindingsSystem {
 
   APIBindingsSystem* api_system() { return &api_system_; }
 
+  // Returns the API with the given |name| for the given |context|. Used for
+  // testing purposes.
+  v8::Local<v8::Object> GetAPIObjectForTesting(ScriptContext* context,
+                                               const std::string& api_name);
+
  private:
   // Handles sending a given |request|, forwarding it on to the send_ipc_ after
   // adding additional info.
