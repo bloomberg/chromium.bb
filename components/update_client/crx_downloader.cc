@@ -124,7 +124,6 @@ void CrxDownloader::OnDownloadComplete(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!result.error)
-
     base::PostTaskWithTraits(
         FROM_HERE,
         {base::MayBlock(), base::TaskPriority::BACKGROUND,
