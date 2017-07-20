@@ -332,42 +332,11 @@ TEST(ProcessMemoryDumpTest, GlobalAllocatorDumpTest) {
   ASSERT_EQ(MemoryAllocatorDump::Flags::DEFAULT, shared_mad1->flags());
 }
 
-TEST(ProcessMemoryDumpTest, OldSharedMemoryOwnershipTest) {
+TEST(ProcessMemoryDumpTest, SharedMemoryOwnershipTest) {
   std::unique_ptr<ProcessMemoryDump> pmd(
       new ProcessMemoryDump(nullptr, kDetailedDumpArgs));
   const ProcessMemoryDump::AllocatorDumpEdgesMap& edges =
       pmd->allocator_dumps_edges_for_testing();
-
-  auto* shm_dump1 = pmd->CreateAllocatorDump("shared_mem/seg1");
-
-  auto* client_dump1 = pmd->CreateAllocatorDump("discardable/segment1");
-  MemoryAllocatorDumpGuid client_global_guid1(1);
-  auto shm_token1 = UnguessableToken::Create();
-  MemoryAllocatorDumpGuid shm_global_guid1 =
-      SharedMemoryTracker::GetGlobalDumpIdForTracing(shm_token1);
-  pmd->AddOverridableOwnershipEdge(shm_dump1->guid(), shm_global_guid1,
-                                   0 /* importance */);
-
-  pmd->CreateSharedMemoryOwnershipEdge(client_dump1->guid(),
-                                       client_global_guid1, shm_token1,
-                                       1 /* importance */);
-
-  EXPECT_EQ(2u, edges.size());
-  EXPECT_EQ(shm_global_guid1, edges.find(shm_dump1->guid())->second.target);
-  EXPECT_EQ(0, edges.find(shm_dump1->guid())->second.importance);
-  EXPECT_TRUE(edges.find(shm_dump1->guid())->second.overridable);
-  EXPECT_EQ(client_global_guid1,
-            edges.find(client_dump1->guid())->second.target);
-  EXPECT_EQ(1, edges.find(client_dump1->guid())->second.importance);
-  EXPECT_FALSE(edges.find(client_dump1->guid())->second.overridable);
-}
-
-TEST(ProcessMemoryDumpTest, NewSharedMemoryOwnershipTest) {
-  std::unique_ptr<ProcessMemoryDump> pmd(
-      new ProcessMemoryDump(nullptr, kDetailedDumpArgs));
-  const ProcessMemoryDump::AllocatorDumpEdgesMap& edges =
-      pmd->allocator_dumps_edges_for_testing();
-  MemoryAllocatorDumpGuid::SetUseSharedMemoryBasedGUIDsForTesting();
 
   auto* client_dump2 = pmd->CreateAllocatorDump("discardable/segment2");
   MemoryAllocatorDumpGuid client_global_guid2(2);
