@@ -236,7 +236,7 @@ component("core") {
   }
 }
 
-source_set("testing") {
+jumbo_source_set("testing") {
   configs += [
     ":blink_core_pch",
     "//third_party/WebKit/Source:config",
@@ -1191,7 +1191,7 @@ fuzzer_test("text_resource_decoder_fuzzer") {
   ]
 }
 
-source_set("unit_tests") {
+jumbo_source_set("unit_tests") {
   testonly = true
   sources = [
     "animation/AnimationClockTest.cpp",
