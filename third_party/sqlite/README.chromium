@@ -1,5 +1,5 @@
 Name: sqlite
-URL: http://sqlite.org/
+URL: https://sqlite.org/
 Version: 3.17.patched
 Included In Release: Yes
 Security Critical: Yes
@@ -97,111 +97,125 @@ git commit -m 'google_generate_amalgamation.sh' amalgamation/
 
 ---
 
-3) Import new release of SQLite.
+3) Import a new SQLite release.
 
 Importing a new SQLite involves merging our local changes with SQLite's changes.
-Like any other merge, this may involve dropping some CLs while modifying others.
-The basic idea below is to generate git branches to work with:
-  sqlite_${BASE} - current version without patches
-  sqlite_${BASE}_patched - current version with patches applied via git CLs
-  sqlite_${VERSION} - new version without patches
-  sqlite_${VERSION}_patched - new version with patches applied via git CLs
-At this point, squashing sqlite_${VERSION}_patched to master gives exactly a CL
-suitable for committing.
+Like any other merge, this may involve modifying some commits and dropping
+others. The basic idea below is to generate git branches to work with:
 
-# Everything based in sqlite subdir.
+* sqlite-new-upstream - new release code archived in a separate directory
+* sqlite-old-base     - current release without patches
+* sqlite-old          - current release with patches mapped to git commits
+* sqlite-new-base     - new release without patches
+* sqlite-new          - new release with patches mapped to git commits
+* sqlite-new-cl       - new release in one git commit, for git cl upload
+
+We will upload sqlite-new-upstream as a massive (800k LOC+) CL that cannot
+possibly be reviewed, but is generated in an automated fashion. We will then
+squash sqlite-new to sqlite-new-upstream and obtain one CL that only contains
+diffs. The second CL is still large, but it's a fraction of the fits (automated)
+CL.
+
+# The steps below are easier if done in the SQLite directory.
 cd third_party/sqlite
 
-BASE=3070603
-VERSION=3080704
+export OLD=3170000
+export NEW=3190300
+export GNU_SED=sed  # OSX: "brew install gnu-sed", then use "gsed" here.
 
-#### Create current-SQLite reference branch.
-git checkout -b sqlite_${BASE} master
+#### Download and unpack the new SQLite release.
+git new-branch sqlite-new-upstream
+# URL from "Alternative Source Code Formats" at https://sqlite.org/download.html
+curl https://sqlite.org/2017/sqlite-src-3190300.zip > upstream.zip
+mkdir sqlite-src-$NEW
+unzip ./upstream.zip -d sqlite-src-$NEW
+rm ./upstream.zip
+mv sqlite-src-$NEW/SQLite-*/* sqlite-src-$NEW/
+rmdir mv sqlite-src-$NEW/SQLite-*/
+xdg-open sqlite-src-$NEW  # Make sure everything looks right.
+
+#### Add the new release code in a separate CL, for code review sanity.
+git add sqlite-src-$NEW  # Committing the code as downloaded, on purpose.
+git clean -i -d -x sqlite-src-$NEW  # Make sure no file is git-ignored.
+git commit -m "sqlite: Add code for release 3.19"
+git cl upload  # Have the new code in a separate (impossible to review) CL.
+
+#### Create a branch for the old SQLite release's upstream version.
+git new-branch --upstream-current sqlite-old-base
 git rm -rf src
-cp -a sqlite-src-${BASE} src
-# -f includes ignored files, of which there are a couple.
-git add -f src/
-git commit -m "Reset to sqlite-src-${BASE}"
-# This branch is unlikely to build.
+cp -r sqlite-src-${OLD}/ src
+# Clean up trailing whitespace and CRLF so any patches look clean.
+find src/ -type f -not -iname "*.db" -not -iname "*.eps" -not -iname "*.ico" \
+    -not -iname "*.jpg" -not -iname "*.pfx" -not -iname "*.png" \
+    -not -iname "*.tiff" -not -iname "*.vsix" \
+    -exec $GNU_SED --in-place 's/[[:space:]]\+$//' {} \+
+git add src/
+git clean -i -d -x sqlite-src-$NEW  # Make sure no file is git-ignored.
+git commit -m "Squash: Reset SQLite src/ to sqlite-src-${OLD}."
+# This branch will not build. It will be used for rebasing, then deleted.
 
-#### Convert patches into CLs.
-git checkout -b sqlite_${BASE}_patched master
-git rebase sqlite_${BASE}
-git am --keep-non-patch patches/*.patch
-git diff master
+#### Create a branch for our old SQLite code, with patches mapped to commits.
+git new-branch --upstream-current sqlite-old
+git am --keep-non-patch --ignore-space-change patches/*.patch
+git diff --ignore-space-change origin/master
 # This branch should be identical to master.
 
-#### Create new-SQLite reference branch.
-git checkout -b sqlite_${VERSION} master
-git rebase sqlite_${BASE}
-# SQLite's download page is at <http://www.sqlite.org/download.html>.  Scroll to
-# "Legacy Source Code Distribution Formats", and grab sqlite-src-<VERSION>.zip.
-# Unzip it and pull it into the repo.
-wget http://www.sqlite.org/2016/sqlite-src-${VERSION}.zip
-unzip sqlite-src-${VERSION}.zip
-rm sqlite-src-${VERSION}.zip
-# -f includes ignored files, of which there are a couple.
-git add -f sqlite-src-${VERSION}/
-git commit -m "Begin import of sqlite-src-${VERSION}"
-# Sometimes DOS line endings sneak into the source code.  This command works on
-# OSX and Linux and fixes those files, but double-check the results before
-# committing:
-egrep --exclude="*.eps" --exclude="*.ico" --exclude="*.jpg" \
-      --exclude="*.gif" --exclude="*.tiff" --exclude="*.vsix" \
-      --exclude="*.db" -URl '\r' \
-      sqlite-src-${VERSION}/ | LANG=C xargs sed -i~ -e $'s/\r$//'
-# This might fail for lack of changes.
-git commit -a -m "Fix line endings for sqlite-src-${VERSION}"
+#### Create a branch for the new SQLite release's upstream version.
+git checkout sqlite-old-base
+git new-branch --upstream-current sqlite-new-base
 git rm -rf src
-cp -a sqlite-src-${VERSION} src
-# -f includes ignored files, of which there are a couple.
-git add -f src/
-git commit -m "Update src to sqlite-src-${VERSION}" src/
-# This branch is unlikely to build.
+cp -r sqlite-src-${NEW}/ src
+# Clean up trailing whitespace and CRLF so any patches look clean.
+find src/ -type f -not -iname "*.db" -not -iname "*.eps" -not -iname "*.ico" \
+    -not -iname "*.jpg" -not -iname "*.pfx" -not -iname "*.png" \
+    -not -iname "*.tiff" -not -iname "*.vsix" \
+    -exec $GNU_SED --in-place 's/[[:space:]]\+$//' {} \+
+git add src/
+git clean -i -d -x sqlite-src-$NEW  # Make sure no file is git-ignored.
+git commit -m "Squash: Reset SQLite src/ to sqlite-src-${NEW}."
+# This branch will not build. It will be used for rebasing, then deleted.
 
-#### Create a branch for merging the CLs to the new SQLite.
-git checkout -b sqlite_${VERSION}_patched master
-git rebase sqlite_${VERSION}
+#### Create a branch for updating our patches.
+git checkout sqlite-old
+git new-branch --upstream-current sqlite-new
+# Rebase our patches, which are mapped to separate commits, onto the new
+# release. There will be merge conflicts that must be fixed. This is the
+# interesting part of the work.
+git rebase sqlite-new-base
 
-# Replay the  patches onto this branch.   There will be merge  conflicts to fix.
-# My approach is  generally to just accept them prefering  the patch's change in
-# case of conflicts, and then resolve the conflicts as a second pass.
-git rebase --onto zsqlite_${VERSION}_patched zsqlite_${BASE} zsqlite_${BASE}_patched
-# Once everything is resolved, re-generate the amalgamation.
+#### Finally, create the branch that we'll upload.
+git new-branch --upstream-current sqlite-new-cl
 ./google_generate_amalgamation.sh
-git commit -a -m "google_generate_amalgamation.sh"
-
 # The goal is to have a set of reasonably-independent CLs which can be
 # understood separately, so that future importers can sensibly determine how to
 # handle conflicts.  So use git-rebase and slipstream fixups back into their
-# original CL until things are relatively clean.
-
+# original CL until everything builds and works.
+cd ../..
+ninja -C out/Default
+out/Default/sql_unittests
+third_party/WebKit/Tools/Scripts/run-webkit-tests -t Default storage/websql/*
+cd third_party/sqlite
 # Rebuild the patch set.
 git rm patches/*
-# This assumes that HEAD is still the google_generate_amalgamation.sh checkin.
-git format-patch --output-directory=patches sqlite_${VERSION}..HEAD^
+git format-patch --output-directory=patches --ignore-space-change \
+    sqlite-new-base..sqlite-new
+git add amalgamation/
 git add patches/*.patch
-git commit -m "Rebuild patches for sqlite_${VERSION}"
-
-# Drop the old version of SQLite.
-git rm -r sqlite_${BASE}
-git commit -m 'Remove sqlite_${BASE}' -- sqlite_${BASE}
-
-# Do a squash upload.  Edit the commit message appropriately to reflect anything
-# from <http://www.sqlite.org/changes.html> which might be deemed important.
-# Don't enumerate all of the patch messages, those are assumed, but do reference
-# any material changes made.
+git commit -m "Squash: regenerate amalgamation and patches."
+git branch --set-upstream-to=sqlite-new-upstream
+git cl upload --squash
+# Edit the commit message appropriately to reflect anything from
+# <https://www.sqlite.org/changes.html> which might be deemed important. Don't
+# enumerate all of the patch messages, those are assumed, but do reference any
+# material changes made.
 # TODO(shess) Describe an appropriate comment style.  Seems like it should at
 # least include the SQLite version number.  Meanwhile, look in the logs for past
 # commits to model things on.
 
-Find a sucker.  Send review.
-
-TODO(shess): It is basically impossible to trybot the entire change, it takes
-forever to upload and sqlite3.c breaks things because it's too large.  I have a
-nasty Perl script to break up sqlite3.c into pieces which are then included by a
-single .c file, but there must be a better way.  Perhaps just have BUILD.gn
-include all the .c files directly?
+#### Drop the old version of SQLite.
+git new-branch sqlite-rm-old
+git rm -r sqlite_${BASE}
+git commit -m "sqlite: Remove source code for old release ${OLD}."
 
 Note that things can be broken down differently, if you prefer.  For instance,
 adding the new version of the SQLite distro and removing the old one can be
