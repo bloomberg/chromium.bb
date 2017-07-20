@@ -17,17 +17,17 @@
         box-shadow: 0 0 16px rgba(0, 0, 0, 0.12),
                     0 16px 16px rgba(0, 0, 0, 0.24);
         color: inherit;
-        overflow: auto;
         padding: 0;
         top: 0;
         width: 512px;
       }
 
-      :host([open]) {
+      :host([open]) #content-wrapper {
         /* Keep max-height within viewport, and flex content accordingly. */
         display: flex;
         flex-direction: column;
         max-height: 100vh;
+        overflow: auto;
       }
 
       /* When needing to flex, force .body-container alone to shrink. */
@@ -118,22 +118,26 @@
         padding: 10px;  /* Makes the actual icon 16x16. */
       }
     </style>
-    <div class="top-container">
-      <div class="title-container" tabindex="-1">
-        <slot name="title"></slot>
+    <!-- This wrapper is necessary, such that the "pulse" animation is not
+      erroneously played when the user clicks on the outer-most scrollbar. -->
+    <div id="content-wrapper">
+      <div class="top-container">
+        <div class="title-container" tabindex="-1">
+          <slot name="title"></slot>
+        </div>
+        <button is="paper-icon-button-light" class="icon-clear" id="close"
+            aria-label$="[[closeText]]" hidden$="[[noCancel]]" on-tap="cancel"
+            on-keypress="onCloseKeypress_">
+        </button>
       </div>
-      <button is="paper-icon-button-light" class="icon-clear" id="close"
-          aria-label$="[[closeText]]" hidden$="[[noCancel]]" on-tap="cancel"
-          on-keypress="onCloseKeypress_">
-      </button>
+      <div class="body-container">
+        <span id="bodyTopMarker"></span>
+        <slot name="body"></slot>
+        <span id="bodyBottomMarker"></span>
+      </div>
+      <slot name="button-container"></slot>
+      <slot name="footer"></slot>
     </div>
-    <div class="body-container">
-      <span id="bodyTopMarker"></span>
-      <slot name="body"></slot>
-      <span id="bodyBottomMarker"></span>
-    </div>
-    <slot name="button-container"></slot>
-    <slot name="footer"></slot>
   </template>
   <script src="cr_dialog.js"></script>
 </dom-module>
