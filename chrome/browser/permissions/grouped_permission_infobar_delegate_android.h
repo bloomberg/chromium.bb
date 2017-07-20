@@ -26,8 +26,7 @@ class GroupedPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   static infobars::InfoBar* Create(
       const base::WeakPtr<PermissionPromptAndroid>& permission_prompt,
-      InfoBarService* infobar_service,
-      const GURL& requesting_origin);
+      InfoBarService* infobar_service);
 
   bool persist() const { return persist_; }
   void set_persist(bool persist) { persist_ = persist; }
@@ -49,13 +48,9 @@ class GroupedPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
   void InfoBarDismissed() override;
   base::string16 GetLinkText() const override;
 
- protected:
-  bool GetAcceptState(size_t position);
-
  private:
   GroupedPermissionInfoBarDelegate(
-      const base::WeakPtr<PermissionPromptAndroid>& permission_prompt,
-      const GURL& requesting_origin);
+      const base::WeakPtr<PermissionPromptAndroid>& permission_prompt);
 
   // ConfirmInfoBarDelegate:
   InfoBarIdentifier GetIdentifier() const override;
@@ -67,7 +62,6 @@ class GroupedPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
   // InfoBarDelegate:
   bool EqualsDelegate(infobars::InfoBarDelegate* delegate) const override;
 
-  const GURL requesting_origin_;
   // Whether the accept/deny decision is persisted.
   bool persist_;
   base::WeakPtr<PermissionPromptAndroid> permission_prompt_;
