@@ -14,8 +14,6 @@ static_library("browser") {
     "credential_manager_impl.h",
     "password_manager_internals_service_factory.cc",
     "password_manager_internals_service_factory.h",
-    "visible_password_observer.cc",
-    "visible_password_observer.h",
   ]
 
   public_deps = [

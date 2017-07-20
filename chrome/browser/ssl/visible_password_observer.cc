@@ -2,14 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/password_manager/content/browser/visible_password_observer.h"
+#include "chrome/browser/ssl/visible_password_observer.h"
 
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/origin_util.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(password_manager::VisiblePasswordObserver);
-
-namespace password_manager {
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(VisiblePasswordObserver);
 
 VisiblePasswordObserver::~VisiblePasswordObserver() {}
 
@@ -27,12 +25,8 @@ void VisiblePasswordObserver::RenderFrameHasNoVisiblePasswordFields(
 
 void VisiblePasswordObserver::RenderFrameDeleted(
     content::RenderFrameHost* render_frame_host) {
-  // If a renderer process crashes, it won't send notifications that
-  // the password fields have been hidden, so watch for crashing
-  // processes and remove them from
-  // |frames_with_visible_password_fields_|.
-  frames_with_visible_password_fields_.erase(render_frame_host);
-  MaybeNotifyAllFieldsInvisible();
+  // After a renderer crashes, it has no visible password fields.
+  RenderFrameHasNoVisiblePasswordFields(render_frame_host);
 }
 
 VisiblePasswordObserver::VisiblePasswordObserver(
@@ -40,16 +34,11 @@ VisiblePasswordObserver::VisiblePasswordObserver(
     : content::WebContentsObserver(web_contents), web_contents_(web_contents) {}
 
 void VisiblePasswordObserver::MaybeNotifyPasswordInputShownOnHttp() {
-  if (!content::IsOriginSecure(web_contents_->GetVisibleURL())) {
-    web_contents_->OnPasswordInputShownOnHttp();
-  }
+  web_contents_->OnPasswordInputShownOnHttp();
 }
 
 void VisiblePasswordObserver::MaybeNotifyAllFieldsInvisible() {
-  if (frames_with_visible_password_fields_.empty() &&
-      !content::IsOriginSecure(web_contents_->GetVisibleURL())) {
+  if (frames_with_visible_password_fields_.empty()) {
     web_contents_->OnAllPasswordInputsHiddenOnHttp();
   }
 }
-
-}  // namespace password_manager

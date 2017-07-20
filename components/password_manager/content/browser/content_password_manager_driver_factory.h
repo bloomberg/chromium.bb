@@ -17,7 +17,7 @@
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "third_party/WebKit/public/platform/modules/sensitive_input_visibility/sensitive_input_visibility_service.mojom.h"
+#include "services/service_manager/public/cpp/bind_source_info.h"
 
 namespace content {
 class WebContents;
@@ -43,10 +43,6 @@ class ContentPasswordManagerDriverFactory
 
   static void BindPasswordManagerDriver(
       autofill::mojom::PasswordManagerDriverRequest request,
-      content::RenderFrameHost* render_frame_host);
-
-  static void BindSensitiveInputVisibilityService(
-      blink::mojom::SensitiveInputVisibilityServiceRequest request,
       content::RenderFrameHost* render_frame_host);
 
   ContentPasswordManagerDriver* GetDriverForFrame(
