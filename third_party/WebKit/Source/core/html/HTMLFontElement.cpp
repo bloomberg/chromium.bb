@@ -98,10 +98,13 @@ static bool ParseFontSize(const CharacterType* characters,
   // Step 8
   int value;
 
-  if (digits.Is8Bit())
-    value = CharactersToIntStrict(digits.Characters8(), digits.length());
-  else
-    value = CharactersToIntStrict(digits.Characters16(), digits.length());
+  if (digits.Is8Bit()) {
+    value =
+        CharactersToIntStrict(digits.Characters8(), digits.length(), nullptr);
+  } else {
+    value =
+        CharactersToIntStrict(digits.Characters16(), digits.length(), nullptr);
+  }
 
   // Step 9
   if (mode == kRelativePlus)
