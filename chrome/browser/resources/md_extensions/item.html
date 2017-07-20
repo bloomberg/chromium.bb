@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
 <link rel="import" href="chrome://resources/html/action_link.html">
 <link rel="import" href="chrome://resources/html/action_link_css.html">
 <link rel="import" href="chrome://resources/html/assert.html">
@@ -19,7 +20,7 @@
 
 <dom-module id="extensions-item">
   <template>
-    <style include="iron-flex cr-hidden-style action-link">
+    <style include="iron-flex cr-hidden-style action-link paper-button-style">
       #icon-wrapper {
         align-self: flex-start;
         display: flex;
@@ -95,6 +96,10 @@
         padding-top: 8px;
       }
 
+      #button-strip paper-button {
+        margin: 0 4px;
+      }
+
       #source-indicator {
         -webkit-margin-start: 30px;
         margin-top: 30px;
@@ -137,18 +142,8 @@
         display: block;
       }
 
-      paper-button,
       paper-toggle-button {
         cursor: pointer;
-      }
-
-      #button-strip paper-button {
-        align-items: center;
-        display: flex;
-        margin: 0 4px;
-        min-height: 32px;
-        padding: 0 12px;
-        text-transform: uppercase;
       }
 
       .action-button {
