@@ -134,6 +134,7 @@ const CGFloat kCloseButtonHeight = 44.0;
                                          0, kMenuItemLeadingEdgeInset, 0, 0)];
     [menuButton.titleLabel setFont:[MDCTypography subheadFont]];
     [menuButton.titleLabel setTextAlignment:NSTextAlignmentNatural];
+    menuButton.enabled = item.enabled;
     [menuButton addTarget:self.dispatcher
                    action:@selector(closeToolsMenu)
          forControlEvents:UIControlEventTouchUpInside];

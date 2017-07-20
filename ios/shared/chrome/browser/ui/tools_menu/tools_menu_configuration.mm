@@ -19,6 +19,7 @@
 @synthesize inIncognito = _inIncognito;
 @synthesize userAgentType = _userAgentType;
 @synthesize requestStartTime = _requestStartTime;
+@synthesize inNewTabPage = _inNewTabPage;
 
 - (instancetype)initWithDisplayView:(UIView*)displayView {
   if (self = [super init]) {

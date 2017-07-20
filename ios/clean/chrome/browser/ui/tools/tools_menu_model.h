@@ -26,6 +26,8 @@ struct MenuModelItem {
   // The selector name which will be called on the dispatcher, when the
   // item is selected.
   NSString* selector;
+  // If visible, this is the condition in which the item will be enabled.
+  int enabled;
 };
 
 // Menu items can be marked as visible or not when Incognito is enabled.
@@ -35,6 +37,16 @@ typedef NS_OPTIONS(NSUInteger, ItemVisible) {
   ItemVisibleAlways            = 0,
   ItemVisibleIncognitoOnly     = 1 << 0,
   ItemVisibleNotIncognitoOnly  = 1 << 1,
+  // clang-format on
+};
+
+// Menu items can be enabled or not based on the ToolsMenuConfiguration.
+// The following bits are used for |enabled| field in |MenuModelItem|.
+typedef NS_OPTIONS(NSUInteger, ItemEnable) {
+  // clang-format off
+  ItemEnabledAlways            = 0,
+  ItemEnabledWhenOpenTabs      = 1 << 0,
+  ItemEnabledNotInNTP          = 1 << 1,
   // clang-format on
 };
 
