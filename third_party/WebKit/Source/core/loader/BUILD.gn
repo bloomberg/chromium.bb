@@ -88,6 +88,7 @@ blink_core_sources("loader") {
     "modulescript/ModuleTreeLinker.h",
     "modulescript/ModuleTreeLinkerRegistry.cpp",
     "modulescript/ModuleTreeLinkerRegistry.h",
+    "modulescript/ModuleTreeReachedUrlSet.h",
     "private/CrossOriginPreflightResultCache.cpp",
     "private/CrossOriginPreflightResultCache.h",
     "private/FrameClientHintsPreferencesContext.cpp",
