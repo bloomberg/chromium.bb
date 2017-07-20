@@ -339,10 +339,10 @@ bool FieldHasNonscriptModifiedValue(
 
 // Helper function that checks the presence of visible password and username
 // fields in |form.control_elements|.
-// Iff a visible password found, then |*found_visible_password| is set to true.
-// Iff a visible password found AND there is a visible username before it, then
-// |*found_visible_username_before_visible_password| is set to true.
-void FoundVisiblePasswordAndVisibleUsernameBeforePassword(
+// Iff a visible password is found, then |*found_visible_password| is set to
+// true. Iff a visible password is found AND there is a visible username before
+// it, then |*found_visible_username_before_visible_password| is set to true.
+void FindVisiblePasswordAndVisibleUsernameBeforePassword(
     const SyntheticForm& form,
     bool* found_visible_password,
     bool* found_visible_username_before_visible_password) {
@@ -417,7 +417,7 @@ bool GetPasswordForm(
   // the latest username field just before selected password field).
   bool ignore_invisible_passwords = false;
   bool ignore_invisible_usernames = false;
-  FoundVisiblePasswordAndVisibleUsernameBeforePassword(
+  FindVisiblePasswordAndVisibleUsernameBeforePassword(
       form, &ignore_invisible_passwords, &ignore_invisible_usernames);
   std::string layout_sequence;
   layout_sequence.reserve(form.control_elements.size());
