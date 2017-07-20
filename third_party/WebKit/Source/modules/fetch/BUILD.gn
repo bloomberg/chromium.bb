@@ -43,4 +43,12 @@ blink_modules_sources("fetch") {
     "Response.cpp",
     "Response.h",
   ]
+
+  if (is_win && is_component_build) {
+    # Body.cpp exports a class (MODULES_EXPORT) that inherits from
+    # PairIterable<String, String> that is also used as base class by an
+    # imported (CORE_EXPORT) class and that confuses the Windows
+    # linker/compiler. https://crbug.com/739340
+    jumbo_excluded_sources = [ "Body.cpp" ]
+  }
 }
