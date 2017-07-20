@@ -21,7 +21,6 @@
 namespace blink {
 
 class SensorProviderProxy;
-class SensorReading;
 
 // This class wraps 'Sensor' mojo interface and used by multiple
 // JS sensor instances of the same type (within a single frame).
@@ -83,8 +82,6 @@ class SensorProxy final : public GarbageCollectedFinalized<SensorProxy>,
 
  private:
   friend class SensorProviderProxy;
-  friend class SensorReadingUpdaterContinuous;
-  friend class SensorReadingUpdaterOnChange;
   SensorProxy(device::mojom::blink::SensorType, SensorProviderProxy*, Page*);
 
   // Updates sensor reading from shared buffer.
