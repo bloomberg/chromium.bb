@@ -456,7 +456,7 @@ static void tokenize_b(int plane, int block, int blk_row, int blk_col,
       td->counts->blockz_count[txsize_sqr_map[tx_size]][type][ref];
   int eob_val;
   int first_val = 1;
-  const int seg_eob = get_tx_eob(&cpi->common.seg, segment_id, tx_size);
+  const int seg_eob = av1_get_tx_eob(&cpi->common.seg, segment_id, tx_size);
   unsigned int(*const eob_branch)[COEFF_CONTEXTS] =
       td->counts->eob_branch[txsize_sqr_map[tx_size]][type][ref];
   const uint8_t *const band = get_band_translate(tx_size);

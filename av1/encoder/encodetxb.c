@@ -1574,7 +1574,7 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
   const SCAN_ORDER *const scan_order = get_scan(cm, tx_size, tx_type, mbmi);
   const int16_t *scan = scan_order->scan;
   const int16_t *iscan = scan_order->iscan;
-  const int seg_eob = get_tx_eob(&cpi->common.seg, segment_id, tx_size);
+  const int seg_eob = av1_get_tx_eob(&cpi->common.seg, segment_id, tx_size);
   int c, i;
   TXB_CTX txb_ctx;
   get_txb_ctx(plane_bsize, tx_size, plane, pd->above_context + blk_col,

@@ -631,6 +631,16 @@ static INLINE void av1_merge_rd_stats(RD_STATS *rd_stats_dst,
 #endif
 }
 
+static INLINE int av1_get_coeff_token_cost(int token, int eob_val, int is_first,
+                                           const int *head_cost_table,
+                                           const int *tail_cost_table) {
+  if (eob_val == LAST_EOB) return av1_cost_zero(128);
+  const int comb_symb = 2 * AOMMIN(token, TWO_TOKEN) - eob_val + is_first;
+  int cost = head_cost_table[comb_symb];
+  if (token > ONE_TOKEN) cost += tail_cost_table[token - TWO_TOKEN];
+  return cost;
+}
+
 struct TileInfo;
 struct TileDataEnc;
 struct AV1_COMP;
@@ -675,9 +685,6 @@ void av1_set_rd_speed_thresholds_sub8x8(struct AV1_COMP *cpi);
 void av1_update_rd_thresh_fact(const AV1_COMMON *const cm,
                                int (*fact)[MAX_MODES], int rd_thresh, int bsize,
                                int best_mode_index);
-
-void av1_fill_token_costs(av1_coeff_cost *c,
-                          av1_coeff_probs_model (*p)[PLANE_TYPES]);
 
 static INLINE int rd_less_than_thresh(int64_t best_rd, int thresh,
                                       int thresh_fact) {

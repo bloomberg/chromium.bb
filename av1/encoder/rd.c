@@ -247,25 +247,6 @@ void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
   }
 }
 
-void av1_fill_token_costs(av1_coeff_cost *c,
-                          av1_coeff_probs_model (*p)[PLANE_TYPES]) {
-  int i, j, k, l;
-  TX_SIZE t;
-  for (t = 0; t < TX_SIZES; ++t)
-    for (i = 0; i < PLANE_TYPES; ++i)
-      for (j = 0; j < REF_TYPES; ++j)
-        for (k = 0; k < COEF_BANDS; ++k)
-          for (l = 0; l < BAND_COEFF_CONTEXTS(k); ++l) {
-            aom_prob probs[ENTROPY_NODES];
-            av1_model_to_full_probs(p[t][i][j][k][l], probs);
-            av1_cost_tokens((int *)c[t][i][j][k][0][l], probs, av1_coef_tree);
-            av1_cost_tokens_skip((int *)c[t][i][j][k][1][l], probs,
-                                 av1_coef_tree);
-            assert(c[t][i][j][k][0][l][EOB_TOKEN] ==
-                   c[t][i][j][k][1][l][EOB_TOKEN]);
-          }
-}
-
 // Values are now correlated to quantizer.
 static int sad_per_bit16lut_8[QINDEX_RANGE];
 static int sad_per_bit4lut_8[QINDEX_RANGE];
@@ -440,6 +421,22 @@ void av1_set_mvcost(MACROBLOCK *x, MV_REFERENCE_FRAME ref_frame, int ref,
   x->nmvjointcost = x->nmv_vec_cost[nmv_ctx];
 }
 
+void fill_token_costs_from_cdf(av1_coeff_cost *cost,
+                               coeff_cdf_model (*cdf)[PLANE_TYPES]) {
+  for (int tx = 0; tx < TX_SIZES; ++tx) {
+    for (int pt = 0; pt < PLANE_TYPES; ++pt) {
+      for (int rt = 0; rt < REF_TYPES; ++rt) {
+        for (int band = 0; band < COEF_BANDS; ++band) {
+          for (int ctx = 0; ctx < BAND_COEFF_CONTEXTS(band); ++ctx) {
+            av1_cost_tokens_from_cdf(cost[tx][pt][rt][band][ctx],
+                                     cdf[tx][pt][rt][band][ctx], NULL);
+          }
+        }
+      }
+    }
+  }
+}
+
 void av1_initialize_rd_consts(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
   MACROBLOCK *const x = &cpi->td.mb;
@@ -475,7 +472,8 @@ void av1_initialize_rd_consts(AV1_COMP *cpi) {
 #endif
 
   if (cpi->oxcf.pass != 1) {
-    av1_fill_token_costs(x->token_costs, cm->fc->coef_probs);
+    fill_token_costs_from_cdf(x->token_head_costs, cm->fc->coef_head_cdfs);
+    fill_token_costs_from_cdf(x->token_tail_costs, cm->fc->coef_tail_cdfs);
 #if CONFIG_GLOBAL_MOTION
     for (int i = 0; i < TRANS_TYPES; ++i)
       cpi->gmtype_cost[i] = (1 + (i > 0 ? GLOBAL_TYPE_BITS : 0))

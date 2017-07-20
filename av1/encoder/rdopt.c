@@ -1526,11 +1526,6 @@ static int64_t av1_block_error2_c(const tran_low_t *coeff,
 #endif  // CONFIG_PVQ
 
 #if !CONFIG_PVQ || CONFIG_VAR_TX
-/* The trailing '0' is a terminator which is used inside av1_cost_coeffs() to
- * decide whether to include cost of a trailing EOB node or not (i.e. we
- * can skip this if the last coefficient in this transform block, e.g. the
- * 16th coefficient in a 4x4 block or the 64th coefficient in a 8x8 block,
- * were non-zero). */
 #if !CONFIG_LV_MAP
 static int cost_coeffs(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
                        int block, TX_SIZE tx_size, const SCAN_ORDER *scan_order,
@@ -1545,16 +1540,18 @@ static int cost_coeffs(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
   const int eob = p->eobs[block];
   const tran_low_t *const qcoeff = BLOCK_OFFSET(p->qcoeff, block);
   const int tx_size_ctx = txsize_sqr_map[tx_size];
-  unsigned int(*token_costs)[2][COEFF_CONTEXTS][ENTROPY_TOKENS] =
-      x->token_costs[tx_size_ctx][type][is_inter_block(mbmi)];
   uint8_t token_cache[MAX_TX_SQUARE];
   int pt = combine_entropy_contexts(*a, *l);
   int c, cost;
   const int16_t *scan = scan_order->scan;
   const int16_t *nb = scan_order->neighbors;
   const int ref = is_inter_block(mbmi);
-  aom_prob *blockz_probs =
-      cm->fc->blockzero_probs[txsize_sqr_map[tx_size]][type][ref];
+  int(*head_token_costs)[COEFF_CONTEXTS][TAIL_TOKENS] =
+      x->token_head_costs[tx_size_ctx][type][ref];
+  int(*tail_token_costs)[COEFF_CONTEXTS][TAIL_TOKENS] =
+      x->token_tail_costs[tx_size_ctx][type][ref];
+  const int seg_eob = av1_get_tx_eob(&cm->seg, mbmi->segment_id, tx_size);
+  int eob_val;
 
 #if CONFIG_HIGHBITDEPTH
   const int cat6_bits = av1_get_cat6_extrabits_size(tx_size, xd->bd);
@@ -1569,8 +1566,8 @@ static int cost_coeffs(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
   (void)cm;
 
   if (eob == 0) {
-    // single eob token
-    cost = av1_cost_bit(blockz_probs[pt], 0);
+    // block zero
+    cost = (*head_token_costs)[pt][0];
   } else {
     if (use_fast_coef_costing) {
       int band_left = *band_count++;
@@ -1579,10 +1576,13 @@ static int cost_coeffs(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
       int v = qcoeff[0];
       int16_t prev_t;
       cost = av1_get_token_cost(v, &prev_t, cat6_bits);
-      cost += (*token_costs)[!prev_t][pt][prev_t];
+      eob_val = (eob == 1) ? EARLY_EOB : NO_EOB;
+      cost += av1_get_coeff_token_cost(
+          prev_t, eob_val, 1, (*head_token_costs)[pt], (*tail_token_costs)[pt]);
 
       token_cache[0] = av1_pt_energy_class[prev_t];
-      ++token_costs;
+      ++head_token_costs;
+      ++tail_token_costs;
 
       // ac tokens
       for (c = 1; c < eob; c++) {
@@ -1591,17 +1591,18 @@ static int cost_coeffs(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
 
         v = qcoeff[rc];
         cost += av1_get_token_cost(v, &t, cat6_bits);
-        cost += (*token_costs)[!t][!prev_t][t];
+        eob_val =
+            (c + 1 == eob) ? (c + 1 == seg_eob ? LAST_EOB : EARLY_EOB) : NO_EOB;
+        cost += av1_get_coeff_token_cost(t, eob_val, 0,
+                                         (*head_token_costs)[!prev_t],
+                                         (*tail_token_costs)[!prev_t]);
         prev_t = t;
         if (!--band_left) {
           band_left = *band_count++;
-          ++token_costs;
+          ++head_token_costs;
+          ++tail_token_costs;
         }
       }
-
-      // eob token
-      cost += (*token_costs)[0][!prev_t][EOB_TOKEN];
-
     } else {  // !use_fast_coef_costing
       int band_left = *band_count++;
 
@@ -1609,10 +1610,13 @@ static int cost_coeffs(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
       int v = qcoeff[0];
       int16_t tok;
       cost = av1_get_token_cost(v, &tok, cat6_bits);
-      cost += (*token_costs)[!tok][pt][tok];
+      eob_val = (eob == 1) ? EARLY_EOB : NO_EOB;
+      cost += av1_get_coeff_token_cost(tok, eob_val, 1, (*head_token_costs)[pt],
+                                       (*tail_token_costs)[pt]);
 
       token_cache[0] = av1_pt_energy_class[tok];
-      ++token_costs;
+      ++head_token_costs;
+      ++tail_token_costs;
 
       // ac tokens
       for (c = 1; c < eob; c++) {
@@ -1621,17 +1625,17 @@ static int cost_coeffs(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
         v = qcoeff[rc];
         cost += av1_get_token_cost(v, &tok, cat6_bits);
         pt = get_coef_context(nb, token_cache, c);
-        cost += (*token_costs)[!tok][pt][tok];
+        eob_val =
+            (c + 1 == eob) ? (c + 1 == seg_eob ? LAST_EOB : EARLY_EOB) : NO_EOB;
+        cost += av1_get_coeff_token_cost(
+            tok, eob_val, 0, (*head_token_costs)[pt], (*tail_token_costs)[pt]);
         token_cache[rc] = av1_pt_energy_class[tok];
         if (!--band_left) {
           band_left = *band_count++;
-          ++token_costs;
+          ++head_token_costs;
+          ++tail_token_costs;
         }
       }
-
-      // eob token
-      pt = get_coef_context(nb, token_cache, c);
-      cost += (*token_costs)[0][pt][EOB_TOKEN];
     }
   }
 
@@ -4679,8 +4683,8 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
 #else
   int tx_size_ctx = txsize_sqr_map[tx_size];
   int coeff_ctx = get_entropy_context(tx_size, pta, ptl);
-  zero_blk_rate = x->token_costs[tx_size_ctx][pd->plane_type][1][0][0]
-                                [coeff_ctx][EOB_TOKEN];
+  zero_blk_rate =
+      x->token_head_costs[tx_size_ctx][pd->plane_type][1][0][coeff_ctx][0];
 #endif
 
   rd_stats->ref_rdcost = ref_best_rd;
@@ -4757,8 +4761,8 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
 
       tx_size_ctx = txsize_sqr_map[quarter_txsize];
       coeff_ctx = get_entropy_context(quarter_txsize, pta, ptl);
-      zero_blk_rate = x->token_costs[tx_size_ctx][pd->plane_type][1][0][0]
-                                    [coeff_ctx][EOB_TOKEN];
+      zero_blk_rate =
+          x->token_head_costs[tx_size_ctx][pd->plane_type][1][0][coeff_ctx][0];
       if ((RDCOST(x->rdmult, rd_stats_qttx.rate, rd_stats_qttx.dist) >=
                RDCOST(x->rdmult, zero_blk_rate, rd_stats_qttx.sse) ||
            rd_stats_qttx.skip == 1) &&
@@ -4787,8 +4791,8 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
       av1_set_txb_context(x, plane, 0, quarter_txsize, pta, ptl);
       coeff_ctx = get_entropy_context(quarter_txsize, pta + blk_col_offset,
                                       ptl + blk_row_offset);
-      zero_blk_rate = x->token_costs[tx_size_ctx][pd->plane_type][1][0][0]
-                                    [coeff_ctx][EOB_TOKEN];
+      zero_blk_rate =
+          x->token_head_costs[tx_size_ctx][pd->plane_type][1][0][coeff_ctx][0];
       if ((RDCOST(x->rdmult, rd_stats_tmp.rate, rd_stats_tmp.dist) >=
                RDCOST(x->rdmult, zero_blk_rate, rd_stats_tmp.sse) ||
            rd_stats_tmp.skip == 1) &&
