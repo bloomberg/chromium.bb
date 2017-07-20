@@ -62,6 +62,7 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/metrics/call_stack_profile_metrics_provider.h"
 #include "components/metrics/drive_metrics_provider.h"
+#include "components/metrics/field_trials_provider.h"
 #include "components/metrics/file_metrics_provider.h"
 #include "components/metrics/gpu/gpu_metrics_provider.h"
 #include "components/metrics/metrics_log_uploader.h"
@@ -316,6 +317,9 @@ class AndroidIncognitoObserver : public TabModelListObserver {
 }  // namespace
 
 const char ChromeMetricsServiceClient::kBrowserMetricsName[] = "BrowserMetrics";
+
+// UKM suffix for field trial recording.
+const char kUKMFieldTrialSuffix[] = "UKM";
 
 ChromeMetricsServiceClient::ChromeMetricsServiceClient(
     metrics::MetricsStateManager* state_manager)
@@ -770,6 +774,11 @@ void ChromeMetricsServiceClient::RegisterUKMProviders() {
       base::MakeUnique<metrics::NetworkMetricsProvider>(
           base::MakeUnique<metrics::NetworkQualityEstimatorProviderImpl>(
               g_browser_process->io_thread())));
+
+  // TODO(rkaplow): Support synthetic trials for UKM.
+  ukm_service_->RegisterMetricsProvider(
+      base::MakeUnique<variations::FieldTrialsProvider>(nullptr,
+                                                        kUKMFieldTrialSuffix));
 }
 
 bool ChromeMetricsServiceClient::ShouldIncludeProfilerDataInLog() {

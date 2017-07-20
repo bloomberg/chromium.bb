@@ -4,6 +4,7 @@
 
 #include "components/metrics/field_trials_provider.h"
 
+#include "base/strings/string_piece.h"
 #include "components/metrics/proto/system_profile.pb.h"
 #include "components/variations/active_field_trials.h"
 #include "components/variations/synthetic_trial_registry.h"
@@ -24,35 +25,41 @@ void WriteFieldTrials(const std::vector<ActiveGroupId>& field_trial_ids,
 
 }  // namespace
 
-FieldTrialsProvider::FieldTrialsProvider(SyntheticTrialRegistry* registry)
-    : registry_(registry) {}
+FieldTrialsProvider::FieldTrialsProvider(SyntheticTrialRegistry* registry,
+                                         base::StringPiece suffix)
+    : registry_(registry), suffix_(suffix) {}
 FieldTrialsProvider::~FieldTrialsProvider() = default;
 
 void FieldTrialsProvider::GetFieldTrialIds(
     std::vector<ActiveGroupId>* field_trial_ids) const {
   // We use the default field trial suffixing (no suffix).
-  variations::GetFieldTrialActiveGroupIds(base::StringPiece(), field_trial_ids);
+  variations::GetFieldTrialActiveGroupIds(suffix_, field_trial_ids);
 }
 
 void FieldTrialsProvider::OnDidCreateMetricsLog() {
-  creation_times_.push_back(base::TimeTicks::Now());
+  if (registry_) {
+    creation_times_.push_back(base::TimeTicks::Now());
+  }
 }
 
 void FieldTrialsProvider::ProvideSystemProfileMetrics(
     metrics::SystemProfileProto* system_profile_proto) {
-  base::TimeTicks creation_time;
-  // Should always be true, but don't crash even if there is a bug.
-  if (!creation_times_.empty()) {
-    creation_time = creation_times_.back();
-    creation_times_.pop_back();
-  }
-  std::vector<ActiveGroupId> synthetic_trials;
-  registry_->GetSyntheticFieldTrialsOlderThan(creation_time, &synthetic_trials);
-
   std::vector<ActiveGroupId> field_trial_ids;
   GetFieldTrialIds(&field_trial_ids);
   WriteFieldTrials(field_trial_ids, system_profile_proto);
-  WriteFieldTrials(synthetic_trials, system_profile_proto);
+
+  if (registry_) {
+    base::TimeTicks creation_time;
+    // Should always be true, but don't crash even if there is a bug.
+    if (!creation_times_.empty()) {
+      creation_time = creation_times_.back();
+      creation_times_.pop_back();
+    }
+    std::vector<ActiveGroupId> synthetic_trials;
+    registry_->GetSyntheticFieldTrialsOlderThan(creation_time,
+                                                &synthetic_trials);
+    WriteFieldTrials(synthetic_trials, system_profile_proto);
+  }
 }
 
 }  // namespace variations
