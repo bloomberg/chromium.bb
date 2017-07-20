@@ -138,6 +138,13 @@ class VrShell : public device::GvrDelegate,
                                 const base::android::JavaParamRef<jobject>& obj,
                                 jboolean can_go_back,
                                 jboolean can_go_forward);
+  void RequestToExitVr(JNIEnv* env,
+                       const base::android::JavaParamRef<jobject>& obj,
+                       int reason);
+  void LogUnsupportedModeUserMetric(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      int mode);
 
   void ContentWebContentsDestroyed();
   // Called when our WebContents have been hidden. Usually a sign that something
@@ -173,6 +180,7 @@ class VrShell : public device::GvrDelegate,
   void ForceExitVr();
   void ExitPresent();
   void ExitFullscreen();
+  void LogUnsupportedModeUserMetric(vr::UiUnsupportedMode mode);
   void OnUnsupportedMode(vr::UiUnsupportedMode mode);
   void OnExitVrPromptResult(vr::UiUnsupportedMode reason,
                             vr::ExitVrPromptChoice choice);
@@ -215,8 +223,7 @@ class VrShell : public device::GvrDelegate,
 
   bool HasDaydreamSupport(JNIEnv* env);
 
-  void ExitVrDueToUnsupportedMode(vr::UiUnsupportedMode mode,
-                                  bool show_exit_warning);
+  void ExitVrDueToUnsupportedMode(vr::UiUnsupportedMode mode);
 
   bool vr_shell_enabled_;
 

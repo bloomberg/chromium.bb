@@ -33,6 +33,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.NativePage;
 import org.chromium.chrome.browser.UrlConstants;
+import org.chromium.chrome.browser.page_info.PageInfoPopup;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.InterceptNavigationDelegateImpl;
 import org.chromium.chrome.browser.tab.Tab;
@@ -451,7 +452,16 @@ public class VrShellImpl
     // the security icon in the URL bar.
     @CalledByNative
     public void onUnhandledPageInfo() {
-        mDelegate.onUnhandledPageInfo();
+        mDelegate.requestToExitVr(new OnExitVrRequestListener() {
+            @Override
+            public void onSucceeded() {
+                PageInfoPopup.show(
+                        mActivity, mActivity.getActivityTab(), null, PageInfoPopup.OPENED_FROM_VR);
+            }
+
+            @Override
+            public void onDenied() {}
+        }, UiUnsupportedMode.UNHANDLED_PAGE_INFO);
     }
 
     // Exits CCT, returning to the app that opened it.
@@ -652,6 +662,19 @@ public class VrShellImpl
         return mDelegate.hasDaydreamSupport();
     }
 
+    @Override
+    public void requestToExitVr(@UiUnsupportedMode int reason) {
+        nativeRequestToExitVr(mNativeVrShell, reason);
+    }
+
+    @CalledByNative
+    private void onExitVrRequestResult(@UiUnsupportedMode int reason, boolean shouldExit) {
+        if (shouldExit) {
+            nativeLogUnsupportedModeUserMetric(mNativeVrShell, reason);
+        }
+        mDelegate.onExitVrRequestResult(shouldExit);
+    }
+
     @CalledByNative
     private void showTab(int id) {
         Tab tab = mActivity.getTabModelSelector().getTabById(id);
@@ -780,4 +803,7 @@ public class VrShellImpl
     private native void nativeRestoreContentSurface(long nativeVrShell);
     private native void nativeSetHistoryButtonsEnabled(
             long nativeVrShell, boolean canGoBack, boolean canGoForward);
+    private native void nativeRequestToExitVr(long nativeVrShell, @UiUnsupportedMode int reason);
+    private native void nativeLogUnsupportedModeUserMetric(
+            long nativeVrShell, @UiUnsupportedMode int mode);
 }

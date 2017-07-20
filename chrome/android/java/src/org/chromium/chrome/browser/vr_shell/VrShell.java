@@ -59,4 +59,9 @@ public interface VrShell {
      * Returns whether the back button is enabled.
      */
     Boolean isBackButtonEnabled();
+
+    /**
+     * Requests to exit VR.
+     */
+    void requestToExitVr(@UiUnsupportedMode int reason);
 }
