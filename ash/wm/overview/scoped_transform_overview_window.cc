@@ -9,6 +9,7 @@
 
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
 #include "ash/wm/overview/window_selector_item.h"
+#include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/window_mirror_view.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
@@ -164,8 +165,10 @@ TransientDescendantIteratorRange GetTransientTreeIterator(
 }  // namespace
 
 ScopedTransformOverviewWindow::ScopedTransformOverviewWindow(
+    WindowSelectorItem* selector_item,
     aura::Window* window)
-    : window_(window),
+    : selector_item_(selector_item),
+      window_(window),
       determined_original_window_shape_(false),
       ignored_by_shelf_(wm::GetWindowState(window)->ignored_by_shelf()),
       overview_started_(false),
@@ -456,7 +459,25 @@ void ScopedTransformOverviewWindow::EnsureVisible() {
 }
 
 void ScopedTransformOverviewWindow::OnGestureEvent(ui::GestureEvent* event) {
-  if (event->type() == ui::ET_GESTURE_TAP) {
+  if (minimized_widget_ && SplitViewController::ShouldAllowSplitView()) {
+    gfx::Point location(event->location());
+    ::wm::ConvertPointToScreen(minimized_widget_->GetNativeWindow(), &location);
+    switch (event->type()) {
+      case ui::ET_GESTURE_SCROLL_BEGIN:
+      case ui::ET_GESTURE_TAP_DOWN:
+        selector_item_->HandlePressEvent(location);
+        break;
+      case ui::ET_GESTURE_SCROLL_UPDATE:
+        selector_item_->HandleDragEvent(location);
+        break;
+      case ui::ET_GESTURE_END:
+        selector_item_->HandleReleaseEvent(location);
+        break;
+      default:
+        break;
+    }
+    event->SetHandled();
+  } else if (event->type() == ui::ET_GESTURE_TAP) {
     EnsureVisible();
     window_->Show();
     wm::ActivateWindow(window_);
@@ -464,7 +485,25 @@ void ScopedTransformOverviewWindow::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 void ScopedTransformOverviewWindow::OnMouseEvent(ui::MouseEvent* event) {
-  if (event->type() == ui::ET_MOUSE_PRESSED && event->IsOnlyLeftMouseButton()) {
+  if (minimized_widget_ && SplitViewController::ShouldAllowSplitView()) {
+    gfx::Point location(event->location());
+    ::wm::ConvertPointToScreen(minimized_widget_->GetNativeWindow(), &location);
+    switch (event->type()) {
+      case ui::ET_MOUSE_PRESSED:
+        selector_item_->HandlePressEvent(location);
+        break;
+      case ui::ET_MOUSE_DRAGGED:
+        selector_item_->HandleDragEvent(location);
+        break;
+      case ui::ET_MOUSE_RELEASED:
+        selector_item_->HandleReleaseEvent(location);
+        break;
+      default:
+        break;
+    }
+    event->SetHandled();
+  } else if (event->type() == ui::ET_MOUSE_PRESSED &&
+             event->IsOnlyLeftMouseButton()) {
     EnsureVisible();
     window_->Show();
     wm::ActivateWindow(window_);
