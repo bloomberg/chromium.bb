@@ -3102,3 +3102,6 @@ crbug.com/626703 [ Win7 ] external/wpt/html/syntax/parsing/html5lib_tests16.html
 crbug.com/746128 [ Win7 ] media/controls/video-enter-exit-fullscreen-without-hovering-doesnt-show-controls.html [ Failure ]
 
 crbug.com/626703 [ Win7 ] external/wpt/image-decodes/image-decode-path-changes.html [ Pass Crash ]
+
+# Sheriff failures 2017-07-20
+crbug.com/746926 [ Win Debug ] virtual/outofblink-cors/webexposed/global-interface-listing.html [ Timeout ]
