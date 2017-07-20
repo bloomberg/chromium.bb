@@ -27,6 +27,9 @@
 #include "components/vector_icons/vector_icons.h"
 #include "ui/gfx/transform_util.h"
 
+using cc::TargetProperty::BOUNDS;
+using cc::TargetProperty::TRANSFORM;
+
 namespace vr {
 
 namespace {
@@ -271,6 +274,7 @@ void UiSceneManager::CreateContentQuad() {
   element->SetTranslate(0, kContentVerticalOffset, -kContentDistance);
   element->set_visible(false);
   element->set_corner_radius(kContentCornerRadius);
+  element->animation_player().SetTransitionedProperties({TRANSFORM, BOUNDS});
   main_content_ = element.get();
   content_elements_.push_back(element.get());
   scene_->AddUiElement(std::move(element));

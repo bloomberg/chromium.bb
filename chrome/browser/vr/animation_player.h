@@ -60,6 +60,9 @@ class AnimationPlayer final {
     transition_ = transition;
   }
 
+  void SetTransitionedProperties(
+      const std::vector<cc::TargetProperty::Type>& properties);
+
   void TransitionOpacityTo(base::TimeTicks monotonic_time,
                            float current,
                            float target);
@@ -70,10 +73,12 @@ class AnimationPlayer final {
                           const gfx::SizeF& current,
                           const gfx::SizeF& target);
 
+  bool IsAnimatingProperty(cc::TargetProperty::Type property) const;
+
  private:
   void StartAnimations(base::TimeTicks monotonic_time);
   cc::Animation* GetRunningAnimationForProperty(
-      cc::TargetProperty::Type target_property);
+      cc::TargetProperty::Type target_property) const;
 
   cc::AnimationTarget* target_ = nullptr;
   Animations animations_;

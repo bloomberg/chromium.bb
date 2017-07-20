@@ -58,4 +58,24 @@ bool UiSceneManagerTest::VerifyVisibility(
   return true;
 }
 
+void UiSceneManagerTest::AnimateBy(base::TimeDelta delta) {
+  base::TimeTicks target_time = current_time_ + delta;
+  base::TimeDelta frame_time = base::TimeDelta::FromSecondsD(1.0 / 60.0);
+  for (; current_time_ < target_time; current_time_ += frame_time) {
+    scene_->OnBeginFrame(current_time_);
+  }
+  current_time_ = target_time;
+  scene_->OnBeginFrame(current_time_);
+}
+
+bool UiSceneManagerTest::IsAnimating(
+    UiElement* element,
+    const std::vector<cc::TargetProperty::Type>& properties) {
+  for (auto property : properties) {
+    if (!element->animation_player().IsAnimatingProperty(property))
+      return false;
+  }
+  return true;
+}
+
 }  // namespace vr

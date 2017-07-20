@@ -45,4 +45,12 @@ base::TimeDelta UsToDelta(uint64_t us) {
   return base::TimeDelta::FromInternalValue(us);
 }
 
+base::TimeTicks MsToTicks(uint64_t ms) {
+  return UsToTicks(1000 * ms);
+}
+
+base::TimeDelta MsToDelta(uint64_t ms) {
+  return UsToDelta(1000 * ms);
+}
+
 }  // namespace vr

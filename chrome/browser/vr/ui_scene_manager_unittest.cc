@@ -9,11 +9,15 @@
 #include "base/test/scoped_mock_time_message_loop_task_runner.h"
 #include "chrome/browser/vr/elements/ui_element.h"
 #include "chrome/browser/vr/elements/ui_element_debug_id.h"
+#include "chrome/browser/vr/test/animation_utils.h"
 #include "chrome/browser/vr/test/mock_browser_interface.h"
 #include "chrome/browser/vr/test/ui_scene_manager_test.h"
 #include "chrome/browser/vr/ui_scene.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using cc::TargetProperty::BOUNDS;
+using cc::TargetProperty::TRANSFORM;
 
 namespace vr {
 
@@ -266,24 +270,36 @@ TEST_F(UiSceneManagerTest, UiUpdatesForFullscreenChanges) {
   // Hold onto the background color to make sure it changes.
   SkColor initial_background = scene_->GetWorldBackgroundColor();
   VerifyElementsVisible("Initial", kElementsVisibleInBrowsing);
+  UiElement* content_quad = scene_->GetUiElementByDebugId(kContentQuad);
+  gfx::SizeF initial_content_size = content_quad->size();
+  gfx::Transform initial_position =
+      content_quad->transform_operations().Apply();
 
   // In fullscreen mode, content elements should be visible, control elements
   // should be hidden.
   manager_->SetFullscreen(true);
   VerifyElementsVisible("In fullscreen", visible_in_fullscreen);
-  {
-    SCOPED_TRACE("Entered Fullsceen");
-    // Make sure background has changed for fullscreen.
-    EXPECT_NE(initial_background, scene_->GetWorldBackgroundColor());
-  }
+  // Make sure background has changed for fullscreen.
+  EXPECT_NE(initial_background, scene_->GetWorldBackgroundColor());
+  // Should have started transition.
+  EXPECT_TRUE(IsAnimating(content_quad, {TRANSFORM, BOUNDS}));
+  // Finish the transition.
+  AnimateBy(MsToDelta(1000));
+  EXPECT_FALSE(IsAnimating(content_quad, {TRANSFORM, BOUNDS}));
+  EXPECT_NE(initial_content_size, content_quad->size());
+  EXPECT_NE(initial_position, content_quad->transform_operations().Apply());
 
   // Everything should return to original state after leaving fullscreen.
   manager_->SetFullscreen(false);
   VerifyElementsVisible("Restore initial", kElementsVisibleInBrowsing);
-  {
-    SCOPED_TRACE("Exited Fullsceen");
-    EXPECT_EQ(initial_background, scene_->GetWorldBackgroundColor());
-  }
+  EXPECT_EQ(initial_background, scene_->GetWorldBackgroundColor());
+  // Should have started transition.
+  EXPECT_TRUE(IsAnimating(content_quad, {TRANSFORM, BOUNDS}));
+  // Finish the transition.
+  AnimateBy(MsToDelta(1000));
+  EXPECT_FALSE(IsAnimating(content_quad, {TRANSFORM, BOUNDS}));
+  EXPECT_EQ(initial_content_size, content_quad->size());
+  EXPECT_EQ(initial_position, content_quad->transform_operations().Apply());
 }
 
 TEST_F(UiSceneManagerTest, UiUpdatesExitPrompt) {
