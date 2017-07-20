@@ -1094,6 +1094,9 @@ public class CustomTabsConnection {
                     Profile profile = Profile.getLastUsedProfile();
                     new LoadingPredictor(profile).cancelPageLoadHint(mSpeculation.url);
                     break;
+                case SpeculationParams.HIDDEN_TAB:
+                    mSpeculation.tab.destroy();
+                    break;
                 default:
                     return;
             }
@@ -1114,6 +1117,10 @@ public class CustomTabsConnection {
                 && !ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_BACKGROUND_TAB)) {
             speculationMode = SpeculationParams.PRERENDER;
         }
+
+        // At most one on-going speculation, clears the previous one.
+        cancelSpeculation(null);
+
         switch (speculationMode) {
             case SpeculationParams.PREFETCH:
                 boolean didPrefetch = new LoadingPredictor(profile).prepareForPageLoad(url);
@@ -1190,30 +1197,25 @@ public class CustomTabsConnection {
      * Creates a hidden tab and initiates a navigation.
      */
     private void launchUrlInHiddenTab(
-            final CustomTabsSessionToken session, final String url, final Bundle extras) {
-        ThreadUtils.postOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                Intent extrasIntent = new Intent();
-                if (extras != null) extrasIntent.putExtras(extras);
-                if (IntentHandler.getExtraHeadersFromIntent(extrasIntent) != null) return;
+            final CustomTabsSessionToken session, String url, Bundle extras) {
+        ThreadUtils.assertOnUiThread();
+        Intent extrasIntent = new Intent();
+        if (extras != null) extrasIntent.putExtras(extras);
+        if (IntentHandler.getExtraHeadersFromIntent(extrasIntent) != null) return;
 
-                Tab tab = Tab.createDetached(new CustomTabDelegateFactory(false, false, null));
+        Tab tab = Tab.createDetached(new CustomTabDelegateFactory(false, false, null));
 
-                // Updating post message as soon as we have a valid WebContents.
-                mClientManager.resetPostMessageHandlerForSession(
-                        session, tab.getContentViewCore().getWebContents());
+        // Updating post message as soon as we have a valid WebContents.
+        mClientManager.resetPostMessageHandlerForSession(
+                session, tab.getContentViewCore().getWebContents());
 
-                LoadUrlParams loadParams = new LoadUrlParams(url);
-                String referrer = getReferrer(session, extrasIntent);
-                if (referrer != null && !referrer.isEmpty()) {
-                    loadParams.setReferrer(
-                            new Referrer(referrer, Referrer.REFERRER_POLICY_DEFAULT));
-                }
-                mSpeculation = SpeculationParams.forHiddenTab(session, url, tab, referrer, extras);
-                mSpeculation.tab.loadUrl(loadParams);
-            }
-        });
+        LoadUrlParams loadParams = new LoadUrlParams(url);
+        String referrer = getReferrer(session, extrasIntent);
+        if (referrer != null && !referrer.isEmpty()) {
+            loadParams.setReferrer(new Referrer(referrer, Referrer.REFERRER_POLICY_DEFAULT));
+        }
+        mSpeculation = SpeculationParams.forHiddenTab(session, url, tab, referrer, extras);
+        mSpeculation.tab.loadUrl(loadParams);
     }
 
     @VisibleForTesting
