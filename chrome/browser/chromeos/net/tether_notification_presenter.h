@@ -102,6 +102,7 @@ class TetherNotificationPresenter
       std::unique_ptr<message_center::Notification> notification);
   void OpenSettingsAndRemoveNotification(const std::string& settings_subpage,
                                          const std::string& notification_id);
+  void RemoveNotificationIfVisible(const std::string& notification_id);
 
   Profile* profile_;
   message_center::MessageCenter* message_center_;

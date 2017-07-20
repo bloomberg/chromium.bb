@@ -876,8 +876,6 @@ int GetMobileUninitializedMsg() {
   static int s_uninitialized_msg(0);
 
   NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
-  // TODO(lesliewatkins): Only return this message when Tether is uninitialized
-  // due to no Bluetooth (dependent on codereview.chromium.org/2969493002/).
   if (handler->GetTechnologyState(NetworkTypePattern::Tether()) ==
       NetworkStateHandler::TECHNOLOGY_UNINITIALIZED) {
     s_uninitialized_msg = IDS_ASH_STATUS_TRAY_ENABLE_BLUETOOTH;

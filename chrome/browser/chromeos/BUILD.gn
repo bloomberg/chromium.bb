@@ -1946,6 +1946,7 @@ source_set("unit_tests") {
     "//ash/resources",
     "//base",
     "//chrome/common",
+    "//chromeos/components/tether:test_support",
     "//chromeos/ime:gencode",
     "//components/cryptauth:test_support",
     "//components/drive",
