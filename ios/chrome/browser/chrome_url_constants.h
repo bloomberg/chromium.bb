@@ -32,6 +32,7 @@ extern const char kChromeUIOfflineURL[];
 extern const char kChromeUIPhysicalWebURL[];
 extern const char kChromeUIPopularSitesInternalsURL[];
 extern const char kChromeUISettingsURL[];
+extern const char kChromeUISuggestionsURL[];
 extern const char kChromeUITermsURL[];
 extern const char kChromeUIVersionURL[];
 
@@ -56,6 +57,7 @@ extern const char kChromeUIPhysicalWebHost[];
 extern const char kChromeUIPopularSitesInternalsHost[];
 extern const char kChromeUIPolicyHost[];
 extern const char kChromeUISignInInternalsHost[];
+extern const char kChromeUISuggestionsHost[];
 extern const char kChromeUISyncInternalsHost[];
 extern const char kChromeUITermsHost[];
 extern const char kChromeUIVersionHost[];
