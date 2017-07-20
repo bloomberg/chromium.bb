@@ -20,6 +20,7 @@ import org.chromium.content_public.browser.WebContents;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Class containing utility functions for transitioning between different
@@ -113,5 +114,20 @@ public class VrTransitionUtils {
         VrTestRule.pollJavaScriptBoolean(
                 "vrDisplay.isPresenting", POLL_TIMEOUT_LONG_MS, cvc.getWebContents());
         Assert.assertTrue(VrShellDelegate.getVrShellForTesting().getWebVrModeEnabled());
+    }
+
+    /**
+     * @return Whether the VR back button is enabled.
+     */
+    public static Boolean isBackButtonEnabled() {
+        final AtomicBoolean isBackButtonEnabled = new AtomicBoolean();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                isBackButtonEnabled.set(
+                        VrShellDelegate.getVrShellForTesting().isBackButtonEnabled());
+            }
+        });
+        return isBackButtonEnabled.get();
     }
 }

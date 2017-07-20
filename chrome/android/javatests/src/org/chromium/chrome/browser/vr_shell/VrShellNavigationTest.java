@@ -18,11 +18,14 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.history.HistoryItemView;
 import org.chromium.chrome.browser.history.HistoryPage;
+import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.vr_shell.util.VrInfoBarUtils;
 import org.chromium.chrome.browser.vr_shell.util.VrTransitionUtils;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
@@ -272,5 +275,28 @@ public class VrShellNavigationTest {
 
         assertState(mVrTestRule.getFirstTabWebContents(), Page.PAGE_WEBVR,
                 PresentationMode.NON_PRESENTING, FullscreenMode.NON_FULLSCREENED);
+    }
+
+    /**
+     * Tests navigation from a fullscreened WebVR to a WebVR page.
+     */
+    @Test
+    @MediumTest
+    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
+    public void testBackDoesntBackgroundChrome()
+            throws IllegalArgumentException, InterruptedException, TimeoutException {
+        Assert.assertFalse("Back button isn't disabled.", VrTransitionUtils.isBackButtonEnabled());
+        mVrTestRule.loadUrlInNewTab(getUrl(Page.PAGE_2D), false, TabLaunchType.FROM_CHROME_UI);
+        Assert.assertFalse("Back button isn't disabled.", VrTransitionUtils.isBackButtonEnabled());
+        final Tab tab =
+                mVrTestRule.loadUrlInNewTab(getUrl(Page.PAGE_2D), false, TabLaunchType.FROM_LINK);
+        Assert.assertTrue("Back button isn't enabled.", VrTransitionUtils.isBackButtonEnabled());
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mVrTestRule.getActivity().getTabModelSelector().closeTab(tab);
+            }
+        });
+        Assert.assertFalse("Back button isn't disabled.", VrTransitionUtils.isBackButtonEnabled());
     }
 }

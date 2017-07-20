@@ -19,6 +19,7 @@ import org.chromium.chrome.browser.infobar.InfoBar;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestion;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.test.ChromeActivityTestCommon.ChromeTestCommonCallback;
 import org.chromium.chrome.test.util.ApplicationTestUtils;
 
@@ -26,6 +27,11 @@ import java.util.List;
 import java.util.concurrent.TimeoutException;
 
 //TODO(yolandyan): break this test rule down to smaller rules once the junit4 migration is over
+/**
+ * Custom  {@link ActivityTestRule} for test using  {@link ChromeActivity}.
+ *
+ * @param <T> The {@link Activity} class under test.
+ */
 public class ChromeActivityTestRule<T extends ChromeActivity>
         extends ActivityTestRule<T> implements ChromeTestCommonCallback<T> {
     private final ChromeActivityTestCommon<T> mTestCommon;
@@ -140,7 +146,7 @@ public class ChromeActivityTestRule<T extends ChromeActivity>
     /**
      * Navigates to a URL directly without going through the UrlBar. This bypasses the page
      * preloading mechanism of the UrlBar.
-     * @param url            The url to load in the current tab.
+     * @param url            The URL to load in the current tab.
      * @param secondsToWait  The number of seconds to wait for the page to be loaded.
      * @return FULL_PRERENDERED_PAGE_LOAD or PARTIAL_PRERENDERED_PAGE_LOAD if the page has been
      *         prerendered. DEFAULT_PAGE_LOAD if it had not.
@@ -153,7 +159,7 @@ public class ChromeActivityTestRule<T extends ChromeActivity>
     /**
      * Navigates to a URL directly without going through the UrlBar. This bypasses the page
      * preloading mechanism of the UrlBar.
-     * @param url The url to load in the current tab.
+     * @param url The URL to load in the current tab.
      * @return FULL_PRERENDERED_PAGE_LOAD or PARTIAL_PRERENDERED_PAGE_LOAD if the page has been
      *         prerendered. DEFAULT_PAGE_LOAD if it had not.
      */
@@ -162,11 +168,11 @@ public class ChromeActivityTestRule<T extends ChromeActivity>
     }
 
     /**
-     * @param url            The url of the page to load.
+     * @param url            The URL of the page to load.
      * @param pageTransition The type of transition. see
      *                       {@link org.chromium.ui.base.PageTransition}
      *                       for valid values.
-     * @param tab            The tab to load the url into.
+     * @param tab            The tab to load the URL into.
      * @param secondsToWait  The number of seconds to wait for the page to be loaded.
      * @return               FULL_PRERENDERED_PAGE_LOAD or PARTIAL_PRERENDERED_PAGE_LOAD if the
      *                       page has been prerendered. DEFAULT_PAGE_LOAD if it had not.
@@ -177,11 +183,11 @@ public class ChromeActivityTestRule<T extends ChromeActivity>
     }
 
     /**
-     * @param url            The url of the page to load.
+     * @param url            The URL of the page to load.
      * @param pageTransition The type of transition. see
      *                       {@link org.chromium.ui.base.PageTransition}
      *                       for valid values.
-     * @param tab            The tab to load the url into.
+     * @param tab            The tab to load the URL into.
      * @return               FULL_PRERENDERED_PAGE_LOAD or PARTIAL_PRERENDERED_PAGE_LOAD if the
      *                       page has been prerendered. DEFAULT_PAGE_LOAD if it had not.
      */
@@ -190,21 +196,32 @@ public class ChromeActivityTestRule<T extends ChromeActivity>
     }
 
     /**
-     * Load a url in a new tab. The {@link Tab} will pretend to be created from a link.
-     * @param url The url of the page to load.
+     * Load a URL in a new tab. The {@link Tab} will pretend to be created from a link.
+     * @param url The URL of the page to load.
      */
     public Tab loadUrlInNewTab(String url) throws InterruptedException {
         return mTestCommon.loadUrlInNewTab(url);
     }
 
     /**
-     * Load a url in a new tab. The {@link Tab} will pretend to be created from a link.
-     * @param url The url of the page to load.
+     * Load a URL in a new tab. The {@link Tab} will pretend to be created from a link.
+     * @param url The URL of the page to load.
      * @param incognito Whether the new tab should be incognito.
      */
     public Tab loadUrlInNewTab(final String url, final boolean incognito)
             throws InterruptedException {
         return mTestCommon.loadUrlInNewTab(url, incognito);
+    }
+
+    /**
+     * Load a URL in a new tab, with the given transition type.
+     * @param url The URL of the page to load.
+     * @param incognito Whether the new tab should be incognito.
+     * @param launchType The type of Tab Launch.
+     */
+    public Tab loadUrlInNewTab(final String url, final boolean incognito,
+            final TabLaunchType launchType) throws InterruptedException {
+        return mTestCommon.loadUrlInNewTab(url, incognito, launchType);
     }
 
     /**
