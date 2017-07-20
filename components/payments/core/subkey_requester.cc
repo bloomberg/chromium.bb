@@ -125,10 +125,11 @@ void SubKeyRequester::OnAddressValidationRulesLoaded(
   // The case for |success| == false is already handled. if |success| == false,
   // AddressValidator::GetRegionSubKeys will return an empty list of subkeys.
   // Therefore, here, we can ignore the value of |success|.
-
   // Check if there is any subkey request for that region code.
-  if (!pending_subkey_region_code_.compare(region_code))
+  if (pending_subkey_request_ &&
+      !pending_subkey_region_code_.compare(region_code)) {
     pending_subkey_request_->OnRulesLoaded();
+  }
   pending_subkey_region_code_.clear();
   pending_subkey_request_.reset();
 }
