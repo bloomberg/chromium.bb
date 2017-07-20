@@ -1231,7 +1231,7 @@ bool ModifySelectionyWithPageGranularity(
     LocalFrame& frame,
     SelectionModifyAlteration alter,
     unsigned vertical_distance,
-    FrameSelection::VerticalDirection direction) {
+    SelectionModifyVerticalDirection direction) {
   SelectionModifier selection_modifier(
       frame, frame.Selection().ComputeVisibleSelectionInDOMTree());
   if (!selection_modifier.ModifyWithPageGranularity(alter, vertical_distance,
@@ -1258,7 +1258,7 @@ static bool ExecuteMovePageDown(LocalFrame& frame,
     return false;
   return ModifySelectionyWithPageGranularity(
       frame, SelectionModifyAlteration::kMove, distance,
-      FrameSelection::kDirectionDown);
+      SelectionModifyVerticalDirection::kDown);
 }
 
 static bool ExecuteMovePageDownAndModifySelection(LocalFrame& frame,
@@ -1270,7 +1270,7 @@ static bool ExecuteMovePageDownAndModifySelection(LocalFrame& frame,
     return false;
   return ModifySelectionyWithPageGranularity(
       frame, SelectionModifyAlteration::kExtend, distance,
-      FrameSelection::kDirectionDown);
+      SelectionModifyVerticalDirection::kDown);
 }
 
 static bool ExecuteMovePageUp(LocalFrame& frame,
@@ -1282,7 +1282,7 @@ static bool ExecuteMovePageUp(LocalFrame& frame,
     return false;
   return ModifySelectionyWithPageGranularity(
       frame, SelectionModifyAlteration::kMove, distance,
-      FrameSelection::kDirectionUp);
+      SelectionModifyVerticalDirection::kUp);
 }
 
 static bool ExecuteMovePageUpAndModifySelection(LocalFrame& frame,
@@ -1294,7 +1294,7 @@ static bool ExecuteMovePageUpAndModifySelection(LocalFrame& frame,
     return false;
   return ModifySelectionyWithPageGranularity(
       frame, SelectionModifyAlteration::kExtend, distance,
-      FrameSelection::kDirectionUp);
+      SelectionModifyVerticalDirection::kUp);
 }
 
 static bool ExecuteMoveRight(LocalFrame& frame,

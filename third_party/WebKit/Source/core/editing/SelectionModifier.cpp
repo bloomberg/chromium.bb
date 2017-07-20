@@ -715,7 +715,7 @@ static bool AbsoluteCaretY(const VisiblePosition& c, int& y) {
 bool SelectionModifier::ModifyWithPageGranularity(
     SelectionModifyAlteration alter,
     unsigned vertical_distance,
-    VerticalDirection direction) {
+    SelectionModifyVerticalDirection direction) {
   if (!vertical_distance)
     return false;
 
@@ -725,7 +725,7 @@ bool SelectionModifier::ModifyWithPageGranularity(
 
   if (alter == SelectionModifyAlteration::kExtend) {
     selection_ = CreateVisibleSelection(PrepareToExtendSeelction(
-        selection_, direction == FrameSelection::kDirectionUp
+        selection_, direction == SelectionModifyVerticalDirection::kUp
                         ? kDirectionBackward
                         : kDirectionForward));
   }
@@ -734,13 +734,15 @@ bool SelectionModifier::ModifyWithPageGranularity(
   LayoutUnit x_pos;
   switch (alter) {
     case SelectionModifyAlteration::kMove:
-      pos = CreateVisiblePosition(direction == FrameSelection::kDirectionUp
-                                      ? selection_.Start()
-                                      : selection_.End(),
-                                  selection_.Affinity());
+      pos = CreateVisiblePosition(
+          direction == SelectionModifyVerticalDirection::kUp
+              ? selection_.Start()
+              : selection_.End(),
+          selection_.Affinity());
       x_pos = LineDirectionPointForBlockDirectionNavigation(
-          direction == FrameSelection::kDirectionUp ? selection_.Start()
-                                                    : selection_.End());
+          direction == SelectionModifyVerticalDirection::kUp
+              ? selection_.Start()
+              : selection_.End());
       break;
     case SelectionModifyAlteration::kExtend:
       pos = CreateVisiblePosition(selection_.Extent(), selection_.Affinity());
@@ -752,14 +754,14 @@ bool SelectionModifier::ModifyWithPageGranularity(
   int start_y;
   if (!AbsoluteCaretY(pos, start_y))
     return false;
-  if (direction == FrameSelection::kDirectionUp)
+  if (direction == SelectionModifyVerticalDirection::kUp)
     start_y = -start_y;
   int last_y = start_y;
 
   VisiblePosition result;
   VisiblePosition next;
   for (VisiblePosition p = pos;; p = next) {
-    if (direction == FrameSelection::kDirectionUp)
+    if (direction == SelectionModifyVerticalDirection::kUp)
       next = PreviousLinePosition(p, x_pos);
     else
       next = NextLinePosition(p, x_pos);
@@ -769,7 +771,7 @@ bool SelectionModifier::ModifyWithPageGranularity(
     int next_y;
     if (!AbsoluteCaretY(next, next_y))
       break;
-    if (direction == FrameSelection::kDirectionUp)
+    if (direction == SelectionModifyVerticalDirection::kUp)
       next_y = -next_y;
     if (next_y - start_y > static_cast<int>(vertical_distance))
       break;
@@ -788,7 +790,7 @@ bool SelectionModifier::ModifyWithPageGranularity(
           SelectionInDOMTree::Builder()
               .Collapse(result.ToPositionWithAffinity())
               .SetIsDirectional(ShouldAlwaysUseDirectionalSelection(GetFrame()))
-              .SetAffinity(direction == FrameSelection::kDirectionUp
+              .SetAffinity(direction == SelectionModifyVerticalDirection::kUp
                                ? TextAffinity::kUpstream
                                : TextAffinity::kDownstream)
               .Build());
