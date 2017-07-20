@@ -106,7 +106,6 @@ class SPDY_EXPORT_PRIVATE SpdyFrameBuilder {
     return (WriteBytes(&upper, sizeof(upper)) &&
             WriteBytes(&lower, sizeof(lower)));
   }
-  bool WriteStringPiece16(const SpdyStringPiece& value);
   bool WriteStringPiece32(const SpdyStringPiece& value);
   bool WriteBytes(const void* data, uint32_t data_len);
 
