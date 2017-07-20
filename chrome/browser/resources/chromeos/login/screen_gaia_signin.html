@@ -3,8 +3,8 @@
 <div class="step right hidden no-logo" id="gaia-signin" role="group"
     aria-live="polite" hidden>
   <link rel="stylesheet" href="oobe_dialog_parameters.css">
-  <oobe-dialog id="signin-frame-dialog" role="dialog" has-buttons no-header
-      no-footer-padding hidden>
+  <oobe-dialog id="signin-frame-dialog" class="gaia-dialog" role="dialog"
+      has-buttons no-header no-footer-padding hidden>
     <div id="signin-frame-container-v2" class="footer flex layout vertical">
     </div>
     <div class="bottom-buttons flex layout horizontal">
@@ -19,18 +19,20 @@
   <div id="gaia-step-contents" class="step-contents">
     <div id="gaia-signin-form-container">
       <webview id="signin-frame" name="signin-frame" hidden></webview>
-      <offline-gaia id="offline-gaia" hidden></offline-gaia>
-      <saml-interstitial id="saml-interstitial" class="fit" hidden>
+      <offline-gaia id="offline-gaia" class="gaia-dialog" hidden>
+      </offline-gaia>
+      <saml-interstitial id="saml-interstitial" class="fit gaia-dialog"
+          hidden>
       </saml-interstitial>
-      <offline-ad-login id="offline-ad-auth" class="fit" hidden
+      <offline-ad-login id="offline-ad-auth" class="fit gaia-dialog" hidden
           i18n-values="ad-welcome-message:adAuthWelcomeMessage">
       </offline-ad-login>
     </div>
   </div>
-  <div id="gaia-loading" class="step-loading" hidden>
+  <div id="gaia-loading" class="step-loading gaia-dialog" hidden>
     <throbber-notice i18n-values="text:gaiaLoading"></throbber-notice>
   </div>
-  <notification-card id="gaia-whitelist-error" type="fail"
+  <notification-card id="gaia-whitelist-error" type="fail" class="gaia-dialog"
       i18n-values="button-label:tryAgainButton;
                    link-label:learnMoreButton">
   </notification-card>
