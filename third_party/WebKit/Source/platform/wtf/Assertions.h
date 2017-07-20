@@ -27,23 +27,13 @@
 #ifndef WTF_Assertions_h
 #define WTF_Assertions_h
 
-// This file uses some GCC extensions, but it should be compatible with C++ and
-// Objective C++.
-
 #include <stdarg.h>
 
-#include "base/allocator/partition_allocator/oom.h"
+#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/logging.h"
-#include "build/build_config.h"
-#include "platform/wtf/Compiler.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/WTFExport.h"
-#include "platform/wtf/build_config.h"
-
-#if defined(OS_WIN)
-#include <windows.h>
-#endif
 
 // WTFLogAlways() is deprecated. crbug.com/638849
 WTF_EXPORT PRINTF_FORMAT(1, 2)  // NOLINT
