@@ -24,20 +24,9 @@
 
 namespace web {
 
-WKBasedNavigationManagerImpl::WKBasedNavigationManagerImpl()
-    : delegate_(nullptr), browser_state_(nullptr) {}
+WKBasedNavigationManagerImpl::WKBasedNavigationManagerImpl() = default;
 
 WKBasedNavigationManagerImpl::~WKBasedNavigationManagerImpl() = default;
-
-void WKBasedNavigationManagerImpl::SetDelegate(
-    NavigationManagerDelegate* delegate) {
-  delegate_ = delegate;
-}
-
-void WKBasedNavigationManagerImpl::SetBrowserState(
-    BrowserState* browser_state) {
-  browser_state_ = browser_state;
-}
 
 void WKBasedNavigationManagerImpl::SetSessionController(
     CRWSessionController* session_controller) {}
@@ -217,11 +206,6 @@ void WKBasedNavigationManagerImpl::GoForward() {
 }
 
 void WKBasedNavigationManagerImpl::GoToIndex(int index) {
-  DLOG(WARNING) << "Not yet implemented.";
-}
-
-void WKBasedNavigationManagerImpl::Reload(ReloadType reload_type,
-                                          bool check_for_reposts) {
   DLOG(WARNING) << "Not yet implemented.";
 }
 
