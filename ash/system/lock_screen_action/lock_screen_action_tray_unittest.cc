@@ -12,7 +12,9 @@
 #include "ash/system/status_area_widget_test_helper.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/tray_action/tray_action.h"
+#include "base/command_line.h"
 #include "base/macros.h"
+#include "chromeos/chromeos_switches.h"
 #include "components/session_manager/session_manager_types.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/image/image_skia.h"
@@ -58,6 +60,12 @@ class LockScreenActionTrayTest : public AshTestBase {
   LockScreenActionTrayTest() = default;
   ~LockScreenActionTrayTest() override = default;
 
+  void SetUp() override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        chromeos::switches::kShowMdLogin);
+    AshTestBase::SetUp();
+  }
+
   void ClickOnTray() {
     // Perform click on the tray view.
     ui::test::EventGenerator& generator = GetEventGenerator();
@@ -71,6 +79,8 @@ class LockScreenActionTrayTest : public AshTestBase {
  private:
   DISALLOW_COPY_AND_ASSIGN(LockScreenActionTrayTest);
 };
+
+using LockScreenActionTrayWithoutMdLoginTest = AshTestBase;
 
 }  // namespace
 
@@ -226,6 +236,29 @@ TEST_F(LockScreenActionTrayTest, TrayNotVisibleWhenSessionNotLocked) {
   EXPECT_TRUE(GetTray()->visible());
 
   SetUserLoggedIn(false);
+  EXPECT_FALSE(GetTray()->visible());
+}
+
+TEST_F(LockScreenActionTrayWithoutMdLoginTest, NotVisible) {
+  SetUserLoggedIn(true);
+
+  TrayAction* tray_action = Shell::Get()->tray_action();
+  TestTrayActionClient tray_action_client;
+  tray_action->SetClient(tray_action_client.CreateInterfacePtrAndBind(),
+                         mojom::TrayActionState::kNotAvailable);
+
+  EXPECT_FALSE(GetTray()->visible());
+
+  tray_action->UpdateLockScreenNoteState(mojom::TrayActionState::kAvailable);
+  EXPECT_FALSE(GetTray()->visible());
+
+  tray_action->UpdateLockScreenNoteState(mojom::TrayActionState::kLaunching);
+  EXPECT_FALSE(GetTray()->visible());
+
+  tray_action->UpdateLockScreenNoteState(mojom::TrayActionState::kActive);
+  EXPECT_FALSE(GetTray()->visible());
+
+  tray_action->UpdateLockScreenNoteState(mojom::TrayActionState::kBackground);
   EXPECT_FALSE(GetTray()->visible());
 }
 
