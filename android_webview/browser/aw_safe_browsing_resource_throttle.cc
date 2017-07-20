@@ -130,8 +130,13 @@ void AwSafeBrowsingResourceThrottle::DoApplicationResponse(
 
   // Navigate back for back-to-safety on subresources
   if (!proceed && resource.is_subframe) {
-    DCHECK(web_contents->GetController().CanGoBack());
-    web_contents->GetController().GoBack();
+    if (web_contents->GetController().CanGoBack()) {
+      web_contents->GetController().GoBack();
+    } else {
+      web_contents->GetController().LoadURL(
+          ui_manager->default_safe_page(), content::Referrer(),
+          ui::PAGE_TRANSITION_AUTO_TOPLEVEL, std::string());
+    }
   }
 
   ui_manager->OnBlockingPageDone(

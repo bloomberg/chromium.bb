@@ -42,6 +42,7 @@ import org.chromium.components.safe_browsing.SafeBrowsingApiHandler;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.ArrayList;
@@ -757,6 +758,34 @@ public class SafeBrowsingTest extends AwTestBase {
 
         // Check onSafeBrowsingHit arguments
         assertEquals(responseUrl, mContentsClient.getLastRequest().url);
+        assertEquals(AwSafeBrowsingConversionHelper.SAFE_BROWSING_THREAT_MALWARE,
+                mContentsClient.getLastThreatType());
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
+    public void testSafeBrowsingOnSafeBrowsingHitForSubresourceNoPreviousPage() throws Throwable {
+        mContentsClient.setSafeBrowsingAction(SafeBrowsingAction.BACK_TO_SAFETY);
+        final String responseUrl = mTestServer.getURL(IFRAME_HTML_PATH);
+        final String subresourceUrl = mTestServer.getURL(MALWARE_HTML_PATH);
+        int pageFinishedCount = mContentsClient.getOnPageFinishedHelper().getCallCount();
+        loadUrlAsync(mAwContents, responseUrl);
+
+        // We'll successfully load IFRAME_HTML_PATH, and will soon call onSafeBrowsingHit
+        mContentsClient.getOnPageFinishedHelper().waitForCallback(pageFinishedCount);
+
+        // Wait for the onSafeBrowsingHit to call BACK_TO_SAFETY and navigate back
+        pollUiThread(new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                return ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL.equals(mAwContents.getUrl());
+            }
+        });
+
+        // Check onSafeBrowsingHit arguments
+        assertFalse(mContentsClient.getLastRequest().isMainFrame);
+        assertEquals(subresourceUrl, mContentsClient.getLastRequest().url);
         assertEquals(AwSafeBrowsingConversionHelper.SAFE_BROWSING_THREAT_MALWARE,
                 mContentsClient.getLastThreatType());
     }
