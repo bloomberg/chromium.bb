@@ -1479,6 +1479,27 @@ Press any key to continue exploring.
   <message name="IDS_WELCOME_SCREEN_TITLE" desc="Title of the OOBE welcome screen">
     Connect
   </message>
+  <message name="IDS_OOBE_ADVANCED_OPTIONS_SCREEN_TITLE" desc="Screen title on the Chrome OS OOBE (first run) Advanced options screen">
+    Advanced options
+  </message>
+  <message name="IDS_OOBE_ADVANCED_OPTIONS_EE_BOOTSTRAPPING_TITLE" desc="Title of the button that triggers Enterprise Enrollment via bootstrapping application mode on the Chrome OS OOBE (first run UI) Advanced options screen">
+    Enable remote enrollment
+  </message>
+  <message name="IDS_OOBE_ADVANCED_OPTIONS_EE_BOOTSTRAPPING_SUBTITLE" desc="Subtitle of the button that triggers Enterprise Enrollment via bootstrapping application mode on the Chrome OS OOBE (first run UI) Advanced options screen">
+    Use the bootstrapping app to quickly enroll
+  </message>
+  <message name="IDS_OOBE_ADVANCED_OPTIONS_CFM_SETUP_TITLE" desc="Title of the button that triggers Chromebox for Meetings device mode on the Chrome OS OOBE (first run UI) Advanced options screen">
+    Set up as Chromebox for meetings
+  </message>
+  <message name="IDS_OOBE_ADVANCED_OPTIONS_CFM_SETUP_SUBTITLE" desc="Subtitle of the button that trigers Chromebox for Meetings device mode on the Chrome OS OOBE (first run UI) Advanced options screen">
+    Enroll device for video conferencing
+  </message>
+  <message name="IDS_OOBE_ADVANCED_OPTIONS_DEVICE_REQUISITION_TITLE" desc="Title of the button that triggers Device requisition device setup mode on the Chrome OS OOBE (first run UI) Advanced options screen">
+    Device requisition
+  </message>
+  <message name="IDS_OOBE_ADVANCED_OPTIONS_DEVICE_REQUISITION_SUBTITLE" desc="Subtitle of the button that trigers Device requisition device setup mode on the Chrome OS OOBE (first run UI) Advanced options screen">
+    Add requisition ID to this device
+  </message>
   <message name="IDS_NETWORK_SCREEN_ACCESSIBLE_TITLE" desc="Text to be spoken on opening the OOBE network screen">
     Welcome! Set your language and network
   </message>
