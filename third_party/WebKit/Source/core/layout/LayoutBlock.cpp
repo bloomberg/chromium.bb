@@ -1430,6 +1430,7 @@ void LayoutBlock::ComputePreferredLogicalWidths() {
   }
 
   LayoutUnit border_and_padding = BorderAndPaddingLogicalWidth();
+  DCHECK_GE(border_and_padding, LayoutUnit());
   min_preferred_logical_width_ += border_and_padding;
   max_preferred_logical_width_ += border_and_padding;
 
