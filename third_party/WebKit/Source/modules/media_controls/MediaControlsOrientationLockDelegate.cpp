@@ -90,7 +90,7 @@ class DummyScreenOrientationCallback : public WebLockOrientationCallback {
 
 }  // anonymous namespace
 
-constexpr TimeDelta MediaControlsOrientationLockDelegate::kUnlockDelay;
+constexpr TimeDelta MediaControlsOrientationLockDelegate::kLockToAnyDelay;
 
 MediaControlsOrientationLockDelegate::MediaControlsOrientationLockDelegate(
     HTMLVideoElement& video)
@@ -163,6 +163,17 @@ void MediaControlsOrientationLockDelegate::MaybeLockOrientation() {
   MaybeListenToDeviceOrientation();
 }
 
+void MediaControlsOrientationLockDelegate::ChangeLockToAnyOrientation() {
+  // Must already be locked.
+  DCHECK_EQ(state_, State::kMaybeLockedFullscreen);
+  DCHECK_NE(locked_orientation_, kWebScreenOrientationLockDefault);
+
+  locked_orientation_ = kWebScreenOrientationLockAny;
+  ScreenOrientationController::From(*GetDocument().GetFrame())
+      ->lock(locked_orientation_,
+             WTF::WrapUnique(new DummyScreenOrientationCallback));
+}
+
 void MediaControlsOrientationLockDelegate::MaybeUnlockOrientation() {
   DCHECK(state_ != State::kPendingFullscreen);
 
@@ -180,7 +191,7 @@ void MediaControlsOrientationLockDelegate::MaybeUnlockOrientation() {
   ScreenOrientationController::From(*GetDocument().GetFrame())->unlock();
   locked_orientation_ = kWebScreenOrientationLockDefault /* unlocked */;
 
-  unlock_task_.Cancel();
+  lock_to_any_task_.Cancel();
 }
 
 void MediaControlsOrientationLockDelegate::MaybeListenToDeviceOrientation() {
@@ -274,7 +285,8 @@ void MediaControlsOrientationLockDelegate::handleEvent(
   }
 
   if (event->type() == EventTypeNames::deviceorientation) {
-    MaybeUnlockIfDeviceOrientationMatchesVideo(ToDeviceOrientationEvent(event));
+    MaybeLockToAnyIfDeviceOrientationMatchesVideo(
+        ToDeviceOrientationEvent(event));
 
     return;
   }
@@ -401,7 +413,8 @@ MediaControlsOrientationLockDelegate::ComputeDeviceOrientation(
 }
 
 void MediaControlsOrientationLockDelegate::
-    MaybeUnlockIfDeviceOrientationMatchesVideo(DeviceOrientationEvent* event) {
+    MaybeLockToAnyIfDeviceOrientationMatchesVideo(
+        DeviceOrientationEvent* event) {
   DCHECK_EQ(state_, State::kMaybeLockedFullscreen);
   DCHECK(locked_orientation_ == kWebScreenOrientationLockPortrait ||
          locked_orientation_ == kWebScreenOrientationLockLandscape);
@@ -418,13 +431,13 @@ void MediaControlsOrientationLockDelegate::
     return;
 
   // Job done: the user rotated their device to match the orientation of the
-  // video that we locked to, so now we can stop listening and unlock.
+  // video that we locked to, so now we can stop listening.
   if (LocalDOMWindow* dom_window = GetDocument().domWindow()) {
     dom_window->removeEventListener(EventTypeNames::deviceorientation, this,
                                     false);
   }
-  // Delay before unlocking, as a workaround for the case where the device is
-  // initially portrait-primary, then fullscreen orientation lock locks it to
+  // Delay before changing lock, as a workaround for the case where the device
+  // is initially portrait-primary, then fullscreen orientation lock locks it to
   // landscape and the screen orientation changes to landscape-primary, but the
   // user actually rotates the device to landscape-secondary. In that case, if
   // this delegate unlocks the orientation before Android has detected the
@@ -432,14 +445,27 @@ void MediaControlsOrientationLockDelegate::
   // Android would change the screen orientation back to portrait-primary. This
   // is avoided by delaying unlocking long enough to ensure that Android has
   // detected the orientation change.
-  unlock_task_ =
+  lock_to_any_task_ =
       TaskRunnerHelper::Get(TaskType::kMediaElementEvent, &GetDocument())
           ->PostDelayedCancellableTask(
               BLINK_FROM_HERE,
-              WTF::Bind(
-                  &MediaControlsOrientationLockDelegate::MaybeUnlockOrientation,
-                  WrapPersistent(this)),
-              kUnlockDelay);
+              // Conceptually, this callback will unlock the screen orientation,
+              // so that the user can now rotate their device to the opposite
+              // orientation in order to exit fullscreen. But unlocking
+              // corresponds to kWebScreenOrientationLockDefault, which is
+              // sometimes a specific orientation. For example in a webapp added
+              // to homescreen that has set its orientation to portrait using
+              // the manifest, unlocking actually locks to portrait, which would
+              // immediately exit fullscreen if we're watching a landscape video
+              // in landscape orientation! So instead, this locks to
+              // kWebScreenOrientationLockAny which will auto-rotate according
+              // to the accelerometer, and only exit fullscreen once the user
+              // actually rotates their device. We only fully unlock to
+              // kWebScreenOrientationLockDefault once fullscreen is exited.
+              WTF::Bind(&MediaControlsOrientationLockDelegate::
+                            ChangeLockToAnyOrientation,
+                        WrapPersistent(this)),
+              kLockToAnyDelay);
 }
 
 DEFINE_TRACE(MediaControlsOrientationLockDelegate) {
