@@ -45,10 +45,11 @@ def GetVSPath():
   if VS_VERSION == '2015':
     return r'C:\Program Files (x86)\Microsoft Visual Studio 14.0'
   elif VS_VERSION == '2017':
-    # Use vswhere to find the VS 2017 installation. This handles preview
-    # versions automatically. This assumes that only one version is installed.
+    # Use vswhere to find the VS 2017 installation. This will find prerelease
+    # versions because -prerelease is specified. This assumes that only one
+    # version is installed.
     command = (r'C:\Program Files (x86)\Microsoft Visual Studio\Installer'
-               r'\vswhere.exe')
+               r'\vswhere.exe -prerelease')
     marker = 'installationPath: '
     for line in subprocess.check_output(command).splitlines():
       if line.startswith(marker):
