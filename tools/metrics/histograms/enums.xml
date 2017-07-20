@@ -38507,6 +38507,17 @@ from previous Chrome versions.
   <int value="59" label=".zip"/>
 </enum>
 
+<enum name="VirtualKeyboardControllerState">
+  <int value="0" label="UNKNOWN"/>
+  <int value="1" label="INITIAL"/>
+  <int value="2" label="LOADING_EXTENSION"/>
+  <int value="3" label="SHOWING"/>
+  <int value="4" label="SHOWN"/>
+  <int value="5" label="WILL_HIDE"/>
+  <int value="6" label="HIDING"/>
+  <int value="7" label="HIDDEN"/>
+</enum>
+
 <enum name="VirtualKeyboardControllerStateTransition">
   <int value="-7007" label="Invalid_HIDDEN_to_HIDDEN"/>
   <int value="-7006" label="Invalid_HIDDEN_to_HIDING"/>

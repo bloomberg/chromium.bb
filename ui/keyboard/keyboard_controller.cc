@@ -47,6 +47,10 @@ constexpr int kHideKeyboardDelayMs = 100;
 // The virtual keyboard show/hide animation duration.
 constexpr int kAnimationDurationMs = 100;
 
+// Reports an error histogram if the keyboard state is lingering in an
+// intermediate state for more than 5 seconds.
+constexpr int kReportLingeringStateDelayMs = 5000;
+
 // The opacity of virtual keyboard container when show animation starts or
 // hide animation finishes. This cannot be zero because we call Show() on the
 // keyboard window before setting the opacity back to 1.0. Since windows are not
@@ -220,6 +224,8 @@ std::string StateToStr(keyboard::KeyboardControllerState state) {
       return "HIDDEN";
     case keyboard::KeyboardControllerState::INITIAL:
       return "INITIAL";
+    case keyboard::KeyboardControllerState::COUNT:
+      NOTREACHED();
   }
   NOTREACHED() << "Unknownstate: " << static_cast<int>(state);
   // Needed for windows build.
@@ -285,7 +291,8 @@ KeyboardController::KeyboardController(std::unique_ptr<KeyboardUI> ui,
       keyboard_locked_(false),
       keyboard_mode_(FULL_WIDTH),
       state_(KeyboardControllerState::UNKNOWN),
-      weak_factory_(this) {
+      weak_factory_report_lingering_state_(this),
+      weak_factory_will_hide_(this) {
   ui_->GetInputMethod()->AddObserver(this);
   ui_->SetController(this);
   ChangeState(KeyboardControllerState::INITIAL);
@@ -401,7 +408,8 @@ void KeyboardController::HideKeyboard(HideReason reason) {
     // Do nothing if keyboard is already hidden or being hidden.
     return;
   }
-  weak_factory_.InvalidateWeakPtrs();
+
+  weak_factory_will_hide_.InvalidateWeakPtrs();
   keyboard_visible_ = false;
   ToggleTouchEventLogging(true);
 
@@ -560,7 +568,8 @@ void KeyboardController::OnTextInputStateChanged(
       base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE,
           base::Bind(&KeyboardController::HideKeyboard,
-                     weak_factory_.GetWeakPtr(), HIDE_REASON_AUTOMATIC),
+                     weak_factory_will_hide_.GetWeakPtr(),
+                     HIDE_REASON_AUTOMATIC),
           base::TimeDelta::FromMilliseconds(kHideKeyboardDelayMs));
       if (state_ == KeyboardControllerState::LOADING_EXTENSION) {
         show_on_resize_ = false;
@@ -577,7 +586,7 @@ void KeyboardController::OnTextInputStateChanged(
       // Investigate why, and enable the DCHECK below.
       // DCHECK(state_ == KeyboardControllerState::WILL_HIDE) <<
       // StateToStr(state_);
-      weak_factory_.InvalidateWeakPtrs();
+      weak_factory_will_hide_.InvalidateWeakPtrs();
       keyboard_visible_ = true;
       ChangeState(KeyboardControllerState::SHOWN);
     }
@@ -653,7 +662,7 @@ void KeyboardController::PopulateKeyboardContent(int64_t display_id,
   if (!WillHideKeyboard()) {
     keyboard::LogKeyboardControlEvent(keyboard::KEYBOARD_CONTROL_SHOW);
   } else {
-    weak_factory_.InvalidateWeakPtrs();
+    weak_factory_will_hide_.InvalidateWeakPtrs();
   }
 
   // If |container_| has hide animation, its visibility is set to false when
@@ -722,7 +731,7 @@ void KeyboardController::PopulateKeyboardContent(int64_t display_id,
 }
 
 bool KeyboardController::WillHideKeyboard() const {
-  return weak_factory_.HasWeakPtrs();
+  return weak_factory_will_hide_.HasWeakPtrs();
 }
 
 void KeyboardController::ShowAnimationFinished() {
@@ -787,9 +796,35 @@ void KeyboardController::CheckStateTransition(KeyboardControllerState prev,
 
 void KeyboardController::ChangeState(KeyboardControllerState state) {
   CheckStateTransition(state_, state);
+  if (state_ == state)
+    return;
+
   state_ = state;
   for (KeyboardControllerObserver& observer : observer_list_)
     observer.OnStateChanged(state);
+
+  weak_factory_report_lingering_state_.InvalidateWeakPtrs();
+
+  switch (state_) {
+    case KeyboardControllerState::LOADING_EXTENSION:
+    case KeyboardControllerState::WILL_HIDE:
+    case KeyboardControllerState::HIDING:
+    case KeyboardControllerState::SHOWING:
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+          FROM_HERE,
+          base::Bind(&KeyboardController::ReportLingeringState,
+                     weak_factory_report_lingering_state_.GetWeakPtr()),
+          base::TimeDelta::FromMilliseconds(kReportLingeringStateDelayMs));
+      break;
+    default:
+      // Do nothing
+      break;
+  }
+}
+
+void KeyboardController::ReportLingeringState() {
+  UMA_HISTOGRAM_ENUMERATION("VirtualKeyboard.LingeringIntermediateState",
+                            state_, KeyboardControllerState::COUNT);
 }
 
 }  // namespace keyboard
