@@ -517,21 +517,6 @@ void Shell::UpdateAfterLoginStatusChange(LoginStatus status) {
     root_window_controller->UpdateAfterLoginStatusChange(status);
 }
 
-void Shell::NotifyTabletModeStarted() {
-  for (auto& observer : shell_observers_)
-    observer.OnTabletModeStarted();
-}
-
-void Shell::NotifyTabletModeEnding() {
-  for (auto& observer : shell_observers_)
-    observer.OnTabletModeEnding();
-}
-
-void Shell::NotifyTabletModeEnded() {
-  for (auto& observer : shell_observers_)
-    observer.OnTabletModeEnded();
-}
-
 void Shell::NotifyOverviewModeStarting() {
   for (auto& observer : shell_observers_)
     observer.OnOverviewModeStarting();

@@ -556,17 +556,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   // TODO(oshima): Investigate if we can merge this and |OnLoginStateChanged|.
   void UpdateAfterLoginStatusChange(LoginStatus status);
 
-  // Notifies observers that tablet mode has started, windows might still
-  // animate.
-  void NotifyTabletModeStarted();
-
-  // Notifies observers that tablet mode is about to end.
-  void NotifyTabletModeEnding();
-
-  // Notifies observers that tablet mode has ended, windows might still be
-  // returning to their original position.
-  void NotifyTabletModeEnded();
-
   // Notifies observers that overview mode is about to be started (before the
   // windows get re-arranged).
   void NotifyOverviewModeStarting();

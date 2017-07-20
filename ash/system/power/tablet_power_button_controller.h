@@ -9,7 +9,7 @@
 #include <utility>
 
 #include "ash/ash_export.h"
-#include "ash/shell_observer.h"
+#include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
@@ -36,7 +36,7 @@ class LockStateController;
 class ASH_EXPORT TabletPowerButtonController
     : public chromeos::AccelerometerReader::Observer,
       public chromeos::PowerManagerClient::Observer,
-      public ShellObserver,
+      public TabletModeObserver,
       public ui::EventHandler,
       public ui::InputDeviceEventObserver {
  public:
@@ -93,7 +93,7 @@ class ASH_EXPORT TabletPowerButtonController
   void LidEventReceived(chromeos::PowerManagerClient::LidState state,
                         const base::TimeTicks& timestamp) override;
 
-  // Overridden from ShellObserver:
+  // TabletModeObserver:
   void OnTabletModeStarted() override;
   void OnTabletModeEnded() override;
 

@@ -59,17 +59,6 @@ class ASH_EXPORT ShellObserver {
   // Called after split view mode has ended.
   virtual void OnSplitViewModeEnded() {}
 
-  // Called when the always tablet mode has started. Windows might still
-  // animate though.
-  virtual void OnTabletModeStarted() {}
-
-  // Called when the tablet mode is about to end.
-  virtual void OnTabletModeEnding() {}
-
-  // Called when the tablet mode has ended. Windows may still be
-  // animating but have been restored.
-  virtual void OnTabletModeEnded() {}
-
   // Called when keyboard is activated/deactivated in |root_window|.
   virtual void OnVirtualKeyboardStateChanged(bool activated,
                                              aura::Window* root_window) {}

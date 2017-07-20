@@ -12,6 +12,7 @@
 #include "ash/frame/frame_border_hit_test.h"
 #include "ash/frame/header_painter_util.h"
 #include "ash/shell.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profiles_state.h"
@@ -75,9 +76,11 @@ BrowserNonClientFrameViewAsh::BrowserNonClientFrameViewAsh(
   ash::wm::InstallResizeHandleWindowTargeterForWindow(frame->GetNativeWindow(),
                                                       nullptr);
   ash::Shell::Get()->AddShellObserver(this);
+  ash::Shell::Get()->tablet_mode_controller()->AddObserver(this);
 }
 
 BrowserNonClientFrameViewAsh::~BrowserNonClientFrameViewAsh() {
+  ash::Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
   ash::Shell::Get()->RemoveShellObserver(this);
 }
 

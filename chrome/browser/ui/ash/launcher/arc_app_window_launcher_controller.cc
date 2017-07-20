@@ -163,8 +163,9 @@ ArcAppWindowLauncherController::ArcAppWindowLauncherController(
 ArcAppWindowLauncherController::~ArcAppWindowLauncherController() {
   if (observed_profile_)
     StopObserving(observed_profile_);
-  if (observing_shell_)
-    ash::Shell::Get()->RemoveShellObserver(this);
+  if (observing_shell_ && ash::Shell::Get()->tablet_mode_controller()) {
+    ash::Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
+  }
   if (arc::ArcSessionManager::Get())
     arc::ArcSessionManager::Get()->RemoveObserver(this);
 }
@@ -285,7 +286,7 @@ void ArcAppWindowLauncherController::AttachControllerToWindowIfNeeded(
   // the layout switch information.
   if (!observing_shell_) {
     observing_shell_ = true;
-    ash::Shell::Get()->AddShellObserver(this);
+    ash::Shell::Get()->tablet_mode_controller()->AddObserver(this);
   }
 
   // Check if we have controller for this task.
