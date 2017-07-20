@@ -530,7 +530,7 @@ bool EGLStreamPictureBuffer::BindSampleToTexture(
   result = eglStreamConsumerAcquireKHR(egl_display, stream_);
   RETURN_ON_FAILURE(result, "Could not post acquire stream", false);
   gl::GLImageDXGI* gl_image_dxgi =
-      gl::GLImageDXGI::FromGLImage(gl_image_.get());
+      static_cast<gl::GLImageDXGI*>(gl_image_.get());
   DCHECK(gl_image_dxgi);
 
   gl_image_dxgi->SetTexture(dx11_decoding_texture_, subresource);
@@ -646,14 +646,13 @@ bool EGLStreamDelayedCopyPictureBuffer::BindSampleToTexture(
   DCHECK(decoder->d3d11_processor_);
   DCHECK(decoder->enumerator_);
 
-  gl::GLImageDXGI* gl_image_dxgi =
-      gl::GLImageDXGI::FromGLImage(gl_image_.get());
+  gl::CopyingGLImageDXGI* gl_image_dxgi =
+      static_cast<gl::CopyingGLImageDXGI*>(gl_image_.get());
   DCHECK(gl_image_dxgi);
 
   gl_image_dxgi->SetTexture(dx11_decoding_texture_, subresource);
-  return static_cast<gl::CopyingGLImageDXGI*>(gl_image_dxgi)
-      ->InitializeVideoProcessor(decoder->d3d11_processor_,
-                                 decoder->enumerator_);
+  return gl_image_dxgi->InitializeVideoProcessor(decoder->d3d11_processor_,
+                                                 decoder->enumerator_);
 }
 
 bool EGLStreamDelayedCopyPictureBuffer::AllowOverlay() const {
@@ -802,7 +801,7 @@ bool EGLStreamCopyPictureBuffer::CopySurfaceComplete(
   result = eglStreamConsumerAcquireKHR(egl_display, stream_);
   RETURN_ON_FAILURE(result, "Could not post acquire stream", false);
   gl::GLImageDXGI* gl_image_dxgi =
-      gl::GLImageDXGI::FromGLImage(gl_image_.get());
+      static_cast<gl::GLImageDXGI*>(gl_image_.get());
   DCHECK(gl_image_dxgi);
 
   gl_image_dxgi->SetTexture(angle_copy_texture_, 0);
