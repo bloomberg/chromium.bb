@@ -12,7 +12,6 @@
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "cc/base/ring_buffer.h"
 #include "cc/cc_export.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/scheduler/begin_frame_source.h"
@@ -198,11 +197,6 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
   bool inside_process_scheduled_actions_ = false;
   SchedulerStateMachine::Action inside_action_ =
       SchedulerStateMachine::ACTION_NONE;
-
-  // TEMPORARY: Compositor state for debugging BeginMainFrame renderer hang.
-  // TODO(sunnyps): Remove after fixing https://crbug.com/622080
-  base::TimeTicks debug_begin_frame_received_at_;
-  RingBuffer<SchedulerStateMachine::Action, 10> debug_actions_;
 
   bool stopped_ = false;
 
