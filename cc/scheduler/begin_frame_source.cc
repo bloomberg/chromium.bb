@@ -61,7 +61,7 @@ void BeginFrameObserverBase::AsValueInto(
 
 // BeginFrameSource -------------------------------------------------------
 namespace {
-static base::StaticAtomicSequenceNumber g_next_source_id;
+static base::AtomicSequenceNumber g_next_source_id;
 }  // namespace
 
 BeginFrameSource::BeginFrameSource() : source_id_(g_next_source_id.GetNext()) {}

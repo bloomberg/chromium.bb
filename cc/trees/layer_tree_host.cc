@@ -59,7 +59,7 @@
 #include "ui/gfx/geometry/vector2d_conversions.h"
 
 namespace {
-static base::StaticAtomicSequenceNumber s_layer_tree_host_sequence_number;
+static base::AtomicSequenceNumber s_layer_tree_host_sequence_number;
 }
 
 namespace cc {

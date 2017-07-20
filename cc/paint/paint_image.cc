@@ -7,7 +7,7 @@
 
 namespace cc {
 namespace {
-base::StaticAtomicSequenceNumber s_next_id_;
+base::AtomicSequenceNumber s_next_id_;
 }
 
 PaintImage::PaintImage() = default;

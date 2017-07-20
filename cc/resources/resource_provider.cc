@@ -175,7 +175,7 @@ class ScopedSetActiveTexture {
 
 // Generates process-unique IDs to use for tracing a ResourceProvider's
 // resources.
-base::StaticAtomicSequenceNumber g_next_resource_provider_tracing_id;
+base::AtomicSequenceNumber g_next_resource_provider_tracing_id;
 
 }  // namespace
 
