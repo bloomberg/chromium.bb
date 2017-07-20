@@ -1021,8 +1021,10 @@ TEST(JourneyLoggerTest, RecordJourneyStatsHistograms_TwoPaymentRequests) {
       JourneyLogger::COMPLETION_STATUS_USER_ABORTED, 1);
 }
 
-// Tests that the Payment Request UKMs are logged correctly.
-TEST(JourneyLoggerTest, RecordJourneyStatsHistograms_CheckoutFunnelUkm) {
+// Tests that the Payment Request UKMs are logged correctly when the user aborts
+// the Payment Request.
+TEST(JourneyLoggerTest,
+     RecordJourneyStatsHistograms_CheckoutFunnelUkm_UserAborted) {
   ukm::TestUkmRecorder ukm_recorder;
   char test_url[] = "http://www.google.com/";
 
@@ -1058,6 +1060,43 @@ TEST(JourneyLoggerTest, RecordJourneyStatsHistograms_CheckoutFunnelUkm) {
   ASSERT_NE(nullptr, step_metric);
   EXPECT_EQ(JourneyLogger::EVENT_SHOWN | JourneyLogger::EVENT_PAY_CLICKED,
             step_metric->value);
+}
+
+// Tests that the Payment Request UKMs are logged correctly when the user
+// completes the Payment Request.
+TEST(JourneyLoggerTest,
+     RecordJourneyStatsHistograms_CheckoutFunnelUkm_Completed) {
+  ukm::TestUkmRecorder ukm_recorder;
+  char test_url[] = "http://www.google.com/";
+
+  base::HistogramTester histogram_tester;
+  JourneyLogger logger(/*is_incognito=*/true, /*url=*/GURL(test_url),
+                       /*ukm_recorder=*/&ukm_recorder);
+
+  // Simulate that the user aborts after being shown the Payment Request.
+  logger.SetEventOccurred(JourneyLogger::EVENT_SHOWN);
+  logger.SetCompleted();
+
+  // Make sure the UKM was logged correctly.
+  ASSERT_EQ(1U, ukm_recorder.sources_count());
+  const ukm::UkmSource* source = ukm_recorder.GetSourceForUrl(test_url);
+  ASSERT_NE(nullptr, source);
+
+  ASSERT_EQ(1U, ukm_recorder.entries_count());
+  const ukm::mojom::UkmEntry* entry = ukm_recorder.GetEntry(0);
+  EXPECT_EQ(source->id(), entry->source_id);
+  EXPECT_EQ(base::HashMetricName(internal::kUKMCheckoutEventsEntryName),
+            entry->event_hash);
+
+  const ukm::mojom::UkmMetric* status_metric = ukm::TestUkmRecorder::FindMetric(
+      entry, internal::kUKMCompletionStatusMetricName);
+  ASSERT_NE(nullptr, status_metric);
+  EXPECT_EQ(JourneyLogger::COMPLETION_STATUS_COMPLETED, status_metric->value);
+
+  const ukm::mojom::UkmMetric* step_metric =
+      ukm::TestUkmRecorder::FindMetric(entry, internal::kUKMEventsMetricName);
+  ASSERT_NE(nullptr, step_metric);
+  EXPECT_EQ(JourneyLogger::EVENT_SHOWN, step_metric->value);
 }
 
 }  // namespace payments
