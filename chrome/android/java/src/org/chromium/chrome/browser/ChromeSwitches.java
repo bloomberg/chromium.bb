@@ -31,9 +31,6 @@ public abstract class ChromeSwitches {
     /** Disable the First Run Experience. */
     public static final String DISABLE_FIRST_RUN_EXPERIENCE = "disable-fre";
 
-    /** Enable the Lightweight First Run Experience. */
-    public static final String ENABLE_LIGHTWEIGHT_FIRST_RUN_EXPERIENCE = "enable-lightweight-fre";
-
     /** Force the crash dump to be uploaded regardless of preferences. */
     public static final String FORCE_CRASH_DUMP_UPLOAD = "force-dump-upload";
 
