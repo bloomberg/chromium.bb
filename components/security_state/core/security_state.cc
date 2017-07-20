@@ -248,11 +248,9 @@ void SecurityInfoForRequest(
       visible_security_state.displayed_password_field_on_http;
   security_info->displayed_credit_card_field_on_http =
       visible_security_state.displayed_credit_card_field_on_http;
-  if (visible_security_state.certificate) {
-    security_info->cert_missing_subject_alt_name =
-        !visible_security_state.certificate->GetSubjectAltName(nullptr,
-                                                               nullptr);
-  }
+  security_info->cert_missing_subject_alt_name =
+      visible_security_state.certificate &&
+      !visible_security_state.certificate->GetSubjectAltName(nullptr, nullptr);
 
   security_info->contained_mixed_form =
       visible_security_state.contained_mixed_form;
