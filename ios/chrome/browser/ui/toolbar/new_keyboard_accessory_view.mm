@@ -59,7 +59,7 @@
   const CGFloat kButtonHeight = 34.0;
   const CGFloat kBetweenShortcutButtonSpacing = 5.0;
   const CGFloat kBetweenSearchButtonSpacing = 12.0;
-  const CGFloat kHorizontalMargin = 12.0;
+  const CGFloat kHorizontalMargin = 10.0;
 
   // Create and add stackview filled with the shortcut buttons.
   UIStackView* shortcutStackView = [[UIStackView alloc] init];
