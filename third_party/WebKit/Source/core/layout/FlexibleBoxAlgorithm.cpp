@@ -48,6 +48,57 @@ FlexItem::FlexItem(LayoutBox* box,
   DCHECK(!box->IsOutOfFlowPositioned());
 }
 
+void FlexLine::FreezeViolations(Vector<FlexItem*>& violations) {
+  for (size_t i = 0; i < violations.size(); ++i) {
+    DCHECK(!violations[i]->frozen) << i;
+    LayoutBox* child = violations[i]->box;
+    LayoutUnit child_size = violations[i]->flexed_content_size;
+    remaining_free_space -= child_size - violations[i]->flex_base_content_size;
+    total_flex_grow -= child->Style()->FlexGrow();
+    total_flex_shrink -= child->Style()->FlexShrink();
+    total_weighted_flex_shrink -=
+        child->Style()->FlexShrink() * violations[i]->flex_base_content_size;
+    // totalWeightedFlexShrink can be negative when we exceed the precision of
+    // a double when we initially calcuate totalWeightedFlexShrink. We then
+    // subtract each child's weighted flex shrink with full precision, now
+    // leading to a negative result. See
+    // css3/flexbox/large-flex-shrink-assert.html
+    total_weighted_flex_shrink = std::max(total_weighted_flex_shrink, 0.0);
+    violations[i]->frozen = true;
+  }
+}
+
+void FlexLine::FreezeInflexibleItems() {
+  // Per https://drafts.csswg.org/css-flexbox/#resolve-flexible-lengths step 2,
+  // we freeze all items with a flex factor of 0 as well as those with a min/max
+  // size violation.
+  FlexSign flex_sign = Sign();
+  remaining_free_space = container_main_inner_size - sum_flex_base_size;
+
+  Vector<FlexItem*> new_inflexible_items;
+  for (size_t i = 0; i < line_items.size(); ++i) {
+    FlexItem& flex_item = line_items[i];
+    LayoutBox* child = flex_item.box;
+    DCHECK(!flex_item.box->IsOutOfFlowPositioned());
+    DCHECK(!flex_item.frozen) << i;
+    float flex_factor = (flex_sign == kPositiveFlexibility)
+                            ? child->Style()->FlexGrow()
+                            : child->Style()->FlexShrink();
+    if (flex_factor == 0 ||
+        (flex_sign == kPositiveFlexibility &&
+         flex_item.flex_base_content_size >
+             flex_item.hypothetical_main_content_size) ||
+        (flex_sign == kNegativeFlexibility &&
+         flex_item.flex_base_content_size <
+             flex_item.hypothetical_main_content_size)) {
+      flex_item.flexed_content_size = flex_item.hypothetical_main_content_size;
+      new_inflexible_items.push_back(&flex_item);
+    }
+  }
+  FreezeViolations(new_inflexible_items);
+  initial_free_space = remaining_free_space;
+}
+
 FlexLayoutAlgorithm::FlexLayoutAlgorithm(const ComputedStyle* style,
                                          LayoutUnit line_break_length,
                                          const Vector<FlexItem>& all_items)

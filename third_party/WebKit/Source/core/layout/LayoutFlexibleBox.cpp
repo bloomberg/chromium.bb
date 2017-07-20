@@ -979,39 +979,29 @@ void LayoutFlexibleBox::LayoutFlexItems(bool relayout_children,
   FlexLine* current_line;
   while ((current_line = flex_algorithm.ComputeNextFlexLine())) {
     DCHECK_GE(current_line->line_items.size(), 0ULL);
-    LayoutUnit container_main_inner_size =
-        MainAxisContentExtent(current_line->sum_hypothetical_main_size);
-    // availableFreeSpace is the initial amount of free space in this flexbox.
-    // remainingFreeSpace starts out at the same value but as we place and lay
-    // out flex items we subtract from it. Note that both values can be
-    // negative.
-    LayoutUnit remaining_free_space =
-        container_main_inner_size - current_line->sum_flex_base_size;
-    FlexSign flex_sign =
-        (current_line->sum_hypothetical_main_size < container_main_inner_size)
-            ? kPositiveFlexibility
-            : kNegativeFlexibility;
-    FreezeInflexibleItems(flex_sign, current_line, remaining_free_space);
-    // The initial free space gets calculated after freezing inflexible items.
-    // https://drafts.csswg.org/css-flexbox/#resolve-flexible-lengths step 3
-    const LayoutUnit initial_free_space = remaining_free_space;
-    while (!ResolveFlexibleLengths(flex_sign, current_line, initial_free_space,
-                                   remaining_free_space)) {
+    current_line->SetContainerMainInnerSize(
+        MainAxisContentExtent(current_line->sum_hypothetical_main_size));
+    current_line->FreezeInflexibleItems();
+
+    while (!ResolveFlexibleLengths(current_line,
+                                   current_line->initial_free_space,
+                                   current_line->remaining_free_space)) {
       DCHECK_GE(current_line->total_flex_grow, 0);
       DCHECK_GE(current_line->total_weighted_flex_shrink, 0);
     }
 
     // Recalculate the remaining free space. The adjustment for flex factors
     // between 0..1 means we can't just use remainingFreeSpace here.
-    remaining_free_space = container_main_inner_size;
+    current_line->remaining_free_space =
+        current_line->container_main_inner_size;
     for (size_t i = 0; i < current_line->line_items.size(); ++i) {
       FlexItem& flex_item = current_line->line_items[i];
       DCHECK(!flex_item.box->IsOutOfFlowPositioned());
-      remaining_free_space -= flex_item.FlexedMarginBoxSize();
+      current_line->remaining_free_space -= flex_item.FlexedMarginBoxSize();
     }
     LayoutAndPlaceChildren(cross_axis_offset, current_line,
-                           remaining_free_space, relayout_children,
-                           layout_scope);
+                           current_line->remaining_free_space,
+                           relayout_children, layout_scope);
   }
   if (HasLineIfEmpty()) {
     // Even if ComputeNextFlexLine returns true, the flexbox might not have
@@ -1369,65 +1359,8 @@ FlexItem LayoutFlexibleBox::ConstructFlexItem(LayoutBox& child,
                   margin);
 }
 
-void LayoutFlexibleBox::FreezeViolations(Vector<FlexItem*>& violations,
-                                         LayoutUnit& available_free_space,
-                                         double& total_flex_grow,
-                                         double& total_flex_shrink,
-                                         double& total_weighted_flex_shrink) {
-  for (size_t i = 0; i < violations.size(); ++i) {
-    DCHECK(!violations[i]->frozen) << i;
-    LayoutBox* child = violations[i]->box;
-    LayoutUnit child_size = violations[i]->flexed_content_size;
-    available_free_space -= child_size - violations[i]->flex_base_content_size;
-    total_flex_grow -= child->Style()->FlexGrow();
-    total_flex_shrink -= child->Style()->FlexShrink();
-    total_weighted_flex_shrink -=
-        child->Style()->FlexShrink() * violations[i]->flex_base_content_size;
-    // totalWeightedFlexShrink can be negative when we exceed the precision of
-    // a double when we initially calcuate totalWeightedFlexShrink. We then
-    // subtract each child's weighted flex shrink with full precision, now
-    // leading to a negative result. See
-    // css3/flexbox/large-flex-shrink-assert.html
-    total_weighted_flex_shrink = std::max(total_weighted_flex_shrink, 0.0);
-    violations[i]->frozen = true;
-  }
-}
-
-void LayoutFlexibleBox::FreezeInflexibleItems(
-    FlexSign flex_sign,
-    FlexLine* line,
-    LayoutUnit& remaining_free_space) {
-  // Per https://drafts.csswg.org/css-flexbox/#resolve-flexible-lengths step 2,
-  // we freeze all items with a flex factor of 0 as well as those with a min/max
-  // size violation.
-  Vector<FlexItem*> new_inflexible_items;
-  for (size_t i = 0; i < line->line_items.size(); ++i) {
-    FlexItem& flex_item = line->line_items[i];
-    LayoutBox* child = flex_item.box;
-    DCHECK(!flex_item.box->IsOutOfFlowPositioned());
-    DCHECK(!flex_item.frozen) << i;
-    float flex_factor = (flex_sign == kPositiveFlexibility)
-                            ? child->Style()->FlexGrow()
-                            : child->Style()->FlexShrink();
-    if (flex_factor == 0 ||
-        (flex_sign == kPositiveFlexibility &&
-         flex_item.flex_base_content_size >
-             flex_item.hypothetical_main_content_size) ||
-        (flex_sign == kNegativeFlexibility &&
-         flex_item.flex_base_content_size <
-             flex_item.hypothetical_main_content_size)) {
-      flex_item.flexed_content_size = flex_item.hypothetical_main_content_size;
-      new_inflexible_items.push_back(&flex_item);
-    }
-  }
-  FreezeViolations(new_inflexible_items, remaining_free_space,
-                   line->total_flex_grow, line->total_flex_shrink,
-                   line->total_weighted_flex_shrink);
-}
-
 // Returns true if we successfully ran the algorithm and sized the flex items.
 bool LayoutFlexibleBox::ResolveFlexibleLengths(
-    FlexSign flex_sign,
     FlexLine* line,
     LayoutUnit initial_free_space,
     LayoutUnit& remaining_free_space) {
@@ -1436,6 +1369,7 @@ bool LayoutFlexibleBox::ResolveFlexibleLengths(
   Vector<FlexItem*> min_violations;
   Vector<FlexItem*> max_violations;
 
+  FlexSign flex_sign = line->Sign();
   double sum_flex_factors = (flex_sign == kPositiveFlexibility)
                                 ? line->total_flex_grow
                                 : line->total_flex_shrink;
@@ -1487,9 +1421,8 @@ bool LayoutFlexibleBox::ResolveFlexibleLengths(
   }
 
   if (total_violation) {
-    FreezeViolations(total_violation < 0 ? max_violations : min_violations,
-                     remaining_free_space, line->total_flex_grow,
-                     line->total_flex_shrink, line->total_weighted_flex_shrink);
+    line->FreezeViolations(total_violation < 0 ? max_violations
+                                               : min_violations);
   } else {
     remaining_free_space -= used_free_space;
   }

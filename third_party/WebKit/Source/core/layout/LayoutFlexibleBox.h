@@ -38,7 +38,7 @@
 namespace blink {
 
 class FlexItem;
-struct FlexLine;
+class FlexLine;
 
 class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
  public:
@@ -99,11 +99,6 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
   void RemoveChild(LayoutObject*) override;
 
  private:
-  enum FlexSign {
-    kPositiveFlexibility,
-    kNegativeFlexibility,
-  };
-
   enum ChildLayoutType { kLayoutIfNeeded, kForceLayout, kNeverLayout };
 
   enum class TransformedWritingMode {
@@ -197,18 +192,9 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
       LayoutUnit child_size);
   FlexItem ConstructFlexItem(LayoutBox& child, ChildLayoutType);
 
-  void FreezeInflexibleItems(FlexSign,
-                             FlexLine*,
-                             LayoutUnit& remaining_free_space);
-  bool ResolveFlexibleLengths(FlexSign,
-                              FlexLine*,
+  bool ResolveFlexibleLengths(FlexLine*,
                               LayoutUnit initial_free_space,
                               LayoutUnit& remaining_free_space);
-  void FreezeViolations(Vector<FlexItem*>&,
-                        LayoutUnit& available_free_space,
-                        double& total_flex_grow,
-                        double& total_flex_shrink,
-                        double& total_weighted_flex_shrink);
 
   void ResetAutoMarginsAndLogicalTopInCrossAxis(LayoutBox& child);
   void SetOverrideMainAxisContentSizeForChild(LayoutBox& child,
