@@ -802,7 +802,7 @@ ae8cf9fca3165a1c1f12decfd910c4fe *./vpd
   def testGetModels(self):
     self.rc.SetDefaultCmdResult(output='reef\npyro\nsnappy\n')
     build_bin = os.path.join(self._buildroot, constants.DEFAULT_CHROOT_DIR,
-                             'build', self._board, 'usr', 'bin')
+                             'usr', 'bin')
     osutils.Touch(os.path.join(build_bin, 'fdtget'), makedirs=True)
     result = commands.GetModels(self._buildroot, self._board)
     self.assertEquals(result, ['reef', 'pyro', 'snappy'])

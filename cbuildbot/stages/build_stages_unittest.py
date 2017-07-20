@@ -347,8 +347,7 @@ class BuildPackagesStageTest(AllConfigsTestCase,
       rc.AddCmdResult(partial_mock.ListRegex('fdtget'), output='reef')
 
     self._update_metadata = True
-    fdtget = os.path.join(self.build_root,
-                          'chroot/build/x86-generic/usr/bin/fdtget')
+    fdtget = os.path.join(self.build_root, 'chroot/usr/bin/fdtget')
     osutils.Touch(fdtget, makedirs=True)
     self._mock_configurator = _HookRunCommandFdtget
     self.RunTestsWithBotId('x86-generic-paladin', options_tests=False)

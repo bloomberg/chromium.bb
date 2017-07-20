@@ -528,17 +528,18 @@ def GetModels(buildroot, board):
     board: The board the build is for.
 
   Returns:
-    A list of models supported by this board, if it is a unified build, or
-    None, if it is not.
+    A list of models supported by this board, if it is a unified build; None,
+    if it is not a unified build.
   """
-  fdtget = os.path.join(buildroot, constants.DEFAULT_CHROOT_DIR,
-                        cros_build_lib.GetSysroot(board).lstrip(os.path.sep),
-                        'usr', 'bin', 'fdtget')
+  fdtget = os.path.join(buildroot, constants.DEFAULT_CHROOT_DIR, 'usr', 'bin',
+                        'fdtget')
   if not os.path.isfile(fdtget):
     return None
   fdtget = path_util.ToChrootPath(fdtget)
 
-  args = ['-l', '/usr/share/chromeos-config/config.dtb', '/chromeos/models']
+  config_fname = os.path.join(cros_build_lib.GetSysroot(board), 'usr', 'share',
+                              'chromeos-config', 'config.dtb')
+  args = ['-l', config_fname, '/chromeos/models']
   result = cros_build_lib.RunCommand([fdtget] + args, enter_chroot=True,
                                      capture_output=True, log_output=True,
                                      cwd=buildroot, error_code_ok=True)
