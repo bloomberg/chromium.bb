@@ -558,8 +558,3 @@ void OAuth2TokenFetched(JNIEnv* env,
                     : GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
   heap_callback->Run(err, token, base::Time());
 }
-
-// static
-bool OAuth2TokenServiceDelegateAndroid::Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}

@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/payments/android/ssl_validity_checker_android.h"
-
 #include "base/android/scoped_java_ref.h"
 #include "chrome/browser/payments/ssl_validity_checker.h"
 #include "content/public/browser/web_contents.h"
@@ -18,10 +16,6 @@ jboolean IsSslCertificateValid(
     const base::android::JavaParamRef<jobject>& jweb_contents) {
   return SslValidityChecker::IsSslCertificateValid(
       content::WebContents::FromJavaWebContents(jweb_contents));
-}
-
-bool RegisterSslValidityChecker(JNIEnv* env) {
-  return RegisterNativesImpl(env);
 }
 
 }  // namespace payments

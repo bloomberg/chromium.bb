@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_MEDIA_ANDROID_ROUTER_MEDIA_ROUTER_DIALOG_CONTROLLER_ANDROID_H_
 #define CHROME_BROWSER_MEDIA_ANDROID_ROUTER_MEDIA_ROUTER_DIALOG_CONTROLLER_ANDROID_H_
 
-#include <jni.h>
-
 #include <memory>
 
 #include "base/android/scoped_java_ref.h"
@@ -22,8 +20,6 @@ class MediaRouterDialogControllerAndroid
       public MediaRouterDialogController {
  public:
   ~MediaRouterDialogControllerAndroid() override;
-
-  static bool Register(JNIEnv* env);
 
   static MediaRouterDialogControllerAndroid* GetOrCreateForWebContents(
       content::WebContents* web_contents);

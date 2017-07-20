@@ -19,7 +19,6 @@ class ProfileAndroid : public base::SupportsUserData::Data {
  public:
   static ProfileAndroid* FromProfile(Profile* profile);
   static Profile* FromProfileAndroid(jobject obj);
-  static bool RegisterProfileAndroid(JNIEnv* env);
 
   static base::android::ScopedJavaLocalRef<jobject> GetLastUsedProfile(
       JNIEnv* env,

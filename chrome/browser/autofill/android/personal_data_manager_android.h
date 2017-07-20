@@ -27,9 +27,6 @@ class PersonalDataManagerAndroid
     : public PersonalDataManagerObserver,
       public base::SupportsWeakPtr<PersonalDataManagerAndroid> {
  public:
-  // Registers the JNI bindings for this class.
-  static bool Register(JNIEnv* env);
-
   PersonalDataManagerAndroid(JNIEnv* env, jobject obj);
 
   // Returns true if personal data manager has loaded the initial data.

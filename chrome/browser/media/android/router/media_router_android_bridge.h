@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_MEDIA_ANDROID_ROUTER_MEDIA_ROUTER_ANDROID_BRIDGE_H_
 #define CHROME_BROWSER_MEDIA_ANDROID_ROUTER_MEDIA_ROUTER_ANDROID_BRIDGE_H_
 
-#include <jni.h>
-
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "chrome/common/media_router/media_route.h"
@@ -23,8 +21,6 @@ class MediaRouterAndroidBridge {
  public:
   explicit MediaRouterAndroidBridge(MediaRouterAndroid* router);
   ~MediaRouterAndroidBridge();
-
-  static bool Register(JNIEnv* env);
 
   // Implement the corresponding calls for the MediaRouterAndroid class.
   // Virtual so could be overridden by tests.

@@ -27,7 +27,4 @@ class InstantAppsInfoBar : public ConfirmInfoBar {
   DISALLOW_COPY_AND_ASSIGN(InstantAppsInfoBar);
 };
 
-// Register native methods.
-bool RegisterInstantAppInfoBar(JNIEnv* env);
-
 #endif  // CHROME_BROWSER_UI_ANDROID_INFOBARS_INSTANT_APPS_INFOBAR_H_

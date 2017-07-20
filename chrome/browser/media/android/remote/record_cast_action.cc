@@ -2,10 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/media/android/remote/record_cast_action.h"
-
-#include <jni.h>
-
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "jni/RecordCastAction_jni.h"
@@ -100,11 +96,6 @@ static void RecordCastEndedTimeRemaining(JNIEnv*,
 
   UMA_HISTOGRAM_ENUMERATION("Cast.Sender.CastTimeRemainingPercentage",
       percent_remaining, 101);
-}
-
-// Register native methods
-bool RegisterRecordCastAction(JNIEnv* env) {
-  return RegisterNativesImpl(env);
 }
 
 }  // namespace remote_media

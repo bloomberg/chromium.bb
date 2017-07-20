@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/sessions/sync_sessions_metrics_android.h"
-
 #include <string>
 
 #include "base/metrics/field_trial.h"
@@ -14,11 +12,6 @@
 #include "components/sync_sessions/sessions_sync_manager.h"
 #include "components/sync_sessions/sync_sessions_metrics.h"
 #include "jni/SyncSessionsMetrics_jni.h"
-
-// static
-bool SyncSessionsMetricsAndroid::Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
 
 // static
 void RecordYoungestForeignTabAgeOnNTP(

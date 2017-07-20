@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_SPEECH_TTS_ANDROID_H_
 #define CHROME_BROWSER_SPEECH_TTS_ANDROID_H_
 
-#include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "chrome/browser/speech/tts_platform.h"
@@ -40,7 +39,6 @@ class TtsPlatformImplAndroid : public TtsPlatformImpl {
 
   // Static functions.
   static TtsPlatformImplAndroid* GetInstance();
-  static bool Register(JNIEnv* env);
 
  private:
   friend struct base::DefaultSingletonTraits<TtsPlatformImplAndroid>;

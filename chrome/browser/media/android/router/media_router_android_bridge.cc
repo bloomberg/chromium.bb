@@ -26,12 +26,6 @@ MediaRouterAndroidBridge::MediaRouterAndroidBridge(MediaRouterAndroid* router)
 
 MediaRouterAndroidBridge::~MediaRouterAndroidBridge() = default;
 
-// static
-bool MediaRouterAndroidBridge::Register(JNIEnv* env) {
-  bool ret = RegisterNativesImpl(env);
-  return ret;
-}
-
 void MediaRouterAndroidBridge::CreateRoute(const MediaSource::Id& source_id,
                                            const MediaSink::Id& sink_id,
                                            const std::string& presentation_id,

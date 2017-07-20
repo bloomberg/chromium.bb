@@ -46,11 +46,6 @@ Profile* ProfileAndroid::FromProfileAndroid(jobject obj) {
 }
 
 // static
-bool ProfileAndroid::RegisterProfileAndroid(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
-// static
 ScopedJavaLocalRef<jobject> ProfileAndroid::GetLastUsedProfile(JNIEnv* env,
                                                                jclass clazz) {
   Profile* profile = ProfileManager::GetLastUsedProfile();

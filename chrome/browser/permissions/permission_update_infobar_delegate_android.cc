@@ -120,12 +120,6 @@ bool PermissionUpdateInfoBarDelegate::ShouldShowPermissionInfobar(
   return false;
 }
 
-// static
-bool PermissionUpdateInfoBarDelegate::RegisterPermissionUpdateInfoBarDelegate(
-    JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 void PermissionUpdateInfoBarDelegate::OnPermissionResult(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,

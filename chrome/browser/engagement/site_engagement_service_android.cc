@@ -15,11 +15,6 @@
 using base::android::JavaParamRef;
 
 // static
-bool SiteEngagementServiceAndroid::Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
-// static
 const base::android::ScopedJavaGlobalRef<jobject>&
 SiteEngagementServiceAndroid::GetOrCreate(JNIEnv* env,
                                           SiteEngagementService* service) {
