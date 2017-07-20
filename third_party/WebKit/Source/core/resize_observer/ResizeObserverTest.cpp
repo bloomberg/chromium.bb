@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/dom/ResizeObserver.h"
+#include "core/resize_observer/ResizeObserver.h"
 
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/V8GCController.h"
-#include "core/dom/ResizeObservation.h"
-#include "core/dom/ResizeObserverController.h"
 #include "core/exported/WebViewBase.h"
+#include "core/resize_observer/ResizeObservation.h"
+#include "core/resize_observer/ResizeObserverController.h"
 #include "core/testing/sim/SimCompositor.h"
 #include "core/testing/sim/SimDisplayItemList.h"
 #include "core/testing/sim/SimRequest.h"

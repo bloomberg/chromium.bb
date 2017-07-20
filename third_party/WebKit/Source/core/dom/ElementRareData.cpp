@@ -31,8 +31,8 @@
 #include "core/dom/ElementRareData.h"
 
 #include "core/css/cssom/InlineStylePropertyMap.h"
-#include "core/dom/ResizeObservation.h"
-#include "core/dom/ResizeObserver.h"
+#include "core/resize_observer/ResizeObservation.h"
+#include "core/resize_observer/ResizeObserver.h"
 
 namespace blink {
 
