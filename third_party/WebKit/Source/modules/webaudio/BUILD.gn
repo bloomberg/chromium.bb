@@ -125,6 +125,14 @@ blink_modules_sources("webaudio") {
   ]
 
   if (is_win) {
+    jumbo_excluded_sources = [
+      # Uses Supplement<LocalDOMWindow> with MODULES_EXPORT while
+      # other files use Supplement<LocalDOMWindow> with
+      # CORE_EXPORT. Mixing those in the same compilation unit
+      # triggers link errors in Windows. https://crbug.com/739340
+      "WindowAudioWorklet.cpp",
+    ]
+
     # Result of 32-bit shift implicitly converted to 64 bits.
     cflags = [ "/wd4334" ]
   }
