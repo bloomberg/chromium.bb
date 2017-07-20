@@ -153,6 +153,7 @@
         "RecalculateStyle",
         "UpdateLayout",
         "UserCallback",
+        "V8Compile",
       ]
     },
     TraceEvents: {
