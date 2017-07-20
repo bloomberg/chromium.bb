@@ -53,10 +53,6 @@
   // The Overflow controls will only be displayed on CompactWidth SizeClasses.
   [viewController setDisplayOverflowControls:YES];
 
-  // Since the close MenuButton is always located on the top right corner,
-  // set the navigation translucency to NO so it doesn't cover the button.
-  self.baseViewController.navigationBar.translucent = NO;
-
   [self.baseViewController pushViewController:viewController animated:YES];
 }
 
