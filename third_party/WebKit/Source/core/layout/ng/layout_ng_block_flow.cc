@@ -8,6 +8,7 @@
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_fragment.h"
 #include "core/layout/ng/ng_layout_result.h"
+#include "core/layout/ng/ng_length_utils.h"
 
 namespace blink {
 
@@ -41,9 +42,28 @@ void LayoutNGBlockFlow::UpdateBlockLayout(bool relayout_children) {
     SetLogicalTop(computed_values.position_);
   }
 
+  // We need to update our margins as these are calculated once and stored in
+  // LayoutBox::margin_box_outsets_. Typically this happens within
+  // UpdateLogicalWidth and UpdateLogicalHeight.
+  //
+  // This primarily fixes cases where we are embedded inside another layout,
+  // for example LayoutView, LayoutFlexibleBox, etc.
+  UpdateMargins(*constraint_space);
+
   for (NGOutOfFlowPositionedDescendant descendant :
        result->OutOfFlowPositionedDescendants())
     descendant.node.UseOldOutOfFlowPositioning();
+}
+
+void LayoutNGBlockFlow::UpdateMargins(
+    const NGConstraintSpace& constraint_space) {
+  NGBoxStrut margins =
+      ComputeMargins(constraint_space, StyleRef(),
+                     constraint_space.WritingMode(), StyleRef().Direction());
+  SetMarginBefore(margins.block_start);
+  SetMarginAfter(margins.block_end);
+  SetMarginStart(margins.inline_start);
+  SetMarginEnd(margins.inline_end);
 }
 
 NGInlineNodeData& LayoutNGBlockFlow::GetNGInlineNodeData() const {
