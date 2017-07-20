@@ -13,6 +13,7 @@
 #include <memory>
 
 #include "base/command_line.h"
+#include "base/ios/ios_util.h"
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
@@ -399,6 +400,19 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
                                             font:[MDCTypography subheadFont]
                                        textColor:textColor
                                        tintColor:tintColor];
+
+  // Disable default drop interactions on the omnibox.
+  // TODO(crbug.com/739903): Handle drop events once Chrome iOS is built with
+  // the iOS 11 SDK.
+  if (base::ios::IsRunningOnIOS11OrLater()) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
+    SEL setInteractionsSelector = NSSelectorFromString(@"setInteractions:");
+    if ([_omniBox respondsToSelector:setInteractionsSelector]) {
+      [_omniBox performSelector:setInteractionsSelector withObject:@[]];
+    }
+#pragma clang diagnostic pop
+  }
   if (_incognito) {
     [_omniBox setIncognito:YES];
     [_omniBox
