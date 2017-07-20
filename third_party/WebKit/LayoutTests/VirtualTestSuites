@@ -504,11 +504,6 @@
     "args": ["--enable-print-browser"]
   },
   {
-    "prefix": "experimental-canvas-features",
-    "base": "fast/canvas-experimental",
-    "args": ["--enable-experimental-canvas-features"]
-  },
-  {
     "prefix": "new-remote-playback-pipeline",
     "base": "media/remoteplayback",
     "args": ["--enable-features=NewRemotePlaybackPipeline"]

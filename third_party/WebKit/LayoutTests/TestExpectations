@@ -2897,9 +2897,6 @@ crbug.com/722943 media/audio-repaint.html [ Skip ]
 # Flaky timeout
 crbug.com/723297 virtual/off-main-thread-fetch/http/tests/inspector/service-workers/service-workers-redundant.html [ Timeout ]
 
-# Tests to be run only under virtual/experimental-canvas-features/
-crbug.com/682753 fast/canvas-experimental [ Skip ]
-
 crbug.com/715405 virtual/mojo-loading/http/tests/inspector/network/waterfall-images.html [ Skip ]
 crbug.com/714166 http/tests/inspector/network/waterfall-images.html [ Skip ]
 crbug.com/708175 external/wpt/IndexedDB/interleaved-cursors.html [ Failure Pass ]
