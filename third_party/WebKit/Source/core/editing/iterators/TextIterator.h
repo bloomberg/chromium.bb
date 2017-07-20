@@ -32,12 +32,11 @@
 #include "core/editing/FindOptions.h"
 #include "core/editing/iterators/FullyClippedStateStack.h"
 #include "core/editing/iterators/TextIteratorBehavior.h"
+#include "core/editing/iterators/TextIteratorTextNodeHandler.h"
 #include "core/editing/iterators/TextIteratorTextState.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
-
-class TextIteratorTextNodeHandler;
 
 CORE_EXPORT String
 PlainText(const EphemeralRange&,
@@ -68,7 +67,7 @@ class CORE_TEMPLATE_CLASS_EXPORT TextIteratorAlgorithm {
 
   ~TextIteratorAlgorithm();
 
-  bool AtEnd() const { return !text_state_->PositionNode() || should_stop_; }
+  bool AtEnd() const { return !text_state_.PositionNode() || should_stop_; }
   void Advance();
   bool IsInsideAtomicInlineElement() const;
   bool IsInTextSecurityMode() const;
@@ -83,10 +82,10 @@ class CORE_TEMPLATE_CLASS_EXPORT TextIteratorAlgorithm {
   PositionTemplate<Strategy> StartPositionInCurrentContainer() const;
   PositionTemplate<Strategy> EndPositionInCurrentContainer() const;
 
-  const TextIteratorTextState& GetText() const { return *text_state_; }
-  int length() const { return text_state_->length(); }
+  const TextIteratorTextState& GetText() const { return text_state_; }
+  int length() const { return text_state_.length(); }
   UChar CharacterAt(unsigned index) const {
-    return text_state_->CharacterAt(index);
+    return text_state_.CharacterAt(index);
   }
 
   bool BreaksAtReplacedElement() {
@@ -235,10 +234,10 @@ class CORE_TEMPLATE_CLASS_EXPORT TextIteratorAlgorithm {
   bool handle_shadow_root_ = false;
 
   // Contains state of emitted text.
-  const Member<TextIteratorTextState> text_state_;
+  TextIteratorTextState text_state_;
 
   // Helper for extracting text content from text nodes.
-  const Member<TextIteratorTextNodeHandler> text_node_handler_;
+  TextIteratorTextNodeHandler text_node_handler_;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT

@@ -16,12 +16,7 @@ namespace blink {
 TextIteratorTextNodeHandler::TextIteratorTextNodeHandler(
     const TextIteratorBehavior& behavior,
     TextIteratorTextState* text_state)
-    : behavior_(behavior), text_state_(text_state) {}
-
-DEFINE_TRACE(TextIteratorTextNodeHandler) {
-  visitor->Trace(text_node_);
-  visitor->Trace(text_state_);
-}
+    : behavior_(behavior), text_state_(*text_state) {}
 
 bool TextIteratorTextNodeHandler::HandleRemainingTextRuns() {
   if (ShouldProceedToRemainingText())
@@ -29,13 +24,13 @@ bool TextIteratorTextNodeHandler::HandleRemainingTextRuns() {
   // Handle remembered text box
   if (text_box_) {
     HandleTextBox();
-    return text_state_->PositionNode();
+    return text_state_.PositionNode();
   }
   // Handle remembered pre-formatted text node.
   if (!needs_handle_pre_formatted_text_node_)
     return false;
   HandlePreFormattedTextNode();
-  return text_state_->PositionNode();
+  return text_state_.PositionNode();
 }
 
 bool TextIteratorTextNodeHandler::ShouldHandleFirstLetter(
@@ -260,8 +255,8 @@ void TextIteratorTextNodeHandler::HandleTextBox() {
                                text_box_start == run_start && run_start > 0);
       if (need_space &&
           !layout_object->Style()->IsCollapsibleWhiteSpace(
-              text_state_->LastCharacter()) &&
-          text_state_->LastCharacter()) {
+              text_state_.LastCharacter()) &&
+          text_state_.LastCharacter()) {
         if (run_start > 0 && str[run_start - 1] == ' ') {
           unsigned space_run_start = run_start - 1;
           while (space_run_start > 0 && str[space_run_start - 1] == ' ')
@@ -328,7 +323,7 @@ void TextIteratorTextNodeHandler::HandleTextBox() {
         // If we are doing a subrun that doesn't go to the end of the text box,
         // come back again to finish handling this text box; don't advance to
         // the next one.
-        if (static_cast<unsigned>(text_state_->PositionEndOffset()) <
+        if (static_cast<unsigned>(text_state_.PositionEndOffset()) <
             text_box_end + text_start_offset)
           return;
 
@@ -440,8 +435,8 @@ void TextIteratorTextNodeHandler::SpliceBuffer(UChar c,
                                                Node* offset_base_node,
                                                int text_start_offset,
                                                int text_end_offset) {
-  text_state_->SpliceBuffer(c, text_node, offset_base_node, text_start_offset,
-                            text_end_offset);
+  text_state_.SpliceBuffer(c, text_node, offset_base_node, text_start_offset,
+                           text_end_offset);
   ResetCollapsedWhiteSpaceFixup();
 }
 
@@ -453,10 +448,10 @@ void TextIteratorTextNodeHandler::EmitText(Node* text_node,
                                                 : layout_object->GetText();
   if (behavior_.EmitsSpaceForNbsp())
     string.Replace(kNoBreakSpaceCharacter, kSpaceCharacter);
-  text_state_->EmitText(text_node,
-                        text_start_offset + layout_object->TextStartOffset(),
-                        text_end_offset + layout_object->TextStartOffset(),
-                        string, text_start_offset, text_end_offset);
+  text_state_.EmitText(text_node,
+                       text_start_offset + layout_object->TextStartOffset(),
+                       text_end_offset + layout_object->TextStartOffset(),
+                       string, text_start_offset, text_end_offset);
   ResetCollapsedWhiteSpaceFixup();
 }
 
