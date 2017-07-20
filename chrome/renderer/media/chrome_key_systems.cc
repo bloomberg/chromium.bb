@@ -83,6 +83,8 @@ static void AddExternalClearKey(
       "org.chromium.externalclearkey.crash";
   static const char kExternalClearKeyVerifyCdmHostTestKeySystem[] =
       "org.chromium.externalclearkey.verifycdmhosttest";
+  static const char kExternalClearKeyStorageIdTestKeySystem[] =
+      "org.chromium.externalclearkey.storageidtest";
 
   std::vector<base::string16> additional_param_names;
   std::vector<base::string16> additional_param_values;
@@ -128,6 +130,10 @@ static void AddExternalClearKey(
   // A key system that triggers the verify host files test in ClearKeyCdm.
   concrete_key_systems->emplace_back(new cdm::ExternalClearKeyProperties(
       kExternalClearKeyVerifyCdmHostTestKeySystem));
+
+  // A key system that fetches the Storage ID in ClearKeyCdm.
+  concrete_key_systems->emplace_back(new cdm::ExternalClearKeyProperties(
+      kExternalClearKeyStorageIdTestKeySystem));
 }
 
 #if defined(WIDEVINE_CDM_AVAILABLE)
