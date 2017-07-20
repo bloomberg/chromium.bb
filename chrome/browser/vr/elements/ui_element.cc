@@ -9,14 +9,11 @@
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "cc/base/math_util.h"
+#include "chrome/browser/vr/elements/ui_element_transform_operations.h"
 
 namespace vr {
 
 namespace {
-
-static constexpr size_t kTranslateIndex = 0;
-static constexpr size_t kRotateIndex = 1;
-static constexpr size_t kScaleIndex = 2;
 
 bool GetRayPlaneDistance(const gfx::Point3F& ray_origin,
                          const gfx::Vector3dF& ray_vector,
@@ -36,6 +33,7 @@ bool GetRayPlaneDistance(const gfx::Point3F& ray_origin,
 
 UiElement::UiElement() {
   animation_player_.set_target(this);
+  transform_operations_.AppendTranslate(0, 0, 0);
   transform_operations_.AppendTranslate(0, 0, 0);
   transform_operations_.AppendRotate(1, 0, 0, 0);
   transform_operations_.AppendScale(1, 1, 1);
@@ -87,14 +85,17 @@ void UiElement::SetSize(float width, float height) {
 }
 
 void UiElement::SetTransformOperations(
-    const cc::TransformOperations& operations) {
-  DCHECK_EQ(3ul, operations.size());
-  DCHECK_EQ(cc::TransformOperation::TRANSFORM_OPERATION_TRANSLATE,
-            operations.at(kTranslateIndex).type);
-  DCHECK_EQ(cc::TransformOperation::TRANSFORM_OPERATION_ROTATE,
-            operations.at(kRotateIndex).type);
-  DCHECK_EQ(cc::TransformOperation::TRANSFORM_OPERATION_SCALE,
-            operations.at(kScaleIndex).type);
+    const UiElementTransformOperations& ui_element_transform_operations) {
+  animation_player_.TransitionTransformOperationsTo(
+      last_frame_time_, transform_operations_,
+      ui_element_transform_operations.operations());
+}
+
+void UiElement::SetLayoutOffset(float x, float y) {
+  cc::TransformOperations operations = transform_operations_;
+  cc::TransformOperation& op = operations.at(kLayoutOffsetIndex);
+  op.translate = {x, y, 0};
+  op.Bake();
   animation_player_.TransitionTransformOperationsTo(
       last_frame_time_, transform_operations_, operations);
 }
@@ -144,6 +145,11 @@ void UiElement::SetMode(ColorScheme::Mode mode) {
 }
 
 void UiElement::OnSetMode() {}
+
+void UiElement::AddChild(UiElement* child) {
+  child->parent_ = this;
+  children_.push_back(child);
+}
 
 gfx::Point3F UiElement::GetCenter() const {
   gfx::Point3F center;
@@ -199,6 +205,37 @@ void UiElement::NotifyClientTransformOperationsAnimated(
 void UiElement::NotifyClientBoundsAnimated(const gfx::SizeF& size,
                                            cc::Animation* animation) {
   size_ = size;
+}
+
+void UiElement::LayOutChildren() {
+  for (auto* child : children_) {
+    // To anchor a child, use the parent's size to find its edge.
+    float x_offset;
+    switch (child->x_anchoring()) {
+      case XLEFT:
+        x_offset = -0.5f * size().width();
+        break;
+      case XRIGHT:
+        x_offset = 0.5f * size().width();
+        break;
+      case XNONE:
+        x_offset = 0.0f;
+        break;
+    }
+    float y_offset;
+    switch (child->y_anchoring()) {
+      case YTOP:
+        y_offset = 0.5f * size().height();
+        break;
+      case YBOTTOM:
+        y_offset = -0.5f * size().height();
+        break;
+      case YNONE:
+        y_offset = 0.0f;
+        break;
+    }
+    child->SetLayoutOffset(x_offset, y_offset);
+  }
 }
 
 }  // namespace vr

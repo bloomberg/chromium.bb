@@ -12,6 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/vr/elements/ui_element.h"
+#include "chrome/browser/vr/elements/ui_element_transform_operations.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/transform_util.h"
 
@@ -75,21 +76,21 @@ TEST(UiScene, ParentTransformAppliesToChild) {
   element->set_id(0);
   element->SetSize(1000, 1000);
 
-  cc::TransformOperations operations;
-  operations.AppendTranslate(6, 1, 0);
-  operations.AppendRotate(0, 0, 1, 180 / 2);
-  operations.AppendScale(3, 3, 1);
+  UiElementTransformOperations operations;
+  operations.SetTranslate(6, 1, 0);
+  operations.SetRotate(0, 0, 1, 90);
+  operations.SetScale(3, 3, 1);
   element->SetTransformOperations(operations);
   scene.AddUiElement(std::move(element));
 
   // Add a child to the parent, with different transformations.
   element = base::MakeUnique<UiElement>();
   element->set_id(1);
-  element->set_parent_id(0);
-  cc::TransformOperations child_operations;
-  child_operations.AppendTranslate(3, 0, 0);
-  child_operations.AppendRotate(0, 0, 1, 180 / 2);
-  child_operations.AppendScale(2, 2, 1);
+  scene.GetUiElementById(0)->AddChild(element.get());
+  UiElementTransformOperations child_operations;
+  child_operations.SetTranslate(3, 0, 0);
+  child_operations.SetRotate(0, 0, 1, 90);
+  child_operations.SetScale(2, 2, 1);
   element->SetTransformOperations(child_operations);
   scene.AddUiElement(std::move(element));
   const UiElement* child = scene.GetUiElementById(1);
@@ -114,7 +115,7 @@ TEST(UiScene, Opacity) {
 
   element = base::MakeUnique<UiElement>();
   element->set_id(1);
-  element->set_parent_id(0);
+  scene.GetUiElementById(0)->AddChild(element.get());
   element->SetOpacity(0.5);
   scene.AddUiElement(std::move(element));
 
@@ -133,7 +134,7 @@ TEST(UiScene, LockToFov) {
 
   element = base::MakeUnique<UiElement>();
   element->set_id(1);
-  element->set_parent_id(0);
+  scene.GetUiElementById(0)->AddChild(element.get());
   element->set_lock_to_fov(false);
   scene.AddUiElement(std::move(element));
 
@@ -164,7 +165,7 @@ TEST_P(AnchoringTest, VerifyCorrectPosition) {
   // Add a child to the parent, with anchoring.
   element = base::MakeUnique<UiElement>();
   element->set_id(1);
-  element->set_parent_id(0);
+  scene.GetUiElementById(0)->AddChild(element.get());
   element->set_x_anchoring(GetParam().x_anchoring);
   element->set_y_anchoring(GetParam().y_anchoring);
   scene.AddUiElement(std::move(element));
