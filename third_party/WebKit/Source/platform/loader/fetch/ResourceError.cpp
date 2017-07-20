@@ -28,7 +28,6 @@
 
 #include "net/base/net_errors.h"
 #include "platform/loader/fetch/ResourceRequest.h"
-#include "platform/weborigin/KURL.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
@@ -44,15 +43,14 @@ constexpr char kThrottledErrorDescription[] =
 
 const char kErrorDomainBlinkInternal[] = "BlinkInternal";
 
-ResourceError ResourceError::CancelledError(const String& failing_url) {
-  return WebURLError(KURL(kParsedURLString, failing_url), false,
-                     net::ERR_ABORTED);
+ResourceError ResourceError::CancelledError(const KURL& url) {
+  return WebURLError(url, false, net::ERR_ABORTED);
 }
 
 ResourceError ResourceError::CancelledDueToAccessCheckError(
-    const String& failing_url,
+    const KURL& url,
     ResourceRequestBlockedReason blocked_reason) {
-  ResourceError error = CancelledError(failing_url);
+  ResourceError error = CancelledError(url);
   error.SetIsAccessCheck(true);
   if (blocked_reason == ResourceRequestBlockedReason::kSubresourceFilter)
     error.SetShouldCollapseInitiator(true);
@@ -60,25 +58,23 @@ ResourceError ResourceError::CancelledDueToAccessCheckError(
 }
 
 ResourceError ResourceError::CancelledDueToAccessCheckError(
-    const String& failing_url,
+    const KURL& url,
     ResourceRequestBlockedReason blocked_reason,
     const String& localized_description) {
-  ResourceError error =
-      CancelledDueToAccessCheckError(failing_url, blocked_reason);
+  ResourceError error = CancelledDueToAccessCheckError(url, blocked_reason);
   error.localized_description_ = localized_description;
   return error;
 }
 
-ResourceError ResourceError::CacheMissError(const String& failing_url) {
-  return WebURLError(KURL(kParsedURLString, failing_url), false,
-                     net::ERR_CACHE_MISS);
+ResourceError ResourceError::CacheMissError(const KURL& url) {
+  return WebURLError(url, false, net::ERR_CACHE_MISS);
 }
 
 ResourceError ResourceError::Copy() const {
   ResourceError error_copy;
   error_copy.domain_ = domain_.IsolatedCopy();
   error_copy.error_code_ = error_code_;
-  error_copy.failing_url_ = failing_url_.IsolatedCopy();
+  error_copy.failing_url_ = failing_url_.Copy();
   error_copy.localized_description_ = localized_description_.IsolatedCopy();
   error_copy.is_null_ = is_null_;
   error_copy.is_access_check_ = is_access_check_;
