@@ -24,7 +24,6 @@ namespace web {
 class BrowserState;
 class NavigationItem;
 struct Referrer;
-class NavigationManagerDelegate;
 class SessionStorageBuilder;
 
 // Implementation of NavigationManagerImpl.
@@ -34,7 +33,6 @@ class LegacyNavigationManagerImpl : public NavigationManagerImpl {
   ~LegacyNavigationManagerImpl() override;
 
   // NavigationManagerImpl:
-  void SetDelegate(NavigationManagerDelegate* delegate) override;
   void SetBrowserState(BrowserState* browser_state) override;
   void SetSessionController(CRWSessionController* session_controller) override;
   void InitializeSession() override;
@@ -81,7 +79,6 @@ class LegacyNavigationManagerImpl : public NavigationManagerImpl {
   void GoBack() override;
   void GoForward() override;
   void GoToIndex(int index) override;
-  void Reload(ReloadType reload_type, bool check_for_reposts) override;
   NavigationItemList GetBackwardItems() const override;
   NavigationItemList GetForwardItems() const override;
   void CopyStateFromAndPrune(const NavigationManager* source) override;
@@ -102,12 +99,6 @@ class LegacyNavigationManagerImpl : public NavigationManagerImpl {
   // Returns the most recent NavigationItem that does not have an app-specific
   // URL.
   NavigationItem* GetLastCommittedNonAppSpecificItem() const;
-
-  // The primary delegate for this manager.
-  NavigationManagerDelegate* delegate_;
-
-  // The BrowserState that is associated with this instance.
-  BrowserState* browser_state_;
 
   // CRWSessionController that backs this instance.
   // TODO(stuartmorgan): Fold CRWSessionController into this class.

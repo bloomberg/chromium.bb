@@ -49,11 +49,12 @@ enum class NavigationInitiationType {
 // Generally mirrors upstream's NavigationController.
 class NavigationManagerImpl : public NavigationManager {
  public:
+  NavigationManagerImpl();
   ~NavigationManagerImpl() override {}
 
   // Setters for NavigationManagerDelegate and BrowserState.
-  virtual void SetDelegate(NavigationManagerDelegate* delegate) = 0;
-  virtual void SetBrowserState(BrowserState* browser_state) = 0;
+  virtual void SetDelegate(NavigationManagerDelegate* delegate);
+  virtual void SetBrowserState(BrowserState* browser_state);
 
   // Sets the CRWSessionController that backs this object.
   // Keeps a strong reference to |session_controller|.
@@ -127,6 +128,9 @@ class NavigationManagerImpl : public NavigationManager {
   // Returns the index of the previous item. Only used by SessionStorageBuilder.
   virtual int GetPreviousItemIndex() const = 0;
 
+  // NavigationManager:
+  void Reload(ReloadType reload_type, bool check_for_reposts) override;
+
  protected:
   // The SessionStorageBuilder functions require access to private variables of
   // NavigationManagerImpl.
@@ -145,6 +149,12 @@ class NavigationManagerImpl : public NavigationManager {
   // in the fragment).
   static bool AreUrlsFragmentChangeNavigation(const GURL& existing_url,
                                               const GURL& new_url);
+
+  // The primary delegate for this manager.
+  NavigationManagerDelegate* delegate_;
+
+  // The BrowserState that is associated with this instance.
+  BrowserState* browser_state_;
 };
 
 }  // namespace web

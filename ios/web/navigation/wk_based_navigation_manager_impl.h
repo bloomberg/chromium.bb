@@ -22,7 +22,6 @@ namespace web {
 class BrowserState;
 class NavigationItem;
 struct Referrer;
-class NavigationManagerDelegate;
 class SessionStorageBuilder;
 
 // WKBackForwardList based implementation of NavigationManagerImpl.
@@ -40,8 +39,6 @@ class WKBasedNavigationManagerImpl : public NavigationManagerImpl {
   ~WKBasedNavigationManagerImpl() override;
 
   // NavigationManagerImpl:
-  void SetDelegate(NavigationManagerDelegate* delegate) override;
-  void SetBrowserState(BrowserState* browser_state) override;
   void SetSessionController(CRWSessionController* session_controller) override;
   void InitializeSession() override;
   void ReplaceSessionHistory(std::vector<std::unique_ptr<NavigationItem>> items,
@@ -87,7 +84,6 @@ class WKBasedNavigationManagerImpl : public NavigationManagerImpl {
   void GoBack() override;
   void GoForward() override;
   void GoToIndex(int index) override;
-  void Reload(ReloadType reload_type, bool check_for_reposts) override;
   NavigationItemList GetBackwardItems() const override;
   NavigationItemList GetForwardItems() const override;
   void CopyStateFromAndPrune(const NavigationManager* source) override;
@@ -101,11 +97,7 @@ class WKBasedNavigationManagerImpl : public NavigationManagerImpl {
   // NavigationManagerImpl methods used by SessionStorageBuilder.
   NavigationItemImpl* GetNavigationItemImplAtIndex(size_t index) const override;
 
-  // The primary delegate for this manager.
-  NavigationManagerDelegate* delegate_;
 
-  // The BrowserState that is associated with this instance.
-  BrowserState* browser_state_;
 
   // List of transient url rewriters added by |AddTransientURLRewriter()|.
   std::unique_ptr<std::vector<BrowserURLRewriter::URLRewriter>>
