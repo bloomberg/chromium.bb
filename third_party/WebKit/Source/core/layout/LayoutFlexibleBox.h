@@ -198,10 +198,10 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
   FlexItem ConstructFlexItem(LayoutBox& child, ChildLayoutType);
 
   void FreezeInflexibleItems(FlexSign,
-                             FlexLine&,
+                             FlexLine*,
                              LayoutUnit& remaining_free_space);
   bool ResolveFlexibleLengths(FlexSign,
-                              FlexLine&,
+                              FlexLine*,
                               LayoutUnit initial_free_space,
                               LayoutUnit& remaining_free_space);
   void FreezeViolations(Vector<FlexItem*>&,
@@ -215,7 +215,7 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
                                               LayoutUnit child_preferred_size);
   void PrepareChildForPositionedLayout(LayoutBox& child);
   void LayoutAndPlaceChildren(LayoutUnit& cross_axis_offset,
-                              FlexLine&,
+                              FlexLine*,
                               LayoutUnit available_free_space,
                               bool relayout_children,
                               SubtreeLayoutScope&);

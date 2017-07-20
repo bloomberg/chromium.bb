@@ -75,12 +75,8 @@ class FlexItem {
 };
 
 struct FlexLine {
-  void Reset() {
-    line_items.clear();
-    sum_flex_base_size = LayoutUnit();
+  FlexLine() {
     total_flex_grow = total_flex_shrink = total_weighted_flex_shrink = 0;
-    sum_hypothetical_main_size = LayoutUnit();
-    cross_axis_offset = cross_axis_extent = max_ascent = LayoutUnit();
   }
 
   // These fields get filled in by ComputeNextFlexLine.
@@ -108,7 +104,11 @@ class FlexLayoutAlgorithm {
                       LayoutUnit line_break_length,
                       const Vector<FlexItem>& all_items);
 
-  bool ComputeNextFlexLine(size_t* next_index, FlexLine*);
+  Vector<FlexLine>& FlexLines() { return flex_lines_; }
+
+  // Computes the next flex line, stores it in FlexLines(), and returns a
+  // pointer to it. Returns nullptr if there are no more lines.
+  FlexLine* ComputeNextFlexLine();
 
  private:
   bool IsMultiline() const { return style_->FlexWrap() != EFlexWrap::kNowrap; }
@@ -116,6 +116,8 @@ class FlexLayoutAlgorithm {
   const ComputedStyle* style_;
   LayoutUnit line_break_length_;
   const Vector<FlexItem>& all_items_;
+  Vector<FlexLine> flex_lines_;
+  size_t next_item_index_;
 };
 
 }  // namespace blink
