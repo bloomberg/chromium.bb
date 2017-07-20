@@ -15,8 +15,8 @@ static_assert(TargetProperty::FIRST_TARGET_PROPERTY == 0,
 
 // This should match the TargetProperty enum.
 static const char* const s_targetPropertyNames[] = {
-    "TRANSFORM",     "OPACITY",          "FILTER",
-    "SCROLL_OFFSET", "BACKGROUND_COLOR", "BOUNDS"};
+    "TRANSFORM",        "OPACITY", "FILTER",    "SCROLL_OFFSET",
+    "BACKGROUND_COLOR", "BOUNDS",  "VISIBILITY"};
 
 static_assert(static_cast<int>(TargetProperty::LAST_TARGET_PROPERTY) + 1 ==
                   arraysize(s_targetPropertyNames),

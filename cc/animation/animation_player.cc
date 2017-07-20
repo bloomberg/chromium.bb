@@ -754,7 +754,8 @@ void AnimationPlayer::TickAnimation(base::TimeTicks monotonic_time,
           curve->ToFilterAnimationCurve()->GetValue(trimmed), animation);
       break;
     case TargetProperty::BACKGROUND_COLOR:
-      // Not yet implemented.
+      target->NotifyClientBackgroundColorAnimated(
+          curve->ToColorAnimationCurve()->GetValue(trimmed), animation);
       break;
     case TargetProperty::SCROLL_OFFSET:
       target->NotifyClientScrollOffsetAnimated(
@@ -763,6 +764,10 @@ void AnimationPlayer::TickAnimation(base::TimeTicks monotonic_time,
     case TargetProperty::BOUNDS:
       target->NotifyClientBoundsAnimated(
           curve->ToSizeAnimationCurve()->GetValue(trimmed), animation);
+      break;
+    case TargetProperty::VISIBILITY:
+      target->NotifyClientVisibilityAnimated(
+          curve->ToBooleanAnimationCurve()->GetValue(trimmed), animation);
       break;
   }
 }
