@@ -11,6 +11,9 @@
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
 #import "remoting/ios/app/remoting_theme.h"
 
+#include "remoting/base/string_resources.h"
+#include "ui/base/l10n/l10n_util.h"
+
 static const float kLogoSizeMultiplier = 0.381966f;
 static const float kLogoYOffset = -10.f;
 static const float kButtonHeight = 80.f;
@@ -34,7 +37,8 @@ static const float kButtonHeight = 80.f;
   [self.view addSubview:imageView];
 
   MDCFlatButton* signInButton = [[MDCFlatButton alloc] init];
-  [signInButton setTitle:@"Sign in" forState:UIControlStateNormal];
+  [signInButton setTitle:l10n_util::GetNSString(IDS_SIGN_IN_BUTTON)
+                forState:UIControlStateNormal];
   [signInButton sizeToFit];
   [signInButton addTarget:self
                    action:@selector(didTapSignIn:)

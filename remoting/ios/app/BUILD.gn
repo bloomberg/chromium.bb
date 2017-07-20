@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//remoting/build/config/remoting_build.gni")
 import("//remoting/ios/app/remoting_ios_tmpl.gni")
 
 group("all") {
@@ -10,6 +11,20 @@ group("all") {
   deps = [
     ":ios_remoting_app",
   ]
+}
+
+foreach(locale, remoting_locales_with_underscores) {
+  bundle_data("locale_${locale}_bundle_data") {
+    sources = [
+      "$root_out_dir/remoting/resources/$locale.lproj/locale.pak",
+    ]
+    outputs = [
+      "{{bundle_resources_dir}}/$locale.lproj/{{source_file_part}}",
+    ]
+    public_deps = [
+      "//remoting/resources:copy_locales",
+    ]
+  }
 }
 
 # source set to be used by both external and internal app.
@@ -78,10 +93,15 @@ source_set("common_source_set") {
     "//remoting/ios/mdc",
     "//remoting/ios/persistence",
     "//remoting/protocol",
+    "//remoting/resources",
     "//ui/base",
     "//ui/gfx",
     "//ui/resources",
   ]
+
+  foreach(locale, remoting_locales_with_underscores) {
+    deps += [ ":locale_${locale}_bundle_data" ]
+  }
 
   public_deps = [
     "//ios/third_party/material_components_ios",

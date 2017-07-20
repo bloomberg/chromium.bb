@@ -8,6 +8,9 @@
 
 #import "remoting/ios/app/help_view_controller.h"
 
+#include "remoting/base/string_resources.h"
+#include "ui/base/l10n/l10n_util.h"
+
 // TODO(nicholss): These urls should come from a global config.
 static NSString* const kHelpCenterUrl =
     @"https://support.google.com/chrome/answer/1649523?co=GENIE.Platform%3DiOS";
@@ -20,11 +23,11 @@ static NSString* const kCreditsUrlString =
 
 - (instancetype)init {
   if (self = [super initWithUrl:kHelpCenterUrl title:@"Help Center"]) {
-    self.navigationItem.rightBarButtonItem =
-        [[UIBarButtonItem alloc] initWithTitle:@"Credits"
-                                         style:UIBarButtonItemStylePlain
-                                        target:self
-                                        action:@selector(onTapCredits:)];
+    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc]
+        initWithTitle:l10n_util::GetNSString(IDS_CREDITS)
+                style:UIBarButtonItemStylePlain
+               target:self
+               action:@selector(onTapCredits:)];
   }
   return self;
 }
@@ -32,9 +35,9 @@ static NSString* const kCreditsUrlString =
 #pragma mark - Private
 
 - (void)onTapCredits:(id)button {
-  WebViewController* creditsVC =
-      [[WebViewController alloc] initWithUrl:kCreditsUrlString
-                                       title:@"Credits"];
+  WebViewController* creditsVC = [[WebViewController alloc]
+      initWithUrl:kCreditsUrlString
+            title:l10n_util::GetNSString(IDS_CREDITS)];
   [self.navigationController pushViewController:creditsVC animated:YES];
 }
 
