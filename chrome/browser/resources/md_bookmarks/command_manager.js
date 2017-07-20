@@ -648,8 +648,10 @@ cr.define('bookmarks', function() {
      */
     onKeydown_: function(e) {
       var selection = this.getState().selection.items;
-      if (e.target == document.body)
+      if (e.target == document.body &&
+          !bookmarks.DialogFocusManager.getInstance().hasOpenDialog()) {
         this.handleKeyEvent(e, selection);
+      }
     },
 
     /**

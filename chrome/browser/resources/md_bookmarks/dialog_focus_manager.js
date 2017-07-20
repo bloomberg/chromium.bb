@@ -44,6 +44,13 @@ cr.define('bookmarks', function() {
       showFn();
     },
 
+    /**
+     * @return {boolean} True if the document currently has an open dialog.
+     */
+    hasOpenDialog: function() {
+      return this.dialogs_.size > 0;
+    },
+
     /** @private */
     updatePreviousFocus_: function() {
       this.previousFocusElement_ = this.getFocusedElement_();
@@ -75,7 +82,7 @@ cr.define('bookmarks', function() {
 
         assert(this.dialogs_.delete(dialog));
         // Focus the originally focused element if there are no more dialogs.
-        if (!this.dialogs_.size)
+        if (!this.hasOpenDialog())
           this.previousFocusElement_.focus();
 
         dialog.removeEventListener('close', closeListener);
