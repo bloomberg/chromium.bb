@@ -52,19 +52,25 @@ struct SensorReading {
   // values[0]: proximity sensor distance measured in centimeters.
   //
   // ACCELEROMETER:
-  // values[0]: acceleration minus Gx on the x-axis.
-  // values[1]: acceleration minus Gy on the y-axis.
-  // values[2]: acceleration minus Gz on the z-axis.
+  // values[0]: acceleration minus Gx on the x-axis in SI meters per second
+  // squared (m/s^2) units.
+  // values[1]: acceleration minus Gy on the y-axis in SI meters per second
+  // squared (m/s^2) units.
+  // values[2]: acceleration minus Gz on the z-axis in SI meters per second
+  // squared (m/s^2) units.
   //
   // LINEAR_ACCELERATION:
-  // values[0]: acceleration on the x-axis.
-  // values[1]: acceleration on the y-axis.
-  // values[2]: acceleration on the z-axis.
+  // values[0]: acceleration on the x-axis in SI meters per second squared
+  // (m/s^2) units.
+  // values[1]: acceleration on the y-axis in SI meters per second squared
+  // (m/s^2) units.
+  // values[2]: acceleration on the z-axis in SI meters per second squared
+  // (m/s^2) units.
   //
   // GYROSCOPE:
-  // values[0]: angular speed around the x-axis.
-  // values[1]: angular speed around the y-axis.
-  // values[2]: angular speed around the z-axis.
+  // values[0]: angular speed around the x-axis in radians/second.
+  // values[1]: angular speed around the y-axis in radians/second.
+  // values[2]: angular speed around the z-axis in radians/second.
   //
   // MAGNETOMETER:
   // values[0]: ambient magnetic field in the x-axis in micro-Tesla (uT).
@@ -76,11 +82,14 @@ struct SensorReading {
   //
   // ABSOLUTE_ORIENTATION_EULER_ANGLES:
   // values[0]: x-axis angle in degrees representing the orientation of the
-  // device in 3D space.
+  // device in 3D space. It corresponds to the beta value in the W3C
+  // DeviceOrientation Event Specification. This value is in [180, 180).
   // values[1]: y-axis angle in degrees representing the orientation of the
-  // device in 3D space.
+  // device in 3D space. It corresponds to the gamma value in the W3C
+  // DeviceOrientation Event Specification. This value is in [-90, 90).
   // values[2]: z-axis angle in degrees representing the orientation of the
-  // device in 3D space.
+  // device in 3D space. It corresponds to the alpha value in the W3C
+  // DeviceOrientation Event Specification. This value is in [0, 360).
   //
   // ABSOLUTE_ORIENTATION_QUATERNION:
   // values[0]: x value of a quaternion representing the orientation of the
@@ -96,11 +105,14 @@ struct SensorReading {
   // (Identical to ABSOLUTE_ORIENTATION_EULER_ANGLES except that it doesn't use
   // the geomagnetic field.)
   // values[0]: x-axis angle in degrees representing the orientation of the
-  // device in 3D space.
+  // device in 3D space. It corresponds to the beta value in the W3C
+  // DeviceOrientation Event Specification. This value is in [180, 180).
   // values[1]: y-axis angle in degrees representing the orientation of the
-  // device in 3D space.
+  // device in 3D space. It corresponds to the gamma value in the W3C
+  // DeviceOrientation Event Specification. This value is in [-90, 90).
   // values[2]: z-axis angle in degrees representing the orientation of the
-  // device in 3D space.
+  // device in 3D space. It corresponds to the alpha value in the W3C
+  // DeviceOrientation Event Specification. This value is in [0, 360).
   //
   // RELATIVE_ORIENTATION_QUATERNION:
   // (Identical to ABSOLUTE_ORIENTATION_QUATERNION except that it doesn't use
