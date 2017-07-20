@@ -460,6 +460,7 @@ class Desktop:
     # Ensure that the software-rendering GL drivers are loaded by the desktop
     # session, instead of any hardware GL drivers installed on the system.
     library_path = (
+        "/usr/lib/mesa-diverted/%(arch)s-linux-gnu:"
         "/usr/lib/%(arch)s-linux-gnu/mesa:"
         "/usr/lib/%(arch)s-linux-gnu/dri:"
         "/usr/lib/%(arch)s-linux-gnu/gallium-pipe" %
