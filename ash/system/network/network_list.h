@@ -14,6 +14,7 @@
 #include "ash/system/network/network_icon_animation_observer.h"
 #include "ash/system/network/network_info.h"
 #include "ash/system/network/network_state_list_detailed_view.h"
+#include "ash/system/tray/tray_info_label.h"
 #include "base/macros.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_type_pattern.h"
@@ -32,7 +33,8 @@ namespace tray {
 // A list of available networks of a given type. This class is used for all
 // network types except VPNs. For VPNs, see the |VPNList| class.
 class NetworkListView : public NetworkStateListDetailedView,
-                        public network_icon::AnimationObserver {
+                        public network_icon::AnimationObserver,
+                        public TrayInfoLabel::Delegate {
  public:
   class SectionHeaderRowView;
 
@@ -104,7 +106,7 @@ class NetworkListView : public NetworkStateListDetailedView,
   // and is only modified if the info label is created or destroyed.
   void UpdateInfoLabel(int message_id,
                        int insertion_index,
-                       InfoLabel** info_label_ptr);
+                       TrayInfoLabel** info_label_ptr);
 
   // Creates a cellular/tether/Wi-Fi header row |view| and adds it to
   // |scroll_content()| if necessary and reorders the |scroll_content()| placing
@@ -116,6 +118,10 @@ class NetworkListView : public NetworkStateListDetailedView,
                              SectionHeaderRowView** view,
                              views::Separator** separator_view);
 
+  // TrayInfoLabel::Delegate:
+  void OnLabelClicked(int message_id) override;
+  bool IsLabelClickable(int message_id) const override;
+
   // network_icon::AnimationObserver:
   void NetworkIconChanged() override;
 
@@ -125,8 +131,8 @@ class NetworkListView : public NetworkStateListDetailedView,
 
   bool needs_relayout_;
 
-  InfoLabel* no_wifi_networks_view_;
-  InfoLabel* no_mobile_networks_view_;
+  TrayInfoLabel* no_wifi_networks_view_;
+  TrayInfoLabel* no_mobile_networks_view_;
   SectionHeaderRowView* mobile_header_view_;
   SectionHeaderRowView* wifi_header_view_;
   views::Separator* mobile_separator_view_;

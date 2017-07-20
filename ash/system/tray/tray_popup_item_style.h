@@ -44,6 +44,8 @@ class TrayPopupItemStyle {
     // System information text (e.g. date/time, battery status, "Scanning for
     // devices..." seen in the Bluetooth detailed view, etc).
     SYSTEM_INFO,
+    // System information text within a clickable row.
+    CLICKABLE_SYSTEM_INFO,
     // Child buttons within rows that have a visible border (e.g. Cast's
     // "Stop", etc).
     BUTTON,

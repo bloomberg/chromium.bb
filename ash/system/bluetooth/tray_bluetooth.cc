@@ -20,6 +20,7 @@
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_details_view.h"
+#include "ash/system/tray/tray_info_label.h"
 #include "ash/system/tray/tray_item_more.h"
 #include "ash/system/tray/tray_popup_item_style.h"
 #include "ash/system/tray/tray_popup_utils.h"
@@ -314,8 +315,8 @@ class BluetoothDetailedView : public TrayDetailsView {
 
     // Show user Bluetooth state if there is no bluetooth devices in list.
     if (device_map_.size() == 0 && bluetooth_available && bluetooth_enabled) {
-      scroll_content()->AddChildView(
-          new InfoLabel(IDS_ASH_STATUS_TRAY_BLUETOOTH_DISCOVERING));
+      scroll_content()->AddChildView(new TrayInfoLabel(
+          nullptr /* delegate */, IDS_ASH_STATUS_TRAY_BLUETOOTH_DISCOVERING));
     }
 
     // Focus the device which was focused before the device-list update.

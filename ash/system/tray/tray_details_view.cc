@@ -237,35 +237,6 @@ const int kTitleRowPaddingBottom =
 
 }  // namespace
 
-////////////////////////////////////////////////////////////////////////////////
-// TrayDetailsView::InfoLabel:
-
-TrayDetailsView::InfoLabel::InfoLabel(int message_id)
-    : label_(TrayPopupUtils::CreateDefaultLabel()) {
-  SetLayoutManager(new views::FillLayout);
-
-  TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::SYSTEM_INFO);
-  style.SetupLabel(label_);
-
-  TriView* tri_view = TrayPopupUtils::CreateMultiTargetRowView();
-  tri_view->SetInsets(gfx::Insets(0,
-                                  kMenuExtraMarginFromLeftEdge +
-                                      kTrayPopupPaddingHorizontal -
-                                      kTrayPopupLabelHorizontalPadding,
-                                  0, kTrayPopupPaddingHorizontal));
-  tri_view->SetContainerVisible(TriView::Container::START, false);
-  tri_view->SetContainerVisible(TriView::Container::END, false);
-  tri_view->AddView(TriView::Container::CENTER, label_);
-  AddChildView(tri_view);
-
-  SetMessage(message_id);
-}
-
-TrayDetailsView::InfoLabel::~InfoLabel() {}
-
-void TrayDetailsView::InfoLabel::SetMessage(int message_id) {
-  label_->SetText(l10n_util::GetStringUTF16(message_id));
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // TrayDetailsView:
