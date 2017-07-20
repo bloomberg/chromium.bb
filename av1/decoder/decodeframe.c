@@ -2314,9 +2314,8 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
                              int supertx_enabled,
 #endif
                              int mi_row, int mi_col, aom_reader *r,
-                             BLOCK_SIZE bsize, int n4x4_l2) {
+                             BLOCK_SIZE bsize) {
   AV1_COMMON *const cm = &pbi->common;
-  const int n8x8_l2 = n4x4_l2 - 1;
   const int num_8x8_wh = mi_size_wide[bsize];
   const int hbs = num_8x8_wh >> 1;
 #if CONFIG_CB4X4
@@ -2438,22 +2437,22 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
 #if CONFIG_SUPERTX
                          supertx_enabled,
 #endif  // CONFIG_SUPERTX
-                         mi_row, mi_col, r, subsize, n8x8_l2);
+                         mi_row, mi_col, r, subsize);
         decode_partition(pbi, xd,
 #if CONFIG_SUPERTX
                          supertx_enabled,
 #endif  // CONFIG_SUPERTX
-                         mi_row, mi_col + hbs, r, subsize, n8x8_l2);
+                         mi_row, mi_col + hbs, r, subsize);
         decode_partition(pbi, xd,
 #if CONFIG_SUPERTX
                          supertx_enabled,
 #endif  // CONFIG_SUPERTX
-                         mi_row + hbs, mi_col, r, subsize, n8x8_l2);
+                         mi_row + hbs, mi_col, r, subsize);
         decode_partition(pbi, xd,
 #if CONFIG_SUPERTX
                          supertx_enabled,
 #endif  // CONFIG_SUPERTX
-                         mi_row + hbs, mi_col + hbs, r, subsize, n8x8_l2);
+                         mi_row + hbs, mi_col + hbs, r, subsize);
         break;
 #if CONFIG_EXT_PARTITION_TYPES
       case PARTITION_HORZ_A:
@@ -3877,8 +3876,7 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
 #if CONFIG_SUPERTX
                            0,
 #endif  // CONFIG_SUPERTX
-                           mi_row, mi_col, &td->bit_reader, cm->sb_size,
-                           b_width_log2_lookup[cm->sb_size]);
+                           mi_row, mi_col, &td->bit_reader, cm->sb_size);
 #if (CONFIG_NCOBMC || CONFIG_NCOBMC_ADAPT_WEIGHT) && CONFIG_MOTION_VAR
           detoken_and_recon_sb(pbi, &td->xd, mi_row, mi_col, &td->bit_reader,
                                cm->sb_size);
@@ -4022,8 +4020,7 @@ static int tile_worker_hook(TileWorkerData *const tile_data,
 #if CONFIG_SUPERTX
                        0,
 #endif
-                       mi_row, mi_col, &tile_data->bit_reader, cm->sb_size,
-                       b_width_log2_lookup[cm->sb_size]);
+                       mi_row, mi_col, &tile_data->bit_reader, cm->sb_size);
 #if (CONFIG_NCOBMC || CONFIG_NCOBMC_ADAPT_WEIGHT) && CONFIG_MOTION_VAR
       detoken_and_recon_sb(pbi, &tile_data->xd, mi_row, mi_col,
                            &tile_data->bit_reader, cm->sb_size);
