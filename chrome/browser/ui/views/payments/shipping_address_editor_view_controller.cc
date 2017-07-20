@@ -41,6 +41,33 @@ namespace {
 // http://www.cplusplus.com/reference/string/string/npos
 const size_t kInvalidCountryIndex = static_cast<size_t>(-1);
 
+// Used to normalize a profile in place and synchronously from an
+// AddressNormalizer that already loaded the normalization rules.
+class SynchronousAddressNormalizerDelegate
+    : public AddressNormalizer::Delegate {
+ public:
+  // Doesn't take ownership of |profile_to_normalize| but does modify it.
+  SynchronousAddressNormalizerDelegate(
+      autofill::AutofillProfile* profile_to_normalize)
+      : normalized(false), profile_to_normalize_(profile_to_normalize) {}
+
+  ~SynchronousAddressNormalizerDelegate() override { DCHECK(normalized); }
+
+ private:
+  void OnAddressNormalized(
+      const autofill::AutofillProfile& normalized_profile) override {
+    *profile_to_normalize_ = normalized_profile;
+    normalized = true;
+  }
+
+  void OnCouldNotNormalize(const autofill::AutofillProfile& profile) override {
+    normalized = false;
+  }
+
+  bool normalized;
+  autofill::AutofillProfile* profile_to_normalize_;
+};
+
 }  // namespace
 
 ShippingAddressEditorViewController::ShippingAddressEditorViewController(
@@ -89,11 +116,11 @@ base::string16 ShippingAddressEditorViewController::GetInitialValueForType(
     autofill::l10n::CaseInsensitiveCompare compare;
 
     for (const auto& region : region_model_->GetRegions()) {
-      base::string16 region_code = base::UTF8ToUTF16(region.first);
-      if (compare.StringsEqual(initial_region, region_code) ||
+      if (compare.StringsEqual(initial_region,
+                               base::UTF8ToUTF16(region.first)) ||
           compare.StringsEqual(initial_region,
                                base::UTF8ToUTF16(region.second))) {
-        return region_code;
+        return base::UTF8ToUTF16(region.second);
       }
     }
 
@@ -371,6 +398,17 @@ void ShippingAddressEditorViewController::UpdateEditorFields() {
 
 void ShippingAddressEditorViewController::OnDataChanged(bool synchronous) {
   SaveFieldsToProfile(&temporary_profile_, /*ignore_errors*/ true);
+
+  // This function is called after rules are successfully loaded. Because of
+  // this, normalization is guaranteed to be synchronous. If they're not loaded,
+  // something went wrong with the network call and normalization can't happen
+  // (there's no data to go in the region combobox anyways).
+  std::string country_code = countries_[chosen_country_index_].first;
+  if (state()->GetAddressNormalizer()->AreRulesLoadedForRegion(country_code)) {
+    SynchronousAddressNormalizerDelegate delegate(&temporary_profile_);
+    state()->GetAddressNormalizer()->StartAddressNormalization(
+        temporary_profile_, country_code, 1, &delegate);
+  }
 
   UpdateEditorFields();
   if (synchronous) {
