@@ -87,7 +87,7 @@ class TestImporterTest(LoggingTestCase):
             '/mock-checkout/third_party/WebKit/LayoutTests/W3CImportExpectations', '')
         importer = TestImporter(host)
         importer.git_cl = MockGitCL(host, results={
-            Build('builder-a', 123): TryJobStatus('COMPLETED', 'SUCCESS')
+            Build('builder-a', 123): TryJobStatus('COMPLETED', 'SUCCESS'),
         })
         success = importer.update_expectations_for_cl()
         self.assertTrue(success)
@@ -98,7 +98,7 @@ class TestImporterTest(LoggingTestCase):
             '/mock-checkout/third_party/WebKit/LayoutTests/W3CImportExpectations', '')
         importer = TestImporter(host)
         importer.git_cl = MockGitCL(host, results={
-            Build('builder-a', 123): TryJobStatus('COMPLETED', 'FAILURE')
+            Build('builder-a', 123): TryJobStatus('COMPLETED', 'FAILURE'),
         })
         importer.fetch_new_expectations_and_baselines = lambda: None
         success = importer.update_expectations_for_cl()
@@ -112,8 +112,10 @@ class TestImporterTest(LoggingTestCase):
         host.filesystem.write_text_file(
             '/mock-checkout/third_party/WebKit/LayoutTests/W3CImportExpectations', '')
         importer = TestImporter(host)
+        # Only the latest job for each builder is counted.
         importer.git_cl = MockGitCL(host, results={
-            Build('builder-a', 123): TryJobStatus('COMPLETED', 'SUCCESS')
+            Build('builder-a', 120): TryJobStatus('COMPLETED', 'FAILURE'),
+            Build('builder-a', 123): TryJobStatus('COMPLETED', 'SUCCESS'),
         })
         success = importer.run_commit_queue_for_cl()
         self.assertTrue(success)
@@ -134,7 +136,9 @@ class TestImporterTest(LoggingTestCase):
             '/mock-checkout/third_party/WebKit/LayoutTests/W3CImportExpectations', '')
         importer = TestImporter(host)
         importer.git_cl = MockGitCL(host, results={
-            Build('builder-a', 123): TryJobStatus('COMPLETED', 'FAILURE')
+            Build('builder-a', 120): TryJobStatus('COMPLETED', 'SUCCESS'),
+            Build('builder-a', 123): TryJobStatus('COMPLETED', 'FAILURE'),
+            Build('builder-b', 200): TryJobStatus('COMPLETED', 'SUCCESS'),
         })
         importer.fetch_new_expectations_and_baselines = lambda: None
         success = importer.run_commit_queue_for_cl()
