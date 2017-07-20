@@ -450,6 +450,28 @@ class MountTests(cros_test_lib.TestCase):
           cros_build_lib.SudoRunCommand(['umount', '-lf', tempdir],
                                         error_code_ok=True)
 
+  def testUnmountTree(self):
+    with osutils.TempDir(prefix='chromite.test.osutils') as tempdir:
+      # Mount the dir and verify it worked.
+      st_before = os.stat(tempdir)
+      osutils.MountTmpfsDir(tempdir)
+      st_after = os.stat(tempdir)
+      self.assertNotEqual(st_before.st_dev, st_after.st_dev)
+
+      # Mount an inner dir the same way.
+      tempdir2 = os.path.join(tempdir, 'inner')
+      osutils.SafeMakedirsNonRoot(tempdir2)
+      st_before2 = os.stat(tempdir2)
+      osutils.MountTmpfsDir(tempdir2)
+      st_after2 = os.stat(tempdir2)
+      self.assertNotEqual(st_before2.st_dev, st_after2.st_dev)
+
+      # Unmount the whole tree and verify it worked.
+      osutils.UmountTree(tempdir)
+      st_umount = os.stat(tempdir)
+      self.assertFalse(os.path.exists(tempdir2))
+      self.assertEqual(st_before.st_dev, st_umount.st_dev)
+
 
 class IteratePathsTest(cros_test_lib.TestCase):
   """Test iterating through all segments of a path."""

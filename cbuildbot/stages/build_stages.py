@@ -204,7 +204,7 @@ class CleanUpStage(generic_stages.BuilderStage):
                           self._build_root, e)
 
     # Clean mount points first to be safe about deleting.
-    commands.CleanUpMountPoints(self._build_root)
+    osutils.UmountTree(self._build_root)
 
     if manifest is None:
       self._DeleteChroot()

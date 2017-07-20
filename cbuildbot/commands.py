@@ -162,22 +162,6 @@ def ValidateClobber(buildroot):
 # =========================== Main Commands ===================================
 
 
-def CleanUpMountPoints(buildroot):
-  """Cleans up any stale mount points from previous runs."""
-  # Scrape it from /proc/mounts since it's easily accessible;
-  # additionally, unmount in reverse order of what's listed there
-  # rather than trying a reverse sorting; it's possible for
-  # mount /z /foon
-  # mount /foon/blah -o loop /a
-  # which reverse sorting cannot handle.
-  buildroot = os.path.realpath(buildroot).rstrip('/') + '/'
-  mounts = [mtab.destination for mtab in osutils.IterateMountPoints() if
-            mtab.destination.startswith(buildroot)]
-
-  for mount_pt in reversed(mounts):
-    osutils.UmountDir(mount_pt, lazy=True, cleanup=False)
-
-
 def WipeOldOutput(buildroot):
   """Wipes out build output directory.
 
