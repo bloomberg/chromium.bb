@@ -14,8 +14,8 @@
 namespace blink {
 
 class ModuleScriptFetchRequest;
-enum class ModuleGraphLevel;
 class ModuleTreeLinkerRegistry;
+class ModuleTreeReachedUrlSet;
 
 // A ModuleTreeLinker is responsible for running and keeping intermediate states
 // for "internal module script graph fetching procedure" for a module graph tree
@@ -27,6 +27,7 @@ class CORE_EXPORT ModuleTreeLinker final : public SingleModuleClient {
                                  const AncestorList&,
                                  ModuleGraphLevel,
                                  Modulator*,
+                                 ModuleTreeReachedUrlSet*,
                                  ModuleTreeLinkerRegistry*,
                                  ModuleTreeClient*);
   static ModuleTreeLinker* FetchDescendantsForInlineScript(
@@ -48,6 +49,7 @@ class CORE_EXPORT ModuleTreeLinker final : public SingleModuleClient {
   ModuleTreeLinker(const AncestorList& ancestor_list_with_url,
                    ModuleGraphLevel,
                    Modulator*,
+                   ModuleTreeReachedUrlSet*,
                    ModuleTreeLinkerRegistry*,
                    ModuleTreeClient*);
 
@@ -79,6 +81,7 @@ class CORE_EXPORT ModuleTreeLinker final : public SingleModuleClient {
   friend class DependencyModuleClient;
 
   const Member<Modulator> modulator_;
+  const Member<ModuleTreeReachedUrlSet> reached_url_set_;
   const Member<ModuleTreeLinkerRegistry> registry_;
   const Member<ModuleTreeClient> client_;
   const HashSet<KURL> ancestor_list_with_url_;
