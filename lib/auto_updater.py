@@ -632,7 +632,10 @@ class ChromiumOSFlashUpdater(BaseUpdater):
     """Revert the boot partition."""
     part = self.GetRootDev(self.device)
     logging.warning('Reverting update; Boot partition will be %s', part)
-    self.device.RunCommand(['/postinst', part], **self._cmd_kwargs)
+    try:
+      self.device.RunCommand(['/postinst', part], **self._cmd_kwargs)
+    except cros_build_lib.RunCommandError as e:
+      logging.warning('Reverting the boot partition failed: %s', e)
 
   def UpdateRootfs(self):
     """Update the rootfs partition of the device."""
