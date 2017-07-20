@@ -43,9 +43,8 @@ bool IsSearchResultsNewDesignEnabled() {
 }
 
 bool IsPlayStoreAppSearchEnabled() {
-  static const bool enabled =
-      base::FeatureList::IsEnabled(kEnablePlayStoreAppSearch);
-  return enabled;
+  // Not using local static variable to allow tests to change this value.
+  return base::FeatureList::IsEnabled(kEnablePlayStoreAppSearch);
 }
 
 int AnswerCardMaxWidth() {
