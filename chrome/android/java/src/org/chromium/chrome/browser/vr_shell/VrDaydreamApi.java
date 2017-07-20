@@ -36,16 +36,10 @@ public interface VrDaydreamApi {
     Intent createVrIntent(final ComponentName componentName);
 
     /**
-     * Launch the given PendingIntent in VR mode.
-     * @return false if unable to acquire DaydreamApi instance.
-     */
-    boolean launchInVr(final PendingIntent pendingIntent);
-
-    /**
      * Launch the given Intent in VR mode.
      * @return false if unable to acquire DaydreamApi instance.
      */
-    boolean launchInVr(final Intent intent);
+    boolean launchInVr(final PendingIntent pendingIntent);
 
     /**
      * @param requestCode The requestCode used by startActivityForResult.

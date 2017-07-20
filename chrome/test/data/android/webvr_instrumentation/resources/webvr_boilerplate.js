@@ -87,6 +87,7 @@ gl.enable(gl.DEPTH_TEST);
 gl.enable(gl.CULL_FACE);
 window.addEventListener("resize", onResize, false);
 window.addEventListener("vrdisplaypresentchange", onVrPresentChange, false);
+window.addEventListener('vrdisplayactivate', onVrRequestPresent, false);
 window.requestAnimationFrame(onAnimationFrame);
 webglCanvas.onclick = onVrRequestPresent;
 onResize();
