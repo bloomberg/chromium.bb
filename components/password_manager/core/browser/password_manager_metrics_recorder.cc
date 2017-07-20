@@ -15,6 +15,10 @@ typedef autofill::SavePasswordProgressLogger Logger;
 
 namespace password_manager {
 
+// URL Keyed Metrics.
+const char kUkmUserModifiedPasswordField[] = "UserModifiedPasswordField";
+const char kUkmProvisionalSaveFailure[] = "ProvisionalSaveFailure";
+
 PasswordManagerMetricsRecorder::PasswordManagerMetricsRecorder(
     std::unique_ptr<ukm::UkmEntryBuilder> ukm_entry_builder)
     : ukm_entry_builder_(std::move(ukm_entry_builder)) {}
@@ -24,7 +28,7 @@ PasswordManagerMetricsRecorder::PasswordManagerMetricsRecorder(
 
 PasswordManagerMetricsRecorder::~PasswordManagerMetricsRecorder() {
   if (user_modified_password_field_)
-    RecordUkmMetric("UserModifiedPasswordField", 1);
+    RecordUkmMetric(kUkmUserModifiedPasswordField, 1);
 }
 
 PasswordManagerMetricsRecorder& PasswordManagerMetricsRecorder::operator=(
@@ -51,6 +55,7 @@ void PasswordManagerMetricsRecorder::RecordProvisionalSaveFailure(
     BrowserSavePasswordProgressLogger* logger) {
   UMA_HISTOGRAM_ENUMERATION("PasswordManager.ProvisionalSaveFailure", failure,
                             MAX_FAILURE_VALUE);
+  RecordUkmMetric(kUkmProvisionalSaveFailure, static_cast<int64_t>(failure));
 
   if (logger) {
     switch (failure) {
