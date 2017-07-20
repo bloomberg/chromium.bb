@@ -2440,6 +2440,12 @@ if (enable_java_templates) {
     }
     assert(_android_manifest != "")  # Mark as used.
 
+    if (_supports_android &&
+        (!defined(invoker.no_build_hooks) ||
+         (defined(invoker.no_build_hooks) && !invoker.no_build_hooks))) {
+      _accumulated_deps += [ "//build/android:build_hooks_java" ]
+    }
+
     if (defined(invoker.run_findbugs_override)) {
       _run_findbugs = invoker.run_findbugs_override
     } else {
