@@ -99,7 +99,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientPrintersSyncTest, RemoveAndEditPrinters) {
   ASSERT_TRUE(PrintersMatchChecker().Wait());
   EXPECT_EQ(2, GetPrinterCount(0));
   EXPECT_EQ(updated_description,
-            GetPrinterStore(1)->GetPrinters()[0]->description());
+            GetPrinterStore(1)->GetConfiguredPrinters()[0].description());
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientPrintersSyncTest, ConflictResolution) {
@@ -125,7 +125,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientPrintersSyncTest, ConflictResolution) {
   // Conflict resolution shoud run here.
   ASSERT_TRUE(PrintersMatchChecker().Wait());
   // The more recent update should win.
-  EXPECT_EQ(valid_message, GetPrinterStore(1)->GetPrinters()[0]->description());
+  EXPECT_EQ(valid_message,
+            GetPrinterStore(1)->GetConfiguredPrinters()[0].description());
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientPrintersSyncTest, SimpleMerge) {

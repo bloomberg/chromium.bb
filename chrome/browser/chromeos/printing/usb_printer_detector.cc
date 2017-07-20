@@ -261,11 +261,8 @@ class UsbPrinterDetectorImpl : public UsbPrinterDetector,
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     if (result == PrinterSetupResult::kSuccess) {
       if (data->is_new) {
-        // We aren't done with data->printer yet, so we have to copy it instead
-        // of moving it.
-        auto printer_copy = base::MakeUnique<Printer>(*data->printer);
         SyncedPrintersManagerFactory::GetForBrowserContext(profile_)
-            ->RegisterPrinter(std::move(printer_copy));
+            ->UpdateConfiguredPrinter(*data->printer);
       }
       // TODO(justincarlson): If the device was hotplugged, pop a timed
       // notification that says the printer is now available for printing.

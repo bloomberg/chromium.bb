@@ -52,11 +52,10 @@ printing::PrinterBasicInfo ToBasicInfo(const chromeos::Printer& printer) {
   return basic_info;
 }
 
-void AddPrintersToList(
-    const std::vector<std::unique_ptr<chromeos::Printer>>& printers,
-    PrinterList* list) {
+void AddPrintersToList(const std::vector<chromeos::Printer>& printers,
+                       PrinterList* list) {
   for (const auto& printer : printers) {
-    list->push_back(ToBasicInfo(*printer));
+    list->push_back(ToBasicInfo(printer));
   }
 }
 
@@ -103,8 +102,8 @@ class PrinterBackendProxyChromeos : public PrinterBackendProxy {
 
     if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kDisableNativeCups)) {
-      AddPrintersToList(prefs_->GetPrinters(), &printer_list);
-      AddPrintersToList(prefs_->GetRecommendedPrinters(), &printer_list);
+      AddPrintersToList(prefs_->GetConfiguredPrinters(), &printer_list);
+      AddPrintersToList(prefs_->GetEnterprisePrinters(), &printer_list);
     }
 
     content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,

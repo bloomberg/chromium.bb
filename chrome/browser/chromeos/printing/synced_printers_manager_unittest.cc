@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/printing/synced_printers_manager.h"
 
+#include <algorithm>
 #include <memory>
 #include <utility>
 
@@ -12,6 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
+#include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/printing/printers_sync_bridge.h"
 #include "chrome/browser/chromeos/printing/synced_printers_manager_factory.h"
@@ -30,7 +32,7 @@ namespace {
 const char kTestPrinterId[] = "UUID-UUID-UUID-PRINTER";
 const char kTestUri[] = "ipps://printer.chromium.org/ipp/print";
 
-const char kLexJson[] = R"json({
+const char kLexJson[] = R"({
         "display_name": "LexaPrint",
         "description": "Laser on the test shelf",
         "manufacturer": "LexaPrint, Inc.",
@@ -40,60 +42,43 @@ const char kLexJson[] = R"json({
           "effective_manufacturer": "LexaPrint",
           "effective_model": "MS610de",
         },
-      } )json";
+      } )";
 
 // Helper class to record observed events.
 class LoggingObserver : public SyncedPrintersManager::Observer {
  public:
-  void OnPrinterAdded(const Printer& printer) override {
-    last_added_ = printer;
+  void OnConfiguredPrintersChanged(
+      const std::vector<Printer>& printers) override {
+    configured_printers_ = printers;
   }
 
-  void OnPrinterUpdated(const Printer& printer) override {
-    last_updated_ = printer;
+  void OnEnterprisePrintersChanged(
+      const std::vector<Printer>& printer) override {
+    enterprise_printers_ = printer;
   }
 
-  void OnPrinterRemoved(const Printer& printer) override {
-    last_removed_ = printer;
+  const std::vector<Printer>& configured_printers() const {
+    return configured_printers_;
   }
-
-  // Returns true if OnPrinterAdded was called.
-  bool AddCalled() const { return last_added_.has_value(); }
-
-  // Returns true if OnPrinterUpdated was called.
-  bool UpdateCalled() const { return last_updated_.has_value(); }
-
-  // Returns true if OnPrinterRemoved was called.
-  bool RemoveCalled() const { return last_removed_.has_value(); }
-
-  // Returns the last printer that was added.  If AddCalled is false, there will
-  // be no printer.
-  base::Optional<Printer> LastAdded() const { return last_added_; }
-  // Returns the last printer that was updated.  If UpdateCalled is false, there
-  // will be no printer.
-  base::Optional<Printer> LastUpdated() const { return last_updated_; }
-  // Returns the last printer that was removed.  If RemoveCalled is false, there
-  // will be no printer.
-  base::Optional<Printer> LastRemoved() const { return last_removed_; }
+  const std::vector<Printer>& enterprise_printers() const {
+    return enterprise_printers_;
+  }
 
  private:
-  base::Optional<Printer> last_added_;
-  base::Optional<Printer> last_updated_;
-  base::Optional<Printer> last_removed_;
+  std::vector<Printer> configured_printers_;
+  std::vector<Printer> enterprise_printers_;
 };
-
-}  // namespace
 
 class SyncedPrintersManagerTest : public testing::Test {
  protected:
   SyncedPrintersManagerTest()
-      : manager_(
+      : manager_(SyncedPrintersManager::Create(
             &profile_,
             base::MakeUnique<PrintersSyncBridge>(
                 base::Bind(&syncer::ModelTypeStore::CreateInMemoryStoreForTest,
                            syncer::PRINTERS),
                 base::BindRepeating(
-                    base::IgnoreResult(&base::debug::DumpWithoutCrashing)))) {
+                    base::IgnoreResult(&base::debug::DumpWithoutCrashing))))) {
     base::RunLoop().RunUntilIdle();
   }
 
@@ -103,66 +88,84 @@ class SyncedPrintersManagerTest : public testing::Test {
   // Must outlive |manager_|.
   TestingProfile profile_;
 
-  SyncedPrintersManager manager_;
+  std::unique_ptr<SyncedPrintersManager> manager_;
 };
+
+// Add a test failure if the ids of printers are not those in expected.  Order
+// is not considered.
+void ExpectPrinterIdsAre(const std::vector<Printer>& printers,
+                         std::vector<std::string> expected_ids) {
+  std::sort(expected_ids.begin(), expected_ids.end());
+  std::vector<std::string> printer_ids;
+  for (const Printer& printer : printers) {
+    printer_ids.push_back(printer.id());
+  }
+  std::sort(printer_ids.begin(), printer_ids.end());
+  if (printer_ids != expected_ids) {
+    ADD_FAILURE() << "Expected to find ids: {"
+                  << base::JoinString(expected_ids, ",") << "}; found ids: {"
+                  << base::JoinString(printer_ids, ",") << "}";
+  }
+}
 
 TEST_F(SyncedPrintersManagerTest, AddPrinter) {
   LoggingObserver observer;
-  manager_.AddObserver(&observer);
-  manager_.RegisterPrinter(base::MakeUnique<Printer>(kTestPrinterId));
+  manager_->AddObserver(&observer);
+  manager_->UpdateConfiguredPrinter(Printer(kTestPrinterId));
 
-  auto printers = manager_.GetPrinters();
+  auto printers = manager_->GetConfiguredPrinters();
   ASSERT_EQ(1U, printers.size());
-  EXPECT_EQ(kTestPrinterId, printers[0]->id());
-  EXPECT_EQ(Printer::Source::SRC_USER_PREFS, printers[0]->source());
+  EXPECT_EQ(kTestPrinterId, printers[0].id());
+  EXPECT_EQ(Printer::Source::SRC_USER_PREFS, printers[0].source());
 
-  EXPECT_TRUE(observer.AddCalled());
-  EXPECT_FALSE(observer.UpdateCalled());
+  ExpectPrinterIdsAre(observer.configured_printers(), {kTestPrinterId});
 }
 
 TEST_F(SyncedPrintersManagerTest, UpdatePrinterAssignsId) {
-  manager_.RegisterPrinter(base::MakeUnique<Printer>());
+  manager_->UpdateConfiguredPrinter(Printer());
 
-  auto printers = manager_.GetPrinters();
+  auto printers = manager_->GetConfiguredPrinters();
   ASSERT_EQ(1U, printers.size());
-  EXPECT_FALSE(printers[0]->id().empty());
+  EXPECT_FALSE(printers[0].id().empty());
 }
 
 TEST_F(SyncedPrintersManagerTest, UpdatePrinter) {
-  manager_.RegisterPrinter(base::MakeUnique<Printer>(kTestPrinterId));
-  auto updated_printer = base::MakeUnique<Printer>(kTestPrinterId);
-  updated_printer->set_uri(kTestUri);
+  manager_->UpdateConfiguredPrinter(Printer(kTestPrinterId));
+  Printer updated_printer(kTestPrinterId);
+  updated_printer.set_uri(kTestUri);
 
   // Register observer so it only receives the update event.
   LoggingObserver observer;
-  manager_.AddObserver(&observer);
+  manager_->AddObserver(&observer);
 
-  manager_.RegisterPrinter(std::move(updated_printer));
+  manager_->UpdateConfiguredPrinter(updated_printer);
 
-  auto printers = manager_.GetPrinters();
+  auto printers = manager_->GetConfiguredPrinters();
   ASSERT_EQ(1U, printers.size());
-  EXPECT_EQ(kTestUri, printers[0]->uri());
+  EXPECT_EQ(kTestUri, printers[0].uri());
 
-  EXPECT_TRUE(observer.UpdateCalled());
-  EXPECT_FALSE(observer.AddCalled());
+  ExpectPrinterIdsAre(observer.configured_printers(), {kTestPrinterId});
 }
 
 TEST_F(SyncedPrintersManagerTest, RemovePrinter) {
-  manager_.RegisterPrinter(base::MakeUnique<Printer>("OtherUUID"));
-  manager_.RegisterPrinter(base::MakeUnique<Printer>(kTestPrinterId));
-  manager_.RegisterPrinter(base::MakeUnique<Printer>());
+  manager_->UpdateConfiguredPrinter(Printer("OtherUUID"));
+  manager_->UpdateConfiguredPrinter(Printer(kTestPrinterId));
+  manager_->UpdateConfiguredPrinter(Printer());
 
-  manager_.RemovePrinter(kTestPrinterId);
+  manager_->RemoveConfiguredPrinter(kTestPrinterId);
 
-  auto printers = manager_.GetPrinters();
+  auto printers = manager_->GetConfiguredPrinters();
+
+  // One of the remaining ids should be "OtherUUID", the other should have
+  // been automatically generated by the manager.
   ASSERT_EQ(2U, printers.size());
-  EXPECT_NE(kTestPrinterId, printers.at(0)->id());
-  EXPECT_NE(kTestPrinterId, printers.at(1)->id());
+  EXPECT_NE(kTestPrinterId, printers.at(0).id());
+  EXPECT_NE(kTestPrinterId, printers.at(1).id());
 }
 
 // Tests for policy printers
 
-TEST_F(SyncedPrintersManagerTest, RecommendedPrinters) {
+TEST_F(SyncedPrintersManagerTest, EnterprisePrinters) {
   std::string first_printer =
       R"json({
       "display_name": "Color Laser",
@@ -188,14 +191,14 @@ TEST_F(SyncedPrintersManagerTest, RecommendedPrinters) {
   // TestingPrefSyncableService assumes ownership of |value|.
   prefs->SetManagedPref(prefs::kRecommendedNativePrinters, std::move(value));
 
-  auto printers = manager_.GetRecommendedPrinters();
+  auto printers = manager_->GetEnterprisePrinters();
   ASSERT_EQ(2U, printers.size());
-  EXPECT_EQ("Color Laser", printers[0]->display_name());
-  EXPECT_EQ("ipp://192.168.1.5", printers[1]->uri());
-  EXPECT_EQ(Printer::Source::SRC_POLICY, printers[1]->source());
+  EXPECT_EQ("Color Laser", printers[0].display_name());
+  EXPECT_EQ("ipp://192.168.1.5", printers[1].uri());
+  EXPECT_EQ(Printer::Source::SRC_POLICY, printers[1].source());
 }
 
-TEST_F(SyncedPrintersManagerTest, GetRecommendedPrinter) {
+TEST_F(SyncedPrintersManagerTest, GetEnterprisePrinter) {
   std::string printer = kLexJson;
   auto value = base::MakeUnique<base::ListValue>();
   value->AppendString(printer);
@@ -205,10 +208,10 @@ TEST_F(SyncedPrintersManagerTest, GetRecommendedPrinter) {
   // TestingPrefSyncableService assumes ownership of |value|.
   prefs->SetManagedPref(prefs::kRecommendedNativePrinters, std::move(value));
 
-  auto printers = manager_.GetRecommendedPrinters();
+  auto printers = manager_->GetEnterprisePrinters();
 
-  const Printer& from_list = *(printers.front());
-  std::unique_ptr<Printer> retrieved = manager_.GetPrinter(from_list.id());
+  const Printer& from_list = printers.front();
+  std::unique_ptr<Printer> retrieved = manager_->GetPrinter(from_list.id());
 
   EXPECT_EQ(from_list.id(), retrieved->id());
   EXPECT_EQ("LexaPrint", from_list.display_name());
@@ -217,21 +220,22 @@ TEST_F(SyncedPrintersManagerTest, GetRecommendedPrinter) {
 
 TEST_F(SyncedPrintersManagerTest, PrinterNotInstalled) {
   Printer printer(kTestPrinterId, base::Time::FromInternalValue(1000));
-  EXPECT_FALSE(manager_.IsConfigurationCurrent(printer));
+  EXPECT_FALSE(manager_->IsConfigurationCurrent(printer));
 }
 
 TEST_F(SyncedPrintersManagerTest, PrinterIsInstalled) {
   Printer printer(kTestPrinterId, base::Time::FromInternalValue(1000));
-  manager_.PrinterInstalled(printer);
-  EXPECT_TRUE(manager_.IsConfigurationCurrent(printer));
+  manager_->PrinterInstalled(printer);
+  EXPECT_TRUE(manager_->IsConfigurationCurrent(printer));
 }
 
 TEST_F(SyncedPrintersManagerTest, UpdatedPrinterConfiguration) {
   Printer printer(kTestPrinterId, base::Time::FromInternalValue(1000));
-  manager_.PrinterInstalled(printer);
+  manager_->PrinterInstalled(printer);
 
   Printer updated_printer(kTestPrinterId, base::Time::FromInternalValue(2000));
-  EXPECT_FALSE(manager_.IsConfigurationCurrent(updated_printer));
+  EXPECT_FALSE(manager_->IsConfigurationCurrent(updated_printer));
 }
 
+}  // namespace
 }  // namespace chromeos

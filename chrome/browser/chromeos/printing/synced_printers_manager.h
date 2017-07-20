@@ -34,78 +34,59 @@ class SyncedPrintersManager : public KeyedService {
  public:
   class Observer {
    public:
-    virtual void OnPrinterAdded(const Printer& printer) = 0;
-    virtual void OnPrinterUpdated(const Printer& printer) = 0;
-    virtual void OnPrinterRemoved(const Printer& printer) = 0;
+    virtual void OnConfiguredPrintersChanged(
+        const std::vector<Printer>& printers) = 0;
+    virtual void OnEnterprisePrintersChanged(
+        const std::vector<Printer>& printers) = 0;
   };
 
-  SyncedPrintersManager(Profile* profile,
-                        std::unique_ptr<PrintersSyncBridge> sync_bridge);
-  ~SyncedPrintersManager() override;
+  static std::unique_ptr<SyncedPrintersManager> Create(
+      Profile* profile,
+      std::unique_ptr<PrintersSyncBridge> sync_bridge);
+  ~SyncedPrintersManager() override = default;
 
   // Register the printing preferences with the |registry|.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Returns the printers that are saved in preferences.
-  std::vector<std::unique_ptr<Printer>> GetPrinters() const;
+  virtual std::vector<Printer> GetConfiguredPrinters() const = 0;
 
   // Returns printers from enterprise policy.
-  std::vector<std::unique_ptr<Printer>> GetRecommendedPrinters() const;
+  virtual std::vector<Printer> GetEnterprisePrinters() const = 0;
 
-  // Returns the printer with id |printer_id|, or nullptr if no such
-  // printer exists.
-  std::unique_ptr<Printer> GetPrinter(const std::string& printer_id) const;
+  // Returns the printer with id |printer_id|, or nullptr if no such printer
+  // exists.  Searches both Configured and Enterprise printers.
+  virtual std::unique_ptr<Printer> GetPrinter(
+      const std::string& printer_id) const = 0;
 
   // Adds or updates a printer in profile preferences.  The |printer| is
   // identified by its id field.  Those with an empty id are treated as new
   // printers.
-  void RegisterPrinter(std::unique_ptr<Printer> printer);
+  virtual void UpdateConfiguredPrinter(const Printer& printer) = 0;
 
   // Remove printer from preferences with the id |printer_id|.  Returns true if
   // the printer was successfully removed.
-  bool RemovePrinter(const std::string& printer_id);
+  virtual bool RemoveConfiguredPrinter(const std::string& printer_id) = 0;
 
   // Attach |observer| for notification of events.  |observer| is expected to
   // live on the same thread (UI) as this object.  OnPrinter* methods are
   // invoked inline so calling RegisterPrinter in response to OnPrinterAdded is
   // forbidden.
-  void AddObserver(SyncedPrintersManager::Observer* observer);
+  virtual void AddObserver(SyncedPrintersManager::Observer* observer) = 0;
 
   // Remove |observer| so that it no longer receives notifications.  After the
   // completion of this method, the |observer| can be safely destroyed.
-  void RemoveObserver(SyncedPrintersManager::Observer* observer);
+  virtual void RemoveObserver(SyncedPrintersManager::Observer* observer) = 0;
 
   // Returns a ModelTypeSyncBridge for the sync client.
-  PrintersSyncBridge* GetSyncBridge();
+  virtual PrintersSyncBridge* GetSyncBridge() = 0;
 
   // Registers that the printer was installed in CUPS. This is independent of
   // whether a printer is saved in profile preferences.
-  void PrinterInstalled(const Printer& printer);
+  virtual void PrinterInstalled(const Printer& printer) = 0;
 
   // Returns true if |printer| is currently installed in CUPS.
-  bool IsConfigurationCurrent(const Printer& printer) const;
-
- private:
-  // Updates the in-memory recommended printer list.
-  void UpdateRecommendedPrinters();
-
-  Profile* profile_;
-  PrefChangeRegistrar pref_change_registrar_;
-
-  // The backend for profile printers.
-  std::unique_ptr<PrintersSyncBridge> sync_bridge_;
-
-  // Contains the keys for all recommended printers in order so we can return
-  // the list of recommended printers in the order they were received.
-  std::vector<std::string> recommended_printer_ids_;
-  std::map<std::string, std::unique_ptr<Printer>> recommended_printers_;
-
-  // Map of printer ids to installation timestamps.
-  std::map<std::string, base::Time> installed_printer_timestamps_;
-
-  base::ObserverList<Observer> observers_;
-
-  DISALLOW_COPY_AND_ASSIGN(SyncedPrintersManager);
+  virtual bool IsConfigurationCurrent(const Printer& printer) const = 0;
 };
 
 }  // namespace chromeos
