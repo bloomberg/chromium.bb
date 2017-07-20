@@ -11,6 +11,9 @@
 #import "remoting/ios/app/app_delegate.h"
 #import "remoting/ios/app/remoting_theme.h"
 
+#include "remoting/base/string_resources.h"
+#include "ui/base/l10n/l10n_util.h"
+
 static NSString* const kFeedbackContext = @"SideMenuFeedbackContext";
 
 #pragma mark - SideMenuItem
@@ -50,17 +53,18 @@ static NSString* const kFeedbackContext = @"SideMenuFeedbackContext";
   dispatch_once(&onceToken, ^{
     items = @[ @[
       [[SideMenuItem alloc]
-          initWithTitle:@"Send Feedback"
+          initWithTitle:l10n_util::GetNSString(IDS_ACTIONBAR_SEND_FEEDBACK)
                    icon:RemotingTheme.feedbackIcon
                  action:^{
                    [AppDelegate.instance
                        presentFeedbackFlowWithContext:kFeedbackContext];
                  }],
-      [[SideMenuItem alloc] initWithTitle:@"Help"
-                                     icon:RemotingTheme.helpIcon
-                                   action:^{
-                                     [AppDelegate.instance presentHelpCenter];
-                                   }],
+      [[SideMenuItem alloc]
+          initWithTitle:l10n_util::GetNSString(IDS_ACTIONBAR_HELP)
+                   icon:RemotingTheme.helpIcon
+                 action:^{
+                   [AppDelegate.instance presentHelpCenter];
+                 }],
     ] ];
   });
   return items;

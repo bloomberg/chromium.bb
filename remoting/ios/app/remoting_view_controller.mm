@@ -28,7 +28,9 @@
 
 #include "base/strings/sys_string_conversions.h"
 #include "remoting/base/oauth_token_getter.h"
+#include "remoting/base/string_resources.h"
 #include "remoting/client/connect_to_host_info.h"
+#include "ui/base/l10n/l10n_util.h"
 
 static CGFloat kHostInset = 5.f;
 
@@ -74,7 +76,8 @@ static CGFloat kHostInset = 5.f;
     _appBar = [[MDCAppBar alloc] init];
     [self addChildViewController:_appBar.headerViewController];
 
-    self.navigationItem.title = @"chrome remote desktop";
+    self.navigationItem.title =
+        l10n_util::GetNSString(IDS_PRODUCT_NAME).lowercaseString;
 
     UIBarButtonItem* menuButton =
         [[UIBarButtonItem alloc] initWithImage:RemotingTheme.menuIcon
@@ -163,7 +166,7 @@ static CGFloat kHostInset = 5.f;
            completion:(void (^)())completionBlock {
   if (![cell.hostInfo isOnline]) {
     MDCSnackbarMessage* message = [[MDCSnackbarMessage alloc] init];
-    message.text = @"Host is offline.";
+    message.text = l10n_util::GetNSString(IDS_HOST_OFFLINE_TOOLTIP);
     [MDCSnackbarManager showMessage:message];
     return;
   }

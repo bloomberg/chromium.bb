@@ -11,6 +11,9 @@
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
 #import "remoting/ios/app/remoting_theme.h"
 
+#include "remoting/base/string_resources.h"
+#include "ui/base/l10n/l10n_util.h"
+
 static const CGFloat kReconnectButtonWidth = 120.f;
 static const CGFloat kReconnectButtonHeight = 30.f;
 
@@ -30,7 +33,8 @@ static const CGFloat kReconnectButtonHeight = 30.f;
 
     _reconnectButton = [[MDCRaisedButton alloc] init];
     [_reconnectButton setElevation:4.0f forState:UIControlStateNormal];
-    [_reconnectButton setTitle:@"Reconnect" forState:UIControlStateNormal];
+    [_reconnectButton setTitle:l10n_util::GetNSString(IDS_RECONNECT)
+                      forState:UIControlStateNormal];
     [_reconnectButton addTarget:self
                          action:@selector(didTapReconnect:)
                forControlEvents:UIControlEventTouchUpInside];
