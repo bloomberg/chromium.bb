@@ -15,8 +15,10 @@
 #import "chrome/browser/certificate_viewer.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/cocoa/browser_dialogs_views_mac.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
+#include "chrome/browser/ui/cocoa/bubble_anchor_helper.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_decoration.h"
@@ -126,16 +128,9 @@ bool g_is_bubble_showing = false;
 // proper anchor point for the bubble. The returned point is in screen
 // coordinates.
 NSPoint AnchorPointForWindow(NSWindow* parent) {
-  BrowserWindowController* controller = [parent windowController];
-  NSPoint origin = NSZeroPoint;
-  if ([controller isKindOfClass:[BrowserWindowController class]]) {
-    LocationBarViewMac* location_bar = [controller locationBarBridge];
-    if (location_bar) {
-      NSPoint bubble_point = location_bar->GetPageInfoBubblePoint();
-      origin = ui::ConvertPointFromWindowToScreen(parent, bubble_point);
-    }
-  }
-  return origin;
+  Browser* browser = chrome::FindBrowserWithWindow(parent);
+  DCHECK(browser);
+  return GetPageInfoAnchorPointForBrowser(browser);
 }
 
 }  // namespace
@@ -1268,14 +1263,8 @@ void PageInfoUIBridge::Show(gfx::NativeWindow parent,
                             const GURL& virtual_url,
                             const security_state::SecurityInfo& security_info) {
   if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
-    BrowserWindowController* controller =
-        [BrowserWindowController browserWindowControllerForWindow:parent];
-    LocationBarViewMac* location_bar = [controller locationBarBridge];
-    LocationBarDecoration* decoration =
-        location_bar ? location_bar->GetPageInfoDecoration() : nullptr;
-    chrome::ShowPageInfoBubbleViewsAtPoint(
-        gfx::ScreenPointFromNSPoint(AnchorPointForWindow(parent)), profile,
-        web_contents, virtual_url, security_info, decoration);
+    chrome::ShowPageInfoBubbleViews(parent, profile, web_contents, virtual_url,
+                                    security_info);
     return;
   }
 

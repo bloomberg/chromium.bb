@@ -78,7 +78,7 @@ void TabDialogsViewsMac::ShowManagePasswordsBubble(bool user_action) {
   bubble_view->set_parent_window(parent);
   views::BubbleDialogDelegateView::CreateBubble(bubble_view);
   bubble_view->ShowForReason(reason);
-  KeepBubbleAnchored(bubble_view, GetManagePasswordDecoration(bubble_view));
+  KeepBubbleAnchored(bubble_view, GetManagePasswordDecoration(window));
 }
 
 void TabDialogsViewsMac::HideManagePasswordsBubble() {

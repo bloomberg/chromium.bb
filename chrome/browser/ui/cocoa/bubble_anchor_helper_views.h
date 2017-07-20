@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_COCOA_BUBBLE_ANCHOR_HELPER_VIEWS_H_
 #define CHROME_BROWSER_UI_COCOA_BUBBLE_ANCHOR_HELPER_VIEWS_H_
 
+#include "ui/gfx/native_widget_types.h"
+
 namespace views {
 class BubbleDialogDelegateView;
 }
@@ -12,8 +14,10 @@ class BubbleDialogDelegateView;
 class LocationBarDecoration;
 
 // Returns the manage password icon decoration in the omnibox.
-LocationBarDecoration* GetManagePasswordDecoration(
-    views::BubbleDialogDelegateView* bubble);
+LocationBarDecoration* GetManagePasswordDecoration(gfx::NativeWindow window);
+
+// Returns the page info decoration in the omnibox.
+LocationBarDecoration* GetPageInfoDecoration(gfx::NativeWindow window);
 
 // Monitors |bubble|'s parent window for size changes, and updates the bubble
 // anchor. The monitor will be deleted when |bubble| is closed. If |decoration|
