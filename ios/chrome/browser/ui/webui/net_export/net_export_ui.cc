@@ -135,14 +135,24 @@ void NetExportMessageHandler::OnEnableNotifyUIWithState(
 
 void NetExportMessageHandler::OnStartNetLog(const base::ListValue* list) {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  std::string capture_mode_string;
-  bool result = list->GetString(0, &capture_mode_string);
-  DCHECK(result);
 
-  net::NetLogCaptureMode capture_mode =
-      net_log::NetExportFileWriter::CaptureModeFromString(capture_mode_string);
+  const base::Value::ListStorage& params = list->GetList();
+
+  // Determine the capture mode.
+  net::NetLogCaptureMode capture_mode = net::NetLogCaptureMode::Default();
+  if (params.size() > 0 && params[0].is_string()) {
+    capture_mode = net_log::NetExportFileWriter::CaptureModeFromString(
+        params[0].GetString());
+  }
+
+  // Determine the max file size.
+  size_t max_log_file_size = net_log::NetExportFileWriter::kNoLimit;
+  if (params.size() > 1 && params[1].is_int() && params[1].GetInt() > 0) {
+    max_log_file_size = params[1].GetInt();
+  }
+
   file_writer_->StartNetLog(
-      base::FilePath(), capture_mode,
+      base::FilePath(), capture_mode, max_log_file_size,
       base::CommandLine::ForCurrentProcess()->GetCommandLineString(),
       GetChannelString(),
       {GetApplicationContext()->GetSystemURLRequestContext()});
