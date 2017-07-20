@@ -82,8 +82,6 @@ class WebContentsViewGuest : public WebContentsView,
                      const DragEventSourceInfo& event_info,
                      RenderWidgetHostImpl* source_rwh) override;
   void UpdateDragCursor(blink::WebDragOperation operation) override;
-  void GotFocus() override;
-  void TakeFocus(bool reverse) override;
 
  private:
   // The WebContentsImpl whose contents we display.

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "device/vr/vr_device.h"
+
 #include "device/vr/vr_device_provider.h"
 #include "device/vr/vr_display_impl.h"
 
@@ -21,12 +22,14 @@ VRDevice::~VRDevice() {}
 
 void VRDevice::AddDisplay(VRDisplayImpl* display) {
   displays_.insert(display);
+  OnDisplayAdded(display);
 }
 
 void VRDevice::RemoveDisplay(VRDisplayImpl* display) {
   if (CheckPresentingDisplay(display))
     ExitPresent();
   displays_.erase(display);
+  OnDisplayRemoved(display);
 }
 
 bool VRDevice::IsAccessAllowed(VRDisplayImpl* display) {
@@ -46,7 +49,7 @@ void VRDevice::OnChanged() {
 void VRDevice::OnVRDisplayInfoCreated(mojom::VRDisplayInfoPtr vr_device_info) {
   if (vr_device_info.is_null())
     return;
-  for (auto* display : displays_)
+  for (VRDisplayImpl* display : displays_)
     display->OnChanged(vr_device_info.Clone());
 }
 
@@ -60,24 +63,13 @@ void VRDevice::OnExitPresent() {
 }
 
 void VRDevice::OnBlur() {
-  for (auto* display : displays_)
+  for (VRDisplayImpl* display : displays_)
     display->OnBlur();
 }
 
 void VRDevice::OnFocus() {
-  for (auto* display : displays_)
+  for (VRDisplayImpl* display : displays_)
     display->OnFocus();
-}
-
-void VRDevice::OnActivate(mojom::VRDisplayEventReason reason,
-                          const base::Callback<void(bool)>& on_handled) {
-  for (auto* display : displays_)
-    display->OnActivate(reason, on_handled);
-}
-
-void VRDevice::OnDeactivate(mojom::VRDisplayEventReason reason) {
-  for (auto* display : displays_)
-    display->OnDeactivate(reason);
 }
 
 void VRDevice::SetPresentingDisplay(VRDisplayImpl* display) {

@@ -32,7 +32,7 @@ class VRServiceImplTest : public testing::Test {
   std::unique_ptr<VRServiceImpl> BindService() {
     mojom::VRServiceClientPtr proxy;
     FakeVRServiceClient client(mojo::MakeRequest(&proxy));
-    auto service = base::WrapUnique(new VRServiceImpl());
+    auto service = base::WrapUnique(new VRServiceImpl(-1, -1));
     service->SetClient(std::move(proxy),
                        base::Bind(&VRServiceImplTest::onDisplaySynced,
                                   base::Unretained(this)));

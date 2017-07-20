@@ -136,8 +136,8 @@ class CONTENT_EXPORT WebContentsViewAura
                      const DragEventSourceInfo& event_info,
                      RenderWidgetHostImpl* source_rwh) override;
   void UpdateDragCursor(blink::WebDragOperation operation) override;
-  void GotFocus() override;
-  void LostFocus() override;
+  void GotFocus(RenderWidgetHostImpl* render_widget_host) override;
+  void LostFocus(RenderWidgetHostImpl* render_widget_host) override;
   void TakeFocus(bool reverse) override;
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
   void ShowPopupMenu(RenderFrameHost* render_frame_host,

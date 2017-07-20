@@ -510,12 +510,6 @@ RenderWidgetHostViewAndroid::~RenderWidgetHostViewAndroid() {
   DCHECK(!delegated_frame_host_);
 }
 
-void RenderWidgetHostViewAndroid::Blur() {
-  host_->Blur();
-  if (overscroll_controller_)
-    overscroll_controller_->Disable();
-}
-
 void RenderWidgetHostViewAndroid::AddDestructionObserver(
     DestructionObserver* observer) {
   destruction_observers_.AddObserver(observer);
@@ -610,10 +604,31 @@ RenderWidgetHostViewAndroid::GetNativeViewAccessible() {
   return NULL;
 }
 
+void RenderWidgetHostViewAndroid::GotFocus() {
+  host_->GotFocus();
+  OnFocusInternal();
+}
+
+void RenderWidgetHostViewAndroid::LostFocus() {
+  host_->LostFocus();
+  LostFocusInternal();
+}
+
 void RenderWidgetHostViewAndroid::Focus() {
+  // TODO(boliu): Make sure rwhva/rwh focus state stays in sync with CVC, and
+  // ideally properly implements "request focus". See crbug.com/746099.
   host_->Focus();
+  OnFocusInternal();
+}
+
+void RenderWidgetHostViewAndroid::OnFocusInternal() {
   if (overscroll_controller_)
     overscroll_controller_->Enable();
+}
+
+void RenderWidgetHostViewAndroid::LostFocusInternal() {
+  if (overscroll_controller_)
+    overscroll_controller_->Disable();
 }
 
 bool RenderWidgetHostViewAndroid::HasFocus() const {

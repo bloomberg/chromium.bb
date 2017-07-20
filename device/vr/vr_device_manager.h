@@ -43,10 +43,6 @@ class VRDeviceManager {
 
   DEVICE_VR_EXPORT unsigned int GetNumberOfConnectedDevices();
 
-  void ListeningForActivateChanged(bool listening, VRServiceImpl* service);
-
-  bool IsMostRecentlyListeningForActivate(VRServiceImpl* service);
-
  private:
   friend class VRDeviceManagerTest;
   friend class VRDisplayImplTest;
@@ -72,12 +68,9 @@ class VRDeviceManager {
   bool vr_initialized_ = false;
 
   std::set<VRServiceImpl*> services_;
-  VRServiceImpl* most_recently_listening_for_activate_ = nullptr;
 
   // For testing. If true will not delete self when consumer count reaches 0.
   bool keep_alive_;
-
-  bool has_activate_listeners_ = false;
 
   base::ThreadChecker thread_checker_;
 

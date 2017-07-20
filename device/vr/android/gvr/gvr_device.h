@@ -12,6 +12,7 @@ namespace device {
 
 class GvrDeviceProvider;
 class GvrDelegate;
+class VRDisplayImpl;
 
 class DEVICE_VR_EXPORT GvrDevice : public VRDevice {
  public:
@@ -28,7 +29,11 @@ class DEVICE_VR_EXPORT GvrDevice : public VRDevice {
   void SetSecureOrigin(bool secure_origin) override;
   void ExitPresent() override;
   void GetNextMagicWindowPose(
+      VRDisplayImpl* display,
       mojom::VRDisplay::GetNextMagicWindowPoseCallback callback) override;
+  void OnDisplayAdded(VRDisplayImpl* display) override;
+  void OnDisplayRemoved(VRDisplayImpl* display) override;
+  void OnListeningForActivateChanged(VRDisplayImpl* display) override;
 
   void OnDelegateChanged();
 

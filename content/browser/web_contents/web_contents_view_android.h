@@ -96,7 +96,8 @@ class WebContentsViewAndroid : public WebContentsView,
                      const DragEventSourceInfo& event_info,
                      RenderWidgetHostImpl* source_rwh) override;
   void UpdateDragCursor(blink::WebDragOperation operation) override;
-  void GotFocus() override;
+  void GotFocus(RenderWidgetHostImpl* render_widget_host) override;
+  void LostFocus(RenderWidgetHostImpl* render_widget_host) override;
   void TakeFocus(bool reverse) override;
 
   // ui::ViewClient implementation.

@@ -32,6 +32,7 @@ class FakeVRDevice : public VRDevice {
   void SetSecureOrigin(bool secure_origin) override;
   void ExitPresent() override;
   void GetNextMagicWindowPose(
+      VRDisplayImpl* display,
       mojom::VRDisplay::GetNextMagicWindowPoseCallback callback) override;
 
  private:

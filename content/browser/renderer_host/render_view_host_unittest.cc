@@ -118,10 +118,6 @@ class MockDraggingRenderViewHostDelegateView
     drag_url_ = drop_data.url;
     html_base_url_ = drop_data.html_base_url;
   }
-  void UpdateDragCursor(blink::WebDragOperation operation) override {}
-  void GotFocus() override {}
-  void TakeFocus(bool reverse) override {}
-  virtual void UpdatePreferredSize(const gfx::Size& pref_size) {}
 
   GURL drag_url() {
     return drag_url_;

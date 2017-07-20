@@ -156,7 +156,8 @@ void WebContentsViewChildFrame::UpdateDragCursor(WebDragOperation operation) {
     view->UpdateDragCursor(operation);
 }
 
-void WebContentsViewChildFrame::GotFocus() {
+void WebContentsViewChildFrame::GotFocus(
+    RenderWidgetHostImpl* render_widget_host) {
   NOTREACHED();
 }
 

@@ -26,8 +26,6 @@ class OpenVRDeviceProvider : public VRDeviceProvider {
   void GetDevices(std::vector<VRDevice*>* devices) override;
   void Initialize() override;
 
-  void SetListeningForActivate(bool listening) override;
-
  private:
   bool initialized_;
   vr::IVRSystem* vr_system_;

@@ -13,6 +13,7 @@
 #include "device/vr/android/gvr/gvr_delegate_provider.h"
 #include "device/vr/android/gvr/gvr_device_provider.h"
 #include "device/vr/vr_device_manager.h"
+#include "device/vr/vr_display_impl.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/transform.h"
 #include "ui/gfx/transform_util.h"
@@ -62,13 +63,35 @@ void GvrDevice::ExitPresent() {
 }
 
 void GvrDevice::GetNextMagicWindowPose(
+    VRDisplayImpl* display,
     mojom::VRDisplay::GetNextMagicWindowPoseCallback callback) {
   GvrDelegateProvider* delegate_provider = gvr_provider_->GetDelegateProvider();
   if (!delegate_provider) {
     std::move(callback).Run(nullptr);
     return;
   }
-  delegate_provider->GetNextMagicWindowPose(std::move(callback));
+  delegate_provider->GetNextMagicWindowPose(display, std::move(callback));
+}
+
+void GvrDevice::OnDisplayAdded(VRDisplayImpl* display) {
+  GvrDelegateProvider* delegate_provider = gvr_provider_->GetDelegateProvider();
+  if (!delegate_provider)
+    return;
+  delegate_provider->OnDisplayAdded(display);
+}
+
+void GvrDevice::OnDisplayRemoved(VRDisplayImpl* display) {
+  GvrDelegateProvider* delegate_provider = gvr_provider_->GetDelegateProvider();
+  if (!delegate_provider)
+    return;
+  delegate_provider->OnDisplayRemoved(display);
+}
+
+void GvrDevice::OnListeningForActivateChanged(VRDisplayImpl* display) {
+  GvrDelegateProvider* delegate_provider = gvr_provider_->GetDelegateProvider();
+  if (!delegate_provider)
+    return;
+  delegate_provider->OnListeningForActivateChanged(display);
 }
 
 void GvrDevice::OnDelegateChanged() {

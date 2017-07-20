@@ -2913,8 +2913,8 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
                  routing_id_));
 
 #if BUILDFLAG(ENABLE_VR)
-  GetInterfaceRegistry()->AddInterface<device::mojom::VRService>(
-      base::Bind(&device::VRServiceImpl::Create));
+  GetInterfaceRegistry()->AddInterface<device::mojom::VRService>(base::Bind(
+      &device::VRServiceImpl::Create, GetProcess()->GetID(), GetRoutingID()));
 #else
   GetInterfaceRegistry()->AddInterface<device::mojom::VRService>(
       base::Bind(&IgnoreInterfaceRequest<device::mojom::VRService>));

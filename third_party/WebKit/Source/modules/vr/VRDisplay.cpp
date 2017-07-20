@@ -1017,8 +1017,9 @@ void VRDisplay::FocusChanged() {
 }
 
 bool VRDisplay::FocusedOrPresenting() {
-  // TODO(mthiesse, crbug.com/687411): Focused state should be determined
-  // browser-side to correctly track which display should be receiving input.
+  // The browser can't track focus for frames, so we still need to check for
+  // focus in the renderer, even if the browser is checking focus before
+  // sending input.
   return navigator_vr_->IsFocused() || is_presenting_;
 }
 

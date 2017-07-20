@@ -85,11 +85,6 @@ void VRDeviceManager::AddService(VRServiceImpl* service) {
 }
 
 void VRDeviceManager::RemoveService(VRServiceImpl* service) {
-
-  if (service->listening_for_activate()) {
-    ListeningForActivateChanged(false, service);
-  }
-
   services_.erase(service);
 
   if (services_.empty() && !keep_alive_) {
@@ -102,39 +97,6 @@ unsigned int VRDeviceManager::GetNumberOfConnectedDevices() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   return static_cast<unsigned int>(devices_.size());
-}
-
-void VRDeviceManager::ListeningForActivateChanged(bool listening,
-                                                  VRServiceImpl* service) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  if (listening) {
-    most_recently_listening_for_activate_ = service;
-  }
-
-  bool activate_listeners = listening;
-  if (!activate_listeners) {
-    for (auto* service : services_) {
-      if (service->listening_for_activate()) {
-        activate_listeners = true;
-        break;
-      }
-    }
-  }
-
-  // Notify all the providers if this changes
-  if (has_activate_listeners_ != activate_listeners) {
-    has_activate_listeners_ = activate_listeners;
-    for (const auto& provider : providers_)
-      provider->SetListeningForActivate(has_activate_listeners_);
-  }
-}
-
-bool VRDeviceManager::IsMostRecentlyListeningForActivate(
-    VRServiceImpl* service) {
-  if (!service)
-    return false;
-  return service == most_recently_listening_for_activate_;
 }
 
 VRDevice* VRDeviceManager::GetDevice(unsigned int index) {

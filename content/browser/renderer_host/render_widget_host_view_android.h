@@ -81,8 +81,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
                               ContentViewCore* content_view_core);
   ~RenderWidgetHostViewAndroid() override;
 
-  void Blur();
-
   // Interface used to observe the destruction of a RenderWidgetHostViewAndroid.
   class DestructionObserver {
    public:
@@ -317,6 +315,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void SetSelectionControllerClientForTesting(
       std::unique_ptr<ui::TouchSelectionControllerClient> client);
 
+  void GotFocus();
+  void LostFocus();
+
  private:
   void RunAckCallbacks();
 
@@ -368,6 +369,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
                             float mouse_down_y);
 
   WebContentsAccessibilityAndroid* GetWebContentsAccessibilityAndroid() const;
+
+  void OnFocusInternal();
+  void LostFocusInternal();
 
   // The model object.
   RenderWidgetHostImpl* host_;
