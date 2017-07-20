@@ -11,6 +11,8 @@ component("metrics_cpp") {
     "mojo_ukm_recorder.h",
     "ukm_entry_builder.cc",
     "ukm_entry_builder.h",
+    "ukm_entry_builder_base.cc",
+    "ukm_entry_builder_base.h",
     "ukm_recorder.cc",
     "ukm_recorder.h",
   ]
@@ -25,5 +27,37 @@ component("metrics_cpp") {
 
   deps = [
     "//mojo/public/cpp/bindings",
+  ]
+}
+
+action("gen_ukm_builders") {
+  script = "//tools/metrics/ukm/gen_builders.py"
+
+  sources = [
+    "//tools/metrics/ukm/ukm.xml",
+  ]
+
+  outdir = "$target_gen_dir"
+
+  outputs = [
+    outdir + "/ukm_builders.cc",
+    outdir + "/ukm_builders.h",
+  ]
+
+  args = [
+    "--input",
+    rebase_path(sources[0], root_build_dir),
+    "--output",
+    rebase_path(outdir, root_build_dir),
+  ]
+}
+
+static_library("ukm_builders") {
+  sources = get_target_outputs(":gen_ukm_builders")
+
+  deps = [
+    ":gen_ukm_builders",
+    ":metrics_cpp",
+    "//base",
   ]
 }
