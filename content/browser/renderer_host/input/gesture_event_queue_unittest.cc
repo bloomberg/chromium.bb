@@ -1069,9 +1069,9 @@ INSTANTIATE_TEST_CASE_P(AllSources,
                                         blink::kWebGestureDeviceTouchpad));
 #endif  // GTEST_HAS_PARAM_TEST
 
-// Test that a GestureScrollEnd | GestureFlingStart are deferred during the
-// debounce interval, that Scrolls are not and that the deferred events are
-// sent after that timer fires.
+// Test that a GestureScrollEnd is deferred during the debounce interval,
+// that Scrolls are not and that the deferred events are sent after that
+// timer fires.
 TEST_F(GestureEventQueueTest, DebounceDefersFollowingGestureEvents) {
   SetUpForDebounce(3);
 
@@ -1095,16 +1095,11 @@ TEST_F(GestureEventQueueTest, DebounceDefersFollowingGestureEvents) {
   EXPECT_EQ(2U, GestureEventQueueSize());
   EXPECT_EQ(1U, GestureEventDebouncingQueueSize());
 
-  SimulateGestureFlingStartEvent(0, 10, blink::kWebGestureDeviceTouchscreen);
-  EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
-  EXPECT_EQ(2U, GestureEventQueueSize());
-  EXPECT_EQ(2U, GestureEventDebouncingQueueSize());
-
   SimulateGestureEvent(WebInputEvent::kGestureTapDown,
                        blink::kWebGestureDeviceTouchscreen);
   EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
   EXPECT_EQ(2U, GestureEventQueueSize());
-  EXPECT_EQ(3U, GestureEventDebouncingQueueSize());
+  EXPECT_EQ(2U, GestureEventDebouncingQueueSize());
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
@@ -1113,14 +1108,71 @@ TEST_F(GestureEventQueueTest, DebounceDefersFollowingGestureEvents) {
 
   // The deferred events are correctly queued in coalescing queue.
   EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
-  EXPECT_EQ(5U, GestureEventQueueSize());
+  EXPECT_EQ(4U, GestureEventQueueSize());
   EXPECT_EQ(0U, GestureEventDebouncingQueueSize());
   EXPECT_FALSE(ScrollingInProgress());
 
   // Verify that the coalescing queue contains the correct events.
+  WebInputEvent::Type expected[] = {WebInputEvent::kGestureScrollUpdate,
+                                    WebInputEvent::kGestureScrollUpdate,
+                                    WebInputEvent::kGestureScrollEnd};
+
+  for (unsigned i = 0; i < sizeof(expected) / sizeof(WebInputEvent::Type);
+       i++) {
+    WebGestureEvent merged_event = GestureEventQueueEventAt(i);
+    EXPECT_EQ(expected[i], merged_event.GetType());
+  }
+}
+
+// Test that a GestureFlingStart is not filtered out by debouncing and that
+// GestureFlingStart causes debouncing queue to empty into gesture queue.
+TEST_F(GestureEventQueueTest, DebounceEndsWithFlingStartEvent) {
+  SetUpForDebounce(3);
+
+  SimulateGestureEvent(WebInputEvent::kGestureScrollUpdate,
+                       blink::kWebGestureDeviceTouchpad);
+  EXPECT_EQ(1U, GetAndResetSentGestureEventCount());
+  EXPECT_EQ(1U, GestureEventQueueSize());
+  EXPECT_EQ(0U, GestureEventDebouncingQueueSize());
+  EXPECT_TRUE(ScrollingInProgress());
+
+  SimulateGestureEvent(WebInputEvent::kGestureScrollEnd,
+                       blink::kWebGestureDeviceTouchpad);
+  EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
+  EXPECT_EQ(1U, GestureEventQueueSize());
+  EXPECT_EQ(1U, GestureEventDebouncingQueueSize());
+
+  // The deferred events are correctly queued in coalescing queue.
+  SimulateGestureFlingStartEvent(0, 10, blink::kWebGestureDeviceTouchpad);
+  EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
+  EXPECT_EQ(3U, GestureEventQueueSize());
+  EXPECT_EQ(0U, GestureEventDebouncingQueueSize());
+  EXPECT_FALSE(ScrollingInProgress());
+  EXPECT_TRUE(FlingInProgress());
+
+  SimulateGestureEvent(WebInputEvent::kGestureScrollBegin,
+                       blink::kWebGestureDeviceTouchpad);
+  EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
+  EXPECT_EQ(4U, GestureEventQueueSize());
+  EXPECT_EQ(0U, GestureEventDebouncingQueueSize());
+
+  SimulateGestureEvent(WebInputEvent::kGestureScrollUpdate,
+                       blink::kWebGestureDeviceTouchpad);
+  EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
+  EXPECT_EQ(5U, GestureEventQueueSize());
+  EXPECT_EQ(0U, GestureEventDebouncingQueueSize());
+
+  SimulateGestureEvent(WebInputEvent::kGestureScrollEnd,
+                       blink::kWebGestureDeviceTouchpad);
+  EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
+  EXPECT_EQ(5U, GestureEventQueueSize());
+  EXPECT_EQ(1U, GestureEventDebouncingQueueSize());
+
+  // Verify that the coalescing queue contains the correct events.
   WebInputEvent::Type expected[] = {
-      WebInputEvent::kGestureScrollUpdate, WebInputEvent::kGestureScrollUpdate,
-      WebInputEvent::kGestureScrollEnd, WebInputEvent::kGestureFlingStart};
+      WebInputEvent::kGestureScrollUpdate, WebInputEvent::kGestureScrollEnd,
+      WebInputEvent::kGestureFlingStart, WebInputEvent::kGestureScrollBegin,
+      WebInputEvent::kGestureScrollUpdate};
 
   for (unsigned i = 0; i < sizeof(expected) / sizeof(WebInputEvent::Type);
       i++) {

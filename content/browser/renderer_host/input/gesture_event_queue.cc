@@ -89,6 +89,13 @@ bool GestureEventQueue::ShouldForwardForBounceReduction(
       debouncing_deferral_queue_.clear();
       return true;
 
+    case WebInputEvent::kGestureFlingStart:
+      // GestureFlingStart shouldn't be debounced because it is a discrete event
+      // signalling the end of a scroll
+      debounce_deferring_timer_.Stop();
+      GestureEventQueue::SendScrollEndingEventsNow();
+      return true;
+
     case WebInputEvent::kGesturePinchBegin:
     case WebInputEvent::kGesturePinchEnd:
     case WebInputEvent::kGesturePinchUpdate:
