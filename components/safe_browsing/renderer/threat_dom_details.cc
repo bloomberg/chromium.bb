@@ -53,10 +53,24 @@ class TagNameIs {
   std::string tag_;
 };
 
+void GetDefaultTagAndAttributeList(
+    std::vector<TagAndAttributesItem>* tag_and_attributes_list) {
+  tag_and_attributes_list->clear();
+
+  // These entries must be sorted by tag name.
+  // These tags are related to identifying Google ads.
+  tag_and_attributes_list->push_back(
+      TagAndAttributesItem("div", {"data-google-query-id", "id"}));
+  tag_and_attributes_list->push_back(TagAndAttributesItem("iframe", {"id"}));
+}
+
 void ParseTagAndAttributeParams(
     std::vector<TagAndAttributesItem>* tag_and_attributes_list) {
   DCHECK(tag_and_attributes_list);
+  // If the feature is disabled we just use the default list. Otherwise the list
+  // from the Finch param will be the one used.
   if (!base::FeatureList::IsEnabled(kThreatDomDetailsTagAndAttributeFeature)) {
+    GetDefaultTagAndAttributeList(tag_and_attributes_list);
     return;
   }
   tag_and_attributes_list->clear();
@@ -232,8 +246,15 @@ bool ShouldHandleElement(
 }  // namespace
 
 TagAndAttributesItem::TagAndAttributesItem() {}
+
+TagAndAttributesItem::TagAndAttributesItem(
+    const std::string& tag_name_param,
+    const std::vector<std::string>& attributes_param)
+    : tag_name(tag_name_param), attributes(attributes_param) {}
+
 TagAndAttributesItem::TagAndAttributesItem(const TagAndAttributesItem& item)
     : tag_name(item.tag_name), attributes(item.attributes) {}
+
 TagAndAttributesItem::~TagAndAttributesItem() {}
 
 uint32_t ThreatDOMDetails::kMaxNodes = 500;
