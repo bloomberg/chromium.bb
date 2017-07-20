@@ -247,7 +247,7 @@ class MODULES_EXPORT RTCPeerConnection final
   void ScheduleDispatchEvent(Event*);
   void ScheduleDispatchEvent(Event*, std::unique_ptr<BoolFunction>);
   void DispatchScheduledEvent();
-  MediaStreamTrack* GetTrack(const WebMediaStreamTrack&) const;
+  MediaStreamTrack* GetTrack(const WebMediaStreamTrack& web_track) const;
 
   // The "Change" methods set the state asynchronously and fire the
   // corresponding event immediately after changing the state (if it was really
@@ -296,8 +296,8 @@ class MODULES_EXPORT RTCPeerConnection final
   // |rtp_receivers_|.
   HeapHashMap<WeakMember<MediaStreamComponent>, WeakMember<MediaStreamTrack>>
       tracks_;
-  HeapHashMap<uintptr_t, Member<RTCRtpSender>> rtp_senders_;
-  HeapHashMap<uintptr_t, Member<RTCRtpReceiver>> rtp_receivers_;
+  HeapHashMap<uintptr_t, WeakMember<RTCRtpSender>> rtp_senders_;
+  HeapHashMap<uintptr_t, WeakMember<RTCRtpReceiver>> rtp_receivers_;
 
   std::unique_ptr<WebRTCPeerConnectionHandler> peer_handler_;
 

@@ -50,7 +50,6 @@ class CONTENT_EXPORT WebRtcMediaStreamTrackAdapterMap
     // adapter it will be disposed and removed from the map.
     ~AdapterRef();
 
-    std::unique_ptr<AdapterRef> Copy() const;
     bool is_initialized() const { return adapter_->is_initialized(); }
     const blink::WebMediaStreamTrack& web_track() const {
       return adapter_->web_track();

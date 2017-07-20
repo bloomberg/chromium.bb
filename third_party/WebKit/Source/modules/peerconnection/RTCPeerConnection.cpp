@@ -1110,10 +1110,7 @@ void RTCPeerConnection::addStream(ScriptState* script_state,
   if (!valid)
     exception_state.ThrowDOMException(kSyntaxError,
                                       "Unable to add the provided stream.");
-  // Ensure |rtp_senders_| is up-to-date so that |addTrack| knows if a sender
-  // already exists for a track. When |addStream| and |removeStream| are
-  // are implemented using |addTrack| and |removeTrack| we can simply add and
-  // remove senders there instead. https://crbug.com/738929
+  // Ensure |rtp_senders_| is up-to-date.
   getSenders();
 }
 
@@ -1140,16 +1137,10 @@ void RTCPeerConnection::removeStream(MediaStream* stream,
 }
 
 MediaStreamVector RTCPeerConnection::getLocalStreams() const {
-  // TODO(hbos): We should define this as "the streams of all senders" instead
-  // of a set that we add to and subtract from on |addStream| and
-  // |removeStream|. https://crbug.com/738918
   return local_streams_;
 }
 
 MediaStreamVector RTCPeerConnection::getRemoteStreams() const {
-  // TODO(hbos): We should define this as "the streams of all receivers" instead
-  // of a set that we add to and subtract from on a remote stream being added or
-  // removed. https://crbug.com/741618
   return remote_streams_;
 }
 
@@ -1314,9 +1305,6 @@ void RTCPeerConnection::removeTrack(RTCRtpSender* sender,
   // being nulled.
   DCHECK(!sender->web_rtp_sender()->Track());
   sender->SetTrack(nullptr);
-  // TODO(hbos): When |addStream| and |removeStream| are implemented using
-  // |addTrack| and |removeTrack|, we should remove |sender| from |rtp_senders_|
-  // here. https://crbug.com/738929
 }
 
 RTCDataChannel* RTCPeerConnection::createDataChannel(
@@ -1489,9 +1477,6 @@ void RTCPeerConnection::DidRemoveRemoteStream(
   DCHECK(pos != kNotFound);
   remote_streams_.erase(pos);
   stream->UnregisterObserver(this);
-  // TODO(hbos): When we listen to receivers/tracks being added and removed
-  // instead of streams we should remove the receiver(s) from |rtp_receivers_|
-  // here. https://crbug.com/741619
 
   ScheduleDispatchEvent(
       MediaStreamEvent::Create(EventTypeNames::removestream, stream));
