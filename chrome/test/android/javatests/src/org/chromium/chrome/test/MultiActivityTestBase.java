@@ -50,13 +50,4 @@ public abstract class MultiActivityTestBase extends InstrumentationTestCase
     protected void waitForFullLoad(final ChromeActivity activity, final String expectedTitle) {
         mTestCommon.waitForFullLoad(activity, expectedTitle);
     }
-
-    /**
-     * Approximates when a ChromeActivity is fully ready and loaded, which is hard to gauge
-     * because Android's Activity transition animations are not monitorable.
-     */
-    protected void waitForFullLoad(final ChromeActivity activity, final String expectedTitle,
-            boolean waitLongerForLoad) {
-        mTestCommon.waitForFullLoad(activity, expectedTitle, waitLongerForLoad);
-    }
 }
