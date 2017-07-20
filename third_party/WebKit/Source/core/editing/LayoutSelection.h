@@ -40,6 +40,8 @@ class FrameSelection;
 // editing/ passes them as offsets in the DOM tree but layout uses them as
 // offset in the layout tree. This doesn't work in the cases of
 // CSS first-letter or character transform. See crbug.com/17528.
+// TODO(yoichio): Remove unused functionality comparing to
+// SelectionMarkingRange.
 class SelectionPaintRange {
   DISALLOW_NEW();
 

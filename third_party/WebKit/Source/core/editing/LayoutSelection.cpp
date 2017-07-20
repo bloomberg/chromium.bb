@@ -230,8 +230,105 @@ static SelectedMap CollectSelectedMap(const SelectionPaintRange& range) {
   return selected_map;
 }
 
+// This class represents a selection range in layout tree for marking
+// SelectionState
+// TODO(yoichio): Remove unused functionality comparing to SelectionPaintRange.
+class SelectionMarkingRange {
+  DISALLOW_NEW();
+
+ public:
+  class Iterator
+      : public std::iterator<std::input_iterator_tag, LayoutObject*> {
+   public:
+    explicit Iterator(const SelectionMarkingRange* range) {
+      if (!range) {
+        current_ = nullptr;
+        return;
+      }
+      range_ = range;
+      current_ = range->StartLayoutObject();
+    }
+    Iterator(const Iterator&) = default;
+    bool operator==(const Iterator& other) const {
+      return current_ == other.current_;
+    }
+    bool operator!=(const Iterator& other) const { return !operator==(other); }
+    Iterator& operator++() {
+      DCHECK(current_);
+      for (current_ = current_->NextInPreOrder();
+           current_ && current_ != range_->traverse_stop_;
+           current_ = current_->NextInPreOrder()) {
+        if (current_->CanBeSelectionLeaf())
+          return *this;
+      }
+
+      current_ = nullptr;
+      return *this;
+    }
+    LayoutObject* operator*() const {
+      DCHECK(current_);
+      return current_;
+    }
+
+   private:
+    const SelectionMarkingRange* range_;
+    LayoutObject* current_;
+  };
+  Iterator begin() const { return Iterator(this); };
+  Iterator end() const { return Iterator(nullptr); };
+
+  SelectionMarkingRange() = default;
+  SelectionMarkingRange(LayoutObject* start_layout_object,
+                        int start_offset,
+                        LayoutObject* end_layout_object,
+                        int end_offset)
+      : start_layout_object_(start_layout_object),
+        start_offset_(start_offset),
+        end_layout_object_(end_layout_object),
+        end_offset_(end_offset) {
+    DCHECK(start_layout_object_);
+    DCHECK(end_layout_object_);
+    traverse_stop_ = end_layout_object_->ChildAt(end_offset);
+    if (!traverse_stop_)
+      traverse_stop_ = end_layout_object_->NextInPreOrderAfterChildren();
+    if (start_layout_object_ != end_layout_object_)
+      return;
+    DCHECK_LT(start_offset_, end_offset_);
+  }
+  SelectionPaintRange ToPaintRange() const {
+    return {start_layout_object_, start_offset_, end_layout_object_,
+            end_offset_};
+  };
+
+  LayoutObject* StartLayoutObject() const {
+    DCHECK(!IsNull());
+    return start_layout_object_;
+  }
+  int StartOffset() const {
+    DCHECK(!IsNull());
+    return start_offset_;
+  }
+  LayoutObject* EndLayoutObject() const {
+    DCHECK(!IsNull());
+    return end_layout_object_;
+  }
+  int EndOffset() const {
+    DCHECK(!IsNull());
+    return end_offset_;
+  }
+
+  bool IsNull() const { return !start_layout_object_; }
+
+ private:
+  LayoutObject* start_layout_object_ = nullptr;
+  int start_offset_ = -1;
+  LayoutObject* end_layout_object_ = nullptr;
+  int end_offset_ = -1;
+  LayoutObject* traverse_stop_ = nullptr;
+};
+
 // Update the selection status of all LayoutObjects between |start| and |end|.
-static void SetSelectionState(const SelectionPaintRange& range) {
+static void SetSelectionState(const SelectionMarkingRange& range) {
   if (range.IsNull())
     return;
 
@@ -253,7 +350,7 @@ static void SetSelectionState(const SelectionPaintRange& range) {
 
 // Set SetSelectionState and ShouldInvalidateSelection flag of LayoutObjects
 // comparing them in |new_range| and |old_range|.
-static void UpdateLayoutObjectState(const SelectionPaintRange& new_range,
+static void UpdateLayoutObjectState(const SelectionMarkingRange& new_range,
                                     const SelectionPaintRange& old_range) {
   const SelectedMap& old_selected_map = CollectSelectedMap(old_range);
 
@@ -268,7 +365,7 @@ static void UpdateLayoutObjectState(const SelectionPaintRange& new_range,
   // TODO(editing-dev): |new_selected_map| doesn't really need to store the
   // SelectionState, it's just more convenient to have it use the same data
   // structure as |old_selected_map|.
-  SelectedMap new_selected_map = CollectSelectedMap(new_range);
+  SelectedMap new_selected_map = CollectSelectedMap(new_range.ToPaintRange());
 
   // Have any of the old selected objects changed compared to the new selection?
   for (const auto& pair : old_selected_map.object_map) {
@@ -350,16 +447,16 @@ void LayoutSelection::ClearSelection() {
   paint_range_ = SelectionPaintRange();
 }
 
-static SelectionPaintRange CalcSelectionPaintRange(
+static SelectionMarkingRange CalcSelectionMarkingRange(
     const FrameSelection& frame_selection) {
   const SelectionInDOMTree& selection_in_dom =
       frame_selection.GetSelectionInDOMTree();
   if (selection_in_dom.IsNone())
-    return SelectionPaintRange();
+    return {};
 
   const EphemeralRangeInFlatTree& selection = CalcSelection(frame_selection);
   if (selection.IsCollapsed() || frame_selection.IsHidden())
-    return SelectionPaintRange();
+    return {};
 
   const PositionInFlatTree start_pos = selection.StartPosition();
   const PositionInFlatTree end_pos = selection.EndPosition();
@@ -370,11 +467,10 @@ static SelectionPaintRange CalcSelectionPaintRange(
   DCHECK(end_layout_object);
   DCHECK(start_layout_object->View() == end_layout_object->View());
   if (!start_layout_object || !end_layout_object)
-    return SelectionPaintRange();
+    return {};
 
-  return SelectionPaintRange(start_layout_object,
-                             start_pos.ComputeEditingOffset(),
-                             end_layout_object, end_pos.ComputeEditingOffset());
+  return {start_layout_object, start_pos.ComputeEditingOffset(),
+          end_layout_object, end_pos.ComputeEditingOffset()};
 }
 
 void LayoutSelection::SetHasPendingSelection() {
@@ -386,20 +482,20 @@ void LayoutSelection::Commit() {
     return;
   has_pending_selection_ = false;
 
-  const SelectionPaintRange& new_range =
-      CalcSelectionPaintRange(*frame_selection_);
+  const SelectionMarkingRange& new_range =
+      CalcSelectionMarkingRange(*frame_selection_);
   if (new_range.IsNull()) {
     ClearSelection();
     return;
   }
   // Just return if the selection hasn't changed.
-  if (paint_range_ == new_range)
+  if (paint_range_ == new_range.ToPaintRange())
     return;
 
   DCHECK(frame_selection_->GetDocument().GetLayoutView()->GetFrameView());
   DCHECK(!frame_selection_->GetDocument().NeedsLayoutTreeUpdate());
   UpdateLayoutObjectState(new_range, paint_range_);
-  paint_range_ = new_range;
+  paint_range_ = new_range.ToPaintRange();
 }
 
 void LayoutSelection::OnDocumentShutdown() {
