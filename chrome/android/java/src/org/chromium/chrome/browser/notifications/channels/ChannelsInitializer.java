@@ -52,10 +52,10 @@ public class ChannelsInitializer {
      */
     public void ensureInitialized(String channelId) {
         if (channelId.startsWith(ChannelDefinitions.CHANNEL_ID_PREFIX_SITES)) {
-            // TODO(crbug.com/700377): Initialize site channels via native, not directly as below,
-            // in order to keep track of when they were created.
-            SiteChannelsManager.getInstance().createSiteChannel(
-                    SiteChannelsManager.toSiteOrigin(channelId), /*enabled=*/true);
+            // If we have a valid site channel ID at this point, it is safe to assume a channel
+            // has already been created, since the only way to obtain a site channel ID is by
+            // creating a channel.
+            assert SiteChannelsManager.isValidSiteChannelId(channelId);
             return;
         }
         ChannelDefinitions.PredefinedChannel predefinedChannel =

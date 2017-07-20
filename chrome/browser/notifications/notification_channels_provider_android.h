@@ -5,12 +5,14 @@
 #ifndef CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_CHANNELS_PROVIDER_ANDROID_H_
 #define CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_CHANNELS_PROVIDER_ANDROID_H_
 
+#include <map>
 #include <string>
 #include <tuple>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/clock.h"
 #include "components/content_settings/core/browser/content_settings_observable_provider.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/content_settings/core/browser/content_settings_rule.h"
@@ -23,15 +25,17 @@
 enum NotificationChannelStatus { ENABLED, BLOCKED, UNAVAILABLE };
 
 struct NotificationChannel {
-  NotificationChannel(std::string origin, NotificationChannelStatus status)
-      : origin(origin), status(status) {}
+  NotificationChannel(const std::string& id,
+                      const std::string& origin,
+                      const base::Time& timestamp,
+                      NotificationChannelStatus status);
+  NotificationChannel(const NotificationChannel& other);
   bool operator==(const NotificationChannel& other) const {
     return origin == other.origin && status == other.status;
   }
-  bool operator<(const NotificationChannel& other) const {
-    return std::tie(origin, status) < std::tie(other.origin, other.status);
-  }
-  std::string origin;
+  const std::string id;
+  const std::string origin;
+  const base::Time timestamp;
   NotificationChannelStatus status = NotificationChannelStatus::UNAVAILABLE;
 };
 
@@ -47,7 +51,9 @@ class NotificationChannelsProviderAndroid
    public:
     virtual ~NotificationChannelsBridge() = default;
     virtual bool ShouldUseChannelSettings() = 0;
-    virtual void CreateChannel(const std::string& origin, bool enabled) = 0;
+    virtual NotificationChannel CreateChannel(const std::string& origin,
+                                              const base::Time& timestamp,
+                                              bool enabled) = 0;
     virtual NotificationChannelStatus GetChannelStatus(
         const std::string& origin) = 0;
     virtual void DeleteChannel(const std::string& origin) = 0;
@@ -71,22 +77,48 @@ class NotificationChannelsProviderAndroid
   void ClearAllContentSettingsRules(ContentSettingsType content_type) override;
   void ShutdownOnUIThread() override;
 
+  base::Time GetWebsiteSettingLastModified(
+      const ContentSettingsPattern& primary_pattern,
+      const ContentSettingsPattern& secondary_pattern,
+      ContentSettingsType content_type,
+      const content_settings::ResourceIdentifier& resource_identifier);
+
  private:
   explicit NotificationChannelsProviderAndroid(
-      std::unique_ptr<NotificationChannelsBridge> bridge);
+      std::unique_ptr<NotificationChannelsBridge> bridge,
+      std::unique_ptr<base::Clock> clock);
   friend class NotificationChannelsProviderAndroidTest;
+
+  std::vector<NotificationChannel> UpdateCachedChannels() const;
 
   void CreateChannelIfRequired(const std::string& origin_string,
                                NotificationChannelStatus new_channel_status);
 
+  void InitCachedChannels();
+
   std::unique_ptr<NotificationChannelsBridge> bridge_;
+
   bool should_use_channels_;
 
-  // This cache is updated every time GetRuleIterator is called. It is used to
-  // check if any channels have changed their status since the previous call,
-  // in order to notify observers. This is necessary to detect channels getting
-  // blocked/enabled by the user, in the absence of a callback for this event.
-  std::vector<NotificationChannel> cached_channels_;
+  std::unique_ptr<base::Clock> clock_;
+
+  // Flag to keep track of whether |cached_channels_| has been initialized yet.
+  bool initialized_cached_channels_;
+
+  // Map of origin - NotificationChannel. Channel status may be out of date.
+  // This cache is completely refreshed every time GetRuleIterator is called;
+  // entries are also added and deleted when channels are added and deleted.
+  // This cache serves three purposes:
+  //
+  // 1. For looking up the channel ID for an origin.
+  //
+  // 2. For looking up the channel creation timestamp for an origin.
+  //
+  // 3. To check if any channels have changed status since the last time
+  //    they were checked, in order to notify observers. This is necessary to
+  //    detect channels getting blocked/enabled by the user, in the absence of a
+  //    callback for this event.
+  std::map<std::string, NotificationChannel> cached_channels_;
 
   base::WeakPtrFactory<NotificationChannelsProviderAndroid> weak_factory_;
 

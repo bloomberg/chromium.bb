@@ -393,8 +393,8 @@ public class NotificationPlatformBridge {
      *   2. NotificationConstants.EXTRA_NOTIFICATION_TAG - set by us on browser UI that should
      *     launch specific site settings, e.g. the web notifications Site Settings button.
      *
-     * See {@link SiteChannelsManager#toChannelId} and {@link SiteChannelsManager#toSiteOrigin} for
-     * how we convert origins to and from channel ids.
+     * See {@link SiteChannelsManager#createChannelId} and {@link SiteChannelsManager#toSiteOrigin}
+     * for how we convert origins to and from channel ids.
      *
      * See {@link #makePlatformTag} for details about the format of the EXTRA_NOTIFICATION tag.
      *
@@ -623,10 +623,12 @@ public class NotificationPlatformBridge {
         // Don't set a channelId for web apk notifications because the channel won't be
         // initialized for the web apk and it will crash on notify - see crbug.com/727178.
         // (It's okay to not set a channel on them because web apks don't target O yet.)
+        // TODO(crbug.com/700377): Channel ID should be retrieved from cache in native and passed
+        // through to here with other notification parameters.
         String channelId = forWebApk
                 ? null
                 : ChromeFeatureList.isEnabled(ChromeFeatureList.SITE_NOTIFICATION_CHANNELS)
-                        ? SiteChannelsManager.toChannelId(origin)
+                        ? SiteChannelsManager.getInstance().getChannelIdForOrigin(origin)
                         : ChannelDefinitions.CHANNEL_ID_SITES;
         if (useCustomLayouts(hasImage)) {
             return new CustomNotificationBuilder(context, channelId);

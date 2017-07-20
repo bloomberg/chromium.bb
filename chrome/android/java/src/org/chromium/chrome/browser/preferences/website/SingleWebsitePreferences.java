@@ -385,14 +385,13 @@ public class SingleWebsitePreferences extends PreferenceFragment
                 public boolean onPreferenceClick(Preference preference) {
                     // There is no guarantee that a channel has been initialized yet for sites
                     // that were granted permission before the channel-initialization-on-grant
-                    // code was in place. So initialize it here before launching the settings.
-                    // TODO(awdf): Once upgrade code is in place, quickly check this ran instead.
-                    // (Right now this is laggy!)
-                    SiteChannelsManager.getInstance().createSiteChannel(
-                            mSite.getAddress().getOrigin(), value == ContentSetting.ALLOW);
-
-                    launchOsChannelSettings(preference.getContext(),
-                            SiteChannelsManager.toChannelId(mSite.getAddress().getOrigin()));
+                    // code was in place. However, getChannelIdForOrigin will fall back to the
+                    // generic Sites channel if no specific channel has been created for the given
+                    // origin, so it is safe to open the channel settings for whatever channel ID
+                    // it returns.
+                    String channelId = SiteChannelsManager.getInstance().getChannelIdForOrigin(
+                            mSite.getAddress().getOrigin());
+                    launchOsChannelSettings(preference.getContext(), channelId);
                     return true;
                 }
             });
