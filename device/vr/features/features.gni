@@ -12,4 +12,7 @@ declare_args() {
   enable_vr = is_android && (current_cpu == "arm" || current_cpu == "arm64") &&
               !is_chromecast
   enable_openvr = false
+
+  # Whether to include VR extras like test APKs in non-VR-specific targets
+  include_vr_data = false
 }

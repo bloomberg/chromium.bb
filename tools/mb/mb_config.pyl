@@ -96,7 +96,7 @@
 
     'chromium.fyi': {
       'Afl Upload Linux ASan': 'release_afl_asan',
-      'Android Builder (dbg)': 'android_debug_static_bot',
+      'Android Builder (dbg)': 'android_debug_static_bot_vrdata',
       'Android Builder Goma Canary (dbg)': 'android_debug_bot',
       'Android deterministic': 'android_without_codecs_release_bot_minimal_symbols',
       'Android deterministic (dbg)': 'android_debug_bot',
@@ -780,6 +780,10 @@
 
     'android_debug_static_bot': [
       'android', 'debug_static_bot',
+    ],
+
+    'android_debug_static_bot_vrdata': [
+      'android', 'debug_static_bot', 'include_vr_data',
     ],
 
     'android_debug_static_bot_arm64': [
@@ -1761,6 +1765,10 @@
     'hybrid': {
       'gn_args': 'v8_target_cpu="arm" target_cpu="x86"',
       'mixins': ['disable_nacl'],
+    },
+
+    'include_vr_data': {
+      'gn_args': 'include_vr_data=true',
     },
 
     'internal_gles2_conform_tests': {
