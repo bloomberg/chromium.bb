@@ -11,6 +11,8 @@ viz_component("common") {
   defines = [ "VIZ_COMMON_IMPLEMENTATION" ]
 
   sources = [
+    "display/renderer_settings.cc",
+    "display/renderer_settings.h",
     "gl_helper.cc",
     "gl_helper.h",
     "gl_helper_readback_support.cc",

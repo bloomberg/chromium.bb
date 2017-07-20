@@ -817,7 +817,7 @@ void CompositorImpl::InitializeDisplay(
       root_window_->GetBeginFrameSource(), task_runner,
       display_output_surface->capabilities().max_frames_pending);
 
-  cc::RendererSettings renderer_settings;
+  viz::RendererSettings renderer_settings;
   renderer_settings.allow_antialiasing = false;
   renderer_settings.highp_threshold_min = 2048;
   renderer_settings.enable_color_correct_rendering =

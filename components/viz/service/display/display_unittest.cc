@@ -101,7 +101,7 @@ class DisplayTest : public testing::Test {
 
   ~DisplayTest() override { support_->EvictCurrentSurface(); }
 
-  void SetUpDisplay(const cc::RendererSettings& settings,
+  void SetUpDisplay(const RendererSettings& settings,
                     std::unique_ptr<cc::TestWebGraphicsContext3D> context) {
     begin_frame_source_.reset(new cc::StubBeginFrameSource);
 
@@ -126,7 +126,7 @@ class DisplayTest : public testing::Test {
   }
 
   std::unique_ptr<Display> CreateDisplay(
-      const cc::RendererSettings& settings,
+      const RendererSettings& settings,
       const FrameSinkId& frame_sink_id,
       std::unique_ptr<DisplayScheduler> scheduler,
       std::unique_ptr<cc::OutputSurface> output_surface) {
@@ -181,7 +181,7 @@ void CopyCallback(bool* called, std::unique_ptr<cc::CopyOutputResult> result) {
 
 // Check that frame is damaged and swapped only under correct conditions.
 TEST_F(DisplayTest, DisplayDamaged) {
-  cc::RendererSettings settings;
+  RendererSettings settings;
   settings.partial_swap_enabled = true;
   settings.finish_rendering_on_resize = true;
   SetUpDisplay(settings, nullptr);
@@ -439,7 +439,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
 
 // Check LatencyInfo storage is cleaned up if it exceeds the limit.
 TEST_F(DisplayTest, MaxLatencyInfoCap) {
-  cc::RendererSettings settings;
+  RendererSettings settings;
   settings.partial_swap_enabled = true;
   settings.finish_rendering_on_resize = true;
   SetUpDisplay(settings, nullptr);
@@ -505,7 +505,7 @@ TEST_F(DisplayTest, Finish) {
   LocalSurfaceId local_surface_id1(id_allocator_.GenerateId());
   LocalSurfaceId local_surface_id2(id_allocator_.GenerateId());
 
-  cc::RendererSettings settings;
+  RendererSettings settings;
   settings.partial_swap_enabled = true;
   settings.finish_rendering_on_resize = true;
 
@@ -583,7 +583,7 @@ class CountLossDisplayClient : public StubDisplayClient {
 };
 
 TEST_F(DisplayTest, ContextLossInformsClient) {
-  SetUpDisplay(cc::RendererSettings(), cc::TestWebGraphicsContext3D::Create());
+  SetUpDisplay(RendererSettings(), cc::TestWebGraphicsContext3D::Create());
 
   CountLossDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
@@ -601,7 +601,7 @@ TEST_F(DisplayTest, ContextLossInformsClient) {
 // a surface should only cause damage on the Display the surface belongs to.
 // There should not be a side-effect on other Displays.
 TEST_F(DisplayTest, CompositorFrameDamagesCorrectDisplay) {
-  cc::RendererSettings settings;
+  RendererSettings settings;
   LocalSurfaceId local_surface_id(id_allocator_.GenerateId());
 
   // Set up first display.

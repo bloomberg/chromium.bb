@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/output/renderer_settings.h"
+#include "components/viz/common/display/renderer_settings.h"
 
-namespace cc {
+namespace viz {
 
 RendererSettings::RendererSettings() = default;
 
 RendererSettings::RendererSettings(const RendererSettings& other) = default;
 
-RendererSettings::~RendererSettings() {
-}
+RendererSettings::~RendererSettings() = default;
 
-}  // namespace cc
+}  // namespace viz

@@ -8929,7 +8929,7 @@ TEST_F(LayerTreeHostImplTest, ShutdownReleasesContext) {
   constexpr double refresh_rate = 60.0;
   auto layer_tree_frame_sink = base::MakeUnique<viz::TestLayerTreeFrameSink>(
       context_provider, TestContextProvider::CreateWorker(), nullptr, nullptr,
-      RendererSettings(), base::ThreadTaskRunnerHandle::Get().get(),
+      viz::RendererSettings(), base::ThreadTaskRunnerHandle::Get().get(),
       synchronous_composite, disable_display_vsync, refresh_rate);
   layer_tree_frame_sink->SetClient(&test_client);
 

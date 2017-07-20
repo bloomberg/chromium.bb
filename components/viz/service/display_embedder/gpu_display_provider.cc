@@ -91,7 +91,7 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
       synthetic_begin_frame_source.get(), task_runner_.get(),
       max_frames_pending);
 
-  cc::RendererSettings settings;
+  RendererSettings settings;
   settings.show_overdraw_feedback =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           cc::switches::kShowOverdrawFeedback);

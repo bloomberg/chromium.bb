@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_OUTPUT_RENDERER_SETTINGS_H_
-#define CC_OUTPUT_RENDERER_SETTINGS_H_
+#ifndef COMPONENTS_VIZ_COMMON_DISPLAY_RENDERER_SETTINGS_H_
+#define COMPONENTS_VIZ_COMMON_DISPLAY_RENDERER_SETTINGS_H_
 
 #include <stddef.h>
 
-#include "cc/cc_export.h"
 #include "components/viz/common/resources/resource_settings.h"
+#include "components/viz/common/viz_common_export.h"
 
-namespace cc {
+namespace viz {
 
-class CC_EXPORT RendererSettings {
+class VIZ_COMMON_EXPORT RendererSettings {
  public:
   RendererSettings();
   RendererSettings(const RendererSettings& other);
   ~RendererSettings();
 
-  viz::ResourceSettings resource_settings;
+  ResourceSettings resource_settings;
   bool allow_antialiasing = true;
   bool force_antialiasing = false;
   bool force_blending_with_shaders = false;
@@ -37,6 +37,6 @@ class CC_EXPORT RendererSettings {
   bool disallow_non_exact_resource_reuse = false;
 };
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_OUTPUT_RENDERER_SETTINGS_H_
+#endif  // COMPONENTS_VIZ_COMMON_DISPLAY_RENDERER_SETTINGS_H_

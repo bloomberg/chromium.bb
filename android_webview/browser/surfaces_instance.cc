@@ -12,11 +12,11 @@
 #include "android_webview/browser/deferred_gpu_command_service.h"
 #include "android_webview/browser/parent_output_surface.h"
 #include "base/memory/ptr_util.h"
-#include "cc/output/renderer_settings.h"
 #include "cc/output/texture_mailbox_deleter.h"
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/surface_draw_quad.h"
 #include "cc/scheduler/begin_frame_source.h"
+#include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display/display_scheduler.h"
@@ -45,7 +45,7 @@ scoped_refptr<SurfacesInstance> SurfacesInstance::GetOrCreateInstance() {
 SurfacesInstance::SurfacesInstance()
     : frame_sink_id_allocator_(kDefaultClientId),
       frame_sink_id_(AllocateFrameSinkId()) {
-  cc::RendererSettings settings;
+  viz::RendererSettings settings;
 
   // Should be kept in sync with compositor_impl_android.cc.
   settings.allow_antialiasing = false;

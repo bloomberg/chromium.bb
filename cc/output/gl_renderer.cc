@@ -36,7 +36,6 @@
 #include "cc/output/layer_quad.h"
 #include "cc/output/output_surface.h"
 #include "cc/output/output_surface_frame.h"
-#include "cc/output/renderer_settings.h"
 #include "cc/output/static_geometry_binding.h"
 #include "cc/output/texture_mailbox_deleter.h"
 #include "cc/quads/draw_polygon.h"
@@ -47,6 +46,7 @@
 #include "cc/raster/scoped_gpu_raster.h"
 #include "cc/resources/resource_pool.h"
 #include "cc/resources/scoped_resource.h"
+#include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
@@ -377,7 +377,7 @@ class GLRenderer::SyncQuery {
   DISALLOW_COPY_AND_ASSIGN(SyncQuery);
 };
 
-GLRenderer::GLRenderer(const RendererSettings* settings,
+GLRenderer::GLRenderer(const viz::RendererSettings* settings,
                        OutputSurface* output_surface,
                        ResourceProvider* resource_provider,
                        TextureMailboxDeleter* texture_mailbox_deleter)

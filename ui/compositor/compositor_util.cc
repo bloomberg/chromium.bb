@@ -6,16 +6,16 @@
 
 #include "base/command_line.h"
 #include "cc/base/switches.h"
-#include "cc/output/renderer_settings.h"
+#include "components/viz/common/display/renderer_settings.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/display/display_switches.h"
 #include "ui/gfx/color_space_switches.h"
 
 namespace ui {
 
-cc::RendererSettings CreateRendererSettings(
+viz::RendererSettings CreateRendererSettings(
     const viz::BufferToTextureTargetMap& image_targets) {
-  cc::RendererSettings renderer_settings;
+  viz::RendererSettings renderer_settings;
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   renderer_settings.partial_swap_enabled =
       !command_line->HasSwitch(switches::kUIDisablePartialSwap);

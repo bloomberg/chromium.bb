@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "cc/output/renderer_settings.h"
 #include "cc/output/texture_mailbox_deleter.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/scheduler/delay_based_time_source.h"
@@ -19,6 +18,7 @@
 #include "cc/test/test_context_provider.h"
 #include "cc/test/test_gpu_memory_buffer_manager.h"
 #include "cc/test/test_shared_bitmap_manager.h"
+#include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "components/viz/service/display/display.h"
@@ -84,7 +84,7 @@ class DirectLayerTreeFrameSinkTest : public testing::Test {
         begin_frame_source_.get(), task_runner_.get(), max_frames_pending));
 
     display_.reset(new Display(
-        &bitmap_manager_, &gpu_memory_buffer_manager_, cc::RendererSettings(),
+        &bitmap_manager_, &gpu_memory_buffer_manager_, RendererSettings(),
         kArbitraryFrameSinkId, std::move(display_output_surface),
         std::move(scheduler),
         base::MakeUnique<cc::TextureMailboxDeleter>(task_runner_.get())));

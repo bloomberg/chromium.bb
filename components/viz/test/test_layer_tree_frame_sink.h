@@ -8,8 +8,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "cc/output/layer_tree_frame_sink.h"
-#include "cc/output/renderer_settings.h"
 #include "cc/scheduler/begin_frame_source.h"
+#include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display/display_client.h"
@@ -60,7 +60,7 @@ class TestLayerTreeFrameSink : public cc::LayerTreeFrameSink,
       scoped_refptr<ContextProvider> worker_context_provider,
       SharedBitmapManager* shared_bitmap_manager,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-      const cc::RendererSettings& renderer_settings,
+      const RendererSettings& renderer_settings,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       bool synchronous_composite,
       bool disable_display_vsync,
@@ -111,7 +111,7 @@ class TestLayerTreeFrameSink : public cc::LayerTreeFrameSink,
 
   const bool synchronous_composite_;
   const bool disable_display_vsync_;
-  const cc::RendererSettings renderer_settings_;
+  const RendererSettings renderer_settings_;
   const double refresh_rate_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

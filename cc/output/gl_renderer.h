@@ -49,7 +49,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
  public:
   class ScopedUseGrContext;
 
-  GLRenderer(const RendererSettings* settings,
+  GLRenderer(const viz::RendererSettings* settings,
              OutputSurface* output_surface,
              ResourceProvider* resource_provider,
              TextureMailboxDeleter* texture_mailbox_deleter);

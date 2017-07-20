@@ -442,7 +442,7 @@ SINGLE_THREAD_TEST_F(LayerTreeHostTestReadyToDrawVisibility);
 class LayerTreeHostContextCacheTest : public LayerTreeHostTest {
  public:
   std::unique_ptr<viz::TestLayerTreeFrameSink> CreateLayerTreeFrameSink(
-      const RendererSettings& renderer_settings,
+      const viz::RendererSettings& renderer_settings,
       double refresh_rate,
       scoped_refptr<viz::ContextProvider> compositor_context_provider,
       scoped_refptr<viz::ContextProvider> worker_context_provider) override {
@@ -3367,7 +3367,7 @@ class OnDrawLayerTreeFrameSink : public viz::TestLayerTreeFrameSink {
       scoped_refptr<viz::ContextProvider> worker_context_provider,
       viz::SharedBitmapManager* shared_bitmap_manager,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-      const RendererSettings& renderer_settings,
+      const viz::RendererSettings& renderer_settings,
       base::SingleThreadTaskRunner* task_runner,
       bool synchronous_composite,
       double refresh_rate,
@@ -3405,7 +3405,7 @@ class LayerTreeHostTestAbortedCommitDoesntStallSynchronousCompositor
   }
 
   std::unique_ptr<viz::TestLayerTreeFrameSink> CreateLayerTreeFrameSink(
-      const RendererSettings& renderer_settings,
+      const viz::RendererSettings& renderer_settings,
       double refresh_rate,
       scoped_refptr<viz::ContextProvider> compositor_context_provider,
       scoped_refptr<viz::ContextProvider> worker_context_provider) override {
@@ -5536,7 +5536,7 @@ MULTI_THREAD_TEST_F(LayerTreeHostTestEmptyLayerGpuRasterization);
 class LayerTreeHostWithGpuRasterizationTest : public LayerTreeHostTest {
  protected:
   std::unique_ptr<viz::TestLayerTreeFrameSink> CreateLayerTreeFrameSink(
-      const RendererSettings& renderer_settings,
+      const viz::RendererSettings& renderer_settings,
       double refresh_rate,
       scoped_refptr<viz::ContextProvider> compositor_context_provider,
       scoped_refptr<viz::ContextProvider> worker_context_provider) override {
@@ -6066,7 +6066,7 @@ class LayerTreeHostTestSynchronousCompositeSwapPromise
   }
 
   std::unique_ptr<viz::TestLayerTreeFrameSink> CreateLayerTreeFrameSink(
-      const RendererSettings& renderer_settings,
+      const viz::RendererSettings& renderer_settings,
       double refresh_rate,
       scoped_refptr<viz::ContextProvider> compositor_context_provider,
       scoped_refptr<viz::ContextProvider> worker_context_provider) override {
