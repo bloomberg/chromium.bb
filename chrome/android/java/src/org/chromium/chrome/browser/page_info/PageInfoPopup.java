@@ -68,7 +68,6 @@ import org.chromium.chrome.browser.ssl.SecurityStateModel;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.components.location.LocationUtils;
-import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -410,13 +409,6 @@ public class PageInfoPopup implements OnClickListener {
         SpannableStringBuilder urlBuilder = new SpannableStringBuilder(mFullUrl);
         OmniboxUrlEmphasizer.emphasizeUrl(urlBuilder, mContext.getResources(), mTab.getProfile(),
                 mSecurityLevel, mIsInternalPage, true, true);
-        if (mSecurityLevel == ConnectionSecurityLevel.SECURE) {
-            OmniboxUrlEmphasizer.EmphasizeComponentsResponse emphasizeResponse =
-                    OmniboxUrlEmphasizer.parseForEmphasizeComponents(
-                            mTab.getProfile(), urlBuilder.toString());
-            urlBuilder.setSpan(new StyleSpan(R.style.RobotoMediumStyle), 0,
-                    emphasizeResponse.schemeLength, Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
-        }
         mUrlTitle.setText(urlBuilder);
 
         if (mParsedUrl == null || mParsedUrl.getScheme() == null

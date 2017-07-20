@@ -64,7 +64,7 @@
     <!-- Text size of the infobar message and other controls. -->
     <dimen name="infobar_text_size">16sp</dimen>
     <!-- Text size of the infobar message when a big icon is shown. -->
-    <dimen name="infobar_big_icon_message_size">20sp</dimen>
+    <dimen name="infobar_big_icon_message_size">18sp</dimen>
     <!-- Text size of descriptive controls on an infobar. -->
     <dimen name="infobar_descriptive_text_size">14sp</dimen>
     <!-- Padding surrounding the infobar. -->

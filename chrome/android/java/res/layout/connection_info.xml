@@ -29,14 +29,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:paddingBottom="@dimen/connection_info_padding_thin"
-            style="@style/RobotoMediumStyle"
+            android:textStyle="bold"
             android:textColor="@color/connection_info_popup_text" />
 
         <TextView
             android:id="@+id/connection_info_description"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:lineSpacingExtra="6dp"
             android:textColor="@color/connection_info_popup_text" />
     </LinearLayout>
 
