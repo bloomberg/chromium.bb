@@ -74277,6 +74277,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SoftwareReporter.Cleaner.CleaningTime" units="ms">
+  <owner>alito@chromium.org</owner>
+  <summary>
+    The time between sending the user's response to the Chrome Cleaner process
+    and the Cleaner process terminating. This histogram is logged only for
+    successfully completed runs of the cleaner.
+  </summary>
+</histogram>
+
 <histogram name="SoftwareReporter.Cleaner.CleanupResult"
     enum="SoftwareReporterCleanupResult">
   <owner>ftirelo@chromium.org</owner>
@@ -74326,6 +74335,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="SoftwareReporter.Cleaner.RunningTime" units="ms">
   <owner>mad@chromium.org</owner>
   <summary>How long it took to run the software reporter cleaner tool.</summary>
+</histogram>
+
+<histogram name="SoftwareReporter.Cleaner.ScanningTime" units="ms">
+  <owner>alito@chromium.org</owner>
+  <summary>
+    The time between launching the Chrome Cleaner process and the cleaner having
+    scanned the user's machine and Chrome receiving an IPC call with the
+    results.
+  </summary>
 </histogram>
 
 <histogram name="SoftwareReporter.Cleaner.Version">
@@ -74470,6 +74488,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The number of profiles whose settings will be reset once a successful
     cleanup completes.
+  </summary>
+</histogram>
+
+<histogram name="SoftwareReporter.PromptDialog.TimeUntilDone" units="ms">
+  <owner>alito@chromium.org</owner>
+  <summary>
+    The time between the Chrome Cleaner dialog being shown and the dialog being
+    closed.
   </summary>
 </histogram>
 
@@ -90226,6 +90252,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="MobileStartup.ToolbarFirstDrawTime"/>
   <affected-histogram name="MobileStartup.ToolbarFirstFocusTime"/>
   <affected-histogram name="MobileStartup.ToolbarInflationTime"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="ChromeCleanerDialogDoneReason" separator="_">
+  <suffix name="Accepted" label="User accepted the prompt."/>
+  <suffix name="Canceled" label="User clicked the cancel button."/>
+  <suffix name="Dismissed"
+      label="User dismissed the prompt, for example by pressing ESC."/>
+  <suffix name="DetailsButtonClicked" label="User clicked the details button."/>
+  <affected-histogram name="SoftwareReporter.PromptDialog.TimeUntilDone"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="ChromeContentBrowserClientMetricSuffixes"

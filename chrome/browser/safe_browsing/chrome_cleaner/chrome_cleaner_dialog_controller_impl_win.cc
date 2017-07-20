@@ -53,13 +53,18 @@ ChromeCleanerDialogControllerImpl::ChromeCleanerDialogControllerImpl(
 ChromeCleanerDialogControllerImpl::~ChromeCleanerDialogControllerImpl() =
     default;
 
-void ChromeCleanerDialogControllerImpl::DialogShown() {}
+void ChromeCleanerDialogControllerImpl::DialogShown() {
+  time_dialog_shown_ = base::Time::Now();
+}
 
 void ChromeCleanerDialogControllerImpl::Accept(bool logs_enabled) {
   DCHECK(browser_);
 
   RecordPromptDialogResponseHistogram(PROMPT_DIALOG_RESPONSE_ACCEPTED);
   RecordCleanupStartedHistogram(CLEANUP_STARTED_FROM_PROMPT_DIALOG);
+  UMA_HISTOGRAM_LONG_TIMES_100(
+      "SoftwareReporter.PromptDialog.TimeUntilDone_Accepted",
+      base::Time::Now() - time_dialog_shown_);
 
   cleaner_controller_->ReplyWithUserResponse(
       browser_->profile(),
@@ -74,6 +79,10 @@ void ChromeCleanerDialogControllerImpl::Cancel() {
   DCHECK(browser_);
 
   RecordPromptDialogResponseHistogram(PROMPT_DIALOG_RESPONSE_CANCELLED);
+  DCHECK(!time_dialog_shown_.is_null());
+  UMA_HISTOGRAM_LONG_TIMES_100(
+      "SoftwareReporter.PromptDialog.TimeUntilDone_Canceled",
+      base::Time::Now() - time_dialog_shown_);
 
   cleaner_controller_->ReplyWithUserResponse(
       browser_->profile(), ChromeCleanerController::UserResponse::kDenied);
@@ -84,6 +93,10 @@ void ChromeCleanerDialogControllerImpl::Close() {
   DCHECK(browser_);
 
   RecordPromptDialogResponseHistogram(PROMPT_DIALOG_RESPONSE_DISMISSED);
+  DCHECK(!time_dialog_shown_.is_null());
+  UMA_HISTOGRAM_LONG_TIMES_100(
+      "SoftwareReporter.PromptDialog.TimeUntilDone_Dismissed",
+      base::Time::Now() - time_dialog_shown_);
 
   cleaner_controller_->ReplyWithUserResponse(
       browser_->profile(), ChromeCleanerController::UserResponse::kDismissed);
@@ -93,6 +106,10 @@ void ChromeCleanerDialogControllerImpl::Close() {
 void ChromeCleanerDialogControllerImpl::DetailsButtonClicked(
     bool logs_enabled) {
   RecordPromptDialogResponseHistogram(PROMPT_DIALOG_RESPONSE_DETAILS);
+  DCHECK(!time_dialog_shown_.is_null());
+  UMA_HISTOGRAM_LONG_TIMES_100(
+      "SoftwareReporter.PromptDialog.TimeUntilDone_DetailsButtonClicked",
+      base::Time::Now() - time_dialog_shown_);
 
   cleaner_controller_->SetLogsEnabled(logs_enabled);
   OpenSettingsPage(browser_);

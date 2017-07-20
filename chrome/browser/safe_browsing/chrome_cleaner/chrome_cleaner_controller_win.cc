@@ -6,6 +6,7 @@
 
 #include <windows.h>
 
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -319,6 +320,9 @@ void ChromeCleanerController::ReplyWithUserResponse(
       ->PostTask(FROM_HERE,
                  base::BindOnce(std::move(prompt_user_callback_), acceptance));
 
+  if (new_state == State::kCleaning)
+    time_cleanup_started_ = base::Time::Now();
+
   // The transition to a new state should happen only after the response has
   // been posted on the UI thread so that if we transition to the kIdle state,
   // the response callback is not cleared before it has been posted.
@@ -419,6 +423,8 @@ void ChromeCleanerController::OnChromeCleanerFetchedAndVerified(
                  weak_factory_.GetWeakPtr()),
       // Our callbacks should be dispatched to the UI thread only.
       base::ThreadTaskRunnerHandle::Get());
+
+  time_scanning_started_ = base::Time::Now();
 }
 
 // static
@@ -448,6 +454,10 @@ void ChromeCleanerController::OnPromptUser(
   DCHECK_EQ(State::kScanning, state());
   DCHECK(!files_to_delete_);
   DCHECK(!prompt_user_callback_);
+  DCHECK(!time_scanning_started_.is_null());
+
+  UMA_HISTOGRAM_LONG_TIMES_100("SoftwareReporter.Cleaner.ScanningTime",
+                               base::Time::Now() - time_scanning_started_);
 
   if (files_to_delete->empty()) {
     BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)
@@ -510,6 +520,15 @@ void ChromeCleanerController::OnCleanerProcessDone(
 
   if (process_status.launch_status ==
       ChromeCleanerRunner::LaunchStatus::kSuccess) {
+    if (process_status.exit_code == kRebootRequiredExitCode ||
+        process_status.exit_code == kRebootNotRequiredExitCode) {
+      DCHECK(!time_cleanup_started_.is_null());
+      UMA_HISTOGRAM_CUSTOM_TIMES("SoftwareReporter.Cleaner.CleaningTime",
+                                 base::Time::Now() - time_cleanup_started_,
+                                 base::TimeDelta::FromMilliseconds(1),
+                                 base::TimeDelta::FromHours(5), 100);
+    }
+
     if (process_status.exit_code == kRebootRequiredExitCode) {
       RecordCleanupResultHistogram(CLEANUP_RESULT_REBOOT_REQUIRED);
       SetStateAndNotifyObservers(State::kRebootRequired);
@@ -526,6 +545,8 @@ void ChromeCleanerController::OnCleanerProcessDone(
       RecordCleanupResultHistogram(CLEANUP_RESULT_SUCCEEDED);
       delegate_->ResetTaggedProfiles(
           g_browser_process->profile_manager()->GetLoadedProfiles(),
+          // OnSettingsResetCompleted() will take care of transitioning to the
+          // kIdle state with IdleReason kCleaningSucceeded.
           base::BindOnce(&ChromeCleanerController::OnSettingsResetCompleted,
                          base::Unretained(this)));
       ResetCleanerDataAndInvalidateWeakPtrs();

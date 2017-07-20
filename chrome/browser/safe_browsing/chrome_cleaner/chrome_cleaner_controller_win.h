@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
+#include "base/time/time.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_runner_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/reporter_runner_win.h"
 #include "components/chrome_cleaner/public/interfaces/chrome_prompt.mojom.h"
@@ -254,6 +255,10 @@ class ChromeCleanerController {
   // The Mojo callback that should be called to send a response to the Chrome
   // Cleaner process. This must be posted to run on the IO thread.
   chrome_cleaner::mojom::ChromePrompt::PromptUserCallback prompt_user_callback_;
+
+  // For metrics reporting.
+  base::Time time_scanning_started_;
+  base::Time time_cleanup_started_;
 
   base::ObserverList<Observer> observer_list_;
 
