@@ -18,8 +18,8 @@ const ActiveGroupId kSyntheticTrials[] = {{55, 15}, {66, 16}};
 
 class TestProvider : public FieldTrialsProvider {
  public:
-  TestProvider(SyntheticTrialRegistry* registry)
-      : FieldTrialsProvider(registry) {}
+  TestProvider(SyntheticTrialRegistry* registry, base::StringPiece suffix)
+      : FieldTrialsProvider(registry, suffix) {}
   ~TestProvider() override {}
 
   void GetFieldTrialIds(
@@ -83,7 +83,7 @@ class FieldTrialsProviderTest : public ::testing::Test {
 };
 
 TEST_F(FieldTrialsProviderTest, ProvideSyntheticTrials) {
-  TestProvider provider(&registry_);
+  TestProvider provider(&registry_, base::StringPiece());
 
   RegisterExpectedSyntheticTrials();
   // Make sure these trials are older than the log.

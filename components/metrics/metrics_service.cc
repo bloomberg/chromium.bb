@@ -140,6 +140,7 @@
 #include "base/metrics/sparse_histogram.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string_piece.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/tracked_objects.h"
@@ -236,7 +237,7 @@ MetricsService::MetricsService(MetricsStateManager* state_manager,
       base::MakeUnique<StabilityMetricsProvider>(local_state_));
 
   RegisterMetricsProvider(base::MakeUnique<variations::FieldTrialsProvider>(
-      &synthetic_trial_registry_));
+      &synthetic_trial_registry_, base::StringPiece()));
 }
 
 MetricsService::~MetricsService() {
