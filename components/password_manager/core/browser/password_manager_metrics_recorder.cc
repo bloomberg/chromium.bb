@@ -20,29 +20,32 @@ const char kUkmUserModifiedPasswordField[] = "UserModifiedPasswordField";
 const char kUkmProvisionalSaveFailure[] = "ProvisionalSaveFailure";
 
 PasswordManagerMetricsRecorder::PasswordManagerMetricsRecorder(
-    std::unique_ptr<ukm::UkmEntryBuilder> ukm_entry_builder)
-    : ukm_entry_builder_(std::move(ukm_entry_builder)) {}
+    ukm::UkmRecorder* ukm_recorder,
+    ukm::SourceId source_id,
+    const GURL& main_frame_url)
+    : ukm_recorder_(ukm_recorder),
+      source_id_(source_id),
+      main_frame_url_(main_frame_url),
+      ukm_entry_builder_(
+          ukm_recorder
+              ? ukm_recorder->GetEntryBuilder(source_id, "PageWithPassword")
+              : nullptr) {}
 
 PasswordManagerMetricsRecorder::PasswordManagerMetricsRecorder(
-    PasswordManagerMetricsRecorder&& that) = default;
+    PasswordManagerMetricsRecorder&& that) noexcept = default;
 
 PasswordManagerMetricsRecorder::~PasswordManagerMetricsRecorder() {
   if (user_modified_password_field_)
     RecordUkmMetric(kUkmUserModifiedPasswordField, 1);
+
+  // Bind |main_frame_url_| to |source_id_| directly before sending the content
+  // of |ukm_recorder_| to ensure that the binding has not been purged already.
+  if (ukm_recorder_)
+    ukm_recorder_->UpdateSourceURL(source_id_, main_frame_url_);
 }
 
 PasswordManagerMetricsRecorder& PasswordManagerMetricsRecorder::operator=(
     PasswordManagerMetricsRecorder&& that) = default;
-
-// static
-std::unique_ptr<ukm::UkmEntryBuilder>
-PasswordManagerMetricsRecorder::CreateUkmEntryBuilder(
-    ukm::UkmRecorder* ukm_recorder,
-    ukm::SourceId source_id) {
-  if (!ukm_recorder)
-    return nullptr;
-  return ukm_recorder->GetEntryBuilder(source_id, "PageWithPassword");
-}
 
 void PasswordManagerMetricsRecorder::RecordUserModifiedPasswordField() {
   user_modified_password_field_ = true;

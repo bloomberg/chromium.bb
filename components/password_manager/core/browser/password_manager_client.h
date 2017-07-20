@@ -221,7 +221,8 @@ class PasswordManagerClient {
   virtual ukm::UkmRecorder* GetUkmRecorder() = 0;
 
   // Gets a ukm::SourceId that is associated with the WebContents object
-  // and its last committed main frame navigation.
+  // and its last committed main frame navigation. Note that the URL binding
+  // has to happen by the caller at a later point.
   virtual ukm::SourceId GetUkmSourceId() = 0;
 
   // Gets a metrics recorder for the currently committed navigation.
