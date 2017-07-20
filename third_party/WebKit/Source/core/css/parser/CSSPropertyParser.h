@@ -84,7 +84,6 @@ class CSSPropertyParser {
   bool ConsumeBorder(bool important);
 
   bool ParseShorthand(CSSPropertyID, bool important);
-  bool ConsumeShorthandGreedily(const StylePropertyShorthand&, bool important);
   bool Consume2Values(const StylePropertyShorthand&, bool important);
 
   bool ConsumeBackgroundShorthand(const StylePropertyShorthand&,

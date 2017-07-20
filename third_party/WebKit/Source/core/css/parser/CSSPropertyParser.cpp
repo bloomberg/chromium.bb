@@ -1344,39 +1344,6 @@ bool CSSPropertyParser::ParseViewportDescriptor(CSSPropertyID prop_id,
   }
 }
 
-bool CSSPropertyParser::ConsumeShorthandGreedily(
-    const StylePropertyShorthand& shorthand,
-    bool important) {
-  // Existing shorthands have at most 6 longhands.
-  DCHECK_LE(shorthand.length(), 6u);
-  const CSSValue* longhands[6] = {nullptr, nullptr, nullptr,
-                                  nullptr, nullptr, nullptr};
-  const CSSPropertyID* shorthand_properties = shorthand.properties();
-  do {
-    bool found_longhand = false;
-    for (size_t i = 0; !found_longhand && i < shorthand.length(); ++i) {
-      if (longhands[i])
-        continue;
-      longhands[i] = ParseSingleValue(shorthand_properties[i], shorthand.id());
-      if (longhands[i])
-        found_longhand = true;
-    }
-    if (!found_longhand)
-      return false;
-  } while (!range_.AtEnd());
-
-  for (size_t i = 0; i < shorthand.length(); ++i) {
-    if (longhands[i]) {
-      AddParsedProperty(shorthand_properties[i], shorthand.id(), *longhands[i],
-                        important);
-    } else {
-      AddParsedProperty(shorthand_properties[i], shorthand.id(),
-                        *CSSInitialValue::Create(), important);
-    }
-  }
-  return true;
-}
-
 bool CSSPropertyParser::ConsumeBorder(bool important) {
   CSSValue* width = nullptr;
   const CSSValue* style = nullptr;
@@ -2067,9 +2034,6 @@ bool CSSPropertyParser::ParseShorthand(CSSPropertyID unresolved_property,
   }
 
   switch (property) {
-    case CSSPropertyTextDecoration:
-      DCHECK(RuntimeEnabledFeatures::CSS3TextDecorationsEnabled());
-      return ConsumeShorthandGreedily(textDecorationShorthand(), important);
     case CSSPropertyMarker: {
       const CSSValue* marker = ParseSingleValue(CSSPropertyMarkerStart);
       if (!marker || !range_.AtEnd())
@@ -2082,20 +2046,6 @@ bool CSSPropertyParser::ParseShorthand(CSSPropertyID unresolved_property,
                         important);
       return true;
     }
-    case CSSPropertyFlexFlow:
-      return ConsumeShorthandGreedily(flexFlowShorthand(), important);
-    case CSSPropertyColumnRule:
-      return ConsumeShorthandGreedily(columnRuleShorthand(), important);
-    case CSSPropertyListStyle:
-      return ConsumeShorthandGreedily(listStyleShorthand(), important);
-    case CSSPropertyBorderTop:
-      return ConsumeShorthandGreedily(borderTopShorthand(), important);
-    case CSSPropertyBorderRight:
-      return ConsumeShorthandGreedily(borderRightShorthand(), important);
-    case CSSPropertyBorderBottom:
-      return ConsumeShorthandGreedily(borderBottomShorthand(), important);
-    case CSSPropertyBorderLeft:
-      return ConsumeShorthandGreedily(borderLeftShorthand(), important);
     case CSSPropertyBorder:
       return ConsumeBorder(important);
     case CSSPropertyPageBreakAfter:
