@@ -68,8 +68,7 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
                      bool ipp_everywhere);
 
   void HandleAddCupsPrinter(const base::ListValue* args);
-  void OnAddedPrinter(std::unique_ptr<Printer> printer,
-                      PrinterSetupResult result);
+  void OnAddedPrinter(const Printer& printer, PrinterSetupResult result);
   void OnAddPrinterError();
 
   // Get a list of all manufacturers for which we have at least one model of
