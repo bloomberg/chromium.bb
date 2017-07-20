@@ -2677,15 +2677,9 @@ void LocalFrameView::GetTickmarks(Vector<IntRect>& tickmarks) const {
       GetFrame().GetDocument()->Markers().LayoutRectsForTextMatchMarkers();
 }
 
-void LocalFrameView::SetInputEventsTransformForEmulation(
-    const IntSize& offset,
+void LocalFrameView::SetInputEventsScaleForEmulation(
     float content_scale_factor) {
-  input_events_offset_for_emulation_ = offset;
   input_events_scale_factor_for_emulation_ = content_scale_factor;
-}
-
-IntSize LocalFrameView::InputEventsOffsetForEmulation() const {
-  return input_events_offset_for_emulation_;
 }
 
 float LocalFrameView::InputEventsScaleFactor() const {

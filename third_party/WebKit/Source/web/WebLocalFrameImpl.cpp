@@ -1742,8 +1742,7 @@ void WebLocalFrameImpl::CreateFrameView() {
     GetFrame()->View()->EnableAutoSizeMode(web_view->MinAutoSize(),
                                            web_view->MaxAutoSize());
 
-  GetFrame()->View()->SetInputEventsTransformForEmulation(
-      input_events_offset_for_emulation_,
+  GetFrame()->View()->SetInputEventsScaleForEmulation(
       input_events_scale_factor_for_emulation_);
   GetFrame()->View()->SetDisplayMode(web_view->DisplayMode());
 }
@@ -1815,14 +1814,11 @@ void WebLocalFrameImpl::SetCanHaveScrollbars(bool can_have_scrollbars) {
     view->SetCanHaveScrollbars(can_have_scrollbars);
 }
 
-void WebLocalFrameImpl::SetInputEventsTransformForEmulation(
-    const IntSize& offset,
+void WebLocalFrameImpl::SetInputEventsScaleForEmulation(
     float content_scale_factor) {
-  input_events_offset_for_emulation_ = offset;
   input_events_scale_factor_for_emulation_ = content_scale_factor;
   if (GetFrame()->View())
-    GetFrame()->View()->SetInputEventsTransformForEmulation(
-        input_events_offset_for_emulation_,
+    GetFrame()->View()->SetInputEventsScaleForEmulation(
         input_events_scale_factor_for_emulation_);
 }
 

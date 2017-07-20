@@ -74,7 +74,7 @@ class WebLocalFrameBase : public GarbageCollectedFinalized<WebLocalFrameBase>,
       const = 0;
   virtual TextCheckerClient& GetTextCheckerClient() const = 0;
   virtual TextFinder* GetTextFinder() const = 0;
-  virtual void SetInputEventsTransformForEmulation(const IntSize&, float) = 0;
+  virtual void SetInputEventsScaleForEmulation(float) = 0;
 
   virtual WebFrameWidgetBase* LocalRootFrameWidget() = 0;
 
