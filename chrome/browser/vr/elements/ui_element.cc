@@ -84,6 +84,10 @@ void UiElement::SetSize(float width, float height) {
                                        gfx::SizeF(width, height));
 }
 
+void UiElement::SetVisible(bool visible) {
+  animation_player_.TransitionVisibilityTo(last_frame_time_, visible_, visible);
+}
+
 void UiElement::SetTransformOperations(
     const UiElementTransformOperations& ui_element_transform_operations) {
   animation_player_.TransitionTransformOperationsTo(
@@ -205,6 +209,11 @@ void UiElement::NotifyClientTransformOperationsAnimated(
 void UiElement::NotifyClientBoundsAnimated(const gfx::SizeF& size,
                                            cc::Animation* animation) {
   size_ = size;
+}
+
+void UiElement::NotifyClientVisibilityAnimated(bool visible,
+                                               cc::Animation* animation) {
+  visible_ = visible;
 }
 
 void UiElement::LayOutChildren() {

@@ -167,7 +167,7 @@ void UiSceneManager::CreateScreenDimmer() {
   element->set_debug_id(kScreenDimmer);
   element->set_id(AllocateId());
   element->set_fill(vr::Fill::NONE);
-  element->set_visible(false);
+  element->SetVisible(false);
   element->set_hit_testable(false);
   element->set_is_overlay(true);
   screen_dimmer_ = element.get();
@@ -188,7 +188,7 @@ void UiSceneManager::CreateSecurityWarnings() {
                         -kWarningDistance * cos(kWarningAngleRadians));
   element->SetRotate(1, 0, 0, kWarningAngleRadians);
   element->SetScale(kWarningDistance, kWarningDistance, 1);
-  element->set_visible(false);
+  element->SetVisible(false);
   element->set_hit_testable(false);
   element->set_lock_to_fov(true);
   permanent_security_warning_ = element.get();
@@ -203,7 +203,7 @@ void UiSceneManager::CreateSecurityWarnings() {
   element->set_fill(vr::Fill::NONE);
   element->SetSize(kTransientWarningWidth, kTransientWarningHeight);
   element->SetTranslate(0, 0, -kWarningDistance);
-  element->set_visible(false);
+  element->SetVisible(false);
   element->set_hit_testable(false);
   element->set_lock_to_fov(true);
   scene_->AddUiElement(std::move(element));
@@ -215,7 +215,7 @@ void UiSceneManager::CreateSecurityWarnings() {
   element->SetSize(kExitWarningWidth, kExitWarningHeight);
   element->SetTranslate(0, 0, -kExitWarningDistance);
   element->SetScale(kExitWarningDistance, kExitWarningDistance, 1);
-  element->set_visible(false);
+  element->SetVisible(false);
   element->set_hit_testable(false);
   element->set_lock_to_fov(true);
   exit_warning_ = element.get();
@@ -258,8 +258,8 @@ void UiSceneManager::CreateSystemIndicators() {
         512, kIndicatorHeight, indicator.icon, indicator.resource_string);
     element->set_debug_id(indicator.debug_id);
     element->set_id(AllocateId());
+    element->SetVisible(false);
     indicator_layout->AddChild(element.get());
-    element->set_visible(false);
     *(indicator.element) = element.get();
     system_indicators_.push_back(element.get());
     scene_->AddUiElement(std::move(element));
@@ -279,7 +279,7 @@ void UiSceneManager::CreateContentQuad() {
   element->set_fill(vr::Fill::CONTENT);
   element->SetSize(kContentWidth, kContentHeight);
   element->SetTranslate(0, kContentVerticalOffset, -kContentDistance);
-  element->set_visible(false);
+  element->SetVisible(false);
   element->set_corner_radius(kContentCornerRadius);
   element->animation_player().SetTransitionedProperties({TRANSFORM, BOUNDS});
   main_content_ = element.get();
@@ -388,7 +388,7 @@ void UiSceneManager::CreateTransientUrlBar() {
   url_bar->set_debug_id(kTransientUrlBar);
   url_bar->set_id(AllocateId());
   url_bar->set_lock_to_fov(true);
-  url_bar->set_visible(false);
+  url_bar->SetVisible(false);
   url_bar->set_hit_testable(false);
   url_bar->SetTranslate(0, kTransientUrlBarVerticalOffset,
                         -kTransientUrlBarDistance);
@@ -428,8 +428,8 @@ void UiSceneManager::CreateExitPrompt() {
   element->set_fill(vr::Fill::NONE);
   element->SetSize(kExitPromptWidth, kExitPromptHeight);
   element->SetTranslate(0.0, kExitPromptVerticalOffset, kTextureOffset);
+  element->SetVisible(false);
   main_content_->AddChild(element.get());
-  element->set_visible(false);
   scene_->AddUiElement(std::move(element));
 
   // Place an invisible but hittable plane behind the exit prompt, to keep the
@@ -456,7 +456,7 @@ void UiSceneManager::CreateToasts() {
   element->set_id(AllocateId());
   element->set_fill(vr::Fill::NONE);
   element->SetSize(kToastWidthDMM, kToastHeightDMM);
-  element->set_visible(false);
+  element->SetVisible(false);
   element->set_hit_testable(false);
   exclusive_screen_toast_ = element.get();
   scene_->AddUiElement(std::move(element));
@@ -679,11 +679,11 @@ void UiSceneManager::ConfigureSecurityWarnings() {
 
 void UiSceneManager::ConfigureIndicators() {
   bool allowed = !web_vr_mode_ && !fullscreen_;
-  audio_capture_indicator_->set_visible(allowed && audio_capturing_);
-  video_capture_indicator_->set_visible(allowed && video_capturing_);
-  screen_capture_indicator_->set_visible(allowed && screen_capturing_);
-  location_access_indicator_->set_visible(allowed && location_access_);
-  bluetooth_connected_indicator_->set_visible(allowed && bluetooth_connected_);
+  audio_capture_indicator_->SetVisible(allowed && audio_capturing_);
+  video_capture_indicator_->SetVisible(allowed && video_capturing_);
+  screen_capture_indicator_->SetVisible(allowed && screen_capturing_);
+  location_access_indicator_->SetVisible(allowed && location_access_);
+  bluetooth_connected_indicator_->SetVisible(allowed && bluetooth_connected_);
 }
 
 void UiSceneManager::ConfigureExclusiveScreenToast() {

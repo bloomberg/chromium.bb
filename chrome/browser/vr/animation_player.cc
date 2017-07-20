@@ -301,6 +301,93 @@ void AnimationPlayer::TransitionBoundsTo(base::TimeTicks monotonic_time,
                                      cc::TargetProperty::BOUNDS));
 }
 
+void AnimationPlayer::TransitionBackgroundColorTo(
+    base::TimeTicks monotonic_time,
+    SkColor current,
+    SkColor target) {
+  DCHECK(target_);
+
+  if (!transition_.target_properties[cc::TargetProperty::BACKGROUND_COLOR]) {
+    target_->NotifyClientBackgroundColorAnimated(target, nullptr);
+    return;
+  }
+
+  cc::Animation* running_animation =
+      GetRunningAnimationForProperty(cc::TargetProperty::BACKGROUND_COLOR);
+
+  if (running_animation) {
+    const cc::ColorAnimationCurve* curve =
+        running_animation->curve()->ToColorAnimationCurve();
+    if (target == curve->GetValue(GetEndTime(running_animation))) {
+      return;
+    }
+    if (target == curve->GetValue(GetStartTime(running_animation))) {
+      ReverseAnimation(monotonic_time, running_animation);
+      return;
+    }
+  } else if (target == current) {
+    return;
+  }
+
+  RemoveAnimations(cc::TargetProperty::BACKGROUND_COLOR);
+
+  std::unique_ptr<cc::KeyframedColorAnimationCurve> curve(
+      cc::KeyframedColorAnimationCurve::Create());
+
+  curve->AddKeyframe(cc::ColorKeyframe::Create(
+      base::TimeDelta(), current, CreateTransitionTimingFunction()));
+
+  curve->AddKeyframe(cc::ColorKeyframe::Create(
+      transition_.duration, target, CreateTransitionTimingFunction()));
+
+  AddAnimation(cc::Animation::Create(std::move(curve), GetNextAnimationId(),
+                                     GetNextGroupId(),
+                                     cc::TargetProperty::BACKGROUND_COLOR));
+}
+
+void AnimationPlayer::TransitionVisibilityTo(base::TimeTicks monotonic_time,
+                                             bool current,
+                                             bool target) {
+  DCHECK(target_);
+
+  if (!transition_.target_properties[cc::TargetProperty::VISIBILITY]) {
+    target_->NotifyClientVisibilityAnimated(target, nullptr);
+    return;
+  }
+
+  cc::Animation* running_animation =
+      GetRunningAnimationForProperty(cc::TargetProperty::VISIBILITY);
+
+  if (running_animation) {
+    const cc::BooleanAnimationCurve* curve =
+        running_animation->curve()->ToBooleanAnimationCurve();
+    if (target == curve->GetValue(GetEndTime(running_animation))) {
+      return;
+    }
+    if (target == curve->GetValue(GetStartTime(running_animation))) {
+      ReverseAnimation(monotonic_time, running_animation);
+      return;
+    }
+  } else if (target == current) {
+    return;
+  }
+
+  RemoveAnimations(cc::TargetProperty::VISIBILITY);
+
+  std::unique_ptr<cc::KeyframedBooleanAnimationCurve> curve(
+      cc::KeyframedBooleanAnimationCurve::Create());
+
+  curve->AddKeyframe(cc::BooleanKeyframe::Create(
+      base::TimeDelta(), current, CreateTransitionTimingFunction()));
+
+  curve->AddKeyframe(cc::BooleanKeyframe::Create(
+      transition_.duration, target, CreateTransitionTimingFunction()));
+
+  AddAnimation(cc::Animation::Create(std::move(curve), GetNextAnimationId(),
+                                     GetNextGroupId(),
+                                     cc::TargetProperty::VISIBILITY));
+}
+
 cc::Animation* AnimationPlayer::GetRunningAnimationForProperty(
     cc::TargetProperty::Type target_property) const {
   for (auto& animation : animations_) {

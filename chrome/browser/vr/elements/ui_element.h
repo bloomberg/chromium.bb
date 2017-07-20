@@ -106,7 +106,7 @@ class UiElement : public cc::AnimationTarget {
 
   // If true, this object will be visible.
   bool visible() const { return visible_; }
-  void set_visible(bool visible) { visible_ = visible; }
+  void SetVisible(bool visible);
 
   // If false, the reticle will not hit the element, even if visible.
   bool hit_testable() const { return hit_testable_; }
@@ -261,6 +261,8 @@ class UiElement : public cc::AnimationTarget {
       cc::Animation* animation) override;
   void NotifyClientBoundsAnimated(const gfx::SizeF& size,
                                   cc::Animation* animation) override;
+  void NotifyClientVisibilityAnimated(bool visible,
+                                      cc::Animation* animation) override;
 
   // Handles positioning adjustments for children. This will be overridden by
   // UiElements providing custom layout modes. See the documentation of the

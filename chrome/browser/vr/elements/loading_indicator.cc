@@ -12,7 +12,7 @@ namespace vr {
 LoadingIndicator::LoadingIndicator(int preferred_width)
     : TexturedElement(preferred_width),
       texture_(base::MakeUnique<LoadingIndicatorTexture>()) {
-  set_visible(false);
+  SetVisible(false);
 }
 
 LoadingIndicator::~LoadingIndicator() = default;
@@ -42,7 +42,7 @@ void LoadingIndicator::SetLoadProgress(float progress) {
 }
 
 void LoadingIndicator::SetVisibility() {
-  set_visible(enabled_ && loading_);
+  SetVisible(enabled_ && loading_);
 }
 
 }  // namespace vr
