@@ -85,7 +85,8 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
       const WTF::Optional<NGLogicalOffset>& child_bfc_offset,
       const NGLogicalOffset& logical_offset,
       const NGLayoutResult& layout_result,
-      const NGFragment& fragment);
+      const NGFragment& fragment,
+      bool empty_block_affected_by_clearance);
 
   // Positions the fragment that establishes a new formatting context.
   //
@@ -126,9 +127,12 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   //   BFC Offset is known here because of the padding.
   //   <div style="padding: 1px">
   //     <div id="empty-div" style="margins: 1px"></div>
-  NGLogicalOffset PositionWithParentBfc(const NGConstraintSpace&,
-                                        const NGInflowChildData& child_data,
-                                        const NGLayoutResult&);
+  NGLogicalOffset PositionWithParentBfc(
+      const NGLayoutInputNode& child,
+      const NGConstraintSpace&,
+      const NGInflowChildData& child_data,
+      const NGLayoutResult&,
+      bool* empty_block_affected_by_clearance);
 
   NGLogicalOffset PositionLegacy(const NGConstraintSpace& child_space,
                                  const NGInflowChildData& child_data);

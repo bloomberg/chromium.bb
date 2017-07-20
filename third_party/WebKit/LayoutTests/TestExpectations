@@ -327,7 +327,6 @@ crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/float-appl
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/float-applies-to-012.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/float-replaced-width-002.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/floating-replaced-height-008.xht [ Skip ]
-crbug.com/719615 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/floats-001.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/floats-005.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/floats-028.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/floats-029.xht [ Failure ]
@@ -349,7 +348,6 @@ crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/margin-col
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/margin-collapse-033.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/margin-collapse-034.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/margin-collapse-035.xht [ Failure ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/margin-collapse-125.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/margin-collapse-157.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/margin-collapse-clear-008.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/margin-collapse-clear-012.xht [ Failure ]
@@ -441,8 +439,6 @@ crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/absolute-re
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/absolute-replaced-height-032.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/absolute-replaced-height-033.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/absolute-replaced-height-036.xht [ Failure ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/absolute-replaced-width-013.xht [ Failure ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/absolute-replaced-width-027.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/absolute-replaced-width-036.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/absolute-replaced-width-037.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/absolute-replaced-width-043.xht [ Failure ]
@@ -537,7 +533,6 @@ crbug.com/635619 virtual/layout_ng/fast/block/float/019.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/020.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/022.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/023.html [ Failure ]
-crbug.com/635619 virtual/layout_ng/fast/block/float/024.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/025.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/026.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/027.html [ Failure ]
@@ -628,7 +623,6 @@ crbug.com/635619 virtual/layout_ng/fast/block/float/vertical-move-relayout.html 
 crbug.com/635619 virtual/layout_ng/fast/block/float/width-update-after-clear.html [ Failure ]
 
 ### virtual/layout_ng/fast/block/margin-collapse
-crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/025.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/032.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/033.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/043.html [ Failure ]
@@ -636,7 +630,6 @@ crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/057.html [ Failure
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/101.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/103.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/bfc-beside-float-complex-margin-collapsing.html [ Failure ]
-crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/self-collapsing-block-creates-block-formatting-context.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/self-collapsing-block-with-overflow-hidden-and-float-child.html [ Failure ]
 
 ### virtual/layout_ng/fast/block/margin-collapse/block-inside-inline
@@ -645,7 +638,6 @@ crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/block-inside-inlin
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/block-inside-inline/011.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/block-inside-inline/012.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/block-inside-inline/015.html [ Failure ]
-crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/block-inside-inline/025.html [ Failure ]
 
 ### virtual/layout_ng/fast/block/margin-collapse
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/clear-nested-float-more-than-one-previous-sibling-away.html [ Failure ]
