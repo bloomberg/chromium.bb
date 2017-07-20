@@ -81033,6 +81033,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Translate.SourceLanguage" enum="CLD3LanguageCode">
+  <owner>yyushkina@google.com</owner>
+  <summary>
+    The number of requests sent to the Translate server, grouped by source
+    language.
+  </summary>
+</histogram>
+
+<histogram name="Translate.TargetLanguage" enum="CLD3LanguageCode">
+  <owner>yyushkina@google.com</owner>
+  <summary>
+    The number of requests sent to the Translate server, grouped by target
+    language.
+  </summary>
+</histogram>
+
 <histogram name="Translate.TimeToBeReady" units="ms">
   <owner>kenjibaheux@google.com</owner>
   <summary>

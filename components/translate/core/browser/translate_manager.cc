@@ -337,6 +337,10 @@ void TranslateManager::TranslatePage(const std::string& original_source_lang,
     return;
   }
 
+  // Log the source and target languages of the translate request.
+  TranslateBrowserMetrics::ReportTranslateSourceLanguage(original_source_lang);
+  TranslateBrowserMetrics::ReportTranslateTargetLanguage(target_lang);
+
   // Translation can be kicked by context menu against unsupported languages.
   // Unsupported language strings should be replaced with
   // kUnknownLanguageCode in order to send a translation request with enabling
