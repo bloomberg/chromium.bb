@@ -49,14 +49,7 @@ android_envsetup_main() {
   # Add Chromium Android development scripts to system path.
   # Must be after CHROME_SRC is set.
   export PATH=$PATH:${CHROME_SRC}/build/android
-
-  export ENVSETUP_GYP_CHROME_SRC=${CHROME_SRC}  # TODO(thakis): Remove.
 }
 # In zsh, $0 is the name of the file being sourced.
 android_envsetup_main "${BASH_SOURCE:-$0}"
 unset -f android_envsetup_main
-
-android_gyp() {
-  echo "Please call build/gyp_chromium instead. android_gyp is going away."
-  "${ENVSETUP_GYP_CHROME_SRC}/build/gyp_chromium" --depth="${ENVSETUP_GYP_CHROME_SRC}" --check "$@"
-}
