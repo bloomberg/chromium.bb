@@ -408,27 +408,13 @@ void ChildThreadImpl::OnFieldTrialGroupFinalized(
 
 void ChildThreadImpl::ConnectChannel(
     mojo::edk::IncomingBrokerClientInvitation* invitation) {
-  std::string channel_token;
-  mojo::ScopedMessagePipeHandle handle;
-  if (!IsInBrowserProcess()) {
-    channel_token = base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-        switches::kMojoChannelToken);
-  }
+  DCHECK(service_manager_connection_);
+  IPC::mojom::ChannelBootstrapPtr bootstrap;
+  mojo::ScopedMessagePipeHandle handle =
+      mojo::MakeRequest(&bootstrap).PassMessagePipe();
+  service_manager_connection_->AddConnectionFilter(
+      base::MakeUnique<ChannelBootstrapFilter>(bootstrap.PassInterface()));
 
-  if (!channel_token.empty()) {
-    // TODO(rockot): Remove all paths which lead to this branch. The Channel
-    // connection should always be established by a service manager connection
-    // from the browser. http://crbug.com/623396.
-    handle = invitation->ExtractMessagePipe(channel_token);
-  } else {
-    DCHECK(service_manager_connection_);
-    IPC::mojom::ChannelBootstrapPtr bootstrap;
-    handle = mojo::MakeRequest(&bootstrap).PassMessagePipe();
-    service_manager_connection_->AddConnectionFilter(
-        base::MakeUnique<ChannelBootstrapFilter>(bootstrap.PassInterface()));
-  }
-
-  DCHECK(handle.is_valid());
   channel_->Init(
       IPC::ChannelMojo::CreateClientFactory(
           std::move(handle), ChildProcess::current()->io_task_runner()),

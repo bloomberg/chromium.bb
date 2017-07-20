@@ -14,6 +14,7 @@
 #include "content/public/common/child_process_host_delegate.h"
 #include "ipc/ipc_platform_file.h"
 #include "mojo/edk/embedder/outgoing_broker_client_invitation.h"
+#include "services/service_manager/public/interfaces/service.mojom.h"
 
 namespace base {
 class CommandLine;
@@ -154,6 +155,8 @@ class ServiceUtilityProcessHost : public content::ChildProcessHostDelegate {
 
   class PdfToEmfState;
   std::unique_ptr<PdfToEmfState> pdf_to_emf_state_;
+
+  service_manager::mojom::ServicePtr utility_process_connection_;
 
   base::WeakPtrFactory<ServiceUtilityProcessHost> weak_ptr_factory_;
 

@@ -31,7 +31,6 @@
 #include "ipc/ipc_channel_mojo.h"
 #include "ipc/ipc_logging.h"
 #include "ipc/message_filter.h"
-#include "mojo/edk/embedder/embedder.h"
 #include "services/resource_coordinator/public/interfaces/memory_instrumentation/constants.mojom.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
@@ -119,24 +118,7 @@ void ChildProcessHostImpl::ForceShutdown() {
   Send(new ChildProcessMsg_Shutdown());
 }
 
-std::string ChildProcessHostImpl::CreateChannelMojo(
-    mojo::edk::OutgoingBrokerClientInvitation* invitation) {
-  DCHECK(channel_id_.empty());
-  channel_id_ = mojo::edk::GenerateRandomToken();
-  channel_ =
-      IPC::ChannelMojo::Create(invitation->AttachMessagePipe(channel_id_),
-                               IPC::Channel::MODE_SERVER, this);
-  if (!channel_ || !InitChannel())
-    return std::string();
-  return channel_id_;
-}
-
 void ChildProcessHostImpl::CreateChannelMojo() {
-  // TODO(rockot): Remove |channel_id_| once this is the only code path by which
-  // the Channel is created. For now it serves to at least mutually exclude
-  // different CreateChannel* calls.
-  DCHECK(channel_id_.empty());
-  channel_id_ = "ChannelMojo";
 
   mojo::MessagePipe pipe;
   BindInterface(IPC::mojom::ChannelBootstrap::Name_, std::move(pipe.handle1));

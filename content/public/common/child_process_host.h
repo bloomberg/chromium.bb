@@ -12,7 +12,6 @@
 #include "content/common/content_export.h"
 #include "content/public/common/bind_interface_helpers.h"
 #include "ipc/ipc_channel_proxy.h"
-#include "mojo/edk/embedder/outgoing_broker_client_invitation.h"
 
 namespace base {
 class FilePath;
@@ -72,14 +71,6 @@ class CONTENT_EXPORT ChildProcessHost : public IPC::Sender {
   // Send the shutdown message to the child process.
   // Does not check with the delegate's CanShutdown.
   virtual void ForceShutdown() = 0;
-
-  // Creates the IPC channel on top of Mojo. Returns the Mojo channel token if
-  // succeeded, or an empty string on failure.
-  //
-  // DEPRECATED: Don't use this. Instead implement GetRemoteInterfaces() in the
-  // delegate and use the CreateChannelMojo() version below.
-  virtual std::string CreateChannelMojo(
-      mojo::edk::OutgoingBrokerClientInvitation* invitation) = 0;
 
   // Creates the IPC channel over a Mojo message pipe. The pipe connection is
   // brokered through the Service Manager like any other service connection.

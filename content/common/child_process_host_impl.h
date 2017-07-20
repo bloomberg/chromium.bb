@@ -64,8 +64,6 @@ class CONTENT_EXPORT ChildProcessHostImpl : public ChildProcessHost,
   // ChildProcessHost implementation
   bool Send(IPC::Message* message) override;
   void ForceShutdown() override;
-  std::string CreateChannelMojo(
-      mojo::edk::OutgoingBrokerClientInvitation* invitation) override;
   void CreateChannelMojo() override;
   bool IsChannelOpening() override;
   void AddFilter(IPC::MessageFilter* filter) override;
@@ -94,7 +92,6 @@ class CONTENT_EXPORT ChildProcessHostImpl : public ChildProcessHost,
   base::Process peer_process_;
   bool opening_channel_;  // True while we're waiting the channel to be opened.
   std::unique_ptr<IPC::Channel> channel_;
-  std::string channel_id_;
 
   // Holds all the IPC message filters.  Since this object lives on the IO
   // thread, we don't have a IPC::ChannelProxy and so we manage filters
