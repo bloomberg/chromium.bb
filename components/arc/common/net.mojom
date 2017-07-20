@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Next MinVersion: 7
+
 module arc.mojom;
 
 [Extensible]
@@ -122,11 +124,13 @@ struct NetworkData {
   array<WifiConfiguration> networks;
 };
 
-interface NetHost {
-  // Sends a request to get configured or visible WiFi networks based on the
-  // |configured_only| and |visible_only| flags.
-  GetNetworksDeprecated@0(bool configured_only, bool visible_only) => (NetworkData data);
+struct GetNetworksResponseType {
+  NetworkResult status;
+  array<NetworkConfiguration> networks;
+};
 
+
+interface NetHost {
   // Sends a request to get enabled / disabled status of WiFi.
   GetWifiEnabledState@1() => (bool is_enabled);
 
@@ -135,7 +139,7 @@ interface NetHost {
 
   // Sends a request to get configured or visible WiFi networks based on the
   // request type.
-  [MinVersion=2] GetNetworks@3(GetNetworksRequestType type) => (NetworkData data);
+  [MinVersion=2] GetNetworksDeprecated@3(GetNetworksRequestType type) => (NetworkData data);
 
   // Sends a request to enable or disable WiFi. The |result| is true when the
   // the state has been successfully set or WiFi is already in the desired
@@ -161,6 +165,11 @@ interface NetHost {
   [MinVersion=5] GetDefaultNetwork@9() => (
       NetworkConfiguration? logical_default,
       NetworkConfiguration? physical_default);
+
+  // Sends a request to get configured or visible WiFi networks based on the
+  // request type.
+  [MinVersion=6] GetNetworks@10(GetNetworksRequestType type) =>
+      (GetNetworksResponseType response);
 };
 
 interface NetInstance {

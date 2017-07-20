@@ -50,8 +50,7 @@ class ArcNetHostImpl : public KeyedService,
   // ARC -> Chrome calls:
 
   void GetNetworksDeprecated(
-      bool configured_only,
-      bool visible_only,
+      mojom::GetNetworksRequestType type,
       const GetNetworksDeprecatedCallback& callback) override;
 
   void GetNetworks(mojom::GetNetworksRequestType type,
