@@ -1,6 +1,6 @@
 {
   "name": "gpu driver bug list",
-  "version": "10.19",
+  "version": "10.20",
   "entries": [
     {
       "id": 1,
@@ -2487,19 +2487,6 @@
       },
       "features": [
         "disable_larger_than_screen_overlays"
-      ]
-    },
-    {
-      "id": 230,
-      "description": "Disable use of Direct3D 11 on Intel Cherryview due to visual glitches.",
-      "cr_bugs": [730126],
-      "os": {
-        "type": "win"
-      },
-      "vendor_id": "0x8086",
-      "device_id": ["0x22B0", "0x22B1", "0x22B2", "0x22B3"],
-      "features": [
-        "disable_d3d11"
       ]
     },
     {
