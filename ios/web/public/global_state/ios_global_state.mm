@@ -19,6 +19,8 @@
 namespace {
 
 base::AtExitManager* g_exit_manager = nullptr;
+base::MessageLoopForUI* g_message_loop = nullptr;
+net::NetworkChangeNotifier* g_network_change_notifer = nullptr;
 
 base::TaskScheduler::InitParams GetDefaultTaskSchedulerInitParams() {
   using StandbyThreadPolicy =
@@ -64,26 +66,32 @@ void Create(const CreateParams& create_params) {
 }
 
 void BuildMessageLoop() {
-  static std::unique_ptr<base::MessageLoopForUI> main_message_loop;
-
   static dispatch_once_t once_token;
   dispatch_once(&once_token, ^{
     // Create a MessageLoop if one does not already exist for the current
     // thread.
     if (!base::MessageLoop::current()) {
-      main_message_loop = base::MakeUnique<base::MessageLoopForUI>();
+      g_message_loop = new base::MessageLoopForUI();
     }
     base::MessageLoopForUI::current()->Attach();
   });
 }
 
-void CreateNetworkChangeNotifier() {
-  static std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier;
+void DestroyMessageLoop() {
+  delete g_message_loop;
+  g_message_loop = nullptr;
+}
 
+void CreateNetworkChangeNotifier() {
   static dispatch_once_t once_token;
   dispatch_once(&once_token, ^{
-    network_change_notifier.reset(net::NetworkChangeNotifier::Create());
+    g_network_change_notifer = net::NetworkChangeNotifier::Create();
   });
+}
+
+void DestroyNetworkChangeNotifier() {
+  delete g_network_change_notifer;
+  g_network_change_notifer = nullptr;
 }
 
 void StartTaskScheduler(base::TaskScheduler::InitParams* params) {

@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "ios/web/public/app/task_scheduler_init_params_callback.h"
@@ -68,15 +69,19 @@ class WebMainLoop {
   bool created_threads_;
 
   // Members initialized in |MainMessageLoopStart()| ---------------------------
+  // The MessageLoop and NetworkChangeNotifier are not owned by the WebMainLoop
+  // but still need to be destroyed in correct order so use ScopedClosureRunner.
+  base::ScopedClosureRunner destroy_message_loop_;
   std::unique_ptr<base::SystemMonitor> system_monitor_;
   std::unique_ptr<base::PowerMonitor> power_monitor_;
+  base::ScopedClosureRunner destroy_network_change_notifier_;
 
   // Destroy parts_ before main_message_loop_ (required) and before other
   // classes constructed in web (but after main_thread_).
   std::unique_ptr<WebMainParts> parts_;
 
   // Members initialized in |InitializeMainThread()| ---------------------------
-  // This must get destroyed before other threads that are created in parts_.
+  // This must get destroyed after other threads that are created in parts_.
   std::unique_ptr<WebThreadImpl> main_thread_;
 
   // Members initialized in |RunMainMessageLoopParts()| ------------------------
