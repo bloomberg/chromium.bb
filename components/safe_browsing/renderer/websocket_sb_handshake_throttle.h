@@ -12,6 +12,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "third_party/WebKit/public/platform/WebCallbacks.h"
 #include "third_party/WebKit/public/platform/WebSocketHandshakeThrottle.h"
@@ -30,12 +31,22 @@ class WebSocketSBHandshakeThrottle : public blink::WebSocketHandshakeThrottle {
       blink::WebCallbacks<void, const blink::WebString&>* callbacks) override;
 
  private:
+  // These values are logged to UMA so do not renumber or reuse.
+  enum class Result {
+    UNKNOWN = 0,
+    SAFE = 1,
+    BLOCKED = 2,
+    ABANDONED = 3,
+    RESULT_COUNT
+  };
   void OnCheckResult(bool safe);
 
   GURL url_;
   blink::WebCallbacks<void, const blink::WebString&>* callbacks_;
   mojom::SafeBrowsingUrlCheckerPtr url_checker_;
   mojom::SafeBrowsing* safe_browsing_;
+  base::TimeTicks start_time_;
+  Result result_;
 
   base::WeakPtrFactory<WebSocketSBHandshakeThrottle> weak_factory_;
 

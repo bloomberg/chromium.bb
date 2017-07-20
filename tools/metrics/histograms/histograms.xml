@@ -65120,6 +65120,25 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram base="true" name="SafeBrowsing.WebSocket.Elapsed" units="ms">
+  <owner>ricea@chromium.org</owner>
+  <summary>
+    Time spent on SafeBrowsing lookup. Since this includes any time spent on the
+    interstitial page the average may not be useful.
+  </summary>
+</histogram>
+
+<histogram name="SafeBrowsing.WebSocket.Result"
+    enum="SafeBrowsingWebSocketResult">
+  <owner>ricea@chromium.org</owner>
+  <summary>
+    Results of a SafeBrowsing lookup for a WebSocket handshake. All lookups are
+    counted. Note: the &quot;ABANDONED&quot; bucket contains both connections
+    that were abandoned before the check completed and those that were cancelled
+    when the user navigated away from the SafeBrowsing interstitial.
+  </summary>
+</histogram>
+
 <histogram name="SB.BloomFilter" units="ms">
   <obsolete>
     Has not been generated for years (7/8/14).
@@ -97637,6 +97656,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="SafeBrowsing.Pref.Scout.NoScoutGroup"/>
   <affected-histogram name="SafeBrowsing.Pref.Scout.ScoutGroup"/>
   <affected-histogram name="SafeBrowsing.Pref.Scout.SetPref"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="SafeBrowsingWebSocketElapsed" separator=".">
+  <suffix name="Safe"
+      label="Passed SafeBrowsing check, or blocked and interstitial clicked
+             through"/>
+  <suffix name="Blocked" label="Failed SafeBrowsing check and blocked"/>
+  <suffix name="Abandoned"
+      label="Connection abandoned, or interstitial displayed and user did not
+             proceed to site"/>
+  <affected-histogram name="SafeBrowsing.WebSocket.Elapsed"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="SameVersionStartupCounts" separator=".">
