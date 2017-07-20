@@ -33,12 +33,7 @@ android_envsetup_main() {
     echo "${CHROME_SRC}"
   fi
 
-  # Allow the caller to override a few environment variables. If any of them is
-  # unset, we default to a sane value that's known to work. This allows for
-  # experimentation with a custom SDK.
-  if [[ -z "${ANDROID_SDK_ROOT}" || ! -d "${ANDROID_SDK_ROOT}" ]]; then
-    local ANDROID_SDK_ROOT="${CHROME_SRC}/third_party/android_tools/sdk/"
-  fi
+  local ANDROID_SDK_ROOT="${CHROME_SRC}/third_party/android_tools/sdk/"
 
   # Add Android SDK tools to system path.
   export PATH=$PATH:${ANDROID_SDK_ROOT}/platform-tools
