@@ -375,27 +375,6 @@ static CSSValue* ConsumeFilter(CSSParserTokenRange& range,
   return list;
 }
 
-static CSSValue* ConsumePerspective(CSSParserTokenRange& range,
-                                    const CSSParserContext* context,
-                                    bool use_legacy_parsing) {
-  if (range.Peek().Id() == CSSValueNone)
-    return ConsumeIdent(range);
-  CSSPrimitiveValue* parsed_value =
-      ConsumeLength(range, context->Mode(), kValueRangeAll);
-  if (!parsed_value && use_legacy_parsing) {
-    double perspective;
-    if (!ConsumeNumberRaw(range, perspective))
-      return nullptr;
-    context->Count(WebFeature::kUnitlessPerspectiveInPerspectiveProperty);
-    parsed_value = CSSPrimitiveValue::Create(
-        perspective, CSSPrimitiveValue::UnitType::kPixels);
-  }
-  if (parsed_value &&
-      (parsed_value->IsCalculated() || parsed_value->GetDoubleValue() > 0))
-    return parsed_value;
-  return nullptr;
-}
-
 static CSSValue* ConsumeBackgroundBlendMode(CSSParserTokenRange& range) {
   CSSValueID id = range.Peek().Id();
   if (id == CSSValueNormal || id == CSSValueOverlay ||
@@ -1046,10 +1025,6 @@ const CSSValue* CSSPropertyParser::ParseSingleValue(
     case CSSPropertyR:
       return ConsumeLengthOrPercent(range_, kSVGAttributeMode, kValueRangeAll,
                                     UnitlessQuirk::kForbid);
-    case CSSPropertyPerspective:
-      return ConsumePerspective(
-          range_, context_,
-          unresolved_property == CSSPropertyAliasWebkitPerspective);
     case CSSPropertyBorderImageRepeat:
     case CSSPropertyWebkitMaskBoxImageRepeat:
       return CSSPropertyBorderImageUtils::ConsumeBorderImageRepeat(range_);

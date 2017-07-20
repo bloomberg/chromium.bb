@@ -2004,7 +2004,8 @@
     },
     {
       name: "perspective",
-      api_class: "CSSPropertyAPIPerspective",
+      api_class: true,
+      api_methods: ["parseSingleValue"],
       converter: "ConvertPerspective",
       interpolable: true,
       field_template: "primitive",
