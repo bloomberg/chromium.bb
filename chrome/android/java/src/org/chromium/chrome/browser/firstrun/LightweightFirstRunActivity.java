@@ -17,6 +17,7 @@ import org.chromium.base.CommandLine;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
+import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
@@ -39,14 +40,16 @@ public class LightweightFirstRunActivity extends FirstRunActivity {
             @Override
             public void onClick(View widget) {
                 CustomTabActivity.showInfoPage(LightweightFirstRunActivity.this,
-                        getString(R.string.chrome_terms_of_service_url));
+                        LocalizationUtils.substituteLocalePlaceholder(
+                                getString(R.string.chrome_terms_of_service_url)));
             }
         };
         NoUnderlineClickableSpan clickablePrivacySpan = new NoUnderlineClickableSpan() {
             @Override
             public void onClick(View widget) {
                 CustomTabActivity.showInfoPage(LightweightFirstRunActivity.this,
-                        getString(R.string.chrome_privacy_notice_url));
+                        LocalizationUtils.substituteLocalePlaceholder(
+                                getString(R.string.chrome_privacy_notice_url)));
             }
         };
         ((TextView) findViewById(R.id.lightweight_fre_tos_and_privacy))
