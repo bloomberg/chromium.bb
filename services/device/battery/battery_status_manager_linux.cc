@@ -88,7 +88,9 @@ UPowerObject::UPowerObject(
     : dbus_(dbus),
       proxy_(dbus_->GetObjectProxy(kUPowerServiceName,
                                    dbus::ObjectPath(kUPowerPath))),
-      properties_(new UPowerProperties(proxy_, property_changed_callback)) {}
+      properties_(
+          base::MakeUnique<UPowerProperties>(proxy_,
+                                             property_changed_callback)) {}
 
 UPowerObject::~UPowerObject() {
   properties_.reset();  // before the proxy is deleted.
@@ -252,7 +254,9 @@ BatteryObject::BatteryObject(
     const PropertyChangedCallback& property_changed_callback)
     : dbus_(dbus),
       proxy_(dbus_->GetObjectProxy(kUPowerServiceName, device_path)),
-      properties_(new BatteryProperties(proxy_, property_changed_callback)) {}
+      properties_(
+          base::MakeUnique<BatteryProperties>(proxy_,
+                                              property_changed_callback)) {}
 
 BatteryObject::~BatteryObject() {
   properties_.reset();  // before the proxy is deleted.
@@ -369,7 +373,7 @@ class BatteryStatusManagerLinux::BatteryStatusNotificationThread
     dbus::Bus::Options options;
     options.bus_type = dbus::Bus::SYSTEM;
     options.connection_type = dbus::Bus::PRIVATE;
-    system_bus_ = new dbus::Bus(options);
+    system_bus_ = make_scoped_refptr(new dbus::Bus(options));
   }
 
   bool IsDaemonVersionBelow_0_99() {
