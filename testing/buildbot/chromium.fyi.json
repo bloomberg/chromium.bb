@@ -127,6 +127,26 @@
           "can_use_on_swarming_builders": false
         },
         "test": "vr_common_unittests"
+      },
+      {
+        "args": [
+          "--shared-prefs-file=../../chrome/android/shared_preference_files/test/vr_ddview_skipdon_setupcomplete.json",
+          "--replace-system-package=com.google.vr.vrcore,../../third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk",
+          "--test-filter=WebViewWebVrTest#*"
+        ],
+        "name": "webview_instrumentation_test_apk-marlin-ddview-nougat",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "android_devices": "1",
+              "device_os": "NMF26U",
+              "device_type": "marlin"
+            }
+          ],
+          "hard_timeout": 960
+        },
+        "test": "webview_instrumentation_test_apk"
       }
     ],
     "instrumentation_tests": [
