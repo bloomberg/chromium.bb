@@ -23,9 +23,11 @@
 #import "remoting/ios/session/remoting_client.h"
 
 #include "base/strings/sys_string_conversions.h"
+#include "remoting/base/string_resources.h"
 #include "remoting/client/chromoting_client_runtime.h"
 #include "remoting/client/gesture_interpreter.h"
 #include "remoting/client/input/keyboard_interpreter.h"
+#include "ui/base/l10n/l10n_util.h"
 
 static const CGFloat kFabInset = 15.f;
 static const CGFloat kKeyboardAnimationTime = 0.3;
@@ -287,7 +289,7 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
   // modal window option selector. Replace this with a real menu later.
 
   UIAlertController* alert = [UIAlertController
-      alertControllerWithTitle:@"Remote Settings"
+      alertControllerWithTitle:nil
                        message:nil
                 preferredStyle:UIAlertControllerStyleActionSheet];
 
@@ -296,7 +298,8 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
       [self hideKeyboard];
       [_actionImageView setActive:NO animated:YES];
     };
-    [alert addAction:[UIAlertAction actionWithTitle:@"Hide Keyboard"
+    [alert addAction:[UIAlertAction actionWithTitle:l10n_util::GetNSString(
+                                                        IDS_HIDE_KEYBOARD)
                                               style:UIAlertActionStyleDefault
                                             handler:hideKeyboardHandler]];
   } else {
@@ -304,17 +307,18 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
       [self showKeyboard];
       [_actionImageView setActive:NO animated:YES];
     };
-    [alert addAction:[UIAlertAction actionWithTitle:@"Show Keyboard"
+    [alert addAction:[UIAlertAction actionWithTitle:l10n_util::GetNSString(
+                                                        IDS_SHOW_KEYBOARD)
                                               style:UIAlertActionStyleDefault
                                             handler:showKeyboardHandler]];
   }
 
   remoting::GestureInterpreter::InputMode currentInputMode =
       _client.gestureInterpreter->GetInputMode();
-  NSString* switchInputModeTitle =
+  NSString* switchInputModeTitle = l10n_util::GetNSString(
       currentInputMode == remoting::GestureInterpreter::DIRECT_INPUT_MODE
-          ? @"Trackpad Mode"
-          : @"Touch Mode";
+          ? IDS_SELECT_TRACKPAD_MODE
+          : IDS_SELECT_TOUCH_MODE);
   void (^switchInputModeHandler)(UIAlertAction*) = ^(UIAlertAction*) {
     switch (currentInputMode) {
       case remoting::GestureInterpreter::DIRECT_INPUT_MODE:
@@ -336,9 +340,11 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
     [self.navigationController popToRootViewControllerAnimated:YES];
     [_actionImageView setActive:NO animated:YES];
   };
-  [alert addAction:[UIAlertAction actionWithTitle:@"Disconnect"
-                                            style:UIAlertActionStyleDefault
-                                          handler:disconnectHandler]];
+  [alert
+      addAction:[UIAlertAction actionWithTitle:l10n_util::GetNSString(
+                                                   IDS_DISCONNECT_MYSELF_BUTTON)
+                                         style:UIAlertActionStyleDefault
+                                       handler:disconnectHandler]];
 
   __weak HostViewController* weakSelf = self;
   void (^settingsHandler)(UIAlertAction*) = ^(UIAlertAction*) {
@@ -351,7 +357,8 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
     [weakSelf presentViewController:navController animated:YES completion:nil];
     [_actionImageView setActive:NO animated:YES];
   };
-  [alert addAction:[UIAlertAction actionWithTitle:@"Settings"
+  [alert addAction:[UIAlertAction actionWithTitle:l10n_util::GetNSString(
+                                                      IDS_SETTINGS_BUTTON)
                                             style:UIAlertActionStyleDefault
                                           handler:settingsHandler]];
 
@@ -360,9 +367,10 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
     [weakAlert dismissViewControllerAnimated:YES completion:nil];
     [_actionImageView setActive:NO animated:YES];
   };
-  [alert addAction:[UIAlertAction actionWithTitle:@"Cancel"
-                                            style:UIAlertActionStyleCancel
-                                          handler:cancelHandler]];
+  [alert addAction:[UIAlertAction
+                       actionWithTitle:l10n_util::GetNSString(IDS_CANCEL)
+                                 style:UIAlertActionStyleCancel
+                               handler:cancelHandler]];
 
   alert.popoverPresentationController.sourceView = self.view;
   // Target the alert menu at the top middle of the FAB.

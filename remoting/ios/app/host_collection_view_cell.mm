@@ -14,6 +14,10 @@
 #import "remoting/ios/app/remoting_theme.h"
 #import "remoting/ios/domain/host_info.h"
 
+#include "base/strings/sys_string_conversions.h"
+#include "remoting/base/string_resources.h"
+#include "ui/base/l10n/l10n_util.h"
+
 static const CGFloat kLinePadding = 2.f;
 static const CGFloat kHostCardIconInset = 10.f;
 static const CGFloat kHostCardPadding = 4.f;
@@ -133,11 +137,15 @@ static const CGFloat kHostCardIconSize = 45.f;
 
   if ([_hostInfo.status isEqualToString:@"ONLINE"]) {
     _imageView.backgroundColor = RemotingTheme.onlineHostColor;
-    _statusLabel.text = @"Online";
+    _statusLabel.text = l10n_util::GetNSString(IDS_HOST_ONLINE_SUBTITLE);
   } else {
     _imageView.backgroundColor = RemotingTheme.offlineHostColor;
     _statusLabel.text =
-        [NSString stringWithFormat:@"Last online: %@", hostInfo.updatedTime];
+        hostInfo.updatedTime
+            ? l10n_util::GetNSStringF(
+                  IDS_LAST_ONLINE_SUBTITLE,
+                  base::SysNSStringToUTF16(hostInfo.updatedTime))
+            : l10n_util::GetNSString(IDS_HOST_OFFLINE_SUBTITLE);
   }
 }
 

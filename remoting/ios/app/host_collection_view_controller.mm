@@ -14,6 +14,9 @@
 #import "ios/third_party/material_components_ios/src/components/ShadowLayer/src/MaterialShadowLayer.h"
 #import "remoting/ios/app/host_collection_header_view.h"
 
+#include "remoting/base/string_resources.h"
+#include "ui/base/l10n/l10n_util.h"
+
 static NSString* const kReusableIdentifierItem =
     @"remotingHostCollectionViewControllerItem";
 
@@ -87,7 +90,7 @@ static CGFloat kHostCollectionHeaderViewHeight = 25.f;
                                          withReuseIdentifier:kind
                                                 forIndexPath:indexPath];
   if ([kind isEqualToString:UICollectionElementKindSectionHeader]) {
-    supplementaryView.text = @"Remote devices";
+    supplementaryView.text = l10n_util::GetNSString(IDS_REMOTE_DEVICES_TITLE);
   }
   return supplementaryView;
 }

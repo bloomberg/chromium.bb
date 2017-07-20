@@ -22,7 +22,9 @@ static NSString* const kCreditsUrlString =
 @implementation HelpViewController
 
 - (instancetype)init {
-  if (self = [super initWithUrl:kHelpCenterUrl title:@"Help Center"]) {
+  if (self = [super
+          initWithUrl:kHelpCenterUrl
+                title:l10n_util::GetNSString(IDS_ACTIONBAR_HELP_TITLE)]) {
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc]
         initWithTitle:l10n_util::GetNSString(IDS_CREDITS)
                 style:UIBarButtonItemStylePlain
