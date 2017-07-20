@@ -8,6 +8,7 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
+@protocol BrowserCommands;
 @class ShareToData;
 
 namespace ShareTo {
@@ -71,6 +72,7 @@ class ChromeBrowserState;
 - (void)shareWithData:(ShareToData*)data
            controller:(UIViewController*)controller
          browserState:(ios::ChromeBrowserState*)browserState
+           dispatcher:(id<BrowserCommands>)dispatcher
       shareToDelegate:(id<ShareToDelegate>)delegate
              fromRect:(CGRect)rect
                inView:(UIView*)inView;
