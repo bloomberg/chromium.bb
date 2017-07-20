@@ -84147,6 +84147,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="VirtualKeyboard.LingeringIntermediateState"
+    enum="VirtualKeyboardControllerState">
+  <owner>oka@chromium.org</owner>
+  <summary>
+    Records whenever an intermediate keyboard state has been active for longer
+    than a fixed timeout.
+  </summary>
+</histogram>
+
 <histogram name="VoiceInteraction.IllegalContextRequest" enum="BooleanHit">
   <owner>muyuanli@chromium.org</owner>
   <summary>
