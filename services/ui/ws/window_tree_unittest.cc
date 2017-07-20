@@ -1785,9 +1785,11 @@ TEST_F(WindowTreeManualDisplayTest,
   std::vector<ui::mojom::WmViewportMetricsPtr> viewport_metrics;
   viewport_metrics.push_back(ui::mojom::WmViewportMetrics::New(metrics1));
   ASSERT_TRUE(display_manager->SetDisplayConfiguration(
-      displays, std::move(viewport_metrics), display_id1));
+      displays, std::move(viewport_metrics), display_id1,
+      display::kInvalidDisplayId));
   RunUntilIdle();
-  EXPECT_EQ("OnDisplaysChanged " + std::to_string(display_id1),
+  EXPECT_EQ("OnDisplaysChanged " + std::to_string(display_id1) + " " +
+                std::to_string(display::kInvalidDisplayId),
             display_manager_observer.GetAndClearObserverCalls());
   PlatformDisplay* platform_display1 =
       display_manager->GetDisplayById(display_id1)->platform_display();
@@ -1808,12 +1810,14 @@ TEST_F(WindowTreeManualDisplayTest,
   EXPECT_TRUE(display_manager_observer.GetAndClearObserverCalls().empty());
 
   // Add another display.
-  display::Display display2 = MakeDisplay(0, 0, 1024, 768, 1.0f);
+  const float kDisplay2ScaleFactor = 1.75;
+  display::Display display2 =
+      MakeDisplay(0, 0, 1024, 768, kDisplay2ScaleFactor);
   const int64_t display_id2 = 102;
   display2.set_id(display_id2);
   mojom::WmViewportMetrics metrics2;
   metrics2.bounds_in_pixels = display2.bounds();
-  metrics2.device_scale_factor = 1.5;
+  metrics2.device_scale_factor = kDisplay2ScaleFactor;
   metrics2.ui_scale_factor = 2.5;
   ASSERT_TRUE(
       WindowTreeTestApi(window_manager_tree)
@@ -1834,11 +1838,20 @@ TEST_F(WindowTreeManualDisplayTest,
   viewport_metrics.push_back(ui::mojom::WmViewportMetrics::New(metrics1));
   viewport_metrics.push_back(ui::mojom::WmViewportMetrics::New(metrics2));
   ASSERT_TRUE(display_manager->SetDisplayConfiguration(
-      displays, std::move(viewport_metrics), display_id2));
+      displays, std::move(viewport_metrics), display_id2, display_id2));
   RunUntilIdle();
   EXPECT_EQ("OnDisplaysChanged " + std::to_string(display_id1) + " " +
-                std::to_string(display_id2),
+                std::to_string(display_id2) + " " + std::to_string(display_id2),
             display_manager_observer.GetAndClearObserverCalls());
+  EXPECT_EQ(
+      kDisplay1ScaleFactor * ui::mojom::kCursorMultiplierForExternalDisplays,
+      static_cast<TestPlatformDisplay*>(platform_display1)->cursor_scale());
+  PlatformDisplay* platform_display2 =
+      display_manager->GetDisplayById(display_id2)->platform_display();
+  ASSERT_TRUE(platform_display2);
+  EXPECT_EQ(
+      kDisplay2ScaleFactor,
+      static_cast<TestPlatformDisplay*>(platform_display2)->cursor_scale());
 
   // Delete the second display, no notification should be sent.
   EXPECT_TRUE(window_manager_tree->DeleteWindow(display_root_id2));
@@ -1852,9 +1865,10 @@ TEST_F(WindowTreeManualDisplayTest,
 
   viewport_metrics.push_back(ui::mojom::WmViewportMetrics::New(metrics1));
   ASSERT_TRUE(display_manager->SetDisplayConfiguration(
-      displays, std::move(viewport_metrics), display_id1));
+      displays, std::move(viewport_metrics), display_id1, display_id1));
   RunUntilIdle();
-  EXPECT_EQ("OnDisplaysChanged " + std::to_string(display_id1),
+  EXPECT_EQ("OnDisplaysChanged " + std::to_string(display_id1) + " " +
+                std::to_string(display_id1),
             display_manager_observer.GetAndClearObserverCalls());
 
   // The display list should not have display2.

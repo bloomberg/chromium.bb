@@ -56,6 +56,7 @@
 #include "ui/base/layout.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/display/screen.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/insets.h"
@@ -1919,9 +1920,13 @@ void WindowTreeClient::SetDisplayConfiguration(
     int64_t primary_display_id) {
   DCHECK_EQ(displays.size(), viewport_metrics.size());
   if (window_manager_client_) {
+    const int64_t internal_display_id =
+        display::Display::HasInternalDisplay()
+            ? display::Display::InternalDisplayId()
+            : display::kInvalidDisplayId;
     window_manager_client_->SetDisplayConfiguration(
         displays, std::move(viewport_metrics), primary_display_id,
-        base::Bind(&OnAckMustSucceed));
+        internal_display_id, base::Bind(&OnAckMustSucceed));
   }
 }
 

@@ -2350,9 +2350,11 @@ void WindowTree::SetDisplayConfiguration(
     const std::vector<display::Display>& displays,
     std::vector<ui::mojom::WmViewportMetricsPtr> viewport_metrics,
     int64_t primary_display_id,
+    int64_t internal_display_id,
     const SetDisplayConfigurationCallback& callback) {
   callback.Run(display_manager()->SetDisplayConfiguration(
-      displays, std::move(viewport_metrics), primary_display_id));
+      displays, std::move(viewport_metrics), primary_display_id,
+      internal_display_id));
 }
 
 void WindowTree::SwapDisplayRoots(int64_t display_id1,

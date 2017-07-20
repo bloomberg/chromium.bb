@@ -92,7 +92,7 @@ TEST_F(UserDisplayManagerTest, OnlyNotifyWhenFrameDecorationsSet) {
       ->SetFrameDecorationValues(CreateDefaultFrameDecorationValues());
   RunUntilIdle();
 
-  EXPECT_EQ("OnDisplaysChanged 1",
+  EXPECT_EQ("OnDisplaysChanged 1 -1",
             display_manager_observer1.GetAndClearObserverCalls());
 }
 
@@ -114,7 +114,7 @@ TEST_F(UserDisplayManagerTest, AddObserverAfterFrameDecorationsSet) {
   user_display_manager1->AddObserver(display_manager_observer1.GetPtr());
   RunUntilIdle();
 
-  EXPECT_EQ("OnDisplaysChanged 1",
+  EXPECT_EQ("OnDisplaysChanged 1 -1",
             display_manager_observer1.GetAndClearObserverCalls());
 }
 
@@ -135,7 +135,7 @@ TEST_F(UserDisplayManagerTest, AddRemoveDisplay) {
   user_display_manager1->AddObserver(display_manager_observer1.GetPtr());
   RunUntilIdle();
 
-  EXPECT_EQ("OnDisplaysChanged 1",
+  EXPECT_EQ("OnDisplaysChanged 1 -1",
             display_manager_observer1.GetAndClearObserverCalls());
 
   // Add another display.
@@ -143,14 +143,14 @@ TEST_F(UserDisplayManagerTest, AddRemoveDisplay) {
   RunUntilIdle();
 
   // Observer should be notified immediately as frame decorations were set.
-  EXPECT_EQ("OnDisplaysChanged 1 2",
+  EXPECT_EQ("OnDisplaysChanged 1 2 -1",
             display_manager_observer1.GetAndClearObserverCalls());
 
   // Remove the display and verify observer is notified.
   screen_manager().RemoveDisplay(second_display_id);
   RunUntilIdle();
 
-  EXPECT_EQ("OnDisplaysChanged 1",
+  EXPECT_EQ("OnDisplaysChanged 1 -1",
             display_manager_observer1.GetAndClearObserverCalls());
 }
 

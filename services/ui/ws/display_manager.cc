@@ -27,6 +27,7 @@
 #include "services/ui/ws/window_tree.h"
 #include "ui/display/display_list.h"
 #include "ui/display/screen_base.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/events/event_rewriter.h"
 
 #if defined(OS_CHROMEOS)
@@ -43,7 +44,8 @@ DisplayManager::DisplayManager(WindowServer* window_server,
     // 0 as invalid.
     : window_server_(window_server),
       user_id_tracker_(user_id_tracker),
-      next_root_id_(0) {
+      next_root_id_(0),
+      internal_display_id_(display::kInvalidDisplayId) {
 #if defined(OS_CHROMEOS)
   // TODO: http://crbug.com/701468 fix function key preferences and sticky keys.
   ui::EventRewriterChromeOS::Delegate* delegate = nullptr;
@@ -73,7 +75,8 @@ void DisplayManager::OnDisplayCreationConfigSet() {
 bool DisplayManager::SetDisplayConfiguration(
     const std::vector<display::Display>& displays,
     std::vector<ui::mojom::WmViewportMetricsPtr> viewport_metrics,
-    int64_t primary_display_id) {
+    int64_t primary_display_id,
+    int64_t internal_display_id) {
   if (window_server_->display_creation_config() !=
       DisplayCreationConfig::MANUAL) {
     LOG(ERROR) << "SetDisplayConfiguration is only valid when roots manually "
@@ -86,6 +89,7 @@ bool DisplayManager::SetDisplayConfiguration(
   }
   size_t primary_display_index = displays.size();
   std::set<int64_t> display_ids;
+  size_t internal_display_index = displays.size();
   for (size_t i = 0; i < displays.size(); ++i) {
     const display::Display& display = displays[i];
     if (display.id() == display::kInvalidDisplayId) {
@@ -98,6 +102,8 @@ bool DisplayManager::SetDisplayConfiguration(
     }
     if (display.id() == primary_display_id)
       primary_display_index = i;
+    if (display.id() == internal_display_id)
+      internal_display_index = i;
     Display* ws_display = GetDisplayById(display.id());
     if (!ws_display) {
       LOG(ERROR) << "SetDisplayConfiguration passed unknown display id "
@@ -109,6 +115,13 @@ bool DisplayManager::SetDisplayConfiguration(
     LOG(ERROR) << "SetDisplayConfiguration primary id not in displays";
     return false;
   }
+  if (internal_display_index == displays.size() &&
+      internal_display_id != display::kInvalidDisplayId) {
+    LOG(ERROR) << "SetDisplayConfiguration internal display id not in displays";
+    return false;
+  }
+  // See comment in header as to why this doesn't use Display::SetInternalId().
+  internal_display_id_ = internal_display_id;
 
   display::DisplayList& display_list =
       display::ScreenManager::GetInstance()->GetScreen()->display_list();
@@ -298,6 +311,20 @@ void DisplayManager::SetHighContrastMode(bool enabled) {
     display->platform_display()->GetFrameGenerator()->SetHighContrastMode(
         enabled);
   }
+}
+
+bool DisplayManager::IsInternalDisplay(const display::Display& display) const {
+  return display.id() == GetInternalDisplayId();
+}
+
+int64_t DisplayManager::GetInternalDisplayId() const {
+  if (window_server_->display_creation_config() ==
+      DisplayCreationConfig::MANUAL) {
+    return internal_display_id_;
+  }
+  return display::Display::HasInternalDisplay()
+             ? display::Display::InternalDisplayId()
+             : display::kInvalidDisplayId;
 }
 
 void DisplayManager::OnActiveUserIdChanged(const UserId& previously_active_id,

@@ -53,7 +53,8 @@ class DisplayManager : public UserIdTrackerObserver,
   bool SetDisplayConfiguration(
       const std::vector<display::Display>& displays,
       std::vector<ui::mojom::WmViewportMetricsPtr> viewport_metrics,
-      int64_t primary_display_id);
+      int64_t primary_display_id,
+      int64_t internal_display_id);
 
   // Returns the UserDisplayManager for |user_id|. DisplayManager owns the
   // return value.
@@ -109,6 +110,9 @@ class DisplayManager : public UserIdTrackerObserver,
   // Switch the high contrast mode of all Displays to |enabled|.
   void SetHighContrastMode(bool enabled);
 
+  bool IsInternalDisplay(const display::Display& display) const;
+  int64_t GetInternalDisplayId() const;
+
  private:
   // UserIdTrackerObserver:
   void OnActiveUserIdChanged(const UserId& previously_active_id,
@@ -147,6 +151,13 @@ class DisplayManager : public UserIdTrackerObserver,
   ClientSpecificId next_root_id_;
 
   bool got_initial_config_from_window_manager_ = false;
+
+  // Id of the internal display, or kInvalidDisplayId. This is only set when
+  // WindowManager is configured to manually create display roots. This is
+  // not mirrored in Display::SetInternalId() as mus may be running in the
+  // same process as the window-manager, so that if this did set the value in
+  // Display there could be race conditions.
+  int64_t internal_display_id_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayManager);
 };
