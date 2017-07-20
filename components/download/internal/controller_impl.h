@@ -131,6 +131,9 @@ class ControllerImpl : public Controller,
   // service.
   void UpdateDriverStates();
 
+  // See |UpdateDriverState|.
+  void UpdateDriverStateWithGuid(const std::string& guid);
+
   // Processes the download based on the state of |entry|. May start, pause
   // or resume a download accordingly.
   void UpdateDriverState(Entry* entry);

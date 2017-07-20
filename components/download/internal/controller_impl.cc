@@ -363,7 +363,14 @@ void ControllerImpl::OnDownloadFailed(const DriverEntry& download,
   }
 
   if (failure_type == FailureType::RECOVERABLE) {
-    UpdateDriverState(entry);
+    // Because the network offline signal comes later than actual download
+    // failure, retry the download after a delay to avoid the retry to fail
+    // immediately again.
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&ControllerImpl::UpdateDriverStateWithGuid,
+                   weak_ptr_factory_.GetWeakPtr(), download.guid),
+        config_->download_retry_delay);
   } else {
     // TODO(dtrainor, xingliu): We probably have to prevent cancel calls from
     // coming through here as we remove downloads (especially through
@@ -717,6 +724,12 @@ void ControllerImpl::UpdateDriverStates() {
   DCHECK(startup_status_.Complete());
 
   for (auto* entry : model_->PeekEntries())
+    UpdateDriverState(entry);
+}
+
+void ControllerImpl::UpdateDriverStateWithGuid(const std::string& guid) {
+  Entry* entry = model_->Get(guid);
+  if (entry)
     UpdateDriverState(entry);
 }
 

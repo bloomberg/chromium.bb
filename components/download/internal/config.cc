@@ -29,22 +29,28 @@ const uint32_t kDefaultMaxRetryCount = 5;
 
 // Default value for file keep alive time in minutes, keep the file alive for
 // 12 hours by default.
-const uint32_t kDefaultFileKeepAliveTimeMinutes = 12 * 60;
+const base::TimeDelta kDefaultFileKeepAliveTime =
+    base::TimeDelta::FromHours(12);
 
 // Default value for file cleanup window in minutes, the system will schedule a
 // cleanup task within this window.
-const uint32_t kDefaultFileCleanupWindowMinutes = 24 * 60;
+const base::TimeDelta kDefaultFileCleanupWindow =
+    base::TimeDelta::FromHours(24);
 
 // Default value for the start window time for OS to schedule background task.
-const uint32_t kDefaultWindowStartTimeSeconds = 300; /* 5 minutes. */
+const base::TimeDelta kDefaultWindowStartTime = base::TimeDelta::FromMinutes(5);
 
 // Default value for the end window time for OS to schedule background task.
-const uint32_t kDefaultWindowEndTimeSeconds = 3600 * 8; /* 8 hours. */
+const base::TimeDelta kDefaultWindowEndTime = base::TimeDelta::FromHours(8);
 
 // The default delay to notify the observer when network changes from
 // disconnected to connected.
 const base::TimeDelta kDefaultNetworkChangeDelay =
     base::TimeDelta::FromSeconds(5);
+
+// The default value of download retry delay when the download is failed.
+const base::TimeDelta kDefaultDownloadRetryDelay =
+    base::TimeDelta::FromSeconds(20);
 
 // Helper routine to get Finch experiment parameter. If no Finch seed was found,
 // use the |default_value|. The |name| should match an experiment
@@ -70,20 +76,27 @@ std::unique_ptr<Configuration> Configuration::CreateFromFinch() {
   config->max_retry_count =
       GetFinchConfigUInt(kMaxRetryCountConfig, kDefaultMaxRetryCount);
   config->file_keep_alive_time =
-      base::TimeDelta::FromMinutes(base::saturated_cast<int>(GetFinchConfigUInt(
-          kFileKeepAliveTimeMinutesConfig, kDefaultFileKeepAliveTimeMinutes)));
+      base::TimeDelta::FromMinutes(base::saturated_cast<int>(
+          GetFinchConfigUInt(kFileKeepAliveTimeMinutesConfig,
+                             kDefaultFileKeepAliveTime.InMinutes())));
   config->file_cleanup_window =
-      base::TimeDelta::FromMinutes(base::saturated_cast<int>(GetFinchConfigUInt(
-          kFileCleanupWindowMinutesConfig, kDefaultFileCleanupWindowMinutes)));
-  config->window_start_time_seconds = GetFinchConfigUInt(
-      kWindowStartTimeConfig, kDefaultWindowStartTimeSeconds);
-  config->window_end_time_seconds =
-      GetFinchConfigUInt(kWindowEndTimeConfig, kDefaultWindowEndTimeSeconds);
+      base::TimeDelta::FromMinutes(base::saturated_cast<int>(
+          GetFinchConfigUInt(kFileCleanupWindowMinutesConfig,
+                             kDefaultFileCleanupWindow.InMinutes())));
+  config->window_start_time =
+      base::TimeDelta::FromSeconds(base::saturated_cast<int>(GetFinchConfigUInt(
+          kWindowStartTimeSecondsConfig, kDefaultWindowStartTime.InSeconds())));
+  config->window_end_time =
+      base::TimeDelta::FromSeconds(base::saturated_cast<int>(GetFinchConfigUInt(
+          kWindowEndTimeSecondsConfig, kDefaultWindowEndTime.InSeconds())));
   config->network_change_delay =
       base::TimeDelta::FromMilliseconds(base::saturated_cast<int>(
-          GetFinchConfigUInt(kNetworkChangeDelayConfig,
+          GetFinchConfigUInt(kNetworkChangeDelayMsConfig,
                              kDefaultNetworkChangeDelay.InMilliseconds())));
-
+  config->download_retry_delay =
+      base::TimeDelta::FromMilliseconds(base::saturated_cast<int>(
+          GetFinchConfigUInt(kDownloadRetryDelayMsConfig,
+                             kDefaultDownloadRetryDelay.InMilliseconds())));
   return config;
 }
 
@@ -92,12 +105,11 @@ Configuration::Configuration()
       max_running_downloads(kDefaultMaxRunningDownloads),
       max_scheduled_downloads(kDefaultMaxScheduledDownloads),
       max_retry_count(kDefaultMaxRetryCount),
-      file_keep_alive_time(base::TimeDelta::FromMinutes(
-          base::saturated_cast<int>(kDefaultFileKeepAliveTimeMinutes))),
-      file_cleanup_window(base::TimeDelta::FromMinutes(
-          base::saturated_cast<int>(kDefaultFileCleanupWindowMinutes))),
-      window_start_time_seconds(kDefaultWindowStartTimeSeconds),
-      window_end_time_seconds(kDefaultWindowEndTimeSeconds),
-      network_change_delay(kDefaultNetworkChangeDelay) {}
+      file_keep_alive_time(kDefaultFileKeepAliveTime),
+      file_cleanup_window(kDefaultFileCleanupWindow),
+      window_start_time(kDefaultWindowStartTime),
+      window_end_time(kDefaultWindowEndTime),
+      network_change_delay(kDefaultNetworkChangeDelay),
+      download_retry_delay(kDefaultDownloadRetryDelay) {}
 
 }  // namespace download

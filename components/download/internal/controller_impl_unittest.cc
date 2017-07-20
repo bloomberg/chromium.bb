@@ -863,9 +863,12 @@ TEST_F(DownloadServiceControllerImplTest, RetryOnFailure) {
   driver_->NotifyDownloadFailed(dentry2, FailureType::RECOVERABLE);
   driver_->NotifyDownloadFailed(dentry2, FailureType::RECOVERABLE);
   driver_->NotifyDownloadFailed(dentry2, FailureType::RECOVERABLE);
-  EXPECT_EQ(nullptr, model_->Get(entry2.guid));
+  // Failed entry should exist because we retry after a delay.
+  EXPECT_NE(nullptr, model_->Get(entry2.guid));
 
   task_runner_->RunUntilIdle();
+  // Retry is done, and failed entry should be removed.
+  EXPECT_EQ(nullptr, model_->Get(entry2.guid));
 }
 
 TEST_F(DownloadServiceControllerImplTest, OnDownloadSucceeded) {
