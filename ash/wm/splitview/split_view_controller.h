@@ -26,7 +26,7 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
                                        public ShellObserver {
  public:
   enum State { NO_SNAP, LEFT_SNAPPED, RIGHT_SNAPPED, BOTH_SNAPPED };
-  enum SnapPosition { LEFT, RIGHT };
+  enum SnapPosition { NONE, LEFT, RIGHT };
 
   class Observer {
    public:
@@ -58,9 +58,9 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   // Gets the window bounds according to the snap state |snap_state| and the
   // separator position |separator_position_|.
   gfx::Rect GetSnappedWindowBoundsInParent(aura::Window* window,
-                                           State snap_state);
+                                           SnapPosition snap_position);
   gfx::Rect GetSnappedWindowBoundsInScreen(aura::Window* window,
-                                           State snap_state);
+                                           SnapPosition snap_position);
   gfx::Rect GetDisplayWorkAreaBoundsInParent(aura::Window* window);
   gfx::Rect GetDisplayWorkAreaBoundsInScreen(aura::Window* window);
 
@@ -87,6 +87,7 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   aura::Window* right_window() { return right_window_; }
   int divider_position() const { return divider_position_; }
   State state() const { return state_; }
+  SnapPosition default_snap_position() const { return default_snap_position_; }
 
  private:
   friend class SplitViewControllerTest;
@@ -122,7 +123,7 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   // first window was snapped left, then |default_snap_position_| equals LEFT,
   // i.e., all the other windows will open snapped on the right side - and vice
   // versa.
-  SnapPosition default_snap_position_ = LEFT;
+  SnapPosition default_snap_position_ = NONE;
 
   base::ObserverList<Observer> observers_;
 
