@@ -65,25 +65,36 @@ inline {{enum_name}} cssValueIDToPlatformEnumGenerated(CSSValueID v) {
   {% endif %}
   {% endfor %}
     default:
-      DCHECK(v >= {{mapping.start_segment[2]}} && v <= {{mapping.end_segment[2]}}) ;
+      DCHECK_GE(v, {{mapping.start_segment[2]}});
+      DCHECK_LE(v, {{mapping.end_segment[2]}});
       return static_cast<{{enum_name}}>(v - {{mapping.start_segment[2]}} + static_cast<int>({{enum_name}}::{{mapping.start_segment[0]}}));
   }
   {% else %}
-  DCHECK(v >= {{mapping.start_segment[2]}} && v <= {{mapping.end_segment[2]}}) ;
+  DCHECK_GE(v, {{mapping.start_segment[2]}});
+  DCHECK_LE(v, {{mapping.end_segment[2]}});
   return static_cast<{{enum_name}}>(v - {{mapping.start_segment[2]}} + static_cast<int>({{enum_name}}::{{mapping.start_segment[0]}}));
   {% endif %}
 }
 
 inline CSSValueID platformEnumToCSSValueIDGenerated({{enum_name}} v) {
+  {% if mapping['mapping'] | length > mapping.longest_segment_length %}
   switch (v) {
   {% for cs_value, cs_num, css_value, css_num in mapping['mapping']: %}
+  {% if cs_num < mapping.start_segment[1] or cs_num > mapping.end_segment[1] %}
     case {{enum_name}}::{{cs_value}}:
       return {{css_value}};
+  {% endif %}
   {% endfor %}
     default:
-      NOTREACHED();
-      return CSSValueNone;
+      DCHECK_GE(v, {{enum_name}}::{{mapping.start_segment[0]}});
+      DCHECK_LE(v, {{enum_name}}::{{mapping.end_segment[0]}});
+      return static_cast<CSSValueID>(static_cast<int>(v) - static_cast<int>({{enum_name}}::{{mapping.start_segment[0]}}) + static_cast<int>({{mapping.start_segment[2]}}));
   }
+  {% else %}
+  DCHECK_GE(v, {{enum_name}}::{{mapping.start_segment[0]}});
+  DCHECK_LE(v, {{enum_name}}::{{mapping.end_segment[0]}});
+  return static_cast<CSSValueID>(static_cast<int>(v) - static_cast<int>({{enum_name}}::{{mapping.start_segment[0]}}) + static_cast<int>({{mapping.start_segment[2]}}));
+  {% endif %}
 }
 
 {% endif %}
