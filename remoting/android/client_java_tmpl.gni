@@ -79,6 +79,7 @@ template("remoting_android_client_java_tmpl") {
     deps = [
       "//base:base_java",
       "//remoting/android:remoting_android_client_java_resources",
+      "//remoting/android:remoting_apk_manifest",
       "//third_party/android_tools:android_support_annotations_java",
       "//third_party/android_tools:android_support_compat_java",
       "//third_party/android_tools:android_support_core_ui_java",
@@ -86,6 +87,9 @@ template("remoting_android_client_java_tmpl") {
       "//third_party/android_tools:android_support_v7_mediarouter_java",
       "//ui/android:ui_utils_java",
     ]
+
+    # Manifest used for linting (determining unused resources).
+    android_manifest = "$root_gen_dir/remoting/android/AndroidManifest.xml"
 
     deps += [ invoker.remoting_google_play_services_library ]
   }
