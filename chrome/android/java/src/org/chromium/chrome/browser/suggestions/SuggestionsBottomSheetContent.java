@@ -93,25 +93,22 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
 
         mBottomSheetObserver = new SuggestionsSheetVisibilityChangeObserver(this, activity) {
             @Override
-            public void onSheetOpened() {
-                mRecyclerView.setAdapter(adapter);
+            public void onContentShown(boolean isFirstShown) {
+                if (isFirstShown) {
+                    mRecyclerView.setAdapter(adapter);
 
-                mRecyclerView.scrollToPosition(0);
-                adapter.refreshSuggestions();
-                mSuggestionsUiDelegate.getEventReporter().onSurfaceOpened();
-                mRecyclerView.getScrollEventReporter().reset();
+                    mRecyclerView.scrollToPosition(0);
+                    adapter.refreshSuggestions();
+                    mSuggestionsUiDelegate.getEventReporter().onSurfaceOpened();
+                    mRecyclerView.getScrollEventReporter().reset();
 
-                if (ChromeFeatureList.isEnabled(
-                            ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_CAROUSEL)
-                        && sheet.getActiveTab() != null) {
-                    updateContextualSuggestions(sheet.getActiveTab().getUrl());
+                    if (ChromeFeatureList.isEnabled(
+                                ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_CAROUSEL)
+                            && sheet.getActiveTab() != null) {
+                        updateContextualSuggestions(sheet.getActiveTab().getUrl());
+                    }
                 }
 
-                super.onSheetOpened();
-            }
-
-            @Override
-            public void onContentShown() {
                 SuggestionsMetrics.recordSurfaceVisible();
             }
 
