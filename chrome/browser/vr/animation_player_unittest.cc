@@ -363,4 +363,93 @@ TEST(AnimationPlayerTest, ReversedBoundsTransitions) {
   EXPECT_FLOAT_SIZE_EQ(from, target.size());
 }
 
+TEST(AnimationPlayerTest, DoubleReversedTransitions) {
+  TestAnimationTarget target;
+  AnimationPlayer player;
+  player.set_target(&target);
+  Transition transition;
+  transition.target_properties[cc::TargetProperty::OPACITY] = true;
+  transition.duration = UsToDelta(10000);
+  player.set_transition(transition);
+
+  base::TimeTicks start_time = UsToTicks(1000000);
+  player.Tick(start_time);
+
+  float from = 1.0f;
+  float to = 0.5f;
+  player.TransitionOpacityTo(start_time, from, to);
+
+  EXPECT_EQ(from, target.opacity());
+  player.Tick(start_time);
+
+  player.Tick(start_time + UsToDelta(1000));
+  float value_before_reversing = target.opacity();
+  EXPECT_GT(from, value_before_reversing);
+  EXPECT_LT(to, value_before_reversing);
+
+  player.TransitionOpacityTo(start_time + UsToDelta(1000), target.opacity(),
+                             from);
+  player.Tick(start_time + UsToDelta(1000));
+  EXPECT_FLOAT_EQ(value_before_reversing, target.opacity());
+
+  player.Tick(start_time + UsToDelta(1500));
+  value_before_reversing = target.opacity();
+  // If the code for reversing transitions does not account for an existing time
+  // offset, then reversing a second time will give incorrect values.
+  player.TransitionOpacityTo(start_time + UsToDelta(1500), target.opacity(),
+                             to);
+  player.Tick(start_time + UsToDelta(1500));
+  EXPECT_FLOAT_EQ(value_before_reversing, target.opacity());
+}
+
+TEST(AnimationPlayerTest, RedundantTransition) {
+  TestAnimationTarget target;
+  AnimationPlayer player;
+  player.set_target(&target);
+  Transition transition;
+  transition.target_properties[cc::TargetProperty::OPACITY] = true;
+  transition.duration = UsToDelta(10000);
+  player.set_transition(transition);
+
+  base::TimeTicks start_time = UsToTicks(1000000);
+  player.Tick(start_time);
+
+  float from = 1.0f;
+  float to = 0.5f;
+  player.TransitionOpacityTo(start_time, from, to);
+
+  EXPECT_EQ(from, target.opacity());
+  player.Tick(start_time);
+
+  player.Tick(start_time + UsToDelta(1000));
+  float value_before_redundant_transition = target.opacity();
+
+  // While an existing transition is in progress to the same value, we should
+  // not start a new transition.
+  player.TransitionOpacityTo(start_time, target.opacity(), to);
+
+  EXPECT_EQ(1lu, player.animations().size());
+  EXPECT_EQ(value_before_redundant_transition, target.opacity());
+}
+
+TEST(AnimationPlayerTest, TransitionToSameValue) {
+  TestAnimationTarget target;
+  AnimationPlayer player;
+  player.set_target(&target);
+  Transition transition;
+  transition.target_properties[cc::TargetProperty::OPACITY] = true;
+  transition.duration = UsToDelta(10000);
+  player.set_transition(transition);
+
+  base::TimeTicks start_time = UsToTicks(1000000);
+  player.Tick(start_time);
+
+  // Transitioning to the same value should be a no-op.
+  float from = 1.0f;
+  float to = 1.0f;
+  player.TransitionOpacityTo(start_time, from, to);
+  EXPECT_EQ(from, target.opacity());
+  EXPECT_TRUE(player.animations().empty());
+}
+
 }  // namespace vr
