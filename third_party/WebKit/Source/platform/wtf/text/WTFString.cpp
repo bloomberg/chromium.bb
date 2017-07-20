@@ -420,40 +420,49 @@ String String::NumberToStringFixedWidth(double number,
   return String(NumberToFixedWidthString(number, decimal_places, buffer));
 }
 
-int String::ToIntStrict(bool* ok, int base) const {
+int String::ToIntStrict(bool* ok) const {
   if (!impl_) {
     if (ok)
       *ok = false;
     return 0;
   }
-  return impl_->ToIntStrict(ok, base);
+  return impl_->ToIntStrict(ok);
 }
 
-unsigned String::ToUIntStrict(bool* ok, int base) const {
+unsigned String::ToUIntStrict(bool* ok) const {
   if (!impl_) {
     if (ok)
       *ok = false;
     return 0;
   }
-  return impl_->ToUIntStrict(ok, base);
+  return impl_->ToUIntStrict(ok);
 }
 
-int64_t String::ToInt64Strict(bool* ok, int base) const {
+unsigned String::HexToUIntStrict(bool* ok) const {
   if (!impl_) {
     if (ok)
       *ok = false;
     return 0;
   }
-  return impl_->ToInt64Strict(ok, base);
+  return impl_->HexToUIntStrict(ok);
 }
 
-uint64_t String::ToUInt64Strict(bool* ok, int base) const {
+int64_t String::ToInt64Strict(bool* ok) const {
   if (!impl_) {
     if (ok)
       *ok = false;
     return 0;
   }
-  return impl_->ToUInt64Strict(ok, base);
+  return impl_->ToInt64Strict(ok);
+}
+
+uint64_t String::ToUInt64Strict(bool* ok) const {
+  if (!impl_) {
+    if (ok)
+      *ok = false;
+    return 0;
+  }
+  return impl_->ToUInt64Strict(ok);
 }
 
 int String::ToInt(bool* ok) const {

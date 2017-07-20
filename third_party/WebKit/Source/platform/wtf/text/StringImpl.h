@@ -306,10 +306,11 @@ class WTF_EXPORT StringImpl {
 
   bool ContainsOnlyWhitespace();
 
-  int ToIntStrict(bool* ok = 0, int base = 10);
-  unsigned ToUIntStrict(bool* ok = 0, int base = 10);
-  int64_t ToInt64Strict(bool* ok = 0, int base = 10);
-  uint64_t ToUInt64Strict(bool* ok = 0, int base = 10);
+  int ToIntStrict(bool* ok = 0);
+  unsigned ToUIntStrict(bool* ok = 0);
+  unsigned HexToUIntStrict(bool* ok);
+  int64_t ToInt64Strict(bool* ok = 0);
+  uint64_t ToUInt64Strict(bool* ok = 0);
 
   int ToInt(bool* ok = 0);          // ignores trailing garbage
   unsigned ToUInt(bool* ok = 0);    // ignores trailing garbage
