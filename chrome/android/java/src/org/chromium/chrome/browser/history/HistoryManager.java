@@ -134,23 +134,17 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
         mLargeIconBridge.createCache(maxSize);
 
         // 7. Initialize the adapter to load items.
-        mHistoryAdapter.generateHeaderItems();
         mHistoryAdapter.initialize();
 
-        // 8. Add scroll listener to show/hide info button on scroll and page in more items
-        // when necessary.
+        // 8. Add scroll listener to page in more items when necessary.
         mRecyclerView.addOnScrollListener(new OnScrollListener() {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                if (!mHistoryAdapter.canLoadMoreItems()) return;
+
+                // Load more items if the scroll position is close to the bottom of the list.
                 LinearLayoutManager layoutManager =
                         (LinearLayoutManager) recyclerView.getLayoutManager();
-                // Show info button if available if first visible position is close to info header;
-                // otherwise hide info button.
-                mToolbar.updateInfoMenuItem(infoHeaderIsVisible() && shouldShowInfoButton(),
-                        shouldShowInfoHeaderIfAvailable());
-
-                if (!mHistoryAdapter.canLoadMoreItems()) return;
-                // Load more items if the scroll position is close to the bottom of the list.
                 if (layoutManager.findLastVisibleItemPosition()
                         > (mHistoryAdapter.getItemCount() - 25)) {
                     mHistoryAdapter.loadMoreItems();
@@ -420,8 +414,7 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
      * @return True if info menu item should be shown on history toolbar, false otherwise.
      */
     boolean shouldShowInfoButton() {
-        return mHistoryAdapter.hasPrivacyDisclaimers() && mHistoryAdapter.getItemCount() > 0
-                && !mToolbar.isSearching();
+        return mHistoryAdapter.hasPrivacyDisclaimers();
     }
 
     /**
@@ -430,14 +423,6 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
      */
     boolean shouldShowInfoHeaderIfAvailable() {
         return mShouldShowInfoHeader;
-    }
-
-    /**
-     * @return True if info header is visible on history page.
-     */
-    boolean infoHeaderIsVisible() {
-        LinearLayoutManager layoutManager = (LinearLayoutManager) mRecyclerView.getLayoutManager();
-        return (layoutManager.findFirstVisibleItemPosition() == 0);
     }
 
     @Override

@@ -90,7 +90,7 @@ public class DownloadHistoryAdapterTest {
         editor.putBoolean(PREF_SHOW_STORAGE_INFO_HEADER, true).apply();
     }
 
-    private void initializeAdapter(boolean showOffTheRecord, boolean hasHeader) throws Exception {
+    private void initializeAdapter(boolean showOffTheRecord) throws Exception {
         mObserver = new Observer();
         mAdapter = new DownloadHistoryAdapter(showOffTheRecord, null);
         mAdapter.registerAdapterDataObserver(mObserver);
@@ -106,17 +106,14 @@ public class DownloadHistoryAdapterTest {
             }
         });
         mDownloadDelegate.addCallback.waitForCallback(0);
-        // If header should be added, onChanged() will be called twice because both setHeaders()
-        // and loadMoreItems() will call notifyDataSetChanged(). Otherwise, setHeaders() will not
-        // be called and onChanged() will only be called once.
-        mObserver.onChangedCallback.waitForCallback(callCount, hasHeader ? 2 : 1);
+        mObserver.onChangedCallback.waitForCallback(callCount, 1);
     }
 
     /** Nothing downloaded, nothing shown. */
     @Test
     @SmallTest
     public void testInitialize_Empty() throws Exception {
-        initializeAdapter(false, false);
+        initializeAdapter(false);
         Assert.assertEquals(0, mAdapter.getItemCount());
         Assert.assertEquals(0, mAdapter.getTotalDownloadSize());
 
@@ -136,7 +133,7 @@ public class DownloadHistoryAdapterTest {
     public void testInitialize_SingleItem() throws Exception {
         DownloadItem item = StubbedProvider.createDownloadItem(0, "19840116 12:00");
         mDownloadDelegate.regularItems.add(item);
-        initializeAdapter(false, true);
+        initializeAdapter(false);
         checkAdapterContents(HEADER, null, item);
         Assert.assertEquals(1, mAdapter.getTotalDownloadSize());
     }
@@ -149,7 +146,7 @@ public class DownloadHistoryAdapterTest {
         DownloadItem item1 = StubbedProvider.createDownloadItem(1, "19840116 12:01");
         mDownloadDelegate.regularItems.add(item0);
         mDownloadDelegate.regularItems.add(item1);
-        initializeAdapter(false, true);
+        initializeAdapter(false);
         checkAdapterContents(HEADER, null, item1, item0);
         Assert.assertEquals(11, mAdapter.getTotalDownloadSize());
     }
@@ -162,7 +159,7 @@ public class DownloadHistoryAdapterTest {
         DownloadItem item1 = StubbedProvider.createDownloadItem(1, "19840117 12:00");
         mDownloadDelegate.regularItems.add(item0);
         mDownloadDelegate.regularItems.add(item1);
-        initializeAdapter(false, true);
+        initializeAdapter(false);
         checkAdapterContents(HEADER, null, item1, null, item0);
         Assert.assertEquals(11, mAdapter.getTotalDownloadSize());
     }
@@ -175,7 +172,7 @@ public class DownloadHistoryAdapterTest {
         editor.putBoolean(PREF_SHOW_STORAGE_INFO_HEADER, false).apply();
         DownloadItem item = StubbedProvider.createDownloadItem(0, "19840116 12:00");
         mDownloadDelegate.regularItems.add(item);
-        initializeAdapter(false, false);
+        initializeAdapter(false);
         checkAdapterContents(null, item);
         Assert.assertEquals(1, mAdapter.getTotalDownloadSize());
     }
@@ -188,7 +185,7 @@ public class DownloadHistoryAdapterTest {
         DownloadItem item1 = StubbedProvider.createDownloadItem(1, "19840116 12:01");
         mDownloadDelegate.regularItems.add(item0);
         mDownloadDelegate.regularItems.add(item1);
-        initializeAdapter(false, true);
+        initializeAdapter(false);
         checkAdapterContents(HEADER, null, item1, item0);
         Assert.assertEquals(11, mAdapter.getTotalDownloadSize());
 
@@ -219,7 +216,7 @@ public class DownloadHistoryAdapterTest {
         DownloadItem item1 = StubbedProvider.createDownloadItem(1, "19840116 12:01");
         mDownloadDelegate.regularItems.add(item0);
         mDownloadDelegate.offTheRecordItems.add(item1);
-        initializeAdapter(false, true);
+        initializeAdapter(false);
         checkAdapterContents(HEADER, null, item0);
         Assert.assertEquals(1, mAdapter.getTotalDownloadSize());
     }
@@ -232,7 +229,7 @@ public class DownloadHistoryAdapterTest {
         DownloadItem item1 = StubbedProvider.createDownloadItem(1, "19840116 12:00");
         mDownloadDelegate.regularItems.add(item0);
         mDownloadDelegate.offTheRecordItems.add(item1);
-        initializeAdapter(true, true);
+        initializeAdapter(true);
         checkAdapterContents(HEADER, null, item0, item1);
         Assert.assertEquals(11, mAdapter.getTotalDownloadSize());
     }
@@ -247,7 +244,7 @@ public class DownloadHistoryAdapterTest {
         mDownloadDelegate.regularItems.add(item0);
         mDownloadDelegate.offTheRecordItems.add(item1);
         mOfflineDelegate.items.add(item2);
-        initializeAdapter(true, true);
+        initializeAdapter(true);
         checkAdapterContents(HEADER, null, item2, null, item0, item1);
         Assert.assertEquals(100011, mAdapter.getTotalDownloadSize());
     }
@@ -257,7 +254,7 @@ public class DownloadHistoryAdapterTest {
     @SmallTest
     public void testUpdate_UpdateItems() throws Exception {
         // Start with an empty Adapter.
-        initializeAdapter(false, false);
+        initializeAdapter(false);
         Assert.assertEquals(0, mAdapter.getItemCount());
         Assert.assertEquals(0, mAdapter.getTotalDownloadSize());
 
@@ -270,7 +267,7 @@ public class DownloadHistoryAdapterTest {
         Assert.assertEquals(1, mAdapter.getTotalDownloadSize());
 
         // Add a second item with a different date.
-        Assert.assertEquals(3, mObserver.onChangedCallback.getCallCount());
+        Assert.assertEquals(2, mObserver.onChangedCallback.getCallCount());
         DownloadItem item1 = StubbedProvider.createDownloadItem(1, "19840117 12:00");
         mAdapter.onDownloadItemCreated(item1);
         mObserver.onChangedCallback.waitForCallback(2);
@@ -326,28 +323,26 @@ public class DownloadHistoryAdapterTest {
         mDownloadDelegate.regularItems.add(regularItem);
         mDownloadDelegate.offTheRecordItems.add(offTheRecordItem);
         mOfflineDelegate.items.add(offlineItem);
-        initializeAdapter(true, true);
+        initializeAdapter(true);
         checkAdapterContents(HEADER, null, offlineItem, null, regularItem, offTheRecordItem);
         Assert.assertEquals(100011, mAdapter.getTotalDownloadSize());
 
-        // Remove an item from the date bucket with two items. Wait for two callbacks as
-        // notifyDataSetChanged() is called once when setHeaders() is called and once when items
-        // are loaded.
-        Assert.assertEquals(2, mObserver.onChangedCallback.getCallCount());
+        // Remove an item from the date bucket with two items.
+        Assert.assertEquals(1, mObserver.onChangedCallback.getCallCount());
         mAdapter.onDownloadItemRemoved(offTheRecordItem.getId(), true);
         mObserver.onChangedCallback.waitForCallback(1);
         checkAdapterContents(HEADER, null, offlineItem, null, regularItem);
         Assert.assertEquals(100001, mAdapter.getTotalDownloadSize());
 
         // Remove an item from the second bucket, which removes the bucket entirely.
-        Assert.assertEquals(4, mObserver.onChangedCallback.getCallCount());
+        Assert.assertEquals(2, mObserver.onChangedCallback.getCallCount());
         mOfflineDelegate.observer.onItemDeleted(offlineItem.getGuid());
         mObserver.onChangedCallback.waitForCallback(2);
         checkAdapterContents(HEADER, null, regularItem);
         Assert.assertEquals(1, mAdapter.getTotalDownloadSize());
 
         // Remove the last item in the list.
-        Assert.assertEquals(6, mObserver.onChangedCallback.getCallCount());
+        Assert.assertEquals(3, mObserver.onChangedCallback.getCallCount());
         mAdapter.onDownloadItemRemoved(regularItem.getId(), false);
         mObserver.onChangedCallback.waitForCallback(3);
         Assert.assertEquals(0, mAdapter.getItemCount());
@@ -372,7 +367,7 @@ public class DownloadHistoryAdapterTest {
         mDownloadDelegate.offTheRecordItems.add(item4);
         mDownloadDelegate.regularItems.add(item5);
         mOfflineDelegate.items.add(item6);
-        initializeAdapter(true, true);
+        initializeAdapter(true);
         checkAdapterContents(
                 HEADER, null, item5, item4, item6, null, item3, item2, null, item1, item0);
         Assert.assertEquals(1666, mAdapter.getTotalDownloadSize());
@@ -406,7 +401,7 @@ public class DownloadHistoryAdapterTest {
         mOfflineDelegate.items.add(item0);
         mOfflineDelegate.items.add(item1);
         mOfflineDelegate.items.add(item2);
-        initializeAdapter(false, true);
+        initializeAdapter(false);
         checkAdapterContents(HEADER, null, item2, null, item1, item0);
         Assert.assertEquals(111000, mAdapter.getTotalDownloadSize());
 
@@ -432,7 +427,7 @@ public class DownloadHistoryAdapterTest {
     public void testInProgress_FilePathMapAccurate() throws Exception {
         Set<DownloadHistoryItemWrapper> toDelete;
 
-        initializeAdapter(false, false);
+        initializeAdapter(false);
         Assert.assertEquals(0, mAdapter.getItemCount());
         Assert.assertEquals(0, mAdapter.getTotalDownloadSize());
 
@@ -491,7 +486,7 @@ public class DownloadHistoryAdapterTest {
         mDownloadDelegate.offTheRecordItems.add(item4);
         mDownloadDelegate.regularItems.add(item5);
         mOfflineDelegate.items.add(item6);
-        initializeAdapter(true, true);
+        initializeAdapter(true);
         checkAdapterContents(
                 HEADER, null, item5, item4, item6, null, item3, item2, null, item1, item0);
 
@@ -545,7 +540,7 @@ public class DownloadHistoryAdapterTest {
         mDownloadDelegate.offTheRecordItems.add(item4);
         mDownloadDelegate.regularItems.add(item5);
         mOfflineDelegate.items.add(item6);
-        initializeAdapter(true, true);
+        initializeAdapter(true);
         checkAdapterContents(
                 HEADER, null, item5, item4, item6, null, item3, item2, null, item1, item0);
 
@@ -591,7 +586,7 @@ public class DownloadHistoryAdapterTest {
         mDownloadDelegate.offTheRecordItems.add(item4);
         mDownloadDelegate.regularItems.add(item5);
         mOfflineDelegate.items.add(item6);
-        initializeAdapter(true, true);
+        initializeAdapter(true);
         checkAdapterContents(
                 HEADER, null, item5, item4, item6, null, item3, item2, null, item1, item0);
 

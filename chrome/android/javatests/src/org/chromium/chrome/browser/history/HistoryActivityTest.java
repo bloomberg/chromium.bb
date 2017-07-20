@@ -34,7 +34,6 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
-import org.chromium.chrome.browser.widget.DateDividedAdapter;
 import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.chrome.browser.widget.selection.SelectableItemView;
 import org.chromium.chrome.browser.widget.selection.SelectableItemViewHolder;
@@ -443,10 +442,11 @@ public class HistoryActivityTest extends BaseActivityInstrumentationTestCase<His
         // Not signed in
         ChromeSigninController signinController = ChromeSigninController.get();
         signinController.setSignedInAccountName(null);
-        assertFalse(infoMenuItem.isVisible());
-        DateDividedAdapter.ItemGroup headerGroup = mAdapter.getFirstGroupForTests();
-        assertTrue(mAdapter.hasListHeader());
-        assertEquals(1, headerGroup.size());
+        assertEquals(false, infoMenuItem.isVisible());
+        assertEquals(View.GONE, mAdapter.getSignedInNotSyncedViewForTests().getVisibility());
+        assertEquals(View.GONE, mAdapter.getSignedInSyncedViewForTests().getVisibility());
+        assertEquals(
+                View.GONE, mAdapter.getOtherFormsOfBrowsingHistoryViewForTests().getVisibility());
 
         // Signed in but not synced and history has items
         signinController.setSignedInAccountName("test@gmail.com");
@@ -457,100 +457,22 @@ public class HistoryActivityTest extends BaseActivityInstrumentationTestCase<His
                 toolbar.onSignInStateChange();
             }
         });
-        assertTrue(infoMenuItem.isVisible());
+        assertEquals(true, infoMenuItem.isVisible());
 
         // Signed in, synced, has other forms and has items
         // Privacy disclaimers should be shown by default
         setHasOtherFormsOfBrowsingData(true, true);
-        assertTrue(infoMenuItem.isVisible());
-        headerGroup = mAdapter.getFirstGroupForTests();
-        assertTrue(mAdapter.hasListHeader());
-        assertEquals(2, headerGroup.size());
+        assertEquals(true, infoMenuItem.isVisible());
+        assertEquals(View.VISIBLE, mAdapter.getPrivacyDisclaimersForTests().getVisibility());
 
-        // Toggle Info Menu Item to off
+        // Toggle Info Menu Item
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
                 mHistoryManager.onMenuItemClick(infoMenuItem);
             }
         });
-        headerGroup = mAdapter.getFirstGroupForTests();
-        assertTrue(mAdapter.hasListHeader());
-        assertEquals(1, headerGroup.size());
-
-        // Toggle Info Menu Item to on
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mHistoryManager.onMenuItemClick(infoMenuItem);
-            }
-        });
-        headerGroup = mAdapter.getFirstGroupForTests();
-        assertTrue(mAdapter.hasListHeader());
-        assertEquals(2, headerGroup.size());
-
-        signinController.setSignedInAccountName(null);
-    }
-
-    @SmallTest
-    public void testInfoHeaderInSearchMode() throws Exception {
-        final HistoryManagerToolbar toolbar = mHistoryManager.getToolbarForTests();
-        final MenuItem infoMenuItem = toolbar.getItemById(R.id.info_menu_id);
-
-        // Sign in
-        int callCount = mTestObserver.onSelectionCallback.getCallCount();
-        ChromeSigninController signinController = ChromeSigninController.get();
-        signinController.setSignedInAccountName("test@gmail.com");
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                toolbar.onSignInStateChange();
-                mAdapter.onSignInStateChange();
-            }
-        });
-        mTestObserver.onChangedCallback.waitForCallback(callCount, 1);
-        DateDividedAdapter.ItemGroup firstGroup = mAdapter.getFirstGroupForTests();
-        assertTrue(infoMenuItem.isVisible());
-        assertTrue(mAdapter.hasListHeader());
-        assertEquals(2, firstGroup.size());
-
-        // Enter search mode
-        callCount = mTestObserver.onSelectionCallback.getCallCount();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                toolbar.getMenu().performIdentifierAction(R.id.search_menu_id, 0);
-            }
-        });
-
-        mTestObserver.onSelectionCallback.waitForCallback(callCount, 1);
-        firstGroup = mAdapter.getFirstGroupForTests();
-        assertFalse(infoMenuItem.isVisible());
-        // The first group should be the history item group from SetUp()
-        assertFalse(mAdapter.hasListHeader());
-        assertEquals(3, firstGroup.size());
-
-        signinController.setSignedInAccountName(null);
-    }
-
-    @SmallTest
-    public void testInvisibleHeader() throws Exception {
-        assertTrue(mAdapter.hasListHeader());
-
-        // Not sign in and set clear browsing data button to invisible
-        ChromeSigninController signinController = ChromeSigninController.get();
-        signinController.setSignedInAccountName(null);
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mAdapter.setClearBrowsingDataButtonVisibilityForTest(false);
-                mAdapter.setPrivacyDisclaimerVisibility();
-            }
-        });
-
-        DateDividedAdapter.ItemGroup firstGroup = mAdapter.getFirstGroupForTests();
-        assertFalse(mAdapter.hasListHeader());
-        assertEquals(3, firstGroup.size());
+        assertEquals(View.GONE, mAdapter.getPrivacyDisclaimersForTests().getVisibility());
     }
 
     @SmallTest
