@@ -1197,11 +1197,16 @@ class DBTracker::MemoryDumpProvider
  public:
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd) override {
+    // Don't dump in background mode ("from the field") until whitelisted.
+    if (args.level_of_detail ==
+        base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND) {
+      return true;
+    }
+
     auto db_visitor = [](const base::trace_event::MemoryDumpArgs& args,
                          base::trace_event::ProcessMemoryDump* pmd,
                          TrackedDB* db) {
-      std::string db_dump_name = base::StringPrintf(
-          "leveldatabase/0x%" PRIXPTR, reinterpret_cast<uintptr_t>(db));
+      std::string db_dump_name = DBTracker::GetMemoryDumpName(db);
       auto* db_dump = pmd->CreateAllocatorDump(db_dump_name.c_str());
 
       uint64_t db_memory_usage = 0;
@@ -1249,11 +1254,19 @@ DBTracker* DBTracker::GetInstance() {
   return instance;
 }
 
+std::string DBTracker::GetMemoryDumpName(leveldb::DB* tracked_db) {
+  return base::StringPrintf("leveldatabase/0x%" PRIXPTR,
+                            reinterpret_cast<uintptr_t>(tracked_db));
+}
+
 leveldb::Status DBTracker::OpenDatabase(const leveldb::Options& options,
                                         const std::string& name,
                                         TrackedDB** dbptr) {
   leveldb::DB* db = nullptr;
   auto status = leveldb::DB::Open(options, name, &db);
+  // Enforce expectations: either we succeed, and get a valid object in |db|,
+  // or we fail, and |db| is still NULL.
+  CHECK((status.ok() && db) || (!status.ok() && !db));
   if (status.ok()) {
     // TrackedDBImpl ctor adds the instance to the tracker.
     *dbptr = new TrackedDBImpl(GetInstance(), name, db);

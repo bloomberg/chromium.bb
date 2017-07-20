@@ -383,6 +383,18 @@ _BANNED_CPP_FUNCTIONS = (
         r'^content[\\\/]public[\\\/]test[\\\/]test_web_ui\.(cc|h)$',
       ),
     ),
+    (
+      'leveldb::DB::Open',
+      (
+        'Instead of leveldb::DB::Open() use leveldb_env::OpenDB() from',
+        'third_party/leveldatabase/env_chromium.h. It exposes databases to',
+        "Chrome's tracing, making their memory usage visible.",
+      ),
+      True,
+      (
+        r'^third_party/leveldatabase/.*\.(cc|h)$',
+      ),
+    )
 )
 
 

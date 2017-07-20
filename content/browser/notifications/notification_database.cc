@@ -132,14 +132,12 @@ NotificationDatabase::Status NotificationDatabase::Open(
     options.env = env_.get();
   }
 
-  leveldb::DB* db = nullptr;
   Status status = LevelDBStatusToStatus(
-      leveldb::DB::Open(options, path_.AsUTF8Unsafe(), &db));
+      leveldb_env::OpenDB(options, path_.AsUTF8Unsafe(), &db_));
   if (status != STATUS_OK)
     return status;
 
   state_ = STATE_INITIALIZED;
-  db_.reset(db);
 
   return ReadNextPersistentNotificationId();
 }

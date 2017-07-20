@@ -15,6 +15,7 @@
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "storage/common/fileapi/file_system_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 #include "url/gurl.h"
@@ -71,7 +72,7 @@ TEST(DriveMetadataDBMigrationUtilTest, RollbackFromV4ToV3) {
   const char kDemotedDirtyIDKeyPrefix[] = "DEMOTED_DIRTY: ";
 
   // Set up environment.
-  leveldb::DB* db_ptr = nullptr;
+  std::unique_ptr<leveldb::DB> db;
   base::ScopedTempDir base_dir;
   ASSERT_TRUE(base_dir.CreateUniqueTempDir());
   {
@@ -79,10 +80,9 @@ TEST(DriveMetadataDBMigrationUtilTest, RollbackFromV4ToV3) {
     options.create_if_missing = true;
     std::string db_dir =
         storage::FilePathToString(base_dir.GetPath().Append(kDatabaseName));
-    leveldb::Status status = leveldb::DB::Open(options, db_dir, &db_ptr);
+    leveldb::Status status = leveldb_env::OpenDB(options, db_dir, &db);
     ASSERT_TRUE(status.ok());
   }
-  std::unique_ptr<leveldb::DB> db(db_ptr);
 
   // Setup the database with the schema version 4, without IDs.
   leveldb::WriteBatch batch;

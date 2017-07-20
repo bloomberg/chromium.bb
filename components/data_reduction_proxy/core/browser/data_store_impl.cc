@@ -121,16 +121,14 @@ DataStore::Status DataStoreImpl::OpenDB() {
   // these log entries are deleted.
   options.reuse_logs = false;
   std::string db_name = profile_path_.Append(kDBName).AsUTF8Unsafe();
-  leveldb::DB* dbptr = nullptr;
+  db_.reset();
   Status status =
-      LevelDbToDRPStoreStatus(leveldb::DB::Open(options, db_name, &dbptr));
+      LevelDbToDRPStoreStatus(leveldb_env::OpenDB(options, db_name, &db_));
   UMA_HISTOGRAM_ENUMERATION("DataReductionProxy.LevelDBOpenStatus", status,
                             STATUS_MAX);
 
   if (status != OK)
     LOG(ERROR) << "Failed to open Data Reduction Proxy DB: " << status;
-
-  db_.reset(dbptr);
 
   if (db_) {
     leveldb::Range range;
@@ -139,7 +137,7 @@ DataStore::Status DataStoreImpl::OpenDB() {
     // lowest keys.
     range.start = "";
     range.limit = "z";  // Keys starting with 'z' will not be included.
-    dbptr->GetApproximateSizes(&range, 1, &size);
+    db_->GetApproximateSizes(&range, 1, &size);
     UMA_HISTOGRAM_MEMORY_KB("DataReductionProxy.LevelDBSize", size / 1024);
   }
 

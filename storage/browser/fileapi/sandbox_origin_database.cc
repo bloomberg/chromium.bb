@@ -87,11 +87,9 @@ bool SandboxOriginDatabase::Init(InitOption init_option,
   options.reuse_logs = leveldb_env::kDefaultLogReuseOptionValue;
   if (env_override_)
     options.env = env_override_;
-  leveldb::DB* db;
-  leveldb::Status status = leveldb::DB::Open(options, path, &db);
+  leveldb::Status status = leveldb_env::OpenDB(options, path, &db_);
   ReportInitStatus(status);
   if (status.ok()) {
-    db_.reset(db);
     return true;
   }
   HandleError(FROM_HERE, status);

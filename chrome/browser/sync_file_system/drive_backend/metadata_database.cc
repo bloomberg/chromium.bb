@@ -222,19 +222,18 @@ SyncStatusCode OpenDatabase(const base::FilePath& path,
   options.reuse_logs = leveldb_env::kDefaultLogReuseOptionValue;
   if (env_override)
     options.env = env_override;
-  leveldb::DB* db = nullptr;
+  std::unique_ptr<leveldb::DB> db;
   leveldb::Status db_status =
-      leveldb::DB::Open(options, path.AsUTF8Unsafe(), &db);
+      leveldb_env::OpenDB(options, path.AsUTF8Unsafe(), &db);
   UMA_HISTOGRAM_ENUMERATION("SyncFileSystem.Database.Open",
                             leveldb_env::GetLevelDBStatusUMAValue(db_status),
                             leveldb_env::LEVELDB_STATUS_MAX);
   SyncStatusCode status = LevelDBStatusToSyncStatusCode(db_status);
   if (status != SYNC_STATUS_OK) {
-    delete db;
     return status;
   }
 
-  db_out->reset(new LevelDBWrapper(base::WrapUnique(db)));
+  db_out->reset(new LevelDBWrapper(std::move(db)));
   *created = IsDatabaseEmpty(db_out->get());
   return status;
 }
