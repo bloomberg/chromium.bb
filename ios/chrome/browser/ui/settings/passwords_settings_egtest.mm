@@ -85,17 +85,6 @@ GREYElementInteraction* GetInteractionForPasswordDetailItem(
                                @"PasswordDetailsCollectionViewController")];
 }
 
-// Copy buttons have unique accessibility labels, but the visible text is the
-// same for multiple types of copied items (just "Copy"). Therefore the
-// matchers here check the relative position of the Copy buttons to their
-// respective section headers as well. The scheme of the vertical order is:
-//   Site header
-//   Copy (site) button
-//   Username header
-//   Copy (username) button
-//   Password header
-//   Copy (password) button
-
 id<GREYMatcher> SiteHeader() {
   return grey_allOf(
       grey_accessibilityLabel(
@@ -117,13 +106,11 @@ id<GREYMatcher> PasswordHeader() {
       grey_accessibilityTrait(UIAccessibilityTraitHeader), nullptr);
 }
 
-GREYLayoutConstraint* Above() {
-  return [GREYLayoutConstraint
-      layoutConstraintWithAttribute:kGREYLayoutAttributeBottom
-                          relatedBy:kGREYLayoutRelationLessThanOrEqual
-               toReferenceAttribute:kGREYLayoutAttributeTop
-                         multiplier:1.0
-                           constant:0.0];
+id<GREYMatcher> FederationHeader() {
+  return grey_allOf(
+      grey_accessibilityLabel(
+          l10n_util::GetNSString(IDS_IOS_SHOW_PASSWORD_VIEW_FEDERATION)),
+      grey_accessibilityTrait(UIAccessibilityTraitHeader), nullptr);
 }
 
 GREYLayoutConstraint* Below() {
@@ -144,9 +131,7 @@ id<GREYMatcher> CopySiteButton() {
                                          IDS_IOS_SHOW_PASSWORD_VIEW_SITE),
                                      l10n_util::GetNSString(
                                          IDS_IOS_SETTINGS_SITE_COPY_BUTTON)]),
-      grey_interactable(), grey_layout(@[ Below() ], SiteHeader()),
-      grey_layout(@[ Above() ], UsernameHeader()),
-      grey_layout(@[ Above() ], PasswordHeader()), nullptr);
+      grey_interactable(), nullptr);
 }
 
 // Matcher for the Copy username button in Password Details view.
@@ -158,9 +143,7 @@ id<GREYMatcher> CopyUsernameButton() {
                                IDS_IOS_SHOW_PASSWORD_VIEW_USERNAME),
                            l10n_util::GetNSString(
                                IDS_IOS_SETTINGS_USERNAME_COPY_BUTTON)]),
-      grey_interactable(), grey_layout(@[ Below() ], SiteHeader()),
-      grey_layout(@[ Below() ], UsernameHeader()),
-      grey_layout(@[ Above() ], PasswordHeader()), nullptr);
+      grey_interactable(), nullptr);
 }
 
 // Matcher for the Copy password button in Password Details view.
@@ -172,19 +155,21 @@ id<GREYMatcher> CopyPasswordButton() {
                                IDS_IOS_SHOW_PASSWORD_VIEW_PASSWORD),
                            l10n_util::GetNSString(
                                IDS_IOS_SETTINGS_PASSWORD_COPY_BUTTON)]),
-      grey_interactable(), grey_layout(@[ Below() ], SiteHeader()),
-      grey_layout(@[ Below() ], UsernameHeader()),
-      grey_layout(@[ Below() ], PasswordHeader()), nullptr);
+      grey_interactable(), nullptr);
 }
 
-// Matcher for the Copy site button in Password Details view.
+// Matcher for the Show password button in Password Details view.
+id<GREYMatcher> ShowPasswordButton() {
+  return grey_allOf(ButtonWithAccessibilityLabel(l10n_util::GetNSString(
+                        IDS_IOS_SETTINGS_PASSWORD_SHOW_BUTTON)),
+                    grey_interactable(), nullptr);
+}
+
+// Matcher for the Delete button in Password Details view.
 id<GREYMatcher> DeleteButton() {
-  return grey_allOf(
-      ButtonWithAccessibilityLabel(
-          l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORD_DELETE_BUTTON)),
-      grey_interactable(), grey_layout(@[ Below() ], SiteHeader()),
-      grey_layout(@[ Below() ], UsernameHeader()),
-      grey_layout(@[ Below() ], PasswordHeader()), nullptr);
+  return grey_allOf(ButtonWithAccessibilityLabel(l10n_util::GetNSString(
+                        IDS_IOS_SETTINGS_PASSWORD_DELETE_BUTTON)),
+                    grey_interactable(), nullptr);
 }
 
 // This is similar to grey_ancestor, but only limited to the immediate parent.
@@ -607,46 +592,6 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
   [self clearPasswordStore];
 }
 
-// Checks that blacklisted credentials only have the Site section.
-- (void)testBlacklisted {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      password_manager::features::kViewPasswords);
-
-  PasswordForm blacklisted;
-  blacklisted.origin = GURL("https://example.com");
-  blacklisted.signon_realm = blacklisted.origin.spec();
-  blacklisted.blacklisted_by_user = true;
-  [self savePasswordFormToStore:blacklisted];
-
-  [self openPasswordSettings];
-
-  [GetInteractionForPasswordEntry(@"example.com") performAction:grey_tap()];
-
-  // Check that the Site section is there as well as the Delete button.
-  [[EarlGrey selectElementWithMatcher:SiteHeader()]
-      assertWithMatcher:grey_sufficientlyVisible()];
-  // Not using DeleteButton() matcher here, because that also encodes the
-  // relative position against the password section, which is missing in this
-  // case.
-  [GetInteractionForPasswordDetailItem(ButtonWithAccessibilityLabel(
-      l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORD_DELETE_BUTTON)))
-      assertWithMatcher:grey_notNil()];
-
-  // Check that the rest is not present.
-  [[EarlGrey selectElementWithMatcher:UsernameHeader()]
-      assertWithMatcher:grey_nil()];
-  [[EarlGrey selectElementWithMatcher:PasswordHeader()]
-      assertWithMatcher:grey_nil()];
-
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
-      performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
-      performAction:grey_tap()];
-  [self tapDone];
-  [self clearPasswordStore];
-}
-
 // Checks that attempts to copy the site via the context menu item provide an
 // appropriate feedback.
 - (void)testCopySiteMenuItem {
@@ -854,22 +799,177 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
   [GetInteractionForPasswordDetailItem(UsernameHeader())
       assertWithMatcher:grey_notNil()];
   // For federation check both the section header and content.
-  [GetInteractionForPasswordDetailItem(grey_allOf(
-      grey_accessibilityTrait(UIAccessibilityTraitHeader),
-      grey_accessibilityLabel(
-          l10n_util::GetNSString(IDS_IOS_SHOW_PASSWORD_VIEW_FEDERATION)),
-      nullptr)) assertWithMatcher:grey_notNil()];
+  [GetInteractionForPasswordDetailItem(FederationHeader())
+      assertWithMatcher:grey_notNil()];
   [GetInteractionForPasswordDetailItem(grey_text(@"famous.provider.net"))
       assertWithMatcher:grey_notNil()];
-  // Not using DeleteButton() matcher here, because that also encodes the
-  // relative position against the password section, which is missing in this
-  // case.
-  [GetInteractionForPasswordDetailItem(ButtonWithAccessibilityLabel(
-      l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORD_DELETE_BUTTON)))
+  [GetInteractionForPasswordDetailItem(DeleteButton())
       assertWithMatcher:grey_notNil()];
 
   // Check that the password is not present.
   [GetInteractionForPasswordDetailItem(PasswordHeader())
+      assertWithMatcher:grey_nil()];
+
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
+      performAction:grey_tap()];
+  [self tapDone];
+  [self clearPasswordStore];
+}
+
+// Checks the order of the elements in the detail view layout for a
+// non-federated, non-blacklisted credential.
+- (void)testLayoutNormal {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      password_manager::features::kViewPasswords);
+
+  [self saveExamplePasswordForm];
+
+  [self openPasswordSettings];
+
+  [GetInteractionForPasswordEntry(@"example.com, concrete username")
+      performAction:grey_tap()];
+
+  [GetInteractionForPasswordDetailItem(SiteHeader())
+      assertWithMatcher:grey_notNil()];
+  id<GREYMatcher> siteCell = grey_accessibilityLabel(@"https://example.com/");
+  [GetInteractionForPasswordDetailItem(siteCell)
+      assertWithMatcher:grey_layout(@[ Below() ], SiteHeader())];
+  [GetInteractionForPasswordDetailItem(CopySiteButton())
+      assertWithMatcher:grey_layout(@[ Below() ], siteCell)];
+
+  [GetInteractionForPasswordDetailItem(UsernameHeader())
+      assertWithMatcher:grey_layout(@[ Below() ], CopySiteButton())];
+  id<GREYMatcher> usernameCell = grey_accessibilityLabel(@"concrete username");
+  [GetInteractionForPasswordDetailItem(usernameCell)
+      assertWithMatcher:grey_layout(@[ Below() ], UsernameHeader())];
+  [GetInteractionForPasswordDetailItem(CopyUsernameButton())
+      assertWithMatcher:grey_layout(@[ Below() ], usernameCell)];
+
+  [GetInteractionForPasswordDetailItem(PasswordHeader())
+      assertWithMatcher:grey_layout(@[ Below() ], CopyUsernameButton())];
+  id<GREYMatcher> passwordCell = grey_accessibilityLabel(@"●●●●●●●●●●●●●●●●●");
+  [GetInteractionForPasswordDetailItem(passwordCell)
+      assertWithMatcher:grey_layout(@[ Below() ], PasswordHeader())];
+  [GetInteractionForPasswordDetailItem(CopyPasswordButton())
+      assertWithMatcher:grey_layout(@[ Below() ], passwordCell)];
+  [GetInteractionForPasswordDetailItem(ShowPasswordButton())
+      assertWithMatcher:grey_layout(@[ Below() ], CopyPasswordButton())];
+
+  [GetInteractionForPasswordDetailItem(DeleteButton())
+      assertWithMatcher:grey_layout(@[ Below() ], ShowPasswordButton())];
+
+  // Check that the federation block is not present. Match directly to also
+  // catch the case where the block would be present but not currently visible
+  // due to the scrolling state.
+  [[EarlGrey selectElementWithMatcher:FederationHeader()]
+      assertWithMatcher:grey_nil()];
+
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
+      performAction:grey_tap()];
+  [self tapDone];
+  [self clearPasswordStore];
+}
+
+// Checks the order of the elements in the detail view layout for a blacklisted
+// credential.
+- (void)testLayoutBlacklisted {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      password_manager::features::kViewPasswords);
+
+  PasswordForm blacklisted;
+  blacklisted.origin = GURL("https://example.com");
+  blacklisted.signon_realm = blacklisted.origin.spec();
+  blacklisted.blacklisted_by_user = true;
+  [self savePasswordFormToStore:blacklisted];
+
+  [self openPasswordSettings];
+
+  [GetInteractionForPasswordEntry(@"example.com") performAction:grey_tap()];
+
+  [GetInteractionForPasswordDetailItem(SiteHeader())
+      assertWithMatcher:grey_notNil()];
+  id<GREYMatcher> siteCell = grey_accessibilityLabel(@"https://example.com/");
+  [GetInteractionForPasswordDetailItem(siteCell)
+      assertWithMatcher:grey_layout(@[ Below() ], SiteHeader())];
+  [GetInteractionForPasswordDetailItem(CopySiteButton())
+      assertWithMatcher:grey_layout(@[ Below() ], siteCell)];
+
+  [GetInteractionForPasswordDetailItem(DeleteButton())
+      assertWithMatcher:grey_layout(@[ Below() ], CopySiteButton())];
+
+  // Check that the other blocks are not present. Match directly to also catch
+  // the case where those blocks would be present but not currently visible due
+  // to the scrolling state.
+  [[EarlGrey selectElementWithMatcher:UsernameHeader()]
+      assertWithMatcher:grey_nil()];
+  [[EarlGrey selectElementWithMatcher:PasswordHeader()]
+      assertWithMatcher:grey_nil()];
+  [[EarlGrey selectElementWithMatcher:FederationHeader()]
+      assertWithMatcher:grey_nil()];
+
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
+      performAction:grey_tap()];
+  [self tapDone];
+  [self clearPasswordStore];
+}
+
+// Checks the order of the elements in the detail view layout for a federated
+// credential.
+- (void)testLayoutFederated {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      password_manager::features::kViewPasswords);
+
+  PasswordForm federated;
+  federated.username_value = base::ASCIIToUTF16("federated username");
+  federated.origin = GURL("https://example.com");
+  federated.signon_realm = federated.origin.spec();
+  federated.federation_origin =
+      url::Origin(GURL("https://famous.provider.net"));
+  [self savePasswordFormToStore:federated];
+
+  [self openPasswordSettings];
+
+  [GetInteractionForPasswordEntry(@"example.com, federated username")
+      performAction:grey_tap()];
+
+  [GetInteractionForPasswordDetailItem(SiteHeader())
+      assertWithMatcher:grey_notNil()];
+  id<GREYMatcher> siteCell = grey_accessibilityLabel(@"https://example.com/");
+  [GetInteractionForPasswordDetailItem(siteCell)
+      assertWithMatcher:grey_layout(@[ Below() ], SiteHeader())];
+  [GetInteractionForPasswordDetailItem(CopySiteButton())
+      assertWithMatcher:grey_layout(@[ Below() ], siteCell)];
+
+  [GetInteractionForPasswordDetailItem(UsernameHeader())
+      assertWithMatcher:grey_layout(@[ Below() ], CopySiteButton())];
+  id<GREYMatcher> usernameCell = grey_accessibilityLabel(@"federated username");
+  [GetInteractionForPasswordDetailItem(usernameCell)
+      assertWithMatcher:grey_layout(@[ Below() ], UsernameHeader())];
+  [GetInteractionForPasswordDetailItem(CopyUsernameButton())
+      assertWithMatcher:grey_layout(@[ Below() ], usernameCell)];
+
+  [GetInteractionForPasswordDetailItem(FederationHeader())
+      assertWithMatcher:grey_layout(@[ Below() ], CopyUsernameButton())];
+  id<GREYMatcher> federationCell = grey_text(@"famous.provider.net");
+  [GetInteractionForPasswordDetailItem(federationCell)
+      assertWithMatcher:grey_layout(@[ Below() ], FederationHeader())];
+
+  [GetInteractionForPasswordDetailItem(DeleteButton())
+      assertWithMatcher:grey_layout(@[ Below() ], federationCell)];
+
+  // Check that the password is not present. Match directly to also catch the
+  // case where the password header would be present but not currently visible
+  // due to the scrolling state.
+  [[EarlGrey selectElementWithMatcher:PasswordHeader()]
       assertWithMatcher:grey_nil()];
 
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
