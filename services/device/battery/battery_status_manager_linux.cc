@@ -373,6 +373,9 @@ class BatteryStatusManagerLinux::BatteryStatusNotificationThread
   }
 
   bool IsDaemonVersionBelow_0_99() {
+    // TODO(thestig): Fix https://crbug.com/746146 and remove these CHECKs.
+    CHECK(upower_);
+    CHECK(upower_->properties());
     base::Version daemon_version = upower_->properties()->daemon_version();
     return daemon_version.IsValid() &&
            daemon_version.CompareTo(base::Version("0.99")) < 0;
