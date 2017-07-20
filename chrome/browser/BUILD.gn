@@ -3649,6 +3649,15 @@ split_static_library("browser") {
     ]
   }
 
+  if ((is_linux && !is_chromeos) || is_win) {
+    sources += [
+      "feature_engagement_tracker/new_tab/new_tab_tracker.cc",
+      "feature_engagement_tracker/new_tab/new_tab_tracker.h",
+      "feature_engagement_tracker/new_tab/new_tab_tracker_factory.cc",
+      "feature_engagement_tracker/new_tab/new_tab_tracker_factory.h",
+    ]
+  }
+
   if (is_desktop_linux) {
     # Desktop linux, doesn't count ChromeOS.
     sources += [

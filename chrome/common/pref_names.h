@@ -51,11 +51,13 @@ extern const char kImportantSitesDialogHistory[];
 extern const char kLastProfileResetTimestamp[];
 extern const char kChromeCleanerResetPending[];
 #endif
+extern const char kNewTabInProductHelp[];
 extern const char kNewTabPageLocationOverride[];
 extern const char kProfileIconVersion[];
 extern const char kRestoreOnStartup[];
 extern const char kSessionExitedCleanly[];
 extern const char kSessionExitType[];
+extern const char kSessionTimeTotal[];
 extern const char kSiteEngagementLastUpdateTime[];
 extern const char kSupervisedUserApprovedExtensions[];
 extern const char kSupervisedUserCustodianEmail[];
