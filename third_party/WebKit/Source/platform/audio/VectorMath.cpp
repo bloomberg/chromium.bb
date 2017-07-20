@@ -68,7 +68,8 @@ void Vsmul(const float* source_p,
            int dest_stride,
            size_t frames_to_process) {
 #if defined(ARCH_CPU_X86)
-  ::vsmul(sourceP, sourceStride, scale, destP, destStride, framesToProcess);
+  ::vsmul(source_p, source_stride, scale, dest_p, dest_stride,
+          frames_to_process);
 #else
   vDSP_vsmul(source_p, source_stride, scale, dest_p, dest_stride,
              frames_to_process);
@@ -83,8 +84,8 @@ void Vadd(const float* source1p,
           int dest_stride,
           size_t frames_to_process) {
 #if defined(ARCH_CPU_X86)
-  ::vadd(source1P, sourceStride1, source2P, sourceStride2, destP, destStride,
-         framesToProcess);
+  ::vadd(source1p, source_stride1, source2p, source_stride2, dest_p,
+         dest_stride, frames_to_process);
 #else
   vDSP_vadd(source1p, source_stride1, source2p, source_stride2, dest_p,
             dest_stride, frames_to_process);
@@ -99,8 +100,8 @@ void Vmul(const float* source1p,
           int dest_stride,
           size_t frames_to_process) {
 #if defined(ARCH_CPU_X86)
-  ::vmul(source1P, sourceStride1, source2P, sourceStride2, destP, destStride,
-         framesToProcess);
+  ::vmul(source1p, source_stride1, source2p, source_stride2, dest_p,
+         dest_stride, frames_to_process);
 #else
   vDSP_vmul(source1p, source_stride1, source2p, source_stride2, dest_p,
             dest_stride, frames_to_process);
@@ -124,7 +125,7 @@ void Zvmul(const float* real1p,
   dest.realp = real_dest_p;
   dest.imagp = imag_dest_p;
 #if defined(ARCH_CPU_X86)
-  ::zvmul(&sc1, 1, &sc2, 1, &dest, 1, framesToProcess, 1);
+  ::zvmul(&sc1, 1, &sc2, 1, &dest, 1, frames_to_process, 1);
 #else
   vDSP_zvmul(&sc1, 1, &sc2, 1, &dest, 1, frames_to_process, 1);
 #endif
@@ -238,7 +239,7 @@ void Vsma(const float* source_p,
     n = tail_frames;
   }
 #elif HAVE(MIPS_MSA_INTRINSICS)
-  if ((sourceStride == 1) && (destStride == 1)) {
+  if ((source_stride == 1) && (dest_stride == 1)) {
     float* destPCopy = destP;
     v4f32 vScale;
     v4f32 vSrc0, vSrc1, vSrc2, vSrc3, vSrc4, vSrc5, vSrc6, vSrc7;
@@ -249,13 +250,13 @@ void Vsma(const float* source_p,
     vScale = (v4f32)__msa_fill_w(scaleVal.intVal);
 
     for (; n >= 32; n -= 32) {
-      LD_SP8(sourceP, 4, vSrc0, vSrc1, vSrc2, vSrc3, vSrc4, vSrc5, vSrc6,
+      LD_SP8(source_p, 4, vSrc0, vSrc1, vSrc2, vSrc3, vSrc4, vSrc5, vSrc6,
              vSrc7);
       LD_SP8(destPCopy, 4, vDst0, vDst1, vDst2, vDst3, vDst4, vDst5, vDst6,
              vDst7);
       VSMA4(vSrc0, vSrc1, vSrc2, vSrc3, vDst0, vDst1, vDst2, vDst3, vScale);
       VSMA4(vSrc4, vSrc5, vSrc6, vSrc7, vDst4, vDst5, vDst6, vDst7, vScale);
-      ST_SP8(vDst0, vDst1, vDst2, vDst3, vDst4, vDst5, vDst6, vDst7, destP, 4);
+      ST_SP8(vDst0, vDst1, vDst2, vDst3, vDst4, vDst5, vDst6, vDst7, dest_p, 4);
     }
   }
 #endif
@@ -340,7 +341,7 @@ void Vsmul(const float* source_p,
     n = tail_frames;
   }
 #elif HAVE(MIPS_MSA_INTRINSICS)
-  if ((sourceStride == 1) && (destStride == 1)) {
+  if ((source_stride == 1) && (dest_stride == 1)) {
     v4f32 vScale;
     v4f32 vSrc0, vSrc1, vSrc2, vSrc3, vSrc4, vSrc5, vSrc6, vSrc7;
     v4f32 vDst0, vDst1, vDst2, vDst3, vDst4, vDst5, vDst6, vDst7;
@@ -350,11 +351,11 @@ void Vsmul(const float* source_p,
     vScale = (v4f32)__msa_fill_w(scaleVal.intVal);
 
     for (; n >= 32; n -= 32) {
-      LD_SP8(sourceP, 4, vSrc0, vSrc1, vSrc2, vSrc3, vSrc4, vSrc5, vSrc6,
+      LD_SP8(source_p, 4, vSrc0, vSrc1, vSrc2, vSrc3, vSrc4, vSrc5, vSrc6,
              vSrc7);
       VSMUL4(vSrc0, vSrc1, vSrc2, vSrc3, vDst0, vDst1, vDst2, vDst3, vScale);
       VSMUL4(vSrc4, vSrc5, vSrc6, vSrc7, vDst4, vDst5, vDst6, vDst7, vScale);
-      ST_SP8(vDst0, vDst1, vDst2, vDst3, vDst4, vDst5, vDst6, vDst7, destP, 4);
+      ST_SP8(vDst0, vDst1, vDst2, vDst3, vDst4, vDst5, vDst6, vDst7, dest_p, 4);
     }
   }
 #endif
@@ -479,7 +480,7 @@ void Vadd(const float* source1p,
     n = tail_frames;
   }
 #elif HAVE(MIPS_MSA_INTRINSICS)
-  if ((sourceStride1 == 1) && (sourceStride2 == 1) && (destStride == 1)) {
+  if ((source_stride1 == 1) && (source_stride2 == 1) && (dest_stride == 1)) {
     v4f32 vSrc1P0, vSrc1P1, vSrc1P2, vSrc1P3, vSrc1P4, vSrc1P5, vSrc1P6,
         vSrc1P7;
     v4f32 vSrc2P0, vSrc2P1, vSrc2P2, vSrc2P3, vSrc2P4, vSrc2P5, vSrc2P6,
@@ -487,15 +488,15 @@ void Vadd(const float* source1p,
     v4f32 vDst0, vDst1, vDst2, vDst3, vDst4, vDst5, vDst6, vDst7;
 
     for (; n >= 32; n -= 32) {
-      LD_SP8(source1P, 4, vSrc1P0, vSrc1P1, vSrc1P2, vSrc1P3, vSrc1P4, vSrc1P5,
+      LD_SP8(source1p, 4, vSrc1P0, vSrc1P1, vSrc1P2, vSrc1P3, vSrc1P4, vSrc1P5,
              vSrc1P6, vSrc1P7);
-      LD_SP8(source2P, 4, vSrc2P0, vSrc2P1, vSrc2P2, vSrc2P3, vSrc2P4, vSrc2P5,
+      LD_SP8(source2p, 4, vSrc2P0, vSrc2P1, vSrc2P2, vSrc2P3, vSrc2P4, vSrc2P5,
              vSrc2P6, vSrc2P7);
       ADD4(vSrc1P0, vSrc2P0, vSrc1P1, vSrc2P1, vSrc1P2, vSrc2P2, vSrc1P3,
            vSrc2P3, vDst0, vDst1, vDst2, vDst3);
       ADD4(vSrc1P4, vSrc2P4, vSrc1P5, vSrc2P5, vSrc1P6, vSrc2P6, vSrc1P7,
            vSrc2P7, vDst4, vDst5, vDst6, vDst7);
-      ST_SP8(vDst0, vDst1, vDst2, vDst3, vDst4, vDst5, vDst6, vDst7, destP, 4);
+      ST_SP8(vDst0, vDst1, vDst2, vDst3, vDst4, vDst5, vDst6, vDst7, dest_p, 4);
     }
   }
 #endif
@@ -582,7 +583,7 @@ void Vmul(const float* source1p,
     n = tail_frames;
   }
 #elif HAVE(MIPS_MSA_INTRINSICS)
-  if ((sourceStride1 == 1) && (sourceStride2 == 1) && (destStride == 1)) {
+  if ((source_stride1 == 1) && (source_stride2 == 1) && (dest_stride == 1)) {
     v4f32 vSrc1P0, vSrc1P1, vSrc1P2, vSrc1P3, vSrc1P4, vSrc1P5, vSrc1P6,
         vSrc1P7;
     v4f32 vSrc2P0, vSrc2P1, vSrc2P2, vSrc2P3, vSrc2P4, vSrc2P5, vSrc2P6,
@@ -590,15 +591,15 @@ void Vmul(const float* source1p,
     v4f32 vDst0, vDst1, vDst2, vDst3, vDst4, vDst5, vDst6, vDst7;
 
     for (; n >= 32; n -= 32) {
-      LD_SP8(source1P, 4, vSrc1P0, vSrc1P1, vSrc1P2, vSrc1P3, vSrc1P4, vSrc1P5,
+      LD_SP8(source1p, 4, vSrc1P0, vSrc1P1, vSrc1P2, vSrc1P3, vSrc1P4, vSrc1P5,
              vSrc1P6, vSrc1P7);
-      LD_SP8(source2P, 4, vSrc2P0, vSrc2P1, vSrc2P2, vSrc2P3, vSrc2P4, vSrc2P5,
+      LD_SP8(source2p, 4, vSrc2P0, vSrc2P1, vSrc2P2, vSrc2P3, vSrc2P4, vSrc2P5,
              vSrc2P6, vSrc2P7);
       MUL4(vSrc1P0, vSrc2P0, vSrc1P1, vSrc2P1, vSrc1P2, vSrc2P2, vSrc1P3,
            vSrc2P3, vDst0, vDst1, vDst2, vDst3);
       MUL4(vSrc1P4, vSrc2P4, vSrc1P5, vSrc2P5, vSrc1P6, vSrc2P6, vSrc1P7,
            vSrc2P7, vDst4, vDst5, vDst6, vDst7);
-      ST_SP8(vDst0, vDst1, vDst2, vDst3, vDst4, vDst5, vDst6, vDst7, destP, 4);
+      ST_SP8(vDst0, vDst1, vDst2, vDst3, vDst4, vDst5, vDst6, vDst7, dest_p, 4);
     }
   }
 #endif
@@ -804,7 +805,7 @@ void Vmaxmgv(const float* source_p,
     n = tail_frames;
   }
 #elif HAVE(MIPS_MSA_INTRINSICS)
-  if (sourceStride == 1) {
+  if (source_stride == 1) {
     v4f32 vMax = {
         0,
     };
@@ -812,7 +813,7 @@ void Vmaxmgv(const float* source_p,
     const v16i8 vSignBitMask = (v16i8)__msa_fill_w(0x7FFFFFFF);
 
     for (; n >= 32; n -= 32) {
-      LD_SP8(sourceP, 4, vSrc0, vSrc1, vSrc2, vSrc3, vSrc4, vSrc5, vSrc6,
+      LD_SP8(source_p, 4, vSrc0, vSrc1, vSrc2, vSrc3, vSrc4, vSrc5, vSrc6,
              vSrc7);
       AND_W4_SP(vSrc0, vSrc1, vSrc2, vSrc3, vSignBitMask);
       VMAX_W4_SP(vSrc0, vSrc1, vSrc2, vSrc3, vMax);
@@ -864,25 +865,25 @@ void Vclip(const float* source_p,
     n = tail_frames;
   }
 #elif HAVE(MIPS_MSA_INTRINSICS)
-  if ((sourceStride == 1) && (destStride == 1)) {
+  if ((source_stride == 1) && (dest_stride == 1)) {
     v4f32 vSrc0, vSrc1, vSrc2, vSrc3, vSrc4, vSrc5, vSrc6, vSrc7;
     v4f32 vDst0, vDst1, vDst2, vDst3, vDst4, vDst5, vDst6, vDst7;
     v4f32 vLowThr, vHighThr;
     FloatInt lowThr, highThr;
 
-    lowThr.floatVal = lowThreshold;
-    highThr.floatVal = highThreshold;
+    lowThr.floatVal = low_threshold;
+    highThr.floatVal = high_threshold;
     vLowThr = (v4f32)__msa_fill_w(lowThr.intVal);
     vHighThr = (v4f32)__msa_fill_w(highThr.intVal);
 
     for (; n >= 32; n -= 32) {
-      LD_SP8(sourceP, 4, vSrc0, vSrc1, vSrc2, vSrc3, vSrc4, vSrc5, vSrc6,
+      LD_SP8(source_p, 4, vSrc0, vSrc1, vSrc2, vSrc3, vSrc4, vSrc5, vSrc6,
              vSrc7);
       VCLIP4(vSrc0, vSrc1, vSrc2, vSrc3, vLowThr, vHighThr, vDst0, vDst1, vDst2,
              vDst3);
       VCLIP4(vSrc4, vSrc5, vSrc6, vSrc7, vLowThr, vHighThr, vDst4, vDst5, vDst6,
              vDst7);
-      ST_SP8(vDst0, vDst1, vDst2, vDst3, vDst4, vDst5, vDst6, vDst7, destP, 4);
+      ST_SP8(vDst0, vDst1, vDst2, vDst3, vDst4, vDst5, vDst6, vDst7, dest_p, 4);
     }
   }
 #endif
