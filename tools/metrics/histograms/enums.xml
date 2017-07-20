@@ -11261,6 +11261,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="4" label="Automatic kiosk session"/>
 </enum>
 
+<enum name="EquivalentEffectiveAndWhiteListed">
+  <int value="0" label="Different effective and whitelisted touch actions"/>
+  <int value="1" label="Equivalent effective and whitelisted touch actions"/>
+</enum>
+
 <enum name="ErrorCodesGetAdaptersAddresses">
   <int value="8" label="ERROR_NOT_ENOUGH_MEMORY"/>
   <int value="87" label="ERROR_INVALID_PARAMETER"/>

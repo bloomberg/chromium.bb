@@ -33,6 +33,11 @@ class CONTENT_EXPORT TouchActionFilter {
   // for a touch start event that is currently in flight.
   void OnSetTouchAction(cc::TouchAction touch_action);
 
+  // Called at the end of a touch action sequence in order to log when a
+  // whitelisted touch action is or is not equivalent to the allowed touch
+  // action.
+  void ReportAndResetTouchAction();
+
   // Must be called at least once between when the last gesture events for the
   // previous touch sequence have passed through the touch action filter and the
   // time the touch start for the next touch sequence has reached the
