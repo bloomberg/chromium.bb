@@ -55,7 +55,7 @@ void ArcManualAuthCodeFetcher::OnAuthSucceeded(const std::string& auth_code) {
   base::ResetAndReturn(&pending_callback_).Run(true /* success */, auth_code);
 }
 
-void ArcManualAuthCodeFetcher::OnAuthFailed() {
+void ArcManualAuthCodeFetcher::OnAuthFailed(const std::string& error_msg) {
   // Don't report via callback. Extension is already showing more detailed
   // information. Update only UMA here.
   UpdateOptInCancelUMA(OptInCancelReason::NETWORK_ERROR);

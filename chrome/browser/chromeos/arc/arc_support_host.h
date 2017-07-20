@@ -10,12 +10,13 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/observer_list.h"
 #include "chrome/browser/chromeos/arc/extensions/arc_support_message_host.h"
 #include "extensions/browser/api/messaging/native_message_host.h"
 #include "ui/display/display_observer.h"
+#include "url/gurl.h"
 
 class Profile;
+class GURL;
 
 // Native interface to control ARC support chrome App.
 // TODO(hidehiko,lhchavez): Move this into extensions/ directory, and put it
@@ -24,12 +25,12 @@ class ArcSupportHost : public arc::ArcSupportMessageHost::Observer,
                        public display::DisplayObserver {
  public:
   enum class UIPage {
-    NO_PAGE,               // Hide everything.
-    TERMS,                 // Terms content page.
-    LSO,                   // LSO page to enter user's credentials.
-    ARC_LOADING,           // ARC loading progress page.
-    AD_AUTH_NOTIFICATION,  // Active Directory user auth notification.
-    ERROR,                 // ARC start error page.
+    NO_PAGE,                // Hide everything.
+    TERMS,                  // Terms content page.
+    LSO,                    // LSO page to enter user's credentials.
+    ARC_LOADING,            // ARC loading progress page.
+    ACTIVE_DIRECTORY_AUTH,  // Active Directory user SAML authentication.
+    ERROR,                  // ARC start error page.
   };
 
   // Error types whose corresponding message ARC support has.
@@ -45,14 +46,16 @@ class ArcSupportHost : public arc::ArcSupportMessageHost::Observer,
     SIGN_IN_UNKNOWN_ERROR,
   };
 
-  // Delegate to handle manual authentication related events.
+  // Delegate to handle authentication related events. Currently used for Active
+  // Directory and LSO auth.
   class AuthDelegate {
    public:
-    // Called when LSO auth token fetch is successfully completed.
+    // Called when authentication succeeded. LSO auth returns the auth token
+    // |auth_code|, Active Directory auth returns an empty string.
     virtual void OnAuthSucceeded(const std::string& auth_code) = 0;
 
-    // Called when LSO auth token fetch has failed.
-    virtual void OnAuthFailed() = 0;
+    // Called when authentication failed. |error_msg| contains error details.
+    virtual void OnAuthFailed(const std::string& error_msg) = 0;
 
     // Called when "RETRY" button on the error page is clicked during
     // authentication.
@@ -109,10 +112,6 @@ class ArcSupportHost : public arc::ArcSupportMessageHost::Observer,
   explicit ArcSupportHost(Profile* profile);
   ~ArcSupportHost() override;
 
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
-  bool HasObserver(Observer* observer);
-
   void SetAuthDelegate(AuthDelegate* delegate);
   void SetTermsOfServiceDelegate(TermsOfServiceDelegate* delegate);
   void SetErrorDelegate(ErrorDelegate* delegate);
@@ -145,8 +144,13 @@ class ArcSupportHost : public arc::ArcSupportMessageHost::Observer,
   // Requests to show the "ARC is loading" page.
   void ShowArcLoading();
 
-  // Requests to show the "Active Directory auth notification" page.
-  void ShowActiveDirectoryAuthNotification();
+  // Requests to show the "Active Directory SAML auth" page. |federation_url| is
+  // the Active Directory Federation Services URL (aka the SAML redirect URL)
+  // that handles user authentication. |device_management_url_prefix| is the
+  // device management (DM) server URL prefix that is used to detect whether the
+  // SAML flow finished. The DM server is the SAML service provider.
+  void ShowActiveDirectoryAuth(const GURL& federation_url,
+                               const std::string& device_management_url_prefix);
 
   // Requests to show the error page
   void ShowError(Error error, bool should_show_send_feedback);
@@ -200,12 +204,14 @@ class ArcSupportHost : public arc::ArcSupportMessageHost::Observer,
   void SendPreferenceCheckboxUpdate(const std::string& action_name,
                                     const PreferenceCheckboxData& data);
 
+  // Sends the two active_directory_auth_* URLs (see below) to the extension.
+  void SendActiveDirectoryAuthUrls();
+
   void DisconnectMessageHost();
 
   Profile* const profile_;
   RequestOpenAppCallback request_open_app_callback_;
 
-  base::ObserverList<Observer> observer_list_;
   AuthDelegate* auth_delegate_ = nullptr;           // not owned
   TermsOfServiceDelegate* tos_delegate_ = nullptr;  // not owned
   ErrorDelegate* error_delegate_ = nullptr;         // not owned
@@ -232,6 +238,12 @@ class ArcSupportHost : public arc::ArcSupportMessageHost::Observer,
   PreferenceCheckboxData metrics_checkbox_;
   PreferenceCheckboxData backup_and_restore_checkbox_;
   PreferenceCheckboxData location_services_checkbox_;
+
+  // Federation Services URL for Active Directory user SAML authentication.
+  GURL active_directory_auth_federation_url_;
+  // Prefix of the device management (DM) server URL used to detect whether the
+  // SAML flow finished. The DM server is the SAML service provider.
+  std::string active_directory_auth_device_management_url_prefix_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcSupportHost);
 };

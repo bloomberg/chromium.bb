@@ -307,11 +307,21 @@ bool SetArcPlayStoreEnabledForProfile(Profile* profile, bool enabled) {
   return true;
 }
 
-bool AreArcAllOptInPreferencesManagedForProfile(const Profile* profile) {
-  return profile->GetPrefs()->IsManagedPreference(
-             prefs::kArcBackupRestoreEnabled) &&
-         profile->GetPrefs()->IsManagedPreference(
-             prefs::kArcLocationServiceEnabled);
+bool AreArcAllOptInPreferencesIgnorableForProfile(const Profile* profile) {
+  // For Active Directory users, a LaForge account is created, where
+  // backup&restore and location services are not supported, hence the policies
+  // are unused.
+  if (IsActiveDirectoryUserForProfile(profile))
+    return true;
+
+  if (profile->GetPrefs()->IsManagedPreference(
+          prefs::kArcBackupRestoreEnabled) &&
+      profile->GetPrefs()->IsManagedPreference(
+          prefs::kArcLocationServiceEnabled)) {
+    return true;
+  }
+
+  return false;
 }
 
 bool IsActiveDirectoryUserForProfile(const Profile* profile) {

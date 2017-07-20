@@ -48,6 +48,13 @@ webview,
   width: 1px;
 }
 
+.button-active-directory-auth {
+  border: 1px solid #e6e6e6;
+  border-radius: 2px;
+  color: #5a5a5a;
+  margin: 26px 18px 0 26px;
+}
+
 .checkbox-option {
   height: 12px;
   margin: 0;
@@ -85,6 +92,11 @@ webview,
   height: 300px;
   padding: 0;
   width: 960px;
+}
+
+.icon-header {
+  height: 32px;
+  width: 32px;
 }
 
 .overlay-text .page {
@@ -130,10 +142,29 @@ webview,
   text-align: center;
 }
 
+.section-active-directory-auth {
+  align-content: left;
+  padding: 36px 0 0 64px;
+  text-align: left;
+}
+
+.section-active-directory-auth-view {
+  border: 1px solid #e6e6e6;
+  color: rgba(0, 0, 0, 0.54);
+  flex: auto;
+  height: 380px;
+  margin: 40px 64px 0 auto;
+  overflow: hidden;
+}
+
 .section-buttons {
   margin: auto;
   padding: 16px 0 24px 0;
   width: 640px;
+}
+
+.section-active-directory-auth-buttons {
+  float: right;
 }
 
 .section-flex {
@@ -173,14 +204,17 @@ webview,
   width: 640px;
 }
 
-.text-ad-auth {
-  color: rgba(0, 0, 0, 0.54);
-  font-size: 18px;
-  font-weight: 300;
-  line-height: 24px;
-  margin: auto;
-  padding: 72px 0 32px 0;
-  width: 640px;
+.text-active-directory-auth-title {
+  color: rgba(0, 0, 0, 0.87);
+  font-size: 28px;
+  font-weight: normal;
+  margin: 36px 64px 0 0; /* = 64 - font height*/
+}
+
+.text-active-directory-auth-subtitle {
+  color: rgba(0, 0, 0, 0.87);
+  font-size: 13px;
+  margin: 23px 64px 0 0; /* = 40 - 4 (adjustment) - line-height */
 }
 
 .text-status {

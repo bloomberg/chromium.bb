@@ -11,21 +11,13 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/arc/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/dm_token_storage.h"
 #include "chrome/browser/chromeos/settings/install_attributes.h"
-#include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
-#include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/browser/navigation_handle.h"
-#include "net/http/http_response_headers.h"
-#include "net/http/http_status_code.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "url/gurl.h"
 
 namespace em = enterprise_management;
 
@@ -33,16 +25,21 @@ namespace {
 
 constexpr char kSamlAuthErrorMessage[] = "SAML authentication failed. ";
 
+policy::BrowserPolicyConnectorChromeOS* GetConnector() {
+  return g_browser_process->platform_part()
+      ->browser_policy_connector_chromeos();
+}
+
 policy::DeviceManagementService* GetDeviceManagementService() {
-  policy::BrowserPolicyConnectorChromeOS* const connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  return connector->device_management_service();
+  return GetConnector()->device_management_service();
 }
 
 std::string GetClientId() {
-  policy::BrowserPolicyConnectorChromeOS* const connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  return connector->GetInstallAttributes()->GetDeviceId();
+  return GetConnector()->GetInstallAttributes()->GetDeviceId();
+}
+
+std::string GetDmServerUrl() {
+  return GetDeviceManagementService()->GetServerUrl();
 }
 
 }  // namespace
@@ -50,16 +47,21 @@ std::string GetClientId() {
 namespace arc {
 
 ArcActiveDirectoryEnrollmentTokenFetcher::
-    ArcActiveDirectoryEnrollmentTokenFetcher()
-    : weak_ptr_factory_(this) {}
+    ArcActiveDirectoryEnrollmentTokenFetcher(ArcSupportHost* support_host)
+    : support_host_(support_host), weak_ptr_factory_(this) {
+  DCHECK(support_host_);
+  support_host_->SetAuthDelegate(this);
+}
 
 ArcActiveDirectoryEnrollmentTokenFetcher::
-    ~ArcActiveDirectoryEnrollmentTokenFetcher() = default;
+    ~ArcActiveDirectoryEnrollmentTokenFetcher() {
+  support_host_->SetAuthDelegate(nullptr);
+}
 
-void ArcActiveDirectoryEnrollmentTokenFetcher::Fetch(
-    const FetchCallback& callback) {
+void ArcActiveDirectoryEnrollmentTokenFetcher::Fetch(FetchCallback callback) {
   DCHECK(callback_.is_null());
-  callback_ = callback;
+  DCHECK(auth_session_id_.empty());
+  callback_ = std::move(callback);
   dm_token_storage_ = base::MakeUnique<policy::DMTokenStorage>(
       g_browser_process->local_state());
   dm_token_storage_->RetrieveDMToken(base::BindOnce(
@@ -71,8 +73,7 @@ void ArcActiveDirectoryEnrollmentTokenFetcher::OnDMTokenAvailable(
     const std::string& dm_token) {
   if (dm_token.empty()) {
     LOG(ERROR) << "Retrieving the DMToken failed.";
-    base::ResetAndReturn(&callback_)
-        .Run(Status::FAILURE, std::string(), std::string());
+    std::move(callback_).Run(Status::FAILURE, std::string(), std::string());
     return;
   }
 
@@ -84,6 +85,7 @@ void ArcActiveDirectoryEnrollmentTokenFetcher::OnDMTokenAvailable(
 void ArcActiveDirectoryEnrollmentTokenFetcher::DoFetchEnrollmentToken() {
   DCHECK(!dm_token_.empty());
   DCHECK(!fetch_request_job_);
+  VLOG(1) << "Fetching enrollment token";
 
   policy::DeviceManagementService* service = GetDeviceManagementService();
   fetch_request_job_.reset(
@@ -114,6 +116,7 @@ void ArcActiveDirectoryEnrollmentTokenFetcher::
         policy::DeviceManagementStatus dm_status,
         int net_error,
         const em::DeviceManagementResponse& response) {
+  VLOG(1) << "Enrollment token response received. DM Status: " << dm_status;
   fetch_request_job_.reset();
 
   Status fetch_status;
@@ -157,124 +160,72 @@ void ArcActiveDirectoryEnrollmentTokenFetcher::
     }
   }
 
+  VLOG(1) << "Enrollment token fetch finished. Status: " << (int)fetch_status;
   dm_token_.clear();
-  base::ResetAndReturn(&callback_).Run(fetch_status, enrollment_token, user_id);
+  auth_session_id_.clear();
+  std::move(callback_).Run(fetch_status, enrollment_token, user_id);
 }
 
 void ArcActiveDirectoryEnrollmentTokenFetcher::InitiateSamlFlow(
     const std::string& auth_redirect_url) {
+  VLOG(1) << "Initiating SAML flow. Auth redirect URL: " << auth_redirect_url;
+
   // We must have an auth session id. Otherwise, we might end up in a loop.
   if (auth_session_id_.empty()) {
     LOG(ERROR) << kSamlAuthErrorMessage << "No auth session id.";
-    CancelSamlFlow(true /* close_saml_page */);
+    CancelSamlFlow();
     return;
   }
 
   // Check if URL is valid.
-  GURL url(auth_redirect_url);
-  if (!url.is_valid()) {
+  const GURL redirect_url(auth_redirect_url);
+  if (!redirect_url.is_valid()) {
     LOG(ERROR) << kSamlAuthErrorMessage << "Redirect URL invalid.";
-    CancelSamlFlow(true /* close_saml_page */);
+    CancelSamlFlow();
     return;
   }
 
-  // Open a browser window and navigate to the URL.
-  Profile* const profile = ArcSessionManager::Get()->profile();
-  if (!profile) {
-    LOG(ERROR) << kSamlAuthErrorMessage << "No user profile found.";
-    CancelSamlFlow(true /* close_saml_page */);
-    return;
-  }
-  chrome::ScopedTabbedBrowserDisplayer displayer(profile);
-  DCHECK(displayer.browser());
-  browser_ = displayer.browser();
-  content::WebContents* web_contents =
-      chrome::AddSelectedTabWithURL(browser_, url, ui::PAGE_TRANSITION_LINK);
-
-  // Since the ScopedTabbedBrowserDisplayer does not guarantee that the
-  // browser will be shown on the active desktop, we ensure the visibility.
-  multi_user_util::MoveWindowToCurrentDesktop(
-      browser_->window()->GetNativeWindow());
-
-  // Observe web contents to receive the DidFinishNavigation() event.
-  Observe(web_contents);
+  // Send the URL to the support host to display it in a web view inside the
+  // Active Directory auth page.
+  support_host_->ShowActiveDirectoryAuth(redirect_url, GetDmServerUrl());
 }
 
-void ArcActiveDirectoryEnrollmentTokenFetcher::CancelSamlFlow(
-    bool close_saml_page) {
+void ArcActiveDirectoryEnrollmentTokenFetcher::CancelSamlFlow() {
+  VLOG(1) << "Cancelling SAML flow.";
   dm_token_.clear();
   auth_session_id_.clear();
-  FinalizeSamlPage(close_saml_page);
   DCHECK(!callback_.is_null());
   base::ResetAndReturn(&callback_)
       .Run(Status::FAILURE, std::string(), std::string());
 }
 
-void ArcActiveDirectoryEnrollmentTokenFetcher::FinalizeSamlPage(
-    bool close_saml_page) {
-  content::WebContents* web_contents =
-      content::WebContentsObserver::web_contents();
-  DCHECK(browser_);
-  DCHECK(web_contents);
-  Observe(nullptr);
-  if (close_saml_page) {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
-        base::BindOnce(&chrome::CloseWebContents, browser_, web_contents,
-                       false /* add_to_history */));
-  }
-  browser_ = nullptr;
+void ArcActiveDirectoryEnrollmentTokenFetcher::OnAuthSucceeded(
+    const std::string& unused_auth_code) {
+  VLOG(1) << "SAML auth succeeded.";
+  DCHECK(!auth_session_id_.empty());
+  DoFetchEnrollmentToken();
+  support_host_->ShowArcLoading();
 }
 
-void ArcActiveDirectoryEnrollmentTokenFetcher::DidFinishNavigation(
-    content::NavigationHandle* navigation_handle) {
-  // Set close_saml_page to false here since the browser might show the actual
-  // reason for the failure.
-  if (navigation_handle->GetNetErrorCode() != net::OK) {
-    LOG(ERROR) << kSamlAuthErrorMessage << "Got net error code "
-               << navigation_handle->GetNetErrorCode() << ".";
-    CancelSamlFlow(false /* close_saml_page */);
-    return;
-  }
+void ArcActiveDirectoryEnrollmentTokenFetcher::OnAuthFailed(
+    const std::string& error_msg) {
+  LOG(ERROR) << "SAML auth failed: " << error_msg;
 
-  if (navigation_handle->IsErrorPage()) {
-    LOG(ERROR) << kSamlAuthErrorMessage << "Is error page.";
-    CancelSamlFlow(false /* close_saml_page */);
-    return;
-  }
-
-  // No response headers is fine, could be intermediate state.
-  const net::HttpResponseHeaders* response_headers =
-      navigation_handle->GetResponseHeaders();
-  if (!response_headers)
-    return;
-
-  if (response_headers->response_code() != net::HTTP_OK) {
-    LOG(ERROR) << kSamlAuthErrorMessage
-               << "Bad HTTP response: " << response_headers->response_code();
-    CancelSamlFlow(false /* close_saml_page */);
-    return;
-  }
-
-  policy::DeviceManagementService* service = GetDeviceManagementService();
-  GURL server_url(service->GetServerUrl());
-  const GURL& url = navigation_handle->GetURL();
-
-  if (url.scheme() == server_url.scheme() && url.host() == server_url.host() &&
-      base::StartsWith(url.path(), server_url.path(),
-                       base::CompareCase::INSENSITIVE_ASCII)) {
-    // SAML flow succeeded! Close the page, no need to keep it open.
-    FinalizeSamlPage(true /* close_saml_page */);
-    // Fetch enrollment token again, this time with non-empty session id.
-    DCHECK(!auth_session_id_.empty());
-    DoFetchEnrollmentToken();
-  }
+  // Don't call callback here, allow user to retry.
+  support_host_->ShowError(ArcSupportHost::Error::SERVER_COMMUNICATION_ERROR,
+                           true /* should_show_send_feedback */);
+  UpdateOptInCancelUMA(OptInCancelReason::NETWORK_ERROR);
 }
 
-void ArcActiveDirectoryEnrollmentTokenFetcher::WebContentsDestroyed() {
-  LOG(ERROR) << kSamlAuthErrorMessage << "Web contents destroyed.";
-  // No need to close the page, it's already being destroyed.
-  CancelSamlFlow(false /* close_saml_page */);
+void ArcActiveDirectoryEnrollmentTokenFetcher::OnAuthRetryClicked() {
+  VLOG(1) << "Retrying token fetch.";
+
+  // Retry the full flow (except DM token fetch), not just the SAML part, in
+  // case DM server returned bad data.
+  auth_session_id_.clear();
+  DCHECK(!callback_.is_null());
+  support_host_->ShowArcLoading();
+  DoFetchEnrollmentToken();
 }
 
 }  // namespace arc

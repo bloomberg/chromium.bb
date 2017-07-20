@@ -654,13 +654,14 @@ TEST_P(ArcSessionManagerPolicyTest, SkippingTerms) {
   arc_session_manager()->Initialize();
   arc_session_manager()->RequestEnable();
 
-  // Terms of Service are skipped iff not an Active Directory user, ARC is
-  // enabled by policy and both ArcBackupRestoreEnabled and
-  // ArcLocationServiceEnabled are managed.
-  const bool expected_terms_skipping = !is_active_directory_user() &&
-                                       arc_enabled_pref_managed() &&
-                                       backup_restore_pref_value().is_bool() &&
-                                       location_service_pref_value().is_bool();
+  // Terms of Service are skipped iff ARC is enabled by policy and both policies
+  // are either managed or unused (for Active Directory users a LaForge account
+  // is created, not a full Dasher account, where the policies have no meaning).
+  const bool prefs_managed = backup_restore_pref_value().is_bool() &&
+                             location_service_pref_value().is_bool();
+  const bool prefs_unused = is_active_directory_user();
+  const bool expected_terms_skipping =
+      (arc_enabled_pref_managed() && (prefs_managed || prefs_unused));
   EXPECT_EQ(expected_terms_skipping
                 ? ArcSessionManager::State::CHECKING_ANDROID_MANAGEMENT
                 : ArcSessionManager::State::NEGOTIATING_TERMS_OF_SERVICE,
@@ -720,7 +721,7 @@ TEST_P(ArcSessionManagerPolicyTest, ReenableManagedArc) {
 }
 
 INSTANTIATE_TEST_CASE_P(
-    All,
+    ,
     ArcSessionManagerPolicyTest,
     testing::Combine(
         testing::Bool() /* arc_enabled_pref_managed */,
@@ -901,7 +902,7 @@ class ArcSessionOobeOptInNegotiatorTest
   DISALLOW_COPY_AND_ASSIGN(ArcSessionOobeOptInNegotiatorTest);
 };
 
-INSTANTIATE_TEST_CASE_P(All,
+INSTANTIATE_TEST_CASE_P(,
                         ArcSessionOobeOptInNegotiatorTest,
                         ::testing::Values(true, false));
 
