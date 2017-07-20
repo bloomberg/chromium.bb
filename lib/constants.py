@@ -357,17 +357,17 @@ SOM_BUILDS = {
 # Major is used for tracking heavy API breakage- for example, no longer
 # supporting the --resume option.
 REEXEC_API_MAJOR = 0
-REEXEC_API_MINOR = 5
+REEXEC_API_MINOR = 6
 REEXEC_API_VERSION = '%i.%i' % (REEXEC_API_MAJOR, REEXEC_API_MINOR)
 
-# Minor version 5 is the first to support --goma_dir and --goma_client_json
-REEXEC_API_GOMA = 5
-
-# Minor version 4 is the first to support --git-cache-dir
-REEXEC_API_GIT_CACHE_DIR = 4
-
-# Minor version 3 is the first to support --master-build-id
+# Support --master-build-id
 REEXEC_API_MASTER_BUILD_ID = 3
+# Support --git-cache-dir
+REEXEC_API_GIT_CACHE_DIR = 4
+# Support --goma_dir and --goma_client_json
+REEXEC_API_GOMA = 5
+# Support --ts-mon-task-num
+REEXEC_API_TSMON_TASK_NUM = 6
 
 # We rely on the (waterfall, builder name, build number) to uniquely identify
 # a build. However, future migrations or state wipes of the buildbot master may

@@ -247,8 +247,6 @@ class BootstrapStage(PatchChangesStage):
     _, minor = cros_build_lib.GetTargetChromiteApiVersion(buildroot)
     args = [cbuildbot_path]
     args.extend(options.build_targets)
-    # Increment the ts-mon task_num so the metrics don't collide.
-    args.extend(['--ts-mon-task-num', str(options.ts_mon_task_num + 1)])
     args.extend(cls._FilterArgsForApi(options.parsed_args, minor))
 
     # Only pass down --cache-dir if it was specified. By default, we want
@@ -256,6 +254,10 @@ class BootstrapStage(PatchChangesStage):
     # each instance of cbuildbot needs to calculate the default separately.
     if minor >= 2 and options.cache_dir_specified:
       args += ['--cache-dir', options.cache_dir]
+
+    if minor >= constants.REEXEC_API_TSMON_TASK_NUM:
+      # Increment the ts-mon task_num so the metrics don't collide.
+      args.extend(['--ts-mon-task-num', str(options.ts_mon_task_num + 1)])
 
     return args
 

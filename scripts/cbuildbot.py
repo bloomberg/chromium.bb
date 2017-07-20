@@ -705,6 +705,7 @@ def _CreateParser():
                         'older chromite instances')
   group.add_option('--sourceroot', type='path', default=constants.SOURCE_ROOT)
   group.add_option('--ts-mon-task-num', type='int', default=0,
+                   api=constants.REEXEC_API_TSMON_TASK_NUM,
                    help='The task number of this process. Defaults to 0. '
                         'This argument is useful for running multiple copies '
                         'of cbuildbot without their metrics colliding.')
