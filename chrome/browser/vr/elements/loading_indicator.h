@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/timer/timer.h"
 #include "chrome/browser/vr/elements/textured_element.h"
 
 namespace vr {
@@ -20,19 +19,16 @@ class LoadingIndicator : public TexturedElement {
   explicit LoadingIndicator(int preferred_width);
   ~LoadingIndicator() override;
 
+  void SetEnabled(bool enabled) override;
   void SetLoading(bool loading);
   void SetLoadProgress(float progress);
-
-  void SetEnabled(bool enabled) override;
 
  private:
   UiTexture* GetTexture() const override;
   std::unique_ptr<LoadingIndicatorTexture> texture_;
 
-  void ResetVisibilityTimer();
   void SetVisibility();
 
-  base::OneShotTimer visibility_timer_;
   bool enabled_ = false;
   bool loading_ = false;
 

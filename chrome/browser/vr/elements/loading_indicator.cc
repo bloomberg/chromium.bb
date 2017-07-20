@@ -9,11 +9,6 @@
 
 namespace vr {
 
-namespace {
-
-static constexpr int kVisibilityTimeoutMs = 200;
-}
-
 LoadingIndicator::LoadingIndicator(int preferred_width)
     : TexturedElement(preferred_width),
       texture_(base::MakeUnique<LoadingIndicatorTexture>()) {
@@ -39,7 +34,6 @@ void LoadingIndicator::SetLoading(bool loading) {
   loading_ = loading;
   texture_->SetLoading(loading);
   texture_->SetLoadProgress(0);
-  ResetVisibilityTimer();
   SetVisibility();
 }
 
@@ -47,18 +41,8 @@ void LoadingIndicator::SetLoadProgress(float progress) {
   texture_->SetLoadProgress(progress);
 }
 
-void LoadingIndicator::ResetVisibilityTimer() {
-  if (enabled_ && !loading_) {
-    visibility_timer_.Start(
-        FROM_HERE, base::TimeDelta::FromMilliseconds(kVisibilityTimeoutMs),
-        this, &LoadingIndicator::SetVisibility);
-  } else {
-    visibility_timer_.Stop();
-  }
-}
-
 void LoadingIndicator::SetVisibility() {
-  set_visible(enabled_ && (loading_ || visibility_timer_.IsRunning()));
+  set_visible(enabled_ && loading_);
 }
 
 }  // namespace vr
