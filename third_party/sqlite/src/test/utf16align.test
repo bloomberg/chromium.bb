@@ -8,7 +8,7 @@
 #    May you share freely, never taking more than you give.
 #
 #***********************************************************************
-# 
+#
 # This file contains code to verify that the SQLITE_UTF16_ALIGNED
 # flag passed into the sqlite3_create_collation() function insures
 # that all strings passed to that function are aligned on an even

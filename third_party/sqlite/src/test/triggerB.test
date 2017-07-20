@@ -148,6 +148,6 @@ for {set i 0} {$i<=64} {incr i} {
     }
   }] [subst {$i a$i b$i}]
 }
-  
+
 
 finish_test

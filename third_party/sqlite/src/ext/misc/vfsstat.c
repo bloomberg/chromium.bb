@@ -46,7 +46,7 @@ SQLITE_EXTENSION_INIT1
 **      SELECT * FROM vfsstat WHERE count>0;
 **
 ** LIMITATIONS:
-** 
+**
 ** This module increments counters without using mutex protection.  So if
 ** two or more threads try to use this module at the same time, race conditions
 ** may occur which mess up the counts.  This is harmless, other than giving
@@ -82,7 +82,7 @@ static const char *azFile[] = {
 ** Stat types
 */
 #define VFSSTAT_BYTESIN      0   /* Bytes read in */
-#define VFSSTAT_BYTESOUT     1   /* Bytes written out */   
+#define VFSSTAT_BYTESOUT     1   /* Bytes written out */
 #define VFSSTAT_READ         2   /* Read requests */
 #define VFSSTAT_WRITE        3   /* Write requests */
 #define VFSSTAT_SYNC         4   /* Syncs */
@@ -248,9 +248,9 @@ static int vstatClose(sqlite3_file *pFile){
 ** Read data from an vstat-file.
 */
 static int vstatRead(
-  sqlite3_file *pFile, 
-  void *zBuf, 
-  int iAmt, 
+  sqlite3_file *pFile,
+  void *zBuf,
+  int iAmt,
   sqlite_int64 iOfst
 ){
   int rc;
@@ -482,9 +482,9 @@ static int vstatDelete(sqlite3_vfs *pVfs, const char *zPath, int dirSync){
 ** is available, or false otherwise.
 */
 static int vstatAccess(
-  sqlite3_vfs *pVfs, 
-  const char *zPath, 
-  int flags, 
+  sqlite3_vfs *pVfs,
+  const char *zPath,
+  int flags,
   int *pResOut
 ){
   int rc;
@@ -499,9 +499,9 @@ static int vstatAccess(
 ** of at least (INST_MAX_PATHNAME+1) bytes.
 */
 static int vstatFullPathname(
-  sqlite3_vfs *pVfs, 
-  const char *zPath, 
-  int nOut, 
+  sqlite3_vfs *pVfs,
+  const char *zPath,
+  int nOut,
   char *zOut
 ){
   STATCNT(VFSSTAT_ANY,VFSSTAT_FULLPATH)++;
@@ -517,7 +517,7 @@ static void *vstatDlOpen(sqlite3_vfs *pVfs, const char *zPath){
 
 /*
 ** Populate the buffer zErrMsg (size nByte bytes) with a human readable
-** utf-8 string describing the most recent error encountered associated 
+** utf-8 string describing the most recent error encountered associated
 ** with dynamic libraries.
 */
 static void vstatDlError(sqlite3_vfs *pVfs, int nByte, char *zErrMsg){
@@ -539,7 +539,7 @@ static void vstatDlClose(sqlite3_vfs *pVfs, void *pHandle){
 }
 
 /*
-** Populate the buffer pointed to by zBufOut with nByte bytes of 
+** Populate the buffer pointed to by zBufOut with nByte bytes of
 ** random data.
 */
 static int vstatRandomness(sqlite3_vfs *pVfs, int nByte, char *zBufOut){
@@ -548,7 +548,7 @@ static int vstatRandomness(sqlite3_vfs *pVfs, int nByte, char *zBufOut){
 }
 
 /*
-** Sleep for nMicro microseconds. Return the number of microseconds 
+** Sleep for nMicro microseconds. Return the number of microseconds
 ** actually slept.
 */
 static int vstatSleep(sqlite3_vfs *pVfs, int nMicro){
@@ -575,7 +575,7 @@ static int vstatCurrentTimeInt64(sqlite3_vfs *pVfs, sqlite3_int64 *p){
 /*
 ** A virtual table for accessing the stats collected by this VFS shim
 */
-static int vstattabConnect(sqlite3*, void*, int, const char*const*, 
+static int vstattabConnect(sqlite3*, void*, int, const char*const*,
                            sqlite3_vtab**,char**);
 static int vstattabBestIndex(sqlite3_vtab*,sqlite3_index_info*);
 static int vstattabDisconnect(sqlite3_vtab*);
@@ -607,7 +607,7 @@ static int vstattabConnect(
   int rc;
 
 /* Column numbers */
-#define VSTAT_COLUMN_FILE  0 
+#define VSTAT_COLUMN_FILE  0
 #define VSTAT_COLUMN_STAT  1
 #define VSTAT_COLUMN_COUNT 2
 
@@ -710,7 +710,7 @@ static int vstattabEof(sqlite3_vtab_cursor *cur){
 ** the beginning.
 */
 static int vstattabFilter(
-  sqlite3_vtab_cursor *pVtabCursor, 
+  sqlite3_vtab_cursor *pVtabCursor,
   int idxNum, const char *idxStr,
   int argc, sqlite3_value **argv
 ){
@@ -792,15 +792,15 @@ static int vstatRegister(
 #ifdef _WIN32
 __declspec(dllexport)
 #endif
-/* 
+/*
 ** This routine is called when the extension is loaded.
 **
 ** Register the new VFS.  Make arrangement to register the virtual table
 ** for each new database connection.
 */
 int sqlite3_vfsstat_init(
-  sqlite3 *db, 
-  char **pzErrMsg, 
+  sqlite3 *db,
+  char **pzErrMsg,
   const sqlite3_api_routines *pApi
 ){
   int rc = SQLITE_OK;

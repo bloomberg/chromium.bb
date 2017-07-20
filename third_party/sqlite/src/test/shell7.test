@@ -20,9 +20,9 @@ set testprefix shell7
 set CLI [test_find_cli]
 
 
-do_execsql_test 1.0 { 
-  CREATE TABLE f1(tn INTEGER PRIMARY KEY, x BLOB); 
-  CREATE TABLE f2(tn INTEGER PRIMARY KEY, x BLOB); 
+do_execsql_test 1.0 {
+  CREATE TABLE f1(tn INTEGER PRIMARY KEY, x BLOB);
+  CREATE TABLE f2(tn INTEGER PRIMARY KEY, x BLOB);
 
   INSERT INTO f1 VALUES(1, X'01020304');
   INSERT INTO f1 VALUES(2, X'01000304');
@@ -38,11 +38,11 @@ foreach {tn l x} [db eval { SELECT tn, length(x) AS l, x FROM f1 }] {
   close $fd
 
   do_test 1.$tn.1 { file size shell7_test.bin } $l
-  do_test 1.$tn.2 { 
+  do_test 1.$tn.2 {
     catchcmd test.db "INSERT INTO f2 VALUES($tn, readfile('shell7_test.bin'));"
   } {0 {}}
 
-  do_execsql_test 1.$tn.3 { 
+  do_execsql_test 1.$tn.3 {
     SELECT (SELECT x FROM f1 WHERE tn=1)==(SELECT x FROM f2 WHERE tn=1)
   } {1}
 }

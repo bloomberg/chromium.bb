@@ -22,15 +22,15 @@ ifcapable !fts5 {
 }
 
 set docs {
-  "eight zero iv eight 7"            "ix one 8 one three ii one"        
-  "1 9 9 three viii"                 "5 zero ii 6 nine ix 3"            
-  "3 zero 5 2 seven nine"            "two eight viii eight 1"           
-  "4 six two 5 9 vii"                "viii ii four 8 i i iv"            
-  "vii 0 iv seven 7 viii"            "five 1 nine vi seven"             
-  "1 zero zero iii 1"                "one one six 6 nine seven"         
-  "one v 4 zero 4 iii ii"            "2 3 eight six ix"                 
-  "six iv 7 three 5"                 "ix zero 0 8 ii 7 3"               
-  "four six nine 2 vii 3"            "five viii 5 8 0 7"                
+  "eight zero iv eight 7"            "ix one 8 one three ii one"
+  "1 9 9 three viii"                 "5 zero ii 6 nine ix 3"
+  "3 zero 5 2 seven nine"            "two eight viii eight 1"
+  "4 six two 5 9 vii"                "viii ii four 8 i i iv"
+  "vii 0 iv seven 7 viii"            "five 1 nine vi seven"
+  "1 zero zero iii 1"                "one one six 6 nine seven"
+  "one v 4 zero 4 iii ii"            "2 3 eight six ix"
+  "six iv 7 three 5"                 "ix zero 0 8 ii 7 3"
+  "four six nine 2 vii 3"            "five viii 5 8 0 7"
 }
 
 foreach_detail_mode $::testprefix {

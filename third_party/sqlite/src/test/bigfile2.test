@@ -45,8 +45,8 @@ do_test 1.2 {
 
 # Now insert a large row. The overflow pages will be located past the 4GB
 # boundary. Then, after opening and closing the database, test that the row
-# can be read back in. 
-# 
+# can be read back in.
+#
 set str [string repeat k 30000]
 do_test 1.3 {
   sqlite3 db test.db

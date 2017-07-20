@@ -67,7 +67,7 @@ proc swap_byte_order {utf16} {
 #    byte-order mark info, refer to section 3.10 of the unicode standard.
 #
 # 5. Take the byte-order marked UTF-16 strings from step 4 and ensure
-#    that SQLite can convert them both to native byte order UTF-16 
+#    that SQLite can convert them both to native byte order UTF-16
 #    strings, sans BOM.
 #
 # Coverage:
@@ -79,7 +79,7 @@ proc swap_byte_order {utf16} {
 # sqlite_utf16to16be (step 5)
 #
 proc test_conversion {testname str} {
- 
+
   # Step 1.
   set utf16le_sqlite3 [test_translate $str UTF8 UTF16LE]
   set utf16le_tcl [encoding convertto unicode $str]
@@ -99,7 +99,7 @@ proc test_conversion {testname str} {
   }
   do_bincmp_test $testname.2 $utf16be_sqlite3 $utf16be_tcl
   set utf16be $utf16be_tcl
- 
+
   # Step 3.
   if { $::tcl_platform(byteOrder)=="littleEndian" } {
     set utf16 $utf16le

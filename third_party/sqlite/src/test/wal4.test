@@ -28,7 +28,7 @@ do_test wal4-1.1 {
 } {wal 1 2}
 
 do_test wal4-1.2 {
-  # Save a copy of the file-system containing the wal and wal-index files 
+  # Save a copy of the file-system containing the wal and wal-index files
   # only (no database file).
   faultsim_save_and_close
   forcedelete sv_test.db
@@ -53,10 +53,10 @@ do_faultsim_test wal4-2 -prep {
   # it should still be zero bytes in size regardless of whether or not
   # a fault was injected. Test these assertions:
   #
-  if { $testrc==0 && [file exists test.db-wal] } { 
+  if { $testrc==0 && [file exists test.db-wal] } {
     error "Wal file was not deleted"
   }
-  if { [file size test.db]!=0 } { 
+  if { [file size test.db]!=0 } {
     error "Db file grew to [file size test.db] bytes"
   }
 }

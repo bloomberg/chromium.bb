@@ -11,7 +11,7 @@
 # This file implements utility functions for SQLite library.
 #
 # This file attempts to restore the header of a journal.
-# This may be useful for rolling-back the last committed 
+# This may be useful for rolling-back the last committed
 # transaction from a recovered journal.
 #
 
@@ -130,7 +130,7 @@ proc dump_jrnl_page {jrnl_pgno} {
   for {set addr 0} {$addr<$db_pgsz} {set addr [expr $addr+16]} {
     # get 16 bytes of data
     set s [string range $data $addr [expr $addr+16]]
-    
+
     # Convert the data to hex and to characters.
     binary scan $s H*@0a* hex ascii
 

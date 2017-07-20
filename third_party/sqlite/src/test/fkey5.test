@@ -72,7 +72,7 @@ do_test fkey5-1.1 {
 
     PRAGMA foreign_key_check;
   }
-} {}    
+} {}
 do_test fkey5-1.2 {
   db eval {
     INSERT INTO c1 VALUES(90),(87),(88);

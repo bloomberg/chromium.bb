@@ -107,12 +107,12 @@ exprlist(A) ::= exprlist(X) cnearset(Y). {
   A = sqlite3Fts5ParseImplicitAnd(pParse, X, Y);
 }
 
-cnearset(A) ::= nearset(X). { 
-  A = sqlite3Fts5ParseNode(pParse, FTS5_STRING, 0, 0, X); 
+cnearset(A) ::= nearset(X). {
+  A = sqlite3Fts5ParseNode(pParse, FTS5_STRING, 0, 0, X);
 }
-cnearset(A) ::= colset(X) COLON nearset(Y). { 
+cnearset(A) ::= colset(X) COLON nearset(Y). {
   sqlite3Fts5ParseSetColset(pParse, Y, X);
-  A = sqlite3Fts5ParseNode(pParse, FTS5_STRING, 0, 0, Y); 
+  A = sqlite3Fts5ParseNode(pParse, FTS5_STRING, 0, 0, Y);
 }
 
 %type colset {Fts5Colset*}
@@ -120,7 +120,7 @@ cnearset(A) ::= colset(X) COLON nearset(Y). {
 %type colsetlist {Fts5Colset*}
 %destructor colsetlist { sqlite3_free($$); }
 
-colset(A) ::= MINUS LCP colsetlist(X) RCP. { 
+colset(A) ::= MINUS LCP colsetlist(X) RCP. {
     A = sqlite3Fts5ParseColsetInvert(pParse, X);
 }
 colset(A) ::= LCP colsetlist(X) RCP. { A = X; }
@@ -132,10 +132,10 @@ colset(A) ::= MINUS STRING(X). {
   A = sqlite3Fts5ParseColsetInvert(pParse, A);
 }
 
-colsetlist(A) ::= colsetlist(Y) STRING(X). { 
+colsetlist(A) ::= colsetlist(Y) STRING(X). {
   A = sqlite3Fts5ParseColset(pParse, Y, &X); }
-colsetlist(A) ::= STRING(X). { 
-  A = sqlite3Fts5ParseColset(pParse, 0, &X); 
+colsetlist(A) ::= STRING(X). {
+  A = sqlite3Fts5ParseColset(pParse, 0, &X);
 }
 
 %type nearset     {Fts5ExprNearset*}
@@ -150,8 +150,8 @@ nearset(A) ::= STRING(X) LP nearphrases(Y) neardist_opt(Z) RP. {
   A = Y;
 }
 
-nearphrases(A) ::= phrase(X). { 
-  A = sqlite3Fts5ParseNearset(pParse, 0, X); 
+nearphrases(A) ::= phrase(X). {
+  A = sqlite3Fts5ParseNearset(pParse, 0, X);
 }
 nearphrases(A) ::= nearphrases(X) phrase(Y). {
   A = sqlite3Fts5ParseNearset(pParse, X, Y);
@@ -173,10 +173,10 @@ neardist_opt(A) ::= COMMA STRING(X). { A = X; }
 %type phrase {Fts5ExprPhrase*}
 %destructor phrase { sqlite3Fts5ParsePhraseFree($$); }
 
-phrase(A) ::= phrase(X) PLUS STRING(Y) star_opt(Z). { 
+phrase(A) ::= phrase(X) PLUS STRING(Y) star_opt(Z). {
   A = sqlite3Fts5ParseTerm(pParse, X, &Y, Z);
 }
-phrase(A) ::= STRING(Y) star_opt(Z). { 
+phrase(A) ::= STRING(Y) star_opt(Z). {
   A = sqlite3Fts5ParseTerm(pParse, 0, &Y, Z);
 }
 

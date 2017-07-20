@@ -8,7 +8,7 @@
 #    May you share freely, never taking more than you give.
 #
 #***********************************************************************
-# 
+#
 # This file tests aspects of the malloc failure while parsing
 # CREATE TABLE statements in auto_vacuum mode.
 #
@@ -37,7 +37,7 @@ proc do_mallocC_test {tn args} {
     sqlite3_memdebug_fail $::n -repeat 1
     do_test mallocC-$tn.$::n.1 {
       set res [catchsql [string trim $::mallocopts(-sql)]]
-      set rc [expr { 
+      set rc [expr {
         0==[string compare $res {1 {out of memory}}] ||
         [db errorcode] == 3082 ||
         0==[lindex $res 0]
@@ -104,7 +104,7 @@ if {0} {
 
 do_mallocC_test 1 -sql {
   BEGIN;
-  -- Allocate 32 new root pages. This will exercise the 'extract specific 
+  -- Allocate 32 new root pages. This will exercise the 'extract specific
   -- page from the freelist' code when in auto-vacuum mode (see the
   -- allocatePage() routine in btree.c).
   CREATE TABLE t1(a UNIQUE, b UNIQUE, c UNIQUE);

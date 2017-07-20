@@ -85,8 +85,8 @@ do_test pcache-1.6.1 {
   pcache_stats
 } {current 11 max 22 min 20 recyclable 0}
 
-# At this point connection db2 has a read lock on the database file and a 
-# single pinned page in its cache. Connection [db] is holding 10 dirty 
+# At this point connection db2 has a read lock on the database file and a
+# single pinned page in its cache. Connection [db] is holding 10 dirty
 # pages. It cannot recycle them because of the read lock held by db2.
 #
 do_test pcache-1.6.2 {
@@ -102,19 +102,19 @@ do_test pcache-1.6.2 {
     CREATE INDEX i9 ON t9(a, b);
     CREATE INDEX i10 ON t9(a, b);
     CREATE INDEX i11 ON t9(a, b);
-  } 
+  }
   pcache_stats
 } {current 23 max 22 min 20 recyclable 0}
 
 do_test pcache-1.7 {
   execsql {
     CREATE TABLE t10(a, b, c);
-  } 
+  }
   pcache_stats
 } {current 24 max 22 min 20 recyclable 0}
 
 # Rolling back the transaction held by db2 at this point releases a pinned
-# page. Because the number of allocated pages is greater than the 
+# page. Because the number of allocated pages is greater than the
 # configured maximum, this page should be freed immediately instead of
 # recycled.
 #
@@ -139,7 +139,7 @@ do_test pcache-1.11 {
 } {current 12 max 20 min 10 recyclable 12}
 
 do_test pcache-1.12 {
-  execsql { 
+  execsql {
     SELECT * FROM t1 ORDER BY a; SELECT * FROM t1;
     SELECT * FROM t2 ORDER BY a; SELECT * FROM t2;
     SELECT * FROM t3 ORDER BY a; SELECT * FROM t3;
@@ -165,7 +165,7 @@ do_test pcache-1.14 {
 } {current 2 max 15 min 10 recyclable 2}
 
 do_test pcache-1.15 {
-  execsql { 
+  execsql {
     SELECT * FROM t1 ORDER BY a; SELECT * FROM t1;
     SELECT * FROM t2 ORDER BY a; SELECT * FROM t2;
     SELECT * FROM t3 ORDER BY a; SELECT * FROM t3;

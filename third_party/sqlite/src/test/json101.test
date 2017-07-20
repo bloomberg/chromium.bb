@@ -326,7 +326,7 @@ do_execsql_test json-6.4 {
 
 # White-space tests.  Note that form-feed is not white-space in JSON.
 # ticket [57eec374ae1d0a1d4a23077a95f4e173fe269113]
-# 
+#
 foreach {tn isvalid ws} {
   7.1  1  char(0x20)
   7.2  1  char(0x09)

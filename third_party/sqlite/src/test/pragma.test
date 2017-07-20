@@ -291,26 +291,26 @@ ifcapable pager_pragmas&&attach {
     forcedelete test2.db-journal
     execsql {
       ATTACH 'test2.db' AS aux;
-    } 
+    }
   } {}
   do_test pragma-2.2 {
     execsql {
       pragma aux.synchronous;
-    } 
+    }
   } {2}
   do_test pragma-2.3 {
     execsql {
       pragma aux.synchronous = OFF;
       pragma aux.synchronous;
       pragma synchronous;
-    } 
+    }
   } {0 2}
   do_test pragma-2.4 {
     execsql {
       pragma aux.synchronous = ON;
       pragma synchronous;
       pragma aux.synchronous;
-    } 
+    }
   } {2 1}
 } ;# ifcapable pager_pragmas
 
@@ -372,7 +372,7 @@ ifcapable attach {
         PRAGMA integrity_check=0
       }
     } {{row 1 missing from index i2} {row 2 missing from index i2} {wrong # of entries in index i2} {row 1 missing from index i2} {row 2 missing from index i2} {wrong # of entries in index i2}}
-  
+
     # Add additional corruption by appending unused pages to the end of
     # the database file testerr.db
     #
@@ -551,27 +551,27 @@ do_test pragma-4.1 {
     ATTACH 'test2.db' AS aux;
     pragma aux.cache_size;
     pragma aux.default_cache_size;
-  } 
+  }
 } [list $DFLT_CACHE_SZ $DFLT_CACHE_SZ]
 do_test pragma-4.2 {
   execsql {
     pragma aux.cache_size = 50;
     pragma aux.cache_size;
     pragma aux.default_cache_size;
-  } 
+  }
 } [list 50 $DFLT_CACHE_SZ]
 do_test pragma-4.3 {
   execsql {
     pragma aux.default_cache_size = 456;
     pragma aux.cache_size;
     pragma aux.default_cache_size;
-  } 
+  }
 } {456 456}
 do_test pragma-4.4 {
   execsql {
     pragma cache_size;
     pragma default_cache_size;
-  } 
+  }
 } [list $DFLT_CACHE_SZ $DFLT_CACHE_SZ]
 do_test pragma-4.5 {
   execsql {
@@ -579,7 +579,7 @@ do_test pragma-4.5 {
     ATTACH 'test3.db' AS aux;
     pragma aux.cache_size;
     pragma aux.default_cache_size;
-  } 
+  }
 } [list $DFLT_CACHE_SZ $DFLT_CACHE_SZ]
 do_test pragma-4.6 {
   execsql {
@@ -587,7 +587,7 @@ do_test pragma-4.6 {
     ATTACH 'test2.db' AS aux;
     pragma aux.cache_size;
     pragma aux.default_cache_size;
-  } 
+  }
 } {456 456}
 } ;# ifcapable pager_pragmas
 
@@ -597,18 +597,18 @@ ifcapable pager_pragmas {
 do_test pragma-5.0 {
   execsql {
     pragma synchronous;
-  } 
+  }
 } {2}
 do_test pragma-5.1 {
   catchsql {
     BEGIN;
     pragma synchronous = OFF;
-  } 
+  }
 } {1 {Safety level may not be changed inside a transaction}}
 do_test pragma-5.2 {
   execsql {
     pragma synchronous;
-  } 
+  }
 } {2}
 catchsql {COMMIT;}
 } ;# ifcapable pager_pragmas
@@ -641,7 +641,7 @@ db nullvalue <<NULL>>
 do_test pragma-6.2.2 {
   execsql {
     CREATE TABLE t5(
-      a TEXT DEFAULT CURRENT_TIMESTAMP, 
+      a TEXT DEFAULT CURRENT_TIMESTAMP,
       b DEFAULT (5+3),
       c TEXT,
       d INTEGER DEFAULT NULL,
@@ -739,7 +739,7 @@ do_test pragma-6.5.2 {
 
 ifcapable tempdb {
   # Test for ticket #3320. When a temp table of the same name exists, make
-  # sure the schema of the main table can still be queried using 
+  # sure the schema of the main table can still be queried using
   # "pragma table_info":
   do_test pragma-6.6.1 {
     execsql {
@@ -767,7 +767,7 @@ ifcapable tempdb {
 do_test pragma-6.7 {
   execsql {
     CREATE TABLE test_table(
-      one INT NOT NULL DEFAULT -1, 
+      one INT NOT NULL DEFAULT -1,
       two text,
       three VARCHAR(45, 65) DEFAULT 'abcde',
       four REAL DEFAULT X'abcdef',
@@ -1010,7 +1010,7 @@ ifcapable vacuum {
 
 ifcapable attach {
   db eval {ATTACH 'test2.db' AS aux}
-  
+
   # Check that the user-version in the auxilary database can be manipulated (
   # and that we aren't accidentally manipulating the same in the main db).
   do_test pragma-8.2.5 {
@@ -1033,7 +1033,7 @@ ifcapable attach {
       PRAGMA main.user_version;
     }
   } {2}
-  
+
   # Now check that a ROLLBACK resets the user-version if it has been modified
   # within a transaction.
   do_test pragma-8.2.9 {
@@ -1191,24 +1191,24 @@ ifcapable wsd {
     "
   } {}
   do_test pragma-9.6 {
-    execsql { 
+    execsql {
       PRAGMA temp_store_directory;
     }
   } [list [file nativename [get_pwd]]]
   do_test pragma-9.7 {
-    catchsql { 
+    catchsql {
       PRAGMA temp_store_directory='/NON/EXISTENT/PATH/FOOBAR';
     }
   } {1 {not a writable directory}}
   do_test pragma-9.8 {
-    execsql { 
+    execsql {
       PRAGMA temp_store_directory='';
     }
   } {}
   if {![info exists TEMP_STORE] || $TEMP_STORE<=1} {
     ifcapable tempdb {
       do_test pragma-9.9 {
-        execsql { 
+        execsql {
           PRAGMA temp_store_directory;
           PRAGMA temp_store=FILE;
           CREATE TEMP TABLE temp_store_directory_test(a integer);
@@ -1294,22 +1294,22 @@ do_test pragma-10.0 {
     CREATE TABLE t1(a PRIMARY KEY);
     CREATE TABLE t1_mirror(a);
     CREATE TABLE t1_mirror2(a);
-    CREATE TRIGGER t1_bi BEFORE INSERT ON t1 BEGIN 
+    CREATE TRIGGER t1_bi BEFORE INSERT ON t1 BEGIN
       INSERT INTO t1_mirror VALUES(new.a);
     END;
-    CREATE TRIGGER t1_ai AFTER INSERT ON t1 BEGIN 
+    CREATE TRIGGER t1_ai AFTER INSERT ON t1 BEGIN
       INSERT INTO t1_mirror2 VALUES(new.a);
     END;
-    CREATE TRIGGER t1_bu BEFORE UPDATE ON t1 BEGIN 
+    CREATE TRIGGER t1_bu BEFORE UPDATE ON t1 BEGIN
       UPDATE t1_mirror SET a = new.a WHERE a = old.a;
     END;
-    CREATE TRIGGER t1_au AFTER UPDATE ON t1 BEGIN 
+    CREATE TRIGGER t1_au AFTER UPDATE ON t1 BEGIN
       UPDATE t1_mirror2 SET a = new.a WHERE a = old.a;
     END;
-    CREATE TRIGGER t1_bd BEFORE DELETE ON t1 BEGIN 
+    CREATE TRIGGER t1_bd BEFORE DELETE ON t1 BEGIN
       DELETE FROM t1_mirror WHERE a = old.a;
     END;
-    CREATE TRIGGER t1_ad AFTER DELETE ON t1 BEGIN 
+    CREATE TRIGGER t1_ad AFTER DELETE ON t1 BEGIN
       DELETE FROM t1_mirror2 WHERE a = old.a;
     END;
   }
@@ -1399,13 +1399,13 @@ do_test pragma-13.1 {
   }
 } {}
 
-} ;# ifcapable bloblit 
+} ;# ifcapable bloblit
 
 ifcapable pager_pragmas {
   db close
   forcedelete test.db
   sqlite3 db test.db
- 
+
   # EVIDENCE-OF: R-15672-33611 PRAGMA schema.page_count; Return the total
   # number of pages in the database file.
   #
@@ -1415,7 +1415,7 @@ ifcapable pager_pragmas {
   } {0 0}
 
   do_test pragma-14.2 {
-    execsql { 
+    execsql {
       CREATE TABLE abc(a, b, c);
       PRAGMA page_count;
       PRAGMA main.page_count;
@@ -1427,7 +1427,7 @@ ifcapable pager_pragmas {
   } {2}
 
   do_test pragma-14.3 {
-    execsql { 
+    execsql {
       BEGIN;
       CREATE TABLE def(a, b, c);
       PRAGMA page_count;
@@ -1463,7 +1463,7 @@ ifcapable pager_pragmas {
     execsql {
       ATTACH 'test2.db' AS aux;
       PRAGMA aux.page_count;
-    } 
+    }
   } {5}
   do_test pragma-14.6uc {
     execsql {pragma AUX.PAGE_COUNT}
@@ -1493,7 +1493,7 @@ ifcapable pager_pragmas {
     # Evaluating this statement will cause the schema to be reloaded (because
     # the schema was changed by another connection in pragma-15.2). At one
     # point there was a bug that reset the cache_size to its default value
-    # when this happened. 
+    # when this happened.
     execsql { SELECT * FROM sqlite_master }
     execsql { PRAGMA cache_size }
   } {59}
@@ -1525,7 +1525,7 @@ ifcapable lock_proxy_pragmas&&prefer_proxy_locking {
     }
     execsql {
       PRAGMA lock_proxy_file;
-    } 
+    }
   } {mylittleproxy}
 
   do_test pragma-16.2 {
@@ -1578,7 +1578,7 @@ ifcapable lock_proxy_pragmas&&prefer_proxy_locking {
       PRAGMA lock_proxy_file;
     } db2
   } {myotherproxy}
-  
+
   do_test pragma-16.6 {
     db2 close
     sqlite3 db2 test2.db
@@ -1588,23 +1588,23 @@ ifcapable lock_proxy_pragmas&&prefer_proxy_locking {
     } db2]
     string match "*test2.db:auto:" $lockpath
   } {1}
-  
+
   set sqlite_hostid_num 2
   do_test pragma-16.7 {
     list [catch {
       sqlite3 db test2.db
-      execsql { 
+      execsql {
         PRAGMA lock_proxy_file=":auto:";
         select * from sqlite_master;
       }
     } msg] $msg
   } {1 {database is locked}}
   db close
-  
+
   do_test pragma-16.8 {
     list [catch {
       sqlite3 db test2.db
-      execsql { select * from sqlite_master } 
+      execsql { select * from sqlite_master }
     } msg] $msg
   } {1 {database is locked}}
 
@@ -1613,12 +1613,12 @@ ifcapable lock_proxy_pragmas&&prefer_proxy_locking {
     execsql {
       PRAGMA lock_proxy_file="yetanotherproxy";
       PRAGMA lock_proxy_file;
-    } 
+    }
   } {yetanotherproxy}
   do_test pragma-16.8.2 {
     execsql {
       create table mine(x);
-    } 
+    }
   } {}
 
   db close
@@ -1762,7 +1762,7 @@ if {![nonzero_reserved_bytes]} {
     db close
     forcedelete test.db
     sqlite3 db test.db
-    execsql { 
+    execsql {
       PRAGMA page_size = 1024;
       PRAGMA auto_vacuum = 0;
       CREATE TABLE t1(a PRIMARY KEY, b);
@@ -1775,27 +1775,27 @@ if {![nonzero_reserved_bytes]} {
     forcecopy test.db testerr.db
     hexio_write testerr.db 15000 [string repeat 55 100]
   } {100}
-  
+
   set mainerr {*** in database main ***
 Multiple uses for byte 672 of page 15}
   set auxerr {*** in database aux ***
 Multiple uses for byte 672 of page 15}
-  
+
   set mainerr {/{\*\*\* in database main \*\*\*
 Multiple uses for byte 672 of page 15}.*/}
   set auxerr {/{\*\*\* in database aux \*\*\*
 Multiple uses for byte 672 of page 15}.*/}
-  
+
   do_test 22.2 {
     catch { db close }
     sqlite3 db testerr.db
     execsql { PRAGMA integrity_check }
   } $mainerr
-  
+
   do_test 22.3.1 {
     catch { db close }
     sqlite3 db test.db
-    execsql { 
+    execsql {
       ATTACH 'testerr.db' AS 'aux';
       PRAGMA integrity_check;
     }
@@ -1806,11 +1806,11 @@ Multiple uses for byte 672 of page 15}.*/}
   do_test 22.3.3 {
     execsql { PRAGMA aux.integrity_check; }
   } $auxerr
-  
+
   do_test 22.4.1 {
     catch { db close }
     sqlite3 db testerr.db
-    execsql { 
+    execsql {
       ATTACH 'test.db' AS 'aux';
       PRAGMA integrity_check;
     }
@@ -1822,7 +1822,7 @@ Multiple uses for byte 672 of page 15}.*/}
     execsql { PRAGMA aux.integrity_check; }
   } {ok}
 }
-  
+
 db close
 forcedelete test.db test.db-wal test.db-journal
 sqlite3 db test.db

@@ -25,8 +25,8 @@ ifcapable !fts5 {
   proc return_if_no_fts5 {} {}
 }
 
-catch { 
-  sqlite3_fts5_may_be_corrupt 0 
+catch {
+  sqlite3_fts5_may_be_corrupt 0
   reset_db
 }
 
@@ -105,7 +105,7 @@ proc fts5_test_rowcount {cmd} {
 }
 
 proc test_queryphrase_cb {cnt cmd} {
-  upvar $cnt L 
+  upvar $cnt L
   for {set i 0} {$i < [$cmd xInstCount]} {incr i} {
     foreach {ip ic io} [$cmd xInst $i] break
     set A($ic) 1
@@ -172,7 +172,7 @@ proc fts5_level_segs {tbl} {
     lappend ret [expr [llength $L] - 3]
   }
   set ret
-} 
+}
 
 proc fts5_level_segids {tbl} {
   set sql "SELECT fts5_decode(rowid,block) aS r FROM ${tbl}_data WHERE rowid=10"
@@ -251,7 +251,7 @@ proc nearset {aCol args} {
   if {$O(-dict)!=""} { upvar $O(-dict) aDict }
 
   for {set j 0} {$j < [llength $aCol]} {incr j} {
-    for {set i 0} {$i < $nPhrase} {incr i} { 
+    for {set i 0} {$i < $nPhrase} {incr i} {
       set A($j,$i) [list]
     }
   }
@@ -266,13 +266,13 @@ proc nearset {aCol args} {
     set zCol [lindex $aCol $iCol]
     set nToken [llength $zCol]
 
-    # Each iteration of the following loop searches a substring of the 
+    # Each iteration of the following loop searches a substring of the
     # column value for phrase matches. The last token of the substring
     # is token $iLast of the column value. The first token is:
     #
     #   iFirst = ($iLast - $O(-near) - 1)
     #
-    # where $sz is the length of the phrase being searched for. A phrase 
+    # where $sz is the length of the phrase being searched for. A phrase
     # counts as matching the substring if its first token lies on or before
     # $iLast and its last token on or after $iFirst.
     #
@@ -288,7 +288,7 @@ proc nearset {aCol args} {
     for { } {$iLast < $nToken} {incr iLast} {
 
       catch { array unset B }
-      
+
       for {set iPhrase 0} {$iPhrase<$nPhrase} {incr iPhrase} {
         set p [lindex $lPhrase $iPhrase]
         set nPm1 [expr {[llength $p] - 1}]
@@ -440,7 +440,7 @@ proc detail_is_full {} { detail_check ; expr {$::detail == "full"} }
 
 
 #-------------------------------------------------------------------------
-# Convert a poslist of the type returned by fts5_test_poslist() to a 
+# Convert a poslist of the type returned by fts5_test_poslist() to a
 # collist as returned by fts5_test_collist().
 #
 proc fts5_poslist2collist {poslist} {
@@ -467,10 +467,10 @@ proc fts5_collist_elem_compare {a b} {
 # Construct and return a tcl list equivalent to that returned by the SQL
 # query executed against database handle [db]:
 #
-#   SELECT 
-#     rowid, 
+#   SELECT
+#     rowid,
 #     fts5_test_poslist($tbl),
-#     fts5_test_collist($tbl) 
+#     fts5_test_collist($tbl)
 #   FROM $tbl('$expr')
 #   ORDER BY rowid $order;
 #
@@ -497,10 +497,10 @@ proc fts5_query_data {expr tbl {order ASC} {aDictVar ""}} {
   db eval "SELECT rowid, * FROM $tbl ORDER BY rowid $order" x {
     set cols [list]
     foreach col $lCols { lappend cols $x($col) }
-    
+
     set ::pc 0
     set rowdata [eval $tclexpr]
-    if {$rowdata != ""} { 
+    if {$rowdata != ""} {
       lappend res $x(rowid) $rowdata [fts5_poslist2collist $rowdata]
     }
   }
@@ -588,7 +588,7 @@ proc nearset_rf {aCol args} {
 # Helper for [fts5_expr_ok]
 proc nearset_rc {aCol args} {
   nearset_rf $aCol {*}$args
-  if {[lsearch $args -col]>=0} { 
+  if {[lsearch $args -col]>=0} {
     set ::expr_not_ok 1
   }
   list

@@ -20,7 +20,7 @@ source $testdir/tester.tcl
 # Mimic the SQLite 2 collation type NUMERIC.
 db collate numeric numeric_collate
 proc numeric_collate {lhs rhs} {
-  if {$lhs == $rhs} {return 0} 
+  if {$lhs == $rhs} {return 0}
   return [expr ($lhs>$rhs)?1:-1]
 }
 
@@ -432,7 +432,7 @@ do_test misc1-12.13 {
 } {1 4 4}
 
 # There was a problem with realloc() in the OP_MemStore operation of
-# the VDBE.  A buffer was being reallocated but some pointers into 
+# the VDBE.  A buffer was being reallocated but some pointers into
 # the old copy of the buffer were not being moved over to the new copy.
 # The following code tests for the problem.
 #
@@ -574,7 +574,7 @@ do_test misc1-17.1 {
     CREATE TABLE RealTable(TestID INTEGER PRIMARY KEY, TestString TEXT);
     CREATE TEMP TABLE TempTable(TestID INTEGER PRIMARY KEY, TestString TEXT);
     CREATE TEMP TRIGGER trigTest_1 AFTER UPDATE ON TempTable BEGIN
-      INSERT INTO RealTable(TestString) 
+      INSERT INTO RealTable(TestString)
          SELECT new.TestString FROM TempTable LIMIT 1;
     END;
     INSERT INTO TempTable(TestString) VALUES ('1');
@@ -694,7 +694,7 @@ do_catchsql_test misc1-23.3 {
 } {0 {}}
 
 
-# At one point, running this would read one byte passed the end of a 
+# At one point, running this would read one byte passed the end of a
 # buffer, upsetting valgrind.
 #
 do_test misc1-24.0 {

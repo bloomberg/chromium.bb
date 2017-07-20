@@ -49,7 +49,7 @@
 ** integer is the average number of rows in the index that have the same
 ** value in the first column of the index.  The third integer is the average
 ** number of rows in the index that have the same value for the first two
-** columns.  The N-th integer (for N>1) is the average number of rows in 
+** columns.  The N-th integer (for N>1) is the average number of rows in
 ** the index which have the same value for the first N-1 columns.  For
 ** a K-column index, there will be K+1 integers in the stat column.  If
 ** the index is unique, then the last integer will be 1.
@@ -59,7 +59,7 @@
 ** must be separated from the last integer by a single space.  If the
 ** "unordered" keyword is present, then the query planner assumes that
 ** the index is unordered and will not use the index for a range query.
-** 
+**
 ** If the sqlite_stat1.idx column is NULL, then the sqlite_stat1.stat
 ** column contains a single integer which is the (estimated) number of
 ** rows in the table identified by sqlite_stat1.tbl.
@@ -117,9 +117,9 @@
 ** number of entries that are strictly less than the sample.  The first
 ** integer in nLt contains the number of entries in the index where the
 ** left-most column is less than the left-most column of the sample.
-** The K-th integer in the nLt entry is the number of index entries 
+** The K-th integer in the nLt entry is the number of index entries
 ** where the first K columns are less than the first K columns of the
-** sample.  The nDLt column is like nLt except that it contains the 
+** sample.  The nDLt column is like nLt except that it contains the
 ** number of distinct entries in the index that are less than the
 ** sample.
 **
@@ -212,9 +212,9 @@ static void openStatTable(
     Table *pStat;
     if( (pStat = sqlite3FindTable(db, zTab, pDb->zDbSName))==0 ){
       if( aTable[i].zCols ){
-        /* The sqlite_statN table does not exist. Create it. Note that a 
-        ** side-effect of the CREATE TABLE statement is to leave the rootpage 
-        ** of the new table in register pParse->regRoot. This is important 
+        /* The sqlite_statN table does not exist. Create it. Note that a
+        ** side-effect of the CREATE TABLE statement is to leave the rootpage
+        ** of the new table in register pParse->regRoot. This is important
         ** because the OpenWrite opcode below will be needing it. */
         sqlite3NestedParse(pParse,
             "CREATE TABLE %Q.%s(%s)", pDb->zDbSName, zTab, aTable[i].zCols
@@ -223,7 +223,7 @@ static void openStatTable(
         aCreateTbl[i] = OPFLAG_P2ISREG;
       }
     }else{
-      /* The table already exists. If zWhere is not NULL, delete all entries 
+      /* The table already exists. If zWhere is not NULL, delete all entries
       ** associated with the table zWhere. If zWhere is NULL, delete the
       ** entire contents of the table. */
       aRoot[i] = pStat->tnum;
@@ -278,7 +278,7 @@ struct Stat4Sample {
   int iCol;                       /* If !isPSample, the reason for inclusion */
   u32 iHash;                      /* Tiebreaker hash */
 #endif
-};                                                    
+};
 struct Stat4Accum {
   tRowcnt nRow;             /* Number of rows in the entire table */
   tRowcnt nPSample;         /* How often to do a periodic sample */
@@ -386,7 +386,7 @@ static void stat4Destructor(void *pOld){
 ** PRIMARY KEY of the table.  The covering index that implements the
 ** original WITHOUT ROWID table as N==K as a special case.
 **
-** This routine allocates the Stat4Accum object in heap memory. The return 
+** This routine allocates the Stat4Accum object in heap memory. The return
 ** value is a pointer to the Stat4Accum object.  The datatype of the
 ** return value is BLOB, but it is really just a pointer to the Stat4Accum
 ** object.
@@ -416,7 +416,7 @@ static void statInit(
   assert( nKeyCol>0 );
 
   /* Allocate the space required for the Stat4Accum object */
-  n = sizeof(*p) 
+  n = sizeof(*p)
     + sizeof(tRowcnt)*nColUp                  /* Stat4Accum.anEq */
     + sizeof(tRowcnt)*nColUp                  /* Stat4Accum.anDLt */
 #ifdef SQLITE_ENABLE_STAT3_OR_STAT4
@@ -449,7 +449,7 @@ static void statInit(
     p->nPSample = (tRowcnt)(sqlite3_value_int64(argv[2])/(mxSample/3+1) + 1);
     p->current.anLt = &p->current.anEq[nColUp];
     p->iPrn = 0x689e962d*(u32)nCol ^ 0xd0944565*(u32)sqlite3_value_int(argv[2]);
-  
+
     /* Set up the Stat4Accum.a[] and aBest[] arrays */
     p->a = (struct Stat4Sample*)&p->current.anLt[nColUp];
     p->aBest = &p->a[mxSample];
@@ -460,7 +460,7 @@ static void statInit(
       p->a[i].anDLt = (tRowcnt *)pSpace; pSpace += (sizeof(tRowcnt) * nColUp);
     }
     assert( (pSpace - (u8*)p)==n );
-  
+
     for(i=0; i<nCol; i++){
       p->aBest[i].iCol = i;
     }
@@ -486,19 +486,19 @@ static const FuncDef statInitFuncdef = {
 
 #ifdef SQLITE_ENABLE_STAT4
 /*
-** pNew and pOld are both candidate non-periodic samples selected for 
-** the same column (pNew->iCol==pOld->iCol). Ignoring this column and 
+** pNew and pOld are both candidate non-periodic samples selected for
+** the same column (pNew->iCol==pOld->iCol). Ignoring this column and
 ** considering only any trailing columns and the sample hash value, this
 ** function returns true if sample pNew is to be preferred over pOld.
 ** In other words, if we assume that the cardinalities of the selected
 ** column for pNew and pOld are equal, is pNew to be preferred over pOld.
 **
 ** This function assumes that for each argument sample, the contents of
-** the anEq[] array from pSample->anEq[pSample->iCol+1] onwards are valid. 
+** the anEq[] array from pSample->anEq[pSample->iCol+1] onwards are valid.
 */
 static int sampleIsBetterPost(
-  Stat4Accum *pAccum, 
-  Stat4Sample *pNew, 
+  Stat4Accum *pAccum,
+  Stat4Sample *pNew,
   Stat4Sample *pOld
 ){
   int nCol = pAccum->nCol;
@@ -518,11 +518,11 @@ static int sampleIsBetterPost(
 ** Return true if pNew is to be preferred over pOld.
 **
 ** This function assumes that for each argument sample, the contents of
-** the anEq[] array from pSample->anEq[pSample->iCol] onwards are valid. 
+** the anEq[] array from pSample->anEq[pSample->iCol] onwards are valid.
 */
 static int sampleIsBetter(
-  Stat4Accum *pAccum, 
-  Stat4Sample *pNew, 
+  Stat4Accum *pAccum,
+  Stat4Sample *pNew,
   Stat4Sample *pOld
 ){
   tRowcnt nEqNew = pNew->anEq[pNew->iCol];
@@ -558,7 +558,7 @@ static void sampleInsert(Stat4Accum *p, Stat4Sample *pNew, int nEqZero){
     Stat4Sample *pUpgrade = 0;
     assert( pNew->anEq[pNew->iCol]>0 );
 
-    /* This sample is being added because the prefix that ends in column 
+    /* This sample is being added because the prefix that ends in column
     ** iCol occurs many times in the table. However, if we have already
     ** added a sample that shares this prefix, there is no need to add
     ** this one. Instead, upgrade the priority of the highest priority
@@ -602,7 +602,7 @@ static void sampleInsert(Stat4Accum *p, Stat4Sample *pNew, int nEqZero){
   ** for the last sample in the p->a[] array. Otherwise, the samples would
   ** be out of order. */
 #ifdef SQLITE_ENABLE_STAT4
-  assert( p->nSample==0 
+  assert( p->nSample==0
        || pNew->anLt[p->nCol-1] > p->a[p->nSample-1].anLt[p->nCol-1] );
 #endif
 
@@ -670,11 +670,11 @@ static void samplePushPrevious(Stat4Accum *p, int iChng){
       p->current.isPSample = 1;
       sampleInsert(p, &p->current, 0);
       p->current.isPSample = 0;
-    }else 
+    }else
 
     /* Or if it is a non-periodic sample. Add it in this case too. */
-    if( p->nSample<p->mxSample 
-     || sampleIsBetter(p, &p->current, &p->a[p->iMin]) 
+    if( p->nSample<p->mxSample
+     || sampleIsBetter(p, &p->current, &p->a[p->iMin])
     ){
       sampleInsert(p, &p->current, 0);
     }
@@ -818,9 +818,9 @@ static void statGet(
   /* STAT3 and STAT4 have a parameter on this routine. */
   int eCall = sqlite3_value_int(argv[1]);
   assert( argc==2 );
-  assert( eCall==STAT_GET_STAT1 || eCall==STAT_GET_NEQ 
+  assert( eCall==STAT_GET_STAT1 || eCall==STAT_GET_NEQ
        || eCall==STAT_GET_ROWID || eCall==STAT_GET_NLT
-       || eCall==STAT_GET_NDLT 
+       || eCall==STAT_GET_NDLT
   );
   if( eCall==STAT_GET_STAT1 )
 #else
@@ -830,20 +830,20 @@ static void statGet(
     /* Return the value to store in the "stat" column of the sqlite_stat1
     ** table for this index.
     **
-    ** The value is a string composed of a list of integers describing 
-    ** the index. The first integer in the list is the total number of 
-    ** entries in the index. There is one additional integer in the list 
+    ** The value is a string composed of a list of integers describing
+    ** the index. The first integer in the list is the total number of
+    ** entries in the index. There is one additional integer in the list
     ** for each indexed column. This additional integer is an estimate of
     ** the number of rows matched by a stabbing query on the index using
     ** a key with the corresponding number of fields. In other words,
-    ** if the index is on columns (a,b) and the sqlite_stat1 value is 
+    ** if the index is on columns (a,b) and the sqlite_stat1 value is
     ** "100 10 2", then SQLite estimates that:
     **
     **   * the index contains 100 rows,
     **   * "WHERE a=?" matches 10 rows, and
     **   * "WHERE a=? AND b=?" matches 2 rows.
     **
-    ** If D is the count of distinct values and K is the total number of 
+    ** If D is the count of distinct values and K is the total number of
     ** rows, then each estimate is computed as:
     **
     **        I = (K+D-1)/D
@@ -893,7 +893,7 @@ static void statGet(
       case STAT_GET_NEQ:  aCnt = p->a[p->iGet].anEq; break;
       case STAT_GET_NLT:  aCnt = p->a[p->iGet].anLt; break;
       default: {
-        aCnt = p->a[p->iGet].anDLt; 
+        aCnt = p->a[p->iGet].anDLt;
         p->iGet++;
         break;
       }
@@ -1005,7 +1005,7 @@ static void analyzeOneTable(
   }
 #endif
 
-  /* Establish a read-lock on the table at the shared-cache level. 
+  /* Establish a read-lock on the table at the shared-cache level.
   ** Open a read-only cursor on the table. Also allocate a cursor number
   ** to use for scanning indexes (iIdxCur). No index cursor is opened at
   ** this time though.  */
@@ -1071,9 +1071,9 @@ static void analyzeOneTable(
     **  end_of_scan:
     */
 
-    /* Make sure there are enough memory cells allocated to accommodate 
+    /* Make sure there are enough memory cells allocated to accommodate
     ** the regPrev array and a trailing rowid (the rowid slot is required
-    ** when building a record to insert into the sample column of 
+    ** when building a record to insert into the sample column of
     ** the sqlite_stat4 table.  */
     pParse->nMem = MAX(pParse->nMem, regPrev+nColTest);
 
@@ -1084,7 +1084,7 @@ static void analyzeOneTable(
     VdbeComment((v, "%s", pIdx->zName));
 
     /* Invoke the stat_init() function. The arguments are:
-    ** 
+    **
     **    (1) the number of columns in the index including the rowid
     **        (or for a WITHOUT ROWID table, the number of PK columns),
     **    (2) the number of columns in the key without the rowid/pk
@@ -1135,7 +1135,7 @@ static void analyzeOneTable(
       addrNextRow = sqlite3VdbeCurrentAddr(v);
       if( nColTest==1 && pIdx->nKeyCol==1 && IsUniqueIndex(pIdx) ){
         /* For a single-column UNIQUE index, once we have found a non-NULL
-        ** row, we know that all the rest will be distinct, so skip 
+        ** row, we know that all the rest will be distinct, so skip
         ** subsequent distinctness tests. */
         sqlite3VdbeAddOp2(v, OP_NotNull, regPrev, endDistinctTest);
         VdbeCoverage(v);
@@ -1144,15 +1144,15 @@ static void analyzeOneTable(
         char *pColl = (char*)sqlite3LocateCollSeq(pParse, pIdx->azColl[i]);
         sqlite3VdbeAddOp2(v, OP_Integer, i, regChng);
         sqlite3VdbeAddOp3(v, OP_Column, iIdxCur, i, regTemp);
-        aGotoChng[i] = 
+        aGotoChng[i] =
         sqlite3VdbeAddOp4(v, OP_Ne, regTemp, 0, regPrev+i, pColl, P4_COLLSEQ);
         sqlite3VdbeChangeP5(v, SQLITE_NULLEQ);
         VdbeCoverage(v);
       }
       sqlite3VdbeAddOp2(v, OP_Integer, nColTest, regChng);
       sqlite3VdbeGoto(v, endDistinctTest);
-  
-  
+
+
       /*
       **  chng_addr_0:
       **   regPrev(0) = idx(0)
@@ -1168,7 +1168,7 @@ static void analyzeOneTable(
       sqlite3VdbeResolveLabel(v, endDistinctTest);
       sqlite3DbFree(db, aGotoChng);
     }
-  
+
     /*
     **  chng_addr_N:
     **   regRowid = idx(rowid)            // STAT34 only
@@ -1400,7 +1400,7 @@ void sqlite3Analyze(Parse *pParse, Token *pName1, Token *pName2){
         }
         sqlite3DbFree(db, z);
       }
-    }   
+    }
   }
   v = sqlite3GetVdbe(pParse);
   if( v ) sqlite3VdbeAddOp0(v, OP_Expire);
@@ -1483,7 +1483,7 @@ static void decodeIntArray(
 
 /*
 ** This callback is invoked once for each index when reading the
-** sqlite_stat1 table.  
+** sqlite_stat1 table.
 **
 **     argv[0] = name of the table
 **     argv[1] = name of the index (might be NULL)
@@ -1521,7 +1521,7 @@ static int analysisLoader(void *pData, int argc, char **argv, char **NotUsed){
     tRowcnt *aiRowEst = 0;
     int nCol = pIndex->nKeyCol+1;
 #ifdef SQLITE_ENABLE_STAT3_OR_STAT4
-    /* Index.aiRowEst may already be set here if there are duplicate 
+    /* Index.aiRowEst may already be set here if there are duplicate
     ** sqlite_stat1 entries for this index. In that case just clobber
     ** the old data with the new instead of allocating a new array.  */
     if( pIndex->aiRowEst==0 ){
@@ -1573,7 +1573,7 @@ void sqlite3DeleteIndexSamples(sqlite3 *db, Index *pIdx){
 #ifdef SQLITE_ENABLE_STAT3_OR_STAT4
 /*
 ** Populate the pIdx->aAvgEq[] array based on the samples currently
-** stored in pIdx->aSample[]. 
+** stored in pIdx->aSample[].
 */
 static void initAvgEq(Index *pIdx){
   if( pIdx ){
@@ -1609,12 +1609,12 @@ static void initAvgEq(Index *pIdx){
       pIdx->nRowEst0 = nRow;
 
       /* Set nSum to the number of distinct (iCol+1) field prefixes that
-      ** occur in the stat4 table for this index. Set sumEq to the sum of 
-      ** the nEq values for column iCol for the same set (adding the value 
+      ** occur in the stat4 table for this index. Set sumEq to the sum of
+      ** the nEq values for column iCol for the same set (adding the value
       ** only once where there exist duplicate prefixes).  */
       for(i=0; i<nSample; i++){
         if( i==(pIdx->nSample-1)
-         || aSample[i].anDLt[iCol]!=aSample[i+1].anDLt[iCol] 
+         || aSample[i].anDLt[iCol]!=aSample[i+1].anDLt[iCol]
         ){
           sumEq += aSample[i].anEq[iCol];
           nSum100 += 100;
@@ -1648,7 +1648,7 @@ static Index *findIndexOrPrimaryKey(
 }
 
 /*
-** Load the content from either the sqlite_stat4 or sqlite_stat3 table 
+** Load the content from either the sqlite_stat4 or sqlite_stat3 table
 ** into the relevant Index.aSample[] arrays.
 **
 ** Arguments zSql1 and zSql2 must point to SQL statements that return
@@ -1747,7 +1747,7 @@ static int loadStatTbl(
     if( zIndex==0 ) continue;
     pIdx = findIndexOrPrimaryKey(db, zIndex, zDb);
     if( pIdx==0 ) continue;
-    /* This next condition is true if data has already been loaded from 
+    /* This next condition is true if data has already been loaded from
     ** the sqlite_stat4 table. In this case ignore stat3 data.  */
     nCol = pIdx->nSampleCol;
     if( bStat3 && nCol>1 ) continue;
@@ -1783,7 +1783,7 @@ static int loadStatTbl(
 }
 
 /*
-** Load content from the sqlite_stat4 and sqlite_stat3 tables into 
+** Load content from the sqlite_stat4 and sqlite_stat3 tables into
 ** the Index.aSample[] arrays of all indices.
 */
 static int loadStat4(sqlite3 *db, const char *zDb){
@@ -1792,7 +1792,7 @@ static int loadStat4(sqlite3 *db, const char *zDb){
   assert( db->lookaside.bDisable );
   if( sqlite3FindTable(db, "sqlite_stat4", zDb) ){
     rc = loadStatTbl(db, 0,
-      "SELECT idx,count(*) FROM %Q.sqlite_stat4 GROUP BY idx", 
+      "SELECT idx,count(*) FROM %Q.sqlite_stat4 GROUP BY idx",
       "SELECT idx,neq,nlt,ndlt,sample FROM %Q.sqlite_stat4",
       zDb
     );
@@ -1800,7 +1800,7 @@ static int loadStat4(sqlite3 *db, const char *zDb){
 
   if( rc==SQLITE_OK && sqlite3FindTable(db, "sqlite_stat3", zDb) ){
     rc = loadStatTbl(db, 1,
-      "SELECT idx,count(*) FROM %Q.sqlite_stat3 GROUP BY idx", 
+      "SELECT idx,count(*) FROM %Q.sqlite_stat3 GROUP BY idx",
       "SELECT idx,neq,nlt,ndlt,sqlite_record(sample) FROM %Q.sqlite_stat3",
       zDb
     );
@@ -1817,11 +1817,11 @@ static int loadStat4(sqlite3 *db, const char *zDb){
 ** Index.aSample[] arrays.
 **
 ** If the sqlite_stat1 table is not present in the database, SQLITE_ERROR
-** is returned. In this case, even if SQLITE_ENABLE_STAT3/4 was defined 
-** during compilation and the sqlite_stat3/4 table is present, no data is 
+** is returned. In this case, even if SQLITE_ENABLE_STAT3/4 was defined
+** during compilation and the sqlite_stat3/4 table is present, no data is
 ** read from it.
 **
-** If SQLITE_ENABLE_STAT3/4 was defined during compilation and the 
+** If SQLITE_ENABLE_STAT3/4 was defined during compilation and the
 ** sqlite_stat4 table is not present in the database, SQLITE_ERROR is
 ** returned. However, in this case, data is read from the sqlite_stat1
 ** table (if it is present) before returning.
@@ -1854,7 +1854,7 @@ int sqlite3AnalysisLoad(sqlite3 *db, int iDb){
   sInfo.db = db;
   sInfo.zDatabase = db->aDb[iDb].zDbSName;
   if( sqlite3FindTable(db, "sqlite_stat1", sInfo.zDatabase)!=0 ){
-    zSql = sqlite3MPrintf(db, 
+    zSql = sqlite3MPrintf(db,
         "SELECT tbl,idx,stat FROM %Q.sqlite_stat1", sInfo.zDatabase);
     if( zSql==0 ){
       rc = SQLITE_NOMEM_BKPT;

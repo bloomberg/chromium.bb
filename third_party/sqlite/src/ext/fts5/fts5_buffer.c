@@ -56,14 +56,14 @@ int sqlite3Fts5Get32(const u8 *aBuf){
 }
 
 /*
-** Append buffer nData/pData to buffer pBuf. If an OOM error occurs, set 
+** Append buffer nData/pData to buffer pBuf. If an OOM error occurs, set
 ** the error code in p. If an error has already occurred when this function
 ** is called, it is a no-op.
 */
 void sqlite3Fts5BufferAppendBlob(
   int *pRc,
-  Fts5Buffer *pBuf, 
-  u32 nData, 
+  Fts5Buffer *pBuf,
+  u32 nData,
   const u8 *pData
 ){
   assert_nc( *pRc || nData>=0 );
@@ -74,12 +74,12 @@ void sqlite3Fts5BufferAppendBlob(
 
 /*
 ** Append the nul-terminated string zStr to the buffer pBuf. This function
-** ensures that the byte following the buffer data is set to 0x00, even 
+** ensures that the byte following the buffer data is set to 0x00, even
 ** though this byte is not included in the pBuf->n count.
 */
 void sqlite3Fts5BufferAppendString(
   int *pRc,
-  Fts5Buffer *pBuf, 
+  Fts5Buffer *pBuf,
   const char *zStr
 ){
   int nStr = (int)strlen(zStr);
@@ -91,13 +91,13 @@ void sqlite3Fts5BufferAppendString(
 ** Argument zFmt is a printf() style format string. This function performs
 ** the printf() style processing, then appends the results to buffer pBuf.
 **
-** Like sqlite3Fts5BufferAppendString(), this function ensures that the byte 
+** Like sqlite3Fts5BufferAppendString(), this function ensures that the byte
 ** following the buffer data is set to 0x00, even though this byte is not
 ** included in the pBuf->n count.
-*/ 
+*/
 void sqlite3Fts5BufferAppendPrintf(
   int *pRc,
-  Fts5Buffer *pBuf, 
+  Fts5Buffer *pBuf,
   char *zFmt, ...
 ){
   if( *pRc==SQLITE_OK ){
@@ -124,12 +124,12 @@ char *sqlite3Fts5Mprintf(int *pRc, const char *zFmt, ...){
     zRet = sqlite3_vmprintf(zFmt, ap);
     va_end(ap);
     if( zRet==0 ){
-      *pRc = SQLITE_NOMEM; 
+      *pRc = SQLITE_NOMEM;
     }
   }
   return zRet;
 }
- 
+
 
 /*
 ** Free any buffer allocated by pBuf. Zero the structure before returning.
@@ -140,7 +140,7 @@ void sqlite3Fts5BufferFree(Fts5Buffer *pBuf){
 }
 
 /*
-** Zero the contents of the buffer object. But do not free the associated 
+** Zero the contents of the buffer object. But do not free the associated
 ** memory allocation.
 */
 void sqlite3Fts5BufferZero(Fts5Buffer *pBuf){
@@ -154,8 +154,8 @@ void sqlite3Fts5BufferZero(Fts5Buffer *pBuf){
 */
 void sqlite3Fts5BufferSet(
   int *pRc,
-  Fts5Buffer *pBuf, 
-  int nData, 
+  Fts5Buffer *pBuf,
+  int nData,
   const u8 *pData
 ){
   pBuf->n = 0;
@@ -171,7 +171,7 @@ int sqlite3Fts5PoslistNext64(
   if( i>=n ){
     /* EOF */
     *piOff = -1;
-    return 1;  
+    return 1;
   }else{
     i64 iOff = *piOff;
     int iVal;
@@ -217,8 +217,8 @@ int sqlite3Fts5PoslistReaderInit(
 ** to iPos before returning.
 */
 void sqlite3Fts5PoslistSafeAppend(
-  Fts5Buffer *pBuf, 
-  i64 *piPrev, 
+  Fts5Buffer *pBuf,
+  i64 *piPrev,
   i64 iPos
 ){
   static const i64 colmask = ((i64)(0x7FFFFFFF)) << 32;
@@ -232,7 +232,7 @@ void sqlite3Fts5PoslistSafeAppend(
 }
 
 int sqlite3Fts5PoslistWriterAppend(
-  Fts5Buffer *pBuf, 
+  Fts5Buffer *pBuf,
   Fts5PoslistWriter *pWriter,
   i64 iPos
 ){
@@ -261,7 +261,7 @@ void *sqlite3Fts5MallocZero(int *pRc, int nByte){
 ** the length of the string is determined using strlen().
 **
 ** It is the responsibility of the caller to eventually free the returned
-** buffer using sqlite3_free(). If an OOM error occurs, NULL is returned. 
+** buffer using sqlite3_free(). If an OOM error occurs, NULL is returned.
 */
 char *sqlite3Fts5Strndup(int *pRc, const char *pIn, int nIn){
   char *zRet = 0;
@@ -328,9 +328,9 @@ int sqlite3Fts5TermsetNew(Fts5Termset **pp){
 }
 
 int sqlite3Fts5TermsetAdd(
-  Fts5Termset *p, 
+  Fts5Termset *p,
   int iIdx,
-  const char *pTerm, int nTerm, 
+  const char *pTerm, int nTerm,
   int *pbPresent
 ){
   int rc = SQLITE_OK;
@@ -351,9 +351,9 @@ int sqlite3Fts5TermsetAdd(
     hash = hash % ArraySize(p->apHash);
 
     for(pEntry=p->apHash[hash]; pEntry; pEntry=pEntry->pNext){
-      if( pEntry->iIdx==iIdx 
-          && pEntry->nTerm==nTerm 
-          && memcmp(pEntry->pTerm, pTerm, nTerm)==0 
+      if( pEntry->iIdx==iIdx
+          && pEntry->nTerm==nTerm
+          && memcmp(pEntry->pTerm, pTerm, nTerm)==0
       ){
         *pbPresent = 1;
         break;

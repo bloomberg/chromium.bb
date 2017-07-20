@@ -49,7 +49,7 @@ proc do_autocommit_threshold_test {tn value} {
     db eval { INSERT INTO t1 VALUES(randomblob(100), randomblob(100)) }
     if {[read_mxframe] >= $value} break
   }
-  
+
   set nBackfillNew [read_nbackfill]
   uplevel [list do_test $tn "expr $nBackfillNew > $nBackfillSaved" 1]
 }
@@ -157,7 +157,7 @@ foreach {tn code} {
     file size test.db-wal
   } 0
   do_test 1.$tn.11.2 {
-    autocheckpoint db 100 
+    autocheckpoint db 100
     for {set i 0} {$i < 1000} {incr i} {
       db eval { INSERT INTO t1 VALUES(randomblob(100), randomblob(100)) }
     }
@@ -171,7 +171,7 @@ foreach {tn code} {
     expr {[file size test.db-wal] < (1 * 1024 * 1024)}
   } 0
 
-  # EVIDENCE-OF: R-33080-59193 Checkpoints initiated by this mechanism 
+  # EVIDENCE-OF: R-33080-59193 Checkpoints initiated by this mechanism
   # are PASSIVE.
   #
   set ::busy_callback_count 0
@@ -181,7 +181,7 @@ foreach {tn code} {
   }
   do_test 1.$tn.12.1 {
     sqlite3_wal_checkpoint_v2 db truncate
-    autocheckpoint db 100 
+    autocheckpoint db 100
     db busy busy_callback
     db eval { INSERT INTO t1 VALUES(randomblob(100), randomblob(100)) }
     db eval { INSERT INTO t1 VALUES(randomblob(100), randomblob(100)) }

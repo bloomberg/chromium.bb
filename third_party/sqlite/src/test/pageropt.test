@@ -23,7 +23,7 @@ ifcapable {!pager_pragmas||secure_delete||direct_read} {
   return
 }
 
-# A non-zero reserved_bytes value changes the number of pages in the 
+# A non-zero reserved_bytes value changes the number of pages in the
 # database file, which messes up the results in this test.
 if {[nonzero_reserved_bytes]} {finish_test; return;}
 

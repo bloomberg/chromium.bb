@@ -19,7 +19,7 @@ index 4b032271148e..2a24b78f3783 100644
 +++ b/third_party/sqlite/src/ext/fts3/fts3.c
 @@ -4171,8 +4171,8 @@ static int fts3EvalDeferredPhrase(Fts3Cursor *pCsr, Fts3Phrase *pPhrase){
      Fts3DeferredToken *pDeferred = pToken->pDeferred;
- 
+
      if( pDeferred ){
 -      char *pList;
 -      int nList;
@@ -27,7 +27,7 @@ index 4b032271148e..2a24b78f3783 100644
 +      int nList = 0;
        int rc = sqlite3Fts3DeferredTokenList(pDeferred, &pList, &nList);
        if( rc!=SQLITE_OK ) return rc;
- 
--- 
+
+--
 2.11.0
 

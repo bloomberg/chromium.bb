@@ -4,7 +4,7 @@
 # reads the file and returns a list of mappings required to remove all
 # diacritical marks from a unicode string. Each mapping is itself a list
 # consisting of two elements - the unicode codepoint and the single ASCII
-# character that it should be replaced with, or an empty string if the 
+# character that it should be replaced with, or an empty string if the
 # codepoint should simply be removed from the input. Examples:
 #
 #   { 224 a  }     (replace codepoint 224 to "a")

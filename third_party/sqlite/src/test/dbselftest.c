@@ -12,7 +12,7 @@
 **
 ** This program implements an SQLite database self-verification utility.
 ** Usage:
-** 
+**
 **       dbselftest DATABASE ...
 **
 ** This program reads the "selftest" table in DATABASE, in rowid order,
@@ -22,7 +22,7 @@
 ** The intent of this program is to have a set of test database files that
 ** can be run using future versions of SQLite in order to verify that
 ** legacy database files continue to be readable.  In other words, the
-** intent is to confirm that there have been no breaking changes in the 
+** intent is to confirm that there have been no breaking changes in the
 ** file format.  The program can also be used to verify that database files
 ** are fully compatible between different architectures.
 **
@@ -55,7 +55,7 @@ static const char zHelp[] =
 /******************************************************************************
 ** The following code from ext/misc/sha1.c
 **
-** Context for the SHA1 hash 
+** Context for the SHA1 hash
 */
 typedef struct SHA1Context SHA1Context;
 struct SHA1Context {
@@ -570,7 +570,7 @@ static int buildSelftestTable(sqlite3 *db){
   tno = 110;
   zSql = "SELECT type,name,tbl_name,sql FROM sqlite_master ORDER BY name";
   sha1Exec(db, zSql, zHash);
-  rc = runSql(db, 
+  rc = runSql(db,
       "INSERT INTO selftest(tno,op,sql,ans)"
       " VALUES(%d,'sha1',%Q,%Q)", tno, zSql, zHash);
   tno += 10;
@@ -679,7 +679,7 @@ int main(int argc, char **argv){
   memset(&str, 0, sizeof(str));
   strAppend(&str, "\n");
   for(iDb=0; iDb<nDb; iDb++, sqlite3_close(db)){
-    rc = sqlite3_open_v2(azDb[iDb], &db, 
+    rc = sqlite3_open_v2(azDb[iDb], &db,
           doInit ? SQLITE_OPEN_READWRITE : SQLITE_OPEN_READONLY, 0);
     if( rc ){
       printf("Cannot open \"%s\": %s\n", azDb[iDb], sqlite3_errmsg(db));
@@ -704,7 +704,7 @@ int main(int argc, char **argv){
       nCol = 4;
       nRow = 2;
     }else{
-      rc = sqlite3_get_table(db, 
+      rc = sqlite3_get_table(db,
           "SELECT tno,op,sql,ans FROM selftest ORDER BY tno",
           &azTest, &nRow, &nCol, &zErrMsg);
       if( rc || zErrMsg ){
@@ -718,7 +718,7 @@ int main(int argc, char **argv){
       const char *zOp = azTest[i*nCol+1];
       const char *zSql = azTest[i*nCol+2];
       const char *zAns = azTest[i*nCol+3];
-  
+
       if( eVolume>=VOLUME_ECHO ){
         char *zQuote = sqlite3_mprintf("%q", zSql);
         printf("%d: %s %s\n", tno, zOp, zSql);

@@ -507,7 +507,7 @@ if {$encoding=="UTF-16le"} {
     execsql {SELECT hex(replace('aabcdefg','a','aaa'))}
   } {616161616161626364656667}
 }
-  
+
 # Use the "sqlite_register_test_function" TCL command which is part of
 # the text fixture in order to verify correct operation of some of
 # the user-defined SQL function APIs that are not used by the built-in
@@ -576,7 +576,7 @@ do_test func-11.1 {
 
 # Test that destructors passed to sqlite3 by calls to sqlite3_result_text()
 # etc. are called. These tests use two special user-defined functions
-# (implemented in func.c) only available in test builds. 
+# (implemented in func.c) only available in test builds.
 #
 # Function test_destructor() takes one argument and returns a copy of the
 # text form of that argument. A destructor is associated with the return
@@ -713,7 +713,7 @@ do_execsql_test 13.8.6 {
 do_test func-14.1 {
   catch {
     db function [string repeat X 254] {return "hello"}
-  } 
+  }
 } {0}
 do_test func-14.2 {
   catch {
@@ -861,7 +861,7 @@ ifcapable compound&&subquery {
 
 do_test func-18.15 {
   catchsql {
-    SELECT sum(x) FROM 
+    SELECT sum(x) FROM
        (SELECT 9223372036854775807 AS x UNION ALL
         SELECT 10 AS x);
   }
@@ -869,14 +869,14 @@ do_test func-18.15 {
 if {[working_64bit_int]} {
   do_test func-18.16 {
     catchsql {
-      SELECT sum(x) FROM 
+      SELECT sum(x) FROM
          (SELECT 9223372036854775807 AS x UNION ALL
           SELECT -10 AS x);
     }
   } {0 9223372036854775797}
   do_test func-18.17 {
     catchsql {
-      SELECT sum(x) FROM 
+      SELECT sum(x) FROM
          (SELECT -9223372036854775807 AS x UNION ALL
           SELECT 10 AS x);
     }
@@ -884,7 +884,7 @@ if {[working_64bit_int]} {
 }
 do_test func-18.18 {
   catchsql {
-    SELECT sum(x) FROM 
+    SELECT sum(x) FROM
        (SELECT -9223372036854775807 AS x UNION ALL
         SELECT -10 AS x);
   }
@@ -1024,8 +1024,8 @@ do_test func-21.8 {
 
 ifcapable tclvar {
   do_test func-21.9 {
-    # Attempt to exploit a buffer-overflow that at one time existed 
-    # in the REPLACE function. 
+    # Attempt to exploit a buffer-overflow that at one time existed
+    # in the REPLACE function.
     set ::str "[string repeat A 29998]CC[string repeat A 35537]"
     set ::rep [string repeat B 65536]
     execsql {
@@ -1339,7 +1339,7 @@ do_test func-29.6 {
 #
 do_execsql_test func-29.10 {
   CREATE TABLE t29b(a,b,c,d,e,f,g,h,i);
-  INSERT INTO t29b 
+  INSERT INTO t29b
    VALUES(1, hex(randomblob(2000)), null, 0, 1, '', zeroblob(0),'x',x'01');
   SELECT typeof(c), typeof(d), typeof(e), typeof(f),
          typeof(g), typeof(h), typeof(i) FROM t29b;
@@ -1377,7 +1377,7 @@ for {set i 65536} {$i<=0x10ffff} {incr i 139} {
 
 # Test char().
 #
-do_execsql_test func-31.1 { 
-  SELECT char(), length(char()), typeof(char()) 
+do_execsql_test func-31.1 {
+  SELECT char(), length(char()), typeof(char())
 } {{} 0 text}
 finish_test

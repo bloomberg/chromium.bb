@@ -8,7 +8,7 @@
 #    May you share freely, never taking more than you give.
 #
 #***********************************************************************
-# This file implements regression tests for SQLite library. 
+# This file implements regression tests for SQLite library.
 #
 # $Id: selectB.test,v 1.10 2009/04/02 16:59:47 drh Exp $
 
@@ -72,52 +72,52 @@ for {set ii 1} {$ii <= 2} {incr ii} {
   } {
     SELECT a FROM t1 UNION ALL SELECT d FROM t2
   } {2 8 14 3 12 21}
-  
+
   test_transform selectB-$ii.3 {
     SELECT * FROM (SELECT a FROM t1 UNION ALL SELECT d FROM t2) ORDER BY 1
   } {
     SELECT a FROM t1 UNION ALL SELECT d FROM t2 ORDER BY 1
   } {2 3 8 12 14 21}
-  
+
   test_transform selectB-$ii.4 {
-    SELECT * FROM 
-      (SELECT a FROM t1 UNION ALL SELECT d FROM t2) 
+    SELECT * FROM
+      (SELECT a FROM t1 UNION ALL SELECT d FROM t2)
     WHERE a>10 ORDER BY 1
   } {
     SELECT a FROM t1 WHERE a>10 UNION ALL SELECT d FROM t2 WHERE d>10 ORDER BY 1
   } {12 14 21}
-  
+
   test_transform selectB-$ii.5 {
-    SELECT * FROM 
-      (SELECT a FROM t1 UNION ALL SELECT d FROM t2) 
-    WHERE a>10 ORDER BY a
-  } {
-    SELECT a FROM t1 WHERE a>10 
-      UNION ALL 
-    SELECT d FROM t2 WHERE d>10 
-    ORDER BY a
-  } {12 14 21}
-  
-  test_transform selectB-$ii.6 {
-    SELECT * FROM 
-      (SELECT a FROM t1 UNION ALL SELECT d FROM t2 WHERE d > 12) 
+    SELECT * FROM
+      (SELECT a FROM t1 UNION ALL SELECT d FROM t2)
     WHERE a>10 ORDER BY a
   } {
     SELECT a FROM t1 WHERE a>10
-      UNION ALL 
+      UNION ALL
+    SELECT d FROM t2 WHERE d>10
+    ORDER BY a
+  } {12 14 21}
+
+  test_transform selectB-$ii.6 {
+    SELECT * FROM
+      (SELECT a FROM t1 UNION ALL SELECT d FROM t2 WHERE d > 12)
+    WHERE a>10 ORDER BY a
+  } {
+    SELECT a FROM t1 WHERE a>10
+      UNION ALL
     SELECT d FROM t2 WHERE d>12 AND d>10
     ORDER BY a
   } {14 21}
-  
+
   test_transform selectB-$ii.7 {
-    SELECT * FROM (SELECT a FROM t1 UNION ALL SELECT d FROM t2) ORDER BY 1 
+    SELECT * FROM (SELECT a FROM t1 UNION ALL SELECT d FROM t2) ORDER BY 1
     LIMIT 2
   } {
     SELECT a FROM t1 UNION ALL SELECT d FROM t2 ORDER BY 1 LIMIT 2
   } {2 3}
-  
+
   test_transform selectB-$ii.8 {
-    SELECT * FROM (SELECT a FROM t1 UNION ALL SELECT d FROM t2) ORDER BY 1 
+    SELECT * FROM (SELECT a FROM t1 UNION ALL SELECT d FROM t2) ORDER BY 1
     LIMIT 2 OFFSET 3
   } {
     SELECT a FROM t1 UNION ALL SELECT d FROM t2 ORDER BY 1 LIMIT 2 OFFSET 3
@@ -126,11 +126,11 @@ for {set ii 1} {$ii <= 2} {incr ii} {
   test_transform selectB-$ii.9 {
     SELECT * FROM (
       SELECT a FROM t1 UNION ALL SELECT d FROM t2 UNION ALL SELECT c FROM t1
-    ) 
+    )
   } {
     SELECT a FROM t1 UNION ALL SELECT d FROM t2 UNION ALL SELECT c FROM t1
   } {2 8 14 3 12 21 6 12 18}
-  
+
   test_transform selectB-$ii.10 {
     SELECT * FROM (
       SELECT a FROM t1 UNION ALL SELECT d FROM t2 UNION ALL SELECT c FROM t1
@@ -139,7 +139,7 @@ for {set ii 1} {$ii <= 2} {incr ii} {
     SELECT a FROM t1 UNION ALL SELECT d FROM t2 UNION ALL SELECT c FROM t1
     ORDER BY 1
   } {2 3 6 8 12 12 14 18 21}
-  
+
   test_transform selectB-$ii.11 {
     SELECT * FROM (
       SELECT a FROM t1 UNION ALL SELECT d FROM t2 UNION ALL SELECT c FROM t1
@@ -162,7 +162,7 @@ for {set ii 1} {$ii <= 2} {incr ii} {
   # } {
   #   SELECT a FROM t1 UNION ALL SELECT d FROM t2 ORDER BY 1 ASC
   # } {2 3 8 12 14 21}
-  # 
+  #
   # test_transform selectB-$ii.14 {
   #  SELECT * FROM (SELECT a FROM t1 UNION ALL SELECT d FROM t2 ORDER BY a DESC)
   # } {
@@ -220,76 +220,76 @@ for {set ii 3} {$ii <= 6} {incr ii} {
 
   do_test selectB-$ii.1 {
     execsql {
-      SELECT DISTINCT * FROM 
-        (SELECT c FROM t1 UNION ALL SELECT e FROM t2) 
+      SELECT DISTINCT * FROM
+        (SELECT c FROM t1 UNION ALL SELECT e FROM t2)
       ORDER BY 1;
     }
   } {6 12 15 18 24}
-  
+
   do_test selectB-$ii.2 {
     execsql {
-      SELECT c, count(*) FROM 
-        (SELECT c FROM t1 UNION ALL SELECT e FROM t2) 
+      SELECT c, count(*) FROM
+        (SELECT c FROM t1 UNION ALL SELECT e FROM t2)
       GROUP BY c ORDER BY 1;
     }
   } {6 2 12 1 15 1 18 1 24 1}
   do_test selectB-$ii.3 {
     execsql {
-      SELECT c, count(*) FROM 
-        (SELECT c FROM t1 UNION ALL SELECT e FROM t2) 
+      SELECT c, count(*) FROM
+        (SELECT c FROM t1 UNION ALL SELECT e FROM t2)
       GROUP BY c HAVING count(*)>1;
     }
   } {6 2}
   do_test selectB-$ii.4 {
     execsql {
-      SELECT t4.c, t3.a FROM 
+      SELECT t4.c, t3.a FROM
         (SELECT c FROM t1 UNION ALL SELECT e FROM t2) AS t4, t1 AS t3
       WHERE t3.a=14
       ORDER BY 1
     }
   } {6 14 6 14 12 14 15 14 18 14 24 14}
-  
+
   do_test selectB-$ii.5 {
     execsql {
-      SELECT d FROM t2 
-      EXCEPT 
+      SELECT d FROM t2
+      EXCEPT
       SELECT a FROM (SELECT a FROM t1 UNION ALL SELECT d FROM t2)
     }
   } {}
   do_test selectB-$ii.6 {
     execsql {
       SELECT * FROM (SELECT a FROM t1 UNION ALL SELECT d FROM t2)
-      EXCEPT 
+      EXCEPT
       SELECT * FROM (SELECT a FROM t1 UNION ALL SELECT d FROM t2)
     }
   } {}
   do_test selectB-$ii.7 {
     execsql {
       SELECT c FROM t1
-      EXCEPT 
+      EXCEPT
       SELECT * FROM (SELECT e FROM t2 UNION ALL SELECT f FROM t2)
     }
   } {12}
   do_test selectB-$ii.8 {
     execsql {
       SELECT * FROM (SELECT e FROM t2 UNION ALL SELECT f FROM t2)
-      EXCEPT 
+      EXCEPT
       SELECT c FROM t1
     }
   } {9 15 24 27}
   do_test selectB-$ii.9 {
     execsql {
       SELECT * FROM (SELECT e FROM t2 UNION ALL SELECT f FROM t2)
-      EXCEPT 
+      EXCEPT
       SELECT c FROM t1
       ORDER BY c DESC
     }
   } {27 24 15 9}
-  
+
   do_test selectB-$ii.10 {
     execsql {
       SELECT * FROM (SELECT e FROM t2 UNION ALL SELECT f FROM t2)
-      UNION 
+      UNION
       SELECT c FROM t1
       ORDER BY c DESC
     }
@@ -297,7 +297,7 @@ for {set ii 3} {$ii <= 6} {incr ii} {
   do_test selectB-$ii.11 {
     execsql {
       SELECT c FROM t1
-      UNION 
+      UNION
       SELECT * FROM (SELECT e FROM t2 UNION ALL SELECT f FROM t2)
       ORDER BY c
     }
@@ -311,16 +311,16 @@ for {set ii 3} {$ii <= 6} {incr ii} {
   do_test selectB-$ii.13 {
     execsql {
       SELECT * FROM (SELECT e FROM t2 UNION ALL SELECT f FROM t2)
-      UNION 
+      UNION
       SELECT * FROM (SELECT e FROM t2 UNION ALL SELECT f FROM t2)
       ORDER BY 1
     }
   } {6 9 15 18 24 27}
-  
+
   do_test selectB-$ii.14 {
     execsql {
       SELECT c FROM t1
-      INTERSECT 
+      INTERSECT
       SELECT * FROM (SELECT e FROM t2 UNION ALL SELECT f FROM t2)
       ORDER BY 1
     }
@@ -328,7 +328,7 @@ for {set ii 3} {$ii <= 6} {incr ii} {
   do_test selectB-$ii.15 {
     execsql {
       SELECT * FROM (SELECT e FROM t2 UNION ALL SELECT f FROM t2)
-      INTERSECT 
+      INTERSECT
       SELECT c FROM t1
       ORDER BY 1
     }
@@ -336,7 +336,7 @@ for {set ii 3} {$ii <= 6} {incr ii} {
   do_test selectB-$ii.16 {
     execsql {
       SELECT * FROM (SELECT e FROM t2 UNION ALL SELECT f FROM t2)
-      INTERSECT 
+      INTERSECT
       SELECT * FROM (SELECT e FROM t2 UNION ALL SELECT f FROM t2)
       ORDER BY 1
     }

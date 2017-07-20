@@ -1,6 +1,6 @@
 #!/usr/bin/tclsh
 #
-# Parse the output of 
+# Parse the output of
 #
 #         objdump -d sqlite3.o
 #

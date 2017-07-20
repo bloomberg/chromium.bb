@@ -25,7 +25,7 @@ ifcapable !fts5 {
 #-------------------------------------------------------------------------
 # An OOM while dropping an fts5 table.
 #
-db func rnddoc fts5_rnddoc 
+db func rnddoc fts5_rnddoc
 do_test 1.0 {
   execsql { CREATE VIRTUAL TABLE xx USING fts5(x) }
 } {}
@@ -103,7 +103,7 @@ do_execsql_test 5.0 {
   INSERT INTO x2(rowid, x) VALUES(50, 'a b c'); -- 1
 }
 
-proc rowidmod {cmd mod} { 
+proc rowidmod {cmd mod} {
   set row [$cmd xRowid]
   expr {$row % $mod}
 }
@@ -111,14 +111,14 @@ sqlite3_fts5_create_function db rowidmod rowidmod
 
 do_faultsim_test 5.1 -faults oom-* -body {
   db eval {
-    SELECT rowid || '-' || rank FROM x2 WHERE x2 MATCH 'b' AND 
+    SELECT rowid || '-' || rank FROM x2 WHERE x2 MATCH 'b' AND
     rank MATCH "rowidmod('7')" ORDER BY rank
   }
 } -test {
   faultsim_test_result {0 {50-1 30-2 10-3 40-5 20-6}}
 }
 
-proc rowidprefix {cmd prefix} { 
+proc rowidprefix {cmd prefix} {
   set row [$cmd xRowid]
   set {} "${row}-${prefix}"
 }
@@ -127,7 +127,7 @@ sqlite3_fts5_create_function db rowidprefix rowidprefix
 set str [string repeat abcdefghijklmnopqrstuvwxyz 10]
 do_faultsim_test 5.2 -faults oom-* -body {
   db eval "
-    SELECT rank, x FROM x2 WHERE x2 MATCH 'b' AND 
+    SELECT rank, x FROM x2 WHERE x2 MATCH 'b' AND
     rank MATCH 'rowidprefix(''$::str'')'
     LIMIT 1
   "
@@ -153,7 +153,7 @@ do_faultsim_test 6.1 -faults oom-t* -body {
   faultsim_test_result {0 {{a b *c* d *c* b a}}}
 }
 
-proc firstinst {cmd} { 
+proc firstinst {cmd} {
   foreach {p c o} [$cmd xInst 0] {}
   expr $c*100 + $o
 }
@@ -267,8 +267,8 @@ do_execsql_test 9.0 {
   INSERT INTO tt(tt, rank) VALUES('pgsz', 32);
   BEGIN;
     WITH ii(i) AS (SELECT 1 UNION ALL SELECT i+1 FROM ii WHERE i<200)
-      INSERT INTO tt(rowid, x) 
-      SELECT i, CASE WHEN (i%50)==0 THEN 'a a a a a a' ELSE 'a x a x a x' END 
+      INSERT INTO tt(rowid, x)
+      SELECT i, CASE WHEN (i%50)==0 THEN 'a a a a a a' ELSE 'a x a x a x' END
       FROM ii;
   COMMIT;
 }
@@ -285,7 +285,7 @@ do_faultsim_test 9.1 -faults oom-* -body {
 do_faultsim_test 10.1 -faults oom-t* -body {
   db one { SELECT fts5_expr('a AND b NEAR(a b)') }
 } -test {
-  faultsim_test_result {0 {"a" AND "b" AND NEAR("a" "b", 10)}} 
+  faultsim_test_result {0 {"a" AND "b" AND NEAR("a" "b", 10)}}
 }
 
 do_faultsim_test 10.2 -faults oom-t* -body {
@@ -328,7 +328,7 @@ do_faultsim_test 12.1 -faults oom-t* -prep {
 } -body {
   db eval { CREATE VIRTUAL TABLE vv USING fts5vocab(ft, 'row') }
 } -test {
-  faultsim_test_result {0 {}} 
+  faultsim_test_result {0 {}}
 }
 
 #-------------------------------------------------------------------------
@@ -347,7 +347,7 @@ do_faultsim_test 13.1 -faults oom-t* -prep {
 } -body {
   db eval { SELECT * FROM vv }
 } -test {
-  faultsim_test_result {0 {a 1 1 b 1 1}} 
+  faultsim_test_result {0 {a 1 1 b 1 1}}
 }
 
 #-------------------------------------------------------------------------

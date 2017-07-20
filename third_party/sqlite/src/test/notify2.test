@@ -75,7 +75,7 @@ set sql $zSql
     return $lRes
   }
 
-  proc execsql_retry {db sql} { 
+  proc execsql_retry {db sql} {
     set msg "SQLITE_LOCKED blah..."
     while { [string match SQLITE_LOCKED* $msg] } {
       catch { execsql_blocking $db $sql } msg
@@ -114,8 +114,8 @@ set sql $zSql
       foreach {tbl database} [select_one {t1 main} {t2 aux2} {t3 aux3}] {}
 
       set SQL($ii) [string map [list xxx $tbl yyy $database] [select_one {
-            SELECT 
-              (SELECT b FROM xxx WHERE a=(SELECT max(a) FROM xxx))==total(a) 
+            SELECT
+              (SELECT b FROM xxx WHERE a=(SELECT max(a) FROM xxx))==total(a)
               FROM xxx WHERE a!=(SELECT max(a) FROM xxx);
       } {
             DELETE FROM xxx WHERE a<(SELECT max(a)-100 FROM xxx);
@@ -148,7 +148,7 @@ set sql $zSql
       if {$rc && [string match "SQLITE_LOCKED*" $msg]} {
         sqlite3_close $::DB
         opendb
-      } 
+      }
     } elseif {$rc} {
       # Hit some other kind of error. This is a malfunction.
       error $msg
@@ -178,7 +178,7 @@ foreach {iTest xStep xPrepare} {
   # Set up the database schema used by this test. Each thread opens file
   # test.db as the main database, then attaches files test2.db and test3.db
   # as auxillary databases. Each file contains a single table (t1, t2 and t3, in
-  # files test.db, test2.db and test3.db, respectively). 
+  # files test.db, test2.db and test3.db, respectively).
   #
   do_test notify2-$iTest.1.1 {
     sqlite3 db test.db
@@ -232,10 +232,10 @@ foreach {iTest xStep xPrepare} {
 
 # The following tests checks to make sure sqlite3_blocking_step() is
 # faster than sqlite3_step(). "Faster" in this case means uses fewer
-# CPU cycles. This is not always the same as faster in wall-clock time 
-# for this type of test. The number of CPU cycles per transaction is 
-# roughly proportional to the number of attempts made (i.e. one plus the 
-# number of SQLITE_BUSY or SQLITE_LOCKED errors that require the transaction 
+# CPU cycles. This is not always the same as faster in wall-clock time
+# for this type of test. The number of CPU cycles per transaction is
+# roughly proportional to the number of attempts made (i.e. one plus the
+# number of SQLITE_BUSY or SQLITE_LOCKED errors that require the transaction
 # to be retried). So this test just measures that a greater percentage of
 # transactions attempted using blocking_step() succeed.
 #
@@ -251,11 +251,11 @@ puts [array get anWrite]
 do_test notify2-3 {
   set blocking [expr {
     double($anSuccess(sqlite3_blocking_step)) /
-    double($anAttempt(sqlite3_blocking_step)) 
+    double($anAttempt(sqlite3_blocking_step))
   }]
   set non [expr {
     double($anSuccess(sqlite3_step)) /
-    double($anAttempt(sqlite3_step)) 
+    double($anAttempt(sqlite3_step))
   }]
   puts -nonewline [format " blocking: %.1f%% non-blocking %.1f%% ..." \
     [expr $blocking*100.0] [expr $non*100.0]]

@@ -1,8 +1,8 @@
 
 OVERVIEW
 
-  The SQLite library is capable of parsing SQL foreign key constraints 
-  supplied as part of CREATE TABLE statements, but it does not actually 
+  The SQLite library is capable of parsing SQL foreign key constraints
+  supplied as part of CREATE TABLE statements, but it does not actually
   implement them. However, most of the features of foreign keys may be
   implemented using SQL triggers, which SQLite does support. This text
   file describes a feature of the SQLite shell tool (sqlite3) that
@@ -20,28 +20,28 @@ CAPABILITIES
     CREATE TABLE child(d, e, f, FOREIGN KEY(d, e) REFERENCES parent(a, b));
 
   implies that for each row in table "child", there must be a row in
-  "parent" for which the expression (child.d==parent.a AND child.e==parent.b) 
+  "parent" for which the expression (child.d==parent.a AND child.e==parent.b)
   is true. The columns in the parent table are required to be either the
   primary key columns or subject to a UNIQUE constraint. There is no such
   requirement for the columns of the child table.
 
-  At this time, all foreign keys are implemented as if they were 
-  "MATCH NONE", even if the declaration specified "MATCH PARTIAL" or 
+  At this time, all foreign keys are implemented as if they were
+  "MATCH NONE", even if the declaration specified "MATCH PARTIAL" or
   "MATCH FULL". "MATCH NONE" means that if any of the key columns in
   the child table are NULL, then there is no requirement for a corresponding
   row in the parent table. So, taking this into account, the expression that
   must be true for every row of the child table in the above example is
   actually:
 
-      (child.d IS NULL) OR 
-      (child.e IS NULL) OR 
+      (child.d IS NULL) OR
+      (child.e IS NULL) OR
       (child.d==parent.a AND child.e==parent.b)
 
-  Attempting to insert or update a row in the child table so that the 
-  affected row violates this constraint results in an exception being 
+  Attempting to insert or update a row in the child table so that the
+  affected row violates this constraint results in an exception being
   thrown.
 
-  The effect of attempting to delete or update a row in the parent table 
+  The effect of attempting to delete or update a row in the parent table
   so that the constraint becomes untrue for one or more rows in the child
   table depends on the "ON DELETE" or "ON UPDATE" actions specified as
   part of the foreign key definition, respectively. Three different actions
@@ -55,7 +55,7 @@ CAPABILITIES
 
     CASCADE:  Instead of throwing an exception, all corresponding child table
               rows are either deleted (if the parent row is being deleted)
-              or updated to match the new parent key values (if the parent 
+              or updated to match the new parent key values (if the parent
               row is being updated).
 
     SET NULL: Instead of throwing an exception, the foreign key fields of
@@ -82,7 +82,7 @@ LIMITATIONS
       error when the program is run (see below).
 
     * SQLite does not support recursive triggers, and therefore this program
-      does not support recursive CASCADE or SET NULL foreign key 
+      does not support recursive CASCADE or SET NULL foreign key
       relationships. If the parent and the child tables of a CASCADE or
       SET NULL foreign key are the same table, the generated triggers will
       malfunction. This is also true if the recursive foreign key constraint
@@ -119,7 +119,7 @@ USAGE
   triggers have already been installed (i.e. after new tables are created
   or existing tables dropped).
 
-  Finally, a series of SQL trigger definitions (CREATE TRIGGER statements) 
+  Finally, a series of SQL trigger definitions (CREATE TRIGGER statements)
   that implement the foreign key constraints found in the database schema are
   generated.
 
@@ -130,7 +130,7 @@ USAGE
   dot-commands (i.e. ".output").
 
   The simplest way to activate the foriegn key definitions in a database
-  is simply to open it using the shell tool and enter the command 
+  is simply to open it using the shell tool and enter the command
   ".genfkey --exec":
 
     sqlite> .genfkey --exec

@@ -124,7 +124,7 @@ proc balanced_andor_tree {nEntry} {
 
 if 1 {
 
-# Test that queries like "1 AND 2 AND 3 AND 4..." are transformed to 
+# Test that queries like "1 AND 2 AND 3 AND 4..." are transformed to
 # balanced trees by FTS.
 #
 for {set i 1} {$i < 100} {incr i} {
@@ -157,7 +157,7 @@ for {set i 2} {$i < 64} {incr i 4} {
   } [balanced_andor_tree $i]
 }
 
-# These exceed the depth limit. 
+# These exceed the depth limit.
 #
 for {set i 65} {$i < 70} {incr i} {
   do_test 3.$i {
@@ -165,7 +165,7 @@ for {set i 65} {$i < 70} {incr i} {
   } {1 {Error parsing expression}}
 }
 
-# This also exceeds the depth limit. 
+# This also exceeds the depth limit.
 #
 
 do_test 4.1.1 {
@@ -209,21 +209,21 @@ do_faultsim_test fts3expr3-fault-1 -faults oom-* -body {
 #-------------------------------------------------------------------
 
 foreach {tn expr res} {
-  1 {1 OR 2 OR 3 OR 4}           {OR {OR {P 1} {P 2}} {OR {P 3} {P 4}}} 
-  2 {1 OR (2 AND 3 AND 4 AND 5)} 
+  1 {1 OR 2 OR 3 OR 4}           {OR {OR {P 1} {P 2}} {OR {P 3} {P 4}}}
+  2 {1 OR (2 AND 3 AND 4 AND 5)}
     {OR {P 1} {AND {AND {P 2} {P 3}} {AND {P 4} {P 5}}}}
-  3 {(2 AND 3 AND 4 AND 5) OR 1} 
+  3 {(2 AND 3 AND 4 AND 5) OR 1}
     {OR {AND {AND {P 2} {P 3}} {AND {P 4} {P 5}}} {P 1}}
 
-  4 {1 AND (2 OR 3 OR 4 OR 5)} 
+  4 {1 AND (2 OR 3 OR 4 OR 5)}
     {AND {P 1} {OR {OR {P 2} {P 3}} {OR {P 4} {P 5}}}}
-  5 {(2 OR 3 OR 4 OR 5) AND 1} 
+  5 {(2 OR 3 OR 4 OR 5) AND 1}
     {AND {OR {OR {P 2} {P 3}} {OR {P 4} {P 5}}} {P 1}}
 
-  6 {(2 OR 3 OR 4 OR 5) NOT 1} 
+  6 {(2 OR 3 OR 4 OR 5) NOT 1}
     {NOT {OR {OR {P 2} {P 3}} {OR {P 4} {P 5}}} {P 1}}
 
-  7 {1 NOT (2 OR 3 OR 4 OR 5)} 
+  7 {1 NOT (2 OR 3 OR 4 OR 5)}
     {NOT {P 1} {OR {OR {P 2} {P 3}} {OR {P 4} {P 5}}}}
 
   8 {(1 OR 2 OR 3 OR 4) NOT (5 AND 6 AND 7 AND 8)}

@@ -105,7 +105,7 @@ for {set i 1} {$i < 30} {incr i} {
     sqlite3 db test.db
     signature
   } $sig
-} 
+}
 
 
 # Test case for crashing during database sync with simulated
@@ -128,6 +128,6 @@ for {set i 1} {$i < 10} {incr i} {
     sqlite3 db test.db
     signature
   } $sig
-} 
+}
 
 finish_test

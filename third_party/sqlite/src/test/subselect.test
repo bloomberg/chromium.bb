@@ -83,7 +83,7 @@ do_test subselect-1.5 {
     INSERT INTO t2 VALUES(4,16);
   }
   execsql {
-    SELECT y from t2 
+    SELECT y from t2
     WHERE x = (SELECT sum(b) FROM t1 where a notnull) - (SELECT sum(a) FROM t1)
   }
 } {8}
@@ -129,7 +129,7 @@ ifcapable !compound {
 do_test subselect-3.1 {
   execsql {
     CREATE TABLE t3(x int);
-    INSERT INTO t3 SELECT a FROM t1; 
+    INSERT INTO t3 SELECT a FROM t1;
     INSERT INTO t3 SELECT b FROM t1;
     SELECT * FROM t3 ORDER BY x;
   }

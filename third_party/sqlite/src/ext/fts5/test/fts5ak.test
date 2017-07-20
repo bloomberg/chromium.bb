@@ -86,7 +86,7 @@ do_execsql_test 2.1 {
   SELECT highlight(ft1, 0, '[', ']') FROM ft1 WHERE ft1 MATCH 'h + d';
 } {
   {[h d] b j c c g a c a}
-  {j f [h d] g h i b d f} 
+  {j f [h d] g h i b d f}
 }
 
 do_execsql_test 2.2 {

@@ -69,5 +69,5 @@ do_execsql_test skipscan3-2.3 {
   SELECT d FROM t2 WHERE a=1 AND c=32;
 } {x0032}
 
-  
+
 finish_test

@@ -39,7 +39,7 @@ do_test tkt3762-1.1 {
     INSERT INTO t1 SELECT x FROM t1;
     DELETE FROM t1 WHERE rowid>202;
     VACUUM;
-    
+
     BEGIN;
     DELETE FROM t1 WHERE rowid IN (10,11,12) ;
     PRAGMA incremental_vacuum(10);

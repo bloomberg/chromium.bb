@@ -81,7 +81,7 @@ if {$tcl_platform(platform) != "symbian"} {
 }
 
 # The following block of tests, nan-1.2.*, are the same as the nan-1.1.*
-# tests above, except that the SELECT queries used to validate data 
+# tests above, except that the SELECT queries used to validate data
 # convert floating point values to text internally before returning them
 # to Tcl. This allows the tests to be run on platforms where Tcl has
 # problems converting "inf" and "-inf" from floating point to text format.
@@ -366,7 +366,7 @@ do_realnum_test nan-4.35 {
   }
 } {0.0 real}
 
-  
+
 
 
 

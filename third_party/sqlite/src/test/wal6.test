@@ -101,23 +101,23 @@ do_test 2.2 {
   } db2
 } {1 one 2 two}
 
-do_catchsql_test 2.3 { 
-  INSERT INTO t1 VALUES('x', 'x') 
+do_catchsql_test 2.3 {
+  INSERT INTO t1 VALUES('x', 'x')
 } {1 {database is locked}}
 
-do_test 2.4 { 
+do_test 2.4 {
   list [sqlite3_errcode db] [sqlite3_extended_errcode db]
 } {SQLITE_BUSY SQLITE_BUSY_SNAPSHOT}
 
 do_execsql_test 2.5 {
   SELECT * FROM t1;
   COMMIT;
-  INSERT INTO t1 VALUES('x', 'x') 
+  INSERT INTO t1 VALUES('x', 'x')
 } {1 one 2 two}
 
 proc test3 {prefix} {
   do_test $prefix.1 {
-    execsql { SELECT count(*) FROM t1 } 
+    execsql { SELECT count(*) FROM t1 }
   } {0}
   do_test $prefix.2 {
     execsql { INSERT INTO t1 VALUES('x', 'x') } db2
@@ -126,7 +126,7 @@ proc test3 {prefix} {
     execsql { INSERT INTO t1 VALUES('y', 'y') }
   } {}
   do_test $prefix.4 {
-    execsql { SELECT count(*) FROM t1 } 
+    execsql { SELECT count(*) FROM t1 }
   } {2}
 }
 
@@ -143,7 +143,7 @@ do_test 2.x {
 
 #-------------------------------------------------------------------------
 # Check that if BEGIN IMMEDIATE fails, it does not leave the user with
-# an open read-transaction (unless one was already open before the BEGIN 
+# an open read-transaction (unless one was already open before the BEGIN
 # IMMEDIATE). Even if there are other active VMs.
 #
 
@@ -166,13 +166,13 @@ proc test4 {prefix} {
 
 reset_db
 sqlite3 db2 test.db
-do_execsql_test 3.1 { 
+do_execsql_test 3.1 {
   PRAGMA journal_mode = WAL;
   CREATE TABLE ab(a PRIMARY KEY, b);
 } {wal}
 
-do_test 3.2.1 { 
-  execsql { 
+do_test 3.2.1 {
+  execsql {
     BEGIN;
       INSERT INTO ab VALUES(1, 2);
   } db2
@@ -181,7 +181,7 @@ test4 3.2.2
 
 db func test4 test4
 do_test 3.3.1 {
-  execsql { 
+  execsql {
     BEGIN;
       INSERT INTO ab VALUES(3, 4);
   } db2
@@ -213,7 +213,7 @@ do_test 4.2 {
 
 do_test 4.3 {
   sqlite3 db2 test.db
-  execsql { 
+  execsql {
     BEGIN;
     INSERT INTO t2 VALUES(3, 4);
   }
@@ -227,11 +227,11 @@ do_test 4.3 {
   sqlite3 db2 test.db
 } {}
 
-do_test 4.4.1 { 
-  catchsql { SELECT * FROM t1 } db2 
+do_test 4.4.1 {
+  catchsql { SELECT * FROM t1 } db2
 } {0 {1 2}}
-do_test 4.4.2 { 
-  catchsql { SELECT * FROM t2 } db2 
+do_test 4.4.2 {
+  catchsql { SELECT * FROM t2 } db2
 } {1 {database disk image is malformed}}
 
 #-------------------------------------------------------------------------
@@ -255,11 +255,11 @@ do_test 5.2 {
   } {
     if {$x==1} {
       db2 eval { INSERT INTO t1 VALUES(5, 6) }
-    } 
+    }
     if {$x==3} {
       set res [catchsql {BEGIN EXCLUSIVE}]
       lappend res [sqlite3_extended_errcode db]
-    } 
+    }
   }
   set res
 } {1 {database is locked} SQLITE_BUSY_SNAPSHOT}

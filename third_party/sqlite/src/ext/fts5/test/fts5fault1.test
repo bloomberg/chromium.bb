@@ -48,7 +48,7 @@ faultsim_save_and_close
 do_faultsim_test 2 -prep {
   faultsim_restore_and_reopen
 } -body {
-  execsql { 
+  execsql {
     INSERT INTO t1 VALUES('a b c', 'a bc def ghij klmno');
   }
 } -test {
@@ -116,7 +116,7 @@ foreach {tn expr res} {
 # an error to occur.
 #
 reset_db
-do_execsql_test 5.0.1 { 
+do_execsql_test 5.0.1 {
   PRAGMA main.page_size = 512;
   CREATE VIRTUAL TABLE x1 USING fts5(a, b);
   PRAGMA main.page_size;
@@ -177,21 +177,21 @@ do_faultsim_test 5.4 -faults oom* -prep {
 }
 
 do_faultsim_test 5.5.1 -faults oom* -body {
-  execsql { 
+  execsql {
     SELECT count(fts5_decode(rowid, block)) FROM x1_data WHERE rowid=1
   }
 } -test {
   faultsim_test_result [list 0 1]
 }
 do_faultsim_test 5.5.2 -faults oom* -body {
-  execsql { 
+  execsql {
     SELECT count(fts5_decode(rowid, block)) FROM x1_data WHERE rowid=10
   }
 } -test {
   faultsim_test_result [list 0 1]
 }
 do_faultsim_test 5.5.3 -faults oom* -body {
-  execsql { 
+  execsql {
     SELECT count(fts5_decode(rowid, block)) FROM x1_data WHERE rowid = (
       SELECT min(rowid) FROM x1_data WHERE rowid>20
     )
@@ -200,9 +200,9 @@ do_faultsim_test 5.5.3 -faults oom* -body {
   faultsim_test_result [list 0 1]
 }
 do_faultsim_test 5.5.4 -faults oom* -body {
-  execsql { 
+  execsql {
     SELECT count(fts5_decode(rowid, block)) FROM x1_data WHERE rowid = (
-      SELECT max(rowid) FROM x1_data 
+      SELECT max(rowid) FROM x1_data
     )
   }
 } -test {
@@ -309,7 +309,7 @@ do_test 8.0 {
 
 do_faultsim_test 8.1 -faults oom* -prep {
 } -body {
-  execsql { 
+  execsql {
     SELECT rowid FROM x1 WHERE x1 MATCH 'x*'
   }
 } -test {

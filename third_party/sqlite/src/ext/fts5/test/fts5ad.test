@@ -60,7 +60,7 @@ foreach {T create} {
     CREATE VIRTUAL TABLE t1 USING fts5(a, b, detail=%DETAIL%);
     INSERT INTO t1(t1, rank) VALUES('pgsz', 32);
   }
-  
+
   3 {
     CREATE VIRTUAL TABLE t1 USING fts5(a, b, prefix="1,2,3,4", detail=%DETAIL%);
     INSERT INTO t1(t1, rank) VALUES('pgsz', 32);
@@ -71,7 +71,7 @@ foreach {T create} {
     INSERT INTO t1(t1, rank) VALUES('pgsz', 32);
     BEGIN;
   }
-  
+
   5 {
     CREATE VIRTUAL TABLE t1 USING fts5(a, b, prefix="1,2,3,4", detail=%DETAIL%);
     INSERT INTO t1(t1, rank) VALUES('pgsz', 32);
@@ -80,11 +80,11 @@ foreach {T create} {
 
 } {
 
-  do_test $T.1 { 
+  do_test $T.1 {
     execsql { DROP TABLE IF EXISTS t1 }
     execsql $create
   } {}
-  
+
   do_test $T.1 {
     foreach {rowid a b} {
       0   {fghij uvwxyz klmn pq uvwx}         {klmn f fgh uv fghij klmno}
@@ -193,7 +193,7 @@ foreach {T create} {
       }
     }
   } {}
-  
+
   proc prefix_query {prefixlist} {
     set ret [list]
     db eval {SELECT rowid, a, b FROM t1 ORDER BY rowid DESC} {
@@ -212,13 +212,13 @@ foreach {T create} {
   do_execsql_test $T.integrity {
     INSERT INTO t1(t1) VALUES('integrity-check');
   }
-  
+
   foreach {bAsc sql} {
     1 {SELECT rowid FROM t1 WHERE t1 MATCH $prefix}
     0 {SELECT rowid FROM t1 WHERE t1 MATCH $prefix ORDER BY rowid DESC}
   } {
     foreach {tn prefix} {
-      1  {a*} 2 {ab*} 3 {abc*} 4 {abcd*} 5 {abcde*} 
+      1  {a*} 2 {ab*} 3 {abc*} 4 {abcd*} 5 {abcde*}
       6  {f*} 7 {fg*} 8 {fgh*} 9 {fghi*} 10 {fghij*}
       11 {k*} 12 {kl*} 13 {klm*} 14 {klmn*} 15 {klmno*}
       16 {p*} 17 {pq*} 18 {pqr*} 19 {pqrs*} 20 {pqrst*}
@@ -231,7 +231,7 @@ foreach {T create} {
         set res [lsort -integer -increasing $res]
       }
       set n [llength $res]
-      if {$T==5} breakpoint 
+      if {$T==5} breakpoint
       do_execsql_test $T.$bAsc.$tn.$n $sql $res
     }
   }

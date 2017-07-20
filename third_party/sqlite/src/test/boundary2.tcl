@@ -179,14 +179,14 @@ foreach r $nums3 {
     puts "    SELECT a FROM t1 WHERE r $op $r ORDER BY a"
     puts "  \175"
     puts "\175 {[sort $aset]}"
-  
+
     ################################################################ 2.x.y.2
     puts "do_test $tname-2.$i.$subno.2 \173"
     puts "  db eval \173"
     puts "    SELECT a FROM t1 WHERE r $op $r ORDER BY a DESC"
     puts "  \175"
     puts "\175 {[reverse [sort $aset]]}"
-  
+
     ################################################################ 2.x.y.3
     set aset {}
     foreach rx [sort $rset] {
@@ -197,7 +197,7 @@ foreach r $nums3 {
     puts "    SELECT a FROM t1 WHERE r $op $r ORDER BY r"
     puts "  \175"
     puts "\175 {$aset}"
-  
+
     ################################################################ 2.x.y.4
     set aset {}
     foreach rx [reverse [sort $rset]] {
@@ -208,7 +208,7 @@ foreach r $nums3 {
     puts "    SELECT a FROM t1 WHERE r $op $r ORDER BY r DESC"
     puts "  \175"
     puts "\175 {$aset}"
-  
+
     ################################################################ 2.x.y.5
     set aset {}
     set xset {}
@@ -224,7 +224,7 @@ foreach r $nums3 {
     puts "    SELECT a FROM t1 WHERE r $op $r ORDER BY x"
     puts "  \175"
     puts "\175 {$aset}"
-  
+
     ################################################################ 2.x.y.10
     if {abs($r)>9223372036854775808 || [string length $r5]>15} continue
     set rset {}
@@ -242,7 +242,7 @@ foreach r $nums3 {
     puts "    SELECT a FROM t1 WHERE r $op $r0 ORDER BY r"
     puts "  \175"
     puts "\175 {$aset}"
-  
+
     ################################################################ 2.x.y.11
     set aset {}
     foreach rx [reverse [sort $rset]] {
@@ -271,7 +271,7 @@ foreach r $nums3 {
     puts "    SELECT a FROM t1 WHERE r $op $r5 ORDER BY r"
     puts "  \175"
     puts "\175 {$aset}"
-  
+
     ################################################################ 2.x.y.13
     set aset {}
     foreach rx [reverse [sort $rset]] {
@@ -335,14 +335,14 @@ foreach r $nums3 {
     puts "    SELECT a FROM t1 WHERE r $op $r ORDER BY a"
     puts "  \175"
     puts "\175 {[sort $aset]}"
-  
+
     ################################################################ 2.x.y.2
     puts "do_test $tname-4.$i.$subno.2 \173"
     puts "  db eval \173"
     puts "    SELECT a FROM t1 WHERE r $op $r ORDER BY a DESC"
     puts "  \175"
     puts "\175 {[reverse [sort $aset]]}"
-  
+
     ################################################################ 2.x.y.3
     set aset {}
     foreach rx [sort $rset] {
@@ -353,7 +353,7 @@ foreach r $nums3 {
     puts "    SELECT a FROM t1 WHERE r $op $r ORDER BY r"
     puts "  \175"
     puts "\175 {$aset}"
-  
+
     ################################################################ 2.x.y.4
     set aset {}
     foreach rx [reverse [sort $rset]] {
@@ -364,7 +364,7 @@ foreach r $nums3 {
     puts "    SELECT a FROM t1 WHERE r $op $r ORDER BY r DESC"
     puts "  \175"
     puts "\175 {$aset}"
-  
+
     ################################################################ 2.x.y.5
     set aset {}
     set xset {}
@@ -380,7 +380,7 @@ foreach r $nums3 {
     puts "    SELECT a FROM t1 WHERE r $op $r ORDER BY x"
     puts "  \175"
     puts "\175 {$aset}"
-  
+
     ################################################################ 2.x.y.10
     if {abs($r)>9223372036854775808 || [string length $r5]>15} continue
     set rset {}
@@ -398,7 +398,7 @@ foreach r $nums3 {
     puts "    SELECT a FROM t1 WHERE r $op $r0 ORDER BY r"
     puts "  \175"
     puts "\175 {$aset}"
-  
+
     ################################################################ 2.x.y.11
     set aset {}
     foreach rx [reverse [sort $rset]] {
@@ -427,7 +427,7 @@ foreach r $nums3 {
     puts "    SELECT a FROM t1 WHERE r $op $r5 ORDER BY r"
     puts "  \175"
     puts "\175 {$aset}"
-  
+
     ################################################################ 2.x.y.13
     set aset {}
     foreach rx [reverse [sort $rset]] {

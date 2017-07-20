@@ -43,7 +43,7 @@ static char *readFile(const char *zFilename){
   rewind(in);
   z = malloc( n+1 );
   if( z==0 ){
-    fprintf(stderr, "cannot allocate %d bytes to store '%s'\n", 
+    fprintf(stderr, "cannot allocate %d bytes to store '%s'\n",
             (int)(n+1), zFilename);
     exit(1);
   }
@@ -67,11 +67,11 @@ static char *readFile(const char *zFilename){
 **    *  '++'
 **    *  '--'
 **
-** If the code contains the phrase "side-effects-ok" is inside a 
+** If the code contains the phrase "side-effects-ok" is inside a
 ** comment, then always return false.  This is used to disable checking
 ** for assert()s with deliberate side-effects, such as used by
 ** SQLITE_TESTCTRL_ASSERT - a facility that allows applications to
-** determine at runtime whether or not assert()s are enabled.  
+** determine at runtime whether or not assert()s are enabled.
 ** Obviously, that determination cannot be made unless the assert()
 ** has some side-effect.
 **
@@ -154,5 +154,5 @@ int main(int argc, char **argv){
     fprintf(stderr, "Found %u undesirable side-effects\n", nErr);
     return 1;
   }
-  return 0; 
+  return 0;
 }

@@ -47,7 +47,7 @@ const char *findOption(const char *zName, int hasArg, const char *zDefault){
       break;
     }
   }
-  return zResult;       
+  return zResult;
 }
 
 
@@ -129,7 +129,7 @@ static void showSchema(sqlite3 *db, const char *zTab){
   sqlite3_finalize(pStmt);
 }
 
-/* 
+/*
 ** Read a 64-bit variable-length integer from memory starting at p[0].
 ** Return the number of bytes read, or 0 on error.
 ** The value is stored in *v.
@@ -201,7 +201,7 @@ static void showVocabulary(sqlite3 *db, const char *zTab){
   printf("Number of documents...................... %9d\n", nDoc);
 
   runSql(db, "CREATE VIRTUAL TABLE %s USING fts4aux(%Q)", zAux, zTab);
-  pStmt = prepare(db, 
+  pStmt = prepare(db,
              "SELECT count(*), sum(occurrences) FROM %s WHERE col='*'",
              zAux);
   while( sqlite3_step(pStmt)==SQLITE_ROW ){
@@ -508,7 +508,7 @@ static void showSegdirMap(sqlite3 *db, const char *zTab){
         if( iLEnd+1<=iEnd ){
           sqlite3_bind_int64(pStmt2, 1, iLEnd+1);
           sqlite3_bind_int64(pStmt2, 2, iEnd);
-          iLower = -1;        
+          iLower = -1;
           while( sqlite3_step(pStmt2)==SQLITE_ROW ){
             iX = sqlite3_column_int64(pStmt2, 0);
             if( iLower<0 ){
@@ -588,8 +588,8 @@ static void decodeSegment(
     }
   }
 }
-  
-  
+
+
 /*
 ** Print a a blob as hex and ascii.
 */
@@ -733,7 +733,7 @@ static void decodeDoclist(
     }
   }
 }
-  
+
 
 /*
 ** Print the content of a doclist.  The segment or segdir-root is
@@ -871,5 +871,5 @@ int main(int argc, char **argv){
   }else{
     usage(argv[0]);
   }
-  return 0; 
+  return 0;
 }

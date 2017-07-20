@@ -48,9 +48,9 @@ proc standard_path {x} {
 # new quota size to cover the last write.  These three values are
 # appended to the global variable $::quota.  The filename is processed
 # to convert every \ character into / and to change the name of the
-# working directory to PWD.  
+# working directory to PWD.
 #
-# The quota is increased to the request if the ::quota_request_ok 
+# The quota is increased to the request if the ::quota_request_ok
 # global variable is true.
 #
 set ::quota {}

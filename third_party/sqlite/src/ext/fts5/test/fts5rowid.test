@@ -35,14 +35,14 @@ do_execsql_test 1.3 {
 
 do_catchsql_test 1.4 {
   SELECT fts5_rowid('nosucharg');
-} {1 {first arg to fts5_rowid() must be 'segment'}} 
+} {1 {first arg to fts5_rowid() must be 'segment'}}
 
 
 #-------------------------------------------------------------------------
 # Tests of the fts5_decode() function.
 #
 reset_db
-do_execsql_test 2.1 { 
+do_execsql_test 2.1 {
   CREATE VIRTUAL TABLE x1 USING fts5(a, b);
   INSERT INTO x1(x1, rank) VALUES('pgsz', 32);
 } {}

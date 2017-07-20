@@ -318,7 +318,7 @@ static int SQLITE_TCLAPI utf8_to_utf8(
   sqlite3_free(z);
   return TCL_OK;
 #else
-  Tcl_AppendResult(interp, 
+  Tcl_AppendResult(interp,
       "[utf8_to_utf8] unavailable - SQLITE_DEBUG not defined", 0
   );
   return TCL_ERROR;

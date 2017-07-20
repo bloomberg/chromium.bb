@@ -45,8 +45,8 @@ do_test tkt2832-2.1 {
   }
 } {}
 do_test tkt2832-2.2 {
-  execsql { 
-    UPDATE t2 SET b = 5 
+  execsql {
+    UPDATE t2 SET b = 5
   }
 } {}
 

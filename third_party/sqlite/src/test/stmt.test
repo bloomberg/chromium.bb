@@ -83,7 +83,7 @@ proc filecount {testname sql expected} {
 filecount stmt-2.1 { INSERT INTO t1 VALUES(9, 9)  } 2
 filecount stmt-2.2 { REPLACE INTO t1 VALUES(9, 9) } 2
 filecount stmt-2.3 { INSERT INTO t1 SELECT 9, 9   } 2
-filecount stmt-2.4 { 
+filecount stmt-2.4 {
     INSERT INTO t1 SELECT 9, 9;
     INSERT INTO t1 SELECT 10, 10;
 } 2
@@ -91,9 +91,9 @@ filecount stmt-2.4 {
 do_test stmt-2.5 {
   execsql { CREATE INDEX i1 ON t1(b) }
 } {}
-filecount stmt-2.6 { 
+filecount stmt-2.6 {
   REPLACE INTO t1 VALUES(5, 5);
-  REPLACE INTO t1 VALUES(5, 5); 
+  REPLACE INTO t1 VALUES(5, 5);
 } 2
 
 finish_test

@@ -68,8 +68,8 @@ do_multiclient_test tn {
   # It is stuck in a permanent SQLITE_BUSY state at this point.
   #
   do_test 1.$tn.7 { rbu step } {SQLITE_BUSY}
-  do_test 1.$tn.8 { 
-    list [catch { rbu close } msg] $msg 
+  do_test 1.$tn.8 {
+    list [catch { rbu close } msg] $msg
   } {1 SQLITE_BUSY}
 
   do_test 1.$tn.9.1 { sql2 { BEGIN EXCLUSIVE } } {}
@@ -78,7 +78,7 @@ do_multiclient_test tn {
     rbu step
   } {SQLITE_BUSY}
   do_test 1.$tn.9.3 {
-    list [catch { rbu close } msg] $msg 
+    list [catch { rbu close } msg] $msg
   } {1 {SQLITE_BUSY - database is locked}}
   do_test 1.$tn.9.4 { sql2 COMMIT } {}
 
@@ -88,7 +88,7 @@ do_multiclient_test tn {
     rbu step
   } {SQLITE_BUSY}
   do_test 1.$tn.10.3 {
-    list [catch { rbu close } msg] $msg 
+    list [catch { rbu close } msg] $msg
   } {1 SQLITE_BUSY}
   do_test 1.$tn.10.4 { sql2 COMMIT } {}
 
@@ -132,14 +132,14 @@ do_multiclient_test tn {
 
   do_test 2.$tn.2 { sql2 { BEGIN IMMEDIATE } } {}
 
-  do_test 2.$tn.3 { 
+  do_test 2.$tn.3 {
     sqlite3rbu rbu test.db rbu.db
-    rbu step 
+    rbu step
   } {SQLITE_BUSY}
 
   do_test 2.$tn.4 { list [catch { rbu close } msg] $msg } {1 SQLITE_BUSY}
 
-  do_test 2.$tn.5 { 
+  do_test 2.$tn.5 {
     sql2 { SELECT * FROM xx ; COMMIT }
   } {1 2 3 4 5 6 7 8 9}
 
@@ -151,12 +151,12 @@ do_multiclient_test tn {
 
   do_test 2.$tn.7 { sql2 { BEGIN EXCLUSIVE } } {}
 
-  do_test 2.$tn.8 { 
+  do_test 2.$tn.8 {
     sqlite3rbu rbu test.db rbu.db
-    rbu step 
+    rbu step
   } {SQLITE_BUSY}
   do_test 2.$tn.9 { list [catch { rbu close } msg] $msg } {1 SQLITE_BUSY}
-  do_test 2.$tn.10 { 
+  do_test 2.$tn.10 {
     sql2 { SELECT * FROM xx ; COMMIT }
   } {1 2 3 4 5 6 7 8 9}
 
@@ -180,13 +180,13 @@ do_multiclient_test tn {
   sql1 $setup_sql
 
   # Check the initial database contains table "xx" with a single row.
-  # Also save the current values of "PRAGMA data-version" for [db1] 
+  # Also save the current values of "PRAGMA data-version" for [db1]
   # and [db2].
   #
   do_test 2.$tn.1 {
     list [sql1 { SELECT count(*) FROM xx }] [sql2 { SELECT count(*) FROM xx }]
   } {1 1}
-  set V1 [sql1 {PRAGMA data_version}] 
+  set V1 [sql1 {PRAGMA data_version}]
   set V2 [sql2 {PRAGMA data_version}]
 
   # Check the values of data-version have not magically changed.
@@ -195,7 +195,7 @@ do_multiclient_test tn {
     list [sql1 {PRAGMA data_version}] [sql2 {PRAGMA data_version}]
   } [list $V1 $V2]
 
-  # Start stepping the RBU. From the point of view of [db1] and [db2], the 
+  # Start stepping the RBU. From the point of view of [db1] and [db2], the
   # data-version values remain unchanged until the database contents are
   # modified. At which point the values are incremented.
   #
@@ -216,7 +216,7 @@ do_multiclient_test tn {
     list [sql1 {SELECT count(*) FROM xx}] [sql2 {SELECT count(*) FROM xx}]
   } {3 3}
 
-  set V1 [sql1 {PRAGMA data_version}] 
+  set V1 [sql1 {PRAGMA data_version}]
   set V2 [sql2 {PRAGMA data_version}]
 
   # Finish applying the RBU (i.e. do the incremental checkpoint). Check that

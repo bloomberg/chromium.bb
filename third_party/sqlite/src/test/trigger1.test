@@ -39,7 +39,7 @@ do_test trigger1-1.1.1 {
      CREATE TRIGGER trig UPDATE ON no_such_table BEGIN
        SELECT * from sqlite_master;
      END;
-   } 
+   }
 } {1 {no such table: main.no_such_table}}
 
 ifcapable tempdb {
@@ -48,7 +48,7 @@ ifcapable tempdb {
        CREATE TEMP TRIGGER trig UPDATE ON no_such_table BEGIN
          SELECT * from sqlite_master;
        END;
-     } 
+     }
   } {1 {no such table: no_such_table}}
 }
 
@@ -154,7 +154,7 @@ ifcapable tempdb {
               SELECT * from sqlite_master;
           END;
           SELECT count(*) FROM sqlite_master WHERE name = 'temp_trig';
-    } 
+    }
   } {0}
 }
 
@@ -342,7 +342,7 @@ ifcapable tempdb {
   do_test trigger1-3.8 {
     execsql {
       INSERT INTO t1 VALUES(3,4);
-      SELECT * FROM t1; 
+      SELECT * FROM t1;
       SELECT * FROM t2;
     }
   } {1 2 3 4 3 4}
@@ -544,7 +544,7 @@ ifcapable conflict {
 #
 # Also verify that references within trigger programs are resolved at
 # statement compile time, not trigger installation time. This means, for
-# example, that you can drop and re-create tables referenced by triggers. 
+# example, that you can drop and re-create tables referenced by triggers.
 ifcapable tempdb&&attach {
   do_test trigger1-10.0 {
     forcedelete test2.db
@@ -563,13 +563,13 @@ ifcapable tempdb&&attach {
   } {}
   do_test trigger1-10.2 {
     execsql {
-      CREATE TEMP TRIGGER trig1 AFTER INSERT ON main.t4 BEGIN 
+      CREATE TEMP TRIGGER trig1 AFTER INSERT ON main.t4 BEGIN
         INSERT INTO insert_log VALUES('main', new.a, new.b, new.c);
       END;
-      CREATE TEMP TRIGGER trig2 AFTER INSERT ON temp.t4 BEGIN 
+      CREATE TEMP TRIGGER trig2 AFTER INSERT ON temp.t4 BEGIN
         INSERT INTO insert_log VALUES('temp', new.a, new.b, new.c);
       END;
-      CREATE TEMP TRIGGER trig3 AFTER INSERT ON aux.t4 BEGIN 
+      CREATE TEMP TRIGGER trig3 AFTER INSERT ON aux.t4 BEGIN
         INSERT INTO insert_log VALUES('aux', new.a, new.b, new.c);
       END;
     }

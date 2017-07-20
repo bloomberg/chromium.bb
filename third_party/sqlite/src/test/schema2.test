@@ -17,7 +17,7 @@
 # $Id: schema2.test,v 1.4 2009/02/04 17:40:58 drh Exp $
 
 #---------------------------------------------------------------------
-# When any of the following types of SQL statements or actions are 
+# When any of the following types of SQL statements or actions are
 # executed, all pre-compiled statements are invalidated. An attempt
 # to execute an invalidated statement always returns SQLITE_SCHEMA.
 #
@@ -200,7 +200,7 @@ ifcapable utf16 {
     sqlite3_reset $::STMT
   } {SQLITE_OK}
   do_test schema2-7.3 {
-    add_test_collate $::DB 0 0 0 
+    add_test_collate $::DB 0 0 0
     sqlite3_step $::STMT
   } {SQLITE_DONE}
   do_test schema2-7.4 {
@@ -224,7 +224,7 @@ ifcapable auth {
 }
 
 #---------------------------------------------------------------------
-# schema2-9.1: Test that if a table is dropped by one database connection, 
+# schema2-9.1: Test that if a table is dropped by one database connection,
 #             other database connections are aware of the schema change.
 # schema2-9.2: Test that if a view is dropped by one database connection,
 #             other database connections are aware of the schema change.
@@ -294,7 +294,7 @@ do_test schema2-10.5 {
 } {}
 
 #---------------------------------------------------------------------
-# Attempting to delete or replace a user-function or collation sequence 
+# Attempting to delete or replace a user-function or collation sequence
 # while there are active statements returns an SQLITE_BUSY error.
 #
 # schema2-11.1 - 11.4: User function.

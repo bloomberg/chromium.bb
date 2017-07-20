@@ -32,18 +32,18 @@ do_execsql_test 1 {
 
 #explain_i {
 #  SELECT * FROM t2
-#  UNION ALL 
-#  SELECT * FROM t1 WHERE a<5 
+#  UNION ALL
+#  SELECT * FROM t1 WHERE a<5
 #  ORDER BY 2, 1
 #}
 
 do_execsql_test 2 {
   SELECT * FROM t2
-  UNION ALL 
-  SELECT * FROM t1 WHERE a<5 
+  UNION ALL
+  SELECT * FROM t1 WHERE a<5
   ORDER BY 2, 1
 } {6 {} {} 1 one I 5 ten XX}
 
 
-  
+
 finish_test

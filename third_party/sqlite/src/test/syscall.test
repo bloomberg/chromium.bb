@@ -18,7 +18,7 @@ source $testdir/malloc_common.tcl
 if {[llength [info commands test_syscall]]==0} {
   finish_test
   return
-} 
+}
 
 if {[test_syscall defaultvfs] != "unix"} {
   finish_test
@@ -59,7 +59,7 @@ do_test 2.1.2 { test_syscall exists nosuchcall } 0
 foreach s {
     open close access getcwd stat fstat ftruncate
     fcntl read pread write pwrite fchmod fallocate
-    pread64 pwrite64 unlink openDirectory mkdir rmdir 
+    pread64 pwrite64 unlink openDirectory mkdir rmdir
     statvfs fchown geteuid umask mmap munmap mremap
     getpagesize readlink lstat
 } {
@@ -70,7 +70,7 @@ do_test 3.1 { lsort [test_syscall list] } [lsort $syscall_list]
 #-------------------------------------------------------------------------
 # This test verifies that if a call to open() fails and errno is set to
 # EINTR, the call is retried. If it succeeds, execution continues as if
-# nothing happened. 
+# nothing happened.
 #
 test_syscall reset
 forcedelete test.db2
@@ -89,7 +89,7 @@ foreach jrnl [list wal delete] {
     db_restore_and_reopen
     test_syscall fault $i 0
     test_syscall errno open EINTR
-  
+
     do_test 4.2.$jrnl.$i {
       sqlite3 db test.db
       execsql { ATTACH 'test.db2' AS aux }
@@ -122,8 +122,8 @@ foreach jrnl [list wal delete] {
 # same file. From the Linux man page:
 #
 #   close() closes a file descriptor, so that it no longer refers to any file
-#   and may be reused. Any record locks (see fcntl(2)) held on the file it 
-#   was associated with, and owned by the process, are removed (regardless 
+#   and may be reused. Any record locks (see fcntl(2)) held on the file it
+#   was associated with, and owned by the process, are removed (regardless
 #   of the file descriptor that was used to obtain the lock).
 #
 catch { db close }
@@ -145,24 +145,24 @@ do_multiclient_test tn {
   } {}
 
   do_test syscall-5.$tn.2 { sql2 { SELECT * FROM t1 } } {1 2}
-  do_test syscall-5.$tn.3 { 
+  do_test syscall-5.$tn.3 {
     csql2 { INSERT INTO t1 VALUES(5, 6) }
   } {1 {database is locked}}
 
-  do_test syscall-5.$tn.4 { 
+  do_test syscall-5.$tn.4 {
     code1 {
       dbX1 close
       dbX2 close
     }
   } {}
 
-  do_test syscall-5.$tn.5 { 
+  do_test syscall-5.$tn.5 {
     csql2 { INSERT INTO t1 VALUES(5, 6) }
   } {1 {database is locked}}
 
   do_test syscall-5.$tn.6 { sql1 { COMMIT } } {}
 
-  do_test syscall-5.$tn.7 { 
+  do_test syscall-5.$tn.7 {
     csql2 { INSERT INTO t1 VALUES(5, 6) }
   } {0 {}}
 }
@@ -232,7 +232,7 @@ foreach {nByte res} {
 }
 
 #-------------------------------------------------------------------------
-# 
+#
 catch { db close }
 forcedelete test.db test.db2
 
@@ -242,11 +242,11 @@ do_test 8.1 {
   file size test.db
 } {0}
 foreach {tn hint size} {
-  1  1000    4096 
-  2  1000    4096 
-  3  3000    4096 
-  4  4096    4096 
-  5  4197    8192 
+  1  1000    4096
+  2  1000    4096
+  3  3000    4096
+  4  4096    4096
+  5  4197    8192
 } {
   do_test 8.2.$tn {
     file_control_sizehint_test db main $hint
@@ -262,11 +262,11 @@ do_test 8.3 {
   file size test.db
 } {0}
 foreach {tn hint size} {
-  1  5       16 
-  2  13      16 
-  3  45      48 
-  4  48      48 
-  5  49      64 
+  1  5       16
+  2  13      16
+  3  45      48
+  4  48      48
+  5  49      64
 } {
   do_test 8.4.$tn {
     file_control_sizehint_test db main $hint

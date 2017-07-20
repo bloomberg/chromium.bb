@@ -55,11 +55,11 @@ ifcapable incrblob {
     CREATE TABLE pX(x PRIMARY KEY);
     CREATE TABLE cX(a INTEGER PRIMARY KEY, b REFERENCES pX);
   }
-  
+
   do_catchsql_test 2.1 {
     INSERT INTO cX VALUES(11, zeroblob(40));
   } {1 {FOREIGN KEY constraint failed}}
-  
+
   do_test 2.2 {
     set stmt [sqlite3_prepare_v2 db "INSERT INTO cX VALUES(11, ?)" -1]
     sqlite3_bind_zeroblob $stmt 1 45

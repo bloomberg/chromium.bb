@@ -39,6 +39,6 @@ index 110d7ec656ae..3b938ce7b2f8 100644
    pcache1.separateCache = 0;
  #elif SQLITE_THREADSAFE
    pcache1.separateCache = sqlite3GlobalConfig.pPage==0
--- 
+--
 2.11.0
 

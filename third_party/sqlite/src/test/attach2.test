@@ -116,7 +116,7 @@ do_test attach2-2.10 {
 do_test attach2-2.11 {
   # when the write failed in the previous test, the transaction should
   # have rolled back.
-  # 
+  #
   # Update for version 3: A transaction is no longer rolled back if a
   #                       database is found to be busy.
   execsql {rollback}
@@ -157,9 +157,9 @@ for {set i 2} {$i<=15} {incr i} {
 # A procedure to verify the status of locks on a database.
 #
 proc lock_status {testnum db expected_result} {
-  # If the database was compiled with OMIT_TEMPDB set, then 
+  # If the database was compiled with OMIT_TEMPDB set, then
   # the lock_status list will not contain an entry for the temp
-  # db. But the test code doesn't know this, so its easiest 
+  # db. But the test code doesn't know this, so its easiest
   # to filter it out of the $expected_result list here.
   ifcapable !tempdb {
     set expected_result [concat \
@@ -211,7 +211,7 @@ do_test attach2-4.4 {
   # to commit a write to test.db from db2
   catchsql {
     INSERT INTO t1 VALUES(1, 2)
-  } db2 
+  } db2
 } {1 {database is locked}}
 
 lock_status 4.4.1 db {main shared temp closed file2 unlocked}
@@ -221,7 +221,7 @@ lock_status 4.4.2 db2 {main unlocked temp closed file2 unlocked}
 # are large enough to hold the entire change in memory.  If either
 # is set too small, then changes will spill to the database, forcing
 # a reserved lock to promote to exclusive.  That will mess up our
-# test results. 
+# test results.
 
 set soft_limit [sqlite3_soft_heap_limit 0]
 
@@ -266,7 +266,7 @@ do_test attach2-4.7 {
   # failing to obtain a write-lock on file2.
   catchsql {
     INSERT INTO t1 VALUES(1, 2)
-  } db2 
+  } db2
 } {0 {}}
 
 lock_status 4.7.1 db {main shared temp closed file2 shared}

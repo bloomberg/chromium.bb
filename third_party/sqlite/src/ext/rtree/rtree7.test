@@ -8,7 +8,7 @@
 #    May you share freely, never taking more than you give.
 #
 #***********************************************************************
-# 
+#
 # Test that nothing goes wrong if an rtree table is created, then the
 # database page-size is modified. At one point (3.6.22), this was causing
 # malfunctions.
@@ -16,7 +16,7 @@
 
 if {![info exists testdir]} {
   set testdir [file join [file dirname [info script]] .. .. test]
-} 
+}
 source $testdir/tester.tcl
 
 ifcapable !rtree||!vacuum {
@@ -47,7 +47,7 @@ do_test rtree7-1.2 {
   execsql_intout { SELECT * FROM rt }
 } {1 1 2 3 4}
 do_test rtree7-1.3 {
-  execsql_intout { 
+  execsql_intout {
     PRAGMA page_size = 2048;
     VACUUM;
     SELECT * FROM rt;
@@ -60,7 +60,7 @@ do_test rtree7-1.4 {
   execsql_intout { SELECT sum(x1), sum(x2), sum(y1), sum(y2) FROM rt }
 } {51 102 153 204}
 do_test rtree7-1.5 {
-  execsql_intout { 
+  execsql_intout {
     PRAGMA page_size = 512;
     VACUUM;
     SELECT sum(x1), sum(x2), sum(y1), sum(y2) FROM rt

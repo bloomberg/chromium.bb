@@ -78,8 +78,8 @@ db1 close
 db2 close
 
 #-------------------------------------------------------------------------
-# The following tests attempt to find a similar problem with collation 
-# sequence names - pointers to database handle specific allocations leaking 
+# The following tests attempt to find a similar problem with collation
+# sequence names - pointers to database handle specific allocations leaking
 # into schema objects and being used after the original handle has been
 # closed.
 #
@@ -178,14 +178,14 @@ db2 busy [list busyhandler db2]
 
 do_test 3.1 {
   db1 eval {
-    BEGIN; 
+    BEGIN;
       CREATE TABLE t1(a, b);
       CREATE TABLE t2(a, b);
       INSERT INTO t1 VALUES(1, 2);
       INSERT INTO t2 VALUES(1, 2);
   }
   # Keep this next COMMIT as a separate statement. This ensures that COMMIT
-  # has already been compiled and loaded into the tcl interface statement 
+  # has already been compiled and loaded into the tcl interface statement
   # cache when it is attempted below.
   db1 eval COMMIT
   db1 eval {
@@ -222,7 +222,7 @@ do_test 3.6 {
   close $::tf
   db1 eval COMMIT
 } {}
-  
+
 db1 close
 db2 close
 

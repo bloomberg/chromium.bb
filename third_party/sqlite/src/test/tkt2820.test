@@ -14,7 +14,7 @@
 # occurs while a query is in process will fail with a
 # "database is locked" error, but the entry in the sqlite_master
 # table will still be removed.  This is incorrect.  The
-# entry in the sqlite_master table should persist when 
+# entry in the sqlite_master table should persist when
 # the DROP fails due to an error.
 #
 # $Id: tkt2820.test,v 1.1 2007/12/04 16:54:53 drh Exp $

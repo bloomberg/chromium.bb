@@ -9,7 +9,7 @@
 #
 #***********************************************************************
 # This file implements regression tests for SQLite library. The focus
-# of these tests is exclusive access mode (i.e. the thing activated by 
+# of these tests is exclusive access mode (i.e. the thing activated by
 # "PRAGMA locking_mode = EXCLUSIVE").
 #
 # $Id: exclusive.test,v 1.15 2009/06/26 12:30:40 danielk1977 Exp $
@@ -37,43 +37,43 @@ do_test exclusive-1.0 {
     pragma locking_mode;
     pragma main.locking_mode;
     pragma temp.locking_mode;
-  } 
+  }
 } [list normal normal exclusive]
 do_test exclusive-1.1 {
   execsql {
     pragma locking_mode = exclusive;
-  } 
+  }
 } {exclusive}
 do_test exclusive-1.2 {
   execsql {
     pragma locking_mode;
     pragma main.locking_mode;
     pragma temp.locking_mode;
-  } 
+  }
 } [list exclusive exclusive exclusive]
 do_test exclusive-1.3 {
   execsql {
     pragma locking_mode = normal;
-  } 
+  }
 } {normal}
 do_test exclusive-1.4 {
   execsql {
     pragma locking_mode;
     pragma main.locking_mode;
     pragma temp.locking_mode;
-  } 
+  }
 } [list normal normal exclusive]
 do_test exclusive-1.5 {
   execsql {
     pragma locking_mode = invalid;
-  } 
+  }
 } {normal}
 do_test exclusive-1.6 {
   execsql {
     pragma locking_mode;
     pragma main.locking_mode;
     pragma temp.locking_mode;
-  } 
+  }
 } [list normal normal exclusive]
 ifcapable attach {
   do_test exclusive-1.7 {
@@ -144,7 +144,7 @@ ifcapable attach {
       pragma aux3.locking_mode;
     }
   } [list normal exclusive normal normal normal]
-  
+
   do_test exclusive-1.99 {
     execsql {
       DETACH aux;
@@ -155,7 +155,7 @@ ifcapable attach {
 }
 
 #----------------------------------------------------------------------
-# Test cases exclusive-2.X verify that connections in exclusive 
+# Test cases exclusive-2.X verify that connections in exclusive
 # locking_mode do not relinquish locks.
 #
 do_test exclusive-2.0 {
@@ -173,7 +173,7 @@ do_test exclusive-2.1 {
   } db2
 } {1 2 3 4 5 6}
 do_test exclusive-2.2 {
-  # This causes connection 'db' (in exclusive mode) to establish 
+  # This causes connection 'db' (in exclusive mode) to establish
   # a shared-lock on the db. The other connection should now be
   # locked out as a writer.
   execsql {
@@ -244,12 +244,12 @@ do_test exclusive-2.11 {
 db2 close
 
 #----------------------------------------------------------------------
-# Tests exclusive-3.X - test that a connection in exclusive mode 
-# truncates instead of deletes the journal file when committing 
+# Tests exclusive-3.X - test that a connection in exclusive mode
+# truncates instead of deletes the journal file when committing
 # a transaction.
 #
 # These tests are not run on windows because the windows backend
-# opens the journal file for exclusive access, preventing its contents 
+# opens the journal file for exclusive access, preventing its contents
 # from being inspected externally.
 #
 if {$tcl_platform(platform) != "windows"} {
@@ -318,7 +318,7 @@ if {$tcl_platform(platform) != "windows"} {
 #
 
 # The following procedure computes a "signature" for table "t3".  If
-# T3 changes in any way, the signature should change.  
+# T3 changes in any way, the signature should change.
 #
 # This is used to test ROLLBACK.  We gather a signature for t3, then
 # make lots of changes to t3, then rollback and take another signature.
@@ -408,7 +408,7 @@ foreach {name value} [array get env SQLITE_FORCE_PROXY_LOCKING] {
 set extrafds 0
 if {$using_proxy!=0} {
   set extrafds 2
-} 
+}
 
 do_test exclusive-5.0 {
   execsql {

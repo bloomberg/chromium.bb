@@ -58,13 +58,13 @@ do_execsql_test 2 {
 do_faultsim_test 2.1 -faults oom* -body {
   execsql { SELECT mit(matchinfo(t1, 'a')) FROM t1('x') }
 } -test {
-  faultsim_test_result {0 {{2 5} {2 5}}} 
+  faultsim_test_result {0 {{2 5} {2 5}}}
 }
 
 do_faultsim_test 2.2 -faults oom* -body {
   execsql { SELECT mit(matchinfo(t1, 'l')) FROM t1('x') }
 } -test {
-  faultsim_test_result {0 {{3 3} {1 7}}} 
+  faultsim_test_result {0 {{3 3} {1 7}}}
 }
 
 do_execsql_test 2.3 {
@@ -75,12 +75,12 @@ do_execsql_test 2.3 {
 do_faultsim_test 2.4 -faults oom* -body {
   execsql { SELECT mit(matchinfo(t1, 's')) FROM t1('a b c') }
 } -test {
-  faultsim_test_result {0 {{3 2} {2 3}}} 
+  faultsim_test_result {0 {{3 2} {2 3}}}
 }
 
 #-------------------------------------------------------------------------
 #
-reset_db 
+reset_db
 do_execsql_test 3.0 {
   CREATE VIRTUAL TABLE x1 USING fts5(z);
 }

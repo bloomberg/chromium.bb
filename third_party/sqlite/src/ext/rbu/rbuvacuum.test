@@ -50,7 +50,7 @@ foreach step {0 1} {
   do_execsql_test 1.2.4 {
     PRAGMA page_count;
   } {3}
-  
+
   # Add an index to the table.
   do_execsql_test 1.3.1 {
     CREATE INDEX t1b ON t1(b);
@@ -88,7 +88,7 @@ foreach step {0 1} {
   do_execsql_test 1.4.3 {
     PRAGMA page_count;
   } {10}
-  
+
   # WITHOUT ROWID table with an index.
   do_execsql_test 1.4.1 {
     CREATE INDEX t2c ON t2(c);
@@ -147,7 +147,7 @@ foreach step {0 1} {
     CREATE INDEX t4a ON t4(a);
     CREATE INDEX t4b ON t4(b);
     CREATE INDEX t4c ON t4(c);
-    
+
     INSERT INTO t4 VALUES('j', 'k', 'l');
     DELETE FROM t4 WHERE a='g';
   }
@@ -319,7 +319,7 @@ for {set i 1} 1 {incr i} {
   execsql { INSERT INTO tx VALUES(20, 20) }
 
   do_test 2.2.$i.1 {
-    sqlite3rbu_vacuum rbu test.db state.db 
+    sqlite3rbu_vacuum rbu test.db state.db
     rbu step
   } {SQLITE_BUSY}
   do_test 2.2.$i.2 {

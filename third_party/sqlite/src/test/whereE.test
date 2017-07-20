@@ -34,7 +34,7 @@ do_execsql_test 1.1 {
   ALTER TABLE t1 ADD COLUMN c;
   UPDATE t1 SET c=a*rowid+10000;
   CREATE INDEX t1ab ON t1(a,b);
-  
+
   CREATE TABLE t2(x,y);
   INSERT INTO t2 VALUES(4,44),(5,55),(6,66),(7,77);
   INSERT INTO t2 SELECT x+4, (x+4)*11 FROM t2;

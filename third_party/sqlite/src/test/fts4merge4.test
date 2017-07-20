@@ -80,9 +80,9 @@ foreach {tn am expected} {
       execsql { INSERT INTO t2(t2) VALUES($am) };
 
       eval $openclose
-  
+
       for {set i 0} {$i < 100} {incr i} {
-        execsql { 
+        execsql {
           BEGIN;
             INSERT INTO t2 VALUES($doc);
             INSERT INTO t2 VALUES($doc);
@@ -92,7 +92,7 @@ foreach {tn am expected} {
           COMMIT;
         }
       }
-  
+
       execsql { SELECT level, count(*) FROM t2_segdir GROUP BY level }
     } [list {*}$expected]
   }

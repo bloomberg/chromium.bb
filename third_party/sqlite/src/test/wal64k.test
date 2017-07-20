@@ -28,7 +28,7 @@ db close
 test_syscall pagesize 65536
 sqlite3 db test.db
 
-do_execsql_test 1.0 { 
+do_execsql_test 1.0 {
   PRAGMA journal_mode = WAL;
   CREATE TABLE t1(x);
   CREATE INDEX i1 ON t1(x);

@@ -61,7 +61,7 @@ set SQL(2) {
   INSERT INTO t3 SELECT randstr(10,10)||x FROM t3;
   DELETE FROM t3 WHERE random()%10!=0;
   INSERT INTO t3 SELECT randstr(10,10)||x FROM t3;
-} 
+}
 set SQL(3) {
   UPDATE t3 SET x = randstr(10, 400) WHERE random()%10;
   INSERT INTO t3 SELECT x FROM t3 WHERE random()%10;
@@ -88,7 +88,7 @@ for {set ii 2} {$ii < ($iterations+2)} {incr ii} {
 
   # Execute some SQL on the database. Then rollback to savepoint "one".
   # Check that the database signature is as it was when "one" was opened.
-  # 
+  #
   do_test savepoint2-$ii.2 {
     execsql $SQL(1)
     execsql "ROLLBACK to one"
@@ -105,7 +105,7 @@ for {set ii 2} {$ii < ($iterations+2)} {incr ii} {
     execsql "SAVEPOINT two"
   } {}
 
-  # More SQL changes. The rollback to savepoint "two". Check that the 
+  # More SQL changes. The rollback to savepoint "two". Check that the
   # signature is as it was when savepoint "two" was opened.
   #
   do_test savepoint2-$ii.4 {
@@ -115,7 +115,7 @@ for {set ii 2} {$ii < ($iterations+2)} {incr ii} {
   } $::sig(two)
   integrity_check savepoint2-$ii.4.1
 
-  # More SQL changes. The rollback to savepoint "two". Check that the 
+  # More SQL changes. The rollback to savepoint "two". Check that the
   # signature is as it was when savepoint "two" was opened.
   #
   do_test savepoint2-$ii.5 {
@@ -127,12 +127,12 @@ for {set ii 2} {$ii < ($iterations+2)} {incr ii} {
     signature
   } $::sig(one)
 
-  # By this point the database is in the same state as it was at the 
-  # top of the for{} loop (everything having been rolled back by the 
-  # "ROLLBACK TO one" command above). So make a few changes to the 
+  # By this point the database is in the same state as it was at the
+  # top of the for{} loop (everything having been rolled back by the
+  # "ROLLBACK TO one" command above). So make a few changes to the
   # database and COMMIT the open transaction, so that the next iteration
   # of the for{} loop works on a different dataset.
-  # 
+  #
   # The transaction being committed here may have been opened normally using
   # "BEGIN", or may have been opened using a transaction savepoint created
   # by the "SAVEPOINT one" statement.

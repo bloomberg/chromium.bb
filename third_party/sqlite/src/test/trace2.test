@@ -70,50 +70,50 @@ do_trace_select_test 1.2  {
 }
 
 do_trace_select_test 1.3  {
-  SELECT sql('SELECT 1, 
-    2, 
+  SELECT sql('SELECT 1,
+    2,
     3'
   );
 } {
-  "SELECT sql('SELECT 1, 
-    2, 
+  "SELECT sql('SELECT 1,
+    2,
     3'
   );"
-  "-- SELECT 1, 
---     2, 
+  "-- SELECT 1,
+--     2,
 --     3"
 }
 
 do_trace_select_test 1.4  {
-  SELECT sql('SELECT 1, 
+  SELECT sql('SELECT 1,
 
 
     3'
   );
 } {
-  "SELECT sql('SELECT 1, 
+  "SELECT sql('SELECT 1,
 
 
     3'
   );"
-  "-- SELECT 1, 
--- 
--- 
+  "-- SELECT 1,
+--
+--
 --     3"
 }
 
 do_trace_select_test 1.5  {
-  SELECT $var, sql('SELECT 1, 
-    $var, 
+  SELECT $var, sql('SELECT 1,
+    $var,
     3'
   );
 } {
-  "SELECT NULL, sql('SELECT 1, 
-    $var, 
+  "SELECT NULL, sql('SELECT 1,
+    $var,
     3'
   );"
-  "-- SELECT 1, 
---     $var, 
+  "-- SELECT 1,
+--     $var,
 --     3"
 }
 
@@ -127,13 +127,13 @@ ifcapable fts3 {
   do_trace_test 2.2 {
     INSERT INTO x1 VALUES('North northwest wind between 8 and 14 mph');
   } {
-    "INSERT INTO x1 VALUES('North northwest wind between 8 and 14 mph');" 
+    "INSERT INTO x1 VALUES('North northwest wind between 8 and 14 mph');"
     "-- DELETE FROM 'main'.'x1_segdir' WHERE level = ?"
-    "-- INSERT INTO 'main'.'x1_content' VALUES(?,(?))" 
-    "-- REPLACE INTO 'main'.'x1_docsize' VALUES(?,?)" 
-    "-- SELECT value FROM 'main'.'x1_stat' WHERE id=?" 
-    "-- REPLACE INTO 'main'.'x1_stat' VALUES(?,?)" 
-    "-- SELECT (SELECT max(idx) FROM 'main'.'x1_segdir' WHERE level = ?) + 1" 
+    "-- INSERT INTO 'main'.'x1_content' VALUES(?,(?))"
+    "-- REPLACE INTO 'main'.'x1_docsize' VALUES(?,?)"
+    "-- SELECT value FROM 'main'.'x1_stat' WHERE id=?"
+    "-- REPLACE INTO 'main'.'x1_stat' VALUES(?,?)"
+    "-- SELECT (SELECT max(idx) FROM 'main'.'x1_segdir' WHERE level = ?) + 1"
     "-- SELECT coalesce((SELECT max(blockid) FROM 'main'.'x1_segments') + 1, 1)"
     "-- REPLACE INTO 'main'.'x1_segdir' VALUES(?,?,?,?,?,?)"
     "-- SELECT level, idx, end_block FROM 'main'.'x1_segdir' WHERE level BETWEEN ? AND ? ORDER BY level DESC, idx ASC"

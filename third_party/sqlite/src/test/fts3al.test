@@ -56,7 +56,7 @@ do_test fts3al-1.3 {
 #
 # UPDATE: The above is no longer true; there is no such code in fts3.
 # But leave the test in just the same.
-# 
+#
 
 set word "\x80xxxxx\x80xxxxx\x80xxxxx\x80xxxxx\x80xxxxx\x80xxxxx\x80"
 set phrase1 "$word $word $word target $word $word $word"

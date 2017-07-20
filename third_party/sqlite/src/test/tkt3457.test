@@ -21,23 +21,23 @@ if {$tcl_platform(platform) != "unix"} {
 }
 
 #-----------------------------------------------------------------------
-# To roll back a hot-journal file, the application needs read and write 
+# To roll back a hot-journal file, the application needs read and write
 # permission on the journal file in question. The following tests test
 # the outcome of trying to rollback a hot-journal file when this is not
 # the case.
-# 
+#
 #   tkt3457-1.2: Application has neither read, nor write permission on
 #                the hot-journal file. Result: SQLITE_CANTOPEN.
-#                
+#
 #   tkt3457-1.3: Application has write but not read permission on
 #                the hot-journal file. Result: SQLITE_CANTOPEN.
 #
 #   tkt3457-1.4: Application has read but not write permission on
 #                the hot-journal file. Result: SQLITE_CANTOPEN.
 #
-#   tkt3457-1.5: Application has read/write permission on the hot-journal 
+#   tkt3457-1.5: Application has read/write permission on the hot-journal
 #                file. Result: SQLITE_OK.
-# 
+#
 do_test tkt3457-1.1 {
   execsql {
     CREATE TABLE t1(a, b, c);

@@ -28,7 +28,7 @@ proc pager_cache_size {db} {
   return $stats(page)
 }
 
-if {[permutation] == ""} { 
+if {[permutation] == ""} {
   do_test cache-1.1 { pager_cache_size db } {0}
 }
 
@@ -43,7 +43,7 @@ do_test cache-1.2 {
 
 # At one point, repeatedly locking and unlocking the cache was causing
 # a resource leak of one page per repetition. The page wasn't actually
-# leaked, but would not be reused until the pager-cache was full (i.e. 
+# leaked, but would not be reused until the pager-cache was full (i.e.
 # 2000 pages by default).
 #
 # This tests that once the pager-cache is initialized, it can be locked
@@ -61,12 +61,12 @@ for {set ii 0} {$ii < 10} {incr ii} {
 # This block of tests checks that it is possible to set the cache_size of a
 # database to a small (< 10) value. More specifically:
 #
-#   cache-2.1.*: Test that "PRAGMA cache_size" appears to work with small 
+#   cache-2.1.*: Test that "PRAGMA cache_size" appears to work with small
 #                values.
-#   cache-2.2.*: Test that "PRAGMA main.cache_size" appears to work with 
+#   cache-2.2.*: Test that "PRAGMA main.cache_size" appears to work with
 #                small values.
-#   cache-2.3.*: Test cache_size=1 correctly spills/flushes the cache. 
-#   cache-2.4.*: Test cache_size=0 correctly spills/flushes the cache. 
+#   cache-2.3.*: Test cache_size=1 correctly spills/flushes the cache.
+#   cache-2.4.*: Test cache_size=0 correctly spills/flushes the cache.
 #
 #
 db_delete_and_reopen

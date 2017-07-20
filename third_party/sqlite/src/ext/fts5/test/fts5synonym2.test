@@ -31,8 +31,8 @@ proc fts5_test_bothlist {cmd} {
 
   for {set i 0} {$i < [$cmd xPhraseCount]} {incr i} {
     set bFirst 1
-    $cmd xPhraseColumnForeach $i c { 
-      lappend CL $i.$c 
+    $cmd xPhraseColumnForeach $i c {
+      lappend CL $i.$c
       if {$bFirst} { $cmd xPhraseForeach $i c o { lappend PL $i.$c.$o } }
       set bFirst 0
     }
@@ -46,7 +46,7 @@ proc fts5_rowid {cmd} { expr [$cmd xColumnText -1] }
 sqlite3_fts5_create_function db fts5_rowid fts5_rowid
 
 do_execsql_test 1.$tok.0.1 "
-  CREATE VIRTUAL TABLE ss USING fts5(a, b, 
+  CREATE VIRTUAL TABLE ss USING fts5(a, b,
        tokenize='tclnum $tok', detail=%DETAIL%);
   INSERT INTO ss(ss, rank) VALUES('rank', 'fts5_rowid()');
 "

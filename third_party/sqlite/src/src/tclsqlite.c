@@ -3140,7 +3140,7 @@ static int SQLITE_TCLAPI DbObjCmd(
   */
   case DB_PREUPDATE: {
 #ifndef SQLITE_ENABLE_PREUPDATE_HOOK
-    Tcl_AppendResult(interp, "preupdate_hook was omitted at compile-time", 
+    Tcl_AppendResult(interp, "preupdate_hook was omitted at compile-time",
                      (char*)0);
     rc = TCL_ERROR;
 #else

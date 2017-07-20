@@ -62,13 +62,13 @@ ifcapable compound {
   do_test insert3-1.4.1 {
     execsql {
       INSERT INTO t1 SELECT * FROM t1;
-      SELECT 'a:', x, y FROM log UNION ALL 
+      SELECT 'a:', x, y FROM log UNION ALL
           SELECT 'b:', x, y FROM log2 ORDER BY x;
     }
   } {a: 5 4 b: 10 2 b: 20 1 a: 453 2 a: hello 4 b: hi 2 b: world 1}
   do_test insert3-1.4.2 {
     execsql {
-      SELECT 'a:', x, y FROM log UNION ALL 
+      SELECT 'a:', x, y FROM log UNION ALL
           SELECT 'b:', x, y FROM log2 ORDER BY x, y;
     }
   } {a: 5 4 b: 10 2 b: 20 1 a: 453 2 a: hello 4 b: hi 2 b: world 1}
@@ -179,7 +179,7 @@ sqlite3 db test.db
 # tests are included to ensure that that bug is fixed.
 #
 do_test insert3-4.1 {
-  execsql { 
+  execsql {
     CREATE TABLE t1(a, b, c);
     CREATE INDEX i1 ON t1(a, b);
     BEGIN;

@@ -1,7 +1,7 @@
 #
 # The build process allows for using a cross-compiler.  But the default
 # action is to target the same platform that we are running on.  The
-# configure script needs to discover the following properties of the 
+# configure script needs to discover the following properties of the
 # build and target systems:
 #
 #    srcdir
@@ -61,7 +61,7 @@
 #    TARGET_READLINE_INC
 #
 #        This variables define the directory that contain header
-#        files for the readline library.  If the compiler is able 
+#        files for the readline library.  If the compiler is able
 #        to find <readline.h> on its own, then this can be blank.
 #
 #    TARGET_EXEEXT
@@ -119,7 +119,7 @@ USE_AMALGAMATION=1
 # See whether we can run specific tclsh versions known to work well;
 # if not, then we fall back to plain tclsh.
 # TODO: try other versions before falling back?
-# 
+#
 AC_CHECK_PROGS(TCLSH_CMD, [tclsh8.6 tclsh8.5 tclsh], none)
 if test "$TCLSH_CMD" = "none"; then
   # If we can't find a local tclsh, then building the amalgamation will fail.
@@ -181,7 +181,7 @@ AC_SUBST(BUILD_CC)
 ##########
 # Do we want to support multithreaded use of sqlite
 #
-AC_ARG_ENABLE(threadsafe, 
+AC_ARG_ENABLE(threadsafe,
 AC_HELP_STRING([--disable-threadsafe],[Disable mutexing]),,enable_threadsafe=yes)
 AC_MSG_CHECKING([whether to support threadsafe operation])
 if test "$enable_threadsafe" = "no"; then
@@ -201,7 +201,7 @@ fi
 ##########
 # Do we want to support release
 #
-AC_ARG_ENABLE(releasemode, 
+AC_ARG_ENABLE(releasemode,
 AC_HELP_STRING([--enable-releasemode],[Support libtool link to release mode]),,enable_releasemode=no)
 AC_MSG_CHECKING([whether to support shared library linked as release mode or not])
 if test "$enable_releasemode" = "no"; then
@@ -216,27 +216,27 @@ AC_SUBST(ALLOWRELEASE)
 ##########
 # Do we want temporary databases in memory
 #
-AC_ARG_ENABLE(tempstore, 
+AC_ARG_ENABLE(tempstore,
 AC_HELP_STRING([--enable-tempstore],[Use an in-ram database for temporary tables (never,no,yes,always)]),,enable_tempstore=no)
 AC_MSG_CHECKING([whether to use an in-ram database for temporary tables])
 case "$enable_tempstore" in
-  never ) 
+  never )
     TEMP_STORE=0
     AC_MSG_RESULT([never])
   ;;
-  no ) 
+  no )
     TEMP_STORE=1
     AC_MSG_RESULT([no])
   ;;
-  yes ) 
+  yes )
      TEMP_STORE=2
     AC_MSG_RESULT([yes])
   ;;
-  always ) 
+  always )
      TEMP_STORE=3
     AC_MSG_RESULT([always])
   ;;
-  * ) 
+  * )
     TEMP_STORE=1
     AC_MSG_RESULT([no])
   ;;
@@ -418,7 +418,7 @@ if test "${use_tcl}" = "yes" ; then
     else
       AC_MSG_RESULT([file not found])
     fi
-    
+
     #
     # If the TCL_BIN_DIR is the build directory (not the install directory),
     # then set the common variable name to the value of the build variables.
@@ -427,34 +427,34 @@ if test "${use_tcl}" = "yes" ; then
     # instead of TCL_BUILD_LIB_SPEC since it will work with both an
     # installed and uninstalled version of Tcl.
     #
-    
+
     if test -f $TCL_BIN_DIR/Makefile ; then
       TCL_LIB_SPEC=${TCL_BUILD_LIB_SPEC}
       TCL_STUB_LIB_SPEC=${TCL_BUILD_STUB_LIB_SPEC}
       TCL_STUB_LIB_PATH=${TCL_BUILD_STUB_LIB_PATH}
     fi
-    
+
     #
     # eval is required to do the TCL_DBGX substitution
     #
-    
+
     eval "TCL_LIB_FILE=\"${TCL_LIB_FILE}\""
     eval "TCL_LIB_FLAG=\"${TCL_LIB_FLAG}\""
     eval "TCL_LIB_SPEC=\"${TCL_LIB_SPEC}\""
-    
+
     eval "TCL_STUB_LIB_FILE=\"${TCL_STUB_LIB_FILE}\""
     eval "TCL_STUB_LIB_FLAG=\"${TCL_STUB_LIB_FLAG}\""
     eval "TCL_STUB_LIB_SPEC=\"${TCL_STUB_LIB_SPEC}\""
-    
+
     AC_SUBST(TCL_VERSION)
     AC_SUBST(TCL_BIN_DIR)
     AC_SUBST(TCL_SRC_DIR)
     AC_SUBST(TCL_INCLUDE_SPEC)
-    
+
     AC_SUBST(TCL_LIB_FILE)
     AC_SUBST(TCL_LIB_FLAG)
     AC_SUBST(TCL_LIB_SPEC)
-    
+
     AC_SUBST(TCL_STUB_LIB_FILE)
     AC_SUBST(TCL_STUB_LIB_FLAG)
     AC_SUBST(TCL_STUB_LIB_SPEC)
@@ -591,7 +591,7 @@ fi
 ##########
 # Do we want to support memsys3 and/or memsys5
 #
-AC_ARG_ENABLE(memsys5, 
+AC_ARG_ENABLE(memsys5,
   AC_HELP_STRING([--enable-memsys5],[Enable MEMSYS5]),
   [enable_memsys5=yes],[enable_memsys5=no])
 AC_MSG_CHECKING([whether to support MEMSYS5])
@@ -601,7 +601,7 @@ if test "${enable_memsys5}" = "yes"; then
 else
   AC_MSG_RESULT([no])
 fi
-AC_ARG_ENABLE(memsys3, 
+AC_ARG_ENABLE(memsys3,
   AC_HELP_STRING([--enable-memsys3],[Enable MEMSYS3]),
   [enable_memsys3=yes],[enable_memsys3=no])
 AC_MSG_CHECKING([whether to support MEMSYS3])

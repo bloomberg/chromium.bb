@@ -8,7 +8,7 @@
 #    May you share freely, never taking more than you give.
 #
 #***********************************************************************
-# 
+#
 # This test script reproduces the problem reported by ticket #2565,
 # A database corruption bug that occurs in auto_vacuum mode when
 # the soft_heap_limit is set low enough to be triggered.

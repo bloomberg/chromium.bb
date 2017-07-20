@@ -28,9 +28,9 @@ set g_chunk_size [ expr ($::SQLITE_MAX_PAGE_SIZE*16384) ]
 set g_max_chunks 32
 
 # This handles appending the chunk number
-# to the end of the filename.  if 
+# to the end of the filename.  if
 # SQLITE_MULTIPLEX_EXT_OVWR is defined, then
-# it overwrites the last 2 bytes of the 
+# it overwrites the last 2 bytes of the
 # file name with the chunk number.
 proc multiplex_name {name chunk} {
   if {$chunk==0} { return $name }
@@ -41,7 +41,7 @@ proc multiplex_name {name chunk} {
   return $name$num
 }
 
-# This saves off the parameters and calls the 
+# This saves off the parameters and calls the
 # underlying sqlite3_multiplex_control() API.
 proc multiplex_set {db name chunk_size max_chunks} {
   global g_chunk_size
@@ -49,13 +49,13 @@ proc multiplex_set {db name chunk_size max_chunks} {
   set g_chunk_size [ expr (($chunk_size+($::SQLITE_MAX_PAGE_SIZE-1)) & ~($::SQLITE_MAX_PAGE_SIZE-1)) ]
   set g_max_chunks $max_chunks
   set rc [catch {sqlite3_multiplex_control $db $name chunk_size $chunk_size} msg]
-  if { $rc==0 } { 
+  if { $rc==0 } {
     set rc [catch {sqlite3_multiplex_control $db $name max_chunks $max_chunks} msg]
   }
   list $msg
 }
 
-# This attempts to delete the base file and 
+# This attempts to delete the base file and
 # and files with the chunk extension.
 proc multiplex_delete {name} {
   global g_max_chunks
@@ -71,7 +71,7 @@ db close
 sqlite3_shutdown
 test_sqlite3_log xLog
 proc xLog {error_code msg} {
-  lappend ::log $error_code $msg 
+  lappend ::log $error_code $msg
 }
 unset -nocomplain log
 
@@ -136,7 +136,7 @@ do_test multiplex-1.13.6  { db close }                                          
 do_test multiplex-1.13.7  { sqlite3_multiplex_shutdown }                                  {SQLITE_OK}
 
 #-------------------------------------------------------------------------
-# Some simple warm-body tests with a single database file in rollback 
+# Some simple warm-body tests with a single database file in rollback
 # mode:
 #
 #   multiplex-2.1.*: Test simple writing to a multiplex file.
@@ -233,8 +233,8 @@ do_test multiplex-2.5.2 {
   }
 } {delete}
 
-do_test multiplex-2.5.3 { 
-  execsql { 
+do_test multiplex-2.5.3 {
+  execsql {
     INSERT INTO t1 VALUES(1, 'one');
     INSERT INTO t1 VALUES(2, randomblob(4000));
     INSERT INTO t1 VALUES(3, 'three');
@@ -293,8 +293,8 @@ foreach jmode $all_journal_modes {
       db eval "PRAGMA journal_mode = $jmode;"
     } $jmode
 
-    do_test multiplex-2.6.3.$sz.$jmode { 
-      execsql { 
+    do_test multiplex-2.6.3.$sz.$jmode {
+      execsql {
         CREATE TABLE t1(a PRIMARY KEY, b);
         INSERT INTO t1 VALUES(1, 'one');
         INSERT INTO t1 VALUES(2, randomblob($g_chunk_size));
@@ -324,8 +324,8 @@ do_test multiplex-2.7.2  { sqlite3_multiplex_initialize "" 1 }                  
 do_test multiplex-2.7.3  { sqlite3 db test.db }                                             {}
 do_test multiplex-2.7.4  { lindex [ catchsql { SELECT multiplex_control(2, 65536); } ] 0 }  {0}
 do_test multiplex-2.7.5  { lindex [ catchsql { SELECT multiplex_control(1, 0); } ] 0 }      {0}
-do_test multiplex-2.7.6 { 
-  execsql { 
+do_test multiplex-2.7.6 {
+  execsql {
     CREATE TABLE t1(a PRIMARY KEY, b);
     INSERT INTO t1 VALUES(1, randomblob(1000));
   }
@@ -333,8 +333,8 @@ do_test multiplex-2.7.6 {
 # verify only one file, and file size is less than chunks size
 do_test multiplex-2.7.7  { expr ([file size [multiplex_name test.db 0]] < 65536) } {1}
 do_test multiplex-2.7.8  { file exists [multiplex_name test.db 1] }                {0}
-do_test multiplex-2.7.9 { 
-  execsql { 
+do_test multiplex-2.7.9 {
+  execsql {
     INSERT INTO t1 VALUES(2, randomblob(65536));
   }
 } {}
@@ -414,20 +414,20 @@ do_test multiplex-3.2.3 { execsql { INSERT INTO t1 VALUES('v', 'w') } db1b } {}
 do_test multiplex-3.2.4 { execsql { INSERT INTO t1 VALUES('t', 'u') } db2a } {}
 do_test multiplex-3.2.5 { execsql { INSERT INTO t1 VALUES('r', 's') } db2b } {}
 
-do_test multiplex-3.2.6 { 
+do_test multiplex-3.2.6 {
   execsql { INSERT INTO t1 VALUES(randomblob(500), randomblob(500)) } db1a
 } {}
-do_test multiplex-3.2.7 { 
+do_test multiplex-3.2.7 {
   execsql { INSERT INTO t1 VALUES(randomblob(500), randomblob(500)) } db1b
 } {}
-do_test multiplex-3.2.8 { 
+do_test multiplex-3.2.8 {
   execsql { INSERT INTO t1 VALUES(randomblob(500), randomblob(500)) } db2a
 } {}
-do_test multiplex-3.2.9 { 
+do_test multiplex-3.2.9 {
   execsql { INSERT INTO t1 VALUES(randomblob(500), randomblob(500)) } db2b
 } {}
 
-do_test multiplex-3.3.1 { 
+do_test multiplex-3.3.1 {
   execsql { INSERT INTO t1 VALUES(randomblob(500), randomblob(500)) } db1a
   execsql { INSERT INTO t1 VALUES(randomblob(500), randomblob(500)) } db1b
   execsql { INSERT INTO t1 VALUES(randomblob(500), randomblob(500)) } db2a
@@ -495,7 +495,7 @@ do_test multiplex-4.1.12 {
 
 
 #-------------------------------------------------------------------------
-# The following tests test that the multiplex VFS handles malloc and IO 
+# The following tests test that the multiplex VFS handles malloc and IO
 # errors.
 #
 
@@ -549,7 +549,7 @@ do_faultsim_test multiplex-5.5 -prep {
 }
 
 #-------------------------------------------------------------------------
-# Test that you can vacuum a multiplex'ed DB.  
+# Test that you can vacuum a multiplex'ed DB.
 
 ifcapable vacuum {
 
@@ -593,6 +593,6 @@ do_test multiplex-6.99 {
 catch { db close }
 catch { sqlite3_multiplex_shutdown }
 sqlite3_shutdown
-test_sqlite3_log 
+test_sqlite3_log
 sqlite3_initialize
 finish_test

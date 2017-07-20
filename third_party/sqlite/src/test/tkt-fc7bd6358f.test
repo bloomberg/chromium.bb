@@ -28,7 +28,7 @@
 #
 # The correct result should be two rows, one with 12|12|12 and the other
 # with 34|34|34. With this bug, no rows are returned. Bisecting shows that
-# this bug was introduced with check-in [dd4d67a67454] on 2009-04-23. 
+# this bug was introduced with check-in [dd4d67a67454] on 2009-04-23.
 #
 
 set testdir [file dirname $argv0]
@@ -74,5 +74,5 @@ foreach {a from} {
   }
 }
 
-    
+
 finish_test

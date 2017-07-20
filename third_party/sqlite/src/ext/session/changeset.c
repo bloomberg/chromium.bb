@@ -73,7 +73,7 @@ static void readFile(const char *zFilename, int *pSz, void **ppBuf){
 ** digits. */
 static const char hexdigits[] = {
   '0', '1', '2', '3', '4', '5', '6', '7',
-  '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' 
+  '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
 };
 
 /*
@@ -412,5 +412,5 @@ int main(int argc, char **argv){
   /* If nothing else matches, show the usage comment */
   usage(argv[0]);
   sqlite3_free(pBuf);
-  return 0; 
+  return 0;
 }

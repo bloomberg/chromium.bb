@@ -10,7 +10,7 @@
 #***********************************************************************
 #
 #   This test attempts to deadlock SQLite in shared-cache mode.
-#     
+#
 #
 # $Id: thread002.test,v 1.9 2009/03/26 14:48:07 danielk1977 Exp $
 
@@ -50,10 +50,10 @@ set thread_program {
   for {set ii 0} {$ii < 100} {incr ii} {
     execsql { SELECT * FROM aux1.t1 }
     execsql { INSERT INTO aux1.t1(v) SELECT sum(v) FROM aux2.t1 }
-  
+
     execsql { SELECT * FROM aux2.t1 }
     execsql { INSERT INTO aux2.t1(v) SELECT sum(v) FROM aux3.t1 }
-  
+
     execsql { SELECT * FROM aux3.t1 }
     execsql { INSERT INTO aux3.t1(v) SELECT sum(v) FROM aux1.t1 }
 

@@ -11,7 +11,7 @@
 *************************************************************************
 **
 ** This file contains code for a virtual table that finds the transitive
-** closure of a parent/child relationship in a real table.  The virtual 
+** closure of a parent/child relationship in a real table.  The virtual
 ** table is called "transitive_closure".
 **
 ** A transitive_closure virtual table is created like this:
@@ -22,15 +22,15 @@
 **        parentcolumn=<columnname>   -- P
 **     );
 **
-** When it is created, the new transitive_closure table may be supplied 
+** When it is created, the new transitive_closure table may be supplied
 ** with default values for the name of a table T and columns T.X and T.P.
-** The T.X and T.P columns must contain integers.  The ideal case is for 
+** The T.X and T.P columns must contain integers.  The ideal case is for
 ** T.X to be the INTEGER PRIMARY KEY.  The T.P column should reference
 ** the T.X column. The row referenced by T.P is the parent of the current row.
 **
 ** The tablename, idcolumn, and parentcolumn supplied by the CREATE VIRTUAL
 ** TABLE statement may be overridden in individual queries by including
-** terms like tablename='newtable', idcolumn='id2', or 
+** terms like tablename='newtable', idcolumn='id2', or
 ** parentcolumn='parent3' in the WHERE clause of the query.
 **
 ** For efficiency, it is essential that there be an index on the P column:
@@ -86,7 +86,7 @@
 ** The "ct1.depth<=2" term could be a strict equality "ct1.depth=2" in
 ** order to find only the grandchildren of ?1, not ?1 itself or the
 ** children of ?1.
-** 
+**
 ** The root=?1 term must be supplied in WHERE clause or else the query
 ** of the ct1 virtual table will return an empty set.  The tablename,
 ** idcolumn, and parentcolumn attributes can be overridden in the WHERE
@@ -352,8 +352,8 @@ static void closureAvlDestroy(closure_avl *p, void (*xDestroy)(closure_avl*)){
 ** End of the AVL Tree implementation
 ******************************************************************************/
 
-/* 
-** A closure virtual-table object 
+/*
+** A closure virtual-table object
 */
 struct closure_vtab {
   sqlite3_vtab base;         /* Base class - must be first */
@@ -410,7 +410,7 @@ static closure_avl *queuePull(closure_queue *pQueue){
 
 /*
 ** This function converts an SQL quoted string into an unquoted string
-** and returns a pointer to a buffer allocated using sqlite3_malloc() 
+** and returns a pointer to a buffer allocated using sqlite3_malloc()
 ** containing the result. The caller should eventually free this buffer
 ** using sqlite3_free.
 **
@@ -650,12 +650,12 @@ static int closureInsertNode(
 **
 ** This routine actually computes the closure.
 **
-** See the comment at the beginning of closureBestIndex() for a 
+** See the comment at the beginning of closureBestIndex() for a
 ** description of the meaning of idxNum.  The idxStr parameter is
 ** not used.
 */
 static int closureFilter(
-  sqlite3_vtab_cursor *pVtabCursor, 
+  sqlite3_vtab_cursor *pVtabCursor,
   int idxNum, const char *idxStr,
   int argc, sqlite3_value **argv
 ){
@@ -805,7 +805,7 @@ static int closureEof(sqlite3_vtab_cursor *cur){
 **   (D)    idcolumn = $idcolumn
 **   (E)    parentcolumn = $parentcolumn
 **
-** 
+**
 **
 **   idxNum       meaning
 **   ----------   ------------------------------------------------------
@@ -838,7 +838,7 @@ static int closureBestIndex(
       seenMatch = 1;
     }
     if( pConstraint->usable==0 ) continue;
-    if( (iPlan & 1)==0 
+    if( (iPlan & 1)==0
      && pConstraint->iColumn==CLOSURE_COL_ROOT
      && pConstraint->op==SQLITE_INDEX_CONSTRAINT_EQ
     ){
@@ -902,7 +902,7 @@ static int closureBestIndex(
   }
   if( seenMatch && (iPlan&1)==0 ) rCost *= 1e30;
   pIdxInfo->estimatedCost = rCost;
-   
+
   return SQLITE_OK;
 }
 
@@ -944,8 +944,8 @@ static sqlite3_module closureModule = {
 __declspec(dllexport)
 #endif
 int sqlite3_closure_init(
-  sqlite3 *db, 
-  char **pzErrMsg, 
+  sqlite3 *db,
+  char **pzErrMsg,
   const sqlite3_api_routines *pApi
 ){
   int rc = SQLITE_OK;

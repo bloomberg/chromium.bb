@@ -59,7 +59,7 @@ do_test tkt3346-2.1 {
   catchsql {
     CREATE TABLE t2(a);
     INSERT INTO t2 VALUES(1);
-    
+
     SELECT * FROM (SELECT * FROM t1 WHERE 1=x.a) AS x;
   }
 } {1 {no such column: x.a}}

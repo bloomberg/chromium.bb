@@ -23,7 +23,7 @@ ifcapable {!trigger} {
 }
 
 # Set variable $nStatement to the number of statements to include in the
-# body of the trigger. On a workstation with virtually unlimited memory, 
+# body of the trigger. On a workstation with virtually unlimited memory,
 # use 10000. But on symbian, which allows each application at most a 32MB
 # heap, use 1000.
 #

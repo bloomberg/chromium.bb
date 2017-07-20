@@ -2,15 +2,15 @@
 1. OVERVIEW
 
   This README file describes the syntax of the arguments that may be passed to
-  the FTS3 MATCH operator used for full-text queries. For example, if table 
+  the FTS3 MATCH operator used for full-text queries. For example, if table
   "t1" is an Fts3 virtual table, the following SQL query:
 
     SELECT * FROM t1 WHERE <col> MATCH <full-text query>
 
-  may be used to retrieve all rows that match a specified for full-text query. 
-  The text "<col>" should be replaced by either the name of the fts3 table 
-  (in this case "t1"), or by the name of one of the columns of the fts3 
-  table. <full-text-query> should be replaced by an SQL expression that 
+  may be used to retrieve all rows that match a specified for full-text query.
+  The text "<col>" should be replaced by either the name of the fts3 table
+  (in this case "t1"), or by the name of one of the columns of the fts3
+  table. <full-text-query> should be replaced by an SQL expression that
   computes to a string containing an Fts3 query.
 
   If the left-hand-side of the MATCH operator is set to the name of the
@@ -19,7 +19,7 @@
   may only match the specified column. In both cases this may be overriden
   as part of the query text (see sections 2 and 3 below).
 
-  As of SQLite version 3.6.8, Fts3 supports two slightly different query 
+  As of SQLite version 3.6.8, Fts3 supports two slightly different query
   formats; the standard syntax, which is used by default, and the enhanced
   query syntax which can be selected by compiling with the pre-processor
   symbol SQLITE_ENABLE_FTS3_PARENTHESIS defined.
@@ -28,15 +28,15 @@
 
 2. STANDARD QUERY SYNTAX
 
-  When using the standard Fts3 query syntax, a query usually consists of a 
+  When using the standard Fts3 query syntax, a query usually consists of a
   list of terms (words) separated by white-space characters. To match a
   query, a row (or column) of an Fts3 table must contain each of the specified
   terms. For example, the following query:
 
     <col> MATCH 'hello world'
 
-  matches rows (or columns, if <col> is the name of a column name) that 
-  contain at least one instance of the token "hello", and at least one 
+  matches rows (or columns, if <col> is the name of a column name) that
+  contain at least one instance of the token "hello", and at least one
   instance of the token "world". Tokens may be grouped into phrases using
   quotation marks. In this case, a matching row or column must contain each
   of the tokens in the phrase in the order specified, with no intervening
@@ -51,8 +51,8 @@
     "One should always greet the world with a cheery hello, thought Joe."
     "How many hello world programs could their be?"
 
-  As well as grouping tokens together by phrase, the binary NEAR operator 
-  may be used to search for rows that contain two or more specified tokens 
+  As well as grouping tokens together by phrase, the binary NEAR operator
+  may be used to search for rows that contain two or more specified tokens
   or phrases within a specified proximity of each other. The NEAR operator
   must always be specified in upper case. The word "near" in lower or mixed
   case is treated as an ordinary token. For example, the following query:
@@ -74,13 +74,13 @@
 
     <col> MATCH 'reliable NEAR/2 engineering NEAR/5 consultancy'
 
-  searches for a row that contains an instance of the token "reliable" 
+  searches for a row that contains an instance of the token "reliable"
   seperated by not more than two tokens from an instance of "engineering",
   which is in turn separated by not more than 5 other tokens from an
   instance of the term "consultancy". Phrases enclosed in quotes may
   also be used as arguments to the NEAR operator.
 
-  Similar to the NEAR operator, one or more tokens or phrases may be 
+  Similar to the NEAR operator, one or more tokens or phrases may be
   separated by OR operators. In this case, only one of the specified tokens
   or phrases must appear in the document. For example, the query:
 
@@ -98,7 +98,7 @@
   Any token that is part of an Fts3 query expression, whether or not it is
   part of a phrase enclosed in quotes, may have a '*' character appended to
   it. In this case, the token matches all terms that begin with the characters
-  of the token, not just those that exactly match it. For example, the 
+  of the token, not just those that exactly match it. For example, the
   following query:
 
     <col> MATCH 'sql*'
@@ -107,7 +107,7 @@
   contain "SQL".
 
   A token that is not part of a quoted phrase may be preceded by a '-'
-  character, which indicates that matching rows must not contain the 
+  character, which indicates that matching rows must not contain the
   specified term. For example, the following:
 
     <col> MATCH '"database engine" -sqlite'
@@ -118,7 +118,7 @@
   on a single term. At this time, all Fts3 queries must contain at least
   one term or phrase that is not preceded by the '-' prefix.
 
-  Regardless of whether or not a table name or column name is used on the 
+  Regardless of whether or not a table name or column name is used on the
   left hand side of the MATCH operator, a specific column of the fts3 table
   may be associated with each token in a query by preceding a token with
   a column name followed by a ':' character. For example, regardless of what
@@ -130,7 +130,7 @@
 
     <col> MATCH 'col1:hello col2:world'
 
-  It is not possible to associate a specific table column with a quoted 
+  It is not possible to associate a specific table column with a quoted
   phrase or a term preceded by a '-' operator. A '*' character may be
   appended to a term associated with a specific column for prefix matching.
 
@@ -157,7 +157,7 @@
        <col> MATCH '(hello AND world) OR (simple AND example)'
 
      As with the OR and NEAR operators, the AND operator must be specified
-     in upper case. The word "and" specified in lower or mixed case is 
+     in upper case. The word "and" specified in lower or mixed case is
      handled as a regular token.
 
   3) The '-' token prefix is not supported. Instead, a new binary operator,

@@ -9,7 +9,7 @@
 #
 #***********************************************************************
 #
-# This file contains fault injection tests designed to test the btree.c 
+# This file contains fault injection tests designed to test the btree.c
 # module.
 #
 
@@ -50,7 +50,7 @@ do_faultsim_test 1 -prep {
   execsql { PRAGMA incremental_vacuum = 10 }
 } -test {
   sqlite3_finalize $::STMT
-  faultsim_test_result {0 {}} 
+  faultsim_test_result {0 {}}
   faultsim_integrity_check
 }
 

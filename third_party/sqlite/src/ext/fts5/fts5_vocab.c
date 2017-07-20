@@ -11,7 +11,7 @@
 ******************************************************************************
 **
 ** This is an SQLite virtual table module implementing direct access to an
-** existing FTS5 index. The module may create several different types of 
+** existing FTS5 index. The module may create several different types of
 ** tables:
 **
 ** col:
@@ -19,15 +19,15 @@
 **
 **   One row for each term/column combination. The value of $doc is set to
 **   the number of fts5 rows that contain at least one instance of term
-**   $term within column $col. Field $cnt is set to the total number of 
-**   instances of term $term in column $col (in any row of the fts5 table). 
+**   $term within column $col. Field $cnt is set to the total number of
+**   instances of term $term in column $col (in any row of the fts5 table).
 **
 ** row:
 **     CREATE TABLE vocab(term, doc, cnt, PRIMARY KEY(term));
 **
 **   One row for each term in the database. The value of $doc is set to
 **   the number of fts5 rows that contain at least one instance of term
-**   $term. Field $cnt is set to the total number of instances of term 
+**   $term. Field $cnt is set to the total number of instances of term
 **   $term in the database.
 */
 
@@ -84,7 +84,7 @@ struct Fts5VocabCursor {
 
 
 /*
-** Translate a string containing an fts5vocab table type to an 
+** Translate a string containing an fts5vocab table type to an
 ** FTS5_VOCAB_XXX constant. If successful, set *peType to the output
 ** value and return SQLITE_OK. Otherwise, set *pzErr to an error message
 ** and return SQLITE_ERROR.
@@ -159,8 +159,8 @@ static int fts5VocabInitVtab(
   sqlite3_vtab **ppVTab,          /* Write the resulting vtab structure here */
   char **pzErr                    /* Write any error message here */
 ){
-  const char *azSchema[] = { 
-    "CREATE TABlE vocab(" FTS5_VOCAB_COL_SCHEMA  ")", 
+  const char *azSchema[] = {
+    "CREATE TABlE vocab(" FTS5_VOCAB_COL_SCHEMA  ")",
     "CREATE TABlE vocab(" FTS5_VOCAB_ROW_SCHEMA  ")"
   };
 
@@ -178,10 +178,10 @@ static int fts5VocabInitVtab(
     const char *zDb = bDb ? argv[3] : argv[1];
     const char *zTab = bDb ? argv[4] : argv[3];
     const char *zType = bDb ? argv[5] : argv[4];
-    int nDb = (int)strlen(zDb)+1; 
+    int nDb = (int)strlen(zDb)+1;
     int nTab = (int)strlen(zTab)+1;
     int eType = 0;
-    
+
     rc = fts5VocabTableType(zType, pzErr, &eType);
     if( rc==SQLITE_OK ){
       assert( eType>=0 && eType<ArraySize(azSchema) );
@@ -233,7 +233,7 @@ static int fts5VocabCreateMethod(
   return fts5VocabInitVtab(db, pAux, argc, argv, ppVtab, pzErr);
 }
 
-/* 
+/*
 ** Implementation of the xBestIndex method.
 */
 static int fts5VocabBestIndexMethod(
@@ -284,8 +284,8 @@ static int fts5VocabBestIndexMethod(
   ** specifically - "ORDER BY term" or "ORDER BY term ASC" - set the
   ** sqlite3_index_info.orderByConsumed flag to tell the core the results
   ** are already in sorted order.  */
-  if( pInfo->nOrderBy==1 
-   && pInfo->aOrderBy[0].iColumn==0 
+  if( pInfo->nOrderBy==1
+   && pInfo->aOrderBy[0].iColumn==0
    && pInfo->aOrderBy[0].desc==0
   ){
     pInfo->orderByConsumed = 1;
@@ -299,7 +299,7 @@ static int fts5VocabBestIndexMethod(
 ** Implementation of xOpen method.
 */
 static int fts5VocabOpenMethod(
-  sqlite3_vtab *pVTab, 
+  sqlite3_vtab *pVTab,
   sqlite3_vtab_cursor **ppCsr
 ){
   Fts5VocabTable *pTab = (Fts5VocabTable*)pVTab;
@@ -467,7 +467,7 @@ static int fts5VocabNextMethod(sqlite3_vtab_cursor *pCursor){
             }
             break;
 
-          default: 
+          default:
             assert( pCsr->pConfig->eDetail==FTS5_DETAIL_NONE );
             pCsr->aDoc[0]++;
             break;
@@ -556,8 +556,8 @@ static int fts5VocabFilterMethod(
   return rc;
 }
 
-/* 
-** This is the xEof method of the virtual table. SQLite calls this 
+/*
+** This is the xEof method of the virtual table. SQLite calls this
 ** routine to find out if it has reached the end of a result set.
 */
 static int fts5VocabEofMethod(sqlite3_vtab_cursor *pCursor){
@@ -604,13 +604,13 @@ static int fts5VocabColumnMethod(
   return SQLITE_OK;
 }
 
-/* 
+/*
 ** This is the xRowid method. The SQLite core calls this routine to
 ** retrieve the rowid for the current row of the result set. The
 ** rowid should be written to *pRowid.
 */
 static int fts5VocabRowidMethod(
-  sqlite3_vtab_cursor *pCursor, 
+  sqlite3_vtab_cursor *pCursor,
   sqlite_int64 *pRowid
 ){
   Fts5VocabCursor *pCsr = (Fts5VocabCursor*)pCursor;

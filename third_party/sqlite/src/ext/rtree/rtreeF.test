@@ -19,15 +19,15 @@
 #     CREATE TABLE t1(x);
 #     CREATE TABLE t2(y);
 #     CREATE VIRTUAL TABLE t3 USING rtree(a,b,c);
-#     CREATE TRIGGER t2del AFTER DELETE ON t2 WHEN (SELECT 1 from t1) BEGIN 
-#       DELETE FROM t3 WHERE a=old.y; 
+#     CREATE TRIGGER t2del AFTER DELETE ON t2 WHEN (SELECT 1 from t1) BEGIN
+#       DELETE FROM t3 WHERE a=old.y;
 #     END;
 #     DELETE FROM t2 WHERE y=1;
-# 
+#
 
 if {![info exists testdir]} {
   set testdir [file join [file dirname [info script]] .. .. test]
-} 
+}
 source $testdir/tester.tcl
 ifcapable !rtree { finish_test ; return }
 
@@ -35,8 +35,8 @@ do_execsql_test rtreeF-1.1 {
   CREATE TABLE t1(x);
   CREATE TABLE t2(y);
   CREATE VIRTUAL TABLE t3 USING rtree(a,b,c);
-  CREATE TRIGGER t2dwl AFTER DELETE ON t2 WHEN (SELECT 1 from t1) BEGIN 
-    DELETE FROM t3 WHERE a=old.y; 
+  CREATE TRIGGER t2dwl AFTER DELETE ON t2 WHEN (SELECT 1 from t1) BEGIN
+    DELETE FROM t3 WHERE a=old.y;
   END;
 
   INSERT INTO t1(x) VALUES(999);

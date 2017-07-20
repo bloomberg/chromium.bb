@@ -25,7 +25,7 @@ set sqlite_fts3_enable_parentheses 1
 #
 #   do_fts3query_test
 #   fts3_make_deferrable
-#   fts3_zero_long_segments 
+#   fts3_zero_long_segments
 #
 
 #
@@ -37,7 +37,7 @@ set sqlite_fts3_enable_parentheses 1
 # The name and column names used by $TABLE must not require any quoting or
 # escaping when used in SQL statements.
 #
-# $MATCHINFO may be any expression accepted by the FTS4 MATCH operator, 
+# $MATCHINFO may be any expression accepted by the FTS4 MATCH operator,
 # except that the "<column-name>:token" syntax is not supported. Tcl list
 # commands are used to tokenize the expression. Any parenthesis must appear
 # either as separate list elements, or as the first (for opening) or last
@@ -50,7 +50,7 @@ set sqlite_fts3_enable_parentheses 1
 #
 # If the "deferred" option is supplied, it is passed a list of tokens that
 # are deferred by FTS and result in the relevant matchinfo() stats being an
-# approximation. 
+# approximation.
 #
 set sqlite_fts3_enable_parentheses 1
 proc do_fts3query_test {tn args} {
@@ -91,19 +91,19 @@ proc do_fts3query_test {tn args} {
 
   do_execsql_test $tn$title.1 "
     SELECT docid FROM $tbl WHERE $tbl MATCH '$match' ORDER BY docid ASC
-  " [lsort -integer -incr [array names aHit]] 
+  " [lsort -integer -incr [array names aHit]]
 
   do_execsql_test $tn$title.2 "
     SELECT docid FROM $tbl WHERE $tbl MATCH '$match' ORDER BY docid DESC
-  " [lsort -integer -decr [array names aHit]] 
+  " [lsort -integer -decr [array names aHit]]
 
   do_execsql_test $tn$title.3 "
-    SELECT docid, mit(matchinfo($tbl, 'x')) FROM $tbl 
+    SELECT docid, mit(matchinfo($tbl, 'x')) FROM $tbl
     WHERE $tbl MATCH '$match' ORDER BY docid DESC
   " $matchinfo_desc
 
   do_execsql_test $tn$title.4 "
-    SELECT docid, mit(matchinfo($tbl, 'x')) FROM $tbl 
+    SELECT docid, mit(matchinfo($tbl, 'x')) FROM $tbl
     WHERE $tbl MATCH '$match' ORDER BY docid ASC
   " $matchinfo_asc
 }
@@ -134,9 +134,9 @@ proc fts3_make_deferrable {tbl token {nRow 0}} {
 #    fts3_zero_long_segments TABLE ?LIMIT?
 #
 proc fts3_zero_long_segments {tbl limit} {
-  execsql " 
-    UPDATE ${tbl}_segments 
-    SET block = zeroblob(length(block)) 
+  execsql "
+    UPDATE ${tbl}_segments
+    SET block = zeroblob(length(block))
     WHERE length(block)>$limit
   "
   return [db changes]
@@ -173,9 +173,9 @@ proc fix_phrase_expr {cols expr colfiltervar} {
   return $out
 }
 
-proc fix_near_expr {cols expr colfiltervar} { 
+proc fix_near_expr {cols expr colfiltervar} {
   upvar $colfiltervar iColFilter
- 
+
   set iColFilter -1
 
   set out [list]
@@ -201,7 +201,7 @@ proc get_single_near_results {tbl expr deferred arrayvar nullvar} {
 
   # Calculate the expected results using [fts3_near_match]. The following
   # loop populates the "hits" and "counts" arrays as follows:
-  # 
+  #
   #   1. For each document in the table that matches the NEAR expression,
   #      hits($docid) is set to 1. The set of docids that match the expression
   #      can therefore be found using [array names hits].
@@ -230,7 +230,7 @@ proc get_single_near_results {tbl expr deferred arrayvar nullvar} {
   # This block populates the nHit and nDoc arrays. For each phrase/column
   # in the query/table, array elements are set as follows:
   #
-  #   nHit($iPhrase,$iCol) - Total number of hits for phrase $iPhrase in 
+  #   nHit($iPhrase,$iCol) - Total number of hits for phrase $iPhrase in
   #                          column $iCol.
   #
   #   nDoc($iPhrase,$iCol) - Number of documents with at least one hit for
@@ -312,8 +312,8 @@ proc get_single_near_results {tbl expr deferred arrayvar nullvar} {
 
 
 proc matching_brackets {expr} {
-  if {[string range $expr 0 0]!="(" || [string range $expr end end] !=")"} { 
-    return 0 
+  if {[string range $expr 0 0]!="(" || [string range $expr end end] !=")"} {
+    return 0
   }
 
   set iBracket 1
@@ -410,7 +410,7 @@ proc get_near_results {tbl expr deferred arrayvar {nullvar ""}} {
 #--------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------
-# The following test cases - fts3auto-1.* - focus on testing the Tcl 
+# The following test cases - fts3auto-1.* - focus on testing the Tcl
 # command [fts3_near_match], which is used by other tests in this file.
 #
 proc test_fts3_near_match {tn doc expr res} {
@@ -436,7 +436,7 @@ test_fts3_near_match 1.3.1 $A {"c d" 5 "i j" 1 "e f"}      {0 0 0}
 test_fts3_near_match 1.3.2 $A {"c d" 5 "i j" 2 "e f"}      {1 1 1}
 
 #--------------------------------------------------------------------------
-# Test cases fts3auto-2.* run some simple tests using the 
+# Test cases fts3auto-2.* run some simple tests using the
 # [do_fts3query_test] proc.
 #
 foreach {tn create} {
@@ -526,7 +526,7 @@ foreach {tn create} {
 }
 
 #--------------------------------------------------------------------------
-# 
+#
 foreach {tn create} {
   1    "fts4(x, y)"
   2    "fts4(x, y, order=DESC)"
@@ -547,7 +547,7 @@ foreach {tn create} {
   do_fts3query_test 4.$tn.1.4 t1 {one NEAR/2 five}
   do_fts3query_test 4.$tn.1.5 t1 {one NEAR/3 five}
 
-  do_test 4.$tn.2 { 
+  do_test 4.$tn.2 {
     set limit [fts3_make_deferrable t1 five]
     execsql { INSERT INTO t1(t1) VALUES('optimize') }
     ifcapable fts4_deferred {

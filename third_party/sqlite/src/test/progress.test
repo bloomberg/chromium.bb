@@ -97,8 +97,8 @@ do_test progress-1.2 {
   }
 } 10
 
-# Test that an active transaction remains active and not rolled back 
-# after the progress query abandons a query. 
+# Test that an active transaction remains active and not rolled back
+# after the progress query abandons a query.
 #
 # UPDATE: It is now recognised that this is a sure route to database
 # corruption. So the transaction is rolled back.

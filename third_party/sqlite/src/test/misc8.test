@@ -10,7 +10,7 @@
 #***********************************************************************
 # This file implements regression tests for SQLite library.
 # The focus of this script is testing the "eval.c" loadable extension.
-# 
+#
 
 set testdir [file dirname $argv0]
 source $testdir/tester.tcl
@@ -82,15 +82,15 @@ do_execsql_test misc8-2.1 {
       printf('DELETE FROM t2 WHERE c=%d AND %d>5', a+c, a+c)
   ) FROM t1, t2;
 } {
-  0 1 {} 10 1 {} 
-  0 2 {} 10 2 {} 
-  0 3 {} 10 3 {} 
-  0 4 {} 10 4 {} 
-  0 5 {} 10 5 {} 
-  0 6 {} 10 {} {} 
-  0 7 {} 10 {} {} 
+  0 1 {} 10 1 {}
+  0 2 {} 10 2 {}
+  0 3 {} 10 3 {}
+  0 4 {} 10 4 {}
+  0 5 {} 10 5 {}
+  0 6 {} 10 {} {}
+  0 7 {} 10 {} {}
   0 8 {} 10 {} {}
-  0 9 {} 10 {} {} 
+  0 9 {} 10 {} {}
   0 10 {} 10 {} {}
 }
 

@@ -31,7 +31,7 @@ for {set tn 1} {1} {incr tn} {
   sqlite3rbu_vacuum rbu test.db test.db2
   for {set i 0} {$i < $tn} {incr i} { rbu step }
   set rc [rbu close]
-  if {$rc!="SQLITE_OK"} { 
+  if {$rc!="SQLITE_OK"} {
     if {$rc!="SQLITE_DONE"} {error $rc}
     break
   }

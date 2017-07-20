@@ -26,13 +26,13 @@
 ** The fuzzer data table must contain exactly four columns (more precisely,
 ** the statement "SELECT * FROM <fuzzer_data_table>" must return records
 ** that consist of four columns). It does not matter what the columns are
-** named. 
+** named.
 **
 ** Each row in the fuzzer data table represents a single character
 ** transformation. The left most column of the row (column 0) contains an
 ** integer value - the identifier of the ruleset to which the transformation
 ** rule belongs (see "MULTIPLE RULE SETS" below). The second column of the
-** row (column 0) contains the input character or characters. The third 
+** row (column 0) contains the input character or characters. The third
 ** column contains the output character or characters. And the fourth column
 ** contains the integer cost of making the transformation. For example:
 **
@@ -43,8 +43,8 @@
 **    INSERT INTO f_data(ruleset, cFrom, cTo, Cost) VALUES(0, 'oe', 'o', 40);
 **
 ** The first row inserted into the fuzzer data table by the SQL script
-** above indicates that the cost of inserting a letter 'a' is 100.  (All 
-** costs are integers.  We recommend that costs be scaled so that the 
+** above indicates that the cost of inserting a letter 'a' is 100.  (All
+** costs are integers.  We recommend that costs be scaled so that the
 ** average cost is around 100.) The second INSERT statement creates a rule
 ** saying that the cost of deleting a single letter 'b' is 87.  The third
 ** and fourth INSERT statements mean that the cost of transforming a
@@ -53,7 +53,7 @@
 **
 ** The contents of the fuzzer data table are loaded into main memory when
 ** a fuzzer table is first created, and may be internally reloaded by the
-** system at any subsequent time. Therefore, the fuzzer data table should be 
+** system at any subsequent time. Therefore, the fuzzer data table should be
 ** populated before the fuzzer table is created and not modified thereafter.
 ** If you do need to modify the contents of the fuzzer data table, it is
 ** recommended that the associated fuzzer table be dropped, the fuzzer data
@@ -73,7 +73,7 @@
 ** (called "distance") and appear in order of increasing cost.  No string
 ** is output more than once.  If there are multiple ways to transform the
 ** target string into the output string then the lowest cost transform is
-** the one that is returned.  In the example, the search is limited to 
+** the one that is returned.  In the example, the search is limited to
 ** strings with a total distance of less than 200.
 **
 ** The fuzzer is a read-only table.  Any attempt to DELETE, INSERT, or
@@ -82,7 +82,7 @@
 ** It is important to put some kind of a limit on the fuzzer output.  This
 ** can be either in the form of a LIMIT clause at the end of the query,
 ** or better, a "distance<NNN" constraint where NNN is some number.  The
-** running time and memory requirement is exponential in the value of NNN 
+** running time and memory requirement is exponential in the value of NNN
 ** so you want to make sure that NNN is not too big.  A value of NNN that
 ** is about twice the average transformation cost seems to give good results.
 **
@@ -117,12 +117,12 @@
 ** Normally, the "ruleset" value associated with all character transformations
 ** in the fuzzer data table is zero. However, if required, the fuzzer table
 ** allows multiple rulesets to be defined. Each query uses only a single
-** ruleset. This allows, for example, a single fuzzer table to support 
+** ruleset. This allows, for example, a single fuzzer table to support
 ** multiple languages.
 **
-** By default, only the rules from ruleset 0 are used. To specify an 
+** By default, only the rules from ruleset 0 are used. To specify an
 ** alternative ruleset, a "ruleset = ?" expression must be added to the
-** WHERE clause of a SELECT, where ? is the identifier of the desired 
+** WHERE clause of a SELECT, where ? is the identifier of the desired
 ** ruleset. For example:
 **
 **   SELECT vocabulary.w FROM f, vocabulary
@@ -132,7 +132,7 @@
 **      AND f.ruleset=1  -- Specify the ruleset to use here
 **    LIMIT 20
 **
-** If no "ruleset = ?" constraint is specified in the WHERE clause, ruleset 
+** If no "ruleset = ?" constraint is specified in the WHERE clause, ruleset
 ** 0 is used.
 **
 ** LIMITS
@@ -170,7 +170,7 @@ typedef struct fuzzer_stem fuzzer_stem;
 **
 ** fuzzer_cost is the "cost" of an edit operation.
 **
-** fuzzer_len is the length of a matching string.  
+** fuzzer_len is the length of a matching string.
 **
 ** fuzzer_ruleid is an ruleset identifier.
 */
@@ -222,8 +222,8 @@ struct fuzzer_stem {
   fuzzer_len n;              /* Apply pRule at this character offset */
 };
 
-/* 
-** A fuzzer virtual-table object 
+/*
+** A fuzzer virtual-table object
 */
 struct fuzzer_vtab {
   sqlite3_vtab base;         /* Base class - must be first */
@@ -319,22 +319,22 @@ static int fuzzerLoadOneRule(
   }
 
   if( nCost<=0 || nCost>FUZZER_MX_COST ){
-    *pzErr = sqlite3_mprintf("%s: cost must be between 1 and %d", 
+    *pzErr = sqlite3_mprintf("%s: cost must be between 1 and %d",
         p->zClassName, FUZZER_MX_COST
     );
     rc = SQLITE_ERROR;
   }else
   if( nFrom>FUZZER_MX_LENGTH || nTo>FUZZER_MX_LENGTH ){
-    *pzErr = sqlite3_mprintf("%s: maximum string length is %d", 
+    *pzErr = sqlite3_mprintf("%s: maximum string length is %d",
         p->zClassName, FUZZER_MX_LENGTH
     );
-    rc = SQLITE_ERROR;    
+    rc = SQLITE_ERROR;
   }else
   if( iRuleset<0 || iRuleset>FUZZER_MX_RULEID ){
-    *pzErr = sqlite3_mprintf("%s: ruleset must be between 0 and %d", 
+    *pzErr = sqlite3_mprintf("%s: ruleset must be between 0 and %d",
         p->zClassName, FUZZER_MX_RULEID
     );
-    rc = SQLITE_ERROR;    
+    rc = SQLITE_ERROR;
   }else{
 
     pRule = sqlite3_malloc( sizeof(*pRule) + nFrom + nTo );
@@ -401,7 +401,7 @@ static int fuzzerLoadRules(
   sqlite3_free(zSql);
 
   /* All rules are now in a singly linked list starting at pHead. This
-  ** block sorts them by cost and then sets fuzzer_vtab.pRule to point to 
+  ** block sorts them by cost and then sets fuzzer_vtab.pRule to point to
   ** point to the head of the sorted list.
   */
   if( rc==SQLITE_OK ){
@@ -435,7 +435,7 @@ static int fuzzerLoadRules(
 
 /*
 ** This function converts an SQL quoted string into an unquoted string
-** and returns a pointer to a buffer allocated using sqlite3_malloc() 
+** and returns a pointer to a buffer allocated using sqlite3_malloc()
 ** containing the result. The caller should eventually free this buffer
 ** using sqlite3_free.
 **
@@ -631,7 +631,7 @@ static int fuzzerRender(
   }else{
     memcpy(z, pStem->zBasis, n);
     memcpy(&z[n], pRule->zTo, pRule->nTo);
-    memcpy(&z[n+pRule->nTo], &pStem->zBasis[n+pRule->nFrom], 
+    memcpy(&z[n+pRule->nTo], &pStem->zBasis[n+pRule->nFrom],
            pStem->nBasis-n-pRule->nFrom+1);
   }
 
@@ -707,9 +707,9 @@ static int fuzzerSeen(fuzzer_cursor *pCur, fuzzer_stem *pStem){
 /*
 ** If argument pRule is NULL, this function returns false.
 **
-** Otherwise, it returns true if rule pRule should be skipped. A rule 
+** Otherwise, it returns true if rule pRule should be skipped. A rule
 ** should be skipped if it does not belong to rule-set iRuleset, or if
-** applying it to stem pStem would create a string longer than 
+** applying it to stem pStem would create a string longer than
 ** FUZZER_MX_OUTPUT_LENGTH bytes.
 */
 static int fuzzerSkipRule(
@@ -804,7 +804,7 @@ static fuzzer_stem *fuzzerLowestCostStem(fuzzer_cursor *pCur){
         pBest = pX;
         iBest = i;
       }
-    } 
+    }
     if( pBest ){
       pCur->aQueue[iBest] = pBest->pNext;
       pBest->pNext = 0;
@@ -965,7 +965,7 @@ static int fuzzerNext(sqlite3_vtab_cursor *cur){
 ** prior to any fuzzerColumn, fuzzerRowid, or fuzzerEof call.
 */
 static int fuzzerFilter(
-  sqlite3_vtab_cursor *pVtabCursor, 
+  sqlite3_vtab_cursor *pVtabCursor,
   int idxNum, const char *idxStr,
   int argc, sqlite3_value **argv
 ){
@@ -1067,7 +1067,7 @@ static int fuzzerEof(sqlite3_vtab_cursor *cur){
 **   bit 3:   Term like (C) found
 **
 ** If bit-1 is set, $str is always in filter.argv[0].  If bit-2 is set
-** then $value is in filter.argv[0] if bit-1 is clear and is in 
+** then $value is in filter.argv[0] if bit-1 is clear and is in
 ** filter.argv[1] if bit-1 is set.  If bit-3 is set, then $ruleid is
 ** in filter.argv[0] if bit-1 and bit-2 are both zero, is in
 ** filter.argv[1] if exactly one of bit-1 and bit-2 are set, and is in
@@ -1089,7 +1089,7 @@ static int fuzzerBestIndex(sqlite3_vtab *tab, sqlite3_index_info *pIdxInfo){
       seenMatch = 1;
     }
     if( pConstraint->usable==0 ) continue;
-    if( (iPlan & 1)==0 
+    if( (iPlan & 1)==0
      && pConstraint->iColumn==0
      && pConstraint->op==SQLITE_INDEX_CONSTRAINT_MATCH
     ){
@@ -1135,7 +1135,7 @@ static int fuzzerBestIndex(sqlite3_vtab *tab, sqlite3_index_info *pIdxInfo){
   }
   if( seenMatch && (iPlan&1)==0 ) rCost = 1e99;
   pIdxInfo->estimatedCost = rCost;
-   
+
   return SQLITE_OK;
 }
 
@@ -1147,7 +1147,7 @@ static sqlite3_module fuzzerModule = {
   fuzzerConnect,
   fuzzerConnect,
   fuzzerBestIndex,
-  fuzzerDisconnect, 
+  fuzzerDisconnect,
   fuzzerDisconnect,
   fuzzerOpen,                  /* xOpen - open a cursor */
   fuzzerClose,                 /* xClose - close a cursor */
@@ -1172,8 +1172,8 @@ static sqlite3_module fuzzerModule = {
 __declspec(dllexport)
 #endif
 int sqlite3_fuzzer_init(
-  sqlite3 *db, 
-  char **pzErrMsg, 
+  sqlite3 *db,
+  char **pzErrMsg,
   const sqlite3_api_routines *pApi
 ){
   int rc = SQLITE_OK;

@@ -119,7 +119,7 @@ do_test fts4aa-1.8 {
 } {}
 ifcapable fts4_deferred {
   do_test fts4aa-1.9 {
-    # Note: Token 'in' is being deferred in the following query. 
+    # Note: Token 'in' is being deferred in the following query.
     db eval {
       SELECT docid, mit(matchinfo(t1, 'pcxnal')) FROM t1
        WHERE t1 MATCH 'joseph died in egypt'

@@ -24,13 +24,13 @@ do_test index-1.1 {
   execsql {SELECT name FROM sqlite_master WHERE type!='meta' ORDER BY name}
 } {index1 test1}
 do_test index-1.1b {
-  execsql {SELECT name, sql, tbl_name, type FROM sqlite_master 
+  execsql {SELECT name, sql, tbl_name, type FROM sqlite_master
            WHERE name='index1'}
 } {index1 {CREATE INDEX index1 ON test1(f1)} test1 index}
 do_test index-1.1c {
   db close
   sqlite3 db test.db
-  execsql {SELECT name, sql, tbl_name, type FROM sqlite_master 
+  execsql {SELECT name, sql, tbl_name, type FROM sqlite_master
            WHERE name='index1'}
 } {index1 {CREATE INDEX index1 ON test1(f1)} test1 index}
 do_test index-1.1d {
@@ -82,7 +82,7 @@ do_test index-3.1 {
     set sql "CREATE INDEX [format index%02d $i] ON test1(f[expr {($i%5)+1}])"
     execsql $sql
   }
-  execsql {SELECT name FROM sqlite_master 
+  execsql {SELECT name FROM sqlite_master
            WHERE type='index' AND tbl_name='test1'
            ORDER BY name}
 } $r
@@ -99,7 +99,7 @@ integrity_check index-3.2.3
 #
 do_test index-3.3 {
   execsql {DROP TABLE test1}
-  execsql {SELECT name FROM sqlite_master 
+  execsql {SELECT name FROM sqlite_master
            WHERE type='index' AND tbl_name='test1'
            ORDER BY name}
 } {}
@@ -230,7 +230,7 @@ do_test index-7.2 {
 } {16}
 do_test index-7.3 {
   execsql {
-    SELECT name FROM sqlite_master 
+    SELECT name FROM sqlite_master
     WHERE type='index' AND tbl_name='test1'
   }
 } {sqlite_autoindex_test1_1}
@@ -688,7 +688,7 @@ ifcapable conflict {
       DROP TABLE t7;
       DROP TABLE t8;
       CREATE TABLE t7(
-         a PRIMARY KEY ON CONFLICT FAIL, 
+         a PRIMARY KEY ON CONFLICT FAIL,
          UNIQUE(a) ON CONFLICT IGNORE
       );
     }
@@ -732,6 +732,6 @@ do_test index-21.2 {
   }
 } {0 {9 5 1}}
 
-   
+
 
 finish_test

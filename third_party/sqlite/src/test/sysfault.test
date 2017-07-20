@@ -18,7 +18,7 @@ source $testdir/malloc_common.tcl
 if {[llength [info commands test_syscall]]==0} {
   finish_test
   return
-} 
+}
 
 set testprefix sysfault
 
@@ -83,14 +83,14 @@ foreach {tn errno errlist} {
     faultsim_restore
   } -body "
     test_syscall errno fstat $errno
-    $open_and_write_body 
+    $open_and_write_body
   " -test "
     faultsim_test_result {0 {wal 1 2 3 4}} $errs
   "
 }
 
 #-------------------------------------------------------------------------
-# Various errors in locking functions. 
+# Various errors in locking functions.
 #
 foreach vfs {unix unix-excl} {
   foreach {tn errno errlist} {
@@ -107,7 +107,7 @@ foreach vfs {unix unix-excl} {
     proc vfsfault_install {} { test_syscall install fcntl }
     set errs [list]
     foreach e $errlist { lappend errs [list 1 $e] }
-  
+
     set body [string map [list %VFS% $vfs] {
       sqlite3 db test.db
       db eval {
@@ -122,7 +122,7 @@ foreach vfs {unix unix-excl} {
         SELECT * FROM t1;
       }
     }]
-  
+
     do_faultsim_test 1.3.$vfs.$tn -faults vfsfault-* -prep {
       faultsim_restore
     } -body "
@@ -137,7 +137,7 @@ foreach vfs {unix unix-excl} {
 #-------------------------------------------------------------------------
 # Check that a single EINTR error does not affect processing.
 #
-proc vfsfault_install {} { 
+proc vfsfault_install {} {
   test_syscall reset
   test_syscall install {open ftruncate close read pread pread64 write fallocate}
 }
@@ -213,12 +213,12 @@ do_faultsim_test 2.2 -faults vfsfault-* -prep {
     {1 {unable to open database file}}                                      \
     {1 {unable to open database: test.db2}}                                 \
     {1 {attempt to write a readonly database}}                              \
-    {1 {disk I/O error}}                                                  
+    {1 {disk I/O error}}
 }
 
 #-------------------------------------------------------------------------
 
-proc vfsfault_install {} { 
+proc vfsfault_install {} {
   test_syscall reset
   test_syscall install {fstat fallocate}
 }
@@ -247,7 +247,7 @@ do_faultsim_test 3 -faults vfsfault-* -prep {
 #-------------------------------------------------------------------------
 # Test errors in mmap().
 #
-proc vfsfault_install {} { 
+proc vfsfault_install {} {
   test_syscall reset
   test_syscall install {mmap}
 }
@@ -262,7 +262,7 @@ faultsim_save_and_close
 do_faultsim_test 4 -faults vfsfault-* -prep {
   faultsim_restore_and_reopen
   file_control_chunksize_test db main 8192
-  execsql { 
+  execsql {
     PRAGMA mmap_size = 1000000;
   }
 } -body {

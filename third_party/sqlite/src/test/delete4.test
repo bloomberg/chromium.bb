@@ -94,8 +94,8 @@ do_execsql_test 3.3 {
   SELECT i FROM t1 ORDER BY i;
 } {1 3 5 7}
 
-do_execsql_test 3.4 { 
-  PRAGMA integrity_check; 
+do_execsql_test 3.4 {
+  PRAGMA integrity_check;
 } {ok}
 
 # Between 2015-09-14 and 2015-09-28, the following test cases would result

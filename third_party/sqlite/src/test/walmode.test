@@ -17,7 +17,7 @@ set testdir [file dirname $argv0]
 source $testdir/tester.tcl
 source $testdir/malloc_common.tcl
 
-# If the library was compiled without WAL support, check that the 
+# If the library was compiled without WAL support, check that the
 # "PRAGMA journal_mode=WAL" treats "WAL" as an unrecognized mode.
 #
 ifcapable !wal {
@@ -88,7 +88,7 @@ do_test walmode-2.3 {
 
 # If the first statement executed is "PRAGMA journal_mode = wal", and
 # the file is already configured for WAL (read and write versions set
-# to 2), then there should be no need to write the database. The 
+# to 2), then there should be no need to write the database. The
 # statement should cause the client to connect to the log file.
 #
 set sqlite_sync_count 0
@@ -200,7 +200,7 @@ do_test walmode-5.1.4 {
   execsql { PRAGMA main.journal_mode = wal }
 } {memory}
 do_test walmode-5.1.5 {
-  execsql { 
+  execsql {
     INSERT INTO t1 VALUES(3, 4);
     SELECT * FROM t1;
     PRAGMA main.journal_mode;
@@ -233,7 +233,7 @@ do_test walmode-5.2.4 {
   execsql { PRAGMA main.journal_mode = wal }
 } $tempJrnlMode
 do_test walmode-5.2.5 {
-  execsql { 
+  execsql {
     INSERT INTO t1 VALUES(3, 4);
     SELECT * FROM t1;
     PRAGMA main.journal_mode;
@@ -261,7 +261,7 @@ do_test walmode-5.3.4 {
   execsql { PRAGMA temp.journal_mode = wal }
 } $tempJrnlMode
 do_test walmode-5.3.5 {
-  execsql { 
+  execsql {
     INSERT INTO t1 VALUES(3, 4);
     SELECT * FROM t1;
     PRAGMA temp.journal_mode;
@@ -290,7 +290,7 @@ foreach {tn mode} {
 db close
 
 #-------------------------------------------------------------------------
-# Test the effect of a "PRAGMA journal_mode" command being the first 
+# Test the effect of a "PRAGMA journal_mode" command being the first
 # thing executed by a new connection. This means that the schema is not
 # loaded when sqlite3_prepare_v2() is called to compile the statement.
 #
@@ -321,7 +321,7 @@ foreach {tn sql result} {
  15  "PRAGMA journal_mode"                wal
  16  "PRAGMA main.journal_mode"           wal
 } {
-  do_test walmode-7.$tn { 
+  do_test walmode-7.$tn {
     db close
     sqlite3 db test.db
     execsql $sql
@@ -330,7 +330,7 @@ foreach {tn sql result} {
 db close
 
 #-------------------------------------------------------------------------
-# Test the effect of a "PRAGMA journal_mode" command on an attached 
+# Test the effect of a "PRAGMA journal_mode" command on an attached
 # database.
 #
 faultsim_delete_and_reopen
@@ -356,7 +356,7 @@ do_execsql_test walmode-8.11 { PRAGMA main.journal_mode  }         {wal}
 do_execsql_test walmode-8.12 { PRAGMA journal_mode  }              {wal}
 
 # Change to WAL mode on test2.db and make sure (in the tests that follow)
-# that this mode change persists. 
+# that this mode change persists.
 do_test walmode-8.x1 {
   execsql {
      PRAGMA two.journal_mode=WAL;
@@ -372,7 +372,7 @@ do_execsql_test walmode-8.15 { PRAGMA main.journal_mode  }         {wal}
 do_execsql_test walmode-8.16 { PRAGMA two.journal_mode   }         {wal}
 do_execsql_test walmode-8.17 { INSERT INTO two.t2 DEFAULT VALUES } {}
 do_execsql_test walmode-8.18 { PRAGMA two.journal_mode   }         {wal}
- 
+
 sqlite3 db2 test.db2
 do_test walmode-8.19 { execsql { PRAGMA main.journal_mode } db2 }  {wal}
 db2 close

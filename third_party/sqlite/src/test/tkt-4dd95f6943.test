@@ -8,7 +8,7 @@
 #    May you share freely, never taking more than you give.
 #
 #***********************************************************************
-# This file implements regression tests for SQLite library. 
+# This file implements regression tests for SQLite library.
 #
 
 set testdir [file dirname $argv0]
@@ -86,40 +86,40 @@ foreach {tn1 idx} {
     do_execsql_test 2.$tn1.$tn2.4 "
       SELECT x, y FROM t2 WHERE x = 4 AND y IN $inexpr ORDER BY x DESC, y DESC;
     " {4 5  4 4  4 2}
-    
+
     do_execsql_test 2.$tn1.$tn2.5 "
-      SELECT a, x, y FROM t2, t3 WHERE a = 4 AND x = 1 AND y IN $inexpr 
+      SELECT a, x, y FROM t2, t3 WHERE a = 4 AND x = 1 AND y IN $inexpr
       ORDER BY a, x ASC, y ASC;
     " {4 1 2  4 1 4  4 1 5}
     do_execsql_test 2.$tn1.$tn2.6 "
-      SELECT a, x, y FROM t2, t3 WHERE a = 2 AND x = 1 AND y IN $inexpr 
+      SELECT a, x, y FROM t2, t3 WHERE a = 2 AND x = 1 AND y IN $inexpr
       ORDER BY x ASC, y ASC;
     " {2 1 2  2 1 4  2 1 5}
 
     do_execsql_test 2.$tn1.$tn2.7 "
-      SELECT a, x, y FROM t2, t3 WHERE a = 4 AND x = 1 AND y IN $inexpr 
+      SELECT a, x, y FROM t2, t3 WHERE a = 4 AND x = 1 AND y IN $inexpr
       ORDER BY a, x ASC, y DESC;
     " {4 1 5  4 1 4  4 1 2}
     do_execsql_test 2.$tn1.8 "
-      SELECT a, x, y FROM t2, t3 WHERE a = 2 AND x = 1 AND y IN $inexpr 
+      SELECT a, x, y FROM t2, t3 WHERE a = 2 AND x = 1 AND y IN $inexpr
       ORDER BY x ASC, y DESC;
     " {2 1 5  2 1 4  2 1 2}
 
     do_execsql_test 2.$tn1.$tn2.9 "
-      SELECT a, x, y FROM t2, t3 WHERE a = 4 AND x = 1 AND y IN $inexpr 
+      SELECT a, x, y FROM t2, t3 WHERE a = 4 AND x = 1 AND y IN $inexpr
       ORDER BY a, x DESC, y ASC;
     " {4 1 2  4 1 4  4 1 5}
     do_execsql_test 2.$tn1.10 "
-      SELECT a, x, y FROM t2, t3 WHERE a = 2 AND x = 1 AND y IN $inexpr 
+      SELECT a, x, y FROM t2, t3 WHERE a = 2 AND x = 1 AND y IN $inexpr
       ORDER BY x DESC, y ASC;
     " {2 1 2  2 1 4  2 1 5}
 
     do_execsql_test 2.$tn1.$tn2.11 "
-      SELECT a, x, y FROM t2, t3 WHERE a = 4 AND x = 1 AND y IN $inexpr 
+      SELECT a, x, y FROM t2, t3 WHERE a = 4 AND x = 1 AND y IN $inexpr
       ORDER BY a, x DESC, y DESC;
     " {4 1 5  4 1 4  4 1 2}
     do_execsql_test 2.$tn1.$tn2.12 "
-      SELECT a, x, y FROM t2, t3 WHERE a = 2 AND x = 1 AND y IN $inexpr 
+      SELECT a, x, y FROM t2, t3 WHERE a = 2 AND x = 1 AND y IN $inexpr
       ORDER BY x DESC, y DESC;
     " {2 1 5  2 1 4  2 1 2}
   }

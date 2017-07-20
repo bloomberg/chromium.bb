@@ -85,7 +85,7 @@ do_test incrblob-1.3.10 {
 } {}
 
 #------------------------------------------------------------------------
-# incrblob-2.*: 
+# incrblob-2.*:
 #
 # Test that the following operations use ptrmap pages to reduce
 # unnecessary reads:
@@ -156,13 +156,13 @@ foreach AutoVacuumMode [list 0 1] {
     db close
     sqlite3 db test.db
     execsql "PRAGMA mmap_size = 0"
-  
+
     # Read the last 20 bytes of the blob via a blob handle.
     set ::blob [db incrblob blobs v 1]
     seek $::blob -20 end
     set ::fragment [read $::blob]
     close $::blob
-  
+
     # If the database is not in auto-vacuum mode, the whole of
     # the overflow-chain must be scanned. In auto-vacuum mode,
     # sqlite uses the ptrmap pages to avoid reading the other pages.
@@ -179,14 +179,14 @@ foreach AutoVacuumMode [list 0 1] {
     db close
     sqlite3 db test.db
     execsql "PRAGMA mmap_size = 0"
-  
+
     # Write the second-to-last 20 bytes of the blob via a blob handle.
     #
     set ::blob [db incrblob blobs v 1]
     seek $::blob -40 end
     puts -nonewline $::blob "1234567890abcdefghij"
     flush $::blob
-  
+
     # If the database is not in auto-vacuum mode, the whole of
     # the overflow-chain must be scanned. In auto-vacuum mode,
     # sqlite uses the ptrmap pages to avoid reading the other pages.
@@ -210,7 +210,7 @@ foreach AutoVacuumMode [list 0 1] {
     sqlite3 db test.db
     execsql { PRAGMA mmap_size = 0 }
 
-    execsql { SELECT i FROM blobs } 
+    execsql { SELECT i FROM blobs }
   } {45}
 
   do_test incrblob-2.$AutoVacuumMode.9 {
@@ -220,7 +220,7 @@ foreach AutoVacuumMode [list 0 1] {
 sqlite3_soft_heap_limit $cmdlinearg(soft-heap-limit)
 
 #------------------------------------------------------------------------
-# incrblob-3.*: 
+# incrblob-3.*:
 #
 # Test the outcome of trying to write to a read-only blob handle.
 #
@@ -245,14 +245,14 @@ do_test incrblob-3.3 {
 } "1234567890abcdefghij"
 do_test incrblob-3.4 {
   set rc [catch {
-    sqlite3_blob_write $::blob 20 "qwertyuioplkjhgfds" 
+    sqlite3_blob_write $::blob 20 "qwertyuioplkjhgfds"
   } msg]
   list $rc $msg
 } {1 SQLITE_READONLY}
 catch {close $::blob}
 
 #------------------------------------------------------------------------
-# incrblob-4.*: 
+# incrblob-4.*:
 #
 # Try a couple of error conditions:
 #
@@ -274,13 +274,13 @@ catch {close $::blob}
 do_test incrblob-4.1 {
   set rc [catch {
     set ::blob [db incrblob blobs v 2]
-  } msg ] 
+  } msg ]
   list $rc $msg
 } {1 {no such rowid: 2}}
 do_test incrblob-4.2 {
   set rc [catch {
     set ::blob [db incrblob blobs blue 1]
-  } msg ] 
+  } msg ]
   list $rc $msg
 } {1 {no such column: "blue"}}
 do_test incrblob-4.3 {
@@ -292,14 +292,14 @@ do_test incrblob-4.3 {
 do_test incrblob-4.4 {
   set rc [catch {
     set ::blob [db incrblob nosuchdb blobs v 1]
-  } msg ] 
+  } msg ]
   list $rc $msg
 } {1 {no such table: nosuchdb.blobs}}
 
 do_test incrblob-4.5 {
   set rc [catch {
     set ::blob [db incrblob blobs i 1]
-  } msg ] 
+  } msg ]
   list $rc $msg
 } {1 {cannot open value of type integer}}
 do_test incrblob-4.6 {
@@ -308,13 +308,13 @@ do_test incrblob-4.6 {
   }
   set rc [catch {
     set ::blob [db incrblob blobs v 2]
-  } msg ] 
+  } msg ]
   list $rc $msg
 } {1 {cannot open value of type real}}
 do_test incrblob-4.7 {
   set rc [catch {
     set ::blob [db incrblob blobs i 2]
-  } msg ] 
+  } msg ]
   list $rc $msg
 } {1 {cannot open value of type null}}
 
@@ -324,7 +324,7 @@ do_test incrblob-4.8.1 {
   }
   set rc [catch {
     set ::blob [db incrblob blobs k 3]
-  } msg ] 
+  } msg ]
   list $rc $msg
 } {1 {cannot open indexed column for writing}}
 do_test incrblob-4.8.2 {
@@ -334,13 +334,13 @@ do_test incrblob-4.8.2 {
   }
   set rc [catch {
     set ::blob [db incrblob -readonly t3 a 1]
-  } msg ] 
+  } msg ]
   list $rc $msg
 } {1 {cannot open value of type null}}
 do_test incrblob-4.8.3 {
   set rc [catch {
     set ::blob [db incrblob -readonly t3 rowid 1]
-  } msg ] 
+  } msg ]
   list $rc $msg
 } {1 {no such column: "rowid"}}
 
@@ -382,7 +382,7 @@ ifcapable vtab {
 
 
 #------------------------------------------------------------------------
-# incrblob-5.*: 
+# incrblob-5.*:
 #
 #     Test that opening a blob in an attached database works.
 #
@@ -419,18 +419,18 @@ unset -nocomplain ::data
 unset -nocomplain ::text
 
 #------------------------------------------------------------------------
-# incrblob-6.*: 
+# incrblob-6.*:
 #
 #     Test that opening a blob for write-access is impossible if
 #     another connection has the database RESERVED lock.
 #
 #     Then test that blob writes that take place inside of a
 #     transaction are not visible to external connections until
-#     after the transaction is commited and the blob channel 
+#     after the transaction is commited and the blob channel
 #     closed.
 #
 #     This test does not work with the "memsubsys1" configuration.
-#     Permutation memsubsys1 configures a very small static allocation 
+#     Permutation memsubsys1 configures a very small static allocation
 #     for use as page-cache memory. This causes SQLite to upgrade
 #     to an exclusive lock when writing earlier than usual, which
 #     makes some of these tests fail.
@@ -468,7 +468,7 @@ if {[permutation] != "memsubsys1"} {
   do_test incrblob-6.6 {
     close $::blob
   } {}
-  
+
   do_test incrblob-6.7 {
     set ::blob [db2 incrblob blobs i 4]
     gets $::blob
@@ -481,8 +481,8 @@ if {[permutation] != "memsubsys1"} {
     puts -nonewline $::blob "invocation"
     flush $::blob
   } {}
-  
-  # At this point commit should be illegal (because 
+
+  # At this point commit should be illegal (because
   # there is an open blob channel).
   #
   do_test incrblob-6.11 {
@@ -490,7 +490,7 @@ if {[permutation] != "memsubsys1"} {
       COMMIT;
     } db2
   } {1 {cannot commit transaction - SQL statements in progress}}
-  
+
   do_test incrblob-6.12 {
     execsql {
       SELECT * FROM blobs WHERE rowid = 4;
@@ -651,7 +651,7 @@ do_test incrblob-7.6 {
 
 # Test that if either the "offset" or "amount" arguments to
 # sqlite3_blob_write() are less than zero, SQLITE_ERROR is returned.
-# 
+#
 do_test incrblob-8.1 {
   execsql { INSERT INTO t1 VALUES(314159, 'sqlite') }
   set ::b [db incrblob t1 b 314159]

@@ -101,7 +101,7 @@ do_test bitvec-1.18 {
   sqlite3BitvecBuiltinTest 400000 {1 5000 100000 1 2 400000 1 37 0}
 } 0
 
-# Attempt to induce hash collisions.  
+# Attempt to induce hash collisions.
 #
 unset -nocomplain start
 unset -nocomplain incr

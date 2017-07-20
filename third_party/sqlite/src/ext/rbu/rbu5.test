@@ -27,7 +27,7 @@ proc pkcols {db tbl} {
   return $ret
 }
 
-# Return a list of all columns for table $tbl in the database opened by 
+# Return a list of all columns for table $tbl in the database opened by
 # database handle $db.
 #
 proc allcols {db tbl} {
@@ -89,7 +89,7 @@ proc generate_rbu_db {target rbu sql} {
   dbRbu eval $sql
 
   dbRbu function ucontrol ucontrol
-  
+
   # Evaluate the SQL script to modify the contents of copy.db.
   set ret [datacksum dbRbu]
 
@@ -105,7 +105,7 @@ proc generate_rbu_db {target rbu sql} {
     set where [list]
     foreach c $pk { lappend where "main.$tbl.$c IS orig.$tbl.$c" }
     set where [join $where " AND "]
-    
+
     # A WHERE clause to test that all columns match.
     #
     set where2 [list]
@@ -115,35 +115,35 @@ proc generate_rbu_db {target rbu sql} {
 
     # Create a data_xxx table in the RBU update database.
     dbRbu eval "
-      CREATE TABLE rbu.data_$tbl AS SELECT *, '' AS rbu_control 
+      CREATE TABLE rbu.data_$tbl AS SELECT *, '' AS rbu_control
       FROM main.$tbl LIMIT 0
     "
 
     # Find all new rows INSERTed by the script.
     dbRbu eval "
-      INSERT INTO rbu.data_$tbl 
+      INSERT INTO rbu.data_$tbl
           SELECT *, 0 AS rbu_control FROM main.$tbl
           WHERE NOT EXISTS (
             SELECT 1 FROM orig.$tbl WHERE $where
           )
     "
-    
+
     # Find all old rows DELETEd by the script.
     dbRbu eval "
-      INSERT INTO rbu.data_$tbl 
+      INSERT INTO rbu.data_$tbl
           SELECT *, 1 AS rbu_control FROM orig.$tbl
           WHERE NOT EXISTS (
             SELECT 1 FROM main.$tbl WHERE $where
           )
     "
-    
+
     # Find all rows UPDATEd by the script.
     set origcols [list]
     foreach c $cols { lappend origcols "main.$tbl.$c" }
     set origcols [join $origcols ,]
     dbRbu eval "
       INSERT INTO rbu.data_$tbl
-          SELECT $origcols, $ucontrol AS rbu_control 
+          SELECT $origcols, $ucontrol AS rbu_control
           FROM orig.$tbl, main.$tbl
           WHERE $where AND NOT ($where2)
     "
@@ -203,7 +203,7 @@ foreach {tn idx} {
     } $cksum
 
     do_test 1.$tn.$cmd.2 {
-      db eval { PRAGMA integrity_check } 
+      db eval { PRAGMA integrity_check }
     } {ok}
 
     db close
@@ -291,7 +291,7 @@ foreach {tn idx} {
     } $cksum
 
     do_test 2.$tn.$cmd.2 {
-      db eval { PRAGMA integrity_check } 
+      db eval { PRAGMA integrity_check }
     } {ok}
 
     db close

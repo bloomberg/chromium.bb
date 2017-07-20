@@ -39,13 +39,13 @@ proc rstring {n} {
 proc rvalue {} {
   switch -- [expr int(rand()*5)] {
     0 { # SQL NULL value.
-      return NULL 
+      return NULL
     }
     1 { # Integer value.
-      return [expr int(rand()*1024)] 
+      return [expr int(rand()*1024)]
     }
     2 { # Real value.
-      return [expr rand()] 
+      return [expr rand()]
     }
     3 { # String value.
       set n [expr int(rand()*2500)]
@@ -106,7 +106,7 @@ proc purge_pcache {} {
   }
 }
 
-# This block creates a database to work with. 
+# This block creates a database to work with.
 #
 do_test fuzz3-1 {
   execsql {
@@ -138,18 +138,18 @@ for {set ii 0} {$ii < 5000} {incr ii} {
 
   set iTest 0
   foreach sql {
-    {SELECT * FROM t2 ORDER BY d}      
-    {SELECT * FROM t1}                 
-    {SELECT * FROM t2}                 
-    {SELECT * FROM t1 ORDER BY a}      
-    {SELECT * FROM t1 WHERE a = (SELECT a FROM t1 WHERE rowid=25)} 
-    {SELECT * FROM t2 WHERE d = (SELECT d FROM t2 WHERE rowid=1)}  
-    {SELECT * FROM t2 WHERE d = (SELECT d FROM t2 WHERE rowid=50)} 
-    {PRAGMA integrity_check}           
+    {SELECT * FROM t2 ORDER BY d}
+    {SELECT * FROM t1}
+    {SELECT * FROM t2}
+    {SELECT * FROM t1 ORDER BY a}
+    {SELECT * FROM t1 WHERE a = (SELECT a FROM t1 WHERE rowid=25)}
+    {SELECT * FROM t2 WHERE d = (SELECT d FROM t2 WHERE rowid=1)}
+    {SELECT * FROM t2 WHERE d = (SELECT d FROM t2 WHERE rowid=50)}
+    {PRAGMA integrity_check}
   } {
     do_test fuzz3-$ii.$iNew.[incr iTest] {
       foreach {rc msg} [catchsql $sql] {}
-      if {$rc == 0 
+      if {$rc == 0
        || $msg eq "database or disk is full"
        || $msg eq "database disk image is malformed"
        || $msg eq "file is encrypted or is not a database"
@@ -161,7 +161,7 @@ for {set ii 0} {$ii < 5000} {incr ii} {
     } {ok}
   }
 
-  # Restore the original database file content. Test that the correct 
+  # Restore the original database file content. Test that the correct
   # checksum is now returned.
   #
   purge_pcache

@@ -21,7 +21,7 @@
 ** Examples:
 **
 ** To convert 123 from LogEst to integer:
-** 
+**
 **         ./LogEst ^123
 **
 ** To convert 123456 from integer to LogEst:

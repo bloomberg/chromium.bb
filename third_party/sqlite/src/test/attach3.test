@@ -26,7 +26,7 @@ ifcapable !attach {
 # The tests in this file were written before SQLite supported recursive
 # trigger invocation, and some tests depend on that to pass. So disable
 # recursive triggers for this file.
-catchsql { pragma recursive_triggers = off } 
+catchsql { pragma recursive_triggers = off }
 
 # Create tables t1 and t2 in the main database
 execsql {
@@ -149,7 +149,7 @@ do_test attach3-5.3 {
   }
 } {1 2 hello world}
 
-# Drop the view 
+# Drop the view
 do_test attach3-6.1 {
   execsql {
     DROP VIEW aux.v1;
@@ -186,7 +186,7 @@ do_test attach3-5.3 {
       INSERT INTO t3 VALUES(new.e*2, new.f*2);
     END}}
 
-# Drop the trigger 
+# Drop the trigger
 do_test attach3-8.1 {
   execsql {
     DROP TRIGGER aux.tr1;
@@ -204,7 +204,7 @@ ifcapable tempdb {
     execsql {
       CREATE TABLE main.t4(a, b, c);
       CREATE TABLE aux.t4(a, b, c);
-      CREATE TEMP TRIGGER tst_trigger BEFORE INSERT ON aux.t4 BEGIN 
+      CREATE TEMP TRIGGER tst_trigger BEFORE INSERT ON aux.t4 BEGIN
         SELECT 'hello world';
       END;
       SELECT count(*) FROM temp.sqlite_master;

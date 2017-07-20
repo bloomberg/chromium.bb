@@ -11,7 +11,7 @@
 # This file implements regression tests for SQLite library.  The
 # focus of this file is testing for correct handling of I/O errors
 # such as writes failing because the disk is full.
-# 
+#
 # The tests in this file use special facilities that are only
 # available in the SQLite test fixture.
 #
@@ -49,7 +49,7 @@ proc check_db {testname} {
 
   # Run an integrity-check. If "disk I/O error" is returned, the
   # pager must be in error state. In this case open a new database
-  # connection. Otherwise, try a ROLLBACK, in case a transaction 
+  # connection. Otherwise, try a ROLLBACK, in case a transaction
   # is still active.
   set rc [catch {execsql {PRAGMA integrity_check}} msg]
   if {$rc && ($msg eq "disk I/O error" || $msg eq "database is locked")} {
@@ -80,9 +80,9 @@ set sql {
   PRAGMA default_cache_size = 10;
   BEGIN;
   DELETE FROM t1 WHERE (oid%7)==0;
-  INSERT INTO t1 SELECT randstr(400,400), randstr(400,400) 
+  INSERT INTO t1 SELECT randstr(400,400), randstr(400,400)
     WHERE (random()%7)==0;
-  UPDATE t1 SET a = randstr(400,400), b = randstr(400,400) 
+  UPDATE t1 SET a = randstr(400,400), b = randstr(400,400)
     WHERE (random()%7)==0;
   ROLLBACK;
 }
@@ -115,7 +115,7 @@ foreach bPersist [list 0 1] {
 # When this test was written, an IO error within the UPDATE statement caused
 # a rollback, which tripped all read-cursors, causing the outer SELECT to
 # fail with "abort due to ROLLBACK". Now, the loop continues until the UPDATE
-# is run successfully. At this point the next IO error occurs within the 
+# is run successfully. At this point the next IO error occurs within the
 # SELECT - throwing the "disk I/O error" that the test case now expects.
 #
 do_test ioerr2-5 {

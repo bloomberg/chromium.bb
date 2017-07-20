@@ -8,7 +8,7 @@
 #    May you share freely, never taking more than you give.
 #
 #***********************************************************************
-# 
+#
 # This is a test case from content taken "from the wild".  In this
 # particular instance, the query was provided with permission by
 # Elan Feingold on 2013-06-27.  His message on the SQLite mailing list
@@ -23,9 +23,9 @@
 # > query in our test suite, that would be off-the-chain terrific.
 #
 # Please find items 1..3 in this file: http://www.plexapp.com/elan/sqlite_bug.txt
-# 
+#
 # You have our permission to include the query in your test suite.
-# 
+#
 # Thanks for an amazing product.
 #-----------------------------------------------------------------------------
 #
@@ -284,7 +284,7 @@ do_execsql_test wild001.01 {
   INSERT INTO sqlite_stat3 VALUES('items','i_secid',15,25903,2,4);
   INSERT INTO sqlite_stat3 VALUES('items','i_secid',1398,25918,3,5);
   ANALYZE sqlite_master;
-  
+
   explain query plan
   select items.title
     from items

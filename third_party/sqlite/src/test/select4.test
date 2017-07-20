@@ -86,7 +86,7 @@ do_test select4-1.1f {
 } {0 1 2 3 4 5 3 4}
 do_test select4-1.1g {
   execsql {
-    CREATE TABLE t2 AS 
+    CREATE TABLE t2 AS
       SELECT DISTINCT log FROM t1
       UNION ALL
       SELECT n FROM t1 WHERE log=2;
@@ -97,7 +97,7 @@ execsql {DROP TABLE t2}
 ifcapable subquery {
   do_test select4-1.2 {
     execsql {
-      SELECT log FROM t1 WHERE n IN 
+      SELECT log FROM t1 WHERE n IN
         (SELECT DISTINCT log FROM t1 UNION ALL
          SELECT n FROM t1 WHERE log=3)
       ORDER BY log;
@@ -135,7 +135,7 @@ do_test select4-2.1 {
 ifcapable subquery {
   do_test select4-2.2 {
     execsql {
-      SELECT log FROM t1 WHERE n IN 
+      SELECT log FROM t1 WHERE n IN
         (SELECT DISTINCT log FROM t1 UNION
          SELECT n FROM t1 WHERE log=3)
       ORDER BY log;
@@ -173,7 +173,7 @@ do_test select4-3.1.1 {
 } {0 1 2 3 4}
 do_test select4-3.1.2 {
   execsql {
-    CREATE TABLE t2 AS 
+    CREATE TABLE t2 AS
       SELECT DISTINCT log FROM t1
       EXCEPT
       SELECT n FROM t1 WHERE log=3
@@ -184,7 +184,7 @@ do_test select4-3.1.2 {
 execsql {DROP TABLE t2}
 do_test select4-3.1.3 {
   execsql {
-    CREATE TABLE t2 AS 
+    CREATE TABLE t2 AS
       SELECT DISTINCT log FROM t1
       EXCEPT
       SELECT n FROM t1 WHERE log=3
@@ -196,7 +196,7 @@ execsql {DROP TABLE t2}
 ifcapable subquery {
   do_test select4-3.2 {
     execsql {
-      SELECT log FROM t1 WHERE n IN 
+      SELECT log FROM t1 WHERE n IN
         (SELECT DISTINCT log FROM t1 EXCEPT
          SELECT n FROM t1 WHERE log=3)
       ORDER BY log;
@@ -260,7 +260,7 @@ execsql {DROP TABLE t2}
 ifcapable subquery {
   do_test select4-4.2 {
     execsql {
-      SELECT log FROM t1 WHERE n IN 
+      SELECT log FROM t1 WHERE n IN
         (SELECT DISTINCT log FROM t1 INTERSECT
          SELECT n FROM t1 WHERE log=3)
       ORDER BY log;
@@ -281,7 +281,7 @@ do_catchsql_test select4-4.4 {
     SELECT 0 ORDER BY 1
     INTERSECT
     SELECT 1
-    INTERSECT 
+    INTERSECT
     SELECT 2
     ORDER BY 1
   );
@@ -497,7 +497,7 @@ do_test select4-7.1 {
     CREATE TABLE t2 AS SELECT log AS 'x', count(*) AS 'y' FROM t1 GROUP BY log;
     SELECT * FROM t2 ORDER BY x;
   }
-} {0 1 1 1 2 2 3 4 4 8 5 15}  
+} {0 1 1 1 2 2 3 4 4 8 5 15}
 ifcapable subquery {
   do_test select4-7.2 {
     execsql2 {
@@ -947,21 +947,21 @@ do_execsql_test select4-16.1 {
   INSERT INTO t1(a,b,c,d)
     SELECT x%10, x/10, x, printf('xyz%dabc',x) FROM c;
 
-  SELECT t3.c FROM 
+  SELECT t3.c FROM
     (SELECT a,max(b) AS m FROM t1 WHERE a>=5 GROUP BY a) AS t2
     JOIN t1 AS t3
   WHERE t2.a=t3.a AND t2.m=t3.b
   ORDER BY t3.a;
 } {95 96 97 98 99}
 do_execsql_test select4-16.2 {
-  SELECT t3.c FROM 
+  SELECT t3.c FROM
     (SELECT a,max(b) AS m FROM t1 WHERE a>=5 GROUP BY a) AS t2
     CROSS JOIN t1 AS t3
   WHERE t2.a=t3.a AND t2.m=t3.b
   ORDER BY t3.a;
 } {95 96 97 98 99}
 do_execsql_test select4-16.3 {
-  SELECT t3.c FROM 
+  SELECT t3.c FROM
     (SELECT a,max(b) AS m FROM t1 WHERE a>=5 GROUP BY a) AS t2
     LEFT JOIN t1 AS t3
   WHERE t2.a=t3.a AND t2.m=t3.b
@@ -974,7 +974,7 @@ do_execsql_test select4-16.3 {
 # on aggregate subqueries.  But if the subquery is a compound where the
 # last SELECT is non-aggregate but some other SELECT is an aggregate, the
 # test is incomplete and the optimization is not properly disabled.
-# 
+#
 # The following test cases verify that the fix works.
 #
 do_execsql_test select4-17.1 {

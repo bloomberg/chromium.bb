@@ -33,7 +33,7 @@ proc fill_multilanguage_fulltext_t1 {} {
   set english {one two three four five}
   set spanish {un dos tres cuatro cinco}
   set german {eine zwei drei vier funf}
-  
+
   for {set i 1} {$i<=31} {incr i} {
     set cmd "INSERT INTO t1 VALUES"
     set vset {}

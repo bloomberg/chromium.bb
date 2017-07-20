@@ -57,5 +57,5 @@ do_test tkt-6bfb98dfc0.100 {
     SELECT x, length(y) FROM t1 ORDER BY x;
   }
 } {75 400 76 400}
-    
+
 finish_test

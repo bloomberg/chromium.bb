@@ -9,7 +9,7 @@
 #
 #***********************************************************************
 #
-# This file containst tests to verify that ROLLBACK or ROLLBACK TO 
+# This file containst tests to verify that ROLLBACK or ROLLBACK TO
 # operations interact correctly with ongoing SELECT statements.
 #
 

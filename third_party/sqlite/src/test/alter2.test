@@ -9,7 +9,7 @@
 #
 #*************************************************************************
 # This file implements regression tests for SQLite library.  The
-# focus of this script is testing that SQLite can handle a subtle 
+# focus of this script is testing that SQLite can handle a subtle
 # file format change that may be used in the future to implement
 # "ALTER TABLE ... ADD COLUMN".
 #
@@ -27,20 +27,20 @@ ifcapable {!pragma} return
 #
 do_not_use_codec
 
-# The file format change affects the way row-records stored in tables (but 
-# not indices) are interpreted. Before version 3.1.3, a row-record for a 
+# The file format change affects the way row-records stored in tables (but
+# not indices) are interpreted. Before version 3.1.3, a row-record for a
 # table with N columns was guaranteed to contain exactly N fields. As
 # of version 3.1.3, the record may contain up to N fields. In this case
-# the M fields that are present are the values for the left-most M 
+# the M fields that are present are the values for the left-most M
 # columns. The (N-M) rightmost columns contain NULL.
 #
 # If any records in the database contain less fields than their table
-# has columns, then the file-format meta value should be set to (at least) 2. 
+# has columns, then the file-format meta value should be set to (at least) 2.
 #
 
 # This procedure sets the value of the file-format in file 'test.db'
 # to $newval. Also, the schema cookie is incremented.
-# 
+#
 proc set_file_format {newval} {
   hexio_write test.db 44 [hexio_render_int32 $newval]
   set schemacookie [hexio_get_int [hexio_read test.db 40 4]]
@@ -50,7 +50,7 @@ proc set_file_format {newval} {
 }
 
 # This procedure returns the value of the file-format in file 'test.db'.
-# 
+#
 proc get_file_format {{fname test.db}} {
   return [hexio_get_int [hexio_read $fname 44 4]]
 }
@@ -58,7 +58,7 @@ proc get_file_format {{fname test.db}} {
 # This procedure sets the SQL statement stored for table $tbl in the
 # sqlite_master table of file 'test.db' to $sql. Also set the file format
 # to the supplied value. This is 2 if the added column has a default that is
-# NULL, or 3 otherwise. 
+# NULL, or 3 otherwise.
 #
 proc alter_table {tbl sql {file_format 2}} {
   sqlite3 dbat test.db
@@ -73,7 +73,7 @@ proc alter_table {tbl sql {file_format 2}} {
   set_file_format 2
 }
 
-# Create bogus application-defined functions for functions used 
+# Create bogus application-defined functions for functions used
 # internally by ALTER TABLE, to ensure that ALTER TABLE falls back
 # to the built-in functions.
 #
@@ -243,7 +243,7 @@ ifcapable trigger {
 
 #---------------------------------------------------------------------
 # Check that an error occurs if the database is upgraded to a file
-# format that SQLite does not support (in this case 5). Note: The 
+# format that SQLite does not support (in this case 5). Note: The
 # file format is checked each time the schema is read, so changing the
 # file format requires incrementing the schema cookie.
 #
@@ -255,7 +255,7 @@ do_test alter2-4.1 {
 } {}
 do_test alter2-4.2 {
   # We have to run two queries here because the Tcl interface uses
-  # sqlite3_prepare_v2(). In this case, the first query encounters an 
+  # sqlite3_prepare_v2(). In this case, the first query encounters an
   # SQLITE_SCHEMA error. Then, when trying to recompile the statement, the
   # "unsupported file format" error is encountered. So the error code
   # returned is SQLITE_SCHEMA, not SQLITE_ERROR as required by the following
@@ -302,9 +302,9 @@ ifcapable vacuum {
     get_file_format
   } $default_file_format
 }
- 
+
 #---------------------------------------------------------------------
-# Test that when a database with file-format 2 is opened, new 
+# Test that when a database with file-format 2 is opened, new
 # databases are still created with file-format 1.
 #
 do_test alter2-6.1 {
@@ -328,11 +328,11 @@ do_test alter2-6.3 {
   execsql {
     CREATE TABLE t1(a, b);
   }
-  get_file_format 
+  get_file_format
 } {2}
 
 #---------------------------------------------------------------------
-# Test that types and values for columns added with default values 
+# Test that types and values for columns added with default values
 # other than NULL work with SELECT statements.
 #
 do_test alter2-7.1 {
@@ -373,9 +373,9 @@ do_test alter2-7.5 {
 
 #-----------------------------------------------------------------------
 # Test that UPDATE trigger tables work with default values, and that when
-# a row is updated the default values are correctly transfered to the 
+# a row is updated the default values are correctly transfered to the
 # new row.
-# 
+#
 ifcapable trigger {
 db function set_val {set ::val}
   do_test alter2-8.1 {
@@ -383,7 +383,7 @@ db function set_val {set ::val}
       CREATE TRIGGER trig1 BEFORE UPDATE ON t1 BEGIN
       SELECT set_val(
           old.b||' '||typeof(old.b)||' '||old.c||' '||typeof(old.c)||' '||
-          new.b||' '||typeof(new.b)||' '||new.c||' '||typeof(new.c) 
+          new.b||' '||typeof(new.b)||' '||new.c||' '||typeof(new.c)
       );
       END;
     }
@@ -404,9 +404,9 @@ ifcapable trigger {
 
 #-----------------------------------------------------------------------
 # Test that DELETE trigger tables work with default values, and that when
-# a row is updated the default values are correctly transfered to the 
+# a row is updated the default values are correctly transfered to the
 # new row.
-# 
+#
 ifcapable trigger {
   do_test alter2-9.1 {
     execsql {
@@ -427,7 +427,7 @@ ifcapable trigger {
 }
 
 #-----------------------------------------------------------------------
-# Test creating an index on a column added with a default value. 
+# Test creating an index on a column added with a default value.
 #
 ifcapable bloblit {
   do_test alter2-10.1 {

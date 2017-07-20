@@ -253,7 +253,7 @@ do_execsql_test transitive1-410 {
              ON files.idpath = path.idpath
            LEFT JOIN bookmark
                   ON bookmark.idfile = episode.idfile
-                     AND bookmark.type = 1; 
+                     AND bookmark.type = 1;
   CREATE VIEW tvshowview
   AS
     SELECT tvshow.*,
@@ -272,7 +272,7 @@ do_execsql_test transitive1-410 {
                   ON episode.idshow = tvshow.idshow
            LEFT JOIN files
                   ON files.idfile = episode.idfile
-    GROUP  BY tvshow.idshow; 
+    GROUP  BY tvshow.idshow;
   SELECT
     episodeview.c12,
     path.strPath,
@@ -309,8 +309,8 @@ do_execsql_test transitive1-500 {
   SELECT * FROM x WHERE x.y>='1' AND x.y<'2' AND x.i=x.y;
 } {10 10}
 do_execsql_test transitive1-510 {
-  CREATE TABLE t1(x TEXT); 
-  CREATE TABLE t2(y TEXT); 
+  CREATE TABLE t1(x TEXT);
+  CREATE TABLE t2(y TEXT);
   INSERT INTO t1 VALUES('abc');
   INSERT INTO t2 VALUES('ABC');
   SELECT * FROM t1 CROSS JOIN t2 WHERE (x=y COLLATE nocase) AND y='ABC';

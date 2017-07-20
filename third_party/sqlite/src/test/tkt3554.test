@@ -11,7 +11,7 @@
 # This file implements regression tests for SQLite library.
 #
 # This file implements tests to verify that ticket #3554 has been
-# fixed.  
+# fixed.
 #
 # $Id: tkt3554.test,v 1.2 2009/06/05 17:09:12 drh Exp $
 
@@ -26,16 +26,16 @@ ifcapable !trigger {
 do_test tkt3544-1.1 {
   execsql {
     CREATE TABLE test ( obj, t1, t2, PRIMARY KEY(obj, t1, t2) );
-  
+
     CREATE TRIGGER test_insert BEFORE INSERT ON test BEGIN
-      UPDATE test SET t1 = new.t1 
+      UPDATE test SET t1 = new.t1
         WHERE obj = new.obj AND new.t1 < t1 AND new.t2 >= t1;
-  
-      UPDATE test SET t2 = new.t2 
+
+      UPDATE test SET t2 = new.t2
         WHERE obj = new.obj AND new.t2 > t2 AND new.t1 <= t2;
-  
+
       SELECT RAISE(IGNORE) WHERE EXISTS (
-        SELECT obj FROM test 
+        SELECT obj FROM test
         WHERE obj = new.obj AND new.t1 >= t1 AND new.t2 <= t2
       );
     END;

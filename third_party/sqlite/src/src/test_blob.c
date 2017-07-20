@@ -48,12 +48,12 @@ static char *ptrToText(void *p){
 ** of *ppBlob is undefined in this case.
 **
 ** If the object contains a string that begins with "incrblob_", then it
-** is assumed to be the name of a Tcl channel opened using the [db incrblob] 
-** command (see tclsqlite.c). Otherwise, it is assumed to be a pointer 
+** is assumed to be the name of a Tcl channel opened using the [db incrblob]
+** command (see tclsqlite.c). Otherwise, it is assumed to be a pointer
 ** encoded using the ptrToText() routine or similar.
 */
 static int blobHandleFromObj(
-  Tcl_Interp *interp, 
+  Tcl_Interp *interp,
   Tcl_Obj *pObj,
   sqlite3_blob **ppBlob
 ){
@@ -67,7 +67,7 @@ static int blobHandleFromObj(
     int notUsed;
     Tcl_Channel channel;
     ClientData instanceData;
-    
+
     channel = Tcl_GetChannel(interp, z, &notUsed);
     if( !channel ) return TCL_ERROR;
 
@@ -158,7 +158,7 @@ static int SQLITE_TCLAPI test_blob_close(
 ){
   sqlite3_blob *pBlob;
   int rc;
-  
+
   if( objc!=2 ){
     Tcl_WrongNumArgs(interp, 1, objv, "HANDLE");
     return TCL_ERROR;
@@ -186,7 +186,7 @@ static int SQLITE_TCLAPI test_blob_bytes(
 ){
   sqlite3_blob *pBlob;
   int nByte;
-  
+
   if( objc!=2 ){
     Tcl_WrongNumArgs(interp, 1, objv, "HANDLE");
     return TCL_ERROR;
@@ -209,7 +209,7 @@ static int SQLITE_TCLAPI test_blob_bytes(
 **   to read N bytes from offset OFFSET from the underlying SQLite
 **   blob handle.
 **
-**   On success, a byte-array object containing the read data is 
+**   On success, a byte-array object containing the read data is
 **   returned. On failure, the interpreter result is set to the
 **   text representation of the returned error code (i.e. "SQLITE_NOMEM")
 **   and a Tcl exception is thrown.
@@ -225,7 +225,7 @@ static int SQLITE_TCLAPI test_blob_read(
   int iOffset;
   unsigned char *zBuf = 0;
   int rc;
-  
+
   if( objc!=4 ){
     Tcl_WrongNumArgs(interp, 1, objv, "CHANNEL OFFSET N");
     return TCL_ERROR;
@@ -234,7 +234,7 @@ static int SQLITE_TCLAPI test_blob_read(
   if( blobHandleFromObj(interp, objv[1], &pBlob) ) return TCL_ERROR;
   if( TCL_OK!=Tcl_GetIntFromObj(interp, objv[2], &iOffset)
    || TCL_OK!=Tcl_GetIntFromObj(interp, objv[3], &nByte)
-  ){ 
+  ){
     return TCL_ERROR;
   }
 
@@ -263,7 +263,7 @@ static int SQLITE_TCLAPI test_blob_read(
 **   at offset OFFSET.
 **
 **   On success, an empty string is returned. On failure, the interpreter
-**   result is set to the text representation of the returned error code 
+**   result is set to the text representation of the returned error code
 **   (i.e. "SQLITE_NOMEM") and a Tcl exception is thrown.
 */
 static int SQLITE_TCLAPI test_blob_write(
@@ -278,14 +278,14 @@ static int SQLITE_TCLAPI test_blob_write(
 
   unsigned char *zBuf;
   int nBuf;
-  
+
   if( objc!=4 && objc!=5 ){
     Tcl_WrongNumArgs(interp, 1, objv, "HANDLE OFFSET DATA ?NDATA?");
     return TCL_ERROR;
   }
 
   if( blobHandleFromObj(interp, objv[1], &pBlob) ) return TCL_ERROR;
-  if( TCL_OK!=Tcl_GetIntFromObj(interp, objv[2], &iOffset) ){ 
+  if( TCL_OK!=Tcl_GetIntFromObj(interp, objv[2], &iOffset) ){
     return TCL_ERROR;
   }
 

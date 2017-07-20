@@ -7,7 +7,7 @@
 #***********************************************************************
 #
 # This file contains tests for SQLite. Specifically, it tests that SQLite
-# does not crash and an error is returned if localhost() fails. This 
+# does not crash and an error is returned if localhost() fails. This
 # is the problem reported by ticket 91e2e8ba6f.
 #
 
@@ -39,7 +39,7 @@ do_execsql_test 1.5 {
 } {1 1.1}
 
 do_execsql_test 1.6 {
-  SELECT a.x/10, a.y/10 FROM 
+  SELECT a.x/10, a.y/10 FROM
     (SELECT * FROM t1 LIMIT 5 OFFSET 0) AS a, t1 AS b WHERE a.x = b.x
   LIMIT 5 OFFSET 0;
 } {1 1.1}

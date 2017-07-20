@@ -51,7 +51,7 @@
       __asm__ __volatile__ ("rdtsc" : "=A" (val));
       return val;
   }
- 
+
 #elif (defined(__GNUC__) && defined(__ppc__))
 
   __inline__ sqlite_uint64 sqlite3Hwtime(void){

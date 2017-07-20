@@ -122,7 +122,7 @@ do_test select5-4.5 {
 
 # Some tests for queries with a GROUP BY clause but no aggregate functions.
 #
-# Note: The query in test cases 5.1 through 5.5 are not legal SQL. So if the 
+# Note: The query in test cases 5.1 through 5.5 are not legal SQL. So if the
 # implementation changes in the future and it returns different results,
 # this is not such a big deal.
 #
@@ -133,27 +133,27 @@ do_test select5-5.1 {
     INSERT INTO t2 VALUES(1, 4, 5);
     INSERT INTO t2 VALUES(6, 4, 7);
     CREATE INDEX t2_idx ON t2(a);
-  } 
+  }
 } {}
 do_test select5-5.2 {
   execsql {
     SELECT a FROM t2 GROUP BY a;
-  } 
+  }
 } {1 6}
 do_test select5-5.3 {
   execsql {
     SELECT a FROM t2 WHERE a>2 GROUP BY a;
-  } 
+  }
 } {6}
 do_test select5-5.4 {
   execsql {
     SELECT a, b FROM t2 GROUP BY a, b;
-  } 
+  }
 } {1 2 1 4 6 4}
 do_test select5-5.5 {
   execsql {
     SELECT a, b FROM t2 GROUP BY a;
-  } 
+  }
 } {1 4 6 4}
 
 # Test rendering of columns for the GROUP BY clause.
@@ -236,7 +236,7 @@ do_test select5-8.5 {
 } {one 6 two 3}
 do_test select5-8.6 {
   execsql {
-    SELECT a, count(t8a.b) FROM t8a, t8b WHERE b=t8b.rowid 
+    SELECT a, count(t8a.b) FROM t8a, t8b WHERE b=t8b.rowid
      GROUP BY a ORDER BY 2;
   }
 } {two 1 one 2}
@@ -253,5 +253,5 @@ do_test select5-8.8 {
 
 
 
- 
+
 finish_test

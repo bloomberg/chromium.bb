@@ -9,7 +9,7 @@
 #
 #***********************************************************************
 # This file implements regression tests for SQLite library.  The
-# focus of this file is changing the database page size using a 
+# focus of this file is changing the database page size using a
 # VACUUM statement.
 #
 # $Id: vacuum3.test,v 1.9 2008/08/26 21:07:27 drh Exp $
@@ -27,7 +27,7 @@ ifcapable !vacuum {
 
 
 #-------------------------------------------------------------------
-# Test cases vacuum3-1.* convert a simple 2-page database between a 
+# Test cases vacuum3-1.* convert a simple 2-page database between a
 # few different page sizes.
 #
 do_test vacuum3-1.1 {
@@ -56,7 +56,7 @@ foreach {request actual database} [list \
   1024 1024 2048                        \
 ] {
   do_test vacuum3-1.$I.1 {
-    execsql " 
+    execsql "
       PRAGMA page_size = $request;
       VACUUM;
     "
@@ -74,7 +74,7 @@ foreach {request actual database} [list \
 }
 
 #-------------------------------------------------------------------
-# Test cases vacuum3-2.* convert a simple 3-page database between a 
+# Test cases vacuum3-2.* convert a simple 3-page database between a
 # few different page sizes.
 #
 do_test vacuum3-2.1 {
@@ -105,7 +105,7 @@ foreach {request actual database} [list \
   1024 1024 3072                        \
 ] {
   do_test vacuum3-2.$I.1 {
-    execsql " 
+    execsql "
       PRAGMA page_size = $request;
       VACUUM;
     "
@@ -124,7 +124,7 @@ foreach {request actual database} [list \
 
 #-------------------------------------------------------------------
 # Test cases vacuum3-3.* converts a database large enough to include
-# the locking page (in a test environment) between few different 
+# the locking page (in a test environment) between few different
 # page sizes.
 #
 proc signature {} {
@@ -136,28 +136,28 @@ do_test vacuum3-3.1 {
     BEGIN;
     CREATE TABLE abc(a PRIMARY KEY, b, c);
     INSERT INTO abc VALUES(randomblob(100), randomblob(200), randomblob(1000));
-    INSERT INTO abc 
+    INSERT INTO abc
         SELECT randomblob(1000), randomblob(200), randomblob(100)
         FROM abc;
-    INSERT INTO abc 
+    INSERT INTO abc
         SELECT randomblob(100), randomblob(200), randomblob(1000)
         FROM abc;
-    INSERT INTO abc 
+    INSERT INTO abc
         SELECT randomblob(100), randomblob(200), randomblob(1000)
         FROM abc;
-    INSERT INTO abc 
+    INSERT INTO abc
         SELECT randomblob(100), randomblob(200), randomblob(1000)
         FROM abc;
-    INSERT INTO abc 
+    INSERT INTO abc
         SELECT randomblob(100), randomblob(200), randomblob(1000)
         FROM abc;
-    INSERT INTO abc 
+    INSERT INTO abc
         SELECT randomblob(25), randomblob(45), randomblob(9456)
         FROM abc;
-    INSERT INTO abc 
+    INSERT INTO abc
         SELECT randomblob(100), randomblob(200), randomblob(1000)
         FROM abc;
-    INSERT INTO abc 
+    INSERT INTO abc
         SELECT randomblob(25), randomblob(45), randomblob(9456)
         FROM abc;
     COMMIT;
@@ -180,7 +180,7 @@ foreach {request actual} [list \
   1024 1024                    \
 ] {
   do_test vacuum3-3.$I.1 {
-    execsql " 
+    execsql "
       PRAGMA page_size = $request;
       VACUUM;
     "
@@ -211,7 +211,7 @@ do_test vacuum3-4.2 {
   execsql { SELECT * FROM abc } db2
 } {1 2 3 4 5 6}
 do_test vacuum3-4.3 {
-  execsql { 
+  execsql {
     PRAGMA page_size = 2048;
     VACUUM;
   }
@@ -254,10 +254,10 @@ do_test vacuum3-5.2 {
 } {1024}
 
 set create_database_sql {
-  BEGIN; 
-  CREATE TABLE t1(a, b, c); 
-  INSERT INTO t1 VALUES(1, randstr(50,50), randstr(50,50)); 
-  INSERT INTO t1 SELECT a+2, b||'-'||rowid, c||'-'||rowid FROM t1; 
+  BEGIN;
+  CREATE TABLE t1(a, b, c);
+  INSERT INTO t1 VALUES(1, randstr(50,50), randstr(50,50));
+  INSERT INTO t1 SELECT a+2, b||'-'||rowid, c||'-'||rowid FROM t1;
   INSERT INTO t1 SELECT a+4, b||'-'||rowid, c||'-'||rowid FROM t1;
   INSERT INTO t1 SELECT a+8, b||'-'||rowid, c||'-'||rowid FROM t1;
   INSERT INTO t1 SELECT a+16, b||'-'||rowid, c||'-'||rowid FROM t1;
@@ -277,14 +277,14 @@ do_ioerr_test vacuum3-ioerr-1 -cksum true -sqlprep "
 " -sqlbody {
   PRAGMA page_size = 4096;
   VACUUM;
-} 
-do_ioerr_test vacuum3-ioerr-2 -cksum true -sqlprep " 
+}
+do_ioerr_test vacuum3-ioerr-2 -cksum true -sqlprep "
   PRAGMA page_size = 2048;
   $create_database_sql
 " -sqlbody {
   PRAGMA page_size = 512;
   VACUUM;
-} 
+}
 
 ifcapable autovacuum {
   do_ioerr_test vacuum3-ioerr-3 -cksum true -sqlprep "
@@ -293,24 +293,24 @@ ifcapable autovacuum {
   " -sqlbody {
     PRAGMA auto_vacuum = 1;
     VACUUM;
-  } 
+  }
   do_ioerr_test vacuum3-ioerr-4 -cksum true -sqlprep "
     PRAGMA auto_vacuum = 1;
     $create_database_sql
   " -sqlbody {
     PRAGMA auto_vacuum = 0;
     VACUUM;
-  } 
+  }
 }
 
 source $testdir/malloc_common.tcl
 if {$MEMDEBUG} {
-  do_malloc_test vacuum3-malloc-1 -sqlprep { 
+  do_malloc_test vacuum3-malloc-1 -sqlprep {
     PRAGMA page_size = 2048;
-    BEGIN; 
-    CREATE TABLE t1(a, b, c); 
-    INSERT INTO t1 VALUES(1, randstr(50,50), randstr(50,50)); 
-    INSERT INTO t1 SELECT a+2, b||'-'||rowid, c||'-'||rowid FROM t1; 
+    BEGIN;
+    CREATE TABLE t1(a, b, c);
+    INSERT INTO t1 VALUES(1, randstr(50,50), randstr(50,50));
+    INSERT INTO t1 SELECT a+2, b||'-'||rowid, c||'-'||rowid FROM t1;
     INSERT INTO t1 SELECT a+4, b||'-'||rowid, c||'-'||rowid FROM t1;
     INSERT INTO t1 SELECT a+8, b||'-'||rowid, c||'-'||rowid FROM t1;
     INSERT INTO t1 SELECT a+16, b||'-'||rowid, c||'-'||rowid FROM t1;
@@ -325,8 +325,8 @@ if {$MEMDEBUG} {
   } -sqlbody {
     PRAGMA page_size = 512;
     VACUUM;
-  } 
-  do_malloc_test vacuum3-malloc-2 -sqlprep { 
+  }
+  do_malloc_test vacuum3-malloc-2 -sqlprep {
     PRAGMA encoding=UTF16;
     CREATE TABLE t1(a, b, c);
     INSERT INTO t1 VALUES(1, 2, 3);
@@ -334,7 +334,7 @@ if {$MEMDEBUG} {
     INSERT INTO t2 SELECT * FROM t1;
   } -sqlbody {
     VACUUM;
-  } 
+  }
 }
 
 finish_test

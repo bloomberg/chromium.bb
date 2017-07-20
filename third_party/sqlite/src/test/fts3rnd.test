@@ -23,25 +23,25 @@
 #
 #   2. The following is performed 100 times:
 #
-#      a. A row is inserted into the database. The row contents are 
+#      a. A row is inserted into the database. The row contents are
 #         generated as in step 1. The docid is a pseudo-randomly selected
 #         value between 0 and 1000000.
-# 
+#
 #      b. A psuedo-randomly selected row is updated. One of its columns is
 #         set to contain a new document generated in the same way as the
 #         documents in step 1.
-# 
+#
 #      c. A psuedo-randomly selected row is deleted.
-# 
+#
 #      d. For each of several types of fts3 queries, 10 SELECT queries
 #         of the form:
-# 
+#
 #           SELECT docid FROM <tbl> WHERE <tbl> MATCH '<query>'
-# 
+#
 #         are evaluated. The results are compared to those calculated by
 #         Tcl code in this file. The patterns used for the different query
 #         types are:
-# 
+#
 #           1.  query = <term>
 #           2.  query = <prefix>
 #           3.  query = "<term> <term>"
@@ -55,11 +55,11 @@
 #           11. query = <term> NEAR <term> OR <term> NEAR <term>
 #           12. query = <term> NEAR <term> NOT <term> NEAR <term>
 #           13. query = <term> NEAR <term> AND <term> NEAR <term>
-# 
+#
 #         where <term> is a term psuedo-randomly selected from the vocabulary
 #         and prefix is the first 2 characters of such a term followed by
 #         a "*" character.
-#     
+#
 #      Every second iteration, steps (a) through (d) above are performed
 #      within a single transaction. This forces the queries in (d) to
 #      read data from both the database and the in-memory hash table
@@ -161,7 +161,7 @@ proc simple_phrase {zPrefix} {
 }
 
 # This [proc] is used to test the FTS3 matchinfo() function.
-# 
+#
 proc simple_token_matchinfo {zToken bDesc} {
 
   set nDoc(0) 0
@@ -197,7 +197,7 @@ proc simple_token_matchinfo {zToken bDesc} {
   }
 
   set ret
-} 
+}
 
 proc simple_near {termlist nNear} {
   set ret [list]
@@ -214,7 +214,7 @@ proc simple_near {termlist nNear} {
           if {$iStart < 0} {set iStart 0}
           foreach i2 [lsearch -exact -all [lrange $v $iStart $iEnd] $T] {
             incr i2 $iStart
-            if {$i2 != $i} { lappend l2 $i2 } 
+            if {$i2 != $i} { lappend l2 $i2 }
           }
         }
         set l [lsort -uniq -integer $l2]
@@ -223,7 +223,7 @@ proc simple_near {termlist nNear} {
       if {[llength $l]} {
 #puts "MATCH($key): $v"
         lappend ret $key
-      } 
+      }
     }
   }
 
@@ -231,7 +231,7 @@ proc simple_near {termlist nNear} {
 }
 
 # The following three procs:
-# 
+#
 #   setup_not A B
 #   setup_or  A B
 #   setup_and A B
@@ -293,19 +293,19 @@ foreach {nodesize order} {
     execsql "INSERT INTO t1(t1) VALUES('nodesize=$nodesize')"
     for {set i 0} {$i < 100} {incr i} { insert_row $i }
   }
-  
+
   for {set iTest 1} {$iTest <= $NUM_TRIALS} {incr iTest} {
     catchsql COMMIT
 
     set DO_MALLOC_TEST 0
     set nRep 10
-    if {$iTest==100 && $nodesize==50} { 
-      set DO_MALLOC_TEST 1 
+    if {$iTest==100 && $nodesize==50} {
+      set DO_MALLOC_TEST 1
       set nRep 2
     }
 
     set ::testprefix fts3rnd-1.$testname.$iTest
-  
+
     # Delete one row, update one row and insert one row.
     #
     set rows [array names ::t1]
@@ -325,13 +325,13 @@ foreach {nodesize order} {
       delete_row $iDelete
     if {0==($iTest%2)} { execsql COMMIT }
 
-    if {0==($iTest%2)} { 
-      #do_test 0 { fts3_integrity_check t1 } ok 
+    if {0==($iTest%2)} {
+      #do_test 0 { fts3_integrity_check t1 } ok
     }
 
     # Pick 10 terms from the vocabulary. Check that the results of querying
     # the database for the set of documents containing each of these terms
-    # is the same as the result obtained by scanning the contents of the Tcl 
+    # is the same as the result obtained by scanning the contents of the Tcl
     # array for each term.
     #
     for {set i 0} {$i < 10} {incr i} {
@@ -399,7 +399,7 @@ foreach {nodesize order} {
       set terms [list [random_term] [random_term]]
       set match [join $terms " NEAR "]
       do_orderbydocid_test 6.$i {
-        SELECT docid FROM t1 WHERE t1 MATCH $match 
+        SELECT docid FROM t1 WHERE t1 MATCH $match
       } [simple_near $terms 10]
     }
 
@@ -413,7 +413,7 @@ foreach {nodesize order} {
         SELECT docid FROM t1 WHERE t1 MATCH $match
       } [simple_near $terms $nNear]
     }
-    
+
     # Set operations on simple term queries.
     #
     foreach {tn op proc} {
@@ -430,7 +430,7 @@ foreach {nodesize order} {
         } [$proc [simple_phrase $term1] [simple_phrase $term2]]
       }
     }
- 
+
     # Set operations on NEAR queries.
     #
     foreach {tn op proc} {

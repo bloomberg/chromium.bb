@@ -8,7 +8,7 @@
 #    May you share freely, never taking more than you give.
 #
 #***********************************************************************
-# 
+#
 # This file implements test for the REGEXP operator in test_regexp.c.
 #
 
@@ -111,7 +111,7 @@ do_execsql_test regexp1-1.27 {
 } {4}
 
 do_execsql_test regexp1-2.1 {
-  SELECT 'aaaabbbbcccc' REGEXP 'ab*c', 
+  SELECT 'aaaabbbbcccc' REGEXP 'ab*c',
          'aaaacccc' REGEXP 'ab*c';
 } {1 1}
 do_execsql_test regexp1-2.2 {

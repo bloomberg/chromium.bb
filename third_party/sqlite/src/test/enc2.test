@@ -42,7 +42,7 @@ ifcapable {!utf16} {
 
 db close
 
-# Return the UTF-8 representation of the supplied UTF-16 string $str. 
+# Return the UTF-8 representation of the supplied UTF-16 string $str.
 proc utf8 {str} {
   # If $str ends in two 0x00 0x00 bytes, knock these off before
   # converting to UTF-8 using TCL.
@@ -63,7 +63,7 @@ set dbcontents {
   CREATE TABLE t1(a PRIMARY KEY, b, c);
   INSERT INTO t1 VALUES('one', 'I', 1);
 }
-# This proc tests that we can open and manipulate the test.db 
+# This proc tests that we can open and manipulate the test.db
 # database, and that it is possible to retreive values in
 # various text encodings.
 #
@@ -81,7 +81,7 @@ do_test $t.2 {
   execsql {SELECT * FROM t1}
 } {one I 1 two II 2}
 
-# Insert some data 
+# Insert some data
 do_test $t.3 {
   execsql {
     INSERT INTO t1 VALUES('three','III',3);
@@ -302,7 +302,7 @@ do_test enc2-5-12 {
   }
 } {1 {no such collation sequence: test_collate}}
 do_test enc2-5.13 {
-  add_test_collate_needed $DB 
+  add_test_collate_needed $DB
   set res [execsql {SELECT * FROM t5 ORDER BY 1 COLLATE test_collate; }]
   lappend res $::test_collate_enc
 } {one two three four five UTF-16BE}
@@ -440,7 +440,7 @@ forcedelete test.db
 # 1: Open an empty database file assuming UTF-16 encoding.
 # 2: Open the same database with a different handle assuming UTF-8. Create
 #    a table using this handle.
-# 3: Read the sqlite_master table from the first handle. 
+# 3: Read the sqlite_master table from the first handle.
 # 4: Ensure the first handle recognises the database encoding is UTF-8.
 #
 do_test enc2-7.1 {

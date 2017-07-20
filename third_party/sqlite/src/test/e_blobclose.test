@@ -43,7 +43,7 @@ do_execsql_test 1.3 { PRAGMA lock_status } {main unlocked temp closed}
 # there are no other open read-write blob handles or active write
 # statements, the current transaction is committed.
 #
-#   2.1.*: Transaction is not committed if there are other open 
+#   2.1.*: Transaction is not committed if there are other open
 #          read-write blob handles.
 #
 #   2.2.*: Transaction is not committed if not in auto-commit mode.
@@ -58,19 +58,19 @@ do_test 2.1.1 {
   execsql { PRAGMA lock_status }
 } {main reserved temp closed}
 do_test 2.1.2 {
-  sqlite3_blob_close $B1 
+  sqlite3_blob_close $B1
   execsql { PRAGMA lock_status }
 } {main reserved temp closed}
 do_test 2.1.3 {
-  sqlite3_blob_close $B2 
+  sqlite3_blob_close $B2
   execsql { PRAGMA lock_status }
 } {main reserved temp closed}
 do_test 2.1.4 {
-  sqlite3_blob_close $B3 
+  sqlite3_blob_close $B3
   execsql { PRAGMA lock_status }
 } {main shared temp closed}
 do_test 2.1.5 {
-  sqlite3_blob_close $B4 
+  sqlite3_blob_close $B4
   execsql { PRAGMA lock_status }
 } {main unlocked temp closed}
 
@@ -80,7 +80,7 @@ do_test 2.2.1 {
 } {main reserved temp closed}
 do_test 2.2.2 {
   execsql { BEGIN }
-  sqlite3_blob_close $B1 
+  sqlite3_blob_close $B1
   execsql { PRAGMA lock_status }
 } {main reserved temp closed}
 do_test 2.2.3 {
@@ -88,8 +88,8 @@ do_test 2.2.3 {
   execsql { PRAGMA lock_status }
 } {main unlocked temp closed}
 
-proc val {} { 
-  sqlite3_blob_close $::B 
+proc val {} {
+  sqlite3_blob_close $::B
   db eval { PRAGMA lock_status }
 }
 db func val val
@@ -130,7 +130,7 @@ do_test 3.2 {
 do_test 3.3 {
   sqlite3 db2 test.db
   execsql { BEGIN ; SELECT * FROM x1 } db2
-  sqlite3_blob_close $B 
+  sqlite3_blob_close $B
 } {SQLITE_BUSY}
 
 # EVIDENCE-OF: R-41959-38737 Otherwise, if this function is passed a

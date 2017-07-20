@@ -8,7 +8,7 @@
 #    May you share freely, never taking more than you give.
 #
 #***********************************************************************
-# 
+#
 # Test cases for query planning decisions.
 
 
@@ -98,13 +98,13 @@ do_execsql_test 3.0 {
 } {}
 
 foreach {tn sql} {
-  1 {SELECT t1.a, t1.b, t2.d, t2.e FROM t1, t2 
+  1 {SELECT t1.a, t1.b, t2.d, t2.e FROM t1, t2
      WHERE t2.d=t1.b AND t1.a=(t2.d+1) AND t1.b = (t2.e+1)}
 
-  2 {SELECT t1.a, t1.b, t2.d, t2.e FROM t2, t1 
+  2 {SELECT t1.a, t1.b, t2.d, t2.e FROM t2, t1
      WHERE t2.d=t1.b AND t1.a=(t2.d+1) AND t1.b = (t2.e+1)}
 
-  3 {SELECT t1.a, t1.b, t2.d, t2.e FROM t2 CROSS JOIN t1 
+  3 {SELECT t1.a, t1.b, t2.d, t2.e FROM t2 CROSS JOIN t1
      WHERE t2.d=t1.b AND t1.a=(t2.d+1) AND t1.b = (t2.e+1)}
 } {
   do_test 3.$tn {

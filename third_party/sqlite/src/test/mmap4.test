@@ -9,13 +9,13 @@
 #
 #***********************************************************************
 #
-# This file tests the effect of the mmap() or mremap() system calls 
-# returning an error on the library. 
+# This file tests the effect of the mmap() or mremap() system calls
+# returning an error on the library.
 #
-# If either mmap() or mremap() fails, SQLite should log an error 
-# message, then continue accessing the database using read() and 
+# If either mmap() or mremap() fails, SQLite should log an error
+# message, then continue accessing the database using read() and
 # write() exclusively.
-# 
+#
 set testdir [file dirname $argv0]
 source $testdir/tester.tcl
 ifcapable !mmap {
@@ -25,7 +25,7 @@ ifcapable !mmap {
 source $testdir/lock_common.tcl
 set testprefix mmap4
 
-# Return a Tcl script that registers a user-defined scalar function 
+# Return a Tcl script that registers a user-defined scalar function
 # named rblob() with database handle $dbname. The function returns a
 # sequence of pseudo-random blobs based on seed value $seed.
 #

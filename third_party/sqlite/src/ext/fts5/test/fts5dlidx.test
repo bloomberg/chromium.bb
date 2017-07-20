@@ -34,7 +34,7 @@ proc do_fb_test {tn sql res} {
   uplevel [list do_execsql_test $tn.2 "$sql ORDER BY rowid DESC" $res2]
 }
 
-# This test populates the FTS5 table with $nEntry entries. Rows are 
+# This test populates the FTS5 table with $nEntry entries. Rows are
 # numbered from 0 to ($nEntry-1). The rowid for row $i is:
 #
 #   ($iFirst + $i*$nStep)
@@ -56,10 +56,10 @@ proc do_dlidx_test1 {tn spc1 spc2 nEntry iFirst nStep} {
     set doc [string trim [string repeat "a b c " 100]]
     if {($i % $spc1)==0} {
       lappend xdoc $rowid
-      append doc " x" 
-      if {($i % $spc2)==0} { 
+      append doc " x"
+      if {($i % $spc2)==0} {
         lappend ydoc $rowid
-        append doc " y" 
+        append doc " y"
       }
     }
     execsql { INSERT INTO t1(rowid, x) VALUES($rowid, $doc) }
@@ -70,17 +70,17 @@ proc do_dlidx_test1 {tn spc1 spc2 nEntry iFirst nStep} {
   do_test $tn.1 {
     execsql { INSERT INTO t1(t1) VALUES('integrity-check') }
   } {}
-  
+
   do_fb_test $tn.3.1 { SELECT rowid FROM t1 WHERE t1 MATCH 'a AND x' } $xdoc
   do_fb_test $tn.3.2 { SELECT rowid FROM t1 WHERE t1 MATCH 'x AND a' } $xdoc
-  
+
   do_fb_test $tn.4.1 { SELECT rowid FROM t1 WHERE t1 MATCH 'a AND y' } $ydoc
   do_fb_test $tn.4.2 { SELECT rowid FROM t1 WHERE t1 MATCH 'y AND a' } $ydoc
-  
+
   if {[detail_is_full]} {
-    do_fb_test $tn.5.1 { 
+    do_fb_test $tn.5.1 {
       SELECT rowid FROM t1 WHERE t1 MATCH 'a + b + c + x' } $xdoc
-    do_fb_test $tn.5.2 { 
+    do_fb_test $tn.5.2 {
       SELECT rowid FROM t1 WHERE t1 MATCH 'b + c + x + y' } $ydoc
   }
 }
@@ -90,7 +90,7 @@ foreach {tn pgsz} {
   1 32
   2 200
 } {
-  do_execsql_test $tn.0 { 
+  do_execsql_test $tn.0 {
     DROP TABLE IF EXISTS t1;
     CREATE VIRTUAL TABLE t1 USING fts5(x, detail=%DETAIL%);
     INSERT INTO t1(t1, rank) VALUES('pgsz', $pgsz);
@@ -114,7 +114,7 @@ proc do_dlidx_test2 {tn nEntry iFirst nStep} {
     INSERT INTO t1 VALUES('b a');
 
     WITH iii(ii, i) AS (
-      SELECT 1,     $iFirst UNION ALL 
+      SELECT 1,     $iFirst UNION ALL
       SELECT ii+1, i+$nStep FROM iii WHERE ii<$nEntry
     )
     INSERT INTO t1(rowid,x) SELECT i, $str FROM iii;
@@ -173,8 +173,8 @@ do_execsql_test 3.1 {
 
 
 do_execsql_test 3.2 {
-  SELECT rowid FROM abc WHERE abc 
-  MATCH 'IteratorpItercurrentlypointstothefirstrowidofadoclist' 
+  SELECT rowid FROM abc WHERE abc
+  MATCH 'IteratorpItercurrentlypointstothefirstrowidofadoclist'
   ORDER BY rowid DESC;
 } {16 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1}
 

@@ -11,7 +11,7 @@
 #
 # This test script checks that tickets #2794, #2795, #2796, and #2797
 # have been fixed.
-# 
+#
 # $Id: mallocF.test,v 1.4 2008/02/18 22:24:58 drh Exp $
 
 set testdir [file dirname $argv0]

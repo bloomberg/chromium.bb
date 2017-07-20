@@ -9,7 +9,7 @@
 #
 #***********************************************************************
 #
-# This test verifies a couple of specific potential data corruption 
+# This test verifies a couple of specific potential data corruption
 # scenarios involving crashes or power failures.
 #
 # Later: Also, some other specific scenarios required for coverage
@@ -52,14 +52,14 @@ do_test crash8-1.1 {
 } {ok}
 
 
-# Potential corruption scenario 1. A second process opens the database 
+# Potential corruption scenario 1. A second process opens the database
 # and modifies a large portion of it. It then opens a second transaction
 # and modifies a small part of the database, but crashes before it commits
-# the transaction. 
+# the transaction.
 #
 # When the first process accessed the database again, it was rolling back
 # the aborted transaction, but was not purging its in-memory cache (which
-# was loaded before the second process made its first, successful, 
+# was loaded before the second process made its first, successful,
 # modification). Producing an inconsistent cache.
 #
 do_test crash8-1.2 {
@@ -78,7 +78,7 @@ do_test crash8-1.3 {
 # with a small in-memory cache. Such that more than one journal-header
 # was written to the file. It then opens a second transaction and makes
 # a smaller change that requires only a single journal-header to be
-# written to the journal file. The second change is such that the 
+# written to the journal file. The second change is such that the
 # journal content written to the persistent journal file exactly overwrites
 # the first journal-header and set of subsequent records written by the
 # first, successful, change. The second process crashes before it can
@@ -115,14 +115,14 @@ do_test crash8-2.3 {
 
 proc read_file {zFile} {
   set fd [open $zFile]
-  fconfigure $fd -translation binary 
+  fconfigure $fd -translation binary
   set zData [read $fd]
   close $fd
   return $zData
 }
 proc write_file {zFile zData} {
   set fd [open $zFile w]
-  fconfigure $fd -translation binary 
+  fconfigure $fd -translation binary
   puts -nonewline $fd $zData
   close $fd
 }
@@ -130,14 +130,14 @@ proc write_file {zFile zData} {
 # The following tests check that SQLite will not roll back a hot-journal
 # file if the sector-size field in the first journal file header is
 # suspect. Definition of suspect:
-# 
+#
 #    a) Not a power of 2, or                (crash8-3.5)
 #    b) Greater than 0x01000000 (16MB), or  (crash8-3.6)
 #    c) Less than 512.                      (crash8-3.7)
 #
 # Also test that SQLite will not rollback a hot-journal file with a
 # suspect page-size. In this case "suspect" means:
-# 
+#
 #    a) Not a power of 2, or
 #    b) Less than 512, or
 #    c) Greater than SQLITE_MAX_PAGE_SIZE
@@ -155,7 +155,7 @@ do_test crash8-3.2 {
 } {0}
 do_test crash8-3.3 {
   set zJournal [read_file test.db-journal]
-  execsql { 
+  execsql {
     COMMIT;
     SELECT count(*) FROM t1;
   }
@@ -169,7 +169,7 @@ do_test crash8-3.5 {
   set zJournal2 [string replace $zJournal 20 23 [binary format I 513]]
   write_file test.db-journal $zJournal2
 
-  execsql { 
+  execsql {
     SELECT count(*) FROM t1;
     PRAGMA integrity_check
   }
@@ -177,7 +177,7 @@ do_test crash8-3.5 {
 do_test crash8-3.6 {
   set zJournal2 [string replace $zJournal 20 23 [binary format I 0x2000000]]
   write_file test.db-journal $zJournal2
-  execsql { 
+  execsql {
     SELECT count(*) FROM t1;
     PRAGMA integrity_check
   }
@@ -185,7 +185,7 @@ do_test crash8-3.6 {
 do_test crash8-3.7 {
   set zJournal2 [string replace $zJournal 20 23 [binary format I 256]]
   write_file test.db-journal $zJournal2
-  execsql { 
+  execsql {
     SELECT count(*) FROM t1;
     PRAGMA integrity_check
   }
@@ -195,7 +195,7 @@ do_test crash8-3.8 {
   set zJournal2 [string replace $zJournal 24 27 [binary format I 513]]
   write_file test.db-journal $zJournal2
 
-  execsql { 
+  execsql {
     SELECT count(*) FROM t1;
     PRAGMA integrity_check
   }
@@ -204,7 +204,7 @@ do_test crash8-3.9 {
   set big [expr $SQLITE_MAX_PAGE_SIZE * 2]
   set zJournal2 [string replace $zJournal 24 27 [binary format I $big]]
   write_file test.db-journal $zJournal2
-  execsql { 
+  execsql {
     SELECT count(*) FROM t1;
     PRAGMA integrity_check
   }
@@ -212,7 +212,7 @@ do_test crash8-3.9 {
 do_test crash8-3.10 {
   set zJournal2 [string replace $zJournal 24 27 [binary format I 256]]
   write_file test.db-journal $zJournal2
-  execsql { 
+  execsql {
     SELECT count(*) FROM t1;
     PRAGMA integrity_check
   }
@@ -220,17 +220,17 @@ do_test crash8-3.10 {
 
 do_test crash8-3.11 {
   set fd [open test.db-journal w]
-  fconfigure $fd -translation binary 
+  fconfigure $fd -translation binary
   puts -nonewline $fd $zJournal
   close $fd
-  execsql { 
+  execsql {
     SELECT count(*) FROM t1;
     PRAGMA integrity_check
   }
 } {6 ok}
 
 
-# If a connection running in persistent-journal mode is part of a 
+# If a connection running in persistent-journal mode is part of a
 # multi-file transaction, it must ensure that the master-journal name
 # appended to the journal file contents during the commit is located
 # at the end of the physical journal file. If there was already a
@@ -371,7 +371,7 @@ if {$::tcl_platform(platform)=="unix"} {
       }
       execsql { PRAGMA integrity_check }
     } {ok}
-  
+
     catch { db close }
     forcedelete test.db test.db-journal
     sqlite3 db test.db

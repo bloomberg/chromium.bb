@@ -191,7 +191,7 @@ do_execsql_test resolver01-6.1 {
   SELECT min(name) FROM t61 GROUP BY lower(name);
 } {}
 do_execsql_test resolver01-6.2 {
-  SELECT min(name) AS name FROM t61 GROUP BY lower(name); 
+  SELECT min(name) AS name FROM t61 GROUP BY lower(name);
 } {}
 do_execsql_test resolver01-6.3 {
   CREATE TABLE t63(name);

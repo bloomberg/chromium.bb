@@ -107,11 +107,11 @@ ifcapable altertable {
   do_execsql_test schema4-2.1 {
     CREATE TABLE log(x, a, b);
     CREATE TABLE tbl(a, b);
-  
+
     CREATE TABLE t1(a, b);
     CREATE INDEX i1 ON t1(a, b);
   } {}
-  
+
   do_execsql_test schema4-2.2 {
     CREATE TRIGGER t1 AFTER INSERT ON tbl BEGIN
       INSERT INTO log VALUES('after insert', new.a, new.b);
@@ -123,7 +123,7 @@ ifcapable altertable {
 
   do_execsql_test schema4-2.3 { ALTER TABLE t1 RENAME TO t2 } {}
 
-  do_execsql_test schema4-2.4 { 
+  do_execsql_test schema4-2.4 {
     INSERT INTO tbl VALUES('a', 'b');
     DELETE FROM tbl;
     SELECT * FROM log;
@@ -132,7 +132,7 @@ ifcapable altertable {
   db close
   sqlite3 db test.db
 
-  do_execsql_test schema4-2.5 { 
+  do_execsql_test schema4-2.5 {
     DELETE FROM log;
     INSERT INTO tbl VALUES('c', 'd');
     DELETE FROM tbl;
@@ -158,7 +158,7 @@ ifcapable altertable {
     select sql from sqlite_temp_master WHERE type='table';
   } {{CREATE TABLE x1(x)}}
 
-  do_execsql_test schema4-2.10 { 
+  do_execsql_test schema4-2.10 {
     DELETE FROM log;
     INSERT INTO tbl2 VALUES('e', 'f');
     UPDATE tbl2 SET a='g', b='h';

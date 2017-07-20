@@ -80,7 +80,7 @@ foreach var [lsort [info vars tcl_*]] {
 do_test vtab2-2.3 {
   execsql {
     SELECT name, value FROM vars
-      WHERE name MATCH 'tcl_*' AND arrayname = '' 
+      WHERE name MATCH 'tcl_*' AND arrayname = ''
       ORDER BY name;
   }
 } $result
@@ -133,7 +133,7 @@ do_test vtab2-4.3 {
 } {a}
 do_test vtab2-4.4 {
   execsql {
-    UPDATE fkey 
+    UPDATE fkey
     SET to_col = (SELECT name FROM v_col WHERE tablename = 't1' AND pk);
   }
 } {}

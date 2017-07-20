@@ -130,7 +130,7 @@ do_execsql_test 6.0 {
   INSERT INTO hh VALUES('GHI', 3, 'v');
   INSERT INTO hh VALUES('ghi', 3, 'vi');
 
-  CREATE INDEX hh_ab ON hh(a, b); 
+  CREATE INDEX hh_ab ON hh(a, b);
 }
 
 do_execsql_test 6.1 {
@@ -174,7 +174,7 @@ do_execsql_test 7.0 {
 
 
 foreach {tn sql res eqp} {
-  1 "SELECT * FROM xy WHERE (i, j) IS (2, 2)" {2 2 2} 
+  1 "SELECT * FROM xy WHERE (i, j) IS (2, 2)" {2 2 2}
     "0 0 0 {SEARCH TABLE xy USING INTEGER PRIMARY KEY (rowid=?)}"
 
   2 "SELECT * FROM xy WHERE (k, j) < (2, 3)" {1 1 1 2 2 2}
@@ -217,7 +217,7 @@ foreach {tn q res} {
   4 "(a, b) < (4, 3)" {1 2 3}
 } {
   do_execsql_test 9.$tn "SELECT c FROM t2 WHERE $q" $res
-} 
+}
 
 do_execsql_test 10.0 {
   CREATE TABLE dual(dummy); INSERT INTO dual(dummy) VALUES('X');
@@ -370,7 +370,7 @@ do_execsql_test 16.4 {
   INSERT INTO t16c VALUES(2, 'w', 'x', 'y', 'z');
   SELECT * FROM t16c;
 } {
-  1 D A B C 
+  1 D A B C
   2 w x y z
 }
 

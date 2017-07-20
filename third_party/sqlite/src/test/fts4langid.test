@@ -37,7 +37,7 @@ set ::testprefix fts4langid
 #
 #   2.3.* - Same as 2.1.*, after a 'rebuild' command.
 #
-#   3.* - Tests with content= tables. Both where there is a real 
+#   3.* - Tests with content= tables. Both where there is a real
 #         underlying content table and where there is not.
 #
 #   4.* - Test that if one is provided, the tokenizer xLanguage method
@@ -71,7 +71,7 @@ do_execsql_test 1.10 {SELECT lang_id FROM t1} {0 4 0}
 do_execsql_test 1.11 {
   CREATE VIRTUAL TABLE t2 USING fts4;
   INSERT INTO t2 VALUES('abc');
-} 
+}
 do_execsql_test 1.12 { SELECT rowid FROM t2 WHERE content MATCH 'abc' } 1
 
 do_execsql_test 1.13 {
@@ -234,7 +234,7 @@ proc filter_list {list langid} {
   set res
 }
 
-do_test 2.0 { 
+do_test 2.0 {
   reset_db
   build_multilingual_db_1 db
 } {}
@@ -251,7 +251,7 @@ proc do_test_query1 {tn query res_script} {
   }
 }
 
-# Run some queries. 
+# Run some queries.
 do_test_query1 2.1.1  {delta}          { rowid_list delta }
 do_test_query1 2.1.2  {"zero one two"} { rowid_list "zero one two" }
 do_test_query1 2.1.3  {zero one two} {
@@ -279,7 +279,7 @@ do_test_query1 2.2.4 {"zero one" OR "one two"} {
 
 # And rebuild.
 #
-do_test 2.3 { 
+do_test 2.3 {
   reset_db
   build_multilingual_db_1 db
   execsql { INSERT INTO t2(t2) VALUES('rebuild') }
@@ -347,13 +347,13 @@ do_test_query1 3.3.4 {"zero one" OR "one two"} {
 proc build_multilingual_db_2 {db} {
   $db eval {
     CREATE VIRTUAL TABLE t4 USING fts4(
-        tokenize=testtokenizer, 
+        tokenize=testtokenizer,
         languageid=lid
     );
   }
   for {set i 0} {$i < 50} {incr i} {
-    execsql { 
-      INSERT INTO t4(docid, content, lid) VALUES($i, 'The Quick Brown Fox', $i) 
+    execsql {
+      INSERT INTO t4(docid, content, lid) VALUES($i, 'The Quick Brown Fox', $i)
     }
   }
 }
@@ -399,7 +399,7 @@ proc build_multilingual_db_3 {db} {
     execsql {
       INSERT INTO t5(docid, content, lid) VALUES(
           $lid, 'My language is ' || $lid, $lid
-      ) 
+      )
     }
   }
 }
@@ -415,7 +415,7 @@ do_execsql_test 5.1.1 {
 
 do_execsql_test 5.1.2 {SELECT docid FROM t5 WHERE t5 MATCH 'language'} 0
 foreach langid [list 0 1 2 [expr 1<<30]] {
-  do_execsql_test 5.2.$langid { 
+  do_execsql_test 5.2.$langid {
     SELECT docid FROM t5 WHERE t5 MATCH 'language' AND lid = $langid
   } $langid
 }
@@ -442,7 +442,7 @@ do_test 5.3.3 {
 
 do_execsql_test 5.3.4 { INSERT INTO t6(t6) VALUES('optimize') } {}
 do_execsql_test 5.3.5 { SELECT docid FROM t6 WHERE t6 MATCH 'belong' } {1}
-do_execsql_test 5.3.6 { 
+do_execsql_test 5.3.6 {
   SELECT docid FROM t6 WHERE t6 MATCH 'belong' AND lid=$lid
 } {2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21}
 

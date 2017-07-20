@@ -10,7 +10,7 @@
 #***********************************************************************
 #
 # This test script checks malloc failures in various obscure operations.
-# 
+#
 # $Id: mallocH.test,v 1.2 2008/08/01 20:10:09 drh Exp $
 
 set testdir [file dirname $argv0]

@@ -67,8 +67,8 @@ proc random_doc {vocab nWord} {
 foreach_detail_mode $testprefix {
 
   set vocab [build_vocab1]
-  db func r random_doc 
-  
+  db func r random_doc
+
   do_execsql_test 1.0 {
     CREATE VIRTUAL TABLE eee USING fts5(e, ee, detail=%DETAIL%);
     BEGIN;
@@ -78,13 +78,13 @@ foreach_detail_mode $testprefix {
     COMMIT;
     INSERT INTO eee(eee) VALUES('integrity-check');
   }
-  
+
   set hash [sqlite3_fts5_token_hash 1024 xyz]
   set vocab [build_vocab1 -prefix xyz -hash $hash]
   lappend vocab xyz
-  
+
   do_execsql_test 1.1 {
-    CREATE VIRTUAL TABLE vocab USING fts5vocab(eee, 'row'); 
+    CREATE VIRTUAL TABLE vocab USING fts5vocab(eee, 'row');
     BEGIN;
   }
   do_test 1.2 {
@@ -92,7 +92,7 @@ foreach_detail_mode $testprefix {
       execsql { INSERT INTO eee VALUES( r($vocab, 5), r($vocab, 7) ) }
     }
   } {}
-    
+
   do_test 1.3 {
     db eval { SELECT term, doc FROM vocab } {
       set nRow [db one {SELECT count(*) FROM eee WHERE eee MATCH $term}]
@@ -102,7 +102,7 @@ foreach_detail_mode $testprefix {
     }
     set {} {}
   } {}
-  
+
   do_execsql_test 1.4 {
     COMMIT;
     INSERT INTO eee(eee) VALUES('integrity-check');

@@ -63,7 +63,7 @@
 ** The return value of the script is a list of key-value pairs used to
 ** populate the output fields of the sqlite3_index_info structure. Possible
 ** keys and the usage of the accompanying values are:
-** 
+**
 **   "orderby"          (value of orderByConsumed flag)
 **   "cost"             (value of estimatedCost field)
 **   "rows"             (value of estimatedRows field)
@@ -104,8 +104,8 @@
 typedef struct tcl_vtab tcl_vtab;
 typedef struct tcl_cursor tcl_cursor;
 
-/* 
-** A fs virtual-table object 
+/*
+** A fs virtual-table object
 */
 struct tcl_vtab {
   sqlite3_vtab base;
@@ -130,7 +130,7 @@ static void tclDequote(char *z){
   if( q=='[' || q=='\'' || q=='"' || q=='`' ){
     int iIn = 1;
     int iOut = 0;
-    if( q=='[' ) q = ']';  
+    if( q=='[' ) q = ']';
 
     while( ALWAYS(z[iIn]) ){
       if( z[iIn]==q ){
@@ -140,7 +140,7 @@ static void tclDequote(char *z){
           break;
         }else{
           /* Character iIn and iIn+1 form an escaped quote character. Skip
-          ** the input cursor past both and copy a single quote character 
+          ** the input cursor past both and copy a single quote character
           ** to the output buffer. */
           iIn += 2;
           z[iOut++] = q;
@@ -271,7 +271,7 @@ static int tclNext(sqlite3_vtab_cursor *pVtabCursor){
 }
 
 static int tclFilter(
-  sqlite3_vtab_cursor *pVtabCursor, 
+  sqlite3_vtab_cursor *pVtabCursor,
   int idxNum, const char *idxStr,
   int argc, sqlite3_value **argv
 ){
@@ -314,10 +314,10 @@ static int tclFilter(
     rc = SQLITE_ERROR;
     pTab->base.zErrMsg = sqlite3_mprintf("%s", zErr);
   }else{
-    /* Analyze the scripts return value. The return value should be a tcl 
+    /* Analyze the scripts return value. The return value should be a tcl
     ** list object with an even number of elements. The first element of each
     ** pair must be one of:
-    ** 
+    **
     **   "sql"          (SQL statement to return data)
     */
     Tcl_Obj *pRes = Tcl_GetObjResult(interp);
@@ -354,8 +354,8 @@ static int tclFilter(
 }
 
 static int tclColumn(
-  sqlite3_vtab_cursor *pVtabCursor, 
-  sqlite3_context *ctx, 
+  sqlite3_vtab_cursor *pVtabCursor,
+  sqlite3_context *ctx,
   int i
 ){
   tcl_cursor *pCsr = (tcl_cursor*)pVtabCursor;
@@ -458,10 +458,10 @@ static int tclBestIndex(sqlite3_vtab *tab, sqlite3_index_info *pIdxInfo){
     rc = SQLITE_ERROR;
     pTab->base.zErrMsg = sqlite3_mprintf("%s", zErr);
   }else{
-    /* Analyze the scripts return value. The return value should be a tcl 
+    /* Analyze the scripts return value. The return value should be a tcl
     ** list object with an even number of elements. The first element of each
     ** pair must be one of:
-    ** 
+    **
     **   "orderby"          (value of orderByConsumed flag)
     **   "cost"             (value of estimatedCost field)
     **   "rows"             (value of estimatedRows field)
@@ -502,8 +502,8 @@ static int tclBestIndex(sqlite3_vtab *tab, sqlite3_index_info *pIdxInfo){
           rc = Tcl_GetWideIntFromObj(interp, p, &x);
           pIdxInfo->estimatedRows = (tRowcnt)x;
         }else
-        if( sqlite3_stricmp("use", zCmd)==0 
-         || sqlite3_stricmp("omit", zCmd)==0 
+        if( sqlite3_stricmp("use", zCmd)==0
+         || sqlite3_stricmp("omit", zCmd)==0
         ){
           int iCons;
           rc = Tcl_GetIntFromObj(interp, p, &iCons);
@@ -541,7 +541,7 @@ static sqlite3_module tclModule = {
   tclConnect,
   tclConnect,
   tclBestIndex,
-  tclDisconnect, 
+  tclDisconnect,
   tclDisconnect,
   tclOpen,                      /* xOpen - open a cursor */
   tclClose,                     /* xClose - close a cursor */
@@ -602,7 +602,7 @@ int Sqlitetesttcl_Init(Tcl_Interp *interp){
   };
   int i;
   for(i=0; i<sizeof(aObjCmd)/sizeof(aObjCmd[0]); i++){
-    Tcl_CreateObjCommand(interp, aObjCmd[i].zName, 
+    Tcl_CreateObjCommand(interp, aObjCmd[i].zName,
         aObjCmd[i].xProc, aObjCmd[i].clientData, 0);
   }
 #endif

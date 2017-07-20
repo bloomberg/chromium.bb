@@ -8,7 +8,7 @@
 #    May you share freely, never taking more than you give.
 #
 #***********************************************************************
-# This file implements regression tests for SQLite library. 
+# This file implements regression tests for SQLite library.
 #
 # The focus of this file is testing that LIMIT and OFFSET work for
 # unusual combinations SELECT statements.
@@ -28,31 +28,31 @@ execsql {
   INSERT INTO songs VALUES(6,'two',11);
 }
 set result [execsql {
-  SELECT DISTINCT artist,sum(timesplayed) AS total      
-  FROM songs      
-  GROUP BY LOWER(artist)      
+  SELECT DISTINCT artist,sum(timesplayed) AS total
+  FROM songs
+  GROUP BY LOWER(artist)
 }]
 do_test select8-1.1 {
   execsql {
-    SELECT DISTINCT artist,sum(timesplayed) AS total      
-    FROM songs      
-    GROUP BY LOWER(artist)      
+    SELECT DISTINCT artist,sum(timesplayed) AS total
+    FROM songs
+    GROUP BY LOWER(artist)
     LIMIT 1 OFFSET 1
   }
 } [lrange $result 2 3]
 do_test select8-1.2 {
   execsql {
-    SELECT DISTINCT artist,sum(timesplayed) AS total      
-    FROM songs      
-    GROUP BY LOWER(artist)      
+    SELECT DISTINCT artist,sum(timesplayed) AS total
+    FROM songs
+    GROUP BY LOWER(artist)
     LIMIT 2 OFFSET 1
   }
 } [lrange $result 2 5]
 do_test select8-1.3 {
   execsql {
-    SELECT DISTINCT artist,sum(timesplayed) AS total      
-    FROM songs      
-    GROUP BY LOWER(artist)      
+    SELECT DISTINCT artist,sum(timesplayed) AS total
+    FROM songs
+    GROUP BY LOWER(artist)
     LIMIT -1 OFFSET 2
   }
 } [lrange $result 4 end]

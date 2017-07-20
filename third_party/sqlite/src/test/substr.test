@@ -23,7 +23,7 @@ ifcapable !tclvar {
 
 # Create a table to work with.
 #
-execsql { 
+execsql {
   CREATE TABLE t1(t text, b blob)
 }
 proc substr-test {id string i1 i2 result} {
@@ -132,7 +132,7 @@ subblob-test 4.2 61E188B462E28D8563E3919663 2 1 E1
 subblob-test 4.3 61E188B462E28D8563E3919663 1 2 61E1
 subblob-test 4.4 61E188B462E28D8563E3919663 -2 1 96
 subblob-test 4.5 61E188B462E28D8563E3919663 -5 4 63E39196
-subblob-test 4.6 61E188B462E28D8563E3919663 -100 98 61E188B462E28D8563E391 
+subblob-test 4.6 61E188B462E28D8563E3919663 -100 98 61E188B462E28D8563E391
 
 # Two-argument SUBSTR
 #

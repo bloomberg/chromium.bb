@@ -12,7 +12,7 @@
 **
 ** This file contains C code to implement the TreeView debugging routines.
 ** These routines print a parse tree to standard output for debugging and
-** analysis. 
+** analysis.
 **
 ** The interfaces in this file is only available when compiling
 ** with SQLITE_DEBUG.
@@ -177,7 +177,7 @@ void sqlite3TreeViewSelect(TreeView *pView, const Select *p, u8 moreToFollow){
           sqlite3XPrintf(&x, " LEFT-JOIN");
         }
         sqlite3StrAccumFinish(&x);
-        sqlite3TreeViewItem(pView, zLine, i<p->pSrc->nSrc-1); 
+        sqlite3TreeViewItem(pView, zLine, i<p->pSrc->nSrc-1);
         if( pItem->pSelect ){
           sqlite3TreeViewSelect(pView, pItem->pSelect, 0);
         }
@@ -423,7 +423,7 @@ void sqlite3TreeViewExpr(TreeView *pView, const Expr *pExpr, u8 moreToFollow){
       ** is set to the column of the pseudo-table to read, or to -1 to
       ** read the rowid field.
       */
-      sqlite3TreeViewLine(pView, "%s(%d)", 
+      sqlite3TreeViewLine(pView, "%s(%d)",
           pExpr->iTable ? "NEW" : "OLD", pExpr->iColumn);
       break;
     }

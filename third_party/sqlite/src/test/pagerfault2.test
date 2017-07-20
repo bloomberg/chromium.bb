@@ -11,9 +11,9 @@
 #
 # The tests in this file test the pager modules response to various
 # fault conditions (OOM, IO error, disk full etc.). They are similar
-# to those in file pagerfault1.test. 
+# to those in file pagerfault1.test.
 #
-# More specifically, the tests in this file are those deemed too slow to 
+# More specifically, the tests in this file are those deemed too slow to
 # run as part of pagerfault1.test.
 #
 
@@ -57,7 +57,7 @@ do_test pagerfault2-1-pre1 {
 do_faultsim_test pagerfault2-1 -faults oom-transient -prep {
   faultsim_restore_and_reopen
   sqlite3_db_config_lookaside db 0 256 4096
-  execsql { 
+  execsql {
     BEGIN;
       SELECT * FROM t1;
       INSERT INTO t1 VALUES(5, 6);
@@ -82,7 +82,7 @@ do_faultsim_test pagerfault2-2 -faults oom-transient -prep {
   sqlite3_db_config_lookaside db 0 256 4096
   db func a_string a_string
 
-  execsql { 
+  execsql {
     PRAGMA cache_size = 20;
     BEGIN;
       INSERT INTO t1 VALUES(a_string(401), a_string(402));

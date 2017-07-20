@@ -21,17 +21,17 @@ ifcapable !fts5 {
   return
 }
 
-proc inst {cmd i} { 
+proc inst {cmd i} {
   $cmd xInst $i
 }
 sqlite3_fts5_create_function db inst inst
 
-proc colsize {cmd i} { 
+proc colsize {cmd i} {
   $cmd xColumnSize $i
 }
 sqlite3_fts5_create_function db colsize colsize
 
-proc totalsize {cmd i} { 
+proc totalsize {cmd i} {
   $cmd xColumnTotalSize $i
 }
 sqlite3_fts5_create_function db totalsize totalsize
@@ -104,13 +104,13 @@ do_execsql_test 3.1 {
 } {0+1   1+3   3+5}
 
 do_execsql_test 3.2 {
-  SELECT prevrowid(e5) || '+' || prevrowid1(e5) || '+' || rowid 
+  SELECT prevrowid(e5) || '+' || prevrowid1(e5) || '+' || rowid
   FROM e5 WHERE e5 MATCH 'e'
 } {0+1+2    2+3+4}
 
 #-------------------------------------------------------------------------
 # Test that if the xQueryPhrase callback returns other than SQLITE_OK,
-# the query is abandoned. And that if it returns an error code other than 
+# the query is abandoned. And that if it returns an error code other than
 # SQLITE_DONE, the error is propagated back to the caller.
 #
 do_execsql_test 4.0 {
@@ -207,7 +207,7 @@ do_catchsql_test 6.2 {
 } {1 {no such cursor: 0}}
 
 #-------------------------------------------------------------------------
-# Test passing an out-of-range phrase number to xPhraseSize (should 
+# Test passing an out-of-range phrase number to xPhraseSize (should
 # return 0).
 #
 proc my_phrasesize {cmd iPhrase} { $cmd xPhraseSize $iPhrase }
@@ -218,7 +218,7 @@ do_execsql_test 7.1 {
   INSERT INTO t1 VALUES('a b c');
 }
 do_execsql_test 7.2 {
-  SELECT 
+  SELECT
     my_phrasesize(t1, -1),
     my_phrasesize(t1, 0),
     my_phrasesize(t1, 1),

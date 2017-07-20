@@ -9,9 +9,9 @@
 #
 #***********************************************************************
 #
-# This test script checks malloc failures in LIMIT operations for 
+# This test script checks malloc failures in LIMIT operations for
 # UPDATE/DELETE statements.
-# 
+#
 # $Id: mallocJ.test,v 1.6 2009/01/09 02:49:32 drh Exp $
 
 set testdir [file dirname $argv0]

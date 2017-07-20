@@ -191,7 +191,7 @@ ifcapable autovacuum {
 
 #-------------------------------------------------------------------------
 # The following block of tests verify the behaviour of the library when
-# a database is VACUUMed when there are one or more unfinalized SQL 
+# a database is VACUUMed when there are one or more unfinalized SQL
 # statements reading the same database using the same db handle.
 #
 db close
@@ -201,9 +201,9 @@ do_execsql_test vacuum2-5.1 {
   CREATE TABLE t1(a PRIMARY KEY, b UNIQUE);
   INSERT INTO t1 VALUES(1, randomblob(500));
   INSERT INTO t1 SELECT a+1, randomblob(500) FROM t1;      -- 2
-  INSERT INTO t1 SELECT a+2, randomblob(500) FROM t1;      -- 4 
-  INSERT INTO t1 SELECT a+4, randomblob(500) FROM t1;      -- 8 
-  INSERT INTO t1 SELECT a+8, randomblob(500) FROM t1;      -- 16 
+  INSERT INTO t1 SELECT a+2, randomblob(500) FROM t1;      -- 4
+  INSERT INTO t1 SELECT a+4, randomblob(500) FROM t1;      -- 8
+  INSERT INTO t1 SELECT a+8, randomblob(500) FROM t1;      -- 16
 } {}
 
 do_test vacuum2-5.2 {

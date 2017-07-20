@@ -201,8 +201,8 @@ do_test  view-3.4 {
 } {a 2 a 3 a 5 a 6}
 do_test view-3.5 {
   execsql2 {
-    CREATE VIEW v4 AS 
-      SELECT a, b FROM t1 
+    CREATE VIEW v4 AS
+      SELECT a, b FROM t1
       UNION
       SELECT b AS 'x', a AS 'y' FROM t1
       ORDER BY x, y;
@@ -423,7 +423,7 @@ do_test view-9.2 {
 } {1 2 4}
 do_test view-9.3 {
   execsql {
-    CREATE VIEW v9 AS 
+    CREATE VIEW v9 AS
        SELECT DISTINCT count(*) FROM t2 GROUP BY a ORDER BY 1 LIMIT 3;
     SELECT * FROM v9;
   }
@@ -435,7 +435,7 @@ do_test view-9.4 {
 } {4 2 1}
 do_test view-9.5 {
   execsql {
-    CREATE VIEW v10 AS 
+    CREATE VIEW v10 AS
        SELECT DISTINCT a, count(*) FROM t2 GROUP BY a ORDER BY 2 LIMIT 3;
     SELECT * FROM v10;
   }

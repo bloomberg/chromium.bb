@@ -100,13 +100,13 @@ do_catchsql_test without_rowid5-3.1 {
     word TEXT PRIMARY KEY,
     cnt INTEGER
   ) WITHOUT _rowid_;
-} {1 {unknown table option: _rowid_}}  
+} {1 {unknown table option: _rowid_}}
 do_catchsql_test without_rowid5-3.2 {
   CREATE TABLE IF NOT EXISTS error2(
     word TEXT PRIMARY KEY,
     cnt INTEGER
   ) WITHOUT oid;
-} {1 {unknown table option: oid}}  
+} {1 {unknown table option: oid}}
 
 # EVIDENCE-OF: R-58033-17334 An error is raised if a CREATE TABLE
 # statement with the WITHOUT ROWID clause lacks a PRIMARY KEY.

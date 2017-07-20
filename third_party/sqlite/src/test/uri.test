@@ -51,7 +51,7 @@ foreach {tn uri file} {
   15     test.db?mork=1#boris                 test.db?mork=1#boris
   16     file://localhostPWD/test.db%3Fhello  test.db?hello
 } {
-  
+
 
   ifcapable !curdir { if {$tn==3} break }
 
@@ -233,7 +233,7 @@ do_test 4.3.2 {
 
 #-------------------------------------------------------------------------
 # Test that things work if an ATTACHed database uses a different VFS than
-# the main database. The important point is that for all operations 
+# the main database. The important point is that for all operations
 # involving the ATTACHed database, the correct versions of the following
 # VFS are used for all operations involving the attached database.
 #
@@ -249,21 +249,21 @@ do_test 4.3.2 {
 # methods using "tvfs2" set entries in the global T2 array.
 #
 ifcapable wal {
-  testvfs tvfs1 
+  testvfs tvfs1
   tvfs1 filter {xOpen xDelete xAccess xFullPathname}
   tvfs1 script tvfs1_callback
-  proc tvfs1_callback {method filename args} { 
-    set ::T1([file tail $filename]) 1 
+  proc tvfs1_callback {method filename args} {
+    set ::T1([file tail $filename]) 1
     return SQLITE_OK
   }
-  testvfs tvfs2 
+  testvfs tvfs2
   tvfs2 filter {xOpen xDelete xAccess xFullPathname}
   tvfs2 script tvfs2_callback
-  proc tvfs2_callback {method filename args} { 
-    set ::T2([file tail $filename]) 1 
+  proc tvfs2_callback {method filename args} {
+    set ::T2([file tail $filename]) 1
     return SQLITE_OK
   }
-  
+
   catch {db close}
   eval forcedelete [glob test.db*]
   do_test 5.1.1 {
@@ -281,12 +281,12 @@ ifcapable wal {
     }
     lsort [array names ::T1]
   } {test.db1 test.db1-journal test.db1-wal}
-  
+
   do_test 5.1.2 {
     lsort [array names ::T2]
   } {test.db2 test.db2-journal test.db2-wal}
   db close
-  
+
   tvfs1 delete
   tvfs2 delete
 }
@@ -333,11 +333,11 @@ do_test 7.2 {
   sqlite3 db file:test.db?mode=ro
   execsql { ATTACH 'file:test.db2?mode=rw' AS aux }
 } {}
-do_execsql_test  7.3 { 
-  INSERT INTO t2 VALUES('c', 'd') 
+do_execsql_test  7.3 {
+  INSERT INTO t2 VALUES('c', 'd')
 } {}
-do_catchsql_test 7.4 { 
-  INSERT INTO t1 VALUES(3, 4) 
+do_catchsql_test 7.4 {
+  INSERT INTO t1 VALUES(3, 4)
 } {1 {attempt to write a readonly database}}
 
 finish_test

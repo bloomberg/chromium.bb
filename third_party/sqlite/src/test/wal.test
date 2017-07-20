@@ -72,9 +72,9 @@ do_test wal-0.2 {
 } {1024}
 
 do_test wal-1.0 {
-  execsql { 
+  execsql {
     BEGIN;
-    CREATE TABLE t1(a, b); 
+    CREATE TABLE t1(a, b);
   }
   list [file exists test.db-journal] \
        [file exists test.db-wal]     \
@@ -146,7 +146,7 @@ do_test wal-3.3 {
 db2 close
 
 #-------------------------------------------------------------------------
-# The following tests, wal-4.*, test that savepoints work with WAL 
+# The following tests, wal-4.*, test that savepoints work with WAL
 # databases.
 #
 do_test wal-4.1 {
@@ -350,7 +350,7 @@ foreach sector {512 4096} {
       db close
       file size test.db
     } [expr $pgsz*2]
-  
+
     do_test wal-6.$sector.$pgsz.2 {
       log_deleted test.db-wal
     } {1}
@@ -404,7 +404,7 @@ do_test wal-8.2 {
   file size test.db
 } [expr 68*1024]
 do_test wal-8.3 {
-  execsql { 
+  execsql {
     DELETE FROM t1 WHERE rowid<54;
     PRAGMA wal_checkpoint;
   }
@@ -440,7 +440,7 @@ do_test wal-9.3 {
   forcedelete test2.db test2.db-wal
   copy_file test.db test2.db
   copy_file test.db-wal test2.db-wal
-  sqlite3_wal db3 test2.db 
+  sqlite3_wal db3 test2.db
   execsql {PRAGMA integrity_check } db3
 } {ok}
 db3 close
@@ -456,7 +456,7 @@ foreach handle {db db2 db3} { catch { $handle close } }
 unset handle
 
 #-------------------------------------------------------------------------
-# The following block of tests - wal-10.* - test that the WAL locking 
+# The following block of tests - wal-10.* - test that the WAL locking
 # scheme works in simple cases. This block of tests is run twice. Once
 # using multiple connections in the address space of the current process,
 # and once with all connections except one running in external processes.
@@ -483,7 +483,7 @@ do_multiclient_test tn {
     sql2 {SELECT * FROM t1}
   } {1 2}
 
-  # Have [db] commit the transaction. Check that [db2] is now seeing the 
+  # Have [db] commit the transaction. Check that [db2] is now seeing the
   # new, updated snapshot.
   #
   do_test wal-10.$tn.3 {
@@ -509,7 +509,7 @@ do_multiclient_test tn {
     sql2 COMMIT
   } {}
 
-  # Have [db2] open a write transaction. Then attempt to write to the 
+  # Have [db2] open a write transaction. Then attempt to write to the
   # database via [db]. This should fail (writer lock cannot be obtained).
   #
   # Then open a read-transaction with [db]. Commit the [db2] transaction
@@ -546,7 +546,7 @@ do_multiclient_test tn {
     sql2 { BEGIN; SELECT * FROM t1 }
   } {1 2 3 4 5 6 7 8 9 10}
   do_test wal-10.$tn.12 {
-    catchsql { PRAGMA wal_checkpoint } 
+    catchsql { PRAGMA wal_checkpoint }
   } {0 {0 7 7}}   ;# Reader no longer block checkpoints
   do_test wal-10.$tn.13 {
     execsql { INSERT INTO t1 VALUES(11, 12) }
@@ -556,7 +556,7 @@ do_multiclient_test tn {
   # Writers do not block checkpoints any more either.
   #
   do_test wal-10.$tn.14 {
-    catchsql { PRAGMA wal_checkpoint } 
+    catchsql { PRAGMA wal_checkpoint }
   } {0 {0 8 7}}
 
   # The following series of test cases used to verify another blocking
@@ -566,10 +566,10 @@ do_multiclient_test tn {
     sql2 { COMMIT; BEGIN; SELECT * FROM t1; }
   } {1 2 3 4 5 6 7 8 9 10 11 12}
   do_test wal-10.$tn.16 {
-    catchsql { PRAGMA wal_checkpoint } 
+    catchsql { PRAGMA wal_checkpoint }
   } {0 {0 8 8}}
   do_test wal-10.$tn.17 {
-    execsql { PRAGMA wal_checkpoint } 
+    execsql { PRAGMA wal_checkpoint }
   } {0 8 8}
   do_test wal-10.$tn.18 {
     sql3 { BEGIN; SELECT * FROM t1 }
@@ -647,7 +647,7 @@ do_multiclient_test tn {
   # releases all locks before returning a busy error.
   #
   do_test wal-10.$tn.35 {
-    execsql { 
+    execsql {
       DELETE FROM t1;
       INSERT INTO t1 VALUES('a', 'b');
       INSERT INTO t1 VALUES('c', 'd');
@@ -694,7 +694,7 @@ do_test wal-11.3 {
 } [list 3 [wal_file_size 4 1024]]
 
 do_test wal-11.4 {
-  execsql { 
+  execsql {
     BEGIN;
       INSERT INTO t1 SELECT blob(900) FROM t1;   -- 2
       INSERT INTO t1 SELECT blob(900) FROM t1;   -- 4
@@ -704,7 +704,7 @@ do_test wal-11.4 {
   list [expr [file size test.db]/1024] [file size test.db-wal]
 } [list 3 [wal_file_size 32 1024]]
 do_test wal-11.5 {
-  execsql { 
+  execsql {
     SELECT count(*) FROM t1;
     PRAGMA integrity_check;
   }
@@ -714,7 +714,7 @@ do_test wal-11.6 {
   list [expr [file size test.db]/1024] [file size test.db-wal]
 } [list 3 [wal_file_size 40 1024]]
 do_test wal-11.7 {
-  execsql { 
+  execsql {
     SELECT count(*) FROM t1;
     PRAGMA integrity_check;
   }
@@ -770,8 +770,8 @@ do_test wal-11.14 {
 
 
 #-------------------------------------------------------------------------
-# This block of tests, wal-12.*, tests the fix for a problem that 
-# could occur if a log that is a prefix of an older log is written 
+# This block of tests, wal-12.*, tests the fix for a problem that
+# could occur if a log that is a prefix of an older log is written
 # into a reused log file.
 #
 reopen_db
@@ -807,7 +807,7 @@ db2 close
 do_test wal-12.5 {
   execsql {
     PRAGMA wal_checkpoint;
-    UPDATE t2 SET y = 2 WHERE x = 'B'; 
+    UPDATE t2 SET y = 2 WHERE x = 'B';
     PRAGMA wal_checkpoint;
     UPDATE t1 SET y = 1 WHERE x = 'A';
     PRAGMA wal_checkpoint;
@@ -848,7 +848,7 @@ do_test wal-14 {
     INSERT INTO t1 SELECT randomblob(10), randomblob(100) FROM t1;
   }
 
-  db2 eval { 
+  db2 eval {
     INSERT INTO t1 SELECT randomblob(10), randomblob(100);
     INSERT INTO t1 SELECT randomblob(10), randomblob(100);
     INSERT INTO t1 SELECT randomblob(10), randomblob(100);
@@ -858,11 +858,11 @@ do_test wal-14 {
   # After executing the "PRAGMA wal_checkpoint", connection [db] was being
   # left with an inconsistent cache. Running the CREATE INDEX statement
   # in this state led to database corruption.
-  catchsql { 
+  catchsql {
     PRAGMA wal_checkpoint;
     CREATE INDEX i1 on t1(b);
   }
-   
+
   db2 eval { PRAGMA integrity_check }
 } {ok}
 
@@ -870,7 +870,7 @@ catch { db close }
 catch { db2 close }
 
 #-------------------------------------------------------------------------
-# The following block of tests - wal-15.* - focus on testing the 
+# The following block of tests - wal-15.* - focus on testing the
 # implementation of the sqlite3_wal_checkpoint() interface.
 #
 forcedelete test.db test.db-wal
@@ -916,7 +916,7 @@ do_test wal-15.3.3 {
   sqlite3_errmsg db
 } {database table is locked}
 
-# Earlier versions returned an error is returned if the db cannot be 
+# Earlier versions returned an error is returned if the db cannot be
 # checkpointed because of locks held by another connection. Check that
 # this is no longer the case.
 #
@@ -993,15 +993,15 @@ foreach {tn ckpt_cmd ckpt_res ckpt_main ckpt_aux} {
       INSERT INTO t2 VALUES(2, randomblob(1000));
       INSERT INTO t1 SELECT * FROM t2;
     }
-  
+
     list [file size test.db] [file size test.db-wal]
   } [list [expr 1*1024] [wal_file_size 10 1024]]
   do_test wal-16.$tn.3 {
     list [file size test2.db] [file size test2.db-wal]
   } [list [expr 1*1024] [wal_file_size 13 1024]]
-  
+
   do_test wal-16.$tn.4 [list eval $ckpt_cmd] $ckpt_res
-  
+
   do_test wal-16.$tn.5 {
     list [file size test.db] [file size test.db-wal]
   } [list [expr ($ckpt_main ? 7 : 1)*1024] [wal_file_size 10 1024]]
@@ -1017,7 +1017,7 @@ foreach {tn ckpt_cmd ckpt_res ckpt_main ckpt_aux} {
 # The following tests - wal-17.* - attempt to verify that the correct
 # number of "padding" frames are appended to the log file when a transaction
 # is committed in synchronous=FULL mode.
-# 
+#
 # Do this by creating a database that uses 512 byte pages. Then writing
 # a transaction that modifies 171 pages. In synchronous=NORMAL mode, this
 # produces a log file of:
@@ -1027,7 +1027,7 @@ foreach {tn ckpt_cmd ckpt_res ckpt_main ckpt_aux} {
 # Slightly larger than 11*8192 = 90112 bytes.
 #
 # Run the test using various different sector-sizes. In each case, the
-# WAL code should write the 90300 bytes of log file containing the 
+# WAL code should write the 90300 bytes of log file containing the
 # transaction, then append as may frames as are required to extend the
 # log file so that no part of the next transaction will be written into
 # a disk-sector used by transaction just committed.
@@ -1037,7 +1037,7 @@ catch { db close }
 foreach {tn sectorsize logsize} "
   1   128  [wal_file_size 172 512]
   2   256  [wal_file_size 172 512]
-  3   512  [wal_file_size 172 512] 
+  3   512  [wal_file_size 172 512]
   4  1024  [wal_file_size 172 512]
   5  2048  [wal_file_size 172 512]
   6  4096  [wal_file_size 176 512]
@@ -1082,7 +1082,7 @@ sqlite3_test_control_pending_byte $old_pending_byte
 # This test - wal-18.* - verifies a couple of specific conditions that
 # may be encountered while recovering a log file are handled correctly:
 #
-#   wal-18.1.* When the first 32-bits of a frame checksum is correct but 
+#   wal-18.1.* When the first 32-bits of a frame checksum is correct but
 #              the second 32-bits are false, and
 #
 #   wal-18.2.* When the page-size field that occurs at the start of a log
@@ -1129,13 +1129,13 @@ foreach {nFrame result} {
     hexio_write test.db-wal [expr 24 + $nFrame*(24+1024) + 20] 00000000
 
     sqlite3 db test.db
-    execsql { 
+    execsql {
       SELECT * FROM t1;
-      PRAGMA integrity_check; 
+      PRAGMA integrity_check;
     }
   } [concat $result ok]
   db close
-} 
+}
 
 proc randomblob {pgsz} {
   sqlite3 rbdb :memory:
@@ -1151,7 +1151,7 @@ proc logcksum {ckv1 ckv2 blob} {
   # Since the magic number at the start of the -wal file header is
   # 931071618 that indicates that the content should always be read as
   # little-endian.
-  # 
+  #
   set scanpattern i*
 
   binary scan $blob $scanpattern values
@@ -1162,7 +1162,7 @@ proc logcksum {ckv1 ckv2 blob} {
 }
 
 forcecopy test.db testX.db
-foreach {tn pgsz works} { 
+foreach {tn pgsz works} {
   1    128    0
   2    256    0
   3    512    1
@@ -1184,14 +1184,14 @@ foreach {tn pgsz works} {
   for {set pg 1} {$pg <= 3} {incr pg} {
     forcecopy testX.db test.db
     forcedelete test.db-wal
-  
+
     # Check that the database now exists and consists of three pages. And
     # that there is no associated wal file.
     #
     do_test wal-18.2.$tn.$pg.1 { file exists test.db-wal } 0
     do_test wal-18.2.$tn.$pg.2 { file exists test.db } 1
     do_test wal-18.2.$tn.$pg.3 { file size test.db } [expr 1024*3]
-  
+
     do_test wal-18.2.$tn.$pg.4 {
 
       # Create a wal file that contains a single frame (database page
@@ -1223,16 +1223,16 @@ foreach {tn pgsz works} {
       puts -nonewline $fd $framehdr
       puts -nonewline $fd $framebody
       close $fd
-  
+
       file size test.db-wal
     } [wal_file_size 1 $pgsz]
-  
+
     do_test wal-18.2.$tn.$pg.5 {
       sqlite3 db test.db
       set rc [catch { db one {PRAGMA integrity_check} } msg]
       expr { $rc!=0 || $msg!="ok" }
     } $works
-  
+
     db close
   }
 }
@@ -1245,7 +1245,7 @@ foreach {tn pgsz works} {
 # EXCLUSIVE lock on the database file. If the lock is obtained, the
 # connection knows that it is the last connection to disconnect from
 # the database, so it runs a checkpoint operation. The bug was that
-# the connection was not updating its private copy of the wal-index 
+# the connection was not updating its private copy of the wal-index
 # header before doing so, meaning that it could checkpoint an old
 # snapshot.
 #
@@ -1288,7 +1288,7 @@ do_test wal-19.4 {
 #   1. Using connection 1, create the database schema.
 #
 #   2. Using connection 2 (in an external process), add so much
-#      data to the database without checkpointing that a wal-index 
+#      data to the database without checkpointing that a wal-index
 #      larger than 64KB is required.
 #
 #   3. Using connection 1, checkpoint the database. Make sure all
@@ -1348,7 +1348,7 @@ catch { db close }
 
 do_test wal-21.1 {
   faultsim_delete_and_reopen
-  execsql { 
+  execsql {
     PRAGMA journal_mode = WAL;
     CREATE TABLE t1(a, b);
     INSERT INTO t1 VALUES(1, 2);
@@ -1360,7 +1360,7 @@ do_test wal-21.1 {
   }
 } {wal}
 do_test wal-21.2 {
-  execsql { 
+  execsql {
     PRAGMA cache_size = 10;
     PRAGMA wal_checkpoint;
     BEGIN;
@@ -1402,7 +1402,7 @@ foreach pgsz {512 1024 2048 4096 8192 16384 32768 65536} {
 incr ::do_not_use_codec -1
 
 #-------------------------------------------------------------------------
-# Test that when 1 or more pages are recovered from a WAL file, 
+# Test that when 1 or more pages are recovered from a WAL file,
 # sqlite3_log() is invoked to report this to the user.
 #
 ifcapable curdir {
@@ -1436,19 +1436,19 @@ do_test wal-23.3 {
   faultsim_restore_and_reopen
   execsql { SELECT * FROM t1 }
 } {1 2 3 4}
-do_test wal-23.4 { 
-  set ::log 
+do_test wal-23.4 {
+  set ::log
 } [list SQLITE_NOTICE_RECOVER_WAL \
     "recovered 2 frames from WAL file $walfile"]
 
 
 ifcapable autovacuum {
-  # This block tests that if the size of a database is reduced by a 
+  # This block tests that if the size of a database is reduced by a
   # transaction (because of an incremental or auto-vacuum), that no
   # data is written to the WAL file for the truncated pages as part
   # of the commit. e.g. if a transaction reduces the size of a database
-  # to N pages, data for page N+1 should not be written to the WAL file 
-  # when committing the transaction. At one point such data was being 
+  # to N pages, data for page N+1 should not be written to the WAL file
+  # when committing the transaction. At one point such data was being
   # written.
   #
   catch {db close}
@@ -1465,7 +1465,7 @@ ifcapable autovacuum {
     INSERT INTO t1 SELECT * FROM t1;
     INSERT INTO t1 SELECT * FROM t1;
   } {wal}
-  do_test 24.2 { 
+  do_test 24.2 {
     execsql {
       DELETE FROM t1;
       PRAGMA wal_checkpoint;
@@ -1478,7 +1478,7 @@ ifcapable autovacuum {
     file size test.db
   } [expr 84 * 1024]
   do_test 24.4 {
-    execsql { 
+    execsql {
       PRAGMA cache_size = 200;
       PRAGMA incremental_vacuum;
       PRAGMA wal_checkpoint;

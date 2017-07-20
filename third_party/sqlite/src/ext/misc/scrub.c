@@ -117,7 +117,7 @@ static u8 *scrubBackupRead(ScrubState *p, int pgno, u8 *pBuf){
     scrubBackupErr(p, "read failed for page %d", pgno);
     p->rcErr = SQLITE_IOERR;
   }
-  return pOut;  
+  return pOut;
 }
 
 /* Write a page to the destination database */
@@ -309,7 +309,7 @@ static void scrubBackupFreelist(ScrubState *p, int pgno, u32 nFree){
   if( p->rcErr ) return;
   aBuf = scrubBackupAllocPage(p);
   if( aBuf==0 ) return;
- 
+
   while( pgno && nFree){
     a = scrubBackupRead(p, pgno, aBuf);
     if( a==0 ) break;
@@ -363,9 +363,9 @@ static void scrubBackupOverflow(ScrubState *p, int pgno, u32 nByte){
     scrubBackupWrite(p, pgno, a);
     pgno = scrubBackupInt32(a);
   }
-  sqlite3_free(aBuf);      
+  sqlite3_free(aBuf);
 }
-   
+
 
 /*
 ** Copy B-Tree page pgno, and all of its children, from source to destination.
@@ -383,7 +383,7 @@ static void scrubBackupBtree(ScrubState *p, int pgno, int iDepth){
   u32 x, y;
   int ln = 0;
 
-  
+
   if( p->rcErr ) return;
   if( iDepth>50 ){
     scrubBackupErr(p, "corrupt: b-tree too deep at page %d", pgno);
@@ -409,7 +409,7 @@ static void scrubBackupBtree(ScrubState *p, int pgno, int iDepth){
   if( y>x ){ ln=__LINE__; goto btree_corrupt; }
   if( y<x ) memset(a+y, 0, x-y);  /* Zero the gap */
 
-  /* Zero out all the free blocks */  
+  /* Zero out all the free blocks */
   pc = scrubBackupInt16(&aTop[1]);
   if( pc>0 && pc<x ){ ln=__LINE__; goto btree_corrupt; }
   while( pc ){
@@ -475,7 +475,7 @@ static void scrubBackupBtree(ScrubState *p, int pgno, int iDepth){
 btree_corrupt:
   scrubBackupErr(p, "corruption on page %d of source database (errid=%d)",
                  pgno, ln);
-  if( pgno>1 ) sqlite3_free(a);  
+  if( pgno>1 ) sqlite3_free(a);
 }
 
 /*
@@ -523,7 +523,7 @@ int sqlite3_scrub_backup(
   if( s.page1==0 ) goto scrub_abort;
   s.szUsable = s.szPage - s.page1[20];
 
-  /* Copy the freelist */    
+  /* Copy the freelist */
   n = scrubBackupInt32(&s.page1[36]);
   i = scrubBackupInt32(&s.page1[32]);
   if( n ) scrubBackupFreelist(&s, i, n);
@@ -544,8 +544,8 @@ int sqlite3_scrub_backup(
   sqlite3_finalize(pStmt);
 
   /* If the last page of the input db file is a free-list leaf, then the
-  ** backup file on disk is still smaller than the size indicated within 
-  ** the database header. In this case, write a page of zeroes to the 
+  ** backup file on disk is still smaller than the size indicated within
+  ** the database header. In this case, write a page of zeroes to the
   ** last page of the backup database so that SQLite does not mistakenly
   ** think the db is corrupt.  */
   if( s.iLastPage<s.nPage ){
@@ -557,7 +557,7 @@ int sqlite3_scrub_backup(
     }
   }
 
-scrub_abort:    
+scrub_abort:
   /* Close the destination database without closing the transaction. If we
   ** commit, page zero will be overwritten. */
   sqlite3_close(s.dbDest);
@@ -572,7 +572,7 @@ scrub_abort:
     sqlite3_free(s.zErr);
   }
   return s.rcErr;
-}   
+}
 
 #ifdef SCRUB_STANDALONE
 /* Error and warning log */

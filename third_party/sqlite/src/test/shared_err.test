@@ -112,7 +112,7 @@ do_ioerr_test shared_ioerr-2 -tclprep {
   incr ::residx
 
   # When this transaction begins the table contains 512 entries. The
-  # two statements together add 512+146 more if it succeeds. 
+  # two statements together add 512+146 more if it succeeds.
   # (1024/7==146)
   execsql {BEGIN;}
   execsql {INSERT INTO t1 SELECT a+1, b FROM t1;}
@@ -143,8 +143,8 @@ do_ioerr_test shared_ioerr-2 -tclprep {
 }
 
 # This test is designed to provoke an IO error when a cursor position is
-# "saved" (because another cursor is going to modify the underlying table). 
-# 
+# "saved" (because another cursor is going to modify the underlying table).
+#
 do_ioerr_test shared_ioerr-3 -tclprep {
   sqlite3 db2 test.db
   execsql {
@@ -180,7 +180,7 @@ do_ioerr_test shared_ioerr-3 -tclprep {
   # There are three possible outcomes here (assuming persistent IO errors):
   #
   # 1. If the [sqlite3_step] did not require any IO (required pages in
-  #    the cache), then the next row ("002...") may be retrieved 
+  #    the cache), then the next row ("002...") may be retrieved
   #    successfully.
   #
   # 2. If the [sqlite3_step] does require IO, then [sqlite3_step] returns
@@ -196,16 +196,16 @@ do_ioerr_test shared_ioerr-3 -tclprep {
 
   do_test shared_ioerr-3.$n.cleanup.1 {
     expr {
-      $::steprc eq "SQLITE_ROW" || 
+      $::steprc eq "SQLITE_ROW" ||
       $::steprc eq "SQLITE_ERROR" ||
-      $::steprc eq "SQLITE_ABORT" 
+      $::steprc eq "SQLITE_ABORT"
     }
   } {1}
   do_test shared_ioerr-3.$n.cleanup.2 {
     expr {
       ($::steprc eq "SQLITE_ROW" && $::column eq "002.002.002.002.002") ||
       ($::steprc eq "SQLITE_ERROR" && $::column eq "") ||
-      ($::steprc eq "SQLITE_ABORT" && $::column eq "001.001.001.001.001") 
+      ($::steprc eq "SQLITE_ABORT" && $::column eq "001.001.001.001.001")
     }
   } {1}
   do_test shared_ioerr-3.$n.cleanup.3 {
@@ -223,7 +223,7 @@ do_ioerr_test shared_ioerr-3 -tclprep {
 # This is a repeat of the previous test except that this time we
 # are doing a reverse-order scan of the table when the cursor is
 # "saved".
-# 
+#
 do_ioerr_test shared_ioerr-3rev -tclprep {
   sqlite3 db2 test.db
   execsql {
@@ -260,7 +260,7 @@ do_ioerr_test shared_ioerr-3rev -tclprep {
   # There are three possible outcomes here (assuming persistent IO errors):
   #
   # 1. If the [sqlite3_step] did not require any IO (required pages in
-  #    the cache), then the next row ("002...") may be retrieved 
+  #    the cache), then the next row ("002...") may be retrieved
   #    successfully.
   #
   # 2. If the [sqlite3_step] does require IO, then [sqlite3_step] returns
@@ -276,16 +276,16 @@ do_ioerr_test shared_ioerr-3rev -tclprep {
 
   do_test shared_ioerr-3rev.$n.cleanup.1 {
     expr {
-      $::steprc eq "SQLITE_ROW" || 
+      $::steprc eq "SQLITE_ROW" ||
       $::steprc eq "SQLITE_ERROR" ||
-      $::steprc eq "SQLITE_ABORT" 
+      $::steprc eq "SQLITE_ABORT"
     }
   } {1}
   do_test shared_ioerr-3rev.$n.cleanup.2 {
     expr {
       ($::steprc eq "SQLITE_ROW" && $::column eq "197.197.197.197.197") ||
       ($::steprc eq "SQLITE_ERROR" && $::column eq "") ||
-      ($::steprc eq "SQLITE_ABORT" && $::column eq "198.198.198.198.198") 
+      ($::steprc eq "SQLITE_ABORT" && $::column eq "198.198.198.198.198")
     }
   } {1}
   do_test shared_ioerr-3rev.$n.cleanup.3 {
@@ -303,12 +303,12 @@ do_ioerr_test shared_ioerr-3rev -tclprep {
 # Provoke a malloc() failure when a cursor position is being saved. This
 # only happens with index cursors (because they malloc() space to save the
 # current key value). It does not happen with tables, because an integer
-# key does not require a malloc() to store. 
+# key does not require a malloc() to store.
 #
 # The library should return an SQLITE_NOMEM to the caller. The query that
 # owns the cursor (the one for which the position is not saved) should
 # continue unaffected.
-# 
+#
 do_malloc_test shared_err-4 -tclprep {
   sqlite3 db2 test.db
   execsql {
@@ -380,13 +380,13 @@ do_malloc_test shared_err-6 -tclbody {
 #  set msg
 #} {library routine called out of sequence}
 
-# Again provoke a malloc() failure when a cursor position is being saved, 
-# this time during a ROLLBACK operation by some other handle. 
+# Again provoke a malloc() failure when a cursor position is being saved,
+# this time during a ROLLBACK operation by some other handle.
 #
 # The library should return an SQLITE_NOMEM to the caller. The query that
 # owns the cursor (the one for which the position is not saved) should
 # be aborted.
-# 
+#
 set ::aborted 0
 do_malloc_test shared_err-8 -tclprep {
   sqlite3 db2 test.db
@@ -413,7 +413,7 @@ do_malloc_test shared_err-8 -tclprep {
     INSERT INTO t1 VALUES(6, NULL);
     ROLLBACK}
 } -cleanup {
-  # UPDATE: As of [5668], if the rollback fails SQLITE_CORRUPT is returned. 
+  # UPDATE: As of [5668], if the rollback fails SQLITE_CORRUPT is returned.
   # So these tests have been updated to expect SQLITE_CORRUPT and its
   # associated English language error message.
   #
@@ -437,7 +437,7 @@ do_malloc_test shared_err-8 -tclprep {
       incr ::aborted
     }
     expr {
-      ($rc1=="SQLITE_DONE" && $rc2=="SQLITE_OK") || 
+      ($rc1=="SQLITE_DONE" && $rc2=="SQLITE_OK") ||
       ($rc1=="SQLITE_ERROR" && $rc2=="SQLITE_ABORT") ||
       ($rc1=="SQLITE_ERROR" && $rc2=="SQLITE_NOMEM") ||
       ($rc1=="SQLITE_ERROR" && $rc2=="SQLITE_IOERR") ||
@@ -447,7 +447,7 @@ do_malloc_test shared_err-8 -tclprep {
   db2 close
 }
 
-# When this test case was written, OOM errors in write statements would 
+# When this test case was written, OOM errors in write statements would
 # cause transaction rollback, which would trip cursors in other statements,
 # aborting them. This no longer happens.
 #
@@ -475,18 +475,18 @@ do_malloc_test shared_err-9 -tclprep {
     BEGIN;
     INSERT INTO abc VALUES(1, 2, 3);
     ROLLBACK;
-  }     
+  }
   db2 close
-}     
+}
 
 catch {db close}
 catch {db2 close}
 do_malloc_test shared_err-10 -tclprep {
   sqlite3 db test.db
   sqlite3 db2 test.db
-  
+
   db eval { SELECT * FROM sqlite_master }
-  db2 eval { 
+  db2 eval {
     BEGIN;
     CREATE TABLE abc(a, b, c);
   }
@@ -500,9 +500,9 @@ do_malloc_test shared_err-10 -tclprep {
 do_malloc_test shared_err-11 -tclprep {
   sqlite3 db test.db
   sqlite3 db2 test.db
-  
+
   db eval { SELECT * FROM sqlite_master }
-  db2 eval { 
+  db2 eval {
     BEGIN;
     CREATE TABLE abc(a, b, c);
   }

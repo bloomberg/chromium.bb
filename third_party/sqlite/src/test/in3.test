@@ -8,7 +8,7 @@
 #    May you share freely, never taking more than you give.
 #
 #***********************************************************************
-# This file tests the optimisations made in November 2007 of expressions 
+# This file tests the optimisations made in November 2007 of expressions
 # of the following form:
 #
 #     <value> IN (SELECT <column> FROM <table>)
@@ -67,7 +67,7 @@ do_test in3-1.5 {
 } {0 1 3 5}
 
 # Because none of the sub-select queries in the following statements
-# match the pattern ("SELECT <column> FROM <table>"), the following do 
+# match the pattern ("SELECT <column> FROM <table>"), the following do
 # require a temp table.
 #
 do_test in3-1.6 {
@@ -90,7 +90,7 @@ do_test in3-1.10 {
   exec_neph { SELECT a FROM t1 WHERE a IN (SELECT a FROM t1 ORDER BY a); }
 } {0 1 3 5}
 
-# These do use the temp-table. Adding the LIMIT clause means the 
+# These do use the temp-table. Adding the LIMIT clause means the
 # ORDER BY cannot be ignored.
 do_test in3-1.11 {
   exec_neph {SELECT a FROM t1 WHERE a IN (SELECT a FROM t1 ORDER BY a LIMIT 1)}
@@ -113,7 +113,7 @@ ifcapable compound {
   } {1 1 3 5}
 }
 
-# The first of these queries has to use the temp-table, because the 
+# The first of these queries has to use the temp-table, because the
 # collation sequence used for the index on "t1.a" does not match the
 # collation sequence used by the "IN" comparison. The second does not
 # require a temp-table, because the collation sequences match.
@@ -155,8 +155,8 @@ do_test in3-2.1 {
 } {}
 do_test in3-2.2 {
   execsql {
-    SELECT rowid 
-    FROM t1 
+    SELECT rowid
+    FROM t1
     WHERE rowid IN (SELECT rowid FROM t1 WHERE rowid IN (1, 2));
   }
 } {1 2}
@@ -167,7 +167,7 @@ do_test in3-2.3 {
 } {2 4}
 do_test in3-2.4 {
   execsql {
-    SELECT rowid FROM t1 WHERE rowid IN 
+    SELECT rowid FROM t1 WHERE rowid IN
        (select rowid from t1 where rowid IN (-1,2,4))
   }
 } {2 4}
@@ -206,7 +206,7 @@ do_test in3-3.2 {
   exec_neph { SELECT x IN (SELECT a FROM t1) FROM t2 }
 } {0 0}
 do_test in3-3.3 {
-  # Logically, numeric affinity is applied to both sides before 
+  # Logically, numeric affinity is applied to both sides before
   # the comparison.  Therefore it is possible to use index t1_i2.
   exec_neph { SELECT x IN (SELECT b FROM t1) FROM t2 }
 } {0 1}
@@ -222,12 +222,12 @@ do_test in3-3.5 {
   exec_neph { SELECT y IN (SELECT a FROM t1) FROM t2 }
 } {1 1}
 do_test in3-3.6 {
-  # Numeric affinity is applied to both sides before 
+  # Numeric affinity is applied to both sides before
   # the comparison.  Therefore it is possible to use index t1_i2.
   exec_neph { SELECT y IN (SELECT b FROM t1) FROM t2 }
 } {0 1}
 do_test in3-3.7 {
-  # Numeric affinity is applied before the comparison takes place. 
+  # Numeric affinity is applied before the comparison takes place.
   # Making it impossible to use index t1_i3.
   exec_neph { SELECT y IN (SELECT c FROM t1) FROM t2 }
 } {1 1}
@@ -272,9 +272,9 @@ do_test in3-4.6 {
 do_test in3-5.1 {
   execsql {
     CREATE TABLE Folders(
-      folderid INTEGER PRIMARY KEY, 
-      parentid INTEGER, 
-      rootid INTEGER, 
+      folderid INTEGER PRIMARY KEY,
+      parentid INTEGER,
+      rootid INTEGER,
       path VARCHAR(255)
     );
   }

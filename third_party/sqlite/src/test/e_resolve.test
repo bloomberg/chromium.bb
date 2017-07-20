@@ -9,7 +9,7 @@
 #
 #***********************************************************************
 #
-# This file implements tests to verify that the "testable statements" in 
+# This file implements tests to verify that the "testable statements" in
 # the lang_naming.html document are correct.
 #
 
@@ -108,7 +108,7 @@ do_execsql_test 5.1 { SELECT * FROM n3 } {at1  n3}
 do_execsql_test 5.2 { SELECT * FROM n4 } {at2  n4}
 
 #-------------------------------------------------------------------------
-# EVIDENCE-OF: R-37286-42536 
+# EVIDENCE-OF: R-37286-42536
 #
 db close
 forcedelete test.db file.db

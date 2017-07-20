@@ -11,8 +11,8 @@
 # This file implements regression tests for SQLite library.  The
 # focus of this script is testing the FTS5 module.
 #
-# Specifically, this tests that, provided the amount of data remains 
-# constant, the FTS index does not grow indefinitely as rows are inserted 
+# Specifically, this tests that, provided the amount of data remains
+# constant, the FTS index does not grow indefinitely as rows are inserted
 # and deleted,
 #
 
@@ -57,7 +57,7 @@ for {set iTest 0} {$iTest < 50000} {incr iTest} {
     set sz [db one {SELECT count(*) FROM t1_data}]
     set s [structure]
     do_execsql_test 1.$iTest.$sz.{$s} {
-      INSERT INTO t1(t1) VALUES('integrity-check') 
+      INSERT INTO t1(t1) VALUES('integrity-check')
     }
   }
 }

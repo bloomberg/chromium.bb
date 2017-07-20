@@ -90,7 +90,7 @@ do_test 4.3 {
 } {2 4 8}
 
 #-------------------------------------------------------------------------
-# Test that indexes with large numbers of columns can be correctly 
+# Test that indexes with large numbers of columns can be correctly
 # identified as covering indexes.
 reset_db
 set L [list]

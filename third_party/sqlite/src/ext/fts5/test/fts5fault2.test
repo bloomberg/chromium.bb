@@ -29,7 +29,7 @@ do_execsql_test 1.0 {
   INSERT INTO x1(x1, rank) VALUES('pgsz', 32);
   WITH input(a,b) AS (
     SELECT 1, $doc UNION ALL
-    SELECT a+1, ($doc || CASE WHEN (a+1)%100 THEN '' ELSE ' xyz' END) 
+    SELECT a+1, ($doc || CASE WHEN (a+1)%100 THEN '' ELSE ' xyz' END)
     FROM input WHERE a < 1000
   )
   INSERT INTO t1 SELECT * FROM input;
@@ -52,9 +52,9 @@ do_faultsim_test 1.2 -faults oom-* -prep {
 }
 
 #-------------------------------------------------------------------------
-# OOM within a query that accesses the in-memory hash table. 
+# OOM within a query that accesses the in-memory hash table.
 #
-reset_db 
+reset_db
 do_execsql_test 2.0 {
   CREATE VIRTUAL TABLE "a b c" USING fts5(a, b, c);
   INSERT INTO "a b c" VALUES('one two', 'x x x', 'three four');
@@ -76,7 +76,7 @@ do_faultsim_test 2.1 -faults oom-trans* -prep {
 #-------------------------------------------------------------------------
 # OOM within an 'optimize' operation that writes multiple pages to disk.
 #
-reset_db 
+reset_db
 do_execsql_test 3.0 {
   CREATE VIRTUAL TABLE zzz USING fts5(z);
   INSERT INTO zzz(zzz, rank) VALUES('pgsz', 32);
@@ -101,7 +101,7 @@ do_faultsim_test 3.1 -faults oom-trans* -prep {
 #-------------------------------------------------------------------------
 # OOM within an 'integrity-check' operation.
 #
-reset_db 
+reset_db
 db func rnddoc fts5_rnddoc
 do_execsql_test 4.0 {
   CREATE VIRTUAL TABLE zzz USING fts5(z);
@@ -125,8 +125,8 @@ faultsim_save_and_close
 do_faultsim_test 5.0 -faults oom-* -prep {
   faultsim_restore_and_reopen
 } -body {
-  execsql { 
-    CREATE VIRTUAL TABLE uio USING fts5(a, b, 
+  execsql {
+    CREATE VIRTUAL TABLE uio USING fts5(a, b,
       tokenize="porter 'ascii'",
       content="another table",
       content_rowid="somecolumn"

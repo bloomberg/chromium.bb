@@ -58,7 +58,7 @@ foreach {i cmd t0 t1 t2 t3} {
       DELETE FROM t2;
       INSERT INTO t1 VALUES(1,2,3);
       BEGIN;
-      INSERT INTO t2 VALUES(1); 
+      INSERT INTO t2 VALUES(1);
       $cmd INTO t1 VALUES(1,2,4);
     }]} r1]
     catch {execsql {COMMIT}}
@@ -104,7 +104,7 @@ foreach {i cmd t0 t1 t2} {
       DELETE FROM t2;
       INSERT INTO t1 VALUES(1,2,3);
       BEGIN;
-      INSERT INTO t2 VALUES(1); 
+      INSERT INTO t2 VALUES(1);
       $cmd INTO t1 VALUES(1,2,4);
     }]} r1]
     catch {execsql {COMMIT}}
@@ -149,7 +149,7 @@ foreach {i cmd t0 t1 t2} {
       DELETE FROM t2;
       INSERT INTO t1 VALUES(1,2,3);
       BEGIN;
-      INSERT INTO t2 VALUES(1); 
+      INSERT INTO t2 VALUES(1);
       $cmd INTO t1 VALUES(1,2,4);
     }]} r1]
     catch {execsql {COMMIT}}
@@ -197,7 +197,7 @@ foreach {i conf1 cmd t0 t1 t2} {
       DELETE FROM t2;
       INSERT INTO t1 VALUES(1,2,3);
       BEGIN;
-      INSERT INTO t2 VALUES(1); 
+      INSERT INTO t2 VALUES(1);
       $cmd INTO t1 VALUES(1,2,4);
     }]} r1]
     catch {execsql {COMMIT}}
@@ -250,7 +250,7 @@ foreach {i conf1 cmd t0 t1 t2} {
       CREATE TABLE t1(a,b,c NOT NULL $conf1 DEFAULT 5);
       DELETE FROM t2;
       BEGIN;
-      INSERT INTO t2 VALUES(1); 
+      INSERT INTO t2 VALUES(1);
       $cmd INTO t1 VALUES(1,2,NULL);
     }]} r1]
     catch {execsql {COMMIT}}
@@ -285,7 +285,7 @@ do_test conflict-6.0 {
 #   t3     Number of temporary files for tables
 #   t4     Number of temporary files for statement journals
 #
-# Update (2007-08-21): Since temporary table files are now opened lazily, 
+# Update (2007-08-21): Since temporary table files are now opened lazily,
 # and none of the following tests use large quantities of data, t3 is always 0.
 #
 # Update (2016-03-04): Subjournals now also open lazily, so t4 is also always 0.
@@ -316,7 +316,7 @@ foreach {i conf1 cmd t0 t1 t2 t3 t4} {
   }
   do_test conflict-6.$i {
     db close
-    sqlite3 db test.db 
+    sqlite3 db test.db
     if {$conf1!=""} {set conf1 "ON CONFLICT $conf1"}
     execsql {pragma temp_store=file}
     set ::sqlite_opentemp_count 0
@@ -661,13 +661,13 @@ do_test conflict-11.1 {
     COMMIT;
   }
 
-  
+
   # Set a small cache size so that changes will spill into
-  # the database file.  
+  # the database file.
   execsql {
     PRAGMA cache_size = 10;
   }
-  
+
   # Make lots of changes.  Because of the small cache, some
   # (most?) of these changes will spill into the disk file.
   # In other words, some of the changes will not be held in

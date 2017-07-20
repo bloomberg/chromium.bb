@@ -166,7 +166,7 @@ do_test lastinsert-3.4 {
 
 # ----------------------------------------------------------------------------
 # 4.x - tests with instead of insert trigger
-# These may not be run if either views or triggers were disabled at 
+# These may not be run if either views or triggers were disabled at
 # compile-time
 
 ifcapable {view && trigger} {

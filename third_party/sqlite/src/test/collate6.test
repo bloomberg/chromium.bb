@@ -25,7 +25,7 @@ ifcapable {!trigger} {
   return
 }
 
-# Create a case-insensitive collation type NOCASE for use in testing. 
+# Create a case-insensitive collation type NOCASE for use in testing.
 # Normally, capital letters are less than their lower-case counterparts.
 db collate NOCASE nocase_collate
 proc nocase_collate {a b} {
@@ -44,11 +44,11 @@ do_test collate6-1.0 {
   }
 } {}
 
-# Test that the default collation sequence applies to new.* references 
+# Test that the default collation sequence applies to new.* references
 # in WHEN clauses.
 do_test collate6-1.1 {
   execsql {
-    CREATE TRIGGER collate6trig BEFORE INSERT ON collate6tab 
+    CREATE TRIGGER collate6trig BEFORE INSERT ON collate6tab
       WHEN new.a = 'a' BEGIN
         INSERT INTO collate6log VALUES(new.a, new.b);
     END;
@@ -70,10 +70,10 @@ do_test collate6-1.4 {
   execsql {
     DROP TRIGGER collate6trig;
     DELETE FROM collate6log;
-  } 
+  }
 } {}
 
-# Test that the default collation sequence applies to new.* references 
+# Test that the default collation sequence applies to new.* references
 # in the body of triggers.
 do_test collate6-1.5 {
   execsql {
@@ -98,7 +98,7 @@ do_test collate6-1.8 {
   execsql {
     DROP TRIGGER collate6trig;
     DELETE FROM collate6log;
-  } 
+  }
 } {}
 
 do_test collate6-1.9 {
@@ -107,7 +107,7 @@ do_test collate6-1.9 {
   }
 } {}
 
-# Test that an explicit collation sequence overrides an implicit 
+# Test that an explicit collation sequence overrides an implicit
 # one attached to a 'new' reference.
 #
 do_test collate6-2.1 {

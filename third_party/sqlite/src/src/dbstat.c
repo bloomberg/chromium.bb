@@ -27,22 +27,22 @@
 
 /*
 ** Page paths:
-** 
-**   The value of the 'path' column describes the path taken from the 
-**   root-node of the b-tree structure to each page. The value of the 
+**
+**   The value of the 'path' column describes the path taken from the
+**   root-node of the b-tree structure to each page. The value of the
 **   root-node path is '/'.
 **
 **   The value of the path for the left-most child page of the root of
 **   a b-tree is '/000/'. (Btrees store content ordered from left to right
 **   so the pages to the left have smaller keys than the pages to the right.)
 **   The next to left-most child of the root page is
-**   '/001', and so on, each sibling page identified by a 3-digit hex 
+**   '/001', and so on, each sibling page identified by a 3-digit hex
 **   value. The children of the 451st left-most sibling have paths such
 **   as '/1c2/000/, '/1c2/001/' etc.
 **
-**   Overflow pages are specified by appending a '+' character and a 
+**   Overflow pages are specified by appending a '+' character and a
 **   six-digit hexadecimal value to the path to the cell they are linked
-**   from. For example, the three overflow pages in a chain linked from 
+**   from. For example, the three overflow pages in a chain linked from
 **   the left-most cell of the 450th child of the root page are identified
 **   by the paths:
 **
@@ -213,8 +213,8 @@ static int statBestIndex(sqlite3_vtab *tab, sqlite3_index_info *pIdxInfo){
   }
 
 
-  /* Records are always returned in ascending order of (name, path). 
-  ** If this will satisfy the client, set the orderByConsumed flag so that 
+  /* Records are always returned in ascending order of (name, path).
+  ** If this will satisfy the client, set the orderByConsumed flag so that
   ** SQLite does not do an external sort.
   */
   if( ( pIdxInfo->nOrderBy==1
@@ -299,7 +299,7 @@ static void getLocalPayload(
   int nLocal;
   int nMinLocal;
   int nMaxLocal;
- 
+
   if( flags==0x0D ){              /* Table leaf node */
     nMinLocal = (nUsable - 12) * 32 / 255 - 23;
     nMaxLocal = nUsable - 35;
@@ -392,7 +392,7 @@ static int statDecodePage(Btree *pBt, StatPage *p){
             if( rc!=SQLITE_OK ){
               assert( pPg==0 );
               return rc;
-            } 
+            }
             pCell->aOvfl[j] = sqlite3Get4byte(sqlite3PagerGetData(pPg));
             sqlite3PagerUnref(pPg);
           }
@@ -476,7 +476,7 @@ statNextRestart:
       if( pCell->iOvfl<pCell->nOvfl ){
         int nUsable;
         sqlite3BtreeEnter(pBt);
-        nUsable = sqlite3BtreeGetPageSize(pBt) - 
+        nUsable = sqlite3BtreeGetPageSize(pBt) -
                         sqlite3BtreeGetReserveNoMutex(pBt);
         sqlite3BtreeLeave(pBt);
         pCsr->zName = (char *)sqlite3_column_text(pCsr->pStmt, 0);
@@ -572,7 +572,7 @@ static int statEof(sqlite3_vtab_cursor *pCursor){
 }
 
 static int statFilter(
-  sqlite3_vtab_cursor *pCursor, 
+  sqlite3_vtab_cursor *pCursor,
   int idxNum, const char *idxStr,
   int argc, sqlite3_value **argv
 ){
@@ -617,8 +617,8 @@ static int statFilter(
 }
 
 static int statColumn(
-  sqlite3_vtab_cursor *pCursor, 
-  sqlite3_context *ctx, 
+  sqlite3_vtab_cursor *pCursor,
+  sqlite3_context *ctx,
   int i
 ){
   StatCursor *pCsr = (StatCursor *)pCursor;

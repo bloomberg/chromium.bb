@@ -41,7 +41,7 @@ proc utf16 {str {nt 1}} {
   return $r
 }
 
-# Return the UTF-8 representation of the supplied UTF-16 string $str. 
+# Return the UTF-8 representation of the supplied UTF-16 string $str.
 proc utf8 {str} {
   # If $str ends in two 0x00 0x00 bytes, knock these off before
   # converting to UTF-8 using TCL.

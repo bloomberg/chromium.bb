@@ -55,11 +55,11 @@ foreach_detail_mode $testprefix {
     }
     execsql "CREATE VIRTUAL TABLE t2 USING fts5(detail=%DETAIL%,[join $cols ,])"
   } {}
-  
+
   do_test 2.2 {
     execsql "INSERT INTO t2 VALUES([join $vals ,])"
   } {}
-  
+
   foreach {tn q res} {
     1 { c1:val1 }     1
     2 { c300:val300 } 1
@@ -109,7 +109,7 @@ do_execsql_test 4.5 {
   INSERT INTO t2 VALUES('ab');
   INSERT INTO t2 VALUES('cd');
   INSERT INTO t2 VALUES('ef');
-} 
+}
 do_execsql_test 4.6 {
   SELECT * FROM t2('ab + xyz');
 }

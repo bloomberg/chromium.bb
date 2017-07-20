@@ -27,7 +27,7 @@ proc wal_page_count {{file test.db}} { wal_frame_count ${file}-wal 1024 }
 
 
 # A checkpoint may be requested either using the C API or by executing
-# an SQL PRAGMA command. To test both methods, all tests in this file are 
+# an SQL PRAGMA command. To test both methods, all tests in this file are
 # run twice - once using each method to request checkpoints.
 #
 foreach {testprefix do_wal_checkpoint} {
@@ -74,7 +74,7 @@ foreach {testprefix do_wal_checkpoint} {
     set ::nBusyHandler 0
     set ::busy_handler_script ""
     proc busyhandler {n} {
-      incr ::nBusyHandler 
+      incr ::nBusyHandler
       eval $::busy_handler_script
       return 0
     }
@@ -124,7 +124,7 @@ foreach {testprefix do_wal_checkpoint} {
 
     # Now do a blocking-checkpoint. Set the busy-handler up so that connection
     # 2 releases its lock on the 6th invocation. The checkpointer should then
-    # proceed to checkpoint the entire log file. Next write should go to the 
+    # proceed to checkpoint the entire log file. Next write should go to the
     # start of the log file.
     #
     set ::busy_handler_script { if {$n==5} { sql2 COMMIT } }
@@ -150,8 +150,8 @@ foreach {testprefix do_wal_checkpoint} {
     } [expr {[nonzero_reserved_bytes]?"/# # #/":"7 5 0"}]
     do_test 1.$tn.10 { sql3 { BEGIN ; SELECT x FROM t1 } } {1 2 3 4 5 6}
 
-    set ::busy_handler_script { 
-      if {$n==5} { sql2 COMMIT } 
+    set ::busy_handler_script {
+      if {$n==5} { sql2 COMMIT }
       if {$n==6} { set ::db_file_size [db_page_count] }
       if {$n==7} { sql3 COMMIT }
     }
@@ -163,7 +163,7 @@ foreach {testprefix do_wal_checkpoint} {
   }
 
   #-------------------------------------------------------------------------
-  # This block of tests explores checkpoint operations on more than one 
+  # This block of tests explores checkpoint operations on more than one
   # database file.
   #
   proc setup_and_attach_aux {} {
@@ -187,7 +187,7 @@ foreach {testprefix do_wal_checkpoint} {
 
   # Test that executing "PRAGMA wal_checkpoint" checkpoints all attached
   # databases, not just the main db.  In capi mode, check that this is
-  # true if a NULL pointer is passed to wal_checkpoint_v2() in place of a 
+  # true if a NULL pointer is passed to wal_checkpoint_v2() in place of a
   # database name.
   do_multiclient_test tn {
     setup_and_attach_aux
@@ -263,7 +263,7 @@ foreach {testprefix do_wal_checkpoint} {
   #      database file, RESTART checkpoints block until readers using any part
   #      of the log file have finished.
   #
-  # This test case involves running a checkpoint while there exist other 
+  # This test case involves running a checkpoint while there exist other
   # processes holding all three types of locks.
   #
   foreach {tn1 checkpoint busy_on ckpt_expected expected} {
@@ -324,7 +324,7 @@ foreach {testprefix do_wal_checkpoint} {
     code1 $do_wal_checkpoint
     code2 $do_wal_checkpoint
     code3 $do_wal_checkpoint
-    
+
     do_test 3.$tn.1 {
       sql1 {
         PRAGMA auto_vacuum = 0;
@@ -391,7 +391,7 @@ foreach {testprefix do_wal_checkpoint} {
     } [wal_file_size 2 1024]
 
   }
-  
+
   # Test that FULL, RESTART and TRUNCATE callbacks block on other clients
   # and truncate the wal file as required even if the entire wal file has
   # already been checkpointed when they are invoked.
@@ -417,13 +417,13 @@ foreach {testprefix do_wal_checkpoint} {
       file size test.db-wal
     } [wal_file_size 10 1024]
 
-    do_test 5.$tn.2 { 
+    do_test 5.$tn.2 {
       sql2 { BEGIN; SELECT * FROM t1 }
     } {1 2 3 4 5 6}
 
     do_test 5.$tn.3 { do_wal_checkpoint db -mode passive } {0 10 10}
 
-    do_test 5.$tn.4 { 
+    do_test 5.$tn.4 {
       sql3 { BEGIN; INSERT INTO t1 VALUES(7, 8); }
     } {}
 
@@ -435,7 +435,7 @@ foreach {testprefix do_wal_checkpoint} {
     do_test 5.$tn.8 { do_wal_checkpoint db -mode full     } {0 10 10}
     do_test 5.$tn.9 { do_wal_checkpoint db -mode truncate } {1 10 10}
 
-    do_test 5.$tn.10 { 
+    do_test 5.$tn.10 {
       file size test.db-wal
     } [wal_file_size 10 1024]
 
@@ -453,7 +453,7 @@ foreach {testprefix do_wal_checkpoint} {
       }
     } {1 2 3 4 5 6 7 8 9 10}
 
-    do_test 5.$tn.14 { 
+    do_test 5.$tn.14 {
       sql2 { BEGIN; SELECT * FROM t1 }
     } {1 2 3 4 5 6 7 8 9 10}
 

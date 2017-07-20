@@ -198,7 +198,7 @@ if {[permutation]!="inmemory_journal"} {
     }
   } {delete youngling}
   db close
-  
+
   do_test nolock-4.2 {
     forcedelete test.db
     sqlite3 db test.db

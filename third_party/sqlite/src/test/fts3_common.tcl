@@ -47,7 +47,7 @@
 #-------------------------------------------------------------------------
 # USAGE: fts3_build_db_1 SWITCHES N
 #
-# Build a sample FTS table in the database opened by database connection 
+# Build a sample FTS table in the database opened by database connection
 # [db]. The name of the new table is "t1".
 #
 proc fts3_build_db_1 {args} {
@@ -95,7 +95,7 @@ proc fts3_build_db_1 {args} {
 #-------------------------------------------------------------------------
 # USAGE: fts3_build_db_2 N ARGS
 #
-# Build a sample FTS table in the database opened by database connection 
+# Build a sample FTS table in the database opened by database connection
 # [db]. The name of the new table is "t2".
 #
 proc fts3_build_db_2 {args} {
@@ -142,7 +142,7 @@ proc fts3_build_db_2 {args} {
 #
 # This proc is used to verify that the full-text index is consistent with
 # the contents of the fts3 table. In other words, it checks that the
-# data in the %_contents table matches that in the %_segdir and %_segments 
+# data in the %_contents table matches that in the %_segdir and %_segments
 # tables.
 #
 # This is not an efficient procedure. It uses a lot of memory and a lot
@@ -156,13 +156,13 @@ proc fts3_build_db_2 {args} {
 #
 #          set C($iDocid,$iCol,$iPosition) $zTerm
 #
-#   2) Iterate through each column of each row of the %_content table. 
+#   2) Iterate through each column of each row of the %_content table.
 #      Tokenize all documents, and check that for each token there is
 #      a corresponding entry in the $C array. After checking a token,
 #      [unset] the $C array entry.
 #
 #   3) Check that array $C is now empty.
-#      
+#
 #
 proc fts3_integrity_check {tbl} {
 
@@ -261,8 +261,8 @@ proc fts3_terms {tbl where} {
 # USAGE: fts3_doclist TBL TERM WHERE
 #
 # Argument TBL must be the name of an FTS3 table. TERM is a term that may
-# or may not be present in the table. Argument WHERE is used to select a 
-# subset of the b-tree segments in the associated full-text index as 
+# or may not be present in the table. Argument WHERE is used to select a
+# subset of the b-tree segments in the associated full-text index as
 # described above for [fts3_terms].
 #
 # This function returns the results of merging the doclists associated
@@ -272,7 +272,7 @@ proc fts3_terms {tbl where} {
 #   [$docid ?$col[$off1 $off2...]?...]
 #
 # The formatting is odd for a Tcl command in order to be compatible with
-# the original C-language implementation. If argument WHERE is "1", then 
+# the original C-language implementation. If argument WHERE is "1", then
 # any empty doclists are omitted from the returned list.
 #
 proc fts3_doclist {tbl term where} {
@@ -288,7 +288,7 @@ proc fts3_doclist {tbl term where} {
       set lPos [list]
       set lCol [list]
       incr docid [gobble_varint doclist]
-  
+
       while {[set iDelta [gobble_varint doclist]] > 0} {
         if {$iDelta == 1} {
           lappend lCol [list $iCol $lPos]
@@ -301,11 +301,11 @@ proc fts3_doclist {tbl term where} {
           lappend lPos $iPos
         }
       }
-  
+
       if {[llength $lPos]>0} {
         lappend lCol [list $iCol $lPos]
       }
-  
+
       if {$where != "1" || [llength $lCol]>0} {
         set ret($docid) $lCol
       } else {
@@ -343,7 +343,7 @@ proc gobble_string {varname nLength} {
   return $ret
 }
 
-# The argument is a blob of data representing an FTS3 segment leaf. 
+# The argument is a blob of data representing an FTS3 segment leaf.
 # Return a list consisting of alternating terms (strings) and doclists
 # (blobs of data).
 #
@@ -370,7 +370,7 @@ proc fts3_readleaf {blob} {
 proc fts3_read2 {tbl where varname} {
   upvar $varname a
   array unset a
-  db eval " SELECT start_block, leaves_end_block, root 
+  db eval " SELECT start_block, leaves_end_block, root
             FROM ${tbl}_segdir WHERE $where
             ORDER BY level ASC, idx DESC
   " {
@@ -379,8 +379,8 @@ proc fts3_read2 {tbl where varname} {
     if {$c==0} {
       foreach {t d} [fts3_readleaf $root] { lappend a($t) $d }
     } else {
-      db eval " SELECT block 
-                FROM ${tbl}_segments 
+      db eval " SELECT block
+                FROM ${tbl}_segments
                 WHERE blockid>=$start_block AND blockid<=$leaves_end_block
                 ORDER BY blockid
       " {
@@ -393,15 +393,15 @@ proc fts3_read2 {tbl where varname} {
 proc fts3_read {tbl where varname} {
   upvar $varname a
   array unset a
-  db eval " SELECT start_block, leaves_end_block, root 
+  db eval " SELECT start_block, leaves_end_block, root
             FROM ${tbl}_segdir WHERE $where
             ORDER BY level DESC, idx ASC
   " {
     if {$start_block == 0} {
       foreach {t d} [fts3_readleaf $root] { lappend a($t) $d }
     } else {
-      db eval " SELECT block 
-                FROM ${tbl}_segments 
+      db eval " SELECT block
+                FROM ${tbl}_segments
                 WHERE blockid>=$start_block AND blockid<$leaves_end_block
                 ORDER BY blockid
       " {

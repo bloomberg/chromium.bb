@@ -68,8 +68,8 @@ foreach {tn delete_sql} {
 
   do_execsql_test 2.3 " BEGIN; $delete_sql; "
 
-  do_test 2.4 { 
-    catchsql { SELECT * FROM t2 } db2 
+  do_test 2.4 {
+    catchsql { SELECT * FROM t2 } db2
   } {1 {database table is locked: t2}}
 
   do_execsql_test 2.5 COMMIT

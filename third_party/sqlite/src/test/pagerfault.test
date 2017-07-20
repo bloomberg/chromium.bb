@@ -57,7 +57,7 @@ do_faultsim_test pagerfault-1 -prep {
 } -body {
   execsql { SELECT count(*) FROM t1 }
 } -test {
-  faultsim_test_result {0 4} 
+  faultsim_test_result {0 4}
   faultsim_integrity_check
   if {[db one { SELECT count(*) FROM t1 }] != 4} {
     error "Database content appears incorrect"
@@ -65,7 +65,7 @@ do_faultsim_test pagerfault-1 -prep {
 }
 
 #-------------------------------------------------------------------------
-# Test fault-injection while rolling back a hot-journal file with a 
+# Test fault-injection while rolling back a hot-journal file with a
 # page-size different from the current value stored on page 1 of the
 # database file.
 #
@@ -81,8 +81,8 @@ do_test pagerfault-2-pre1 {
     PRAGMA page_size = 4096;
     BEGIN;
       CREATE TABLE abc(a, b, c);
-      INSERT INTO abc VALUES('o', 't', 't'); 
-      INSERT INTO abc VALUES('f', 'f', 's'); 
+      INSERT INTO abc VALUES('o', 't', 't');
+      INSERT INTO abc VALUES('f', 'f', 's');
       INSERT INTO abc SELECT * FROM abc; -- 4
       INSERT INTO abc SELECT * FROM abc; -- 8
       INSERT INTO abc SELECT * FROM abc; -- 16
@@ -107,7 +107,7 @@ do_faultsim_test pagerfault-2 -prep {
   faultsim_integrity_check
   set res [db eval { SELECT * FROM abc }]
   if {$res != $answer} { error "Database content appears incorrect ($res)" }
-} 
+}
 
 #-------------------------------------------------------------------------
 # Test fault-injection while rolling back hot-journals that were created
@@ -154,7 +154,7 @@ do_test pagerfault-3-pre1 {
 do_faultsim_test pagerfault-3 -prep {
   faultsim_restore_and_reopen
 } -body {
-  execsql { 
+  execsql {
     ATTACH 'test.db2' AS aux;
     SELECT count(*) FROM t2;
     SELECT count(*) FROM t1;
@@ -177,7 +177,7 @@ do_faultsim_test pagerfault-3 -prep {
 do_faultsim_test pagerfault-4 -prep {
   faultsim_delete_and_reopen
 } -body {
-  execsql { 
+  execsql {
     CREATE TABLE x(y);
     INSERT INTO x VALUES('z');
     SELECT * FROM x;
@@ -193,7 +193,7 @@ do_faultsim_test pagerfault-4 -prep {
 #
 #    pagerfault-5.1: With no journal_size_limit configured.
 #    pagerfault-5.2: With a journal_size_limit configured.
-#    pagerfault-5.4: Multi-file transaction. One connection has a 
+#    pagerfault-5.4: Multi-file transaction. One connection has a
 #                    journal_size_limit of 0, the other has no limit.
 #
 do_test pagerfault-5-pre1 {
@@ -220,7 +220,7 @@ do_faultsim_test pagerfault-5.1 -prep {
 do_faultsim_test pagerfault-5.2 -prep {
   faultsim_restore_and_reopen
   db func a_string a_string
-  execsql { 
+  execsql {
     PRAGMA journal_mode = PERSIST;
     PRAGMA journal_size_limit = 2048;
   }
@@ -234,7 +234,7 @@ do_faultsim_test pagerfault-5.3 -faults oom-transient -prep {
   faultsim_restore_and_reopen
   db func a_string a_string
   forcedelete test2.db test2.db-journal test2.db-wal
-  execsql { 
+  execsql {
     PRAGMA journal_mode = PERSIST;
     ATTACH 'test2.db' AS aux;
     PRAGMA aux.journal_mode = PERSIST;
@@ -260,7 +260,7 @@ do_faultsim_test pagerfault-5.3 -faults oom-transient -prep {
 }
 
 #-------------------------------------------------------------------------
-# Test fault-injection as part of a commit when using 
+# Test fault-injection as part of a commit when using
 # journal_mode=TRUNCATE.
 #
 do_test pagerfault-6-pre1 {
@@ -318,13 +318,13 @@ do_faultsim_test pagerfault-6.2 -faults cantopen-* -prep {
 #     INSERT INTO t1 VALUES(2, randomblob(1502));
 #     INSERT INTO t1 VALUES(3, randomblob(1503));
 #     INSERT INTO t1 VALUES(4, randomblob(1504));
-#     INSERT INTO t1 
+#     INSERT INTO t1
 #       SELECT x, randomblob(1500+oid+(SELECT max(oid) FROM t1)) FROM t1;
-#     INSERT INTO t1 
+#     INSERT INTO t1
 #       SELECT x, randomblob(1500+oid+(SELECT max(oid) FROM t1)) FROM t1;
-#     INSERT INTO t1 
+#     INSERT INTO t1
 #       SELECT x, randomblob(1500+oid+(SELECT max(oid) FROM t1)) FROM t1;
-#     INSERT INTO t1 
+#     INSERT INTO t1
 #       SELECT x, randomblob(1500+oid+(SELECT max(oid) FROM t1)) FROM t1;
 #   }
 #   faultsim_save_and_close
@@ -332,7 +332,7 @@ do_faultsim_test pagerfault-6.2 -faults cantopen-* -prep {
 # do_faultsim_test pagerfault-6 -prep {
 #   faultsim_restore_and_reopen
 # } -body {
-#   execsql { 
+#   execsql {
 #     BEGIN;
 #       UPDATE t1 SET x=x+4 WHERE x=1;
 #       SAVEPOINT one;
@@ -384,7 +384,7 @@ do_test pagerfault-7-pre1 {
 } {}
 do_faultsim_test pagerfault-7 -prep {
   faultsim_restore_and_reopen
-  execsql { 
+  execsql {
     PRAGMA cache_size = 10;
     BEGIN;
       UPDATE t1 SET b = randomblob(1500);
@@ -423,7 +423,7 @@ do_test pagerfault-8-pre2 {
 } {1}
 do_faultsim_test pagerfault-8 -prep {
   faultsim_restore_and_reopen
-  execsql { 
+  execsql {
     BEGIN;
     DELETE FROM t1 WHERE a>32;
   }
@@ -435,7 +435,7 @@ do_faultsim_test pagerfault-8 -prep {
 }
 
 #-------------------------------------------------------------------------
-# This test case is specially designed so that during a savepoint 
+# This test case is specially designed so that during a savepoint
 # rollback, a new cache entry must be allocated (see comments surrounding
 # the call to sqlite3PagerAcquire() from within pager_playback_one_page()
 # for details). Test the effects of injecting an OOM at this point.
@@ -456,7 +456,7 @@ do_test pagerfault-9-pre1 {
 } {}
 do_faultsim_test pagerfault-9.1 -prep {
   faultsim_restore_and_reopen
-  execsql { 
+  execsql {
     BEGIN;
       INSERT INTO t1 VALUES(randomblob(900));
       INSERT INTO t1 VALUES(randomblob(900));
@@ -476,8 +476,8 @@ do_faultsim_test pagerfault-9.1 -prep {
   faultsim_integrity_check
 
   set sl [db one { SELECT COALESCE(sum(length(x)), 'null') FROM t1 }]
-  if {$sl!="null" && $sl!=1800} { 
-    error "Content looks no good... ($sl)" 
+  if {$sl!="null" && $sl!=1800} {
+    error "Content looks no good... ($sl)"
   }
 }
 
@@ -626,7 +626,7 @@ ss_layer delete
 #-------------------------------------------------------------------------
 # Test fault injection when SQLite opens a database where the size of the
 # database file is zero bytes but the accompanying journal file is larger
-# than that. In this scenario SQLite should delete the journal file 
+# than that. In this scenario SQLite should delete the journal file
 # without rolling it back, even if it is in all other respects a valid
 # hot-journal file.
 #
@@ -708,9 +708,9 @@ do_faultsim_test pagerfault-14c -prep {
   catch { db2 close }
   faultsim_restore_and_reopen
   sqlite3 db2 test.db2
-  db2 eval { 
-    PRAGMA synchronous = off; 
-    PRAGMA page_size = 4096; 
+  db2 eval {
+    PRAGMA synchronous = off;
+    PRAGMA page_size = 4096;
     CREATE TABLE xx(a);
   }
 } -body {
@@ -817,7 +817,7 @@ do_faultsim_test pagerfault-17b -prep {
 }
 do_faultsim_test pagerfault-17c -prep {
   faultsim_restore_and_reopen
-  execsql { 
+  execsql {
     PRAGMA locking_mode = exclusive;
     PRAGMA journal_mode = wal;
   }
@@ -861,7 +861,7 @@ do_faultsim_test pagerfault-17e -prep {
 }
 
 #-------------------------------------------------------------------------
-# Test fault-injection when changing from journal_mode=persist to 
+# Test fault-injection when changing from journal_mode=persist to
 # journal_mode=delete (this involves deleting the journal file).
 #
 do_test pagerfault-18-pre1 {
@@ -900,9 +900,9 @@ do_faultsim_test pagerfault-19a -prep {
     COMMIT;
   }
 } -body {
-  execsql { 
+  execsql {
     CREATE TABLE t2(a, b);
-    INSERT INTO t2 SELECT * FROM t1; 
+    INSERT INTO t2 SELECT * FROM t1;
     DELETE FROM t1;
   }
 } -test {
@@ -925,7 +925,7 @@ do_test pagerfault-19-pre1 {
 do_faultsim_test pagerfault-19b -prep {
   faultsim_restore_and_reopen
 } -body {
-  execsql { 
+  execsql {
     BEGIN;
       UPDATE t4 SET x = x+1;
       UPDATE t6 SET x = x+1;
@@ -958,7 +958,7 @@ do_test pagerfault-20-pre1 {
 do_faultsim_test pagerfault-20 -prep {
   faultsim_restore_and_reopen
 } -body {
-  execsql { 
+  execsql {
     BEGIN;
       CREATE TABLE t1(a, b);
       CREATE TABLE t2(a, b);
@@ -991,7 +991,7 @@ do_faultsim_test pagerfault-21 -prep {
 
 
 #-------------------------------------------------------------------------
-# Test fault-injection and rollback when the nReserve header value 
+# Test fault-injection and rollback when the nReserve header value
 # is non-zero.
 #
 do_test pagerfault-21-pre1 {
@@ -1098,7 +1098,7 @@ do_faultsim_test pagerfault-22 -prep {
 # Provoke an OOM error during a commit of multi-file transaction. One of
 # the databases written during the transaction is an in-memory database.
 # This test causes rollback of the in-memory database after CommitPhaseOne()
-# has successfully returned. i.e. the series of calls for the aborted commit 
+# has successfully returned. i.e. the series of calls for the aborted commit
 # is:
 #
 #   PagerCommitPhaseOne(<in-memory-db>)   ->   SQLITE_OK
@@ -1109,16 +1109,16 @@ do_faultsim_test pagerfault-22 -prep {
 do_faultsim_test pagerfault-23 -prep {
   sqlite3 db :memory:
   foreach f [glob -nocomplain test.db*] { forcedelete $f }
-  db eval { 
+  db eval {
     ATTACH 'test.db2' AS aux;
     CREATE TABLE t1(a, b);
     CREATE TABLE aux.t2(a, b);
   }
 } -body {
-  execsql { 
+  execsql {
     BEGIN;
       INSERT INTO t1 VALUES(1,2);
-      INSERT INTO t2 VALUES(3,4); 
+      INSERT INTO t2 VALUES(3,4);
     COMMIT;
   }
 } -test {
@@ -1141,7 +1141,7 @@ do_faultsim_test pagerfault-24 -prep {
 
 proc lockrows {n} {
   if {$n==0} { return "" }
-  db eval { SELECT * FROM t1 WHERE oid = $n } { 
+  db eval { SELECT * FROM t1 WHERE oid = $n } {
     return [lockrows [expr {$n-1}]]
   }
 }
@@ -1167,7 +1167,7 @@ do_faultsim_test pagerfault-25 -prep {
   faultsim_restore_and_reopen
   db func a_string a_string
   set ::channel [db incrblob -readonly t1 a 1]
-  execsql { 
+  execsql {
     PRAGMA cache_size = 10;
     BEGIN;
       INSERT INTO t1 VALUES(a_string(3000));
@@ -1179,7 +1179,7 @@ do_faultsim_test pagerfault-25 -prep {
   catch { lockrows 30 }
   catch { db eval COMMIT }
   close $::channel
-  faultsim_test_result {0 {}} 
+  faultsim_test_result {0 {}}
 }
 
 do_faultsim_test pagerfault-26 -prep {
@@ -1204,13 +1204,13 @@ do_faultsim_test pagerfault-26 -prep {
   if {$contents != "1 2"} { error "Bad database contents ($contents)" }
 
   set sz [file size test.db]
-  if {$testrc!=0 && $sz!=1024*3 && $sz!=4096*3} { 
+  if {$testrc!=0 && $sz!=1024*3 && $sz!=4096*3} {
     error "Expected file size to be 3072 or 12288 bytes - actual size $sz bytes"
   }
-  if {$testrc==0 && $sz!=4096*3} { 
+  if {$testrc==0 && $sz!=4096*3} {
     error "Expected file size to be 12288 bytes - actual size $sz bytes"
   }
-} 
+}
 
 do_test pagerfault-27-pre {
   faultsim_delete_and_reopen
@@ -1233,7 +1233,7 @@ do_test pagerfault-27-pre {
 do_faultsim_test pagerfault-27 -faults ioerr-persistent -prep {
   faultsim_restore_and_reopen
   db func a_string a_string
-  execsql { 
+  execsql {
     PRAGMA cache_size = 10;
     BEGIN EXCLUSIVE;
   }
@@ -1290,7 +1290,7 @@ do_faultsim_test pagerfault-28a -faults oom* -prep {
   db2 eval { SELECT count(*) FROM t2 }
 
   db func a_string a_string
-  execsql { 
+  execsql {
     BEGIN;
       INSERT INTO t1 VALUES(a_string(2000), a_string(2000));
       INSERT INTO t1 VALUES(a_string(2000), a_string(2000));
@@ -1334,7 +1334,7 @@ db2 close
 #    3) Same again.
 #
 #    4a) Stop injecting errors. Allow the rollback to succeed. Check that
-#        the database is Ok. Or, 
+#        the database is Ok. Or,
 #
 #    4b) Close and reopen the db. Check that the db is Ok.
 #
@@ -1452,7 +1452,7 @@ do_faultsim_test pagerfault-33a -prep {
   execsql { VACUUM }
 } -test {
   faultsim_test_result {0 {}}
-} 
+}
 do_faultsim_test pagerfault-33b -prep {
   sqlite3 db ""
   execsql {
@@ -1463,7 +1463,7 @@ do_faultsim_test pagerfault-33b -prep {
   execsql { VACUUM }
 } -test {
   faultsim_test_result {0 {}}
-} 
+}
 
 do_test pagerfault-34-pre {
   reset_db
@@ -1483,7 +1483,7 @@ do_faultsim_test pagerfault-34 -prep {
   execsql COMMIT
 } -test {
   faultsim_test_result {0 {}}
-} 
+}
 
 do_test pagerfault-35-pre {
   faultsim_delete_and_reopen

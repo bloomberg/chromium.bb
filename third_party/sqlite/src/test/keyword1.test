@@ -91,7 +91,7 @@ set exprkw {
   current_timestamp
   raise
 }
-foreach kw $kwlist {  
+foreach kw $kwlist {
   do_test keyword1-$kw.1 {
     if {$kw=="if"} {
       db eval "CREATE TABLE \"$kw\"($kw $kw)"

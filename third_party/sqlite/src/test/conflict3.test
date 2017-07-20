@@ -27,7 +27,7 @@ ifcapable !conflict {
 
 do_execsql_test conflict-1.1 {
   CREATE TABLE t1(
-    a INTEGER PRIMARY KEY ON CONFLICT REPLACE, 
+    a INTEGER PRIMARY KEY ON CONFLICT REPLACE,
     b UNIQUE ON CONFLICT IGNORE,
     c UNIQUE ON CONFLICT FAIL
   );
@@ -57,7 +57,7 @@ do_execsql_test conflict-1.4 {
 do_execsql_test conflict-2.1 {
   DROP TABLE t1;
   CREATE TABLE t1(
-    a INT PRIMARY KEY ON CONFLICT REPLACE, 
+    a INT PRIMARY KEY ON CONFLICT REPLACE,
     b UNIQUE ON CONFLICT IGNORE,
     c UNIQUE ON CONFLICT FAIL
   );
@@ -87,7 +87,7 @@ do_execsql_test conflict-2.4 {
 do_execsql_test conflict-3.1 {
   DROP TABLE t1;
   CREATE TABLE t1(
-    a INT PRIMARY KEY ON CONFLICT REPLACE, 
+    a INT PRIMARY KEY ON CONFLICT REPLACE,
     b UNIQUE ON CONFLICT IGNORE,
     c UNIQUE ON CONFLICT FAIL
   ) WITHOUT ROWID;
@@ -207,7 +207,7 @@ do_execsql_test conflict-6.4 {
 do_execsql_test conflict-7.1 {
   DROP TABLE t1;
   CREATE TABLE t1(
-    a UNIQUE ON CONFLICT REPLACE, 
+    a UNIQUE ON CONFLICT REPLACE,
     b INTEGER PRIMARY KEY ON CONFLICT IGNORE,
     c UNIQUE ON CONFLICT FAIL
   );
@@ -237,7 +237,7 @@ do_execsql_test conflict-7.4 {
 do_execsql_test conflict-8.1 {
   DROP TABLE t1;
   CREATE TABLE t1(
-    a UNIQUE ON CONFLICT REPLACE, 
+    a UNIQUE ON CONFLICT REPLACE,
     b INT PRIMARY KEY ON CONFLICT IGNORE,
     c UNIQUE ON CONFLICT FAIL
   );
@@ -267,7 +267,7 @@ do_execsql_test conflict-8.4 {
 do_execsql_test conflict-9.1 {
   DROP TABLE t1;
   CREATE TABLE t1(
-    a UNIQUE ON CONFLICT REPLACE, 
+    a UNIQUE ON CONFLICT REPLACE,
     b INT PRIMARY KEY ON CONFLICT IGNORE,
     c UNIQUE ON CONFLICT FAIL
   ) WITHOUT ROWID;
@@ -297,7 +297,7 @@ do_execsql_test conflict-9.4 {
 do_execsql_test conflict-10.1 {
   DROP TABLE t1;
   CREATE TABLE t1(
-    a UNIQUE ON CONFLICT REPLACE, 
+    a UNIQUE ON CONFLICT REPLACE,
     b UNIQUE ON CONFLICT IGNORE,
     c INTEGER PRIMARY KEY ON CONFLICT FAIL
   );
@@ -327,7 +327,7 @@ do_execsql_test conflict-10.4 {
 do_execsql_test conflict-11.1 {
   DROP TABLE t1;
   CREATE TABLE t1(
-    a UNIQUE ON CONFLICT REPLACE, 
+    a UNIQUE ON CONFLICT REPLACE,
     b UNIQUE ON CONFLICT IGNORE,
     c PRIMARY KEY ON CONFLICT FAIL
   ) WITHOUT ROWID;

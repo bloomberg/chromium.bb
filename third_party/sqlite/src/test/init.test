@@ -10,7 +10,7 @@
 #***********************************************************************
 #
 # This file implements regression tests for SQLite library.  The
-# focus of this file is testing the effects of a failure in 
+# focus of this file is testing the effects of a failure in
 # sqlite3_initialize().
 #
 #

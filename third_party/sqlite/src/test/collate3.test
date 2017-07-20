@@ -27,7 +27,7 @@ source $testdir/tester.tcl
 #
 
 #
-# These tests ensure that when a user executes a statement with an 
+# These tests ensure that when a user executes a statement with an
 # unknown collation sequence an error is returned.
 #
 do_test collate3-1.0 {
@@ -63,8 +63,8 @@ execsql {
 proc caseless {a b} { string compare -nocase $a $b }
 do_test collate3-1.4 {
   db collate caseless caseless
-  execsql { 
-    CREATE TABLE t1(a COLLATE caseless); 
+  execsql {
+    CREATE TABLE t1(a COLLATE caseless);
     INSERT INTO t1 VALUES('Abc2');
     INSERT INTO t1 VALUES('abc1');
     INSERT INTO t1 VALUES('aBc3');
@@ -186,22 +186,22 @@ do_test collate3-2.1 {
   catchsql {
     SELECT * FROM collate3t1 ORDER BY 1 COLLATE string_compare;
   }
-} {1 {no such collation sequence: string_compare}} 
+} {1 {no such collation sequence: string_compare}}
 do_test collate3-2.2 {
   catchsql {
     SELECT * FROM collate3t1 ORDER BY c1;
   }
-} {1 {no such collation sequence: string_compare}} 
+} {1 {no such collation sequence: string_compare}}
 do_test collate3-2.3 {
   catchsql {
     SELECT * FROM collate3t1 WHERE c1 = 'xxx';
   }
-} {1 {no such collation sequence: string_compare}} 
+} {1 {no such collation sequence: string_compare}}
 do_test collate3-2.4 {
   catchsql {
     CREATE TABLE collate3t2(c1 COLLATE string_compare);
   }
-} {1 {no such collation sequence: string_compare}} 
+} {1 {no such collation sequence: string_compare}}
 do_test collate3-2.5 {
   catchsql {
     CREATE INDEX collate3t1_i1 ON collate3t1(c1);
@@ -216,7 +216,7 @@ do_test collate3-2.7.1 {
   catchsql {
     SELECT count(*) FROM collate3t1 GROUP BY c1;
   }
-} {1 {no such collation sequence: string_compare}} 
+} {1 {no such collation sequence: string_compare}}
 # do_test collate3-2.7.2 {
 #   catchsql {
 #     SELECT * FROM collate3t1 GROUP BY c1;
@@ -226,29 +226,29 @@ do_test collate3-2.7.2 {
   catchsql {
     SELECT * FROM collate3t1 GROUP BY c1;
   }
-} {1 {no such collation sequence: string_compare}} 
+} {1 {no such collation sequence: string_compare}}
 do_test collate3-2.8 {
   catchsql {
     SELECT DISTINCT c1 FROM collate3t1;
   }
-} {1 {no such collation sequence: string_compare}} 
+} {1 {no such collation sequence: string_compare}}
 
 ifcapable compound {
   do_test collate3-2.9 {
     catchsql {
       SELECT c1 FROM collate3t1 UNION SELECT c1 FROM collate3t1;
     }
-  } {1 {no such collation sequence: string_compare}} 
+  } {1 {no such collation sequence: string_compare}}
   do_test collate3-2.10 {
     catchsql {
       SELECT c1 FROM collate3t1 EXCEPT SELECT c1 FROM collate3t1;
     }
-  } {1 {no such collation sequence: string_compare}} 
+  } {1 {no such collation sequence: string_compare}}
   do_test collate3-2.11 {
     catchsql {
       SELECT c1 FROM collate3t1 INTERSECT SELECT c1 FROM collate3t1;
     }
-  } {1 {no such collation sequence: string_compare}} 
+  } {1 {no such collation sequence: string_compare}}
   do_test collate3-2.12 {
     catchsql {
       SELECT c1 FROM collate3t1 UNION ALL SELECT c1 FROM collate3t1;
@@ -258,33 +258,33 @@ ifcapable compound {
     catchsql {
       SELECT 10 UNION ALL SELECT 20 ORDER BY 1 COLLATE string_compare;
     }
-  } {1 {no such collation sequence: string_compare}} 
+  } {1 {no such collation sequence: string_compare}}
   do_test collate3-2.14 {
     catchsql {
       SELECT 10 INTERSECT SELECT 20 ORDER BY 1 COLLATE string_compare;
     }
-  } {1 {no such collation sequence: string_compare}} 
+  } {1 {no such collation sequence: string_compare}}
   do_test collate3-2.15 {
     catchsql {
       SELECT 10 EXCEPT SELECT 20 ORDER BY 1 COLLATE string_compare;
     }
-  } {1 {no such collation sequence: string_compare}} 
+  } {1 {no such collation sequence: string_compare}}
   do_test collate3-2.16 {
     catchsql {
       SELECT 10 UNION SELECT 20 ORDER BY 1 COLLATE string_compare;
     }
-  } {1 {no such collation sequence: string_compare}} 
+  } {1 {no such collation sequence: string_compare}}
   do_test collate3-2.17 {
     catchsql {
       SELECT c1 FROM collate3t1 UNION ALL SELECT c1 FROM collate3t1 ORDER BY 1;
     }
-  } {1 {no such collation sequence: string_compare}} 
+  } {1 {no such collation sequence: string_compare}}
 } ;# ifcapable compound
 
 #
 # Create an index that uses a collation sequence then close and
 # re-open the database without re-registering the collation
-# sequence. Then check that for the table with the index 
+# sequence. Then check that for the table with the index
 # * An INSERT fails,
 # * An UPDATE on the column with the index fails,
 # * An UPDATE on a different column succeeds.
@@ -309,12 +309,12 @@ do_test collate3-3.1 {
   catchsql {
     INSERT INTO collate3t1 VALUES('xxx', 0);
   }
-} {1 {no such collation sequence: string_compare}} 
+} {1 {no such collation sequence: string_compare}}
 do_test collate3-3.2 {
   catchsql {
     UPDATE collate3t1 SET c1 = 'xxx';
   }
-} {1 {no such collation sequence: string_compare}} 
+} {1 {no such collation sequence: string_compare}}
 do_test collate3-3.3 {
   catchsql {
     UPDATE collate3t1 SET c2 = 'xxx';
@@ -324,7 +324,7 @@ do_test collate3-3.4 {
   catchsql {
     DELETE FROM collate3t1 WHERE 1;
   }
-} {1 {no such collation sequence: string_compare}} 
+} {1 {no such collation sequence: string_compare}}
 do_test collate3-3.5 {
   catchsql {
     SELECT * FROM collate3t1;
@@ -351,34 +351,34 @@ do_test collate3-3.10 {
   catchsql {
     SELECT * FROM collate3t1 ORDER BY 1 COLLATE string_compare;
   }
-} {1 {no such collation sequence: string_compare}} 
+} {1 {no such collation sequence: string_compare}}
 do_test collate3-3.11 {
   catchsql {
     SELECT * FROM collate3t1 ORDER BY c1;
   }
-} {1 {no such collation sequence: string_compare}} 
+} {1 {no such collation sequence: string_compare}}
 do_test collate3-3.12 {
   catchsql {
     SELECT * FROM collate3t1 WHERE c1 = 'xxx';
   }
-} {1 {no such collation sequence: string_compare}} 
+} {1 {no such collation sequence: string_compare}}
 do_test collate3-3.13 {
   catchsql {
     CREATE TABLE collate3t2(c1 COLLATE string_compare);
   }
-} {1 {no such collation sequence: string_compare}} 
+} {1 {no such collation sequence: string_compare}}
 do_test collate3-3.14 {
   catchsql {
     CREATE INDEX collate3t1_i2 ON collate3t1(c1);
   }
-} {1 {no such collation sequence: string_compare}} 
+} {1 {no such collation sequence: string_compare}}
 do_test collate3-3.15 {
   execsql {
     DROP TABLE collate3t1;
   }
 } {}
 
-# Check we can create an index that uses an explicit collation 
+# Check we can create an index that uses an explicit collation
 # sequence and then close and re-open the database.
 do_test collate3-4.6 {
   db collate user_defined "string compare"
@@ -423,7 +423,7 @@ proc numeric_compare {lhs rhs} {
   return $res
 }
 
-# Check we can create a view that uses an explicit collation 
+# Check we can create a view that uses an explicit collation
 # sequence and then close and re-open the database.
 ifcapable view {
 do_test collate3-4.9 {
@@ -433,7 +433,7 @@ do_test collate3-4.9 {
     INSERT INTO collate3t1 VALUES('2', NULL);
     INSERT INTO collate3t1 VALUES('101', NULL);
     INSERT INTO collate3t1 VALUES('12', NULL);
-    CREATE VIEW collate3v1 AS SELECT * FROM collate3t1 
+    CREATE VIEW collate3v1 AS SELECT * FROM collate3t1
         ORDER BY 1 COLLATE user_defined;
     SELECT * FROM collate3v1;
   }

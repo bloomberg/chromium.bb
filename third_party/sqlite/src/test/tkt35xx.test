@@ -89,7 +89,7 @@ do_test tkt35xx-1.2.5 {
   # would be committed. But, the "SELECT count(*)" in tkt35xx-1.2.6 would
   # return 1, not 5. Data magically disappeared!
   #
-  execsql { 
+  execsql {
     INSERT INTO t3 VALUES(5, $big);
     COMMIT;
   }

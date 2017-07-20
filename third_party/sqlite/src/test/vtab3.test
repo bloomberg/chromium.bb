@@ -40,9 +40,9 @@ proc auth {code arg1 arg2 arg3 arg4 args} {
 do_test vtab3-1.1 {
   execsql {
     CREATE TABLE elephant(
-      name VARCHAR(32), 
-      color VARCHAR(16), 
-      age INTEGER, 
+      name VARCHAR(32),
+      color VARCHAR(16),
+      age INTEGER,
       UNIQUE(name, color)
     );
   }

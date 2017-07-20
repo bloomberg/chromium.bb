@@ -259,7 +259,7 @@ test_blob_open 8 main t1 y 3 0 SQLITE_ERROR "cannot open value of type real"
 # KEY or UNIQUE constraint and the blob is being opened for read/write
 # access
 #
-# Test cases 8.1.* show that such columns can be opened for read-access. 
+# Test cases 8.1.* show that such columns can be opened for read-access.
 # Tests 8.2.* show that read-write access is different. Columns "c" and "c"
 # are not part of an index, PK or UNIQUE constraint, so they work in both
 # cases.

@@ -66,7 +66,7 @@ foreach {tn schema} {
     INSERT INTO t1 VALUES(2, 'b', 'c', 'd');
     INSERT INTO t1 VALUES(3, 'c', 'd', 'e');
   }
-  
+
   do_execsql_test 2.$tn.1 {
     ATTACH 'rbu.db' AS rbu;
     CREATE TABLE rbu.data_t1(i, a, b, c, rbu_control);
@@ -74,11 +74,11 @@ foreach {tn schema} {
     INSERT INTO data_t1 VALUES(3, 'c', 'd', 'e', 2);
     INSERT INTO data_t1 VALUES(4, 'd', 'e', 'f', 2);
   }
-  
+
   do_test 2.$tn.2 {
     step_rbu test.db rbu.db
   } {SQLITE_DONE}
-  
+
   do_execsql_test 2.$tn.3 {
     SELECT * FROM t1 ORDER BY i
   } {
@@ -87,7 +87,7 @@ foreach {tn schema} {
     3 c d e
     4 d e f
   }
-  
+
   integrity_check 2.$tn.4
 }
 
@@ -111,7 +111,7 @@ foreach {tn schema} {
     INSERT INTO t1 VALUES('b', 'c', 'd');
     INSERT INTO t1 VALUES('c', 'd', 'e');
   }
-  
+
   do_execsql_test 3.$tn.1 {
     ATTACH 'rbu.db' AS rbu;
     CREATE TABLE rbu.data_t1(rbu_rowid, a, b, c, rbu_control);
@@ -119,11 +119,11 @@ foreach {tn schema} {
     INSERT INTO data_t1 VALUES(3, 'c', 'd', 'e', 2);
     INSERT INTO data_t1 VALUES(4, 'd', 'e', 'f', 2);
   }
-  
+
   do_test 3.$tn.2 {
     step_rbu test.db rbu.db
   } {SQLITE_DONE}
-  
+
   do_execsql_test 3.$tn.3 {
     SELECT rowid, * FROM t1 ORDER BY 1
   } {
@@ -132,7 +132,7 @@ foreach {tn schema} {
     3 c d e
     4 d e f
   }
-  
+
   integrity_check 3.$tn.4
 }
 

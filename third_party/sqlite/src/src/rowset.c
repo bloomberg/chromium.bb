@@ -35,7 +35,7 @@
 ** extracts the least value from the RowSet.
 **
 ** The INSERT primitive might allocate additional memory.  Memory is
-** allocated in chunks so most INSERTs do no allocation.  There is an 
+** allocated in chunks so most INSERTs do no allocation.  There is an
 ** upper bound on the size of allocated memory.  No memory is freed
 ** until DESTROY.
 **
@@ -83,7 +83,7 @@
 ** in the list, pLeft points to the tree, and v is unused.  The
 ** RowSet.pForest value points to the head of this forest list.
 */
-struct RowSetEntry {            
+struct RowSetEntry {
   i64 v;                        /* ROWID value for this entry */
   struct RowSetEntry *pRight;   /* Right subtree (larger entries) or list */
   struct RowSetEntry *pLeft;    /* Left subtree (smaller entries) */
@@ -131,7 +131,7 @@ struct RowSet {
 **
 ** It must be the case that N is sufficient to make a Rowset.  If not
 ** an assertion fault occurs.
-** 
+**
 ** If N is larger than the minimum, use the surplus as an initial
 ** allocation of entries available to be filled.
 */
@@ -231,7 +231,7 @@ void sqlite3RowSetInsert(RowSet *p, i64 rowid){
 /*
 ** Merge two lists of RowSetEntry objects.  Remove duplicates.
 **
-** The input lists are connected via pRight pointers and are 
+** The input lists are connected via pRight pointers and are
 ** assumed to each already be in sorted order.
 */
 static struct RowSetEntry *rowSetEntryMerge(
@@ -268,7 +268,7 @@ static struct RowSetEntry *rowSetEntryMerge(
 /*
 ** Sort all elements on the list of RowSetEntry objects into order of
 ** increasing v.
-*/ 
+*/
 static struct RowSetEntry *rowSetEntrySort(struct RowSetEntry *pIn){
   unsigned int i;
   struct RowSetEntry *pNext, *aBucket[40];
@@ -341,7 +341,7 @@ static struct RowSetEntry *rowSetNDeepTree(
   struct RowSetEntry *pLeft;     /* Left subtree */
   if( *ppList==0 ){ /*OPTIMIZATION-IF-TRUE*/
     /* Prevent unnecessary deep recursion when we run out of entries */
-    return 0; 
+    return 0;
   }
   if( iDepth>1 ){   /*OPTIMIZATION-IF-TRUE*/
     /* This branch causes a *balanced* tree to be generated.  A valid tree

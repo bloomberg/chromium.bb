@@ -18,7 +18,7 @@
 
 if {![info exists testdir]} {
   set testdir [file join [file dirname [info script]] .. .. test]
-} 
+}
 source [file join [file dirname [info script]] session_common.tcl]
 source $testdir/tester.tcl
 ifcapable !session {finish_test; return}
@@ -52,8 +52,8 @@ foreach {tn setup result} {
   1 {
     S attach *
   } {
-    {INSERT t2 0 X. {} {i 2 t two}} 
-    {INSERT t1 0 X. {} {i 1 t one}} 
+    {INSERT t2 0 X. {} {i 2 t two}}
+    {INSERT t1 0 X. {} {i 1 t one}}
     {INSERT t3 0 X. {} {i 3 t three}}
   }
 
@@ -61,8 +61,8 @@ foreach {tn setup result} {
     S attach t1
     S attach *
   } {
-    {INSERT t1 0 X. {} {i 1 t one}} 
-    {INSERT t2 0 X. {} {i 2 t two}} 
+    {INSERT t1 0 X. {} {i 1 t one}}
+    {INSERT t2 0 X. {} {i 2 t two}}
     {INSERT t3 0 X. {} {i 3 t three}}
   }
 
@@ -72,8 +72,8 @@ foreach {tn setup result} {
     S attach t1
   } {
     {INSERT t3 0 X. {} {i 3 t three}}
-    {INSERT t2 0 X. {} {i 2 t two}} 
-    {INSERT t1 0 X. {} {i 1 t one}} 
+    {INSERT t2 0 X. {} {i 2 t two}}
+    {INSERT t1 0 X. {} {i 1 t one}}
   }
 } {
   execsql {
@@ -100,9 +100,9 @@ foreach {tn setup result} {
   1 {
     S attach *
   } {
-    {INSERT t2 0 X. {} {i 4 t four}} 
+    {INSERT t2 0 X. {} {i 4 t four}}
     {INSERT t2 0 X. {} {i 5 t five}}
-    {INSERT t1 0 X. {} {i 1 t one}} 
+    {INSERT t1 0 X. {} {i 1 t one}}
     {INSERT t3 0 X. {} {i 6 t six}}
   }
 
@@ -110,8 +110,8 @@ foreach {tn setup result} {
     S attach t1
     S attach *
   } {
-    {INSERT t1 0 X. {} {i 1 t one}} 
-    {INSERT t2 0 X. {} {i 4 t four}} 
+    {INSERT t1 0 X. {} {i 1 t one}}
+    {INSERT t2 0 X. {} {i 4 t four}}
     {INSERT t2 0 X. {} {i 5 t five}}
     {INSERT t3 0 X. {} {i 6 t six}}
   }
@@ -122,9 +122,9 @@ foreach {tn setup result} {
     S attach t1
   } {
     {INSERT t3 0 X. {} {i 6 t six}}
-    {INSERT t2 0 X. {} {i 4 t four}} 
+    {INSERT t2 0 X. {} {i 4 t four}}
     {INSERT t2 0 X. {} {i 5 t five}}
-    {INSERT t1 0 X. {} {i 1 t one}} 
+    {INSERT t1 0 X. {} {i 1 t one}}
   }
 } {
   execsql {
@@ -158,10 +158,10 @@ foreach {tn setup result} {
   1 {
     S attach *
   } {
-    {DELETE t2 0 X. {i 4 t four} {}} 
-    {DELETE t2 0 X. {i 5 t five} {}} 
+    {DELETE t2 0 X. {i 4 t four} {}}
+    {DELETE t2 0 X. {i 5 t five} {}}
     {DELETE t1 0 X. {i 1 t one} {}}
-    {DELETE t3 0 X. {i 6 t six} {}} 
+    {DELETE t3 0 X. {i 6 t six} {}}
   }
 
   2 {
@@ -169,9 +169,9 @@ foreach {tn setup result} {
     S attach *
   } {
     {DELETE t1 0 X. {i 1 t one} {}}
-    {DELETE t2 0 X. {i 4 t four} {}} 
-    {DELETE t2 0 X. {i 5 t five} {}} 
-    {DELETE t3 0 X. {i 6 t six} {}} 
+    {DELETE t2 0 X. {i 4 t four} {}}
+    {DELETE t2 0 X. {i 5 t five} {}}
+    {DELETE t3 0 X. {i 6 t six} {}}
   }
 
   3 {
@@ -179,9 +179,9 @@ foreach {tn setup result} {
     S attach t2
     S attach t1
   } {
-    {DELETE t3 0 X. {i 6 t six} {}} 
-    {DELETE t2 0 X. {i 4 t four} {}} 
-    {DELETE t2 0 X. {i 5 t five} {}} 
+    {DELETE t3 0 X. {i 6 t six} {}}
+    {DELETE t2 0 X. {i 4 t four} {}}
+    {DELETE t2 0 X. {i 5 t five} {}}
     {DELETE t1 0 X. {i 1 t one} {}}
   }
 } {
@@ -223,8 +223,8 @@ foreach {tn setup1 sql1 setup2 sql2 result} {
     INSERT INTO t1 VALUES(3, 'three');
     INSERT INTO t2 VALUES(4, 'four');
   } {
-    {INSERT t1 0 X. {} {i 1 t one}} 
-    {INSERT t1 0 X. {} {i 3 t three}} 
+    {INSERT t1 0 X. {} {i 1 t one}}
+    {INSERT t1 0 X. {} {i 3 t three}}
     {INSERT t2 0 X. {} {i 2 t two}}
     {INSERT t2 0 X. {} {i 4 t four}}
   }
@@ -243,8 +243,8 @@ foreach {tn setup1 sql1 setup2 sql2 result} {
   } {
     {INSERT t2 0 X. {} {i 2 t two}}
     {INSERT t2 0 X. {} {i 4 t four}}
-    {INSERT t1 0 X. {} {i 1 t one}} 
-    {INSERT t1 0 X. {} {i 3 t three}} 
+    {INSERT t1 0 X. {} {i 1 t one}}
+    {INSERT t1 0 X. {} {i 3 t three}}
   }
 
   1 {
@@ -260,8 +260,8 @@ foreach {tn setup1 sql1 setup2 sql2 result} {
   } {
     {INSERT t2 0 X. {} {i 2 t two}}
     {INSERT t2 0 X. {} {i 4 t four}}
-    {INSERT t1 0 X. {} {i 3 t three}} 
-    {INSERT t3 0 X. {} {i 5 t five}} 
+    {INSERT t1 0 X. {} {i 3 t three}}
+    {INSERT t3 0 X. {} {i 5 t five}}
   }
 
 } {

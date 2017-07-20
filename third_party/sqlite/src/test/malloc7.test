@@ -35,7 +35,7 @@ do_malloc_test malloc7-1 -sqlprep {
   set nbyte [string length $sql16]
   set ::STMT [sqlite3_prepare16 db $sql16 $nbyte DUMMY]
   sqlite3_finalize $::STMT
-} 
+}
 
 
 # Ensure that no file descriptors were leaked.

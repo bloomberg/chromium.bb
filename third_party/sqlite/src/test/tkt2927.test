@@ -155,7 +155,7 @@ do_test tkt2927-2.16 {
 do_test tkt2927-3.1 {
   db eval {
     SELECT a, b FROM t1
-    UNION 
+    UNION
     SELECT a, b FROM t1
     ORDER BY 1
   }
@@ -163,7 +163,7 @@ do_test tkt2927-3.1 {
 do_test tkt2927-3.2 {
   db eval {
     SELECT a, b FROM t1
-    UNION 
+    UNION
     SELECT a, abs(b) FROM t1
     ORDER BY 1
   }
@@ -171,7 +171,7 @@ do_test tkt2927-3.2 {
 do_test tkt2927-3.3 {
   db eval {
     SELECT a, b FROM t1
-    UNION 
+    UNION
     SELECT abs(a), b FROM t1
     ORDER BY 1
   }
@@ -179,7 +179,7 @@ do_test tkt2927-3.3 {
 do_test tkt2927-3.4 {
   db eval {
     SELECT a, b FROM t1
-    UNION 
+    UNION
     SELECT abs(a), abs(b) FROM t1
     ORDER BY 1
   }
@@ -187,7 +187,7 @@ do_test tkt2927-3.4 {
 do_test tkt2927-3.5 {
   db eval {
     SELECT a, abs(b) FROM t1
-    UNION 
+    UNION
     SELECT a, b FROM t1
     ORDER BY 1
   }
@@ -195,7 +195,7 @@ do_test tkt2927-3.5 {
 do_test tkt2927-3.6 {
   db eval {
     SELECT a, abs(b) FROM t1
-    UNION 
+    UNION
     SELECT a, abs(b) FROM t1
     ORDER BY 1
   }
@@ -203,7 +203,7 @@ do_test tkt2927-3.6 {
 do_test tkt2927-3.7 {
   db eval {
     SELECT a, abs(b) FROM t1
-    UNION 
+    UNION
     SELECT abs(a), b FROM t1
     ORDER BY 1
   }
@@ -211,7 +211,7 @@ do_test tkt2927-3.7 {
 do_test tkt2927-3.8 {
   db eval {
     SELECT a, abs(b) FROM t1
-    UNION 
+    UNION
     SELECT abs(a), abs(b) FROM t1
     ORDER BY 1
   }
@@ -219,7 +219,7 @@ do_test tkt2927-3.8 {
 do_test tkt2927-3.9 {
   db eval {
     SELECT abs(a), b FROM t1
-    UNION 
+    UNION
     SELECT a, b FROM t1
     ORDER BY 1
   }
@@ -227,7 +227,7 @@ do_test tkt2927-3.9 {
 do_test tkt2927-3.10 {
   db eval {
     SELECT abs(a), b FROM t1
-    UNION 
+    UNION
     SELECT a, abs(b) FROM t1
     ORDER BY 1
   }
@@ -235,7 +235,7 @@ do_test tkt2927-3.10 {
 do_test tkt2927-3.11 {
   db eval {
     SELECT abs(a), b FROM t1
-    UNION 
+    UNION
     SELECT abs(a), b FROM t1
     ORDER BY 1
   }
@@ -243,7 +243,7 @@ do_test tkt2927-3.11 {
 do_test tkt2927-3.12 {
   db eval {
     SELECT abs(a), b FROM t1
-    UNION 
+    UNION
     SELECT abs(a), abs(b) FROM t1
     ORDER BY 1
   }
@@ -251,7 +251,7 @@ do_test tkt2927-3.12 {
 do_test tkt2927-3.13 {
   db eval {
     SELECT abs(a), abs(b) FROM t1
-    UNION 
+    UNION
     SELECT a, b FROM t1
     ORDER BY 1
   }
@@ -259,7 +259,7 @@ do_test tkt2927-3.13 {
 do_test tkt2927-3.14 {
   db eval {
     SELECT abs(a), abs(b) FROM t1
-    UNION 
+    UNION
     SELECT a, abs(b) FROM t1
     ORDER BY 1
   }
@@ -267,7 +267,7 @@ do_test tkt2927-3.14 {
 do_test tkt2927-3.15 {
   db eval {
     SELECT abs(a), abs(b) FROM t1
-    UNION 
+    UNION
     SELECT abs(a), b FROM t1
     ORDER BY 1
   }
@@ -275,7 +275,7 @@ do_test tkt2927-3.15 {
 do_test tkt2927-3.16 {
   db eval {
     SELECT abs(a), abs(b) FROM t1
-    UNION 
+    UNION
     SELECT abs(a), abs(b) FROM t1
     ORDER BY 1
   }

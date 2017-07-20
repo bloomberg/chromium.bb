@@ -39,27 +39,27 @@ proc file_pages {} {
 # Test cases autovacuum-1.* work as follows:
 #
 # 1. A table with a single indexed field is created.
-# 2. Approximately 20 rows are inserted into the table. Each row is long 
-#    enough such that it uses at least 2 overflow pages for both the table 
+# 2. Approximately 20 rows are inserted into the table. Each row is long
+#    enough such that it uses at least 2 overflow pages for both the table
 #    and index entry.
 # 3. The rows are deleted in a psuedo-random order. Sometimes only one row
 #    is deleted per transaction, sometimes more than one.
 # 4. After each transaction the table data is checked to ensure it is correct
 #    and a "PRAGMA integrity_check" is executed.
-# 5. Once all the rows are deleted the file is checked to make sure it 
+# 5. Once all the rows are deleted the file is checked to make sure it
 #    consists of exactly 4 pages.
 #
-# Steps 2-5 are repeated for a few different psuedo-random delete patterns 
+# Steps 2-5 are repeated for a few different psuedo-random delete patterns
 # (defined by the $delete_orders list).
 set delete_orders [list]
 lappend delete_orders {1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20}
-lappend delete_orders {20 19 18 17 16 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1} 
+lappend delete_orders {20 19 18 17 16 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1}
 lappend delete_orders {8 18 2 4 14 11 13 3 10 7 9 5 12 17 19 15 20 6 16 1}
 lappend delete_orders {10 3 11 17 19 20 7 4 13 6 1 14 16 12 9 18 8 15 5 2}
 lappend delete_orders {{1 2 3 4 5 6 7 8 9 10} {11 12 13 14 15 16 17 18 19 20}}
 lappend delete_orders {{19 8 17 15} {16 11 9 14} {18 5 3 1} {13 20 7 2} {6 12}}
 
-# The length of each table entry. 
+# The length of each table entry.
 # set ENTRY_LEN 3500
 set ENTRY_LEN 3500
 
@@ -126,7 +126,7 @@ foreach delete_order $delete_orders {
 }
 
 #---------------------------------------------------------------------------
-# Tests cases autovacuum-2.* test that root pages are allocated 
+# Tests cases autovacuum-2.* test that root pages are allocated
 # and deallocated correctly at the start of the file. Operation is roughly as
 # follows:
 #
@@ -245,7 +245,7 @@ do_test autovacuum-2.3.5 {
 } $::av4_data
 
 # Drop all the tables in the file. This puts all pages except the first 2
-# (the sqlite_master root-page and the first pointer map page) on the 
+# (the sqlite_master root-page and the first pointer map page) on the
 # free-list.
 do_test autovacuum-2.4.1 {
   execsql {
@@ -577,7 +577,7 @@ do_test autovacuum-5.1 {
 # The problem is difficult to reproduce.  The sequence of statements in
 # the following test are carefully designed make it occur and thus to
 # verify that this very obscure bug has been resolved.
-# 
+#
 ifcapable integrityck&&memorydb {
 
 do_test autovacuum-6.1 {
@@ -606,7 +606,7 @@ do_test autovacuum-6.1 {
 #---------------------------------------------------------------------
 # Test cases autovacuum-7.X test the case where a page must be moved
 # and the destination location collides with at least one other
-# entry in the page hash-table (internal to the pager.c module. 
+# entry in the page hash-table (internal to the pager.c module.
 #
 do_test autovacuum-7.1 {
   db close
@@ -704,6 +704,6 @@ do_test autovacuum-9.5 {
   execsql { DELETE FROM t1 WHERE rowid > (SELECT max(a)/2 FROM t1) }
   file size test.db
 } $::sqlite_pending_byte
- 
+
 
 finish_test

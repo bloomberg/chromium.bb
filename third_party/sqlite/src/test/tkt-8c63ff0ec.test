@@ -8,11 +8,11 @@
 #    May you share freely, never taking more than you give.
 #
 #***********************************************************************
-# 
+#
 # Test cases to show that ticket [8c63ff0eca81a9132d8d67b31cd6ae9712a2cc6f]
 # "Incorrect query result on a UNION ALL" which was caused by using the same
 # temporary register in concurrent co-routines, as been fixed.
-# 
+#
 
 
 set testdir [file dirname $argv0]
@@ -26,7 +26,7 @@ do_execsql_test 1.1 {
   INSERT INTO t2 VALUES(2);
   CREATE TABLE t3(z);
   INSERT INTO t3 VALUES(2),(2),(2),(2);
-  
+
   SELECT a, b+c FROM t1
   UNION ALL
   SELECT x, 5 FROM t2 JOIN t3 ON z=x WHERE x=2

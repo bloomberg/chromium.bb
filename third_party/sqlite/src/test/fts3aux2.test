@@ -56,89 +56,89 @@ do_execsql_test 1.2.7 {
 } {}
 
 do_execsql_test 1.3.1 {
-  SELECT term, documents, occurrences, languageid 
+  SELECT term, documents, occurrences, languageid
   FROM terms WHERE col = '*' AND languageid=1;
 } {
-  four 1 1 1 one 1 1 1 three 1 1 1 two 1 1 1 
+  four 1 1 1 one 1 1 1 three 1 1 1 two 1 1 1
 }
 
 do_execsql_test 1.3.2 {
-  SELECT term, col, documents, occurrences, languageid 
+  SELECT term, col, documents, occurrences, languageid
   FROM terms WHERE languageid=1;
 } {
-  four * 1 1 1   four 1 1 1 1 
-  one * 1 1 1    one 0 1 1 1 
-  three * 1 1 1  three 1 1 1 1 
-  two * 1 1 1    two 0 1 1 1 
+  four * 1 1 1   four 1 1 1 1
+  one * 1 1 1    one 0 1 1 1
+  three * 1 1 1  three 1 1 1 1
+  two * 1 1 1    two 0 1 1 1
 }
 
 do_execsql_test 1.3.3 {
-  SELECT term, col, documents, occurrences, languageid 
+  SELECT term, col, documents, occurrences, languageid
   FROM terms WHERE languageid=1 AND term='zero'
 } {
 }
 
 do_execsql_test 1.3.4 {
-  SELECT term, col, documents, occurrences, languageid 
+  SELECT term, col, documents, occurrences, languageid
   FROM terms WHERE languageid='1' AND term='two'
 } {
-  two * 1 1 1    two 0 1 1 1 
+  two * 1 1 1    two 0 1 1 1
 }
 
 do_execsql_test 1.3.5 {
-  SELECT term, col, documents, occurrences, languageid 
+  SELECT term, col, documents, occurrences, languageid
   FROM terms WHERE languageid='+1' AND term>'four'
 } {
-  one * 1 1 1    one 0 1 1 1 
-  three * 1 1 1  three 1 1 1 1 
-  two * 1 1 1    two 0 1 1 1 
+  one * 1 1 1    one 0 1 1 1
+  three * 1 1 1  three 1 1 1 1
+  two * 1 1 1    two 0 1 1 1
 }
 
 do_execsql_test 1.4.1 {
-  SELECT term, documents, occurrences, languageid 
+  SELECT term, documents, occurrences, languageid
   FROM terms WHERE col = '*' AND languageid=2;
 } {
   eight 1 1 2 five 1 1 2 seven 1 1 2 six 1 1 2
 }
 
 do_execsql_test 1.4.2 {
-  SELECT term, col, documents, occurrences, languageid 
+  SELECT term, col, documents, occurrences, languageid
   FROM terms WHERE languageid=2;
 } {
-  eight * 1 1 2    eight 1 1 1 2 
-  five * 1 1 2     five 0 1 1 2 
-  seven * 1 1 2    seven 1 1 1 2 
+  eight * 1 1 2    eight 1 1 1 2
+  five * 1 1 2     five 0 1 1 2
+  seven * 1 1 2    seven 1 1 1 2
   six * 1 1 2      six 0 1 1 2
 }
 
 do_execsql_test 1.4.3 {
-  SELECT term, col, documents, occurrences, languageid 
+  SELECT term, col, documents, occurrences, languageid
   FROM terms WHERE languageid=2 AND term='five';
 } {
-  five * 1 1 2     five 0 1 1 2 
+  five * 1 1 2     five 0 1 1 2
 }
 
 do_execsql_test 1.4.4 {
-  SELECT term, col, documents, occurrences, languageid 
-  FROM terms WHERE term='five' AND languageid=2 
+  SELECT term, col, documents, occurrences, languageid
+  FROM terms WHERE term='five' AND languageid=2
 } {
-  five * 1 1 2     five 0 1 1 2 
+  five * 1 1 2     five 0 1 1 2
 }
 
 do_execsql_test 1.4.5 {
-  SELECT term, col, documents, occurrences, languageid 
+  SELECT term, col, documents, occurrences, languageid
   FROM terms WHERE term>='seven' AND languageid=2
 } {
-  seven * 1 1 2    seven 1 1 1 2 
+  seven * 1 1 2    seven 1 1 1 2
   six * 1 1 2      six 0 1 1 2
 }
 
 do_execsql_test 1.4.6 {
-  SELECT term, col, documents, occurrences, languageid 
+  SELECT term, col, documents, occurrences, languageid
   FROM terms WHERE term>='e' AND term<'seven' AND languageid=2
 } {
-  eight * 1 1 2    eight 1 1 1 2 
-  five * 1 1 2     five 0 1 1 2 
+  eight * 1 1 2    eight 1 1 1 2
+  five * 1 1 2     five 0 1 1 2
 }
 
 finish_test

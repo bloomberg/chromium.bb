@@ -10,7 +10,7 @@
 **
 *************************************************************************
 **
-** The code in this file contains sample implementations of the 
+** The code in this file contains sample implementations of the
 ** sqlite3_wsd_init() and sqlite3_wsd_find() functions required if the
 ** SQLITE_OMIT_WSD symbol is defined at build time.
 */

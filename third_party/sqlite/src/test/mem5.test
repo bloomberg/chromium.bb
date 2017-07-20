@@ -20,7 +20,7 @@ ifcapable !mem5 {
   return
 }
 
-# The tests in this file configure the lookaside allocator after a 
+# The tests in this file configure the lookaside allocator after a
 # connection is opened. This will not work if there is any "presql"
 # configured (SQL run within the [sqlite3] wrapper in tester.tcl).
 if {[info exists ::G(perm:presql)]} {

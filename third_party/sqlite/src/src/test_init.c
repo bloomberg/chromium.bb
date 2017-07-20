@@ -129,33 +129,33 @@ static void wrPCacheShutdown(void *pArg){
 
 static sqlite3_pcache *wrPCacheCreate(int a, int b, int c){
   return wrapped.pcache.xCreate(a, b, c);
-}  
+}
 static void wrPCacheCachesize(sqlite3_pcache *p, int n){
   wrapped.pcache.xCachesize(p, n);
-}  
+}
 static int wrPCachePagecount(sqlite3_pcache *p){
   return wrapped.pcache.xPagecount(p);
-}  
+}
 static sqlite3_pcache_page *wrPCacheFetch(sqlite3_pcache *p, unsigned a, int b){
   return wrapped.pcache.xFetch(p, a, b);
-}  
+}
 static void wrPCacheUnpin(sqlite3_pcache *p, sqlite3_pcache_page *a, int b){
   wrapped.pcache.xUnpin(p, a, b);
-}  
+}
 static void wrPCacheRekey(
-  sqlite3_pcache *p, 
-  sqlite3_pcache_page *a, 
-  unsigned b, 
+  sqlite3_pcache *p,
+  sqlite3_pcache_page *a,
+  unsigned b,
   unsigned c
 ){
   wrapped.pcache.xRekey(p, a, b, c);
-}  
+}
 static void wrPCacheTruncate(sqlite3_pcache *p, unsigned a){
   wrapped.pcache.xTruncate(p, a);
-}  
+}
 static void wrPCacheDestroy(sqlite3_pcache *p){
   wrapped.pcache.xDestroy(p);
-}  
+}
 
 static void installInitWrappers(void){
   sqlite3_mutex_methods mutexmethods = {
@@ -165,9 +165,9 @@ static void installInitWrappers(void){
   };
   sqlite3_pcache_methods2 pcachemethods = {
     1, 0,
-    wrPCacheInit,      wrPCacheShutdown,  wrPCacheCreate, 
+    wrPCacheInit,      wrPCacheShutdown,  wrPCacheCreate,
     wrPCacheCachesize, wrPCachePagecount, wrPCacheFetch,
-    wrPCacheUnpin,     wrPCacheRekey,     wrPCacheTruncate,  
+    wrPCacheUnpin,     wrPCacheRekey,     wrPCacheTruncate,
     wrPCacheDestroy
   };
   sqlite3_mem_methods memmethods = {

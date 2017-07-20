@@ -27,9 +27,9 @@ ifcapable !wal {finish_test ; return }
 # if the process crashes, the transaction is implicitly rolled back and
 # the rogue entries remain in the hash table.
 #
-# Normally, this causes no problem - readers can tell the difference 
+# Normally, this causes no problem - readers can tell the difference
 # between committed and uncommitted entries in the hash table. However,
-# if it happens often enough that all slots in the hash-table become 
+# if it happens often enough that all slots in the hash-table become
 # non-zero, the next process that attempts to read or write the hash
 # table falls into an infinite loop.
 #
@@ -39,7 +39,7 @@ ifcapable !wal {finish_test ; return }
 # assert() before entering the infinite loop.
 #
 # walcrash2-1.1: Create a database. Commit a transaction that adds 8 frames
-#                to the WAL (and 8 entry to the first hash-table in the 
+#                to the WAL (and 8 entry to the first hash-table in the
 #                wal-index).
 #
 # walcrash2-1.2: Have an external process open a transaction, add 8 entries
@@ -47,7 +47,7 @@ ifcapable !wal {finish_test ; return }
 #                times (so that the wal-index contains 8192 entries - all
 #                slots are non-zero).
 #
-# walcrash2-1.3: Using a new database connection, attempt to query the 
+# walcrash2-1.3: Using a new database connection, attempt to query the
 #                database. This should cause the process to go into the
 #                infinite loop.
 #
@@ -68,7 +68,7 @@ do_test walcrash2-1.1 {
     COMMIT;
   }
   file size test.db-wal
-} [wal_file_size 8 1024] 
+} [wal_file_size 8 1024]
 for {set nEntry 8} {$nEntry < 8192} {incr nEntry 8} {
   do_test walcrash2-1.2.[expr $nEntry/8] {
     set C [launch_testfixture]
@@ -84,7 +84,7 @@ for {set nEntry 8} {$nEntry < 8192} {incr nEntry 8} {
           INSERT INTO t1 SELECT * FROM t1;                -- 16 rows, 17 pages
           INSERT INTO t1 SELECT * FROM t1 LIMIT 3;        -- 20 rows, 20 pages
       }
-    } 
+    }
     close $C
     file size test.db-wal
   } [wal_file_size 16 1024]

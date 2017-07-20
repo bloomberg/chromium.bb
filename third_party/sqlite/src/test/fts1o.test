@@ -92,7 +92,7 @@ do_test fts1o-3.6 {
 } {{one three four} {one four} {one four two}}
 
 #---------------------------------------------------------------------
-# Test that it is possible to rename an fts1 table in an attached 
+# Test that it is possible to rename an fts1 table in an attached
 # database.
 #
 forcedelete test2.db test2.db-journal

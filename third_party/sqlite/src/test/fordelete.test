@@ -17,10 +17,10 @@ set testdir [file dirname $argv0]
 source $testdir/tester.tcl
 set ::testprefix fordelete
 
-# This function returns a list of the tables or indexes opened with 
-# OP_OpenWrite instructions when the SQL statement passed as the only 
+# This function returns a list of the tables or indexes opened with
+# OP_OpenWrite instructions when the SQL statement passed as the only
 # argument is executed. If the OPFLAG_FORDELETE flag is specified on
-# the OP_OpenWrite, an asterix is appended to the object name. The list 
+# the OP_OpenWrite, an asterix is appended to the object name. The list
 # is sorted in [lsort] order before it is returned.
 #
 proc analyze_delete_program {sql} {
@@ -30,7 +30,7 @@ proc analyze_delete_program {sql} {
   } {
     set T($rootpage) $name
   }
-  
+
   # For each OpenWrite instruction generated for the proposed DELETE
   # statement, add the following array entries:
   #
@@ -48,7 +48,7 @@ proc analyze_delete_program {sql} {
 
       set obj $T($root)
       set O($obj) ""
-      if {"0x$R(p5)" & 0x08} { 
+      if {"0x$R(p5)" & 0x08} {
         set O($obj) *
       } else {
         set O($obj) ""
@@ -114,7 +114,7 @@ foreach {tn sql res} {
 #
 #   0x01 0x00
 #
-# is interpreted by OP_Column as a vector of NULL values (assuming the 
+# is interpreted by OP_Column as a vector of NULL values (assuming the
 # default column values are NULL). Also test that:
 #
 #   0x00
@@ -128,7 +128,7 @@ do_execsql_test 3.0 {
 
 do_test 3.1 {
   set root [db one { SELECT rootpage FROM sqlite_master WHERE name = 'x1' }]
-  db eval { 
+  db eval {
     BEGIN IMMEDIATE;
   }
   set bt [btree_from_db db]
@@ -144,7 +144,7 @@ do_test 3.1 {
 
 do_test 3.2 {
   set root [db one { SELECT rootpage FROM sqlite_master WHERE name = 'x2' }]
-  db eval { 
+  db eval {
     BEGIN IMMEDIATE;
   }
   set bt [btree_from_db db]
@@ -161,7 +161,7 @@ do_test 3.2 {
 
 #-------------------------------------------------------------------------
 #
-reset_db 
+reset_db
 do_execsql_test 4.0 {
   CREATE TABLE log(x);
   CREATE TABLE p1(one PRIMARY KEY, two);
@@ -179,7 +179,7 @@ do_execsql_test 4.1 {
   CREATE TABLE tbl(a PRIMARY KEY, b, c);
   CREATE TABLE log(a, b, c);
   INSERT INTO "tbl" VALUES(1,2,3);
-  CREATE TRIGGER the_trigger BEFORE DELETE ON tbl BEGIN 
+  CREATE TRIGGER the_trigger BEFORE DELETE ON tbl BEGIN
     INSERT INTO log VALUES(1, 2,3);
   END;
   COMMIT;

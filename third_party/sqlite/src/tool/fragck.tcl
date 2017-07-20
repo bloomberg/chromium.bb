@@ -35,7 +35,7 @@ set DB [btree_open [lindex $argv 0] 1000 0]
 # The first argument is the name of an array variable that exists in
 # the scope of the caller. If the third argument is non-zero, then
 # info is returned for the page that lies $up entries upwards in the
-# tree-structure. (i.e. $up==1 returns the parent page, $up==2 the 
+# tree-structure. (i.e. $up==1 returns the parent page, $up==2 the
 # grandparent etc.)
 #
 # The following entries in that array are filled in with information retrieved
@@ -51,7 +51,7 @@ set DB [btree_open [lindex $argv 0] 1000 0]
 #   $arrayvar(header_bytes)        =  Header size in bytes
 #   $arrayvar(local_payload_bytes) =  Local payload size
 #   $arrayvar(parent)              =  Parent page number
-# 
+#
 proc cursor_info {arrayvar csr {up 0}} {
   upvar $arrayvar a
   foreach [list a(page_no) \
@@ -94,16 +94,16 @@ if {$objname=="sqlite_master"} {
   if {![string is integer -strict $rootpage]} {
     puts stderr "invalid root page for $objname: $rootpage"
     exit 1
-  } 
+  }
 }
 
 # The cursor $csr is pointing to an entry.  Print out information
 # about the page that $up levels above that page that contains
 # the entry.  If $up==0 use the page that contains the entry.
-# 
+#
 # If information about the page has been printed already, then
 # this is a no-op.
-# 
+#
 proc page_info {csr up} {
   global seen
   cursor_info ci $csr $up
@@ -130,10 +130,10 @@ proc page_info {csr up} {
   # print the results
   #
   puts [format {LEVEL %d:  %6d} $depth $pg]
-}  
+}
 
-  
-  
+
+
 
 # Loop through the object and print out page numbers
 #

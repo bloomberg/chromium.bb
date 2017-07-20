@@ -41,7 +41,7 @@ do_test 1.1 {
 #   1. Restores the db to the state it was in following test case 1.0
 #   2. Opens an RBU vacuum and steps it $n times.
 #   3. Closes the RBU vacuum handled opened in (2).
-#   4. Opens a second RBU vacuum handle, resumes and completes the vacuum op. 
+#   4. Opens a second RBU vacuum handle, resumes and completes the vacuum op.
 #
 # The loop runs until $n is large enough that step (2) vacuums the entire
 # database.
@@ -65,7 +65,7 @@ for {set n 1} {$n < 5000} {incr n} {
 
   do_test 1.2.$n.2 {
     sqlite3 db2 test.db
-    db2 eval { 
+    db2 eval {
       SELECT count(*) FROM t1;
       PRAGMA integrity_check;
     }
@@ -79,7 +79,7 @@ for {set n 1} {$n < 5000} {incr n} {
 #   2. Opens an RBU vacuum and steps it $n times.
 #   3. Takes a copy of all database files and the state db.
 #   4. Opens a second RBU vacuum handle on the copy, resumes and completes the
-#      vacuum op. 
+#      vacuum op.
 #
 # The loop runs until $n is large enough that step (2) vacuums the entire
 # database.
@@ -116,7 +116,7 @@ for {set n 1} {$n < 5000} {incr n} {
 
   do_test 1.3.$n.2 {
     sqlite3 db2 test.db2
-    db2 eval { 
+    db2 eval {
       SELECT count(*) FROM t1;
       PRAGMA integrity_check;
     }
@@ -131,7 +131,7 @@ for {set n 1} {$n < 5000} {incr n} {
 #   2. Opens an RBU vacuum and steps it $n times.
 #   3. Takes a copy of all database files and the state db.
 #   4. Opens a second RBU vacuum handle on the copy, resumes and completes the
-#      vacuum op. 
+#      vacuum op.
 #
 # The loop runs until $n is large enough that step (3) vacuums the entire
 # database.
@@ -175,7 +175,7 @@ for {set n 1} {$n < 5000} {incr n} {
 
   do_test 1.4.$n.2 {
     sqlite3 db2 test.db2
-    db2 eval { 
+    db2 eval {
       SELECT count(*) FROM t1;
       PRAGMA integrity_check;
     }
@@ -191,7 +191,7 @@ do_test 2.0 {
     WITH s(i) AS (
         VALUES(1) UNION ALL SELECT i+1 FROM s WHERE i<10
     )
-    INSERT INTO data_t1 
+    INSERT INTO data_t1
       SELECT randomblob(50), randomblob(75), randomblob(100), 0 FROM s;
   }
   db2 close
@@ -242,7 +242,7 @@ for {set n 1} {$n < 5000} {incr n} {
 
   do_test 2.$n.2 {
     sqlite3 db2 test.db2
-    db2 eval { 
+    db2 eval {
       SELECT count(*) FROM t1;
       PRAGMA integrity_check;
     }

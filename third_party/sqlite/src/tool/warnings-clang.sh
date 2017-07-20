@@ -1,6 +1,6 @@
 #/bin/sh
 #
-# Run this script in a directory with a working makefile to check for 
+# Run this script in a directory with a working makefile to check for
 # compiler warnings in SQLite.
 #
 rm -f sqlite3.c

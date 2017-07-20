@@ -22,7 +22,7 @@
 ** thereby avoiding a recompile of SQLite.
 **
 **
-** This source file demonstrates how to use SQLite to create an SQL database 
+** This source file demonstrates how to use SQLite to create an SQL database
 ** server thread in a multiple-threaded program.  One or more client threads
 ** send messages to the server thread and the server thread processes those
 ** messages in the order received and returns the results to the client.
@@ -38,7 +38,7 @@
 **         and used within the server thread.  Client calls to the database
 **         can be made from multiple threads (though not at the same time!)
 **
-**    (2)  Beginning with SQLite version 3.3.0, when two or more 
+**    (2)  Beginning with SQLite version 3.3.0, when two or more
 **         connections to the same database occur within the same thread,
 **         they can optionally share their database cache.  This reduces
 **         I/O and memory requirements.  Cache shared is controlled using
@@ -63,7 +63,7 @@
 **
 ** Note:  The extra features of version 3.3.0 described by points (2)
 ** through (4) above are only available if you compile without the
-** option -DSQLITE_OMIT_SHARED_CACHE. 
+** option -DSQLITE_OMIT_SHARED_CACHE.
 **
 ** Here is how the client/server approach works:  The database server
 ** thread is started on this procedure:
@@ -215,7 +215,7 @@
 #include "sqlite3.h"
 
 /*
-** Messages are passed from client to server and back again as 
+** Messages are passed from client to server and back again as
 ** instances of the following structure.
 */
 typedef struct SqlMessage SqlMessage;
@@ -266,7 +266,7 @@ static struct ServerState {
 ** Send a message to the server.  Block until we get a reply.
 **
 ** The mutex and condition variable in the message are uninitialized
-** when this routine is called.  This routine takes care of 
+** when this routine is called.  This routine takes care of
 ** initializing them and destroying them when it has finished.
 */
 static void sendToServer(SqlMessage *pMsg){
@@ -315,7 +315,7 @@ static void sendToServer(SqlMessage *pMsg){
 **        sqlite3_finalize
 **        sqlite3_close
 **
-** Clients should use the following client-side routines instead of 
+** Clients should use the following client-side routines instead of
 ** the core routines above.
 **
 **        sqlite3_client_open
@@ -486,7 +486,7 @@ static void *serverWrapper(void *pnDecr){
 /*
 ** This function is the similar to sqlite3_server_start(), except that
 ** the integer pointed to by the first argument is decremented when
-** the server thread exits. 
+** the server thread exits.
 */
 void sqlite3_server_start2(int *pnDecr){
   pthread_t x;

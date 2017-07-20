@@ -25,10 +25,10 @@ BCC = gcc -g -O2
 #### If the target operating system supports the "usleep()" system
 #    call, then define the HAVE_USLEEP macro for all C modules.
 #
-#USLEEP = 
+#USLEEP =
 USLEEP = -DHAVE_USLEEP=1
 
-#### If you want the SQLite library to be safe for use within a 
+#### If you want the SQLite library to be safe for use within a
 #    multi-threaded program, then define the following macro
 #    appropriately:
 #
@@ -39,7 +39,7 @@ THREADSAFE = -DTHREADSAFE=1
 #    thread safe
 #
 THREADLIB = -lpthread
-#THREADLIB = 
+#THREADLIB =
 
 #### Specify any extra libraries needed to access required functions.
 #
@@ -49,14 +49,14 @@ TLIBS = -ldl
 #### Leave SQLITE_DEBUG undefined for maximum speed.  Use SQLITE_DEBUG=1
 #    to check for memory leaks.  Use SQLITE_DEBUG=2 to print a log of all
 #    malloc()s and free()s in order to track down memory leaks.
-#    
+#
 #    SQLite uses some expensive assert() statements in the inner loop.
 #    You can make the library go almost twice as fast if you compile
 #    with -DNDEBUG=1
 #
 #OPTS = -DSQLITE_DEBUG=2
 #OPTS = -DSQLITE_DEBUG=1
-#OPTS = 
+#OPTS =
 OPTS = -DNDEBUG=1
 #OPTS += -DHAVE_FDATASYNC=1
 
@@ -90,7 +90,7 @@ endif
 #EXE = .exe
 EXE =
 
-#### C Compile and options for use in building executables that 
+#### C Compile and options for use in building executables that
 #    will run on the target platform.  This is usually the same
 #    as BCC, unless you are cross-compiling.
 #

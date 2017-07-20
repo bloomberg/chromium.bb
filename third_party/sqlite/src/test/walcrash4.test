@@ -21,9 +21,9 @@ do_not_use_codec
 
 #-------------------------------------------------------------------------
 # At one point, if "PRAGMA synchronous=full" is set and the platform
-# does not support POWERSAFE_OVERWRITE, and the last frame written to 
+# does not support POWERSAFE_OVERWRITE, and the last frame written to
 # the wal file in a transaction is aligned with a sector boundary, the
-# xSync() call was omitted. 
+# xSync() call was omitted.
 #
 # The following test verifies that this has been fixed.
 #
@@ -48,7 +48,7 @@ for {set nExtra 0} {$nExtra < 10} {incr nExtra} {
   for {set i 0} {$i < 10} {incr i} {
     do_test 1.nExtra=$nExtra.i=$i.1 {
       faultsim_restore_and_reopen
-    
+
       set fd [open crash.tcl w]
       puts $fd [subst -nocommands {
         sqlite3_crash_enable 1
@@ -69,16 +69,16 @@ for {set nExtra 0} {$nExtra < 10} {incr nExtra} {
         sqlite3_crash_now
       }]
       close $fd
-    
+
       set r [catch { exec [info nameofexec] crash.tcl >@stdout } msg]
       list $r $msg
     } "1 {$msg}"
-  
-    do_execsql_test 1.nExtra=$nExtra.i=$i.2 { 
+
+    do_execsql_test 1.nExtra=$nExtra.i=$i.2 {
       SELECT count(*) FROM t1;
       PRAGMA integrity_check;
     } {1 ok}
-  } 
+  }
 }
 
 

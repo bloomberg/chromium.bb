@@ -73,7 +73,7 @@ ifcapable {utf16} {
   do_test misuse-1.4 {
     catchsql2 {
        SELECT x_sqlite_exec('SELECT * FROM t1') AS xyz;
-    } 
+    }
   } {0 {xyz {1 2}}}
 }
 do_test misuse-1.5 {

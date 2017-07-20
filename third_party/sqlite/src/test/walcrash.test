@@ -10,18 +10,18 @@
 #***********************************************************************
 # This file implements regression tests for SQLite library.  The
 # focus of this file is testing the operation of the library when
-# recovering a database following a simulated system failure in 
+# recovering a database following a simulated system failure in
 # "PRAGMA journal_mode=WAL" mode.
 #
 
 #
-# These are 'warm-body' tests of database recovery used while developing 
+# These are 'warm-body' tests of database recovery used while developing
 # the WAL code. They serve to prove that a few really simple cases work:
 #
 # walcrash-1.*: Recover a database.
 # walcrash-2.*: Recover a database where the failed transaction spanned more
 #               than one page.
-# walcrash-3.*: Recover multiple databases where the failed transaction 
+# walcrash-3.*: Recover multiple databases where the failed transaction
 #               was a multi-file transaction.
 #
 
@@ -53,7 +53,7 @@ for {set i 1} {$i < $REPEATS} {incr i} {
   } {1}
   integrity_check walcrash-1.$i.3
   db close
-  
+
   do_test walcrash-1.$i.4 {
     crashsql -delay 2 -file test.db-wal -seed [incr seed] {
       INSERT INTO t1 VALUES(4, (SELECT sum(a) FROM t1) + 4);
@@ -90,7 +90,7 @@ for {set i 1} {$i < $REPEATS} {incr i} {
   } {1}
   integrity_check walcrash-2.$i.3
   db close
-  
+
   do_test walcrash-2.$i.4 {
     crashsql -delay 2 -file test.db-wal -seed [incr seed] {
       INSERT INTO t1 VALUES(6, (SELECT sum(a) FROM t1) + 6);
@@ -113,7 +113,7 @@ for {set i 1} {$i < $REPEATS} {incr i} {
 # for {set i 1} {$i < $REPEATS} {incr i} {
 #   forcedelete test.db test.db-wal
 #   forcedelete test2.db test2.db-wal
-# 
+#
 #   do_test walcrash-3.$i.1 {
 #     crashsql -delay 2 -file test2.db-wal -seed [incr seed] {
 #       PRAGMA journal_mode = WAL;
@@ -126,17 +126,17 @@ for {set i 1} {$i < $REPEATS} {incr i} {
 #       COMMIT;
 #     }
 #   } {1 {child process exited abnormally}}
-# 
+#
 #   do_test walcrash-3.$i.2 {
 #     sqlite3_wal db test.db
-#     execsql { 
+#     execsql {
 #       ATTACH 'test2.db' AS aux;
 #       SELECT * FROM t1 EXCEPT SELECT * FROM t2;
 #     }
 #   } {}
 #   do_test walcrash-3.$i.3 { execsql { PRAGMA main.integrity_check } } {ok}
 #   do_test walcrash-3.$i.4 { execsql { PRAGMA aux.integrity_check  } } {ok}
-# 
+#
 #   db close
 # }
 
@@ -158,7 +158,7 @@ for {set i 1} {$i < $REPEATS} {incr i} {
 
   do_test walcrash-4.$i.2 {
     sqlite3 db test.db
-    execsql { 
+    execsql {
       SELECT * FROM t1 WHERE a = 1;
     }
   } {1 2}
@@ -257,7 +257,7 @@ for {set i 1} {$i < $REPEATS} {incr i} {
 # case because it means the content of page 1 may be damaged. SQLite will
 # have to determine:
 #
-#   (a) that the database is a WAL database, and 
+#   (a) that the database is a WAL database, and
 #   (b) the database page-size
 #
 # based on the log file.

@@ -26,8 +26,8 @@ set today [clock format [clock seconds] -format "%Y-%m-%d %H:%M:%S UTC" -gmt 1]
 puts $out [subst \
 {/******************************************************************************
 ** This file is an amalgamation of separate C source files from the SQLite
-** Full Text Search extension 2 (fts3).  By combining all the individual C 
-** code  files into this single large file, the entire code can be compiled 
+** Full Text Search extension 2 (fts3).  By combining all the individual C
+** code  files into this single large file, the entire code can be compiled
 ** as a one translation unit.  This allows many compilers to do optimizations
 ** that would not be possible if the files were compiled separately.  It also
 ** makes the code easier to import into other projects.
@@ -35,7 +35,7 @@ puts $out [subst \
 ** This amalgamation was generated on $today.
 */}]
 
-# These are the header files used by FTS3.  The first time any of these 
+# These are the header files used by FTS3.  The first time any of these
 # files are seen in a #include statement in the C code, include the complete
 # text of the file in-line.  The file only needs to be included once.
 #

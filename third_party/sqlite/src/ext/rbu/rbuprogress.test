@@ -16,7 +16,7 @@ set ::testprefix rbuprogress
 
 proc create_db_file {filename sql} {
   forcedelete $filename
-  sqlite3 tmpdb $filename  
+  sqlite3 tmpdb $filename
   tmpdb eval $sql
   tmpdb close
 }
@@ -81,7 +81,7 @@ proc do_sp_test {tn bReopen target rbu reslist} {
     }
 
     # One step to clean up the temporary tables used to update the only
-    # target table in the rbu database. And one more to move the *-oal 
+    # target table in the rbu database. And one more to move the *-oal
     # file to *-wal. After each of these steps, the progress remains
     # at "10000 0".
     #
@@ -102,7 +102,7 @@ proc do_sp_test {tn bReopen target rbu reslist} {
     }
 
     # Do the checkpoint.
-    while {[rbu step]=="SQLITE_OK"} { 
+    while {[rbu step]=="SQLITE_OK"} {
       foreach {a b} [rbu bp_progress] {}
       if {[set a]!=10000 || [set b]<=0 || [set b]>10000} {
         rbu close
@@ -130,23 +130,23 @@ foreach {bReopen} { 0 1 } {
       CREATE TABLE data_t1(a, b, c, rbu_control);
       INSERT INTO data_t1 VALUES(4, 4, 4, 0);
       INSERT INTO data_t1 VALUES(5, 5, 5, 0);
-  
+
       CREATE TABLE rbu_count(tbl, cnt);
       INSERT INTO rbu_count VALUES('data_t1', 2);
     }
   } {}
   do_sp_test 2.$bReopen.1.1 $bReopen test.db rbu.db {5000 10000}
-  
+
   reset_db
   do_test 2.$bReopen.2.0 {
     execsql { CREATE TABLE t1(a INTEGER PRIMARY KEY, b, c) }
     create_rbu1 rbu.db
   } {rbu.db}
   do_sp_test 2.$bReopen.2.1 $bReopen test.db rbu.db {3333 6666 10000}
-  
+
   reset_db
   do_test 2.$bReopen.3.0 {
-    execsql { 
+    execsql {
       CREATE TABLE t1(a INTEGER PRIMARY KEY, b, c);
       CREATE INDEX i1 ON t1(b);
       INSERT INTO t1 VALUES(1, 1, 1);
@@ -158,16 +158,16 @@ foreach {bReopen} { 0 1 } {
       INSERT INTO data_t1 VALUES(4, 4, 4, 0);
       INSERT INTO data_t1 VALUES(2, NULL, NULL, 1);
       INSERT INTO data_t1 VALUES(5, NULL, NULL, 1);
-  
+
       CREATE TABLE rbu_count(tbl, cnt);
       INSERT INTO rbu_count VALUES('data_t1', 3);
     }
   } {}
   do_sp_test 2.$bReopen.3.1 $bReopen test.db rbu.db {1666 3333 6000 8000 10000}
-  
+
   reset_db
   do_test 2.$bReopen.4.0 {
-    execsql { 
+    execsql {
       CREATE TABLE t1(a INTEGER PRIMARY KEY, b, c);
       CREATE INDEX i1 ON t1(b);
       INSERT INTO t1 VALUES(1, 1, 1);
@@ -177,16 +177,16 @@ foreach {bReopen} { 0 1 } {
     create_db_file rbu.db {
       CREATE TABLE data_t1(a, b, c, rbu_control);
       INSERT INTO data_t1 VALUES(2, 4, 4, '.xx');
-  
+
       CREATE TABLE rbu_count(tbl, cnt);
       INSERT INTO rbu_count VALUES('data_t1', 1);
     }
   } {}
   do_sp_test 2.$bReopen.4.1 $bReopen test.db rbu.db {3333 6666 10000}
-  
+
   reset_db
   do_test 2.$bReopen.5.0 {
-    execsql { 
+    execsql {
       CREATE TABLE t1(a INTEGER PRIMARY KEY, b, c);
       CREATE INDEX i1 ON t1(b);
       INSERT INTO t1 VALUES(1, 1, 1);
@@ -196,7 +196,7 @@ foreach {bReopen} { 0 1 } {
     create_db_file rbu.db {
       CREATE TABLE data_t1(a, b, c, rbu_control);
       INSERT INTO data_t1 VALUES(4, NULL, 4, '.xx');
-  
+
       CREATE TABLE rbu_count(tbl, cnt);
       INSERT INTO rbu_count VALUES('data_t1', 1);
     }
@@ -205,7 +205,7 @@ foreach {bReopen} { 0 1 } {
 
   reset_db
   do_test 2.$bReopen.6.0 {
-    execsql { 
+    execsql {
       CREATE TABLE t1(a INTEGER PRIMARY KEY, b, c);
       CREATE INDEX i1 ON t1(b);
       INSERT INTO t1 VALUES(1, 1, 1);
@@ -231,7 +231,7 @@ proc do_phase2_test {tn bReopen target rbu nStep} {
 
     # Build the OAL/WAL file:
     sqlite3rbu rbu $target $rbu
-    while {[lindex [rbu bp_progress] 0]<10000} { 
+    while {[lindex [rbu bp_progress] 0]<10000} {
       set rc [rbu step]
       if {"SQLITE_OK" != [set rc]} { rbu close }
     }
@@ -255,7 +255,7 @@ proc do_phase2_test {tn bReopen target rbu nStep} {
 
     set rc [rbu step]
     if {[set rc] != "SQLITE_DONE"} {
-      error "Have [set rc], expected SQLITE_DONE" 
+      error "Have [set rc], expected SQLITE_DONE"
     }
 
     rbu close
@@ -280,7 +280,7 @@ foreach bReopen {0 1} {
       INSERT INTO data_t2 VALUES(1, 2, 0);
       INSERT INTO data_t3 VALUES(1, 2, 0);
       INSERT INTO data_t4 VALUES(1, 2, 0);
-  
+
       CREATE TABLE rbu_count(tbl, cnt);
       INSERT INTO rbu_count VALUES('data_t1', 1);
       INSERT INTO rbu_count VALUES('data_t2', 1);
@@ -305,8 +305,8 @@ foreach {bReopen} { 0 1 } {
         INSERT INTO data0_t1 VALUES(15, 15, 15, 0);
         INSERT INTO data0_t1 VALUES(20, 20, 20, 0);
         CREATE TABLE rbu_count(tbl, cnt);
-        INSERT INTO rbu_count VALUES('data0_t1', 2); 
-      } 
+        INSERT INTO rbu_count VALUES('data0_t1', 2);
+      }
       {2500 5000 7500 10000}
       {1666 3333 5000 6666 8333 10000}
 
@@ -314,8 +314,8 @@ foreach {bReopen} { 0 1 } {
         CREATE TABLE data0_t1(a, b, c, rbu_control);
         INSERT INTO data0_t1 VALUES(10, 10, 10, 2);
         CREATE TABLE rbu_count(tbl, cnt);
-        INSERT INTO rbu_count VALUES('data0_t1', 1); 
-      } 
+        INSERT INTO rbu_count VALUES('data0_t1', 1);
+      }
       {3333 6666 10000}
       {2000 4000 6000 8000 10000}
 
@@ -324,8 +324,8 @@ foreach {bReopen} { 0 1 } {
         INSERT INTO data0_t1 VALUES(7, 7, 7, 2);
         INSERT INTO data0_t1 VALUES(10, 10, 10, 2);
         CREATE TABLE rbu_count(tbl, cnt);
-        INSERT INTO rbu_count VALUES('data0_t1', 2); 
-      } 
+        INSERT INTO rbu_count VALUES('data0_t1', 2);
+      }
       {2500 4000 6000 8000 10000}
       {1666 2500 3750 5000 6250 7500 8750 10000}
 
@@ -352,11 +352,11 @@ foreach {bReopen} { 0 1 } {
 
 foreach {bReopen} { 0 1 } {
   foreach {tn tbl} {
-    nopk { 
+    nopk {
       CREATE TABLE t1(a, b, c);
       CREATE INDEX t1c ON t1(c);
     }
-    vtab { 
+    vtab {
       CREATE VIRTUAL TABLE t1 USING fts5(a, b, c);
     }
   } {
@@ -369,8 +369,8 @@ foreach {bReopen} { 0 1 } {
         INSERT INTO data0_t1 VALUES(15, 15, 15, 4, 0);
         INSERT INTO data0_t1 VALUES(20, 20, 20, 5, 0);
         CREATE TABLE rbu_count(tbl, cnt);
-        INSERT INTO rbu_count VALUES('data0_t1', 2); 
-      } 
+        INSERT INTO rbu_count VALUES('data0_t1', 2);
+      }
       {2500 5000 7500 10000}
       {5000 10000}
 
@@ -379,8 +379,8 @@ foreach {bReopen} { 0 1 } {
         INSERT INTO data0_t1 VALUES(0, 7, 7, 7, 2);
         INSERT INTO data0_t1 VALUES(2, 10, 10, 10, 2);
         CREATE TABLE rbu_count(tbl, cnt);
-        INSERT INTO rbu_count VALUES('data0_t1', 2); 
-      } 
+        INSERT INTO rbu_count VALUES('data0_t1', 2);
+      }
       {2500 4000 6000 8000 10000}
       {5000 10000}
 
@@ -389,8 +389,8 @@ foreach {bReopen} { 0 1 } {
         INSERT INTO data0_t1 VALUES(1, NULL, NULL, NULL, 1);
         INSERT INTO data0_t1 VALUES(2, NULL, NULL, 7, '..x');
         CREATE TABLE rbu_count(tbl, cnt);
-        INSERT INTO rbu_count VALUES('data0_t1', 2); 
-      } 
+        INSERT INTO rbu_count VALUES('data0_t1', 2);
+      }
       {2500 4000 6000 8000 10000}
       {5000 10000}
     } {

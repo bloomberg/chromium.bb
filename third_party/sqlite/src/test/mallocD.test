@@ -27,12 +27,12 @@ db close
 sqlite3_simulate_device -char atomic
 sqlite3 db test.db -vfs devsym
 
-set PREP { 
+set PREP {
   PRAGMA page_size = 1024;
   CREATE TABLE abc(a, b, c);
 }
 
-do_malloc_test mallocD-1 -sqlprep $PREP -sqlbody { 
+do_malloc_test mallocD-1 -sqlprep $PREP -sqlbody {
   INSERT INTO abc VALUES(1, 2, 3);
 }
 

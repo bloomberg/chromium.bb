@@ -8,7 +8,7 @@
 #    May you share freely, never taking more than you give.
 #
 #***********************************************************************
-# 
+#
 # This file implements tests for the REGEXP operator in ext/misc/regexp.c.
 # It focuses on the use of the sqlite3_set_auxdata()/get_auxdata() APIs.
 #
@@ -102,7 +102,7 @@ do_execsql_test 2.3 {
 } {1 a_abc_1 2 a_abc_1 1 a_abc_1 2 a_abc_1 1 a_abc_1 2 a_abc_1}
 
 #-------------------------------------------------------------------------
-# Test that trigger parameters (i.e. new.* and old.*) refs are not 
+# Test that trigger parameters (i.e. new.* and old.*) refs are not
 # considered to be constant across separate invocations of the trigger.
 #
 do_execsql_test 3.0 {

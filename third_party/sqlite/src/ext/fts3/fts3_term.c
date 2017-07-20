@@ -11,8 +11,8 @@
 ******************************************************************************
 **
 ** This file is not part of the production FTS code. It is only used for
-** testing. It contains a virtual table implementation that provides direct 
-** access to the full-text index of an FTS table. 
+** testing. It contains a virtual table implementation that provides direct
+** access to the full-text index of an FTS table.
 */
 
 #include "fts3Int.h"
@@ -87,7 +87,7 @@ static int fts3termConnectMethod(
     return SQLITE_ERROR;
   }
 
-  zDb = argv[1]; 
+  zDb = argv[1];
   nDb = (int)strlen(zDb);
   zFts3 = argv[3];
   nFts3 = (int)strlen(zFts3);
@@ -142,7 +142,7 @@ static int fts3termDisconnectMethod(sqlite3_vtab *pVtab){
 ** xBestIndex - Analyze a WHERE and ORDER BY clause.
 */
 static int fts3termBestIndexMethod(
-  sqlite3_vtab *pVTab, 
+  sqlite3_vtab *pVTab,
   sqlite3_index_info *pInfo
 ){
   UNUSED_PARAMETER(pVTab);
@@ -203,7 +203,7 @@ static int fts3termNextMethod(sqlite3_vtab_cursor *pCursor){
   pCsr->iRowid++;
 
   /* Advance to the next term in the full-text index. */
-  if( pCsr->csr.aDoclist==0 
+  if( pCsr->csr.aDoclist==0
    || pCsr->pNext>=&pCsr->csr.aDoclist[pCsr->csr.nDoclist-1]
   ){
     rc = sqlite3Fts3SegReaderStep(pFts3, &pCsr->csr);

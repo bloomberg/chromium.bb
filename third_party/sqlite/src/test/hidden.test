@@ -51,20 +51,20 @@ foreach {tn view} {
   do_execsql_test 2.$tn.2 {
     SELECT a, b, __hidden__c FROM v1;
   } {1 2 3}
-  
+
   do_execsql_test 2.$tn.3 {
     SELECT * FROM v1;
   } {1 2}
-  
+
   do_execsql_test 2.$tn.4 {
     CREATE TRIGGER tr1 INSTEAD OF INSERT ON v1 BEGIN
       INSERT INTO x1 VALUES(new.a, new.b, new.__hidden__c);
     END;
-  
+
     INSERT INTO v1 VALUES(4, 5);
     SELECT * FROM x1;
   } {1 2 3 4 5 {}}
-  
+
   do_execsql_test 2.$tn.5 {
     INSERT INTO v1(a, b, __hidden__c) VALUES(7, 8, 9);
     SELECT * FROM x1;

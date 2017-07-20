@@ -22,7 +22,7 @@ proc finish_test {} {}
 #
 set TIMEOUT 3600
 
-# Process command-line arguments. 
+# Process command-line arguments.
 #
 if {[llength $argv]>0} {
   foreach {name value} $argv {
@@ -42,9 +42,9 @@ set argv [list]
 # Test plan:
 #
 # The general principle is to run those SQLite tests that use
-# pseudo-random data in some way over and over again for a very 
-# long time. The number of tests run depends on the value of 
-# global variable $TIMEOUT - tests are run for at least $TIMEOUT 
+# pseudo-random data in some way over and over again for a very
+# long time. The number of tests run depends on the value of
+# global variable $TIMEOUT - tests are run for at least $TIMEOUT
 # seconds.
 #
 #   fuzz.test     (pseudo-random SQL statements)
@@ -52,7 +52,7 @@ set argv [list]
 #   fuzz_malloc.test
 #   corruptC.test (pseudo-random corruption to a database)
 #
-# Many database changes maintaining some kind of invariant. 
+# Many database changes maintaining some kind of invariant.
 # Storing checksums etc.
 #
 

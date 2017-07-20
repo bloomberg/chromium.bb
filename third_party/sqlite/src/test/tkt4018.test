@@ -11,7 +11,7 @@
 # This file implements regression tests for SQLite library.
 #
 # This file implements tests to verify that ticket #4018 has been
-# fixed.  
+# fixed.
 #
 
 set testdir [file dirname $argv0]
@@ -29,7 +29,7 @@ proc testsql {sql} {
     exit
   }]
   close $fd
-  set fd [open "| [info nameofexec] ./tf_main.tcl" r] 
+  set fd [open "| [info nameofexec] ./tf_main.tcl" r]
   set res [read $fd]
   close $fd
   return $res
@@ -67,7 +67,7 @@ do_test tkt4018-1.4 {
   testsql {INSERT INTO t1 VALUES(3, 4)}
 } {0 {}}
 
-# Check that reusing a file descriptor cannot change a read-only 
+# Check that reusing a file descriptor cannot change a read-only
 # connection into a read-write connection.
 do_test tkt4018-2.1 {
   sqlite3 db2 test.db

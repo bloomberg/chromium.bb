@@ -149,7 +149,7 @@ proc record_sizes {rootpage} {
 }
 
 
-# Create a table and insert some 1-byte integers. Make sure they 
+# Create a table and insert some 1-byte integers. Make sure they
 # can be read back OK. These should be 3 byte records.
 do_test types-2.1.1 {
   execsql {
@@ -217,7 +217,7 @@ ifcapable legacyformat {
     record_sizes $root
   } {2 3 3 4 4 6 6 10 10}
 }
-  
+
 # Insert some reals. These should be 10 byte records.
 do_test types-2.2.1 {
   execsql {
@@ -245,7 +245,7 @@ ifcapable legacyformat {
     record_sizes $root
   } {2 10 10}
 }
-  
+
 # Insert a NULL. This should be a two byte record.
 do_test types-2.3.1 {
   execsql {

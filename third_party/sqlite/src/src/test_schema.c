@@ -191,7 +191,7 @@ static int schemaNext(sqlite3_vtab_cursor *cur){
         goto next_exit;
       }
 
-      /* Set zSql to the SQL to pull the list of tables from the 
+      /* Set zSql to the SQL to pull the list of tables from the
       ** sqlite_master (or sqlite_temp_master) table of the database
       ** identified by the row pointed to by the SQL statement pCur->pDbList
       ** (iterating through a "PRAGMA database_list;" statement).
@@ -221,7 +221,7 @@ static int schemaNext(sqlite3_vtab_cursor *cur){
     ** identified by the rows pointed to by statements pCur->pDbList and
     ** pCur->pTableList.
     */
-    zSql = sqlite3_mprintf("PRAGMA %Q.table_info(%Q)", 
+    zSql = sqlite3_mprintf("PRAGMA %Q.table_info(%Q)",
         sqlite3_column_text(pCur->pDbList, 1),
         sqlite3_column_text(pCur->pTableList, 0)
     );
@@ -245,7 +245,7 @@ next_exit:
 ** Reset a schema table cursor.
 */
 static int schemaFilter(
-  sqlite3_vtab_cursor *pVtabCursor, 
+  sqlite3_vtab_cursor *pVtabCursor,
   int idxNum, const char *idxStr,
   int argc, sqlite3_value **argv
 ){
@@ -337,7 +337,7 @@ int Sqlitetestschema_Init(Tcl_Interp *interp){
   };
   int i;
   for(i=0; i<sizeof(aObjCmd)/sizeof(aObjCmd[0]); i++){
-    Tcl_CreateObjCommand(interp, aObjCmd[i].zName, 
+    Tcl_CreateObjCommand(interp, aObjCmd[i].zName,
         aObjCmd[i].xProc, aObjCmd[i].clientData, 0);
   }
   return TCL_OK;
@@ -352,8 +352,8 @@ int Sqlitetestschema_Init(Tcl_Interp *interp){
 __declspec(dllexport)
 #endif
 int sqlite3_schema_init(
-  sqlite3 *db, 
-  char **pzErrMsg, 
+  sqlite3 *db,
+  char **pzErrMsg,
   const sqlite3_api_routines *pApi
 ){
   SQLITE_EXTENSION_INIT2(pApi);

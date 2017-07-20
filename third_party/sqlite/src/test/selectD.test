@@ -37,7 +37,7 @@ for {set i 1} {$i<=2} {incr i} {
     db eval {
       SELECT *
         FROM (t1), (t2), (t3), (t4)
-       WHERE t4.a=t3.a+111 
+       WHERE t4.a=t3.a+111
          AND t3.a=t2.a+111
          AND t2.a=t1.a+111;
     }
@@ -154,7 +154,7 @@ for {set i 1} {$i<=2} {incr i} {
 
 # The following test was added on 2013-04-24 in order to verify that
 # the datatypes and affinities of sub-sub-queries are set prior to computing
-# the datatypes and affinities of the parent sub-queries because the 
+# the datatypes and affinities of the parent sub-queries because the
 # latter computation depends on the former.
 #
 do_execsql_test selectD-4.1 {
@@ -162,7 +162,7 @@ do_execsql_test selectD-4.1 {
   CREATE TABLE t42(d INTEGER PRIMARY KEY, e INTEGER);
   CREATE TABLE t43(f INTEGER PRIMARY KEY, g INTEGER);
   EXPLAIN QUERY PLAN
-  SELECT * 
+  SELECT *
    FROM t41
    LEFT JOIN (SELECT count(*) AS cnt, x1.d
                 FROM (t42 INNER JOIN t43 ON d=g) AS x1

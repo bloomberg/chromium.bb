@@ -318,10 +318,10 @@ do_test sqllimits1-5.14.1 {
   sqlite3_bind_zeroblob $::STMT 1 [expr {$SQLITE_LIMIT_LENGTH + 1}]
 } {}
 do_test sqllimits1-5.14.2 {
-  sqlite3_step $::STMT 
+  sqlite3_step $::STMT
 } {SQLITE_ERROR}
 do_test sqllimits1-5.14.3 {
-  sqlite3_reset $::STMT 
+  sqlite3_reset $::STMT
 } {SQLITE_TOOBIG}
 do_test sqllimits1-5.14.4 {
   set np1 [expr {$SQLITE_LIMIT_LENGTH + 1}]
@@ -354,7 +354,7 @@ do_test sqllimits1-5.14.9 {
   catch {sqlite3_bind_text16 $::STMT 1 $::str1 $n} res
   set res
 } {}
-sqlite3_finalize $::STMT 
+sqlite3_finalize $::STMT
 
 do_test sqllimits1-5.15 {
   execsql {
@@ -471,7 +471,7 @@ do_test sqllimits1-7.2 {
   #
   # Therefore, a single insert adds (N^16 plus some) rows to the database.
   # A really long loop...
-  #     
+  #
   execsql {
     CREATE TRIGGER update_b BEFORE UPDATE ON trig
       FOR EACH ROW BEGIN
@@ -497,7 +497,7 @@ do_test sqllimits1-7.2 {
 
 do_test sqllimits1-7.3 {
   execsql {
-    INSERT INTO trig VALUES (1,1); 
+    INSERT INTO trig VALUES (1,1);
   }
 } {}
 
@@ -586,7 +586,7 @@ do_test sqllimits1-8.1 {
   for {set i 0} {$i <= $SQLITE_LIMIT_COLUMN} {incr i} {
     lappend cols "c$i"
   }
-  catchsql "CREATE TABLE t([join $cols ,])" 
+  catchsql "CREATE TABLE t([join $cols ,])"
 } {1 {too many columns on t}}
 
 do_test sqllimits1-8.2 {
@@ -682,7 +682,7 @@ do_test sqllimits1-8.11 {
 
 #--------------------------------------------------------------------
 # These tests - sqllimits1-9.* - test that the SQLITE_LIMIT_EXPR_DEPTH
-# limit is enforced. The limit refers to the number of terms in 
+# limit is enforced. The limit refers to the number of terms in
 # the expression.
 #
 # EVIDENCE-OF: R-12723-08526 SQLITE_LIMIT_EXPR_DEPTH The maximum depth
@@ -699,9 +699,9 @@ if {$SQLITE_MAX_EXPR_DEPTH==0} {
       SELECT $expr
     }]
   } "1 {Expression tree is too large (maximum depth $::SQLITE_MAX_EXPR_DEPTH)}"
-  
+
   # Attempting to beat the expression depth limit using nested SELECT
-  # queries causes a parser stack overflow. 
+  # queries causes a parser stack overflow.
   do_test sqllimits1-9.2 {
     set max $::SQLITE_MAX_EXPR_DEPTH
     set expr "SELECT 1"
@@ -710,8 +710,8 @@ if {$SQLITE_MAX_EXPR_DEPTH==0} {
     }
     catchsql [subst { $expr }]
   } "1 {parser stack overflow}"
-  
-if 0 {  
+
+if 0 {
   do_test sqllimits1-9.3 {
     execsql {
       PRAGMA max_page_count = 1000000;  -- 1 GB
@@ -727,7 +727,7 @@ if 0 {
       }
     }
   } {}
-  
+
   do_test sqllimits1-9.4 {
     catchsql {
       SELECT a FROM v199
@@ -806,7 +806,7 @@ ifcapable attach {
 }
 
 #--------------------------------------------------------------------
-# Test cases sqllimits1-13.*: Check that the SQLITE_MAX_VARIABLE_NUMBER 
+# Test cases sqllimits1-13.*: Check that the SQLITE_MAX_VARIABLE_NUMBER
 # limit works.
 #
 # EVIDENCE-OF: R-42363-29104 SQLITE_LIMIT_VARIABLE_NUMBER The maximum
@@ -827,9 +827,9 @@ do_test sqllimits1-13.2 {
 
 
 #--------------------------------------------------------------------
-# Test cases sqllimits1-15.* verify that the 
+# Test cases sqllimits1-15.* verify that the
 # SQLITE_MAX_LIKE_PATTERN_LENGTH limit is enforced. This limit only
-# applies to the built-in LIKE operator, supplying an external 
+# applies to the built-in LIKE operator, supplying an external
 # implementation by overriding the like() scalar function bypasses
 # this limitation.
 #

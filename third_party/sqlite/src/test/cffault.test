@@ -9,7 +9,7 @@
 #
 #***********************************************************************
 #
-# This file contains fault-injection test cases for the 
+# This file contains fault-injection test cases for the
 # sqlite3_db_cacheflush API.
 #
 
@@ -18,7 +18,7 @@ source $testdir/tester.tcl
 set testprefix cffault
 source $testdir/malloc_common.tcl
 
-# Run the supplied SQL on a copy of the database currently stored on 
+# Run the supplied SQL on a copy of the database currently stored on
 # disk in file $dbfile.
 proc diskquery {dbfile sql} {
   forcecopy $dbfile dq.db

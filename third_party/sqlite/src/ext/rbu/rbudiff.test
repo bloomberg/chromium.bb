@@ -65,9 +65,9 @@ proc test_rbucount {sql} {
   } {
     set a [tmpdb eval "SELECT count(*) FROM [sqlesc $name]"]
     set b [tmpdb eval {SELECT cnt FROM rbu_count WHERE tbl = $name}]
-    if {$a != $b} { 
+    if {$a != $b} {
       tmpdb close
-      error "rbu_count error - tbl = $name" 
+      error "rbu_count error - tbl = $name"
     }
   }
   tmpdb close
@@ -80,8 +80,8 @@ proc rbudiff_cksum {db1} {
   sqlite3 dbtmp $db1
   foreach tbl [dbtmp eval {SELECT name FROM sqlite_master WHERE type='table'}] {
     set cols [list]
-    dbtmp eval "PRAGMA table_info = [sqlesc $tbl]" { 
-      lappend cols "quote( $name )" 
+    dbtmp eval "PRAGMA table_info = [sqlesc $tbl]" {
+      lappend cols "quote( $name )"
     }
     append txt [dbtmp eval \
       "SELECT [join $cols {||'.'||}] FROM [sqlesc $tbl] ORDER BY 1"
@@ -97,7 +97,7 @@ foreach {tn init mod} {
     CREATE TABLE t1(a PRIMARY KEY, b, c);
     INSERT INTO t1 VALUES(1, 2, 3);
     INSERT INTO t1 VALUES(4, 5, 6);
-  
+
     CREATE TABLE t2(a, b, c, PRIMARY KEY(b, c));
     INSERT INTO t2 VALUES(1, 2, 3);
     INSERT INTO t2 VALUES(4, 5, 6);
@@ -105,7 +105,7 @@ foreach {tn init mod} {
     INSERT INTO t1 VALUES(7, 8, 9);
     DELETE FROM t1 WHERE a=4;
     UPDATE t1 SET c = 11 WHERE a = 1;
-  
+
     INSERT INTO t2 VALUES(7, 8, 9);
     DELETE FROM t2 WHERE a=4;
     UPDATE t2 SET c = 11 WHERE a = 1;
@@ -285,11 +285,11 @@ tablE t1 USING FTs5(c);
 
     sqlite3 db test.db
     sqlite3 db2 test.db2
-    do_test 3.$tn.2 { 
+    do_test 3.$tn.2 {
       db2 eval { SELECT * FROM t1 ORDER BY rowid }
     } [db eval { SELECT * FROM t1 ORDER BY rowid }]
 
-    do_test 3.$tn.3 { 
+    do_test 3.$tn.3 {
       db2 eval { INSERT INTO t1(t1) VALUES('integrity-check') }
     } {}
 

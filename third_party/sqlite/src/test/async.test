@@ -43,9 +43,9 @@ set ASYNC_INCLUDE {
 # Enable asynchronous IO.
 sqlite3async_initialize "" 1
 
-# This proc flushes the contents of the async-IO queue through to the 
+# This proc flushes the contents of the async-IO queue through to the
 # underlying VFS. A couple of the test scripts identified in $ASYNC_INCLUDE
-# above contain lines like "catch flush_async_queue" in places where 
+# above contain lines like "catch flush_async_queue" in places where
 # this is required for the tests to work in async mode.
 #
 proc flush_async_queue {} {
@@ -66,7 +66,7 @@ foreach testfile [lsort -dictionary [glob $testdir/*.test]] {
   if {[lsearch -exact $ASYNC_INCLUDE $tail]<0} continue
   source $testfile
 
-  # Make sure everything is flushed through. This is because [source]ing 
+  # Make sure everything is flushed through. This is because [source]ing
   # the next test file will delete the database file on disk (using
   # [delete_file]). If the asynchronous backend still has the file
   # open, it will become confused.

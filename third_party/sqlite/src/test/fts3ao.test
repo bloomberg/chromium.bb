@@ -107,7 +107,7 @@ do_test fts3ao-2.12 {
 } {{one three four} {one four} {one four two}}
 
 #-------------------------------------------------------------------
-# Close, delete and reopen the database. The following test should 
+# Close, delete and reopen the database. The following test should
 # be run on an initially empty db.
 #
 db close
@@ -133,7 +133,7 @@ do_test fts3ao-3.2 {
 } {{one three four} {one four} {one two} {one three four} {one four} {one two}}
 
 #---------------------------------------------------------------------
-# Test that it is possible to rename an fts3 table in an attached 
+# Test that it is possible to rename an fts3 table in an attached
 # database.
 #
 forcedelete test2.db test2.db-journal
@@ -169,7 +169,7 @@ do_test fts3ao-3.3 {
 } {{one three four} {one four} {one two}}
 
 #---------------------------------------------------------------------
-# Test that it is possible to rename an fts3 table within a 
+# Test that it is possible to rename an fts3 table within a
 # transaction.
 #
 do_test fts3ao-4.1 {

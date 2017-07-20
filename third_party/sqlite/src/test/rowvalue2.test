@@ -26,7 +26,7 @@ do_execsql_test 1.0 {
   CREATE INDEX i1 ON t1(a, b);
 }
 
-do_execsql_test 1.1.1 { SELECT c FROM t1 WHERE (a, b) >= (1, 0) } {2 3} 
+do_execsql_test 1.1.1 { SELECT c FROM t1 WHERE (a, b) >= (1, 0) } {2 3}
 do_execsql_test 1.1.2 { SELECT c FROM t1 WHERE (a, b) > (1, 0)  } {3}
 
 #-------------------------------------------------------------------------
@@ -108,7 +108,7 @@ foreach {tn idx} {
 
     foreach op [list > >= < <= == IS] {
       do_execsql_test 3.1.$tn.$w.$op [subst -novar {
-        SELECT rowid FROM t3 WHERE (a, b, c) [set op] ($a, $b, $c) 
+        SELECT rowid FROM t3 WHERE (a, b, c) [set op] ($a, $b, $c)
         ORDER BY +rowid
       }] [db eval [subst -novar {
         SELECT rowid FROM t3 WHERE w [set op] $w ORDER BY +rowid

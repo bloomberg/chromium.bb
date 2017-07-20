@@ -28,7 +28,7 @@
 set testdir [file dirname $argv0]
 source $testdir/tester.tcl
 
-# Schema and query extracted from Skrooge.org.  
+# Schema and query extracted from Skrooge.org.
 #
 do_test fuzz-oss1-skrooge {
   db eval {

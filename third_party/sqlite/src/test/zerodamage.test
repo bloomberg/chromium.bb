@@ -8,7 +8,7 @@
 #    May you share freely, never taking more than you give.
 #
 #***********************************************************************
-# 
+#
 # This file implements tests of the SQLITE_IOCAP_POWERSAFE_OVERWRITE property
 # and the SQLITE_FCNTL_POWERSAFE_OVERWRITE file-control for manipulating it.
 #

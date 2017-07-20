@@ -260,14 +260,14 @@ do_test rowid-4.5 {
   execsql {CREATE INDEX idxt2 ON t2(y)}
   set sqlite_search_count 0
   concat [execsql {
-    SELECT t1.x FROM t2, t1 
+    SELECT t1.x FROM t2, t1
     WHERE t2.y==256 AND t1.rowid==t2.rowid
   }] $sqlite_search_count
 } {4 3}
 do_test rowid-4.5.1 {
   set sqlite_search_count 0
   concat [execsql {
-    SELECT t1.x FROM t2, t1 
+    SELECT t1.x FROM t2, t1
     WHERE t1.OID==t2.rowid AND t2.y==81
   }] $sqlite_search_count
 } {3 3}
@@ -371,7 +371,7 @@ ifcapable subquery {
       INSERT INTO t2(b) VALUES(33);
       INSERT INTO t2(b) VALUES(44);
       INSERT INTO t2(b) VALUES(55);
-      SELECT b FROM t2 WHERE a NOT IN(1,2,1000000,1000001,2147483647) 
+      SELECT b FROM t2 WHERE a NOT IN(1,2,1000000,1000001,2147483647)
           ORDER BY b;
     }
   } {11 22 33 44 55}

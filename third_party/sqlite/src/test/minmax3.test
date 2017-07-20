@@ -27,7 +27,7 @@ proc count sql {
 
 # This procedure sets the value of the file-format in file 'test.db'
 # to $newval. Also, the schema cookie is incremented.
-# 
+#
 proc set_file_format {newval} {
   hexio_write test.db 44 [hexio_render_int32 $newval]
   set schemacookie [hexio_get_int [hexio_read test.db 40 4]]

@@ -8,7 +8,7 @@
 #    May you share freely, never taking more than you give.
 #
 #***********************************************************************
-# 
+#
 # This file implements a test for VACUUM on attached databases.
 #
 
@@ -117,7 +117,7 @@ do_catchsql_test vacuum5-2.0 {
 #
 if {$::TEMP_STORE<3 && [permutation]!="inmemory_journal"} {
   db close
-  testvfs tvfs 
+  testvfs tvfs
   tvfs filter xOpen
   tvfs script open_cb
   forcedelete test.db
@@ -146,7 +146,7 @@ if {$::TEMP_STORE<3 && [permutation]!="inmemory_journal"} {
   do_test 3.2 {
     lrange $::openfiles 0 4
   } {test.db test.db-journal test.db-journal {} test.db-journal}
-} 
+}
 
 
 

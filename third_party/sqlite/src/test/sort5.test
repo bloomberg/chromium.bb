@@ -8,7 +8,7 @@
 #    May you share freely, never taking more than you give.
 #
 #***********************************************************************
-# This file implements regression tests for SQLite library. 
+# This file implements regression tests for SQLite library.
 #
 
 set testdir [file dirname $argv0]
@@ -75,7 +75,7 @@ sqlite3 db test.db -vfs tvfs
 execsql { CREATE TABLE t1(x) }
 
 # Each iteration of the following loop attempts to sort 10001 records
-# each a bit over 100 bytes in size. In total a little more than 1MiB 
+# each a bit over 100 bytes in size. In total a little more than 1MiB
 # of data.
 #
 foreach {tn pgsz cachesz bTemp} {

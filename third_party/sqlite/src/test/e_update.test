@@ -9,7 +9,7 @@
 #
 #***********************************************************************
 #
-# This file implements tests to verify that the "testable statements" in 
+# This file implements tests to verify that the "testable statements" in
 # the lang_update.html document are correct.
 #
 set testdir [file dirname $argv0]
@@ -107,8 +107,8 @@ do_update_tests e_update-0 {
 # statement.
 #
 #     Test cases e_update-1.1.1.* test the "identified by the
-#     qualified-table-name" part of the statement above. Tests 
-#     e_update-1.1.2.* show that the "zero or more rows" part is 
+#     qualified-table-name" part of the statement above. Tests
+#     e_update-1.1.2.* show that the "zero or more rows" part is
 #     accurate.
 #
 do_execsql_test e_update-1.1.0 {
@@ -210,7 +210,7 @@ do_execsql_test e_update-1.5.0 {
 do_update_tests e_update-1.5 -query {
   SELECT * FROM t2
 } {
-  1   "UPDATE t2 SET c = 1+1 WHERE a=2" 
+  1   "UPDATE t2 SET c = 1+1 WHERE a=2"
       {3 1 4   1 5 9   2 6 2}
 
   2   "UPDATE t2 SET b = 4/2, c=CAST((0.4*5) AS INTEGER) WHERE a<3"
@@ -277,27 +277,27 @@ do_execsql_test e_update-1.8.0 {
   INSERT INTO t3 VALUES(4, 'four');
 } {}
 foreach {tn sql error ac data } {
-  1  "UPDATE t3 SET b='one' WHERE a=3" 
+  1  "UPDATE t3 SET b='one' WHERE a=3"
      {UNIQUE constraint failed: t3.b} 1 {1 one 2 two 3 three 4 four}
 
-  2  "UPDATE OR REPLACE t3 SET b='one' WHERE a=3" 
+  2  "UPDATE OR REPLACE t3 SET b='one' WHERE a=3"
      {} 1 {2 two 3 one 4 four}
 
   3  "UPDATE OR FAIL t3 SET b='three'"
      {UNIQUE constraint failed: t3.b} 1 {2 three 3 one 4 four}
 
-  4  "UPDATE OR IGNORE t3 SET b='three' WHERE a=3" 
+  4  "UPDATE OR IGNORE t3 SET b='three' WHERE a=3"
      {} 1 {2 three 3 one 4 four}
 
-  5  "UPDATE OR ABORT t3 SET b='three' WHERE a=3" 
+  5  "UPDATE OR ABORT t3 SET b='three' WHERE a=3"
      {UNIQUE constraint failed: t3.b} 1 {2 three 3 one 4 four}
 
   6  "BEGIN" {} 0 {2 three 3 one 4 four}
 
-  7  "UPDATE t3 SET b='three' WHERE a=3" 
+  7  "UPDATE t3 SET b='three' WHERE a=3"
      {UNIQUE constraint failed: t3.b} 0 {2 three 3 one 4 four}
 
-  8  "UPDATE OR ABORT t3 SET b='three' WHERE a=3" 
+  8  "UPDATE OR ABORT t3 SET b='three' WHERE a=3"
      {UNIQUE constraint failed: t3.b} 0 {2 three 3 one 4 four}
 
   9  "UPDATE OR FAIL t3 SET b='two'"
@@ -538,7 +538,7 @@ do_update_tests e_update-3.1 -query { SELECT s FROM t7 } {
 #
 do_update_tests e_update-3.2 -query { SELECT s FROM t7 } {
   1   "UPDATE t7 SET s = q LIMIT -1"              {1 2 3 4 5 6 7 8 9 10}
-  2   "UPDATE t7 SET s = r WHERE q>4 LIMIT -1"  
+  2   "UPDATE t7 SET s = r WHERE q>4 LIMIT -1"
       {1 2 3 4 five six seven eight nine ten}
   3   "UPDATE t7 SET s = 'X' LIMIT -1"            {X X X X X X X X X X}
 }
@@ -601,5 +601,5 @@ do_update_tests e_update-3.5 -query { SELECT x FROM t8 ; DELETE FROM t8 } {
 
 
 } ;# ifcapable update_delete_limit
- 
+
 finish_test

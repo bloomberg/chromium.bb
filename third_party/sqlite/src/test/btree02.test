@@ -12,7 +12,7 @@
 #
 # The focus of this script is making multiple calls to saveCursorPosition()
 # and restoreCursorPosition() when cursors have eState==CURSOR_SKIPNEXT
-# 
+#
 
 set testdir [file dirname $argv0]
 source $testdir/tester.tcl
@@ -45,7 +45,7 @@ do_test btree02-110 {
       db eval {DELETE FROM t1 WHERE a=$a}
     }
     db eval {COMMIT; BEGIN}
-  }  
+  }
   db one {COMMIT; SELECT count(*) FROM t1;}
 } {20}
 

@@ -94,7 +94,7 @@ for {set i 0} {$i < $nOpt} {incr i} {
       if { [incr i]>=$nOpt } usage
       set O(trans) [lindex $argv $i]
     }
-    
+
     -automerge {
       if { [incr i]>=$nOpt } usage
       set O(automerge) [lindex $argv $i]

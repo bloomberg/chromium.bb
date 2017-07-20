@@ -57,7 +57,7 @@ foreach {t param} {
     build_database $nRow $param
     execsql { SELECT count(*) FROM t1 }
   } $nRow
-  
+
   foreach {tn query} {
   1   "SELECT docid, * FROM t1"
   2   "SELECT docid, * FROM t1 WHERE t1 MATCH 'aa'"
@@ -74,45 +74,45 @@ foreach {t param} {
   13  "SELECT docid, content FROM t1 WHERE t1 MATCH 'aa NEAR/2 bb NEAR/3 cc'"
   14  "SELECT docid, content FROM t1 WHERE t1 MATCH '\"aa bb cc\"'"
   } {
-  
+
     unset -nocomplain A B C D
     set A_list [list]
     set B_list [list]
     set C_list [list]
     set D_list [list]
-  
+
     unset -nocomplain X
-    db eval "$query ORDER BY rowid ASC"  X  { 
-      set A($X(docid)) [array get X] 
+    db eval "$query ORDER BY rowid ASC"  X  {
+      set A($X(docid)) [array get X]
       lappend A_list $X(docid)
     }
     unset -nocomplain X
-    db eval "$query ORDER BY rowid DESC" X  { 
-      set B($X(docid)) [array get X] 
+    db eval "$query ORDER BY rowid DESC" X  {
+      set B($X(docid)) [array get X]
       lappend B_list $X(docid)
     }
     unset -nocomplain X
-    db eval "$query ORDER BY docid ASC"  X  { 
-      set C($X(docid)) [array get X] 
+    db eval "$query ORDER BY docid ASC"  X  {
+      set C($X(docid)) [array get X]
       lappend C_list $X(docid)
     }
     unset -nocomplain X
-    db eval "$query ORDER BY docid DESC" X  { 
-      set D($X(docid)) [array get X] 
+    db eval "$query ORDER BY docid DESC" X  {
+      set D($X(docid)) [array get X]
       lappend D_list $X(docid)
     }
-  
+
     do_test $tn.1 { set A_list } [lsort -integer -increasing $A_list]
     do_test $tn.2 { set B_list } [lsort -integer -decreasing $B_list]
     do_test $tn.3 { set C_list } [lsort -integer -increasing $C_list]
     do_test $tn.4 { set D_list } [lsort -integer -decreasing $D_list]
-  
+
     unset -nocomplain DATA
     unset -nocomplain X
-    db eval "$query" X  { 
-      set DATA($X(docid)) [array get X] 
+    db eval "$query" X  {
+      set DATA($X(docid)) [array get X]
     }
-  
+
     do_test $tn.5 { lsort [array get A] } [lsort [array get DATA]]
     do_test $tn.6 { lsort [array get B] } [lsort [array get DATA]]
     do_test $tn.7 { lsort [array get C] } [lsort [array get DATA]]

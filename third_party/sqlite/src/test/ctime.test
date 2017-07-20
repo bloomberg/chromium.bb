@@ -10,7 +10,7 @@
 #***********************************************************************
 # This file implements regression tests for SQLite library.
 #
-# This file implements tests for the compile time diagnostic 
+# This file implements tests for the compile time diagnostic
 # functions.
 #
 

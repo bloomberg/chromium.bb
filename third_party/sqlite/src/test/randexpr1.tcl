@@ -2,7 +2,7 @@
 # complicated expressions.
 #
 # The generated tests are intended to verify expression evaluation
-# in SQLite against expression evaluation TCL.  
+# in SQLite against expression evaluation TCL.
 #
 
 # Terms of the $intexpr list each contain two sub-terms.

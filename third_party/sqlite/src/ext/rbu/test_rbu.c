@@ -27,7 +27,7 @@
 #endif
 #include <assert.h>
 
-/* From main.c */ 
+/* From main.c */
 extern const char *sqlite3ErrName(int);
 extern int sqlite3TestMakePointerStr(Tcl_Interp*, char*, void*);
 
@@ -335,7 +335,7 @@ static int SQLITE_TCLAPI test_sqlite3rbu_internal_test(
   return TCL_OK;
 }
 
-int SqliteRbu_Init(Tcl_Interp *interp){ 
+int SqliteRbu_Init(Tcl_Interp *interp){
   static struct {
      char *zName;
      Tcl_ObjCmdProc *xProc;

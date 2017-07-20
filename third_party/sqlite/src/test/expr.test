@@ -534,7 +534,7 @@ test_expr expr-5.67b {t1='abc_', t2='A%7_'} {t1 LIKE t2 ESCAPE '7'} $NCSL
 test_expr expr-5.68a {t1='abc7', t2='a%7_'} {t1 LIKE t2 ESCAPE '7'} 0
 test_expr expr-5.68b {t1='abc7', t2='A%7_'} {t1 LIKE t2 ESCAPE '7'} 0
 
-# These are the same test as the block above, but using a multi-byte 
+# These are the same test as the block above, but using a multi-byte
 # character as the escape character.
 if {"\u1234"!="u1234"} {
   test_expr expr-5.69a "t1='abc', t2='a_c'" \
@@ -704,8 +704,8 @@ test_expr expr-case.11 {i1=null} \
 test_expr expr-case.12 {i1=1} \
 	{CASE i1 WHEN 1 THEN null WHEN 2 THEN 'two' ELSE 3 END} {{}}
 test_expr expr-case.13 {i1=7} \
-	{ CASE WHEN i1 < 5 THEN 'low' 
-	       WHEN i1 < 10 THEN 'medium' 
+	{ CASE WHEN i1 < 5 THEN 'low'
+	       WHEN i1 < 10 THEN 'medium'
                WHEN i1 < 15 THEN 'high' ELSE 'error' END} medium
 
 

@@ -114,13 +114,13 @@ do_test 3.2 {
   file_control_persist_wal db 1
   db close
 } {}
-do_test walpersist-3.3 { 
-  file size test.db-wal 
+do_test walpersist-3.3 {
+  file size test.db-wal
 } {0}
-do_test walpersist-3.4 { 
+do_test walpersist-3.4 {
   sqlite3 db test.db
   execsql { PRAGMA integrity_check }
 } {ok}
- 
+
 
 finish_test

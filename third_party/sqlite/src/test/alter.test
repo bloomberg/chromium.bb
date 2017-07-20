@@ -29,10 +29,10 @@ ifcapable !altertable {
 # alter-1.1.* - alter-1.7.*: Basic tests of ALTER TABLE, including tables
 #     with implicit and explicit indices. These tests came from an earlier
 #     fork of SQLite that also supported ALTER TABLE.
-# alter-1.8.*: Tests for ALTER TABLE when the table resides in an 
+# alter-1.8.*: Tests for ALTER TABLE when the table resides in an
 #     attached database.
 # alter-1.9.*: Tests for ALTER TABLE when their is whitespace between the
-#     table name and left parenthesis token. i.e: 
+#     table name and left parenthesis token. i.e:
 #     "CREATE TABLE abc       (a, b, c);"
 # alter-2.*: Test error conditions and messages.
 # alter-3.*: Test ALTER TABLE on tables that have TRIGGERs attached to them.
@@ -71,12 +71,12 @@ do_test alter-1.1 {
 do_test alter-1.2 {
   execsql [subst {
     CREATE $::temp TABLE objlist(type, name, tbl_name);
-    INSERT INTO objlist SELECT type, name, tbl_name 
+    INSERT INTO objlist SELECT type, name, tbl_name
         FROM sqlite_master WHERE NAME!='objlist';
   }]
   ifcapable tempdb {
     execsql {
-      INSERT INTO objlist SELECT type, name, tbl_name 
+      INSERT INTO objlist SELECT type, name, tbl_name
           FROM temp.sqlite_master WHERE NAME!='objlist';
     }
   }
@@ -122,7 +122,7 @@ do_test alter-1.5 {
         FROM sqlite_master WHERE NAME!='objlist';
   }
   catchsql {
-    INSERT INTO objlist SELECT type, name, tbl_name 
+    INSERT INTO objlist SELECT type, name, tbl_name
         FROM sqlite_temp_master WHERE NAME!='objlist';
   }
   execsql {
@@ -152,10 +152,10 @@ ifcapable tempdb {
     execsql {
       CREATE TEMP TABLE objlist(type, name, tbl_name);
       INSERT INTO objlist SELECT type, name, tbl_name FROM sqlite_master;
-      INSERT INTO objlist 
-          SELECT type, name, tbl_name FROM temp.sqlite_master 
+      INSERT INTO objlist
+          SELECT type, name, tbl_name FROM temp.sqlite_master
           WHERE NAME!='objlist';
-      SELECT type, name, tbl_name FROM objlist 
+      SELECT type, name, tbl_name FROM objlist
           ORDER BY tbl_name, type desc, name;
     }
   } [list \
@@ -173,7 +173,7 @@ ifcapable tempdb {
   }
 }
 
-# Create bogus application-defined functions for functions used 
+# Create bogus application-defined functions for functions used
 # internally by ALTER TABLE, to ensure that ALTER TABLE falls back
 # to the built-in functions.
 #
@@ -201,7 +201,7 @@ do_test alter-1.7 {
         FROM sqlite_master WHERE NAME!='objlist';
   }
   catchsql {
-    INSERT INTO objlist SELECT type, name, tbl_name 
+    INSERT INTO objlist SELECT type, name, tbl_name
         FROM sqlite_temp_master WHERE NAME!='objlist';
   }
   execsql {
@@ -428,22 +428,22 @@ ifcapable attach {
   } {0 {}}
   do_test alter-3.2.3 {
     catchsql {
-      CREATE TABLE ON.t1(a, b, c); 
+      CREATE TABLE ON.t1(a, b, c);
     }
   } {1 {near "ON": syntax error}}
   do_test alter-3.2.4 {
     catchsql {
-      CREATE TABLE 'ON'.t1(a, b, c); 
+      CREATE TABLE 'ON'.t1(a, b, c);
     }
   } {0 {}}
   do_test alter-3.2.4 {
     catchsql {
-      CREATE TABLE 'ON'.ON(a, b, c); 
+      CREATE TABLE 'ON'.ON(a, b, c);
     }
   } {1 {near "ON": syntax error}}
   do_test alter-3.2.5 {
     catchsql {
-      CREATE TABLE 'ON'.'ON'(a, b, c); 
+      CREATE TABLE 'ON'.'ON'(a, b, c);
     }
   } {0 {}}
 }
@@ -493,7 +493,7 @@ do_test alter-3.3.3 {
   execsql {
     ALTER TABLE tbl1 RENAME TO tbl2;
     INSERT INTO tbl2 VALUES('d', 'e', 'f');
-  } 
+  }
   set ::TRIGGER
 } {trig1 d e f}
 do_test alter-3.3.4 {
@@ -501,19 +501,19 @@ do_test alter-3.3.4 {
     CREATE $::temp TRIGGER trig2 AFTER UPDATE ON tbl2 BEGIN
       SELECT trigfunc('trig2', new.a, new.b, new.c);
     END;
-  }] 
+  }]
 } {}
 do_test alter-3.3.5 {
   execsql {
     ALTER TABLE tbl2 RENAME TO tbl3;
     INSERT INTO tbl3 VALUES('g', 'h', 'i');
-  } 
+  }
   set ::TRIGGER
 } {trig1 g h i}
 do_test alter-3.3.6 {
   execsql {
     UPDATE tbl3 SET a = 'G' where a = 'g';
-  } 
+  }
   set ::TRIGGER
 } {trig2 G h i}
 do_test alter-3.3.7 {
@@ -607,7 +607,7 @@ execsql "
 set ::tbl_name2 "abcXdef"
 do_test alter-6.3 {
   execsql "
-    ALTER TABLE $::tbl_name RENAME TO $::tbl_name2 
+    ALTER TABLE $::tbl_name RENAME TO $::tbl_name2
   "
   execsql "
     SELECT sql FROM sqlite_master WHERE oid = $::oid
@@ -698,7 +698,7 @@ do_test alter-9.2 {
 } {{} {} {}}
 
 #------------------------------------------------------------------------
-# alter-10.X - Make sure ALTER TABLE works with multi-byte UTF-8 characters 
+# alter-10.X - Make sure ALTER TABLE works with multi-byte UTF-8 characters
 # in the names.
 #
 do_test alter-10.1 {
@@ -796,7 +796,7 @@ do_test alter-12.4 {
   execsql { SELECT * FROM v1; }
 } {}
 do_test alter-12.5 {
-  catchsql { 
+  catchsql {
     ALTER TABLE v1 ADD COLUMN new_column;
   }
 } {1 {Cannot add a column to a view}}

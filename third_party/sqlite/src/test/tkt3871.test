@@ -18,7 +18,7 @@ do_test tkt3871-1.1 {
     execsql { INSERT INTO t1 VALUES($i, $i*$i) }
   }
   execsql COMMIT
-  execsql { 
+  execsql {
     CREATE VIRTUAL TABLE e USING echo(t1);
     SELECT count(*) FROM e;
   }

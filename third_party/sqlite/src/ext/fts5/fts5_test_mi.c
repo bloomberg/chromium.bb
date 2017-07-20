@@ -10,7 +10,7 @@
 **
 ******************************************************************************
 **
-** This file contains test code only, it is not included in release 
+** This file contains test code only, it is not included in release
 ** versions of FTS5. It contains the implementation of an FTS5 auxiliary
 ** function very similar to the FTS4 function matchinfo():
 **
@@ -20,20 +20,20 @@
 **
 **  1) this function uses the FTS5 definition of "matchable phrase", which
 **     excludes any phrases that are part of an expression sub-tree that
-**     does not match the current row. This comes up for MATCH queries 
+**     does not match the current row. This comes up for MATCH queries
 **     such as:
 **
 **         "a OR (b AND c)"
 **
-**     In FTS4, if a single row contains instances of tokens "a" and "c", 
+**     In FTS4, if a single row contains instances of tokens "a" and "c",
 **     but not "b", all instances of "c" are considered matches. In FTS5,
 **     they are not (as the "b AND c" sub-tree does not match the current
 **     row.
 **
-**  2) For the values returned by 'x' that apply to all rows of the table, 
+**  2) For the values returned by 'x' that apply to all rows of the table,
 **     NEAR constraints are not considered. But for the number of hits in
 **     the current row, they are.
-**     
+**
 ** This file exports a single function that may be called to register the
 ** matchinfo() implementation with a database handle:
 **
@@ -65,7 +65,7 @@ struct Fts5MatchinfoCtx {
 
 /*
 ** Return a pointer to the fts5_api pointer for database connection db.
-** If an error occurs, return NULL and leave an error in the database 
+** If an error occurs, return NULL and leave an error in the database
 ** handle (accessible using sqlite3_errcode()/errmsg()).
 */
 static int fts5_api_from_db(sqlite3 *db, fts5_api **ppApi){
@@ -75,7 +75,7 @@ static int fts5_api_from_db(sqlite3 *db, fts5_api **ppApi){
   *ppApi = 0;
   rc = sqlite3_prepare(db, "SELECT fts5()", -1, &pStmt, 0);
   if( rc==SQLITE_OK ){
-    if( SQLITE_ROW==sqlite3_step(pStmt) 
+    if( SQLITE_ROW==sqlite3_step(pStmt)
         && sizeof(fts5_api*)==sqlite3_column_bytes(pStmt, 0)
       ){
       memcpy(ppApi, sqlite3_column_blob(pStmt, 0), sizeof(fts5_api*));
@@ -89,7 +89,7 @@ static int fts5_api_from_db(sqlite3 *db, fts5_api **ppApi){
 
 /*
 ** Argument f should be a flag accepted by matchinfo() (a valid character
-** in the string passed as the second argument). If it is not, -1 is 
+** in the string passed as the second argument). If it is not, -1 is
 ** returned. Otherwise, if f is a valid matchinfo flag, the value returned
 ** is the number of 32-bit integers added to the output array if the
 ** table has nCol columns and the query nPhrase phrases.
@@ -138,8 +138,8 @@ static int fts5MatchinfoXCb(
   u32 *aOut = (u32*)pUserData;
   int iPrev = -1;
 
-  for(pApi->xPhraseFirst(pFts, 0, &iter, &iCol, &iOff); 
-      iCol>=0; 
+  for(pApi->xPhraseFirst(pFts, 0, &iter, &iCol, &iOff);
+      iCol>=0;
       pApi->xPhraseNext(pFts, &iter, &iCol, &iOff)
   ){
     aOut[iCol*3+1]++;
@@ -160,11 +160,11 @@ static int fts5MatchinfoGlobalCb(
   int rc = SQLITE_OK;
   switch( f ){
     case 'p':
-      aOut[0] = p->nPhrase; 
+      aOut[0] = p->nPhrase;
       break;
 
     case 'c':
-      aOut[0] = p->nCol; 
+      aOut[0] = p->nCol;
       break;
 
     case 'x': {
@@ -225,7 +225,7 @@ static int fts5MatchinfoLocalCb(
         Fts5PhraseIter iter;
         int iCol;
         for(pApi->xPhraseFirstColumn(pFts, iPhrase, &iter, &iCol);
-            iCol>=0; 
+            iCol>=0;
             pApi->xPhraseNextColumn(pFts, &iter, &iCol)
         ){
           aOut[iPhrase * ((p->nCol+31)/32) + iCol/32] |= ((u32)1 << iCol%32);
@@ -245,8 +245,8 @@ static int fts5MatchinfoLocalCb(
       for(iPhrase=0; iPhrase<p->nPhrase; iPhrase++){
         Fts5PhraseIter iter;
         int iOff, iCol;
-        for(pApi->xPhraseFirst(pFts, iPhrase, &iter, &iCol, &iOff); 
-            iOff>=0; 
+        for(pApi->xPhraseFirst(pFts, iPhrase, &iter, &iCol, &iOff);
+            iOff>=0;
             pApi->xPhraseNext(pFts, &iter, &iCol, &iOff)
         ){
           aOut[nMul * (iCol + iPhrase * p->nCol)]++;
@@ -300,7 +300,7 @@ static int fts5MatchinfoLocalCb(
   }
   return rc;
 }
- 
+
 static Fts5MatchinfoCtx *fts5MatchinfoNew(
   const Fts5ExtensionApi *pApi,   /* API offered by current FTS version */
   Fts5Context *pFts,              /* First arg to pass to pApi functions */
@@ -400,8 +400,8 @@ int sqlite3Fts5TestRegisterMatchinfo(sqlite3 *db){
   int rc;                         /* Return code */
   fts5_api *pApi;                 /* FTS5 API functions */
 
-  /* Extract the FTS5 API pointer from the database handle. The 
-  ** fts5_api_from_db() function above is copied verbatim from the 
+  /* Extract the FTS5 API pointer from the database handle. The
+  ** fts5_api_from_db() function above is copied verbatim from the
   ** FTS5 documentation. Refer there for details. */
   rc = fts5_api_from_db(db, &pApi);
   if( rc!=SQLITE_OK ) return rc;
@@ -409,8 +409,8 @@ int sqlite3Fts5TestRegisterMatchinfo(sqlite3 *db){
   /* If fts5_api_from_db() returns NULL, then either FTS5 is not registered
   ** with this database handle, or an error (OOM perhaps?) has occurred.
   **
-  ** Also check that the fts5_api object is version 2 or newer.  
-  */ 
+  ** Also check that the fts5_api object is version 2 or newer.
+  */
   if( pApi==0 || pApi->iVersion<2 ){
     return SQLITE_ERROR;
   }

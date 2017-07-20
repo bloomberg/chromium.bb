@@ -55,7 +55,7 @@ do_test vacuum-1.1 {
   expr {$::cksum!=""}
 } {1}
 
-# Create bogus application-defined functions for functions used 
+# Create bogus application-defined functions for functions used
 # internally by VACUUM, to ensure that VACUUM falls back
 # to the built-in functions.
 #
@@ -164,7 +164,7 @@ do_test vacuum-2.5 {
   execsql {
     -- The "SELECT * FROM sqlite_master" statement ensures that this test
     -- works when shared-cache is enabled. If shared-cache is enabled, then
-    -- db3 shares a cache with db2 (but not db - it was opened as 
+    -- db3 shares a cache with db2 (but not db - it was opened as
     -- "./test.db").
     SELECT * FROM sqlite_master;
     SELECT * FROM t7 LIMIT 1
@@ -200,7 +200,7 @@ do_test vacuum-2.10 {
 } 0
 integrity_check vacuum-2.11
 db3 close
- 
+
 
 # Ticket #427.  Make sure VACUUM works when the EMPTY_RESULT_CALLBACKS
 # pragma is turned on.

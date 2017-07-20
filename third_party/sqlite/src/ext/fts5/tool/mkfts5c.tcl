@@ -24,9 +24,9 @@ set G(src) [string map [list %dir% $srcdir] {
 
 set G(hdr) {
 
-#if !defined(SQLITE_CORE) || defined(SQLITE_ENABLE_FTS5) 
+#if !defined(SQLITE_CORE) || defined(SQLITE_ENABLE_FTS5)
 
-#if !defined(NDEBUG) && !defined(SQLITE_DEBUG) 
+#if !defined(NDEBUG) && !defined(SQLITE_DEBUG)
 # define NDEBUG 1
 #endif
 #if defined(NDEBUG) && defined(SQLITE_DEBUG)
@@ -36,7 +36,7 @@ set G(hdr) {
 }
 
 set G(footer) {
-    
+
 #endif /* !defined(SQLITE_CORE) || defined(SQLITE_ENABLE_FTS5) */
 }
 
@@ -58,7 +58,7 @@ proc fts5_source_id {zDir} {
   set top [file dirname [file dirname $zDir]]
   set uuid [string trim [readfile [file join $top manifest.uuid]]]
 
-  set L [split [readfile [file join $top manifest]]] 
+  set L [split [readfile [file join $top manifest]]]
   set date [lindex $L [expr [lsearch -exact $L D]+1]]
   set date [string range $date 0 [string last . $date]-1]
   set date [string map {T { }} $date]
@@ -88,8 +88,8 @@ proc fts5c_printfile {zIn} {
   foreach line [split $data "\n"] {
     if {[regexp {^#include.*fts5} $line]} {
       set line "/* $line */"
-    } elseif { 
-         ![regexp { sqlite3Fts5Init\(} $line] 
+    } elseif {
+         ![regexp { sqlite3Fts5Init\(} $line]
        && [regexp {^(const )?[a-zA-Z][a-zA-Z0-9]* [*]?sqlite3Fts5} $line]
     } {
       set line "static $line"

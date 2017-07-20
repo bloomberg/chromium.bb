@@ -227,7 +227,7 @@ puts {
     (SELECT rowid FROM t1 ORDER BY random() LIMIT 20000);
 }
 puts {SELECT count(*) FROM t1;}
-    
+
 # Delete 20000 more rows at random from the table.
 #
 puts {

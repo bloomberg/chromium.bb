@@ -20,9 +20,9 @@
 **
 ** Each database connection creates a separate log file in the same
 ** directory as the original database and named after the original
-** database.  A unique suffix is added to avoid name collisions.  
+** database.  A unique suffix is added to avoid name collisions.
 ** Separate log files are used so that concurrent processes do not
-** try to write log operations to the same file at the same instant, 
+** try to write log operations to the same file at the same instant,
 ** resulting in overwritten or comingled log text.
 **
 ** Each individual log file records operations by a single database
@@ -183,7 +183,7 @@ static sqlite3_uint64 vlog_time(){
 static sqlite3_uint64 vlog_time(){
   FILETIME ft;
   sqlite3_uint64 u64time = 0;
- 
+
   GetSystemTimeAsFileTime(&ft);
 
   u64time |= ft.dwHighDateTime;
@@ -272,7 +272,7 @@ static VLogLog *vlogLogOpen(const char *zFilename){
   if( nName>8 && strcmp(zFilename+nName-8,"-journal")==0 ){
     nName -= 8;
     isJournal = 1;
-  }else if( nName>12 
+  }else if( nName>12
          && sqlite3_strglob("-mj??????9??", zFilename+nName-12)==0 ){
     return 0;  /* Do not log master journal files */
   }
@@ -357,7 +357,7 @@ static void vlogSignature(unsigned char *p, int n, char *zCksum){
   int i;
   if( n<=16 ){
     for(i=0; i<n; i++) sqlite3_snprintf(3, zCksum+i*2, "%02x", p[i]);
-  }else{ 
+  }else{
     pI = (unsigned int*)p;
     for(i=0; i<n-7; i+=8){
       s0 += pI[0] + s1;
@@ -380,9 +380,9 @@ static int bigToNative(const unsigned char *x){
 ** Read data from an vlog-file.
 */
 static int vlogRead(
-  sqlite3_file *pFile, 
-  void *zBuf, 
-  int iAmt, 
+  sqlite3_file *pFile,
+  void *zBuf,
+  int iAmt,
   sqlite_int64 iOfst
 ){
   int rc;
@@ -658,9 +658,9 @@ static int vlogDelete(sqlite3_vfs *pVfs, const char *zPath, int dirSync){
 ** is available, or false otherwise.
 */
 static int vlogAccess(
-  sqlite3_vfs *pVfs, 
-  const char *zPath, 
-  int flags, 
+  sqlite3_vfs *pVfs,
+  const char *zPath,
+  int flags,
   int *pResOut
 ){
   int rc;
@@ -681,9 +681,9 @@ static int vlogAccess(
 ** of at least (INST_MAX_PATHNAME+1) bytes.
 */
 static int vlogFullPathname(
-  sqlite3_vfs *pVfs, 
-  const char *zPath, 
-  int nOut, 
+  sqlite3_vfs *pVfs,
+  const char *zPath,
+  int nOut,
   char *zOut
 ){
   return REALVFS(pVfs)->xFullPathname(REALVFS(pVfs), zPath, nOut, zOut);
@@ -698,7 +698,7 @@ static void *vlogDlOpen(sqlite3_vfs *pVfs, const char *zPath){
 
 /*
 ** Populate the buffer zErrMsg (size nByte bytes) with a human readable
-** utf-8 string describing the most recent error encountered associated 
+** utf-8 string describing the most recent error encountered associated
 ** with dynamic libraries.
 */
 static void vlogDlError(sqlite3_vfs *pVfs, int nByte, char *zErrMsg){
@@ -720,7 +720,7 @@ static void vlogDlClose(sqlite3_vfs *pVfs, void *pHandle){
 }
 
 /*
-** Populate the buffer pointed to by zBufOut with nByte bytes of 
+** Populate the buffer pointed to by zBufOut with nByte bytes of
 ** random data.
 */
 static int vlogRandomness(sqlite3_vfs *pVfs, int nByte, char *zBufOut){
@@ -728,7 +728,7 @@ static int vlogRandomness(sqlite3_vfs *pVfs, int nByte, char *zBufOut){
 }
 
 /*
-** Sleep for nMicro microseconds. Return the number of microseconds 
+** Sleep for nMicro microseconds. Return the number of microseconds
 ** actually slept.
 */
 static int vlogSleep(sqlite3_vfs *pVfs, int nMicro){

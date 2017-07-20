@@ -42,7 +42,7 @@ if {0==[info exists ::G(savepoint6_iterations)]} {
 #   2. A serialized Tcl array representing the contents of table t1 at the
 #      start of the savepoint. The keys of the array are the x values. The
 #      values are the y values.
-#  
+#
 # Array ::aEntry contains the contents of database table t1. Array keys are
 # x values, the array data values are y values.
 #
@@ -161,17 +161,17 @@ proc random_integers {nRes nRange} {
     lappend ret [expr int(rand()*$nRange)]
   }
   return $ret
-} 
+}
 #-------------------------------------------------------------------------
 
 proc database_op {} {
-  set i [expr int(rand()*2)] 
+  set i [expr int(rand()*2)]
   if {$i==0} {
     insert_rows [random_integers 100 1000]
   }
   if {$i==1} {
     delete_rows [random_integers 100 1000]
-    set i [expr int(rand()*3)] 
+    set i [expr int(rand()*3)]
     if {$i==0} {
       sql {PRAGMA incremental_vacuum}
     }
@@ -203,9 +203,9 @@ do_test savepoint6-1.1 {
 } {}
 do_test savepoint6-1.2 {
   insert_rows {
-    497 166 230 355 779 588 394 317 290 475 362 193 805 851 564 
-    763 44 930 389 819 765 760 966 280 538 414 500 18 25 287 320 
-    30 382 751 87 283 981 429 630 974 421 270 810 405 
+    497 166 230 355 779 588 394 317 290 475 362 193 805 851 564
+    763 44 930 389 819 765 760 966 280 538 414 500 18 25 287 320
+    30 382 751 87 283 981 429 630 974 421 270 810 405
   }
 
   savepoint one
@@ -258,13 +258,13 @@ foreach zSetup [list {
     release one
     checkdb
   } {ok}
-  
+
   for {set i 0} {$i < $::G(savepoint6_iterations)} {incr i} {
     do_test savepoint6-$testname.$i.1 {
       savepoint_op
       checkdb
     } {ok}
-  
+
     do_test savepoint6-$testname.$i.2 {
       database_op
       database_op

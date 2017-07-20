@@ -39,7 +39,7 @@ foreach iOffset [list 0 256 4094] {
     puts $fd "[string repeat x $iOffset]SQLite version 3.6.0"
     close $fd
   } {}
-  
+
   do_test incrblob2-1.$iOffset.2 {
     set fd1 [db incrblob blobs data 1]
     set fd2 [db incrblob blobs data 1]
@@ -51,33 +51,33 @@ foreach iOffset [list 0 256 4094] {
     }
     read $fd1 6
   } {SQLite}
-  
+
   do_test incrblob2-1.$iOffset.3 {
     read $fd2 6
   } {SQLite}
-  
+
   do_test incrblob2-1.$iOffset.4 {
     seek $fd2 $iOffset start
     seek $fd1 $iOffset start
     puts -nonewline $fd2 "etiLQS"
   } {}
 
-  
+
   do_test incrblob2-1.$iOffset.5 {
     seek $fd1 $iOffset start
     read $fd1 6
   } {etiLQS}
-  
+
   do_test incrblob2-1.$iOffset.6 {
     seek $fd2 $iOffset start
     read $fd2 6
   } {etiLQS}
-  
+
   do_test incrblob2-1.$iOffset.7 {
     seek $fd1 $iOffset start
     read $fd1 6
   } {etiLQS}
-  
+
   do_test incrblob2-1.$iOffset.8 {
     close $fd1
     close $fd2
@@ -99,7 +99,7 @@ foreach iOffset [list 0 256 4094] {
 
     puts -nonewline $fd1 "123456"
   } {}
-  
+
   do_test incrblob2-2.$iOffset.2 {
     read $fd2 6
   } {123456}
@@ -128,7 +128,7 @@ do_test incrblob2-3.4 {
 } {}
 
 #--------------------------------------------------------------------------
-# The following tests - incrblob2-4.* - test that blob handles are 
+# The following tests - incrblob2-4.* - test that blob handles are
 # invalidated at the correct times.
 #
 do_test incrblob2-4.1 {
@@ -205,7 +205,7 @@ do_test incrblob2-4.6 {
   aborted_handles
 } {3 14 15 92}
 
-# Clobber row 65 using UPDATE OR REPLACE on row 35. This should abort 
+# Clobber row 65 using UPDATE OR REPLACE on row 35. This should abort
 # handles 35 and 65.
 #
 do_test incrblob2-4.7 {
@@ -237,7 +237,7 @@ do_test incrblob2-4.10 {
 
 do_test incrblob2-4.1.X {
   for {set ii 1} {$ii < 100} {incr ii} {
-    close $handles($ii) 
+    close $handles($ii)
   }
 } {}
 
@@ -307,7 +307,7 @@ do_test incrblob2-6.1 {
     DELETE FROM t1;
     INSERT INTO t1 VALUES(1, zeroblob(100));
   }
-  
+
   set rdHandle [db incrblob -readonly t1 data 1]
   set wrHandle [db incrblob t1 data 1]
 
@@ -371,7 +371,7 @@ sqlite3_memory_highwater 1
 do_test incrblob2-7.1 {
   db eval {
     CREATE TABLE t2(B BLOB);
-    INSERT INTO t2 VALUES(zeroblob(10 * 1024 * 1024)); 
+    INSERT INTO t2 VALUES(zeroblob(10 * 1024 * 1024));
   }
   expr {[sqlite3_memory_highwater]<(5 * 1024 * 1024)}
 } {1}
@@ -396,7 +396,7 @@ do_test incrblob2-7.5 {
 
 #---------------------------------------------------------------------------
 # The following tests, incrblob2-8.*, test that nothing terrible happens
-# when a statement transaction is rolled back while there are open 
+# when a statement transaction is rolled back while there are open
 # incremental-blob handles. At one point an assert() was failing when
 # this was attempted.
 #
@@ -405,7 +405,7 @@ do_test incrblob2-8.1 {
   set h [db incrblob t2 B 1]
   set rc [catch {
     db eval {SELECT rowid FROM t2} { execsql "DROP TABLE t2" }
-  } msg] 
+  } msg]
   list $rc $msg
 } {1 {database table is locked}}
 do_test incrblob2-8.2 {

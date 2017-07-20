@@ -9,7 +9,7 @@
 #
 #***********************************************************************
 # This file implements regression tests for SQLite library.  The
-# focus of this file is testing OOM error handling within the built-in 
+# focus of this file is testing OOM error handling within the built-in
 # INSTR() function.
 #
 

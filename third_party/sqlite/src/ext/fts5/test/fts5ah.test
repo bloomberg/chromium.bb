@@ -85,7 +85,7 @@ do_test 1.4 {
 do_test 1.5 {
   set fwd [execsql_reads {SELECT rowid FROM t1 WHERE t1 MATCH 'x' }]
   set bwd [execsql_reads {
-    SELECT rowid FROM t1 WHERE t1 MATCH 'x' ORDER BY 1 ASC 
+    SELECT rowid FROM t1 WHERE t1 MATCH 'x' ORDER BY 1 ASC
   }]
   expr {$bwd < $fwd + 12}
 } {1}
@@ -138,8 +138,8 @@ foreach {tn fraction tail cnt} {
   set n [execsql_reads $q]
   set ret [llength [execsql $q]]
 
-  # Because the position lists for 'x' are quite long in this db, the 
-  # advantage is a bit smaller in detail=none mode. Update $fraction to 
+  # Because the position lists for 'x' are quite long in this db, the
+  # advantage is a bit smaller in detail=none mode. Update $fraction to
   # reflect this.
   if {[detail_is_none] && $fraction<0.5} { set fraction [expr $fraction*2] }
 

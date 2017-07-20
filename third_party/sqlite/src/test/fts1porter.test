@@ -23566,7 +23566,7 @@ set porter_test_data {
     zone                 zone
     zounds               zound
     zwagger              zwagger
-}                         
+}
 
 # Create a full-text index to use for testing the stemmer.
 #

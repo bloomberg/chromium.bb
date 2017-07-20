@@ -11,7 +11,7 @@
 # This file implements regression tests for SQLite library.
 #
 # This file implements tests to verify that ticket #3442 has been
-# fixed.  
+# fixed.
 #
 #
 # $Id: tkt3442.test,v 1.2 2009/06/05 17:09:12 drh Exp $
@@ -42,8 +42,8 @@ proc EQP {sql} {
 }
 
 
-# These tests perform an EXPLAIN QUERY PLAN on both versions of the 
-# SELECT referenced in ticket #3442 (both '5000' and "5000") 
+# These tests perform an EXPLAIN QUERY PLAN on both versions of the
+# SELECT referenced in ticket #3442 (both '5000' and "5000")
 # and verify that the query plan is the same.
 #
 ifcapable explain {

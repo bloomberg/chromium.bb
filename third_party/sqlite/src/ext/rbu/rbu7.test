@@ -21,7 +21,7 @@ set ::testprefix rbu7
 
 # Test index:
 #
-#   1.*: That affinities are correctly applied to values within the 
+#   1.*: That affinities are correctly applied to values within the
 #        RBU database.
 #
 #   2.*: Tests for multi-column primary keys.
@@ -90,7 +90,7 @@ foreach {tn tbl} {
       sqlite3rbu rbu test.db rbu.db
       rbu step
       set rc [rbu close]
-    } 
+    }
     set rc
   } {SQLITE_DONE}
 

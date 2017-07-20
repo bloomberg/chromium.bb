@@ -104,7 +104,7 @@ static void fileOpen(const char *zPrg, const char *zName){
     g.pDb = openDatabase(zPrg, zName);
     rc = sqlite3_file_control(g.pDb, "main", SQLITE_FCNTL_FILE_POINTER, pArg);
     if( rc!=SQLITE_OK ){
-      fprintf(stderr, 
+      fprintf(stderr,
           "%s: failed to obtain fd for %s (SQLite too old?)\n", zPrg, zName
       );
       exit(1);
@@ -135,7 +135,7 @@ static void fileClose(){
 /*
 ** Read content from the file.
 **
-** Space to hold the content is obtained from sqlite3_malloc() and needs 
+** Space to hold the content is obtained from sqlite3_malloc() and needs
 ** to be freed by the caller.
 */
 static unsigned char *fileRead(sqlite3_int64 ofst, int nByte){
@@ -392,7 +392,7 @@ static i64 localPayload(i64 nPayload, char cType){
   }
   return nLocal;
 }
-  
+
 
 /*
 ** Create a description for a single cell.
@@ -1075,7 +1075,7 @@ int main(int argc, char **argv){
 
   /* Check for the "--uri" or "-uri" switch. */
   if( nArg>1 ){
-    if( sqlite3_stricmp("-raw", azArg[1])==0 
+    if( sqlite3_stricmp("-raw", azArg[1])==0
      || sqlite3_stricmp("--raw", azArg[1])==0
     ){
       g.bRaw = 1;

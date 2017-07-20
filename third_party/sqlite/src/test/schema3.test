@@ -52,7 +52,7 @@ do_multiclient_test tn {
     10 { ALTER TABLE t3 ADD COLUMN c } { DELETE FROM t3 WHERE c>10 }
     11 { ALTER TABLE t4 ADD COLUMN c } { INSERT INTO t4(a,b,c) VALUES(1,2,3) }
     12 { ALTER TABLE t6 ADD COLUMN c } { CREATE INDEX i2 ON t6(c) }
-    13 { ALTER TABLE t6 ADD COLUMN d } { 
+    13 { ALTER TABLE t6 ADD COLUMN d } {
          CREATE TRIGGER tr1 AFTER UPDATE OF d ON t6 BEGIN
            SELECT 1, 2, 3;
          END;
@@ -78,7 +78,7 @@ do_multiclient_test tn {
     }
     21  { CREATE TRIGGER tr3 BEFORE DELETE ON t7 BEGIN SELECT 1, 2, 3 ; END } {
           DROP TRIGGER IF EXISTS tr3;
-          CREATE TRIGGER tr3 AFTER INSERT ON t7 BEGIN SELECT 1, 2, 3 ; END 
+          CREATE TRIGGER tr3 AFTER INSERT ON t7 BEGIN SELECT 1, 2, 3 ; END
     }
 
     22  { CREATE TABLE t8(a, b) }       {

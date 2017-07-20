@@ -21,7 +21,7 @@ ifcapable !view||!subquery {
   return
 }
 
-# The sqlite3_xferopt_count variable is incremented whenever the 
+# The sqlite3_xferopt_count variable is incremented whenever the
 # insert transfer optimization applies.
 #
 # This procedure runs a test to see if the sqlite3_xferopt_count is
@@ -127,11 +127,11 @@ xferopt_test insert4-2.4.4 0
 # transfer is successful and that the transfer optimization was used or
 # not, as appropriate.
 #
-#     xfer_check TESTID  XFER-USED   INIT-DATA   DEST-SCHEMA   SRC-SCHEMA 
+#     xfer_check TESTID  XFER-USED   INIT-DATA   DEST-SCHEMA   SRC-SCHEMA
 #
 # The TESTID argument is the symbolic name for this test.  The XFER-USED
 # argument is true if the transfer optimization should be employed and
-# false if not.  INIT-DATA is a single row of data that is to be 
+# false if not.  INIT-DATA is a single row of data that is to be
 # transfered.  DEST-SCHEMA and SRC-SCHEMA are table declarations for
 # the destination and source tables.
 #
@@ -199,7 +199,7 @@ xfer_check insert4-3.8 0 {1 9} \
 
 
 # Do run the transfer optimization if the destination table and
-# source table have the same NOT NULL constraints or if the 
+# source table have the same NOT NULL constraints or if the
 # source table has extra NOT NULL constraints.
 #
 xfer_check insert4-3.9 1 {1 9} \
@@ -244,7 +244,7 @@ ifcapable vacuum {
       INSERT INTO t4 VALUES(NULL,0);
       INSERT INTO t4 VALUES(NULL,1);
       INSERT INTO t4 VALUES(NULL,1);
-      VACUUM;   
+      VACUUM;
     }
   } {}
 }
@@ -257,7 +257,7 @@ do_test insert4-5.1 {
 } {1 {no such table: nosuchtable}}
 do_test insert4-5.2 {
   # Number of columns does not match.
-  catchsql { 
+  catchsql {
     CREATE TABLE t5(a, b, c);
     INSERT INTO t4 SELECT * FROM t5;
   }
@@ -266,7 +266,7 @@ do_test insert4-5.2 {
 do_test insert4-6.1 {
   set ::sqlite3_xferopt_count 0
   execsql {
-    CREATE INDEX t2_i2 ON t2(x, y COLLATE nocase); 
+    CREATE INDEX t2_i2 ON t2(x, y COLLATE nocase);
     CREATE INDEX t2_i1 ON t2(x ASC, y DESC);
     CREATE INDEX t3_i1 ON t3(a, b);
     INSERT INTO t2 SELECT * FROM t3;
@@ -457,7 +457,7 @@ do_test insert4-8.6 {
   execsql {
     SELECT * FROM t1;
   }
-} {-99 100 1 2} 
+} {-99 100 1 2}
 do_test insert4-8.7 {
   execsql {
     DROP TABLE IF EXISTS t1;
@@ -477,7 +477,7 @@ do_test insert4-8.8 {
   execsql {
     SELECT * FROM t1;
   }
-} {1 2} 
+} {1 2}
 do_test insert4-8.9 {
   execsql {
     DROP TABLE IF EXISTS t1;
@@ -502,7 +502,7 @@ do_test insert4-8.11 {
   execsql {
     SELECT * FROM t1;
   }
-} {1 2} 
+} {1 2}
 
 do_test insert4-8.21 {
   execsql {

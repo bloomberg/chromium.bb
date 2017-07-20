@@ -8,7 +8,7 @@
 #    May you share freely, never taking more than you give.
 #
 #***********************************************************************
-# This file implements regression tests for SQLite library.  
+# This file implements regression tests for SQLite library.
 #
 # This is a copy of the capi3.test file that has been adapted to
 # test the new sqlite3_prepare_v2 interface.
@@ -35,7 +35,7 @@ proc utf16 {str {nt 1}} {
   return $r
 }
 
-# Return the UTF-8 representation of the supplied UTF-16 string $str. 
+# Return the UTF-8 representation of the supplied UTF-16 string $str.
 proc utf8 {str} {
   # If $str ends in two 0x00 0x00 bytes, knock these off before
   # converting to UTF-8 using TCL.
@@ -51,8 +51,8 @@ proc utf8 {str} {
 # These tests complement those in capi2.test. They are organized
 # as follows:
 #
-# capi3c-1.*: Test sqlite3_prepare_v2 
-# capi3c-2.*: Test sqlite3_prepare16_v2 
+# capi3c-1.*: Test sqlite3_prepare_v2
+# capi3c-2.*: Test sqlite3_prepare16_v2
 # capi3c-3.*: Test sqlite3_open
 # capi3c-4.*: Test sqlite3_open16
 # capi3c-5.*: Test the various sqlite3_result_* APIs
@@ -240,7 +240,7 @@ proc check_header {STMT test names decltypes} {
   # Column names in UTF-8
   do_test $test.1 {
     set cnamelist [list]
-    foreach i $idxlist {lappend cnamelist [sqlite3_column_name $STMT $i]} 
+    foreach i $idxlist {lappend cnamelist [sqlite3_column_name $STMT $i]}
     set cnamelist
   } $names
 
@@ -258,7 +258,7 @@ proc check_header {STMT test names decltypes} {
   # Column names in UTF-8
   do_test $test.3 {
     set cnamelist [list]
-    foreach i $idxlist {lappend cnamelist [sqlite3_column_name $STMT $i]} 
+    foreach i $idxlist {lappend cnamelist [sqlite3_column_name $STMT $i]}
     set cnamelist
   } $names
 
@@ -276,7 +276,7 @@ proc check_header {STMT test names decltypes} {
   # Column names in UTF-8
   do_test $test.5 {
     set cnamelist [list]
-    foreach i $idxlist {lappend cnamelist [sqlite3_column_decltype $STMT $i]} 
+    foreach i $idxlist {lappend cnamelist [sqlite3_column_decltype $STMT $i]}
     set cnamelist
   } $decltypes
 
@@ -306,7 +306,7 @@ proc check_header {STMT test names decltypes} {
         [sqlite3_column_decltype16 $STMT $numcols]
     } {{} {} {} {} {} {} {} {}}
   }
-} 
+}
 
 # This proc is used to test the following API calls:
 #
@@ -338,16 +338,16 @@ ifcapable columnmetadata {
     set ::idxlist [list]
     set ::numcols [sqlite3_column_count $STMT]
     for {set i 0} {$i < $::numcols} {incr i} {lappend ::idxlist $i}
-  
+
     # Database names in UTF-8
     do_test $test.8 {
       set cnamelist [list]
       foreach i $idxlist {
         lappend cnamelist [sqlite3_column_database_name $STMT $i]
-      } 
+      }
       set cnamelist
     } $dbs
-  
+
     # Database names in UTF-16
     ifcapable {utf16} {
       do_test $test.9 {
@@ -358,16 +358,16 @@ ifcapable columnmetadata {
         set cnamelist
       } $dbs
     }
-  
+
     # Table names in UTF-8
     do_test $test.10 {
       set cnamelist [list]
       foreach i $idxlist {
         lappend cnamelist [sqlite3_column_table_name $STMT $i]
-      } 
+      }
       set cnamelist
     } $tables
-  
+
     # Table names in UTF-16
     ifcapable {utf16} {
       do_test $test.11 {
@@ -378,16 +378,16 @@ ifcapable columnmetadata {
         set cnamelist
       } $tables
     }
-  
+
     # Origin names in UTF-8
     do_test $test.12 {
       set cnamelist [list]
       foreach i $idxlist {
         lappend cnamelist [sqlite3_column_origin_name $STMT $i]
-      } 
+      }
       set cnamelist
     } $cols
-  
+
     # Origin declaration types in UTF-16
     ifcapable {utf16} {
       do_test $test.13 {
@@ -410,9 +410,9 @@ ifcapable columnmetadata {
 # sqlite3_column_text16
 # sqlite3_column_double
 #
-# $STMT is a compiled SQL statement for which the previous call 
-# to sqlite3_step returned SQLITE_ROW. $test is a prefix to use 
-# for test names within this proc. $types is a list of the 
+# $STMT is a compiled SQL statement for which the previous call
+# to sqlite3_step returned SQLITE_ROW. $test is a prefix to use
+# for test names within this proc. $types is a list of the
 # manifest types for the current row. $ints, $doubles and $strings
 # are lists of the integer, real and string representations of
 # the values in the current row.
@@ -644,7 +644,7 @@ if {[clang_sanitize_address]==0} {
 
 # This procedure sets the value of the file-format in file 'test.db'
 # to $newval. Also, the schema cookie is incremented.
-# 
+#
 proc set_file_format {newval} {
   hexio_write test.db 44 [hexio_render_int32 $newval]
   set schemacookie [hexio_get_int [hexio_read test.db 40 4]]
@@ -654,7 +654,7 @@ proc set_file_format {newval} {
 }
 
 # This procedure returns the value of the file-format in file 'test.db'.
-# 
+#
 proc get_file_format {{fname test.db}} {
   return [hexio_get_int [hexio_read $fname 44 4]]
 }
@@ -940,7 +940,7 @@ do_test capi3c-11.21 {
 
 # The following tests - capi3c-12.* - check that its Ok to start a
 # transaction while other VMs are active, and that its Ok to execute
-# atomic updates in the same situation 
+# atomic updates in the same situation
 #
 do_test capi3c-12.1 {
   set STMT [sqlite3_prepare_v2 $DB "SELECT a FROM t2" -1 TAIL]
@@ -981,7 +981,7 @@ do_test capi3c-12.8 {
   }
 } {1 2 3 4}
 
-# Test cases capi3c-13.* test the sqlite3_clear_bindings() and 
+# Test cases capi3c-13.* test the sqlite3_clear_bindings() and
 # sqlite3_sleep APIs.
 #
 if {[llength [info commands sqlite3_clear_bindings]]>0} {
@@ -1042,7 +1042,7 @@ do_test capi3c-15.3 {
   sqlite3_finalize $STMT
 } {SQLITE_OK}
 
-# Make sure code is always generated even if an IF EXISTS or 
+# Make sure code is always generated even if an IF EXISTS or
 # IF NOT EXISTS clause is present that the table does not or
 # does exists.  That way we will always have a prepared statement
 # to expire when the schema changes.
@@ -1369,7 +1369,7 @@ do_test capi3c-24.4 {
 } {INTEGER STRING DATETIME}
 do_test capi3c-24.5 {
   decltype {
-    SELECT (SELECT x FROM (SELECT c AS x)) 
+    SELECT (SELECT x FROM (SELECT c AS x))
     FROM (SELECT * FROM t5 ORDER BY c LIMIT 1) ORDER BY b
   }
 } {DATETIME}

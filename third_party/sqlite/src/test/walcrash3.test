@@ -51,11 +51,11 @@ proc tvfs_callback {method file arglist} {
 for {set i 2} {$i<1000} {incr i} {
 
   # If the WAL file is truncated within the following, within the following
-  # xWrite call the [tvfs_callback] makes a copy of the database and WAL 
+  # xWrite call the [tvfs_callback] makes a copy of the database and WAL
   # files set sets $::state to 2. So that the copied files are in the same
-  # state as the real database and WAL files would be if an application crash 
+  # state as the real database and WAL files would be if an application crash
   # occurred immediately following the xTruncate().
-  # 
+  #
   set ::state 0
   do_execsql_test 1.$i.1 {
     INSERT INTO t1 VALUES(randomblob(10), randomblob(1000));
@@ -100,7 +100,7 @@ set nInitialErr [set_test_counter errors]
 for {set i 2} {$i<10000 && [set_test_counter errors]==$nInitialErr} {incr i} {
 
   do_test 2.$i.1 {
-    catch { db close } 
+    catch { db close }
     db_restore
     crashsql -delay 2 -file test.db-wal -seed $i {
       SELECT * FROM sqlite_master;
@@ -121,7 +121,7 @@ for {set i 2} {$i<10000 && [set_test_counter errors]==$nInitialErr} {incr i} {
 
   do_test 2.$i.2 {
     sqlite3 db test.db
-    execsql { PRAGMA integrity_check } 
+    execsql { PRAGMA integrity_check }
   } {ok}
 }
 

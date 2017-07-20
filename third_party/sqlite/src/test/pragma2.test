@@ -101,7 +101,7 @@ ifcapable attach {
       PRAGMA aux.freelist_count;
     }
   } {9}
-  
+
   do_test pragma2-3.1 {
     execsql {
       PRAGMA aux.freelist_count;
@@ -270,6 +270,6 @@ do_execsql_test pragma2-5.3 {
   PRAGMA cache_spill(-51);
   PRAGMA cache_spill;
 } {3}
-   
+
 test_restore_config_pagecache
 finish_test

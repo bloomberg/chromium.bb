@@ -180,7 +180,7 @@ do_test backup2-14 {
   set rc [catch {db restore} res]
   lappend rc $res
 } {1 {wrong # args: should be "db restore ?DATABASE? FILENAME"}}
- 
+
 forcedelete bu1.db bu2.db bu3.db bu4.db
 
 finish_test

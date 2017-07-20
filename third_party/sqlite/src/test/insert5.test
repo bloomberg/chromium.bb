@@ -22,11 +22,11 @@ ifcapable !subquery {
   return
 }
 
-# Return true if the compilation of the sql passed as an argument 
+# Return true if the compilation of the sql passed as an argument
 # includes the opcode OpenEphemeral. An "INSERT INTO ... SELECT"
 # statement includes such an opcode if a temp-table is used
 # to store intermediate results.
-# 
+#
 proc uses_temp_table {sql} {
   return [expr {[lsearch [execsql "EXPLAIN $sql"] OpenEphemeral]>=0}]
 }
@@ -36,12 +36,12 @@ proc uses_temp_table {sql} {
 do_test insert5-1.0 {
   forcedelete test2.db test2.db-journal
   execsql {
-    CREATE TABLE MAIN(Id INTEGER, Id1 INTEGER); 
-    CREATE TABLE B(Id INTEGER, Id1 INTEGER); 
+    CREATE TABLE MAIN(Id INTEGER, Id1 INTEGER);
+    CREATE TABLE B(Id INTEGER, Id1 INTEGER);
     CREATE VIEW v1 AS SELECT * FROM B;
     CREATE VIEW v2 AS SELECT * FROM MAIN;
-    INSERT INTO MAIN(Id,Id1) VALUES(2,3); 
-    INSERT INTO B(Id,Id1) VALUES(2,3); 
+    INSERT INTO MAIN(Id,Id1) VALUES(2,3);
+    INSERT INTO B(Id,Id1) VALUES(2,3);
   }
 } {}
 
@@ -50,8 +50,8 @@ do_test insert5-1.0 {
 ifcapable compound {
   do_test insert5-1.1 {
     execsql {
-      INSERT INTO B 
-        SELECT * FROM B UNION ALL 
+      INSERT INTO B
+        SELECT * FROM B UNION ALL
         SELECT * FROM MAIN WHERE exists (select * FROM B WHERE B.Id = MAIN.Id);
       SELECT * FROM B;
     }
@@ -79,8 +79,8 @@ do_test insert5-2.4 {
   uses_temp_table { INSERT INTO b SELECT id1, (SELECT id FROM b) FROM main }
 } {1}
 do_test insert5-2.5 {
-  uses_temp_table { 
-    INSERT INTO b 
+  uses_temp_table {
+    INSERT INTO b
       SELECT * FROM main WHERE id = (SELECT id1 FROM b WHERE main.id = b.id) }
 } {1}
 do_test insert5-2.6 {
@@ -90,8 +90,8 @@ do_test insert5-2.7 {
   uses_temp_table { INSERT INTO b SELECT * FROM v2 }
 } {0}
 do_test insert5-2.8 {
-  uses_temp_table { 
-    INSERT INTO b 
+  uses_temp_table {
+    INSERT INTO b
     SELECT * FROM main WHERE id > 10 AND max(id1, (SELECT id FROM b)) > 10;
   }
 } {1}
@@ -100,16 +100,16 @@ do_test insert5-2.8 {
 # or ORDER BY of a sub-query is no longer supported.
 #
 # do_test insert5-2.9 {
-#   uses_temp_table { 
-#     INSERT INTO b 
-#     SELECT * FROM main 
+#   uses_temp_table {
+#     INSERT INTO b
+#     SELECT * FROM main
 #     WHERE id > 10 AND (SELECT count(*) FROM v2 GROUP BY main.id)
 #   }
 # } {}
 do_test insert5-2.9 {
-  catchsql { 
-    INSERT INTO b 
-    SELECT * FROM main 
+  catchsql {
+    INSERT INTO b
+    SELECT * FROM main
     WHERE id > 10 AND (SELECT count(*) FROM v2 GROUP BY main.id)
   }
 } {1 {no such column: main.id}}

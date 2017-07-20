@@ -59,7 +59,7 @@
 **
 ** The call to vfstrace_register() simply creates the shim VFS that does
 ** tracing.  The application must also arrange to use the new VFS for
-** all database connections that are created and for which tracing is 
+** all database connections that are created and for which tracing is
 ** desired.  This can be done by specifying the trace VFS using URI filename
 ** notation, or by specifying the trace VFS as the 4th parameter to
 ** sqlite3_open_v2() or by making the trace VFS be the default (by setting
@@ -105,7 +105,7 @@
 ** invariants are (1) you must have -DSQLITE_ENABLE_VFSTRACE so that
 ** the shell.c source file will know to include the -vfstrace command-line
 ** option and (2) you must compile and link the three source files
-** shell,c, test_vfstrace.c, and sqlite3.c.  
+** shell,c, test_vfstrace.c, and sqlite3.c.
 */
 #include <stdlib.h>
 #include <string.h>
@@ -306,9 +306,9 @@ static int vfstraceClose(sqlite3_file *pFile){
 ** Read data from an vfstrace-file.
 */
 static int vfstraceRead(
-  sqlite3_file *pFile, 
-  void *zBuf, 
-  int iAmt, 
+  sqlite3_file *pFile,
+  void *zBuf,
+  int iAmt,
   sqlite_int64 iOfst
 ){
   vfstrace_file *p = (vfstrace_file *)pFile;
@@ -325,9 +325,9 @@ static int vfstraceRead(
 ** Write data to an vfstrace-file.
 */
 static int vfstraceWrite(
-  sqlite3_file *pFile, 
-  const void *zBuf, 
-  int iAmt, 
+  sqlite3_file *pFile,
+  const void *zBuf,
+  int iAmt,
   sqlite_int64 iOfst
 ){
   vfstrace_file *p = (vfstrace_file *)pFile;
@@ -441,7 +441,7 @@ static int vfstraceCheckReservedLock(sqlite3_file *pFile, int *pResOut){
   vfstrace_file *p = (vfstrace_file *)pFile;
   vfstrace_info *pInfo = p->pInfo;
   int rc;
-  vfstrace_printf(pInfo, "%s.xCheckReservedLock(%s,%d)", 
+  vfstrace_printf(pInfo, "%s.xCheckReservedLock(%s,%d)",
                   pInfo->zVfsName, p->zFName);
   rc = p->pReal->pMethods->xCheckReservedLock(p->pReal, pResOut);
   vfstrace_print_errcode(pInfo, " -> %s", rc);
@@ -561,10 +561,10 @@ static int vfstraceShmLock(sqlite3_file *pFile, int ofst, int n, int flags){
   return rc;
 }
 static int vfstraceShmMap(
-  sqlite3_file *pFile, 
-  int iRegion, 
-  int szRegion, 
-  int isWrite, 
+  sqlite3_file *pFile,
+  int iRegion,
+  int szRegion,
+  int isWrite,
   void volatile **pp
 ){
   vfstrace_file *p = (vfstrace_file *)pFile;
@@ -670,9 +670,9 @@ static int vfstraceDelete(sqlite3_vfs *pVfs, const char *zPath, int dirSync){
 ** is available, or false otherwise.
 */
 static int vfstraceAccess(
-  sqlite3_vfs *pVfs, 
-  const char *zPath, 
-  int flags, 
+  sqlite3_vfs *pVfs,
+  const char *zPath,
+  int flags,
   int *pResOut
 ){
   vfstrace_info *pInfo = (vfstrace_info*)pVfs->pAppData;
@@ -692,9 +692,9 @@ static int vfstraceAccess(
 ** of at least (DEVSYM_MAX_PATHNAME+1) bytes.
 */
 static int vfstraceFullPathname(
-  sqlite3_vfs *pVfs, 
-  const char *zPath, 
-  int nOut, 
+  sqlite3_vfs *pVfs,
+  const char *zPath,
+  int nOut,
   char *zOut
 ){
   vfstrace_info *pInfo = (vfstrace_info*)pVfs->pAppData;
@@ -720,7 +720,7 @@ static void *vfstraceDlOpen(sqlite3_vfs *pVfs, const char *zPath){
 
 /*
 ** Populate the buffer zErrMsg (size nByte bytes) with a human readable
-** utf-8 string describing the most recent error encountered associated 
+** utf-8 string describing the most recent error encountered associated
 ** with dynamic libraries.
 */
 static void vfstraceDlError(sqlite3_vfs *pVfs, int nByte, char *zErrMsg){
@@ -752,7 +752,7 @@ static void vfstraceDlClose(sqlite3_vfs *pVfs, void *pHandle){
 }
 
 /*
-** Populate the buffer pointed to by zBufOut with nByte bytes of 
+** Populate the buffer pointed to by zBufOut with nByte bytes of
 ** random data.
 */
 static int vfstraceRandomness(sqlite3_vfs *pVfs, int nByte, char *zBufOut){
@@ -763,7 +763,7 @@ static int vfstraceRandomness(sqlite3_vfs *pVfs, int nByte, char *zBufOut){
 }
 
 /*
-** Sleep for nMicro microseconds. Return the number of microseconds 
+** Sleep for nMicro microseconds. Return the number of microseconds
 ** actually slept.
 */
 static int vfstraceSleep(sqlite3_vfs *pVfs, int nMicro){
@@ -825,7 +825,7 @@ static const char *vfstraceNextSystemCall(sqlite3_vfs *pVfs, const char *zName){
 /*
 ** Clients invoke this routine to construct a new trace-vfs shim.
 **
-** Return SQLITE_OK on success.  
+** Return SQLITE_OK on success.
 **
 ** SQLITE_NOMEM is returned in the case of a memory allocation error.
 ** SQLITE_NOTFOUND is returned if zOldVfsName does not exist.
@@ -873,11 +873,11 @@ int vfstrace_register(
     pNew->xCurrentTimeInt64 = pRoot->xCurrentTimeInt64==0 ? 0 :
                                    vfstraceCurrentTimeInt64;
     if( pNew->iVersion>=3 ){
-      pNew->xSetSystemCall = pRoot->xSetSystemCall==0 ? 0 : 
+      pNew->xSetSystemCall = pRoot->xSetSystemCall==0 ? 0 :
                                    vfstraceSetSystemCall;
-      pNew->xGetSystemCall = pRoot->xGetSystemCall==0 ? 0 : 
+      pNew->xGetSystemCall = pRoot->xGetSystemCall==0 ? 0 :
                                    vfstraceGetSystemCall;
-      pNew->xNextSystemCall = pRoot->xNextSystemCall==0 ? 0 : 
+      pNew->xNextSystemCall = pRoot->xNextSystemCall==0 ? 0 :
                                    vfstraceNextSystemCall;
     }
   }

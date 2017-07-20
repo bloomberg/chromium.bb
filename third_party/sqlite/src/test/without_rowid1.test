@@ -154,7 +154,7 @@ do_execsql_test 2.4.2 {
 } {ABC def ghi ABC def ghi}
 
 #-------------------------------------------------------------------------
-# Unless the destination table is completely empty, the xfer optimization 
+# Unless the destination table is completely empty, the xfer optimization
 # is disabled for WITHOUT ROWID tables. The following tests check for
 # some problems that might occur if this were not the case.
 #
@@ -295,9 +295,9 @@ do_execsql_test 6.0 {
 
 do_execsql_test 6.1 {
   CREATE TABLE t48(
-    a UNIQUE UNIQUE, 
-    b UNIQUE, 
-    PRIMARY KEY(a), 
+    a UNIQUE UNIQUE,
+    b UNIQUE,
+    PRIMARY KEY(a),
     UNIQUE(a)
   ) WITHOUT ROWID;
   INSERT INTO t48 VALUES('a', 'b'), ('c', 'd'), ('e', 'f');
@@ -328,5 +328,5 @@ do_catchsql_test 7.3 {
   ) WITHOUT ROWID;
 } {1 {no such column: rowid}}
 
-  
+
 finish_test

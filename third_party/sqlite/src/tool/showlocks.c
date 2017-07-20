@@ -58,7 +58,7 @@ int main(int argc, char **argv){
     return 1;
   }
   cnt = showLocksInRange(fd, 0, MX_LCK);
-  if( cnt==0 ) printf("no locks\n");  
+  if( cnt==0 ) printf("no locks\n");
   close(fd);
   return 0;
 }

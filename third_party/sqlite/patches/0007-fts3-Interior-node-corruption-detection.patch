@@ -27,7 +27,7 @@ index 9659815da93a..4b032271148e 100644
 @@ -1844,7 +1844,13 @@ static int fts3ScanInteriorNode(
      isFirstTerm = 0;
      zCsr += fts3GetVarint32(zCsr, &nSuffix);
-     
+
 -    if( nPrefix<0 || nSuffix<0 || &zCsr[nSuffix]>zEnd ){
 +    /* NOTE(shess): Previous code checked for negative nPrefix and
 +    ** nSuffix and suffix overrunning zEnd.  Additionally corrupt if
@@ -39,6 +39,6 @@ index 9659815da93a..4b032271148e 100644
        rc = FTS_CORRUPT_VTAB;
        goto finish_scan;
      }
--- 
+--
 2.11.0
 

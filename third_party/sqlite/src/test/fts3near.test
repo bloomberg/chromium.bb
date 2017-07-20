@@ -64,28 +64,28 @@ do_test fts3near-1.11 {
 } {1}
 do_test fts3near-1.12 {
   execsql {SELECT docid FROM t1 WHERE content MATCH 'five NEAR/1 "two three"'}
-} {2 3} 
+} {2 3}
 do_test fts3near-1.13 {
   execsql {SELECT docid FROM t1 WHERE content MATCH 'one NEAR five'}
-} {1 3} 
+} {1 3}
 
 do_test fts3near-1.14 {
   execsql {SELECT docid FROM t1 WHERE content MATCH 'four NEAR four'}
-} {} 
+} {}
 do_test fts3near-1.15 {
   execsql {SELECT docid FROM t1 WHERE content MATCH 'one NEAR two NEAR one'}
-} {3} 
+} {3}
 
 do_test fts3near-1.16 {
   execsql {
     SELECT docid FROM t1 WHERE content MATCH '"one three" NEAR/0 "four five"'
   }
-} {1} 
+} {1}
 do_test fts3near-1.17 {
   execsql {
     SELECT docid FROM t1 WHERE content MATCH '"four five" NEAR/0 "one three"'
   }
-} {1} 
+} {1}
 
 
 # Output format of the offsets() function:
@@ -175,7 +175,7 @@ db eval {
     This specification defines Cascading Style Sheets, level 2 (CSS2). CSS2 is a style sheet language that allows authors and users to attach style (e.g., fonts, spacing, and aural cues) to structured documents (e.g., HTML documents and XML applications). By separating the presentation style of documents from the content of documents, CSS2 simplifies Web authoring and site maintenance.
 
     CSS2 builds on CSS1 (see [CSS1]) and, with very few exceptions, all valid CSS1 style sheets are valid CSS2 style sheets. CSS2 supports media-specific style sheets so that authors may tailor the presentation of their documents to visual browsers, aural devices, printers, braille devices, handheld devices, etc. This specification also supports content positioning, downloadable fonts, table layout, features for internationalization, automatic counters and numbering, and some properties related to user interface.
-  ') 
+  ')
 }
 do_test fts3near-4.1 {
   execsql {

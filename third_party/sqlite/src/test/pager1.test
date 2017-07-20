@@ -81,7 +81,7 @@ db func a_string a_string
 
 do_multiclient_test tn {
 
-  # Create and populate a database table using connection [db]. Check 
+  # Create and populate a database table using connection [db]. Check
   # that connections [db2] and [db3] can see the schema and content.
   #
   do_test pager1-$tn.1 {
@@ -112,15 +112,15 @@ do_multiclient_test tn {
   # other connections (specifically [db2]) from writing to the database.
   #
   # Even if [db2] opens a transaction first, it may not write to the
-  # database. After the attempt to write the db within a transaction, 
+  # database. After the attempt to write the db within a transaction,
   # [db2] is left with an open transaction, but not a read-lock on
   # the main database. So it does not prevent [db] from committing.
   #
-  do_test pager1-$tn.8 { 
+  do_test pager1-$tn.8 {
     csql2 { UPDATE t1 SET a = a + 10 }
   } {1 {database is locked}}
-  do_test pager1-$tn.9 { 
-    csql2 { 
+  do_test pager1-$tn.9 {
+    csql2 {
       BEGIN;
       UPDATE t1 SET a = a + 10;
     }
@@ -137,8 +137,8 @@ do_multiclient_test tn {
   # Check that, as noted above, [db2] really did keep an open transaction
   # after the attempt to write the database failed.
   #
-  do_test pager1-$tn.14 { 
-    csql2 { BEGIN } 
+  do_test pager1-$tn.14 {
+    csql2 { BEGIN }
   } {1 {cannot start a transaction within a transaction}}
   do_test pager1-$tn.15 { sql2 { ROLLBACK } } {}
 
@@ -147,10 +147,10 @@ do_multiclient_test tn {
   # of any transaction). After this fails, check that [db3] can read
   # the db (showing that [db] did not take a PENDING lock etc.)
   #
-  do_test pager1-$tn.15 { 
+  do_test pager1-$tn.15 {
     sql2 { BEGIN; SELECT * FROM t1; }
   } {1 one 2 two 3 three}
-  do_test pager1-$tn.16 { 
+  do_test pager1-$tn.16 {
     csql1 { UPDATE t1 SET a = a + 10 }
   } {1 {database is locked}}
   do_test pager1-$tn.17 { sql3 { SELECT * FROM t1 } } {1 one 2 two 3 three}
@@ -159,17 +159,17 @@ do_multiclient_test tn {
   # This works - [db] gets a RESERVED lock which does not conflict with
   # the SHARED lock [db2] is holding.
   #
-  do_test pager1-$tn.18 { 
-    sql1 { 
-      BEGIN;  
-      UPDATE t1 SET a = a + 10; 
+  do_test pager1-$tn.18 {
+    sql1 {
+      BEGIN;
+      UPDATE t1 SET a = a + 10;
     }
   } {}
-  do_test pager1-$tn-19 { 
-    sql1 { PRAGMA lock_status } 
+  do_test pager1-$tn-19 {
+    sql1 { PRAGMA lock_status }
   } {main reserved temp closed}
-  do_test pager1-$tn-20 { 
-    sql2 { PRAGMA lock_status } 
+  do_test pager1-$tn-20 {
+    sql2 { PRAGMA lock_status }
   } {main shared temp closed}
 
   # Check that all connections can still read the database. Only [db] sees
@@ -180,7 +180,7 @@ do_multiclient_test tn {
   do_test pager1-$tn.23 { sql3 { SELECT * FROM t1 } } {1 one 2 two 3 three}
 
   # Because [db2] still has the SHARED lock, [db] is unable to commit the
-  # transaction. If it tries, an error is returned and the connection 
+  # transaction. If it tries, an error is returned and the connection
   # upgrades to a PENDING lock.
   #
   # Once this happens, [db] can read the database and see the new content,
@@ -189,8 +189,8 @@ do_multiclient_test tn {
   # the database.
   #
   do_test pager1-$tn.24 { csql1 { COMMIT } } {1 {database is locked}}
-  do_test pager1-$tn-25 { 
-    sql1 { PRAGMA lock_status } 
+  do_test pager1-$tn-25 {
+    sql1 { PRAGMA lock_status }
   } {main pending temp closed}
   do_test pager1-$tn.26 { sql1 { SELECT * FROM t1  } } {11 one 12 two 13 three}
   do_test pager1-$tn.27 { sql2 { SELECT * FROM t1  } } {1 one 2 two 3 three}
@@ -204,7 +204,7 @@ do_multiclient_test tn {
   do_test pager1-$tn.30 { csql2 { SELECT * FROM t1 } } {1 {database is locked}}
   do_test pager1-$tn.31 { csql3 { SELECT * FROM t1 } } {1 {database is locked}}
 
-  # [db] is now able to commit the transaction. Once the transaction is 
+  # [db] is now able to commit the transaction. Once the transaction is
   # committed, all three connections can read the new content.
   #
   do_test pager1-$tn.25 { sql1 { UPDATE t1 SET a = a+10 } } {}
@@ -223,11 +223,11 @@ do_multiclient_test tn {
   }
   db busy busy
 
-  do_test pager1-$tn.29 { 
-    sql1 { BEGIN ; INSERT INTO t1 VALUES('x', 'y') } 
+  do_test pager1-$tn.29 {
+    sql1 { BEGIN ; INSERT INTO t1 VALUES('x', 'y') }
   } {}
-  do_test pager1-$tn.30 { 
-    sql2 { BEGIN ; SELECT * FROM t1 } 
+  do_test pager1-$tn.30 {
+    sql2 { BEGIN ; SELECT * FROM t1 }
   } {21 one 22 two 23 three}
   do_test pager1-$tn.31 { sql1 COMMIT } {}
   do_test pager1-$tn.32 { set ::nbusy } {0 1 2 3 4 5 6}
@@ -241,13 +241,13 @@ do_multiclient_test tn {
 #
 # pager1-3.1.3.*: Use a journal created in synchronous=off mode as part
 #                 of a savepoint rollback.
-# 
+#
 do_test pager1-3.1.1 {
   faultsim_delete_and_reopen
   execsql {
     CREATE TABLE t1(a PRIMARY KEY, b);
     CREATE TABLE counter(
-      i CHECK (i<5), 
+      i CHECK (i<5),
       u CHECK (u<10)
     );
     INSERT INTO counter VALUES(0, 0);
@@ -369,7 +369,7 @@ foreach {tn sql tcl} {
 # pager1.4.2.*: Test that if the master journal pointer at the end of a
 #               hot-journal file appears to be corrupt (checksum does not
 #               compute) the associated journal is rolled back (and no
-#               xAccess() call to check for the presence of any master 
+#               xAccess() call to check for the presence of any master
 #               journal file is made).
 #
 # pager1.4.3.*: Test that the contents of a hot-journal are ignored if the
@@ -390,10 +390,10 @@ foreach {tn sql tcl} {
 # pager1.4.7.*: Test that if a hot-journal file exists but a client can
 #               open it for reading only, the database cannot be accessed and
 #               SQLITE_CANTOPEN is returned.
-# 
+#
 do_test pager1.4.1.1 {
   faultsim_delete_and_reopen
-  execsql { 
+  execsql {
     CREATE TABLE x(y, z);
     INSERT INTO x VALUES(1, 2);
   }
@@ -522,7 +522,7 @@ db close
 
 # Set up a VFS that snapshots the file-system just before a master journal
 # file is deleted to commit a multi-file transaction. Specifically, the
-# file-system is saved just before the xDelete() call to remove the 
+# file-system is saved just before the xDelete() call to remove the
 # master journal file from the file-system.
 #
 set pwd [get_pwd]
@@ -531,7 +531,7 @@ tv script copy_on_mj_delete
 set ::mj_filename_length 0
 set ::mj_delete_cnt 0
 proc copy_on_mj_delete {method filename args} {
-  if {[string match *mj* [file tail $filename]]} { 
+  if {[string match *mj* [file tail $filename]]} {
     #
     # NOTE: Is the file name relative?  If so, add the length of the current
     #       directory.
@@ -542,7 +542,7 @@ proc copy_on_mj_delete {method filename args} {
     } else {
       set ::mj_filename_length [string length $filename]
     }
-    faultsim_save 
+    faultsim_save
     incr ::mj_delete_cnt
   }
   return SQLITE_OK
@@ -550,7 +550,7 @@ proc copy_on_mj_delete {method filename args} {
 
 foreach {tn1 tcl} {
   1 { set prefix "test.db" }
-  2 { 
+  2 {
     # This test depends on the underlying VFS being able to open paths
     # 512 bytes in length. The idea is to create a hot-journal file that
     # contains a master-journal pointer so large that it could contain
@@ -582,62 +582,62 @@ foreach {tn1 tcl} {
 } {
   eval $tcl
   foreach {tn2 sql usesMJ} {
-    o { 
+    o {
       PRAGMA main.synchronous=OFF;
       PRAGMA aux.synchronous=OFF;
       PRAGMA journal_mode = DELETE;
     } 0
-    o512 { 
+    o512 {
       PRAGMA main.synchronous=OFF;
       PRAGMA aux.synchronous=OFF;
       PRAGMA main.page_size = 512;
       PRAGMA aux.page_size = 512;
       PRAGMA journal_mode = DELETE;
     } 0
-    n { 
+    n {
       PRAGMA main.synchronous=NORMAL;
       PRAGMA aux.synchronous=NORMAL;
       PRAGMA journal_mode = DELETE;
     } 1
-    f { 
+    f {
       PRAGMA main.synchronous=FULL;
       PRAGMA aux.synchronous=FULL;
       PRAGMA journal_mode = DELETE;
     } 1
-    w1 { 
+    w1 {
       PRAGMA main.synchronous=NORMAL;
       PRAGMA aux.synchronous=NORMAL;
       PRAGMA journal_mode = WAL;
     } 0
-    w2 { 
+    w2 {
       PRAGMA main.synchronous=NORMAL;
       PRAGMA aux.synchronous=NORMAL;
       PRAGMA main.journal_mode=DELETE;
       PRAGMA aux.journal_mode=WAL;
     } 0
-    o1a { 
+    o1a {
       PRAGMA main.synchronous=FULL;
       PRAGMA aux.synchronous=OFF;
       PRAGMA journal_mode=DELETE;
     } 0
-    o1b { 
+    o1b {
       PRAGMA main.synchronous=OFF;
       PRAGMA aux.synchronous=NORMAL;
       PRAGMA journal_mode=DELETE;
     } 0
-    m1 { 
+    m1 {
       PRAGMA main.synchronous=NORMAL;
       PRAGMA aux.synchronous=NORMAL;
       PRAGMA main.journal_mode=DELETE;
       PRAGMA aux.journal_mode = MEMORY;
     } 0
-    t1 { 
+    t1 {
       PRAGMA main.synchronous=NORMAL;
       PRAGMA aux.synchronous=NORMAL;
       PRAGMA main.journal_mode=DELETE;
       PRAGMA aux.journal_mode = TRUNCATE;
     } 1
-    p1 { 
+    p1 {
       PRAGMA main.synchronous=NORMAL;
       PRAGMA aux.synchronous=NORMAL;
       PRAGMA main.journal_mode=DELETE;
@@ -646,8 +646,8 @@ foreach {tn1 tcl} {
   } {
 
     set tn "${tn1}.${tn2}"
-  
-    # Set up a connection to have two databases, test.db (main) and 
+
+    # Set up a connection to have two databases, test.db (main) and
     # test.db2 (aux). Then run a multi-file transaction on them. The
     # VFS will snapshot the file-system just before the master-journal
     # file is deleted to commit the transaction.
@@ -683,7 +683,7 @@ foreach {tn1 tcl} {
     do_test pager1-4.4.$tn.1b {
       set ::mj_delete_cnt
     } $usesMJ
-    
+
     # Check that the transaction was committed successfully.
     #
     do_execsql_test pager1-4.4.$tn.2 {
@@ -692,7 +692,7 @@ foreach {tn1 tcl} {
     do_execsql_test pager1-4.4.$tn.3 {
       SELECT * FROM b
     } {won too free double-you why zed}
-    
+
     if {$usesMJ} {
       # Restore the file-system and reopen the databases. Check that it now
       # appears that the transaction was not committed (because the file-system
@@ -705,7 +705,7 @@ foreach {tn1 tcl} {
       do_execsql_test pager1-4.4.$tn.5 {SELECT * FROM a} {double-you why zed}
       do_execsql_test pager1-4.4.$tn.6 {SELECT * FROM b} {won too free}
     }
-    
+
     # Restore the file-system again. This time, before reopening the databases,
     # delete the master-journal file from the file-system. It now appears that
     # the transaction was committed (no master-journal file == no rollback).
@@ -744,7 +744,7 @@ tv sectorsize 512
 tv script copy_on_journal_delete
 tv filter xDelete
 proc copy_on_journal_delete {method filename args} {
-  if {[string match *journal $filename]} faultsim_save 
+  if {[string match *journal $filename]} faultsim_save
   return SQLITE_OK
 }
 faultsim_delete_and_reopen
@@ -771,14 +771,14 @@ do_execsql_test pager1.4.5.2 {
 
 # Now try four tests:
 #
-#  pager1-4.5.3: Restore the file-system. Check that the whole transaction 
+#  pager1-4.5.3: Restore the file-system. Check that the whole transaction
 #                is rolled back.
 #
 #  pager1-4.5.4: Restore the file-system. Corrupt the first record in the
 #                journal. Check the transaction is not rolled back.
 #
 #  pager1-4.5.5: Restore the file-system. Corrupt the second record in the
-#                journal. Check that the first record in the transaction is 
+#                journal. Check that the first record in the transaction is
 #                played back, but not the second.
 #
 #  pager1-4.5.6: Restore the file-system. Try to open the database with a
@@ -818,9 +818,9 @@ db close
 tv script copy_on_mj_delete
 tv filter xDelete
 proc copy_on_mj_delete {method filename args} {
-  if {[string match *mj* [file tail $filename]]} { 
+  if {[string match *mj* [file tail $filename]]} {
     set ::mj_filename $filename
-    faultsim_save 
+    faultsim_save
   }
   return SQLITE_OK
 }
@@ -891,7 +891,7 @@ do_test pager1.4.6.9 {
   [file tail $::mj_filename] [file tail $::mj_filename1]
 ]]
 
-# The master-journal $::mj_filename1 contains pointers to test.db and 
+# The master-journal $::mj_filename1 contains pointers to test.db and
 # test.db2. However the hot-journal associated with test.db2 points to
 # a different master-journal. Therefore, reading from test.db only should
 # be enough to cause SQLite to delete $::mj_filename1.
@@ -921,7 +921,7 @@ tv sectorsize 512
 tv script copy_on_journal_delete
 tv filter xDelete
 proc copy_on_journal_delete {method filename args} {
-  if {[string match *journal $filename]} faultsim_save 
+  if {[string match *journal $filename]} faultsim_save
   return SQLITE_OK
 }
 faultsim_delete_and_reopen
@@ -939,7 +939,7 @@ do_execsql_test pager1.4.7.1 {
 } {delete}
 tv filter {}
 db close
-tv delete 
+tv delete
 catch {
   test_syscall install fchmod
   test_syscall fault 1 1
@@ -994,13 +994,13 @@ do_test pager1.4.8.3 {
 # pager1-5.4.*: Check that with synchronous=normal, the master-journal file
 #               name is added to a journal file immediately after the last
 #               journal record. But with synchronous=full, extra unused space
-#               is allocated between the last journal record and the 
+#               is allocated between the last journal record and the
 #               master-journal file name so that the master-journal file
 #               name does not lie on the same sector as the last journal file
 #               record.
 #
 # pager1-5.5.*: Check that in journal_mode=PERSIST mode, a journal file is
-#               truncated to zero bytes when a multi-file transaction is 
+#               truncated to zero bytes when a multi-file transaction is
 #               committed (instead of the first couple of bytes being zeroed).
 #
 #
@@ -1086,10 +1086,10 @@ do_test pager1-5.4.1 {
   }
 
   # The size of the journal file is now:
-  # 
+  #
   #   1) 512 byte header +
   #   2) 2 * (1024+8) byte records +
-  #   3) 20+N bytes of master-journal pointer, where N is the size of 
+  #   3) 20+N bytes of master-journal pointer, where N is the size of
   #      the master-journal name encoded as utf-8 with no nul term.
   #
   set mj_pointer [expr {
@@ -1139,7 +1139,7 @@ tv delete
 
 do_test pager1-5.5.1 {
   sqlite3 db test.db
-  execsql { 
+  execsql {
     ATTACH 'test.db2' AS aux;
     PRAGMA journal_mode = PERSIST;
     CREATE TABLE t3(a, b);
@@ -1218,7 +1218,7 @@ do_execsql_test pager1-6.12 { PRAGMA max_page_count }      {11}
 ifcapable wal {
   faultsim_delete_and_reopen
   foreach {tn sql res js ws} [subst {
-  
+
     1  {
       CREATE TABLE t1(a, b);
       PRAGMA auto_vacuum=OFF;
@@ -1228,28 +1228,28 @@ ifcapable wal {
       PRAGMA journal_mode=TRUNCATE;
       INSERT INTO t1 VALUES(1, 2);
     } {exclusive truncate} 0 -1
-  
+
     2  {
       BEGIN IMMEDIATE;
         SELECT * FROM t1;
       COMMIT;
     } {1 2} 0 -1
-  
+
     3  {
       BEGIN;
         SELECT * FROM t1;
       COMMIT;
     } {1 2} 0 -1
-  
+
     4  { PRAGMA journal_mode = WAL }    wal       -1 -1
     5  { INSERT INTO t1 VALUES(3, 4) }  {}        -1 [wal_file_size 1 1024]
     6  { PRAGMA locking_mode = NORMAL } exclusive -1 [wal_file_size 1 1024]
     7  { INSERT INTO t1 VALUES(5, 6); } {}        -1 [wal_file_size 2 1024]
-  
+
     8  { PRAGMA journal_mode = TRUNCATE } truncate          0 -1
     9  { INSERT INTO t1 VALUES(7, 8) }    {}                0 -1
     10 { SELECT * FROM t1 }               {1 2 3 4 5 6 7 8} 0 -1
-  
+
   }] {
     do_execsql_test pager1-7.1.$tn.1 $sql $res
     catch { set J -1 ; set J [file size test.db-journal] }
@@ -1281,7 +1281,7 @@ do_test pager1-7.2.3 {
 } {persist -1}
 
 #-------------------------------------------------------------------------
-# The following tests, pager1-8.*, test that the special filenames 
+# The following tests, pager1-8.*, test that the special filenames
 # ":memory:" and "" open temporary databases.
 #
 foreach {tn filename} {
@@ -1323,7 +1323,7 @@ foreach {tn filename} {
 #                 source db is written to during the backup op.
 #
 #   pager1-9.2.*: Test that a backup completes successfully even if the
-#                 source db is written to and then rolled back during a 
+#                 source db is written to and then rolled back during a
 #                 backup operation.
 #
 do_test pager1-9.0.1 {
@@ -1374,7 +1374,7 @@ do_test pager1-9.2.1 {
   B step 30
 } {SQLITE_OK}
 do_test pager1-9.2.2 {
-  execsql { 
+  execsql {
     BEGIN;
       UPDATE ab SET b = a_string(301);
     ROLLBACK;
@@ -1461,7 +1461,7 @@ db2 close
 testvfs tv -default 1
 foreach sectorsize {
     16
-    32   64   128   256   512   1024   2048 
+    32   64   128   256   512   1024   2048
     4096 8192 16384 32768 65536 131072 262144
 } {
   tv sectorsize $sectorsize
@@ -1486,7 +1486,7 @@ foreach sectorsize {
   } [expr $sectorsize > 65536 ? 65536 : ($sectorsize<32 ? 512 : $sectorsize)]
 
   do_test pager1-10.$sectorsize.2 {
-    execsql { 
+    execsql {
       INSERT INTO t3 VALUES(a_string(300), a_string(300));
       INSERT INTO t3 SELECT * FROM t3;        /*  2 */
       INSERT INTO t3 SELECT * FROM t3;        /*  4 */
@@ -1499,7 +1499,7 @@ foreach sectorsize {
   do_test pager1-10.$sectorsize.3 {
     db close
     sqlite3 db test.db
-    execsql { 
+    execsql {
       PRAGMA cache_size = 10;
       BEGIN;
     }
@@ -1528,7 +1528,7 @@ foreach sectorsize {
       SELECT * FROM t5;
     }
   } {1 2}
-  
+
 }
 db close
 
@@ -1606,20 +1606,20 @@ do_test pager1-11.4 {
 do_execsql_test pager1-11.5 { SELECT count(*) FROM zz } {32}
 db close
 tv delete
-  
+
 #-------------------------------------------------------------------------
 # Test "PRAGMA page_size"
 #
 testvfs tv -default 1
 tv sectorsize 1024
 foreach pagesize {
-    512   1024   2048 4096 8192 16384 32768 
+    512   1024   2048 4096 8192 16384 32768
 } {
   faultsim_delete_and_reopen
 
   # The sector-size (according to the VFS) is 1024 bytes. So if the
   # page-size requested using "PRAGMA page_size" is greater than the
-  # compile time value of SQLITE_MAX_PAGE_SIZE, then the effective 
+  # compile time value of SQLITE_MAX_PAGE_SIZE, then the effective
   # page-size remains 1024 bytes.
   #
   set eff $pagesize
@@ -1635,13 +1635,13 @@ foreach pagesize {
   } $eff
   do_test pager1-12.$pagesize.2 {
     sqlite3 db2 test.db
-    execsql { 
+    execsql {
       SELECT count(*) FROM v;
       PRAGMA main.page_size;
     } db2
   } [list 1 $eff]
   do_test pager1-12.$pagesize.3 {
-    execsql { 
+    execsql {
       SELECT count(*) FROM v;
       PRAGMA main.page_size;
     }
@@ -1654,9 +1654,9 @@ tv delete
 #-------------------------------------------------------------------------
 # Test specal "PRAGMA journal_mode=PERSIST" test cases.
 #
-# pager1-13.1.*: This tests a special case encountered in persistent 
+# pager1-13.1.*: This tests a special case encountered in persistent
 #                journal mode: If the journal associated with a transaction
-#                is smaller than the journal file (because a previous 
+#                is smaller than the journal file (because a previous
 #                transaction left a very large non-hot journal file in the
 #                file-system), then SQLite has to be careful that there is
 #                not a journal-header left over from a previous transaction
@@ -1684,7 +1684,7 @@ faultsim_delete_and_reopen
 db func a_string a_string
 
 # The UPDATE statement at the end of this test case creates a really big
-# journal. Since the cache-size is only 10 pages, the journal contains 
+# journal. Since the cache-size is only 10 pages, the journal contains
 # frequent journal headers.
 #
 do_execsql_test pager1-13.1.1 {
@@ -1707,15 +1707,15 @@ do_execsql_test pager1-13.1.1 {
 
 if {$::tcl_platform(platform)!="windows"} {
 # Run transactions of increasing sizes. Eventually, one (or more than one)
-# of these will write just enough content that one of the old headers created 
+# of these will write just enough content that one of the old headers created
 # by the transaction in the block above lies immediately after the content
 # journalled by the current transaction.
 #
 for {set nUp 1} {$nUp<64} {incr nUp} {
-  do_execsql_test pager1-13.1.2.$nUp.1 { 
+  do_execsql_test pager1-13.1.2.$nUp.1 {
     UPDATE t1 SET b = a_string(399) WHERE a <= $nUp
   } {}
-  do_execsql_test pager1-13.1.2.$nUp.2 { PRAGMA integrity_check } {ok} 
+  do_execsql_test pager1-13.1.2.$nUp.2 { PRAGMA integrity_check } {ok}
 
   # Try to access the snapshot of the file-system.
   #
@@ -1738,10 +1738,10 @@ do_execsql_test pager1-13.2.1 {
   UPDATE t1 SET b = a_string(400);
 } {}
 for {set nUp 1} {$nUp<64} {incr nUp} {
-  do_execsql_test pager1-13.2.2.$nUp.1 { 
+  do_execsql_test pager1-13.2.2.$nUp.1 {
     UPDATE t1 SET b = a_string(399) WHERE a <= $nUp
   } {}
-  do_execsql_test pager1-13.2.2.$nUp.2 { PRAGMA integrity_check } {ok} 
+  do_execsql_test pager1-13.2.2.$nUp.2 { PRAGMA integrity_check } {ok}
   sqlite3 db2 sv_test.db
   do_test pager1-13.2.2.$nUp.3 {
     execsql { SELECT sum(length(b)) FROM t1 } db2
@@ -1844,7 +1844,7 @@ for {set ii [expr $::file_len-5]} {$ii < [expr $::file_len+20]} {incr ii} {
 
 
 #-------------------------------------------------------------------------
-# Test the pagers response to the b-tree layer requesting illegal page 
+# Test the pagers response to the b-tree layer requesting illegal page
 # numbers:
 #
 #   + The locking page,
@@ -1858,7 +1858,7 @@ ifcapable !direct_read {
 do_test pager1-18.1 {
   faultsim_delete_and_reopen
   db func a_string a_string
-  execsql { 
+  execsql {
     PRAGMA page_size = 1024;
     CREATE TABLE t1(a, b);
     INSERT INTO t1 VALUES(a_string(500), a_string(200));
@@ -1998,16 +1998,16 @@ do_test pager1-19.1 {
 } {}
 
 #-------------------------------------------------------------------------
-# Test a couple of special cases that come up while committing 
+# Test a couple of special cases that come up while committing
 # transactions:
 #
-#   pager1-20.1.*: Committing an in-memory database transaction when the 
+#   pager1-20.1.*: Committing an in-memory database transaction when the
 #                  database has not been modified at all.
 #
 #   pager1-20.2.*: As above, but with a normal db in exclusive-locking mode.
 #
 #   pager1-20.3.*: Committing a transaction in WAL mode where the database has
-#                  been modified, but all dirty pages have been flushed to 
+#                  been modified, but all dirty pages have been flushed to
 #                  disk before the commit.
 #
 do_test pager1-20.1.1 {
@@ -2277,7 +2277,7 @@ do_test pager1-24.1.2 {
   recursive_select 64 x2
 } {}
 do_test pager1-24.1.3 {
-  execsql { 
+  execsql {
       UPDATE x1 SET z = a_string(300) WHERE rowid>40;
     COMMIT;
     PRAGMA integrity_check;
@@ -2376,15 +2376,15 @@ do_test pager1.27.1 {
 } {}
 
 #-------------------------------------------------------------------------
-# Test that attempting to open a write-transaction with 
-# locking_mode=exclusive in WAL mode fails if there are other clients on 
+# Test that attempting to open a write-transaction with
+# locking_mode=exclusive in WAL mode fails if there are other clients on
 # the same database.
 #
 catch { db close }
 ifcapable wal {
   do_multiclient_test tn {
     do_test pager1-28.$tn.1 {
-      sql1 { 
+      sql1 {
         PRAGMA journal_mode = WAL;
         CREATE TABLE t1(a, b);
         INSERT INTO t1 VALUES('a', 'b');
@@ -2393,11 +2393,11 @@ ifcapable wal {
     do_test pager1-28.$tn.2 { sql2 { SELECT * FROM t1 } } {a b}
 
     do_test pager1-28.$tn.3 { sql1 { PRAGMA locking_mode=exclusive } } {exclusive}
-    do_test pager1-28.$tn.4 { 
+    do_test pager1-28.$tn.4 {
       csql1 { BEGIN; INSERT INTO t1 VALUES('c', 'd'); }
     } {1 {database is locked}}
     code2 { db2 close ; sqlite3 db2 test.db }
-    do_test pager1-28.$tn.4 { 
+    do_test pager1-28.$tn.4 {
       sql1 { INSERT INTO t1 VALUES('c', 'd'); COMMIT }
     } {}
   }
@@ -2410,7 +2410,7 @@ ifcapable wal {
 #
 do_multiclient_test tn {
   do_test pager1-28.$tn.1 {
-    sql1 { 
+    sql1 {
       PRAGMA journal_mode = PERSIST;
       CREATE TABLE t1(a, b);
       INSERT INTO t1 VALUES('a', 'b');
@@ -2421,7 +2421,7 @@ do_multiclient_test tn {
   do_test pager1-28.$tn.4 { file exists test.db-journal } 0
 
   do_test pager1-28.$tn.5 {
-    sql1 { 
+    sql1 {
       PRAGMA journal_mode = PERSIST;
       INSERT INTO t1 VALUES('c', 'd');
     }
@@ -2487,7 +2487,7 @@ if {[nonzero_reserved_bytes]} {
 }
 
 #-------------------------------------------------------------------------
-# Test that if an empty database file (size 0 bytes) is opened in 
+# Test that if an empty database file (size 0 bytes) is opened in
 # exclusive-locking mode, any journal file is deleted from the file-system
 # without being rolled back. And that the RESERVED lock obtained while
 # doing this is not released.
@@ -2537,7 +2537,7 @@ do_test pager1-31.1 {
   }
   copy_file test.db test.db2
   copy_file test.db-journal test.db2-journal
-  
+
   hexio_write test.db2-journal 24 00000000
   sqlite3 db2 test.db2
   execsql { PRAGMA integrity_check } db2
@@ -2666,7 +2666,7 @@ do_multiclient_test tn {
     INSERT INTO t1 VALUES(1, 2);
   }
 
-  do_test 36.$tn.1 { 
+  do_test 36.$tn.1 {
     sql2 { PRAGMA max_page_count = 2 }
     list [catch { sql2 { CREATE TABLE t2(x) } } msg] $msg
   } {1 {database or disk is full}}
@@ -2674,7 +2674,7 @@ do_multiclient_test tn {
   sql1 { PRAGMA checkpoint_fullfsync = 1 }
   sql1 { CREATE TABLE t2(x) }
 
-  do_test 36.$tn.2 { 
+  do_test 36.$tn.2 {
     sql2 { INSERT INTO t2 VALUES('xyz') }
     list [catch { sql2 { CREATE TABLE t3(x) } } msg] $msg
   } {1 {database or disk is full}}

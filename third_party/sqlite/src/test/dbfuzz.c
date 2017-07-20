@@ -146,7 +146,7 @@ static VFile *findVFile(const char *zName){
   int i;
   if( zName==0 ) return 0;
   for(i=0; i<MX_FILE; i++){
-    if( g.aFile[i].zFilename==0 ) continue;   
+    if( g.aFile[i].zFilename==0 ) continue;
     if( strcmp(g.aFile[i].zFilename, zName)==0 ) return &g.aFile[i];
   }
   return 0;
@@ -638,7 +638,7 @@ static void runSql(sqlite3 *db, const char *zSql, unsigned  runFlags){
             }
           }
         }
-      }         
+      }
       sqlite3_finalize(pStmt);
     }
   }

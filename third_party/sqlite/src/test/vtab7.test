@@ -24,7 +24,7 @@ ifcapable !vtab {
 
 # Register the echo module. Code inside the echo module appends elements
 # to the global tcl list variable ::echo_module whenever SQLite invokes
-# certain module callbacks. This includes the xSync(), xCommit() and 
+# certain module callbacks. This includes the xSync(), xCommit() and
 # xRollback() callbacks. For each of these callback, two elements are
 # appended to ::echo_module, as follows:
 #
@@ -46,7 +46,7 @@ trace add variable ::echo_module write echo_module_trace
 # This Tcl proc is invoked whenever the ::echo_module variable is written.
 #
 proc echo_module_trace {args} {
-  # Filter out writes to ::echo_module that are not xSync, xCommit or 
+  # Filter out writes to ::echo_module that are not xSync, xCommit or
   # xRollback callbacks.
   if {[llength $::echo_module] < 2} return
   set x [lindex $::echo_module end-1]
@@ -60,7 +60,7 @@ proc echo_module_trace {args} {
   }
 }
 
-# The following tests, vtab7-1.*, test that the trace callback on 
+# The following tests, vtab7-1.*, test that the trace callback on
 # ::echo_module is providing the expected tcl callbacks.
 do_test vtab7-1.1 {
   execsql {
@@ -165,7 +165,7 @@ ifcapable attach {
 # } {1 {library routine called out of sequence}}
 
 # These tests, vtab7-4.*, test that an SQLITE_LOCKED error is returned
-# if an attempt to write to a virtual module table or create a new 
+# if an attempt to write to a virtual module table or create a new
 # virtual table from within an xSync() callback.
 do_test vtab7-4.1 {
   execsql {

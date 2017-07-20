@@ -8,8 +8,8 @@
 #    May you share freely, never taking more than you give.
 #
 #*************************************************************************
-# This file implements regression tests for SQLite library. The focus 
-# of this script is testing the pluggable tokeniser feature of the 
+# This file implements regression tests for SQLite library. The focus
+# of this script is testing the pluggable tokeniser feature of the
 # FTS2 module.
 #
 # $Id: fts2token.test,v 1.3 2007/06/25 12:05:40 danielk1977 Exp $
@@ -49,7 +49,7 @@ proc escape_string {str} {
 #   3: Test that the value returned for tokenizer 'blah' is now the
 #      same as that retrieved for 'simple'.
 #
-#   4: Test that it is now possible to create an fts2 table using 
+#   4: Test that it is now possible to create an fts2 table using
 #      tokenizer 'blah' (it was not possible in step 1).
 #
 #   5: Test that the table created to use tokenizer 'blah' is usable.
@@ -119,7 +119,7 @@ ifcapable icu {
 #--------------------------------------------------------------------------
 # Test cases fts2token-4.* test the ICU tokenizer. In practice, this
 # tokenizer only has two modes - "thai" and "everybody else". Some other
-# Asian languages (Lao, Khmer etc.) require the same special treatment as 
+# Asian languages (Lao, Khmer etc.) require the same special treatment as
 # Thai, but ICU doesn't support them yet.
 #
 ifcapable icu {
@@ -130,14 +130,14 @@ ifcapable icu {
       lindex $::out 0
     } $output
   }
-  
+
   do_icu_test fts2token-4.1 en_US  {}   {}
   do_icu_test fts2token-4.2 en_US {Test cases fts2} [list \
     0 test Test 1 cases cases 2 fts2 fts2
   ]
 
   # The following test shows that ICU is smart enough to recognise
-  # Thai chararacters, even when the locale is set to English/United 
+  # Thai chararacters, even when the locale is set to English/United
   # States.
   #
   set input "\u0e2d\u0e30\u0e44\u0e23\u0e19\u0e30\u0e04\u0e23\u0e31\u0e1a"

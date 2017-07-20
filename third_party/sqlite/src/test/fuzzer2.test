@@ -42,10 +42,10 @@ do_test 1.1.2 {
   set LETTERS {a b c d e f g h i j k l m n o p q r s t u v w x y z}
   set cost 1
   db transaction {
-    foreach c1 $LETTERS { 
-      foreach c2 $LETTERS { 
-        foreach c3 $LETTERS { 
-          foreach c4 $LETTERS { 
+    foreach c1 $LETTERS {
+      foreach c2 $LETTERS {
+        foreach c3 $LETTERS {
+          foreach c4 $LETTERS {
             db eval {INSERT INTO x1_rules VALUES(0, $c1||$c2, $c3||$c4, $cost)}
             set cost [expr ($cost%1000) + 1]
           }
@@ -65,7 +65,7 @@ do_execsql_test 1.2.1 {
   SELECT word FROM x1 WHERE word MATCH 'xx' LIMIT 10;
 } {xx hw hx hy hz ia ib ic id ie}
 do_execsql_test 1.2.2 {
-  SELECT cTo FROM x1_rules WHERE cFrom='xx' 
+  SELECT cTo FROM x1_rules WHERE cFrom='xx'
   ORDER BY cost asc, rowid asc LIMIT 9;
 } {hw hx hy hz ia ib ic id ie}
 

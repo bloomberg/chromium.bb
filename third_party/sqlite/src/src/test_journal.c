@@ -22,7 +22,7 @@
 **     jt_register()
 **     jt_unregister()
 **
-**   See header comments associated with those two functions below for 
+**   See header comments associated with those two functions below for
 **   details.
 **
 ** LIMITATIONS
@@ -34,7 +34,7 @@
 **  Starting a Transaction:
 **
 **   When a write-transaction is started, the contents of the database is
-**   inspected and the following data stored as part of the database file 
+**   inspected and the following data stored as part of the database file
 **   handle (type struct jt_file):
 **
 **     a) The page-size of the database file.
@@ -42,15 +42,15 @@
 **     c) The set of page numbers corresponding to free-list leaf pages.
 **     d) A check-sum for every page in the database file.
 **
-**   The start of a write-transaction is deemed to have occurred when a 
-**   28-byte journal header is written to byte offset 0 of the journal 
+**   The start of a write-transaction is deemed to have occurred when a
+**   28-byte journal header is written to byte offset 0 of the journal
 **   file.
 **
 **  Syncing the Journal File:
 **
 **   Whenever the xSync method is invoked to sync a journal-file, the
 **   contents of the journal file are read. For each page written to
-**   the journal file, a check-sum is calculated and compared to the  
+**   the journal file, a check-sum is calculated and compared to the
 **   check-sum calculated for the corresponding database page when the
 **   write-transaction was initialized. The success of the comparison
 **   is assert()ed. So if SQLite has written something other than the
@@ -58,8 +58,8 @@
 **
 **   Additionally, the set of page numbers for which records exist in
 **   the journal file is added to (unioned with) the set of page numbers
-**   corresponding to free-list leaf pages collected when the 
-**   write-transaction was initialized. This set comprises the page-numbers 
+**   corresponding to free-list leaf pages collected when the
+**   write-transaction was initialized. This set comprises the page-numbers
 **   corresponding to those pages that SQLite may now safely modify.
 **
 **  Writing to the Database File:
@@ -69,12 +69,12 @@
 **
 **     a) That the block of data is an aligned block of page-size bytes.
 **
-**     b) That if the page being written did not exist when the 
+**     b) That if the page being written did not exist when the
 **        transaction was started (i.e. the database file is growing), then
 **        the journal-file must have been synced at least once since
 **        the start of the transaction.
 **
-**     c) That if the page being written did exist when the transaction 
+**     c) That if the page being written did exist when the transaction
 **        was started, then the page must have either been a free-list
 **        leaf page at the start of the transaction, or else must have
 **        been stored in the journal file prior to the most recent sync.
@@ -82,11 +82,11 @@
 **  Closing a Transaction:
 **
 **   When a transaction is closed, all data collected at the start of
-**   the transaction, or following an xSync of a journal-file, is 
-**   discarded. The end of a transaction is recognized when any one 
+**   the transaction, or following an xSync of a journal-file, is
+**   discarded. The end of a transaction is recognized when any one
 **   of the following occur:
 **
-**     a) A block of zeroes (or anything else that is not a valid 
+**     a) A block of zeroes (or anything else that is not a valid
 **        journal-header) is written to the start of the journal file.
 **
 **     b) A journal file is truncated to zero bytes in size using xTruncate.
@@ -265,9 +265,9 @@ static int jtClose(sqlite3_file *pFile){
 ** Read data from an jt-file.
 */
 static int jtRead(
-  sqlite3_file *pFile, 
-  void *zBuf, 
-  int iAmt, 
+  sqlite3_file *pFile,
+  void *zBuf,
+  int iAmt,
   sqlite_int64 iOfst
 ){
   jt_file *p = (jt_file *)pFile;
@@ -275,10 +275,10 @@ static int jtRead(
 }
 
 /*
-** Parameter zJournal is the name of a journal file that is currently 
+** Parameter zJournal is the name of a journal file that is currently
 ** open. This function locates and returns the handle opened on the
 ** corresponding database file by the pager that currently has the
-** journal file opened. This file-handle is identified by the 
+** journal file opened. This file-handle is identified by the
 ** following properties:
 **
 **   a) SQLITE_OPEN_MAIN_DB was specified when the file was opened.
@@ -286,7 +286,7 @@ static int jtRead(
 **   b) The file-name specified when the file was opened matches
 **      all but the final 8 characters of the journal file name.
 **
-**   c) There is currently a reserved lock on the file. This 
+**   c) There is currently a reserved lock on the file. This
 **      condition is waived if the noLock argument is non-zero.
 **/
 static jt_file *locateDatabaseHandle(const char *zJournal, int noLock){
@@ -307,8 +307,8 @@ static jt_file *locateDatabaseHandle(const char *zJournal, int noLock){
 }
 
 /*
-** Parameter z points to a buffer of 4 bytes in size containing a 
-** unsigned 32-bit integer stored in big-endian format. Decode the 
+** Parameter z points to a buffer of 4 bytes in size containing a
+** unsigned 32-bit integer stored in big-endian format. Decode the
 ** integer and return its value.
 */
 static u32 decodeUint32(const unsigned char *z){
@@ -334,7 +334,7 @@ static u32 genCksum(const unsigned char *z, int n){
 ** integer fields contained in the journal header and writes their
 ** values to the output variables.
 **
-** SQLITE_OK is returned if the journal-header is successfully 
+** SQLITE_OK is returned if the journal-header is successfully
 ** decoded. Otherwise, SQLITE_ERROR.
 */
 static int decodeJournalHdr(
@@ -453,16 +453,16 @@ static int readJournalFile(jt_file *p, jt_file *pMain){
 
     /* Read and decode the next journal-header from the journal file. */
     rc = sqlite3OsRead(pReal, zBuf, 28, iOff);
-    if( rc!=SQLITE_OK 
-     || decodeJournalHdr(zBuf, &nRec, &nPage, &nSector, &nPagesize) 
+    if( rc!=SQLITE_OK
+     || decodeJournalHdr(zBuf, &nRec, &nPage, &nSector, &nPagesize)
     ){
       goto finish_rjf;
     }
     iOff += nSector;
 
     if( nRec==0 ){
-      /* A trick. There might be another journal-header immediately 
-      ** following this one. In this case, 0 records means 0 records, 
+      /* A trick. There might be another journal-header immediately
+      ** following this one. In this case, 0 records means 0 records,
       ** not "read until the end of the file". See also ticket #2565.
       */
       if( iSize>=(iOff+nSector) ){
@@ -510,9 +510,9 @@ finish_rjf:
 ** Write data to an jt-file.
 */
 static int jtWrite(
-  sqlite3_file *pFile, 
-  const void *zBuf, 
-  int iAmt, 
+  sqlite3_file *pFile,
+  const void *zBuf,
+  int iAmt,
   sqlite_int64 iOfst
 ){
   int rc;
@@ -521,7 +521,7 @@ static int jtWrite(
     if( iOfst==0 ){
       jt_file *pMain = locateDatabaseHandle(p->zName, 0);
       assert( pMain );
-  
+
       if( iAmt==28 ){
         /* Zeroing the first journal-file header. This is the end of a
         ** transaction. */
@@ -543,9 +543,9 @@ static int jtWrite(
   }
 
   if( p->flags&SQLITE_OPEN_MAIN_DB && p->pWritable ){
-    if( iAmt<(int)p->nPagesize 
-     && p->nPagesize%iAmt==0 
-     && iOfst>=(PENDING_BYTE+512) 
+    if( iAmt<(int)p->nPagesize
+     && p->nPagesize%iAmt==0
+     && iOfst>=(PENDING_BYTE+512)
      && iOfst+iAmt<=PENDING_BYTE+p->nPagesize
     ){
       /* No-op. This special case is hit when the backup code is copying a
@@ -601,8 +601,8 @@ static int jtSync(sqlite3_file *pFile, int flags){
     int rc;
     jt_file *pMain;                   /* The associated database file */
 
-    /* The journal file is being synced. At this point, we inspect the 
-    ** contents of the file up to this point and set each bit in the 
+    /* The journal file is being synced. At this point, we inspect the
+    ** contents of the file up to this point and set each bit in the
     ** jt_file.pWritable bitvec of the main database file associated with
     ** this journal file.
     */
@@ -745,9 +745,9 @@ static int jtDelete(sqlite3_vfs *pVfs, const char *zPath, int dirSync){
 ** is available, or false otherwise.
 */
 static int jtAccess(
-  sqlite3_vfs *pVfs, 
-  const char *zPath, 
-  int flags, 
+  sqlite3_vfs *pVfs,
+  const char *zPath,
+  int flags,
   int *pResOut
 ){
   return sqlite3OsAccess(g.pVfs, zPath, flags, pResOut);
@@ -759,9 +759,9 @@ static int jtAccess(
 ** of at least (JT_MAX_PATHNAME+1) bytes.
 */
 static int jtFullPathname(
-  sqlite3_vfs *pVfs, 
-  const char *zPath, 
-  int nOut, 
+  sqlite3_vfs *pVfs,
+  const char *zPath,
+  int nOut,
   char *zOut
 ){
   return sqlite3OsFullPathname(g.pVfs, zPath, nOut, zOut);
@@ -776,7 +776,7 @@ static void *jtDlOpen(sqlite3_vfs *pVfs, const char *zPath){
 
 /*
 ** Populate the buffer zErrMsg (size nByte bytes) with a human readable
-** utf-8 string describing the most recent error encountered associated 
+** utf-8 string describing the most recent error encountered associated
 ** with dynamic libraries.
 */
 static void jtDlError(sqlite3_vfs *pVfs, int nByte, char *zErrMsg){
@@ -798,7 +798,7 @@ static void jtDlClose(sqlite3_vfs *pVfs, void *pHandle){
 }
 
 /*
-** Populate the buffer pointed to by zBufOut with nByte bytes of 
+** Populate the buffer pointed to by zBufOut with nByte bytes of
 ** random data.
 */
 static int jtRandomness(sqlite3_vfs *pVfs, int nByte, char *zBufOut){
@@ -806,7 +806,7 @@ static int jtRandomness(sqlite3_vfs *pVfs, int nByte, char *zBufOut){
 }
 
 /*
-** Sleep for nMicro microseconds. Return the number of microseconds 
+** Sleep for nMicro microseconds. Return the number of microseconds
 ** actually slept.
 */
 static int jtSleep(sqlite3_vfs *pVfs, int nMicro){
@@ -835,7 +835,7 @@ static int jtGetLastError(sqlite3_vfs *pVfs, int n, char *z){
 */
 
 /*
-** Configure the jt VFS as a wrapper around the VFS named by parameter 
+** Configure the jt VFS as a wrapper around the VFS named by parameter
 ** zWrap. If the isDefault parameter is true, then the jt VFS is installed
 ** as the new default VFS for SQLite connections. If isDefault is not
 ** true, then the jt VFS is installed as non-default. In this case it

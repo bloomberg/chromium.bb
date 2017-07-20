@@ -12,9 +12,9 @@
 # Regression testing of FOR EACH ROW table triggers on WITHOUT ROWID
 # tables.
 #
-# 1. Trigger execution order tests. 
+# 1. Trigger execution order tests.
 # These tests ensure that BEFORE and AFTER triggers are fired at the correct
-# times relative to each other and the triggering statement. 
+# times relative to each other and the triggering statement.
 #
 # without_rowid4-1.1.*: ON UPDATE trigger execution model.
 # without_rowid4-1.2.*: DELETE trigger execution model.
@@ -25,19 +25,19 @@
 # trigger program can correctly execute INSERT, UPDATE, DELETE * SELECT
 # statements, and combinations thereof).
 #
-# 3. Selective trigger execution 
+# 3. Selective trigger execution
 # This tests that conditional triggers (ie. UPDATE OF triggers and triggers
 # with WHEN clauses) are fired only fired when they are supposed to be.
 #
 # without_rowid4-3.1: UPDATE OF triggers
 # without_rowid4-3.2: WHEN clause
 #
-# 4. Cascaded trigger execution 
-# Tests that trigger-programs may cause other triggers to fire. Also that a 
+# 4. Cascaded trigger execution
+# Tests that trigger-programs may cause other triggers to fire. Also that a
 # trigger-program is never executed recursively.
-# 
+#
 # without_rowid4-4.1: Trivial cascading trigger
-# without_rowid4-4.2: Trivial recursive trigger handling 
+# without_rowid4-4.2: Trivial recursive trigger handling
 #
 # 5. Count changes behaviour.
 # Verify that rows altered by triggers are not included in the return value
@@ -60,7 +60,7 @@ ifcapable {!trigger} {
 # The tests in this file were written before SQLite supported recursive
 # trigger invocation, and some tests depend on that to pass. So disable
 # recursive triggers for this file.
-catchsql { pragma recursive_triggers = off } 
+catchsql { pragma recursive_triggers = off }
 
 # 1.
 ifcapable subquery {
@@ -74,7 +74,7 @@ ifcapable subquery {
   ifcapable tempdb {
     lappend tbl_definitions \
         {CREATE TEMP TABLE tbl (a PRIMARY KEY, b) WITHOUT rowid;
-         CREATE INDEX tbl_idx ON tbl(b);} 
+         CREATE INDEX tbl_idx ON tbl(b);}
     lappend tbl_definitions \
         {CREATE TEMP TABLE tbl (a PRIMARY KEY, b) WITHOUT rowid}
     lappend tbl_definitions \
@@ -89,48 +89,48 @@ ifcapable subquery {
       DROP TABLE tbl;
       DROP TABLE other_tbl;
     }
-  
+
     execsql $tbl_defn
-  
+
     execsql {
       INSERT INTO tbl VALUES(1, 2);
       INSERT INTO tbl VALUES(3, 4);
-  
+
       CREATE TABLE rlog (idx, old_a, old_b, db_sum_a, db_sum_b, new_a, new_b);
       CREATE TABLE clog (idx, old_a, old_b, db_sum_a, db_sum_b, new_a, new_b);
-  
-      CREATE TRIGGER before_update_row BEFORE UPDATE ON tbl FOR EACH ROW 
+
+      CREATE TRIGGER before_update_row BEFORE UPDATE ON tbl FOR EACH ROW
         BEGIN
-        INSERT INTO rlog VALUES ( (SELECT coalesce(max(idx),0) + 1 FROM rlog), 
-  	  old.a, old.b, 
+        INSERT INTO rlog VALUES ( (SELECT coalesce(max(idx),0) + 1 FROM rlog),
+  	  old.a, old.b,
   	  (SELECT coalesce(sum(a),0) FROM tbl),
-          (SELECT coalesce(sum(b),0) FROM tbl), 
+          (SELECT coalesce(sum(b),0) FROM tbl),
   	  new.a, new.b);
       END;
-  
-      CREATE TRIGGER after_update_row AFTER UPDATE ON tbl FOR EACH ROW 
+
+      CREATE TRIGGER after_update_row AFTER UPDATE ON tbl FOR EACH ROW
         BEGIN
-        INSERT INTO rlog VALUES ( (SELECT coalesce(max(idx),0) + 1 FROM rlog), 
-  	  old.a, old.b, 
+        INSERT INTO rlog VALUES ( (SELECT coalesce(max(idx),0) + 1 FROM rlog),
+  	  old.a, old.b,
   	  (SELECT coalesce(sum(a),0) FROM tbl),
-          (SELECT coalesce(sum(b),0) FROM tbl), 
+          (SELECT coalesce(sum(b),0) FROM tbl),
   	  new.a, new.b);
       END;
-  
+
       CREATE TRIGGER conditional_update_row AFTER UPDATE ON tbl FOR EACH ROW
         WHEN old.a = 1
         BEGIN
-        INSERT INTO clog VALUES ( (SELECT coalesce(max(idx),0) + 1 FROM clog), 
-  	  old.a, old.b, 
+        INSERT INTO clog VALUES ( (SELECT coalesce(max(idx),0) + 1 FROM clog),
+  	  old.a, old.b,
   	  (SELECT coalesce(sum(a),0) FROM tbl),
-          (SELECT coalesce(sum(b),0) FROM tbl), 
+          (SELECT coalesce(sum(b),0) FROM tbl),
   	  new.a, new.b);
       END;
     }
-  
+
     do_test without_rowid4-1.$ii.1 {
       set r {}
-      foreach v [execsql { 
+      foreach v [execsql {
         UPDATE tbl SET a = a * 10, b = b * 10;
         SELECT * FROM rlog ORDER BY idx;
         SELECT * FROM clog ORDER BY idx;
@@ -143,7 +143,7 @@ ifcapable subquery {
   	    3 3 4 13 24 30 40 \
   	    4 3 4 40 60 30 40 \
             1 1 2 13 24 10 20 ]
-  
+
     execsql {
       DELETE FROM rlog;
       DELETE FROM tbl;
@@ -151,19 +151,19 @@ ifcapable subquery {
       INSERT INTO tbl VALUES (300, 200);
       CREATE TRIGGER delete_before_row BEFORE DELETE ON tbl FOR EACH ROW
         BEGIN
-        INSERT INTO rlog VALUES ( (SELECT coalesce(max(idx),0) + 1 FROM rlog), 
-  	  old.a, old.b, 
+        INSERT INTO rlog VALUES ( (SELECT coalesce(max(idx),0) + 1 FROM rlog),
+  	  old.a, old.b,
   	  (SELECT coalesce(sum(a),0) FROM tbl),
-          (SELECT coalesce(sum(b),0) FROM tbl), 
+          (SELECT coalesce(sum(b),0) FROM tbl),
   	  0, 0);
       END;
-  
+
       CREATE TRIGGER delete_after_row AFTER DELETE ON tbl FOR EACH ROW
         BEGIN
-        INSERT INTO rlog VALUES ( (SELECT coalesce(max(idx),0) + 1 FROM rlog), 
-  	  old.a, old.b, 
+        INSERT INTO rlog VALUES ( (SELECT coalesce(max(idx),0) + 1 FROM rlog),
+  	  old.a, old.b,
   	  (SELECT coalesce(sum(a),0) FROM tbl),
-          (SELECT coalesce(sum(b),0) FROM tbl), 
+          (SELECT coalesce(sum(b),0) FROM tbl),
   	  0, 0);
       END;
     }
@@ -180,42 +180,42 @@ ifcapable subquery {
             2 100 100 300 200 0 0 \
             3 300 200 300 200 0 0 \
             4 300 200 0 0 0 0 ]
-  
+
     execsql {
       DELETE FROM rlog;
       CREATE TRIGGER insert_before_row BEFORE INSERT ON tbl FOR EACH ROW
         BEGIN
-        INSERT INTO rlog VALUES ( (SELECT coalesce(max(idx),0) + 1 FROM rlog), 
+        INSERT INTO rlog VALUES ( (SELECT coalesce(max(idx),0) + 1 FROM rlog),
   	  0, 0,
   	  (SELECT coalesce(sum(a),0) FROM tbl),
-          (SELECT coalesce(sum(b),0) FROM tbl), 
+          (SELECT coalesce(sum(b),0) FROM tbl),
   	  new.a, new.b);
       END;
-  
+
       CREATE TRIGGER insert_after_row AFTER INSERT ON tbl FOR EACH ROW
         BEGIN
-        INSERT INTO rlog VALUES ( (SELECT coalesce(max(idx),0) + 1 FROM rlog), 
+        INSERT INTO rlog VALUES ( (SELECT coalesce(max(idx),0) + 1 FROM rlog),
   	  0, 0,
   	  (SELECT coalesce(sum(a),0) FROM tbl),
-          (SELECT coalesce(sum(b),0) FROM tbl), 
+          (SELECT coalesce(sum(b),0) FROM tbl),
   	  new.a, new.b);
       END;
     }
     do_test without_rowid4-1.$ii.3 {
       execsql {
-  
+
         CREATE TABLE other_tbl(a, b);
         INSERT INTO other_tbl VALUES(1, 2);
         INSERT INTO other_tbl VALUES(3, 4);
         -- INSERT INTO tbl SELECT * FROM other_tbl;
         INSERT INTO tbl VALUES(5, 6);
         DROP TABLE other_tbl;
-  
+
         SELECT * FROM rlog;
       }
     } [list 1 0 0 0 0 5 6 \
             2 0 0 5 6 5 6 ]
-  
+
     integrity_check without_rowid4-1.$ii.4
   }
   catchsql {
@@ -232,14 +232,14 @@ foreach tr_program {
   {UPDATE tbl SET b = old.b;}
   {INSERT INTO log VALUES(new.c, 2, 3);}
   {DELETE FROM log WHERE a = 1;}
-  {INSERT INTO tbl VALUES(500, new.b * 10, 700); 
-    UPDATE tbl SET c = old.c; 
+  {INSERT INTO tbl VALUES(500, new.b * 10, 700);
+    UPDATE tbl SET c = old.c;
     DELETE FROM log;}
-  {INSERT INTO log select * from tbl;} 
+  {INSERT INTO log select * from tbl;}
 } {
   foreach test_varset [ list \
     {
-      set statement {UPDATE tbl SET c = 10 WHERE a = 1;} 
+      set statement {UPDATE tbl SET c = 10 WHERE a = 1;}
       set prep      {INSERT INTO tbl VALUES(1, 2, 3);}
       set newC 10
       set newB 2
@@ -279,24 +279,24 @@ foreach tr_program {
     set statement_type [string range $statement 0 5]
     set tr_program_fixed $tr_program
     if {$statement_type == "DELETE"} {
-      regsub -all new\.a $tr_program_fixed {''} tr_program_fixed 
-      regsub -all new\.b $tr_program_fixed {''} tr_program_fixed 
-      regsub -all new\.c $tr_program_fixed {''} tr_program_fixed 
+      regsub -all new\.a $tr_program_fixed {''} tr_program_fixed
+      regsub -all new\.b $tr_program_fixed {''} tr_program_fixed
+      regsub -all new\.c $tr_program_fixed {''} tr_program_fixed
     }
     if {$statement_type == "INSERT"} {
-      regsub -all old\.a $tr_program_fixed {''} tr_program_fixed 
-      regsub -all old\.b $tr_program_fixed {''} tr_program_fixed 
-      regsub -all old\.c $tr_program_fixed {''} tr_program_fixed 
+      regsub -all old\.a $tr_program_fixed {''} tr_program_fixed
+      regsub -all old\.b $tr_program_fixed {''} tr_program_fixed
+      regsub -all old\.c $tr_program_fixed {''} tr_program_fixed
     }
 
 
     set tr_program_cooked $tr_program
-    regsub -all new\.a $tr_program_cooked $newA tr_program_cooked 
-    regsub -all new\.b $tr_program_cooked $newB tr_program_cooked 
-    regsub -all new\.c $tr_program_cooked $newC tr_program_cooked 
-    regsub -all old\.a $tr_program_cooked $oldA tr_program_cooked 
-    regsub -all old\.b $tr_program_cooked $oldB tr_program_cooked 
-    regsub -all old\.c $tr_program_cooked $oldC tr_program_cooked 
+    regsub -all new\.a $tr_program_cooked $newA tr_program_cooked
+    regsub -all new\.b $tr_program_cooked $newB tr_program_cooked
+    regsub -all new\.c $tr_program_cooked $newC tr_program_cooked
+    regsub -all old\.a $tr_program_cooked $oldA tr_program_cooked
+    regsub -all old\.b $tr_program_cooked $oldB tr_program_cooked
+    regsub -all old\.c $tr_program_cooked $oldC tr_program_cooked
 
     catchsql {
       DROP TABLE tbl;
@@ -394,7 +394,7 @@ ifcapable subquery {
   set t232 {0 0 1}
 }
 do_test without_rowid4-3.2 {
-  execsql { 
+  execsql {
 
     INSERT INTO tbl VALUES(0, 0, 0, 0);     -- 1 (ifcapable subquery)
     SELECT * FROM log;
@@ -446,7 +446,7 @@ execsql {
 # Simple recursive trigger
 execsql {
   CREATE TABLE tbl(a, b, c, PRIMARY KEY(c,a,b)) WITHOUT rowid;
-  CREATE TRIGGER tbl_trig BEFORE INSERT ON tbl 
+  CREATE TRIGGER tbl_trig BEFORE INSERT ON tbl
     BEGIN
       INSERT INTO tbl VALUES (new.a, new.b, new.c+1);
     END;
@@ -464,7 +464,7 @@ execsql {
 # 5.
 execsql {
   CREATE TABLE tbl(a, b, c, PRIMARY KEY(c,a,b)) WITHOUT rowid;
-  CREATE TRIGGER tbl_trig BEFORE INSERT ON tbl 
+  CREATE TRIGGER tbl_trig BEFORE INSERT ON tbl
     BEGIN
       INSERT INTO tbl VALUES (1, 2, 3);
       INSERT INTO tbl VALUES (2, 2, 3);
@@ -535,8 +535,8 @@ ifcapable conflict {
     }
   } {}
   execsql {DELETE FROM tbl}
-  
-  
+
+
   # Handling of ON CONFLICT by UPDATE statements inside triggers
   execsql {
     INSERT INTO tbl values (4, 2, 3);
@@ -610,35 +610,35 @@ do_test without_rowid4-7.1 {
   INSERT INTO ab VALUES (0, 0);
   INSERT INTO cd VALUES (3, 4);
 
-  CREATE TABLE tlog(ii INTEGER PRIMARY KEY, 
+  CREATE TABLE tlog(ii INTEGER PRIMARY KEY,
       olda, oldb, oldc, oldd, newa, newb, newc, newd);
 
   CREATE VIEW abcd AS SELECT a, b, c, d FROM ab, cd;
 
   CREATE TRIGGER before_update INSTEAD OF UPDATE ON abcd BEGIN
-    INSERT INTO tlog VALUES(NULL, 
+    INSERT INTO tlog VALUES(NULL,
 	old.a, old.b, old.c, old.d, new.a, new.b, new.c, new.d);
   END;
   CREATE TRIGGER after_update INSTEAD OF UPDATE ON abcd BEGIN
-    INSERT INTO tlog VALUES(NULL, 
+    INSERT INTO tlog VALUES(NULL,
 	old.a, old.b, old.c, old.d, new.a, new.b, new.c, new.d);
   END;
 
   CREATE TRIGGER before_delete INSTEAD OF DELETE ON abcd BEGIN
-    INSERT INTO tlog VALUES(NULL, 
+    INSERT INTO tlog VALUES(NULL,
 	old.a, old.b, old.c, old.d, 0, 0, 0, 0);
   END;
   CREATE TRIGGER after_delete INSTEAD OF DELETE ON abcd BEGIN
-    INSERT INTO tlog VALUES(NULL, 
+    INSERT INTO tlog VALUES(NULL,
 	old.a, old.b, old.c, old.d, 0, 0, 0, 0);
   END;
 
   CREATE TRIGGER before_insert INSTEAD OF INSERT ON abcd BEGIN
-    INSERT INTO tlog VALUES(NULL, 
+    INSERT INTO tlog VALUES(NULL,
 	0, 0, 0, 0, new.a, new.b, new.c, new.d);
   END;
    CREATE TRIGGER after_insert INSTEAD OF INSERT ON abcd BEGIN
-    INSERT INTO tlog VALUES(NULL, 
+    INSERT INTO tlog VALUES(NULL,
 	0, 0, 0, 0, new.a, new.b, new.c, new.d);
    END;
   }

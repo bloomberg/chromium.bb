@@ -26,7 +26,7 @@ ifcapable !vtab {
 #      "CREATE TABLE t1 (a, b, c)"
 #
 # This virtual table supports both LIKE and = operators on all columns.
-#  
+#
 proc vtab_cmd {bOmit method args} {
   switch -- $method {
     xConnect {
@@ -45,7 +45,7 @@ proc vtab_cmd {bOmit method args} {
         array set C [lindex $clist $i]
         if {$C(usable) && ($C(op)=="like" || $C(op)=="eq")} {
           lappend ret $use $i
-          lappend ret idxstr 
+          lappend ret idxstr
           lappend ret "[lindex {a b c} $C(column)] [string toupper $C(op)] ?"
           break
         }
@@ -119,15 +119,15 @@ foreach omit {0 1} {
     DROP TABLE t1;
     CREATE VIRTUAL TABLE t1 USING tcl('vtab_cmd $omit');
   "
-  do_execsql_test 1.6.$omit.1 { 
+  do_execsql_test 1.6.$omit.1 {
     SELECT rowid FROM t1 WHERE c LIKE 'o%'
   } {3 4}
 
-  do_execsql_test 1.6.$omit.2 { 
+  do_execsql_test 1.6.$omit.2 {
     SELECT rowid FROM t1 WHERE c LIKE 'o%' OR b='y'
   } {3 4 6}
 
-  do_execsql_test 1.6.$omit.3 { 
+  do_execsql_test 1.6.$omit.3 {
     SELECT rowid FROM t1 WHERE c = 'three' OR c LIKE 'o%'
   } {1 6 3 4}
 }
@@ -154,7 +154,7 @@ ifcapable !icu {
 }
 
 #-------------------------------------------------------------------------
-# Test that any PRIMARY KEY within a sqlite3_decl_vtab() CREATE TABLE 
+# Test that any PRIMARY KEY within a sqlite3_decl_vtab() CREATE TABLE
 # statement is currently ignored.
 #
 proc vvv_command {method args} {

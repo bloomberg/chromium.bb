@@ -15,7 +15,7 @@
 
 if {![info exists testdir]} {
   set testdir [file join [file dirname [info script]] .. .. test]
-} 
+}
 source [file join [file dirname [info script]] session_common.tcl]
 source $testdir/tester.tcl
 ifcapable !session {finish_test; return}
@@ -31,7 +31,7 @@ proc populate_db {} {
     PRAGMA foreign_keys = 1;
     CREATE TABLE p1(a PRIMARY KEY, b);
     CREATE TABLE c1(a PRIMARY KEY, b REFERENCES p1);
-    CREATE TABLE c2(a PRIMARY KEY, 
+    CREATE TABLE c2(a PRIMARY KEY,
         b REFERENCES p1 DEFERRABLE INITIALLY DEFERRED
     );
 
@@ -133,8 +133,8 @@ foreach {tn open noclose close} {
 #--------------------------------------------------------------------
 # Test that a cyclic relationship can be inserted and deleted.
 #
-# This situation does not come up in practice, but testing it serves to 
-# show that it does not matter which order parent and child keys 
+# This situation does not come up in practice, but testing it serves to
+# show that it does not matter which order parent and child keys
 # are processed in internally when applying a changeset.
 #
 drop_all_tables
@@ -145,7 +145,7 @@ do_execsql_test 3.1 {
 }
 
 # Create changesets as follows:
-# 
+#
 #   $cc1    - Insert a row into t1.
 #   $cc2    - Insert a row into t2.
 #   $cc     - Combination of $cc1 and $cc2.
@@ -177,8 +177,8 @@ do_test 3.2 {
 # Now modify the database schema to create a cyclic foreign key dependency
 # between tables t1 and t2. This means that although changesets $cc and
 # $ccdel can be applied, none of the others may without violating the
-# foreign key constraints. 
-# 
+# foreign key constraints.
+#
 do_test 3.3 {
 
   drop_all_tables
@@ -221,7 +221,7 @@ do_test 3.5.2 {
 } {1 SQLITE_CONSTRAINT}
 
 #--------------------------------------------------------------------
-# Test that if a change that affects FK processing is not applied 
+# Test that if a change that affects FK processing is not applied
 # due to a separate constraint, SQLite does not get confused and
 # increment FK counters anyway.
 #
@@ -245,15 +245,15 @@ do_execsql_test 4.3.1 {
     PRAGMA defer_foreign_keys = 1;
     INSERT INTO c1 VALUES(1, 1);
 }
-do_catchsql_test 4.3.2 { 
-  INSERT INTO c1 VALUES(1, 'x') 
+do_catchsql_test 4.3.2 {
+  INSERT INTO c1 VALUES(1, 'x')
 } {1 {UNIQUE constraint failed: c1.a}}
 
 do_catchsql_test 4.3.3 { COMMIT } {0 {}}
 do_catchsql_test 4.3.4 { BEGIN ; COMMIT } {0 {}}
 
 #--------------------------------------------------------------------
-# Test that if a DELETE change cannot be applied due to an 
+# Test that if a DELETE change cannot be applied due to an
 # SQLITE_CONSTRAINT error thrown by a trigger program, things do not
 # go awry.
 

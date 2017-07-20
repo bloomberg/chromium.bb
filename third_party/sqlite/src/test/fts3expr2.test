@@ -24,23 +24,23 @@ ifcapable !fts3 {
 }
 
 # Test overview:
-# 
+#
 #   The tests in this file are pseudo-randomly generated. They test
 #   the fts3 match expression parser via the test interface
 #   SQL function "fts3_exprtest" (see comments in fts3_expr.c).
 #
 #   Each test case works as follows:
-#   
+#
 #     1. A random expression tree is generated using proc [random_expr_tree].
 #     2. The expression tree is converted to the text of an equivalent
 #        fts3 expression using proc [tree_to_expr].
-#     3. The test SQL function "fts3_exprtest" is used to parse the 
+#     3. The test SQL function "fts3_exprtest" is used to parse the
 #        expression text generated in step (2), returning a parsed expression
 #        tree.
-#     4. Test that the tree returned in step (3) matches that generated in 
+#     4. Test that the tree returned in step (3) matches that generated in
 #        step (1).
 #
-#   In step (2), 4 different fts3 expressions are created from each 
+#   In step (2), 4 different fts3 expressions are created from each
 #   expression tree by varying the following boolean properties:
 #
 #     * Whether or not superflous parenthesis are included. i.e. if
@@ -75,7 +75,7 @@ proc random_phrase {} {
   list P [lindex $phrases [rnd [llength $phrases]]]
 }
 
-# Generate and return a pseudo-random expression tree. Using the same 
+# Generate and return a pseudo-random expression tree. Using the same
 # format returned by the [test_fts3expr2] proc.
 #
 proc random_expr_tree {iHeight} {
@@ -136,10 +136,10 @@ proc tree_to_expr {tree all_brackets implicit_and} {
 
   if {$iLeftPrec > $iPrec || $all_brackets} {
     set zLeft "($zLeft)"
-  } 
+  }
   if {$iRightPrec >= $iPrec || $all_brackets} {
     set zRight "($zRight)"
-  } 
+  }
 
   return "$zLeft $op $zRight"
 }

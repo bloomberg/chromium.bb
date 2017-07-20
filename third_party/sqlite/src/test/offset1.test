@@ -8,7 +8,7 @@
 #    May you share freely, never taking more than you give.
 #
 #***********************************************************************
-# 
+#
 # This file implements test cases for the [b65cb2c8d91f6685841d7d1e13b6]
 # bug:  Correct handling of LIMIT and OFFSET on a UNION ALL query where
 # the right-hand SELECT contains an ORDER BY in a subquery.

@@ -80,10 +80,10 @@ proc do_fileopen_test {prefix sql} {
         db eval $::sql
       } msg]
       if {$rc == 0} {set ::go 0}
-  
+
       expr {$rc == 0 || ($rc == 1 && [string first unable $msg]==0)}
     } 1
-  
+
     close [lindex $fd_list 0]
     set fd_list [lrange $fd_list 1 end]
     incr ::n
@@ -105,7 +105,7 @@ if {$tcl_platform(platform)!="windows"} {
     INSERT INTO abc SELECT a+2, b, c FROM abc;
     COMMIT;
   }
-  
+
   do_fileopen_test misc7-6.2 {
     PRAGMA temp.cache_size = 1000;
   }
@@ -122,7 +122,7 @@ execsql {
   INSERT INTO abc VALUES(2, 3, 4);
   INSERT INTO abc SELECT a+2, b, c FROM abc;
 }
-  
+
 
 #--------------------------------------------------------------------
 # Test that the sqlite3_busy_timeout call seems to delay approximately
@@ -202,8 +202,8 @@ ifcapable utf16 {
 
 do_test misc7-9 {
   execsql {
-    SELECT * 
-    FROM (SELECT name+1 AS one FROM sqlite_master LIMIT 1 OFFSET 1) 
+    SELECT *
+    FROM (SELECT name+1 AS one FROM sqlite_master LIMIT 1 OFFSET 1)
     WHERE one LIKE 'hello%';
   }
 } {}
@@ -247,7 +247,7 @@ ifcapable vtab {
   } -tclbody {
     register_echo_module [sqlite3_connection_pointer db]
     execsql {SELECT * FROM t1 WHERE a = 1;}
-  } 
+  }
 
   # The case where the virtual table module returns a very large number
   # as the cost of a scan (greater than SQLITE_BIG_DOUBLE in the code).
@@ -275,12 +275,12 @@ ifcapable explain {
   }
   do_execsql_test misc7-14.2 {
     EXPLAIN QUERY PLAN SELECT * FROM abc AS t2 WHERE a = 1;
-  } {0 0 0 
+  } {0 0 0
      {SEARCH TABLE abc AS t2 USING INDEX sqlite_autoindex_abc_1 (a=?)}
   }
   do_execsql_test misc7-14.3 {
     EXPLAIN QUERY PLAN SELECT * FROM abc AS t2 ORDER BY a;
-  } {0 0 0 
+  } {0 0 0
      {SCAN TABLE abc AS t2 USING INDEX sqlite_autoindex_abc_1}
   }
 }
@@ -300,23 +300,23 @@ do_test misc7-15.1 {
     PRAGMA cache_size = 10;
     BEGIN;
     CREATE TABLE abc(a PRIMARY KEY, b, c);
-    INSERT INTO abc 
+    INSERT INTO abc
     VALUES(randstr(100,100), randstr(100,100), randstr(100,100));
-    INSERT INTO abc SELECT 
+    INSERT INTO abc SELECT
             randstr(100,100), randstr(100,100), randstr(100,100) FROM abc;
-    INSERT INTO abc SELECT 
+    INSERT INTO abc SELECT
             randstr(100,100), randstr(100,100), randstr(100,100) FROM abc;
-    INSERT INTO abc SELECT 
+    INSERT INTO abc SELECT
             randstr(100,100), randstr(100,100), randstr(100,100) FROM abc;
-    INSERT INTO abc SELECT 
+    INSERT INTO abc SELECT
             randstr(100,100), randstr(100,100), randstr(100,100) FROM abc;
-    INSERT INTO abc SELECT 
+    INSERT INTO abc SELECT
             randstr(100,100), randstr(100,100), randstr(100,100) FROM abc;
-    INSERT INTO abc SELECT 
+    INSERT INTO abc SELECT
             randstr(100,100), randstr(100,100), randstr(100,100) FROM abc;
-    INSERT INTO abc SELECT 
+    INSERT INTO abc SELECT
             randstr(100,100), randstr(100,100), randstr(100,100) FROM abc;
-    INSERT INTO abc SELECT 
+    INSERT INTO abc SELECT
             randstr(100,100), randstr(100,100), randstr(100,100) FROM abc;
     COMMIT;
   }
@@ -325,7 +325,7 @@ do_test misc7-15.1 {
 do_test misc7-15.2 {
   execsql {
     DELETE FROM abc WHERE rowid > 12;
-    INSERT INTO abc SELECT 
+    INSERT INTO abc SELECT
             randstr(100,100), randstr(100,100), randstr(100,100) FROM abc;
   }
 } {}
@@ -345,7 +345,7 @@ do_ioerr_test misc7-16 -sqlprep {
    INSERT INTO t3 SELECT randstr(100, 100), randstr(100, 100) FROM t3;
    INSERT INTO t3 SELECT randstr(100, 100), randstr(100, 100) FROM t3;
    INSERT INTO t3 SELECT randstr(100, 100), randstr(100, 100) FROM t3;
-   UPDATE t3 
+   UPDATE t3
    SET b = 'hello world'
    WHERE rowid >= (SELECT max(rowid)-1 FROM t3);
 } -tclbody {
@@ -398,12 +398,12 @@ if {$tcl_platform(platform)!="windows"} {
       execsql {
         COMMIT;
       }
-    
+
       db close
       forcecopy bak.db test.db
       forcecopy bak.db-journal test.db-journal
       sqlite3 db test.db
-    
+
       catch {file attributes test.db-journal -permissions r--------}
       catch {file attributes test.db-journal -readonly 1}
       catchsql {
@@ -412,7 +412,7 @@ if {$tcl_platform(platform)!="windows"} {
     } {1 {unable to open database file}}
     do_test misc7-17.2 {
       # Note that the -readonly flag must be cleared before the -permissions
-      # are set. Otherwise, when using tcl 8.5 on mac, the fact that the 
+      # are set. Otherwise, when using tcl 8.5 on mac, the fact that the
       # -readonly flag is set causes the attempt to set the permissions
       # to fail.
       catch {file attributes test.db-journal -readonly 0}
@@ -421,14 +421,14 @@ if {$tcl_platform(platform)!="windows"} {
         SELECT count(*) FROM t3;
       }
     } {0 32}
-    
+
     # sqlite3_test_control_pending_page [expr ($::sqlite_pending_byte / 1024) + 1]
     set ::pending_byte_page [expr ($::sqlite_pending_byte / 1024) + 1]
-    sqlite3_test_control_pending_byte $::sqlite_pending_byte 
+    sqlite3_test_control_pending_byte $::sqlite_pending_byte
     do_test misc7-17.3 {
       db eval {
         pragma writable_schema = true;
-        UPDATE sqlite_master 
+        UPDATE sqlite_master
           SET rootpage = $pending_byte_page
           WHERE type = 'table' AND name = 't3';
       }
@@ -436,13 +436,13 @@ if {$tcl_platform(platform)!="windows"} {
         SELECT rootpage FROM sqlite_master WHERE type = 'table' AND name = 't3';
       }
     } $::pending_byte_page
-    
+
     do_test misc7-17.4 {
       db close
       sqlite3 db test.db
       catchsql {
         SELECT count(*) FROM t3;
-      } 
+      }
     } {1 {database disk image is malformed}}
   }
 }
@@ -490,7 +490,7 @@ do_test misc7-21.1 {
   list $rc $msg
 } {1 {unable to open database file}}
 
-# Try to do hot-journal rollback with a read-only connection. The 
+# Try to do hot-journal rollback with a read-only connection. The
 # error code should be SQLITE_READONLY_ROLLBACK.
 #
 do_test misc7-22.1 {
@@ -509,13 +509,13 @@ do_test misc7-22.1 {
   }
 } {1 {attempt to write a readonly database}}
 do_test misc7-22.2 { execsql { SELECT * FROM t1 } } {1 2 3 4}
-do_test misc7-22.3 { 
+do_test misc7-22.3 {
   set fd [open test.db-journal w]
   puts $fd [string repeat abc 1000]
   close $fd
   catchsql { SELECT * FROM t1 }
 } {1 {attempt to write a readonly database}}
-do_test misc7-22.4 { 
+do_test misc7-22.4 {
   sqlite3_extended_errcode db
 } SQLITE_READONLY_ROLLBACK
 

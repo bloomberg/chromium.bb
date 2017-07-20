@@ -82,7 +82,7 @@ if {![file exists $testextension]} {
 
   set cmdline [concat exec gcc $gcc_shared]
   lappend cmdline -Wall -I$srcdir -I. -I.. -g $testextsrc -o $testextension
-  
+
   if {[catch $cmdline msg]} {
     puts "Skipping loadext tests: Test extension not built..."
     puts $msg
@@ -175,7 +175,7 @@ do_test loadext-2.3 {
   list $rc $msg
 } /[list 1 [format $dlerror_nosymbol $testextension icecream]]/
 
-# Try to load an extension for which the entry point fails (returns non-zero) 
+# Try to load an extension for which the entry point fails (returns non-zero)
 #
 do_test loadext-2.4 {
   set rc [catch {

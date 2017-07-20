@@ -5,7 +5,7 @@
 # This script summarizes the results contained in that file.
 #
 # DETAILS:
-# Compile SQLite using the -DVDBE_PROFILE option on Linux.  This causes 
+# Compile SQLite using the -DVDBE_PROFILE option on Linux.  This causes
 # performance information about individual VDBE operations to be appended
 # to the "vdbe_profile.out" file.  After content has been accumulated in
 # vdbe_profile.out, run this script to analyze the output and generate a

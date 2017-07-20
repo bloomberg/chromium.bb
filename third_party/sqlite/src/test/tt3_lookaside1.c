@@ -50,7 +50,7 @@ static char *lookaside1_thread_writer(int iTid, void *pArg){
   opendb(&err, &db, "test.db", 0);
 
   do{
-    sql_script(&err, &db, 
+    sql_script(&err, &db,
       "BEGIN;"
         "UPDATE t3 SET i=i+1 WHERE x=1;"
       "ROLLBACK;"
@@ -69,7 +69,7 @@ static void lookaside1(int nMs){
   Threadset threads = {0};
 
   opendb(&err, &db, "test.db", 1);
-  sql_script(&err, &db, 
+  sql_script(&err, &db,
      "CREATE TABLE t1(x PRIMARY KEY) WITHOUT ROWID;"
      "WITH data(x,y) AS ("
      "  SELECT 1, quote(randomblob(750)) UNION ALL "

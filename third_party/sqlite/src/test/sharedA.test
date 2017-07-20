@@ -66,7 +66,7 @@ do_test 1.1 {
     CREATE TABLE t1(x);
     INSERT INTO t1 VALUES(123);
   }
-  db1 eval { 
+  db1 eval {
     SELECT * FROM t1;
     CREATE INDEX i1 ON t1(x);
   }
@@ -97,11 +97,11 @@ do_test 1.3 {
 #
 # The following sequence of tests attempt to verify that the actions
 # taken by sqlite3RollbackAll() are thread-atomic (that they cannot be
-# interrupted by a separate thread.)  
+# interrupted by a separate thread.)
 #
 # Note that a TCL interpreter can only be used within the thread in which
-# it was originally created (because it uses thread-local-storage).  
-# The tvfs callbacks must therefore only run on the main thread.  
+# it was originally created (because it uses thread-local-storage).
+# The tvfs callbacks must therefore only run on the main thread.
 # There is some trickery in the read_callback procedure to ensure that
 # this is the case.
 #
@@ -158,7 +158,7 @@ tvfs filter xRead
 tvfs script read_callback
 unset -nocomplain ::some_time_laster
 unset -nocomplain ::thread_result
-proc read_callback {call file args} { 
+proc read_callback {call file args} {
   if {[string match *test.db2-journal $file]} {
     tvfs filter {}   ;# Ensure that tvfs callbacks to do run on the
                       # child thread
@@ -176,8 +176,8 @@ do_test 2.3 { db1 eval ROLLBACK } {}
 # schema change.
 #
 if {[info exists ::thread_result]==0} { vwait ::thread_result }
-do_test 2.4 { 
-  list $::thread_result [sqlite3_errmsg db2] 
+do_test 2.4 {
+  list $::thread_result [sqlite3_errmsg db2]
 } {SQLITE_SCHEMA {database schema has changed}}
 
 db1 close

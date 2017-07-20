@@ -29,7 +29,7 @@ do_execsql_test 1.0 {
 
 do_test 1.1 {
   forcedelete rbu.db
-  sqlite3 rbu rbu.db 
+  sqlite3 rbu rbu.db
   rbu eval {
     CREATE TABLE data_t1(a, b, rbu_control);
     INSERT INTO data_t1 VALUES(2, $bigB, 0);
@@ -52,7 +52,7 @@ do_test 1.3 {
 } {SQLITE_DONE}
 
 do_execsql_test 1.4 {
-  SELECT * FROM t1 
+  SELECT * FROM t1
 } [list 1 $bigA 2 $bigB]
 
 finish_test

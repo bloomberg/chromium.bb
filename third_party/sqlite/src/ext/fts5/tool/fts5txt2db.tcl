@@ -8,7 +8,7 @@
 #    May you find forgiveness for yourself and forgive others.
 #    May you share freely, never taking more than you give.
 #
-proc process_cmdline {} { 
+proc process_cmdline {} {
   cmdline::process ::A $::argv {
     {fts5                 "use fts5 (this is the default)"}
     {fts4                 "use fts4"}
@@ -27,7 +27,7 @@ proc process_cmdline {} {
   inserted into the column value for each row. For example, setting the -colsize
   option to "5 10" creates an FTS table with 2 columns, with roughly 5 and 10
   tokens per row in each, respectively.
-  
+
   Each "FILE" argument should be a text file. The contents of these text files
   is split on whitespace characters to form a list of tokens. The first N1
   tokens are used for the first column of the first row, where N1 is the first
@@ -48,14 +48,14 @@ namespace eval cmdline {
       puts stderr "Error: $msg"
       puts stderr ""
     }
-  
+
     set L [list]
     foreach o $O {
       if {[llength $o]==1} {
         lappend L [string toupper $o]
       }
     }
-  
+
     puts stderr "Usage: $::argv0 ?SWITCHES? $L"
     puts stderr ""
     puts stderr "Switches are:"
@@ -72,17 +72,17 @@ namespace eval cmdline {
     puts stderr $E
     exit -1
   }
-  
+
   proc process {avar lArgs O E} {
     upvar $avar A
     set zTrailing ""       ;# True if ... is present in $O
     set lPosargs [list]
-  
+
     # Populate A() with default values. Also, for each switch in the command
     # line spec, set an entry in the idx() array as follows:
     #
-    #  {tblname t1 "table name to use"}  
-    #      -> [set idx(-tblname) {tblname t1 "table name to use"}  
+    #  {tblname t1 "table name to use"}
+    #      -> [set idx(-tblname) {tblname t1 "table name to use"}
     #
     # For each position parameter, append its name to $lPosargs. If the ...
     # specifier is present, set $zTrailing to the name of the prefix.
@@ -111,7 +111,7 @@ namespace eval cmdline {
         }
       }
     }
-  
+
     # Set explicitly specified option values
     #
     set nArg [llength $lArgs]
@@ -121,10 +121,10 @@ namespace eval cmdline {
       set c [array names idx "${opt}*"]
       if {[llength $c]==0} { cmdline_error $O $E "Unrecognized option: $opt"}
       if {[llength $c]>1}  { cmdline_error $O $E "Ambiguous option: $opt"}
-  
+
       if {[llength $idx($c)]==3} {
         if {$i==[llength $lArgs]-1} {
-          cmdline_error $O $E "Option requires argument: $c" 
+          cmdline_error $O $E "Option requires argument: $c"
         }
         incr i
         set A([lindex $idx($c) 0]) [lindex $lArgs $i]
@@ -132,7 +132,7 @@ namespace eval cmdline {
         set A([lindex $idx($c) 0]) 1
       }
     }
-  
+
     # Deal with position arguments.
     #
     set nPosarg [llength $lPosargs]

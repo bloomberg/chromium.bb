@@ -8,7 +8,7 @@
 #    May you share freely, never taking more than you give.
 #
 #***********************************************************************
-# This file implements regression tests for SQLite library. 
+# This file implements regression tests for SQLite library.
 #
 # This file checks error recovery from malformed SQL strings.
 #
@@ -31,7 +31,7 @@ do_test fuzz2-2.1 {
   fuzzcatch {SELECT 1 WHERE ( #61 NOT MATCH ROUND( 1 ) )}
 } {1}
 do_test fuzz2-2.2 {
-  fuzzcatch {SELECT 1 LIMIT NOT #59 COLLATE AAAAAA NOT IN 
+  fuzzcatch {SELECT 1 LIMIT NOT #59 COLLATE AAAAAA NOT IN
     ( "AAAAAA" NOTNULL <= x'414141414141' IS NULL , ( ROUND ( 1.0 ) ) )}
 } {1}
 do_test fuzz2-2.3 {
@@ -105,7 +105,7 @@ do_test fuzz2-5.5 {
 } {1}
 
 # Test cases discovered by Michal Zalewski on 2015-01-03 and reported on the
-# sqlite-users mailing list.  All of these cases cause segfaults in 
+# sqlite-users mailing list.  All of these cases cause segfaults in
 # SQLite 3.8.7.4 and earlier.
 #
 do_test fuzz2-6.1 {
@@ -122,7 +122,7 @@ do_test fuzz2-6.4a {
   catchsql {INSERT INTO t0 SELECT strftime();}
 } {0 {}}
 do_test fuzz2-6.4b {
-  db eval {SELECT quote(t) FROM t0} 
+  db eval {SELECT quote(t) FROM t0}
 } {NULL}
 
 # Another test case discovered by Michal Zalewski, this on on 2015-01-22.

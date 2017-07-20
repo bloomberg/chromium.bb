@@ -24,9 +24,9 @@ index f9768895ae98..ee58edad775c 100644
  #  define _CRT_RAND_S
  #endif
 +#endif
- 
+
  /*
  ** Include the header file used to customize the compiler options for MSVC.
--- 
+--
 2.11.0
 

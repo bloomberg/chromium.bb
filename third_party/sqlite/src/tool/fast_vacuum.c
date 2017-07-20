@@ -160,7 +160,7 @@ int main(int argc, char **argv){
   /* Query the schema of the main database. Create a mirror schema
   ** in the temporary database.
   */
-  execExecSql(db, 
+  execExecSql(db,
       "SELECT 'CREATE TABLE vacuum_db.' || substr(sql,14) "
       "  FROM sqlite_master WHERE type='table' AND name!='sqlite_sequence'"
       "   AND rootpage>0"

@@ -25,7 +25,7 @@ ifcapable !shared_cache {
 db close
 
 # Use shared-cache mode for these tests.
-# 
+#
 set ::enable_shared_cache [sqlite3_enable_shared_cache]
 sqlite3_enable_shared_cache 1
 
@@ -60,7 +60,7 @@ for {set ii 2} {$ii < 500} {incr ii} {
     # If the race-condition was hit, then $finished(0 and $finished(1)
     # will not use the same pager cache. In this case the next statement
     # can be executed succesfully. However, if the race-condition is not
-    # hit, then $finished(1) will be blocked by the write-lock held by 
+    # hit, then $finished(1) will be blocked by the write-lock held by
     # $finished(0) on the shared-cache table t1 and the statement will
     # return SQLITE_LOCKED.
     #
@@ -79,9 +79,9 @@ for {set ii 2} {$ii < 500} {incr ii} {
 #
 #    CREATE TABLE t1(a INTEGER PRIMARY KEY, b UNIQUE);
 #
-# One thread is a reader and the other thread a reader and a writer. The 
+# One thread is a reader and the other thread a reader and a writer. The
 # writer thread repeats the following transaction as fast as possible:
-# 
+#
 #      BEGIN;
 #        DELETE FROM t1 WHERE a = (SELECT max(a) FROM t1);
 #        INSERT INTO t1 VALUES(NULL, NULL);
@@ -95,13 +95,13 @@ for {set ii 2} {$ii < 500} {incr ii} {
 #        SELECT count(*) FROM t1 WHERE b IS NULL;
 #      COMMIT;
 #
-# The test runs for 20 seconds or until one of the "SELECT count(*)" 
+# The test runs for 20 seconds or until one of the "SELECT count(*)"
 # statements returns a non-zero value. If an SQLITE_LOCKED error occurs,
 # the connection issues a ROLLBACK immediately to abandon the current
 # transaction.
 #
-# If everything is working correctly, the "SELECT count(*)" statements 
-# should never return a value other than 0. The "INSERT" statement 
+# If everything is working correctly, the "SELECT count(*)" statements
+# should never return a value other than 0. The "INSERT" statement
 # executed by the writer adds a row with "b IS NULL" to the table, but
 # the subsequent UPDATE statement sets its "b" value to an integer
 # immediately afterwards.
@@ -112,7 +112,7 @@ for {set ii 2} {$ii < 500} {incr ii} {
 # rollback the statement-transaction belonging to the UPDATE statement.
 # The UPDATE statement would still be reported as successful to the user,
 # but it would have no effect on the database contents.
-# 
+#
 # Note that it has so far only proved possible to hit this race-condition
 # when using an ATTACHed database. There doesn't seem to be any reason
 # for this, other than that operating on an ATTACHed database means there

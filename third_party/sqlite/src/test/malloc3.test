@@ -47,7 +47,7 @@ if {[permutation]=="inmemory_journal"} {
 
 #--------------------------------------------------------------------------
 # NOTES ON RECOVERING FROM A MALLOC FAILURE
-# 
+#
 # The tests in this file test the behaviours described in the following
 # paragraphs. These tests test the behaviour of the system when malloc() fails
 # inside of a call to _prepare(), _step(), _finalize() or _reset(). The
@@ -147,7 +147,7 @@ if {[permutation]=="inmemory_journal"} {
 #
 # If a transaction has been automatically rolled back, then the driver
 # program executes all the SQL specified as part of SQL or PREP primitives
-# between the current SQL statement and the most recent "BEGIN". Any 
+# between the current SQL statement and the most recent "BEGIN". Any
 # TEST block immediately proceeding the SQL statement is evaluated, and
 # then the SQL statement reexecuted with the incremented N value.
 #
@@ -193,7 +193,7 @@ proc SQL  {a1 {a2 ""}} {
 }
 
 # TEST_AUTOCOMMIT --
-# 
+#
 #     A shorthand test to see if a transaction is active or not. The first
 #     argument - $id - is the integer number of the test case. The second
 #     argument is either 1 or 0, the expected value of the auto-commit flag.
@@ -216,8 +216,8 @@ TEST 1 {
     execsql {SELECT tbl_name FROM sqlite_master;}
   } {}
 }
-SQL { 
-  CREATE TABLE IF NOT EXISTS abc(a, b, c); 
+SQL {
+  CREATE TABLE IF NOT EXISTS abc(a, b, c);
 }
 TEST 2 {
   do_test $testid.1 {
@@ -297,7 +297,7 @@ TEST 6 {
   do_test $testid.2 {
     execsql {
       SELECT min(
-          (oid == a) AND 'String value ' || a == b AND a == length(c) 
+          (oid == a) AND 'String value ' || a == b AND a == length(c)
       ) FROM abc;
     }
   } {1}
@@ -312,7 +312,7 @@ TEST 7 {
   do_test $testid {
     execsql {
       SELECT min(
-          (oid == a) AND 'String value ' || a == b AND a == length(c) 
+          (oid == a) AND 'String value ' || a == b AND a == length(c)
       ) FROM abc;
     }
   } {1}
@@ -327,7 +327,7 @@ TEST 9 {
   do_test $testid {
     execsql {
       SELECT min(
-          (oid == a) AND 'String value ' || a == b AND a == length(c) 
+          (oid == a) AND 'String value ' || a == b AND a == length(c)
       ) FROM abc;
     }
   } {1}
@@ -481,7 +481,7 @@ TEST 29 {
   } {a b c a b c 1 2 3 1 2 3}
 }
 
-# Test a simple multi-file transaction 
+# Test a simple multi-file transaction
 #
 forcedelete test2.db
 ifcapable attach {
@@ -519,12 +519,12 @@ TEST 32 {
   }
 }
 SQL BEGIN
-TEST 33 { 
+TEST 33 {
   do_test $testid {
     execsql {SELECT * FROM ghi}
   } {a b c 1 2 3}
 }
-SQL -norollback { 
+SQL -norollback {
   -- There is a unique index on ghi(g), so this statement may not cause
   -- an automatic ROLLBACK. Hence the "-norollback" switch.
   INSERT INTO ghi SELECT '2'||g, h, i FROM ghi;
@@ -557,7 +557,7 @@ proc run_test {arglist iRepeat {pcstart 0} {iFailStart 1}} {
       -prep {db eval $v2}
       -debug {eval $v2}
     }
-    set nac [sqlite3_get_autocommit $::DB]       ;# New Auto-Commit 
+    set nac [sqlite3_get_autocommit $::DB]       ;# New Auto-Commit
     if {$ac && !$nac} {set begin_pc $i}
   }
 
@@ -575,7 +575,7 @@ proc run_test {arglist iRepeat {pcstart 0} {iFailStart 1}} {
 
     switch -- $k {
 
-      -test { 
+      -test {
         foreach {id script} $v {}
         set testid "malloc3-(test $id).$iterid"
         eval $script
@@ -591,7 +591,7 @@ proc run_test {arglist iRepeat {pcstart 0} {iFailStart 1}} {
         set ac [sqlite3_get_autocommit $::DB]        ;# Auto-Commit
         sqlite3_memdebug_fail $iFail -repeat 0
         set rc [catch {db eval [lindex $v 2]} msg]   ;# True error occurs
-        set nac [sqlite3_get_autocommit $::DB]       ;# New Auto-Commit 
+        set nac [sqlite3_get_autocommit $::DB]       ;# New Auto-Commit
 
         if {$rc != 0 && $nac && !$ac} {
           # Before [db eval] the auto-commit flag was clear. Now it
@@ -608,7 +608,7 @@ proc run_test {arglist iRepeat {pcstart 0} {iFailStart 1}} {
             # Successful execution of sql. The number of failed malloc()
             # calls should be equal to the number of benign failures.
             # Otherwise a malloc() failed and the error was not reported.
-            # 
+            #
             set expr {$nFail!=$nBenign}
             if {[expr $expr]} {
               error "Unreported malloc() failure, test \"$testid\", $expr"
@@ -619,7 +619,7 @@ proc run_test {arglist iRepeat {pcstart 0} {iFailStart 1}} {
               # is clear. We can deduce that a "BEGIN" statement has just
               # been successfully executed.
               set begin_pc $pc
-            } 
+            }
 
             incr pc
             set iFail 1

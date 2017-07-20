@@ -9,7 +9,7 @@
 #
 #***********************************************************************
 #
-# This file implements regression tests for SQLite library. This file 
+# This file implements regression tests for SQLite library. This file
 # implements tests for range and LIKE constraints that use bound variables
 # instead of literal constant arguments.
 #
@@ -26,15 +26,15 @@ ifcapable !stat4&&!stat3 {
 #----------------------------------------------------------------------
 # Test Organization:
 #
-# analyze3-1.*: Test that the values of bound parameters are considered 
+# analyze3-1.*: Test that the values of bound parameters are considered
 #               in the same way as constants when planning queries that
 #               use range constraints.
 #
-# analyze3-2.*: Test that the values of bound parameters are considered 
+# analyze3-2.*: Test that the values of bound parameters are considered
 #               in the same way as constants when planning queries that
 #               use LIKE expressions in the WHERE clause.
 #
-# analyze3-3.*: Test that binding to a variable does not invalidate the 
+# analyze3-3.*: Test that binding to a variable does not invalidate the
 #               query plan when there is no way in which replanning the
 #               query may produce a superior outcome.
 #
@@ -44,10 +44,10 @@ ifcapable !stat4&&!stat3 {
 # analyze3-5.*: Check that the query plans of applicable statements are
 #               invalidated if the values of SQL parameter are modified
 #               using the clear_bindings() or transfer_bindings() APIs.
-# 
+#
 # analyze3-6.*: Test that the problem fixed by commit [127a5b776d] is fixed.
 #
-# analyze3-7.*: Test that some memory leaks discovered by fuzz testing 
+# analyze3-7.*: Test that some memory leaks discovered by fuzz testing
 #               have been fixed.
 #
 
@@ -67,14 +67,14 @@ proc sf_execsql {sql {db db}} {
 
 #-------------------------------------------------------------------------
 #
-# analyze3-1.1.1: 
-#   Create a table with two columns. Populate the first column (affinity 
-#   INTEGER) with integer values from 100 to 1100. Create an index on this 
+# analyze3-1.1.1:
+#   Create a table with two columns. Populate the first column (affinity
+#   INTEGER) with integer values from 100 to 1100. Create an index on this
 #   column. ANALYZE the table.
 #
 # analyze3-1.1.2 - 3.1.3
 #   Show that there are two possible plans for querying the table with
-#   a range constraint on the indexed column - "full table scan" or "use 
+#   a range constraint on the indexed column - "full table scan" or "use
 #   the index". When the range is specified using literal values, SQLite
 #   is able to pick the best plan based on the samples in sqlite_stat3.
 #
@@ -82,8 +82,8 @@ proc sf_execsql {sql {db db}} {
 #   Show that using SQL variables produces the same results as using
 #   literal values to constrain the range scan.
 #
-#   These tests also check that the compiler code considers column 
-#   affinities when estimating the number of rows scanned by the "use 
+#   These tests also check that the compiler code considers column
+#   affinities when estimating the number of rows scanned by the "use
 #   index strategy".
 #
 do_test analyze3-1.1.1 {
@@ -113,14 +113,14 @@ do_execsql_test analyze3-1.1.x {
 } {99 1000}
 
 # The first of the following two SELECT statements visits 99 rows. So
-# it is better to use the index. But the second visits every row in 
+# it is better to use the index. But the second visits every row in
 # the table (1000 in total) so it is better to do a full-table scan.
 #
 do_eqp_test analyze3-1.1.2 {
   SELECT sum(y) FROM t1 WHERE x>200 AND x<300
 } {0 0 0 {SEARCH TABLE t1 USING INDEX i1 (x>? AND x<?)}}
 do_eqp_test analyze3-1.1.3 {
-  SELECT sum(y) FROM t1 WHERE x>0 AND x<1100 
+  SELECT sum(y) FROM t1 WHERE x>0 AND x<1100
 } {0 0 0 {SCAN TABLE t1}}
 
 do_test analyze3-1.1.4 {
@@ -326,7 +326,7 @@ do_test analyze3-2.11 {
 
 #-------------------------------------------------------------------------
 # This block of tests checks that statements are correctly marked as
-# expired when the values bound to any parameters that may affect the 
+# expired when the values bound to any parameters that may affect the
 # query plan are modified.
 #
 drop_all_tables

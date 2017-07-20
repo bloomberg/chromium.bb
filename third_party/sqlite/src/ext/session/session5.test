@@ -8,13 +8,13 @@
 #    May you share freely, never taking more than you give.
 #
 #***********************************************************************
-# This file implements regression tests for the session module. 
+# This file implements regression tests for the session module.
 # Specifically, for the sqlite3changeset_concat() command.
-# 
+#
 
 if {![info exists testdir]} {
   set testdir [file join [file dirname [info script]] .. .. test]
-} 
+}
 source [file join [file dirname [info script]] session_common.tcl]
 source $testdir/tester.tcl
 ifcapable !session {finish_test; return}
@@ -23,11 +23,11 @@ set testprefix session5
 
 # Organization of tests:
 #
-#   session5-1.*: Simple tests to check the concat() function produces 
+#   session5-1.*: Simple tests to check the concat() function produces
 #                 correct results.
 #
 #   session5-2.*: More complicated tests.
-#   
+#
 #   session5-3.*: Schema mismatch errors.
 #
 #   session5-4.*: Test the concat cases that indicate that the database
@@ -140,7 +140,7 @@ do_concat_test 1.2.7 {
 #-------------------------------------------------------------------------
 # Test cases session5-2.* - more complex tests.
 #
-db function indirect indirect 
+db function indirect indirect
 proc indirect {{x -1}} {
   S indirect $x
   s_prev indirect $x
@@ -165,11 +165,11 @@ do_concat_test 2.1 {
   INSERT INTO def SELECT d, e, f+4 FROM def;
 } {
   DELETE FROM def WHERE rowid>4;
-} { 
-  INSERT INTO def SELECT d, e, f+4 FROM def; 
+} {
+  INSERT INTO def SELECT d, e, f+4 FROM def;
 } {
   INSERT INTO abc VALUES(22, 44, -1);
-} { 
+} {
   UPDATE abc SET c=-2 WHERE c=-1;
   UPDATE abc SET c=-3 WHERE c=-2;
 } {
@@ -220,7 +220,7 @@ do_test 2.3.0 {
   catch {db close}
   forcedelete test.db
   sqlite3 db test.db
- 
+
   set sql1 ""
   set sql2 ""
   for {set i 1} {$i < 120} {incr i} {
@@ -314,7 +314,7 @@ do_test 3.1 {
 
   execsql { CREATE TABLE t1(a PRIMARY KEY, b) }
   set c1 [changeset_from_sql { INSERT INTO t1 VALUES(1, 2) }]
-  execsql { 
+  execsql {
     DROP TABLE t1;
     CREATE TABLE t1(a PRIMARY KEY, b, c);
   }
@@ -330,7 +330,7 @@ do_test 3.2 {
 
   execsql { CREATE TABLE t1(a PRIMARY KEY, b) }
   set c1 [changeset_from_sql { INSERT INTO t1 VALUES(1, 2) }]
-  execsql { 
+  execsql {
     DROP TABLE t1;
     CREATE TABLE t1(a, b PRIMARY KEY);
   }

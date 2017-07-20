@@ -99,7 +99,7 @@ do_faultsim_test 1 -prep {
 #
 #   1. Create a large database.
 #   2. Set the pager cache to be very small.
-#   3. Open a transaction. 
+#   3. Open a transaction.
 #   4. Run the following 100 times:
 #      a. Update a row.
 #      b. Copy all files on disk to a new db location, including the journal.
@@ -107,7 +107,7 @@ do_faultsim_test 1 -prep {
 #         the database created in step 1 (proving the journal was rolled
 #         back).
 
-do_test 2.0 { 
+do_test 2.0 {
   setup_and_save_db
   multiplex_restore_db
   sqlite3 db file:test.db?8_3_names=1
@@ -117,7 +117,7 @@ do_test 2.0 {
 
 for {set iTest 1} {$iTest<=100} {incr iTest} {
   do_test 2.$iTest {
-    execsql { 
+    execsql {
       UPDATE t1 SET a=randomblob(12), b=randomblob(1400) WHERE rowid=5*$iTest
     }
     foreach f [glob -nocomplain test.*] {forcecopy $f "xx_$f"}

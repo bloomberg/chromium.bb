@@ -27,13 +27,13 @@ ifcapable {!pager_pragmas} {
 #     In persistent journal mode, if:
 #
 #       * There is a persistent journal in the file-system, AND
-#       * there exists a connection with a shared lock on the db file, 
+#       * there exists a connection with a shared lock on the db file,
 #
 #     then a second connection cannot open a read-transaction on the database.
 #     The reason is because while determining that the persistent-journal is
 #     not a hot-journal, SQLite currently grabs an exclusive lock on the
 #     database file. If this fails because another connection has a shared
-#     lock, then SQLITE_BUSY is returned to the user.  
+#     lock, then SQLITE_BUSY is returned to the user.
 #
 # jrnlmode2-2.*: Demonstrate bug #3751:
 #
@@ -45,7 +45,7 @@ ifcapable {!pager_pragmas} {
 #     attempts to obtain an exclusive lock on the database file (this is a
 #     bug). The attempt to obtain an exclusive (write) lock on a read-only file
 #     fails at the OS level. Under unix, fcntl() reports an EBADF - "Bad file
-#     descriptor" - error. 
+#     descriptor" - error.
 #
 
 do_test jrnlmode2-1.1 {

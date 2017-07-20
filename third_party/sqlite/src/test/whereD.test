@@ -10,7 +10,7 @@
 #***********************************************************************
 # This file implements regression tests for SQLite library.  The
 # focus of this file is testing that an index may be used as a covering
-# index when there are OR expressions in the WHERE clause. 
+# index when there are OR expressions in the WHERE clause.
 #
 
 
@@ -82,7 +82,7 @@ do_execsql_test 2.0 {
   CREATE INDEX t1d ON t1(d);
   CREATE TABLE t2(x,y);
   CREATE INDEX t2y ON t2(y);
-  
+
   INSERT INTO t1 VALUES(1,2,3,4);
   INSERT INTO t1 VALUES(5,6,7,8);
   INSERT INTO t2 VALUES(1,2);
@@ -100,7 +100,7 @@ do_execsql_test 2.2 {
 # Similar to [do_execsql_test], except that two elements are appended
 # to the result - the string "search" and the number of times test variable
 # sqlite3_search_count is incremented by running the supplied SQL. e.g.
-# 
+#
 #   do_searchcount_test 1.0 { SELECT * FROM t1 } {x y search 2}
 #
 proc do_searchcount_test {tn sql res} {
@@ -109,7 +109,7 @@ proc do_searchcount_test {tn sql res} {
       set ::sqlite_search_count 0
       concat [db eval {$sql}] search [set ::sqlite_search_count]
     } [list $res]
-  }] 
+  }]
 }
 
 do_execsql_test 3.0 {
@@ -139,19 +139,19 @@ do_searchcount_test 3.4.1 {
   SELECT y FROM t4 WHERE x='a'
 } {one search 2}
 do_searchcount_test 3.4.2 {
-  SELECT a, b FROM t3 WHERE 
-        (a=1 AND b=(SELECT y FROM t4 WHERE x='a')) 
+  SELECT a, b FROM t3 WHERE
+        (a=1 AND b=(SELECT y FROM t4 WHERE x='a'))
      OR (a=2 AND b='two')
 } {1 one 2 two search 6}
 do_searchcount_test 3.4.3 {
-  SELECT a, b FROM t3 WHERE 
+  SELECT a, b FROM t3 WHERE
         (a=2 AND b='two')
-     OR (a=1 AND b=(SELECT y FROM t4 WHERE x='a')) 
+     OR (a=1 AND b=(SELECT y FROM t4 WHERE x='a'))
 } {2 two 1 one search 6}
 do_searchcount_test 3.4.4 {
-  SELECT a, b FROM t3 WHERE 
-        (a=2 AND b=(SELECT y FROM t4 WHERE x='b')) 
-     OR (a=1 AND b=(SELECT y FROM t4 WHERE x='a')) 
+  SELECT a, b FROM t3 WHERE
+        (a=2 AND b=(SELECT y FROM t4 WHERE x='b'))
+     OR (a=1 AND b=(SELECT y FROM t4 WHERE x='a'))
 } {2 two 1 one search 8}
 
 do_searchcount_test 3.5.1 {
@@ -162,7 +162,7 @@ do_searchcount_test 3.5.2 {
 } {1 i 2 ii search 3}
 
 # Ticket [d02e1406a58ea02d] (2012-10-04)
-# LEFT JOIN with an OR in the ON clause causes segfault 
+# LEFT JOIN with an OR in the ON clause causes segfault
 #
 do_test 4.1 {
   db eval {
@@ -240,9 +240,9 @@ do_execsql_test 5.1 {
   CREATE INDEX tc15 ON t(c15);
   CREATE INDEX tc16 ON t(c16);
   CREATE INDEX tc17 ON t(c17);
-  
+
   INSERT INTO t(c0, c16) VALUES (1,1);
-  
+
   SELECT * FROM t WHERE
     c0=1 or  c1=1 or  c2=1 or  c3=1 or
     c4=1 or  c5=1 or  c6=1 or  c7=1 or
@@ -321,7 +321,7 @@ do_searchcount_test 6.5.3 {
   SELECT d FROM x1 WHERE c=11 OR rowid = 2
 } {12 8 search 2}
 do_searchcount_test 6.5.4 {
-  SELECT a FROM x1 WHERE c=11 OR rowid = 2 
+  SELECT a FROM x1 WHERE c=11 OR rowid = 2
 } {9 5 search 3}
 
 do_searchcount_test 6.6.1 {
@@ -331,7 +331,7 @@ do_searchcount_test 6.6.2 {
   SELECT c FROM x1 WHERE a=1 OR b=6 OR c=11
 } {3 7 11 search 7}
 do_searchcount_test 6.6.3 {
-  SELECT c FROM x1 WHERE c=11 OR a=1 OR b=6 
+  SELECT c FROM x1 WHERE c=11 OR a=1 OR b=6
 } {11 3 7 search 7}
 do_searchcount_test 6.6.4 {
   SELECT c FROM x1 WHERE b=6 OR c=11 OR a=1
@@ -352,7 +352,7 @@ do_execsql_test 7.1 {
 } {1 1 {} {}}
 
 do_execsql_test 7.3 {
-  CREATE TABLE foo (Id INTEGER PRIMARY KEY, fa INTEGER, fb INTEGER); 
+  CREATE TABLE foo (Id INTEGER PRIMARY KEY, fa INTEGER, fb INTEGER);
   CREATE TABLE bar (Id INTEGER PRIMARY KEY, ba INTEGER, bb INTEGER);
 
   INSERT INTO foo VALUES(1, 1, 1);
@@ -377,39 +377,39 @@ do_execsql_test 7.3 {
 }
 
 do_execsql_test 7.4 {
-  SELECT 
+  SELECT
     bar.Id, bar.ba, bar.bb, foo.fb
     FROM foo LEFT JOIN bar
            ON (bar.ba = 1 AND bar.bb = foo.fb)
            OR (bar.ba = 5 AND bar.bb = foo.fb);
 } {
-  1 1 1 1 
-  {} {} {} 2 
-  {} {} {} 3 
-  4 1 4 4 
-  {} {} {} 5 
-  {} {} {} 6 
-  7 1 7 7 
-  {} {} {} 8 
+  1 1 1 1
+  {} {} {} 2
+  {} {} {} 3
+  4 1 4 4
+  {} {} {} 5
+  {} {} {} 6
+  7 1 7 7
+  {} {} {} 8
   {} {} {} 9
 }
 
 do_execsql_test 7.5 {
   CREATE INDEX idx_bar ON bar(ba, bb);
-  SELECT 
+  SELECT
     bar.Id, bar.ba, bar.bb, foo.fb
     FROM foo LEFT JOIN bar
            ON (bar.ba = 1 AND bar.bb = foo.fb)
            OR (bar.ba = 5 AND bar.bb = foo.fb);
 } {
-  1 1 1 1 
-  {} {} {} 2 
-  {} {} {} 3 
-  4 1 4 4 
-  {} {} {} 5 
-  {} {} {} 6 
-  7 1 7 7 
-  {} {} {} 8 
+  1 1 1 1
+  {} {} {} 2
+  {} {} {} 3
+  4 1 4 4
+  {} {} {} 5
+  {} {} {} 6
+  7 1 7 7
+  {} {} {} 8
   {} {} {} 9
 }
 

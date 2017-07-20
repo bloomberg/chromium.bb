@@ -91,7 +91,7 @@ do_test async4.1.13 {
   execsql { CREATE TABLE t3(a, b, c) } db
 } {}
 do_test async4.1.14 {
-  execsql { 
+  execsql {
     CREATE INDEX i1 ON t2(a);
     CREATE INDEX i2 ON t1(a);
   } db2

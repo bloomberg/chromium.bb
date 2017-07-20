@@ -26,16 +26,16 @@ foreach_detail_mode $testprefix {
   do_execsql_test 1.0 {
     CREATE VIRTUAL TABLE o1 USING fts5(a, detail=%DETAIL%);
     INSERT INTO o1(o1, rank) VALUES('pgsz', 32);
-  
+
     WITH s(i) AS ( SELECT 1 UNION ALL SELECT i+1 FROM s WHERE i<300 )
     INSERT INTO o1 SELECT 'A B C' FROM s;
-  
+
     INSERT INTO o1 VALUES('A X C');
-  
+
     WITH s(i) AS ( SELECT 1 UNION ALL SELECT i+1 FROM s WHERE i<300 )
     INSERT INTO o1 SELECT 'A B C' FROM s;
   }
-  
+
   do_faultsim_test 1 -faults oom* -prep {
     sqlite3 db test.db
   } -body {
@@ -47,7 +47,7 @@ foreach_detail_mode $testprefix {
 
 do_execsql_test 2.0 {
   CREATE VIRTUAL TABLE o2 USING fts5(a);
-  
+
   INSERT INTO o2 VALUES('A B C');
   WITH s(i) AS ( SELECT 1 UNION ALL SELECT i+1 FROM s WHERE i<300 )
   INSERT INTO o2 SELECT group_concat('A B C ') FROM s;

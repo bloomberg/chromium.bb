@@ -283,7 +283,7 @@ do_execsql_test json102-1132 {
 } ;# end ifcapable vtab
 
 #-------------------------------------------------------------------------
-# Test that json_valid() correctly identifies non-ascii range 
+# Test that json_valid() correctly identifies non-ascii range
 # characters as non-whitespace.
 #
 do_execsql_test json102-1201 { SELECT json_valid(char(32)  || '"xyz"') } 1

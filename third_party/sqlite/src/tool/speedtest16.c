@@ -31,15 +31,15 @@
 
 #define ISSPACE(X)  isspace((unsigned char)(X))
 
-/* 
-** hwtime.h contains inline assembler code for implementing 
+/*
+** hwtime.h contains inline assembler code for implementing
 ** high-performance timing routines.
 */
 #include "hwtime.h"
 
 /*
 ** Convert a zero-terminated ASCII string into a zero-terminated
-** UTF-16le string.  Memory to hold the returned string comes 
+** UTF-16le string.  Memory to hold the returned string comes
 ** from malloc() and should be freed by the caller.
 */
 static void *asciiToUtf16le(const char *z){
@@ -71,7 +71,7 @@ static void prepareAndRun(sqlite3 *db, const char *zSql){
   const void *stmtTail;
   sqlite_uint64 iStart, iElapse;
   int rc;
-  
+
   printf("****************************************************************\n");
   printf("SQL statement: [%s]\n", zSql);
   utf16 = asciiToUtf16le(zSql);

@@ -10,7 +10,7 @@
 #***********************************************************************
 # This file implements regression tests for SQLite library.
 #
-# This file implements tests to verify that ticket 
+# This file implements tests to verify that ticket
 # [f7b4edece25c994857dc139207f55a53c8319fae] has been fixed.
 #
 
@@ -53,7 +53,7 @@ do_test tkt-f7b4edec-2 {
   set ::HOOKS
 } {}
 
-# Rerun the prepared statement that was created prior to the 
+# Rerun the prepared statement that was created prior to the
 # schema reparse.  Verify that the update-hook gives the correct
 # output.
 #

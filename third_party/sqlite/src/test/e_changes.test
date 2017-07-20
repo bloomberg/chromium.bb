@@ -14,7 +14,7 @@ set testdir [file dirname $argv0]
 source $testdir/tester.tcl
 set testprefix e_changes
 
-# Like [do_execsql_test], except it appends the value returned by 
+# Like [do_execsql_test], except it appends the value returned by
 # [db changes] to the result of executing the SQL script.
 #
 proc do_changes_test {tn sql res} {
@@ -37,11 +37,11 @@ do_execsql_test 1.0 {
   CREATE INDEX i2 ON t2(y);
 }
 foreach {tn schema} {
-  1 { 
+  1 {
       CREATE TABLE t1(a, b);
       CREATE INDEX i1 ON t1(b);
   }
-  2 { 
+  2 {
       CREATE TABLE t1(a, b, PRIMARY KEY(a, b)) WITHOUT ROWID;
       CREATE INDEX i1 ON t1(b);
   }
@@ -113,7 +113,7 @@ foreach {tn schema} {
 #
 reset_db
 do_changes_test 2.1 { CREATE TABLE t1(x)          } 0
-do_changes_test 2.2 { 
+do_changes_test 2.2 {
   WITH d(y) AS (SELECT 1 UNION ALL SELECT y+1 FROM d WHERE y<47)
   INSERT INTO t1 SELECT y FROM d;
 } 47
@@ -192,7 +192,7 @@ do_execsql_test 3.2.0 {
 do_changes_test 3.2.1 { DELETE FROM p1 WHERE one = 'a' } 1
 do_changes_test 3.2.2 { DELETE FROM p1 WHERE one = 'b' } 1
 do_changes_test 3.2.3 { DELETE FROM p1 WHERE one = 'c' } 1
-do_execsql_test 3.2.4 { 
+do_execsql_test 3.2.4 {
   SELECT * FROM c1;
   SELECT * FROM c2;
   SELECT * FROM c3;
@@ -201,7 +201,7 @@ do_execsql_test 3.2.4 {
 do_changes_test 3.2.5 { UPDATE p1 SET one = 'g' WHERE one = 'd' } 1
 do_changes_test 3.2.6 { UPDATE p1 SET one = 'h' WHERE one = 'e' } 1
 do_changes_test 3.2.7 { UPDATE p1 SET one = 'i' WHERE one = 'f' } 1
-do_execsql_test 3.2.8 { 
+do_execsql_test 3.2.8 {
   SELECT * FROM c4;
   SELECT * FROM c5;
   SELECT * FROM c6;
@@ -222,7 +222,7 @@ do_changes_test 3.3.1 { INSERT OR REPLACE INTO r1 VALUES('i', 1)    }   1
 do_changes_test 3.3.2 { INSERT OR REPLACE INTO r1 VALUES('iv', 'v') }   1
 do_changes_test 3.3.3 { UPDATE OR REPLACE r1 SET b='v' WHERE a='iii' }  1
 do_changes_test 3.3.4 { UPDATE OR REPLACE r1 SET b='vi',a='vii' WHERE a='ii' } 1
-do_execsql_test 3.3.5 { 
+do_execsql_test 3.3.5 {
   SELECT * FROM r1 ORDER BY a;
 } {i 1   iii v   vii vi}
 

@@ -129,7 +129,7 @@ ifcapable schema_pragmas {
 do_test attach-1.11b {
   db_list db
 } {0 main 2 db2 3 db3 4 db4 5 db5 6 db6 7 db7 8 db8 9 db9}
-} ;# ifcapable schema_pragmas 
+} ;# ifcapable schema_pragmas
 do_test attach-1.12 {
   catchsql {
     ATTACH 'test.db' as db2;
@@ -337,7 +337,7 @@ do_test attach-2.10 {
   } db2
 } {table t2 t2 table tx tx trigger r1 t2 index i2 t2}
 #do_test attach-2.11 {
-#  catchsql { 
+#  catchsql {
 #    SELECT * FROM t2 WHERE x>5;
 #  }
 #} {1 {database schema has changed}}
@@ -608,7 +608,7 @@ ifcapable !compound {
     ATTACH DATABASE 'test2.db' AS db2;
     INSERT INTO db2.t3 VALUES(13,14);
     INSERT INTO main.t3 VALUES(15,16);
-  } 
+  }
 } ;# ifcapable !compound
 
 ifcapable view {
@@ -776,7 +776,7 @@ ifcapable subquery {
     forcedelete test.db test.db-journal
     sqlite3 db test.db
     catchsql {
-      DETACH RAISE ( IGNORE ) IN ( SELECT "AAAAAA" . * ORDER BY 
+      DETACH RAISE ( IGNORE ) IN ( SELECT "AAAAAA" . * ORDER BY
       REGISTER LIMIT "AAAAAA" . "AAAAAA" OFFSET RAISE ( IGNORE ) NOT NULL )
     }
   } {1 {no such table: AAAAAA}}

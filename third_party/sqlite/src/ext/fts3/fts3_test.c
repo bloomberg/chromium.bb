@@ -142,7 +142,7 @@ static int nm_match_count(
       /* This is a real match. Increment the counter. */
       nOcc++;
     }
-  } 
+  }
 
   return nOcc;
 }
@@ -165,7 +165,7 @@ static int SQLITE_TCLAPI fts3_near_match_cmd(
   Tcl_Obj **apDocToken;
   Tcl_Obj *pRet;
   Tcl_Obj *pPhrasecount = 0;
-  
+
   Tcl_Obj **apExprToken;
   int nExprToken;
 
@@ -189,7 +189,7 @@ static int SQLITE_TCLAPI fts3_near_match_cmd(
     };
     int iOpt;
     if( Tcl_GetIndexFromObjStruct(
-        interp, objv[ii], aOpt, sizeof(aOpt[0]), "option", 0, &iOpt) 
+        interp, objv[ii], aOpt, sizeof(aOpt[0]), "option", 0, &iOpt)
     ){
       return TCL_ERROR;
     }
@@ -254,7 +254,7 @@ static int SQLITE_TCLAPI fts3_near_match_cmd(
   Tcl_DecrRefCount(pRet);
   Tcl_SetObjResult(interp, Tcl_NewBooleanObj(nTotal>0));
 
- near_match_out: 
+ near_match_out:
   ckfree((char *)aPhrase);
   ckfree((char *)doc.aToken);
   return rc;
@@ -332,10 +332,10 @@ static int SQLITE_TCLAPI fts3_configure_incr_load_cmd(
 /**************************************************************************
 ** Beginning of test tokenizer code.
 **
-** For language 0, this tokenizer is similar to the default 'simple' 
+** For language 0, this tokenizer is similar to the default 'simple'
 ** tokenizer. For other languages L, the following:
 **
-**   * Odd numbered languages are case-sensitive. Even numbered 
+**   * Odd numbered languages are case-sensitive. Even numbered
 **     languages are not.
 **
 **   * Language ids 100 or greater are considered an error.
@@ -570,13 +570,13 @@ static int SQLITE_TCLAPI fts3_test_varint_cmd(
   return TCL_OK;
 }
 
-/* 
+/*
 ** End of tokenizer code.
-**************************************************************************/ 
+**************************************************************************/
 
 int Sqlitetestfts3_Init(Tcl_Interp *interp){
   Tcl_CreateObjCommand(interp, "fts3_near_match", fts3_near_match_cmd, 0, 0);
-  Tcl_CreateObjCommand(interp, 
+  Tcl_CreateObjCommand(interp,
       "fts3_configure_incr_load", fts3_configure_incr_load_cmd, 0, 0
   );
   Tcl_CreateObjCommand(

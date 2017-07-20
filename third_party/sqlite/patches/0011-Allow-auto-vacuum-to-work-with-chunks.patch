@@ -24,7 +24,7 @@ index de553423b884..3335ced417ca 100644
 @@ -2812,6 +2812,46 @@ int sqlite3BtreeGetAutoVacuum(Btree *p){
  #endif
  }
- 
+
 +/*
 +** Change the 'auto-vacuum-slack-pages' property of the database. If auto vacuum
 +** is enabled, this is the number of chunks of slack to allow before
@@ -65,7 +65,7 @@ index de553423b884..3335ced417ca 100644
 +#endif
 +}
 +
- 
+
  /*
  ** Get a reference to pPage1 of the database file.  This will
 @@ -3653,13 +3693,27 @@ int sqlite3BtreeIncrVacuum(Btree *p){
@@ -75,7 +75,7 @@ index de553423b884..3335ced417ca 100644
 +  int bShouldVacuum = pBt->autoVacuum && !pBt->incrVacuum;
    Pager *pPager = pBt->pPager;
    VVA_ONLY( int nRef = sqlite3PagerRefcount(pPager); )
- 
+
    assert( sqlite3_mutex_held(pBt->mutex) );
    invalidateAllOverflowCache(pBt);
    assert(pBt->autoVacuum);
@@ -129,7 +129,7 @@ index b1775a4082a3..1d5ebfca098d 100644
 @@ -736,6 +736,27 @@ void sqlite3Pragma(
    }
  #endif
- 
+
 +  /*
 +  **  PRAGMA [schema.]auto_vacuum_slack_pages(N)
 +  **
@@ -163,7 +163,7 @@ index 5d8d0aa35b3f..e47f80fefac4 100644
  #define PragTyp_LOCK_STATUS                   41
  #define PragTyp_PARSER_TRACE                  42
 +#define PragTyp_AUTO_VACUUM_SLACK_PAGES       43
- 
+
  /* Property flags associated with various pragma. */
  #define PragFlg_NeedSchema 0x01 /* Force schema load before running */
 @@ -145,6 +146,13 @@ static const PragmaName aPragmaName[] = {
@@ -180,6 +180,6 @@ index 5d8d0aa35b3f..e47f80fefac4 100644
  #if !defined(SQLITE_OMIT_FLAG_PRAGMAS)
  #if !defined(SQLITE_OMIT_AUTOMATIC_INDEX)
   {/* zName:     */ "automatic_index",
--- 
+--
 2.11.0
 

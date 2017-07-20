@@ -42,18 +42,18 @@ proc backwards_collate {a b} {
 }
 
 # The following values are used in these tests:
-# NULL   aa ab ba bb   aA aB bA bB   Aa Ab Ba Bb   AA AB BA BB 
+# NULL   aa ab ba bb   aA aB bA bB   Aa Ab Ba Bb   AA AB BA BB
 #
 # The collation orders for each of the tested collation types are:
 #
-# BINARY:    NULL  AA AB Aa Ab  BA BB Ba Bb  aA aB aa ab  bA bB ba bb 
-# NOCASE:    NULL  aa aA Aa AA  ab aB Ab AB  ba bA Ba BA  bb bB Bb BB 
-# BACKWARDS: NULL  AA BA aA bA  AB BB aB bB  Aa Ba aa ba  Ab Bb ab bb 
+# BINARY:    NULL  AA AB Aa Ab  BA BB Ba Bb  aA aB aa ab  bA bB ba bb
+# NOCASE:    NULL  aa aA Aa AA  ab aB Ab AB  ba bA Ba BA  bb bB Bb BB
+# BACKWARDS: NULL  AA BA aA bA  AB BB aB bB  Aa Ba aa ba  Ab Bb ab bb
 #
 # These tests verify that the default collation type for a column is used
-# for comparison operators (<, >, <=, >=, =) involving that column and 
+# for comparison operators (<, >, <=, >=, =) involving that column and
 # an expression that is not a column with a default collation type.
-# 
+#
 # The collation sequences BINARY and NOCASE are built-in, the BACKWARDS
 # collation sequence is implemented by the TCL proc backwards_collate
 # above.
@@ -61,8 +61,8 @@ proc backwards_collate {a b} {
 do_test collate2-1.0 {
   execsql {
     CREATE TABLE collate2t1(
-      a COLLATE BINARY, 
-      b COLLATE NOCASE, 
+      a COLLATE BINARY,
+      b COLLATE NOCASE,
       c COLLATE BACKWARDS
     );
     INSERT INTO collate2t1 VALUES( NULL, NULL, NULL );
@@ -87,7 +87,7 @@ do_test collate2-1.0 {
     INSERT INTO collate2t1 VALUES( 'BA', 'BA', 'BA' );
     INSERT INTO collate2t1 VALUES( 'BB', 'BB', 'BB' );
   }
-  if {[info exists collate_test_use_index]} { 
+  if {[info exists collate_test_use_index]} {
     execsql {
       CREATE INDEX collate2t1_i1 ON collate2t1(a);
       CREATE INDEX collate2t1_i2 ON collate2t1(b);
@@ -268,21 +268,21 @@ do_test collate2-1.18 {
 } {Aa Ba aa ba Ab Bb}
 do_test collate2-1.19 {
   execsql {
-    SELECT a FROM collate2t1 WHERE 
+    SELECT a FROM collate2t1 WHERE
       CASE a WHEN 'aa' THEN 1 ELSE 0 END
         ORDER BY 1, oid;
   }
 } {aa}
 do_test collate2-1.20 {
   execsql {
-    SELECT b FROM collate2t1 WHERE 
+    SELECT b FROM collate2t1 WHERE
       CASE b WHEN 'aa' THEN 1 ELSE 0 END
         ORDER BY 1, oid;
   }
 } {aa aA Aa AA}
 do_test collate2-1.21 {
   execsql {
-    SELECT c FROM collate2t1 WHERE 
+    SELECT c FROM collate2t1 WHERE
       CASE c WHEN 'aa' THEN 1 ELSE 0 END
         ORDER BY 1, oid;
   }
@@ -306,19 +306,19 @@ ifcapable subquery {
   } {aa bb}
   do_test collate2-1.25 {
     execsql {
-      SELECT a FROM collate2t1 
+      SELECT a FROM collate2t1
         WHERE a IN (SELECT a FROM collate2t1 WHERE a IN ('aa', 'bb'));
     }
   } {aa bb}
   do_test collate2-1.26 {
     execsql {
-      SELECT b FROM collate2t1 
+      SELECT b FROM collate2t1
         WHERE b IN (SELECT a FROM collate2t1 WHERE a IN ('aa', 'bb'));
     }
   } {aa bb aA bB Aa Bb AA BB}
   do_test collate2-1.27 {
     execsql {
-      SELECT c FROM collate2t1 
+      SELECT c FROM collate2t1
         WHERE c IN (SELECT a FROM collate2t1 WHERE a IN ('aa', 'bb'));
     }
   } {aa bb}
@@ -448,19 +448,19 @@ ifcapable subquery {
   } {ab ba aA aB bA bB Aa Ab Ba Bb AA AB BA BB}
   do_test collate2-2.25 {
     execsql {
-      SELECT a FROM collate2t1 
+      SELECT a FROM collate2t1
         WHERE NOT a IN (SELECT a FROM collate2t1 WHERE a IN ('aa', 'bb'));
     }
   } {ab ba aA aB bA bB Aa Ab Ba Bb AA AB BA BB}
   do_test collate2-2.26 {
     execsql {
-      SELECT b FROM collate2t1 
+      SELECT b FROM collate2t1
         WHERE NOT b IN (SELECT a FROM collate2t1 WHERE a IN ('aa', 'bb'));
     }
   } {ab ba aB bA Ab Ba AB BA}
   do_test collate2-2.27 {
     execsql {
-      SELECT c FROM collate2t1 
+      SELECT c FROM collate2t1
         WHERE NOT c IN (SELECT a FROM collate2t1 WHERE a IN ('aa', 'bb'));
     }
   } {ab ba aA aB bA bB Aa Ab Ba Bb AA AB BA BB}
@@ -590,19 +590,19 @@ ifcapable subquery {
   } {{} 1 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0}
   do_test collate2-3.25 {
     execsql {
-      SELECT a IN (SELECT a FROM collate2t1 WHERE a IN ('aa', 'bb')) 
+      SELECT a IN (SELECT a FROM collate2t1 WHERE a IN ('aa', 'bb'))
         FROM collate2t1;
     }
   } {{} 1 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0}
   do_test collate2-3.26 {
     execsql {
-      SELECT b IN (SELECT a FROM collate2t1 WHERE a IN ('aa', 'bb')) 
+      SELECT b IN (SELECT a FROM collate2t1 WHERE a IN ('aa', 'bb'))
         FROM collate2t1;
     }
   } {{} 1 0 0 1 1 0 0 1 1 0 0 1 1 0 0 1}
   do_test collate2-3.27 {
     execsql {
-      SELECT c IN (SELECT a FROM collate2t1 WHERE a IN ('aa', 'bb')) 
+      SELECT c IN (SELECT a FROM collate2t1 WHERE a IN ('aa', 'bb'))
         FROM collate2t1;
     }
   } {{} 1 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0}
@@ -622,13 +622,13 @@ do_test collate2-4.0 {
 # is used.
 do_test collate2-4.1 {
   execsql {
-    SELECT collate2t1.a FROM collate2t1, collate2t2 
+    SELECT collate2t1.a FROM collate2t1, collate2t2
       WHERE collate2t1.b = collate2t2.b;
   }
 } {aa aA Aa AA}
 do_test collate2-4.2 {
   execsql {
-    SELECT collate2t1.a FROM collate2t1, collate2t2 
+    SELECT collate2t1.a FROM collate2t1, collate2t2
       WHERE collate2t2.b = collate2t1.b;
   }
 } {aa}
@@ -637,14 +637,14 @@ do_test collate2-4.2 {
 # does not, the collation type is used.
 do_test collate2-4.3 {
   execsql {
-    SELECT collate2t1.a FROM collate2t1, collate2t3 
+    SELECT collate2t1.a FROM collate2t1, collate2t3
       WHERE collate2t1.b = collate2t3.b||''
       ORDER BY +collate2t1.a DESC;
   }
 } {aa aA Aa AA}
 do_test collate2-4.4 {
   execsql {
-    SELECT collate2t1.a FROM collate2t1, collate2t3 
+    SELECT collate2t1.a FROM collate2t1, collate2t3
       WHERE collate2t3.b||'' = collate2t1.b
       ORDER BY +collate2t1.a DESC;
   }
@@ -662,7 +662,7 @@ do_test collate2-4.5 {
 #
 # SQLite transforms the JOIN syntax into a WHERE clause internally, so
 # the focus of these tests is to ensure that the table on the left-hand-side
-# of the join determines the collation type used. 
+# of the join determines the collation type used.
 #
 do_test collate2-5.0 {
   execsql {
@@ -707,7 +707,7 @@ do_execsql_test 6.3 {
   SELECT * FROM t1 WHERE x BETWEEN 'a' COLLATE nocase AND 'c' COLLATE nocase;
 } {b B}
 do_execsql_test 6.4 {
-  SELECT * FROM t1 
+  SELECT * FROM t1
   WHERE x COLLATE nocase BETWEEN 'a' COLLATE nocase AND 'c' COLLATE nocase;
 } {b B}
 do_execsql_test 6.5 {
@@ -717,7 +717,7 @@ do_execsql_test 6.6 {
   SELECT * FROM t1 WHERE +x BETWEEN 'a' COLLATE nocase AND 'c' COLLATE nocase;
 } {b B}
 do_execsql_test 6.7 {
-  SELECT * FROM t1 
+  SELECT * FROM t1
   WHERE +x COLLATE nocase BETWEEN 'a' COLLATE nocase AND 'c' COLLATE nocase;
 } {b B}
 

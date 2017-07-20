@@ -10,7 +10,7 @@
 **
 *************************************************************************
 ** Code for testing all sorts of SQLite interfaces. This code
-** is not included in the SQLite library. 
+** is not included in the SQLite library.
 */
 
 #include "sqlite3.h"
@@ -24,7 +24,7 @@
 #include "sqliteInt.h"
 
 #ifdef SQLITE_ENABLE_RTREE
-/* 
+/*
 ** Type used to cache parameter information for the "circle" r-tree geometry
 ** callback.
 */
@@ -55,7 +55,7 @@ static void circle_del(void *p){
 */
 static int circle_geom(
   sqlite3_rtree_geometry *p,
-  int nCoord, 
+  int nCoord,
   sqlite3_rtree_dbl *aCoord,
   int *pRes
 ){
@@ -78,7 +78,7 @@ static int circle_geom(
     if( nCoord!=4 ) return SQLITE_ERROR;
 
     /* Test that the correct number of parameters (3) have been supplied,
-    ** and that the parameters are in range (that the radius of the circle 
+    ** and that the parameters are in range (that the radius of the circle
     ** radius is greater than zero). */
     if( p->nParam!=3 || p->aParam[2]<0.0 ) return SQLITE_ERROR;
 
@@ -118,7 +118,7 @@ static int circle_geom(
     pCircle->mxArea = (xmax - xmin)*(ymax - ymin) + 1.0;
   }
 
-  /* Check if any of the 4 corners of the bounding-box being tested lie 
+  /* Check if any of the 4 corners of the bounding-box being tested lie
   ** inside the circular region. If they do, then the bounding-box does
   ** intersect the region of interest. Set the output variable to true and
   ** return SQLITE_OK in this case. */
@@ -126,7 +126,7 @@ static int circle_geom(
     double x = (i&0x01) ? xmax : xmin;
     double y = (i&0x02) ? ymax : ymin;
     double d2;
-    
+
     d2  = (x-pCircle->centerx)*(x-pCircle->centerx);
     d2 += (y-pCircle->centery)*(y-pCircle->centery);
     if( d2<(pCircle->radius*pCircle->radius) ){
@@ -140,10 +140,10 @@ static int circle_geom(
   ** cover part of the circular region, set the output variable to true
   ** and return SQLITE_OK. */
   for(i=0; i<2; i++){
-    if( xmin<=pCircle->aBox[i].xmin 
-     && xmax>=pCircle->aBox[i].xmax 
-     && ymin<=pCircle->aBox[i].ymin 
-     && ymax>=pCircle->aBox[i].ymax 
+    if( xmin<=pCircle->aBox[i].xmin
+     && xmax>=pCircle->aBox[i].xmax
+     && ymin<=pCircle->aBox[i].ymin
+     && ymax>=pCircle->aBox[i].ymax
     ){
       *pRes = 1;
       return SQLITE_OK;
@@ -157,7 +157,7 @@ static int circle_geom(
 }
 
 /*
-** Implementation of "circle" r-tree geometry callback using the 
+** Implementation of "circle" r-tree geometry callback using the
 ** 2nd-generation interface that allows scoring.
 **
 ** Two calling forms:
@@ -254,7 +254,7 @@ static int circle_query_func(sqlite3_rtree_query_info *p){
     pCircle->mxArea = 200.0*200.0;
   }
 
-  /* Check if any of the 4 corners of the bounding-box being tested lie 
+  /* Check if any of the 4 corners of the bounding-box being tested lie
   ** inside the circular region. If they do, then the bounding-box does
   ** intersect the region of interest. Set the output variable to true and
   ** return SQLITE_OK in this case. */
@@ -262,7 +262,7 @@ static int circle_query_func(sqlite3_rtree_query_info *p){
     double x = (i&0x01) ? xmax : xmin;
     double y = (i&0x02) ? ymax : ymin;
     double d2;
-    
+
     d2  = (x-pCircle->centerx)*(x-pCircle->centerx);
     d2 += (y-pCircle->centery)*(y-pCircle->centery);
     if( d2<(pCircle->radius*pCircle->radius) ) nWithin++;
@@ -274,10 +274,10 @@ static int circle_query_func(sqlite3_rtree_query_info *p){
   ** and return SQLITE_OK. */
   if( nWithin==0 ){
     for(i=0; i<2; i++){
-      if( xmin<=pCircle->aBox[i].xmin 
-       && xmax>=pCircle->aBox[i].xmax 
-       && ymin<=pCircle->aBox[i].ymin 
-       && ymax>=pCircle->aBox[i].ymax 
+      if( xmin<=pCircle->aBox[i].xmin
+       && xmax>=pCircle->aBox[i].xmax
+       && ymin<=pCircle->aBox[i].ymin
+       && ymax>=pCircle->aBox[i].ymax
       ){
         nWithin = 1;
         break;
@@ -319,7 +319,7 @@ static int circle_query_func(sqlite3_rtree_query_info *p){
   return SQLITE_OK;
 }
 /*
-** Implementation of "breadthfirstsearch" r-tree geometry callback using the 
+** Implementation of "breadthfirstsearch" r-tree geometry callback using the
 ** 2nd-generation interface that allows scoring.
 **
 **     ... WHERE id MATCH breadthfirstsearch($x0,$x1,$y0,$y1) ...

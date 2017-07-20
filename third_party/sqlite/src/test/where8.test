@@ -24,7 +24,7 @@ source $testdir/tester.tcl
 #   where8-2.*: Tests surrounding virtual tables and the OR optimization.
 #
 #   where8-3.*: Tests with more than one table in the FROM clause.
-# 
+#
 
 proc execsql_status {sql {db db}} {
   set result [uplevel $db eval [list $sql]]
@@ -56,35 +56,35 @@ do_test where8-1.1 {
   }
 } {}
 
-do_test where8-1.2 { 
+do_test where8-1.2 {
   execsql_status2 { SELECT c FROM t1 WHERE a = 1 OR b = 'nine' }
 } {I IX 0 0 6}
 
-do_test where8-1.3 { 
+do_test where8-1.3 {
   execsql_status2 { SELECT c FROM t1 WHERE a > 8 OR b = 'two' }
 } {IX X II 0 0 6}
 
 ifcapable like_match_blobs {
-  do_test where8-1.4a { 
+  do_test where8-1.4a {
     execsql_status2 { SELECT c FROM t1 WHERE a > 8 OR b GLOB 't*' }
   } {IX X III II 0 0 10}
-  do_test where8-1.5a { 
+  do_test where8-1.5a {
     execsql_status2 { SELECT c FROM t1 WHERE a > 8 OR b GLOB 'f*' }
   } {IX X V IV 0 0 10}
 } else {
-  do_test where8-1.4b { 
+  do_test where8-1.4b {
     execsql_status2 { SELECT c FROM t1 WHERE a > 8 OR b GLOB 't*' }
   } {IX X III II 0 0 9}
-  do_test where8-1.5 { 
+  do_test where8-1.5 {
     execsql_status2 { SELECT c FROM t1 WHERE a > 8 OR b GLOB 'f*' }
   } {IX X V IV 0 0 9}
 }
 
-do_test where8-1.6 { 
+do_test where8-1.6 {
   execsql_status { SELECT c FROM t1 WHERE a = 1 OR b = 'three' ORDER BY rowid }
 } {I III 0 1}
 
-do_test where8-1.7 { 
+do_test where8-1.7 {
   execsql_status { SELECT c FROM t1 WHERE a = 1 OR b = 'three' ORDER BY a }
 } {I III 0 1}
 
@@ -98,25 +98,25 @@ do_test where8-1.9 {
 } {IX X VIII 0 0 7}
 
 do_test where8-1.10 {
-  execsql_status2 { 
-    SELECT c FROM t1 WHERE (a >= 9 AND c != 'X') OR b <= 'eight' 
+  execsql_status2 {
+    SELECT c FROM t1 WHERE (a >= 9 AND c != 'X') OR b <= 'eight'
   }
 } {IX VIII 0 0 7}
 
 do_test where8-1.11 {
-  execsql_status2 { 
-    SELECT c FROM t1 WHERE (a >= 4 AND a <= 6) OR b = 'nine' 
+  execsql_status2 {
+    SELECT c FROM t1 WHERE (a >= 4 AND a <= 6) OR b = 'nine'
   }
 } {IV V VI IX 0 0 10}
 
 do_test where8-1.12.1 {
-  execsql_status2 { 
+  execsql_status2 {
     SELECT c FROM t1 WHERE a IN(1, 2, 3) OR a = 5
   }
 } {I II III V 0 0 14}
 
 do_test where8-1.12.2 {
-  execsql_status2 { 
+  execsql_status2 {
     SELECT c FROM t1 WHERE +a IN(1, 2, 3) OR +a = 5
   }
 } {I II III V 9 0 9}
@@ -131,7 +131,7 @@ do_test where8-1.13 {
 do_test where8-1.14 {
   execsql_status2 {
     SELECT c FROM t1
-    WHERE 
+    WHERE
       a = 2 OR b = 'three' OR a = 4 OR b = 'five' OR a = 6 OR
       b = 'seven' OR a = 8 OR b = 'nine' OR a = 10
     ORDER BY rowid
@@ -140,7 +140,7 @@ do_test where8-1.14 {
 
 do_test where8-1.15 {
   execsql_status2 {
-    SELECT c FROM t1 WHERE 
+    SELECT c FROM t1 WHERE
       a BETWEEN 2 AND 4 OR b = 'nine'
     ORDER BY rowid
   }
@@ -149,7 +149,7 @@ do_test where8-1.15 {
 
 #--------------------------------------------------------------------------
 # Tests where8-2.*: Virtual tables
-# 
+#
 
 if 0 {
 ifcapable vtab {
@@ -178,7 +178,7 @@ ifcapable vtab {
 
 #--------------------------------------------------------------------------
 # Tests where8-3.*: Cases with multiple tables in the FROM clause.
-# 
+#
 do_test where8-3.1 {
   execsql {
     CREATE TABLE t2(d, e, f);
@@ -228,24 +228,24 @@ do_test where8-3.6 {
   # transformed into "a IN (2, 3)". This is why the sort is required.
   #
   execsql_status {
-    SELECT a, d 
-    FROM t1, t2 
+    SELECT a, d
+    FROM t1, t2
     WHERE (a = 2 OR a = 3) AND (d = +a OR e = 'sixteen')
     ORDER BY t1.rowid
   }
 } {2 2 2 4 3 3 3 4 0 1}
 do_test where8-3.7 {
   execsql_status {
-    SELECT a, d 
-    FROM t1, t2 
+    SELECT a, d
+    FROM t1, t2
     WHERE a = 2 AND (d = a OR e = 'sixteen')
     ORDER BY t1.rowid
   }
 } {/2 2 2 4 0 [01]/}
 do_test where8-3.8 {
   execsql_status {
-    SELECT a, d 
-    FROM t1, t2 
+    SELECT a, d
+    FROM t1, t2
     WHERE (a = 2 OR b = 'three') AND (d = a OR e = 'sixteen')
     ORDER BY t1.rowid
   }
@@ -254,8 +254,8 @@ do_test where8-3.8 {
 do_test where8-3.9 {
   # The "OR c = 'IX'" term forces a linear scan.
   execsql_status {
-    SELECT a, d 
-    FROM t1, t2 
+    SELECT a, d
+    FROM t1, t2
     WHERE (a = 2 OR b = 'three' OR c = 'IX') AND (d = a OR e = 'sixteen')
     ORDER BY t1.rowid
   }
@@ -331,7 +331,7 @@ do_test where8-3.23 {
 }
 
 #-----------------------------------------------------------------------
-# The following tests - where8-4.* - verify that adding or removing 
+# The following tests - where8-4.* - verify that adding or removing
 # indexes does not change the results returned by various queries.
 #
 do_test where8-4.1 {
@@ -453,8 +453,8 @@ catch {unset B}
 
 set A 2
 foreach idxsql {
-  { 
-    /* No indexes */ 
+  {
+    /* No indexes */
   } {
     CREATE INDEX i5 ON t3(a);
   } {
@@ -714,14 +714,14 @@ catch {unset B}
 # At one point the following tests provoked an invalid write error (writing
 # to memory that had already been freed). It was not possible to demonstrate
 # that this bug could cause a query to return bad data.
-# 
+#
 do_test where8-5.1 {
   db close
   sqlite3 db test.db
   sqlite3_db_config_lookaside db 0 0 0
   execsql {
     CREATE TABLE tA(
-      a, b, c, d, e, f, g, h, 
+      a, b, c, d, e, f, g, h,
       i, j, k, l, m, n, o, p
     );
   }
@@ -742,7 +742,7 @@ do_test where8-5.2 {
 } {}
 do_test where8-5.3 {
   execsql {
-    INSERT INTO tA VALUES(1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8); 
+    INSERT INTO tA VALUES(1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8);
     CREATE UNIQUE INDEX tAI ON tA(p);
     CREATE TABLE tB(x);
     INSERT INTO tB VALUES('x');

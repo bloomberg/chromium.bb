@@ -13,11 +13,11 @@
 ** OVERVIEW
 **
 **   This file contains experimental code used to record data from live
-**   SQLite applications that may be useful for offline analysis. 
+**   SQLite applications that may be useful for offline analysis.
 **   Specifically, this module can be used to capture the following
 **   information:
 **
-**     1) The initial contents of all database files opened by the 
+**     1) The initial contents of all database files opened by the
 **        application, and
 **
 **     2) All SQL statements executed by the application.
@@ -32,24 +32,24 @@
 **   To use this module, SQLite must be compiled with the SQLITE_ENABLE_SQLLOG
 **   pre-processor symbol defined and this file linked into the application.
 **   One way to link this file into the application is to append the content
-**   of this file onto the end of the "sqlite3.c" amalgamation and then 
+**   of this file onto the end of the "sqlite3.c" amalgamation and then
 **   recompile the application as normal except with the addition  of the
 **   -DSQLITE_ENABLE_SQLLOG option.
 **
 **   At runtime, logging is enabled by setting environment variable
-**   SQLITE_SQLLOG_DIR to the name of a directory in which to store logged 
+**   SQLITE_SQLLOG_DIR to the name of a directory in which to store logged
 **   data. The logging directory must already exist.
 **
 **   Usually, if the application opens the same database file more than once
 **   (either by attaching it or by using more than one database handle), only
-**   a single copy is made. This behavior may be overridden (so that a 
+**   a single copy is made. This behavior may be overridden (so that a
 **   separate copy is taken each time the database file is opened or attached)
 **   by setting the environment variable SQLITE_SQLLOG_REUSE_FILES to 0.
 **
 **   If the environment variable SQLITE_SQLLOG_CONDITIONAL is defined, then
 **   logging is only done for database connections if a file named
 **   "<database>-sqllog" exists in the same directly as the main database
-**   file when it is first opened ("<database>" is replaced by the actual 
+**   file when it is first opened ("<database>" is replaced by the actual
 **   name of the main database file).
 **
 ** OUTPUT:
@@ -68,7 +68,7 @@
 ** ERROR HANDLING:
 **
 **   This module attempts to make a best effort to continue logging if an
-**   IO or other error is encountered. For example, if a log file cannot 
+**   IO or other error is encountered. For example, if a log file cannot
 **   be opened logs are not collected for that connection, but other
 **   logging proceeds as expected. Errors are logged by calling sqlite3_log().
 */
@@ -144,8 +144,8 @@ static int sqllog_isspace(char c){
 /*
 ** The first argument points to a nul-terminated string containing an SQL
 ** command. Before returning, this function sets *pz to point to the start
-** of the first token in this command, and *pn to the number of bytes in 
-** the token. This is used to check if the SQL command is an "ATTACH" or 
+** of the first token in this command, and *pn to the number of bytes in
+** the token. This is used to check if the SQL command is an "ATTACH" or
 ** not.
 */
 static void sqllogTokenize(const char *z, const char **pz, int *pn){
@@ -165,11 +165,11 @@ static void sqllogTokenize(const char *z, const char **pz, int *pn){
 }
 
 /*
-** Check if the logs directory already contains a copy of database file 
+** Check if the logs directory already contains a copy of database file
 ** zFile. If so, return a pointer to the full path of the copy. Otherwise,
 ** return NULL.
 **
-** If a non-NULL value is returned, then the caller must arrange to 
+** If a non-NULL value is returned, then the caller must arrange to
 ** eventually free it using sqlite3_free().
 */
 static char *sqllogFindFile(const char *zFile){
@@ -232,7 +232,7 @@ static int sqllogFindAttached(
   int rc;
 
   /* The "PRAGMA database_list" command returns a list of databases in the
-  ** order that they were attached. So a newly attached database is 
+  ** order that they were attached. So a newly attached database is
   ** described by the last row returned.  */
   assert( sqllogglobal.bRec==0 );
   sqllogglobal.bRec = 1;
@@ -252,7 +252,7 @@ static int sqllogFindAttached(
       nVal2 = sqlite3_column_bytes(pStmt, 2);
       memcpy(zFile, zVal2, nVal2+1);
 
-      if( zSearch && strlen(zSearch)==nVal1 
+      if( zSearch && strlen(zSearch)==nVal1
        && 0==sqlite3_strnicmp(zSearch, zVal1, nVal1)
       ){
         break;
@@ -270,7 +270,7 @@ static int sqllogFindAttached(
 
 
 /*
-** Parameter zSearch is the name of a database attached to the database 
+** Parameter zSearch is the name of a database attached to the database
 ** connection associated with the first argument. This function creates
 ** a backup of this database in the logs directory.
 **
@@ -347,7 +347,7 @@ static void sqllogCopydb(struct SLConn *p, const char *zSearch, int bLog){
   }
 
   if( bLog ){
-    zFree = sqlite3_mprintf("ATTACH '%q' AS '%q'; -- clock=%d\n", 
+    zFree = sqlite3_mprintf("ATTACH '%q' AS '%q'; -- clock=%d\n",
         zInit, zName, sqllogglobal.iClock++
     );
   }else{
@@ -360,7 +360,7 @@ static void sqllogCopydb(struct SLConn *p, const char *zSearch, int bLog){
 }
 
 /*
-** If it is not already open, open the log file for connection *p. 
+** If it is not already open, open the log file for connection *p.
 **
 ** The SLGlobal.mutex mutex is always held when this function is called.
 */
@@ -369,7 +369,7 @@ static void sqllogOpenlog(struct SLConn *p){
   if( p->fd==0 ){
     char *zLog;
 
-    /* If it is still NULL, have global.zPrefix point to a copy of 
+    /* If it is still NULL, have global.zPrefix point to a copy of
     ** environment variable $ENVIRONMENT_VARIABLE1_NAME.  */
     if( sqllogglobal.zPrefix[0]==0 ){
       FILE *fd;
@@ -417,7 +417,7 @@ static void testSqllogStmt(struct SLConn *p, const char *zSql){
 
 /*
 ** The database handle passed as the only argument has just been opened.
-** Return true if this module should log initial databases and SQL 
+** Return true if this module should log initial databases and SQL
 ** statements for this connection, or false otherwise.
 **
 ** If an error occurs, sqlite3_log() is invoked to report it to the user
@@ -431,7 +431,7 @@ static int sqllogTraceDb(sqlite3 *db){
     if( rc==SQLITE_OK ){
       int nFile = strlen(zFile);
       if( (SQLLOG_NAMESZ-nFile)<8 ){
-        sqlite3_log(SQLITE_IOERR, 
+        sqlite3_log(SQLITE_IOERR,
             "sqllogTraceDb(): database name too long (%d bytes)", nFile
         );
         bRet = 0;
@@ -462,7 +462,7 @@ static int sqllogTraceDb(sqlite3 *db){
 **
 ** The pCtx parameter is a copy of the pointer that was originally passed
 ** into the sqlite3_config(SQLITE_CONFIG_SQLLOG) statement.  In this
-** particular implementation, pCtx is always a pointer to the 
+** particular implementation, pCtx is always a pointer to the
 ** sqllogglobal global variable define above.
 */
 static void testSqllog(void *pCtx, sqlite3 *db, const char *zSql, int eType){
@@ -539,7 +539,7 @@ static void testSqllog(void *pCtx, sqlite3 *db, const char *zSql, int eType){
 
 /*
 ** This function is called either before sqlite3_initialized() or by it.
-** It checks if the SQLITE_SQLLOG_DIR variable is defined, and if so 
+** It checks if the SQLITE_SQLLOG_DIR variable is defined, and if so
 ** registers an SQLITE_CONFIG_SQLLOG callback to record the applications
 ** database activity.
 */

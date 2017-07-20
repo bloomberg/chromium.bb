@@ -14,7 +14,7 @@
 ** (defined in ext/async/sqlite3async.h) to Tcl.
 */
 
-#define TCL_THREADS 
+#define TCL_THREADS
 #if defined(INCLUDE_SQLITE_TCL_H)
 #  include "sqlite_tcl.h"
 #else
@@ -130,7 +130,7 @@ static int SQLITE_TCLAPI testAsyncStart(
 ** Wait for the current writer thread to terminate.
 **
 ** If the current writer thread is set to run forever then this
-** command would block forever.  To prevent that, an error is returned. 
+** command would block forever.  To prevent that, an error is returned.
 */
 static int SQLITE_TCLAPI testAsyncWait(
   void * clientData,

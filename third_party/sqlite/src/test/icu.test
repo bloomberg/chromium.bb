@@ -27,9 +27,9 @@ execsql {INSERT INTO test1 VALUES(1,2,1.1,2.2,'hello','world')}
 proc test_expr {name settings expr result} {
   do_test $name [format {
     lindex [db eval {
-      BEGIN; 
-      UPDATE test1 SET %s; 
-      SELECT %s FROM test1; 
+      BEGIN;
+      UPDATE test1 SET %s;
+      SELECT %s FROM test1;
       ROLLBACK;
     }] 0
   } $settings $expr] $result
@@ -54,7 +54,7 @@ set ::ograve "\xF2"
 # That German letter that looks a bit like a B. The
 # upper-case version of which is "SS" (two characters).
 #
-set ::szlig "\xDF" 
+set ::szlig "\xDF"
 
 # Tests of the upper()/lower() functions.
 #
@@ -119,19 +119,19 @@ do_test icu-4.3 {
 } {apricot cherry chokecherry yamot peach plum}
 
 #-------------------------------------------------------------------------
-# Test that it is not possible to call the ICU regex() function with 
+# Test that it is not possible to call the ICU regex() function with
 # anything other than exactly two arguments. See also:
 #
 #   http://src.chromium.org/viewvc/chrome/trunk/src/third_party/sqlite/icu-regexp.patch?revision=34807&view=markup
 #
 do_catchsql_test icu-5.1 { SELECT regexp('a[abc]c.*', 'abc') } {0 1}
-do_catchsql_test icu-5.2 { 
-  SELECT regexp('a[abc]c.*') 
+do_catchsql_test icu-5.2 {
+  SELECT regexp('a[abc]c.*')
 } {1 {wrong number of arguments to function regexp()}}
-do_catchsql_test icu-5.3 { 
-  SELECT regexp('a[abc]c.*', 'abc', 'c') 
+do_catchsql_test icu-5.3 {
+  SELECT regexp('a[abc]c.*', 'abc', 'c')
 } {1 {wrong number of arguments to function regexp()}}
-do_catchsql_test icu-5.4 { 
+do_catchsql_test icu-5.4 {
   SELECT 'abc' REGEXP 'a[abc]c.*'
 } {0 1}
 do_catchsql_test icu-5.4 { SELECT 'abc' REGEXP }    {1 {near " ": syntax error}}

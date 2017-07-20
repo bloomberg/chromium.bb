@@ -84,7 +84,7 @@ do_test trace-2.1 {
 do_test trace-2.2 {
   set TRACE_OUT {}
   sqlite3_reset $STMT
-  set TRACE_OUT 
+  set TRACE_OUT
 } {}
 do_test trace-2.3 {
   sqlite3_step $STMT
@@ -106,7 +106,7 @@ do_test trace-2.6 {
 } {VACUUM}
 
 # Similar tests, but this time for profiling.
-# 
+#
 do_test trace-3.1 {
   set rc [catch {db profile 1 2 3} msg]
   lappend rc $msg
@@ -154,7 +154,7 @@ do_test trace-4.1 {
 do_test trace-4.2 {
   set TRACE_OUT {}
   sqlite3_reset $STMT
-  set TRACE_OUT 
+  set TRACE_OUT
 } {}
 do_test trace-4.3 {
   sqlite3_step $STMT

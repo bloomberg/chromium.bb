@@ -42,7 +42,7 @@ proc error_test {tn sql result} {
 # The body of the following [foreach] block contains test cases to verify
 # that the example code in fts3.html works as expected. The tests run three
 # times, with different values for DO_MALLOC_TEST.
-# 
+#
 #   DO_MALLOC_TEST=0: Run tests with no OOM errors.
 #   DO_MALLOC_TEST=1: Run tests with transient OOM errors.
 #   DO_MALLOC_TEST=2: Run tests with persistent OOM errors.
@@ -56,7 +56,7 @@ foreach {DO_MALLOC_TEST enc} {
 
 #if {$DO_MALLOC_TEST} break
 
-# Reset the database and database connection. If this iteration of the 
+# Reset the database and database connection. If this iteration of the
 # [foreach] loop is testing with OOM errors, disable the lookaside buffer.
 #
 db close
@@ -74,7 +74,7 @@ proc mit {blob} {
 db func mit mit
 
 ##########################################################################
-# Test the example CREATE VIRTUAL TABLE statements in section 1.1 
+# Test the example CREATE VIRTUAL TABLE statements in section 1.1
 # of fts3.in.
 #
 ddl_test   1.1.1.1 {CREATE VIRTUAL TABLE data USING fts3()}
@@ -136,7 +136,7 @@ ddl_test   1.1.7.4 {DROP TABLE papers}
 ddl_test   1.1.7.5 {DROP TABLE simpledata}
 read_test  1.1.7.6 {SELECT * FROM sqlite_master} {}
 
-# The following is not one of the examples in section 1.1. It tests 
+# The following is not one of the examples in section 1.1. It tests
 # specifying an FTS3 table with no module arguments using a slightly
 # different syntax.
 ddl_test   1.1.8.1 {CREATE VIRTUAL TABLE data USING fts3;}
@@ -150,7 +150,7 @@ ddl_test   1.2.1.1 {
   CREATE VIRTUAL TABLE pages USING fts3(title, body);
 }
 write_test 1.2.1.2 pages_content {
-  INSERT INTO pages(docid, title, body) 
+  INSERT INTO pages(docid, title, body)
   VALUES(53, 'Home Page', 'SQLite is a software...');
 }
 read_test  1.2.1.3 {
@@ -158,7 +158,7 @@ read_test  1.2.1.3 {
 } {53 {Home Page} {SQLite is a software...}}
 
 write_test 1.2.1.4 pages_content {
-  INSERT INTO pages(title, body) 
+  INSERT INTO pages(title, body)
   VALUES('Download', 'All SQLite source code...');
 }
 read_test  1.2.1.5 {
@@ -201,7 +201,7 @@ ddl_test   1.2.2.8 { DROP TABLE docs }
 # Test the examples in section 1.3 (querying FTS3 tables)
 #
 ddl_test   1.3.1.1 { CREATE VIRTUAL TABLE mail USING fts3(subject, body) }
-read_test  1.3.1.2 { 
+read_test  1.3.1.2 {
   SELECT * FROM mail WHERE rowid = 15;                -- Fast. Rowid lookup.
   SELECT * FROM mail WHERE body MATCH 'sqlite';       -- Fast. Full-text query.
   SELECT * FROM mail WHERE mail MATCH 'search';       -- Fast. Full-text query.
@@ -214,15 +214,15 @@ ddl_test   1.3.1.3 { DROP TABLE mail }
 ddl_test   1.3.2.1 { CREATE VIRTUAL TABLE mail USING fts3(subject, body) }
 
 write_test 1.3.2.2 mail_content {
-  INSERT INTO mail(docid, subject, body) 
+  INSERT INTO mail(docid, subject, body)
   VALUES(1, 'software feedback', 'found it too slow')
 }
 write_test 1.3.2.3 mail_content {
-  INSERT INTO mail(docid, subject, body) 
+  INSERT INTO mail(docid, subject, body)
   VALUES(2, 'software feedback', 'no feedback')
 }
 write_test 1.3.2.4 mail_content {
-  INSERT INTO mail(docid, subject, body) 
+  INSERT INTO mail(docid, subject, body)
   VALUES(3, 'slow lunch order',  'was a software problem')
 }
 read_test  1.3.2.5 {
@@ -243,8 +243,8 @@ ddl_test   1.3.3.1 { CREATE VIRTUAL TABLE docs USING fts3(content) }
 read_test  1.3.3.2 { SELECT * FROM docs WHERE docs MATCH 'sqlite' } {}
 read_test  1.3.3.3 { SELECT * FROM docs WHERE docs.docs MATCH 'sqlite' } {}
 read_test  1.3.3.4 { SELECT * FROM docs WHERE main.docs.docs MATCH 'sqlite' } {}
-do_error_test e_fts3-1.3.3.5 { 
-  SELECT * FROM docs WHERE main.docs MATCH 'sqlite' 
+do_error_test e_fts3-1.3.3.5 {
+  SELECT * FROM docs WHERE main.docs MATCH 'sqlite'
 } {no such column: main.docs}
 ddl_test   1.3.2.8 { DROP TABLE docs }
 
@@ -268,29 +268,29 @@ foreach {tn title body} {
   set R($tn) [list $title $body]
 }
 
-read_test  1.4.1.11 { 
+read_test  1.4.1.11 {
   SELECT * FROM docs WHERE docs MATCH 'linux'
 } [concat $R(2) $R(4) $R(5) $R(6) $R(7) $R(8)]
-read_test  1.4.1.12 { 
+read_test  1.4.1.12 {
   SELECT * FROM docs WHERE docs MATCH 'lin*'
 } [concat $R(2) $R(3) $R(4) $R(5) $R(6) $R(7) $R(8) $R(9)]
-read_test  1.4.1.13 { 
+read_test  1.4.1.13 {
   SELECT * FROM docs WHERE docs MATCH 'title:linux problems'
 } [concat $R(5)]
-read_test  1.4.1.14 { 
+read_test  1.4.1.14 {
   SELECT * FROM docs WHERE body MATCH 'title:linux driver'
 } [concat $R(6)]
-read_test  1.4.1.15 { 
+read_test  1.4.1.15 {
   SELECT * FROM docs WHERE docs MATCH '"linux applications"'
 } [concat $R(8)]
-read_test  1.4.1.16 { 
+read_test  1.4.1.16 {
   SELECT * FROM docs WHERE docs MATCH '"lin* app*"'
 } [concat $R(8) $R(9)]
 ddl_test   1.4.1.17 { DROP TABLE docs }
 unset R
 
 ddl_test   1.4.2.1 { CREATE VIRTUAL TABLE docs USING fts3() }
-write_test 1.4.2.2 docs_content { 
+write_test 1.4.2.2 docs_content {
   INSERT INTO docs VALUES(
   'SQLite is an ACID compliant embedded relational database management system')
 }
@@ -319,7 +319,7 @@ foreach {tn docid content} {
   4 3 "sqlite is a database"
 } {
   set R($docid) $content
-  write_test 1.5.1.$tn docs_content { 
+  write_test 1.5.1.$tn docs_content {
     INSERT INTO docs(docid, content) VALUES($docid, $content)
   }
 }
@@ -340,7 +340,7 @@ read_test 1.5.1.8 {
 } {}
 
 write_test 1.5.2.1 docs_content {
-  INSERT INTO docs 
+  INSERT INTO docs
     SELECT 'sqlite is also a library' UNION ALL
     SELECT 'library software'
 }
@@ -353,13 +353,13 @@ read_test 1.5.2.3 {
   SELECT docid FROM docs WHERE docs MATCH 'library'
 } {3 4 5}
 write_test 1.5.2.4 docs_content {
-  INSERT INTO docs 
+  INSERT INTO docs
     SELECT 'the sqlite library runs on linux' UNION ALL
     SELECT 'as does the sqlite database (on linux)' UNION ALL
     SELECT 'the sqlite database is accessed by the sqlite library'
 }
 read_test 1.5.2.2 {
-  SELECT docid FROM docs 
+  SELECT docid FROM docs
   WHERE docs MATCH '("sqlite database" OR "sqlite library") AND linux';
 } {6 7}
 read_test 1.5.2.3 {
@@ -399,22 +399,22 @@ ddl_test  1.6.1.5 { DROP TABLE docs }
 #
 ddl_test   1.7.1.1 { CREATE VIRTUAL TABLE mail USING fts3(subject, body) }
 
-write_test 1.7.1.2 mail_content { 
+write_test 1.7.1.2 mail_content {
   INSERT INTO mail VALUES(
     'hello world', 'This message is a hello world message.');
 }
-write_test 1.7.1.3 mail_content { 
+write_test 1.7.1.3 mail_content {
   INSERT INTO mail VALUES(
     'urgent: serious', 'This mail is seen as a more serious mail');
 }
 
-read_test  1.7.1.4 { 
+read_test  1.7.1.4 {
   SELECT offsets(mail) FROM mail WHERE mail MATCH 'world';
 } {{0 0 6 5 1 0 24 5}}
-read_test  1.7.1.5 { 
+read_test  1.7.1.5 {
   SELECT offsets(mail) FROM mail WHERE mail MATCH 'message'
 } {{1 0 5 7 1 0 30 7}}
-read_test  1.7.1.6 { 
+read_test  1.7.1.6 {
   SELECT offsets(mail) FROM mail WHERE mail MATCH '"serious mail"'
 } {{1 0 28 7 1 1 36 4}}
 
@@ -436,33 +436,33 @@ read_test  1.7.2.4 {
 
 ddl_test   1.7.3.1 { DROP TABLE IF EXISTS t1 }
 ddl_test   1.7.3.2 { CREATE VIRTUAL TABLE t1 USING fts3(a, b) }
-write_test 1.7.3.3 t1_content { 
+write_test 1.7.3.3 t1_content {
   INSERT INTO t1 VALUES(
     'transaction default models default', 'Non transaction reads');
 }
-write_test 1.7.3.4 t1_content { 
+write_test 1.7.3.4 t1_content {
   INSERT INTO t1 VALUES('the default transaction', 'these semantics present');
 }
-write_test 1.7.3.5 t1_content { 
+write_test 1.7.3.5 t1_content {
   INSERT INTO t1 VALUES('single request', 'default data');
 }
-read_test  1.7.3.6 { 
-  SELECT mit(matchinfo(t1)) FROM t1 
+read_test  1.7.3.6 {
+  SELECT mit(matchinfo(t1)) FROM t1
     WHERE t1 MATCH 'default transaction "these semantics"';
 } {{3 2 1 3 2 0 1 1 1 2 2 0 1 1 0 0 0 1 1 1}}
 
 ##########################################################################
 # Test the example in section 5 (custom tokenizers).
 #
-ddl_test   1.8.1.1 { CREATE VIRTUAL TABLE simple USING fts3(tokenize=simple) } 
-write_test 1.8.1.2 simple_content { 
+ddl_test   1.8.1.1 { CREATE VIRTUAL TABLE simple USING fts3(tokenize=simple) }
+write_test 1.8.1.2 simple_content {
   INSERT INTO simple VALUES('Right now they''re very frustrated')
 }
-read_test 1.8.1.3 {SELECT docid FROM simple WHERE simple MATCH 'Frustrated'} {1} 
+read_test 1.8.1.3 {SELECT docid FROM simple WHERE simple MATCH 'Frustrated'} {1}
 read_test 1.8.1.4 {SELECT docid FROM simple WHERE simple MATCH 'Frustration'} {}
 
-ddl_test   1.8.2.1 { CREATE VIRTUAL TABLE porter USING fts3(tokenize=porter) } 
-write_test 1.8.2.2 porter_content { 
+ddl_test   1.8.2.1 { CREATE VIRTUAL TABLE porter USING fts3(tokenize=porter) }
+write_test 1.8.2.2 porter_content {
   INSERT INTO porter VALUES('Right now they''re very frustrated')
 }
 read_test 1.8.2.4 {
@@ -480,7 +480,7 @@ read_test 1.8.2.4 {
 set DO_MALLOC_TEST 0
 ddl_test   2.1.0 { DROP TABLE IF EXISTS t1 }
 ddl_test   2.1.1 { CREATE VIRTUAL TABLE t1 USING fts3(a, b) }
-write_test 2.1.2 t1_content { 
+write_test 2.1.2 t1_content {
   INSERT INTO t1 VALUES('one two three', x'A1B2C3D4E5F6');
 }
 error_test 2.1.3 {
@@ -508,7 +508,7 @@ error_test 2.1.8 {
 # opening a database handle). This case was not tested by the OOM testing
 # of the document examples above.
 #
-do_malloc_test e_fts3-3 -tclbody { 
+do_malloc_test e_fts3-3 -tclbody {
   if {[catch {sqlite3 db test.db}]} { error "out of memory" }
 }
 #-------------------------------------------------------------------------
@@ -527,10 +527,10 @@ write_test 4.3 t4_content {
   INSERT INTO t4 VALUES('a stately pleasure', 'dome decree');
 }
 do_test e_fts3-4.4 {
-  execsql { SELECT optimize(t4) FROM t4 LIMIT 1 } 
+  execsql { SELECT optimize(t4) FROM t4 LIMIT 1 }
 } {{Index optimized}}
 do_test e_fts3-4.5 {
-  execsql { SELECT optimize(t4) FROM t4 LIMIT 1 } 
+  execsql { SELECT optimize(t4) FROM t4 LIMIT 1 }
 } {{Index already optimal}}
 #-------------------------------------------------------------------------
 
@@ -543,16 +543,16 @@ ddl_test   5.1 { CREATE VIRTUAL TABLE t5 USING fts3(x) }
 write_test 5.2 t5_content {
   INSERT INTO t5 VALUES('In Xanadu did Kubla Khan A stately pleasure-dome decree Where Alph, the sacred river, ran Through caverns measureless to man Down to a sunless sea.  So twice five miles of fertile ground With walls and towers were girdled round : And there were gardens bright with sinuous rills, Where blossomed many an incense-bearing tree ; And here were forests ancient as the hills, Enfolding sunny spots of greenery.');
 }
-read_test 5.3 { 
+read_test 5.3 {
   SELECT snippet(t5) FROM t5 WHERE t5 MATCH 'miles'
 } {{<b>...</b>to a sunless sea.  So twice five <b>miles</b> of fertile ground With walls and towers<b>...</b>}}
-read_test 5.4 { 
+read_test 5.4 {
   SELECT snippet(t5, '<i>') FROM t5 WHERE t5 MATCH 'miles'
 } {{<b>...</b>to a sunless sea.  So twice five <i>miles</b> of fertile ground With walls and towers<b>...</b>}}
-read_test 5.5 { 
+read_test 5.5 {
   SELECT snippet(t5, '<i>', '</i>') FROM t5 WHERE t5 MATCH 'miles'
 } {{<b>...</b>to a sunless sea.  So twice five <i>miles</i> of fertile ground With walls and towers<b>...</b>}}
-read_test 5.6 { 
+read_test 5.6 {
   SELECT snippet(t5, '<i>', '</i>', 'XXX') FROM t5 WHERE t5 MATCH 'miles'
 } {{XXXto a sunless sea.  So twice five <i>miles</i> of fertile ground With walls and towersXXX}}
 #-------------------------------------------------------------------------
@@ -580,7 +580,7 @@ read_test  6.8 { SELECT * FROM t6 WHERE x MATCH NULL } {}
 #   2. That it is an error to use the "docid" or "rowid" column of
 #      an FTS3 table as the LHS of a MATCH operator.
 #
-#   3. That it is an error to AND together two MATCH expressions in 
+#   3. That it is an error to AND together two MATCH expressions in
 #      that refer to a single FTS3 table in a WHERE clause.
 #
 #
@@ -673,7 +673,7 @@ foreach DO_MALLOC_TEST {0 1 2} {
 #
 set DO_MALLOC_TEST 0
 ddl_test   10.1.1 { CREATE VIRTUAL TABLE ta USING fts3 }
-write_test 10.1.2 ta_content { 
+write_test 10.1.2 ta_content {
   INSERT INTO ta VALUES('During a summer vacation in 1790') }
 write_test 10.1.3 ta_content {
   INSERT INTO ta VALUES('Wordsworth went on a walking tour') }
@@ -686,16 +686,16 @@ error_test 10.1.6 {
 } {database disk image is malformed}
 
 write_test 10.2.1 ta_content { DELETE FROM ta }
-write_test 10.2.2 ta_content { 
+write_test 10.2.2 ta_content {
   INSERT INTO ta VALUES('debate demonstrated the rising difficulty') }
-write_test 10.2.3 ta_content { 
+write_test 10.2.3 ta_content {
   INSERT INTO ta VALUES('Google released its browser beta') }
 
 set blob [db one {SELECT root FROM ta_segdir WHERE rowid = 2}]
 binary scan $blob "a6 a3 a*" start middle end
 set middle "\x0E\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x06\x06"
 set blob [binary format "a6 a* a*" $start $middle $end]
-write_test 10.2.4 ta_segdir { 
+write_test 10.2.4 ta_segdir {
   UPDATE ta_segdir SET root = $blob WHERE rowid = 2
 }
 error_test 10.2.5 {

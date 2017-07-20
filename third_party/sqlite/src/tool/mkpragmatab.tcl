@@ -411,7 +411,7 @@ foreach line [split $pragma_def \n] {
   foreach {id val} [split $line :] break
   set val [string trim $val]
   if {$id=="NAME"} {
-    record_one    
+    record_one
     set name $val
     set type [string toupper $val]
   } elseif {$id=="TYPE"} {

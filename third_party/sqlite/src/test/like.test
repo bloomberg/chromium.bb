@@ -152,7 +152,7 @@ do_test like-2.4 {
 ifcapable !like_opt {
   finish_test
   return
-} 
+}
 
 # This procedure executes the SQL.  Then it appends to the result the
 # "sort" or "nosort" keyword (as in the cksort procedure above) then
@@ -176,7 +176,7 @@ proc queryplan {sql} {
       lappend data $tab *
     }
   }
-  return $data   
+  return $data
 }
 
 # Perform tests on the like optimization.
@@ -504,7 +504,7 @@ do_test like-5.18 {
 # when constructing the comparison.  Example:  "ab" becomes "ac".
 # In other words, the last character is increased by one.
 #
-# Make sure this happens correctly when the last character is a 
+# Make sure this happens correctly when the last character is a
 # "z" and we are doing case-insensitive comparisons.
 #
 # Ticket #2959

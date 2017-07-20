@@ -138,7 +138,7 @@ if {[wal_is_capable]} {
   # At one point, when a specific page was being extracted from the b-tree
   # free-list (e.g. during an incremental-vacuum), all trunk pages that
   # occurred before the specific page in the free-list trunk were being
-  # written to the journal or wal file. This is not necessary. Only the 
+  # written to the journal or wal file. This is not necessary. Only the
   # extracted page and the page that contains the pointer to it need to
   # be journalled.
   #
@@ -154,7 +154,7 @@ if {[wal_is_capable]} {
   #      trunk page), and
   #   2. The leaf page transformed into a trunk page to replace the recycled
   #      page, and
-  #   3. The trunk page that contained a pointer to the leaf page used 
+  #   3. The trunk page that contained a pointer to the leaf page used
   #      in (2), and
   #   4. Page 1. Page 1 is always updated, even in WAL mode, since it contains
   #      the "number of free-list pages" field.
@@ -185,7 +185,7 @@ if {[wal_is_capable]} {
   }
 
   do_test 4.2 {
-    execsql { 
+    execsql {
       PRAGMA journal_mode = WAL;
       PRAGMA incremental_vacuum(1);
     }
@@ -206,7 +206,7 @@ if {[wal_is_capable]} {
       set newsz [file size test.db-wal]
       if {$newsz>$maxsz} {set maxsz $newsz}
     }
-    set maxsz 
+    set maxsz
   } [expr {32+3*(512+24)}]
 }
 

@@ -124,7 +124,7 @@ do_test memsubsys2-3.8 {
 do_test memsubsys2-3.9 {
   sqlite3_free 0
 } {}
-  
+
 
 # Test 4: Verify that turning on memstatus reenables the statistics
 # tracking.
@@ -168,7 +168,7 @@ do_test memsubsys2-4.10 {
 do_test memsubsys2-4.11 {
   sqlite3_memory_used
 } {0}
-  
+
 
 
 

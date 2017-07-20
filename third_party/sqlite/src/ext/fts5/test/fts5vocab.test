@@ -128,17 +128,17 @@ do_execsql_test 2.0 {
 }
 
 set res_row [star_from_row {
-  a 10 20   b 9 14   c 9 20   d 9 19   
-  e 8 13   f 10 20   g 7 14   x 1 1   
+  a 10 20   b 9 14   c 9 20   d 9 19
+  e 8 13   f 10 20   g 7 14   x 1 1
   y 1 1
 }]
 set res_col [star_from_col {
   a a 6 11    a b 7 9
-  b a 6 7     b b 7 7 
-  c a 6 12    c b 5 8 
-  d a 4 6     d b 9 13 
-  e a 6 7     e b 6 6 
-  f a 9 10    f b 7 10 
+  b a 6 7     b b 7 7
+  c a 6 12    c b 5 8
+  d a 4 6     d b 9 13
+  e a 6 7     e b 6 6
+  f a 9 10    f b 7 10
   g a 5 7     g b 5 7
   x a 1 1     y b 1 1
 }]
@@ -187,7 +187,7 @@ do_catchsql_test 4.1 {
 } {1 {wrong number of vtable arguments}}
 
 #-------------------------------------------------------------------------
-# Test fts5vocab tables created in the temp schema. 
+# Test fts5vocab tables created in the temp schema.
 #
 reset_db
 forcedelete test.db2
@@ -298,7 +298,7 @@ foreach {term} {
   j jj jjj
 } {
   set resr [db eval {
-    SELECT $term, 
+    SELECT $term,
       sum(cont(one || ' ' || two, $term) > 0),
       sum(cont(one || ' ' || two, $term))
     FROM tx
@@ -408,12 +408,12 @@ do_execsql_test 8.0 {
 
 set resr [star_from_row {a 3 3 b 3 3 c 3 3 d 3 3 e 3 3 f 3 3 g 3 3 h 3 3 i 3 3}]
 set resc [star_from_col {
-  a a 1 1 a b 1 1 a c 1 1 b a 1 1 
-  b b 1 1 b c 1 1 c a 1 1 c b 1 1 
+  a a 1 1 a b 1 1 a c 1 1 b a 1 1
+  b b 1 1 b c 1 1 c a 1 1 c b 1 1
   c c 1 1 d a 1 1 d b 1 1 d c 1 1
-  e a 1 1 e b 1 1 e c 1 1 f a 1 1 
-  f b 1 1 f c 1 1 g a 1 1 g b 1 1 
-  g c 1 1 h a 1 1 h b 1 1 h c 1 1 
+  e a 1 1 e b 1 1 e c 1 1 f a 1 1
+  f b 1 1 f c 1 1 g a 1 1 g b 1 1
+  g c 1 1 h a 1 1 h b 1 1 h c 1 1
   i a 1 1 i b 1 1 i c 1 1
 }]
 if {[detail_is_none]} { set resc [row_to_col $resr] }
@@ -423,7 +423,7 @@ do_execsql_test 8.1.2 { SELECT * FROM x1_c } $resc
 
 do_execsql_test 8.2 {
   PRAGMA writable_schema = 1;
-  UPDATE sqlite_master 
+  UPDATE sqlite_master
   SET sql = 'CREATE VIRTUAL TABLE x1 USING fts5(a, detail=%DETAIL%)'
   WHERE name = 'x1';
 }
@@ -436,8 +436,8 @@ do_execsql_test 8.2.1 { SELECT * FROM x1_r } $resr
 if {[detail_is_none]} {
   do_execsql_test 8.2.2 { SELECT * FROM x1_c } $resc
 } else {
-  do_catchsql_test 8.2.2 { 
-    SELECT * FROM x1_c 
+  do_catchsql_test 8.2.2 {
+    SELECT * FROM x1_c
   } {1 {database disk image is malformed}}
 }
 
@@ -468,7 +468,7 @@ do_execsql_test 9.3 {
 do_execsql_test 9.4 {
   SELECT * FROM rrr ORDER BY term DESC
 } {
-  ghi 2 2 def 2 2 abc 2 2 
+  ghi 2 2 def 2 2 abc 2 2
 }
 do_test 9.5 {
   set e2 [db eval { EXPLAIN SELECT * FROM rrr ORDER BY term ASC }]

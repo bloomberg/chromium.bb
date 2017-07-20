@@ -40,11 +40,11 @@ index 6feb638b9280..b46c5bbc9ced 100644
 @@ -75,6 +75,8 @@ LIBOBJ+= vdbe.o parse.o \
  	 vdbetrace.o wal.o walker.o where.o wherecode.o whereexpr.o \
           utf.o vtab.o
- 
+
 +LIBOBJ += recover.o recover_varint.o resolve.o
 +
  LIBOBJ += sqlite3session.o
- 
+
  # All of the source code files.
 @@ -370,6 +372,8 @@ TESTSRC2 = \
    $(TOP)/src/prepare.c \
@@ -60,7 +60,7 @@ index 6feb638b9280..b46c5bbc9ced 100644
  TESTFIXTURE_FLAGS += -DSQLITE_SERIES_CONSTRAINT_VERIFY=1
  TESTFIXTURE_FLAGS += -DSQLITE_DEFAULT_PAGE_SIZE=1024
 +TESTFIXTURE_FLAGS += -DDEFAULT_ENABLE_RECOVER=1
- 
+
  testfixture$(EXE): $(TESTSRC2) libsqlite3.a $(TESTSRC) $(TOP)/src/tclsqlite.c
  	$(TCCX) $(TCL_FLAGS) -DTCLSH=1 $(TESTFIXTURE_FLAGS)                  \
 diff --git a/third_party/sqlite/src/src/main.c b/third_party/sqlite/src/src/main.c
@@ -70,7 +70,7 @@ index 9aad8fdd4cf8..03e4f1b92845 100644
 @@ -3014,6 +3014,14 @@ static int openDatabase(
    }
  #endif
- 
+
 +#ifdef DEFAULT_ENABLE_RECOVER
 +  /* Initialize recover virtual table for testing. */
 +  extern int recoverVtableInit(sqlite3 *db);
@@ -3900,6 +3900,6 @@ index 000000000000..8aa4e049a010
 +} [list 4 1024 1 text [string length $substr] $substr]
 +
 +finish_test
--- 
+--
 2.11.0
 

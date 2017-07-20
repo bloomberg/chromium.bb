@@ -53,7 +53,7 @@ do_execsql_test autoindex2-100 {
   CREATE INDEX t1x1 on t1 (ptime, vstatus);
   CREATE INDEX t1x2 on t1 (did, ssid, ptime, vstatus, exbyte, t1_id);
   CREATE INDEX t1x3 on t1 (job_id);
-  
+
   CREATE TABLE t2(
     did char(9),
     client_did char(30),
@@ -110,7 +110,7 @@ do_execsql_test autoindex2-100 {
   CREATE INDEX t2x13 on t2 (tzid);
   CREATE INDEX t2x14 on t2 (gr_code);
   CREATE INDEX t2x15 on t2 (parent_id);
-  
+
   CREATE TABLE t3(
     uid int,
     param3 int,
@@ -200,7 +200,7 @@ do_execsql_test autoindex2-120 {
      t1.admin_uuid,
      t1.previous_value,
      t1.job_id,
-     client_did, 
+     client_did,
      t1.last_t1,
      t1.data_t1,
      t1.previous_date,

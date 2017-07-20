@@ -101,7 +101,7 @@ do_execsql_test skipscan2-1.7 {
 } {David Jack Patrick Quiana Xavier}
 
 # Add 8 more people, bringing the total to 34.  Then the number of
-# duplicates in the left-column of the index will be 17 and 
+# duplicates in the left-column of the index will be 17 and
 # skip-scan should not be used after an (unfudged) ANALYZE.
 #
 do_execsql_test skipscan2-1.8 {
@@ -126,7 +126,7 @@ do_execsql_test skipscan2-1.9eqp {
 } {~/*INDEX people_idx1 */}
 
 # Add 2 more people, bringing the total to 36.  Then the number of
-# duplicates in the left-column of the index will be 18 and 
+# duplicates in the left-column of the index will be 18 and
 # skip-scan will be used after an (unfudged) ANALYZE.
 #
 do_execsql_test skipscan2-1.10 {

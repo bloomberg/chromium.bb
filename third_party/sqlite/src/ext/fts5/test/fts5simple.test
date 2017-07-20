@@ -176,11 +176,11 @@ do_execsql_test 6.1 {
   INSERT INTO xyz VALUES('x', 'y', 'z');
 }
 
-do_catchsql_test 6.2 { 
-  SELECT * FROM xyz WHERE xyz MATCH '' 
+do_catchsql_test 6.2 {
+  SELECT * FROM xyz WHERE xyz MATCH ''
 } {1 {fts5: syntax error near ""}}
-do_catchsql_test 6.3 { 
-  SELECT * FROM xyz WHERE xyz MATCH NULL 
+do_catchsql_test 6.3 {
+  SELECT * FROM xyz WHERE xyz MATCH NULL
 } {1 {fts5: syntax error near ""}}
 
 #-------------------------------------------------------------------------
@@ -189,12 +189,12 @@ do_execsql_test 7.1 {
   CREATE VIRTUAL TABLE ft2 USING fts5(content);
   INSERT INTO ft2(rowid, content) VALUES(1, 'a b c');
   INSERT INTO ft2(rowid, content) VALUES(2, 'a b d');
-} 
+}
 
 do_catchsql_test 7.2 {
   BEGIN;
     UPDATE ft2 SET rowid=2 WHERE rowid=1;
-} {1 {constraint failed}} 
+} {1 {constraint failed}}
 
 do_execsql_test 7.3 {
   COMMIT;
@@ -334,8 +334,8 @@ do_execsql_test 14.1 {
     INSERT INTO ttt(rowid, x) VALUES(3, 'a b c');
   COMMIT;
 }
-do_test 14.2 { 
-  fts5_level_segs ttt 
+do_test 14.2 {
+  fts5_level_segs ttt
 } {1}
 
 #-------------------------------------------------------------------------

@@ -81,7 +81,7 @@ ifcapable view {
 foreach {tn params results} $tests {
   set ::DB [sqlite3_connection_pointer db]
 
-  set tstbody [concat sqlite3_table_column_metadata $::DB $params] 
+  set tstbody [concat sqlite3_table_column_metadata $::DB $params]
   do_test colmeta-$tn.1 {
     list [catch $tstbody msg] [set msg]
   } $results
@@ -90,7 +90,7 @@ foreach {tn params results} $tests {
   sqlite3 db test.db
 
   set ::DB [sqlite3_connection_pointer db]
-  set tstbody [concat sqlite3_table_column_metadata $::DB $params] 
+  set tstbody [concat sqlite3_table_column_metadata $::DB $params]
   do_test colmeta-$tn.2 {
     list [catch $tstbody msg] [set msg]
   } $results

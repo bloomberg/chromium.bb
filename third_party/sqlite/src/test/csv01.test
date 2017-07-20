@@ -8,7 +8,7 @@
 #    May you share freely, never taking more than you give.
 #
 #***********************************************************************
-# 
+#
 # Test cases for CSV virtual table.
 
 set testdir [file dirname $argv0]

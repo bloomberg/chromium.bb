@@ -1,7 +1,7 @@
 /*
 ** This C program extracts all "words" from an input document and adds them
 ** to an SQLite database.  A "word" is any contiguous sequence of alphabetic
-** characters.  All digits, punctuation, and whitespace characters are 
+** characters.  All digits, punctuation, and whitespace characters are
 ** word separators.  The database stores a single entry for each distinct
 ** word together with a count of the number of occurrences of that word.
 ** A fresh database is created automatically on each run.
@@ -70,7 +70,7 @@
 #endif
 #define ISALPHA(X) isalpha((unsigned char)(X))
 
-const char zHelp[] = 
+const char zHelp[] =
 "Usage: wordcount [OPTIONS] DATABASE [INPUT]\n"
 " --all                Repeat the test for all test modes\n"
 " --cachesize NNN      Use a cache size of NNN\n"
@@ -159,7 +159,7 @@ static void addCharToHash(unsigned int *a, unsigned char x){
       a[4] += a[2] + a[3];
       a[0] = a[1] = a[2] = 0;
     }
-  }    
+  }
 }
 
 /*
@@ -399,7 +399,7 @@ int main(int argc, char **argv){
       startTime = realTime();
       rewind(in);
     }
- 
+
     /* Construct the "wordcount" table into which to put the words */
     if( sqlite3_exec(db, "BEGIN IMMEDIATE", 0, 0, 0) ){
       fatal_error("Could not start a transaction\n");
@@ -417,7 +417,7 @@ int main(int argc, char **argv){
     if( rc ) fatal_error("Could not create the wordcount table: %s.\n",
                          sqlite3_errmsg(db));
     sqlite3_free(zSql);
-  
+
     /* Prepare SQL statements that will be needed */
     if( iMode2==MODE_QUERY ){
       rc = sqlite3_prepare_v2(db,
@@ -474,14 +474,14 @@ int main(int argc, char **argv){
       if( rc ) fatal_error("Could not prepare the DELETE statement: %s\n",
                            sqlite3_errmsg(db));
     }
-  
+
     /* Process the input file */
     while( fgets(zInput, sizeof(zInput), in) ){
       for(i=0; zInput[i]; i++){
         if( !ISALPHA(zInput[i]) ) continue;
         for(j=i+1; ISALPHA(zInput[j]); j++){}
-  
-        /* Found a new word at zInput[i] that is j-i bytes long. 
+
+        /* Found a new word at zInput[i] that is j-i bytes long.
         ** Process it into the wordcount table.  */
         if( iMode2==MODE_DELETE ){
           sqlite3_bind_text(pDelete, 1, zInput+i, j-i, SQLITE_STATIC);
@@ -531,7 +531,7 @@ int main(int argc, char **argv){
           }
         }
         i = j-1;
-  
+
         /* Increment the operation counter.  Do a COMMIT if it is time. */
         nOp++;
         if( commitInterval>0 && (nOp%commitInterval)==0 ){
@@ -544,7 +544,7 @@ int main(int argc, char **argv){
     sqlite3_finalize(pUpdate);  pUpdate = 0;
     sqlite3_finalize(pSelect);  pSelect = 0;
     sqlite3_finalize(pDelete);  pDelete = 0;
-  
+
     if( iMode2==MODE_QUERY && iMode!=MODE_ALL ){
       printf("%s sum of cnt: %lld\n", zTag, sumCnt);
       rc = sqlite3_prepare_v2(db,"SELECT sum(cnt*cnt) FROM wordcount", -1,
@@ -554,8 +554,8 @@ int main(int argc, char **argv){
       }
       sqlite3_finalize(pSelect);
     }
-  
-  
+
+
     if( showTimer ){
       sqlite3_int64 elapseTime = realTime() - startTime;
       totalTime += elapseTime;
@@ -569,11 +569,11 @@ int main(int argc, char **argv){
         fprintf(pTimer, "\n");
       }
     }
-  
+
     if( showSummary ){
       sqlite3_create_function(db, "checksum", -1, SQLITE_UTF8, 0,
                               0, checksumStep, checksumFinalize);
-      sqlite3_exec(db, 
+      sqlite3_exec(db,
         "SELECT 'count(*):  ', count(*) FROM wordcount;\n"
         "SELECT 'sum(cnt):  ', sum(cnt) FROM wordcount;\n"
         "SELECT 'max(cnt):  ', max(cnt) FROM wordcount;\n"
@@ -596,7 +596,7 @@ int main(int argc, char **argv){
     fprintf(pTimer, "%3d.%03d wordcount --all\n", (int)(totalTime/1000),
                                    (int)(totalTime%1000));
   }
-  
+
   /* Database connection statistics printed after both prepared statements
   ** have been finalized */
   if( showStats ){
@@ -613,13 +613,13 @@ int main(int argc, char **argv){
     sqlite3_db_status(db, SQLITE_DBSTATUS_CACHE_HIT, &iCur, &iHiwtr, 1);
     printf("%s Page cache hits:             %d\n", zTag, iCur);
     sqlite3_db_status(db, SQLITE_DBSTATUS_CACHE_MISS, &iCur, &iHiwtr, 1);
-    printf("%s Page cache misses:           %d\n", zTag, iCur); 
+    printf("%s Page cache misses:           %d\n", zTag, iCur);
     sqlite3_db_status(db, SQLITE_DBSTATUS_CACHE_WRITE, &iCur, &iHiwtr, 1);
-    printf("%s Page cache writes:           %d\n", zTag, iCur); 
+    printf("%s Page cache writes:           %d\n", zTag, iCur);
     sqlite3_db_status(db, SQLITE_DBSTATUS_SCHEMA_USED, &iCur, &iHiwtr, 0);
-    printf("%s Schema Heap Usage:           %d bytes\n", zTag, iCur); 
+    printf("%s Schema Heap Usage:           %d bytes\n", zTag, iCur);
     sqlite3_db_status(db, SQLITE_DBSTATUS_STMT_USED, &iCur, &iHiwtr, 0);
-    printf("%s Statement Heap Usage:        %d bytes\n", zTag, iCur); 
+    printf("%s Statement Heap Usage:        %d bytes\n", zTag, iCur);
   }
 
   sqlite3_close(db);

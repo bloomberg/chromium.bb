@@ -296,8 +296,8 @@ static const sqlite3_api_routines sqlite3Apis = {
   sqlite3_memory_highwater,
   sqlite3_memory_used,
 #ifdef SQLITE_MUTEX_OMIT
-  0, 
-  0, 
+  0,
+  0,
   0,
   0,
   0,
@@ -432,7 +432,7 @@ static const sqlite3_api_routines sqlite3Apis = {
 **
 ** Return SQLITE_OK on success and SQLITE_ERROR if something goes wrong.
 **
-** If an error occurs and pzErrMsg is not 0, then fill *pzErrMsg with 
+** If an error occurs and pzErrMsg is not 0, then fill *pzErrMsg with
 ** error message text.  The calling function should free this memory
 ** by calling sqlite3DbFree(db, ).
 */
@@ -456,7 +456,7 @@ static int sqlite3LoadExtension(
   /* Shared library endings to try if zFile cannot be loaded as written */
   static const char *azEndings[] = {
 #if SQLITE_OS_WIN
-     "dll"   
+     "dll"
 #elif defined(__APPLE__)
      "dylib"
 #else
@@ -496,7 +496,7 @@ static int sqlite3LoadExtension(
     if( pzErrMsg ){
       *pzErrMsg = zErrmsg = sqlite3_malloc64(nMsg);
       if( zErrmsg ){
-        sqlite3_snprintf(nMsg, zErrmsg, 
+        sqlite3_snprintf(nMsg, zErrmsg,
             "unable to open shared library [%s]", zFile);
         sqlite3OsDlError(pVfs, nMsg-1, zErrmsg);
       }
@@ -508,9 +508,9 @@ static int sqlite3LoadExtension(
   /* If no entry point was specified and the default legacy
   ** entry point name "sqlite3_extension_init" was not found, then
   ** construct an entry point name "sqlite3_X_init" where the X is
-  ** replaced by the lowercase value of every ASCII alphabetic 
+  ** replaced by the lowercase value of every ASCII alphabetic
   ** character in the filename after the last "/" upto the first ".",
-  ** and eliding the first three characters if they are "lib".  
+  ** and eliding the first three characters if they are "lib".
   ** Examples:
   **
   **    /usr/local/lib/libExample5.4.3.so ==>  sqlite3_example_init
@@ -630,7 +630,7 @@ int sqlite3_enable_load_extension(sqlite3 *db, int onoff){
 */
 typedef struct sqlite3AutoExtList sqlite3AutoExtList;
 static SQLITE_WSD struct sqlite3AutoExtList {
-  u32 nExt;              /* Number of entries in aExt[] */          
+  u32 nExt;              /* Number of entries in aExt[] */
   void (**aExt)(void);   /* Pointers to the extension init functions */
 } sqlite3Autoext = { 0, 0 };
 

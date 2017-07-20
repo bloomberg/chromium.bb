@@ -75,7 +75,7 @@ do_execsql_test default-3.1 {
     g LONG INTEGER DEFAULT( 3600*12 )
   );
   INSERT INTO t3 VALUES(null, 5, 'row1', '5.25', 'xyz', 321, '432');
-  SELECT a, typeof(a), b, typeof(b), c, typeof(c), 
+  SELECT a, typeof(a), b, typeof(b), c, typeof(c),
          d, typeof(d), e, typeof(e), f, typeof(f),
          g, typeof(g) FROM t3;
 } {1 integer 5 integer row1 text 5.25 real xyz text 321 text 432 integer}
@@ -99,7 +99,7 @@ do_execsql_test default-3.3 {
   SELECT * FROM t300;
 } {2147483647 2147483648 9223372036854775807 -2147483647 -2147483648 -9223372036854775808 9.22337203685478e+18 9223372036854775807}
 
-# Do now allow bound parameters in new DEFAULT values. 
+# Do now allow bound parameters in new DEFAULT values.
 # Silently convert bound parameters to NULL in DEFAULT causes
 # in the sqlite_master table, for backwards compatibility.
 #
@@ -111,7 +111,7 @@ do_execsql_test default-4.0 {
   PRAGMA writable_schema=ON;
   UPDATE sqlite_master SET sql='CREATE TABLE t1(a TEXT, b TEXT DEFAULT(:xyz))';
 } {}
-db close 
+db close
 sqlite3 db test.db
 do_execsql_test default-4.1 {
   INSERT INTO t1(a) VALUES('xyzzy');

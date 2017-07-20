@@ -325,5 +325,5 @@ int main(int argc, char **argv){
     fprintf(stderr, "%s\n", g.zErr);
     exit(1);
   }
-  return 0; 
+  return 0;
 }

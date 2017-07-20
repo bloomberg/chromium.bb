@@ -20,12 +20,12 @@ ifcapable !fts3 { finish_test ; return }
 
 if 0 {
 
-# Test error handling in the sqlite3Fts3Init() function. This is the 
+# Test error handling in the sqlite3Fts3Init() function. This is the
 # function that registers the FTS3 module and various support functions
 # with SQLite.
 #
-do_faultsim_test 1 -body { 
-  sqlite3 db test.db 
+do_faultsim_test 1 -body {
+  sqlite3 db test.db
   expr 0
 } -test {
   catch { db close }
@@ -41,7 +41,7 @@ do_execsql_test 2.0 {
   INSERT INTO t1 VALUES('test renaming the table');
   INSERT INTO t1 VALUES(' after it has been written');
 }
-do_faultsim_test 2 -prep { 
+do_faultsim_test 2 -prep {
   sqlite3 db test.db
   execsql {
     BEGIN;
@@ -51,10 +51,10 @@ do_faultsim_test 2 -prep {
 } -body {
   execsql { ALTER TABLE t1 RENAME TO t2 }
 } -test {
-  faultsim_test_result {0 {}} 
+  faultsim_test_result {0 {}}
 }
 
-# Test error handling in the special case where a single prefix query 
+# Test error handling in the special case where a single prefix query
 # matches terms that reside on a large range of leaf nodes.
 #
 do_test fts3fault-3.0 {
@@ -68,25 +68,25 @@ do_test fts3fault-3.0 {
   execsql { COMMIT }
 } {}
 
-do_faultsim_test 3 -faults oom-transient -prep { 
+do_faultsim_test 3 -faults oom-transient -prep {
   sqlite3 db test.db
   execsql { SELECT * FROM t3 WHERE t3 MATCH 'x' }
 } -body {
   execsql { SELECT count(rowid) FROM t3 WHERE t3 MATCH 'aa*' }
 } -test {
-  faultsim_test_result {0 1000} 
+  faultsim_test_result {0 1000}
 }
 
 do_test fts3fault-4.0 {
   faultsim_delete_and_reopen
-  execsql { 
-    CREATE VIRTUAL TABLE t4 USING fts4; 
+  execsql {
+    CREATE VIRTUAL TABLE t4 USING fts4;
     INSERT INTO t4 VALUES('The British Government called on');
     INSERT INTO t4 VALUES('as pesetas then became much');
   }
 } {}
 faultsim_save_and_close
-do_faultsim_test 4 -prep { 
+do_faultsim_test 4 -prep {
   faultsim_restore_and_reopen
   execsql { SELECT content FROM t4 }
 } -body {
@@ -97,16 +97,16 @@ do_faultsim_test 4 -prep {
 
 do_test fts3fault-5.0 {
   faultsim_delete_and_reopen
-  execsql { 
-    CREATE VIRTUAL TABLE t5 USING fts4; 
+  execsql {
+    CREATE VIRTUAL TABLE t5 USING fts4;
     INSERT INTO t5 VALUES('The British Government called on');
     INSERT INTO t5 VALUES('as pesetas then became much');
   }
 } {}
 faultsim_save_and_close
-do_faultsim_test 5 -prep { 
+do_faultsim_test 5 -prep {
   faultsim_restore_and_reopen
-  execsql { 
+  execsql {
     BEGIN;
       INSERT INTO t5 VALUES('influential in shaping his future outlook');
       INSERT INTO t5 VALUES('might be acceptable to the British electorate');
@@ -122,7 +122,7 @@ do_test fts3fault-6.0 {
   execsql { CREATE VIRTUAL TABLE t6 USING fts4 }
 } {}
 faultsim_save_and_close
-do_faultsim_test 6 -prep { 
+do_faultsim_test 6 -prep {
   faultsim_restore_and_reopen
   execsql { SELECT rowid FROM t6 }
 } -body {
@@ -133,14 +133,14 @@ do_faultsim_test 6 -prep {
 
 # Test various malloc failures while processing FTS4 parameters.
 #
-do_faultsim_test 7.1 -prep { 
+do_faultsim_test 7.1 -prep {
   faultsim_delete_and_reopen
 } -body {
   execsql { CREATE VIRTUAL TABLE t1 USING fts4(a, b, matchinfo=fts3) }
 } -test {
   faultsim_test_result {0 {}}
 }
-do_faultsim_test 7.2 -prep { 
+do_faultsim_test 7.2 -prep {
   faultsim_delete_and_reopen
 } -body {
   execsql { CREATE VIRTUAL TABLE t1 USING fts4(a, b, matchinfo=fs3) }
@@ -149,7 +149,7 @@ do_faultsim_test 7.2 -prep {
                        {1 {vtable constructor failed: t1}} \
                        {1 {SQL logic error or missing database}}
 }
-do_faultsim_test 7.3 -prep { 
+do_faultsim_test 7.3 -prep {
   faultsim_delete_and_reopen
 } -body {
   execsql { CREATE VIRTUAL TABLE t1 USING fts4(a, b, matchnfo=fts3) }
@@ -181,7 +181,7 @@ do_test 8.0 {
   faultsim_save_and_close
 } {}
 
-do_faultsim_test 8.1 -faults oom-t* -prep { 
+do_faultsim_test 8.1 -faults oom-t* -prep {
   faultsim_restore_and_reopen
   db func mit mit
 } -body {
@@ -190,7 +190,7 @@ do_faultsim_test 8.1 -faults oom-t* -prep {
   faultsim_test_result {0 {{1 1 1 1 4 2 1 5 5}}}
 }
 
-do_faultsim_test 8.2 -faults oom-t* -prep { 
+do_faultsim_test 8.2 -faults oom-t* -prep {
   faultsim_restore_and_reopen
   db func mit mit
 } -body {
@@ -198,7 +198,7 @@ do_faultsim_test 8.2 -faults oom-t* -prep {
 } -test {
   faultsim_test_result {0 3}
 }
-do_faultsim_test 8.3 -prep { 
+do_faultsim_test 8.3 -prep {
   faultsim_restore_and_reopen
   db func mit mit
 } -body {
@@ -206,7 +206,7 @@ do_faultsim_test 8.3 -prep {
 } -test {
   faultsim_test_result {0 10002}
 }
-do_faultsim_test 8.4 -prep { 
+do_faultsim_test 8.4 -prep {
   faultsim_restore_and_reopen
   db func mit mit
 } -body {

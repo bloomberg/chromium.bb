@@ -104,9 +104,9 @@ foreach {tn where result} {
     set q "SELECT docid FROM t1 $w $order"
 
     if {$tn2<5} {
-      set r [lsort -integer -increasing $result] 
+      set r [lsort -integer -increasing $result]
     } else {
-      set r [lsort -integer -decreasing $result] 
+      set r [lsort -integer -decreasing $result]
     }
 
     do_execsql_test 3.$tn.$tn2 $q $r

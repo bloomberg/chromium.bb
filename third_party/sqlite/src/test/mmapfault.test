@@ -53,7 +53,7 @@ do_faultsim_test 1 -prep {
 } -body {
   execsql { INSERT INTO t1 VALUES(a_string(200), a_string(300)) }
 } -test {
-  faultsim_test_result {0 {}} 
+  faultsim_test_result {0 {}}
 
   if {[sqlite3_get_autocommit db]} {
     sqlite3 db2 test.db
@@ -64,8 +64,8 @@ do_faultsim_test 1 -prep {
 
   execsql { INSERT INTO t1 VALUES(a_string(201), a_string(301)) }
   set nRow [db one {SELECT count(*) FROM t1}]
-  if {$nRow!=5 && $nRow!=66 && $nRow!=65} { 
-    error "Database content appears incorrect (2) ($nRow)" 
+  if {$nRow!=5 && $nRow!=66 && $nRow!=65} {
+    error "Database content appears incorrect (2) ($nRow)"
   }
 
   catch { execsql COMMIT }

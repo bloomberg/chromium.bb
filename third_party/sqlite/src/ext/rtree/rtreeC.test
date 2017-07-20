@@ -10,11 +10,11 @@
 #***********************************************************************
 # Make sure the rtreenode() testing function can handle entries with
 # 64-bit rowids.
-# 
+#
 
 if {![info exists testdir]} {
   set testdir [file join [file dirname [info script]] .. .. test]
-} 
+}
 source $testdir/tester.tcl
 ifcapable !rtree { finish_test ; return }
 set testprefix rtreeC
@@ -25,7 +25,7 @@ do_execsql_test 1.0 {
 }
 
 do_eqp_test 1.1 {
-  SELECT * FROM r_tree, t 
+  SELECT * FROM r_tree, t
   WHERE t.x>=min_x AND t.x<=max_x AND t.y>=min_y AND t.x<=max_y
 } {
   0 0 1 {SCAN TABLE t}
@@ -52,7 +52,7 @@ do_eqp_test 1.5 {
   SELECT * FROM t, r_tree
 } {
   0 0 1 {SCAN TABLE r_tree VIRTUAL TABLE INDEX 2:}
-  0 1 0 {SCAN TABLE t} 
+  0 1 0 {SCAN TABLE t}
 }
 
 do_execsql_test 2.0 {
@@ -78,7 +78,7 @@ db close
 sqlite3 db test.db
 
 do_eqp_test 2.1 {
-  SELECT * FROM r_tree, t 
+  SELECT * FROM r_tree, t
   WHERE t.x>=min_x AND t.x<=max_x AND t.y>=min_y AND t.x<=max_y
 } {
   0 0 1 {SCAN TABLE t}
@@ -105,7 +105,7 @@ do_eqp_test 2.5 {
   SELECT * FROM t, r_tree
 } {
   0 0 1 {SCAN TABLE r_tree VIRTUAL TABLE INDEX 2:}
-  0 1 0 {SCAN TABLE t} 
+  0 1 0 {SCAN TABLE t}
 }
 
 #-------------------------------------------------------------------------
@@ -118,7 +118,7 @@ do_execsql_test 3.1 {
 }
 
 do_eqp_test 3.2.1 { SELECT * FROM t1 CROSS JOIN t2 } {
-  0 0 0 {SCAN TABLE t1} 
+  0 0 0 {SCAN TABLE t1}
   0 1 1 {SCAN TABLE t2}
 }
 do_eqp_test 3.2.2 { SELECT * FROM t2 CROSS JOIN t1 } {
@@ -127,10 +127,10 @@ do_eqp_test 3.2.2 { SELECT * FROM t2 CROSS JOIN t1 } {
 
 do_eqp_test 3.3.1 { SELECT * FROM t1 CROSS JOIN t3 } {
   0 0 0 {SCAN TABLE t1}
-  0 1 1 {SCAN TABLE t3 VIRTUAL TABLE INDEX 2:} 
+  0 1 1 {SCAN TABLE t3 VIRTUAL TABLE INDEX 2:}
 }
 do_eqp_test 3.3.2 { SELECT * FROM t3 CROSS JOIN t1 } {
-  0 0 0 {SCAN TABLE t3 VIRTUAL TABLE INDEX 2:} 
+  0 0 0 {SCAN TABLE t3 VIRTUAL TABLE INDEX 2:}
   0 1 1 {SCAN TABLE t1}
 }
 
@@ -187,7 +187,7 @@ do_execsql_test 5.1 {
 do_eqp_test 5.2 {
   SELECT * FROM t1, rt WHERE x==id;
 } {
-  0 0 0 {SCAN TABLE t1} 
+  0 0 0 {SCAN TABLE t1}
   0 1 1 {SCAN TABLE rt VIRTUAL TABLE INDEX 1:}
 }
 
@@ -203,7 +203,7 @@ sqlite3 db test.db
 do_eqp_test 5.4 {
   SELECT * FROM t1, rt WHERE x==id;
 } {
-  0 0 1 {SCAN TABLE rt VIRTUAL TABLE INDEX 2:} 
+  0 0 1 {SCAN TABLE rt VIRTUAL TABLE INDEX 2:}
   0 1 0 {SEARCH TABLE t1 USING INDEX sqlite_autoindex_t1_1 (x=?)}
 }
 
@@ -215,7 +215,7 @@ sqlite3 db test.db
 do_eqp_test 5.6 {
   SELECT * FROM t1, rt WHERE x==id;
 } {
-  0 0 0 {SCAN TABLE t1} 
+  0 0 0 {SCAN TABLE t1}
   0 1 1 {SCAN TABLE rt VIRTUAL TABLE INDEX 1:}
 }
 
@@ -239,7 +239,7 @@ do_test 5.7 {
 do_eqp_test 5.8 {
   SELECT * FROM t1, rt WHERE x==id;
 } {
-  0 0 0 {SCAN TABLE t1} 
+  0 0 0 {SCAN TABLE t1}
   0 1 1 {SCAN TABLE rt VIRTUAL TABLE INDEX 1:}
 }
 
@@ -259,7 +259,7 @@ ifcapable rtree {
   db close
   sqlite3 db test.db
   do_execsql_test 6.2 { SELECT * FROM t1 } {1}
-  
+
   do_test 6.3 {
     sqlite3 db2 test.db
     db2 eval { DROP TABLE sqlite_stat1 }
@@ -303,24 +303,24 @@ proc do_eqp_execsql_test {tn sql res} {
 }
 
 do_eqp_execsql_test 7.1 {
-  SELECT id FROM xdir, rt, ydir 
+  SELECT id FROM xdir, rt, ydir
   ON (y1 BETWEEN ymin AND ymax)
   WHERE (x1 BETWEEN xmin AND xmax);
 } {
-  0 0 0 {SCAN TABLE xdir} 
-  0 1 2 {SCAN TABLE ydir} 
+  0 0 0 {SCAN TABLE xdir}
+  0 1 2 {SCAN TABLE ydir}
   0 2 1 {SCAN TABLE rt VIRTUAL TABLE INDEX 2:B2D3B0D1}
   2 4
 }
 
 do_eqp_execsql_test 7.2 {
-  SELECT * FROM xdir, rt LEFT JOIN ydir 
+  SELECT * FROM xdir, rt LEFT JOIN ydir
   ON (y1 BETWEEN ymin AND ymax)
   WHERE (x1 BETWEEN xmin AND xmax);
 } {
-  0 0 0 {SCAN TABLE xdir} 
+  0 0 0 {SCAN TABLE xdir}
   0 1 1 {SCAN TABLE rt VIRTUAL TABLE INDEX 2:B0D1}
-  0 2 2 {SCAN TABLE ydir} 
+  0 2 2 {SCAN TABLE ydir}
 
   5 1 2 7 12 14 {}
   5 2 2 7  8 12 10
@@ -328,24 +328,24 @@ do_eqp_execsql_test 7.2 {
 }
 
 do_eqp_execsql_test 7.3 {
-  SELECT id FROM xdir, rt CROSS JOIN ydir 
+  SELECT id FROM xdir, rt CROSS JOIN ydir
   ON (y1 BETWEEN ymin AND ymax)
   WHERE (x1 BETWEEN xmin AND xmax);
 } {
-  0 0 0 {SCAN TABLE xdir} 
+  0 0 0 {SCAN TABLE xdir}
   0 1 1 {SCAN TABLE rt VIRTUAL TABLE INDEX 2:B0D1}
-  0 2 2 {SCAN TABLE ydir} 
+  0 2 2 {SCAN TABLE ydir}
   2 4
 }
 
 do_eqp_execsql_test 7.4 {
-  SELECT id FROM rt, xdir CROSS JOIN ydir 
+  SELECT id FROM rt, xdir CROSS JOIN ydir
   ON (y1 BETWEEN ymin AND ymax)
   WHERE (x1 BETWEEN xmin AND xmax);
 } {
-  0 0 1 {SCAN TABLE xdir} 
+  0 0 1 {SCAN TABLE xdir}
   0 1 0 {SCAN TABLE rt VIRTUAL TABLE INDEX 2:B0D1}
-  0 2 2 {SCAN TABLE ydir} 
+  0 2 2 {SCAN TABLE ydir}
   2 4
 }
 

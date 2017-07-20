@@ -42,7 +42,7 @@ proc cksort {sql} {
   return $data
 }
 
-# 
+#
 # Test cases are organized roughly as follows:
 #
 # collate4-1.*      ORDER BY.
@@ -55,11 +55,11 @@ proc cksort {sql} {
 
 #
 # These tests - collate4-1.* - check that indices are correctly
-# selected or not selected to implement ORDER BY clauses when 
-# user defined collation sequences are involved. 
+# selected or not selected to implement ORDER BY clauses when
+# user defined collation sequences are involved.
 #
-# Because these tests also exercise all the different ways indices 
-# can be created, they also serve to verify that indices are correctly 
+# Because these tests also exercise all the different ways indices
+# can be created, they also serve to verify that indices are correctly
 # initialized with user-defined collation sequences when they are
 # created.
 #
@@ -100,7 +100,7 @@ do_test collate4-1.1.6 {
 do_test collate4-1.1.7 {
   execsql {
     CREATE TABLE collate4t2(
-      a PRIMARY KEY COLLATE NOCASE, 
+      a PRIMARY KEY COLLATE NOCASE,
       b UNIQUE COLLATE TEXT
     );
     INSERT INTO collate4t2 VALUES( 'a', 'a' );
@@ -130,8 +130,8 @@ do_test collate4-1.1.13 {
 do_test collate4-1.1.14 {
   execsql {
     CREATE TABLE collate4t3(
-      b COLLATE TEXT,  
-      a COLLATE NOCASE, 
+      b COLLATE TEXT,
+      a COLLATE NOCASE,
       UNIQUE(a), PRIMARY KEY(b)
     );
     INSERT INTO collate4t3 VALUES( 'a', 'a' );
@@ -231,8 +231,8 @@ do_test collate4-1.2.6 {
 do_test collate4-1.2.7 {
   execsql {
     CREATE TABLE collate4t2(
-      a COLLATE NOCASE, 
-      b COLLATE TEXT, 
+      a COLLATE NOCASE,
+      b COLLATE TEXT,
       PRIMARY KEY(a, b)
     );
     INSERT INTO collate4t2 VALUES( 'a', 'a' );
@@ -295,11 +295,11 @@ do_test collate4-1.2.22 {
   cksort {SELECT a FROM collate4t3 ORDER BY a COLLATE text DESC, b}
 } {b a B A {} sort}
 do_test collate4-1.2.23 {
-  cksort {SELECT a FROM collate4t3 
+  cksort {SELECT a FROM collate4t3
             ORDER BY a COLLATE text DESC, b COLLATE nocase}
 } {b a B A {} sort}
 do_test collate4-1.2.24 {
-  cksort {SELECT a FROM collate4t3 
+  cksort {SELECT a FROM collate4t3
             ORDER BY a COLLATE text DESC, b COLLATE nocase DESC}
 } {b a B A {} nosort}
 
@@ -313,8 +313,8 @@ do_test collate4-1.2.25 {
 
 #
 # These tests - collate4-2.* - check that indices are correctly
-# selected or not selected to implement WHERE clauses when user 
-# defined collation sequences are involved. 
+# selected or not selected to implement WHERE clauses when user
+# defined collation sequences are involved.
 #
 # Indices may optimise WHERE clauses using <, >, <=, >=, = or IN
 # operators.
@@ -557,12 +557,12 @@ do_test collate4-3.15 {
 # Mimic the SQLite 2 collation type NUMERIC.
 db collate numeric numeric_collate
 proc numeric_collate {lhs rhs} {
-  if {$lhs == $rhs} {return 0} 
+  if {$lhs == $rhs} {return 0}
   return [expr ($lhs>$rhs)?1:-1]
 }
 
 #
-# These tests - collate4-4.* check that min() and max() only ever 
+# These tests - collate4-4.* check that min() and max() only ever
 # use indices constructed with built-in collation type numeric.
 #
 # CHANGED:  min() and max() now use the collation type. If there
@@ -669,11 +669,11 @@ do_test collate4-4.15 {
 } {}
 
 #
-# These tests - collate4.6.* - ensure that implict INTEGER PRIMARY KEY 
-# indices do not confuse collation sequences. 
+# These tests - collate4.6.* - ensure that implict INTEGER PRIMARY KEY
+# indices do not confuse collation sequences.
 #
 # These indices are never used for sorting in SQLite. And you can't
-# create another index on an INTEGER PRIMARY KEY column, so we don't have 
+# create another index on an INTEGER PRIMARY KEY column, so we don't have
 # to test that.
 # (Revised 2004-Nov-22):  The ROWID can be used for sorting now.
 #

@@ -1,6 +1,6 @@
 /*
 ** This script is called from crash01.test and config02.test and perhaps other
-** script.  After the database file has been set up, make a big rollback 
+** script.  After the database file has been set up, make a big rollback
 ** journal in client 1, then crash client 1.
 ** Then in the other clients, do an integrity check.
 */

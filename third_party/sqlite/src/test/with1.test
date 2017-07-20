@@ -41,7 +41,7 @@ do_execsql_test 1.3 {
 do_execsql_test 1.4 {
   WITH x(a) AS ( SELECT * FROM t1) UPDATE t1 SET x = y;
 } {}
- 
+
 #--------------------------------------------------------------------------
 
 do_execsql_test 2.1 {
@@ -168,7 +168,7 @@ do_execsql_test 5.2.1 {
   INSERT INTO edge VALUES(4, 8, 80);
   INSERT INTO edge VALUES(7, 8, 80);
   INSERT INTO edge VALUES(8, 9, 90);
-  
+
   WITH RECURSIVE
     ancest(id, mtime) AS
       (VALUES(0, 0)
@@ -285,15 +285,15 @@ do_execsql_test 6.2 {
   )
   SELECT fpath FROM flat WHERE fpath!='' ORDER BY 1;
 } {
-  /bin 
-  /bin/false /bin/grep /bin/ls /bin/true 
-  /etc 
-  /etc/rc.d 
-  /etc/rc.d/rc.apache /etc/rc.d/rc.samba 
-  /home 
-  /home/dan 
-  /home/dan/public_html 
-  /home/dan/public_html/index.html 
+  /bin
+  /bin/false /bin/grep /bin/ls /bin/true
+  /etc
+  /etc/rc.d
+  /etc/rc.d/rc.apache /etc/rc.d/rc.samba
+  /home
+  /home/dan
+  /home/dan/public_html
+  /home/dan/public_html/index.html
   /home/dan/public_html/index.html/logo.gif
 }
 
@@ -332,7 +332,7 @@ do_execsql_test 7.2 {
     SELECT i, '' FROM tree WHERE p IS NULL
     UNION ALL
     SELECT i, path || '/' || i FROM tree, t WHERE p = id
-  ) 
+  )
   SELECT path FROM t;
 } {{} /2 /3 /2/4 /2/4/5}
 
@@ -341,7 +341,7 @@ do_execsql_test 7.3 {
     VALUES(2)
     UNION ALL
     SELECT i FROM tree, t WHERE p = id
-  ) 
+  )
   SELECT id FROM t;
 } {2 4 5}
 
@@ -350,7 +350,7 @@ do_catchsql_test 7.4 {
     VALUES(2)
     UNION ALL
     SELECT i FROM tree WHERE p IN (SELECT id FROM t)
-  ) 
+  )
   SELECT id FROM t;
 } {1 {recursive reference in a subquery: t}}
 
@@ -359,7 +359,7 @@ do_catchsql_test 7.5 {
     VALUES(2)
     UNION ALL
     SELECT i FROM tree, t WHERE p = id AND p IN (SELECT id FROM t)
-  ) 
+  )
   SELECT id FROM t;
 } {1 {multiple recursive references: t}}
 
@@ -368,7 +368,7 @@ do_catchsql_test 7.6 {
     SELECT i FROM tree WHERE 2 IN (SELECT id FROM t)
     UNION ALL
     SELECT i FROM tree, t WHERE p = id
-  ) 
+  )
   SELECT id FROM t;
 } {1 {circular reference: t}}
 
@@ -381,14 +381,14 @@ do_execsql_test 8.1-mandelbrot {
     m(iter, cx, cy, x, y) AS (
       SELECT 0, x, y, 0.0, 0.0 FROM xaxis, yaxis
       UNION ALL
-      SELECT iter+1, cx, cy, x*x-y*y + cx, 2.0*x*y + cy FROM m 
+      SELECT iter+1, cx, cy, x*x-y*y + cx, 2.0*x*y + cy FROM m
        WHERE (x*x + y*y) < 4.0 AND iter<28
     ),
     m2(iter, cx, cy) AS (
       SELECT max(iter), cx, cy FROM m GROUP BY cx, cy
     ),
     a(t) AS (
-      SELECT group_concat( substr(' .+*#', 1+min(iter/7,4), 1), '') 
+      SELECT group_concat( substr(' .+*#', 1+min(iter/7,4), 1), '')
       FROM m2 GROUP BY cy
     )
   SELECT group_concat(rtrim(t),x'0a') FROM a;
@@ -422,14 +422,14 @@ do_execsql_test 8.2-soduko {
     input(sud) AS (
       VALUES('53..7....6..195....98....6.8...6...34..8.3..17...2...6.6....28....419..5....8..79')
     ),
-  
+
     /* A table filled with digits 1..9, inclusive. */
     digits(z, lp) AS (
       VALUES('1', 1)
       UNION ALL SELECT
       CAST(lp+1 AS TEXT), lp+1 FROM digits WHERE lp<9
     ),
-  
+
     /* The tricky bit. */
     x(s, ind) AS (
       SELECT sud, instr(sud, '.') FROM input
@@ -454,7 +454,7 @@ do_execsql_test 8.2-soduko {
 
 #--------------------------------------------------------------------------
 # Some tests that use LIMIT and OFFSET in the definition of recursive CTEs.
-# 
+#
 set I [list 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20]
 proc limit_test {tn iLimit iOffset} {
   if {$iOffset < 0} { set iOffset 0 }
@@ -466,8 +466,8 @@ proc limit_test {tn iLimit iOffset} {
   uplevel [list do_execsql_test $tn [subst -nocommands {
     WITH ii(a) AS (
       VALUES(1)
-      UNION ALL 
-      SELECT a+1 FROM ii WHERE a<20 
+      UNION ALL
+      SELECT a+1 FROM ii WHERE a<20
       LIMIT $iLimit OFFSET $iOffset
     )
     SELECT * FROM ii
@@ -526,7 +526,7 @@ do_execsql_test 10.2 {
   )
   SELECT p FROM flat ORDER BY p;
 } {
-  /a /a/a /a/a/a 
+  /a /a/a /a/a/a
      /a/b /a/b/c /a/b/c/d
           /a/b/d
 }
@@ -538,10 +538,10 @@ proc scan_tree {bDepthFirst bReverse} {
 
   set order "ORDER BY "
   if {$bDepthFirst==0} { append order "2 ASC," }
-  if {$bReverse==0} { 
-    append order " 3 ASC" 
+  if {$bReverse==0} {
+    append order " 3 ASC"
   } else {
-    append order " 3 DESC" 
+    append order " 3 DESC"
   }
 
   db eval "
@@ -580,7 +580,7 @@ do_test 10.4 {
   scan_tree 1 0
 } [list {*}{
   /a /a/b /a/b/c
-     /a/d /a/d/e 
+     /a/d /a/d/e
           /a/d/f
   /g /g/h
 }]
@@ -590,9 +590,9 @@ do_test 10.4 {
 do_test 10.5 {
   scan_tree 0 1
 } [list {*}{
-  /g /a 
-  /g/h /a/d /a/b 
-  /a/d/f /a/d/e /a/b/c 
+  /g /a
+  /g/h /a/d /a/b
+  /a/d/f /a/d/e /a/b/c
 }]
 
 # Depth first, siblings in ascending order.
@@ -601,8 +601,8 @@ do_test 10.6 {
   scan_tree 1 1
 } [list {*}{
   /g /g/h
-  /a /a/d /a/d/f 
-          /a/d/e 
+  /a /a/d /a/d/f
+          /a/d/e
      /a/b /a/b/c
 }]
 
@@ -612,19 +612,19 @@ do_test 10.6 {
 do_catchsql_test 10.7.1 {
   WITH t(a) AS (
     SELECT 1 AS b UNION ALL SELECT a+1 AS c FROM t WHERE a<5 ORDER BY a
-  ) 
+  )
   SELECT * FROM t
 } {1 {1st ORDER BY term does not match any column in the result set}}
 do_execsql_test 10.7.2 {
   WITH t(a) AS (
     SELECT 1 AS b UNION ALL SELECT a+1 AS c FROM t WHERE a<5 ORDER BY b
-  ) 
+  )
   SELECT * FROM t
 } {1 2 3 4 5}
 do_execsql_test 10.7.3 {
   WITH t(a) AS (
     SELECT 1 AS b UNION ALL SELECT a+1 AS c FROM t WHERE a<5 ORDER BY c
-  ) 
+  )
   SELECT * FROM t
 } {1 2 3 4 5}
 
@@ -656,7 +656,7 @@ do_execsql_test 10.8.1 {
 }
 do_execsql_test 10.8.2 {
   WITH flat(fid, depth, p) AS (
-      SELECT id, 1, ('/' || payload) COLLATE nocase 
+      SELECT id, 1, ('/' || payload) COLLATE nocase
       FROM tree WHERE parentid IS NULL
     UNION ALL
       SELECT id, depth+1, (p||'/'||payload)
@@ -674,7 +674,7 @@ do_execsql_test 10.8.3 {
       SELECT id, 1, ('/' || payload)
       FROM tree WHERE parentid IS NULL
     UNION ALL
-      SELECT id, depth+1, (p||'/'||payload) COLLATE nocase 
+      SELECT id, depth+1, (p||'/'||payload) COLLATE nocase
       FROM flat, tree WHERE parentid=fid
     ORDER BY 2, 3
   )
@@ -727,7 +727,7 @@ do_execsql_test 11.1 {
   INSERT INTO org VALUES('Xia','Xaviar');
   INSERT INTO org VALUES('Xerxes','Xaviar');
   INSERT INTO org VALUES('Xena','Xia');
-  -- Find all members of Alice's group, breath-first order  
+  -- Find all members of Alice's group, breath-first order
   WITH RECURSIVE
     under_alice(name,level) AS (
        VALUES('Alice','0')
@@ -818,7 +818,7 @@ do_execsql_test 11.3 {
 
 #--------------------------------------------------------------------------
 # Ticket [31a19d11b97088296ac104aaff113a9790394927] (2014-02-09)
-# Name resolution issue with compound SELECTs and Common Table Expressions 
+# Name resolution issue with compound SELECTs and Common Table Expressions
 #
 do_execsql_test 12.1 {
 WITH RECURSIVE
@@ -912,7 +912,7 @@ do_catchsql_test 17.4 {
 } {1 {no such table: t11}}
 
 do_execsql_test 17.5 {
-  WITH 
+  WITH
   x1 AS (SELECT 10),
   x2 AS (SELECT * FROM x1),
   x3 AS (
@@ -923,7 +923,7 @@ do_execsql_test 17.5 {
 } {10 10}
 
 do_execsql_test 17.6 {
-  WITH 
+  WITH
   x1 AS (SELECT 10),
   x2 AS (SELECT * FROM x1),
   x3 AS (
@@ -934,11 +934,11 @@ do_execsql_test 17.6 {
 } {10 11}
 
 do_execsql_test 17.7 {
-  WITH 
+  WITH
   x1 AS (SELECT 10),
   x2 AS (SELECT * FROM x1),
   x3 AS (
-    WITH 
+    WITH
       x1 AS ( SELECT 11 ),
       x4 AS ( SELECT * FROM x2 )
     SELECT * FROM x4 UNION ALL SELECT * FROM x1
@@ -947,11 +947,11 @@ do_execsql_test 17.7 {
 } {10 11}
 
 do_execsql_test 17.8 {
-  WITH 
+  WITH
   x1 AS (SELECT 10),
   x2 AS (SELECT * FROM x1),
   x3 AS (
-    WITH 
+    WITH
       x1 AS ( SELECT 11 ),
       x4 AS ( SELECT * FROM x2 )
     SELECT * FROM x4 UNION ALL SELECT * FROM x1
@@ -960,14 +960,14 @@ do_execsql_test 17.8 {
 } {10 11}
 
 do_execsql_test 17.9 {
-  WITH 
+  WITH
   x1 AS (SELECT 10),
   x2 AS (SELECT 11),
   x3 AS (
     SELECT * FROM x1 UNION ALL SELECT * FROM x2
   ),
   x4 AS (
-    WITH 
+    WITH
     x1 AS (SELECT 12),
     x2 AS (SELECT 13)
     SELECT * FROM x3
@@ -984,7 +984,7 @@ do_execsql_test 18.1 {
 do_execsql_test 18.2 {
   WITH xyz(x) AS (
     SELECT printf('%d', 5) * NULL
-    UNION SELECT round(1<1+x) 
+    UNION SELECT round(1<1+x)
     FROM xyz ORDER BY 1
   )
   SELECT 1 FROM xyz;

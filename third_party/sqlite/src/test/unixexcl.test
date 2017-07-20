@@ -9,7 +9,7 @@
 #
 #***********************************************************************
 #
-# This file contains tests for the "unix-excl" VFS module (part of 
+# This file contains tests for the "unix-excl" VFS module (part of
 # os_unix.c).
 #
 
@@ -21,7 +21,7 @@ source $testdir/malloc_common.tcl
 if {$::tcl_platform(platform)!="unix" || [info commands test_syscall]==""} {
   finish_test
   return
-} 
+}
 set testprefix unixexcl
 
 
@@ -47,12 +47,12 @@ do_multiclient_test tn {
     }
   } {hello world}
   if {$tn==1} {
-    do_test unixexcl-1.$tn.4.multiproc { 
-      csql2 { SELECT * FROM t1 } 
+    do_test unixexcl-1.$tn.4.multiproc {
+      csql2 { SELECT * FROM t1 }
     } {1 {database is locked}}
   } else {
-    do_test unixexcl-1.$tn.4.singleproc { 
-      csql2 { SELECT * FROM t1 } 
+    do_test unixexcl-1.$tn.4.singleproc {
+      csql2 { SELECT * FROM t1 }
     } {0 {hello world}}
   }
 }
@@ -75,8 +75,8 @@ do_multiclient_test tn {
       db eval { SELECT * FROM t1 }
     }
   } {hello world}
-  do_test unixexcl-2.$tn.4 { 
-    csql2 { SELECT * FROM t1 } 
+  do_test unixexcl-2.$tn.4 {
+    csql2 { SELECT * FROM t1 }
   } {0 {hello world}}
 }
 
@@ -103,7 +103,7 @@ do_multiclient_test tn {
     } {1 2}
 
     do_test unixexcl-3.$tn.2 {
-      sql2 { 
+      sql2 {
         BEGIN;
           SELECT * FROM t1;
       }

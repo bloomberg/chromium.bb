@@ -194,7 +194,7 @@ foreach r $nums3 {
     puts "     WHERE t1.rowid $op $r ORDER BY t2.a"
     puts "  \175"
     puts "\175 {[sort $aset]}"
-  
+
     ################################################################ 2.x.y.2
     puts "do_test $tname-2.$i.$subno.2 \173"
     puts "  db eval \173"
@@ -217,7 +217,7 @@ foreach r $nums3 {
     puts "     ORDER BY t1.rowid"
     puts "  \175"
     puts "\175 {$aset}"
-  
+
     ################################################################ 2.x.y.4
     set aset {}
     foreach rx [reverse [sort $rset]] {
@@ -230,7 +230,7 @@ foreach r $nums3 {
     puts "     ORDER BY t1.rowid DESC"
     puts "  \175"
     puts "\175 {$aset}"
-  
+
     ################################################################ 2.x.y.5
     set aset {}
     set xset {}
@@ -248,7 +248,7 @@ foreach r $nums3 {
     puts "     ORDER BY x"
     puts "  \175"
     puts "\175 {$aset}"
-  
+
     ################################################################ 2.x.y.10
     if {[string length $r5]>15} continue
     set rset {}
@@ -268,7 +268,7 @@ foreach r $nums3 {
     puts "     ORDER BY t1.rowid"
     puts "  \175"
     puts "\175 {$aset}"
-  
+
     ################################################################ 2.x.y.11
     set aset {}
     foreach rx [reverse [sort $rset]] {
@@ -282,7 +282,7 @@ foreach r $nums3 {
     puts "  \175"
     puts "\175 {$aset}"
   }
-  
+
 }
 
 

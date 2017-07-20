@@ -979,7 +979,7 @@ proc cleanup {dir} {
 
   foreach f [glob -nocomplain [file join $dir *]] {
     set tail [file tail $f]
-    if {[info exists K($tail)]==0} { 
+    if {[info exists K($tail)]==0} {
       file delete -force $f
     }
   }

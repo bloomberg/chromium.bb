@@ -34,7 +34,7 @@ static void vlogSignature(unsigned char *p, int n, char *zCksum){
   int i;
   if( n<=16 ){
     for(i=0; i<n; i++) sprintf(zCksum+i*2, "%02x", p[i]);
-  }else{ 
+  }else{
     pI = (unsigned int*)p;
     for(i=0; i<n-7; i+=8){
       s0 += pI[0] + s1;

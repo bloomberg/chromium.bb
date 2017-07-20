@@ -47,14 +47,14 @@ for {set av 0} {$av<=$upperBound} {incr av} {
   } {4}
 
   set isUtf16 0
-  ifcapable utf16 { 
+  ifcapable utf16 {
     set isUtf16 [expr {[execsql {PRAGMA encoding}] != "UTF-8"}]
   }
 
   do_test createtab-$av.2 {
     file size test.db
   } [expr {1024*(4+($av!=0)+(${isUtf16}*2))}]
-  
+
   # Start reading the table
   #
   do_test createtab-$av.3 {
@@ -64,7 +64,7 @@ for {set av 0} {$av<=$upperBound} {incr av} {
   do_test createtab-$av.4 {
     sqlite3_column_int $STMT 0
   } {1}
-  
+
   # While still reading the table, create a new table.
   #
   do_test createtab-$av.5 {
@@ -74,7 +74,7 @@ for {set av 0} {$av<=$upperBound} {incr av} {
       SELECT * FROM t2;
     }
   } {1 2}
-  
+
   # Continue reading the original table.
   #
   do_test createtab-$av.6 {
@@ -86,7 +86,7 @@ for {set av 0} {$av<=$upperBound} {incr av} {
   do_test createtab-$av.8 {
     sqlite3_column_int $STMT 0
   } {2}
-  
+
   # Do another cycle of creating a new database table while contining
   # to read the original table.
   #
@@ -106,7 +106,7 @@ for {set av 0} {$av<=$upperBound} {incr av} {
   do_test createtab-$av.14 {
     sqlite3_column_int $STMT 0
   } {3}
-  
+
   # One more cycle.
   #
   do_test createtab-$av.21 {
@@ -125,7 +125,7 @@ for {set av 0} {$av<=$upperBound} {incr av} {
   do_test createtab-$av.24 {
     sqlite3_column_int $STMT 0
   } {4}
-  
+
   # Finish reading.  Do an integrity check on the database.
   #
   do_test createtab-$av.30 {
@@ -142,5 +142,5 @@ for {set av 0} {$av<=$upperBound} {incr av} {
   integrity_check createtab-$av.40
 
 }
-  
+
 finish_test

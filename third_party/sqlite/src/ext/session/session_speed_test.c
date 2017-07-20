@@ -46,7 +46,7 @@ struct CmdLineOption {
 #define CMDLINE_NONE(x,y,z)  {x, y, CMDLINE_BARE, z}
 
 static void option_requires_argument_error(CmdLineOption *pOpt){
-  fprintf(stderr, "Option requires a%s argument: %s\n", 
+  fprintf(stderr, "Option requires a%s argument: %s\n",
       pOpt->eType==CMDLINE_INTEGER ? "n integer" :
       pOpt->eType==CMDLINE_STRING ? " string" : " boolean",
       pOpt->zText
@@ -60,7 +60,7 @@ static void ambiguous_option_error(const char *zArg){
 }
 
 static void unknown_option_error(
-  const char *zArg, 
+  const char *zArg,
   CmdLineOption *aOpt,
   const char *zHelp
 ){
@@ -110,8 +110,8 @@ static int get_boolean_option(CmdLineOption *pOpt, const char *zArg){
 }
 
 static void parse_command_line(
-  int argc, 
-  char **argv, 
+  int argc,
+  char **argv,
   int iStart,
   CmdLineOption *aOpt,
   void *pStruct,
@@ -189,7 +189,7 @@ static void parse_command_line(
     fprintf(stdout, "\n");
   }
 }
-/* 
+/*
 ** End of generic command line parser.
 *************************************************************************/
 
@@ -208,9 +208,9 @@ static int xConflict(void *pCtx, int eConflict, sqlite3_changeset_iter *p){
 }
 
 static void run_test(
-  sqlite3 *db, 
-  sqlite3 *db2, 
-  int nRow, 
+  sqlite3 *db,
+  sqlite3 *db2,
+  int nRow,
   const char *zSql
 ){
   sqlite3_session *pSession = 0;
@@ -271,7 +271,7 @@ int main(int argc, char **argv){
   CmdLineOption aOpt[] = {
     CMDLINE_INT32( "-rows", "number of rows in test",
       offsetof(struct Options, nRow) ),
-    CMDLINE_BOOL("-without-rowid", "use WITHOUT ROWID tables", 
+    CMDLINE_BOOL("-without-rowid", "use WITHOUT ROWID tables",
       offsetof(struct Options, bWithoutRowid) ),
     CMDLINE_BOOL("-integer", "use integer data (instead of text/blobs)",
       offsetof(struct Options, bInteger) ),

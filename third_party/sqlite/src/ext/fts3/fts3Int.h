@@ -14,7 +14,7 @@
 #ifndef _FTSINT_H
 #define _FTSINT_H
 
-#if !defined(NDEBUG) && !defined(SQLITE_DEBUG) 
+#if !defined(NDEBUG) && !defined(SQLITE_DEBUG)
 # define NDEBUG 1
 #endif
 
@@ -37,7 +37,7 @@
 
 /* If not building as part of the core, include sqlite3ext.h. */
 #ifndef SQLITE_CORE
-# include "sqlite3ext.h" 
+# include "sqlite3ext.h"
 SQLITE_EXTENSION_INIT3
 #endif
 
@@ -47,7 +47,7 @@ SQLITE_EXTENSION_INIT3
 
 /*
 ** This constant determines the maximum depth of an FTS expression tree
-** that the library will create and use. FTS uses recursion to perform 
+** that the library will create and use. FTS uses recursion to perform
 ** various operations on the query tree, so the disadvantage of a large
 ** limit is that it may allow very large queries to use large amounts
 ** of stack space (perhaps causing a stack overflow).
@@ -65,11 +65,11 @@ SQLITE_EXTENSION_INIT3
 #define FTS3_MERGE_COUNT 16
 
 /*
-** This is the maximum amount of data (in bytes) to store in the 
+** This is the maximum amount of data (in bytes) to store in the
 ** Fts3Table.pendingTerms hash table. Normally, the hash table is
 ** populated as documents are inserted/updated/deleted in a transaction
 ** and used to create a new segment when the transaction is committed.
-** However if this limit is reached midway through a transaction, a new 
+** However if this limit is reached midway through a transaction, a new
 ** segment is created and the hash table cleared immediately.
 */
 #define FTS3_MAX_PENDING_DATA (1*1024*1024)
@@ -98,7 +98,7 @@ SQLITE_EXTENSION_INIT3
 /*
 ** FTS4 virtual tables may maintain multiple indexes - one index of all terms
 ** in the document set and zero or more prefix indexes. All indexes are stored
-** as one or more b+-trees in the %_segments and %_segdir tables. 
+** as one or more b+-trees in the %_segments and %_segdir tables.
 **
 ** It is possible to determine which index a b+-tree belongs to based on the
 ** value stored in the "%_segdir.level" column. Given this value L, the index
@@ -106,8 +106,8 @@ SQLITE_EXTENSION_INIT3
 ** level values between 0 and 1023 (inclusive) belong to index 0, all levels
 ** between 1024 and 2047 to index 1, and so on.
 **
-** It is considered impossible for an index to use more than 1024 levels. In 
-** theory though this may happen, but only after at least 
+** It is considered impossible for an index to use more than 1024 levels. In
+** theory though this may happen, but only after at least
 ** (FTS3_MERGE_COUNT^1024) separate flushes of the pending-terms tables.
 */
 #define FTS3_SEGDIR_MAXLEVEL      1024
@@ -125,11 +125,11 @@ SQLITE_EXTENSION_INIT3
 ** Terminator values for position-lists and column-lists.
 */
 #define POS_COLUMN  (1)     /* Column-list terminator */
-#define POS_END     (0)     /* Position-list terminator */ 
+#define POS_END     (0)     /* Position-list terminator */
 
 /*
 ** This section provides definitions to allow the
-** FTS3 extension to be compiled outside of the 
+** FTS3 extension to be compiled outside of the
 ** amalgamation.
 */
 #ifndef SQLITE_AMALGAMATION
@@ -167,7 +167,7 @@ typedef sqlite3_int64 i64;        /* 8-byte signed integer */
 /*
 ** Activate assert() only if SQLITE_TEST is enabled.
 */
-#if !defined(NDEBUG) && !defined(SQLITE_DEBUG) 
+#if !defined(NDEBUG) && !defined(SQLITE_DEBUG)
 # define NDEBUG 1
 #endif
 
@@ -226,8 +226,8 @@ struct Fts3Table {
   int nAutoincrmerge;             /* Value configured by 'automerge' */
   u32 nLeafAdd;                   /* Number of leaf blocks added this trans */
 
-  /* Precompiled statements used by the implementation. Each of these 
-  ** statements is run and reset within a single virtual table API call. 
+  /* Precompiled statements used by the implementation. Each of these
+  ** statements is run and reset within a single virtual table API call.
   */
   sqlite3_stmt *aStmt[40];
   sqlite3_stmt *pSeekStmt;        /* Cache for fts3CursorSeekStmt() */
@@ -245,8 +245,8 @@ struct Fts3Table {
   char *zSegmentsTbl;             /* Name of %_segments table */
   sqlite3_blob *pSegments;        /* Blob handle open on %_segments table */
 
-  /* 
-  ** The following array of hash tables is used to buffer pending index 
+  /*
+  ** The following array of hash tables is used to buffer pending index
   ** updates during transactions. All pending updates buffered at any one
   ** time must share a common language-id (see the FTS4 langid= feature).
   ** The current language id is stored in variable iPrevLangid.
@@ -256,10 +256,10 @@ struct Fts3Table {
   ** terms that appear in the document set. Each subsequent index in aIndex[]
   ** is an index of prefixes of a specific length.
   **
-  ** Variable nPendingData contains an estimate the memory consumed by the 
+  ** Variable nPendingData contains an estimate the memory consumed by the
   ** pending data structures, including hash table overhead, but not including
   ** malloc overhead.  When nPendingData exceeds nMaxPendingData, all hash
-  ** tables are flushed to disk. Variable iPrevDocid is the docid of the most 
+  ** tables are flushed to disk. Variable iPrevDocid is the docid of the most
   ** recently inserted record.
   */
   int nIndex;                     /* Size of aIndex[] */
@@ -332,10 +332,10 @@ struct Fts3Cursor {
 **
 **     CREATE VIRTUAL TABLE ex1 USING fts3(a,b,c,d);
 **     SELECT docid FROM ex1 WHERE b MATCH 'one two three';
-** 
+**
 ** Because the LHS of the MATCH operator is 2nd column "b",
 ** Fts3Cursor.eSearch will be set to FTS3_FULLTEXT_SEARCH+1.  (+0 for a,
-** +1 for b, +2 for c, +3 for d.)  If the LHS of MATCH were "ex1" 
+** +1 for b, +2 for c, +3 for d.)  If the LHS of MATCH were "ex1"
 ** indicating that all columns should be searched,
 ** then eSearch would be set to FTS3_FULLTEXT_SEARCH+4.
 */
@@ -394,8 +394,8 @@ struct Fts3Phrase {
   char *pOrPoslist;
   i64 iOrDocid;
 
-  /* Variables below this point are populated by fts3_expr.c when parsing 
-  ** a MATCH expression. Everything above is part of the evaluation phase. 
+  /* Variables below this point are populated by fts3_expr.c when parsing
+  ** a MATCH expression. Everything above is part of the evaluation phase.
   */
   int nToken;                /* Number of tokens in the phrase */
   int iColumn;               /* Index of column this phrase must match */
@@ -405,10 +405,10 @@ struct Fts3Phrase {
 /*
 ** A tree of these objects forms the RHS of a MATCH operator.
 **
-** If Fts3Expr.eType is FTSQUERY_PHRASE and isLoaded is true, then aDoclist 
-** points to a malloced buffer, size nDoclist bytes, containing the results 
-** of this phrase query in FTS3 doclist format. As usual, the initial 
-** "Length" field found in doclists stored on disk is omitted from this 
+** If Fts3Expr.eType is FTSQUERY_PHRASE and isLoaded is true, then aDoclist
+** points to a malloced buffer, size nDoclist bytes, containing the results
+** of this phrase query in FTS3 doclist format. As usual, the initial
+** "Length" field found in doclists stored on disk is omitted from this
 ** buffer.
 **
 ** Variable aMI is used only for FTSQUERY_NEAR nodes to store the global
@@ -420,7 +420,7 @@ struct Fts3Phrase {
 **   aMI[iCol*3 + 1] = Number of occurrences
 **   aMI[iCol*3 + 2] = Number of rows containing at least one instance
 **
-** The aMI array is allocated using sqlite3_malloc(). It should be freed 
+** The aMI array is allocated using sqlite3_malloc(). It should be freed
 ** when the expression node is.
 */
 struct Fts3Expr {
@@ -444,7 +444,7 @@ struct Fts3Expr {
 
 /*
 ** Candidate values for Fts3Query.eType. Note that the order of the first
-** four values is in order of precedence when parsing expressions. For 
+** four values is in order of precedence when parsing expressions. For
 ** example, the following:
 **
 **   "a OR b AND c NOT d NEAR e"
@@ -501,7 +501,7 @@ int sqlite3Fts3SegReaderStart(Fts3Table*, Fts3MultiSegReader*, Fts3SegFilter*);
 int sqlite3Fts3SegReaderStep(Fts3Table *, Fts3MultiSegReader *);
 void sqlite3Fts3SegReaderFinish(Fts3MultiSegReader *);
 
-int sqlite3Fts3SegReaderCursor(Fts3Table *, 
+int sqlite3Fts3SegReaderCursor(Fts3Table *,
     int, int, int, const char *, int, int, int, Fts3MultiSegReader *);
 
 /* Flags allowed as part of the 4th argument to SegmentReaderIterate() */
@@ -565,7 +565,7 @@ int sqlite3Fts3EvalTestDeferred(Fts3Cursor *pCsr, int *pRc);
 /* fts3_tokenizer.c */
 const char *sqlite3Fts3NextToken(const char *, int *);
 int sqlite3Fts3InitHashTable(sqlite3 *, Fts3Hash *, const char *);
-int sqlite3Fts3InitTokenizer(Fts3Hash *pHash, const char *, 
+int sqlite3Fts3InitTokenizer(Fts3Hash *pHash, const char *,
     sqlite3_tokenizer **, char **
 );
 int sqlite3Fts3IsIdChar(char);
@@ -601,7 +601,7 @@ int sqlite3Fts3MsrIncrStart(
     Fts3Table*, Fts3MultiSegReader*, int, const char*, int);
 int sqlite3Fts3MsrIncrNext(
     Fts3Table *, Fts3MultiSegReader *, sqlite3_int64 *, char **, int *);
-int sqlite3Fts3EvalPhrasePoslist(Fts3Cursor *, Fts3Expr *, int iCol, char **); 
+int sqlite3Fts3EvalPhrasePoslist(Fts3Cursor *, Fts3Expr *, int iCol, char **);
 int sqlite3Fts3MsrOvfl(Fts3Cursor *, Fts3MultiSegReader *, int *);
 int sqlite3Fts3MsrIncrRestart(Fts3MultiSegReader *pCsr);
 

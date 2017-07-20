@@ -54,7 +54,7 @@ do_test in-1.7 {
 } {101 102 103 4 5 6 7 8 9 10}
 
 # The rest of this file concentrates on testing the IN operator.
-# Skip this if the library is compiled with SQLITE_OMIT_SUBQUERY 
+# Skip this if the library is compiled with SQLITE_OMIT_SUBQUERY
 # (because the IN operator is unavailable).
 #
 ifcapable !subquery {
@@ -126,7 +126,7 @@ do_test in-3.3 {
 #
 do_test in-4.1 {
   execsql {
-    UPDATE t1 SET b=b*2 
+    UPDATE t1 SET b=b*2
     WHERE b IN (SELECT b FROM t1 WHERE a>8)
   }
   execsql {SELECT b FROM t1 ORDER BY b}
@@ -297,7 +297,7 @@ do_test in-8.2 {
 do_test in-9.1 {
   execsql {
     CREATE TABLE t4 AS SELECT a FROM tb;
-    SELECT * FROM t4;    
+    SELECT * FROM t4;
   }
 } {1 2 3 5 7 9 11}
 do_test in-9.2 {
@@ -490,12 +490,12 @@ do_test in-12.15 {
 
 
 #------------------------------------------------------------------------
-# The following tests check that NULL is handled correctly when it 
+# The following tests check that NULL is handled correctly when it
 # appears as part of a set of values on the right-hand side of an
 # IN or NOT IN operator.
 #
 # When it appears in such a set, NULL is handled as an "unknown value".
-# If, because of the unknown value in the set, the result of the expression 
+# If, because of the unknown value in the set, the result of the expression
 # cannot be determined, then it itself evaluates to NULL.
 #
 
@@ -503,7 +503,7 @@ do_test in-12.15 {
 #
 do_test in-13.1 {
   db nullvalue "null"
-  execsql { SELECT 
+  execsql { SELECT
     1 IN (NULL, 1, 2),     -- The value 1 is a member of the set, return true.
     3 IN (NULL, 1, 2),     -- Ambiguous, return NULL.
     1 NOT IN (NULL, 1, 2), -- The value 1 is a member of the set, return false.
@@ -512,7 +512,7 @@ do_test in-13.1 {
 } {1 null 0 null}
 
 do_test in-13.2 {
-  execsql { 
+  execsql {
     CREATE TABLE t7(a, b, c NOT NULL);
     INSERT INTO t7 VALUES(1,    1, 1);
     INSERT INTO t7 VALUES(2,    2, 2);
@@ -552,14 +552,14 @@ do_test in-13.9 {
       6 NOT IN (SELECT b FROM t7),
       2 NOT IN (SELECT c FROM t7),
       6 NOT IN (SELECT c FROM t7)
-  } 
+  }
 } {0 null 0 1 0 1}
 
 do_test in-13.10 {
-  execsql { 
+  execsql {
     SELECT b IN (
-      SELECT inside.a 
-      FROM t7 AS inside 
+      SELECT inside.a
+      FROM t7 AS inside
       WHERE inside.b BETWEEN outside.b+1 AND outside.b+2
     )
     FROM t7 AS outside ORDER BY b;
@@ -569,8 +569,8 @@ do_test in-13.10 {
 do_test in-13.11 {
   execsql {
     SELECT b NOT IN (
-      SELECT inside.a 
-      FROM t7 AS inside 
+      SELECT inside.a
+      FROM t7 AS inside
       WHERE inside.b BETWEEN outside.b+1 AND outside.b+2
     )
     FROM t7 AS outside ORDER BY b;
@@ -591,7 +591,7 @@ do_test in-13.12 {
       6 IN (SELECT b FROM t7),
       2 IN (SELECT c FROM t7),
       6 IN (SELECT c FROM t7)
-  } 
+  }
 } {1 null 1 0 1 0}
 
 do_test in-13.13 {
@@ -603,7 +603,7 @@ do_test in-13.13 {
       6 NOT IN (SELECT b FROM t7),
       2 NOT IN (SELECT c FROM t7),
       6 NOT IN (SELECT c FROM t7)
-  } 
+  }
 } {0 null 0 1 0 1}
 
 do_test in-13.14 {

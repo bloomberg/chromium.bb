@@ -61,7 +61,7 @@ do_test tkt-fc62af4523.2 {
 do_test tkt-fc62af4523.3 { execsql { PRAGMA journal_mode = DELETE } } {delete}
 do_test tkt-fc62af4523.4 { file exists test.db-journal } {1}
 
-# Cause the external process to crash. Since it has already written 
+# Cause the external process to crash. Since it has already written
 # uncommitted data into the database file, the next reader will have
 # to do a hot-journal rollback to recover the database.
 #

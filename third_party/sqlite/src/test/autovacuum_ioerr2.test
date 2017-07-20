@@ -11,7 +11,7 @@
 # This file implements regression tests for SQLite library.  The
 # focus of this file is testing for correct handling of I/O errors
 # such as writes failing because the disk is full.
-# 
+#
 # The tests in this file use special facilities that are only
 # available in the SQLite test fixture.
 #
@@ -51,7 +51,7 @@ do_ioerr_test autovacuum-ioerr2-2 -tclprep {
   }
   for {set i 0} {$i<150} {incr i} {
     execsql {
-      INSERT INTO abc VALUES(randstr(100,100)); 
+      INSERT INTO abc VALUES(randstr(100,100));
     }
   }
   execsql COMMIT
@@ -79,7 +79,7 @@ forcedelete backup.db
 ifcapable subquery {
   do_ioerr_test autovacuum-ioerr2-4 -tclprep {
     if {![file exists backup.db]} {
-      sqlite3 dbb backup.db 
+      sqlite3 dbb backup.db
       execsql {
         PRAGMA auto_vacuum = 1;
         BEGIN;
@@ -89,7 +89,7 @@ ifcapable subquery {
       } dbb
       for {set i 0} {$i<2500} {incr i} {
         execsql {
-          INSERT INTO abc VALUES(randstr(100,100)); 
+          INSERT INTO abc VALUES(randstr(100,100));
         } dbb
       }
       execsql {
@@ -110,7 +110,7 @@ ifcapable subquery {
     BEGIN;
     DELETE FROM abc WHERE oid < 3;
     UPDATE abc SET a = randstr(100,100) WHERE oid > 2300;
-    UPDATE abc SET a = randstr(1100,1100) WHERE oid = 
+    UPDATE abc SET a = randstr(1100,1100) WHERE oid =
         (select max(oid) from abc);
     COMMIT;
   }

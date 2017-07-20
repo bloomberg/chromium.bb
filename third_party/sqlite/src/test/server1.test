@@ -166,6 +166,6 @@ do_test server1-2.6 {
   client_result C
 } SQLITE_OK
 
-client_halt *   
+client_halt *
 sqlite3_enable_shared_cache 0
 finish_test

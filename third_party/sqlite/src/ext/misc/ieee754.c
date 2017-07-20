@@ -114,8 +114,8 @@ static void ieee754func(
 __declspec(dllexport)
 #endif
 int sqlite3_ieee_init(
-  sqlite3 *db, 
-  char **pzErrMsg, 
+  sqlite3 *db,
+  char **pzErrMsg,
   const sqlite3_api_routines *pApi
 ){
   int rc = SQLITE_OK;

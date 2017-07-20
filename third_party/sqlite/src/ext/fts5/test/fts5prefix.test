@@ -34,12 +34,12 @@ do_execsql_test 1.1 {
 
 
 #-------------------------------------------------------------------------
-# Check that prefix indexes really do index n-character prefixes, not 
+# Check that prefix indexes really do index n-character prefixes, not
 # n-byte prefixes. Use the ascii tokenizer so as not to be confused by
 # diacritic removal.
 #
-do_execsql_test 2.0 { 
-  CREATE VIRTUAL TABLE t1 USING fts5(x, tokenize = ascii, prefix = 2) 
+do_execsql_test 2.0 {
+  CREATE VIRTUAL TABLE t1 USING fts5(x, tokenize = ascii, prefix = 2)
 }
 
 do_test 2.1 {
@@ -242,8 +242,8 @@ proc rnddoc {n} {
   set doc
 }
 set cols [list]
-for {set i 1} {$i<250} {incr i} { 
-  lappend cols "c$i" 
+for {set i 1} {$i<250} {incr i} {
+  lappend cols "c$i"
   lappend vals "'[rnddoc 10]'"
 }
 

@@ -7,7 +7,7 @@
 #***********************************************************************
 #
 # This file contains tests for SQLite. Specifically, it tests that SQLite
-# does not crash and an error is returned if localhost() fails. This 
+# does not crash and an error is returned if localhost() fails. This
 # is the problem reported by ticket bd484a090c.
 #
 

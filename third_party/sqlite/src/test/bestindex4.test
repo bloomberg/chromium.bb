@@ -40,7 +40,7 @@ ifcapable !vtab {
 #   0x08 - ignore the "usable" flag (malfunction)
 #
 #
-#  
+#
 proc vtab_cmd {param method args} {
   switch -- $method {
     xConnect {
@@ -58,7 +58,7 @@ proc vtab_cmd {param method args} {
       for {set i 0} {$i < [llength $clist]} {incr i} {
         array unset C
         array set C [lindex $clist $i]
-        if { ($C(usable) || ($param & 0x08)) 
+        if { ($C(usable) || ($param & 0x08))
           && $C(op)=="eq" && ($param & 1<<$C(column))
         } {
           lappend ret $use $i

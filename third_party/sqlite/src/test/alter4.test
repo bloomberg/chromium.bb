@@ -9,7 +9,7 @@
 #
 #*************************************************************************
 # This file implements regression tests for SQLite library.  The
-# focus of this script is testing that SQLite can handle a subtle 
+# focus of this script is testing that SQLite can handle a subtle
 # file format change that may be used in the future to implement
 # "ALTER TABLE ... ADD COLUMN".
 #
@@ -111,12 +111,12 @@ do_test alter4-1.7 {
 do_test alter4-1.99 {
   catchsql {
     # May not exist if foriegn-keys are omitted at compile time.
-    DROP TABLE t2; 
+    DROP TABLE t2;
   }
   execsql {
-    DROP TABLE abc; 
-    DROP TABLE t1; 
-    DROP TABLE t3; 
+    DROP TABLE abc;
+    DROP TABLE t1;
+    DROP TABLE t3;
   }
 } {}
 
@@ -248,7 +248,7 @@ ifcapable attach {
       CREATE TABLE aux.t1 AS SELECT * FROM t1;
       PRAGMA aux.schema_version = 30;
       SELECT sql FROM aux.sqlite_master;
-    } 
+    }
   } {{CREATE TABLE t1(a,b)}}
   do_test alter4-5.2 {
     execsql {
@@ -315,7 +315,7 @@ ifcapable trigger&&tempdb {
       CREATE TEMP TRIGGER t1_b AFTER INSERT ON t1 BEGIN
         INSERT INTO log VALUES('b', new.a, new.b);
       END;
-  
+
       INSERT INTO t1 VALUES(1, 2);
       SELECT * FROM log;
     }
@@ -346,7 +346,7 @@ do_test alter4-8.2 {
     lappend cols c$i
   }
   set ::sql "CREATE TABLE t4([join $cols {, }])"
-  list 
+  list
 } {}
 do_test alter4-8.2 {
   execsql {
@@ -370,7 +370,7 @@ do_execsql_test alter4-9.2 { SELECT typeof(a), a, typeof(b), b FROM t5; } {
   real     9.22337203685478e+18
 }
 
-do_execsql_test alter4-9.3 { 
+do_execsql_test alter4-9.3 {
   ALTER TABLE t5 ADD COLUMN c INTEGER DEFAULT (-(-9223372036854775808));
   SELECT typeof(c), c FROM t5;
 } {real 9.22337203685478e+18}

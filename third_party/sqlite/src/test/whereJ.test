@@ -8,7 +8,7 @@
 #    May you share freely, never taking more than you give.
 #
 #***********************************************************************
-# 
+#
 # This file implements regression tests for a complex
 # query planning case.
 #
@@ -26,7 +26,7 @@ do_execsql_test whereJ-1.0 {
   CREATE TABLE tx1 (
     est,
     cid,
-    sid,	
+    sid,
     fid,
     aid,
     edate,
@@ -398,7 +398,7 @@ do_execsql_test 3.3 {
 
 # This one should use index "idx_c".
 do_eqp_test 3.4 {
-  SELECT * FROM t1 WHERE 
+  SELECT * FROM t1 WHERE
     a = 4 AND b BETWEEN 20 AND 80           -- Matches 80 rows
       AND
     c BETWEEN 150 AND 160                   -- Matches 10 rows
@@ -408,7 +408,7 @@ do_eqp_test 3.4 {
 
 # This one should use index "idx_ab".
 do_eqp_test 3.5 {
-  SELECT * FROM t1 WHERE 
+  SELECT * FROM t1 WHERE
     a = 5 AND b BETWEEN 20 AND 80           -- Matches 1 row
       AND
     c BETWEEN 150 AND 160                   -- Matches 10 rows
@@ -660,7 +660,7 @@ do_test 5.1 {
             ('t1','t1abe','2000000 8000 1600 150'),
             ('t1','t1abf','2000000 8000 1600 150');
     ANALYZE sqlite_master;
-  
+
     EXPLAIN QUERY PLAN
     SELECT * FROM t1
      WHERE (a=1 OR a=2)

@@ -10,7 +10,7 @@
 **
 *************************************************************************
 **
-** This file contains a command-line application that uses the RBU 
+** This file contains a command-line application that uses the RBU
 ** extension. See the usage() function below for an explanation.
 */
 
@@ -23,7 +23,7 @@
 ** Print a usage message and exit.
 */
 void usage(const char *zArgv0){
-  fprintf(stderr, 
+  fprintf(stderr,
 "Usage: %s ?OPTIONS? TARGET-DB RBU-DB\n"
 "\n"
 "Where options are:\n"

@@ -154,7 +154,7 @@ do_execsql_test 6.1 {
 }
 
 do_execsql_test 6.2 {
-  INSERT INTO t1(t1) VALUES('integrity-check') 
+  INSERT INTO t1(t1) VALUES('integrity-check')
 }
 
 do_execsql_test 6.3 {
@@ -166,7 +166,7 @@ do_execsql_test 6.4 {
 }
 
 do_execsql_test 6.5 {
-  INSERT INTO t1(t1) VALUES('integrity-check') 
+  INSERT INTO t1(t1) VALUES('integrity-check')
 }
 
 do_execsql_test 6.6 {
@@ -368,7 +368,7 @@ do_execsql_test 14.1 {
   INSERT INTO t1(t1, rank) VALUES('pgsz', 32);
   WITH d(x,y) AS (
     SELECT NULL, 'xyz xyz xyz xyz xyz xyz'
-    UNION ALL 
+    UNION ALL
     SELECT NULL, 'xyz xyz xyz xyz xyz xyz' FROM d
   )
   INSERT INTO t1 SELECT * FROM d LIMIT 200;
@@ -435,7 +435,7 @@ db func funk funk
 # This test case corrupts the structure record within the first invocation
 # of function funk(). Which used to cause the bm25() function to throw an
 # exception. But since bm25() can now used the cached structure record,
-# it never sees the corruption introduced by funk() and so the following 
+# it never sees the corruption introduced by funk() and so the following
 # statement no longer fails.
 #
 do_catchsql_test 16.2 {
