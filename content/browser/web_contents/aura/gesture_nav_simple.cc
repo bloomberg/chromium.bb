@@ -385,6 +385,9 @@ bool GestureNavSimple::OnOverscrollUpdate(float delta_x, float delta_y) {
 }
 
 void GestureNavSimple::OnOverscrollComplete(OverscrollMode overscroll_mode) {
+  if (!affordance_ || affordance_->IsFinishing())
+    return;
+
   CompleteGestureAnimation();
 
   NavigationControllerImpl& controller = web_contents_->GetController();
@@ -417,7 +420,7 @@ void GestureNavSimple::OnOverscrollModeChange(OverscrollMode old_mode,
       start_threshold;
 
   aura::Window* window = web_contents_->GetNativeView();
-  affordance_.reset(new Affordance(this, new_mode, window->bounds()));
+  affordance_ = base::MakeUnique<Affordance>(this, new_mode, window->bounds());
 
   // Adding the affordance as a child of the content window is not sufficient,
   // because it is possible for a new layer to be parented on top of the
