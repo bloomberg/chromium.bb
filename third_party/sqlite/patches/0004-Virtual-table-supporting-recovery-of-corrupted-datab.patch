@@ -1,4 +1,4 @@
-From b246b60be3e9e241892d772a324aced44865d7f9 Mon Sep 17 00:00:00 2001
+From 116d95a1309084e8ef963e8735d426e74d595b99 Mon Sep 17 00:00:00 2001
 From: Scott Hess <shess@chromium.org>
 Date: Sat, 20 Jul 2013 11:42:21 -0700
 Subject: [PATCH 04/10] Virtual table supporting recovery of corrupted
@@ -34,19 +34,19 @@ third_party/sqlite/src/src/{recover,recover-alt}.c .
  create mode 100644 third_party/sqlite/src/test/recover2.test
 
 diff --git a/third_party/sqlite/src/main.mk b/third_party/sqlite/src/main.mk
-index 6feb638b9280..b46c5bbc9ced 100644
+index 32c394e7812d..7e39a3d92c35 100644
 --- a/third_party/sqlite/src/main.mk
 +++ b/third_party/sqlite/src/main.mk
-@@ -75,6 +75,8 @@ LIBOBJ+= vdbe.o parse.o \
+@@ -76,6 +76,8 @@ LIBOBJ+= vdbe.o parse.o \
  	 vdbetrace.o wal.o walker.o where.o wherecode.o whereexpr.o \
           utf.o vtab.o
-
-+LIBOBJ += recover.o recover_varint.o resolve.o
+ 
++LIBOBJ += recover.o recover_varint.o
 +
  LIBOBJ += sqlite3session.o
-
+ 
  # All of the source code files.
-@@ -370,6 +372,8 @@ TESTSRC2 = \
+@@ -373,6 +375,8 @@ TESTSRC2 = \
    $(TOP)/src/prepare.c \
    $(TOP)/src/printf.c \
    $(TOP)/src/random.c \
@@ -55,22 +55,22 @@ index 6feb638b9280..b46c5bbc9ced 100644
    $(TOP)/src/pcache.c \
    $(TOP)/src/pcache1.c \
    $(TOP)/src/select.c \
-@@ -768,6 +772,7 @@ TESTFIXTURE_FLAGS  = -DSQLITE_TEST=1 -DSQLITE_CRASH_TEST=1
- TESTFIXTURE_FLAGS += -DSQLITE_SERVER=1 -DSQLITE_PRIVATE="" -DSQLITE_CORE
+@@ -779,6 +783,7 @@ TESTFIXTURE_FLAGS += -DSQLITE_SERVER=1 -DSQLITE_PRIVATE="" -DSQLITE_CORE
  TESTFIXTURE_FLAGS += -DSQLITE_SERIES_CONSTRAINT_VERIFY=1
  TESTFIXTURE_FLAGS += -DSQLITE_DEFAULT_PAGE_SIZE=1024
+ TESTFIXTURE_FLAGS += -DSQLITE_ENABLE_STMTVTAB
 +TESTFIXTURE_FLAGS += -DDEFAULT_ENABLE_RECOVER=1
-
+ 
  testfixture$(EXE): $(TESTSRC2) libsqlite3.a $(TESTSRC) $(TOP)/src/tclsqlite.c
  	$(TCCX) $(TCL_FLAGS) -DTCLSH=1 $(TESTFIXTURE_FLAGS)                  \
 diff --git a/third_party/sqlite/src/src/main.c b/third_party/sqlite/src/src/main.c
-index 9aad8fdd4cf8..03e4f1b92845 100644
+index b706a0e49cf0..0b8c18d90620 100644
 --- a/third_party/sqlite/src/src/main.c
 +++ b/third_party/sqlite/src/src/main.c
-@@ -3014,6 +3014,14 @@ static int openDatabase(
+@@ -3041,6 +3041,14 @@ static int openDatabase(
    }
  #endif
-
+ 
 +#ifdef DEFAULT_ENABLE_RECOVER
 +  /* Initialize recover virtual table for testing. */
 +  extern int recoverVtableInit(sqlite3 *db);
@@ -3900,6 +3900,6 @@ index 000000000000..8aa4e049a010
 +} [list 4 1024 1 text [string length $substr] $substr]
 +
 +finish_test
---
-2.11.0
+-- 
+2.13.1.518.g3df882009-goog
 

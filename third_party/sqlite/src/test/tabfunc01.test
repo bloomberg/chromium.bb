@@ -175,7 +175,7 @@ do_test tabfunc01-720 {
 } {(005) (007) (013) (017) (023)}
 do_test tabfunc01-721 {
   db eval {
-    SELECT remember(123,$PTR2);
+    SELECT remember(123,inttoptr($PTR2));
     SELECT value FROM carray(inttoptr($PTR2),5,'int64');
   }
 } {123 123 7 13 17 23}

@@ -230,6 +230,13 @@ static void mallocWithAlarm(int n, void **pp){
   ** following xRoundup() call. */
   nFull = sqlite3GlobalConfig.m.xRoundup(n);
 
+#ifdef SQLITE_MAX_MEMORY
+  if( sqlite3StatusValue(SQLITE_STATUS_MEMORY_USED)+nFull>SQLITE_MAX_MEMORY ){
+    *pp = 0;
+    return;
+  }
+#endif
+
   sqlite3StatusHighwater(SQLITE_STATUS_MALLOC_SIZE, n);
   if( mem0.alarmThreshold>0 ){
     sqlite3_int64 nUsed = sqlite3StatusValue(SQLITE_STATUS_MEMORY_USED);
@@ -418,7 +425,7 @@ int sqlite3MallocSize(void *p){
 int sqlite3DbMallocSize(sqlite3 *db, void *p){
   assert( p!=0 );
   if( db==0 || !isLookaside(db,p) ){
-#if SQLITE_DEBUG
+#ifdef SQLITE_DEBUG
     if( db==0 ){
       assert( sqlite3MemdebugNoType(p, (u8)~MEMTYPE_HEAP) );
       assert( sqlite3MemdebugHasType(p, MEMTYPE_HEAP) );
@@ -467,11 +474,12 @@ static SQLITE_NOINLINE void measureAllocationSize(sqlite3 *db, void *p){
 
 /*
 ** Free memory that might be associated with a particular database
-** connection.
+** connection.  Calling sqlite3DbFree(D,X) for X==0 is a harmless no-op.
+** The sqlite3DbFreeNN(D,X) version requires that X be non-NULL.
 */
-void sqlite3DbFree(sqlite3 *db, void *p){
+void sqlite3DbFreeNN(sqlite3 *db, void *p){
   assert( db==0 || sqlite3_mutex_held(db->mutex) );
-  if( p==0 ) return;
+  assert( p!=0 );
   if( db ){
     if( db->pnBytesFreed ){
       measureAllocationSize(db, p);
@@ -479,7 +487,7 @@ void sqlite3DbFree(sqlite3 *db, void *p){
     }
     if( isLookaside(db, p) ){
       LookasideSlot *pBuf = (LookasideSlot*)p;
-#if SQLITE_DEBUG
+#ifdef SQLITE_DEBUG
       /* Trash all content in the buffer being freed */
       memset(p, 0xaa, db->lookaside.sz);
 #endif
@@ -494,6 +502,10 @@ void sqlite3DbFree(sqlite3 *db, void *p){
   assert( db!=0 || sqlite3MemdebugNoType(p, MEMTYPE_LOOKASIDE) );
   sqlite3MemdebugSetType(p, MEMTYPE_HEAP);
   sqlite3_free(p);
+}
+void sqlite3DbFree(sqlite3 *db, void *p){
+  assert( db==0 || sqlite3_mutex_held(db->mutex) );
+  if( p ) sqlite3DbFreeNN(db, p);
 }
 
 /*

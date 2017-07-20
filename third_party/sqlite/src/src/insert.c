@@ -521,10 +521,10 @@ void sqlite3Insert(
 #endif
 
   db = pParse->db;
-  memset(&dest, 0, sizeof(dest));
   if( pParse->nErr || db->mallocFailed ){
     goto insert_cleanup;
   }
+  dest.iSDParm = 0;  /* Suppress a harmless compiler warning */
 
   /* If the Select object is really just a simple VALUES() list with a
   ** single row (the common case) then keep that one row of values
@@ -1527,6 +1527,9 @@ void sqlite3GenerateConstraintChecks(
     }
     sqlite3VdbeAddOp3(v, OP_MakeRecord, regIdx, pIdx->nColumn, aRegIdx[ix]);
     VdbeComment((v, "for %s", pIdx->zName));
+#ifdef SQLITE_ENABLE_NULL_TRIM
+    if( pIdx->idxType==2 ) sqlite3SetMakeRecordP5(v, pIdx->pTable);
+#endif
 
     /* In an UPDATE operation, if this index is the PRIMARY KEY index
     ** of a WITHOUT ROWID table and there has been no change the
@@ -1682,8 +1685,11 @@ void sqlite3SetMakeRecordP5(Vdbe *v, Table *pTab){
   ** version 2 and later (SQLite version 3.1.4, 2005-02-20). */
   if( pTab->pSchema->file_format<2 ) return;
 
-  for(i=pTab->nCol; i>1 && pTab->aCol[i-1].pDflt==0; i--){}
-  sqlite3VdbeChangeP5(v, i);
+  for(i=pTab->nCol-1; i>0; i--){
+    if( pTab->aCol[i].pDflt!=0 ) break;
+    if( pTab->aCol[i].colFlags & COLFLAG_PRIMKEY ) break;
+  }
+  sqlite3VdbeChangeP5(v, i+1);
 }
 #endif
 
@@ -1892,7 +1898,7 @@ static int xferCompatibleIndex(Index *pDest, Index *pSrc){
     }
     if( pSrc->aiColumn[i]==XN_EXPR ){
       assert( pSrc->aColExpr!=0 && pDest->aColExpr!=0 );
-      if( sqlite3ExprCompare(pSrc->aColExpr->a[i].pExpr,
+      if( sqlite3ExprCompare(0, pSrc->aColExpr->a[i].pExpr,
                              pDest->aColExpr->a[i].pExpr, -1)!=0 ){
         return 0;   /* Different expressions in the index */
       }
@@ -1904,7 +1910,7 @@ static int xferCompatibleIndex(Index *pDest, Index *pSrc){
       return 0;   /* Different collating sequences */
     }
   }
-  if( sqlite3ExprCompare(pSrc->pPartIdxWhere, pDest->pPartIdxWhere, -1) ){
+  if( sqlite3ExprCompare(0, pSrc->pPartIdxWhere, pDest->pPartIdxWhere, -1) ){
     return 0;     /* Different WHERE clauses */
   }
 
@@ -1973,7 +1979,7 @@ static int xferOptimization(
     return 0;   /* tab1 must not have triggers */
   }
 #ifndef SQLITE_OMIT_VIRTUALTABLE
-  if( pDest->tabFlags & TF_Virtual ){
+  if( IsVirtual(pDest) ){
     return 0;   /* tab1 must not be a virtual table */
   }
 #endif
@@ -2035,7 +2041,7 @@ static int xferOptimization(
     return 0;   /* source and destination must both be WITHOUT ROWID or not */
   }
 #ifndef SQLITE_OMIT_VIRTUALTABLE
-  if( pSrc->tabFlags & TF_Virtual ){
+  if( IsVirtual(pSrc) ){
     return 0;   /* tab2 must not be a virtual table */
   }
 #endif
@@ -2221,8 +2227,6 @@ static int xferOptimization(
       ** sorted order.  */
       for(i=0; i<pSrcIdx->nColumn; i++){
         const char *zColl = pSrcIdx->azColl[i];
-        assert( sqlite3_stricmp(sqlite3StrBINARY, zColl)!=0
-                    || sqlite3StrBINARY==zColl );
         if( sqlite3_stricmp(sqlite3StrBINARY, zColl) ) break;
       }
       if( i==pSrcIdx->nColumn ){
