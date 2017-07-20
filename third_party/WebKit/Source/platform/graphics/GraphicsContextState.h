@@ -87,7 +87,7 @@ class PLATFORM_EXPORT GraphicsContextState final {
   // Shadow. (This will need tweaking if we use draw loopers for other things.)
   SkDrawLooper* DrawLooper() const {
     DCHECK_EQ(fill_flags_.getLooper(), stroke_flags_.getLooper());
-    return fill_flags_.getLooper().get();
+    return fill_flags_.getLooper();
   }
   void SetDrawLooper(sk_sp<SkDrawLooper>);
 
@@ -99,7 +99,7 @@ class PLATFORM_EXPORT GraphicsContextState final {
 
   SkColorFilter* GetColorFilter() const {
     DCHECK_EQ(fill_flags_.getColorFilter(), stroke_flags_.getColorFilter());
-    return fill_flags_.getColorFilter().get();
+    return fill_flags_.getColorFilter();
   }
   void SetColorFilter(sk_sp<SkColorFilter>);
 

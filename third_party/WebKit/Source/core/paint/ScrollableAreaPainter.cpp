@@ -107,7 +107,7 @@ void ScrollableAreaPainter::DrawPlatformResizerImage(
   line_path.lineTo(points[1].X(), points[1].Y());
   line_path.moveTo(points[2].X(), points[2].Y());
   line_path.lineTo(points[3].X(), points[3].Y());
-  paint_flags.setColor(SkColorSetARGB(153, 0, 0, 0));
+  paint_flags.setARGB(153, 0, 0, 0);
   context.DrawPath(line_path, paint_flags);
 
   // Draw a light line one pixel below the light line,
@@ -117,7 +117,7 @@ void ScrollableAreaPainter::DrawPlatformResizerImage(
   line_path.lineTo(points[1].X() + (on_left ? -1 : 1), points[1].Y());
   line_path.moveTo(points[2].X(), points[2].Y() + 1);
   line_path.lineTo(points[3].X() + (on_left ? -1 : 1), points[3].Y());
-  paint_flags.setColor(SkColorSetARGB(153, 255, 255, 255));
+  paint_flags.setARGB(153, 255, 255, 255);
   context.DrawPath(line_path, paint_flags);
 }
 

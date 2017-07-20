@@ -412,8 +412,7 @@ sk_sp<SkImage> SVGImage::ImageForCurrentFrameForContainer(
 static bool DrawNeedsLayer(const PaintFlags& flags) {
   if (SkColorGetA(flags.getColor()) < 255)
     return true;
-
-  return flags.getBlendMode() != SkBlendMode::kSrcOver;
+  return !flags.isSrcOver();
 }
 
 bool SVGImage::ApplyShaderInternal(PaintFlags& flags,

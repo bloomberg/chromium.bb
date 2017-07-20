@@ -307,7 +307,7 @@ void GetTextInterceptsInternal(const ShapeResultBloberizer::BlobBuffer& blobs,
   // Get the number of intervals, without copying the actual values by
   // specifying nullptr for the buffer, following the Skia allocation model for
   // retrieving text intercepts.
-  SkPaint paint = flags.ToSkPaint();
+  SkPaint paint(ToSkPaint(flags));
   unsigned num_intervals = InterceptsFromBlobs(blobs, paint, bounds, nullptr);
   if (!num_intervals)
     return;

@@ -1106,9 +1106,8 @@ void DrawArcOp::RasterWithFlags(const PaintOpWithFlags* base_op,
                                 SkCanvas* canvas,
                                 const SkMatrix& original_ctm) {
   auto* op = static_cast<const DrawArcOp*>(base_op);
-  SkPaint paint = flags->ToSkPaint();
   canvas->drawArc(op->oval, op->start_angle, op->sweep_angle, op->use_center,
-                  paint);
+                  ToSkPaint(*flags));
 }
 
 void DrawCircleOp::RasterWithFlags(const PaintOpWithFlags* base_op,
@@ -1116,8 +1115,7 @@ void DrawCircleOp::RasterWithFlags(const PaintOpWithFlags* base_op,
                                    SkCanvas* canvas,
                                    const SkMatrix& original_ctm) {
   auto* op = static_cast<const DrawCircleOp*>(base_op);
-  SkPaint paint = flags->ToSkPaint();
-  canvas->drawCircle(op->cx, op->cy, op->radius, paint);
+  canvas->drawCircle(op->cx, op->cy, op->radius, ToSkPaint(*flags));
 }
 
 void DrawColorOp::Raster(const PaintOp* base_op,
@@ -1132,8 +1130,7 @@ void DrawDRRectOp::RasterWithFlags(const PaintOpWithFlags* base_op,
                                    SkCanvas* canvas,
                                    const SkMatrix& original_ctm) {
   auto* op = static_cast<const DrawDRRectOp*>(base_op);
-  SkPaint paint = flags->ToSkPaint();
-  canvas->drawDRRect(op->outer, op->inner, paint);
+  canvas->drawDRRect(op->outer, op->inner, ToSkPaint(*flags));
 }
 
 void DrawImageOp::RasterWithFlags(const PaintOpWithFlags* base_op,
@@ -1141,8 +1138,8 @@ void DrawImageOp::RasterWithFlags(const PaintOpWithFlags* base_op,
                                   SkCanvas* canvas,
                                   const SkMatrix& original_ctm) {
   auto* op = static_cast<const DrawImageOp*>(base_op);
-  SkPaint paint = flags->ToSkPaint();
-  canvas->drawImage(op->image.sk_image().get(), op->left, op->top, &paint);
+  canvas->drawImage(op->image.sk_image().get(), op->left, op->top,
+                    ToSkPaint(flags));
 }
 
 void DrawImageRectOp::RasterWithFlags(const PaintOpWithFlags* base_op,
@@ -1153,9 +1150,8 @@ void DrawImageRectOp::RasterWithFlags(const PaintOpWithFlags* base_op,
   // TODO(enne): Probably PaintCanvas should just use the skia enum directly.
   SkCanvas::SrcRectConstraint skconstraint =
       static_cast<SkCanvas::SrcRectConstraint>(op->constraint);
-  SkPaint paint = flags->ToSkPaint();
-  canvas->drawImageRect(op->image.sk_image().get(), op->src, op->dst, &paint,
-                        skconstraint);
+  canvas->drawImageRect(op->image.sk_image().get(), op->src, op->dst,
+                        ToSkPaint(flags), skconstraint);
 }
 
 void DrawIRectOp::RasterWithFlags(const PaintOpWithFlags* base_op,
@@ -1163,8 +1159,7 @@ void DrawIRectOp::RasterWithFlags(const PaintOpWithFlags* base_op,
                                   SkCanvas* canvas,
                                   const SkMatrix& original_ctm) {
   auto* op = static_cast<const DrawIRectOp*>(base_op);
-  SkPaint paint = flags->ToSkPaint();
-  canvas->drawIRect(op->rect, paint);
+  canvas->drawIRect(op->rect, ToSkPaint(*flags));
 }
 
 void DrawLineOp::RasterWithFlags(const PaintOpWithFlags* base_op,
@@ -1172,8 +1167,7 @@ void DrawLineOp::RasterWithFlags(const PaintOpWithFlags* base_op,
                                  SkCanvas* canvas,
                                  const SkMatrix& original_ctm) {
   auto* op = static_cast<const DrawLineOp*>(base_op);
-  SkPaint paint = flags->ToSkPaint();
-  canvas->drawLine(op->x0, op->y0, op->x1, op->y1, paint);
+  canvas->drawLine(op->x0, op->y0, op->x1, op->y1, ToSkPaint(*flags));
 }
 
 void DrawOvalOp::RasterWithFlags(const PaintOpWithFlags* base_op,
@@ -1181,8 +1175,7 @@ void DrawOvalOp::RasterWithFlags(const PaintOpWithFlags* base_op,
                                  SkCanvas* canvas,
                                  const SkMatrix& original_ctm) {
   auto* op = static_cast<const DrawOvalOp*>(base_op);
-  SkPaint paint = flags->ToSkPaint();
-  canvas->drawOval(op->oval, paint);
+  canvas->drawOval(op->oval, ToSkPaint(*flags));
 }
 
 void DrawPathOp::RasterWithFlags(const PaintOpWithFlags* base_op,
@@ -1190,8 +1183,7 @@ void DrawPathOp::RasterWithFlags(const PaintOpWithFlags* base_op,
                                  SkCanvas* canvas,
                                  const SkMatrix& original_ctm) {
   auto* op = static_cast<const DrawPathOp*>(base_op);
-  SkPaint paint = flags->ToSkPaint();
-  canvas->drawPath(op->path, paint);
+  canvas->drawPath(op->path, ToSkPaint(*flags));
 }
 
 void DrawPosTextOp::RasterWithFlags(const PaintOpWithFlags* base_op,
@@ -1199,8 +1191,8 @@ void DrawPosTextOp::RasterWithFlags(const PaintOpWithFlags* base_op,
                                     SkCanvas* canvas,
                                     const SkMatrix& original_ctm) {
   auto* op = static_cast<const DrawPosTextOp*>(base_op);
-  SkPaint paint = flags->ToSkPaint();
-  canvas->drawPosText(op->GetData(), op->bytes, op->GetArray(), paint);
+  canvas->drawPosText(op->GetData(), op->bytes, op->GetArray(),
+                      ToSkPaint(*flags));
 }
 
 void DrawRecordOp::Raster(const PaintOp* base_op,
@@ -1216,8 +1208,7 @@ void DrawRectOp::RasterWithFlags(const PaintOpWithFlags* base_op,
                                  SkCanvas* canvas,
                                  const SkMatrix& original_ctm) {
   auto* op = static_cast<const DrawRectOp*>(base_op);
-  SkPaint paint = flags->ToSkPaint();
-  canvas->drawRect(op->rect, paint);
+  canvas->drawRect(op->rect, ToSkPaint(*flags));
 }
 
 void DrawRRectOp::RasterWithFlags(const PaintOpWithFlags* base_op,
@@ -1225,8 +1216,7 @@ void DrawRRectOp::RasterWithFlags(const PaintOpWithFlags* base_op,
                                   SkCanvas* canvas,
                                   const SkMatrix& original_ctm) {
   auto* op = static_cast<const DrawRRectOp*>(base_op);
-  SkPaint paint = flags->ToSkPaint();
-  canvas->drawRRect(op->rrect, paint);
+  canvas->drawRRect(op->rrect, ToSkPaint(*flags));
 }
 
 void DrawTextOp::RasterWithFlags(const PaintOpWithFlags* base_op,
@@ -1234,8 +1224,7 @@ void DrawTextOp::RasterWithFlags(const PaintOpWithFlags* base_op,
                                  SkCanvas* canvas,
                                  const SkMatrix& original_ctm) {
   auto* op = static_cast<const DrawTextOp*>(base_op);
-  SkPaint paint = flags->ToSkPaint();
-  canvas->drawText(op->GetData(), op->bytes, op->x, op->y, paint);
+  canvas->drawText(op->GetData(), op->bytes, op->x, op->y, ToSkPaint(*flags));
 }
 
 void DrawTextBlobOp::RasterWithFlags(const PaintOpWithFlags* base_op,
@@ -1243,8 +1232,7 @@ void DrawTextBlobOp::RasterWithFlags(const PaintOpWithFlags* base_op,
                                      SkCanvas* canvas,
                                      const SkMatrix& original_ctm) {
   auto* op = static_cast<const DrawTextBlobOp*>(base_op);
-  SkPaint paint = flags->ToSkPaint();
-  canvas->drawTextBlob(op->blob.get(), op->x, op->y, paint);
+  canvas->drawTextBlob(op->blob.get(), op->x, op->y, ToSkPaint(*flags));
 }
 
 void RestoreOp::Raster(const PaintOp* base_op,
@@ -1274,8 +1262,7 @@ void SaveLayerOp::RasterWithFlags(const PaintOpWithFlags* base_op,
   // See PaintOp::kUnsetRect
   bool unset = op->bounds.left() == SK_ScalarInfinity;
 
-  SkPaint paint = flags->ToSkPaint();
-  canvas->saveLayer(unset ? nullptr : &op->bounds, &paint);
+  canvas->saveLayer(unset ? nullptr : &op->bounds, ToSkPaint(flags));
 }
 
 void SaveLayerAlphaOp::Raster(const PaintOp* base_op,
@@ -1387,7 +1374,7 @@ int ClipPathOp::CountSlowPaths() const {
 }
 
 int DrawLineOp::CountSlowPaths() const {
-  if (const SkPathEffect* effect = flags.getPathEffect().get()) {
+  if (const SkPathEffect* effect = flags.getPathEffect()) {
     SkPathEffect::DashInfo info;
     SkPathEffect::DashType dashType = effect->asADash(&info);
     if (flags.getStrokeCap() != PaintFlags::kRound_Cap &&

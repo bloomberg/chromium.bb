@@ -460,8 +460,8 @@ void BaseRenderingContext2D::CompositedDraw(
       PaintFlags foreground_flags =
           *GetState().GetFlags(paint_type, kDrawForegroundOnly, image_type);
       foreground_flags.setImageFilter(SkComposeImageFilter::Make(
-          SkComposeImageFilter::Make(foreground_flags.getImageFilter(),
-                                     shadow_flags.getImageFilter()),
+          SkComposeImageFilter::Make(foreground_flags.refImageFilter(),
+                                     shadow_flags.refImageFilter()),
           filter));
       c->setMatrix(ctm);
       draw_func(c, &foreground_flags);

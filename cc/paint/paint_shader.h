@@ -84,8 +84,6 @@ class CC_PAINT_EXPORT PaintShader : public SkRefCnt {
     return local_matrix_ ? *local_matrix_ : SkMatrix::I();
   }
 
-  bool IsOpaque() const;
-
  private:
   friend class PaintFlags;
 
