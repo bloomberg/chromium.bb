@@ -7,9 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/values.h"
-#import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
-#import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
-#include "ios/chrome/browser/ui/commands/ios_command_ids.h"
+#include "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/web/public/web_state/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -21,8 +19,9 @@ namespace {
 const char kPrintCommandPrefix[] = "print";
 }
 
-PrintObserver::PrintObserver(web::WebState* web_state)
-    : web::WebStateObserver(web_state) {
+PrintObserver::PrintObserver(web::WebState* web_state,
+                             id<BrowserCommands> dispatcher)
+    : web::WebStateObserver(web_state), dispatcher_(dispatcher) {
   web_state->AddScriptCommandCallback(
       base::Bind(&PrintObserver::OnPrintCommand, base::Unretained(this)),
       kPrintCommandPrefix);
@@ -39,9 +38,7 @@ void PrintObserver::WebStateDestroyed() {
 bool PrintObserver::OnPrintCommand(const base::DictionaryValue&,
                                    const GURL&,
                                    bool) {
-  GenericChromeCommand* print_command =
-      [[GenericChromeCommand alloc] initWithTag:IDC_PRINT];
-  [web_state()->GetView() chromeExecuteCommand:print_command];
+  [dispatcher_ printTab];
   return true;
 }
 

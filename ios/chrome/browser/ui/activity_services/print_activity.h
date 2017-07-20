@@ -7,11 +7,13 @@
 
 #import <UIKit/UIKit.h>
 
+@protocol BrowserCommands;
+
 // Activity that triggers the printing service.
 @interface PrintActivity : UIActivity
 
-// The responder that receives ChromeCommands when the activity is performed.
-@property(nonatomic, weak) UIResponder* responder;
+// The dispatcher that handles when the activity is performed.
+@property(nonatomic, weak) id<BrowserCommands> dispatcher;
 
 // Identifier for the print activity.
 + (NSString*)activityIdentifier;

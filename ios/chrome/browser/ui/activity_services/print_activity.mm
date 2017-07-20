@@ -5,9 +5,7 @@
 #import "ios/chrome/browser/ui/activity_services/print_activity.h"
 
 #include "base/logging.h"
-#import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
-#import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
-#include "ios/chrome/browser/ui/commands/ios_command_ids.h"
+#include "ios/chrome/browser/ui/commands/browser_commands.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -21,23 +19,14 @@ NSString* const kPrintActivityType = @"com.google.chrome.printActivity";
 
 }  // namespace
 
-@interface PrintActivity () {
-  UIResponder* responder_;
-}
-@end
-
 @implementation PrintActivity
-@dynamic responder;
+@synthesize dispatcher = _dispatcher;
 
 + (NSString*)activityIdentifier {
   return kPrintActivityType;
 }
 
 #pragma mark - UIActivity
-
-- (void)setResponder:(UIResponder*)responder {
-  responder_ = responder;
-}
 
 - (NSString*)activityType {
   return [PrintActivity activityIdentifier];
@@ -63,10 +52,7 @@ NSString* const kPrintActivityType = @"com.google.chrome.printActivity";
 }
 
 - (void)performActivity {
-  GenericChromeCommand* command =
-      [[GenericChromeCommand alloc] initWithTag:IDC_PRINT];
-  DCHECK(responder_);
-  [responder_ chromeExecuteCommand:command];
+  [self.dispatcher printTab];
   [self activityDidFinish:YES];
 }
 

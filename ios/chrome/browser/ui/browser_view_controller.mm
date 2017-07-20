@@ -635,8 +635,6 @@ NSString* const kNativeControllerTemporaryKey = @"NativeControllerTemporaryKey";
 - (void)sharePageWithData:(ShareToData*)data;
 // Convenience method to share the current page.
 - (void)sharePage;
-// Prints the web page in the current tab.
-- (void)print;
 // Shows the Online Help Page in a tab.
 - (void)showHelpPage;
 // Show the bookmarks page.
@@ -3517,26 +3515,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [_toolbarController dismissTabHistoryPopup];
 }
 
-- (void)print {
-  Tab* currentTab = [_model currentTab];
-  // The UI should prevent users from printing non-printable pages. However, a
-  // redirection to an un-printable page can happen before it is reflected in
-  // the UI.
-  if (![currentTab viewForPrinting]) {
-    TriggerHapticFeedbackForNotification(UINotificationFeedbackTypeError);
-    [self showSnackbar:l10n_util::GetNSString(IDS_IOS_CANNOT_PRINT_PAGE_ERROR)];
-    return;
-  }
-  DCHECK(_browserState);
-  if (!_printController) {
-    _printController = [[PrintController alloc]
-        initWithContextGetter:_browserState->GetRequestContext()];
-  }
-  [_printController printView:[currentTab viewForPrinting]
-                    withTitle:[currentTab title]
-               viewController:self];
-}
-
 - (void)addToReadingListURL:(const GURL&)URL title:(NSString*)title {
   base::RecordAction(UserMetricsAction("MobileReadingListAdd"));
 
@@ -4072,6 +4050,26 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
                    transition:ui::PAGE_TRANSITION_TYPED];
 }
 
+- (void)printTab {
+  Tab* currentTab = [_model currentTab];
+  // The UI should prevent users from printing non-printable pages. However, a
+  // redirection to an un-printable page can happen before it is reflected in
+  // the UI.
+  if (![currentTab viewForPrinting]) {
+    TriggerHapticFeedbackForNotification(UINotificationFeedbackTypeError);
+    [self showSnackbar:l10n_util::GetNSString(IDS_IOS_CANNOT_PRINT_PAGE_ERROR)];
+    return;
+  }
+  DCHECK(_browserState);
+  if (!_printController) {
+    _printController = [[PrintController alloc]
+        initWithContextGetter:_browserState->GetRequestContext()];
+  }
+  [_printController printView:[currentTab viewForPrinting]
+                    withTitle:[currentTab title]
+               viewController:self];
+}
+
 #pragma mark - Command Handling
 
 - (IBAction)chromeExecuteCommand:(id)sender {
@@ -4180,9 +4178,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
       DCHECK([sender isKindOfClass:[TabHistoryCell class]]);
       [self navigateToSelectedEntry:sender];
       break;
-    case IDC_PRINT:
-      [self print];
-      break;
     case IDC_ADD_READING_LIST: {
       ReadingListAddCommand* command =
           base::mac::ObjCCastStrict<ReadingListAddCommand>(sender);
@@ -4247,6 +4242,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [controller shareWithData:data
                  controller:self
                browserState:_browserState
+                 dispatcher:self.dispatcher
             shareToDelegate:self
                    fromRect:fromRect
                      inView:inView];

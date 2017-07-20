@@ -479,7 +479,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 
   if (experimental_flags::IsAutoReloadEnabled())
     _autoReloadBridge = [[AutoReloadBridge alloc] initWithTab:self];
-  _printObserver = base::MakeUnique<PrintObserver>(self.webState);
 
   id<PasswordsUiDelegate> passwordsUiDelegate =
       [[PasswordsUiDelegateImpl alloc] init];
@@ -508,6 +507,13 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
         [[ReaderModeController alloc] initWithWebState:self.webState
                                               delegate:self];
   }
+}
+
+// Attach any tab helpers which are dependent on the dispatcher having been
+// set on the tab.
+- (void)attachDispatcherDependentTabHelpers {
+  _printObserver =
+      base::MakeUnique<PrintObserver>(self.webState, self.dispatcher);
 }
 
 - (NSArray*)accessoryViewProviders {
@@ -789,6 +795,18 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   [_overscrollActionsController
       setDelegate:overscrollActionsControllerDelegate];
   overscrollActionsControllerDelegate_ = overscrollActionsControllerDelegate;
+}
+
+- (void)setDispatcher:(id<ApplicationCommands, BrowserCommands>)dispatcher {
+  if (_dispatcher == dispatcher)
+    return;
+  // The dispatcher shouldn't change once set, so at this stage the dispatcher
+  // should be nil, or the new value should be nil.
+  DCHECK(!_dispatcher || !dispatcher);
+  _dispatcher = dispatcher;
+  // If the new dispatcher is nonnull, add tab helpers.
+  if (self.dispatcher)
+    [self attachDispatcherDependentTabHelpers];
 }
 
 - (void)saveTitleToHistoryDB {

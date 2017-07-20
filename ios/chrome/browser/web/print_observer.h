@@ -7,6 +7,7 @@
 
 #include "ios/web/public/web_state/web_state_observer.h"
 
+@protocol BrowserCommands;
 namespace base {
 class DictionaryValue;
 }  // namespace base
@@ -16,7 +17,7 @@ class GURL;
 // Handles print requests from JavaScript window.print.
 class PrintObserver : public web::WebStateObserver {
  public:
-  explicit PrintObserver(web::WebState* web_state);
+  PrintObserver(web::WebState* web_state, id<BrowserCommands> dispatcher);
   ~PrintObserver() override;
 
  private:
@@ -27,6 +28,8 @@ class PrintObserver : public web::WebStateObserver {
   bool OnPrintCommand(const base::DictionaryValue&, const GURL&, bool);
   // Stops handling print requests from the web page.
   void Detach();
+
+  __weak id<BrowserCommands> dispatcher_;
 };
 
 #endif  // IOS_CHROME_BROWSER_WEB_PRINT_OBSERVER_H_
