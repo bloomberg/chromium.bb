@@ -1,4 +1,4 @@
 include_rules = [
-  "+mojo/edk/embedder",
-  "+ui/gl",
+  "-components/viz",
+  "+components/viz/common",
 ]

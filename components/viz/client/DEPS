@@ -3,6 +3,7 @@ include_rules = [
   "-cc/blink",
   "-cc/test",
 
+  "+components/viz/client",
   "+mojo/public/cpp/bindings",
   "+mojo/public/cpp/system",
   "+ui/gfx/geometry",
