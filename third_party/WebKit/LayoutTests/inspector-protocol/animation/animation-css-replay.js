@@ -1,7 +1,7 @@
 (async function(testRunner) {
   let {page, session, dp} = await testRunner.startHTML(`
     <div id='node' style='background-color: red; height: 100px; transition: width 100ms; width: 100px'></div>
-  `, '');
+  `, 'Tests replaying css animation.');
 
   dp.Animation.enable();
   session.evaluate(`node.style.width = '200px';`);

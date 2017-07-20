@@ -1,4 +1,4 @@
-
+Tests that javascript dialogs send events.
 Opening dialog: type=beforeunload; message=beforeunload in javascriptDialogEvents
 Closed dialog: result=false
 Opening dialog: type=alert; message=alert

@@ -1,4 +1,4 @@
-
+Tests that worker can be paused in postMessage.
 Paused on 'debugger;'
 PASS: message has not been dispatched yet.
 PASS: message has not been dispatched yet.

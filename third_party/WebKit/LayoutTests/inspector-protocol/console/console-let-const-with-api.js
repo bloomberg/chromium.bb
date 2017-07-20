@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank('');
+  let {page, session, dp} = await testRunner.startBlank('Tests how let/const declarations interact with command line api.');
 
   var response = await dp.Runtime.evaluate({expression: 'let a = 42;'});
   failIfError(response);

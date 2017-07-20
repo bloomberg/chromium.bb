@@ -1,4 +1,4 @@
-
+Tests accessibility values of ignored nodes.
 
 WebArea
   tree

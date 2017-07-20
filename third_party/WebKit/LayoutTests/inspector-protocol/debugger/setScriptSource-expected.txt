@@ -1,4 +1,4 @@
-
+Tests setScriptSource functionality.
 Function evaluate: {"type":"number","value":6,"description":"6"}
 PASS, result value: 6
 Function evaluate: {"type":"number","value":8,"description":"8"}

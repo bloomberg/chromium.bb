@@ -1,4 +1,4 @@
-
+Tests animation notifications from multiple frames.
 Frame appended
 Animation started: start time is valid
 Frame appended

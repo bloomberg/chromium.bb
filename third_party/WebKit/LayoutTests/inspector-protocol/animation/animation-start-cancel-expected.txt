@@ -1,4 +1,4 @@
-
+Tests animationCanceled notification.
 Animation created
 Animation started
 Animation canceled

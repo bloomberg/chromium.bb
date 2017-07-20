@@ -12,7 +12,7 @@
       <dialog data-dump>Closed Dialog</dialog>
       <dialog data-dump open>Open Dialog</dialog>
     </dialog>
-  `, '');
+  `, 'Tests accessibility values in modal dialog.');
 
   var dumpAccessibilityNodesBySelectorAndCompleteTest =
       (await testRunner.loadScript('../resources/accessibility-dumpAccessibilityNodes.js'))(testRunner, session);

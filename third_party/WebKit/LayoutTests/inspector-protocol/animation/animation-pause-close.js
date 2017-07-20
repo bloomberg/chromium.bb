@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank('');
+  let {page, session, dp} = await testRunner.startBlank('Tests that the playback rate is reset on disabling.');
 
   dp.Animation.enable();
   await dp.Animation.setPlaybackRate({ playbackRate: 0 });

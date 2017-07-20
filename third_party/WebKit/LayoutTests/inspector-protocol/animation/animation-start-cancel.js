@@ -1,7 +1,7 @@
 (async function(testRunner) {
   let {page, session, dp} = await testRunner.startHTML(`
     <div id='node' style='background-color: red; width: 100px'></div>
-  `, '');
+  `, 'Tests animationCanceled notification.');
 
   dp.Animation.onAnimationCreated(() => testRunner.log('Animation created'));
   dp.Animation.onAnimationStarted(() => testRunner.log('Animation started'));

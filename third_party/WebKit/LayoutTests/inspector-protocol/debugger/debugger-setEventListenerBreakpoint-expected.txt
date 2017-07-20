@@ -1,4 +1,4 @@
-
+Tests event listener breakpoints.
 PASS: Debugger was enabled
 Error on attempt to set event listener breakpoint when DOM is disabled: undefined
 PASS: DOM was enabled

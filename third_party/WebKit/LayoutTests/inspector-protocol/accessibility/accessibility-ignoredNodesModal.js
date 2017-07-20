@@ -10,7 +10,7 @@
         (Dialog itself is not hidden)
         <div data-dump>Non-hidden element inside dialog</div>
     </dialog>
-  `, '');
+  `, 'Tests accessibility values of ignored nodes in model dialog.');
 
   var dumpAccessibilityNodesBySelectorAndCompleteTest =
       (await testRunner.loadScript('../resources/accessibility-dumpAccessibilityNodes.js'))(testRunner, session);

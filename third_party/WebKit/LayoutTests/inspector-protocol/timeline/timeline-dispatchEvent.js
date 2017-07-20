@@ -1,7 +1,7 @@
 (async function(testRunner) {
   let {page, session, dp} = await testRunner.startHTML(`
     <div id='my-div'></div>
-  `, '');
+  `, 'Tests trace events for event dispatching.');
 
   function performAction() {
     var div = document.querySelector('#my-div');

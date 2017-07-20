@@ -38,7 +38,7 @@
         Ginger Ale
       </li>
     </ul>
-  `, '');
+  `, 'Tests relationship accessibility values.');
 
   var dumpAccessibilityNodesBySelectorAndCompleteTest =
       (await testRunner.loadScript('../resources/accessibility-dumpAccessibilityNodes.js'))(testRunner, session);

@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank('');
+  let {page, session, dp} = await testRunner.startBlank('Tests that worker can be paused in postMessage.');
 
   dp.Debugger.enable();
   dp.Runtime.evaluate({expression: `

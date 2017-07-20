@@ -1,4 +1,4 @@
-
+Tests certain trace events in iframes.
 Recording started
 Tracing complete
 Frames in TracingStartedInPage

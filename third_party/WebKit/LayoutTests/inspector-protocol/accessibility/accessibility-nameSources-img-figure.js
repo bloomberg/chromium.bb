@@ -58,7 +58,7 @@
         <title>svg1-title</title>
       </svg>
     </div>
-  `, '');
+  `, 'Tests name sources in images and figures.');
 
   var dumpAccessibilityNodesBySelectorAndCompleteTest =
       (await testRunner.loadScript('../resources/accessibility-dumpAccessibilityNodes.js'))(testRunner, session);

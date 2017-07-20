@@ -1,4 +1,4 @@
-
+Tests setBlackboxPatterns functionality.
 Pattern parser error: Uncaught SyntaxError: Invalid regular expression: /(foo([)/: Unterminated character class
 Paused in
 (...):1

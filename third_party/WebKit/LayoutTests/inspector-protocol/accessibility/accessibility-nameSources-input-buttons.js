@@ -53,7 +53,7 @@
 
       <input id='image-input5' type='image' src='resources/cake.png' title='image-input-title5'>
     </div>
-  `, '');
+  `, 'Tests name sources in input[type=button].');
 
   var dumpAccessibilityNodesBySelectorAndCompleteTest =
       (await testRunner.loadScript('../resources/accessibility-dumpAccessibilityNodes.js'))(testRunner, session);

@@ -1,4 +1,4 @@
-
+Tests how DOM.requestChildNodes pierces through frames.
 {
     method : DOM.setChildNodes
     params : {

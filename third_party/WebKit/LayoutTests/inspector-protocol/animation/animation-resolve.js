@@ -1,7 +1,7 @@
 (async function(testRunner) {
   let {page, session, dp} = await testRunner.startHTML(`
     <div id='node' style='background-color: red; height: 100px'></div>
-  `, '');
+  `, 'Tests how animation could be resolved into remote object.');
 
   dp.Animation.enable();
   session.evaluate(`

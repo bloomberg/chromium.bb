@@ -1,4 +1,4 @@
-
+Tests how DOMDebugger reports event listeners for nodes.
 Event listeners of window
   type:click
   useCapture:true

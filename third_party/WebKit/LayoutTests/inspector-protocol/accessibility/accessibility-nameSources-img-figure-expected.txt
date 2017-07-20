@@ -1,4 +1,4 @@
-
+Tests name sources in images and figures.
 {
   "nodeId": "<string>",
   "ignored": false,

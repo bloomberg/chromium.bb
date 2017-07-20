@@ -18,7 +18,7 @@
         </div>
     </div>
     </body>
-  `, '');
+  `, 'Tests DOM.getRelayoutBoundary method.');
 
   var DOMHelper = await testRunner.loadScript('../resources/dom-helper.js');
   var NodeTracker = await testRunner.loadScript('../resources/node-tracker.js');

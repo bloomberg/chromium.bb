@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank('');
+  let {page, session, dp} = await testRunner.startBlank('Tests that stepping over caught exception does not pause.');
 
   dp.Debugger.enable();
   dp.Runtime.enable();

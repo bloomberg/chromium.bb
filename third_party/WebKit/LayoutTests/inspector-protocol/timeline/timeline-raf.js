@@ -1,7 +1,7 @@
 (async function(testRunner) {
   let {page, session, dp} = await testRunner.startHTML(`
     <div id='myDiv'>DIV</div>
-  `, '');
+  `, 'Tests trace events for rafs.');
 
   function performActions() {
     var callback;

@@ -1,7 +1,7 @@
 (async function(testRunner) {
   let {page, session, dp} = await testRunner.startHTML(`
     <div id='node' style='background-color: red; height: 100px; width: 100px'></div>
-  `, '');
+  `, 'Tests seeking animation past end time.');
 
   dp.Animation.enable();
   session.evaluate(`

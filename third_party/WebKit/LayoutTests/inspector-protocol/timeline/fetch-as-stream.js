@@ -10,7 +10,7 @@
     </style>
     <div id='test'>
     </div>
-  `, '');
+  `, 'Tests fetching trace through IO domain stream.');
 
   var TracingHelper = await testRunner.loadScript('../resources/tracing-test.js');
   var tracingHelper = new TracingHelper(testRunner, session);

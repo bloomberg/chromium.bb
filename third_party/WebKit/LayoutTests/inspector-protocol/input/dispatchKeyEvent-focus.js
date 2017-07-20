@@ -5,7 +5,7 @@
       <input id='bar'>
       <input id='baz'>
     </div>
-  `, ``);
+  `, `Tests that Input.dispatchKeyEvent method affects focus.`);
 
   function type(text) {
     for (var i = 0; i < text.length; ++i) {

@@ -1,4 +1,4 @@
-
+Tests fetching trace through IO domain stream.
 Recording started
 Tracing complete
 Error after legit close: undefined

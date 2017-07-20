@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank('');
+  let {page, session, dp} = await testRunner.startBlank('Tests sourceURL in setTimeout from worker.');
 
   await session.evaluate(`
     window.worker = new Worker('${testRunner.url('resources/dedicated-worker-string-setTimeout.js')}');

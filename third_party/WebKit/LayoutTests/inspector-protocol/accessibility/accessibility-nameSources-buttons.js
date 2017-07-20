@@ -35,7 +35,7 @@
        <button id='button11'>button11-content</button>
        <label for='button11'>label-for-button11</label>
      </div>
-  `, '');
+  `, 'Tests name sources in buttons.');
 
   var dumpAccessibilityNodesBySelectorAndCompleteTest =
       (await testRunner.loadScript('../resources/accessibility-dumpAccessibilityNodes.js'))(testRunner, session);

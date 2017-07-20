@@ -1,4 +1,4 @@
-
+Tests name sources in input[type=button].
 {
   "nodeId": "<string>",
   "ignored": false,

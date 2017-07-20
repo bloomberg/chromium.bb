@@ -1,4 +1,4 @@
-
+Tests that node without AXNode reports accessibility values.
 {
   "nodeId": "<string>",
   "ignored": true,

@@ -1,4 +1,4 @@
-
+Tests DOM.getFlattenedDocument method.
 {
     nodes : [
         [0] : {

@@ -43,7 +43,7 @@
 
       <input data-dump id='text12' type='text' title='text12-title' aria-placeholder='text12-aria-placeholder'>
   </div>
-  `, '');
+  `, 'Tests name sources in inputs.');
 
   var dumpAccessibilityNodesBySelectorAndCompleteTest =
       (await testRunner.loadScript('../resources/accessibility-dumpAccessibilityNodes.js'))(testRunner, session);

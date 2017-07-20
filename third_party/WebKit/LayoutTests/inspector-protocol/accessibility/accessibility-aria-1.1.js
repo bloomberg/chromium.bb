@@ -9,7 +9,7 @@
     <button data-dump aria-keyshortcuts='Ctrl+A'>Select All</button>
 
     <input data-dump type='checkbox' aria-roledescription='Lightswitch' checked>
-  `, '');
+  `, 'Tests ARIA 1.1 accessibility markup.');
 
   var dumpAccessibilityNodesBySelectorAndCompleteTest =
       (await testRunner.loadScript('../resources/accessibility-dumpAccessibilityNodes.js'))(testRunner, session);

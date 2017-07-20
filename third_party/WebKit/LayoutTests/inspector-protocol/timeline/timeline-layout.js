@@ -7,7 +7,7 @@
     }
     </style>
     <div id='myDiv'>DIV</div>
-  `, '');
+  `, 'Tests trace events for layout.');
 
   function performActions() {
     var div = document.querySelector('#myDiv');

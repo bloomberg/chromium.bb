@@ -15,7 +15,7 @@
     }
     </style>
     <div id='node' style='background-color: red; width: 100px'></div>
-  `, '');
+  `, 'Test that css animation can be paused over protocol.');
 
 
   dp.Animation.enable();

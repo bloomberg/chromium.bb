@@ -15,7 +15,7 @@
     }
     </style>
     <div id='node' style='background-color: red; width: 100px'></div>
-  `, '');
+  `, 'Tests how zero-duration animations are reported over protocol.');
 
   dp.Animation.enable();
   session.evaluate('node.classList.add("anim")');

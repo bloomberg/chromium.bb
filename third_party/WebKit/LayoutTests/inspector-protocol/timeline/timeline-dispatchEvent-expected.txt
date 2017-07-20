@@ -1,4 +1,4 @@
-
+Tests trace events for event dispatching.
 Recording started
 Tracing complete
 SUCCESS: found click event
