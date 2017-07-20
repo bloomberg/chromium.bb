@@ -20,11 +20,25 @@
 #include "av1/encoder/bgsprite.h"
 
 #include "aom_mem/aom_mem.h"
+#include "./aom_scale_rtcd.h"
 #include "av1/common/mv.h"
 #include "av1/common/warped_motion.h"
 #include "av1/encoder/encoder.h"
 #include "av1/encoder/global_motion.h"
 #include "av1/encoder/mathutils.h"
+#include "av1/encoder/temporal_filter.h"
+
+/* Blending Modes:
+ * 0 = Median
+ * 1 = Mean
+ */
+#define BGSPRITE_BLENDING_MODE 1
+
+/* Interpolation for panorama alignment sampling:
+ * 0 = Nearest neighbor
+ * 1 = Bilinear
+ */
+#define BGSPRITE_INTERPOLATION 0
 
 #define TRANSFORM_MAT_DIM 3
 
@@ -184,7 +198,8 @@ static void invert_params(const double *const params, double *target) {
   matrix_to_params(inverse, target);
 }
 
-// swap_yuvs two YuvPixels.
+#if BGSPRITE_BLENDING_MODE == 0
+// swaps two YuvPixels.
 static void swap_yuv(YuvPixel *a, YuvPixel *b) {
   const YuvPixel temp = *b;
   *b = *a;
@@ -216,7 +231,7 @@ static YuvPixel qselect(YuvPixel arr[], int left, int right, int k) {
   if (left >= right) {
     return arr[left];
   }
-  unsigned int seed = time(NULL);
+  unsigned int seed = (int)time(NULL);
   int pivot_idx = left + rand_r(&seed) % (right - left + 1);
   pivot_idx = partition(arr, left, right, pivot_idx);
 
@@ -228,6 +243,7 @@ static YuvPixel qselect(YuvPixel arr[], int left, int right, int k) {
     return qselect(arr, pivot_idx + 1, right, k);
   }
 }
+#endif  // BGSPRITE_BLENDING_MODE == 0
 
 // Stitches images together to create ARF and stores it in 'panorama'.
 static void stitch_images(YV12_BUFFER_CONFIG **const frames,
@@ -274,7 +290,7 @@ static void stitch_images(YV12_BUFFER_CONFIG **const frames,
     const uint16_t *y_buffer16 = CONVERT_TO_SHORTPTR(frames[i]->y_buffer);
     const uint16_t *u_buffer16 = CONVERT_TO_SHORTPTR(frames[i]->u_buffer);
     const uint16_t *v_buffer16 = CONVERT_TO_SHORTPTR(frames[i]->v_buffer);
-#endif
+#endif  // CONFIG_HIGHBITDEPTH
 
     for (int y = 0; y < transformed_height; ++y) {
       for (int x = 0; x < transformed_width; ++x) {
@@ -283,12 +299,103 @@ static void stitch_images(YV12_BUFFER_CONFIG **const frames,
         double uv_matrix[3] = { 0 };
         multiply_mat(transform_matrix, xy_matrix, uv_matrix, TRANSFORM_MAT_DIM,
                      TRANSFORM_MAT_DIM, 1);
+
+        // Coordinates used for nearest neighbor interpolation.
         int image_x = (int)round(uv_matrix[0]);
         int image_y = (int)round(uv_matrix[1]);
 
-        // Check if valid point in original image.
-        if (image_x >= 0 && image_x < frame_width && image_y >= 0 &&
-            image_y < frame_height) {
+        // Temporary values for bilinear interpolation
+        double interpolated_yvalue = 0.0;
+        double interpolated_uvalue = 0.0;
+        double interpolated_vvalue = 0.0;
+        double interpolated_fraction = 0.0;
+        int interpolation_count = 0;
+
+#if BGSPRITE_INTERPOLATION == 1
+        // Coordintes used for bilinear interpolation.
+        double x_base;
+        double y_base;
+        double x_decimal = modf(uv_matrix[0], &x_base);
+        double y_decimal = modf(uv_matrix[1], &y_base);
+
+        if ((x_decimal > 0.2 && x_decimal < 0.8) ||
+            (y_decimal > 0.2 && y_decimal < 0.8)) {
+          for (int u = 0; u < 2; ++u) {
+            for (int v = 0; v < 2; ++v) {
+              int interp_x = (int)x_base + u;
+              int interp_y = (int)y_base + v;
+              if (interp_x >= 0 && interp_x < frame_width && interp_y >= 0 &&
+                  interp_y < frame_height) {
+                interpolation_count++;
+
+                interpolated_fraction +=
+                    fabs(u - x_decimal) * fabs(v - y_decimal);
+                int ychannel_idx = interp_y * frames[i]->y_stride + interp_x;
+                int uvchannel_idx = (interp_y >> frames[i]->subsampling_y) *
+                                        frames[i]->uv_stride +
+                                    (interp_x >> frames[i]->subsampling_x);
+#if CONFIG_HIGHBITDEPTH
+                if (frames[i]->flags & YV12_FLAG_HIGHBITDEPTH) {
+                  interpolated_yvalue += (1 - fabs(u - x_decimal)) *
+                                         (1 - fabs(v - y_decimal)) *
+                                         y_buffer16[ychannel_idx];
+                  interpolated_uvalue += (1 - fabs(u - x_decimal)) *
+                                         (1 - fabs(v - y_decimal)) *
+                                         u_buffer16[uvchannel_idx];
+                  interpolated_vvalue += (1 - fabs(u - x_decimal)) *
+                                         (1 - fabs(v - y_decimal)) *
+                                         v_buffer16[uvchannel_idx];
+                } else {
+#endif  // CONFIG_HIGHBITDEPTH
+                  interpolated_yvalue += (1 - fabs(u - x_decimal)) *
+                                         (1 - fabs(v - y_decimal)) *
+                                         frames[i]->y_buffer[ychannel_idx];
+                  interpolated_uvalue += (1 - fabs(u - x_decimal)) *
+                                         (1 - fabs(v - y_decimal)) *
+                                         frames[i]->u_buffer[uvchannel_idx];
+                  interpolated_vvalue += (1 - fabs(u - x_decimal)) *
+                                         (1 - fabs(v - y_decimal)) *
+                                         frames[i]->v_buffer[uvchannel_idx];
+#if CONFIG_HIGHBITDEPTH
+                }
+#endif  // CONFIG_HIGHBITDEPTH
+              }
+            }
+          }
+        }
+#endif  // BGSPRITE_INTERPOLATION == 1
+
+        if (BGSPRITE_INTERPOLATION && interpolation_count > 2) {
+          if (interpolation_count != 4) {
+            interpolated_yvalue /= interpolated_fraction;
+            interpolated_uvalue /= interpolated_fraction;
+            interpolated_vvalue /= interpolated_fraction;
+          }
+          int pano_x = x + x_min[i] + x_offset;
+          int pano_y = y + y_min[i] + y_offset;
+
+#if CONFIG_HIGHBITDEPTH
+          if (frames[i]->flags & YV12_FLAG_HIGHBITDEPTH) {
+            temp_pano[pano_y][pano_x][count[pano_y][pano_x]].y =
+                (uint16_t)interpolated_yvalue;
+            temp_pano[pano_y][pano_x][count[pano_y][pano_x]].u =
+                (uint16_t)interpolated_uvalue;
+            temp_pano[pano_y][pano_x][count[pano_y][pano_x]].v =
+                (uint16_t)interpolated_vvalue;
+          } else {
+#endif  // CONFIG_HIGHBITDEPTH
+            temp_pano[pano_y][pano_x][count[pano_y][pano_x]].y =
+                (uint8_t)interpolated_yvalue;
+            temp_pano[pano_y][pano_x][count[pano_y][pano_x]].u =
+                (uint8_t)interpolated_uvalue;
+            temp_pano[pano_y][pano_x][count[pano_y][pano_x]].v =
+                (uint8_t)interpolated_vvalue;
+#if CONFIG_HIGHBITDEPTH
+          }
+#endif  // CONFIG_HIGHBITDEPTH
+          ++count[pano_y][pano_x];
+        } else if (image_x >= 0 && image_x < frame_width && image_y >= 0 &&
+                   image_y < frame_height) {
           // Place in panorama stack.
           int pano_x = x + x_min[i] + x_offset;
           int pano_y = y + y_min[i] + y_offset;
@@ -313,17 +420,52 @@ static void stitch_images(YV12_BUFFER_CONFIG **const frames,
                 frames[i]->u_buffer[uvchannel_idx];
             temp_pano[pano_y][pano_x][count[pano_y][pano_x]].v =
                 frames[i]->v_buffer[uvchannel_idx];
-
-            // Update count.
-            count[pano_y][pano_x]++;
 #if CONFIG_HIGHBITDEPTH
           }
 #endif  // CONFIG_HIGHBITDEPTH
+          ++count[pano_y][pano_x];
         }
       }
     }
   }
 
+#if BGSPRITE_BLENDING_MODE == 1
+  // Apply mean filtering and store result in temp_pano[y][x][0].
+  for (int y = 0; y < height; ++y) {
+    for (int x = 0; x < width; ++x) {
+      if (count[y][x] == 0) {
+        // Just make the pixel black.
+        // TODO(toddnguyen): Color the pixel with nearest neighbor
+      } else {
+        // Find
+        uint32_t y_sum = 0;
+        uint32_t u_sum = 0;
+        uint32_t v_sum = 0;
+        for (int i = 0; i < count[y][x]; ++i) {
+          y_sum += temp_pano[y][x][i].y;
+          u_sum += temp_pano[y][x][i].u;
+          v_sum += temp_pano[y][x][i].v;
+        }
+
+        const uint32_t unsigned_count = (uint32_t)count[y][x];
+
+#if CONFIG_HIGHBITDEPTH
+        if (panorama->flags & YV12_FLAG_HIGHBITDEPTH) {
+          temp_pano[y][x][0].y = (uint16_t)OD_DIVU(y_sum, unsigned_count);
+          temp_pano[y][x][0].u = (uint16_t)OD_DIVU(u_sum, unsigned_count);
+          temp_pano[y][x][0].v = (uint16_t)OD_DIVU(v_sum, unsigned_count);
+        } else {
+#endif  // CONFIG_HIGHBITDEPTH
+          temp_pano[y][x][0].y = (uint8_t)OD_DIVU(y_sum, unsigned_count);
+          temp_pano[y][x][0].u = (uint8_t)OD_DIVU(u_sum, unsigned_count);
+          temp_pano[y][x][0].v = (uint8_t)OD_DIVU(v_sum, unsigned_count);
+#if CONFIG_HIGHBITDEPTH
+        }
+#endif  // CONFIG_HIGHBITDEPTH
+      }
+    }
+  }
+#else
   // Apply median filtering using quickselect.
   for (int y = 0; y < height; ++y) {
     for (int x = 0; x < width; ++x) {
@@ -344,10 +486,11 @@ static void stitch_images(YV12_BUFFER_CONFIG **const frames,
       }
     }
   }
+#endif  // BGSPRITE_BLENDING_MODE == 1
 
   // NOTE(toddnguyen): Right now the ARF in the cpi struct is fixed size at
   // the same size as the frames. For now, we crop the generated panorama.
-  assert(panorama->y_width < width && panorama->y_height < height);
+  // assert(panorama->y_width < width && panorama->y_height < height);
   const int crop_x_offset = x_min[center_idx] + x_offset;
   const int crop_y_offset = y_min[center_idx] + y_offset;
 
@@ -466,7 +609,6 @@ static void stitch_images(YV12_BUFFER_CONFIG **const frames,
 
 int av1_background_sprite(AV1_COMP *cpi, int distance) {
   YV12_BUFFER_CONFIG *frames[MAX_LAG_BUFFERS] = { NULL };
-  int inliers_by_motion[RANSAC_NUM_MOTIONS];
   static const double identity_params[MAX_PARAMDIM - 1] = {
     0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0
   };
@@ -504,6 +646,17 @@ int av1_background_sprite(AV1_COMP *cpi, int distance) {
     frames[frames_to_stitch - 1 - frame] = &buf->img;
   }
 
+  YV12_BUFFER_CONFIG temp_bg;
+  memset(&temp_bg, 0, sizeof(temp_bg));
+  aom_alloc_frame_buffer(&temp_bg, frames[0]->y_width, frames[0]->y_height,
+                         frames[0]->subsampling_x, frames[0]->subsampling_y,
+#if CONFIG_HIGHBITDEPTH
+                         frames[0]->flags & YV12_FLAG_HIGHBITDEPTH,
+#endif
+                         frames[0]->border, 0);
+  aom_yv12_copy_frame(frames[0], &temp_bg);
+  temp_bg.bit_depth = frames[0]->bit_depth;
+
   // Allocate empty arrays for parameters between frames.
   double **params = aom_malloc(frames_to_stitch * sizeof(*params));
   for (int i = 0; i < frames_to_stitch; ++i) {
@@ -515,6 +668,7 @@ int av1_background_sprite(AV1_COMP *cpi, int distance) {
   // params[i] will have the transform from frame[i] to frame[i-1].
   // params[0] will have the identity matrix because it has no previous frame.
   TransformationType model = AFFINE;
+  int inliers_by_motion[RANSAC_NUM_MOTIONS];
   for (int frame = 0; frame < frames_to_stitch - 1; ++frame) {
     const int global_motion_ret = compute_global_motion_feature_based(
         model, frames[frame + 1], frames[frame],
@@ -553,7 +707,7 @@ int av1_background_sprite(AV1_COMP *cpi, int distance) {
               y_min, y_max, &pano_x_min, &pano_x_max, &pano_y_min, &pano_y_max);
 
   // Center panorama on the ARF.
-  const int center_idx = frames_fwd;
+  const int center_idx = frames_bwd;
   assert(center_idx >= 0 && center_idx < frames_to_stitch);
 
   // Recompute transformations to adjust to center image.
@@ -574,10 +728,13 @@ int av1_background_sprite(AV1_COMP *cpi, int distance) {
   // Stitch Images.
   stitch_images(frames, frames_to_stitch, center_idx,
                 (const double **const)params, x_min, x_max, y_min, y_max,
-                pano_x_min, pano_x_max, pano_y_min, pano_y_max,
-                &cpi->alt_ref_buffer);
+                pano_x_min, pano_x_max, pano_y_min, pano_y_max, &temp_bg);
+
+  // Apply temporal filter.
+  av1_temporal_filter(cpi, &temp_bg, distance);
 
   // Free memory.
+  aom_free_frame_buffer(&temp_bg);
   for (int i = 0; i < frames_to_stitch; ++i) {
     aom_free(params[i]);
   }

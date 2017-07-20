@@ -5423,7 +5423,12 @@ void av1_encode_frame(AV1_COMP *cpi) {
     else
       cm->reference_mode = REFERENCE_MODE_SELECT;
 #else
+#if CONFIG_BGSPRITE
+    (void)is_alt_ref;
+    if (!cpi->allow_comp_inter_inter)
+#else
     if (is_alt_ref || !cpi->allow_comp_inter_inter)
+#endif  // CONFIG_BGSPRITE
       cm->reference_mode = SINGLE_REFERENCE;
     else if (mode_thrs[COMPOUND_REFERENCE] > mode_thrs[SINGLE_REFERENCE] &&
              mode_thrs[COMPOUND_REFERENCE] > mode_thrs[REFERENCE_MODE_SELECT] &&

@@ -602,7 +602,11 @@ static void adjust_arnr_filter(AV1_COMP *cpi, int distance, int group_boost,
   *arnr_strength = strength;
 }
 
-void av1_temporal_filter(AV1_COMP *cpi, int distance) {
+void av1_temporal_filter(AV1_COMP *cpi,
+#if CONFIG_BGSPRITE
+                         YV12_BUFFER_CONFIG *bg,
+#endif  // CONFIG_BGSPRITE
+                         int distance) {
   RATE_CONTROL *const rc = &cpi->rc;
   int frame;
   int frames_to_blur;
@@ -644,9 +648,18 @@ void av1_temporal_filter(AV1_COMP *cpi, int distance) {
   // Setup frame pointers, NULL indicates frame not included in filter.
   for (frame = 0; frame < frames_to_blur; ++frame) {
     const int which_buffer = start_frame - frame;
-    struct lookahead_entry *buf =
-        av1_lookahead_peek(cpi->lookahead, which_buffer);
-    frames[frames_to_blur - 1 - frame] = &buf->img;
+#if CONFIG_BGSPRITE
+    if (frame == frames_to_blur_backward && bg != NULL) {
+      // Insert bg into frames at ARF index.
+      frames[frames_to_blur - 1 - frame] = bg;
+    } else {
+#endif  // CONFIG_BGSPRITE
+      struct lookahead_entry *buf =
+          av1_lookahead_peek(cpi->lookahead, which_buffer);
+      frames[frames_to_blur - 1 - frame] = &buf->img;
+#if CONFIG_BGSPRITE
+    }
+#endif  // CONFIG_BGSPRITE
   }
 
   if (frames_to_blur > 0) {
