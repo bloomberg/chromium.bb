@@ -45,7 +45,7 @@ void ExitPromptTexture::Draw(SkCanvas* sk_canvas,
   gfx::Canvas* canvas = &gfx_canvas;
 
   // Prompt text area.
-  auto text = l10n_util::GetStringUTF16(IDS_VR_SHELL_EXIT_PROMPT_DESCRIPTION);
+  auto text = l10n_util::GetStringUTF16(content_message_id_);
   gfx::FontList fonts;
   GetFontList(ToPixels(kFontSizePromptText), text, &fonts);
   gfx::Rect prompt_text_size(size_.width(), 0);
@@ -161,6 +161,11 @@ void ExitPromptTexture::SetSecondaryButtonPressed(bool pressed) {
   if (secondary_pressed_ != pressed)
     set_dirty();
   secondary_pressed_ = pressed;
+}
+
+void ExitPromptTexture::SetContentMessageId(int message_id) {
+  content_message_id_ = message_id;
+  set_dirty();
 }
 
 gfx::Size ExitPromptTexture::GetPreferredTextureSize(int maximum_width) const {

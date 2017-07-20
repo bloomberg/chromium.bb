@@ -25,6 +25,7 @@ class UiBrowserInterface;
 class UiElement;
 class UiScene;
 class UrlBar;
+class ExitPrompt;
 
 class UiSceneManager {
  public:
@@ -60,8 +61,10 @@ class UiSceneManager {
   void OnAppButtonGesturePerformed(UiInterface::Direction direction);
   void OnWebVrFrameAvailable();
 
+  void SetExitVrPromptEnabled(bool enabled, UiUnsupportedMode reason);
+
   void OnSecurityIconClickedForTesting();
-  void OnExitPromptPrimaryButtonClickedForTesting();
+  void OnExitPromptChoiceForTesting(bool chose_exit);
 
  private:
   void CreateScreenDimmer();
@@ -81,11 +84,9 @@ class UiSceneManager {
   void ConfigureExclusiveScreenToast();
   void ConfigureIndicators();
   void ConfigureBackgroundColor();
-  void CloseExitPrompt();
   void OnBackButtonClicked();
   void OnSecurityIconClicked();
-  void OnExitPromptPrimaryButtonClicked();
-  void OnExitPromptSecondaryButtonClicked();
+  void OnExitPromptChoice(bool chose_exit);
   void OnExitPromptBackplaneClicked();
   void OnCloseButtonClicked();
   void OnUnsupportedMode(UiUnsupportedMode mode);
@@ -100,7 +101,7 @@ class UiSceneManager {
   UiElement* permanent_security_warning_ = nullptr;
   TransientSecurityWarning* transient_security_warning_ = nullptr;
   ExclusiveScreenToast* exclusive_screen_toast_ = nullptr;
-  UiElement* exit_prompt_ = nullptr;
+  ExitPrompt* exit_prompt_ = nullptr;
   UiElement* exit_prompt_backplane_ = nullptr;
   UiElement* exit_warning_ = nullptr;
   UiElement* main_content_ = nullptr;
@@ -139,6 +140,7 @@ class UiSceneManager {
   bool screen_capturing_ = false;
   bool location_access_ = false;
   bool bluetooth_connected_ = false;
+  UiUnsupportedMode exit_vr_prompt_reason_ = UiUnsupportedMode::kCount;
 
   int next_available_id_ = 1;
 

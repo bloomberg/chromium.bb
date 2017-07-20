@@ -22,6 +22,8 @@ class ExitPrompt : public TexturedElement {
              const base::Callback<void()>& secondary_buttton_callback);
   ~ExitPrompt() override;
 
+  void SetContentMessageId(int message_id);
+
   void SetTextureForTesting(ExitPromptTexture* texture);
 
   void OnHoverEnter(const gfx::PointF& position) override;

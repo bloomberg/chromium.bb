@@ -72,6 +72,7 @@ static_library("vr_common") {
     "elements/url_bar.h",
     "elements/url_bar_texture.cc",
     "elements/url_bar_texture.h",
+    "exit_vr_prompt_choice.h",
     "font_fallback.cc",
     "font_fallback.h",
     "fps_meter.cc",
