@@ -40,6 +40,7 @@ source_set("tab_ui") {
   ]
   deps = [
     "//ios/clean/chrome/browser/ui",
+    "//ios/clean/chrome/browser/ui/transitions",
     "//ios/clean/chrome/browser/ui/transitions/animators",
     "//ios/clean/chrome/browser/ui/transitions/presenters",
   ]
