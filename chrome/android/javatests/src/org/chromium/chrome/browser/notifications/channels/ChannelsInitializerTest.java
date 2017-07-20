@@ -230,12 +230,14 @@ public class ChannelsInitializerTest {
     public void testEnsureInitialized_singleOriginSiteChannel() throws Exception {
         if (!BuildInfo.isAtLeastO()) return;
         String origin = "https://example.com";
-        mChannelsInitializer.ensureInitialized(SiteChannelsManager.toChannelId(origin));
+        long creationTime = 621046800000L;
+        mChannelsInitializer.ensureInitialized(
+                SiteChannelsManager.createChannelId(origin, creationTime));
 
         assertThat(getChannelsIgnoringMiscellaneous(), hasSize(1));
 
         Channel channel = getChannelsIgnoringMiscellaneous().get(0);
-        assertThat(channel.getId(), is(SiteChannelsManager.toChannelId(origin)));
+        assertThat(channel.getId(), is(SiteChannelsManager.createChannelId(origin, creationTime)));
         assertThat(channel.getName().toString(), is("https://example.com"));
         assertThat(channel.getImportance(), is(NotificationManager.IMPORTANCE_DEFAULT));
         assertThat(channel.getGroupId(), is(ChannelDefinitions.CHANNEL_GROUP_ID_SITES));

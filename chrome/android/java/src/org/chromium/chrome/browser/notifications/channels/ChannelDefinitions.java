@@ -33,8 +33,8 @@ public class ChannelDefinitions {
     // TODO(crbug.com/700377): Deprecate the 'sites' channel.
     public static final String CHANNEL_ID_SITES = "sites";
     public static final String CHANNEL_ID_PREFIX_SITES = "web:";
+    public static final String CHANNEL_GROUP_ID_SITES = "sites";
     static final String CHANNEL_GROUP_ID_GENERAL = "general";
-    static final String CHANNEL_GROUP_ID_SITES = "sites";
     /**
      * Version number identifying the current set of channels. This must be incremented whenever
      * the set of channels returned by {@link #getStartupChannelIds()} or
