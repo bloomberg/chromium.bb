@@ -89,6 +89,10 @@ public class SafeBrowsingTest extends AwTestBase {
 
     private static final String INTERSTITIAL_PAGE_TITLE = "Security error";
 
+    // These URLs will be CTS-tested and should not be changed.
+    private static final String WEB_UI_MALWARE_URL = "chrome://safe-browsing/match?type=malware";
+    private static final String WEB_UI_PHISHING_URL = "chrome://safe-browsing/match?type=phishing";
+
     /**
      * A fake SafeBrowsingApiHandler which treats URLs ending in MALWARE_HTML_PATH as malicious URLs
      * that should be blocked.
@@ -852,5 +856,29 @@ public class SafeBrowsingTest extends AwTestBase {
         final String responseUrl = mTestServer.getURL(MALWARE_HTML_PATH);
         loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), responseUrl);
         assertTargetPageHasLoaded(MALWARE_PAGE_BACKGROUND_COLOR);
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
+    public void testSafeBrowsingHardcodedMalwareUrl() throws Throwable {
+        loadGreenPage();
+        int interstitialCount =
+                mWebContentsObserver.getAttachedInterstitialPageHelper().getCallCount();
+        loadUrlAsync(mAwContents, WEB_UI_MALWARE_URL);
+        mWebContentsObserver.getAttachedInterstitialPageHelper().waitForCallback(interstitialCount);
+        waitForInterstitialToLoad();
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
+    public void testSafeBrowsingHardcodedPhishingUrl() throws Throwable {
+        loadGreenPage();
+        int interstitialCount =
+                mWebContentsObserver.getAttachedInterstitialPageHelper().getCallCount();
+        loadUrlAsync(mAwContents, WEB_UI_PHISHING_URL);
+        mWebContentsObserver.getAttachedInterstitialPageHelper().waitForCallback(interstitialCount);
+        waitForInterstitialToLoad();
     }
 }
