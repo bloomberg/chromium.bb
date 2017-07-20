@@ -585,7 +585,8 @@ void VrShell::ExitFullscreen() {
   }
 }
 
-void VrShell::ExitVrDueToUnsupportedMode(vr::UiUnsupportedMode mode) {
+void VrShell::ExitVrDueToUnsupportedMode(vr::UiUnsupportedMode mode,
+                                         bool show_exit_warning) {
   if (mode == vr::UiUnsupportedMode::kUnhandledPageInfo) {
     UMA_HISTOGRAM_ENUMERATION("VR.Shell.EncounteredUnsupportedMode", mode,
                               vr::UiUnsupportedMode::kCount);
@@ -593,15 +594,43 @@ void VrShell::ExitVrDueToUnsupportedMode(vr::UiUnsupportedMode mode) {
     Java_VrShellImpl_onUnhandledPageInfo(env, j_vr_shell_.obj());
     return;
   }
-  ui_->SetIsExiting();
-  PostToGlThread(FROM_HERE, base::Bind(&VrShellGl::set_is_exiting,
-                                       gl_thread_->GetVrShellGl(), true));
-  main_thread_task_runner_->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&VrShell::ForceExitVr, weak_ptr_factory_.GetWeakPtr()),
-      kExitVrDueToUnsupportedModeDelay);
+  if (show_exit_warning) {
+    ui_->SetIsExiting();
+    PostToGlThread(FROM_HERE, base::Bind(&VrShellGl::set_is_exiting,
+                                         gl_thread_->GetVrShellGl(), true));
+    main_thread_task_runner_->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&VrShell::ForceExitVr, weak_ptr_factory_.GetWeakPtr()),
+        kExitVrDueToUnsupportedModeDelay);
+  } else {
+    ForceExitVr();
+  }
   UMA_HISTOGRAM_ENUMERATION("VR.Shell.EncounteredUnsupportedMode", mode,
                             vr::UiUnsupportedMode::kCount);
+}
+
+void VrShell::OnUnsupportedMode(vr::UiUnsupportedMode mode) {
+  switch (mode) {
+    case vr::UiUnsupportedMode::kUnhandledPageInfo:
+      ui_->SetExitVrPromptEnabled(true, mode);
+      break;
+    default:
+      ExitVrDueToUnsupportedMode(mode, true);
+      break;
+  }
+}
+
+void VrShell::OnExitVrPromptResult(vr::UiUnsupportedMode reason,
+                                   vr::ExitVrPromptChoice choice) {
+  switch (choice) {
+    case vr::ExitVrPromptChoice::CHOICE_NONE:
+    case vr::ExitVrPromptChoice::CHOICE_STAY:
+      ui_->SetExitVrPromptEnabled(false, vr::UiUnsupportedMode::kCount);
+      return;
+    case vr::ExitVrPromptChoice::CHOICE_EXIT:
+      ExitVrDueToUnsupportedMode(reason, false);
+      return;
+  }
 }
 
 void VrShell::UpdateVSyncInterval(base::TimeTicks vsync_timebase,

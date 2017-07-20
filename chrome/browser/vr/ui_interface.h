@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_VR_UI_INTERFACE_H_
 #define CHROME_BROWSER_VR_UI_INTERFACE_H_
 
+#include "chrome/browser/vr/ui_unsupported_mode.h"
 #include "components/security_state/core/security_state.h"
 
 class SkBitmap;
@@ -52,6 +53,9 @@ class UiInterface {
   virtual void FlushTabList() {}
   virtual void UpdateTab(bool incognito, int id, const std::string& title) {}
   virtual void RemoveTab(bool incognito, int id) {}
+
+  virtual void SetExitVrPromptEnabled(bool enabled,
+                                      UiUnsupportedMode reason) = 0;
 };
 
 }  // namespace vr

@@ -19,6 +19,10 @@ ExitPrompt::ExitPrompt(int preferred_width,
 
 ExitPrompt::~ExitPrompt() = default;
 
+void ExitPrompt::SetContentMessageId(int message_id) {
+  texture_->SetContentMessageId(message_id);
+}
+
 void ExitPrompt::SetTextureForTesting(ExitPromptTexture* texture) {
   texture_.reset(texture);
 }

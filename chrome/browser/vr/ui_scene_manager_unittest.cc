@@ -32,9 +32,9 @@ TEST_F(UiSceneManagerTest, ExitPresentAndFullscreenOnAppButtonClick) {
   MakeManager(kNotInCct, kInWebVr);
 
   // Clicking app button should trigger to exit presentation.
-  EXPECT_CALL(*browser_, ExitPresent()).Times(1);
+  EXPECT_CALL(*browser_, ExitPresent());
   // And also trigger exit fullscreen.
-  EXPECT_CALL(*browser_, ExitFullscreen()).Times(1);
+  EXPECT_CALL(*browser_, ExitFullscreen());
   manager_->OnAppButtonClicked();
 }
 
@@ -302,7 +302,7 @@ TEST_F(UiSceneManagerTest, UiUpdatesForFullscreenChanges) {
   EXPECT_EQ(initial_position, content_quad->transform_operations().Apply());
 }
 
-TEST_F(UiSceneManagerTest, UiUpdatesExitPrompt) {
+TEST_F(UiSceneManagerTest, SecurityIconClickTriggersUnsupportedMode) {
   MakeManager(kNotInCct, kNotInWebVr);
 
   manager_->SetWebVrSecureOrigin(true);
@@ -310,16 +310,14 @@ TEST_F(UiSceneManagerTest, UiUpdatesExitPrompt) {
   // Initial state.
   VerifyElementsVisible("Initial", kElementsVisibleInBrowsing);
 
-  // Exit prompt visible state.
+  // Clicking on security icon should trigger unsupported mode.
+  EXPECT_CALL(*browser_,
+              OnUnsupportedMode(UiUnsupportedMode::kUnhandledPageInfo));
   manager_->OnSecurityIconClickedForTesting();
-  VerifyElementsVisible("Prompt visible", kElementsVisibleWithExitPrompt);
-
-  // Back to initial state.
-  manager_->OnExitPromptPrimaryButtonClickedForTesting();
-  VerifyElementsVisible("Restore initial", kElementsVisibleInBrowsing);
+  VerifyElementsVisible("Prompt invisible", kElementsVisibleInBrowsing);
 }
 
-TEST_F(UiSceneManagerTest, BackplaneClickClosesExitPrompt) {
+TEST_F(UiSceneManagerTest, UiUpdatesForShowingExitPrompt) {
   MakeManager(kNotInCct, kNotInWebVr);
 
   manager_->SetWebVrSecureOrigin(true);
@@ -327,14 +325,96 @@ TEST_F(UiSceneManagerTest, BackplaneClickClosesExitPrompt) {
   // Initial state.
   VerifyElementsVisible("Initial", kElementsVisibleInBrowsing);
 
-  // Exit prompt visible state.
-  manager_->OnSecurityIconClickedForTesting();
-  VerifyElementsVisible("Prompt visble", kElementsVisibleWithExitPrompt);
+  // Showing exit VR prompt should make prompt visible.
+  manager_->SetExitVrPromptEnabled(true, UiUnsupportedMode::kUnhandledPageInfo);
+  VerifyElementsVisible("Prompt visible", kElementsVisibleWithExitPrompt);
+}
 
-  // Back to initial state.
+TEST_F(UiSceneManagerTest, UiUpdatesForHidingExitPrompt) {
+  MakeManager(kNotInCct, kNotInWebVr);
+
+  manager_->SetWebVrSecureOrigin(true);
+
+  // Initial state.
+  manager_->SetExitVrPromptEnabled(true, UiUnsupportedMode::kUnhandledPageInfo);
+  VerifyElementsVisible("Initial", kElementsVisibleWithExitPrompt);
+
+  // Hiding exit VR prompt should make prompt invisible.
+  manager_->SetExitVrPromptEnabled(false, UiUnsupportedMode::kCount);
+  VerifyElementsVisible("Prompt invisible", kElementsVisibleInBrowsing);
+}
+
+TEST_F(UiSceneManagerTest, BackplaneClickTriggersOnExitPrompt) {
+  MakeManager(kNotInCct, kNotInWebVr);
+
+  manager_->SetWebVrSecureOrigin(true);
+
+  // Initial state.
+  VerifyElementsVisible("Initial", kElementsVisibleInBrowsing);
+  manager_->SetExitVrPromptEnabled(true, UiUnsupportedMode::kUnhandledPageInfo);
+
+  // Click on backplane should trigger UI browser interface but not close
+  // prompt.
+  EXPECT_CALL(*browser_,
+              OnExitVrPromptResult(UiUnsupportedMode::kUnhandledPageInfo,
+                                   ExitVrPromptChoice::CHOICE_NONE));
   scene_->GetUiElementByDebugId(kExitPromptBackplane)
       ->OnButtonUp(gfx::PointF());
-  VerifyElementsVisible("Restore initial", kElementsVisibleInBrowsing);
+  VerifyElementsVisible("Prompt still visible", kElementsVisibleWithExitPrompt);
+}
+
+TEST_F(UiSceneManagerTest, PrimaryButtonClickTriggersOnExitPrompt) {
+  MakeManager(kNotInCct, kNotInWebVr);
+
+  manager_->SetWebVrSecureOrigin(true);
+
+  // Initial state.
+  VerifyElementsVisible("Initial", kElementsVisibleInBrowsing);
+  manager_->SetExitVrPromptEnabled(true, UiUnsupportedMode::kUnhandledPageInfo);
+
+  // Click on 'OK' should trigger UI browser interface but not close prompt.
+  EXPECT_CALL(*browser_,
+              OnExitVrPromptResult(UiUnsupportedMode::kUnhandledPageInfo,
+                                   ExitVrPromptChoice::CHOICE_STAY));
+  manager_->OnExitPromptChoiceForTesting(false);
+  VerifyElementsVisible("Prompt still visible", kElementsVisibleWithExitPrompt);
+}
+
+TEST_F(UiSceneManagerTest, SecondaryButtonClickTriggersOnExitPrompt) {
+  MakeManager(kNotInCct, kNotInWebVr);
+
+  manager_->SetWebVrSecureOrigin(true);
+
+  // Initial state.
+  VerifyElementsVisible("Initial", kElementsVisibleInBrowsing);
+  manager_->SetExitVrPromptEnabled(true, UiUnsupportedMode::kUnhandledPageInfo);
+
+  // Click on 'Exit VR' should trigger UI browser interface but not close
+  // prompt.
+  EXPECT_CALL(*browser_,
+              OnExitVrPromptResult(UiUnsupportedMode::kUnhandledPageInfo,
+                                   ExitVrPromptChoice::CHOICE_EXIT));
+  manager_->OnExitPromptChoiceForTesting(true);
+  VerifyElementsVisible("Prompt still visible", kElementsVisibleWithExitPrompt);
+}
+
+TEST_F(UiSceneManagerTest, SecondExitPromptTriggersOnExitPrompt) {
+  MakeManager(kNotInCct, kNotInWebVr);
+
+  manager_->SetWebVrSecureOrigin(true);
+
+  // Initial state.
+  VerifyElementsVisible("Initial", kElementsVisibleInBrowsing);
+  manager_->SetExitVrPromptEnabled(true, UiUnsupportedMode::kUnhandledPageInfo);
+
+  // Click on 'Exit VR' should trigger UI browser interface but not close
+  // prompt.
+  EXPECT_CALL(*browser_,
+              OnExitVrPromptResult(UiUnsupportedMode::kUnhandledPageInfo,
+                                   ExitVrPromptChoice::CHOICE_NONE));
+  manager_->SetExitVrPromptEnabled(true,
+                                   UiUnsupportedMode::kUnhandledCodePoint);
+  VerifyElementsVisible("Prompt still visible", kElementsVisibleWithExitPrompt);
 }
 
 TEST_F(UiSceneManagerTest, UiUpdatesForWebVR) {
