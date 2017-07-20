@@ -404,8 +404,8 @@ bool ComponentCloudPolicyStore::ParsePolicy(const std::string& data,
                                             PolicyMap* policy) {
   std::string json_reader_error_message;
   std::unique_ptr<base::Value> json = base::JSONReader::ReadAndReturnError(
-      data, base::JSON_PARSE_RFC | base::JSON_DETACHABLE_CHILDREN,
-      nullptr /* error_code_out */, &json_reader_error_message);
+      data, base::JSON_PARSE_RFC, nullptr /* error_code_out */,
+      &json_reader_error_message);
   base::DictionaryValue* dict = nullptr;
   if (!json) {
     LOG(ERROR) << "Invalid JSON blob: " << json_reader_error_message;
