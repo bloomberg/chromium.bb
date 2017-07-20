@@ -230,6 +230,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // MediaObserverClient implementation.
   void SwitchRenderer(bool is_rendered_remotely) override;
   void ActivateViewportIntersectionMonitoring(bool activate) override;
+  void UpdateRemotePlaybackCompatibility(bool is_compatible) override;
 
   // Called from WebMediaPlayerCast.
   // TODO(hubbe): WMPI_CAST make private.

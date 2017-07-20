@@ -65,6 +65,8 @@ class RendererControllerTest : public ::testing::Test,
     activate_viewport_intersection_monitoring_ = activate;
   }
 
+  void UpdateRemotePlaybackCompatibility(bool is_compatibe) override {}
+
   void CreateCdm(bool is_remoting) { is_remoting_cdm_ = is_remoting; }
 
   base::MessageLoop message_loop_;

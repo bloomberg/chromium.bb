@@ -29,8 +29,9 @@ class WebRemotePlaybackClient {
   // Returns if the remote playback available for this media element.
   virtual bool RemotePlaybackAvailable() const = 0;
 
-  // Notifies the client that the source of the HTMLMediaElement has changed.
-  virtual void SourceChanged(const WebURL&) = 0;
+  // Notifies the client that the source of the HTMLMediaElement has changed as
+  // well as if the new source is supported for remote playback.
+  virtual void SourceChanged(const WebURL&, bool is_source_supported) = 0;
 };
 
 }  // namespace blink

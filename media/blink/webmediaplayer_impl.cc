@@ -136,13 +136,9 @@ bool IsBackgroundVideoPauseOptimizationEnabled() {
   return base::FeatureList::IsEnabled(kBackgroundVideoPauseOptimization);
 }
 
-#if defined(OS_ANDROID)
-
 bool IsNewRemotePlaybackPipelineEnabled() {
   return base::FeatureList::IsEnabled(kNewRemotePlaybackPipeline);
 }
-
-#endif
 
 bool IsNetworkStateError(blink::WebMediaPlayer::NetworkState state) {
   bool result = state == blink::WebMediaPlayer::kNetworkStateFormatError ||
@@ -1795,6 +1791,9 @@ void WebMediaPlayerImpl::DataSourceInitialized(bool success) {
   DVLOG(1) << __func__;
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
+  if (observer_ && IsNewRemotePlaybackPipelineEnabled() && data_source_)
+    observer_->OnDataSourceInitialized(data_source_->GetUrlAfterRedirects());
+
 #if defined(OS_ANDROID)
   // We can't play HLS URLs with WebMediaPlayerImpl, so in cases where they are
   // encountered, instruct the HTML media element to use the MediaPlayerRenderer
@@ -2458,6 +2457,12 @@ void WebMediaPlayerImpl::ActivateViewportIntersectionMonitoring(bool activate) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   client_->ActivateViewportIntersectionMonitoring(activate);
+}
+
+void WebMediaPlayerImpl::UpdateRemotePlaybackCompatibility(bool is_compatible) {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+
+  client_->RemotePlaybackCompatibilityChanged(loaded_url_, is_compatible);
 }
 
 bool WebMediaPlayerImpl::ShouldPauseVideoWhenHidden() const {
