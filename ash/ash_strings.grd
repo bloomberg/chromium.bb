@@ -892,6 +892,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_NO_MOBILE_NETWORKS" desc="The message to display in the network list when no mobile networks are available.">
         No mobile network available
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_ENABLE_BLUETOOTH" desc="The message to display in the network list when Tether is enabled but Bluetooth is disabled.">
+        Turn on Bluetooth to discover nearby devices
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_VPN_DISCONNECTED" desc="The label used in system tray bubble to display vpn is disconnected.">
         VPN disconnected
       </message>
