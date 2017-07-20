@@ -633,16 +633,6 @@ Resource* ResourceFetcher::RequestResource(
                                     params.Options().initiator_info.name);
   }
 
-  // A main resource request with the "cid" scheme can only be handled by an
-  // MHTML Archive. Abort the request when there is none.
-  // Note: There are some embedders of WebView that are using Content-ID
-  // URLs for sub-resources, even without any MHTMLArchive. Please see
-  // https://crbug.com/739658.
-  if (!archive_ && factory.GetType() == Resource::kMainResource &&
-      resource_request.Url().ProtocolIs(kContentIdScheme)) {
-    return nullptr;
-  }
-
   bool is_data_url = resource_request.Url().ProtocolIsData();
   bool is_static_data = is_data_url || substitute_data.IsValid() || archive_;
   if (is_static_data) {

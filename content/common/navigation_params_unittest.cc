@@ -17,11 +17,11 @@ TEST(NavigationParamsTest, ShouldMakeNetworkRequestForURL) {
   EXPECT_TRUE(ShouldMakeNetworkRequestForURL(GURL("http://foo/bar.html")));
   EXPECT_TRUE(ShouldMakeNetworkRequestForURL(GURL("https://foo/bar.html")));
   EXPECT_TRUE(ShouldMakeNetworkRequestForURL(GURL("data://foo")));
+  EXPECT_TRUE(ShouldMakeNetworkRequestForURL(GURL("cid:foo@bar")));
 
   EXPECT_FALSE(ShouldMakeNetworkRequestForURL(GURL("about:blank")));
   EXPECT_FALSE(ShouldMakeNetworkRequestForURL(GURL("about:srcdoc")));
   EXPECT_FALSE(ShouldMakeNetworkRequestForURL(GURL("javascript://foo.js")));
-  EXPECT_FALSE(ShouldMakeNetworkRequestForURL(GURL("cid:foo@bar")));
   EXPECT_FALSE(ShouldMakeNetworkRequestForURL(GURL()));
 }
 
