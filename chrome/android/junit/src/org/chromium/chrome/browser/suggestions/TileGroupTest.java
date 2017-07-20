@@ -60,8 +60,7 @@ import java.util.List;
 @Features({@Features.Register(ChromeFeatureList.NTP_OFFLINE_PAGES_FEATURE_NAME),
         @Features.Register(ChromeFeatureList.SUGGESTIONS_HOME_MODERN_LAYOUT)})
 public class TileGroupTest {
-    private static final int MAX_COLUMNS_TO_FETCH = 4;
-    private static final int MAX_ROWS_TO_FETCH = 1;
+    private static final int MAX_TILES_TO_FETCH = 4;
     private static final int TILE_TITLE_LINES = 1;
     private static final String[] URLS = {"https://www.google.com", "https://tellmedadjokes.com"};
 
@@ -94,7 +93,7 @@ public class TileGroupTest {
                 new TileGroup(RuntimeEnvironment.application, mock(SuggestionsUiDelegate.class),
                         mock(ContextMenuManager.class), mTileGroupDelegate, mTileGroupObserver,
                         mock(OfflinePageBridge.class), TILE_TITLE_LINES);
-        tileGroup.startObserving(MAX_ROWS_TO_FETCH, MAX_COLUMNS_TO_FETCH);
+        tileGroup.startObserving(MAX_TILES_TO_FETCH);
 
         notifyTileUrlsAvailable(URLS);
 
@@ -116,7 +115,7 @@ public class TileGroupTest {
                 new TileGroup(RuntimeEnvironment.application, mock(SuggestionsUiDelegate.class),
                         mock(ContextMenuManager.class), mTileGroupDelegate, mTileGroupObserver,
                         mock(OfflinePageBridge.class), TILE_TITLE_LINES);
-        tileGroup.startObserving(MAX_ROWS_TO_FETCH, MAX_COLUMNS_TO_FETCH);
+        tileGroup.startObserving(MAX_TILES_TO_FETCH);
 
         notifyTileUrlsAvailable(/* nothing! */);
 
@@ -206,7 +205,7 @@ public class TileGroupTest {
         TileGroup tileGroup = new TileGroup(RuntimeEnvironment.application, uiDelegate,
                 mock(ContextMenuManager.class), mTileGroupDelegate, mTileGroupObserver,
                 mock(OfflinePageBridge.class), TILE_TITLE_LINES);
-        tileGroup.startObserving(MAX_ROWS_TO_FETCH, MAX_COLUMNS_TO_FETCH);
+        tileGroup.startObserving(MAX_TILES_TO_FETCH);
 
         notifyTileUrlsAvailable(URLS);
 
@@ -221,7 +220,7 @@ public class TileGroupTest {
         TileGroup tileGroup = new TileGroup(RuntimeEnvironment.application, uiDelegate,
                 mock(ContextMenuManager.class), mTileGroupDelegate, mTileGroupObserver,
                 mock(OfflinePageBridge.class), TILE_TITLE_LINES);
-        tileGroup.startObserving(MAX_ROWS_TO_FETCH, MAX_COLUMNS_TO_FETCH);
+        tileGroup.startObserving(MAX_TILES_TO_FETCH);
 
         notifyTileUrlsAvailable(URLS);
         reset(mTileGroupObserver);
@@ -261,7 +260,7 @@ public class TileGroupTest {
         TileGroup tileGroup = new TileGroup(RuntimeEnvironment.application, uiDelegate,
                 mock(ContextMenuManager.class), mTileGroupDelegate, mTileGroupObserver,
                 mock(OfflinePageBridge.class), TILE_TITLE_LINES);
-        tileGroup.startObserving(MAX_ROWS_TO_FETCH, MAX_COLUMNS_TO_FETCH);
+        tileGroup.startObserving(MAX_TILES_TO_FETCH);
         ViewGroup layout = new FrameLayout(RuntimeEnvironment.application, null);
 
         // Initialise the internal list of tiles
@@ -282,7 +281,7 @@ public class TileGroupTest {
         TileGroup tileGroup = new TileGroup(RuntimeEnvironment.application, uiDelegate,
                 mock(ContextMenuManager.class), mTileGroupDelegate, mTileGroupObserver,
                 mock(OfflinePageBridge.class), TILE_TITLE_LINES);
-        tileGroup.startObserving(MAX_ROWS_TO_FETCH, MAX_COLUMNS_TO_FETCH);
+        tileGroup.startObserving(MAX_TILES_TO_FETCH);
         ViewGroup layout = new FrameLayout(RuntimeEnvironment.application, null);
 
         // Initialise the internal list of tiles
@@ -302,7 +301,7 @@ public class TileGroupTest {
         TileGroup tileGroup = new TileGroup(RuntimeEnvironment.application, uiDelegate,
                 mock(ContextMenuManager.class), mTileGroupDelegate, mTileGroupObserver,
                 mock(OfflinePageBridge.class), TILE_TITLE_LINES);
-        tileGroup.startObserving(MAX_ROWS_TO_FETCH, MAX_COLUMNS_TO_FETCH);
+        tileGroup.startObserving(MAX_TILES_TO_FETCH);
         notifyTileUrlsAvailable(URLS);
 
         // Initialise the layout with views whose URLs don't match the ones of the new tiles.
@@ -328,7 +327,7 @@ public class TileGroupTest {
                 new TileGroup(RuntimeEnvironment.application, mock(SuggestionsUiDelegate.class),
                         mock(ContextMenuManager.class), mTileGroupDelegate, mTileGroupObserver,
                         mock(OfflinePageBridge.class), TILE_TITLE_LINES);
-        tileGroup.startObserving(MAX_ROWS_TO_FETCH, MAX_COLUMNS_TO_FETCH);
+        tileGroup.startObserving(MAX_TILES_TO_FETCH);
         notifyTileUrlsAvailable(URLS);
 
         // Initialise the layout with views whose URLs match the ones of the new tiles.
@@ -439,7 +438,7 @@ public class TileGroupTest {
 
     /**
      * Notifies the tile group of new tiles created from the provided URLs. Requires
-     * {@link TileGroup#startObserving(int, int)} to have been called on the tile group under test.
+     * {@link TileGroup#startObserving(int)} to have been called on the tile group under test.
      * @see TileGroup#onMostVisitedURLsAvailable(String[], String[], String[], int[])
      */
     private void notifyTileUrlsAvailable(String... urls) {
@@ -472,7 +471,7 @@ public class TileGroupTest {
         TileGroup tileGroup = new TileGroup(RuntimeEnvironment.application, uiDelegate,
                 mock(ContextMenuManager.class), mTileGroupDelegate, mTileGroupObserver,
                 mock(OfflinePageBridge.class), TILE_TITLE_LINES);
-        tileGroup.startObserving(MAX_ROWS_TO_FETCH, MAX_COLUMNS_TO_FETCH);
+        tileGroup.startObserving(MAX_TILES_TO_FETCH);
         notifyTileUrlsAvailable(urls);
 
         ViewGroup layout = new FrameLayout(RuntimeEnvironment.application, null);
