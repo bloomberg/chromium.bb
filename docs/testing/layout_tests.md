@@ -426,6 +426,42 @@ machine?
 * In the loaded devtools, set any required breakpoints and execute `test()` in
   the console to actually start the test.
 
+## Bisecting Regressions
+
+You can use [`git bisect`](https://git-scm.com/docs/git-bisect) to find which
+commit broke (or fixed!) a layout test in a fully automated way.  Unlike
+[bisect-builds.py](http://dev.chromium.org/developers/bisect-builds-py), which
+downloads pre-built Chromium binaries, `git bisect` operates on your local
+checkout, so it can run tests with `content_shell`.
+
+Bisecting can take several hours, but since it is fully automated you can leave
+it running overnight and view the results the next day.
+
+To set up an automated bisect of a layout test regression, create a script like
+this:
+
+```
+#!/bin/bash
+
+# Exit code 125 tells git bisect to skip the revision.
+gclient sync || exit 125
+ninja -C out/Debug -j100 blink_tests || exit 125
+
+blink/tools/run_layout_tests.sh -t Debug \
+  --no-show-results --no-retry-failures \
+  path/to/layout/test.html
+```
+
+Modify the `out` directory, ninja args, and test name as appropriate, and save
+the script in `~/checkrev.sh`.  Then run:
+
+```
+chmod u+x ~/checkrev.sh  # mark script as executable
+git bisect start <badrev> <goodrev>
+git bisect run ~/checkrev.sh
+git bisect reset  # quit the bisect session
+```
+
 ## Rebaselining Layout Tests
 
 *** promo
