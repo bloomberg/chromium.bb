@@ -19,9 +19,9 @@
     </style>
     <div class="settings-box first">
       <paper-input id="name" value="[[profileName]]" pattern=".*\S.*"
-          auto-validate required on-change="onProfileNameChanged_"
-          on-keydown="onProfileNameKeydown_"
-          disabled="[[isProfileNameDisabled_(syncStatus)]]">
+          on-change="onProfileNameChanged_" on-keydown="onProfileNameKeydown_"
+          disabled="[[isProfileNameDisabled_(syncStatus)]]"
+          auto-validate no-label-float required>
       </paper-input>
     </div>
     <template is="dom-if" if="[[isProfileShortcutSettingVisible_]]">
