@@ -39,6 +39,7 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/common/capabilities.h"
+#include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/AcceleratedStaticBitmapImage.h"
 #include "platform/graphics/GraphicsLayer.h"
@@ -1178,7 +1179,11 @@ RefPtr<DrawingBuffer::ColorBuffer> DrawingBuffer::CreateColorBuffer(
       buffer_format = gfx::BufferFormat::RGBA_8888;
       gl_format = GL_RGBA;
     } else {
-      buffer_format = gfx::BufferFormat::BGRX_8888;
+      buffer_format = gfx::BufferFormat::RGBX_8888;
+      if (gpu::IsImageFromGpuMemoryBufferFormatSupported(
+              gfx::BufferFormat::BGRX_8888,
+              ContextProvider()->GetCapabilities()))
+        buffer_format = gfx::BufferFormat::BGRX_8888;
       gl_format = GL_RGB;
     }
     gpu_memory_buffer = gpu_memory_buffer_manager->CreateGpuMemoryBuffer(
