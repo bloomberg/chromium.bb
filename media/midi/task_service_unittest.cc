@@ -104,14 +104,14 @@ class TaskServiceClient {
   }
 
   void SignalEvent() {
-    midi::SignalEvent();
     IncrementCount();
+    midi::SignalEvent();
   }
 
   void WaitEvent() {
+    IncrementCount();
     wait_task_event_->Signal();
     midi::WaitEvent();
-    IncrementCount();
   }
 
   base::Lock lock_;
