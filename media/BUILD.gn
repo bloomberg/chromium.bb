@@ -93,19 +93,6 @@ component("media") {
     "device_monitors/device_monitor_mac.mm",
     "device_monitors/system_message_window_win.cc",
     "device_monitors/system_message_window_win.h",
-    "renderers/audio_renderer_impl.cc",
-    "renderers/audio_renderer_impl.h",
-    "renderers/default_renderer_factory.cc",
-    "renderers/default_renderer_factory.h",
-    "renderers/gpu_video_accelerator_factories.h",
-    "renderers/renderer_impl.cc",
-    "renderers/renderer_impl.h",
-    "renderers/skcanvas_video_renderer.cc",
-    "renderers/skcanvas_video_renderer.h",
-    "renderers/video_overlay_factory.cc",
-    "renderers/video_overlay_factory.h",
-    "renderers/video_renderer_impl.cc",
-    "renderers/video_renderer_impl.h",
   ]
 
   configs += [
@@ -145,6 +132,7 @@ component("media") {
     ":shared_memory_support",
     "//media/filters",
     "//media/formats",
+    "//media/renderers",
     "//ui/gfx:color_space",
   ]
 
