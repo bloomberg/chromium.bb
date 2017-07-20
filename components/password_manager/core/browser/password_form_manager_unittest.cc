@@ -3843,21 +3843,22 @@ TEST_F(PasswordFormManagerTest, TestUkmForFilling) {
       fetched_forms.push_back(test.fetched_form);
 
     ukm::TestUkmRecorder test_ukm_recorder;
-    client()->GetUkmRecorder()->UpdateSourceURL(client()->GetUkmSourceId(),
-                                                form_to_fill.origin);
-
     {
+      auto metrics_recorder = base::MakeRefCounted<PasswordFormMetricsRecorder>(
+          form_to_fill.origin.SchemeIsCryptographic(), &test_ukm_recorder,
+          test_ukm_recorder.GetNewSourceID(), form_to_fill.origin);
       FakeFormFetcher fetcher;
       PasswordFormManager form_manager(
           password_manager(), client(),
           test.is_http_basic_auth ? nullptr : client()->driver(), form_to_fill,
           base::MakeUnique<NiceMock<MockFormSaver>>(), &fetcher);
-      form_manager.Init(nullptr);
+      form_manager.Init(metrics_recorder);
       fetcher.SetNonFederated(fetched_forms, 0u);
     }
 
     const auto* source =
         test_ukm_recorder.GetSourceForUrl(form_to_fill.origin.spec().c_str());
+    ASSERT_TRUE(source);
     test_ukm_recorder.ExpectMetric(*source, "PasswordForm",
                                    kUkmManagerFillEvent, test.expected_event);
   }
