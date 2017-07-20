@@ -334,13 +334,10 @@ TEST_F(ManagePasswordsBubbleModelTest, Edit) {
     {
       // Setup metrics recorder
       ukm::SourceId source_id = test_ukm_recorder.GetNewSourceID();
-      static_cast<ukm::UkmRecorder*>(&test_ukm_recorder)
-          ->UpdateSourceURL(source_id, GURL("https://www.example.com/"));
-      auto recorder = base::MakeRefCounted<
-          password_manager::PasswordFormMetricsRecorder>(
-          true /*is_main_frame_secure*/,
-          password_manager::PasswordFormMetricsRecorder::CreateUkmEntryBuilder(
-              &test_ukm_recorder, source_id));
+      auto recorder =
+          base::MakeRefCounted<password_manager::PasswordFormMetricsRecorder>(
+              true /*is_main_frame_secure*/, &test_ukm_recorder, source_id,
+              GURL("https://www.example.com/"));
 
       // Exercise bubble.
       ON_CALL(*controller(), GetPasswordFormMetricsRecorder())
@@ -571,14 +568,11 @@ TEST_F(ManagePasswordsBubbleModelTest, RecordUKMs) {
         ukm::TestUkmRecorder test_ukm_recorder;
         {
           // Setup metrics recorder
-          ukm::SourceId source_id = test_ukm_recorder.GetNewSourceID();
-          static_cast<ukm::UkmRecorder*>(&test_ukm_recorder)
-              ->UpdateSourceURL(source_id, GURL("https://www.example.com/"));
           auto recorder = base::MakeRefCounted<
               password_manager::PasswordFormMetricsRecorder>(
-              true /*is_main_frame_secure*/,
-              password_manager::PasswordFormMetricsRecorder::
-                  CreateUkmEntryBuilder(&test_ukm_recorder, source_id));
+              true /*is_main_frame_secure*/, &test_ukm_recorder,
+              test_ukm_recorder.GetNewSourceID(),
+              GURL("https://www.example.com/"));
 
           // Exercise bubble.
           ON_CALL(*controller(), GetPasswordFormMetricsRecorder())
