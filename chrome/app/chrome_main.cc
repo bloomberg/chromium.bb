@@ -117,11 +117,18 @@ int ChromeMain(int argc, const char** argv) {
   if (command_line->HasSwitch(switches::kMemlog))
     profiling::ProfilingProcessHost::EnsureStarted();
 #endif
-  // The profiling process. This is a child process type implemented at the
+#if !defined(OS_WIN) || defined(COMPONENT_BUILD) || \
+    defined(CHROME_MULTIPLE_DLL_CHILD)
+  // The profiling process is only compiled into the child process. On Windows,
+  // non-component builds, child code is only used for
+  // CHROME_MULTIPLE_DLL_CHILD.
+  //
+  // This is a child process type implemented at the
   // Chrome layer rather than the content layer (like the other child procs.).
   if (command_line->GetSwitchValueASCII(switches::kProcessType) ==
       switches::kProfiling)
     return profiling::ProfilingMain(*command_line);
+#endif
 #endif  // ENABLE_OOP_HEAP_PROFILING
 
 #if defined(OS_CHROMEOS) && BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)

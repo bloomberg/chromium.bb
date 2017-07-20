@@ -36,7 +36,7 @@ class MemlogReceiverPipe
 
     // Takes ownership of HANDLE and closes it when the class goes out of scope.
     CompletionThunk(HANDLE handle, Callback cb);
-    ~CompletionThunk();
+    ~CompletionThunk() override;
 
     void set_callback(Callback cb) { callback_ = cb; }
 
@@ -60,7 +60,6 @@ class MemlogReceiverPipe
   };
 
   explicit MemlogReceiverPipe(std::unique_ptr<CompletionThunk> thunk);
-  ~MemlogReceiverPipe();
 
   void StartReadingOnIOThread();
 
@@ -69,6 +68,9 @@ class MemlogReceiverPipe
                    scoped_refptr<MemlogStreamReceiver> receiver);
 
  private:
+  friend class base::RefCountedThreadSafe<MemlogReceiverPipe>;
+  ~MemlogReceiverPipe();
+
   void OnIOCompleted(size_t bytes_transfered, DWORD error);
 
   void ReadUntilBlocking();
