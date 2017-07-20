@@ -204,34 +204,32 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
       toSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
 
   // Saved passwords.
-  if ([passwordManagerEnabled_ value]) {
-    if (!savedForms_.empty()) {
-      [model addSectionWithIdentifier:SectionIdentifierSavedPasswords];
-      CollectionViewTextItem* headerItem =
-          [[CollectionViewTextItem alloc] initWithType:ItemTypeHeader];
-      headerItem.text =
-          l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORDS_SAVED_HEADING);
-      headerItem.textColor = [[MDCPalette greyPalette] tint500];
-      [model setHeader:headerItem
-          forSectionWithIdentifier:SectionIdentifierSavedPasswords];
-      for (const auto& form : savedForms_) {
-        [model addItem:[self savedFormItemWithForm:form.get()]
-            toSectionWithIdentifier:SectionIdentifierSavedPasswords];
-      }
+  if (!savedForms_.empty()) {
+    [model addSectionWithIdentifier:SectionIdentifierSavedPasswords];
+    CollectionViewTextItem* headerItem =
+        [[CollectionViewTextItem alloc] initWithType:ItemTypeHeader];
+    headerItem.text =
+        l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORDS_SAVED_HEADING);
+    headerItem.textColor = [[MDCPalette greyPalette] tint500];
+    [model setHeader:headerItem
+        forSectionWithIdentifier:SectionIdentifierSavedPasswords];
+    for (const auto& form : savedForms_) {
+      [model addItem:[self savedFormItemWithForm:form.get()]
+          toSectionWithIdentifier:SectionIdentifierSavedPasswords];
     }
-    if (!blacklistedForms_.empty()) {
-      [model addSectionWithIdentifier:SectionIdentifierBlacklist];
-      CollectionViewTextItem* headerItem =
-          [[CollectionViewTextItem alloc] initWithType:ItemTypeHeader];
-      headerItem.text =
-          l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORDS_EXCEPTIONS_HEADING);
-      headerItem.textColor = [[MDCPalette greyPalette] tint500];
-      [model setHeader:headerItem
-          forSectionWithIdentifier:SectionIdentifierBlacklist];
-      for (const auto& form : blacklistedForms_) {
-        [model addItem:[self blacklistedFormItemWithForm:form.get()]
-            toSectionWithIdentifier:SectionIdentifierBlacklist];
-      }
+  }
+  if (!blacklistedForms_.empty()) {
+    [model addSectionWithIdentifier:SectionIdentifierBlacklist];
+    CollectionViewTextItem* headerItem =
+        [[CollectionViewTextItem alloc] initWithType:ItemTypeHeader];
+    headerItem.text =
+        l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORDS_EXCEPTIONS_HEADING);
+    headerItem.textColor = [[MDCPalette greyPalette] tint500];
+    [model setHeader:headerItem
+        forSectionWithIdentifier:SectionIdentifierBlacklist];
+    for (const auto& form : blacklistedForms_) {
+      [model addItem:[self blacklistedFormItemWithForm:form.get()]
+          toSectionWithIdentifier:SectionIdentifierBlacklist];
     }
   }
 }
@@ -256,6 +254,7 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
           initWithType:ItemTypeSavePasswordsSwitch];
   savePasswordsItem.text = l10n_util::GetNSString(IDS_IOS_SAVE_PASSWORDS);
   savePasswordsItem.on = [passwordManagerEnabled_ value];
+  savePasswordsItem.accessibilityIdentifier = @"savePasswordsItem_switch";
   return savePasswordsItem;
 }
 
@@ -378,10 +377,9 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
   // Update the cell.
   [self reconfigureCellsForItems:@[ savePasswordsItem_ ]];
 
-  // Update the rest of the UI.
+  // Update the edit button.
   [self.editor setEditing:NO];
   [self updateEditButton];
-  [self reloadData];
 }
 
 #pragma mark - Actions
@@ -393,10 +391,9 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
   // Update the item.
   savePasswordsItem_.on = [passwordManagerEnabled_ value];
 
-  // Update the rest of the UI.
+  // Update the edit button.
   [self.editor setEditing:NO];
   [self updateEditButton];
-  [self reloadData];
 }
 
 #pragma mark - Private methods
