@@ -11,6 +11,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/stl_util.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -36,11 +38,12 @@ bool WebDataRequest::IsActive() {
 WebDataRequest::WebDataRequest(WebDataRequestManager* manager,
                                WebDataServiceConsumer* consumer,
                                WebDataServiceBase::Handle handle)
-    : task_runner_(base::ThreadTaskRunnerHandle::Get()),
+    : task_runner_(base::SequencedTaskRunnerHandle::IsSet()
+                       ? base::SequencedTaskRunnerHandle::Get()
+                       : nullptr),
       atomic_manager_(reinterpret_cast<base::subtle::AtomicWord>(manager)),
       consumer_(consumer),
       handle_(handle) {
-  DCHECK(task_runner_);
   DCHECK(IsActive());
   static_assert(sizeof(atomic_manager_) == sizeof(manager), "size mismatch");
 }
@@ -54,7 +57,7 @@ WebDataServiceConsumer* WebDataRequest::GetConsumer() {
   return consumer_;
 }
 
-scoped_refptr<base::SingleThreadTaskRunner> WebDataRequest::GetTaskRunner() {
+scoped_refptr<base::SequencedTaskRunner> WebDataRequest::GetTaskRunner() {
   return task_runner_;
 }
 
@@ -99,12 +102,17 @@ void WebDataRequestManager::CancelRequest(WebDataServiceBase::Handle h) {
 void WebDataRequestManager::RequestCompleted(
     std::unique_ptr<WebDataRequest> request,
     std::unique_ptr<WDTypedResult> result) {
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+  // Careful: Don't swap this below the BindOnce() call below, since that
+  // effectively does a std::move() on |request|!
+  scoped_refptr<base::SequencedTaskRunner> task_runner =
       request->GetTaskRunner();
-  task_runner->PostTask(
-      FROM_HERE,
+  auto task =
       base::BindOnce(&WebDataRequestManager::RequestCompletedOnThread, this,
-                     base::Passed(&request), base::Passed(&result)));
+                     base::Passed(&request), base::Passed(&result));
+  if (task_runner)
+    task_runner->PostTask(FROM_HERE, std::move(task));
+  else
+    base::PostTask(FROM_HERE, std::move(task));
 }
 
 WebDataRequestManager::~WebDataRequestManager() {

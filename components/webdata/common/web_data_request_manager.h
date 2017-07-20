@@ -15,7 +15,6 @@
 #include "base/atomicops.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "components/webdata/common/web_data_results.h"
 #include "components/webdata/common/web_data_service_base.h"
@@ -24,6 +23,10 @@
 
 class WebDataServiceConsumer;
 class WebDataRequestManager;
+
+namespace base {
+class SequencedTaskRunner;
+}
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -60,15 +63,16 @@ class WebDataRequest {
   // Retrieves the |consumer_| set in the constructor.
   WebDataServiceConsumer* GetConsumer();
 
-  // Retrieves the original task runner of the request.
-  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner();
+  // Retrieves the original task runner of the request.  This may be null if the
+  // original task was not posted as a sequenced task.
+  scoped_refptr<base::SequencedTaskRunner> GetTaskRunner();
 
   // Marks the current request as inactive, either due to cancellation or
   // completion.
   void MarkAsInactive();
 
   // Tracks task runner that the request originated on.
-  const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  const scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   // The manager associated with this request. This is stored as a raw (untyped)
   // pointer value because it does double duty as the flag indicating whether or
