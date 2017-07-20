@@ -227,7 +227,7 @@ class TestImporter(object):
             _log.warning('Checkout is dirty; aborting.')
             return False
         _, local_commits = self.run(
-            ['git', 'log', '--oneline', 'origin/master..HEAD'])[1]
+            ['git', 'log', '--oneline', 'origin/master..HEAD'])
         if local_commits:
             _log.warning('Checkout has local commits before import.')
         return True
