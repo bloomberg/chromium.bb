@@ -69,6 +69,9 @@ class TabularContextMenuListAdapter extends BaseAdapter {
             viewHolder = new ViewHolderItem();
             viewHolder.mIcon = (ImageView) convertView.findViewById(R.id.context_menu_icon);
             viewHolder.mText = (TextView) convertView.findViewById(R.id.context_text);
+            if (viewHolder.mText == null) {
+                throw new IllegalStateException("Context text not found in new view inflation");
+            }
             viewHolder.mShareIcon =
                     (ImageView) convertView.findViewById(R.id.context_menu_share_icon);
             viewHolder.mRightPadding =
@@ -77,6 +80,9 @@ class TabularContextMenuListAdapter extends BaseAdapter {
             convertView.setTag(viewHolder);
         } else {
             viewHolder = (ViewHolderItem) convertView.getTag();
+            if (viewHolder.mText == null) {
+                throw new IllegalStateException("Context text not found in view resuse");
+            }
         }
 
         viewHolder.mText.setText(menuItem.getTitle(mActivity));
