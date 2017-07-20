@@ -33,12 +33,13 @@ namespace media {
     }                                       \
   } while (0)
 
-
 D3D11VideoDecodeAccelerator::D3D11VideoDecodeAccelerator(
     const GetGLContextCallback& get_gl_context_cb,
-    const MakeGLContextCurrentCallback& make_context_current_cb)
+    const MakeGLContextCurrentCallback& make_context_current_cb,
+    const BindGLImageCallback& bind_image_cb)
     : get_gl_context_cb_(get_gl_context_cb),
-      make_context_current_cb_(make_context_current_cb) {}
+      make_context_current_cb_(make_context_current_cb),
+      bind_image_cb_(bind_image_cb) {}
 
 D3D11VideoDecodeAccelerator::~D3D11VideoDecodeAccelerator() {}
 
@@ -189,6 +190,13 @@ void D3D11VideoDecodeAccelerator::AssignPictureBuffers(
     picture_buffers_.push_back(
         base::MakeUnique<D3D11PictureBuffer>(buffers[i], i));
     picture_buffers_[i]->Init(video_device_, out_texture, decoder_guid_);
+    for (uint32_t client_id : buffers[i].client_texture_ids()) {
+      // The picture buffer handles the actual binding of its contents to
+      // texture ids. This call just causes the texture manager to hold a
+      // reference to the GLImage as long as either texture exists.
+      bind_image_cb_.Run(client_id, GL_TEXTURE_EXTERNAL_OES,
+                         picture_buffers_[i]->gl_image(), true);
+    }
   }
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&D3D11VideoDecodeAccelerator::DoDecode,
@@ -245,7 +253,7 @@ void D3D11VideoDecodeAccelerator::OutputResult(D3D11PictureBuffer* buffer,
                                                size_t input_buffer_id) {
   buffer->set_in_client_use(true);
   Picture picture(buffer->picture_buffer().id(), input_buffer_id,
-                  gfx::Rect(0, 0), gfx::ColorSpace(), false);
+                  gfx::Rect(0, 0), gfx::ColorSpace(), true);
   client_->PictureReady(picture);
 }
 }  // namespace media

@@ -25,7 +25,8 @@ class MEDIA_GPU_EXPORT D3D11VideoDecodeAccelerator
  public:
   D3D11VideoDecodeAccelerator(
       const GetGLContextCallback& get_gl_context_cb,
-      const MakeGLContextCurrentCallback& make_context_current_cb);
+      const MakeGLContextCurrentCallback& make_context_current_cb,
+      const BindGLImageCallback& bind_image_cb);
 
   ~D3D11VideoDecodeAccelerator() override;
 
@@ -54,6 +55,7 @@ class MEDIA_GPU_EXPORT D3D11VideoDecodeAccelerator
   Client* client_;
   GetGLContextCallback get_gl_context_cb_;
   MakeGLContextCurrentCallback make_context_current_cb_;
+  BindGLImageCallback bind_image_cb_;
   base::win::ScopedComPtr<ID3D11Device> device_;
   base::win::ScopedComPtr<ID3D11DeviceContext> device_context_;
   base::win::ScopedComPtr<ID3D11VideoDevice> video_device_;
