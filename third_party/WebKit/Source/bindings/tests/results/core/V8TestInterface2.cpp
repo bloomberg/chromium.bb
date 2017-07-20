@@ -415,6 +415,9 @@ static void namedPropertyQuery(const AtomicString& name, const v8::PropertyCallb
   bool result = impl->NamedPropertyQuery(name, exceptionState);
   if (!result)
     return;
+  // https://heycam.github.io/webidl/#LegacyPlatformObjectGetOwnProperty
+  // 2.7. If |O| implements an interface with a named property setter, then set
+  //      desc.[[Writable]] to true, otherwise set it to false.
   V8SetReturnValueInt(info, v8::None);
 }
 
@@ -444,6 +447,29 @@ static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo
 
   TestInterfaceEmpty* result = impl->item(index, exceptionState);
   V8SetReturnValueFast(info, result, impl);
+}
+
+static void indexedPropertyDescriptor(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
+  // https://heycam.github.io/webidl/#LegacyPlatformObjectGetOwnProperty
+  // Steps 1.1 to 1.2.4 are covered here: we rely on indexedPropertyGetter() to
+  // call the getter function and check that |index| is a valid property index,
+  // in which case it will have set info.GetReturnValue() to something other
+  // than undefined.
+  V8TestInterface2::indexedPropertyGetterCallback(index, info);
+  v8::Local<v8::Value> getterValue = info.GetReturnValue().Get();
+  if (!getterValue->IsUndefined()) {
+    // 1.2.5. Let |desc| be a newly created Property Descriptor with no fields.
+    // 1.2.6. Set desc.[[Value]] to the result of converting value to an
+    //        ECMAScript value.
+    // 1.2.7. If O implements an interface with an indexed property setter,
+    //        then set desc.[[Writable]] to true, otherwise set it to false.
+    v8::PropertyDescriptor desc(getterValue, true);
+    // 1.2.8. Set desc.[[Enumerable]] and desc.[[Configurable]] to true.
+    desc.set_enumerable(true);
+    desc.set_configurable(true);
+    // 1.2.9. Return |desc|.
+    V8SetReturnValue(info, desc);
+  }
 }
 
 static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info) {
@@ -579,6 +605,10 @@ void V8TestInterface2::indexedPropertyGetterCallback(uint32_t index, const v8::P
   TestInterface2V8Internal::indexedPropertyGetter(index, info);
 }
 
+void V8TestInterface2::indexedPropertyDescriptorCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
+  TestInterface2V8Internal::indexedPropertyDescriptor(index, info);
+}
+
 void V8TestInterface2::indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info) {
   TestInterface2V8Internal::indexedPropertySetter(index, v8Value, info);
 }
@@ -672,7 +702,7 @@ void V8TestInterface2::installV8TestInterface2Template(
   v8::IndexedPropertyHandlerConfiguration indexedPropertyHandlerConfig(
       V8TestInterface2::indexedPropertyGetterCallback,
       V8TestInterface2::indexedPropertySetterCallback,
-      nullptr,
+      V8TestInterface2::indexedPropertyDescriptorCallback,
       V8TestInterface2::indexedPropertyDeleterCallback,
       IndexedPropertyEnumerator<TestInterface2>,
       V8TestInterface2::indexedPropertyDefinerCallback,

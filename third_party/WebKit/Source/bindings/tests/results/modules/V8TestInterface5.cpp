@@ -517,27 +517,6 @@ static void namedPropertyGetter(const AtomicString& name, const v8::PropertyCall
   V8SetReturnValueString(info, result, info.GetIsolate());
 }
 
-static void namedPropertySetter(const AtomicString& name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info) {
-  TestInterface5Implementation* impl = V8TestInterface5::toImpl(info.Holder());
-  V8StringResource<> propertyValue = v8Value;
-  if (!propertyValue.Prepare())
-    return;
-
-  bool result = impl->AnonymousNamedSetter(name, propertyValue);
-  if (!result)
-    return;
-  V8SetReturnValue(info, v8Value);
-}
-
-static void namedPropertyDeleter(const AtomicString& name, const v8::PropertyCallbackInfo<v8::Boolean>& info) {
-  TestInterface5Implementation* impl = V8TestInterface5::toImpl(info.Holder());
-
-  DeleteResult result = impl->AnonymousNamedDeleter(name);
-  if (result == kDeleteUnknownProperty)
-    return;
-  V8SetReturnValue(info, result == kDeleteSuccess);
-}
-
 static void namedPropertyQuery(const AtomicString& name, const v8::PropertyCallbackInfo<v8::Integer>& info) {
   const CString& nameInUtf8 = name.Utf8();
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kGetterContext, "TestInterface5", nameInUtf8.data());
@@ -547,7 +526,10 @@ static void namedPropertyQuery(const AtomicString& name, const v8::PropertyCallb
   bool result = impl->NamedPropertyQuery(name, exceptionState);
   if (!result)
     return;
-  V8SetReturnValueInt(info, v8::None);
+  // https://heycam.github.io/webidl/#LegacyPlatformObjectGetOwnProperty
+  // 2.7. If |O| implements an interface with a named property setter, then set
+  //      desc.[[Writable]] to true, otherwise set it to false.
+  V8SetReturnValueInt(info, v8::ReadOnly);
 }
 
 static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info) {
@@ -574,6 +556,29 @@ static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo
 
   String result = impl->AnonymousIndexedGetter(index);
   V8SetReturnValueString(info, result, info.GetIsolate());
+}
+
+static void indexedPropertyDescriptor(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
+  // https://heycam.github.io/webidl/#LegacyPlatformObjectGetOwnProperty
+  // Steps 1.1 to 1.2.4 are covered here: we rely on indexedPropertyGetter() to
+  // call the getter function and check that |index| is a valid property index,
+  // in which case it will have set info.GetReturnValue() to something other
+  // than undefined.
+  V8TestInterface5::indexedPropertyGetterCallback(index, info);
+  v8::Local<v8::Value> getterValue = info.GetReturnValue().Get();
+  if (!getterValue->IsUndefined()) {
+    // 1.2.5. Let |desc| be a newly created Property Descriptor with no fields.
+    // 1.2.6. Set desc.[[Value]] to the result of converting value to an
+    //        ECMAScript value.
+    // 1.2.7. If O implements an interface with an indexed property setter,
+    //        then set desc.[[Writable]] to true, otherwise set it to false.
+    v8::PropertyDescriptor desc(getterValue, true);
+    // 1.2.8. Set desc.[[Enumerable]] and desc.[[Configurable]] to true.
+    desc.set_enumerable(true);
+    desc.set_configurable(true);
+    // 1.2.9. Return |desc|.
+    V8SetReturnValue(info, desc);
+  }
 }
 
 static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info) {
@@ -769,22 +774,6 @@ void V8TestInterface5::namedPropertyGetterCallback(v8::Local<v8::Name> name, con
   TestInterface5ImplementationV8Internal::namedPropertyGetter(propertyName, info);
 }
 
-void V8TestInterface5::namedPropertySetterCallback(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info) {
-  if (!name->IsString())
-    return;
-  const AtomicString& propertyName = ToCoreAtomicString(name.As<v8::String>());
-
-  TestInterface5ImplementationV8Internal::namedPropertySetter(propertyName, v8Value, info);
-}
-
-void V8TestInterface5::namedPropertyDeleterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Boolean>& info) {
-  if (!name->IsString())
-    return;
-  const AtomicString& propertyName = ToCoreAtomicString(name.As<v8::String>());
-
-  TestInterface5ImplementationV8Internal::namedPropertyDeleter(propertyName, info);
-}
-
 void V8TestInterface5::namedPropertyQueryCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Integer>& info) {
   if (!name->IsString())
     return;
@@ -799,6 +788,10 @@ void V8TestInterface5::namedPropertyEnumeratorCallback(const v8::PropertyCallbac
 
 void V8TestInterface5::indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
   TestInterface5ImplementationV8Internal::indexedPropertyGetter(index, info);
+}
+
+void V8TestInterface5::indexedPropertyDescriptorCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
+  TestInterface5ImplementationV8Internal::indexedPropertyDescriptor(index, info);
 }
 
 void V8TestInterface5::indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info) {
@@ -917,7 +910,7 @@ static void installV8TestInterface5Template(
   v8::IndexedPropertyHandlerConfiguration indexedPropertyHandlerConfig(
       V8TestInterface5::indexedPropertyGetterCallback,
       V8TestInterface5::indexedPropertySetterCallback,
-      nullptr,
+      V8TestInterface5::indexedPropertyDescriptorCallback,
       V8TestInterface5::indexedPropertyDeleterCallback,
       IndexedPropertyEnumerator<TestInterface5Implementation>,
       V8TestInterface5::indexedPropertyDefinerCallback,
@@ -925,7 +918,7 @@ static void installV8TestInterface5Template(
       v8::PropertyHandlerFlags::kNone);
   instanceTemplate->SetHandler(indexedPropertyHandlerConfig);
   // Named properties
-  v8::NamedPropertyHandlerConfiguration namedPropertyHandlerConfig(V8TestInterface5::namedPropertyGetterCallback, V8TestInterface5::namedPropertySetterCallback, V8TestInterface5::namedPropertyQueryCallback, V8TestInterface5::namedPropertyDeleterCallback, V8TestInterface5::namedPropertyEnumeratorCallback, v8::Local<v8::Value>(), static_cast<v8::PropertyHandlerFlags>(int(v8::PropertyHandlerFlags::kOnlyInterceptStrings) | int(v8::PropertyHandlerFlags::kNonMasking)));
+  v8::NamedPropertyHandlerConfiguration namedPropertyHandlerConfig(V8TestInterface5::namedPropertyGetterCallback, nullptr, V8TestInterface5::namedPropertyQueryCallback, nullptr, V8TestInterface5::namedPropertyEnumeratorCallback, v8::Local<v8::Value>(), static_cast<v8::PropertyHandlerFlags>(int(v8::PropertyHandlerFlags::kOnlyInterceptStrings) | int(v8::PropertyHandlerFlags::kNonMasking)));
   instanceTemplate->SetHandler(namedPropertyHandlerConfig);
 
   // Array iterator (@@iterator)
