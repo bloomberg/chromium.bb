@@ -553,7 +553,7 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
 
 // Checks that deleting a password from password details view goes back to the
 // list-of-passwords view.
-- (void)testDeletion {
+- (void)testDeletionInDetailView {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
       password_manager::features::kViewPasswords);
@@ -591,6 +591,11 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
                             grey_accessibilityTrait(UIAccessibilityTraitHeader),
                             nullptr)] assertWithMatcher:grey_notNil()];
 
+  // Verify that the deletion was propagated to the PasswordStore.
+  TestStoreConsumer consumer;
+  GREYAssert(consumer.GetStoreResults().empty(),
+             @"Stored password was not removed from PasswordStore.");
+
   // Also verify that the removed password is no longer in the list.
   [GetInteractionForPasswordEntry(@"example.com, concrete username")
       assertWithMatcher:grey_not(grey_sufficientlyVisible())];
@@ -602,7 +607,7 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
 }
 
 // Checks that deleting a password from password details can be cancelled.
-- (void)testCancelDeletion {
+- (void)testCancelDeletionInDetailView {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
       password_manager::features::kViewPasswords);
@@ -631,6 +636,11 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
   // button.
   [[EarlGrey selectElementWithMatcher:CopyPasswordButton()]
       assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Verify that the deletion did not happen.
+  TestStoreConsumer consumer;
+  GREYAssertEqual(1u, consumer.GetStoreResults().size(),
+                  @"Stored password was removed from PasswordStore.");
 
   // Go back to the list view and verify that the password is still in the
   // list.
@@ -1125,6 +1135,57 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
                         password_manager::prefs::kPasswordManagerSavingEnabled),
                     @"State of the UI toggle differs from real preferences.");
   }
+
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
+      performAction:grey_tap()];
+  TapDone();
+}
+
+// Checks that deleting a password from the list view works.
+- (void)testDeletionInListView {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      password_manager::features::kViewPasswords);
+
+  // Save a password to be deleted later.
+  SaveExamplePasswordForm();
+
+  OpenPasswordSettings();
+
+  TapEdit();
+
+  // Select password entry to be removed.
+  [GetInteractionForPasswordEntry(@"example.com, concrete username")
+      performAction:grey_tap()];
+
+  // Selecting the "Delete" button is tricky, because its text is defined in the
+  // private part of MD components library. But it is the unique
+  // almost-completely visible element which is aligned with the bottom edge of
+  // the screen.
+  GREYLayoutConstraint* equalBottom = [GREYLayoutConstraint
+      layoutConstraintWithAttribute:kGREYLayoutAttributeBottom
+                          relatedBy:kGREYLayoutRelationEqual
+               toReferenceAttribute:kGREYLayoutAttributeBottom
+                         multiplier:1.0
+                           constant:0.0];
+  id<GREYMatcher> wholeScreen =
+      grey_accessibilityID(@"SavePasswordsCollectionViewController");
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(
+                                   grey_layout(@[ equalBottom ], wholeScreen),
+                                   grey_accessibilityTrait(
+                                       UIAccessibilityTraitButton),
+                                   grey_accessibilityElement(),
+                                   grey_minimumVisiblePercent(0.98), nil)]
+      performAction:grey_tap()];
+
+  // Verify that the deletion was propagated to the PasswordStore.
+  TestStoreConsumer consumer;
+  GREYAssert(consumer.GetStoreResults().empty(),
+             @"Stored password was not removed from PasswordStore.");
+  // Verify that the removed password is no longer in the list.
+  [GetInteractionForPasswordEntry(@"example.com, concrete username")
+      assertWithMatcher:grey_not(grey_sufficientlyVisible())];
 
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
