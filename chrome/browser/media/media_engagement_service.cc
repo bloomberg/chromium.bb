@@ -66,7 +66,7 @@ const char MediaEngagementService::kHistogramScoreAtStartupName[] =
 
 // static
 bool MediaEngagementService::IsEnabled() {
-  return base::FeatureList::IsEnabled(media::kMediaEngagement);
+  return base::FeatureList::IsEnabled(media::kRecordMediaEngagementScores);
 }
 
 // static
