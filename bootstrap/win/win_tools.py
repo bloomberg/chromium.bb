@@ -320,11 +320,14 @@ def main(argv):
       template.PYTHON_BIN_RELDIR,
       os.path.join(ROOT_DIR, 'python_bin_reldir.txt'))
 
+  python_bat_template = ('python27.new.bat' if not args.bleeding_edge
+                         else 'python27.bleeding_edge.bat')
+
   # Re-evaluate and regenerate our root templated files.
   for src_name, dst_name in (
       ('git-bash.template.sh', 'git-bash'),
       ('pylint.new.bat', 'pylint.bat'),
-      ('python27.new.bat', 'python.bat'),
+      (python_bat_template, 'python.bat'),
       ):
     template.maybe_install(src_name, os.path.join(ROOT_DIR, dst_name))
 
