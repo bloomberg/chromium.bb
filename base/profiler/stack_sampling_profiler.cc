@@ -179,7 +179,7 @@ class StackSamplingProfiler::SamplingThread : public Thread {
     CallStackProfiles profiles;
 
     // Sequence number for generating new profiler ids.
-    static StaticAtomicSequenceNumber next_profiler_id;
+    static AtomicSequenceNumber next_profiler_id;
   };
 
   // Gets the single instance of this class.
@@ -365,7 +365,7 @@ void StackSamplingProfiler::SamplingThread::TestAPI::ShutdownTaskAndSignalEvent(
   event->Signal();
 }
 
-StaticAtomicSequenceNumber
+AtomicSequenceNumber
     StackSamplingProfiler::SamplingThread::CollectionContext::next_profiler_id;
 
 StackSamplingProfiler::SamplingThread::SamplingThread()

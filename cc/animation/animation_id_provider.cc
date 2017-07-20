@@ -7,10 +7,10 @@
 
 namespace cc {
 
-base::StaticAtomicSequenceNumber g_next_animation_id;
-base::StaticAtomicSequenceNumber g_next_group_id;
-base::StaticAtomicSequenceNumber g_next_timeline_id;
-base::StaticAtomicSequenceNumber g_next_player_id;
+base::AtomicSequenceNumber g_next_animation_id;
+base::AtomicSequenceNumber g_next_group_id;
+base::AtomicSequenceNumber g_next_timeline_id;
+base::AtomicSequenceNumber g_next_player_id;
 
 int AnimationIdProvider::NextAnimationId() {
   // Animation IDs start from 1.
