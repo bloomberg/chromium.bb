@@ -722,7 +722,7 @@ public class TabsOpenedFromExternalAppTest {
             }
         }));
         ApplicationTestUtils.assertWaitForPageScaleFactorMatch(
-                mActivityTestRule.getActivity(), 0.5f, false);
+                mActivityTestRule.getActivity(), 0.5f);
 
         // Long press the center of the page, which should bring up the context menu.
         final TestTabObserver observer = new TestTabObserver();

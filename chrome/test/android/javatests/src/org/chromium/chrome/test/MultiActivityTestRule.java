@@ -36,11 +36,6 @@ public class MultiActivityTestRule implements TestRule, MultiActivityTestCommonC
         mTestCommon.waitForFullLoad(activity, expectedTitle);
     }
 
-    public void waitForFullLoad(
-            final ChromeActivity activity, final String expectedTitle, boolean waitLongerForLoad) {
-        mTestCommon.waitForFullLoad(activity, expectedTitle, waitLongerForLoad);
-    }
-
     @Override
     public Statement apply(final Statement base, Description desc) {
         return new Statement() {
