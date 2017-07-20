@@ -80,7 +80,7 @@ class UiSceneManager {
   void ConfigureSecurityWarnings();
   void ConfigureExclusiveScreenToast();
   void ConfigureIndicators();
-  void UpdateBackgroundColor();
+  void ConfigureBackgroundColor();
   void CloseExitPrompt();
   void OnBackButtonClicked();
   void OnSecurityIconClicked();
@@ -127,7 +127,10 @@ class UiSceneManager {
   // Flag to indicate that we're waiting for the first WebVR frame to show up
   // before we hide the splash screen. This is used in the case of WebVR
   // auto-presentation.
-  bool waiting_for_first_web_vr_frame_ = false;
+  bool showing_web_vr_splash_screen_ = false;
+  bool prompting_to_exit_ = false;
+  bool exiting_ = false;
+
   bool secure_origin_ = false;
   bool fullscreen_ = false;
   bool incognito_ = false;

@@ -84,7 +84,7 @@ void UiRenderer::DrawWorldElements(const RenderInfo& render_info,
     glEnable(GL_DEPTH_TEST);
     glDepthMask(GL_TRUE);
 
-    const SkColor backgroundColor = scene_->GetWorldBackgroundColor();
+    const SkColor backgroundColor = scene_->background_color();
     glClearColor(SkColorGetR(backgroundColor) / 255.0,
                  SkColorGetG(backgroundColor) / 255.0,
                  SkColorGetB(backgroundColor) / 255.0,
@@ -92,9 +92,8 @@ void UiRenderer::DrawWorldElements(const RenderInfo& render_info,
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   }
   std::vector<const UiElement*> elements = scene_->GetWorldElements();
-  bool draw_reticle =
-      !(scene_->is_exiting() || scene_->showing_splash_screen() || web_vr_mode);
-  DrawUiView(render_info, controller_info, elements, draw_reticle);
+  DrawUiView(render_info, controller_info, elements,
+             scene_->reticle_rendering_enabled());
 }
 
 void UiRenderer::DrawOverlayElements(const RenderInfo& render_info,
