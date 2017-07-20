@@ -254,8 +254,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     private ChromeFullscreenManager mFullscreenManager;
     private boolean mCreatedFullscreenManager;
 
-    private final PictureInPictureController mPictureInPictureController =
-            new PictureInPictureController();
+    // The PictureInPictureController is initialized lazily https://crbug.com/729738.
+    private PictureInPictureController mPictureInPictureController;
 
     private CompositorViewHolder mCompositorViewHolder;
     private InsetObserverView mInsetObserverView;
@@ -876,7 +876,9 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         FeatureUtilities.setIsInMultiWindowMode(
                 MultiWindowUtils.getInstance().isInMultiWindowMode(this));
 
-        mPictureInPictureController.cleanup(this);
+        if (mPictureInPictureController != null) {
+            mPictureInPictureController.cleanup(this);
+        }
         VrShellDelegate.maybeRegisterVrEntryHook(this);
     }
 
@@ -884,6 +886,9 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     protected void onUserLeaveHint() {
         super.onUserLeaveHint();
 
+        if (mPictureInPictureController == null) {
+            mPictureInPictureController = new PictureInPictureController();
+        }
         mPictureInPictureController.attemptPictureInPicture(this);
     }
 
@@ -926,7 +931,9 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
     @Override
     public void onNewIntentWithNative(Intent intent) {
-        mPictureInPictureController.cleanup(this);
+        if (mPictureInPictureController != null) {
+            mPictureInPictureController.cleanup(this);
+        }
 
         super.onNewIntentWithNative(intent);
         if (mIntentHandler.shouldIgnoreIntent(intent)) return;
