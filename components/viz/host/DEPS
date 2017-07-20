@@ -1,6 +1,7 @@
 include_rules = [
   "+cc/ipc",
   "+cc/surfaces",
+  "+components/viz/host",
   "+gpu/command_buffer/client",
   "+gpu/command_buffer/common",
   "+gpu/ipc/client",
@@ -10,3 +11,13 @@ include_rules = [
   "+services/ui/gpu/interfaces",
   "+ui/gfx",
 ]
+
+specific_include_rules = {
+  "host_frame_sink_manager.*": [
+    "+components/viz/service/frame_sinks/compositor_frame_sink_support.h",
+    "+components/viz/service/frame_sinks/compositor_frame_sink_support_client.h",
+    "+components/viz/service/frame_sinks/frame_sink_manager.h",
+    "+components/viz/service/frame_sinks/frame_sink_manager_impl.h",
+    "+components/viz/service/frame_sinks/compositor_frame_sink_support_manager.h",
+  ]
+}

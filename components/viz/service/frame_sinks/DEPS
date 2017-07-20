@@ -3,7 +3,6 @@ include_rules = [
   "+cc/ipc",
   "+cc/surfaces",
   "+cc/scheduler",
-  "+components/viz/display_embedder",
   "+gpu/ipc/common",
   "+mojo/public/cpp/bindings",
 ]
