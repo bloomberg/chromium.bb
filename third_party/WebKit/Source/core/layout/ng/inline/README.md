@@ -50,8 +50,6 @@ three separate steps or stages that are executed in order:
 
 [text-transform]: https://drafts.csswg.org/css-text-3/#propdef-text-transform
 
-[NGInlineItem]: ng_inline_item.h
-
 ### Line Breaking ###
 
 [NGLineBreaker] takes a list of [NGInlineItem],
@@ -81,11 +79,6 @@ This phase:
 [ShapingLineBreaker] is... TODO(kojii): fill out.
 
 [CSS Calculating widths and margins]: https://drafts.csswg.org/css2/visudet.html#Computing_widths_and_margins
-
-[NGInlineItemResult]: ng_inline_item_result.h
-[NGLineBreaker]: ng_line_breaker.h
-[ShapeResult]: ../../../platform/fonts/shaping/ShapeResult.h
-[ShapingLineBreaker]: ../../../platform/fonts/shaping/ShapingLineBreaker.h
 
 ### Line Box Construction ###
 
@@ -138,13 +131,6 @@ This phase consists of following sub-phases:
 [line-right]: https://drafts.csswg.org/css-writing-modes-3/#line-right
 [text-align]: https://drafts.csswg.org/css-text-3/#propdef-text-align
 
-[NGInlineNode]: ng_inline_node.h
-[NGInlineLayoutAlgorithm]: ng_inlineLlayout_algorithm.h
-[NGPhysicalBoxFragment]: ../ng_physical_box_fragment.h
-[NGPhysicalFragment]: ../ng_physical_fragment.h
-[NGPhysicalLineBoxFragment]: ng_physical_line_box_fragment.h
-[NGPhysicalTextFragment]: ng_physical_text_fragment.h
-
 ### Inline Box Tree ###
 [Inline Box Tree]: #inline-box-tree
 
@@ -180,7 +166,44 @@ When all operations are done,
 [height of inline, non-replaced elements depends on the content area]: https://drafts.csswg.org/css2/visudet.html#inline-non-replaced
 [vertical-align]: https://drafts.csswg.org/css2/visudet.html#propdef-vertical-align
 
-[NGInlineBoxState]: ng_inline_box_state.h
+## Miscellaneous topics ##
+
+### Baseline ###
+
+Computing baselines in LayoutNG goes the following process.
+
+1. Users of baseline should request what kind and type of the baseline
+   they need by calling [NGConstraintSpaceBuilder]`::AddBaselineRequest()`.
+2. Call [NGLayoutInputNode]`::Layout()`,
+   that calls appropriate layout algorithm.
+3. Each layout algorithm computes baseline according to the requests.
+4. Users retrieve the result by [NGPhysicalBoxFragment]`::Baseline()`,
+   or by higher level functions such as [NGBoxFragment]`::BaselineMetrics()`.
+
+Algorithms are responsible
+for checking [NGConstraintSpace]`::BaselineRequests()`,
+computing requested baselines, and
+calling [NGFragmentBuilder]`::AddBaseline()`
+to add them to [NGPhysicalBoxFragment].
+
+[NGBaselineRequest] consists of [NGBaselineAlgorithmType] and [FontBaseline].
+
+In most normal cases,
+algorithms should decide which box should provide the baseline
+for the specified [NGBaselineAlgorithmType] and delegate to it.
+
+[FontBaseline] currently has only two baseline types,
+alphabetic and ideographic,
+and they are hard coded to derive from the CSS [writing-mode] property today.
+
+We plan to support more baseline types,
+and allow authors to specify the baseline type,
+as defined in the CSS [dominant-baseline] property in future.
+[NGPhysicalLineBoxFragment] and [NGPhysicalTextFragment] should be
+responsible for computing different baseline types from font metrics.
+
+[dominant-baseline]: https://drafts.csswg.org/css-inline/#dominant-baseline-property
+[writing-mode]: https://drafts.csswg.org/css-writing-modes-3/#propdef-writing-mode
 
 ### <a name="bidi"></a>Bidirectional Text ###
 [Bidirectional Text]: #bidi
@@ -212,4 +235,24 @@ In a bird's‐eye view, it consists of two parts:
 [UAX#9 Resolving Embedding Levels]: http://www.unicode.org/reports/tr9/#Resolving_Embedding_Levels
 [UAX#9 Reordering Resolved Levels]: http://www.unicode.org/reports/tr9/#Reordering_Resolved_Levels
 
+[FontBaseline]: ../../../platform/fonts/FontBaseline.h
+[NGBaselineAlgorithmType]: ng_baseline.h
+[NGBaselineRequest]: ng_baseline.h
 [NGBidiParagraph]: ng_bidi_paragraph.h
+[NGBoxFragment]: ../ng_box_fragment.h
+[NGConstraintSpace]: ../ng_constraint_space_builder.h
+[NGConstraintSpaceBuilder]: ../ng_constraint_space_builder.h
+[NGFragmentBuilder]: ../ng_fragment_builder.h
+[NGInlineBoxState]: ng_inline_box_state.h
+[NGInlineItem]: ng_inline_item.h
+[NGInlineItemResult]: ng_inline_item_result.h
+[NGInlineNode]: ng_inline_node.h
+[NGInlineLayoutAlgorithm]: ng_inlineLlayout_algorithm.h
+[NGLayoutInputNode]: ../ng_layout_input_node.h
+[NGLineBreaker]: ng_line_breaker.h
+[NGPhysicalBoxFragment]: ../ng_physical_box_fragment.h
+[NGPhysicalFragment]: ../ng_physical_fragment.h
+[NGPhysicalLineBoxFragment]: ng_physical_line_box_fragment.h
+[NGPhysicalTextFragment]: ng_physical_text_fragment.h
+[ShapeResult]: ../../../platform/fonts/shaping/ShapeResult.h
+[ShapingLineBreaker]: ../../../platform/fonts/shaping/ShapingLineBreaker.h
