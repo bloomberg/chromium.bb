@@ -11,6 +11,7 @@
 #include "cc/animation/animation.h"
 #include "cc/trees/target_property.h"
 #include "chrome/browser/vr/transition.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 namespace cc {
 class AnimationTarget;
@@ -72,6 +73,12 @@ class AnimationPlayer final {
   void TransitionBoundsTo(base::TimeTicks monotonic_time,
                           const gfx::SizeF& current,
                           const gfx::SizeF& target);
+  void TransitionBackgroundColorTo(base::TimeTicks monotonic_time,
+                                   SkColor current,
+                                   SkColor target);
+  void TransitionVisibilityTo(base::TimeTicks monotonic_time,
+                              bool current,
+                              bool target);
 
   bool IsAnimatingProperty(cc::TargetProperty::Type property) const;
 
