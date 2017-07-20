@@ -131,17 +131,20 @@ fi
 if [ "$repo_add_once" = "true" ]; then
   determine_rpm_package_manager
 
-  case $PACKAGEMANAGER in
-  "yum")
-    install_yum
-    ;;
-  "urpmi")
-    install_urpmi
-    ;;
-  "yast")
-    install_yast
-    ;;
-  esac
+  for PACKAGEMANAGER in ${PACKAGEMANAGERS[*]}
+  do
+    case $PACKAGEMANAGER in
+    "yum")
+      install_yum
+      ;;
+    "urpmi")
+      install_urpmi
+      ;;
+    "yast")
+      install_yast
+      ;;
+    esac
+  done
 fi
 
 # Some package managers have locks that prevent everything from being
@@ -209,17 +212,20 @@ fi
 #
 #determine_rpm_package_manager
 #
-#case $PACKAGEMANAGER in
-#"yum")
-#  remove_yum
-#  ;;
-#"urpmi")
-#  remove_urpmi
-#  ;;
-#"yast")
-#  remove_yast
-#  ;;
-#esac
+#for PACKAGEMANAGER in ${PACKAGEMANAGERS[*]}
+#do
+#  case $PACKAGEMANAGER in
+#  "yum")
+#    remove_yum
+#    ;;
+#  "urpmi")
+#    remove_urpmi
+#    ;;
+#  "yast")
+#    remove_yast
+#    ;;
+#  esac
+#done
 
 exit 0
 
