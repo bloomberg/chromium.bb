@@ -60,7 +60,7 @@ Initializer* Initializer::instance_ = nullptr;
 // static
 void Initializer::Init(
     cryptauth::CryptAuthService* cryptauth_service,
-    std::unique_ptr<NotificationPresenter> notification_presenter,
+    NotificationPresenter* notification_presenter,
     PrefService* pref_service,
     ProfileOAuth2TokenService* token_service,
     NetworkStateHandler* network_state_handler,
@@ -105,7 +105,7 @@ void Initializer::RegisterProfilePrefs(PrefRegistrySimple* registry) {
 
 Initializer::Initializer(
     cryptauth::CryptAuthService* cryptauth_service,
-    std::unique_ptr<NotificationPresenter> notification_presenter,
+    NotificationPresenter* notification_presenter,
     PrefService* pref_service,
     ProfileOAuth2TokenService* token_service,
     NetworkStateHandler* network_state_handler,
@@ -113,7 +113,7 @@ Initializer::Initializer(
     NetworkConnect* network_connect,
     NetworkConnectionHandler* network_connection_handler)
     : cryptauth_service_(cryptauth_service),
-      notification_presenter_(std::move(notification_presenter)),
+      notification_presenter_(notification_presenter),
       pref_service_(pref_service),
       token_service_(token_service),
       network_state_handler_(network_state_handler),
@@ -220,7 +220,7 @@ void Initializer::OnBluetoothAdapterAdvertisingIntervalSet(
   host_scanner_ = base::MakeUnique<HostScanner>(
       tether_host_fetcher_.get(), ble_connection_manager_.get(),
       host_scan_device_prioritizer_.get(), tether_host_response_recorder_.get(),
-      notification_presenter_.get(), device_id_tether_network_guid_map_.get(),
+      notification_presenter_, device_id_tether_network_guid_map_.get(),
       master_host_scan_cache_.get(), clock_.get());
   host_scan_scheduler_ = base::MakeUnique<HostScanScheduler>(
       network_state_handler_, host_scanner_.get());
@@ -231,7 +231,7 @@ void Initializer::OnBluetoothAdapterAdvertisingIntervalSet(
       tether_host_fetcher_.get(), ble_connection_manager_.get(),
       tether_host_response_recorder_.get(),
       device_id_tether_network_guid_map_.get(), master_host_scan_cache_.get(),
-      notification_presenter_.get(), host_connection_metrics_logger_.get());
+      notification_presenter_, host_connection_metrics_logger_.get());
   network_configuration_remover_ =
       base::MakeUnique<NetworkConfigurationRemover>(
           network_state_handler_, managed_network_configuration_handler_);

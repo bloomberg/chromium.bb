@@ -64,7 +64,7 @@ class Initializer : public OAuth2TokenService::Observer {
   // initialized, this function is a no-op.
   static void Init(
       cryptauth::CryptAuthService* cryptauth_service,
-      std::unique_ptr<NotificationPresenter> notification_presenter,
+      NotificationPresenter* notification_presenter,
       PrefService* pref_service,
       ProfileOAuth2TokenService* token_service,
       NetworkStateHandler* network_state_handler,
@@ -85,7 +85,7 @@ class Initializer : public OAuth2TokenService::Observer {
 
   Initializer(
       cryptauth::CryptAuthService* cryptauth_service,
-      std::unique_ptr<NotificationPresenter> notification_presenter,
+      NotificationPresenter* notification_presenter,
       PrefService* pref_service,
       ProfileOAuth2TokenService* token_service,
       NetworkStateHandler* network_state_handler,
@@ -107,7 +107,7 @@ class Initializer : public OAuth2TokenService::Observer {
   void OnPreCrashStateRestored();
 
   cryptauth::CryptAuthService* cryptauth_service_;
-  std::unique_ptr<NotificationPresenter> notification_presenter_;
+  NotificationPresenter* notification_presenter_;
   PrefService* pref_service_;
   ProfileOAuth2TokenService* token_service_;
   NetworkStateHandler* network_state_handler_;

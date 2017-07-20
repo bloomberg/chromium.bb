@@ -74,8 +74,7 @@ class TetherService : public KeyedService,
    public:
     virtual void InitializeTether(
         cryptauth::CryptAuthService* cryptauth_service,
-        std::unique_ptr<chromeos::tether::NotificationPresenter>
-            notification_presenter,
+        chromeos::tether::NotificationPresenter* notification_presenter,
         PrefService* pref_service,
         ProfileOAuth2TokenService* token_service,
         chromeos::NetworkStateHandler* network_state_handler,
@@ -108,6 +107,7 @@ class TetherService : public KeyedService,
                              bool powered) override;
 
   // chromeos::NetworkStateHandlerObserver:
+  void DefaultNetworkChanged(const chromeos::NetworkState* network) override;
   void DeviceListChanged() override;
 
   // Callback when the controlling pref changes.
@@ -126,6 +126,7 @@ class TetherService : public KeyedService,
  private:
   friend class TetherServiceTest;
   FRIEND_TEST_ALL_PREFIXES(TetherServiceTest, TestFeatureFlagEnabled);
+  FRIEND_TEST_ALL_PREFIXES(TetherServiceTest, TestBluetoothNotification);
 
   void OnBluetoothAdapterFetched(
       scoped_refptr<device::BluetoothAdapter> adapter);
@@ -142,8 +143,15 @@ class TetherService : public KeyedService,
   // Whether Tether is enabled.
   bool IsEnabledbyPreference() const;
 
+  // Returns whether the "enable Bluetooth" notification can be shown under the
+  // current conditions.
+  bool CanEnableBluetoothNotificationBeShown();
+
   void SetInitializerDelegateForTest(
       std::unique_ptr<InitializerDelegate> initializer_delegate);
+  void SetNotificationPresenterForTest(
+      std::unique_ptr<chromeos::tether::NotificationPresenter>
+          notification_presenter);
 
   // Whether the service has been shut down.
   bool shut_down_ = false;
@@ -158,6 +166,8 @@ class TetherService : public KeyedService,
   cryptauth::CryptAuthService* cryptauth_service_;
   chromeos::NetworkStateHandler* network_state_handler_;
   std::unique_ptr<InitializerDelegate> initializer_delegate_;
+  std::unique_ptr<chromeos::tether::NotificationPresenter>
+      notification_presenter_;
 
   PrefChangeRegistrar registrar_;
   scoped_refptr<device::BluetoothAdapter> adapter_;
