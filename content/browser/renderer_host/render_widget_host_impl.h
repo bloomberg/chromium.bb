@@ -456,7 +456,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Set the RenderView background transparency.
   void SetBackgroundOpaque(bool opaque);
 
-  // Called when the reponse to a pending mouse lock request has arrived.
+  // Called when the response to a pending mouse lock request has arrived.
   // Returns true if |allowed| is true and the mouse has been successfully
   // locked.
   bool GotResponseToLockMouseRequest(bool allowed);

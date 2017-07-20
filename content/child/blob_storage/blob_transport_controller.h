@@ -77,7 +77,7 @@ class CONTENT_EXPORT BlobTransportController {
       scoped_refptr<base::SingleThreadTaskRunner> main_runner);
 
   // This responds to the request using the |sender|. If we need to save files
-  // then we we hold onto the sender to send the (possibly multiple) reponses
+  // then we we hold onto the sender to send the (possibly multiple) responses
   // asynchronously. Use CancelAllBlobTransfers to stop usage of the |sender|.
   // We close the file handles once we're done writing to them.
   void OnMemoryRequest(
