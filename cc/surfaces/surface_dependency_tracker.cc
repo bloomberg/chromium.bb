@@ -20,9 +20,7 @@ SurfaceDependencyTracker::SurfaceDependencyTracker(
 
 SurfaceDependencyTracker::~SurfaceDependencyTracker() = default;
 
-void SurfaceDependencyTracker::RequestSurfaceResolution(
-    Surface* surface,
-    SurfaceDependencyDeadline* deadline) {
+void SurfaceDependencyTracker::RequestSurfaceResolution(Surface* surface) {
   DCHECK(surface->HasPendingFrame());
 
   const CompositorFrame& pending_frame = surface->GetPendingFrame();

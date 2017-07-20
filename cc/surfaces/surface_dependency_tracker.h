@@ -31,8 +31,7 @@ class CC_SURFACES_EXPORT SurfaceDependencyTracker {
 
   // Called when |surface| has a pending CompositorFrame and it wishes to be
   // informed when that surface's dependencies are resolved.
-  void RequestSurfaceResolution(Surface* surface,
-                                SurfaceDependencyDeadline* deadline);
+  void RequestSurfaceResolution(Surface* surface);
 
   void OnSurfaceActivated(Surface* surface);
   void OnSurfaceDependenciesChanged(
