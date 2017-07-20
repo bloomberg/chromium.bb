@@ -435,7 +435,6 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
         site_config=stage._run.site_config,
         dry_run=True,
         skip_delta_payloads=False,
-        disable_tests=False,
         skip_duts_check=False)
 
   def testRunPaygenInProcessComplex(self):
@@ -456,7 +455,6 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
         work_dir=mock.ANY,
         site_config=stage._run.site_config,
         skip_delta_payloads=True,
-        disable_tests=True,
         skip_duts_check=False)
 
   def testRunPaygenInProcessWithUnifiedBuild(self):
