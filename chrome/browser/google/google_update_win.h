@@ -14,7 +14,7 @@
 #include "ui/gfx/native_widget_types.h"
 
 namespace base {
-class SingleThreadTaskRunner;
+class SequencedTaskRunner;
 }  // namespace base
 
 // These values are used for a histogram. Do not reorder.
@@ -87,14 +87,13 @@ class UpdateCheckDelegate {
   UpdateCheckDelegate() {}
 };
 
-// Begins an asynchronous update check on |task_runner|. If a new version is
+// Begins an asynchronous update check. If a new version is
 // available and |install_update_if_possible| is true, the new version will be
 // automatically downloaded and installed. |elevation_window| is the window
 // which should own any necessary elevation UI. Methods on |delegate| will be
 // invoked on the caller's thread to provide feedback on the operation, with
 // messages localized to |locale| if possible.
 void BeginUpdateCheck(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     const std::string& locale,
     bool install_update_if_possible,
     gfx::AcceleratedWidget elevation_window,
@@ -109,5 +108,8 @@ typedef base::Callback<HRESULT(base::win::ScopedComPtr<IGoogleUpdate3Web>*)>
 // implementation independent of Google Update's.
 void SetGoogleUpdateFactoryForTesting(
     const GoogleUpdate3ClassFactory& google_update_factory);
+
+void SetUpdateDriverTaskRunnerForTesting(
+    base::SequencedTaskRunner* task_runner);
 
 #endif  // CHROME_BROWSER_GOOGLE_GOOGLE_UPDATE_WIN_H_

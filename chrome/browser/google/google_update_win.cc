@@ -22,12 +22,14 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/path_service.h"
+#include "base/sequenced_task_runner.h"
 #include "base/sequenced_task_runner_helpers.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_traits.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/version.h"
 #include "base/win/scoped_bstr.h"
@@ -62,6 +64,7 @@ enum GoogleUpdateUpgradeStatus {
 };
 
 GoogleUpdate3ClassFactory* g_google_update_factory = nullptr;
+base::SequencedTaskRunner* g_update_driver_task_runner = nullptr;
 
 // The time interval, in milliseconds, between polls to Google Update. This
 // value was chosen unscientificaly during an informal discussion.
@@ -197,10 +200,9 @@ HRESULT CreateGoogleUpdate3WebClass(
 // Google Update on another.
 class UpdateCheckDriver {
  public:
-  // Runs an update check on |task_runner|, invoking methods of |delegate| on
-  // the caller's thread to report progress and final results.
+  // Runs an update check, invoking methods of |delegate| on the caller's thread
+  // to report progress and final results.
   static void RunUpdateCheck(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       const std::string& locale,
       bool install_update_if_possible,
       gfx::AcceleratedWidget elevation_window,
@@ -210,7 +212,6 @@ class UpdateCheckDriver {
   friend class base::DeleteHelper<UpdateCheckDriver>;
 
   UpdateCheckDriver(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       const std::string& locale,
       bool install_update_if_possible,
       gfx::AcceleratedWidget elevation_window,
@@ -308,11 +309,11 @@ class UpdateCheckDriver {
   static UpdateCheckDriver* driver_;
 
   // The task runner on which the update checks runs.
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   // The caller's task runner, on which methods of the |delegates_| will be
   // invoked.
-  scoped_refptr<base::SingleThreadTaskRunner> result_runner_;
+  scoped_refptr<base::SequencedTaskRunner> result_runner_;
 
   // The UI locale.
   std::string locale_;
@@ -361,7 +362,6 @@ UpdateCheckDriver* UpdateCheckDriver::driver_ = nullptr;
 
 // static
 void UpdateCheckDriver::RunUpdateCheck(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     const std::string& locale,
     bool install_update_if_possible,
     gfx::AcceleratedWidget elevation_window,
@@ -371,27 +371,28 @@ void UpdateCheckDriver::RunUpdateCheck(
   if (!driver_) {
     // The driver is owned by itself, and will self-destruct when its work is
     // done.
-    driver_ =
-        new UpdateCheckDriver(task_runner, locale, install_update_if_possible,
-                              elevation_window, delegate);
-    task_runner->PostTask(FROM_HERE,
-                          base::Bind(&UpdateCheckDriver::BeginUpdateCheck,
-                                     base::Unretained(driver_)));
+    driver_ = new UpdateCheckDriver(locale, install_update_if_possible,
+                                    elevation_window, delegate);
+    driver_->task_runner_->PostTask(
+        FROM_HERE, base::Bind(&UpdateCheckDriver::BeginUpdateCheck,
+                              base::Unretained(driver_)));
   } else {
-    DCHECK_EQ(driver_->task_runner_, task_runner);
     driver_->AddDelegate(delegate);
   }
 }
 
 // Runs on the caller's thread.
 UpdateCheckDriver::UpdateCheckDriver(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     const std::string& locale,
     bool install_update_if_possible,
     gfx::AcceleratedWidget elevation_window,
     const base::WeakPtr<UpdateCheckDelegate>& delegate)
-    : task_runner_(std::move(task_runner)),
-      result_runner_(base::ThreadTaskRunnerHandle::Get()),
+    : task_runner_(
+          g_update_driver_task_runner
+              ? g_update_driver_task_runner
+              : base::CreateSequencedTaskRunnerWithTraits(
+                    {base::MayBlock(), base::TaskPriority::USER_VISIBLE})),
+      result_runner_(base::SequencedTaskRunnerHandle::Get()),
       locale_(locale),
       install_update_if_possible_(install_update_if_possible),
       elevation_window_(elevation_window),
@@ -405,7 +406,7 @@ UpdateCheckDriver::UpdateCheckDriver(
       installer_exit_code_(-1) {}
 
 UpdateCheckDriver::~UpdateCheckDriver() {
-  DCHECK(result_runner_->BelongsToCurrentThread());
+  DCHECK(result_runner_->RunsTasksInCurrentSequence());
   // If there is an error, then error_code must not be blank, and vice versa.
   DCHECK_NE(status_ == UPGRADE_ERROR, error_code_ == GOOGLE_UPDATE_NO_ERROR);
   UMA_HISTOGRAM_ENUMERATION("GoogleUpdate.UpgradeResult", status_,
@@ -440,14 +441,14 @@ UpdateCheckDriver::~UpdateCheckDriver() {
 
 void UpdateCheckDriver::AddDelegate(
     const base::WeakPtr<UpdateCheckDelegate>& delegate) {
-  DCHECK(result_runner_->BelongsToCurrentThread());
+    DCHECK(result_runner_->RunsTasksInCurrentSequence());
   delegates_.push_back(delegate);
 }
 
 void UpdateCheckDriver::NotifyUpgradeProgress(
     int progress,
     const base::string16& new_version) {
-  DCHECK(result_runner_->BelongsToCurrentThread());
+  DCHECK(result_runner_->RunsTasksInCurrentSequence());
 
   for (const auto& delegate : delegates_) {
     if (delegate)
@@ -859,13 +860,11 @@ void UpdateCheckDriver::OnUpgradeError(GoogleUpdateErrorCode error_code,
 // Globals ---------------------------------------------------------------------
 
 void BeginUpdateCheck(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     const std::string& locale,
     bool install_update_if_possible,
     gfx::AcceleratedWidget elevation_window,
     const base::WeakPtr<UpdateCheckDelegate>& delegate) {
-  UpdateCheckDriver::RunUpdateCheck(std::move(task_runner), locale,
-                                    install_update_if_possible,
+  UpdateCheckDriver::RunUpdateCheck(locale, install_update_if_possible,
                                     elevation_window, delegate);
 }
 
@@ -882,4 +881,11 @@ void SetGoogleUpdateFactoryForTesting(
     g_google_update_factory =
         new GoogleUpdate3ClassFactory(google_update_factory);
   }
+}
+
+// TODO(calamity): Remove once a MockTimer is implemented in
+// ScopedTaskEnvironment. See https://crbug.com/708584.
+void SetUpdateDriverTaskRunnerForTesting(
+    base::SequencedTaskRunner* task_runner) {
+  g_update_driver_task_runner = task_runner;
 }
