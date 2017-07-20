@@ -454,21 +454,16 @@ ukm::UkmRecorder* ChromePasswordManagerClient::GetUkmRecorder() {
 ukm::SourceId ChromePasswordManagerClient::GetUkmSourceId() {
   // TODO(crbug.com/732846): The UKM Source should be recycled (e.g. from the
   // web contents), once the UKM framework provides a mechanism for that.
-  if (!ukm_source_id_) {
+  if (!ukm_source_id_)
     ukm_source_id_ = ukm::UkmRecorder::GetNewSourceID();
-    ukm::UkmRecorder* ukm_recorder = GetUkmRecorder();
-    if (ukm_recorder)
-      ukm_recorder->UpdateSourceURL(*ukm_source_id_, GetMainFrameURL());
-  }
   return *ukm_source_id_;
 }
 
 PasswordManagerMetricsRecorder&
 ChromePasswordManagerClient::GetMetricsRecorder() {
   if (!metrics_recorder_) {
-    metrics_recorder_.emplace(
-        PasswordManagerMetricsRecorder::CreateUkmEntryBuilder(
-            GetUkmRecorder(), GetUkmSourceId()));
+    metrics_recorder_.emplace(GetUkmRecorder(), GetUkmSourceId(),
+                              GetMainFrameURL());
   }
   return metrics_recorder_.value();
 }
