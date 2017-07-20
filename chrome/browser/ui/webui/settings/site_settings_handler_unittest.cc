@@ -357,7 +357,7 @@ TEST_F(SiteSettingsHandlerTest, Origins) {
 }
 
 TEST_F(SiteSettingsHandlerTest, DefaultSettingSource) {
-  const std::string google("http://www.google.com");
+  const std::string google("https://www.google.com");
   ContentSettingSourceSetter source_setter(profile(),
                                            CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
 
