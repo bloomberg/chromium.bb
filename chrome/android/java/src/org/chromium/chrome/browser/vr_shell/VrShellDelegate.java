@@ -46,6 +46,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
@@ -94,7 +95,8 @@ public class VrShellDelegate
     @IntDef({VR_NOT_AVAILABLE, VR_CARDBOARD, VR_DAYDREAM})
     private @interface VrSupportLevel {}
 
-    public static final String DAYDREAM_VR_EXTRA = "android.intent.extra.VR_LAUNCH";
+    private static final String DAYDREAM_VR_EXTRA = "android.intent.extra.VR_LAUNCH";
+    private static final String DAYDREAM_HOME_PACKAGE = "com.google.android.vr.home";
     static final String VR_FRE_INTENT_EXTRA = "org.chromium.chrome.browser.vr_shell.VR_FRE";
 
     // Linter and formatter disagree on how the line below should be formatted.
@@ -841,6 +843,11 @@ public class VrShellDelegate
         sBlackOverlayView = null;
     }
 
+    private static boolean isTrustedDaydreamIntent(Intent intent) {
+        return isVrIntent(intent)
+                && IntentHandler.isIntentFromTrustedApp(intent, DAYDREAM_HOME_PACKAGE);
+    }
+
     private void onAutopresentIntent() {
         // Autopresent intents are only expected from trusted first party apps while
         // we're not in vr.
@@ -871,7 +878,7 @@ public class VrShellDelegate
         VrShellDelegate instance = getInstance(activity);
         if (instance == null) return;
         instance.onVrIntent();
-        if (VrIntentHandler.getInstance().isTrustedDaydreamIntent(intent)) {
+        if (isTrustedDaydreamIntent(intent)) {
             if (!ChromeFeatureList.isEnabled(ChromeFeatureList.WEBVR_AUTOPRESENT)
                     || !activitySupportsPresentation(activity)
                     || !isVrShellEnabled(instance.mVrSupportLevel)) {
@@ -886,7 +893,7 @@ public class VrShellDelegate
      * This is called when ChromeTabbedActivity gets a new intent before native is initialized.
      */
     public static void maybeHandleVrIntentPreNative(ChromeActivity activity, Intent intent) {
-        if (VrIntentHandler.getInstance().isTrustedDaydreamIntent(intent)) {
+        if (isTrustedDaydreamIntent(intent)) {
             // We add a black overlay view so that we can show black while the VR UI is loading.
             // Note that this alone isn't sufficient to prevent 2D UI from showing when
             // auto-presenting WebVR. See comment about the custom animation in {@link

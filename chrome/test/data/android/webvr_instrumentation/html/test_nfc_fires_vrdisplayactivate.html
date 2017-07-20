@@ -13,10 +13,8 @@ vrdisplayactivate event
     <script src="../resources/webvr_e2e.js"></script>
     <script>
       var t = async_test("NFC scan fires the vrdisplayactivate event");
-      function addListener() {
-        window.addEventListener("vrdisplayactivate", () => {t.done();}, false);
-      }
-      // NFC scan triggered after page loaded and listener added
+      window.addEventListener("vrdisplayactivate", () => {t.done();}, false);
+      // NFC scan triggered after page load
     </script>
   </body>
 </html>
