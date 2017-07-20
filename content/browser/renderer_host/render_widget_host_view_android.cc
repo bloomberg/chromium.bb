@@ -73,6 +73,7 @@
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_iterator.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -1199,6 +1200,10 @@ void RenderWidgetHostViewAndroid::DidCreateNewRendererCompositorFrameSink(
 }
 
 void RenderWidgetHostViewAndroid::EvictFrameIfNecessary() {
+  if (!base::FeatureList::IsEnabled(
+          features::kHideIncorrectlySizedFullscreenFrames)) {
+    return;
+  }
   if (host_->delegate()->IsFullscreenForCurrentTab() &&
       current_surface_size_ != view_.GetPhysicalBackingSize()) {
     // When we're in a fullscreen and the frame size doesn't match the view

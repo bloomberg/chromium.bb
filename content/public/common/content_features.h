@@ -102,6 +102,7 @@ extern const base::Feature kSendBeaconThrowForBlobWithNonSimpleType;
 
 #if defined(OS_ANDROID)
 CONTENT_EXPORT extern const base::Feature kAndroidAutofillAccessibility;
+CONTENT_EXPORT extern const base::Feature kHideIncorrectlySizedFullscreenFrames;
 CONTENT_EXPORT extern const base::Feature kImeThread;
 CONTENT_EXPORT extern const base::Feature kServiceWorkerPaymentApps;
 CONTENT_EXPORT extern const base::Feature kWebNfc;
