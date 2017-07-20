@@ -15,6 +15,7 @@
 
 #include "base/macros.h"
 #include "net/http2/hpack/decoder/hpack_decoder_listener.h"
+#include "net/http2/hpack/decoder/hpack_decoder_tables.h"
 #include "net/http2/hpack/decoder/http2_hpack_decoder.h"
 #include "net/http2/hpack/hpack_string.h"
 #include "net/http2/hpack/http2_hpack_constants.h"
