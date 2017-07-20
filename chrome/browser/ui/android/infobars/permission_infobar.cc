@@ -19,6 +19,7 @@
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/image/image.h"
 
+using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
 
 std::unique_ptr<infobars::InfoBar> CreatePermissionInfoBar(
@@ -38,17 +39,13 @@ PermissionInfoBarDelegate* PermissionInfoBar::GetDelegate() {
 
 ScopedJavaLocalRef<jobject> PermissionInfoBar::CreateRenderInfoBar(
     JNIEnv* env) {
-  ScopedJavaLocalRef<jstring> ok_button_text =
-      base::android::ConvertUTF16ToJavaString(
-          env, GetTextFor(PermissionInfoBarDelegate::BUTTON_OK));
-  ScopedJavaLocalRef<jstring> cancel_button_text =
-      base::android::ConvertUTF16ToJavaString(
-          env, GetTextFor(PermissionInfoBarDelegate::BUTTON_CANCEL));
+  base::string16 ok_button_text =
+      GetTextFor(PermissionInfoBarDelegate::BUTTON_OK);
+  base::string16 cancel_button_text =
+      GetTextFor(PermissionInfoBarDelegate::BUTTON_CANCEL);
   PermissionInfoBarDelegate* delegate = GetDelegate();
-  ScopedJavaLocalRef<jstring> message_text =
-      base::android::ConvertUTF16ToJavaString(env, delegate->GetMessageText());
-  ScopedJavaLocalRef<jstring> link_text =
-      base::android::ConvertUTF16ToJavaString(env, delegate->GetLinkText());
+  base::string16 message_text = delegate->GetMessageText();
+  base::string16 link_text = delegate->GetLinkText();
 
   ScopedJavaLocalRef<jobject> java_bitmap;
   if (delegate->GetIconId() == infobars::InfoBarDelegate::kNoIconID &&
@@ -57,13 +54,10 @@ ScopedJavaLocalRef<jobject> PermissionInfoBar::CreateRenderInfoBar(
   }
 
   std::vector<int> content_settings{delegate->content_settings_types()};
-
-  return Java_PermissionInfoBar_create(
-      env, GetTab()->GetJavaObject(), GetEnumeratedIconId(), java_bitmap.obj(),
-      message_text.obj(), link_text.obj(), ok_button_text.obj(),
-      cancel_button_text.obj(),
-      base::android::ToJavaIntArray(env, content_settings).obj(),
-      delegate->ShouldShowPersistenceToggle());
+  return CreateRenderInfoBarHelper(
+      env, GetEnumeratedIconId(), GetTab()->GetJavaObject(), java_bitmap,
+      message_text, link_text, ok_button_text, cancel_button_text,
+      content_settings, delegate->ShouldShowPersistenceToggle());
 }
 
 void PermissionInfoBar::ProcessButton(int action) {
@@ -71,9 +65,41 @@ void PermissionInfoBar::ProcessButton(int action) {
   // inform it of the toggle state.
   PermissionInfoBarDelegate* delegate = GetDelegate();
   if (delegate->ShouldShowPersistenceToggle()) {
-    delegate->set_persist(Java_PermissionInfoBar_isPersistSwitchOn(
-        base::android::AttachCurrentThread(), GetJavaInfoBar()));
+    delegate->set_persist(
+        IsSwitchOn(base::android::AttachCurrentThread(), GetJavaInfoBar()));
   }
 
   ConfirmInfoBar::ProcessButton(action);
+}
+
+ScopedJavaLocalRef<jobject> PermissionInfoBar::CreateRenderInfoBarHelper(
+    JNIEnv* env,
+    int enumerated_icon_id,
+    const JavaRef<jobject>& tab,
+    const ScopedJavaLocalRef<jobject>& icon_bitmap,
+    const base::string16& message_text,
+    const base::string16& link_text,
+    const base::string16& ok_button_text,
+    const base::string16& cancel_button_text,
+    std::vector<int>& content_settings,
+    bool show_persistence_toggle) {
+  ScopedJavaLocalRef<jstring> message_text_java =
+      base::android::ConvertUTF16ToJavaString(env, message_text);
+  ScopedJavaLocalRef<jstring> link_text_java =
+      base::android::ConvertUTF16ToJavaString(env, link_text);
+  ScopedJavaLocalRef<jstring> ok_button_text_java =
+      base::android::ConvertUTF16ToJavaString(env, ok_button_text);
+  ScopedJavaLocalRef<jstring> cancel_button_text_java =
+      base::android::ConvertUTF16ToJavaString(env, cancel_button_text);
+
+  ScopedJavaLocalRef<jintArray> content_settings_types =
+      base::android::ToJavaIntArray(env, content_settings);
+  return Java_PermissionInfoBar_create(
+      env, tab, enumerated_icon_id, icon_bitmap, message_text_java,
+      link_text_java, ok_button_text_java, cancel_button_text_java,
+      content_settings_types, show_persistence_toggle);
+}
+
+bool PermissionInfoBar::IsSwitchOn(JNIEnv* env, jobject info_bar_obj) {
+  return Java_PermissionInfoBar_isPersistSwitchOn(env, info_bar_obj);
 }
