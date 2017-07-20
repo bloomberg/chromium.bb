@@ -80413,6 +80413,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="TouchAction.GestureEventFiltered"
+    enum="TouchGestureEventFiltered">
+  <owner>hayleyferr@chromium.org</owner>
+  <owner>xidachen@chromium.org</owner>
+  <summary>
+    Tracks how often a gesture event is or is not dropped due to the current
+    allowed touch action state not matching the gesture event.
+  </summary>
+</histogram>
+
 <histogram name="TouchBar.Default.Metrics" enum="DefaultTouchBarActions">
   <owner>spqchan@chromium.com</owner>
   <summary>Tracks the usage of the default touch bar buttons.</summary>
