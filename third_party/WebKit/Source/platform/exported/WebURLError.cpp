@@ -65,8 +65,8 @@ WebURLError& WebURLError::operator=(const ResourceError& error) {
 WebURLError::operator ResourceError() const {
   if (!reason)
     return ResourceError();
-  ResourceError resource_error = ResourceError(
-      domain, reason, unreachable_url.GetString(), localized_description);
+  ResourceError resource_error =
+      ResourceError(domain, reason, unreachable_url, localized_description);
   resource_error.SetStaleCopyInCache(stale_copy_in_cache);
   resource_error.SetWasIgnoredByHandler(was_ignored_by_handler);
   resource_error.SetIsAccessCheck(is_web_security_violation);

@@ -648,10 +648,9 @@ TEST_P(ThreadableLoaderTest, DidFailInStart) {
   CreateLoader();
   CallCheckpoint(1);
 
-  EXPECT_CALL(*Client(),
-              DidFail(ResourceError(
-                  kErrorDomainBlinkInternal, 0, ErrorURL().GetString(),
-                  "Cross origin requests are not supported.")));
+  EXPECT_CALL(*Client(), DidFail(ResourceError(
+                             kErrorDomainBlinkInternal, 0, ErrorURL(),
+                             "Cross origin requests are not supported.")));
   EXPECT_CALL(GetCheckpoint(), Call(2));
 
   StartLoader(ErrorURL(), WebURLRequest::kFetchRequestModeSameOrigin);

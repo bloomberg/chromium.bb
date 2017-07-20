@@ -144,8 +144,7 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader,
   void LoadActualRequest();
   // Clears actual_request_ and reports access control check failure to
   // m_client.
-  void HandlePreflightFailure(const String& url,
-                              const String& error_description);
+  void HandlePreflightFailure(const KURL&, const String& error_description);
   // Investigates the response for the preflight request. If successful,
   // the actual request will be made later in handleSuccessfulFinish().
   void HandlePreflightResponse(const ResourceResponse&);
