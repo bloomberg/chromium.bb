@@ -41,6 +41,9 @@ class UI_BASE_EXPORT OnScreenKeyboardDisplayManager {
   // Returns true on success.
   bool GetOSKPath(base::string16* osk_path);
 
+  // Returns true if the virtual keyboard is currently visible.
+  bool IsKeyboardVisible() const;
+
  private:
   OnScreenKeyboardDisplayManager();
 
