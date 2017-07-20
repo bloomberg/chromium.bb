@@ -23,25 +23,8 @@ bool EmbeddedContentPainter::IsSelected() const {
   SelectionState s = layout_embedded_content_.GetSelectionState();
   if (s == SelectionState::kNone)
     return false;
-  if (s == SelectionState::kInside)
-    return true;
 
-  int selection_start, selection_end;
-  std::tie(selection_start, selection_end) =
-      layout_embedded_content_.SelectionStartEnd();
-  if (s == SelectionState::kStart)
-    return selection_start == 0;
-
-  int end = layout_embedded_content_.GetNode()->hasChildren()
-                ? layout_embedded_content_.GetNode()->CountChildren()
-                : 1;
-  if (s == SelectionState::kEnd)
-    return selection_end == end;
-  if (s == SelectionState::kStartAndEnd)
-    return selection_start == 0 && selection_end == end;
-
-  DCHECK(0);
-  return false;
+  return true;
 }
 
 void EmbeddedContentPainter::Paint(const PaintInfo& paint_info,
