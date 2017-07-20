@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/tablet_mode/tablet_mode_event_handler_aura.h"
+#include "ash/wm/tablet_mode/tablet_mode_event_handler_classic.h"
 
 #include "ash/shell.h"
 #include "ui/events/event.h"
@@ -10,15 +10,15 @@
 namespace ash {
 namespace wm {
 
-TabletModeEventHandlerAura::TabletModeEventHandlerAura() {
+TabletModeEventHandlerClassic::TabletModeEventHandlerClassic() {
   Shell::Get()->AddPreTargetHandler(this);
 }
 
-TabletModeEventHandlerAura::~TabletModeEventHandlerAura() {
+TabletModeEventHandlerClassic::~TabletModeEventHandlerClassic() {
   Shell::Get()->RemovePreTargetHandler(this);
 }
 
-void TabletModeEventHandlerAura::OnTouchEvent(ui::TouchEvent* event) {
+void TabletModeEventHandlerClassic::OnTouchEvent(ui::TouchEvent* event) {
   if (ToggleFullscreen(*event))
     event->StopPropagation();
 }

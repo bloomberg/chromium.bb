@@ -5,9 +5,8 @@
 #include "chrome/browser/ui/ash/ash_init.h"
 
 #include "ash/accelerators/accelerator_controller.h"
-#include "ash/accelerators/accelerator_controller_delegate_aura.h"
+#include "ash/accelerators/accelerator_controller_delegate_classic.h"
 #include "ash/accessibility_types.h"
-#include "ash/aura/shell_port_classic.h"
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/magnifier/partial_magnification_controller.h"
@@ -16,6 +15,7 @@
 #include "ash/public/cpp/config.h"
 #include "ash/shell.h"
 #include "ash/shell_init_params.h"
+#include "ash/shell_port_classic.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/sys_info.h"
@@ -112,7 +112,7 @@ AshInit::AshInit() {
 
   ash::Shell* shell = ash::Shell::Get();
 
-  ash::AcceleratorControllerDelegateAura* accelerator_controller_delegate =
+  ash::AcceleratorControllerDelegateClassic* accelerator_controller_delegate =
       nullptr;
   if (chromeos::GetAshConfig() == ash::Config::CLASSIC) {
     accelerator_controller_delegate =

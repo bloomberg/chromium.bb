@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_ACCELERATORS_ACCELERATOR_HANDLER_AURA_H_
-#define ASH_ACCELERATORS_ACCELERATOR_HANDLER_AURA_H_
+#ifndef ASH_ACCELERATORS_ACCELERATOR_CONTROLLER_DELEGATE_CLASSIC_H_
+#define ASH_ACCELERATORS_ACCELERATOR_CONTROLLER_DELEGATE_CLASSIC_H_
 
 #include <memory>
 
@@ -18,11 +18,11 @@ class ScreenshotDelegate;
 // for example accelerators related to display management. These sorts of
 // accelerators should be rare. Most new accelerators should be added to
 // accelerator_controller.cc instead.
-class ASH_EXPORT AcceleratorControllerDelegateAura
+class ASH_EXPORT AcceleratorControllerDelegateClassic
     : public AcceleratorControllerDelegate {
  public:
-  AcceleratorControllerDelegateAura();
-  ~AcceleratorControllerDelegateAura() override;
+  AcceleratorControllerDelegateClassic();
+  ~AcceleratorControllerDelegateClassic() override;
 
   void SetScreenshotDelegate(
       std::unique_ptr<ScreenshotDelegate> screenshot_delegate);
@@ -41,9 +41,9 @@ class ASH_EXPORT AcceleratorControllerDelegateAura
  private:
   std::unique_ptr<ScreenshotDelegate> screenshot_delegate_;
 
-  DISALLOW_COPY_AND_ASSIGN(AcceleratorControllerDelegateAura);
+  DISALLOW_COPY_AND_ASSIGN(AcceleratorControllerDelegateClassic);
 };
 
 }  // namespace ash
 
-#endif  // ASH_ACCELERATORS_ACCELERATOR_HANDLER_AURA_H_
+#endif  // ASH_ACCELERATORS_ACCELERATOR_CONTROLLER_DELEGATE_CLASSIC_H_

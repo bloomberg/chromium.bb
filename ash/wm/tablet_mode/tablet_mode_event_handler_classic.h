@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_TABLET_MODE_TABLET_MODE_EVENT_HANDLER_AURA_H_
-#define ASH_WM_TABLET_MODE_TABLET_MODE_EVENT_HANDLER_AURA_H_
+#ifndef ASH_WM_TABLET_MODE_TABLET_MODE_EVENT_HANDLER_CLASSIC_H_
+#define ASH_WM_TABLET_MODE_TABLET_MODE_EVENT_HANDLER_CLASSIC_H_
 
 #include "ash/ash_export.h"
 #include "ash/wm/tablet_mode/tablet_mode_event_handler.h"
@@ -13,20 +13,20 @@ namespace ash {
 namespace wm {
 
 // Implementation of TabletModeEventHandler for aura. Uses ui::EventHandler.
-class ASH_EXPORT TabletModeEventHandlerAura : public TabletModeEventHandler,
-                                              public ui::EventHandler {
+class ASH_EXPORT TabletModeEventHandlerClassic : public TabletModeEventHandler,
+                                                 public ui::EventHandler {
  public:
-  TabletModeEventHandlerAura();
-  ~TabletModeEventHandlerAura() override;
+  TabletModeEventHandlerClassic();
+  ~TabletModeEventHandlerClassic() override;
 
  private:
   // ui::EventHandler override:
   void OnTouchEvent(ui::TouchEvent* event) override;
 
-  DISALLOW_COPY_AND_ASSIGN(TabletModeEventHandlerAura);
+  DISALLOW_COPY_AND_ASSIGN(TabletModeEventHandlerClassic);
 };
 
 }  // namespace wm
 }  // namespace ash
 
-#endif  // ASH_WM_TABLET_MODE_TABLET_MODE_EVENT_HANDLER_AURA_H_
+#endif  // ASH_WM_TABLET_MODE_TABLET_MODE_EVENT_HANDLER_CLASSIC_H_

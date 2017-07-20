@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/window_cycle_event_filter_aura.h"
+#include "ash/wm/window_cycle_event_filter_classic.h"
 
 #include "ash/accelerators/debug_commands.h"
 #include "ash/shell.h"
@@ -12,7 +12,7 @@
 
 namespace ash {
 
-WindowCycleEventFilterAura::WindowCycleEventFilterAura() {
+WindowCycleEventFilterClassic::WindowCycleEventFilterClassic() {
   Shell::Get()->AddPreTargetHandler(this);
   // Handling release of "Alt" must come before other pretarget handlers
   // (specifically, the partial screenshot handler). See crbug.com/651939
@@ -21,12 +21,12 @@ WindowCycleEventFilterAura::WindowCycleEventFilterAura() {
   Shell::Get()->PrependPreTargetHandler(&alt_release_handler_);
 }
 
-WindowCycleEventFilterAura::~WindowCycleEventFilterAura() {
+WindowCycleEventFilterClassic::~WindowCycleEventFilterClassic() {
   Shell::Get()->RemovePreTargetHandler(this);
   Shell::Get()->RemovePreTargetHandler(&alt_release_handler_);
 }
 
-void WindowCycleEventFilterAura::OnKeyEvent(ui::KeyEvent* event) {
+void WindowCycleEventFilterClassic::OnKeyEvent(ui::KeyEvent* event) {
   // Until the alt key is released, all key events except the trigger key press
   // (which is handled by the accelerator controller to call Step) are handled
   // by this window cycle controller: https://crbug.com/340339.
@@ -52,7 +52,7 @@ void WindowCycleEventFilterAura::OnKeyEvent(ui::KeyEvent* event) {
   }
 }
 
-void WindowCycleEventFilterAura::OnMouseEvent(ui::MouseEvent* event) {
+void WindowCycleEventFilterClassic::OnMouseEvent(ui::MouseEvent* event) {
   // Prevent mouse clicks from doing anything while the Alt+Tab UI is active
   // <crbug.com/641171> but don't interfere with drag and drop operations
   // <crbug.com/660945>.
@@ -62,11 +62,11 @@ void WindowCycleEventFilterAura::OnMouseEvent(ui::MouseEvent* event) {
   }
 }
 
-WindowCycleEventFilterAura::AltReleaseHandler::AltReleaseHandler() {}
+WindowCycleEventFilterClassic::AltReleaseHandler::AltReleaseHandler() {}
 
-WindowCycleEventFilterAura::AltReleaseHandler::~AltReleaseHandler() {}
+WindowCycleEventFilterClassic::AltReleaseHandler::~AltReleaseHandler() {}
 
-void WindowCycleEventFilterAura::AltReleaseHandler::OnKeyEvent(
+void WindowCycleEventFilterClassic::AltReleaseHandler::OnKeyEvent(
     ui::KeyEvent* event) {
   // Views uses VKEY_MENU for both left and right Alt keys.
   if (event->key_code() == ui::VKEY_MENU &&

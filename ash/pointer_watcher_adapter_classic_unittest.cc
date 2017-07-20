@@ -12,7 +12,7 @@
 
 namespace ash {
 
-using PointerWatcherAdapterTest = AshTestBase;
+using PointerWatcherAdapterClassicTest = AshTestBase;
 
 enum TestPointerCaptureEvents {
   NONE = 0x01,
@@ -150,7 +150,7 @@ class TestHelper {
   DISALLOW_COPY_AND_ASSIGN(TestHelper);
 };
 
-TEST_F(PointerWatcherAdapterTest, MouseEvents) {
+TEST_F(PointerWatcherAdapterClassicTest, MouseEvents) {
   TestHelper helper;
 
   // Move: only the move and drag PointerWatcher should get the event.
@@ -191,7 +191,7 @@ TEST_F(PointerWatcherAdapterTest, MouseEvents) {
   helper.ExpectCallCount(CAPTURE, CAPTURE, CAPTURE);
 }
 
-TEST_F(PointerWatcherAdapterTest, TouchEvents) {
+TEST_F(PointerWatcherAdapterClassicTest, TouchEvents) {
   TestHelper helper;
 
   // Press: all.

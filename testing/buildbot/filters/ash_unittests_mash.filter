@@ -206,10 +206,10 @@
 -PartialScreenshotControllerTest.TouchMousePointerHoverIgnoredWithPointerEvents
 -PartialScreenshotControllerTest.TwoFingerTouch
 -PartialScreenshotControllerTest.VisibilityTest
--PointerWatcherAdapterTest.MouseEvents
--PointerWatcherAdapterTest.TouchEvents
--PointerWatcherdapterTest.Mousevents
--PointerWatcherdapterTest.Touchvents
+-PointerWatcherAdapterClassicTest.MouseEvents
+-PointerWatcherAdapterClassicTest.TouchEvents
+-PointerWatcherdapterClassicTest.Mousevents
+-PointerWatcherdapterClassicTest.Touchvents
 -ResizeShadowAndCursorTest.MaximizeRestore
 -ResizeShadowAndCursorTest.MouseDrag
 -ResizeShadowAndCursorTest.MouseHover

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_IMMERSIVE_FOCUS_WATCHER_AURA_H_
-#define ASH_WM_IMMERSIVE_FOCUS_WATCHER_AURA_H_
+#ifndef ASH_WM_IMMERSIVE_FOCUS_WATCHER_CLASSIC_H_
+#define ASH_WM_IMMERSIVE_FOCUS_WATCHER_CLASSIC_H_
 
 #include "ash/ash_export.h"
 #include "ash/public/cpp/immersive/immersive_focus_watcher.h"
@@ -19,14 +19,15 @@ class ImmersiveRevealedLock;
 // ImmersiveFocusWatcher is responsible for grabbing a reveal lock based on
 // activation and/or focus. This implementation grabs a lock if views focus is
 // in the top view, or a bubble is showing that is anchored to the top view.
-class ASH_EXPORT ImmersiveFocusWatcherAura
+class ASH_EXPORT ImmersiveFocusWatcherClassic
     : public ImmersiveFocusWatcher,
       public views::FocusChangeListener,
       public views::WidgetObserver,
       public ::wm::TransientWindowObserver {
  public:
-  explicit ImmersiveFocusWatcherAura(ImmersiveFullscreenController* controller);
-  ~ImmersiveFocusWatcherAura() override;
+  explicit ImmersiveFocusWatcherClassic(
+      ImmersiveFullscreenController* controller);
+  ~ImmersiveFocusWatcherClassic() override;
 
   // ImmersiveFocusWatcher:
   void UpdateFocusRevealedLock() override;
@@ -68,9 +69,9 @@ class ASH_EXPORT ImmersiveFocusWatcherAura
   // |ImmersiveFullscreenController::top_container_|.
   std::unique_ptr<BubbleObserver> bubble_observer_;
 
-  DISALLOW_COPY_AND_ASSIGN(ImmersiveFocusWatcherAura);
+  DISALLOW_COPY_AND_ASSIGN(ImmersiveFocusWatcherClassic);
 };
 
 }  // namespace ash
 
-#endif  // ASH_WM_IMMERSIVE_FOCUS_WATCHER_AURA_H_
+#endif  // ASH_WM_IMMERSIVE_FOCUS_WATCHER_CLASSIC_H_

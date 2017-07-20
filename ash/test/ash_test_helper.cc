@@ -7,9 +7,8 @@
 #include <algorithm>
 #include <set>
 
-#include "ash/accelerators/accelerator_controller_delegate_aura.h"
+#include "ash/accelerators/accelerator_controller_delegate_classic.h"
 #include "ash/ash_switches.h"
-#include "ash/aura/shell_port_classic.h"
 #include "ash/display/display_configuration_controller_test_api.h"
 #include "ash/mus/bridge/shell_port_mash.h"
 #include "ash/mus/window_manager.h"
@@ -18,6 +17,7 @@
 #include "ash/shell.h"
 #include "ash/shell_init_params.h"
 #include "ash/shell_port.h"
+#include "ash/shell_port_classic.h"
 #include "ash/system/screen_layout_observer.h"
 #include "ash/test/ash_test_environment.h"
 #include "ash/test/ash_test_views_delegate.h"
@@ -180,7 +180,7 @@ void AshTestHelper::SetUp(bool start_session) {
       .DisableDisplayAnimator();
 
   if (config_ == Config::CLASSIC) {
-    // TODO: disabled for mash as AcceleratorControllerDelegateAura isn't
+    // TODO: disabled for mash as AcceleratorControllerDelegateClassic isn't
     // created in mash http://crbug.com/632111.
     test_screenshot_delegate_ = new TestScreenshotDelegate();
     ShellPortClassic::Get()

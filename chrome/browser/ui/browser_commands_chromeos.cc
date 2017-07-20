@@ -4,10 +4,10 @@
 
 #include "chrome/browser/ui/browser_commands_chromeos.h"
 
-#include "ash/accelerators/accelerator_controller_delegate_aura.h"
-#include "ash/aura/shell_port_classic.h"
+#include "ash/accelerators/accelerator_controller_delegate_classic.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/screenshot_delegate.h"
+#include "ash/shell_port_classic.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 

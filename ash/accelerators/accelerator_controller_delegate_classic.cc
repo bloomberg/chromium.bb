@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/accelerators/accelerator_controller_delegate_aura.h"
+#include "ash/accelerators/accelerator_controller_delegate_classic.h"
 
 #include <algorithm>
 #include <cmath>
 #include <string>
 #include <utility>
 
-#include "ash/accelerators/accelerator_commands_aura.h"
+#include "ash/accelerators/accelerator_commands_classic.h"
 #include "ash/accelerators/debug_commands.h"
 #include "ash/accessibility_types.h"
 #include "ash/debug.h"
@@ -106,16 +106,16 @@ void HandleTouchHudModeChange() {
 
 }  // namespace
 
-AcceleratorControllerDelegateAura::AcceleratorControllerDelegateAura() {}
+AcceleratorControllerDelegateClassic::AcceleratorControllerDelegateClassic() {}
 
-AcceleratorControllerDelegateAura::~AcceleratorControllerDelegateAura() {}
+AcceleratorControllerDelegateClassic::~AcceleratorControllerDelegateClassic() {}
 
-void AcceleratorControllerDelegateAura::SetScreenshotDelegate(
+void AcceleratorControllerDelegateClassic::SetScreenshotDelegate(
     std::unique_ptr<ScreenshotDelegate> screenshot_delegate) {
   screenshot_delegate_ = std::move(screenshot_delegate);
 }
 
-bool AcceleratorControllerDelegateAura::HandlesAction(
+bool AcceleratorControllerDelegateClassic::HandlesAction(
     AcceleratorAction action) {
   // NOTE: When adding a new accelerator that only depends on //ash/common code,
   // add it to accelerator_controller.cc instead. See class comment.
@@ -146,7 +146,7 @@ bool AcceleratorControllerDelegateAura::HandlesAction(
   return false;
 }
 
-bool AcceleratorControllerDelegateAura::CanPerformAction(
+bool AcceleratorControllerDelegateClassic::CanPerformAction(
     AcceleratorAction action,
     const ui::Accelerator& accelerator,
     const ui::Accelerator& previous_accelerator) {
@@ -184,7 +184,7 @@ bool AcceleratorControllerDelegateAura::CanPerformAction(
   return false;
 }
 
-void AcceleratorControllerDelegateAura::PerformAction(
+void AcceleratorControllerDelegateClassic::PerformAction(
     AcceleratorAction action,
     const ui::Accelerator& accelerator) {
   switch (action) {

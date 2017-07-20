@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_WINDOW_CYCLE_EVENT_FILTER_AURA_H_
-#define ASH_WM_WINDOW_CYCLE_EVENT_FILTER_AURA_H_
+#ifndef ASH_WM_WINDOW_CYCLE_EVENT_FILTER_CLASSIC_H_
+#define ASH_WM_WINDOW_CYCLE_EVENT_FILTER_CLASSIC_H_
 
 #include "ash/ash_export.h"
 #include "ash/wm/window_cycle_event_filter.h"
@@ -13,11 +13,11 @@
 
 namespace ash {
 
-class ASH_EXPORT WindowCycleEventFilterAura : public ui::EventHandler,
-                                              public WindowCycleEventFilter {
+class ASH_EXPORT WindowCycleEventFilterClassic : public ui::EventHandler,
+                                                 public WindowCycleEventFilter {
  public:
-  WindowCycleEventFilterAura();
-  ~WindowCycleEventFilterAura() override;
+  WindowCycleEventFilterClassic();
+  ~WindowCycleEventFilterClassic() override;
 
   // Overridden from ui::EventHandler:
   void OnKeyEvent(ui::KeyEvent* event) override;
@@ -43,9 +43,9 @@ class ASH_EXPORT WindowCycleEventFilterAura : public ui::EventHandler,
 
   AltReleaseHandler alt_release_handler_;
 
-  DISALLOW_COPY_AND_ASSIGN(WindowCycleEventFilterAura);
+  DISALLOW_COPY_AND_ASSIGN(WindowCycleEventFilterClassic);
 };
 
 }  // namespace ash
 
-#endif  // ASH_WM_WINDOW_CYCLE_EVENT_FILTER_AURA_H_
+#endif  // ASH_WM_WINDOW_CYCLE_EVENT_FILTER_CLASSIC_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/accelerators/accelerator_commands_aura.h"
+#include "ash/accelerators/accelerator_commands_classic.h"
 
 #include "ash/shell.h"
 #include "ash/wm/screen_pinning_controller.h"

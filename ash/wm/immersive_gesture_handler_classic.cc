@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/immersive_gesture_handler_aura.h"
+#include "ash/wm/immersive_gesture_handler_classic.h"
 
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
 #include "ash/shell.h"
@@ -25,17 +25,17 @@ gfx::Point GetEventLocationInScreen(const ui::LocatedEvent& event) {
 
 }  // namespace
 
-ImmersiveGestureHandlerAura::ImmersiveGestureHandlerAura(
+ImmersiveGestureHandlerClassic::ImmersiveGestureHandlerClassic(
     ImmersiveFullscreenController* controller)
     : immersive_fullscreen_controller_(controller) {
   Shell::Get()->AddPreTargetHandler(this);
 }
 
-ImmersiveGestureHandlerAura::~ImmersiveGestureHandlerAura() {
+ImmersiveGestureHandlerClassic::~ImmersiveGestureHandlerClassic() {
   Shell::Get()->RemovePreTargetHandler(this);
 }
 
-void ImmersiveGestureHandlerAura::OnGestureEvent(ui::GestureEvent* event) {
+void ImmersiveGestureHandlerClassic::OnGestureEvent(ui::GestureEvent* event) {
   immersive_fullscreen_controller_->OnGestureEvent(
       event, GetEventLocationInScreen(*event));
 }
