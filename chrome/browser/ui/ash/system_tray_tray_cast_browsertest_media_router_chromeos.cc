@@ -26,8 +26,7 @@ namespace {
 // Helper to create a MediaSink intance.
 media_router::MediaSink MakeSink(const std::string& id,
                                  const std::string& name) {
-  return media_router::MediaSink(id, name,
-                                 media_router::MediaSink::IconType::GENERIC);
+  return media_router::MediaSink(id, name, media_router::SinkIconType::GENERIC);
 }
 
 // Helper to create a MediaRoute instance.

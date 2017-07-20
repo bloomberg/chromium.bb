@@ -158,11 +158,11 @@ TEST_F(QueryResultManagerTest, StartStopSinksQuery) {
 }
 
 TEST_F(QueryResultManagerTest, MultipleQueries) {
-  MediaSink sink1("sinkId1", "Sink 1", MediaSink::IconType::CAST);
-  MediaSink sink2("sinkId2", "Sink 2", MediaSink::IconType::CAST);
-  MediaSink sink3("sinkId3", "Sink 3", MediaSink::IconType::CAST);
-  MediaSink sink4("sinkId4", "Sink 4", MediaSink::IconType::CAST);
-  MediaSink sink5("sinkId5", "Sink 5", MediaSink::IconType::CAST);
+  MediaSink sink1("sinkId1", "Sink 1", SinkIconType::CAST);
+  MediaSink sink2("sinkId2", "Sink 2", SinkIconType::CAST);
+  MediaSink sink3("sinkId3", "Sink 3", SinkIconType::CAST);
+  MediaSink sink4("sinkId4", "Sink 4", SinkIconType::CAST);
+  MediaSink sink5("sinkId5", "Sink 5", SinkIconType::CAST);
   MediaSource presentation_source1 =
       MediaSourceForPresentationUrl(GURL("http://bar.com"));
   MediaSource presentation_source2 =
@@ -278,10 +278,10 @@ TEST_F(QueryResultManagerTest, MultipleQueries) {
 }
 
 TEST_F(QueryResultManagerTest, MultipleUrls) {
-  const MediaSink sink1("sinkId1", "Sink 1", MediaSink::IconType::CAST);
-  const MediaSink sink2("sinkId2", "Sink 2", MediaSink::IconType::CAST);
-  const MediaSink sink3("sinkId3", "Sink 3", MediaSink::IconType::CAST);
-  const MediaSink sink4("sinkId4", "Sink 4", MediaSink::IconType::CAST);
+  const MediaSink sink1("sinkId1", "Sink 1", SinkIconType::CAST);
+  const MediaSink sink2("sinkId2", "Sink 2", SinkIconType::CAST);
+  const MediaSink sink3("sinkId3", "Sink 3", SinkIconType::CAST);
+  const MediaSink sink4("sinkId4", "Sink 4", SinkIconType::CAST);
   const MediaSource source_a(
       MediaSourceForPresentationUrl(GURL("http://urlA.com")));
   const MediaSource source_b(

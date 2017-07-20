@@ -93,7 +93,7 @@ bool StructTraits<media_router::mojom::MediaSinkDataView,
   if (domain)
     out->set_domain(*domain);
 
-  media_router::MediaSink::IconType icon_type;
+  media_router::SinkIconType icon_type;
   if (!data.ReadIconType(&icon_type))
     return false;
 

@@ -11,7 +11,7 @@ namespace media_router {
 
 MediaSink::MediaSink(const MediaSink::Id& sink_id,
                      const std::string& name,
-                     const MediaSink::IconType icon_type)
+                     SinkIconType icon_type)
     : sink_id_(sink_id), name_(name), icon_type_(icon_type) {}
 
 MediaSink::MediaSink(const MediaSink& other) = default;
