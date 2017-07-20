@@ -17,6 +17,20 @@ class PermissionInfoBar : public ConfirmInfoBar {
       std::unique_ptr<PermissionInfoBarDelegate> delegate);
   ~PermissionInfoBar() override;
 
+  static base::android::ScopedJavaLocalRef<jobject> CreateRenderInfoBarHelper(
+      JNIEnv* env,
+      int enumerated_icon_id,
+      const base::android::JavaRef<jobject>& tab,
+      const base::android::ScopedJavaLocalRef<jobject>& icon_bitmap,
+      const base::string16& message_text,
+      const base::string16& link_text,
+      const base::string16& ok_button_text,
+      const base::string16& cancel_button_text,
+      std::vector<int>& content_settings,
+      bool show_persistence_toggle);
+
+  static bool IsSwitchOn(JNIEnv* env, jobject info_bar_obj);
+
  protected:
   PermissionInfoBarDelegate* GetDelegate();
 
