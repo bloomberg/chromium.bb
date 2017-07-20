@@ -103,6 +103,84 @@ TEST_F(ToolsMediatorTest, TestMenuItemsForTabSwitcherNonIncognito) {
   EXPECT_EQ(5ul, [mediator_.menuItemsArray count]);
 }
 
+TEST_F(ToolsMediatorTest, TestEnabledMenuItemsForOpenTabs) {
+  configuration_.inTabSwitcher = YES;
+  configuration_.inIncognito = NO;
+  configuration_.noOpenedTabs = NO;
+
+  mediator_ = [[ToolsMediator alloc] initWithConsumer:consumer_
+                                        configuration:configuration_];
+
+  ToolsMenuItem* closeAllTabsItem = mediator_.menuItemsArray[2];
+  EXPECT_NSEQ(@"Close All Tabs", closeAllTabsItem.title);
+  EXPECT_EQ(true, closeAllTabsItem.enabled);
+}
+
+TEST_F(ToolsMediatorTest, TestEnabledMenuItemsForNoOpenTabs) {
+  configuration_.inTabSwitcher = YES;
+  configuration_.inIncognito = NO;
+  configuration_.noOpenedTabs = YES;
+
+  mediator_ = [[ToolsMediator alloc] initWithConsumer:consumer_
+                                        configuration:configuration_];
+
+  ToolsMenuItem* closeAllTabsItem = mediator_.menuItemsArray[2];
+  EXPECT_NSEQ(@"Close All Tabs", closeAllTabsItem.title);
+  EXPECT_EQ(false, closeAllTabsItem.enabled);
+}
+
+TEST_F(ToolsMediatorTest, TestEnabledMenuItemsForOpenTabsIncognito) {
+  configuration_.inTabSwitcher = YES;
+  configuration_.inIncognito = YES;
+  configuration_.noOpenedTabs = NO;
+
+  mediator_ = [[ToolsMediator alloc] initWithConsumer:consumer_
+                                        configuration:configuration_];
+
+  ToolsMenuItem* closeAllTabsItem = mediator_.menuItemsArray[2];
+  EXPECT_NSEQ(@"Close All Incognito Tabs", closeAllTabsItem.title);
+  EXPECT_EQ(true, closeAllTabsItem.enabled);
+}
+
+TEST_F(ToolsMediatorTest, TestEnabledMenuItemsForNoOpenTabsIncognito) {
+  configuration_.inTabSwitcher = YES;
+  configuration_.inIncognito = YES;
+  configuration_.noOpenedTabs = YES;
+
+  mediator_ = [[ToolsMediator alloc] initWithConsumer:consumer_
+                                        configuration:configuration_];
+
+  ToolsMenuItem* closeAllTabsItem = mediator_.menuItemsArray[2];
+  EXPECT_NSEQ(@"Close All Incognito Tabs", closeAllTabsItem.title);
+  EXPECT_EQ(false, closeAllTabsItem.enabled);
+}
+
+TEST_F(ToolsMediatorTest, TestEnabledMenuItemsForInNTP) {
+  configuration_.inTabSwitcher = NO;
+  configuration_.inIncognito = NO;
+  configuration_.inNewTabPage = YES;
+
+  mediator_ = [[ToolsMediator alloc] initWithConsumer:consumer_
+                                        configuration:configuration_];
+
+  ToolsMenuItem* findInPageItem = mediator_.menuItemsArray[4];
+  EXPECT_NSEQ(@"Find in Page…", findInPageItem.title);
+  EXPECT_EQ(false, findInPageItem.enabled);
+}
+
+TEST_F(ToolsMediatorTest, TestEnabledMenuItemsForNotInNTP) {
+  configuration_.inTabSwitcher = NO;
+  configuration_.inIncognito = NO;
+  configuration_.inNewTabPage = NO;
+
+  mediator_ = [[ToolsMediator alloc] initWithConsumer:consumer_
+                                        configuration:configuration_];
+
+  ToolsMenuItem* findInPageItem = mediator_.menuItemsArray[4];
+  EXPECT_NSEQ(@"Find in Page…", findInPageItem.title);
+  EXPECT_EQ(true, findInPageItem.enabled);
+}
+
 TEST_F(ToolsMediatorTest, TestDontUpdateConsumerLoadingState) {
   configuration_.inTabSwitcher = NO;
   [[consumer_ reject] setIsLoading:YES];

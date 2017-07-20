@@ -24,6 +24,8 @@ enum class UserAgentType : short;
 @property(nonatomic, getter=hasNoOpenedTabs) BOOL noOpenedTabs;
 // Indicates that the menu is being shown while in incognito mode.
 @property(nonatomic, getter=isInIncognito) BOOL inIncognito;
+// Indicates that the menu is being shown while in the New Tab Page.
+@property(nonatomic, getter=isInNewTabPage) BOOL inNewTabPage;
 
 // Indicates that the menu is being shown while user agent is |userAgentType|.
 // If NONE, shows "Request Desktop Site" in disabled state.

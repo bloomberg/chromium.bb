@@ -11,6 +11,7 @@
 @interface ToolsMenuItem : NSObject
 @property(nonatomic, copy) NSString* title;
 @property(nonatomic) SEL action;
+@property(nonatomic) BOOL enabled;
 @end
 
 #endif  // IOS_CLEAN_CHROME_BROWSER_UI_TOOLS_TOOLS_MENU_ITEM_H_

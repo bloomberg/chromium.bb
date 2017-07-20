@@ -202,6 +202,8 @@
   ToolsMenuConfiguration* menuConfiguration =
       [[ToolsMenuConfiguration alloc] initWithDisplayView:nil];
   menuConfiguration.inTabSwitcher = YES;
+  menuConfiguration.noOpenedTabs = self.browser->web_state_list().empty();
+  menuConfiguration.inNewTabPage = NO;
   toolsCoordinator.toolsMenuConfiguration = menuConfiguration;
   [toolsCoordinator start];
   self.toolsMenuCoordinator = toolsCoordinator;

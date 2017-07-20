@@ -87,11 +87,11 @@
 
   for (size_t i = 0; i < arraysize(itemsModelList); ++i) {
     const MenuModelItem& modelItem = itemsModelList[i];
-
     if ([self itemIsVisibleForCurrentConfiguration:modelItem]) {
       ToolsMenuItem* menuItem = [[ToolsMenuItem alloc] init];
       menuItem.title = l10n_util::GetNSStringWithFixup(modelItem.title_id);
       menuItem.action = NSSelectorFromString(modelItem.selector);
+      menuItem.enabled = [self itemIsEnabledForCurrentConfiguration:modelItem];
       [self.menuItems addObject:menuItem];
     }
   }
@@ -129,6 +129,20 @@
       return YES;
     default:
       return NO;
+  }
+}
+
+// Returns true if item should be enabled on the current configuration.
+- (BOOL)itemIsEnabledForCurrentConfiguration:(const MenuModelItem)modelItem {
+  switch (modelItem.enabled) {
+    case ItemEnabledAlways:
+      return YES;
+    case ItemEnabledNotInNTP:
+      return !self.toolsMenuConfiguration.inNewTabPage;
+    case ItemEnabledWhenOpenTabs:
+      return !self.toolsMenuConfiguration.hasNoOpenedTabs;
+    default:
+      return YES;
   }
 }
 
