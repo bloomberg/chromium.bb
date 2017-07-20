@@ -411,6 +411,11 @@ TestingBrowserProcess::GetPhysicalWebDataSource() {
   return nullptr;
 }
 
+prefs::InProcessPrefServiceFactory*
+TestingBrowserProcess::pref_service_factory() const {
+  return nullptr;
+}
+
 void TestingBrowserProcess::SetSystemRequestContext(
     net::URLRequestContextGetter* context_getter) {
   system_request_context_ = context_getter;

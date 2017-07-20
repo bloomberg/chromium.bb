@@ -420,6 +420,9 @@ PrefService* Shell::GetActiveUserPrefService() const {
 }
 
 PrefService* Shell::GetLocalStatePrefService() const {
+  if (shell_port_->GetAshConfig() == Config::MASH)
+    return local_state_.get();
+
   return shell_delegate_->GetLocalStatePrefService();
 }
 
@@ -633,7 +636,8 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
       display_configurator_(new display::DisplayConfigurator()),
       native_cursor_manager_(nullptr),
       simulate_modal_window_open_for_testing_(false),
-      is_touch_hud_projection_enabled_(false) {
+      is_touch_hud_projection_enabled_(false),
+      weak_factory_(this) {
   // TODO(sky): better refactor cash/mash dependencies. Perhaps put all cash
   // state on ShellPortClassic. http://crbug.com/671246.
 
@@ -856,10 +860,17 @@ void Shell::Init(const ShellInitParams& init_params) {
   if (config == Config::MASH && shell_delegate_->GetShellConnector()) {
     auto pref_registry = base::MakeRefCounted<PrefRegistrySimple>();
     Shell::RegisterPrefs(pref_registry.get());
+    prefs::ConnectToPrefService(shell_delegate_->GetShellConnector(),
+                                std::move(pref_registry),
+                                base::Bind(&Shell::OnPrefServiceInitialized,
+                                           weak_factory_.GetWeakPtr()),
+                                prefs::mojom::kForwarderServiceName);
+    pref_registry = base::MakeRefCounted<PrefRegistrySimple>();
     prefs::ConnectToPrefService(
         shell_delegate_->GetShellConnector(), std::move(pref_registry),
-        base::Bind(&Shell::OnPrefServiceInitialized, base::Unretained(this)),
-        prefs::mojom::kForwarderServiceName);
+        base::Bind(&Shell::OnLocalStatePrefServiceInitialized,
+                   weak_factory_.GetWeakPtr()),
+        prefs::mojom::kLocalStateServiceName);
   }
 
   // Some delegates access ShellPort during their construction. Create them here
@@ -1292,11 +1303,16 @@ void Shell::InitializeShelf() {
 
 void Shell::OnPrefServiceInitialized(
     std::unique_ptr<::PrefService> pref_service) {
-  if (!instance_)
-    return;
   // |pref_service_| is null if can't connect to Chrome (as happens when
   // running mash outside of chrome --mash and chrome isn't built).
   pref_service_ = std::move(pref_service);
+}
+
+void Shell::OnLocalStatePrefServiceInitialized(
+    std::unique_ptr<::PrefService> pref_service) {
+  // |pref_service_| is null if can't connect to Chrome (as happens when
+  // running mash outside of chrome --mash and chrome isn't built).
+  local_state_ = std::move(pref_service);
 }
 
 }  // namespace ash

@@ -100,6 +100,10 @@ class BrowserPolicyConnector;
 class PolicyService;
 }
 
+namespace prefs {
+class InProcessPrefServiceFactory;
+}
+
 namespace printing {
 class BackgroundPrintingManager;
 class PrintJobManager;
@@ -288,6 +292,8 @@ class BrowserProcess {
 
   // Returns the Physical Web data source.
   virtual physical_web::PhysicalWebDataSource* GetPhysicalWebDataSource() = 0;
+
+  virtual prefs::InProcessPrefServiceFactory* pref_service_factory() const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserProcess);
