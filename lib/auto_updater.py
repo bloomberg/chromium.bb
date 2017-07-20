@@ -108,6 +108,9 @@ ERROR_MSG_IN_LOADING_LIB = 'python: error while loading shared libraries'
 # 2. for some retriable commands to be retried.
 MAX_RETRY = 5
 
+# Number of times to retry update_engine_client --status. See crbug.com/744212.
+UPDATE_ENGINE_STATUS_RETRY = 30
+
 # The delay between retriable tasks.
 DELAY_SEC_FOR_RETRY = 5
 
@@ -677,7 +680,7 @@ class ChromiumOSFlashUpdater(BaseUpdater):
 
         #TODO(dhaddock): Remove retry when M61 is stable. See crbug.com/744212.
         op, progress = retry_util.RetryException(cros_build_lib.RunCommandError,
-                                                 MAX_RETRY,
+                                                 UPDATE_ENGINE_STATUS_RETRY,
                                                  self.GetUpdateStatus,
                                                  self.device,
                                                  ['CURRENT_OP', 'PROGRESS'],
