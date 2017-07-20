@@ -10,6 +10,7 @@
 
 #include <map>
 #include <set>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -1481,7 +1482,14 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, StartAndStop) {
   EXPECT_FALSE(csd_service->enabled());
 }
 
-IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, MalwareWebSocketBlocked) {
+// Parameterised fixture to permit running the same test for Window and Worker
+// scopes.
+class SafeBrowsingServiceWebSocketTest
+    : public ::testing::WithParamInterface<std::string>,
+      public SafeBrowsingServiceTest {};
+
+IN_PROC_BROWSER_TEST_P(SafeBrowsingServiceWebSocketTest,
+                       MalwareWebSocketBlocked) {
   // This test currently only passes when the network service is enabled.
   if (!base::FeatureList::IsEnabled(features::kNetworkService))
     return;
@@ -1491,6 +1499,11 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, MalwareWebSocketBlocked) {
   GURL::Replacements replace_scheme;
   replace_scheme.SetScheme("ws", url::Component(0, strlen("ws")));
   GURL websocket_url = resolved.ReplaceComponents(replace_scheme);
+
+  GURL::Replacements add_query;
+  std::string query = "type=" + GetParam();
+  add_query.SetQueryStr(query);
+  GURL main_url_with_query = main_url.ReplaceComponents(add_query);
 
   // Add the WebSocket url as malware.
   SBFullHashResult uws_full_hash;
@@ -1509,7 +1522,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, MalwareWebSocketBlocked) {
           base::Unretained(this)));
 
   EXPECT_CALL(observer_, OnSafeBrowsingHit(IsUnsafeResourceFor(websocket_url)));
-  ui_test_utils::NavigateToURL(browser(), main_url);
+  ui_test_utils::NavigateToURL(browser(), main_url_with_query);
 
   // If the interstitial fails to be displayed, the test will hang here.
   load_stop_observer.Wait();
@@ -1517,6 +1530,11 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, MalwareWebSocketBlocked) {
   EXPECT_TRUE(ShowingInterstitialPage());
   EXPECT_TRUE(got_hit_report());
 }
+
+INSTANTIATE_TEST_CASE_P(
+    /* no prefix */,
+    SafeBrowsingServiceWebSocketTest,
+    ::testing::Values("window", "worker"));
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, UnknownWebSocketNotBlocked) {
   GURL main_url = embedded_test_server()->GetURL(kMalwareWebSocketPage);
@@ -2243,10 +2261,17 @@ IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest, CheckBrowseUrl) {
   }
 }
 
+// Parameterised fixture to permit running the same test for Window and Worker
+// scopes.
+class V4SafeBrowsingServiceWebSocketTest
+    : public ::testing::WithParamInterface<std::string>,
+      public V4SafeBrowsingServiceTest {};
+
 // This is almost identical to
-// SafeBrowsingServiceTest.MalwareWebSocketBlocked. That test will be deleted
-// when the old database backend stops being used.
-IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest, MalwareWebSocketBlocked) {
+// SafeBrowsingServiceWebSocketTest.MalwareWebSocketBlocked. That test will be
+// deleted when the old database backend is removed.
+IN_PROC_BROWSER_TEST_P(V4SafeBrowsingServiceWebSocketTest,
+                       MalwareWebSocketBlocked) {
   // This test currently only passes when the network service is enabled.
   if (!base::FeatureList::IsEnabled(features::kNetworkService))
     return;
@@ -2256,6 +2281,11 @@ IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest, MalwareWebSocketBlocked) {
   GURL::Replacements replace_scheme;
   replace_scheme.SetScheme("ws", url::Component(0, strlen("ws")));
   GURL websocket_url = resolved.ReplaceComponents(replace_scheme);
+
+  GURL::Replacements add_query;
+  std::string query = "type=" + GetParam();
+  add_query.SetQueryStr(query);
+  GURL main_url_with_query = main_url.ReplaceComponents(add_query);
 
   MarkUrlForMalwareUnexpired(websocket_url);
 
@@ -2271,7 +2301,7 @@ IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest, MalwareWebSocketBlocked) {
           base::Unretained(this)));
 
   EXPECT_CALL(observer_, OnSafeBrowsingHit(IsUnsafeResourceFor(websocket_url)));
-  ui_test_utils::NavigateToURL(browser(), main_url);
+  ui_test_utils::NavigateToURL(browser(), main_url_with_query);
 
   // If the interstitial fails to be displayed, the test will hang here.
   load_stop_observer.Wait();
@@ -2279,9 +2309,14 @@ IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest, MalwareWebSocketBlocked) {
   EXPECT_TRUE(ShowingInterstitialPage());
   EXPECT_TRUE(got_hit_report());
   EXPECT_EQ(websocket_url, hit_report().malicious_url);
-  EXPECT_EQ(main_url, hit_report().page_url);
+  EXPECT_EQ(main_url_with_query, hit_report().page_url);
   EXPECT_TRUE(hit_report().is_subresource);
 }
+
+// TODO(ricea): Test SharedWorker and ServiceWorker scopes as well.
+INSTANTIATE_TEST_CASE_P(/* no prefix */,
+                        V4SafeBrowsingServiceWebSocketTest,
+                        ::testing::Values("window", "worker"));
 
 // Identical to SafeBrowsingServiceTest.UnknownWebSocketNotBlocked. Uses the
 // V4 database backend.
