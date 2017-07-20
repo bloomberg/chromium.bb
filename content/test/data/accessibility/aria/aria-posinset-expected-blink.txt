@@ -6,30 +6,30 @@ rootWebArea
 ++++listBoxOption selectable name='Item 1' setSize=2 posInSet=1
 ++++listBoxOption selectable name='Item 2' setSize=2 posInSet=2
 ++form
-++++radioButton setSize=4 posInSet=3 checkedState=1
+++++radioButton setSize=4 posInSet=3 checkedState=false
 ++++staticText name='1'
 ++++++inlineTextBox name='1'
 ++++lineBreak name='<newline>'
 ++++++inlineTextBox name='<newline>'
-++++radioButton setSize=4 posInSet=4 checkedState=1
+++++radioButton setSize=4 posInSet=4 checkedState=false
 ++++staticText name='2'
 ++++++inlineTextBox name='2'
-++radioButton setSize=2 posInSet=1 checkedState=1
+++radioButton setSize=2 posInSet=1 checkedState=false
 ++staticText name='Apple'
 ++++inlineTextBox name='Apple'
 ++lineBreak name='<newline>'
 ++++inlineTextBox name='<newline>'
-++radioButton setSize=2 posInSet=2 checkedState=1
+++radioButton setSize=2 posInSet=2 checkedState=false
 ++staticText name='Banana'
 ++++inlineTextBox name='Banana'
 ++group name='Cake'
 ++++legend
 ++++++staticText name='Cake'
 ++++++++inlineTextBox name='Cake'
-++++radioButton name='Chiffon cakes' setSize=2 posInSet=1 checkedState=2
+++++radioButton name='Chiffon cakes' setSize=2 posInSet=1 checkedState=true
 ++++lineBreak name='<newline>'
 ++++++inlineTextBox name='<newline>'
-++++radioButton name='Chocolate cakes' setSize=2 posInSet=2 checkedState=1
+++++radioButton name='Chocolate cakes' setSize=2 posInSet=2 checkedState=false
 ++form
 ++++paragraph
 ++++++button name='changedFromRadio'
@@ -38,6 +38,6 @@ rootWebArea
 ++++++++++inlineTextBox name='red'
 ++++++lineBreak name='<newline>'
 ++++++++inlineTextBox name='<newline>'
-++++++radioButton name='blue' setSize=1 posInSet=1 checkedState=1
+++++++radioButton name='blue' setSize=1 posInSet=1 checkedState=false
 ++staticText name='Done'
 ++++inlineTextBox name='Done'

@@ -5,18 +5,18 @@ rootWebArea name='Action verbs'
 ++heading name='Heading' hierarchicalLevel=1
 ++++staticText name='Heading'
 ++++++inlineTextBox name='Heading'
-++button name='Button' defaultActionVerb=6
-++link name='Link' defaultActionVerb=4
-++++staticText name='Link' defaultActionVerb=3
+++button name='Button' defaultActionVerb=press
+++link name='Link' defaultActionVerb=jump
+++++staticText name='Link' defaultActionVerb=click
 ++++++inlineTextBox name='Link'
 ++textField
-++checkBox defaultActionVerb=2 checkedState=1
-++checkBox defaultActionVerb=8 checkedState=2
-++radioButton defaultActionVerb=7 checkedState=1
-++switch name='ARIA Switch' defaultActionVerb=2 checkedState=1
-++popUpButton collapsed haspopup defaultActionVerb=5
+++checkBox defaultActionVerb=check checkedState=false
+++checkBox defaultActionVerb=uncheck checkedState=true
+++radioButton defaultActionVerb=select checkedState=false
+++switch name='ARIA Switch' defaultActionVerb=check checkedState=false
+++popUpButton collapsed haspopup defaultActionVerb=open
 ++++menuListPopup invisible activedescendantId=menuListOption
-++++++menuListOption selectable selected name='Pop-up button' defaultActionVerb=3
-++genericContainer defaultActionVerb=3
-++++staticText name='Div with click handler' defaultActionVerb=3
+++++++menuListOption selectable selected name='Pop-up button' defaultActionVerb=click
+++genericContainer defaultActionVerb=click
+++++staticText name='Div with click handler' defaultActionVerb=click
 ++++++inlineTextBox name='Div with click handler'

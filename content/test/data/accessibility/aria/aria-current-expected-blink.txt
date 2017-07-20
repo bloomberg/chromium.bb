@@ -5,7 +5,7 @@ rootWebArea
 ++link name='Section two'
 ++++staticText name='Section two'
 ++++++inlineTextBox name='Section two'
-++link name='Section three' ariaCurrentState=5
+++link name='Section three' ariaCurrentState=location
 ++++staticText name='Section three'
 ++++++inlineTextBox name='Section three'
 ++lineBreak name='<newline>'
@@ -23,7 +23,7 @@ rootWebArea
 ++genericContainer
 ++++staticText name='Span 1'
 ++++++inlineTextBox name='Span 1'
-++++genericContainer ariaCurrentState=2
+++++genericContainer ariaCurrentState=true
 ++++++staticText name='Span 2'
 ++++++++inlineTextBox name='Span 2'
 ++++staticText name='Span 3'
