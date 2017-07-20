@@ -32,7 +32,7 @@ PasswordManagerMetricsRecorder CreateMetricsRecorder(
 }  // namespace
 
 TEST(PasswordManagerMetricsRecorder, UserModifiedPasswordField) {
-  ukm::TestUkmRecorder test_ukm_recorder;
+  ukm::TestAutoSetUkmRecorder test_ukm_recorder;
   {
     PasswordManagerMetricsRecorder recorder(
         CreateMetricsRecorder(&test_ukm_recorder));
@@ -45,7 +45,7 @@ TEST(PasswordManagerMetricsRecorder, UserModifiedPasswordField) {
 }
 
 TEST(PasswordManagerMetricsRecorder, UserModifiedPasswordFieldMultipleTimes) {
-  ukm::TestUkmRecorder test_ukm_recorder;
+  ukm::TestAutoSetUkmRecorder test_ukm_recorder;
   {
     PasswordManagerMetricsRecorder recorder(
         CreateMetricsRecorder(&test_ukm_recorder));
@@ -60,7 +60,7 @@ TEST(PasswordManagerMetricsRecorder, UserModifiedPasswordFieldMultipleTimes) {
 }
 
 TEST(PasswordManagerMetricsRecorder, UserModifiedPasswordFieldNotCalled) {
-  ukm::TestUkmRecorder test_ukm_recorder;
+  ukm::TestAutoSetUkmRecorder test_ukm_recorder;
   {
     PasswordManagerMetricsRecorder recorder(
         CreateMetricsRecorder(&test_ukm_recorder));

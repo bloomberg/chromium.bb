@@ -90,7 +90,7 @@ class RenderWidgetHostLatencyTrackerTestBrowserClient
 
  private:
   rappor::TestRapporServiceImpl rappor_service_;
-  ukm::TestUkmRecorder test_ukm_recorder_;
+  ukm::TestAutoSetUkmRecorder test_ukm_recorder_;
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostLatencyTrackerTestBrowserClient);
 };
 

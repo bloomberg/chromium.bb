@@ -330,7 +330,7 @@ TEST_F(ManagePasswordsBubbleModelTest, ClickUpdate) {
 TEST_F(ManagePasswordsBubbleModelTest, Edit) {
   using password_manager::metrics_util::CredentialSourceType;
   for (const bool do_change : {false, true}) {
-    ukm::TestUkmRecorder test_ukm_recorder;
+    ukm::TestAutoSetUkmRecorder test_ukm_recorder;
     {
       // Setup metrics recorder
       ukm::SourceId source_id = test_ukm_recorder.GetNewSourceID();
@@ -565,7 +565,7 @@ TEST_F(ManagePasswordsBubbleModelTest, RecordUKMs) {
                      << ", interaction = " << static_cast<int64_t>(interaction)
                      << ", credential management api ="
                      << credential_management_api);
-        ukm::TestUkmRecorder test_ukm_recorder;
+        ukm::TestAutoSetUkmRecorder test_ukm_recorder;
         {
           // Setup metrics recorder
           auto recorder = base::MakeRefCounted<

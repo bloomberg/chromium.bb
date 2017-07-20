@@ -53,11 +53,9 @@ std::vector<int64_t> GetValuesForMetric(const mojom::UkmEntry* entry,
 
 TestUkmRecorder::TestUkmRecorder() {
   EnableRecording();
-  UkmRecorder::Set(this);
 }
 
 TestUkmRecorder::~TestUkmRecorder() {
-  UkmRecorder::Set(nullptr);
 };
 
 const UkmSource* TestUkmRecorder::GetSourceForUrl(const char* url) const {
@@ -247,5 +245,13 @@ std::vector<int64_t> TestUkmRecorder::GetMetrics(
   mojom::UkmEntryPtr entry = GetMergedEntryForSourceID(source.id(), event_name);
   return GetValuesForMetric(entry.get(), metric_name);
 }
+
+TestAutoSetUkmRecorder::TestAutoSetUkmRecorder() {
+  UkmRecorder::Set(this);
+}
+
+TestAutoSetUkmRecorder::~TestAutoSetUkmRecorder() {
+  UkmRecorder::Set(nullptr);
+};
 
 }  // namespace ukm

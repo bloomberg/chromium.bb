@@ -246,7 +246,7 @@ class MediaEngagementContentsObserverTest
 
   base::MockTimer* playback_timer_;
 
-  ukm::TestUkmRecorder test_ukm_recorder_;
+  ukm::TestAutoSetUkmRecorder test_ukm_recorder_;
 
   base::HistogramTester histogram_tester_;
 };
