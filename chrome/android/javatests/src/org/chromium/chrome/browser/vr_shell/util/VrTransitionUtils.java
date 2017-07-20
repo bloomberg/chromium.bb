@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.vr_shell.util;
 
 import static org.chromium.chrome.browser.vr_shell.VrTestRule.POLL_CHECK_INTERVAL_SHORT_MS;
-import static org.chromium.chrome.browser.vr_shell.VrTestRule.POLL_TIMEOUT_SHORT_MS;
+import static org.chromium.chrome.browser.vr_shell.VrTestRule.POLL_TIMEOUT_LONG_MS;
 
 import org.junit.Assert;
 
@@ -111,7 +111,7 @@ public class VrTransitionUtils {
     public static void enterPresentationOrFail(ContentViewCore cvc) {
         enterPresentation(cvc);
         VrTestRule.pollJavaScriptBoolean(
-                "vrDisplay.isPresenting", POLL_TIMEOUT_SHORT_MS, cvc.getWebContents());
+                "vrDisplay.isPresenting", POLL_TIMEOUT_LONG_MS, cvc.getWebContents());
         Assert.assertTrue(VrShellDelegate.getVrShellForTesting().getWebVrModeEnabled());
     }
 }
