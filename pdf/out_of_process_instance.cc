@@ -1318,10 +1318,9 @@ void OutOfProcessInstance::DocumentLoadComplete(int page_count) {
   DCHECK_EQ(LOAD_STATE_LOADING, document_load_state_);
   document_load_state_ = LOAD_STATE_COMPLETE;
   UserMetricsRecordAction("PDF.LoadSuccess");
-  uma_.HistogramEnumeration("PDF.DocumentFeature", LOADED_DOCUMENT,
-                            FEATURES_COUNT);
+  HistogramEnumeration("PDF.DocumentFeature", LOADED_DOCUMENT, FEATURES_COUNT);
   if (!font_substitution_reported_)
-    uma_.HistogramEnumeration("PDF.IsFontSubstituted", 0, 2);
+    HistogramEnumeration("PDF.IsFontSubstituted", 0, 2);
 
   // Note: If we are in print preview mode the scroll location is retained
   // across document loads so we don't want to scroll again and override it.
@@ -1335,15 +1334,13 @@ void OutOfProcessInstance::DocumentLoadComplete(int page_count) {
   std::string title = engine_->GetMetadata("Title");
   if (!base::TrimWhitespace(base::UTF8ToUTF16(title), base::TRIM_ALL).empty()) {
     metadata_message.Set(pp::Var(kJSTitle), pp::Var(title));
-    uma_.HistogramEnumeration("PDF.DocumentFeature", HAS_TITLE, FEATURES_COUNT);
+    HistogramEnumeration("PDF.DocumentFeature", HAS_TITLE, FEATURES_COUNT);
   }
 
   pp::VarArray bookmarks = engine_->GetBookmarks();
   metadata_message.Set(pp::Var(kJSBookmarks), bookmarks);
-  if (bookmarks.GetLength() > 0) {
-    uma_.HistogramEnumeration("PDF.DocumentFeature", HAS_BOOKMARKS,
-                              FEATURES_COUNT);
-  }
+  if (bookmarks.GetLength() > 0)
+    HistogramEnumeration("PDF.DocumentFeature", HAS_BOOKMARKS, FEATURES_COUNT);
   PostMessage(metadata_message);
 
   pp::VarDictionary progress_message;
@@ -1374,7 +1371,7 @@ void OutOfProcessInstance::DocumentLoadComplete(int page_count) {
 
   pp::PDF::SetContentRestriction(this, content_restrictions);
 
-  uma_.HistogramCustomCounts("PDF.PageCount", page_count, 1, 1000000, 50);
+  HistogramCustomCounts("PDF.PageCount", page_count, 1, 1000000, 50);
 }
 
 void OutOfProcessInstance::RotateClockwise() {
@@ -1650,6 +1647,26 @@ pp::FloatPoint OutOfProcessInstance::BoundScrollOffsetToDocument(
   float max_y = document_size_.height() * zoom_ - plugin_dip_size_.height();
   float y = std::max(std::min(scroll_offset.y(), max_y), min_y);
   return pp::FloatPoint(x, y);
+}
+
+void OutOfProcessInstance::HistogramCustomCounts(const std::string& name,
+                                                 int32_t sample,
+                                                 int32_t min,
+                                                 int32_t max,
+                                                 uint32_t bucket_count) {
+  if (IsPrintPreview())
+    return;
+
+  uma_.HistogramCustomCounts(name, sample, min, max, bucket_count);
+}
+
+void OutOfProcessInstance::HistogramEnumeration(const std::string& name,
+                                                int32_t sample,
+                                                int32_t boundary_value) {
+  if (IsPrintPreview())
+    return;
+
+  uma_.HistogramEnumeration(name, sample, boundary_value);
 }
 
 }  // namespace chrome_pdf
