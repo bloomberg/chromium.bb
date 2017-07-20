@@ -5,6 +5,8 @@
 import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("interfaces") {
+  support_lazy_serialization = true
+
   sources = [
     "leveldb.mojom",
   ]
