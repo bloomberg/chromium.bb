@@ -178,4 +178,37 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, MetricsConsentCheck) {
   ChromeMetricsServiceAccessor::SetMetricsAndCrashReportingForTesting(nullptr);
 }
 
+// Make sure that UKM is disabled while an non-sync window is open.
+IN_PROC_BROWSER_TEST_F(UkmBrowserTest, DisableSyncCheck) {
+  // Enable metrics recording and update MetricsServicesManager.
+  bool metrics_enabled = true;
+  ChromeMetricsServiceAccessor::SetMetricsAndCrashReportingForTesting(
+      &metrics_enabled);
+  g_browser_process->GetMetricsServicesManager()->UpdateUploadPermissions(true);
+
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  std::unique_ptr<ProfileSyncServiceHarness> harness =
+      EnableSyncForProfile(profile);
+
+  Browser* sync_browser = CreateBrowser(profile);
+  EXPECT_TRUE(ukm_enabled());
+  uint64_t original_client_id = client_id();
+
+  harness->DisableSyncForDatatype(syncer::TYPED_URLS);
+  EXPECT_FALSE(ukm_enabled());
+
+  harness->EnableSyncForDatatype(syncer::TYPED_URLS);
+  EXPECT_TRUE(ukm_enabled());
+  // Client ID should be reset.
+  EXPECT_NE(original_client_id, client_id());
+
+  harness->service()->RequestStop(browser_sync::ProfileSyncService::CLEAR_DATA);
+  CloseBrowserSynchronously(sync_browser);
+  ChromeMetricsServiceAccessor::SetMetricsAndCrashReportingForTesting(nullptr);
+}
+
+// TODO(crbug/745939): Add a tests for disable w/ multiprofiles.
+
+// TODO(crbug/745939): Add a tests for guest profile.
+
 }  // namespace metrics
