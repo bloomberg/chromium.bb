@@ -80,6 +80,7 @@ public class CustomTabsConnection {
 
     @VisibleForTesting
     static final String PAGE_LOAD_METRICS_CALLBACK = "NavigationMetrics";
+    static final String BOTTOM_BAR_SCROLL_STATE_CALLBACK = "onBottomBarScrollStateChanged";
 
     // For CustomTabs.SpeculationStatusOnStart, see tools/metrics/enums.xml. Append only.
     private static final int SPECULATION_STATUS_ON_START_ALLOWED = 0;
@@ -777,6 +778,11 @@ public class CustomTabsConnection {
         return mClientManager.shouldSendNavigationInfoForSession(session);
     }
 
+    /** @see ClientManager#shouldSendBottomBarScrollStateForSession(CustomTabsSessionToken) */
+    public boolean shouldSendBottomBarScrollStateForSession(CustomTabsSessionToken session) {
+        return mClientManager.shouldSendBottomBarScrollStateForSession(session);
+    }
+
     /** See {@link ClientManager#getClientPackageNameForSession(CustomTabsSessionToken)} */
     public String getClientPackageNameForSession(CustomTabsSessionToken session) {
         return mClientManager.getClientPackageNameForSession(session);
@@ -844,6 +850,30 @@ public class CustomTabsConnection {
      */
     public void sendNavigationInfo(
             CustomTabsSessionToken session, String url, String title, Bitmap screenshot) { }
+
+    /**
+     * Called when the bottom bar for the custom tab has been hidden or shown completely by user
+     * scroll.
+     *
+     * @param session The session that is linked with the custom tab.
+     * @param hidden Whether the bottom bar is hidden or shown.
+     */
+    public void onBottomBarScrollStateChanged(CustomTabsSessionToken session, boolean hidden) {
+        if (!shouldSendBottomBarScrollStateForSession(session)) return;
+        CustomTabsCallback callback = mClientManager.getCallbackForSession(session);
+
+        Bundle args = new Bundle();
+        args.putBoolean("hidden", hidden);
+        try {
+            callback.extraCallback(BOTTOM_BAR_SCROLL_STATE_CALLBACK, args);
+        } catch (Exception e) {
+            // Pokemon exception handling, see above and crbug.com/517023.
+            return;
+        }
+        if (mLogRequests) {
+            logCallback("extraCallback(" + BOTTOM_BAR_SCROLL_STATE_CALLBACK + ")", hidden);
+        }
+    }
 
     /**
      * Notifies the application of a navigation event.
