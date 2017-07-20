@@ -49,7 +49,7 @@ public class CopylessPasteTest {
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
     // The default timeout (in seconds) for a callback to wait.
-    public static final long WAIT_TIMEOUT_SECONDS = scaleTimeout(10);
+    public static final long WAIT_TIMEOUT_SECONDS = scaleTimeout(20);
 
     // NODATA_PAGE doesn't contain desired metadata.
     private static final String NODATA_PAGE = "/chrome/test/data/android/about.html";
