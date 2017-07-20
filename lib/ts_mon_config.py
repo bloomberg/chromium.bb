@@ -67,7 +67,8 @@ def SetupTsMonGlobalState(service_name,
   if indirect:
     return _CreateTsMonFlushingProcess([service_name],
                                        {'short_lived': short_lived,
-                                        'debug_file': debug_file})
+                                        'debug_file': debug_file,
+                                        'task_num': task_num})
 
   # google-api-client has too much noisey logging.
   googleapiclient.discovery.logger.setLevel(logging.WARNING)
@@ -126,10 +127,11 @@ def GenerateTsMonArgparseOptions(service_name, short_lived,
     args.extend(['--ts-mon-task-hostname', 'autogen:' + host,
                  '--ts-mon-task-number', str(os.getpid())])
   elif task_num:
-    args.extend(['--ts-mon-task-number', task_num])
+    args.extend(['--ts-mon-task-number', str(task_num)])
 
   args.extend(['--ts-mon-flush', 'auto' if auto_flush else 'manual'])
   return args
+
 
 @contextlib.contextmanager
 def _CreateTsMonFlushingProcess(setup_args, setup_kwargs):

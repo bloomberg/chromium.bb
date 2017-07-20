@@ -14,6 +14,8 @@ from chromite.lib import cros_test_lib
 from chromite.lib import metrics
 from chromite.lib import ts_mon_config
 
+from infra_libs.ts_mon.common import interface
+
 
 # pylint: disable=protected-access
 
@@ -170,3 +172,22 @@ class TestConsumeMessages(cros_test_lib.MockTestCase):
     except StopIteration:
       pass # No more time calls left.
     self.assertEqual(self.flush_mock.call_count, 5)
+
+
+class TestSetupTsMonGlobalState(cros_test_lib.MockTestCase):
+  """Test that SetupTsMonGlobalState works correctly."""
+
+  def testTaskNumArgument(self):
+    """The task_num argument should set the task_num in ts-mon."""
+    ts_mon_config.SetupTsMonGlobalState('unittest', auto_flush=False,
+                                        task_num=42)
+    self.assertEqual(interface.state.target.task_num, 42)
+
+  def testTaskNumWithIndirect(self):
+    """The task_num argument should propagate to the flushing subprocess."""
+    create_flushing_process = self.PatchObject(
+        ts_mon_config, '_CreateTsMonFlushingProcess')
+    ts_mon_config.SetupTsMonGlobalState('unittest', indirect=True, task_num=42)
+    create_flushing_process.assert_called_once_with(
+        ['unittest'],
+        {'task_num': 42, 'debug_file': None, 'short_lived': False})
