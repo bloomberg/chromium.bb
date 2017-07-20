@@ -73,6 +73,7 @@ class SurfacesInstance : public base::RefCounted<SurfacesInstance>,
   void OnBeginFrame(const cc::BeginFrameArgs& args) override;
   void WillDrawSurface(const viz::LocalSurfaceId& local_surface_id,
                        const gfx::Rect& damage_rect) override;
+  void OnBeginFramePausedChanged(bool paused) override;
   void ReclaimResources(
       const std::vector<cc::ReturnedResource>& resources) override;
 

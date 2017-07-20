@@ -113,6 +113,7 @@ class CONTENT_EXPORT DelegatedFrameHost
       const std::vector<cc::ReturnedResource>& resources) override;
   void WillDrawSurface(const viz::LocalSurfaceId& id,
                        const gfx::Rect& damage_rect) override;
+  void OnBeginFramePausedChanged(bool paused) override;
 
   // Public interface exposed to RenderWidgetHostView.
 

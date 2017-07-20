@@ -78,6 +78,11 @@ void GpuCompositorFrameSink::OnBeginFrame(const cc::BeginFrameArgs& args) {
     client_->OnBeginFrame(args);
 }
 
+void GpuCompositorFrameSink::OnBeginFramePausedChanged(bool paused) {
+  if (client_)
+    client_->OnBeginFramePausedChanged(paused);
+}
+
 void GpuCompositorFrameSink::ReclaimResources(
     const std::vector<cc::ReturnedResource>& resources) {
   if (client_)

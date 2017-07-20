@@ -75,6 +75,8 @@ class FakeCompositorFrameSinkSupportClient
   void WillDrawSurface(const LocalSurfaceId& local_surface_id,
                        const gfx::Rect& damage_rect) override {}
 
+  void OnBeginFramePausedChanged(bool paused) override {}
+
   void clear_returned_resources() { returned_resources_.clear(); }
   const std::vector<cc::ReturnedResource>& returned_resources() {
     return returned_resources_;

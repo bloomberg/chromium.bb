@@ -162,6 +162,10 @@ void DirectLayerTreeFrameSink::WillDrawSurface(
   // TODO(staraz): Implement this.
 }
 
+void DirectLayerTreeFrameSink::OnBeginFramePausedChanged(bool paused) {
+  begin_frame_source_->OnSetBeginFrameSourcePaused(paused);
+}
+
 void DirectLayerTreeFrameSink::OnNeedsBeginFrames(bool needs_begin_frame) {
   support_->SetNeedsBeginFrame(needs_begin_frame);
 }

@@ -194,6 +194,10 @@ void DelegatedFrameHostAndroid::WillDrawSurface(
     const viz::LocalSurfaceId& local_surface_id,
     const gfx::Rect& damage_rect) {}
 
+void DelegatedFrameHostAndroid::OnBeginFramePausedChanged(bool paused) {
+  begin_frame_source_.OnSetBeginFrameSourcePaused(paused);
+}
+
 void DelegatedFrameHostAndroid::OnNeedsBeginFrames(bool needs_begin_frames) {
   support_->SetNeedsBeginFrame(needs_begin_frames);
 }

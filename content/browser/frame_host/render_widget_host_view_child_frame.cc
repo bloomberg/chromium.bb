@@ -758,6 +758,10 @@ void RenderWidgetHostViewChildFrame::OnBeginFrame(
   renderer_compositor_frame_sink_->OnBeginFrame(args);
 }
 
+void RenderWidgetHostViewChildFrame::OnBeginFramePausedChanged(bool paused) {
+  renderer_compositor_frame_sink_->OnBeginFramePausedChanged(paused);
+}
+
 void RenderWidgetHostViewChildFrame::SetNeedsBeginFrames(
     bool needs_begin_frames) {
   if (support_)

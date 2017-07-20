@@ -197,6 +197,8 @@ void HardwareRenderer::WillDrawSurface(
     const viz::LocalSurfaceId& local_surface_id,
     const gfx::Rect& damage_rect) {}
 
+void HardwareRenderer::OnBeginFramePausedChanged(bool paused) {}
+
 // static
 ChildFrameQueue HardwareRenderer::WaitAndPruneFrameQueue(
     ChildFrameQueue* child_frames_ptr) {
