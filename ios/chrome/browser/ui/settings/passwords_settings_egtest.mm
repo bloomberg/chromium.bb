@@ -14,7 +14,10 @@
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/common/password_manager_features.h"
+#include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #import "ios/chrome/browser/ui/settings/password_details_collection_view_controller_for_testing.h"
 #import "ios/chrome/browser/ui/settings/reauthentication_module.h"
@@ -24,6 +27,7 @@
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #include "ios/chrome/test/earl_grey/accessibility_util.h"
+#import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -56,19 +60,26 @@ namespace {
 // it too high could result in scrolling way past the searched element.
 constexpr int kScrollAmount = 150;
 
+// Returns the GREYElementInteraction* for the item on the password list with
+// the given |matcher|. It scrolls in |direction| if necessary to ensure that
+// the matched item is interactable. The result can be used to perform user
+// actions or checks.
+GREYElementInteraction* GetInteractionForListItem(id<GREYMatcher> matcher,
+                                                  GREYDirection direction) {
+  return [[EarlGrey
+      selectElementWithMatcher:grey_allOf(matcher, grey_interactable(), nil)]
+         usingSearchAction:grey_scrollInDirection(direction, kScrollAmount)
+      onElementWithMatcher:grey_accessibilityID(
+                               @"SavePasswordsCollectionViewController")];
+}
+
 // Returns the GREYElementInteraction* for the cell on the password list with
 // the given |username|. It scrolls down if necessary to ensure that the matched
 // cell is interactable. The result can be used to perform user actions or
 // checks.
 GREYElementInteraction* GetInteractionForPasswordEntry(NSString* username) {
-  return [[EarlGrey
-      selectElementWithMatcher:grey_allOf(
-                                   ButtonWithAccessibilityLabel(username),
-                                   grey_interactable(), nil)]
-         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown,
-                                                  kScrollAmount)
-      onElementWithMatcher:grey_accessibilityID(
-                               @"SavePasswordsCollectionViewController")];
+  return GetInteractionForListItem(ButtonWithAccessibilityLabel(username),
+                                   kGREYDirectionDown);
 }
 
 // Returns the GREYElementInteraction* for the item on the detail view
@@ -978,6 +989,72 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
       performAction:grey_tap()];
   TapDone();
   ClearPasswordStore();
+}
+
+// Check that stored entries are shown no matter what the preference for saving
+// passwords is.
+- (void)testStoredEntriesAlwaysShown {
+  SaveExamplePasswordForm();
+
+  PasswordForm blacklisted;
+  blacklisted.origin = GURL("https://blacklisted.com");
+  blacklisted.signon_realm = blacklisted.origin.spec();
+  blacklisted.blacklisted_by_user = true;
+  SaveToPasswordStore(blacklisted);
+
+  OpenPasswordSettings();
+
+  // Toggle the "Save Passwords" control off and back on and check that stored
+  // items are still present.
+  constexpr BOOL kExpectedState[] = {YES, NO};
+  for (BOOL expected_state : kExpectedState) {
+    // Toggle the switch. It is located near the top, so if not interactable,
+    // try scrolling up.
+    [GetInteractionForListItem(chrome_test_util::CollectionViewSwitchCell(
+                                   @"savePasswordsItem_switch", expected_state),
+                               kGREYDirectionUp)
+        performAction:chrome_test_util::TurnCollectionViewSwitchOn(
+                          !expected_state)];
+    // Check the stored items. Scroll down if needed.
+    [GetInteractionForPasswordEntry(@"example.com, concrete username")
+        assertWithMatcher:grey_notNil()];
+    [GetInteractionForPasswordEntry(@"blacklisted.com")
+        assertWithMatcher:grey_notNil()];
+  }
+
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
+      performAction:grey_tap()];
+  TapDone();
+  ClearPasswordStore();
+}
+
+// Check that toggling the switch for the "save passwords" preference changes
+// the settings.
+- (void)testPrefToggle {
+  OpenPasswordSettings();
+
+  // Toggle the "Save Passwords" control off and back on and check the
+  // preferences.
+  constexpr BOOL kExpectedState[] = {YES, NO};
+  for (BOOL expected_initial_state : kExpectedState) {
+    [[EarlGrey
+        selectElementWithMatcher:chrome_test_util::CollectionViewSwitchCell(
+                                     @"savePasswordsItem_switch",
+                                     expected_initial_state)]
+        performAction:chrome_test_util::TurnCollectionViewSwitchOn(
+                          !expected_initial_state)];
+    ios::ChromeBrowserState* browserState =
+        chrome_test_util::GetOriginalBrowserState();
+    const bool expected_final_state = !expected_initial_state;
+    GREYAssertEqual(expected_final_state,
+                    browserState->GetPrefs()->GetBoolean(
+                        password_manager::prefs::kPasswordManagerSavingEnabled),
+                    @"State of the UI toggle differs from real preferences.");
+  }
+
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
+      performAction:grey_tap()];
+  TapDone();
 }
 
 @end
