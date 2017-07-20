@@ -1,7 +1,7 @@
 (async function(testRunner) {
   var {page, session, dp} = await testRunner.startHTML(`
     <div style="position:absolute;top:100;left:100;width:100;height:100;background:black"></div>
-  `, '');
+  `, 'Tests inspect mode.');
   var NodeTracker = await testRunner.loadScript('../resources/node-tracker.js');
   var nodeTracker = new NodeTracker(dp);
   dp.DOM.enable();

@@ -44,7 +44,7 @@
       <div id='inert-root' inert>
         <button data-dump>button in inert subtree</button>
       </div>
-  `, '');
+  `, 'Tests accessibility values of ignored nodes.');
 
   var dumpAccessibilityNodesBySelectorAndCompleteTest =
       (await testRunner.loadScript('../resources/accessibility-dumpAccessibilityNodes.js'))(testRunner, session);

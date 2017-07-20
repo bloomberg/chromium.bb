@@ -1,7 +1,7 @@
 (async function(testRunner) {
   let {page, session, dp} = await testRunner.startHTML(`
     <iframe src='data:text/html,<script>window.foo = 42</script>' name='frame0'></iframe>
-  `, '');
+  `, 'Tests certain trace events in iframes.');
 
   function performActions() {
     var frame1 = document.createElement('iframe');

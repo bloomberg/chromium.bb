@@ -1,4 +1,4 @@
-
+Tests DOM.getBoxModel method.
 #text: Could not compute box model.
 BR: Could not compute box model.
 #text: Could not compute box model.

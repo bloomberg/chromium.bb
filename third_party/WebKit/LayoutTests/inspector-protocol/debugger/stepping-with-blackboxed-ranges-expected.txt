@@ -1,4 +1,4 @@
-
+Tests how stepping works with some source ranges blackboxed.
 foo: 14:4
 blackboxedBoo: 3:12
 notBlackboxedFoo: 3:12

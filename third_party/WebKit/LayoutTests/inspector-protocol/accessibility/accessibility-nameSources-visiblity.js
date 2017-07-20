@@ -97,7 +97,7 @@
         After</label>
       <input data-dump id='input5'>
     </div>
-  `, '');
+  `, 'Tests name sources in invisible nodes.');
 
   var dumpAccessibilityNodesBySelectorAndCompleteTest =
       (await testRunner.loadScript('../resources/accessibility-dumpAccessibilityNodes.js'))(testRunner, session);

@@ -1,4 +1,4 @@
-
+Tests that evaluation on call frame affects scope variables.
 Paused on 'debugger;'
 Variable value changed
 Stacktrace re-read again

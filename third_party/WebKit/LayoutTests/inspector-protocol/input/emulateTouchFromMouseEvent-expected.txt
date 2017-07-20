@@ -1,4 +1,4 @@
-
+Tests Input.emulateTouchFromMouseEvent method.
 -----Event-----
 type: touchstart
 ----Touches----

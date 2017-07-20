@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank(``);
+  let {page, session, dp} = await testRunner.startBlank(`Test Runtime.getProperties with different flag combinations.`);
 
   // A helper function that dumps object properties and internal properties in sorted order.
   function logGetPropertiesResult(title, protocolResult) {

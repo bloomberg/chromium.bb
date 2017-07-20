@@ -3,7 +3,7 @@
     <style id='style'>
     </style>
     <div id='for-pseudo'><span id='inner-span'></span></div>
-  `, '');
+  `, 'Tests that DOM pushes child node updates on pseudo-element addition.');
 
   var DOMHelper = await testRunner.loadScript('../resources/dom-helper.js');
   var NodeTracker = await testRunner.loadScript('../resources/node-tracker.js');

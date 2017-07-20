@@ -1,4 +1,4 @@
-
+Tests retrieving event listeners from DOMDebugger.
 Fetching listeners for depth = undefined and pierce = undefined
 {
     listeners : [

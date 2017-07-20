@@ -1,4 +1,4 @@
-
+Tests how console messages from worker get into page's console once worker is destroyed.
 Starting worker
 Logging in worker: message0
 Got log message from page: message0

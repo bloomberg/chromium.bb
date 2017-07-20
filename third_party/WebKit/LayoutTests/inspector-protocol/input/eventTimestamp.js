@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank(``);
+  let {page, session, dp} = await testRunner.startBlank(`Tests timestamps in multiple input domain methods.`);
 
   await session.evaluate(`
     var logs = [];

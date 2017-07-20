@@ -1,4 +1,4 @@
-
+Tests Input.dispatchKeyEvent method.
 -----Event-----
 type: keydown
 keyCode: 65

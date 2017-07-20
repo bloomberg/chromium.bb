@@ -1,4 +1,4 @@
-
+Tests name sources in invisible nodes.
 {
   "nodeId": "<string>",
   "ignored": false,

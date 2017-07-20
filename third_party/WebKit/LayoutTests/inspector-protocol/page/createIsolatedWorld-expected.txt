@@ -1,4 +1,4 @@
-
+Tests Page.createIsolatedWorld method.
 Runtime enabled
 Page enabled
 Main Frame obtained

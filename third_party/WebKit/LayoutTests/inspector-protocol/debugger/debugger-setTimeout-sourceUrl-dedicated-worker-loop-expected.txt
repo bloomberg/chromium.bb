@@ -1,4 +1,4 @@
-
+Tests sourceURL in setTimeout from worker.
 Started worker
 Worker created
 didConnectToWorker

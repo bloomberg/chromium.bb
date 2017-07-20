@@ -1,4 +1,4 @@
-
+Tests continueToLocation functionality.
 Paused on debugger statement
 Paused after continueToLocation
 Stopped on line 8, expected 8, requested 8, (0-based numbers).

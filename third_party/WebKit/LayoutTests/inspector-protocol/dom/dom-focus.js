@@ -2,7 +2,7 @@
   var {page, session, dp} = await testRunner.startHTML(`
     <input></input>
     <input id='second'></input>
-  `, '');
+  `, 'Tests DOM.focus method.');
 
   testRunner.log(await session.evaluate(getActiveElement));
   var document = (await dp.DOM.getDocument()).result.root;

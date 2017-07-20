@@ -39,7 +39,7 @@
       </details>
       <span hidden='true' id='labelledby5'>summary5-aria-labelledby</span>
     </div>
-  `, '');
+  `, 'Tests name sources in details and summary.');
 
   var dumpAccessibilityNodesBySelectorAndCompleteTest =
       (await testRunner.loadScript('../resources/accessibility-dumpAccessibilityNodes.js'))(testRunner, session);

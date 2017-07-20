@@ -1,4 +1,4 @@
-
+Tests that DOM pushes child node updates on pseudo-element addition.
 
 === Get the Document ===
 

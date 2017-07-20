@@ -1,4 +1,4 @@
-
+Tests Input.dispatchTouchEvent method.
 -----Event-----
 type: touchstart
 ----Touches----

@@ -1,4 +1,4 @@
-
+Tests how DOM domain works with outerHTML.
 {
     id : <messageId>
     result : {

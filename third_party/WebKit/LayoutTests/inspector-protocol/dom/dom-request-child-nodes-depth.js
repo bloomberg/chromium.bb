@@ -20,7 +20,7 @@
             </div>
         </div>
     </div>
-  `, '');
+  `, 'Tests that DOM.requestChildNodes respects depth parameter.');
   testRunner.log("\n=== Get the Document ===\n");
   var response = await dp.DOM.getDocument();
   var bodyId = response.result.root.children[0].children[1].nodeId;

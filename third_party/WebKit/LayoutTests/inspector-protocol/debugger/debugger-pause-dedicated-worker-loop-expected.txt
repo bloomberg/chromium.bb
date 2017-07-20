@@ -1,4 +1,4 @@
-
+Tests that worker can be interrupted and paused.
 Started worker
 Worker created
 didConnectToWorker

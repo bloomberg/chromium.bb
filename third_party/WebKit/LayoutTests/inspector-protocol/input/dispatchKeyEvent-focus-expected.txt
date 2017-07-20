@@ -1,4 +1,4 @@
-
+Tests that Input.dispatchKeyEvent method affects focus.
 focus foo
 blur foo
 focus bar

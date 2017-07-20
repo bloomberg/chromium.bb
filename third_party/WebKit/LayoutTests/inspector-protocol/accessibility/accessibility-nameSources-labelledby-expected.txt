@@ -1,4 +1,4 @@
-
+Tests name sources when used with aria-labelledby.
 {
   "nodeId": "<string>",
   "ignored": false,

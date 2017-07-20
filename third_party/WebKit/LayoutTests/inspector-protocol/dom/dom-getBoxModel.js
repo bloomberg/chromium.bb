@@ -7,7 +7,7 @@
     <div style='position:absolute;top:100;left:0;width:100;height:100;background:red'></div>
     <div style='position:absolute;top:200;left:100;width:100;height:100;background:green'></div>
     <div style='position:absolute;top:150;left:50;width:100;height:100;background:blue;transform:rotate(45deg);'></div>
-  `, '');
+  `, 'Tests DOM.getBoxModel method.');
   var NodeTracker = await testRunner.loadScript('../resources/node-tracker.js');
   var nodeTracker = new NodeTracker(dp);
   dp.DOM.enable();

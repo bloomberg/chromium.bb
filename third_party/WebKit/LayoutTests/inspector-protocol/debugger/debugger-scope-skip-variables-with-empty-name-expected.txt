@@ -1,4 +1,4 @@
-
+Tests that we do not report scope variables with empty names.
 {
     result : [
         [0] : {

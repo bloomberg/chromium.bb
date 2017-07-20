@@ -1,7 +1,7 @@
 (async function(testRunner) {
   var {page, session, dp} = await testRunner.startHTML(`
         <div id='container' style='display:none'><div>child1</div><div>child2</div></div>
-  `, '');
+  `, 'Tests how DOM.childNodeCountUpdated event works.');
   var NodeTracker = await testRunner.loadScript('../resources/node-tracker.js');
   var nodeTracker = new NodeTracker(dp);
   var containerNodeId;

@@ -65,7 +65,7 @@
       </ul>
       <div role='listitem' id='list1_item3'>C</div>
     </div>
-  `, '');
+  `, 'Tests name sources when used with aria-labelledby.');
 
   var dumpAccessibilityNodesBySelectorAndCompleteTest =
       (await testRunner.loadScript('../resources/accessibility-dumpAccessibilityNodes.js'))(testRunner, session);

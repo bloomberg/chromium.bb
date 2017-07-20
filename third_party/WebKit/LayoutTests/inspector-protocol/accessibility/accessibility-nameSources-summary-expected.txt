@@ -1,4 +1,4 @@
-
+Tests name sources in details and summary.
 {
   "nodeId": "<string>",
   "ignored": false,

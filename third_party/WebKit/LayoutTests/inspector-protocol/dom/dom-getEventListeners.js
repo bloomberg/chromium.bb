@@ -20,7 +20,7 @@
         <iframe src='../dom/resources/iframe-with-listener.html' width='400' height='200'></iframe>
         <div id='shadow-host'></div>
     </body>
-  `, '');
+  `, 'Tests retrieving event listeners from DOMDebugger.');
 
   await session.evaluate(() => {
     var host = document.querySelector('#shadow-host').createShadowRoot();

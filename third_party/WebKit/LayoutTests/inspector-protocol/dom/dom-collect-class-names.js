@@ -10,7 +10,7 @@
     <div class='class5 class6'></div>
     <div id='shadow-host'></div>
     </body>
-  `, '');
+  `, 'Tests collecting class names in DOM domain.');
 
   await session.evaluate(() => {
     var host = document.querySelector('#shadow-host');

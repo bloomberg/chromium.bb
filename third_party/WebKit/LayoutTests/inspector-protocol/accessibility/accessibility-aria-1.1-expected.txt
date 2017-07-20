@@ -1,4 +1,4 @@
-
+Tests ARIA 1.1 accessibility markup.
 {
   "nodeId": "<string>",
   "ignored": false,

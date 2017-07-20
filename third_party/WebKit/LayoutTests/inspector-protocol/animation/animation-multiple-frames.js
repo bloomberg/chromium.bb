@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank('');
+  let {page, session, dp} = await testRunner.startBlank('Tests animation notifications from multiple frames.');
 
   await session.evaluate(`
     function appendIframe() {

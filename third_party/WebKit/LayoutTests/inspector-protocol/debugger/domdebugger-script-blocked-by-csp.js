@@ -8,7 +8,7 @@
     <button id='testButton' onclick='alert(1);'>Button</button>
     </body>
     </html>
-  `, ``);
+  `, `Tests pausing on scriptBlockedbyCSP breakpoint.`);
 
   dp.Debugger.enable();
   dp.DOM.enable();

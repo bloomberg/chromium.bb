@@ -2,7 +2,7 @@
   var {page, session, dp} = await testRunner.startHTML(`
     <div id="id">Привет мир</div>
     <div>Привет мир 2</div>
-  `, '');
+  `, 'Tests how DOM domain works with outerHTML.');
 
   var message = await dp.DOM.getDocument();
   message = await dp.DOM.querySelector({ nodeId: message.result.root.nodeId, selector: "body" });
