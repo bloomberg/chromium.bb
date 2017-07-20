@@ -71,6 +71,10 @@ class VariationsSeedStore {
   // Registers Local State prefs used by this class.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
+  PrefService* local_state() { return local_state_; }
+
+  const PrefService* local_state() const { return local_state_; }
+
  protected:
   // Whether signature verification is enabled. Overridable for tests.
   virtual bool SignatureVerificationEnabled();
