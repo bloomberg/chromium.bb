@@ -9,4 +9,7 @@ declare_args() {
   # Indicates if Video4Linux2 codec is used. This is used for all CrOS
   # platforms which have v4l2 hardware encoder / decoder.
   use_v4l2_codec = false
+
+  # Indicates if VA-API-based hardware acceleration is to be used.
+  use_vaapi = false
 }
