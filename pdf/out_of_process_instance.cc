@@ -150,6 +150,11 @@ const char kJSFieldFocus[] = "focused";
 
 const int kFindResultCooldownMs = 100;
 
+// Same value as printing::COMPLETE_PREVIEW_DOCUMENT_INDEX.
+constexpr int kCompletePDFIndex = -1;
+// A different negative value to differentiate itself from |kCompletePDFIndex|.
+constexpr int kInvalidPDFIndex = -2;
+
 // A delay to wait between each accessibility page to keep the system
 // responsive.
 const int kAccessibilityPageDelayMs = 100;
@@ -220,18 +225,19 @@ const PPP_Pdf ppp_private = {
 
 int ExtractPrintPreviewPageIndex(base::StringPiece src_url) {
   // Sample |src_url| format: chrome://print/id/page_index/print.pdf
+  // The page_index is zero-based, but can be negative with special meanings.
   std::vector<base::StringPiece> url_substr =
       base::SplitStringPiece(src_url.substr(strlen(kChromePrint)), "/",
                              base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   if (url_substr.size() != 3)
-    return -1;
+    return kInvalidPDFIndex;
 
   if (url_substr[2] != "print.pdf")
-    return -1;
+    return kInvalidPDFIndex;
 
   int page_index = 0;
   if (!base::StringToInt(url_substr[1], &page_index))
-    return -1;
+    return kInvalidPDFIndex;
   return page_index;
 }
 
@@ -528,20 +534,39 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
              dict.Get(pp::Var(kJSPrintPreviewUrl)).is_string() &&
              dict.Get(pp::Var(kJSPrintPreviewGrayscale)).is_bool() &&
              dict.Get(pp::Var(kJSPrintPreviewPageCount)).is_int()) {
+    // For security reasons, crash if the URL that is trying to be loaded here
+    // isn't a print preview one.
+    std::string url = dict.Get(pp::Var(kJSPrintPreviewUrl)).AsString();
+    CHECK(IsPrintPreview());
+    CHECK(IsPrintPreviewUrl(url));
+
     int print_preview_page_count =
-        std::max(dict.Get(pp::Var(kJSPrintPreviewPageCount)).AsInt(), 0);
-    if (print_preview_page_count <= 0) {
+        dict.Get(pp::Var(kJSPrintPreviewPageCount)).AsInt();
+    if (print_preview_page_count < 0) {
       NOTREACHED();
       return;
     }
 
-    print_preview_page_count_ = print_preview_page_count;
-    url_ = dict.Get(pp::Var(kJSPrintPreviewUrl)).AsString();
-    // For security reasons we crash if the URL that is trying to be loaded here
-    // isn't a print preview one.
-    CHECK(IsPrintPreview());
-    CHECK(IsPrintPreviewUrl(url_));
+    // The page count is zero if the print preview source is a PDF. In which
+    // case, the page index for |url| should be at |kCompletePDFIndex|.
+    // When the page count is not zero, then the source is not PDF. In which
+    // case, the page index for |url| should be non-negative.
+    bool is_printing_pdf = print_preview_page_count == 0;
+    int page_index = ExtractPrintPreviewPageIndex(url);
+    if (is_printing_pdf) {
+      if (page_index != kCompletePDFIndex) {
+        NOTREACHED();
+        return;
+      }
+    } else {
+      if (page_index < 0) {
+        NOTREACHED();
+        return;
+      }
+    }
 
+    print_preview_page_count_ = print_preview_page_count;
+    url_ = url;
     preview_pages_info_ = std::queue<PreviewPageInfo>();
     preview_document_load_state_ = LOAD_STATE_COMPLETE;
     document_load_state_ = LOAD_STATE_LOADING;
