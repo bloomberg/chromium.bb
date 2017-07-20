@@ -33,10 +33,13 @@
 #include "remoting/host/native_messaging/pipe_messaging_channel.h"
 #include "remoting/host/policy_watcher.h"
 #include "remoting/host/setup/test_util.h"
+#include "remoting/protocol/errors.h"
 #include "remoting/protocol/ice_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace remoting {
+
+using protocol::ErrorCode;
 
 namespace {
 
@@ -159,9 +162,10 @@ void MockIt2MeHost::Disconnect() {
 void MockIt2MeHost::RunSetState(It2MeHostState state) {
   if (!host_context()->network_task_runner()->BelongsToCurrentThread()) {
     host_context()->network_task_runner()->PostTask(
-        FROM_HERE, base::Bind(&It2MeHost::SetStateForTesting, this, state, ""));
+        FROM_HERE,
+        base::Bind(&It2MeHost::SetStateForTesting, this, state, ErrorCode::OK));
   } else {
-    SetStateForTesting(state, "");
+    SetStateForTesting(state, ErrorCode::OK);
   }
 }
 

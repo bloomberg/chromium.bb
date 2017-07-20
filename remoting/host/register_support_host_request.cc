@@ -29,6 +29,8 @@ using buzz::XmlElement;
 
 namespace remoting {
 
+using protocol::ErrorCode;
+
 namespace {
 // Strings used in the request message we send to the bot.
 const char kRegisterQueryTag[] = "register-support-host";
@@ -78,10 +80,9 @@ void RegisterSupportHostRequest::OnSignalStrategyStateChange(
         base::Bind(&RegisterSupportHostRequest::ProcessResponse,
                    base::Unretained(this)));
     if (!request_) {
-      std::string error_message =
-          "Error sending the register-support-host request.";
-      LOG(ERROR) << error_message;
-      CallCallback(std::string(), base::TimeDelta(), error_message);
+      LOG(ERROR) << "Error sending the register-support-host request.";
+      CallCallback(std::string(), base::TimeDelta(),
+                   ErrorCode::SIGNALING_ERROR);
       return;
     }
 
@@ -90,9 +91,8 @@ void RegisterSupportHostRequest::OnSignalStrategyStateChange(
 
   } else if (state == SignalStrategy::DISCONNECTED) {
     // We will reach here if signaling fails to connect.
-    std::string error_message = "Signal strategy disconnected.";
-    LOG(ERROR) << error_message;
-    CallCallback(std::string(), base::TimeDelta(), error_message);
+    LOG(ERROR) << "Signal strategy disconnected.";
+    CallCallback(std::string(), base::TimeDelta(), ErrorCode::SIGNALING_ERROR);
   }
 }
 
@@ -154,45 +154,45 @@ std::unique_ptr<XmlElement> RegisterSupportHostRequest::CreateSignature(
 void RegisterSupportHostRequest::ParseResponse(const XmlElement* response,
                                                std::string* support_id,
                                                base::TimeDelta* lifetime,
-                                               std::string* error_message) {
-  std::ostringstream error;
-
+                                               ErrorCode* error_code) {
   if (!response) {
-    *error_message = "register-support-host request timed out.";
+    LOG(ERROR) << "register-support-host request timed out.";
+    *error_code = ErrorCode::SIGNALING_TIMEOUT;
     return;
   }
 
   std::string type = response->Attr(buzz::QN_TYPE);
   if (type == buzz::STR_ERROR) {
-    error << "Received error in response to heartbeat: " << response->Str();
-    *error_message = error.str();
+    LOG(ERROR) << "Received error in response to heartbeat: "
+               << response->Str();
+    *error_code = ErrorCode::HOST_REGISTRATION_ERROR;
     return;
   }
 
   // This method must only be called for error or result stanzas.
   if (type != buzz::STR_RESULT) {
-    error << "Received unexpect stanza of type \"" << type << "\"";
-    *error_message = error.str();
+    LOG(ERROR) << "Received unexpect stanza of type \"" << type << "\"";
+    *error_code = ErrorCode::HOST_REGISTRATION_ERROR;
     return;
   }
 
   const XmlElement* result_element = response->FirstNamed(QName(
       kChromotingXmlNamespace, kRegisterQueryResultTag));
   if (!result_element) {
-    error << "<" << kRegisterQueryResultTag
-          << "> is missing in the host registration response: "
-          << response->Str();
-    *error_message = error.str();
+    LOG(ERROR) << "<" << kRegisterQueryResultTag
+               << "> is missing in the host registration response: "
+               << response->Str();
+    *error_code = ErrorCode::HOST_REGISTRATION_ERROR;
     return;
   }
 
   const XmlElement* support_id_element =
       result_element->FirstNamed(QName(kChromotingXmlNamespace, kSupportIdTag));
   if (!support_id_element) {
-    error << "<" << kSupportIdTag
-          << "> is missing in the host registration response: "
-          << response->Str();
-    *error_message = error.str();
+    LOG(ERROR) << "<" << kSupportIdTag
+               << "> is missing in the host registration response: "
+               << response->Str();
+    *error_code = ErrorCode::HOST_REGISTRATION_ERROR;
     return;
   }
 
@@ -200,20 +200,20 @@ void RegisterSupportHostRequest::ParseResponse(const XmlElement* response,
       result_element->FirstNamed(QName(kChromotingXmlNamespace,
                                        kSupportIdLifetimeTag));
   if (!lifetime_element) {
-    error << "<" << kSupportIdLifetimeTag
-          << "> is missing in the host registration response: "
-          << response->Str();
-    *error_message = error.str();
+    LOG(ERROR) << "<" << kSupportIdLifetimeTag
+               << "> is missing in the host registration response: "
+               << response->Str();
+    *error_code = ErrorCode::HOST_REGISTRATION_ERROR;
     return;
   }
 
   int lifetime_int;
   if (!base::StringToInt(lifetime_element->BodyText(), &lifetime_int) ||
       lifetime_int <= 0) {
-    error << "<" << kSupportIdLifetimeTag
-          << "> is malformed in the host registration response: "
-          << response->Str();
-    *error_message = error.str();
+    LOG(ERROR) << "<" << kSupportIdLifetimeTag
+               << "> is malformed in the host registration response: "
+               << response->Str();
+    *error_code = ErrorCode::HOST_REGISTRATION_ERROR;
     return;
   }
 
@@ -226,25 +226,21 @@ void RegisterSupportHostRequest::ProcessResponse(IqRequest* request,
                                                  const XmlElement* response) {
   std::string support_id;
   base::TimeDelta lifetime;
-  std::string error_message;
-  ParseResponse(response, &support_id, &lifetime, &error_message);
-  if (!error_message.empty()) {
-    LOG(ERROR) << error_message;
-  }
-  CallCallback(support_id, lifetime, error_message);
+  ErrorCode error_code = ErrorCode::OK;
+  ParseResponse(response, &support_id, &lifetime, &error_code);
+  CallCallback(support_id, lifetime, error_code);
 }
 
-void RegisterSupportHostRequest::CallCallback(
-    const std::string& support_id,
-    base::TimeDelta lifetime,
-    const std::string& error_message) {
+void RegisterSupportHostRequest::CallCallback(const std::string& support_id,
+                                              base::TimeDelta lifetime,
+                                              ErrorCode error_code) {
   // Cleanup state before calling the callback.
   request_.reset();
   iq_sender_.reset();
   signal_strategy_->RemoveListener(this);
   signal_strategy_ = nullptr;
 
-  base::ResetAndReturn(&callback_).Run(support_id, lifetime, error_message);
+  base::ResetAndReturn(&callback_).Run(support_id, lifetime, error_code);
 }
 
 }  // namespace remoting

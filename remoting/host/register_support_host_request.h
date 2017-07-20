@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "remoting/base/rsa_key_pair.h"
+#include "remoting/protocol/errors.h"
 #include "remoting/signaling/signal_strategy.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
@@ -39,7 +40,8 @@ class RegisterSupportHostRequest : public SignalStrategy::Listener {
   // is an error message if the request failed, or null if it succeeded.
   typedef base::Callback<void(const std::string&,
                               const base::TimeDelta&,
-                              const std::string&)> RegisterCallback;
+                              protocol::ErrorCode error_code)>
+      RegisterCallback;
 
   // |signal_strategy| and |key_pair| must outlive this
   // object. |callback| is called when registration response is
@@ -67,12 +69,13 @@ class RegisterSupportHostRequest : public SignalStrategy::Listener {
 
   void ProcessResponse(IqRequest* request, const buzz::XmlElement* response);
   void ParseResponse(const buzz::XmlElement* response,
-                     std::string* support_id, base::TimeDelta* lifetime,
-                     std::string* error_message);
+                     std::string* support_id,
+                     base::TimeDelta* lifetime,
+                     protocol::ErrorCode* error_code);
 
-  void CallCallback(
-      const std::string& support_id, base::TimeDelta lifetime,
-      const std::string& error_message);
+  void CallCallback(const std::string& support_id,
+                    base::TimeDelta lifetime,
+                    protocol::ErrorCode error_code);
 
   SignalStrategy* signal_strategy_;
   scoped_refptr<RsaKeyPair> key_pair_;

@@ -16,6 +16,7 @@
 #include "remoting/host/host_status_observer.h"
 #include "remoting/host/it2me/it2me_confirmation_dialog.h"
 #include "remoting/host/it2me/it2me_confirmation_dialog_proxy.h"
+#include "remoting/protocol/errors.h"
 #include "remoting/protocol/port_range.h"
 #include "remoting/protocol/validating_authenticator.h"
 #include "remoting/signaling/xmpp_signal_strategy.h"
@@ -62,7 +63,7 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
                                    base::TimeDelta access_code_lifetime) = 0;
     virtual void OnNatPolicyChanged(bool nat_traversal_enabled) = 0;
     virtual void OnStateChanged(It2MeHostState state,
-                                const std::string& error_message) = 0;
+                                protocol::ErrorCode error_code) = 0;
   };
 
   It2MeHost();
@@ -89,8 +90,8 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
   void OnClientDisconnected(const std::string& jid) override;
 
   void SetStateForTesting(It2MeHostState state,
-                          const std::string& error_message) {
-    SetState(state, error_message);
+                          protocol::ErrorCode error_code) {
+    SetState(state, error_code);
   }
 
   // Returns the callback used for validating the connection.  Do not run the
@@ -114,7 +115,7 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
   friend class It2MeHostTest;
 
   // Updates state of the host. Can be called only on the network thread.
-  void SetState(It2MeHostState state, const std::string& error_message);
+  void SetState(It2MeHostState state, protocol::ErrorCode error_code);
 
   // Returns true if the host is in a post-starting, non-error state.
   bool IsRunning() const;
@@ -132,7 +133,7 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
   // Called when the support host registration completes.
   void OnReceivedSupportID(const std::string& support_id,
                            const base::TimeDelta& lifetime,
-                           const std::string& error_message);
+                           protocol::ErrorCode error_code);
 
   // Handlers for NAT traversal and domain policies.
   void UpdateNatPolicy(bool nat_traversal_enabled);

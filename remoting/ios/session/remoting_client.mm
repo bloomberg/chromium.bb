@@ -279,7 +279,8 @@ NSString* const kHostSessionPin = @"kHostSessionPin";
       break;
     case remoting::protocol::ErrorCode::HOST_CONFIGURATION_ERROR:
       _sessionDetails.error = SessionErrorHostConfigurationError;
-    case remoting::protocol::ErrorCode::UNKNOWN_ERROR:
+      break;
+    default:
       _sessionDetails.error = SessionErrorUnknownError;
       break;
   }
