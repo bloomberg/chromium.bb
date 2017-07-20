@@ -80474,6 +80474,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="TouchAction.EquivalentEffectiveAndWhiteListed"
+    enum="EquivalentEffectiveAndWhiteListed">
+  <owner>hayleyferr@chromium.org</owner>
+  <owner>xidachen@chromium.org</owner>
+  <summary>
+    Tracks how often the effective touch action computed by blink is or is not
+    equivalent to the whitelisted touch action computed by the compositor at the
+    end of each touch sequence.
+  </summary>
+</histogram>
+
 <histogram name="TouchAction.GestureEventFiltered"
     enum="TouchGestureEventFiltered">
   <owner>hayleyferr@chromium.org</owner>

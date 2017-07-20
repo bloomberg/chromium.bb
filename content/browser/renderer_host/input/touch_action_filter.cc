@@ -174,6 +174,23 @@ void TouchActionFilter::OnSetTouchAction(cc::TouchAction touch_action) {
   allowed_touch_action_ &= touch_action;
 }
 
+void TouchActionFilter::ReportAndResetTouchAction() {
+  // Report the effective touch action computed by blink such as
+  // kTouchActionNone, kTouchActionPanX, etc.
+  // Since |cc::kTouchActionAuto| is equivalent to |cc::kTouchActionMax|, we
+  // must add one to the upper bound to be able to visualize the number of
+  // times |cc::kTouchActionAuto| is hit.
+  UMA_HISTOGRAM_ENUMERATION("TouchAction.EffectiveTouchAction",
+                            allowed_touch_action_, cc::kTouchActionMax + 1);
+
+  // Report how often the effective touch action computed by blink is or is
+  // not equivalent to the whitelisted touch action computed by the
+  // compositor.
+  UMA_HISTOGRAM_BOOLEAN("TouchAction.EquivalentEffectiveAndWhiteListed",
+                        allowed_touch_action_ == white_listed_touch_action_);
+  ResetTouchAction();
+}
+
 void TouchActionFilter::ResetTouchAction() {
   // Note that resetting the action mid-sequence is tolerated. Gestures that had
   // their begin event(s) suppressed will be suppressed until the next sequence.
