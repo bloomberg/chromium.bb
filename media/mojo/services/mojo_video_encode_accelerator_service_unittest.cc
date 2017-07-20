@@ -98,9 +98,10 @@ class MojoVideoEncodeAcceleratorServiceTest : public ::testing::Test {
                 RequireBitstreamBuffers(_, kInputVisibleSize, _));
 
     const uint32_t kInitialBitrate = 100000u;
-    mojo_vea_service()->Initialize(PIXEL_FORMAT_I420, kInputVisibleSize,
-                                   H264PROFILE_MIN, kInitialBitrate,
-                                   std::move(mojo_vea_client));
+    mojo_vea_service()->Initialize(
+        PIXEL_FORMAT_I420, kInputVisibleSize, H264PROFILE_MIN, kInitialBitrate,
+        std::move(mojo_vea_client),
+        base::Bind([](bool success) { ASSERT_TRUE(success); }));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -195,9 +196,10 @@ TEST_F(MojoVideoEncodeAcceleratorServiceTest, InitializeFailure) {
               NotifyError(VideoEncodeAccelerator::kPlatformFailureError));
 
   const uint32_t kInitialBitrate = 100000u;
-  mojo_vea_service()->Initialize(PIXEL_FORMAT_I420, kInputVisibleSize,
-                                 H264PROFILE_MIN, kInitialBitrate,
-                                 std::move(mojo_vea_client));
+  mojo_vea_service()->Initialize(
+      PIXEL_FORMAT_I420, kInputVisibleSize, H264PROFILE_MIN, kInitialBitrate,
+      std::move(mojo_vea_client),
+      base::Bind([](bool success) { ASSERT_FALSE(success); }));
   base::RunLoop().RunUntilIdle();
 
   mojo_vea_binding->Close();
