@@ -290,10 +290,6 @@ crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/float/overhanging-tall-blo
 ### virtual/layout_ng Mac 1px glyph difference.
 crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/basic/015.html [ Failure ]
 
-### virtual/layout_ng/external/wpt/css/CSS2/abspos
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/abspos/abspos-containing-block-initial-001.xht [ Failure ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/abspos/abspos-containing-block-initial-009a.xht [ Failure ]
-
 ### virtual/layout_ng/external/wpt/css/CSS2/floats
 crbug.com/719620 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-placement-vertical-001a.xht [ Failure ]
 crbug.com/719620 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-placement-vertical-001b.xht [ Failure ]
@@ -400,9 +396,7 @@ crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-repl
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-replaced-width-015.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/root-box-001.xht [ Failure ]
 
-# Margin collapsing quirks
-# https://html.spec.whatwg.org/multipage/rendering.html#margin-collapsing-quirks
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/blocks-025.xht [ Failure ]
+# Missing refs, these are also skipped for existing layout.
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-block-002.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-block-003.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-block-004.xht [ Skip ]
@@ -453,8 +447,6 @@ crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/absolute-re
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/abspos-007.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/abspos-011.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/abspos-012.xht [ Failure ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/abspos-019.xht [ Failure ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/abspos-020.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/abspos-containing-block-001.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/abspos-containing-block-002.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/abspos-containing-block-007.xht [ Failure ]
