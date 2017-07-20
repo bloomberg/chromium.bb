@@ -18,6 +18,7 @@ import copy
 import json
 import logging
 import os
+import sys
 import tempfile
 import threading
 
@@ -97,6 +98,7 @@ def _initial_load():
 
   ctx_path = os.environ.get(_ENV_KEY)
   if ctx_path:
+    ctx_path = ctx_path.decode(sys.getfilesystemencoding())
     _LOGGER.debug('Loading LUCI_CONTEXT: %r', ctx_path)
     try:
       with open(ctx_path, 'r') as f:
@@ -231,13 +233,15 @@ def write(_tmpdir=None, **section_values):
         old_value = _CUR_CONTEXT
         old_envvar = os.environ.get(_ENV_KEY, None)
 
-        os.environ[_ENV_KEY] = name
+        os.environ[_ENV_KEY] = name.encode(sys.getfilesystemencoding())
         _CUR_CONTEXT = new_val
         yield
       finally:
         _CUR_CONTEXT = old_value
         if old_envvar is None:
           del os.environ[_ENV_KEY]
+        else:
+          os.environ[_ENV_KEY] = old_envvar
   finally:
     _WRITE_LOCK.release()
 
