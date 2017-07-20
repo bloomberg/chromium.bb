@@ -5,7 +5,6 @@
 #include <string>
 
 #include "base/command_line.h"
-#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -32,9 +31,9 @@ class TopDocumentIsolationTest : public ContentBrowserTest {
     return visualizer_.DepictFrameTree(node);
   }
 
-  void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(features::kTopDocumentIsolation);
-    ContentBrowserTest::SetUp();
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ContentBrowserTest::SetUpCommandLine(command_line);
+    content::EnableTopDocumentIsolationForTesting(command_line);
   }
 
   void SetUpOnMainThread() override {
@@ -70,7 +69,6 @@ class TopDocumentIsolationTest : public ContentBrowserTest {
 
  private:
   FrameTreeVisualizer visualizer_;
-  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(TopDocumentIsolationTest);
 };

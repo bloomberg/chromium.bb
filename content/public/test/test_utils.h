@@ -6,6 +6,7 @@
 #define CONTENT_PUBLIC_TEST_TEST_UTILS_H_
 
 #include <memory>
+#include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -99,6 +100,11 @@ void EnableFeatureWithParam(const base::Feature& feature,
                             const std::string& param_value,
                             base::CommandLine* command_line);
 
+// Mutates |command_line| to enable a testing mode for TopDocumentIsolation by
+// 1) enabling the features::kTopDocumentIsolation feature and 2) forcing a mode
+// that isolates all cross-site frames.
+void EnableTopDocumentIsolationForTesting(base::CommandLine* command_line);
+
 #if defined(OS_ANDROID)
 // Registers content/browser JNI bindings necessary for some types of tests.
 bool RegisterJniForTesting(JNIEnv* env);
@@ -125,7 +131,7 @@ class MessageLoopRunner : public base::RefCountedThreadSafe<MessageLoopRunner> {
     DEFERRED,
   };
 
-  MessageLoopRunner(QuitMode mode = QuitMode::DEFERRED);
+  explicit MessageLoopRunner(QuitMode mode = QuitMode::DEFERRED);
 
   // Run the current MessageLoop unless the quit closure
   // has already been called.
@@ -287,7 +293,7 @@ class InProcessUtilityThreadHelper : public BrowserChildProcessObserver {
 // accessing it and causing use-after-free condition.
 class RenderFrameDeletedObserver : public WebContentsObserver {
  public:
-  RenderFrameDeletedObserver(RenderFrameHost* rfh);
+  explicit RenderFrameDeletedObserver(RenderFrameHost* rfh);
   ~RenderFrameDeletedObserver() override;
 
   // Overridden WebContentsObserver methods.
