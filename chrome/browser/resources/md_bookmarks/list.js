@@ -156,10 +156,11 @@ Polymer({
     var focusedIndex =
         this.getIndexForItemElement_(/** @type {HTMLElement} */ (e.target));
     var oldFocusedIndex = focusedIndex;
+    var cursorModifier = cr.isMac ? e.metaKey : e.ctrlKey;
     if (e.key == 'ArrowUp') {
       focusedIndex--;
       focusMoved = true;
-    } else if (e.key == 'ArrowDown' && !(cr.isMac && e.metaKey)) {
+    } else if (e.key == 'ArrowDown') {
       focusedIndex++;
       focusMoved = true;
       e.preventDefault();
@@ -169,7 +170,7 @@ Polymer({
     } else if (e.key == 'End') {
       focusedIndex = list.items.length - 1;
       focusMoved = true;
-    } else if (e.key == ' ' && e.ctrlKey) {
+    } else if (e.key == ' ' && cursorModifier) {
       this.dispatch(bookmarks.actions.selectItem(
           this.displayedIds_[focusedIndex], this.getState(), {
             clear: false,
@@ -184,7 +185,7 @@ Polymer({
       focusedIndex = Math.min(list.items.length - 1, Math.max(0, focusedIndex));
       list.focusItem(focusedIndex);
 
-      if (e.ctrlKey && !e.shiftKey) {
+      if (cursorModifier && !e.shiftKey) {
         this.dispatch(
             bookmarks.actions.updateAnchor(this.displayedIds_[focusedIndex]));
       } else {
@@ -197,7 +198,7 @@ Polymer({
         // If the focus moved from something other than a Ctrl + move event,
         // update the selection.
         var config = {
-          clear: !e.ctrlKey,
+          clear: !cursorModifier,
           range: e.shiftKey,
           toggle: false,
         };

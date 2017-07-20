@@ -324,22 +324,22 @@ TEST_F('MaterialBookmarksFocusTest', 'All', function() {
       var focusedItem = items[0];
       focusedItem.focus();
 
-      keydown(focusedItem, ' ', 'ctrl');
+      keydown(focusedItem, ' ', multiKey);
       assertDeepEquals(['2'], normalizeSet(store.data.selection.items));
 
-      keydown(focusedItem, 'ArrowDown', 'ctrl');
+      keydown(focusedItem, 'ArrowDown', multiKey);
       focusedItem = items[1];
       assertDeepEquals(['2'], normalizeSet(store.data.selection.items));
       assertEquals('3', store.data.selection.anchor);
 
-      keydown(focusedItem, 'ArrowDown', 'ctrl');
+      keydown(focusedItem, 'ArrowDown', multiKey);
       focusedItem = items[2];
       assertDeepEquals(['2'], normalizeSet(store.data.selection.items));
 
-      keydown(focusedItem, ' ', 'ctrl');
+      keydown(focusedItem, ' ', multiKey);
       assertDeepEquals(['2', '4'], normalizeSet(store.data.selection.items));
 
-      keydown(focusedItem, ' ', 'ctrl');
+      keydown(focusedItem, ' ', multiKey);
       assertDeepEquals(['2'], normalizeSet(store.data.selection.items));
     });
 
@@ -347,23 +347,23 @@ TEST_F('MaterialBookmarksFocusTest', 'All', function() {
       var focusedItem = items[0];
       focusedItem.focus();
 
-      keydown(focusedItem, ' ', 'ctrl');
+      keydown(focusedItem, ' ', multiKey);
       assertDeepEquals(['2'], normalizeSet(store.data.selection.items));
 
-      keydown(focusedItem, 'ArrowDown', 'ctrl');
+      keydown(focusedItem, 'ArrowDown', multiKey);
       focusedItem = items[1];
       assertDeepEquals(['2'], normalizeSet(store.data.selection.items));
 
-      keydown(focusedItem, 'ArrowDown', 'ctrl');
+      keydown(focusedItem, 'ArrowDown', multiKey);
       focusedItem = items[2];
       assertDeepEquals(['2'], normalizeSet(store.data.selection.items));
 
-      keydown(focusedItem, 'ArrowDown', ['ctrl', 'shift']);
+      keydown(focusedItem, 'ArrowDown', [multiKey, 'shift']);
       focusedItem = items[3];
       assertDeepEquals(
           ['2', '4', '5'], normalizeSet(store.data.selection.items));
 
-      keydown(focusedItem, 'ArrowDown', ['ctrl', 'shift']);
+      keydown(focusedItem, 'ArrowDown', [multiKey, 'shift']);
       focusedItem = items[3];
       assertDeepEquals(
           ['2', '4', '5', '6'], normalizeSet(store.data.selection.items));

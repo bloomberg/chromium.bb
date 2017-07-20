@@ -134,10 +134,11 @@ Polymer({
     // Ignore double clicks so that Ctrl double-clicking an item won't deselect
     // the item before opening.
     if (e.detail != 2) {
+      var addKey = cr.isMac ? e.metaKey : e.ctrlKey;
       this.dispatch(bookmarks.actions.selectItem(this.itemId, this.getState(), {
-        clear: !e.ctrlKey,
+        clear: !addKey,
         range: e.shiftKey,
-        toggle: e.ctrlKey && !e.shiftKey,
+        toggle: addKey && !e.shiftKey,
       }));
     }
     e.stopPropagation();

@@ -91,7 +91,8 @@ function normalizeSet(set) {
 }
 
 /**
- * Sends a custom click event to |element|.
+ * Sends a custom click event to |element|. All ctrl-clicks are automatically
+ * rewritten to command-clicks on Mac.
  * @param {HTMLElement} element
  * @param {Object=} config
  */
@@ -109,6 +110,11 @@ function customClick(element, config) {
   if (config) {
     for (var key in config)
       props[key] = config[key];
+  }
+
+  if (cr.isMac && props.ctrlKey) {
+    props.ctrlKey = false;
+    props.metaKey = true;
   }
 
   element.dispatchEvent(new MouseEvent('mousedown', props));
