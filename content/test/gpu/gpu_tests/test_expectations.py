@@ -31,7 +31,7 @@ OS_CONDITIONS = ['win', 'mac', 'linux', 'chromeos', 'android'] + \
 
 BROWSER_TYPE_CONDITIONS = [
     'android-webview-instrumentation', 'android-content-shell',
-    'android-chromium', 'debug', 'release']
+    'android-chromium', 'debug', 'debug_x64', 'release', 'release_x64']
 
 ASAN_CONDITIONS = ['asan', 'no_asan']
 
@@ -91,7 +91,7 @@ class Expectation(object):
 
     Browser types:
       android-webview-instrumentation, android-content-shell,
-      android-chromium, debug, release
+      android-chromium, debug, debug_x64, release, release_x64
 
     Sample usage in SetExpectations in subclasses:
       self.Fail('gl-enable-vertex-attrib.html',
