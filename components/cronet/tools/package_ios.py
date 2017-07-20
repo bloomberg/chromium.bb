@@ -99,6 +99,7 @@ def package_ios_framework_using_gn(out_dir='out/Framework', extra_options=''):
       gn_args = 'target_os="ios" enable_websockets=false ' \
                 'is_cronet_build=true is_component_build=false ' \
                 'disable_file_support=true disable_ftp_support=true ' \
+                'include_transport_security_state_preload_list=false ' \
                 'use_platform_icu_alternatives=true ' \
                 'disable_brotli_filter=false enable_dsyms=true ' \
                 'target_cpu="%s" additional_target_cpus = ["%s"] %s' % \
