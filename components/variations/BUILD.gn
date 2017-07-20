@@ -30,6 +30,7 @@ static_library("variations") {
     "metrics.h",
     "metrics_util.cc",
     "metrics_util.h",
+    "platform_field_trials.h",
     "pref_names.cc",
     "pref_names.h",
     "processed_study.cc",
