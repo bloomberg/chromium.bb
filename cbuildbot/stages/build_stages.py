@@ -68,6 +68,8 @@ class CleanUpStage(generic_stages.BuilderStage):
       # in there might be broken. Since we've already unmounted everything in
       # there, we can just remove it using rm -rf.
       osutils.RmDir(chroot, ignore_missing=True, sudo=True)
+      # Also remove the image file so that it doesn't get re-mounted later.
+      osutils.SafeUnlink(chroot + '.img')
 
   def _DeleteArchivedTrybotImages(self):
     """Clear all previous archive images to save space."""
