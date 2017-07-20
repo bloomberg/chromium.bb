@@ -368,22 +368,16 @@ struct RtreeMatchArg {
 # define MIN(x,y) ((x) > (y) ? (y) : (x))
 #endif
 
-/* What version of GCC is being used.  0 means GCC is not being used */
+/* What version of GCC is being used.  0 means GCC is not being used .
+** Note that the GCC_VERSION macro will also be set correctly when using
+** clang, since clang works hard to be gcc compatible.  So the gcc
+** optimizations will also work when compiling with clang.
+*/
 #ifndef GCC_VERSION
 #if defined(__GNUC__) && !defined(SQLITE_DISABLE_INTRINSIC)
 # define GCC_VERSION (__GNUC__*1000000+__GNUC_MINOR__*1000+__GNUC_PATCHLEVEL__)
 #else
 # define GCC_VERSION 0
-#endif
-#endif
-
-/* What version of CLANG is being used.  0 means CLANG is not being used */
-#ifndef CLANG_VERSION
-#if defined(__clang__) && !defined(_WIN32) && !defined(SQLITE_DISABLE_INTRINSIC)
-# define CLANG_VERSION \
-            (__clang_major__*1000000+__clang_minor__*1000+__clang_patchlevel__)
-#else
-# define CLANG_VERSION 0
 #endif
 #endif
 
@@ -437,7 +431,7 @@ static void readCoord(u8 *p, RtreeCoord *pCoord){
   assert( ((((char*)p) - (char*)0)&3)==0 );  /* p is always 4-byte aligned */
 #if SQLITE_BYTEORDER==1234 && MSVC_VERSION>=1300
   pCoord->u = _byteswap_ulong(*(u32*)p);
-#elif SQLITE_BYTEORDER==1234 && (GCC_VERSION>=4003000 || CLANG_VERSION>=3000000)
+#elif SQLITE_BYTEORDER==1234 && GCC_VERSION>=4003000
   pCoord->u = __builtin_bswap32(*(u32*)p);
 #elif SQLITE_BYTEORDER==4321
   pCoord->u = *(u32*)p;
@@ -455,7 +449,7 @@ static i64 readInt64(u8 *p){
   u64 x;
   memcpy(&x, p, 8);
   return (i64)_byteswap_uint64(x);
-#elif SQLITE_BYTEORDER==1234 && (GCC_VERSION>=4003000 || CLANG_VERSION>=3000000)
+#elif SQLITE_BYTEORDER==1234 && GCC_VERSION>=4003000
   u64 x;
   memcpy(&x, p, 8);
   return (i64)__builtin_bswap64(x);
@@ -464,15 +458,15 @@ static i64 readInt64(u8 *p){
   memcpy(&x, p, 8);
   return x;
 #else
-  return (
-    (((i64)p[0]) << 56) +
-    (((i64)p[1]) << 48) +
-    (((i64)p[2]) << 40) +
-    (((i64)p[3]) << 32) +
-    (((i64)p[4]) << 24) +
-    (((i64)p[5]) << 16) +
-    (((i64)p[6]) <<  8) +
-    (((i64)p[7]) <<  0)
+  return (i64)(
+    (((u64)p[0]) << 56) +
+    (((u64)p[1]) << 48) +
+    (((u64)p[2]) << 40) +
+    (((u64)p[3]) << 32) +
+    (((u64)p[4]) << 24) +
+    (((u64)p[5]) << 16) +
+    (((u64)p[6]) <<  8) +
+    (((u64)p[7]) <<  0)
   );
 #endif
 }
@@ -491,7 +485,7 @@ static int writeCoord(u8 *p, RtreeCoord *pCoord){
   assert( ((((char*)p) - (char*)0)&3)==0 );  /* p is always 4-byte aligned */
   assert( sizeof(RtreeCoord)==4 );
   assert( sizeof(u32)==4 );
-#if SQLITE_BYTEORDER==1234 && (GCC_VERSION>=4003000 || CLANG_VERSION>=3000000)
+#if SQLITE_BYTEORDER==1234 && GCC_VERSION>=4003000
   i = __builtin_bswap32(pCoord->u);
   memcpy(p, &i, 4);
 #elif SQLITE_BYTEORDER==1234 && MSVC_VERSION>=1300
@@ -510,7 +504,7 @@ static int writeCoord(u8 *p, RtreeCoord *pCoord){
   return 4;
 }
 static int writeInt64(u8 *p, i64 i){
-#if SQLITE_BYTEORDER==1234 && (GCC_VERSION>=4003000 || CLANG_VERSION>=3000000)
+#if SQLITE_BYTEORDER==1234 && GCC_VERSION>=4003000
   i = (i64)__builtin_bswap64((u64)i);
   memcpy(p, &i, 8);
 #elif SQLITE_BYTEORDER==1234 && MSVC_VERSION>=1300
@@ -1066,7 +1060,7 @@ static int rtreeEof(sqlite3_vtab_cursor *cur){
     c.u = _byteswap_ulong(*(u32*)a);                            \
     r = eInt ? (sqlite3_rtree_dbl)c.i : (sqlite3_rtree_dbl)c.f; \
 }
-#elif SQLITE_BYTEORDER==1234 && (GCC_VERSION>=4003000 || CLANG_VERSION>=3000000)
+#elif SQLITE_BYTEORDER==1234 && GCC_VERSION>=4003000
 #define RTREE_DECODE_COORD(eInt, a, r) {                        \
     RtreeCoord c;    /* Coordinate decoded */                   \
     c.u = __builtin_bswap32(*(u32*)a);                          \
@@ -3204,12 +3198,36 @@ static int rtreeRename(sqlite3_vtab *pVtab, const char *zNewName){
     , pRtree->zDb, pRtree->zName, zNewName
   );
   if( zSql ){
+    nodeBlobReset(pRtree);
     rc = sqlite3_exec(pRtree->db, zSql, 0, 0, 0);
     sqlite3_free(zSql);
   }
   return rc;
 }
 
+/*
+** The xSavepoint method.
+**
+** This module does not need to do anything to support savepoints. However,
+** it uses this hook to close any open blob handle. This is done because a
+** DROP TABLE command - which fortunately always opens a savepoint - cannot
+** succeed if there are any open blob handles. i.e. if the blob handle were
+** not closed here, the following would fail:
+**
+**   BEGIN;
+**     INSERT INTO rtree...
+**     DROP TABLE <tablename>;    -- Would fail with SQLITE_LOCKED
+**   COMMIT;
+*/
+static int rtreeSavepoint(sqlite3_vtab *pVtab, int iSavepoint){
+  Rtree *pRtree = (Rtree *)pVtab;
+  int iwt = pRtree->inWrTrans;
+  UNUSED_PARAMETER(iSavepoint);
+  pRtree->inWrTrans = 0;
+  nodeBlobReset(pRtree);
+  pRtree->inWrTrans = iwt;
+  return SQLITE_OK;
+}
 
 /*
 ** This function populates the pRtree->nRowEst variable with an estimate
@@ -3256,7 +3274,7 @@ static int rtreeQueryStat1(sqlite3 *db, Rtree *pRtree){
 }
 
 static sqlite3_module rtreeModule = {
-  0,                          /* iVersion */
+  2,                          /* iVersion */
   rtreeCreate,                /* xCreate - create a table */
   rtreeConnect,               /* xConnect - connect to an existing table */
   rtreeBestIndex,             /* xBestIndex - Determine search strategy */
@@ -3276,7 +3294,7 @@ static sqlite3_module rtreeModule = {
   rtreeEndTransaction,        /* xRollback - rollback transaction */
   0,                          /* xFindFunction - function overloading */
   rtreeRename,                /* xRename - rename the table */
-  0,                          /* xSavepoint */
+  rtreeSavepoint,             /* xSavepoint */
   0,                          /* xRelease */
   0,                          /* xRollbackTo */
 };
@@ -3343,7 +3361,8 @@ static int rtreeSqlInit(
   for(i=0; i<N_STATEMENT && rc==SQLITE_OK; i++){
     char *zSql = sqlite3_mprintf(azSql[i], zDb, zPrefix);
     if( zSql ){
-      rc = sqlite3_prepare_v2(db, zSql, -1, appStmt[i], 0);
+      rc = sqlite3_prepare_v3(db, zSql, -1, SQLITE_PREPARE_PERSISTENT,
+                              appStmt[i], 0);
     }else{
       rc = SQLITE_NOMEM;
     }
@@ -3418,6 +3437,10 @@ static int getNodeSize(
     rc = getIntFromStmt(db, zSql, &pRtree->iNodeSize);
     if( rc!=SQLITE_OK ){
       *pzErr = sqlite3_mprintf("%s", sqlite3_errmsg(db));
+    }else if( pRtree->iNodeSize<(512-64) ){
+      rc = SQLITE_CORRUPT;
+      *pzErr = sqlite3_mprintf("undersize RTree blobs in \"%q_node\"",
+                               pRtree->zName);
     }
   }
 

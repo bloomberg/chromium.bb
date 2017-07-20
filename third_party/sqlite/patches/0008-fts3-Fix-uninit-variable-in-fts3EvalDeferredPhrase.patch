@@ -1,4 +1,4 @@
-From e007f424af863cda23f578906426d32f06e5c9cb Mon Sep 17 00:00:00 2001
+From 6bf4c55498680496d6e150d22219f7a980566ce6 Mon Sep 17 00:00:00 2001
 From: Scott Hess <shess@chromium.org>
 Date: Thu, 12 Feb 2015 15:01:26 -0800
 Subject: [PATCH 08/10] [fts3] Fix uninit variable in fts3EvalDeferredPhrase.
@@ -14,12 +14,12 @@ R=thakis@chromium.org
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/third_party/sqlite/src/ext/fts3/fts3.c b/third_party/sqlite/src/ext/fts3/fts3.c
-index 4b032271148e..2a24b78f3783 100644
+index 2d21c4fd6844..a563dc788c77 100644
 --- a/third_party/sqlite/src/ext/fts3/fts3.c
 +++ b/third_party/sqlite/src/ext/fts3/fts3.c
-@@ -4171,8 +4171,8 @@ static int fts3EvalDeferredPhrase(Fts3Cursor *pCsr, Fts3Phrase *pPhrase){
+@@ -4187,8 +4187,8 @@ static int fts3EvalDeferredPhrase(Fts3Cursor *pCsr, Fts3Phrase *pPhrase){
      Fts3DeferredToken *pDeferred = pToken->pDeferred;
-
+ 
      if( pDeferred ){
 -      char *pList;
 -      int nList;
@@ -27,7 +27,7 @@ index 4b032271148e..2a24b78f3783 100644
 +      int nList = 0;
        int rc = sqlite3Fts3DeferredTokenList(pDeferred, &pList, &nList);
        if( rc!=SQLITE_OK ) return rc;
-
---
-2.11.0
+ 
+-- 
+2.13.1.518.g3df882009-goog
 

@@ -168,12 +168,12 @@ static struct action *Action_new(void);
 static struct action *Action_sort(struct action *);
 
 /********** From the file "build.h" ************************************/
-void FindRulePrecedences();
-void FindFirstSets();
-void FindStates();
-void FindLinks();
-void FindFollowSets();
-void FindActions();
+void FindRulePrecedences(struct lemon*);
+void FindFirstSets(struct lemon*);
+void FindStates(struct lemon*);
+void FindLinks(struct lemon*);
+void FindFollowSets(struct lemon*);
+void FindActions(struct lemon*);
 
 /********* From the file "configlist.h" *********************************/
 void Configlist_init(void);
@@ -457,7 +457,7 @@ struct state *State_new(void);
 void State_init(void);
 int State_insert(struct state *, struct config *);
 struct state *State_find(struct config *);
-struct state **State_arrayof(/*  */);
+struct state **State_arrayof(void);
 
 /* Routines used for efficiency in Configlist_add */
 
@@ -1251,7 +1251,7 @@ static struct config *basis = 0;         /* Top of list of basis configs */
 static struct config **basisend = 0;     /* End of list of basis configs */
 
 /* Return a pointer to a new configuration */
-PRIVATE struct config *newconfig(){
+PRIVATE struct config *newconfig(void){
   struct config *newcfg;
   if( freelist==0 ){
     int i;
@@ -1277,7 +1277,7 @@ PRIVATE void deleteconfig(struct config *old)
 }
 
 /* Initialized the configuration list builder */
-void Configlist_init(){
+void Configlist_init(void){
   current = 0;
   currentend = &current;
   basis = 0;
@@ -1287,7 +1287,7 @@ void Configlist_init(){
 }
 
 /* Initialized the configuration list builder */
-void Configlist_reset(){
+void Configlist_reset(void){
   current = 0;
   currentend = &current;
   basis = 0;
@@ -1397,7 +1397,7 @@ void Configlist_closure(struct lemon *lemp)
 }
 
 /* Sort the configuration list */
-void Configlist_sort(){
+void Configlist_sort(void){
   current = (struct config*)msort((char*)current,(char**)&(current->next),
                                   Configcmp);
   currentend = 0;
@@ -1405,7 +1405,7 @@ void Configlist_sort(){
 }
 
 /* Sort the basis configuration list */
-void Configlist_sortbasis(){
+void Configlist_sortbasis(void){
   basis = (struct config*)msort((char*)current,(char**)&(current->bp),
                                 Configcmp);
   basisend = 0;
@@ -1414,7 +1414,7 @@ void Configlist_sortbasis(){
 
 /* Return a pointer to the head of the configuration list and
 ** reset the list */
-struct config *Configlist_return(){
+struct config *Configlist_return(void){
   struct config *old;
   old = current;
   current = 0;
@@ -1424,7 +1424,7 @@ struct config *Configlist_return(){
 
 /* Return a pointer to the head of the configuration list and
 ** reset the list */
-struct config *Configlist_basis(){
+struct config *Configlist_basis(void){
   struct config *old;
   old = basis;
   basis = 0;
@@ -1466,7 +1466,7 @@ void ErrorMsg(const char *filename, int lineno, const char *format, ...){
 /* Report an out-of-memory condition and abort.  This function
 ** is used mostly by the "MemoryCheck" macro in struct.h
 */
-void memory_error(){
+void memory_error(void){
   fprintf(stderr,"Out of memory.  Aborting...\n");
   exit(1);
 }
@@ -2051,7 +2051,7 @@ int OptInit(char **a, struct s_options *o, FILE *err)
   return 0;
 }
 
-int OptNArgs(){
+int OptNArgs(void){
   int cnt = 0;
   int dashdash = 0;
   int i;
@@ -2078,7 +2078,7 @@ void OptErr(int n)
   if( i>=0 ) errline(i,0,errstream);
 }
 
-void OptPrint(){
+void OptPrint(void){
   int i;
   int max, len;
   max = 0;
@@ -2896,7 +2896,7 @@ void Parse(struct lemon *gp)
 static struct plink *plink_freelist = 0;
 
 /* Allocate a new plink */
-struct plink *Plink_new(){
+struct plink *Plink_new(void){
   struct plink *newlink;
 
   if( plink_freelist==0 ){
@@ -3297,7 +3297,14 @@ PRIVATE int compute_action(struct lemon *lemp, struct action *ap)
   int act;
   switch( ap->type ){
     case SHIFT:  act = ap->x.stp->statenum;                        break;
-    case SHIFTREDUCE: act = ap->x.rp->iRule + lemp->nstate;        break;
+    case SHIFTREDUCE: {
+      act = ap->x.rp->iRule + lemp->nstate;
+      /* Since a SHIFT is inherient after a prior REDUCE, convert any
+      ** SHIFTREDUCE action with a nonterminal on the LHS into a simple
+      ** REDUCE action: */
+      if( ap->sp->index>=lemp->nterminal ) act += lemp->nrule;
+      break;
+    }
     case REDUCE: act = ap->x.rp->iRule + lemp->nstate+lemp->nrule; break;
     case ERROR:  act = lemp->nstate + lemp->nrule*2;               break;
     case ACCEPT: act = lemp->nstate + lemp->nrule*2 + 1;           break;
@@ -4161,7 +4168,7 @@ void ReportTable(
   for(i=0; i<lemp->nxstate; i++){
     for(ap=lemp->sorted[i]->ap; ap; ap=ap->next){
       if( ap->type==REDUCE || ap->type==SHIFTREDUCE ){
-        ap->x.rp->doesReduce = i;
+        ap->x.rp->doesReduce = 1;
       }
     }
   }
@@ -4415,7 +4422,7 @@ void ReportTable(
   ** sequentually beginning with 0.
   */
   for(rp=lemp->rule; rp; rp=rp->next){
-    fprintf(out,"  { %d, %d },\n",rp->lhs->index,rp->nrhs); lineno++;
+    fprintf(out,"  { %d, %d },\n",rp->lhs->index,-rp->nrhs); lineno++;
   }
   tplt_xfer(lemp->name,in,out,&lineno);
 
@@ -4724,7 +4731,7 @@ void SetSize(int n)
 }
 
 /* Allocate a new set */
-char *SetNew(){
+char *SetNew(void){
   char *s;
   s = (char*)calloc( size, 1);
   if( s==0 ){
@@ -4830,7 +4837,7 @@ typedef struct s_x1node {
 static struct s_x1 *x1a;
 
 /* Allocate a new associative array */
-void Strsafe_init(){
+void Strsafe_init(void){
   if( x1a ) return;
   x1a = (struct s_x1*)malloc( sizeof(struct s_x1) );
   if( x1a ){
@@ -4997,7 +5004,7 @@ typedef struct s_x2node {
 static struct s_x2 *x2a;
 
 /* Allocate a new associative array */
-void Symbol_init(){
+void Symbol_init(void){
   if( x2a ) return;
   x2a = (struct s_x2*)malloc( sizeof(struct s_x2) );
   if( x2a ){
@@ -5194,7 +5201,7 @@ typedef struct s_x3node {
 static struct s_x3 *x3a;
 
 /* Allocate a new associative array */
-void State_init(){
+void State_init(void){
   if( x3a ) return;
   x3a = (struct s_x3*)malloc( sizeof(struct s_x3) );
   if( x3a ){
@@ -5288,7 +5295,7 @@ struct state *State_find(struct config *key)
 /* Return an array of pointers to all data in the table.
 ** The array is obtained from malloc.  Return NULL if memory allocation
 ** problems, or if the array is empty. */
-struct state **State_arrayof()
+struct state **State_arrayof(void)
 {
   struct state **array;
   int i,arrSize;
@@ -5334,7 +5341,7 @@ typedef struct s_x4node {
 static struct s_x4 *x4a;
 
 /* Allocate a new associative array */
-void Configtable_init(){
+void Configtable_init(void){
   if( x4a ) return;
   x4a = (struct s_x4*)malloc( sizeof(struct s_x4) );
   if( x4a ){

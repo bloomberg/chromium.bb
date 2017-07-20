@@ -31,14 +31,14 @@ do_execsql_test 1.0 {
 }
 
 foreach {tn sql expect} {
-  1 "SELECT * FROM e6 WHERE b LIKE 'abc'" {
+  1 "SELECT * FROM e6 WHERE b LIKE '8abc'" {
     xBestIndex {SELECT rowid, a, b FROM 't6' WHERE b like ?}
-    xFilter {SELECT rowid, a, b FROM 't6' WHERE b like ?} abc
+    xFilter {SELECT rowid, a, b FROM 't6' WHERE b like ?} 8abc
   }
 
-  2 "SELECT * FROM e6 WHERE b GLOB 'abc'" {
+  2 "SELECT * FROM e6 WHERE b GLOB '8abc'" {
     xBestIndex {SELECT rowid, a, b FROM 't6' WHERE b glob ?}
-    xFilter {SELECT rowid, a, b FROM 't6' WHERE b glob ?} abc
+    xFilter {SELECT rowid, a, b FROM 't6' WHERE b glob ?} 8abc
   }
 } {
   do_test 1.$tn {
@@ -216,24 +216,28 @@ if {$tcl_platform(platform)!="windows" || \
   } {}
 
   set pwd [pwd]
-  do_execsql_test 3.5 {
-    SELECT path, size FROM fstree WHERE path GLOB $pwd || '/subdir/*' ORDER BY 1
-  } [list \
-    "$pwd/subdir/x1.txt" 143 \
-    "$pwd/subdir/x2.txt" 153 \
-  ]
-  do_execsql_test 3.6 {
-    SELECT path, size FROM fstree WHERE path LIKE $pwd || '/subdir/%' ORDER BY 1
-  } [list \
-    "$pwd/subdir/x1.txt" 143 \
-    "$pwd/subdir/x2.txt" 153 \
-  ]
-  do_execsql_test 3.7 {
-    SELECT sum(size) FROM fstree WHERE path LIKE $pwd || '/subdir/%'
-  } 296
-  do_execsql_test 3.8 {
-    SELECT size FROM fstree WHERE path = $pwd || '/subdir/x1.txt'
-  } 143
+  if {![string match {*[_%]*} $pwd]} {
+    do_execsql_test 3.5 {
+      SELECT path, size FROM fstree
+       WHERE path GLOB $pwd || '/subdir/*' ORDER BY 1
+    } [list \
+      "$pwd/subdir/x1.txt" 143 \
+      "$pwd/subdir/x2.txt" 153 \
+    ]
+    do_execsql_test 3.6 {
+      SELECT path, size FROM fstree
+       WHERE path LIKE $pwd || '/subdir/%' ORDER BY 1
+    } [list \
+      "$pwd/subdir/x1.txt" 143 \
+      "$pwd/subdir/x2.txt" 153 \
+    ]
+    do_execsql_test 3.7 {
+      SELECT sum(size) FROM fstree WHERE path LIKE $pwd || '/subdir/%'
+    } 296
+    do_execsql_test 3.8 {
+      SELECT size FROM fstree WHERE path = $pwd || '/subdir/x1.txt'
+    } 143
+  }
 
 }
 

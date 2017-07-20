@@ -1,4 +1,4 @@
-From 48c000f21a646815c76026f3ced1f53847c2d66f Mon Sep 17 00:00:00 2001
+From 0189f2ce45d8c2ed45e5321361cd7de21ea4432e Mon Sep 17 00:00:00 2001
 From: rmcilroy <rmcilroy@chromium.org>
 Date: Thu, 20 Jun 2013 22:50:12 +0000
 Subject: [PATCH 02/10] Use seperate page-cache pools for each sqlite
@@ -16,10 +16,10 @@ Original review URL: https://chromiumcodereview.appspot.com/17413004
  1 file changed, 5 insertions(+), 1 deletion(-)
 
 diff --git a/third_party/sqlite/src/src/pcache1.c b/third_party/sqlite/src/src/pcache1.c
-index 110d7ec656ae..3b938ce7b2f8 100644
+index 885b8b11fcf7..4b09e9805e82 100644
 --- a/third_party/sqlite/src/src/pcache1.c
 +++ b/third_party/sqlite/src/src/pcache1.c
-@@ -690,6 +690,8 @@ static int pcache1Init(void *NotUsed){
+@@ -689,6 +689,8 @@ static int pcache1Init(void *NotUsed){
    ** private PGroup (mode-1).  pcache1.separateCache is false if the single
    ** PGroup in pcache1.grp is used for all page caches (mode-2).
    **
@@ -28,7 +28,7 @@ index 110d7ec656ae..3b938ce7b2f8 100644
    **   *  Always use a unified cache (mode-2) if ENABLE_MEMORY_MANAGEMENT
    **
    **   *  Use a unified cache in single-threaded applications that have
-@@ -699,7 +701,9 @@ static int pcache1Init(void *NotUsed){
+@@ -698,7 +700,9 @@ static int pcache1Init(void *NotUsed){
    **
    **   *  Otherwise use separate caches (mode-1)
    */
@@ -39,6 +39,6 @@ index 110d7ec656ae..3b938ce7b2f8 100644
    pcache1.separateCache = 0;
  #elif SQLITE_THREADSAFE
    pcache1.separateCache = sqlite3GlobalConfig.pPage==0
---
-2.11.0
+-- 
+2.13.1.518.g3df882009-goog
 

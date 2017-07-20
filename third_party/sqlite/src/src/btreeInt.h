@@ -449,10 +449,12 @@ struct BtShared {
 #define BTS_READ_ONLY        0x0001   /* Underlying file is readonly */
 #define BTS_PAGESIZE_FIXED   0x0002   /* Page size can no longer be changed */
 #define BTS_SECURE_DELETE    0x0004   /* PRAGMA secure_delete is enabled */
-#define BTS_INITIALLY_EMPTY  0x0008   /* Database was empty at trans start */
-#define BTS_NO_WAL           0x0010   /* Do not open write-ahead-log files */
-#define BTS_EXCLUSIVE        0x0020   /* pWriter has an exclusive lock */
-#define BTS_PENDING          0x0040   /* Waiting for read-locks to clear */
+#define BTS_OVERWRITE        0x0008   /* Overwrite deleted content with zeros */
+#define BTS_FAST_SECURE      0x000c   /* Combination of the previous two */
+#define BTS_INITIALLY_EMPTY  0x0010   /* Database was empty at trans start */
+#define BTS_NO_WAL           0x0020   /* Do not open write-ahead-log files */
+#define BTS_EXCLUSIVE        0x0040   /* pWriter has an exclusive lock */
+#define BTS_PENDING          0x0080   /* Waiting for read-locks to clear */
 
 /*
 ** An instance of the following structure is used to hold information
@@ -518,10 +520,10 @@ struct BtCursor {
   ** initialized. */
   i8 iPage;                 /* Index of current page in apPage */
   u8 curIntKey;             /* Value of apPage[0]->intKey */
-  struct KeyInfo *pKeyInfo; /* Argument passed to comparison function */
-  void *padding1;           /* Make object size a multiple of 16 */
-  u16 aiIdx[BTCURSOR_MAX_DEPTH];        /* Current index in apPage[i] */
-  MemPage *apPage[BTCURSOR_MAX_DEPTH];  /* Pages from root to current page */
+  u16 ix;                   /* Current index for apPage[iPage] */
+  u16 aiIdx[BTCURSOR_MAX_DEPTH-1];     /* Current index in apPage[i] */
+  struct KeyInfo *pKeyInfo;            /* Arg passed to comparison function */
+  MemPage *apPage[BTCURSOR_MAX_DEPTH]; /* Pages from root to current page */
 };
 
 /*

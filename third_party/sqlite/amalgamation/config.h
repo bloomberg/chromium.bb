@@ -15,6 +15,15 @@
  * but AFAICT there are no current portability concerns here.  limits.h is
  * another alternative.
  */
+
+// features.h, included below, indirectly includes sys/mman.h. The latter header
+// only defines mremap if _GNU_SOURCE is defined. Depending on the order of the
+// files in the amalgamation, removing the define below may result in a build
+// error on Linux.
+#if defined(__GNUC__) && !defined(_GNU_SOURCE)
+# define _GNU_SOURCE
+#endif
+
 #include <features.h>
 
 /* SQLite wants to track malloc sizes.  On OSX it uses malloc_size(), on

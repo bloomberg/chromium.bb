@@ -1,4 +1,4 @@
-From 8728c1116d9245f7a0f1e72b5d2f00940a04b104 Mon Sep 17 00:00:00 2001
+From e249174e02172cdddc4b22662d092303b3814d10 Mon Sep 17 00:00:00 2001
 From: Scott Hess <shess@chromium.org>
 Date: Tue, 16 Dec 2014 13:02:27 -0800
 Subject: [PATCH 06/10] [fts3] Disable fts3_tokenizer and fts4.
@@ -14,7 +14,7 @@ No original review URL because this was part of the initial Chromium commit.
  1 file changed, 9 insertions(+)
 
 diff --git a/third_party/sqlite/src/ext/fts3/fts3.c b/third_party/sqlite/src/ext/fts3/fts3.c
-index 7c931c42d49e..9659815da93a 100644
+index 03a22f80f9ea..06c20756c85a 100644
 --- a/third_party/sqlite/src/ext/fts3/fts3.c
 +++ b/third_party/sqlite/src/ext/fts3/fts3.c
 @@ -287,6 +287,7 @@
@@ -22,10 +22,10 @@ index 7c931c42d49e..9659815da93a 100644
  ** older data.
  */
 +#define CHROMIUM_FTS3_CHANGES 1
-
+ 
  #include "fts3Int.h"
  #if !defined(SQLITE_CORE) || defined(SQLITE_ENABLE_FTS3)
-@@ -3955,7 +3956,11 @@ int sqlite3Fts3Init(sqlite3 *db){
+@@ -3972,7 +3973,11 @@ int sqlite3Fts3Init(sqlite3 *db){
    ** module with sqlite.
    */
    if( SQLITE_OK==rc
@@ -37,7 +37,7 @@ index 7c931c42d49e..9659815da93a 100644
     && SQLITE_OK==(rc = sqlite3_overload_function(db, "snippet", -1))
     && SQLITE_OK==(rc = sqlite3_overload_function(db, "offsets", 1))
     && SQLITE_OK==(rc = sqlite3_overload_function(db, "matchinfo", 1))
-@@ -3965,6 +3970,9 @@ int sqlite3Fts3Init(sqlite3 *db){
+@@ -3982,6 +3987,9 @@ int sqlite3Fts3Init(sqlite3 *db){
      rc = sqlite3_create_module_v2(
          db, "fts3", &fts3Module, (void *)pHash, hashDestroy
      );
@@ -47,14 +47,14 @@ index 7c931c42d49e..9659815da93a 100644
      if( rc==SQLITE_OK ){
        rc = sqlite3_create_module_v2(
            db, "fts4", &fts3Module, (void *)pHash, 0
-@@ -3973,6 +3981,7 @@ int sqlite3Fts3Init(sqlite3 *db){
+@@ -3990,6 +3998,7 @@ int sqlite3Fts3Init(sqlite3 *db){
      if( rc==SQLITE_OK ){
        rc = sqlite3Fts3InitTok(db, (void *)pHash);
      }
 +#endif
      return rc;
    }
-
---
-2.11.0
+ 
+-- 
+2.13.1.518.g3df882009-goog
 

@@ -1,4 +1,4 @@
-From 59a7fecd66719e55105c172e8719ef9071852364 Mon Sep 17 00:00:00 2001
+From 14e5a2b03a580d4f706c4ab2b2f0d9a3c825a1cb Mon Sep 17 00:00:00 2001
 From: Scott Hess <shess@chromium.org>
 Date: Tue, 14 Mar 2017 13:45:46 -0700
 Subject: [PATCH 09/10] [build] Fix _CRT_RAND_S conflict in sqliteInt.h
@@ -12,7 +12,7 @@ BUG=701522
  1 file changed, 3 insertions(+)
 
 diff --git a/third_party/sqlite/src/src/sqliteInt.h b/third_party/sqlite/src/src/sqliteInt.h
-index f9768895ae98..ee58edad775c 100644
+index 05b691b32dee..fcbcf8bb6a40 100644
 --- a/third_party/sqlite/src/src/sqliteInt.h
 +++ b/third_party/sqlite/src/src/sqliteInt.h
 @@ -55,8 +55,11 @@
@@ -24,9 +24,9 @@ index f9768895ae98..ee58edad775c 100644
  #  define _CRT_RAND_S
  #endif
 +#endif
-
+ 
  /*
  ** Include the header file used to customize the compiler options for MSVC.
---
-2.11.0
+-- 
+2.13.1.518.g3df882009-goog
 

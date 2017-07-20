@@ -76,16 +76,20 @@ static void typeofFunc(
   int NotUsed,
   sqlite3_value **argv
 ){
-  const char *z = 0;
+  static const char *azType[] = { "integer", "real", "text", "blob", "null" };
+  int i = sqlite3_value_type(argv[0]) - 1;
   UNUSED_PARAMETER(NotUsed);
-  switch( sqlite3_value_type(argv[0]) ){
-    case SQLITE_INTEGER: z = "integer"; break;
-    case SQLITE_TEXT:    z = "text";    break;
-    case SQLITE_FLOAT:   z = "real";    break;
-    case SQLITE_BLOB:    z = "blob";    break;
-    default:             z = "null";    break;
-  }
-  sqlite3_result_text(context, z, -1, SQLITE_STATIC);
+  assert( i>=0 && i<ArraySize(azType) );
+  assert( SQLITE_INTEGER==1 );
+  assert( SQLITE_FLOAT==2 );
+  assert( SQLITE_TEXT==3 );
+  assert( SQLITE_BLOB==4 );
+  assert( SQLITE_NULL==5 );
+  /* EVIDENCE-OF: R-01470-60482 The sqlite3_value_type(V) interface returns
+  ** the datatype code for the initial datatype of the sqlite3_value object
+  ** V. The returned value is one of SQLITE_INTEGER, SQLITE_FLOAT,
+  ** SQLITE_TEXT, SQLITE_BLOB, or SQLITE_NULL. */
+  sqlite3_result_text(context, azType[i], -1, SQLITE_STATIC);
 }
 
 
@@ -204,15 +208,13 @@ static void instrFunc(
     if( typeHaystack==SQLITE_BLOB && typeNeedle==SQLITE_BLOB ){
       zHaystack = sqlite3_value_blob(argv[0]);
       zNeedle = sqlite3_value_blob(argv[1]);
-      assert( zNeedle!=0 );
-      assert( zHaystack!=0 || nHaystack==0 );
       isText = 0;
     }else{
       zHaystack = sqlite3_value_text(argv[0]);
       zNeedle = sqlite3_value_text(argv[1]);
       isText = 1;
-      if( zHaystack==0 || zNeedle==0 ) return;
     }
+    if( zNeedle==0 || (nHaystack && zHaystack==0) ) return;
     while( nNeedle<=nHaystack && memcmp(zHaystack, zNeedle, nNeedle)!=0 ){
       N++;
       do{

@@ -939,7 +939,11 @@ void sqlite3StartTable(
   pTable->iPKey = -1;
   pTable->pSchema = db->aDb[iDb].pSchema;
   pTable->nTabRef = 1;
+#ifdef SQLITE_DEFAULT_ROWEST
+  pTable->nRowLogEst = sqlite3LogEst(SQLITE_DEFAULT_ROWEST);
+#else
   pTable->nRowLogEst = 200; assert( 200==sqlite3LogEst(1048576) );
+#endif
   assert( pParse->pNewTable==0 );
   pParse->pNewTable = pTable;
 
@@ -1115,6 +1119,7 @@ void sqlite3AddNotNull(Parse *pParse, int onError){
   p = pParse->pNewTable;
   if( p==0 || NEVER(p->nCol<1) ) return;
   p->aCol[p->nCol-1].notNull = (u8)onError;
+  p->tabFlags |= TF_HasNotNull;
 }
 
 /*
@@ -3454,6 +3459,9 @@ void sqlite3DefaultRowEst(Index *pIdx){
   int nCopy = MIN(ArraySize(aVal), pIdx->nKeyCol);
   int i;
 
+  /* Indexes with default row estimates should not have stat1 data */
+  assert( !pIdx->hasStat1 );
+
   /* Set the first entry (number of rows in the index) to the estimated
   ** number of rows in the table, or half the number of rows in the table
   ** for a partial index.   But do not let the estimate drop below 10. */
@@ -3619,7 +3627,7 @@ void sqlite3IdListDelete(sqlite3 *db, IdList *pList){
     sqlite3DbFree(db, pList->a[i].zName);
   }
   sqlite3DbFree(db, pList->a);
-  sqlite3DbFree(db, pList);
+  sqlite3DbFreeNN(db, pList);
 }
 
 /*
@@ -3764,12 +3772,12 @@ SrcList *sqlite3SrcListAppend(
     pDatabase = 0;
   }
   if( pDatabase ){
-    Token *pTemp = pDatabase;
-    pDatabase = pTable;
-    pTable = pTemp;
+    pItem->zName = sqlite3NameFromToken(db, pDatabase);
+    pItem->zDatabase = sqlite3NameFromToken(db, pTable);
+  }else{
+    pItem->zName = sqlite3NameFromToken(db, pTable);
+    pItem->zDatabase = 0;
   }
-  pItem->zName = sqlite3NameFromToken(db, pTable);
-  pItem->zDatabase = sqlite3NameFromToken(db, pDatabase);
   return pList;
 }
 
@@ -3809,7 +3817,7 @@ void sqlite3SrcListDelete(sqlite3 *db, SrcList *pList){
     sqlite3ExprDelete(db, pItem->pOn);
     sqlite3IdListDelete(db, pItem->pUsing);
   }
-  sqlite3DbFree(db, pList);
+  sqlite3DbFreeNN(db, pList);
 }
 
 /*
@@ -3958,36 +3966,25 @@ void sqlite3BeginTransaction(Parse *pParse, int type){
 }
 
 /*
-** Generate VDBE code for a COMMIT statement.
+** Generate VDBE code for a COMMIT or ROLLBACK statement.
+** Code for ROLLBACK is generated if eType==TK_ROLLBACK.  Otherwise
+** code is generated for a COMMIT.
 */
-void sqlite3CommitTransaction(Parse *pParse){
+void sqlite3EndTransaction(Parse *pParse, int eType){
   Vdbe *v;
+  int isRollback;
 
   assert( pParse!=0 );
   assert( pParse->db!=0 );
-  if( sqlite3AuthCheck(pParse, SQLITE_TRANSACTION, "COMMIT", 0, 0) ){
+  assert( eType==TK_COMMIT || eType==TK_END || eType==TK_ROLLBACK );
+  isRollback = eType==TK_ROLLBACK;
+  if( sqlite3AuthCheck(pParse, SQLITE_TRANSACTION,
+       isRollback ? "ROLLBACK" : "COMMIT", 0, 0) ){
     return;
   }
   v = sqlite3GetVdbe(pParse);
   if( v ){
-    sqlite3VdbeAddOp1(v, OP_AutoCommit, 1);
-  }
-}
-
-/*
-** Generate VDBE code for a ROLLBACK statement.
-*/
-void sqlite3RollbackTransaction(Parse *pParse){
-  Vdbe *v;
-
-  assert( pParse!=0 );
-  assert( pParse->db!=0 );
-  if( sqlite3AuthCheck(pParse, SQLITE_TRANSACTION, "ROLLBACK", 0, 0) ){
-    return;
-  }
-  v = sqlite3GetVdbe(pParse);
-  if( v ){
-    sqlite3VdbeAddOp2(v, OP_AutoCommit, 1, 1);
+    sqlite3VdbeAddOp2(v, OP_AutoCommit, 1, isRollback);
   }
 }
 
@@ -4177,7 +4174,9 @@ void sqlite3UniqueConstraint(
       assert( pIdx->aiColumn[j]>=0 );
       zCol = pTab->aCol[pIdx->aiColumn[j]].zName;
       if( j ) sqlite3StrAccumAppend(&errMsg, ", ", 2);
-      sqlite3XPrintf(&errMsg, "%s.%s", pTab->zName, zCol);
+      sqlite3StrAccumAppendAll(&errMsg, pTab->zName);
+      sqlite3StrAccumAppend(&errMsg, ".", 1);
+      sqlite3StrAccumAppendAll(&errMsg, zCol);
     }
   }
   zErr = sqlite3StrAccumFinish(&errMsg);

@@ -164,6 +164,7 @@ struct VdbeFrame {
   i64 *anExec;            /* Event counters from parent frame */
   Mem *aMem;              /* Array of memory cells for parent frame */
   VdbeCursor **apCsr;     /* Array of Vdbe cursors for parent frame */
+  u8 *aOnce;              /* Bitmask used by OP_Once */
   void *token;            /* Copy of SubProgram.token */
   i64 lastRowid;          /* Last insert rowid (sqlite3.lastRowid) */
   AuxData *pAuxData;      /* Linked list of auxdata allocations */
@@ -184,7 +185,7 @@ struct VdbeFrame {
 ** structures. Each Mem struct may cache multiple representations (string,
 ** integer etc.) of the same value.
 */
-struct Mem {
+struct sqlite3_value {
   union MemValue {
     double r;           /* Real value used when MEM_Real is set in flags */
     i64 i;              /* Integer value used when MEM_Int is set in flags */
@@ -287,11 +288,11 @@ struct Mem {
 ** when the VM is halted (if not before).
 */
 struct AuxData {
-  int iOp;                        /* Instruction number of OP_Function opcode */
-  int iArg;                       /* Index of function argument. */
+  int iAuxOp;                     /* Instruction number of OP_Function opcode */
+  int iAuxArg;                    /* Index of function argument. */
   void *pAux;                     /* Aux data pointer */
-  void (*xDelete)(void *);        /* Destructor for the aux data */
-  AuxData *pNext;                 /* Next element in list */
+  void (*xDeleteAux)(void*);      /* Destructor for the aux data */
+  AuxData *pNextAux;              /* Next element in list */
 };
 
 /*
@@ -382,6 +383,7 @@ struct Vdbe {
   u16 nResColumn;         /* Number of columns in one row of the result set */
   u8 errorAction;         /* Recovery action to do in case of an error */
   u8 minWriteFileFormat;  /* Minimum file format for writable database files */
+  u8 prepFlags;           /* SQLITE_PREPARE_* flags */
   bft expired:1;          /* True if the VM needs to be recompiled */
   bft doingRerun:1;       /* True if rerunning after an auto-reprepare */
   bft explain:2;          /* True if EXPLAIN present on SQL command */
@@ -390,10 +392,9 @@ struct Vdbe {
   bft usesStmtJournal:1;  /* True if uses a statement journal */
   bft readOnly:1;         /* True for statements that do not write */
   bft bIsReader:1;        /* True for statements that read */
-  bft isPrepareV2:1;      /* True if prepared with prepare_v2() */
   yDbMask btreeMask;      /* Bitmask of db->aDb[] entries referenced */
   yDbMask lockMask;       /* Subset of btreeMask that requires a lock */
-  u32 aCounter[5];        /* Counters used by sqlite3_stmt_status() */
+  u32 aCounter[7];        /* Counters used by sqlite3_stmt_status() */
   char *zSql;             /* Text of the SQL statement that generated this */
   void *pFree;            /* Free this when deleting the vdbe */
   VdbeFrame *pFrame;      /* Parent frame */
@@ -475,7 +476,7 @@ void sqlite3VdbeMemSetInt64(Mem*, i64);
 #else
   void sqlite3VdbeMemSetDouble(Mem*, double);
 #endif
-void sqlite3VdbeMemSetPointer(Mem*, void*);
+void sqlite3VdbeMemSetPointer(Mem*, void*, const char*);
 void sqlite3VdbeMemInit(Mem*,sqlite3*,u16);
 void sqlite3VdbeMemSetNull(Mem*);
 void sqlite3VdbeMemSetZeroBlob(Mem*,int);
@@ -507,7 +508,7 @@ int sqlite3VdbeSorterInit(sqlite3 *, int, VdbeCursor *);
 void sqlite3VdbeSorterReset(sqlite3 *, VdbeSorter *);
 void sqlite3VdbeSorterClose(sqlite3 *, VdbeCursor *);
 int sqlite3VdbeSorterRowkey(const VdbeCursor *, Mem *);
-int sqlite3VdbeSorterNext(sqlite3 *, const VdbeCursor *, int *);
+int sqlite3VdbeSorterNext(sqlite3 *, const VdbeCursor *);
 int sqlite3VdbeSorterRewind(const VdbeCursor *, int *);
 int sqlite3VdbeSorterWrite(const VdbeCursor *, Mem *);
 int sqlite3VdbeSorterCompare(const VdbeCursor *, Mem *, int, int *);
@@ -535,12 +536,14 @@ int sqlite3VdbeCheckFk(Vdbe *, int);
 # define sqlite3VdbeCheckFk(p,i) 0
 #endif
 
-int sqlite3VdbeMemTranslate(Mem*, u8);
 #ifdef SQLITE_DEBUG
   void sqlite3VdbePrintSql(Vdbe*);
   void sqlite3VdbeMemPrettyPrint(Mem *pMem, char *zBuf);
 #endif
-int sqlite3VdbeMemHandleBom(Mem *pMem);
+#ifndef SQLITE_OMIT_UTF16
+  int sqlite3VdbeMemTranslate(Mem*, u8);
+  int sqlite3VdbeMemHandleBom(Mem *pMem);
+#endif
 
 #ifndef SQLITE_OMIT_INCRBLOB
   int sqlite3VdbeMemExpandBlob(Mem *);
