@@ -31,7 +31,7 @@ class AppListTestViewDelegate : public AppListViewDelegate {
 
   int dismiss_count() { return dismiss_count_; }
   int open_search_result_count() { return open_search_result_count_; }
-  std::map<size_t, int> open_search_result_counts() {
+  std::map<size_t, int>& open_search_result_counts() {
     return open_search_result_counts_;
   }
 

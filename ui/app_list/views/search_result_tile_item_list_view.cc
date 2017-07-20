@@ -169,7 +169,12 @@ void SearchResultTileItemListView::UpdateSelectedIndex(int old_selected,
 }
 
 bool SearchResultTileItemListView::OnKeyPressed(const ui::KeyEvent& event) {
-  if (selected_index() >= 0 && child_at(selected_index())->OnKeyPressed(event))
+  int selection_index = selected_index();
+  // Also count the separator when Play Store app search feature is enabled.
+  const int child_index = is_play_store_app_search_enabled_
+                              ? selection_index * 2 + 1
+                              : selection_index;
+  if (selection_index >= 0 && child_at(child_index)->OnKeyPressed(event))
     return true;
 
   int dir = 0;
@@ -204,7 +209,7 @@ bool SearchResultTileItemListView::OnKeyPressed(const ui::KeyEvent& event) {
   if (dir == 0)
     return false;
 
-  int selection_index = selected_index() + dir;
+  selection_index = selection_index + dir;
   if (IsValidSelectionIndex(selection_index)) {
     SetSelectedIndex(selection_index);
     return true;
