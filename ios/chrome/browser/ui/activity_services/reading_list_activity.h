@@ -8,6 +8,7 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
+@protocol BrowserCommands;
 class GURL;
 
 // Activity that triggers the add-to-reading-list service.
@@ -18,7 +19,7 @@ class GURL;
 
 - (instancetype)initWithURL:(const GURL&)activityURL
                       title:(NSString*)title
-                  responder:(UIResponder*)responder;
+                 dispatcher:(id<BrowserCommands>)dispatcher;
 
 @end
 
