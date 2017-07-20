@@ -365,16 +365,8 @@ class MenuItemViewTestRemoveWithSubmenu : public MenuTestBase {
 typedef MenuItemViewTestRemoveWithSubmenu<0> MenuItemViewTestRemoveWithSubmenu0;
 typedef MenuItemViewTestRemoveWithSubmenu<1> MenuItemViewTestRemoveWithSubmenu1;
 
-#if defined(USE_OZONE)
-// ozone bringup - http://crbug.com/401304
-#define MAYBE_RemoveItemWithSubmenu0 DISABLED_RemoveItemWithSubmenu0
-#define MAYBE_RemoveItemWithSubmenu1 DISABLED_RemoveItemWithSubmenu1
-#else
-#define MAYBE_RemoveItemWithSubmenu0 RemoveItemWithSubmenu0
-#define MAYBE_RemoveItemWithSubmenu1 RemoveItemWithSubmenu1
-#endif
 // If this flakes, disable and log details in http://crbug.com/523255.
-VIEW_TEST(MenuItemViewTestRemoveWithSubmenu0, MAYBE_RemoveItemWithSubmenu0)
+VIEW_TEST(MenuItemViewTestRemoveWithSubmenu0, RemoveItemWithSubmenu0)
 
 // If this flakes, disable and log details in http://crbug.com/523255.
-VIEW_TEST(MenuItemViewTestRemoveWithSubmenu1, MAYBE_RemoveItemWithSubmenu1)
+VIEW_TEST(MenuItemViewTestRemoveWithSubmenu1, RemoveItemWithSubmenu1)
