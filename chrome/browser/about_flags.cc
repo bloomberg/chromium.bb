@@ -1398,12 +1398,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAshEnableUnifiedDesktopName,
      flag_descriptions::kAshEnableUnifiedDesktopDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(switches::kEnableUnifiedDesktop)},
-    {"enable-easy-unlock-bluetooth-low-energy-detection",
+    {"disable-easy-unlock-bluetooth-low-energy-detection",
      flag_descriptions::kEasyUnlockBluetoothLowEnergyDiscoveryName,
      flag_descriptions::kEasyUnlockBluetoothLowEnergyDiscoveryDescription,
      kOsCrOS,
-     SINGLE_VALUE_TYPE(
-         proximity_auth::switches::kEnableBluetoothLowEnergyDiscovery)},
+     SINGLE_DISABLE_VALUE_TYPE(
+         proximity_auth::switches::kDisableBluetoothLowEnergyDiscovery)},
     {"spurious-power-button-window",
      flag_descriptions::kSpuriousPowerButtonWindowName,
      flag_descriptions::kSpuriousPowerButtonWindowDescription, kOsCrOS,

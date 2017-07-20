@@ -574,8 +574,8 @@ EasyUnlockPrivateGetPermitAccessFunction::
 
 ExtensionFunction::ResponseAction
 EasyUnlockPrivateGetPermitAccessFunction::Run() {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          proximity_auth::switches::kEnableBluetoothLowEnergyDiscovery)) {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          proximity_auth::switches::kDisableBluetoothLowEnergyDiscovery)) {
     return GetPermitAccessForExperiment();
   }
 
@@ -675,8 +675,8 @@ EasyUnlockPrivateSetRemoteDevicesFunction::Run() {
     devices.Append(device.ToValue());
 
   // Store the BLE device if we are trying out the BLE experiment.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          proximity_auth::switches::kEnableBluetoothLowEnergyDiscovery)) {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          proximity_auth::switches::kDisableBluetoothLowEnergyDiscovery)) {
     EasyUnlockService::Get(profile)->SetRemoteBleDevices(devices);
   } else {
     EasyUnlockService::Get(profile)->SetRemoteDevices(devices);
@@ -696,8 +696,8 @@ EasyUnlockPrivateGetRemoteDevicesFunction::
 bool EasyUnlockPrivateGetRemoteDevicesFunction::RunAsync() {
   // Return the remote devices stored with the native CryptAuthDeviceManager if
   // we are trying out the BLE experiment.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          proximity_auth::switches::kEnableBluetoothLowEnergyDiscovery)) {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          proximity_auth::switches::kDisableBluetoothLowEnergyDiscovery)) {
     ReturnDevicesForExperiment();
   } else {
     Profile* profile = Profile::FromBrowserContext(browser_context());
@@ -906,8 +906,8 @@ ExtensionFunction::ResponseAction EasyUnlockPrivateGetUserInfoFunction::Run() {
         EasyUnlockService::GetDeviceId(), account_id.GetUserEmail());
 
     user.ble_discovery_enabled =
-        base::CommandLine::ForCurrentProcess()->HasSwitch(
-            proximity_auth::switches::kEnableBluetoothLowEnergyDiscovery);
+        !base::CommandLine::ForCurrentProcess()->HasSwitch(
+            proximity_auth::switches::kDisableBluetoothLowEnergyDiscovery);
     users.push_back(std::move(user));
   }
   return RespondNow(

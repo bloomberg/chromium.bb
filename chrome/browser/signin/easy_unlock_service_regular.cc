@@ -50,6 +50,7 @@
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/content_switches.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/common/constants.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -468,8 +469,11 @@ void EasyUnlockServiceRegular::InitializeInternal() {
   OnPrefsChanged();
 
 #if defined(OS_CHROMEOS)
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          proximity_auth::switches::kEnableBluetoothLowEnergyDiscovery)) {
+  // TODO(tengs): Due to badly configured browser_tests, Chrome crashes during
+  // shutdown. Revisit this condition after migration is fully completed.
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          proximity_auth::switches::kDisableBluetoothLowEnergyDiscovery) &&
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType)) {
     pref_manager_.reset(
         new proximity_auth::ProximityAuthPrefManager(profile()->GetPrefs()));
     GetCryptAuthDeviceManager()->AddObserver(this);

@@ -127,8 +127,8 @@ bool EasyUnlockAuthAttempt::Start() {
   // TODO(sacomoto): Clean this up when the background app is not needed
   // anymore.
   if (!app_manager_->SendAuthAttemptEvent() &&
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          proximity_auth::switches::kEnableBluetoothLowEnergyDiscovery)) {
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          proximity_auth::switches::kDisableBluetoothLowEnergyDiscovery)) {
     Cancel(account_id_);
     return false;
   }

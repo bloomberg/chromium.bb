@@ -7,9 +7,9 @@
 namespace proximity_auth {
 namespace switches {
 
-// Enables discovery of the phone over Bluetooth Low Energy.
-const char kEnableBluetoothLowEnergyDiscovery[] =
-    "enable-proximity-auth-bluetooth-low-energy-discovery";
+// Disables discovery of the phone over Bluetooth Low Energy.
+const char kDisableBluetoothLowEnergyDiscovery[] =
+    "disable-proximity-auth-bluetooth-low-energy-discovery";
 
 // Enables the use of EasyUnlock to log into the Chromebook.
 extern const char kEnableChromeOSLogin[] =
