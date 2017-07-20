@@ -13,6 +13,7 @@
 #include "android_webview/browser/aw_quota_manager_bridge.h"
 #include "android_webview/browser/aw_resource_context.h"
 #include "android_webview/browser/aw_safe_browsing_whitelist_manager.h"
+#include "android_webview/browser/aw_web_ui_controller_factory.h"
 #include "android_webview/browser/net/aw_url_request_context_getter.h"
 #include "android_webview/common/aw_content_client.h"
 #include "base/base_paths_android.h"
@@ -222,6 +223,9 @@ void AwBrowserContext::PreMainMessageLoopRun() {
       base::MakeUnique<safe_browsing::TriggerManager>(
           safe_browsing_ui_manager_.get());
   safe_browsing_whitelist_manager_ = CreateSafeBrowsingWhitelistManager();
+
+  content::WebUIControllerFactory::RegisterFactory(
+      AwWebUIControllerFactory::GetInstance());
 }
 
 void AwBrowserContext::OnWebRestrictionsAuthorityChanged() {
