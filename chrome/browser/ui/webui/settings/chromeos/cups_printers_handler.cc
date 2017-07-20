@@ -76,6 +76,7 @@ std::unique_ptr<base::DictionaryValue> GetPrinterInfo(const Printer& printer) {
   printer_info->SetString("printerDescription", printer.description());
   printer_info->SetString("printerManufacturer", printer.manufacturer());
   printer_info->SetString("printerModel", printer.model());
+  printer_info->SetString("printerMakeAndModel", printer.make_and_model());
   // Get protocol, ip address and queue from the printer's URI.
   const std::string printer_uri = printer.uri();
   url::Parsed parsed;
@@ -255,7 +256,7 @@ void CupsPrintersHandler::HandleGetPrinterInfo(const base::ListValue* args) {
 
   if (printer_address.empty()) {
     // Run the failure callback.
-    OnPrinterInfo(callback_id, false, "", "", false);
+    OnPrinterInfo(callback_id, false, "", "", "", false);
     return;
   }
 
@@ -299,6 +300,7 @@ void CupsPrintersHandler::OnPrinterInfo(const std::string& callback_id,
                                         bool success,
                                         const std::string& make,
                                         const std::string& model,
+                                        const std::string& make_and_model,
                                         bool ipp_everywhere) {
   if (!success) {
     base::DictionaryValue reject;
@@ -310,6 +312,7 @@ void CupsPrintersHandler::OnPrinterInfo(const std::string& callback_id,
   base::DictionaryValue info;
   info.SetString("manufacturer", make);
   info.SetString("model", model);
+  info.SetString("makeAndModel", make_and_model);
   info.SetBoolean("autoconf", ipp_everywhere);
   ResolveJavascriptCallback(base::Value(callback_id), info);
 }
@@ -325,6 +328,7 @@ void CupsPrintersHandler::HandleAddCupsPrinter(const base::ListValue* args) {
   std::string printer_description;
   std::string printer_manufacturer;
   std::string printer_model;
+  std::string printer_make_and_model;
   std::string printer_address;
   std::string printer_protocol;
   CHECK(printer_dict->GetString("printerId", &printer_id));
@@ -332,6 +336,8 @@ void CupsPrintersHandler::HandleAddCupsPrinter(const base::ListValue* args) {
   CHECK(printer_dict->GetString("printerDescription", &printer_description));
   CHECK(printer_dict->GetString("printerManufacturer", &printer_manufacturer));
   CHECK(printer_dict->GetString("printerModel", &printer_model));
+  CHECK(
+      printer_dict->GetString("printerMakeAndModel", &printer_make_and_model));
   CHECK(printer_dict->GetString("printerAddress", &printer_address));
   CHECK(printer_dict->GetString("printerProtocol", &printer_protocol));
 
@@ -358,6 +364,7 @@ void CupsPrintersHandler::HandleAddCupsPrinter(const base::ListValue* args) {
   printer.set_description(printer_description);
   printer.set_manufacturer(printer_manufacturer);
   printer.set_model(printer_model);
+  printer.set_make_and_model(printer_make_and_model);
   printer.set_uri(printer_uri);
 
   bool autoconf = false;

@@ -47,6 +47,7 @@ function getEmptyPrinter_() {
     printerId: '',
     printerManufacturer: '',
     printerModel: '',
+    printerMakeAndModel: '',
     printerName: '',
     printerPPDPath: '',
     printerProtocol: 'ipp',
@@ -456,6 +457,7 @@ Polymer({
     this.newPrinter.printerAutoconf = info.autoconf;
     this.newPrinter.printerManufacturer = info.manufacturer;
     this.newPrinter.printerModel = info.model;
+    this.newPrinter.printerMakeAndModel = info.makeAndModel;
 
     // Add the printer if it's configurable. Otherwise, forward to the
     // manufacturer dialog.

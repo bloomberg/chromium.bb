@@ -156,7 +156,11 @@ std::unique_ptr<Printer> UsbDeviceToPrinter(const device::UsbDevice& device) {
   auto printer = base::MakeUnique<Printer>();
   printer->set_manufacturer(base::UTF16ToUTF8(device.manufacturer_string()));
   printer->set_model(base::UTF16ToUTF8(device.product_string()));
+  // Synthesize make-and-model string for printer identification.
+  printer->set_make_and_model(
+      base::JoinString({printer->manufacturer(), printer->model()}, " "));
 
+  // TODO(crbug.com/740727): i18n for display names.
   // Construct the display name by however much of the manufacturer/model
   // information that we have available.
   std::vector<std::string> display_name_parts;
@@ -171,6 +175,7 @@ std::unique_ptr<Printer> UsbDeviceToPrinter(const device::UsbDevice& device) {
     // unknown.
     display_name_parts.push_back("Unknown Printer");
   }
+
   display_name_parts.push_back("(USB)");
   printer->set_display_name(base::JoinString(display_name_parts, " "));
   printer->set_description(printer->display_name());
