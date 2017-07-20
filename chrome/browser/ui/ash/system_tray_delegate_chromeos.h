@@ -31,6 +31,10 @@ class SystemTrayNotifier;
 
 namespace chromeos {
 
+// DEPRECATED. Do not add new code here. This class is being removed as part of
+// the transition to mustash. New code should be added to SystemTrayClient.
+// Use system_tray.mojom methods if you need to send information to ash.
+// Please contact jamescook@chromium.org if you have questions or need help.
 class SystemTrayDelegateChromeOS
     : public ash::SystemTrayDelegate,
       public content::NotificationObserver,
