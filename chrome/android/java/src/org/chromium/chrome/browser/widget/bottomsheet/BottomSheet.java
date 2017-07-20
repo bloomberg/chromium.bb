@@ -700,61 +700,65 @@ public class BottomSheet
 
         // Listen to height changes on the root.
         root.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
-            /** Whether or not the keyboard is currently showing. */
-            private boolean mIsKeyboardShowing;
+            private int mPreviousKeyboardHeight;
 
             @Override
             public void onLayoutChange(View v, int left, int top, int right, int bottom,
                     int oldLeft, int oldTop, int oldRight, int oldBottom) {
                 // Compute the new height taking the keyboard into account.
                 // TODO(mdjones): Share this logic with LocationBarLayout: crbug.com/725725.
-                int decorHeight = mActivity.getWindow().getDecorView().getHeight();
-                mActivity.getWindow().getDecorView().getWindowVisibleDisplayFrame(
-                        mVisibleViewportRect);
-                int heightMinusKeyboard = Math.min(decorHeight, mVisibleViewportRect.height());
-
-                boolean isKeyboardShowing =
-                        UiUtils.isKeyboardShowing(getContext(), BottomSheet.this);
-
-                boolean keyboardHeightChanged = isKeyboardShowing != mIsKeyboardShowing;
-
-                // Make sure the size of the layout actually changed.
-                if (!keyboardHeightChanged && bottom - top == oldBottom - oldTop
-                        && right - left == oldRight - oldLeft) {
-                    return;
-                }
-
+                float previousWidth = mContainerWidth;
+                float previousHeight = mContainerHeight;
                 mContainerWidth = right - left;
                 mContainerHeight = bottom - top;
-                mIsKeyboardShowing = isKeyboardShowing;
-                int keyboardHeight =
-                        mIsKeyboardShowing ? (int) (mContainerHeight - heightMinusKeyboard) : 0;
-                updateSheetDimensions();
 
-                for (BottomSheetObserver o : mObservers) {
-                    o.onSheetLayout((int) mContainerHeight, heightMinusKeyboard);
+                if (previousWidth != mContainerWidth || previousHeight != mContainerHeight) {
+                    updateSheetDimensions();
                 }
 
-                // If the keyboard height changed, recompute the padding for the content area. This
-                // shrinks the content size while retaining the default background color where the
-                // keyboard is appearing. If the sheet is not showing, resize the sheet to its
-                // default state.
-                if (keyboardHeightChanged && isSheetOpen()) {
+                int heightMinusKeyboard = (int) mContainerHeight;
+                int keyboardHeight = 0;
+
+                // Reset mVisibleViewportRect regardless of sheet open state as it is used outside
+                // of calculating the keyboard height.
+                mActivity.getWindow().getDecorView().getWindowVisibleDisplayFrame(
+                        mVisibleViewportRect);
+                if (isSheetOpen()) {
+                    int decorHeight = mActivity.getWindow().getDecorView().getHeight();
+                    heightMinusKeyboard = Math.min(decorHeight, mVisibleViewportRect.height());
+                    keyboardHeight = (int) (mContainerHeight - heightMinusKeyboard);
+                }
+
+                if (previousHeight != mContainerHeight
+                        || mPreviousKeyboardHeight != keyboardHeight) {
+                    for (BottomSheetObserver o : mObservers) {
+                        o.onSheetLayout((int) mContainerHeight, heightMinusKeyboard);
+                    }
+                }
+
+                if (keyboardHeight != mPreviousKeyboardHeight) {
+                    // If the keyboard height changed, recompute the padding for the content area.
+                    // This shrinks the content size while retaining the default background color
+                    // where the keyboard is appearing. If the sheet is not showing, resize the
+                    // sheet to its default state.
                     mBottomSheetContentContainer.setPadding(
                             0, 0, 0, (int) mBottomNavHeight + keyboardHeight);
-                } else if (!isSheetOpen()) {
-                    mBottomSheetContentContainer.setPadding(0, 0, 0, (int) mBottomNavHeight);
                 }
 
-                // If we are in the middle of a touch event stream (i.e. scrolling while keyboard is
-                // up) don't set the sheet state. Instead allow the gesture detector to position the
-                // sheet and make sure the keyboard hides.
-                if (mIsScrolling) {
-                    UiUtils.hideKeyboard(BottomSheet.this);
-                } else {
-                    cancelAnimation();
-                    setSheetState(mCurrentState, false);
+                if (previousHeight != mContainerHeight
+                        || mPreviousKeyboardHeight != keyboardHeight) {
+                    // If we are in the middle of a touch event stream (i.e. scrolling while
+                    // keyboard is up) don't set the sheet state. Instead allow the gesture detector
+                    // to position the sheet and make sure the keyboard hides.
+                    if (mIsScrolling) {
+                        UiUtils.hideKeyboard(BottomSheet.this);
+                    } else {
+                        cancelAnimation();
+                        setSheetState(mCurrentState, false);
+                    }
                 }
+
+                mPreviousKeyboardHeight = keyboardHeight;
             }
         });
 
@@ -807,6 +811,16 @@ public class BottomSheet
             @Override
             public void onBottomControlsHeightChanged(int bottomControlsHeight) {}
         });
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasWindowFocus) {
+        super.onWindowFocusChanged(hasWindowFocus);
+
+        // Trigger a relayout on window focus to correct any positioning issues when leaving Chrome
+        // previously.  This is required as a layout is not triggered when coming back to Chrome
+        // with the keyboard previously shown.
+        if (hasWindowFocus) requestLayout();
     }
 
     /**
