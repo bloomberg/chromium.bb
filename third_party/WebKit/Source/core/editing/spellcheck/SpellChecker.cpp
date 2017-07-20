@@ -95,45 +95,6 @@ SelectionInDOMTree SelectWord(const VisiblePosition& position) {
       .Build();
 }
 
-EphemeralRange ExpandSelectionRangeIfNecessary(
-    const VisibleSelection& selection) {
-  DCHECK(!selection.IsNone());
-
-  // If some text is actually selected, we can use the selection range as-is to
-  // check for a marker. If no text is selected (we just have a caret
-  // somewhere), we need to expand one character on either side so we can find
-  // a spelling marker immediately before or after the caret.
-
-  // (The spelling markers on these words may be anchored to a different node
-  // than the collapsed selection's Position is, but once we expand the
-  // selection, if we're next to a marker, either the start or end point should
-  // now be anchored relative to the same text node as that marker.)
-
-  // Some text is actually selected
-  if (selection.IsRange())
-    return EphemeralRange(selection.Start(), selection.End());
-
-  // No text is actually selected, need to expand the selection range. This is
-  // to make sure we can find a marker touching the caret. E.g. if we have:
-  // <span>word1 <b>word2</b></span>
-  // with a caret selection immediately before "word2", there's one text node
-  // immediately before the caret ("word1 ") and one immediately after
-  // ("word2"). Expanding the selection by one character on either side ensures
-  // we get a range that intersects both neighboring text nodes (if they exist).
-  const VisiblePosition& caret_position = selection.VisibleStart();
-
-  const Position& previous_position =
-      PreviousPositionOf(caret_position).DeepEquivalent();
-
-  const Position& next_position =
-      NextPositionOf(caret_position).DeepEquivalent();
-
-  return EphemeralRange(
-      previous_position.IsNull() ? caret_position.DeepEquivalent()
-                                 : previous_position,
-      next_position.IsNull() ? caret_position.DeepEquivalent() : next_position);
-}
-
 }  // namespace
 
 SpellChecker* SpellChecker::Create(LocalFrame& frame) {
@@ -869,14 +830,13 @@ void SpellChecker::RemoveSpellingAndGrammarMarkers(const HTMLElement& element,
 }
 
 Optional<std::pair<Node*, SpellCheckMarker*>>
-SpellChecker::GetSpellCheckMarkerTouchingSelection() {
+SpellChecker::GetSpellCheckMarkerUnderSelection() {
   const VisibleSelection& selection =
       GetFrame().Selection().ComputeVisibleSelectionInDOMTree();
   if (selection.IsNone())
     return Optional<std::pair<Node*, SpellCheckMarker*>>();
 
-  const EphemeralRange& range_to_check =
-      ExpandSelectionRangeIfNecessary(selection);
+  const EphemeralRange& range_to_check = FirstEphemeralRangeOf(selection);
 
   Node* const start_container =
       range_to_check.StartPosition().ComputeContainerNode();
@@ -907,7 +867,7 @@ SpellChecker::GetSpellCheckMarkerTouchingSelection() {
 
 void SpellChecker::ReplaceMisspelledRange(const String& text) {
   const Optional<std::pair<Node*, SpellCheckMarker*>>& node_and_marker =
-      GetSpellCheckMarkerTouchingSelection();
+      GetSpellCheckMarkerUnderSelection();
   if (!node_and_marker)
     return;
 
