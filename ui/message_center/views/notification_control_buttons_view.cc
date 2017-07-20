@@ -20,7 +20,8 @@ namespace {
 
 // This value should be the same as the duration of reveal animation of
 // the settings view of an Android notification.
-constexpr int kBackgroundColorChangeDuration = 360;
+constexpr auto kBackgroundColorChangeDuration =
+    base::TimeDelta::FromMilliseconds(360);
 
 // The initial background color of the view.
 constexpr SkColor kInitialBackgroundColor =

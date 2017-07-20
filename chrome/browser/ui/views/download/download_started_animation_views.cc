@@ -5,6 +5,7 @@
 #include "chrome/browser/download/download_started_animation.h"
 
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -16,7 +17,7 @@
 #include "ui/views/widget/widget.h"
 
 // How long to spend moving downwards and fading out after waiting.
-const int kMoveTimeMs = 600;
+constexpr auto kMoveTime = base::TimeDelta::FromMilliseconds(600);
 
 // The animation framerate.
 const int kFrameRateHz = 60;
@@ -59,8 +60,7 @@ class DownloadStartedAnimationViews : public gfx::LinearAnimation,
 
 DownloadStartedAnimationViews::DownloadStartedAnimationViews(
     content::WebContents* web_contents)
-    : gfx::LinearAnimation(kMoveTimeMs, kFrameRateHz, NULL),
-      popup_(NULL) {
+    : gfx::LinearAnimation(kMoveTime, kFrameRateHz, NULL), popup_(NULL) {
   gfx::ImageSkia download_image =
       gfx::CreateVectorIcon(kFileDownloadShelfIcon, 72, gfx::kGoogleBlue500);
 

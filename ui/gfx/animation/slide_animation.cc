@@ -52,7 +52,8 @@ void SlideAnimation::Show() {
   }
 
   // This will also reset the currently-occurring animation.
-  SetDuration(static_cast<int>(slide_duration_ * (1 - value_current_)));
+  SetDuration(base::TimeDelta::FromMilliseconds(
+      static_cast<int>(slide_duration_ * (1 - value_current_))));
   Start();
 }
 
@@ -76,7 +77,8 @@ void SlideAnimation::Hide() {
   }
 
   // This will also reset the currently-occurring animation.
-  SetDuration(static_cast<int>(slide_duration_ * value_current_));
+  SetDuration(base::TimeDelta::FromMilliseconds(
+      static_cast<int>(slide_duration_ * value_current_)));
   Start();
 }
 

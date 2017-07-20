@@ -28,9 +28,9 @@ namespace {
 constexpr char kWidgetName[] = "TouchCalibratorOverlay";
 
 constexpr int kAnimationFrameRate = 100;
-constexpr int kFadeDurationInMs = 150;
-constexpr int kPointMoveDurationInMs = 400;
-constexpr int kPointMoveDurationLongInMs = 500;
+constexpr auto kFadeDuration = base::TimeDelta::FromMilliseconds(150);
+constexpr auto kPointMoveDuration = base::TimeDelta::FromMilliseconds(400);
+constexpr auto kPointMoveDurationLong = base::TimeDelta::FromMilliseconds(500);
 
 const SkColor kExitLabelColor = SkColorSetARGBInline(255, 138, 138, 138);
 constexpr int kExitLabelWidth = 300;
@@ -46,7 +46,8 @@ constexpr int kHintBoxSublabelTextSize = 3;
 constexpr int kThrobberCircleViewWidth = 64;
 constexpr float kThrobberCircleRadiusFactor = 3.f / 8.f;
 
-constexpr int kFinalMessageTransitionDurationMs = 200;
+constexpr auto kFinalMessageTransitionDuration =
+    base::TimeDelta::FromMilliseconds(200);
 constexpr int kCompleteMessageViewWidth = 427;
 constexpr int kCompleteMessageViewHeight = kThrobberCircleViewWidth;
 constexpr int kCompleteMessageTextSize = 16;
@@ -105,14 +106,13 @@ gfx::Size GetSizeForString(const base::string16& text,
 }
 
 void AnimateLayerToPosition(views::View* view,
-                            int duration,
+                            base::TimeDelta duration,
                             gfx::Point end_position,
                             float opacity = 1.f) {
   ui::ScopedLayerAnimationSettings slide_settings(view->layer()->GetAnimator());
   slide_settings.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-  slide_settings.SetTransitionDuration(
-      base::TimeDelta::FromMilliseconds(duration));
+  slide_settings.SetTransitionDuration(duration);
   view->SetBoundsRect(gfx::Rect(end_position, view->size()));
   view->layer()->SetOpacity(opacity);
 }
@@ -479,7 +479,7 @@ TouchCalibratorView::TouchCalibratorView(const display::Display& target_display,
   set_owned_by_client();
 
   animator_.reset(
-      new gfx::LinearAnimation(kFadeDurationInMs, kAnimationFrameRate, this));
+      new gfx::LinearAnimation(kFadeDuration, kAnimationFrameRate, this));
 
   InitViewContents();
   AdvanceToNextState();
@@ -713,7 +713,7 @@ void TouchCalibratorView::AdvanceToNextState() {
       end_opacity_value_ = kBackgroundFinalOpacity;
 
       flags_.setStyle(cc::PaintFlags::kFill_Style);
-      animator_->SetDuration(kFadeDurationInMs);
+      animator_->SetDuration(kFadeDuration);
       animator_->Start();
       return;
     case DISPLAY_POINT_1:
@@ -722,7 +722,7 @@ void TouchCalibratorView::AdvanceToNextState() {
       // The touch point has to be animated from the top left corner of the
       // screen to the top right corner.
       AnimateLayerToPosition(
-          touch_point_view_, kPointMoveDurationInMs,
+          touch_point_view_, kPointMoveDuration,
           gfx::Point(display_.bounds().width() - kTouchPointViewOffset -
                          touch_point_view_->width(),
                      touch_point_view_->y()));
@@ -734,7 +734,7 @@ void TouchCalibratorView::AdvanceToNextState() {
       // The touch point has to be animated from the top right corner of the
       // screen to the bottom left corner.
       AnimateLayerToPosition(
-          touch_point_view_, kPointMoveDurationLongInMs,
+          touch_point_view_, kPointMoveDurationLong,
           gfx::Point(kTouchPointViewOffset, display_.bounds().height() -
                                                 kTouchPointViewOffset -
                                                 touch_point_view_->height()));
@@ -745,7 +745,7 @@ void TouchCalibratorView::AdvanceToNextState() {
       // The touch point has to be animated from the bottom left corner of the
       // screen to the bottom right corner.
       AnimateLayerToPosition(
-          touch_point_view_, kPointMoveDurationInMs,
+          touch_point_view_, kPointMoveDuration,
           gfx::Point(display_.bounds().width() - kTouchPointViewOffset -
                          touch_point_view_->width(),
                      touch_point_view_->y()));
@@ -758,7 +758,7 @@ void TouchCalibratorView::AdvanceToNextState() {
       touch_point_view_->SetVisible(false);
 
       AnimateLayerToPosition(completion_message_view_,
-                             kFinalMessageTransitionDurationMs,
+                             kFinalMessageTransitionDuration,
                              gfx::Point(completion_message_view_->x(),
                                         display_.bounds().height() / 2));
       return;
@@ -768,7 +768,7 @@ void TouchCalibratorView::AdvanceToNextState() {
         // In case of primary view, we also need to fade out the calibration
         // complete message view.
         AnimateLayerToPosition(
-            completion_message_view_, kFadeDurationInMs,
+            completion_message_view_, kFadeDuration,
             gfx::Point(completion_message_view_->x(),
                        completion_message_view_->y() +
                            2 * completion_message_view_->height()),
@@ -779,7 +779,7 @@ void TouchCalibratorView::AdvanceToNextState() {
       end_opacity_value_ = 0.f;
 
       flags_.setStyle(cc::PaintFlags::kFill_Style);
-      animator_->SetDuration(kFadeDurationInMs);
+      animator_->SetDuration(kFadeDuration);
       animator_->Start();
       return;
     default:

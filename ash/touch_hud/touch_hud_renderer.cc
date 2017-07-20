@@ -4,6 +4,7 @@
 
 #include "ash/touch_hud/touch_hud_renderer.h"
 
+#include "base/time/time.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_owner.h"
@@ -22,7 +23,8 @@ const int kPointRadius = 20;
 const SkColor kProjectionFillColor = SkColorSetRGB(0xF5, 0xF5, 0xDC);
 const SkColor kProjectionStrokeColor = SK_ColorGRAY;
 const int kProjectionAlpha = 0xB0;
-const int kFadeoutDurationInMs = 250;
+constexpr base::TimeDelta kFadeoutDuration =
+    base::TimeDelta::FromMilliseconds(250);
 const int kFadeoutFrameRate = 60;
 
 // TouchPointView draws a single touch point. This object manages its own
@@ -59,8 +61,8 @@ class TouchPointView : public views::View,
         touch.type() == ui::ET_TOUCH_CANCELLED ||
         touch.type() == ui::ET_POINTER_UP ||
         touch.type() == ui::ET_POINTER_CANCELLED) {
-      fadeout_.reset(new gfx::LinearAnimation(kFadeoutDurationInMs,
-                                              kFadeoutFrameRate, this));
+      fadeout_.reset(
+          new gfx::LinearAnimation(kFadeoutDuration, kFadeoutFrameRate, this));
       fadeout_->Start();
     } else {
       SetX(parent()->GetMirroredXInView(touch.root_location().x()) -
