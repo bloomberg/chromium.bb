@@ -608,6 +608,40 @@ PositionTemplate<Strategy> AdjustSelectionEndToAvoidCrossingEditingBoundaries(
   return end;
 }
 
+// The selection starts in editable content or non-editable content inside a
+// different editable ancestor, move forward until non-editable content inside
+// the same lowest editable ancestor is reached.
+template <typename Strategy>
+PositionTemplate<Strategy> AdjustSelectionStartToAvoidCrossingEditingBoundaries(
+    const PositionTemplate<Strategy>& start,
+    ContainerNode* start_root,
+    Element* base_editable_ancestor) {
+  Element* const start_editable_ancestor =
+      LowestEditableAncestor(start.ComputeContainerNode());
+  if (start_root || start_editable_ancestor != base_editable_ancestor) {
+    PositionTemplate<Strategy> position = NextVisuallyDistinctCandidate(start);
+    Element* shadow_ancestor =
+        start_root ? start_root->OwnerShadowHost() : nullptr;
+    if (position.IsNull() && shadow_ancestor)
+      position = PositionTemplate<Strategy>::BeforeNode(*shadow_ancestor);
+    while (position.IsNotNull() &&
+           !(LowestEditableAncestor(position.ComputeContainerNode()) ==
+                 base_editable_ancestor &&
+             !IsEditablePosition(position))) {
+      Element* root = RootEditableElementOf(position);
+      shadow_ancestor = root ? root->OwnerShadowHost() : nullptr;
+      position = IsAtomicNode(position.ComputeContainerNode())
+                     ? PositionTemplate<Strategy>::InParentAfterNode(
+                           *position.ComputeContainerNode())
+                     : NextVisuallyDistinctCandidate(position);
+      if (position.IsNull() && shadow_ancestor)
+        position = PositionTemplate<Strategy>::BeforeNode(*shadow_ancestor);
+    }
+    return CreateVisiblePosition(position).DeepEquivalent();
+  }
+  return start;
+}
+
 template <typename Strategy>
 void VisibleSelectionTemplate<
     Strategy>::AdjustSelectionToAvoidCrossingEditingBoundaries() {
@@ -667,40 +701,14 @@ void VisibleSelectionTemplate<
       return;
     }
 
-    // The selection starts in editable content or non-editable content inside a
-    // different editable ancestor, move forward until non-editable content
-    // inside the same lowest editable ancestor is reached.
-    Element* start_editable_ancestor =
-        LowestEditableAncestor(start_.ComputeContainerNode());
-    if (start_root || start_editable_ancestor != base_editable_ancestor) {
-      PositionTemplate<Strategy> p = NextVisuallyDistinctCandidate(start_);
-      Element* shadow_ancestor =
-          start_root ? start_root->OwnerShadowHost() : nullptr;
-      if (p.IsNull() && shadow_ancestor)
-        p = PositionTemplate<Strategy>::BeforeNode(*shadow_ancestor);
-      while (p.IsNotNull() &&
-             !(LowestEditableAncestor(p.ComputeContainerNode()) ==
-                   base_editable_ancestor &&
-               !IsEditablePosition(p))) {
-        Element* root = RootEditableElementOf(p);
-        shadow_ancestor = root ? root->OwnerShadowHost() : nullptr;
-        p = IsAtomicNode(p.ComputeContainerNode())
-                ? PositionTemplate<Strategy>::InParentAfterNode(
-                      *p.ComputeContainerNode())
-                : NextVisuallyDistinctCandidate(p);
-        if (p.IsNull() && shadow_ancestor)
-          p = PositionTemplate<Strategy>::BeforeNode(*shadow_ancestor);
-      }
-      const VisiblePositionTemplate<Strategy> next = CreateVisiblePosition(p);
-
-      if (next.IsNull()) {
-        // The selection crosses an Editing boundary.  This is a
-        // programmer error in the editing code.  Happy debugging!
-        NOTREACHED();
-        *this = VisibleSelectionTemplate<Strategy>();
-        return;
-      }
-      start_ = next.DeepEquivalent();
+    start_ = AdjustSelectionStartToAvoidCrossingEditingBoundaries(
+        start_, start_root, base_editable_ancestor);
+    if (start_.IsNull()) {
+      // The selection crosses an Editing boundary.  This is a
+      // programmer error in the editing code.  Happy debugging!
+      NOTREACHED();
+      *this = VisibleSelectionTemplate<Strategy>();
+      return;
     }
   }
 }
