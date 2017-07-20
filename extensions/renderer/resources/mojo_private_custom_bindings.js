@@ -6,7 +6,7 @@
  * Custom bindings for the mojoPrivate API.
  */
 
-let binding = require('binding').Binding.create('mojoPrivate');
+let binding = apiBridge || require('binding').Binding.create('mojoPrivate');
 
 binding.registerCustomHook(function(bindingsAPI) {
   let apiFunctions = bindingsAPI.apiFunctions;
@@ -20,4 +20,5 @@ binding.registerCustomHook(function(bindingsAPI) {
   });
 });
 
-exports.$set('binding', binding.generate());
+if (!apiBridge)
+  exports.$set('binding', binding.generate());

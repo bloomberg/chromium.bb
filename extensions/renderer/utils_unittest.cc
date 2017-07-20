@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/strings/stringprintf.h"
+#include "extensions/common/feature_switch.h"
 #include "extensions/grit/extensions_renderer_resources.h"
 #include "extensions/renderer/module_system_test.h"
 #include "gin/dictionary.h"
@@ -24,6 +25,12 @@ class UtilsUnittest : public ModuleSystemTest {
                                  "exports.$set('DCHECK', function() {});\n"
                                  "exports.$set('WARNING', function() {});");
     env()->OverrideNativeHandler("v8_context", "");
+
+    // Native bindings set up the chrome.runtime accessor, so we don't need to
+    // stub it out.
+    if (FeatureSwitch::native_crx_bindings()->IsEnabled())
+      return;
+
     gin::Dictionary chrome(env()->isolate(), env()->CreateGlobal("chrome"));
     gin::Dictionary chrome_runtime(
         gin::Dictionary::CreateEmpty(env()->isolate()));

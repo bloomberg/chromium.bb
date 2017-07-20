@@ -583,6 +583,13 @@ IPCMessageSender* NativeExtensionBindingsSystem::GetIPCMessageSender() {
   return ipc_message_sender_.get();
 }
 
+v8::Local<v8::Object> NativeExtensionBindingsSystem::GetAPIObjectForTesting(
+    ScriptContext* context,
+    const std::string& api_name) {
+  return GetAPIHelper(context->v8_context(),
+                      gin::StringToSymbol(context->isolate(), api_name));
+}
+
 void NativeExtensionBindingsSystem::BindingAccessor(
     v8::Local<v8::Name> name,
     const v8::PropertyCallbackInfo<v8::Value>& info) {
