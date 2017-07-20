@@ -46,14 +46,14 @@ static const size_t kLargeEnoughSize = 1000 * 1000;
 
 namespace {
 
-std::unique_ptr<ImageDecoder> CreateDecoder(size_t max_decoded_bytes) {
+std::unique_ptr<ImageDecoder> CreateJPEGDecoder(size_t max_decoded_bytes) {
   return WTF::WrapUnique(new JPEGImageDecoder(
       ImageDecoder::kAlphaNotPremultiplied,
       ColorBehavior::TransformToTargetForTesting(), max_decoded_bytes));
 }
 
-std::unique_ptr<ImageDecoder> CreateDecoder() {
-  return CreateDecoder(ImageDecoder::kNoDecodedImageByteLimit);
+std::unique_ptr<ImageDecoder> CreateJPEGDecoder() {
+  return CreateJPEGDecoder(ImageDecoder::kNoDecodedImageByteLimit);
 }
 
 }  // anonymous namespace
@@ -65,7 +65,7 @@ void Downsample(size_t max_decoded_bytes,
   RefPtr<SharedBuffer> data = ReadFile(image_file_path);
   ASSERT_TRUE(data);
 
-  std::unique_ptr<ImageDecoder> decoder = CreateDecoder(max_decoded_bytes);
+  std::unique_ptr<ImageDecoder> decoder = CreateJPEGDecoder(max_decoded_bytes);
   decoder->SetData(data.Get(), true);
 
   ImageFrame* frame = decoder->FrameBufferAtIndex(0);
@@ -84,7 +84,7 @@ void ReadYUV(size_t max_decoded_bytes,
   RefPtr<SharedBuffer> data = ReadFile(image_file_path);
   ASSERT_TRUE(data);
 
-  std::unique_ptr<ImageDecoder> decoder = CreateDecoder(max_decoded_bytes);
+  std::unique_ptr<ImageDecoder> decoder = CreateJPEGDecoder(max_decoded_bytes);
   decoder->SetData(data.Get(), true);
 
   // Setting a dummy ImagePlanes object signals to the decoder that we want to
@@ -134,7 +134,7 @@ void ReadYUV(size_t max_decoded_bytes,
 
 // Tests failure on a too big image.
 TEST(JPEGImageDecoderTest, tooBig) {
-  std::unique_ptr<ImageDecoder> decoder = CreateDecoder(100);
+  std::unique_ptr<ImageDecoder> decoder = CreateJPEGDecoder(100);
   EXPECT_FALSE(decoder->SetSize(10000, 10000));
   EXPECT_TRUE(decoder->Failed());
 }
@@ -259,7 +259,7 @@ TEST(JPEGImageDecoderTest, yuv) {
   RefPtr<SharedBuffer> data = ReadFile(jpeg_file);
   ASSERT_TRUE(data);
 
-  std::unique_ptr<ImageDecoder> decoder = CreateDecoder(230 * 230 * 4);
+  std::unique_ptr<ImageDecoder> decoder = CreateJPEGDecoder(230 * 230 * 4);
   decoder->SetData(data.Get(), true);
 
   std::unique_ptr<ImagePlanes> image_planes = WTF::MakeUnique<ImagePlanes>();
@@ -270,21 +270,21 @@ TEST(JPEGImageDecoderTest, yuv) {
 
 TEST(JPEGImageDecoderTest,
      byteByByteBaselineJPEGWithColorProfileAndRestartMarkers) {
-  TestByteByByteDecode(&CreateDecoder,
+  TestByteByByteDecode(&CreateJPEGDecoder,
                        "/LayoutTests/images/resources/"
                        "small-square-with-colorspin-profile.jpg",
                        1u, kAnimationNone);
 }
 
 TEST(JPEGImageDecoderTest, byteByByteProgressiveJPEG) {
-  TestByteByByteDecode(&CreateDecoder,
+  TestByteByByteDecode(&CreateJPEGDecoder,
                        "/LayoutTests/images/resources/bug106024.jpg", 1u,
                        kAnimationNone);
 }
 
 TEST(JPEGImageDecoderTest, byteByByteRGBJPEGWithAdobeMarkers) {
   TestByteByByteDecode(
-      &CreateDecoder,
+      &CreateJPEGDecoder,
       "/LayoutTests/images/resources/rgb-jpeg-with-adobe-marker-only.jpg", 1u,
       kAnimationNone);
 }
@@ -295,7 +295,7 @@ TEST(JPEGImageDecoderTest, byteByByteRGBJPEGWithAdobeMarkers) {
 // read) and a call to do a full decode.
 TEST(JPEGImageDecoderTest, mergeBuffer) {
   const char* jpeg_file = "/LayoutTests/images/resources/lenna.jpg";
-  TestMergeBuffer(&CreateDecoder, jpeg_file);
+  TestMergeBuffer(&CreateJPEGDecoder, jpeg_file);
 }
 
 // This tests decoding a JPEG with many progressive scans.  Decoding should
@@ -305,7 +305,7 @@ TEST(JPEGImageDecoderTest, manyProgressiveScans) {
       ReadFile(kDecodersTestingDir, "many-progressive-scans.jpg");
   ASSERT_TRUE(test_data.Get());
 
-  std::unique_ptr<ImageDecoder> test_decoder = CreateDecoder();
+  std::unique_ptr<ImageDecoder> test_decoder = CreateJPEGDecoder();
   test_decoder->SetData(test_data.Get(), true);
   EXPECT_EQ(1u, test_decoder->FrameCount());
   ASSERT_TRUE(test_decoder->FrameBufferAtIndex(0));

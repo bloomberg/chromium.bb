@@ -14,7 +14,7 @@ namespace blink {
 
 namespace {
 
-std::unique_ptr<ImageDecoder> CreateDecoder() {
+std::unique_ptr<ImageDecoder> CreateBMPDecoder() {
   return WTF::WrapUnique(
       new BMPImageDecoder(ImageDecoder::kAlphaNotPremultiplied,
                           ColorBehavior::TransformToTargetForTesting(),
@@ -28,7 +28,7 @@ TEST(BMPImageDecoderTest, isSizeAvailable) {
   RefPtr<SharedBuffer> data = ReadFile(bmp_file);
   ASSERT_TRUE(data.Get());
 
-  std::unique_ptr<ImageDecoder> decoder = CreateDecoder();
+  std::unique_ptr<ImageDecoder> decoder = CreateBMPDecoder();
   decoder->SetData(data.Get(), true);
   EXPECT_TRUE(decoder->IsSizeAvailable());
   EXPECT_EQ(256, decoder->Size().Width());
@@ -40,7 +40,7 @@ TEST(BMPImageDecoderTest, parseAndDecode) {
   RefPtr<SharedBuffer> data = ReadFile(bmp_file);
   ASSERT_TRUE(data.Get());
 
-  std::unique_ptr<ImageDecoder> decoder = CreateDecoder();
+  std::unique_ptr<ImageDecoder> decoder = CreateBMPDecoder();
   decoder->SetData(data.Get(), true);
 
   ImageFrame* frame = decoder->FrameBufferAtIndex(0);
@@ -57,7 +57,7 @@ TEST(BMPImageDecoderTest, emptyImage) {
   RefPtr<SharedBuffer> data = ReadFile(bmp_file);
   ASSERT_TRUE(data.Get());
 
-  std::unique_ptr<ImageDecoder> decoder = CreateDecoder();
+  std::unique_ptr<ImageDecoder> decoder = CreateBMPDecoder();
   decoder->SetData(data.Get(), true);
 
   ImageFrame* frame = decoder->FrameBufferAtIndex(0);
@@ -70,7 +70,7 @@ TEST(BMPImageDecoderTest, int32MinHeight) {
   const char* bmp_file =
       "/LayoutTests/images/resources/1xint32_min.bmp";  // 0xINT32_MIN
   RefPtr<SharedBuffer> data = ReadFile(bmp_file);
-  std::unique_ptr<ImageDecoder> decoder = CreateDecoder();
+  std::unique_ptr<ImageDecoder> decoder = CreateBMPDecoder();
   // Test when not all data is received.
   decoder->SetData(data.Get(), false);
   EXPECT_FALSE(decoder->IsSizeAvailable());
@@ -83,7 +83,7 @@ TEST(BMPImageDecoderTest, int32MinHeight) {
 // read) and a call to do a full decode.
 TEST(BMPImageDecoderTest, mergeBuffer) {
   const char* bmp_file = "/LayoutTests/images/resources/lenna.bmp";
-  TestMergeBuffer(&CreateDecoder, bmp_file);
+  TestMergeBuffer(&CreateBMPDecoder, bmp_file);
 }
 
 }  // namespace blink

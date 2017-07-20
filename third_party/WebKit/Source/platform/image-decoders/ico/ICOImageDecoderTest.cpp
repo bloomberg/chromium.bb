@@ -13,7 +13,7 @@ namespace blink {
 
 namespace {
 
-std::unique_ptr<ImageDecoder> CreateDecoder() {
+std::unique_ptr<ImageDecoder> CreateICODecoder() {
   return WTF::WrapUnique(
       new ICOImageDecoder(ImageDecoder::kAlphaNotPremultiplied,
                           ColorBehavior::TransformToTargetForTesting(),
@@ -28,7 +28,7 @@ TEST(ICOImageDecoderTests, trunctedIco) {
 
   RefPtr<SharedBuffer> truncated_data =
       SharedBuffer::Create(data.data(), data.size() / 2);
-  auto decoder = CreateDecoder();
+  auto decoder = CreateICODecoder();
 
   decoder->SetData(truncated_data.Get(), false);
   decoder->FrameBufferAtIndex(0);
@@ -54,7 +54,7 @@ TEST(ICOImageDecoderTests, errorInPngInIco) {
   modified_data->Append(data.data() + kCrcOffset + kCrcSize,
                         data.size() - kCrcOffset - kCrcSize);
 
-  auto decoder = CreateDecoder();
+  auto decoder = CreateICODecoder();
   decoder->SetData(modified_data.Get(), true);
 
   // ICOImageDecoder reports the frame count based on whether enough data has
@@ -68,22 +68,23 @@ TEST(ICOImageDecoderTests, errorInPngInIco) {
 }
 
 TEST(ICOImageDecoderTests, parseAndDecodeByteByByte) {
-  TestByteByByteDecode(&CreateDecoder,
+  TestByteByByteDecode(&CreateICODecoder,
                        "/LayoutTests/images/resources/png-in-ico.ico", 1u,
                        kAnimationNone);
-  TestByteByByteDecode(&CreateDecoder,
+  TestByteByByteDecode(&CreateICODecoder,
                        "/LayoutTests/images/resources/2entries.ico", 2u,
                        kAnimationNone);
-  TestByteByByteDecode(&CreateDecoder,
+  TestByteByByteDecode(&CreateICODecoder,
                        "/LayoutTests/images/resources/greenbox-3frames.cur", 3u,
                        kAnimationNone);
   TestByteByByteDecode(
-      &CreateDecoder,
+      &CreateICODecoder,
       "/LayoutTests/images/resources/icon-without-and-bitmap.ico", 1u,
       kAnimationNone);
-  TestByteByByteDecode(&CreateDecoder, "/LayoutTests/images/resources/1bit.ico",
-                       1u, kAnimationNone);
-  TestByteByByteDecode(&CreateDecoder,
+  TestByteByByteDecode(&CreateICODecoder,
+                       "/LayoutTests/images/resources/1bit.ico", 1u,
+                       kAnimationNone);
+  TestByteByByteDecode(&CreateICODecoder,
                        "/LayoutTests/images/resources/bug653075.ico", 2u,
                        kAnimationNone);
 }
@@ -98,7 +99,7 @@ TEST(ICOImageDecoderTests, NullData) {
 
   RefPtr<SharedBuffer> truncated_data =
       SharedBuffer::Create(ico_file_data->Data(), kSizeOfBadBlock);
-  auto decoder = CreateDecoder();
+  auto decoder = CreateICODecoder();
 
   decoder->SetData(truncated_data.Get(), false);
   decoder->SetMemoryAllocator(nullptr);
