@@ -11,6 +11,7 @@
 #include "base/memory/singleton.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
@@ -106,7 +107,8 @@ ArcProvisionNotificationService::GetForBrowserContext(
 ArcProvisionNotificationService::ArcProvisionNotificationService(
     content::BrowserContext* context,
     ArcBridgeService* bridge_service)
-    : ArcProvisionNotificationService(base::MakeUnique<DelegateImpl>()) {}
+    : ArcProvisionNotificationService(context,
+                                      base::MakeUnique<DelegateImpl>()) {}
 
 ArcProvisionNotificationService::~ArcProvisionNotificationService() {
   // Make sure no notification is left being shown.
@@ -124,14 +126,16 @@ ArcProvisionNotificationService::~ArcProvisionNotificationService() {
 // static
 std::unique_ptr<ArcProvisionNotificationService>
 ArcProvisionNotificationService::CreateForTesting(
+    content::BrowserContext* context,
     std::unique_ptr<Delegate> delegate) {
   return base::WrapUnique<ArcProvisionNotificationService>(
-      new ArcProvisionNotificationService(std::move(delegate)));
+      new ArcProvisionNotificationService(context, std::move(delegate)));
 }
 
 ArcProvisionNotificationService::ArcProvisionNotificationService(
+    content::BrowserContext* context,
     std::unique_ptr<Delegate> delegate)
-    : delegate_(std::move(delegate)) {
+    : context_(context), delegate_(std::move(delegate)) {
   ArcSessionManager::Get()->AddObserver(this);
 }
 
@@ -147,7 +151,7 @@ void ArcProvisionNotificationService::OnArcOptInManagementCheckStarted() {
   // This observer is notified at an early phase of the opt-in flow, so start
   // showing the notification if the opt-in flow happens silently (due to the
   // managed prefs), or ensure that no notification is shown otherwise.
-  const Profile* const profile = ArcSessionManager::Get()->profile();
+  const Profile* const profile = Profile::FromBrowserContext(context_);
   if (IsArcPlayStoreEnabledPreferenceManagedForProfile(profile) &&
       AreArcAllOptInPreferencesIgnorableForProfile(profile)) {
     delegate_->ShowManagedProvisionNotification();
