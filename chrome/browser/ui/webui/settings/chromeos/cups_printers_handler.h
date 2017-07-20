@@ -55,16 +55,17 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
   void HandleGetPrinterInfo(const base::ListValue* args);
 
   // Handles the callback for HandleGetPrinterInfo. |callback_id| is the
-  // identifier to resolve the correct Promise. |success| indicates if the
-  // query was successful. |make| is the detected printer manufacturer.
-  // |model| is the detected model. |ipp_everywhere| indicates if configuration
-  // using the CUPS IPP Everywhere driver should be attempted. If |success| is
-  // false, the values of |make|, |model| and |ipp_everywhere| are not
-  // specified.
+  // identifier to resolve the correct Promise. |success| indicates if the query
+  // was successful. |make| is the detected printer manufacturer. |model| is the
+  // detected model. |make_and_model| is the unparsed printer-make-and-model
+  // string. |ipp_everywhere| indicates if configuration using the CUPS IPP
+  // Everywhere driver should be attempted. If |success| is false, the values of
+  // |make|, |model|, |make_and_model|, and |ipp_everywhere| are not specified.
   void OnPrinterInfo(const std::string& callback_id,
                      bool success,
                      const std::string& make,
                      const std::string& model,
+                     const std::string& make_and_model,
                      bool ipp_everywhere);
 
   void HandleAddCupsPrinter(const base::ListValue* args);

@@ -97,7 +97,7 @@ void OnPrinterQueried(const chromeos::PrinterInfoCallback& callback,
                       std::unique_ptr<::printing::PrinterInfo> info) {
   if (!info) {
     VLOG(1) << "Could not reach printer";
-    callback.Run(false, std::string(), std::string(), false);
+    callback.Run(false, std::string(), std::string(), std::string(), false);
     return;
   }
 
@@ -114,7 +114,8 @@ void OnPrinterQueried(const chromeos::PrinterInfoCallback& callback,
     model = make_and_model;
   }
 
-  callback.Run(true, make.as_string(), model.as_string(), IsAutoconf(*info));
+  callback.Run(true, make.as_string(), model.as_string(), info->make_and_model,
+               IsAutoconf(*info));
 }
 
 }  // namespace

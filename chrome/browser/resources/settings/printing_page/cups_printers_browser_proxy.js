@@ -17,6 +17,7 @@
  *   printerId: string,
  *   printerManufacturer: string,
  *   printerModel: string,
+ *   printerMakeAndModel: string,
  *   printerName: string,
  *   printerPPDPath: string,
  *   printerProtocol: string,
@@ -53,6 +54,7 @@ var ModelsInfo;
  * @typedef {{
  *   manufacturer: string,
  *   model: string,
+ *   makeAndModel: string,
  *   autoconf: boolean
  * }}
  */
