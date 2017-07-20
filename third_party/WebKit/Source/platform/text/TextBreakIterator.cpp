@@ -264,7 +264,9 @@ inline bool NeedsLineBreakIterator(UChar ch) {
   return ch > kAsciiLineBreakTableLastChar && ch != kNoBreakSpaceCharacter;
 }
 
-template <typename CharacterType, LineBreakType lineBreakType>
+template <typename CharacterType,
+          LineBreakType lineBreakType,
+          bool break_after_space>
 inline int LazyLineBreakIterator::NextBreakablePosition(
     int pos,
     const CharacterType* str) const {
@@ -285,7 +287,17 @@ inline int LazyLineBreakIterator::NextBreakablePosition(
     ch = str[i];
 
     is_space = IsBreakableSpace(ch);
-    if (is_space || ShouldBreakAfter(last_last_ch, last_ch, ch))
+    if (!break_after_space) {
+      if (is_space)
+        return i;
+    } else {
+      if (is_space)
+        continue;
+      if (is_last_space)
+        return i;
+    }
+
+    if (ShouldBreakAfter(last_last_ch, last_ch, ch))
       return i;
 
     if (lineBreakType == LineBreakType::kBreakAll && !U16_IS_LEAD(ch)) {
@@ -317,12 +329,21 @@ inline int LazyLineBreakIterator::NextBreakablePosition(
           }
         }
       }
-      if (i == next_break && !is_last_space)
+      if (i == next_break && (break_after_space || !is_last_space))
         return i;
     }
   }
 
   return len;
+}
+
+template <typename CharacterType, LineBreakType lineBreakType>
+inline int LazyLineBreakIterator::NextBreakablePosition(
+    int pos,
+    const CharacterType* str) const {
+  if (!break_after_space_)
+    return NextBreakablePosition<CharacterType, lineBreakType, false>(pos, str);
+  return NextBreakablePosition<CharacterType, lineBreakType, true>(pos, str);
 }
 
 template <LineBreakType lineBreakType>
