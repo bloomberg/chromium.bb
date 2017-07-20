@@ -769,9 +769,6 @@
     'net_base': {
       'filepath': 'net/base/',
     },
-    'net_error_list': {
-      'filepath': 'net/base/net_error_list.h',
-    },
     'net_http2': {
       'filepath': 'net/http2/',
     },
@@ -1993,10 +1990,8 @@
     'content_bluetooth': ['ortuno+watch@chromium.org',
                           'scheib+watch@chromium.org'],
     'content_loader': ['loading-reviews@chromium.org',
-                       'mmenke@chromium.org',
                        'rdsmith+watch@chromium.org'],
     'content_network': ['asanka@chromium.org',
-                        'mmenke@chromium.org',
                         'rdsmith+watch@chromium.org',
                         'kinuko@chromium.org'],
     'content_renderer': ['mlamouri+watch-content@chromium.org'],
@@ -2155,11 +2150,9 @@
     'net': ['cbentzel+watch@chromium.org',
             'net-reviews@chromium.org'],
     'net_base': ['bnc+watch@chromium.org'],
-    'net_error_list': ['mmenke@chromium.org'],
     'net_http2': ['bnc+watch@chromium.org'],
     'net_log': ['bnc+watch@chromium.org',
-                'eroman@chromium.org',
-                'mmenke@chromium.org'],
+                'eroman@chromium.org'],
     'net_spdy': ['bnc+watch@chromium.org'],
     'netinfo': ['jkarlin+watch@chromium.org'],
     'notifications': ['awdf+watch@chromium.org',
