@@ -6,12 +6,11 @@
 #define CC_ANIMATION_ANIMATION_TARGET_H_
 
 #include "cc/animation/animation_export.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 namespace gfx {
-
 class ScrollOffset;
 class SizeF;
-
 }  // namespace gfx
 
 namespace cc {
@@ -32,6 +31,10 @@ class CC_ANIMATION_EXPORT AnimationTarget {
                                           Animation* animation) {}
   virtual void NotifyClientBoundsAnimated(const gfx::SizeF& size,
                                           Animation* animation) {}
+  virtual void NotifyClientBackgroundColorAnimated(SkColor color,
+                                                   Animation* animation) {}
+  virtual void NotifyClientVisibilityAnimated(bool visibility,
+                                              Animation* animation) {}
   virtual void NotifyClientTransformOperationsAnimated(
       const TransformOperations& operations,
       Animation* animation) {}
