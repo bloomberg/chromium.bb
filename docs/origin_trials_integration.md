@@ -62,8 +62,8 @@ feature implementation.
 1. A native C++ method that you can call in Blink code at runtime to expose your
     feature: `bool OriginTrials::myFeatureEnabled()`
 2. An IDL attribute \[[OriginTrialEnabled]\] that you can use to automatically
-    expose and hide JavaScript methods/attributes/objects. This attribute works
-    very similar to \[RuntimeEnabled\].
+    generate code to expose and hide JavaScript methods/attributes/objects. This
+    attribute works very similarly to \[RuntimeEnabled\].
 ```
 [OriginTrialEnabled=MyFeature]
 partial interface Navigator {
@@ -74,36 +74,6 @@ partial interface Navigator {
 **NOTE:** Your feature implementation must not persist the result of the enabled
 check. Your code should simply call `OriginTrials::myFeatureEnabled()` as often
 as necessary to gate access to your feature.
-
-### IDL Bindings
-
-When using the \[OriginTrialEnabled\] IDL attribute, you'll need to manually
-install the appropriate methods in the V8 bindings code. Based on the
-\[OriginTrialEnabled\] attribute, there will be one or more `installMyFeature`
-methods generated in the bindings code. These methods must be manually
-installed:
-
-- Find the relevant methods by doing a code search for `installMyFeature`:
-    - Search within the generated bindings code, e.g. 'f:gen/blink/bindings'
-    - Example search results: `V8WindowPartial::installMyFeature`,
-      `V8NavigatorPartial::installMyFeature`, `V8<type>::installMyFeature`
-- Determine which bindings code needs to be updated:
-    - [ConditionalFeatures.cpp]: Your feature lives in `core` (i.e. generated
-      methods are found under .../bindings/core/...)
-    - [ConditionalFeaturesForModules.cpp]: Your feature lives under `modules`
-      (i.e. generated methods are found under .../bindings/modules/...)
-- Update `installConditionalFeatures[Core|ForModules]()`:
-    - These methods are broken down by type.
-    - Add/update the logic for each type to call the corresponding
-      `V8<type>::installMyFeature()` methods.
-- Update `installPendingConditionalFeature[Core|ForModules]()`:
-    - These methods are broken down by trial/feature.
-    - Add/update the logic for each feature to call all of the
-     `installMyFeature()` methods.
-
-Eventually, the V8 bindings code will be generated automatically (See
-[crbug.com/615060]).
-
 
 ## Limitations
 
@@ -155,26 +125,16 @@ switches (e.g., on Chrome OS), you can also directly modify
 
 ### Layout Tests
 When using the \[OriginTrialEnabled\] IDL attribute, you should add layout tests
-to verify that you've correctly updated the V8 bindings code. Depending on how
+to verify that the V8 bindings code is working as expected. Depending on how
 your feature is exposed, you'll want tests for the exposed interfaces, as well
 as tests for script-added tokens. For examples, refer to the existing tests in
 [origin_trials/webexposed].
 
-In addition, you'll need to update the command line for the
-`origin-trials-runtimeflags-disabled` virtual suite, in [VirtualTestSuites].
-Add your feature name to the list of explicitly disabled features. This test
-suite ensures that features are actually enabled by origin trial, not overridden
-by the runtime flag.
-
 [build_config.h]: /build/build_config.h
 [chrome_origin_trial_policy.cc]: /chrome/common/origin_trials/chrome_origin_trial_policy.cc
-[crbug.com/615060]: https://bugs.chromium.org/p/chromium/issues/detail?id=615060
-[ConditionalFeatures.cpp]: /third_party/WebKit/Source/bindings/core/v8/ConditionalFeatures.cpp
-[ConditionalFeaturesForModules.cpp]: /third_party/WebKit/Source/bindings/modules/v8/ConditionalFeaturesForModules.cpp
 [generate_token.py]: /tools/origin_trials/generate_token.py
 [Developer Guide]: https://github.com/jpchase/OriginTrials/blob/gh-pages/developer-guide.md
 [OriginTrialEnabled]: /third_party/WebKit/Source/bindings/IDLExtendedAttributes.md#_OriginTrialEnabled_i_m_a_c_
 [origin_trials/webexposed]: /third_party/WebKit/LayoutTests/http/tests/origin_trials/webexposed/
 [RuntimeEnabledFeatures.json5]: /third_party/WebKit/Source/platform/RuntimeEnabledFeatures.json5
 [trial_token_unittest.cc]: /content/common/origin_trials/trial_token_unittest.cc
-[VirtualTestSuites]: /third_party/WebKit/LayoutTests/VirtualTestSuites
