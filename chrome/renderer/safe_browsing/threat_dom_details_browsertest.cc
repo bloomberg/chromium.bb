@@ -278,3 +278,88 @@ TEST_F(ThreatDOMDetailsTest, Everything) {
     EXPECT_TRUE(param.child_node_ids.empty());
   }
 }
+
+TEST_F(ThreatDOMDetailsTest, DefaultTagAndAttributesList) {
+  // Verify that the default tag and attribute list is initialized and used
+  // when the Finch feature (ThreatDomDetailsTagAttributes) is disabled.
+  blink::WebRuntimeFeatures::EnableOverlayScrollbars(
+      ui::IsOverlayScrollbarEnabled());
+  std::unique_ptr<base::test::ScopedFeatureList> feature_list(
+      new base::test::ScopedFeatureList);
+  feature_list->InitAndDisableFeature(
+      safe_browsing::kThreatDomDetailsTagAndAttributeFeature);
+  std::unique_ptr<safe_browsing::ThreatDOMDetails> details(
+      safe_browsing::ThreatDOMDetails::Create(view_->GetMainRenderFrame()));
+  const char urlprefix[] = "data:text/html;charset=utf-8,";
+
+  // A page with some divs containing an iframe which itself contains an
+  // iframe. Tag "img foo" exists to ensure we honour both the tag name and
+  // the attribute name when deciding which elements to collect.
+  //  html
+  //   \ div[data-google-query-id=foo]
+  //    \ div[id=bar]
+  //     \ iframe[id=baz]
+  //      \ iframe2
+  // Since ThreatDOMDetails is a RenderFrameObserver, it will only
+  // extract resources from the frame it assigned to (in this case,
+  // the main frame). Extracting resources from all frames within a
+  // page is covered in SafeBrowsingBlockingPageBrowserTest.
+  // In this example, ExtractResources() will still touch iframe[baz]
+  // since it is the direct child of the main frame, but it would not
+  // go inside of the iframe.
+  std::string iframe2_html = "<html><body>iframe2</body></html>";
+  GURL iframe2_url(urlprefix + iframe2_html);
+  std::string html =
+      "<html><head><div data-google-query-id=foo><div id=bar>"
+      "<iframe id=baz><iframe src=\"" +
+      net::EscapeForHTML(iframe2_url.spec()) +
+      "\"></iframe></iframe></div></div></head></html>";
+  GURL url(urlprefix + html);
+
+  LoadHTML(html.c_str());
+  std::vector<SafeBrowsingHostMsg_ThreatDOMDetails_Node> params;
+  details->ExtractResources(&params);
+  ASSERT_EQ(4u, params.size());
+
+  auto& param = params[0];
+  EXPECT_TRUE(param.url.is_empty());
+  EXPECT_EQ(url, param.parent);
+  EXPECT_EQ("DIV", param.tag_name);
+  // The children field contains URLs, but this mapping is not currently
+  // maintained among the interior nodes. The summary node (last in the list) is
+  // the parent of all elements in the frame.
+  EXPECT_TRUE(param.children.empty());
+  EXPECT_EQ(1, param.node_id);
+  EXPECT_EQ(0, param.parent_node_id);
+  EXPECT_THAT(param.child_node_ids, ElementsAre(2));
+  EXPECT_THAT(param.attributes,
+              ElementsAre(std::make_pair("data-google-query-id", "foo")));
+
+  param = params[1];
+  EXPECT_TRUE(param.url.is_empty());
+  EXPECT_EQ(url, param.parent);
+  EXPECT_EQ("DIV", param.tag_name);
+  EXPECT_TRUE(param.children.empty());
+  EXPECT_EQ(2, param.node_id);
+  EXPECT_EQ(1, param.parent_node_id);
+  EXPECT_THAT(param.child_node_ids, ElementsAre(3));
+  EXPECT_THAT(param.attributes, ElementsAre(std::make_pair("id", "bar")));
+
+  param = params[2];
+  EXPECT_TRUE(param.url.is_empty());
+  EXPECT_EQ(url, param.parent);
+  EXPECT_EQ("IFRAME", param.tag_name);
+  EXPECT_TRUE(param.children.empty());
+  EXPECT_EQ(3, param.node_id);
+  EXPECT_EQ(2, param.parent_node_id);
+  EXPECT_TRUE(param.child_node_ids.empty());
+  EXPECT_THAT(param.attributes, ElementsAre(std::make_pair("id", "baz")));
+
+  param = params[3];
+  EXPECT_EQ(url, param.url);
+  EXPECT_EQ(GURL(), param.parent);
+  EXPECT_TRUE(param.children.empty());
+  EXPECT_EQ(0, param.node_id);
+  EXPECT_EQ(0, param.parent_node_id);
+  EXPECT_TRUE(param.child_node_ids.empty());
+}

@@ -27,6 +27,8 @@ extern const char kTagAndAttributeParamName[];
 class TagAndAttributesItem {
  public:
   TagAndAttributesItem();
+  TagAndAttributesItem(const std::string& tag_name_param,
+                       const std::vector<std::string>& attributes_param);
   TagAndAttributesItem(const TagAndAttributesItem& item);
   ~TagAndAttributesItem();
 
