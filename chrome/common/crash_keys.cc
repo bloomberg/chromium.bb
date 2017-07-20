@@ -89,11 +89,6 @@ const char kZeroEncodeDetails[] = "zero-encode-details";
 const char kUserCloudPolicyManagerConnectTrace[] =
     "user-cloud-policy-manager-connect-trace";
 
-// TEMPORARY: Compositor state for debugging BeginMainFrame renderer hang.
-// TODO(sunnyps): Remove after fixing https://crbug.com/622080
-const char kBeginMainFrameHangCompositorState[] =
-    "begin-main-frame-hang-compositor-state";
-
 size_t RegisterChromeCrashKeys() {
   // The following keys may be chunked by the underlying crash logging system,
   // but ultimately constitute a single key-value pair.
@@ -227,10 +222,6 @@ size_t RegisterChromeCrashKeys() {
 
     // Temporary for https://crbug.com/685996.
     {kUserCloudPolicyManagerConnectTrace, kMediumSize},
-
-    // TEMPORARY: Compositor state for debugging BeginMainFrame renderer hang.
-    // TODO(sunnyps): Remove after fixing https://crbug.com/622080
-    {kBeginMainFrameHangCompositorState, crash_keys::kSmallSize},
 
     // TODO(asvitkine): Remove after fixing https://crbug.com/736675
     {"bad_histogram", kMediumSize},
