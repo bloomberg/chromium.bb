@@ -38,7 +38,7 @@ class VersionUpdaterWin : public VersionUpdater,
                const base::string16& new_version) override;
 
  private:
-  void BeginUpdateCheckOnFileThread(bool install_update_if_possible);
+  void DoBeginUpdateCheck(bool install_update_if_possible);
 
   // A task run on the UI thread with the result of checking for a pending
   // restart.
