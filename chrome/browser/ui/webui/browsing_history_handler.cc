@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <set>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/i18n/rtl.h"
@@ -16,7 +18,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
-#include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/favicon/large_icon_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -265,19 +266,6 @@ void BrowsingHistoryHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-bool BrowsingHistoryHandler::ExtractIntegerValueAtIndex(
-    const base::ListValue* value,
-    int index,
-    int* out_int) {
-  double double_value;
-  if (value->GetDouble(index, &double_value)) {
-    *out_int = static_cast<int>(double_value);
-    return true;
-  }
-  NOTREACHED();
-  return false;
-}
-
 void BrowsingHistoryHandler::HandleQueryHistory(const base::ListValue* args) {
   history::QueryOptions options;
 
@@ -297,7 +285,7 @@ void BrowsingHistoryHandler::HandleQueryHistory(const base::ListValue* args) {
   if (end_time)
     options.end_time = base::Time::FromJsTime(end_time);
 
-  if (!ExtractIntegerValueAtIndex(args, 2, &options.max_count)) {
+  if (!args->GetInteger(2, &options.max_count)) {
     NOTREACHED() << "Failed to convert argument 2.";
     return;
   }

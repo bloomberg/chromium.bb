@@ -8,13 +8,11 @@
 #include <stdint.h>
 
 #include <memory>
-#include <set>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "base/time/clock.h"
 #include "base/values.h"
 #include "chrome/browser/history/browsing_history_service_handler.h"
@@ -62,9 +60,6 @@ class BrowsingHistoryHandler :
   FRIEND_TEST_ALL_PREFIXES(BrowsingHistoryHandlerTest,
                            ObservingWebHistoryDeletions);
   FRIEND_TEST_ALL_PREFIXES(BrowsingHistoryHandlerTest, MdTruncatesTitles);
-
-  bool ExtractIntegerValueAtIndex(
-      const base::ListValue* value, int index, int* out_int);
 
   // The clock used to vend times.
   std::unique_ptr<base::Clock> clock_;
