@@ -147,3 +147,16 @@ TEST_F(SubresourceFilterTest, SimpleDisallowedLoad_WithObserver) {
   EXPECT_EQ(subresource_filter::LoadPolicy::DISALLOW,
             observer.GetSubframeLoadPolicy(disallowed_url).value());
 }
+
+TEST_F(SubresourceFilterTest, DisableRuleset_SubframeAllowed) {
+  subresource_filter::Configuration config(
+      subresource_filter::ActivationLevel::ENABLED,
+      subresource_filter::ActivationScope::ALL_SITES);
+  config.activation_options.should_disable_ruleset_rules = true;
+  scoped_configuration().ResetConfiguration(std::move(config));
+
+  GURL url("https://a.test");
+  ConfigureAsSubresourceFilterOnlyURL(url);
+  SimulateNavigateAndCommit(url, main_rfh());
+  EXPECT_TRUE(CreateAndNavigateDisallowedSubframe(main_rfh()));
+}

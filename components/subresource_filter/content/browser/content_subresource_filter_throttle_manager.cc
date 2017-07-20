@@ -35,6 +35,10 @@ bool ContentSubresourceFilterThrottleManager::Delegate::
   return false;
 }
 
+bool ContentSubresourceFilterThrottleManager::Delegate::AllowRulesetRules() {
+  return true;
+}
+
 ContentSubresourceFilterThrottleManager::
     ContentSubresourceFilterThrottleManager(
         Delegate* delegate,
@@ -98,12 +102,17 @@ void ContentSubresourceFilterThrottleManager::ReadyToCommitNavigation(
       "ContentSubresourceFilterThrottleManager::ReadyToCommitNavigation",
       "activation_state", filter->activation_state().ToTracedValue());
 
-  throttle->WillSendActivationToRenderer();
-
-  content::RenderFrameHost* frame_host =
-      navigation_handle->GetRenderFrameHost();
-  frame_host->Send(new SubresourceFilterMsg_ActivateForNextCommittedLoad(
-      frame_host->GetRoutingID(), filter->activation_state()));
+  // Only send the IPC to the renderer if not actively ignoring rules from our
+  // ruleset. Note, if we ever want to do anything more complex in the renderer
+  // (other than just consume the rules), we will likely have to find a
+  // different solution here.
+  throttle->CouldSendActivationToRenderer();
+  if (delegate_->AllowRulesetRules()) {
+    content::RenderFrameHost* frame_host =
+        navigation_handle->GetRenderFrameHost();
+    frame_host->Send(new SubresourceFilterMsg_ActivateForNextCommittedLoad(
+        frame_host->GetRoutingID(), filter->activation_state()));
+  }
 }
 
 void ContentSubresourceFilterThrottleManager::DidFinishNavigation(
@@ -243,11 +252,14 @@ bool ContentSubresourceFilterThrottleManager::ShouldDisallowNewWindow(
   // isTrusted bit set to false. This bit is set to true if the event is
   // generated via a user action. See docs:
   // https://developer.mozilla.org/en-US/docs/Web/API/Event/isTrusted
+  bool should_block = true;
   if (open_url_params) {
-    return open_url_params->triggering_event_info ==
-           blink::WebTriggeringEventInfo::kFromUntrustedEvent;
+    should_block = open_url_params->triggering_event_info ==
+                   blink::WebTriggeringEventInfo::kFromUntrustedEvent;
   }
-  return true;
+  if (should_block)
+    delegate_->OnFirstSubresourceLoadDisallowed();
+  return should_block;
 }
 
 std::unique_ptr<SubframeNavigationFilteringThrottle>
@@ -255,6 +267,8 @@ ContentSubresourceFilterThrottleManager::
     MaybeCreateSubframeNavigationFilteringThrottle(
         content::NavigationHandle* navigation_handle) {
   if (navigation_handle->IsInMainFrame())
+    return nullptr;
+  if (!delegate_->AllowRulesetRules())
     return nullptr;
   AsyncDocumentSubresourceFilter* parent_filter =
       GetParentFrameFilter(navigation_handle);

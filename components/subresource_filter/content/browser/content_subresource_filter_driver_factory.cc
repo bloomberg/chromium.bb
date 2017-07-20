@@ -105,6 +105,10 @@ bool ContentSubresourceFilterDriverFactory::AllowStrongPopupBlocking() {
   return activation_options_.should_strengthen_popup_blocker;
 }
 
+bool ContentSubresourceFilterDriverFactory::AllowRulesetRules() {
+  return !activation_options_.should_disable_ruleset_rules;
+}
+
 void ContentSubresourceFilterDriverFactory::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
   if (navigation_handle->IsInMainFrame() &&
