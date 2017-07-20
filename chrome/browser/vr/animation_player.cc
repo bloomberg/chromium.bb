@@ -143,6 +143,14 @@ void AnimationPlayer::Tick(base::TimeTicks monotonic_time) {
   StartAnimations(monotonic_time);
 }
 
+void AnimationPlayer::SetTransitionedProperties(
+    const std::vector<cc::TargetProperty::Type>& properties) {
+  transition_.target_properties.reset();
+  for (auto property : properties) {
+    transition_.target_properties[property] = true;
+  }
+}
+
 void AnimationPlayer::TransitionOpacityTo(base::TimeTicks monotonic_time,
                                           float current,
                                           float target) {
@@ -256,17 +264,24 @@ void AnimationPlayer::TransitionBoundsTo(base::TimeTicks monotonic_time,
 }
 
 cc::Animation* AnimationPlayer::GetRunningAnimationForProperty(
-    cc::TargetProperty::Type target_property) {
-  auto it = std::find_if(
-      animations_.begin(), animations_.end(),
-      [target_property](const std::unique_ptr<cc::Animation>& animation) {
-        if (animation->run_state() != cc::Animation::RUNNING &&
-            animation->run_state() != cc::Animation::PAUSED) {
-          return false;
-        }
-        return animation->target_property() == target_property;
-      });
-  return it == animations_.end() ? nullptr : it->get();
+    cc::TargetProperty::Type target_property) const {
+  for (auto& animation : animations_) {
+    if ((animation->run_state() == cc::Animation::RUNNING ||
+         animation->run_state() == cc::Animation::PAUSED) &&
+        animation->target_property() == target_property) {
+      return animation.get();
+    }
+  }
+  return nullptr;
+}
+
+bool AnimationPlayer::IsAnimatingProperty(
+    cc::TargetProperty::Type property) const {
+  for (auto& animation : animations_) {
+    if (animation->target_property() == property)
+      return true;
+  }
+  return false;
 }
 
 }  // namespace vr

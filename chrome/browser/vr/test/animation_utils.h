@@ -26,6 +26,9 @@ std::unique_ptr<cc::Animation> CreateBoundsAnimation(int id,
 base::TimeTicks UsToTicks(uint64_t us);
 base::TimeDelta UsToDelta(uint64_t us);
 
+base::TimeTicks MsToTicks(uint64_t us);
+base::TimeDelta MsToDelta(uint64_t us);
+
 }  // namespace vr
 
 #endif  // CHROME_BROWSER_VR_TEST_ANIMATION_UTILS_H_
