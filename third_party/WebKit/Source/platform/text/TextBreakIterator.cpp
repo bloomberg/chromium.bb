@@ -244,30 +244,48 @@ static inline bool ShouldBreakAfterBreakAll(ULineBreak last_line_break,
   return false;
 }
 
+// Computes if 'word-break:keep-all' should prevent line break.
+// https://drafts.csswg.org/css-text-3/#valdef-word-break-keep-all
+// The spec is not very verbose on how this should work. This logic prevents L/M
+// general categories and complex line breaking since the spec says "except some
+// south east aisans".
+// https://github.com/w3c/csswg-drafts/issues/1619
+static inline bool ShouldKeepAfterKeepAll(UChar last_ch,
+                                          UChar ch,
+                                          UChar next_ch) {
+  UChar pre_ch = U_MASK(u_charType(ch)) & U_GC_M_MASK ? last_ch : ch;
+  return U_MASK(u_charType(pre_ch)) & (U_GC_L_MASK | U_GC_N_MASK) &&
+         !WTF::Unicode::HasLineBreakingPropertyComplexContext(pre_ch) &&
+         U_MASK(u_charType(next_ch)) & (U_GC_L_MASK | U_GC_N_MASK) &&
+         !WTF::Unicode::HasLineBreakingPropertyComplexContext(next_ch);
+}
+
 inline bool NeedsLineBreakIterator(UChar ch) {
   return ch > kAsciiLineBreakTableLastChar && ch != kNoBreakSpaceCharacter;
 }
 
 template <typename CharacterType, LineBreakType lineBreakType>
-static inline int NextBreakablePosition(
-    const LazyLineBreakIterator& lazy_break_iterator,
-    const CharacterType* str,
-    unsigned length,
-    int pos) {
-  int len = static_cast<int>(length);
+inline int LazyLineBreakIterator::NextBreakablePosition(
+    int pos,
+    const CharacterType* str) const {
+  int len = static_cast<int>(string_.length());
   int next_break = -1;
 
-  UChar last_last_ch =
-      pos > 1 ? str[pos - 2] : lazy_break_iterator.SecondToLastCharacter();
-  UChar last_ch = pos > 0 ? str[pos - 1] : lazy_break_iterator.LastCharacter();
+  UChar last_last_ch = pos > 1 ? str[pos - 2] : SecondToLastCharacter();
+  UChar last_ch = pos > 0 ? str[pos - 1] : LastCharacter();
+  bool is_last_space = IsBreakableSpace(last_ch);
   ULineBreak last_line_break;
   if (lineBreakType == LineBreakType::kBreakAll)
     last_line_break = LineBreakPropertyValue(last_last_ch, last_ch);
-  unsigned prior_context_length = lazy_break_iterator.PriorContextLength();
-  for (int i = pos; i < len; i++) {
-    CharacterType ch = str[i];
+  unsigned prior_context_length = PriorContextLength();
+  CharacterType ch;
+  bool is_space;
+  for (int i = pos; i < len;
+       i++, last_last_ch = last_ch, last_ch = ch, is_last_space = is_space) {
+    ch = str[i];
 
-    if (IsBreakableSpace(ch) || ShouldBreakAfter(last_last_ch, last_ch, ch))
+    is_space = IsBreakableSpace(ch);
+    if (is_space || ShouldBreakAfter(last_last_ch, last_ch, ch))
       return i;
 
     if (lineBreakType == LineBreakType::kBreakAll && !U16_IS_LEAD(ch)) {
@@ -278,13 +296,18 @@ static inline int NextBreakablePosition(
         last_line_break = line_break;
     }
 
+    if (lineBreakType == LineBreakType::kKeepAll &&
+        ShouldKeepAfterKeepAll(last_last_ch, last_ch, ch)) {
+      // word-break:keep-all prevents breaks between East Asian ideographic.
+      continue;
+    }
+
     if (NeedsLineBreakIterator(ch) || NeedsLineBreakIterator(last_ch)) {
       if (next_break < i) {
         // Don't break if positioned at start of primary context and there is no
         // prior context.
         if (i || prior_context_length) {
-          TextBreakIterator* break_iterator =
-              lazy_break_iterator.Get(prior_context_length);
+          TextBreakIterator* break_iterator = Get(prior_context_length);
           if (break_iterator) {
             next_break =
                 break_iterator->following(i - 1 + prior_context_length);
@@ -294,106 +317,45 @@ static inline int NextBreakablePosition(
           }
         }
       }
-      if (i == next_break && !IsBreakableSpace(last_ch))
+      if (i == next_break && !is_last_space)
         return i;
     }
-
-    last_last_ch = last_ch;
-    last_ch = ch;
-  }
-
-  return len;
-}
-
-static inline bool ShouldKeepAfter(UChar last_ch, UChar ch, UChar next_ch) {
-  UChar pre_ch = U_MASK(u_charType(ch)) & U_GC_M_MASK ? last_ch : ch;
-  return U_MASK(u_charType(pre_ch)) & (U_GC_L_MASK | U_GC_N_MASK) &&
-         !WTF::Unicode::HasLineBreakingPropertyComplexContext(pre_ch) &&
-         U_MASK(u_charType(next_ch)) & (U_GC_L_MASK | U_GC_N_MASK) &&
-         !WTF::Unicode::HasLineBreakingPropertyComplexContext(next_ch);
-}
-
-static inline int NextBreakablePositionKeepAllInternal(
-    const LazyLineBreakIterator& lazy_break_iterator,
-    const UChar* str,
-    unsigned length,
-    int pos) {
-  int len = static_cast<int>(length);
-  int next_break = -1;
-
-  UChar last_last_ch =
-      pos > 1 ? str[pos - 2]
-              : static_cast<UChar>(lazy_break_iterator.SecondToLastCharacter());
-  UChar last_ch = pos > 0
-                      ? str[pos - 1]
-                      : static_cast<UChar>(lazy_break_iterator.LastCharacter());
-  unsigned prior_context_length = lazy_break_iterator.PriorContextLength();
-  for (int i = pos; i < len; i++) {
-    UChar ch = str[i];
-
-    if (IsBreakableSpace(ch) || ShouldBreakAfter(last_last_ch, last_ch, ch))
-      return i;
-
-    if (!ShouldKeepAfter(last_last_ch, last_ch, ch) &&
-        (NeedsLineBreakIterator(ch) || NeedsLineBreakIterator(last_ch))) {
-      if (next_break < i) {
-        // Don't break if positioned at start of primary context and there is no
-        // prior context.
-        if (i || prior_context_length) {
-          TextBreakIterator* break_iterator =
-              lazy_break_iterator.Get(prior_context_length);
-          if (break_iterator) {
-            next_break =
-                break_iterator->following(i - 1 + prior_context_length);
-            if (next_break >= 0) {
-              next_break -= prior_context_length;
-            }
-          }
-        }
-      }
-      if (i == next_break && !IsBreakableSpace(last_ch))
-        return i;
-    }
-
-    last_last_ch = last_ch;
-    last_ch = ch;
   }
 
   return len;
 }
 
 template <LineBreakType lineBreakType>
-static inline int NextBreakablePosition(
-    const LazyLineBreakIterator& lazy_break_iterator,
-    const String& string,
-    int pos) {
-  if (string.Is8Bit())
-    return NextBreakablePosition<LChar, lineBreakType>(
-        lazy_break_iterator, string.Characters8(), string.length(), pos);
-  return NextBreakablePosition<UChar, lineBreakType>(
-      lazy_break_iterator, string.Characters16(), string.length(), pos);
-}
-
-int LazyLineBreakIterator::NextBreakablePositionIgnoringNBSP(int pos) const {
-  return NextBreakablePosition<LineBreakType::kNormal>(*this, string_, pos);
-}
-
-int LazyLineBreakIterator::NextBreakablePositionBreakAll(int pos) const {
-  return NextBreakablePosition<LineBreakType::kBreakAll>(*this, string_, pos);
-}
-
-int LazyLineBreakIterator::NextBreakablePositionKeepAll(int pos) const {
-  if (string_.Is8Bit())
-    return NextBreakablePosition<LChar, LineBreakType::kNormal>(
-        *this, string_.Characters8(), string_.length(), pos);
-  return NextBreakablePositionKeepAllInternal(*this, string_.Characters16(),
-                                              string_.length(), pos);
+inline int LazyLineBreakIterator::NextBreakablePosition(int pos) const {
+  if (string_.Is8Bit()) {
+    return NextBreakablePosition<LChar, lineBreakType>(pos,
+                                                       string_.Characters8());
+  }
+  return NextBreakablePosition<UChar, lineBreakType>(pos,
+                                                     string_.Characters16());
 }
 
 int LazyLineBreakIterator::NextBreakablePositionBreakCharacter(int pos) const {
   NonSharedCharacterBreakIterator iterator(string_);
   int next = iterator.Following(std::max(pos - 1, 0));
   return next != kTextBreakDone ? next : string_.length();
+}
+
+int LazyLineBreakIterator::NextBreakablePosition(
+    int pos,
+    LineBreakType line_break_type) const {
+  switch (line_break_type) {
+    case LineBreakType::kNormal:
+      return NextBreakablePosition<LineBreakType::kNormal>(pos);
+    case LineBreakType::kBreakAll:
+      return NextBreakablePosition<LineBreakType::kBreakAll>(pos);
+    case LineBreakType::kKeepAll:
+      return NextBreakablePosition<LineBreakType::kKeepAll>(pos);
+    case LineBreakType::kBreakCharacter:
+      return NextBreakablePositionBreakCharacter(pos);
+  }
+  NOTREACHED();
+  return NextBreakablePosition(pos, LineBreakType::kNormal);
 }
 
 unsigned LazyLineBreakIterator::NextBreakOpportunity(unsigned offset) const {
