@@ -178,7 +178,6 @@ ModelTypeStore::Result ModelTypeStoreBackend::Init(
 
 leveldb::Status ModelTypeStoreBackend::OpenDatabase(const std::string& path,
                                                     leveldb::Env* env) {
-  leveldb::DB* db_raw = nullptr;
   leveldb::Options options;
   options.create_if_missing = true;
   options.reuse_logs = leveldb_env::kDefaultLogReuseOptionValue;
@@ -186,11 +185,7 @@ leveldb::Status ModelTypeStoreBackend::OpenDatabase(const std::string& path,
   if (env)
     options.env = env;
 
-  leveldb::Status status = leveldb::DB::Open(options, path, &db_raw);
-  DCHECK(status.ok() != (db_raw == nullptr));
-  if (status.ok())
-    db_.reset(db_raw);
-  return status;
+  return leveldb_env::OpenDB(options, path, &db_);
 }
 
 leveldb::Status ModelTypeStoreBackend::DestroyDatabase(const std::string& path,

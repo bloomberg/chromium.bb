@@ -647,16 +647,13 @@ TEST(ProtoDatabaseImplLevelDBTest, TestOnMemoryDumpEmitsData) {
       new base::trace_event::ProcessMemoryDump(nullptr, dump_args));
   db->OnMemoryDump(dump_args, process_memory_dump.get());
 
-  const auto& allocator_dumps = process_memory_dump->allocator_dumps();
-  const char* system_allocator_pool_name =
-      base::trace_event::MemoryDumpManager::GetInstance()
-          ->system_allocator_pool_name();
-  size_t expected_dump_count = system_allocator_pool_name ? 2 : 1;
-  EXPECT_EQ(expected_dump_count, allocator_dumps.size());
-  for (const auto& dump : allocator_dumps) {
-    ASSERT_TRUE(dump.first.find("leveldb/leveldb_proto/") == 0 ||
-                dump.first.find(system_allocator_pool_name) == 0);
+  size_t leveldb_dump_count = 0;
+  for (const auto& dump : process_memory_dump->allocator_dumps()) {
+    if (dump.first.find("leveldb/leveldb_proto/") == 0) {
+      leveldb_dump_count++;
+    }
   }
+  ASSERT_EQ(1u, leveldb_dump_count);
 }
 
 }  // namespace leveldb_proto

@@ -359,7 +359,6 @@ AttachmentStore::Result OnDiskAttachmentStore::OpenOrCreate(
   DCHECK(!db_);
   base::FilePath leveldb_path = path.Append(kLeveldbDirectory);
 
-  leveldb::DB* db_raw;
   std::unique_ptr<leveldb::DB> db;
   leveldb::Options options;
   options.create_if_missing = true;
@@ -367,14 +366,12 @@ AttachmentStore::Result OnDiskAttachmentStore::OpenOrCreate(
   // TODO(pavely): crbug/424287 Consider adding info_log, block_cache and
   // filter_policy to options.
   leveldb::Status status =
-      leveldb::DB::Open(options, leveldb_path.AsUTF8Unsafe(), &db_raw);
+      leveldb_env::OpenDB(options, leveldb_path.AsUTF8Unsafe(), &db);
   if (!status.ok()) {
-    DVLOG(1) << "DB::Open failed: status=" << status.ToString()
+    DVLOG(1) << "OpenDB failed: status=" << status.ToString()
              << ", path=" << path.AsUTF8Unsafe();
     return AttachmentStore::UNSPECIFIED_ERROR;
   }
-
-  db.reset(db_raw);
 
   attachment_store_pb::StoreMetadata metadata;
   status = ReadStoreMetadata(db.get(), &metadata);

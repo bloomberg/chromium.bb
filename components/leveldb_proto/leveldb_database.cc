@@ -62,19 +62,15 @@ bool LevelDB::InitWithOptions(const base::FilePath& database_dir,
 
   std::string path = database_dir.AsUTF8Unsafe();
 
-  leveldb::DB* db = NULL;
-  leveldb::Status status = leveldb::DB::Open(options, path, &db);
+  leveldb::Status status = leveldb_env::OpenDB(options, path, &db_);
   if (open_histogram_)
     open_histogram_->Add(leveldb_env::GetLevelDBStatusUMAValue(status));
   if (status.IsCorruption()) {
     base::DeleteFile(database_dir, true);
-    status = leveldb::DB::Open(options, path, &db);
+    status = leveldb_env::OpenDB(options, path, &db_);
   }
 
   if (status.ok()) {
-    CHECK(db);
-    db_.reset(db);
-
     base::trace_event::MemoryDumpManager::GetInstance()
         ->RegisterDumpProviderWithSequencedTaskRunner(
             this, "LevelDB", base::SequencedTaskRunnerHandle::Get(),
@@ -223,12 +219,10 @@ bool LevelDB::OnMemoryDump(const base::trace_event::MemoryDumpArgs& dump_args,
     dump->AddString("client_name", "", client_name_);
   }
 
-  // Memory is allocated from system allocator (malloc).
-  const char* system_allocator_pool_name =
-      base::trace_event::MemoryDumpManager::GetInstance()
-          ->system_allocator_pool_name();
-  if (system_allocator_pool_name)
-    pmd->AddSuballocation(dump->guid(), system_allocator_pool_name);
+  // All leveldb databases are already dumped by leveldb_env::DBTracker. Add
+  // an edge to avoid double counting.
+  pmd->AddSuballocation(dump->guid(),
+                        leveldb_env::DBTracker::GetMemoryDumpName(db_.get()));
 
   return true;
 }

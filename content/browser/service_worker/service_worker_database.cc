@@ -1230,16 +1230,13 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::LazyOpen(
     options.env = g_service_worker_env.Pointer();
   }
 
-  leveldb::DB* db = NULL;
   Status status = LevelDBStatusToStatus(
-      leveldb::DB::Open(options, path_.AsUTF8Unsafe(), &db));
+      leveldb_env::OpenDB(options, path_.AsUTF8Unsafe(), &db_));
   HandleOpenResult(FROM_HERE, status);
   if (status != STATUS_OK) {
-    DCHECK(!db);
     // TODO(nhiroki): Should we retry to open the database?
     return status;
   }
-  db_.reset(db);
 
   int64_t db_version;
   status = ReadDatabaseVersion(&db_version);

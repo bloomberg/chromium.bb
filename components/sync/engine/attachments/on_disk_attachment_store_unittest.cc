@@ -19,6 +19,7 @@
 #include "components/sync/engine_impl/attachments/proto/attachment_store.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/options.h"
 #include "third_party/leveldatabase/src/include/leveldb/slice.h"
@@ -103,13 +104,13 @@ class OnDiskAttachmentStoreSpecificTest : public testing::Test {
   }
 
   std::unique_ptr<leveldb::DB> OpenLevelDB() {
-    leveldb::DB* db;
+    std::unique_ptr<leveldb::DB> db;
     leveldb::Options options;
     options.create_if_missing = true;
     leveldb::Status s =
-        leveldb::DB::Open(options, db_path_.AsUTF8Unsafe(), &db);
+        leveldb_env::OpenDB(options, db_path_.AsUTF8Unsafe(), &db);
     EXPECT_TRUE(s.ok());
-    return base::WrapUnique(db);
+    return db;
   }
 
   void UpdateRecord(const std::string& key, const std::string& content) {

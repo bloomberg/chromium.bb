@@ -492,13 +492,11 @@ SyncStatusCode LocalFileChangeTracker::TrackerDB::Init(
   options.reuse_logs = leveldb_env::kDefaultLogReuseOptionValue;
   if (env_override_)
     options.env = env_override_;
-  leveldb::DB* db;
-  leveldb::Status status = leveldb::DB::Open(options, path, &db);
+  leveldb::Status status = leveldb_env::OpenDB(options, path, &db_);
   UMA_HISTOGRAM_ENUMERATION("SyncFileSystem.TrackerDB.Open",
                             leveldb_env::GetLevelDBStatusUMAValue(status),
                             leveldb_env::LEVELDB_STATUS_MAX);
   if (status.ok()) {
-    db_.reset(db);
     return SYNC_STATUS_OK;
   }
 

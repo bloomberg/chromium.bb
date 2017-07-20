@@ -102,7 +102,7 @@ class CONTENT_EXPORT SessionStorageDatabase :
 
   // Tries to open the database at file_path_, assigns |db| to point to the
   // opened leveldb::DB instance.
-  leveldb::Status TryToOpen(leveldb::DB** db);
+  leveldb::Status TryToOpen(std::unique_ptr<leveldb::DB>* db);
 
   // Returns true if the database is already open, false otherwise.
   bool IsOpen() const;

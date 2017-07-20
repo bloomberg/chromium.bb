@@ -292,7 +292,7 @@ LoadStatus GCMStoreImpl::Backend::OpenStoreAndLoadData(StoreOpenMode open_mode,
     return RELOADING_OPEN_STORE;
   }
 
-  // Checks if the store exists or not. Calling DB::Open with create_if_missing
+  // Checks if the store exists or not. Opening a db with create_if_missing
   // not set will still create a new directory if the store does not exist.
   if (open_mode == DO_NOT_CREATE && !DatabaseExists(path_)) {
     DVLOG(2) << "Database " << path_.value() << " does not exist";
@@ -303,9 +303,8 @@ LoadStatus GCMStoreImpl::Backend::OpenStoreAndLoadData(StoreOpenMode open_mode,
   options.create_if_missing = open_mode == CREATE_IF_MISSING;
   options.reuse_logs = leveldb_env::kDefaultLogReuseOptionValue;
   options.paranoid_checks = true;
-  leveldb::DB* db;
   leveldb::Status status =
-      leveldb::DB::Open(options, path_.AsUTF8Unsafe(), &db);
+      leveldb_env::OpenDB(options, path_.AsUTF8Unsafe(), &db_);
   UMA_HISTOGRAM_ENUMERATION("GCM.Database.Open",
                             leveldb_env::GetLevelDBStatusUMAValue(status),
                             leveldb_env::LEVELDB_STATUS_MAX);
@@ -315,7 +314,6 @@ LoadStatus GCMStoreImpl::Backend::OpenStoreAndLoadData(StoreOpenMode open_mode,
     return OPENING_STORE_FAILED;
   }
 
-  db_.reset(db);
   if (!LoadDeviceCredentials(&result->device_android_id,
                              &result->device_security_token)) {
     return LOADING_DEVICE_CREDENTIALS_FAILED;

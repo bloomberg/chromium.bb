@@ -976,13 +976,12 @@ TEST_F(LocalStorageContextMojoTestWithService, InvalidVersionOnDisk) {
   {
     // Mess up version number in database.
     leveldb_env::ChromiumEnv env;
-    leveldb::DB* db = nullptr;
+    std::unique_ptr<leveldb::DB> db;
     leveldb::Options options;
     options.env = &env;
     base::FilePath db_path =
         temp_path().Append(test_path).Append(FILE_PATH_LITERAL("leveldb"));
-    ASSERT_TRUE(leveldb::DB::Open(options, db_path.AsUTF8Unsafe(), &db).ok());
-    std::unique_ptr<leveldb::DB> db_owner(db);
+    ASSERT_TRUE(leveldb_env::OpenDB(options, db_path.AsUTF8Unsafe(), &db).ok());
     ASSERT_TRUE(db->Put(leveldb::WriteOptions(), "VERSION", "argh").ok());
   }
 

@@ -182,24 +182,21 @@ ValueStore::BackingStoreRestoreStatus LazyLevelDb::FixCorruption(
   // RepairDB can drop an unbounded number of leveldb tables (key/value sets).
   s = leveldb::RepairDB(db_path_.AsUTF8Unsafe(), repair_options);
 
-  leveldb::DB* db = nullptr;
   if (s.ok()) {
     restore_status = ValueStore::DB_RESTORE_REPAIR_SUCCESS;
-    s = leveldb::DB::Open(open_options_, db_path_.AsUTF8Unsafe(), &db);
+    s = leveldb_env::OpenDB(open_options_, db_path_.AsUTF8Unsafe(), &db_);
   }
 
   if (!s.ok()) {
     if (DeleteDbFile()) {
       restore_status = ValueStore::DB_RESTORE_DELETE_SUCCESS;
-      s = leveldb::DB::Open(open_options_, db_path_.AsUTF8Unsafe(), &db);
+      s = leveldb_env::OpenDB(open_options_, db_path_.AsUTF8Unsafe(), &db_);
     } else {
       restore_status = ValueStore::DB_RESTORE_DELETE_FAILURE;
     }
   }
 
-  if (s.ok())
-    db_.reset(db);
-  else
+  if (!s.ok())
     db_unrecoverable_ = true;
 
   if (s.ok() && key) {
@@ -209,7 +206,7 @@ ValueStore::BackingStoreRestoreStatus LazyLevelDb::FixCorruption(
     } else if (s.IsIOError()) {
       restore_status = ValueStore::VALUE_RESTORE_DELETE_FAILURE;
     } else {
-      db_.reset(db);
+      db_.reset();
       if (!DeleteDbFile())
         db_unrecoverable_ = true;
       restore_status = ValueStore::DB_RESTORE_DELETE_FAILURE;
@@ -234,14 +231,11 @@ ValueStore::Status LazyLevelDb::EnsureDbIsOpen() {
                               "Database corrupted");
   }
 
-  leveldb::DB* db = nullptr;
   leveldb::Status ldb_status =
-      leveldb::DB::Open(open_options_, db_path_.AsUTF8Unsafe(), &db);
+      leveldb_env::OpenDB(open_options_, db_path_.AsUTF8Unsafe(), &db_);
   open_histogram_->Add(leveldb_env::GetLevelDBStatusUMAValue(ldb_status));
   ValueStore::Status status = ToValueStoreError(ldb_status);
-  if (ldb_status.ok()) {
-    db_.reset(db);
-  } else if (ldb_status.IsCorruption()) {
+  if (ldb_status.IsCorruption()) {
     status.restore_status = FixCorruption(nullptr);
     if (status.restore_status != ValueStore::DB_RESTORE_DELETE_FAILURE) {
       status.code = ValueStore::OK;
