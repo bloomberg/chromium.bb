@@ -4,9 +4,10 @@
 
 #include "android_webview/browser/aw_form_database_service.h"
 
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/synchronization/waitable_event.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/webdata/common/webdata_constants.h"
@@ -28,7 +29,11 @@ void DatabaseErrorCallback(sql::InitStatus init_status,
 
 namespace android_webview {
 
-AwFormDatabaseService::AwFormDatabaseService(const base::FilePath path) {
+AwFormDatabaseService::AwFormDatabaseService(const base::FilePath path)
+    : has_form_data_result_(false),
+      has_form_data_completion_(
+          base::WaitableEvent::ResetPolicy::AUTOMATIC,
+          base::WaitableEvent::InitialState::NOT_SIGNALED) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   web_database_ = new WebDatabaseService(
       path.Append(kWebDataFilename),
@@ -50,7 +55,6 @@ AwFormDatabaseService::~AwFormDatabaseService() {
 
 void AwFormDatabaseService::Shutdown() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(result_map_.empty());
   // TODO(sgurun) we don't run into this logic right now,
   // but if we do, then we need to implement cancellation
   // of pending queries.
@@ -64,14 +68,6 @@ AwFormDatabaseService::get_autofill_webdata_service() {
 }
 
 void AwFormDatabaseService::ClearFormData() {
-  BrowserThread::PostTask(
-      BrowserThread::DB,
-      FROM_HERE,
-      base::Bind(&AwFormDatabaseService::ClearFormDataImpl,
-                 base::Unretained(this)));
-}
-
-void AwFormDatabaseService::ClearFormDataImpl() {
   base::Time begin;
   base::Time end = base::Time::Max();
   autofill_data_->RemoveFormElementsAddedBetween(begin, end);
@@ -79,57 +75,30 @@ void AwFormDatabaseService::ClearFormDataImpl() {
 }
 
 bool AwFormDatabaseService::HasFormData() {
-  WaitableEvent completion(base::WaitableEvent::ResetPolicy::AUTOMATIC,
-                           base::WaitableEvent::InitialState::NOT_SIGNALED);
-  bool result = false;
-  BrowserThread::PostTask(
-      BrowserThread::DB,
+  has_form_data_result_ = false;
+  has_form_data_completion_.Reset();
+  using awds = autofill::AutofillWebDataService;
+  base::PostTask(
       FROM_HERE,
-      base::Bind(&AwFormDatabaseService::HasFormDataImpl,
-                 base::Unretained(this),
-                 &completion,
-                 &result));
+      base::Bind(base::IgnoreResult(&awds::GetCountOfValuesContainedBetween),
+                 autofill_data_, base::Time(), base::Time::Max(), this));
   {
     base::ThreadRestrictions::ScopedAllowWait wait;
-    completion.Wait();
+    has_form_data_completion_.Wait();
   }
-  return result;
-}
-
-void AwFormDatabaseService::HasFormDataImpl(
-    WaitableEvent* completion,
-    bool* result) {
-  WebDataServiceBase::Handle pending_query_handle =
-      autofill_data_->GetCountOfValuesContainedBetween(
-          base::Time(), base::Time::Max(), this);
-  PendingQuery query;
-  query.result = result;
-  query.completion = completion;
-  result_map_[pending_query_handle] = query;
+  return has_form_data_result_;
 }
 
 void AwFormDatabaseService::OnWebDataServiceRequestDone(
     WebDataServiceBase::Handle h,
     std::unique_ptr<WDTypedResult> result) {
-  DCHECK_CURRENTLY_ON(BrowserThread::DB);
-  bool has_form_data = false;
   if (result) {
     DCHECK_EQ(AUTOFILL_VALUE_RESULT, result->GetType());
     const WDResult<int>* autofill_result =
         static_cast<const WDResult<int>*>(result.get());
-    has_form_data = autofill_result->GetValue() > 0;
+    has_form_data_result_ = autofill_result->GetValue() > 0;
   }
-  QueryMap::const_iterator it = result_map_.find(h);
-  if (it == result_map_.end()) {
-    LOG(WARNING) << "Received unexpected callback from web data service";
-    return;
-  }
-
-  WaitableEvent* completion = it->second.completion;
-  *(it->second.result) = has_form_data;
-  result_map_.erase(h);
-
-  completion->Signal();
+  has_form_data_completion_.Signal();
 }
 
 }  // namespace android_webview
