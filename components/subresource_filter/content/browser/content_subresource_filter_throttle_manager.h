@@ -58,7 +58,13 @@ class ContentSubresourceFilterThrottleManager
     // The embedder may be interested in displaying UI to the user when the
     // first load is disallowed for a given page load.
     virtual void OnFirstSubresourceLoadDisallowed() {}
+
+    // Whether the stronger version of the popup blocker is enabled for this
+    // page load.
     virtual bool AllowStrongPopupBlocking();
+
+    // Whether we should be using ruleset rules for this page load.
+    virtual bool AllowRulesetRules();
   };
 
   ContentSubresourceFilterThrottleManager(

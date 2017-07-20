@@ -1139,6 +1139,18 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
+                       DisableRuleset_SubresourceAllowed) {
+  Configuration config = Configuration::MakePresetForLiveRunOnPhishingSites();
+  config.activation_options.should_disable_ruleset_rules = true;
+  ResetConfiguration(std::move(config));
+
+  GURL url(GetTestUrl("subresource_filter/frame_with_included_script.html"));
+  ConfigureAsPhishingURL(url);
+  ui_test_utils::NavigateToURL(browser(), url);
+  EXPECT_TRUE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
+}
+
+IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
                        NoConfiguration_AllowCreatingNewWindows) {
   base::HistogramTester tester;
   const char kWindowOpenPath[] = "/subresource_filter/window_open.html";
@@ -1183,10 +1195,8 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, BlockCreatingNewWindows) {
   EXPECT_TRUE(content::ExecuteScriptAndExtractBool(web_contents, "openWindow()",
                                                    &opened_window));
   EXPECT_FALSE(opened_window);
-  // Do not force the UI if the popup was the only thing disallowed. The popup
-  // UI is good enough.
   tester.ExpectBucketCount(kSubresourceFilterActionsHistogram, kActionUIShown,
-                           0);
+                           1);
   // Make sure the popup UI was shown.
   EXPECT_TRUE(TabSpecificContentSettings::FromWebContents(web_contents)
                   ->IsContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS));
@@ -1223,10 +1233,8 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, BlockOpenURLFromTab) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_TRUE(content::ExecuteScript(web_contents, "openWindow()"));
-  // Do not force the UI if the popup was the only thing disallowed. The popup
-  // UI is good enough.
   tester.ExpectBucketCount(kSubresourceFilterActionsHistogram, kActionUIShown,
-                           0);
+                           1);
 
   EXPECT_TRUE(TabSpecificContentSettings::FromWebContents(web_contents)
                   ->IsContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS));

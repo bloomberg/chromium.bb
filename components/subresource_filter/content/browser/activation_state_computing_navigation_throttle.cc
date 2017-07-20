@@ -138,13 +138,14 @@ ActivationStateComputingNavigationThrottle::filter() const {
 // when activation IPCs are not sent to the render process.
 std::unique_ptr<AsyncDocumentSubresourceFilter>
 ActivationStateComputingNavigationThrottle::ReleaseFilter() {
-  return will_send_activation_to_renderer_ ? std::move(async_filter_) : nullptr;
+  return could_send_activation_to_renderer_ ? std::move(async_filter_)
+                                            : nullptr;
 }
 
 void ActivationStateComputingNavigationThrottle::
-    WillSendActivationToRenderer() {
+    CouldSendActivationToRenderer() {
   DCHECK(async_filter_);
-  will_send_activation_to_renderer_ = true;
+  could_send_activation_to_renderer_ = true;
 }
 
 }  // namespace subresource_filter
