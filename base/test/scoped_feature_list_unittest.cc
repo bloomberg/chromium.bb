@@ -5,6 +5,8 @@
 #include "base/test/scoped_feature_list.h"
 
 #include <string>
+#include <utility>
+
 #include "base/metrics/field_trial.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -13,14 +15,12 @@ namespace test {
 
 namespace {
 
-const base::Feature kTestFeature1{"TestFeature1",
-                                  base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kTestFeature2{"TestFeature2",
-                                  base::FEATURE_DISABLED_BY_DEFAULT};
+const Feature kTestFeature1{"TestFeature1", FEATURE_DISABLED_BY_DEFAULT};
+const Feature kTestFeature2{"TestFeature2", FEATURE_DISABLED_BY_DEFAULT};
 
 void ExpectFeatures(const std::string& enabled_features,
                     const std::string& disabled_features) {
-  base::FeatureList* list = base::FeatureList::GetInstance();
+  FeatureList* list = FeatureList::GetInstance();
   std::string actual_enabled_features;
   std::string actual_disabled_features;
 
@@ -37,18 +37,17 @@ class ScopedFeatureListTest : public testing::Test {
  public:
   ScopedFeatureListTest() {
     // Clear default feature list.
-    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
+    std::unique_ptr<FeatureList> feature_list(new FeatureList);
     feature_list->InitializeFromCommandLine(std::string(), std::string());
-    original_feature_list_ = base::FeatureList::ClearInstanceForTesting();
-    base::FeatureList::SetInstance(std::move(feature_list));
+    original_feature_list_ = FeatureList::ClearInstanceForTesting();
+    FeatureList::SetInstance(std::move(feature_list));
   }
 
   ~ScopedFeatureListTest() override {
     // Restore feature list.
     if (original_feature_list_) {
-      base::FeatureList::ClearInstanceForTesting();
-      base::FeatureList::RestoreInstanceForTesting(
-          std::move(original_feature_list_));
+      FeatureList::ClearInstanceForTesting();
+      FeatureList::RestoreInstanceForTesting(std::move(original_feature_list_));
     }
   }
 
