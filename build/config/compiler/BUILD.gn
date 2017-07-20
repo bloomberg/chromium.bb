@@ -1730,7 +1730,13 @@ config("symbols") {
         cflags += [ "-fno-standalone-debug" ]
       }
     } else {
-      cflags = [ "-g2" ]
+      cflags = []
+      if (target_cpu == "arm") {
+        # dump_syms has issues with dwarf4 on arm, https://crbug.com/744956
+        # TODO(thakis): Remove this again once dump_syms is fixed.
+        cflags += [ "-gdwarf-3" ]
+      }
+      cflags += [ "-g2" ]
     }
     if (use_debug_fission) {
       cflags += [ "-gsplit-dwarf" ]
@@ -1764,7 +1770,13 @@ config("minimal_symbols") {
     cflags = []
     ldflags = [ "/DEBUG" ]
   } else {
-    cflags = [ "-g1" ]
+    cflags = []
+    if (target_cpu == "arm") {
+      # dump_syms has issues with dwarf4 on arm, https://crbug.com/744956
+      # TODO(thakis): Remove this again once dump_syms is fixed.
+      cflags += [ "-gdwarf-3" ]
+    }
+    cflags += [ "-g1" ]
     if (is_android) {
       # Android defaults to symbol_level=1 builds in production builds
       # (https://crbug.com/648948), but clang, unlike gcc, doesn't emit
