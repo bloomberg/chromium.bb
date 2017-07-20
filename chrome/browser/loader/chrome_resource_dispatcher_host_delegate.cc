@@ -976,8 +976,8 @@ content::PreviewsState ChromeResourceDispatcherHostDelegate::GetPreviewsState(
         previews::params::IsClientLoFiEnabled() &&
         previews_io_data->ShouldAllowPreviewAtECT(
             url_request, previews::PreviewsType::LOFI,
-            previews::params::
-                EffectiveConnectionTypeThresholdForClientLoFi())) {
+            previews::params::EffectiveConnectionTypeThresholdForClientLoFi(),
+            previews::params::GetBlackListedHostsForClientLoFiFieldTrial())) {
       previews_state |= content::CLIENT_LOFI_ON;
     }
   }

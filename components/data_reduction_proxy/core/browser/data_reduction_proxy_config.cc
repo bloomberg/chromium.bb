@@ -1061,7 +1061,8 @@ bool DataReductionProxyConfig::IsBlackListedOrDisabled(
     // TODO(ryansturm): Use the correct ECT value (or add new method to
     // just check blacklist). crbug.com/720102
     return !previews_decider.ShouldAllowPreviewAtECT(
-        request, previews_type, net::EFFECTIVE_CONNECTION_TYPE_4G);
+        request, previews_type, net::EFFECTIVE_CONNECTION_TYPE_4G,
+        std::vector<std::string>());
   } else {
     // If Lo-Fi has been turned off, its status can't change. This Lo-Fi bit
     // will be removed when Lo-Fi and Lite Pages are moved over to using the
