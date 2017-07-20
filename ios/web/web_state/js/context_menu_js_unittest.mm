@@ -204,4 +204,24 @@ TEST_F(ContextMenuJsTest, LinkOfImage) {
   }
 }
 
+// Tests context menu invoked on an image with "-webkit-touch-callout:none"
+// style and parent link.
+TEST_F(ContextMenuJsTest, LinkOfImageWithCalloutNone) {
+  // A page with an image surrounded by a link.
+  static const char image_html[] =
+      "<a href='%s'>"
+      "<img style='width:9;height:9;display:block;-webkit-touch-callout:none;'>"
+      "</a>";
+
+  // A page with a link to a destination URL.
+  LoadHtml(base::StringPrintf(image_html, "http://destination"));
+  id result = ExecuteGetElementFromPointJavaScript(5, 5);
+  NSDictionary* expected_result = @{
+    kContextMenuElementInnerText : @"",
+    kContextMenuElementReferrerPolicy : @"default",
+    kContextMenuElementHyperlink : @"http://destination/",
+  };
+  EXPECT_NSEQ(expected_result, result);
+}
+
 }  // namespace web
