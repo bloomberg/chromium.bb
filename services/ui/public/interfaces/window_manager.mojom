@@ -308,7 +308,8 @@ interface WindowManagerClient {
   // changes.
   SetDisplayConfiguration(array<display.mojom.Display> displays,
                           array<WmViewportMetrics> viewport_metrics,
-                          int64 primary_display_id) => (bool success);
+                          int64 primary_display_id,
+                          int64 internal_display_id) => (bool success);
 
   // Swaps the display roots of the two displays.
   SwapDisplayRoots(int64 display_id1, int64 display_id2) => (bool success);

@@ -601,6 +601,10 @@ bool WindowServer::GetFrameDecorationsForUser(
   return window_manager_state->got_frame_decoration_values();
 }
 
+int64_t WindowServer::GetInternalDisplayId() {
+  return display_manager_->GetInternalDisplayId();
+}
+
 bool WindowServer::GetAndClearInFlightWindowManagerChange(
     uint32_t window_manager_change_id,
     InFlightWindowManagerChange* change) {

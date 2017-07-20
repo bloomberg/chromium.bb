@@ -43,12 +43,20 @@ TEST_F(DisplaySynchronizerTest, AddingDisplayNotifies) {
   const size_t initial_count =
       test_window_manager_client->GetChangeCountForType(
           aura::WindowManagerClientChangeType::SET_DISPLAY_CONFIGURATION);
+  // Ideally we would use an id set by UpdateDisplay(), but we need to set
+  // the internal display id before calling UpdateDipslay().
+  const int64_t internal_display_id = 10;
+  // AshTestBase resets this for us.
+  display::Display::SetInternalDisplayId(internal_display_id);
   UpdateDisplay("400x400,400x400");
   // Multiple calls may be sent, so we only check the count changes.
   EXPECT_NE(
       initial_count,
       test_window_manager_client->GetChangeCountForType(
           aura::WindowManagerClientChangeType::SET_DISPLAY_CONFIGURATION));
+  ASSERT_TRUE(display::Display::HasInternalDisplay());
+  EXPECT_EQ(internal_display_id,
+            test_window_manager_client->last_internal_display_id());
 }
 
 }  // namespace mus

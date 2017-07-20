@@ -5,6 +5,8 @@
 #ifndef SERVICES_UI_WS_USER_DISPLAY_MANAGER_DELEGATE_H_
 #define SERVICES_UI_WS_USER_DISPLAY_MANAGER_DELEGATE_H_
 
+#include <stdint.h>
+
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "services/ui/ws/user_id.h"
 
@@ -18,6 +20,8 @@ class UserDisplayManagerDelegate {
   virtual bool GetFrameDecorationsForUser(
       const UserId& user_id,
       mojom::FrameDecorationValuesPtr* values) = 0;
+
+  virtual int64_t GetInternalDisplayId() = 0;
 
  protected:
   virtual ~UserDisplayManagerDelegate() {}

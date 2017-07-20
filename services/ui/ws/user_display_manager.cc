@@ -14,16 +14,6 @@
 
 namespace ui {
 namespace ws {
-namespace {
-
-int64_t GetInternalDisplayId() {
-  if (!display::Display::HasInternalDisplay())
-    return display::kInvalidDisplayId;
-
-  return display::Display::InternalDisplayId();
-}
-
-}  // namespace
 
 UserDisplayManager::UserDisplayManager(UserDisplayManagerDelegate* delegate,
                                        const UserId& user_id)
@@ -129,7 +119,7 @@ void UserDisplayManager::CallOnDisplaysChanged(
                                   ->GetScreen()
                                   ->GetPrimaryDisplay()
                                   .id(),
-                              GetInternalDisplayId());
+                              delegate_->GetInternalDisplayId());
 }
 
 }  // namespace ws
