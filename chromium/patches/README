@@ -64,18 +64,7 @@ Current patches:
   libavformat/mov.c
     Always use av_realloc() for |extradata|. https://crbug.com/721872
 
-    Incorrect frames after seeking. http://crbug.com/568336.
-    Reported: http://ffmpeg.org/pipermail/ffmpeg-devel/2015-December/185040.html
-    Additional FFmpeg bug: https://trac.ffmpeg.org/ticket/6402
-    In Chromium this shows up as frames out of order, so the video jumps
-    around after seek (example in crbug). Using upstream ffplay the out of
-    order frames do not occur, but the first few frames after seek are not
-    correct. Partial revert of commit 4ab56667594842283dc5ae07f0daba2a2cb4d3af
-    to only remove mov_seek_fragment() but leave rest of that commit to make
-    future merges easier. (After debugging, either removing mov_seek_fragment()
-    or mov_read_sidx() avoids the problem, so it is an interaction between
-    the 2 of them. As it shows up in Chromium after a seek, removing
-    mov_seek_fragment() seems like a better choice.)
+    Fix ctts processing when sidx processing is enabled. http://crbug.com/738595
 
   libavformat/matroskadec.c
     Add CONFIG_LZO and CONFIG_SIPR_DECODER (and other CONFIG_*) checks to remove
