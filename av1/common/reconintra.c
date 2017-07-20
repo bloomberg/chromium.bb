@@ -539,6 +539,11 @@ static int has_top_right(BLOCK_SIZE bsize, int mi_row, int mi_col,
 #endif
 
   if (row_off > 0) {  // Just need to check if enough pixels on the right.
+#if CONFIG_EXT_PARTITION
+    if (col_off + top_right_count_unit >=
+        (block_size_wide[BLOCK_64X64] >> (tx_size_wide_log2[0] + ss_x)))
+      return 0;
+#endif
     return col_off + top_right_count_unit < plane_bw_unit;
   } else {
     // All top-right pixels are in the block above, which is already available.
