@@ -1455,6 +1455,10 @@ const char kContextualSearchName[] = "Contextual Search";
 const char kContextualSearchDescription[] =
     "Whether or not Contextual Search is enabled.";
 
+const char kDontPrefetchLibrariesName[] = "Don't Prefetch Libraries";
+const char kDontPrefetchLibrariesDescription[] =
+    "Don't prefetch libraries after loading.";
+
 const char kEnableAndroidPayIntegrationV1Name[] = "Enable Android Pay v1";
 const char kEnableAndroidPayIntegrationV1Description[] =
     "Enable integration with Android Pay using the first version of the API";

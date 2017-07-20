@@ -22731,6 +22731,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="-1578295753" label="UserMediaScreenCapturing:disabled"/>
   <int value="-1575984706" label="gl-composited-overlay-candidate-quad-border"/>
   <int value="-1575554415" label="AndroidPaymentAppsFilter:enabled"/>
+  <int value="-1575430234" label="DontPrefetchLibraries:disabled"/>
   <int value="-1572010356" label="enable-privet-v3"/>
   <int value="-1571841513" label="enable-devtools-experiments"/>
   <int value="-1559789642" label="RunAllFlashInAllowMode:enabled"/>
@@ -23351,6 +23352,7 @@ from previous Chrome versions.
   <int value="575394365" label="AndroidPaymentApps:disabled"/>
   <int value="581118445" label="enable-eol-notification"/>
   <int value="581355159" label="ContentSuggestionsCategoryRanker:disabled"/>
+  <int value="582187448" label="DontPrefetchLibraries:enabled"/>
   <int value="584541349" label="ContextualSearchSingleActions:disabled"/>
   <int value="586021329" label="VibrateRequiresUserGesture:enabled"/>
   <int value="592050831" label="disable-slimming-paint"/>
