@@ -70,15 +70,16 @@ public class VrShellImpl
     // a way to compute good values for any screen size/scaling ratio.
 
     // Increasing DPR any more than this doesn't appear to increase text quality.
-    private static final float DEFAULT_DPR = 1.4f;
+    private static final float DEFAULT_DPR = 1.7f;
     // Fairly arbitrary values that put a good amount of content on the screen without making the
     // text too small to read.
     @VisibleForTesting
-    public static final float DEFAULT_CONTENT_WIDTH = 800f;
+    public static final float DEFAULT_CONTENT_WIDTH = 645f;
     @VisibleForTesting
-    public static final float DEFAULT_CONTENT_HEIGHT = 533f;
+    public static final float DEFAULT_CONTENT_HEIGHT = 430f;
 
     // Make full screen 16:9 until we get exact dimensions from playing video.
+    private static final float FULLSCREEN_DPR = 1.4f;
     private static final float FULLSCREEN_CONTENT_WIDTH = 1024f;
     private static final float FULLSCREEN_CONTENT_HEIGHT = 576f;
 
@@ -493,7 +494,7 @@ public class VrShellImpl
     @CalledByNative
     public void onFullscreenChanged(boolean enabled) {
         if (enabled) {
-            setContentCssSize(FULLSCREEN_CONTENT_WIDTH, FULLSCREEN_CONTENT_HEIGHT, DEFAULT_DPR);
+            setContentCssSize(FULLSCREEN_CONTENT_WIDTH, FULLSCREEN_CONTENT_HEIGHT, FULLSCREEN_DPR);
         } else {
             setContentCssSize(DEFAULT_CONTENT_WIDTH, DEFAULT_CONTENT_HEIGHT, DEFAULT_DPR);
         }
