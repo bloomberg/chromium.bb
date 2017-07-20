@@ -195,6 +195,20 @@ cdm::KeyStatus ConvertKeyStatus(media::CdmKeyInformation::KeyStatus status) {
   return cdm::kInternalError;
 }
 
+cdm::MessageType ConvertMessageType(media::CdmMessageType message_type) {
+  switch (message_type) {
+    case media::CdmMessageType::LICENSE_REQUEST:
+      return cdm::kLicenseRequest;
+    case media::CdmMessageType::LICENSE_RENEWAL:
+      return cdm::kLicenseRenewal;
+    case media::CdmMessageType::LICENSE_RELEASE:
+      return cdm::kLicenseRelease;
+  }
+
+  NOTREACHED();
+  return cdm::kLicenseRequest;
+}
+
 // Shallow copy all the key information from |keys_info| into |keys_vector|.
 // |keys_vector| is only valid for the lifetime of |keys_info| because it
 // contains pointers into the latter.
@@ -709,7 +723,7 @@ void ClearKeyCdm::ScheduleNextRenewal() {
   // Prepare the next renewal message and set timer.
   std::ostringstream msg_stream;
   msg_stream << "Renewal from ClearKey CDM set at time "
-             << host_->GetCurrentWallTime() << ".";
+             << base::Time::FromDoubleT(host_->GetCurrentWallTime()) << ".";
   next_renewal_message_ = msg_stream.str();
 
   host_->SetTimer(timer_delay_ms_, &next_renewal_message_[0]);
@@ -822,7 +836,7 @@ void ClearKeyCdm::OnSessionMessage(const std::string& session_id,
   DVLOG(1) << __func__ << ": size = " << message.size();
 
   host_->OnSessionMessage(
-      session_id.data(), session_id.length(), cdm::kLicenseRequest,
+      session_id.data(), session_id.length(), ConvertMessageType(message_type),
       reinterpret_cast<const char*>(message.data()), message.size());
 }
 

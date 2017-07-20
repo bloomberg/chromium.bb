@@ -123,6 +123,7 @@ PlayerUtils.registerEMEEventListeners = function(player) {
 
   this.registerDefaultEventListeners(player);
   player.video.receivedKeyMessage = false;
+  player.video.receivedRenewalMessage = false;
   Utils.timeLog('Setting video media keys: ' + player.testConfig.keySystem);
 
   var config = {
