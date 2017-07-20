@@ -12,17 +12,17 @@ import "net/interfaces/ip_address.mojom";
 import "url/mojo/origin.mojom";
 import "url/mojo/url.mojom";
 
+enum SinkIconType {
+  CAST,
+  CAST_AUDIO,
+  CAST_AUDIO_GROUP,
+  MEETING,
+  HANGOUT,
+  GENERIC
+};
+
 // Represents an output sink to which media can be routed.
 struct MediaSink {
-  enum IconType {
-    CAST,
-    CAST_AUDIO,
-    CAST_AUDIO_GROUP,
-    MEETING,
-    HANGOUT,
-    GENERIC
-  };
-
   // The sink identifier, e.g. "rs71w7mFzYLFlabir_qO4NHl6SUc."
   string sink_id;
   // The human-readable name, e.g. "Janet's Chromecast".
@@ -32,7 +32,7 @@ struct MediaSink {
   // Optional domain of the sink if this sink is associated with an identity.
   string? domain;
   // The type of icon to show in the UI for this media sink.
-  IconType icon_type;
+  SinkIconType icon_type;
   // This is currently only set by MediaRouter in OnSinksDiscovered().
   MediaSinkExtraData? extra_data;
 };

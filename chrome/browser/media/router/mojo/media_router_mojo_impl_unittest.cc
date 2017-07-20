@@ -728,10 +728,8 @@ TEST_F(MediaRouterMojoImplTest, RegisterAndUnregisterMediaSinksObserver) {
   ProcessEventLoop();
 
   std::vector<MediaSink> expected_sinks;
-  expected_sinks.push_back(
-      MediaSink(kSinkId, kSinkName, MediaSink::IconType::CAST));
-  expected_sinks.push_back(
-      MediaSink(kSinkId2, kSinkName, MediaSink::IconType::CAST));
+  expected_sinks.push_back(MediaSink(kSinkId, kSinkName, SinkIconType::CAST));
+  expected_sinks.push_back(MediaSink(kSinkId2, kSinkName, SinkIconType::CAST));
 
   std::vector<MediaSinkInternal> sinks;
   for (const auto& expected_sink : expected_sinks) {
@@ -1223,7 +1221,7 @@ TEST_F(MediaRouterMojoImplTest, SearchSinks) {
 
 TEST_F(MediaRouterMojoImplTest, ProvideSinks) {
   std::vector<MediaSinkInternal> sinks;
-  MediaSink sink(kSinkId, kSinkName, MediaSink::IconType::CAST);
+  MediaSink sink(kSinkId, kSinkName, SinkIconType::CAST);
   CastSinkExtraData extra_data;
   EXPECT_TRUE(extra_data.ip_address.AssignFromIPLiteral("192.168.1.3"));
   extra_data.capabilities = 2;

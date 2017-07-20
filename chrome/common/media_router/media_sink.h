@@ -16,27 +16,27 @@ class Collator;
 
 namespace media_router {
 
+// IconTypes are listed in the order in which sinks should be sorted.
+// The order must stay in sync with
+// chrome/browser/resources/media_router/media_router_data.js.
+enum SinkIconType {
+  CAST,
+  CAST_AUDIO_GROUP,
+  CAST_AUDIO,
+  MEETING,
+  HANGOUT,
+  GENERIC
+};
+
 // Represents a sink to which media can be routed.
 // TODO(zhaobin): convert MediaSink into a struct.
 class MediaSink {
  public:
   using Id = std::string;
 
-  // IconTypes are listed in the order in which sinks should be sorted.
-  // The order must stay in sync with
-  // chrome/browser/resources/media_router/media_router_data.js.
-  enum IconType {
-    CAST,
-    CAST_AUDIO_GROUP,
-    CAST_AUDIO,
-    MEETING,
-    HANGOUT,
-    GENERIC
-  };
-
   MediaSink(const MediaSink::Id& sink_id,
             const std::string& name,
-            const IconType icon_type);
+            const SinkIconType icon_type);
   MediaSink(const MediaSink& other);
   MediaSink();
 
@@ -58,8 +58,8 @@ class MediaSink {
   void set_domain(const std::string& domain) { domain_ = domain; }
   const base::Optional<std::string>& domain() const { return domain_; }
 
-  void set_icon_type(IconType icon_type) { icon_type_ = icon_type; }
-  IconType icon_type() const { return icon_type_; }
+  void set_icon_type(SinkIconType icon_type) { icon_type_ = icon_type; }
+  SinkIconType icon_type() const { return icon_type_; }
 
   // This method only compares IDs.
   bool Equals(const MediaSink& other) const;
@@ -94,7 +94,7 @@ class MediaSink {
   base::Optional<std::string> domain_;
 
   // The type of icon that corresponds with the MediaSink.
-  IconType icon_type_ = IconType::GENERIC;
+  SinkIconType icon_type_ = SinkIconType::GENERIC;
 };
 
 }  // namespace media_router

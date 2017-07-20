@@ -61,7 +61,7 @@ ErrorType CreateCastMediaSink(const media_router::DnsSdService& service,
   if (friendly_name.empty())
     return ErrorType::MISSING_FRIENDLY_NAME;
   media_router::MediaSink sink(unique_id, friendly_name,
-                               media_router::MediaSink::IconType::CAST);
+                               media_router::SinkIconType::CAST);
 
   media_router::CastSinkExtraData extra_data;
   extra_data.ip_address = ip_address;

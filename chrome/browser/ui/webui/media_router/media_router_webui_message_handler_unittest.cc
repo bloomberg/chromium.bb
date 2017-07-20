@@ -62,7 +62,7 @@ std::string GetStringFromDict(const base::DictionaryValue* dict,
 MediaRoute CreateRoute() {
   MediaRoute::Id route_id("routeId123");
   MediaSink::Id sink_id("sinkId123");
-  MediaSink sink(sink_id, "The sink", MediaSink::IconType::CAST);
+  MediaSink sink(sink_id, "The sink", SinkIconType::CAST);
   std::string description("This is a route");
   bool is_local = true;
   bool is_for_display = true;
@@ -76,7 +76,7 @@ MediaSinkWithCastModes CreateMediaSinkWithCastMode(const std::string& sink_id,
                                                    MediaCastMode cast_mode) {
   std::string sink_name("The sink");
   MediaSinkWithCastModes media_sink_with_cast_modes(
-      MediaSink(sink_id, sink_name, MediaSink::IconType::CAST));
+      MediaSink(sink_id, sink_name, SinkIconType::CAST));
   media_sink_with_cast_modes.cast_modes.insert(cast_mode);
 
   return media_sink_with_cast_modes;

@@ -126,7 +126,7 @@ void MediaRouterAndroidBridge::OnSinksReceived(
         env, java_media_router_, jsource_urn, i);
     sinks_converted.push_back(MediaSink(
         ConvertJavaStringToUTF8(env, jsink_urn.obj()),
-        ConvertJavaStringToUTF8(env, jsink_name.obj()), MediaSink::GENERIC));
+        ConvertJavaStringToUTF8(env, jsink_name.obj()), SinkIconType::GENERIC));
   }
   native_media_router_->OnSinksReceived(
       ConvertJavaStringToUTF8(env, jsource_urn), sinks_converted);

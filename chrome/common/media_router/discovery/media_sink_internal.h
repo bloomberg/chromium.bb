@@ -84,9 +84,7 @@ class MediaSinkInternal {
     sink_.set_description(description);
   }
   void set_domain(const std::string& domain) { sink_.set_domain(domain); }
-  void set_icon_type(MediaSink::IconType icon_type) {
-    sink_.set_icon_type(icon_type);
-  }
+  void set_icon_type(SinkIconType icon_type) { sink_.set_icon_type(icon_type); }
 
   void set_sink(const MediaSink& sink);
   const MediaSink& sink() const { return sink_; }

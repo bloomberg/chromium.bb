@@ -57,7 +57,7 @@ TEST(MediaSinkInternalTest, TestIsValidSinkId) {
 }
 
 TEST(MediaSinkInternalTest, TestConstructorAndAssignment) {
-  MediaSink sink(kSinkId, kSinkName, MediaSink::IconType::CAST);
+  MediaSink sink(kSinkId, kSinkName, SinkIconType::CAST);
   DialSinkExtraData dial_extra_data = CreateDialSinkExtraData();
   CastSinkExtraData cast_extra_data = CreateCastSinkExtraData();
 
@@ -94,7 +94,7 @@ TEST(MediaSinkInternalTest, TestConstructorAndAssignment) {
 }
 
 TEST(MediaSinkInternalTest, TestSetExtraData) {
-  MediaSink sink(kSinkId, kSinkName, MediaSink::IconType::CAST);
+  MediaSink sink(kSinkId, kSinkName, SinkIconType::CAST);
   DialSinkExtraData dial_extra_data = CreateDialSinkExtraData();
   CastSinkExtraData cast_extra_data = CreateCastSinkExtraData();
 

@@ -27,12 +27,12 @@ media_router::DialSinkExtraData CreateDialSinkExtraData(
 
 std::vector<media_router::MediaSinkInternal> CreateDialMediaSinks() {
   media_router::MediaSink sink1("sink1", "sink_name_1",
-                                media_router::MediaSink::IconType::CAST);
+                                media_router::SinkIconType::CAST);
   media_router::DialSinkExtraData extra_data1 = CreateDialSinkExtraData(
       "model_name1", "192.168.1.1", "https://example1.com");
 
   media_router::MediaSink sink2("sink2", "sink_name_2",
-                                media_router::MediaSink::IconType::CAST);
+                                media_router::SinkIconType::CAST);
   media_router::DialSinkExtraData extra_data2 = CreateDialSinkExtraData(
       "model_name2", "192.168.1.2", "https://example2.com");
 
@@ -101,7 +101,7 @@ TEST_F(MediaSinkServiceBaseTest, TestFetchCompleted_SameSink) {
 TEST_F(MediaSinkServiceBaseTest, TestFetchCompleted_OneNewSink) {
   std::vector<MediaSinkInternal> old_sinks = CreateDialMediaSinks();
   std::vector<MediaSinkInternal> new_sinks = CreateDialMediaSinks();
-  MediaSink sink3("sink3", "sink_name_3", MediaSink::IconType::CAST);
+  MediaSink sink3("sink3", "sink_name_3", SinkIconType::CAST);
   DialSinkExtraData extra_data3 = CreateDialSinkExtraData(
       "model_name3", "192.168.1.3", "https://example3.com");
   new_sinks.push_back(MediaSinkInternal(sink3, extra_data3));
@@ -125,11 +125,11 @@ TEST_F(MediaSinkServiceBaseTest, TestFetchCompleted_UpdatedOneSink) {
 TEST_F(MediaSinkServiceBaseTest, TestFetchCompleted_Mixed) {
   std::vector<MediaSinkInternal> old_sinks = CreateDialMediaSinks();
 
-  MediaSink sink1("sink1", "sink_name_1", MediaSink::IconType::CAST);
+  MediaSink sink1("sink1", "sink_name_1", SinkIconType::CAST);
   DialSinkExtraData extra_data2 = CreateDialSinkExtraData(
       "model_name2", "192.168.1.2", "https://example2.com");
 
-  MediaSink sink3("sink3", "sink_name_3", MediaSink::IconType::CAST);
+  MediaSink sink3("sink3", "sink_name_3", SinkIconType::CAST);
   DialSinkExtraData extra_data3 = CreateDialSinkExtraData(
       "model_name3", "192.168.1.3", "https://example3.com");
 

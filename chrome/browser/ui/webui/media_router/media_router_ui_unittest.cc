@@ -149,7 +149,7 @@ class MediaRouterUITest : public ChromeRenderViewHostTestHarness {
   }
 
   MediaSink CreateSinkCompatibleWithAllSources() {
-    MediaSink sink("sinkId", "sinkName", MediaSink::GENERIC);
+    MediaSink sink("sinkId", "sinkName", SinkIconType::GENERIC);
     for (auto* observer : media_sinks_observers_)
       observer->OnSinksUpdated({sink}, std::vector<url::Origin>());
     return sink;
@@ -316,19 +316,19 @@ TEST_F(MediaRouterUITest, SortedSinks) {
   std::string sink_id1("sink3");
   std::string sink_name1("B sink");
   MediaSinkWithCastModes sink1(
-      MediaSink(sink_id1, sink_name1, MediaSink::IconType::CAST));
+      MediaSink(sink_id1, sink_name1, SinkIconType::CAST));
   unsorted_sinks.push_back(sink1);
 
   std::string sink_id2("sink1");
   std::string sink_name2("A sink");
   MediaSinkWithCastModes sink2(
-      MediaSink(sink_id2, sink_name2, MediaSink::IconType::CAST));
+      MediaSink(sink_id2, sink_name2, SinkIconType::CAST));
   unsorted_sinks.push_back(sink2);
 
   std::string sink_id3("sink2");
   std::string sink_name3("B sink");
   MediaSinkWithCastModes sink3(
-      MediaSink(sink_id3, sink_name3, MediaSink::IconType::CAST));
+      MediaSink(sink_id3, sink_name3, SinkIconType::CAST));
   unsorted_sinks.push_back(sink3);
 
   // Sorted order is 2, 3, 1.
@@ -343,23 +343,20 @@ TEST_F(MediaRouterUITest, SortSinksByIconType) {
   CreateMediaRouterUI(profile());
   std::vector<MediaSinkWithCastModes> unsorted_sinks;
 
-  MediaSinkWithCastModes sink1(
-      MediaSink("id1", "sink", MediaSink::IconType::HANGOUT));
+  MediaSinkWithCastModes sink1(MediaSink("id1", "sink", SinkIconType::HANGOUT));
   unsorted_sinks.push_back(sink1);
   MediaSinkWithCastModes sink2(
-      MediaSink("id2", "B sink", MediaSink::IconType::CAST_AUDIO_GROUP));
+      MediaSink("id2", "B sink", SinkIconType::CAST_AUDIO_GROUP));
   unsorted_sinks.push_back(sink2);
-  MediaSinkWithCastModes sink3(
-      MediaSink("id3", "sink", MediaSink::IconType::GENERIC));
+  MediaSinkWithCastModes sink3(MediaSink("id3", "sink", SinkIconType::GENERIC));
   unsorted_sinks.push_back(sink3);
   MediaSinkWithCastModes sink4(
-      MediaSink("id4", "A sink", MediaSink::IconType::CAST_AUDIO_GROUP));
+      MediaSink("id4", "A sink", SinkIconType::CAST_AUDIO_GROUP));
   unsorted_sinks.push_back(sink4);
   MediaSinkWithCastModes sink5(
-      MediaSink("id5", "sink", MediaSink::IconType::CAST_AUDIO));
+      MediaSink("id5", "sink", SinkIconType::CAST_AUDIO));
   unsorted_sinks.push_back(sink5);
-  MediaSinkWithCastModes sink6(
-      MediaSink("id6", "sink", MediaSink::IconType::CAST));
+  MediaSinkWithCastModes sink6(MediaSink("id6", "sink", SinkIconType::CAST));
   unsorted_sinks.push_back(sink6);
 
   // Sorted order is CAST, CAST_AUDIO_GROUP "A", CAST_AUDIO_GROUP "B",
@@ -595,7 +592,7 @@ TEST_F(MediaRouterUITest, NotFoundErrorOnCloseWithNoCompatibleSinks) {
   // Send a sink to the UI that is compatible with sources other than the
   // presentation url to cause a NotFoundError.
   std::vector<MediaSink> sinks;
-  sinks.emplace_back("sink id", "sink name", MediaSink::GENERIC);
+  sinks.emplace_back("sink id", "sink name", SinkIconType::GENERIC);
   std::vector<url::Origin> origins;
   for (auto* observer : media_sinks_observers_) {
     if (observer->source().id() != presentation_url.spec()) {
@@ -626,7 +623,7 @@ TEST_F(MediaRouterUITest, AbortErrorOnClose) {
   // Send a sink to the UI that is compatible with the presentation url to avoid
   // a NotFoundError.
   std::vector<MediaSink> sinks;
-  sinks.emplace_back("sink id", "sink name", MediaSink::GENERIC);
+  sinks.emplace_back("sink id", "sink name", SinkIconType::GENERIC);
   std::vector<url::Origin> origins;
   MediaSource::Id presentation_source_id =
       MediaSourceForPresentationUrl(presentation_url).id();
