@@ -66,7 +66,7 @@ VideoCaptureSystemImpl::VideoCaptureSystemImpl(
 VideoCaptureSystemImpl::~VideoCaptureSystemImpl() = default;
 
 void VideoCaptureSystemImpl::GetDeviceInfosAsync(
-    const DeviceInfoCallback& result_callback) {
+    DeviceInfoCallback result_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   VideoCaptureDeviceDescriptors descriptors;
   factory_->GetDeviceDescriptors(&descriptors);
@@ -88,7 +88,7 @@ void VideoCaptureSystemImpl::GetDeviceInfosAsync(
   }
 
   devices_info_cache_.swap(new_devices_info_cache);
-  result_callback.Run(devices_info_cache_);
+  base::ResetAndReturn(&result_callback).Run(devices_info_cache_);
 }
 
 // Creates a VideoCaptureDevice object. Returns NULL if something goes wrong.

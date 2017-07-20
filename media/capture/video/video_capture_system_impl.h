@@ -18,7 +18,7 @@ class CAPTURE_EXPORT VideoCaptureSystemImpl : public VideoCaptureSystem {
       std::unique_ptr<VideoCaptureDeviceFactory> factory);
   ~VideoCaptureSystemImpl() override;
 
-  void GetDeviceInfosAsync(const DeviceInfoCallback& result_callback) override;
+  void GetDeviceInfosAsync(DeviceInfoCallback result_callback) override;
   std::unique_ptr<VideoCaptureDevice> CreateDevice(
       const std::string& device_id) override;
 

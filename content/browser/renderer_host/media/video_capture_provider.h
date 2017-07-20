@@ -72,8 +72,8 @@ class LaunchedVideoCaptureDevice
 // MediaStreamType == MEDIA_DEVICE_VIDEO_CAPTURE, i.e. camera devices.
 class CONTENT_EXPORT VideoCaptureProvider {
  public:
-  using GetDeviceInfosCallback =
-      base::Callback<void(const std::vector<media::VideoCaptureDeviceInfo>&)>;
+  using GetDeviceInfosCallback = base::OnceCallback<void(
+      const std::vector<media::VideoCaptureDeviceInfo>&)>;
 
   virtual ~VideoCaptureProvider() {}
 
@@ -81,8 +81,7 @@ class CONTENT_EXPORT VideoCaptureProvider {
 
   // The passed-in |result_callback| must guarantee that the called
   // instance stays alive until |result_callback| is invoked.
-  virtual void GetDeviceInfosAsync(
-      const GetDeviceInfosCallback& result_callback) = 0;
+  virtual void GetDeviceInfosAsync(GetDeviceInfosCallback result_callback) = 0;
 
   virtual std::unique_ptr<VideoCaptureDeviceLauncher>
   CreateDeviceLauncher() = 0;
