@@ -55,14 +55,8 @@ extern const char kIncognitoTabOpened[];
 // The user has cleared their browsing data.
 extern const char kClearedBrowsingData[];
 
-// The user has added an item to their reading list.
-extern const char kAddedItemToReadingList[];
-
 // The user has viewed their reading list.
 extern const char kViewedReadingList[];
-
-// The user has opened an item in their reading list.
-extern const char kOpenedReadingListItem[];
 
 #endif  // defined(OS_IOS)
 
