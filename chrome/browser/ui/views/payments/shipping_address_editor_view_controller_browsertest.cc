@@ -404,7 +404,11 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
           static_cast<ValidatingTextfield*>(dialog_view()->GetViewByID(
               EditorViewController::GetInputFieldViewId(type)));
       if (textfield) {
-        EXPECT_TRUE(textfield->text().empty()) << type;
+        // The zip field will be populated after switching to a country for
+        // which the profile has a zip set.
+        EXPECT_TRUE(textfield->text().empty() ||
+                    type == autofill::ADDRESS_HOME_ZIP)
+            << type;
         SetFieldTestValue(type);
         set_types.insert(type);
       }
@@ -1110,6 +1114,31 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   // Expect that the state was selected.
   EXPECT_EQ(base::ASCIIToUTF16("CA"),
             GetComboboxValue(autofill::ADDRESS_HOME_STATE));
+}
+
+IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
+                       NoCountryProfileDoesntSetCountryToLocale) {
+  // Add address without a country but a valid state for the default country.
+  autofill::AutofillProfile profile = autofill::test::GetFullProfile();
+  profile.SetInfo(autofill::AutofillType(autofill::NAME_FULL),
+                  base::ASCIIToUTF16(kNameFull), kLocale);
+  profile.SetInfo(autofill::AutofillType(autofill::ADDRESS_HOME_COUNTRY),
+                  base::ASCIIToUTF16(""), kLocale);
+  AddAutofillProfile(profile);
+
+  InvokePaymentRequestUI();
+  OpenShippingAddressSectionScreen();
+
+  ResetEventObserver(DialogEvent::SHIPPING_ADDRESS_EDITOR_OPENED);
+  ClickOnChildInListViewAndWait(/*child_index=*/0, /*num_children=*/1,
+                                DialogViewID::SHIPPING_ADDRESS_SHEET_LIST_VIEW);
+
+  ClickOnBackArrow();
+  PaymentRequest* request = GetPaymentRequests(GetActiveWebContents()).front();
+  EXPECT_EQ(
+      base::ASCIIToUTF16(""),
+      request->state()->shipping_profiles()[0]->GetInfo(
+          autofill::AutofillType(autofill::ADDRESS_HOME_COUNTRY), kLocale));
 }
 
 }  // namespace payments
