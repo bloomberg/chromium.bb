@@ -210,6 +210,10 @@
 #include "extensions/common/manifest.h"
 #endif
 
+#if BUILDFLAG(ENABLE_OOP_HEAP_PROFILING)
+#include "chrome/browser/ui/webui/memory_internals_ui.h"
+#endif
+
 using content::WebUI;
 using content::WebUIController;
 using ui::WebDialogUI;
@@ -578,6 +582,10 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   if (url.host_piece() == chrome::kChromeUIExtensionsFrameHost)
     return &NewWebUI<extensions::ExtensionsUI>;
+#endif
+#if BUILDFLAG(ENABLE_OOP_HEAP_PROFILING)
+  if (url.host_piece() == chrome::kChromeUIMemoryInternalsHost)
+    return &NewWebUI<MemoryInternalsUI>;
 #endif
 #if BUILDFLAG(ENABLE_PLUGINS)
   if (url.host_piece() == chrome::kChromeUIFlashHost)
