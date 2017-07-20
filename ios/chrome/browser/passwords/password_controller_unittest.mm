@@ -1319,6 +1319,7 @@ TEST(PasswordControllerTestSimple, SaveOnNonHTMLLandingPage) {
   web_state.SetContentIsHTML(false);
   web_state.SetCurrentURL(GURL("https://example.com"));
   [passwordController webState:&web_state didLoadPageWithSuccess:YES];
+  [passwordController detach];
 }
 
 // Tests that an HTTP page without a password field does not update the SSL
