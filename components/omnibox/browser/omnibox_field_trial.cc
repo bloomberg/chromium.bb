@@ -76,7 +76,13 @@ const base::Feature kAndroidFakeboxDemotionOnPhones{
 // in memory allows the suggest server to respond more quickly with
 // personalized suggestions as the user types.
 const base::Feature kSearchProviderWarmUpOnFocus{
-    "OmniboxWarmUpSearchProviderOnFocus", base::FEATURE_DISABLED_BY_DEFAULT};
+  "OmniboxWarmUpSearchProviderOnFocus",
+#if defined(OS_IOS)
+      base::FEATURE_DISABLED_BY_DEFAULT
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+};
 
 // Feature used to enable the transmission of HTTPS URLs as part of the
 // context to the suggest server (assuming SearchProvider is permitted to

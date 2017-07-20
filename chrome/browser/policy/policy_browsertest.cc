@@ -821,7 +821,6 @@ class PolicyTest : public InProcessBrowserTest {
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
     content::TestNavigationObserver observer(web_contents);
-    chrome::FocusLocationBar(browser());
     LocationBar* location_bar = browser()->window()->GetLocationBar();
     ui_test_utils::SendToOmniboxAndSubmit(location_bar, "http://google.com/");
     OmniboxEditModel* model = location_bar->GetOmniboxView()->model();
