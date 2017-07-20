@@ -638,13 +638,13 @@ void RenderViewHostImpl::SetWebUIProperty(const std::string& name,
 void RenderViewHostImpl::RenderWidgetGotFocus() {
   RenderViewHostDelegateView* view = delegate_->GetDelegateView();
   if (view)
-    view->GotFocus();
+    view->GotFocus(GetWidget());
 }
 
 void RenderViewHostImpl::RenderWidgetLostFocus() {
   RenderViewHostDelegateView* view = delegate_->GetDelegateView();
   if (view)
-    view->LostFocus();
+    view->LostFocus(GetWidget());
 }
 
 void RenderViewHostImpl::SetInitialFocus(bool reverse) {

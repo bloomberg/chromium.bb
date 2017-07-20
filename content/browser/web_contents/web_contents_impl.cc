@@ -1872,13 +1872,17 @@ void WebContentsImpl::RenderWidgetGotFocus(
   // Notify the observers if an embedded fullscreen widget was focused.
   if (delegate_ && render_widget_host && delegate_->EmbedsFullscreenWidget() &&
       render_widget_host->GetView() == GetFullscreenRenderWidgetHostView()) {
-    NotifyWebContentsFocused();
+    NotifyWebContentsFocused(render_widget_host);
   }
 }
 
 void WebContentsImpl::RenderWidgetLostFocus(
     RenderWidgetHostImpl* render_widget_host) {
-  NotifyWebContentsLostFocus();
+  // Notify the observers if an embedded fullscreen widget lost focus.
+  if (delegate_ && render_widget_host && delegate_->EmbedsFullscreenWidget() &&
+      render_widget_host->GetView() == GetFullscreenRenderWidgetHostView()) {
+    NotifyWebContentsLostFocus(render_widget_host);
+  }
 }
 
 void WebContentsImpl::RenderWidgetWasResized(
@@ -3377,14 +3381,16 @@ void WebContentsImpl::DidGetRedirectForResourceRequest(
       Details<const ResourceRedirectDetails>(&details));
 }
 
-void WebContentsImpl::NotifyWebContentsFocused() {
+void WebContentsImpl::NotifyWebContentsFocused(
+    RenderWidgetHost* render_widget_host) {
   for (auto& observer : observers_)
-    observer.OnWebContentsFocused();
+    observer.OnWebContentsFocused(render_widget_host);
 }
 
-void WebContentsImpl::NotifyWebContentsLostFocus() {
+void WebContentsImpl::NotifyWebContentsLostFocus(
+    RenderWidgetHost* render_widget_host) {
   for (auto& observer : observers_)
-    observer.OnWebContentsLostFocus();
+    observer.OnWebContentsLostFocus(render_widget_host);
 }
 
 void WebContentsImpl::SystemDragEnded(RenderWidgetHost* source_rwh) {

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "device/vr/vr_display_impl.h"
+
 #include <utility>
 
 #include "base/bind.h"
@@ -12,12 +14,14 @@
 namespace device {
 
 VRDisplayImpl::VRDisplayImpl(device::VRDevice* device,
-                             VRServiceImpl* service,
+                             int render_frame_process_id,
+                             int render_frame_routing_id,
                              mojom::VRServiceClient* service_client,
                              mojom::VRDisplayInfoPtr display_info)
     : binding_(this),
       device_(device),
-      service_(service),
+      render_frame_process_id_(render_frame_process_id),
+      render_frame_routing_id_(render_frame_routing_id),
       weak_ptr_factory_(this) {
   device_->AddDisplay(this);
   mojom::VRDisplayPtr display;
@@ -48,9 +52,6 @@ void VRDisplayImpl::OnFocus() {
 
 void VRDisplayImpl::OnActivate(mojom::VRDisplayEventReason reason,
                                const base::Callback<void(bool)>& on_handled) {
-  VRDeviceManager* manager = VRDeviceManager::GetInstance();
-  if (!manager->IsMostRecentlyListeningForActivate(service_))
-    return;
   client_->OnActivate(reason, on_handled);
 }
 
@@ -94,7 +95,12 @@ void VRDisplayImpl::GetNextMagicWindowPose(
     std::move(callback).Run(nullptr);
     return;
   }
-  device_->GetNextMagicWindowPose(std::move(callback));
+  device_->GetNextMagicWindowPose(this, std::move(callback));
+}
+
+void VRDisplayImpl::SetListeningForActivate(bool listening) {
+  listening_for_activate_ = listening;
+  device_->OnListeningForActivateChanged(this);
 }
 
 }  // namespace device

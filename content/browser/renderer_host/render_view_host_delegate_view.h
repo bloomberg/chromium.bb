@@ -59,10 +59,10 @@ class CONTENT_EXPORT RenderViewHostDelegateView {
   virtual void UpdateDragCursor(blink::WebDragOperation operation) {}
 
   // Notification that view for this delegate got the focus.
-  virtual void GotFocus() {}
+  virtual void GotFocus(RenderWidgetHostImpl* render_widget_host) {}
 
   // Notification that view for this delegate lost the focus.
-  virtual void LostFocus() {}
+  virtual void LostFocus(RenderWidgetHostImpl* render_widget_host) {}
 
   // Callback to inform the browser that the page is returning the focus to
   // the browser's chrome. If reverse is true, it means the focus was

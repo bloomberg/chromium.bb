@@ -1777,7 +1777,7 @@ void RenderWidgetHostViewAura::OnWindowFocused(aura::Window* gained_focus,
       manager->OnWindowFocused();
   } else if (window_ == lost_focus) {
     host_->SetActive(false);
-    host_->Blur();
+    host_->LostFocus();
 
     DetachFromInputMethod();
 

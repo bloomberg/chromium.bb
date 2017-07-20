@@ -214,12 +214,6 @@ void WebContentsViewGuest::UpdateDragCursor(WebDragOperation operation) {
     view->UpdateDragCursor(operation);
 }
 
-void WebContentsViewGuest::GotFocus() {
-}
-
-void WebContentsViewGuest::TakeFocus(bool reverse) {
-}
-
 void WebContentsViewGuest::ShowContextMenu(RenderFrameHost* render_frame_host,
                                            const ContextMenuParams& params) {
   platform_view_delegate_view_->ShowContextMenu(render_frame_host, params);

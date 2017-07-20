@@ -37,10 +37,14 @@ class DEVICE_VR_EXPORT VRDevice {
   virtual void SetSecureOrigin(bool secure_origin) = 0;
   virtual void ExitPresent() = 0;
   virtual void GetNextMagicWindowPose(
+      VRDisplayImpl* display,
       mojom::VRDisplay::GetNextMagicWindowPoseCallback callback) = 0;
 
   void AddDisplay(VRDisplayImpl* display);
   void RemoveDisplay(VRDisplayImpl* display);
+  virtual void OnDisplayAdded(VRDisplayImpl* display) {}
+  virtual void OnDisplayRemoved(VRDisplayImpl* display) {}
+  virtual void OnListeningForActivateChanged(VRDisplayImpl* display){};
 
   bool IsAccessAllowed(VRDisplayImpl* display);
   bool CheckPresentingDisplay(VRDisplayImpl* display);
@@ -49,9 +53,6 @@ class DEVICE_VR_EXPORT VRDevice {
   void OnExitPresent();
   void OnBlur();
   void OnFocus();
-  void OnActivate(mojom::VRDisplayEventReason reason,
-                  const base::Callback<void(bool)>& on_handled);
-  void OnDeactivate(mojom::VRDisplayEventReason reason);
 
  protected:
   friend class VRDisplayImpl;

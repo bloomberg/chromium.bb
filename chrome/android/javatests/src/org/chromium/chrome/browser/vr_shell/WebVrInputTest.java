@@ -5,6 +5,8 @@
 package org.chromium.chrome.browser.vr_shell;
 
 import static org.chromium.chrome.browser.vr_shell.VrTestRule.PAGE_LOAD_TIMEOUT_S;
+import static org.chromium.chrome.browser.vr_shell.VrTestRule.POLL_CHECK_INTERVAL_SHORT_MS;
+import static org.chromium.chrome.browser.vr_shell.VrTestRule.POLL_TIMEOUT_LONG_MS;
 import static org.chromium.chrome.browser.vr_shell.VrTestRule.POLL_TIMEOUT_SHORT_MS;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_NON_DAYDREAM;
@@ -17,6 +19,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
@@ -27,6 +30,8 @@ import org.chromium.chrome.browser.vr_shell.util.CardboardUtils;
 import org.chromium.chrome.browser.vr_shell.util.VrTransitionUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.content.browser.test.util.Criteria;
+import org.chromium.content.browser.test.util.CriteriaHelper;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -150,5 +155,31 @@ public class WebVrInputTest {
         Assert.assertTrue("App button exited WebVR presentation",
                 mVrTestRule.pollJavaScriptBoolean("!vrDisplay.isPresenting", POLL_TIMEOUT_SHORT_MS,
                         mVrTestRule.getFirstTabWebContents()));
+    }
+
+    /**
+     * Tests that focus loss updates synchronously.
+     */
+    @Test
+    @MediumTest
+    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
+    public void testFocusUpdatesSynchronously() throws InterruptedException {
+        mVrTestRule.loadUrlAndAwaitInitialization(
+                VrTestRule.getHtmlTestFile("generic_webvr_page_with_activate_listener"),
+                PAGE_LOAD_TIMEOUT_S);
+
+        CriteriaHelper.pollUiThread(new Criteria("DisplayActivate was never registered.") {
+            @Override
+            public boolean isSatisfied() {
+                return VrShellDelegate.getInstanceForTesting().isListeningForWebVrActivate();
+            }
+        }, POLL_TIMEOUT_LONG_MS, POLL_CHECK_INTERVAL_SHORT_MS);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mVrTestRule.getActivity().getCurrentContentViewCore().onPause();
+                Assert.assertTrue(VrShellDelegate.getInstanceForTesting().isClearActivatePending());
+            }
+        });
     }
 }

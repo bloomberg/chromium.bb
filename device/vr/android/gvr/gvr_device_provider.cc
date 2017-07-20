@@ -41,12 +41,4 @@ void GvrDeviceProvider::Initialize(GvrDelegateProvider* provider) {
   provider->SetDeviceProvider(this);
 }
 
-void GvrDeviceProvider::SetListeningForActivate(bool listening) {
-  GvrDelegateProvider* delegate_provider = GetDelegateProvider();
-  if (!delegate_provider)
-    return;
-
-  delegate_provider->SetListeningForActivate(listening);
-}
-
 }  // namespace device

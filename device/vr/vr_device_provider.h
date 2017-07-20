@@ -20,8 +20,6 @@ class VRDeviceProvider {
 
   // If the VR API requires initialization that should happen here.
   virtual void Initialize() = 0;
-
-  virtual void SetListeningForActivate(bool listening) {}
 };
 
 }  // namespace device

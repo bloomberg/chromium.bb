@@ -217,10 +217,10 @@ class CONTENT_EXPORT WebContentsImpl
       const ResourceRedirectDetails& details);
 
   // Notify observers that the web contents has been focused.
-  void NotifyWebContentsFocused();
+  void NotifyWebContentsFocused(RenderWidgetHost* render_widget_host);
 
   // Notify observers that the web contents has lost focus.
-  void NotifyWebContentsLostFocus();
+  void NotifyWebContentsLostFocus(RenderWidgetHost* render_widget_host);
 
   WebContentsView* GetView() const;
 

@@ -8,10 +8,16 @@
 
 #include "base/android/jni_android.h"
 #include "base/callback_helpers.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/android/vr_shell/vr_metrics_util.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_widget_host.h"
+#include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "device/vr/android/gvr/gvr_delegate.h"
 #include "device/vr/android/gvr/gvr_device.h"
 #include "device/vr/android/gvr/gvr_device_provider.h"
+#include "device/vr/vr_display_impl.h"
 #include "jni/VrShellDelegate_jni.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr.h"
 
@@ -21,8 +27,35 @@ using base::android::ScopedJavaLocalRef;
 
 namespace vr_shell {
 
+namespace {
+
+content::RenderFrameHost* getHostForDisplay(device::VRDisplayImpl* display) {
+  return content::RenderFrameHost::FromID(display->ProcessId(),
+                                          display->RoutingId());
+}
+
+}  // namespace
+
+class DelegateWebContentsObserver : public content::WebContentsObserver {
+ public:
+  DelegateWebContentsObserver(VrShellDelegate* delegate,
+                              content::WebContents* contents)
+      : content::WebContentsObserver(contents), delegate_(delegate) {}
+
+ private:
+  void OnWebContentsFocused(content::RenderWidgetHost* host) override {
+    delegate_->OnWebContentsFocused(host);
+  }
+  void OnWebContentsLostFocus(content::RenderWidgetHost* host) override {
+    delegate_->OnWebContentsLostFocus(host);
+  }
+
+  VrShellDelegate* delegate_;
+};
+
 VrShellDelegate::VrShellDelegate(JNIEnv* env, jobject obj)
-    : weak_ptr_factory_(this) {
+    : task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      weak_ptr_factory_(this) {
   DVLOG(1) << __FUNCTION__ << "=" << this;
   j_vr_shell_delegate_.Reset(env, obj);
 }
@@ -104,8 +137,8 @@ void VrShellDelegate::SetPresentResult(JNIEnv* env,
 
 void VrShellDelegate::DisplayActivate(JNIEnv* env,
                                       const JavaParamRef<jobject>& obj) {
-  if (device_provider_) {
-    device_provider_->Device()->OnActivate(
+  if (activatable_display_) {
+    activatable_display_->OnActivate(
         device::mojom::VRDisplayEventReason::MOUNTED,
         base::Bind(&VrShellDelegate::OnActivateDisplayHandled,
                    weak_ptr_factory_.GetWeakPtr()));
@@ -145,6 +178,11 @@ void VrShellDelegate::UpdateNonPresentingContext(
     return;
   }
   gvr_api_ = gvr::GvrApi::WrapNonOwned(reinterpret_cast<gvr_context*>(context));
+}
+
+bool VrShellDelegate::IsClearActivatePending(JNIEnv* env,
+                                             const JavaParamRef<jobject>& obj) {
+  return !clear_activate_task_.IsCancelled();
 }
 
 void VrShellDelegate::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
@@ -213,15 +251,102 @@ device::GvrDelegate* VrShellDelegate::GetDelegate() {
   return gvr_delegate_;
 }
 
+void VrShellDelegate::OnDisplayAdded(device::VRDisplayImpl* display) {
+  content::RenderFrameHost* host = getHostForDisplay(display);
+  if (host == nullptr)
+    return;
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(host);
+  CHECK(web_contents);
+  content::RenderWidgetHost* render_widget_host =
+      host->GetView()->GetRenderWidgetHost();
+  displays_.emplace(render_widget_host, display);
+  observers_.emplace(display, base::MakeUnique<DelegateWebContentsObserver>(
+                                  this, web_contents));
+  if (host->GetView()->HasFocus())
+    OnWebContentsFocused(render_widget_host);
+}
+
+void VrShellDelegate::OnDisplayRemoved(device::VRDisplayImpl* display) {
+  if (activatable_display_ == display) {
+    SetListeningForActivate(false);
+    activatable_display_ = nullptr;
+  }
+  for (auto it = displays_.begin(); it != displays_.end();) {
+    if (it->second == display) {
+      it = displays_.erase(it);
+    } else {
+      ++it;
+    }
+  }
+  auto it = observers_.find(display);
+  if (it != observers_.end())
+    observers_.erase(it);
+}
+
+void VrShellDelegate::OnListeningForActivateChanged(
+    device::VRDisplayImpl* display) {
+  content::RenderFrameHost* host = getHostForDisplay(display);
+  bool has_focus = host != nullptr && host->GetView()->HasFocus();
+  if (display->ListeningForActivate() && has_focus) {
+    OnFocusedAndActivatable(display);
+  } else {
+    if (activatable_display_ != display)
+      return;
+    OnLostFocusedAndActivatable();
+  }
+}
+
+void VrShellDelegate::OnWebContentsFocused(content::RenderWidgetHost* host) {
+  auto it = displays_.find(host);
+  if (it == displays_.end())
+    return;
+  if (!it->second->ListeningForActivate())
+    return;
+  OnFocusedAndActivatable(it->second);
+}
+
+void VrShellDelegate::OnWebContentsLostFocus(content::RenderWidgetHost* host) {
+  auto it = displays_.find(host);
+  if (it == displays_.end())
+    return;
+  if (activatable_display_ != it->second)
+    return;
+  if (!it->second->ListeningForActivate())
+    return;
+  OnLostFocusedAndActivatable();
+}
+
+void VrShellDelegate::OnFocusedAndActivatable(device::VRDisplayImpl* display) {
+  activatable_display_ = display;
+  SetListeningForActivate(true);
+  clear_activate_task_.Cancel();
+}
+
+void VrShellDelegate::OnLostFocusedAndActivatable() {
+  // We post here to ensure that this runs after Android finishes running all
+  // onPause handlers. This allows us to capture the pre-paused state during
+  // onPause in java, so we know that the pause is the cause of the focus loss,
+  // and that the page is still listening for activate.
+  clear_activate_task_.Reset(
+      base::Bind(&VrShellDelegate::SetListeningForActivate,
+                 weak_ptr_factory_.GetWeakPtr(), false));
+  task_runner_->PostTask(FROM_HERE, clear_activate_task_.callback());
+}
+
 void VrShellDelegate::SetListeningForActivate(bool listening) {
+  clear_activate_task_.Cancel();
   JNIEnv* env = AttachCurrentThread();
   Java_VrShellDelegate_setListeningForWebVrActivate(
       env, j_vr_shell_delegate_.obj(), listening);
 }
 
 void VrShellDelegate::GetNextMagicWindowPose(
+    device::VRDisplayImpl* display,
     device::mojom::VRDisplay::GetNextMagicWindowPoseCallback callback) {
-  if (!gvr_api_ || gvr_delegate_) {
+  content::RenderFrameHost* host = getHostForDisplay(display);
+  if (!gvr_api_ || gvr_delegate_ || host == nullptr ||
+      !host->GetView()->HasFocus()) {
     std::move(callback).Run(nullptr);
     return;
   }
