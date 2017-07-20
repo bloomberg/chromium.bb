@@ -21,7 +21,11 @@ namespace password_manager {
 // Records a 1 for every page on which a user has modified the content of a
 // password field - regardless of how many password fields a page contains or
 // the user modifies.
-constexpr char kUkmUserModifiedPasswordField[] = "UserModifiedPasswordField";
+extern const char kUkmUserModifiedPasswordField[];
+
+// UKM that records a ProvisionalSaveFailure in case the password manager cannot
+// offer to save a credential.
+extern const char kUkmProvisionalSaveFailure[];
 
 class BrowserSavePasswordProgressLogger;
 
@@ -35,13 +39,24 @@ class PasswordManagerMetricsRecorder {
   // Reasons why the password manager failed to do a provisional saving and
   // therefore did not offer the user to save a password.
   enum ProvisionalSaveFailure {
+    // Password manager is disabled or user is in incognito mode.
     SAVING_DISABLED,
+    // Submitted form contains an empty password.
     EMPTY_PASSWORD,
+    // No PasswordFormManager exists for this form.
     NO_MATCHING_FORM,
+    // FormFetcher of PasswordFormManager is still loading.
     MATCHING_NOT_COMPLETE,
+    // Form is blacklisted for saving. Obsolete since M47.
     FORM_BLACKLISTED,
+    // <unknown purpose>. Obsolete since M48.
     INVALID_FORM,
+    // A Google credential cannot be saved by policy because it is the Chrome
+    // Sync credential and therefore acts as a master password that gives access
+    // to all other credentials on https://passwords.google.com.
     SYNC_CREDENTIAL,
+    // Credentials are not offered to be saved on HTTP pages if a credential is
+    // stored for the corresponding HTTPS page.
     SAVING_ON_HTTP_AFTER_HTTPS,
     MAX_FAILURE_VALUE
   };
