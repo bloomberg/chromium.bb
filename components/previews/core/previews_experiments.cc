@@ -9,6 +9,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "components/previews/core/previews_features.h"
 
@@ -171,6 +172,13 @@ net::EffectiveConnectionType EffectiveConnectionTypeThresholdForClientLoFi() {
   return GetParamValueAsECT(kClientLoFiExperimentName,
                             kEffectiveConnectionTypeThreshold,
                             net::EFFECTIVE_CONNECTION_TYPE_2G);
+}
+
+std::vector<std::string> GetBlackListedHostsForClientLoFiFieldTrial() {
+  return base::SplitString(
+      base::GetFieldTrialParamValue(kClientLoFiExperimentName,
+                                    "short_host_blacklist"),
+      ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
 }
 
 }  // namespace params
