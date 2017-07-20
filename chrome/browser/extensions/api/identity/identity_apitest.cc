@@ -391,18 +391,97 @@ gaia::AccountIds CreateIds(const std::string& email, const std::string& obfid) {
   return ids;
 }
 
-class IdentityGetAccountsFunctionTest : public ExtensionBrowserTest {
+class IdentityTestWithSignin : public AsyncExtensionBrowserTest {
+ public:
+  void SetUpInProcessBrowserTestFixture() override {
+    AsyncExtensionBrowserTest::SetUpInProcessBrowserTestFixture();
+
+    will_create_browser_context_services_subscription_ =
+        BrowserContextDependencyManager::GetInstance()
+            ->RegisterWillCreateBrowserContextServicesCallbackForTesting(
+                base::Bind(
+                    &IdentityTestWithSignin::OnWillCreateBrowserContextServices,
+                    base::Unretained(this)));
+  }
+
+  void OnWillCreateBrowserContextServices(content::BrowserContext* context) {
+    // Replace the signin manager and token service with fakes. Do this ahead of
+    // creating the browser so that a bunch of classes don't register as
+    // observers and end up needing to unregister when the fake is substituted.
+    SigninManagerFactory::GetInstance()->SetTestingFactory(
+        context, &BuildFakeSigninManagerBase);
+    ProfileOAuth2TokenServiceFactory::GetInstance()->SetTestingFactory(
+        context, &BuildFakeProfileOAuth2TokenService);
+    GaiaCookieManagerServiceFactory::GetInstance()->SetTestingFactory(
+        context, &BuildFakeGaiaCookieManagerService);
+  }
+
+  void SetUpOnMainThread() override {
+    AsyncExtensionBrowserTest::SetUpOnMainThread();
+
+    // Grab references to the fake signin manager and token service.
+    signin_manager_ = static_cast<FakeSigninManagerForTesting*>(
+        SigninManagerFactory::GetInstance()->GetForProfile(profile()));
+    ASSERT_TRUE(signin_manager_);
+    token_service_ = static_cast<FakeProfileOAuth2TokenService*>(
+        ProfileOAuth2TokenServiceFactory::GetInstance()->GetForProfile(
+            profile()));
+    ASSERT_TRUE(token_service_);
+    GaiaCookieManagerServiceFactory::GetInstance()
+        ->GetForProfile(profile())
+        ->Init();
+
+    // Ensure that the token service is initialized, as the Identity Service
+    // delays responding to requests until this initialization is complete.
+    token_service_->LoadCredentials("dummy_primary_account_id");
+  }
+
+ protected:
+  void SignIn(const std::string& account_key) {
+    SignIn(account_key, account_key);
+  }
+
+  void SignIn(const std::string& email, const std::string& gaia) {
+    AccountTrackerService* account_tracker =
+        AccountTrackerServiceFactory::GetForProfile(profile());
+    std::string account_id = account_tracker->SeedAccountInfo(gaia, email);
+
+#if defined(OS_CHROMEOS)
+    signin_manager_->SetAuthenticatedAccountInfo(gaia, email);
+#else
+    signin_manager_->SignIn(gaia, email, "password");
+#endif
+    token_service_->UpdateCredentials(account_id, "refresh_token");
+  }
+
+  void AddAccount(const std::string& email, const std::string& gaia) {
+    AccountTrackerService* account_tracker =
+        AccountTrackerServiceFactory::GetForProfile(profile());
+    std::string account_id = account_tracker->SeedAccountInfo(gaia, email);
+    token_service_->UpdateCredentials(account_id, "refresh_token");
+  }
+
+  void SeedAccountInfo(const std::string& account_key) {
+    AccountTrackerService* account_tracker =
+        AccountTrackerServiceFactory::GetForProfile(profile());
+    account_tracker->SeedAccountInfo(account_key, account_key);
+  }
+
+  FakeSigninManagerForTesting* signin_manager_;
+  FakeProfileOAuth2TokenService* token_service_;
+
+  std::unique_ptr<
+      base::CallbackList<void(content::BrowserContext*)>::Subscription>
+      will_create_browser_context_services_subscription_;
+};
+
+class IdentityGetAccountsFunctionTest : public IdentityTestWithSignin {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kExtensionsMultiAccount);
   }
 
  protected:
-  void SetAccountState(gaia::AccountIds ids, bool is_signed_in) {
-    IdentityAPI::GetFactoryInstance()->Get(profile())->SetAccountStateForTest(
-        ids, is_signed_in);
-  }
-
   testing::AssertionResult ExpectGetAccounts(
       const std::vector<std::string>& accounts) {
     scoped_refptr<IdentityGetAccountsFunction> func(
@@ -485,15 +564,15 @@ IN_PROC_BROWSER_TEST_F(IdentityGetAccountsFunctionTest, NoneSignedIn) {
 
 IN_PROC_BROWSER_TEST_F(IdentityGetAccountsFunctionTest,
                        PrimaryAccountSignedIn) {
-  SetAccountState(CreateIds("primary@example.com", "1"), true);
+  SignIn("primary@example.com", "1");
   std::vector<std::string> primary;
   primary.push_back("1");
   EXPECT_TRUE(ExpectGetAccounts(primary));
 }
 
 IN_PROC_BROWSER_TEST_F(IdentityGetAccountsFunctionTest, TwoAccountsSignedIn) {
-  SetAccountState(CreateIds("primary@example.com", "1"), true);
-  SetAccountState(CreateIds("secondary@example.com", "2"), true);
+  SignIn("primary@example.com", "1");
+  AddAccount("secondary@example.com", "2");
   std::vector<std::string> two_accounts;
   two_accounts.push_back("1");
   two_accounts.push_back("2");
@@ -503,6 +582,7 @@ IN_PROC_BROWSER_TEST_F(IdentityGetAccountsFunctionTest, TwoAccountsSignedIn) {
 class IdentityOldProfilesGetAccountsFunctionTest
     : public IdentityGetAccountsFunctionTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
+    ExtensionBrowserTest::SetUpCommandLine(command_line);
     // Don't add the multi-account switch that parent class would have.
   }
 };
@@ -514,83 +594,12 @@ IN_PROC_BROWSER_TEST_F(IdentityOldProfilesGetAccountsFunctionTest,
 
 IN_PROC_BROWSER_TEST_F(IdentityOldProfilesGetAccountsFunctionTest,
                        TwoAccountsSignedIn) {
-  SetAccountState(CreateIds("primary@example.com", "1"), true);
-  SetAccountState(CreateIds("secondary@example.com", "2"), true);
+  SignIn("primary@example.com", "1");
+  AddAccount("secondary@example.com", "2");
   std::vector<std::string> only_primary;
   only_primary.push_back("1");
   EXPECT_TRUE(ExpectGetAccounts(only_primary));
 }
-
-class IdentityTestWithSignin : public AsyncExtensionBrowserTest {
- public:
-  void SetUpInProcessBrowserTestFixture() override {
-    AsyncExtensionBrowserTest::SetUpInProcessBrowserTestFixture();
-
-    will_create_browser_context_services_subscription_ =
-        BrowserContextDependencyManager::GetInstance()
-            ->RegisterWillCreateBrowserContextServicesCallbackForTesting(
-                base::Bind(
-                    &IdentityTestWithSignin::OnWillCreateBrowserContextServices,
-                    base::Unretained(this)));
-  }
-
-  void OnWillCreateBrowserContextServices(content::BrowserContext* context) {
-    // Replace the signin manager and token service with fakes. Do this ahead of
-    // creating the browser so that a bunch of classes don't register as
-    // observers and end up needing to unregister when the fake is substituted.
-    SigninManagerFactory::GetInstance()->SetTestingFactory(
-        context, &BuildFakeSigninManagerBase);
-    ProfileOAuth2TokenServiceFactory::GetInstance()->SetTestingFactory(
-        context, &BuildFakeProfileOAuth2TokenService);
-    GaiaCookieManagerServiceFactory::GetInstance()->SetTestingFactory(
-        context, &BuildFakeGaiaCookieManagerService);
-  }
-
-  void SetUpOnMainThread() override {
-    AsyncExtensionBrowserTest::SetUpOnMainThread();
-
-    // Grab references to the fake signin manager and token service.
-    signin_manager_ = static_cast<FakeSigninManagerForTesting*>(
-        SigninManagerFactory::GetInstance()->GetForProfile(profile()));
-    ASSERT_TRUE(signin_manager_);
-    token_service_ = static_cast<FakeProfileOAuth2TokenService*>(
-        ProfileOAuth2TokenServiceFactory::GetInstance()->GetForProfile(
-            profile()));
-    ASSERT_TRUE(token_service_);
-    GaiaCookieManagerServiceFactory::GetInstance()->GetForProfile(profile())
-        ->Init();
-
-    // Ensure that the token service is initialized, as the Identity Service
-    // delays responding to requests until this initialization is complete.
-    token_service_->LoadCredentials("dummy_primary_account_id");
-  }
-
- protected:
-  void SignIn(const std::string& account_key) {
-    SignIn(account_key, account_key);
-  }
-
-  void SignIn(const std::string& email, const std::string& gaia) {
-    AccountTrackerService* account_tracker =
-        AccountTrackerServiceFactory::GetForProfile(profile());
-    std::string account_id =
-        account_tracker->SeedAccountInfo(gaia, email);
-
-#if defined(OS_CHROMEOS)
-    signin_manager_->SetAuthenticatedAccountInfo(gaia, email);
-#else
-    signin_manager_->SignIn(gaia, email, "password");
-#endif
-    token_service_->UpdateCredentials(account_id, "refresh_token");
-  }
-
-  FakeSigninManagerForTesting* signin_manager_;
-  FakeProfileOAuth2TokenService* token_service_;
-
-  std::unique_ptr<
-      base::CallbackList<void(content::BrowserContext*)>::Subscription>
-      will_create_browser_context_services_subscription_;
-};
 
 class IdentityGetProfileUserInfoFunctionTest : public IdentityTestWithSignin {
  protected:
@@ -673,12 +682,6 @@ class GetAuthTokenFunctionTest
         account_key,
         "access_token-" + account_key,
         base::Time::Now() + base::TimeDelta::FromSeconds(3600));
-  }
-
-  void SeedAccountInfo(const std::string& account_key) {
-    AccountTrackerService* account_tracker =
-        AccountTrackerServiceFactory::GetForProfile(profile());
-    account_tracker->SeedAccountInfo(account_key, account_key);
   }
 
  protected:

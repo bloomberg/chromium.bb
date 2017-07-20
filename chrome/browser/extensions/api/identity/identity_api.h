@@ -92,9 +92,6 @@ class IdentityAPI : public BrowserContextKeyedAPI,
 
   const CachedTokens& GetAllCachedTokens();
 
-  // Account queries.
-  std::vector<std::string> GetAccounts() const;
-
   // BrowserContextKeyedAPI implementation.
   void Shutdown() override;
   static BrowserContextKeyedAPIFactory<IdentityAPI>* GetFactoryInstance();
@@ -102,8 +99,6 @@ class IdentityAPI : public BrowserContextKeyedAPI,
   // gaia::AccountTracker::Observer implementation:
   void OnAccountSignInChanged(const gaia::AccountIds& ids,
                               bool is_signed_in) override;
-
-  void SetAccountStateForTest(gaia::AccountIds ids, bool is_signed_in);
 
   void set_get_auth_token_function(
       IdentityGetAuthTokenFunction* get_auth_token_function) {
