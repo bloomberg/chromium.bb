@@ -53,6 +53,11 @@ constexpr char kActionShowErrorPage[] = "showErrorPage";
 constexpr char kErrorMessage[] = "errorMessage";
 constexpr char kShouldShowSendFeedback[] = "shouldShowSendFeedback";
 
+// Action to set the Active Directory Federation Services SAML redirect URL.
+constexpr char kActionActiveDirectoryAuthUrls[] = "setActiveDirectoryAuthUrls";
+constexpr char kFederationUrl[] = "federationUrl";
+constexpr char kDeviceManagementUrlPrefix[] = "deviceManagementUrlPrefix";
+
 // The preference update should have those two fields.
 constexpr char kEnabled[] = "enabled";
 constexpr char kManaged[] = "managed";
@@ -66,13 +71,15 @@ constexpr char kEvent[] = "event";
 // No data will be provided.
 constexpr char kEventOnWindowClosed[] = "onWindowClosed";
 
-// "onAuthSucceeded" is fired when successfully done to LSO authorization in
-// extension.
-// The auth token is passed via "code" field.
+// "onAuthSucceeded" is fired when LSO or Active Directory authentication
+// succeeds. For LSO, the auth token is passed via "code" field. For Active
+// Directory, "code" is empty.
 constexpr char kEventOnAuthSucceeded[] = "onAuthSucceeded";
-// "onAuthFailed" is fired when LSO authorization has failed in extension.
-constexpr char kEventOnAuthFailed[] = "onAuthFailed";
 constexpr char kCode[] = "code";
+
+// "onAuthFailed" is fired when LSO or Active Directory authentication failed.
+constexpr char kEventOnAuthFailed[] = "onAuthFailed";
+constexpr char kAuthErrorMessage[] = "errorMessage";
 
 // "onAgree" is fired when a user clicks "Agree" button.
 // The message should have the following three fields:
@@ -112,8 +119,8 @@ std::ostream& operator<<(std::ostream& os, ArcSupportHost::UIPage ui_page) {
       return os << "LSO";
     case ArcSupportHost::UIPage::ARC_LOADING:
       return os << "ARC_LOADING";
-    case ArcSupportHost::UIPage::AD_AUTH_NOTIFICATION:
-      return os << "AD_AUTH_NOTIFICATION";
+    case ArcSupportHost::UIPage::ACTIVE_DIRECTORY_AUTH:
+      return os << "ACTIVE_DIRECTORY_AUTH";
     case ArcSupportHost::UIPage::ERROR:
       return os << "ERROR";
   }
@@ -173,18 +180,6 @@ ArcSupportHost::~ArcSupportHost() {
     DisconnectMessageHost();
 }
 
-void ArcSupportHost::AddObserver(Observer* observer) {
-  observer_list_.AddObserver(observer);
-}
-
-void ArcSupportHost::RemoveObserver(Observer* observer) {
-  observer_list_.RemoveObserver(observer);
-}
-
-bool ArcSupportHost::HasObserver(Observer* observer) {
-  return observer_list_.HasObserver(observer);
-}
-
 void ArcSupportHost::SetAuthDelegate(AuthDelegate* delegate) {
   // Since AuthDelegate and TermsOfServiceDelegate should not have overlapping
   // life cycle, both delegates can't be non-null at the same time.
@@ -238,8 +233,14 @@ void ArcSupportHost::ShowArcLoading() {
   ShowPage(UIPage::ARC_LOADING);
 }
 
-void ArcSupportHost::ShowActiveDirectoryAuthNotification() {
-  ShowPage(UIPage::AD_AUTH_NOTIFICATION);
+void ArcSupportHost::ShowActiveDirectoryAuth(
+    const GURL& federation_url,
+    const std::string& device_management_url_prefix) {
+  active_directory_auth_federation_url_ = federation_url;
+  active_directory_auth_device_management_url_prefix_ =
+      device_management_url_prefix;
+  SendActiveDirectoryAuthUrls();
+  ShowPage(UIPage::ACTIVE_DIRECTORY_AUTH);
 }
 
 void ArcSupportHost::ShowPage(UIPage ui_page) {
@@ -268,8 +269,10 @@ void ArcSupportHost::ShowPage(UIPage ui_page) {
     case UIPage::ARC_LOADING:
       message.SetString(kPage, "arc-loading");
       break;
-    case UIPage::AD_AUTH_NOTIFICATION:
-      message.SetString(kPage, "ad-auth-notification");
+    case UIPage::ACTIVE_DIRECTORY_AUTH:
+      // TODO(ljusten): Change this to a function similar to ShowError that
+      // sends the active_directory_auth* URLS along with the show message.
+      message.SetString(kPage, "active-directory-auth");
       break;
     default:
       NOTREACHED();
@@ -363,6 +366,26 @@ void ArcSupportHost::SendPreferenceCheckboxUpdate(
   message_host_->SendMessage(message);
 }
 
+void ArcSupportHost::SendActiveDirectoryAuthUrls() {
+  // Missing |message_host_| is normal on first run.
+  if (!message_host_)
+    return;
+
+  // URLs might be invalid when called from SetMessageHost.
+  if (!active_directory_auth_federation_url_.is_valid() ||
+      active_directory_auth_device_management_url_prefix_.empty()) {
+    return;
+  }
+
+  base::DictionaryValue message;
+  message.SetString(kAction, kActionActiveDirectoryAuthUrls);
+  message.SetString(kFederationUrl,
+                    active_directory_auth_federation_url_.spec());
+  message.SetString(kDeviceManagementUrlPrefix,
+                    active_directory_auth_device_management_url_prefix_);
+  message_host_->SendMessage(message);
+}
+
 void ArcSupportHost::SetMessageHost(arc::ArcSupportMessageHost* message_host) {
   if (message_host_ == message_host)
     return;
@@ -389,6 +412,9 @@ void ArcSupportHost::SetMessageHost(arc::ArcSupportMessageHost* message_host) {
                                backup_and_restore_checkbox_);
   SendPreferenceCheckboxUpdate(kActionLocationServiceMode,
                                location_services_checkbox_);
+
+  // Send URLs needed for Active Directory SAML authentication.
+  SendActiveDirectoryAuthUrls();
 
   if (ui_page_ == UIPage::NO_PAGE) {
     // Close() is called before opening the window.
@@ -510,8 +536,11 @@ bool ArcSupportHost::Initialize() {
       "privacyPolicyLink",
       l10n_util::GetStringUTF16(IDS_ARC_OPT_IN_PRIVACY_POLICY_LINK));
   loadtime_data->SetString(
-      "adAuthNotification",
-      l10n_util::GetStringUTF16(IDS_ARC_OPT_IN_AD_AUTH_NOTIFICATION));
+      "activeDirectoryAuthTitle",
+      l10n_util::GetStringUTF16(IDS_ARC_OPT_IN_ACTIVE_DIRECTORY_AUTH_TITLE));
+  loadtime_data->SetString(
+      "activeDirectoryAuthDesc",
+      l10n_util::GetStringUTF16(IDS_ARC_OPT_IN_ACTIVE_DIRECTORY_AUTH_DESC));
 
   loadtime_data->SetBoolean(kArcManaged, is_arc_managed_);
   loadtime_data->SetBoolean("isOwnerProfile",
@@ -574,7 +603,12 @@ void ArcSupportHost::OnMessage(const base::DictionaryValue& message) {
     auth_delegate_->OnAuthSucceeded(code);
   } else if (event == kEventOnAuthFailed) {
     DCHECK(auth_delegate_);
-    auth_delegate_->OnAuthFailed();
+    std::string error_message;
+    if (!message.GetString(kAuthErrorMessage, &error_message)) {
+      NOTREACHED();
+      return;
+    }
+    auth_delegate_->OnAuthFailed(error_message);
   } else if (event == kEventOnAgreed) {
     DCHECK(tos_delegate_);
     bool is_metrics_enabled;

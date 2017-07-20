@@ -68,7 +68,7 @@
         <p class="text-desc" i18n-content="greetingDescription"></p>
         <p class="text-terms-title" id="terms-title"
             i18n-content="termsOfService"></p>
-        <div class="section-terms" id ="terms-container">
+        <div class="section-terms" id="terms-container">
           <webview id="terms-view" partition="persist:arc_support"></webview>
         </div>
         <div id="metrics-preference">
@@ -106,20 +106,24 @@
       </div>
     </div>
   </div>
-  <div id="ad-auth-notification" class="section" hidden>
-    <img class="image-header" src="images/header.png">
-    <div class="scrollable">
-      <div class="content">
-        <p class="text-ad-auth" i18n-content="adAuthNotification"
-            aria-live="polite"></p>
-        <div class="flex"></div>
-        <div class="layout horizontal center-justified">
-          <paper-button class="white" id="button-ad-auth-cancel"
+  <div id="active-directory-auth" class="section" hidden>
+    <div class="section-active-directory-auth">
+      <img class="icon-header" src="icon/playstore.svg">
+      <div class="scrollable">
+        <p class="text-active-directory-auth-title"
+            i18n-content="activeDirectoryAuthTitle"></p>
+        <p class="text-active-directory-auth-subtitle"
+            i18n-content="activeDirectoryAuthDesc"></p>
+        <div class="section-active-directory-auth-view"
+            id="active-directory-auth-container">
+          <webview id="active-directory-auth-view"
+              partition="persist:arc_support">
+          </webview>
+        </div>
+        <div class="section-active-directory-auth-buttons">
+          <paper-button class="button-active-directory-auth"
+              id="button-active-directory-auth-cancel"
               i18n-content="buttonCancel">
-          </paper-button>
-          <div class="button-separator"></div>
-          <paper-button class="blue" id="button-ad-auth-next"
-                i18n-content="buttonNext">
           </paper-button>
         </div>
       </div>

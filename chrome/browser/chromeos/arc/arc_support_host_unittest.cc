@@ -14,16 +14,16 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using arc::FakeArcSupport;
-using testing::_;
 using testing::Eq;
 using testing::StrictMock;
+using testing::_;
 
 namespace {
 
 class MockAuthDelegateNonStrict : public ArcSupportHost::AuthDelegate {
  public:
   MOCK_METHOD1(OnAuthSucceeded, void(const std::string& auth_code));
-  MOCK_METHOD0(OnAuthFailed, void());
+  MOCK_METHOD1(OnAuthFailed, void(const std::string& error_msg));
   MOCK_METHOD0(OnAuthRetryClicked, void());
 };
 
@@ -123,17 +123,18 @@ TEST_F(ArcSupportHostTest, AuthSucceeded) {
   support_host()->ShowLso();
 
   EXPECT_CALL(*auth_delegate, OnAuthSucceeded(Eq(kFakeCode)));
-  fake_arc_support()->EmulateAuthCodeResponse(kFakeCode);
+  fake_arc_support()->EmulateAuthSuccess(kFakeCode);
 }
 
 TEST_F(ArcSupportHostTest, AuthFailed) {
+  constexpr char kFakeError[] = "fake_error";
   MockAuthDelegate* auth_delegate = CreateMockAuthDelegate();
   support_host()->SetAuthDelegate(auth_delegate);
 
   support_host()->ShowLso();
 
-  EXPECT_CALL(*auth_delegate, OnAuthFailed());
-  fake_arc_support()->EmulateAuthFailure();
+  EXPECT_CALL(*auth_delegate, OnAuthFailed(kFakeError));
+  fake_arc_support()->EmulateAuthFailure(kFakeError);
 }
 
 TEST_F(ArcSupportHostTest, AuthRetryOnError) {

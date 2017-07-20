@@ -9,13 +9,16 @@
 var appWindow = null;
 
 /**
- * Contains Web content provided by Google authorization server.
+ * Contains web content provided by Google authorization server.
  * @type {WebView}
  */
 var lsoView = null;
 
 /** @type {TermsOfServicePage} */
 var termsPage = null;
+
+/** @type {ActiveDirectoryAuthPage} */
+var activeDirectoryAuthPage = null;
 
 /**
  * Used for bidirectional communication with native code.
@@ -378,9 +381,7 @@ class TermsOfServicePage {
 
   /** Called when "CANCEL" button is clicked. */
   onCancel_() {
-    if (appWindow) {
-      appWindow.close();
-    }
+    closeWindow();
   }
 
   /** Called when metrics preference is updated. */
@@ -399,6 +400,81 @@ class TermsOfServicePage {
   /** Called when location service preference is updated. */
   onLocationServicePreferenceChanged(isEnabled, isManaged) {
     this.locationServiceCheckbox_.onPreferenceChanged(isEnabled, isManaged);
+  }
+}
+
+/**
+ * Handles events for the Active Directory authentication page.
+ */
+class ActiveDirectoryAuthPage {
+  /**
+   * @param {Element} container The container of the page.
+   */
+  constructor(container) {
+    var requestFilter = {urls: ['<all_urls>'], types: ['main_frame']};
+
+    this.authView_ = container.querySelector('#active-directory-auth-view');
+    this.authView_.request.onResponseStarted.addListener(
+        (details) => this.onAuthViewResponseStarted_(details), requestFilter);
+    this.authView_.request.onErrorOccurred.addListener(
+        (details) => this.onAuthViewErrorOccurred_(details), requestFilter);
+
+    this.deviceManagementUrlPrefix_ = null;
+
+    container.querySelector('#button-active-directory-auth-cancel')
+        .addEventListener('click', () => this.onCancel_());
+  }
+
+  /**
+   * Sets URLs used for Active Directory user SAML authentication.
+   * @param {string} federationUrl The Active Directory Federation Services URL.
+   * @param {string} deviceManagementUrlPrefix Device management server URL
+   *        prefix used to detect if the SAML flow finished. DM server is the
+   *        SAML service provider.
+   */
+  setUrls(federationUrl, deviceManagementUrlPrefix) {
+    this.authView_.src = federationUrl;
+    this.deviceManagementUrlPrefix_ = deviceManagementUrlPrefix;
+  }
+
+  /**
+   *  Auth view onResponseStarted event handler. Checks whether the SAML flow
+   *  reached its endpoint, the device management server.
+   * @param {!Object} details Event parameters.
+   */
+  onAuthViewResponseStarted_(details) {
+    // See if we hit the device management server. This should happen at the
+    // end of the SAML flow. Before that, we're on the Active Directory
+    // Federation Services server.
+    if (this.deviceManagementUrlPrefix_ &&
+        details.url.startsWith(this.deviceManagementUrlPrefix)) {
+      // Did it actually work?
+      if (details.statusCode == 200) {
+        // 'code' is unused, but it needs to be there.
+        sendNativeMessage('onAuthSucceeded', {code: ''});
+      } else {
+        sendNativeMessage('onAuthFailed', {
+          errorMessage:
+              'Status code ' + details.statusCode + ' in DM server response.'
+        });
+      }
+    }
+  }
+
+  /**
+   * Auth view onErrorOccurred event handler.
+   * @param {!Object} details Event parameters.
+   */
+  onAuthViewErrorOccurred_(details) {
+    // Retry triggers net::ERR_ABORTED, so ignore it.
+    if (details.error == 'net::ERR_ABORTED')
+      return;
+    sendNativeMessage(
+        'onAuthFailed', {errorMessage: 'Error occurred: ' + details.error});
+  }
+
+  onCancel_() {
+    closeWindow();
   }
 }
 
@@ -430,6 +506,10 @@ function initialize(data, deviceId) {
           doc.getElementById('location-service-preference'),
           data.learnMoreLocationServices, '#learn-more-link-location-service',
           data.controlledByPolicy));
+
+  // Initialize the Active Directory SAML authentication page.
+  activeDirectoryAuthPage =
+      new ActiveDirectoryAuthPage(doc.getElementById('active-directory-auth'));
 }
 
 /**
@@ -456,16 +536,17 @@ function onNativeMessage(message) {
   } else if (message.action == 'setLocationServiceMode') {
     termsPage.onLocationServicePreferenceChanged(
         message.enabled, message.managed);
-  } else if (message.action == 'closeWindow') {
-    if (appWindow) {
-      appWindow.close();
-    }
   } else if (message.action == 'showPage') {
     showPage(message.page);
   } else if (message.action == 'showErrorPage') {
     showErrorPage(message.errorMessage, message.shouldShowSendFeedback);
+  } else if (message.action == 'closeWindow') {
+    closeWindow();
   } else if (message.action == 'setWindowBounds') {
     setWindowBounds();
+  } else if (message.action == 'setActiveDirectoryAuthUrls') {
+    activeDirectoryAuthPage.setUrls(
+        message.federationUrl, message.deviceManagementUrlPrefix);
   }
 }
 
@@ -637,6 +718,12 @@ function setWindowBounds() {
   appWindow.outerBounds.top = Math.ceil((screen.availHeight - outerHeight) / 2);
 }
 
+function closeWindow() {
+  if (appWindow) {
+    appWindow.close();
+  }
+}
+
 chrome.app.runtime.onLaunched.addListener(function() {
   var onAppContentLoad = function() {
     var doc = appWindow.contentWindow.document;
@@ -648,14 +735,14 @@ chrome.app.runtime.onLaunched.addListener(function() {
       run_at: 'document_end'
     }]);
 
-    var isApprovalResponse = function(url) {
+    var isLsoApprovalResponse = function(url) {
       var resultUrlPrefix = 'https://accounts.google.com/o/oauth2/approval?';
       return url.substring(0, resultUrlPrefix.length) == resultUrlPrefix;
     };
 
     var lsoError = false;
     var onLsoViewRequestResponseStarted = function(details) {
-      if (isApprovalResponse(details.url)) {
+      if (isLsoApprovalResponse(details.url)) {
         showPage('arc-loading');
       }
       lsoError = false;
@@ -672,7 +759,7 @@ chrome.app.runtime.onLaunched.addListener(function() {
         return;
       }
 
-      if (!isApprovalResponse(lsoView.src)) {
+      if (!isLsoApprovalResponse(lsoView.src)) {
         // Show LSO page when its content is ready.
         showPage('lso');
         // We have fixed width for LSO page in css file in order to prevent
@@ -689,7 +776,7 @@ chrome.app.runtime.onLaunched.addListener(function() {
           var authCode = results[0].substring(authCodePrefix.length);
           sendNativeMessage('onAuthSucceeded', {code: authCode});
         } else {
-          sendNativeMessage('onAuthFailed');
+          sendNativeMessage('onAuthFailed', {errorMessage: 'Bad results.'});
           showErrorPage(appWindow.contentWindow.loadTimeData.getString(
               'authorizationFailed'));
         }
@@ -712,25 +799,7 @@ chrome.app.runtime.onLaunched.addListener(function() {
       sendNativeMessage('onSendFeedbackClicked');
     };
 
-    var onAdAuthNext = function() {
-      sendNativeMessage('onAgreed', {
-        isMetricsEnabled: false,          // ignored
-        isBackupRestoreEnabled: false,    // ignored
-        isLocationServiceEnabled: false,  // ignored
-      });
-    };
-
-    var onAdAuthCancel = function() {
-      if (appWindow) {
-        appWindow.close();
-      }
-    };
-
     doc.getElementById('button-retry').addEventListener('click', onRetry);
-    doc.getElementById('button-ad-auth-next')
-        .addEventListener('click', onAdAuthNext);
-    doc.getElementById('button-ad-auth-cancel')
-        .addEventListener('click', onAdAuthCancel);
     doc.getElementById('button-send-feedback')
         .addEventListener('click', onSendFeedback);
     doc.getElementById('overlay-close').addEventListener('click', hideOverlay);

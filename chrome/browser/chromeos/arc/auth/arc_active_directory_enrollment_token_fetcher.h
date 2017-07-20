@@ -11,9 +11,9 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/arc/arc_support_host.h"
 #include "chrome/browser/chromeos/arc/auth/arc_fetcher_base.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
-#include "content/public/browser/web_contents_observer.h"
 
 namespace enterprise_management {
 class DeviceManagementResponse;
@@ -24,17 +24,16 @@ class DeviceManagementRequestJob;
 class DMTokenStorage;
 }  // namespace policy
 
-class Browser;
-
 namespace arc {
 
 // Fetches an enrollment token and user id for a new managed Google Play account
 // when using ARC with Active Directory.
 class ArcActiveDirectoryEnrollmentTokenFetcher
     : public ArcFetcherBase,
-      public content::WebContentsObserver {
+      public ArcSupportHost::AuthDelegate {
  public:
-  ArcActiveDirectoryEnrollmentTokenFetcher();
+  explicit ArcActiveDirectoryEnrollmentTokenFetcher(
+      ArcSupportHost* support_host);
   ~ArcActiveDirectoryEnrollmentTokenFetcher() override;
 
   enum class Status {
@@ -50,15 +49,21 @@ class ArcActiveDirectoryEnrollmentTokenFetcher
   // Fetch() should be called once per instance, and it is expected that the
   // inflight operation is cancelled without calling the |callback| when the
   // instance is deleted.
-  using FetchCallback = base::Callback<void(Status status,
-                                            const std::string& enrollment_token,
-                                            const std::string& user_id)>;
-  void Fetch(const FetchCallback& callback);
+  using FetchCallback =
+      base::OnceCallback<void(Status status,
+                              const std::string& enrollment_token,
+                              const std::string& user_id)>;
+  void Fetch(FetchCallback callback);
 
  private:
   // Called when the |dm_token| is retrieved from policy::DMTokenStorage.
   // Triggers DoFetchEnrollmentToken().
   void OnDMTokenAvailable(const std::string& dm_token);
+
+  // ArcSupportHost::AuthDelegate:
+  void OnAuthSucceeded(const std::string& unused_auth_code) override;
+  void OnAuthFailed(const std::string& error_msg) override;
+  void OnAuthRetryClicked() override;
 
   // Sends a request to fetch an enrollment token from DM server.
   void DoFetchEnrollmentToken();
@@ -70,40 +75,25 @@ class ArcActiveDirectoryEnrollmentTokenFetcher
       int net_error,
       const enterprise_management::DeviceManagementResponse& response);
 
-  // Opens up a web browser, follows |auth_redirect_url| and observes the web
-  // contents (hooks up DidFinishNavigation()). Calls CancelSamlFlow() if the
-  // url is invalid.
+  // Sends |auth_redirect_url| to the ArcSupportHost instance, which displays
+  // it in a web view and checks whether authentication succeeded. Passes
+  // OnSamlFlowFinished as callback for when the SAML flow ends. Calls
+  // CancelSamlFlow() if the url is invalid.
   void InitiateSamlFlow(const std::string& auth_redirect_url);
 
-  // Cleans up SAML resources and calls callback_ with an error status and
-  // resets state.
-  void CancelSamlFlow(bool close_saml_page);
+  // Calls callback_ with an error status and resets state.
+  void CancelSamlFlow();
 
-  // Stops observing and optionally closes the page opened by
-  // InitiateSamlFlow().
-  void FinalizeSamlPage(bool close_saml_page);
+  // Callback called from ArcSupportHost when the SAML flow is finished.
+  void OnSamlFlowFinished(bool result);
 
-  // content::WebContentsObserver:
-  // Checks whether the server URL of the device management service was hit. If
-  // it was, triggers another enrollment token fetch, this time passing the now
-  // non-empty |auth_session_id_|. Cancels the SAML flow if anything went wrong.
-  void DidFinishNavigation(
-      content::NavigationHandle* navigation_handle) override;
-
-  // content::WebContentsObserver:
-  // Cancels SAML flow.
-  void WebContentsDestroyed() override;
+  ArcSupportHost* const support_host_ = nullptr;  // Not owned.
 
   std::unique_ptr<policy::DeviceManagementRequestJob> fetch_request_job_;
   std::unique_ptr<policy::DMTokenStorage> dm_token_storage_;
   FetchCallback callback_;
 
   std::string dm_token_;
-
-  // Web browser the SAML page was created in, not owned. Lives while the page
-  // is observed and gets reset in FinalizeSamlPage(). Note that closing the
-  // browser triggers WebContentsDestroyed(), which calls FinalizeSamlPage().
-  Browser* browser_;
 
   // Current SAML auth session id, stored during SAML authentication.
   std::string auth_session_id_;
