@@ -1,0 +1,8 @@
+set noparent
+file://third_party/WebKit/Source/core/OWNERS
+
+nainar@chromium.org
+shend@chromium.org
+meade@chromium.org
+
+# COMPONENT: Blink>CSS
