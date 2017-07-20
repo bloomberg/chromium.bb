@@ -781,6 +781,15 @@ IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, PlatformVerificationTest) {
 
 IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, Renewal) {
   TestPlaybackCase(kExternalClearKeyRenewalKeySystem, kNoSessionToLoad, kEnded);
+
+  // Check renewal message received.
+  bool receivedRenewalMessage = false;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      "window.domAutomationController.send("
+      "document.querySelector('video').receivedRenewalMessage);",
+      &receivedRenewalMessage));
+  EXPECT_TRUE(receivedRenewalMessage);
 }
 
 IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, LoadLoadableSession) {
