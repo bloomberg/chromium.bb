@@ -17,7 +17,7 @@ declare_args() {
 # Alsa must be used for these targets to build.
 assert(use_alsa)
 
-shared_library("libcast_media_1.0_audio") {
+cast_shared_library("libcast_media_1.0_audio") {
   sources = [
     "cast_media_shlib.cc",
     "media_codec_support_cast_audio.cc",
@@ -162,7 +162,7 @@ source_set("test_support") {
 
 # This is separate from ":governor" because the associated unittest needs
 # to create a Governor directly (to use test functions).
-shared_library("libcast_governor_1.0") {
+cast_shared_library("libcast_governor_1.0") {
   sources = [
     "post_processors/governor_create.cc",
   ]
@@ -186,7 +186,7 @@ source_set("governor") {
   public_configs = [ "//chromecast/public:public_config" ]
 }
 
-shared_library("libcast_saturated_gain_1.0") {
+cast_shared_library("libcast_saturated_gain_1.0") {
   sources = [
     "post_processors/saturated_gain.cc",
     "post_processors/saturated_gain.h",

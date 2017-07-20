@@ -393,7 +393,7 @@ group("cast_shell_lib") {
   }
 }
 
-executable("cast_shell") {
+cast_executable("cast_shell") {
   sources = [
     "app/cast_main.cc",
   ]

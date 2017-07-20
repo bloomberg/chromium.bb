@@ -48,7 +48,7 @@ source_set("crash") {
   }
 }
 
-executable("crash_uploader") {
+cast_executable("crash_uploader") {
   sources = [
     "linux/crash_uploader.cc",
   ]

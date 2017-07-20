@@ -17,7 +17,7 @@ source_set("platform_jni_loader") {
   ]
 }
 
-shared_library("libcast_shell_android") {
+cast_shared_library("libcast_shell_android") {
   sources = [
     "//chromecast/app/android/cast_jni_loader.cc",
     "cast_jni_registrar.cc",
