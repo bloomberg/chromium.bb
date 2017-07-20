@@ -32,6 +32,7 @@ extern const base::Feature kContextualSearchUrlActions;
 extern const base::Feature kContextualSuggestionsCarousel;
 extern const base::Feature kCustomContextMenu;
 extern const base::Feature kCustomFeedbackUi;
+extern const base::Feature kDontPrefetchLibraries;
 extern const base::Feature kDownloadAutoResumptionThrottling;
 extern const base::Feature kDownloadHomeShowStorageInfo;
 extern const base::Feature kFullscreenActivity;

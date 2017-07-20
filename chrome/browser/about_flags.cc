@@ -3240,6 +3240,12 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(chromeos::switches::kEnableLockScreenApps)},
 #endif  // defined(OS_CHROMEOS)
 
+#if defined(OS_ANDROID)
+    {"dont-prefetch-libraries", flag_descriptions::kDontPrefetchLibrariesName,
+     flag_descriptions::kDontPrefetchLibrariesDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kDontPrefetchLibraries)},
+#endif  // defined(OS_ANDROID)
+
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms/enums.xml. See note in
     // enums.xml and don't forget to run AboutFlagsHistogramTest unit test.

@@ -902,6 +902,9 @@ extern const char kContextualSearchUrlActionsDescription[];
 extern const char kContextualSearchName[];
 extern const char kContextualSearchDescription[];
 
+extern const char kDontPrefetchLibrariesName[];
+extern const char kDontPrefetchLibrariesDescription[];
+
 extern const char kEnableAndroidPayIntegrationV1Name[];
 extern const char kEnableAndroidPayIntegrationV1Description[];
 

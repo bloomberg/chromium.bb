@@ -23,6 +23,7 @@ import org.chromium.base.FieldTrialList;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.firstrun.FirstRunGlueImpl;
@@ -188,6 +189,12 @@ public class FeatureUtilities {
         cacheChromeHomeEnabled();
         FirstRunGlueImpl.cacheFirstRunPrefs();
         OmniboxPlaceholderFieldTrial.cacheOmniboxPlaceholderGroup();
+
+        // Propagate DONT_PREFETCH_LIBRARIES feature value to LibraryLoader. This can't
+        // be done in LibraryLoader itself because it lives in //base and can't depend
+        // on ChromeFeatureList.
+        LibraryLoader.setDontPrefetchLibrariesOnNextRuns(
+                ChromeFeatureList.isEnabled(ChromeFeatureList.DONT_PREFETCH_LIBRARIES));
     }
 
     /**
