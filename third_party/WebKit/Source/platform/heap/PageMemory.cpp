@@ -4,6 +4,7 @@
 
 #include "platform/heap/PageMemory.h"
 
+#include "base/allocator/partition_allocator/oom.h"
 #include "platform/heap/Heap.h"
 #include "platform/wtf/AddressSanitizer.h"
 #include "platform/wtf/Assertions.h"

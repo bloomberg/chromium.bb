@@ -30,6 +30,7 @@
 
 #include "platform/wtf/allocator/Partitions.h"
 
+#include "base/allocator/partition_allocator/oom.h"
 #include "base/allocator/partition_allocator/page_allocator.h"
 #include "base/debug/alias.h"
 #include "platform/wtf/allocator/PartitionAllocator.h"

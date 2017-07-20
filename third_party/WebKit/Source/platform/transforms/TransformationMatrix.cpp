@@ -26,9 +26,9 @@
  */
 
 #include "platform/transforms/TransformationMatrix.h"
-#if HAVE(MIPS_MSA_INTRINSICS)
-#include "platform/cpu/mips/CommonMacrosMSA.h"
-#endif
+
+#include <cmath>
+#include <cstdlib>
 
 #include "platform/geometry/FloatBox.h"
 #include "platform/geometry/FloatQuad.h"
@@ -37,16 +37,18 @@
 #include "platform/geometry/LayoutRect.h"
 #include "platform/transforms/AffineTransform.h"
 #include "platform/transforms/Rotation.h"
-
 #include "platform/wtf/Assertions.h"
+#include "platform/wtf/CPU.h"
 #include "platform/wtf/MathExtras.h"
+#include "platform/wtf/build_config.h"
 #include "platform/wtf/text/WTFString.h"
-
-#include <cmath>
-#include <cstdlib>
 
 #if defined(ARCH_CPU_X86_64)
 #include <emmintrin.h>
+#endif
+
+#if HAVE(MIPS_MSA_INTRINSICS)
+#include "platform/cpu/mips/CommonMacrosMSA.h"
 #endif
 
 namespace blink {
