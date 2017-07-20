@@ -415,9 +415,7 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
   [[EarlGrey selectElementWithMatcher:settings_link_matcher]
       performAction:grey_tap()];
 
-  id<GREYMatcher> done_button_matcher = NavigationBarDoneButton();
-  WaitForMatcher(done_button_matcher);
-  [[EarlGrey selectElementWithMatcher:done_button_matcher]
+  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
       performAction:grey_tap()];
 
   // All Settings should be gone and user signed in.
