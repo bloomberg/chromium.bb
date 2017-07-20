@@ -26,6 +26,11 @@ class IOSChromeProfileSyncServiceFactoryTest : public testing::Test {
     chrome_browser_state_ = browser_state_builder.Build();
   }
 
+  void SetUp() override {
+    // Some services will only be created if there is a WebDataService.
+    chrome_browser_state_->CreateWebDataService();
+  }
+
  protected:
   // Returns the collection of default datatypes.
   std::vector<syncer::ModelType> DefaultDatatypes() {
