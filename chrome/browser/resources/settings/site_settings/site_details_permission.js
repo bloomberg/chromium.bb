@@ -15,9 +15,16 @@ Polymer({
   properties: {
     /**
      * The site that this widget is showing details for.
-     * @type {SiteException}
+     * @type {RawSiteException}
      */
     site: Object,
+
+    /**
+     * The default setting for this permission category.
+     * @type {settings.ContentSetting}
+     * @private
+     */
+    defaultSetting_: String,
   },
 
   observers: ['siteChanged_(site, category)'],
@@ -44,10 +51,20 @@ Polymer({
 
   /**
    * Updates the drop-down value after |site| has changed.
-   * @param {!SiteException} site The site to display.
+   * @param {!RawSiteException} site The site to display.
    * @private
    */
   siteChanged_: function(site) {
+    if (site.source == 'default') {
+      this.defaultSetting_ = site.setting;
+      this.$.permission.value = settings.ContentSetting.DEFAULT;
+      return;
+    }
+    // The default setting is unknown, so consult the C++ backend for it.
+    this.browserProxy.getDefaultValueForContentType(this.category)
+        .then((defaultValue) => {
+          this.defaultSetting_ = defaultValue.setting;
+        });
     this.$.permission.value = site.setting;
   },
 
@@ -86,8 +103,34 @@ Polymer({
    * @private
    */
   onPermissionSelectionChange_: function() {
+    if (this.$.permission.value == settings.ContentSetting.DEFAULT) {
+      this.resetPermission();
+      return;
+    }
     this.browserProxy.setCategoryPermissionForOrigin(
         this.site.origin, this.site.embeddingOrigin, this.category,
         this.$.permission.value, this.site.incognito);
+  },
+
+  /**
+   * Updates the string used for this permission category's default setting.
+   * @param {!settings.ContentSetting} defaultSetting Value of the default
+   *    setting for this permission category.
+   * @param {string} askString 'Ask' label, e.g. 'Ask (default)'.
+   * @param {string} allowString 'Allow' label, e.g. 'Allow (default)'.
+   * @param {string} blockString 'Block' label, e.g. 'Blocked (default)'.
+   * @private
+   */
+  defaultSettingString_(defaultSetting, askString, allowString, blockString) {
+    if (defaultSetting == settings.ContentSetting.ASK ||
+        defaultSetting == settings.ContentSetting.IMPORTANT_CONTENT) {
+      return askString;
+    } else if (defaultSetting == settings.ContentSetting.ALLOW) {
+      return allowString;
+    } else if (defaultSetting == settings.ContentSetting.BLOCK) {
+      return blockString;
+    }
+    assertNotReached(
+        `No string for ${this.category}'s default of ${defaultSetting}`);
   },
 });

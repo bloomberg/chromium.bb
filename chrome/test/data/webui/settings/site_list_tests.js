@@ -546,7 +546,7 @@ suite('SiteList', function() {
             assertEquals(
                 kControlledByLookup[prefsMixedProvider.exceptions.geolocation[i]
                                         .source] ||
-                    '',
+                    chrome.settingsPrivate.ControlledBy.PRIMARY_USER,
                 testElement.sites[i].controlledBy);
           }
         });
