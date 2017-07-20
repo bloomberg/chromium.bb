@@ -43,6 +43,7 @@ static_library("safe_browsing") {
 
   deps = [
     "//chrome/app:generated_resources",
+    "//components/chrome_cleaner/public/interfaces",
     "//components/safe_browsing/common:interfaces",
   ]
 
