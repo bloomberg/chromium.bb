@@ -4710,6 +4710,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Autofill.SubmittedServerCardExpirationStatus"
+    enum="AutofillSubmittedServerCardExpirationStatus">
+  <owner>jsaul@google.com</owner>
+  <summary>
+    Metric to measure if a submitted card's expiration date matches the same
+    server card's expiration date (unmasked or not).  Cards are considered to be
+    the same if they have the same card number (if unmasked) or if they have the
+    same network and last four digits (if masked).
+  </summary>
+</histogram>
+
 <histogram name="Autofill.SuggestionAcceptedIndex" units="position">
   <owner>mathp@chromium.org</owner>
   <summary>The index of the accepted Autofill suggestion in the popup.</summary>

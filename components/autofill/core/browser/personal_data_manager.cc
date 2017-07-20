@@ -1639,6 +1639,23 @@ bool PersonalDataManager::ImportCreditCard(
   // can enter the full card number without having to unmask the card.
   for (const auto& card : server_credit_cards_) {
     if (candidate_credit_card.HasSameNumberAs(*card)) {
+      // Record metric on whether expiration dates matched.
+      if (candidate_credit_card.expiration_month() ==
+              card->expiration_month() &&
+          candidate_credit_card.expiration_year() == card->expiration_year()) {
+        AutofillMetrics::LogSubmittedServerCardExpirationStatusMetric(
+            card->record_type() == CreditCard::FULL_SERVER_CARD
+                ? AutofillMetrics::FULL_SERVER_CARD_EXPIRATION_DATE_MATCHED
+                : AutofillMetrics::MASKED_SERVER_CARD_EXPIRATION_DATE_MATCHED);
+      } else {
+        AutofillMetrics::LogSubmittedServerCardExpirationStatusMetric(
+            card->record_type() == CreditCard::FULL_SERVER_CARD
+                ? AutofillMetrics::
+                      FULL_SERVER_CARD_EXPIRATION_DATE_DID_NOT_MATCH
+                : AutofillMetrics::
+                      MASKED_SERVER_CARD_EXPIRATION_DATE_DID_NOT_MATCH);
+      }
+
       if (card->record_type() == CreditCard::FULL_SERVER_CARD)
         return false;
       DCHECK_EQ(card->record_type(), CreditCard::MASKED_SERVER_CARD);

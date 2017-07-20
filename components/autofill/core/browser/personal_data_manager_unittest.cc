@@ -4461,6 +4461,190 @@ TEST_F(PersonalDataManagerTest, DontDuplicateFullServerCard) {
   EXPECT_FALSE(imported_credit_card_matches_masked_server_credit_card);
 }
 
+TEST_F(PersonalDataManagerTest,
+       Metrics_SubmittedServerCardExpirationStatus_FullServerCardMatch) {
+  EnableWalletCardImport();
+
+  std::vector<CreditCard> server_cards;
+  server_cards.push_back(CreditCard(CreditCard::FULL_SERVER_CARD, "c789"));
+  test::SetCreditCardInfo(&server_cards.back(), "Clyde Barrow",
+                          "4444333322221111" /* Visa */, "04", "2111", "1");
+
+  test::SetServerCreditCards(autofill_table_, server_cards);
+  personal_data_->Refresh();
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+  base::RunLoop().Run();
+
+  // A user fills/enters the card's information on a checkout form.  Ensure that
+  // an expiration date match is recorded.
+  FormData form;
+  FormFieldData field;
+  test::CreateTestFormField("Name on card:", "name_on_card", "Clyde Barrow",
+                            "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Card Number:", "card_number", "4444333322221111",
+                            "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Exp Month:", "exp_month", "04", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Exp Year:", "exp_year", "2111", "text", &field);
+  form.fields.push_back(field);
+
+  base::HistogramTester histogram_tester;
+  FormStructure form_structure(form);
+  form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */);
+  std::unique_ptr<CreditCard> imported_credit_card;
+  bool imported_credit_card_matches_masked_server_credit_card;
+  EXPECT_FALSE(personal_data_->ImportFormData(
+      form_structure, false, &imported_credit_card,
+      &imported_credit_card_matches_masked_server_credit_card));
+  EXPECT_FALSE(imported_credit_card);
+  EXPECT_FALSE(imported_credit_card_matches_masked_server_credit_card);
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.SubmittedServerCardExpirationStatus",
+      AutofillMetrics::FULL_SERVER_CARD_EXPIRATION_DATE_MATCHED, 1);
+}
+
+TEST_F(PersonalDataManagerTest,
+       Metrics_SubmittedServerCardExpirationStatus_FullServerCardMismatch) {
+  EnableWalletCardImport();
+
+  std::vector<CreditCard> server_cards;
+  server_cards.push_back(CreditCard(CreditCard::FULL_SERVER_CARD, "c789"));
+  test::SetCreditCardInfo(&server_cards.back(), "Clyde Barrow",
+                          "4444333322221111" /* Visa */, "04", "2111", "1");
+
+  test::SetServerCreditCards(autofill_table_, server_cards);
+  personal_data_->Refresh();
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+  base::RunLoop().Run();
+
+  // A user fills/enters the card's information on a checkout form but changes
+  // the expiration date of the card.  Ensure that an expiration date mismatch
+  // is recorded.
+  FormData form;
+  FormFieldData field;
+  test::CreateTestFormField("Name on card:", "name_on_card", "Clyde Barrow",
+                            "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Card Number:", "card_number", "4444333322221111",
+                            "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Exp Month:", "exp_month", "04", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Exp Year:", "exp_year", "2345", "text", &field);
+  form.fields.push_back(field);
+
+  base::HistogramTester histogram_tester;
+  FormStructure form_structure(form);
+  form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */);
+  std::unique_ptr<CreditCard> imported_credit_card;
+  bool imported_credit_card_matches_masked_server_credit_card;
+  EXPECT_FALSE(personal_data_->ImportFormData(
+      form_structure, false, &imported_credit_card,
+      &imported_credit_card_matches_masked_server_credit_card));
+  EXPECT_FALSE(imported_credit_card);
+  EXPECT_FALSE(imported_credit_card_matches_masked_server_credit_card);
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.SubmittedServerCardExpirationStatus",
+      AutofillMetrics::FULL_SERVER_CARD_EXPIRATION_DATE_DID_NOT_MATCH, 1);
+}
+
+TEST_F(PersonalDataManagerTest,
+       Metrics_SubmittedServerCardExpirationStatus_MaskedServerCardMatch) {
+  EnableWalletCardImport();
+
+  std::vector<CreditCard> server_cards;
+  server_cards.push_back(CreditCard(CreditCard::MASKED_SERVER_CARD, "a123"));
+  test::SetCreditCardInfo(&server_cards.back(), "John Dillinger",
+                          "1111" /* Visa */, "01", "2111", "");
+  server_cards.back().SetNetworkForMaskedCard(kVisaCard);
+
+  test::SetServerCreditCards(autofill_table_, server_cards);
+  personal_data_->Refresh();
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+  base::RunLoop().Run();
+
+  // A user fills/enters the card's information on a checkout form.  Ensure that
+  // an expiration date match is recorded.
+  FormData form;
+  FormFieldData field;
+  test::CreateTestFormField("Name on card:", "name_on_card", "Clyde Barrow",
+                            "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Card Number:", "card_number", "4444333322221111",
+                            "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Exp Month:", "exp_month", "01", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Exp Year:", "exp_year", "2111", "text", &field);
+  form.fields.push_back(field);
+
+  base::HistogramTester histogram_tester;
+  FormStructure form_structure(form);
+  form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */);
+  std::unique_ptr<CreditCard> imported_credit_card;
+  bool imported_credit_card_matches_masked_server_credit_card;
+  EXPECT_TRUE(personal_data_->ImportFormData(
+      form_structure, false, &imported_credit_card,
+      &imported_credit_card_matches_masked_server_credit_card));
+  EXPECT_TRUE(imported_credit_card);
+  EXPECT_TRUE(imported_credit_card_matches_masked_server_credit_card);
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.SubmittedServerCardExpirationStatus",
+      AutofillMetrics::MASKED_SERVER_CARD_EXPIRATION_DATE_MATCHED, 1);
+}
+
+TEST_F(PersonalDataManagerTest,
+       Metrics_SubmittedServerCardExpirationStatus_MaskedServerCardMismatch) {
+  EnableWalletCardImport();
+
+  std::vector<CreditCard> server_cards;
+  server_cards.push_back(CreditCard(CreditCard::MASKED_SERVER_CARD, "a123"));
+  test::SetCreditCardInfo(&server_cards.back(), "John Dillinger",
+                          "1111" /* Visa */, "01", "2111", "");
+  server_cards.back().SetNetworkForMaskedCard(kVisaCard);
+
+  test::SetServerCreditCards(autofill_table_, server_cards);
+  personal_data_->Refresh();
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+  base::RunLoop().Run();
+
+  // A user fills/enters the card's information on a checkout form but changes
+  // the expiration date of the card.  Ensure that an expiration date mismatch
+  // is recorded.
+  FormData form;
+  FormFieldData field;
+  test::CreateTestFormField("Name on card:", "name_on_card", "Clyde Barrow",
+                            "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Card Number:", "card_number", "4444333322221111",
+                            "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Exp Month:", "exp_month", "04", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Exp Year:", "exp_year", "2345", "text", &field);
+  form.fields.push_back(field);
+
+  base::HistogramTester histogram_tester;
+  FormStructure form_structure(form);
+  form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */);
+  std::unique_ptr<CreditCard> imported_credit_card;
+  bool imported_credit_card_matches_masked_server_credit_card;
+  EXPECT_TRUE(personal_data_->ImportFormData(
+      form_structure, false, &imported_credit_card,
+      &imported_credit_card_matches_masked_server_credit_card));
+  EXPECT_TRUE(imported_credit_card);
+  EXPECT_TRUE(imported_credit_card_matches_masked_server_credit_card);
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.SubmittedServerCardExpirationStatus",
+      AutofillMetrics::MASKED_SERVER_CARD_EXPIRATION_DATE_DID_NOT_MATCH, 1);
+}
+
 // Tests the SaveImportedProfile method with different profiles to make sure the
 // merge logic works correctly.
 typedef struct {

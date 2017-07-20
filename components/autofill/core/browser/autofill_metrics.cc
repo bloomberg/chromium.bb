@@ -513,6 +513,15 @@ void LogPredictionQualityMetrics(
 }  // namespace
 
 // static
+void AutofillMetrics::LogSubmittedServerCardExpirationStatusMetric(
+    SubmittedServerCardExpirationStatusMetric metric) {
+  DCHECK_LT(metric, NUM_SUBMITTED_SERVER_CARD_EXPIRATION_STATUS_METRICS);
+  UMA_HISTOGRAM_ENUMERATION(
+      "Autofill.SubmittedServerCardExpirationStatus", metric,
+      NUM_SUBMITTED_SERVER_CARD_EXPIRATION_STATUS_METRICS);
+}
+
+// static
 void AutofillMetrics::LogCardUploadDecisionMetrics(
     int upload_decision_metrics) {
   DCHECK(upload_decision_metrics);
