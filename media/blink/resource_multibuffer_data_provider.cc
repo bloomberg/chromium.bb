@@ -474,7 +474,6 @@ void ResourceMultiBufferDataProvider::DidFinishLoading(double finishTime) {
 
 void ResourceMultiBufferDataProvider::DidFail(const WebURLError& error) {
   DVLOG(1) << "didFail: reason=" << error.reason
-           << ", isCancellation=" << error.is_cancellation
            << ", domain=" << error.domain.Utf8().data()
            << ", localizedDescription="
            << error.localized_description.Utf8().data();

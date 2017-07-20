@@ -12,6 +12,6 @@ allowRequest ID 2
 Auth required for ID 2
 ----- Cancel Auth -----
 Network.responseReceived unauthorised.pl 401 text/plain
-Network.loadingFailed unauthorised.pl 
+Network.loadingFailed unauthorised.pl net::ERR_ABORTED
 Page.frameStoppedLoading
 

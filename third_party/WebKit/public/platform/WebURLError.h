@@ -54,10 +54,6 @@ struct WebURLError {
   // cache that was too stale to return for this request.
   bool stale_copy_in_cache = false;
 
-  // A flag showing whether this error should be treated as a cancellation,
-  // e.g. we do not show console errors for cancellations.
-  bool is_cancellation = false;
-
   // A flag showing whether this error is the result of a request being
   // ignored (e.g. through shouldOverrideUrlLoading).
   bool was_ignored_by_handler = false;

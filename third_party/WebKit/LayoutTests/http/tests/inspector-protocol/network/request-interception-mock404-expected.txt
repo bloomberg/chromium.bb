@@ -10,6 +10,6 @@ Network.responseReceived redirect-iframe.html 200 text/html
 Network.requestIntercepted ID 2 GET redirect1.pl type: Script
 mockResponse ID 2
 Network.responseReceived redirect1.pl 404 text/plain
-Network.loadingFailed redirect1.pl 
+Network.loadingFailed redirect1.pl net::ERR_ABORTED
 Page.frameStoppedLoading
 

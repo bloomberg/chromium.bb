@@ -1258,10 +1258,12 @@ void WebURLLoaderImpl::LoadSynchronously(const WebURLRequest& request,
   // status code or status text.
   int error_code = sync_load_response.error_code;
   if (error_code != net::OK) {
-    response.SetURL(final_url);
-    error.domain = WebString::FromASCII(net::kErrorDomain);
-    error.reason = error_code;
-    error.unreachable_url = final_url;
+    error = WebURLError(final_url, false, error_code);
+    if (error_code == net::ERR_ABORTED) {
+      // SyncResourceHandler returns ERR_ABORTED for CORS redirect errors,
+      // so we treat the error as a web security violation.
+      error.is_web_security_violation = true;
+    }
     return;
   }
 
