@@ -214,20 +214,7 @@ class PLATFORM_EXPORT LazyLineBreakIterator final {
                           int& next_breakable,
                           LineBreakType line_break_type) const {
     if (pos > next_breakable) {
-      switch (line_break_type) {
-        case LineBreakType::kBreakAll:
-          next_breakable = NextBreakablePositionBreakAll(pos);
-          break;
-        case LineBreakType::kKeepAll:
-          next_breakable = NextBreakablePositionKeepAll(pos);
-          break;
-        case LineBreakType::kNormal:
-          next_breakable = NextBreakablePositionIgnoringNBSP(pos);
-          break;
-        case LineBreakType::kBreakCharacter:
-          next_breakable = NextBreakablePositionBreakCharacter(pos);
-          break;
-      }
+      next_breakable = NextBreakablePosition(pos, line_break_type);
     }
     return pos == next_breakable;
   }
@@ -256,10 +243,12 @@ class PLATFORM_EXPORT LazyLineBreakIterator final {
     cached_prior_context_length_ = 0;
   }
 
-  int NextBreakablePositionIgnoringNBSP(int pos) const;
-  int NextBreakablePositionBreakAll(int pos) const;
-  int NextBreakablePositionKeepAll(int pos) const;
+  template <typename CharacterType, LineBreakType>
+  int NextBreakablePosition(int pos, const CharacterType* str) const;
+  template <LineBreakType>
+  int NextBreakablePosition(int pos) const;
   int NextBreakablePositionBreakCharacter(int pos) const;
+  int NextBreakablePosition(int pos, LineBreakType) const;
 
   static const unsigned kPriorContextCapacity = 2;
   String string_;
