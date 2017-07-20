@@ -63,6 +63,7 @@ class TestImporter(object):
         self.git_cl = GitCL(self.host, auth_refresh_token_json=options.auth_refresh_token_json)
 
         _log.debug('Noting the current Chromium commit.')
+        # TODO(qyearsley): Use Git (self.host.git) to run git commands.
         _, show_ref_output = self.run(['git', 'show-ref', 'HEAD'])
         chromium_commit = show_ref_output.split()[0]
 
@@ -89,8 +90,6 @@ class TestImporter(object):
         if options.revision is not None:
             _log.info('Checking out %s', options.revision)
             self.run(['git', 'checkout', options.revision], cwd=local_wpt.path)
-
-        self.run(['git', 'submodule', 'update', '--init', '--recursive'], cwd=local_wpt.path)
 
         _log.info('Noting the revision we are importing.')
         _, show_ref_output = self.run(['git', 'show-ref', 'origin/master'], cwd=local_wpt.path)
@@ -163,7 +162,7 @@ class TestImporter(object):
             self.git_cl.run(['set-close'])
             return False
 
-        if try_results and self.git_cl.has_failing_try_results(try_results):
+        if try_results and self.git_cl.some_failed(try_results):
             self.fetch_new_expectations_and_baselines()
             if self.host.git().has_working_directory_changes():
                 message = 'Update test expectations and baselines.'
@@ -178,14 +177,14 @@ class TestImporter(object):
         try_results = self.git_cl.wait_for_try_jobs(
             poll_delay_seconds=POLL_DELAY_SECONDS,
             timeout_seconds=TIMEOUT_SECONDS)
+        try_results = self.git_cl.filter_latest(try_results)
 
         if not try_results:
             self.git_cl.run(['set-close'])
             _log.error('No CQ try job results, aborting.')
             return False
 
-        # TODO(qyearsley): Change this to look only at the latest try jobs; crbug.com/739119
-        if try_results and all(s == TryJobStatus('COMPLETED', 'SUCCESS') for _, s in try_results.iteritems()):
+        if try_results and self.git_cl.all_success(try_results):
             _log.info('CQ appears to have passed; trying to commit.')
             self.git_cl.run(['upload', '-f', '--send-mail'])  # Turn off WIP mode.
             self.git_cl.run(['set-commit'])

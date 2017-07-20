@@ -90,17 +90,31 @@ class GitCLTest(unittest.TestCase):
             'All jobs finished.\n')
 
     def test_has_failing_try_results_empty(self):
-        self.assertFalse(GitCL.has_failing_try_results({}))
+        self.assertFalse(GitCL.some_failed({}))
 
     def test_has_failing_try_results_only_success_and_started(self):
-        self.assertFalse(GitCL.has_failing_try_results({
+        self.assertFalse(GitCL.some_failed({
             Build('some-builder', 90): TryJobStatus('COMPLETED', 'SUCCESS'),
             Build('some-builder', 100): TryJobStatus('STARTED'),
         }))
 
     def test_has_failing_try_results_with_failing_results(self):
-        self.assertTrue(GitCL.has_failing_try_results({
+        self.assertTrue(GitCL.some_failed({
             Build('some-builder', 1): TryJobStatus('COMPLETED', 'FAILURE'),
+        }))
+
+    def test_all_success_empty(self):
+        self.assertTrue(GitCL.all_success({}))
+
+    def test_all_success_true(self):
+        self.assertTrue(GitCL.all_success({
+            Build('some-builder', 1): TryJobStatus('COMPLETED', 'SUCCESS'),
+        }))
+
+    def test_all_success_with_started_build(self):
+        self.assertFalse(GitCL.all_success({
+            Build('some-builder', 1): TryJobStatus('COMPLETED', 'SUCCESS'),
+            Build('some-builder', 2): TryJobStatus('STARTED'),
         }))
 
     def test_latest_try_builds(self):
@@ -176,6 +190,20 @@ class GitCLTest(unittest.TestCase):
                 Build('builder-a', 100): TryJobStatus('COMPLETED', 'FAILURE'),
                 Build('builder-b', 200): TryJobStatus('COMPLETED', 'FAILURE'),
             })
+
+    def test_filter_latest(self):
+        try_job_results = {
+            Build('builder-a', 100): TryJobStatus('COMPLETED', 'FAILURE'),
+            Build('builder-a', 200): TryJobStatus('COMPLETED', 'SUCCESS'),
+            Build('builder-b', 50): TryJobStatus('SCHEDULED'),
+        }
+        self.assertEqual(
+            GitCL.filter_latest(try_job_results),
+            {
+                Build('builder-a', 200): TryJobStatus('COMPLETED', 'SUCCESS'),
+                Build('builder-b', 50): TryJobStatus('SCHEDULED'),
+            })
+
 
     def test_try_job_results_with_task_id_in_url(self):
         git_cl = GitCL(MockHost())
