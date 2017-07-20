@@ -41,6 +41,7 @@ struct TabStats {
   // User has entered text in a form.
   bool has_form_entry = false;
   int discard_count = 0;
+  bool has_beforeunload_handler = false;
   base::TimeTicks last_active;
   base::TimeTicks last_hidden;
   content::RenderProcessHost* render_process_host = nullptr;

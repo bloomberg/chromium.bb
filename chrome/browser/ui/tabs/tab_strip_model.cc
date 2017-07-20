@@ -1182,7 +1182,7 @@ bool TabStripModel::InternalCloseTabs(const std::vector<int>& indices,
     // Try to fast shutdown the tabs that can close.
     for (std::map<content::RenderProcessHost*, size_t>::iterator iter =
          processes.begin(); iter != processes.end(); ++iter) {
-      iter->first->FastShutdownForPageCount(iter->second);
+      iter->first->FastShutdownIfPossible(iter->second, false);
     }
   }
 

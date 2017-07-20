@@ -153,10 +153,14 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   virtual bool Shutdown(int exit_code, bool wait) = 0;
 
   // Try to shut down the associated renderer process as fast as possible.
-  // If this renderer has any RenderViews with unload handlers, then this
-  // function does nothing.
-  // Returns true if it was able to do fast shutdown.
-  virtual bool FastShutdownIfPossible() = 0;
+  // If a non-zero |page_count| value is provided, then a fast shutdown will
+  // only happen if the count matches the active view count. If
+  // |skip_unload_handlers| is false and this renderer has any RenderViews with
+  // unload handlers, then this function does nothing. Otherwise, the function
+  // will ingnore checking for those handlers. Returns true if it was able to do
+  // fast shutdown.
+  virtual bool FastShutdownIfPossible(size_t page_count = 0,
+                                      bool skip_unload_handlers = false) = 0;
 
   // Returns true if fast shutdown was started for the renderer.
   virtual bool FastShutdownStarted() const = 0;
@@ -206,9 +210,6 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
 
   // Adds a message filter to the IPC channel.
   virtual void AddFilter(BrowserMessageFilter* filter) = 0;
-
-  // Try to shutdown the associated render process as fast as possible.
-  virtual bool FastShutdownForPageCount(size_t count) = 0;
 
   // Sets whether input events should be ignored for this process.
   virtual void SetIgnoreInputEvents(bool ignore_input_events) = 0;

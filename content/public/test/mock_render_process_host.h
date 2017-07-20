@@ -71,7 +71,8 @@ class MockRenderProcessHost : public RenderProcessHost {
   StoragePartition* GetStoragePartition() const override;
   virtual void AddWord(const base::string16& word);
   bool Shutdown(int exit_code, bool wait) override;
-  bool FastShutdownIfPossible() override;
+  bool FastShutdownIfPossible(size_t page_count,
+                              bool skip_unload_handlers) override;
   bool FastShutdownStarted() const override;
   base::ProcessHandle GetHandle() const override;
   bool IsReady() const override;
@@ -90,7 +91,6 @@ class MockRenderProcessHost : public RenderProcessHost {
   bool InSameStoragePartition(StoragePartition* partition) const override;
   IPC::ChannelProxy* GetChannel() override;
   void AddFilter(BrowserMessageFilter* filter) override;
-  bool FastShutdownForPageCount(size_t count) override;
   base::TimeDelta GetChildProcessIdleTime() const override;
   void FilterURL(bool empty_allowed, GURL* url) override;
 #if BUILDFLAG(ENABLE_WEBRTC)
