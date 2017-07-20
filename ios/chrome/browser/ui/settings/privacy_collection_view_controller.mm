@@ -28,10 +28,8 @@
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_switch_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
-#import "ios/chrome/browser/ui/contextual_search/touch_to_search_permissions_mediator.h"
 #import "ios/chrome/browser/ui/settings/accounts_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data_collection_view_controller.h"
-#import "ios/chrome/browser/ui/settings/contextual_search_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/dataplan_usage_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/do_not_track_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/handoff_collection_view_controller.h"
@@ -69,7 +67,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeWebServicesHeader,
   ItemTypeWebServicesFooter,
   ItemTypeWebServicesShowSuggestions,
-  ItemTypeWebServicesTouchToSearch,
   ItemTypeWebServicesSendUsageData,
   ItemTypeWebServicesDoNotTrack,
   ItemTypeWebServicesPhysicalWeb,
@@ -84,7 +81,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   PrefBackedBoolean* _suggestionsEnabled;
   // The item related to the switch for the show suggestions setting.
   CollectionViewSwitchItem* _showSuggestionsItem;
-  TouchToSearchPermissionsMediator* _touchToSearchPermissions;
 
   // Pref observer to track changes to prefs.
   std::unique_ptr<PrefObserverBridge> _prefObserverBridge;
@@ -104,7 +100,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (CollectionViewItem*)clearBrowsingDetailItem;
 - (CollectionViewItem*)sendUsageDetailItem;
 - (CollectionViewItem*)physicalWebDetailItem;
-- (CollectionViewItem*)contextualSearchDetailItem;
 - (CollectionViewItem*)doNotTrackDetailItem;
 
 @end
@@ -185,11 +180,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   _showSuggestionsItem = [self showSuggestionsSwitchItem];
   [model addItem:_showSuggestionsItem
       toSectionWithIdentifier:SectionIdentifierWebServices];
-
-  if ([TouchToSearchPermissionsMediator isTouchToSearchAvailableOnDevice]) {
-    [model addItem:[self contextualSearchDetailItem]
-        toSectionWithIdentifier:SectionIdentifierWebServices];
-  }
 
   [model addItem:[self sendUsageDetailItem]
       toSectionWithIdentifier:SectionIdentifierWebServices];
@@ -285,18 +275,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
                        detailText:detailText];
 }
 
-- (CollectionViewItem*)contextualSearchDetailItem {
-  _touchToSearchPermissions = [[TouchToSearchPermissionsMediator alloc]
-      initWithBrowserState:_browserState];
-  NSString* detailText =
-      [_touchToSearchPermissions preferenceState] == TouchToSearch::DISABLED
-          ? l10n_util::GetNSString(IDS_IOS_SETTING_OFF)
-          : l10n_util::GetNSString(IDS_IOS_SETTING_ON);
-  return [self detailItemWithType:ItemTypeWebServicesTouchToSearch
-                          titleId:IDS_IOS_CONTEXTUAL_SEARCH_TITLE
-                       detailText:detailText];
-}
-
 - (CollectionViewItem*)doNotTrackDetailItem {
   NSString* detailText =
       _browserState->GetPrefs()->GetBoolean(prefs::kEnableDoNotTrack)
@@ -355,10 +333,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
     case ItemTypeOtherDevicesHandoff:
       controller = [[HandoffCollectionViewController alloc]
           initWithBrowserState:_browserState];
-      break;
-    case ItemTypeWebServicesTouchToSearch:
-      controller = [[ContextualSearchCollectionViewController alloc]
-          initWithPermissions:_touchToSearchPermissions];
       break;
     case ItemTypeWebServicesSendUsageData:
       controller = [[DataplanUsageCollectionViewController alloc]

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/settings/contextual_search_collection_view_controller.h"
+#import "ios/chrome/browser/ui/contextual_search/settings/contextual_search_collection_view_controller.h"
 
 #include <memory>
 
