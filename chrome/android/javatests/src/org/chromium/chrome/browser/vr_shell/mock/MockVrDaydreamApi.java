@@ -43,6 +43,11 @@ public class MockVrDaydreamApi implements VrDaydreamApi {
     }
 
     @Override
+    public boolean launchInVr(final Intent intent) {
+        return true;
+    }
+
+    @Override
     public boolean exitFromVr(int requestCode, final Intent intent) {
         return true;
     }
