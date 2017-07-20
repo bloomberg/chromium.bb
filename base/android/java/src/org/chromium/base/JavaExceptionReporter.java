@@ -9,7 +9,6 @@ import android.support.annotation.UiThread;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
-import org.chromium.buildhooks.Callback;
 
 /**
  * This UncaughtExceptionHandler will create a breakpad minidump when there is an uncaught
@@ -53,16 +52,6 @@ public class JavaExceptionReporter implements Thread.UncaughtExceptionHandler {
     public static void reportStackTrace(String stackTrace) {
         assert ThreadUtils.runningOnUiThread();
         nativeReportJavaStackTrace(stackTrace);
-    }
-
-    /**
-     * This class will be passed in ChromeApplication that handlers all AssertionError.
-     */
-    public static class AssertFailureCallback implements Callback<AssertionError> {
-        @Override
-        public void run(AssertionError assertionError) {
-            throw assertionError;
-        }
     }
 
     @CalledByNative
