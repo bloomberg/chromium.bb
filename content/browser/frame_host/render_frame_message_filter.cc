@@ -275,9 +275,34 @@ void RenderFrameMessageFilter::DownloadUrl(int render_view_id,
   if (!resource_context_)
     return;
 
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("renderer_initiated_download", R"(
+        semantics {
+          sender: "Download from Renderer"
+          description:
+            "The frame has either navigated to a URL that was determined to be "
+            "a download via one of the renderer's classification mechanisms, "
+            "or WebView has requested a <canvas> or <img> element at a "
+            "specific location be to downloaded."
+          trigger:
+            "The user navigated to a destination that was categorized as a "
+            "download, or WebView triggered saving a <canvas> or <img> tag."
+          data: "Only the URL we are attempting to download."
+          destination: WEBSITE
+        }
+        policy {
+          cookies_allowed: true
+          cookies_store: "user"
+          setting: "This feature cannot be disabled by settings."
+          chrome_policy {
+            DownloadRestrictions {
+              DownloadRestrictions: 3
+            }
+          }
+        })");
   std::unique_ptr<DownloadUrlParameters> parameters(new DownloadUrlParameters(
       url, render_process_id_, render_view_id, render_frame_id,
-      request_context_.get(), NO_TRAFFIC_ANNOTATION_YET));
+      request_context_.get(), traffic_annotation));
   parameters->set_content_initiated(true);
   parameters->set_suggested_name(suggested_name);
   parameters->set_prompt(use_prompt);
