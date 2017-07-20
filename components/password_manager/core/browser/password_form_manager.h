@@ -401,10 +401,10 @@ class PasswordFormManager : public FormFetcher::Consumer {
   // represents credentials that were not previosly saved.
   void CreatePendingCredentialsForNewCredentials();
 
-  // If |best_matches| contains only one entry then return this entry. Otherwise
-  // for empty |password| return nullptr and for non-empty |password| returns
-  // the unique entry in |best_matches_| with the same password, if it exists,
-  // and nullptr otherwise.
+  // If |best_matches_| contains only one entry, then return this entry.
+  // Otherwise for empty |password| return nullptr and for non-empty |password|
+  // returns the any entry in |best_matches_| with the same password, if it
+  // exists, and nullptr otherwise.
   const autofill::PasswordForm* FindBestMatchForUpdatePassword(
       const base::string16& password) const;
 
@@ -440,8 +440,9 @@ class PasswordFormManager : public FormFetcher::Consumer {
       std::vector<autofill::PasswordForm>* credentials_to_update);
 
   // Set of nonblacklisted PasswordForms from the DB that best match the form
-  // being managed by |this|, indexed by username. They are owned by
-  // |form_fetcher_|.
+  // being managed by |this|, indexed by username. This means the best
+  // PasswordForm for each username is stored in this map. The PasswordForms are
+  // owned by |form_fetcher_|.
   std::map<base::string16, const autofill::PasswordForm*> best_matches_;
 
   // Set of forms from PasswordStore that correspond to the current site and
