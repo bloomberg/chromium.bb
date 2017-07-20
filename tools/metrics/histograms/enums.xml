@@ -36968,6 +36968,11 @@ from previous Chrome versions.
   <int value="3" label="Disabled"/>
 </enum>
 
+<enum name="TouchGestureEventFiltered">
+  <int value="0" label="Touch gesture event not filtered"/>
+  <int value="1" label="Touch gesture event filtered"/>
+</enum>
+
 <enum name="TouchpadDeviceState">
   <int value="0" label="NO_TP_PRESENT_NO_TP_EXPECTED">
     No touchpad detected on a device without built-in touchpad
