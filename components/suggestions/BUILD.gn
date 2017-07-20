@@ -18,6 +18,8 @@ static_library("suggestions") {
     "suggestions_service_impl.h",
     "suggestions_store.cc",
     "suggestions_store.h",
+    "webui/suggestions_source.cc",
+    "webui/suggestions_source.h",
   ]
 
   public_deps = [
@@ -25,6 +27,7 @@ static_library("suggestions") {
     "//components/prefs",
     "//components/suggestions/proto",
     "//net",
+    "//ui/base",
     "//ui/gfx",
     "//url",
   ]
