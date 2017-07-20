@@ -55,7 +55,7 @@ class CC_PAINT_EXPORT PaintImage {
   PaintImage& operator=(PaintImage&& other);
 
   bool operator==(const PaintImage& other) const;
-  explicit operator bool() const { return sk_image_; }
+  explicit operator bool() const { return static_cast<bool>(sk_image_); }
 
   Id stable_id() const { return id_; }
   const sk_sp<SkImage>& sk_image() const { return sk_image_; }
