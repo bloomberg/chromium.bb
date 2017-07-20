@@ -190,7 +190,7 @@ do_test incrblob3-6.3 {
 } {1 {no such column: "content"}}
 
 do_test incrblob3-6.4.1 {
-  execsql { 
+  execsql {
     CREATE TABLE t1(a, b);
     CREATE INDEX i1 ON t1(b);
     INSERT INTO t1 VALUES(zeroblob(100), zeroblob(100));
@@ -207,7 +207,7 @@ do_test incrblob3-6.4.3 {
 } {}
 
 do_test incrblob3-6.5.1 {
-  execsql { 
+  execsql {
     CREATE TABLE p1(a PRIMARY KEY);
     CREATE TABLE c1(a, b REFERENCES p1);
     PRAGMA foreign_keys = 1;
@@ -232,7 +232,7 @@ do_test incrblob3-6.5.4 {
 } {}
 
 
-# Test that sqlite3_blob_open() handles transient and persistent schema 
+# Test that sqlite3_blob_open() handles transient and persistent schema
 # errors correctly.
 #
 do_test incrblob3-7.1 {
@@ -261,7 +261,7 @@ proc access_method {args} {
 }
 
 do_test incrblob3-7.2 {
-  sqlite3 db test.db 
+  sqlite3 db test.db
   sqlite3_db_config_lookaside db 0 0 0
   list [catch {db incrblob blobs v 1} msg] $msg
 } {1 {database schema has changed}}

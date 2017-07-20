@@ -24,19 +24,19 @@ ifcapable !wal {finish_test ; return }
 
 
 # Test organization:
-# 
+#
 #   walback-1.*: Simple tests.
 #
 #   walback-2.*: Test backups when the source db is modified mid-backup.
 #
-#   walback-3.*: Backup of WAL sources into rollback destinations, and 
+#   walback-3.*: Backup of WAL sources into rollback destinations, and
 #                vice-versa.
 #
 
 # Make sure a simple backup from a WAL database works.
 #
 do_test walbak-1.0 {
-  execsql { 
+  execsql {
     PRAGMA synchronous = NORMAL;
     PRAGMA page_size = 1024;
     PRAGMA auto_vacuum = 0;
@@ -54,7 +54,7 @@ do_test walbak-1.1 {
 } [expr 3*1024]
 do_test walbak-1.2 {
   sqlite3 db2 bak.db
-  execsql { 
+  execsql {
     SELECT * FROM t1;
     PRAGMA main.journal_mode;
   } db2
@@ -67,7 +67,7 @@ db2 close
 # Try a VACUUM on a WAL database.
 #
 do_test walbak-1.4 {
-  execsql { 
+  execsql {
     VACUUM;
     PRAGMA main.journal_mode;
   }
@@ -83,7 +83,7 @@ do_test walbak-1.6.1 {
   hexio_read test.db 18 2
 } {0202}
 do_test walbak-1.7 {
-  execsql { 
+  execsql {
     CREATE TABLE t2(a, b);
     INSERT INTO t2 SELECT * FROM t1;
     DROP TABLE t1;
@@ -103,9 +103,9 @@ do_test walbak-1.9 {
 # Backups when the source db is modified mid-backup.
 #
 proc sig {{db db}} {
-  $db eval { 
+  $db eval {
     PRAGMA integrity_check;
-    SELECT md5sum(a, b) FROM t1; 
+    SELECT md5sum(a, b) FROM t1;
   }
 }
 db close
@@ -201,7 +201,7 @@ db close
 #
 #   walbak-3.3.*: a database in rollback mode.
 #
-#   walbak-3.4.*: a database in rollback mode that (initially) uses a 
+#   walbak-3.4.*: a database in rollback mode that (initially) uses a
 #                 different page-size.
 #
 # Check that this does not confuse any connected clients.
@@ -232,7 +232,7 @@ foreach {tn setup} {
     sqlite3 db  test.db
     sqlite3 db2 test.db2
     db  eval { PRAGMA page_size = 1024 ; PRAGMA journal_mode = WAL }
-    db2 eval { 
+    db2 eval {
       PRAGMA page_size = 2048;
       PRAGMA journal_mode = PERSIST;
       CREATE TABLE xx(x);
@@ -317,8 +317,8 @@ foreach {tn src dest dest_final} {
   3   wal       delete    wal
   4   wal       wal       wal
 } {
-  catch { db close } 
-  catch { db2 close } 
+  catch { db close }
+  catch { db2 close }
   forcedelete test.db test.db2
 
   do_test walbak-4.$tn.1 {

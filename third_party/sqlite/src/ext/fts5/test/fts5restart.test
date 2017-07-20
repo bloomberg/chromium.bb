@@ -98,8 +98,8 @@ do_execsql_test 3.2 {
 } $lRowid
 
 #-------------------------------------------------------------------------
-# Remove the row that an FTS5 cursor is currently pointing to. And 
-# various other similar things. Check that this does not disturb 
+# Remove the row that an FTS5 cursor is currently pointing to. And
+# various other similar things. Check that this does not disturb
 # ongoing scans.
 #
 do_execsql_test 4.0 {

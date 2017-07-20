@@ -10,7 +10,7 @@
 #***********************************************************************
 #
 # This file tests that FTS5 handles corrupt databases (i.e. internal
-# inconsistencies in the backing tables) correctly. In this case 
+# inconsistencies in the backing tables) correctly. In this case
 # "correctly" means without crashing.
 #
 
@@ -37,7 +37,7 @@ proc create_t1 {} {
 
 if 1 {
 
-# Create a simple FTS5 table containing 100 documents. Each document 
+# Create a simple FTS5 table containing 100 documents. Each document
 # contains 10 terms, each of which start with the character "x".
 #
 do_test 1.0 { create_t1 } {}
@@ -49,7 +49,7 @@ do_test 1.1 {
   }]
   set L [db one {SELECT length(block) FROM t1_data WHERE rowid = $rowid}]
   set {} {}
-} {} 
+} {}
 
 for {set i 0} {$i < $L} {incr i} {
   do_test 1.2.$i {
@@ -61,7 +61,7 @@ for {set i 0} {$i < $L} {incr i} {
   } {1 {database disk image is malformed}}
   catchsql ROLLBACK
 }
- 
+
 #-------------------------------------------------------------------------
 # Test that trailing bytes appended to the averages record are ignored.
 #
@@ -117,7 +117,7 @@ do_execsql_test 3.3 {
 do_3_test 3.4
 
 do_test 3.5 {
-  execsql { 
+  execsql {
     DELETE FROM t1;
     INSERT INTO t1(t1, rank) VALUES('pgsz', 40);
   }
@@ -141,7 +141,7 @@ do_test 3.7 {
 do_3_test 3.8
 
 do_test 3.9 {
-  execsql { 
+  execsql {
     DELETE FROM t1;
     INSERT INTO t1(t1, rank) VALUES('pgsz', 32);
   }
@@ -159,7 +159,7 @@ do_3_test 3.10
 #
 reset_db
 do_test 4.0 {
-  execsql { 
+  execsql {
     CREATE VIRTUAL TABLE t1 USING fts5(x);
     INSERT INTO t1(t1, rank) VALUES('pgsz', 32);
   }
@@ -198,7 +198,7 @@ do_test 4.1.x { expr $nErr>45 } 1
 #-------------------------------------------------------------------------
 #
 
-# The first argument passed to this command must be a binary blob 
+# The first argument passed to this command must be a binary blob
 # containing an FTS5 leaf page. This command returns a copy of this
 # blob, with the pgidx of the leaf page replaced by a single varint
 # containing value $iVal.
@@ -230,7 +230,7 @@ do_execsql_test 5.1 {
 
 #db eval { SELECT fts5_decode(id, block) b from x1_data } { puts $b }
 #
-db func rewrite_pgidx rewrite_pgidx  
+db func rewrite_pgidx rewrite_pgidx
 set i 0
 foreach rowid [db eval {SELECT rowid FROM x1_data WHERE rowid>100}] {
   foreach val {2 100} {
@@ -263,7 +263,7 @@ do_execsql_test 6.1.0 {
   SELECT quote(block) FROM t1_data WHERE rowid>100;
 } {X'000000180630626262626201020201056363636363010203040A'}
 do_execsql_test 6.1.1 {
-  UPDATE t1_data SET block = 
+  UPDATE t1_data SET block =
   X'000000180630626262626201020201056161616161010203040A'
   WHERE rowid>100;
 }
@@ -295,7 +295,7 @@ do_execsql_test 6.3.0 {
 }    {X'0000001C043061626301020204036465660102030703676869010204040808'}
 do_execsql_test 6.3.1 {
   BEGIN;
-    UPDATE t1_data SET block = 
+    UPDATE t1_data SET block =
       X'0000001C043061626301020204036465660102035003676869010204040808'
       ------------------------------------------^^---------------------
     WHERE id>100;
@@ -306,7 +306,7 @@ do_catchsql_test 6.3.2 {
 do_execsql_test 6.3.3 {
   ROLLBACK;
   BEGIN;
-    UPDATE t1_data SET block = 
+    UPDATE t1_data SET block =
       X'0000001C043061626301020204036465660102030750676869010204040808'
       --------------------------------------------^^-------------------
     WHERE id>100;
@@ -317,7 +317,7 @@ do_catchsql_test 6.3.3 {
 do_execsql_test 6.3.4 {
   ROLLBACK;
   BEGIN;
-    UPDATE t1_data SET block = 
+    UPDATE t1_data SET block =
       X'0000001C043061626301020204036465660102030707676869010204040850'
       --------------------------------------------------------------^^-
     WHERE id>100;
@@ -328,7 +328,7 @@ do_catchsql_test 6.3.5 {
 do_execsql_test 6.3.6 {
   ROLLBACK;
   BEGIN;
-    UPDATE t1_data SET block = 
+    UPDATE t1_data SET block =
       X'0000001C503061626301020204036465660102030707676869010204040808'
       ----------^^-----------------------------------------------------
     WHERE id>100;
@@ -364,11 +364,11 @@ do_test 7.0 {
 
 do_test 7.1 {
   foreach i [db eval { SELECT rowid FROM t5_data WHERE rowid>100 }] {
-    db eval BEGIN  
+    db eval BEGIN
     db eval {DELETE FROM t5_data WHERE rowid = $i}
     set r [catchsql { INSERT INTO t5(t5) VALUES('integrity-check')} ]
     if {$r != "1 {database disk image is malformed}"} { error $r }
-    db eval ROLLBACK  
+    db eval ROLLBACK
   }
 } {}
 

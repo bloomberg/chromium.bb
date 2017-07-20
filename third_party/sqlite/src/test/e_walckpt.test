@@ -75,14 +75,14 @@ proc wal_checkpoint_v2 {db args} {
 }
 
 
-# The following tests are run 3 times, each using a different method of 
+# The following tests are run 3 times, each using a different method of
 # invoking a checkpoint:
 #
 #   1) Using sqlite3_wal_checkpoint_v2()
 #   2) Using "PRAGMA wal_checkpoint"
 #   3) Using sqlite3_wal_checkpoint() in place of checkpoint_v2(PASSIVE)
 #
-# Cases (2) and (3) are to show that the following statements are 
+# Cases (2) and (3) are to show that the following statements are
 # correct, respectively:
 #
 # EVIDENCE-OF: R-36706-10507 The PRAGMA wal_checkpoint command can be
@@ -91,7 +91,7 @@ proc wal_checkpoint_v2 {db args} {
 # EVIDENCE-OF: R-41613-20553 The sqlite3_wal_checkpoint(D,X) is
 # equivalent to
 # sqlite3_wal_checkpoint_v2(D,X,SQLITE_CHECKPOINT_PASSIVE,0,0).
-# 
+#
 foreach {tn script} {
   1 {
     proc checkpoint {db mode args} {
@@ -199,7 +199,7 @@ foreach {tn script} {
   # *pnLog and *pnCkpt set to -1.
   #
   if {$tn==3} {
-    # With sqlite3_wal_checkpoint() the two output variables cannot be 
+    # With sqlite3_wal_checkpoint() the two output variables cannot be
     # tested. So just test that no error is returned when attempting to
     # checkpoint a db in rollback mode.
     do_test $tn.2.2.a { checkpoint db passive aux3 } {}
@@ -230,7 +230,7 @@ foreach {tn script} {
   reset_db
 
 
- 
+
 
   #-----------------------------------------------------------------------
   # EVIDENCE-OF: R-10421-19736 If any other process is running a
@@ -260,7 +260,7 @@ foreach {tn script} {
 
   # Connection [db] runs a checkpoint. During this checkpoint, each
   # time it calls xWrite() to write a page into the database file, we
-  # attempt to start a checkpoint using [db2]. According to the 
+  # attempt to start a checkpoint using [db2]. According to the
   # first requirement being tested, this should return SQLITE_BUSY. According
   # to the second, the busy-handler belonging to [db2] should not be
   # invoked.
@@ -274,7 +274,7 @@ foreach {tn script} {
     set rc [catch {checkpoint db2 passive} msg]
     if {0==[regexp "database is locked" $msg] && $msg!="1 -1 -1"} {
       lappend ::write_errors "$rc $msg"
-    } 
+    }
     incr ::write_count
   }
   db2 busy busy_callback
@@ -312,7 +312,7 @@ foreach {tn script} {
       }
 
       3 {
-        # Close first the writer, then later the reader. And finally the 
+        # Close first the writer, then later the reader. And finally the
         # [db6] reader.
         if {$n==5}  { catch {db2 eval commit} }
         if {$n==10} { catch {db3 eval commit} }
@@ -322,7 +322,7 @@ foreach {tn script} {
     }
   }
 
-  foreach {mode busy_handler_mode} { 
+  foreach {mode busy_handler_mode} {
     passive  1
     full     1       full     2       full    3
     restart  1       restart  2       restart  3
@@ -410,7 +410,7 @@ foreach {tn script} {
     set ::read_ok -1
     set ::write_ok -1
     set ::seen_writer_lock 0
-    
+
     set ::checkpoint_ongoing 1
     do_test $tp.3 {
       checkpoint db $mode main
@@ -447,14 +447,14 @@ foreach {tn script} {
       do_test $tp.5 { set ::sync_counter } 0
       do_test $tp.6 { set ::busy_handler_counter } 0
       db4 close
-  
+
       db2 eval COMMIT
       db3 eval COMMIT
-  
+
       # EVIDENCE-OF: R-65499-53765 On the other hand, passive mode might leave
       # the checkpoint unfinished if there are concurrent readers or writers.
       #
-      #   The reader and writer have now dropped their locks. And so a 
+      #   The reader and writer have now dropped their locks. And so a
       #   checkpoint now is able to checkpoint more frames. Showing that the
       #   attempt above was left "unfinished".
       #
@@ -477,7 +477,7 @@ foreach {tn script} {
     if { $mode=="full" || $mode=="restart" || $mode=="truncate" } {
 
       # EVIDENCE-OF: R-59782-36818 The SQLITE_CHECKPOINT_FULL, RESTART and
-      # TRUNCATE modes also obtain the exclusive "writer" lock on the 
+      # TRUNCATE modes also obtain the exclusive "writer" lock on the
       # database file.
       #
       #   Or at least attempts to obtain.
@@ -491,7 +491,7 @@ foreach {tn script} {
         # busy-handler callback) until there is no database writer and all
         # readers are reading from the most recent database snapshot.
         #
-        #   The test below shows that both the reader and writer have 
+        #   The test below shows that both the reader and writer have
         #   finished:
         #
         #   Also restated by the following two. That both busy_handler_mode
@@ -707,7 +707,7 @@ sqlite3 db2 test.db
 
 do_test 6.1 {
   execsql {
-    PRAGMA auto_vacuum = 0; 
+    PRAGMA auto_vacuum = 0;
     PRAGMA journal_mode = WAL;
     CREATE TABLE t1(a, b);
     INSERT INTO t1 VALUES(1, 2);
@@ -737,7 +737,7 @@ do_test 6.2 {
 #
 do_test 6.4 {
   lrange [wal_checkpoint_v2 db passive] 1 2
-} {4 3} 
+} {4 3}
 
 # EVIDENCE-OF: R-37257-17813 Note that upon successful completion of an
 # SQLITE_CHECKPOINT_TRUNCATE, the log file will have been truncated to

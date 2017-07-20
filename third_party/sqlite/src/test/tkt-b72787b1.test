@@ -25,7 +25,7 @@
 #        * A will find a bad cookie and cause *all* statements
 #          to be expired including the currently running B by calling
 #          sqlite3ExpirePreparedStatements
-#        * When control returns to B it will then abort 
+#        * When control returns to B it will then abort
 #
 #     The bug is that sqlite3ExpirePreparedStatements expires all statements.
 #     Note that B was prepared after the schema change and hence is perfectly

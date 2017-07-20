@@ -109,7 +109,7 @@ ifcapable subquery {
 }
 
 do_test limit-4.1 {
-  ifcapable subquery { 
+  ifcapable subquery {
     execsql {
       BEGIN;
       CREATE TABLE t3(x);
@@ -330,7 +330,7 @@ do_test limit-7.11 {
 } {31}
 do_test limit-7.12 {
   execsql {
-    SELECT a+27 FROM t6 INTERSECT SELECT x FROM t2 
+    SELECT a+27 FROM t6 INTERSECT SELECT x FROM t2
        ORDER BY 1 DESC LIMIT 1 OFFSET 1;
   }
 } {30}
@@ -475,7 +475,7 @@ do_test limit-12.4 {
 } {1 {no such column: x}}
 
 # Ticket [db4d96798da8b]
-# LIMIT does not work with nested views containing UNION ALL 
+# LIMIT does not work with nested views containing UNION ALL
 #
 do_test limit-13.1 {
   db eval {

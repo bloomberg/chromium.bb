@@ -11,13 +11,13 @@
 # This file implements regression tests for SQLite library.
 #
 # This file implements tests to verify that ticket [3fe897352e8d8] has been
-# fixed.  
+# fixed.
 #
 
 set testdir [file dirname $argv0]
 source $testdir/tester.tcl
 
-# The following tests use hex_to_utf16be() and hex_to_utf16le() which 
+# The following tests use hex_to_utf16be() and hex_to_utf16le() which
 # which are only available if SQLite is built with UTF16 support.
 ifcapable {!utf16} {
   finish_test

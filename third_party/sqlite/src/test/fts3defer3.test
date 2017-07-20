@@ -17,7 +17,7 @@ set testdir [file dirname $argv0]
 source $testdir/tester.tcl
 source $testdir/malloc_common.tcl
 ifcapable !fts3||!fts4_deferred {
-  finish_test 
+  finish_test
   return
 }
 set testprefix fts3defer3
@@ -42,21 +42,21 @@ do_test 1.1 {
   execsql COMMIT
 } {}
 
-# Check that the db contains two doclists. A small one for "a" and a 
+# Check that the db contains two doclists. A small one for "a" and a
 # larger one for "b".
 #
 do_execsql_test 1.2 {
   SELECT blockid, length(block) FROM t1_segments;
 } [list 1 8 2 $nDoclist]
 
-# Query for 'a b'. Although this test doesn't prove so, token "b" will 
+# Query for 'a b'. Although this test doesn't prove so, token "b" will
 # be deferred because of the very large associated doclist.
 #
 do_execsql_test 1.3 {
   SELECT docid, content FROM t1 WHERE t1 MATCH 'a b';
 } {200 {a b}}
 
-# Zero out the doclist for token "b" within the database file. Now the 
+# Zero out the doclist for token "b" within the database file. Now the
 # only queries that use token "b" that will work are those that defer
 # it. Any query that tries to use the doclist belonging to token "b"
 # will fail.

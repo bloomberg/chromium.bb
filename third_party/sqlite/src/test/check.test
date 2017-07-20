@@ -35,7 +35,7 @@ do_test check-1.2 {
   execsql {
     INSERT INTO t1 VALUES(3,4);
     SELECT * FROM t1;
-  }  
+  }
 } {3 4.0}
 do_test check-1.3 {
   catchsql {
@@ -45,7 +45,7 @@ do_test check-1.3 {
 do_test check-1.4 {
   execsql {
     SELECT * FROM t1;
-  }  
+  }
 } {3 4.0}
 do_test check-1.5 {
   catchsql {
@@ -55,7 +55,7 @@ do_test check-1.5 {
 do_test check-1.6 {
   execsql {
     SELECT * FROM t1;
-  }  
+  }
 } {3 4.0}
 do_test check-1.7 {
   catchsql {
@@ -65,7 +65,7 @@ do_test check-1.7 {
 do_test check-1.8 {
   execsql {
     SELECT * FROM t1;
-  }  
+  }
 } {3 4.0 {} 6.0}
 do_test check-1.9 {
   catchsql {
@@ -75,7 +75,7 @@ do_test check-1.9 {
 do_test check-1.10 {
   execsql {
     SELECT * FROM t1;
-  }  
+  }
 } {3 4.0 {} 6.0 2 {}}
 do_test check-1.11 {
   execsql {
@@ -431,7 +431,7 @@ do_catchsql_test 7.3 { INSERT INTO t6 VALUES(11) } \
 
 do_test 7.4 {
   sqlite3 db2 test.db
-  execsql { SELECT * FROM t6 } db2 
+  execsql { SELECT * FROM t6 } db2
 } {9}
 
 do_test 7.5 {

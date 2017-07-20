@@ -9,7 +9,7 @@
 #
 #***********************************************************************
 #
-# This file implements tests of the "skip-scan" query strategy. In 
+# This file implements tests of the "skip-scan" query strategy. In
 # particular it tests that stat4 data can be used by a range query
 # that uses the skip-scan approach.
 #
@@ -94,7 +94,7 @@ foreach {tn dbenc coll} {
 
   do_test 2.$tn.3 {
     for {set i 0} {$i < 100} {incr i} {
-      foreach var {a b c d} { 
+      foreach var {a b c d} {
         set $var [lindex $vocab($var) [expr $i % [llength $vocab($var)]]]
       }
       execsql { INSERT INTO t2 VALUES($a, $b, $c, $d) }
@@ -110,7 +110,7 @@ foreach {tn dbenc coll} {
     5 { c < 'q' }                     {/*SCAN TABLE t2*/}
     6 { c < 'c' }                     {/*ANY(a) AND ANY(b) AND c<?*/}
   } {
-    set sql "EXPLAIN QUERY PLAN SELECT * FROM t2 WHERE $q" 
+    set sql "EXPLAIN QUERY PLAN SELECT * FROM t2 WHERE $q"
     do_execsql_test 2.$tn.$tn2 $sql $res
   }
 
@@ -175,7 +175,7 @@ foreach {tn q res} {
   5 "b > 'zzz'"                        {/*ANY(a) AND b>?*/}
   6 "b < 'zzz'"                        {/*SCAN TABLE t3*/}
 } {
-  set sql "EXPLAIN QUERY PLAN SELECT * FROM t3 WHERE $q" 
+  set sql "EXPLAIN QUERY PLAN SELECT * FROM t3 WHERE $q"
   do_execsql_test 3.3.$tn $sql $res
 }
 

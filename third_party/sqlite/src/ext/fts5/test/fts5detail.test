@@ -213,7 +213,7 @@ do_catchsql_test 4.1 {
 } {1 {fts5: column queries are not supported (detail=none)}}
 
 #-------------------------------------------------------------------------
-# Test that for the same content detail=none uses less space than 
+# Test that for the same content detail=none uses less space than
 # detail=col, and that detail=col uses less space than detail=full
 #
 reset_db
@@ -227,13 +227,13 @@ do_test 5.1 {
 } {}
 
 do_execsql_test 5.2 {
-  SELECT 
+  SELECT
     (SELECT sum(length(block)) from t1_data) <
     (SELECT sum(length(block)) from t2_data)
 } {1}
 
 do_execsql_test 5.3 {
-  SELECT 
+  SELECT
     (SELECT sum(length(block)) from t2_data) <
     (SELECT sum(length(block)) from t3_data)
 } {1}

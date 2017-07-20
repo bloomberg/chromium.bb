@@ -55,7 +55,7 @@ foreach cmd $sql_cmd_list {
 # Run the sequence of SQL statements shown above repeatedly.
 # Close and reopen the database right before the UPDATE statement.
 # On each repetition, introduce database corruption typical of
-# what might be seen in a power loss or OS crash.  
+# what might be seen in a power loss or OS crash.
 #
 # Slowly increase the delay before the crash, repeating the test
 # over and over.  Stop testing when the entire sequence of SQL

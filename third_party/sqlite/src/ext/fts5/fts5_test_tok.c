@@ -25,8 +25,8 @@
 **
 **   input = <string>
 **
-** The virtual table module tokenizes this <string>, using the FTS3 
-** tokenizer specified by the arguments to the CREATE VIRTUAL TABLE 
+** The virtual table module tokenizes this <string>, using the FTS3
+** tokenizer specified by the arguments to the CREATE VIRTUAL TABLE
 ** statement and returns one row for each token in the result. With
 ** fields set as follows:
 **
@@ -84,7 +84,7 @@ static void fts5tokDequote(char *z){
   if( q=='[' || q=='\'' || q=='"' || q=='`' ){
     int iIn = 1;
     int iOut = 0;
-    if( q=='[' ) q = ']';  
+    if( q=='[' ) q = ']';
 
     while( z[iIn] ){
       if( z[iIn]==q ){
@@ -94,7 +94,7 @@ static void fts5tokDequote(char *z){
           break;
         }else{
           /* Character iIn and iIn+1 form an escaped quote character. Skip
-          ** the input cursor past both and copy a single quote character 
+          ** the input cursor past both and copy a single quote character
           ** to the output buffer. */
           iIn += 2;
           z[iOut++] = q;
@@ -110,7 +110,7 @@ static void fts5tokDequote(char *z){
 
 /*
 ** The second argument, argv[], is an array of pointers to nul-terminated
-** strings. This function makes a copy of the array and strings into a 
+** strings. This function makes a copy of the array and strings into a
 ** single block of memory. It then dequotes any of the strings that appear
 ** to be quoted.
 **
@@ -166,7 +166,7 @@ static int fts5tokDequoteArray(
 ** and xCreate are identical operations.
 **
 **   argv[0]: module name
-**   argv[1]: database name 
+**   argv[1]: database name
 **   argv[2]: table name
 **   argv[3]: first argument (tokenizer name)
 */
@@ -184,7 +184,7 @@ static int fts5tokConnectMethod(
   char **azDequote = 0;
   int nDequote;
 
-  rc = sqlite3_declare_vtab(db, 
+  rc = sqlite3_declare_vtab(db,
        "CREATE TABLE x(input HIDDEN, token, start, end, position)"
   );
 
@@ -245,15 +245,15 @@ static int fts5tokDisconnectMethod(sqlite3_vtab *pVtab){
 ** xBestIndex - Analyze a WHERE and ORDER BY clause.
 */
 static int fts5tokBestIndexMethod(
-  sqlite3_vtab *pVTab, 
+  sqlite3_vtab *pVTab,
   sqlite3_index_info *pInfo
 ){
   int i;
 
   for(i=0; i<pInfo->nConstraint; i++){
-    if( pInfo->aConstraint[i].usable 
-     && pInfo->aConstraint[i].iColumn==0 
-     && pInfo->aConstraint[i].op==SQLITE_INDEX_CONSTRAINT_EQ 
+    if( pInfo->aConstraint[i].usable
+     && pInfo->aConstraint[i].iColumn==0
+     && pInfo->aConstraint[i].op==SQLITE_INDEX_CONSTRAINT_EQ
     ){
       pInfo->idxNum = 1;
       pInfo->aConstraintUsage[i].argvIndex = 1;

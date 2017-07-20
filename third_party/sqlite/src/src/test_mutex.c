@@ -68,7 +68,7 @@ static int counterMutexNotheld(sqlite3_mutex *p){
 ** return the value of g.disableInit as the result code.  This can be used
 ** to simulate an initialization failure.
 */
-static int counterMutexInit(void){ 
+static int counterMutexInit(void){
   int rc;
   if( g.disableInit ) return g.disableInit;
   rc = g.m.xMutexInit();
@@ -79,7 +79,7 @@ static int counterMutexInit(void){
 /*
 ** Uninitialize the mutex subsystem
 */
-static int counterMutexEnd(void){ 
+static int counterMutexEnd(void){
   g.isInit = 0;
   return g.m.xMutexEnd();
 }
@@ -502,9 +502,9 @@ int Sqlitetest_mutex_Init(Tcl_Interp *interp){
     Tcl_CreateObjCommand(interp, aCmd[i].zName, aCmd[i].xProc, 0, 0);
   }
 
-  Tcl_LinkVar(interp, "disable_mutex_init", 
+  Tcl_LinkVar(interp, "disable_mutex_init",
               (char*)&g.disableInit, TCL_LINK_INT);
-  Tcl_LinkVar(interp, "disable_mutex_try", 
+  Tcl_LinkVar(interp, "disable_mutex_try",
               (char*)&g.disableTry, TCL_LINK_INT);
   return SQLITE_OK;
 }

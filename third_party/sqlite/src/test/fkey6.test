@@ -10,7 +10,7 @@
 #***********************************************************************
 # This file implements regression tests for SQLite library.
 #
-# This file tests the PRAGMA defer_foreign_keys and 
+# This file tests the PRAGMA defer_foreign_keys and
 # SQLITE_DBSTATUS_DEFERRED_FKS
 #
 # EVIDENCE-OF: R-18981-16292 When the defer_foreign_keys PRAGMA is on,

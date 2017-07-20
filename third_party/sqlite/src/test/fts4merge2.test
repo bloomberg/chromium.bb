@@ -22,7 +22,7 @@ do_faultsim_test 1.1 -faults oom-* -prep {
 } -body {
   execsql { INSERT INTO t1(t1) VALUES('merge=32,4') }
 } -test {
-  faultsim_test_result {0 {}} 
+  faultsim_test_result {0 {}}
 }
 
 do_faultsim_test 1.2 -faults oom-t* -prep {
@@ -32,7 +32,7 @@ do_faultsim_test 1.2 -faults oom-t* -prep {
   execsql { INSERT INTO t1(t1) VALUES('merge=1,2') }
   execsql { INSERT INTO t1(t1) VALUES('merge=1,2') }
 } -test {
-  faultsim_test_result {0 {}} 
+  faultsim_test_result {0 {}}
 }
 
 finish_test

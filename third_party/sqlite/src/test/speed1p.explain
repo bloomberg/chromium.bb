@@ -9,7 +9,7 @@
 #
 #*************************************************************************
 # This file implements regression tests for SQLite library.  The
-# focus of this script is measuring executing speed.  
+# focus of this script is measuring executing speed.
 #
 # This is a copy of speed1.test modified to user prepared statements.
 #
@@ -351,7 +351,7 @@ do_test speed1p-1.1 {
   db one {SELECT count(*) FROM t1}
 } 30000
 
-    
+
 # Delete 20000 more rows at random from the table.
 #
 speed_trial speed1p-random-del2 20000 row {

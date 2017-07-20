@@ -9,7 +9,7 @@
 #
 #***********************************************************************
 # This file implements regression tests for SQLite library.  The
-# focus of this script is using the sqlite_interrupt() API to 
+# focus of this script is using the sqlite_interrupt() API to
 # interrupt WAL checkpoint operations.
 #
 
@@ -41,7 +41,7 @@ proc write_cb {method args} {
   return 0
 }
 
-sqlite3 db test.db 
+sqlite3 db test.db
 do_execsql_test 1.0 {
   CREATE TABLE t1(a, b);
   CREATE INDEX t1a ON t1(a);
@@ -64,7 +64,7 @@ foreach idelay {
   do_execsql_test  1.$idelay.2 { SELECT count(*) FROM t1 } 1000
 
   set ::trigger_interrupt $idelay
-  do_test 1.$idelay.3 { 
+  do_test 1.$idelay.3 {
     list [catch { sqlite3_wal_checkpoint_v2 db truncate } msg] $msg
   } {1 {SQLITE_INTERRUPT - interrupted}}
   do_execsql_test  1.$idelay.4 { SELECT count(*) FROM t1 } 1000
@@ -87,7 +87,7 @@ do_test 2.1 {
       incr i -1
       if {$i==0} {
         set ::trigger_interrupt 10
-        set cres [catch { sqlite3_wal_checkpoint_v2 db truncate } msg] 
+        set cres [catch { sqlite3_wal_checkpoint_v2 db truncate } msg]
         lappend cres $msg
       }
     }
@@ -132,7 +132,7 @@ do_test 3.2.2 {
 # Check the effect of an interrupt during an automatic checkpoint
 #
 db_restore_and_reopen
-do_test 4.0 { 
+do_test 4.0 {
   execsql { PRAGMA wal_autocheckpoint = 10 }
   set ::trigger_interrupt 10
   execsql { CREATE TABLE t2(x, y) }
@@ -147,7 +147,7 @@ do_test 4.1 {
   expr $nFrame2 > $nFrame1
 } {1}
 
-# The auto-checkpoint in test 4.0 should not have been interrupted. So 
+# The auto-checkpoint in test 4.0 should not have been interrupted. So
 # this db write should not cause the wal file to grow.
 do_test 4.2 {
   set nFrame1 [wal_frame_count test.db-wal 1024]

@@ -29,7 +29,7 @@ do_execsql_test 1.0 {
 }
 
 #-------------------------------------------------------------------------
-# Check that UPDATE and DELETE statements that feature "WHERE rowid=?" or 
+# Check that UPDATE and DELETE statements that feature "WHERE rowid=?" or
 # or "WHERE docid=?" clauses do not use statement journals. But that other
 # DELETE and UPDATE statements do.
 #
@@ -55,7 +55,7 @@ foreach {tn sql uses} {
 
 #-------------------------------------------------------------------------
 # Check that putting a "DELETE/UPDATE ... WHERE rowid=?" statement in a
-# trigger program does not prevent the VM from using a statement 
+# trigger program does not prevent the VM from using a statement
 # transaction. Even if the calling statement cannot hit a constraint.
 #
 do_execsql_test 2.0 {
@@ -84,7 +84,7 @@ foreach {tn sql uses} {
 
 #-------------------------------------------------------------------------
 # Test that an "UPDATE ... WHERE rowid=?" works and does not corrupt the
-# index when it strikes a constraint. Both inside and outside a 
+# index when it strikes a constraint. Both inside and outside a
 # transaction.
 #
 foreach {tn tcl1 tcl2}  {
@@ -111,7 +111,7 @@ foreach {tn tcl1 tcl2}  {
     1 { UPDATE ft2 SET docid=2 WHERE docid=1 }
       { 1 {a b c} 2 {a b d} 3 {a b e} }
 
-    2 { 
+    2 {
       INSERT INTO ft2(rowid, content) VALUES(4, 'a b f');
       UPDATE ft2 SET docid=5 WHERE docid=4;
       UPDATE ft2 SET docid=3 WHERE docid=5;
@@ -136,7 +136,7 @@ foreach {tn tcl1 tcl2}  {
   } {
     do_catchsql_test 3.$tn.$tn2.a $sql {1 {constraint failed}}
     do_execsql_test  3.$tn.$tn2.b { SELECT rowid, content FROM ft2 } $content
-    do_execsql_test  3.$tn.$tn2.c { 
+    do_execsql_test  3.$tn.$tn2.c {
       INSERT INTO ft2(ft2) VALUES('integrity-check');
     }
   }

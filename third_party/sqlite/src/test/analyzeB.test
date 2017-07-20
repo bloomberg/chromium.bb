@@ -24,7 +24,7 @@ ifcapable !stat3 {
 }
 
 do_execsql_test 1.0 {
-  CREATE TABLE t1(a TEXT, b TEXT); 
+  CREATE TABLE t1(a TEXT, b TEXT);
   INSERT INTO t1 VALUES('(0)', '(0)');
   INSERT INTO t1 VALUES('(1)', '(1)');
   INSERT INTO t1 VALUES('(2)', '(2)');
@@ -76,11 +76,11 @@ do_execsql_test 2.1 {
   ANALYZE;
   SELECT quote(sample) FROM sqlite_stat3;
 } {
-  NULL 14 22.0 {'some text'} X'656667' 
+  NULL 14 22.0 {'some text'} X'656667'
 }
 
 #-------------------------------------------------------------------------
-# 
+#
 reset_db
 do_execsql_test 3.1 {
   CREATE TABLE t2(a, b);
@@ -113,7 +113,7 @@ do_execsql_test 3.3.2 {
 } [lrange [string repeat "10 " 100] 0 23]
 
 #-------------------------------------------------------------------------
-# 
+#
 do_execsql_test 3.4 {
   DROP TABLE IF EXISTS t1;
   CREATE TABLE t1(a INTEGER PRIMARY KEY, b, c);
@@ -131,7 +131,7 @@ do_execsql_test 3.4 {
   INSERT INTO t1 SELECT a+2,3,'three'||substr(c,4) FROM t1 WHERE c GLOB 'one-*';
   INSERT INTO t1 SELECT a+3,4,'four'||substr(c,4) FROM t1 WHERE c GLOB 'one-*';
   INSERT INTO t1 SELECT a+4,5,'five'||substr(c,4) FROM t1 WHERE c GLOB 'one-*';
-  INSERT INTO t1 SELECT a+5,6,'six'||substr(c,4) FROM t1 WHERE c GLOB 'one-*';	
+  INSERT INTO t1 SELECT a+5,6,'six'||substr(c,4) FROM t1 WHERE c GLOB 'one-*';
   CREATE INDEX t1b ON t1(b);
   ANALYZE;
   SELECT c FROM t1 WHERE b=3 AND a BETWEEN 30 AND 60;
@@ -139,7 +139,7 @@ do_execsql_test 3.4 {
 
 
 #-------------------------------------------------------------------------
-# These tests verify that the sample selection for stat3 appears to be 
+# These tests verify that the sample selection for stat3 appears to be
 # working as designed.
 #
 
@@ -230,7 +230,7 @@ do_execsql_test 4.5 { SELECT count(DISTINCT c) FROM t1 WHERE c<200 } 119
 
 reset_db
 do_test 4.7 {
-  execsql { 
+  execsql {
     BEGIN;
     CREATE TABLE t1(o,t INTEGER PRIMARY KEY);
     CREATE INDEX i1 ON t1(o);
@@ -622,7 +622,7 @@ do_test 18.1 {
 #
 ifcapable view {
   do_test 19.1 {
-    reset_db 
+    reset_db
     execsql {
       CREATE TABLE t1(x, y);
       CREATE INDEX i1 ON t1(x, y);
@@ -637,7 +637,7 @@ ifcapable auth {
     return "SQLITE_OK"
   }
   do_test 19.2 {
-    reset_db 
+    reset_db
     db auth authproc
     execsql {
       CREATE TABLE t1(x, y);

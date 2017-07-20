@@ -10,12 +10,12 @@
 **
 *************************************************************************
 ** This file contains the C functions that implement a memory
-** allocation subsystem for use by SQLite. 
+** allocation subsystem for use by SQLite.
 **
 ** This version of the memory allocation subsystem omits all
 ** use of malloc(). The application gives SQLite a block of memory
 ** before calling sqlite3_initialize() from which allocations
-** are made and returned by the xMalloc() and xRealloc() 
+** are made and returned by the xMalloc() and xRealloc()
 ** implementations. Once sqlite3_initialize() has been called,
 ** the amount of memory available to SQLite is fixed and cannot
 ** be changed.
@@ -35,12 +35,12 @@
 ** This algorithm is described in: J. M. Robson. "Bounds for Some Functions
 ** Concerning Dynamic Storage Allocation". Journal of the Association for
 ** Computing Machinery, Volume 21, Number 8, July 1974, pages 491-499.
-** 
+**
 ** Let n be the size of the largest allocation divided by the minimum
 ** allocation size (after rounding all sizes up to a power of 2.)  Let M
 ** be the maximum amount of memory ever outstanding at one time.  Let
 ** N be the total amount of memory available for allocation.  Robson
-** proved that this memory allocator will never breakdown due to 
+** proved that this memory allocator will never breakdown due to
 ** fragmentation as long as the following constraint holds:
 **
 **      N >=  M*(1 + log2(n)/2) - n + 1
@@ -51,7 +51,7 @@
 #include "sqliteInt.h"
 
 /*
-** This version of the memory allocator is used only when 
+** This version of the memory allocator is used only when
 ** SQLITE_ENABLE_MEMSYS5 is defined.
 */
 #ifdef SQLITE_ENABLE_MEMSYS5
@@ -96,7 +96,7 @@ static SQLITE_WSD struct Mem5Global {
   int szAtom;      /* Smallest possible allocation in bytes */
   int nBlock;      /* Number of szAtom sized blocks in zPool */
   u8 *zPool;       /* Memory available to be allocated */
-  
+
   /*
   ** Mutex to control access to the memory allocation subsystem.
   */
@@ -115,7 +115,7 @@ static SQLITE_WSD struct Mem5Global {
   u32 maxCount;       /* Maximum instantaneous currentCount */
   u32 maxRequest;     /* Largest allocation (exclusive of internal frag) */
 #endif
-  
+
   /*
   ** Lists of free blocks.  aiFreelist[0] is a list of free blocks of
   ** size mem5.szAtom.  aiFreelist[1] holds blocks of size szAtom*2.
@@ -291,7 +291,7 @@ static void memsys5FreeUnsafe(void *pOld){
   u32 size, iLogsize;
   int iBlock;
 
-  /* Set iBlock to the index of the block pointed to by pOld in 
+  /* Set iBlock to the index of the block pointed to by pOld in
   ** the array of mem5.szAtom byte blocks pointed to by mem5.zPool.
   */
   iBlock = (int)(((u8 *)pOld-mem5.zPool)/mem5.szAtom);
@@ -360,7 +360,7 @@ static void *memsys5Malloc(int nBytes){
     p = memsys5MallocUnsafe(nBytes);
     memsys5Leave();
   }
-  return (void*)p; 
+  return (void*)p;
 }
 
 /*
@@ -373,14 +373,14 @@ static void memsys5Free(void *pPrior){
   assert( pPrior!=0 );
   memsys5Enter();
   memsys5FreeUnsafe(pPrior);
-  memsys5Leave();  
+  memsys5Leave();
 }
 
 /*
 ** Change the size of an existing memory allocation.
 **
 ** The outer layer memory allocator prevents this routine from
-** being called with pPrior==0.  
+** being called with pPrior==0.
 **
 ** nBytes is always a value obtained from a prior call to
 ** memsys5Round().  Hence nBytes is always a non-negative power
@@ -513,7 +513,7 @@ static void memsys5Shutdown(void *NotUsed){
 
 #ifdef SQLITE_TEST
 /*
-** Open the file indicated and write a log of all unfreed memory 
+** Open the file indicated and write a log of all unfreed memory
 ** allocations into that log.
 */
 void sqlite3Memsys5Dump(const char *zFilename){
@@ -555,7 +555,7 @@ void sqlite3Memsys5Dump(const char *zFilename){
 #endif
 
 /*
-** This routine is the only routine in this file with external 
+** This routine is the only routine in this file with external
 ** linkage. It returns a pointer to a static sqlite3_mem_methods
 ** struct populated with the memsys5 methods.
 */

@@ -39,7 +39,7 @@ do_malloc_test 1 -tclprep {
   fconfigure $::blob -translation binary
   set rc [catch {puts -nonewline $::blob $::data}]
   if {$rc} { error "out of memory" }
-} 
+}
 
 do_malloc_test 2 -tclprep {
   execsql {
@@ -49,8 +49,8 @@ do_malloc_test 2 -tclprep {
 } -tclbody {
   set ::blob [db incrblob blobs v 1]
   set rc [catch {set ::r [read $::blob]}]
-  if {$rc} { 
-    error "out of memory" 
+  if {$rc} {
+    error "out of memory"
   } elseif {$::r ne $::data} {
     error "Bad data read..."
   }
@@ -64,14 +64,14 @@ do_malloc_test 3 -tclprep {
 } -tclbody {
   set ::blob [db incrblob blobs v 1]
   set rc [catch {set ::r [read $::blob]}]
-  if {$rc} { 
-    error "out of memory" 
+  if {$rc} {
+    error "out of memory"
   } elseif {$::r ne $::data} {
     error "Bad data read..."
   }
   set rc [catch {close $::blob}]
-  if {$rc} { 
-    error "out of memory" 
+  if {$rc} {
+    error "out of memory"
   }
 }
 
@@ -109,7 +109,7 @@ do_ioerr_test incrblob_err-7 -cksum 1 -sqlprep {
   CREATE TABLE blobs(k INTEGER PRIMARY KEY, v BLOB);
   INSERT INTO blobs VALUES(1, zeroblob(500 * 1020));
 } -tclbody {
-  # Read some data from the end of the large blob inserted into table 
+  # Read some data from the end of the large blob inserted into table
   # "blobs". This forces the IO error to occur while reading a pointer
   # map page for the purposes of seeking to the end of the blob.
   #
@@ -125,7 +125,7 @@ do_ioerr_test incrblob_err-8 -cksum 1 -sqlprep {
   CREATE TABLE blobs(k INTEGER PRIMARY KEY, v BLOB);
   INSERT INTO blobs VALUES(1, zeroblob(500 * 1020));
 } -tclbody {
-  # Read some data from the end of the large blob inserted into table 
+  # Read some data from the end of the large blob inserted into table
   # "blobs". This forces the IO error to occur while reading a pointer
   # map page for the purposes of seeking to the end of the blob.
   #

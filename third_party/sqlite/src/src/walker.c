@@ -93,7 +93,7 @@ int sqlite3WalkSelectExpr(Walker *pWalker, Select *p){
 ** Walk the parse trees associated with all subqueries in the
 ** FROM clause of SELECT statement p.  Do not invoke the select
 ** callback on p, but do invoke it on each FROM clause subquery
-** and on any subqueries further down in the tree.  Return 
+** and on any subqueries further down in the tree.  Return
 ** WRC_Abort or WRC_Continue;
 */
 int sqlite3WalkSelectFrom(Walker *pWalker, Select *p){
@@ -115,16 +115,16 @@ int sqlite3WalkSelectFrom(Walker *pWalker, Select *p){
     }
   }
   return WRC_Continue;
-} 
+}
 
 /*
 ** Call sqlite3WalkExpr() for every expression in Select statement p.
 ** Invoke sqlite3WalkSelect() for subqueries in the FROM clause and
-** on the compound select chain, p->pPrior. 
+** on the compound select chain, p->pPrior.
 **
 ** If it is not NULL, the xSelectCallback() callback is invoked before
 ** the walk of the expressions and FROM clause. The xSelectCallback2()
-** method, if it is not NULL, is invoked following the walk of the 
+** method, if it is not NULL, is invoked following the walk of the
 ** expressions and FROM clause.
 **
 ** Return WRC_Continue under normal conditions.  Return WRC_Abort if

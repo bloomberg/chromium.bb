@@ -393,7 +393,7 @@ do_test lock-6.1 {
 } {}
 
 do_test lock-6.2 {
-  execsql { 
+  execsql {
     BEGIN;
     INSERT INTO t4 VALUES(1, 'one');
     INSERT INTO t4 VALUES(2, 'two');
@@ -416,13 +416,13 @@ do_test lock-6.5 {
   sqlite3_finalize $STMT
 } {SQLITE_OK}
 
-# At one point the following set of conditions would cause SQLite to 
+# At one point the following set of conditions would cause SQLite to
 # retain a RESERVED or EXCLUSIVE lock after the transaction was committed:
-# 
+#
 #   * The journal-mode is set to something other than 'delete', and
 #   * there exists one or more active read-only statements, and
 #   * a transaction that modified zero database pages is committed.
-# 
+#
 #set temp_status unlocked
 #if {$TEMP_STORE>=2} {set temp_status unknown}
 set temp_status unknown

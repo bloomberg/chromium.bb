@@ -35,7 +35,7 @@ set FAULTSIM(oom-persistent) [list         \
   -injectstop oom_injectstop               \
   -injecterrlist {{1 {out of memory}}}     \
 ]
-  
+
 # Transient and persistent IO errors:
 #
 set FAULTSIM(ioerr-transient) [list        \
@@ -104,7 +104,7 @@ set FAULTSIM(interrupt) [list                 \
 
 
 #--------------------------------------------------------------------------
-# Usage do_faultsim_test NAME ?OPTIONS...? 
+# Usage do_faultsim_test NAME ?OPTIONS...?
 #
 #     -faults           List of fault types to simulate.
 #
@@ -120,7 +120,7 @@ set FAULTSIM(interrupt) [list                 \
 #
 proc do_faultsim_test {name args} {
   global FAULTSIM
-  
+
   foreach n [array names FAULTSIM] {
     if {$n != "interrupt"} {lappend DEFAULT(-faults) $n}
   }
@@ -169,13 +169,13 @@ proc do_faultsim_test {name args} {
 proc faultsim_save {args} { uplevel db_save $args }
 proc faultsim_save_and_close {args} { uplevel db_save_and_close $args }
 proc faultsim_restore {args} { uplevel db_restore $args }
-proc faultsim_restore_and_reopen {args} { 
-  uplevel db_restore_and_reopen $args 
+proc faultsim_restore_and_reopen {args} {
+  uplevel db_restore_and_reopen $args
   sqlite3_extended_result_codes db 1
   sqlite3_db_config_lookaside db 0 0 0
 }
 proc faultsim_delete_and_reopen {args} {
-  uplevel db_delete_and_reopen $args 
+  uplevel db_delete_and_reopen $args
   sqlite3_extended_result_codes db 1
   sqlite3_db_config_lookaside db 0 0 0
 }
@@ -186,7 +186,7 @@ proc faultsim_integrity_check {{db db}} {
 }
 
 
-# The following procs are used as [do_one_faultsim_test] callbacks when 
+# The following procs are used as [do_one_faultsim_test] callbacks when
 # injecting OOM faults into test cases.
 #
 proc oom_injectstart {nRepeat iFail} {
@@ -196,7 +196,7 @@ proc oom_injectstop {} {
   sqlite3_memdebug_fail -1
 }
 
-# The following procs are used as [do_one_faultsim_test] callbacks when 
+# The following procs are used as [do_one_faultsim_test] callbacks when
 # injecting IO error faults into test cases.
 #
 proc ioerr_injectstart {persist iFail} {
@@ -213,7 +213,7 @@ proc ioerr_injectstop {} {
   return $sv
 }
 
-# The following procs are used as [do_one_faultsim_test] callbacks when 
+# The following procs are used as [do_one_faultsim_test] callbacks when
 # injecting shared-memory related error faults into test cases.
 #
 proc shmerr_injectinstall {} {
@@ -232,7 +232,7 @@ proc shmerr_injectstop {} {
   shmfault ioerr
 }
 
-# The following procs are used as [do_one_faultsim_test] callbacks when 
+# The following procs are used as [do_one_faultsim_test] callbacks when
 # injecting SQLITE_FULL error faults into test cases.
 #
 proc fullerr_injectinstall {} {
@@ -250,7 +250,7 @@ proc fullerr_injectstop {} {
   shmfault full
 }
 
-# The following procs are used as [do_one_faultsim_test] callbacks when 
+# The following procs are used as [do_one_faultsim_test] callbacks when
 # injecting SQLITE_CANTOPEN error faults into test cases.
 #
 proc cantopen_injectinstall {} {
@@ -268,7 +268,7 @@ proc cantopen_injectstop {} {
   shmfault cantopen
 }
 
-# The following procs are used as [do_one_faultsim_test] callbacks 
+# The following procs are used as [do_one_faultsim_test] callbacks
 # when injecting SQLITE_INTERRUPT error faults into test cases.
 #
 proc interrupt_injectinstall {} {
@@ -284,7 +284,7 @@ proc interrupt_injectstop {} {
   set res
 }
 
-# This command is not called directly. It is used by the 
+# This command is not called directly. It is used by the
 # [faultsim_test_result] command created by [do_faultsim_test] and used
 # by -test scripts.
 #
@@ -298,7 +298,7 @@ proc faultsim_test_result_int {args} {
 }
 
 #--------------------------------------------------------------------------
-# Usage do_one_faultsim_test NAME ?OPTIONS...? 
+# Usage do_one_faultsim_test NAME ?OPTIONS...?
 #
 # The first argument, <test number>, is used as a prefix of the test names
 # taken by tests executed by this command. Options are as follows. All
@@ -363,7 +363,7 @@ proc do_one_faultsim_test {testname args} {
     eval $O(-prep)
 
     # Start the fault-injection. Run the -body script. Stop the fault
-    # injection. Local var $nfail is set to the total number of faults 
+    # injection. Local var $nfail is set to the total number of faults
     # injected into the system this trial.
     #
     eval $O(-injectstart) $iFail
@@ -414,7 +414,7 @@ proc do_one_faultsim_test {testname args} {
 # successfully, the loop ends.
 #
 proc do_malloc_test {tn args} {
-  array unset ::mallocopts 
+  array unset ::mallocopts
   array set ::mallocopts $args
 
   if {[string is integer $tn]} {
@@ -438,7 +438,7 @@ proc do_malloc_test {tn args} {
     for {set ::n $start} {$::go && $::n <= $end} {incr ::n} {
 
       # If $::iRepeat is 0, then the malloc() failure is transient - it
-      # fails and then subsequent calls succeed. If $::iRepeat is 1, 
+      # fails and then subsequent calls succeed. If $::iRepeat is 1,
       # then the failure is persistent - once malloc() fails it keeps
       # failing.
       #
@@ -448,13 +448,13 @@ proc do_malloc_test {tn args} {
       foreach file [glob -nocomplain test.db-mj*] {forcedelete $file}
 
       do_test ${tn}.${zRepeat}.${::n} {
-  
-        # Remove all traces of database files test.db and test2.db 
-        # from the file-system. Then open (empty database) "test.db" 
+
+        # Remove all traces of database files test.db and test2.db
+        # from the file-system. Then open (empty database) "test.db"
         # with the handle [db].
-        # 
-        catch {db close} 
-        catch {db2 close} 
+        #
+        catch {db close}
+        catch {db2 close}
         forcedelete test.db
         forcedelete test.db-journal
         forcedelete test.db-wal
@@ -469,7 +469,7 @@ proc do_malloc_test {tn args} {
           sqlite3_extended_result_codes db 1
         }
         sqlite3_db_config_lookaside db 0 0 0
-  
+
         # Execute any -tclprep and -sqlprep scripts.
         #
         if {[info exists ::mallocopts(-tclprep)]} {
@@ -478,8 +478,8 @@ proc do_malloc_test {tn args} {
         if {[info exists ::mallocopts(-sqlprep)]} {
           execsql $::mallocopts(-sqlprep)
         }
-  
-        # Now set the ${::n}th malloc() to fail and execute the -tclbody 
+
+        # Now set the ${::n}th malloc() to fail and execute the -tclbody
         # and -sqlbody scripts.
         #
         sqlite3_memdebug_fail $::n -repeat $::iRepeat
@@ -515,7 +515,7 @@ proc do_malloc_test {tn args} {
         } elseif {!$isFail} {
           set v2 $msg
         } elseif {
-          [info command db]=="" || 
+          [info command db]=="" ||
           [db errorcode]==7 ||
           $msg=="out of memory"
         } {
@@ -526,7 +526,7 @@ proc do_malloc_test {tn args} {
         }
         lappend isFail $v2
       } {1 1}
-  
+
       if {[info exists ::mallocopts(-cleanup)]} {
         catch [list uplevel #0 $::mallocopts(-cleanup)] msg
       }
@@ -573,7 +573,7 @@ proc do_error_test {name sql error} {
 proc doPassiveTest {isRestart name sql catchres} {
   if {![info exists ::DO_MALLOC_TEST]} { set ::DO_MALLOC_TEST 1 }
 
-  if {[info exists ::testprefix] 
+  if {[info exists ::testprefix]
    && [string is integer [string range $name 0 0]]
   } {
     set name $::testprefix.$name
@@ -630,7 +630,7 @@ proc doPassiveTest {isRestart name sql catchres} {
 
 
 #-------------------------------------------------------------------------
-# Test a single write to the database. In this case a  "write" is a 
+# Test a single write to the database. In this case a  "write" is a
 # DELETE, UPDATE or INSERT statement.
 #
 # If OOM testing is performed, there are several acceptable outcomes:

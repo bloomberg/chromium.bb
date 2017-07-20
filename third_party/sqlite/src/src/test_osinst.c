@@ -17,18 +17,18 @@
 
 /*
 ** This module contains code for a wrapper VFS that causes a log of
-** most VFS calls to be written into a nominated file on disk. The log 
-** is stored in a compressed binary format to reduce the amount of IO 
+** most VFS calls to be written into a nominated file on disk. The log
+** is stored in a compressed binary format to reduce the amount of IO
 ** overhead introduced into the application by logging.
 **
 ** All calls on sqlite3_file objects except xFileControl() are logged.
 ** Additionally, calls to the xAccess(), xOpen(), and xDelete()
 ** methods are logged. The other sqlite3_vfs object methods (xDlXXX,
-** xRandomness, xSleep, xCurrentTime, xGetLastError and xCurrentTimeInt64) 
+** xRandomness, xSleep, xCurrentTime, xGetLastError and xCurrentTimeInt64)
 ** are not logged.
 **
 ** The binary log files are read using a virtual table implementation
-** also contained in this file. 
+** also contained in this file.
 **
 ** CREATING LOG FILES:
 **
@@ -97,7 +97,7 @@
 #define OS_LOCK              11
 #define OS_OPEN              12
 #define OS_RANDOMNESS        13
-#define OS_READ              14 
+#define OS_READ              14
 #define OS_SECTORSIZE        15
 #define OS_SLEEP             16
 #define OS_SYNC              17
@@ -231,7 +231,7 @@ static sqlite3_uint64 vfslog_time(){
 static sqlite3_uint64 vfslog_time(){
   FILETIME ft;
   sqlite3_uint64 u64time = 0;
- 
+
   GetSystemTimeAsFileTime(&ft);
 
   u64time |= ft.dwHighDateTime;
@@ -271,9 +271,9 @@ static int vfslogClose(sqlite3_file *pFile){
 ** Read data from an vfslog-file.
 */
 static int vfslogRead(
-  sqlite3_file *pFile, 
-  void *zBuf, 
-  int iAmt, 
+  sqlite3_file *pFile,
+  void *zBuf,
+  int iAmt,
   sqlite_int64 iOfst
 ){
   int rc;
@@ -440,10 +440,10 @@ static int vfslogShmLock(sqlite3_file *pFile, int ofst, int n, int flags){
   return rc;
 }
 static int vfslogShmMap(
-  sqlite3_file *pFile, 
-  int iRegion, 
-  int szRegion, 
-  int isWrite, 
+  sqlite3_file *pFile,
+  int iRegion,
+  int szRegion,
+  int isWrite,
   volatile void **pp
 ){
   int rc;
@@ -525,9 +525,9 @@ static int vfslogDelete(sqlite3_vfs *pVfs, const char *zPath, int dirSync){
 ** is available, or false otherwise.
 */
 static int vfslogAccess(
-  sqlite3_vfs *pVfs, 
-  const char *zPath, 
-  int flags, 
+  sqlite3_vfs *pVfs,
+  const char *zPath,
+  int flags,
   int *pResOut
 ){
   int rc;
@@ -546,9 +546,9 @@ static int vfslogAccess(
 ** of at least (INST_MAX_PATHNAME+1) bytes.
 */
 static int vfslogFullPathname(
-  sqlite3_vfs *pVfs, 
-  const char *zPath, 
-  int nOut, 
+  sqlite3_vfs *pVfs,
+  const char *zPath,
+  int nOut,
   char *zOut
 ){
   return REALVFS(pVfs)->xFullPathname(REALVFS(pVfs), zPath, nOut, zOut);
@@ -563,7 +563,7 @@ static void *vfslogDlOpen(sqlite3_vfs *pVfs, const char *zPath){
 
 /*
 ** Populate the buffer zErrMsg (size nByte bytes) with a human readable
-** utf-8 string describing the most recent error encountered associated 
+** utf-8 string describing the most recent error encountered associated
 ** with dynamic libraries.
 */
 static void vfslogDlError(sqlite3_vfs *pVfs, int nByte, char *zErrMsg){
@@ -585,7 +585,7 @@ static void vfslogDlClose(sqlite3_vfs *pVfs, void *pHandle){
 }
 
 /*
-** Populate the buffer pointed to by zBufOut with nByte bytes of 
+** Populate the buffer pointed to by zBufOut with nByte bytes of
 ** random data.
 */
 static int vfslogRandomness(sqlite3_vfs *pVfs, int nByte, char *zBufOut){
@@ -593,7 +593,7 @@ static int vfslogRandomness(sqlite3_vfs *pVfs, int nByte, char *zBufOut){
 }
 
 /*
-** Sleep for nMicro microseconds. Return the number of microseconds 
+** Sleep for nMicro microseconds. Return the number of microseconds
 ** actually slept.
 */
 static int vfslogSleep(sqlite3_vfs *pVfs, int nMicro){
@@ -701,7 +701,7 @@ int sqlite3_vfslog_finalize(const char *zVfs){
   pVfs = sqlite3_vfs_find(zVfs);
   if( !pVfs || pVfs->xOpen!=vfslogOpen ){
     return SQLITE_ERROR;
-  } 
+  }
   sqlite3_vfs_unregister(pVfs);
   vfslog_finalize((VfslogVfs *)pVfs);
   return SQLITE_OK;
@@ -760,7 +760,7 @@ int sqlite3_vfslog_annotate(const char *zVfs, const char *zMsg){
   pVfs = sqlite3_vfs_find(zVfs);
   if( !pVfs || pVfs->xOpen!=vfslogOpen ){
     return SQLITE_ERROR;
-  } 
+  }
   vfslog_call(pVfs, OS_ANNOTATE, 0, 0, 0, 0, 0);
   vfslog_string(pVfs, zMsg);
   return SQLITE_OK;
@@ -842,7 +842,7 @@ static void dequote(char *z){
   if( quote=='[' || quote=='\'' || quote=='"' || quote=='`' ){
     int iIn = 1;                  /* Index of next byte to read from input */
     int iOut = 0;                 /* Index of next byte to write to output */
-    if( quote=='[' ) quote = ']';  
+    if( quote=='[' ) quote = ']';
     while( z[iIn] ){
       if( z[iIn]==quote ){
         if( z[iIn+1]!=quote ) break;
@@ -898,7 +898,7 @@ static int vlogConnect(
 
   if( rc==SQLITE_OK ){
     p->pFd->pMethods->xFileSize(p->pFd, &p->nByte);
-    sqlite3_declare_vtab(db, 
+    sqlite3_declare_vtab(db,
         "CREATE TABLE xxx(event, file, click, rc, size, offset)"
     );
     *ppVtab = &p->base;
@@ -978,7 +978,7 @@ static int vlogNext(sqlite3_vtab_cursor *pCursor){
 
     eEvent = get32bits(pCsr->aBuf);
     if( (rc==SQLITE_OK)
-     && (eEvent==OS_OPEN || eEvent==OS_DELETE || eEvent==OS_ACCESS) 
+     && (eEvent==OS_OPEN || eEvent==OS_DELETE || eEvent==OS_ACCESS)
     ){
       char buf[4];
       rc = p->pFd->pMethods->xRead(p->pFd, buf, 4, pCsr->iOffset+nRead);
@@ -1020,7 +1020,7 @@ static int vlogEof(sqlite3_vtab_cursor *pCursor){
 }
 
 static int vlogFilter(
-  sqlite3_vtab_cursor *pCursor, 
+  sqlite3_vtab_cursor *pCursor,
   int idxNum, const char *idxStr,
   int argc, sqlite3_value **argv
 ){
@@ -1031,8 +1031,8 @@ static int vlogFilter(
 }
 
 static int vlogColumn(
-  sqlite3_vtab_cursor *pCursor, 
-  sqlite3_context *ctx, 
+  sqlite3_vtab_cursor *pCursor,
+  sqlite3_context *ctx,
   int i
 ){
   unsigned int val;

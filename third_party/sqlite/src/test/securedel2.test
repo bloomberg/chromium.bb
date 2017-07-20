@@ -58,7 +58,7 @@ do_execsql_test 1.4.2 { DELETE FROM t1 WHERE rowid = 1 }
 do_test         1.4.3 { detect_blob test.db 1 } {0}
 
 do_execsql_test 1.5.1 { DELETE FROM t1 WHERE rowid>850 } {}
-do_test 1.5.2 { 
+do_test 1.5.2 {
   set n 0
   detect_blob_prepare test.db
   for {set i 851} {$i <= 1000} {incr i 5} {
@@ -69,7 +69,7 @@ do_test 1.5.2 {
 
 db close
 sqlite3 db test.db
-do_test 1.6.1 { 
+do_test 1.6.1 {
   execsql {
     PRAGMA cache_size = 200;
     PRAGMA secure_delete = 1;
@@ -82,7 +82,7 @@ do_test 1.6.1 {
   execsql { DELETE FROM t1 }
 } {}
 
-do_test 1.6.2 { 
+do_test 1.6.2 {
   set n 0
   detect_blob_prepare test.db
   for {set i 2} {$i <= 850} {incr i 5} {

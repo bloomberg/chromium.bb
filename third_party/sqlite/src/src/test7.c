@@ -61,7 +61,7 @@ struct Thread {
   volatile int opnum;      /* Operation number */
   volatile int busy;       /* True if this thread is in use */
 
-  /* The next group of fields are writable by the client threads 
+  /* The next group of fields are writable by the client threads
   ** but read-only to the superviser thread.
   */
   volatile int completed;  /* Number of operations completed */
@@ -74,10 +74,10 @@ struct Thread {
   const char *argv[100];   /* result columns */
   const char *colv[100];   /* result column names */
 
-  /* Initialized to 1 by the supervisor thread when the client is 
-  ** created, and then deemed read-only to the supervisor thread. 
-  ** Is set to 0 by the server thread belonging to this client 
-  ** just before it exits.  
+  /* Initialized to 1 by the supervisor thread when the client is
+  ** created, and then deemed read-only to the supervisor thread.
+  ** Is set to 0 by the server thread belonging to this client
+  ** just before it exits.
   */
   int nServer;             /* Number of server threads running */
 };
@@ -90,7 +90,7 @@ struct Thread {
 static Thread threadset[N_THREAD];
 
 /*
-** The main loop for a thread.  Threads use busy waiting. 
+** The main loop for a thread.  Threads use busy waiting.
 */
 static void *client_main(void *pArg){
   Thread *p = (Thread*)pArg;

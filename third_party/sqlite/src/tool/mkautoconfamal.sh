@@ -13,7 +13,7 @@
 #
 
 
-# Bail out of the script if any command returns a non-zero exit 
+# Bail out of the script if any command returns a non-zero exit
 # status. Or if the script tries to use an unset variable. These
 # may fail for old /bin/sh interpreters.
 #
@@ -31,7 +31,7 @@ DATETIME=`grep '^D' $TOP/manifest | sed -e 's/[^0-9]//g' -e 's/\(............\).
 #
 if test "$#" -ge 1 -a x$1 != x--snapshot
 then
-  # Set global variable $ARTIFACT to the "3xxyyzz" string incorporated 
+  # Set global variable $ARTIFACT to the "3xxyyzz" string incorporated
   # into artifact filenames. And $VERSION2 to the "3.x.y[.z]" form.
   xx=`echo $VERSION|sed 's/3\.\([0-9]*\)\..*/\1/'`
   yy=`echo $VERSION|sed 's/3\.[^.]*\.\([0-9]*\).*/\1/'`
@@ -67,14 +67,14 @@ autoreconf -i
 #automake --add-missing
 
 mkdir -p tea/generic
-echo "#ifdef USE_SYSTEM_SQLITE"      > tea/generic/tclsqlite3.c 
+echo "#ifdef USE_SYSTEM_SQLITE"      > tea/generic/tclsqlite3.c
 echo "# include <sqlite3.h>"        >> tea/generic/tclsqlite3.c
 echo "#else"                        >> tea/generic/tclsqlite3.c
 echo "#include \"sqlite3.c\""       >> tea/generic/tclsqlite3.c
 echo "#endif"                       >> tea/generic/tclsqlite3.c
 cat  $TOP/src/tclsqlite.c           >> tea/generic/tclsqlite3.c
 
-cat tea/configure.ac | 
+cat tea/configure.ac |
   sed "s/AC_INIT(\[sqlite\], .*)/AC_INIT([sqlite], [$VERSION])/" > tmp
 mv tmp tea/configure.ac
 

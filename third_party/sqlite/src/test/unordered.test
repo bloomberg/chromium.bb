@@ -8,7 +8,7 @@
 #    May you share freely, never taking more than you give.
 #
 #***********************************************************************
-# This file implements regression tests for SQLite library.  
+# This file implements regression tests for SQLite library.
 #
 
 set testdir [file dirname $argv0]
@@ -47,7 +47,7 @@ foreach idxmode {ordered unordered} {
         {0 0 0 {SCAN TABLE t1}}
     3   "SELECT * FROM t1 WHERE a = ? ORDER BY rowid"
         {0 0 0 {SEARCH TABLE t1 USING INDEX i1 (a=?)}}
-        {0 0 0 {SEARCH TABLE t1 USING INDEX i1 (a=?)} 
+        {0 0 0 {SEARCH TABLE t1 USING INDEX i1 (a=?)}
          0 0 0 {USE TEMP B-TREE FOR ORDER BY}}
     4   "SELECT max(a) FROM t1"
         {0 0 0 {SEARCH TABLE t1 USING COVERING INDEX i1}}

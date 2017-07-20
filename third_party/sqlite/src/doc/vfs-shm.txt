@@ -54,14 +54,14 @@ The meanings of the various wal-index locking states is as follows:
    RECOVER     - Held during wal-index recovery.  Used to prevent a
                  race if multiple clients try to recover a wal-index at
                  the same time.
-   
 
-A particular lock manager implementation may coalesce one or more of 
+
+A particular lock manager implementation may coalesce one or more of
 the wal-index locking states, though with a reduction in concurrency.
 For example, an implemention might implement only exclusive locking,
-in which case all states would be equivalent to CHECKPOINT, meaning that 
-only one reader or one writer or one checkpointer could be active at a 
-time.  Or, an implementation might combine READ and READ_FULL into 
+in which case all states would be equivalent to CHECKPOINT, meaning that
+only one reader or one writer or one checkpointer could be active at a
+time.  Or, an implementation might combine READ and READ_FULL into
 a single state equivalent to READ, meaning that a writer could
 coexist with a reader, but no reader or writers could coexist with a
 checkpointer.
@@ -93,7 +93,7 @@ during testing using an instrumented lock manager.
      the original database files.
 
 (9)  A CHECKPOINT or RECOVER must be held on the wal-index, or an
-     EXCLUSIVE on the original database file, in order to reset the 
+     EXCLUSIVE on the original database file, in order to reset the
      last valid frame counter in the header of the wal-index back to zero.
 
 (10) A WRITE can only increase the last valid frame pointer in the header.

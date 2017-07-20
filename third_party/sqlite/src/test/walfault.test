@@ -39,15 +39,15 @@ do_faultsim_test walfault-1 -prep {
 
   faultsim_test_result {0 wal}
 
-  # Test that the connection that encountered an error as part of 
+  # Test that the connection that encountered an error as part of
   # "PRAGMA journal_mode = WAL" and a new connection use the same
   # journal mode when accessing the database.
   #
-  # If "PRAGMA journal_mode" is executed immediately, connection [db] (the 
-  # one that hit the error in journal_mode="WAL") might return "wal" even 
-  # if it failed to switch the database to WAL mode. This is not considered 
-  # a problem. When it tries to read the database, connection [db] correctly 
-  # recognizes that it is a rollback database and switches back to a 
+  # If "PRAGMA journal_mode" is executed immediately, connection [db] (the
+  # one that hit the error in journal_mode="WAL") might return "wal" even
+  # if it failed to switch the database to WAL mode. This is not considered
+  # a problem. When it tries to read the database, connection [db] correctly
+  # recognizes that it is a rollback database and switches back to a
   # rollback compatible journal mode.
   #
   if {[permutation] != "inmemory_journal"} {
@@ -55,14 +55,14 @@ do_faultsim_test walfault-1 -prep {
     sqlite3 db2 test.db
     set jm2 [db2 one {SELECT * FROM sqlite_master ; PRAGMA main.journal_mode}]
     db2 close
-  
+
     if { $jm!=$jm2 } { error "Journal modes do not match: $jm $jm2" }
     if { $testrc==0 && $jm!="wal" } { error "Journal mode is not WAL" }
   }
 }
 
 #--------------------------------------------------------------------------
-# Test case walfault-2-* tests fault injection during recovery of a 
+# Test case walfault-2-* tests fault injection during recovery of a
 # short WAL file (a dozen frames or thereabouts).
 #
 do_test walfault-2-pre-1 {
@@ -144,7 +144,7 @@ if {[permutation] != "inmemory_journal"} {
     # of PSOW being set by default.
     faultsim_test_result {0 {wal 0 5 5 a b}}
     faultsim_integrity_check
-  } 
+  }
 }
 
 #--------------------------------------------------------------------------
@@ -305,7 +305,7 @@ do_test walfault-9-pre-1 {
 do_faultsim_test walfault-9 -prep {
   #if {$iFail<73} { set iFail 73 }
   #if {$iFail>73} { exit }
-  
+
   faultsim_restore_and_reopen
   execsql { PRAGMA cache_size = 10 }
 } -body {
@@ -372,7 +372,7 @@ do_faultsim_test walfault-10 -prep {
 }
 
 #--------------------------------------------------------------------------
-# Test fault injection while checkpointing a large WAL file, if the 
+# Test fault injection while checkpointing a large WAL file, if the
 # checkpoint is the first operation run after opening the database.
 # This means that some of the required wal-index pages are mapped as part of
 # the checkpoint process, which means there are a few more opportunities
@@ -418,10 +418,10 @@ do_faultsim_test walfault-11 -faults shmerr* -prep {
 }
 
 #-------------------------------------------------------------------------
-# Test the handling of the various IO/OOM/SHM errors that may occur during 
-# a log recovery operation undertaken as part of a call to 
+# Test the handling of the various IO/OOM/SHM errors that may occur during
+# a log recovery operation undertaken as part of a call to
 # sqlite3_wal_checkpoint().
-# 
+#
 do_test walfault-12-pre-1 {
   faultsim_delete_and_reopen
   execsql {
@@ -451,9 +451,9 @@ do_faultsim_test walfault-12 -prep {
 }
 
 #-------------------------------------------------------------------------
-# Test simple recovery, reading and writing a database file using a 
+# Test simple recovery, reading and writing a database file using a
 # heap-memory wal-index.
-# 
+#
 do_test walfault-13-pre-1 {
   faultsim_delete_and_reopen
   execsql {
@@ -506,7 +506,7 @@ do_test walfault-13-pre-2 {
 do_faultsim_test walfault-13.3 -prep {
   faultsim_restore_and_reopen
 } -body {
-  db eval { 
+  db eval {
     PRAGMA locking_mode = exclusive;
     PRAGMA journal_mode = WAL;
     INSERT INTO abc VALUES(randomblob(1500));
@@ -538,7 +538,7 @@ do_test walfault-14-pre {
 do_faultsim_test walfault-14 -prep {
   faultsim_restore_and_reopen
 } -body {
-  db eval { 
+  db eval {
     PRAGMA wal_checkpoint = full;
     INSERT INTO abc VALUES(randomblob(1500));
   }
@@ -575,7 +575,7 @@ do_faultsim_test walfault-14 -prep {
     COMMIT;
   }
 } -body {
-  db eval { 
+  db eval {
     PRAGMA locking_mode = normal;
     BEGIN;
       INSERT INTO abc VALUES(randomblob(1500));

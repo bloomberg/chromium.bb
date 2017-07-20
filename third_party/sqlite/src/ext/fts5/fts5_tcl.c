@@ -34,7 +34,7 @@ extern int sqlite3Fts5TestRegisterMatchinfo(sqlite3*);
 extern int sqlite3Fts5TestRegisterTok(sqlite3*, fts5_api*);
 
 /*************************************************************************
-** This is a copy of the first part of the SqliteDb structure in 
+** This is a copy of the first part of the SqliteDb structure in
 ** tclsqlite.c.  We need it here so that the get_sqlite_pointer routine
 ** can extract the sqlite3* pointer from an existing Tcl SQLite
 ** connection.
@@ -86,9 +86,9 @@ static int f5tResultToErrorCode(const char *zRes){
 }
 
 static int SQLITE_TCLAPI f5tDbAndApi(
-  Tcl_Interp *interp, 
-  Tcl_Obj *pObj, 
-  sqlite3 **ppDb, 
+  Tcl_Interp *interp,
+  Tcl_Obj *pObj,
+  sqlite3 **ppDb,
   fts5_api **ppApi
 ){
   sqlite3 *db = 0;
@@ -136,10 +136,10 @@ struct F5tApi {
 
 /*
 ** An object of this type is used with the xSetAuxdata() and xGetAuxdata()
-** API test wrappers. The tcl interface allows a single tcl value to be 
+** API test wrappers. The tcl interface allows a single tcl value to be
 ** saved using xSetAuxdata(). Instead of simply storing a pointer to the
-** tcl object, the code in this file wraps it in an sqlite3_malloc'd 
-** instance of the following struct so that if the destructor is not 
+** tcl object, the code in this file wraps it in an sqlite3_malloc'd
+** instance of the following struct so that if the destructor is not
 ** correctly invoked it will be reported as an SQLite memory leak.
 */
 typedef struct F5tAuxData F5tAuxData;
@@ -148,9 +148,9 @@ struct F5tAuxData {
 };
 
 static int xTokenizeCb(
-  void *pCtx, 
+  void *pCtx,
   int tflags,
-  const char *zToken, int nToken, 
+  const char *zToken, int nToken,
   int iStart, int iEnd
 ){
   F5tFunction *p = (F5tFunction*)pCtx;
@@ -174,8 +174,8 @@ static int xTokenizeCb(
 static int SQLITE_TCLAPI xF5tApi(void*, Tcl_Interp*, int, Tcl_Obj *CONST []);
 
 static int xQueryPhraseCb(
-  const Fts5ExtensionApi *pApi, 
-  Fts5Context *pFts, 
+  const Fts5ExtensionApi *pApi,
+  Fts5Context *pFts,
   void *pCtx
 ){
   F5tFunction *p = (F5tFunction*)pCtx;
@@ -501,7 +501,7 @@ static int SQLITE_TCLAPI xF5tApi(
       break;
     }
 
-    default: 
+    default:
       assert( 0 );
       break;
   }
@@ -654,9 +654,9 @@ struct F5tTokenizeCtx {
 };
 
 static int xTokenizeCb2(
-  void *pCtx, 
+  void *pCtx,
   int tflags,
-  const char *zToken, int nToken, 
+  const char *zToken, int nToken,
   int iStart, int iEnd
 ){
   F5tTokenizeCtx *p = (F5tTokenizeCtx*)pCtx;
@@ -782,9 +782,9 @@ struct F5tTokenizerInstance {
 };
 
 static int f5tTokenizerCreate(
-  void *pCtx, 
-  const char **azArg, 
-  int nArg, 
+  void *pCtx,
+  const char **azArg,
+  int nArg,
   Fts5Tokenizer **ppOut
 ){
   F5tTokenizerModule *pMod = (F5tTokenizerModule*)pCtx;
@@ -826,10 +826,10 @@ static void f5tTokenizerDelete(Fts5Tokenizer *p){
 }
 
 static int f5tTokenizerTokenize(
-  Fts5Tokenizer *p, 
+  Fts5Tokenizer *p,
   void *pCtx,
   int flags,
-  const char *pText, int nText, 
+  const char *pText, int nText,
   int (*xToken)(void*, int, const char*, int, int, int)
 ){
   F5tTokenizerInstance *pInst = (F5tTokenizerInstance*)p;
@@ -845,7 +845,7 @@ static int f5tTokenizerTokenize(
   pInst->pContext->pCtx = pCtx;
   pInst->pContext->xToken = xToken;
 
-  assert( 
+  assert(
       flags==FTS5_TOKENIZE_DOCUMENT
    || flags==FTS5_TOKENIZE_AUX
    || flags==FTS5_TOKENIZE_QUERY
@@ -912,14 +912,14 @@ static int SQLITE_TCLAPI f5tTokenizerReturn(
   }
 
   zToken = Tcl_GetStringFromObj(objv[objc-3], &nToken);
-  if( Tcl_GetIntFromObj(interp, objv[objc-2], &iStart) 
-   || Tcl_GetIntFromObj(interp, objv[objc-1], &iEnd) 
+  if( Tcl_GetIntFromObj(interp, objv[objc-2], &iStart)
+   || Tcl_GetIntFromObj(interp, objv[objc-1], &iEnd)
   ){
     return TCL_ERROR;
   }
 
   if( p->xToken==0 ){
-    Tcl_AppendResult(interp, 
+    Tcl_AppendResult(interp,
         "sqlite3_fts5_token may only be used by tokenizer callback", 0
     );
     return TCL_ERROR;
@@ -947,7 +947,7 @@ static void f5tDelTokenizer(void *pCtx){
 ** a tokenizer instance is created (fts5_tokenizer.xCreate), any tokenizer
 ** arguments are appended to SCRIPT and the result executed.
 **
-** The value returned by (SCRIPT + args) is itself a tcl script. This 
+** The value returned by (SCRIPT + args) is itself a tcl script. This
 ** script - call it SCRIPT2 - is executed to tokenize text using the
 ** tokenizer instance "returned" by SCRIPT. Specifically, to tokenize
 ** text SCRIPT2 is invoked with a single argument appended to it - the

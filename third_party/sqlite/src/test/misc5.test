@@ -18,7 +18,7 @@
 set testdir [file dirname $argv0]
 source $testdir/tester.tcl
 
-# Build records using the MakeRecord opcode such that the size of the 
+# Build records using the MakeRecord opcode such that the size of the
 # header is at the transition point in the size of a varint.
 #
 # This test causes an assertion failure or a buffer overrun in version
@@ -473,36 +473,36 @@ ifcapable subquery {
       INSERT INTO songs VALUES(4,'three',5);
       INSERT INTO songs VALUES(5,'one',7);
       INSERT INTO songs VALUES(6,'two',11);
-      SELECT DISTINCT artist 
-      FROM (    
-       SELECT DISTINCT artist    
-       FROM songs      
-       WHERE songid IN (    
-        SELECT songid    
-        FROM songs    
-        WHERE LOWER(artist) = (    
+      SELECT DISTINCT artist
+      FROM (
+       SELECT DISTINCT artist
+       FROM songs
+       WHERE songid IN (
+        SELECT songid
+        FROM songs
+        WHERE LOWER(artist) = (
           -- This sub-query is indeterminate. Because there is no ORDER BY,
           -- it may return 'one', 'two' or 'three'. Because of this, the
-	  -- outermost parent query may correctly return any of 'one', 'two' 
+	  -- outermost parent query may correctly return any of 'one', 'two'
           -- or 'three' as well.
-          SELECT DISTINCT LOWER(artist)    
-          FROM (      
+          SELECT DISTINCT LOWER(artist)
+          FROM (
             -- This sub-query returns the table:
             --
             --     two      14
             --     one      10
             --     three    5
             --
-            SELECT DISTINCT artist,sum(timesplayed) AS total      
-            FROM songs      
-            GROUP BY LOWER(artist)      
-            ORDER BY total DESC      
-            LIMIT 10    
-          )    
-          WHERE artist <> '' 
-        )  
-       )       
-      )  
+            SELECT DISTINCT artist,sum(timesplayed) AS total
+            FROM songs
+            GROUP BY LOWER(artist)
+            ORDER BY total DESC
+            LIMIT 10
+          )
+          WHERE artist <> ''
+        )
+       )
+      )
       ORDER BY LOWER(artist) ASC;
     }
   } {two}
@@ -549,8 +549,8 @@ sqlite3 db test.db
 ifcapable subquery&&compound {
   do_test misc5-6.1 {
     catchsql {
-      SELECT * FROM sqlite_master 
-      UNION ALL 
+      SELECT * FROM sqlite_master
+      UNION ALL
       SELECT * FROM sqlite_master
       LIMIT (SELECT count(*) FROM blah);
     }
@@ -560,9 +560,9 @@ ifcapable subquery&&compound {
       CREATE TABLE logs(msg TEXT, timestamp INTEGER, dbtime TEXT);
     }
     catchsql {
-      SELECT * FROM logs WHERE logs.oid >= (SELECT head FROM logs_base) 
-      UNION ALL 
-      SELECT * FROM logs 
+      SELECT * FROM logs WHERE logs.oid >= (SELECT head FROM logs_base)
+      UNION ALL
+      SELECT * FROM logs
       LIMIT (SELECT lmt FROM logs_base) ;
     }
   } {1 {no such table: logs_base}}
@@ -601,7 +601,7 @@ do_test misc5-7.2 {
   } db2
 } {0 {}}
 db2 close
-  
+
 
 # Ticket #1911
 #

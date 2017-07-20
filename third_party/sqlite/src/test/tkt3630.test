@@ -8,7 +8,7 @@
 #    May you share freely, never taking more than you give.
 #
 #*************************************************************************
-# 
+#
 # This file checks to make sure the "TEMP" or "TEMPORARY" keyword is
 # omitted from the schema of a table that is created using that
 # keyword.  Ticket #3630.

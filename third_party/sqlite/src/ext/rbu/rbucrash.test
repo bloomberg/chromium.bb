@@ -47,7 +47,7 @@ db_save_and_close
 #
 # Check that the same number of steps are required to apply the rbu
 # update using many calls to sqlite3rbu_step() on a single rbu handle
-# as required to apply it using a series of rbu handles, on each of 
+# as required to apply it using a series of rbu handles, on each of
 # which sqlite3rbu_step() is called once.
 #
 do_test 1.1 {
@@ -78,7 +78,7 @@ do_test 1.2 {
 #   1. This process starts the rbu update and calls sqlite3rbu_step()
 #      $nPre times. Then closes the rbu update handle.
 #
-#   2. A second process resumes the rbu update and attempts to call 
+#   2. A second process resumes the rbu update and attempts to call
 #      sqlite3rbu_step() $nStep times before closing the handle. A
 #      crash is simulated during each xSync() of file test.db2.
 #
@@ -109,7 +109,7 @@ proc do_rbu_crash_test {tn nPre nStep} {
     if {$nPre>0} {
       sqlite3rbu rbu test.db file:test.db2
       set i 0
-      for {set i 0} {$i < $nPre} {incr i} { 
+      for {set i 0} {$i < $nPre} {incr i} {
         if {[rbu step]!="SQLITE_OK"} break
       }
       rbu close

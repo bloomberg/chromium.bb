@@ -36,7 +36,7 @@ foreach {tn outcome stmt} {
   8 1 { CREATE VIRTUAL TABLE t1 USING fts5(x) }
   9 2 { CREATE VIRTUAL TABLE t1 USING fts5(x, columnsize=11) }
 } {
-  execsql { 
+  execsql {
     DROP TABLE IF EXISTS t1;
   }
   if {$outcome==2} {
@@ -66,19 +66,19 @@ do_execsql_test 2.2 {
 do_execsql_test 2.3 {
   SELECT rowid FROM t2 WHERE t2 MATCH 'b'; SELECT '::';
   SELECT rowid FROM t2 WHERE t2 MATCH 'e'; SELECT '::';
-  SELECT rowid FROM t2 WHERE t2 MATCH 'h'; 
+  SELECT rowid FROM t2 WHERE t2 MATCH 'h';
 } {3 :: 1 2 3 :: 2 3}
 do_execsql_test 2.4 {
   INSERT INTO t2(t2, rowid, x) VALUES('delete', 2, 'c d e f g h');
   SELECT rowid FROM t2 WHERE t2 MATCH 'b'; SELECT '::';
   SELECT rowid FROM t2 WHERE t2 MATCH 'e'; SELECT '::';
-  SELECT rowid FROM t2 WHERE t2 MATCH 'h'; 
+  SELECT rowid FROM t2 WHERE t2 MATCH 'h';
 } {3 :: 1 3 :: 3}
 do_execsql_test 2.5 {
   INSERT INTO t2(t2) VALUES('delete-all');
   SELECT rowid FROM t2 WHERE t2 MATCH 'b'; SELECT '::';
   SELECT rowid FROM t2 WHERE t2 MATCH 'e'; SELECT '::';
-  SELECT rowid FROM t2 WHERE t2 MATCH 'h'; 
+  SELECT rowid FROM t2 WHERE t2 MATCH 'h';
 } {:: ::}
 do_execsql_test 2.6 {
   INSERT INTO t2(rowid, x) VALUES(1, 'o t t f');

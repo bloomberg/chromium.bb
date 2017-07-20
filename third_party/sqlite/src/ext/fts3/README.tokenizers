@@ -14,17 +14,17 @@
   "simple", "porter" and "unicode".
 
   <tokenizer-args> should consist of zero or more white-space separated
-  arguments to pass to the selected tokenizer implementation. The 
-  interpretation of the arguments, if any, depends on the individual 
+  arguments to pass to the selected tokenizer implementation. The
+  interpretation of the arguments, if any, depends on the individual
   tokenizer.
 
 2. Custom Tokenizers
 
-  FTS3 allows users to provide custom tokenizer implementations. The 
-  interface used to create a new tokenizer is defined and described in 
+  FTS3 allows users to provide custom tokenizer implementations. The
+  interface used to create a new tokenizer is defined and described in
   the fts3_tokenizer.h source file.
 
-  Registering a new FTS3 tokenizer is similar to registering a new 
+  Registering a new FTS3 tokenizer is similar to registering a new
   virtual table module with SQLite. The user passes a pointer to a
   structure containing pointers to various callback functions that
   make up the implementation of the new tokenizer type. For tokenizers,
@@ -40,7 +40,7 @@
 
     SELECT fts3_tokenizer(<tokenizer-name>);
     SELECT fts3_tokenizer(<tokenizer-name>, <sqlite3_tokenizer_module ptr>);
-  
+
   Where <tokenizer-name> is a string identifying the tokenizer and
   <sqlite3_tokenizer_module ptr> is a pointer to an sqlite3_tokenizer_module
   structure encoded as an SQL blob. If the second argument is present,
@@ -60,8 +60,8 @@
 
 3. ICU Library Tokenizers
 
-  If this extension is compiled with the SQLITE_ENABLE_ICU pre-processor 
-  symbol defined, then there exists a built-in tokenizer named "icu" 
+  If this extension is compiled with the SQLITE_ENABLE_ICU pre-processor
+  symbol defined, then there exists a built-in tokenizer named "icu"
   implemented using the ICU library. The first argument passed to the
   xCreate() method (see fts3_tokenizer.h) of this tokenizer may be
   an ICU locale identifier. For example "tr_TR" for Turkish as used
@@ -73,8 +73,8 @@
   text according to the ICU rules for finding word boundaries and discards
   any tokens that consist entirely of white-space. This may be suitable
   for some applications in some locales, but not all. If more complex
-  processing is required, for example to implement stemming or 
-  discard punctuation, this can be done by creating a tokenizer 
+  processing is required, for example to implement stemming or
+  discard punctuation, this can be done by creating a tokenizer
   implementation that uses the ICU tokenizer as part of its implementation.
 
   When using the ICU tokenizer this way, it is safe to overwrite the
@@ -87,47 +87,47 @@
   the fts3_tokenizer() scalar function:
 
       int registerTokenizer(
-        sqlite3 *db, 
-        char *zName, 
+        sqlite3 *db,
+        char *zName,
         const sqlite3_tokenizer_module *p
       ){
         int rc;
         sqlite3_stmt *pStmt;
         const char zSql[] = "SELECT fts3_tokenizer(?, ?)";
-      
+
         rc = sqlite3_prepare_v2(db, zSql, -1, &pStmt, 0);
         if( rc!=SQLITE_OK ){
           return rc;
         }
-      
+
         sqlite3_bind_text(pStmt, 1, zName, -1, SQLITE_STATIC);
         sqlite3_bind_blob(pStmt, 2, &p, sizeof(p), SQLITE_STATIC);
         sqlite3_step(pStmt);
-      
+
         return sqlite3_finalize(pStmt);
       }
-      
+
       int queryTokenizer(
-        sqlite3 *db, 
-        char *zName,  
+        sqlite3 *db,
+        char *zName,
         const sqlite3_tokenizer_module **pp
       ){
         int rc;
         sqlite3_stmt *pStmt;
         const char zSql[] = "SELECT fts3_tokenizer(?)";
-      
+
         *pp = 0;
         rc = sqlite3_prepare_v2(db, zSql, -1, &pStmt, 0);
         if( rc!=SQLITE_OK ){
           return rc;
         }
-      
+
         sqlite3_bind_text(pStmt, 1, zName, -1, SQLITE_STATIC);
         if( SQLITE_ROW==sqlite3_step(pStmt) ){
           if( sqlite3_column_type(pStmt, 0)==SQLITE_BLOB ){
             memcpy(pp, sqlite3_column_blob(pStmt, 0), sizeof(*pp));
           }
         }
-      
+
         return sqlite3_finalize(pStmt);
       }

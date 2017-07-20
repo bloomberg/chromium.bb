@@ -49,8 +49,8 @@ do_test 1.1 {
 
 proc test_to_bak {} {
   foreach f {
-    test.db test.db-wal test.db-oal test.db-journal 
-    test.db2 test.db2-wal test.db2-oal test.db2-journal 
+    test.db test.db-wal test.db-oal test.db-journal
+    test.db2 test.db2-wal test.db2-oal test.db2-journal
   } {
     set t [string map {test bak} $f]
     forcedelete $t

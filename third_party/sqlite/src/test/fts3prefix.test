@@ -51,8 +51,8 @@ proc fts3_terms_and_prefixes {db tbl prefixlengths} {
       if {[string length $a(term)]<$len} continue
       incr nExpect
       set prefix [string range $a(term) 0 [expr $len-1]]
-      set r [$db one { 
-        SELECT count(*) FROM temp.prefixes WHERE 
+      set r [$db one {
+        SELECT count(*) FROM temp.prefixes WHERE
         term = $prefix AND docid = $a(docid) AND col = $a(col) AND pos = $a(pos)
       }]
       if {$r != 1} {
@@ -64,13 +64,13 @@ proc fts3_terms_and_prefixes {db tbl prefixlengths} {
     if {$nCount != $nExpect} {
       error "prefixes.count(*) is $nCount expected $nExpect"
     }
-  
+
     execsql { DROP TABLE temp.prefixes }
     execsql { DROP TABLE temp.terms }
 
     set list [list]
     $db eval "
-      SELECT sum( 1 << (16*(level%1024)) ) AS total, (level/1024) AS tree 
+      SELECT sum( 1 << (16*(level%1024)) ) AS total, (level/1024) AS tree
       FROM ${tbl}_segdir GROUP BY tree
     " {
       lappend list [list $total $tree]

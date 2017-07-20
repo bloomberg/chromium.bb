@@ -24,7 +24,7 @@ db close
 set ::enable_shared_cache [sqlite3_enable_shared_cache 1]
 
 #-------------------------------------------------------------------------
-# Warm body test. Test that an unlock-notify callback can be registered 
+# Warm body test. Test that an unlock-notify callback can be registered
 # and that it is invoked.
 #
 do_test notify1-1.1 {
@@ -88,11 +88,11 @@ do_test notify1-1.15 {
 } {1 2}
 
 #-------------------------------------------------------------------------
-# The following tests, notify1-2.*, test that deadlock is detected 
+# The following tests, notify1-2.*, test that deadlock is detected
 # correctly.
-# 
+#
 do_test notify1-2.1 {
-  execsql { 
+  execsql {
     CREATE TABLE t2(a, b);
     INSERT INTO t2 VALUES('I', 'II');
   }
@@ -180,7 +180,7 @@ do_test notify1-2.3.8 {
   set lUnlock
 } {}
 do_test notify1-2.3.9 {
-  db3 unlock_notify {lappend lUnlock db3} 
+  db3 unlock_notify {lappend lUnlock db3}
   set lUnlock
 } {db3}
 do_test notify1-2.3.10 {
@@ -196,10 +196,10 @@ catch { db2 close }
 catch { db close }
 
 #-------------------------------------------------------------------------
-# The following tests, notify1-3.* and notify1-4.*, test that callbacks 
-# can be issued when there are many (>16) connections waiting on a single 
+# The following tests, notify1-3.* and notify1-4.*, test that callbacks
+# can be issued when there are many (>16) connections waiting on a single
 # unlock event.
-# 
+#
 foreach {tn nConn} {3 20 4 76} {
   do_test notify1-$tn.1 {
     sqlite3 db test.db
@@ -240,7 +240,7 @@ db close
 # These tests, notify1-5.*, test that a malloc() failure that occurs while
 # allocating an array to use as an argument to an unlock-notify callback
 # is handled correctly.
-# 
+#
 source $testdir/malloc_common.tcl
 do_malloc_test notify1-5 -tclprep {
   set ::lUnlock [list]
@@ -275,7 +275,7 @@ do_malloc_test notify1-5 -tclprep {
 
 #-------------------------------------------------------------------------
 # Test cases notify1-6.* test cases where the following occur:
-# 
+#
 #   notify1-6.1.*: Test encountering an SQLITE_LOCKED error when the
 #                  "blocking connection" has already been set by a previous
 #                  SQLITE_LOCKED.
@@ -289,7 +289,7 @@ do_malloc_test notify1-5 -tclprep {
 #                  transaction, the unlock-notify callback is not invoked.
 #
 #   notify1-6.4.*: Like 6.3.*, except that instead of the second blocker
-#                  committing its transaction, the first does. The 
+#                  committing its transaction, the first does. The
 #                  unlock-notify callback is therefore invoked.
 #
 db close
@@ -303,11 +303,11 @@ do_test notify1-6.1.1 {
     CREATE TABLE t1(a, b);
     CREATE TABLE two.t2(a, b);
   }
-  execsql { 
+  execsql {
     BEGIN;
     INSERT INTO t1 VALUES(1, 2);
   } db2
-  execsql { 
+  execsql {
     BEGIN;
     INSERT INTO t2 VALUES(1, 2);
   } db3
@@ -333,7 +333,7 @@ do_test notify1-6.2.3 {
 } {1}
 
 do_test notify1-6.3.1 {
-  execsql { 
+  execsql {
     BEGIN;
     INSERT INTO t1 VALUES(3, 4);
   } db2
@@ -355,7 +355,7 @@ do_test notify1-6.3.5 {
 } {0}
 
 do_test notify1-6.4.1 {
-  execsql { 
+  execsql {
     BEGIN;
     INSERT INTO t2 VALUES(3, 4);
   } db3
@@ -373,7 +373,7 @@ db2 close
 db3 close
 
 #-------------------------------------------------------------------------
-# Test cases notify1-7.* tests that when more than one distinct 
+# Test cases notify1-7.* tests that when more than one distinct
 # unlock-notify function is registered, all are invoked correctly.
 #
 proc unlock_notify {} {
@@ -408,7 +408,7 @@ do_test notify1-7.6 {
 } {2}
 
 #-------------------------------------------------------------------------
-# Test cases notify1-8.* tests that the correct SQLITE_LOCKED extended 
+# Test cases notify1-8.* tests that the correct SQLITE_LOCKED extended
 # error code is returned in various scenarios.
 #
 do_test notify1-8.1 {
@@ -434,7 +434,7 @@ do_test notify1-8.4 {
 } {SQLITE_LOCKED_SHAREDCACHE}
 
 do_test notify1-8.X {
-  execsql { COMMIT } 
+  execsql { COMMIT }
 } {}
 
 #-------------------------------------------------------------------------
@@ -451,7 +451,7 @@ do_test notify1-9.2 {
   execsql { SELECT * FROM t1 } db3
 } {1 2 3 4 5 6 7 8}
 do_test notify1-9.3 {
-  catchsql { 
+  catchsql {
     BEGIN;
     INSERT INTO t1 VALUES(9, 10);
   }
@@ -477,7 +477,7 @@ do_test notify1-9.8 {
   execsql { SELECT * FROM t1 } db3
 } {1 2 3 4 5 6 7 8}
 do_test notify1-9.9 {
-  catchsql { 
+  catchsql {
     BEGIN;
     INSERT INTO t1 VALUES(9, 10);
   }

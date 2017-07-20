@@ -80,7 +80,7 @@ struct MemBlockHdr {
 ** when this module is combined with other in the amalgamation.
 */
 static struct {
-  
+
   /*
   ** Mutex to control access to the memory allocation subsystem.
   */
@@ -91,7 +91,7 @@ static struct {
   */
   struct MemBlockHdr *pFirst;
   struct MemBlockHdr *pLast;
-  
+
   /*
   ** The number of levels of backtrace to save in new allocations.
   */
@@ -104,7 +104,7 @@ static struct {
   int nTitle;        /* Bytes of zTitle to save.  Includes '\0' and padding */
   char zTitle[100];  /* The title text */
 
-  /* 
+  /*
   ** sqlite3MallocDisallow() increments the following counter.
   ** sqlite3MallocAllow() decrements it.
   */
@@ -163,7 +163,7 @@ static struct MemBlockHdr *sqlite3MemsysGetHeader(void *pAllocation){
   pU8 = (u8*)pAllocation;
   assert( pInt[nReserve/sizeof(int)]==(int)REARGUARD );
   /* This checks any of the "extra" bytes allocated due
-  ** to rounding up to an 8 byte boundary to ensure 
+  ** to rounding up to an 8 byte boundary to ensure
   ** they haven't been overwritten.
   */
   while( nReserve-- > p->iSize ) assert( pU8[nReserve]==0x65 );
@@ -292,7 +292,7 @@ static void *sqlite3MemMalloc(int nByte){
     p = (void*)pInt;
   }
   sqlite3_mutex_leave(mem.mutex);
-  return p; 
+  return p;
 }
 
 /*
@@ -302,7 +302,7 @@ static void sqlite3MemFree(void *pPrior){
   struct MemBlockHdr *pHdr;
   void **pBt;
   char *z;
-  assert( sqlite3GlobalConfig.bMemstat || sqlite3GlobalConfig.bCoreMutex==0 
+  assert( sqlite3GlobalConfig.bMemstat || sqlite3GlobalConfig.bCoreMutex==0
        || mem.mutex!=0 );
   pHdr = sqlite3MemsysGetHeader(pPrior);
   pBt = (void**)pHdr;
@@ -328,15 +328,15 @@ static void sqlite3MemFree(void *pPrior){
   randomFill(z, sizeof(void*)*pHdr->nBacktraceSlots + sizeof(*pHdr) +
                 (int)pHdr->iSize + sizeof(int) + pHdr->nTitle);
   free(z);
-  sqlite3_mutex_leave(mem.mutex);  
+  sqlite3_mutex_leave(mem.mutex);
 }
 
 /*
 ** Change the size of an existing memory allocation.
 **
 ** For this debugging implementation, we *always* make a copy of the
-** allocation into a new place in memory.  In this way, if the 
-** higher level code is using pointer to the old allocation, it is 
+** allocation into a new place in memory.  In this way, if the
+** higher level code is using pointer to the old allocation, it is
 ** much more likely to break and we are much more liking to find
 ** the error.
 */
@@ -470,7 +470,7 @@ void sqlite3MemdebugSync(){
 }
 
 /*
-** Open the file indicated and write a log of all unfreed memory 
+** Open the file indicated and write a log of all unfreed memory
 ** allocations into that log.
 */
 void sqlite3MemdebugDump(const char *zFilename){
@@ -487,7 +487,7 @@ void sqlite3MemdebugDump(const char *zFilename){
   for(pHdr=mem.pFirst; pHdr; pHdr=pHdr->pNext){
     char *z = (char*)pHdr;
     z -= pHdr->nBacktraceSlots*sizeof(void*) + pHdr->nTitle;
-    fprintf(out, "**** %lld bytes at %p from %s ****\n", 
+    fprintf(out, "**** %lld bytes at %p from %s ****\n",
             pHdr->iSize, &pHdr[1], pHdr->nTitle ? z : "???");
     if( pHdr->nBacktrace ){
       fflush(out);
@@ -500,7 +500,7 @@ void sqlite3MemdebugDump(const char *zFilename){
   fprintf(out, "COUNTS:\n");
   for(i=0; i<NCSIZE-1; i++){
     if( mem.nAlloc[i] ){
-      fprintf(out, "   %5d: %10d %10d %10d\n", 
+      fprintf(out, "   %5d: %10d %10d %10d\n",
             i*8, mem.nAlloc[i], mem.nCurrent[i], mem.mxCurrent[i]);
     }
   }

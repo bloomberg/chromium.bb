@@ -35,8 +35,8 @@ label     .title -anchor w -text "Node 1:" -background white -borderwidth 0
 
 set rtree_tables [list]
 db eval {
-  SELECT name 
-  FROM sqlite_master 
+  SELECT name
+  FROM sqlite_master
   WHERE type='table' AND sql LIKE '%virtual%table%using%rtree%'
 } {
   set nCol [expr [llength [db eval "pragma table_info($name)"]]/6]

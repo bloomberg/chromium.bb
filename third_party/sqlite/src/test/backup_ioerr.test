@@ -17,8 +17,8 @@
 set testdir [file dirname $argv0]
 source $testdir/tester.tcl
 
-proc data_checksum {db file} { 
-  $db one "SELECT md5sum(a, b) FROM ${file}.t1" 
+proc data_checksum {db file} {
+  $db one "SELECT md5sum(a, b) FROM ${file}.t1"
 }
 proc test_contents {name db1 file1 db2 file2} {
   $db2 eval {select * from sqlite_master}
@@ -73,7 +73,7 @@ proc clear_ioerr_simulation {} {
 }
 
 #--------------------------------------------------------------------
-# The following procedure runs with SQLite's IO error simulation 
+# The following procedure runs with SQLite's IO error simulation
 # enabled.
 #
 #   1) Start with a reasonably sized database. One that includes the
@@ -91,7 +91,7 @@ proc clear_ioerr_simulation {} {
 #      * the call to backup_step() returns an SQLITE_IOERR_XXX error code.
 #
 #      * after the failed call to backup_step() but before the call to
-#        backup_finish() the destination database handle error code and 
+#        backup_finish() the destination database handle error code and
 #        error message remain unchanged.
 #
 #      * the call to backup_finish() returns an SQLITE_IOERR_XXX error code.
@@ -99,20 +99,20 @@ proc clear_ioerr_simulation {} {
 #      * following the call to backup_finish(), the destination database
 #        handle has been populated with an error code and error message.
 #
-#   4) Write to the database via the source database connection. Check 
+#   4) Write to the database via the source database connection. Check
 #      that:
 #
 #      * If an IO error occurs while writing the source database, the
-#        write operation should report an IO error. The backup should 
+#        write operation should report an IO error. The backup should
 #        proceed as normal.
 #
-#      * If an IO error occurs while updating the backup, the write 
+#      * If an IO error occurs while updating the backup, the write
 #        operation should proceed normally. The error should be reported
 #        from the next call to backup_step() (in step 5 of this test
 #        procedure).
 #
-#   5) Step the backup process to finish the backup. If an IO error is 
-#      reported, then the backup process is concluded with a call to 
+#   5) Step the backup process to finish the backup. If an IO error is
+#      reported, then the backup process is concluded with a call to
 #      backup_finish().
 #
 #      Test that if an IO error occurs, or if one occurred while updating
@@ -125,8 +125,8 @@ proc clear_ioerr_simulation {} {
 #     the contents of the backup database should match that of the
 #     source database.
 #
-#   * If the backup fails (backup_finish() returns other than SQLITE_OK), 
-#     then the contents of the backup database should be as they were 
+#   * If the backup fails (backup_finish() returns other than SQLITE_OK),
+#     then the contents of the backup database should be as they were
 #     before the operation was started.
 #
 # The following factors are varied:

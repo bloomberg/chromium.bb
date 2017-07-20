@@ -272,7 +272,7 @@ do_execsql_test 15.1 {
   CREATE VIRTUAL TABLE t1 USING fts5(x, detail=none);
   BEGIN;
     INSERT INTO t1(rowid, x) VALUES(1, 'sqlite');
-    INSERT INTO t1(rowid, x) VALUES(2, 'sqlite'); 
+    INSERT INTO t1(rowid, x) VALUES(2, 'sqlite');
   COMMIT;
 } {}
 
@@ -363,11 +363,11 @@ do_execsql_test 17.4 {
 }
 do_execsql_test 17.5 { SELECT * FROM t2('x:b* OR y:a*') }
 do_execsql_test 17.5 { COMMIT ; SELECT * FROM t2('x:b* OR y:a*') }
-do_execsql_test 17.6 { 
+do_execsql_test 17.6 {
   SELECT * FROM t2('x:b* OR y:a*') WHERE rowid>55
 }
 
 #db eval {SELECT rowid, fts5_decode_none(rowid, block) aS r FROM t2_data} {puts $r}
-  
+
 finish_test
 

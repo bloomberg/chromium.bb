@@ -92,10 +92,10 @@ foreach {tn expr res} {
   9  y    {6}
   10 z    {6}
 } {
-  do_execsql_test 2.7.$tn.1 { 
+  do_execsql_test 2.7.$tn.1 {
     SELECT rowid FROM t1 WHERE t1 MATCH $expr ORDER BY rowid DESC
   } $res
-  do_execsql_test 2.7.$tn.2 { 
+  do_execsql_test 2.7.$tn.2 {
     SELECT rowid FROM t1 WHERE t1 MATCH $expr ORDER BY rowid ASC
   } [lsort -integer $res]
 }
@@ -120,7 +120,7 @@ foreach {tn a b} {
    9 {abash abase abate abashing abashed} {abandon abandoned}
    10 {abate abandoning abandons abasement aback} {abandon abandoning}
 } {
-  do_execsql_test 3.1.$tn.1 { INSERT INTO t1 VALUES($a, $b) } 
+  do_execsql_test 3.1.$tn.1 { INSERT INTO t1 VALUES($a, $b) }
   do_execsql_test 3.1.$tn.2 { INSERT INTO t1(t1) VALUES('integrity-check') }
 }
 

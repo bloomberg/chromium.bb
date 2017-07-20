@@ -24,7 +24,7 @@ proc delete_all {} {
 
 proc copydb {} {
   foreach f [glob -nocomplain test3*] { file delete $f }
-  foreach f [glob -nocomplain test2*] { 
+  foreach f [glob -nocomplain test2*] {
     set p [string range $f 5 end]
     file copy "test2$p" "test3$p"
   }
@@ -97,7 +97,7 @@ do_test 1.3.0 {
   copydb
   files
 } [list {*}{
-  test3.database test3.database-journal test3.database001 
+  test3.database test3.database-journal test3.database001
   test3.database002 test3.database003
 }]
 do_test 1.3.1 {
@@ -115,7 +115,7 @@ do_test 1.4.0 {
   copydb
   files
 } [list {*}{
-  test3.database test3.database-shm test3.database-wal test3.database001 
+  test3.database test3.database-shm test3.database-wal test3.database001
   test3.database002 test3.database003
 }]
 do_test 1.4.1 {
@@ -138,12 +138,12 @@ ifcapable 8_3_names {
     copydb
     files
   } {test3.db test3.nal}
-  
+
   do_test 2.1.1 {
     sqlite3_delete_database test3.db
     files
   } {}
-  
+
   do_test 2.2.0 {
     execsql {
       COMMIT;
@@ -164,7 +164,7 @@ ifcapable 8_3_names {
   sqlite3_multiplex_initialize "" 0
   sqlite3 db file:test2.db?8_3_names=1 -uri 1 -vfs multiplex
   sqlite3_multiplex_control db "main" chunk_size 32768
-  
+
   do_test 2.3.0 {
     execsql { PRAGMA auto_vacuum = 0; }
     execsql {
@@ -177,14 +177,14 @@ ifcapable 8_3_names {
     copydb
     files
   } [list {*}{
-    test3.001 test3.002 test3.003 test3.db test3.nal 
+    test3.001 test3.002 test3.003 test3.db test3.nal
   }]
   do_test 2.3.1 {
     sqlite3_delete_database test3.db
     files
   } {}
-  
-  
+
+
   do_test 2.4.0 {
     execsql {
       COMMIT;
@@ -194,7 +194,7 @@ ifcapable 8_3_names {
     copydb
     files
   } [list {*}{
-    test3.001 test3.002 test3.003 test3.db test3.db-shm test3.wal 
+    test3.001 test3.002 test3.003 test3.db test3.db-shm test3.wal
   }]
   do_test 2.4.1 {
     sqlite3_delete_database test3.db
@@ -204,7 +204,7 @@ ifcapable 8_3_names {
 
 db close
 delete_all
-sqlite3_multiplex_shutdown 
+sqlite3_multiplex_shutdown
 
 do_test 3.0 {
   file mkdir dir2.db

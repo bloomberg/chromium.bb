@@ -132,20 +132,20 @@ do_test corrupt2-2.1 {
   forcedelete corrupt.db-journal
   forcecopy test.db corrupt.db
 
-  sqlite3 db2 corrupt.db 
+  sqlite3 db2 corrupt.db
   execsql "
     $::presql
     CREATE INDEX a1 ON abc(a);
     CREATE INDEX a2 ON abc(b);
     PRAGMA writable_schema = 1;
-    UPDATE sqlite_master 
+    UPDATE sqlite_master
       SET name = 'a3', sql = 'CREATE INDEX a3' || substr(sql, 16, 10000)
       WHERE type = 'index';
     PRAGMA writable_schema = 0;
   " db2
 
   db2 close
-  sqlite3 db2 corrupt.db 
+  sqlite3 db2 corrupt.db
   catchsql "
     $::presql
     SELECT * FROM sqlite_master;
@@ -157,7 +157,7 @@ db2 close
 do_test corrupt2-3.1 {
   forcedelete corrupt.db
   forcedelete corrupt.db-journal
-  sqlite3 db2 corrupt.db 
+  sqlite3 db2 corrupt.db
 
   execsql "
     $::presql
@@ -185,10 +185,10 @@ do_test corrupt2-3.1 {
   set zCelloffset [read $fd 2]
   binary scan $zCelloffset S iCelloffset
   seek $fd [expr 1024*3 + $iCelloffset]
-  puts -nonewline $fd "\00\00\00\00" 
+  puts -nonewline $fd "\00\00\00\00"
   close $fd
 
-  sqlite3 db2 corrupt.db 
+  sqlite3 db2 corrupt.db
   catchsql "
     $::presql
     DROP TABLE t1;
@@ -207,7 +207,7 @@ unset -nocomplain result
 do_test corrupt2-5.1 {
   forcedelete corrupt.db
   forcedelete corrupt.db-journal
-  sqlite3 db2 corrupt.db 
+  sqlite3 db2 corrupt.db
 
   execsql "
     $::presql
@@ -241,7 +241,7 @@ do_test corrupt2-5.1 {
   puts -nonewline $fd $zChildPage
   close $fd
 
-  sqlite3 db2 corrupt.db 
+  sqlite3 db2 corrupt.db
   db2 eval $::presql
   db2 eval {SELECT rowid FROM t1} {
     set result [db2 eval {pragma integrity_check}]
@@ -264,7 +264,7 @@ proc corruption_test {args} {
   forcedelete corrupt.db
   forcedelete corrupt.db-journal
 
-  sqlite3 db corrupt.db 
+  sqlite3 db corrupt.db
   db eval $::presql
   eval $A(-tclprep)
   db eval $A(-sqlprep)
@@ -279,14 +279,14 @@ proc corruption_test {args} {
 ifcapable autovacuum {
   # The tests within this block - corrupt2-6.* - aim to test corruption
   # detection within an incremental-vacuum. When an incremental-vacuum
-  # step is executed, the last non-free page of the database file is 
+  # step is executed, the last non-free page of the database file is
   # moved into a free space in the body of the file. After doing so,
   # the page reference in the parent page must be updated to refer
   # to the new location. These tests test the outcome of corrupting
   # that page reference before performing the incremental vacuum.
   #
 
-  # The last page in the database page is the second page 
+  # The last page in the database page is the second page
   # in an overflow chain.
   #
   corruption_test -sqlprep {
@@ -362,8 +362,8 @@ ifcapable autovacuum {
       hexio_write corrupt.db 28 00000000
     } -test {
       do_test corrupt2-6.4 {
-        catchsql " 
-          $::presql 
+        catchsql "
+          $::presql
           BEGIN EXCLUSIVE;
           COMMIT;
         "
@@ -393,7 +393,7 @@ corruption_test -sqlprep $sqlprep -corrupt {
   #
   set fd [open corrupt.db r+]
   fconfigure $fd -translation binary -encoding binary
-  seek $fd [expr 1024*2 + 8] 
+  seek $fd [expr 1024*2 + 8]
   set zRightChild [read $fd 4]
   binary scan $zRightChild I iRightChild
   seek $fd [expr 1024*($iRightChild-1)]
@@ -411,7 +411,7 @@ corruption_test -sqlprep $sqlprep -corrupt {
   #
   set fd [open corrupt.db r+]
   fconfigure $fd -translation binary -encoding binary
-  seek $fd [expr 1024*2 + 12] 
+  seek $fd [expr 1024*2 + 12]
   set zCellOffset [read $fd 2]
   binary scan $zCellOffset S iCellOffset
   seek $fd [expr 1024*2 + $iCellOffset]
@@ -432,7 +432,7 @@ corruption_test -sqlprep $sqlprep -corrupt {
   #
   set fd [open corrupt.db r+]
   fconfigure $fd -translation binary -encoding binary
-  seek $fd [expr 1024*1 + 8] 
+  seek $fd [expr 1024*1 + 8]
   set zRightChild [read $fd 4]
   binary scan $zRightChild I iRightChild
   seek $fd [expr 1024*($iRightChild-1)]
@@ -500,7 +500,7 @@ corruption_test -sqlprep {
   DELETE FROM t1;
 } -corrupt {
   set offset [expr [file size corrupt.db] - 1024]
-  hexio_write corrupt.db $offset FF 
+  hexio_write corrupt.db $offset FF
   hexio_write corrupt.db 24   12345678
 } -test {
   do_test corrupt2-11.1 {
@@ -521,7 +521,7 @@ corruption_test -sqlprep {
   DELETE FROM t1;
 } -corrupt {
   set pgno [expr [file size corrupt.db] / 1024]
-  hexio_write corrupt.db [expr 1024+5*($pgno-3)] 03 
+  hexio_write corrupt.db [expr 1024+5*($pgno-3)] 03
   hexio_write corrupt.db 24   12345678
 } -test {
   do_test corrupt2-12.1 {
@@ -532,11 +532,11 @@ corruption_test -sqlprep {
 ifcapable autovacuum {
   # It is not possible for the last page in a database file to be the
   # pending-byte page (AKA the locking page). This test verifies that if
-  # an attempt is made to commit a transaction to such an auto-vacuum 
+  # an attempt is made to commit a transaction to such an auto-vacuum
   # database SQLITE_CORRUPT is returned.
   #
   corruption_test -tclprep {
-    db eval { 
+    db eval {
       PRAGMA auto_vacuum = full;
       PRAGMA page_size = 1024;
       CREATE TABLE t1(a INTEGER PRIMARY KEY, b);
@@ -579,7 +579,7 @@ do_execsql_test 14.1 {
   PRAGMA freelist_count;
 } {ok 3}
 
-# There are now 3 free pages. Modify the header-field so that it 
+# There are now 3 free pages. Modify the header-field so that it
 # (incorrectly) says that just 2 are free.
 do_test 14.2 {
   db close

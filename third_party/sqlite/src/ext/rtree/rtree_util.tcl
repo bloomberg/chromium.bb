@@ -33,14 +33,14 @@ proc rtree_depth {db zTab} {
 
 proc rtree_nodedepth {db zTab iNode} {
   set iDepth [rtree_depth $db $zTab]
-  
+
   set ii $iNode
   while {$ii != 1} {
     set sql "SELECT parentnode FROM ${zTab}_parent WHERE nodeno = $ii"
     set ii [db one $sql]
     incr iDepth -1
   }
-  
+
   return $iDepth
 }
 
@@ -76,32 +76,32 @@ proc rtree_mincells {db zTab} {
   return [expr {int($nMax/3)}]
 }
 
-# An integrity check for the rtree $zTab accessible via database 
+# An integrity check for the rtree $zTab accessible via database
 # connection $db.
 #
 proc rtree_check {db zTab} {
   array unset ::checked
- 
+
   # Check each r-tree node.
   set rc [catch {
     rtree_node_check $db $zTab 1 [rtree_depth $db $zTab]
   } msg]
   if {$rc && $msg ne ""} { error $msg }
 
-  # Check that the _rowid and _parent tables have the right 
+  # Check that the _rowid and _parent tables have the right
   # number of entries.
   set nNode   [$db one "SELECT count(*) FROM ${zTab}_node"]
   set nRow    [$db one "SELECT count(*) FROM ${zTab}"]
   set nRowid  [$db one "SELECT count(*) FROM ${zTab}_rowid"]
   set nParent [$db one "SELECT count(*) FROM ${zTab}_parent"]
 
-  if {$nNode != ($nParent+1)} { 
+  if {$nNode != ($nParent+1)} {
     error "Wrong number of entries in ${zTab}_parent"
   }
-  if {$nRow != $nRowid} { 
+  if {$nRow != $nRowid} {
     error "Wrong number of entries in ${zTab}_rowid"
   }
-  
+
   return $rc
 }
 
@@ -135,9 +135,9 @@ proc rtree_node_check {db zTab iNode iDepth} {
     }
   }
 
-  set mapping_table "${zTab}_parent" 
+  set mapping_table "${zTab}_parent"
   set mapping_sql "SELECT parentnode FROM $mapping_table WHERE rowid = \$rowid"
-  if {$iDepth==0} { 
+  if {$iDepth==0} {
     set mapping_table "${zTab}_rowid"
     set mapping_sql "SELECT nodeno FROM $mapping_table WHERE rowid = \$rowid"
   }

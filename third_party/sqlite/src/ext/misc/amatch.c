@@ -24,32 +24,32 @@
 **     );
 **
 ** When it is created, the new amatch table must be supplied with the
-** the name of a table V and columns V.W and V.L such that 
+** the name of a table V and columns V.W and V.L such that
 **
 **     SELECT W FROM V WHERE L=$language
 **
 ** returns the allowed vocabulary for the match.  If the "vocabulary_language"
 ** or L columnname is left unspecified or is an empty string, then no
-** filtering of the vocabulary by language is performed. 
+** filtering of the vocabulary by language is performed.
 **
 ** For efficiency, it is essential that the vocabulary table be indexed:
 **
 **     CREATE vocab_index ON V(W)
 **
-** A separate edit-cost-table provides scoring information that defines 
+** A separate edit-cost-table provides scoring information that defines
 ** what it means for one string to be "close" to another.
 **
 ** The edit-cost-table must contain exactly four columns (more precisely,
 ** the statement "SELECT * FROM <edit-cost-table>" must return records
 ** that consist of four columns). It does not matter what the columns are
-** named. 
+** named.
 **
 ** Each row in the edit-cost-table represents a single character
-** transformation going from user input to the vocabulary. The leftmost 
+** transformation going from user input to the vocabulary. The leftmost
 ** column of the row (column 0) contains an integer identifier of the
 ** language to which the transformation rule belongs (see "MULTIPLE LANGUAGES"
 ** below). The second column of the row (column 1) contains the input
-** character or characters - the characters of user input. The third 
+** character or characters - the characters of user input. The third
 ** column contains characters as they appear in the vocabulary table.
 ** And the fourth column contains the integer cost of making the
 ** transformation. For example:
@@ -63,10 +63,10 @@
 ** The first row inserted into the edit-cost-table by the SQL script
 ** above indicates that the cost of having an extra 'a' in the vocabulary
 ** table that is missing in the user input 100.  (All costs are integers.
-** Overall cost must not exceed 16777216.)  The second INSERT statement 
+** Overall cost must not exceed 16777216.)  The second INSERT statement
 ** creates a rule saying that the cost of having a single letter 'b' in
 ** user input which is missing in the vocabulary table is 87.  The third
-** INSERT statement mean that the cost of matching an 'o' in user input 
+** INSERT statement mean that the cost of matching an 'o' in user input
 ** against an 'oe' in the vocabulary table is 38.  And so forth.
 **
 ** The following rules are special:
@@ -110,7 +110,7 @@
 ** It is important to put some kind of a limit on the amatch output.  This
 ** can be either in the form of a LIMIT clause at the end of the query,
 ** or better, a "distance<NNN" constraint where NNN is some number.  The
-** running time and memory requirement is exponential in the value of NNN 
+** running time and memory requirement is exponential in the value of NNN
 ** so you want to make sure that NNN is not too big.  A value of NNN that
 ** is about twice the average transformation cost seems to give good results.
 **
@@ -132,14 +132,14 @@
 ** MULTIPLE LANGUAGES
 **
 ** Normally, the "iLang" value associated with all character transformations
-** in the edit-cost-table is zero. However, if required, the amatch 
-** virtual table allows multiple languages to be defined. Each query uses 
-** only a single iLang value.   This allows, for example, a single 
+** in the edit-cost-table is zero. However, if required, the amatch
+** virtual table allows multiple languages to be defined. Each query uses
+** only a single iLang value.   This allows, for example, a single
 ** amatch table to support multiple languages.
 **
-** By default, only the rules with iLang=0 are used. To specify an 
+** By default, only the rules with iLang=0 are used. To specify an
 ** alternative language, a "language = ?" expression must be added to the
-** WHERE clause of a SELECT, where ? is the integer identifier of the desired 
+** WHERE clause of a SELECT, where ? is the integer identifier of the desired
 ** language. For example:
 **
 **   SELECT word, distance FROM ex1
@@ -445,7 +445,7 @@ static void amatchAvlRemove(amatch_avl **ppHead, amatch_avl *pOld){
 **
 ** amatch_cost is the "cost" of an edit operation.
 **
-** amatch_len is the length of a matching string.  
+** amatch_len is the length of a matching string.
 **
 ** amatch_langid is an ruleset identifier.
 */
@@ -487,8 +487,8 @@ struct amatch_rule {
   char zTo[4];             /* Tranform to V.W value (extra space appended) */
 };
 
-/* 
-** A amatch virtual-table object 
+/*
+** A amatch virtual-table object
 */
 struct amatch_vtab {
   sqlite3_vtab base;         /* Base class - must be first */
@@ -595,22 +595,22 @@ static int amatchLoadOneRule(
   }
 
   if( rCost<=0 || rCost>AMATCH_MX_COST ){
-    *pzErr = sqlite3_mprintf("%s: cost must be between 1 and %d", 
+    *pzErr = sqlite3_mprintf("%s: cost must be between 1 and %d",
         p->zClassName, AMATCH_MX_COST
     );
     rc = SQLITE_ERROR;
   }else
   if( nFrom>AMATCH_MX_LENGTH || nTo>AMATCH_MX_LENGTH ){
-    *pzErr = sqlite3_mprintf("%s: maximum string length is %d", 
+    *pzErr = sqlite3_mprintf("%s: maximum string length is %d",
         p->zClassName, AMATCH_MX_LENGTH
     );
-    rc = SQLITE_ERROR;    
+    rc = SQLITE_ERROR;
   }else
   if( iLang<0 || iLang>AMATCH_MX_LANGID ){
-    *pzErr = sqlite3_mprintf("%s: iLang must be between 0 and %d", 
+    *pzErr = sqlite3_mprintf("%s: iLang must be between 0 and %d",
         p->zClassName, AMATCH_MX_LANGID
     );
-    rc = SQLITE_ERROR;    
+    rc = SQLITE_ERROR;
   }else
   if( strcmp(zFrom,"")==0 && strcmp(zTo,"?")==0 ){
     if( p->rIns==0 || p->rIns>rCost ) p->rIns = rCost;
@@ -692,7 +692,7 @@ static int amatchLoadRules(
   sqlite3_free(zSql);
 
   /* All rules are now in a singly linked list starting at pHead. This
-  ** block sorts them by cost and then sets amatch_vtab.pRule to point to 
+  ** block sorts them by cost and then sets amatch_vtab.pRule to point to
   ** point to the head of the sorted list.
   */
   if( rc==SQLITE_OK ){
@@ -726,7 +726,7 @@ static int amatchLoadRules(
 
 /*
 ** This function converts an SQL quoted string into an unquoted string
-** and returns a pointer to a buffer allocated using sqlite3_malloc() 
+** and returns a pointer to a buffer allocated using sqlite3_malloc()
 ** containing the result. The caller should eventually free this buffer
 ** using sqlite3_free.
 **
@@ -975,7 +975,7 @@ static int amatchClose(sqlite3_vtab_cursor *cur){
 ** Render a 24-bit unsigned integer as a 4-byte base-64 number.
 */
 static void amatchEncodeInt(int x, char *z){
-  static const char a[] = 
+  static const char a[] =
     "0123456789"
     "ABCDEFGHIJ"
     "KLMNOPQRST"
@@ -1036,7 +1036,7 @@ static void amatchAddWord(
   amatch_avl *pOther;
   int nBase, nTail;
   char zBuf[4];
-  
+
   if( rCost>pCur->rLimit ){
     return;
   }
@@ -1217,11 +1217,11 @@ static int amatchNext(sqlite3_vtab_cursor *cur){
       zNext[i] = 0;
       zBuf[nWord] = 0;
       if( p->rIns>0 ){
-        amatchAddWord(pCur, pWord->rCost+p->rIns, pWord->nMatch, 
+        amatchAddWord(pCur, pWord->rCost+p->rIns, pWord->nMatch,
                       zBuf, zNext);
       }
       if( p->rSub>0 ){
-        amatchAddWord(pCur, pWord->rCost+p->rSub, pWord->nMatch+nNextIn, 
+        amatchAddWord(pCur, pWord->rCost+p->rSub, pWord->nMatch+nNextIn,
                       zBuf, zNext);
       }
       if( p->rIns<0 && p->rSub<0 ) break;
@@ -1254,7 +1254,7 @@ static int amatchNext(sqlite3_vtab_cursor *cur){
 ** prior to any amatchColumn, amatchRowid, or amatchEof call.
 */
 static int amatchFilter(
-  sqlite3_vtab_cursor *pVtabCursor, 
+  sqlite3_vtab_cursor *pVtabCursor,
   int idxNum, const char *idxStr,
   int argc, sqlite3_value **argv
 ){
@@ -1348,7 +1348,7 @@ static int amatchEof(sqlite3_vtab_cursor *cur){
 **   bit 3:   Term like (C) found
 **
 ** If bit-1 is set, $str is always in filter.argv[0].  If bit-2 is set
-** then $value is in filter.argv[0] if bit-1 is clear and is in 
+** then $value is in filter.argv[0] if bit-1 is clear and is in
 ** filter.argv[1] if bit-1 is set.  If bit-3 is set, then $ruleid is
 ** in filter.argv[0] if bit-1 and bit-2 are both zero, is in
 ** filter.argv[1] if exactly one of bit-1 and bit-2 are set, and is in
@@ -1368,7 +1368,7 @@ static int amatchBestIndex(
   pConstraint = pIdxInfo->aConstraint;
   for(i=0; i<pIdxInfo->nConstraint; i++, pConstraint++){
     if( pConstraint->usable==0 ) continue;
-    if( (iPlan & 1)==0 
+    if( (iPlan & 1)==0
      && pConstraint->iColumn==0
      && pConstraint->op==SQLITE_INDEX_CONSTRAINT_MATCH
     ){
@@ -1410,12 +1410,12 @@ static int amatchBestIndex(
     pIdxInfo->orderByConsumed = 1;
   }
   pIdxInfo->estimatedCost = (double)10000;
-   
+
   return SQLITE_OK;
 }
 
 /*
-** The xUpdate() method.  
+** The xUpdate() method.
 **
 ** This implementation disallows DELETE and UPDATE.  The only thing
 ** allowed is INSERT into the "command" column.
@@ -1430,12 +1430,12 @@ static int amatchUpdate(
   const unsigned char *zCmd;
   (void)pRowid;
   if( argc==1 ){
-    pVTab->zErrMsg = sqlite3_mprintf("DELETE from %s is not allowed", 
+    pVTab->zErrMsg = sqlite3_mprintf("DELETE from %s is not allowed",
                                       p->zSelf);
     return SQLITE_ERROR;
   }
   if( sqlite3_value_type(argv[0])!=SQLITE_NULL ){
-    pVTab->zErrMsg = sqlite3_mprintf("UPDATE of %s is not allowed", 
+    pVTab->zErrMsg = sqlite3_mprintf("UPDATE of %s is not allowed",
                                       p->zSelf);
     return SQLITE_ERROR;
   }
@@ -1449,7 +1449,7 @@ static int amatchUpdate(
   }
   zCmd = sqlite3_value_text(argv[2+AMATCH_COL_COMMAND]);
   if( zCmd==0 ) return SQLITE_OK;
-  
+
   return SQLITE_OK;
 }
 
@@ -1491,8 +1491,8 @@ static sqlite3_module amatchModule = {
 __declspec(dllexport)
 #endif
 int sqlite3_amatch_init(
-  sqlite3 *db, 
-  char **pzErrMsg, 
+  sqlite3 *db,
+  char **pzErrMsg,
   const sqlite3_api_routines *pApi
 ){
   int rc = SQLITE_OK;

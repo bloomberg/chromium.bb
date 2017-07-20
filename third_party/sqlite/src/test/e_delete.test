@@ -9,7 +9,7 @@
 #
 #***********************************************************************
 #
-# This file implements tests to verify that the "testable statements" in 
+# This file implements tests to verify that the "testable statements" in
 # the lang_delete.html document are correct.
 #
 set testdir [file dirname $argv0]
@@ -149,7 +149,7 @@ do_delete_tests e_delete-2.1 -error {
 # attached is not in the temp database, then DELETE statements within
 # the trigger body must operate on tables within the same database as
 # it.
-# 
+#
 #   This is tested in two parts. First, check that if a table of the
 #   specified name does not exist, an error is raised. Secondly, test
 #   that if tables with the specified name exist in multiple databases,
@@ -182,7 +182,7 @@ do_delete_tests e_delete-2.2.2 {
       END;
       INSERT INTO aux.t8 VALUES(1, 2);
 
-      SELECT count(*) FROM aux.t9 
+      SELECT count(*) FROM aux.t9
         UNION ALL
       SELECT count(*) FROM aux2.t9;
   } {0 1}
@@ -193,7 +193,7 @@ do_delete_tests e_delete-2.2.2 {
       END;
       INSERT INTO main.t8 VALUES(1, 2);
 
-      SELECT count(*) FROM temp.t7 
+      SELECT count(*) FROM temp.t7
         UNION ALL
       SELECT count(*) FROM main.t7
         UNION ALL
@@ -222,7 +222,7 @@ do_execsql_test e_delete-2.3.1 {
   SELECT count(*) FROM temp.t7 UNION ALL SELECT count(*) FROM main.t7 UNION ALL
   SELECT count(*) FROM aux.t7  UNION ALL SELECT count(*) FROM aux2.t7;
 
-  SELECT count(*) FROM main.t8 UNION ALL SELECT count(*) FROM aux.t8  
+  SELECT count(*) FROM main.t8 UNION ALL SELECT count(*) FROM aux.t8
   UNION ALL SELECT count(*) FROM aux2.t8;
 
   SELECT count(*) FROM aux.t9  UNION ALL SELECT count(*) FROM aux2.t9;
@@ -242,7 +242,7 @@ do_execsql_test e_delete-2.3.3 {
   SELECT count(*) FROM temp.t7 UNION ALL SELECT count(*) FROM main.t7 UNION ALL
   SELECT count(*) FROM aux.t7  UNION ALL SELECT count(*) FROM aux2.t7;
 
-  SELECT count(*) FROM main.t8 UNION ALL SELECT count(*) FROM aux.t8  
+  SELECT count(*) FROM main.t8 UNION ALL SELECT count(*) FROM aux.t8
   UNION ALL SELECT count(*) FROM aux2.t8;
 
   SELECT count(*) FROM aux.t9  UNION ALL SELECT count(*) FROM aux2.t9;
@@ -455,7 +455,7 @@ do_delete_tests e_delete-3.9 -repair rebuild_t1 -query {
 #     In practice, rows are always deleted in rowid order.
 #
 do_delete_tests e_delete-3.10 -repair {
-  rebuild_t1 
+  rebuild_t1
   catchsql { DROP TABLE t1log }
   execsql {
     CREATE TABLE t1log(x);
@@ -473,5 +473,5 @@ do_delete_tests e_delete-3.10 -repair {
 }
 
 }
- 
+
 finish_test

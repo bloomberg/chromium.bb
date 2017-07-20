@@ -37,7 +37,7 @@ foreach zIndex [list {
   /* no-op */
 } {
   CREATE INDEX i1 ON t1(a);
-}] { 
+}] {
   incr iTest
   do_test count-1.$iTest.1 {
     execsql {
@@ -47,7 +47,7 @@ foreach zIndex [list {
     execsql $zIndex
     execsql { SELECT count(*) FROM t1 }
   } {0}
-  
+
   do_test count-1.$iTest.2 {
     execsql {
       INSERT INTO t1 VALUES(1, 2);
@@ -68,7 +68,7 @@ foreach zIndex [list {
       SELECT count(*) FROM t1;
     }
   } {256}
-  
+
   do_test count-1.$iTest.4 {
     execsql {
       INSERT INTO t1 SELECT * FROM t1;          --  512
@@ -78,7 +78,7 @@ foreach zIndex [list {
       SELECT count(*) FROM t1;
     }
   } {4096}
-  
+
   do_test count-1.$iTest.5 {
     execsql {
       BEGIN;

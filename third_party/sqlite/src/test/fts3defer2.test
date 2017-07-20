@@ -14,7 +14,7 @@ set testdir [file dirname $argv0]
 source $testdir/tester.tcl
 source $testdir/malloc_common.tcl
 ifcapable !fts3||!fts4_deferred {
-  finish_test 
+  finish_test
   return
 }
 
@@ -31,7 +31,7 @@ db func mit mit
 #-----------------------------------------------------------------------------
 # This block of tests - fts3defer2-1.* - test the interaction of deferred NEAR
 # expressions and the snippet, offsets and matchinfo functions.
-# 
+#
 do_execsql_test 1.1.1 {
   CREATE VIRTUAL TABLE t1 USING fts4;
 }
@@ -82,7 +82,7 @@ do_execsql_test 1.3.1 { DROP TABLE t1 }
 
 #-----------------------------------------------------------------------------
 # Test cases fts3defer2-2.* focus specifically on the matchinfo function.
-# 
+#
 do_execsql_test 2.1.1 "CREATE VIRTUAL TABLE t2 USING fts4"
 do_execsql_test 2.1.2 "INSERT INTO t2 VALUES('[string repeat {a } 10000]')"
 do_execsql_test 2.1.3 "INSERT INTO t2 VALUES('b [string repeat {z } 10000]')"
@@ -94,7 +94,7 @@ do_execsql_test 2.1.5 {
 foreach {tn sql} {
   1 {}
   2 { INSERT INTO t2(t2) VALUES('optimize') }
-  3 { UPDATE t2_segments SET block = zeroblob(length(block)) 
+  3 { UPDATE t2_segments SET block = zeroblob(length(block))
       WHERE length(block)>10000;
   }
 } {
@@ -148,7 +148,7 @@ do_execsql_test 2.3.2 "
 foreach {tn sql} {
   1 {}
   2 { INSERT INTO t3(t3) VALUES('optimize') }
-  3 { UPDATE t3_segments SET block = zeroblob(length(block)) 
+  3 { UPDATE t3_segments SET block = zeroblob(length(block))
       WHERE length(block)>10000;
   }
 } {

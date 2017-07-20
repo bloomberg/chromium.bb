@@ -29,11 +29,11 @@ static SQLITE_WSD int mutexIsInit = 0;
 /*
 ** Initialize the mutex system.
 */
-int sqlite3MutexInit(void){ 
+int sqlite3MutexInit(void){
   int rc = SQLITE_OK;
   if( !sqlite3GlobalConfig.mutex.xMutexAlloc ){
     /* If the xMutexAlloc method has not been set, then the user did not
-    ** install a mutex implementation via sqlite3_config() prior to 
+    ** install a mutex implementation via sqlite3_config() prior to
     ** sqlite3_initialize() being called. This block copies pointers to
     ** the default implementation into the sqlite3GlobalConfig structure.
     */
@@ -140,7 +140,7 @@ int sqlite3_mutex_try(sqlite3_mutex *p){
 
 /*
 ** The sqlite3_mutex_leave() routine exits a mutex that was previously
-** entered by the same thread.  The behavior is undefined if the mutex 
+** entered by the same thread.  The behavior is undefined if the mutex
 ** is not currently entered. If a NULL pointer is passed as an argument
 ** this function is a no-op.
 */

@@ -25,7 +25,7 @@ if { [info commands sqlite3_table_column_metadata] eq "" } {
 }
 
 # Use shared-cache mode for this test.
-# 
+#
 db close
 set ::enable_shared_cache [sqlite3_enable_shared_cache]
 sqlite3_enable_shared_cache 1
@@ -56,7 +56,7 @@ do_test thread004-1.2 {
     sqlite3_close $::DB
     set nErr
   }
-  
+
   # Run two threads. The first thread opens and closes database test.db
   # repeatedly. Each time this happens, the in-memory schema used by
   # all connections to test.db is discarded.
@@ -68,7 +68,7 @@ do_test thread004-1.2 {
   unset -nocomplain finished
   thread_spawn finished(1) $thread_procs $ThreadOne
   thread_spawn finished(2) $thread_procs $ThreadTwo
-  
+
   foreach t {1 2} {
     if {![info exists finished($t)]} { vwait finished($t) }
   }

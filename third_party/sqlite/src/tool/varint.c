@@ -36,7 +36,7 @@ static int putVarint(unsigned char *p, u64 v){
       v >>= 7;
     }
     return 9;
-  }    
+  }
   n = 0;
   do{
     buf[n++] = (unsigned char)((v & 0x7f) | 0x80);
@@ -59,7 +59,7 @@ int main(int argc, char **argv){
   unsigned char zHex[20];
 
   if( argc==1 ){
-    fprintf(stderr, 
+    fprintf(stderr,
          "Usage:\n"
          "  %s HH HH HH ...   Convert varint to decimal\n"
          "  %s DDDDD          Convert decimal to varint\n"
@@ -67,7 +67,7 @@ int main(int argc, char **argv){
          argv[0], argv[0]);
     exit(1);
   }
-  if( argc>2 
+  if( argc>2
    || (strlen(argv[1])==2 && hexValue(argv[1][0])>=0 && hexValue(argv[1][1])>=0)
   ){
     /* Hex to decimal */

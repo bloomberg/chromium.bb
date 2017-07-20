@@ -129,7 +129,7 @@ do_test where6-2.14 {
 
 # Ticket [ebdbadade5b]:
 # If the ON close on a LEFT JOIN is of the form x=y where both x and y
-# are indexed columns on tables to left of the join, then do not use that 
+# are indexed columns on tables to left of the join, then do not use that
 # term with indices to either table.
 #
 do_test where6-3.1 {

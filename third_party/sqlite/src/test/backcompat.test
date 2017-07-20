@@ -19,7 +19,7 @@
 # windows), where XXX can be any string.
 #
 # This test file uses the tcl code for controlling a second testfixture
-# process located in lock_common.tcl. See the commments in lock_common.tcl 
+# process located in lock_common.tcl. See the commments in lock_common.tcl
 # for documentation of the available commands.
 #
 
@@ -139,7 +139,7 @@ proc read_file_system {} {
   set ret
 }
 proc write_file_system {data} {
-  foreach f {test.db test.db-journal test.db-wal} d $data { 
+  foreach f {test.db test.db-journal test.db-wal} d $data {
     if {[string length $d] == 0} {
       forcedelete $f
     } else {
@@ -151,7 +151,7 @@ proc write_file_system {data} {
 #-------------------------------------------------------------------------
 # Actual tests begin here.
 #
-# This first block of tests checks to see that the same database and 
+# This first block of tests checks to see that the same database and
 # journal files can be used by old and new versions. WAL and wal-index
 # files are tested separately below.
 #
@@ -159,7 +159,7 @@ do_allbackcompat_test {
 
   # Test that database files are backwards compatible.
   #
-  do_test backcompat-1.1.1 { sql1 { 
+  do_test backcompat-1.1.1 { sql1 {
     CREATE TABLE t1(a PRIMARY KEY, b UNIQUE);
     INSERT INTO t1 VALUES('abc', 'def');
   } } {}
@@ -257,7 +257,7 @@ unset ::incompatible
 
 
 #-------------------------------------------------------------------------
-# Test that WAL and wal-index files may be shared between different 
+# Test that WAL and wal-index files may be shared between different
 # SQLite versions.
 #
 do_allbackcompat_test {
@@ -299,8 +299,8 @@ do_allbackcompat_test {
 }
 
 #-------------------------------------------------------------------------
-# Test that FTS3 tables may be read/written by different versions of 
-# SQLite. 
+# Test that FTS3 tables may be read/written by different versions of
+# SQLite.
 #
 ifcapable fts3 {
   set contents {
@@ -323,9 +323,9 @@ ifcapable fts3 {
     if {[code1 {set ::sqlite_options(fts3)}]
      && [code2 {set ::sqlite_options(fts3)}]
     } {
-  
+
       do_test backcompat-3.1 { sql1 $contents } {}
-  
+
       foreach {n q} {
         1    "SELECT * FROM t1 ORDER BY a, b"
         2    "SELECT rowid FROM t1 WHERE a MATCH 'five'"
@@ -335,7 +335,7 @@ ifcapable fts3 {
       } {
         do_test backcompat-3.2 [list sql1 $q] [sql2 $q]
       }
-  
+
       do_test backcompat-3.3 { sql1 {
         INSERT INTO t1 SELECT * FROM t1;
         INSERT INTO t1 SELECT * FROM t1;
@@ -346,7 +346,7 @@ ifcapable fts3 {
         INSERT INTO t1 SELECT * FROM t1;
         INSERT INTO t1 SELECT * FROM t1;
       } } {}
-  
+
       foreach {n q} {
         1    "SELECT * FROM t1 ORDER BY a, b"
         2    "SELECT rowid FROM t1 WHERE a MATCH 'five'"
@@ -356,38 +356,38 @@ ifcapable fts3 {
       } {
         do_test backcompat-3.4 [list sql1 $q] [sql2 $q]
       }
-  
+
       set alphabet "a b c d e f g h i j k l m n o p q r s t u v w x y z 1 2 3 4"
       for {set i 0} {$i < 900} {incr i} {
         set term "[lindex $alphabet [expr $i/30]][lindex $alphabet [expr $i%30]] "
         sql1 "INSERT INTO t1 VALUES($i, '[string repeat $term 14]')"
       }
-  
+
       foreach {n q} {
         1    "SELECT * FROM t1 ORDER BY a, b"
         2    "SELECT rowid FROM t1 WHERE a MATCH 'five'"
         3    "SELECT * FROM t1 WHERE a MATCH 'five'"
         4    "SELECT offsets(t1) FROM t1 WHERE t1 MATCH 'jk'"
         5    "SELECT offsets(t1) FROM t1 WHERE t1 MATCH 'tug* OR eight'"
-  
+
         6    "SELECT offsets(t1) FROM t1 WHERE t1 MATCH 'aa'"
         7    "SELECT offsets(t1) FROM t1 WHERE t1 MATCH '44'"
         8    "SELECT offsets(t1) FROM t1 WHERE t1 MATCH 'a*'"
       } {
         do_test backcompat-3.5 [list sql1 $q] [sql2 $q]
       }
-  
-      do_test backcompat-3.6 { 
-        sql1 "SELECT optimize(t1) FROM t1 LIMIT 1" 
+
+      do_test backcompat-3.6 {
+        sql1 "SELECT optimize(t1) FROM t1 LIMIT 1"
       } {{Index optimized}}
-  
+
       foreach {n q} {
         1    "SELECT * FROM t1 ORDER BY a, b"
         2    "SELECT rowid FROM t1 WHERE a MATCH 'five'"
         3    "SELECT * FROM t1 WHERE a MATCH 'five'"
         4    "SELECT offsets(t1) FROM t1 WHERE t1 MATCH 'jk'"
         5    "SELECT offsets(t1) FROM t1 WHERE t1 MATCH 'tug* OR eight'"
-  
+
         6    "SELECT offsets(t1) FROM t1 WHERE t1 MATCH 'aa'"
         7    "SELECT offsets(t1) FROM t1 WHERE t1 MATCH '44'"
         8    "SELECT offsets(t1) FROM t1 WHERE t1 MATCH 'a*'"
@@ -396,10 +396,10 @@ ifcapable fts3 {
       }
 
       # Now test that an incremental merge can be started by one version
-      # and finished by another. And that the integrity-check still 
+      # and finished by another. And that the integrity-check still
       # passes.
       do_test backcompat-3.8 {
-        sql1 { 
+        sql1 {
           DROP TABLE IF EXISTS t1;
           DROP TABLE IF EXISTS t2;
           CREATE TABLE t1(docid, words);
@@ -418,8 +418,8 @@ ifcapable fts3 {
         }
       } {0 {0 1 2 3 4 5}}
 
-      if {[code1 { set ::sqlite_libversion }] >=3071200 
-       && [code2 { set ::sqlite_libversion }] >=3071200 
+      if {[code1 { set ::sqlite_libversion }] >=3071200
+       && [code2 { set ::sqlite_libversion }] >=3071200
       } {
         if {[code1 { set ::sqlite_libversion }]<3120000} {
           set res {0 {0 1} 1 0}
@@ -447,8 +447,8 @@ ifcapable fts3 {
 }
 
 #-------------------------------------------------------------------------
-# Test that Rtree tables may be read/written by different versions of 
-# SQLite. 
+# Test that Rtree tables may be read/written by different versions of
+# SQLite.
 #
 ifcapable rtree {
   set contents {
@@ -494,29 +494,29 @@ ifcapable rtree {
     if {[code1 {set ::sqlite_options(fts3)}]
      && [code2 {set ::sqlite_options(fts3)}]
     } {
-  
+
       do_test backcompat-4.1 { sql1 $contents } {}
-  
+
       foreach {n q} $::queries {
         do_test backcompat-4.2.$n [list sql1 $q] [sql2 $q]
       }
-  
+
       do_test backcompat-4.3 { sql1 {
         INSERT INTO t1 SELECT id+100, x1+10.0, x2+10.0, y1-10.0, y2-10.0 FROM t1;
       } } {}
-  
+
       foreach {n q} $::queries {
         do_test backcompat-4.4.$n [list sql1 $q] [sql2 $q]
       }
-  
+
       do_test backcompat-4.5 { sql2 {
         INSERT INTO t1 SELECT id+200, x1+20.0, x2+20.0, y1-20.0, y2-20.0 FROM t1;
       } } {}
-  
+
       foreach {n q} $::queries {
         do_test backcompat-4.6.$n [list sql1 $q] [sql2 $q]
       }
-  
+
     }
   }
 }

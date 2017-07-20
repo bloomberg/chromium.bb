@@ -181,7 +181,7 @@ static int sqlite3InitOne(sqlite3 *db, int iDb, char **pzErrMsg){
   }
 
   /* If there is not already a read-only (or read-write) transaction opened
-  ** on the b-tree database, open one now. If a transaction is opened, it 
+  ** on the b-tree database, open one now. If a transaction is opened, it
   ** will be closed before this function returns.  */
   sqlite3BtreeEnter(pDb->pBt);
   if( !sqlite3BtreeIsInReadTrans(pDb->pBt) ){
@@ -286,7 +286,7 @@ static int sqlite3InitOne(sqlite3 *db, int iDb, char **pzErrMsg){
   assert( db->init.busy );
   {
     char *zSql;
-    zSql = sqlite3MPrintf(db, 
+    zSql = sqlite3MPrintf(db,
         "SELECT name, rootpage, sql FROM \"%w\".%s ORDER BY rowid",
         db->aDb[iDb].zDbSName, zMasterName);
 #ifndef SQLITE_OMIT_AUTHORIZATION
@@ -314,7 +314,7 @@ static int sqlite3InitOne(sqlite3 *db, int iDb, char **pzErrMsg){
   }
   if( rc==SQLITE_OK || (db->flags&SQLITE_RecoveryMode)){
     /* Black magic: If the SQLITE_RecoveryMode flag is set, then consider
-    ** the schema loaded, even if errors occurred. In this situation the 
+    ** the schema loaded, even if errors occurred. In this situation the
     ** current sqlite3_prepare() operation will fail, but the following one
     ** will attempt to compile the supplied statement against whatever subset
     ** of the schema was loaded before the error occurred. The primary
@@ -355,7 +355,7 @@ error_out:
 int sqlite3Init(sqlite3 *db, char **pzErrMsg){
   int i, rc;
   int commit_internal = !(db->flags&SQLITE_InternChanges);
-  
+
   assert( sqlite3_mutex_held(db->mutex) );
   assert( sqlite3BtreeHoldsMutex(db->aDb[0].pBt) );
   assert( db->init.busy==0 );
@@ -389,7 +389,7 @@ int sqlite3Init(sqlite3 *db, char **pzErrMsg){
     sqlite3CommitInternalChanges(db);
   }
 
-  return rc; 
+  return rc;
 }
 
 /*
@@ -430,7 +430,7 @@ static void schemaIsValid(Parse *pParse){
     if( pBt==0 ) continue;
 
     /* If there is not already a read-only (or read-write) transaction opened
-    ** on the b-tree database, open one now. If a transaction is opened, it 
+    ** on the b-tree database, open one now. If a transaction is opened, it
     ** will be closed immediately after reading the meta-value. */
     if( !sqlite3BtreeIsInReadTrans(pBt) ){
       rc = sqlite3BtreeBeginTrans(pBt, 0);
@@ -441,7 +441,7 @@ static void schemaIsValid(Parse *pParse){
       openedTransaction = 1;
     }
 
-    /* Read the schema cookie from the database. If it does not match the 
+    /* Read the schema cookie from the database. If it does not match the
     ** value stored as part of the in-memory schema representation,
     ** set Parse.rc to SQLITE_SCHEMA. */
     sqlite3BtreeGetMeta(pBt, BTREE_SCHEMA_VERSION, (u32 *)&cookie);
@@ -468,13 +468,13 @@ static void schemaIsValid(Parse *pParse){
 int sqlite3SchemaToIndex(sqlite3 *db, Schema *pSchema){
   int i = -1000000;
 
-  /* If pSchema is NULL, then return -1000000. This happens when code in 
+  /* If pSchema is NULL, then return -1000000. This happens when code in
   ** expr.c is trying to resolve a reference to a transient table (i.e. one
-  ** created by a sub-select). In this case the return value of this 
+  ** created by a sub-select). In this case the return value of this
   ** function should never be used.
   **
   ** We return -1000000 instead of the more usual -1 simply because using
-  ** -1000000 as the incorrect index into db->aDb[] is much 
+  ** -1000000 as the incorrect index into db->aDb[] is much
   ** more likely to cause a segfault than -1 (of course there are assert()
   ** statements too, but it never hurts to play the odds).
   */
@@ -545,8 +545,8 @@ static int sqlite3Prepare(
   ** This thread is currently holding mutexes on all Btrees (because
   ** of the sqlite3BtreeEnterAll() in sqlite3LockAndPrepare()) so it
   ** is not possible for another thread to start a new schema change
-  ** while this routine is running.  Hence, we do not need to hold 
-  ** locks on the schema, we just need to make sure nobody else is 
+  ** while this routine is running.  Hence, we do not need to hold
+  ** locks on the schema, we just need to make sure nobody else is
   ** holding them.
   **
   ** Note that setting READ_UNCOMMITTED overrides most lock detection,
@@ -767,7 +767,7 @@ int sqlite3_prepare_v2(
 ** Compile the UTF-16 encoded SQL statement zSql into a statement handle.
 */
 static int sqlite3Prepare16(
-  sqlite3 *db,              /* Database handle. */ 
+  sqlite3 *db,              /* Database handle. */
   const void *zSql,         /* UTF-16 encoded SQL statement. */
   int nBytes,               /* Length of zSql in bytes. */
   int saveSqlFlag,          /* True to save SQL text into the sqlite3_stmt */
@@ -810,7 +810,7 @@ static int sqlite3Prepare16(
     int chars_parsed = sqlite3Utf8CharLen(zSql8, (int)(zTail8-zSql8));
     *pzTail = (u8 *)zSql + sqlite3Utf16ByteLen(zSql, chars_parsed);
   }
-  sqlite3DbFree(db, zSql8); 
+  sqlite3DbFree(db, zSql8);
   rc = sqlite3ApiExit(db, rc);
   sqlite3_mutex_leave(db->mutex);
   return rc;
@@ -825,7 +825,7 @@ static int sqlite3Prepare16(
 ** occurs.
 */
 int sqlite3_prepare16(
-  sqlite3 *db,              /* Database handle. */ 
+  sqlite3 *db,              /* Database handle. */
   const void *zSql,         /* UTF-16 encoded SQL statement. */
   int nBytes,               /* Length of zSql in bytes. */
   sqlite3_stmt **ppStmt,    /* OUT: A pointer to the prepared statement */
@@ -837,7 +837,7 @@ int sqlite3_prepare16(
   return rc;
 }
 int sqlite3_prepare16_v2(
-  sqlite3 *db,              /* Database handle. */ 
+  sqlite3 *db,              /* Database handle. */
   const void *zSql,         /* UTF-16 encoded SQL statement. */
   int nBytes,               /* Length of zSql in bytes. */
   sqlite3_stmt **ppStmt,    /* OUT: A pointer to the prepared statement */

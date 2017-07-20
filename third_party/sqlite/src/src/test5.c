@@ -138,7 +138,7 @@ static int SQLITE_TCLAPI test_translate(
 
   if( objc!=4 && objc!=5 ){
     Tcl_AppendResult(interp, "wrong # args: should be \"",
-        Tcl_GetStringFromObj(objv[0], 0), 
+        Tcl_GetStringFromObj(objv[0], 0),
         " <string/blob> <from enc> <to enc>", 0
     );
     return TCL_ERROR;

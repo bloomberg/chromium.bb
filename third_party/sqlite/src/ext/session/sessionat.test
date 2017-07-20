@@ -10,13 +10,13 @@
 #***********************************************************************
 #
 # Tests for the sessions module. Specifically, that a changeset can
-# be applied after ALTER TABLE ADD COLUMN has been used to add 
+# be applied after ALTER TABLE ADD COLUMN has been used to add
 # columns to tables.
 #
 
 if {![info exists testdir]} {
   set testdir [file join [file dirname [info script]] .. .. test]
-} 
+}
 source [file join [file dirname [info script]] session_common.tcl]
 source $testdir/tester.tcl
 ifcapable !session {finish_test; return}
@@ -49,7 +49,7 @@ proc reset_test {} {
 # ?.3.*: Test some INSERT, UPDATE and DELETE operations that do not
 #        require conflict handling.
 #
-# ?.4.*: Test some INSERT, UPDATE and DELETE operations that do require 
+# ?.4.*: Test some INSERT, UPDATE and DELETE operations that do require
 #        conflict handling.
 #
 # ?.5.*: Test that attempting to concat two changesets with different
@@ -124,7 +124,7 @@ eval [string map [list %WR% $trailing] {
   # 4.1: INSERT statements
   # 4.2: DELETE statements
   # 4.3: UPDATE statements
-  #  
+  #
   do_execsql_test $tn.4.1.0 {
     CREATE TABLE t4(x INTEGER PRIMARY KEY, y) %WR%;
   }
@@ -189,7 +189,7 @@ eval [string map [list %WR% $trailing] {
     {UPDATE t5 DATA {{} {} i 3 i 3} {{} {} i 9 {} {}} {i 3 i 8 i 3}}
     {UPDATE t5 CONSTRAINT {{} {} i 2 i 2} {{} {} i 10 {} {}}}
   }
-  
+
   #-----------------------------------------------------------------------
   do_execsql_test $tn.5.0 {
     CREATE TABLE t6(a, b, c, PRIMARY KEY(a, b)) %WR%;

@@ -8,7 +8,7 @@
 #    May you share freely, never taking more than you give.
 #
 #***********************************************************************
-# This file implements regression tests for SQLite library. 
+# This file implements regression tests for SQLite library.
 # This particular file does testing of casting strings into numeric
 # values.
 #

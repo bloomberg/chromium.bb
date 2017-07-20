@@ -13,7 +13,7 @@
 
 if {![info exists testdir]} {
   set testdir [file join [file dirname [info script]] .. .. test]
-} 
+}
 source [file join [file dirname [info script]] session_common.tcl]
 source $testdir/tester.tcl
 ifcapable !session {finish_test; return}
@@ -32,8 +32,8 @@ proc scksum {db dbname} {
   set txt [$db eval "SELECT * FROM $master ORDER BY type,name,sql"]
   foreach tab $alltab {
     set cols [list]
-    db eval "PRAGMA $dbname.table_info = $tab" x { 
-      lappend cols "quote($x(name))" 
+    db eval "PRAGMA $dbname.table_info = $tab" x {
+      lappend cols "quote($x(name))"
     }
     set cols [join $cols ,]
     append txt [db eval "SELECT $cols FROM $tab ORDER BY $cols"]
@@ -148,20 +148,20 @@ do_diff_test 2.4 {
   INSERT INTO t1 VALUES('hvkzyipambwdqlvwv','',-458331.50,X'DA51ED5E84');
   INSERT INTO t1 VALUES(X'C5C6B5DD','jjxrath',40917,830244);
   INSERT INTO t1 VALUES(-204877.54,X'1704C253D5F3AFA8',155120.88,NULL);
-  INSERT INTO t1 
+  INSERT INTO t1
   VALUES('ckmqmzoeuvxisxqy',X'EB5A5D3A1DD22FD1','tidhjcbvbppdt',-642987.37);
   INSERT INTO t1 VALUES(-851726,-161992,-469943,-159541);
   INSERT INTO t1 VALUES(X'4A6A667F858938',185083,X'7A',NULL);
 
   INSERT INTO aux.t1 VALUES(415075.74,'auawczkb',X'',X'57B4FAAF2595');
   INSERT INTO aux.t1 VALUES(727637,711560,-181340,'hphuo');
-  INSERT INTO aux.t1 
+  INSERT INTO aux.t1
   VALUES(-921322.81,662959,'lvlgwdgxaurr','ajjrzrbhqflsutnymgc');
   INSERT INTO aux.t1 VALUES(-146061,-377892,X'4E','gepvpvvuhszpxabbb');
   INSERT INTO aux.t1 VALUES(-851726,-161992,-469943,-159541);
   INSERT INTO aux.t1 VALUES(X'4A6A667F858938',185083,X'7A',NULL);
   INSERT INTO aux.t1 VALUES(-204877.54,X'1704C253D5F3AFA8',155120.88, 4);
-  INSERT INTO aux.t1 
+  INSERT INTO aux.t1
   VALUES('ckmqmzoeuvxisxqy',X'EB5A5D3A1DD22FD1','tidgtsplhjcbvbppdt',-642987.3);
 }
 
@@ -187,8 +187,8 @@ do_empty_diff_test 3.1
 
 #-------------------------------------------------------------------------
 # Test some error cases:
-# 
-#   1) schema mismatches between the two dbs, and 
+#
+#   1) schema mismatches between the two dbs, and
 #   2) tables with no primary keys. This is not actually an error, but
 #      should not add any changes to the session object.
 #

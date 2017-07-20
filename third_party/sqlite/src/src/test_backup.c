@@ -31,8 +31,8 @@ extern const char *sqlite3ErrName(int);
 extern int getDbPointer(Tcl_Interp *, const char *, sqlite3 **);
 
 static int SQLITE_TCLAPI backupTestCmd(
-  ClientData clientData, 
-  Tcl_Interp *interp, 
+  ClientData clientData,
+  Tcl_Interp *interp,
   int objc,
   Tcl_Obj *const*objv
 ){
@@ -115,8 +115,8 @@ static void SQLITE_TCLAPI backupTestFinish(ClientData clientData){
 **
 */
 static int SQLITE_TCLAPI backupTestInit(
-  ClientData clientData, 
-  Tcl_Interp *interp, 
+  ClientData clientData,
+  Tcl_Interp *interp,
   int objc,
   Tcl_Obj *const*objv
 ){

@@ -8,13 +8,13 @@
 #    May you share freely, never taking more than you give.
 #
 #***********************************************************************
-# The tests in this file were used while developing the SQLite 4 code. 
+# The tests in this file were used while developing the SQLite 4 code.
 #
 set testdir [file dirname $argv0]
 source $testdir/tester.tcl
 set testprefix tkt-385a5b56b9
 
-do_execsql_test 1.0 { 
+do_execsql_test 1.0 {
   CREATE TABLE t1(x, y);
   INSERT INTO t1 VALUES(1, NULL);
   INSERT INTO t1 VALUES(2, NULL);

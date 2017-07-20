@@ -93,7 +93,7 @@ do_test subquery-1.9.1 {
 } {0 1 1 1}
 do_test subquery-1.9.2 {
   execsql {
-    SELECT a FROM t1 WHERE (SELECT (y*2)>b FROM t2 WHERE a=x); 
+    SELECT a FROM t1 WHERE (SELECT (y*2)>b FROM t2 WHERE a=x);
   }
 } {3 5 7}
 
@@ -128,7 +128,7 @@ do_test subquery-1.10.4 {
     INSERT INTO t5 VALUES(5, '2003-4');
 
     SELECT period, vsum
-    FROM (SELECT 
+    FROM (SELECT
       a.period,
       (select sum(val) from t5 where period between a.period and '2002-4') vsum
       FROM t5 a where a.period between '2002-1' and '2002-4')
@@ -140,7 +140,7 @@ do_test subquery-1.10.5 {
     SELECT period, vsum from
       (select a.period,
       (select sum(val) from t5 where period between a.period and '2002-4') vsum
-    FROM t5 a where a.period between '2002-1' and '2002-4') 
+    FROM t5 a where a.period between '2002-1' and '2002-4')
     WHERE vsum < 45 ;
   }
 } {2002-2 30 2002-3 25 2002-4 15}
@@ -420,8 +420,8 @@ do_test subquery-3.5.7 {
 
 
 #------------------------------------------------------------------
-# These tests - subquery-4.* - use the TCL statement cache to try 
-# and expose bugs to do with re-using statements that have been 
+# These tests - subquery-4.* - use the TCL statement cache to try
+# and expose bugs to do with re-using statements that have been
 # passed to sqlite3_reset().
 #
 # One problem was that VDBE memory cells were not being initialized
@@ -476,7 +476,7 @@ do_test subquery-5.1 {
     INSERT INTO t5 VALUES(2,22);
     INSERT INTO t5 VALUES(3,33);
     INSERT INTO t5 VALUES(4,44);
-    SELECT b FROM t5 WHERE a IN 
+    SELECT b FROM t5 WHERE a IN
        (SELECT callcnt(y)+0 FROM t4 WHERE x="two")
   }
 } {22}

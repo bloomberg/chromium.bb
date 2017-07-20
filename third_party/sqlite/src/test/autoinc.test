@@ -369,7 +369,7 @@ ifcapable tempdb {
       INSERT INTO t3 VALUES(NULL,4);
     }
   } {}
-  
+
   ifcapable compound {
   do_test autoinc-4.4.1 {
     execsql {
@@ -377,7 +377,7 @@ ifcapable tempdb {
     }
   } {10 1 11 3 20 2 21 4}
   } ;# ifcapable compound
-  
+
   do_test autoinc-4.5 {
     execsql {
       SELECT 1, * FROM main.sqlite_sequence;
@@ -559,8 +559,8 @@ do_test autoinc-9.1 {
 } {t3 0}
 
 ifcapable trigger {
-  catchsql { pragma recursive_triggers = off } 
-  
+  catchsql { pragma recursive_triggers = off }
+
   # Ticket #3928.  Make sure that triggers to not make extra slots in
   # the SQLITE_SEQUENCE table.
   #
@@ -589,11 +589,11 @@ ifcapable trigger {
     db eval {
       DROP TRIGGER t3928r1;
       DROP TRIGGER t3928r2;
-      CREATE TRIGGER t3928r3 BEFORE UPDATE ON t3928 
+      CREATE TRIGGER t3928r3 BEFORE UPDATE ON t3928
         WHEN typeof(new.b)=='integer' BEGIN
            INSERT INTO t3928(b) VALUES('before-int-' || new.b);
       END;
-      CREATE TRIGGER t3928r4 AFTER UPDATE ON t3928 
+      CREATE TRIGGER t3928r4 AFTER UPDATE ON t3928
         WHEN typeof(new.b)=='integer' BEGIN
            INSERT INTO t3928(b) VALUES('after-int-' || new.b);
       END;
@@ -607,7 +607,7 @@ ifcapable trigger {
       SELECT * FROM sqlite_sequence WHERE name='t3928'
     }
   } {t3928 15}
-  
+
   do_test autoinc-3928.5 {
     db eval {
       CREATE TABLE t3928b(x);
@@ -638,7 +638,7 @@ ifcapable trigger {
       SELECT * FROM sqlite_sequence WHERE name LIKE 't3928%' ORDER BY name;
     }
   } {t3928 21 t3928c 6}
-  
+
   # Ticket [a696379c1f0886615541a48b35bd8181a80e88f8]
   do_test autoinc-a69637.1 {
     db eval {

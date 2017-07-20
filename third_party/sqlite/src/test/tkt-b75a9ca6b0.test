@@ -23,14 +23,14 @@ set testprefix tkt-b75a9ca6b0
 
 do_execsql_test 1 {
   CREATE TABLE t1 (x, y);
-  INSERT INTO t1 VALUES (1, 3); 
+  INSERT INTO t1 VALUES (1, 3);
   INSERT INTO t1 VALUES (2, 2);
   INSERT INTO t1 VALUES (3, 1);
 }
 
 do_execsql_test 1.1 {
   CREATE INDEX i1 ON t1(x, y);
-} 
+}
 
 set idxscan {0 0 0 {SCAN TABLE t1 USING COVERING INDEX i1}}
 set tblscan {0 0 0 {SCAN TABLE t1}}
@@ -46,7 +46,7 @@ foreach {tn q res eqp} [subst -nocommands {
 
   3 "SELECT * FROM t1 GROUP BY y, x ORDER BY y, x"
   {3 1  2 2  1 3} {$idxscan $sort}
-  
+
   4 "SELECT * FROM t1 GROUP BY x ORDER BY x"
   {1 3  2 2  3 1} {$idxscan}
 

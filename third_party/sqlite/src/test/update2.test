@@ -84,11 +84,11 @@ do_execsql_test 3.1 {
 #-------------------------------------------------------------------------
 #
 foreach {tn sql} {
-  1 { 
+  1 {
     CREATE TABLE b1(a INTEGER PRIMARY KEY, b, c);
     CREATE TABLE c1(a INTEGER PRIMARY KEY, b, c, d)
   }
-  2 { 
+  2 {
     CREATE TABLE b1(a INT PRIMARY KEY, b, c) WITHOUT ROWID;
     CREATE TABLE c1(a INT PRIMARY KEY, b, c, d) WITHOUT ROWID;
   }

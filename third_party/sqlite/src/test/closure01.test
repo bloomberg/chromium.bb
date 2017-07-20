@@ -8,7 +8,7 @@
 #    May you share freely, never taking more than you give.
 #
 #***********************************************************************
-# 
+#
 # Test cases for transitive_closure virtual table.
 
 set testdir [file dirname $argv0]
@@ -27,7 +27,7 @@ do_execsql_test 1.0 {
   INSERT INTO t1(x, y) SELECT i, nullif(i,1)/2 FROM cnt;
   CREATE INDEX t1y ON t1(y);
   COMMIT;
-  CREATE VIRTUAL TABLE cx 
+  CREATE VIRTUAL TABLE cx
    USING transitive_closure(tablename=t1, idcolumn=x, parentcolumn=y);
 } {}
 
@@ -157,12 +157,12 @@ do_timed_execsql_test 1.10-cte {
   SELECT count(*), min(id), max(id) FROM below WHERE depth=5;
 } {32 32 63}
 
-# Create a much smaller table t2 with only 32 elements 
+# Create a much smaller table t2 with only 32 elements
 db eval {
   CREATE TABLE t2(x INTEGER PRIMARY KEY, y INTEGER);
   INSERT INTO t2 SELECT x, y FROM t1 WHERE x<32;
   CREATE INDEX t2y ON t2(y);
-  CREATE VIRTUAL TABLE c2 
+  CREATE VIRTUAL TABLE c2
    USING transitive_closure(tablename=t2, idcolumn=x, parentcolumn=y);
 }
 

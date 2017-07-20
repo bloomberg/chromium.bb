@@ -10,7 +10,7 @@
 #***********************************************************************
 #
 # This file tests that if sqlite3_release_memory() is called to reclaim
-# memory from a pager that is in the error-state, SQLite does not 
+# memory from a pager that is in the error-state, SQLite does not
 # incorrectly write dirty pages out to the database (not safe to do
 # once the pager is in error state).
 #
@@ -34,7 +34,7 @@ set ::soft_limit [sqlite3_soft_heap_limit 1048576]
 # ("SQLITE_OK", "SQLITE_IOERR" etc.). The actual results returned by the
 # SQL statement, if it is a SELECT, are not available.
 #
-# This can be useful for testing because it forces SQLite to make an extra 
+# This can be useful for testing because it forces SQLite to make an extra
 # call to sqlite3_malloc() when translating from the supplied UTF-16 to
 # the UTF-8 encoding used internally.
 #
@@ -83,7 +83,7 @@ foreach locking_mode {normal exclusive} {
     opendatabases
     execsql { pragma locking_mode=exclusive }
     set nRow [db one {SELECT count(*) FROM a}]
-  
+
     # Dirty (at least) one of the pages in the cache.
     do_test ioerr5-1.$locking_mode-$iFail.1 {
       execsql {
@@ -93,14 +93,14 @@ foreach locking_mode {normal exclusive} {
     } {}
 
     # Open a read-only cursor on table "a". If the COMMIT below is
-    # interrupted by a persistent IO error, the pager will transition to 
+    # interrupted by a persistent IO error, the pager will transition to
     # PAGER_ERROR state. If there are no other read-only cursors open,
-    # from there the pager immediately discards all cached data and 
+    # from there the pager immediately discards all cached data and
     # switches to PAGER_OPEN state. This read-only cursor stops that
     # from happening, leaving the pager stuck in PAGER_ERROR state.
     #
     set channel [db incrblob -readonly a Name [db last_insert_rowid]]
-  
+
     # Now try to commit the transaction. Cause an IO error to occur
     # within this operation, which moves the pager into the error state.
     #
@@ -113,7 +113,7 @@ foreach locking_mode {normal exclusive} {
     set ::sqlite_io_error_hit 0
     set ::sqlite_io_error_persist 0
     set ::sqlite_io_error_pending 0
-  
+
     # Read the contents of the database file into a Tcl variable.
     #
     set fd [open test.db]
@@ -121,7 +121,7 @@ foreach locking_mode {normal exclusive} {
     set zDatabase [read $fd]
     close $fd
 
-    # Set a very low soft-limit and then try to compile an SQL statement 
+    # Set a very low soft-limit and then try to compile an SQL statement
     # from UTF-16 text. To do this, SQLite will need to reclaim memory
     # from the pager that is in error state. Including that associated
     # with the dirty page.
@@ -172,7 +172,7 @@ foreach locking_mode {exclusive normal} {
     opendatabases
     execsql { pragma locking_mode=exclusive }
     set nRow [db one {SELECT count(*) FROM a}]
-  
+
     do_test ioerr5-2.$locking_mode-$iFail.1 {
       execsql {
         BEGIN EXCLUSIVE;

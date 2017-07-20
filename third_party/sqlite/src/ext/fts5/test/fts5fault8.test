@@ -31,16 +31,16 @@ foreach_detail_mode $testprefix {
     INSERT INTO t1 VALUES('a b a b', NULL);
     INSERT INTO t1 VALUES(NULL, '1 2 1 2');
   }
-  
+
   do_faultsim_test 1 -faults oom-* -body {
-    execsql { 
-      SELECT rowid, fts5_test_poslist(t1) FROM t1 WHERE t1 MATCH 'b OR 2' 
+    execsql {
+      SELECT rowid, fts5_test_poslist(t1) FROM t1 WHERE t1 MATCH 'b OR 2'
     }
   } -test {
     faultsim_test_result {0 {1 {0.0.1 1.1.1} 2 {0.0.1 0.0.3} 3 {1.1.1 1.1.3}}} \
                          {1 SQLITE_NOMEM}
   }
-  
+
   do_faultsim_test 2 -faults oom-* -body {
     execsql { INSERT INTO t1(t1) VALUES('integrity-check') }
   } -test {

@@ -50,7 +50,7 @@ do_execsql_test 1.1 {
     INSERT INTO t1 VALUES(3, int2str(1));
 
     CREATE TABLE t2(a INTEGER PRIMARY KEY, b);
-    WITH c(x) AS ( VALUES(1) UNION ALL SELECT x+1 FROM c WHERE x<100 ) 
+    WITH c(x) AS ( VALUES(1) UNION ALL SELECT x+1 FROM c WHERE x<100 )
     INSERT INTO t2 SELECT x, int2str(x) FROM c;
   COMMIT;
 

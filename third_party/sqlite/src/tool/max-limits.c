@@ -37,5 +37,5 @@ int main(int argc, char **argv){
       printf("%-35s %10d\n", aLimit[j].zName, maxLimit(db, aLimit[j].eCode));
     }
     sqlite3_close(db);
-  } 
+  }
 }

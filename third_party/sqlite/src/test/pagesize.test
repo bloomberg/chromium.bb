@@ -74,7 +74,7 @@ if {![info exists SQLITE_MAX_PAGE_SIZE] || $SQLITE_MAX_PAGE_SIZE>=8192} {
       PRAGMA page_size
     }
   } 8192
-}  
+}
 foreach PGSZ {512 2048 4096 8192} {
   if {[info exists SQLITE_MAX_PAGE_SIZE]
            && $SQLITE_MAX_PAGE_SIZE<$PGSZ} continue

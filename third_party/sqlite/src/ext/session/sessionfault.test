@@ -14,7 +14,7 @@
 
 if {![info exists testdir]} {
   set testdir [file join [file dirname [info script]] .. .. test]
-} 
+}
 source [file join [file dirname [info script]] session_common.tcl]
 source $testdir/tester.tcl
 ifcapable !session {finish_test; return}
@@ -34,7 +34,7 @@ db2 close
 #-------------------------------------------------------------------------
 # Test OOM error handling when collecting and applying a simple changeset.
 #
-# Test 1.1 attaches tables individually by name to the session object. 
+# Test 1.1 attaches tables individually by name to the session object.
 # Whereas test 1.2 passes NULL to sqlite3session_attach() to attach all
 # tables.
 #
@@ -73,16 +73,16 @@ do_faultsim_test 1.2 -faults oom-* -prep {
   catch { S delete }
   faultsim_test_result {0 {}} {1 SQLITE_NOMEM}
   faultsim_integrity_check
-  if {$testrc==0} { 
+  if {$testrc==0} {
     proc xConflict {args} { return "OMIT" }
     sqlite3 db2 test.db2
     sqlite3changeset_apply db2 $::changeset xConflict
-    compare_db db db2 
+    compare_db db db2
   }
 }
 
 #-------------------------------------------------------------------------
-# The following block of tests - 2.* - are designed to check 
+# The following block of tests - 2.* - are designed to check
 # the handling of faults in the sqlite3changeset_apply() function.
 #
 catch {db close}
@@ -152,9 +152,9 @@ do_faultsim_test 3 -faults oom-* -prep {
   set {} {}
 } -test {
   faultsim_test_result {0 {}} {1 SQLITE_NOMEM}
-  if {$testrc==0} { 
+  if {$testrc==0} {
     sqlite3changeset_apply db2 [S changeset] xConflict
-    compare_db db db2 
+    compare_db db db2
   }
   catch { S delete }
   faultsim_integrity_check
@@ -213,7 +213,7 @@ do_faultsim_test 4 -faults oom-* -prep {
 }
 
 #-------------------------------------------------------------------------
-# This block of tests verifies that OOM faults in the 
+# This block of tests verifies that OOM faults in the
 # sqlite3changeset_invert() function are handled correctly.
 #
 catch {db close}
@@ -243,8 +243,8 @@ do_faultsim_test 5.1 -faults oom* -body {
     set x [list]
     sqlite3session_foreach c $::inverse { lappend x $c }
     foreach c {
-        {DELETE t1 0 .X {t xxx t yyy} {}} 
-        {INSERT t1 0 .X {} {t string i 1}} 
+        {DELETE t1 0 .X {t xxx t yyy} {}}
+        {INSERT t1 0 .X {} {t string i 1}}
         {UPDATE t1 0 .X {i 20 i 2} {i 4 {} {}}}
     } { lappend y $c }
     if {$x != $y} { error "changeset no good" }
@@ -399,8 +399,8 @@ faultsim_delete_and_reopen
 do_test 8.prep {
   sqlite3session S db main
   S attach *
-  execsql { 
-    CREATE TABLE t1(a, b, PRIMARY KEY(a)); 
+  execsql {
+    CREATE TABLE t1(a, b, PRIMARY KEY(a));
     INSERT INTO t1 VALUES(1, 2);
     INSERT INTO t1 VALUES(3, 4);
     INSERT INTO t1 VALUES(5, 6);
@@ -410,8 +410,8 @@ do_test 8.prep {
 } {}
 
 set expected [normalize_list {
-  {INSERT t1 0 X. {} {i 1 i 2}} 
-  {INSERT t1 0 X. {} {i 3 i 4}} 
+  {INSERT t1 0 X. {} {i 1 i 2}}
+  {INSERT t1 0 X. {} {i 3 i 4}}
   {INSERT t1 0 X. {} {i 5 i 6}}
 }]
 do_faultsim_test 8.1 -faults oom* -body {
@@ -431,7 +431,7 @@ do_faultsim_test 8.2 -faults oom* -body {
 
 faultsim_delete_and_reopen
 do_test 9.1.prep {
-  execsql { 
+  execsql {
     PRAGMA encoding = 'utf16';
     CREATE TABLE t1(a PRIMARY KEY, b);
   }
@@ -467,7 +467,7 @@ do_faultsim_test 9.1 -faults oom-transient -prep {
 
 faultsim_delete_and_reopen
 do_test 9.2.prep {
-  execsql { 
+  execsql {
     PRAGMA encoding = 'utf16';
     CREATE TABLE t1(a PRIMARY KEY, b);
     INSERT INTO t1 VALUES('abcdefghij', 'ABCDEFGHIJKLMNOPQRSTUV');
@@ -503,7 +503,7 @@ do_faultsim_test 9.2 -faults oom-transient -prep {
 }
 
 #-------------------------------------------------------------------------
-# Test that if a conflict-handler encounters an OOM in 
+# Test that if a conflict-handler encounters an OOM in
 # sqlite3_value_text() but goes on to return SQLITE_CHANGESET_REPLACE
 # anyway, the OOM is picked up by the sessions module.
 set bigstr [string repeat abcdefghij 100]
@@ -539,7 +539,7 @@ db close
 do_faultsim_test 10 -faults oom-tra* -prep {
   faultsim_restore_and_reopen
 } -body {
-  sqlite3changeset_apply_replace_all db $::C 
+  sqlite3changeset_apply_replace_all db $::C
 } -test {
   faultsim_test_result {0 {}} {1 SQLITE_NOMEM}
   if {$testrc==0} {
@@ -560,7 +560,7 @@ do_test 11.prep {
     BEGIN;
   }
 
-  set ::cs [changeset_from_sql { 
+  set ::cs [changeset_from_sql {
     INSERT INTO t1 VALUES(1, 2);
     INSERT INTO t2 VALUES('x', 'y');
   }]
@@ -569,7 +569,7 @@ do_test 11.prep {
   set {} {}
 } {}
 
-proc filter {x} { return [string equal t1 $x] } 
+proc filter {x} { return [string equal t1 $x] }
 faultsim_save_and_close
 
 do_faultsim_test 11 -faults oom-tra* -prep {

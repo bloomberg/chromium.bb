@@ -100,13 +100,13 @@ ifcapable stat3 {
   do_test 6.3-prep {
     execsql {
       PRAGMA writable_schema = 1;
-      CREATE TABLE sqlite_stat4 AS 
-      SELECT tbl, idx, neq, nlt, ndlt, sqlite_record(sample) AS sample 
+      CREATE TABLE sqlite_stat4 AS
+      SELECT tbl, idx, neq, nlt, ndlt, sqlite_record(sample) AS sample
       FROM sqlite_stat3;
     }
   } {}
   do_faultsim_test 6.3 -faults oom* -body {
-    execsql { 
+    execsql {
       ANALYZE sqlite_master;
       SELECT rowid FROM t1 WHERE a='abc' AND b<'y';
     }

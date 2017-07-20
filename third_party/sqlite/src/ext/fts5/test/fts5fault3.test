@@ -25,7 +25,7 @@ ifcapable !fts5 {
 #-------------------------------------------------------------------------
 # An OOM while resuming a partially completed segment merge.
 #
-db func rnddoc fts5_rnddoc 
+db func rnddoc fts5_rnddoc
 do_test 1.0 {
   expr srand(0)
   execsql {

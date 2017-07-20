@@ -39,7 +39,7 @@ do_test ptrchng-1.1 {
   execsql {
     CREATE TABLE t1(x INTEGER PRIMARY KEY, y BLOB);
     INSERT INTO t1 VALUES(1, 'abc');
-    INSERT INTO t1 VALUES(2, 
+    INSERT INTO t1 VALUES(2,
        'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234356789');
     INSERT INTO t1 VALUES(3, x'626c6f62');
     INSERT INTO t1 VALUES(4,

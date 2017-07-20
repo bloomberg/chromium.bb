@@ -36,7 +36,7 @@ do_malloc_test fkey_malloc-2 -sqlprep {
   PRAGMA foreign_keys = 1;
   CREATE TABLE t1(a, b, UNIQUE(a, b));
 } -sqlbody {
-  CREATE TABLE t2(x, y, 
+  CREATE TABLE t2(x, y,
     FOREIGN KEY(x, y) REFERENCES t1(a, b) DEFERRABLE INITIALLY DEFERRED
   );
   BEGIN;
@@ -69,7 +69,7 @@ proc catch_fk_error {zSql} {
   if {[string match {*foreign key*} $msg]} {
     return ""
   }
-  if {$msg eq "out of memory" 
+  if {$msg eq "out of memory"
    || $msg eq "FOREIGN KEY constraint failed"
    || $msg eq "constraint failed"
   } {
@@ -108,7 +108,7 @@ do_malloc_test fkey_malloc-5 -sqlprep {
 do_malloc_test fkey_malloc-6 -sqlprep {
   PRAGMA foreign_keys = 1;
   CREATE TABLE t1(
-    x PRIMARY KEY, 
+    x PRIMARY KEY,
     y REFERENCES t1 ON DELETE RESTRICT ON UPDATE SET DEFAULT
   );
   INSERT INTO t1 VALUES('abc', 'abc');

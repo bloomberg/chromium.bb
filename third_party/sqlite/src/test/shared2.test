@@ -23,13 +23,13 @@ ifcapable !shared_cache {
 }
 set ::enable_shared_cache [sqlite3_enable_shared_cache 1]
 
-# Test that if we delete all rows from a table any read-uncommitted 
+# Test that if we delete all rows from a table any read-uncommitted
 # cursors are correctly invalidated. Test on both table and index btrees.
 do_test shared2-1.1 {
   sqlite3 db1 test.db
   sqlite3 db2 test.db
 
-  # Set up some data. Table "numbers" has 64 rows after this block 
+  # Set up some data. Table "numbers" has 64 rows after this block
   # is executed.
   execsql {
     BEGIN;
@@ -46,7 +46,7 @@ do_test shared2-1.1 {
   } db1
 } {}
 do_test shared2-1.2 {
-  # Put connection 2 in read-uncommitted mode and start a SELECT on table 
+  # Put connection 2 in read-uncommitted mode and start a SELECT on table
   # 'numbers'. Half way through the SELECT, use connection 1 to delete the
   # contents of this table.
   execsql {
@@ -117,7 +117,7 @@ do_test shared2-5.1 {
   sqlite3 db test.db
   sqlite3 db2 test.db
   execsql { CREATE TABLE t2(a, b, c) }
-  
+
   # The following statement would crash when attempting to sqlite3_free()
   # a pointer allocated from a lookaside buffer.
   execsql { CREATE INDEX i1 ON t2(a) } db2

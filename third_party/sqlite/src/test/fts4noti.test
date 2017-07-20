@@ -53,17 +53,17 @@ do_execsql_test 1.x { SELECT name FROM sqlite_master } {cc}
 # Test that notindexed columns are not indexed.
 #
 foreach {tn schema} {
-  1 { 
-    CREATE VIRTUAL TABLE t1 USING fts4(a, b, c, notindexed=b); 
+  1 {
+    CREATE VIRTUAL TABLE t1 USING fts4(a, b, c, notindexed=b);
   }
-  2 { 
+  2 {
     CREATE TABLE c1(a, b, c);
     INSERT INTO c1 VALUES('one two', 'three four', 'five six');
     INSERT INTO c1 VALUES('three four', 'five six', 'one two');
-    CREATE VIRTUAL TABLE t1 USING fts4(content=c1, notindexed=b); 
+    CREATE VIRTUAL TABLE t1 USING fts4(content=c1, notindexed=b);
   }
-  3 { 
-    CREATE VIRTUAL TABLE t1 USING fts4(content="", a, b, c, notindexed=b); 
+  3 {
+    CREATE VIRTUAL TABLE t1 USING fts4(content="", a, b, c, notindexed=b);
   }
 } {
   execsql $schema
@@ -85,15 +85,15 @@ foreach {tn schema} {
 
   if {$tn!=3} {
     do_execsql_test 2.$tn.9 { INSERT INTO t1(t1) VALUES('rebuild') }
-  
+
     do_execsql_test 2.$tn.10 { SELECT docid FROM t1 WHERE t1 MATCH 'one' } {1 2}
     do_execsql_test 2.$tn.11 { SELECT docid FROM t1 WHERE t1 MATCH 'three' } {2}
     do_execsql_test 2.$tn.12 { SELECT docid FROM t1 WHERE t1 MATCH 'five' } {1}
-  
-    do_execsql_test 2.$tn.13 { 
+
+    do_execsql_test 2.$tn.13 {
       SELECT a,b,c FROM t1 WHERE docid=1
     } {{one two} {three four} {five six}}
-    do_execsql_test 2.$tn.14 { 
+    do_execsql_test 2.$tn.14 {
       SELECT a,b,c FROM t1 WHERE docid=2
     } {{three four} {five six} {one two}}
   }
@@ -112,7 +112,7 @@ do_test 3.2 {
   set v [string repeat " 1" 50000]
   set v1 "x $v"
   set v2 "y $v"
-  execsql { 
+  execsql {
     INSERT INTO t2 VALUES(1, 'x y z');
     INSERT INTO t2 VALUES(2, $v1);
     INSERT INTO t2 VALUES(3, $v2);
@@ -128,7 +128,7 @@ do_execsql_test 3.5 { SELECT x FROM t2 WHERE t2 MATCH 'x' } {1 2}
 do_execsql_test 3.6 { SELECT x FROM t2 WHERE t2 MATCH 'x 1' } {2}
 
 do_execsql_test 3.x { DROP TABLE t2 }
-  
+
 #-------------------------------------------------------------------------
 # Test that the types of notindexed columns are not modified.
 #

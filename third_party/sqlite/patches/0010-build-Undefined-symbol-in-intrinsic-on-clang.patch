@@ -31,6 +31,6 @@ index c6d2bae3a7b4..445aba9b48e4 100644
    return __builtin_mul_overflow(*pA, iB, pA);
  #else
    i64 iA = *pA;
--- 
+--
 2.11.0
 

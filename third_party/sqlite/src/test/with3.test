@@ -21,7 +21,7 @@ ifcapable {!cte} {
   return
 }
 
-# Test problems found by Kostya Serebryany using 
+# Test problems found by Kostya Serebryany using
 # LibFuzzer.  (http://llvm.org/docs/LibFuzzer.html)
 #
 do_catchsql_test 1.0 {
@@ -80,9 +80,9 @@ ifcapable analyze {
     WITH cnt(i) AS ( SELECT 1 UNION ALL SELECT i+1 FROM cnt LIMIT 1)
     SELECT * FROM cnt, y1 WHERE i=a
   } {
-    3 0 0 {SCAN TABLE cnt} 
+    3 0 0 {SCAN TABLE cnt}
     1 0 0 {COMPOUND SUBQUERIES 0 AND 0 (UNION ALL)}
-    0 0 0 {SCAN SUBQUERY 1} 
+    0 0 0 {SCAN SUBQUERY 1}
     0 1 1 {SEARCH TABLE y1 USING INDEX y1a (a=?)}
   }
 
@@ -90,9 +90,9 @@ ifcapable analyze {
     WITH cnt(i) AS ( SELECT 1 UNION ALL SELECT i+1 FROM cnt LIMIT 1000000)
     SELECT * FROM cnt, y1 WHERE i=a
   } {
-    3 0 0 {SCAN TABLE cnt} 
+    3 0 0 {SCAN TABLE cnt}
     1 0 0 {COMPOUND SUBQUERIES 0 AND 0 (UNION ALL)}
-    0 0 1 {SCAN TABLE y1} 
+    0 0 1 {SCAN TABLE y1}
     0 1 0 {SEARCH SUBQUERY 1 USING AUTOMATIC COVERING INDEX (i=?)}
   }
 }
@@ -108,12 +108,12 @@ do_eqp_test 3.2.2 {
      SELECT * FROM c, w2, w1
      WHERE c.id=w2.pk AND c.id=w1.pk;
 } {
-  2 0 0 {EXECUTE SCALAR SUBQUERY 3} 
-  3 0 0 {SCAN TABLE w2} 
+  2 0 0 {EXECUTE SCALAR SUBQUERY 3}
+  3 0 0 {SCAN TABLE w2}
   4 0 0 {SCAN TABLE w1}
-  4 1 1 {SCAN TABLE c} 
+  4 1 1 {SCAN TABLE c}
   1 0 0 {COMPOUND SUBQUERIES 0 AND 0 (UNION ALL)} 0 0 0 {SCAN SUBQUERY 1}
-  0 1 1 {SEARCH TABLE w2 USING INTEGER PRIMARY KEY (rowid=?)} 
+  0 1 1 {SEARCH TABLE w2 USING INTEGER PRIMARY KEY (rowid=?)}
   0 2 2 {SEARCH TABLE w1 USING INTEGER PRIMARY KEY (rowid=?)}
 }
 

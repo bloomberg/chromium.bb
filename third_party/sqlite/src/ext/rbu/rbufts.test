@@ -64,9 +64,9 @@ do_test 1.1.2 {
     INSERT INTO data_t1 VALUES(30, 'x y z', NULL, '.x.'); -- update
     INSERT INTO data_t1 VALUES(50, '1 2 3', 'x y z', 0);  -- insert
 
-    CREATE VIEW data0_xx AS 
-    SELECT i AS rbu_rowid, a, b, 
-    CASE WHEN rbu_control IN (0, 1) 
+    CREATE VIEW data0_xx AS
+    SELECT i AS rbu_rowid, a, b,
+    CASE WHEN rbu_control IN (0, 1)
     THEN rbu_control ELSE substr(rbu_control, 2) END AS rbu_control
     FROM data_t1;
   }
@@ -104,7 +104,7 @@ do_execsql_test 1.2.4 {
 } {2 {x y z} {d e f} 3 {y y y} {1 1 1}}
 
 #-------------------------------------------------------------------------
-# Test the outcome of attempting to delete or update a row within a 
+# Test the outcome of attempting to delete or update a row within a
 # contentless FTS table using RBU. An error.
 #
 reset_db

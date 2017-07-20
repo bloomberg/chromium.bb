@@ -35,11 +35,11 @@ if {[info exists G(isquick)]} {
 
 #
 # Usage: do_fuzzy_malloc_test <testname> ?<options>?
-# 
+#
 #     -template
 #     -sqlprep
 #     -repeats
-#     
+#
 proc do_fuzzy_malloc_test {testname args} {
   set ::fuzzyopts(-repeats) $::REPEATS
   set ::fuzzyopts(-sqlprep) {}
@@ -67,7 +67,7 @@ proc do_fuzzy_malloc_test {testname args} {
 }
 
 #----------------------------------------------------------------
-# Test malloc failure during parsing (and execution) of a fuzzily 
+# Test malloc failure during parsing (and execution) of a fuzzily
 # generated expressions.
 #
 do_fuzzy_malloc_test fuzzy_malloc-1 -template {Select [Expr]}
@@ -79,7 +79,7 @@ set ::SQLPREP {
     CREATE TABLE def(a, b, c);
     CREATE TABLE ghi(a, b, c);
     INSERT INTO abc VALUES(1.5, 3, 'a short string');
-    INSERT INTO def VALUES(NULL, X'ABCDEF', 
+    INSERT INTO def VALUES(NULL, X'ABCDEF',
         'a longer string. Long enough that it doesn''t fit in Mem.zShort');
     INSERT INTO ghi VALUES(zeroblob(1000), 'hello world', -1257900987654321);
   COMMIT;

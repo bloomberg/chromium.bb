@@ -135,6 +135,6 @@ do_test corrupt9-4.2 {
     REINDEX;
   }
 } {1 {database disk image is malformed}}
- 
+
 
 finish_test

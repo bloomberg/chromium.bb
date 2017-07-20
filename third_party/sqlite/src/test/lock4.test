@@ -44,14 +44,14 @@ do_test lock4-1.1 {
 #     4.  Commit the change to test2.db.
 #
 # Meanwhile, this process will:
-# 
+#
 #     A.  Get an exclusive lock on test.db
 #     B.  Attempt to read from test2.db but get an SQLITE_BUSY error.
 #     C.  Commit the changes to test.db thus alloing the other process
 #         to continue.
 #
 do_test lock4-1.2 {
- 
+
   # Create a script for the second process to run.
   #
   set out [open test2-script.tcl w]
@@ -100,9 +100,9 @@ do_test lock4-1.3 {
   while {[file exists test2.db-journal]} {
     after 10
   }
-  # The other process has committed its transaction on test2.db by 
-  # deleting the journal file. But it might retain the lock for a 
-  # fraction longer 
+  # The other process has committed its transaction on test2.db by
+  # deleting the journal file. But it might retain the lock for a
+  # fraction longer
   #
   after 25
   db2 eval {
@@ -110,7 +110,7 @@ do_test lock4-1.3 {
   }
 } {2}
 
-    
+
 do_test lock4-999.1 {
   rename db2 {}
 } {}

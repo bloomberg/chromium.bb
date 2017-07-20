@@ -40,7 +40,7 @@ do_not_use_codec
 #
 # backup-9.*: Test that passing a negative argument to backup_step() is
 #             interpreted as "copy the whole file".
-# 
+#
 # backup-10.*: Test writing the source database mid backup.
 #
 
@@ -84,9 +84,9 @@ do_test backup-1.3.3 {
   info commands B
 } {}
 
-# Simplest backup operation. Backup test.db to test2.db. test2.db is 
+# Simplest backup operation. Backup test.db to test2.db. test2.db is
 # initially empty. test.db uses the default page size.
-# 
+#
 do_test backup-1.4.1 {
   sqlite3_backup B db2 main db main
 } {B}
@@ -116,7 +116,7 @@ db2 close
 #   4) Integrity check the destination db. (backup-2.*.2)
 #   5) Check that the contents of the destination db is the same as that
 #      of the source db. (backup-2.*.3)
-# 
+#
 # The test is run with all possible combinations of the following
 # input parameters, except that if the destination is an in-memory
 # database, the only page size tested is 1024 bytes (the same as the
@@ -172,7 +172,7 @@ foreach nPagePerStep {1 200} {
   catch { delete_file test2.db }
   eval $zOpenScript
 
-  # Set to true if copying to an in-memory destination. Copying to an 
+  # Set to true if copying to an in-memory destination. Copying to an
   # in-memory destination is only possible if the initial destination
   # page size is the same as the source page size (in this case 1024 bytes).
   #
@@ -200,14 +200,14 @@ foreach nPagePerStep {1 200} {
       INSERT INTO t1 VALUES(5, randstr(1000,1000));
       COMMIT;
     }
-    
-    
+
+
 
     # Set up the content of the target database.
     execsql "PRAGMA ${file_dest}.page_size = ${pgsz_dest}" $db_dest
     if {$rows_dest != 0} {
       execsql "
-        BEGIN; 
+        BEGIN;
         CREATE TABLE ${file_dest}.t1(a, b);
         CREATE INDEX ${file_dest}.i1 ON t1(a, b);
       " $db_dest
@@ -218,21 +218,21 @@ foreach nPagePerStep {1 200} {
       }
       execsql COMMIT $db_dest
     }
-  
+
     # Backup the source database.
     do_test backup-2.$iTest.1 {
       sqlite3_backup B $db_dest $file_dest db main
       while {[B step $nPagePerStep]=="SQLITE_OK"} {}
       B finish
     } {SQLITE_OK}
-    
+
     # Run integrity check on the backup.
     do_test backup-2.$iTest.2 {
       execsql "PRAGMA ${file_dest}.integrity_check" $db_dest
     } {ok}
-  
+
     test_contents backup-2.$iTest.3 db main $db_dest $file_dest
-  
+
   }
 
   db close
@@ -245,14 +245,14 @@ foreach nPagePerStep {1 200} {
 #---------------------------------------------------------------------
 
 #---------------------------------------------------------------------
-# These tests, backup-3.*, ensure that nothing goes wrong if either 
+# These tests, backup-3.*, ensure that nothing goes wrong if either
 # the source or destination database are large enough to include the
 # the locking-page (the page that contains the range of bytes that
 # the locks are applied to). These tests assume that the pending
-# byte is at offset 0x00010000 (64KB offset), as set by tester.tcl, 
+# byte is at offset 0x00010000 (64KB offset), as set by tester.tcl,
 # not at the 1GB offset as it usually is.
 #
-# The test procedure is as follows (same procedure as used for 
+# The test procedure is as follows (same procedure as used for
 # the backup-2.* tests):
 #
 #   1) Populate the source database.
@@ -262,7 +262,7 @@ foreach nPagePerStep {1 200} {
 #   5) Check that the contents of the destination db is the same as that
 #      of the source db. (backup-3.*.3)
 #
-# The test procedure is run with the following parameters varied: 
+# The test procedure is run with the following parameters varied:
 #
 #   * Source database includes pending-byte page.
 #   * Source database does not include pending-byte page.
@@ -290,7 +290,7 @@ foreach nDestPgsz {512 1024 2048 4096} {
   execsql "PRAGMA page_size = $nDestPgsz" db2
   foreach db {db db2} {
     execsql {
-      BEGIN; 
+      BEGIN;
       CREATE TABLE t1(a, b);
       CREATE INDEX i1 ON t1(a, b);
       COMMIT;
@@ -310,12 +310,12 @@ foreach nDestPgsz {512 1024 2048 4096} {
     while {[B step 10]=="SQLITE_OK"} {}
     B finish
   } {SQLITE_OK}
-    
+
   # Run integrity check on the backup.
   do_test backup-3.$iTest.2 {
     execsql "PRAGMA integrity_check" db2
   } {ok}
-  
+
   test_contents backup-3.$iTest.3 db main db2 main
 
   db close
@@ -360,10 +360,10 @@ do_test backup-3.$iTest.2 {
 
 #---------------------------------------------------------------------
 # The following tests, backup-4.*, test various error conditions:
-# 
+#
 # backup-4.1.*: Test invalid database names.
 #
-# backup-4.2.*: Test that the source database cannot be detached while 
+# backup-4.2.*: Test that the source database cannot be detached while
 #               a backup is in progress.
 #
 # backup-4.3.*: Test that the source database handle cannot be closed
@@ -394,11 +394,11 @@ do_test backup-4.1.4 {
 do_test backup-4.2.1 {
   catch { forcedelete test3.db }
   catch { forcedelete test4.db }
-  execsql { 
+  execsql {
     ATTACH 'test3.db' AS aux1;
     CREATE TABLE aux1.t1(a, b);
   }
-  execsql { 
+  execsql {
     ATTACH 'test4.db' AS aux2;
     CREATE TABLE aux2.t2(a, b);
   } db2
@@ -474,7 +474,7 @@ db2 close
 # backup-5.x.1.*: Nothing special. Modify the database mid-backup.
 #
 # backup-5.x.2.*: Modify the database mid-backup so that one or more
-#                 pages are written out due to cache stress. Then 
+#                 pages are written out due to cache stress. Then
 #                 rollback the transaction.
 #
 # backup-5.x.3.*: Database is vacuumed.
@@ -488,7 +488,7 @@ db2 close
 #   1) Backing up file-to-file. The writer writes via an external pager.
 #   2) Backing up file-to-file. The writer writes via the same pager as
 #      is used by the backup operation.
-#   3) Backing up memory-to-file. 
+#   3) Backing up memory-to-file.
 #
 set iTest 0
 forcedelete bak.db-wal
@@ -524,7 +524,7 @@ foreach {writer file} {db test.db db3 test.db db :memory:} {
   } {SQLITE_DONE}
   do_test backup-5.$iTest.1.4 {
     B finish
-  } {SQLITE_OK} 
+  } {SQLITE_OK}
   integrity_check backup-5.$iTest.1.5 db2
   test_contents backup-5.$iTest.1.6 db main db2 main
 
@@ -544,7 +544,7 @@ foreach {writer file} {db test.db db3 test.db db :memory:} {
     B step 50
   } {SQLITE_OK}
   do_test backup-5.$iTest.2.3 {
-    execsql { 
+    execsql {
       BEGIN;
       UPDATE t1 SET a = a + 1;
       ROLLBACK;
@@ -553,7 +553,7 @@ foreach {writer file} {db test.db db3 test.db db :memory:} {
   } {SQLITE_DONE}
   do_test backup-5.$iTest.2.4 {
     B finish
-  } {SQLITE_OK} 
+  } {SQLITE_OK}
   integrity_check backup-5.$iTest.2.5 db2
   test_contents backup-5.$iTest.2.6 db main db2 main
 
@@ -570,7 +570,7 @@ foreach {writer file} {db test.db db3 test.db db :memory:} {
   } {SQLITE_DONE}
   do_test backup-5.$iTest.3.4 {
     B finish
-  } {SQLITE_OK} 
+  } {SQLITE_OK}
   integrity_check backup-5.$iTest.3.5 db2
   test_contents backup-5.$iTest.3.6 db main db2 main
 
@@ -582,7 +582,7 @@ foreach {writer file} {db test.db db3 test.db db :memory:} {
     B step 50
   } {SQLITE_OK}
   do_test backup-5.$iTest.4.3 {
-    execsql { 
+    execsql {
       PRAGMA page_size = 2048;
       VACUUM;
     } $writer
@@ -590,7 +590,7 @@ foreach {writer file} {db test.db db3 test.db db :memory:} {
   } {SQLITE_DONE}
   do_test backup-5.$iTest.4.4 {
     B finish
-  } {SQLITE_OK} 
+  } {SQLITE_OK}
   integrity_check backup-5.$iTest.4.5 db2
   test_contents backup-5.$iTest.4.6 db main db2 main
 
@@ -621,7 +621,7 @@ foreach {writer file} {db test.db db3 test.db db :memory:} {
     B step 8
   } {SQLITE_OK}
   do_test backup-5.$iTest.5.3 {
-    execsql { 
+    execsql {
       DELETE FROM t1;
       PRAGMA incremental_vacuum;
     } $writer
@@ -629,7 +629,7 @@ foreach {writer file} {db test.db db3 test.db db :memory:} {
   } {SQLITE_DONE}
   do_test backup-5.$iTest.5.4 {
     B finish
-  } {SQLITE_OK} 
+  } {SQLITE_OK}
   integrity_check backup-5.$iTest.5.5 db2
   test_contents backup-5.$iTest.5.6 db main db2 main
   catch {db close}
@@ -694,7 +694,7 @@ catch {db2 close}
 #
 # backup-7.1.*: Source database is externally locked (return SQLITE_BUSY).
 #
-# backup-7.2.*: Attempt to step the backup process while a 
+# backup-7.2.*: Attempt to step the backup process while a
 #               write-transaction is underway on the source pager (return
 #               SQLITE_LOCKED).
 #
@@ -733,7 +733,7 @@ do_test backup-7.1.3 {
   B step 5
 } {SQLITE_OK}
 do_test backup-7.2.1 {
-  execsql { 
+  execsql {
     BEGIN;
     INSERT INTO t1 VALUES(1, 4);
   }
@@ -828,14 +828,14 @@ catch { db3 close }
 
 #-----------------------------------------------------------------------
 # The following tests, backup-9.*, test that:
-# 
+#
 #   * Passing 0 as an argument to sqlite3_backup_step() means no pages
-#     are backed up (backup-9.1.*), and 
-#   * Passing a negative value as an argument to sqlite3_backup_step() means 
+#     are backed up (backup-9.1.*), and
+#   * Passing a negative value as an argument to sqlite3_backup_step() means
 #     all pages are backed up (backup-9.2.*).
 #
 # These tests reuse the database "test.db" left over from backup-7.*.
-# 
+#
 do_test backup-9.1.1 {
   sqlite3 db2 test2.db
   sqlite3_backup B db2 main db main
@@ -925,7 +925,7 @@ foreach {tn file rc} {
 } {
   do_test backup-10.$tn.1 {
     sqlite3 db $file
-    execsql { 
+    execsql {
       CREATE TABLE t1(a INTEGER PRIMARY KEY, b BLOB);
       BEGIN;
         INSERT INTO t1 VALUES(NULL, randomblob(200));

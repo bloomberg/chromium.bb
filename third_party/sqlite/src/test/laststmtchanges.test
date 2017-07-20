@@ -14,7 +14,7 @@
 # Note 1: changes() remains constant within a statement and only updates
 #         once the statement is finished (triggers count as part of
 #         statement).
-# Note 2: changes() is changed within the context of a trigger much like 
+# Note 2: changes() is changed within the context of a trigger much like
 #         last_insert_rowid() (see lastinsert.test), but is restored once
 #         the trigger exits.
 # Note 3: changes() is not changed by a change to a view (since everything
@@ -131,7 +131,7 @@ do_test laststmtchanges-2.3 {
 
 # Total changes caused by firing the trigger above:
 #
-#   1 from "insert into t1 values(77)" + 
+#   1 from "insert into t1 values(77)" +
 #   1 from "insert into t2 values (NULL, changes(), NULL);" +
 #   5 from "update t0 set x=x;" +
 #   1 from "update t2 set v2=changes();"

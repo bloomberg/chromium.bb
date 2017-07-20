@@ -16,7 +16,7 @@
 #include <math.h>                 /* amalgamator: keep */
 
 /*
-** Object used to iterate through all "coalesced phrase instances" in 
+** Object used to iterate through all "coalesced phrase instances" in
 ** a single column of the current row. If the phrase instances in the
 ** column being considered do not overlap, this object simply iterates
 ** through them. Or, if they do overlap (share one or more tokens in
@@ -79,7 +79,7 @@ static int fts5CInstIterNext(CInstIter *pIter){
 }
 
 /*
-** Initialize the iterator object indicated by the final parameter to 
+** Initialize the iterator object indicated by the final parameter to
 ** iterate through coalesced phrase instances in column iCol.
 */
 static int fts5CInstIterInit(
@@ -124,16 +124,16 @@ struct HighlightContext {
 
 /*
 ** Append text to the HighlightContext output string - p->zOut. Argument
-** z points to a buffer containing n bytes of text to append. If n is 
+** z points to a buffer containing n bytes of text to append. If n is
 ** negative, everything up until the first '\0' is appended to the output.
 **
-** If *pRc is set to any value other than SQLITE_OK when this function is 
-** called, it is a no-op. If an error (i.e. an OOM condition) is encountered, 
-** *pRc is set to an error code before returning. 
+** If *pRc is set to any value other than SQLITE_OK when this function is
+** called, it is a no-op. If an error (i.e. an OOM condition) is encountered,
+** *pRc is set to an error code before returning.
 */
 static void fts5HighlightAppend(
-  int *pRc, 
-  HighlightContext *p, 
+  int *pRc,
+  HighlightContext *p,
   const char *z, int n
 ){
   if( *pRc==SQLITE_OK ){
@@ -418,7 +418,7 @@ static void fts5SnippetFunction(
       sFinder.nFirst = 0;
       rc = pApi->xColumnText(pFts, i, &sFinder.zDoc, &nDoc);
       if( rc!=SQLITE_OK ) break;
-      rc = pApi->xTokenize(pFts, 
+      rc = pApi->xTokenize(pFts,
           sFinder.zDoc, nDoc, (void*)&sFinder,fts5SentenceFinderCb
       );
       if( rc!=SQLITE_OK ) break;
@@ -451,7 +451,7 @@ static void fts5SnippetFunction(
 
           if( sFinder.aFirst[jj]<io ){
             memset(aSeen, 0, nPhrase);
-            rc = fts5SnippetScore(pApi, pFts, nDocsize, aSeen, i, 
+            rc = fts5SnippetScore(pApi, pFts, nDocsize, aSeen, i,
               sFinder.aFirst[jj], nToken, &nScore, 0
             );
 
@@ -530,7 +530,7 @@ struct Fts5Bm25Data {
 ** table matched by each individual phrase within the query.
 */
 static int fts5CountCb(
-  const Fts5ExtensionApi *pApi, 
+  const Fts5ExtensionApi *pApi,
   Fts5Context *pFts,
   void *pUserData                 /* Pointer to sqlite3_int64 variable */
 ){
@@ -541,12 +541,12 @@ static int fts5CountCb(
 }
 
 /*
-** Set *ppData to point to the Fts5Bm25Data object for the current query. 
+** Set *ppData to point to the Fts5Bm25Data object for the current query.
 ** If the object has not already been allocated, allocate and populate it
 ** now.
 */
 static int fts5Bm25GetData(
-  const Fts5ExtensionApi *pApi, 
+  const Fts5ExtensionApi *pApi,
   Fts5Context *pFts,
   Fts5Bm25Data **ppData           /* OUT: bm25-data object for this query */
 ){
@@ -593,7 +593,7 @@ static int fts5Bm25GetData(
         ** is the number that contain at least one instance of the phrase
         ** under consideration.
         **
-        ** The problem with this is that if (N < 2*nHit), the IDF is 
+        ** The problem with this is that if (N < 2*nHit), the IDF is
         ** negative. Which is undesirable. So the mimimum allowable IDF is
         ** (1e-6) - roughly the same as a term that appears in just over
         ** half of set of 5,000,000 documents.  */
@@ -661,11 +661,11 @@ static void fts5Bm25Function(
   /* Determine the BM25 score for the current row. */
   for(i=0; rc==SQLITE_OK && i<pData->nPhrase; i++){
     score += pData->aIDF[i] * (
-      ( aFreq[i] * (k1 + 1.0) ) / 
+      ( aFreq[i] * (k1 + 1.0) ) /
       ( aFreq[i] + k1 * (1 - b + b * D / pData->avgdl) )
     );
   }
-  
+
   /* If no error has occurred, return the calculated score. Otherwise,
   ** throw an SQL exception.  */
   if( rc==SQLITE_OK ){

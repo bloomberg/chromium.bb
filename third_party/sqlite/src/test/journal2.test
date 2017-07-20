@@ -51,7 +51,7 @@ proc journal_op_catcher {method filename args} {
   #
   if {[info exists ::tvfs_error_on_write]} {
     if {[lsearch {xDelete xWrite xTruncate} $method]>=0} {
-      return SQLITE_IOERR 
+      return SQLITE_IOERR
     }
   }
 
@@ -90,7 +90,7 @@ do_test journal2-1.1 {
 } {xOpen test.db-journal xClose test.db-journal xDelete test.db-journal}
 do_test journal2-1.2 {
   set ::oplog [list]
-  execsql { 
+  execsql {
     PRAGMA journal_mode = truncate;
     INSERT INTO t1 VALUES(1, 2);
   }
@@ -148,10 +148,10 @@ do_test journal2-1.11 {
 # modified before the transaction is committed.
 #
 # Then, enable simulated IO errors in all calls to xDelete, xWrite
-# and xTruncate before committing the transaction and closing the 
+# and xTruncate before committing the transaction and closing the
 # database file. From the point of view of other file-system users, it
 # appears as if the process hosting [db2] unexpectedly exited.
-# 
+#
 do_test journal2-1.12 {
   sqlite3 db2 test.db
   execsql {
@@ -212,7 +212,7 @@ if {[wal_is_capable]} {
     set ::oplog
   } {}
   do_test journal2-2.2 {
-    execsql { 
+    execsql {
       CREATE TABLE t1(x);
       INSERT INTO t1 VALUES(3.14159);
     }

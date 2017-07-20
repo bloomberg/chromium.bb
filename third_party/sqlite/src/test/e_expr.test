@@ -9,7 +9,7 @@
 #
 #***********************************************************************
 #
-# This file implements tests to verify that the "testable statements" in 
+# This file implements tests to verify that the "testable statements" in
 # the lang_expr.html document are correct.
 #
 
@@ -64,8 +64,8 @@ foreach {prec opl} {
   7   AND
   8   OR
 } {
-  foreach op $opl { 
-    set ::opprec($op) $prec 
+  foreach op $opl {
+    set ::opprec($op) $prec
     lappend oplist $op
   }
 }
@@ -122,7 +122,7 @@ foreach op1 $oplist {
 
       # If $op2 groups more tightly than $op1, then the result
       # of executing $sql1 whould be the same as executing $sql3.
-      # If $op1 groups more tightly, or if $op1 and $op2 have 
+      # If $op1 groups more tightly, or if $op1 and $op2 have
       # the same precedence, then executing $sql1 should return
       # the same value as $sql2.
       #
@@ -151,33 +151,33 @@ do_test e_expr-1.1 { array names untested } {}
 # was returning {1 1 0}. This would seem to indicate that LIKE has the
 # same precedence as '<'. Which is incorrect. It has lower precedence.
 #
-do_execsql_test e_expr-1.2.1 { 
+do_execsql_test e_expr-1.2.1 {
   SELECT 0 < 2 LIKE 1,   (0 < 2) LIKE 1,   0 < (2 LIKE 1)
 } {1 1 0}
-do_execsql_test e_expr-1.2.2 { 
+do_execsql_test e_expr-1.2.2 {
   SELECT 0 LIKE 0 < 2,   (0 LIKE 0) < 2,   0 LIKE (0 < 2)
 } {0 1 0}
 
 # Showing that LIKE and == have the same precedence
 #
-do_execsql_test e_expr-1.2.3 { 
+do_execsql_test e_expr-1.2.3 {
   SELECT 2 LIKE 2 == 1,   (2 LIKE 2) == 1,    2 LIKE (2 == 1)
 } {1 1 0}
-do_execsql_test e_expr-1.2.4 { 
+do_execsql_test e_expr-1.2.4 {
   SELECT 2 == 2 LIKE 1,   (2 == 2) LIKE 1,    2 == (2 LIKE 1)
 } {1 1 0}
 
-# Showing that < groups more tightly than == (< has higher precedence). 
+# Showing that < groups more tightly than == (< has higher precedence).
 #
-do_execsql_test e_expr-1.2.5 { 
+do_execsql_test e_expr-1.2.5 {
   SELECT 0 < 2 == 1,   (0 < 2) == 1,   0 < (2 == 1)
 } {1 1 0}
-do_execsql_test e_expr-1.6 { 
+do_execsql_test e_expr-1.6 {
   SELECT 0 == 0 < 2,   (0 == 0) < 2,   0 == (0 < 2)
 } {0 1 0}
 
 #-------------------------------------------------------------------------
-# Check that the four unary prefix operators mentioned in the 
+# Check that the four unary prefix operators mentioned in the
 # documentation exist.
 #
 # EVIDENCE-OF: R-13958-53419 Supported unary prefix operators are these:
@@ -247,7 +247,7 @@ foreach {tn a b} {
 } {
   set as [db one "SELECT $a"]
   set bs [db one "SELECT $b"]
-  
+
   do_execsql_test e_expr-5.$tn "SELECT $a || $b" [list "${as}${bs}"]
 }
 
@@ -263,7 +263,7 @@ do_execsql_test e_expr-6.3 {SELECT -72%-5} {-2}
 do_execsql_test e_expr-6.4 {SELECT -72%5}  {-2}
 
 #-------------------------------------------------------------------------
-# Test that the results of all binary operators are either numeric or 
+# Test that the results of all binary operators are either numeric or
 # NULL, except for the || operator, which may evaluate to either a text
 # value or NULL.
 #
@@ -279,7 +279,7 @@ set literals {
  13     NULL
 }
 foreach op $oplist {
-  foreach {n1 rhs} $literals { 
+  foreach {n1 rhs} $literals {
   foreach {n2 lhs} $literals {
 
     set t [db one " SELECT typeof($lhs $op $rhs) "]
@@ -327,7 +327,7 @@ do_execsql_test e_expr-8.1.14 { SELECT 'ab' !=     NULL } {{}}
 do_execsql_test e_expr-8.1.15 { SELECT NULL !=     'ab' } {{}}
 do_execsql_test e_expr-8.1.16 { SELECT 'ab' !=     'ab' } {0}
 
-foreach {n1 rhs} $literals { 
+foreach {n1 rhs} $literals {
   foreach {n2 lhs} $literals {
     if {$rhs!="NULL" && $lhs!="NULL"} {
       set eq [execsql "SELECT $lhs = $rhs, $lhs != $rhs"]
@@ -347,10 +347,10 @@ foreach {n1 rhs} $literals {
 #-------------------------------------------------------------------------
 # Run some tests on the COLLATE "unary postfix operator".
 #
-# This collation sequence reverses both arguments before using 
+# This collation sequence reverses both arguments before using
 # [string compare] to compare them. For example, when comparing the
 # strings 'one' and 'four', return the result of:
-#   
+#
 #   string compare eno ruof
 #
 proc reverse_str {zStr} {
@@ -394,18 +394,18 @@ do_execsql_test e_expr-9.19 { SELECT ('abcd' <> 'ABCD')     COLLATE nocase } 1
 do_execsql_test e_expr-9.20 { SELECT  'abcd' IS NOT 'ABCD'  COLLATE nocase } 0
 do_execsql_test e_expr-9.21 { SELECT ('abcd' IS NOT 'ABCD') COLLATE nocase } 1
 
-do_execsql_test e_expr-9.22 { 
-  SELECT 'bbb' BETWEEN 'AAA' AND 'CCC' COLLATE nocase 
+do_execsql_test e_expr-9.22 {
+  SELECT 'bbb' BETWEEN 'AAA' AND 'CCC' COLLATE nocase
 } 1
-do_execsql_test e_expr-9.23 { 
-  SELECT ('bbb' BETWEEN 'AAA' AND 'CCC') COLLATE nocase 
+do_execsql_test e_expr-9.23 {
+  SELECT ('bbb' BETWEEN 'AAA' AND 'CCC') COLLATE nocase
 } 0
 
 # EVIDENCE-OF: R-58731-25439 The collating sequence set by the COLLATE
 # operator overrides the collating sequence determined by the COLLATE
 # clause in a table column definition.
 #
-do_execsql_test e_expr-9.24 { 
+do_execsql_test e_expr-9.24 {
   CREATE TABLE t24(a COLLATE NOCASE, b);
   INSERT INTO t24 VALUES('aaa', 1);
   INSERT INTO t24 VALUES('bbb', 2);
@@ -545,7 +545,7 @@ foreach {tn sql} [list                           \
 # holds a spot for a named parameter with the name :AAAA.
 #
 # Identifiers in SQLite consist of alphanumeric, '_' and '$' characters,
-# and any UTF characters with codepoints larger than 127 (non-ASCII 
+# and any UTF characters with codepoints larger than 127 (non-ASCII
 # characters).
 #
 parameter_test e_expr-11.2.1 {SELECT :AAAA}         {1 :AAAA}       -1
@@ -576,7 +576,7 @@ parameter_test e_expr-11.3.6 "SELECT @\u0080" "1 @\u0080" -1
 # include one or more occurrences of "::" and a suffix enclosed in
 # "(...)" containing any text at all.
 #
-# Note: Looks like an identifier cannot consist entirely of "::" 
+# Note: Looks like an identifier cannot consist entirely of "::"
 # characters or just a suffix. Also, the other named variable characters
 # (: and @) work the same way internally. Why not just document it that way?
 #
@@ -592,7 +592,7 @@ parameter_test e_expr-11.4.6 "SELECT \$\u0080" "1 \$\u0080" -1
 parameter_test e_expr-11.5.1 {SELECT $::::a(++--++)} {1 $::::a(++--++)} -1
 parameter_test e_expr-11.5.2 {SELECT $::a()} {1 $::a()} -1
 parameter_test e_expr-11.5.3 {SELECT $::1(::#$)} {1 $::1(::#$)} -1
- 
+
 # EVIDENCE-OF: R-11370-04520 Named parameters are also numbered. The
 # number assigned is one greater than the largest parameter number
 # already assigned.
@@ -624,7 +624,7 @@ do_test e_expr-11.7.1 {
   list [sqlite3_column_type $stmt 0] \
        [sqlite3_column_type $stmt 1] \
        [sqlite3_column_type $stmt 2] \
-       [sqlite3_column_type $stmt 3] 
+       [sqlite3_column_type $stmt 3]
 } {NULL NULL NULL NULL}
 do_test e_expr-11.7.1 { sqlite3_finalize $stmt } SQLITE_OK
 
@@ -636,14 +636,14 @@ do_test e_expr-11.7.1 { sqlite3_finalize $stmt } SQLITE_OK
 do_execsql_test e_expr-12.1.1 { SELECT 0, +0, -0 } {0 0 0}
 do_execsql_test e_expr-12.1.2 { SELECT 1, +1, -1 } {1 1 -1}
 do_execsql_test e_expr-12.1.3 { SELECT 2, +2, -2 } {2 2 -2}
-do_execsql_test e_expr-12.1.4 { 
-  SELECT 1.4, +1.4, -1.4 
+do_execsql_test e_expr-12.1.4 {
+  SELECT 1.4, +1.4, -1.4
 } {1.4 1.4 -1.4}
-do_execsql_test e_expr-12.1.5 { 
-  SELECT 1.5e+5, +1.5e+5, -1.5e+5 
+do_execsql_test e_expr-12.1.5 {
+  SELECT 1.5e+5, +1.5e+5, -1.5e+5
 } {150000.0 150000.0 -150000.0}
-do_execsql_test e_expr-12.1.6 { 
-  SELECT 0.0001, +0.0001, -0.0001 
+do_execsql_test e_expr-12.1.6 {
+  SELECT 0.0001, +0.0001, -0.0001
 } {0.0001 0.0001 -0.0001}
 
 # -- syntax diagram literal-value
@@ -688,7 +688,7 @@ foreach {tn expr} {
  12 :world
  13 $tcl
  14 $tcl(array)
-  
+
   15 cname
   16 tblname.cname
   17 dbname.tblname.cname
@@ -720,21 +720,21 @@ foreach {tn expr} {
   41 "EXPR1 IS NOT EXPR2"
   42 "EXPR1 AND EXPR2"
   43 "EXPR1 OR EXPR2"
- 
+
   44 "count(*)"
   45 "count(DISTINCT EXPR)"
   46 "substr(EXPR, 10, 20)"
   47 "changes()"
- 
+
   48 "( EXPR )"
- 
+
   49 "CAST ( EXPR AS integer )"
   50 "CAST ( EXPR AS 'abcd' )"
   51 "CAST ( EXPR AS 'ab$ $cd' )"
- 
+
   52 "EXPR COLLATE nocase"
   53 "EXPR COLLATE binary"
- 
+
   54 "EXPR1 LIKE EXPR2"
   55 "EXPR1 LIKE EXPR2 ESCAPE EXPR"
   56 "EXPR1 GLOB EXPR2"
@@ -751,11 +751,11 @@ foreach {tn expr} {
   67 "EXPR1 NOT REGEXP EXPR2 ESCAPE EXPR"
   68 "EXPR1 NOT MATCH EXPR2"
   69 "EXPR1 NOT MATCH EXPR2 ESCAPE EXPR"
- 
+
   70 "EXPR ISNULL"
   71 "EXPR NOTNULL"
   72 "EXPR NOT NULL"
- 
+
   73 "EXPR1 IS EXPR2"
   74 "EXPR1 IS NOT EXPR2"
 
@@ -787,16 +787,16 @@ foreach {tn expr} {
 } {
 
   # If the expression string being parsed contains "EXPR2", then replace
-  # string "EXPR1" and "EXPR2" with arbitrary SQL expressions. If it 
+  # string "EXPR1" and "EXPR2" with arbitrary SQL expressions. If it
   # contains "EXPR", then replace EXPR with an arbitrary SQL expression.
-  # 
+  #
   set elist [list $expr]
   if {[string match *EXPR2* $expr]} {
     set elist [list]
     foreach {e1 e2} { cname "34+22" } {
       lappend elist [string map [list EXPR1 $e1 EXPR2 $e2] $expr]
     }
-  } 
+  }
   if {[string match *EXPR* $expr]} {
     set elist2 [list]
     foreach el $elist {
@@ -810,7 +810,7 @@ foreach {tn expr} {
   set x 0
   foreach e $elist {
     incr x
-    do_test e_expr-12.3.$tn.$x { 
+    do_test e_expr-12.3.$tn.$x {
       set rc [catch { execsql "SELECT $e FROM tblname" } msg]
     } {0}
   }
@@ -861,7 +861,7 @@ foreach {tn x expr res nEval} {
 # EVIDENCE-OF: R-05155-34454 The precedence of the BETWEEN operator is
 # the same as the precedence as operators == and != and LIKE and groups
 # left to right.
-# 
+#
 # Therefore, BETWEEN groups more tightly than operator "AND", but less
 # so than "<".
 #
@@ -957,11 +957,11 @@ ifcapable !icu {
 # then the expression following the ESCAPE keyword must evaluate to a
 # string consisting of a single character.
 #
-do_catchsql_test e_expr-14.6.1 { 
-  SELECT 'A' LIKE 'a' ESCAPE '12' 
+do_catchsql_test e_expr-14.6.1 {
+  SELECT 'A' LIKE 'a' ESCAPE '12'
 } {1 {ESCAPE expression must be a single character}}
-do_catchsql_test e_expr-14.6.2 { 
-  SELECT 'A' LIKE 'a' ESCAPE '' 
+do_catchsql_test e_expr-14.6.2 {
+  SELECT 'A' LIKE 'a' ESCAPE ''
 } {1 {ESCAPE expression must be a single character}}
 do_catchsql_test e_expr-14.6.3 { SELECT 'A' LIKE 'a' ESCAPE 'x' }    {0 1}
 do_catchsql_test e_expr-14.6.4 "SELECT 'A' LIKE 'a' ESCAPE '\u00e6'" {0 1}
@@ -1073,10 +1073,10 @@ sqlite3 db test.db
 #   There is a regexp function if ICU is enabled though.
 #
 ifcapable !icu {
-  do_catchsql_test e_expr-18.1.1 { 
-    SELECT regexp('abc', 'def') 
+  do_catchsql_test e_expr-18.1.1 {
+    SELECT regexp('abc', 'def')
   } {1 {no such function: regexp}}
-  do_catchsql_test e_expr-18.1.2 { 
+  do_catchsql_test e_expr-18.1.2 {
     SELECT 'abc' REGEXP 'def'
   } {1 {no such function: REGEXP}}
 }
@@ -1104,10 +1104,10 @@ sqlite3 db test.db
 # EVIDENCE-OF: R-42037-37826 The default match() function implementation
 # raises an exception and is not really useful for anything.
 #
-do_catchsql_test e_expr-19.1.1 { 
-  SELECT 'abc' MATCH 'def' 
+do_catchsql_test e_expr-19.1.1 {
+  SELECT 'abc' MATCH 'def'
 } {1 {unable to use function MATCH in the requested context}}
-do_catchsql_test e_expr-19.1.2 { 
+do_catchsql_test e_expr-19.1.2 {
   SELECT match('abc', 'def')
 } {1 {unable to use function MATCH in the requested context}}
 
@@ -1156,16 +1156,16 @@ db func var var
 foreach {a b c} {0 0 0} break
 set varlist [list]
 do_execsql_test e_expr-21.1.1 {
-  SELECT CASE WHEN var('a') THEN 'A' 
-              WHEN var('b') THEN 'B' 
+  SELECT CASE WHEN var('a') THEN 'A'
+              WHEN var('b') THEN 'B'
               WHEN var('c') THEN 'C' END
 } {{}}
 do_test e_expr-21.1.2 { set varlist } {a b c}
 set varlist [list]
 do_execsql_test e_expr-21.1.3 {
-  SELECT CASE WHEN var('c') THEN 'C' 
-              WHEN var('b') THEN 'B' 
-              WHEN var('a') THEN 'A' 
+  SELECT CASE WHEN var('c') THEN 'C'
+              WHEN var('b') THEN 'B'
+              WHEN var('a') THEN 'A'
               ELSE 'no result'
   END
 } {{no result}}
@@ -1177,24 +1177,24 @@ do_test e_expr-21.1.4 { set varlist } {c b a}
 #
 foreach {a b c} {0 1 0} break
 do_execsql_test e_expr-21.2.1 {
-  SELECT CASE WHEN var('a') THEN 'A' 
-              WHEN var('b') THEN 'B' 
-              WHEN var('c') THEN 'C' 
+  SELECT CASE WHEN var('a') THEN 'A'
+              WHEN var('b') THEN 'B'
+              WHEN var('c') THEN 'C'
               ELSE 'no result'
   END
 } {B}
 foreach {a b c} {0 1 1} break
 do_execsql_test e_expr-21.2.2 {
-  SELECT CASE WHEN var('a') THEN 'A' 
-              WHEN var('b') THEN 'B' 
+  SELECT CASE WHEN var('a') THEN 'A'
+              WHEN var('b') THEN 'B'
               WHEN var('c') THEN 'C'
               ELSE 'no result'
   END
 } {B}
 foreach {a b c} {0 0 1} break
 do_execsql_test e_expr-21.2.3 {
-  SELECT CASE WHEN var('a') THEN 'A' 
-              WHEN var('b') THEN 'B' 
+  SELECT CASE WHEN var('a') THEN 'A'
+              WHEN var('b') THEN 'B'
               WHEN var('c') THEN 'C'
               ELSE 'no result'
   END
@@ -1206,8 +1206,8 @@ do_execsql_test e_expr-21.2.3 {
 #
 foreach {a b c} {0 0 0} break
 do_execsql_test e_expr-21.3.1 {
-  SELECT CASE WHEN var('a') THEN 'A' 
-              WHEN var('b') THEN 'B' 
+  SELECT CASE WHEN var('a') THEN 'A'
+              WHEN var('b') THEN 'B'
               WHEN var('c') THEN 'C'
               ELSE 'no result'
   END
@@ -1218,8 +1218,8 @@ do_execsql_test e_expr-21.3.1 {
 #
 db nullvalue null
 do_execsql_test e_expr-21.3.2 {
-  SELECT CASE WHEN var('a') THEN 'A' 
-              WHEN var('b') THEN 'B' 
+  SELECT CASE WHEN var('a') THEN 'A'
+              WHEN var('b') THEN 'B'
               WHEN var('c') THEN 'C'
   END
 } {null}
@@ -1351,17 +1351,17 @@ do_execsql_test e_expr-24.1.2 {
 set varlist [list]
 foreach {a b c} {0 1 0} break
 do_execsql_test e_expr-25.1.1 {
-  SELECT CASE WHEN var('a') THEN 'A' 
-              WHEN var('b') THEN 'B' 
-              WHEN var('c') THEN 'C' 
+  SELECT CASE WHEN var('a') THEN 'A'
+              WHEN var('b') THEN 'B'
+              WHEN var('c') THEN 'C'
   END
 } {B}
 do_test e_expr-25.1.2 { set ::varlist } {a b}
 set varlist [list]
 do_execsql_test e_expr-25.1.3 {
-  SELECT CASE '0' WHEN var('a') THEN 'A' 
-                  WHEN var('b') THEN 'B' 
-                  WHEN var('c') THEN 'C' 
+  SELECT CASE '0' WHEN var('a') THEN 'A'
+                  WHEN var('b') THEN 'B'
+                  WHEN var('c') THEN 'C'
   END
 } {A}
 do_test e_expr-25.1.4 { set ::varlist } {a}
@@ -1398,10 +1398,10 @@ do_execsql_test e_expr-26.1.4 {
 do_test e_expr-26.1.5 { set ::evalcount } {3}
 set ::evalcount 0
 do_execsql_test e_expr-26.1.6 {
-  SELECT CASE 
-    WHEN ceval(x)=w1 THEN r1 
-    WHEN ceval(x)=w2 THEN r2 
-    ELSE r3 END 
+  SELECT CASE
+    WHEN ceval(x)=w1 THEN r1
+    WHEN ceval(x)=w2 THEN r2
+    ELSE r3 END
   FROM t2
 } {R1 R2 R3}
 do_test e_expr-26.1.6 { set ::evalcount } {5}
@@ -1423,7 +1423,7 @@ do_execsql_test e_expr-27.1.1 {
   SELECT typeof(a), a, typeof(b), b, typeof(c), c FROM t3;
 } {blob UVU text 1.23abc real 4.5}
 do_execsql_test e_expr-27.1.2 {
-  SELECT 
+  SELECT
     typeof(CAST(X'555655' as TEXT)), CAST(X'555655' as TEXT),
     typeof(CAST('1.23abc' as REAL)), CAST('1.23abc' as REAL),
     typeof(CAST(4.5 as INTEGER)), CAST(4.5 as INTEGER)
@@ -1441,7 +1441,7 @@ do_expr_test e_expr-27.2.4 { CAST(NULL AS number) }  null {}
 # is determined by applying the rules for determining column affinity to
 # the type-name.
 #
-# The R-29283-15561 requirement above is demonstrated by all of the 
+# The R-29283-15561 requirement above is demonstrated by all of the
 # subsequent e_expr-26 tests.
 #
 # EVIDENCE-OF: R-43522-35548 Casting a value to a type-name with no
@@ -1517,13 +1517,13 @@ rename db db2
 sqlite3 db :memory:
 ifcapable {utf16} {
 db eval { PRAGMA encoding = 'utf-16le' }
-do_expr_test e_expr-29.1.5 { 
+do_expr_test e_expr-29.1.5 {
     CAST (X'31002E0032003300' AS REAL) } real 1.23
-do_expr_test e_expr-29.1.6 { 
+do_expr_test e_expr-29.1.6 {
     CAST (X'3200330030002E003000' AS REAL) } real 230.0
-do_expr_test e_expr-29.1.7 { 
+do_expr_test e_expr-29.1.7 {
     CAST (X'2D0039002E0038003700' AS REAL) } real -9.87
-do_expr_test e_expr-29.1.8 { 
+do_expr_test e_expr-29.1.8 {
     CAST (X'30002E003000300030003100' AS REAL) } real 0.0001
 }
 db close
@@ -1558,11 +1558,11 @@ do_expr_test e_expr-29.4.3 { CAST('XXI' AS REAL) } real 0.0
 #
 do_expr_test e_expr-30.1.1 { CAST(X'313233' AS INTEGER) } integer 123
 do_expr_test e_expr-30.1.2 { CAST(X'2D363738' AS INTEGER) } integer -678
-do_expr_test e_expr-30.1.3 { 
-  CAST(X'31303030303030' AS INTEGER) 
+do_expr_test e_expr-30.1.3 {
+  CAST(X'31303030303030' AS INTEGER)
 } integer 1000000
-do_expr_test e_expr-30.1.4 { 
-  CAST(X'2D31313235383939393036383432363234' AS INTEGER) 
+do_expr_test e_expr-30.1.4 {
+  CAST(X'2D31313235383939393036383432363234' AS INTEGER)
 } integer -1125899906842624
 
 rename db db2
@@ -1571,11 +1571,11 @@ ifcapable {utf16} {
 execsql { PRAGMA encoding = 'utf-16be' }
 do_expr_test e_expr-30.1.5 { CAST(X'003100320033' AS INTEGER) } integer 123
 do_expr_test e_expr-30.1.6 { CAST(X'002D003600370038' AS INTEGER) } integer -678
-do_expr_test e_expr-30.1.7 { 
-  CAST(X'0031003000300030003000300030' AS INTEGER) 
+do_expr_test e_expr-30.1.7 {
+  CAST(X'0031003000300030003000300030' AS INTEGER)
 } integer 1000000
-do_expr_test e_expr-30.1.8 { 
-  CAST(X'002D0031003100320035003800390039003900300036003800340032003600320034' AS INTEGER) 
+do_expr_test e_expr-30.1.8 {
+  CAST(X'002D0031003100320035003800390039003900300036003800340032003600320034' AS INTEGER)
 } integer -1125899906842624
 }
 db close
@@ -1630,10 +1630,10 @@ do_expr_test e_expr-31.1.4 { CAST(-0.99999 AS INTEGER) } integer 0
 #
 do_expr_test e_expr-31.2.1 { CAST(2e+50 AS INT) } integer 9223372036854775807
 do_expr_test e_expr-31.2.2 { CAST(-2e+50 AS INT) } integer -9223372036854775808
-do_expr_test e_expr-31.2.3 { 
+do_expr_test e_expr-31.2.3 {
   CAST(-9223372036854775809.0 AS INT)
 } integer -9223372036854775808
-do_expr_test e_expr-31.2.4 { 
+do_expr_test e_expr-31.2.4 {
   CAST(9223372036854775809.0 AS INT)
 } integer 9223372036854775807
 
@@ -1656,10 +1656,10 @@ do_expr_test e_expr-32.1.5 { CAST('11.1abc' AS NUMERIC) } real 11.1
 do_expr_test e_expr-32.2.1 { CAST(13.0 AS NUMERIC) } real 13.0
 do_expr_test e_expr-32.2.2 { CAST(13.5 AS NUMERIC) } real 13.5
 
-do_expr_test e_expr-32.2.3 { 
+do_expr_test e_expr-32.2.3 {
   CAST(-9223372036854775808 AS NUMERIC)
 } integer -9223372036854775808
-do_expr_test e_expr-32.2.4 { 
+do_expr_test e_expr-32.2.4 {
   CAST(9223372036854775807 AS NUMERIC)
 } integer 9223372036854775807
 
@@ -1715,7 +1715,7 @@ do_execsql_test e_expr-34.1 {
 # EVIDENCE-OF: R-25588-27181 The EXISTS operator always evaluates to one
 # of the integer values 0 and 1.
 #
-# This statement is not tested by itself. Instead, all e_expr-34.* tests 
+# This statement is not tested by itself. Instead, all e_expr-34.* tests
 # following this point explicitly test that specific invocations of EXISTS
 # return either integer 0 or integer 1.
 #
@@ -1806,10 +1806,10 @@ do_expr_test e_expr-35.1.2 { (SELECT NULL) } null {}
 do_expr_test e_expr-35.1.3 { (SELECT count(*) FROM t2) } integer 3
 do_expr_test e_expr-35.1.4 { (SELECT 4 FROM t2) } integer 4
 
-do_expr_test e_expr-35.1.5 { 
+do_expr_test e_expr-35.1.5 {
   (SELECT b FROM t2 UNION SELECT a+1 FROM t2)
 } null {}
-do_expr_test e_expr-35.1.6 { 
+do_expr_test e_expr-35.1.6 {
   (SELECT a FROM t2 UNION SELECT COALESCE(b, 55) FROM t2 ORDER BY 1)
 } integer 4
 
@@ -1854,7 +1854,7 @@ foreach {tn expr restype resval} {
 
     7  { ( SELECT sum(x) FROM t4 )           }         integer 6
     8  { ( SELECT group_concat(y,'') FROM t4 ) }       text    onetwothree
-    9  { ( SELECT max(x) FROM t4 WHERE y LIKE '___') } integer 2 
+    9  { ( SELECT max(x) FROM t4 WHERE y LIKE '___') } integer 2
 
 } {
   do_expr_test e_expr-36.3.$tn $expr $restype $resval

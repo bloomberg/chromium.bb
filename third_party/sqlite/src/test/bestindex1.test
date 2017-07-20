@@ -8,7 +8,7 @@
 #    May you share freely, never taking more than you give.
 #
 #***********************************************************************
-# 
+#
 #
 
 set testdir [file dirname $argv0]
@@ -73,7 +73,7 @@ register_tcl_module db
 #   "use"  - Implement filtering. Use the constraint, but do not set omit.
 #   "use2" - Do not implement filtering. Use the constraint anyway.
 #
-#   
+#
 proc t1_vtab {mode method args} {
   switch -- $method {
     xConnect {
@@ -138,11 +138,11 @@ foreach {tn mode} {
 
   do_execsql_test 2.2.$mode.2 {SELECT * FROM t1} {one 1 two 2 three 3 four 4}
   do_execsql_test 2.2.$mode.3 {SELECT rowid FROM t1} {1 2 3 4}
-  do_execsql_test 2.2.$mode.4 {SELECT rowid FROM t1 WHERE a='two'} {2} 
+  do_execsql_test 2.2.$mode.4 {SELECT rowid FROM t1 WHERE a='two'} {2}
 
   do_execsql_test 2.2.$mode.5 {
     SELECT rowid FROM t1 WHERE a IN ('one', 'four') ORDER BY +rowid
-  } {1 4} 
+  } {1 4}
 
   set plan(use) {
     0 0 0 {SCAN TABLE t1 VIRTUAL TABLE INDEX 0:SELECT * FROM t1x WHERE a='%1%'}
@@ -160,7 +160,7 @@ foreach {tn mode} {
     0 0 0 {USE TEMP B-TREE FOR ORDER BY}
   }
 
-  do_eqp_test 2.2.$mode.6 { 
+  do_eqp_test 2.2.$mode.6 {
     SELECT rowid FROM t1 WHERE a IN ('one', 'four') ORDER BY +rowid
   } $plan($mode)
 }
@@ -211,10 +211,10 @@ proc vtab_command {method args} {
 
       set map [list]
       for {set i 0} {$i < [llength $vals]} {incr i} {
-        lappend map "%$i%" 
+        lappend map "%$i%"
         set v [lindex $vals $i]
-        if {[string is integer $v]} { 
-          lappend map $v 
+        if {[string is integer $v]} {
+          lappend map $v
         } else {
           lappend map "'$v'"
         }
@@ -250,7 +250,7 @@ do_execsql_test 3.2 {
 do_execsql_test 3.3 { SELECT primarykey FROM VirtualTableA } {1 2 3 4}
 
 do_execsql_test 3.4 {
-  SELECT * FROM 
+  SELECT * FROM
   VirtualTableA a CROSS JOIN VirtualTableB b ON b.PrimaryKey=a.PrimaryKey
   WHERE a.ColumnA IN ('ValueA', 'ValueB') AND a.FlagA=0
 } {
@@ -261,9 +261,9 @@ do_execsql_test 3.4 {
 }
 
 do_execsql_test 3.5 {
-  SELECT * FROM 
+  SELECT * FROM
   VirtualTableA a CROSS JOIN VirtualTableB b ON b.PrimaryKey=a.PrimaryKey
-  WHERE a.FlagA=0 AND a.ColumnA IN ('ValueA', 'ValueB') 
+  WHERE a.FlagA=0 AND a.ColumnA IN ('ValueA', 'ValueB')
 } {
   1 0 ValueA 1 0 ValueA
   2 0 ValueA 2 0 ValueA

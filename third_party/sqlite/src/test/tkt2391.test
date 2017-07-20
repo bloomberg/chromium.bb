@@ -36,7 +36,7 @@ do_test tkt2391.3 {
 } {2}
 
 # This demonstrates the bug. Creating the index causes SQLite to ignore
-# the "COLLATE nocase" clause and use the default collation sequence 
+# the "COLLATE nocase" clause and use the default collation sequence
 # for column "foldername" instead (happens to be BINARY in this case).
 #
 do_test tkt2391.4 {

@@ -139,7 +139,7 @@ do_test where4-3.1 {
     CREATE TABLE t3(x,y,UNIQUE("x",'y' ASC)); -- Goofy syntax allowed
     INSERT INTO t3 VALUES(1,11);
     INSERT INTO t3 VALUES(2,NULL);
- 
+
     SELECT * FROM t2 LEFT JOIN t3 ON a=x WHERE +y IS NULL;
   }
 } {2 2 {} 3 {} {}}
@@ -273,7 +273,7 @@ do_test where4-7.1 {
 } {}
 
 # At one point the sub-select inside the aggregate sum() function in the
-# following query was leaking a couple of stack entries. This query 
+# following query was leaking a couple of stack entries. This query
 # runs the SELECT in a loop enough times that an assert() fails. Or rather,
 # did fail before the bug was fixed.
 #

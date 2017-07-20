@@ -56,7 +56,7 @@ do_test tkt-31338-2.1 {
     INSERT INTO t4 VALUES(444,555);
     INSERT INTO t5 VALUES(888);
     INSERT INTO t5 VALUES(999);
-    
+
     SELECT * FROM t3, t4, t5
      WHERE (v=111 AND x=w AND z!=999) OR (v=333 AND x=444)
      ORDER BY v, w, x, y, z;
@@ -98,37 +98,37 @@ do_test tkt-31338-3.1 {
                SELECT x FROM (SELECT e+f AS x, e FROM t2 ORDER BY 1 LIMIT 2)
                GROUP BY e
             ));
-  }    
+  }
 } {4 1 2 3 4 {}}
 do_test tkt-31338-3.2 {
-  db eval {    
+  db eval {
     SELECT * FROM t3 LEFT JOIN t1 ON d=g LEFT JOIN t4 ON c=h
      WHERE (a=1 AND h=4)
          OR (b=2 AND b NOT IN (
                SELECT x+1 FROM (SELECT e+f AS x, e FROM t2 ORDER BY 1 LIMIT 2)
                GROUP BY e
             ));
-  }    
+  }
 } {4 1 2 3 4 {}}
 do_test tkt-31338-3.3 {
-  db eval {    
+  db eval {
     SELECT * FROM t3 LEFT JOIN t1 ON d=g LEFT JOIN t4 ON c=h
      WHERE (+a=1 AND h=4)
          OR (b IN (
                SELECT x FROM (SELECT e+f AS x, e FROM t2 ORDER BY 1 LIMIT 2)
                GROUP BY e
             ));
-  }    
+  }
 } {4 1 2 3 4 {}}
 do_test tkt-31338-3.4 {
-  db eval {    
+  db eval {
     SELECT * FROM t3 LEFT JOIN t1 ON d=g LEFT JOIN t4 ON c=h
      WHERE (a=1 AND h=4)
          OR (+b IN (
                SELECT x FROM (SELECT e+f AS x, e FROM t2 ORDER BY 1 LIMIT 2)
                GROUP BY e
             ));
-  }    
+  }
 } {4 1 2 3 4 {}}
 
 do_test tkt-31338-3.5 {
@@ -136,7 +136,7 @@ do_test tkt-31338-3.5 {
     CREATE TABLE t5(a,b,c,d,e,f);
     CREATE TABLE t6(g,h);
     CREATE TRIGGER t6r AFTER INSERT ON t6 BEGIN
-      INSERT INTO t5    
+      INSERT INTO t5
         SELECT * FROM t3 LEFT JOIN t1 ON d=g LEFT JOIN t4 ON c=h
          WHERE (a=1 AND h=4)
             OR (b IN (
@@ -146,11 +146,11 @@ do_test tkt-31338-3.5 {
     END;
     INSERT INTO t6 VALUES(88,99);
     SELECT * FROM t5;
-  }    
+  }
 } {4 1 2 3 4 {}}
 
 do_test tkt-31338-3.6 {
-  db eval {    
+  db eval {
     INSERT INTO t1 VALUES(2,4,3,4);
     INSERT INTO t1 VALUES(99,101,3,4);
     INSERT INTO t1 VALUES(98,97,3,4);
@@ -160,7 +160,7 @@ do_test tkt-31338-3.6 {
                SELECT x+a FROM (SELECT e+f AS x, e FROM t2 ORDER BY 1 LIMIT 2)
                GROUP BY e
             ));
-  }    
+  }
 } {4 2 4 3 4 {} 4 99 101 3 4 {}}
 
 do_test tkt-31338-3.7 {
@@ -171,7 +171,7 @@ do_test tkt-31338-3.7 {
                SELECT x FROM (SELECT e+f+a AS x, e FROM t2 ORDER BY 1 LIMIT 2)
                GROUP BY e
             ));
-  }    
+  }
 } {4 2 4 3 4 {} 4 99 101 3 4 {}}
 
 

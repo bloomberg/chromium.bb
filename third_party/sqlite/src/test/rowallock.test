@@ -25,7 +25,7 @@ ifcapable !mmap {
 do_multiclient_test tn {
   code2 { db2 close }
   code3 { db3 close }
-  
+
   do_execsql_test 1.$tn.1 {
     PRAGMA page_size = 4096;
     CREATE TABLE t1(a, b);
@@ -34,8 +34,8 @@ do_multiclient_test tn {
     PRAGMA journal_mode = wal;
   } {wal}
 
-  code1 { 
-    db close 
+  code1 {
+    db close
     sqlite3 db test.db -readonly 1
   }
 

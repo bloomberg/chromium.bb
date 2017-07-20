@@ -11,7 +11,7 @@
 # This file implements regression tests for SQLite library.
 #
 # This file implements tests to verify that ticket #1433 has been
-# fixed.  
+# fixed.
 #
 # The problem in ticket #1433 was that the dependencies on the right-hand
 # side of an IN operator were not being checked correctly.  So in an
@@ -21,12 +21,12 @@
 #
 # the optimizer was missing the fact that the right-hand side of the IN
 # depended on table t2.  It was checking dependencies based on the
-# Expr.pRight field rather than Expr.pList and Expr.pSelect.  
+# Expr.pRight field rather than Expr.pList and Expr.pSelect.
 #
 # Such a bug could be verifed using a less elaborate test case.  But
 # this test case (from the original bug poster) exercises so many different
 # parts of the system all at once, that it seemed like a good one to
-# include in the test suite. 
+# include in the test suite.
 #
 # NOTE:  Yes, in spite of the name of this file (tkt1443.test) this
 # test is for ticket #1433 not #1443.  I mistyped the name when I was
@@ -58,7 +58,7 @@ do_test tkt1443-1.0 {
     INSERT INTO "Items" VALUES(2, 'double');
     INSERT INTO "Items" VALUES(3, 'double:runtime');
     INSERT INTO "Items" VALUES(4, '.*:runtime');
-    
+
     CREATE TABLE Labels(
     	labelId INTEGER PRIMARY KEY,
     	label STR UNIQUE
@@ -66,7 +66,7 @@ do_test tkt1443-1.0 {
     INSERT INTO "Labels" VALUES(0, 'ALL');
     INSERT INTO "Labels" VALUES(1, 'localhost@rpl:linux');
     INSERT INTO "Labels" VALUES(2, 'localhost@rpl:branch');
-    
+
     CREATE TABLE LabelMap(
     	itemId INTEGER,
     	labelId INTEGER,
@@ -78,7 +78,7 @@ do_test tkt1443-1.0 {
     INSERT INTO "LabelMap" VALUES(1, 2, 2);
     INSERT INTO "LabelMap" VALUES(2, 2, 3);
     INSERT INTO "LabelMap" VALUES(3, 2, 3);
-    
+
     CREATE TABLE Users (
     	userId INTEGER PRIMARY KEY,
     	user STRING UNIQUE,
@@ -95,14 +95,14 @@ do_test tkt1443-1.0 {
     );
     INSERT INTO "UserGroups" VALUES(1, 'test');
     INSERT INTO "UserGroups" VALUES(2, 'limited');
-    
+
     CREATE TABLE UserGroupMembers (
     	userGroupId INTEGER,
     	userId INTEGER
     );
     INSERT INTO "UserGroupMembers" VALUES(1, 1);
     INSERT INTO "UserGroupMembers" VALUES(2, 2);
-    
+
     CREATE TABLE Permissions (
     	userGroupId INTEGER,
     	labelId INTEGER NOT NULL,
@@ -145,7 +145,7 @@ do_test tkt1443-1.1 {
   }
 } {double .*:runtime double:runtime .*:runtime double:source .*:runtime}
 
-# Create an index and rerun the query. 
+# Create an index and rerun the query.
 # Verify that the results are the same
 #
 do_test tkt1443-1.2 {

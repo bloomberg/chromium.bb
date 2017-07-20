@@ -1716,7 +1716,7 @@ typedef struct QueryTerm {
  *
  * OR binds more tightly than the implied AND, which is what the
  * major search engines seem to do.  So, for example:
- * 
+ *
  *    [one two OR three]     ==>    one AND (two OR three)
  *    [one OR two three]     ==>    (one OR two) AND three
  *
@@ -2407,11 +2407,11 @@ static void fulltext_vtab_destroy(fulltext_vtab *v){
 ** IdChar(X) will be true.  Otherwise it is false.
 **
 ** For ASCII, any character with the high-order bit set is
-** allowed in an identifier.  For 7-bit characters, 
+** allowed in an identifier.  For 7-bit characters,
 ** sqlite3IsIdChar[X] must be 1.
 **
 ** Ticket #1066.  the SQL standard does not allow '$' in the
-** middle of identfiers.  But many SQL implementations do. 
+** middle of identfiers.  But many SQL implementations do.
 ** SQLite will allow '$' in identifiers for compatibility.
 ** But the feature is undocumented.
 */
@@ -2428,7 +2428,7 @@ static const char isIdChar[] = {
 
 
 /*
-** Return the length of the token that begins at z[0]. 
+** Return the length of the token that begins at z[0].
 ** Store the token type in *tokenType before returning.
 */
 static int getToken(const char *z, int *tokenType){
@@ -2634,7 +2634,7 @@ static char *firstToken(char *zIn, char **pzTail){
 **   *  s begins with the string t, ignoring case
 **   *  s is longer than t
 **   *  The first character of s beyond t is not a alphanumeric
-** 
+**
 ** Ignore leading space in *s.
 **
 ** To put it another way, return true if the first token of
@@ -2677,7 +2677,7 @@ static void clearTableSpec(TableSpec *p) {
  *        USING fts2(subject, body, tokenize mytokenizer(myarg))
  *
  * We return parsed information in a TableSpec structure.
- * 
+ *
  */
 static int parseSpec(TableSpec *pSpec, int argc, const char *const*argv,
                      char**pzErr){
@@ -2834,7 +2834,7 @@ static int constructVtab(
     return SQLITE_NOMEM;
   }
 
-  zTok = spec->azTokenizer[0]; 
+  zTok = spec->azTokenizer[0];
   if( !zTok ){
     zTok = "simple";
   }
@@ -2970,7 +2970,7 @@ static int fulltextBestIndex(sqlite3_vtab *pVTab, sqlite3_index_info *pInfo){
       /* An arbitrary value for now.
        * TODO: Perhaps rowid matches should be considered cheaper than
        * full-text searches. */
-      pInfo->estimatedCost = 1.0;   
+      pInfo->estimatedCost = 1.0;
 
       return SQLITE_OK;
     }
@@ -3087,7 +3087,7 @@ static void snippetOffsetsOfColumn(
   fulltext_vtab *pVtab;                /* The full text index */
   int nColumn;                         /* Number of columns in the index */
   const QueryTerm *aTerm;              /* Query string terms */
-  int nTerm;                           /* Number of query string terms */  
+  int nTerm;                           /* Number of query string terms */
   int i, j;                            /* Loop counters */
   int rc;                              /* Return code */
   unsigned int match, prevMatch;       /* Phrase search bitmasks */
@@ -3141,12 +3141,12 @@ static void snippetOffsetsOfColumn(
     prevMatch = match<<1;
     iRotor++;
   }
-  pTModule->xClose(pTCursor);  
+  pTModule->xClose(pTCursor);
 }
 
 
 /*
-** Compute all offsets for the current row of the query.  
+** Compute all offsets for the current row of the query.
 ** If the offsets have already been computed, this routine is a no-op.
 */
 static void snippetAllOffsets(fulltext_cursor *p){
@@ -3274,7 +3274,7 @@ static void snippetText(
   int iStart, iEnd;
   int tailEllipsis = 0;
   int iMatch;
-  
+
 
   sqlite3_free(pCursor->snippet.zSnippet);
   pCursor->snippet.zSnippet = 0;
@@ -3542,7 +3542,7 @@ static int tokenizeSegment(
   int firstIndex = pQuery->nTerms;
   int iCol;
   int nTerm = 1;
-  
+
   int rc = pModule->xOpen(pTokenizer, pSegment, nSegment, &pCursor);
   if( rc!=SQLITE_OK ) return rc;
   pCursor->pTokenizer = pTokenizer;
@@ -6721,8 +6721,8 @@ static int fulltextRename(
     "ALTER TABLE %Q.'%q_content'  RENAME TO '%q_content';"
     "ALTER TABLE %Q.'%q_segments' RENAME TO '%q_segments';"
     "ALTER TABLE %Q.'%q_segdir'   RENAME TO '%q_segdir';"
-    , p->zDb, p->zName, zName 
-    , p->zDb, p->zName, zName 
+    , p->zDb, p->zName, zName
+    , p->zDb, p->zName, zName
     , p->zDb, p->zName, zName
   );
   if( zSql ){
@@ -6808,18 +6808,18 @@ int sqlite3Fts2Init(sqlite3 *db){
   /* Load the built-in tokenizers into the hash table */
   if( rc==SQLITE_OK ){
     if( sqlite3Fts2HashInsert(pHash, "simple", 7, (void *)pSimple)
-     || sqlite3Fts2HashInsert(pHash, "porter", 7, (void *)pPorter) 
+     || sqlite3Fts2HashInsert(pHash, "porter", 7, (void *)pPorter)
      || (pIcu && sqlite3Fts2HashInsert(pHash, "icu", 4, (void *)pIcu))
     ){
       rc = SQLITE_NOMEM;
     }
   }
 
-  /* Create the virtual table wrapper around the hash-table and overload 
+  /* Create the virtual table wrapper around the hash-table and overload
   ** the two scalar functions. If this is successful, register the
   ** module with sqlite.
   */
-  if( SQLITE_OK==rc 
+  if( SQLITE_OK==rc
    && SQLITE_OK==(rc = sqlite3Fts2InitHashTable(db, pHash, "fts2_tokenizer"))
    && SQLITE_OK==(rc = sqlite3_overload_function(db, "snippet", -1))
    && SQLITE_OK==(rc = sqlite3_overload_function(db, "offsets", -1))
@@ -6848,7 +6848,7 @@ int sqlite3Fts2Init(sqlite3 *db){
 __declspec(dllexport)
 #endif
 int sqlite3_fts2_init(
-  sqlite3 *db, 
+  sqlite3 *db,
   char **pzErrMsg,
   const sqlite3_api_routines *pApi
 ){

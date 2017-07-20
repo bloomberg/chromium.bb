@@ -29,9 +29,9 @@ do_execsql_test 1.0 {
   CREATE VIRTUAL TABLE t1 USING fts5('a', "b", [c], `d`);
   PRAGMA table_info = t1;
 } {
-  0 a {} 0 {} 0 
-  1 b {} 0 {} 0 
-  2 c {} 0 {} 0 
+  0 a {} 0 {} 0
+  1 b {} 0 {} 0
+  2 c {} 0 {} 0
   3 d {} 0 {} 0
 }
 
@@ -39,7 +39,7 @@ do_execsql_test 1.0 {
 # Syntax errors in the prefix= option.
 #
 foreach {tn opt} {
-  1 {prefix=x}  
+  1 {prefix=x}
   2 {prefix='x'}
   3 {prefix='$'}
   4 {prefix='1,2,'}
@@ -104,11 +104,11 @@ do_execsql_test 4.2 {
 } {}
 
 #-------------------------------------------------------------------------
-# Misquoting in tokenize= and other options. 
+# Misquoting in tokenize= and other options.
 #
 do_catchsql_test 5.1 {
   CREATE VIRTUAL TABLE xx USING fts5(x, tokenize="porter 'ascii");
-} {1 {parse error in tokenize directive}} 
+} {1 {parse error in tokenize directive}}
 
 breakpoint
 do_catchsql_test 5.2 {
@@ -232,7 +232,7 @@ foreach {tn spec} {
 # errors in the detail= option.
 #
 foreach {tn opt} {
-  1 {detail=x}  
+  1 {detail=x}
   2 {detail='x'}
   3 {detail='$'}
   4 {detail='1,2,'}

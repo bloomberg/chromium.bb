@@ -81,7 +81,7 @@ for {set i 1} {$i < 50} {incr i} {
     }
   } {ok}
 
-  # Check that everything looks OK from the point of view of an 
+  # Check that everything looks OK from the point of view of an
   # external connection.
   #
   sqlite3 db2 test.db
@@ -95,9 +95,9 @@ for {set i 1} {$i < 50} {incr i} {
     execsql { PRAGMA integrity_check } db2
   } {ok}
   db2 close
-  
+
   # Check that the file-system in its current state can be recovered.
-  # 
+  #
   forcecopy test.db test2.db
   forcecopy test.db-wal test2.db-wal
   forcedelete test2.db-journal
@@ -126,7 +126,7 @@ do_multiclient_test i {
   set tn $testname($i)
 
   do_test wal3-2.$tn.1 {
-    sql1 { 
+    sql1 {
       PRAGMA page_size = 1024;
       PRAGMA journal_mode = WAL;
     }
@@ -199,26 +199,26 @@ catch {db close}
 # synchronous=off, synchronous=normal and synchronous=full.
 #
 foreach {tn syncmode synccount} {
-  1 off     
+  1 off
     {}
-  2 normal  
+  2 normal
     {test.db-wal normal test.db normal}
-  3 full    
+  3 full
     {test.db-wal normal test.db-wal normal test.db-wal normal test.db normal}
 } {
 
-  proc sync_counter {args} { 
+  proc sync_counter {args} {
     foreach {method filename id flags} $args break
     lappend ::syncs [file tail $filename] $flags
   }
   do_test wal3-3.$tn {
     forcedelete test.db test.db-wal test.db-journal
-  
+
     testvfs T
-    T filter {} 
+    T filter {}
     T script sync_counter
     sqlite3 db test.db -vfs T
-  
+
     execsql "PRAGMA synchronous = $syncmode"
     execsql "PRAGMA checkpoint_fullfsync = 0"
     execsql { PRAGMA journal_mode = WAL }
@@ -243,7 +243,7 @@ foreach {tn syncmode synccount} {
 #-------------------------------------------------------------------------
 # Only one client may run recovery at a time. Test this mechanism.
 #
-# When client-2 tries to open a read transaction while client-1 is 
+# When client-2 tries to open a read transaction while client-1 is
 # running recovery, it fails to obtain a lock on an aReadMark[] slot
 # (because they are all locked by recovery). It then tries to obtain
 # a shared lock on the RECOVER lock to see if there really is a
@@ -275,7 +275,7 @@ proc method_callback {method args} {
     if {$::barrier_count == 2} {
       # This code is executed within the xShmBarrier() callback invoked
       # by the client running recovery as part of writing the recovered
-      # wal-index header. If a second client attempts to access the 
+      # wal-index header. If a second client attempts to access the
       # database now, it reads a corrupt (partially written) wal-index
       # header. But it cannot even get that far, as the first client
       # is still holding all the locks (recovery takes an exclusive lock
@@ -340,10 +340,10 @@ T delete
 #-------------------------------------------------------------------------
 # When opening a read-transaction on a database, if the entire log has
 # already been copied to the database file, the reader grabs a special
-# kind of read lock (on aReadMark[0]). This set of test cases tests the 
+# kind of read lock (on aReadMark[0]). This set of test cases tests the
 # outcome of the following:
 #
-#   + The reader discovering that between the time when it determined 
+#   + The reader discovering that between the time when it determined
 #     that the log had been completely backfilled and the lock is obtained
 #     that a writer has written to the log. In this case the reader should
 #     acquire a different read-lock (not aReadMark[0]) and read the new
@@ -375,7 +375,7 @@ do_test wal3-6.1.3 {
   execsql { PRAGMA wal_checkpoint } db2
 } {0 4 4}
 
-# At this point the log file has been fully checkpointed. However, 
+# At this point the log file has been fully checkpointed. However,
 # connection [db3] holds a lock that prevents the log from being wrapped.
 # Test case 3.6.1.4 has [db] attempt a read-lock on aReadMark[0]. But
 # as it is obtaining the lock, [db2] appends to the log file.
@@ -400,7 +400,7 @@ do_test wal3-6.1.4 {
   }
 } {o t t f f s}
 
-# [db] should be left holding a read-lock on some slot other than 
+# [db] should be left holding a read-lock on some slot other than
 # aReadMark[0]. Test this by demonstrating that the read-lock is preventing
 # the log from being wrapped.
 #
@@ -480,7 +480,7 @@ do_test wal3-6.2.5 {
   set sz2 [file size test.db-wal]
   expr {$sz2 == $sz1}
 } {1}
- 
+
 db2 close
 db close
 T delete
@@ -492,9 +492,9 @@ T delete
 # with the outcome of the following:
 #
 #   + The reader discovering that between the time when it read the
-#     wal-index header and the lock was obtained that a writer has 
-#     written to the log. In this case the reader should re-read the 
-#     wal-index header and lock a snapshot corresponding to the new 
+#     wal-index header and the lock was obtained that a writer has
+#     written to the log. In this case the reader should re-read the
+#     wal-index header and lock a snapshot corresponding to the new
 #     header.
 #
 #   + The value in the aReadMark[x] slot has been modified since it was
@@ -561,7 +561,7 @@ T delete
 #-------------------------------------------------------------------------
 # When a connection opens a read-lock on the database, it searches for
 # an aReadMark[] slot that is already set to the mxFrame value for the
-# new transaction. If it cannot find one, it attempts to obtain an 
+# new transaction. If it cannot find one, it attempts to obtain an
 # exclusive lock on an aReadMark[] slot for the purposes of modifying
 # the value, then drops back to a shared-lock for the duration of the
 # transaction.
@@ -604,12 +604,12 @@ for {set i 0} {$i < $nConn} {incr i} {
 set sz [expr 1024 * (2+$AUTOVACUUM)]
 do_test wal3-9.3 {
   for {set i 0} {$i < ($nConn-1)} {incr i} { db$i close }
-  execsql { PRAGMA wal_checkpoint } 
+  execsql { PRAGMA wal_checkpoint }
   byte_is_zero test.db [expr $sz-1024]
 } {1}
 do_test wal3-9.4 {
   db[expr $nConn-1] close
-  execsql { PRAGMA wal_checkpoint } 
+  execsql { PRAGMA wal_checkpoint }
   set sz2 [file size test.db]
   byte_is_zero test.db [expr $sz-1024]
 } {0}

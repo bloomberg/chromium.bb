@@ -26,11 +26,11 @@ do_faultsim_test fts3tok_err-1 -faults oom* -prep {
 } -body {
   execsql { CREATE VIRTUAL TABLE t1 USING fts3tokenize("simple"); }
 } -test {
-  faultsim_test_result {0 {}} 
+  faultsim_test_result {0 {}}
 }
 
 do_test fts3tok_err-2.prep {
-  faultsim_delete_and_reopen 
+  faultsim_delete_and_reopen
   execsql { CREATE VIRTUAL TABLE t1 USING fts3tokenize("simple"); }
   faultsim_save_and_close
 } {}
@@ -38,9 +38,9 @@ do_test fts3tok_err-2.prep {
 do_faultsim_test fts3tok_err-2 -faults oom* -prep {
   faultsim_restore_and_reopen
 } -body {
-  execsql { SELECT token FROM t1 WHERE input = 'A galaxy far, far away' } 
+  execsql { SELECT token FROM t1 WHERE input = 'A galaxy far, far away' }
 } -test {
-  faultsim_test_result {0 {a galaxy far far away}} 
+  faultsim_test_result {0 {a galaxy far far away}}
 }
 
 

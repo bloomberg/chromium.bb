@@ -20,7 +20,7 @@ ifcapable !wal {finish_test ; return }
 
 db close
 testvfs tvfsshm
-testvfs tvfs -default 1 -iversion 1 
+testvfs tvfs -default 1 -iversion 1
 sqlite3 db test.db
 
 #--------------------------------------------------------------------------
@@ -35,13 +35,13 @@ do_execsql_test 1.1 {
   INSERT INTO t1 VALUES(1, 2);
 }
 
-do_execsql_test 1.2 { 
+do_execsql_test 1.2 {
   PRAGMA journal_mode = WAL;
   SELECT * FROM t1;
 } {delete 1 2}
 do_test 1.3 { file exists test.db-wal } {0}
 
-do_execsql_test 1.4 { 
+do_execsql_test 1.4 {
   PRAGMA locking_mode = exclusive;
   PRAGMA journal_mode = WAL;
   SELECT * FROM t1;
@@ -96,8 +96,8 @@ do_test 2.1.4 {
   catchsql { PRAGMA journal_mode = delete } db2
 } {1 {unable to open database file}}
 do_test 2.1.5 {
-  execsql { 
-    PRAGMA locking_mode = exclusive; 
+  execsql {
+    PRAGMA locking_mode = exclusive;
     PRAGMA journal_mode = delete;
     SELECT * FROM t2;
   } db2
@@ -117,7 +117,7 @@ do_test 2.2.2 {
 } {1 {database is locked}}
 
 do_test 2.2.3 {
-  # This is to test that [db2] is not holding a PENDING lock (which can 
+  # This is to test that [db2] is not holding a PENDING lock (which can
   # happen when an attempt to obtain an EXCLUSIVE lock fails).
   sqlite3 db4 test2.db -vfs tvfsshm
   execsql { SELECT * FROM t2 } db4
@@ -152,7 +152,7 @@ db close
 #
 do_test 3.1 {
   sqlite3 db test.db -vfs tvfsshm
-  execsql { 
+  execsql {
     SELECT * FROM t1;
     PRAGMA locking_mode = EXCLUSIVE;
     INSERT INTO t1 VALUES(5, 6);
@@ -166,7 +166,7 @@ db close
 db2 close
 do_test 3.2 {
   sqlite3 db  test.db -vfs tvfsshm
-  execsql { 
+  execsql {
     PRAGMA locking_mode = EXCLUSIVE;
     INSERT INTO t1 VALUES(9, 10);
     PRAGMA locking_mode = NORMAL;

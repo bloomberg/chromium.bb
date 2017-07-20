@@ -34,7 +34,7 @@ set ::testprefix fts3defer
 # "a" with all zeroes and fts3defer-1.4.* repeats the tests from 1.2. If
 # the tests still work, we can conclude that the doclist for "a" was not
 # used.
-# 
+#
 
 set aaa [string repeat "a " 15000]
 
@@ -52,7 +52,7 @@ set tests {
   1  {SELECT rowid FROM t1 WHERE t1 MATCH '"a dog"'}                 {1}
   2  {SELECT rowid FROM t1 WHERE t1 MATCH '"is a dog"'}              {1}
   3  {SELECT rowid FROM t1 WHERE t1 MATCH '"a longer phrase"'}       {3}
-  4  {SELECT snippet(t1) FROM t1 WHERE t1 MATCH '"a longer phrase"'}  
+  4  {SELECT snippet(t1) FROM t1 WHERE t1 MATCH '"a longer phrase"'}
      {"an instance of <b>a</b> <b>longer</b> <b>phrase</b>"}
   5  {SELECT rowid FROM t1 WHERE t1 MATCH 'a dog'}                   {1}
 }
@@ -61,8 +61,8 @@ do_select_tests 1.2 $tests
 
 do_execsql_test 1.3 {
   SELECT count(*) FROM t1_segments WHERE length(block)>10000;
-  UPDATE t1_segments 
-    SET block = zeroblob(length(block)) 
+  UPDATE t1_segments
+    SET block = zeroblob(length(block))
     WHERE length(block)>10000;
 } {1}
 
@@ -74,7 +74,7 @@ do_execsql_test 1.5 { DROP TABLE t1 }
 
 #--------------------------------------------------------------------------
 # These tests - fts3defer-2.* - are more rigorous. They test that for a
-# variety of queries, FTS3 and FTS4 return the same results. And that 
+# variety of queries, FTS3 and FTS4 return the same results. And that
 # zeroing the very large doclists that FTS4 does not load does not change
 # the results.
 #
@@ -249,8 +249,8 @@ foreach {tn setup} {
   set ::testprefix fts3defer-2.$tn
   set DO_MALLOC_TEST 0
 
-  do_execsql_test 0 { 
-    SELECT count(*) FROM t1_segments WHERE length(block)>10000 
+  do_execsql_test 0 {
+    SELECT count(*) FROM t1_segments WHERE length(block)>10000
   } {2}
 
   do_select_test 1.1 {
@@ -286,9 +286,9 @@ foreach {tn setup} {
 
   if { $fts3_simple_deferred_tokens_only==0 } {
     do_select_test 1.11 {
-      SELECT rowid FROM t1 
+      SELECT rowid FROM t1
       WHERE t1 MATCH '(
-        zdu OR zexh OR zf OR zhbrzadb OR zidhxhbtv OR 
+        zdu OR zexh OR zf OR zhbrzadb OR zidhxhbtv OR
         zk OR zkhdvkw OR zm OR zsmhnf
       ) vgsld'
     } {10 13 17 31 35 51 58 88 89 90 93 100}
@@ -322,22 +322,22 @@ foreach {tn setup} {
   do_select_test 3.1 {
     SELECT snippet(t1, '[', ']') FROM t1 WHERE t1 MATCH '"zm agmckuiu"'
   } {
-    {zm [zm] [agmckuiu] uhzq nsab jk rrkx duszemmzl hyq jk} 
-    {jk [zm] [agmckuiu] urvysbnykk jk jk zm zm jk jk} 
-    {[zm] [agmckuiu] zexh fibokdry jk uhzq bu tugflixoex xnxhf sk} 
+    {zm [zm] [agmckuiu] uhzq nsab jk rrkx duszemmzl hyq jk}
+    {jk [zm] [agmckuiu] urvysbnykk jk jk zm zm jk jk}
+    {[zm] [agmckuiu] zexh fibokdry jk uhzq bu tugflixoex xnxhf sk}
     {zm zf uenvbm jk azavwm zm [zm] [agmckuiu] zm jk}
   }
 
   do_select_test 3.2 {
     SELECT snippet(t1, '[', ']') FROM t1 WHERE t1 MATCH 'xnxhf jk'
   } {
-    {[xnxhf] [jk] [jk] agmckuiu duszemmzl [jk] zm zm [jk] vgsld} 
-    {[jk] [xnxhf] igju [jk] xh [jk] nvfasfh zm js [jk]} 
-    {[jk] jcpiwj zm [xnxhf] zm mjpavjuhw mj drir pa pvjrjlas} 
-    {gazrt [jk] ephknonq myjp uenvbm wuvajhwqz [jk] zm [xnxhf] nvfasfh} 
-    {zm aayxpmve csjqxhgj [xnxhf] xr [jk] aayxpmve [xnxhf] zm zm} 
-    {zm agmckuiu zexh fibokdry [jk] uhzq bu tugflixoex [xnxhf] sk} 
-    {lwa hi [xnxhf] qdyerbws zk njtc [jk] uhzq zm [jk]} 
+    {[xnxhf] [jk] [jk] agmckuiu duszemmzl [jk] zm zm [jk] vgsld}
+    {[jk] [xnxhf] igju [jk] xh [jk] nvfasfh zm js [jk]}
+    {[jk] jcpiwj zm [xnxhf] zm mjpavjuhw mj drir pa pvjrjlas}
+    {gazrt [jk] ephknonq myjp uenvbm wuvajhwqz [jk] zm [xnxhf] nvfasfh}
+    {zm aayxpmve csjqxhgj [xnxhf] xr [jk] aayxpmve [xnxhf] zm zm}
+    {zm agmckuiu zexh fibokdry [jk] uhzq bu tugflixoex [xnxhf] sk}
+    {lwa hi [xnxhf] qdyerbws zk njtc [jk] uhzq zm [jk]}
     {zm azavwm igju qzzqdxq [jk] [xnxhf] abthnzcv [jk] nvfasfh zm}
   }
 
@@ -350,14 +350,14 @@ foreach {tn setup} {
   do_select_test 4.2 {
     SELECT offsets(t1) FROM t1 WHERE t1 MATCH 'duszemmzl jk fibokdry'
   } {
-    {0 2 3 8 0 1 36 2 0 0 58 9} 
-    {0 0 0 9 0 1 13 2 0 1 16 2 0 2 19 8 0 1 53 2} 
-    {0 1 4 2 0 0 20 9 0 1 30 2 0 1 33 2 0 2 48 8} 
+    {0 2 3 8 0 1 36 2 0 0 58 9}
+    {0 0 0 9 0 1 13 2 0 1 16 2 0 2 19 8 0 1 53 2}
+    {0 1 4 2 0 0 20 9 0 1 30 2 0 1 33 2 0 2 48 8}
     {0 1 17 2 0 1 20 2 0 1 26 2 0 0 29 9 0 2 39 8}
   }
 
   do_select_test 4.3 {
-    SELECT offsets(t1) FROM t1 
+    SELECT offsets(t1) FROM t1
     WHERE t1 MATCH 'vgsld (hrlipdm OR (aapmve NEAR duszemmzl))'
   } {{0 0 0 5 0 1 15 7 0 0 36 5}}
 
@@ -366,7 +366,7 @@ foreach {tn setup} {
   # zeroed. Change this by messing with the [set dmt_modes] commands above.
   #
   foreach DO_MALLOC_TEST $dmt_modes {
-    
+
     # Phrase search.
     #
     do_select_test 5.$DO_MALLOC_TEST.1 {
@@ -382,25 +382,25 @@ foreach {tn setup} {
     do_select_test 5.$DO_MALLOC_TEST.3 {
       SELECT snippet(t1, '[', ']') FROM t1 WHERE t1 MATCH '"zm aayxpmve"'
     } {
-      {[zm] [aayxpmve] csjqxhgj xnxhf xr jk aayxpmve xnxhf zm zm} 
-      {duszemmzl zk jk jk fibokdry jseuhjnzo [zm] [aayxpmve] zk jk} 
+      {[zm] [aayxpmve] csjqxhgj xnxhf xr jk aayxpmve xnxhf zm zm}
+      {duszemmzl zk jk jk fibokdry jseuhjnzo [zm] [aayxpmve] zk jk}
       {zf jmfiqhwnjg js igju [zm] [aayxpmve] zm mbxnljomiv csjqxhgj nvfasfh}
     }
-    
+
     # snippet() function with multiple tokens.
     do_select_test 5.$DO_MALLOC_TEST.4 {
       SELECT snippet(t1, '[', ']') FROM t1 WHERE t1 MATCH 'zm zhbrzadb'
     } {
       {[zm] jk [zm] [zm] [zhbrzadb] uenvbm aayxpmve urvysbnykk duszemmzl jk}
     }
-    
+
     # snippet() function with phrase.
     do_select_test 5.$DO_MALLOC_TEST.5 {
       SELECT offsets(t1) FROM t1 WHERE t1 MATCH '"zm aayxpmve"'
     } {
       {0 0 0 2 0 1 3 8} {0 0 38 2 0 1 41 8} {0 0 22 2 0 1 25 8}
     }
-    
+
     # snippet() function with multiple tokens.
     do_select_test 5.$DO_MALLOC_TEST.6 {
       SELECT offsets(t1) FROM t1 WHERE t1 MATCH 'zm zhbrzadb'
@@ -412,7 +412,7 @@ foreach {tn setup} {
   }
 
   do_select_test 6.1 {
-    SELECT rowid FROM t1 
+    SELECT rowid FROM t1
     WHERE t1 MATCH 'vgsld (hrlipdm OR (aayxpmve duszemmzl))'
   } {10}
   do_select_test 6.2.1 {

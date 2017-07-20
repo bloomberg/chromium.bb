@@ -147,7 +147,7 @@ do_test triggerD-2.4 {
 #   INSERT INTO main.t1 VALUES(3);
 #   INSERT INTO temp.t1 VALUES(4);
 #   SELECT * FROM t2;
-# 
+#
 # The r1 trigger fires when the value 4 is inserted into the temp.t1
 # table, rather than when value 3 is inserted into main.t1.
 #
@@ -178,7 +178,7 @@ do_test triggerD-3.2 {
 
 
 #############################################################################
-# 
+#
 # Ticket [d6ddba6706353915ceedc56b4e3e72ecb4d77ba4]
 #
 # The following syntax really should not be allowed:
@@ -187,7 +187,7 @@ do_test triggerD-3.2 {
 #
 # But a long-standing bug does allow it.  And the "xyz.tab" slips into
 # the sqlite_master table.  We cannot fix the bug simply by disallowing
-# "xyz.tab" since that could break legacy applications.  We have to 
+# "xyz.tab" since that could break legacy applications.  We have to
 # fix the system so that the "xyz." on "xyz.tab" is ignored.
 # Verify that this is the case.
 #

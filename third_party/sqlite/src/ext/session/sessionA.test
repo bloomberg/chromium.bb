@@ -14,7 +14,7 @@
 
 if {![info exists testdir]} {
   set testdir [file join [file dirname [info script]] .. .. test]
-} 
+}
 source [file join [file dirname [info script]] session_common.tcl]
 source $testdir/tester.tcl
 ifcapable !session {finish_test; return}
@@ -43,7 +43,7 @@ do_test 2.1 {
   set ::table_filter(t3) 1
 
   sqlite3session S db main
-  S table_filter tbl_filter 
+  S table_filter tbl_filter
 
   execsql {
     INSERT INTO t1 VALUES('a', 'b');
@@ -63,7 +63,7 @@ do_test 2.1 {
 } {a b e f}
 
 #-------------------------------------------------------------------------
-# Test that filter callbacks passed to sqlite3changeset_apply() are 
+# Test that filter callbacks passed to sqlite3changeset_apply() are
 # invoked correctly.
 #
 reset_db
@@ -74,7 +74,7 @@ do_execsql_test 3.1 {
 
 do_test 3.2 {
   execsql BEGIN
-  set ::cs [changeset_from_sql { 
+  set ::cs [changeset_from_sql {
     INSERT INTO t1 VALUES(1, 2);
     INSERT INTO t2 VALUES('x', 'y');
   }]
@@ -82,8 +82,8 @@ do_test 3.2 {
   set {} {}
 } {}
 
-proc filter {x y} { 
-  return [string equal $x $y] 
+proc filter {x y} {
+  return [string equal $x $y]
 }
 
 do_test 3.3 {

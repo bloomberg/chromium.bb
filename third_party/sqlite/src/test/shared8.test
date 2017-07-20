@@ -46,7 +46,7 @@ proc roman {n} {
 #
 #    1.8: Close all database connections (deleting the in-memory schema).
 #         Then open a new connection and check that it cannot read the db.
-#         
+#
 do_test 1.0 {
   sqlite3 db1 test.db
   db1 func roman roman
@@ -62,7 +62,7 @@ do_test 1.0 {
 } {1 i 2 ii 3 iii 4 iv}
 
 do_test 1.1 {
-  execsql { 
+  execsql {
     PRAGMA writable_schema = 1;
     DELETE FROM sqlite_master WHERE 1;
     PRAGMA writable_schema = 0;

@@ -88,7 +88,7 @@ static char *stress_thread_4(int iTid, void *pArg){
       closedb(&err, &db);
       opendb(&err, &db, "test.db", 0);
     }
-    sql_script(&err, &db, 
+    sql_script(&err, &db,
         "WITH loop(i) AS (SELECT 1 UNION ALL SELECT i+1 FROM loop LIMIT 200) "
         "INSERT INTO t1 VALUES(randomblob(60), randomblob(60));"
     );
@@ -190,7 +190,7 @@ static void stress1(int nMs){
 
 static void stress2_workload1(Error *pErr, Sqlite *pDb, int i){
   int iTab = (i % (STRESS2_TABCNT-1)) + 1;
-  sql_script_printf(pErr, pDb, 
+  sql_script_printf(pErr, pDb,
       "CREATE TABLE IF NOT EXISTS t%d(x PRIMARY KEY, y, z);", iTab
   );
 }
@@ -255,7 +255,7 @@ static void stress2_workload14(Error *pErr, Sqlite *pDb, int i){
 }
 
 static void stress2_workload17(Error *pErr, Sqlite *pDb, int i){
-  sql_script_printf(pErr, pDb, 
+  sql_script_printf(pErr, pDb,
       "PRAGMA journal_mode = %q", (i%2) ? "delete" : "wal"
   );
 }
@@ -343,7 +343,7 @@ static void stress2(int nMs){
 
   /* To make sure the db file is empty before commencing */
   opendb(&err, &db, zDb, 1);
-  sql_script(&err, &db, 
+  sql_script(&err, &db,
       "CREATE TABLE IF NOT EXISTS t0(x PRIMARY KEY, y, z);"
       "CREATE INDEX IF NOT EXISTS i0 ON t0(y);"
   );

@@ -8,9 +8,9 @@
 #    May you share freely, never taking more than you give.
 #
 #***********************************************************************
-# This file implements regression tests for SQLite library. 
+# This file implements regression tests for SQLite library.
 #
-# Specifically, the tests in this file attempt to verify that 
+# Specifically, the tests in this file attempt to verify that
 # multi-threaded sorting works.
 #
 
@@ -55,17 +55,17 @@ foreach {tn script} {
       LIMIT 10000
     ) INSERT INTO t1 SELECT * FROM r;
   }
-  
+
   do_execsql_test $tn.2.2 {
     CREATE UNIQUE INDEX i1 ON t1(b, a);
   }
-  
+
   do_execsql_test $tn.2.3 {
     CREATE UNIQUE INDEX i2 ON t1(a);
   }
-  
+
   do_execsql_test $tn.2.4 { PRAGMA integrity_check } {ok}
-  
+
   # Because it uses so much data, this test can take 12-13 seconds even on
   # a modern workstation. So it is omitted from "veryquick" and other
   # permutations.test tests.

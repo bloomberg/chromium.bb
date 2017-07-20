@@ -59,7 +59,7 @@ do_execsql_test 1.5 {
   WITH x1 AS (SELECT a FROM t1),
        x2 AS (SELECT i FROM t2),
        x3 AS (SELECT * FROM x1, x2 WHERE x1.a IN x2 AND x2.i IN x1)
-  SELECT * FROM x3 
+  SELECT * FROM x3
 } {2 2}
 
 do_execsql_test 1.6 {
@@ -101,10 +101,10 @@ do_execsql_test 1.10 {
 } {3 2 1 3 2 2}
 
 do_execsql_test 1.11 {
-  WITH 
-  i(x) AS ( 
-    WITH 
-    j(x) AS ( SELECT * FROM i ), 
+  WITH
+  i(x) AS (
+    WITH
+    j(x) AS ( SELECT * FROM i ),
     i(x) AS ( SELECT * FROM t1 )
     SELECT * FROM j
   )
@@ -137,30 +137,30 @@ do_execsql_test 1.13 {
 } {.......... ......... ........ ....... ...... ..... .... ... .. .}
 
 do_execsql_test 1.14 {
-  WITH 
-  t4(x) AS ( 
+  WITH
+  t4(x) AS (
     VALUES(4)
-    UNION ALL 
+    UNION ALL
     SELECT x+1 FROM t4 WHERE x<10
   )
   SELECT * FROM t4;
 } {4 5 6 7 8 9 10}
 
 do_execsql_test 1.15 {
-  WITH 
-  t4(x) AS ( 
+  WITH
+  t4(x) AS (
     VALUES(4)
-    UNION ALL 
+    UNION ALL
     SELECT x+1 FROM main.t4 WHERE x<10
   )
   SELECT * FROM t4;
 } {4 5}
 
 do_catchsql_test 1.16 {
-  WITH 
-  t4(x) AS ( 
+  WITH
+  t4(x) AS (
     VALUES(4)
-    UNION ALL 
+    UNION ALL
     SELECT x+1 FROM t4, main.t4, t4 WHERE x<10
   )
   SELECT * FROM t4;
@@ -195,7 +195,7 @@ do_catchsql_test 3.1 {
 } {1 {circular reference: i}}
 
 do_catchsql_test 3.2 {
-  WITH 
+  WITH
   i(x) AS ( SELECT * FROM j ),
   j(x) AS ( SELECT * FROM k ),
   k(x) AS ( SELECT * FROM i )
@@ -203,22 +203,22 @@ do_catchsql_test 3.2 {
 } {1 {circular reference: i}}
 
 do_catchsql_test 3.3 {
-  WITH 
+  WITH
   i(x) AS ( SELECT * FROM (SELECT * FROM j) ),
   j(x) AS ( SELECT * FROM (SELECT * FROM i) )
   SELECT * FROM i;
 } {1 {circular reference: i}}
 
 do_catchsql_test 3.4 {
-  WITH 
+  WITH
   i(x) AS ( SELECT * FROM (SELECT * FROM j) ),
   j(x) AS ( SELECT * FROM (SELECT * FROM i) )
   SELECT * FROM j;
 } {1 {circular reference: j}}
 
 do_catchsql_test 3.5 {
-  WITH 
-  i(x) AS ( 
+  WITH
+  i(x) AS (
     WITH j(x) AS ( SELECT * FROM i )
     SELECT * FROM j
   )
@@ -254,7 +254,7 @@ do_catchsql_test 4.7 [genstmt [expr $nLimit+1]] \
   {1 {too many columns in result set}}
 
 #---------------------------------------------------------------------------
-# Check that adding a WITH clause to an INSERT disables the xfer 
+# Check that adding a WITH clause to an INSERT disables the xfer
 # optimization.
 #
 proc do_xfer_test {tn bXfer sql {res {}}} {
@@ -275,16 +275,16 @@ do_execsql_test 5.1 {
 do_xfer_test 5.2 1 { INSERT INTO t1 SELECT * FROM t2 }
 do_xfer_test 5.3 0 { INSERT INTO t1 SELECT a, b FROM t2 }
 do_xfer_test 5.4 0 { INSERT INTO t1 SELECT b, a FROM t2 }
-do_xfer_test 5.5 0 { 
-  WITH x AS (SELECT a, b FROM t2) INSERT INTO t1 SELECT * FROM x 
+do_xfer_test 5.5 0 {
+  WITH x AS (SELECT a, b FROM t2) INSERT INTO t1 SELECT * FROM x
 }
-do_xfer_test 5.6 0 { 
-  WITH x AS (SELECT a, b FROM t2) INSERT INTO t1 SELECT * FROM t2 
+do_xfer_test 5.6 0 {
+  WITH x AS (SELECT a, b FROM t2) INSERT INTO t1 SELECT * FROM t2
 }
-do_xfer_test 5.7 0 { 
+do_xfer_test 5.7 0 {
  INSERT INTO t1 WITH x AS ( SELECT * FROM t2 ) SELECT * FROM x
 }
-do_xfer_test 5.8 0 { 
+do_xfer_test 5.8 0 {
  INSERT INTO t1 WITH x(a,b) AS ( SELECT * FROM t2 ) SELECT * FROM x
 }
 
@@ -324,19 +324,19 @@ do_catchsql_test 6.5 {
   DELETE FROM t2 WHERE;
 } {1 {near ";": syntax error}}
 
-do_catchsql_test 6.6 { 
+do_catchsql_test 6.6 {
   WITH x AS (SELECT * FROM t1) DELETE FROM t2 WHERE
 } {/1 {near .* syntax error}/}
 
-do_catchsql_test 6.7 { 
+do_catchsql_test 6.7 {
   WITH x AS (SELECT * FROM t1) DELETE FROM t2 WHRE 1;
 } {/1 {near .* syntax error}/}
 
-do_catchsql_test 6.8 { 
+do_catchsql_test 6.8 {
   WITH x AS (SELECT * FROM t1) UPDATE t2 SET a = 10, b = ;
 } {/1 {near .* syntax error}/}
 
-do_catchsql_test 6.9 { 
+do_catchsql_test 6.9 {
   WITH x AS (SELECT * FROM t1) UPDATE t2 SET a = 10, b = 1 WHERE a===b;
 } {/1 {near .* syntax error}/}
 
@@ -357,10 +357,10 @@ do_execsql_test 7.1 {
   CREATE TABLE t6(y INTEGER);
 
   WITH s(x) AS ( VALUES(7) UNION ALL SELECT x+7 FROM s WHERE x<49 )
-  INSERT INTO t5 
+  INSERT INTO t5
   SELECT * FROM s;
 
-  INSERT INTO t6 
+  INSERT INTO t6
   WITH s(x) AS ( VALUES(2) UNION ALL SELECT x+2 FROM s WHERE x<49 )
   SELECT * FROM s;
 }
@@ -387,7 +387,7 @@ do_execsql_test 7.5 {
 } {14 28 42}
 
 #-------------------------------------------------------------------------
-# At one point the following was causing an assertion failure and a 
+# At one point the following was causing an assertion failure and a
 # memory leak.
 #
 do_execsql_test 8.1 {
@@ -399,7 +399,7 @@ do_execsql_test 8.1 {
 do_execsql_test 8.2 {
   WITH q(a) AS (
     SELECT 1
-    UNION 
+    UNION
     SELECT a+1 FROM q, v WHERE a<5
   )
   SELECT * FROM q;

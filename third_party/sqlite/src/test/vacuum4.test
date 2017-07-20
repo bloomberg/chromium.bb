@@ -8,7 +8,7 @@
 #    May you share freely, never taking more than you give.
 #
 #***********************************************************************
-# 
+#
 # This file implements a test of ticket [da1151f97df244a1]:  An
 # assertion fault while VACUUMing an auto_vacuumed database with
 # large schema.

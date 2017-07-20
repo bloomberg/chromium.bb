@@ -35,9 +35,9 @@ struct Fts5Hash {
 };
 
 /*
-** Each entry in the hash table is represented by an object of the 
+** Each entry in the hash table is represented by an object of the
 ** following type. Each object, its key (zKey[]) and its current data
-** are stored in a single memory allocation. The position list data 
+** are stored in a single memory allocation. The position list data
 ** immediately follows the key data in memory.
 **
 ** The data that follows the key is in a similar, but not identical format
@@ -58,7 +58,7 @@ struct Fts5Hash {
 struct Fts5HashEntry {
   Fts5HashEntry *pHashNext;       /* Next hash entry with same hash-key */
   Fts5HashEntry *pScanNext;       /* Next entry in sorted order */
-  
+
   int nAlloc;                     /* Total size of allocation */
   int iSzPoslist;                 /* Offset of space for 4-byte poslist size */
   int nData;                      /* Total bytes of data (incl. structure) */
@@ -238,15 +238,15 @@ int sqlite3Fts5HashWrite(
   u8 *pPtr;
   int nIncr = 0;                  /* Amount to increment (*pHash->pnByte) by */
   int bNew;                       /* If non-delete entry should be written */
-  
+
   bNew = (pHash->eDetail==FTS5_DETAIL_FULL);
 
   /* Attempt to locate an existing hash entry */
   iHash = fts5HashKey2(pHash->nSlot, (u8)bByte, (const u8*)pToken, nToken);
   for(p=pHash->aSlot[iHash]; p; p=p->pHashNext){
-    if( p->zKey[0]==bByte 
+    if( p->zKey[0]==bByte
      && p->nKey==nToken
-     && memcmp(&p->zKey[1], pToken, nToken)==0 
+     && memcmp(&p->zKey[1], pToken, nToken)==0
     ){
       break;
     }
@@ -293,8 +293,8 @@ int sqlite3Fts5HashWrite(
     nIncr += p->nData;
   }else{
 
-    /* Appending to an existing hash-entry. Check that there is enough 
-    ** space to append the largest possible new entry. Worst case scenario 
+    /* Appending to an existing hash-entry. Check that there is enough
+    ** space to append the largest possible new entry. Worst case scenario
     ** is:
     **
     **     + 9 bytes for a new rowid,
@@ -420,7 +420,7 @@ static Fts5HashEntry *fts5HashEntryMerge(
 ** list.
 */
 static int fts5HashEntrySort(
-  Fts5Hash *pHash, 
+  Fts5Hash *pHash,
   const char *pTerm, int nTerm,   /* Query prefix, if any */
   Fts5HashEntry **ppSorted
 ){

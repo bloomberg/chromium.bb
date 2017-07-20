@@ -44,7 +44,7 @@ set EXCLUDE {
   crash.test
   autovacuum_crash.test
 }
-# Test files btree2.test and btree4.test don't work if the 
+# Test files btree2.test and btree4.test don't work if the
 # SQLITE_DEFAULT_AUTOVACUUM macro is defined to true (because they depend
 # on tables being allocated starting at page 2).
 #
@@ -54,7 +54,7 @@ ifcapable default_autovacuum {
 }
 
 if {[sqlite3 -has-codec]} {
-  # lappend EXCLUDE 
+  # lappend EXCLUDE
 }
 if {[llength $argv]>0} {
   set FILELIST $argv

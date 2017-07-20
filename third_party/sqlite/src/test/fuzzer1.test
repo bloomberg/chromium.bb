@@ -9,7 +9,7 @@
 #
 #***********************************************************************
 # This file implements regression tests for TCL interface to the
-# SQLite library. 
+# SQLite library.
 #
 # The focus of the tests is the word-fuzzer virtual table.
 #
@@ -75,8 +75,8 @@ do_execsql_test fuzzer1-2.1 {
 do_execsql_test fuzzer1-2.1 {
     SELECT word, distance FROM f1 WHERE word MATCH 'abcde'
 } {
-  abcde 0   abcda 1   ebcde 10 
-  ebcda 11  abcdo 100 ebcdo 110 
+  abcde 0   abcda 1   ebcde 10
+  ebcda 11  abcdo 100 ebcdo 110
   obcde 110 obcda 111 obcdo 210
 }
 
@@ -92,23 +92,23 @@ do_execsql_test fuzzer1-2.4 {
 do_execsql_test fuzzer1-2.5 {
   SELECT word, distance FROM f1 WHERE word MATCH 'abcde'
 } {
-  abcde 0   abcda 1   ebcde 10 
-  ebcda 11  abcdo 100 ebcdo 110 
+  abcde 0   abcda 1   ebcde 10
+  ebcda 11  abcdo 100 ebcdo 110
   obcde 110 obcda 111 obcdo 210
 }
 
 do_execsql_test fuzzer1-2.6 {
   SELECT word, distance FROM f1 WHERE word MATCH 'abcde' AND ruleset=0
 } {
-  abcde 0   abcda 1   ebcde 10 
-  ebcda 11  abcdo 100 ebcdo 110 
+  abcde 0   abcda 1   ebcde 10
+  ebcda 11  abcdo 100 ebcdo 110
   obcde 110 obcda 111 obcdo 210
 }
 
 do_execsql_test fuzzer1-2.7 {
   SELECT word, distance FROM f1 WHERE word MATCH 'abcde' AND ruleset=1
 } {
-  abcde 0 axcde 1 abcye 10 
+  abcde 0 axcde 1 abcye 10
   axcye 11 abcze 110 axcze 111
 }
 
@@ -177,7 +177,7 @@ do_test fuzzer1-2.0 {
 
     INSERT INTO f2_rules(cFrom,cTo,cost) VALUES('t','th',70);
     INSERT INTO f2_rules(cFrom,cTo,cost) VALUES('th','t',66);
- 
+
     INSERT INTO f2_rules(cFrom,cTo,cost) VALUES('a','',84);
     INSERT INTO f2_rules(cFrom,cTo,cost) VALUES('','b',106);
     INSERT INTO f2_rules(cFrom,cTo,cost) VALUES('b','',106);
@@ -1545,7 +1545,7 @@ do_execsql_test fuzzer1-4.1 {
 #
 #  1.5.2 - Check that no-op rules (i.e. C->C) are ignored. Test NULL in
 #          the "to" column of a fuzzer data table.
-#  
+#
 #  1.5.3 - Test out-of-range values for the cost field of the data table.
 #
 #  1.5.4 - Test out-of-range values for the string fields of the data table.
@@ -1613,7 +1613,7 @@ do_execsql_test 5.4.2 {
   INSERT INTO "fuzzer [x] rules table" VALUES(
     0, 'x', '123456789012345678901234567890123456789012345678901', 2
   );
-} 
+}
 do_catchsql_test 5.4.3 {
   CREATE VIRTUAL TABLE x USING fuzzer('fuzzer [x] rules table');
 } {1 {fuzzer: maximum string length is 50}}
@@ -1624,7 +1624,7 @@ do_execsql_test 5.4.4 {
   INSERT INTO "fuzzer [x] rules table" VALUES(
     0, '123456789012345678901234567890123456789012345678901', 'x', 2
   );
-} 
+}
 do_catchsql_test 5.4.5 {
   CREATE VIRTUAL TABLE x USING fuzzer('fuzzer [x] rules table');
 } {1 {fuzzer: maximum string length is 50}}
@@ -1633,7 +1633,7 @@ do_execsql_test 5.5.1 {
   DROP TABLE IF EXISTS x;
   DELETE FROM "fuzzer [x] rules table";
   INSERT INTO "fuzzer [x] rules table" VALUES(-1, 'x', 'y', 2);
-} 
+}
 do_catchsql_test 5.5.2 {
   CREATE VIRTUAL TABLE x USING fuzzer('fuzzer [x] rules table');
 } {1 {fuzzer: ruleset must be between 0 and 2147483647}}
@@ -1642,13 +1642,13 @@ do_execsql_test 5.5.3 {
   DROP TABLE IF EXISTS x;
   DELETE FROM "fuzzer [x] rules table";
   INSERT INTO "fuzzer [x] rules table" VALUES((1<<32)+100, 'x', 'y', 2);
-} 
+}
 do_catchsql_test 5.5.4 {
   CREATE VIRTUAL TABLE x USING fuzzer('fuzzer [x] rules table');
 } {1 {fuzzer: ruleset must be between 0 and 2147483647}}
 
 #-------------------------------------------------------------------------
-# Test using different types of quotes with CREATE VIRTUAL TABLE 
+# Test using different types of quotes with CREATE VIRTUAL TABLE
 # arguments.
 #
 do_execsql_test 7.1 {
@@ -1663,8 +1663,8 @@ foreach {tn sql} {
 } {
   do_execsql_test 7.2.$tn.1 { DROP TABLE IF EXISTS x2 }
   do_execsql_test 7.2.$tn.2 $sql
-  do_execsql_test 7.2.$tn.3 { 
-    SELECT word FROM x2 WHERE word MATCH 'aaa' 
+  do_execsql_test 7.2.$tn.3 {
+    SELECT word FROM x2 WHERE word MATCH 'aaa'
   } {aaa baa aba aab bab abb bba bbb}
 }
 
@@ -1680,28 +1680,28 @@ do_execsql_test 8.1 {
 }
 
 do_execsql_test 8.2.1 {
-  SELECT cFrom, cTo, word 
-    FROM x3_rules CROSS JOIN x3 
+  SELECT cFrom, cTo, word
+    FROM x3_rules CROSS JOIN x3
     WHERE word MATCH 'a' AND cost=distance AND ruleset=2
     ORDER BY +cTo;
 } {a x x a y y a z z}
 
 do_execsql_test 8.2.2 {
-  SELECT cFrom, cTo, word 
+  SELECT cFrom, cTo, word
     FROM x3 CROSS JOIN x3_rules
     WHERE word MATCH 'a' AND cost=distance AND ruleset=2
     ORDER BY +cTo DESC
 } {a z z a y y a x x}
 
 do_execsql_test 8.2.3 {
-  SELECT cFrom, cTo, word 
-    FROM x3_rules, x3 
+  SELECT cFrom, cTo, word
+    FROM x3_rules, x3
     WHERE word MATCH 'a' AND cost=distance AND ruleset=2
     ORDER BY +cTo DESC;
 } {a z z a y y a x x}
 
 do_execsql_test 8.2.4 {
-  SELECT cFrom, cTo, word 
+  SELECT cFrom, cTo, word
     FROM x3, x3_rules
     WHERE word MATCH 'a' AND cost=distance AND ruleset=2
     ORDER BY +cTo DESC;
@@ -1709,8 +1709,8 @@ do_execsql_test 8.2.4 {
 
 do_execsql_test 8.2.5 {
   CREATE INDEX i1 ON x3_rules(cost);
-  SELECT cFrom, cTo, word 
-    FROM x3_rules, x3 
+  SELECT cFrom, cTo, word
+    FROM x3_rules, x3
     WHERE word MATCH 'a' AND cost=distance AND ruleset=2
     ORDER BY +cTo DESC;
 } {a z z a y y a x x}
@@ -1720,16 +1720,16 @@ do_execsql_test 8.2.5 {
 } {a z y x a z y x a z y x}
 
 do_execsql_test 8.2.6 {
-  SELECT word FROM x3_rules, x3 
-  WHERE word MATCH x3_rules.cFrom 
-    AND ruleset=2 
+  SELECT word FROM x3_rules, x3
+  WHERE word MATCH x3_rules.cFrom
+    AND ruleset=2
     AND x3_rules.cost=8;
 } {a z y x}
 
 do_execsql_test 8.2.7 {
   CREATE TABLE t1(a, b);
   CREATE INDEX i2 ON t1(b);
-  SELECT word, distance FROM x3, t1 
+  SELECT word, distance FROM x3, t1
     WHERE x3.word MATCH t1.a AND ruleset=2 AND distance=t1.b;
 } {}
 
@@ -1741,11 +1741,11 @@ do_execsql_test 8.2.8 {
   CREATE VIRTUAL TABLE x3 USING fuzzer(x3_rules);
   SELECT * FROM x3_rules;
 } {
-  2 a x 10 
-  2 a y 9 
-  2 a z 8 
-  1 a t 5 
-  1 a u 4 
+  2 a x 10
+  2 a y 9
+  2 a z 8
+  1 a t 5
+  1 a u 4
   1 a v 3
 }
 
@@ -1804,9 +1804,9 @@ do_execsql_test 10.1 {
 }
 
 do_execsql_test 10.2 {
-  SELECT word, distance FROM x5 WHERE word MATCH 
-    'aaaaaaaaaXaaaaaaaaaXaaaaaaaaaXaaaaaaaaaXaaaaaaaaa' || 
-    'aaaaaaaaaXaaaaaaaaaXaaaaaaaaaXaaaaaaaaaXaaaaaaaaa' || 
+  SELECT word, distance FROM x5 WHERE word MATCH
+    'aaaaaaaaaXaaaaaaaaaXaaaaaaaaaXaaaaaaaaaXaaaaaaaaa' ||
+    'aaaaaaaaaXaaaaaaaaaXaaaaaaaaaXaaaaaaaaaXaaaaaaaaa' ||
     'aaaaaaaaaXaaaaaaaaaXaaaaaaaaaXaaaaaaaaaXaaaaaaaaa'
 } {}
 

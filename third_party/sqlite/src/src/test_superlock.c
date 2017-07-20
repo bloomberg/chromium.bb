@@ -11,7 +11,7 @@
 *************************************************************************
 ** Example code for obtaining an exclusive lock on an SQLite database
 ** file. This method is complicated, but works for both WAL and rollback
-** mode database files. The interface to the example code in this file 
+** mode database files. The interface to the example code in this file
 ** consists of the following two functions:
 **
 **   sqlite3demo_superlock()
@@ -56,7 +56,7 @@ static int superlockBusyHandler(void *pCtx, int UNUSED){
 }
 
 /*
-** This function is used to determine if the main database file for 
+** This function is used to determine if the main database file for
 ** connection db is open in WAL mode or not. If no error occurs and the
 ** database file is in WAL mode, set *pbWal to true and return SQLITE_OK.
 ** If it is not in WAL mode, set *pbWal to false.
@@ -119,7 +119,7 @@ static int superlockWalLock(
   if( rc!=SQLITE_OK ) return rc;
 
   /* Obtain the "recovery" lock. Normally, this lock is only obtained by
-  ** clients running database recovery.  
+  ** clients running database recovery.
   */
   rc = superlockShmLock(fd, 2, 1, pBusy);
   if( rc!=SQLITE_OK ) return rc;
@@ -136,7 +136,7 @@ static int superlockWalLock(
   memset((void *)p, 0, 32);
 
   /* Obtain exclusive locks on all the "read-lock" slots. Once these locks
-  ** are held, it is guaranteed that there are no active reader, writer or 
+  ** are held, it is guaranteed that there are no active reader, writer or
   ** checkpointer clients.
   */
   rc = superlockShmLock(fd, 3, SQLITE_SHM_NLOCK-3, pBusy);
@@ -144,7 +144,7 @@ static int superlockWalLock(
 }
 
 /*
-** Release a superlock held on a database file. The argument passed to 
+** Release a superlock held on a database file. The argument passed to
 ** this function must have been obtained from a successful call to
 ** sqlite3demo_superlock().
 */
@@ -170,7 +170,7 @@ void sqlite3demo_superunlock(void *pLock){
 ** returned and output variable *ppLock is populated with an opaque handle
 ** that may be used with sqlite3demo_superunlock() to release the lock.
 **
-** If an error occurs, *ppLock is set to 0 and an SQLite error code 
+** If an error occurs, *ppLock is set to 0 and an SQLite error code
 ** (e.g. SQLITE_BUSY) is returned.
 **
 ** If a required lock cannot be obtained immediately and the xBusy parameter
@@ -200,7 +200,7 @@ int sqlite3demo_superlock(
   );
 
   /* Install a busy-handler and execute a BEGIN EXCLUSIVE. If this is not
-  ** a WAL database, this is all we need to do.  
+  ** a WAL database, this is all we need to do.
   **
   ** A wrapper function is used to invoke the busy-handler instead of
   ** registering the busy-handler function supplied by the user directly

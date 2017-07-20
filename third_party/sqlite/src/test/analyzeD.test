@@ -85,7 +85,7 @@ do_eqp_test 1.4 {
 }
 
 do_test 1.5 {
-  execsql { 
+  execsql {
     UPDATE t1 SET a=13 WHERE a = 3001;
     ANALYZE;
   }
@@ -103,7 +103,7 @@ do_test 1.7 {
   sqlite3 db test.db
 } {}
 
-# Same test as 1.4, except this time the 7 rows that match the a=? condition 
+# Same test as 1.4, except this time the 7 rows that match the a=? condition
 # do not feature larger values than all rows in the stat4 table. So SQLite
 # gets this right, even without stat1 data.
 do_eqp_test 1.8 {

@@ -31,13 +31,13 @@ ifcapable {!trigger || !shared_cache} { finish_test ; return }
 # schema. If process 2 reloads the shared-cache schema from disk, then
 # it does not recreate the temp trigger belonging to process 1. From the
 # point of view of process 1, the temp trigger just disappeared.
-# 
-#   temptrigger-1.1: In shared cache mode, create a table in the main 
+#
+#   temptrigger-1.1: In shared cache mode, create a table in the main
 #                    database and add a temp trigger to it.
 #
 #   temptrigger-1.2: Check that the temp trigger is correctly fired. Check
 #                    that the temp trigger is not fired by statements
-#                    executed by a second connection connected to the 
+#                    executed by a second connection connected to the
 #                    same shared cache.
 #
 #   temptrigger-1.3: Using the second connection to the shared-cache, cause
@@ -91,7 +91,7 @@ do_test temptrigger-1.4 {
 } {1 2 5 6}
 
 do_test temptrigger-1.5 {
-  # Before the bug was fixed, the following 'DROP TRIGGER' hit an 
+  # Before the bug was fixed, the following 'DROP TRIGGER' hit an
   # assert if executed.
   #execsql { DROP TRIGGER tr1 }
 } {}
@@ -103,7 +103,7 @@ catch {db2 close}
 # Tests temptrigger-2.* are similar to temptrigger-1.*, except that
 # temptrigger-2.3 simply opens and closes a connection to the shared-cache.
 # It does not do anything special to cause the schema to be reloaded.
-# 
+#
 do_test temptrigger-2.1 {
   sqlite3 db test.db
   execsql {
@@ -140,11 +140,11 @@ sqlite3_enable_shared_cache $::enable_shared_cache
 
 #-------------------------------------------------------------------------
 # Test case temptrigger-3.* demonstrates a problem with temp triggers
-# on tables located in attached databases. At one point when SQLite reloaded 
-# the schema of an attached database (because some other connection had 
-# changed the schema cookie) it was not re-creating temp triggers attached 
+# on tables located in attached databases. At one point when SQLite reloaded
+# the schema of an attached database (because some other connection had
+# changed the schema cookie) it was not re-creating temp triggers attached
 # to tables located within the attached database.
-# 
+#
 #   temptrigger-3.1: Attach database 'test2.db' to connection [db]. Add a
 #                    temp trigger to a table in 'test2.db'.
 #
@@ -156,12 +156,12 @@ sqlite3_enable_shared_cache $::enable_shared_cache
 #                    correctly.
 #
 #   temptrigger-3.4: Check that the temp trigger can be dropped without error.
-# 
+#
 do_test temptrigger-3.1 {
   catch { forcedelete test2.db test2.db-journal }
   catch { forcedelete test.db test.db-journal }
-  sqlite3 db test.db 
-  sqlite3 db2 test2.db 
+  sqlite3 db test.db
+  sqlite3 db2 test2.db
   execsql { CREATE TABLE t2(a, b) } db2
   execsql {
     ATTACH 'test2.db' AS aux;
@@ -173,7 +173,7 @@ do_test temptrigger-3.1 {
 } {}
 
 do_test temptrigger-3.2.1 {
-  execsql { 
+  execsql {
     INSERT INTO aux.t2 VALUES(1, 2);
     SELECT * FROM aux.t2;
   }
@@ -184,7 +184,7 @@ do_test temptrigger-3.2.2 {
 
 do_test temptrigger-3.3.1 {
   execsql { CREATE TABLE t3(a, b) } db2
-  execsql { 
+  execsql {
     INSERT INTO aux.t2 VALUES(3, 4);
     SELECT * FROM aux.t2;
   }
@@ -194,7 +194,7 @@ do_test temptrigger-3.3.2 {
 } {1 2 3 4}
 
 do_test temptrigger-3.4 {
-  # Before the bug was fixed, the following 'DROP TRIGGER' hit an 
+  # Before the bug was fixed, the following 'DROP TRIGGER' hit an
   # assert if executed.
   #execsql { DROP TRIGGER tr2 }
 } {}
@@ -238,7 +238,7 @@ do_execsql_test 5.2 {
   SELECT * FROM sqlite_master;
   SELECT * FROM temp.sqlite_master;
 } {
-  trigger tr1 t1 0 
+  trigger tr1 t1 0
   {CREATE TRIGGER tr1 BEFORE INSERT ON t1 BEGIN SELECT 1,2,3; END}
 }
 db2 close
@@ -253,8 +253,8 @@ forcedelete test.db2
 
 do_execsql_test 6.0 {
   CREATE TABLE t1(x);
-  CREATE TEMP TRIGGER tr1 BEFORE INSERT ON t1 BEGIN 
-    SELECT raise(ABORT, 'error'); 
+  CREATE TEMP TRIGGER tr1 BEFORE INSERT ON t1 BEGIN
+    SELECT raise(ABORT, 'error');
   END;
   ATTACH 'test.db2' AS aux;
 }

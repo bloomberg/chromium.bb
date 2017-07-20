@@ -116,5 +116,5 @@ thread_halt B
 # Also important to halt the worker threads, which are using spin
 # locks and eating away CPU cycles.
 #
-thread_halt *   
+thread_halt *
 finish_test

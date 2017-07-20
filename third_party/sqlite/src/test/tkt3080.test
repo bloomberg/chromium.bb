@@ -71,7 +71,7 @@ ifcapable vtab {
      execsql {SELECT * FROM t2}
   } {123}
 }
-  
+
 
 
 finish_test

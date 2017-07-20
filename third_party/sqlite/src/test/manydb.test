@@ -29,7 +29,7 @@ foreach {name value} [array get env SQLITE_FORCE_PROXY_LOCKING] {
 set num_fd_per_openwrite_db 3
 if {$using_proxy>0} {
   set num_fd_per_openwrite_db 5
-} 
+}
 
 # First test how many file descriptors are available for use. To open a
 # database for writing SQLite requires 3 file descriptors (the database, the

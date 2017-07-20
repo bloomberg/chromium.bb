@@ -8,7 +8,7 @@
 #    May you share freely, never taking more than you give.
 #
 #***********************************************************************
-# This file implements regression tests for SQLite library. 
+# This file implements regression tests for SQLite library.
 #
 # This file checks to make sure SQLite is able to gracEFully
 # handle malformed UTF-8.
@@ -52,7 +52,7 @@ do_test badutf2-4.0 {
   set S [sqlite3_prepare_v2 db "SELECT ?" -1 dummy]
   sqlite3_expired $S
 } {0}
-        
+
 foreach { i len uval xstr ustr u2u } {
 1 1 00     \x00         {}        {}
 2 1 01     \x01         "\\u0001" 01

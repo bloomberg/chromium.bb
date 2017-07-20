@@ -528,7 +528,7 @@ static int SQLITE_TCLAPI fake_big_file(
   if( zFile==0 ) return TCL_ERROR;
   memcpy(zFile, argv[2], nFile+1);
   zFile[nFile+1] = 0;
-  rc = sqlite3OsOpenMalloc(pVfs, zFile, &fd, 
+  rc = sqlite3OsOpenMalloc(pVfs, zFile, &fd,
       (SQLITE_OPEN_CREATE|SQLITE_OPEN_READWRITE|SQLITE_OPEN_MAIN_DB), 0
   );
   if( rc ){
@@ -689,7 +689,7 @@ static int SQLITE_TCLAPI testBitvecBuiltinTest(
   rc = sqlite3_test_control(SQLITE_TESTCTRL_BITVEC_TEST, sz, aProg);
   Tcl_SetObjResult(interp, Tcl_NewIntObj(rc));
   return TCL_OK;
-}  
+}
 
 /*
 ** Register commands with the TCL interpreter.

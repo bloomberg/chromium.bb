@@ -14,7 +14,7 @@ set testdir [file dirname $argv0]
 source $testdir/tester.tcl
 set testprefix e_totalchanges
 
-# Like [do_execsql_test], except it appends the value returned by 
+# Like [do_execsql_test], except it appends the value returned by
 # [db total_changes] to the result of executing the SQL script.
 #
 proc do_tc_test {tn sql res} {
@@ -73,16 +73,16 @@ do_execsql_test 1.2.1 {
 sqlite3 db test.db     ; # To reset total_changes
 do_tc_test 1.2.2 {
   CREATE TABLE log(detail);
-  CREATE TRIGGER t1_after_insert AFTER INSERT ON t1 BEGIN 
+  CREATE TRIGGER t1_after_insert AFTER INSERT ON t1 BEGIN
     INSERT INTO log VALUES('inserted into t1');
   END;
 
-  CREATE TRIGGER t1_before_delete BEFORE DELETE ON t1 BEGIN 
+  CREATE TRIGGER t1_before_delete BEFORE DELETE ON t1 BEGIN
     INSERT INTO log VALUES('deleting from t1');
     INSERT INTO log VALUES('here we go!');
   END;
 
-  CREATE TRIGGER t1_after_update AFTER UPDATE ON t1 BEGIN 
+  CREATE TRIGGER t1_after_update AFTER UPDATE ON t1 BEGIN
     INSERT INTO log VALUES('update');
     DELETE FROM log;
   END;

@@ -79,7 +79,7 @@ foreach {tn word res} {
   9   renstom*   {rainstorm 8 ransom 6 ransomer 6 ransoming 6 ransoms 6}
 } {
   do_execsql_test 1.2.$tn {
-    SELECT word, matchlen FROM t1 WHERE word MATCH $word 
+    SELECT word, matchlen FROM t1 WHERE word MATCH $word
      ORDER BY score, word LIMIT 5
   } $res
 }
@@ -256,7 +256,7 @@ ifcapable trace {
       lappend ::trace [string range $sql 3 end]
     }
   }
-  
+
   proc do_tracesql_test {tn sql {res {}}} {
     set ::trace [list]
     uplevel [list do_test $tn [subst -nocommands {
@@ -264,7 +264,7 @@ ifcapable trace {
       concat [set vals] [set ::trace]
     }] [list {*}$res]]
   }
-  
+
   db trace trace_callback
   do_tracesql_test 6.2.1 {
     SELECT word FROM t3 WHERE rowid = 10;
@@ -283,19 +283,19 @@ ifcapable trace {
   }
 }
 
-#------------------------------------------------------------------------- 
-# Test that the spellfix1 table supports conflict handling (OR REPLACE 
+#-------------------------------------------------------------------------
+# Test that the spellfix1 table supports conflict handling (OR REPLACE
 # and so on).
 #
 do_execsql_test 7.1 {
   CREATE VIRTUAL TABLE t4 USING spellfix1;
   PRAGMA table_info = t4;
 } {
-  0 word {} 0 {} 0 
-  1 rank {} 0 {} 0 
-  2 distance {} 0 {} 0 
-  3 langid {} 0 {} 0 
-  4 score {} 0 {} 0 
+  0 word {} 0 {} 0
+  1 rank {} 0 {} 0
+  2 distance {} 0 {} 0
+  3 langid {} 0 {} 0
+  4 score {} 0 {} 0
   5 matchlen {} 0 {} 0
 }
 

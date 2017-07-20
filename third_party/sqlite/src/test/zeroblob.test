@@ -165,30 +165,30 @@ do_test zeroblob-5.4 {
     SELECT CAST(zeroblob(100) AS BLOB);
   }
 } [execsql {SELECT zeroblob(100)}]
-  
+
 
 # Check for malicious use of zeroblob.  Make sure nothing crashes.
 #
-do_test zeroblob-6.1.1 { 
-  execsql {select zeroblob(-1)} 
-} {{}} 
-do_test zeroblob-6.1.2 { 
-  execsql {select zeroblob(-10)} 
-} {{}} 
-do_test zeroblob-6.1.3 { 
-  execsql {select zeroblob(-100)} 
-} {{}} 
-do_test zeroblob-6.2 { 
-  execsql {select length(zeroblob(-1))} 
-} {0} 
-do_test zeroblob-6.3 { 
-  execsql {select zeroblob(-1)|1} 
-} {1} 
-do_test zeroblob-6.4 { 
-  catchsql {select length(zeroblob(2147483648))} 
-} {1 {string or blob too big}} 
-do_test zeroblob-6.5 { 
-  catchsql {select zeroblob(2147483648)} 
+do_test zeroblob-6.1.1 {
+  execsql {select zeroblob(-1)}
+} {{}}
+do_test zeroblob-6.1.2 {
+  execsql {select zeroblob(-10)}
+} {{}}
+do_test zeroblob-6.1.3 {
+  execsql {select zeroblob(-100)}
+} {{}}
+do_test zeroblob-6.2 {
+  execsql {select length(zeroblob(-1))}
+} {0}
+do_test zeroblob-6.3 {
+  execsql {select zeroblob(-1)|1}
+} {1}
+do_test zeroblob-6.4 {
+  catchsql {select length(zeroblob(2147483648))}
+} {1 {string or blob too big}}
+do_test zeroblob-6.5 {
+  catchsql {select zeroblob(2147483648)}
 } {1 {string or blob too big}}
 do_test zeroblob-6.6 {
   execsql {select hex(zeroblob(-1))}
@@ -269,19 +269,19 @@ do_test zeroblob-10.1 {
 } {1 {string or blob too big}}
 
 #-------------------------------------------------------------------------
-# Test the zeroblob() function on its own with negative or oversized 
+# Test the zeroblob() function on its own with negative or oversized
 # arguments.
 #
-do_execsql_test 11.0 { 
+do_execsql_test 11.0 {
   SELECT length(zeroblob(-1444444444444444));
 } {0}
-do_catchsql_test 11.1 { 
+do_catchsql_test 11.1 {
   SELECT zeroblob(5000 * 1024 * 1024);
 } {1 {string or blob too big}}
-do_catchsql_test 11.2 { 
+do_catchsql_test 11.2 {
   SELECT quote(zeroblob(5000 * 1024 * 1024));
 } {1 {string or blob too big}}
-do_catchsql_test 11.3 { 
+do_catchsql_test 11.3 {
   SELECT quote(zeroblob(-1444444444444444));
 } {0 X''}
 do_catchsql_test 11.4 {
@@ -304,8 +304,8 @@ do_test 12.1 { bind_and_run $stmt 40 } 40
 do_test 12.2 { bind_and_run $stmt  0 }  0
 do_test 12.3 { bind_and_run $stmt 1000 } 1000
 
-do_test 12.4 { 
-  list [catch { bind_and_run $stmt [expr 5000 * 1024 * 1024] } msg] $msg 
+do_test 12.4 {
+  list [catch { bind_and_run $stmt [expr 5000 * 1024 * 1024] } msg] $msg
 } {1 SQLITE_TOOBIG}
 do_test 12.5 {
   sqlite3_step $stmt

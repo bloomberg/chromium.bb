@@ -50,7 +50,7 @@ proc do_temptables_test {tn sql temptables} {
   uplevel [list do_test $tn [subst -novar {
     set ret ""
     db eval "EXPLAIN [set sql]" {
-      if {$opcode == "OpenEphemeral" || $opcode == "SorterOpen"} { 
+      if {$opcode == "OpenEphemeral" || $opcode == "SorterOpen"} {
         if {$p5 != "08" && $p5!="00"} { error "p5 = $p5" }
         if {$p5 == "08"} {
           lappend ret hash
@@ -65,8 +65,8 @@ proc do_temptables_test {tn sql temptables} {
 
 
 #-------------------------------------------------------------------------
-# The following tests - distinct-1.* - check that the planner correctly 
-# detects cases where a UNIQUE index means that a DISTINCT clause is 
+# The following tests - distinct-1.* - check that the planner correctly
+# detects cases where a UNIQUE index means that a DISTINCT clause is
 # redundant. Currently the planner only detects such cases when there
 # is a single table in the FROM clause.
 #
@@ -144,7 +144,7 @@ foreach {tn noop sql} {
 
 #-------------------------------------------------------------------------
 # The following tests - distinct-2.* - test cases where an index is
-# used to deliver results in order of the DISTINCT expressions. 
+# used to deliver results in order of the DISTINCT expressions.
 #
 drop_all_tables
 do_execsql_test 2.0 {
@@ -200,7 +200,7 @@ do_test 3.1 {
 #-------------------------------------------------------------------------
 # Ticket  [fccbde530a6583bf2748400919f1603d5425995c] (2014-01-08)
 # The logic that computes DISTINCT sometimes thinks that a zeroblob()
-# and a blob of all zeros are different when they should be the same. 
+# and a blob of all zeros are different when they should be the same.
 #
 do_execsql_test 4.1 {
   DROP TABLE IF EXISTS t1;
@@ -259,12 +259,12 @@ db close
 sqlite3 db :memory:
 do_execsql_test 6.1 {
   CREATE TABLE jjj(x);
-  SELECT (SELECT 'mmm' UNION SELECT DISTINCT max(name) ORDER BY 1) 
+  SELECT (SELECT 'mmm' UNION SELECT DISTINCT max(name) ORDER BY 1)
     FROM sqlite_master;
 } {jjj}
 do_execsql_test 6.2 {
   CREATE TABLE nnn(x);
-  SELECT (SELECT 'mmm' UNION SELECT DISTINCT max(name) ORDER BY 1) 
+  SELECT (SELECT 'mmm' UNION SELECT DISTINCT max(name) ORDER BY 1)
     FROM sqlite_master;
 } {mmm}
 

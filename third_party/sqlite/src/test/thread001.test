@@ -20,8 +20,8 @@ set ::enable_shared_cache [sqlite3_enable_shared_cache]
 
 set ::NTHREAD 10
 
-# Run this test three times: 
-# 
+# Run this test three times:
+#
 #    1) All threads use the same database handle.
 #    2) All threads use their own database handles.
 #    3) All threads use their own database handles, shared-cache is enabled.
@@ -50,7 +50,7 @@ foreach {tn same_db shared_cache} [list \
   }
 
   # Set up a database and a schema. The database contains a single
-  # table with two columns. The first column ("a") is an INTEGER PRIMARY 
+  # table with two columns. The first column ("a") is an INTEGER PRIMARY
   # KEY. The second contains the md5sum of all rows in the table with
   # a smaller value stored in column "a".
   #
@@ -64,7 +64,7 @@ foreach {tn same_db shared_cache} [list \
   } {1}
   do_test thread001.$tn.2 {
     execsql {
-      SELECT 
+      SELECT
         (SELECT md5sum(a, b) FROM ab WHERE a < (SELECT max(a) FROM ab)) ==
         (SELECT b FROM ab WHERE a = (SELECT max(a) FROM ab))
     }
@@ -81,37 +81,37 @@ foreach {tn same_db shared_cache} [list \
       #sqlthread parent "puts \"OPEN $::DB\""
       set needToClose 1
     }
-  
+
     for {set i 0} {$i < 100} {incr i} {
       # Test that the invariant is true.
       do_test t1 {
         execsql {
-          SELECT 
+          SELECT
             (SELECT md5sum(a, b) FROM ab WHERE +a < (SELECT max(a) FROM ab)) ==
             (SELECT b FROM ab WHERE a = (SELECT max(a) FROM ab))
         }
       } {1}
-  
+
       # Add another row to the database.
       execsql { INSERT INTO ab SELECT NULL, md5sum(a, b) FROM ab }
     }
-  
+
     if {$needToClose} {
       #sqlthread parent "puts \"CLOSE $::DB\""
       sqlite3_close $::DB
     }
     #sqlthread parent "puts \"DONE\""
-  
+
     list OK
   }
-  
+
   # Kick off $::NTHREAD threads:
   #
   array unset finished
   for {set i 0} {$i < $::NTHREAD} {incr i} {
     thread_spawn finished($i) $dbconfig $thread_procs $thread_program
   }
-  
+
   # Wait for all threads to finish,  then check they all returned "OK".
   #
   for {set i 0} {$i < $::NTHREAD} {incr i} {
@@ -122,7 +122,7 @@ foreach {tn same_db shared_cache} [list \
       set ::finished($i)
     } OK
   }
-  
+
   # Check the database still looks Ok.
   #
   do_test thread001.$tn.5 {
@@ -130,7 +130,7 @@ foreach {tn same_db shared_cache} [list \
   } [expr {1 + $::NTHREAD*100}]
   do_test thread001.$tn.6 {
     execsql {
-      SELECT 
+      SELECT
         (SELECT md5sum(a, b) FROM ab WHERE +a < (SELECT max(a) FROM ab)) ==
         (SELECT b FROM ab WHERE a = (SELECT max(a) FROM ab))
     }

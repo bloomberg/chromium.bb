@@ -18,8 +18,8 @@ set ::testprefix rbu10
 
 
 #--------------------------------------------------------------------
-# Test that UPDATE commands work even if the input columns are in a 
-# different order to the output columns. 
+# Test that UPDATE commands work even if the input columns are in a
+# different order to the output columns.
 #
 do_execsql_test 1.0 {
   CREATE TABLE t1(a INTEGER PRIMARY KEY, b, c);
@@ -45,7 +45,7 @@ do_test 1.1 {
 } {1 b xxx}
 
 #--------------------------------------------------------------------
-# Test that the hidden languageid column of an fts4 table can be 
+# Test that the hidden languageid column of an fts4 table can be
 # written.
 #
 ifcapable fts3 {
@@ -65,8 +65,8 @@ ifcapable fts3 {
     a b 23 10
     a b 24 100
   }]
-  
-  # Or not - this data_xxx table has no langid column, so langid 
+
+  # Or not - this data_xxx table has no langid column, so langid
   # defaults to 0.
   #
   do_test 2.2 {
@@ -81,7 +81,7 @@ ifcapable fts3 {
     a b 24 100
     a b 25 0
   }]
-  
+
   # Update langid.
   #
   do_test 2.3 {
@@ -100,7 +100,7 @@ ifcapable fts3 {
 }
 
 #--------------------------------------------------------------------
-# Test that if writing a hidden virtual table column is an error, 
+# Test that if writing a hidden virtual table column is an error,
 # attempting to do so via rbu is also an error.
 #
 ifcapable fts3 {

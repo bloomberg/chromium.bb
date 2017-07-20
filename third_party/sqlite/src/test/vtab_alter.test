@@ -31,7 +31,7 @@ ifcapable !vtab||!altertable {
 # when an "ALTER TABLE ... RENAME TO" is executed on the v-table.
 # For example:
 #
-#   sqlite> CREATE TABLE t1_base(a, b, c); 
+#   sqlite> CREATE TABLE t1_base(a, b, c);
 #   sqlite> CREATE VIRTUAL TABLE t1 USING(t1_base);
 #   sqlite> ALTER TABLE t1 RENAME TO t2;
 #   sqlite> SELECT tbl_name FROM sqlite_master;
@@ -62,11 +62,11 @@ do_test vtab_alter-1.6 {
   catchsql { SELECT * FROM new }
 } {0 {}}
 
-# Try to rename an echo table that renames its base table. Make 
+# Try to rename an echo table that renames its base table. Make
 # sure nothing terrible happens.
 #
 do_test vtab_alter-2.1 {
-  execsql { 
+  execsql {
     DROP TABLE new;
     DROP TABLE t1;
     CREATE TABLE t1_base(a, b, c);
@@ -74,7 +74,7 @@ do_test vtab_alter-2.1 {
   }
 } {}
 do_test vtab_alter-2.2 {
-  execsql { 
+  execsql {
     INSERT INTO t1_base VALUES(1, 2, 3);
     SELECT * FROM t1;
   }

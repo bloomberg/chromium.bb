@@ -85,7 +85,7 @@ do_faultsim_test 1.1 -prep {
   faultsim_restore_and_reopen
 } -body {
   execsql { CREATE INDEX i1 ON t1(x) }
-  faultsim_test_result {0 {}} 
+  faultsim_test_result {0 {}}
   faultsim_integrity_check
 }
 ifcapable memorymanage {
@@ -94,7 +94,7 @@ ifcapable memorymanage {
     faultsim_restore_and_reopen
   } -body {
     execsql { CREATE INDEX i1 ON t1(x) }
-    faultsim_test_result {0 {}} 
+    faultsim_test_result {0 {}}
   }
   sqlite3_soft_heap_limit $soft_limit
 }
@@ -112,25 +112,25 @@ do_execsql_test 2.0 {
       randomblob(30), randomblob(30), randomblob(30), randomblob(30),
       randomblob(30), randomblob(30), randomblob(30)
     );
-    INSERT INTO t1 SELECT 
+    INSERT INTO t1 SELECT
       randomblob(30), randomblob(30), randomblob(30), randomblob(30),
       randomblob(30), randomblob(30), randomblob(30) FROM t1;         -- 2
-    INSERT INTO t1 SELECT 
+    INSERT INTO t1 SELECT
       randomblob(30), randomblob(30), randomblob(30), randomblob(30),
       randomblob(30), randomblob(30), randomblob(30) FROM t1;         -- 4
-    INSERT INTO t1 SELECT 
+    INSERT INTO t1 SELECT
       randomblob(30), randomblob(30), randomblob(30), randomblob(30),
       randomblob(30), randomblob(30), randomblob(30) FROM t1;         -- 8
-    INSERT INTO t1 SELECT 
+    INSERT INTO t1 SELECT
       randomblob(30), randomblob(30), randomblob(30), randomblob(30),
       randomblob(30), randomblob(30), randomblob(30) FROM t1;         -- 16
-    INSERT INTO t1 SELECT 
+    INSERT INTO t1 SELECT
       randomblob(30), randomblob(30), randomblob(30), randomblob(30),
       randomblob(30), randomblob(30), randomblob(30) FROM t1;         -- 32
-    INSERT INTO t1 SELECT 
+    INSERT INTO t1 SELECT
       randomblob(30), randomblob(30), randomblob(30), randomblob(30),
       randomblob(30), randomblob(30), randomblob(30) FROM t1;         -- 64
-    INSERT INTO t1 SELECT 
+    INSERT INTO t1 SELECT
       randomblob(30), randomblob(30), randomblob(30), randomblob(30),
       randomblob(30), randomblob(30), randomblob(30) FROM t1;         -- 128
   COMMIT;
@@ -141,7 +141,7 @@ do_faultsim_test 2.1 -prep {
   faultsim_restore_and_reopen
 } -body {
   execsql { CREATE INDEX i1 ON t1(t,u,v,w,x,y,z) }
-  faultsim_test_result {0 {}} 
+  faultsim_test_result {0 {}}
   faultsim_integrity_check
 }
 ifcapable memorymanage {
@@ -150,7 +150,7 @@ ifcapable memorymanage {
     faultsim_restore_and_reopen
   } -body {
     execsql { CREATE INDEX i1 ON t1(t,u,v,w,x,y,z) }
-    faultsim_test_result {0 {}} 
+    faultsim_test_result {0 {}}
   }
   sqlite3_soft_heap_limit $soft_limit
 }
@@ -170,15 +170,15 @@ ifcapable memorymanage {
 #   3.5: After a certain amount of data has been read from the main database
 #        file (and written into the temporary b-tree), sqlite3_release_memory()
 #        is called to free as much memory as possible. This causes the temp
-#        b-tree to be flushed to disk. So that before its contents can be 
+#        b-tree to be flushed to disk. So that before its contents can be
 #        transfered to a PMA they must be read back from disk - creating extra
 #        opportunities for IO errors.
 #
 install_custom_faultsim
 
-# Set up a table to build indexes on. Save the setup using the 
+# Set up a table to build indexes on. Save the setup using the
 # [faultsim_save_and_close] mechanism.
-# 
+#
 sqlite3 db test.db
 do_execsql_test 3.0 {
   BEGIN;
@@ -211,7 +211,7 @@ do_faultsim_test 3.1 -faults custom -prep {
   faultsim_restore_and_reopen
 } -body {
   execsql { CREATE INDEX i1 ON t1(x) }
-  faultsim_test_result {0 {}} 
+  faultsim_test_result {0 {}}
 }
 ifcapable memorymanage {
   set soft_limit [sqlite3_soft_heap_limit 50000]
@@ -219,7 +219,7 @@ ifcapable memorymanage {
     faultsim_restore_and_reopen
   } -body {
     execsql { CREATE INDEX i1 ON t1(x) }
-    faultsim_test_result {0 {}} 
+    faultsim_test_result {0 {}}
   }
   sqlite3_soft_heap_limit $soft_limit
 }
@@ -248,7 +248,7 @@ do_faultsim_test 3.3 -faults custom -prep {
   set ::nTmpOpen 0
 } -body {
   execsql { CREATE INDEX i1 ON t1(x) }
-  faultsim_test_result {0 {}} 
+  faultsim_test_result {0 {}}
 }
 
 ifcapable memorymanage {
@@ -258,7 +258,7 @@ ifcapable memorymanage {
     set ::nTmpOpen 0
   } -body {
     execsql { CREATE INDEX i1 ON t1(x) }
-    faultsim_test_result {0 {}} 
+    faultsim_test_result {0 {}}
   }
   sqlite3_soft_heap_limit $soft_limit
 }
@@ -271,7 +271,7 @@ uninstall_custom_faultsim
 # called to free as much memory as possible. This causes the temp b-tree to be
 # flushed to disk. So that before its contents can be transfered to a PMA they
 # must be read back from disk - creating extra opportunities for IO errors.
-# 
+#
 install_custom_faultsim
 
 catch { db close }
@@ -293,7 +293,7 @@ do_execsql_test 4.0 {
 }
 faultsim_save_and_close
 
-testvfs tvfs 
+testvfs tvfs
 tvfs script xRead
 tvfs filter xRead
 set ::nRead 0
@@ -334,7 +334,7 @@ do_faultsim_test 4.2 -faults custom -prep {
   sqlite3_soft_heap_limit 0
 } -body {
   execsql { CREATE INDEX i1 ON t1(x) }
-  faultsim_test_result {0 {}} 
+  faultsim_test_result {0 {}}
 }
 
 uninstall_custom_faultsim

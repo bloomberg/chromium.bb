@@ -10,7 +10,7 @@
 **
 *************************************************************************
 **
-** This file contains multi-threaded tests that use shared-cache and 
+** This file contains multi-threaded tests that use shared-cache and
 ** the VACUUM command.
 **
 ** Tests:
@@ -30,7 +30,7 @@ static char *vacuum1_thread_writer(int iTid, void *pArg){
     i++;
 
     /* Insert lots of rows. Then delete some. */
-    execsql(&err, &db, 
+    execsql(&err, &db,
         "WITH loop(i) AS (SELECT 1 UNION ALL SELECT i+1 FROM loop WHERE i<100) "
         "INSERT INTO t1 SELECT randomblob(50), randomblob(2500) FROM loop"
     );
@@ -70,7 +70,7 @@ static void vacuum1(int nMs){
   Threadset threads = {0};
 
   opendb(&err, &db, "test.db", 1);
-  sql_script(&err, &db, 
+  sql_script(&err, &db,
      "CREATE TABLE t1(x PRIMARY KEY, y BLOB);"
      "CREATE INDEX i1 ON t1(y);"
   );

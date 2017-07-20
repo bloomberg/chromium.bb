@@ -81,13 +81,13 @@ do_test fkey3-2.1 {
 
 
 #-------------------------------------------------------------------------
-# The following tests - fkey-3.* - test some edge cases to do with 
+# The following tests - fkey-3.* - test some edge cases to do with
 # inserting rows into tables that have foreign keys where the parent
 # table is the same as the child table. Especially cases where the
 # new row being inserted matches itself.
 #
 do_execsql_test 3.1.1 {
-  CREATE TABLE t3(a, b, c, d, 
+  CREATE TABLE t3(a, b, c, d,
     UNIQUE(a, b),
     FOREIGN KEY(c, d) REFERENCES t3(a, b)
   );
@@ -125,8 +125,8 @@ do_execsql_test 3.4.2  { INSERT INTO t6 VALUES(NULL, 'a', 1, 'a'); } {}
 do_execsql_test 3.4.3  { INSERT INTO t6 VALUES(2, 'a', 2, 'a');    } {}
 do_execsql_test 3.4.4  { INSERT INTO t6 VALUES(NULL, 'a', 1, 'a'); } {}
 do_execsql_test 3.4.5  { INSERT INTO t6 VALUES(5, 'a', 2, 'a'); } {}
-do_catchsql_test 3.4.6 { 
-  INSERT INTO t6 VALUES(NULL, 'a', 65, 'a');    
+do_catchsql_test 3.4.6 {
+  INSERT INTO t6 VALUES(NULL, 'a', 65, 'a');
 } {1 {FOREIGN KEY constraint failed}}
 
 do_execsql_test 3.4.7 {
@@ -147,10 +147,10 @@ do_execsql_test 3.5.1 {
 }
 do_execsql_test 3.5.2  { INSERT INTO t7 VALUES('x', 1, 'x', NULL) } {}
 do_execsql_test 3.5.3  { INSERT INTO t7 VALUES('x', 2, 'x', 2) } {}
-do_catchsql_test 3.5.4  { 
+do_catchsql_test 3.5.4  {
   INSERT INTO t7 VALUES('x', 450, 'x', NULL);
 } {1 {FOREIGN KEY constraint failed}}
-do_catchsql_test 3.5.5  { 
+do_catchsql_test 3.5.5  {
   INSERT INTO t7 VALUES('x', 450, 'x', 451);
 } {1 {FOREIGN KEY constraint failed}}
 
@@ -161,8 +161,8 @@ do_execsql_test 3.6.1 {
   CREATE UNIQUE INDEX t8i2 ON t8(c);
   INSERT INTO t8 VALUES(1, 1, 1, 1, 1);
 }
-do_catchsql_test 3.6.2 { 
-  UPDATE t8 SET d = 2; 
+do_catchsql_test 3.6.2 {
+  UPDATE t8 SET d = 2;
 } {1 {FOREIGN KEY constraint failed}}
 do_execsql_test 3.6.3 { UPDATE t8 SET d = 1; }
 do_execsql_test 3.6.4 { UPDATE t8 SET e = 2; }

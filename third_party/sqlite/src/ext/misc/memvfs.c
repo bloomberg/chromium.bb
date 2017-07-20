@@ -97,7 +97,7 @@ static sqlite3_vfs mem_vfs = {
   1024,                        /* mxPathname */
   0,                           /* pNext */
   "memvfs",                    /* zName */
-  0,                           /* pAppData (set when registered) */ 
+  0,                           /* pAppData (set when registered) */
   memOpen,                     /* xOpen */
   memDelete,                   /* xDelete */
   memAccess,                   /* xAccess */
@@ -151,9 +151,9 @@ static int memClose(sqlite3_file *pFile){
 ** Read data from an mem-file.
 */
 static int memRead(
-  sqlite3_file *pFile, 
-  void *zBuf, 
-  int iAmt, 
+  sqlite3_file *pFile,
+  void *zBuf,
+  int iAmt,
   sqlite_int64 iOfst
 ){
   MemFile *p = (MemFile *)pFile;
@@ -323,9 +323,9 @@ static int memDelete(sqlite3_vfs *pVfs, const char *zPath, int dirSync){
 ** is available, or false otherwise.
 */
 static int memAccess(
-  sqlite3_vfs *pVfs, 
-  const char *zPath, 
-  int flags, 
+  sqlite3_vfs *pVfs,
+  const char *zPath,
+  int flags,
   int *pResOut
 ){
   /* The spec says there are three possible values for flags.  But only
@@ -345,9 +345,9 @@ static int memAccess(
 ** of at least (INST_MAX_PATHNAME+1) bytes.
 */
 static int memFullPathname(
-  sqlite3_vfs *pVfs, 
-  const char *zPath, 
-  int nOut, 
+  sqlite3_vfs *pVfs,
+  const char *zPath,
+  int nOut,
   char *zOut
 ){
   sqlite3_snprintf(nOut, zOut, "%s", zPath);
@@ -363,7 +363,7 @@ static void *memDlOpen(sqlite3_vfs *pVfs, const char *zPath){
 
 /*
 ** Populate the buffer zErrMsg (size nByte bytes) with a human readable
-** utf-8 string describing the most recent error encountered associated 
+** utf-8 string describing the most recent error encountered associated
 ** with dynamic libraries.
 */
 static void memDlError(sqlite3_vfs *pVfs, int nByte, char *zErrMsg){
@@ -385,7 +385,7 @@ static void memDlClose(sqlite3_vfs *pVfs, void *pHandle){
 }
 
 /*
-** Populate the buffer pointed to by zBufOut with nByte bytes of 
+** Populate the buffer pointed to by zBufOut with nByte bytes of
 ** random data.
 */
 static int memRandomness(sqlite3_vfs *pVfs, int nByte, char *zBufOut){
@@ -393,7 +393,7 @@ static int memRandomness(sqlite3_vfs *pVfs, int nByte, char *zBufOut){
 }
 
 /*
-** Sleep for nMicro microseconds. Return the number of microseconds 
+** Sleep for nMicro microseconds. Return the number of microseconds
 ** actually slept.
 */
 static int memSleep(sqlite3_vfs *pVfs, int nMicro){
@@ -463,17 +463,17 @@ static int memvfsRegister(
 }
 #endif /* MEMVFS_TEST */
 
-  
+
 #ifdef _WIN32
 __declspec(dllexport)
 #endif
-/* 
+/*
 ** This routine is called when the extension is loaded.
 ** Register the new VFS.
 */
 int sqlite3_memvfs_init(
-  sqlite3 *db, 
-  char **pzErrMsg, 
+  sqlite3 *db,
+  char **pzErrMsg,
   const sqlite3_api_routines *pApi
 ){
   int rc = SQLITE_OK;

@@ -73,7 +73,7 @@ do_test vtab5.1.X {
 } {}
 
 # The following tests - vtab5-2.* - ensure that collation sequences
-# assigned to virtual table columns via the "CREATE TABLE" statement 
+# assigned to virtual table columns via the "CREATE TABLE" statement
 # passed to sqlite3_declare_vtab() are used correctly.
 #
 do_test vtab5.2.1 {

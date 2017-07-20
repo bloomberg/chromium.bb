@@ -15,7 +15,7 @@
 
 if {![info exists testdir]} {
   set testdir [file join [file dirname [info script]] .. .. test]
-} 
+}
 source $testdir/tester.tcl
 source $testdir/malloc_common.tcl
 ifcapable !rtree {
@@ -25,7 +25,7 @@ ifcapable !rtree {
 
 # Test summary:
 #
-#   rtree3-1: Test OOM in simple CREATE TABLE, INSERT, DELETE and SELECT 
+#   rtree3-1: Test OOM in simple CREATE TABLE, INSERT, DELETE and SELECT
 #             commands on an almost empty table.
 #
 #   rtree3-2: Test OOM in a DROP TABLE command.
@@ -75,7 +75,7 @@ do_test rtree3-2.prep {
 do_faultsim_test rtree3-2 -faults oom* -prep {
   faultsim_restore_and_reopen
 } -body {
-  execsql { DROP TABLE rt } 
+  execsql { DROP TABLE rt }
 }
 
 do_malloc_test rtree3-3.prep {
@@ -108,7 +108,7 @@ do_faultsim_test rtree3-3b -faults oom* -prep {
     db eval { DELETE FROM rt WHERE x1<($f*10.0) AND x1>($f*10.5) }
   }
   db eval COMMIT
-} 
+}
 
 do_test rtree3-4.prep {
   faultsim_delete_and_reopen
@@ -205,7 +205,7 @@ do_faultsim_test rtree3-8 -faults oom-* -prep {
   catch { db close }
 } -body {
   sqlite3 db test.db
-} 
+}
 
 do_faultsim_test rtree3-9 -faults oom-* -prep {
   sqlite3 db :memory:
@@ -218,7 +218,7 @@ do_faultsim_test rtree3-9 -faults oom-* -prep {
 
 do_test rtree3-10.prep {
   faultsim_delete_and_reopen
-  execsql { 
+  execsql {
     CREATE VIRTUAL TABLE rt USING rtree(ii, x1, x2, y1, y2, z1, z2);
     INSERT INTO rt VALUES(1,  10, 10, 10, 11, 11, 11);
     INSERT INTO rt VALUES(2,  5, 6, 6, 7, 7, 8);
@@ -238,7 +238,7 @@ do_faultsim_test rtree3-10 -faults oom-* -prep {
 
 do_test rtree3-11.prep {
   faultsim_delete_and_reopen
-  execsql { 
+  execsql {
     CREATE VIRTUAL TABLE rt USING rtree(ii, x1, x2, y1, y2);
     INSERT INTO rt VALUES(1, 2, 3, 4, 5);
   }

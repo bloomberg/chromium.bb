@@ -9,8 +9,8 @@
 #
 #***********************************************************************
 #
-# This file attempts to check the behavior of the SQLite library in 
-# an out-of-memory situation. When compiled with -DSQLITE_DEBUG=1, 
+# This file attempts to check the behavior of the SQLite library in
+# an out-of-memory situation. When compiled with -DSQLITE_DEBUG=1,
 # the SQLite library accepts a special command (sqlite3_memdebug_fail N C)
 # which causes the N-th malloc to fail.  This special feature is used
 # to see what happens in the library if a malloc were to really fail
@@ -62,7 +62,7 @@ ifcapable bloblit&&subquery {
     DELETE FROM t1 WHERE a IN (SELECT min(a) FROM t1);
     SELECT count(*), group_concat(e) FROM t1;
     SELECT b FROM t1 ORDER BY 1 COLLATE nocase;
-  } 
+  }
 }
 
 # Ensure that no file descriptors were leaked.
@@ -90,7 +90,7 @@ ifcapable subquery {
     DELETE FROM t1 WHERE a>=10;
     DROP INDEX i1;
     DELETE FROM t1;
-  } 
+  }
 }
 
 # Ensure that no file descriptors were leaked.
@@ -114,7 +114,7 @@ do_malloc_test 3 -sqlbody {
   DROP INDEX i1;
   DELETE FROM t1;
   ROLLBACK;
-} 
+}
 
 
 # Ensure that no file descriptors were leaked.
@@ -140,7 +140,7 @@ ifcapable subquery {
     DROP INDEX i1;
     DELETE FROM t1;
     COMMIT;
-  } 
+  }
 }
 
 # Ensure that no file descriptors were leaked.
@@ -164,7 +164,7 @@ ifcapable trigger {
     END;
     INSERT INTO t1(a,b) VALUES(2,3);
     COMMIT;
-  } 
+  }
 }
 
 # Ensure that no file descriptors were leaked.
@@ -192,7 +192,7 @@ ifcapable vacuum {
     COMMIT;
   } -sqlbody {
     VACUUM;
-  } 
+  }
 }
 
 autoinstall_test_functions
@@ -211,11 +211,11 @@ do_malloc_test 7 -sqlprep {
 # This block is designed to test that some malloc failures that may
 # occur in vdbeapi.c. Specifically, if a malloc failure that occurs
 # when converting UTF-16 text to integers and real numbers is handled
-# correctly. 
+# correctly.
 #
 # This is done by retrieving a string from the database engine and
-# manipulating it using the sqlite3_column_*** APIs. This doesn't 
-# actually return an error to the user when a malloc() fails.. That 
+# manipulating it using the sqlite3_column_*** APIs. This doesn't
+# actually return an error to the user when a malloc() fails.. That
 # could be viewed as a bug.
 #
 # These tests only run if UTF-16 support is compiled in.
@@ -266,7 +266,7 @@ do_malloc_test 9 -sqlprep {
   COMMIT;
 }
 
-# This block tests malloc() failures that occur while opening a 
+# This block tests malloc() failures that occur while opening a
 # connection to a database.
 do_malloc_test 10 -tclprep {
   catch {db2 close}
@@ -302,7 +302,7 @@ do_malloc_test 12 -tclbody {
   sqlite3_finalize $::STMT
 }
 
-# Test malloc errors when replaying two hot journals from a 2-file 
+# Test malloc errors when replaying two hot journals from a 2-file
 # transaction.
 ifcapable crashtest&&attach {
   do_malloc_test 13 -tclprep {
@@ -320,7 +320,7 @@ ifcapable crashtest&&attach {
   } -tclbody {
     db eval {ATTACH 'test2.db' as aux;}
     set rc [catch {db eval {
-      SELECT * FROM t1; 
+      SELECT * FROM t1;
       SELECT * FROM t2;
     }} err]
     if {$rc && $err!="no such table: t1"} {
@@ -363,7 +363,7 @@ proc string_compare {a b} {
   return [string compare $a $b]
 }
 
-# Test for malloc() failures in sqlite3_create_collation() and 
+# Test for malloc() failures in sqlite3_create_collation() and
 # sqlite3_create_collation16().
 #
 ifcapable utf16 {
@@ -373,10 +373,10 @@ ifcapable utf16 {
       if {$msg=="SQLITE_NOMEM"} {set msg "out of memory"}
       error $msg
     }
-  
+
     db complete {SELECT "hello """||'world"' [microsoft], * FROM anicetable;}
     db complete {-- Useful comment}
-  
+
     execsql {
       CREATE TABLE t1(a, b COLLATE string_compare);
       INSERT INTO t1 VALUES(10, 'string');
@@ -402,7 +402,7 @@ ifcapable utf16 {
   do_malloc_test 17 -tclbody {
     set DB2 0
     set STMT 0
-  
+
     # open database using sqlite3_open16()
     set filename [encoding convertto unicode test.db]
     append filename "\x00\x00"
@@ -411,7 +411,7 @@ ifcapable utf16 {
       error "out of memory"
     }
     sqlite3_extended_result_codes $DB2 1
-  
+
     # Prepare statement
     set rc [catch {sqlite3_prepare $DB2 {SELECT * FROM sqlite_master} -1 X} msg]
     if {[sqlite3_errcode $DB2] eq "SQLITE_IOERR+12"} {
@@ -424,14 +424,14 @@ ifcapable utf16 {
       error [string range $msg 4 end]
     }
     set STMT $msg
-  
+
     # Finalize statement
     set rc [sqlite3_finalize $STMT]
     if {$rc!="SQLITE_OK"} {
       error [sqlite3_errmsg $DB2]
     }
     set STMT 0
-  
+
     # Close database
     set rc [sqlite3_close $DB2]
     if {$rc!="SQLITE_OK"} {
@@ -465,8 +465,8 @@ ifcapable utf16 {
 }
 
 # This test is aimed at coverage testing. Specificly, it is supposed to
-# cause a malloc() only used when converting between the two utf-16 
-# encodings to fail (i.e. little-endian->big-endian). It only actually 
+# cause a malloc() only used when converting between the two utf-16
+# encodings to fail (i.e. little-endian->big-endian). It only actually
 # hits this malloc() on little-endian hosts.
 #
 set static_string "\x00h\x00e\x00l\x00l\x00o"
@@ -514,7 +514,7 @@ ifcapable attach {
     ATTACH DATABASE 'test2.db' AS t2;
     SELECT * FROM t1;
     DETACH DATABASE t2;
-  } 
+  }
 }
 
 # Test malloc failure whilst installing a foreign key.
@@ -522,7 +522,7 @@ ifcapable attach {
 ifcapable foreignkey {
   do_malloc_test 21 -sqlbody {
     CREATE TABLE abc(a, b, c, FOREIGN KEY(a) REFERENCES abc(b))
-  } 
+  }
 }
 
 # Test malloc failure in an sqlite3_prepare_v2() call.
@@ -553,21 +553,21 @@ ifcapable {pager_pragmas} {
       BEGIN;
       CREATE TABLE abc(a, b, c);
       CREATE INDEX abc_i ON abc(a, b, c);
-      INSERT INTO abc 
+      INSERT INTO abc
         VALUES(randstr(100,100), randstr(100,100), randstr(100,100));
-      INSERT INTO abc 
+      INSERT INTO abc
         SELECT randstr(100,100), randstr(100,100), randstr(100,100) FROM abc;
-      INSERT INTO abc 
+      INSERT INTO abc
         SELECT randstr(100,100), randstr(100,100), randstr(100,100) FROM abc;
-      INSERT INTO abc 
+      INSERT INTO abc
         SELECT randstr(100,100), randstr(100,100), randstr(100,100) FROM abc;
-      INSERT INTO abc 
+      INSERT INTO abc
         SELECT randstr(100,100), randstr(100,100), randstr(100,100) FROM abc;
-      INSERT INTO abc 
+      INSERT INTO abc
         SELECT randstr(100,100), randstr(100,100), randstr(100,100) FROM abc;
       COMMIT;
     }
-  
+
     # This puts the pager into error state.
     #
     db eval BEGIN
@@ -631,8 +631,8 @@ do_malloc_test 25 -sqlprep {
 # The database set up by -sqlprep script contains a single table B-Tree
 # of height 2. In the -tclbody script, the existing database connection
 # is closed and a new one opened and used to insert a new row into the
-# table B-Tree. By using a new connection, the outcome of a malloc() 
-# failure while seeking to the right-hand side of the B-Tree to insert 
+# table B-Tree. By using a new connection, the outcome of a malloc()
+# failure while seeking to the right-hand side of the B-Tree to insert
 # a new record can be tested.
 #
 do_malloc_test 26 -sqlprep {
@@ -726,11 +726,11 @@ do_malloc_test 31 -sqlprep {
 }
 
 # When written, this test provoked an obscure change-counter bug.
-# 
+#
 # If, when running in exclusive mode, a malloc() failure occurs
 # after the database file change-counter has been written but
 # before the transaction has been committed, then the transaction
-# is automatically rolled back. However, internally the 
+# is automatically rolled back. However, internally the
 # Pager.changeCounterDone flag was being left set. This means
 # that if the same connection attempts another transaction following
 # the malloc failure and rollback, the change counter will not
@@ -754,13 +754,13 @@ do_malloc_test 32 -tclprep {
   # into the second connections pager cache.
   #
   sqlite3 db2 test.db
-  db2 eval { 
+  db2 eval {
     PRAGMA locking_mode = normal;
     SELECT b FROM t1;
   }
 
 } -tclbody {
-  # Running in exclusive mode, perform a database transaction that 
+  # Running in exclusive mode, perform a database transaction that
   # modifies both the database table and index. For iterations where
   # the malloc failure occurs after updating the change counter but
   # before committing the transaction, this should result in the
@@ -775,7 +775,7 @@ do_malloc_test 32 -tclprep {
   # then this should result in the database contents being updated but
   # the change-counter left as it is.
   #
-  db eval { 
+  db eval {
     PRAGMA locking_mode = normal;
     UPDATE t1 SET a = a + 3;
   }
@@ -857,8 +857,8 @@ if {[db eval {PRAGMA locking_mode}]!="exclusive"} {
     SELECT * FROM t1;
   } -cleanup {
     # Try to write to the database using connection [db2]. If connection [db]
-    # has correctly released the shared lock, this write attempt should 
-    # succeed. If [db] has not released the lock, this should hit an 
+    # has correctly released the shared lock, this write attempt should
+    # succeed. If [db] has not released the lock, this should hit an
     # SQLITE_BUSY error.
     do_test malloc-36.$zRepeat.${::n}.unlocked {
       execsql {INSERT INTO t1 VALUES(3, 4)} db2
@@ -899,7 +899,7 @@ do_faultsim_test 40.3 -faults oom-trans* -body {
     SELECT * FROM t1 ORDER BY 1 COLLATE utf16bin;
   }
 } -test {
-  faultsim_test_result {0 {abcde fghij klmno pqrst uvwxy}} 
+  faultsim_test_result {0 {abcde fghij klmno pqrst uvwxy}}
   faultsim_integrity_check
 }
 

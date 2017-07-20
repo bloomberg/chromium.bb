@@ -151,8 +151,8 @@ speed_trial speed4-table1 10000 stmt $sql
 set sql ""
 for {set ii 1} {$ii < 10000} {incr ii} {
   append sql "
-    SELECT (SELECT t FROM t1 WHERE rowid = [expr {$ii*3}]), 
-           (SELECT t FROM t2 WHERE rowid = [expr {$ii*3}]), 
+    SELECT (SELECT t FROM t1 WHERE rowid = [expr {$ii*3}]),
+           (SELECT t FROM t2 WHERE rowid = [expr {$ii*3}]),
            (SELECT t FROM t3 WHERE rowid = [expr {$ii*3}])
   ;"
 }

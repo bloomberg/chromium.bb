@@ -24,7 +24,7 @@ do_execsql_test pragma3-101 {
   PRAGMA temp.data_version;
 } {1}
 
-# Writing to the pragma is a no-op 
+# Writing to the pragma is a no-op
 do_execsql_test pragma3-102 {
   PRAGMA main.data_version=1234;
   PRAGMA main.data_version;

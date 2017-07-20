@@ -38,7 +38,7 @@ do_test shared6-1.1.3 {
 #   1.2.1: If [db1] has an exclusive lock, [db2] cannot read.
 #   1.2.2: If [db1] has an exclusive lock, [db1] can read.
 #   1.2.3: If [db1] has a non-exclusive write-lock, [db2] can read.
-# 
+#
 do_test shared6-1.2.1 {
   execsql { SELECT * FROM t1 } db2    ;# Cache a compiled statement
   execsql { BEGIN EXCLUSIVE } db1
@@ -104,7 +104,7 @@ do_test shared6-1.3.X {
 # For these tests, connection [db2] is in read-uncommitted mode.
 #
 #   1.4.1: If [db1] has a write-lock on t1, [db2] can still read from t1.
-#   1.4.2: If [db1] has a write-lock on the db schema (sqlite_master table), 
+#   1.4.2: If [db1] has a write-lock on the db schema (sqlite_master table),
 #          [db2] cannot read from the schema.
 #   1.4.3: If [db1] has a read-lock on t1, [db2] cannot write to t1.
 #
@@ -178,7 +178,7 @@ if {$::tcl_platform(platform) eq "unix"} {
 }
 
 #-------------------------------------------------------------------------
-# Test that it is possible to open an exclusive transaction while 
+# Test that it is possible to open an exclusive transaction while
 # already holding a read-lock on the database file. And that it is
 # not possible if some other connection holds such a lock.
 #
@@ -246,7 +246,7 @@ do_test shared6-4.2 {
   sqlite3_finalize $::STMT
 } {SQLITE_OK}
 do_test shared6-4.X {
-  
+
   db1 close
   db2 close
 } {}

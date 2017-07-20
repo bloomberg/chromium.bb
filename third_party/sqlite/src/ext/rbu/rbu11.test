@@ -54,7 +54,7 @@ do_execsql_test 2.1 {
 } {wal}
 
 do_test 2.2 {
-  db_save 
+  db_save
   db close
 
   forcedelete rbu.db
@@ -66,7 +66,7 @@ do_test 2.2 {
   }
   dbo close
 
-  db_restore 
+  db_restore
   hexio_write test.db 18 0101
   file exists test.db-wal
 } {1}
@@ -81,7 +81,7 @@ do_test 2.4 {
 } {1 {SQLITE_ERROR - cannot update wal mode database}}
 
 #--------------------------------------------------------------------
-# Test a constraint violation message with an unusual table name. 
+# Test a constraint violation message with an unusual table name.
 # Specifically, one for which the first character is a codepoint
 # smaller than 30 (character '0').
 #
@@ -161,7 +161,7 @@ do_test 4.5.2 {
 do_test 4.5.3 {
   sqlite3 dbo rbu.db
   dbo eval { DELETE FROM rbu_state WHERE k = 100 }
-  dbo close 
+  dbo close
 } {}
 
 # Also, check that an invalid state value in the rbu_state table is
@@ -179,7 +179,7 @@ do_test 4.6.2 {
 do_test 4.6.3 {
   sqlite3 dbo rbu.db
   dbo eval { UPDATE rbu_state SET v = v*-1 WHERE k = 1 }
-  dbo close 
+  dbo close
 } {}
 
 do_test 4.7.1 {

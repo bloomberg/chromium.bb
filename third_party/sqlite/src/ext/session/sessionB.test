@@ -15,7 +15,7 @@
 
 if {![info exists testdir]} {
   set testdir [file join [file dirname [info script]] .. .. test]
-} 
+}
 source [file join [file dirname [info script]] session_common.tcl]
 source $testdir/tester.tcl
 ifcapable !session {finish_test; return}
@@ -23,12 +23,12 @@ ifcapable !session {finish_test; return}
 set testprefix sessionB
 
 #
-# 1.*: Test that the blobs returned by the session_patchset() API are 
+# 1.*: Test that the blobs returned by the session_patchset() API are
 #      as expected. Also the sqlite3_changeset_iter functions.
 #
 # 2.*: Test that patchset blobs are handled by sqlite3changeset_apply().
 #
-# 3.*: Test that sqlite3changeset_invert() works with patchset blobs. 
+# 3.*: Test that sqlite3changeset_invert() works with patchset blobs.
 #      Correct behaviour is to return SQLITE_CORRUPT.
 
 proc do_sql2patchset_test {tn sql res} {
@@ -81,7 +81,7 @@ do_sql2patchset_test 1.5 {
   INSERT INTO t1 VALUES(X'61626364', NULL, NULL, 4.2);
   INSERT INTO t1 VALUES(4.2, NULL, NULL, X'61626364');
 } {
-  {INSERT t1 0 X..X {} {f 4.2 n {} n {} b abcd}} 
+  {INSERT t1 0 X..X {} {f 4.2 n {} n {} b abcd}}
   {INSERT t1 0 X..X {} {b abcd n {} n {} f 4.2}}
 }
 
@@ -104,7 +104,7 @@ do_sql2patchset_test 1.7 {
 do_sql2patchset_test 1.8 {
   DELETE FROM t1;
 } {
-  {DELETE t1 0 X..X {f 4.2 {} {} {} {} b abcd} {}} 
+  {DELETE t1 0 X..X {f 4.2 {} {} {} {} b abcd} {}}
   {DELETE t1 0 X..X {b abcd {} {} {} {} f 4.2} {}}
 }
 
@@ -208,7 +208,7 @@ do_patchconcat_test 4.1.2 {
 } {
   INSERT INTO t1 VALUES(4, 5, 6);
 } {
-  {INSERT t1 0 X.. {} {i 1 i 2 i 3}} 
+  {INSERT t1 0 X.. {} {i 1 i 2 i 3}}
   {INSERT t1 0 X.. {} {i 4 i 5 i 6}}
 }
 
@@ -222,7 +222,7 @@ do_patchconcat_test 4.2.2 {
 } {
   UPDATE t1 SET z = 'def' WHERE x=4
 } {
-  {UPDATE t1 0 X.. {i 1 {} {} {} {}} {{} {} {} {} t abc}} 
+  {UPDATE t1 0 X.. {i 1 {} {} {} {}} {{} {} {} {} t abc}}
   {UPDATE t1 0 X.. {i 4 {} {} {} {}} {{} {} {} {} t def}}
 }
 
@@ -231,7 +231,7 @@ do_patchconcat_test 4.2.3 {
 } {
   DELETE FROM t1 WHERE x=4;
 } {
-  {DELETE t1 0 X.. {i 1 {} {} {} {}} {}} 
+  {DELETE t1 0 X.. {i 1 {} {} {} {}} {}}
   {DELETE t1 0 X.. {i 4 {} {} {} {}} {}}
 }
 
@@ -244,7 +244,7 @@ do_execsql_test 4.3.1 {
   INSERT INTO t2 VALUES('.', 2, 2, '.');
 }
 
-# INSERT + INSERT 
+# INSERT + INSERT
 do_patchconcat_test 4.3.2 -revert {
   INSERT INTO t2 VALUES('a', 'a', 'a', 'a');
 } {
@@ -253,7 +253,7 @@ do_patchconcat_test 4.3.2 -revert {
   {INSERT t2 0 .XX. {} {t a t a t a t a}}
 }
 
-# INSERT + DELETE 
+# INSERT + DELETE
 do_patchconcat_test 4.3.3 {
   INSERT INTO t2 VALUES('a', 'a', 'a', 'a');
 } {
@@ -294,7 +294,7 @@ do_patchconcat_test 4.3.7 {
 } {
   INSERT INTO t2 VALUES('x', 1, 2, '.');
 } {
-  {DELETE t2 0 .XX. {{} {} i 1 i 1 {} {}} {}} 
+  {DELETE t2 0 .XX. {{} {} i 1 i 1 {} {}} {}}
   {UPDATE t2 0 .XX. {{} {} i 1 i 2 {} {}} {t x {} {} {} {} t .}}
 }
 
@@ -304,7 +304,7 @@ do_patchconcat_test 4.3.8 -revert {
 } {
   UPDATE t2 SET a=5 WHERE b=1 AND c=2;
 } {
-  {DELETE t2 0 .XX. {{} {} i 1 i 2 {} {}} {}} 
+  {DELETE t2 0 .XX. {{} {} i 1 i 2 {} {}} {}}
 }
 
 # DELETE + UPDATE
@@ -313,17 +313,17 @@ do_patchconcat_test 4.3.9 -revert {
 } {
   DELETE FROM t2 WHERE b=1;
 } {
-  {DELETE t2 0 .XX. {{} {} i 1 i 1 {} {}} {}} 
-  {DELETE t2 0 .XX. {{} {} i 1 i 2 {} {}} {}} 
+  {DELETE t2 0 .XX. {{} {} i 1 i 1 {} {}} {}}
+  {DELETE t2 0 .XX. {{} {} i 1 i 2 {} {}} {}}
 }
 
 #-------------------------------------------------------------------------
 # More rigorous testing of the _patchset(), _apply and _concat() APIs.
 #
-# The inputs to each test are a populate database and a list of DML 
+# The inputs to each test are a populate database and a list of DML
 # statements. This test determines that the final database is the same
 # if:
-# 
+#
 #   1) the statements are executed directly on the database.
 #
 #   2) a single patchset is collected while executing the statements and
@@ -366,15 +366,15 @@ proc do_patchset_test {tn tstcmd lSql} {
     forcecopy test.db $fname
   }
 
-  # Execute the SQL statements on [db]. Collect a patchset for each 
-  # individual statement, as well as a single patchset for the entire 
+  # Execute the SQL statements on [db]. Collect a patchset for each
+  # individual statement, as well as a single patchset for the entire
   # operation.
   sqlite3session S db main
   S attach *
-  foreach sql $lSql { 
+  foreach sql $lSql {
     sqlite3session T db main
     T attach *
-    db eval $sql 
+    db eval $sql
     lappend lPatch [T $tstcmd]
     T delete
   }
@@ -389,7 +389,7 @@ proc do_patchset_test {tn tstcmd lSql} {
   sqlite3changeset_apply db2 $patchset noop
   uplevel [list do_test $tn.1 { databasecksum db2 } $cksum ]
   db2 close
-  
+
   # 2. Apply each of the single-statement patchsets to test.db3
   sqlite3 db2 test.db3
   foreach p $lPatch {
@@ -467,7 +467,7 @@ do_patchset_changeset_test 5.1 {
 } {
   UPDATE t1 SET c=c+1;
   DELETE FROM t1 WHERE (a%2);
-} 
+}
 
 do_patchset_changeset_test 5.2 {
   CREATE TABLE t1(a PRIMARY KEY, b, c);

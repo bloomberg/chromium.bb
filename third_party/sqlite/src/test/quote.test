@@ -84,6 +84,6 @@ do_test quote-1.6 {
   } msg ]
   lappend r $msg
 } {0 {}}
- 
+
 
 finish_test

@@ -13,7 +13,7 @@
 
 if {![info exists testdir]} {
   set testdir [file join [file dirname [info script]] .. .. test]
-} 
+}
 source [file join [file dirname [info script]] session_common.tcl]
 source $testdir/tester.tcl
 ifcapable !session {finish_test; return}
@@ -71,7 +71,7 @@ if {$tn==1} {
 }
 
 #-------------------------------------------------------------------------
-# Simple changeset tests. Also test the sqlite3changeset_invert() 
+# Simple changeset tests. Also test the sqlite3changeset_invert()
 # function.
 #
 do_test $tn.2.1.1 {
@@ -118,7 +118,7 @@ do_test $tn.2.3.1 {
   execsql { INSERT INTO t1 VALUES(2, 'Ayutthaya') }
   execsql { INSERT INTO t1 VALUES(3, 'Thonburi') }
   S attach t1
-  execsql { 
+  execsql {
     UPDATE t1 SET x = 10 WHERE x = 1;
     UPDATE t1 SET y = 'Surin' WHERE x = 2;
     UPDATE t1 SET x = 20, y = 'Thapae' WHERE x = 3;
@@ -126,18 +126,18 @@ do_test $tn.2.3.1 {
 } {}
 
 do_changeset_test $tn.2.3.2 S {
-  {INSERT t1 0 X. {} {i 10 t Sukhothai}} 
-  {DELETE t1 0 X. {i 1 t Sukhothai} {}} 
-  {UPDATE t1 0 X. {i 2 t Ayutthaya} {{} {} t Surin}} 
-  {DELETE t1 0 X. {i 3 t Thonburi} {}} 
-  {INSERT t1 0 X. {} {i 20 t Thapae}} 
+  {INSERT t1 0 X. {} {i 10 t Sukhothai}}
+  {DELETE t1 0 X. {i 1 t Sukhothai} {}}
+  {UPDATE t1 0 X. {i 2 t Ayutthaya} {{} {} t Surin}}
+  {DELETE t1 0 X. {i 3 t Thonburi} {}}
+  {INSERT t1 0 X. {} {i 20 t Thapae}}
 }
 
 do_changeset_invert_test $tn.2.3.3 S {
-  {DELETE t1 0 X. {i 10 t Sukhothai} {}} 
-  {INSERT t1 0 X. {} {i 1 t Sukhothai}} 
-  {UPDATE t1 0 X. {i 2 t Surin} {{} {} t Ayutthaya}} 
-  {INSERT t1 0 X. {} {i 3 t Thonburi}} 
+  {DELETE t1 0 X. {i 10 t Sukhothai} {}}
+  {INSERT t1 0 X. {} {i 1 t Sukhothai}}
+  {UPDATE t1 0 X. {i 2 t Surin} {{} {} t Ayutthaya}}
+  {INSERT t1 0 X. {} {i 3 t Thonburi}}
   {DELETE t1 0 X. {i 20 t Thapae} {}}
 }
 do_test $tn.2.3.4 { S delete } {}
@@ -154,7 +154,7 @@ do_test $tn.2.4.4 { S delete } {}
 
 #-------------------------------------------------------------------------
 # Test the application of simple changesets. These tests also test that
-# the conflict callback is invoked correctly. For these tests, the 
+# the conflict callback is invoked correctly. For these tests, the
 # conflict callback always returns OMIT.
 #
 db close
@@ -162,9 +162,9 @@ forcedelete test.db test.db2
 sqlite3 db test.db
 sqlite3 db2 test.db2
 
-proc xConflict {args} { 
+proc xConflict {args} {
   lappend ::xConflict $args
-  return "" 
+  return ""
 }
 
 proc bgerror {args} { set ::background_error $args }
@@ -206,11 +206,11 @@ proc do_db2_test {testname sql {result {}}} {
 #
 do_test $tn.3.1.0 {
   execsql { CREATE TABLE t1(a PRIMARY KEY, b NOT NULL) %WR% } db2
-  execsql { 
+  execsql {
     CREATE TABLE t1(a PRIMARY KEY, b) %WR%;
     INSERT INTO t1 VALUES(1, 'one');
     INSERT INTO t1 VALUES(2, 'two');
-  } db 
+  } db
 } {}
 do_db2_test $tn.3.1.1 "INSERT INTO t1 VALUES(6, 'VI')"
 do_conflict_test $tn.3.1.2 -tables t1 -sql {
@@ -320,14 +320,14 @@ foreach {tn2 conflict_return after} {
 
   do_test $tn.4.$tn2.1 {
     foreach db {db db2} {
-      execsql { 
+      execsql {
         CREATE TABLE t1(a, b, c, PRIMARY KEY(a))%WR%;
         INSERT INTO t1 VALUES(1, 2, 3);
         INSERT INTO t1 VALUES(4, 5, 6);
         INSERT INTO t1 VALUES(7, 8, 9);
       } $db
     }
-    execsql { 
+    execsql {
       REPLACE INTO t1 VALUES(4, 5, 7);
       REPLACE INTO t1 VALUES(10, 'x', 'x');
     } db2
@@ -361,7 +361,7 @@ foreach {tn2 conflict_return} {
 
     # Add some rows to [db2]. These rows will cause conflicts later
     # on when the changeset from [db] is applied to it.
-    execsql { 
+    execsql {
       INSERT INTO "'foolish name'" VALUES('one', 'one', 'ii');
       INSERT INTO "'foolish name'" VALUES('one', 'two', 'i');
       INSERT INTO "'foolish name'" VALUES('two', 'two', 'ii');
@@ -391,7 +391,7 @@ foreach {tn2 conflict_return} {
     execsql $schema db
     execsql $schema db2
 
-    execsql { 
+    execsql {
       UPDATE d1 SET y = 'TWO' WHERE "z""z" = 2;
     } db2
 
@@ -454,7 +454,7 @@ do_iterator_test $tn.7.1 * {
   INSERT INTO aux.t1 VALUES('three', 3);
   INSERT INTO aux.t1 VALUES('four', 4);
 } {
-  {INSERT t1 0 X. {} {t two i 2}} 
+  {INSERT t1 0 X. {} {t two i 2}}
   {INSERT t1 0 X. {} {t one i 1}}
 }
 
@@ -510,15 +510,15 @@ do_execsql_test $tn.9.1 {
   CREATE TABLE t7(a, b, c, d, e PRIMARY KEY, f, g)%WR%;
   INSERT INTO t7 VALUES(1, 1, 1, 1, 1, 1, 1);
 }
-do_test $tn.9.2 { 
-  sqlite3session S db main 
+do_test $tn.9.2 {
+  sqlite3session S db main
   S attach *
   execsql { UPDATE t7 SET b=2, d=2 }
 } {}
 do_changeset_test $tn.9.2 S {{UPDATE t7 0 ....X.. {{} {} i 1 {} {} i 1 i 1 {} {} {} {}} {{} {} i 2 {} {} i 2 {} {} {} {} {} {}}}}
 S delete
 catch { db2 close }
- 
+
 #-------------------------------------------------------------------------
 # Test a really long table name.
 #
@@ -531,7 +531,7 @@ do_test $tn.10.1.1 {
   "
   sqlite3session S db main
   S attach $tblname
-  execsql " 
+  execsql "
     INSERT INTO $tblname VALUES('uvw', 'abc');
     DELETE FROM $tblname WHERE a = 'xyz';
   "
@@ -572,7 +572,7 @@ do_test $tn.10.1.1 {
   "
   sqlite3session S db main
   S attach $tblname
-  execsql " 
+  execsql "
     INSERT INTO $tblname VALUES('uvw', 'abc');
     DELETE FROM $tblname WHERE a = 'xyz';
   "

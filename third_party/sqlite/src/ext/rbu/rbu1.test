@@ -23,7 +23,7 @@ sqlite3_config_uri 1
 #
 proc create_rbu1 {filename} {
   forcedelete $filename
-  sqlite3 rbu1 $filename  
+  sqlite3 rbu1 $filename
   rbu1 eval {
     CREATE TABLE data_t1(a, b, c, rbu_control);
     INSERT INTO data_t1 VALUES(1, 2, 3, 0);
@@ -42,7 +42,7 @@ proc create_rbu1 {filename} {
 #
 proc create_rbu4 {filename} {
   forcedelete $filename
-  sqlite3 rbu1 $filename  
+  sqlite3 rbu1 $filename
   rbu1 eval {
     CREATE TABLE data_t1(a, b, c, rbu_control);
     INSERT INTO data_t1 VALUES(1, 2, 3, 0);
@@ -62,7 +62,7 @@ proc create_rbu4 {filename} {
 #
 proc create_rbu4b {filename} {
   forcedelete $filename
-  sqlite3 rbu1 $filename  
+  sqlite3 rbu1 $filename
   rbu1 eval {
     CREATE TABLE data_t1(c, b, '(a)', rbu_control);
     INSERT INTO data_t1 VALUES(3, 2, 1, 0);
@@ -82,7 +82,7 @@ proc create_rbu4b {filename} {
 #
 proc create_rbu5 {filename} {
   forcedelete $filename
-  sqlite3 rbu5 $filename  
+  sqlite3 rbu5 $filename
   rbu5 eval {
     CREATE TABLE data_t1(a, b, c, d, rbu_control);
     INSERT INTO data_t1 VALUES(1, NULL, NULL, 5, '...x');  -- SET d = 5
@@ -137,80 +137,80 @@ foreach {tn3 create_vfs destroy_vfs} {
   eval $create_vfs
 
   foreach {tn2 cmd} {
-      1 run_rbu 
+      1 run_rbu
       2 step_rbu 3 step_rbu_uri 4 step_rbu_state
   } {
     foreach {tn schema} {
       1 {
         CREATE TABLE t1(a INTEGER PRIMARY KEY, b, c);
       }
-      2 { 
+      2 {
         CREATE TABLE t1(a INTEGER PRIMARY KEY, b, c);
         CREATE INDEX i1 ON t1(b);
       }
-      3 { 
+      3 {
         CREATE TABLE t1(a PRIMARY KEY, b, c) WITHOUT ROWID;
       }
-      4 { 
+      4 {
         CREATE TABLE t1(a PRIMARY KEY, b, c) WITHOUT ROWID;
         CREATE INDEX i1 ON t1(b);
       }
-      5 { 
+      5 {
         CREATE TABLE t1(a, b, c, PRIMARY KEY(a, c)) WITHOUT ROWID;
         CREATE INDEX i1 ON t1(b);
       }
-      6 { 
+      6 {
         CREATE TABLE t1(a, b, c, PRIMARY KEY(c)) WITHOUT ROWID;
         CREATE INDEX i1 ON t1(b, a);
       }
-      7 { 
+      7 {
         CREATE TABLE t1(a INTEGER PRIMARY KEY, b, c);
         CREATE INDEX i1 ON t1(b, c);
         CREATE INDEX i2 ON t1(c, b);
         CREATE INDEX i3 ON t1(a, b, c, a, b, c);
       }
 
-      8 { 
+      8 {
         CREATE TABLE t1(a PRIMARY KEY, b, c);
         CREATE INDEX i1 ON t1(b, c);
         CREATE INDEX i2 ON t1(c, b);
         CREATE INDEX i3 ON t1(a, b, c, a, b, c);
       }
 
-      9 { 
+      9 {
         CREATE TABLE t1(a, b, c, PRIMARY KEY(a, c));
         CREATE INDEX i1 ON t1(b);
       }
 
-      10 { 
+      10 {
         CREATE TABLE t1(a INTEGER PRIMARY KEY, b, c);
         CREATE INDEX i1 ON t1(b DESC);
       }
 
-      11 { 
+      11 {
         CREATE TABLE t1(a INTEGER PRIMARY KEY, b, c);
         CREATE INDEX i1 ON t1(b DESC, a ASC, c DESC);
       }
 
-      12 { 
-        CREATE TABLE t1(a INT PRIMARY KEY DESC, b, c) WITHOUT ROWID; 
+      12 {
+        CREATE TABLE t1(a INT PRIMARY KEY DESC, b, c) WITHOUT ROWID;
       }
 
-      13 { 
-        CREATE TABLE t1(a INT, b, c, PRIMARY KEY(a DESC)) WITHOUT ROWID; 
+      13 {
+        CREATE TABLE t1(a INT, b, c, PRIMARY KEY(a DESC)) WITHOUT ROWID;
       }
 
-      14 { 
+      14 {
         CREATE TABLE t1(a, b, c, PRIMARY KEY(a DESC, c)) WITHOUT ROWID;
         CREATE INDEX i1 ON t1(b);
       }
 
-      15 { 
+      15 {
         CREATE TABLE t1(a, b, c, PRIMARY KEY(a, c DESC)) WITHOUT ROWID;
         CREATE INDEX i1 ON t1(b);
       }
 
-      16 { 
+      16 {
         CREATE TABLE t1(a, b, c, PRIMARY KEY(c DESC, a)) WITHOUT ROWID;
         CREATE INDEX i1 ON t1(b DESC, c, a);
       }
@@ -226,21 +226,21 @@ foreach {tn3 create_vfs destroy_vfs} {
       } {SQLITE_DONE}
 
       do_execsql_test $tn3.1.$tn2.$tn.2 { SELECT * FROM t1 ORDER BY a ASC } {
-        1 2 3 
-        2 two three 
+        1 2 3
+        2 two three
         3 {} 8.2
       }
       do_execsql_test $tn3.1.$tn2.$tn.3 { SELECT * FROM t1 ORDER BY b ASC } {
         3 {} 8.2
-        1 2 3 
-        2 two three 
+        1 2 3
+        2 two three
       }
       do_execsql_test $tn3.1.$tn2.$tn.4 { SELECT * FROM t1 ORDER BY c ASC } {
-        1 2 3 
+        1 2 3
         3 {} 8.2
-        2 two three 
+        2 two three
       }
-   
+
       do_execsql_test $tn3.1.$tn2.$tn.5 { PRAGMA integrity_check } ok
 
       if {$cmd=="step_rbu_state"} {
@@ -285,31 +285,31 @@ foreach {tn3 create_vfs destroy_vfs} {
   } {0 SQLITE_OK}
 
   #-------------------------------------------------------------------------
-  # Check that if a UNIQUE constraint is violated the current and all 
-  # subsequent [rbu step] calls return SQLITE_CONSTRAINT. And that the RBU 
-  # transaction is rolled back by the [rbu close] that deletes the rbu 
+  # Check that if a UNIQUE constraint is violated the current and all
+  # subsequent [rbu step] calls return SQLITE_CONSTRAINT. And that the RBU
+  # transaction is rolled back by the [rbu close] that deletes the rbu
   # handle.
   #
   foreach {tn errcode errmsg schema} {
     1 SQLITE_CONSTRAINT "UNIQUE constraint failed: t1.a" {
       CREATE TABLE t1(a INTEGER PRIMARY KEY, b, c);
       INSERT INTO t1 VALUES(3, 2, 1);
-    } 
+    }
 
     2 SQLITE_CONSTRAINT "UNIQUE constraint failed: t1.c" {
       CREATE TABLE t1(a INTEGER PRIMARY KEY, b, c UNIQUE);
       INSERT INTO t1 VALUES(4, 2, 'three');
-    } 
+    }
 
     3 SQLITE_CONSTRAINT "UNIQUE constraint failed: t1.a" {
       CREATE TABLE t1(a PRIMARY KEY, b, c);
       INSERT INTO t1 VALUES(3, 2, 1);
-    } 
+    }
 
     4 SQLITE_CONSTRAINT "UNIQUE constraint failed: t1.c" {
       CREATE TABLE t1(a PRIMARY KEY, b, c UNIQUE);
       INSERT INTO t1 VALUES(4, 2, 'three');
-    } 
+    }
 
   } {
     reset_db
@@ -325,7 +325,7 @@ foreach {tn3 create_vfs destroy_vfs} {
 
     do_test $tn3.3.$tn.2 { rbu step } $errcode
 
-    do_test $tn3.3.$tn.3 { 
+    do_test $tn3.3.$tn.3 {
       list [catch { rbu close } msg] $msg
     } [list 1 "$errcode - $errmsg"]
 
@@ -386,19 +386,19 @@ foreach {tn3 create_vfs destroy_vfs} {
       create_rbu4 rbu.db
       set check [dbfilecksum rbu.db]
       forcedelete state.db
-    
+
       do_test $tn3.4.$tn2.$tn.1 {
         $cmd test.db rbu.db
       } {SQLITE_DONE}
-      
+
       do_execsql_test $tn3.4.$tn2.$tn.2 {
         SELECT * FROM t1 ORDER BY a ASC;
       } {
-        1 2 3 
+        1 2 3
         3 8 9
         6 hello xyz
       }
-    
+
       do_execsql_test $tn3.4.$tn2.$tn.3 { PRAGMA integrity_check } ok
 
       if {$cmd=="step_rbu_state"} {
@@ -435,11 +435,11 @@ foreach {tn3 create_vfs destroy_vfs} {
       create_rbu4b rbu.db
       set check [dbfilecksum rbu.db]
       forcedelete state.db
-    
+
       do_test $tn3.5.$tn2.$tn.1 {
         $cmd test.db rbu.db
       } {SQLITE_DONE}
-      
+
       do_execsql_test $tn3.5.$tn2.$tn.2 {
         SELECT * FROM t1 ORDER BY "(a)" ASC;
       } {
@@ -447,7 +447,7 @@ foreach {tn3 create_vfs destroy_vfs} {
         9 8 3
         xyz hello 6
       }
-    
+
       do_execsql_test $tn3.4.$tn2.$tn.3 { PRAGMA integrity_check } ok
 
       if {$cmd=="step_rbu_state"} {
@@ -502,7 +502,7 @@ foreach {tn3 create_vfs destroy_vfs} {
         INSERT INTO t1 VALUES(2, 5, 6, 7);
         INSERT INTO t1 VALUES(3, 8, 9, 10);
       }
-    
+
       create_rbu5 rbu.db
       set check [dbfilecksum rbu.db]
       forcedelete state.db
@@ -510,7 +510,7 @@ foreach {tn3 create_vfs destroy_vfs} {
       do_test $tn3.5.$tn2.$tn.1 {
         $cmd test.db rbu.db
       } {SQLITE_DONE}
-      
+
       do_execsql_test $tn3.5.$tn2.$tn.2 {
         SELECT * FROM t1 ORDER BY a ASC;
       } {
@@ -518,7 +518,7 @@ foreach {tn3 create_vfs destroy_vfs} {
         2 5 10 5
         3 11 9 10
       }
-    
+
       do_execsql_test $tn3.6.$tn2.$tn.3 { PRAGMA integrity_check } ok
 
       if {$cmd=="step_rbu_state"} {
@@ -533,7 +533,7 @@ foreach {tn3 create_vfs destroy_vfs} {
 
   #-------------------------------------------------------------------------
   # Test some error cases:
-  # 
+  #
   #   * A virtual table with no rbu_rowid column.
   #   * A no-PK table with no rbu_rowid column.
   #   * A PK table with an rbu_rowid column.
@@ -546,22 +546,22 @@ foreach {tn3 create_vfs destroy_vfs} {
          CREATE TABLE t1(a, b);
          CREATE TABLE rbu.data_t1(a, b, rbu_control);
        } {SQLITE_ERROR - table data_t1 requires rbu_rowid column}
-    
+
        2 {
          CREATE VIRTUAL TABLE t1 USING fts4(a, b);
          CREATE TABLE rbu.data_t1(a, b, rbu_control);
        } {SQLITE_ERROR - table data_t1 requires rbu_rowid column}
-    
+
        3 {
          CREATE TABLE t1(a PRIMARY KEY, b);
          CREATE TABLE rbu.data_t1(a, b, rbu_rowid, rbu_control);
        } {SQLITE_ERROR - table data_t1 may not have rbu_rowid column}
-    
+
        4 {
          CREATE TABLE t1(a INTEGER PRIMARY KEY, b);
          CREATE TABLE rbu.data_t1(a, b, rbu_rowid, rbu_control);
        } {SQLITE_ERROR - table data_t1 may not have rbu_rowid column}
-    
+
        5 {
          CREATE TABLE t1(a, b PRIMARY KEY) WITHOUT ROWID;
          CREATE TABLE rbu.data_t1(a, b, rbu_rowid, rbu_control);

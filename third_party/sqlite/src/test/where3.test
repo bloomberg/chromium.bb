@@ -28,19 +28,19 @@ do_test where3-1.1 {
     CREATE TABLE t1(a, b);
     CREATE TABLE t2(p, q);
     CREATE TABLE t3(x, y);
-    
+
     INSERT INTO t1 VALUES(111,'one');
     INSERT INTO t1 VALUES(222,'two');
     INSERT INTO t1 VALUES(333,'three');
-    
+
     INSERT INTO t2 VALUES(1,111);
     INSERT INTO t2 VALUES(2,222);
     INSERT INTO t2 VALUES(4,444);
     CREATE INDEX t2i1 ON t2(p);
-    
+
     INSERT INTO t3 VALUES(999,'nine');
     CREATE INDEX t3i1 ON t3(x);
-    
+
     SELECT * FROM t1, t2 LEFT JOIN t3 ON q=x WHERE p=2 AND a=q;
   }
 } {222 two 2 222 {} {}}
@@ -97,12 +97,12 @@ ifcapable explain&&!cursorhints {
   } [explain_no_trace {
        SELECT parent1.parent1key, child1.value, child2.value
        FROM parent1
-       LEFT OUTER JOIN child1 ON parent1.child1key = child1.child1key 
+       LEFT OUTER JOIN child1 ON parent1.child1key = child1.child1key
        INNER JOIN child2 ON child2.child2key = parent1.child2key;
      }]
 }
 
-# This procedure executes the SQL.  Then it appends 
+# This procedure executes the SQL.  Then it appends
 # the names of the table and index used
 #
 proc queryplan {sql} {
@@ -118,13 +118,13 @@ proc queryplan {sql} {
       lappend data $tab *
     }
   }
-  return $data   
+  return $data
 }
 
 
 # If you have a from clause of the form:   A B C left join D
-# then make sure the query optimizer is able to reorder the 
-# A B C part anyway it wants. 
+# then make sure the query optimizer is able to reorder the
+# A B C part anyway it wants.
 #
 # Following the fix to ticket #1652, there was a time when
 # the C table would not reorder.  So the following reorderings
@@ -226,7 +226,7 @@ do_test where3-2.7 {
 # If the outer loop must be a full table scan, do not let ANALYZE trick
 # the planner into use a table for the outer loop that might be indexable
 # if held until an inner loop.
-# 
+#
 do_execsql_test where3-3.0 {
   CREATE TABLE t301(a INTEGER PRIMARY KEY,b,c);
   CREATE INDEX t301c ON t301(c);
@@ -237,14 +237,14 @@ do_execsql_test where3-3.0 {
   ANALYZE;
   explain query plan SELECT * FROM t302, t301 WHERE t302.x=5 AND t301.a=t302.y;
 } {
-  0 0 0 {SCAN TABLE t302} 
+  0 0 0 {SCAN TABLE t302}
   0 1 1 {SEARCH TABLE t301 USING INTEGER PRIMARY KEY (rowid=?)}
 }
 do_execsql_test where3-3.1 {
   explain query plan
   SELECT * FROM t301, t302 WHERE t302.x=5 AND t301.a=t302.y;
 } {
-  0 0 1 {SCAN TABLE t302} 
+  0 0 1 {SCAN TABLE t302}
   0 1 0 {SEARCH TABLE t301 USING INTEGER PRIMARY KEY (rowid=?)}
 }
 do_execsql_test where3-3.2 {
@@ -266,24 +266,24 @@ do_execsql_test where3-4.0 {
   EXPLAIN QUERY PLAN
   SELECT * FROM t400, t401, t402 WHERE t402.z GLOB 'abc*';
 } {
-  0 0 2 {SCAN TABLE t402} 
-  0 1 0 {SCAN TABLE t400} 
+  0 0 2 {SCAN TABLE t402}
+  0 1 0 {SCAN TABLE t400}
   0 2 1 {SCAN TABLE t401}
 }
 do_execsql_test where3-4.1 {
   EXPLAIN QUERY PLAN
   SELECT * FROM t400, t401, t402 WHERE t401.r GLOB 'abc*';
 } {
-  0 0 1 {SCAN TABLE t401} 
-  0 1 0 {SCAN TABLE t400} 
+  0 0 1 {SCAN TABLE t401}
+  0 1 0 {SCAN TABLE t400}
   0 2 2 {SCAN TABLE t402}
 }
 do_execsql_test where3-4.2 {
   EXPLAIN QUERY PLAN
   SELECT * FROM t400, t401, t402 WHERE t400.c GLOB 'abc*';
 } {
-  0 0 0 {SCAN TABLE t400} 
-  0 1 1 {SCAN TABLE t401} 
+  0 0 0 {SCAN TABLE t400}
+  0 1 1 {SCAN TABLE t401}
   0 2 2 {SCAN TABLE t402}
 }
 } ;# endif
@@ -310,54 +310,54 @@ do_execsql_test where3-5.0 {
   CREATE INDEX bbb_333 ON bbb (fk, lastModified);
 
   EXPLAIN QUERY PLAN
-   SELECT bbb.title AS tag_title 
-     FROM aaa JOIN bbb ON bbb.id = aaa.parent  
+   SELECT bbb.title AS tag_title
+     FROM aaa JOIN bbb ON bbb.id = aaa.parent
     WHERE aaa.fk = 'constant'
       AND LENGTH(bbb.title) > 0
       AND bbb.parent = 4
     ORDER BY bbb.title COLLATE NOCASE ASC;
 } {
-  0 0 0 {SEARCH TABLE aaa USING INDEX aaa_333 (fk=?)} 
-  0 1 1 {SEARCH TABLE bbb USING INTEGER PRIMARY KEY (rowid=?)} 
+  0 0 0 {SEARCH TABLE aaa USING INDEX aaa_333 (fk=?)}
+  0 1 1 {SEARCH TABLE bbb USING INTEGER PRIMARY KEY (rowid=?)}
   0 0 0 {USE TEMP B-TREE FOR ORDER BY}
 }
 do_execsql_test where3-5.1 {
   EXPLAIN QUERY PLAN
-   SELECT bbb.title AS tag_title 
-     FROM aaa JOIN aaa AS bbb ON bbb.id = aaa.parent  
+   SELECT bbb.title AS tag_title
+     FROM aaa JOIN aaa AS bbb ON bbb.id = aaa.parent
     WHERE aaa.fk = 'constant'
       AND LENGTH(bbb.title) > 0
       AND bbb.parent = 4
     ORDER BY bbb.title COLLATE NOCASE ASC;
 } {
-  0 0 0 {SEARCH TABLE aaa USING INDEX aaa_333 (fk=?)} 
-  0 1 1 {SEARCH TABLE aaa AS bbb USING INTEGER PRIMARY KEY (rowid=?)} 
+  0 0 0 {SEARCH TABLE aaa USING INDEX aaa_333 (fk=?)}
+  0 1 1 {SEARCH TABLE aaa AS bbb USING INTEGER PRIMARY KEY (rowid=?)}
   0 0 0 {USE TEMP B-TREE FOR ORDER BY}
 }
 do_execsql_test where3-5.2 {
   EXPLAIN QUERY PLAN
-   SELECT bbb.title AS tag_title 
-     FROM bbb JOIN aaa ON bbb.id = aaa.parent  
+   SELECT bbb.title AS tag_title
+     FROM bbb JOIN aaa ON bbb.id = aaa.parent
     WHERE aaa.fk = 'constant'
       AND LENGTH(bbb.title) > 0
       AND bbb.parent = 4
     ORDER BY bbb.title COLLATE NOCASE ASC;
 } {
-  0 0 1 {SEARCH TABLE aaa USING INDEX aaa_333 (fk=?)} 
-  0 1 0 {SEARCH TABLE bbb USING INTEGER PRIMARY KEY (rowid=?)} 
+  0 0 1 {SEARCH TABLE aaa USING INDEX aaa_333 (fk=?)}
+  0 1 0 {SEARCH TABLE bbb USING INTEGER PRIMARY KEY (rowid=?)}
   0 0 0 {USE TEMP B-TREE FOR ORDER BY}
 }
 do_execsql_test where3-5.3 {
   EXPLAIN QUERY PLAN
-   SELECT bbb.title AS tag_title 
-     FROM aaa AS bbb JOIN aaa ON bbb.id = aaa.parent  
+   SELECT bbb.title AS tag_title
+     FROM aaa AS bbb JOIN aaa ON bbb.id = aaa.parent
     WHERE aaa.fk = 'constant'
       AND LENGTH(bbb.title) > 0
       AND bbb.parent = 4
     ORDER BY bbb.title COLLATE NOCASE ASC;
 } {
-  0 0 1 {SEARCH TABLE aaa USING INDEX aaa_333 (fk=?)} 
-  0 1 0 {SEARCH TABLE aaa AS bbb USING INTEGER PRIMARY KEY (rowid=?)} 
+  0 0 1 {SEARCH TABLE aaa USING INDEX aaa_333 (fk=?)}
+  0 1 0 {SEARCH TABLE aaa AS bbb USING INTEGER PRIMARY KEY (rowid=?)}
   0 0 0 {USE TEMP B-TREE FOR ORDER BY}
 }
 

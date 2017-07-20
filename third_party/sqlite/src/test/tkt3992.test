@@ -70,7 +70,7 @@ ifcapable trigger {
       CREATE TRIGGER tr2 BEFORE UPDATE ON t2 BEGIN
         SELECT tcl('set res', typeof(new.c));
       END;
-  
+
       UPDATE t2 SET a = 'I';
     }
     set res

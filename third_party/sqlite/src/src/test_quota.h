@@ -40,7 +40,7 @@ extern "C" {
 /*
 ** Initialize the quota VFS shim.  Use the VFS named zOrigVfsName
 ** as the VFS that does the actual work.  Use the default if
-** zOrigVfsName==NULL.  
+** zOrigVfsName==NULL.
 **
 ** The quota VFS shim is named "quota".  It will become the default
 ** VFS if makeDefault is non-zero.
@@ -196,7 +196,7 @@ int sqlite3_quota_ferror(quota_FILE*);
 ** zero on success and non-zero on any kind of failure.
 **
 ** The newSize argument must be less than or equal to the current file size.
-** Any attempt to "truncate" a file to a larger size results in 
+** Any attempt to "truncate" a file to a larger size results in
 ** undefined behavior.
 */
 int sqlite3_quota_ftruncate(quota_FILE*, sqlite3_int64 newSize);
@@ -252,7 +252,7 @@ long sqlite3_quota_file_available(quota_FILE*);
 ** A standard SQLite result code is returned (SQLITE_OK, SQLITE_NOMEM, etc.)
 ** When deleting a directory of files, if the deletion of any one
 ** file fails (for example due to an I/O error), then this routine
-** returns immediately, with the error code, and does not try to 
+** returns immediately, with the error code, and does not try to
 ** delete any of the other files in the specified directory.
 **
 ** All files are removed from quota management and deleted from disk.

@@ -38,7 +38,7 @@ proc extract {offsets text} {
     set iOff [expr $s+$n]
   }
   append res [string range $text $iOff end]
-  
+
   set res
 }
 db func extract extract
@@ -53,8 +53,8 @@ do_execsql_test 1.1.0 {
 do_execsql_test 1.1.1 {
   SELECT oid,extract(offsets(xx), x) FROM xx WHERE xx MATCH 'a OR (b NEAR/1 c)';
 } {
-  1 {(A) x x x (B) (C) x x} 
-  2 {(A) (B) (C) x (B) x x C} 
+  1 {(A) x x x (B) (C) x x}
+  2 {(A) (B) (C) x (B) x x C}
   3 {(A) x x (B) (C) x x x}
 }
 
@@ -68,7 +68,7 @@ do_execsql_test 1.2.1 {
   SELECT oid,extract(offsets(xx), x) FROM xx WHERE xx MATCH 'a OR (b NEAR/1 c)';
 } {
   1 {(A) x x x (B) (C) x x}
-  2 {(A) x x C x x x C} 
+  2 {(A) x x C x x x C}
   3 {(A) x x (B) (C) x x x}
 }
 
@@ -90,7 +90,7 @@ do_execsql_test 1.3.1 {
   3 {(A) (B) (C)}
   4 {(A) (B) (C) x x x x x x x B}
   5 {(A) x x x x x x x x x C}
-  6 {(A) x x x x x x x x x x x B} 
+  6 {(A) x x x x x x x x x x x B}
   7 {(A) (B) (C)}
 }
 
@@ -114,7 +114,7 @@ do_execsql_test 1.4.1 {
   5 {(A) (B) (C)}
   4 {(A) (B) (C) x x x x x x x B}
   3 {(A) x x x x x x x x x C}
-  2 {(A) x x x x x x x x x x x B} 
+  2 {(A) x x x x x x x x x x x B}
   1 {(A) (B) (C)}
 }
 

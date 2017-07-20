@@ -10,7 +10,7 @@
 **
 *************************************************************************
 ** This file implements a tokenizer for fts2 based on the ICU library.
-** 
+**
 ** $Id: fts2_icu.c,v 1.3 2008/12/18 05:30:26 danielk1977 Exp $
 */
 
@@ -90,7 +90,7 @@ static int icuDestroy(sqlite3_tokenizer *pTokenizer){
 /*
 ** Prepare to begin tokenizing a particular string.  The input
 ** string to be tokenized is pInput[0..nBytes-1].  A cursor
-** used to incrementally tokenize this string is returned in 
+** used to incrementally tokenize this string is returned in
 ** *ppCursor.
 */
 static int icuOpen(
@@ -129,7 +129,7 @@ static int icuOpen(
   pCsr->aOffset = (int *)&pCsr->aChar[(nChar+3)&~3];
 
   pCsr->aOffset[iOut] = iInput;
-  U8_NEXT(zInput, iInput, nInput, c); 
+  U8_NEXT(zInput, iInput, nInput, c);
   while( c>0 ){
     int isError = 0;
     c = u_foldCase(c, opt);

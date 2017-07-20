@@ -52,7 +52,7 @@ puts "sql:     $sql"
 puts "nRepeat: $nRepeat"
 if {[regexp matchinfo $sql]} {
   sqlite3_fts5_register_matchinfo db
-  db eval $sql 
+  db eval $sql
 } else {
   puts "result:  [db eval $sql]"
 }

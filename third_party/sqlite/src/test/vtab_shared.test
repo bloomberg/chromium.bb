@@ -64,7 +64,7 @@ do_test vtab_shared-1.6 {
 # shows that the correct sqlite3_vtab is being used.
 #
 do_test vtab_shared-1.8.1 {
-  execsql { 
+  execsql {
     BEGIN;
     INSERT INTO t1 VALUES(4, 5, 6);
     SELECT * FROM t1;
@@ -84,7 +84,7 @@ do_test vtab_shared-1.8.5 {
   execsql { SELECT *  FROM t1 } db2
 } {1 2 3 4 5 6}
 
-# While a SELECT is active on virtual table t1 via connection [db], close 
+# While a SELECT is active on virtual table t1 via connection [db], close
 # [db2]. This causes the schema to be reset internally. Verify that this
 # does not cause a problem.
 #
@@ -127,19 +127,19 @@ do_test vtab_shared-1.11 {
 ifcapable compound {
   do_test vtab_shared-1.12.1 {
     db close
-    execsql { 
+    execsql {
       SELECT * FROM t1 UNION ALL
       SELECT * FROM t2 UNION ALL
-      SELECT * FROM t3 
+      SELECT * FROM t3
     } db2
   } {1 2 3 4 5 6 1 2 3 4 5 6 1 2 3 4 5 6}
   do_test vtab_shared-1.12.2 {
     sqlite3 db test.db
     register_echo_module [sqlite3_connection_pointer db]
-    execsql { 
+    execsql {
       SELECT * FROM t1 UNION ALL
       SELECT * FROM t2 UNION ALL
-      SELECT * FROM t3 
+      SELECT * FROM t3
     } db
   } {1 2 3 4 5 6 1 2 3 4 5 6 1 2 3 4 5 6}
 }
@@ -169,7 +169,7 @@ do_test vtab_shared_1.14.1 {
   execsql { SELECT * FROM t3 }
 } {1 2 3 4 5 6}
 do_test vtab_shared_1.14.2 {
-  execsql { 
+  execsql {
     UPDATE t3 SET c = 'six' WHERE c = 6;
     SELECT * FROM t3;
   } db2
@@ -181,7 +181,7 @@ do_test vtab_shared_1.14.3 {
   execsql { SELECT * FROM t3 }
 } {1 2 3 4 5 six}
 do_test vtab_shared_1.14.4 {
-  execsql { 
+  execsql {
     DELETE FROM t3 WHERE c = 'six';
     SELECT * FROM t3;
   } db2
@@ -193,7 +193,7 @@ do_test vtab_shared_1.14.5 {
   execsql { SELECT * FROM t3 }
 } {1 2 3}
 do_test vtab_shared_1.14.6 {
-  execsql { 
+  execsql {
     INSERT INTO t3 VALUES(4, 5, 6);
     SELECT * FROM t3;
   } db2
@@ -203,7 +203,7 @@ do_test vtab_shared_1.15.1 {
   db2 close
   sqlite3 db2 test.db
   register_echo_module [sqlite3_connection_pointer db2]
-  execsql { 
+  execsql {
     UPDATE t3 SET c = 'six' WHERE c = 6;
     SELECT * FROM t3;
   } db2
@@ -212,7 +212,7 @@ do_test vtab_shared_1.15.2 {
   db2 close
   sqlite3 db2 test.db
   register_echo_module [sqlite3_connection_pointer db2]
-  execsql { 
+  execsql {
     DELETE FROM t3 WHERE c = 'six';
     SELECT * FROM t3;
   } db2
@@ -221,7 +221,7 @@ do_test vtab_shared_1.15.3 {
   db2 close
   sqlite3 db2 test.db
   register_echo_module [sqlite3_connection_pointer db2]
-  execsql { 
+  execsql {
     INSERT INTO t3 VALUES(4, 5, 6);
     SELECT * FROM t3;
   }
@@ -238,19 +238,19 @@ ifcapable rtree {
   do_test 2.1.1 {
     sqlite3 db  test.db
     sqlite3 db2 test.db
-  
-    # Create a virtual table using [db]. 
+
+    # Create a virtual table using [db].
     execsql {
       CREATE VIRTUAL TABLE rt USING rtree(id, x1, x2);
       INSERT INTO rt VALUES(1, 2 ,3);
       SELECT * FROM rt;
     }
-  
+
     # Drop the virtual table using [db2]. The sqlite3_vtab object belonging
     # to [db] is moved to the sqlite3.pDisconnect list.
     execsql { DROP TABLE rt } db2
-  
-    # Immediately close [db]. At one point this would fail due to the 
+
+    # Immediately close [db]. At one point this would fail due to the
     # unfinalized statements held by the un-xDisconnect()ed sqlite3_vtab.
     db close
   } {}
@@ -267,7 +267,7 @@ ifcapable fts3 {
       CREATE VIRTUAL TABLE ft USING fts3;
       INSERT INTO ft VALUES('hello world');
       SELECT * FROM ft;
-    } 
+    }
     execsql { DROP TABLE ft } db2
     db close
   } {}

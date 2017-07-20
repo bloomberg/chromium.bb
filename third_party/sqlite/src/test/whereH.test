@@ -8,7 +8,7 @@
 #    May you share freely, never taking more than you give.
 #
 #***********************************************************************
-# 
+#
 # Test cases for query planning decisions where one candidate index
 # covers a proper superset of the WHERE clause terms of another
 # candidate index.

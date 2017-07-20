@@ -9,7 +9,7 @@
 #
 #***********************************************************************
 # This file implements regression tests for TCL interface to the
-# SQLite library. 
+# SQLite library.
 #
 # The focus of the tests in this file is the  following interface:
 #
@@ -68,7 +68,7 @@ do_test hook-3.5 {
 do_test hook-3.6 {
   set commit_cnt {}
   proc commit_hook {} {
-    set ::commit_cnt [execsql {SELECT * FROM t2}] 
+    set ::commit_cnt [execsql {SELECT * FROM t2}]
     return 1
   }
   catchsql {
@@ -118,14 +118,14 @@ db2 close
 #----------------------------------------------------------------------------
 # Tests for the update-hook.
 #
-# 4.1.* - Very simple tests. Test that the update hook is invoked correctly 
-#         for INSERT, DELETE and UPDATE statements, including DELETE 
+# 4.1.* - Very simple tests. Test that the update hook is invoked correctly
+#         for INSERT, DELETE and UPDATE statements, including DELETE
 #         statements with no WHERE clause.
 # 4.2.* - Check that the update-hook is invoked for rows modified by trigger
-#         bodies. Also that the database name is correctly reported when 
+#         bodies. Also that the database name is correctly reported when
 #         an attached database is modified.
-# 4.3.* - Do some sorting, grouping, compound queries, population and 
-#         depopulation of indices, to make sure the update-hook is not 
+# 4.3.* - Do some sorting, grouping, compound queries, population and
+#         depopulation of indices, to make sure the update-hook is not
 #         invoked incorrectly.
 #
 # EVIDENCE-OF: R-21999-45122 The sqlite3_update_hook() interface
@@ -225,7 +225,7 @@ ifcapable trigger {
     }
     set ::update_hook
   } {}
-  
+
   set ::update_hook {}
   do_test hook-4.2.1 {
     catchsql {
@@ -291,7 +291,7 @@ ifcapable trigger {
   }
 }
 
-# Test that other vdbe operations involving btree structures do not 
+# Test that other vdbe operations involving btree structures do not
 # incorrectly invoke the update-hook.
 set ::update_hook {}
 do_test hook-4.3.1 {
@@ -358,8 +358,8 @@ db update_hook {}
 
 #----------------------------------------------------------------------------
 # Test the rollback-hook. The rollback-hook is a bit more complicated than
-# either the commit or update hooks because a rollback can happen 
-# explicitly (an sql ROLLBACK statement) or implicitly (a constraint or 
+# either the commit or update hooks because a rollback can happen
+# explicitly (an sql ROLLBACK statement) or implicitly (a constraint or
 # error condition).
 #
 # hook-5.1.* - Test explicit rollbacks.
@@ -367,12 +367,12 @@ db update_hook {}
 #
 # hook-5.3.* - Test implicit rollbacks caused by IO errors.
 # hook-5.4.* - Test implicit rollbacks caused by malloc() failure.
-# hook-5.5.* - Test hot-journal rollbacks. Or should the rollback hook 
+# hook-5.5.* - Test hot-journal rollbacks. Or should the rollback hook
 #              not be called for these?
 #
 
 do_test hook-5.0 {
-  # Configure the rollback hook to increment global variable 
+  # Configure the rollback hook to increment global variable
   # $::rollback_hook each time it is invoked.
   set ::rollback_hook 0
   db rollback_hook [list incr ::rollback_hook]
@@ -465,12 +465,12 @@ ifcapable !preupdate {
 # 7.4.1 - Test that the pre-update-hook is invoked only once if a row being
 #         deleted is removed by a BEFORE trigger.
 #
-# 7.4.2 - Test that the pre-update-hook is invoked if a BEFORE trigger 
+# 7.4.2 - Test that the pre-update-hook is invoked if a BEFORE trigger
 #         removes a row being updated. In this case the update hook should
 #         be invoked with SQLITE_INSERT as the opcode when inserting the
 #         new version of the row.
-#         
-# TODO: Short records (those created before a column is added to a table 
+#
+# TODO: Short records (those created before a column is added to a table
 #       using ALTER TABLE)
 #
 
@@ -506,9 +506,9 @@ sqlite3 db test.db
 db preupdate hook preupdate_hook
 
 # Set up a schema to use for tests 7.1.* to 7.3.*.
-do_execsql_test 7.0 { 
-  CREATE TABLE t1(a, b); 
-  CREATE TABLE t2(x, y); 
+do_execsql_test 7.0 {
+  CREATE TABLE t1(a, b);
+  CREATE TABLE t2(x, y);
   CREATE TABLE t3(i, j, UNIQUE(i));
 
   INSERT INTO t2 VALUES('a', 'b');
@@ -517,7 +517,7 @@ do_execsql_test 7.0 {
   INSERT INTO t3 VALUES(4, 16);
   INSERT INTO t3 VALUES(5, 25);
   INSERT INTO t3 VALUES(6, 36);
-} 
+}
 
 do_preupdate_test 7.1.1 {
   INSERT INTO t1 VALUES('x', 'y')
@@ -569,7 +569,7 @@ do_preupdate_test 7.2.2 {
   DELETE main t1 5 5   c d
 }
 
-do_execsql_test 7.3.0 { 
+do_execsql_test 7.3.0 {
   DELETE FROM t1;
   DELETE FROM t2;
   DELETE FROM t3;
@@ -761,7 +761,7 @@ forcedelete test.db
 sqlite3 db test.db
 db preupdate hook preupdate_hook
 
-do_execsql_test 7.6.1 { 
+do_execsql_test 7.6.1 {
   CREATE TABLE t1(x PRIMARY KEY);
   CREATE TABLE t2(x PRIMARY KEY);
   CREATE TABLE t3(x PRIMARY KEY);
@@ -805,7 +805,7 @@ do_preupdate_test 7.6.4 {
   DELETE main t4 1 1   3      abc
 }
 
-do_execsql_test 7.6.5 { 
+do_execsql_test 7.6.5 {
   DROP TRIGGER a; DROP TRIGGER b; DROP TRIGGER c;
   DROP TRIGGER d; DROP TRIGGER e; DROP TRIGGER f;
   DROP TRIGGER g; DROP TRIGGER h; DROP TRIGGER i;
@@ -885,12 +885,12 @@ do_preupdate_test 9.5 {
   INSERT INTO t2 DEFAULT VALUES;
 } {
   INSERT main t2 1 1  0  {} 1
-} 
+}
 do_preupdate_test 9.6 {
   INSERT INTO t1 DEFAULT VALUES;
 } {
   INSERT main t1 458 458  0  458 {} {} {}
-} 
+}
 
 
 do_execsql_test 10.0 {

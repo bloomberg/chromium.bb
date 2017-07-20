@@ -9,7 +9,7 @@
 #
 #***********************************************************************
 # This file implements regression tests for SQLite library. Specifically.
-# it contains tests to verify that ticket #2285 has been fixed.  
+# it contains tests to verify that ticket #2285 has been fixed.
 #
 # $Id: tkt2285.test,v 1.2 2008/07/12 14:52:20 drh Exp $
 

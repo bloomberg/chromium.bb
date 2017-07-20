@@ -9,7 +9,7 @@
 #
 #***********************************************************************
 # This file implements regression tests for TCL interface to the
-# SQLite library. 
+# SQLite library.
 #
 # Actually, all tests are based on the TCL interface, so the main
 # interface is pretty well tested.  This file contains some addition
@@ -456,7 +456,7 @@ do_test tcl-10.13 {
   db eval {SELECT * FROM t4}
 } {1 2 5 6 7}
 
-# Now test that [db transaction] commands may be nested with 
+# Now test that [db transaction] commands may be nested with
 # the expected results.
 #
 do_test tcl-10.14 {
@@ -466,7 +466,7 @@ do_test tcl-10.14 {
       INSERT INTO t4 VALUES('one');
     }
 
-    catch { 
+    catch {
       db transaction {
         db eval { INSERT INTO t4 VALUES('two') }
         db transaction {
@@ -538,7 +538,7 @@ do_test tcl-10.19 {
 } {}
 
 # Thwart a [db transaction] command by locking the database using a
-# second connection with "BEGIN EXCLUSIVE". Make sure no transaction is 
+# second connection with "BEGIN EXCLUSIVE". Make sure no transaction is
 # open after the "database is locked" exception is thrown.
 #
 do_test tcl-10.20 {

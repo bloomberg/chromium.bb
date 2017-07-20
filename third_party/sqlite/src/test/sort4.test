@@ -8,7 +8,7 @@
 #    May you share freely, never taking more than you give.
 #
 #***********************************************************************
-# This file implements regression tests for SQLite library. 
+# This file implements regression tests for SQLite library.
 #
 # The tests in this file are brute force tests of the multi-threaded
 # sorter.
@@ -48,7 +48,7 @@ if {[permutation] == "multithread"} { set SORT4TIMEOUT 300 }
 
 #--------------------------------------------------------------------
 # Set up a table "t1" containing $nRow rows. Each row contains also
-# contains blob fields that collectively contain at least $nPayload 
+# contains blob fields that collectively contain at least $nPayload
 # bytes of content. The table schema is as follows:
 #
 #   CREATE TABLE t1(a INTEGER, <extra-columns>, b INTEGER);
@@ -58,13 +58,13 @@ if {[permutation] == "multithread"} { set SORT4TIMEOUT 300 }
 # are at most eight, are named c0, c1, c2 etc. Column c0 contains a 4
 # byte string. Column c1 an 8 byte string. Field c2 16 bytes, and so on.
 #
-# This table is intended to be used for testing queries of the form: 
+# This table is intended to be used for testing queries of the form:
 #
 #   SELECT a, <cols>, b FROM t1 ORDER BY a;
 #
-# The test code checks that rows are returned in order, and that the 
+# The test code checks that rows are returned in order, and that the
 # values of "a" and "b" are the same for each row (the idea being that
-# if field "b" at the end of the sorter record has not been corrupted, 
+# if field "b" at the end of the sorter record has not been corrupted,
 # the rest of the record is probably Ok as well).
 #
 proc populate_table {nRow nPayload} {
@@ -102,9 +102,9 @@ proc sorter_test {nRow nRead nPayload} {
 
   set nPayload [expr (($nPayload+3)/4) * 4]
   set cols [list]
-  foreach {mask col} { 
-    0x04  c0 0x08  c1 0x10  c2 0x20  c3 
-    0x40  c4 0x80  c5 0x100 c6 0x200 c7 
+  foreach {mask col} {
+    0x04  c0 0x08  c1 0x10  c2 0x20  c3
+    0x40  c4 0x80  c5 0x100 c6 0x200 c7
   } {
     if {$nPayload & $mask} { lappend cols $col }
   }
@@ -128,7 +128,7 @@ proc sorter_test {nRow nRead nPayload} {
   # exception is thrown.
   #
   sorter_test_sort4_helper db $sql1 $nRead $sql2
-  set {} {} 
+  set {} {}
 }
 
 # Usage:
@@ -153,7 +153,7 @@ proc do_sorter_test {tn args} {
   set a(-fakeheap)  0
 
   foreach {s val} $args {
-    if {[info exists a($s)]==0} { 
+    if {[info exists a($s)]==0} {
       unset a(-cachesize)
       set optlist "[join [array names a] ,] or -cachesize"
       error "Unknown option $s, expected $optlist"

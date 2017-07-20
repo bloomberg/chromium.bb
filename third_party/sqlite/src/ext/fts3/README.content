@@ -1,21 +1,21 @@
 
 FTS4 CONTENT OPTION
 
-  Normally, in order to create a full-text index on a dataset, the FTS4 
-  module stores a copy of all indexed documents in a specially created 
+  Normally, in order to create a full-text index on a dataset, the FTS4
+  module stores a copy of all indexed documents in a specially created
   database table.
 
   As of SQLite version 3.7.9, FTS4 supports a new option - "content" -
   designed to extend FTS4 to support the creation of full-text indexes where:
 
-    * The indexed documents are not stored within the SQLite database 
+    * The indexed documents are not stored within the SQLite database
       at all (a "contentless" FTS4 table), or
 
     * The indexed documents are stored in a database table created and
       managed by the user (an "external content" FTS4 table).
 
-  Because the indexed documents themselves are usually much larger than 
-  the full-text index, the content option can sometimes be used to achieve 
+  Because the indexed documents themselves are usually much larger than
+  the full-text index, the content option can sometimes be used to achieve
   significant space savings.
 
 CONTENTLESS FTS4 TABLES
@@ -60,18 +60,18 @@ CONTENTLESS FTS4 TABLES
   Errors related to attempting to retrieve column values other than docid
   are runtime errors that occur within sqlite3_step(). In some cases, for
   example if the MATCH expression in a SELECT query matches zero rows, there
-  may be no error at all even if a statement does refer to column values 
+  may be no error at all even if a statement does refer to column values
   other than docid.
 
 EXTERNAL CONTENT FTS4 TABLES
 
   An "external content" FTS4 table is similar to a contentless table, except
-  that if evaluation of a query requires the value of a column other than 
-  docid, FTS4 attempts to retrieve that value from a table (or view, or 
+  that if evaluation of a query requires the value of a column other than
+  docid, FTS4 attempts to retrieve that value from a table (or view, or
   virtual table) nominated by the user (hereafter referred to as the "content
   table"). The FTS4 module never writes to the content table, and writing
   to the content table does not affect the full-text index. It is the
-  responsibility of the user to ensure that the content table and the 
+  responsibility of the user to ensure that the content table and the
   full-text index are consistent.
 
   An external content FTS4 table is created by setting the content option
@@ -83,7 +83,7 @@ EXTERNAL CONTENT FTS4 TABLES
     CREATE TABLE t2(id INTEGER PRIMARY KEY, a, b, c);
     CREATE VIRTUAL TABLE t3 USING fts4(content="t2", a, c);
 
-  Assuming the nominated table does exist, then its columns must be the same 
+  Assuming the nominated table does exist, then its columns must be the same
   as or a superset of those defined for the FTS table.
 
   When a users query on the FTS table requires a column value other than
@@ -94,7 +94,7 @@ EXTERNAL CONTENT FTS4 TABLES
 
     CREATE TABLE t2(id INTEGER PRIMARY KEY, a, b, c, d);
     CREATE VIRTUAL TABLE t3 USING fts4(content="t2", b, c);
-  
+
     INSERT INTO t2 VALUES(2, 'a b', 'c d', 'e f');
     INSERT INTO t2 VALUES(3, 'g h', 'i j', 'k l');
     INSERT INTO t3(docid, b, c) SELECT id, b, c FROM t2;
@@ -102,7 +102,7 @@ EXTERNAL CONTENT FTS4 TABLES
     -- The following query returns a single row with two columns containing
     -- the text values "i j" and "k l".
     --
-    -- The query uses the full-text index to discover that the MATCH 
+    -- The query uses the full-text index to discover that the MATCH
     -- term matches the row with docid=3. It then retrieves the values
     -- of columns b and c from the row with rowid=3 in the content table
     -- to return.
@@ -128,14 +128,14 @@ EXTERNAL CONTENT FTS4 TABLES
   When a row is deleted from an external content FTS4 table, FTS4 needs to
   retrieve the column values of the row being deleted from the content table.
   This is so that FTS4 can update the full-text index entries for each token
-  that occurs within the deleted row to indicate that that row has been 
+  that occurs within the deleted row to indicate that that row has been
   deleted. If the content table row cannot be found, or if it contains values
   inconsistent with the contents of the FTS index, the results can be difficult
   to predict. The FTS index may be left containing entries corresponding to the
   deleted row, which can lead to seemingly nonsensical results being returned
   by subsequent SELECT queries. The same applies when a row is updated, as
   internally an UPDATE is the same as a DELETE followed by an INSERT.
-  
+
   Instead of writing separately to the full-text index and the content table,
   some users may wish to use database triggers to keep the full-text index
   up to date with respect to the set of documents stored in the content table.

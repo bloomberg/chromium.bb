@@ -49,7 +49,7 @@ do_test tkt3918.4 {
   execsql { PRAGMA incremental_vacuum = 1 }
 } {}
 
-# Create another table. This operation will attempt to extract 
+# Create another table. This operation will attempt to extract
 # page 4 from the database free-list. Bug 3918 caused sqlite to
 # incorrectly report corruption here.
 do_test tkt3918.5 {

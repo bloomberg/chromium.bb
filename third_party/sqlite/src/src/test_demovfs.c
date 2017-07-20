@@ -10,16 +10,16 @@
 **
 *************************************************************************
 **
-** This file implements an example of a simple VFS implementation that 
+** This file implements an example of a simple VFS implementation that
 ** omits complex features often not required or not possible on embedded
-** platforms.  Code is included to buffer writes to the journal file, 
+** platforms.  Code is included to buffer writes to the journal file,
 ** which can be a significant performance improvement on some embedded
 ** platforms.
 **
 ** OVERVIEW
 **
-**   The code in this file implements a minimal SQLite VFS that can be 
-**   used on Linux and other posix-like operating systems. The following 
+**   The code in this file implements a minimal SQLite VFS that can be
+**   used on Linux and other posix-like operating systems. The following
 **   system calls are used:
 **
 **    File-system: access(), unlink(), getcwd()
@@ -64,10 +64,10 @@
 **
 **   Most of the data is written in step 1 using a series of calls to the
 **   VFS xWrite() method. The buffers passed to the xWrite() calls are of
-**   various sizes. For example, as of version 3.6.24, when committing a 
-**   transaction that modifies 3 pages of a database file that uses 4096 
-**   byte pages residing on a media with 512 byte sectors, SQLite makes 
-**   eleven calls to the xWrite() method to create the rollback journal, 
+**   various sizes. For example, as of version 3.6.24, when committing a
+**   transaction that modifies 3 pages of a database file that uses 4096
+**   byte pages residing on a media with 512 byte sectors, SQLite makes
+**   eleven calls to the xWrite() method to create the rollback journal,
 **   as follows:
 **
 **             Write offset | Bytes written
@@ -87,18 +87,18 @@
 **             ++++++++++++SYNC+++++++++++
 **
 **   On many operating systems, this is an efficient way to write to a file.
-**   However, on some embedded systems that do not cache writes in OS 
+**   However, on some embedded systems that do not cache writes in OS
 **   buffers it is much more efficient to write data in blocks that are
 **   an integer multiple of the sector-size in size and aligned at the
 **   start of a sector.
 **
 **   To work around this, the code in this file allocates a fixed size
-**   buffer of SQLITE_DEMOVFS_BUFFERSZ using sqlite3_malloc() whenever a 
+**   buffer of SQLITE_DEMOVFS_BUFFERSZ using sqlite3_malloc() whenever a
 **   journal file is opened. It uses the buffer to coalesce sequential
 **   writes into aligned SQLITE_DEMOVFS_BUFFERSZ blocks. When SQLite
 **   invokes the xSync() method to sync the contents of the file to disk,
 **   all accumulated data is written out, even if it does not constitute
-**   a complete block. This means the actual IO to create the rollback 
+**   a complete block. This means the actual IO to create the rollback
 **   journal for the example transaction above is this:
 **
 **             Write offset | Bytes written
@@ -109,7 +109,7 @@
 **                        0             12
 **             ++++++++++++SYNC+++++++++++
 **
-**   Much more efficient if the underlying OS is not caching write 
+**   Much more efficient if the underlying OS is not caching write
 **   operations.
 */
 
@@ -210,9 +210,9 @@ static int demoClose(sqlite3_file *pFile){
 ** Read data from a file.
 */
 static int demoRead(
-  sqlite3_file *pFile, 
-  void *zBuf, 
-  int iAmt, 
+  sqlite3_file *pFile,
+  void *zBuf,
+  int iAmt,
   sqlite_int64 iOfst
 ){
   DemoFile *p = (DemoFile*)pFile;
@@ -222,7 +222,7 @@ static int demoRead(
 
   /* Flush any data in the write buffer to disk in case this operation
   ** is trying to read data the file-region currently cached in the buffer.
-  ** It would be possible to detect this case and possibly save an 
+  ** It would be possible to detect this case and possibly save an
   ** unnecessary write here, but in practice SQLite will rarely read from
   ** a journal file when there is data cached in the write-buffer.
   */
@@ -250,13 +250,13 @@ static int demoRead(
 ** Write data to a crash-file.
 */
 static int demoWrite(
-  sqlite3_file *pFile, 
-  const void *zBuf, 
-  int iAmt, 
+  sqlite3_file *pFile,
+  const void *zBuf,
+  int iAmt,
   sqlite_int64 iOfst
 ){
   DemoFile *p = (DemoFile*)pFile;
-  
+
   if( p->aBuffer ){
     char *z = (char *)zBuf;       /* Pointer to remaining data to write */
     int n = iAmt;                 /* Number of bytes at z */
@@ -267,7 +267,7 @@ static int demoWrite(
 
       /* If the buffer is full, or if this data is not being written directly
       ** following the data already buffered, flush the buffer. Flushing
-      ** the buffer is a no-op if it is empty.  
+      ** the buffer is a no-op if it is empty.
       */
       if( p->nBuffer==SQLITE_DEMOVFS_BUFFERSZ || p->iBufferOfst+p->nBuffer!=i ){
         int rc = demoFlushBuffer(p);
@@ -374,7 +374,7 @@ static int demoFileControl(sqlite3_file *pFile, int op, void *pArg){
 
 /*
 ** The xSectorSize() and xDeviceCharacteristics() methods. These two
-** may return special values allowing SQLite to optimize file-system 
+** may return special values allowing SQLite to optimize file-system
 ** access to some extent. But it is also safe to simply return 0.
 */
 static int demoSectorSize(sqlite3_file *pFile){
@@ -494,9 +494,9 @@ static int demoDelete(sqlite3_vfs *pVfs, const char *zPath, int dirSync){
 ** is both readable and writable.
 */
 static int demoAccess(
-  sqlite3_vfs *pVfs, 
-  const char *zPath, 
-  int flags, 
+  sqlite3_vfs *pVfs,
+  const char *zPath,
+  int flags,
   int *pResOut
 ){
   int rc;                         /* access() return code */
@@ -517,13 +517,13 @@ static int demoAccess(
 
 /*
 ** Argument zPath points to a nul-terminated string containing a file path.
-** If zPath is an absolute path, then it is copied as is into the output 
+** If zPath is an absolute path, then it is copied as is into the output
 ** buffer. Otherwise, if it is a relative path, then the equivalent full
 ** path is written to the output buffer.
 **
 ** This function assumes that paths are UNIX style. Specifically, that:
 **
-**   1. Path components are separated by a '/'. and 
+**   1. Path components are separated by a '/'. and
 **   2. Full paths begin with a '/' character.
 */
 static int demoFullPathname(
@@ -581,7 +581,7 @@ static int demoRandomness(sqlite3_vfs *pVfs, int nByte, char *zByte){
 }
 
 /*
-** Sleep for at least nMicro microseconds. Return the (approximate) number 
+** Sleep for at least nMicro microseconds. Return the (approximate) number
 ** of microseconds slept for.
 */
 static int demoSleep(sqlite3_vfs *pVfs, int nMicro){
@@ -597,13 +597,13 @@ static int demoSleep(sqlite3_vfs *pVfs, int nMicro){
 **   http://en.wikipedia.org/wiki/Julian_day
 **
 ** This implementation is not very good. The current time is rounded to
-** an integer number of seconds. Also, assuming time_t is a signed 32-bit 
+** an integer number of seconds. Also, assuming time_t is a signed 32-bit
 ** value, it will stop working some time in the year 2038 AD (the so-called
-** "year 2038" problem that afflicts systems that store time this way). 
+** "year 2038" problem that afflicts systems that store time this way).
 */
 static int demoCurrentTime(sqlite3_vfs *pVfs, double *pTime){
   time_t t = time(0);
-  *pTime = t/86400.0 + 2440587.5; 
+  *pTime = t/86400.0 + 2440587.5;
   return SQLITE_OK;
 }
 

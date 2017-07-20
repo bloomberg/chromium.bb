@@ -35,5 +35,5 @@ do_test 100 {
     SELECT count(x), sum(x), avg(x), $microsec<10000000 FROM t1;
   }
 } {100000 5000050000 50000.5 1}
-  
+
 finish_test

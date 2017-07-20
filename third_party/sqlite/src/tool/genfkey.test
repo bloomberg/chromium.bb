@@ -72,7 +72,7 @@ do_test genfkey-1.11 {
   execsql { UPDATE t2 SET e = NULL }
 } {}
 do_test genfkey-1.12 {
-  execsql { 
+  execsql {
     UPDATE t1 SET a = 10 ;
     DELETE FROM t1;
     DELETE FROM t2;
@@ -90,7 +90,7 @@ do_test genfkey-1.14 {
   catchsql { INSERT INTO t3 VALUES(3, 1, 4) }
 } {1 {constraint failed}}
 do_test genfkey-1.15 {
-  execsql { 
+  execsql {
     INSERT INTO t1 VALUES(1, 1, 4);
     INSERT INTO t3 VALUES(3, 1, 4);
   }
@@ -122,8 +122,8 @@ do_test genfkey-2.1 {
   execsql {
     CREATE TABLE t1(a INTEGER PRIMARY KEY, b, c, UNIQUE(b, c));
     CREATE TABLE t2(e REFERENCES t1 ON UPDATE CASCADE ON DELETE CASCADE, f);
-    CREATE TABLE t3(g, h, i, 
-        FOREIGN KEY (h, i) 
+    CREATE TABLE t3(g, h, i,
+        FOREIGN KEY (h, i)
         REFERENCES t1(b, c) ON UPDATE CASCADE ON DELETE CASCADE
     );
   }
@@ -179,8 +179,8 @@ do_test genfkey-3.1 {
   execsql {
     CREATE TABLE t1(a INTEGER PRIMARY KEY, b, c, UNIQUE(c, b));
     CREATE TABLE t2(e REFERENCES t1 ON UPDATE SET NULL ON DELETE SET NULL, f);
-    CREATE TABLE t3(g, h, i, 
-        FOREIGN KEY (h, i) 
+    CREATE TABLE t3(g, h, i,
+        FOREIGN KEY (h, i)
         REFERENCES t1(b, c) ON UPDATE SET NULL ON DELETE SET NULL
     );
   }
@@ -286,7 +286,7 @@ do_test genfkey-5.5 {
   catchsql { INSERT INTO t13 VALUES(1) }
 } {1 {constraint failed}}
 do_test genfkey-5.5 {
-  catchsql { 
+  catchsql {
     INSERT INTO "t.3" VALUES(1);
     INSERT INTO t13 VALUES(1);
   }
@@ -298,12 +298,12 @@ do_test genfkey-6.1 {
     DROP TABLE "t.3";
     DROP TABLE t13;
     CREATE TABLE p(
-      "a.1 first", "b.2 second", 
+      "a.1 first", "b.2 second",
       UNIQUE("a.1 first", "b.2 second")
     );
     CREATE TABLE c(
-      "c.1 I", "d.2 II", 
-        FOREIGN KEY("c.1 I", "d.2 II") 
+      "c.1 I", "d.2 II",
+        FOREIGN KEY("c.1 I", "d.2 II")
         REFERENCES p("a.1 first", "b.2 second")
         ON UPDATE CASCADE ON DELETE CASCADE
     );

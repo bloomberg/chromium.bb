@@ -82,7 +82,7 @@ if {!$skipwaltests} {
   forcedelete test.db
   sqlite3 db test.db
   file_control_chunksize_test db main [expr 32*1024]
-  
+
   do_test fallocate-2.1 {
     execsql {
       PRAGMA page_size = 1024;
@@ -91,26 +91,26 @@ if {!$skipwaltests} {
     }
     file size test.db
   } [expr 32*1024]
-  
+
   do_test fallocate-2.2 {
     execsql { INSERT INTO t1 VALUES(1, zeroblob(35*1024)) }
     execsql { PRAGMA wal_checkpoint }
     file size test.db
   } [expr 64*1024]
-  
+
   do_test fallocate-2.3 {
     execsql { DELETE FROM t1 }
     execsql { VACUUM }
     file size test.db
   } [expr 64*1024]
-  
+
   do_test fallocate-2.4 {
     execsql { PRAGMA wal_checkpoint }
     file size test.db
   } [expr 32*1024]
-  
+
   do_test fallocate-2.5 {
-    execsql { 
+    execsql {
       INSERT INTO t1 VALUES(2, randomblob(35*1024));
       PRAGMA wal_checkpoint;
       INSERT INTO t1 VALUES(3, randomblob(128));
@@ -119,21 +119,21 @@ if {!$skipwaltests} {
     }
     file size test.db
   } [expr 64*1024]
-  
+
   do_test fallocate-2.6 {
     sqlite3 db2 test.db
     execsql { BEGIN ; SELECT count(a) FROM t1 } db2
-    execsql {  
+    execsql {
       INSERT INTO t1 VALUES(4, randomblob(128));
       PRAGMA wal_checkpoint;
     }
     file size test.db
   } [expr 64*1024]
-  
+
   do_test fallocate-2.7 {
     execsql { SELECT count(b) FROM t1 } db2
   } {1}
-  
+
   do_test fallocate-2.8 {
     execsql { COMMIT } db2
     execsql { PRAGMA wal_checkpoint }

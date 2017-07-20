@@ -25,7 +25,7 @@ that returns two or more columns, or a list of scalars.  It is not
 currently support for the RHS to be a list of vectors.
 
 The number of columns for LHS must match the number of columns for
-the RHS.  If the RHS is a list of values, then the LHS must be a 
+the RHS.  If the RHS is a list of values, then the LHS must be a
 scalar.  If the RHS is a subquery returning N columns, then the LHS
 must be a vector of size N.
 
@@ -47,7 +47,7 @@ the system only needs a binary result: TRUE or NOT-TRUE.  One can also
 to define a binary result of FALSE and NOT-FALSE, but
 it turns out that no extra optimizations are possible in that case, so if
 the FALSE/NOT-FALSE binary is needed, we have to compute the three-state
-TRUE/FALSE/NULL result and then combine the TRUE and NULL values into 
+TRUE/FALSE/NULL result and then combine the TRUE and NULL values into
 NOT-FALSE.
 
 A "NOT IN" operator is computed by first computing the equivalent IN
@@ -97,11 +97,11 @@ is the algorithm that is implemented in SQLite.
 
   5.  If we do not need to distinguish between FALSE and NULL,
       then return FALSE.
-  
+
   6.  For each row in the RHS, compare that row against the LHS and
       if the result is NULL, immediately return NULL.  In the case
       of a scalar IN operator, we only need to look at the very first
-      row the RHS because for a scalar RHS, all NULLs will always come 
+      row the RHS because for a scalar RHS, all NULLs will always come
       first.  If the RHS is empty, this step is a no-op.
 
   7.  Return FALSE.

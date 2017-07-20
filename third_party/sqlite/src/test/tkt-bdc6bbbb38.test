@@ -11,7 +11,7 @@
 # This file implements regression tests for SQLite library.
 #
 # This file implements tests to verify that ticket [bdc6bbbb38] has been
-# fixed.  
+# fixed.
 #
 
 set testdir [file dirname $argv0]
@@ -34,7 +34,7 @@ foreach {tn idxdir} {1 ASC 2 DESC} {
     {0 0 0 1 0 2 2 1}
   }
   do_execsql_test $tn.1.4 {
-    SELECT snippet(t2,'[',']') FROM t2 WHERE t2 MATCH 'a AND d OR b' 
+    SELECT snippet(t2,'[',']') FROM t2 WHERE t2 MATCH 'a AND d OR b'
     ORDER BY docid ASC
   } {
     {[a] [b] c}
@@ -68,7 +68,7 @@ foreach {tn idxdir} {1 ASC 2 DESC} {
   } {
     {[a] c [d]}
   }
-  do_execsql_test $tn.2.5 { 
+  do_execsql_test $tn.2.5 {
     INSERT INTO t3 VALUES('a b c');
   }
   do_execsql_test $tn.2.6 {

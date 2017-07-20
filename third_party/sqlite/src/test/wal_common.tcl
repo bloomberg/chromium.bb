@@ -34,7 +34,7 @@ proc wal_cksum_intlist {ckv1 ckv2 intlist} {
 }
 
 
-# This proc calculates checksums in the same way as those used by SQLite 
+# This proc calculates checksums in the same way as those used by SQLite
 # in WAL files. If the $endian argument is "big", then checksums are
 # calculated by interpreting data as an array of big-endian integers. If
 # it is "little", data is interpreted as an array of little-endian integers.

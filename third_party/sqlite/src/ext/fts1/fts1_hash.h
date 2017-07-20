@@ -43,7 +43,7 @@ struct fts1Hash {
   } *ht;
 };
 
-/* Each element in the hash table is an instance of the following 
+/* Each element in the hash table is an instance of the following
 ** structure.  All elements are stored on a single doubly-linked list.
 **
 ** Again, this structure is intended to be opaque, but it can't really
@@ -62,10 +62,10 @@ struct fts1HashElem {
 **                           (including the null-terminator, if any).  Case
 **                           is respected in comparisons.
 **
-**   FTS1_HASH_BINARY        pKey points to binary data nKey bytes long. 
+**   FTS1_HASH_BINARY        pKey points to binary data nKey bytes long.
 **                           memcmp() is used to compare keys.
 **
-** A copy of the key is made if the copyKey parameter to fts1HashInit is 1.  
+** A copy of the key is made if the copyKey parameter to fts1HashInit is 1.
 */
 #define FTS1_HASH_STRING    1
 #define FTS1_HASH_BINARY    2

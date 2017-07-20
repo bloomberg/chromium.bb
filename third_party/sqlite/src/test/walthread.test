@@ -47,7 +47,7 @@ proc wait_for_var {varname} {
   uplevel [list set $varname]
 }
 
-# The argument is the name of a list variable in the callers context. The 
+# The argument is the name of a list variable in the callers context. The
 # first element of the list is removed and returned. For example:
 #
 #   set L {a b c}
@@ -64,8 +64,8 @@ proc lshift {lvar} {
 
 #-------------------------------------------------------------------------
 #   do_thread_test TESTNAME OPTIONS...
-# 
-# where OPTIONS are: 
+#
+# where OPTIONS are:
 #
 #   -seconds   SECONDS                How many seconds to run the test for
 #   -init      SCRIPT                 Script to run before test.
@@ -221,7 +221,7 @@ proc do_thread_test2 {args} {
 }
 
 #--------------------------------------------------------------------------
-# Start 10 threads. Each thread performs both read and write 
+# Start 10 threads. Each thread performs both read and write
 # transactions. Each read transaction consists of:
 #
 #   1) Reading the md5sum of all but the last table row,
@@ -293,7 +293,7 @@ do_thread_test2 walthread-1 -seconds $seconds(walthread-1) -init {
   set nRun 0
   while {[tt_continue]} {
     read_transaction
-    write_transaction 
+    write_transaction
     incr nRun
   }
   set nRun
@@ -322,7 +322,7 @@ do_thread_test2 walthread-1 -seconds $seconds(walthread-1) -init {
 # At present, there are 4 clients in total. 2 do "journal_mode = WAL", and
 # two do "journal_mode = DELETE".
 #
-# Each client returns a string of the form "W w, R r", where W is the 
+# Each client returns a string of the form "W w, R r", where W is the
 # number of write-transactions performed using a WAL journal, and D is
 # the number of write-transactions performed using a rollback journal.
 # For example, "192 w, 185 r".
@@ -395,7 +395,7 @@ do_thread_test walthread-3 -seconds $seconds(walthread-3) -init {
   set nextwrite $E(pid)
 
   proc wal_hook {zDb nEntry} {
-    if {$nEntry>10} { 
+    if {$nEntry>10} {
       set rc [catch { db eval {PRAGMA wal_checkpoint} } msg]
       if {$rc && $msg != "database is locked"} { error $msg }
     }
@@ -443,7 +443,7 @@ do_thread_test2 walthread-4 -seconds $seconds(walthread-4) -init {
     CREATE TABLE t1(a INTEGER PRIMARY KEY, b UNIQUE);
   }
 } -thread r 1 {
-  # This connection only ever reads the database. Therefore the 
+  # This connection only ever reads the database. Therefore the
   # busy-handler is not required. Disable it to check that this is true.
   #
   # UPDATE: That is no longer entirely true - as we don't use a blocking
@@ -473,8 +473,8 @@ do_thread_test2 walthread-4 -seconds $seconds(walthread-4) -init {
 
 
 # This test case attempts to provoke a deadlock condition that existed in
-# the unix VFS at one point. The problem occurred only while recovering a 
-# very large wal file (one that requires a wal-index larger than the 
+# the unix VFS at one point. The problem occurred only while recovering a
+# very large wal file (one that requires a wal-index larger than the
 # initial default allocation of 64KB).
 #
 do_thread_test walthread-5 -seconds $seconds(walthread-5) -init {

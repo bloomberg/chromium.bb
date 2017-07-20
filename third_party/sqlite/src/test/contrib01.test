@@ -13,7 +13,7 @@
 # This file contains test cases that were contributed on the sqlite-users
 # mailing list on 2013-06-05 by Mi Chen at mi.chen@echostar.com.
 #
-# At the time it was contributed, this test failed on trunk, but 
+# At the time it was contributed, this test failed on trunk, but
 # worked on the NGQP.
 
 set testdir [file dirname $argv0]
@@ -31,12 +31,12 @@ do_test contrib01-1.0 {
                      G INTEGER NOT NULL,
                      H INTEGER NOT NULL,
                      PRIMARY KEY (B, C, D));
-    
+
     CREATE TABLE T2 (A INTEGER NOT NULL,
                      B INTEGER NOT NULL,
                      C INTEGER NOT NULL,
                      PRIMARY KEY (A, B, C));
-    
+
     INSERT INTO T2(A, B, C) VALUES(702118,16183,15527);
     INSERT INTO T2(A, B, C) VALUES(702118,16183,15560);
     INSERT INTO T2(A, B, C) VALUES(702118,16183,15561);
@@ -50,7 +50,7 @@ do_test contrib01-1.0 {
     INSERT INTO T2(A, B, C) VALUES(702118,16183,15638);
     INSERT INTO T2(A, B, C) VALUES(702118,16183,15681);
     INSERT INTO T2(A, B, C) VALUES(702118,16183,15682);
-    
+
     INSERT INTO T1(B, C, D, E, F, G, H) VALUES(16183,15527,6,0,5,5,0);
     INSERT INTO T1(B, C, D, E, F, G, H) VALUES(16183,15560,6,0,5,2,0);
     INSERT INTO T1(B, C, D, E, F, G, H) VALUES(16183,15561,6,0,5,2,0);

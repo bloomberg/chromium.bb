@@ -88,7 +88,7 @@ set docs [list {
   Added the sqlite3_db_readonly() interface.
 } {
   Added the SQLITE_FCNTL_PRAGMA file control, giving VFS implementations the
-  ability to add new PRAGMA statements or to override built-in PRAGMAs.  
+  ability to add new PRAGMA statements or to override built-in PRAGMAs.
 } {
   Queries of the form: "SELECT max(x), y FROM table" returns the value of y on
   the same row that contains the maximum x value.
@@ -97,16 +97,16 @@ set docs [list {
 } {
   Documented support for the FTS4 content option. This feature has actually
   been in the code since version 3.7.9 but is only now considered to be
-  officially supported.  
+  officially supported.
 } {
   Pending statements no longer block ROLLBACK. Instead, the pending statement
-  will return SQLITE_ABORT upon next access after the ROLLBACK.  
+  will return SQLITE_ABORT upon next access after the ROLLBACK.
 } {
   Improvements to the handling of CSV inputs in the command-line shell
 } {
   Fix a bug introduced in version 3.7.10 that might cause a LEFT JOIN to be
   incorrectly converted into an INNER JOIN if the WHERE clause indexable terms
-  connected by OR.  
+  connected by OR.
 }]
 
 set map(a) [list "\u00C4" "\u00E4"]  ; # LATIN LETTER A WITH DIAERESIS
@@ -119,12 +119,12 @@ set map(h) [list "\u1E26" "\u1E27"]  ; # LATIN LETTER H WITH DIAERESIS
 set map(w) [list "\u1E84" "\u1E85"]  ; # LATIN LETTER W WITH DIAERESIS
 set map(x) [list "\u1E8C" "\u1E8D"]  ; # LATIN LETTER X WITH DIAERESIS
 foreach k [array names map] {
-  lappend mappings [string toupper $k] [lindex $map($k) 0] 
+  lappend mappings [string toupper $k] [lindex $map($k) 0]
   lappend mappings $k [lindex $map($k) 1]
 }
-proc mapdoc {doc} { 
+proc mapdoc {doc} {
   set doc [regsub -all {[[:space:]]+} $doc " "]
-  string map $::mappings [string trim $doc] 
+  string map $::mappings [string trim $doc]
 }
 
 do_test 2.0 {
@@ -145,11 +145,11 @@ do_test 2.1 {
 
 foreach {tn query snippet} {
   2 "row" {
-     ...returns the value of y on the same [row] that contains 
+     ...returns the value of y on the same [row] that contains
      the maximum x value.
   }
   3 "ROW" {
-     ...returns the value of y on the same [row] that contains 
+     ...returns the value of y on the same [row] that contains
      the maximum x value.
   }
   4 "rollback" {
@@ -171,7 +171,7 @@ foreach {tn query snippet} {
 }
 
 #-------------------------------------------------------------------------
-# Make sure the unicode61 tokenizer does not crash if it is passed a 
+# Make sure the unicode61 tokenizer does not crash if it is passed a
 # NULL pointer.
 reset_db
 do_execsql_test 3.1 {
@@ -261,17 +261,17 @@ do_test 4.3 {
 do_unicode_token_test3 5.1 {tokenchars=} {
   sqlite3_reset sqlite3_column_int
 } {
-  0 sqlite3 sqlite3 
-  1 reset reset 
-  2 sqlite3 sqlite3 
-  3 column column 
+  0 sqlite3 sqlite3
+  1 reset reset
+  2 sqlite3 sqlite3
+  3 column column
   4 int int
 }
 
 do_unicode_token_test3 5.2 {tokenchars=_} {
   sqlite3_reset sqlite3_column_int
 } {
-  0 sqlite3_reset sqlite3_reset 
+  0 sqlite3_reset sqlite3_reset
   1 sqlite3_column_int sqlite3_column_int
 }
 
@@ -293,7 +293,7 @@ do_unicode_token_test3 5.4 {tokenchars=xyz} {
 do_unicode_token_test3 5.5 {tokenchars=_} {separators=zyx} {
   sqlite3_resetxsqlite3_column_intyhonda_phantom
 } {
-  0 sqlite3_reset sqlite3_reset 
+  0 sqlite3_reset sqlite3_reset
   1 sqlite3_column_int sqlite3_column_int
   2 honda_phantom honda_phantom
 }
@@ -313,7 +313,7 @@ do_unicode_token_test3 5.7                             \
     3 \u2445timer \u2445timer                          \
   ]
 
-# Check that it is not possible to add a standalone diacritic codepoint 
+# Check that it is not possible to add a standalone diacritic codepoint
 # to either separators or tokenchars.
 do_unicode_token_test3 5.8 "separators=\u0301" \
   "hello\u0301world \u0301helloworld"          \
@@ -344,14 +344,14 @@ proc do_tokenize {tokenizer txt} {
   set res
 }
 
-# Argument $lCodepoint must be a list of codepoints (integers) that 
+# Argument $lCodepoint must be a list of codepoints (integers) that
 # correspond to whitespace characters. This command creates a string
-# $W from the codepoints, then tokenizes "${W}hello{$W}world${W}" 
+# $W from the codepoints, then tokenizes "${W}hello{$W}world${W}"
 # using tokenizer $tokenizer. The test passes if the tokenizer successfully
 # extracts the two 5 character tokens.
 #
 proc do_isspace_test {tn tokenizer lCp} {
-  set whitespace [format [string repeat %c [llength $lCp]] {*}$lCp] 
+  set whitespace [format [string repeat %c [llength $lCp]] {*}$lCp]
   set txt "${whitespace}hello${whitespace}world${whitespace}"
   uplevel [list do_test $tn [list do_tokenize $tokenizer $txt] {hello world}]
 }
@@ -359,7 +359,7 @@ proc do_isspace_test {tn tokenizer lCp} {
 set tokenizers [list unicode61]
 ifcapable icu { lappend tokenizers icu }
 
-# Some tests to check that the tokenizers can both identify white-space 
+# Some tests to check that the tokenizers can both identify white-space
 # codepoints. All codepoints tested below are of type "Zs" in the
 # UnicodeData.txt file.
 #
@@ -477,7 +477,7 @@ foreach {tn sql} {
     CREATE VIRTUAL TABLE t7 USING fts4(tokenize=unicode61 `separators=x\xC4`);
   }
 } {
-  do_execsql_test 9.$tn.0 { 
+  do_execsql_test 9.$tn.0 {
     DROP TABLE IF EXISTS t5;
     DROP TABLE IF EXISTS t5aux;
     DROP TABLE IF EXISTS t6;
@@ -492,7 +492,7 @@ foreach {tn sql} {
     INSERT INTO t5 VALUES('one two three/four.five.six');
     SELECT * FROM t5aux;
   } {
-    four.five.six   * 1 1 four.five.six   0 1 1 
+    four.five.six   * 1 1 four.five.six   0 1 1
     {one two three} * 1 1 {one two three} 0 1 1
   }
 
@@ -501,7 +501,7 @@ foreach {tn sql} {
     INSERT INTO t6 VALUES('alpha=beta"gamma/delta[epsilon]zeta');
     SELECT * FROM t6aux;
   } {
-    {alpha=beta"gamma}   * 1 1 {alpha=beta"gamma} 0 1 1 
+    {alpha=beta"gamma}   * 1 1 {alpha=beta"gamma} 0 1 1
     {delta[epsilon]zeta} * 1 1 {delta[epsilon]zeta} 0 1 1
   }
 
@@ -510,8 +510,8 @@ foreach {tn sql} {
     INSERT INTO t7 VALUES('alephxbeth\xC4gimel');
     SELECT * FROM t7aux;
   } {
-    aleph * 1 1 aleph 0 1 1 
-    beth  * 1 1 beth  0 1 1 
+    aleph * 1 1 aleph 0 1 1
+    beth  * 1 1 beth  0 1 1
     gimel * 1 1 gimel 0 1 1
   }
 }
@@ -530,10 +530,10 @@ do_execsql_test 10.1 {
   CREATE VIRTUAL TABLE t1aux USING fts4aux(t1);
   SELECT * FROM t1aux;
 } {
-  .single=word * 1 1 .single=word 0 1 1 
-  four         * 1 1 four         0 1 1 
-  one          * 1 1 one          0 1 1 
-  three        * 1 1 three        0 1 1 
+  .single=word * 1 1 .single=word 0 1 1
+  four         * 1 1 four         0 1 1
+  one          * 1 1 one          0 1 1
+  three        * 1 1 three        0 1 1
   two          * 1 1 two          0 1 1
 }
 
@@ -547,13 +547,13 @@ do_execsql_test 10.2 {
   CREATE VIRTUAL TABLE t2aux USING fts4aux(t2);
   SELECT * FROM t2aux;
 } {
-  one           * 1 1 one           0 1 1 
-  onebtwoathree * 1 1 onebtwoathree 0 1 1 
-  three         * 1 1 three         0 1 1 
+  one           * 1 1 one           0 1 1
+  onebtwoathree * 1 1 onebtwoathree 0 1 1
+  three         * 1 1 three         0 1 1
   two           * 1 1 two           0 1 1
 }
 
-# Test that the tokenchars and separators options work with the 
+# Test that the tokenchars and separators options work with the
 # fts3tokenize table.
 #
 do_execsql_test 11.1 {

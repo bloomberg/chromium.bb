@@ -96,7 +96,7 @@ int main(int argc, char **argv){
         usage(argv[0]);
       }
     }
-    runSql(db, 
+    runSql(db,
        "BEGIN;"
        "CREATE TABLE t1(x INTEGER PRIMARY KEY, y);"
        "INSERT INTO t1(y) VALUES('abcdefghijklmnopqrstuvwxyz');"
@@ -122,7 +122,7 @@ int main(int argc, char **argv){
       fprintf(stderr, "Integrity check: %s\n", zReply);
       exit(1);
     }
-    runSql(db, 
+    runSql(db,
       "SELECT count(*) FROM t1 WHERE y<>('abcdefghijklmnopqrstuvwxyz' || x)"
     );
     if( strcmp(zReply, "0")!=0 ){

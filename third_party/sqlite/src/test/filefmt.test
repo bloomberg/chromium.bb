@@ -182,7 +182,7 @@ do_test filefmt-2.2.3 {
   sql36231 { INSERT INTO t1 VALUES(a_string(3000)) }
 } {}
 
-do_execsql_test filefmt-2.2.4 { 
+do_execsql_test filefmt-2.2.4 {
   PRAGMA integrity_check;
   BEGIN;
     INSERT INTO t2 VALUES(2);
@@ -198,7 +198,7 @@ sqlite3 db test.db
 integrity_check filefmt-2.2.7
 
 #--------------------------------------------------------------------------
-# Check that ticket 89b8c9ac54 is fixed. Before the fix, the SELECT 
+# Check that ticket 89b8c9ac54 is fixed. Before the fix, the SELECT
 # statement would return SQLITE_CORRUPT. The database file was not actually
 # corrupted, but SQLite was reporting that it was.
 #
@@ -209,8 +209,8 @@ do_execsql_test filefmt-3.1 {
   PRAGMA auto_vacuum = 1;
   CREATE TABLE t1(a, b);
 } {}
-do_test filefmt-3.2 { 
-  sql36231 { DROP TABLE t1 } 
+do_test filefmt-3.2 {
+  sql36231 { DROP TABLE t1 }
 } {}
 do_execsql_test filefmt-3.3 {
   SELECT * FROM sqlite_master;
@@ -236,16 +236,16 @@ do_execsql_test filefmt-4.1 {
   INSERT INTO t2 SELECT randomblob(100), randomblob(100) FROM t1;
 }
 
-do_test filefmt-4.2 { 
+do_test filefmt-4.2 {
   sql36231 { INSERT INTO t2 SELECT * FROM t1 }
 } {}
 
-do_test filefmt-4.3 { 
+do_test filefmt-4.3 {
   forcedelete bak.db
   db backup bak.db
 } {}
 
-do_test filefmt-4.4 { 
+do_test filefmt-4.4 {
   sqlite3 db2 bak.db
   db2 eval { PRAGMA integrity_check }
 } {ok}

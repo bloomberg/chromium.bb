@@ -220,7 +220,7 @@ do_test where-1.25 {
   count {SELECT w FROM t1 WHERE x=3 AND 121<=y AND 196>=y}
 } {10 11 12 13 9}
 
-# Need to work on optimizing the BETWEEN operator.  
+# Need to work on optimizing the BETWEEN operator.
 #
 # do_test where-1.26 {
 #   count {SELECT w FROM t1 WHERE x=3 AND y BETWEEN 121 AND 196}
@@ -435,28 +435,28 @@ ifcapable subquery {
   } {1 0 4 2 1 9 3 1 16 102}
   do_test where-5.5 {
     count {
-      SELECT * FROM t1 WHERE rowid IN 
+      SELECT * FROM t1 WHERE rowid IN
          (select rowid from t1 where rowid IN (-1,2,4))
       ORDER BY 1;
     }
   } {2 1 9 4 2 25 3}
   do_test where-5.6 {
     count {
-      SELECT * FROM t1 WHERE rowid+0 IN 
+      SELECT * FROM t1 WHERE rowid+0 IN
          (select rowid from t1 where rowid IN (-1,2,4))
       ORDER BY 1;
     }
   } {2 1 9 4 2 25 103}
   do_test where-5.7 {
     count {
-      SELECT * FROM t1 WHERE w IN 
+      SELECT * FROM t1 WHERE w IN
          (select rowid from t1 where rowid IN (-1,2,4))
       ORDER BY 1;
     }
   } {2 1 9 4 2 25 9}
   do_test where-5.8 {
     count {
-      SELECT * FROM t1 WHERE w+0 IN 
+      SELECT * FROM t1 WHERE w+0 IN
          (select rowid from t1 where rowid IN (-1,2,4))
       ORDER BY 1;
     }
@@ -992,13 +992,13 @@ do_test where-11.1 {
   execsql {
    CREATE TABLE t99(Dte INT, X INT);
    DELETE FROM t99 WHERE (Dte = 2451337) OR (Dte = 2451339) OR
-     (Dte BETWEEN 2451345 AND 2451347) OR (Dte = 2451351) OR 
+     (Dte BETWEEN 2451345 AND 2451347) OR (Dte = 2451351) OR
      (Dte BETWEEN 2451355 AND 2451356) OR (Dte = 2451358) OR
      (Dte = 2451362) OR (Dte = 2451365) OR (Dte = 2451367) OR
      (Dte BETWEEN 2451372 AND 2451376) OR (Dte BETWEEN 2451382 AND 2451384) OR
-     (Dte = 2451387) OR (Dte BETWEEN 2451389 AND 2451391) OR 
-     (Dte BETWEEN 2451393 AND 2451395) OR (Dte = 2451400) OR 
-     (Dte = 2451402) OR (Dte = 2451404) OR (Dte BETWEEN 2451416 AND 2451418) OR 
+     (Dte = 2451387) OR (Dte BETWEEN 2451389 AND 2451391) OR
+     (Dte BETWEEN 2451393 AND 2451395) OR (Dte = 2451400) OR
+     (Dte = 2451402) OR (Dte = 2451404) OR (Dte BETWEEN 2451416 AND 2451418) OR
      (Dte = 2451422) OR (Dte = 2451426) OR (Dte BETWEEN 2451445 AND 2451446) OR
      (Dte = 2451456) OR (Dte = 2451458) OR (Dte BETWEEN 2451465 AND 2451467) OR
      (Dte BETWEEN 2451469 AND 2451471) OR (Dte = 2451474) OR
@@ -1008,9 +1008,9 @@ do_test where-11.1 {
      (Dte BETWEEN 2451539 AND 2451544) OR (Dte BETWEEN 2451546 AND 2451551) OR
      (Dte BETWEEN 2451553 AND 2451555) OR (Dte = 2451557) OR
      (Dte BETWEEN 2451559 AND 2451561) OR (Dte = 2451563) OR
-     (Dte BETWEEN 2451565 AND 2451566) OR (Dte BETWEEN 2451569 AND 2451571) OR 
+     (Dte BETWEEN 2451565 AND 2451566) OR (Dte BETWEEN 2451569 AND 2451571) OR
      (Dte = 2451573) OR (Dte = 2451575) OR (Dte = 2451577) OR (Dte = 2451581) OR
-     (Dte BETWEEN 2451583 AND 2451586) OR (Dte BETWEEN 2451588 AND 2451592) OR 
+     (Dte BETWEEN 2451583 AND 2451586) OR (Dte BETWEEN 2451588 AND 2451592) OR
      (Dte BETWEEN 2451596 AND 2451598) OR (Dte = 2451600) OR
      (Dte BETWEEN 2451602 AND 2451603) OR (Dte = 2451606) OR (Dte = 2451611);
   }
@@ -1166,74 +1166,74 @@ do_test where-14.1 {
   }
   cksort {
     SELECT x.a || '/' || y.a FROM t8 x, t8 y ORDER BY x.a, y.b
-  } 
+  }
 } {1/4 1/1 4/4 4/1 nosort}
 do_test where-14.2 {
   cksort {
     SELECT x.a || '/' || y.a FROM t8 x, t8 y ORDER BY x.a, y.b DESC
-  } 
+  }
 } {1/1 1/4 4/1 4/4 nosort}
 do_test where-14.3 {
   cksort {
     SELECT x.a || '/' || y.a FROM t8 x, t8 y ORDER BY x.a, x.b
-  } 
+  }
 } {1/4 1/1 4/4 4/1 nosort}
 do_test where-14.4 {
   cksort {
     SELECT x.a || '/' || y.a FROM t8 x, t8 y ORDER BY x.a, x.b DESC
-  } 
+  }
 } {1/4 1/1 4/4 4/1 nosort}
 do_test where-14.5 {
   # This test case changed from "nosort" to "sort". See ticket 2a5629202f.
   cksort {
     SELECT x.a || '/' || y.a FROM t8 x, t8 y ORDER BY x.b, x.a||x.b
-  } 
+  }
 } {/4/[14] 4/[14] 1/[14] 1/[14] sort/}
 do_test where-14.6 {
   # This test case changed from "nosort" to "sort". See ticket 2a5629202f.
   cksort {
     SELECT x.a || '/' || y.a FROM t8 x, t8 y ORDER BY x.b, x.a||x.b DESC
-  } 
+  }
 } {/4/[14] 4/[14] 1/[14] 1/[14] sort/}
 do_test where-14.7 {
   cksort {
     SELECT x.a || '/' || y.a FROM t8 x, t8 y ORDER BY x.b, y.a||y.b
-  } 
+  }
 } {4/1 4/4 1/1 1/4 sort}
 do_test where-14.7.1 {
   cksort {
     SELECT x.a || '/' || y.a FROM t8 x, t8 y ORDER BY x.b, x.a, y.a||y.b
-  } 
+  }
 } {4/1 4/4 1/1 1/4 sort}
 do_test where-14.7.2 {
   cksort {
     SELECT x.a || '/' || y.a FROM t8 x, t8 y ORDER BY x.b, x.a, x.a||x.b
-  } 
+  }
 } {4/4 4/1 1/4 1/1 nosort}
 do_test where-14.8 {
   cksort {
     SELECT x.a || '/' || y.a FROM t8 x, t8 y ORDER BY x.b, y.a||y.b DESC
-  } 
+  }
 } {4/4 4/1 1/4 1/1 sort}
 do_test where-14.9 {
   cksort {
     SELECT x.a || '/' || y.a FROM t8 x, t8 y ORDER BY x.b, x.a||y.b
-  } 
+  }
 } {4/4 4/1 1/4 1/1 sort}
 do_test where-14.10 {
   cksort {
     SELECT x.a || '/' || y.a FROM t8 x, t8 y ORDER BY x.b, x.a||y.b DESC
-  } 
+  }
 } {4/1 4/4 1/1 1/4 sort}
 do_test where-14.11 {
   cksort {
     SELECT x.a || '/' || y.a FROM t8 x, t8 y ORDER BY x.b, y.a||x.b
-  } 
+  }
 } {4/1 4/4 1/1 1/4 sort}
 do_test where-14.12 {
   cksort {
     SELECT x.a || '/' || y.a FROM t8 x, t8 y ORDER BY x.b, y.a||x.b DESC
-  } 
+  }
 } {4/4 4/1 1/4 1/1 sort}
 } ;# {permutation != "no_optimization"}
 
@@ -1252,12 +1252,12 @@ do_test where-15.1 {
 } {}
 
 # Ticket #3408.
-# 
+#
 # The branch of code in where.c that generated rowid lookups was
-# incorrectly deallocating a constant register, meaning that if the 
+# incorrectly deallocating a constant register, meaning that if the
 # vdbe code ran more than once, the second time around the constant
 # value may have been clobbered by some other value.
-# 
+#
 do_test where-16.1 {
   execsql {
     CREATE TABLE a1(id INTEGER PRIMARY KEY, v);

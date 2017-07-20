@@ -8,7 +8,7 @@
 #    May you share freely, never taking more than you give.
 #
 #***********************************************************************
-# This file tests that rollback journals for databases that use a 
+# This file tests that rollback journals for databases that use a
 # page-size other than the default page-size can be rolled back Ok.
 #
 # $Id: crash6.test,v 1.2 2008/04/14 15:27:19 drh Exp $
@@ -61,7 +61,7 @@ proc signature {} {
   return [db eval {SELECT count(*), md5sum(a), md5sum(b), md5sum(c) FROM abc}]
 }
 
-# Test case for crashing during database sync with page-size values 
+# Test case for crashing during database sync with page-size values
 # from 1024 to 8192.
 #
 for {set ii 0} {$ii < 30} {incr ii} {
@@ -79,7 +79,7 @@ for {set ii 0} {$ii < 30} {incr ii} {
   } $pagesize
 
   do_test crash6-3.$ii.1 {
-  
+
     execsql BEGIN
     execsql {CREATE TABLE abc(a, b, c)}
     for {set n 0} {$n < 1000} {incr n} {
@@ -113,6 +113,6 @@ for {set ii 0} {$ii < 30} {incr ii} {
     sqlite3 db test.db
     signature
   } $sig
-} 
+}
 
 finish_test

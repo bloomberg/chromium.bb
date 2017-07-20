@@ -8,7 +8,7 @@
 #    May you share freely, never taking more than you give.
 #
 #***********************************************************************
-# This file implements regression tests for SQLite library. 
+# This file implements regression tests for SQLite library.
 #
 # Specifically, it tests the effects of fault injection on the sorter
 # module (code in vdbesort.c).
@@ -54,7 +54,7 @@ foreach {tn mmap_limit nWorker tmpstore threadsmode fakeheap lookaside} {
     sqlite3_test_control SQLITE_TESTCTRL_SORTER_MMAP db $::mmap_limit
     execsql { PRAGMA cache_size = 5 }
   } -body {
-    execsql { 
+    execsql {
       WITH r(x,y) AS (
           SELECT 1, $::str
           UNION ALL
@@ -73,7 +73,7 @@ foreach {tn mmap_limit nWorker tmpstore threadsmode fakeheap lookaside} {
     add_test_utf16bin_collate db
     execsql { PRAGMA cache_size = 5 }
   } -body {
-    execsql { 
+    execsql {
       WITH r(x,y) AS (
           SELECT 100, $::str
           UNION ALL
@@ -95,7 +95,7 @@ foreach {tn mmap_limit nWorker tmpstore threadsmode fakeheap lookaside} {
     execsql { PRAGMA cache_size = 5 }
 
     do_faultsim_test 3.$tn -faults oom-trans* -body {
-      execsql { 
+      execsql {
         WITH r(x,y) AS (
             SELECT 300, $::str2
             UNION ALL
@@ -124,13 +124,13 @@ sqlite3_initialize
 #-------------------------------------------------------------------------
 #
 reset_db
-do_execsql_test 4.0 { 
-  CREATE TABLE t1(a, b, c); 
+do_execsql_test 4.0 {
+  CREATE TABLE t1(a, b, c);
   INSERT INTO t1 VALUES(1, 2, 3);
 }
-do_test 4.1 { 
+do_test 4.1 {
   for {set i 0} {$i < 256} {incr i} {
-    execsql { 
+    execsql {
       INSERT INTO t1 SELECT
         ((a<<3) + b) & 2147483647,
         ((b<<3) + c) & 2147483647,
@@ -156,10 +156,10 @@ reset_db
 set a [string repeat a 500]
 set b [string repeat b 500]
 set c [string repeat c 500]
-do_execsql_test 5.0 { 
-  CREATE TABLE t1(a, b, c); 
-  INSERT INTO t1 VALUES($a, $b, $c); 
-  INSERT INTO t1 VALUES($c, $b, $a); 
+do_execsql_test 5.0 {
+  CREATE TABLE t1(a, b, c);
+  INSERT INTO t1 VALUES($a, $b, $c);
+  INSERT INTO t1 VALUES($c, $b, $a);
 }
 
 do_faultsim_test 5.1 -faults oom* -body {

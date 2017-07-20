@@ -9,7 +9,7 @@
 #
 #***********************************************************************
 #
-# This file implements tests to verify that the "testable statements" in 
+# This file implements tests to verify that the "testable statements" in
 # the lang_droptrigger.html document are correct.
 #
 
@@ -74,25 +74,25 @@ proc droptrigger_reopen_db {{event INSERT}} {
 do_droptrigger_tests 1.1 -repair {
   droptrigger_reopen_db
 } -tclquery {
-  list_all_triggers 
+  list_all_triggers
 } {
-  1   "DROP TRIGGER main.tr1"            
+  1   "DROP TRIGGER main.tr1"
       {main.tr2 temp.tr1 aux.tr1 aux.tr2 aux.tr3}
-  2   "DROP TRIGGER IF EXISTS main.tr1"  
+  2   "DROP TRIGGER IF EXISTS main.tr1"
       {main.tr2 temp.tr1 aux.tr1 aux.tr2 aux.tr3}
-  3   "DROP TRIGGER tr1"                 
+  3   "DROP TRIGGER tr1"
       {main.tr1 main.tr2 aux.tr1 aux.tr2 aux.tr3}
-  4   "DROP TRIGGER IF EXISTS tr1"       
+  4   "DROP TRIGGER IF EXISTS tr1"
       {main.tr1 main.tr2 aux.tr1 aux.tr2 aux.tr3}
 
-  5   "DROP TRIGGER aux.tr1"             
+  5   "DROP TRIGGER aux.tr1"
       {main.tr1 main.tr2 temp.tr1 aux.tr2 aux.tr3}
-  6   "DROP TRIGGER IF EXISTS aux.tr1"   
+  6   "DROP TRIGGER IF EXISTS aux.tr1"
       {main.tr1 main.tr2 temp.tr1 aux.tr2 aux.tr3}
 
-  7   "DROP TRIGGER IF EXISTS aux.xxx"   
+  7   "DROP TRIGGER IF EXISTS aux.xxx"
       {main.tr1 main.tr2 temp.tr1 aux.tr1 aux.tr2 aux.tr3}
-  8   "DROP TRIGGER IF EXISTS aux.xxx"   
+  8   "DROP TRIGGER IF EXISTS aux.xxx"
       {main.tr1 main.tr2 temp.tr1 aux.tr1 aux.tr2 aux.tr3}
 }
 

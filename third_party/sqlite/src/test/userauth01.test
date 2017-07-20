@@ -8,7 +8,7 @@
 #    May you share freely, never taking more than you give.
 #
 #***********************************************************************
-# 
+#
 # This file implements tests of the SQLITE_USER_AUTHENTICATION extension.
 #
 
@@ -31,7 +31,7 @@ do_execsql_test userauth01-1.0 {
 } {NULL 1 2.5 'three' X'4444' t1}
 
 # Calling sqlite3_user_authenticate() on a no-authentication-required
-# database connection is a harmless no-op.  
+# database connection is a harmless no-op.
 #
 do_test userauth01-1.1 {
   sqlite3_user_authenticate db alice pw-4-alice
@@ -58,7 +58,7 @@ do_test userauth01-1.3 {
 # database and when A is true, the sqlite3_user_add(D,U,P,N,A) routine
 # converts the database into an authentication-required database and
 # logs the database connection D in using user U with password P,N.
-#  
+#
 do_test userauth01-1.4 {
   sqlite3_user_add db alice pw-4-alice 1
 } {SQLITE_OK}
@@ -99,7 +99,7 @@ do_test userauth01-1.8 {
   } db2
 } {1 {no such table: sqlite_user}}
 
-# Any user can change their own password.  
+# Any user can change their own password.
 #
 do_test userauth01-1.9 {
   sqlite3_user_change db2 cindy xyzzy-cindy 0
@@ -251,7 +251,7 @@ do_test authuser01-2.1 {
   db auth auth
   db eval {SELECT x FROM t1}
   set ::authargs
-} {/SQLITE_SELECT {} {} {} {} alice/}  
+} {/SQLITE_SELECT {} {} {} {} alice/}
 
 
 finish_test

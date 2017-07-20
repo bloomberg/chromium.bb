@@ -4,7 +4,7 @@
 #
 # This TCL script scans a concatenation of the parse.h output file from the
 # parser and the vdbe.c source file in order to generate the opcodes numbers
-# for all opcodes.  
+# for all opcodes.
 #
 # The lines of the vdbe.c that we are interested in are of the form:
 #
@@ -37,7 +37,7 @@ set nOp 0
 while {![eof $in]} {
   set line [gets $in]
 
-  # Remember the TK_ values from the parse.h file. 
+  # Remember the TK_ values from the parse.h file.
   # NB:  The "TK_" prefix stands for "ToKen", not the graphical Tk toolkit
   # commonly associated with TCL.
   #

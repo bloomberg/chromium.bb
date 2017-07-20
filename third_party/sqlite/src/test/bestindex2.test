@@ -40,7 +40,7 @@ ifcapable !vtab {
 #
 #   "WHERE a=? AND b=?"    ->   "cost  900 rows  900"
 #   "WHERE c=? AND b<?"    ->   "cost 1000 rows 1000"
-#  
+#
 proc vtab_cmd {tbl cols method args} {
   switch -- $method {
     xConnect {
@@ -105,23 +105,23 @@ do_eqp_test 1.3 {
 do_eqp_test 1.4 {
   SELECT * FROM t1,t2 WHERE c=a
 } {
-  0 0 0 {SCAN TABLE t1 VIRTUAL TABLE INDEX 0:} 
+  0 0 0 {SCAN TABLE t1 VIRTUAL TABLE INDEX 0:}
   0 1 1 {SCAN TABLE t2 VIRTUAL TABLE INDEX 0:indexed(c=?)}
 }
 
 do_eqp_test 1.5 {
   SELECT * FROM t1, t2 CROSS JOIN t3 WHERE t2.c = +t1.b AND t3.e=t2.d
 } {
-  0 0 0 {SCAN TABLE t1 VIRTUAL TABLE INDEX 0:} 
-  0 1 1 {SCAN TABLE t2 VIRTUAL TABLE INDEX 0:indexed(c=?)} 
+  0 0 0 {SCAN TABLE t1 VIRTUAL TABLE INDEX 0:}
+  0 1 1 {SCAN TABLE t2 VIRTUAL TABLE INDEX 0:indexed(c=?)}
   0 2 2 {SCAN TABLE t3 VIRTUAL TABLE INDEX 0:indexed(e=?)}
 }
 
 do_eqp_test 1.6 {
   SELECT * FROM t1, t2, t3 WHERE t2.c = +t1.b AND t3.e = t2.d
 } {
-  0 0 0 {SCAN TABLE t1 VIRTUAL TABLE INDEX 0:} 
-  0 1 1 {SCAN TABLE t2 VIRTUAL TABLE INDEX 0:indexed(c=?)} 
+  0 0 0 {SCAN TABLE t1 VIRTUAL TABLE INDEX 0:}
+  0 1 1 {SCAN TABLE t2 VIRTUAL TABLE INDEX 0:indexed(c=?)}
   0 2 2 {SCAN TABLE t3 VIRTUAL TABLE INDEX 0:indexed(e=?)}
 }
 
@@ -129,12 +129,12 @@ do_execsql_test 1.7.1 {
   CREATE TABLE x1(a, b);
 }
 do_eqp_test 1.7.2 {
-  SELECT * FROM x1 CROSS JOIN t1, t2, t3 
+  SELECT * FROM x1 CROSS JOIN t1, t2, t3
     WHERE t1.a = t2.c AND t1.b = t3.e
 } {
-  0 0 0 {SCAN TABLE x1} 
+  0 0 0 {SCAN TABLE x1}
   0 1 1 {SCAN TABLE t1 VIRTUAL TABLE INDEX 0:}
-  0 2 2 {SCAN TABLE t2 VIRTUAL TABLE INDEX 0:indexed(c=?)} 
+  0 2 2 {SCAN TABLE t2 VIRTUAL TABLE INDEX 0:indexed(c=?)}
   0 3 3 {SCAN TABLE t3 VIRTUAL TABLE INDEX 0:indexed(e=?)}
 }
 

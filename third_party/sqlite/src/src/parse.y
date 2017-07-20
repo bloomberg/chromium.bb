@@ -426,7 +426,7 @@ cmd ::= select(X).  {
         pLoop->pNext = pNext;
         pLoop->selFlags |= SF_Compound;
       }
-      if( (p->selFlags & SF_MultiValue)==0 && 
+      if( (p->selFlags & SF_MultiValue)==0 &&
         (mxSelect = pParse->db->aLimit[SQLITE_LIMIT_COMPOUND_SELECT])>0 &&
         cnt>mxSelect
       ){
@@ -639,7 +639,7 @@ dbnm(A) ::= DOT nm(X). {A = X;}
 
 %type fullname {SrcList*}
 %destructor fullname {sqlite3SrcListDelete(pParse->db, $$);}
-fullname(A) ::= nm(X) dbnm(Y).  
+fullname(A) ::= nm(X) dbnm(Y).
    {A = sqlite3SrcListAppend(pParse->db,0,&X,&Y); /*A-overwrites-X*/}
 
 %type joinop {int}
@@ -662,8 +662,8 @@ on_opt(N) ::= .             {N = 0;}
 // with z pointing to the token data and n containing the number of bytes
 // in the token.
 //
-// If there is a "NOT INDEXED" clause, then (z==0 && n==1), which is 
-// normally illegal. The sqlite3SrcListIndexedBy() function 
+// If there is a "NOT INDEXED" clause, then (z==0 && n==1), which is
+// normally illegal. The sqlite3SrcListIndexedBy() function
 // recognizes and interprets this as a special case.
 //
 %type indexed_opt {Token}
@@ -718,9 +718,9 @@ having_opt(A) ::= HAVING expr(X).  {A = X.pExpr;}
 
 // The destructor for limit_opt will never fire in the current grammar.
 // The limit_opt non-terminal only occurs at the end of a single production
-// rule for SELECT statements.  As soon as the rule that create the 
+// rule for SELECT statements.  As soon as the rule that create the
 // limit_opt non-terminal reduces, the SELECT statement rule will also
-// reduce.  So there is never a limit_opt non-terminal on the stack 
+// reduce.  So there is never a limit_opt non-terminal on the stack
 // except as a transient.  So there is never anything to destroy.
 //
 //%destructor limit_opt {
@@ -729,15 +729,15 @@ having_opt(A) ::= HAVING expr(X).  {A = X.pExpr;}
 //}
 limit_opt(A) ::= .                    {A.pLimit = 0; A.pOffset = 0;}
 limit_opt(A) ::= LIMIT expr(X).       {A.pLimit = X.pExpr; A.pOffset = 0;}
-limit_opt(A) ::= LIMIT expr(X) OFFSET expr(Y). 
+limit_opt(A) ::= LIMIT expr(X) OFFSET expr(Y).
                                       {A.pLimit = X.pExpr; A.pOffset = Y.pExpr;}
-limit_opt(A) ::= LIMIT expr(X) COMMA expr(Y). 
+limit_opt(A) ::= LIMIT expr(X) COMMA expr(Y).
                                       {A.pOffset = X.pExpr; A.pLimit = Y.pExpr;}
 
 /////////////////////////// The DELETE statement /////////////////////////////
 //
 %ifdef SQLITE_ENABLE_UPDATE_DELETE_LIMIT
-cmd ::= with(C) DELETE FROM fullname(X) indexed_opt(I) where_opt(W) 
+cmd ::= with(C) DELETE FROM fullname(X) indexed_opt(I) where_opt(W)
         orderby_opt(O) limit_opt(L). {
   sqlite3WithPush(pParse, C, 1);
   sqlite3SrcListIndexedBy(pParse, X, &I);
@@ -766,7 +766,7 @@ cmd ::= with(C) UPDATE orconf(R) fullname(X) indexed_opt(I) SET setlist(Y)
         where_opt(W) orderby_opt(O) limit_opt(L).  {
   sqlite3WithPush(pParse, C, 1);
   sqlite3SrcListIndexedBy(pParse, X, &I);
-  sqlite3ExprListCheckLength(pParse,Y,"set list"); 
+  sqlite3ExprListCheckLength(pParse,Y,"set list");
   W = sqlite3LimitWhere(pParse, X, W, O, L.pLimit, L.pOffset, "UPDATE");
   sqlite3Update(pParse,X,Y,W,R);
 }
@@ -776,7 +776,7 @@ cmd ::= with(C) UPDATE orconf(R) fullname(X) indexed_opt(I) SET setlist(Y)
         where_opt(W).  {
   sqlite3WithPush(pParse, C, 1);
   sqlite3SrcListIndexedBy(pParse, X, &I);
-  sqlite3ExprListCheckLength(pParse,Y,"set list"); 
+  sqlite3ExprListCheckLength(pParse,Y,"set list");
   sqlite3Update(pParse,X,Y,W,R);
 }
 %endif
@@ -865,7 +865,7 @@ idlist(A) ::= nm(Y).
       }
 #if SQLITE_MAX_EXPR_DEPTH>0
       p->nHeight = 1;
-#endif  
+#endif
     }
     pOut->pExpr = p;
     pOut->zStart = t.z;
@@ -1037,7 +1037,7 @@ expr(A) ::= expr(A) likeop(OP) expr(Y) ESCAPE expr(E).  [LIKE_KW]  {
   ){
     pOperand->pExpr = sqlite3PExpr(pParse, op, pOperand->pExpr, 0);
     pOperand->zEnd = &pPostOp->z[pPostOp->n];
-  }                           
+  }
 }
 
 expr(A) ::= expr(A) ISNULL|NOTNULL(E).   {spanUnaryPostfix(pParse,@E,&A,&E);}
@@ -1061,7 +1061,7 @@ expr(A) ::= expr(A) NOT NULL(E). {spanUnaryPostfix(pParse,TK_NOTNULL,&A,&E);}
 //
 // If expr2 is NULL then code as TK_ISNULL or TK_NOTNULL.  If expr2
 // is any other expression, code as TK_IS or TK_ISNOT.
-// 
+//
 expr(A) ::= expr(A) IS expr(Y).     {
   spanBinaryExpr(pParse,TK_IS,&A,&Y);
   binaryToUnaryIfNull(pParse, Y.pExpr, A.pExpr, TK_ISNULL);
@@ -1089,7 +1089,7 @@ expr(A) ::= expr(A) IS NOT expr(Y). {
 
 
 
-expr(A) ::= NOT(B) expr(X).  
+expr(A) ::= NOT(B) expr(X).
               {spanUnaryPrefix(&A,pParse,@B,&X,&B);/*A-overwrites-B*/}
 expr(A) ::= BITNOT(B) expr(X).
               {spanUnaryPrefix(&A,pParse,@B,&X,&B);/*A-overwrites-B*/}
@@ -1109,7 +1109,7 @@ expr(A) ::= expr(A) between_op(N) expr(X) AND expr(Y). [BETWEEN] {
     A.pExpr->x.pList = pList;
   }else{
     sqlite3ExprListDelete(pParse->db, pList);
-  } 
+  }
   exprNot(pParse, N, &A);
   A.zEnd = Y.zEnd;
 }
@@ -1221,11 +1221,11 @@ case_exprlist(A) ::= WHEN expr(Y) THEN expr(Z). {
 %type case_else {Expr*}
 %destructor case_else {sqlite3ExprDelete(pParse->db, $$);}
 case_else(A) ::=  ELSE expr(X).         {A = X.pExpr;}
-case_else(A) ::=  .                     {A = 0;} 
+case_else(A) ::=  .                     {A = 0;}
 %type case_operand {Expr*}
 %destructor case_operand {sqlite3ExprDelete(pParse->db, $$);}
-case_operand(A) ::= expr(X).            {A = X.pExpr; /*A-overwrites-X*/} 
-case_operand(A) ::= .                   {A = 0;} 
+case_operand(A) ::= expr(X).            {A = X.pExpr; /*A-overwrites-X*/}
+case_operand(A) ::= .                   {A = 0;}
 
 %type exprlist {ExprList*}
 %destructor exprlist {sqlite3ExprListDelete(pParse->db, $$);}
@@ -1253,7 +1253,7 @@ paren_exprlist(A) ::= LP exprlist(X) RP.  {A = X;}
 //
 cmd ::= createkw(S) uniqueflag(U) INDEX ifnotexists(NE) nm(X) dbnm(D)
         ON nm(Y) LP sortlist(Z) RP where_opt(W). {
-  sqlite3CreateIndex(pParse, &X, &D, 
+  sqlite3CreateIndex(pParse, &X, &D,
                      sqlite3SrcListAppend(pParse->db,0,&Y,0), Z, U,
                       &S, W, SQLITE_SO_ASC, NE, SQLITE_IDXTYPE_APPDEF);
 }
@@ -1341,7 +1341,7 @@ cmd ::= VACUUM nm(X).          {sqlite3Vacuum(pParse,&X);}
 cmd ::= PRAGMA nm(X) dbnm(Z).                {sqlite3Pragma(pParse,&X,&Z,0,0);}
 cmd ::= PRAGMA nm(X) dbnm(Z) EQ nmnum(Y).    {sqlite3Pragma(pParse,&X,&Z,&Y,0);}
 cmd ::= PRAGMA nm(X) dbnm(Z) LP nmnum(Y) RP. {sqlite3Pragma(pParse,&X,&Z,&Y,0);}
-cmd ::= PRAGMA nm(X) dbnm(Z) EQ minus_num(Y). 
+cmd ::= PRAGMA nm(X) dbnm(Z) EQ minus_num(Y).
                                              {sqlite3Pragma(pParse,&X,&Z,&Y,1);}
 cmd ::= PRAGMA nm(X) dbnm(Z) LP minus_num(Y) RP.
                                              {sqlite3Pragma(pParse,&X,&Z,&Y,1);}
@@ -1367,7 +1367,7 @@ cmd ::= createkw trigger_decl(A) BEGIN trigger_cmd_list(S) END(Z). {
   sqlite3FinishTrigger(pParse, S, &all);
 }
 
-trigger_decl(A) ::= temp(T) TRIGGER ifnotexists(NOERR) nm(B) dbnm(Z) 
+trigger_decl(A) ::= temp(T) TRIGGER ifnotexists(NOERR) nm(B) dbnm(Z)
                     trigger_time(C) trigger_event(D)
                     ON fullname(E) foreach_clause when_clause(G). {
   sqlite3BeginTrigger(pParse, &B, &Z, C, D.a, D.b, E, G, T, NOERR);
@@ -1401,20 +1401,20 @@ trigger_cmd_list(A) ::= trigger_cmd_list(A) trigger_cmd(X) SEMI. {
   A->pLast->pNext = X;
   A->pLast = X;
 }
-trigger_cmd_list(A) ::= trigger_cmd(A) SEMI. { 
+trigger_cmd_list(A) ::= trigger_cmd(A) SEMI. {
   assert( A!=0 );
   A->pLast = A;
 }
 
 // Disallow qualified table names on INSERT, UPDATE, and DELETE statements
-// within a trigger.  The table to INSERT, UPDATE, or DELETE is always in 
+// within a trigger.  The table to INSERT, UPDATE, or DELETE is always in
 // the same database as the table that the trigger fires on.
 //
 %type trnm {Token}
 trnm(A) ::= nm(A).
 trnm(A) ::= nm DOT nm(X). {
   A = X;
-  sqlite3ErrorMsg(pParse, 
+  sqlite3ErrorMsg(pParse,
         "qualified table names are not allowed on INSERT, UPDATE, and DELETE "
         "statements within triggers");
 }
@@ -1439,9 +1439,9 @@ tridxby ::= NOT INDEXED. {
 
 %type trigger_cmd {TriggerStep*}
 %destructor trigger_cmd {sqlite3DeleteTriggerStep(pParse->db, $$);}
-// UPDATE 
+// UPDATE
 trigger_cmd(A) ::=
-   UPDATE orconf(R) trnm(X) tridxby SET setlist(Y) where_opt(Z).  
+   UPDATE orconf(R) trnm(X) tridxby SET setlist(Y) where_opt(Z).
    {A = sqlite3TriggerUpdateStep(pParse->db, &X, Y, Z, R);}
 
 // INSERT
@@ -1459,14 +1459,14 @@ trigger_cmd(A) ::= select(X).
 // The special RAISE expression that may occur in trigger programs
 expr(A) ::= RAISE(X) LP IGNORE RP(Y).  {
   spanSet(&A,&X,&Y);  /*A-overwrites-X*/
-  A.pExpr = sqlite3PExpr(pParse, TK_RAISE, 0, 0); 
+  A.pExpr = sqlite3PExpr(pParse, TK_RAISE, 0, 0);
   if( A.pExpr ){
     A.pExpr->affinity = OE_Ignore;
   }
 }
 expr(A) ::= RAISE(X) LP raisetype(T) COMMA nm(Z) RP(Y).  {
   spanSet(&A,&X,&Y);  /*A-overwrites-X*/
-  A.pExpr = sqlite3ExprAlloc(pParse->db, TK_RAISE, &Z, 1); 
+  A.pExpr = sqlite3ExprAlloc(pParse->db, TK_RAISE, &Z, 1);
   if( A.pExpr ) {
     A.pExpr->affinity = (char)T;
   }

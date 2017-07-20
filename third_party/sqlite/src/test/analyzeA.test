@@ -28,12 +28,12 @@ ifcapable !stat4&&!stat3 {
 proc populate_stat3 {{bDropTable 1}} {
   # Open a second connection on database "test.db" and run ANALYZE. If this
   # is an ENABLE_STAT3 build, this is all that is required to create and
-  # populate the sqlite_stat3 table. 
-  # 
+  # populate the sqlite_stat3 table.
+  #
   sqlite3 db2 test.db
   execsql { ANALYZE }
 
-  # Now, if this is an ENABLE_STAT4 build, create and populate the 
+  # Now, if this is an ENABLE_STAT4 build, create and populate the
   # sqlite_stat3 table based on the stat4 data gathered by the ANALYZE
   # above. Then drop the sqlite_stat4 table.
   #
@@ -42,8 +42,8 @@ proc populate_stat3 {{bDropTable 1}} {
     execsql {
       PRAGMA writable_schema = on;
       CREATE TABLE sqlite_stat3(tbl,idx,neq,nlt,ndlt,sample);
-      INSERT INTO sqlite_stat3 
-      SELECT DISTINCT tbl, idx, 
+      INSERT INTO sqlite_stat3
+      SELECT DISTINCT tbl, idx,
         lindex(neq,0), lindex(nlt,0), lindex(ndlt,0), test_extract(sample, 0)
       FROM sqlite_stat4;
     } db2
@@ -71,14 +71,14 @@ proc populate_stat4 {{bDropTable 1}} {
     execsql {
       PRAGMA writable_schema = on;
       CREATE TABLE sqlite_stat4(tbl,idx,neq,nlt,ndlt,sample);
-      INSERT INTO sqlite_stat4 
-      SELECT tbl, idx, neq, nlt, ndlt, sqlite_record(sample) 
+      INSERT INTO sqlite_stat4
+      SELECT tbl, idx, neq, nlt, ndlt, sqlite_record(sample)
       FROM sqlite_stat3;
     } db2
     if {$bDropTable} { execsql {DROP TABLE sqlite_stat3} db2 }
     execsql { PRAGMA writable_schema = off }
   }
- 
+
   # Modify the database schema cookie to ensure that the other connection
   # reloads the schema.
   #
@@ -100,7 +100,7 @@ proc populate_both {} {
   sqlite3 db2 test.db
   execsql {
     PRAGMA writable_schema = on;
-    UPDATE sqlite_stat3 SET idx = 
+    UPDATE sqlite_stat3 SET idx =
       CASE idx WHEN 't1b' THEN 't1c' ELSE 't1b'
     END;
     PRAGMA writable_schema = off;
@@ -111,7 +111,7 @@ proc populate_both {} {
 }
 
 foreach {tn analyze_cmd} {
-  1 populate_stat4 
+  1 populate_stat4
   2 populate_stat3
   3 populate_both
 } {
@@ -141,16 +141,16 @@ foreach {tn analyze_cmd} {
     SELECT * FROM t1 WHERE b = 125 AND c = 16;
   } {0 0 0 {SEARCH TABLE t1 USING INDEX t1c (c=?)}}
 
-  do_execsql_test 1.$tn.3.1 { 
+  do_execsql_test 1.$tn.3.1 {
     SELECT count(*) FROM t1 WHERE b BETWEEN 0 AND 50
   } {6}
-  do_execsql_test 1.$tn.3.2 { 
+  do_execsql_test 1.$tn.3.2 {
     SELECT count(*) FROM t1 WHERE c BETWEEN 0 AND 50
   } {90}
-  do_execsql_test 1.$tn.3.3 { 
+  do_execsql_test 1.$tn.3.3 {
     SELECT count(*) FROM t1 WHERE b BETWEEN 75 AND 125
   } {90}
-  do_execsql_test 1.$tn.3.4 { 
+  do_execsql_test 1.$tn.3.4 {
     SELECT count(*) FROM t1 WHERE c BETWEEN 75 AND 125
   } {6}
 

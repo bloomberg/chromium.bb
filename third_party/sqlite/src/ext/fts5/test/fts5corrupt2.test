@@ -10,7 +10,7 @@
 #***********************************************************************
 #
 # This file tests that FTS5 handles corrupt databases (i.e. internal
-# inconsistencies in the backing tables) correctly. In this case 
+# inconsistencies in the backing tables) correctly. In this case
 # "correctly" means without crashing.
 #
 
@@ -24,7 +24,7 @@ ifcapable !fts5 {
 }
 sqlite3_fts5_may_be_corrupt 1
 
-# Create a simple FTS5 table containing 100 documents. Each document 
+# Create a simple FTS5 table containing 100 documents. Each document
 # contains 10 terms, each of which start with the character "x".
 #
 expr srand(0)
@@ -47,7 +47,7 @@ if 0 {
 #     * an integrity-check, and
 #     * unless the deleted block was a b-tree node, a query for "t1 MATCH 'x*'"
 #
-#   and check that the corruption is detected in both cases. The 
+#   and check that the corruption is detected in both cases. The
 #   rollback the transaction.
 #
 # Test 2:
@@ -63,20 +63,20 @@ foreach {tno stmt} {
   foreach rowid [db eval {SELECT rowid FROM t1_data WHERE rowid>10}] {
     incr tn
     #if {$tn!=224} continue
-  
+
     do_test 1.$tno.$tn.1.$rowid {
       execsql { BEGIN }
       execsql $stmt
       catchsql { INSERT INTO t1(t1) VALUES('integrity-check') }
     } {1 {database disk image is malformed}}
-  
+
     if {($rowid & $mask)==0} {
       # Node is a leaf node, not a b-tree node.
       do_catchsql_test 1.$tno.$tn.2.$rowid {
         SELECT rowid FROM t1 WHERE t1 MATCH 'x*'
       } {1 {database disk image is malformed}}
     }
-  
+
     do_execsql_test 1.$tno.$tn.3.$rowid {
       ROLLBACK;
       INSERT INTO t1(t1) VALUES('integrity-check');
@@ -96,7 +96,7 @@ foreach {tno stmt} {
 # corruption. It may not report the db as corrupt because truncating the
 # final leaf to some sizes may create a valid leaf page.
 #
-set lrowid [db one {SELECT max(rowid) FROM t1_data WHERE (rowid & $mask)=0}] 
+set lrowid [db one {SELECT max(rowid) FROM t1_data WHERE (rowid & $mask)=0}]
 set nbyte [db one {SELECT length(block) FROM t1_data WHERE rowid=$lrowid}]
 set all [db eval {SELECT rowid FROM t1}]
 for {set i [expr $nbyte-2]} {$i>=0} {incr i -1} {
@@ -112,8 +112,8 @@ for {set i [expr $nbyte-2]} {$i>=0} {incr i -1} {
   do_test 2.$i.3 {
     set res [catchsql {SELECT rowid FROM t1 WHERE t1 MATCH 'x*'}]
     expr {
-        $res=="1 {database disk image is malformed}" 
-     || $res=="0 {$all}" 
+        $res=="1 {database disk image is malformed}"
+     || $res=="0 {$all}"
     }
   } 1
 
@@ -131,8 +131,8 @@ set doc "A B C D E F G H I J "
 do_execsql_test 3.0 {
   CREATE VIRTUAL TABLE x3 USING fts5(tt);
   INSERT INTO x3(x3, rank) VALUES('pgsz', 32);
-  WITH ii(i) AS (SELECT 1 UNION ALL SELECT i+1 FROM ii WHERE i<1000) 
-  INSERT INTO x3 
+  WITH ii(i) AS (SELECT 1 UNION ALL SELECT i+1 FROM ii WHERE i<1000)
+  INSERT INTO x3
   SELECT ($doc || CASE WHEN (i%50)==0 THEN 'X' ELSE 'Y' END) FROM ii;
 }
 
@@ -180,8 +180,8 @@ set doc "A B C D E F G H I J "
 do_execsql_test 4.0 {
   CREATE VIRTUAL TABLE x4 USING fts5(tt);
   INSERT INTO x4(x4, rank) VALUES('pgsz', 32);
-  WITH ii(i) AS (SELECT 1 UNION ALL SELECT i+1 FROM ii WHERE i<10) 
-  INSERT INTO x4 
+  WITH ii(i) AS (SELECT 1 UNION ALL SELECT i+1 FROM ii WHERE i<10)
+  INSERT INTO x4
   SELECT ($doc || CASE WHEN (i%50)==0 THEN 'X' ELSE 'Y' END) FROM ii;
 }
 
@@ -197,7 +197,7 @@ foreach {tn nCut} {
     do_test 4.$tn.$tn2 {
       execsql {
         BEGIN;
-          UPDATE x4_data SET block = substr(block, 1, length(block)-$nCut) 
+          UPDATE x4_data SET block = substr(block, 1, length(block)-$nCut)
           WHERE id = $rowid;
       }
 
@@ -218,7 +218,7 @@ set doc [string repeat "A B C " 1000]
 do_execsql_test 5.0 {
   CREATE VIRTUAL TABLE x5 USING fts5(tt);
   INSERT INTO x5(x5, rank) VALUES('pgsz', 32);
-  WITH ii(i) AS (SELECT 1 UNION ALL SELECT i+1 FROM ii WHERE i<10) 
+  WITH ii(i) AS (SELECT 1 UNION ALL SELECT i+1 FROM ii WHERE i<10)
   INSERT INTO x5 SELECT $doc FROM ii;
 }
 
@@ -257,7 +257,7 @@ do_execsql_test 6.1 {
 
   UPDATE x5_docsize SET sz = X'' WHERE id=3;
 }
-proc colsize {cmd i} { 
+proc colsize {cmd i} {
   $cmd xColumnSize $i
 }
 sqlite3_fts5_create_function db colsize colsize

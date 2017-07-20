@@ -24,8 +24,8 @@ database_may_be_corrupt
 # mmap mode.
 #
 # The reason is that in mmap mode, the different queries may use different
-# PgHdr objects for the same page (same data, but different PgHdr container 
-# objects). And so the corruption is not detected. 
+# PgHdr objects for the same page (same data, but different PgHdr container
+# objects). And so the corruption is not detected.
 #
 if {[permutation]=="mmap"} {
   finish_test
@@ -55,8 +55,8 @@ do_execsql_test 1.1 {
 # a leaf page.
 #
 do_test 1.2 {
-  db eval { SELECT name, rootpage FROM sqlite_master } { 
-    set r($name) $rootpage 
+  db eval { SELECT name, rootpage FROM sqlite_master } {
+    set r($name) $rootpage
   }
   db close
   hexio_write test.db [expr {($r(t2)-1)*1024 + 11}] [format %.2X $r(t1)]
@@ -94,14 +94,14 @@ do_execsql_test 2.1 {
 } {}
 
 do_test 2.2 {
-  db eval { SELECT name, rootpage FROM sqlite_master } { 
-    set r($name) $rootpage 
+  db eval { SELECT name, rootpage FROM sqlite_master } {
+    set r($name) $rootpage
   }
   db close
   set fl [hexio_get_int [hexio_read test.db 32 4]]
 
-  hexio_write test.db [expr {($fl-1) * 1024 + 0}] 00000000 
-  hexio_write test.db [expr {($fl-1) * 1024 + 4}] 00000001 
+  hexio_write test.db [expr {($fl-1) * 1024 + 0}] 00000000
+  hexio_write test.db [expr {($fl-1) * 1024 + 4}] 00000001
   hexio_write test.db [expr {($fl-1) * 1024 + 8}] [format %.8X $r(t1)]
   hexio_write test.db 36 00000002
 
@@ -109,21 +109,21 @@ do_test 2.2 {
 } {}
 
 
-# The trick here is that the root page of the tree scanned by the outer 
+# The trick here is that the root page of the tree scanned by the outer
 # query is also currently on the free-list. So while the first seek on
-# the table (for a==1) works, by the time the second is attempted The 
+# the table (for a==1) works, by the time the second is attempted The
 # "INSERT INTO t2..." statements have recycled the root page of t1 and
 # used it as an index leaf. Normally, BtreeMovetoUnpacked() detects
 # that the PgHdr object associated with said root page does not match
 # the cursor (as it is now marked with PgHdr.intKey==0) and returns
-# SQLITE_CORRUPT. 
+# SQLITE_CORRUPT.
 #
 set res23 {1 {database disk image is malformed}}
 do_test 2.3 {
   list [catch {
   set res [list]
   db eval { SELECT * FROM t1 WHERE a IN (1, 2) } {
-    db eval { 
+    db eval {
       INSERT INTO t2 SELECT randomblob(100) FROM t2;
       INSERT INTO t2 SELECT randomblob(100) FROM t2;
       INSERT INTO t2 SELECT randomblob(100) FROM t2;
@@ -153,8 +153,8 @@ do_execsql_test 3.1 {
 } {}
 
 do_test 3.2 {
-  db eval { SELECT name, rootpage FROM sqlite_master } { 
-    set r($name) $rootpage 
+  db eval { SELECT name, rootpage FROM sqlite_master } {
+    set r($name) $rootpage
   }
   db close
 
@@ -166,7 +166,7 @@ do_test 3.2 {
 do_test 3.3 {
   list [catch {
   db eval { SELECT * FROM t1 WHERE a IN (1, 2) } {
-    db eval { 
+    db eval {
       DELETE FROM t2 WHERE c=1;
     }
   }

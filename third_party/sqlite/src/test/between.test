@@ -65,7 +65,7 @@ proc queryplan {sql} {
       lappend data $tab *
     }
   }
-  return $data   
+  return $data
 }
 
 do_test between-1.1.1 {

@@ -1,7 +1,7 @@
 
-This directory contains an SQLite extension that implements a virtual 
-table type that allows users to create, query and manipulate r-tree[1] 
-data structures inside of SQLite databases. Users create, populate 
+This directory contains an SQLite extension that implements a virtual
+table type that allows users to create, query and manipulate r-tree[1]
+data structures inside of SQLite databases. Users create, populate
 and query r-tree structures using ordinary SQL statements.
 
     1.  SQL Interface
@@ -21,13 +21,13 @@ and query r-tree structures using ordinary SQL statements.
   1.1 Table Creation.
 
     All r-tree virtual tables have an odd number of columns between
-    3 and 11. Unlike regular SQLite tables, r-tree tables are strongly 
-    typed. 
+    3 and 11. Unlike regular SQLite tables, r-tree tables are strongly
+    typed.
 
-    The leftmost column is always the pimary key and contains 64-bit 
+    The leftmost column is always the pimary key and contains 64-bit
     integer values. Each subsequent column contains a 32-bit real
-    value. For each pair of real values, the first (leftmost) must be 
-    less than or equal to the second. R-tree tables may be 
+    value. For each pair of real values, the first (leftmost) must be
+    less than or equal to the second. R-tree tables may be
     constructed using the following syntax:
 
       CREATE VIRTUAL TABLE <name> USING rtree(<column-names>)
@@ -51,7 +51,7 @@ and query r-tree structures using ordinary SQL statements.
       DROP TABLE <name>;
 
     Dropping the main r-tree table automatically drops the automatically
-    created tables. 
+    created tables.
 
   1.2 Data Manipulation (INSERT, UPDATE, DELETE).
 
@@ -72,7 +72,7 @@ and query r-tree structures using ordinary SQL statements.
         stored in the (N*2)th column is greater than that stored in
         the (N*2+1)th column fails with an SQLITE_CONSTRAINT error.
 
-      * When a record is inserted, values are always converted to 
+      * When a record is inserted, values are always converted to
         the required type (64-bit integer or 32-bit real) as if they
         were part of an SQL CAST expression. Non-numeric strings are
         converted to zero.
@@ -83,12 +83,12 @@ and query r-tree structures using ordinary SQL statements.
     by regular tables. However, some query patterns are more efficient
     than others.
 
-    R-trees support fast lookup by primary key value (O(logN), like 
+    R-trees support fast lookup by primary key value (O(logN), like
     regular tables).
 
     Any combination of equality and range (<, <=, >, >=) constraints
     on spatial data columns may be used to optimize other queries. This
-    is the key advantage to using r-tree tables instead of creating 
+    is the key advantage to using r-tree tables instead of creating
     indices on regular tables.
 
   1.4 Introspection and Analysis.
@@ -112,7 +112,7 @@ and query r-tree structures using ordinary SQL statements.
 
 3. REFERENCES
 
-  [1]  Atonin Guttman, "R-trees - A Dynamic Index Structure For Spatial 
+  [1]  Atonin Guttman, "R-trees - A Dynamic Index Structure For Spatial
        Searching", University of California Berkeley, 1984.
 
   [2]  Norbert Beckmann, Hans-Peter Kriegel, Ralf Schneider, Bernhard Seeger,

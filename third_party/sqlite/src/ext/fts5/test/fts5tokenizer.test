@@ -9,7 +9,7 @@
 #
 #***********************************************************************
 #
-# Tests focusing on the built-in fts5 tokenizers. 
+# Tests focusing on the built-in fts5 tokenizers.
 #
 
 source [file join [file dirname [info script]] fts5_common.tcl]
@@ -57,13 +57,13 @@ do_execsql_test 2.0 {
 }
 do_execsql_test 2.1 { SELECT rowid FROM ft1 WHERE ft1 MATCH 'embedding' } 1
 do_execsql_test 2.2 { SELECT rowid FROM ft1 WHERE ft1 MATCH 'database' } 1
-do_execsql_test 2.3 { 
-  SELECT rowid FROM ft1 WHERE ft1 MATCH 'database embedding' 
+do_execsql_test 2.3 {
+  SELECT rowid FROM ft1 WHERE ft1 MATCH 'database embedding'
 } 1
 
-proc tcl_create {args} { 
+proc tcl_create {args} {
   set ::targs $args
-  error "failed" 
+  error "failed"
 }
 sqlite3_fts5_create_tokenizer db tcl tcl_create
 
@@ -121,7 +121,7 @@ do_test 5.1.1 {
     CREATE VIRTUAL TABLE a1 USING fts5(x, tokenize=`ascii separators '\u1234'`);
     INSERT INTO a1 VALUES('abc\u1234def');
   "
-  execsql { SELECT rowid FROM a1 WHERE a1 MATCH 'def' } 
+  execsql { SELECT rowid FROM a1 WHERE a1 MATCH 'def' }
 } {}
 
 do_test 5.1.2 {
@@ -130,7 +130,7 @@ do_test 5.1.2 {
         x, tokenize=`unicode61 separators '\u1234'`);
     INSERT INTO a2 VALUES('abc\u1234def');
   "
-  execsql { SELECT rowid FROM a2 WHERE a2 MATCH 'def' } 
+  execsql { SELECT rowid FROM a2 WHERE a2 MATCH 'def' }
 } {1}
 
 do_catchsql_test 5.2 {
@@ -141,7 +141,7 @@ do_catchsql_test 5.3 {
 } {1 {error in tokenizer constructor}}
 
 #-------------------------------------------------------------------------
-# Test that the ASCII and unicode61 tokenizers both handle SQLITE_DONE 
+# Test that the ASCII and unicode61 tokenizers both handle SQLITE_DONE
 # correctly.
 #
 
@@ -236,7 +236,7 @@ do_execsql_test 8.2 [subst {
   CREATE VIRTUAL TABLE e6 USING fts5(x,
     tokenize="unicode61 separators '\u0E01\u0E02\u0E03\u0E04\u0E05\u0E06\u0E07'"
   );
-  INSERT INTO e6 VALUES('the\u0E01quick\u0E01brown\u0E01fox\u0E01' 
+  INSERT INTO e6 VALUES('the\u0E01quick\u0E01brown\u0E01fox\u0E01'
                      || 'jumped\u0E01over\u0E01the\u0E01lazy\u0E01dog'
   );
   INSERT INTO e6 VALUES('\u0E08\u0E07\u0E09');

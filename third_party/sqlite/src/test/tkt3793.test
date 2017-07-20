@@ -11,7 +11,7 @@
 # This file implements regression tests for SQLite library.
 #
 # This file implements tests to verify that ticket #3793 has been
-# fixed.  
+# fixed.
 #
 # $Id: tkt3793.test,v 1.2 2009/06/01 16:42:18 shane Exp $
 
@@ -26,9 +26,9 @@ ifcapable !shared_cache||!attach {
 set ::enable_shared_cache [sqlite3_enable_shared_cache 1]
 
 do_test tkt3793-1.1 {
-  # This is taken from shared.test.  The Windows VFS expands 
+  # This is taken from shared.test.  The Windows VFS expands
   # ./test.db (and test.db) to be the same thing so the path
-  # matches and they share a cache.  By changing the case 
+  # matches and they share a cache.  By changing the case
   # for Windows platform, we get around this and get a separate
   # connection.
   if {$::tcl_platform(platform)=="unix"} {
@@ -74,7 +74,7 @@ do_test tkt3793-1.2 {
 # Set the size of the cache shared by [db1] and [db2] to 10. Then update
 # more than 10 pages of table t1. At this point the shared-cache will
 # hold a RESERVED lock on the database file. Even though there are now
-# more than 10 dirty pages in memory, it cannot upgrade to an EXCLUSIVE 
+# more than 10 dirty pages in memory, it cannot upgrade to an EXCLUSIVE
 # lock because of the read-lock held by [db].
 #
 do_test tkt3793-1.3 {
@@ -87,7 +87,7 @@ do_test tkt3793-1.3 {
 
 set x 0
 
-# Run one SELECT query on the shared-cache using [db1], then from within 
+# Run one SELECT query on the shared-cache using [db1], then from within
 # the callback run another via [db2]. Because of the large number of dirty
 # pages within the cache, each time a new page is read from the database
 # SQLite will attempt to upgrade to an EXCLUSIVE lock, and hence invoke
@@ -95,7 +95,7 @@ set x 0
 # function is invoked (the busy-handler associated with the database
 # connection that called sqlite3_step()). When bug #3793 existed, sometimes
 # the [db2] busy-handler was invoked from within the call to sqlite3_step()
-# associated with [db1]. 
+# associated with [db1].
 #
 # Note: Before the bug was fixed, if [db2] was opened with the "-fullmutex 1"
 # option, then this test case would cause an assert() to fail.
@@ -105,13 +105,13 @@ ifcapable threadsafe {
   db1 eval {SELECT * FROM t2 ORDER BY a LIMIT 20} {
     do_test tkt3793-2.[incr x] { set ::busyconnection } db1
     set ::busyconnection db2
-  
+
     db2 eval { SELECT count(*) FROM t2 }
     do_test tkt3793-2.[incr x] { set ::busyconnection } db2
     set ::busyconnection db1
   }
 }
-  
+
 do_test tkt3793-3 {
   db1 close
   db2 close

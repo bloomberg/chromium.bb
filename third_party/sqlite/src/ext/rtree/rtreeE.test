@@ -10,11 +10,11 @@
 #***********************************************************************
 # This file contains tests for the r-tree module. Specifically, it tests
 # that new-style custom r-tree queries (geometry callbacks) work.
-# 
+#
 
 if {![info exists testdir]} {
   set testdir [file join [file dirname [info script]] .. .. test]
-} 
+}
 source $testdir/tester.tcl
 ifcapable !rtree { finish_test ; return }
 ifcapable rtree_int_only { finish_test; return }
@@ -28,7 +28,7 @@ register_circle_geom db
 do_execsql_test rtreeE-1.1 {
   PRAGMA page_size=512;
   CREATE VIRTUAL TABLE rt1 USING rtree(id,x0,x1,y0,y1);
-  
+
   /* A tight pattern of small boxes near 0,0 */
   WITH RECURSIVE
     x(x) AS (VALUES(0) UNION ALL SELECT x+1 FROM x WHERE x<4),

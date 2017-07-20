@@ -57,26 +57,26 @@ foreach {tn xtra} {
     CREATE TABLE t1(x, y);
     CREATE TABLE t2(x, y);
     CREATE INDEX i1y ON t1(y);
-  
+
     WITH cnt(i) AS (
       SELECT 1 UNION ALL SELECT i+1 FROM cnt WHERE i<20
     )
     INSERT INTO t1 SELECT i, randomblob(800) FROM cnt;
   } {}
-  
+
   do_test 1.$tn.1 {
     set nPg [db one { PRAGMA page_count } ]
     expr $nPg>40 && $nPg<50
   } {1}
-  
+
   do_test 1.$tn.2 {
     db close
     sqlite3 db test.db
-  
+
     execsql {PRAGMA journal_mode = wal}
     execsql {PRAGMA cache_size = 5}
     execsql $xtra
-  
+
     db transaction {
       for {set i 0} {$i < 5} {incr i} {
         foreach x [db eval {SELECT x FROM t1}] {
@@ -84,20 +84,20 @@ foreach {tn xtra} {
         }
       }
     }
-  
+
     set nPg [wal_frame_count test.db-wal 1024]
     expr $nPg>40 && $nPg<60
   } {1}
-  
+
   do_execsql_test 1.$tn.3 { PRAGMA integrity_check } ok
-  
+
   do_test 1.$tn.4 {
     forcedelete test.db2 test.db2-wal
     forcecopy test.db test.db2
     sqlite3 db2 test.db2
     execsql { SELECT sum(length(y)) FROM t1 } db2
   } [expr 20*800]
-  
+
   do_test 1.$tn.5 {
     db2 close
     forcecopy test.db test.db2
@@ -105,7 +105,7 @@ foreach {tn xtra} {
     sqlite3 db2 test.db2
     execsql { SELECT sum(length(y)) FROM t1 } db2
   } [expr 20*799]
-  
+
   do_test 1.$tn.6 {
     execsql { PRAGMA integrity_check } db2
   } ok

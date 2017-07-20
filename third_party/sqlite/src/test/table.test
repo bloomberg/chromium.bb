@@ -319,7 +319,7 @@ do_test table-5.4 {
 #} {testdb/spaces+in+this+name+.tbl}
 
 # Try using keywords as table names or column names.
-# 
+#
 do_test table-7.1 {
   set v [catch {execsql {
     CREATE TABLE weird(
@@ -590,7 +590,7 @@ do_test table-11.1 {
            typeof(e), typeof(f), typeof(g), typeof(h)
     FROM t7 LIMIT 1;
   }
-} {integer null null null null null null null} 
+} {integer null null null null null null null}
 do_test table-11.2 {
   execsql {
     SELECT typeof(a+b), typeof(a||b), typeof(c+d), typeof(c||d)
@@ -657,8 +657,8 @@ set sqlite_current_time 0
 # Test cases table-14.*
 #
 # Test that a table cannot be created or dropped while other virtual
-# machines are active. This is required because otherwise when in 
-# auto-vacuum mode the btree-layer may need to move the root-pages of 
+# machines are active. This is required because otherwise when in
+# auto-vacuum mode the btree-layer may need to move the root-pages of
 # a table for which there is an open cursor.
 #
 # 2007-05-02:  A open btree cursor no longer blocks CREATE TABLE.
@@ -690,12 +690,12 @@ do_test table-14.2 {
         db eval {DROP TABLE t9;}
       }
     } msg
-  ] 
+  ]
   set result [list $rc $msg]
 } {1 {database table is locked}}
 
 ifcapable attach {
-  # Now attach a database and ensure that a table can be created in the 
+  # Now attach a database and ensure that a table can be created in the
   # attached database whilst in a callback from a query on the main database.
   do_test table-14.3 {
     forcedelete test2.db
@@ -707,8 +707,8 @@ ifcapable attach {
       db eval {CREATE TABLE aux.t1(a, b, c)}
     }
   } {}
-  
-  # On the other hand, it should be impossible to drop a table when any VMs 
+
+  # On the other hand, it should be impossible to drop a table when any VMs
   # are active. This is because VerifyCookie instructions may have already
   # been executed, and btree root-pages may not move after this (which a
   # delete table might do).
@@ -719,7 +719,7 @@ ifcapable attach {
           db eval {DROP TABLE aux.t1;}
         }
       } msg
-    ] 
+    ]
     set result [list $rc $msg]
   } {1 {database table is locked}}
 }
@@ -753,7 +753,7 @@ do_test table-15.2 {
 # The problem appears to be the use of an aggregate function as part of
 # the default value for a column. This problem has been in the code since
 # at least 2006-01-01 and probably before that. This problem was detected
-# and reported on the sqlite-users@sqlite.org mailing list by Zsbán Ambrus. 
+# and reported on the sqlite-users@sqlite.org mailing list by Zsbán Ambrus.
 #
 do_execsql_test table-16.1 {
   CREATE TABLE t16(x DEFAULT(max(1)));

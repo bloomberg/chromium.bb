@@ -212,7 +212,7 @@ do_test fts3b-4.9 {
   execsql { SELECT docid FROM t4 WHERE t4 MATCH 'testing' }
 } {12}
 do_test fts3b-4.10 {
-  execsql { 
+  execsql {
     UPDATE t4 SET docid = 14 WHERE docid = 12;
     SELECT docid FROM t4 WHERE t4 MATCH 'testing';
   }

@@ -8,7 +8,7 @@
 #    May you share freely, never taking more than you give.
 #
 #***********************************************************************
-# 
+#
 # Test cases for query planning decisions and the likely(), unlikely(), and
 # likelihood() functions.
 
@@ -181,7 +181,7 @@ do_execsql_test whereG-4.0 {
 } {right}
 
 #-------------------------------------------------------------------------
-# Test that likelihood() specifications on indexed terms are taken into 
+# Test that likelihood() specifications on indexed terms are taken into
 # account by various forms of loops.
 #
 #   5.1.*: open ended range scans

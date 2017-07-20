@@ -9,7 +9,7 @@
 #
 #***********************************************************************
 #
-# This file implements tests to verify that the "testable statements" in 
+# This file implements tests to verify that the "testable statements" in
 # the lang_select.html document are correct.
 #
 
@@ -58,9 +58,9 @@ set t1_cross_t1 [list                  \
 
 # This proc is a specialized version of [do_execsql_test].
 #
-# The second argument to this proc must be a SELECT statement that 
-# features a cross join of some time. Instead of the usual ",", 
-# "CROSS JOIN" or "INNER JOIN" join-op, the string %JOIN% must be 
+# The second argument to this proc must be a SELECT statement that
+# features a cross join of some time. Instead of the usual ",",
+# "CROSS JOIN" or "INNER JOIN" join-op, the string %JOIN% must be
 # substituted.
 #
 # This test runs the SELECT three times - once with:
@@ -121,7 +121,7 @@ do_select_tests e_select-0.2 {
   0000.1  "SELECT 1, 2, 3 " {1 2 3}
   1000.1  "SELECT DISTINCT 1, 2, 3 " {1 2 3}
   2000.1  "SELECT ALL 1, 2, 3 " {1 2 3}
-  
+
   0100.1  "SELECT a, b, a||b FROM t1 " {
     a one aone b two btwo c three cthree
   }
@@ -170,21 +170,21 @@ do_select_tests e_select-0.2 {
   0102.2  "SELECT count(*), max(a) FROM t1 GROUP BY b HAVING count(*)=2" { }
 
   1101.1  "SELECT DISTINCT count(*), max(a) FROM t1 GROUP BY b" {1 a 1 c 1 b}
-  1102.1  "SELECT DISTINCT count(*), max(a) FROM t1 
+  1102.1  "SELECT DISTINCT count(*), max(a) FROM t1
            GROUP BY b HAVING count(*)=1" {
     1 a 1 c 1 b
   }
-  1102.2  "SELECT DISTINCT count(*), max(a) FROM t1 
-           GROUP BY b HAVING count(*)=2" { 
+  1102.2  "SELECT DISTINCT count(*), max(a) FROM t1
+           GROUP BY b HAVING count(*)=2" {
   }
 
   2101.1  "SELECT ALL count(*), max(a) FROM t1 GROUP BY b" {1 a 1 c 1 b}
-  2102.1  "SELECT ALL count(*), max(a) FROM t1 
+  2102.1  "SELECT ALL count(*), max(a) FROM t1
            GROUP BY b HAVING count(*)=1" {
     1 a 1 c 1 b
   }
-  2102.2  "SELECT ALL count(*), max(a) FROM t1 
-           GROUP BY b HAVING count(*)=2" { 
+  2102.2  "SELECT ALL count(*), max(a) FROM t1
+           GROUP BY b HAVING count(*)=2" {
   }
 
   0011.1  "SELECT 1, 2, 3 WHERE 1 GROUP BY 2" {1 2 3}
@@ -192,7 +192,7 @@ do_select_tests e_select-0.2 {
   0012.2  "SELECT 1, 2, 3 WHERE 0 GROUP BY 2 HAVING count(*)>1" {}
 
   1011.1  "SELECT DISTINCT 1, 2, 3 WHERE 0 GROUP BY 2" {}
-  1012.1  "SELECT DISTINCT 1, 2, 3 WHERE 1 GROUP BY 2 HAVING count(*)=1" 
+  1012.1  "SELECT DISTINCT 1, 2, 3 WHERE 1 GROUP BY 2 HAVING count(*)=1"
           {1 2 3}
   1012.2  "SELECT DISTINCT 1, 2, 3 WHERE NULL GROUP BY 2 HAVING count(*)>1" {}
 
@@ -201,27 +201,27 @@ do_select_tests e_select-0.2 {
   2012.2  "SELECT ALL 1, 2, 3 WHERE 'abc' GROUP BY 2 HAVING count(*)>1" {}
 
   0111.1  "SELECT count(*), max(a) FROM t1 WHERE a='a' GROUP BY b" {1 a}
-  0112.1  "SELECT count(*), max(a) FROM t1 
+  0112.1  "SELECT count(*), max(a) FROM t1
            WHERE a='c' GROUP BY b HAVING count(*)=1" {1 c}
-  0112.2  "SELECT count(*), max(a) FROM t1 
+  0112.2  "SELECT count(*), max(a) FROM t1
            WHERE 0 GROUP BY b HAVING count(*)=2" { }
-  1111.1  "SELECT DISTINCT count(*), max(a) FROM t1 WHERE a<'c' GROUP BY b" 
+  1111.1  "SELECT DISTINCT count(*), max(a) FROM t1 WHERE a<'c' GROUP BY b"
           {1 a 1 b}
   1112.1  "SELECT DISTINCT count(*), max(a) FROM t1 WHERE a>'a'
            GROUP BY b HAVING count(*)=1" {
     1 c 1 b
   }
   1112.2  "SELECT DISTINCT count(*), max(a) FROM t1 WHERE 0
-           GROUP BY b HAVING count(*)=2" { 
+           GROUP BY b HAVING count(*)=2" {
   }
 
-  2111.1  "SELECT ALL count(*), max(a) FROM t1 WHERE b>'one' GROUP BY b" 
+  2111.1  "SELECT ALL count(*), max(a) FROM t1 WHERE b>'one' GROUP BY b"
           {1 c 1 b}
   2112.1  "SELECT ALL count(*), max(a) FROM t1 WHERE a!='b'
            GROUP BY b HAVING count(*)=1" {
     1 a 1 c
   }
-  2112.2  "SELECT ALL count(*), max(a) FROM t1 
+  2112.2  "SELECT ALL count(*), max(a) FROM t1
            WHERE 0 GROUP BY b HAVING count(*)=2" { }
 }
 
@@ -247,7 +247,7 @@ do_select_tests e_select-0.4 {
 
   4  "SELECT t1.rowid FROM t1" {1 2 3}
   5  "SELECT t1.rowid FROM t1 JOIN t2" {1 1 1 2 2 2 3 3 3}
-  6  "SELECT t1.rowid FROM t1 JOIN t2 JOIN t3" 
+  6  "SELECT t1.rowid FROM t1 JOIN t2 JOIN t3"
      {1 1 1 1 1 1 2 2 2 2 2 2 3 3 3 3 3 3}
 
   7  "SELECT t1.rowid FROM t1 NATURAL JOIN t3" {1 2}
@@ -296,23 +296,23 @@ do_select_tests e_select-0.7 {
   8  "SELECT * FROM t1 ORDER BY b LIMIT 10 OFFSET 5" {}
   9  "SELECT * FROM t1 ORDER BY a,b LIMIT 10, 5" {}
 
-  10  "SELECT * FROM t1 UNION SELECT b, a FROM t1" 
+  10  "SELECT * FROM t1 UNION SELECT b, a FROM t1"
      {a one b two c three one a three c two b}
-  11  "SELECT * FROM t1 UNION SELECT b, a FROM t1 ORDER BY b" 
+  11  "SELECT * FROM t1 UNION SELECT b, a FROM t1 ORDER BY b"
      {one a two b three c a one c three b two}
-  12  "SELECT * FROM t1 UNION SELECT b, a FROM t1 ORDER BY b, a" 
+  12  "SELECT * FROM t1 UNION SELECT b, a FROM t1 ORDER BY b, a"
      {one a two b three c a one c three b two}
-  13  "SELECT * FROM t1 UNION SELECT b, a FROM t1 LIMIT 10" 
+  13  "SELECT * FROM t1 UNION SELECT b, a FROM t1 LIMIT 10"
      {a one b two c three one a three c two b}
-  14  "SELECT * FROM t1 UNION SELECT b, a FROM t1 LIMIT 10 OFFSET 5" 
+  14  "SELECT * FROM t1 UNION SELECT b, a FROM t1 LIMIT 10 OFFSET 5"
      {two b}
-  15  "SELECT * FROM t1 UNION SELECT b, a FROM t1 LIMIT 10, 5" 
+  15  "SELECT * FROM t1 UNION SELECT b, a FROM t1 LIMIT 10, 5"
      {}
-  16  "SELECT * FROM t1 UNION SELECT b, a FROM t1 ORDER BY a LIMIT 10" 
+  16  "SELECT * FROM t1 UNION SELECT b, a FROM t1 ORDER BY a LIMIT 10"
      {a one b two c three one a three c two b}
-  17  "SELECT * FROM t1 UNION SELECT b, a FROM t1 ORDER BY b LIMIT 10 OFFSET 5" 
+  17  "SELECT * FROM t1 UNION SELECT b, a FROM t1 ORDER BY b LIMIT 10 OFFSET 5"
      {b two}
-  18  "SELECT * FROM t1 UNION SELECT b, a FROM t1 ORDER BY a,b LIMIT 10, 5" 
+  18  "SELECT * FROM t1 UNION SELECT b, a FROM t1 ORDER BY a,b LIMIT 10, 5"
      {}
 }
 
@@ -348,9 +348,9 @@ do_execsql_test e_select-1.2.0 {
 } {}
 do_select_tests e_select-1.2 {
   1  "SELECT quote(x), quote(y) FROM xx" {
-     'IiJlsIPepMuAhU' X'10B00B897A15BAA02E3F98DCE8F2' 
-     NULL             -16.87                          
-     -17.89           'linguistically'                
+     'IiJlsIPepMuAhU' X'10B00B897A15BAA02E3F98DCE8F2'
+     NULL             -16.87
+     -17.89           'linguistically'
   }
 
   2  "SELECT count(*), count(x), count(y) FROM xx" {3 2 3}
@@ -362,18 +362,18 @@ do_select_tests e_select-1.2 {
 # joined into a single dataset for the simple SELECT statement to
 # operate on.
 #
-#   There are more detailed tests for subsequent requirements that add 
+#   There are more detailed tests for subsequent requirements that add
 #   more detail to this idea. We just add a single test that shows that
 #   data is coming from each of the three tables following the FROM clause
 #   here to show that the statement, vague as it is, is not incorrect.
 #
 do_select_tests e_select-1.3 {
   1 "SELECT * FROM t1, t2, t3" {
-      a one a I a 1 a one a I b 2 a one b II a 1 
-      a one b II b 2 a one c III a 1 a one c III b 2 
-      b two a I a 1 b two a I b 2 b two b II a 1 
-      b two b II b 2 b two c III a 1 b two c III b 2 
-      c three a I a 1 c three a I b 2 c three b II a 1 
+      a one a I a 1 a one a I b 2 a one b II a 1
+      a one b II b 2 a one c III a 1 a one c III b 2
+      b two a I a 1 b two a I b 2 b two b II a 1
+      b two b II b 2 b two c III a 1 b two c III b 2
+      c three a I a 1 c three a I b 2 c three b II a 1
       c three b II b 2 c three c III a 1 c three c III b 2
   }
 }
@@ -390,7 +390,7 @@ do_select_tests e_select-1.3 {
 #
 #    The tests are built on this assertion. Really, they test that the output
 #    of a CROSS JOIN, JOIN, INNER JOIN or "," join matches the expected result
-#    of calculating the cartesian product of the left and right-hand datasets. 
+#    of calculating the cartesian product of the left and right-hand datasets.
 #
 # EVIDENCE-OF: R-46256-57243 There is no difference between the "INNER
 # JOIN", "JOIN" and "," join operators.
@@ -470,34 +470,34 @@ do_join_test e_select-1.4.2.1 {
 # of Nleft&times;Nright rows, each containing Mleft+Mright columns.
 #
 # x1, x2    (Nlhs=3, Nrhs=2)   (Mlhs=2, Mrhs=3)
-do_join_test e_select-1.4.3.1 { 
-  SELECT count(*) FROM x1 %JOIN% x2 
+do_join_test e_select-1.4.3.1 {
+  SELECT count(*) FROM x1 %JOIN% x2
 } [expr 3*2]
-do_test e_select-1.4.3.2 { 
+do_test e_select-1.4.3.2 {
   expr {[llength [execsql {SELECT * FROM x1, x2}]] / 6}
 } [expr 2+3]
 
 # x2, x3    (Nlhs=2, Nrhs=5)   (Mlhs=3, Mrhs=4)
-do_join_test e_select-1.4.3.3 { 
-  SELECT count(*) FROM x2 %JOIN% x3 
+do_join_test e_select-1.4.3.3 {
+  SELECT count(*) FROM x2 %JOIN% x3
 } [expr 2*5]
-do_test e_select-1.4.3.4 { 
+do_test e_select-1.4.3.4 {
   expr {[llength [execsql {SELECT * FROM x2 JOIN x3}]] / 10}
 } [expr 3+4]
 
 # x3, x1    (Nlhs=5, Nrhs=3)   (Mlhs=4, Mrhs=2)
-do_join_test e_select-1.4.3.5 { 
-  SELECT count(*) FROM x3 %JOIN% x1 
+do_join_test e_select-1.4.3.5 {
+  SELECT count(*) FROM x3 %JOIN% x1
 } [expr 5*3]
-do_test e_select-1.4.3.6 { 
+do_test e_select-1.4.3.6 {
   expr {[llength [execsql {SELECT * FROM x3 CROSS JOIN x1}]] / 15}
 } [expr 4+2]
 
 # x3, x3    (Nlhs=5, Nrhs=5)   (Mlhs=4, Mrhs=4)
-do_join_test e_select-1.4.3.7 { 
-  SELECT count(*) FROM x3 %JOIN% x3 
+do_join_test e_select-1.4.3.7 {
+  SELECT count(*) FROM x3 %JOIN% x3
 } [expr 5*5]
-do_test e_select-1.4.3.8 { 
+do_test e_select-1.4.3.8 {
   expr {[llength [execsql {SELECT * FROM x3 INNER JOIN x3 AS x4}]] / 25}
 } [expr 4+4]
 
@@ -532,7 +532,7 @@ foreach {tn select res} [list                                              \
       {one I two II three III}                                             \
    10 { SELECT t1.b, t2.b FROM t1 %JOIN% t2 ON (t1.a = 'a') }              \
       {one I one II one III}                                               \
-   11 { SELECT t1.b, t2.b 
+   11 { SELECT t1.b, t2.b
         FROM t1 %JOIN% t2 ON (CASE WHEN t1.a = 'a' THEN NULL ELSE 1 END) } \
       {two I two II two III three I three II three III}                    \
 ] {
@@ -549,7 +549,7 @@ do_select_tests e_select-1.4 -error {
   1 { SELECT * FROM t1, t3 USING (b) }   "b"
   2 { SELECT * FROM t3, t1 USING (c) }   "c"
   3 { SELECT * FROM t3, (SELECT a AS b, b AS c FROM t1) USING (a) }   "a"
-} 
+}
 
 # EVIDENCE-OF: R-22776-52830 For each pair of named columns, the
 # expression "lhs.X = rhs.X" is evaluated for each row of the cartesian
@@ -559,7 +559,7 @@ do_select_tests e_select-1.4 -error {
 do_select_tests e_select-1.5 {
   1 { SELECT * FROM t1, t3 USING (a)   }  {a one 1 b two 2}
   2 { SELECT * FROM t3, t4 USING (a,c) }  {b 2}
-} 
+}
 
 # EVIDENCE-OF: R-54046-48600 When comparing values as a result of a
 # USING clause, the normal rules for handling affinities, collation
@@ -583,7 +583,7 @@ do_execsql_test e_select-1.6.0 {
 foreach {tn select res} {
   1 { SELECT * FROM t5 %JOIN% t6 USING (a) } {AA cc cc BB dd DD}
   2 { SELECT * FROM t6 %JOIN% t5 USING (a) } {}
-  3 { SELECT * FROM (SELECT a COLLATE nocase, b FROM t6) %JOIN% t5 USING (a) } 
+  3 { SELECT * FROM (SELECT a COLLATE nocase, b FROM t6) %JOIN% t5 USING (a) }
     {aa cc cc bb DD dd}
   4 { SELECT * FROM t5 %JOIN% t6 USING (a,b) } {AA cc}
   5 { SELECT * FROM t6 %JOIN% t5 USING (a,b) } {}
@@ -599,24 +599,24 @@ foreach {tn select res} {
 # clause and its equivalent ON constraint.
 #
 foreach {tn select res} {
-  1a { SELECT * FROM t1 %JOIN% t2 USING (a)      } 
+  1a { SELECT * FROM t1 %JOIN% t2 USING (a)      }
      {a one I b two II c three III}
   1b { SELECT * FROM t1 %JOIN% t2 ON (t1.a=t2.a) }
      {a one a I b two b II c three c III}
 
-  2a { SELECT * FROM t3 %JOIN% t4 USING (a)      }  
+  2a { SELECT * FROM t3 %JOIN% t4 USING (a)      }
      {a 1 {} b 2 2}
-  2b { SELECT * FROM t3 %JOIN% t4 ON (t3.a=t4.a) } 
+  2b { SELECT * FROM t3 %JOIN% t4 ON (t3.a=t4.a) }
      {a 1 a {} b 2 b 2}
 
   3a { SELECT * FROM t3 %JOIN% t4 USING (a,c)                  } {b 2}
   3b { SELECT * FROM t3 %JOIN% t4 ON (t3.a=t4.a AND t3.c=t4.c) } {b 2 b 2}
 
-  4a { SELECT * FROM (SELECT a COLLATE nocase, b FROM t6) AS x 
-       %JOIN% t5 USING (a) } 
+  4a { SELECT * FROM (SELECT a COLLATE nocase, b FROM t6) AS x
+       %JOIN% t5 USING (a) }
      {aa cc cc bb DD dd}
   4b { SELECT * FROM (SELECT a COLLATE nocase, b FROM t6) AS x
-       %JOIN% t5 ON (x.a=t5.a) } 
+       %JOIN% t5 ON (x.a=t5.a) }
      {aa cc AA cc bb DD BB dd}
 } {
   do_join_test e_select-1.7.$tn $select $res
@@ -652,7 +652,7 @@ do_select_tests e_select-1.8 {
 #
 do_select_tests e_select-1.9 {
   1a "SELECT * FROM t7 JOIN t8 ON (t7.a=t8.a)" {x ex 24 x abc 24}
-  1b "SELECT * FROM t7 LEFT JOIN t8 ON (t7.a=t8.a)" 
+  1b "SELECT * FROM t7 LEFT JOIN t8 ON (t7.a=t8.a)"
      {x ex 24 x abc 24 y why 25 {} {} {}}
   2a "SELECT * FROM t7 JOIN t8 USING (a)" {x ex 24 abc 24}
   2b "SELECT * FROM t7 LEFT JOIN t8 USING (a)" {x ex 24 abc 24 y why 25 {} {}}
@@ -682,7 +682,7 @@ do_select_tests e_select-1-10 {
 
   6a "SELECT * FROM t3 LEFT JOIN t4 USING (a,c)" {a 1 b 2}
   6b "SELECT * FROM t3 NATURAL LEFT JOIN t4"     {a 1 b 2}
-} 
+}
 
 # EVIDENCE-OF: R-49566-01570 If the left and right-hand input datasets
 # feature no common column names, then the NATURAL keyword has no effect
@@ -712,7 +712,7 @@ foreach {tn sql} {
 }
 
 #-------------------------------------------------------------------------
-# The next block of tests - e_select-3.* - concentrate on verifying 
+# The next block of tests - e_select-3.* - concentrate on verifying
 # statements made regarding WHERE clause processing.
 #
 drop_all_tables
@@ -805,10 +805,10 @@ do_select_tests e_select-4.1 {
   7  "SELECT max(a), * FROM z1"             {63 63 born -26}
   8  "SELECT *, min(a) FROM z1"             {-5 {} 75 -5}
 
-  9  "SELECT *,* FROM z1,z2 LIMIT 1" {        
+  9  "SELECT *,* FROM z1,z2 LIMIT 1" {
      51.65 -59.58 belfries {} 21 51.65 -59.58 belfries {} 21
   }
-  10 "SELECT z1.*,z1.* FROM z2,z1 LIMIT 1" {        
+  10 "SELECT z1.*,z1.* FROM z2,z1 LIMIT 1" {
      51.65 -59.58 belfries 51.65 -59.58 belfries
   }
 }
@@ -880,9 +880,9 @@ do_select_tests e_select-4.4 {
 
   2 "SELECT a IS NULL, b+1, * FROM z1" {
         0 -58.58   51.65 -59.58 belfries
-        0 {}       -5 {} 75            
+        0 {}       -5 {} 75
         0 -22.18   -2.2 -23.18 suiters
-        1 68       {} 67 quartets    
+        1 68       {} 67 quartets
         0 -31.3    -1.04 -32.3 aspen
         0 1        63 born -26
   }
@@ -939,10 +939,10 @@ do_execsql_test e_select-4.6.0 {
   INSERT INTO a2 VALUES(10, 4);
 } {}
 do_select_tests e_select-4.6 {
-  1 "SELECT one, two, count(*) FROM a1"                        {4 10 4} 
-  2 "SELECT one, two, count(*) FROM a1 WHERE one<3"            {2 3 2} 
-  3 "SELECT one, two, count(*) FROM a1 WHERE one>3"            {4 10 1} 
-  4 "SELECT *, count(*) FROM a1 JOIN a2"                       {4 10 10 4 16} 
+  1 "SELECT one, two, count(*) FROM a1"                        {4 10 4}
+  2 "SELECT one, two, count(*) FROM a1 WHERE one<3"            {2 3 2}
+  3 "SELECT one, two, count(*) FROM a1 WHERE one>3"            {4 10 1}
+  4 "SELECT *, count(*) FROM a1 JOIN a2"                       {4 10 10 4 16}
   5 "SELECT *, sum(three) FROM a1 NATURAL JOIN a2"             {3 6 2 3}
   6 "SELECT *, sum(three) FROM a1 NATURAL JOIN a2"             {3 6 2 3}
   7 "SELECT group_concat(three, ''), a1.* FROM a1 NATURAL JOIN a2" {12 3 6}
@@ -958,7 +958,7 @@ do_select_tests e_select-4.7 {
   3  "SELECT max(one) IS NULL, one IS NULL, two IS NULL FROM a1 WHERE two=7" {
     1 1 1
   }
-} 
+}
 
 # EVIDENCE-OF: R-64138-28774 An aggregate query without a GROUP BY
 # clause always returns exactly one row of data, even if there are zero
@@ -977,7 +977,7 @@ foreach {tn select} {
   while {"SQLITE_ROW" == [sqlite3_step $::stmt]} { incr nRow }
   set rc [sqlite3_finalize $::stmt]
 
-  # Test that $nRow==1 and that statement execution was successful 
+  # Test that $nRow==1 and that statement execution was successful
   # (rc==SQLITE_OK).
   do_test e_select-4.$tn [list list $rc $nRow] {SQLITE_OK 1}
 }
@@ -1040,7 +1040,7 @@ do_select_tests e_select-4.9 {
 do_select_tests e_select-4.10 {
   1  "SELECT group_concat(y) FROM b2 GROUP BY x" {/#,#   3   #,#/}
   2  "SELECT count(*) FROM b2 GROUP BY CASE WHEN y<4 THEN NULL ELSE 0 END" {4 1}
-} 
+}
 
 # EVIDENCE-OF: R-10470-30318 The usual rules for selecting a collation
 # sequence with which to compare text values apply when evaluating
@@ -1144,7 +1144,7 @@ do_select_tests e_select-4.15 {
   4  "SELECT 1+sum(j), max(j)+1 FROM c2 GROUP BY (j%2)" {81 37 41 22}
   5  "SELECT count(*), round(avg(i),2) FROM c1, c2 ON (i=down) GROUP BY j%2"
         {3 4.33 1 2.0}
-} 
+}
 
 # EVIDENCE-OF: R-62913-19830 Otherwise, it is evaluated against a single
 # arbitrarily chosen row from within the group.
@@ -1160,7 +1160,7 @@ do_select_tests e_select-4.15 {
   4  "SELECT i, j FROM c2 GROUP BY i%2 HAVING j>30" {9 36}
   5  "SELECT count(*), i, k FROM c2 NATURAL JOIN c3 GROUP BY substr(k, 1, 1)"
         {2 5 boron   2 2 helium   1 3 lithium}
-} 
+}
 
 # EVIDENCE-OF: R-19334-12811 Each group of input dataset rows
 # contributes a single row to the set of result rows.
@@ -1175,7 +1175,7 @@ do_select_tests e_select.4.16 -count {
   1  "SELECT i, j FROM c2 GROUP BY i%2"          2
   2  "SELECT i, j FROM c2 GROUP BY i"            9
   3  "SELECT i, j FROM c2 GROUP BY i HAVING i<5" 4
-} 
+}
 
 #-------------------------------------------------------------------------
 # The following tests attempt to verify statements made regarding the ALL
@@ -1243,7 +1243,7 @@ do_select_tests e_select-5 {
 
   4.1 "SELECT DISTINCT x FROM h2" {One Two Three Four}
   4.2 "SELECT DISTINCT x FROM h1, h2 ON (x=b)" {One Four}
-} 
+}
 
 # EVIDENCE-OF: R-02054-15343 For the purposes of detecting duplicate
 # rows, two NULL values are considered to be equal.
@@ -1308,63 +1308,63 @@ do_select_tests e_select-7.1 -error {
   18  "SELECT a, b FROM j1    EXCEPT SELECT g FROM j3"       {EXCEPT}
   19  "SELECT a, b FROM j1    EXCEPT SELECT * FROM j3,j2"    {EXCEPT}
   20  "SELECT *    FROM j3,j2 EXCEPT SELECT a, b FROM j1"    {EXCEPT}
-} 
+}
 
 # EVIDENCE-OF: R-01450-11152 As the components of a compound SELECT must
 # be simple SELECT statements, they may not contain ORDER BY or LIMIT
 # clauses.
-# 
+#
 foreach {tn select op1 op2} {
-  1   "SELECT * FROM j1 ORDER BY a UNION ALL SELECT * FROM j2,j3" 
+  1   "SELECT * FROM j1 ORDER BY a UNION ALL SELECT * FROM j2,j3"
       {ORDER BY} {UNION ALL}
   2   "SELECT count(*) FROM j1 ORDER BY 1 UNION ALL SELECT max(e) FROM j2"
       {ORDER BY} {UNION ALL}
   3   "SELECT count(*), * FROM j1 ORDER BY 1,2,3 UNION ALL SELECT *,* FROM j2"
       {ORDER BY} {UNION ALL}
-  4   "SELECT * FROM j1 LIMIT 10 UNION ALL SELECT * FROM j2,j3" 
+  4   "SELECT * FROM j1 LIMIT 10 UNION ALL SELECT * FROM j2,j3"
       LIMIT {UNION ALL}
-  5   "SELECT * FROM j1 LIMIT 10 OFFSET 5 UNION ALL SELECT * FROM j2,j3" 
+  5   "SELECT * FROM j1 LIMIT 10 OFFSET 5 UNION ALL SELECT * FROM j2,j3"
       LIMIT {UNION ALL}
-  6   "SELECT a FROM j1 LIMIT (SELECT e FROM j2) UNION ALL SELECT g FROM j2,j3" 
+  6   "SELECT a FROM j1 LIMIT (SELECT e FROM j2) UNION ALL SELECT g FROM j2,j3"
       LIMIT {UNION ALL}
 
-  7   "SELECT * FROM j1 ORDER BY a UNION SELECT * FROM j2,j3" 
+  7   "SELECT * FROM j1 ORDER BY a UNION SELECT * FROM j2,j3"
       {ORDER BY} {UNION}
   8   "SELECT count(*) FROM j1 ORDER BY 1 UNION SELECT max(e) FROM j2"
       {ORDER BY} {UNION}
   9   "SELECT count(*), * FROM j1 ORDER BY 1,2,3 UNION SELECT *,* FROM j2"
       {ORDER BY} {UNION}
-  10  "SELECT * FROM j1 LIMIT 10 UNION SELECT * FROM j2,j3" 
+  10  "SELECT * FROM j1 LIMIT 10 UNION SELECT * FROM j2,j3"
       LIMIT {UNION}
-  11  "SELECT * FROM j1 LIMIT 10 OFFSET 5 UNION SELECT * FROM j2,j3" 
+  11  "SELECT * FROM j1 LIMIT 10 OFFSET 5 UNION SELECT * FROM j2,j3"
       LIMIT {UNION}
-  12  "SELECT a FROM j1 LIMIT (SELECT e FROM j2) UNION SELECT g FROM j2,j3" 
+  12  "SELECT a FROM j1 LIMIT (SELECT e FROM j2) UNION SELECT g FROM j2,j3"
       LIMIT {UNION}
 
-  13  "SELECT * FROM j1 ORDER BY a EXCEPT SELECT * FROM j2,j3" 
+  13  "SELECT * FROM j1 ORDER BY a EXCEPT SELECT * FROM j2,j3"
       {ORDER BY} {EXCEPT}
   14  "SELECT count(*) FROM j1 ORDER BY 1 EXCEPT SELECT max(e) FROM j2"
       {ORDER BY} {EXCEPT}
   15  "SELECT count(*), * FROM j1 ORDER BY 1,2,3 EXCEPT SELECT *,* FROM j2"
       {ORDER BY} {EXCEPT}
-  16  "SELECT * FROM j1 LIMIT 10 EXCEPT SELECT * FROM j2,j3" 
+  16  "SELECT * FROM j1 LIMIT 10 EXCEPT SELECT * FROM j2,j3"
       LIMIT {EXCEPT}
-  17  "SELECT * FROM j1 LIMIT 10 OFFSET 5 EXCEPT SELECT * FROM j2,j3" 
+  17  "SELECT * FROM j1 LIMIT 10 OFFSET 5 EXCEPT SELECT * FROM j2,j3"
       LIMIT {EXCEPT}
-  18  "SELECT a FROM j1 LIMIT (SELECT e FROM j2) EXCEPT SELECT g FROM j2,j3" 
+  18  "SELECT a FROM j1 LIMIT (SELECT e FROM j2) EXCEPT SELECT g FROM j2,j3"
       LIMIT {EXCEPT}
 
-  19  "SELECT * FROM j1 ORDER BY a INTERSECT SELECT * FROM j2,j3" 
+  19  "SELECT * FROM j1 ORDER BY a INTERSECT SELECT * FROM j2,j3"
       {ORDER BY} {INTERSECT}
   20  "SELECT count(*) FROM j1 ORDER BY 1 INTERSECT SELECT max(e) FROM j2"
       {ORDER BY} {INTERSECT}
   21  "SELECT count(*), * FROM j1 ORDER BY 1,2,3 INTERSECT SELECT *,* FROM j2"
       {ORDER BY} {INTERSECT}
-  22  "SELECT * FROM j1 LIMIT 10 INTERSECT SELECT * FROM j2,j3" 
+  22  "SELECT * FROM j1 LIMIT 10 INTERSECT SELECT * FROM j2,j3"
       LIMIT {INTERSECT}
-  23  "SELECT * FROM j1 LIMIT 10 OFFSET 5 INTERSECT SELECT * FROM j2,j3" 
+  23  "SELECT * FROM j1 LIMIT 10 OFFSET 5 INTERSECT SELECT * FROM j2,j3"
       LIMIT {INTERSECT}
-  24  "SELECT a FROM j1 LIMIT (SELECT e FROM j2) INTERSECT SELECT g FROM j2,j3" 
+  24  "SELECT a FROM j1 LIMIT (SELECT e FROM j2) INTERSECT SELECT g FROM j2,j3"
       LIMIT {INTERSECT}
 } {
   set err "$op1 clause should come after $op2 not before"
@@ -1379,31 +1379,31 @@ foreach {tn select} {
   1   "SELECT * FROM j1 UNION ALL SELECT * FROM j2,j3 ORDER BY a"
   2   "SELECT count(*) FROM j1 UNION ALL SELECT max(e) FROM j2 ORDER BY 1"
   3   "SELECT count(*), * FROM j1 UNION ALL SELECT *,* FROM j2 ORDER BY 1,2,3"
-  4   "SELECT * FROM j1 UNION ALL SELECT * FROM j2,j3 LIMIT 10" 
-  5   "SELECT * FROM j1 UNION ALL SELECT * FROM j2,j3 LIMIT 10 OFFSET 5" 
-  6   "SELECT a FROM j1 UNION ALL SELECT g FROM j2,j3 LIMIT (SELECT 10)" 
+  4   "SELECT * FROM j1 UNION ALL SELECT * FROM j2,j3 LIMIT 10"
+  5   "SELECT * FROM j1 UNION ALL SELECT * FROM j2,j3 LIMIT 10 OFFSET 5"
+  6   "SELECT a FROM j1 UNION ALL SELECT g FROM j2,j3 LIMIT (SELECT 10)"
 
   7   "SELECT * FROM j1 UNION SELECT * FROM j2,j3 ORDER BY a"
   8   "SELECT count(*) FROM j1 UNION SELECT max(e) FROM j2 ORDER BY 1"
   8b  "VALUES('8b') UNION SELECT max(e) FROM j2 ORDER BY 1"
   9   "SELECT count(*), * FROM j1 UNION SELECT *,* FROM j2 ORDER BY 1,2,3"
-  10  "SELECT * FROM j1 UNION SELECT * FROM j2,j3 LIMIT 10" 
-  11  "SELECT * FROM j1 UNION SELECT * FROM j2,j3 LIMIT 10 OFFSET 5" 
-  12  "SELECT a FROM j1 UNION SELECT g FROM j2,j3 LIMIT (SELECT 10)" 
+  10  "SELECT * FROM j1 UNION SELECT * FROM j2,j3 LIMIT 10"
+  11  "SELECT * FROM j1 UNION SELECT * FROM j2,j3 LIMIT 10 OFFSET 5"
+  12  "SELECT a FROM j1 UNION SELECT g FROM j2,j3 LIMIT (SELECT 10)"
 
   13  "SELECT * FROM j1 EXCEPT SELECT * FROM j2,j3 ORDER BY a"
   14  "SELECT count(*) FROM j1 EXCEPT SELECT max(e) FROM j2 ORDER BY 1"
   15  "SELECT count(*), * FROM j1 EXCEPT SELECT *,* FROM j2 ORDER BY 1,2,3"
-  16  "SELECT * FROM j1 EXCEPT SELECT * FROM j2,j3 LIMIT 10" 
-  17  "SELECT * FROM j1 EXCEPT SELECT * FROM j2,j3 LIMIT 10 OFFSET 5" 
-  18  "SELECT a FROM j1 EXCEPT SELECT g FROM j2,j3 LIMIT (SELECT 10)" 
+  16  "SELECT * FROM j1 EXCEPT SELECT * FROM j2,j3 LIMIT 10"
+  17  "SELECT * FROM j1 EXCEPT SELECT * FROM j2,j3 LIMIT 10 OFFSET 5"
+  18  "SELECT a FROM j1 EXCEPT SELECT g FROM j2,j3 LIMIT (SELECT 10)"
 
   19  "SELECT * FROM j1 INTERSECT SELECT * FROM j2,j3 ORDER BY a"
   20  "SELECT count(*) FROM j1 INTERSECT SELECT max(e) FROM j2 ORDER BY 1"
   21  "SELECT count(*), * FROM j1 INTERSECT SELECT *,* FROM j2 ORDER BY 1,2,3"
-  22  "SELECT * FROM j1 INTERSECT SELECT * FROM j2,j3 LIMIT 10" 
-  23  "SELECT * FROM j1 INTERSECT SELECT * FROM j2,j3 LIMIT 10 OFFSET 5" 
-  24  "SELECT a FROM j1 INTERSECT SELECT g FROM j2,j3 LIMIT (SELECT 10)" 
+  22  "SELECT * FROM j1 INTERSECT SELECT * FROM j2,j3 LIMIT 10"
+  23  "SELECT * FROM j1 INTERSECT SELECT * FROM j2,j3 LIMIT 10 OFFSET 5"
+  24  "SELECT a FROM j1 INTERSECT SELECT g FROM j2,j3 LIMIT (SELECT 10)"
 } {
   do_test e_select-7.3.$tn { catch {execsql $select} msg } 0
 }
@@ -1445,12 +1445,12 @@ do_select_tests e_select-7.4 {
   2   {SELECT * FROM q1 WHERE a=16 UNION ALL SELECT 'x', * FROM q2 WHERE oid=1}
       {16 -87.66 {} x legible 1}
 
-  3   {SELECT count(*) FROM q1 UNION ALL SELECT min(e) FROM q2} 
+  3   {SELECT count(*) FROM q1 UNION ALL SELECT min(e) FROM q2}
       {3 -16.56}
 
-  4   {SELECT * FROM q2 UNION ALL SELECT * FROM q3} 
+  4   {SELECT * FROM q2 UNION ALL SELECT * FROM q3}
       {legible 1 beauty 2 -65.91 4 emanating -16.56 beauty 2 beauty 2}
-} 
+}
 
 # EVIDENCE-OF: R-20560-39162 The UNION operator works the same way as
 # UNION ALL, except that duplicate rows are removed from the final
@@ -1463,12 +1463,12 @@ do_select_tests e_select-7.5 {
   2   {SELECT * FROM q1 WHERE a=16 UNION SELECT 'x', * FROM q2 WHERE oid=1}
       {16 -87.66 {} x legible 1}
 
-  3   {SELECT count(*) FROM q1 UNION SELECT min(e) FROM q2} 
+  3   {SELECT count(*) FROM q1 UNION SELECT min(e) FROM q2}
       {-16.56 3}
 
-  4   {SELECT * FROM q2 UNION SELECT * FROM q3} 
+  4   {SELECT * FROM q2 UNION SELECT * FROM q3}
       {-65.91 4 beauty 2 emanating -16.56 legible 1}
-} 
+}
 
 # EVIDENCE-OF: R-45764-31737 The INTERSECT operator returns the
 # intersection of the results of the left and right SELECTs.
@@ -1485,7 +1485,7 @@ do_select_tests e_select-7.6 {
 do_select_tests e_select-7.7 {
   1   {SELECT a FROM q1 EXCEPT SELECT d FROM q2} {16}
 
-  2   {SELECT * FROM q2 EXCEPT SELECT * FROM q3} 
+  2   {SELECT * FROM q2 EXCEPT SELECT * FROM q3}
       {-65.91 4 emanating -16.56 legible 1}
 }
 
@@ -1526,7 +1526,7 @@ do_select_tests e_select-7.9 {
   15  {SELECT c FROM q1 INTERSECT SELECT g FROM q3} {}
   16  {SELECT c FROM q1 EXCEPT    SELECT g FROM q3} {null -42.47}
 }
-db nullvalue {} 
+db nullvalue {}
 
 # EVIDENCE-OF: R-51232-50224 The collation sequence used to compare two
 # text values is determined as if the columns of the left and right-hand
@@ -1588,13 +1588,13 @@ do_select_tests e_select-7.11 {
 # other words, if "A", "B" and "C" are all simple SELECT statements, (A
 # op B op C) is processed as ((A op B) op C).
 #
-#   e_select-7.12.1: Precedence of UNION vs. INTERSECT 
-#   e_select-7.12.2: Precedence of UNION vs. UNION ALL 
+#   e_select-7.12.1: Precedence of UNION vs. INTERSECT
+#   e_select-7.12.2: Precedence of UNION vs. UNION ALL
 #   e_select-7.12.3: Precedence of UNION vs. EXCEPT
-#   e_select-7.12.4: Precedence of INTERSECT vs. UNION ALL 
+#   e_select-7.12.4: Precedence of INTERSECT vs. UNION ALL
 #   e_select-7.12.5: Precedence of INTERSECT vs. EXCEPT
 #   e_select-7.12.6: Precedence of UNION ALL vs. EXCEPT
-#   e_select-7.12.7: Check that "a EXCEPT b EXCEPT c" is processed as 
+#   e_select-7.12.7: Check that "a EXCEPT b EXCEPT c" is processed as
 #                   "(a EXCEPT b) EXCEPT c".
 #
 # The INTERSECT and EXCEPT operations are mutually commutative. So
@@ -1669,7 +1669,7 @@ do_execsql_test e_select-8.1.0 {
 #
 do_select_tests e_select-8.1 {
   1  "SELECT * FROM d1 ORDER BY x, y, z" {
-     1 2 -20    1 2 3    1 2 7    1 2 8    
+     1 2 -20    1 2 3    1 2 7    1 2 8
      1 4  93    1 5 -1   2 4 93   2 5 -1
   }
 }
@@ -1688,33 +1688,33 @@ do_select_tests e_select-8.1 {
 #
 do_select_tests e_select-8 {
   2.1  "SELECT * FROM d1 ORDER BY x ASC, y ASC, z ASC" {
-     1 2 -20    1 2 3    1 2 7    1 2 8    
+     1 2 -20    1 2 3    1 2 7    1 2 8
      1 4  93    1 5 -1   2 4 93   2 5 -1
   }
   2.2  "SELECT * FROM d1 ORDER BY x DESC, y DESC, z DESC" {
-     2 5 -1     2 4 93   1 5 -1   1 4  93    
-     1 2 8      1 2 7    1 2 3    1 2 -20    
+     2 5 -1     2 4 93   1 5 -1   1 4  93
+     1 2 8      1 2 7    1 2 3    1 2 -20
   }
   2.3 "SELECT * FROM d1 ORDER BY x DESC, y ASC, z DESC" {
-     2 4 93   2 5 -1     1 2 8      1 2 7    
-     1 2 3    1 2 -20    1 4  93    1 5 -1   
+     2 4 93   2 5 -1     1 2 8      1 2 7
+     1 2 3    1 2 -20    1 4  93    1 5 -1
   }
   2.4  "SELECT * FROM d1 ORDER BY x DESC, y ASC, z ASC" {
-     2 4 93   2 5 -1     1 2 -20    1 2 3    
-     1 2 7    1 2 8      1 4  93    1 5 -1   
+     2 4 93   2 5 -1     1 2 -20    1 2 3
+     1 2 7    1 2 8      1 4  93    1 5 -1
   }
 
   3.1  "SELECT * FROM d1 ORDER BY x, y, z" {
-     1 2 -20    1 2 3    1 2 7    1 2 8    
+     1 2 -20    1 2 3    1 2 7    1 2 8
      1 4  93    1 5 -1   2 4 93   2 5 -1
   }
   3.3  "SELECT * FROM d1 ORDER BY x DESC, y, z DESC" {
-     2 4 93   2 5 -1     1 2 8      1 2 7    
-     1 2 3    1 2 -20    1 4  93    1 5 -1   
+     2 4 93   2 5 -1     1 2 8      1 2 7
+     1 2 3    1 2 -20    1 4  93    1 5 -1
   }
   3.4 "SELECT * FROM d1 ORDER BY x DESC, y, z" {
-     2 4 93   2 5 -1     1 2 -20    1 2 3    
-     1 2 7    1 2 8      1 4  93    1 5 -1   
+     2 4 93   2 5 -1     1 2 -20    1 2 3
+     1 2 7    1 2 8      1 4  93    1 5 -1
   }
 }
 
@@ -1725,40 +1725,40 @@ do_select_tests e_select-8 {
 #
 do_select_tests e_select-8.4 {
   1  "SELECT * FROM d1 ORDER BY 1 ASC, 2 ASC, 3 ASC" {
-     1 2 -20    1 2 3    1 2 7    1 2 8    
+     1 2 -20    1 2 3    1 2 7    1 2 8
      1 4  93    1 5 -1   2 4 93   2 5 -1
   }
   2  "SELECT * FROM d1 ORDER BY 1 DESC, 2 DESC, 3 DESC" {
-     2 5 -1     2 4 93   1 5 -1   1 4  93    
-     1 2 8      1 2 7    1 2 3    1 2 -20    
+     2 5 -1     2 4 93   1 5 -1   1 4  93
+     1 2 8      1 2 7    1 2 3    1 2 -20
   }
   3 "SELECT * FROM d1 ORDER BY 1 DESC, 2 ASC, 3 DESC" {
-     2 4 93   2 5 -1     1 2 8      1 2 7    
-     1 2 3    1 2 -20    1 4  93    1 5 -1   
+     2 4 93   2 5 -1     1 2 8      1 2 7
+     1 2 3    1 2 -20    1 4  93    1 5 -1
   }
   4  "SELECT * FROM d1 ORDER BY 1 DESC, 2 ASC, 3 ASC" {
-     2 4 93   2 5 -1     1 2 -20    1 2 3    
-     1 2 7    1 2 8      1 4  93    1 5 -1   
+     2 4 93   2 5 -1     1 2 -20    1 2 3
+     1 2 7    1 2 8      1 4  93    1 5 -1
   }
   5  "SELECT * FROM d1 ORDER BY 1, 2, 3" {
-     1 2 -20    1 2 3    1 2 7    1 2 8    
+     1 2 -20    1 2 3    1 2 7    1 2 8
      1 4  93    1 5 -1   2 4 93   2 5 -1
   }
   6  "SELECT * FROM d1 ORDER BY 1 DESC, 2, 3 DESC" {
-     2 4 93   2 5 -1     1 2 8      1 2 7    
-     1 2 3    1 2 -20    1 4  93    1 5 -1   
+     2 4 93   2 5 -1     1 2 8      1 2 7
+     1 2 3    1 2 -20    1 4  93    1 5 -1
   }
   7  "SELECT * FROM d1 ORDER BY 1 DESC, 2, 3" {
-     2 4 93   2 5 -1     1 2 -20    1 2 3    
-     1 2 7    1 2 8      1 4  93    1 5 -1   
+     2 4 93   2 5 -1     1 2 -20    1 2 3
+     1 2 7    1 2 8      1 4  93    1 5 -1
   }
   8  "SELECT z, x FROM d1 ORDER BY 2" {
-     /# 1    # 1    # 1   # 1 
+     /# 1    # 1    # 1   # 1
       # 1    # 1    # 2   # 2/
   }
   9  "SELECT z, x FROM d1 ORDER BY 1" {
      /-20 1  -1 #   -1 #   3 1
-     7 1     8 1   93 #   93 #/   
+     7 1     8 1   93 #   93 #/
   }
 }
 
@@ -1790,15 +1790,15 @@ do_select_tests e_select-8.5 {
 #
 do_select_tests e_select-8.6 {
   1   "SELECT * FROM d1 ORDER BY x+y+z" {
-    1 2 -20    1 5 -1    1 2 3    2 5 -1 
+    1 2 -20    1 5 -1    1 2 3    2 5 -1
     1 2 7      1 2 8     1 4 93   2 4 93
   }
   2   "SELECT * FROM d1 ORDER BY x*z" {
-    1 2 -20    2 5 -1    1 5 -1    1 2 3 
+    1 2 -20    2 5 -1    1 5 -1    1 2 3
     1 2 7      1 2 8     1 4 93    2 4 93
   }
   3   "SELECT * FROM d1 ORDER BY y*z" {
-    1 2 -20    2 5 -1    1 5 -1    1 2 3 
+    1 2 -20    2 5 -1    1 5 -1    1 2 3
     1 2 7      1 2 8     2 4 93    1 4 93
   }
 }
@@ -1813,20 +1813,20 @@ do_select_tests e_select-8.7.1 -error {
 } {
   1   "SELECT x FROM d1 UNION ALL SELECT a FROM d2 ORDER BY x*z"        1st
   2   "SELECT x,z FROM d1 UNION ALL SELECT a,b FROM d2 ORDER BY x, x/z" 2nd
-} 
+}
 
 do_select_tests e_select-8.7.2 {
   1   "SELECT x*z FROM d1 UNION ALL SELECT a FROM d2 ORDER BY x*z" {
-    -20 -2 -1 3 7 8 93 186 babied barked commercials gently 
+    -20 -2 -1 3 7 8 93 186 babied barked commercials gently
     iterate lad pragmatist reemphasizes rejoicing solemnness
   }
   2   "SELECT x, x/z FROM d1 UNION ALL SELECT a,b FROM d2 ORDER BY x, x/z" {
-    1 -1 1 0 1 0 1 0 1 0 1 0 2 -2 2 0 
+    1 -1 1 0 1 0 1 0 1 0 1 0 2 -2 2 0
     babied charitableness barked interrupted commercials bathrobe gently
     failings iterate sexton lad relenting pragmatist guarded reemphasizes reply
     rejoicing liabilities solemnness annexed
   }
-} 
+}
 
 do_execsql_test e_select-8.8.0 {
   CREATE TABLE d3(a);
@@ -1870,9 +1870,9 @@ do_execsql_test e_select-8.9.2 {
   SELECT x COLLATE binary FROM d4 ORDER BY 1 COLLATE nocase
 } {abc DEF ghi JKL}
 
-# EVIDENCE-OF: R-09398-26102 Otherwise, if the ORDER BY expression is 
-# an alias to an expression that has been assigned a collation sequence 
-# using the postfix COLLATE operator, then the collation sequence 
+# EVIDENCE-OF: R-09398-26102 Otherwise, if the ORDER BY expression is
+# an alias to an expression that has been assigned a collation sequence
+# using the postfix COLLATE operator, then the collation sequence
 # assigned to the aliased expression is used.
 #
 #   In the test 8.10.2, the only result-column expression has no alias. So the
@@ -1920,7 +1920,7 @@ do_execsql_test e_select-8.13.0 {
   CREATE TABLE d5(a, b);
   CREATE TABLE d6(c, d);
   CREATE TABLE d7(e, f);
- 
+
   INSERT INTO d5 VALUES(1, 'f');
   INSERT INTO d6 VALUES(2, 'e');
   INSERT INTO d7 VALUES(3, 'd');
@@ -1950,26 +1950,26 @@ do_select_tests e_select-8.13 {
          ORDER BY 1
       } {1 2 3 4 5 6}
 
-  5   { SELECT a, b FROM d5 UNION ALL SELECT b, a FROM d5 ORDER BY b } 
+  5   { SELECT a, b FROM d5 UNION ALL SELECT b, a FROM d5 ORDER BY b }
       {f 1   c 4   4 c   1 f}
-  6   { SELECT a, b FROM d5 UNION ALL SELECT b, a FROM d5 ORDER BY 2 } 
+  6   { SELECT a, b FROM d5 UNION ALL SELECT b, a FROM d5 ORDER BY 2 }
       {f 1   c 4   4 c   1 f}
 
-  7   { SELECT a, b FROM d5 UNION ALL SELECT b, a FROM d5 ORDER BY a } 
+  7   { SELECT a, b FROM d5 UNION ALL SELECT b, a FROM d5 ORDER BY a }
       {1 f   4 c   c 4   f 1}
-  8   { SELECT a, b FROM d5 UNION ALL SELECT b, a FROM d5 ORDER BY 1 } 
+  8   { SELECT a, b FROM d5 UNION ALL SELECT b, a FROM d5 ORDER BY 1 }
       {1 f   4 c   c 4   f 1}
 
-  9   { SELECT a, b FROM d5 UNION ALL SELECT b, a+1 FROM d5 ORDER BY a+1 } 
+  9   { SELECT a, b FROM d5 UNION ALL SELECT b, a+1 FROM d5 ORDER BY a+1 }
       {f 2   c 5   4 c   1 f}
-  10  { SELECT a, b FROM d5 UNION ALL SELECT b, a+1 FROM d5 ORDER BY 2 } 
+  10  { SELECT a, b FROM d5 UNION ALL SELECT b, a+1 FROM d5 ORDER BY 2 }
       {f 2   c 5   4 c   1 f}
 
-  11  { SELECT a+1, b FROM d5 UNION ALL SELECT b, a+1 FROM d5 ORDER BY a+1 } 
+  11  { SELECT a+1, b FROM d5 UNION ALL SELECT b, a+1 FROM d5 ORDER BY a+1 }
       {2 f   5 c   c 5   f 2}
-  12  { SELECT a+1, b FROM d5 UNION ALL SELECT b, a+1 FROM d5 ORDER BY 1 } 
+  12  { SELECT a+1, b FROM d5 UNION ALL SELECT b, a+1 FROM d5 ORDER BY 1 }
       {2 f   5 c   c 5   f 2}
-} 
+}
 
 # EVIDENCE-OF: R-39265-04070 If no matching expression can be found in
 # the result columns of any constituent SELECT, it is an error.
@@ -1983,12 +1983,12 @@ do_select_tests e_select-8.14 -error {
   4   { SELECT * FROM d5 INTERSECT SELECT * FROM d6 ORDER BY blah    }  1st
   5   { SELECT * FROM d5 INTERSECT SELECT * FROM d6 ORDER BY c,d,c+d }  3rd
   6   { SELECT * FROM d5 EXCEPT SELECT * FROM d7 ORDER BY 1,2,b,a/b  }  4th
-} 
+}
 
 # EVIDENCE-OF: R-03407-11483 Each term of the ORDER BY clause is
 # processed separately and may be matched against result columns from
 # different SELECT statements in the compound.
-# 
+#
 do_select_tests e_select-8.15 {
   1  { SELECT a, b FROM d5 UNION ALL SELECT c-1, d FROM d6 ORDER BY a, d }
      {1 e   1 f   4 b   4 c}
@@ -1996,7 +1996,7 @@ do_select_tests e_select-8.15 {
      {1 e   1 f   4 b   4 c}
   3  { SELECT a, b FROM d5 UNION ALL SELECT c-1, d FROM d6 ORDER BY 1, 2 }
      {1 e   1 f   4 b   4 c}
-} 
+}
 
 
 #-------------------------------------------------------------------------
@@ -2039,7 +2039,7 @@ do_execsql_test e_select-9.0 {
 do_select_tests e_select-9.1 {
   1  { SELECT b FROM f1 ORDER BY a LIMIT 5 } {a b c d e}
   2  { SELECT b FROM f1 ORDER BY a LIMIT 2+3 } {a b c d e}
-  3  { SELECT b FROM f1 ORDER BY a LIMIT (SELECT a FROM f1 WHERE b = 'e') } 
+  3  { SELECT b FROM f1 ORDER BY a LIMIT (SELECT a FROM f1 WHERE b = 'e') }
      {a b c d e}
   4  { SELECT b FROM f1 ORDER BY a LIMIT 5.0 } {a b c d e}
   5  { SELECT b FROM f1 ORDER BY a LIMIT '5' } {a b c d e}
@@ -2056,16 +2056,16 @@ do_select_tests e_select-9.2 -error "datatype mismatch" {
   3  { SELECT b FROM f1 ORDER BY a LIMIT X'ABCD' } {}
   4  { SELECT b FROM f1 ORDER BY a LIMIT 5.1 } {}
   5  { SELECT b FROM f1 ORDER BY a LIMIT (SELECT group_concat(b) FROM f1) } {}
-} 
+}
 
 # EVIDENCE-OF: R-03014-26414 If the LIMIT expression evaluates to a
 # negative value, then there is no upper bound on the number of rows
 # returned.
 #
 do_select_tests e_select-9.4 {
-  1  { SELECT b FROM f1 ORDER BY a LIMIT -1 } 
+  1  { SELECT b FROM f1 ORDER BY a LIMIT -1 }
      {a b c d e f g h i j k l m n o p q r s t u v w x y z}
-  2  { SELECT b FROM f1 ORDER BY a LIMIT length('abc')-100 } 
+  2  { SELECT b FROM f1 ORDER BY a LIMIT length('abc')-100 }
      {a b c d e f g h i j k l m n o p q r s t u v w x y z}
   3  { SELECT b FROM f1 ORDER BY a LIMIT (SELECT count(*) FROM f1)/2 - 14 }
      {a b c d e f g h i j k l m n o p q r s t u v w x y z}
@@ -2089,7 +2089,7 @@ do_select_tests e_select-9.5 {
 do_select_tests e_select-9.6 {
   1  { SELECT b FROM f1 WHERE a>21 ORDER BY a LIMIT 10 } {v w x y z}
   2  { SELECT count(*) FROM f1 GROUP BY a/5 ORDER BY 1 LIMIT 10 } {2 4 5 5 5 5}
-} 
+}
 
 
 # EVIDENCE-OF: R-24188-24349 The expression attached to the optional
@@ -2097,13 +2097,13 @@ do_select_tests e_select-9.6 {
 # integer, or a value that can be losslessly converted to an integer.
 #
 foreach {tn select} {
-  1  { SELECT b FROM f1 ORDER BY a LIMIT 2 OFFSET 'hello' } 
-  2  { SELECT b FROM f1 ORDER BY a LIMIT 2 OFFSET NULL } 
-  3  { SELECT b FROM f1 ORDER BY a LIMIT 2 OFFSET X'ABCD' } 
-  4  { SELECT b FROM f1 ORDER BY a LIMIT 2 OFFSET 5.1 } 
-  5  { SELECT b FROM f1 ORDER BY a 
-       LIMIT 2 OFFSET (SELECT group_concat(b) FROM f1) 
-  } 
+  1  { SELECT b FROM f1 ORDER BY a LIMIT 2 OFFSET 'hello' }
+  2  { SELECT b FROM f1 ORDER BY a LIMIT 2 OFFSET NULL }
+  3  { SELECT b FROM f1 ORDER BY a LIMIT 2 OFFSET X'ABCD' }
+  4  { SELECT b FROM f1 ORDER BY a LIMIT 2 OFFSET 5.1 }
+  5  { SELECT b FROM f1 ORDER BY a
+       LIMIT 2 OFFSET (SELECT group_concat(b) FROM f1)
+  }
 } {
   do_catchsql_test e_select-9.7.$tn $select {1 {datatype mismatch}}
 }
@@ -2117,9 +2117,9 @@ foreach {tn select} {
 do_select_tests e_select-9.8 {
   1  { SELECT b FROM f1 ORDER BY a LIMIT 10 OFFSET 5} {f g h i j k l m n o}
   2  { SELECT b FROM f1 ORDER BY a LIMIT 2+3 OFFSET 10} {k l m n o}
-  3  { SELECT b FROM f1 ORDER BY a 
-       LIMIT  (SELECT a FROM f1 WHERE b='j') 
-       OFFSET (SELECT a FROM f1 WHERE b='b') 
+  3  { SELECT b FROM f1 ORDER BY a
+       LIMIT  (SELECT a FROM f1 WHERE b='j')
+       OFFSET (SELECT a FROM f1 WHERE b='b')
      } {c d e f g h i j k l}
   4  { SELECT b FROM f1 ORDER BY a LIMIT '5' OFFSET 3.0 } {d e f g h}
   5  { SELECT b FROM f1 ORDER BY a LIMIT '5' OFFSET 0 } {a b c d e}
@@ -2145,7 +2145,7 @@ do_select_tests e_select-9.10 {
   1  { SELECT b FROM f1 ORDER BY a LIMIT 5 OFFSET -1 } {a b c d e}
   2  { SELECT b FROM f1 ORDER BY a LIMIT 5 OFFSET -500 } {a b c d e}
   3  { SELECT b FROM f1 ORDER BY a LIMIT 5 OFFSET 0  } {a b c d e}
-} 
+}
 
 # EVIDENCE-OF: R-19509-40356 Instead of a separate OFFSET clause, the
 # LIMIT clause may specify two scalar expressions separated by a comma.
@@ -2156,8 +2156,8 @@ do_select_tests e_select-9.10 {
 do_select_tests e_select-9.11 {
   1  { SELECT b FROM f1 ORDER BY a LIMIT 5, 10 } {f g h i j k l m n o}
   2  { SELECT b FROM f1 ORDER BY a LIMIT 10, 2+3 } {k l m n o}
-  3  { SELECT b FROM f1 ORDER BY a 
-       LIMIT (SELECT a FROM f1 WHERE b='b'), (SELECT a FROM f1 WHERE b='j') 
+  3  { SELECT b FROM f1 ORDER BY a
+       LIMIT (SELECT a FROM f1 WHERE b='b'), (SELECT a FROM f1 WHERE b='j')
      } {c d e f g h i j k l}
   4  { SELECT b FROM f1 ORDER BY a LIMIT 3.0, '5' } {d e f g h}
   5  { SELECT b FROM f1 ORDER BY a LIMIT 0, '5' } {a b c d e}

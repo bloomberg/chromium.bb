@@ -176,7 +176,7 @@ do_test 4.3.2 {
 do_test 4.4.0 {
   forcedelete w
   file mkdir w
-  file link w/test.db [file join [pwd] x/test.db] 
+  file link w/test.db [file join [pwd] x/test.db]
   set {} {}
 } {}
 do_test 4.4.1 {

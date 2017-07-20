@@ -93,9 +93,9 @@ do_test in4-2.8 {
 #
 #    <expr> IN ()
 #
-# i.e. IN expressions with a literal empty set. 
-# 
-# This has led to crashes on more than one occasion. Test case in4-3.2 
+# i.e. IN expressions with a literal empty set.
+#
+# This has led to crashes on more than one occasion. Test case in4-3.2
 # was added in reponse to a bug reported on the mailing list on 11/7/2008.
 # See also tickets #3602 and #185.
 #

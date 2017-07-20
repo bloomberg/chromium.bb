@@ -122,7 +122,7 @@ SELECT COUNT(*) FROM t1;}]
 } {0 1}
 
 # import file with 2 rows, 2 columns
-# note we end up with 3 rows because of the 1 row 
+# note we end up with 3 rows because of the 1 row
 # imported above.
 do_test shell5-1.4.6 {
   set in [open shell5.csv w]
@@ -306,7 +306,7 @@ do_test shell5-1.11 {
 db close
 
 #----------------------------------------------------------------------------
-# 
+#
 reset_db
 sqlite3 db test.db
 do_test shell5-2.1 {

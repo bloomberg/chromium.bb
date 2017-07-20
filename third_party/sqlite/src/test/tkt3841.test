@@ -26,7 +26,7 @@ do_test tkt3841.1 {
   execsql {
     CREATE TABLE table2 (key TEXT, x TEXT);
     CREATE TABLE list (key TEXT, value TEXT);
-  
+
     INSERT INTO table2 VALUES ("a", "alist");
     INSERT INTO table2 VALUES ("b", "blist");
     INSERT INTO list VALUES ("a", 1);

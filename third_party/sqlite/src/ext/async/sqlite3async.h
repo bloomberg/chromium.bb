@@ -19,7 +19,7 @@ extern "C" {
 **   sqlite3async_initialize()
 **   sqlite3async_shutdown()
 **
-** Care must be taken that neither of these functions is called while 
+** Care must be taken that neither of these functions is called while
 ** another thread may be calling either any sqlite3async_XXX() function
 ** or an sqlite3_XXX() API function related to a database handle that
 ** is using the asynchronous IO VFS.
@@ -40,7 +40,7 @@ extern "C" {
 ** and registered, this function is a no-op. The asynchronous IO VFS
 ** is registered as "sqlite3async".
 **
-** The asynchronous IO VFS does not make operating system IO requests 
+** The asynchronous IO VFS does not make operating system IO requests
 ** directly. Instead, it uses an existing VFS implementation for all
 ** required file-system operations. If the first parameter to this function
 ** is NULL, then the current default VFS is used for IO. If it is not
@@ -49,46 +49,46 @@ extern "C" {
 ** locate the VFS to use for all real IO operations. This VFS is known
 ** as the "parent VFS".
 **
-** If the second parameter to this function is non-zero, then the 
-** asynchronous IO VFS is registered as the default VFS for all SQLite 
+** If the second parameter to this function is non-zero, then the
+** asynchronous IO VFS is registered as the default VFS for all SQLite
 ** database connections within the process. Otherwise, the asynchronous IO
 ** VFS is only used by connections opened using sqlite3_open_v2() that
 ** specifically request VFS "sqlite3async".
 **
 ** If a parent VFS cannot be located, then SQLITE_ERROR is returned.
 ** In the unlikely event that operating system specific initialization
-** fails (win32 systems create the required critical section and event 
+** fails (win32 systems create the required critical section and event
 ** objects within this function), then SQLITE_ERROR is also returned.
-** Finally, if the call to sqlite3_vfs_register() returns an error, then 
+** Finally, if the call to sqlite3_vfs_register() returns an error, then
 ** the error code is returned to the user by this function. In all three
 ** of these cases, intialization has failed and the asynchronous IO VFS
 ** is not registered with SQLite.
 **
 ** Otherwise, if no error occurs, SQLITE_OK is returned.
-*/ 
+*/
 int sqlite3async_initialize(const char *zParent, int isDefault);
 
 /*
-** This function unregisters the asynchronous IO VFS using 
+** This function unregisters the asynchronous IO VFS using
 ** sqlite3_vfs_unregister().
 **
-** On win32 platforms, this function also releases the small number of 
+** On win32 platforms, this function also releases the small number of
 ** critical section and event objects created by sqlite3async_initialize().
-*/ 
+*/
 void sqlite3async_shutdown(void);
 
 /*
-** This function may only be called when the asynchronous IO VFS is 
+** This function may only be called when the asynchronous IO VFS is
 ** installed (after a call to sqlite3async_initialize()). It processes
 ** zero or more queued write operations before returning. It is expected
-** (but not required) that this function will be called by a different 
+** (but not required) that this function will be called by a different
 ** thread than those threads that use SQLite. The "background thread"
 ** that performs IO.
 **
-** How many queued write operations are performed before returning 
+** How many queued write operations are performed before returning
 ** depends on the global setting configured by passing the SQLITEASYNC_HALT
 ** verb to sqlite3async_control() (see below for details). By default
-** this function never returns - it processes all pending operations and 
+** this function never returns - it processes all pending operations and
 ** then blocks waiting for new ones.
 **
 ** If multiple simultaneous calls are made to sqlite3async_run() from two
@@ -97,10 +97,10 @@ void sqlite3async_shutdown(void);
 void sqlite3async_run(void);
 
 /*
-** This function may only be called when the asynchronous IO VFS is 
-** installed (after a call to sqlite3async_initialize()). It is used 
-** to query or configure various parameters that affect the operation 
-** of the asynchronous IO VFS. At present there are three parameters 
+** This function may only be called when the asynchronous IO VFS is
+** installed (after a call to sqlite3async_initialize()). It is used
+** to query or configure various parameters that affect the operation
+** of the asynchronous IO VFS. At present there are three parameters
 ** supported:
 **
 **   * The "halt" parameter, which configures the circumstances under
@@ -108,10 +108,10 @@ void sqlite3async_run(void);
 **
 **   * The "delay" parameter. Setting the delay parameter to a non-zero
 **     value causes the sqlite3async_run() function to sleep for the
-**     configured number of milliseconds between each queued write 
+**     configured number of milliseconds between each queued write
 **     operation.
 **
-**   * The "lockfiles" parameter. This parameter determines whether or 
+**   * The "lockfiles" parameter. This parameter determines whether or
 **     not the asynchronous IO VFS locks the database files it operates
 **     on. Disabling file locking can improve throughput.
 **
@@ -121,7 +121,7 @@ void sqlite3async_run(void);
 ** be passed the new value for the parameter as type "int".
 **
 ** When querying the current value of a paramter, the first argument must
-** be one of SQLITEASYNC_GET_HALT, GET_DELAY or GET_LOCKFILES. The second 
+** be one of SQLITEASYNC_GET_HALT, GET_DELAY or GET_LOCKFILES. The second
 ** argument to this function must be of type (int *). The current value
 ** of the queried parameter is copied to the memory pointed to by the
 ** second argument. For example:
@@ -145,29 +145,29 @@ void sqlite3async_run(void);
 **   never return. This is the default setting. If the parameter is set
 **   to IDLE, then calls to sqlite3async_run() return as soon as the
 **   queue of pending write operations is empty. If the parameter is set
-**   to NOW, then calls to sqlite3async_run() return as quickly as 
+**   to NOW, then calls to sqlite3async_run() return as quickly as
 **   possible, without processing any pending write requests.
 **
 **   If an attempt is made to set this parameter to an integer value other
-**   than SQLITEASYNC_HALT_NEVER, IDLE or NOW, then sqlite3async_control() 
-**   returns SQLITE_MISUSE and the current value of the parameter is not 
+**   than SQLITEASYNC_HALT_NEVER, IDLE or NOW, then sqlite3async_control()
+**   returns SQLITE_MISUSE and the current value of the parameter is not
 **   modified.
 **
-**   Modifying the "halt" parameter affects calls to sqlite3async_run() 
+**   Modifying the "halt" parameter affects calls to sqlite3async_run()
 **   made by other threads that are currently in progress.
 **
 ** SQLITEASYNC_DELAY:
 **
 **   This is used to set the value of the "delay" parameter. If set to
 **   a non-zero value, then after completing a pending write request, the
-**   sqlite3async_run() function sleeps for the configured number of 
+**   sqlite3async_run() function sleeps for the configured number of
 **   milliseconds.
 **
 **   If an attempt is made to set this parameter to a negative value,
 **   sqlite3async_control() returns SQLITE_MISUSE and the current value
 **   of the parameter is not modified.
 **
-**   Modifying the "delay" parameter affects calls to sqlite3async_run() 
+**   Modifying the "delay" parameter affects calls to sqlite3async_run()
 **   made by other threads that are currently in progress.
 **
 ** SQLITEASYNC_LOCKFILES:
@@ -180,7 +180,7 @@ void sqlite3async_run(void);
 **
 **   This parameter may only be set when there are no open database
 **   connections using the VFS and the queue of pending write requests
-**   is empty. Attempting to set it when this is not true, or to set it 
+**   is empty. Attempting to set it when this is not true, or to set it
 **   to a value other than 0 or 1 causes sqlite3async_control() to return
 **   SQLITE_MISUSE and the value of the parameter to remain unchanged.
 **

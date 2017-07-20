@@ -11,8 +11,8 @@
 # This file implements regression tests for SQLite library.  The
 # focus of this file is testing the operation of the library in
 # "PRAGMA journal_mode=WAL" mode.
-# 
-# More specifically, this file contains regression tests for the 
+#
+# More specifically, this file contains regression tests for the
 # sqlite3_wal_hook() mechanism, including the sqlite3_wal_autocheckpoint()
 # and "PRAGMA wal_autocheckpoint" convenience interfaces.
 #
@@ -31,7 +31,7 @@ proc wal_hook {zDb nEntry} {
 db wal_hook wal_hook
 
 do_test walhook-1.1 {
-  execsql { 
+  execsql {
     PRAGMA page_size = 1024;
     PRAGMA auto_vacuum = 0;
     PRAGMA journal_mode = wal;
@@ -52,7 +52,7 @@ do_test walhook-1.3 {
   file size test.db
 } [expr 3*1024]
 do_test walhook-1.4 {
-  proc wal_hook {zDb nEntry} { 
+  proc wal_hook {zDb nEntry} {
     execsql { PRAGMA wal_checkpoint }
     return 0
   }

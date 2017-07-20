@@ -10,7 +10,7 @@
 #***********************************************************************
 # This file implements regression tests for SQLite library.
 # The focus of this script is testing details of the SQL language parser.
-# 
+#
 
 set testdir [file dirname $argv0]
 source $testdir/tester.tcl

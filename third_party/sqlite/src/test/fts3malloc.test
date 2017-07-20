@@ -10,7 +10,7 @@
 #***********************************************************************
 #
 # This file contains tests to verify that malloc() errors that occur
-# within the FTS3 module code are handled correctly. 
+# within the FTS3 module code are handled correctly.
 #
 
 set testdir [file dirname $argv0]
@@ -78,7 +78,7 @@ do_write_test fts3_malloc-1.7 sqlite_master {
 
 
 do_test fts3_malloc-2.0 {
-  execsql { 
+  execsql {
     DROP TABLE ft1;
     DROP TABLE ft2;
     DROP TABLE ft3;
@@ -107,12 +107,12 @@ foreach {tn sql result} {
 
   5 "SELECT a FROM ft" {
     {one}                     {two}                 {one two}
-    {three}                   {one three}           {two three}     
-    {one two three}           {four}                {one four} 
-    {two four}                {one two four}        {three four}   
-    {one three four}          {two three four}      {one two three four}  
-    {five}                    {one five}            {two five}            
-    {one two five}            {three five}          {one three five} 
+    {three}                   {one three}           {two three}
+    {one two three}           {four}                {one four}
+    {two four}                {one two four}        {three four}
+    {one three four}          {two three four}      {one two three four}
+    {five}                    {one five}            {two five}
+    {one two five}            {three five}          {one three five}
     {two three five}          {one two three five}  {four five}
     {one four five}           {two four five}       {one two four five}
     {three four five}         {one three four five} {two three four five}
@@ -123,7 +123,7 @@ foreach {tn sql result} {
     {one} {one two} {one three} {one two three}
     {one four} {one two four} {one three four} {one two three four}
     {one five} {one two five} {one three five} {one two three five}
-    {one four five} {one two four five} 
+    {one four five} {one two four five}
     {one three four five} {one two three four five}
   }
 
@@ -131,21 +131,21 @@ foreach {tn sql result} {
     {one} {one two} {one three} {one two three}
     {one four} {one two four} {one three four} {one two three four}
     {one five} {one two five} {one three five} {one two three five}
-    {one four five} {one two four five} 
+    {one four five} {one two four five}
     {one three four five} {one two three four five}
   }
 
   8 "SELECT a FROM ft WHERE a MATCH 'o* t*'" {
-    {one two}             {one three}           {one two three} 
-    {one two four}        {one three four}      {one two three four} 
-    {one two five}        {one three five}      {one two three five} 
+    {one two}             {one three}           {one two three}
+    {one two four}        {one three four}      {one two three four}
+    {one two five}        {one three five}      {one two three five}
     {one two four five}   {one three four five} {one two three four five}
   }
 
   9 "SELECT a FROM ft WHERE a MATCH '\"o* t*\"'" {
-    {one two}             {one three}           {one two three} 
-    {one two four}        {one three four}      {one two three four} 
-    {one two five}        {one three five}      {one two three five} 
+    {one two}             {one three}           {one two three}
+    {one two four}        {one three four}      {one two three four}
+    {one two five}        {one three five}      {one two three five}
     {one two four five}   {one three four five} {one two three four five}
   }
 
@@ -155,7 +155,7 @@ foreach {tn sql result} {
 
   11 {SELECT a FROM ft WHERE a MATCH '"one two three"'} {
     {one two three}
-    {one two three four}  
+    {one two three four}
     {one two three five}
     {one two three four five}
   }
@@ -178,18 +178,18 @@ foreach {tn sql result} {
   }
 
   14 {SELECT a FROM ft WHERE b MATCH 'neung'} {
-    {one}                    {one two} 
+    {one}                    {one two}
     {one three}              {one two three}
-    {one four}               {one two four} 
+    {one four}               {one two four}
     {one three four}         {one two three four}
-    {one five}               {one two five} 
+    {one five}               {one two five}
     {one three five}         {one two three five}
-    {one four five}          {one two four five} 
+    {one four five}          {one two four five}
     {one three four five}    {one two three four five}
   }
 
   15 {SELECT a FROM ft WHERE b MATCH '"neung song sahm"'} {
-    {one two three}          {one two three four}  
+    {one two three}          {one two three four}
     {one two three five}     {one two three four five}
   }
 
@@ -201,8 +201,8 @@ foreach {tn sql result} {
   17 {SELECT a FROM ft WHERE b MATCH 'song OR sahm'} {
     {two}                     {one two}             {three}
     {one three}               {two three}           {one two three}
-    {two four}                {one two four}        {three four}   
-    {one three four}          {two three four}      {one two three four}  
+    {two four}                {one two four}        {three four}
+    {one three four}          {two three four}      {one two three four}
     {two five}                {one two five}        {three five}
     {one three five}          {two three five}      {one two three five}
     {two four five}           {one two four five}   {three four five}
@@ -210,25 +210,25 @@ foreach {tn sql result} {
   }
 
   18 {SELECT a FROM ft WHERE a MATCH 'three NOT two'} {
-    {three}                   {one three}           {three four}   
+    {three}                   {one three}           {three four}
     {one three four}          {three five}          {one three five}
     {three four five}         {one three four five}
   }
 
   19 {SELECT a FROM ft WHERE b MATCH 'sahm NOT song'} {
-    {three}                   {one three}           {three four}   
+    {three}                   {one three}           {three four}
     {one three four}          {three five}          {one three five}
     {three four five}         {one three four five}
   }
 
   20 {SELECT a FROM ft WHERE ft MATCH 'sahm NOT song'} {
-    {three}                   {one three}           {three four}   
+    {three}                   {one three}           {three four}
     {one three four}          {three five}          {one three five}
     {three four five}         {one three four five}
   }
 
   21 {SELECT a FROM ft WHERE b MATCH 'neung NEAR song NEAR sahm'} {
-    {one two three}           {one two three four}  
+    {one two three}           {one two three four}
     {one two three five}      {one two three four five}
   }
 

@@ -22,19 +22,19 @@ ifcapable {!trigger} {
 foreach {tn sql log} {
   1 { } { }
 
-  2 { 
+  2 {
     CREATE TRIGGER trd AFTER DELETE ON t1 BEGIN
       INSERT INTO log VALUES(old.a || old.b || (SELECT count(*) FROM t1));
     END;
   } {1one2 2two1 3three1}
 
-  3 { 
+  3 {
     CREATE TRIGGER trd BEFORE DELETE ON t1 BEGIN
       INSERT INTO log VALUES(old.a || old.b || (SELECT count(*) FROM t1));
     END;
   } {1one3 2two2 3three2}
 
-  4 { 
+  4 {
     CREATE TRIGGER tr1 AFTER DELETE ON t1 BEGIN
       INSERT INTO log VALUES(old.a || old.b || (SELECT count(*) FROM t1));
     END;
@@ -50,7 +50,7 @@ foreach {tn sql log} {
     CREATE TABLE t1(a INT PRIMARY KEY, b) WITHOUT ROWID;
     CREATE TABLE log(t);
   }
-  
+
   execsql $sql
 
   do_execsql_test 1.$tn.1 {

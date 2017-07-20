@@ -91,7 +91,7 @@ do_test insert-1.6c {
 do_test insert-2.1 {
   execsql {
     CREATE TABLE test2(
-      f1 int default -111, 
+      f1 int default -111,
       f2 real default +4.32,
       f3 int default +222,
       f4 int default 7.89
@@ -115,7 +115,7 @@ do_test insert-2.10 {
   execsql {
     DROP TABLE test2;
     CREATE TABLE test2(
-      f1 int default 111, 
+      f1 int default 111,
       f2 real default -4.32,
       f3 text default hi,
       f4 text default 'abc-123',
@@ -250,7 +250,7 @@ ifcapable tempdb {
       expr {[lsearch $x OpenEphemeral]>0}
     } {1}
   }
-  
+
   do_test insert-5.4 {
     # Verify that table "test1" begins on page 3.  This should be the same
     # page number used by "t4" above.
@@ -289,7 +289,7 @@ ifcapable tempdb {
 # Ticket #334:  REPLACE statement corrupting indices.
 #
 ifcapable conflict {
-  # The REPLACE command is not available if SQLITE_OMIT_CONFLICT is 
+  # The REPLACE command is not available if SQLITE_OMIT_CONFLICT is
   # defined at compilation time.
   do_test insert-6.1 {
     execsql {
@@ -328,8 +328,8 @@ ifcapable conflict {
   } {}
 }
 
-# Test that the special optimization for queries of the form 
-# "SELECT max(x) FROM tbl" where there is an index on tbl(x) works with 
+# Test that the special optimization for queries of the form
+# "SELECT max(x) FROM tbl" where there is an index on tbl(x) works with
 # INSERT statments.
 do_test insert-7.1 {
   execsql {

@@ -9,11 +9,11 @@
 #
 #***********************************************************************
 #
-# The tests in this file verify that if an empty database (zero bytes in 
+# The tests in this file verify that if an empty database (zero bytes in
 # size) is used as the source of a backup operation, the final destination
 # database is one page in size.
 #
-# The destination must consist of at least one page as truncating a 
+# The destination must consist of at least one page as truncating a
 # database file to zero bytes is equivalent to resetting the database
 # schema cookie and change counter. Doing that could cause other clients
 # to become confused and continue using out-of-date cache data.
@@ -61,7 +61,7 @@ forcedelete test.db2
 sqlite3 db test.db
 
 #-------------------------------------------------------------------------
-# Test that if the source is zero bytes, the destination database 
+# Test that if the source is zero bytes, the destination database
 # consists of a single page only.
 #
 do_execsql_test 2.1 {

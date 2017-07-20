@@ -4,7 +4,7 @@ set rcsid {$Id: omittest.tcl,v 1.8 2008/10/13 15:35:09 drh Exp $}
 # Documentation for this script. This may be output to stderr
 # if the script is invoked incorrectly.
 set ::USAGE_MESSAGE {
-This Tcl script is used to test the various compile time options 
+This Tcl script is used to test the various compile time options
 available for omitting code (the SQLITE_OMIT_xxx options). It
 should be invoked as follows:
 
@@ -76,7 +76,7 @@ proc run_quick_test {dir omit_symbol_list} {
   set fd [open $dir/makefile w]
   puts $fd $mkfile
   close $fd
-  
+
   set rc [catch {
     exec $::MAKEBIN -C $dir -f makefile clean $::TARGET >& $dir/build.log
   }]
@@ -86,9 +86,9 @@ proc run_quick_test {dir omit_symbol_list} {
   } else {
     puts "Ok"
   }
-  
-  # Create an empty file "$dir/sqlite3". This is to trick the makefile out 
-  # of trying to build the sqlite shell. The sqlite shell won't build 
+
+  # Create an empty file "$dir/sqlite3". This is to trick the makefile out
+  # of trying to build the sqlite shell. The sqlite shell won't build
   # with some of the OMIT options (i.e OMIT_COMPLETE).
   set sqlite3_dummy $dir/sqlite3
   if {$::tcl_platform(platform)=="windows"} {
@@ -139,7 +139,7 @@ proc process_options {argv} {
         incr i
         set ::MAKEFILE [lindex $argv $i]
       }
-  
+
       -nmake {
         set ::MAKEBIN nmake
         set ::MAKEFILE ./Makefile.msc
@@ -267,7 +267,7 @@ proc main {argv} {
     set dirname "test_[regsub -nocase {^x*SQLITE_} $sym {}]"
     run_quick_test $dirname $sym
   } else {
-    # First try a test with all OMIT symbols except SQLITE_OMIT_FLOATING_POINT 
+    # First try a test with all OMIT symbols except SQLITE_OMIT_FLOATING_POINT
     # and SQLITE_OMIT_PRAGMA defined. The former doesn't work (causes segfaults)
     # and the latter is currently incompatible with the test suite (this should
     # be fixed, but it will be a lot of work).
@@ -278,7 +278,7 @@ proc main {argv} {
       }
     }
     run_quick_test test_OMIT_EVERYTHING $allsyms
-  
+
     # Now try one quick.test with each of the OMIT symbols defined. Included
     # are the OMIT_FLOATING_POINT and OMIT_PRAGMA symbols, even though we
     # know they will fail. It's good to be reminded of this from time to time.
@@ -286,8 +286,8 @@ proc main {argv} {
       set dirname "test_[regsub -nocase {^x*SQLITE_} $sym {}]"
       run_quick_test $dirname $sym
     }
-  
-    # Try the ENABLE/DISABLE symbols one at a time.  
+
+    # Try the ENABLE/DISABLE symbols one at a time.
     # We don't do them all at once since some are conflicting.
     foreach sym $::ENABLE_SYMBOLS {
       set dirname "test_[regsub -nocase {^x*SQLITE_} $sym {}]"

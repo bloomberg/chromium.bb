@@ -76,7 +76,7 @@ proc blob_write_error_test {tn B iOffset blob nData errcode errmsg} {
 
   set cmd [list sqlite3_blob_write $B $iOffset $blob $nData]
   uplevel [list do_test $tn.1 [subst -nocommands {
-    list [catch {$cmd} msg] [set msg]              
+    list [catch {$cmd} msg] [set msg]
   }] [list $isError $ret]]
 
   # EVIDENCE-OF: R-34782-18311 Unless SQLITE_MISUSE is returned, this
@@ -151,7 +151,7 @@ sqlite3_blob_close $B
 # the statement that expired the BLOB handle or by other independent
 # statements.
 #
-#   3.1.*: not rolled back, 
+#   3.1.*: not rolled back,
 #   3.2.*: overwritten.
 #
 do_execsql_test 3.0 {

@@ -11,7 +11,7 @@
 ******************************************************************************
 **
 ** This file contains code that modified the OS layer in order to simulate
-** different device types (by overriding the return values of the 
+** different device types (by overriding the return values of the
 ** xDeviceCharacteristics() and xSectorSize() methods).
 */
 #if SQLITE_TEST          /* This file is used for testing only */
@@ -141,9 +141,9 @@ static int devsymClose(sqlite3_file *pFile){
 ** Read data from an devsym-file.
 */
 static int devsymRead(
-  sqlite3_file *pFile, 
-  void *zBuf, 
-  int iAmt, 
+  sqlite3_file *pFile,
+  void *zBuf,
+  int iAmt,
   sqlite_int64 iOfst
 ){
   devsym_file *p = (devsym_file *)pFile;
@@ -154,9 +154,9 @@ static int devsymRead(
 ** Write data to an devsym-file.
 */
 static int devsymWrite(
-  sqlite3_file *pFile, 
-  const void *zBuf, 
-  int iAmt, 
+  sqlite3_file *pFile,
+  const void *zBuf,
+  int iAmt,
   sqlite_int64 iOfst
 ){
   devsym_file *p = (devsym_file *)pFile;
@@ -241,10 +241,10 @@ static int devsymShmLock(sqlite3_file *pFile, int ofst, int n, int flags){
   return sqlite3OsShmLock(p->pReal, ofst, n, flags);
 }
 static int devsymShmMap(
-  sqlite3_file *pFile, 
-  int iRegion, 
-  int szRegion, 
-  int isWrite, 
+  sqlite3_file *pFile,
+  int iRegion,
+  int szRegion,
+  int isWrite,
   void volatile **pp
 ){
   devsym_file *p = (devsym_file *)pFile;
@@ -295,9 +295,9 @@ static int devsymDelete(sqlite3_vfs *pVfs, const char *zPath, int dirSync){
 ** is available, or false otherwise.
 */
 static int devsymAccess(
-  sqlite3_vfs *pVfs, 
-  const char *zPath, 
-  int flags, 
+  sqlite3_vfs *pVfs,
+  const char *zPath,
+  int flags,
   int *pResOut
 ){
   return sqlite3OsAccess(g.pVfs, zPath, flags, pResOut);
@@ -309,9 +309,9 @@ static int devsymAccess(
 ** of at least (DEVSYM_MAX_PATHNAME+1) bytes.
 */
 static int devsymFullPathname(
-  sqlite3_vfs *pVfs, 
-  const char *zPath, 
-  int nOut, 
+  sqlite3_vfs *pVfs,
+  const char *zPath,
+  int nOut,
   char *zOut
 ){
   return sqlite3OsFullPathname(g.pVfs, zPath, nOut, zOut);
@@ -327,7 +327,7 @@ static void *devsymDlOpen(sqlite3_vfs *pVfs, const char *zPath){
 
 /*
 ** Populate the buffer zErrMsg (size nByte bytes) with a human readable
-** utf-8 string describing the most recent error encountered associated 
+** utf-8 string describing the most recent error encountered associated
 ** with dynamic libraries.
 */
 static void devsymDlError(sqlite3_vfs *pVfs, int nByte, char *zErrMsg){
@@ -350,7 +350,7 @@ static void devsymDlClose(sqlite3_vfs *pVfs, void *pHandle){
 #endif /* SQLITE_OMIT_LOAD_EXTENSION */
 
 /*
-** Populate the buffer pointed to by zBufOut with nByte bytes of 
+** Populate the buffer pointed to by zBufOut with nByte bytes of
 ** random data.
 */
 static int devsymRandomness(sqlite3_vfs *pVfs, int nByte, char *zBufOut){
@@ -358,7 +358,7 @@ static int devsymRandomness(sqlite3_vfs *pVfs, int nByte, char *zBufOut){
 }
 
 /*
-** Sleep for nMicro microseconds. Return the number of microseconds 
+** Sleep for nMicro microseconds. Return the number of microseconds
 ** actually slept.
 */
 static int devsymSleep(sqlite3_vfs *pVfs, int nMicro){

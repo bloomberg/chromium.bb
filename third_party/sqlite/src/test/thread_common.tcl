@@ -15,7 +15,7 @@ if {[info exists ::thread_procs]} {
   return 0
 }
 
-# The following script is sourced by every thread spawned using 
+# The following script is sourced by every thread spawned using
 # [sqlthread spawn]:
 set thread_procs {
 
@@ -24,8 +24,8 @@ set thread_procs {
   proc execsql {sql} {
 
     set rc SQLITE_LOCKED
-    while {$rc eq "SQLITE_LOCKED" 
-        || $rc eq "SQLITE_BUSY" 
+    while {$rc eq "SQLITE_LOCKED"
+        || $rc eq "SQLITE_BUSY"
         || $rc eq "SQLITE_SCHEMA"} {
       set res [list]
 
@@ -86,10 +86,10 @@ proc thread_spawn {varname args} {
 # Return true if this build can run the multi-threaded tests.
 #
 proc run_thread_tests {{print_warning 0}} {
-  ifcapable !mutex { 
+  ifcapable !mutex {
     set zProblem "SQLite build is not threadsafe"
   }
-  ifcapable mutex_noop { 
+  ifcapable mutex_noop {
     set zProblem "SQLite build uses SQLITE_MUTEX_NOOP"
   }
   if {[info commands sqlthread] eq ""} {

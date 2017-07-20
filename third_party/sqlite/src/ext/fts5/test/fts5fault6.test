@@ -102,7 +102,7 @@ do_faultsim_test 2.3 -faults oom-t* -prep {
 }
 
 #-------------------------------------------------------------------------
-# OOM in the ASCII tokenizer with very large tokens. 
+# OOM in the ASCII tokenizer with very large tokens.
 #
 # Also the unicode tokenizer.
 #
@@ -142,7 +142,7 @@ faultsim_save_and_close
 do_faultsim_test 4.1 -faults oom-t* -prep {
   faultsim_restore_and_reopen
 } -body {
-  db eval { 
+  db eval {
     CREATE VIRTUAL TABLE yu USING fts5(x, tokenize="unicode61 separators abc");
   }
 } -test {
@@ -181,7 +181,7 @@ do_test 5.0 {
   execsql { CREATE VIRTUAL TABLE t1 USING fts5(a, tokenize=tcl) }
   execsql { INSERT INTO t1(t1, rank) VALUES('pgsz', 32) }
   foreach {rowid text} {
-    1 {aaaa cc b aaaaa cc aa} 
+    1 {aaaa cc b aaaaa cc aa}
     2 {aa aa bb a bbb}
     3 {bb aaaaa aaaaa b aaaa aaaaa}
     4 {aa a b aaaa aa}
@@ -249,7 +249,7 @@ do_faultsim_test 5.2 -faults oom* -prep {
   sqlite3_fts5_register_matchinfo db
   db func mit mit
 } -body {
-  db eval { 
+  db eval {
     SELECT rowid, mit(matchinfo(t1, 'x')) FROM t1 WHERE t1 MATCH 'a AND c'
   }
 } -test {
@@ -260,7 +260,7 @@ do_faultsim_test 5.3 -faults oom* -prep {
   faultsim_restore_and_reopen
   sqlite3_fts5_create_tokenizer db tcl tcl_create
 } -body {
-  db eval { 
+  db eval {
     SELECT count(*) FROM t1 WHERE t1 MATCH 'd AND e AND f'
   }
 } -test {
@@ -271,7 +271,7 @@ do_faultsim_test 5.4 -faults oom* -prep {
   faultsim_restore_and_reopen
   sqlite3_fts5_create_tokenizer db tcl tcl_create
 } -body {
-  db eval { 
+  db eval {
     SELECT count(*) FROM t1 WHERE t1 MATCH 'x + e'
   }
 } -test {

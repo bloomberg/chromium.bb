@@ -8,7 +8,7 @@
 #    May you share freely, never taking more than you give.
 #
 #*************************************************************************
-# This file implements regression tests for SQLite library. The 
+# This file implements regression tests for SQLite library. The
 # focus of this script is testing that the overflow-page related
 # enhancements added after version 3.3.17 speed things up.
 #
@@ -23,7 +23,7 @@
 #
 #   + When deleting rows that span overflow pages. This is faster
 #     because the overflow pages no longer need to be read before
-#     they can be moved to the free list (test cases speed3-1.X). 
+#     they can be moved to the free list (test cases speed3-1.X).
 #
 #   + When reading a column value stored on an overflow page that
 #     is not the first overflow page for the row. The improvement
@@ -108,10 +108,10 @@ proc io_log {db} {
 proc speed3_reset_db {} {
   db close
   sqlite3 db test.db
-  db eval { 
+  db eval {
     PRAGMA main.cache_size = 200000;
     PRAGMA main.auto_vacuum = 'incremental';
-    ATTACH 'test2.db' AS 'aux'; 
+    ATTACH 'test2.db' AS 'aux';
     PRAGMA aux.auto_vacuum = 'none';
   }
 }
@@ -159,7 +159,7 @@ speed_trial speed3-1.incrvacuum $::NROW row {DELETE FROM main.t1 WHERE 1}
 speed_trial speed3-1.normal     $::NROW row {DELETE FROM aux.t1 WHERE 1}
 io_log db
 
-# Select the "C" column (located at the far end of the overflow 
+# Select the "C" column (located at the far end of the overflow
 # chain) from each table row.
 #
 #db eval {PRAGMA incremental_vacuum(500000)}

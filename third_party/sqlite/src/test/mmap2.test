@@ -9,11 +9,11 @@
 #
 #***********************************************************************
 #
-# This file tests the effect of the mmap() or mremap() system calls 
-# returning an error on the library. 
+# This file tests the effect of the mmap() or mremap() system calls
+# returning an error on the library.
 #
-# If either mmap() or mremap() fails, SQLite should log an error 
-# message, then continue accessing the database using read() and 
+# If either mmap() or mremap() fails, SQLite should log an error
+# message, then continue accessing the database using read() and
 # write() exclusively.
 #
 
@@ -35,12 +35,12 @@ sqlite3_shutdown
 test_sqlite3_log xLog
 proc xLog {error_code msg} {
   if {[string match os_unix.c* $msg]} {
-    lappend ::log $msg 
+    lappend ::log $msg
   }
 }
 
 foreach syscall {mmap mremap} {
-  test_syscall uninstall 
+  test_syscall uninstall
   if {[catch {test_syscall install $syscall}]} continue
 
   for {set i 1} {$i < 20} {incr i} {
@@ -80,8 +80,8 @@ foreach syscall {mmap mremap} {
 }
 
 db close
-test_syscall uninstall 
+test_syscall uninstall
 sqlite3_shutdown
-test_sqlite3_log 
+test_sqlite3_log
 sqlite3_initialize
 finish_test

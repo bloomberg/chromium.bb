@@ -285,7 +285,7 @@ do_test delete-8.1 {
   }
 } {1 {attempt to write a readonly database}}
 do_test delete-8.2 {
-  execsql {SELECT * FROM t3} 
+  execsql {SELECT * FROM t3}
 } {123}
 do_test delete-8.3 {
   catchsql {
@@ -293,7 +293,7 @@ do_test delete-8.3 {
   }
 } {1 {attempt to write a readonly database}}
 do_test delete-8.4 {
-  execsql {SELECT * FROM t3} 
+  execsql {SELECT * FROM t3}
 } {123}
 
 # Update for v3: In v2 the DELETE statement would succeed because no
@@ -321,9 +321,9 @@ forcedelete test.db test.db-journal
 # The following tests verify that SQLite correctly handles the case
 # where an index B-Tree is being scanned, the rowid column being read
 # from each index entry and another statement deletes some rows from
-# the index B-Tree. At one point this (obscure) scenario was causing 
+# the index B-Tree. At one point this (obscure) scenario was causing
 # SQLite to return spurious SQLITE_CORRUPT errors and arguably incorrect
-# query results. 
+# query results.
 #
 do_test delete-9.1 {
   sqlite3 db test.db

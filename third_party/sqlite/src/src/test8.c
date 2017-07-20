@@ -49,8 +49,8 @@ typedef struct echo_cursor echo_cursor;
 /*
 ** Errors can be provoked within the following echo virtual table methods:
 **
-**   xBestIndex   xOpen     xFilter   xNext   
-**   xColumn      xRowid    xUpdate   xSync   
+**   xBestIndex   xOpen     xFilter   xNext
+**   xColumn      xRowid    xUpdate   xSync
 **   xBegin       xRename
 **
 ** This is done by setting the global tcl variable:
@@ -62,10 +62,10 @@ typedef struct echo_cursor echo_cursor;
 ** the name of the virtual table, the name of the underlying real table).
 */
 
-/* 
+/*
 ** An echo virtual-table object.
 **
-** echo.vtab.aIndex is an array of booleans. The nth entry is true if 
+** echo.vtab.aIndex is an array of booleans. The nth entry is true if
 ** the nth column of the real table is the left-most column of an index
 ** (implicit or otherwise). In other words, if SQLite can optimize
 ** a query like "SELECT * FROM real_table WHERE col = ?".
@@ -157,9 +157,9 @@ static void dequoteString(char *z){
 ** on *paCol.
 */
 static int getColumnNames(
-  sqlite3 *db, 
+  sqlite3 *db,
   const char *zTab,
-  char ***paCol, 
+  char ***paCol,
   int *pnCol
 ){
   char **aCol = 0;
@@ -186,7 +186,7 @@ static int getColumnNames(
     char *zSpace;
     nCol = sqlite3_column_count(pStmt);
 
-    /* Figure out how much space to allocate for the array of column names 
+    /* Figure out how much space to allocate for the array of column names
     ** (including space for the strings themselves). Then allocate it.
     */
     nBytes = sizeof(char *) * nCol;
@@ -225,15 +225,15 @@ out:
 }
 
 /*
-** Parameter zTab is the name of a table in database db with nCol 
-** columns. This function allocates an array of integers nCol in 
-** size and populates it according to any implicit or explicit 
+** Parameter zTab is the name of a table in database db with nCol
+** columns. This function allocates an array of integers nCol in
+** size and populates it according to any implicit or explicit
 ** indices on table zTab.
 **
-** If successful, SQLITE_OK is returned and *paIndex set to point 
+** If successful, SQLITE_OK is returned and *paIndex set to point
 ** at the allocated array. Otherwise, an error code is returned.
 **
-** See comments associated with the member variable aIndex above 
+** See comments associated with the member variable aIndex above
 ** "struct echo_vtab" for details of the contents of the array.
 */
 static int getIndexArray(
@@ -263,7 +263,7 @@ static int getIndexArray(
   rc = sqlite3_prepare(db, zSql, -1, &pStmt, 0);
   sqlite3_free(zSql);
 
-  /* For each index, figure out the left-most column and set the 
+  /* For each index, figure out the left-most column and set the
   ** corresponding entry in aIndex[] to 1.
   */
   while( pStmt && sqlite3_step(pStmt)==SQLITE_ROW ){
@@ -317,7 +317,7 @@ static void appendToEchoModule(Tcl_Interp *interp, const char *zArg){
 
 /*
 ** This function is called from within the echo-modules xCreate and
-** xConnect methods. The argc and argv arguments are copies of those 
+** xConnect methods. The argc and argv arguments are copies of those
 ** passed to the calling method. This function is responsible for
 ** calling sqlite3_declare_vtab() to declare the schema of the virtual
 ** table being created or connected.
@@ -327,20 +327,20 @@ static void appendToEchoModule(Tcl_Interp *interp, const char *zArg){
 **   CREATE TABLE t1 AS echo(t2);
 **
 ** Then t2 is assumed to be the name of a *real* database table. The
-** schema of the virtual table is declared by passing a copy of the 
+** schema of the virtual table is declared by passing a copy of the
 ** CREATE TABLE statement for the real table to sqlite3_declare_vtab().
-** Hence, the virtual table should have exactly the same column names and 
+** Hence, the virtual table should have exactly the same column names and
 ** types as the real table.
 */
 static int echoDeclareVtab(
-  echo_vtab *pVtab, 
-  sqlite3 *db 
+  echo_vtab *pVtab,
+  sqlite3 *db
 ){
   int rc = SQLITE_OK;
 
   if( pVtab->zTableName ){
     sqlite3_stmt *pStmt = 0;
-    rc = sqlite3_prepare(db, 
+    rc = sqlite3_prepare(db,
         "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = ?",
         -1, &pStmt, 0);
     if( rc==SQLITE_OK ){
@@ -355,7 +355,7 @@ static int echoDeclareVtab(
         }
       } else {
         rc = sqlite3_finalize(pStmt);
-        if( rc==SQLITE_OK ){ 
+        if( rc==SQLITE_OK ){
           rc = SQLITE_ERROR;
         }
       }
@@ -458,7 +458,7 @@ static int echoConstructor(
   return SQLITE_OK;
 }
 
-/* 
+/*
 ** Echo virtual table module xCreate method.
 */
 static int echoCreate(
@@ -472,8 +472,8 @@ static int echoCreate(
   appendToEchoModule(((EchoModule *)pAux)->interp, "xCreate");
   rc = echoConstructor(db, pAux, argc, argv, ppVtab, pzErr);
 
-  /* If there were two arguments passed to the module at the SQL level 
-  ** (i.e. "CREATE VIRTUAL TABLE tbl USING echo(arg1, arg2)"), then 
+  /* If there were two arguments passed to the module at the SQL level
+  ** (i.e. "CREATE VIRTUAL TABLE tbl USING echo(arg1, arg2)"), then
   ** the second argument is used as a table name. Attempt to create
   ** such a table with a single column, "logmsg". This table will
   ** be used to log calls to the xUpdate method. It will be deleted
@@ -506,7 +506,7 @@ static int echoCreate(
   return rc;
 }
 
-/* 
+/*
 ** Echo virtual table module xConnect method.
 */
 static int echoConnect(
@@ -520,7 +520,7 @@ static int echoConnect(
   return echoConstructor(db, pAux, argc, argv, ppVtab, pzErr);
 }
 
-/* 
+/*
 ** Echo virtual table module xDisconnect method.
 */
 static int echoDisconnect(sqlite3_vtab *pVtab){
@@ -528,7 +528,7 @@ static int echoDisconnect(sqlite3_vtab *pVtab){
   return echoDestructor(pVtab);
 }
 
-/* 
+/*
 ** Echo virtual table module xDestroy method.
 */
 static int echoDestroy(sqlite3_vtab *pVtab){
@@ -550,7 +550,7 @@ static int echoDestroy(sqlite3_vtab *pVtab){
   return rc;
 }
 
-/* 
+/*
 ** Echo virtual table module xOpen method.
 */
 static int echoOpen(sqlite3_vtab *pVTab, sqlite3_vtab_cursor **ppCursor){
@@ -563,7 +563,7 @@ static int echoOpen(sqlite3_vtab *pVTab, sqlite3_vtab_cursor **ppCursor){
   return (pCur ? SQLITE_OK : SQLITE_NOMEM);
 }
 
-/* 
+/*
 ** Echo virtual table module xClose method.
 */
 static int echoClose(sqlite3_vtab_cursor *cur){
@@ -584,7 +584,7 @@ static int echoEof(sqlite3_vtab_cursor *cur){
   return (((echo_cursor *)cur)->pStmt ? 0 : 1);
 }
 
-/* 
+/*
 ** Echo virtual table module xNext method.
 */
 static int echoNext(sqlite3_vtab_cursor *cur){
@@ -608,7 +608,7 @@ static int echoNext(sqlite3_vtab_cursor *cur){
   return rc;
 }
 
-/* 
+/*
 ** Echo virtual table module xColumn method.
 */
 static int echoColumn(sqlite3_vtab_cursor *cur, sqlite3_context *ctx, int i){
@@ -628,7 +628,7 @@ static int echoColumn(sqlite3_vtab_cursor *cur, sqlite3_context *ctx, int i){
   return SQLITE_OK;
 }
 
-/* 
+/*
 ** Echo virtual table module xRowid method.
 */
 static int echoRowid(sqlite3_vtab_cursor *cur, sqlite_int64 *pRowid){
@@ -645,7 +645,7 @@ static int echoRowid(sqlite3_vtab_cursor *cur, sqlite_int64 *pRowid){
 /*
 ** Compute a simple hash of the null terminated string zString.
 **
-** This module uses only sqlite3_index_info.idxStr, not 
+** This module uses only sqlite3_index_info.idxStr, not
 ** sqlite3_index_info.idxNum. So to test idxNum, when idxStr is set
 ** in echoBestIndex(), idxNum is set to the corresponding hash value.
 ** In echoFilter(), code assert()s that the supplied idxNum value is
@@ -660,11 +660,11 @@ static int hashString(const char *zString){
   return (int)(val&0x7fffffff);
 }
 
-/* 
+/*
 ** Echo virtual table module xFilter method.
 */
 static int echoFilter(
-  sqlite3_vtab_cursor *pVtabCursor, 
+  sqlite3_vtab_cursor *pVtabCursor,
   int idxNum, const char *idxStr,
   int argc, sqlite3_value **argv
 ){
@@ -750,7 +750,7 @@ static void string_concat(char **pzStr, char *zAppend, int doFree, int *pRc){
 }
 
 /*
-** This function returns a pointer to an sqlite3_malloc()ed buffer 
+** This function returns a pointer to an sqlite3_malloc()ed buffer
 ** containing the select-list (the thing between keywords SELECT and FROM)
 ** to query the underlying real table with for the scan described by
 ** argument pIdxInfo.
@@ -787,10 +787,10 @@ static char *echoSelectList(echo_vtab *pTab, sqlite3_index_info *pIdxInfo){
 **
 ** then the echo module handles WHERE or ORDER BY clauses that refer
 ** to the column "b", but not "a" or "c". If a multi-column index is
-** present, only its left most column is considered. 
+** present, only its left most column is considered.
 **
 ** This xBestIndex method encodes the proposed search strategy as
-** an SQL query on the real table underlying the virtual echo module 
+** an SQL query on the real table underlying the virtual echo module
 ** table and stores the query in sqlite3_index_info.idxStr. The SQL
 ** statement is of the form:
 **
@@ -826,8 +826,8 @@ static int echoBestIndex(sqlite3_vtab *tab, sqlite3_index_info *pIdxInfo){
 
   /* Determine the number of rows in the table and store this value in local
   ** variable nRow. The 'estimated-cost' of the scan will be the number of
-  ** rows in the table for a linear scan, or the log (base 2) of the 
-  ** number of rows if the proposed scan uses an index.  
+  ** rows in the table for a linear scan, or the log (base 2) of the
+  ** number of rows if the proposed scan uses an index.
   */
   if( Tcl_GetVar(interp, "echo_module_cost", TCL_GLOBAL_ONLY) ){
     cost = atof(Tcl_GetVar(interp, "echo_module_cost", TCL_GLOBAL_ONLY));
@@ -898,7 +898,7 @@ static int echoBestIndex(sqlite3_vtab *tab, sqlite3_index_info *pIdxInfo){
           zOp = "regexp"; break;
       }
       if( zOp[0]=='L' ){
-        zNew = sqlite3_mprintf(" %s %s LIKE (SELECT '%%'||?||'%%')", 
+        zNew = sqlite3_mprintf(" %s %s LIKE (SELECT '%%'||?||'%%')",
                                zSep, zNewCol);
       } else {
         zNew = sqlite3_mprintf(" %s %s %s ?", zSep, zNewCol, zOp);
@@ -912,7 +912,7 @@ static int echoBestIndex(sqlite3_vtab *tab, sqlite3_index_info *pIdxInfo){
   }
 
   /* If there is only one term in the ORDER BY clause, and it is
-  ** on a column that this virtual table has an index for, then consume 
+  ** on a column that this virtual table has an index for, then consume
   ** the ORDER BY clause.
   */
   if( pIdxInfo->nOrderBy==1 && (
@@ -952,10 +952,10 @@ static int echoBestIndex(sqlite3_vtab *tab, sqlite3_index_info *pIdxInfo){
 
 /*
 ** The xUpdate method for echo module virtual tables.
-** 
+**
 **    apData[0]  apData[1]  apData[2..]
 **
-**    INTEGER                              DELETE            
+**    INTEGER                              DELETE
 **
 **    INTEGER    NULL       (nCol args)    UPDATE (do not set rowid)
 **    INTEGER    INTEGER    (nCol args)    UPDATE (with SET rowid = <arg1>)
@@ -965,9 +965,9 @@ static int echoBestIndex(sqlite3_vtab *tab, sqlite3_index_info *pIdxInfo){
 **
 */
 int echoUpdate(
-  sqlite3_vtab *tab, 
-  int nData, 
-  sqlite3_value **apData, 
+  sqlite3_vtab *tab,
+  int nData,
+  sqlite3_value **apData,
   sqlite_int64 *pRowid
 ){
   echo_vtab *pVtab = (echo_vtab *)tab;
@@ -1028,7 +1028,7 @@ int echoUpdate(
     int ii;
     char *zInsert = 0;
     char *zValues = 0;
-  
+
     zInsert = sqlite3_mprintf("INSERT INTO %Q (", pVtab->zTableName);
     if( !zInsert ){
       rc = SQLITE_NOMEM;
@@ -1041,9 +1041,9 @@ int echoUpdate(
 
     assert((pVtab->nCol+2)==nData);
     for(ii=2; ii<nData; ii++){
-      string_concat(&zInsert, 
+      string_concat(&zInsert,
           sqlite3_mprintf("%s%Q", zValues?", ":"", pVtab->aCol[ii-2]), 1, &rc);
-      string_concat(&zValues, 
+      string_concat(&zValues,
           sqlite3_mprintf("%s?%d", zValues?", ":"", ii), 1, &rc);
     }
 
@@ -1111,7 +1111,7 @@ static int echoBegin(sqlite3_vtab *tab){
   int rc;
   echo_vtab *pVtab = (echo_vtab *)tab;
   Tcl_Interp *interp = pVtab->interp;
-  const char *zVal; 
+  const char *zVal;
 
   /* Ticket #3083 - do not start a transaction if we are already in
   ** a transaction */
@@ -1142,7 +1142,7 @@ static int echoSync(sqlite3_vtab *tab){
   int rc;
   echo_vtab *pVtab = (echo_vtab *)tab;
   Tcl_Interp *interp = pVtab->interp;
-  const char *zVal; 
+  const char *zVal;
 
   /* Ticket #3083 - Only call xSync if we have previously started a
   ** transaction */
@@ -1266,7 +1266,7 @@ static int echoRename(sqlite3_vtab *vtab, const char *zNewName){
 
   if( p->isPattern ){
     int nThis = (int)strlen(p->zThis);
-    char *zSql = sqlite3_mprintf("ALTER TABLE %s RENAME TO %s%s", 
+    char *zSql = sqlite3_mprintf("ALTER TABLE %s RENAME TO %s%s",
         p->zTableName, zNewName, &p->zTableName[nThis]
     );
     rc = sqlite3_exec(p->db, zSql, 0, 0, 0);
@@ -1300,7 +1300,7 @@ static sqlite3_module echoModule = {
   echoCreate,
   echoConnect,
   echoBestIndex,
-  echoDisconnect, 
+  echoDisconnect,
   echoDestroy,
   echoOpen,                  /* xOpen - open a cursor */
   echoClose,                 /* xClose - close a cursor */
@@ -1323,7 +1323,7 @@ static sqlite3_module echoModuleV2 = {
   echoCreate,
   echoConnect,
   echoBestIndex,
-  echoDisconnect, 
+  echoDisconnect,
   echoDestroy,
   echoOpen,                  /* xOpen - open a cursor */
   echoClose,                 /* xClose - close a cursor */
@@ -1383,7 +1383,7 @@ static int SQLITE_TCLAPI register_echo_module(
   if( rc==SQLITE_OK ){
     pMod = sqlite3_malloc(sizeof(EchoModule));
     pMod->interp = interp;
-    rc = sqlite3_create_module_v2(db, "echo_v2", 
+    rc = sqlite3_create_module_v2(db, "echo_v2",
         &echoModuleV2, (void*)pMod, moduleDestroy
     );
   }
@@ -1435,7 +1435,7 @@ int Sqlitetest8_Init(Tcl_Interp *interp){
   };
   int i;
   for(i=0; i<sizeof(aObjCmd)/sizeof(aObjCmd[0]); i++){
-    Tcl_CreateObjCommand(interp, aObjCmd[i].zName, 
+    Tcl_CreateObjCommand(interp, aObjCmd[i].zName,
         aObjCmd[i].xProc, aObjCmd[i].clientData, 0);
   }
 #endif

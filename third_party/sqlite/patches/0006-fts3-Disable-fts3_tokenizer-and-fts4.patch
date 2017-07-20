@@ -22,13 +22,13 @@ index 7c931c42d49e..9659815da93a 100644
  ** older data.
  */
 +#define CHROMIUM_FTS3_CHANGES 1
- 
+
  #include "fts3Int.h"
  #if !defined(SQLITE_CORE) || defined(SQLITE_ENABLE_FTS3)
 @@ -3955,7 +3956,11 @@ int sqlite3Fts3Init(sqlite3 *db){
    ** module with sqlite.
    */
-   if( SQLITE_OK==rc 
+   if( SQLITE_OK==rc
 +#if CHROMIUM_FTS3_CHANGES && !SQLITE_TEST
 +      /* fts3_tokenizer() disabled for security reasons. */
 +#else
@@ -54,7 +54,7 @@ index 7c931c42d49e..9659815da93a 100644
 +#endif
      return rc;
    }
- 
--- 
+
+--
 2.11.0
 

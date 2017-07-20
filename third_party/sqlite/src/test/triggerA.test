@@ -11,7 +11,7 @@
 # This file implements regression tests for SQLite library. Specifically,
 # it tests issues relating to firing an INSTEAD OF trigger on a VIEW
 # when one tries to UPDATE or DELETE from the view.  Does the WHERE
-# clause of the UPDATE or DELETE statement get passed down correctly 
+# clause of the UPDATE or DELETE statement get passed down correctly
 # into the query that manifests the view?
 #
 # Ticket #2938
@@ -223,7 +223,7 @@ do_malloc_test triggerA-3 -tclprep {
   forcedelete test.db test.db-journal
   forcecopy test.db-triggerA test.db
   sqlite3 db test.db
-  sqlite3_extended_result_codes db 1  
+  sqlite3_extended_result_codes db 1
   db eval {SELECT * FROM v5; -- warm up the cache}
 } -sqlbody {
    DELETE FROM v5 WHERE x=5;

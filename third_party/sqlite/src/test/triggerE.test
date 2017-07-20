@@ -35,12 +35,12 @@ do_execsql_test 1.0 {
 #   ATTACH 'test.db2' AS aux;
 #   CREATE TABLE aux.t4(x);
 #   INSERT INTO aux.t4 VALUES(5);
-# 
+#
 #   CREATE TRIGGER tr1 AFTER INSERT ON t1 WHEN new.a IN (SELECT x FROM aux.t4)
 #   BEGIN
 #     SELECT 1;
 #   END;
-# } 
+# }
 # do_execsql_test 1.2 { INSERT INTO t1 VALUES(1,1); }
 # do_execsql_test 1.3 { INSERT INTO t1 VALUES(5,5); }
 
@@ -64,14 +64,14 @@ foreach {tn defn} {
 }
 
 #-------------------------------------------------------------------------
-# Test that variable references within trigger definitions loaded from 
+# Test that variable references within trigger definitions loaded from
 # the sqlite_master table are automatically converted to NULL.
 #
 do_execsql_test 2.1 {
   PRAGMA writable_schema = 1;
   INSERT INTO sqlite_master VALUES('trigger', 'tr1', 't1', 0,
-    'CREATE TRIGGER tr1 AFTER INSERT ON t1 BEGIN 
-        INSERT INTO t2 VALUES(?1, ?2); 
+    'CREATE TRIGGER tr1 AFTER INSERT ON t1 BEGIN
+        INSERT INTO t2 VALUES(?1, ?2);
      END'
   );
 

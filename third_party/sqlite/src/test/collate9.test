@@ -55,43 +55,43 @@ do_test collate9-1.1 {
   }
 } {}
 do_test collate9-1.2 {
-  execsql { 
+  execsql {
     SELECT x FROM xy ORDER BY x
   }
 } {two three one}
 do_test collate9-1.3 {
-  execsql { 
+  execsql {
     SELECT y FROM xy ORDER BY y
   }
 } {one three two}
 do_test collate9-1.4 {
-  cksort { 
+  cksort {
     SELECT x FROM xy ORDER BY x
   }
 } {two three one sort}
 do_test collate9-1.5 {
-  execsql { 
+  execsql {
     CREATE INDEX xy_i ON xy(x)
   }
 } {}
 do_test collate9-1.6 {
-  cksort { 
+  cksort {
     SELECT x FROM xy ORDER BY x
   }
 } {two three one nosort}
 
 do_test collate9-2.1 {
-  execsql { 
+  execsql {
     SELECT x, x < 'seven' FROM xy ORDER BY x
   }
 } {two 1 three 1 one 0}
 do_test collate9-2.2 {
-  execsql { 
+  execsql {
     SELECT y, y < 'seven' FROM xy ORDER BY x
   }
 } {two 0 three 0 one 1}
 do_test collate9-2.3 {
-  execsql { 
+  execsql {
     SELECT y, y COLLATE "reverse sort" < 'seven' FROM xy ORDER BY x
   }
 } {two 1 three 1 one 0}
@@ -117,22 +117,22 @@ do_test collate9-3.1 {
   }
 } {}
 do_test collate9-3.2 {
-  cksort { 
-    SELECT y FROM xy ORDER BY y 
+  cksort {
+    SELECT y FROM xy ORDER BY y
   }
 } {one three two sort}
 do_test collate9-3.3 {
-  cksort { 
+  cksort {
     SELECT y FROM xy ORDER BY y COLLATE "reverse sort"
   }
 } {two three one nosort}
 do_test collate9-3.4 {
-  cksort { 
+  cksort {
     SELECT y AS aaa FROM xy ORDER BY aaa
   }
 } {one three two sort}
 do_test collate9-3.5 {
-  cksort { 
+  cksort {
     SELECT y COLLATE "reverse sort" AS aaa FROM xy ORDER BY aaa
   }
 } {two three one nosort}

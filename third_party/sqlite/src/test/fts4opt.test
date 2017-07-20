@@ -21,7 +21,7 @@ ifcapable !fts3 {
   return
 }
 
-# Create the fts_kjv_genesis procedure which fills and FTS3/4 table 
+# Create the fts_kjv_genesis procedure which fills and FTS3/4 table
 # with the complete text of the Book of Genesis.
 #
 source $testdir/genesis.tcl
@@ -43,19 +43,19 @@ proc prepare_for_optimize {db tbl} {
         level, idx, start_block, leaves_end_block, end_block, root
       );
 
-      INSERT INTO temp.tmp_segdir 
-        SELECT 
+      INSERT INTO temp.tmp_segdir
+        SELECT
         1024*(o.level / 1024) + 32,                                -- level
         sum(o.level<i.level OR (o.level=i.level AND o.idx>i.idx)), -- idx
         o.start_block, o.leaves_end_block, o.end_block, o.root     -- other
-        FROM %_segdir o, %_segdir i 
+        FROM %_segdir o, %_segdir i
         WHERE (o.level / 1024) = (i.level / 1024)
         GROUP BY o.level, o.idx;
-  
+
       DELETE FROM %_segdir;
       INSERT INTO %_segdir SELECT * FROM temp.tmp_segdir;
       DROP TABLE temp.tmp_segdir;
-  
+
     COMMIT;
   }]
 }
@@ -70,9 +70,9 @@ do_test 1.1 {
 do_execsql_test 1.2 {
   SELECT level, count(*) FROM t2_segdir GROUP BY level
 } {
-  0    13    1 15    2 5 
-  1024 13 1025 15 1026 5 
-  2048 13 2049 15 2050 5 
+  0    13    1 15    2 5
+  1024 13 1025 15 1026 5
+  2048 13 2049 15 2050 5
   3072 13 3073 15 3074 5
 }
 
@@ -83,9 +83,9 @@ do_execsql_test 1.4 { INSERT INTO t2(t2) VALUES('integrity-check') }
 do_execsql_test 1.5 {
   SELECT level, count(*) FROM t2_segdir GROUP BY level
 } {
-  32   33 
-  1056 33 
-  2080 33 
+  32   33
+  1056 33
+  2080 33
   3104 33
 }
 
@@ -131,9 +131,9 @@ do_test 2.1 {
 do_execsql_test 2.2 {
   SELECT level, count(*) FROM t2_segdir GROUP BY level
 } {
-  0    10    1 15    2 12 
-  1024 10 1025 15 1026 12 
-  2048 10 2049 15 2050 12 
+  0    10    1 15    2 12
+  1024 10 1025 15 1026 12
+  2048 10 2049 15 2050 12
   3072 10 3073 15 3074 12
 }
 
@@ -144,9 +144,9 @@ do_execsql_test 2.4 { INSERT INTO t2(t2) VALUES('integrity-check') }
 do_execsql_test 2.5 {
   SELECT level, count(*) FROM t2_segdir GROUP BY level
 } {
-    32 37 
-  1056 37 
-  2080 37 
+    32 37
+  1056 37
+  2080 37
   3104 37
 }
 

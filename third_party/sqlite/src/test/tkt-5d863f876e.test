@@ -11,7 +11,7 @@
 # This file implements regression tests for SQLite library.
 #
 # This file implements tests to verify that ticket [5d863f876e] has been
-# fixed.  
+# fixed.
 #
 
 set testdir [file dirname $argv0]
@@ -34,7 +34,7 @@ do_multiclient_test tn {
   } {wal delete}
 
   do_test $tn.2 {
-    sql2 { SELECT * FROM t1 } 
+    sql2 { SELECT * FROM t1 }
   } {1 2 3 4}
 
   do_test $tn.3 {

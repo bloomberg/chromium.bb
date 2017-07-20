@@ -29,55 +29,55 @@ foreach f [list test.db test.db-journal] {
     db close
     delete_file test.db
     sqlite3 db test.db
-  
+
     set from_size [expr 1024 << ($ii&3)]
     set to_size   [expr 1024 << (($ii>>2)&3)]
-  
+
     execsql "
       PRAGMA page_size = $from_size;
       BEGIN;
       CREATE TABLE abc(a PRIMARY KEY, b, c);
       INSERT INTO abc VALUES(randomblob(100), randomblob(200), randomblob(1000));
-      INSERT INTO abc 
+      INSERT INTO abc
           SELECT randomblob(1000), randomblob(200), randomblob(100)
           FROM abc;
-      INSERT INTO abc 
+      INSERT INTO abc
           SELECT randomblob(100), randomblob(200), randomblob(1000)
           FROM abc;
-      INSERT INTO abc 
+      INSERT INTO abc
           SELECT randomblob(100), randomblob(200), randomblob(1000)
           FROM abc;
-      INSERT INTO abc 
+      INSERT INTO abc
           SELECT randomblob(100), randomblob(200), randomblob(1000)
           FROM abc;
-      INSERT INTO abc 
+      INSERT INTO abc
           SELECT randomblob(100), randomblob(200), randomblob(1000)
           FROM abc WHERE [expr $ii&16];
-      INSERT INTO abc 
+      INSERT INTO abc
           SELECT randomblob(25), randomblob(45), randomblob(9456)
           FROM abc WHERE [expr $ii&32];
-      INSERT INTO abc 
+      INSERT INTO abc
           SELECT randomblob(100), randomblob(200), randomblob(1000)
           FROM abc WHERE [expr $ii&8];
-      INSERT INTO abc 
+      INSERT INTO abc
           SELECT randomblob(25), randomblob(45), randomblob(9456)
           FROM abc WHERE [expr $ii&4];
       COMMIT;
     "
-  
+
     set sig [signature]
     db close
-  
+
     do_test crash7-1.$ii.crash {
        crashsql -file $f "
          PRAGMA page_size = $to_size;
          VACUUM;
        "
     } {1 {child process exited abnormally}}
-  
+
     sqlite3 db test.db
     integrity_check crash7-1.$ii.integrity
-  } 
+  }
 }
 
 db close

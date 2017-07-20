@@ -24,9 +24,9 @@ if {[working_64bit_int]} {
   } {-9223372036854775808 integer}
 } else {
   # this alternate version of tkt3922.1 doesn't
-  # really test the same thing as the original, 
-  # but is needed to create the table and 
-  # provided simply as a place holder for 
+  # really test the same thing as the original,
+  # but is needed to create the table and
+  # provided simply as a place holder for
   # platforms without working 64bit support.
   do_test tkt3922.1 {
     execsql {
@@ -67,8 +67,8 @@ if {[working_64bit_int]} {
   } {9223372036854775807 integer}
 } else {
   # this alternate version of tkt3922.5 doesn't
-  # really test the same thing as the original, 
-  # but provided simply as a place holder for 
+  # really test the same thing as the original,
+  # but provided simply as a place holder for
   # platforms without working 64bit support.
   do_test tkt3922.5 {
     execsql {

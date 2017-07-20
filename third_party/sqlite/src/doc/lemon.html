@@ -88,9 +88,9 @@ output with all comments, actions, and other extraneous text removed.
 Omit "#line" directives in the generated parser C code.
 <li><b>-m</b>
 Cause the output C source code to be compatible with the "makeheaders"
-program. 
+program.
 <li><b>-p</b>
-Display all conflicts that are resolved by 
+Display all conflicts that are resolved by
 <a href='#precrules'>precedence rules</a>.
 <li><b>-q</b>
 Suppress generation of the report file.
@@ -197,7 +197,7 @@ simple.)
 We assume the existence of some kind of tokenizer which is created
 using TokenizerCreate() on line 8 and deleted by TokenizerFree()
 on line 16.  The GetNextToken() function on line 11 retrieves the
-next token from the input file and puts its type in the 
+next token from the input file and puts its type in the
 integer variable hTokenId.  The sToken variable is assumed to be
 some kind of structure that contains details about each token,
 such as its complete text, what line it occurs on, etc. </p>
@@ -295,7 +295,7 @@ and underscore characters than begins with a lower case letter.
 Again, the usual convention is to make nonterminals use all lower
 case letters.</p>
 
-<p>In Lemon, terminal and nonterminal symbols do not need to 
+<p>In Lemon, terminal and nonterminal symbols do not need to
 be declared or identified in a separate section of the grammar file.
 Lemon is able to generate a list of all terminals and nonterminals
 by examining the grammar rules, and it can always distinguish a
@@ -402,10 +402,10 @@ of the shift, and a reduce-reduce conflict is resolved by reducing
 whichever rule comes first in the grammar file.</p>
 
 <p>Just like in
-yacc and bison, Lemon allows a measure of control 
+yacc and bison, Lemon allows a measure of control
 over the resolution of paring conflicts using precedence rules.
 A precedence value can be assigned to any terminal symbol
-using the 
+using the
 <a href='#pleft'>%left</a>,
 <a href='#pright'>%right</a> or
 <a href='#pnonassoc'>%nonassoc</a> directives.  Terminal symbols
@@ -499,7 +499,7 @@ as follows:
 </ul>
 Reduce-reduce conflicts are resolved this way:
 <ul>
-<li> If either reduce rule 
+<li> If either reduce rule
      lacks precedence information, then resolve in favor of the
      rule that appears first in the grammar and report a parsing
      conflict.
@@ -563,13 +563,13 @@ the <a href='#pinclude'>%include</a> directive except that %include
 is inserted at the beginning of the main output file.</p>
 
 <p>%code is typically used to include some action routines or perhaps
-a tokenizer or even the "main()" function 
+a tokenizer or even the "main()" function
 as part of the output file.</p>
 
 <a name='default_destructor'></a>
 <h4>The <tt>%default_destructor</tt> directive</h4>
 
-<p>The %default_destructor directive specifies a destructor to 
+<p>The %default_destructor directive specifies a destructor to
 use for non-terminals that do not have their own destructor
 specified by a separate %destructor directive.  See the documentation
 on the <a name='#destructor'>%destructor</a> directive below for
@@ -585,7 +585,7 @@ non-terminals using a single statement.</p>
 
 <p>The %default_type directive specifies the datatype of non-terminal
 symbols that do no have their own datatype defined using a separate
-<a href='#ptype'>%type</a> directive.  
+<a href='#ptype'>%type</a> directive.
 </p>
 
 <a name='destructor'></a>
@@ -698,7 +698,7 @@ ignored unless the "-DMACRO" command-line option is used.  Grammar text
 betwen "%ifndef MACRO" and the next nested "%endif" is included except when
 the "-DMACRO" command-line option is used.
 
-<p>Note that the argument to %ifdef and %ifndef must be a single 
+<p>Note that the argument to %ifdef and %ifndef must be a single
 preprocessor symbol name, not a general expression.  There is no "%else"
 directive.
 
@@ -728,7 +728,7 @@ grammar call functions that are prototyed in unistd.h.</p>
 <h4>The <tt>%left</tt> directive</h4>
 
 The %left directive is used (along with the <a href='#pright'>%right</a> and
-<a href='#pnonassoc'>%nonassoc</a> directives) to declare precedences of 
+<a href='#pnonassoc'>%nonassoc</a> directives) to declare precedences of
 terminal symbols.  Every terminal symbol whose name appears after
 a %left directive but before the next period (".") is
 given the same left-associative precedence value.  Subsequent
@@ -778,7 +778,7 @@ parsers and link them all into the same executable.
 <h4>The <tt>%nonassoc</tt> directive</h4>
 
 <p>This directive is used to assign non-associative precedence to
-one or more terminal symbols.  See the section on 
+one or more terminal symbols.  See the section on
 <a href='#precrules'>precedence rules</a>
 or on the <a href='#pleft'>%left</a> directive for additional information.</p>
 
@@ -817,7 +817,7 @@ only invoked when parsing is unable to continue.</p>
 <h4>The <tt>%right</tt> directive</h4>
 
 <p>This directive is used to assign right-associative precedence to
-one or more terminal symbols.  See the section on 
+one or more terminal symbols.  See the section on
 <a href='#precrules'>precedence rules</a>
 or on the <a href='#pleft'>%left</a> directive for additional information.</p>
 
@@ -954,7 +954,7 @@ and able to pay that price, fine.  You just need to know.</p>
 <h4>The <tt>%wildcard</tt> directive</h4>
 
 <p>The %wildcard directive is followed by a single token name and a
-period.  This directive specifies that the identified token should 
+period.  This directive specifies that the identified token should
 match any input token.
 
 <p>When the generated parser has the choice of matching an input against
@@ -980,7 +980,7 @@ until at least three new tokens have been successfully shifted.</p>
 is unable to shift the error symbol, then the %parse_failed routine
 is invoked and the parser resets itself to its start state, ready
 to begin parsing a new file.  This is what will happen at the very
-first syntax error, of course, if there are no instances of the 
+first syntax error, of course, if there are no instances of the
 "error" non-terminal in your grammar.</p>
 
 </body>

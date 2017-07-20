@@ -31,8 +31,8 @@ do_execsql_test 1.0 {
 }
 db close
 
-forcecopy test.db test.db-bak 
-forcecopy rbu.db rbu.db-bak 
+forcecopy test.db test.db-bak
+forcecopy rbu.db rbu.db-bak
 
 do_faultsim_test 1 -faults oom* -prep {
   forcecopy test.db-bak test.db
@@ -48,7 +48,7 @@ do_faultsim_test 1 -faults oom* -prep {
       {1 SQLITE_CONSTRAINT} \
       {1 SQLITE_NOMEM} \
       {1 {SQLITE_NOMEM - unable to open a temporary database file for storing temporary tables}} \
-      {1 {SQLITE_NOMEM - out of memory}} 
+      {1 {SQLITE_NOMEM - out of memory}}
 }
 
 

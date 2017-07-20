@@ -8,7 +8,7 @@
 #    May you share freely, never taking more than you give.
 #
 #***********************************************************************
-# This file implements regression tests for SQLite library. 
+# This file implements regression tests for SQLite library.
 #
 # The focus of this file is testing the compound-SELECT merge
 # optimization.  Or, in other words, making sure that all
@@ -1331,20 +1331,20 @@ do_execsql_test 4.1.1 {
 }
 
 do_eqp_test 4.1.2 {
-  SELECT c, d FROM t5 
+  SELECT c, d FROM t5
   UNION ALL
   SELECT a, b FROM t4 WHERE f()==f()
   ORDER BY 1,2
 } {
-  1 0 0 {SCAN TABLE t5 USING INDEX i2} 
+  1 0 0 {SCAN TABLE t5 USING INDEX i2}
   1 0 0 {USE TEMP B-TREE FOR RIGHT PART OF ORDER BY}
-  2 0 0 {SCAN TABLE t4 USING INDEX i1} 
+  2 0 0 {SCAN TABLE t4 USING INDEX i1}
   2 0 0 {USE TEMP B-TREE FOR RIGHT PART OF ORDER BY}
   0 0 0 {COMPOUND SUBQUERIES 1 AND 2 (UNION ALL)}
 }
 
 do_execsql_test 4.1.3 {
-  SELECT c, d FROM t5 
+  SELECT c, d FROM t5
   UNION ALL
   SELECT a, b FROM t4 WHERE f()==f()
   ORDER BY 1,2
@@ -1370,7 +1370,7 @@ do_execsql_test 4.2.1 {
 do_execsql_test 4.2.2 {
   SELECT c, f(d,c,d,c,d) FROM t7
   UNION ALL
-  SELECT a, b FROM t6 
+  SELECT a, b FROM t6
   ORDER BY 1,2
 } {/2 . 3 . 4 . 5 . 6 . 7 ./}
 

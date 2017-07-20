@@ -11,7 +11,7 @@
 # This file implements regression tests for SQLite library.  The
 # focus of this file is testing the incremental vacuum feature.
 #
-# Note: There are also some tests for incremental vacuum and IO 
+# Note: There are also some tests for incremental vacuum and IO
 # errors in incrvacuum_ioerr.test.
 #
 # $Id: incrvacuum.test,v 1.23 2009/02/18 20:31:18 drh Exp $
@@ -167,7 +167,7 @@ do_test incrvacuum-3.4 {
 } {3}
 
 #---------------------------------------------------------------------
-# Try to run a very simple incremental vacuum. Also verify that 
+# Try to run a very simple incremental vacuum. Also verify that
 # PRAGMA incremental_vacuum is a harmless no-op against a database that
 # does not support auto-vacuum.
 #
@@ -264,7 +264,7 @@ do_test incrvacuum-5.2.5 {
 # the other with no auto-vacuum completely disabled. After executing
 # each element of the following list on both databases, test that
 # the integrity-check passes and the contents of each are identical.
-# 
+#
 set TestScriptList [list {
   BEGIN;
   CREATE TABLE t1(a, b);
@@ -302,7 +302,7 @@ set TestScriptList [list {
 ]
 
 # If this build omits subqueries, step 2 in the above list will not
-# work. Replace it with "" in this case. 
+# work. Replace it with "" in this case.
 #
 ifcapable !subquery { lset TestScriptList 2 "" }
 
@@ -357,13 +357,13 @@ db2 close
 # End of test cases 5.3.*
 
 #---------------------------------------------------------------------
-# The following tests - incrvacuum-6.* - test running incremental 
+# The following tests - incrvacuum-6.* - test running incremental
 # vacuum while another statement (a read) is being executed.
 #
 for {set jj 0} {$jj < 10} {incr jj} {
   # Build some test data. Two tables are created in an empty
   # database. tbl1 data is a contiguous block starting at page 5 (pages
-  # 3 and 4 are the table roots). tbl2 is a contiguous block starting 
+  # 3 and 4 are the table roots). tbl2 is a contiguous block starting
   # right after tbl1.
   #
   # Then drop tbl1 so that when an incr vacuum is run the pages
@@ -389,7 +389,7 @@ for {set jj 0} {$jj < 10} {incr jj} {
     expr {[file size test.db] / 1024}
   } {36}
 
-  # Run a linear scan query on tbl2. After reading ($jj*100) rows, 
+  # Run a linear scan query on tbl2. After reading ($jj*100) rows,
   # run the incremental vacuum to shrink the database.
   #
   do_test incrvacuum-6.${jj}.2 {
@@ -459,7 +459,7 @@ while 1 {
 # with an incremental-vacuum if it is the first statement executed
 # after an existing database is opened.
 #
-# At one point, this would always return SQLITE_SCHEMA (which 
+# At one point, this would always return SQLITE_SCHEMA (which
 # causes an infinite loop in tclsqlite.c if using the Tcl interface).
 #
 do_test incrvacuum-8.1 {
@@ -589,7 +589,7 @@ do_test incrvacuum-10.8 {
 
 #----------------------------------------------------------------
 # Test that if we set the auto_vacuum mode to 'incremental', then
-# create a database, thereafter that database defaults to incremental 
+# create a database, thereafter that database defaults to incremental
 # vacuum mode.
 #
 db close
@@ -777,7 +777,7 @@ do_test incrvacuum-15.1 {
 
   catchsql {INSERT INTO t2 SELECT * FROM t1}
 
-  execsql { 
+  execsql {
     COMMIT;
     PRAGMA integrity_check;
   }

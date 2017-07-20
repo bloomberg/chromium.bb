@@ -9,7 +9,7 @@
 # This file implements regression tests for the FTS SQLite module.
 #
 # This file implements tests to verify that ticket [9fd058691] has been
-# fixed.  
+# fixed.
 #
 
 set testdir [file dirname $argv0]

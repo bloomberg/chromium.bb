@@ -42,11 +42,11 @@ do_execsql_test 2.0 {
     INSERT INTO fts_idx(rowid, b, c) VALUES (new.a, new.b, new.c);
   END;
   CREATE TRIGGER tbl_ad AFTER DELETE ON tbl BEGIN
-    INSERT INTO fts_idx(fts_idx, rowid, b, c) 
+    INSERT INTO fts_idx(fts_idx, rowid, b, c)
       VALUES('delete', old.a, old.b, old.c);
   END;
   CREATE TRIGGER tbl_au AFTER UPDATE ON tbl BEGIN
-    INSERT INTO fts_idx(fts_idx, rowid, b, c) 
+    INSERT INTO fts_idx(fts_idx, rowid, b, c)
       VALUES('delete', old.a, old.b, old.c);
     INSERT INTO fts_idx(rowid, b, c) VALUES (new.a, new.b, new.c);
   END;

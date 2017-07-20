@@ -43,7 +43,7 @@ static void *testContextMalloc(sqlite3_context *context, int nByte){
 ** generating test data.
 */
 static void randStr(sqlite3_context *context, int argc, sqlite3_value **argv){
-  static const unsigned char zSrc[] = 
+  static const unsigned char zSrc[] =
      "abcdefghijklmnopqrstuvwxyz"
      "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
      "0123456789"
@@ -83,7 +83,7 @@ static void randStr(sqlite3_context *context, int argc, sqlite3_value **argv){
 ** and returns the same argument interpreted as TEXT. A destructor is
 ** passed with the sqlite3_result_text() call.
 **
-** SQL function 'test_destructor_count' returns the number of outstanding 
+** SQL function 'test_destructor_count' returns the number of outstanding
 ** allocations made by 'test_destructor';
 **
 ** WARNING: Not threadsafe.
@@ -97,17 +97,17 @@ static void destructor(void *p){
   test_destructor_count_var--;
 }
 static void test_destructor(
-  sqlite3_context *pCtx, 
+  sqlite3_context *pCtx,
   int nArg,
   sqlite3_value **argv
 ){
   char *zVal;
   int len;
-  
+
   test_destructor_count_var++;
   assert( nArg==1 );
   if( sqlite3_value_type(argv[0])==SQLITE_NULL ) return;
-  len = sqlite3_value_bytes(argv[0]); 
+  len = sqlite3_value_bytes(argv[0]);
   zVal = testContextMalloc(pCtx, len+3);
   if( !zVal ){
     return;
@@ -120,17 +120,17 @@ static void test_destructor(
 }
 #ifndef SQLITE_OMIT_UTF16
 static void test_destructor16(
-  sqlite3_context *pCtx, 
+  sqlite3_context *pCtx,
   int nArg,
   sqlite3_value **argv
 ){
   char *zVal;
   int len;
-  
+
   test_destructor_count_var++;
   assert( nArg==1 );
   if( sqlite3_value_type(argv[0])==SQLITE_NULL ) return;
-  len = sqlite3_value_bytes16(argv[0]); 
+  len = sqlite3_value_bytes16(argv[0]);
   zVal = testContextMalloc(pCtx, len+3);
   if( !zVal ){
     return;
@@ -143,7 +143,7 @@ static void test_destructor16(
 }
 #endif
 static void test_destructor_count(
-  sqlite3_context *pCtx, 
+  sqlite3_context *pCtx,
   int nArg,
   sqlite3_value **argv
 ){
@@ -151,7 +151,7 @@ static void test_destructor_count(
 }
 
 /*
-** The following aggregate function, test_agg_errmsg16(), takes zero 
+** The following aggregate function, test_agg_errmsg16(), takes zero
 ** arguments. It returns the text value returned by the sqlite3_errmsg16()
 ** API function.
 */
@@ -187,7 +187,7 @@ static void test_agg_errmsg16_final(sqlite3_context *ctx){
 */
 static void free_test_auxdata(void *p) {sqlite3_free(p);}
 static void test_auxdata(
-  sqlite3_context *pCtx, 
+  sqlite3_context *pCtx,
   int nArg,
   sqlite3_value **argv
 ){
@@ -224,7 +224,7 @@ static void test_auxdata(
 ** second argument exists, it becomes the error code.
 */
 static void test_error(
-  sqlite3_context *pCtx, 
+  sqlite3_context *pCtx,
   int nArg,
   sqlite3_value **argv
 ){
@@ -274,7 +274,7 @@ static void counterFunc(
 ** first argument do not invalidate the second argument.
 */
 static void test_isolation(
-  sqlite3_context *pCtx, 
+  sqlite3_context *pCtx,
   int nArg,
   sqlite3_value **argv
 ){
@@ -288,11 +288,11 @@ static void test_isolation(
 }
 
 /*
-** Invoke an SQL statement recursively.  The function result is the 
+** Invoke an SQL statement recursively.  The function result is the
 ** first column of the first row of the result set.
 */
 static void test_eval(
-  sqlite3_context *pCtx, 
+  sqlite3_context *pCtx,
   int nArg,
   sqlite3_value **argv
 ){
@@ -352,7 +352,7 @@ static void testHexToBin(const char *zIn, char *zOut){
 */
 #ifndef SQLITE_OMIT_UTF16
 static void testHexToUtf16be(
-  sqlite3_context *pCtx, 
+  sqlite3_context *pCtx,
   int nArg,
   sqlite3_value **argv
 ){
@@ -379,7 +379,7 @@ static void testHexToUtf16be(
 ** result using sqlite3_result_text16le().
 */
 static void testHexToUtf8(
-  sqlite3_context *pCtx, 
+  sqlite3_context *pCtx,
   int nArg,
   sqlite3_value **argv
 ){
@@ -406,7 +406,7 @@ static void testHexToUtf8(
 */
 #ifndef SQLITE_OMIT_UTF16
 static void testHexToUtf16le(
-  sqlite3_context *pCtx, 
+  sqlite3_context *pCtx,
   int nArg,
   sqlite3_value **argv
 ){
@@ -683,9 +683,9 @@ static int registerTestFunctions(
         aFuncs[i].eTextRep, 0, aFuncs[i].xFunc, 0, 0);
   }
 
-  sqlite3_create_function(db, "test_agg_errmsg16", 0, SQLITE_ANY, 0, 0, 
+  sqlite3_create_function(db, "test_agg_errmsg16", 0, SQLITE_ANY, 0, 0,
       test_agg_errmsg16_step, test_agg_errmsg16_final);
-      
+
   return SQLITE_OK;
 }
 
@@ -781,11 +781,11 @@ static int SQLITE_TCLAPI abuse_create_function(
        "_123456789_123456789_123456789_123456789_123456789",
        mxArg, SQLITE_UTF8, 0, tStep, 0, 0);
   if( rc!=SQLITE_OK ) goto abuse_err;
-                                
+
   return TCL_OK;
 
 abuse_err:
-  Tcl_AppendResult(interp, "sqlite3_create_function abused test failed", 
+  Tcl_AppendResult(interp, "sqlite3_create_function abused test failed",
                    (char*)0);
   return TCL_ERROR;
 }

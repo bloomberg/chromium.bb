@@ -163,7 +163,7 @@ ifcapable tempdb {
   do_test auth-1.16 {
     execsql {SELECT name FROM sqlite_temp_master}
   } {}
-  
+
   do_test auth-1.17 {
     proc auth {code arg1 arg2 arg3 arg4 args} {
       if {$code=="SQLITE_CREATE_TABLE"} {
@@ -357,7 +357,7 @@ do_test auth-1.40 {
   }
   catchsql {SELECT a,c FROM t2 WHERE b IS NULL}
 } {1 {access to t2.b is prohibited}}
-  
+
 do_test auth-1.41 {
   proc auth {code arg1 arg2 arg3 arg4 args} {
     if {$code=="SQLITE_UPDATE" && $arg1=="t2" && $arg2=="b"} {
@@ -571,7 +571,7 @@ ifcapable view {
 do_test auth-1.79 {
   proc auth {code arg1 arg2 arg3 arg4 args} {
     if {$code=="SQLITE_CREATE_VIEW"} {
-      set ::authargs [list $arg1 $arg2 $arg3 $arg4] 
+      set ::authargs [list $arg1 $arg2 $arg3 $arg4]
       return SQLITE_DENY
     }
     return SQLITE_OK
@@ -587,7 +587,7 @@ do_test auth-1.81 {
 do_test auth-1.82 {
   proc auth {code arg1 arg2 arg3 arg4 args} {
     if {$code=="SQLITE_CREATE_VIEW"} {
-      set ::authargs [list $arg1 $arg2 $arg3 $arg4] 
+      set ::authargs [list $arg1 $arg2 $arg3 $arg4]
       return SQLITE_IGNORE
     }
     return SQLITE_OK
@@ -605,7 +605,7 @@ ifcapable tempdb {
   do_test auth-1.85 {
     proc auth {code arg1 arg2 arg3 arg4 args} {
       if {$code=="SQLITE_CREATE_TEMP_VIEW"} {
-        set ::authargs [list $arg1 $arg2 $arg3 $arg4] 
+        set ::authargs [list $arg1 $arg2 $arg3 $arg4]
         return SQLITE_DENY
       }
       return SQLITE_OK
@@ -621,7 +621,7 @@ ifcapable tempdb {
   do_test auth-1.88 {
     proc auth {code arg1 arg2 arg3 arg4 args} {
       if {$code=="SQLITE_CREATE_TEMP_VIEW"} {
-        set ::authargs [list $arg1 $arg2 $arg3 $arg4] 
+        set ::authargs [list $arg1 $arg2 $arg3 $arg4]
         return SQLITE_IGNORE
       }
       return SQLITE_OK
@@ -952,7 +952,7 @@ do_test auth-1.136.3 {
   execsql {
     INSERT INTO t2 VALUES(1,2,3);
   }
-  set ::authargs 
+  set ::authargs
 } {SQLITE_INSERT t2 {} main {} SQLITE_INSERT tx {} main r2 SQLITE_READ t2 ROWID main r2}
 do_test auth-1.136.4 {
   execsql {
@@ -1729,11 +1729,11 @@ ifcapable attach {
     db authorizer {}
     execsql {DETACH DATABASE test1}
     db authorizer ::auth
-    
+
     # Authorization for ALTER TABLE. These tests are omitted if the library
     # was built without ALTER TABLE support.
     ifcapable altertable {
-    
+
       do_test auth-1.263 {
         proc auth {code arg1 arg2 arg3 arg4 args} {
           if {$code=="SQLITE_ALTER_TABLE"} {
@@ -1785,12 +1785,12 @@ ifcapable attach {
       do_test auth-1.270 {
         execsql {SELECT name FROM sqlite_temp_master WHERE type='table'}
       } {t1x}
-  
+
       do_test auth-1.271 {
         set authargs
       } {temp t1x {} {}}
     } ;# ifcapable altertable
-  
+
   } else {
     db authorizer {}
     db eval {
@@ -1968,7 +1968,7 @@ ifcapable tempdb {
   } {}
 }
 
-} ;# ifcapable reindex 
+} ;# ifcapable reindex
 
 ifcapable analyze {
   proc auth {code args} {
@@ -2386,7 +2386,7 @@ ifcapable trigger {
   do_test auth-5.3.1 {
     execsql {
       CREATE TABLE t5 ( x );
-      CREATE TRIGGER t5_tr1 AFTER INSERT ON t5 BEGIN 
+      CREATE TRIGGER t5_tr1 AFTER INSERT ON t5 BEGIN
         UPDATE t5 SET x = 1 WHERE NEW.x = 0;
       END;
     }

@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# This is a template for a script used for day-to-day size and 
+# This is a template for a script used for day-to-day size and
 # performance monitoring of SQLite.  Typical usage:
 #
 #     sh run-speed-test.sh trunk  #  Baseline measurement of trunk

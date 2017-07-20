@@ -9,7 +9,7 @@
 #
 #***********************************************************************
 #
-# This file implements tests to verify that the "testable statements" in 
+# This file implements tests to verify that the "testable statements" in
 # the lang_vacuum.html document are correct.
 #
 
@@ -78,8 +78,8 @@ do_execsql_test e_vacuum-0.1 { VACUUM } {}
 # reclaims this space and reduces the size of the database file.
 #
 foreach {tn avmode sz} {
-  1 none        7 
-  2 full        8 
+  1 none        7
+  2 full        8
   3 incremental 8
 } {
   set nPage [create_db "PRAGMA auto_vacuum = $avmode"]
@@ -96,7 +96,7 @@ foreach {tn avmode sz} {
     do_execsql_test e_vacuum-1.1.$tn.2 {PRAGMA freelist_count} 0
   } else {
     set freelist [expr {$nPage - $sz}]
-    if {$avmode == "incremental"} { 
+    if {$avmode == "incremental"} {
       # The page size is 1024 bytes. Therefore, assuming the database contains
       # somewhere between 207 and 411 pages (it does), there are 2 pointer-map
       # pages.
@@ -119,24 +119,24 @@ foreach {tn avmode sz} {
 #   e_vacuum-1.2.1 - Perform many INSERT, UPDATE and DELETE ops on table t1.
 #   e_vacuum-1.2.2 - Verify that t1 and its indexes are now quite fragmented.
 #   e_vacuum-1.2.3 - Run VACUUM.
-#   e_vacuum-1.2.4 - Verify that t1 and its indexes are now much 
+#   e_vacuum-1.2.4 - Verify that t1 and its indexes are now much
 #                    less fragmented.
 #
 ifcapable vtab&&compound {
-  create_db 
+  create_db
   register_dbstat_vtab db
   do_execsql_test e_vacuum-1.2.1 {
     DELETE FROM t1 WHERE a%2;
     INSERT INTO t1 SELECT b, a FROM t2 WHERE a%2;
     UPDATE t1 SET b=randomblob(600) WHERE (a%2)==0;
   } {}
-  
+
   do_test e_vacuum-1.2.2.1 { expr [fragment_count t1]>100 } 1
   do_test e_vacuum-1.2.2.2 { expr [fragment_count sqlite_autoindex_t1_1]>100 } 1
   do_test e_vacuum-1.2.2.3 { expr [fragment_count sqlite_autoindex_t1_2]>100 } 1
-  
+
   do_execsql_test e_vacuum-1.2.3 { VACUUM } {}
-  
+
   # In practice, the tables and indexes each end up stored as two fragments -
   # one containing the root page and another containing all other pages.
   #
@@ -172,7 +172,7 @@ if {![nonzero_reserved_bytes]} {
     execsql VACUUM
     execsql { PRAGMA page_size ; PRAGMA auto_vacuum }
   } {2048 0}
-  
+
   # EVIDENCE-OF: R-48521-51450 When in write-ahead log mode, only the
   # auto_vacuum support property can be changed using VACUUM.
   #
@@ -189,7 +189,7 @@ if {![nonzero_reserved_bytes]} {
     } {2048 1}
   }
 }
-  
+
 # EVIDENCE-OF: R-55119-57913 By default, VACUUM only works only on the
 # main database.
 forcedelete test.db2
@@ -250,14 +250,14 @@ do_execsql_test e_vacuum-3.1.4 {
 # is run.
 #
 do_execsql_test  e_vacuum-3.2.1.1 { BEGIN } {}
-do_catchsql_test e_vacuum-3.2.1.2 { 
-  VACUUM 
+do_catchsql_test e_vacuum-3.2.1.2 {
+  VACUUM
 } {1 {cannot VACUUM from within a transaction}}
 do_execsql_test  e_vacuum-3.2.1.3 { COMMIT } {}
 do_execsql_test  e_vacuum-3.2.1.4 { VACUUM } {}
 do_execsql_test  e_vacuum-3.2.1.5 { SAVEPOINT x } {}
-do_catchsql_test e_vacuum-3.2.1.6 { 
-  VACUUM 
+do_catchsql_test e_vacuum-3.2.1.6 {
+  VACUUM
 } {1 {cannot VACUUM from within a transaction}}
 do_execsql_test  e_vacuum-3.2.1.7 { COMMIT } {}
 do_execsql_test  e_vacuum-3.2.1.8 { VACUUM } {}

@@ -9,7 +9,7 @@
 #
 #***********************************************************************
 #
-# This file implements tests to verify that the "testable statements" in 
+# This file implements tests to verify that the "testable statements" in
 # the lang_dropview.html document are correct.
 #
 
@@ -24,7 +24,7 @@ proc dropview_reopen_db {} {
 
   db eval {
     ATTACH 'test.db2' AS aux;
-    CREATE TABLE t1(a, b); 
+    CREATE TABLE t1(a, b);
     INSERT INTO t1 VALUES('a main', 'b main');
     CREATE VIEW v1 AS SELECT * FROM t1;
     CREATE VIEW v2 AS SELECT * FROM t1;
@@ -100,7 +100,7 @@ do_execsql_test 2.1 {
 do_execsql_test 2.2 {;
   SELECT * FROM sqlite_master WHERE name = 'new view';
 } {
-  view {new view} {new view} 0 
+  view {new view} {new view} 0
   {CREATE VIEW "new view" AS SELECT * FROM t1 AS x, t1 AS y}
 }
 do_execsql_test 2.3 {
@@ -117,7 +117,7 @@ do_catchsql_test 2.4 {
 #
 #     For each view in the database, check that it can be queried. Then drop
 #     it. Check that it can no longer be queried and is no longer listed
-#     in any schema table. Then check that the contents of the db tables have 
+#     in any schema table. Then check that the contents of the db tables have
 #     not changed
 #
 set databasedata [list_all_data]
@@ -162,7 +162,7 @@ do_test          3.5.4 { list_all_data  } $databasedata
 # the IF EXISTS clause is not present, it is an error.
 #
 do_dropview_tests 4 -repair {
-  dropview_reopen_db 
+  dropview_reopen_db
 } -errorformat {
   no such view: %s
 } {

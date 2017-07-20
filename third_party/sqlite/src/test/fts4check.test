@@ -128,7 +128,7 @@ do_test 3.0 {
   }
   foreach docid [execsql {SELECT docid FROM t1 ORDER BY 1 ASC}] {
     execsql {
-      INSERT INTO t3(x, y, langid) 
+      INSERT INTO t3(x, y, langid)
       SELECT x, y, (docid%9)*4 FROM t1 WHERE docid=$docid;
     }
   }
@@ -165,8 +165,8 @@ do_execsql_test 4.0 {
 
 do_execsql_test 4.1 {
   PRAGMA writable_schema = 1;
-  UPDATE sqlite_master 
-    SET sql = 'CREATE VIRTUAL TABLE t4 USING fts4(a, b, c)' 
+  UPDATE sqlite_master
+    SET sql = 'CREATE VIRTUAL TABLE t4 USING fts4(a, b, c)'
     WHERE name = 't4';
 }
 

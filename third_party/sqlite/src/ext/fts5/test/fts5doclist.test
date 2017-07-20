@@ -32,7 +32,7 @@ do_test 1.0 {
   execsql "CREATE VIRTUAL TABLE ccc USING fts5([join $cols ,])"
 } {}
 
-db func rnddoc fts5_rnddoc 
+db func rnddoc fts5_rnddoc
 do_execsql_test 1.1 {
   WITH ii(i) AS (SELECT 1 UNION SELECT i+1 FROM ii WHERE i<100)
   INSERT INTO ccc(x899) SELECT rnddoc(500) FROM ii;

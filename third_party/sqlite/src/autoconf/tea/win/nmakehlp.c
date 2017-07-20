@@ -61,7 +61,7 @@ typedef struct {
 
 pipeinfo Out = {INVALID_HANDLE_VALUE, '\0'};
 pipeinfo Err = {INVALID_HANDLE_VALUE, '\0'};
-
+
 /*
  * exitcodes: 0 == no, 1 == yes, 2 == error
  */
@@ -176,7 +176,7 @@ main(
     WriteFile(GetStdHandle(STD_ERROR_HANDLE), msg, chars, &dwWritten, NULL);
     return 2;
 }
-
+
 static int
 CheckForCompilerFeature(
     const char *option)
@@ -310,7 +310,7 @@ CheckForCompilerFeature(
              || strstr(Out.buffer, "D2021") != NULL
              || strstr(Err.buffer, "D2021") != NULL);
 }
-
+
 static int
 CheckForLinkerFeature(
     const char *option)
@@ -435,7 +435,7 @@ CheckForLinkerFeature(
 	    strstr(Out.buffer, "LNK4044") != NULL ||
 	    strstr(Err.buffer, "LNK4044") != NULL);
 }
-
+
 static DWORD WINAPI
 ReadFromPipe(
     LPVOID args)
@@ -460,7 +460,7 @@ ReadFromPipe(
 
     return 0;  /* makes the compiler happy */
 }
-
+
 static int
 IsIn(
     const char *string,
@@ -468,7 +468,7 @@ IsIn(
 {
     return (strstr(string, substring) != NULL);
 }
-
+
 /*
  * GetVersionFromFile --
  * 	Looks for a match string in a file and then returns the version
@@ -523,7 +523,7 @@ GetVersionFromFile(
     }
     return szResult;
 }
-
+
 /*
  * List helpers for the SubstituteFile function
  */
@@ -564,7 +564,7 @@ list_free(list_item_t **listPtrPtr)
 	free(tmpPtr);
     }
 }
-
+
 /*
  * SubstituteFile --
  *	As windows doesn't provide anything useful like sed and it's unreliable
@@ -628,11 +628,11 @@ SubstituteFile(
 	    }
 	}
 #endif
-	
+
 	/*
 	 * Run the substitutions over each line of the input
 	 */
-	
+
 	while (fgets(szBuffer, cbBuffer, fp) != NULL) {
 	    list_item_t *p = NULL;
 	    for (p = substPtr; p != NULL; p = p->nextPtr) {
@@ -652,13 +652,13 @@ SubstituteFile(
 	    }
 	    printf(szBuffer);
 	}
-	
+
 	list_free(&substPtr);
     }
     fclose(fp);
     return 0;
 }
-
+
 /*
  * QualifyPath --
  *

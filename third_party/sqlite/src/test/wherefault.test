@@ -10,7 +10,7 @@
 #***********************************************************************
 # This file implements regression tests for SQLite library. The focus
 # is testing of where.c. More specifically, the focus is on handling OOM
-# errors within the code that optimizes WHERE clauses that feature the 
+# errors within the code that optimizes WHERE clauses that feature the
 # OR operator.
 #
 
@@ -27,7 +27,7 @@ do_malloc_test 1 -sqlprep {
   CREATE INDEX i2 ON t1(b);
 } -sqlbody {
   SELECT c FROM t1
-  WHERE 
+  WHERE
     a = 2 OR b = 'three' OR a = 4 OR b = 'five' OR a = 6 OR
     b = 'seven' OR a = 8 OR b = 'nine' OR a = 10
   ORDER BY rowid;

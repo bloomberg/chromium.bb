@@ -38,7 +38,7 @@ do_faultsim_test 1 -faults * -prep {
 } -body {
   execsql { SELECT count(*) FROM sss }
 } -test {
-  faultsim_test_result {0 8} 
+  faultsim_test_result {0 8}
 }
 
 

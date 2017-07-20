@@ -55,7 +55,7 @@ ifcapable conflict {
       INSERT INTO t3 SELECT a FROM t1;
     }
   } {1 {UNIQUE constraint failed: t3.a}}
-  
+
   # Try to continue with the SELECT statement
   #
   do_test rollback-1.5 {
@@ -79,7 +79,7 @@ do_test rollback-1.9 {
   sqlite3_finalize $STMT
 } {SQLITE_OK}
 
-if {$tcl_platform(platform) == "unix" 
+if {$tcl_platform(platform) == "unix"
  && [permutation] ne "onefile"
  && [permutation] ne "inmemory_journal"
 } {
@@ -98,7 +98,7 @@ if {$tcl_platform(platform) == "unix"
   # At this point files testA.db and testA.db-journal are present in the
   # file system. This block adds a master-journal file pointer to the
   # end of testA.db-journal. The master-journal file does not exist.
-  # 
+  #
   set mj [file normalize testA.db-mj-123]
   binary scan $mj c* a
   set cksum 0
@@ -126,7 +126,7 @@ if {$tcl_platform(platform) == "unix"
   # the master-journal file and return SQLITE_CANTOPEN when it could not
   # be opened. This is incorrect, it should simply delete the journal
   # file and proceed with the query.
-  # 
+  #
   do_test rollback-2.2 {
     sqlite3 db2 testA.db
     execsql {

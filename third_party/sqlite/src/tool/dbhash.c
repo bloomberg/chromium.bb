@@ -232,7 +232,7 @@ static void hash_finish(const char *zName){
 }
 /* End of the hashing logic
 *******************************************************************************/
-  
+
 /*
 ** Print an error resulting from faulting command-line arguments and
 ** abort the program.
@@ -445,7 +445,7 @@ int main(int argc, char **argv){
   if( zLike==0 ) zLike = "%";
 
   for(i=1; i<=nFile; i++){
-    static const int openFlags = 
+    static const int openFlags =
        SQLITE_OPEN_READWRITE |     /* Read/write so hot journals can recover */
        SQLITE_OPEN_URI
     ;
@@ -465,7 +465,7 @@ int main(int argc, char **argv){
 
     /* Start the hash */
     hash_init();
-  
+
     /* Hash table content */
     if( !omitContent ){
       pStmt = db_prepare(
@@ -487,7 +487,7 @@ int main(int argc, char **argv){
       }
       sqlite3_finalize(pStmt);
     }
-  
+
     /* Hash the database schema */
     if( !omitSchema ){
       hash_one_query(
@@ -497,7 +497,7 @@ int main(int argc, char **argv){
          zLike
       );
     }
-  
+
     /* Finish and output the hash and close the database connection. */
     hash_finish(zDb);
     sqlite3_close(g.db);

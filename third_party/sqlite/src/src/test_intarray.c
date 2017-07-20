@@ -160,7 +160,7 @@ static int intarrayNext(sqlite3_vtab_cursor *cur){
 ** Reset a intarray table cursor.
 */
 static int intarrayFilter(
-  sqlite3_vtab_cursor *pVtabCursor, 
+  sqlite3_vtab_cursor *pVtabCursor,
   int idxNum, const char *idxStr,
   int argc, sqlite3_value **argv
 ){
@@ -380,7 +380,7 @@ int Sqlitetestintarray_Init(Tcl_Interp *interp){
   };
   int i;
   for(i=0; i<sizeof(aObjCmd)/sizeof(aObjCmd[0]); i++){
-    Tcl_CreateObjCommand(interp, aObjCmd[i].zName, 
+    Tcl_CreateObjCommand(interp, aObjCmd[i].zName,
         aObjCmd[i].xProc, aObjCmd[i].clientData, 0);
   }
   return TCL_OK;

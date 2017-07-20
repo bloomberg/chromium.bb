@@ -65,7 +65,7 @@ static int SQLITE_TCLAPI btree_open(
   if( zFilename==0 ) return TCL_ERROR;
   memcpy(zFilename, argv[1], n+1);
   zFilename[n+1] = 0;
-  rc = sqlite3BtreeOpen(sDb.pVfs, zFilename, &sDb, &pBt, 0, 
+  rc = sqlite3BtreeOpen(sDb.pVfs, zFilename, &sDb, &pBt, 0,
      SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_MAIN_DB);
   sqlite3_free(zFilename);
   if( rc!=SQLITE_OK ){
@@ -163,8 +163,8 @@ static int SQLITE_TCLAPI btree_pager_stats(
     return TCL_ERROR;
   }
   pBt = sqlite3TestTextToPtr(argv[1]);
- 
-  /* Normally in this file, with a b-tree handle opened using the 
+
+  /* Normally in this file, with a b-tree handle opened using the
   ** [btree_open] command it is safe to call sqlite3BtreeEnter() directly.
   ** But this function is sometimes called with a btree handle obtained
   ** from an open SQLite connection (using [btree_from_db]). In this case
@@ -474,7 +474,7 @@ static int SQLITE_TCLAPI btree_varint_test(
       out = out32;
       if( n1!=n2 ){
         sqlite3_snprintf(sizeof(zErr), zErr,
-          "putVarint returned %d and GetVarint32 returned %d", 
+          "putVarint returned %d and GetVarint32 returned %d",
                   n1, n2);
         Tcl_AppendResult(interp, zErr, 0);
         return TCL_ERROR;
@@ -588,7 +588,7 @@ static int SQLITE_TCLAPI btree_set_cache_size(
 ){
   int nCache;
   Btree *pBt;
-  
+
   if( argc!=3 ){
     Tcl_AppendResult(
         interp, "wrong # args: should be \"", argv[0], " BT NCACHE\"", 0);
@@ -603,7 +603,7 @@ static int SQLITE_TCLAPI btree_set_cache_size(
   sqlite3BtreeLeave(pBt);
   sqlite3_mutex_leave(pBt->db->mutex);
   return TCL_OK;
-}      
+}
 
 /*
 ** usage:   btree_insert CSR ?KEY? VALUE

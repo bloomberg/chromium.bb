@@ -11,7 +11,7 @@
 # This file implements regression tests for SQLite library.  The
 # focus of this file is testing for correct handling of disk full
 # errors.
-# 
+#
 # $Id: diskfull.test,v 1.8 2008/07/12 14:52:20 drh Exp $
 
 set testdir [file dirname $argv0]
@@ -85,7 +85,7 @@ do_diskfull_test diskfull-2 VACUUM
 # forcedelete test.db
 # forcedelete test.db-journal
 # sqlite3 db test.db
-# 
+#
 # do_test diskfull-3.1 {
 #   execsql {
 #     PRAGMA default_cache_size = 10;
@@ -98,13 +98,13 @@ do_diskfull_test diskfull-2 VACUUM
 #     INSERT INTO t3 SELECT randstr(100, 100), randstr(100, 100) FROM t3;
 #     INSERT INTO t3 SELECT randstr(100, 100), randstr(100, 100) FROM t3;
 #     INSERT INTO t3 SELECT randstr(100, 100), randstr(100, 100) FROM t3;
-#     UPDATE t3 
+#     UPDATE t3
 #     SET b = (SELECT a FROM t3 WHERE rowid = (SELECT max(rowid)-1 FROM t3))
 #     WHERE rowid = (SELECT max(rowid) FROM t3);
 #     PRAGMA cache_size;
 #   }
 # } {10}
-# 
+#
 # do_diskfull_test diskfull-3.2 {
 #   BEGIN;
 #     INSERT INTO t3 VALUES( randstr(100, 100), randstr(100, 100) );

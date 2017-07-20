@@ -57,7 +57,7 @@ proc aux_function_1 {cmd tn} {
 }
 
 sqlite3_fts5_create_function db aux_function_1 aux_function_1
-db eval { 
+db eval {
   SELECT aux_function_1(f1, 1) FROM f1 WHERE f1 MATCH 'a'
   ORDER BY rowid ASC
 }
@@ -105,8 +105,8 @@ proc aux_function_2 {cmd tn inst} {
 }
 
 sqlite3_fts5_create_function db aux_function_2 aux_function_2
-db eval { 
-  SELECT aux_function_2(f1, 2, 'A'), aux_function_2(f1, 2, 'B') 
+db eval {
+  SELECT aux_function_2(f1, 2, 'A'), aux_function_2(f1, 2, 'B')
   FROM f1 WHERE f1 MATCH 'a'
   ORDER BY rowid ASC
 }

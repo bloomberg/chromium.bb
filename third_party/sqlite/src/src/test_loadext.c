@@ -80,7 +80,7 @@ static void statusFunc(
     sqlite3_result_error(context, zMsg, -1);
     sqlite3_free(zMsg);
     return;
-  } 
+  }
   if( argc==2 ){
     sqlite3_result_int(context, mx);
   }else{
@@ -95,8 +95,8 @@ static void statusFunc(
 __declspec(dllexport)
 #endif
 int testloadext_init(
-  sqlite3 *db, 
-  char **pzErrMsg, 
+  sqlite3 *db,
+  char **pzErrMsg,
   const sqlite3_api_routines *pApi
 ){
   int nErr = 0;
@@ -116,8 +116,8 @@ int testloadext_init(
 __declspec(dllexport)
 #endif
 int testbrokenext_init(
-  sqlite3 *db, 
-  char **pzErrMsg, 
+  sqlite3 *db,
+  char **pzErrMsg,
   const sqlite3_api_routines *pApi
 ){
   char *zErr;

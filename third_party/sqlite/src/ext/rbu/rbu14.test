@@ -63,9 +63,9 @@ foreach {tn schema} {
       ('t1', 50, NULL, NULL, 1),            -- delete from t1
       ('t2', 51, NULL, NULL, 1);            -- delete from t2
 
-    CREATE VIEW rbu.data_t1 AS 
+    CREATE VIEW rbu.data_t1 AS
     SELECT a, b, c, rbu_control FROM stuff WHERE tbl='t1';
-    CREATE VIEW rbu.data_t2 AS 
+    CREATE VIEW rbu.data_t2 AS
     SELECT a, b, c, rbu_control FROM stuff WHERE tbl='t2';
   }
 

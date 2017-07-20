@@ -52,9 +52,9 @@ foreach {tn expr res} {
 }
 
 foreach {tn expr res} {
-  1 {c1:abc}                           
+  1 {c1:abc}
     {c1 : "abc"}
-  2 {c2 : NEAR(one two) c1:"hello world"} 
+  2 {c2 : NEAR(one two) c1:"hello world"}
     {c2 : NEAR("one" "two", 10) AND c1 : "hello" + "world"}
 } {
   do_execsql_test 2.$tn {SELECT fts5_expr($expr, 'c1', 'c2')} [list $res]

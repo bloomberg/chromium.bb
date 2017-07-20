@@ -499,7 +499,7 @@ foreach {tn mmap_limit nWorker tmpstore coremutex fakeheap softheaplimit} {
           3          0       0     file      true    false             0
           4    1000000       3     file      true    false             0
           5          0       0   memory     false     true             0
-          6          0       0     file     false     true       1000000     
+          6          0       0     file     false     true       1000000
           7          0       0     file     false     true         10000
 } {
   db close
@@ -516,8 +516,8 @@ foreach {tn mmap_limit nWorker tmpstore coremutex fakeheap softheaplimit} {
   reset_db
   sqlite3_test_control SQLITE_TESTCTRL_SORTER_MMAP db $mmap_limit
   execsql "PRAGMA temp_store = $tmpstore; PRAGMA threads = $nWorker"
-  
-  
+
+
   set ten [string repeat X 10300]
   set one [string repeat y   200]
 

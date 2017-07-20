@@ -27,13 +27,13 @@
 */
 #define DB_FILE "test.db"
 
-/* 
+/*
 ** When this variable becomes non-zero, all threads stop
 ** what they are doing.
 */
 volatile int all_stop = 0;
 
-/* 
+/*
 ** Callback from the integrity check.  If the result is anything other
 ** than "ok" it means the integrity check has failed.  Set the "all_stop"
 ** global variable to stop all other activity.  Print the error message
@@ -105,7 +105,7 @@ int main(int argc, char **argv){
     unlink(DB_FILE);
     unlink(zJournal);
     sqlite3_free(zJournal);
-  }  
+  }
   sqlite3_open(DB_FILE, &db);
   if( db==0 ){
     fprintf(stderr,"unable to initialize database\n");

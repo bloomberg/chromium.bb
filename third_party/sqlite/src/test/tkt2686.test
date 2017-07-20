@@ -40,7 +40,7 @@ for {set i 1} {$i<2000} {incr i} {
   } {1 {database or disk is full}}
   do_test tkt2686-$i.2 {
     execsql {
-      DELETE FROM filler 
+      DELETE FROM filler
        WHERE rowid <= (SELECT MAX(rowid) FROM filler LIMIT 20)
     }
   } {}
@@ -70,7 +70,7 @@ for {set i 10000} {$i<12000} {incr i} {
   } {1 {database or disk is full}}
   do_test tkt2686-$i.2 {
     execsql {
-      DELETE FROM filler 
+      DELETE FROM filler
        WHERE rowid <= (SELECT MAX(rowid) FROM filler LIMIT 20)
     }
   } {}

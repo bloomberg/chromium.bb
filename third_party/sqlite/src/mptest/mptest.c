@@ -9,7 +9,7 @@
 **    May you share freely, never taking more than you give.
 **
 *************************************************************************
-** 
+**
 ** This is a program used for testing SQLite, and specifically for testing
 ** the ability of independent processes to access the same SQLite database
 ** concurrently.
@@ -266,7 +266,7 @@ static void fatalError(const char *zFormat, ...){
     }
   }
   sqlite3_close(g.db);
-  exit(1);  
+  exit(1);
 }
 
 
@@ -927,7 +927,7 @@ static void runScript(
     */
     if( strcmp(zCmd, "sleep")==0 ){
       sqlite3_sleep(atoi(azArg[0]));
-    }else 
+    }else
 
     /*
     **   --exit N
@@ -1331,7 +1331,7 @@ int SQLITE_CDECL main(int argc, char **argv){
   }else{
     g.pLog = stdout;
   }
-  
+
   sqlite3_config(SQLITE_CONFIG_LOG, sqlErrorCallback, 0);
   if( zClient ){
     iClient = atoi(zClient);
@@ -1366,7 +1366,7 @@ int SQLITE_CDECL main(int argc, char **argv){
   rc = sqlite3_open_v2(g.zDbFile, &g.db, openFlags, g.zVfs);
   if( rc ) fatalError("cannot open [%s]", g.zDbFile);
   if( iTmout>0 ) sqlite3_busy_timeout(g.db, iTmout);
-  
+
   if( zJMode ){
 #if defined(_WIN32)
     if( sqlite3_stricmp(zJMode,"persist")==0

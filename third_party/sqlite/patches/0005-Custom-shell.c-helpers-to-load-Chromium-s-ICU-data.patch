@@ -24,7 +24,7 @@ index a1dec21affea..c59886b087e2 100644
 @@ -77,6 +77,13 @@ OPTS += -DSQLITE_MEMDEBUG=1
  # TODO(shess) I can't see why I need this setting.
  OPTS += -DOS_UNIX=1
- 
+
 +# Support for loading Chromium ICU data in sqlite3.
 +ifeq ($(shell uname -s),Darwin)
 +SHELL_ICU =
@@ -40,12 +40,12 @@ index b46c5bbc9ced..a8e8ffe27562 100644
 --- a/third_party/sqlite/src/main.mk
 +++ b/third_party/sqlite/src/main.mk
 @@ -498,7 +498,7 @@ libsqlite3.a:	$(LIBOBJ)
- 
+
  sqlite3$(EXE):	$(TOP)/src/shell.c libsqlite3.a sqlite3.h
  	$(TCCX) $(READLINE_FLAGS) -o sqlite3$(EXE) $(SHELL_OPT) \
 -		$(TOP)/src/shell.c libsqlite3.a $(LIBREADLINE) $(TLIBS) $(THREADLIB)
 +		$(TOP)/src/shell.c $(SHELL_ICU) libsqlite3.a $(LIBREADLINE) $(TLIBS) $(THREADLIB)
- 
+
  sqldiff$(EXE):	$(TOP)/tool/sqldiff.c sqlite3.c sqlite3.h
  	$(TCCX) -o sqldiff$(EXE) -DSQLITE_THREADSAFE=0 \
 diff --git a/third_party/sqlite/src/src/shell.c b/third_party/sqlite/src/src/shell.c
@@ -55,7 +55,7 @@ index 0e553d9fbb6f..33377da521d3 100644
 @@ -5849,6 +5849,16 @@ int SQLITE_CDECL wmain(int argc, wchar_t **wargv){
    }
  #endif
- 
+
 +  /* Begin evanm patch. */
 +#if !defined(__APPLE__)
 +  extern int sqlite_shell_init_icu();
@@ -140,6 +140,6 @@ index 000000000000..67ebbf4fbdb4
 +
 +  return 1;
 +}
--- 
+--
 2.11.0
 

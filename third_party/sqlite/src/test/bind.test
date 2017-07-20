@@ -247,7 +247,7 @@ do_test bind-4.6 {
 do_test bind-5.1 {
   sqlite3_bind_null $VM 1
   sqlite3_bind_null $VM 2
-  sqlite3_bind_null $VM 3 
+  sqlite3_bind_null $VM 3
   sqlite_step $VM N VALUES COLNAMES
   sqlite3_reset $VM
   execsql {SELECT rowid, * FROM t1}
@@ -373,7 +373,7 @@ ifcapable {utf16} {
   } {bind or column index out of range}
 }
 do_test bind-8.4 {
-  sqlite3_bind_null $VM 1 
+  sqlite3_bind_null $VM 1
   sqlite3_errmsg $DB
 } {not an error}
 do_test bind-8.5 {

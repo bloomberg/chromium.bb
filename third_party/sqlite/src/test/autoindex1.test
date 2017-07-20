@@ -26,7 +26,7 @@ ifcapable {!autoindex} {
   return
 }
 
-# Setup for logging 
+# Setup for logging
 db close
 sqlite3_shutdown
 test_sqlite3_log [list lappend ::log]
@@ -181,8 +181,8 @@ do_execsql_test autoindex1-500 {
   SELECT b FROM t501
    WHERE t501.a IN (SELECT x FROM t502 WHERE y=?);
 } {
-  0 0 0 {SEARCH TABLE t501 USING INTEGER PRIMARY KEY (rowid=?)} 
-  0 0 0 {EXECUTE LIST SUBQUERY 1} 
+  0 0 0 {SEARCH TABLE t501 USING INTEGER PRIMARY KEY (rowid=?)}
+  0 0 0 {EXECUTE LIST SUBQUERY 1}
   1 0 0 {SCAN TABLE t502}
 }
 do_execsql_test autoindex1-501 {
@@ -190,8 +190,8 @@ do_execsql_test autoindex1-501 {
   SELECT b FROM t501
    WHERE t501.a IN (SELECT x FROM t502 WHERE y=t501.b);
 } {
-  0 0 0 {SCAN TABLE t501} 
-  0 0 0 {EXECUTE CORRELATED LIST SUBQUERY 1} 
+  0 0 0 {SCAN TABLE t501}
+  0 0 0 {EXECUTE CORRELATED LIST SUBQUERY 1}
   1 0 0 {SEARCH TABLE t502 USING AUTOMATIC COVERING INDEX (y=?)}
 }
 do_execsql_test autoindex1-502 {
@@ -200,8 +200,8 @@ do_execsql_test autoindex1-502 {
    WHERE t501.a=123
      AND t501.a IN (SELECT x FROM t502 WHERE y=t501.b);
 } {
-  0 0 0 {SEARCH TABLE t501 USING INTEGER PRIMARY KEY (rowid=?)} 
-  0 0 0 {EXECUTE CORRELATED LIST SUBQUERY 1} 
+  0 0 0 {SEARCH TABLE t501 USING INTEGER PRIMARY KEY (rowid=?)}
+  0 0 0 {EXECUTE CORRELATED LIST SUBQUERY 1}
   1 0 0 {SCAN TABLE t502}
 }
 
@@ -247,15 +247,15 @@ do_execsql_test autoindex1-600 {
     Date_of_Registration text,
     Date_Last_Changed text,
     UNIQUE(Sheep_No));
-  CREATE INDEX fo_flock_no_index  
+  CREATE INDEX fo_flock_no_index
               ON flock_owner (flock_no);
-  CREATE INDEX fo_owner_change_date_index  
+  CREATE INDEX fo_owner_change_date_index
               ON flock_owner (owner_change_date);
-  CREATE INDEX fo_owner_person_id_index  
+  CREATE INDEX fo_owner_person_id_index
               ON flock_owner (owner_person_id);
-  CREATE INDEX sheep_org_flock_index  
+  CREATE INDEX sheep_org_flock_index
            ON sheep (originating_flock);
-  CREATE INDEX sheep_reg_flock_index  
+  CREATE INDEX sheep_reg_flock_index
            ON sheep (registering_flock);
   EXPLAIN QUERY PLAN
   SELECT x.sheep_no, x.registering_flock, x.date_of_registration
@@ -274,11 +274,11 @@ do_execsql_test autoindex1-600 {
    WHERE y.sheep_no IS NULL
    ORDER BY x.registering_flock;
 } {
-  1 0 0 {SCAN TABLE sheep AS s} 
-  1 1 1 {SEARCH TABLE flock_owner AS prev USING INDEX sqlite_autoindex_flock_owner_1 (flock_no=? AND owner_change_date<?)} 
-  1 0 0 {EXECUTE CORRELATED SCALAR SUBQUERY 2} 
-  2 0 0 {SEARCH TABLE flock_owner AS later USING COVERING INDEX sqlite_autoindex_flock_owner_1 (flock_no=? AND owner_change_date>? AND owner_change_date<?)} 
-  0 0 0 {SCAN TABLE sheep AS x USING INDEX sheep_reg_flock_index} 
+  1 0 0 {SCAN TABLE sheep AS s}
+  1 1 1 {SEARCH TABLE flock_owner AS prev USING INDEX sqlite_autoindex_flock_owner_1 (flock_no=? AND owner_change_date<?)}
+  1 0 0 {EXECUTE CORRELATED SCALAR SUBQUERY 2}
+  2 0 0 {SEARCH TABLE flock_owner AS later USING COVERING INDEX sqlite_autoindex_flock_owner_1 (flock_no=? AND owner_change_date>? AND owner_change_date<?)}
+  0 0 0 {SCAN TABLE sheep AS x USING INDEX sheep_reg_flock_index}
   0 1 1 {SEARCH SUBQUERY 1 AS y USING AUTOMATIC COVERING INDEX (sheep_no=?)}
 }
 
@@ -287,7 +287,7 @@ do_execsql_test autoindex1-700 {
   CREATE TABLE t5(a, b, c);
   EXPLAIN QUERY PLAN SELECT a FROM t5 WHERE b=10 ORDER BY c;
 } {
-  0 0 0 {SCAN TABLE t5} 
+  0 0 0 {SCAN TABLE t5}
   0 0 0 {USE TEMP B-TREE FOR ORDER BY}
 }
 
@@ -328,7 +328,7 @@ do_execsql_test autoindex1-800 {
     data_sync1 TEXT,
     data_sync2 TEXT,
     data_sync3 TEXT,
-    data_sync4 TEXT 
+    data_sync4 TEXT
   );
   CREATE TABLE mimetypes(
     _id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -399,19 +399,19 @@ do_execsql_test autoindex1-800 {
   INSERT INTO sqlite_stat1 VALUES('accounts',NULL,'1');
   DROP TABLE IF EXISTS sqlite_stat3;
   ANALYZE sqlite_master;
-  
+
   EXPLAIN QUERY PLAN
-  SELECT * FROM 
-        data JOIN mimetypes ON (data.mimetype_id=mimetypes._id) 
-             JOIN raw_contacts ON (data.raw_contact_id=raw_contacts._id) 
+  SELECT * FROM
+        data JOIN mimetypes ON (data.mimetype_id=mimetypes._id)
+             JOIN raw_contacts ON (data.raw_contact_id=raw_contacts._id)
              JOIN accounts ON (raw_contacts.account_id=accounts._id)
    WHERE mimetype_id=10 AND data14 IS NOT NULL;
 } {/SEARCH TABLE data .*SEARCH TABLE raw_contacts/}
 do_execsql_test autoindex1-801 {
   EXPLAIN QUERY PLAN
-  SELECT * FROM 
-        data JOIN mimetypes ON (data.mimetype_id=mimetypes._id) 
-             JOIN raw_contacts ON (data.raw_contact_id=raw_contacts._id) 
+  SELECT * FROM
+        data JOIN mimetypes ON (data.mimetype_id=mimetypes._id)
+             JOIN raw_contacts ON (data.raw_contact_id=raw_contacts._id)
              JOIN accounts ON (raw_contacts.account_id=accounts._id)
    WHERE mimetypes._id=10 AND data14 IS NOT NULL;
 } {/SEARCH TABLE data .*SEARCH TABLE raw_contacts/}
@@ -454,7 +454,7 @@ do_execsql_test autoindex1-900 {
   CREATE TABLE labels (ROWID INTEGER PRIMARY KEY, message_id INTEGER NOT NULL, mailbox_id INTEGER NOT NULL, UNIQUE(message_id, mailbox_id));
   CREATE INDEX labels_message_id_mailbox_id_index ON labels(message_id, mailbox_id);
   CREATE INDEX labels_mailbox_id_index ON labels(mailbox_id);
-  
+
   explain query plan
   SELECT messages.ROWID,
          messages.message_id,

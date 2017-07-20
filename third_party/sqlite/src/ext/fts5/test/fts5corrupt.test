@@ -9,7 +9,7 @@
 #
 #***********************************************************************
 #
-# This file tests that the FTS5 'integrity-check' command detects 
+# This file tests that the FTS5 'integrity-check' command detects
 # inconsistencies (corruption) in the on-disk backing tables.
 #
 

@@ -71,15 +71,15 @@ int sqlite3IsNaN(double x){
   **
   **      This option [-ffast-math] should never be turned on by any
   **      -O option since it can result in incorrect output for programs
-  **      which depend on an exact implementation of IEEE or ISO 
+  **      which depend on an exact implementation of IEEE or ISO
   **      rules/specifications for math functions.
   **
   ** Under MSVC, this NaN test may fail if compiled with a floating-
-  ** point precision mode other than /fp:precise.  From the MSDN 
+  ** point precision mode other than /fp:precise.  From the MSDN
   ** documentation:
   **
-  **      The compiler [with /fp:precise] will properly handle comparisons 
-  **      involving NaN. For example, x != x evaluates to true if x is NaN 
+  **      The compiler [with /fp:precise] will properly handle comparisons
+  **      involving NaN. For example, x != x evaluates to true if x is NaN
   **      ...
   */
 #ifdef __FAST_MATH__
@@ -110,7 +110,7 @@ int sqlite3Strlen30(const char *z){
 }
 
 /*
-** Return the declared type of a column.  Or return zDflt if the column 
+** Return the declared type of a column.  Or return zDflt if the column
 ** has no declared type.
 **
 ** The column type is an extra string stored after the zero-terminator on
@@ -415,7 +415,7 @@ int sqlite3AtoF(const char *z, double *pResult, int length, u8 enc){
     z+=incr;
     eValid = 0;
 
-    /* This branch is needed to avoid a (harmless) buffer overread.  The 
+    /* This branch is needed to avoid a (harmless) buffer overread.  The
     ** special comment alerts the mutation tester that the correct answer
     ** is obtained even if the branch is omitted */
     if( z>=zEnd ) goto do_atof_calc;              /*PREVENTS-HARMLESS-OVERREAD*/
@@ -495,7 +495,7 @@ do_atof_calc:
           }
         }
       }else{
-        /* 1.0e+22 is the largest power of 10 than can be 
+        /* 1.0e+22 is the largest power of 10 than can be
         ** represented exactly. */
         while( e%22 ) { scale *= 1.0e+1; e -= 1; }
         while( e>0 ) { scale *= 1.0e+22; e -= 22; }
@@ -553,11 +553,11 @@ static int compare2pow63(const char *zNum, int incr){
 ** Convert zNum to a 64-bit signed integer.  zNum must be decimal. This
 ** routine does *not* accept hexadecimal notation.
 **
-** If the zNum value is representable as a 64-bit twos-complement 
+** If the zNum value is representable as a 64-bit twos-complement
 ** integer, then write that value into *pNum and return 0.
 **
 ** If zNum is exactly 9223372036854775808, return 2.  This special
-** case is broken out because while 9223372036854775808 cannot be a 
+** case is broken out because while 9223372036854775808 cannot be a
 ** signed 64-bit integer, its negative -9223372036854775808 can be.
 **
 ** If zNum is too big for a 64-bit integer and is not
@@ -788,7 +788,7 @@ static int SQLITE_NOINLINE putVarint64(unsigned char *p, u64 v){
       v >>= 7;
     }
     return 9;
-  }    
+  }
   n = 0;
   do{
     buf[n++] = (u8)((v & 0x7f) | 0x80);
@@ -998,8 +998,8 @@ u8 sqlite3GetVarint(const unsigned char *p, u64 *v){
 ** If the varint stored in p[0] is larger than can fit in a 32-bit unsigned
 ** integer, then set *v to 0xffffffff.
 **
-** A MACRO version, getVarint32, is provided which inlines the 
-** single-byte case.  All code should use the MACRO version as 
+** A MACRO version, getVarint32, is provided which inlines the
+** single-byte case.  All code should use the MACRO version as
 ** this function assumes the single-byte case has already been handled.
 */
 u8 sqlite3GetVarint32(const unsigned char *p, u32 *v){
@@ -1217,7 +1217,7 @@ void *sqlite3HexToBlob(sqlite3 *db, const char *z, int n){
 ** argument.  The zType is a word like "NULL" or "closed" or "invalid".
 */
 static void logBadConnection(const char *zType){
-  sqlite3_log(SQLITE_MISUSE, 
+  sqlite3_log(SQLITE_MISUSE,
      "API call with %s database connection pointer",
      zType
   );
@@ -1291,7 +1291,7 @@ int sqlite3AddInt64(i64 *pA, i64 iB){
     if( iA<0 && -(iA + LARGEST_INT64) > iB + 1 ) return 1;
   }
   *pA += iB;
-  return 0; 
+  return 0;
 #endif
 }
 int sqlite3SubInt64(i64 *pA, i64 iB){
@@ -1337,7 +1337,7 @@ int sqlite3MulInt64(i64 *pA, i64 iB){
 }
 
 /*
-** Compute the absolute value of a 32-bit signed integer, of possible.  Or 
+** Compute the absolute value of a 32-bit signed integer, of possible.  Or
 ** if the integer has a value of -2147483648, return +2147483647
 */
 int sqlite3AbsInt32(int x){
@@ -1377,11 +1377,11 @@ void sqlite3FileSuffix3(const char *zBaseFilename, char *z){
 }
 #endif
 
-/* 
+/*
 ** Find (an approximate) sum of two LogEst values.  This computation is
 ** not a simple "+" operator because LogEst is stored as a logarithmic
 ** value.
-** 
+**
 */
 LogEst sqlite3LogEstAdd(LogEst a, LogEst b){
   static const unsigned char x[] = {
@@ -1489,8 +1489,8 @@ u64 sqlite3LogEstToInt(LogEst x){
 ** Conceptually:
 **
 **    struct VList {
-**      int nAlloc;   // Number of allocated slots 
-**      int nUsed;    // Number of used slots 
+**      int nAlloc;   // Number of allocated slots
+**      int nUsed;    // Number of used slots
 **      struct VListEntry {
 **        int iValue;    // Value for this entry
 **        int nSlot;     // Slots used by this entry
@@ -1499,7 +1499,7 @@ u64 sqlite3LogEstToInt(LogEst x){
 **    }
 **
 ** During code generation, pointers to the variable names within the
-** VList are taken.  When that happens, nAlloc is set to zero as an 
+** VList are taken.  When that happens, nAlloc is set to zero as an
 ** indication that the VList may never again be enlarged, since the
 ** accompanying realloc() would invalidate the pointers.
 */

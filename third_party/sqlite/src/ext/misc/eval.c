@@ -33,7 +33,7 @@ struct EvalResult {
 */
 static int callback(void *pCtx, int argc, char **argv, char **colnames){
   struct EvalResult *p = (struct EvalResult*)pCtx;
-  int i; 
+  int i;
   for(i=0; i<argc; i++){
     const char *z = argv[i] ? argv[i] : "";
     size_t sz = strlen(z);
@@ -105,8 +105,8 @@ static void sqlEvalFunc(
 __declspec(dllexport)
 #endif
 int sqlite3_eval_init(
-  sqlite3 *db, 
-  char **pzErrMsg, 
+  sqlite3 *db,
+  char **pzErrMsg,
   const sqlite3_api_routines *pApi
 ){
   int rc = SQLITE_OK;

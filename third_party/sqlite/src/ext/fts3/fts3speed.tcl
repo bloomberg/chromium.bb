@@ -1,7 +1,7 @@
 
 
 #--------------------------------------------------------------------------
-# This script contains several sub-programs used to test FTS3/FTS4 
+# This script contains several sub-programs used to test FTS3/FTS4
 # performance. It does not run the queries directly, but generates SQL
 # scripts that can be run using the shell tool.
 #

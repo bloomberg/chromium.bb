@@ -21,19 +21,19 @@
 
 /*
 ** Both test cases involve 1 writer/checkpointer thread and N reader threads.
-** 
-** Each reader thread performs a series of read transactions, one after 
+**
+** Each reader thread performs a series of read transactions, one after
 ** another. Each read transaction lasts for 100 ms.
 **
 ** The writer writes transactions as fast as possible. It uses a callback
-** registered with sqlite3_wal_hook() to try to keep the WAL-size limited to 
+** registered with sqlite3_wal_hook() to try to keep the WAL-size limited to
 ** around 50 pages.
 **
-** In test case checkpoint_starvation_1, the auto-checkpoint uses 
+** In test case checkpoint_starvation_1, the auto-checkpoint uses
 ** SQLITE_CHECKPOINT_PASSIVE. In checkpoint_starvation_2, it uses RESTART.
-** The expectation is that in the first case the WAL file will grow very 
+** The expectation is that in the first case the WAL file will grow very
 ** large, and in the second will be limited to the 50 pages or thereabouts.
-** However, the overall transaction throughput will be lower for 
+** However, the overall transaction throughput will be lower for
 ** checkpoint_starvation_2, as every checkpoint will block for up to 200 ms
 ** waiting for readers to clear.
 */
@@ -51,9 +51,9 @@ struct CheckpointStarvationCtx {
 typedef struct CheckpointStarvationCtx CheckpointStarvationCtx;
 
 static int checkpoint_starvation_walhook(
-  void *pCtx, 
-  sqlite3 *db, 
-  const char *zDb, 
+  void *pCtx,
+  sqlite3 *db,
+  const char *zDb,
   int nFrame
 ){
   CheckpointStarvationCtx *p = (CheckpointStarvationCtx *)pCtx;
@@ -97,7 +97,7 @@ static void checkpoint_starvation_main(int nMs, CheckpointStarvationCtx *p){
   int i;
 
   opendb(&err, &db, "test.db", 1);
-  sql_script(&err, &db, 
+  sql_script(&err, &db,
       "PRAGMA page_size = 1024;"
       "PRAGMA journal_mode = WAL;"
       "CREATE TABLE t1(x);"

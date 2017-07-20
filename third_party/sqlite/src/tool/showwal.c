@@ -233,7 +233,7 @@ static void print_oneline_frame(int iFrame, Cksum *pCksum){
   s0 = getInt32(aData+16);
   s1 = getInt32(aData+20);
   fprintf(stdout, "Frame %4d: %6d %6d 0x%08x,%08x 0x%08x,%08x %s\n",
-          iFrame, 
+          iFrame,
           getInt32(aData),
           getInt32(aData+4),
           getInt32(aData+8),
@@ -508,7 +508,7 @@ static void decode_btree_page(
       printf(" %03x: %.64s\n", i, &zMap[i]);
     }
     free(zMap);
-  }  
+  }
 }
 
 int main(int argc, char **argv){

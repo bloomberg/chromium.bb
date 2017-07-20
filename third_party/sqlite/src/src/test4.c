@@ -62,7 +62,7 @@ static Thread threadset[N_THREAD];
 
 
 /*
-** The main loop for a thread.  Threads use busy waiting. 
+** The main loop for a thread.  Threads use busy waiting.
 */
 static void *thread_main(void *pArg){
   Thread *p = (Thread*)pArg;
@@ -661,7 +661,7 @@ static int SQLITE_TCLAPI tcl_thread_db_put(
 ** Usage: thread_stmt_get ID
 **
 ** Return the database stmt pointer for the given thread.  Then
-** remove the pointer from the thread itself. 
+** remove the pointer from the thread itself.
 */
 static int SQLITE_TCLAPI tcl_thread_stmt_get(
   void *NotUsed,

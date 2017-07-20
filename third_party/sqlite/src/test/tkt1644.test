@@ -22,7 +22,7 @@ source $testdir/tester.tcl
 ifcapable !tempdb||!view {
   finish_test
   return
-}  
+}
 
 # Create two tables T1 and T2 and make V1 point to T1.
 do_test tkt1644-1.1 {
@@ -80,7 +80,7 @@ ifcapable view {
     }
     list [sqlite3_step $::STMT] [sqlite3_finalize $::STMT]
   } {SQLITE_ERROR SQLITE_SCHEMA}
-  
+
   do_test tkt1644-2.2 {
     execsql {
       CREATE TABLE real_t1(a, b);

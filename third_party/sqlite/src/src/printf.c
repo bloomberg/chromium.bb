@@ -1,6 +1,6 @@
 /*
 ** The "printf" code that follows dates from the 1980's.  It is in
-** the public domain. 
+** the public domain.
 **
 **************************************************************************
 **
@@ -229,7 +229,7 @@ void sqlite3VXPrintf(
       break;
     }
     /* Find out what flags are present */
-    flag_leftjustify = flag_plussign = flag_blanksign = 
+    flag_leftjustify = flag_plussign = flag_blanksign =
      flag_alternateform = flag_altform2 = flag_zeropad = 0;
     done = 0;
     do{
@@ -511,7 +511,7 @@ void sqlite3VXPrintf(
           e2 = exp;
         }
         if( MAX(e2,0)+(i64)precision+(i64)width > etBUFSIZE - 15 ){
-          bufpt = zExtra 
+          bufpt = zExtra
               = sqlite3Malloc( MAX(e2,0)+(i64)precision+(i64)width+15 );
           if( bufpt==0 ){
             setStrAccumError(pAccum, STRACCUM_NOMEM);
@@ -962,7 +962,7 @@ char *sqlite3_vmprintf(const char *zFormat, va_list ap){
   char zBase[SQLITE_PRINT_BUF_SIZE];
   StrAccum acc;
 
-#ifdef SQLITE_ENABLE_API_ARMOR  
+#ifdef SQLITE_ENABLE_API_ARMOR
   if( zFormat==0 ){
     (void)SQLITE_MISUSE_BKPT;
     return 0;

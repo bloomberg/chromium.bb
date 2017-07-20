@@ -18,11 +18,11 @@
 # trigger9-1.* -   Test that if there are no references to OLD.* cols, or a
 #                  reference to only OLD.rowid, the data is not loaded.
 #
-# trigger9-2.* -   Test that for NEW.* records populated by UPDATE 
-#                  statements, unused fields are populated with NULL values. 
+# trigger9-2.* -   Test that for NEW.* records populated by UPDATE
+#                  statements, unused fields are populated with NULL values.
 #
 # trigger9-3.* -   Test that the temporary tables used for OLD.* references
-#                  in "INSTEAD OF" triggers have NULL values in unused 
+#                  in "INSTEAD OF" triggers have NULL values in unused
 #                  fields.
 #
 
@@ -209,7 +209,7 @@ ifcapable compound {
     execsql {
       BEGIN;
         INSERT INTO t3 VALUES(1, 'zero');
-        CREATE VIEW v1 AS 
+        CREATE VIEW v1 AS
           SELECT sum(a) AS a, max(b) AS b FROM t3 GROUP BY t3.a HAVING b>'two';
         CREATE TRIGGER trig1 INSTEAD OF UPDATE ON v1 BEGIN
           INSERT INTO t2 VALUES(old.a);

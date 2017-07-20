@@ -105,7 +105,7 @@ static int getVarint32(const char *p, int *pi){
  *
  * On disk, every document list has positions and offsets, so we don't bother
  * to serialize a doclist's type.
- * 
+ *
  * We don't yet delta-encode document IDs; doing so will probably be a
  * modest win.
  *
@@ -1105,7 +1105,7 @@ static int query_merge(fulltext_vtab *v, sqlite3_stmt **pSelect,
       return rc;
     }
   }
-  
+
   return SQLITE_OK;
 }
 
@@ -1137,7 +1137,7 @@ static void query_add(Query *q, int is_phrase, const char *zTerm){
   t->is_phrase = is_phrase;
   t->zTerm = zTerm;
 }
-    
+
 static void query_free(Query *q){
   int i;
   for(i = 0; i < q->nTerms; ++i){
@@ -1152,7 +1152,7 @@ static int tokenize_segment(sqlite3_tokenizer *pTokenizer,
   sqlite3_tokenizer_module *pModule = pTokenizer->pModule;
   sqlite3_tokenizer_cursor *pCursor;
   int is_first = 1;
-  
+
   int rc = pModule->xOpen(pTokenizer, zQuery, -1, &pCursor);
   if( rc!=SQLITE_OK ) return rc;
   pCursor->pTokenizer = pTokenizer;
@@ -1196,7 +1196,7 @@ static int parse_query(fulltext_vtab *v, const char *zQuery, Query *pQuery){
     s = t;
     in_phrase = !in_phrase;
   }
-  
+
   free(zQuery1);
   return SQLITE_OK;
 }
@@ -1317,7 +1317,7 @@ static int build_terms(Hash *terms, sqlite3_tokenizer *pTokenizer,
 
     /* Positions can't be negative; we use -1 as a terminator internally. */
     if( iPosition<0 ) {
-      rc = SQLITE_ERROR;  
+      rc = SQLITE_ERROR;
       goto err;
     }
 

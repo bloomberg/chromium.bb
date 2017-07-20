@@ -10,10 +10,10 @@
 #
 #--------------------------------------------------------------------------
 #
-# This script extracts the documentation for the API used by fts5 auxiliary 
+# This script extracts the documentation for the API used by fts5 auxiliary
 # functions from header file fts5.h. It outputs html text on stdout that
 # is included in the documentation on the web.
-# 
+#
 
 set ::fts5_docs_output ""
 if {[info commands hd_putsnl]==""} {
@@ -35,7 +35,7 @@ set data [read $fd]
 close $fd
 
 
-# Argument $data is the entire text of the fts5.h file. This function 
+# Argument $data is the entire text of the fts5.h file. This function
 # extracts the definition of the Fts5ExtensionApi structure from it and
 # returns a key/value list of structure member names and definitions. i.e.
 #
@@ -53,7 +53,7 @@ proc get_struct_members {data} {
   foreach member [split $defn2 {;}] {
 
     set member [string trim $member]
-    if {$member!=""} { 
+    if {$member!=""} {
       catch { set name [lindex $member end] }
       regexp {.*?[(][*]([^)]*)[)]} $member -> name
       lappend res $name $member
@@ -130,12 +130,12 @@ proc get_api_docs {data} {
   #   ...
   #
   array set M [get_struct_members $data]
-  
+
   # Initialize global list D as a map from section name to documentation
   # text. Most (all?) section names are structure member names.
   #
   set D [get_struct_docs $data [array names M]]
-  
+
   output "<dl>"
   foreach {sub docs} $D {
     if {[info exists M($sub)]} {
@@ -153,7 +153,7 @@ proc get_api_docs {data} {
     output "<dt style=\"white-space:pre;font-family:monospace;font-size:120%\""
     output "$link>"
     output "<b>$hdr</b></dt><dd>"
-  
+
     set mode ""
     set margin " style=margin-top:0.1em"
     foreach line [split [string trim $docs] "\n"] {

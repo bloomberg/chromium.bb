@@ -140,7 +140,7 @@ do_execsql_test 2.5 {
 
 
 #-------------------------------------------------------------------------
-# Test that sqlite3rbu_create_vfs() returns an error if the requested 
+# Test that sqlite3rbu_create_vfs() returns an error if the requested
 # parent VFS is unknown.
 #
 # And that nothing disasterous happens if a VFS name passed to
@@ -157,12 +157,12 @@ do_test 3.2 {
 } {}
 
 #-------------------------------------------------------------------------
-# Test that it is an error to specify an explicit VFS that does not 
+# Test that it is an error to specify an explicit VFS that does not
 # include rbu VFS functionality.
 #
 do_test 4.1 {
   testvfs tvfs
-  sqlite3rbu rbu file:test.db?vfs=tvfs rbu.db 
+  sqlite3rbu rbu file:test.db?vfs=tvfs rbu.db
   list [catch { rbu step } msg] $msg
 } {0 SQLITE_ERROR}
 do_test 4.2 {

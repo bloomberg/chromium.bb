@@ -67,52 +67,52 @@
 static const char *const pragCName[] = {
   /*   0 */ "cache_size",  /* Used by: default_cache_size */
   /*   1 */ "cid",         /* Used by: table_info */
-  /*   2 */ "name",       
-  /*   3 */ "type",       
-  /*   4 */ "notnull",    
-  /*   5 */ "dflt_value", 
-  /*   6 */ "pk",         
+  /*   2 */ "name",
+  /*   3 */ "type",
+  /*   4 */ "notnull",
+  /*   5 */ "dflt_value",
+  /*   6 */ "pk",
   /*   7 */ "table",       /* Used by: stats */
-  /*   8 */ "index",      
-  /*   9 */ "width",      
-  /*  10 */ "height",     
+  /*   8 */ "index",
+  /*   9 */ "width",
+  /*  10 */ "height",
   /*  11 */ "seqno",       /* Used by: index_info */
-  /*  12 */ "cid",        
-  /*  13 */ "name",       
+  /*  12 */ "cid",
+  /*  13 */ "name",
   /*  14 */ "seqno",       /* Used by: index_xinfo */
-  /*  15 */ "cid",        
-  /*  16 */ "name",       
-  /*  17 */ "desc",       
-  /*  18 */ "coll",       
-  /*  19 */ "key",        
+  /*  15 */ "cid",
+  /*  16 */ "name",
+  /*  17 */ "desc",
+  /*  18 */ "coll",
+  /*  19 */ "key",
   /*  20 */ "seq",         /* Used by: index_list */
-  /*  21 */ "name",       
-  /*  22 */ "unique",     
-  /*  23 */ "origin",     
-  /*  24 */ "partial",    
+  /*  21 */ "name",
+  /*  22 */ "unique",
+  /*  23 */ "origin",
+  /*  24 */ "partial",
   /*  25 */ "seq",         /* Used by: database_list */
-  /*  26 */ "name",       
-  /*  27 */ "file",       
+  /*  26 */ "name",
+  /*  27 */ "file",
   /*  28 */ "seq",         /* Used by: collation_list */
-  /*  29 */ "name",       
+  /*  29 */ "name",
   /*  30 */ "id",          /* Used by: foreign_key_list */
-  /*  31 */ "seq",        
-  /*  32 */ "table",      
-  /*  33 */ "from",       
-  /*  34 */ "to",         
-  /*  35 */ "on_update",  
-  /*  36 */ "on_delete",  
-  /*  37 */ "match",      
+  /*  31 */ "seq",
+  /*  32 */ "table",
+  /*  33 */ "from",
+  /*  34 */ "to",
+  /*  35 */ "on_update",
+  /*  36 */ "on_delete",
+  /*  37 */ "match",
   /*  38 */ "table",       /* Used by: foreign_key_check */
-  /*  39 */ "rowid",      
-  /*  40 */ "parent",     
-  /*  41 */ "fkid",       
+  /*  39 */ "rowid",
+  /*  40 */ "parent",
+  /*  41 */ "fkid",
   /*  42 */ "busy",        /* Used by: wal_checkpoint */
-  /*  43 */ "log",        
+  /*  43 */ "log",
   /*  44 */ "checkpointed",
   /*  45 */ "timeout",     /* Used by: busy_timeout */
   /*  46 */ "database",    /* Used by: lock_status */
-  /*  47 */ "status",     
+  /*  47 */ "status",
 };
 
 /* Definitions of all built-in pragmas */

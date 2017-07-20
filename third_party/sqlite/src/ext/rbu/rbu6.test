@@ -41,7 +41,7 @@ proc setup_test {} {
   rbu close
 }
 
-# Test the outcome of some other client writing the db while the *-oal 
+# Test the outcome of some other client writing the db while the *-oal
 # file is being generated. Once this has happened, the update cannot be
 # progressed.
 #

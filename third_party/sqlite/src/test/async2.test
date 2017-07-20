@@ -26,7 +26,7 @@ if {
 set setup_script {
   CREATE TABLE counter(c);
   INSERT INTO counter(c) VALUES (1);
-} 
+}
 
 set sql_script {
   BEGIN;
@@ -55,11 +55,11 @@ foreach err [list ioerr malloc-transient malloc-persistent] {
     sqlite3 db test.db
     execsql $::setup_script
     db close
-  
+
     sqlite3async_initialize "" 1
     sqlite3 db test.db
     sqlite3_db_config_lookaside db 0 0 0
-  
+
     switch -- $err {
       ioerr             { set ::sqlite_io_error_pending $n }
       malloc-persistent { sqlite3_memdebug_fail $n -repeat 1 }
@@ -116,7 +116,7 @@ foreach err [list ioerr malloc-transient malloc-persistent] {
         incr ::go -1
       }
     }
-  
+
     db close
   }
 }

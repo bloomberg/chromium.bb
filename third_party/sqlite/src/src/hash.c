@@ -116,7 +116,7 @@ static int rehash(Hash *pH, unsigned int new_size){
 
   /* The inability to allocates space for a larger hash table is
   ** a performance hit but it is not a fatal error.  So mark the
-  ** allocation as a benign. Use sqlite3Malloc()/memset(0) instead of 
+  ** allocation as a benign. Use sqlite3Malloc()/memset(0) instead of
   ** sqlite3MallocZero() to make the allocation, as sqlite3MallocZero()
   ** only zeroes the requested number of bytes whereas this module will
   ** use the actual amount of space allocated for the hash table (which
@@ -166,7 +166,7 @@ static HashElem *findElementWithHash(
   *pHash = h;
   while( count-- ){
     assert( elem!=0 );
-    if( sqlite3StrICmp(elem->pKey,pKey)==0 ){ 
+    if( sqlite3StrICmp(elem->pKey,pKey)==0 ){
       return elem;
     }
     elem = elem->next;
@@ -184,7 +184,7 @@ static void removeElementGivenHash(
 ){
   struct _ht *pEntry;
   if( elem->prev ){
-    elem->prev->next = elem->next; 
+    elem->prev->next = elem->next;
   }else{
     pH->first = elem->next;
   }

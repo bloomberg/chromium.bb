@@ -203,7 +203,7 @@ set tabledef {CREATE TABLE space_used(
    name clob,        -- Name of a table or index in the database file
    tblname clob,     -- Name of associated table
    is_index boolean, -- TRUE if it is an index, false for a table
-   is_without_rowid boolean, -- TRUE if WITHOUT ROWID table  
+   is_without_rowid boolean, -- TRUE if WITHOUT ROWID table
    nentry int,       -- Number of entries in the BTree
    leaf_entries int, -- Number of leaf entries
    depth int,        -- Depth of the b-tree
@@ -238,7 +238,7 @@ foreach {name tblname} [concat sqlite_master sqlite_master [db eval $sql]] {
   set is_index [expr {$name!=$tblname}]
   set is_without_rowid [is_without_rowid $name]
   db eval {
-    SELECT 
+    SELECT
       sum(ncell) AS nentry,
       sum((pagetype=='leaf')*ncell) AS leaf_entries,
       sum(payload) AS payload,
@@ -291,14 +291,14 @@ foreach {name tblname} [concat sqlite_master sqlite_master [db eval $sql]] {
       $nentry,
       $leaf_entries,
       $depth,
-      $payload,     
+      $payload,
       $ovfl_payload,
-      $ovfl_cnt,   
+      $ovfl_cnt,
       $mx_payload,
       $int_pages,
-      $leaf_pages,  
-      $ovfl_pages, 
-      $int_unused, 
+      $leaf_pages,
+      $ovfl_pages,
+      $int_unused,
       $leaf_unused,
       $ovfl_unused,
       $gap_cnt,
@@ -377,19 +377,19 @@ proc divide {num denom} {
 proc subreport {title where showFrag} {
   global pageSize file_pgcnt compressOverhead
 
-  # Query the in-memory database for the sum of various statistics 
+  # Query the in-memory database for the sum of various statistics
   # for the subset of tables/indices identified by the WHERE clause in
   # $where. Note that even if the WHERE clause matches no rows, the
   # following query returns exactly one row (because it is an aggregate).
   #
-  # The results of the query are stored directly by SQLite into local 
+  # The results of the query are stored directly by SQLite into local
   # variables (i.e. $nentry, $payload etc.).
   #
   mem eval "
     SELECT
       int(sum(
-        CASE WHEN (is_without_rowid OR is_index) THEN nentry 
-             ELSE leaf_entries 
+        CASE WHEN (is_without_rowid OR is_index) THEN nentry
+             ELSE leaf_entries
         END
       )) AS nentry,
       int(sum(payload)) AS payload,
@@ -492,9 +492,9 @@ proc subreport {title where showFrag} {
   return 1
 }
 
-# Calculate the overhead in pages caused by auto-vacuum. 
+# Calculate the overhead in pages caused by auto-vacuum.
 #
-# This procedure calculates and returns the number of pages used by the 
+# This procedure calculates and returns the number of pages used by the
 # auto-vacuum 'pointer-map'. If the database does not support auto-vacuum,
 # then 0 is returned. The two arguments are the size of the database file in
 # pages and the page size used by the database (in bytes).
@@ -539,7 +539,7 @@ proc autovacuum_overhead {filePages pageSize} {
 # nindex:        Number of indices in the db.
 # nautoindex:    Number of indices created automatically.
 # nmanindex:     Number of indices created manually.
-# user_payload:  Number of bytes of payload in table btrees 
+# user_payload:  Number of bytes of payload in table btrees
 #                (not including sqlite_master)
 # user_percent:  $user_payload as a percentage of total file size.
 
@@ -607,7 +607,7 @@ statline {Bytes of user payload stored} $user_payload $user_percent
 puts ""
 titleline "Page counts for all tables with their indices"
 puts ""
-mem eval {SELECT tblname, count(*) AS cnt, 
+mem eval {SELECT tblname, count(*) AS cnt,
               int(sum(int_pages+leaf_pages+ovfl_pages)) AS size
           FROM space_used GROUP BY tblname ORDER BY size+0 DESC, tblname} {} {
   statline [string toupper $tblname] $size [percent $size $file_pgcnt]
@@ -681,7 +681,7 @@ titleline Definitions
 puts {
 Page size in bytes
 
-    The number of bytes in a single page of the database file.  
+    The number of bytes in a single page of the database file.
     Usually 1024.
 
 Number of pages in the whole file
@@ -754,7 +754,7 @@ Bytes of payload
 
     The amount of payload stored under this category.  Payload is the data
     part of table entries and the key part of index entries.  The percentage
-    at the right is the bytes of payload divided by the bytes of storage 
+    at the right is the bytes of payload divided by the bytes of storage
     consumed.
 
 Average payload per entry
@@ -825,8 +825,8 @@ Unused bytes on overflow pages
 
 Unused bytes on all pages
 
-    The total number of bytes of unused space on all primary and overflow 
-    pages.  The percentage at the right is the number of unused bytes 
+    The total number of bytes of unused space on all primary and overflow
+    pages.  The percentage at the right is the number of unused bytes
     divided by the total number of bytes.
 }
 

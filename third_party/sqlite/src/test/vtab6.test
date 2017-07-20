@@ -53,7 +53,7 @@ do_test vtab6-1.1 {
     INSERT INTO t1 VALUES(2,3,4);
     INSERT INTO t1 VALUES(3,4,5);
     SELECT * FROM t1;
-  }  
+  }
 } {1 2 3 2 3 4 3 4 5}
 do_test vtab6-1.2 {
   execsql {
@@ -61,7 +61,7 @@ do_test vtab6-1.2 {
     INSERT INTO t2 VALUES(2,3,4);
     INSERT INTO t2 VALUES(3,4,5);
     SELECT * FROM t2;
-  }  
+  }
 } {1 2 3 2 3 4 3 4 5}
 
 do_test vtab6-1.3 {
@@ -159,7 +159,7 @@ do_test vtab6-1.12 {
 ifcapable subquery {
   do_test vtab6-1.13 {
     execsql2 {
-      SELECT * FROM t1 NATURAL JOIN 
+      SELECT * FROM t1 NATURAL JOIN
         (SELECT b as 'c', c as 'd', d as 'e' FROM t2) as t3
     }
   } {a 1 b 2 c 3 d 4 e 5}
@@ -177,7 +177,7 @@ do_test vtab6-1.15 {
     INSERT INTO t3 VALUES(3,4,5);
     INSERT INTO t3 VALUES(4,5,6);
     SELECT * FROM t3;
-  }  
+  }
 } {2 3 4 3 4 5 4 5 6}
 do_test vtab6-1.16 {
   execsql {
@@ -195,7 +195,7 @@ do_test vtab6-1.18 {
     INSERT INTO t4 VALUES(3,4,5);
     INSERT INTO t4 VALUES(4,5,6);
     SELECT * FROM t4;
-  }  
+  }
 } {2 3 4 3 4 5 4 5 6}
 do_test vtab6-1.19.1 {
   execsql {
@@ -381,9 +381,9 @@ do_test vtab6-8.1 {
     INSERT INTO t9 VALUES(1,11);
     INSERT INTO t9 VALUES(2,22);
     INSERT INTO t10 VALUES(1,2);
-    INSERT INTO t10 VALUES(3,3);    
+    INSERT INTO t10 VALUES(3,3);
     INSERT INTO t11 VALUES(2,111);
-    INSERT INTO t11 VALUES(3,333);    
+    INSERT INTO t11 VALUES(3,333);
     CREATE VIEW v10_11 AS SELECT x, q FROM t10, t11 WHERE t10.y=t11.p;
     COMMIT;
     SELECT * FROM t9 LEFT JOIN v10_11 ON( a=x );
@@ -452,7 +452,7 @@ do_test vtab6-10.1 {
     CREATE INDEX i22 ON real_t22(q);
     SELECT a FROM t21 LEFT JOIN t22 ON b=p WHERE q=
        (SELECT max(m.q) FROM t22 m JOIN t21 n ON n.b=m.p WHERE n.c=1);
-  }  
+  }
 } {}
 } ;# ifcapable subquery
 
@@ -461,8 +461,8 @@ do_test vtab6-11.1.0 {
     CREATE TABLE ab_r(a, b);
     CREATE TABLE bc_r(b, c);
 
-    CREATE VIRTUAL TABLE ab USING echo(ab_r); 
-    CREATE VIRTUAL TABLE bc USING echo(bc_r); 
+    CREATE VIRTUAL TABLE ab USING echo(ab_r);
+    CREATE VIRTUAL TABLE bc USING echo(bc_r);
 
     INSERT INTO ab VALUES(1, 2);
     INSERT INTO bc VALUES(2, 3);

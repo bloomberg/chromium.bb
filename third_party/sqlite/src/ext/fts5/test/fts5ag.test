@@ -22,7 +22,7 @@ ifcapable !fts5 {
 }
 
 #-------------------------------------------------------------------------
-# This file attempts to verify that the extension APIs work with 
+# This file attempts to verify that the extension APIs work with
 # "ORDER BY rank" queries. This is done by comparing the results of
 # the fts5_test() function when run with queries of the form:
 #

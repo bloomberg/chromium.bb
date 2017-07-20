@@ -38,7 +38,7 @@ do_test 1.2.1 {
   db close
   foreach {name f} $files { forcedelete $f }
   sqlite3 db test.db
-  
+
   foreach {name f} $files {
     if {$name == "main"} continue
     execsql "ATTACH '$f' AS $name"

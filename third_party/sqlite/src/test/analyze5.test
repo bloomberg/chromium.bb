@@ -57,7 +57,7 @@ do_test analyze5-1.0 {
     if {$i%2} {set v $u} {set v [string toupper $u]}
     db eval {INSERT INTO t1 VALUES($t,$u,$v,$w,$x,$y,$z)}
   }
-  db eval { 
+  db eval {
     CREATE INDEX t1t ON t1(t);  -- 0.5, 1.5, 2.5, and 3.5
     CREATE INDEX t1u ON t1(u);  -- text
     CREATE INDEX t1v ON t1(v);  -- mixed case text
@@ -69,7 +69,7 @@ do_test analyze5-1.0 {
   }
   ifcapable stat4 {
     db eval {
-      SELECT DISTINCT lindex(test_decode(sample),0) 
+      SELECT DISTINCT lindex(test_decode(sample),0)
         FROM sqlite_stat4 WHERE idx='t1u' ORDER BY nlt;
     }
   } else {
@@ -82,7 +82,7 @@ do_test analyze5-1.0 {
 do_test analyze5-1.1 {
   ifcapable stat4 {
     db eval {
-      SELECT DISTINCT lower(lindex(test_decode(sample), 0)) 
+      SELECT DISTINCT lower(lindex(test_decode(sample), 0))
         FROM sqlite_stat4 WHERE idx='t1v' ORDER BY 1
     }
   } else {
@@ -126,7 +126,7 @@ foreach {testid where index rows} {
    20  {z>=-100 AND z<2}     t1z  700
    21  {z>=-100 AND z<=2}    t1z  875
    22  {z>=-100 AND z<3}     t1z  875
-  
+
    31  {z>=0.0 AND z<=0.0}   t1z  400
    32  {z>=1.0 AND z<=1.0}   t1z  300
    33  {z>=2.0 AND z<=2.0}   t1z  175
@@ -149,7 +149,7 @@ foreach {testid where index rows} {
    50  {z>=-100 AND z<2.0}   t1z  700
    51  {z>=-100 AND z<=2.0}  t1z  875
    52  {z>=-100 AND z<3.0}   t1z  875
-  
+
   101  {z=-1}                t1z    1
   102  {z=0}                 t1z  400
   103  {z=1}                 t1z  300
@@ -164,7 +164,7 @@ foreach {testid where index rows} {
   112  {z=4.0}               t1z    1
   113  {z=1.5}               t1z    1
   114  {z=2.5}               t1z    1
-  
+
   201  {z IN (-1)}           t1z    1
   202  {z IN (0)}            t1z  400
   203  {z IN (1)}            t1z  300

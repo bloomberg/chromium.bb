@@ -112,7 +112,7 @@ foreach fromjmode $all_journal_modes {
       db eval "PRAGMA journal_mode=$tojmode"
     } $fromjmode
 
-    # Rollback the transaction.  
+    # Rollback the transaction.
     #
     do_test jrnlmode3-3.$cnt.4 {
       db eval {

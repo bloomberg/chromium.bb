@@ -9,7 +9,7 @@
 #
 #***********************************************************************
 #
-# This file implements tests to verify that the "testable statements" in 
+# This file implements tests to verify that the "testable statements" in
 # the lang_reindex.html document are correct.
 #
 
@@ -85,7 +85,7 @@ do_execsql_test e_reindex-1.4 {
 } {ok}
 
 #-------------------------------------------------------------------------
-# The remaining tests in this file focus on testing that the REINDEX 
+# The remaining tests in this file focus on testing that the REINDEX
 # command reindexes the correct subset of the indexes in the database.
 # They all use the following dataset.
 #

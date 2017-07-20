@@ -7,7 +7,7 @@
 #
 #***********************************************************************
 # This file implements regression tests for SQLite library.  The
-# focus of this file is the interactions between the FTS3/4 module 
+# focus of this file is the interactions between the FTS3/4 module
 # and shared-cache mode.
 #
 
@@ -53,9 +53,9 @@ do_execsql_test fts3shared-1.2 {
 # on that table and so the SELECT fails.
 #
 do_test fts3shared-1.3 {
-  catchsql {  
+  catchsql {
     BEGIN;
-      SELECT rowid FROM t1 WHERE t1 MATCH 'stars' 
+      SELECT rowid FROM t1 WHERE t1 MATCH 'stars'
   } db2
 } {1 {database table is locked}}
 
@@ -129,12 +129,12 @@ do_test 2.3.6 { catchsql "SELECT * FROM t2aux"                     dbR } $LOCKED
 do_test 2.3.7 { execsql COMMIT dbW } {}
 do_test 2.3.8 { execsql COMMIT dbR } {}
 
-# Test that once a connection has read from the FTS or fts4aux table, 
+# Test that once a connection has read from the FTS or fts4aux table,
 # another connection may not write to the FTS table.
 #
 foreach {tn sql} {
   1 "SELECT * FROM t1 WHERE rowid=1"
-  2 "SELECT * FROM t1 WHERE t1 MATCH 'a'" 
+  2 "SELECT * FROM t1 WHERE t1 MATCH 'a'"
   3 "SELECT rowid FROM t1 WHERE t1 MATCH 'a'"
   4 "SELECT * FROM t1"
   5 "SELECT * FROM t1aux"
@@ -147,14 +147,14 @@ foreach {tn sql} {
     catchsql "INSERT INTO t1 VALUES('p q r')" dbW
   } $LOCKED
 
-  execsql ROLLBACK dbR 
-  execsql ROLLBACK dbW 
+  execsql ROLLBACK dbR
+  execsql ROLLBACK dbW
 }
 
 # Same test as 2.4.*, except with a content= table.
 #
 foreach {tn sql} {
-  2 "SELECT * FROM t2 WHERE t2 MATCH 'a'" 
+  2 "SELECT * FROM t2 WHERE t2 MATCH 'a'"
   3 "SELECT rowid FROM t2 WHERE t2 MATCH 'a'"
   5 "SELECT * FROM t2aux"
 } {
@@ -166,8 +166,8 @@ foreach {tn sql} {
     catchsql "INSERT INTO t2(rowid, a, b) VALUES(3, 's t u', 'v w x')" dbW
   } $LOCKED
 
-  execsql ROLLBACK dbR 
-  execsql ROLLBACK dbW 
+  execsql ROLLBACK dbR
+  execsql ROLLBACK dbW
 }
 
 dbW close

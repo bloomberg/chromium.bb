@@ -48,7 +48,7 @@ do_test 1.3 {
 } 1
 
 do_test 1.4 {
-  execsql { 
+  execsql {
     BEGIN;
       INSERT INTO t1 VALUES(3);
       INSERT INTO t1 VALUES(4);
@@ -141,7 +141,7 @@ do_execsql_test 4.4 {
 # previously registered write-ahead log callback.
 set ::old_wal_hook 0
 proc my_old_wal_hook {args} {
-  incr ::old_wal_hook 
+  incr ::old_wal_hook
   return 0
 }
 db wal_hook my_old_wal_hook
@@ -150,7 +150,7 @@ do_test 5.1 {
   set ::old_wal_hook
 } {1}
 
-# Replace old_wal_hook. Observe that it is not invoked after it has 
+# Replace old_wal_hook. Observe that it is not invoked after it has
 # been replaced.
 proc my_new_wal_hook {args} { return 0 }
 db wal_hook my_new_wal_hook

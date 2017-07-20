@@ -11,7 +11,7 @@
 # This file implements regression tests for the SQLite library, focusing
 # on the incremental vacuum feature.
 #
-# The tests in this file were added at the same time as optimizations 
+# The tests in this file were added at the same time as optimizations
 # were made to:
 #
 #   * Truncate the database after a rollback mode commit, and
@@ -36,11 +36,11 @@ proc check_on_disk {} {
 
   # Copy the wal and journal files for database "test.db" to "test2.db".
   forcedelete test2.db test2.db-journal test2.db-wal
-  if {[file exists test.db-journal]} { 
-    forcecopy test.db-journal test2.db-journal 
+  if {[file exists test.db-journal]} {
+    forcecopy test.db-journal test2.db-journal
   }
-  if {[file exists test.db-wal]} { 
-    forcecopy test.db-wal test2.db-wal 
+  if {[file exists test.db-wal]} {
+    forcecopy test.db-wal test2.db-wal
   }
 
   # Now copy the database file itself. Do this using open/read/puts
@@ -83,7 +83,7 @@ foreach {T jrnl_mode} {
     PRAGMA auto_vacuum = 2;
   }
   db eval "PRAGMA journal_mode = $jrnl_mode"
-  
+
   foreach {tn sql} {
     1 {
       CREATE TABLE t1(x UNIQUE);
@@ -97,12 +97,12 @@ foreach {T jrnl_mode} {
       INSERT INTO t1 SELECT randomblob(400) FROM t1;    -- 128
       INSERT INTO t1 SELECT randomblob(400) FROM t1;    -- 256
     }
-  
+
     2 {
       DELETE FROM t1 WHERE rowid%8;
     }
-  
-    3 { 
+
+    3 {
       BEGIN;
         PRAGMA incremental_vacuum = 100;
         INSERT INTO t1 SELECT randomblob(400) FROM t1;    --  64
@@ -110,8 +110,8 @@ foreach {T jrnl_mode} {
         INSERT INTO t1 SELECT randomblob(400) FROM t1;    -- 256
       ROLLBACK;
     }
-  
-    4 { 
+
+    4 {
       BEGIN;
         SAVEPOINT one;
           PRAGMA incremental_vacuum = 100;
@@ -120,20 +120,20 @@ foreach {T jrnl_mode} {
             INSERT INTO t1 SELECT randomblob(400) FROM t1;    -- 128
             INSERT INTO t1 SELECT randomblob(400) FROM t1;    -- 256
     }
-  
+
     5 {   ROLLBACK to two }
-  
+
     6 { ROLLBACK to one }
-  
-    7 { 
+
+    7 {
         INSERT INTO t1 SELECT randomblob(400) FROM t1;    --  64
         PRAGMA incremental_vacuum = 1000;
         INSERT INTO t1 SELECT randomblob(400) FROM t1;    -- 128
         INSERT INTO t1 SELECT randomblob(400) FROM t1;    -- 256
       ROLLBACK;
     }
-  
-    8 { 
+
+    8 {
       BEGIN;
         INSERT INTO t1 SELECT randomblob(400) FROM t1;    --  64
         PRAGMA incremental_vacuum = 1000;

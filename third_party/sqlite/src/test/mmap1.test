@@ -28,7 +28,7 @@ proc nRead {db} {
   return $stats(read)
 }
 
-# Return a Tcl script that registers a user-defined scalar function 
+# Return a Tcl script that registers a user-defined scalar function
 # named rblob() with database handle $dbname. The function returns a
 # sequence of pseudo-random blobs based on seed value $seed.
 #

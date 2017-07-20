@@ -33,21 +33,21 @@ do_malloc_test 2 -sqlprep {
   PRAGMA cache_size = 10;
   CREATE TABLE t1(a, b, c);
   INSERT INTO t1 VALUES(randstr(400,400), randstr(400,400), randstr(400,400));
-  INSERT INTO t1 SELECT 
+  INSERT INTO t1 SELECT
     randstr(400,400), randstr(400,400), randstr(400,400) FROM t1;
-  INSERT INTO t1 
+  INSERT INTO t1
     SELECT randstr(400,400), randstr(400,400), randstr(400,400) FROM t1;
-  INSERT INTO t1 
+  INSERT INTO t1
     SELECT randstr(400,400), randstr(400,400), randstr(400,400) FROM t1;
-  INSERT INTO t1 
+  INSERT INTO t1
     SELECT randstr(400,400), randstr(400,400), randstr(400,400) FROM t1;
-  INSERT INTO t1 
+  INSERT INTO t1
     SELECT randstr(400,400), randstr(400,400), randstr(400,400) FROM t1;
-  INSERT INTO t1 
+  INSERT INTO t1
     SELECT randstr(400,400), randstr(400,400), randstr(400,400) FROM t1;
-  INSERT INTO t1 
+  INSERT INTO t1
     SELECT randstr(400,400), randstr(400,400), randstr(400,400) FROM t1;
-  INSERT INTO t1 
+  INSERT INTO t1
     SELECT randstr(400,400), randstr(400,400), randstr(400,400) FROM t1;
 } -sqlbody {
   PRAGMA cache_size = 10;

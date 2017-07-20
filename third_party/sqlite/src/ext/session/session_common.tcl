@@ -45,9 +45,9 @@ proc do_conflict_test {tn args} {
   }
   array set O $args
 
-  proc xConflict {args} [subst -nocommands { 
+  proc xConflict {args} [subst -nocommands {
     lappend ::xConflict [set args]
-    return $O(-policy) 
+    return $O(-policy)
   }]
   proc bgerror {args} { set ::background_error $args }
 
@@ -128,7 +128,7 @@ proc do_iterator_test {tn tbl_list sql res} {
   S delete
 }
 
-# Compare the contents of all tables in [db1] and [db2]. Throw an error if 
+# Compare the contents of all tables in [db1] and [db2]. Throw an error if
 # they are not identical, or return an empty string if they are.
 #
 proc compare_db {db1 db2} {
@@ -137,10 +137,10 @@ proc compare_db {db1 db2} {
   set lot1 [$db1 eval $sql]
   set lot2 [$db2 eval $sql]
 
-  if {$lot1 != $lot2} { 
+  if {$lot1 != $lot2} {
     puts $lot1
     puts $lot2
-    error "databases contain different tables" 
+    error "databases contain different tables"
   }
 
   foreach tbl $lot1 {
@@ -154,10 +154,10 @@ proc compare_db {db1 db2} {
     set sql "SELECT * FROM $tbl ORDER BY [join $col1 ,]"
     set data1 [$db1 eval $sql]
     set data2 [$db2 eval $sql]
-    if {$data1 != $data2} { 
+    if {$data1 != $data2} {
       puts "$data1"
       puts "$data2"
-      error "table $tbl data mismatch" 
+      error "table $tbl data mismatch"
     }
   }
 

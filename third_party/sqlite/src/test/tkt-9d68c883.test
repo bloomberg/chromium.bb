@@ -40,7 +40,7 @@ for {set i 0} {$i < 100} {incr i} {
         DELETE FROM t5;
         INSERT INTO t8 VALUES('hello world');
     }
-  
+
     sqlite3_memdebug_fail $i -repeat 0
     catchsql { DROP TABLE t7; }
     sqlite3_memdebug_fail -1
@@ -50,6 +50,6 @@ for {set i 0} {$i < 100} {incr i} {
   } {ok}
 }
 
-catch { db close } 
+catch { db close }
 unregister_devsim
 finish_test

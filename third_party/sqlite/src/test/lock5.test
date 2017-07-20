@@ -167,7 +167,7 @@ do_test lock5-none.3 {
   execsql { SELECT * FROM t1; } db2
 } {1 2}
 do_test lock5-none.4 {
-  execsql { 
+  execsql {
     BEGIN;
     SELECT * FROM t1;
   } db2

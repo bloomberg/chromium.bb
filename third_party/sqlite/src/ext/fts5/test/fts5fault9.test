@@ -112,7 +112,7 @@ do_faultsim_test 4.2 -faults oom-t* -body {
 #-------------------------------------------------------------------------
 # An OOM within an "ORDER BY rank" query.
 #
-db func rnddoc fts5_rnddoc 
+db func rnddoc fts5_rnddoc
 do_execsql_test 5.0 {
   CREATE VIRTUAL TABLE xx USING fts5(x, y, detail=%DETAIL%);
   INSERT INTO xx VALUES ('def', 'abc ' || rnddoc(10));

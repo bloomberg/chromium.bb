@@ -12,7 +12,7 @@
 # it tests that ticket [2d1a5c67dfc2363e44f29d9bbd57f7331851390a] has
 # been resolved.
 #
-# 
+#
 #
 
 set testdir [file dirname $argv0]

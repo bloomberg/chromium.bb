@@ -13,7 +13,7 @@
 
 if {![info exists testdir]} {
   set testdir [file join [file dirname [info script]] .. .. test]
-} 
+}
 source [file join [file dirname [info script]] session_common.tcl]
 source $testdir/tester.tcl
 ifcapable !session {finish_test; return}
@@ -47,7 +47,7 @@ proc do_then_undo {tn sql} {
   db eval $sql
 
   set ck2 [udbcksum db main]
-  
+
   set invert [sqlite3changeset_invert [S changeset]]
   S delete
   sqlite3changeset_apply db $invert noop

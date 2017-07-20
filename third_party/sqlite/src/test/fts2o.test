@@ -105,7 +105,7 @@ do_test fts2o-2.12 {
 } {{one three four} {one four} {one four two}}
 
 #-------------------------------------------------------------------
-# Close, delete and reopen the database. The following test should 
+# Close, delete and reopen the database. The following test should
 # be run on an initially empty db.
 #
 db close
@@ -131,7 +131,7 @@ do_test fts2o-3.2 {
 } {{one three four} {one four} {one two} {one three four} {one four} {one two}}
 
 #---------------------------------------------------------------------
-# Test that it is possible to rename an fts2 table in an attached 
+# Test that it is possible to rename an fts2 table in an attached
 # database.
 #
 forcedelete test2.db test2.db-journal

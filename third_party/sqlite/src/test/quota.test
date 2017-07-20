@@ -38,7 +38,7 @@ do_test quota-1.8 { sqlite3_quota_shutdown }               {SQLITE_OK}
 
 
 #-------------------------------------------------------------------------
-# Some simple warm-body tests with a single database file in rollback 
+# Some simple warm-body tests with a single database file in rollback
 # mode:
 #
 #   quota-2.1.*: Test that SQLITE_FULL is returned if the database would
@@ -55,7 +55,7 @@ do_test quota-1.8 { sqlite3_quota_shutdown }               {SQLITE_OK}
 #                file. Check that this fails and the quota system still works
 #                afterwards. Then close the database and successfully shut
 #                down the quota system.
-#   
+#
 sqlite3_quota_initialize "" 1
 
 unset -nocomplain quota_request_ok
@@ -172,7 +172,7 @@ do_test quota-3.1.6 {
 } {SQLITE_OK}
 
 do_test quota-3.2.1 {
-  delete_file force test.db test2.db 
+  delete_file force test.db test2.db
 
   sqlite3_quota_set * 4096 {}
   sqlite3 db1a test.db
@@ -200,16 +200,16 @@ do_test quota-3.2.3 { execsql { INSERT INTO t1 VALUES('v', 'w') } db1b } {}
 do_test quota-3.2.4 { execsql { INSERT INTO t1 VALUES('t', 'u') } db2a } {}
 do_test quota-3.2.5 { execsql { INSERT INTO t1 VALUES('r', 's') } db2b } {}
 
-do_test quota-3.2.6 { 
+do_test quota-3.2.6 {
   catchsql { INSERT INTO t1 VALUES(randomblob(500), randomblob(500)) } db1a
 } {1 {database or disk is full}}
-do_test quota-3.2.7 { 
+do_test quota-3.2.7 {
   catchsql { INSERT INTO t1 VALUES(randomblob(500), randomblob(500)) } db1b
 } {1 {database or disk is full}}
-do_test quota-3.2.8 { 
+do_test quota-3.2.8 {
   catchsql { INSERT INTO t1 VALUES(randomblob(500), randomblob(500)) } db2a
 } {1 {database or disk is full}}
-do_test quota-3.2.9 { 
+do_test quota-3.2.9 {
   catchsql { INSERT INTO t1 VALUES(randomblob(500), randomblob(500)) } db2b
 } {1 {database or disk is full}}
 
@@ -223,7 +223,7 @@ proc quota_callback {file limitvar size} {
   set limit 0
 }
 sqlite3_quota_set * 4096 quota_callback
-do_test quota-3.3.1 { 
+do_test quota-3.3.1 {
   execsql { INSERT INTO t1 VALUES(randomblob(500), randomblob(500)) } db1a
   execsql { INSERT INTO t1 VALUES(randomblob(500), randomblob(500)) } db1b
   execsql { INSERT INTO t1 VALUES(randomblob(500), randomblob(500)) } db2a
@@ -355,7 +355,7 @@ if {$tcl_platform(platform)=="windows"} {
   set quotagroup *\\quota-test-A?.db
 } else {
   set quotagroup */quota-test-A?.db
-} 
+}
 foreach file [glob -nocomplain quota-test-A*] {
   forcedelete $file
 }
@@ -406,7 +406,7 @@ if {$tcl_platform(platform)=="windows"} {
   set quotagroup *\\quota-test-B*
 } else {
   set quotagroup */quota-test-B*
-} 
+}
 foreach file [glob -nocomplain quota-test-B*] {
   forcedelete $file
 }
@@ -469,7 +469,7 @@ do_test quota-4.9.2 {
 } {}
 
 #-------------------------------------------------------------------------
-# The following tests test that the quota VFS handles malloc and IO 
+# The following tests test that the quota VFS handles malloc and IO
 # errors.
 #
 

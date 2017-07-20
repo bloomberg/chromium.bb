@@ -10,8 +10,8 @@
 #*************************************************************************
 # This file implements regression tests for SQLite library.  The
 # focus of this script is testing the FTS5 module.
-# 
-# More specifically, the tests in this file focus on the built-in 
+#
+# More specifically, the tests in this file focus on the built-in
 # snippet() function.
 #
 
@@ -118,9 +118,9 @@ foreach {tn doc res} {
 
   8.1 {o o o o o o o o o X o o o o o o o o o o o o o o o o X X X o o o}
       {...o o [X] [X] [X] o o...}
-  8.2 {o o o o o o o. o o X o o o o o o o o o o o o o o o o X X X o o o} 
+  8.2 {o o o o o o o. o o X o o o o o o o o o o o o o o o o X X X o o o}
       {...o o [X] o o o o...}
-  8.3 {o o o o X o o o o o o o o o o o o o o o o o o o o o X X X o o o} 
+  8.3 {o o o o X o o o o o o o o o o o o o o o o o o o o o X X X o o o}
       {o o o o [X] o o...}
 } {
   do_snippet_test 1.$tn $doc X $res
@@ -175,7 +175,7 @@ do_execsql_test 5.1 {
   SELECT snippet(p1, 0, '[', ']', '...', 6) FROM p1('x');
 } {{[x] a a a a a...}}
 
-} ;# foreach_detail_mode 
+} ;# foreach_detail_mode
 
 finish_test
 

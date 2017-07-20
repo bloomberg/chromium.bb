@@ -21,7 +21,7 @@ do_test tkt3879.1.1 {
     CREATE TABLE t1 (a PRIMARY KEY, b);
     INSERT INTO t1 VALUES ('w',  1);
     INSERT INTO t1 VALUES ('z', -1);
-  
+
     CREATE TABLE t2 (m INTEGER PRIMARY KEY, n, a, p);
     INSERT INTO t2 VALUES (25, 13, 'w', 1);
     INSERT INTO t2 VALUES (26, 25, 'z', 153);

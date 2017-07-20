@@ -26,14 +26,14 @@ database_may_be_corrupt
 #--------------------------------------------------------------------------
 # OVERVIEW
 #
-#   This test file attempts to verify that SQLite does not read past the 
-#   end of any in-memory buffers as a result of corrupted database page 
+#   This test file attempts to verify that SQLite does not read past the
+#   end of any in-memory buffers as a result of corrupted database page
 #   images. Usually this happens because a field within a database page
 #   that contains an offset to some other structure within the same page
 #   is set to too large a value. A database page contains the following
 #   such fields:
 #
-#     1. The page header field that contains the offset to the first 
+#     1. The page header field that contains the offset to the first
 #        free block of space.
 #
 #     2. The first two bytes of all but the last free block on the free-block
@@ -62,11 +62,11 @@ database_may_be_corrupt
 #   (or similar) in order to verify that no overreads occur.
 #
 # TEST PLAN
-# 
+#
 #   Test cases corruptD-1.* are white-box tests. They attempt to corrupt
 #   one of the above fields, then exercise each part of the code in btree.c
 #   that uses said field.
-#   
+#
 #   Offset variables 1, 2, 3 and 4 are all checked to make sure they
 #   will not result in buffer overruns as part of page initialization in
 #   sqlite3BtreeInitPage(). Offsets 5 and 6 cannot be tested as part of
@@ -74,7 +74,7 @@ database_may_be_corrupt
 #
 
 do_test corruptD-1.0 {
-  execsql { 
+  execsql {
     PRAGMA auto_vacuum = 0;
     PRAGMA page_size = 1024;
     CREATE TABLE t1(a, b);
@@ -106,7 +106,7 @@ proc restore_file {} {
 
 #-------------------------------------------------------------------------
 # The following tests, corruptD-1.1.*, focus on the page header field
-# containing the offset of the first free block in a page. 
+# containing the offset of the first free block in a page.
 #
 do_test corruptD-1.1.1 {
   incr_change_counter
@@ -137,7 +137,7 @@ do_test corruptD-1.2.2 {
 #-------------------------------------------------------------------------
 # The following tests, corruptD-1.5.*, focus on the offsets contained
 # in the cell offset array.
-# 
+#
 #   defragmentPage
 #
 

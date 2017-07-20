@@ -35,8 +35,8 @@ proc extract_hints {sql} {
       OpenRead {
         set csr($a(p1)) $lookup($a(p2))
       }
-      CursorHint { 
-        lappend ret $csr($a(p1)) $a(p4) 
+      CursorHint {
+        lappend ret $csr($a(p1)) $a(p4)
       }
     }
   }

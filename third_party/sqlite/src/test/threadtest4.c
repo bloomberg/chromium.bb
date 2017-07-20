@@ -256,7 +256,7 @@ static void worker_add_content(WorkerInfo *p, int mn, int mx, int iTab){
     case 3:  zTabDef = "t3(tid,sp,x,y,z)";  break;
   }
   pthread_mutex_lock(p->pWrMutex);
-  run_sql(p, 
+  run_sql(p,
      "WITH RECURSIVE\n"
      " c(i) AS (VALUES(%d) UNION ALL SELECT i+1 FROM c WHERE i<%d)\n"
      "INSERT INTO %s SELECT %d, zeroblob(3000), i, printf('%%d',i), i FROM c;",
@@ -400,7 +400,7 @@ int main(int argc, char **argv){
       exit(1);
     }
   }
-  if( nWorker==0 ){ 
+  if( nWorker==0 ){
     fprintf(stderr,
        "usage:  %s ?OPTIONS? N\n"
        "N is the number of threads and must be at least 2.\n"

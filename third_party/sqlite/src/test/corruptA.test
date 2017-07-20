@@ -52,32 +52,32 @@ do_test corruptA-2.1 {
   forcecopy test.db-template test.db
   hexio_write test.db 19 $unreadable_version   ;# the read format number
   sqlite3 db test.db
-  catchsql {SELECT * FROM t1}  
+  catchsql {SELECT * FROM t1}
 } {1 {file is encrypted or is not a database}}
- 
+
 do_test corruptA-2.2 {
   db close
   forcecopy test.db-template test.db
   hexio_write test.db 21 41   ;# max embedded payload fraction
   sqlite3 db test.db
-  catchsql {SELECT * FROM t1}  
+  catchsql {SELECT * FROM t1}
 } {1 {file is encrypted or is not a database}}
- 
+
 do_test corruptA-2.3 {
   db close
   forcecopy test.db-template test.db
   hexio_write test.db 22 1f   ;# min embedded payload fraction
   sqlite3 db test.db
-  catchsql {SELECT * FROM t1}  
+  catchsql {SELECT * FROM t1}
 } {1 {file is encrypted or is not a database}}
- 
+
 do_test corruptA-2.4 {
   db close
   forcecopy test.db-template test.db
   hexio_write test.db 23 21   ;# min leaf payload fraction
   sqlite3 db test.db
-  catchsql {SELECT * FROM t1}  
+  catchsql {SELECT * FROM t1}
 } {1 {file is encrypted or is not a database}}
- 
+
 
 finish_test

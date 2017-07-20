@@ -149,7 +149,7 @@ do_test percentile-1.18 {
   execsql {
     UPDATE t1 SET x=NULL;
     SELECT ifnull(percentile(x, 50),'NULL') FROM t1
-  } 
+  }
 } {NULL}
 
 # Exactly one non-NULL entry
@@ -158,7 +158,7 @@ do_test percentile-1.19 {
   execsql {
     UPDATE t1 SET x=12345 WHERE rowid=5;
     SELECT percentile(x, 0), percentile(x, 50), percentile(x,100) FROM t1
-  } 
+  }
 } {12345.0 12345.0 12345.0}
 
 # Infinity as an input

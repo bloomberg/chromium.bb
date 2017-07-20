@@ -14,7 +14,7 @@
 
 if {![info exists testdir]} {
   set testdir [file join [file dirname [info script]] .. .. test]
-} 
+}
 source [file join [file dirname [info script]] rtree_util.tcl]
 source $testdir/tester.tcl
 
@@ -34,19 +34,19 @@ if {[info exists G(isquick)] && $G(isquick)} {
 
 foreach module {rtree_i32 rtree} {
   for {set nDim 1} {$nDim <= 5} {incr nDim} {
-  
+
     do_test rtree2-$module.$nDim.1 {
       set cols [list]
       foreach c [list c0 c1 c2 c3 c4 c5 c6 c7 c8 c9] {
         lappend cols "$c REAL"
       }
       set cols [join [lrange $cols 0 [expr {$nDim*2-1}]] ", "]
-      execsql " 
+      execsql "
         CREATE VIRTUAL TABLE t1 USING ${module}(ii, $cols);
         CREATE TABLE t2 (ii, $cols);
       "
     } {}
-  
+
     do_test rtree2-$module.$nDim.2 {
       db transaction {
         for {set ii 0} {$ii < $::NROW} {incr ii} {
@@ -70,7 +70,7 @@ foreach module {rtree_i32 rtree} {
           #}
         }
       }
-  
+
       set t1 [execsql {SELECT * FROM t1 ORDER BY ii}]
       set t2 [execsql {SELECT * FROM t2 ORDER BY ii}]
       set rc [expr {$t1 eq $t2}]
@@ -80,11 +80,11 @@ foreach module {rtree_i32 rtree} {
       }
       set rc
     } {1}
-  
+
     do_test rtree2-$module.$nDim.3 {
       rtree_check db t1
     } 0
-  
+
     set OPS [list < > <= >= =]
     for {set ii 0} {$ii < $::NSELECT} {incr ii} {
       do_test rtree2-$module.$nDim.4.$ii.1 {
@@ -101,7 +101,7 @@ foreach module {rtree_i32 rtree} {
           lappend where "$col $op $val"
         }
         set where [join $where " AND "]
-  
+
         set t1 [execsql "SELECT * FROM t1 WHERE $where ORDER BY ii"]
         set t2 [execsql "SELECT * FROM t2 WHERE $where ORDER BY ii"]
         set rc [expr {$t1 eq $t2}]
@@ -117,13 +117,13 @@ foreach module {rtree_i32 rtree} {
         set rc
       } {1}
     }
-  
+
     for {set ii 0} {$ii < $::NROW} {incr ii $::NDEL} {
       #puts [rtree_treedump db t1]
       do_test rtree2-$module.$nDim.5.$ii.1 {
         execsql "DELETE FROM t2 WHERE ii <= $::ii"
         execsql "DELETE FROM t1 WHERE ii <= $::ii"
-  
+
         set t1 [execsql {SELECT * FROM t1 ORDER BY ii}]
         set t2 [execsql {SELECT * FROM t2 ORDER BY ii}]
         set rc [expr {$t1 eq $t2}]
@@ -137,7 +137,7 @@ foreach module {rtree_i32 rtree} {
         rtree_check db t1
       } {0}
     }
-  
+
     do_test rtree2-$module.$nDim.6 {
       execsql {
         DROP TABLE t1;

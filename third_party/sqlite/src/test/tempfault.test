@@ -71,7 +71,7 @@ do_faultsim_test 2.1 -faults * -prep {
       WITH x(i) AS (SELECT 1 UNION ALL SELECT i+1 FROM x WHERE i<100)
           INSERT INTO t1 SELECT randomblob(100), randomblob(100) FROM x;
     }
-  } 
+  }
 } -body {
   execsql { UPDATE t1 SET a = randomblob(99) }
 } -test {
@@ -90,7 +90,7 @@ do_faultsim_test 3 -faults * -prep {
     INSERT INTO t1 SELECT randomblob(100), randomblob(100) FROM x;
   }
 } -body {
-  execsql { 
+  execsql {
     BEGIN;
       UPDATE t1 SET a = randomblob(99);
       SAVEPOINT abc;
@@ -116,7 +116,7 @@ do_faultsim_test 4 -faults * -prep {
     INSERT INTO t1 SELECT randomblob(100), randomblob(100) FROM x;
   }
 } -body {
-  execsql { 
+  execsql {
     BEGIN;
       UPDATE t1 SET a = randomblob(99);
       SAVEPOINT abc;

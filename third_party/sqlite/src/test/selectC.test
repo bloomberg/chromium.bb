@@ -8,7 +8,7 @@
 #    May you share freely, never taking more than you give.
 #
 #***********************************************************************
-# This file implements regression tests for SQLite library. 
+# This file implements regression tests for SQLite library.
 #
 # $Id: selectC.test,v 1.5 2009/05/17 15:26:21 drh Exp $
 
@@ -188,11 +188,11 @@ do_test selectC-3.1 {
     INSERT INTO person VALUES('lakeside', 'amy', NULL);
     INSERT INTO person VALUES('lake-apts', 'tom', NULL);
     INSERT INTO person VALUES('acorn', 'hideo', 'CQB421');
-    
-    SELECT 
-      org_id, 
+
+    SELECT
+      org_id,
       count((NOT (org_id IS NULL)) AND (NOT (nickname IS NULL)))
-    FROM person 
+    FROM person
     WHERE (CASE WHEN license != '' THEN 1 ELSE 0 END)
     GROUP BY 1;
   }

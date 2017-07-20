@@ -30,7 +30,7 @@ sqlite3 db test.db
 #   shell2-1.*: Misc. test of various tickets and reported errors.
 #
 
-# Batch mode not creating databases.  
+# Batch mode not creating databases.
 # Reported on mailing list by Ken Zalewski.
 # Ticket [aeff892c57].
 do_test shell2-1.1.1 {
@@ -104,7 +104,7 @@ INSERT INTO foo(a) VALUES(1);
 SELECT * FROM foo;
 1}}
 
-# Test with echo on using dot command and 
+# Test with echo on using dot command and
 # turning off mid- processing.
 # NB. whitespace is important
 do_test shell2-1.4.4 {
@@ -118,7 +118,7 @@ SELECT * FROM foo;}
 .echo OFF
 1}}
 
-# Test with echo on using dot command and 
+# Test with echo on using dot command and
 # multiple commands per line.
 # NB. whitespace is important
 do_test shell2-1.4.5 {
@@ -150,7 +150,7 @@ SELECT * FROM foo2;
 2
 }}
 
-# Test with echo on and headers on using dot command and 
+# Test with echo on and headers on using dot command and
 # multiple commands per line.
 # NB. whitespace is important
 do_test shell2-1.4.6 {

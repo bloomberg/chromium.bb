@@ -9,7 +9,7 @@
 #
 #***********************************************************************
 #
-# Test that errors encountered during a ROLLBACK operation correctly 
+# Test that errors encountered during a ROLLBACK operation correctly
 # affect ongoing SQL statements.
 #
 
@@ -41,17 +41,17 @@ foreach f {oom ioerr} {
     set sql2 { SELECT i FROM t1 WHERE (i%2)==0 ORDER BY h }
     set ::s1 [sqlite3_prepare db $sql1 -1 dummy]
     set ::s2 [sqlite3_prepare db $sql2 -1 dummy]
-  
+
     for {set i 0} {$i < 10} {incr i} { sqlite3_step $::s1 }
     for {set i 0} {$i < 3}  {incr i} { sqlite3_step $::s2 }
-  
+
     execsql {
       BEGIN; DELETE FROM t1 WHERE (i%2)
     }
   } -body {
     execsql { ROLLBACK }
   } -test {
-  
+
     set res1 [list]
     set res2 [list]
     while {"SQLITE_ROW" == [sqlite3_step $::s1]} {
@@ -62,10 +62,10 @@ foreach f {oom ioerr} {
     }
     set rc1 [sqlite3_finalize $::s1]
     set rc2 [sqlite3_finalize $::s2]
-  
+
     catchsql { ROLLBACK }
-  
-    if {$rc1=="SQLITE_OK" && $rc2=="SQLITE_OK" 
+
+    if {$rc1=="SQLITE_OK" && $rc2=="SQLITE_OK"
      && $res1=="22 24 26 28 30 32 34 36 38 40"
      && $res2=="8 10 12 14 16 18 20 22 24 26 28 30 32 34 36 38 40"
     } {

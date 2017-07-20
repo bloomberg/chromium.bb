@@ -11,7 +11,7 @@
 # This file implements regression tests for SQLite library.
 #
 # This file implements tests to verify that ticket #1444 has been
-# fixed.  
+# fixed.
 #
 
 set testdir [file dirname $argv0]
@@ -19,7 +19,7 @@ source $testdir/tester.tcl
 
 ifcapable !compound||!view {
   finish_test
-  return 
+  return
 }
 
 # The use of a VIEW that contained an ORDER BY clause within a UNION ALL

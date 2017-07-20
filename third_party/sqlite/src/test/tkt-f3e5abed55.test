@@ -74,7 +74,7 @@ if {[permutation]!="inmemory_journal"} {
     }
     return "SQLITE_OK"
   }
-  
+
   sqlite3 db  test.db
   sqlite3 db2 test.db
   do_test tkt-f3e5abed55-2.1 {
@@ -91,7 +91,7 @@ if {[permutation]!="inmemory_journal"} {
   do_test tkt-f3e5abed55-2.3 {
     catchsql COMMIT
   } {1 {database is locked}}
-  
+
   do_test tkt-f3e5abed55-2.4 {
     execsql COMMIT db2
     execsql {

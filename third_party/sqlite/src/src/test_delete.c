@@ -15,7 +15,7 @@
 **   * The journal file.
 **   * The wal file.
 **   * The SQLITE_ENABLE_8_3_NAMES version of the db, journal or wal files.
-**   * Files created by the test_multiplex.c module to extend any of the 
+**   * Files created by the test_multiplex.c module to extend any of the
 **     above.
 */
 
@@ -30,7 +30,7 @@
 #include "sqlite3.h"
 
 /* The following #defines are copied from test_multiplex.c */
-#ifndef MX_CHUNK_NUMBER 
+#ifndef MX_CHUNK_NUMBER
 # define MX_CHUNK_NUMBER 299
 #endif
 #ifndef SQLITE_MULTIPLEX_JOURNAL_8_3_OFFSET
@@ -53,7 +53,7 @@ static void sqlite3Delete83Name(char *z){
 }
 
 /*
-** zFile is a filename. Assuming no error occurs, if this file exists, 
+** zFile is a filename. Assuming no error occurs, if this file exists,
 ** set *pbExists to true and unlink it. Or, if the file does not exist,
 ** set *pbExists to false before returning.
 **
@@ -64,9 +64,9 @@ static int sqlite3DeleteUnlinkIfExists(const char *zFile, int *pbExists){
   int rc;
   rc = access(zFile, F_OK);
   if( rc ){
-    if( errno==ENOENT ){ 
+    if( errno==ENOENT ){
       if( pbExists ) *pbExists = 0;
-      return 0; 
+      return 0;
     }
     return errno;
   }

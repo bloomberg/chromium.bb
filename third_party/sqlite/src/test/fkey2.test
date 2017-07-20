@@ -24,9 +24,9 @@ ifcapable {!foreignkey||!trigger} {
 #-------------------------------------------------------------------------
 # Test structure:
 #
-# fkey2-1.*: Simple tests to check that immediate and deferred foreign key 
+# fkey2-1.*: Simple tests to check that immediate and deferred foreign key
 #            constraints work when not inside a transaction.
-#            
+#
 # fkey2-2.*: Tests to verify that deferred foreign keys work inside
 #            explicit transactions (i.e that processing really is deferred).
 #
@@ -39,12 +39,12 @@ ifcapable {!foreignkey||!trigger} {
 # fkey2-5.*: Check that if foreign-keys are enabled, it is not possible
 #            to write to an FK column using the incremental blob API.
 #
-# fkey2-6.*: Test that FK processing is automatically disabled when 
+# fkey2-6.*: Test that FK processing is automatically disabled when
 #            running VACUUM.
 #
 # fkey2-7.*: Test using an IPK as the key in the child (referencing) table.
 #
-# fkey2-8.*: Test that enabling/disabling foreign key support while a 
+# fkey2-8.*: Test that enabling/disabling foreign key support while a
 #            transaction is active is not possible.
 #
 # fkey2-9.*: Test SET DEFAULT actions.
@@ -60,17 +60,17 @@ ifcapable {!foreignkey||!trigger} {
 #
 # fkey2-14.*: Test the ALTER TABLE and DROP TABLE commands.
 #
-# fkey2-15.*: Test that if there are no (known) outstanding foreign key 
+# fkey2-15.*: Test that if there are no (known) outstanding foreign key
 #             constraint violations in the database, inserting into a parent
 #             table or deleting from a child table does not cause SQLite
 #             to check if this has repaired an outstanding violation.
 #
-# fkey2-16.*: Test that rows that refer to themselves may be inserted, 
+# fkey2-16.*: Test that rows that refer to themselves may be inserted,
 #             updated and deleted.
 #
 # fkey2-17.*: Test that the "count_changes" pragma does not interfere with
 #             FK constraint processing.
-# 
+#
 # fkey2-18.*: Test that the authorization callback is invoked when processing
 #             FK constraints.
 #
@@ -139,7 +139,7 @@ set FkeySimpleTests {
   4.17 "UPDATE t7 SET a = 10"             {0 {}}
 
   5.1  "INSERT INTO t9 VALUES(1, 3)"      {1 {no such table: main.nosuchtable}}
-  5.2  "INSERT INTO t10 VALUES(1, 3)"  
+  5.2  "INSERT INTO t10 VALUES(1, 3)"
                             {1 {foreign key mismatch - "t10" referencing "t9"}}
 }
 
@@ -333,7 +333,7 @@ fkey2-2-test 32 1   "RELEASE save"
 fkey2-2-test 33 1   "DELETE FROM leaf WHERE cellid = 'b'"
 fkey2-2-test 34 0   "DELETE FROM leaf WHERE cellid = 'c'"
 fkey2-2-test 35 0 "COMMIT"
-fkey2-2-test 36 0 "SELECT * FROM node" {2 {}} 
+fkey2-2-test 36 0 "SELECT * FROM node" {2 {}}
 fkey2-2-test 37 0 "SELECT * FROM leaf" {a 2}
 
 fkey2-2-test 38 0 "SAVEPOINT outer"
@@ -361,10 +361,10 @@ fkey2-2-test 58 0 "RELEASE outer"
 fkey2-2-test 59 0 "SELECT * FROM node" {2 {} 3 2 4 {}}
 fkey2-2-test 60 0 "SELECT * FROM leaf" {a 2 d 3 e 3 f 4}
 
-# The following set of tests check that if a statement that affects 
-# multiple rows violates some foreign key constraints, then strikes a 
-# constraint that causes the statement-transaction to be rolled back, 
-# the deferred constraint counter is correctly reset to the value it 
+# The following set of tests check that if a statement that affects
+# multiple rows violates some foreign key constraints, then strikes a
+# constraint that causes the statement-transaction to be rolled back,
+# the deferred constraint counter is correctly reset to the value it
 # had before the statement-transaction was opened.
 #
 fkey2-2-test 61 0 "BEGIN"
@@ -399,11 +399,11 @@ do_test fkey2-3.1.1 {
   execsql {
     CREATE TABLE ab(a PRIMARY KEY, b);
     CREATE TABLE cd(
-      c PRIMARY KEY REFERENCES ab ON UPDATE CASCADE ON DELETE CASCADE, 
+      c PRIMARY KEY REFERENCES ab ON UPDATE CASCADE ON DELETE CASCADE,
       d
     );
     CREATE TABLE ef(
-      e REFERENCES cd ON UPDATE CASCADE, 
+      e REFERENCES cd ON UPDATE CASCADE,
       f, CHECK (e!=5)
     );
   }
@@ -440,14 +440,14 @@ do_test fkey2-3.2.2 {
 } {1 b 1 d 1 e}
 
 #-------------------------------------------------------------------------
-# Test cases fkey2-4.* test that recursive foreign key actions 
+# Test cases fkey2-4.* test that recursive foreign key actions
 # (i.e. CASCADE) are allowed even if recursive triggers are disabled.
 #
 drop_all_tables
 do_test fkey2-4.1 {
   execsql {
     CREATE TABLE t1(
-      node PRIMARY KEY, 
+      node PRIMARY KEY,
       parent REFERENCES t1 ON DELETE CASCADE
     );
     CREATE TABLE t2(node PRIMARY KEY, parent);
@@ -466,14 +466,14 @@ do_test fkey2-4.1 {
 } {}
 do_test fkey2-4.2 {
   execsql { PRAGMA recursive_triggers = off }
-  execsql { 
+  execsql {
     BEGIN;
       DELETE FROM t1 WHERE node = 1;
       SELECT node FROM t1;
   }
 } {}
 do_test fkey2-4.3 {
-  execsql { 
+  execsql {
       DELETE FROM t2 WHERE node = 1;
       SELECT node FROM t2;
     ROLLBACK;
@@ -481,14 +481,14 @@ do_test fkey2-4.3 {
 } {4 5 6 7}
 do_test fkey2-4.4 {
   execsql { PRAGMA recursive_triggers = on }
-  execsql { 
+  execsql {
     BEGIN;
       DELETE FROM t1 WHERE node = 1;
       SELECT node FROM t1;
   }
 } {}
 do_test fkey2-4.3 {
-  execsql { 
+  execsql {
       DELETE FROM t2 WHERE node = 1;
       SELECT node FROM t2;
     ROLLBACK;
@@ -545,7 +545,7 @@ ifcapable vacuum {
 #-------------------------------------------------------------------------
 # Test that it is possible to use an INTEGER PRIMARY KEY as the child key
 # of a foreign constraint.
-# 
+#
 drop_all_tables
 do_test fkey2-7.1 {
   execsql {
@@ -557,7 +557,7 @@ do_test fkey2-7.2 {
   catchsql { INSERT INTO t2 VALUES(1, 'A'); }
 } {1 {FOREIGN KEY constraint failed}}
 do_test fkey2-7.3 {
-  execsql { 
+  execsql {
     INSERT INTO t1 VALUES(1, 2);
     INSERT INTO t1 VALUES(2, 3);
     INSERT INTO t2 VALUES(1, 'A');
@@ -585,7 +585,7 @@ do_test fkey2-7.9 {
 #-------------------------------------------------------------------------
 # Test that it is not possible to enable/disable FK support while a
 # transaction is open.
-# 
+#
 drop_all_tables
 proc fkey2-8-test {tn zSql value} {
   do_test fkey-2.8.$tn.1 [list execsql $zSql] {}
@@ -651,8 +651,8 @@ do_test fkey2-9.2.1 {
   execsql {
     CREATE TABLE pp(a, b, c, PRIMARY KEY(b, c));
     CREATE TABLE cc(d DEFAULT 3, e DEFAULT 1, f DEFAULT 2,
-        FOREIGN KEY(f, d) REFERENCES pp 
-        ON UPDATE SET DEFAULT 
+        FOREIGN KEY(f, d) REFERENCES pp
+        ON UPDATE SET DEFAULT
         ON DELETE SET NULL
     );
     INSERT INTO pp VALUES(1, 2, 3);
@@ -683,7 +683,7 @@ do_execsql_test fkey2-9.3.0 {
 } {}
 
 #-------------------------------------------------------------------------
-# The following tests, fkey2-10.*, test "foreign key mismatch" and 
+# The following tests, fkey2-10.*, test "foreign key mismatch" and
 # other errors.
 #
 set tn 0
@@ -708,7 +708,7 @@ foreach zSql [list {
   } {/1 {foreign key mismatch - "c" referencing "."}/}
 }
 
-# "rowid" cannot be used as part of a child or parent key definition 
+# "rowid" cannot be used as part of a child or parent key definition
 # unless it happens to be the name of an explicitly declared column.
 #
 do_test fkey2-10.2.1 {
@@ -769,30 +769,30 @@ do_test fkey2-12.1.1 {
   execsql {
     CREATE TABLE t1(a, b PRIMARY KEY);
     CREATE TABLE t2(
-      x REFERENCES t1 ON UPDATE RESTRICT DEFERRABLE INITIALLY DEFERRED 
+      x REFERENCES t1 ON UPDATE RESTRICT DEFERRABLE INITIALLY DEFERRED
     );
     INSERT INTO t1 VALUES(1, 'one');
     INSERT INTO t1 VALUES(2, 'two');
     INSERT INTO t1 VALUES(3, 'three');
   }
 } {}
-do_test fkey2-12.1.2 { 
+do_test fkey2-12.1.2 {
   execsql "BEGIN"
   execsql "INSERT INTO t2 VALUES('two')"
 } {}
-do_test fkey2-12.1.3 { 
+do_test fkey2-12.1.3 {
   execsql "UPDATE t1 SET b = 'four' WHERE b = 'one'"
 } {}
-do_test fkey2-12.1.4 { 
+do_test fkey2-12.1.4 {
   catchsql "UPDATE t1 SET b = 'five' WHERE b = 'two'"
 } {1 {FOREIGN KEY constraint failed}}
-do_test fkey2-12.1.5 { 
+do_test fkey2-12.1.5 {
   execsql "DELETE FROM t1 WHERE b = 'two'"
 } {}
-do_test fkey2-12.1.6 { 
+do_test fkey2-12.1.6 {
   catchsql "COMMIT"
 } {1 {FOREIGN KEY constraint failed}}
-do_test fkey2-12.1.7 { 
+do_test fkey2-12.1.7 {
   execsql {
     INSERT INTO t1 VALUES(2, 'two');
     COMMIT;
@@ -803,7 +803,7 @@ drop_all_tables
 do_test fkey2-12.2.1 {
   execsql {
     CREATE TABLE t1(x COLLATE NOCASE PRIMARY KEY);
-    CREATE TRIGGER tt1 AFTER DELETE ON t1 
+    CREATE TRIGGER tt1 AFTER DELETE ON t1
       WHEN EXISTS ( SELECT 1 FROM t2 WHERE old.x = y )
     BEGIN
       INSERT INTO t1 VALUES(old.x);
@@ -873,14 +873,14 @@ do_test fkey2-12.3.3 {
   catchsql { INSERT INTO down(c39, c38) VALUES('yes', 'no') }
 } {1 {FOREIGN KEY constraint failed}}
 do_test fkey2-12.3.4 {
-  execsql { 
+  execsql {
     INSERT INTO up(c34, c35) VALUES('yes', 'no');
     INSERT INTO down(c39, c38) VALUES('yes', 'no');
   }
   catchsql { DELETE FROM up WHERE c34 = 'yes' }
 } {1 {FOREIGN KEY constraint failed}}
 do_test fkey2-12.3.5 {
-  execsql { 
+  execsql {
     DELETE FROM up WHERE c34 = 'possibly';
     SELECT c34, c35 FROM up;
     SELECT c39, c38 FROM down;
@@ -926,14 +926,14 @@ foreach {tn stmt} {
   } {1 2 3 2 3 1}
 }
 do_test fkey2-13.1.3 {
-  execsql { 
+  execsql {
     REPLACE INTO pp(rowid, a, b, c) VALUES(1, 2, 2, 3);
     SELECT rowid, * FROM pp;
     SELECT * FROM cc;
   }
 } {1 2 2 3 2 3 1}
 do_test fkey2-13.1.4 {
-  execsql { 
+  execsql {
     REPLACE INTO pp(rowid, a, b, c) VALUES(2, 2, 2, 3);
     SELECT rowid, * FROM pp;
     SELECT * FROM cc;
@@ -952,7 +952,7 @@ drop_all_tables
 ifcapable altertable {
   do_test fkey2-14.1.1 {
     # Adding a column with a REFERENCES clause is not supported.
-    execsql { 
+    execsql {
       CREATE TABLE t1(a PRIMARY KEY);
       CREATE TABLE t2(a, b);
     }
@@ -971,15 +971,15 @@ ifcapable altertable {
     catchsql { ALTER TABLE t2 ADD COLUMN g DEFAULT CURRENT_TIME REFERENCES t1 }
   } {1 {Cannot add a REFERENCES column with non-NULL default value}}
   do_test fkey2-14.1.6 {
-    execsql { 
+    execsql {
       PRAGMA foreign_keys = off;
       ALTER TABLE t2 ADD COLUMN h DEFAULT 'text' REFERENCES t1;
       PRAGMA foreign_keys = on;
       SELECT sql FROM sqlite_master WHERE name='t2';
     }
   } {{CREATE TABLE t2(a, b, c REFERENCES t1, d DEFAULT NULL REFERENCES t1, e REFERENCES t1 DEFAULT NULL, h DEFAULT 'text' REFERENCES t1)}}
-  
-  
+
+
   # Test the sqlite_rename_parent() function directly.
   #
   proc test_rename_parent {zCreate zOld zNew} {
@@ -994,7 +994,7 @@ ifcapable altertable {
   do_test fkey2-14.2.1.3 {
     test_rename_parent {CREATE TABLE t1(a REFERENCES "t2")} t2 t3
   } {{CREATE TABLE t1(a REFERENCES "t3")}}
-  
+
   # Test ALTER TABLE RENAME TABLE a bit.
   #
   do_test fkey2-14.2.2.1 {
@@ -1039,7 +1039,7 @@ ifcapable altertable {
   drop_all_tables
   do_test fkey2-14.1tmp.1 {
     # Adding a column with a REFERENCES clause is not supported.
-    execsql { 
+    execsql {
       CREATE TEMP TABLE t1(a PRIMARY KEY);
       CREATE TEMP TABLE t2(a, b);
     }
@@ -1058,7 +1058,7 @@ ifcapable altertable {
     catchsql { ALTER TABLE t2 ADD COLUMN g DEFAULT CURRENT_TIME REFERENCES t1 }
   } {1 {Cannot add a REFERENCES column with non-NULL default value}}
   do_test fkey2-14.1tmp.6 {
-    execsql { 
+    execsql {
       PRAGMA foreign_keys = off;
       ALTER TABLE t2 ADD COLUMN h DEFAULT 'text' REFERENCES t1;
       PRAGMA foreign_keys = on;
@@ -1075,7 +1075,7 @@ ifcapable altertable {
   do_test fkey2-14.2tmp.1.3 {
     test_rename_parent {CREATE TABLE t1(a REFERENCES "t2")} t2 t3
   } {{CREATE TABLE t1(a REFERENCES "t3")}}
-  
+
   # Test ALTER TABLE RENAME TABLE a bit.
   #
   do_test fkey2-14.2tmp.2.1 {
@@ -1120,7 +1120,7 @@ ifcapable altertable {
   drop_all_tables
   do_test fkey2-14.1aux.1 {
     # Adding a column with a REFERENCES clause is not supported.
-    execsql { 
+    execsql {
       ATTACH ':memory:' AS aux;
       CREATE TABLE aux.t1(a PRIMARY KEY);
       CREATE TABLE aux.t2(a, b);
@@ -1140,7 +1140,7 @@ ifcapable altertable {
     catchsql { ALTER TABLE t2 ADD COLUMN g DEFAULT CURRENT_TIME REFERENCES t1 }
   } {1 {Cannot add a REFERENCES column with non-NULL default value}}
   do_test fkey2-14.1aux.6 {
-    execsql { 
+    execsql {
       PRAGMA foreign_keys = off;
       ALTER TABLE t2 ADD COLUMN h DEFAULT 'text' REFERENCES t1;
       PRAGMA foreign_keys = on;
@@ -1157,7 +1157,7 @@ ifcapable altertable {
   do_test fkey2-14.2aux.1.3 {
     test_rename_parent {CREATE TABLE t1(a REFERENCES "t2")} t2 t3
   } {{CREATE TABLE t1(a REFERENCES "t3")}}
-  
+
   # Test ALTER TABLE RENAME TABLE a bit.
   #
   do_test fkey2-14.2aux.2.1 {
@@ -1253,7 +1253,7 @@ do_test fkey-2.14.3.9 {
 } {}
 do_test fkey-2.14.3.10 {
   execsql {
-    CREATE TABLE cc(a, b, 
+    CREATE TABLE cc(a, b,
       FOREIGN KEY(a, b) REFERENCES pp DEFERRABLE INITIALLY DEFERRED
     );
   }
@@ -1268,7 +1268,7 @@ do_test fkey-2.14.3.10 {
   }
 } {}
 do_test fkey-2.14.3.11 {
-  execsql { 
+  execsql {
     BEGIN;
       DROP TABLE cc;
       DROP TABLE pp;
@@ -1295,7 +1295,7 @@ do_test fkey-2.14.3.13 {
 drop_all_tables
 do_test fkey-2.14.4.1 {
   execsql {
-    CREATE TABLE t1(x REFERENCES v); 
+    CREATE TABLE t1(x REFERENCES v);
     CREATE VIEW v AS SELECT * FROM t1;
   }
 } {}
@@ -1317,7 +1317,7 @@ ifcapable vtab {
 }
 
 #-------------------------------------------------------------------------
-# The following tests, fkey2-15.*, test that unnecessary FK related scans 
+# The following tests, fkey2-15.*, test that unnecessary FK related scans
 # and lookups are avoided when the constraint counters are zero.
 #
 drop_all_tables
@@ -1362,7 +1362,7 @@ do_test fkey2-15.1.6 {
   }
 } {1}
 do_test fkey2-15.1.7 {
-  execsql { 
+  execsql {
     BEGIN;
     DELETE FROM pp WHERE a = 2;
   }
@@ -1428,7 +1428,7 @@ foreach {tn zSchema} {
 drop_all_tables
 do_test fkey2-17.1.1 {
   execsql { PRAGMA count_changes = 1 }
-  execsql { 
+  execsql {
     CREATE TABLE one(a, b, c, UNIQUE(b, c));
     CREATE TABLE two(d, e, f, FOREIGN KEY(e, f) REFERENCES one(b, c));
     INSERT INTO one VALUES(1, 2, 3);
@@ -1481,7 +1481,7 @@ do_test fkey2-17.1.9 {
 do_test fkey2-17.1.10 {
   execsql {
     CREATE TABLE three(
-      g, h, i, 
+      g, h, i,
       FOREIGN KEY(h, i) REFERENCES one(b, c) DEFERRABLE INITIALLY DEFERRED
     );
   }
@@ -1507,7 +1507,7 @@ do_test fkey2-17.2.1 {
   execsql {
     CREATE TABLE high("a'b!" PRIMARY KEY, b);
     CREATE TABLE low(
-      c, 
+      c,
       "d&6" REFERENCES high ON UPDATE CASCADE ON DELETE CASCADE
     );
   }
@@ -1577,7 +1577,7 @@ ifcapable auth {
     execsql { INSERT INTO short VALUES(1, 3, 2) }
     set authargs
   } {SQLITE_INSERT short {} main {} SQLITE_READ long b main {}}
-  
+
   # As must an insert on the child table of a deferred constraint.
   set authargs {}
   do_test fkey2-18.4 {
@@ -1757,10 +1757,10 @@ foreach {tn update} {
 }
 
 #-------------------------------------------------------------------------
-# The following block of tests, those prefixed with "fkey2-genfkey.", are 
-# the same tests that were used to test the ".genfkey" command provided 
-# by the shell tool. So these tests show that the built-in foreign key 
-# implementation is more or less compatible with the triggers generated 
+# The following block of tests, those prefixed with "fkey2-genfkey.", are
+# the same tests that were used to test the ".genfkey" command provided
+# by the shell tool. So these tests show that the built-in foreign key
+# implementation is more or less compatible with the triggers generated
 # by genfkey.
 #
 drop_all_tables
@@ -1805,7 +1805,7 @@ do_test fkey2-genfkey.1.11 {
   execsql { UPDATE t2 SET e = NULL }
 } {}
 do_test fkey2-genfkey.1.12 {
-  execsql { 
+  execsql {
     UPDATE t1 SET a = 10;
     DELETE FROM t1;
     DELETE FROM t2;
@@ -1822,7 +1822,7 @@ do_test fkey2-genfkey.1.14 {
   catchsql { INSERT INTO t3 VALUES(3, 1, 4) }
 } {1 {FOREIGN KEY constraint failed}}
 do_test fkey2-genfkey.1.15 {
-  execsql { 
+  execsql {
     INSERT INTO t1 VALUES(1, 1, 4);
     INSERT INTO t3 VALUES(3, 1, 4);
   }
@@ -1845,8 +1845,8 @@ do_test fkey2-genfkey.2.1 {
   execsql {
     CREATE TABLE t1(a INTEGER PRIMARY KEY, b, c, UNIQUE(b, c));
     CREATE TABLE t2(e REFERENCES t1 ON UPDATE CASCADE ON DELETE CASCADE, f);
-    CREATE TABLE t3(g, h, i, 
-        FOREIGN KEY (h, i) 
+    CREATE TABLE t3(g, h, i,
+        FOREIGN KEY (h, i)
         REFERENCES t1(b, c) ON UPDATE CASCADE ON DELETE CASCADE
     );
   }
@@ -1891,8 +1891,8 @@ do_test fkey2-genfkey.3.1 {
   execsql {
     CREATE TABLE t1(a INTEGER PRIMARY KEY, b, c, UNIQUE(c, b));
     CREATE TABLE t2(e REFERENCES t1 ON UPDATE SET NULL ON DELETE SET NULL, f);
-    CREATE TABLE t3(g, h, i, 
-        FOREIGN KEY (h, i) 
+    CREATE TABLE t3(g, h, i,
+        FOREIGN KEY (h, i)
         REFERENCES t1(b, c) ON UPDATE SET NULL ON DELETE SET NULL
     );
   }

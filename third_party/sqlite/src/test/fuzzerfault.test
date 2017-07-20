@@ -9,7 +9,7 @@
 #
 #***********************************************************************
 # This file implements regression tests for TCL interface to the
-# SQLite library. 
+# SQLite library.
 #
 
 set testdir [file dirname $argv0]
@@ -32,7 +32,7 @@ do_faultsim_test 1 -prep {
   faultsim_restore_and_reopen
   load_static_extension db fuzzer
 } -body {
-  execsql { 
+  execsql {
     CREATE VIRTUAL TABLE x1 USING fuzzer(x1_rules);
     SELECT word FROM x1 WHERE word MATCH 'xax';
   }
@@ -58,7 +58,7 @@ do_faultsim_test 2 -prep {
   faultsim_restore_and_reopen
   load_static_extension db fuzzer
 } -body {
-  execsql { 
+  execsql {
     SELECT count(*) FROM x2 WHERE word MATCH 'abc';
   }
 } -test {
@@ -69,7 +69,7 @@ do_test 3-pre1 {
   faultsim_delete_and_reopen
   execsql {
     CREATE TABLE x1_rules(ruleset, cFrom, cTo, cost);
-    INSERT INTO x1_rules VALUES(0, 'a', 
+    INSERT INTO x1_rules VALUES(0, 'a',
       '123456789012345678901234567890a1234567890123456789', 10
     );
   }
@@ -80,7 +80,7 @@ do_faultsim_test 3 -prep {
   faultsim_restore_and_reopen
   load_static_extension db fuzzer
 } -body {
-  execsql { 
+  execsql {
     CREATE VIRTUAL TABLE x1 USING fuzzer(x1_rules);
     SELECT count(*) FROM (SELECT * FROM x1 WHERE word MATCH 'a' LIMIT 2);
   }

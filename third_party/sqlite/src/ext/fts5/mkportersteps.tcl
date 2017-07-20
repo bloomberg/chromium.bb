@@ -33,59 +33,59 @@ set O(Step1B) {
 }
 
 set O(Step2) {
-  { "ational" fts5Porter_MGt0 "ate" } 
-  { "tional"  fts5Porter_MGt0 "tion" } 
-  { "enci"    fts5Porter_MGt0 "ence" } 
-  { "anci"    fts5Porter_MGt0 "ance" } 
-  { "izer"    fts5Porter_MGt0 "ize" } 
+  { "ational" fts5Porter_MGt0 "ate" }
+  { "tional"  fts5Porter_MGt0 "tion" }
+  { "enci"    fts5Porter_MGt0 "ence" }
+  { "anci"    fts5Porter_MGt0 "ance" }
+  { "izer"    fts5Porter_MGt0 "ize" }
   { "logi"    fts5Porter_MGt0 "log" }
   { "bli"     fts5Porter_MGt0 "ble" }
-  { "alli"    fts5Porter_MGt0 "al" } 
-  { "entli"   fts5Porter_MGt0 "ent" } 
-  { "eli"     fts5Porter_MGt0 "e" } 
-  { "ousli"   fts5Porter_MGt0 "ous" } 
-  { "ization" fts5Porter_MGt0 "ize" } 
-  { "ation"   fts5Porter_MGt0 "ate" } 
-  { "ator"    fts5Porter_MGt0 "ate" } 
-  { "alism"   fts5Porter_MGt0 "al" } 
-  { "iveness" fts5Porter_MGt0 "ive" } 
-  { "fulness" fts5Porter_MGt0 "ful" } 
-  { "ousness" fts5Porter_MGt0 "ous" } 
-  { "aliti"   fts5Porter_MGt0 "al" } 
-  { "iviti"   fts5Porter_MGt0 "ive" } 
-  { "biliti"  fts5Porter_MGt0 "ble" } 
+  { "alli"    fts5Porter_MGt0 "al" }
+  { "entli"   fts5Porter_MGt0 "ent" }
+  { "eli"     fts5Porter_MGt0 "e" }
+  { "ousli"   fts5Porter_MGt0 "ous" }
+  { "ization" fts5Porter_MGt0 "ize" }
+  { "ation"   fts5Porter_MGt0 "ate" }
+  { "ator"    fts5Porter_MGt0 "ate" }
+  { "alism"   fts5Porter_MGt0 "al" }
+  { "iveness" fts5Porter_MGt0 "ive" }
+  { "fulness" fts5Porter_MGt0 "ful" }
+  { "ousness" fts5Porter_MGt0 "ous" }
+  { "aliti"   fts5Porter_MGt0 "al" }
+  { "iviti"   fts5Porter_MGt0 "ive" }
+  { "biliti"  fts5Porter_MGt0 "ble" }
 }
 
 set O(Step3) {
-  { "icate" fts5Porter_MGt0 "ic" } 
-  { "ative" fts5Porter_MGt0 "" } 
-  { "alize" fts5Porter_MGt0 "al" } 
-  { "iciti" fts5Porter_MGt0 "ic" } 
-  { "ical" fts5Porter_MGt0 "ic" } 
-  { "ful" fts5Porter_MGt0 "" } 
-  { "ness" fts5Porter_MGt0 "" } 
+  { "icate" fts5Porter_MGt0 "ic" }
+  { "ative" fts5Porter_MGt0 "" }
+  { "alize" fts5Porter_MGt0 "al" }
+  { "iciti" fts5Porter_MGt0 "ic" }
+  { "ical" fts5Porter_MGt0 "ic" }
+  { "ful" fts5Porter_MGt0 "" }
+  { "ness" fts5Porter_MGt0 "" }
 }
 
 set O(Step4) {
-  { "al" fts5Porter_MGt1 "" } 
-  { "ance" fts5Porter_MGt1 "" } 
-  { "ence" fts5Porter_MGt1 "" } 
-  { "er" fts5Porter_MGt1 "" } 
-  { "ic" fts5Porter_MGt1 "" } 
-  { "able" fts5Porter_MGt1 "" } 
-  { "ible" fts5Porter_MGt1 "" } 
-  { "ant" fts5Porter_MGt1 "" } 
-  { "ement" fts5Porter_MGt1 "" } 
-  { "ment" fts5Porter_MGt1 "" } 
-  { "ent" fts5Porter_MGt1 "" } 
-  { "ion" fts5Porter_MGt1_and_S_or_T "" } 
-  { "ou"  fts5Porter_MGt1 "" } 
-  { "ism" fts5Porter_MGt1 "" } 
-  { "ate" fts5Porter_MGt1 "" } 
-  { "iti" fts5Porter_MGt1 "" } 
-  { "ous" fts5Porter_MGt1 "" } 
-  { "ive" fts5Porter_MGt1 "" } 
-  { "ize" fts5Porter_MGt1 "" } 
+  { "al" fts5Porter_MGt1 "" }
+  { "ance" fts5Porter_MGt1 "" }
+  { "ence" fts5Porter_MGt1 "" }
+  { "er" fts5Porter_MGt1 "" }
+  { "ic" fts5Porter_MGt1 "" }
+  { "able" fts5Porter_MGt1 "" }
+  { "ible" fts5Porter_MGt1 "" }
+  { "ant" fts5Porter_MGt1 "" }
+  { "ement" fts5Porter_MGt1 "" }
+  { "ment" fts5Porter_MGt1 "" }
+  { "ent" fts5Porter_MGt1 "" }
+  { "ion" fts5Porter_MGt1_and_S_or_T "" }
+  { "ou"  fts5Porter_MGt1 "" }
+  { "ism" fts5Porter_MGt1 "" }
+  { "ate" fts5Porter_MGt1 "" }
+  { "iti" fts5Porter_MGt1 "" }
+  { "ous" fts5Porter_MGt1 "" }
+  { "ive" fts5Porter_MGt1 "" }
+  { "ize" fts5Porter_MGt1 "" }
 }
 
 proc sort_cb {lhs rhs} {
@@ -108,7 +108,7 @@ static int fts5Porter${name}(char *aBuf, int *pnBuf){
   }
 
   set T(case) {
-    case '${k}': 
+    case '${k}':
       ${ifstmts}
       break;
   }
@@ -174,7 +174,7 @@ static int fts5Porter${name}(char *aBuf, int *pnBuf){
     set ifstmts ""
     foreach I $aCase($k) {
       set zSuffix [lindex $I 0]         ;# Suffix text for this rule
-      set zRep [lindex $I 2]            ;# Replacement text for rule 
+      set zRep [lindex $I 2]            ;# Replacement text for rule
       set xCond [lindex $I 1]           ;# Condition callback (or "")
 
       set n [string length $zSuffix]
@@ -212,7 +212,7 @@ foreach step [array names O] {
   create_step_function $step $O($step)
 }
 puts [string trim {
-/* 
+/*
 ** GENERATED CODE ENDS HERE (mkportersteps.tcl)
 ***************************************************************************
 **************************************************************************/

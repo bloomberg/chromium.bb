@@ -47,7 +47,7 @@ do_test thread1-1.1 {
 #    unlock B
 #    write-lock C
 #
-# At one point, the write-lock of C would fail on Linux. 
+# At one point, the write-lock of C would fail on Linux.
 #
 do_test thread1-1.2 {
   thread_create A test.db
@@ -169,5 +169,5 @@ do_test thread1-2.11 {
   execsql {SELECT * FROM t2}
 } {98 99}
 
-thread_halt *   
+thread_halt *
 finish_test

@@ -24,7 +24,7 @@ source $testdir/tester.tcl
 do_test avtrans-1.0 {
   execsql { PRAGMA auto_vacuum=ON }
   wal_set_journal_mode
-  execsql { 
+  execsql {
     CREATE TABLE one(a int PRIMARY KEY, b text);
     INSERT INTO one VALUES(1,'one');
     INSERT INTO one VALUES(2,'two');
@@ -278,7 +278,7 @@ do_test avtrans-5.7 {
 #
 do_test avtrans-5.8 {
   execsql {
-    SELECT name fROM sqlite_master 
+    SELECT name fROM sqlite_master
     WHERE type='table' OR type='index'
     ORDER BY name
   }
@@ -287,7 +287,7 @@ do_test avtrans-5.9 {
   execsql {
     BEGIN TRANSACTION;
     CREATE TABLE t1(a int, b int, c int);
-    SELECT name fROM sqlite_master 
+    SELECT name fROM sqlite_master
     WHERE type='table' OR type='index'
     ORDER BY name;
   }
@@ -295,7 +295,7 @@ do_test avtrans-5.9 {
 do_test avtrans-5.10 {
   execsql {
     CREATE INDEX i1 ON t1(a);
-    SELECT name fROM sqlite_master 
+    SELECT name fROM sqlite_master
     WHERE type='table' OR type='index'
     ORDER BY name;
   }
@@ -303,7 +303,7 @@ do_test avtrans-5.10 {
 do_test avtrans-5.11 {
   execsql {
     COMMIT;
-    SELECT name fROM sqlite_master 
+    SELECT name fROM sqlite_master
     WHERE type='table' OR type='index'
     ORDER BY name;
   }
@@ -315,7 +315,7 @@ do_test avtrans-5.12 {
     CREATE INDEX i2a ON t2(a);
     CREATE INDEX i2b ON t2(b);
     DROP TABLE t1;
-    SELECT name fROM sqlite_master 
+    SELECT name fROM sqlite_master
     WHERE type='table' OR type='index'
     ORDER BY name;
   }
@@ -323,7 +323,7 @@ do_test avtrans-5.12 {
 do_test avtrans-5.13 {
   execsql {
     ROLLBACK;
-    SELECT name fROM sqlite_master 
+    SELECT name fROM sqlite_master
     WHERE type='table' OR type='index'
     ORDER BY name;
   }
@@ -332,7 +332,7 @@ do_test avtrans-5.14 {
   execsql {
     BEGIN TRANSACTION;
     DROP INDEX i1;
-    SELECT name fROM sqlite_master 
+    SELECT name fROM sqlite_master
     WHERE type='table' OR type='index'
     ORDER BY name;
   }
@@ -340,7 +340,7 @@ do_test avtrans-5.14 {
 do_test avtrans-5.15 {
   execsql {
     ROLLBACK;
-    SELECT name fROM sqlite_master 
+    SELECT name fROM sqlite_master
     WHERE type='table' OR type='index'
     ORDER BY name;
   }
@@ -353,7 +353,7 @@ do_test avtrans-5.16 {
     CREATE INDEX i2x ON t2(x);
     CREATE INDEX i2y ON t2(y);
     INSERT INTO t2 VALUES(1,2,3);
-    SELECT name fROM sqlite_master 
+    SELECT name fROM sqlite_master
     WHERE type='table' OR type='index'
     ORDER BY name;
   }
@@ -361,7 +361,7 @@ do_test avtrans-5.16 {
 do_test avtrans-5.17 {
   execsql {
     COMMIT;
-    SELECT name fROM sqlite_master 
+    SELECT name fROM sqlite_master
     WHERE type='table' OR type='index'
     ORDER BY name;
   }
@@ -381,7 +381,7 @@ do_test avtrans-5.20 {
     BEGIN TRANSACTION;
     DROP TABLE t1;
     DROP TABLE t2;
-    SELECT name fROM sqlite_master 
+    SELECT name fROM sqlite_master
     WHERE type='table' OR type='index'
     ORDER BY name;
   }
@@ -395,7 +395,7 @@ do_test avtrans-5.21 {
 do_test avtrans-5.22 {
   execsql {
     ROLLBACK;
-    SELECT name fROM sqlite_master 
+    SELECT name fROM sqlite_master
     WHERE type='table' OR type='index'
     ORDER BY name;
   }
@@ -842,7 +842,7 @@ do_test avtrans-9.1 {
 } {1024}
 
 # The following procedure computes a "signature" for table "t3".  If
-# T3 changes in any way, the signature should change.  
+# T3 changes in any way, the signature should change.
 #
 # This is used to test ROLLBACK.  We gather a signature for t3, then
 # make lots of changes to t3, then rollback and take another signature.
@@ -922,5 +922,5 @@ for {set i 2} {$i<=$limit} {incr i} {
 }
 integrity_check avtrans-10.1
 wal_check_journal_mode avtrans-10.2
-   
+
 finish_test

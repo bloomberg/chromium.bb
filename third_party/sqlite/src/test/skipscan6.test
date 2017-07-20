@@ -9,7 +9,7 @@
 #
 #***********************************************************************
 #
-# This file implements tests of the "skip-scan" query strategy. In 
+# This file implements tests of the "skip-scan" query strategy. In
 # particular, this file verifies that use of all columns of an index
 # is always preferred over the use of a skip-scan on some columns of
 # the same index.  Because of difficulties in scoring a skip-scan,
@@ -155,7 +155,7 @@ do_execsql_test 3.0 {
   CREATE INDEX t3_a ON t3(a);
 
   WITH d(a, b) AS (
-    SELECT 1, 1 
+    SELECT 1, 1
     UNION ALL
     SELECT a+1, (a+1) % 5 FROM d WHERE a<100
   )
@@ -170,8 +170,8 @@ do_execsql_test 3.0 {
   SELECT * FROM sqlite_stat1;
 } {
   t2 t2_ba   {100 20 1 1}
-  t2 t2_a    {100 1} 
-  t3 t3_a    {100 1} 
+  t2 t2_a    {100 1}
+  t3 t3_a    {100 1}
   t3 t3_ba   {100 20 1 1}
 }
 

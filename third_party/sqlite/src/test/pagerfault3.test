@@ -21,7 +21,7 @@ if {[permutation] == "inmemory_journal"} {
 }
 
 # Create a database with page-size 2048 bytes that uses 2 pages. Populate
-# it so that if the page-size is changed to 1024 bytes and the db vacuumed, 
+# it so that if the page-size is changed to 1024 bytes and the db vacuumed,
 # the new db size is 3 pages.
 #
 do_test pagerfault3-pre1 {
@@ -36,7 +36,7 @@ do_test pagerfault3-pre1 {
 do_test pagerfault3-pre2 {
   faultsim_save_and_close
   faultsim_restore_and_reopen
-  execsql { 
+  execsql {
     PRAGMA page_size = 1024;
     VACUUM;
     PRAGMA page_count;
@@ -51,12 +51,12 @@ do_test pagerfault3-pre2 {
 do_faultsim_test pagerfault3-1 -faults ioerr-transient -prep {
   faultsim_restore_and_reopen
 } -body {
-  execsql { 
+  execsql {
     PRAGMA page_size = 1024;
     VACUUM;
   }
 } -test {
-  faultsim_test_result {0 {}} 
+  faultsim_test_result {0 {}}
   faultsim_integrity_check
 }
 

@@ -34,7 +34,7 @@ proc fuzz {TemplateList} {
 #
 proc Literal {} {
   set TemplateList {
-    456 0 -456 1 -1 
+    456 0 -456 1 -1
     2147483648 2147483647 2147483649 -2147483647 -2147483648 -2147483649
     'The' 'first' 'experiments' 'in' 'hardware' 'fault' 'injection'
     zeroblob(1000)
@@ -102,7 +102,7 @@ proc Expr { {c {}} } {
       {[Expr $c] IN ([Select 1])}          \
       {[Expr $c] NOT IN ([Select 1])}      \
       {EXISTS ([Select 1])}                \
-  } 
+  }
   set res [fuzz $TemplateList]
   incr ::ExprDepth -1
   return $res
@@ -166,8 +166,8 @@ proc SimpleSelect {{nRes 0}} {
         {[SelectKw] [ResultSet $nRes] FROM ([Select])}                   \
         {[SelectKw] [ResultSet $nRes $::ColumnList] FROM [Table]}        \
         {
-             [SelectKw] [ResultSet $nRes $::ColumnList] 
-             FROM ([Select]) 
+             [SelectKw] [ResultSet $nRes $::ColumnList]
+             FROM ([Select])
              GROUP BY [Expr]
              HAVING [Expr]
         }                                                                \
@@ -178,17 +178,17 @@ proc SimpleSelect {{nRes 0}} {
           {[SelectKw] * FROM [Table]}                                    \
           {[SelectKw] * FROM [Table] WHERE [Expr $::ColumnList]}         \
           {
-             [SelectKw] * 
-             FROM [Table],[Table] AS t2 
-             WHERE [Expr $::ColumnList] 
+             [SelectKw] *
+             FROM [Table],[Table] AS t2
+             WHERE [Expr $::ColumnList]
           } {
-             [SelectKw] * 
-             FROM [Table] LEFT OUTER JOIN [Table] AS t2 
+             [SelectKw] *
+             FROM [Table] LEFT OUTER JOIN [Table] AS t2
              ON [Expr $::ColumnList]
-             WHERE [Expr $::ColumnList] 
+             WHERE [Expr $::ColumnList]
           }
     }
-  } 
+  }
 
   fuzz $TemplateList
 }
@@ -200,10 +200,10 @@ proc SimpleSelect {{nRes 0}} {
 #
 proc Select {{nMulti 0}} {
   set TemplateList {
-    {[SimpleSelect $nMulti]} {[SimpleSelect $nMulti]} {[SimpleSelect $nMulti]} 
-    {[SimpleSelect $nMulti]} {[SimpleSelect $nMulti]} {[SimpleSelect $nMulti]} 
-    {[SimpleSelect $nMulti]} {[SimpleSelect $nMulti]} {[SimpleSelect $nMulti]} 
-    {[SimpleSelect $nMulti]} {[SimpleSelect $nMulti]} {[SimpleSelect $nMulti]} 
+    {[SimpleSelect $nMulti]} {[SimpleSelect $nMulti]} {[SimpleSelect $nMulti]}
+    {[SimpleSelect $nMulti]} {[SimpleSelect $nMulti]} {[SimpleSelect $nMulti]}
+    {[SimpleSelect $nMulti]} {[SimpleSelect $nMulti]} {[SimpleSelect $nMulti]}
+    {[SimpleSelect $nMulti]} {[SimpleSelect $nMulti]} {[SimpleSelect $nMulti]}
     {[SimpleSelect $nMulti] ORDER BY [Expr] DESC}
     {[SimpleSelect $nMulti] ORDER BY [Expr] ASC}
     {[SimpleSelect $nMulti] ORDER BY [Expr] ASC, [Expr] DESC}
@@ -246,8 +246,8 @@ proc Column {} {
 #
 proc Update {} {
   set TemplateList {
-    {UPDATE [Table] 
-     SET [Column] = [Expr $::ColumnList] 
+    {UPDATE [Table]
+     SET [Column] = [Expr $::ColumnList]
      WHERE [Expr $::ColumnList]}
   }
   fuzz $TemplateList
@@ -274,8 +274,8 @@ proc Statement {} {
 # of strings.
 proc Identifier {} {
   set TemplateList {
-    This just chooses randomly a fixed 
-    We would also thank the developers 
+    This just chooses randomly a fixed
+    We would also thank the developers
     for their analysis Samba
   }
   fuzz $TemplateList
@@ -285,7 +285,7 @@ proc Check {} {
   # Use a large value for $::SelectDepth, because sub-selects are
   # not allowed in expressions used by CHECK constraints.
   #
-  set sd $::SelectDepth 
+  set sd $::SelectDepth
   set ::SelectDepth 500
   set TemplateList {
     {}
@@ -349,17 +349,17 @@ set ::log [open fuzzy.log w]
 
 #
 # Usage: do_fuzzy_test <testname> ?<options>?
-# 
+#
 #     -template
 #     -errorlist
 #     -repeats
-#     
+#
 proc do_fuzzy_test {testname args} {
   set ::fuzzyopts(-errorlist) [list]
   set ::fuzzyopts(-repeats) $::REPEATS
   array set ::fuzzyopts $args
 
-  lappend ::fuzzyopts(-errorlist) {parser stack overflow} 
+  lappend ::fuzzyopts(-errorlist) {parser stack overflow}
   lappend ::fuzzyopts(-errorlist) {ORDER BY}
   lappend ::fuzzyopts(-errorlist) {GROUP BY}
   lappend ::fuzzyopts(-errorlist) {datatype mismatch}

@@ -100,7 +100,7 @@ wal_check_journal_mode savepoint-1.7
 #------------------------------------------------------------------------
 # These tests - savepoint-2.* - test rollbacks and releases of savepoints
 # with a very simple data set.
-# 
+#
 
 do_test savepoint-2.1 {
   execsql {
@@ -187,28 +187,28 @@ wal_check_journal_mode savepoint-2.12
 #
 # These tests do not work in WAL mode. WAL mode does not take RESERVED
 # locks on the database file.
-# 
+#
 if {[wal_is_wal_mode]==0} {
   do_test savepoint-3.1 {
     execsql { SAVEPOINT "transaction" }
     execsql { PRAGMA lock_status }
   } {main unlocked temp closed}
-  
+
   do_test savepoint-3.2 {
     execsql { INSERT INTO t1 VALUES(1, 2, 3) }
     execsql { PRAGMA lock_status }
   } {main reserved temp closed}
-  
+
   do_test savepoint-3.3 {
     execsql { ROLLBACK TO "transaction" }
     execsql { PRAGMA lock_status }
   } {main reserved temp closed}
-  
+
   do_test savepoint-3.4 {
     execsql { INSERT INTO t1 VALUES(1, 2, 3) }
     execsql { PRAGMA lock_status }
   } {main reserved temp closed}
-  
+
   do_test savepoint-3.5 {
     execsql { RELEASE "transaction" }
     execsql { PRAGMA lock_status }
@@ -218,7 +218,7 @@ if {[wal_is_wal_mode]==0} {
 #------------------------------------------------------------------------
 # Test that savepoints that include schema modifications are handled
 # correctly. Test cases savepoint-4.*.
-# 
+#
 do_test savepoint-4.1 {
   execsql {
     CREATE TABLE t2(d, e, f);
@@ -277,7 +277,7 @@ wal_check_journal_mode savepoint-4.9
 
 #------------------------------------------------------------------------
 # Test some logic errors to do with the savepoint feature.
-# 
+#
 
 ifcapable incrblob {
   do_test savepoint-5.1.1 {
@@ -293,12 +293,12 @@ ifcapable incrblob {
     close $fd
     catchsql {SAVEPOINT abc}
   } {0 {}}
-  
+
   do_test savepoint-5.2 {
     execsql  {RELEASE abc}
     catchsql {RELEASE abc}
   } {1 {no such savepoint: abc}}
-  
+
   do_test savepoint-5.3.1 {
     execsql  {SAVEPOINT abc}
     catchsql {ROLLBACK TO def}
@@ -329,7 +329,7 @@ ifcapable incrblob {
     close $fd
     execsql {release abc}
   } {}
-  
+
   # Rollback mode:
   #
   #   Open a savepoint transaction and insert a row into the database. Then,
@@ -338,7 +338,7 @@ ifcapable incrblob {
   #   until after the read-only transaction has been closed.
   #
   # WAL mode:
-  # 
+  #
   #   As above, except that the savepoint transaction can be successfully
   #   committed before the read-only transaction has been closed.
   #
@@ -423,7 +423,7 @@ ifcapable {autovacuum && pragma} {
 }
 
 #-------------------------------------------------------------------------
-# The following tests, savepoint-7.*, attempt to break the logic 
+# The following tests, savepoint-7.*, attempt to break the logic
 # surrounding savepoints by growing and shrinking the database file.
 #
 db close
@@ -609,9 +609,9 @@ ifcapable auth {
 }
 
 #-------------------------------------------------------------------------
-# The following tests - savepoint-10.* - test the interaction of 
+# The following tests - savepoint-10.* - test the interaction of
 # savepoints and ATTACH statements.
-# 
+#
 
 # First make sure it is not possible to attach or detach a database while
 # a savepoint is open (it is not possible if any transaction is open).
@@ -665,7 +665,7 @@ if {[wal_is_wal_mode]==0} {
   do_test savepoint-10.2.2 {
     execsql { PRAGMA lock_status }
   } [list main unlocked temp $templockstate aux1 unlocked aux2 unlocked]
-  
+
   do_test savepoint-10.2.3 {
     execsql {
       SAVEPOINT one;
@@ -704,7 +704,7 @@ if {[wal_is_wal_mode]==0} {
       INSERT INTO t2 VALUES(5, 6);
       RELEASE one;
     }
-    execsql { 
+    execsql {
       SELECT * FROM t1;
       SELECT * FROM t2;
       SELECT * FROM t3;
@@ -713,9 +713,9 @@ if {[wal_is_wal_mode]==0} {
   do_test savepoint-10.2.9 {
     execsql { PRAGMA lock_status }
   } [list main unlocked temp $templockstate aux1 unlocked aux2 unlocked]
-  
+
   do_test savepoint-10.2.10 {
-    execsql { 
+    execsql {
       SAVEPOINT one;
         INSERT INTO t1 VALUES('a', 'b');
         SAVEPOINT two;
@@ -723,7 +723,7 @@ if {[wal_is_wal_mode]==0} {
           SAVEPOINT three;
             INSERT INTO t3 VALUES('e', 'f');
     }
-    execsql { 
+    execsql {
       SELECT * FROM t1;
       SELECT * FROM t2;
       SELECT * FROM t3;
@@ -731,18 +731,18 @@ if {[wal_is_wal_mode]==0} {
   } {1 2 a b 5 6 c d 3 4 e f}
   do_test savepoint-10.2.11 {
     execsql { ROLLBACK TO two }
-    execsql { 
+    execsql {
       SELECT * FROM t1;
       SELECT * FROM t2;
       SELECT * FROM t3;
     }
   } {1 2 a b 5 6 3 4}
   do_test savepoint-10.2.12 {
-    execsql { 
+    execsql {
       INSERT INTO t3 VALUES('g', 'h');
       ROLLBACK TO two;
     }
-    execsql { 
+    execsql {
       SELECT * FROM t1;
       SELECT * FROM t2;
       SELECT * FROM t3;
@@ -750,7 +750,7 @@ if {[wal_is_wal_mode]==0} {
   } {1 2 a b 5 6 3 4}
   do_test savepoint-10.2.13 {
     execsql { ROLLBACK }
-    execsql { 
+    execsql {
       SELECT * FROM t1;
       SELECT * FROM t2;
       SELECT * FROM t3;
@@ -762,10 +762,10 @@ if {[wal_is_wal_mode]==0} {
 }
 
 #-------------------------------------------------------------------------
-# The following tests - savepoint-11.* - test the interaction of 
-# savepoints and creating or dropping tables and indexes in 
+# The following tests - savepoint-11.* - test the interaction of
+# savepoints and creating or dropping tables and indexes in
 # auto-vacuum mode.
-# 
+#
 do_test savepoint-11.1 {
   db close
   forcedelete test.db
@@ -792,7 +792,7 @@ do_test savepoint-11.4 {
 } {}
 integrity_check savepoint-11.5
 do_test savepoint-11.6 {
-  execsql { 
+  execsql {
     CREATE TABLE t3(a, b, UNIQUE(a, b));
     ROLLBACK TO one;
   }
@@ -834,9 +834,9 @@ do_test savepoint-11.12 {
 wal_check_journal_mode savepoint-11.13
 
 #-------------------------------------------------------------------------
-# The following tests - savepoint-12.* - test the interaction of 
+# The following tests - savepoint-12.* - test the interaction of
 # savepoints and "ON CONFLICT ROLLBACK" clauses.
-# 
+#
 do_test savepoint-12.1 {
   execsql {
     CREATE TABLE t4(a PRIMARY KEY, b);
@@ -847,9 +847,9 @@ do_test savepoint-12.2 {
   # The final statement of the following SQL hits a constraint when the
   # conflict handling mode is "OR ROLLBACK" and there are a couple of
   # open savepoints. At one point this would fail to clear the internal
-  # record of the open savepoints, resulting in an assert() failure 
+  # record of the open savepoints, resulting in an assert() failure
   # later on.
-  # 
+  #
   catchsql {
     BEGIN;
       INSERT INTO t4 VALUES(2, 'two');
@@ -868,9 +868,9 @@ do_test savepoint-12.4 {
 wal_check_journal_mode savepoint-12.5
 
 #-------------------------------------------------------------------------
-# The following tests - savepoint-13.* - test the interaction of 
+# The following tests - savepoint-13.* - test the interaction of
 # savepoints and "journal_mode = off".
-# 
+#
 if {[wal_is_wal_mode]==0} {
   do_test savepoint-13.1 {
     db close
@@ -1029,7 +1029,7 @@ do_multiclient_test tn {
 # This next block of tests verifies that a problem reported on the mailing
 # list has been resolved. At one point the second "CREATE TABLE t6" would
 # fail as table t6 still existed in the internal cache of the db schema
-# (even though it had been removed from the database by the ROLLBACK 
+# (even though it had been removed from the database by the ROLLBACK
 # command).
 #
 sqlite3 db test.db

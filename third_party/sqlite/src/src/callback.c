@@ -1,5 +1,5 @@
 /*
-** 2005 May 23 
+** 2005 May 23
 **
 ** The author disclaims copyright to this source code.  In place of
 ** a legal notice, here is a blessing:
@@ -69,8 +69,8 @@ static int synthCollSeq(sqlite3 *db, CollSeq *pColl){
 ** This function is responsible for invoking the collation factory callback
 ** or substituting a collation sequence of a different encoding when the
 ** requested collation sequence is not available in the desired encoding.
-** 
-** If it is not NULL, then pColl must point to the database native encoding 
+**
+** If it is not NULL, then pColl must point to the database native encoding
 ** collation sequence with name zName, length nName.
 **
 ** The return value is either the collation sequence to be used in database
@@ -116,7 +116,7 @@ CollSeq *sqlite3GetCollSeq(
 ** that have not been defined by sqlite3_create_collation() etc.
 **
 ** If required, this routine calls the 'collation needed' callback to
-** request a definition of the collating sequence. If this doesn't work, 
+** request a definition of the collating sequence. If this doesn't work,
 ** an equivalent collating sequence that uses a text encoding different
 ** from the main database is substituted, if one is available.
 */
@@ -171,7 +171,7 @@ static CollSeq *findCollSeqEntry(
       pColl[0].zName[nName] = 0;
       pDel = sqlite3HashInsert(&db->aCollSeq, pColl[0].zName, pColl);
 
-      /* If a malloc() failure occurred in sqlite3HashInsert(), it will 
+      /* If a malloc() failure occurred in sqlite3HashInsert(), it will
       ** return the pColl pointer to be deleted (because it wasn't added
       ** to the hash table).
       */
@@ -229,7 +229,7 @@ CollSeq *sqlite3FindCollSeq(
 ** is also -1.  In other words, we are searching for a function that
 ** takes a variable number of arguments.
 **
-** If nArg is -2 that means that we are searching for any function 
+** If nArg is -2 that means that we are searching for any function
 ** regardless of the number of arguments it uses, so return a positive
 ** match score for any
 **
@@ -321,8 +321,8 @@ void sqlite3InsertBuiltinFuncs(
     }
   }
 }
-  
-  
+
+
 
 /*
 ** Locate a user function given a name, a number of arguments and a flag
@@ -383,7 +383,7 @@ FuncDef *sqlite3FindFunction(
   ** have fields overwritten with new information appropriate for the
   ** new function.  But the FuncDefs for built-in functions are read-only.
   ** So we must not search for built-ins when creating a new function.
-  */ 
+  */
   if( !createFlag && (pBest==0 || (db->flags & SQLITE_PreferBuiltin)!=0) ){
     bestScore = 0;
     h = (sqlite3UpperToLower[(u8)zName[0]] + nName) % SQLITE_FUNC_HASH_SZ;
@@ -402,7 +402,7 @@ FuncDef *sqlite3FindFunction(
   ** exact match for the name, number of arguments and encoding, then add a
   ** new entry to the hash table and return it.
   */
-  if( createFlag && bestScore<FUNC_PERFECT_MATCH && 
+  if( createFlag && bestScore<FUNC_PERFECT_MATCH &&
       (pBest = sqlite3DbMallocZero(db, sizeof(*pBest)+nName+1))!=0 ){
     FuncDef *pOther;
     pBest->zName = (const char*)&pBest[1];
@@ -427,7 +427,7 @@ FuncDef *sqlite3FindFunction(
 
 /*
 ** Free all resources held by the schema structure. The void* argument points
-** at a Schema struct. This function does not call sqlite3DbFree(db, ) on the 
+** at a Schema struct. This function does not call sqlite3DbFree(db, ) on the
 ** pointer itself, it just cleans up subsidiary resources (i.e. the contents
 ** of the schema hash tables).
 **

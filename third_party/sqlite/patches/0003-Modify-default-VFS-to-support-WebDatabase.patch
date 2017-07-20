@@ -37,11 +37,11 @@ index 7f0ebdba6fdf..60981af7e738 100644
 +  return 0;
 +
    return pFile->pInode!=0 &&
-       (osStat(pFile->zPath, &buf)!=0 
+       (osStat(pFile->zPath, &buf)!=0
           || (u64)buf.st_ino!=pFile->pInode->fileId.ino);
 @@ -5640,6 +5646,44 @@ static int findCreateFileMode(
  }
- 
+
  /*
 +** Initialize |unixFile| internals of |file| on behalf of chromiumOpen() in
 +** WebDatabase SQLiteFileSystemPosix.cpp.  Function is a subset of unixOpen(),
@@ -82,15 +82,15 @@ index 7f0ebdba6fdf..60981af7e738 100644
 +
 +/*
  ** Open the file zPath.
- ** 
+ **
  ** Previously, the SQLite OS layer used three functions in place of this
 @@ -5740,6 +5784,7 @@ static int unixOpen(
      sqlite3_randomness(0,0);
    }
- 
+
 +  /* Duplicated in chromium_sqlite3_fill_in_unix_sqlite3_file(). */
    memset(p, 0, sizeof(unixFile));
- 
+
    if( eType==SQLITE_OPEN_MAIN_DB ){
 @@ -5748,6 +5793,7 @@ static int unixOpen(
      if( pUnused ){
@@ -102,7 +102,7 @@ index 7f0ebdba6fdf..60981af7e738 100644
          return SQLITE_NOMEM_BKPT;
 @@ -5825,6 +5871,7 @@ static int unixOpen(
    }
- 
+
    if( p->pUnused ){
 +    /* Duplicated in chromium_sqlite3_fill_in_unix_sqlite3_file(). */
      p->pUnused->fd = fd;
@@ -111,10 +111,10 @@ index 7f0ebdba6fdf..60981af7e738 100644
 @@ -5903,10 +5950,12 @@ static int unixOpen(
    }
  #endif
-   
+
 +  /* Duplicated in chromium_sqlite3_fill_in_unix_sqlite3_file(). */
    rc = fillInUnixFile(pVfs, fd, pFile, zPath, ctrlFlags);
- 
+
  open_finished:
    if( rc!=SQLITE_OK ){
 +    /* Duplicated in chromium_sqlite3_fill_in_unix_sqlite3_file(). */
@@ -128,7 +128,7 @@ index 2cb5f7b0c836..94dcd0e047f9 100644
 @@ -5960,4 +5960,12 @@ int sqlite3_os_end(void){
    return SQLITE_OK;
  }
- 
+
 +CHROMIUM_SQLITE_API
 +void chromium_sqlite3_initialize_win_sqlite3_file(sqlite3_file* file, HANDLE handle) {
 +  winFile* winSQLite3File = (winFile*)file;
@@ -145,7 +145,7 @@ index eaa75fc249e1..fbbf4b9f2db3 100644
 @@ -7697,6 +7697,29 @@ int sqlite3_strnicmp(const char *, const char *, int);
  */
  int sqlite3_strglob(const char *zGlob, const char *zStr);
- 
+
 +/* Begin WebDatabase patch for Chromium */
 +/* Expose some SQLite internals for the WebDatabase vfs.
 +** DO NOT EXTEND THE USE OF THIS.
@@ -172,6 +172,6 @@ index eaa75fc249e1..fbbf4b9f2db3 100644
  /*
  ** CAPI3REF: String LIKE Matching
  *
--- 
+--
 2.11.0
 

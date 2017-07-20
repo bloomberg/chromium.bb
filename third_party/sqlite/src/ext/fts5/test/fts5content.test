@@ -53,12 +53,12 @@ do_execsql_test 1.6 {
 } {1 1 2 1 4 1}
 
 do_execsql_test 1.7 {
-  SELECT rowid, snippet(f1, -1, '[', ']', '...', 5) IS NULL 
+  SELECT rowid, snippet(f1, -1, '[', ']', '...', 5) IS NULL
   FROM f1 WHERE f1 MATCH 'o';
 } {1 1 2 1 4 1}
 
 do_execsql_test 1.8 {
-  SELECT rowid, snippet(f1, 1, '[', ']', '...', 5) IS NULL 
+  SELECT rowid, snippet(f1, 1, '[', ']', '...', 5) IS NULL
   FROM f1 WHERE f1 MATCH 'o';
 } {1 1 2 1 4 1}
 
@@ -112,11 +112,11 @@ do_execsql_test 2.1 {
     INSERT INTO fts_idx(rowid, b, c) VALUES (new.a, new.b, new.c);
   END;
   CREATE TRIGGER tbl_ad AFTER DELETE ON tbl BEGIN
-    INSERT INTO fts_idx(fts_idx, rowid, b, c) 
+    INSERT INTO fts_idx(fts_idx, rowid, b, c)
         VALUES('delete', old.a, old.b, old.c);
   END;
   CREATE TRIGGER tbl_au AFTER UPDATE ON tbl BEGIN
-    INSERT INTO fts_idx(fts_idx, rowid, b, c) 
+    INSERT INTO fts_idx(fts_idx, rowid, b, c)
         VALUES('delete', old.a, old.b, old.c);
     INSERT INTO fts_idx(rowid, b, c) VALUES (new.a, new.b, new.c);
   END;
@@ -147,7 +147,7 @@ do_execsql_test 2.6 {
 } {three {t h r e e x y z}}
 
 do_execsql_test 2.7 {
-  SELECT highlight(fts_idx, 1, '[', ']') FROM fts_idx 
+  SELECT highlight(fts_idx, 1, '[', ']') FROM fts_idx
   WHERE fts_idx MATCH 't AND x';
 } {{[t] h r e e [x] y z}}
 
@@ -212,7 +212,7 @@ do_execsql_test 4.5 { SELECT rowid FROM t2 WHERE t2 MATCH 'x'} {-40}
 
 do_execsql_test 4.6 { INSERT INTO t2(t2) VALUES('integrity-check') } {}
 
-do_execsql_test 4.7 { 
+do_execsql_test 4.7 {
   DELETE FROM x2 WHERE "key col" = 1;
   INSERT INTO t2(t2, rowid, a, c) VALUES('delete', 1, 'a b', 'e f');
   INSERT INTO t2(t2) VALUES('integrity-check');

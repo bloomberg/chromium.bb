@@ -34,8 +34,8 @@ static int fts5_isopenquote(char x){
 }
 
 /*
-** Argument pIn points to a character that is part of a nul-terminated 
-** string. Return a pointer to the first character following *pIn in 
+** Argument pIn points to a character that is part of a nul-terminated
+** string. Return a pointer to the first character following *pIn in
 ** the string that is not a white-space character.
 */
 static const char *fts5ConfigSkipWhitespace(const char *pIn){
@@ -47,8 +47,8 @@ static const char *fts5ConfigSkipWhitespace(const char *pIn){
 }
 
 /*
-** Argument pIn points to a character that is part of a nul-terminated 
-** string. Return a pointer to the first character following *pIn in 
+** Argument pIn points to a character that is part of a nul-terminated
+** string. Return a pointer to the first character following *pIn in
 ** the string that is not a "bareword" character.
 */
 static const char *fts5ConfigSkipBareword(const char *pIn){
@@ -79,9 +79,9 @@ static const char *fts5ConfigSkipLiteral(const char *pIn){
       p++;
       if( *p=='\'' ){
         p++;
-        while( (*p>='a' && *p<='f') 
-            || (*p>='A' && *p<='F') 
-            || (*p>='0' && *p<='9') 
+        while( (*p>='a' && *p<='f')
+            || (*p>='A' && *p<='F')
+            || (*p>='0' && *p<='9')
             ){
           p++;
         }
@@ -112,7 +112,7 @@ static const char *fts5ConfigSkipLiteral(const char *pIn){
       if( *p=='+' || *p=='-' ) p++;
       while( fts5_isdigit(*p) ) p++;
 
-      /* At this point, if the literal was an integer, the parse is 
+      /* At this point, if the literal was an integer, the parse is
       ** finished. Or, if it is a floating point value, it may continue
       ** with either a decimal point or an 'E' character. */
       if( *p=='.' && fts5_isdigit(p[1]) ){
@@ -136,8 +136,8 @@ static const char *fts5ConfigSkipLiteral(const char *pIn){
 ** nul-terminator byte.
 **
 ** If the close-quote is found, the value returned is the byte offset of
-** the character immediately following it. Or, if the close-quote is not 
-** found, -1 is returned. If -1 is returned, the buffer is left in an 
+** the character immediately following it. Or, if the close-quote is not
+** found, -1 is returned. If -1 is returned, the buffer is left in an
 ** undefined state.
 */
 static int fts5Dequote(char *z){
@@ -148,7 +148,7 @@ static int fts5Dequote(char *z){
 
   /* Set stack variable q to the close-quote character */
   assert( q=='[' || q=='\'' || q=='"' || q=='`' );
-  if( q=='[' ) q = ']';  
+  if( q=='[' ) q = ']';
 
   while( ALWAYS(z[iIn]) ){
     if( z[iIn]==q ){
@@ -158,7 +158,7 @@ static int fts5Dequote(char *z){
         break;
       }else{
         /* Character iIn and iIn+1 form an escaped quote character. Skip
-        ** the input cursor past both and copy a single quote character 
+        ** the input cursor past both and copy a single quote character
         ** to the output buffer. */
         iIn += 2;
         z[iOut++] = q;
@@ -203,8 +203,8 @@ struct Fts5Enum {
 typedef struct Fts5Enum Fts5Enum;
 
 static int fts5ConfigSetEnum(
-  const Fts5Enum *aEnum, 
-  const char *zEnum, 
+  const Fts5Enum *aEnum,
+  const char *zEnum,
   int *peVal
 ){
   int nEnum = (int)strlen(zEnum);
@@ -324,7 +324,7 @@ static int fts5ConfigParseSpecial(
           *pzErr = sqlite3_mprintf("parse error in tokenize directive");
           rc = SQLITE_ERROR;
         }else{
-          rc = sqlite3Fts5GetTokenizer(pGlobal, 
+          rc = sqlite3Fts5GetTokenizer(pGlobal,
               (const char**)azArg, nArg, &pConfig->pTok, &pConfig->pTokApi,
               pzErr
           );
@@ -391,7 +391,7 @@ static int fts5ConfigParseSpecial(
 }
 
 /*
-** Allocate an instance of the default tokenizer ("simple") at 
+** Allocate an instance of the default tokenizer ("simple") at
 ** Fts5Config.pTokenizer. Return SQLITE_OK if successful, or an SQLite error
 ** code if an error occurs.
 */
@@ -458,14 +458,14 @@ static const char *fts5ConfigGobbleWord(
 }
 
 static int fts5ConfigParseColumn(
-  Fts5Config *p, 
-  char *zCol, 
-  char *zArg, 
+  Fts5Config *p,
+  char *zCol,
+  char *zArg,
   char **pzErr
 ){
   int rc = SQLITE_OK;
-  if( 0==sqlite3_stricmp(zCol, FTS5_RANK_NAME) 
-   || 0==sqlite3_stricmp(zCol, FTS5_ROWID_NAME) 
+  if( 0==sqlite3_stricmp(zCol, FTS5_RANK_NAME)
+   || 0==sqlite3_stricmp(zCol, FTS5_ROWID_NAME)
   ){
     *pzErr = sqlite3_mprintf("reserved fts5 column name: %s", zCol);
     rc = SQLITE_ERROR;
@@ -508,14 +508,14 @@ static int fts5ConfigMakeExprlist(Fts5Config *p){
 
 /*
 ** Arguments nArg/azArg contain the string arguments passed to the xCreate
-** or xConnect method of the virtual table. This function attempts to 
+** or xConnect method of the virtual table. This function attempts to
 ** allocate an instance of Fts5Config containing the results of parsing
 ** those arguments.
 **
 ** If successful, SQLITE_OK is returned and *ppOut is set to point to the
-** new Fts5Config object. If an error occurs, an SQLite error code is 
+** new Fts5Config object. If an error occurs, an SQLite error code is
 ** returned, *ppOut is set to NULL and an error message may be left in
-** *pzErr. It is the responsibility of the caller to eventually free any 
+** *pzErr. It is the responsibility of the caller to eventually free any
 ** such error message using sqlite3_free().
 */
 int sqlite3Fts5ConfigParse(
@@ -602,8 +602,8 @@ int sqlite3Fts5ConfigParse(
   /* If no zContent option was specified, fill in the default values. */
   if( rc==SQLITE_OK && pRet->zContent==0 ){
     const char *zTail = 0;
-    assert( pRet->eContent==FTS5_CONTENT_NORMAL 
-         || pRet->eContent==FTS5_CONTENT_NONE 
+    assert( pRet->eContent==FTS5_CONTENT_NORMAL
+         || pRet->eContent==FTS5_CONTENT_NONE
     );
     if( pRet->eContent==FTS5_CONTENT_NORMAL ){
       zTail = "content";
@@ -674,7 +674,7 @@ int sqlite3Fts5ConfigDeclareVtab(Fts5Config *pConfig){
     const char *zSep = (i==0?"":", ");
     zSql = sqlite3Fts5Mprintf(&rc, "%z%s%Q", zSql, zSep, pConfig->azCol[i]);
   }
-  zSql = sqlite3Fts5Mprintf(&rc, "%z, %Q HIDDEN, %s HIDDEN)", 
+  zSql = sqlite3Fts5Mprintf(&rc, "%z, %Q HIDDEN, %s HIDDEN)",
       zSql, pConfig->zName, FTS5_RANK_NAME
   );
 
@@ -683,7 +683,7 @@ int sqlite3Fts5ConfigDeclareVtab(Fts5Config *pConfig){
     rc = sqlite3_declare_vtab(pConfig->db, zSql);
     sqlite3_free(zSql);
   }
-  
+
   return rc;
 }
 
@@ -701,7 +701,7 @@ int sqlite3Fts5ConfigDeclareVtab(Fts5Config *pConfig){
 **     int iPos            // Position of token in input (first token is 0)
 **
 ** If the callback returns a non-zero value the tokenization is abandoned
-** and no further callbacks are issued. 
+** and no further callbacks are issued.
 **
 ** This function returns SQLITE_OK if successful or an SQLite error code
 ** if an error occurs. If the tokenization was abandoned early because
@@ -731,7 +731,7 @@ int sqlite3Fts5Tokenize(
 */
 static const char *fts5ConfigSkipArgs(const char *pIn){
   const char *p = pIn;
-  
+
   while( 1 ){
     p = fts5ConfigSkipWhitespace(p);
     p = fts5ConfigSkipLiteral(p);
@@ -748,7 +748,7 @@ static const char *fts5ConfigSkipArgs(const char *pIn){
 }
 
 /*
-** Parameter zIn contains a rank() function specification. The format of 
+** Parameter zIn contains a rank() function specification. The format of
 ** this is:
 **
 **   + Bareword (function name)
@@ -790,7 +790,7 @@ int sqlite3Fts5ConfigParseRank(
       p++;
     }
     if( rc==SQLITE_OK ){
-      const char *pArgs; 
+      const char *pArgs;
       p = fts5ConfigSkipWhitespace(p);
       pArgs = p;
       if( *p!=')' ){
@@ -816,8 +816,8 @@ int sqlite3Fts5ConfigParseRank(
 }
 
 int sqlite3Fts5ConfigSetValue(
-  Fts5Config *pConfig, 
-  const char *zKey, 
+  Fts5Config *pConfig,
+  const char *zKey,
   sqlite3_value *pVal,
   int *pbBadkey
 ){
@@ -942,7 +942,7 @@ int sqlite3Fts5ConfigLoad(Fts5Config *pConfig, int iCookie){
     }
     rc = sqlite3_finalize(p);
   }
-  
+
   if( rc==SQLITE_OK && iVersion!=FTS5_CURRENT_VERSION ){
     rc = SQLITE_ERROR;
     if( pConfig->pzErrmsg ){

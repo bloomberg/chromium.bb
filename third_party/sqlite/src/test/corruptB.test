@@ -64,7 +64,7 @@ do_test corruptB-1.3.2 {
   catchsql { SELECT * FROM t1 }
 } {1 {database disk image is malformed}}
 
-# Set the left-child of a cell in a B-Tree rootpage to refer to the 
+# Set the left-child of a cell in a B-Tree rootpage to refer to the
 # root-page itself.
 #
 do_test corruptB-1.4.1 {
