@@ -103,6 +103,10 @@
 #include "ui/keyboard/keyboard_util.h"
 #endif
 
+#if defined(OS_WIN)
+#include "ui/base/win/osk_display_manager.h"
+#endif
+
 using content::WebContents;
 using views::View;
 
@@ -741,7 +745,9 @@ void LocationBarView::ButtonPressed(views::Button* sender,
 }
 
 bool LocationBarView::IsVirtualKeyboardVisible() {
-#if defined(USE_AURA)
+#if defined(OS_WIN)
+  return ui::OnScreenKeyboardDisplayManager::GetInstance()->IsKeyboardVisible();
+#elif defined(USE_AURA)
   return keyboard::IsKeyboardVisible();
 #else
   return false;
