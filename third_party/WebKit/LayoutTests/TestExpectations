@@ -808,8 +808,6 @@ crbug.com/470482 fast/cookies/local-file-can-set-cookies.html [ Skip ]
 # Text::inDocument() returns false but should not.
 crbug.com/264138 dom/legacy_dom_conformance/xhtml/level3/core/nodecomparedocumentposition38.xhtml [ Failure ]
 
-crbug.com/736676 virtual/enable_wasm_streaming/http/tests/wasm_streaming/wasm_response_apis.html [ Pass Crash ]
-
 crbug.com/410145 [ Win ] fast/table/column-in-inline.html [ Failure ]
 crbug.com/410145 [ Win ] virtual/mojo-loading/fast/table/column-in-inline.html [ Failure ]
 crbug.com/411164 [ Win ] http/tests/security/powerfulFeatureRestrictions/serviceworker-on-insecure-origin.html [ Pass ]
