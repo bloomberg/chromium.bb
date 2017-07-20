@@ -70,13 +70,15 @@ bool ShouldShrinkToFit(const ComputedStyle& parent_style,
          !is_in_parallel_flow;
 }
 
-void AdjustToClearance(const WTF::Optional<LayoutUnit>& clearance_offset,
+bool AdjustToClearance(const WTF::Optional<LayoutUnit>& clearance_offset,
                        NGLogicalOffset* offset) {
   DCHECK(offset);
-  if (clearance_offset) {
-    offset->block_offset =
-        std::max(clearance_offset.value(), offset->block_offset);
+  if (clearance_offset && clearance_offset.value() > offset->block_offset) {
+    offset->block_offset = clearance_offset.value();
+    return true;
   }
+
+  return false;
 }
 
 }  // namespace blink
