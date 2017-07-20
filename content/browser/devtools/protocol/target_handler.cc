@@ -4,8 +4,10 @@
 
 #include "content/browser/devtools/protocol/target_handler.h"
 
+#include "base/strings/stringprintf.h"
 #include "content/browser/devtools/devtools_manager.h"
 #include "content/browser/devtools/devtools_session.h"
+#include "content/public/browser/devtools_agent_host_client.h"
 
 namespace content {
 namespace protocol {
@@ -24,12 +26,77 @@ std::unique_ptr<Target::TargetInfo> CreateInfo(DevToolsAgentHost* host) {
 
 }  // namespace
 
+class TargetHandler::Session : public DevToolsAgentHostClient {
+ public:
+  static std::string Attach(TargetHandler* handler,
+                            DevToolsAgentHost* agent_host,
+                            bool waiting_for_debugger) {
+    std::string id = base::StringPrintf("%s:%d", agent_host->GetId().c_str(),
+                                        ++handler->last_session_id_);
+    Session* session = new Session(handler, agent_host, id);
+    handler->attached_sessions_[id].reset(session);
+    static_cast<DevToolsAgentHostImpl*>(agent_host)->AttachMultiClient(session);
+    handler->frontend_->AttachedToTarget(id, CreateInfo(agent_host),
+                                         waiting_for_debugger);
+    return id;
+  }
+
+  ~Session() override {
+    if (agent_host_)
+      agent_host_->DetachClient(this);
+  }
+
+  void Detach(bool host_closed) {
+    handler_->frontend_->DetachedFromTarget(id_, agent_host_->GetId());
+    if (host_closed)
+      handler_->auto_attacher_.AgentHostClosed(agent_host_.get());
+    else
+      agent_host_->DetachClient(this);
+    handler_->auto_attached_sessions_.erase(agent_host_.get());
+    agent_host_ = nullptr;
+    handler_->attached_sessions_.erase(id_);
+  }
+
+  void SendMessageToAgentHost(const std::string& message) {
+    agent_host_->DispatchProtocolMessage(this, message);
+  }
+
+  bool IsAttachedTo(const std::string& target_id) {
+    return agent_host_->GetId() == target_id;
+  }
+
+ private:
+  Session(TargetHandler* handler,
+          DevToolsAgentHost* agent_host,
+          const std::string& id)
+      : handler_(handler), agent_host_(agent_host), id_(id) {}
+
+  // DevToolsAgentHostClient implementation.
+  void DispatchProtocolMessage(DevToolsAgentHost* agent_host,
+                               const std::string& message) override {
+    DCHECK(agent_host == agent_host_.get());
+    handler_->frontend_->ReceivedMessageFromTarget(id_, message,
+                                                   agent_host_->GetId());
+  }
+
+  void AgentHostClosed(DevToolsAgentHost* agent_host,
+                       bool replaced_with_another_client) override {
+    DCHECK(agent_host == agent_host_.get());
+    Detach(true);
+  }
+
+  TargetHandler* handler_;
+  scoped_refptr<DevToolsAgentHost> agent_host_;
+  std::string id_;
+
+  DISALLOW_COPY_AND_ASSIGN(Session);
+};
+
 TargetHandler::TargetHandler()
     : DevToolsDomainHandler(Target::Metainfo::domainName),
-      auto_attacher_(base::Bind(&TargetHandler::AttachToTargetInternal,
-                                base::Unretained(this)),
-                     base::Bind(&TargetHandler::DetachFromTargetInternal,
-                                base::Unretained(this))),
+      auto_attacher_(
+          base::Bind(&TargetHandler::AutoAttach, base::Unretained(this)),
+          base::Bind(&TargetHandler::AutoDetach, base::Unretained(this))),
       discover_(false) {}
 
 TargetHandler::~TargetHandler() {
@@ -54,9 +121,8 @@ void TargetHandler::SetRenderFrameHost(RenderFrameHostImpl* render_frame_host) {
 Response TargetHandler::Disable() {
   SetAutoAttach(false, false);
   SetDiscoverTargets(false);
-  for (const auto& id_host : attached_hosts_)
-    id_host.second->DetachClient(this);
-  attached_hosts_.clear();
+  auto_attached_sessions_.clear();
+  attached_sessions_.clear();
   return Response::OK();
 }
 
@@ -68,46 +134,52 @@ void TargetHandler::RenderFrameHostChanged() {
   auto_attacher_.UpdateFrames();
 }
 
-void TargetHandler::TargetCreatedInternal(DevToolsAgentHost* host) {
-  if (reported_hosts_.find(host->GetId()) != reported_hosts_.end())
-    return;
-  frontend_->TargetCreated(CreateInfo(host));
-  reported_hosts_[host->GetId()] = host;
+void TargetHandler::AutoAttach(DevToolsAgentHost* host,
+                               bool waiting_for_debugger) {
+  std::string session_id = Session::Attach(this, host, waiting_for_debugger);
+  auto_attached_sessions_[host] = attached_sessions_[session_id].get();
 }
 
-void TargetHandler::TargetInfoChangedInternal(DevToolsAgentHost* host) {
-  if (reported_hosts_.find(host->GetId()) == reported_hosts_.end())
+void TargetHandler::AutoDetach(DevToolsAgentHost* host) {
+  auto it = auto_attached_sessions_.find(host);
+  if (it == auto_attached_sessions_.end())
     return;
-  frontend_->TargetInfoChanged(CreateInfo(host));
+  it->second->Detach(false);
 }
 
-void TargetHandler::TargetDestroyedInternal(DevToolsAgentHost* host) {
-  auto it = reported_hosts_.find(host->GetId());
-  if (it == reported_hosts_.end())
-    return;
-  if (discover_)
-    frontend_->TargetDestroyed(host->GetId());
-  reported_hosts_.erase(it);
-}
-
-bool TargetHandler::AttachToTargetInternal(
-    DevToolsAgentHost* host, bool waiting_for_debugger) {
-  attached_hosts_[host->GetId()] = host;
-  if (!host->AttachClient(this)) {
-    attached_hosts_.erase(host->GetId());
-    return false;
+Response TargetHandler::FindSession(Maybe<std::string> session_id,
+                                    Maybe<std::string> target_id,
+                                    Session** session,
+                                    bool fall_through) {
+  *session = nullptr;
+  if (session_id.isJust()) {
+    auto it = attached_sessions_.find(session_id.fromJust());
+    if (it == attached_sessions_.end()) {
+      if (fall_through)
+        return Response::FallThrough();
+      return Response::InvalidParams("No session with given id");
+    }
+    *session = it->second.get();
+    return Response::OK();
   }
-  frontend_->AttachedToTarget(CreateInfo(host), waiting_for_debugger);
-  return true;
-}
-
-void TargetHandler::DetachFromTargetInternal(DevToolsAgentHost* host) {
-  auto it = attached_hosts_.find(host->GetId());
-  if (it == attached_hosts_.end())
-    return;
-  host->DetachClient(this);
-  frontend_->DetachedFromTarget(host->GetId());
-  attached_hosts_.erase(it);
+  if (target_id.isJust()) {
+    for (auto& it : attached_sessions_) {
+      if (it.second->IsAttachedTo(target_id.fromJust())) {
+        if (*session)
+          return Response::Error("Multiple sessions attached, specify id.");
+        *session = it.second.get();
+      }
+    }
+    if (!*session) {
+      if (fall_through)
+        return Response::FallThrough();
+      return Response::InvalidParams("No session for given target id");
+    }
+    return Response::OK();
+  }
+  if (fall_through)
+    return Response::FallThrough();
+  return Response::InvalidParams("Session id must be specified");
 }
 
 // ----------------- Protocol ----------------------
@@ -120,9 +192,7 @@ Response TargetHandler::SetDiscoverTargets(bool discover) {
     DevToolsAgentHost::AddObserver(this);
   } else {
     DevToolsAgentHost::RemoveObserver(this);
-    RawHostsMap copy = reported_hosts_;
-    for (const auto& id_host : copy)
-      TargetDestroyedInternal(id_host.second);
+    reported_hosts_.clear();
   }
   return Response::OK();
 }
@@ -144,32 +214,36 @@ Response TargetHandler::SetRemoteLocations(
 }
 
 Response TargetHandler::AttachToTarget(const std::string& target_id,
-                                       bool* out_success) {
+                                       std::string* out_session_id) {
   // TODO(dgozman): only allow reported hosts.
   scoped_refptr<DevToolsAgentHost> agent_host =
       DevToolsAgentHost::GetForId(target_id);
   if (!agent_host)
     return Response::InvalidParams("No target with given id found");
-  *out_success = AttachToTargetInternal(agent_host.get(), false);
+  *out_session_id = Session::Attach(this, agent_host.get(), false);
   return Response::OK();
 }
 
-Response TargetHandler::DetachFromTarget(const std::string& target_id) {
-  auto it = attached_hosts_.find(target_id);
-  if (it == attached_hosts_.end())
-    return Response::Error("Not attached to the target");
-  DevToolsAgentHost* agent_host = it->second.get();
-  DetachFromTargetInternal(agent_host);
+Response TargetHandler::DetachFromTarget(Maybe<std::string> session_id,
+                                         Maybe<std::string> target_id) {
+  Session* session = nullptr;
+  Response response =
+      FindSession(std::move(session_id), std::move(target_id), &session, false);
+  if (!response.isSuccess())
+    return response;
+  session->Detach(false);
   return Response::OK();
 }
 
-Response TargetHandler::SendMessageToTarget(
-    const std::string& target_id,
-    const std::string& message) {
-  auto it = attached_hosts_.find(target_id);
-  if (it == attached_hosts_.end())
-    return Response::FallThrough();
-  it->second->DispatchProtocolMessage(this, message);
+Response TargetHandler::SendMessageToTarget(const std::string& message,
+                                            Maybe<std::string> session_id,
+                                            Maybe<std::string> target_id) {
+  Session* session = nullptr;
+  Response response =
+      FindSession(std::move(session_id), std::move(target_id), &session, true);
+  if (!response.isSuccess())
+    return response;
+  session->SendMessageToAgentHost(message);
   return Response::OK();
 }
 
@@ -239,49 +313,38 @@ Response TargetHandler::GetTargets(
   return Response::OK();
 }
 
-// ---------------- DevToolsAgentHostClient ----------------
-
-void TargetHandler::DispatchProtocolMessage(
-    DevToolsAgentHost* host,
-    const std::string& message) {
-  auto it = attached_hosts_.find(host->GetId());
-  if (it == attached_hosts_.end())
-    return;  // Already disconnected.
-
-  frontend_->ReceivedMessageFromTarget(host->GetId(), message);
-}
-
-void TargetHandler::AgentHostClosed(
-    DevToolsAgentHost* host,
-    bool replaced_with_another_client) {
-  frontend_->DetachedFromTarget(host->GetId());
-  attached_hosts_.erase(host->GetId());
-  auto_attacher_.AgentHostClosed(host);
-}
-
 // -------------- DevToolsAgentHostObserver -----------------
 
 bool TargetHandler::ShouldForceDevToolsAgentHostCreation() {
   return true;
 }
 
-void TargetHandler::DevToolsAgentHostCreated(DevToolsAgentHost* agent_host) {
+void TargetHandler::DevToolsAgentHostCreated(DevToolsAgentHost* host) {
   // If we start discovering late, all existing agent hosts will be reported,
   // but we could have already attached to some.
-  TargetCreatedInternal(agent_host);
+  if (reported_hosts_.find(host) != reported_hosts_.end())
+    return;
+  frontend_->TargetCreated(CreateInfo(host));
+  reported_hosts_.insert(host);
 }
 
-void TargetHandler::DevToolsAgentHostDestroyed(DevToolsAgentHost* agent_host) {
-  DCHECK(attached_hosts_.find(agent_host->GetId()) == attached_hosts_.end());
-  TargetDestroyedInternal(agent_host);
+void TargetHandler::DevToolsAgentHostDestroyed(DevToolsAgentHost* host) {
+  if (reported_hosts_.find(host) == reported_hosts_.end())
+    return;
+  frontend_->TargetDestroyed(host->GetId());
+  reported_hosts_.erase(host);
 }
 
 void TargetHandler::DevToolsAgentHostAttached(DevToolsAgentHost* host) {
-  TargetInfoChangedInternal(host);
+  if (reported_hosts_.find(host) == reported_hosts_.end())
+    return;
+  frontend_->TargetInfoChanged(CreateInfo(host));
 }
 
 void TargetHandler::DevToolsAgentHostDetached(DevToolsAgentHost* host) {
-  TargetInfoChangedInternal(host);
+  if (reported_hosts_.find(host) == reported_hosts_.end())
+    return;
+  frontend_->TargetInfoChanged(CreateInfo(host));
 }
 
 }  // namespace protocol

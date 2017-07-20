@@ -186,6 +186,10 @@ void DevToolsAgentHostImpl::ForceAttachClient(DevToolsAgentHostClient* client) {
   InnerAttachClient(client);
 }
 
+void DevToolsAgentHostImpl::AttachMultiClient(DevToolsAgentHostClient* client) {
+  InnerAttachClient(client);
+}
+
 bool DevToolsAgentHostImpl::DetachClient(DevToolsAgentHostClient* client) {
   if (!SessionByClient(client))
     return false;

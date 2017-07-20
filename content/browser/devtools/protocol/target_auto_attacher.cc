@@ -176,8 +176,8 @@ void TargetAutoAttacher::ReattachTargetsOfType(const Hosts& new_hosts,
   for (auto& it : new_hosts) {
     DevToolsAgentHost* host = it.get();
     if (old_hosts.find(host) == old_hosts.end()) {
-      if (attach_callback_.Run(host, waiting_for_debugger))
-        auto_attached_hosts_.insert(host);
+      attach_callback_.Run(host, waiting_for_debugger);
+      auto_attached_hosts_.insert(host);
     }
   }
 }

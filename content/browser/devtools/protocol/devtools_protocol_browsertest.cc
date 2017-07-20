@@ -1657,6 +1657,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, TargetDiscovery) {
   EXPECT_TRUE(params->GetBoolean("targetInfo.attached", &is_attached));
   EXPECT_TRUE(is_attached);
   params = WaitForNotification("Target.attachedToTarget", true);
+  std::string session_id;
+  EXPECT_TRUE(params->GetString("sessionId", &session_id));
   EXPECT_TRUE(params->GetString("targetInfo.targetId", &temp));
   EXPECT_EQ(attached_id, temp);
   EXPECT_TRUE(notifications_.empty());
@@ -1667,9 +1669,11 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, TargetDiscovery) {
   EXPECT_TRUE(notifications_.empty());
 
   command_params.reset(new base::DictionaryValue());
-  command_params->SetString("targetId", attached_id);
+  command_params->SetString("sessionId", session_id);
   SendCommand("Target.detachFromTarget", std::move(command_params), true);
   params = WaitForNotification("Target.detachedFromTarget", true);
+  EXPECT_TRUE(params->GetString("sessionId", &temp));
+  EXPECT_EQ(session_id, temp);
   EXPECT_TRUE(params->GetString("targetId", &temp));
   EXPECT_EQ(attached_id, temp);
   EXPECT_TRUE(notifications_.empty());
@@ -1737,6 +1741,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsProtocolTest, TargetNoDiscovery) {
   command_params->SetBoolean("value", true);
   SendCommand("Target.setAttachToFrames", std::move(command_params), false);
   params = WaitForNotification("Target.attachedToTarget", true);
+  std::string session_id;
+  EXPECT_TRUE(params->GetString("sessionId", &session_id));
   EXPECT_TRUE(params->GetString("targetInfo.targetId", &target_id));
   EXPECT_TRUE(params->GetString("targetInfo.type", &temp));
   EXPECT_EQ("iframe", temp);
@@ -1748,10 +1754,13 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsProtocolTest, TargetNoDiscovery) {
   params = WaitForNotification("Target.detachedFromTarget", true);
   EXPECT_TRUE(params->GetString("targetId", &temp));
   EXPECT_EQ(target_id, temp);
+  EXPECT_TRUE(params->GetString("sessionId", &temp));
+  EXPECT_EQ(session_id, temp);
 
   // Navigate back to cross-site iframe.
   NavigateFrameToURL(root->child_at(0), cross_site_url);
   params = WaitForNotification("Target.attachedToTarget", true);
+  EXPECT_TRUE(params->GetString("sessionId", &session_id));
   EXPECT_TRUE(params->GetString("targetInfo.targetId", &target_id));
   EXPECT_TRUE(params->GetString("targetInfo.type", &temp));
   EXPECT_EQ("iframe", temp);
@@ -1764,6 +1773,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsProtocolTest, TargetNoDiscovery) {
   params = WaitForNotification("Target.detachedFromTarget", true);
   EXPECT_TRUE(params->GetString("targetId", &temp));
   EXPECT_EQ(target_id, temp);
+  EXPECT_TRUE(params->GetString("sessionId", &temp));
+  EXPECT_EQ(session_id, temp);
 }
 
 IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, SetAndGetCookies) {

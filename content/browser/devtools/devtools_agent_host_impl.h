@@ -44,6 +44,7 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
   void DisconnectWebContents() override;
   void ConnectWebContents(WebContents* wc) override;
 
+  void AttachMultiClient(DevToolsAgentHostClient* client);
   bool Inspect();
 
  protected:
