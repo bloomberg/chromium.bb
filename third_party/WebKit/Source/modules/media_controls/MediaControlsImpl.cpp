@@ -870,7 +870,8 @@ void MediaControlsImpl::DefaultEventHandler(Event* event) {
       return;
     }
     if (key == "ArrowDown" || key == "ArrowUp") {
-      volume_slider_->OnMediaKeyboardEvent(event);
+      for (int i = 0; i < 5; i++)
+        volume_slider_->OnMediaKeyboardEvent(event);
       return;
     }
   }
