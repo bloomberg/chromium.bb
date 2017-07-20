@@ -8,11 +8,12 @@ import unittest
 from webkitpy.common.host_mock import MockHost
 from webkitpy.common.system.executive_mock import MockExecutive, mock_git_commands
 from webkitpy.w3c.chromium_commit import ChromiumCommit
+from webkitpy.w3c.chromium_commit_mock import MockChromiumCommit
+from webkitpy.w3c.gerrit import GerritCL
+from webkitpy.w3c.gerrit_mock import MockGerritAPI
 from webkitpy.w3c.test_exporter import TestExporter
 from webkitpy.w3c.wpt_github import PullRequest
 from webkitpy.w3c.wpt_github_mock import MockWPTGitHub
-from webkitpy.w3c.gerrit import GerritCL
-from webkitpy.w3c.gerrit_mock import MockGerritAPI
 
 
 class TestExporterTest(unittest.TestCase):
@@ -39,9 +40,9 @@ class TestExporterTest(unittest.TestCase):
         test_exporter.run()
 
         self.assertEqual(test_exporter.wpt_github.calls, [
-            'pr_with_position',
-            'pr_with_position',
-            'pr_with_position',
+            'pr_for_chromium_commit',
+            'pr_for_chromium_commit',
+            'pr_for_chromium_commit',
         ])
 
     def test_creates_pull_request_for_all_exportable_commits(self):
@@ -77,16 +78,16 @@ class TestExporterTest(unittest.TestCase):
         test_exporter.run()
 
         self.assertEqual(test_exporter.wpt_github.calls, [
-            'pr_with_change_id',
-            'pr_with_change_id',
-            'pr_with_change_id',
-            'pr_with_change_id',
+            'pr_for_chromium_commit',
+            'pr_for_chromium_commit',
+            'pr_for_chromium_commit',
+            'pr_for_chromium_commit',
             'create_pr',
             'add_label "chromium-export"',
-            'pr_with_change_id',
+            'pr_for_chromium_commit',
             'create_pr',
             'add_label "chromium-export"',
-            'pr_with_change_id',
+            'pr_for_chromium_commit',
             'create_pr',
             'add_label "chromium-export"',
         ])
@@ -103,51 +104,52 @@ class TestExporterTest(unittest.TestCase):
         # 4. #458478 has an in-flight PR associated with it and should be merged successfully.
         host = MockHost()
         host.executive = mock_git_commands({
-            'show': 'git show text\nCr-Commit-Position: refs/heads/master@{#458476}',
+            'show': 'git show text\nCr-Commit-Position: refs/heads/master@{#458476}\nChange-Id: I0476',
             'crrev-parse': 'c2087acb00eee7960339a0be34ea27d6b20e1131',
+
         })
         test_exporter = TestExporter(host, 'gh-username', 'gh-token', gerrit_user=None, gerrit_token=None)
         test_exporter.wpt_github = MockWPTGitHub(pull_requests=[
             PullRequest(
                 title='Open PR',
                 number=1234,
-                body='rutabaga\nCr-Commit-Position: refs/heads/master@{#458475}',
+                body='rutabaga\nCr-Commit-Position: refs/heads/master@{#458475}\nChange-Id: I0005',
                 state='open',
                 labels=['do not merge yet']
             ),
             PullRequest(
                 title='Merged PR',
                 number=2345,
-                body='rutabaga\nCr-Commit-Position: refs/heads/master@{#458477}',
+                body='rutabaga\nCr-Commit-Position: refs/heads/master@{#458477}\nChange-Id: Idead',
                 state='closed',
                 labels=[]
             ),
             PullRequest(
                 title='Open PR',
                 number=3456,
-                body='rutabaga\nCr-Commit-Position: refs/heads/master@{#458478}',
+                body='rutabaga\nCr-Commit-Position: refs/heads/master@{#458478}\nChange-Id: I0118',
                 state='open',
                 labels=[]  # It's important that this is empty.
             ),
         ], unsuccessful_merge_index=0)
         test_exporter.gerrit = MockGerritAPI(host, 'gerrit-username', 'gerrit-token')
         test_exporter.get_exportable_commits = lambda: [
-            ChromiumCommit(host, position='refs/heads/master@{#458475}'),
-            ChromiumCommit(host, position='refs/heads/master@{#458476}'),
-            ChromiumCommit(host, position='refs/heads/master@{#458477}'),
-            ChromiumCommit(host, position='refs/heads/master@{#458478}'),
+            MockChromiumCommit(host, position='refs/heads/master@{#458475}', change_id='I0005'),
+            MockChromiumCommit(host, position='refs/heads/master@{#458476}', change_id='I0476'),
+            MockChromiumCommit(host, position='refs/heads/master@{#458477}', change_id='Idead'),
+            MockChromiumCommit(host, position='refs/heads/master@{#458478}', change_id='I0118'),
         ]
         test_exporter.run()
         self.assertEqual(test_exporter.wpt_github.calls, [
-            'pr_with_position',
+            'pr_for_chromium_commit',
             'remove_label "do not merge yet"',
             'get_pr_branch',
             'merge_pull_request',
-            'pr_with_position',
+            'pr_for_chromium_commit',
             'create_pr',
             'add_label "chromium-export"',
-            'pr_with_position',
-            'pr_with_position',
+            'pr_for_chromium_commit',
+            'pr_for_chromium_commit',
             # Testing the lack of remove_label here. The exporter should not
             # try to remove the provisional label from PRs it has already
             # removed it from.
@@ -156,9 +158,7 @@ class TestExporterTest(unittest.TestCase):
             'delete_remote_branch',
         ])
         self.assertEqual(test_exporter.wpt_github.pull_requests_created, [
-            ('chromium-export-c2087acb00',
-             'git show text\nCr-Commit-Position: refs/heads/master@{#458476}',
-             'git show text\nCr-Commit-Position: refs/heads/master@{#458476}'),
+            ('chromium-export-52c3178508', 'Fake subject', 'Fake body\n\nChange-Id: I0476'),
         ])
 
     def test_new_gerrit_cl(self):
@@ -291,7 +291,7 @@ class TestExporterTest(unittest.TestCase):
         test_exporter.run()
 
         self.assertEqual(test_exporter.wpt_github.calls, [
-            'pr_with_change_id',
+            'pr_for_chromium_commit',
             'remove_label "do not merge yet"',
             'get_pr_branch',
             'merge_pull_request',

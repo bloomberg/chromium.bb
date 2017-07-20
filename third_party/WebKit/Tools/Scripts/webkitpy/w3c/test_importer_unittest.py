@@ -26,7 +26,7 @@ class TestImporterTest(LoggingTestCase):
         ])
         importer = TestImporter(host, wpt_github=wpt_github)
         importer.exportable_but_not_exported_commits = lambda _: [
-            MockChromiumCommit(host, change_id='Iba5eba11')
+            MockChromiumCommit(host, subject='Fake PR subject', change_id='Iba5eba11')
         ]
         importer.checkout_is_okay = lambda: True
         return_code = importer.main(['--credentials-json=/tmp/creds.json'])
@@ -35,7 +35,7 @@ class TestImporterTest(LoggingTestCase):
             'INFO: Cloning GitHub w3c/web-platform-tests into /tmp/wpt\n',
             'INFO: There were exportable but not-yet-exported commits:\n',
             'INFO: Commit: https://fake-chromium-commit-viewer.org/+/14fd77e88e\n',
-            'INFO: Subject: Fake commit message\n',
+            'INFO: Subject: Fake PR subject\n',
             'INFO: PR: https://github.com/w3c/web-platform-tests/pull/5\n',
             'INFO: Modified files in wpt directory in this commit:\n',
             'INFO:   third_party/WebKit/LayoutTests/external/wpt/one.html\n',
@@ -50,7 +50,7 @@ class TestImporterTest(LoggingTestCase):
         wpt_github = MockWPTGitHub(pull_requests=[])
         importer = TestImporter(host, wpt_github=wpt_github)
         importer.exportable_but_not_exported_commits = lambda _: [
-            MockChromiumCommit(host, position='refs/heads/master@{#431}')
+            MockChromiumCommit(host, subject='Fake PR subject', position='refs/heads/master@{#431}')
         ]
         importer.checkout_is_okay = lambda: True
         return_code = importer.main(['--credentials-json=/tmp/creds.json'])
@@ -59,7 +59,7 @@ class TestImporterTest(LoggingTestCase):
             'INFO: Cloning GitHub w3c/web-platform-tests into /tmp/wpt\n',
             'INFO: There were exportable but not-yet-exported commits:\n',
             'INFO: Commit: https://fake-chromium-commit-viewer.org/+/fa2de685c0\n',
-            'INFO: Subject: Fake commit message\n',
+            'INFO: Subject: Fake PR subject\n',
             'WARNING: No pull request found.\n',
             'INFO: Modified files in wpt directory in this commit:\n',
             'INFO:   third_party/WebKit/LayoutTests/external/wpt/one.html\n',
