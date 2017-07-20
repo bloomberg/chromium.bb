@@ -1211,14 +1211,7 @@ class BookmarkBarViewTest10 : public BookmarkBarViewEventTestBase {
   }
 };
 
-#if defined(USE_OZONE)
-// ozone bringup - http://crbug.com/401304
-#define MAYBE_KeyEvents DISABLED_KeyEvents
-#else
-#define MAYBE_KeyEvents KeyEvents
-#endif
-
-VIEW_TEST(BookmarkBarViewTest10, MAYBE_KeyEvents)
+VIEW_TEST(BookmarkBarViewTest10, KeyEvents)
 
 // Make sure the menu closes with the following sequence: show menu, show
 // context menu, close context menu (via escape), then click else where. This
@@ -1296,10 +1289,6 @@ class BookmarkBarViewTest11 : public BookmarkBarViewEventTestBase {
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 // TODO(erg): linux_aura bringup: http://crbug.com/163931
-#define MAYBE_CloseMenuAfterClosingContextMenu \
-  DISABLED_CloseMenuAfterClosingContextMenu
-#elif defined(USE_OZONE)
-// ozone bringup - http://crbug.com/401304
 #define MAYBE_CloseMenuAfterClosingContextMenu \
   DISABLED_CloseMenuAfterClosingContextMenu
 #else
@@ -1523,14 +1512,7 @@ class BookmarkBarViewTest14 : public BookmarkBarViewEventTestBase {
   BookmarkContextMenuNotificationObserver observer_;
 };
 
-#if defined(USE_OZONE)
-// ozone bringup - http://crbug.com/401304
-#define MAYBE_ContextMenus2 DISABLED_ContextMenus2
-#else
-#define MAYBE_ContextMenus2 ContextMenus2
-#endif
-
-VIEW_TEST(BookmarkBarViewTest14, MAYBE_ContextMenus2)
+VIEW_TEST(BookmarkBarViewTest14, ContextMenus2)
 
 // Makes sure deleting from the context menu keeps the bookmark menu showing.
 class BookmarkBarViewTest15 : public BookmarkBarViewEventTestBase {
@@ -1729,14 +1711,7 @@ class BookmarkBarViewTest17 : public BookmarkBarViewEventTestBase {
   BookmarkContextMenuNotificationObserver observer_;
 };
 
-#if defined(OS_WIN)
-// Flaky on Win7. crbug/453796
-#define MAYBE_ContextMenus3 DISABLED_ContextMenus3
-#else
-#define MAYBE_ContextMenus3 ContextMenus3
-#endif
-
-VIEW_TEST(BookmarkBarViewTest17, MAYBE_ContextMenus3)
+VIEW_TEST(BookmarkBarViewTest17, ContextMenus3)
 
 // Verifies sibling menus works. Clicks on the 'other bookmarks' folder, then
 // moves the mouse over the first item on the bookmark bar and makes sure the
