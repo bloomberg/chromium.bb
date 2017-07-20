@@ -1607,7 +1607,7 @@ CommandHandler.COMMANDS_['set-wallpaper'] = /** @type {Command} */ ({
     });
   },
   canExecute: function(event, fileManager) {
-    var entries = CommandUtil.getCommandEntries(event.target);
+    var entries = fileManager.getSelection().entries;
     if (entries.length === 0) {
       event.canExecute = false;
       event.command.setHidden(true);
