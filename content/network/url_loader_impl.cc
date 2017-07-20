@@ -7,6 +7,7 @@
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "content/common/loader_util.h"
 #include "content/common/net_adapters.h"
 #include "content/network/network_context.h"
 #include "content/public/common/referrer.h"
@@ -14,6 +15,7 @@
 #include "content/public/common/url_loader_factory.mojom.h"
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/load_flags.h"
+#include "net/base/mime_sniffer.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_file_element_reader.h"
 #include "net/url_request/url_request_context.h"
@@ -251,32 +253,14 @@ void URLLoaderImpl::OnResponseStarted(net::URLRequest* url_request,
     NotifyCompleted(net_error);
     return;
   }
-  // TODO: Add support for optional MIME sniffing.
 
-  scoped_refptr<ResourceResponse> response = new ResourceResponse();
-  PopulateResourceResponse(url_request_.get(), response.get());
-  response->head.encoded_data_length = url_request_->raw_header_size();
-
-  base::Optional<net::SSLInfo> ssl_info;
-  if (options_ & mojom::kURLLoadOptionSendSSLInfo)
-    ssl_info = url_request_->ssl_info();
-  mojom::DownloadedTempFilePtr downloaded_file_ptr;
-  url_loader_client_->OnReceiveResponse(response->head, ssl_info,
-                                        std::move(downloaded_file_ptr));
-
-  net::IOBufferWithSize* metadata = url_request->response_info().metadata.get();
-  if (metadata) {
-    const uint8_t* data = reinterpret_cast<const uint8_t*>(metadata->data());
-
-    url_loader_client_->OnReceiveCachedMetadata(
-        std::vector<uint8_t>(data, data + metadata->size()));
-  }
+  response_ = new ResourceResponse();
+  PopulateResourceResponse(url_request_.get(), response_.get());
+  response_->head.encoded_data_length = url_request_->raw_header_size();
 
   mojo::DataPipe data_pipe(kDefaultAllocationSize);
-
   response_body_stream_ = std::move(data_pipe.producer_handle);
-  url_loader_client_->OnStartLoadingResponseBody(
-      std::move(data_pipe.consumer_handle));
+  consumer_handle_ = std::move(data_pipe.consumer_handle);
   peer_closed_handle_watcher_.Watch(
       response_body_stream_.get(), MOJO_HANDLE_SIGNAL_PEER_CLOSED,
       base::Bind(&URLLoaderImpl::OnResponseBodyStreamClosed,
@@ -287,6 +271,10 @@ void URLLoaderImpl::OnResponseStarted(net::URLRequest* url_request,
       response_body_stream_.get(), MOJO_HANDLE_SIGNAL_WRITABLE,
       base::Bind(&URLLoaderImpl::OnResponseBodyStreamReady,
                  base::Unretained(this)));
+
+  if (!(options_ & mojom::kURLLoadOptionSniffMimeType) ||
+      !ShouldSniffContent(url_request_.get(), response_.get()))
+    SendResponseToClient();
 
   // Start reading...
   ReadMore();
@@ -332,6 +320,24 @@ void URLLoaderImpl::ReadMore() {
 
 void URLLoaderImpl::DidRead(uint32_t num_bytes, bool completed_synchronously) {
   DCHECK(url_request_->status().is_success());
+  if (consumer_handle_.is_valid()) {
+    const std::string& type_hint = response_->head.mime_type;
+    std::string new_type;
+    bool made_final_decision =
+        net::SniffMimeType(pending_write_->buffer(), num_bytes,
+                           url_request_->url(), type_hint, &new_type);
+    // SniffMimeType() returns false if there is not enough data to determine
+    // the mime type. However, even if it returns false, it returns a new type
+    // that is probably better than the current one.
+    response_->head.mime_type.assign(new_type);
+
+    if (!made_final_decision) {
+      // TODO: handle case where the initial read didn't have enough bytes.
+      // http://crbug.com/746144
+      LOG(ERROR) << "URLLoaderImpl couldn't make final sniffing decision.";
+    }
+    SendResponseToClient();
+  }
   response_body_stream_ = pending_write_->Complete(num_bytes);
   pending_write_ = nullptr;
   if (completed_synchronously) {
@@ -362,6 +368,9 @@ base::WeakPtr<URLLoaderImpl> URLLoaderImpl::GetWeakPtrForTests() {
 }
 
 void URLLoaderImpl::NotifyCompleted(int error_code) {
+  if (consumer_handle_.is_valid())
+    SendResponseToClient();
+
   ResourceRequestCompletionStatus request_complete_data;
   request_complete_data.error_code = error_code;
   request_complete_data.exists_in_cache =
@@ -397,6 +406,27 @@ void URLLoaderImpl::DeleteIfNeeded() {
   bool has_data_pipe = pending_write_.get() || response_body_stream_.is_valid();
   if (!connected_ && !has_data_pipe)
     delete this;
+}
+
+void URLLoaderImpl::SendResponseToClient() {
+  base::Optional<net::SSLInfo> ssl_info;
+  if (options_ & mojom::kURLLoadOptionSendSSLInfo)
+    ssl_info = url_request_->ssl_info();
+  mojom::DownloadedTempFilePtr downloaded_file_ptr;
+  url_loader_client_->OnReceiveResponse(response_->head, ssl_info,
+                                        std::move(downloaded_file_ptr));
+
+  net::IOBufferWithSize* metadata =
+      url_request_->response_info().metadata.get();
+  if (metadata) {
+    const uint8_t* data = reinterpret_cast<const uint8_t*>(metadata->data());
+
+    url_loader_client_->OnReceiveCachedMetadata(
+        std::vector<uint8_t>(data, data + metadata->size()));
+  }
+
+  url_loader_client_->OnStartLoadingResponseBody(std::move(consumer_handle_));
+  response_ = nullptr;
 }
 
 }  // namespace content

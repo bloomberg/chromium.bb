@@ -137,9 +137,8 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
           webui_factory_ptr_.get(),
           GetContentClient()->browser()->CreateURLLoaderThrottles(
               web_contents_getter_),
-          0 /* routing_id? */, 0 /* request_id? */,
-          mojom::kURLLoadOptionSendSSLInfo, *resource_request_, this,
-          kTrafficAnnotation);
+          0 /* routing_id? */, 0 /* request_id? */, mojom::kURLLoadOptionNone,
+          *resource_request_, this, kTrafficAnnotation);
       return;
     }
 
@@ -220,8 +219,8 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
         GetContentClient()->browser()->CreateURLLoaderThrottles(
             web_contents_getter_),
         0 /* routing_id? */, 0 /* request_id? */,
-        mojom::kURLLoadOptionSendSSLInfo, *resource_request_, this,
-        kTrafficAnnotation);
+        mojom::kURLLoadOptionSendSSLInfo | mojom::kURLLoadOptionSniffMimeType,
+        *resource_request_, this, kTrafficAnnotation);
   }
 
   void FollowRedirect() {
