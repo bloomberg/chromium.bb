@@ -1,6 +1,7 @@
 include_rules = [
     # To whitelist base/ stuff Blink is allowed to include, we list up all
     # directories and files instead of writing 'base/'.
+    "+base/allocator/partition_allocator/oom.h",
     "+base/bind.h",
     "+base/bind_helpers.h",
     "+base/callback.h",

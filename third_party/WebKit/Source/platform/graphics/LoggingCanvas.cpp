@@ -578,7 +578,7 @@ JSONObject* AutoLogger::LogItemWithParams(const String& name) {
   JSONObject* item = LogItem(name);
   std::unique_ptr<JSONObject> params = JSONObject::Create();
   item->SetObject("params", std::move(params));
-  return item->GetObject("params");
+  return item->GetJSONObject("params");
 }
 
 LoggingCanvas::LoggingCanvas(int width, int height)

@@ -199,7 +199,7 @@ void extractEntity(const JSONObject& val, Entity& entity, int recursionLevel) {
         property->values->set_entity_values(Vector<EntityPtr>());
         property->values->get_entity_values().push_back(Entity::New());
 
-        extractEntity(*(val.GetObject(entry.first)),
+        extractEntity(*(val.GetJSONObject(entry.first)),
                       *(property->values->get_entity_values().at(0)),
                       recursionLevel + 1);
       } break;

@@ -301,7 +301,7 @@ bool JSONObject::GetString(const String& name, String* output) const {
   return value->AsString(output);
 }
 
-JSONObject* JSONObject::GetObject(const String& name) const {
+JSONObject* JSONObject::GetJSONObject(const String& name) const {
   return JSONObject::Cast(Get(name));
 }
 

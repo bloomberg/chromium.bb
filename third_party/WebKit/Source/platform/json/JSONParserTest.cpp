@@ -343,7 +343,7 @@ TEST(JSONParserTest, Reading) {
   EXPECT_EQ(JSONValue::kTypeObject, root->GetType());
   object_val = JSONObject::Cast(root.get());
   ASSERT_TRUE(object_val);
-  JSONObject* inner_object = object_val->GetObject("inner");
+  JSONObject* inner_object = object_val->GetJSONObject("inner");
   ASSERT_TRUE(inner_object);
   JSONArray* inner_array = inner_object->GetArray("array");
   ASSERT_TRUE(inner_array);
@@ -351,7 +351,7 @@ TEST(JSONParserTest, Reading) {
   bool_value = true;
   EXPECT_TRUE(object_val->GetBoolean("false", &bool_value));
   EXPECT_FALSE(bool_value);
-  inner_object = object_val->GetObject("d");
+  inner_object = object_val->GetJSONObject("d");
   EXPECT_TRUE(inner_object);
 
   // Test keys with periods
@@ -365,7 +365,7 @@ TEST(JSONParserTest, Reading) {
   EXPECT_EQ(3, integer_value);
   EXPECT_TRUE(object_val->GetInteger("c", &integer_value));
   EXPECT_EQ(2, integer_value);
-  inner_object = object_val->GetObject("d.e.f");
+  inner_object = object_val->GetJSONObject("d.e.f");
   ASSERT_TRUE(inner_object);
   EXPECT_EQ(1U, inner_object->size());
   EXPECT_TRUE(inner_object->GetInteger("g.h.i.j", &integer_value));
@@ -376,7 +376,7 @@ TEST(JSONParserTest, Reading) {
   EXPECT_EQ(JSONValue::kTypeObject, root->GetType());
   object_val = JSONObject::Cast(root.get());
   ASSERT_TRUE(object_val);
-  inner_object = object_val->GetObject("a");
+  inner_object = object_val->GetJSONObject("a");
   ASSERT_TRUE(inner_object);
   EXPECT_TRUE(inner_object->GetInteger("b", &integer_value));
   EXPECT_EQ(2, integer_value);
