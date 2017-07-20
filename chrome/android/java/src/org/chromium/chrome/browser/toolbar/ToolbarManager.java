@@ -851,6 +851,12 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         menuHandler.addObserver(new AppMenuObserver() {
             @Override
             public void onMenuVisibilityChanged(boolean isVisible) {
+                if (isVisible) {
+                    // Defocus here to avoid handling focus in multiple places, e.g., when the
+                    // forward button is pressed. (see crbug.com/414219)
+                    setUrlBarFocus(false);
+                }
+
                 if (mControlsVisibilityDelegate == null) return;
                 if (isVisible) {
                     mFullscreenMenuToken =
