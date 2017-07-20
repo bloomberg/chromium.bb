@@ -883,4 +883,37 @@ public class AwContentsClientShouldInterceptRequestTest extends AwTestBase {
         executeJavaScriptAndWaitForResult(mAwContents, client, "1+1");
         signalAfterSendingIpc.countDown();
     }
+
+    // Webview must be able to intercept requests with the content-id scheme.
+    // See https://crbug.com/739658.
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testContentIdImage() throws Throwable {
+        final String imageContentIdUrl = "cid://intercept-me";
+        final String pageUrl = addPageToTestServer(mWebServer, "/main.html",
+                CommonResources.makeHtmlPageFrom("", "<img src=\'" + imageContentIdUrl + "\'>"));
+
+        int callCount = mShouldInterceptRequestHelper.getCallCount();
+        loadUrlAsync(mAwContents, pageUrl);
+        mShouldInterceptRequestHelper.waitForCallback(callCount, 2);
+        assertEquals(2, mShouldInterceptRequestHelper.getUrls().size());
+        assertEquals(imageContentIdUrl, mShouldInterceptRequestHelper.getUrls().get(1));
+    }
+
+    // Webview must be able to intercept requests with the content-id scheme.
+    // See https://crbug.com/739658.
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testContentIdIframe() throws Throwable {
+        final String iframeContentIdUrl = "cid://intercept-me";
+        final String pageUrl = addPageToTestServer(mWebServer, "/main.html",
+                CommonResources.makeHtmlPageFrom(
+                        "", "<iframe src=\'" + iframeContentIdUrl + "\'></iframe>"));
+
+        int callCount = mShouldInterceptRequestHelper.getCallCount();
+        loadUrlAsync(mAwContents, pageUrl);
+        mShouldInterceptRequestHelper.waitForCallback(callCount, 2);
+        assertEquals(2, mShouldInterceptRequestHelper.getUrls().size());
+        assertEquals(iframeContentIdUrl, mShouldInterceptRequestHelper.getUrls().get(1));
+    }
 }
