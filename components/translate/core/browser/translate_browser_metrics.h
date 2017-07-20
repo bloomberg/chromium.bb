@@ -19,6 +19,8 @@ enum MetricsNameIndex {
   UMA_LOCALES_ON_DISABLED_BY_PREFS,
   UMA_UNDISPLAYABLE_LANGUAGE,
   UMA_UNSUPPORTED_LANGUAGE_AT_INITIATION,
+  UMA_TRANSLATE_SOURCE_LANGUAGE,
+  UMA_TRANSLATE_TARGET_LANGUAGE,
   UMA_MAX,
 };
 
@@ -63,6 +65,16 @@ void ReportLocalesOnDisabledByPrefs(const std::string& locale);
 void ReportUndisplayableLanguage(const std::string& language);
 
 void ReportUnsupportedLanguageAtInitiation(const std::string& language);
+
+// Called when a request is sent to the translate server to report the source
+// language of the translated page. Buckets are labelled with CLD3LanguageCode
+// values.
+void ReportTranslateSourceLanguage(const std::string& language);
+
+// Called when a request is sent to the translate server to report the target
+// language for the translated page. Buckets are labelled with CLD3LanguageCode
+// values.
+void ReportTranslateTargetLanguage(const std::string& language);
 
 // Provides UMA entry names for unit tests.
 const char* GetMetricsName(MetricsNameIndex index);
