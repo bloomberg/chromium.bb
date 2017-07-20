@@ -8577,7 +8577,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram base="true" name="Compositing.Browser.LayersUpdateTime"
     units="microseconds">
-  <owner>threaded-rendering@chromium.org</owner>
+  <owner>threaded-rendering-dev@chromium.org</owner>
   <summary>
     Time spent updating layers, in microseconds. Recorded when layers are
     updated (in a browser process).
@@ -8894,7 +8894,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram base="true" name="Compositing.Renderer.LayersUpdateTime"
     units="microseconds">
-  <owner>threaded-rendering@chromium.org</owner>
+  <owner>threaded-rendering-dev@chromium.org</owner>
   <summary>
     Time spent updating layers, in microseconds. Recorded when layers are
     updated (in a renderer process).
@@ -18716,25 +18716,25 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Event.Scroll.ScrollerSize.OnLoad" units="pixels">
   <owner>yigu@chromium.org</owner>
-  <owner>input-dev@chromium.org</owner>
-  <owner>threaded-rendering@chromium.org</owner>
   <summary>
     Record the area of a scroller upon page load. This is intended to help us
     measure the distribution of scrollers with different sizes. Combined with
     the other two metrics which measure the size of scrollers on scroll, we may
     have a better idea of not compositing small scrollers.
+
+    Team: input-dev@chromium.org, threaded-rendering-dev@chromium.org.
   </summary>
 </histogram>
 
 <histogram name="Event.Scroll.ScrollerSize.OnScroll" units="pixels">
   <owner>yigu@chromium.org</owner>
-  <owner>input-dev@chromium.org</owner>
-  <owner>threaded-rendering@chromium.org</owner>
   <summary>
     Record the area of a scroller upon ScrollBegin. This is intended to help us
     measure the frequencies of different sizes of scrollers getting scrolled.
     For those small scrollers that users may rarely scroll, there is no need to
     composite them even if we are able to do so.
+
+    Team: input-dev@chromium.org, threaded-rendering-dev@chromium.org.
   </summary>
 </histogram>
 
