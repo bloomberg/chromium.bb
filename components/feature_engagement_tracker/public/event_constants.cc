@@ -25,9 +25,7 @@ const char kNewTabOpened[] = "new_tab_opened";
 const char kChromeOpened[] = "chrome_opened";
 const char kIncognitoTabOpened[] = "incognito_tab_opened";
 const char kClearedBrowsingData[] = "cleared_browsing_data";
-const char kAddedItemToReadingList[] = "added_item_to_reading_list";
 const char kViewedReadingList[] = "viewed_reading_list";
-const char kOpenedReadingListItem[] = "opened_reading_list_item";
 #endif  // defined(OS_IOS)
 
 }  // namespace events
