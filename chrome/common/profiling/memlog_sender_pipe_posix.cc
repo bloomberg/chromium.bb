@@ -10,16 +10,14 @@
 #include "base/posix/unix_domain_socket_linux.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/common/profiling/memlog_stream.h"
+#include "mojo/edk/embedder/platform_channel_utils_posix.h"
 
 namespace profiling {
 
 MemlogSenderPipe::MemlogSenderPipe(const std::string& pipe_id) {
   int fd;
   CHECK(base::StringToInt(pipe_id, &fd));
-  fd_.reset(fd);
-
-  static std::vector<int> dummy_instance;
-  dummy_for_send_ = &dummy_instance;
+  handle_.reset(mojo::edk::PlatformHandle(fd));
 }
 
 MemlogSenderPipe::~MemlogSenderPipe() {
@@ -31,7 +29,7 @@ bool MemlogSenderPipe::Connect() {
 }
 
 bool MemlogSenderPipe::Send(const void* data, size_t sz) {
-  return base::UnixDomainSocket::SendMsg(fd_.get(), data, sz, *dummy_for_send_);
+  return mojo::edk::PlatformChannelWrite(handle_.get(), data, sz);
 }
 
 }  // namespace profiling
