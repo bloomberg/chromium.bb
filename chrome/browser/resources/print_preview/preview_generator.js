@@ -219,7 +219,7 @@ cr.define('print_preview', function() {
       this.selectedDestination_ = this.destinationStore_.selectedDestination;
 
       this.inFlightRequestId_++;
-      this.generateDraft_ = this.documentInfo_.isModifiable && previewChanged;
+      this.generateDraft_ = this.documentInfo_.isModifiable;
       return {
         id: this.inFlightRequestId_,
         request: this.nativeLayer_.getPreview(
