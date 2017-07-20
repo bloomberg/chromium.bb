@@ -254,6 +254,10 @@ bool PaymentRequestState::IsPaymentAppInvoked() const {
   return !!response_helper_;
 }
 
+AddressNormalizer* PaymentRequestState::GetAddressNormalizer() {
+  return payment_request_delegate_->GetAddressNormalizer();
+}
+
 void PaymentRequestState::PopulateProfileCache() {
   std::vector<autofill::AutofillProfile*> profiles =
       personal_data_manager_->GetProfilesToSuggest();

@@ -185,6 +185,8 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
   // generation has begun. False otherwise.
   bool IsPaymentAppInvoked() const;
 
+  AddressNormalizer* GetAddressNormalizer();
+
  private:
   // Fetches the Autofill Profiles for this user from the PersonalDataManager,
   // and stores copies of them, owned by this PaymentRequestState, in
