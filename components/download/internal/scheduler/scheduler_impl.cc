@@ -59,8 +59,8 @@ void SchedulerImpl::Reschedule(const Model::EntryList& entries) {
   task_scheduler_->ScheduleTask(
       DownloadTaskType::DOWNLOAD_TASK, criteria.requires_unmetered_network,
       criteria.requires_battery_charging,
-      base::saturated_cast<long>(config_->window_start_time_seconds),
-      base::saturated_cast<long>(config_->window_end_time_seconds));
+      base::saturated_cast<long>(config_->window_start_time.InSeconds()),
+      base::saturated_cast<long>(config_->window_end_time.InSeconds()));
 }
 
 Entry* SchedulerImpl::Next(const Model::EntryList& entries,
