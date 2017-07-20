@@ -4,6 +4,8 @@
 
 #include <TargetConditionals.h>
 
+#include <utility>
+
 #include "base/callback.h"
 #include "base/mac/foundation_util.h"
 #include "base/memory/ref_counted.h"
@@ -13,6 +15,7 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/password_store.h"
+#include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -32,6 +35,7 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/testing/wait_util.h"
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
@@ -231,12 +235,70 @@ scoped_refptr<password_manager::PasswordStore> GetPasswordStore() {
       ServiceAccessType::EXPLICIT_ACCESS);
 }
 
+// This class is used to obtain results from the PasswordStore and hence both
+// check the success of store updates and ensure that store has finished
+// processing.
+class TestStoreConsumer : public password_manager::PasswordStoreConsumer {
+ public:
+  void OnGetPasswordStoreResults(
+      std::vector<std::unique_ptr<autofill::PasswordForm>> obtained) override {
+    obtained_ = std::move(obtained);
+  }
+
+  const std::vector<autofill::PasswordForm>& GetStoreResults() {
+    results_.clear();
+    ResetObtained();
+    GetPasswordStore()->GetAutofillableLogins(this);
+    bool responded = testing::WaitUntilConditionOrTimeout(1.0, ^bool {
+      return !AreObtainedReset();
+    });
+    GREYAssert(responded, @"Obtaining fillable items took too long.");
+    AppendObtainedToResults();
+    GetPasswordStore()->GetBlacklistLogins(this);
+    responded = testing::WaitUntilConditionOrTimeout(1.0, ^bool {
+      return !AreObtainedReset();
+    });
+    GREYAssert(responded, @"Obtaining blacklisted items took too long.");
+    AppendObtainedToResults();
+    return results_;
+  }
+
+ private:
+  // Puts |obtained_| in a known state not corresponding to any PasswordStore
+  // state.
+  void ResetObtained() {
+    obtained_.clear();
+    obtained_.emplace_back(nullptr);
+  }
+
+  // Returns true if |obtained_| are in the reset state.
+  bool AreObtainedReset() { return obtained_.size() == 1 && !obtained_[0]; }
+
+  void AppendObtainedToResults() {
+    for (const auto& source : obtained_) {
+      results_.emplace_back(*source);
+    }
+    ResetObtained();
+  }
+
+  // Temporary cache of obtained store results.
+  std::vector<std::unique_ptr<autofill::PasswordForm>> obtained_;
+
+  // Combination of fillable and blacklisted credentials from the store.
+  std::vector<autofill::PasswordForm> results_;
+};
+
 // Saves |form| to the password store and waits until the async processing is
 // done.
 void SaveToPasswordStore(const PasswordForm& form) {
   GetPasswordStore()->AddLogin(form);
-  // Allow the PasswordStore to process this on the DB thread.
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  // Check the result and ensure PasswordStore processed this.
+  TestStoreConsumer consumer;
+  for (const auto& result : consumer.GetStoreResults()) {
+    if (result == form)
+      return;
+  }
+  GREYFail(@"Stored form was not found in the PasswordStore results.");
 }
 
 // Saves an example form in the store.
@@ -253,8 +315,9 @@ void SaveExamplePasswordForm() {
 void ClearPasswordStore() {
   GetPasswordStore()->RemoveLoginsCreatedBetween(base::Time(), base::Time(),
                                                  base::Closure());
-  // Allow the PasswordStore to process this on the DB thread.
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  TestStoreConsumer consumer;
+  GREYAssert(consumer.GetStoreResults().empty(),
+             @"PasswordStore was not cleared.");
 }
 
 // Opens the passwords page from the NTP. It requires no menus to be open.
@@ -262,6 +325,13 @@ void OpenPasswordSettings() {
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI
       tapSettingsMenuButton:chrome_test_util::SettingsMenuPasswordsButton()];
+  // The settings page requested results from PasswordStore. Make sure they
+  // have already been delivered by posting a task to PasswordStore's
+  // background task runner and waits until it is finished. Because the
+  // background task runner is sequenced, this means that previously posted
+  // tasks are also finished when this function exits.
+  TestStoreConsumer consumer;
+  consumer.GetStoreResults();
 }
 
 // Tap Edit in any settings view.
