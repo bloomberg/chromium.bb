@@ -33,9 +33,6 @@ namespace {
 const base::Feature kDisplaySuggestionsServiceTiles{
     "DisplaySuggestionsServiceTiles", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// The maximum index of the home page tile.
-const size_t kMaxHomeTileIndex = 3;
-
 // Determine whether we need any tiles from PopularSites to fill up a grid of
 // |num_tiles| tiles.
 bool NeedPopularSites(const PrefService* prefs, int num_tiles) {
@@ -404,38 +401,34 @@ NTPTilesVector MostVisitedSites::InsertHomeTile(
 
   const GURL& home_page_url = home_page_client_->GetHomePageUrl();
   NTPTilesVector new_tiles;
-  // Add the home tile to the first four tiles.
-  NTPTile home_tile;
-  home_tile.url = home_page_url;
-  home_tile.title = title;
-  home_tile.source = TileSource::HOMEPAGE;
-
   bool home_tile_added = false;
-  size_t index = 0;
 
-  while (index < tiles.size() && new_tiles.size() < num_sites_) {
-    bool hosts_are_equal = tiles[index].url.host() == home_page_url.host();
+  for (auto& tile : tiles) {
+    if (new_tiles.size() >= num_sites_) {
+      break;
+    }
 
-    // Add the home tile to the first four tiles
-    // or at the position of a tile that has the same host
-    // and is ranked higher.
     // TODO(fhorschig): Introduce a more sophisticated deduplication.
-    if (!home_tile_added && (index >= kMaxHomeTileIndex || hosts_are_equal)) {
-      new_tiles.push_back(std::move(home_tile));
+    if (tile.url.host() == home_page_url.host()) {
+      tile.source = TileSource::HOMEPAGE;
       home_tile_added = true;
-      continue;  // Do not advance the current tile index.
     }
-
-    // Add non-home page tiles.
-    if (!hosts_are_equal) {
-      new_tiles.push_back(std::move(tiles[index]));
-    }
-    ++index;
+    new_tiles.push_back(std::move(tile));
   }
 
   // Add the home page tile if there are less than 4 tiles
   // and none of them is the home page (and there is space left).
-  if (!home_tile_added && new_tiles.size() < num_sites_) {
+  if (!home_tile_added) {
+    // Make room for the home page tile.
+    if (new_tiles.size() >= num_sites_) {
+      new_tiles.pop_back();
+    }
+
+    NTPTile home_tile;
+    home_tile.url = home_page_url;
+    home_tile.title = title;
+    home_tile.source = TileSource::HOMEPAGE;
+
     new_tiles.push_back(std::move(home_tile));
   }
   return new_tiles;
