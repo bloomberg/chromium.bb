@@ -9,6 +9,7 @@
 
 #include <memory>
 
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
@@ -42,15 +43,22 @@ class UrlFetcherDownloader : public CrxDownloader,
                                   int64_t current,
                                   int64_t total,
                                   int64_t current_network_bytes) override;
+
+  void CreateDownloadDir();
+  void StartURLFetch(const GURL& url);
+
+  THREAD_CHECKER(thread_checker_);
+
   std::unique_ptr<net::URLFetcher> url_fetcher_;
-  net::URLRequestContextGetter* context_getter_;
+  net::URLRequestContextGetter* context_getter_ = nullptr;
+
+  // Contains a temporary download directory for the downloaded file.
+  base::FilePath download_dir_;
 
   base::TimeTicks download_start_time_;
 
-  int64_t downloaded_bytes_;
-  int64_t total_bytes_;
-
-  base::ThreadChecker thread_checker_;
+  int64_t downloaded_bytes_ = -1;
+  int64_t total_bytes_ = -1;
 
   DISALLOW_COPY_AND_ASSIGN(UrlFetcherDownloader);
 };

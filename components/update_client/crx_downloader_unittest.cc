@@ -18,6 +18,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/update_client/update_client_errors.h"
+#include "components/update_client/utils.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/test_url_request_interceptor.h"
 #include "net/url_request/url_request_test_util.h"
@@ -165,6 +166,7 @@ void CrxDownloaderTest::RunThreads() {
 }
 
 void CrxDownloaderTest::RunThreadsUntilIdle() {
+  scoped_task_environment_.RunUntilIdle();
   base::RunLoop().RunUntilIdle();
 }
 
@@ -222,7 +224,8 @@ TEST_F(CrxDownloaderTest, OneUrl) {
   EXPECT_EQ(1843, download_complete_result_.total_bytes);
   EXPECT_TRUE(ContentsEqual(download_complete_result_.response, test_file));
 
-  EXPECT_TRUE(base::DeleteFile(download_complete_result_.response, false));
+  EXPECT_TRUE(
+      DeleteFileAndEmptyParentDirectory(download_complete_result_.response));
 
   EXPECT_LE(1, num_progress_calls_);
   EXPECT_EQ(1843, download_progress_result_.downloaded_bytes);
@@ -291,7 +294,8 @@ TEST_F(CrxDownloaderTest, MAYBE_TwoUrls) {
   EXPECT_EQ(1843, download_complete_result_.total_bytes);
   EXPECT_TRUE(ContentsEqual(download_complete_result_.response, test_file));
 
-  EXPECT_TRUE(base::DeleteFile(download_complete_result_.response, false));
+  EXPECT_TRUE(
+      DeleteFileAndEmptyParentDirectory(download_complete_result_.response));
 
   EXPECT_LE(1, num_progress_calls_);
   EXPECT_EQ(1843, download_progress_result_.downloaded_bytes);
@@ -370,7 +374,8 @@ TEST_F(CrxDownloaderTest, MAYBE_TwoUrls_FirstInvalid) {
   EXPECT_EQ(1843, download_complete_result_.total_bytes);
   EXPECT_TRUE(ContentsEqual(download_complete_result_.response, test_file));
 
-  EXPECT_TRUE(base::DeleteFile(download_complete_result_.response, false));
+  EXPECT_TRUE(
+      DeleteFileAndEmptyParentDirectory(download_complete_result_.response));
 
   EXPECT_LE(1, num_progress_calls_);
   EXPECT_EQ(1843, download_progress_result_.downloaded_bytes);
@@ -402,7 +407,8 @@ TEST_F(CrxDownloaderTest, TwoUrls_SecondInvalid) {
   EXPECT_EQ(1843, download_complete_result_.total_bytes);
   EXPECT_TRUE(ContentsEqual(download_complete_result_.response, test_file));
 
-  EXPECT_TRUE(base::DeleteFile(download_complete_result_.response, false));
+  EXPECT_TRUE(
+      DeleteFileAndEmptyParentDirectory(download_complete_result_.response));
 
   EXPECT_LE(1, num_progress_calls_);
   EXPECT_EQ(1843, download_progress_result_.downloaded_bytes);

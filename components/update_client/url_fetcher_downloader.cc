@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
@@ -21,22 +22,43 @@
 #include "net/url_request/url_fetcher.h"
 #include "url/gurl.h"
 
+namespace {
+
+constexpr base::TaskTraits kTaskTraits = {
+    base::MayBlock(), base::TaskPriority::BACKGROUND,
+    base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN};
+
+}  // namespace
+
 namespace update_client {
 
 UrlFetcherDownloader::UrlFetcherDownloader(
     std::unique_ptr<CrxDownloader> successor,
     net::URLRequestContextGetter* context_getter)
-    : CrxDownloader(std::move(successor)),
-      context_getter_(context_getter),
-      downloaded_bytes_(-1),
-      total_bytes_(-1) {}
+    : CrxDownloader(std::move(successor)), context_getter_(context_getter) {}
 
 UrlFetcherDownloader::~UrlFetcherDownloader() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
 void UrlFetcherDownloader::DoStartDownload(const GURL& url) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  base::PostTaskWithTraitsAndReply(
+      FROM_HERE, kTaskTraits,
+      base::BindOnce(&UrlFetcherDownloader::CreateDownloadDir,
+                     base::Unretained(this)),
+      base::BindOnce(&UrlFetcherDownloader::StartURLFetch,
+                     base::Unretained(this), url));
+}
+
+void UrlFetcherDownloader::CreateDownloadDir() {
+  base::CreateNewTempDirectory(FILE_PATH_LITERAL("chrome_url_fetcher_"),
+                               &download_dir_);
+}
+
+void UrlFetcherDownloader::StartURLFetch(const GURL& url) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("url_fetcher_downloader", R"(
@@ -67,6 +89,30 @@ void UrlFetcherDownloader::DoStartDownload(const GURL& url) {
           }
         })");
 
+  if (download_dir_.empty()) {
+    Result result;
+    result.error = -1;
+    result.downloaded_bytes = downloaded_bytes_;
+    result.total_bytes = total_bytes_;
+
+    DownloadMetrics download_metrics;
+    download_metrics.url = url;
+    download_metrics.downloader = DownloadMetrics::kUrlFetcher;
+    download_metrics.error = -1;
+    download_metrics.downloaded_bytes = downloaded_bytes_;
+    download_metrics.total_bytes = total_bytes_;
+    download_metrics.download_time_ms = 0;
+
+    main_task_runner()->PostTask(
+        FROM_HERE, base::BindOnce(&UrlFetcherDownloader::OnDownloadComplete,
+                                  base::Unretained(this), false, result,
+                                  download_metrics));
+    return;
+  }
+
+  const base::FilePath response =
+      download_dir_.AppendASCII(url.ExtractFileName());
+
   url_fetcher_ = net::URLFetcher::Create(0, url, net::URLFetcher::GET, this,
                                          traffic_annotation);
   url_fetcher_->SetRequestContext(context_getter_);
@@ -74,10 +120,8 @@ void UrlFetcherDownloader::DoStartDownload(const GURL& url) {
                              net::LOAD_DO_NOT_SAVE_COOKIES |
                              net::LOAD_DISABLE_CACHE);
   url_fetcher_->SetAutomaticallyRetryOn5xx(false);
-  url_fetcher_->SaveResponseToTemporaryFile(
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BACKGROUND,
-           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
+  url_fetcher_->SaveResponseToFileAtPath(
+      response, base::CreateSequencedTaskRunnerWithTraits(kTaskTraits));
   data_use_measurement::DataUseUserData::AttachToFetcher(
       url_fetcher_.get(), data_use_measurement::DataUseUserData::UPDATE_CLIENT);
 
@@ -85,13 +129,10 @@ void UrlFetcherDownloader::DoStartDownload(const GURL& url) {
   url_fetcher_->Start();
 
   download_start_time_ = base::TimeTicks::Now();
-
-  downloaded_bytes_ = -1;
-  total_bytes_ = -1;
 }
 
 void UrlFetcherDownloader::OnURLFetchComplete(const net::URLFetcher* source) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   const base::TimeTicks download_end_time(base::TimeTicks::Now());
   const base::TimeDelta download_time =
@@ -121,16 +162,20 @@ void UrlFetcherDownloader::OnURLFetchComplete(const net::URLFetcher* source) {
   download_metrics.total_bytes = total_bytes_;
   download_metrics.download_time_ms = download_time.InMilliseconds();
 
-  base::FilePath local_path_;
-  source->GetResponseAsFilePath(false, &local_path_);
   VLOG(1) << "Downloaded " << downloaded_bytes_ << " bytes in "
           << download_time.InMilliseconds() << "ms from "
-          << source->GetURL().spec() << " to " << local_path_.value();
+          << source->GetURL().spec() << " to " << result.response.value();
+
+  // Delete the download directory in the error cases.
+  if (fetch_error && !download_dir_.empty())
+    base::PostTaskWithTraits(
+        FROM_HERE, kTaskTraits,
+        base::BindOnce(IgnoreResult(&base::DeleteFile), download_dir_, true));
 
   main_task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&UrlFetcherDownloader::OnDownloadComplete,
-                 base::Unretained(this), is_handled, result, download_metrics));
+      FROM_HERE, base::BindOnce(&UrlFetcherDownloader::OnDownloadComplete,
+                                base::Unretained(this), is_handled, result,
+                                download_metrics));
 }
 
 void UrlFetcherDownloader::OnURLFetchDownloadProgress(
@@ -138,7 +183,7 @@ void UrlFetcherDownloader::OnURLFetchDownloadProgress(
     int64_t current,
     int64_t total,
     int64_t current_network_bytes) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   downloaded_bytes_ = current;
   total_bytes_ = total;
