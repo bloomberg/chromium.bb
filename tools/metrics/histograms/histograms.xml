@@ -31457,10 +31457,37 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram
     name="Media.VideoCaptureService.DurationFromLastConnectToClosingConnection"
     units="ms">
+  <obsolete>
+    Deprecated 07/2017 in favor of the more differentiated durations.
+  </obsolete>
   <owner>chfremer@chromium.org</owner>
   <summary>
     Measures the duration from the time the Browser connected to the video
     capture service to the time it closed the connection.
+  </summary>
+</histogram>
+
+<histogram
+    name="Media.VideoCaptureService.DurationFromLastConnectToClosingConnectionAfterCapture"
+    units="ms">
+  <owner>chfremer@chromium.org</owner>
+  <summary>
+    Measures the duration from the time the Browser connected to the video
+    capture service to the time it closed the connection. Entries are only
+    logged if the service was used for creating an actual capture session as
+    opposed to enumerating devices only.
+  </summary>
+</histogram>
+
+<histogram
+    name="Media.VideoCaptureService.DurationFromLastConnectToClosingConnectionAfterEnumerationOnly"
+    units="ms">
+  <owner>chfremer@chromium.org</owner>
+  <summary>
+    Measures the duration from the time the Browser connected to the video
+    capture service to the time it closed the connection. Entries are only
+    logged if the service was used for enumerating devices only, but not for
+    creating an actual capture session.
   </summary>
 </histogram>
 
@@ -31475,10 +31502,36 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Media.VideoCaptureService.DurationUntilReconnect" units="ms">
+  <obsolete>
+    Deprecated 07/2017 in favor of the more differentiated durations.
+  </obsolete>
   <owner>chfremer@chromium.org</owner>
   <summary>
     Measures the duration from the time the Browser last closed or lost
     connection to the video capture service to the time it reconnects.
+  </summary>
+</histogram>
+
+<histogram name="Media.VideoCaptureService.DurationUntilReconnectAfterCapture"
+    units="ms">
+  <owner>chfremer@chromium.org</owner>
+  <summary>
+    Measures the duration from the time the Browser last closed or lost
+    connection to the video capture service to the time it reconnects. This
+    duration only gets logged for reconnects after usage of the service for
+    capture (as opposed to enumeration-only usage).
+  </summary>
+</histogram>
+
+<histogram
+    name="Media.VideoCaptureService.DurationUntilReconnectAfterEnumerationOnly"
+    units="ms">
+  <owner>chfremer@chromium.org</owner>
+  <summary>
+    Measures the duration from the time the Browser last closed or lost
+    connection to the video capture service to the time it reconnects. This
+    duration only gets logged for reconnects after enumeration-only usage of the
+    service.
   </summary>
 </histogram>
 

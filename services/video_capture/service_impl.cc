@@ -94,8 +94,11 @@ void ServiceImpl::MaybeRequestQuit() {
   DCHECK(ref_factory_);
   if (ref_factory_->HasNoRefs()) {
     video_capture::uma::LogVideoCaptureServiceEvent(
-        video_capture::uma::SERVICE_CLOSING_BECAUSE_NO_CLIENT);
+        video_capture::uma::SERVICE_SHUTTING_DOWN_BECAUSE_NO_CLIENT);
     context()->RequestQuit();
+  } else {
+    video_capture::uma::LogVideoCaptureServiceEvent(
+        video_capture::uma::SERVICE_SHUTDOWN_TIMEOUT_CANCELED);
   }
 }
 

@@ -49,6 +49,7 @@ class CONTENT_EXPORT ServiceVideoCaptureProvider : public VideoCaptureProvider {
   video_capture::mojom::DeviceFactoryPtr device_factory_;
   base::SequenceChecker sequence_checker_;
 
+  bool has_created_device_launcher_;
   base::TimeTicks time_of_last_connect_;
   base::TimeTicks time_of_last_uninitialize_;
 };

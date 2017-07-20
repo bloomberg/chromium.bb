@@ -13,7 +13,8 @@
 
 namespace content {
 
-ServiceVideoCaptureProvider::ServiceVideoCaptureProvider() {
+ServiceVideoCaptureProvider::ServiceVideoCaptureProvider()
+    : has_created_device_launcher_(false) {
   sequence_checker_.DetachFromSequence();
   DCHECK(BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   connector_ =
@@ -42,6 +43,7 @@ std::unique_ptr<VideoCaptureDeviceLauncher>
 ServiceVideoCaptureProvider::CreateDeviceLauncher() {
   DCHECK(sequence_checker_.CalledOnValidSequence());
   LazyConnectToService();
+  has_created_device_launcher_ = true;
   return base::MakeUnique<ServiceVideoCaptureDeviceLauncher>(&device_factory_);
 }
 
@@ -52,10 +54,16 @@ void ServiceVideoCaptureProvider::LazyConnectToService() {
   video_capture::uma::LogVideoCaptureServiceEvent(
       video_capture::uma::BROWSER_CONNECTING_TO_SERVICE);
   if (time_of_last_uninitialize_ != base::TimeTicks()) {
-    video_capture::uma::LogDurationUntilReconnect(base::TimeTicks::Now() -
-                                                  time_of_last_uninitialize_);
+    if (has_created_device_launcher_) {
+      video_capture::uma::LogDurationUntilReconnectAfterCapture(
+          base::TimeTicks::Now() - time_of_last_uninitialize_);
+    } else {
+      video_capture::uma::LogDurationUntilReconnectAfterEnumerationOnly(
+          base::TimeTicks::Now() - time_of_last_uninitialize_);
+    }
   }
 
+  has_created_device_launcher_ = false;
   time_of_last_connect_ = base::TimeTicks::Now();
 
   connector_->BindInterface(video_capture::mojom::kServiceName,
@@ -86,10 +94,21 @@ void ServiceVideoCaptureProvider::UninitializeInternal(
   switch (reason) {
     case ReasonForUninitialize::kShutdown:
     case ReasonForUninitialize::kClientRequest:
-      video_capture::uma::LogVideoCaptureServiceEvent(
-          video_capture::uma::BROWSER_CLOSING_CONNECTION_TO_SERVICE);
-      video_capture::uma::LogDurationFromLastConnectToClosingConnection(
-          duration_since_last_connect);
+      if (has_created_device_launcher_) {
+        video_capture::uma::LogVideoCaptureServiceEvent(
+            video_capture::uma::
+                BROWSER_CLOSING_CONNECTION_TO_SERVICE_AFTER_CAPTURE);
+        video_capture::uma::
+            LogDurationFromLastConnectToClosingConnectionAfterCapture(
+                duration_since_last_connect);
+      } else {
+        video_capture::uma::LogVideoCaptureServiceEvent(
+            video_capture::uma::
+                BROWSER_CLOSING_CONNECTION_TO_SERVICE_AFTER_ENUMERATION_ONLY);
+        video_capture::uma::
+            LogDurationFromLastConnectToClosingConnectionAfterEnumerationOnly(
+                duration_since_last_connect);
+      }
       break;
     case ReasonForUninitialize::kConnectionLost:
       video_capture::uma::LogVideoCaptureServiceEvent(
