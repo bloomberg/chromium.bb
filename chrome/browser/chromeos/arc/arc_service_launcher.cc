@@ -62,13 +62,17 @@ ArcServiceLauncher* g_arc_service_launcher = nullptr;
 
 }  // namespace
 
-ArcServiceLauncher::ArcServiceLauncher() {
+ArcServiceLauncher::ArcServiceLauncher()
+    : arc_service_manager_(base::MakeUnique<ArcServiceManager>()),
+      arc_session_manager_(base::MakeUnique<ArcSessionManager>(
+          base::MakeUnique<ArcSessionRunner>(
+              base::Bind(ArcSession::Create,
+                         arc_service_manager_->arc_bridge_service())))) {
   DCHECK(g_arc_service_launcher == nullptr);
   g_arc_service_launcher = this;
 }
 
 ArcServiceLauncher::~ArcServiceLauncher() {
-  DCHECK(!arc_service_manager_);
   DCHECK_EQ(g_arc_service_launcher, this);
   g_arc_service_launcher = nullptr;
 }
@@ -78,17 +82,7 @@ ArcServiceLauncher* ArcServiceLauncher::Get() {
   return g_arc_service_launcher;
 }
 
-void ArcServiceLauncher::Initialize() {
-  arc_service_manager_ = base::MakeUnique<ArcServiceManager>();
-  arc_session_manager_ = base::MakeUnique<ArcSessionManager>(
-      base::MakeUnique<ArcSessionRunner>(base::Bind(
-          ArcSession::Create, arc_service_manager_->arc_bridge_service())));
-}
-
 void ArcServiceLauncher::MaybeSetProfile(Profile* profile) {
-  DCHECK(arc_service_manager_);
-  DCHECK(arc_session_manager_);
-
   if (!IsArcAllowedForProfile(profile))
     return;
 
@@ -173,12 +167,23 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
 }
 
 void ArcServiceLauncher::Shutdown() {
-  // Destroy in the reverse order of the initialization.
   arc_play_store_enabled_preference_handler_.reset();
-  if (arc_service_manager_)
-    arc_service_manager_->Shutdown();
+  arc_service_manager_->Shutdown();
+  arc_session_manager_->Shutdown();
+}
+
+void ArcServiceLauncher::ResetForTesting() {
+  // First destroy the internal states, then re-initialize them.
+  // These are for workaround of singletonness DCHECK in their ctors/dtors.
+  Shutdown();
   arc_session_manager_.reset();
-  arc_service_manager_.reset();
+
+  // No recreation of arc_service_manager. Pointers to its ArcBridgeService
+  // may be referred from existing KeyedService, so destoying it would cause
+  // unexpected behavior, specifically on test teardown.
+  arc_session_manager_ = base::MakeUnique<ArcSessionManager>(
+      base::MakeUnique<ArcSessionRunner>(base::Bind(
+          ArcSession::Create, arc_service_manager_->arc_bridge_service())));
 }
 
 }  // namespace arc
