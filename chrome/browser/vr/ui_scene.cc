@@ -14,48 +14,10 @@
 
 namespace vr {
 
-namespace {
-
-void ApplyAnchoring(const UiElement& parent,
-                    XAnchoring x_anchoring,
-                    YAnchoring y_anchoring,
-                    gfx::Transform* transform) {
-  // To anchor a child, use the parent's size to find its edge.
-  float x_offset;
-  switch (x_anchoring) {
-    case XLEFT:
-      x_offset = -0.5f * parent.size().width();
-      break;
-    case XRIGHT:
-      x_offset = 0.5f * parent.size().width();
-      break;
-    case XNONE:
-      x_offset = 0.0f;
-      break;
-  }
-  float y_offset;
-  switch (y_anchoring) {
-    case YTOP:
-      y_offset = 0.5f * parent.size().height();
-      break;
-    case YBOTTOM:
-      y_offset = -0.5f * parent.size().height();
-      break;
-    case YNONE:
-      y_offset = 0.0f;
-      break;
-  }
-  transform->matrix().postTranslate(x_offset, y_offset, 0);
-}
-
-}  // namespace
-
 void UiScene::AddUiElement(std::unique_ptr<UiElement> element) {
   CHECK_GE(element->id(), 0);
   CHECK_EQ(GetUiElementById(element->id()), nullptr);
-  if (element->parent_id() >= 0) {
-    CHECK_NE(GetUiElementById(element->parent_id()), nullptr);
-  } else {
+  if (!element->parent()) {
     CHECK_EQ(element->x_anchoring(), XAnchoring::XNONE);
     CHECK_EQ(element->y_anchoring(), YAnchoring::YNONE);
   }
@@ -90,12 +52,11 @@ void UiScene::RemoveAnimation(int element_id, int animation_id) {
 void UiScene::OnBeginFrame(const base::TimeTicks& current_time) {
   for (const auto& element : ui_elements_) {
     // Process all animations before calculating object transforms.
-    // TODO: eventually, we'd like to stop assuming that animations are
-    // element-level concepts. A single animation may simultaneously update
-    // properties on multiple elements, say.
     element->Animate(current_time);
-
     element->set_dirty(true);
+  }
+  for (auto& element : ui_elements_) {
+    element->LayOutChildren();
   }
   for (auto& element : ui_elements_) {
     ApplyRecursiveTransforms(element.get());
@@ -174,11 +135,7 @@ void UiScene::ApplyRecursiveTransforms(UiElement* element) {
   if (!element->dirty())
     return;
 
-  UiElement* parent = nullptr;
-  if (element->parent_id() >= 0) {
-    parent = GetUiElementById(element->parent_id());
-    CHECK(parent != nullptr);
-  }
+  UiElement* parent = element->parent();
 
   gfx::Transform transform;
   transform.Scale(element->size().width(), element->size().height());
@@ -190,8 +147,6 @@ void UiScene::ApplyRecursiveTransforms(UiElement* element) {
   gfx::Transform inheritable = element->transform_operations().Apply();
 
   if (parent) {
-    ApplyAnchoring(*parent, element->x_anchoring(), element->y_anchoring(),
-                   &inheritable);
     ApplyRecursiveTransforms(parent);
     inheritable.ConcatTransform(parent->inheritable_transform());
 

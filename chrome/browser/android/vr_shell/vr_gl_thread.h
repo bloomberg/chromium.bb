@@ -43,9 +43,6 @@ class VrGLThread : public base::Thread,
 
   ~VrGLThread() override;
   base::WeakPtr<VrShellGl> GetVrShellGl() { return weak_vr_shell_gl_; }
-  base::WeakPtr<vr::UiSceneManager> GetSceneManager() {
-    return weak_scene_manager_;
-  }
 
   // GlBrowserInterface implementation (VrShellGl calling out to UI/VrShell).
   void ContentSurfaceChanged(jobject surface) override;
