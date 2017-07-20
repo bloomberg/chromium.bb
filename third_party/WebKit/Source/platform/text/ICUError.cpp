@@ -4,8 +4,6 @@
 
 #include "platform/text/ICUError.h"
 
-#include "base/allocator/partition_allocator/oom.h"
-
 namespace blink {
 
 // Distinguish memory allocation failures from other errors.

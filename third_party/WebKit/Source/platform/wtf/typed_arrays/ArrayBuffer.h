@@ -26,7 +26,6 @@
 #ifndef ArrayBuffer_h
 #define ArrayBuffer_h
 
-#include "base/allocator/partition_allocator/oom.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/HashSet.h"
 #include "platform/wtf/RefCounted.h"
