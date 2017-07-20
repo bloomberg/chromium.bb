@@ -16,33 +16,14 @@ fi
 android_envsetup_main() {
   local SCRIPT_PATH="$1"
   local SCRIPT_DIR="$(dirname "$SCRIPT_PATH")"
-
-  local CURRENT_DIR="$(readlink -f "${SCRIPT_DIR}/../../")"
-  if [[ -z "${CHROME_SRC}" ]]; then
-    # If $CHROME_SRC was not set, assume current directory is CHROME_SRC.
-    local CHROME_SRC="${CURRENT_DIR}"
-  fi
-
-  if [[ "${CURRENT_DIR/"${CHROME_SRC}"/}" == "${CURRENT_DIR}" ]]; then
-    # If current directory is not in $CHROME_SRC, it might be set for other
-    # source tree. If $CHROME_SRC was set correctly and we are in the correct
-    # directory, "${CURRENT_DIR/"${CHROME_SRC}"/}" will be "".
-    # Otherwise, it will equal to "${CURRENT_DIR}"
-    echo "Warning: Current directory is out of CHROME_SRC, it may not be \
-  the one you want."
-    echo "${CHROME_SRC}"
-  fi
-
+  local CHROME_SRC="$(readlink -f "${SCRIPT_DIR}/../../")"
   local ANDROID_SDK_ROOT="${CHROME_SRC}/third_party/android_tools/sdk/"
 
-  # Add Android SDK tools to system path.
+  # Add Android SDK and utility tools to the system path.
   export PATH=$PATH:${ANDROID_SDK_ROOT}/platform-tools
-
-  # Add Android utility tools to the system path.
   export PATH=$PATH:${ANDROID_SDK_ROOT}/tools/
 
-  # Add Chromium Android development scripts to system path.
-  # Must be after CHROME_SRC is set.
+  # Add Chromium Android development scripts to the system path.
   export PATH=$PATH:${CHROME_SRC}/build/android
 }
 # In zsh, $0 is the name of the file being sourced.
