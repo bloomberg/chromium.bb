@@ -107,6 +107,7 @@ class MEDIA_EXPORT VideoEncodeAccelerator {
   // Initializes the video encoder with specific configuration.  Called once per
   // encoder construction.  This call is synchronous and returns true iff
   // initialization is successful.
+  // TODO(mcasas): Update to asynchronous, https://crbug.com/744210.
   // Parameters:
   //  |input_format| is the frame format of the input stream (as would be
   //  reported by VideoFrame::format() for frames passed to Encode()).

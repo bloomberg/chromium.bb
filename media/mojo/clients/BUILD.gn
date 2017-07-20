@@ -43,6 +43,8 @@ source_set("clients") {
     "mojo_renderer_factory.h",
     "mojo_video_decoder.cc",
     "mojo_video_decoder.h",
+    "mojo_video_encode_accelerator.cc",
+    "mojo_video_encode_accelerator.h",
   ]
 
   if (is_android) {
@@ -63,6 +65,7 @@ source_set("clients") {
   ]
 
   deps = [
+    "//media/gpu",
     "//media/mojo/common",
     "//media/mojo/common:mojo_shared_buffer_video_frame",
     "//mojo/common",
