@@ -373,10 +373,11 @@ class WTF_EXPORT String {
 
   // Convert the string into a number.
 
-  int ToIntStrict(bool* ok = 0, int base = 10) const;
-  unsigned ToUIntStrict(bool* ok = 0, int base = 10) const;
-  int64_t ToInt64Strict(bool* ok = 0, int base = 10) const;
-  uint64_t ToUInt64Strict(bool* ok = 0, int base = 10) const;
+  int ToIntStrict(bool* ok = 0) const;
+  unsigned ToUIntStrict(bool* ok = 0) const;
+  unsigned HexToUIntStrict(bool* ok) const;
+  int64_t ToInt64Strict(bool* ok = 0) const;
+  uint64_t ToUInt64Strict(bool* ok = 0) const;
 
   int ToInt(bool* ok = 0) const;
   unsigned ToUInt(bool* ok = 0) const;
