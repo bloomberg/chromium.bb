@@ -7412,7 +7412,7 @@ I don't think this site should be blocked!
           Use Smart Lock to sign in to your account
         </message>
          <message name="IDS_SETTINGS_EASY_UNLOCK_PROXIMITY_THRESHOLD_LABEL" desc="The text on the Easy unlock settings page indicating how close the phone should be for unlock to work.">
-          Distance from your phone to unlock your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+          Distance needed for phone to unlock this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
         </message>
         <message name="IDS_SETTINGS_EASY_UNLOCK_PROXIMITY_THRESHOLD_VERY_CLOSE" desc="The text on the Easy unlock settings page indicating the phone should be very close for the unlock to work.">
           Very close
