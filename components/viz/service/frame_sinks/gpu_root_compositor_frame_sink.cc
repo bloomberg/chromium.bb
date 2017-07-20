@@ -135,6 +135,11 @@ void GpuRootCompositorFrameSink::OnBeginFrame(const cc::BeginFrameArgs& args) {
     client_->OnBeginFrame(args);
 }
 
+void GpuRootCompositorFrameSink::OnBeginFramePausedChanged(bool paused) {
+  if (client_)
+    client_->OnBeginFramePausedChanged(paused);
+}
+
 void GpuRootCompositorFrameSink::ReclaimResources(
     const std::vector<cc::ReturnedResource>& resources) {
   if (client_)

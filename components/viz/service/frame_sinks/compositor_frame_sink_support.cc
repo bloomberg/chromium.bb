@@ -338,7 +338,10 @@ const cc::BeginFrameArgs& CompositorFrameSinkSupport::LastUsedBeginFrameArgs()
   return last_begin_frame_args_;
 }
 
-void CompositorFrameSinkSupport::OnBeginFrameSourcePausedChanged(bool paused) {}
+void CompositorFrameSinkSupport::OnBeginFrameSourcePausedChanged(bool paused) {
+  if (client_)
+    client_->OnBeginFramePausedChanged(paused);
+}
 
 void CompositorFrameSinkSupport::UpdateNeedsBeginFramesInternal() {
   if (!begin_frame_source_)

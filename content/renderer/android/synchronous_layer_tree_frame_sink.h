@@ -106,6 +106,7 @@ class SynchronousLayerTreeFrameSink
       const std::vector<cc::ReturnedResource>& resources) override;
   void WillDrawSurface(const viz::LocalSurfaceId& local_surface_id,
                        const gfx::Rect& damage_rect) override;
+  void OnBeginFramePausedChanged(bool paused) override;
 
  private:
   class SoftwareOutputSurface;

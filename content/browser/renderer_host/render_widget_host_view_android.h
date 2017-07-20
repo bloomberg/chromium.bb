@@ -352,6 +352,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void AcknowledgeBeginFrame(const cc::BeginFrameAck& ack);
   void StartObservingRootWindow();
   void StopObservingRootWindow();
+  void SendBeginFramePaused();
   void SendBeginFrame(cc::BeginFrameArgs args);
   bool Animate(base::TimeTicks frame_time);
   void RequestDisallowInterceptTouchEvent();
@@ -374,6 +375,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   // The begin frame source being observed.  Null if none.
   cc::BeginFrameSource* begin_frame_source_;
   cc::BeginFrameArgs last_begin_frame_args_;
+  bool begin_frame_paused_ = false;
 
   // Indicates whether and for what reason a request for begin frames has been
   // issued. Used to control action dispatch at the next |OnBeginFrame()| call.

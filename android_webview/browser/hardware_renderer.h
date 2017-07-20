@@ -57,6 +57,7 @@ class HardwareRenderer : public viz::CompositorFrameSinkSupportClient {
       const std::vector<cc::ReturnedResource>& resources) override;
   void WillDrawSurface(const viz::LocalSurfaceId& local_surface_id,
                        const gfx::Rect& damage_rect) override;
+  void OnBeginFramePausedChanged(bool paused) override;
 
   void ReturnChildFrame(std::unique_ptr<ChildFrame> child_frame);
   void ReturnResourcesToCompositor(

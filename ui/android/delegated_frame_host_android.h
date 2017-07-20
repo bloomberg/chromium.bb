@@ -86,6 +86,7 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
       const std::vector<cc::ReturnedResource>& resources) override;
   void WillDrawSurface(const viz::LocalSurfaceId& local_surface_id,
                        const gfx::Rect& damage_rect) override;
+  void OnBeginFramePausedChanged(bool paused) override;
 
   // cc::ExternalBeginFrameSourceClient implementation.
   void OnNeedsBeginFrames(bool needs_begin_frames) override;

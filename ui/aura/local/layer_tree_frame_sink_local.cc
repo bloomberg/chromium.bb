@@ -109,6 +109,12 @@ void LayerTreeFrameSinkLocal::OnBeginFrame(const cc::BeginFrameArgs& args) {
   begin_frame_source_->OnBeginFrame(args);
 }
 
+void LayerTreeFrameSinkLocal::OnBeginFramePausedChanged(bool paused) {
+  DCHECK(thread_checker_);
+  DCHECK(thread_checker_->CalledOnValidThread());
+  begin_frame_source_->OnSetBeginFrameSourcePaused(paused);
+}
+
 void LayerTreeFrameSinkLocal::ReclaimResources(
     const std::vector<cc::ReturnedResource>& resources) {
   DCHECK(thread_checker_);

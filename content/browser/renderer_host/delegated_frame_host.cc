@@ -508,6 +508,11 @@ void DelegatedFrameHost::WillDrawSurface(const viz::LocalSurfaceId& id,
   AttemptFrameSubscriberCapture(damage_rect);
 }
 
+void DelegatedFrameHost::OnBeginFramePausedChanged(bool paused) {
+  if (renderer_compositor_frame_sink_)
+    renderer_compositor_frame_sink_->OnBeginFramePausedChanged(paused);
+}
+
 void DelegatedFrameHost::OnBeginFrame(const cc::BeginFrameArgs& args) {
   if (renderer_compositor_frame_sink_)
     renderer_compositor_frame_sink_->OnBeginFrame(args);

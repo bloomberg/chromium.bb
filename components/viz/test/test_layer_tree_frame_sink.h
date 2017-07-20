@@ -95,6 +95,7 @@ class TestLayerTreeFrameSink : public cc::LayerTreeFrameSink,
       const std::vector<cc::ReturnedResource>& resources) override;
   void WillDrawSurface(const LocalSurfaceId& local_surface_id,
                        const gfx::Rect& damage_rect) override;
+  void OnBeginFramePausedChanged(bool paused) override;
 
   // DisplayClient implementation.
   void DisplayOutputSurfaceLost() override;

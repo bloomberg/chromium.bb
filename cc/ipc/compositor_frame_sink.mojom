@@ -53,6 +53,9 @@ interface CompositorFrameSinkClient {
   // Notification for the client to generate a CompositorFrame.
   OnBeginFrame(BeginFrameArgs args);
 
+  // Inform the client that OnBeginFrame may not be called for some time.
+  OnBeginFramePausedChanged(bool paused);
+
   // Returns resources sent to SubmitCompositorFrame to be reused or freed.
   ReclaimResources(array<ReturnedResource> resources);
 };

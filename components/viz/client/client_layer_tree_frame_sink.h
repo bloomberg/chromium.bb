@@ -61,6 +61,7 @@ class ClientLayerTreeFrameSink : public cc::LayerTreeFrameSink,
   void DidReceiveCompositorFrameAck(
       const std::vector<cc::ReturnedResource>& resources) override;
   void OnBeginFrame(const cc::BeginFrameArgs& begin_frame_args) override;
+  void OnBeginFramePausedChanged(bool paused) override;
   void ReclaimResources(
       const std::vector<cc::ReturnedResource>& resources) override;
 
@@ -70,6 +71,7 @@ class ClientLayerTreeFrameSink : public cc::LayerTreeFrameSink,
   static void OnMojoConnectionError(uint32_t custom_reason,
                                     const std::string& description);
 
+  bool begin_frames_paused_ = false;
   LocalSurfaceId local_surface_id_;
   std::unique_ptr<LocalSurfaceIdProvider> local_surface_id_provider_;
   std::unique_ptr<cc::ExternalBeginFrameSource> begin_frame_source_;

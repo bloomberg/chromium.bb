@@ -53,6 +53,7 @@ class LayerTreeFrameSinkLocal : public cc::LayerTreeFrameSink,
       const std::vector<cc::ReturnedResource>& resources) override;
   void WillDrawSurface(const viz::LocalSurfaceId& local_surface_id,
                        const gfx::Rect& damage_rect) override {}
+  void OnBeginFramePausedChanged(bool paused) override;
 
   // cc::ExternalBeginFrameSourceClient:
   void OnNeedsBeginFrames(bool needs_begin_frames) override;
