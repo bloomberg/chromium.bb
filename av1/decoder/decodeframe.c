@@ -3273,7 +3273,6 @@ static void read_tile_info(AV1Decoder *const pbi,
                            struct aom_read_bit_buffer *const rb) {
   AV1_COMMON *const cm = &pbi->common;
 #if CONFIG_EXT_TILE
-  cm->large_scale_tile = aom_rb_read_literal(rb, 1);
   cm->single_tile_decoding = 0;
   if (cm->large_scale_tile) {
     struct loopfilter *lf = &cm->lf;
@@ -4421,6 +4420,13 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
   if (cm->profile >= MAX_SUPPORTED_PROFILE)
     aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
                        "Unsupported bitstream profile");
+
+#if CONFIG_EXT_TILE
+  cm->large_scale_tile = aom_rb_read_literal(rb, 1);
+#if CONFIG_REFERENCE_BUFFER
+  if (cm->large_scale_tile) pbi->seq_params.frame_id_numbers_present_flag = 0;
+#endif  // CONFIG_REFERENCE_BUFFER
+#endif  // CONFIG_EXT_TILE
 
   cm->show_existing_frame = aom_rb_read_bit(rb);
 

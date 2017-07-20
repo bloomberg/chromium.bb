@@ -224,6 +224,9 @@ static aom_codec_err_t decoder_peek_si_internal(
     struct aom_read_bit_buffer rb = { data, data + data_sz, 0, NULL, NULL };
     const int frame_marker = aom_rb_read_literal(&rb, 2);
     const BITSTREAM_PROFILE profile = av1_read_profile(&rb);
+#if CONFIG_EXT_TILE
+    unsigned int large_scale_tile;
+#endif  // CONFIG_EXT_TILE
 
     if (frame_marker != AOM_FRAME_MARKER) return AOM_CODEC_UNSUP_BITSTREAM;
 
@@ -231,6 +234,10 @@ static aom_codec_err_t decoder_peek_si_internal(
 
     if ((profile >= 2 && data_sz <= 1) || data_sz < 1)
       return AOM_CODEC_UNSUP_BITSTREAM;
+
+#if CONFIG_EXT_TILE
+    large_scale_tile = aom_rb_read_literal(&rb, 1);
+#endif  // CONFIG_EXT_TILE
 
     if (aom_rb_read_bit(&rb)) {     // show an existing frame
       aom_rb_read_literal(&rb, 3);  // Frame buffer to show.
@@ -248,6 +255,9 @@ static aom_codec_err_t decoder_peek_si_internal(
       int frame_id_len;
       SequenceHeader seq_params;
       read_sequence_header(&seq_params);
+#if CONFIG_EXT_TILE
+      if (large_scale_tile) seq_params.frame_id_numbers_present_flag = 0;
+#endif  // CONFIG_EXT_TILE
       if (seq_params.frame_id_numbers_present_flag) {
         frame_id_len = seq_params.frame_id_length_minus7 + 7;
         aom_rb_read_literal(&rb, frame_id_len);
