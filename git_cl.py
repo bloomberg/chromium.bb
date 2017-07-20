@@ -4849,7 +4849,7 @@ def CMDupload(parser, args):
   parser.add_option('--bypass-watchlists', action='store_true',
                     dest='bypass_watchlists',
                     help='bypass watchlists auto CC-ing reviewers')
-  parser.add_option('-f', action='store_true', dest='force',
+  parser.add_option('-f', '--force', action='store_true', dest='force',
                     help="force yes to questions (don't prompt)")
   parser.add_option('--message', '-m', dest='message',
                     help='message for patchset')
@@ -4993,7 +4993,7 @@ def CMDland(parser, args):
                     help='bypass upload presubmit hook')
   parser.add_option('-m', dest='message',
                     help="override review description")
-  parser.add_option('-f', action='store_true', dest='force',
+  parser.add_option('-f', '--force', action='store_true', dest='force',
                     help="force yes to questions (don't prompt)")
   parser.add_option('-c', dest='contributor',
                     help="external contributor for patch (appended to " +
