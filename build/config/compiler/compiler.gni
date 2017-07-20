@@ -72,7 +72,7 @@ if (is_mac || is_ios) {
   enable_frame_pointers = true
 } else if (is_win) {
   # 64-bit Windows ABI doesn't support frame pointers.
-  if (target_cpu == "x64") {
+  if (current_cpu == "x64") {
     enable_frame_pointers = false
   } else {
     enable_frame_pointers = true
@@ -83,9 +83,9 @@ if (is_mac || is_ios) {
   # 32-bit builds (https://bugs.llvm.org/show_bug.cgi?id=18505) so disable them
   # there to avoid the unnecessary overhead.
   enable_frame_pointers = current_cpu != "arm"
-} else if (current_cpu == "arm64") {
+} else if (is_android) {
   # Ensure that stacks from arm64 crash dumps are usable (crbug.com/391706).
-  enable_frame_pointers = true
+  enable_frame_pointers = current_cpu == "arm64"
 } else {
   # Explicitly ask for frame pointers, otherwise:
   # * Stacks may be missing for sanitizer and profiling builds.
