@@ -40,6 +40,7 @@ class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT
                    std::unique_ptr<base::Value> value);
   void AddChild(const ResourceCoordinatorInterface& child);
   void RemoveChild(const ResourceCoordinatorInterface& child);
+
   CoordinationUnitID id() const { return cu_id_; }
 
  private:

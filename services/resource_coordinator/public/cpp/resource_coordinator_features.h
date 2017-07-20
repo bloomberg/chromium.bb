@@ -17,6 +17,8 @@ namespace features {
 // in the .cc file.
 extern const SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT base::Feature
     kGlobalResourceCoordinator;
+extern const SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT base::Feature
+    kGRCRenderProcessCPUProfiling;
 
 }  // namespace features
 
