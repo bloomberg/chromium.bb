@@ -240,6 +240,7 @@ blink_core_sources("html") {
     "RadioNodeList.h",
     "RelList.cpp",
     "RelList.h",
+    "TableConstants.h",
     "TextControlElement.cpp",
     "TextControlElement.h",
     "TextDocument.cpp",
