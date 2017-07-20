@@ -57,6 +57,8 @@ ShippingAddressEditorViewController::ShippingAddressEditorViewController(
       profile_to_edit_(profile),
       chosen_country_index_(kInvalidCountryIndex),
       failed_to_load_region_data_(false) {
+  if (profile_to_edit_)
+    temporary_profile_ = *profile_to_edit_;
   UpdateCountries(/*model=*/nullptr);
   UpdateEditorFields();
 }
@@ -74,24 +76,15 @@ ShippingAddressEditorViewController::GetFieldDefinitions() {
 
 base::string16 ShippingAddressEditorViewController::GetInitialValueForType(
     autofill::ServerFieldType type) {
-  // Temporary profile has precedence over profile to edit since its existence
-  // is based on having unsaved stated to restore.
-  if (temporary_profile_.get())
-    return temporary_profile_->GetInfo(autofill::AutofillType(type),
-                                       state()->GetApplicationLocale());
-
-  if (!profile_to_edit_)
-    return base::string16();
-
   if (type == autofill::PHONE_HOME_WHOLE_NUMBER) {
     return data_util::GetFormattedPhoneNumberForDisplay(
-        *profile_to_edit_, state()->GetApplicationLocale());
+        temporary_profile_, state()->GetApplicationLocale());
   }
 
-  if (type == autofill::ADDRESS_HOME_STATE) {
+  if (type == autofill::ADDRESS_HOME_STATE && region_model_) {
     // For the state, check if the inital value matches either a region code or
     // a region name.
-    base::string16 initial_region = profile_to_edit_->GetInfo(
+    base::string16 initial_region = temporary_profile_.GetInfo(
         autofill::AutofillType(type), state()->GetApplicationLocale());
     autofill::l10n::CaseInsensitiveCompare compare;
 
@@ -107,8 +100,8 @@ base::string16 ShippingAddressEditorViewController::GetInitialValueForType(
     return initial_region;
   }
 
-  return profile_to_edit_->GetInfo(autofill::AutofillType(type),
-                                   state()->GetApplicationLocale());
+  return temporary_profile_.GetInfo(autofill::AutofillType(type),
+                                    state()->GetApplicationLocale());
 }
 
 bool ShippingAddressEditorViewController::ValidateModelAndSave() {
@@ -213,6 +206,7 @@ void ShippingAddressEditorViewController::OnPerformAction(
 }
 
 void ShippingAddressEditorViewController::UpdateEditorView() {
+  region_model_ = nullptr;
   EditorViewController::UpdateEditorView();
   if (chosen_country_index_ > 0UL &&
       chosen_country_index_ < countries_.size()) {
@@ -228,8 +222,6 @@ void ShippingAddressEditorViewController::UpdateEditorView() {
   } else {
     chosen_country_index_ = kInvalidCountryIndex;
   }
-  // Ignore temporary profile once the editor view has been updated.
-  temporary_profile_.reset();
 }
 
 base::string16 ShippingAddressEditorViewController::GetSheetTitle() {
@@ -269,9 +261,9 @@ void ShippingAddressEditorViewController::UpdateCountries(
   }
   // If there is a profile to edit, make sure to use its country for the initial
   // |chosen_country_index_|.
-  if (profile_to_edit_) {
+  if (IsEditingExistingItem()) {
     autofill::AutofillType country_type(autofill::ADDRESS_HOME_COUNTRY);
-    base::string16 chosen_country(profile_to_edit_->GetInfo(
+    base::string16 chosen_country(temporary_profile_.GetInfo(
         country_type, state()->GetApplicationLocale()));
     for (chosen_country_index_ = 0; chosen_country_index_ < countries_.size();
          ++chosen_country_index_) {
@@ -286,9 +278,9 @@ void ShippingAddressEditorViewController::UpdateCountries(
       if (countries_.size() > 0) {
         LOG(ERROR) << "Unexpected country: " << chosen_country;
         chosen_country_index_ = 0;
-        profile_to_edit_->SetInfo(country_type,
-                                  countries_[chosen_country_index_].second,
-                                  state()->GetApplicationLocale());
+        temporary_profile_.SetInfo(country_type,
+                                   countries_[chosen_country_index_].second,
+                                   state()->GetApplicationLocale());
       } else {
         LOG(ERROR) << "Unexpected empty country list!";
         chosen_country_index_ = kInvalidCountryIndex;
@@ -378,8 +370,7 @@ void ShippingAddressEditorViewController::UpdateEditorFields() {
 }
 
 void ShippingAddressEditorViewController::OnDataChanged(bool synchronous) {
-  temporary_profile_.reset(new autofill::AutofillProfile);
-  SaveFieldsToProfile(temporary_profile_.get(), /*ignore_errors*/ true);
+  SaveFieldsToProfile(&temporary_profile_, /*ignore_errors*/ true);
 
   UpdateEditorFields();
   if (synchronous) {
@@ -412,8 +403,6 @@ bool ShippingAddressEditorViewController::SaveFieldsToProfile(
         << "Can't set profile country to: " << country;
     if (!success && !ignore_errors)
       return false;
-  } else {
-    DCHECK_EQ(temporary_profile_.get(), profile);
   }
 
   bool success = true;
