@@ -86,8 +86,8 @@ class ASH_EXPORT PaletteToolManager : public PaletteTool::Delegate {
   // not available.
   const gfx::VectorIcon& GetActiveTrayIcon(PaletteToolId tool_id) const;
 
-  // Create views for all of the registered tools.
-  std::vector<PaletteToolView> CreateViews();
+  // Create views for all of the registered mode tools with group |group|.
+  std::vector<PaletteToolView> CreateViewsForGroup(PaletteGroup group);
 
   // Called when the views returned by CreateViews have been destroyed. This
   // should clear any (now) stale references.

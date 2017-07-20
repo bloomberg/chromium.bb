@@ -1227,6 +1227,7 @@ source_set("common_unittests") {
     "system/palette/mock_palette_tool_delegate.cc",
     "system/palette/mock_palette_tool_delegate.h",
     "system/palette/palette_tool_manager_unittest.cc",
+    "system/palette/palette_tray_unittest.cc",
     "system/palette/tools/create_note_unittest.cc",
     "system/palette/tools/metalayer_unittest.cc",
     "system/palette/tools/screenshot_unittest.cc",

@@ -49,30 +49,23 @@ void CommonPaletteTool::OnViewDestroyed() {
 void CommonPaletteTool::OnEnable() {
   PaletteTool::OnEnable();
   start_time_ = base::TimeTicks::Now();
-
-  if (highlight_view_)
-    TrayPopupUtils::UpdateCheckMarkVisibility(highlight_view_, true);
 }
 
 void CommonPaletteTool::OnDisable() {
   PaletteTool::OnDisable();
   AddHistogramTimes(GetToolId(), base::TimeTicks::Now() - start_time_);
-
-  if (highlight_view_)
-    TrayPopupUtils::UpdateCheckMarkVisibility(highlight_view_, false);
 }
 
 void CommonPaletteTool::OnViewClicked(views::View* sender) {
+  // The tool should always be disabled when we click it because the bubble
+  // which houses this view is automatically closed when the tool is first
+  // enabled. Then, to open the bubble again we have to click on the palette
+  // tray twice, and the first click will disable any active tools.
+  DCHECK(!enabled());
+
   delegate()->RecordPaletteOptionsUsage(
       PaletteToolIdToPaletteTrayOptions(GetToolId()));
-  if (enabled()) {
-    delegate()->DisableTool(GetToolId());
-    delegate()->RecordPaletteModeCancellation(
-        PaletteToolIdToPaletteModeCancelType(GetToolId(),
-                                             false /*is_switched*/));
-  } else {
-    delegate()->EnableTool(GetToolId());
-  }
+  delegate()->EnableTool(GetToolId());
 }
 
 views::View* CommonPaletteTool::CreateDefaultView(const base::string16& name) {
@@ -80,7 +73,6 @@ views::View* CommonPaletteTool::CreateDefaultView(const base::string16& name) {
       CreateVectorIcon(GetPaletteIcon(), kMenuIconSize, gfx::kChromeIconGrey);
   highlight_view_ = new HoverHighlightView(this);
   highlight_view_->AddIconAndLabel(icon, name);
-  TrayPopupUtils::InitializeAsCheckableRow(highlight_view_, enabled());
   return highlight_view_;
 }
 

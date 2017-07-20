@@ -27,8 +27,8 @@ class ImageView;
 
 namespace ash {
 
-class TrayBubbleWrapper;
 class PaletteToolManager;
+class TrayBubbleWrapper;
 
 // The PaletteTray shows the palette in the bottom area of the screen. This
 // class also controls the lifetime for all of the tools available in the
@@ -40,6 +40,26 @@ class ASH_EXPORT PaletteTray : public TrayBackgroundView,
                                public PaletteToolManager::Delegate,
                                public ui::InputDeviceEventObserver {
  public:
+  // For testing.
+  class TestApi {
+   public:
+    explicit TestApi(PaletteTray* palette_tray);
+    ~TestApi();
+
+    PaletteToolManager* GetPaletteToolManager() {
+      return palette_tray_->palette_tool_manager_.get();
+    }
+
+    TrayBubbleWrapper* GetTrayBubbleWrapper() {
+      return palette_tray_->bubble_.get();
+    }
+
+   private:
+    PaletteTray* palette_tray_ = nullptr;  // not owned
+
+    DISALLOW_COPY_AND_ASSIGN(TestApi);
+  };
+
   explicit PaletteTray(Shelf* shelf);
   ~PaletteTray() override;
 
