@@ -25,10 +25,15 @@ import org.chromium.base.PathUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
+import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.tab.EmptyTabObserver;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.WebContents;
 
@@ -36,6 +41,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 /** Tests for CustomTabsConnection. */
 @RunWith(ChromeJUnit4ClassRunner.class)
@@ -216,6 +223,64 @@ public class CustomTabsConnectionTest {
         assertWarmupAndMayLaunchUrl(null, null, true);
         CustomTabsTestUtils.cleanupSessions(mCustomTabsConnection); // Resets throttling.
         assertWarmupAndMayLaunchUrl(null, "", true);
+    }
+
+    /**
+     * Tests that a new mayLaunchUrl() call destroys the previous hidden tab.
+     */
+    @Test
+    @SmallTest
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+            "enable-features=" + ChromeFeatureList.CCT_BACKGROUND_TAB})
+    public void testOnlyOneHiddenTab() throws Exception {
+        Assert.assertTrue("Failed warmup()", mCustomTabsConnection.warmup(0));
+        CustomTabsSessionToken token = CustomTabsSessionToken.createDummySessionTokenForTesting();
+        Assert.assertTrue("Failed newSession()", mCustomTabsConnection.newSession(token));
+        mCustomTabsConnection.setSpeculationModeForSession(
+                token, CustomTabsConnection.SpeculationParams.HIDDEN_TAB);
+
+        // First hidden tab, add an observer to check that it's destroyed.
+        Assert.assertTrue("Failed first mayLaunchUrl()",
+                mCustomTabsConnection.mayLaunchUrl(token, Uri.parse(URL), null, null));
+        final Semaphore destroyed = new Semaphore(0);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                Assert.assertNotNull(
+                        "Null speculation, first one", mCustomTabsConnection.mSpeculation);
+                Tab tab = mCustomTabsConnection.mSpeculation.tab;
+                Assert.assertNotNull("No first tab", tab);
+                tab.addObserver(new EmptyTabObserver() {
+                    @Override
+                    public void onDestroyed(Tab destroyedTab) {
+                        destroyed.release();
+                    }
+                });
+            }
+        });
+
+        // New hidden tab.
+        mCustomTabsConnection.resetThrottling(Process.myUid());
+        Assert.assertTrue("Failed second mayLaunchUrl()",
+                mCustomTabsConnection.mayLaunchUrl(token, Uri.parse(URL2), null, null));
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                Assert.assertNotNull(
+                        "Null speculation, new hidden tab", mCustomTabsConnection.mSpeculation);
+                Assert.assertNotNull("No second tab", mCustomTabsConnection.mSpeculation.tab);
+                Assert.assertEquals(URL2, mCustomTabsConnection.mSpeculation.url);
+            }
+        });
+
+        Assert.assertTrue(
+                "Only one hidden tab should exist.", destroyed.tryAcquire(10, TimeUnit.SECONDS));
+
+        // Clears the second hidden tab.
+        mCustomTabsConnection.resetThrottling(Process.myUid());
+        Assert.assertTrue("Failed cleanup mayLaunchUrl()",
+                mCustomTabsConnection.mayLaunchUrl(token, null, null, null));
     }
 
     @Test
