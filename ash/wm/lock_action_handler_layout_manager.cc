@@ -15,6 +15,7 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
+#include "ui/wm/core/window_animations.h"
 
 namespace ash {
 
@@ -33,6 +34,9 @@ LockActionHandlerLayoutManager::~LockActionHandlerLayoutManager() = default;
 
 void LockActionHandlerLayoutManager::OnWindowAddedToLayout(
     aura::Window* child) {
+  ::wm::SetWindowVisibilityAnimationType(
+      child, ::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
+
   wm::WindowState* window_state =
       LockWindowState::SetLockWindowStateWithShelfExcluded(child);
   wm::WMEvent event(wm::WM_EVENT_ADDED_TO_WORKSPACE);
