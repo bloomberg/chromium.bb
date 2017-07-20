@@ -179,7 +179,7 @@ public class WebappActivity extends SingleTabActivity {
                 controlContainer);
 
         if (getFullscreenManager() != null) getFullscreenManager().setTab(getActivityTab());
-        mSplashController.onFinishedNativeInit(getActivityTab(), getCompositorViewHolder());
+        mSplashController.onFinishedNativeInit(getActivityTab());
         super.finishNativeInitialization();
         mIsInitialized = true;
     }
