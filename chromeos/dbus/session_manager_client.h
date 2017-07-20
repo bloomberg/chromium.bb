@@ -203,6 +203,12 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
       const cryptohome::Identification& cryptohome_id,
       std::string* policy_out) = 0;
 
+  // Fetches the user policy blob for a hidden user home mount. |callback| is
+  // invoked upon completition.
+  virtual void RetrievePolicyForUserWithoutSession(
+      const cryptohome::Identification& cryptohome_id,
+      const RetrievePolicyCallback& callback) = 0;
+
   // Fetches the policy blob associated with the specified device-local account
   // from session manager.  |callback| is invoked up on completion.
   virtual void RetrieveDeviceLocalAccountPolicy(

@@ -384,6 +384,10 @@ void UserManagerBase::SaveForceOnlineSignin(const AccountId& account_id,
                                             bool force_online_signin) {
   DCHECK(!task_runner_ || task_runner_->RunsTasksInCurrentSequence());
 
+  User* const user = FindUserAndModify(account_id);
+  if (user)
+    user->set_force_online_signin(force_online_signin);
+
   // Do not update local state if data stored or cached outside the user's
   // cryptohome is to be treated as ephemeral.
   if (IsUserNonCryptohomeDataEphemeral(account_id))
