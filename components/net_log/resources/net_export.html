@@ -70,13 +70,6 @@
             Include raw bytes (will include cookies and credentials)
           </label>
         </div>
-        <div>
-          <label>
-            Maximum log size (megabytes):
-            <input id='log-max-filesize' value="100" size="4" />
-            (Blank means unlimited).
-          </label>
-        </div>
       </div>
     </div>
 
@@ -143,12 +136,9 @@
 
         <div id="toobig-read-more">
           <ul>
-            <li>The maximum log size can be specified when starting
-            logging.</li>
-            <li>Compressing the log file before attaching is a good
-              idea.</li>
-            <li>Capture logs over a shorter period of time; stop
-              logging once the issue has reproduced.</li>
+            <li>Compressing the log file before attaching is a good idea.</li>
+            <li>If the log file is still too big, you can try capturing again,
+              but over a shorter period of time</li>
             <li>Existing log files can be shrunk using
               <a
                 href="https://chromium.googlesource.com/chromium/src/+/master/net/tools/truncate_net_log.py"
