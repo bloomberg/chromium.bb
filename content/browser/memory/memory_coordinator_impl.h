@@ -137,7 +137,7 @@ class CONTENT_EXPORT MemoryCoordinatorImpl : public base::MemoryCoordinator,
   void UpdateConditionIfNeeded(MemoryCondition condition);
 
   // Asks the delegate to discard a tab.
-  void DiscardTab();
+  void DiscardTab(bool skip_unload_handlers);
 
   // Gets the current TimeTicks.
   base::TimeTicks NowTicks() const { return tick_clock_->NowTicks(); }

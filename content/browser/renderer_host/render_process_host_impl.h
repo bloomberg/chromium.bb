@@ -156,7 +156,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
   bool IsForGuestsOnly() const override;
   StoragePartition* GetStoragePartition() const override;
   bool Shutdown(int exit_code, bool wait) override;
-  bool FastShutdownIfPossible() override;
+  bool FastShutdownIfPossible(size_t page_count = 0,
+                              bool skip_unload_handlers = false) override;
   base::ProcessHandle GetHandle() const override;
   bool IsReady() const override;
   BrowserContext* GetBrowserContext() const override;
@@ -174,7 +175,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   bool SuddenTerminationAllowed() const override;
   IPC::ChannelProxy* GetChannel() override;
   void AddFilter(BrowserMessageFilter* filter) override;
-  bool FastShutdownForPageCount(size_t count) override;
   bool FastShutdownStarted() const override;
   base::TimeDelta GetChildProcessIdleTime() const override;
   void FilterURL(bool empty_allowed, GURL* url) override;

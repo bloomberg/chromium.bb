@@ -4,4 +4,5 @@ include_rules = [
   "+ash/shell.h",
   "+content/test/test_web_contents.h",
   "+services/resource_coordinator/public",
+  "+third_party/WebKit/public/platform/WebSuddenTerminationDisablerType.h",
 ]

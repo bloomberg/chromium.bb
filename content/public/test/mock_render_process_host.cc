@@ -174,7 +174,10 @@ bool MockRenderProcessHost::Shutdown(int exit_code, bool wait) {
   return true;
 }
 
-bool MockRenderProcessHost::FastShutdownIfPossible() {
+bool MockRenderProcessHost::FastShutdownIfPossible(size_t page_count,
+                                                   bool skip_unload_handlers) {
+  if (GetActiveViewCount() != page_count)
+    return false;
   // We aren't actually going to do anything, but set |fast_shutdown_started_|
   // to true so that tests know we've been called.
   fast_shutdown_started_ = true;
@@ -271,12 +274,6 @@ IPC::ChannelProxy* MockRenderProcessHost::GetChannel() {
 }
 
 void MockRenderProcessHost::AddFilter(BrowserMessageFilter* filter) {
-}
-
-bool MockRenderProcessHost::FastShutdownForPageCount(size_t count) {
-  if (GetActiveViewCount() == count)
-    return FastShutdownIfPossible();
-  return false;
 }
 
 base::TimeDelta MockRenderProcessHost::GetChildProcessIdleTime() const {

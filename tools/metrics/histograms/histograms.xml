@@ -79361,8 +79361,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     enum="BooleanTabDiscardFastShutdown">
   <owner>oysteine@chromium.org</owner>
   <summary>
+    Recorded for each discarding, indicates whether the discarded tab succeeded
+    in doing a render process fast shutdown or not.
+  </summary>
+</histogram>
+
+<histogram name="TabManager.Discarding.DiscardedTabCouldUnsafeFastShutdown"
+    enum="BooleanTabDiscardFastShutdown">
+  <owner>oysteine@chromium.org</owner>
+  <summary>
     Recorded for each discarding, allowing us to know whether the discarded tab
-    succeeded in doing a render process fast shutdown.
+    succeeded an unsafe process shutdown (not invoking unload handlers).
   </summary>
 </histogram>
 

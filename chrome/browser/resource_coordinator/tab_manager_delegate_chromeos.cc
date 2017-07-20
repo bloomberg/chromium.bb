@@ -343,18 +343,20 @@ void TabManagerDelegate::ScheduleEarlyOomPrioritiesAdjustment() {
 
 // If able to get the list of ARC procsses, prioritize tabs and apps as a whole.
 // Otherwise try to kill tabs only.
-void TabManagerDelegate::LowMemoryKill(const TabStatsList& tab_list) {
+void TabManagerDelegate::LowMemoryKill(
+    const TabStatsList& tab_list,
+    TabManager::DiscardTabCondition condition) {
   arc::ArcProcessService* arc_process_service = arc::ArcProcessService::Get();
   if (arc_process_service &&
       arc_process_service->RequestAppProcessList(
           base::Bind(&TabManagerDelegate::LowMemoryKillImpl,
-                     weak_ptr_factory_.GetWeakPtr(), tab_list))) {
+                     weak_ptr_factory_.GetWeakPtr(), tab_list, condition))) {
     // LowMemoryKillImpl will be called asynchronously so nothing left to do.
     return;
   }
   // If the list of ARC processes is not available, call LowMemoryKillImpl
   // synchronously with an empty list of apps.
-  LowMemoryKillImpl(tab_list, std::vector<arc::ArcProcess>());
+  LowMemoryKillImpl(tab_list, condition, std::vector<arc::ArcProcess>());
 }
 
 int TabManagerDelegate::GetCachedOomScore(ProcessHandle process_handle) {
@@ -535,10 +537,11 @@ bool TabManagerDelegate::KillArcProcess(const int nspid) {
   return true;
 }
 
-bool TabManagerDelegate::KillTab(const TabStats& tab_stats) {
+bool TabManagerDelegate::KillTab(const TabStats& tab_stats,
+                                 TabManager::DiscardTabCondition condition) {
   // Check |tab_manager_| is alive before taking tabs into consideration.
   return tab_manager_ && tab_manager_->CanDiscardTab(tab_stats) &&
-         tab_manager_->DiscardTabById(tab_stats.tab_contents_id);
+         tab_manager_->DiscardTabById(tab_stats.tab_contents_id, condition);
 }
 
 chromeos::DebugDaemonClient* TabManagerDelegate::GetDebugDaemonClient() {
@@ -547,6 +550,7 @@ chromeos::DebugDaemonClient* TabManagerDelegate::GetDebugDaemonClient() {
 
 void TabManagerDelegate::LowMemoryKillImpl(
     const TabStatsList& tab_list,
+    TabManager::DiscardTabCondition condition,
     std::vector<arc::ArcProcess> arc_processes) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   VLOG(2) << "LowMemoryKillImpl";
@@ -612,7 +616,7 @@ void TabManagerDelegate::LowMemoryKillImpl(
       // So |estimated_memory_freed_kb| is an over-estimation.
       int estimated_memory_freed_kb =
           mem_stat_->EstimatedMemoryFreedKB(it->tab()->renderer_handle);
-      if (KillTab(*it->tab())) {
+      if (KillTab(*it->tab(), condition)) {
         target_memory_to_free_kb -= estimated_memory_freed_kb;
         memory::MemoryKillsMonitor::LogLowMemoryKill("TAB",
                                                      estimated_memory_freed_kb);
