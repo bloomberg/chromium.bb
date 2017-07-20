@@ -1,4 +1,4 @@
-# Copyright 2015 The Chromium OS Authors. All rights reserved.
+# Copyright 2014 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -64,21 +64,32 @@ def SetupTsMonGlobalState(service_name,
   if not config:
     return TrivialContextManager()
 
+  # The flushing subprocess calls .flush manually.
   if indirect:
-    return _CreateTsMonFlushingProcess([service_name],
-                                       {'short_lived': short_lived,
-                                        'debug_file': debug_file,
-                                        'task_num': task_num})
+    auto_flush = False
 
   # google-api-client has too much noisey logging.
-  googleapiclient.discovery.logger.setLevel(logging.WARNING)
-  parser = argparse.ArgumentParser()
-  config.add_argparse_options(parser)
-  args = GenerateTsMonArgparseOptions(
+  options = _GenerateTsMonArgparseOptions(
       service_name, short_lived, auto_flush, debug_file, task_num)
 
+  if indirect:
+    return _CreateTsMonFlushingProcess(options)
+  else:
+    _SetupTsMonFromOptions(options, suppress_exception)
+    return TrivialContextManager()
+
+
+def _SetupTsMonFromOptions(options, suppress_exception):
+  """Sets up ts-mon global state given parsed argparse options.
+
+  Args:
+    options: An argparse options object containing ts-mon flags.
+    suppress_exception: True to silence any exception during the setup. Default
+                        is set to True.
+  """
+  googleapiclient.discovery.logger.setLevel(logging.WARNING)
   try:
-    config.process_argparse_options(parser.parse_args(args=args))
+    config.process_argparse_options(options)
     logging.notice('ts_mon was set up.')
     global _WasSetup  # pylint: disable=global-statement
     _WasSetup = True
@@ -89,11 +100,8 @@ def SetupTsMonGlobalState(service_name,
       raise
 
 
-  return TrivialContextManager()
-
-
-def GenerateTsMonArgparseOptions(service_name, short_lived,
-                                 auto_flush, debug_file, task_num):
+def _GenerateTsMonArgparseOptions(service_name, short_lived,
+                                  auto_flush, debug_file, task_num):
   """Generates an arg list for ts-mon to consume.
 
   Args:
@@ -105,6 +113,9 @@ def GenerateTsMonArgparseOptions(service_name, short_lived,
     debug_file: If non-none, send metrics to this path instead of to PubSub.
     task_num: Override the default task num of 0.
   """
+  parser = argparse.ArgumentParser()
+  config.add_argparse_options(parser)
+
   args = [
       '--ts-mon-target-type', 'task',
       '--ts-mon-task-service-name', service_name,
@@ -130,11 +141,11 @@ def GenerateTsMonArgparseOptions(service_name, short_lived,
     args.extend(['--ts-mon-task-number', str(task_num)])
 
   args.extend(['--ts-mon-flush', 'auto' if auto_flush else 'manual'])
-  return args
+  return parser.parse_args(args=args)
 
 
 @contextlib.contextmanager
-def _CreateTsMonFlushingProcess(setup_args, setup_kwargs):
+def _CreateTsMonFlushingProcess(options):
   """Creates a separate process to flush ts_mon metrics.
 
   Useful for multiprocessing scenarios where we don't want multiple ts-mon
@@ -143,9 +154,7 @@ def _CreateTsMonFlushingProcess(setup_args, setup_kwargs):
   dedicated flushing process.
 
   Args:
-    setup_args: Arguments sent to SetupTsMonGlobalState in the child process
-    setup_kwargs: Keyword arguments sent to SetupTsMonGlobalState in the child
-      process
+    options: An argparse options object to configure ts-mon with.
 
   Side effects:
     Sets chromite.lib.metrics.MESSAGE_QUEUE, which causes the metric functions
@@ -160,8 +169,7 @@ def _CreateTsMonFlushingProcess(setup_args, setup_kwargs):
     message_q = manager.Queue()
 
     metrics.FLUSHING_PROCESS = multiprocessing.Process(
-        target=lambda: _SetupAndConsumeMessages(
-            message_q, setup_args, setup_kwargs))
+        target=lambda: _SetupAndConsumeMessages(message_q, options))
     metrics.FLUSHING_PROCESS.start()
 
     # this makes the chromite.lib.metric functions use the queue.
@@ -204,22 +212,19 @@ def _CleanupMetricsFlushingProcess():
   logging.info("Finished waiting for ts_mon process.")
 
 
-def _SetupAndConsumeMessages(message_q, setup_args, setup_kwargs):
+def _SetupAndConsumeMessages(message_q, options):
   """Sets up ts-mon, and starts a MetricConsumer loop.
 
   Args:
     message_q: The metric multiprocessing.Queue to read from.
-    setup_args: The args to pass SetupTsMonGlobalState.
-    setup_kwargs: The kwargs to pass SetupTsMonGlobalState.
+    options: An argparse options object to configure ts-mon with.
   """
   # Configure ts-mon, but don't start up a sending thread.
-  setup_kwargs['auto_flush'] = False
-  SetupTsMonGlobalState(*setup_args, **setup_kwargs)
+  _SetupTsMonFromOptions(options, suppress_exception=True)
   if not _WasSetup:
     return
 
   return MetricConsumer(message_q).Consume()
-
 
 
 class MetricConsumer(object):

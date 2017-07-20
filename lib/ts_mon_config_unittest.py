@@ -18,6 +18,8 @@ from infra_libs.ts_mon.common import interface
 
 
 # pylint: disable=protected-access
+DEFAULT_OPTIONS = ts_mon_config._GenerateTsMonArgparseOptions(
+    'unittest', False, False, None, 0)
 
 
 class TestConsumeMessages(cros_test_lib.MockTestCase):
@@ -30,7 +32,7 @@ class TestConsumeMessages(cros_test_lib.MockTestCase):
     self.time_mock = self.PatchObject(ts_mon_config, 'time')
     self.time_mock.time.side_effect = itertools.count(0)
     self.flush_mock = self.PatchObject(ts_mon_config.metrics, 'Flush')
-    self.PatchObject(ts_mon_config, 'SetupTsMonGlobalState')
+    self.PatchObject(ts_mon_config, '_SetupTsMonFromOptions')
     self.PatchObject(ts_mon_config, '_WasSetup', True)
     self.mock_metric = self.PatchObject(metrics, 'Boolean')
 
@@ -40,10 +42,10 @@ class TestConsumeMessages(cros_test_lib.MockTestCase):
     q = Queue.Queue()
     q.put(None)
 
-    ts_mon_config._SetupAndConsumeMessages(q, [''], {})
+    ts_mon_config._SetupAndConsumeMessages(q, DEFAULT_OPTIONS)
 
-    ts_mon_config.SetupTsMonGlobalState.assert_called_once_with(
-        '', auto_flush=False)
+    ts_mon_config._SetupTsMonFromOptions.assert_called_once_with(
+        DEFAULT_OPTIONS, suppress_exception=True)
     self.assertFalse(ts_mon_config.time.time.called)
     self.assertFalse(ts_mon_config.metrics.Flush.called)
 
@@ -55,7 +57,7 @@ class TestConsumeMessages(cros_test_lib.MockTestCase):
                              False))
     q.put(None)
 
-    ts_mon_config._SetupAndConsumeMessages(q, [''], {})
+    ts_mon_config._SetupAndConsumeMessages(q, DEFAULT_OPTIONS)
 
     self.assertEqual(2, ts_mon_config.time.time.call_count)
     ts_mon_config.time.sleep.assert_called_once_with(
@@ -75,7 +77,7 @@ class TestConsumeMessages(cros_test_lib.MockTestCase):
                              False))
     q.put(None)
 
-    ts_mon_config._SetupAndConsumeMessages(q, [''], {})
+    ts_mon_config._SetupAndConsumeMessages(q, DEFAULT_OPTIONS)
 
     self.assertEqual(3, ts_mon_config.time.time.call_count)
     ts_mon_config.time.sleep.assert_called_once_with(
@@ -97,7 +99,7 @@ class TestConsumeMessages(cros_test_lib.MockTestCase):
 
     self.PatchObject(multiprocessing, 'Process', SaveProcess)
 
-    with ts_mon_config._CreateTsMonFlushingProcess([], {}) as q:
+    with ts_mon_config._CreateTsMonFlushingProcess(DEFAULT_OPTIONS) as q:
       q.put(metrics.MetricCall('Boolean', [], {},
                                '__class__', [], {},
                                False))
@@ -125,7 +127,7 @@ class TestConsumeMessages(cros_test_lib.MockTestCase):
 
     exception_log = self.PatchObject(ts_mon_config.logging, 'exception')
 
-    ts_mon_config._SetupAndConsumeMessages(q, [''], {})
+    ts_mon_config._SetupAndConsumeMessages(q, DEFAULT_OPTIONS)
 
     self.assertEqual(1, exception_log.call_count)
     # time.time is called once because we check if we need to Flush() before
@@ -143,7 +145,7 @@ class TestConsumeMessages(cros_test_lib.MockTestCase):
                              reset_after=True))
     q.put(None)
 
-    ts_mon_config._SetupAndConsumeMessages(q, [''], {})
+    ts_mon_config._SetupAndConsumeMessages(q, DEFAULT_OPTIONS)
 
     self.assertEqual(
         [self.mock_metric.return_value],
@@ -154,7 +156,7 @@ class TestConsumeMessages(cros_test_lib.MockTestCase):
   def testSubprocessQuitsWhenNotSetup(self):
     self.PatchObject(ts_mon_config.logging, 'exception')
     self.PatchObject(ts_mon_config, '_WasSetup', False)
-    ts_mon_config._SetupAndConsumeMessages(None, [''], {})
+    ts_mon_config._SetupAndConsumeMessages(None, DEFAULT_OPTIONS)
     self.assertEqual(False, ts_mon_config._WasSetup)
     # The entry should not have been consumed by _ConsumeMessages
     self.assertEqual(0, ts_mon_config.logging.exception.call_count)
@@ -188,6 +190,6 @@ class TestSetupTsMonGlobalState(cros_test_lib.MockTestCase):
     create_flushing_process = self.PatchObject(
         ts_mon_config, '_CreateTsMonFlushingProcess')
     ts_mon_config.SetupTsMonGlobalState('unittest', indirect=True, task_num=42)
-    create_flushing_process.assert_called_once_with(
-        ['unittest'],
-        {'task_num': 42, 'debug_file': None, 'short_lived': False})
+    options = ts_mon_config._GenerateTsMonArgparseOptions(
+        'unittest', False, False, None, 42)
+    create_flushing_process.assert_called_once_with(options)
