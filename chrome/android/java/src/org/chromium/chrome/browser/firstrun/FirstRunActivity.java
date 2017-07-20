@@ -32,6 +32,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.searchwidget.SearchWidgetProvider;
 import org.chromium.chrome.browser.util.IntentUtils;
+import org.chromium.ui.base.LocalizationUtils;
 
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Constructor;
@@ -665,7 +666,8 @@ public class FirstRunActivity extends AsyncInitializationActivity implements Fir
 
     @Override
     public void showInfoPage(int url) {
-        CustomTabActivity.showInfoPage(this, getString(url));
+        CustomTabActivity.showInfoPage(
+                this, LocalizationUtils.substituteLocalePlaceholder(getString(url)));
     }
 
     @VisibleForTesting
