@@ -8,8 +8,8 @@
 #include <string>
 #include <vector>
 
-#include "base/files/scoped_file.h"
 #include "base/macros.h"
+#include "mojo/edk/embedder/scoped_platform_handle.h"
 
 namespace profiling {
 
@@ -23,11 +23,7 @@ class MemlogSenderPipe {
   bool Send(const void* data, size_t sz);
 
  private:
-  base::ScopedFD fd_;
-
-  // Make base::UnixDomainSocket::SendMsg happy.
-  // TODO(ajwong): This is not really threadsafe. Fix.
-  std::vector<int>* dummy_for_send_ = nullptr;
+  mojo::edk::ScopedPlatformHandle handle_;
 
   DISALLOW_COPY_AND_ASSIGN(MemlogSenderPipe);
 };
