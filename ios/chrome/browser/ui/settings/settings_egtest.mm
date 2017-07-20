@@ -290,16 +290,6 @@ bool IsCertificateCleared() {
       performAction:grey_scrollToContentEdge(kGREYContentEdgeTop)];
 }
 
-// Exits Settings by clicking on the Done button.
-- (void)dismissSettings {
-  // Dismiss the settings.
-  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
-      performAction:grey_tap()];
-
-  // Wait for UI components to finish loading.
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
-}
-
 // From the NTP, clears the cookies and site data via the UI.
 - (void)clearCookiesAndSiteData {
   [ChromeEarlGreyUI openSettingsMenu];
@@ -316,7 +306,8 @@ bool IsCertificateCleared() {
       performAction:grey_tap()];
 
   [self clearBrowsingData];
-  [self dismissSettings];
+  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+      performAction:grey_tap()];
 }
 
 // From the NTP, clears the saved passwords via the UI.
@@ -350,7 +341,8 @@ bool IsCertificateCleared() {
   [[EarlGrey selectElementWithMatcher:ClearSavedPasswordsButton()]
       performAction:grey_tap()];
 
-  [self dismissSettings];
+  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+      performAction:grey_tap()];
 }
 
 // Enable password management.
