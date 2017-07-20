@@ -264,6 +264,9 @@ class PpapiCdmAdapter : public pp::Instance,
       const linked_ptr<PepperPlatformChallengeResponse>& response);
 #endif
 
+  void RequestStorageIdDone(int32_t result,
+                            const linked_ptr<pp::Var>& response);
+
   pp::OutputProtection_Private output_protection_;
 
   // Same as above, these are only read by QueryOutputProtectionStatusDone().
@@ -276,7 +279,7 @@ class PpapiCdmAdapter : public pp::Instance,
   bool uma_for_output_protection_query_reported_;
   bool uma_for_output_protection_positive_result_reported_;
 
-  // TODO(jrummell): Use this to implement host challenging.
+  // Used to implement platform challenge (ChromeOS only) and access Storage ID.
   pp::PlatformVerification platform_verification_;
 
   PpbBufferAllocator allocator_;

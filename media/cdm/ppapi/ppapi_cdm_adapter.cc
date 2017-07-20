@@ -1158,8 +1158,21 @@ void PpapiCdmAdapter::OnDeferredInitializationDone(cdm::StreamType stream_type,
 }
 
 void PpapiCdmAdapter::RequestStorageId() {
-  // TODO(jrummell): Implement Storage Id. https://crbug.com/478960.
-  PP_NOTREACHED();
+  CDM_DLOG() << __func__;
+
+  // If persistent storage is not allowed, no need to get the Storage ID.
+  if (allow_persistent_state_) {
+    linked_ptr<pp::Var> response(new pp::Var());
+    int32_t result = platform_verification_.GetStorageId(
+        response.get(), callback_factory_.NewCallback(
+                            &PpapiCdmAdapter::RequestStorageIdDone, response));
+    if (result == PP_OK_COMPLETIONPENDING)
+      return;
+
+    // Fall through on error and provide an empty storage_id.
+    PP_DCHECK(result != PP_OK);
+  }
+
   cdm_->OnStorageId(nullptr, 0);
 }
 
@@ -1275,6 +1288,21 @@ void PpapiCdmAdapter::QueryOutputProtectionStatusDone(int32_t result) {
 
   cdm_->OnQueryOutputProtectionStatus(query_result, output_link_mask_,
                                       output_protection_mask_);
+}
+
+void PpapiCdmAdapter::RequestStorageIdDone(
+    int32_t result,
+    const linked_ptr<pp::Var>& response) {
+  std::string storage_id;
+
+  if (result == PP_OK)
+    storage_id = response->AsString();
+
+  CDM_DLOG() << __func__ << ": result = " << result
+             << ", storage_id = " << storage_id;
+
+  cdm_->OnStorageId(reinterpret_cast<const uint8_t*>(storage_id.data()),
+                    static_cast<uint32_t>(storage_id.length()));
 }
 
 PpapiCdmAdapter::SessionError::SessionError(
