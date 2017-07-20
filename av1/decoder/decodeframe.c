@@ -2971,6 +2971,12 @@ static void decode_restoration(AV1_COMMON *cm, aom_reader *rb) {
 static void setup_loopfilter(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
   struct loopfilter *lf = &cm->lf;
   lf->filter_level = aom_rb_read_literal(rb, 6);
+#if CONFIG_UV_LVL
+  if (lf->filter_level > 0) {
+    lf->filter_level_u = aom_rb_read_literal(rb, 6);
+    lf->filter_level_v = aom_rb_read_literal(rb, 6);
+  }
+#endif
   lf->sharpness_level = aom_rb_read_literal(rb, 3);
 
   // Read in loop filter deltas applied at the MB level based on mode or ref
@@ -3926,9 +3932,20 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
   }
 
 #if CONFIG_VAR_TX || CONFIG_CB4X4
-  // Loopfilter the whole frame.
+// Loopfilter the whole frame.
+#if CONFIG_UV_LVL
+  if (cm->lf.filter_level > 0) {
+    av1_loop_filter_frame(get_frame_new_buffer(cm), cm, &pbi->mb,
+                          cm->lf.filter_level, 0, 0);
+    av1_loop_filter_frame(get_frame_new_buffer(cm), cm, &pbi->mb,
+                          cm->lf.filter_level_u, 1, 0);
+    av1_loop_filter_frame(get_frame_new_buffer(cm), cm, &pbi->mb,
+                          cm->lf.filter_level_v, 2, 0);
+  }
+#else
   av1_loop_filter_frame(get_frame_new_buffer(cm), cm, &pbi->mb,
                         cm->lf.filter_level, 0, 0);
+#endif  // CONFIG_UV_LVL
 #else
 #if CONFIG_PARALLEL_DEBLOCKING
   // Loopfilter all rows in the frame in the frame.

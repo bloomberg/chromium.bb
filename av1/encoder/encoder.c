@@ -3994,7 +3994,13 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
 
   if (lf->filter_level > 0) {
 #if CONFIG_VAR_TX || CONFIG_EXT_PARTITION || CONFIG_CB4X4
+#if CONFIG_UV_LVL
     av1_loop_filter_frame(cm->frame_to_show, cm, xd, lf->filter_level, 0, 0);
+    av1_loop_filter_frame(cm->frame_to_show, cm, xd, lf->filter_level_u, 1, 0);
+    av1_loop_filter_frame(cm->frame_to_show, cm, xd, lf->filter_level_v, 2, 0);
+#else
+    av1_loop_filter_frame(cm->frame_to_show, cm, xd, lf->filter_level, 0, 0);
+#endif  // CONFIG_UV_LVL
 #else
     if (cpi->num_workers > 1)
       av1_loop_filter_frame_mt(cm->frame_to_show, cm, xd->plane,

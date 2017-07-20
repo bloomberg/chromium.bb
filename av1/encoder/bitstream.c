@@ -3364,6 +3364,12 @@ static void encode_loopfilter(AV1_COMMON *cm, struct aom_write_bit_buffer *wb) {
 
   // Encode the loop filter level and type
   aom_wb_write_literal(wb, lf->filter_level, 6);
+#if CONFIG_UV_LVL
+  if (lf->filter_level > 0) {
+    aom_wb_write_literal(wb, lf->filter_level_u, 6);
+    aom_wb_write_literal(wb, lf->filter_level_v, 6);
+  }
+#endif
   aom_wb_write_literal(wb, lf->sharpness_level, 3);
 
   // Write out loop filter deltas applied at the MB level based on mode or

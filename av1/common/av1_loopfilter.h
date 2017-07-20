@@ -37,6 +37,10 @@ enum lf_path {
 
 struct loopfilter {
   int filter_level;
+#if CONFIG_UV_LVL
+  int filter_level_u;
+  int filter_level_v;
+#endif
 
   int sharpness_level;
   int last_sharpness_level;

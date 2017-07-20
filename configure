@@ -337,6 +337,7 @@ EXPERIMENT_LIST="
     var_tx_no_tx_mode
     mrc_tx
     lpf_direct
+    uv_lvl
 "
 CONFIG_LIST="
     dependency_tracking
