@@ -101,7 +101,8 @@ std::unique_ptr<KeyedService> BuildTestHistoryService(
 class MediaEngagementServiceTest : public ChromeRenderViewHostTestHarness {
  public:
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(media::kMediaEngagement);
+    scoped_feature_list_.InitAndEnableFeature(
+        media::kRecordMediaEngagementScores);
     ChromeRenderViewHostTestHarness::SetUp();
 
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
