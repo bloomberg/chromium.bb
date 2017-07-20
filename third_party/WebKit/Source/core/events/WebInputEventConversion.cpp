@@ -60,24 +60,20 @@ float FrameScale(const LocalFrameView* frame_view) {
 
 FloatPoint FrameTranslation(const LocalFrameView* frame_view) {
   float scale = 1;
-  FloatSize offset;
   IntPoint visual_viewport;
   FloatSize overscroll_offset;
   if (frame_view) {
     LocalFrameView* root_view = frame_view->GetFrame().LocalFrameRoot().View();
     if (root_view) {
       scale = root_view->InputEventsScaleFactor();
-      offset = FloatSize(root_view->InputEventsOffsetForEmulation());
       visual_viewport = FlooredIntPoint(
           root_view->GetPage()->GetVisualViewport().VisibleRect().Location());
       overscroll_offset =
           root_view->GetPage()->GetChromeClient().ElasticOverscroll();
     }
   }
-  return FloatPoint(
-      -offset.Width() / scale + visual_viewport.X() + overscroll_offset.Width(),
-      -offset.Height() / scale + visual_viewport.Y() +
-          overscroll_offset.Height());
+  return FloatPoint(visual_viewport.X() + overscroll_offset.Width(),
+                    visual_viewport.Y() + overscroll_offset.Height());
 }
 
 FloatPoint ConvertAbsoluteLocationForLayoutObjectFloat(

@@ -41,14 +41,12 @@ class EmulationHandler : public DevToolsDomainHandler,
       int height,
       double device_scale_factor,
       bool mobile,
-      Maybe<bool> fit_window,
       Maybe<double> scale,
-      Maybe<double> offset_x,
-      Maybe<double> offset_y,
       Maybe<int> screen_widget,
       Maybe<int> screen_height,
       Maybe<int> position_x,
       Maybe<int> position_y,
+      Maybe<bool> dont_set_visible_size,
       Maybe<Emulation::ScreenOrientation> screen_orientation) override;
   Response ClearDeviceMetricsOverride() override;
 

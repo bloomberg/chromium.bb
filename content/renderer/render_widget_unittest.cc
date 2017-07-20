@@ -496,7 +496,6 @@ TEST_F(RenderWidgetPopupUnittest, EmulatingPopupRect) {
   emulation_params.screen_position = blink::WebDeviceEmulationParams::kMobile;
   emulation_params.view_size = emulated_window_rect.size();
   emulation_params.view_position = blink::WebPoint(150, 160);
-  emulation_params.fit_to_view = true;
 
   gfx::Rect parent_window_rect = gfx::Rect(0, 0, 800, 600);
 
@@ -513,21 +512,10 @@ TEST_F(RenderWidgetPopupUnittest, EmulatingPopupRect) {
 
   widget()->SetPopupOriginAdjustmentsForEmulation(&emulator);
 
-  // Emulation-applied scale factor to fit the emulated device in the window.
-  float scale =
-      (float)parent_window_rect.height() / emulated_window_rect.height();
-
-  // Used to center the emulated device in the window.
-  gfx::Point offset(
-      (parent_window_rect.width() - emulated_window_rect.width() * scale) / 2,
-      (parent_window_rect.height() - emulated_window_rect.height() * scale) /
-          2);
-
   // Position of the popup as seen by the emulated widget.
-  gfx::Point emulated_position(emulation_params.view_position.x +
-                                   (popup_screen_rect.x - offset.x()) / scale,
-                               emulation_params.view_position.y +
-                                   (popup_screen_rect.y - offset.y()) / scale);
+  gfx::Point emulated_position(
+      emulation_params.view_position.x + popup_screen_rect.x,
+      emulation_params.view_position.y + popup_screen_rect.y);
 
   // Both the window and view rects as read from the accessors should have the
   // emulation parameters applied.

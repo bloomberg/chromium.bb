@@ -405,7 +405,7 @@ class WEB_EXPORT WebLocalFrameImpl final
     return shared_worker_repository_client_.get();
   }
 
-  void SetInputEventsTransformForEmulation(const IntSize&, float) override;
+  void SetInputEventsScaleForEmulation(float) override;
 
   static void SelectWordAroundPosition(LocalFrame*, VisiblePosition);
 
@@ -504,9 +504,8 @@ class WEB_EXPORT WebLocalFrameImpl final
   // information. Is used by PrintPage().
   Member<ChromePrintContext> print_context_;
 
-  // Stores the additional input events offset and scale when device metrics
+  // Stores the additional input events scale when device metrics
   // emulation is enabled.
-  IntSize input_events_offset_for_emulation_;
   float input_events_scale_factor_for_emulation_;
 
   // Borrowed pointers to Mojo objects.

@@ -143,14 +143,12 @@ Response EmulationHandler::SetDeviceMetricsOverride(
     int height,
     double device_scale_factor,
     bool mobile,
-    Maybe<bool> fit_window,
     Maybe<double> scale,
-    Maybe<double> offset_x,
-    Maybe<double> offset_y,
     Maybe<int> screen_width,
     Maybe<int> screen_height,
     Maybe<int> position_x,
     Maybe<int> position_y,
+    Maybe<bool> dont_set_visible_size,
     Maybe<Emulation::ScreenOrientation> screen_orientation) {
   const static int max_size = 10000000;
   const static double max_scale = 10;
@@ -216,7 +214,6 @@ Response EmulationHandler::SetDeviceMetricsOverride(
       blink::WebPoint(position_x.fromMaybe(0), position_y.fromMaybe(0));
   params.device_scale_factor = device_scale_factor;
   params.view_size = blink::WebSize(width, height);
-  params.fit_to_view = fit_window.fromMaybe(false);
   params.scale = scale.fromMaybe(1);
   params.screen_orientation_type = orientationType;
   params.screen_orientation_angle = orientationAngle;
@@ -226,7 +223,7 @@ Response EmulationHandler::SetDeviceMetricsOverride(
 
   device_emulation_enabled_ = true;
   device_emulation_params_ = params;
-  if (width > 0 && height > 0) {
+  if (!dont_set_visible_size.fromMaybe(false) && width > 0 && height > 0) {
     original_view_size_ = widget_host->GetView()->GetViewBounds().size();
     widget_host->GetView()->SetSize(gfx::Size(width, height));
   } else {
@@ -253,6 +250,16 @@ Response EmulationHandler::ClearDeviceMetricsOverride() {
 }
 
 Response EmulationHandler::SetVisibleSize(int width, int height) {
+  if (width < 0 || height < 0)
+    return Response::InvalidParams("Width and height must be non-negative");
+
+  // Set size of frame by resizing RWHV if available.
+  RenderWidgetHostImpl* widget_host =
+      host_ ? host_->GetRenderWidgetHost() : nullptr;
+  if (!widget_host)
+    return Response::Error("Target does not support setVisibleSize");
+
+  widget_host->GetView()->SetSize(gfx::Size(width, height));
   return Response::OK();
 }
 

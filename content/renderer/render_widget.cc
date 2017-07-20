@@ -565,9 +565,9 @@ void RenderWidget::SetPopupOriginAdjustmentsForEmulation(
     RenderWidgetScreenMetricsEmulator* emulator) {
   popup_origin_scale_for_emulation_ = emulator->scale();
   popup_view_origin_for_emulation_ = emulator->applied_widget_rect().origin();
-  popup_screen_origin_for_emulation_ = gfx::Point(
-      emulator->original_screen_rect().origin().x() + emulator->offset().x(),
-      emulator->original_screen_rect().origin().y() + emulator->offset().y());
+  popup_screen_origin_for_emulation_ =
+      gfx::Point(emulator->original_screen_rect().origin().x(),
+                 emulator->original_screen_rect().origin().y());
   screen_info_ = emulator->original_screen_info();
   device_scale_factor_ = screen_info_.device_scale_factor;
 }
@@ -582,8 +582,7 @@ gfx::Rect RenderWidget::AdjustValidationMessageAnchor(const gfx::Rect& anchor) {
 void RenderWidget::SetExternalPopupOriginAdjustmentsForEmulation(
     ExternalPopupMenu* popup,
     RenderWidgetScreenMetricsEmulator* emulator) {
-  popup->SetOriginScaleAndOffsetForEmulation(
-      emulator->scale(), emulator->offset());
+  popup->SetOriginScaleForEmulation(emulator->scale());
 }
 #endif
 

@@ -216,7 +216,6 @@ void DevToolsEmulator::EnableDeviceEmulation(
       emulation_params_.view_size == params.view_size &&
       emulation_params_.screen_position == params.screen_position &&
       emulation_params_.device_scale_factor == params.device_scale_factor &&
-      emulation_params_.offset == params.offset &&
       emulation_params_.scale == params.scale &&
       emulation_params_.viewport_offset == params.viewport_offset) {
     return;
@@ -415,18 +414,14 @@ void DevToolsEmulator::MainFrameScrollOrScaleChanged() {
 void DevToolsEmulator::ApplyDeviceEmulationTransform(
     TransformationMatrix* transform) {
   if (device_metrics_enabled_) {
-    WebSize offset(emulation_params_.offset.x, emulation_params_.offset.y);
-    // Scale first, so that translation is unaffected.
-    transform->Translate(offset.width, offset.height);
     transform->Scale(emulation_params_.scale);
     if (web_view_->MainFrameImpl()) {
-      web_view_->MainFrameImpl()->SetInputEventsTransformForEmulation(
-          offset, emulation_params_.scale);
+      web_view_->MainFrameImpl()->SetInputEventsScaleForEmulation(
+          emulation_params_.scale);
     }
   } else {
     if (web_view_->MainFrameImpl()) {
-      web_view_->MainFrameImpl()->SetInputEventsTransformForEmulation(
-          WebSize(0, 0), 1.0);
+      web_view_->MainFrameImpl()->SetInputEventsScaleForEmulation(1.0);
     }
   }
 }

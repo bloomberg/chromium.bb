@@ -11,7 +11,6 @@
 #include "third_party/WebKit/public/web/WebDeviceEmulationParams.h"
 
 namespace gfx {
-class PointF;
 class Rect;
 }
 
@@ -41,7 +40,6 @@ class CONTENT_EXPORT RenderWidgetScreenMetricsEmulator {
   }
 
   float scale() const { return scale_; }
-  const gfx::PointF& offset() const { return offset_; }
   const gfx::Rect& applied_widget_rect() const { return applied_widget_rect_; }
   const ScreenInfo& original_screen_info() const {
     return original_resize_params_.screen_info;
@@ -72,7 +70,6 @@ class CONTENT_EXPORT RenderWidgetScreenMetricsEmulator {
 
   // The computed scale and offset used to fit widget into browser window.
   float scale_;
-  gfx::PointF offset_;
 
   // Widget rect as passed to webwidget.
   gfx::Rect applied_widget_rect_;
