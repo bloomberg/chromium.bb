@@ -129,6 +129,7 @@ class ClientManager {
         private boolean mShouldHideDomain;
         private boolean mShouldPrerenderOnCellular;
         private boolean mShouldSendNavigationInfo;
+        private boolean mShouldSendBottomBarScrollState;
         private KeepAliveServiceConnection mKeepAliveConnection;
         private String mPredictedUrl;
         private long mLastMayLaunchUrlTimestamp;
@@ -412,6 +413,24 @@ class ClientManager {
     public synchronized void setHideDomainForSession(CustomTabsSessionToken session, boolean hide) {
         SessionParams params = mSessionParams.get(session);
         if (params != null) params.mShouldHideDomain = hide;
+    }
+
+    /**
+     * @return Whether bottom bar scrolling state should be recorded and shared for the session.
+     */
+    public synchronized boolean shouldSendBottomBarScrollStateForSession(
+            CustomTabsSessionToken session) {
+        SessionParams params = mSessionParams.get(session);
+        return params != null ? params.mShouldSendBottomBarScrollState : false;
+    }
+
+    /**
+     * Sets whether bottom bar scrolling state should be recorded and shared for the session.
+     */
+    public synchronized void setSendBottomBarScrollingStateForSessionn(
+            CustomTabsSessionToken session, boolean send) {
+        SessionParams params = mSessionParams.get(session);
+        if (params != null) params.mShouldSendBottomBarScrollState = send;
     }
 
     /**
