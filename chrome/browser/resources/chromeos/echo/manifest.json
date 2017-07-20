@@ -40,7 +40,8 @@
   "externally_connectable": {
     "ids": ["*"],
     "matches": [
-      "*://www.google.com/*chrome/devices/goodies.html*"
+      "*://www.google.com/*chromebook/*",
+      "*://chromebook-dot-googwebreview.appspot.com/*chromebook/*"
     ]
   }
 }
