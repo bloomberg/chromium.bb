@@ -1733,7 +1733,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RemoveResumingDownload) {
   request_start_handler.WaitForCallback();
 
   // At this point, the download resumption request has been sent out, but the
-  // reponse hasn't been received yet.
+  // response hasn't been received yet.
   download->Remove();
 
   request_start_handler.RespondWith(std::string(), net::OK);

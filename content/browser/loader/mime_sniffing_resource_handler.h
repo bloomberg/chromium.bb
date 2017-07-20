@@ -173,7 +173,7 @@ class CONTENT_EXPORT MimeSniffingResourceHandler
   bool must_download_;
   bool must_download_is_set_;
 
-  // Used to buffer the reponse received until replay.
+  // Used to buffer the response received until replay.
   scoped_refptr<ResourceResponse> response_;
   scoped_refptr<net::IOBuffer> read_buffer_;
   int read_buffer_size_;
