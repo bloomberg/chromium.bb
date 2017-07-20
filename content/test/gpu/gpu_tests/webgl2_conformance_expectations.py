@@ -295,6 +295,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['passthrough', 'opengl', 'intel'], bug=602688)
     self.Fail('conformance/textures/misc/texture-attachment-formats.html',
         ['passthrough', 'opengl', 'intel'], bug=602688)
+    self.Fail('conformance/renderbuffers/framebuffer-state-restoration.html',
+        ['passthrough', 'opengl', 'intel'], bug=602688)
 
     # Mac only.
     self.Fail('conformance2/renderbuffers/' +
