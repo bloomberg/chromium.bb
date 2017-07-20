@@ -16,6 +16,9 @@ namespace features {
 extern const base::Feature kWebPayments;
 #endif
 
+// Used to control the support for Payment Details modifiers.
+extern const base::Feature kWebPaymentsModifiers;
+
 }  // namespace features
 }  // namespace payments
 

@@ -10,6 +10,7 @@ import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.autofill.CardUnmaskPrompt;
 import org.chromium.chrome.browser.payments.PaymentRequestTestCommon.PaymentRequestTestCommonCallback;
@@ -52,6 +53,10 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
 
     /** The billing address dropdown index for the first billing address. */
     public static final int FIRST_BILLING_ADDRESS = PaymentRequestTestCommon.FIRST_BILLING_ADDRESS;
+
+    /** Command line flag to enable payment details modifiers in tests. */
+    public static final String ENABLE_WEB_PAYMENTS_MODIFIERS =
+            "enable-features=" + ChromeFeatureList.WEB_PAYMENTS_MODIFIERS;
 
     private final PaymentRequestTestCommon mTestCommon;
     private final MainActivityStartCallback mCallback;

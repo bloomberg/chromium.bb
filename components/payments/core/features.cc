@@ -12,5 +12,8 @@ const base::Feature kWebPayments{"WebPayments",
                                  base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
+const base::Feature kWebPaymentsModifiers{"WebPaymentsModifiers",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace payments

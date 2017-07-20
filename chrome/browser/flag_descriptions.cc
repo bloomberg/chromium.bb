@@ -1320,6 +1320,13 @@ const char kWebPaymentsName[] = "Web Payments";
 const char kWebPaymentsDescription[] =
     "Enable Web Payments API integration, a JavaScript API for merchants.";
 
+const char kWebPaymentsModifiersName[] = "Enable web payment modifiers";
+const char kWebPaymentsModifiersDescription[] =
+    "If the website provides modifiers in the payment request, show the custom "
+    "total for each payment instrument, update the shopping cart when "
+    "instruments are switched, and send modified payment method specific data "
+    "to the payment app.";
+
 const char kWebrtcEchoCanceller3Name[] = "WebRTC Echo Canceller 3.";
 const char kWebrtcEchoCanceller3Description[] =
     "Experimental WebRTC echo canceller (AEC3).";
@@ -1842,13 +1849,6 @@ const char kUseAndroidMidiApiDescription[] =
 const char kUseDdljsonApiName[] = "Use new ddljson API for Doodles";
 const char kUseDdljsonApiDescription[] =
     "Enables the new ddljson API to fetch Doodles for the NTP.";
-
-const char kWebPaymentsModifiersName[] = "Enable web payment modifiers";
-const char kWebPaymentsModifiersDescription[] =
-    "If the website provides modifiers in the payment request, show the custom "
-    "total for each payment instrument, update the shopping cart when "
-    "instruments are switched, and send modified payment method specific data "
-    "to the payment app.";
 
 const char kXGEOVisibleNetworksName[] = "Enable XGEO Visible Networks";
 const char kXGEOVisibleNetworksDescription[] =

@@ -62,6 +62,7 @@
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_switches.h"
 #include "components/password_manager/core/common/password_manager_features.h"
+#include "components/payments/core/features.h"
 #include "components/previews/core/previews_features.h"
 #include "components/proximity_auth/switches.h"
 #include "components/search_provider_logos/features.h"
@@ -2601,6 +2602,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"web-payments", flag_descriptions::kWebPaymentsName,
      flag_descriptions::kWebPaymentsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kWebPayments)},
+    {"web-payments-modifiers", flag_descriptions::kWebPaymentsModifiersName,
+     flag_descriptions::kWebPaymentsModifiersDescription,
+     kOsAndroid | kOsDesktop,
+     FEATURE_VALUE_TYPE(payments::features::kWebPaymentsModifiers)},
 #if defined(OS_ANDROID)
     {"enable-android-pay-integration-v1",
      flag_descriptions::kEnableAndroidPayIntegrationV1Name,
@@ -2734,9 +2739,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAndroid,
      FEATURE_VALUE_TYPE(
          offline_pages::kOfflinePagesSvelteConcurrentLoadingFeature)},
-    {"web-payments-modifiers", flag_descriptions::kWebPaymentsModifiersName,
-     flag_descriptions::kWebPaymentsModifiersDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kWebPaymentsModifiers)},
     {"xgeo-visible-networks", flag_descriptions::kXGEOVisibleNetworksName,
      flag_descriptions::kXGEOVisibleNetworksDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kXGEOVisibleNetworks)},

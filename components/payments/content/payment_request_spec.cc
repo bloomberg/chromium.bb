@@ -6,8 +6,10 @@
 
 #include <utility>
 
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/payments/core/features.h"
 #include "components/payments/core/payment_instrument.h"
 #include "components/payments/core/payment_method_data.h"
 #include "components/payments/core/payment_request_data_util.h"
@@ -263,7 +265,8 @@ PaymentRequestSpec::GetShippingOptions() const {
 const mojom::PaymentDetailsModifierPtr*
 PaymentRequestSpec::GetApplicableModifier(
     PaymentInstrument* selected_instrument) const {
-  if (!selected_instrument)
+  if (!selected_instrument ||
+      !base::FeatureList::IsEnabled(features::kWebPaymentsModifiers))
     return nullptr;
 
   for (const auto& modifier : details().modifiers) {
