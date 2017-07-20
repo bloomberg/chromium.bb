@@ -18,7 +18,7 @@ namespace protocol {
 class TargetAutoAttacher : public ServiceWorkerDevToolsManager::Observer {
  public:
   // Second parameter is |waiting_for_debugger|, returns whether it succeeded.
-  using AttachCallback = base::Callback<bool(DevToolsAgentHost*, bool)>;
+  using AttachCallback = base::Callback<void(DevToolsAgentHost*, bool)>;
   using DetachCallback = base::Callback<void(DevToolsAgentHost*)>;
 
   TargetAutoAttacher(AttachCallback attach_callback,
