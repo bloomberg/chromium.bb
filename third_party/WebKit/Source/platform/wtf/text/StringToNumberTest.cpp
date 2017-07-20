@@ -123,4 +123,20 @@ TEST(StringToNumberTest, TestCharactersToIntStrict) {
 #undef EXPECT_VALID
 #undef EXPECT_INVALID
 }
+
+NumberParsingState ParseUInt(const char* str, unsigned* value) {
+  NumberParsingState state;
+  *value = CharactersToUIntStrict(reinterpret_cast<const LChar*>(str),
+                                  std::strlen(str), &state);
+  return state;
+}
+
+TEST(StringToNumberTest, NumberParsingState) {
+  unsigned value;
+  EXPECT_EQ(NumberParsingState::kOverflowMax, ParseUInt("10000000000", &value));
+  EXPECT_EQ(NumberParsingState::kError, ParseUInt("10000000000abc", &value));
+  EXPECT_EQ(NumberParsingState::kError, ParseUInt("-10000000000", &value));
+  EXPECT_EQ(NumberParsingState::kError, ParseUInt("-0", &value));
+  EXPECT_EQ(NumberParsingState::kSuccess, ParseUInt("10", &value));
+}
 }

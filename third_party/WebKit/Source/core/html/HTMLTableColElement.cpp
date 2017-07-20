@@ -24,25 +24,22 @@
 
 #include "core/html/HTMLTableColElement.h"
 
+#include <algorithm>
 #include "core/CSSPropertyNames.h"
 #include "core/HTMLNames.h"
 #include "core/html/HTMLTableCellElement.h"
 #include "core/html/HTMLTableElement.h"
+#include "core/html/TableConstants.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/layout/LayoutTableCol.h"
-#include <algorithm>
 
 namespace blink {
 
 using namespace HTMLNames;
 
-namespace {
-const unsigned kDefaultSpan = 1;
-}  // namespace
-
 inline HTMLTableColElement::HTMLTableColElement(const QualifiedName& tag_name,
                                                 Document& document)
-    : HTMLTablePartElement(tag_name, document), span_(1) {}
+    : HTMLTablePartElement(tag_name, document), span_(kDefaultColSpan) {}
 
 DEFINE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLTableColElement)
 
@@ -68,14 +65,10 @@ void HTMLTableColElement::ParseAttribute(
     const AttributeModificationParams& params) {
   if (params.name == spanAttr) {
     unsigned new_span = 0;
-    if (params.new_value.IsEmpty() ||
-        !ParseHTMLNonNegativeInteger(params.new_value, new_span) ||
-        new_span < 1) {
-      // If the value of span is not a valid non-negative integer greater than
-      // zero, set it to 1.
-      new_span = kDefaultSpan;
+    if (!ParseHTMLClampedNonNegativeInteger(params.new_value, kMinColSpan,
+                                            kMaxColSpan, new_span)) {
+      new_span = kDefaultColSpan;
     }
-    new_span = std::min(new_span, HTMLTableCellElement::MaxColSpan());
     span_ = new_span;
     if (GetLayoutObject() && GetLayoutObject()->IsLayoutTableCol())
       GetLayoutObject()->UpdateFromElement();
@@ -104,7 +97,7 @@ HTMLTableColElement::AdditionalPresentationAttributeStyle() {
 }
 
 void HTMLTableColElement::setSpan(unsigned n) {
-  SetUnsignedIntegralAttribute(spanAttr, n, kDefaultSpan);
+  SetUnsignedIntegralAttribute(spanAttr, n, kDefaultColSpan);
 }
 
 const AtomicString& HTMLTableColElement::Width() const {

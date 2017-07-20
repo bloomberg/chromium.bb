@@ -24,7 +24,7 @@ PASS spanAttributeEffect("2" + arabicIndicDigitOne) is 2
 PASS spanAttributeEffect("2147483647") is 1000
 PASS spanAttributeEffect("2147483648") is 1000
 PASS spanAttributeEffect("4294967295") is 1000
-PASS spanAttributeEffect("4294967296") is 1
+PASS spanAttributeEffect("4294967296") is 1000
 PASS successfullyParsed is true
 
 TEST COMPLETE

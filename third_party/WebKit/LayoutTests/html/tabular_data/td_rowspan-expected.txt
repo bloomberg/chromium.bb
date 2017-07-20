@@ -23,7 +23,7 @@ PASS rowspanAttributeEffect(arabicIndicDigitOne) is 1
 PASS rowspanAttributeEffect("2" + arabicIndicDigitOne) is 2
 PASS rowspanAttributeEffect("2147483647") is 65534
 PASS rowspanAttributeEffect("4294967295") is 65534
-PASS rowspanAttributeEffect("4294967296") is 1
+PASS rowspanAttributeEffect("4294967296") is 65534
 PASS successfullyParsed is true
 
 TEST COMPLETE

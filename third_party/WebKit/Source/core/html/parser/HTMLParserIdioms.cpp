@@ -226,9 +226,10 @@ bool ParseHTMLInteger(const String& input, int& value) {
 }
 
 template <typename CharacterType>
-static bool ParseHTMLNonNegativeIntegerInternal(const CharacterType* position,
-                                                const CharacterType* end,
-                                                unsigned& value) {
+static WTF::NumberParsingState ParseHTMLNonNegativeIntegerInternal(
+    const CharacterType* position,
+    const CharacterType* end,
+    unsigned& value) {
   // This function is an implementation of the following algorithm:
   // https://html.spec.whatwg.org/multipage/infrastructure.html#rules-for-parsing-non-negative-integers
   // However, in order to support integers >= 2^31, we fold [1] into this.
@@ -249,7 +250,7 @@ static bool ParseHTMLNonNegativeIntegerInternal(const CharacterType* position,
 
   // Step 5: If position is past the end of input, return an error.
   if (position == end)
-    return false;
+    return WTF::NumberParsingState::kError;
   DCHECK_LT(position, end);
 
   // Step 6: If the character indicated by position (the first character) is a
@@ -262,13 +263,13 @@ static bool ParseHTMLNonNegativeIntegerInternal(const CharacterType* position,
   }
 
   if (position == end)
-    return false;
+    return WTF::NumberParsingState::kError;
   DCHECK_LT(position, end);
 
   // Step 7: If the character indicated by position is not an ASCII digit,
   // then return an error.
   if (!IsASCIIDigit(*position))
-    return false;
+    return WTF::NumberParsingState::kError;
 
   // Step 8: Collect a sequence of characters ...
   StringBuilder digits;
@@ -278,32 +279,69 @@ static bool ParseHTMLNonNegativeIntegerInternal(const CharacterType* position,
     digits.Append(*position++);
   }
 
-  bool ok;
+  WTF::NumberParsingState state;
   unsigned digits_value;
-  if (digits.Is8Bit())
+  if (digits.Is8Bit()) {
     digits_value =
-        CharactersToUIntStrict(digits.Characters8(), digits.length(), &ok);
-  else
+        CharactersToUIntStrict(digits.Characters8(), digits.length(), &state);
+  } else {
     digits_value =
-        CharactersToUIntStrict(digits.Characters16(), digits.length(), &ok);
-  if (!ok)
-    return false;
-  if (sign < 0 && digits_value != 0)
-    return false;
-  value = digits_value;
-  return true;
+        CharactersToUIntStrict(digits.Characters16(), digits.length(), &state);
+  }
+  // TODO(tkent): The following code to adjust NumberParsingState is not simple
+  // due to "-0" behavior difference between CharactersToUIntStrict() and
+  // ParseHTMLNonNegativeIntegerInternal(). Simplify the code by updating
+  // CharactersToUIntStrict() to accept "-0".
+  if (state == WTF::NumberParsingState::kOverflowMax && sign < 0)
+    return WTF::NumberParsingState::kError;
+  if (state == WTF::NumberParsingState::kSuccess) {
+    if (sign < 0 && digits_value != 0)
+      return WTF::NumberParsingState::kError;
+    value = digits_value;
+  }
+  return state;
 }
 
-// https://html.spec.whatwg.org/multipage/infrastructure.html#rules-for-parsing-non-negative-integers
-bool ParseHTMLNonNegativeInteger(const String& input, unsigned& value) {
+static WTF::NumberParsingState ParseHTMLNonNegativeIntegerInternal(
+    const String& input,
+    unsigned& value) {
   unsigned length = input.length();
-  if (length && input.Is8Bit()) {
+  if (length == 0)
+    return WTF::NumberParsingState::kError;
+  if (input.Is8Bit()) {
     const LChar* start = input.Characters8();
     return ParseHTMLNonNegativeIntegerInternal(start, start + length, value);
   }
 
   const UChar* start = input.Characters16();
   return ParseHTMLNonNegativeIntegerInternal(start, start + length, value);
+}
+
+// https://html.spec.whatwg.org/multipage/infrastructure.html#rules-for-parsing-non-negative-integers
+bool ParseHTMLNonNegativeInteger(const String& input, unsigned& value) {
+  return ParseHTMLNonNegativeIntegerInternal(input, value) ==
+         WTF::NumberParsingState::kSuccess;
+}
+
+bool ParseHTMLClampedNonNegativeInteger(const String& input,
+                                        unsigned min,
+                                        unsigned max,
+                                        unsigned& value) {
+  unsigned parsed_value;
+  switch (ParseHTMLNonNegativeIntegerInternal(input, parsed_value)) {
+    case WTF::NumberParsingState::kError:
+      return false;
+    case WTF::NumberParsingState::kOverflowMin:
+      NOTREACHED() << input;
+      return false;
+    case WTF::NumberParsingState::kOverflowMax:
+      value = max;
+      return true;
+    case WTF::NumberParsingState::kSuccess:
+      value = std::max(min, std::min(parsed_value, max));
+      return true;
+  }
+  return false;
 }
 
 template <typename CharacterType>

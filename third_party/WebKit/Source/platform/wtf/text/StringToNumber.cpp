@@ -28,7 +28,7 @@ static bool IsCharacterAllowedInBase(UChar c, int base) {
 template <typename IntegralType, typename CharType>
 static inline IntegralType ToIntegralType(const CharType* data,
                                           size_t length,
-                                          bool* ok,
+                                          NumberParsingState* parsing_state,
                                           int base) {
   static_assert(std::is_integral<IntegralType>::value,
                 "IntegralType must be an integral type.");
@@ -38,10 +38,12 @@ static inline IntegralType ToIntegralType(const CharType* data,
       std::numeric_limits<IntegralType>::min();
   static constexpr bool kIsSigned =
       std::numeric_limits<IntegralType>::is_signed;
+  DCHECK(parsing_state);
 
   IntegralType value = 0;
-  bool is_ok = false;
+  NumberParsingState state = NumberParsingState::kError;
   bool is_negative = false;
+  bool overflow = false;
 
   if (!data)
     goto bye;
@@ -75,28 +77,33 @@ static inline IntegralType ToIntegralType(const CharType* data,
     else
       digit_value = c - 'A' + 10;
 
-    bool overflow;
     if (is_negative) {
       // Overflow condition:
-      //       value * base - digitValue < integralMin
-      //   <=> value < (integralMin + digitValue) / base
+      //       value * base - digit_value < kIntegralMin
+      //   <=> value < (kIntegralMin + digit_value) / base
       // We must be careful of rounding errors here, but the default rounding
       // mode (round to zero) works well, so we can use this formula as-is.
-      overflow = value < (kIntegralMin + digit_value) / base;
+      if (value < (kIntegralMin + digit_value) / base) {
+        state = NumberParsingState::kOverflowMin;
+        overflow = true;
+      }
     } else {
       // Overflow condition:
-      //       value * base + digitValue > integralMax
-      //   <=> value > (integralMax + digitValue) / base
+      //       value * base + digit_value > kIntegralMax
+      //   <=> value > (kIntegralMax + digit_value) / base
       // Ditto regarding rounding errors.
-      overflow = value > (kIntegralMax - digit_value) / base;
+      if (value > (kIntegralMax - digit_value) / base) {
+        state = NumberParsingState::kOverflowMax;
+        overflow = true;
+      }
     }
-    if (overflow)
-      goto bye;
 
-    if (is_negative)
-      value = base * value - digit_value;
-    else
-      value = base * value + digit_value;
+    if (!overflow) {
+      if (is_negative)
+        value = base * value - digit_value;
+      else
+        value = base * value + digit_value;
+    }
     ++data;
   }
 
@@ -106,12 +113,29 @@ static inline IntegralType ToIntegralType(const CharType* data,
     ++data;
   }
 
-  if (!length)
-    is_ok = true;
+  if (length == 0) {
+    if (!overflow)
+      state = NumberParsingState::kSuccess;
+  } else {
+    // Even if we detected overflow, we return kError for trailing garbage.
+    state = NumberParsingState::kError;
+  }
 bye:
+  *parsing_state = state;
+  return state == NumberParsingState::kSuccess ? value : 0;
+}
+
+template <typename IntegralType, typename CharType>
+static inline IntegralType ToIntegralType(const CharType* data,
+                                          size_t length,
+                                          bool* ok,
+                                          int base) {
+  NumberParsingState state;
+  IntegralType value =
+      ToIntegralType<IntegralType, CharType>(data, length, &state, base);
   if (ok)
-    *ok = is_ok;
-  return is_ok ? value : 0;
+    *ok = state == NumberParsingState::kSuccess;
+  return value;
 }
 
 template <typename CharType>
@@ -136,6 +160,18 @@ static unsigned LengthOfCharactersAsInteger(const CharType* data,
   }
 
   return i;
+}
+
+unsigned CharactersToUIntStrict(const LChar* data,
+                                size_t length,
+                                NumberParsingState* state) {
+  return ToIntegralType<unsigned, LChar>(data, length, state, 10);
+}
+
+unsigned CharactersToUIntStrict(const UChar* data,
+                                size_t length,
+                                NumberParsingState* state) {
+  return ToIntegralType<unsigned, UChar>(data, length, state, 10);
 }
 
 int CharactersToIntStrict(const LChar* data,
