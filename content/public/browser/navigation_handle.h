@@ -7,7 +7,9 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
+#include "base/supports_user_data.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/reload_type.h"
@@ -38,9 +40,9 @@ class WebContents;
 // references to a NavigationHandle at the time of
 // WebContentsObserver::DidFinishNavigation, just before the handle is
 // destroyed.
-class CONTENT_EXPORT NavigationHandle {
+class CONTENT_EXPORT NavigationHandle : public base::SupportsUserData {
  public:
-  virtual ~NavigationHandle() {}
+  ~NavigationHandle() override {}
 
   // Parameters available at navigation start time -----------------------------
   //

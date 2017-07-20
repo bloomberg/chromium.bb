@@ -5,6 +5,10 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_CHROME_CONTENT_BROWSER_CLIENT_EXTENSIONS_PART_H_
 #define CHROME_BROWSER_EXTENSIONS_CHROME_CONTENT_BROWSER_CLIENT_EXTENSIONS_PART_H_
 
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chrome/browser/chrome_content_browser_client_parts.h"
@@ -71,9 +75,8 @@ class ChromeContentBrowserClientExtensionsPart
   static std::unique_ptr<content::VpnServiceProxy> GetVpnServiceProxy(
       content::BrowserContext* browser_context);
 
-  static bool ShouldFrameShareParentSiteInstanceDespiteTopDocumentIsolation(
-      const GURL& url,
-      content::SiteInstance* parent_site_instance);
+  static bool IsMainFrameSiteInstanceExcludedFromTopDocumentIsolation(
+      content::SiteInstance* main_frame_site_instance);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ChromeContentBrowserClientExtensionsPartTest,
