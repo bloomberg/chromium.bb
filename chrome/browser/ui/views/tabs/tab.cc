@@ -232,9 +232,8 @@ class Tab::FaviconCrashAnimation : public gfx::LinearAnimation,
                                    public gfx::AnimationDelegate {
  public:
   explicit FaviconCrashAnimation(Tab* target)
-      : gfx::LinearAnimation(1000, 25, this),
-        target_(target) {
-  }
+      : gfx::LinearAnimation(base::TimeDelta::FromSeconds(1), 25, this),
+        target_(target) {}
   ~FaviconCrashAnimation() override {}
 
   // gfx::Animation overrides:

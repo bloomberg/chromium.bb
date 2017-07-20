@@ -57,7 +57,8 @@ const int kMaxRippleRadius = 54;
 const SkColor kRippleColor = SkColorSetA(gfx::kGoogleBlue500, 0x66);
 const int kMaxRippleBurstRadius = 72;
 const gfx::Tween::Type kBurstAnimationTweenType = gfx::Tween::EASE_IN;
-const int kRippleBurstAnimationDuration = 160;
+constexpr auto kRippleBurstAnimationDuration =
+    base::TimeDelta::FromMilliseconds(160);
 
 // Offset of the affordance when it is at the maximum distance with content
 // border. Since the affordance is initially out of content bounds, this is the
@@ -66,7 +67,7 @@ const int kMaxAffordanceOffset = 146;
 
 // Parameters defining animation when the affordance is aborted.
 const gfx::Tween::Type kAbortAnimationTweenType = gfx::Tween::EASE_IN;
-const int kAbortAnimationDuration = 300;
+constexpr auto kAbortAnimationDuration = base::TimeDelta::FromMilliseconds(300);
 
 bool ShouldNavigateForward(const NavigationController& controller,
                            OverscrollMode mode) {

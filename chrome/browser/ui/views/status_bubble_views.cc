@@ -49,38 +49,43 @@
 #include "services/ui/public/interfaces/window_manager.mojom.h"  // nogncheck
 #endif
 
+namespace {
+
 // The alpha and color of the bubble's shadow.
-static const SkColor kShadowColor = SkColorSetARGB(30, 0, 0, 0);
+const SkColor kShadowColor = SkColorSetARGB(30, 0, 0, 0);
 
 // The roundedness of the edges of our bubble.
-static const int kBubbleCornerRadius = 4;
+const int kBubbleCornerRadius = 4;
 
 // How close the mouse can get to the infobubble before it starts sliding
 // off-screen.
-static const int kMousePadding = 20;
+const int kMousePadding = 20;
 
 // The horizontal offset of the text within the status bubble, not including the
 // outer shadow ring.
-static const int kTextPositionX = 3;
+const int kTextPositionX = 3;
 
 // The minimum horizontal space between the (right) end of the text and the edge
 // of the status bubble, not including the outer shadow ring.
-static const int kTextHorizPadding = 1;
+const int kTextHorizPadding = 1;
 
 // Delays before we start hiding or showing the bubble after we receive a
 // show or hide request.
-static const int kShowDelay = 80;
-static const int kHideDelay = 250;
+const int kShowDelay = 80;
+const int kHideDelay = 250;
 
 // How long each fade should last for.
-static const int kShowFadeDurationMS = 120;
-static const int kHideFadeDurationMS = 200;
-static const int kFramerate = 25;
+constexpr auto kShowFadeDuration = base::TimeDelta::FromMilliseconds(120);
+constexpr auto kHideFadeDuration = base::TimeDelta::FromMilliseconds(200);
+const int kFramerate = 25;
 
 // How long each expansion step should take.
-static const int kMinExpansionStepDurationMS = 20;
-static const int kMaxExpansionStepDurationMS = 150;
+constexpr auto kMinExpansionStepDuration =
+    base::TimeDelta::FromMilliseconds(20);
+constexpr auto kMaxExpansionStepDuration =
+    base::TimeDelta::FromMilliseconds(150);
 
+}  // namespace
 
 // StatusBubbleViews::StatusViewAnimation --------------------------------------
 class StatusBubbleViews::StatusViewAnimation : public gfx::LinearAnimation,
@@ -179,7 +184,7 @@ class StatusBubbleViews::StatusView : public views::View {
   void RestartTimer(base::TimeDelta delay);
 
   // Manage the fades and starting and stopping the animations correctly.
-  void StartFade(float start, float end, int duration);
+  void StartFade(float start, float end, base::TimeDelta duration);
   void StartHiding();
   void StartShowing();
 
@@ -274,10 +279,10 @@ void StatusBubbleViews::StatusView::StartTimer(base::TimeDelta time) {
 void StatusBubbleViews::StatusView::OnTimer() {
   if (state_ == BUBBLE_HIDING_TIMER) {
     state_ = BUBBLE_HIDING_FADE;
-    StartFade(1.0f, 0.0f, kHideFadeDurationMS);
+    StartFade(1.0f, 0.0f, kHideFadeDuration);
   } else if (state_ == BUBBLE_SHOWING_TIMER) {
     state_ = BUBBLE_SHOWING_FADE;
-    StartFade(0.0f, 1.0f, kShowFadeDurationMS);
+    StartFade(0.0f, 1.0f, kShowFadeDuration);
   }
 }
 
@@ -301,7 +306,7 @@ void StatusBubbleViews::StatusView::ResetTimer() {
 
 void StatusBubbleViews::StatusView::StartFade(float start,
                                               float end,
-                                              int duration) {
+                                              base::TimeDelta duration) {
   animation_.reset(new StatusViewAnimation(this, start, end));
 
   // This will also reset the currently-occurring animation.
@@ -323,8 +328,7 @@ void StatusBubbleViews::StatusView::StartHiding() {
     float current_opacity = animation_->GetCurrentOpacity();
 
     // Start a fade in the opposite direction.
-    StartFade(current_opacity, 0.0f,
-              static_cast<int>(kHideFadeDurationMS * current_opacity));
+    StartFade(current_opacity, 0.0f, kHideFadeDuration * current_opacity);
   }
 }
 
@@ -344,8 +348,7 @@ void StatusBubbleViews::StatusView::StartShowing() {
     float current_opacity = animation_->GetCurrentOpacity();
 
     // Start a fade in the opposite direction.
-    StartFade(current_opacity, 1.0f,
-              static_cast<int>(kShowFadeDurationMS * current_opacity));
+    StartFade(current_opacity, 1.0f, kShowFadeDuration * current_opacity);
   } else if (state_ == BUBBLE_SHOWING_TIMER) {
     // We hadn't yet begun showing anything when we received a new request
     // for something to show, so we start from scratch.
@@ -588,10 +591,10 @@ void StatusBubbleViews::StatusViewExpander::StartExpansion(
   expanded_text_ = expanded_text;
   expansion_start_ = expansion_start;
   expansion_end_ = expansion_end;
-  int min_duration = std::max(kMinExpansionStepDurationMS,
-      static_cast<int>(kMaxExpansionStepDurationMS *
-          (expansion_end - expansion_start) / 100.0));
-  SetDuration(std::min(kMaxExpansionStepDurationMS, min_duration));
+  base::TimeDelta min_duration = std::max(
+      kMinExpansionStepDuration,
+      kMaxExpansionStepDuration * (expansion_end - expansion_start) / 100.0);
+  SetDuration(std::min(kMaxExpansionStepDuration, min_duration));
   Start();
 }
 

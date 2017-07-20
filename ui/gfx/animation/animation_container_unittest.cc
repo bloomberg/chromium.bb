@@ -47,8 +47,7 @@ class FakeAnimationContainerObserver : public AnimationContainerObserver {
 class TestAnimation : public LinearAnimation {
  public:
   explicit TestAnimation(AnimationDelegate* delegate)
-      : LinearAnimation(20, 20, delegate) {
-  }
+      : LinearAnimation(base::TimeDelta::FromMilliseconds(20), 20, delegate) {}
 
   void AnimateToState(double state) override {}
 

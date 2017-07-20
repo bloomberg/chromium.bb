@@ -112,7 +112,7 @@ void ProgressBar::SetValue(double value) {
   current_value_ = adjusted_value;
   if (IsIndeterminate()) {
     indeterminate_bar_animation_.reset(new gfx::LinearAnimation(this));
-    indeterminate_bar_animation_->SetDuration(2000);  // In milliseconds.
+    indeterminate_bar_animation_->SetDuration(base::TimeDelta::FromSeconds(2));
     indeterminate_bar_animation_->Start();
   } else {
     indeterminate_bar_animation_.reset();

@@ -14,7 +14,7 @@ AnimatedIcon::AnimatedIcon(const gfx::VectorIcon& icon, NSView* host_view)
       host_view_(host_view),
       duration_(gfx::GetDurationOfAnimation(icon)),
       animation_(base::MakeUnique<gfx::LinearAnimation>(this)) {
-  animation_->SetDuration(duration_.InMilliseconds());
+  animation_->SetDuration(duration_);
 }
 
 AnimatedIcon::~AnimatedIcon() {}

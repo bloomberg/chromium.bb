@@ -115,8 +115,8 @@ void SearchResultListView::SetAutoLaunchTimeout(
   if (timeout > base::TimeDelta()) {
     auto_launch_indicator_->SetVisible(true);
     auto_launch_indicator_->SetBounds(0, 0, 0, kTimeoutIndicatorHeight);
-    auto_launch_animation_.reset(new gfx::LinearAnimation(
-        timeout.InMilliseconds(), kTimeoutFramerate, this));
+    auto_launch_animation_.reset(
+        new gfx::LinearAnimation(timeout, kTimeoutFramerate, this));
     auto_launch_animation_->Start();
   } else {
     auto_launch_indicator_->SetVisible(false);
