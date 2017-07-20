@@ -5,7 +5,6 @@
 #import "ios/chrome/browser/ui/commands/reading_list_add_command.h"
 
 #include "base/logging.h"
-#include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -20,7 +19,7 @@
 @synthesize URL = _URL;
 
 - (instancetype)initWithURL:(const GURL&)URL title:(NSString*)title {
-  if (self = [super initWithTag:IDC_ADD_READING_LIST]) {
+  if (self = [super initWithTag:0]) {
     _URL = URL;
     _title = title;
   }

@@ -226,7 +226,7 @@
     ReadingListActivity* readingListActivity =
         [[ReadingListActivity alloc] initWithURL:data.url
                                            title:data.title
-                                       responder:controller];
+                                      dispatcher:dispatcher];
     [applicationActivities addObject:readingListActivity];
   }
   return applicationActivities;

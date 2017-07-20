@@ -8,6 +8,7 @@
 #import <Foundation/Foundation.h>
 
 @class OpenNewTabCommand;
+@class ReadingListAddCommand;
 
 // Protocol for commands that will generally be handled by the "current tab",
 // which in practice is the BrowserViewController instance displaying the tab.
@@ -42,6 +43,9 @@
 
 // Prints the currently active tab.
 - (void)printTab;
+
+// Adds a page to the reading list using data in |command|.
+- (void)addToReadingList:(ReadingListAddCommand*)command;
 
 @end
 

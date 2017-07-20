@@ -5,8 +5,7 @@
 #import "ios/chrome/browser/ui/activity_services/reading_list_activity.h"
 
 #include "base/logging.h"
-#import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
-#include "ios/chrome/browser/ui/commands/ios_command_ids.h"
+#import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/reading_list_add_command.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -26,12 +25,15 @@ NSString* const kReadingListActivityType =
 @interface ReadingListActivity () {
   GURL _activityURL;
   NSString* _title;
-  // The responder that receives ChromeCommands when the activity is performed.
-  __weak UIResponder* _responder;
 }
+
+@property(nonatomic, weak, readonly) id<BrowserCommands> dispatcher;
+
 @end
 
 @implementation ReadingListActivity
+
+@synthesize dispatcher = _dispatcher;
 
 + (NSString*)activityIdentifier {
   return kReadingListActivityType;
@@ -39,9 +41,9 @@ NSString* const kReadingListActivityType =
 
 - (instancetype)initWithURL:(const GURL&)activityURL
                       title:(NSString*)title
-                  responder:(UIResponder*)responder {
+                 dispatcher:(id<BrowserCommands>)dispatcher {
   if (self = [super init]) {
-    _responder = responder;
+    _dispatcher = dispatcher;
     _activityURL = activityURL;
     _title = [NSString stringWithString:title];
   }
@@ -73,7 +75,7 @@ NSString* const kReadingListActivityType =
 - (void)performActivity {
   ReadingListAddCommand* command =
       [[ReadingListAddCommand alloc] initWithURL:_activityURL title:_title];
-  [_responder chromeExecuteCommand:command];
+  [_dispatcher addToReadingList:command];
   [self activityDidFinish:YES];
 }
 
