@@ -650,6 +650,39 @@ crbug.com/728378 virtual/layout_ng/overflow/overflow-position-004.html [ Failure
 
 # ====== LayoutNG-only failures until here ======
 
+# ====== DevTools test migration failures from here ======
+# Temporary failures (these tests are copies from html to js)
+# See crbug.com/667560 for details
+
+crbug.com/667560 http/tests/devtools/console/console-assert.js [ Skip ]
+crbug.com/667560 http/tests/devtools/console/console-big-array.js [ Skip ]
+crbug.com/667560 http/tests/devtools/console/console-custom-formatters.js [ Skip ]
+crbug.com/667560 http/tests/devtools/console/console-dir-es6.js [ Skip ]
+crbug.com/667560 http/tests/devtools/console/console-dirxml.js [ Skip ]
+crbug.com/667560 http/tests/devtools/console/console-edit-expanded-tree.js [ Skip ]
+crbug.com/667560 http/tests/devtools/console/console-external-array.js [ Skip ]
+crbug.com/667560 http/tests/devtools/console/console-format-array-prototype.js [ Skip ]
+crbug.com/667560 http/tests/devtools/console/console-format-es6-2.js [ Skip ]
+crbug.com/667560 http/tests/devtools/console/console-format-es6-symbols-error.js [ Skip ]
+crbug.com/667560 http/tests/devtools/console/console-format-es6.js [ Skip ]
+crbug.com/667560 http/tests/devtools/console/console-format-style.js [ Skip ]
+
+### virtual/mojo-loading/http/tests/devtools
+crbug.com/667560 virtual/mojo-loading/http/tests/devtools/console/console-assert.js [ Skip ]
+crbug.com/667560 virtual/mojo-loading/http/tests/devtools/console/console-big-array.js [ Skip ]
+crbug.com/667560 virtual/mojo-loading/http/tests/devtools/console/console-custom-formatters.js [ Skip ]
+crbug.com/667560 virtual/mojo-loading/http/tests/devtools/console/console-dir-es6.js [ Skip ]
+crbug.com/667560 virtual/mojo-loading/http/tests/devtools/console/console-dirxml.js [ Skip ]
+crbug.com/667560 virtual/mojo-loading/http/tests/devtools/console/console-edit-expanded-tree.js [ Skip ]
+crbug.com/667560 virtual/mojo-loading/http/tests/devtools/console/console-external-array.js [ Skip ]
+crbug.com/667560 virtual/mojo-loading/http/tests/devtools/console/console-format-array-prototype.js [ Skip ]
+crbug.com/667560 virtual/mojo-loading/http/tests/devtools/console/console-format-es6-2.js [ Skip ]
+crbug.com/667560 virtual/mojo-loading/http/tests/devtools/console/console-format-es6-symbols-error.js [ Skip ]
+crbug.com/667560 virtual/mojo-loading/http/tests/devtools/console/console-format-es6.js [ Skip ]
+crbug.com/667560 virtual/mojo-loading/http/tests/devtools/console/console-format-style.js [ Skip ]
+
+# ====== DevTools test migration failures until here ======
+
 # Run these tests with under virtual/scalefactor... only.
 crbug.com/567837 fast/hidpi/static [ Skip ]
 
