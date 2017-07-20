@@ -1409,6 +1409,14 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
                  desc="Size and units downloaded, and the origin domain.">
           <ph name="DOWNLOAD_RECEIVED">$1<ex>154 MB</ex></ph> from <ph name="DOWNLOAD_DOMAIN">$2<ex>example.com</ex></ph>
         </message>
+        <message name="IDS_DOWNLOAD_NOTIFICATION_STATUS_SHORT"
+                 desc="Size and units downloaded, and the origin domain. ">
+          <ph name="DOWNLOAD_RECEIVED">$1<ex>154 MB</ex></ph> from <ph name="DOWNLOAD_DOMAIN">$2<ex>example.com</ex></ph>
+        </message>
+        <message name="IDS_DOWNLOAD_NOTIFICATION_DISPLAY_SOURCE"
+                 desc="The name of the notification source, which is download manager here. Shown in the notification header.">
+          Download manager
+        </message>
       </if>
       <message name="IDS_DOWNLOAD_STATUS_IN_PROGRESS"
                desc="Size and units downloaded, time remaining.">
