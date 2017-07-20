@@ -1,5 +1,5 @@
 rootWebArea
-++checkBox checkedState=1
-++checkBox checkedState=2
-++checkBox checkedState=1
-++checkBox checkedState=3
+++checkBox checkedState=false
+++checkBox checkedState=true
+++checkBox checkedState=false
+++checkBox checkedState=mixed

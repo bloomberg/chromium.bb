@@ -1,4 +1,4 @@
 rootWebArea
 ++radioGroup required
-++++radioButton checkedState=1
-++++radioButton checkedState=1
+++++radioButton checkedState=false
+++++radioButton checkedState=false

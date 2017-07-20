@@ -9,11 +9,11 @@ rootWebArea
 ++++++staticText name='placeholder3'
 ++++++++inlineTextBox name='placeholder3'
 ++textField name='aria-label4' placeholder='aria-placeholder4'
-++textField description='aria-description5' name='aria-label5' placeholder='placeholder5' descriptionFrom=5
+++textField description='aria-description5' name='aria-label5' placeholder='placeholder5' descriptionFrom=relatedElement
 ++++genericContainer
 ++++++staticText name='placeholder5'
 ++++++++inlineTextBox name='placeholder5'
 ++genericContainer
 ++++staticText name='aria-description5'
 ++++++inlineTextBox name='aria-description5'
-++textField description='title6' name='aria-placeholder6' descriptionFrom=2
+++textField description='title6' name='aria-placeholder6' descriptionFrom=attribute

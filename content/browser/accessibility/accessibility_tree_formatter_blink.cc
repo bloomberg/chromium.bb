@@ -58,8 +58,67 @@ std::string AccessibilityTreeFormatterBlink::IntAttrToString(
     return target ? ui::ToString(target->GetData().role) : std::string("null");
   }
 
-  if (attr == ui::AX_ATTR_RESTRICTION)
-    return ui::ToString(static_cast<ui::AXRestriction>(value));
+  switch (attr) {
+    case ui::AX_ATTR_ARIA_CURRENT_STATE:
+      return ui::ToString(static_cast<ui::AXAriaCurrentState>(value));
+    case ui::AX_ATTR_CHECKED_STATE:
+      return ui::ToString(static_cast<ui::AXCheckedState>(value));
+    case ui::AX_ATTR_DEFAULT_ACTION_VERB:
+      return ui::ToString(static_cast<ui::AXDefaultActionVerb>(value));
+    case ui::AX_ATTR_DESCRIPTION_FROM:
+      return ui::ToString(static_cast<ui::AXDescriptionFrom>(value));
+    case ui::AX_ATTR_INVALID_STATE:
+      return ui::ToString(static_cast<ui::AXInvalidState>(value));
+    case ui::AX_ATTR_NAME_FROM:
+      return ui::ToString(static_cast<ui::AXNameFrom>(value));
+    case ui::AX_ATTR_RESTRICTION:
+      return ui::ToString(static_cast<ui::AXRestriction>(value));
+    case ui::AX_ATTR_SORT_DIRECTION:
+      return ui::ToString(static_cast<ui::AXSortDirection>(value));
+    case ui::AX_ATTR_TEXT_DIRECTION:
+      return ui::ToString(static_cast<ui::AXTextDirection>(value));
+    // No pretty printing necessary for these:
+    case ui::AX_ATTR_ACTIVEDESCENDANT_ID:
+    case ui::AX_ATTR_ARIA_CELL_COLUMN_INDEX:
+    case ui::AX_ATTR_ARIA_CELL_ROW_INDEX:
+    case ui::AX_ATTR_ARIA_COLUMN_COUNT:
+    case ui::AX_ATTR_ARIA_ROW_COUNT:
+    case ui::AX_ATTR_BACKGROUND_COLOR:
+    case ui::AX_ATTR_CHILD_TREE_ID:
+    case ui::AX_ATTR_COLOR:
+    case ui::AX_ATTR_COLOR_VALUE:
+    case ui::AX_ATTR_DETAILS_ID:
+    case ui::AX_ATTR_ERRORMESSAGE_ID:
+    case ui::AX_ATTR_HIERARCHICAL_LEVEL:
+    case ui::AX_ATTR_IN_PAGE_LINK_TARGET_ID:
+    case ui::AX_ATTR_MEMBER_OF_ID:
+    case ui::AX_ATTR_NEXT_ON_LINE_ID:
+    case ui::AX_ATTR_POS_IN_SET:
+    case ui::AX_ATTR_PREVIOUS_ON_LINE_ID:
+    case ui::AX_ATTR_SCROLL_X:
+    case ui::AX_ATTR_SCROLL_X_MAX:
+    case ui::AX_ATTR_SCROLL_X_MIN:
+    case ui::AX_ATTR_SCROLL_Y:
+    case ui::AX_ATTR_SCROLL_Y_MAX:
+    case ui::AX_ATTR_SCROLL_Y_MIN:
+    case ui::AX_ATTR_SET_SIZE:
+    case ui::AX_ATTR_TABLE_CELL_COLUMN_INDEX:
+    case ui::AX_ATTR_TABLE_CELL_COLUMN_SPAN:
+    case ui::AX_ATTR_TABLE_CELL_ROW_INDEX:
+    case ui::AX_ATTR_TABLE_CELL_ROW_SPAN:
+    case ui::AX_ATTR_TABLE_COLUMN_COUNT:
+    case ui::AX_ATTR_TABLE_COLUMN_HEADER_ID:
+    case ui::AX_ATTR_TABLE_COLUMN_INDEX:
+    case ui::AX_ATTR_TABLE_HEADER_ID:
+    case ui::AX_ATTR_TABLE_ROW_COUNT:
+    case ui::AX_ATTR_TABLE_ROW_HEADER_ID:
+    case ui::AX_ATTR_TABLE_ROW_INDEX:
+    case ui::AX_ATTR_TEXT_SEL_END:
+    case ui::AX_ATTR_TEXT_SEL_START:
+    case ui::AX_ATTR_TEXT_STYLE:
+    case ui::AX_INT_ATTRIBUTE_NONE:
+      break;
+  }
 
   // Just return the number
   return std::to_string(value);

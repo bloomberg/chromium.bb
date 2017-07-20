@@ -1,11 +1,11 @@
 rootWebArea
-++genericContainer invalidState=2
+++genericContainer invalidState=true
 ++++staticText name='invalid=true'
 ++++++inlineTextBox name='invalid=true'
-++genericContainer invalidState=3
+++genericContainer invalidState=spelling
 ++++staticText name='invalid=spelling'
 ++++++inlineTextBox name='invalid=spelling'
-++genericContainer invalidState=4
+++genericContainer invalidState=grammar
 ++++staticText name='invalid=grammar'
 ++++++inlineTextBox name='invalid=grammar'
 ++genericContainer
@@ -17,11 +17,11 @@ rootWebArea
 ++genericContainer
 ++++staticText name='invalid=<default>'
 ++++++inlineTextBox name='invalid=<default>'
-++genericContainer ariaInvalidValue='unknown' invalidState=5
+++genericContainer ariaInvalidValue='unknown' invalidState=other
 ++++staticText name='invalid=unknown'
 ++++++inlineTextBox name='invalid=unknown'
 ++form
-++++textField invalidState=2
+++++textField invalidState=true
 ++++++genericContainer
 ++++++++staticText name='1234'
 ++++++++++inlineTextBox name='1234'

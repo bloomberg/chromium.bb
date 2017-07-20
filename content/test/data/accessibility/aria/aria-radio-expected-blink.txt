@@ -1,2 +1,2 @@
 rootWebArea
-++radioButton name='Radio1' checkedState=1
+++radioButton name='Radio1' checkedState=false

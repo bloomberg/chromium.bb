@@ -1,15 +1,15 @@
 rootWebArea
 ++tree
-++++treeItem selectable name='Animals ' hierarchicalLevel=1 setSize=2 posInSet=1 checkedState=3
+++++treeItem selectable name='Animals ' hierarchicalLevel=1 setSize=2 posInSet=1 checkedState=mixed
 ++++++staticText name='Animals'
 ++++++++inlineTextBox name='Animals'
 ++++++treeItem selectable name='Domesticated ' hierarchicalLevel=2 setSize=2 posInSet=1
 ++++++++staticText name='Domesticated'
 ++++++++++inlineTextBox name='Domesticated'
-++++++++treeItem selectable name='Dog' hierarchicalLevel=3 setSize=2 posInSet=1 checkedState=2
+++++++++treeItem selectable name='Dog' hierarchicalLevel=3 setSize=2 posInSet=1 checkedState=true
 ++++++++++staticText name='Dog'
 ++++++++++++inlineTextBox name='Dog'
-++++++++treeItem selectable name='Cat' hierarchicalLevel=3 setSize=2 posInSet=2 checkedState=1
+++++++++treeItem selectable name='Cat' hierarchicalLevel=3 setSize=2 posInSet=2 checkedState=false
 ++++++++++staticText name='Cat'
 ++++++++++++inlineTextBox name='Cat'
 ++++++treeItem selectable name='Wild' hierarchicalLevel=2 setSize=2 posInSet=2

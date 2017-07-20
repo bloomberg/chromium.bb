@@ -1,2 +1,2 @@
 rootWebArea
-++checkBox name='aria label' checkedState=1
+++checkBox name='aria label' checkedState=false

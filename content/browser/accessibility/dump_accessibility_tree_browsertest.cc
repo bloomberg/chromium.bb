@@ -218,7 +218,8 @@ void DumpAccessibilityTreeTest::AddDefaultFilters(
   AddFilter(filters, "flowtoIds*");
   AddFilter(filters, "detailsIds*");
   AddFilter(filters, "invalidState=*");
-  AddFilter(filters, "invalidState=1", Filter::DENY);  // Don't show false value
+  AddFilter(filters, "invalidState=false",
+            Filter::DENY);  // Don't show false value
 
   //
   // OS X

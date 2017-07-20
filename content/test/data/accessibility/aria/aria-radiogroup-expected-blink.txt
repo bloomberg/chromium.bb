@@ -1,4 +1,4 @@
 rootWebArea
 ++radioGroup
-++++radioButton name='Radio 1' checkedState=1 radioGroupIds=radioButton,radioButton
-++++radioButton name='Radio 2' checkedState=1 radioGroupIds=radioButton,radioButton
+++++radioButton name='Radio 1' checkedState=false radioGroupIds=radioButton,radioButton
+++++radioButton name='Radio 2' checkedState=false radioGroupIds=radioButton,radioButton
