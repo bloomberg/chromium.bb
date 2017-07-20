@@ -169,6 +169,7 @@ void JourneyLogger::RecordJourneyStatsHistograms(
   RecordCheckoutFlowMetrics();
   RecordCanMakePaymentStats(completion_status);
   RecordUrlKeyedMetrics(completion_status);
+  RecordEventsMetric(completion_status);
 
   // These following metrics only make sense if the UI was shown to the user.
   if (was_show_called_) {
@@ -323,6 +324,44 @@ void JourneyLogger::RecordCanMakePaymentEffectOnCompletion(
 
   base::UmaHistogramEnumeration(histogram_name, completion_status,
                                 COMPLETION_STATUS_MAX);
+}
+
+void JourneyLogger::RecordEventsMetric(CompletionStatus completion_status) {
+  // Add the completion status to the events.
+  switch (completion_status) {
+    case COMPLETION_STATUS_COMPLETED:
+      events_ |= EVENT_COMPLETED;
+      break;
+    case COMPLETION_STATUS_USER_ABORTED:
+      events_ |= EVENT_USER_ABORTED;
+      break;
+    case COMPLETION_STATUS_OTHER_ABORTED:
+      events_ |= EVENT_OTHER_ABORTED;
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  // Add the whether the user had complete suggestions for all requested
+  // sections to the events.
+  bool user_had_complete_suggestions_for_requested_information = true;
+  for (int i = 0; i < NUMBER_OF_SECTIONS; ++i) {
+    if (sections_[i].is_requested_) {
+      if (sections_[i].number_suggestions_shown_ == 0 ||
+          !sections_[i].has_complete_suggestion_) {
+        user_had_complete_suggestions_for_requested_information = false;
+      }
+    }
+  }
+  if (user_had_complete_suggestions_for_requested_information)
+    events_ |= EVENT_HAD_NECESSARY_COMPLETE_SUGGESTIONS;
+
+  // Add whether the user had and initial form of payment to the events.
+  if (sections_[SECTION_PAYMENT_METHOD].number_suggestions_shown_ > 0)
+    events_ |= EVENT_HAD_INITIAL_FORM_OF_PAYMENT;
+
+  // Record the events.
+  UMA_HISTOGRAM_SPARSE_SLOWLY("PaymentRequest.Events", events_);
 }
 
 void JourneyLogger::RecordUrlKeyedMetrics(CompletionStatus completion_status) {

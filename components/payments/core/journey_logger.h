@@ -106,7 +106,12 @@ class JourneyLogger {
     EVENT_PAY_CLICKED = 1 << 1,
     EVENT_RECEIVED_INSTRUMENT_DETAILS = 1 << 2,
     EVENT_SKIPPED_SHOW = 1 << 3,
-    EVENT_ENUM_MAX = 16,
+    EVENT_COMPLETED = 1 << 4,
+    EVENT_USER_ABORTED = 1 << 5,
+    EVENT_OTHER_ABORTED = 1 << 6,
+    EVENT_HAD_INITIAL_FORM_OF_PAYMENT = 1 << 7,
+    EVENT_HAD_NECESSARY_COMPLETE_SUGGESTIONS = 1 << 8,
+    EVENT_ENUM_MAX = 512,
   };
 
   // The reason why the Payment Request was aborted.
@@ -249,6 +254,10 @@ class JourneyLogger {
   // of the CanMakePaymentMethod.
   void RecordCanMakePaymentEffectOnCompletion(
       CompletionStatus completion_status);
+
+  // Records the metric about the different events that happened during the
+  // Payment Request.
+  void RecordEventsMetric(CompletionStatus completion_status);
 
   // Records the Payment Request Url Keyed Metrics.
   void RecordUrlKeyedMetrics(CompletionStatus completion_status);
