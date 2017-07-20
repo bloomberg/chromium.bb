@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_DOM_DISTILLER_DOM_DISTILLER_SERVICE_FACTORY_ANDROID_H_
 #define CHROME_BROWSER_DOM_DISTILLER_DOM_DISTILLER_SERVICE_FACTORY_ANDROID_H_
 
-#include <jni.h>
 #include "base/android/scoped_java_ref.h"
 
 namespace dom_distiller {
@@ -17,8 +16,6 @@ class DomDistillerServiceFactoryAndroid {
  public:
   static base::android::ScopedJavaLocalRef<jobject>
   GetForProfile(JNIEnv* env, jclass clazz, jobject j_profile);
-
-  static bool Register(JNIEnv* env);
 };
 
 }  // namespace android

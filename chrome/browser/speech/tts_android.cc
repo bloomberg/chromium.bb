@@ -143,8 +143,3 @@ TtsPlatformImplAndroid* TtsPlatformImplAndroid::GetInstance() {
       TtsPlatformImplAndroid,
       base::LeakySingletonTraits<TtsPlatformImplAndroid>>::get();
 }
-
-// static
-bool TtsPlatformImplAndroid::Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}

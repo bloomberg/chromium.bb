@@ -4,7 +4,6 @@
 
 #include "chrome/browser/history/android/sqlite_cursor.h"
 
-#include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
@@ -55,10 +54,6 @@ ScopedJavaLocalRef<jobject> SQLiteCursor::NewJavaSqliteCursor(
     AndroidHistoryProviderService* service) {
   SQLiteCursor* cursor = new SQLiteCursor(column_names, statement, service);
   return Java_SQLiteCursor_create(env, reinterpret_cast<intptr_t>(cursor));
-}
-
-bool SQLiteCursor::RegisterSqliteCursor(JNIEnv* env) {
-  return RegisterNativesImpl(env);
 }
 
 jint SQLiteCursor::GetCount(JNIEnv* env, const JavaParamRef<jobject>& obj) {

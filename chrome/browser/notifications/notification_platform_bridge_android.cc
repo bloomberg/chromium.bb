@@ -328,12 +328,6 @@ void NotificationPlatformBridgeAndroid::SetReadyCallback(
 }
 
 // static
-bool NotificationPlatformBridgeAndroid::RegisterNotificationPlatformBridge(
-    JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
-// static
 void NotificationPlatformBridgeAndroid::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(prefs::kNotificationsVibrateEnabled, true);

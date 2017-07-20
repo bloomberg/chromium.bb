@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_SUPERVISED_USER_SUPERVISED_USER_CONTENT_PROVIDER_ANDROID_H_
 #define CHROME_BROWSER_SUPERVISED_USER_SUPERVISED_USER_CONTENT_PROVIDER_ANDROID_H_
 
-#include <jni.h>
 #include <memory>
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
@@ -35,8 +34,6 @@ class SupervisedUserContentProvider {
       const base::android::JavaParamRef<jstring>& url);
 
   void SetFilterForTesting(JNIEnv* env, jobject caller);
-
-  static bool Register(JNIEnv* env);
 
  private:
   class UrlFilterObserver : public SupervisedUserServiceObserver {

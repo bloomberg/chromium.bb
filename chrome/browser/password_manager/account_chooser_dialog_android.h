@@ -69,7 +69,4 @@ class AccountChooserDialogAndroid : public content::WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(AccountChooserDialogAndroid);
 };
 
-// Native JNI methods
-bool RegisterAccountChooserDialogAndroid(JNIEnv* env);
-
 #endif  // CHROME_BROWSER_PASSWORD_MANAGER_ACCOUNT_CHOOSER_DIALOG_ANDROID_H_

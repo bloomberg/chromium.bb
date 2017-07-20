@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/logging.h"
@@ -19,11 +18,6 @@
 #include "jni/PaymentManifestWebDataService_jni.h"
 
 namespace payments {
-
-// static
-bool PaymentManifestWebDataServiceAndroid::Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
 
 PaymentManifestWebDataServiceAndroid::PaymentManifestWebDataServiceAndroid(
     JNIEnv* env,

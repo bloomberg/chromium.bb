@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_PAYMENTS_ANDROID_PAYMENT_MANIFEST_WEB_DATA_SERVICE_ANDROID_H_
 #define CHROME_BROWSER_PAYMENTS_ANDROID_PAYMENT_MANIFEST_WEB_DATA_SERVICE_ANDROID_H_
 
-#include <jni.h>
 #include <map>
 #include <memory>
 #include <vector>
@@ -25,9 +24,6 @@ namespace payments {
 // therefore a single instance of this wrapper.
 class PaymentManifestWebDataServiceAndroid : public WebDataServiceConsumer {
  public:
-  // Registers the JNI bindings for this class.
-  static bool Register(JNIEnv* env);
-
   PaymentManifestWebDataServiceAndroid(JNIEnv* env, jobject obj);
   ~PaymentManifestWebDataServiceAndroid() override;
 

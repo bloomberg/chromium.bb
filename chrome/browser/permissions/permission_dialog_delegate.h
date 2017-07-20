@@ -65,7 +65,6 @@ class PermissionDialogDelegate : public content::WebContentsObserver {
   static bool ShouldShowDialog(bool has_user_gesture);
 
   // JNI methods.
-  static bool RegisterPermissionDialogDelegate(JNIEnv* env);
   void Accept(JNIEnv* env, const JavaParamRef<jobject>& obj, jboolean persist);
   void Cancel(JNIEnv* env, const JavaParamRef<jobject>& obj, jboolean persist);
   void Dismissed(JNIEnv* env, const JavaParamRef<jobject>& obj);

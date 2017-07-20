@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_PLATFORM_BRIDGE_ANDROID_H_
 #define CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_PLATFORM_BRIDGE_ANDROID_H_
 
-#include <jni.h>
 #include <stdint.h>
 #include <map>
 #include <set>
@@ -75,8 +74,6 @@ class NotificationPlatformBridgeAndroid : public NotificationPlatformBridge {
       bool incognito,
       const GetDisplayedNotificationsCallback& callback) const override;
   void SetReadyCallback(NotificationBridgeReadyCallback callback) override;
-
-  static bool RegisterNotificationPlatformBridge(JNIEnv* env);
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 

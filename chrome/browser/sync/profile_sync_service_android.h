@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_SYNC_PROFILE_SYNC_SERVICE_ANDROID_H_
 #define CHROME_BROWSER_SYNC_PROFILE_SYNC_SERVICE_ANDROID_H_
 
-#include <jni.h>
-
 #include <map>
 #include <memory>
 
@@ -189,9 +187,6 @@ class ProfileSyncServiceAndroid : public syncer::SyncServiceObserver {
       jlong network_resources);
 
   static ProfileSyncServiceAndroid* GetProfileSyncServiceAndroid();
-
-  // Registers the ProfileSyncServiceAndroid's native methods through JNI.
-  static bool Register(JNIEnv* env);
 
  private:
   // Returns whether sync is allowed by Android.

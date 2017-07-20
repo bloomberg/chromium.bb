@@ -29,10 +29,6 @@ ScopedJavaLocalRef<jobject> DomDistillerServiceFactoryAndroid::GetForProfile(
   return ScopedJavaLocalRef<jobject>(service_android->java_ref_);
 }
 
-bool DomDistillerServiceFactoryAndroid::Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 ScopedJavaLocalRef<jobject> GetForProfile(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,

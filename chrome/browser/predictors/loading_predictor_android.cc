@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/predictors/loading_predictor_android.h"
-
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 
@@ -64,10 +62,6 @@ static jboolean CancelPageLoadHint(JNIEnv* env,
   loading_predictor->CancelPageLoadHint(url);
 
   return true;
-}
-
-bool RegisterLoadingPredictor(JNIEnv* env) {
-  return RegisterNativesImpl(env);
 }
 
 }  // namespace predictors

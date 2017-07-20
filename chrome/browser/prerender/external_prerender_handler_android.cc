@@ -159,9 +159,4 @@ static jlong Init(JNIEnv* env, const JavaParamRef<jclass>& clazz) {
   return reinterpret_cast<intptr_t>(external_handler);
 }
 
-bool ExternalPrerenderHandlerAndroid::RegisterExternalPrerenderHandlerAndroid(
-    JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace prerender

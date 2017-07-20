@@ -10,7 +10,6 @@
 #include <string>
 #include <vector>
 
-#include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
@@ -501,11 +500,6 @@ ProfileSyncServiceAndroid*
   return reinterpret_cast<ProfileSyncServiceAndroid*>(
       Java_ProfileSyncService_getProfileSyncServiceAndroid(
           AttachCurrentThread()));
-}
-
-// static
-bool ProfileSyncServiceAndroid::Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
 }
 
 static jlong Init(JNIEnv* env, const JavaParamRef<jobject>& obj) {

@@ -17,11 +17,6 @@ using ::base::android::ConvertJavaStringToUTF8;
 
 }  // namespace
 
-// static
-bool JourneyLoggerAndroid::Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 JourneyLoggerAndroid::JourneyLoggerAndroid(bool is_incognito,
                                            const std::string& url)
     : journey_logger_(is_incognito,

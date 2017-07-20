@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/dom_distiller/tab_utils_android.h"
-
 #include <string>
 
 #include "base/android/jni_string.h"
@@ -76,7 +74,3 @@ jboolean IsHeuristicAlwaysTrue(JNIEnv* env,
 }
 
 }  // namespace android
-
-bool RegisterDomDistillerTabUtils(JNIEnv* env) {
-  return android::RegisterNativesImpl(env);
-}

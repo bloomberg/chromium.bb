@@ -8,7 +8,6 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
-#include "chrome/browser/media/android/remote/record_cast_action.h"
 #include "chrome/browser/media/android/remote/remote_media_player_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -257,12 +256,6 @@ void RemoteMediaPlayerBridge::OnRouteAvailabilityChanged(
       OnRouteAvailabilityChanged(
           player_id(),
           static_cast<blink::WebRemotePlaybackAvailability>(availability));
-}
-
-// static
-bool RemoteMediaPlayerBridge::RegisterRemoteMediaPlayerBridge(JNIEnv* env) {
-  bool ret = RegisterNativesImpl(env);
-  return ret;
 }
 
 void RemoteMediaPlayerBridge::RequestRemotePlayback() {
