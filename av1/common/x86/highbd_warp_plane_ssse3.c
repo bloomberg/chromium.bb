@@ -28,6 +28,20 @@ void av1_highbd_warp_affine_ssse3(const int32_t *mat, const uint16_t *ref,
 #error "HORSHEAR_REDUCE_PREC_BITS < 5 not currently supported by SSSE3 filter"
 #endif
   int i, j, k;
+#if CONFIG_CONVOLVE_ROUND
+  const int use_conv_params = conv_params->round == CONVOLVE_OPT_NO_ROUND;
+  const int reduce_bits_horiz =
+      use_conv_params ? conv_params->round_0 : HORSHEAR_REDUCE_PREC_BITS;
+  const int offset_bits_horiz =
+      use_conv_params ? bd + FILTER_BITS - 1 : bd + WARPEDPIXEL_FILTER_BITS - 1;
+  if (use_conv_params) {
+    conv_params->do_post_rounding = 1;
+  }
+  assert(FILTER_BITS == WARPEDPIXEL_FILTER_BITS);
+#else
+  const int reduce_bits_horiz = HORSHEAR_REDUCE_PREC_BITS;
+  const int offset_bits_horiz = bd + WARPEDPIXEL_FILTER_BITS - 1;
+#endif
 
   /* Note: For this code to work, the left/right frame borders need to be
      extended by at least 13 pixels each. By the time we get here, other
@@ -154,9 +168,8 @@ void av1_highbd_warp_affine_ssse3(const int32_t *mat, const uint16_t *ref,
           // coeffs 6 7 6 7 6 7 6 7 for pixels 0, 2, 4, 6
           const __m128i coeff_6 = _mm_unpackhi_epi64(tmp_12, tmp_14);
 
-          const __m128i round_const =
-              _mm_set1_epi32((1 << (bd + WARPEDPIXEL_FILTER_BITS - 1)) +
-                             ((1 << HORSHEAR_REDUCE_PREC_BITS) >> 1));
+          const __m128i round_const = _mm_set1_epi32(
+              (1 << offset_bits_horiz) + ((1 << reduce_bits_horiz) >> 1));
 
           // Calculate filtered results
           const __m128i res_0 = _mm_madd_epi16(src, coeff_0);
@@ -169,8 +182,8 @@ void av1_highbd_warp_affine_ssse3(const int32_t *mat, const uint16_t *ref,
 
           __m128i res_even = _mm_add_epi32(_mm_add_epi32(res_0, res_4),
                                            _mm_add_epi32(res_2, res_6));
-          res_even = _mm_srai_epi32(_mm_add_epi32(res_even, round_const),
-                                    HORSHEAR_REDUCE_PREC_BITS);
+          res_even = _mm_sra_epi32(_mm_add_epi32(res_even, round_const),
+                                   _mm_cvtsi32_si128(reduce_bits_horiz));
 
           // Filter odd-index pixels
           const __m128i tmp_1 = _mm_loadu_si128(
@@ -207,8 +220,8 @@ void av1_highbd_warp_affine_ssse3(const int32_t *mat, const uint16_t *ref,
 
           __m128i res_odd = _mm_add_epi32(_mm_add_epi32(res_1, res_5),
                                           _mm_add_epi32(res_3, res_7));
-          res_odd = _mm_srai_epi32(_mm_add_epi32(res_odd, round_const),
-                                   HORSHEAR_REDUCE_PREC_BITS);
+          res_odd = _mm_sra_epi32(_mm_add_epi32(res_odd, round_const),
+                                  _mm_cvtsi32_si128(reduce_bits_horiz));
 
           // Combine results into one register.
           // We store the columns in the order 0, 2, 4, 6, 1, 3, 5, 7
@@ -299,39 +312,66 @@ void av1_highbd_warp_affine_ssse3(const int32_t *mat, const uint16_t *ref,
                                               _mm_add_epi32(res_5, res_7));
 
         // Rearrange pixels back into the order 0 ... 7
-        const __m128i res_lo = _mm_unpacklo_epi32(res_even, res_odd);
-        const __m128i res_hi = _mm_unpackhi_epi32(res_even, res_odd);
+        __m128i res_lo = _mm_unpacklo_epi32(res_even, res_odd);
+        __m128i res_hi = _mm_unpackhi_epi32(res_even, res_odd);
 
-        // Round and pack into 8 bits
-        const __m128i round_const =
-            _mm_set1_epi32(-(1 << (bd + VERSHEAR_REDUCE_PREC_BITS - 1)) +
-                           ((1 << VERSHEAR_REDUCE_PREC_BITS) >> 1));
-
-        const __m128i res_lo_round = _mm_srai_epi32(
-            _mm_add_epi32(res_lo, round_const), VERSHEAR_REDUCE_PREC_BITS);
-        const __m128i res_hi_round = _mm_srai_epi32(
-            _mm_add_epi32(res_hi, round_const), VERSHEAR_REDUCE_PREC_BITS);
-
-        __m128i res_16bit = _mm_packs_epi32(res_lo_round, res_hi_round);
-        // Clamp res_16bit to the range [0, 2^bd - 1]
-        const __m128i max_val = _mm_set1_epi16((1 << bd) - 1);
-        const __m128i zero = _mm_setzero_si128();
-        res_16bit = _mm_max_epi16(_mm_min_epi16(res_16bit, max_val), zero);
-
-        // Store, blending with 'pred' if needed
-        __m128i *const p = (__m128i *)&pred[(i + k + 4) * p_stride + j];
-
-        // Note: If we're outputting a 4x4 block, we need to be very careful
-        // to only output 4 pixels at this point, to avoid encode/decode
-        // mismatches when encoding with multiple threads.
-        if (p_width == 4) {
-          if (comp_avg)
-            res_16bit = _mm_avg_epu16(res_16bit, _mm_loadl_epi64(p));
-          _mm_storel_epi64(p, res_16bit);
+#if CONFIG_CONVOLVE_ROUND
+        if (use_conv_params) {
+          __m128i *const p =
+              (__m128i *)&conv_params
+                  ->dst[(i + k + 4) * conv_params->dst_stride + j];
+          const __m128i orig_lo = _mm_loadu_si128(p);
+          const __m128i round_const = _mm_set1_epi32(
+              -(1 << (bd + 2 * FILTER_BITS - conv_params->round_0 - 1)) +
+              ((1 << (conv_params->round_1)) >> 1));
+          res_lo = _mm_add_epi32(res_lo, round_const);
+          res_lo = _mm_add_epi32(
+              orig_lo,
+              _mm_srl_epi16(res_lo, _mm_cvtsi32_si128(conv_params->round_1)));
+          _mm_storeu_si128(p, res_lo);
+          if (p_width > 4) {
+            const __m128i orig_hi = _mm_loadu_si128(p + 1);
+            res_hi = _mm_add_epi32(res_hi, round_const);
+            res_hi = _mm_add_epi32(
+                orig_hi,
+                _mm_srl_epi16(res_hi, _mm_cvtsi32_si128(conv_params->round_1)));
+            _mm_storeu_si128(p + 1, res_hi);
+          }
         } else {
-          if (comp_avg)
-            res_16bit = _mm_avg_epu16(res_16bit, _mm_loadu_si128(p));
-          _mm_storeu_si128(p, res_16bit);
+#else
+        {
+#endif
+          // Round and pack into 8 bits
+          const __m128i round_const =
+              _mm_set1_epi32(-(1 << (bd + VERSHEAR_REDUCE_PREC_BITS - 1)) +
+                             ((1 << VERSHEAR_REDUCE_PREC_BITS) >> 1));
+
+          const __m128i res_lo_round = _mm_srai_epi32(
+              _mm_add_epi32(res_lo, round_const), VERSHEAR_REDUCE_PREC_BITS);
+          const __m128i res_hi_round = _mm_srai_epi32(
+              _mm_add_epi32(res_hi, round_const), VERSHEAR_REDUCE_PREC_BITS);
+
+          __m128i res_16bit = _mm_packs_epi32(res_lo_round, res_hi_round);
+          // Clamp res_16bit to the range [0, 2^bd - 1]
+          const __m128i max_val = _mm_set1_epi16((1 << bd) - 1);
+          const __m128i zero = _mm_setzero_si128();
+          res_16bit = _mm_max_epi16(_mm_min_epi16(res_16bit, max_val), zero);
+
+          // Store, blending with 'pred' if needed
+          __m128i *const p = (__m128i *)&pred[(i + k + 4) * p_stride + j];
+
+          // Note: If we're outputting a 4x4 block, we need to be very careful
+          // to only output 4 pixels at this point, to avoid encode/decode
+          // mismatches when encoding with multiple threads.
+          if (p_width == 4) {
+            if (comp_avg)
+              res_16bit = _mm_avg_epu16(res_16bit, _mm_loadl_epi64(p));
+            _mm_storel_epi64(p, res_16bit);
+          } else {
+            if (comp_avg)
+              res_16bit = _mm_avg_epu16(res_16bit, _mm_loadu_si128(p));
+            _mm_storeu_si128(p, res_16bit);
+          }
         }
       }
     }
