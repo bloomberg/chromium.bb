@@ -1025,7 +1025,7 @@ TEST(JourneyLoggerTest, RecordJourneyStatsHistograms_TwoPaymentRequests) {
 // the Payment Request.
 TEST(JourneyLoggerTest,
      RecordJourneyStatsHistograms_CheckoutFunnelUkm_UserAborted) {
-  ukm::TestUkmRecorder ukm_recorder;
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
   char test_url[] = "http://www.google.com/";
 
   base::HistogramTester histogram_tester;
@@ -1066,7 +1066,7 @@ TEST(JourneyLoggerTest,
 // completes the Payment Request.
 TEST(JourneyLoggerTest,
      RecordJourneyStatsHistograms_CheckoutFunnelUkm_Completed) {
-  ukm::TestUkmRecorder ukm_recorder;
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
   char test_url[] = "http://www.google.com/";
 
   base::HistogramTester histogram_tester;

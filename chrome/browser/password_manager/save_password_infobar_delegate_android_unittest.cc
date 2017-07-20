@@ -182,7 +182,7 @@ TEST_P(SavePasswordInfoBarDelegateTestForUKMs, VerifyUKMRecording) {
   SCOPED_TRACE(::testing::Message() << "dismissal_reason = "
                                     << static_cast<int64_t>(dismissal_reason));
 
-  ukm::TestUkmRecorder test_ukm_recorder;
+  ukm::TestAutoSetUkmRecorder test_ukm_recorder;
   {
     // Setup metrics recorder
     auto recorder = base::MakeRefCounted<PasswordFormMetricsRecorder>(

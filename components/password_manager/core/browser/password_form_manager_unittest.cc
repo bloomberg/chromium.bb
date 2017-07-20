@@ -723,7 +723,7 @@ class PasswordFormManagerTest : public testing::Test {
 
   // Returns the sample values of |metric_value| in events named |event_name|.
   std::vector<int64_t> GetAllUkmSamples(
-      const ukm::TestUkmRecorder& test_ukm_recorder,
+      const ukm::TestAutoSetUkmRecorder& test_ukm_recorder,
       base::StringPiece event_name,
       base::StringPiece metric_name) {
     std::vector<int64_t> values;
@@ -3619,7 +3619,7 @@ TEST_F(PasswordFormManagerTest, SuppressedFormsHistograms) {
       SCOPED_TRACE(test_case.expected_histogram_sample_generated);
 
       base::HistogramTester histogram_tester;
-      ukm::TestUkmRecorder test_ukm_recorder;
+      ukm::TestAutoSetUkmRecorder test_ukm_recorder;
 
       std::vector<PasswordForm> suppressed_forms;
       for (const auto* form_data : test_case.simulated_suppressed_forms) {
@@ -3842,7 +3842,7 @@ TEST_F(PasswordFormManagerTest, TestUkmForFilling) {
     if (test.fetched_form)
       fetched_forms.push_back(test.fetched_form);
 
-    ukm::TestUkmRecorder test_ukm_recorder;
+    ukm::TestAutoSetUkmRecorder test_ukm_recorder;
     {
       auto metrics_recorder = base::MakeRefCounted<PasswordFormMetricsRecorder>(
           form_to_fill.origin.SchemeIsCryptographic(), &test_ukm_recorder,

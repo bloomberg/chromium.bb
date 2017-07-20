@@ -119,6 +119,14 @@ class TestUkmRecorder : public UkmRecorderImpl {
   DISALLOW_COPY_AND_ASSIGN(TestUkmRecorder);
 };
 
+// Similar to a TestUkmRecorder, but also sets itself as the global UkmRecorder
+// on construction, and unsets itself on destruction.
+class TestAutoSetUkmRecorder : public TestUkmRecorder {
+ public:
+  TestAutoSetUkmRecorder();
+  ~TestAutoSetUkmRecorder() override;
+};
+
 }  // namespace ukm
 
 #endif  // COMPONENTS_UKM_TEST_UKM_RECORDER_H_

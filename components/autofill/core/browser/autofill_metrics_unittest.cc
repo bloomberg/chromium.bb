@@ -346,7 +346,7 @@ MATCHER(CompareMetrics, "") {
 }
 
 void VerifyDeveloperEngagementUkm(
-    const ukm::TestUkmRecorder& ukm_recorder,
+    const ukm::TestAutoSetUkmRecorder& ukm_recorder,
     const FormData& form,
     const std::vector<int64_t>& expected_metric_values) {
   const ukm::mojom::UkmEntry* entry = ukm_recorder.GetEntryForEntryName(
@@ -377,7 +377,7 @@ MATCHER(CompareMetricsIgnoringMillisecondsSinceFormParsed, "") {
            rhs.first == internal::kUKMMillisecondsSinceFormParsedMetricName));
 }
 
-void VerifyFormInteractionUkm(const ukm::TestUkmRecorder& ukm_recorder,
+void VerifyFormInteractionUkm(const ukm::TestAutoSetUkmRecorder& ukm_recorder,
                               const FormData& form,
                               const char* event_name,
                               const ExpectedUkmMetrics& expected_metrics) {
@@ -400,7 +400,7 @@ void VerifyFormInteractionUkm(const ukm::TestUkmRecorder& ukm_recorder,
   }
 }
 
-void VerifySubmitFormUkm(const ukm::TestUkmRecorder& ukm_recorder,
+void VerifySubmitFormUkm(const ukm::TestAutoSetUkmRecorder& ukm_recorder,
                          const FormData& form,
                          AutofillMetrics::AutofillFormSubmittedState state) {
   VerifyFormInteractionUkm(
@@ -479,7 +479,7 @@ class AutofillMetricsTest : public testing::Test {
   void EnableWalletSync();
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  ukm::TestUkmRecorder test_ukm_recorder_;
+  ukm::TestAutoSetUkmRecorder test_ukm_recorder_;
   TestAutofillClient autofill_client_;
   std::unique_ptr<AccountTrackerService> account_tracker_;
   std::unique_ptr<FakeSigninManagerBase> signin_manager_;
