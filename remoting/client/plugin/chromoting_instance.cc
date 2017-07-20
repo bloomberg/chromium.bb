@@ -139,9 +139,9 @@ std::string ConnectionErrorToString(protocol::ErrorCode error) {
     case protocol::SIGNALING_TIMEOUT:
     case protocol::UNKNOWN_ERROR:
       return "NETWORK_FAILURE";
+    default:
+      return "UNKNOWN";
   }
-  DLOG(FATAL) << "Unknown error code" << error;
-  return std::string();
 }
 
 PP_Instance g_logging_instance = 0;

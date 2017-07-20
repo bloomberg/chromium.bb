@@ -29,8 +29,6 @@ static_library("client") {
     "host_experiment_sender.h",
     "queued_task_poster.cc",
     "queued_task_poster.h",
-    "server_log_entry_client.cc",
-    "server_log_entry_client.h",
     "software_video_renderer.cc",
     "software_video_renderer.h",
   ]
@@ -53,10 +51,7 @@ static_library("client") {
   libs = []
 
   if (is_nacl) {
-    sources -= [
-      "client_telemetry_logger.cc",
-      "server_log_entry_client.cc",
-    ]
+    sources -= [ "client_telemetry_logger.cc" ]
   } else {
     sources += [
       "chromoting_client_runtime.cc",
@@ -90,7 +85,6 @@ source_set("unit_tests") {
     "dual_buffer_frame_consumer_unittest.cc",
     "empty_cursor_filter_unittest.cc",
     "queued_task_poster_unittest.cc",
-    "server_log_entry_client_unittest.cc",
     "software_video_renderer_unittest.cc",
   ]
 
