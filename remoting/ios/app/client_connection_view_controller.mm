@@ -24,7 +24,9 @@
 #import "remoting/ios/session/remoting_client.h"
 
 #include "base/strings/sys_string_conversions.h"
+#include "remoting/base/string_resources.h"
 #include "remoting/protocol/client_authentication_config.h"
+#include "ui/base/l10n/l10n_util.h"
 
 static const CGFloat kIconRadius = 30.f;
 static const CGFloat kActivityIndicatorStrokeWidth = 3.f;
@@ -78,7 +80,8 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
 
     // TODO(yuweih): This logic may be reused by other views.
     UIButton* cancelButton = [UIButton buttonWithType:UIButtonTypeSystem];
-    [cancelButton setTitle:@"CANCEL" forState:UIControlStateNormal];
+    [cancelButton setTitle:l10n_util::GetNSString(IDS_CANCEL).uppercaseString
+                  forState:UIControlStateNormal];
     [cancelButton
         setImage:[RemotingTheme
                          .backIcon imageFlippedForRightToLeftLayoutDirection]
@@ -408,7 +411,7 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
 - (void)showConnectingState {
   [_pinEntryView endEditing:YES];
   _statusLabel.text =
-      [NSString stringWithFormat:@"Connecting to %@", _remoteHostName];
+      [self stringWithHostNameForId:IDS_CONNECTING_TO_HOST_MESSAGE];
 
   _pinEntryView.hidden = YES;
 
@@ -439,7 +442,7 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
 - (void)showConnectedState {
   [_pinEntryView endEditing:YES];
   _statusLabel.text =
-      [NSString stringWithFormat:@"Connected to %@", _remoteHostName];
+      [self stringWithHostNameForId:IDS_CONNECTED_TO_HOST_MESSAGE];
 
   _pinEntryView.hidden = YES;
   [_pinEntryView clearPinEntry];
@@ -463,7 +466,7 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
 
 - (void)showReconnect {
   _statusLabel.text =
-      [NSString stringWithFormat:@"Connection closed for %@", _remoteHostName];
+      [self stringWithHostNameForId:IDS_CONNECTION_CLOSED_FOR_HOST_MESSAGE];
   [_activityIndicator stopAnimating];
   _activityIndicator.hidden = YES;
 
@@ -473,12 +476,14 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
 
   [self.navigationController popToViewController:self animated:YES];
   [MDCSnackbarManager
-      showMessage:[MDCSnackbarMessage messageWithText:@"Connection Closed."]];
+      showMessage:[MDCSnackbarMessage
+                      messageWithText:l10n_util::GetNSString(
+                                          IDS_MESSAGE_SESSION_FINISHED)]];
 }
 
 - (void)showError {
   _statusLabel.text =
-      [NSString stringWithFormat:@"Error connecting to %@", _remoteHostName];
+      [self stringWithHostNameForId:IDS_ERROR_CONNECTING_TO_HOST_MESSAGE];
 
   _pinEntryView.hidden = YES;
 
@@ -490,6 +495,7 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
 
   _reconnectView.hidden = NO;
 
+  // TODO(yuweih): I18N
   MDCSnackbarMessage* message = nil;
   switch (_lastError) {
     case SessionErrorOk:
@@ -612,6 +618,11 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
   [[NSOperationQueue mainQueue] addOperationWithBlock:^{
     self.state = state;
   }];
+}
+
+- (NSString*)stringWithHostNameForId:(int)messageId {
+  return l10n_util::GetNSStringF(messageId,
+                                 base::SysNSStringToUTF16(_remoteHostName));
 }
 
 @end

@@ -586,6 +586,12 @@
         <message desc="Button to show or hide the on-screen keyboard." name="IDS_SHOW_HIDE_KEYBOARD" formatter_data="android_java">
           Show/hide keyboard.
         </message>
+        <message desc="Button to show the on-screen keyboard." name="IDS_SHOW_KEYBOARD">
+          Show keyboard
+        </message>
+        <message desc="Button to show the on-screen keyboard." name="IDS_HIDE_KEYBOARD">
+          Hide keyboard
+        </message>
         <message desc="Menu item to select the Touch input mode. In this mode, there is no visible mouse pointer and the user must tap on the screen to simulate a left-click." name="IDS_SELECT_TOUCH_MODE" formatter_data="android_java">
           Touch mode
         </message>
@@ -681,13 +687,67 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
         <message desc="Initial screen's subtitle, with a short description of the app" name="IDS_SHORT_DESCRIPTION">
           Access your computer securely over the Internet
         </message>
-        <message desc="Subtitle shown in the host list when host is offline, and for which no last-online status is available." name ="IDS_HOST_OFFLINE_SUBTITLE">
-          offline
-        </message>
-        <message desc="Subtitle shown in the host list when host is offline. Indicates when host was last seen online." name ="IDS_LAST_ONLINE_SUBTITLE">
-          last online <ph name="DATE">$1<ex>1/6/13</ex></ph>
-        </message>
       </if> <!-- is_ios -->
+
+      <message desc="Title for a list of devices that an be accessed remotely." name="IDS_REMOTE_DEVICES_TITLE">
+        Remote devices
+      </message>
+      <message desc="Subtitle shown in the host list when host is online." name ="IDS_HOST_ONLINE_SUBTITLE">
+        Online
+      </message>
+      <message desc="Subtitle shown in the host list when host is offline, and for which no last-online status is available." name="IDS_HOST_OFFLINE_SUBTITLE">
+        Offline
+      </message>
+      <message desc="Subtitle shown in the host list when host is offline. Indicates when host was last seen online." name="IDS_LAST_ONLINE_SUBTITLE">
+        Last online: <ph name="DATE">$1<ex>1/6/13</ex></ph>
+      </message>
+      <message desc="Title for the button that brings up a settings menu." name="IDS_SETTINGS_BUTTON">
+        Settings
+      </message>
+      <message desc="Short placeholder text on a text box to prompt the user to enter the PIN." name="IDS_ENTER_PIN">
+        Enter PIN
+      </message>
+      <message desc="Text displayed while the client is connecting to a host" name="IDS_CONNECTING_TO_HOST_MESSAGE">
+        Connecting to <ph name="HOSTNAME">$1<ex>My Linux desktop</ex></ph>
+      </message>
+      <message desc="Text displayed when the client is successfully connected to a host" name="IDS_CONNECTED_TO_HOST_MESSAGE">
+        Connected to <ph name="HOSTNAME">$1<ex>My Linux desktop</ex></ph>
+      </message>
+      <message desc="Text displayed when the client's connection to a host is closed" name="IDS_CONNECTION_CLOSED_FOR_HOST_MESSAGE">
+        Connection closed for <ph name="HOSTNAME">$1<ex>My Linux desktop</ex></ph>
+      </message>
+      <message desc="Text displayed when the client failed to connect to a host" name="IDS_ERROR_CONNECTING_TO_HOST_MESSAGE">
+        Error connecting to <ph name="HOSTNAME">$1<ex>My Linux desktop</ex></ph>
+      </message>
+      <message desc="Title for an options menu for configuring how the remote host screen should be displayed in the window." name="IDS_DISPLAY_OPTIONS">
+        Display options
+      </message>
+      <message desc="Title for an options menu for configuring how mouse inputs should be injected to the remote host." name="IDS_MOUSE_OPTIONS">
+        Mouse options
+      </message>
+      <message desc="Title for an options menu for configuring how keyboard inputs should be injected to the remote host." name="IDS_KEYBOARD_OPTIONS">
+        Keyboard options
+      </message>
+      <message desc="Title for the support menu with options like FAQs and Help Center." name="IDS_SUPPORT_MENU">
+        Support
+      </message>
+      <message desc="Title for the button that brings up the help center page." name="IDS_HELP_CENTER">
+        Help Center
+      </message>
+      <message desc="Title for the button that brings up the frequently asked questions page." name="IDS_FAQS">
+        FAQs
+      </message>
+      <message desc="Subtitle (description) of the option controlling whether or not the remote desktop is scaled down if it is too large to fit in the window." name="IDS_SHRINK_TO_FIT_SUBTITLE">
+        Keep whole remote desktop visible
+      </message>
+      <message desc="Subtitle (description) of the option controlling whether or not the remote desktop is resized to match the window size as closely as possible." name="IDS_RESIZE_TO_CLIENT_SUBTITLE">
+        Update remote resolution to match window
+      </message>
+
+      <!-- This is a verbatim transcription for the description. See also IDS_REMEMBER_PIN. -->
+      <message desc="Check-box displayed when the user enters their PIN to connect to a host, avoiding the need to enter the PIN each time." name="IDS_REMEMBER_PIN_ON_THIS_DEVICE">
+        Remember my PIN on this device.
+      </message>
 
       <message desc="Label for the access code entry box. This is where the client user enters the code that permits access to the host." name="IDS_ACCESS_CODE">
         Access code
@@ -928,6 +988,10 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
         OK
       </message>
       <if expr="is_android">
+        <!-- Android uses a different format for placeholder -->
+        <message desc="Message that is spoken (for accessibility) whenever the user selects an account from a list displayed in the application." name="IDS_LOG_IN_ACCOUNT_DESCRIPTION" formatter_data="android_java">
+          Signed in as <ph name="EMAIL_ADDRESS">%1$s<ex>test@gmail.com</ex></ph>.
+        </message>
         <message desc="This string represents a host status line, which is shown below the host name for offline hosts.  The status line consists of 1) a host offline status (i.e. a specific 'Host failed to read the policy.' or 'Invalid host owner.' or a generic 'Host if offline.') and 2) statement when the host was last seen online (i.e. 'Last seen online 20 minutes ago.')."
                  name="IDS_HOST_STATUS_LINE" formatter_data="android_java">
           <ph name="OPTIONAL_OFFLINE_REASON">%2$s<ex>Host failed to read the policy.</ex></ph>  Last seen online <ph name="RELATIVE_TIMESTAMP">%1$s<ex>yesterday</ex></ph>.
@@ -942,6 +1006,9 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
         </message>
       </if>
       <if expr="not is_android">
+        <message desc="Short message being popped up whenever the user selects an account from a list displayed in the application." name="IDS_LOG_IN_ACCOUNT_DESCRIPTION">
+          Signed in as <ph name="EMAIL_ADDRESS">$1<ex>test@gmail.com</ex></ph>.
+        </message>
         <message desc="Modified version of the host name shown for hosts that are not currently accessible and for which no last-online status is available." name="IDS_OFFLINE">
           <ph name="HOSTNAME">$1<ex>My Linux desktop</ex></ph> (offline)
         </message>
@@ -1171,9 +1238,6 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
       </message>
       <message desc="Menu option to open a new window." name="IDS_NEW_WINDOW">
         New window…
-      </message>
-      <message desc="Message that is spoken (for accessibility) whenever the user selects an account from a list displayed in the application." name="IDS_LOG_IN_ACCOUNT_DESCRIPTION" formatter_data="android_java">
-        Signed in as <ph name="EMAIL_ADDRESS">%1$s<ex>test@gmail.com</ex></ph>.
       </message>
       <message desc="Label for the Feedback button displayed in the Android Help screen. Pressing this button causes the Feedback screen to be shown." name="IDS_ACTIONBAR_FEEDBACK" formatter_data="android_java">
         Feedback
