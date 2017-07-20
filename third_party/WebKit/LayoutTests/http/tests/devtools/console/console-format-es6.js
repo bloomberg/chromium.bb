@@ -1,4 +1,4 @@
-<!-- NOTE: Test is being migrated (see crbug.com/667560) !--><html>
+<html>
 <head>
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../http/tests/inspector/console-test.js"></script>
@@ -14,24 +14,54 @@ function log(current)
 
 function onload()
 {
-    var map2 = new Map();
-    map2.set(41, 42);
-    map2.set({foo: 1}, {foo: 2});
+    var p = Promise.reject(-0);
+    p.catch(function() {});
 
-    var iter1 = map2.values();
-    iter1.next();
+    var smb1 = Symbol();
+    var smb2 = Symbol("a");
+    var obj = {
+        get getter() {}
+    };
+    obj["a"] = smb1;
+    obj[smb2] = 2;
 
-    var set2 = new Set();
-    set2.add(41);
-    set2.add({foo: 1});
+    var map = new Map();
+    var weakMap = new WeakMap();
+    map.set(obj, {foo: 1});
+    weakMap.set(obj, {foo: 1});
 
-    var iter2 = set2.keys();
-    iter2.next();
+    var set = new Set();
+    var weakSet = new WeakSet();
+    set.add(obj);
+    weakSet.add(obj);
+
+    var mapMap0 = new Map();
+    mapMap0.set(new Map(), new WeakMap());
+    var mapMap = new Map();
+    mapMap.set(map, weakMap);
+
+    var setSet0 = new Set();
+    setSet0.add(new WeakSet());
+    var setSet = new Set();
+    setSet.add(weakSet);
+
+    var bigmap = new Map();
+    bigmap.set(" from str ", " to str ");
+    bigmap.set(undefined, undefined);
+    bigmap.set(null, null);
+    bigmap.set(42, 42);
+    bigmap.set({foo:"from"}, {foo:"to"});
+    bigmap.set(["from"], ["to"]);
+
+    var genFunction = function *() {
+        yield 1;
+        yield 2;
+    }
+    var generator = genFunction();
 
     globals = [
-        map2.keys(), map2.values(), map2.entries(),
-        set2.keys(), set2.values(), set2.entries(),
-        iter1, iter2,
+        p, smb1, smb2, obj, map, weakMap, set, weakSet,
+        mapMap0, mapMap, setSet0, setSet, bigmap, generator
     ];
 
     runTest();
