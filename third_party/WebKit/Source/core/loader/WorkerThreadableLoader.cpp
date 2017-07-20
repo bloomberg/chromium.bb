@@ -302,9 +302,7 @@ void WorkerThreadableLoader::Cancel() {
   // by sending a cancellation error.
   // Note: no more client callbacks will be done after this method -- the
   // clearClient() call ensures that.
-  ResourceError error(String(), 0, String(), String());
-  error.SetIsCancellation(true);
-  DidFail(error);
+  DidFail(ResourceError::CancelledError(KURL()));
   DCHECK(!client_);
 }
 

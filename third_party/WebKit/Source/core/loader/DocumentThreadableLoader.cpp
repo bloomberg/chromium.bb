@@ -517,13 +517,7 @@ void DocumentThreadableLoader::Cancel() {
     return;
   }
 
-  // FIXME: This error is sent to the client in didFail(), so it should not be
-  // an internal one. Use LocalFrameClient::cancelledError() instead.
-  ResourceError error(kErrorDomainBlinkInternal, 0, GetResource()->Url(),
-                      "Load cancelled");
-  error.SetIsCancellation(true);
-
-  DispatchDidFail(error);
+  DispatchDidFail(ResourceError::CancelledError(GetResource()->Url()));
 }
 
 void DocumentThreadableLoader::SetDefersLoading(bool value) {

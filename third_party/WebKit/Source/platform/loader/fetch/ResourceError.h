@@ -66,7 +66,6 @@ class PLATFORM_EXPORT ResourceError final {
   ResourceError()
       : error_code_(0),
         is_null_(true),
-        is_cancellation_(false),
         is_access_check_(false),
         is_timeout_(false),
         stale_copy_in_cache_(false),
@@ -82,7 +81,6 @@ class PLATFORM_EXPORT ResourceError final {
         failing_url_(failing_url),
         localized_description_(localized_description),
         is_null_(false),
-        is_cancellation_(false),
         is_access_check_(false),
         is_timeout_(false),
         stale_copy_in_cache_(false),
@@ -100,10 +98,7 @@ class PLATFORM_EXPORT ResourceError final {
   const String& FailingURL() const { return failing_url_; }
   const String& LocalizedDescription() const { return localized_description_; }
 
-  void SetIsCancellation(bool is_cancellation) {
-    is_cancellation_ = is_cancellation;
-  }
-  bool IsCancellation() const { return is_cancellation_; }
+  bool IsCancellation() const;
 
   void SetIsAccessCheck(bool is_access_check) {
     is_access_check_ = is_access_check;
@@ -145,7 +140,6 @@ class PLATFORM_EXPORT ResourceError final {
   String failing_url_;
   String localized_description_;
   bool is_null_;
-  bool is_cancellation_;
   bool is_access_check_;
   bool is_timeout_;
   bool stale_copy_in_cache_;
