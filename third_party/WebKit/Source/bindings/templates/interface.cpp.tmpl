@@ -156,6 +156,47 @@ void {{v8_class_or_partial}}::indexedPropertySetterCallback(uint32_t index, v8::
 
 
 {##############################################################################}
+{% block indexed_property_descriptor %}
+{% if indexed_property_getter %}
+static void indexedPropertyDescriptor(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
+  // https://heycam.github.io/webidl/#LegacyPlatformObjectGetOwnProperty
+  // Steps 1.1 to 1.2.4 are covered here: we rely on indexedPropertyGetter() to
+  // call the getter function and check that |index| is a valid property index,
+  // in which case it will have set info.GetReturnValue() to something other
+  // than undefined.
+  {{v8_class_or_partial}}::indexedPropertyGetterCallback(index, info);
+  v8::Local<v8::Value> getterValue = info.GetReturnValue().Get();
+  if (!getterValue->IsUndefined()) {
+    // 1.2.5. Let |desc| be a newly created Property Descriptor with no fields.
+    // 1.2.6. Set desc.[[Value]] to the result of converting value to an
+    //        ECMAScript value.
+    // 1.2.7. If O implements an interface with an indexed property setter,
+    //        then set desc.[[Writable]] to true, otherwise set it to false.
+    v8::PropertyDescriptor desc(getterValue, {% if indexed_property_setter %}true{% else %}false{% endif %});
+    // 1.2.8. Set desc.[[Enumerable]] and desc.[[Configurable]] to true.
+    desc.set_enumerable(true);
+    desc.set_configurable(true);
+    // 1.2.9. Return |desc|.
+    V8SetReturnValue(info, desc);
+  }
+}
+
+{% endif %}
+{% endblock %}
+
+
+{##############################################################################}
+{% block indexed_property_descriptor_callback %}
+{% if indexed_property_getter %}
+void {{v8_class_or_partial}}::indexedPropertyDescriptorCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
+  {{cpp_class}}V8Internal::indexedPropertyDescriptor(index, info);
+}
+
+{% endif %}
+{% endblock %}
+
+
+{##############################################################################}
 {% block indexed_property_deleter %}
 {% if indexed_property_deleter and not indexed_property_deleter.is_custom %}
 {% set deleter = indexed_property_deleter %}
@@ -474,7 +515,12 @@ static void namedPropertyQuery(const AtomicString& name, const v8::PropertyCallb
   bool result = impl->NamedPropertyQuery({{getter_arguments | join(', ')}});
   if (!result)
     return;
-  V8SetReturnValueInt(info, v8::None);
+  {# TODO(rakuco): [LegacyUnenumerableNamedProperties] makes named properties
+     have [[Enumerable]] set to false. #}
+  // https://heycam.github.io/webidl/#LegacyPlatformObjectGetOwnProperty
+  // 2.7. If |O| implements an interface with a named property setter, then set
+  //      desc.[[Writable]] to true, otherwise set it to false.
+  V8SetReturnValueInt(info, {% if named_property_setter %}v8::None{% else %}v8::ReadOnly{% endif %});
 }
 
 {% endif %}
@@ -767,7 +813,9 @@ for (const auto& attributeConfig : {{method.name}}OriginSafeAttributeConfigurati
 {% set indexed_property_setter_callback =
        '%s::indexedPropertySetterCallback' % v8_class_or_partial
        if indexed_property_getter or named_property_setter else 'nullptr' %}
-{% set indexed_property_descriptor_callback = 'nullptr' %}
+{% set indexed_property_descriptor_callback =
+       '%s::indexedPropertyDescriptorCallback' % v8_class_or_partial
+       if indexed_property_getter else 'nullptr' %}
 {% set indexed_property_deleter_callback =
        '%s::indexedPropertyDeleterCallback' % v8_class_or_partial
        if indexed_property_deleter or named_property_deleter else 'nullptr' %}

@@ -142,8 +142,8 @@ FAIL Object.getOwnPropertyDescriptor(global, 'length').configurable should be fa
 PASS Object.getOwnPropertyDescriptor(global, 0).value is global[0]
 PASS Object.getOwnPropertyDescriptor(global, 0).hasOwnProperty('get') is false
 PASS Object.getOwnPropertyDescriptor(global, 0).hasOwnProperty('set') is false
-PASS Object.getOwnPropertyDescriptor(global, 0).enumerable is false
-FAIL Object.getOwnPropertyDescriptor(global, 0).configurable should be false. Was true.
+PASS Object.getOwnPropertyDescriptor(global, 0).enumerable is true
+PASS Object.getOwnPropertyDescriptor(global, 0).configurable is true
 PASS Object.getOwnPropertyDescriptor(objectWithGetter, 'getter').get is getterFunc
 PASS Object.getOwnPropertyDescriptor(objectWithGetter, 'getter').set is undefined
 PASS Object.getOwnPropertyDescriptor(objectWithGetter, 'getter').hasOwnProperty('value') is false

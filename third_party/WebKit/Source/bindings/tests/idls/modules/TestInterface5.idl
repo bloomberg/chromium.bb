@@ -72,8 +72,6 @@ callback VoidCallbackFunctionModules = void ();
 
     // Anonymous named property operations
     getter DOMString (DOMString name);
-    setter DOMString (DOMString name, DOMString value);
-    deleter boolean (DOMString name);
 
     [NotEnumerable] stringifier;
 

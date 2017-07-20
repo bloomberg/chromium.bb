@@ -113,6 +113,29 @@ static void voidMethodDocumentMethod(const v8::FunctionCallbackInfo<v8::Value>& 
   impl->voidMethodDocument(document);
 }
 
+static void indexedPropertyDescriptor(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
+  // https://heycam.github.io/webidl/#LegacyPlatformObjectGetOwnProperty
+  // Steps 1.1 to 1.2.4 are covered here: we rely on indexedPropertyGetter() to
+  // call the getter function and check that |index| is a valid property index,
+  // in which case it will have set info.GetReturnValue() to something other
+  // than undefined.
+  V8TestIntegerIndexedGlobal::indexedPropertyGetterCallback(index, info);
+  v8::Local<v8::Value> getterValue = info.GetReturnValue().Get();
+  if (!getterValue->IsUndefined()) {
+    // 1.2.5. Let |desc| be a newly created Property Descriptor with no fields.
+    // 1.2.6. Set desc.[[Value]] to the result of converting value to an
+    //        ECMAScript value.
+    // 1.2.7. If O implements an interface with an indexed property setter,
+    //        then set desc.[[Writable]] to true, otherwise set it to false.
+    v8::PropertyDescriptor desc(getterValue, true);
+    // 1.2.8. Set desc.[[Enumerable]] and desc.[[Configurable]] to true.
+    desc.set_enumerable(true);
+    desc.set_configurable(true);
+    // 1.2.9. Return |desc|.
+    V8SetReturnValue(info, desc);
+  }
+}
+
 } // namespace TestIntegerIndexedGlobalV8Internal
 
 void V8TestIntegerIndexedGlobal::lengthAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -167,6 +190,10 @@ void V8TestIntegerIndexedGlobal::namedPropertyEnumeratorCallback(const v8::Prope
 
 void V8TestIntegerIndexedGlobal::indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
   V8TestIntegerIndexedGlobal::indexedPropertyGetterCustom(index, info);
+}
+
+void V8TestIntegerIndexedGlobal::indexedPropertyDescriptorCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
+  TestIntegerIndexedGlobalV8Internal::indexedPropertyDescriptor(index, info);
 }
 
 void V8TestIntegerIndexedGlobal::indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info) {
@@ -239,7 +266,7 @@ static void installV8TestIntegerIndexedGlobalTemplate(
   v8::IndexedPropertyHandlerConfiguration indexedPropertyHandlerConfig(
       V8TestIntegerIndexedGlobal::indexedPropertyGetterCallback,
       V8TestIntegerIndexedGlobal::indexedPropertySetterCallback,
-      nullptr,
+      V8TestIntegerIndexedGlobal::indexedPropertyDescriptorCallback,
       V8TestIntegerIndexedGlobal::indexedPropertyDeleterCallback,
       IndexedPropertyEnumerator<TestIntegerIndexedGlobal>,
       V8TestIntegerIndexedGlobal::indexedPropertyDefinerCallback,
