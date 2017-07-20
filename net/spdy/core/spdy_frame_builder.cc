@@ -128,19 +128,6 @@ bool SpdyFrameBuilder::BeginNewFrameInternal(const SpdyFramer& framer,
   return success;
 }
 
-bool SpdyFrameBuilder::WriteStringPiece16(const SpdyStringPiece& value) {
-  if (value.size() > 0xffff) {
-    DCHECK(false) << "Tried to write string with length > 16bit.";
-    return false;
-  }
-
-  if (!WriteUInt16(static_cast<uint16_t>(value.size()))) {
-    return false;
-  }
-
-  return WriteBytes(value.data(), static_cast<uint16_t>(value.size()));
-}
-
 bool SpdyFrameBuilder::WriteStringPiece32(const SpdyStringPiece& value) {
   if (!WriteUInt32(value.size())) {
     return false;
