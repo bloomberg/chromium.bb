@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "cc/base/switches.h"
+#include "components/viz/common/gpu/context_provider.h"
 #include "services/ui/public/cpp/gpu/gpu.h"
 #include "ui/aura/mus/window_port_mus.h"
 #include "ui/aura/window_tree_host.h"
@@ -53,10 +54,16 @@ void MusContextFactory::OnEstablishedGpuChannel(
       WindowTreeHost::GetForAcceleratedWidget(compositor->widget());
   WindowPortMus* window_port = WindowPortMus::Get(host->window());
   DCHECK(window_port);
+
+  scoped_refptr<viz::ContextProvider> context_provider =
+      gpu_->CreateContextProvider(std::move(gpu_channel));
+  // If the binding fails, then we need to return early since the compositor
+  // expects a successfully initialized/bound provider.
+  if (!context_provider->BindToCurrentThread())
+    return;
   std::unique_ptr<cc::LayerTreeFrameSink> layer_tree_frame_sink =
-      window_port->RequestLayerTreeFrameSink(
-          gpu_->CreateContextProvider(std::move(gpu_channel)),
-          gpu_->gpu_memory_buffer_manager());
+      window_port->RequestLayerTreeFrameSink(std::move(context_provider),
+                                             gpu_->gpu_memory_buffer_manager());
   compositor->SetLayerTreeFrameSink(std::move(layer_tree_frame_sink));
 }
 
