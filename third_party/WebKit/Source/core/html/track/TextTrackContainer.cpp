@@ -29,12 +29,12 @@
 
 #include "core/html/track/TextTrackContainer.h"
 
-#include "core/dom/ResizeObserver.h"
-#include "core/dom/ResizeObserverEntry.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/track/CueTimeline.h"
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutVideo.h"
+#include "core/resize_observer/ResizeObserver.h"
+#include "core/resize_observer/ResizeObserverEntry.h"
 
 namespace blink {
 

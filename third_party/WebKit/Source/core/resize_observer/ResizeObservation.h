@@ -6,7 +6,7 @@
 #define ResizeObservation_h
 
 #include "core/CoreExport.h"
-#include "core/dom/ResizeObserverEntry.h"
+#include "core/resize_observer/ResizeObserverEntry.h"
 #include "platform/geometry/LayoutSize.h"
 #include "platform/heap/Handle.h"
 

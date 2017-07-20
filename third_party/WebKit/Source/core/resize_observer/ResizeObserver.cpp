@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/dom/ResizeObserver.h"
+#include "core/resize_observer/ResizeObserver.h"
 
 #include "bindings/core/v8/ResizeObserverCallback.h"
 #include "core/dom/Element.h"
-#include "core/dom/ResizeObservation.h"
-#include "core/dom/ResizeObserverController.h"
-#include "core/dom/ResizeObserverEntry.h"
 #include "core/frame/LocalFrameView.h"
+#include "core/resize_observer/ResizeObservation.h"
+#include "core/resize_observer/ResizeObserverController.h"
+#include "core/resize_observer/ResizeObserverEntry.h"
 
 namespace blink {
 
