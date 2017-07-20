@@ -42367,6 +42367,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Net.SuccessfulResolutionWithValidDNSName" enum="Boolean">
   <owner>palmer@chromium.org</owner>
+  <obsolete>
+    Removed in 07/2017.
+  </obsolete>
   <summary>
     True if a DNS name contains only characters for which
     |net::IsValidLabelCharacter| returns true. Used to see if we can deprecate
