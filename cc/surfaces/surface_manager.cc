@@ -63,10 +63,8 @@ std::string SurfaceManager::SurfaceReferencesToString() {
 }
 #endif
 
-void SurfaceManager::RequestSurfaceResolution(
-    Surface* surface,
-    SurfaceDependencyDeadline* deadline) {
-  dependency_tracker_.RequestSurfaceResolution(surface, deadline);
+void SurfaceManager::RequestSurfaceResolution(Surface* surface) {
+  dependency_tracker_.RequestSurfaceResolution(surface);
 }
 
 Surface* SurfaceManager::CreateSurface(
