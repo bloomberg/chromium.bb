@@ -201,14 +201,6 @@ public class TileGroup implements MostVisitedSites.Observer {
     private boolean mHasReceivedData;
 
     /**
-     * The number of columns tiles get rendered in. Precalculated upon calling
-     * {@link #startObserving(int, int)} and constant from then on. Used for pinning the home page
-     * tile to the first tile row.
-     * @see #renderTileViews(ViewGroup, boolean)
-     */
-    private int mNumColumns;
-
-    /**
      * @param context Used for initialisation and resolving resources.
      * @param uiDelegate Delegate used to interact with the rest of the system.
      * @param contextMenuManager Used to handle context menu invocations on the tiles.
@@ -268,22 +260,7 @@ public class TileGroup implements MostVisitedSites.Observer {
             // send non dupes URLs. Remove once https://crbug.com/703628 is fixed.
             if (addedUrls.contains(urls[i])) continue;
 
-            // The home page tile is pinned to the first row of tiles. It will appear on
-            // the position corresponding to its ranking among all tiles (obtained from the
-            // ntp_tiles C++ component). If its position is larger than the number of tiles
-            // in the first row, it will appear on the last position of the first row.
-            // Do note, that the number of tiles in a row (column number) is determined upon
-            // initialization and not changed afterwards.
-            if (sources[i] == TileSource.HOMEPAGE) {
-                int homeTilePosition = Math.min(mPendingTiles.size(), mNumColumns - 1);
-                mPendingTiles.add(homeTilePosition,
-                        new Tile(titles[i], urls[i], whitelistIconPaths[i], homeTilePosition,
-                                sources[i]));
-            } else {
-                mPendingTiles.add(new Tile(titles[i], urls[i], whitelistIconPaths[i],
-                        mPendingTiles.size(), sources[i]));
-            }
-
+            mPendingTiles.add(new Tile(titles[i], urls[i], whitelistIconPaths[i], i, sources[i]));
             addedUrls.add(urls[i]);
 
             if (urls[i].equals(mPendingRemovalUrl)) removalCompleted = false;
@@ -316,13 +293,11 @@ public class TileGroup implements MostVisitedSites.Observer {
     /**
      * Instructs this instance to start listening for data. The {@link TileGroup.Observer} may be
      * called immediately if new data is received synchronously.
-     * @param maxRows The maximum number of rows to fetch.
-     * @param maxColumns The maximum number of columns to fetch.
+     * @param maxResults The maximum number of sites to retrieve.
      */
-    public void startObserving(int maxRows, int maxColumns) {
+    public void startObserving(int maxResults) {
         addTask(TileTask.FETCH_DATA);
-        mNumColumns = Math.min(maxColumns, TileGridLayout.calculateNumColumns());
-        mTileGroupDelegate.setMostVisitedSitesObserver(this, maxRows * maxColumns);
+        mTileGroupDelegate.setMostVisitedSitesObserver(this, maxResults);
     }
 
     /**
