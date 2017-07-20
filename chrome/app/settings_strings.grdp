@@ -2176,6 +2176,15 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_SITE_URL" desc="Label for site URL text entry in site settings.">
     Site URL
   </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_ASK_DEFAULT_MENU" desc="Label for the default menu item to ask for permission for a particular site.">
+    Ask (default)
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_ALLOW_DEFAULT_MENU" desc="Label for the default menu item to allow a permission for a particular site.">
+    Allow (default)
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_BLOCK_DEFAULT_MENU" desc="Label for the default menu item to block a permission for a particular site.">
+    Block (default)
+  </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_ALLOW_MENU" desc="Label for the menu item to allow permission for a particular site.">
     Allow
   </message>

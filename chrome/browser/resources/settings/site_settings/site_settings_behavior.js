@@ -145,13 +145,15 @@ var SiteSettingsBehaviorImpl = {
     var origin = exception.origin;
     var embeddingOrigin = exception.embeddingOrigin;
 
-    var enforcement = '';
+    var enforcement = /** @type {?chrome.settingsPrivate.Enforcement} */ (null);
     if (exception.source == 'extension' || exception.source == 'HostedApp' ||
         exception.source == 'platform_app' || exception.source == 'policy') {
       enforcement = chrome.settingsPrivate.Enforcement.ENFORCED;
     }
 
-    var controlledBy = kControlledByLookup[exception.source] || '';
+    var controlledBy = /** @type {!chrome.settingsPrivate.ControlledBy} */ (
+        kControlledByLookup[exception.source] ||
+        chrome.settingsPrivate.ControlledBy.PRIMARY_USER);
 
     return {
       category: this.category,

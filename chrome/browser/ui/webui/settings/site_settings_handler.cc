@@ -114,23 +114,23 @@ void AddExceptionsGrantedByHostedApps(content::BrowserContext* context,
 //    7. User-set global default for a ContentSettingsType.
 //    8. Chrome's built-in default.
 std::string ConvertContentSettingSourceToString(
-    content_settings::SettingSource content_settings_source,
+    const content_settings::SettingInfo& info,
     PermissionStatusSource permission_status_source) {
   // TODO(patricialor): Do some plumbing for sources #1, #2, #3, and #5 through
   // to the Web UI. Currently there aren't strings to represent these sources.
   if (permission_status_source == PermissionStatusSource::KILL_SWITCH)
     return site_settings::kPreferencesSource;  // Source #1.
 
-  if (content_settings_source == content_settings::SETTING_SOURCE_POLICY ||
-      content_settings_source == content_settings::SETTING_SOURCE_SUPERVISED) {
+  if (info.source == content_settings::SETTING_SOURCE_POLICY ||
+      info.source == content_settings::SETTING_SOURCE_SUPERVISED) {
     return site_settings::kPolicyProviderId;  // Source #2.
   }
 
-  if (content_settings_source == content_settings::SETTING_SOURCE_EXTENSION)
+  if (info.source == content_settings::SETTING_SOURCE_EXTENSION)
     return site_settings::kExtensionProviderId;  // Source #3.
 
-  DCHECK_NE(content_settings::SETTING_SOURCE_NONE, content_settings_source);
-  if (content_settings_source == content_settings::SETTING_SOURCE_USER) {
+  DCHECK_NE(content_settings::SETTING_SOURCE_NONE, info.source);
+  if (info.source == content_settings::SETTING_SOURCE_USER) {
     if (permission_status_source ==
             PermissionStatusSource::SAFE_BROWSING_BLACKLIST ||
         permission_status_source ==
@@ -138,7 +138,11 @@ std::string ConvertContentSettingSourceToString(
         permission_status_source == PermissionStatusSource::MULTIPLE_IGNORES) {
       return site_settings::kPreferencesSource;  // Source #5.
     }
-    // Source #4, #6, #7, #8. When #4 is the source, |permission_status_source|
+    if (info.primary_pattern == ContentSettingsPattern::Wildcard() &&
+        info.secondary_pattern == ContentSettingsPattern::Wildcard()) {
+      return "default";  // Source #7, #8.
+    }
+    // Source #4, #6. When #4 is the source, |permission_status_source|
     // won't be set to any of the source #5 enum values, as PermissionManager is
     // aware of the difference between these two sources internally. The
     // subtlety here should go away when PermissionManager can handle all
@@ -177,8 +181,8 @@ ContentSetting GetContentSettingForOrigin(const GURL& origin,
   }
 
   // Retrieve the source of the content setting.
-  *source_string =
-      ConvertContentSettingSourceToString(info.source, result.source);
+  *source_string = ConvertContentSettingSourceToString(info, result.source);
+
   return result.content_setting;
 }
 

@@ -83,10 +83,8 @@ Polymer({
           exceptionList.forEach(function(exception, i) {
             // |exceptionList| should be in the same order as |categoryList|,
             // which is in the same order as |siteDetailsPermissions|.
-            var element = /** @type{!SiteDetailsPermissionElement} */ (
-                siteDetailsPermissions[i]);
-            element.site = /** @type{!SiteException} */ (
-                element.expandSiteException(exception));
+            siteDetailsPermissions[i].site =
+                /** @type {!RawSiteException} */ (exception);
           });
         });
   },

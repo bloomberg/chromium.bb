@@ -3,53 +3,35 @@
 // found in the LICENSE file.
 
 /**
+ * In the real (non-test) code, this data comes from the C++ handler.
  * Only used for tests.
- * @typedef {{
- *   auto_downloads: !Array<!RawSiteException>},
- *   background_sync: !Array<!RawSiteException>},
- *   camera: !Array<!RawSiteException>},
- *   cookies: !Array<!RawSiteException>},
- *   geolocation: !Array<!RawSiteException>},
- *   javascript: !Array<!RawSiteException>},
- *   mic: !Array<!RawSiteException>},
- *   midiDevices: !Array<!RawSiteException>},
- *   notifications: !Array<!RawSiteException>},
- *   plugins: !Array<!RawSiteException>},
- *   images: !Array<!RawSiteException>},
- *   popups: !Array<!RawSiteException>},
- *   unsandboxed_plugins: !Array<!RawSiteException>},
- * }}
- */
-var ExceptionListPref;
-
-/**
- * In the real (non-test) code, these data come from the C++ handler.
- * Only used for tests.
- * @typedef {{defaults: CategoryDefaultsPref,
- *            exceptions: ExceptionListPref}}
+ * @typedef {{defaults: Map<string, !DefaultContentSetting>,
+ *            exceptions: !Map<string, !Array<!RawSiteException>>}}
  */
 var SiteSettingsPref;
 
 /**
  * An example empty pref.
+ * TODO(patricialor): Use the values from settings.ContentSettingsTypes (see
+ * site_settings/constants.js) as the keys for these instead.
  * @type {SiteSettingsPref}
  */
 var prefsEmpty = {
   defaults: {
-    ads: '',
-    auto_downloads: '',
-    background_sync: '',
-    camera: '',
-    cookies: '',
-    geolocation: '',
-    javascript: '',
-    mic: '',
-    midiDevices: '',
-    notifications: '',
-    plugins: '',
-    images: '',
-    popups: '',
-    unsandboxed_plugins: '',
+    ads: {},
+    auto_downloads: {},
+    background_sync: {},
+    camera: {},
+    cookies: {},
+    geolocation: {},
+    javascript: {},
+    mic: {},
+    midiDevices: {},
+    notifications: {},
+    plugins: {},
+    images: {},
+    popups: {},
+    unsandboxed_plugins: {},
   },
   exceptions: {
     ads: [],
@@ -203,10 +185,11 @@ TestSiteSettingsPrefsBrowserProxy.prototype = {
     var pref = undefined;
     if (contentType == settings.ContentSettingsTypes.ADS) {
       pref = this.prefs_.defaults.ads;
-    } else if (contentType == settings.ContentSettingsTypes.AUTOMATIC_DOWNLOADS) {
+    } else if (
+        contentType == settings.ContentSettingsTypes.AUTOMATIC_DOWNLOADS) {
       pref = this.prefs_.defaults.auto_downloads;
     } else if (contentType == settings.ContentSettingsTypes.BACKGROUND_SYNC) {
-      pref = this.prefs_.background_sync;
+      pref = this.prefs_.defaults.background_sync;
     } else if (contentType == settings.ContentSettingsTypes.CAMERA) {
       pref = this.prefs_.defaults.camera;
     } else if (contentType == settings.ContentSettingsTypes.COOKIES) {
@@ -336,10 +319,12 @@ TestSiteSettingsPrefsBrowserProxy.prototype = {
         contentType = 'unsandboxed_plugins';
       }
 
-      var setting = undefined;
+      var setting;
+      var source;
       this.prefs_.exceptions[contentType].some(function(originPrefs) {
         if (originPrefs.origin == origin) {
           setting = originPrefs.setting;
+          source = originPrefs.source;
           return true;
         }
       });
@@ -354,7 +339,7 @@ TestSiteSettingsPrefsBrowserProxy.prototype = {
         origin: origin,
         displayName: '',
         setting: setting,
-        source: undefined
+        source: source,
       })
     }, this);
     return Promise.resolve(exceptionList);

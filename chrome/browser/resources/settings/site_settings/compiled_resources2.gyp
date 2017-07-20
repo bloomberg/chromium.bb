@@ -195,6 +195,7 @@
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
         '<(EXTERNS_GYP):chrome_send',
+        '<(EXTERNS_GYP):settings_private',
         'constants',
         'cookie_tree_node',
       ],

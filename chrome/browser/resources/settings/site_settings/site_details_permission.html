@@ -23,6 +23,13 @@
           <select id="permission" class="md-select"
               aria-labelledby="permissionHeader"
               on-change="onPermissionSelectionChange_">
+            <option id="default" value$="[[ContentSetting.DEFAULT]]">
+              [[defaultSettingString_(
+                  defaultSetting_,
+                  '$i18nPolymer{siteSettingsActionAskDefault}',
+                  '$i18nPolymer{siteSettingsActionAllowDefault}',
+                  '$i18nPolymer{siteSettingsActionBlockDefault}')]]
+            </option>
             <option id="allow" value$="[[ContentSetting.ALLOW]]">
               $i18n{siteSettingsActionAllow}
             </option>

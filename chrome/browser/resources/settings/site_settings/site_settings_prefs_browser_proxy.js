@@ -21,11 +21,12 @@ var ContentSettingProvider = {
 /**
  * The site exception information passed from the C++ handler.
  * See also: SiteException.
+ * TODO(patricialor): Investigate making the |source| field an enum type.
  * @typedef {{embeddingOrigin: string,
  *            incognito: boolean,
  *            origin: string,
  *            displayName: string,
- *            setting: string,
+ *            setting: !settings.ContentSetting,
  *            source: string}}
  */
 var RawSiteException;
@@ -38,21 +39,15 @@ var RawSiteException;
  *            incognito: boolean,
  *            origin: string,
  *            displayName: string,
- *            setting: string,
- *            enforcement: string,
- *            controlledBy: string}}
+ *            setting: !settings.ContentSetting,
+ *            enforcement: ?chrome.settingsPrivate.Enforcement,
+ *            controlledBy: !chrome.settingsPrivate.ControlledBy}}
  */
 var SiteException;
 
 /**
- * @typedef {{location: string,
- *            notifications: string}}
- */
-var CategoryDefaultsPref;
-
-/**
- * @typedef {{setting: string,
- *            source: ContentSettingProvider}}
+ * @typedef {{setting: !settings.ContentSetting,
+ *            source: !ContentSettingProvider}}
  */
 var DefaultContentSetting;
 
