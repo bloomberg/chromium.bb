@@ -87,7 +87,7 @@ gfx::Rect GetBoundsInMaximizedMode(wm::WindowState* state_object) {
     return Shell::Get()
         ->split_view_controller()
         ->GetSnappedWindowBoundsInParent(state_object->window(),
-                                         SplitViewController::LEFT);
+                                         SplitViewController::LEFT_SNAPPED);
   }
 
   if (state_object->GetStateType() == wm::WINDOW_STATE_TYPE_RIGHT_SNAPPED) {
@@ -95,7 +95,7 @@ gfx::Rect GetBoundsInMaximizedMode(wm::WindowState* state_object) {
     return Shell::Get()
         ->split_view_controller()
         ->GetSnappedWindowBoundsInParent(state_object->window(),
-                                         SplitViewController::RIGHT);
+                                         SplitViewController::RIGHT_SNAPPED);
   }
 
   gfx::Rect bounds_in_parent;
@@ -337,11 +337,11 @@ void TabletModeWindowState::UpdateWindow(wm::WindowState* window_state,
   } else if (target_state == wm::WINDOW_STATE_TYPE_LEFT_SNAPPED) {
     window_state->SetBoundsDirectAnimated(
         Shell::Get()->split_view_controller()->GetSnappedWindowBoundsInParent(
-            window_state->window(), SplitViewController::LEFT));
+            window_state->window(), SplitViewController::LEFT_SNAPPED));
   } else if (target_state == wm::WINDOW_STATE_TYPE_RIGHT_SNAPPED) {
     window_state->SetBoundsDirectAnimated(
         Shell::Get()->split_view_controller()->GetSnappedWindowBoundsInParent(
-            window_state->window(), SplitViewController::RIGHT));
+            window_state->window(), SplitViewController::RIGHT_SNAPPED));
   } else {
     UpdateBounds(window_state, animated);
   }

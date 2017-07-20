@@ -128,10 +128,10 @@ aura::Window* SplitViewController::GetDefaultSnappedWindow() {
 
 gfx::Rect SplitViewController::GetSnappedWindowBoundsInParent(
     aura::Window* window,
-    SnapPosition snap_position) {
-  if (snap_position == LEFT)
+    State snap_state) {
+  if (snap_state == LEFT_SNAPPED)
     return GetLeftWindowBoundsInParent(window);
-  else if (snap_position == RIGHT)
+  else if (snap_state == RIGHT_SNAPPED)
     return GetRightWindowBoundsInParent(window);
 
   NOTREACHED();
@@ -140,10 +140,10 @@ gfx::Rect SplitViewController::GetSnappedWindowBoundsInParent(
 
 gfx::Rect SplitViewController::GetSnappedWindowBoundsInScreen(
     aura::Window* window,
-    SnapPosition snap_position) {
-  if (snap_position == LEFT)
+    State snap_state) {
+  if (snap_state == LEFT_SNAPPED)
     return GetLeftWindowBoundsInScreen(window);
-  else if (snap_position == RIGHT)
+  else if (snap_state == RIGHT_SNAPPED)
     return GetRightWindowBoundsInScreen(window);
 
   NOTREACHED();
@@ -220,7 +220,7 @@ void SplitViewController::OnWindowActivated(ActivationReason reason,
   // is active.
   if (default_snap_position_ == LEFT)
     SnapWindow(gained_active, SplitViewController::RIGHT);
-  else if (default_snap_position_ == RIGHT)
+  else
     SnapWindow(gained_active, SplitViewController::LEFT);
 }
 
@@ -232,7 +232,7 @@ void SplitViewController::OnOverviewModeStarting() {
     if (default_snap_position_ == LEFT) {
       StopObserving(right_window_);
       state_ = LEFT_SNAPPED;
-    } else if (default_snap_position_ == RIGHT) {
+    } else {
       StopObserving(left_window_);
       state_ = RIGHT_SNAPPED;
     }
@@ -250,7 +250,7 @@ void SplitViewController::OnOverviewModeEnded() {
       if (CanSnap(window) && window != GetDefaultSnappedWindow()) {
         if (default_snap_position_ == LEFT)
           SnapWindow(window, SplitViewController::RIGHT);
-        else if (default_snap_position_ == RIGHT)
+        else
           SnapWindow(window, SplitViewController::LEFT);
         break;
       }
@@ -263,7 +263,7 @@ void SplitViewController::EndSplitView() {
   StopObserving(right_window_);
   left_window_ = nullptr;
   right_window_ = nullptr;
-  default_snap_position_ = NONE;
+  default_snap_position_ = LEFT;
   divider_position_ = -1;
 
   State previous_state = state_;
