@@ -318,6 +318,10 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
      * screen (either the next authentication or the login screen).
      */
     cancel: function() {
+      if (this.currentStep_ == STEP_WORKING ||
+          this.currentStep_ == STEP_AD_JOIN) {
+        return;
+      }
       if (this.isCancelDisabled)
         return;
       this.isCancelDisabled = true;
@@ -440,11 +444,8 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
           this.currentStep_ == STEP_SIGNIN && this.lastBackMessageValue_;
       this.navigation_.refreshVisible =
           this.isAtTheBeginning() && !this.isManualEnrollment_;
-      this.navigation_.closeVisible =
-          (this.currentStep_ == STEP_SIGNIN ||
-           this.currentStep_ == STEP_ERROR ||
-           this.currentStep_ == STEP_ACTIVE_DIRECTORY_JOIN_ERROR ||
-           this.currentStep_ == STEP_AD_JOIN) &&
+      this.navigation_.closeVisible = (this.currentStep_ == STEP_SIGNIN ||
+                                       this.currentStep_ == STEP_ERROR) &&
           !this.navigation_.refreshVisible;
       $('login-header-bar').updateUI_();
     }
