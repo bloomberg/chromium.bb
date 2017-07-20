@@ -210,6 +210,64 @@ id<GREYMatcher> PopUpMenuItemWithLabel(int label) {
       nullptr);
 }
 
+scoped_refptr<password_manager::PasswordStore> GetPasswordStore() {
+  // ServiceAccessType governs behaviour in Incognito: only modifications with
+  // EXPLICIT_ACCESS, which correspond to user's explicit gesture, succeed.
+  // This test does not deal with Incognito, so the value of the argument is
+  // irrelevant.
+  return IOSChromePasswordStoreFactory::GetForBrowserState(
+      chrome_test_util::GetOriginalBrowserState(),
+      ServiceAccessType::EXPLICIT_ACCESS);
+}
+
+// Saves |form| to the password store and waits until the async processing is
+// done.
+void SaveToPasswordStore(const PasswordForm& form) {
+  GetPasswordStore()->AddLogin(form);
+  // Allow the PasswordStore to process this on the DB thread.
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+}
+
+// Saves an example form in the store.
+void SaveExamplePasswordForm() {
+  PasswordForm example;
+  example.username_value = base::ASCIIToUTF16("concrete username");
+  example.password_value = base::ASCIIToUTF16("concrete password");
+  example.origin = GURL("https://example.com");
+  example.signon_realm = example.origin.spec();
+  SaveToPasswordStore(example);
+}
+
+// Removes all credentials stored.
+void ClearPasswordStore() {
+  GetPasswordStore()->RemoveLoginsCreatedBetween(base::Time(), base::Time(),
+                                                 base::Closure());
+  // Allow the PasswordStore to process this on the DB thread.
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+}
+
+// Opens the passwords page from the NTP. It requires no menus to be open.
+void OpenPasswordSettings() {
+  [ChromeEarlGreyUI openSettingsMenu];
+  [ChromeEarlGreyUI
+      tapSettingsMenuButton:chrome_test_util::SettingsMenuPasswordsButton()];
+}
+
+// Tap Edit in any settings view.
+void TapEdit() {
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
+                                   IDS_IOS_NAVIGATION_BAR_EDIT_BUTTON)]
+      performAction:grey_tap()];
+}
+
+// Tap Done in any settings view.
+void TapDone() {
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::NavigationBarDoneButton()]
+      performAction:grey_tap()];
+}
+
 }  // namespace
 
 @interface MockReauthenticationModule : NSObject<ReauthenticationProtocol>
@@ -271,64 +329,6 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
   [super tearDown];
 }
 
-- (scoped_refptr<password_manager::PasswordStore>)passwordStore {
-  // ServiceAccessType governs behaviour in Incognito: only modifications with
-  // EXPLICIT_ACCESS, which correspond to user's explicit gesture, succeed.
-  // This test does not deal with Incognito, so the value of the argument is
-  // irrelevant.
-  return IOSChromePasswordStoreFactory::GetForBrowserState(
-      chrome_test_util::GetOriginalBrowserState(),
-      ServiceAccessType::EXPLICIT_ACCESS);
-}
-
-// Saves |form| to the password store and waits until the async processing is
-// done.
-- (void)savePasswordFormToStore:(const PasswordForm&)form {
-  [self passwordStore]->AddLogin(form);
-  // Allow the PasswordStore to process this on the DB thread.
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
-}
-
-// Saves an example form in the store.
-- (void)saveExamplePasswordForm {
-  PasswordForm example;
-  example.username_value = base::ASCIIToUTF16("concrete username");
-  example.password_value = base::ASCIIToUTF16("concrete password");
-  example.origin = GURL("https://example.com");
-  example.signon_realm = example.origin.spec();
-  [self savePasswordFormToStore:example];
-}
-
-// Removes all credentials stored.
-- (void)clearPasswordStore {
-  [self passwordStore]->RemoveLoginsCreatedBetween(base::Time(), base::Time(),
-                                                   base::Closure());
-  // Allow the PasswordStore to process this on the DB thread.
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
-}
-
-// Opens the passwords page from the NTP. It requires no menus to be open.
-- (void)openPasswordSettings {
-  [ChromeEarlGreyUI openSettingsMenu];
-  [ChromeEarlGreyUI
-      tapSettingsMenuButton:chrome_test_util::SettingsMenuPasswordsButton()];
-}
-
-// Tap Edit in any settings view.
-- (void)tapEdit {
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
-                                   IDS_IOS_NAVIGATION_BAR_EDIT_BUTTON)]
-      performAction:grey_tap()];
-}
-
-// Tap Done in any settings view.
-- (void)tapDone {
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::NavigationBarDoneButton()]
-      performAction:grey_tap()];
-}
-
 // Verifies the UI elements are accessible on the Passwords page.
 // TODO(crbug.com/159166): This differs from testAccessibilityOnPasswords in
 // settings_egtest.mm in that here this tests the new UI (for viewing
@@ -340,14 +340,14 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
       password_manager::features::kViewPasswords);
 
   // Saving a form is needed for using the "password details" view.
-  [self saveExamplePasswordForm];
+  SaveExamplePasswordForm();
 
-  [self openPasswordSettings];
+  OpenPasswordSettings();
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
 
-  [self tapEdit];
+  TapEdit();
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
-  [self tapDone];
+  TapDone();
 
   // Inspect "password details" view.
   [GetInteractionForPasswordEntry(@"example.com, concrete username")
@@ -358,8 +358,8 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
 
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
-  [self tapDone];
-  [self clearPasswordStore];
+  TapDone();
+  ClearPasswordStore();
 }
 
 // Checks that attempts to copy a password provide appropriate feedback,
@@ -370,9 +370,9 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
       password_manager::features::kViewPasswords);
 
   // Saving a form is needed for using the "password details" view.
-  [self saveExamplePasswordForm];
+  SaveExamplePasswordForm();
 
-  [self openPasswordSettings];
+  OpenPasswordSettings();
 
   [GetInteractionForPasswordEntry(@"example.com, concrete username")
       performAction:grey_tap()];
@@ -406,8 +406,8 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
-  [self tapDone];
-  [self clearPasswordStore];
+  TapDone();
+  ClearPasswordStore();
 }
 
 // Checks that attempts to copy a username provide appropriate feedback.
@@ -417,9 +417,9 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
       password_manager::features::kViewPasswords);
 
   // Saving a form is needed for using the "password details" view.
-  [self saveExamplePasswordForm];
+  SaveExamplePasswordForm();
 
-  [self openPasswordSettings];
+  OpenPasswordSettings();
 
   [GetInteractionForPasswordEntry(@"example.com, concrete username")
       performAction:grey_tap()];
@@ -436,8 +436,8 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
-  [self tapDone];
-  [self clearPasswordStore];
+  TapDone();
+  ClearPasswordStore();
 }
 
 // Checks that attempts to copy a site URL provide appropriate feedback.
@@ -447,9 +447,9 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
       password_manager::features::kViewPasswords);
 
   // Saving a form is needed for using the "password details" view.
-  [self saveExamplePasswordForm];
+  SaveExamplePasswordForm();
 
-  [self openPasswordSettings];
+  OpenPasswordSettings();
 
   [GetInteractionForPasswordEntry(@"example.com, concrete username")
       performAction:grey_tap()];
@@ -466,8 +466,8 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
-  [self tapDone];
-  [self clearPasswordStore];
+  TapDone();
+  ClearPasswordStore();
 }
 
 // Checks that deleting a password from password details view goes back to the
@@ -478,9 +478,9 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
       password_manager::features::kViewPasswords);
 
   // Save form to be deleted later.
-  [self saveExamplePasswordForm];
+  SaveExamplePasswordForm();
 
-  [self openPasswordSettings];
+  OpenPasswordSettings();
 
   [GetInteractionForPasswordEntry(@"example.com, concrete username")
       performAction:grey_tap()];
@@ -516,8 +516,8 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
 
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
-  [self tapDone];
-  [self clearPasswordStore];
+  TapDone();
+  ClearPasswordStore();
 }
 
 // Checks that deleting a password from password details can be cancelled.
@@ -527,9 +527,9 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
       password_manager::features::kViewPasswords);
 
   // Save form to be deleted later.
-  [self saveExamplePasswordForm];
+  SaveExamplePasswordForm();
 
-  [self openPasswordSettings];
+  OpenPasswordSettings();
 
   [GetInteractionForPasswordEntry(@"example.com, concrete username")
       performAction:grey_tap()];
@@ -560,8 +560,8 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
 
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
-  [self tapDone];
-  [self clearPasswordStore];
+  TapDone();
+  ClearPasswordStore();
 }
 
 // Checks that if the list view is in edit mode, then the details password view
@@ -572,11 +572,11 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
       password_manager::features::kViewPasswords);
 
   // Save a form to have something to tap on.
-  [self saveExamplePasswordForm];
+  SaveExamplePasswordForm();
 
-  [self openPasswordSettings];
+  OpenPasswordSettings();
 
-  [self tapEdit];
+  TapEdit();
 
   [GetInteractionForPasswordEntry(@"example.com, concrete username")
       performAction:grey_tap()];
@@ -588,8 +588,8 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
 
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
-  [self tapDone];
-  [self clearPasswordStore];
+  TapDone();
+  ClearPasswordStore();
 }
 
 // Checks that attempts to copy the site via the context menu item provide an
@@ -600,9 +600,9 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
       password_manager::features::kViewPasswords);
 
   // Saving a form is needed for using the "password details" view.
-  [self saveExamplePasswordForm];
+  SaveExamplePasswordForm();
 
-  [self openPasswordSettings];
+  OpenPasswordSettings();
 
   [GetInteractionForPasswordEntry(@"example.com, concrete username")
       performAction:grey_tap()];
@@ -627,8 +627,8 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
-  [self tapDone];
-  [self clearPasswordStore];
+  TapDone();
+  ClearPasswordStore();
 }
 
 // Checks that attempts to copy the username via the context menu item provide
@@ -639,9 +639,9 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
       password_manager::features::kViewPasswords);
 
   // Saving a form is needed for using the "password details" view.
-  [self saveExamplePasswordForm];
+  SaveExamplePasswordForm();
 
-  [self openPasswordSettings];
+  OpenPasswordSettings();
 
   [GetInteractionForPasswordEntry(@"example.com, concrete username")
       performAction:grey_tap()];
@@ -667,8 +667,8 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
-  [self tapDone];
-  [self clearPasswordStore];
+  TapDone();
+  ClearPasswordStore();
 }
 
 // Checks that attempts to copy the password via the context menu item provide
@@ -679,9 +679,9 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
       password_manager::features::kViewPasswords);
 
   // Saving a form is needed for using the "password details" view.
-  [self saveExamplePasswordForm];
+  SaveExamplePasswordForm();
 
-  [self openPasswordSettings];
+  OpenPasswordSettings();
 
   [GetInteractionForPasswordEntry(@"example.com, concrete username")
       performAction:grey_tap()];
@@ -714,8 +714,8 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
-  [self tapDone];
-  [self clearPasswordStore];
+  TapDone();
+  ClearPasswordStore();
 }
 
 // Checks that attempts to show and hide the password via the context menu item
@@ -726,9 +726,9 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
       password_manager::features::kViewPasswords);
 
   // Saving a form is needed for using the "password details" view.
-  [self saveExamplePasswordForm];
+  SaveExamplePasswordForm();
 
-  [self openPasswordSettings];
+  OpenPasswordSettings();
 
   [GetInteractionForPasswordEntry(@"example.com, concrete username")
       performAction:grey_tap()];
@@ -769,8 +769,8 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
-  [self tapDone];
-  [self clearPasswordStore];
+  TapDone();
+  ClearPasswordStore();
 }
 
 // Checks that federated credentials have no password but show the federation.
@@ -785,9 +785,9 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
   federated.signon_realm = federated.origin.spec();
   federated.federation_origin =
       url::Origin(GURL("https://famous.provider.net"));
-  [self savePasswordFormToStore:federated];
+  SaveToPasswordStore(federated);
 
-  [self openPasswordSettings];
+  OpenPasswordSettings();
 
   [GetInteractionForPasswordEntry(@"example.com, federated username")
       performAction:grey_tap()];
@@ -814,8 +814,8 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
-  [self tapDone];
-  [self clearPasswordStore];
+  TapDone();
+  ClearPasswordStore();
 }
 
 // Checks the order of the elements in the detail view layout for a
@@ -825,9 +825,9 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
   scoped_feature_list.InitAndEnableFeature(
       password_manager::features::kViewPasswords);
 
-  [self saveExamplePasswordForm];
+  SaveExamplePasswordForm();
 
-  [self openPasswordSettings];
+  OpenPasswordSettings();
 
   [GetInteractionForPasswordEntry(@"example.com, concrete username")
       performAction:grey_tap()];
@@ -871,8 +871,8 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
-  [self tapDone];
-  [self clearPasswordStore];
+  TapDone();
+  ClearPasswordStore();
 }
 
 // Checks the order of the elements in the detail view layout for a blacklisted
@@ -886,9 +886,9 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
   blacklisted.origin = GURL("https://example.com");
   blacklisted.signon_realm = blacklisted.origin.spec();
   blacklisted.blacklisted_by_user = true;
-  [self savePasswordFormToStore:blacklisted];
+  SaveToPasswordStore(blacklisted);
 
-  [self openPasswordSettings];
+  OpenPasswordSettings();
 
   [GetInteractionForPasswordEntry(@"example.com") performAction:grey_tap()];
 
@@ -917,8 +917,8 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
-  [self tapDone];
-  [self clearPasswordStore];
+  TapDone();
+  ClearPasswordStore();
 }
 
 // Checks the order of the elements in the detail view layout for a federated
@@ -934,9 +934,9 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
   federated.signon_realm = federated.origin.spec();
   federated.federation_origin =
       url::Origin(GURL("https://famous.provider.net"));
-  [self savePasswordFormToStore:federated];
+  SaveToPasswordStore(federated);
 
-  [self openPasswordSettings];
+  OpenPasswordSettings();
 
   [GetInteractionForPasswordEntry(@"example.com, federated username")
       performAction:grey_tap()];
@@ -976,8 +976,8 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
-  [self tapDone];
-  [self clearPasswordStore];
+  TapDone();
+  ClearPasswordStore();
 }
 
 @end
