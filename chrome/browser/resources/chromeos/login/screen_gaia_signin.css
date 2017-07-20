@@ -83,6 +83,15 @@
   font-size: 13px;
 }
 
+#gaia-signin.whitelist-error .step-contents,
+#gaia-signin.whitelist-error .gaia-dialog {
+  visibility: hidden;
+}
+
+#gaia-signin.whitelist-error .step-loading {
+  visibility: hidden;
+}
+
 #gaia-whitelist-error {
   bottom: 0;
   display: block;
@@ -93,16 +102,8 @@
   visibility: hidden;
 }
 
-.whitelist-error #gaia-whitelist-error {
+#gaia-signin.whitelist-error #gaia-whitelist-error {
   visibility: visible;
-}
-
-#gaia-signin.whitelist-error .step-contents {
-  visibility: hidden;
-}
-
-#gaia-signin.whitelist-error .step-loading {
-  visibility: hidden;
 }
 
 #gaia-navigation {
