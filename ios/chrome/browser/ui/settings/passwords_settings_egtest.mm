@@ -582,6 +582,9 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
                                    grey_sufficientlyVisible(), nullptr)]
       performAction:grey_tap()];
 
+  // Wait until the alert and the detail view are dismissed.
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+
   // Check that the current view is now the list view, by locating the header
   // of the list of passwords.
   [[EarlGrey selectElementWithMatcher:
