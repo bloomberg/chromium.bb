@@ -23,6 +23,7 @@
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/signin/token_handle_util.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
+#include "chrome/browser/chromeos/policy/pre_signin_policy_fetcher.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chromeos/login/auth/login_performer.h"
@@ -31,11 +32,16 @@
 #include "components/user_manager/user.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "third_party/cros_system_api/dbus/cryptohome/dbus-constants.h"
 #include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
 
 namespace base {
 class ListValue;
+}
+
+namespace enterprise_management {
+class CloudPolicySettings;
 }
 
 namespace chromeos {
@@ -226,6 +232,12 @@ class ExistingUserController
   void ContinuePerformLogin(LoginPerformer::AuthorizationMode auth_mode,
                             const UserContext& user_context);
 
+  // Removes the constraint that user home mount requires ext4 encryption from
+  // |user_context|, then calls login() on previously-used |login_performer|.
+  void ContinuePerformLoginWithoutMigration(
+      LoginPerformer::AuthorizationMode auth_mode,
+      const UserContext& user_context);
+
   // Updates the |login_display_| attached to this controller.
   void UpdateLoginDisplay(const user_manager::UserList& users);
 
@@ -279,6 +291,19 @@ class ExistingUserController
   void OnTokenHandleChecked(
       const AccountId&,
       TokenHandleUtil::TokenHandleStatus token_handle_status);
+
+  // Called on completition of a pre-signin policy fetch, which is performed to
+  // check if there is a user policy governing migration action.
+  void OnPolicyFetchResult(
+      const UserContext& user_context,
+      policy::PreSigninPolicyFetcher::PolicyFetchResult result,
+      std::unique_ptr<enterprise_management::CloudPolicySettings>
+          policy_payload);
+
+  // Called when cryptohome wipe has finished.
+  void WipePerformed(const UserContext& user_context,
+                     bool success,
+                     cryptohome::MountError return_code);
 
   // Clear the recorded displayed email, displayed name, given name so it won't
   // affect any future attempts.
@@ -394,6 +419,8 @@ class ExistingUserController
   std::unique_ptr<OAuth2TokenInitializer> oauth2_token_initializer_;
 
   std::unique_ptr<TokenHandleUtil> token_handle_util_;
+
+  std::unique_ptr<policy::PreSigninPolicyFetcher> pre_signin_policy_fetcher_;
 
   // Factory of callbacks.
   base::WeakPtrFactory<ExistingUserController> weak_factory_;

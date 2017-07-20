@@ -144,6 +144,12 @@ void LogPolicyResponseUma(base::StringPiece method_name,
              login_manager::kSessionManagerRetrievePolicyForUser) {
     UMA_HISTOGRAM_ENUMERATION("Enterprise.RetrievePolicyResponse.User",
                               response, RetrievePolicyResponseType::COUNT);
+  } else if (method_name ==
+             login_manager::
+                 kSessionManagerRetrievePolicyForUserWithoutSession) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "Enterprise.RetrievePolicyResponse.UserDuringLogin", response,
+        RetrievePolicyResponseType::COUNT);
   } else {
     LOG(ERROR) << "Invalid method_name: " << method_name;
   }
@@ -311,6 +317,23 @@ class SessionManagerClientImpl : public SessionManagerClient {
     return BlockingRetrievePolicyByUsername(
         login_manager::kSessionManagerRetrievePolicyForUser, cryptohome_id.id(),
         policy_out);
+  }
+
+  void RetrievePolicyForUserWithoutSession(
+      const cryptohome::Identification& cryptohome_id,
+      const RetrievePolicyCallback& callback) override {
+    const std::string method_name =
+        login_manager::kSessionManagerRetrievePolicyForUserWithoutSession;
+    dbus::MethodCall method_call(login_manager::kSessionManagerInterface,
+                                 method_name);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(cryptohome_id.id());
+    session_manager_proxy_->CallMethodWithErrorCallback(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&SessionManagerClientImpl::OnRetrievePolicySuccess,
+                   weak_ptr_factory_.GetWeakPtr(), method_name, callback),
+        base::Bind(&SessionManagerClientImpl::OnRetrievePolicyError,
+                   weak_ptr_factory_.GetWeakPtr(), method_name, callback));
   }
 
   void RetrieveDeviceLocalAccountPolicy(
@@ -958,6 +981,11 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
     *policy_out =
         GetFileContent(GetUserFilePath(cryptohome_id, kStubPolicyFile));
     return RetrievePolicyResponseType::SUCCESS;
+  }
+  void RetrievePolicyForUserWithoutSession(
+      const cryptohome::Identification& cryptohome_id,
+      const RetrievePolicyCallback& callback) override {
+    RetrievePolicyForUser(cryptohome_id, callback);
   }
   void RetrieveDeviceLocalAccountPolicy(
       const std::string& account_id,
