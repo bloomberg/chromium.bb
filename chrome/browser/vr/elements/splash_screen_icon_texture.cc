@@ -22,8 +22,9 @@ void SplashScreenIconTexture::Draw(SkCanvas* sk_canvas,
                                    const gfx::Size& texture_size) {
   size_.set_width(texture_size.width());
   size_.set_height(texture_size.height());
-
-  sk_canvas->drawImage(splash_screen_icon_, 0, 0);
+  sk_canvas->drawImageRect(
+      splash_screen_icon_,
+      SkRect::MakeXYWH(0, 0, size_.width(), size_.height()), nullptr);
 }
 
 gfx::Size SplashScreenIconTexture::GetPreferredTextureSize(
