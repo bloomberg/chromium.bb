@@ -68,3 +68,25 @@ if (chromecast_branding == "public") {
 # reference for all GN files referencing a locales list. |locales| is declared
 # in //build/config/locales.gni.
 cast_locales = locales
+
+# These templates are a temporary fix fo link libc++ into shared libraries and
+# executables. These should be removed as soon as crbug.com/746091 is resolved.
+template("cast_shared_library") {
+  shared_library(target_name) {
+    forward_variables_from(invoker, "*")
+    if (!defined(deps)) {
+      deps = []
+    }
+    deps += [ "//build/config:exe_and_shlib_deps" ]
+  }
+}
+
+template("cast_executable") {
+  executable(target_name) {
+    forward_variables_from(invoker, "*")
+    if (!defined(deps)) {
+      deps = []
+    }
+    deps += [ "//build/config:exe_and_shlib_deps" ]
+  }
+}

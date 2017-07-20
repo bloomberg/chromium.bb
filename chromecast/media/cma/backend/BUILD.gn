@@ -53,7 +53,7 @@ source_set("cast_media_android_dummy") {
 # Target for OEM partners to override media shared library, i.e.
 # libcast_media_1.0.so. This target is only used to build executables
 # with correct linkage information.
-shared_library("libcast_media_1.0") {
+cast_shared_library("libcast_media_1.0") {
   if (is_cast_desktop_build) {
     deps = [
       ":default",
