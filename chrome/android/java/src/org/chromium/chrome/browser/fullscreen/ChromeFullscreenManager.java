@@ -485,8 +485,9 @@ public class ChromeFullscreenManager
         ViewGroup view = contentViewCore.getContainerView();
 
         float topViewsTranslation = getTopVisibleContentOffset();
+        float bottomMargin = getBottomControlsHeight() - getBottomControlOffset();
         applyTranslationToTopChildViews(view, topViewsTranslation);
-        applyMarginToFullChildViews(view, topViewsTranslation);
+        applyMarginToFullChildViews(view, topViewsTranslation, bottomMargin);
         updateContentViewViewportSize(contentViewCore);
     }
 
@@ -579,7 +580,8 @@ public class ChromeFullscreenManager
         return showControls;
     }
 
-    private void applyMarginToFullChildViews(ViewGroup contentView, float margin) {
+    private void applyMarginToFullChildViews(
+            ViewGroup contentView, float topMargin, float bottomMargin) {
         for (int i = 0; i < contentView.getChildCount(); i++) {
             View child = contentView.getChildAt(i);
             if (!(child.getLayoutParams() instanceof FrameLayout.LayoutParams)) continue;
@@ -587,8 +589,10 @@ public class ChromeFullscreenManager
                     (FrameLayout.LayoutParams) child.getLayoutParams();
 
             if (layoutParams.height == LayoutParams.MATCH_PARENT
-                    && layoutParams.topMargin != (int) margin) {
-                layoutParams.topMargin = (int) margin;
+                    && (layoutParams.topMargin != (int) topMargin
+                               || layoutParams.bottomMargin != (int) bottomMargin)) {
+                layoutParams.topMargin = (int) topMargin;
+                layoutParams.bottomMargin = (int) bottomMargin;
                 child.requestLayout();
                 TraceEvent.instant("FullscreenManager:child.requestLayout()");
             }
