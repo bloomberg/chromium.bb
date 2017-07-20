@@ -13,6 +13,7 @@
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/peer_connection_remote_audio_source.h"
 #include "content/renderer/media/webrtc_audio_renderer.h"
+#include "content/renderer/media/webrtc_logging.h"
 #include "content/renderer/render_thread_impl.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/webrtc/api/mediastreaminterface.h"
@@ -91,8 +92,10 @@ MediaStreamRendererFactoryImpl::GetAudioRenderer(
   DCHECK(!web_stream.IsNull());
   blink::WebVector<blink::WebMediaStreamTrack> audio_tracks;
   web_stream.AudioTracks(audio_tracks);
-  if (audio_tracks.IsEmpty())
-    return NULL;
+  if (audio_tracks.IsEmpty()) {
+    WebRtcLogMessage("No audio tracks in media stream (return null).");
+    return nullptr;
+  }
 
   DVLOG(1) << "MediaStreamRendererFactoryImpl::GetAudioRenderer stream:"
            << web_stream.Id().Utf8();
@@ -109,7 +112,7 @@ MediaStreamRendererFactoryImpl::GetAudioRenderer(
   if (!audio_track) {
     // This can happen if the track was cloned.
     // TODO(tommi, perkj): Fix cloning of tracks to handle extra data too.
-    LOG(ERROR) << "No native track for WebMediaStreamTrack.";
+    WebRtcLogMessage("Error: No native track for WebMediaStreamTrack");
     return nullptr;
   }
 
@@ -142,11 +145,16 @@ MediaStreamRendererFactoryImpl::GetAudioRenderer(
         web_stream, render_frame_id, GetSessionIdForWebRtcAudioRenderer(),
         device_id, security_origin);
 
-    if (!audio_device->SetAudioRenderer(renderer.get()))
+    if (!audio_device->SetAudioRenderer(renderer.get())) {
+      WebRtcLogMessage("Error: SetAudioRenderer failed for remote track.");
       return nullptr;
+    }
   }
 
-  return renderer->CreateSharedAudioRendererProxy(web_stream);
+  auto ret = renderer->CreateSharedAudioRendererProxy(web_stream);
+  if (!ret)
+    WebRtcLogMessage("Error: CreateSharedAudioRendererProxy failed.");
+  return ret;
 }
 
 }  // namespace content

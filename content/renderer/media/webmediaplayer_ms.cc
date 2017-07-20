@@ -22,6 +22,7 @@
 #include "content/public/renderer/media_stream_video_renderer.h"
 #include "content/renderer/media/web_media_element_source_utils.h"
 #include "content/renderer/media/webmediaplayer_ms_compositor.h"
+#include "content/renderer/media/webrtc_logging.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "media/base/bind_to_current_loop.h"
@@ -255,6 +256,8 @@ void WebMediaPlayerMS::Load(LoadType load_type,
     audio_renderer_ = renderer_factory_->GetAudioRenderer(
         web_stream, frame->GetRoutingID(), initial_audio_output_device_id_,
         initial_security_origin_);
+    if (!audio_renderer_)
+      WebRtcLogMessage("Warning: Failed to instantiate audio renderer.");
   }
 
   if (!video_frame_provider_ && !audio_renderer_) {
