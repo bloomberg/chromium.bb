@@ -14,6 +14,7 @@
     {
       'target_name': 'chrome_cleanup_page',
       'dependencies': [
+        '<(DEPTH)/ui/webui/resources/cr_elements/cr_expand_button/compiled_resources2.gyp:cr_expand_button',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:util',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
