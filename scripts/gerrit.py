@@ -292,8 +292,8 @@ def UserActDeps(opts, query):
   cls = _Query(opts, query, raw=False)
 
   @cros_build_lib.Memoize
-  def _QueryChange(cl):
-    return _Query(opts, cl, raw=False)
+  def _QueryChange(cl, helper=None):
+    return _Query(opts, cl, raw=False, helper=helper)
 
   def _Children(cl):
     """Returns the Gerrit and CQ-Depends dependencies of a patch"""
@@ -301,8 +301,13 @@ def UserActDeps(opts, query):
     direct_deps = cl.GerritDependencies() + cq_deps
     # We need to query the change to guarantee that we have a .gerrit_number
     for dep in direct_deps:
+      if not dep.remote in opts.gerrit:
+        opts.gerrit[dep.remote] = gerrit.GetGerritHelper(
+            remote=dep.remote, print_cmd=opts.debug)
+      helper = opts.gerrit[dep.remote]
+
       # TODO(phobbs) this should maybe catch network errors.
-      change = _QueryChange(dep.ToGerritQueryText())[-1]
+      change = _QueryChange(dep.ToGerritQueryText(), helper=helper)[-1]
       if change.status == 'NEW':
         yield change
 
