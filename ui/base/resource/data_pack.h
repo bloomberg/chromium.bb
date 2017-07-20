@@ -75,6 +75,8 @@ class UI_DATA_PACK_EXPORT DataPack : public ResourceHandle {
 #endif
 
  private:
+  struct Entry;
+  struct Alias;
   class DataSource;
   class BufferDataSource;
   class MemoryMappedDataSource;
@@ -82,11 +84,14 @@ class UI_DATA_PACK_EXPORT DataPack : public ResourceHandle {
   // Does the actual loading of a pack file.
   // Called by Load and LoadFromFile and LoadFromBuffer.
   bool LoadImpl(std::unique_ptr<DataSource> data_source);
+  const Entry* LookupEntryById(uint16_t resource_id) const;
 
   std::unique_ptr<DataSource> data_source_;
 
-  // Number of resources in the data.
+  const Entry* resource_table_;
   size_t resource_count_;
+  const Alias* alias_table_;
+  size_t alias_count_;
 
   // Type of encoding for text resources.
   TextEncodingType text_encoding_type_;

@@ -17,6 +17,7 @@
 #include "base/strings/string_piece.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/resource/data_pack_literal.h"
 #include "ui/base/ui_base_paths.h"
 
 namespace ui {
@@ -27,11 +28,6 @@ class DataPackTest
   DataPackTest() {}
 };
 
-extern const char kSamplePakContents[];
-extern const char kSampleCorruptPakContents[];
-extern const size_t kSamplePakSize;
-extern const size_t kSampleCorruptPakSize;
-
 TEST(DataPackTest, LoadFromPath) {
   base::ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
@@ -39,8 +35,8 @@ TEST(DataPackTest, LoadFromPath) {
       dir.GetPath().Append(FILE_PATH_LITERAL("sample.pak"));
 
   // Dump contents into the pak file.
-  ASSERT_EQ(base::WriteFile(data_path, kSamplePakContents, kSamplePakSize),
-            static_cast<int>(kSamplePakSize));
+  ASSERT_EQ(base::WriteFile(data_path, kSamplePakContentsV4, kSamplePakSizeV4),
+            static_cast<int>(kSamplePakSizeV4));
 
   // Load the file through the data pack API.
   DataPack pack(SCALE_FACTOR_100P);
@@ -72,8 +68,8 @@ TEST(DataPackTest, LoadFromFile) {
       dir.GetPath().Append(FILE_PATH_LITERAL("sample.pak"));
 
   // Dump contents into the pak file.
-  ASSERT_EQ(base::WriteFile(data_path, kSamplePakContents, kSamplePakSize),
-            static_cast<int>(kSamplePakSize));
+  ASSERT_EQ(base::WriteFile(data_path, kSamplePakContentsV4, kSamplePakSizeV4),
+            static_cast<int>(kSamplePakSizeV4));
 
   base::File file(data_path, base::File::FLAG_OPEN | base::File::FLAG_READ);
   ASSERT_TRUE(file.IsValid());
@@ -112,15 +108,15 @@ TEST(DataPackTest, LoadFromFileRegion) {
   const char kPadding[5678] = {0};
   ASSERT_EQ(static_cast<int>(sizeof(kPadding)),
             base::WriteFile(data_path, kPadding, sizeof(kPadding)));
-  ASSERT_TRUE(base::AppendToFile(
-      data_path, kSamplePakContents, kSamplePakSize));
+  ASSERT_TRUE(
+      base::AppendToFile(data_path, kSamplePakContentsV4, kSamplePakSizeV4));
 
   base::File file(data_path, base::File::FLAG_OPEN | base::File::FLAG_READ);
   ASSERT_TRUE(file.IsValid());
 
   // Load the file through the data pack API.
   DataPack pack(SCALE_FACTOR_100P);
-  base::MemoryMappedFile::Region region = {sizeof(kPadding), kSamplePakSize};
+  base::MemoryMappedFile::Region region = {sizeof(kPadding), kSamplePakSizeV4};
   ASSERT_TRUE(pack.LoadFromFileRegion(std::move(file), region));
 
   base::StringPiece data;
@@ -142,11 +138,11 @@ TEST(DataPackTest, LoadFromFileRegion) {
   ASSERT_FALSE(pack.GetStringPiece(140, &data));
 }
 
-TEST(DataPackTest, LoadFromBuffer) {
+TEST(DataPackTest, LoadFromBufferV4) {
   DataPack pack(SCALE_FACTOR_100P);
 
   ASSERT_TRUE(pack.LoadFromBuffer(
-      base::StringPiece(kSamplePakContents, kSamplePakSize)));
+      base::StringPiece(kSamplePakContentsV4, kSamplePakSizeV4)));
 
   base::StringPiece data;
   ASSERT_TRUE(pack.HasResource(4));
@@ -161,6 +157,31 @@ TEST(DataPackTest, LoadFromBuffer) {
   EXPECT_EQ(0U, data.length());
   ASSERT_TRUE(pack.GetStringPiece(10, &data));
   EXPECT_EQ(0U, data.length());
+
+  // Try looking up an invalid key.
+  ASSERT_FALSE(pack.HasResource(140));
+  ASSERT_FALSE(pack.GetStringPiece(140, &data));
+}
+
+TEST(DataPackTest, LoadFromBufferV5) {
+  DataPack pack(SCALE_FACTOR_100P);
+
+  ASSERT_TRUE(pack.LoadFromBuffer(
+      base::StringPiece(kSamplePakContentsV5, kSamplePakSizeV5)));
+
+  base::StringPiece data;
+  ASSERT_TRUE(pack.HasResource(4));
+  ASSERT_TRUE(pack.GetStringPiece(4, &data));
+  EXPECT_EQ("this is id 4", data);
+  ASSERT_TRUE(pack.HasResource(6));
+  ASSERT_TRUE(pack.GetStringPiece(6, &data));
+  EXPECT_EQ("this is id 6", data);
+
+  // Try reading zero-length data blobs, just in case.
+  ASSERT_TRUE(pack.GetStringPiece(1, &data));
+  EXPECT_EQ(0U, data.length());
+  ASSERT_TRUE(pack.GetStringPiece(10, &data));
+  EXPECT_EQ("this is id 4", data);
 
   // Try looking up an invalid key.
   ASSERT_FALSE(pack.HasResource(140));
@@ -228,8 +249,8 @@ TEST(DataPackTest, ModifiedWhileUsed) {
       dir.GetPath().Append(FILE_PATH_LITERAL("sample.pak"));
 
   // Dump contents into the pak file.
-  ASSERT_EQ(base::WriteFile(data_path, kSamplePakContents, kSamplePakSize),
-            static_cast<int>(kSamplePakSize));
+  ASSERT_EQ(base::WriteFile(data_path, kSamplePakContentsV4, kSamplePakSizeV4),
+            static_cast<int>(kSamplePakSizeV4));
 
   base::File file(data_path, base::File::FLAG_OPEN | base::File::FLAG_READ);
   ASSERT_TRUE(file.IsValid());
