@@ -282,7 +282,6 @@ bool DocumentLifecycle::CanRewindTo(LifecycleState next_state) const {
       state_ == g_deprecated_transition_stack->From() &&
       next_state == g_deprecated_transition_stack->To())
     return true;
-  // TODO(smcgruer): Not sure if this is correct.
   return state_ == kStyleClean || state_ == kLayoutSubtreeChangeClean ||
          state_ == kAfterPerformLayout || state_ == kLayoutClean ||
          state_ == kCompositingInputsClean || state_ == kCompositingClean ||

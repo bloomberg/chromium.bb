@@ -328,9 +328,6 @@ void CompositedLayerMapping::UpdateStickyConstraints(
   web_constraint.scroll_container_relative_containing_block_rect =
       EnclosingIntRect(
           constraints.ScrollContainerRelativeContainingBlockRect());
-  // TODO(smcgruer): Until http://crbug.com/702229 is fixed, the nearest
-  // sticky layers may not be composited and we may incorrectly end up with
-  // invalid layer IDs.
   LayoutBoxModelObject* sticky_box_shifting_ancestor =
       constraints.NearestStickyBoxShiftingStickyBox();
   if (sticky_box_shifting_ancestor &&
