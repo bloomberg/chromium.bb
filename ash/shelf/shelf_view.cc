@@ -466,6 +466,14 @@ void ShelfView::ButtonPressed(views::Button* sender,
 
   // Notify the item of its selection; handle the result in AfterItemSelected.
   const ShelfItem& item = model_->items()[last_pressed_index_];
+
+  // Run AfterItemSelected directly if the item has no delegate (ie. in tests).
+  if (!model_->GetShelfItemDelegate(item.id)) {
+    AfterItemSelected(item, sender, ui::Event::Clone(event), ink_drop,
+                      SHELF_ACTION_NONE, base::nullopt);
+    return;
+  }
+
   // Mash requires conversion of mouse and touch events to pointer events.
   std::unique_ptr<ui::Event> pointer_event;
   if (Shell::GetAshConfig() == Config::MASH &&

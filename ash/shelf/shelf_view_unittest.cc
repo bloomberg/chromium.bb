@@ -252,9 +252,6 @@ class ShelfViewTest : public AshTestBase {
 
     test_api_.reset(new ShelfViewTestAPI(shelf_view_));
     test_api_->SetAnimationDuration(1);  // Speeds up animation for test.
-
-    // Add browser shortcut shelf item at index 0 for test.
-    AddItem(TYPE_BROWSER_SHORTCUT, true);
   }
 
   void TearDown() override {
@@ -472,7 +469,7 @@ class ShelfViewTest : public AshTestBase {
       ShelfID id = AddAppShortcut();
       // App Icon is located at index 0, and browser shortcut is located at
       // index 1. So we should start to add app shortcut at index 2.
-      id_map->insert(id_map->begin() + (i + browser_index_ + 1),
+      id_map->insert(id_map->begin() + i + 2,
                      std::make_pair(id, GetButtonByID(id)));
     }
     ASSERT_NO_FATAL_FAILURE(CheckModelIDs(*id_map));
@@ -638,7 +635,6 @@ class ShelfViewTest : public AshTestBase {
 
   ShelfModel* model_ = nullptr;
   ShelfView* shelf_view_ = nullptr;
-  int browser_index_ = 1;
   bool reach_touch_time_threshold_ = true;
 
   std::unique_ptr<ShelfViewTestAPI> test_api_;
@@ -1135,7 +1131,6 @@ TEST_F(ShelfViewTest, DragWithNotDraggableItemInFront) {
   // The expected id order is initialized as: 1, 2, 3, 4, 5, 6, 7
   std::vector<std::pair<ShelfID, views::View*>> id_map;
   SetupForDragTest(&id_map);
-  ASSERT_EQ(TYPE_APP_LIST, model_->items()[0].type);
 
   // Ensure that the app list button cannot be dragged.
   // The expected id order is unchanged: 1, 2, 3, 4, 5, 6, 7
@@ -1155,16 +1150,15 @@ TEST_F(ShelfViewTest, DragWithNotDraggableItemInFront) {
   ASSERT_NO_FATAL_FAILURE(DragAndVerify(5, 0, shelf_view_, id_map));
 }
 
-// Check that clicking first on one item and then dragging another works as
-// expected.
+// Ensure that clicking on one item and then dragging another works as expected.
 TEST_F(ShelfViewTest, ClickOneDragAnother) {
   std::vector<std::pair<ShelfID, views::View*>> id_map;
   SetupForDragTest(&id_map);
 
-  // A click on item 1 is simulated.
-  SimulateClick(1);
+  // A click on the item at index 2 is simulated.
+  SimulateClick(2);
 
-  // Dragging browser index at 0 should change the model order correctly.
+  // Dragging the browser item at index 1 should change the model order.
   EXPECT_TRUE(model_->items()[1].type == TYPE_BROWSER_SHORTCUT);
   views::View* dragged_button = SimulateDrag(ShelfView::MOUSE, 1, 3, false);
   std::rotate(id_map.begin() + 1, id_map.begin() + 2, id_map.begin() + 4);
@@ -1176,17 +1170,16 @@ TEST_F(ShelfViewTest, ClickOneDragAnother) {
 // Tests that double-clicking an item does not activate it twice.
 TEST_F(ShelfViewTest, ClickingTwiceActivatesOnce) {
   // Watch for selection of the browser shortcut.
-  ShelfID browser_shelf_id = model_->items()[browser_index_].id;
   ShelfItemSelectionTracker* selection_tracker = new ShelfItemSelectionTracker;
   model_->SetShelfItemDelegate(
-      browser_shelf_id,
+      model_->items()[1].id,
       base::WrapUnique<ShelfItemSelectionTracker>(selection_tracker));
 
   // A single click selects the item, but a double-click does not.
   EXPECT_EQ(0u, selection_tracker->item_selected_count());
-  SimulateClick(browser_index_);
+  SimulateClick(1);
   EXPECT_EQ(1u, selection_tracker->item_selected_count());
-  SimulateDoubleClick(browser_index_);
+  SimulateDoubleClick(1);
   EXPECT_EQ(1u, selection_tracker->item_selected_count());
 }
 
@@ -1656,8 +1649,6 @@ TEST_F(ShelfViewTest, OverflowShelfColorIsDerivedFromWallpaper) {
 TEST_F(ShelfViewTest, CheckDragInsertBoundsOfScrolledOverflowBubble) {
   UpdateDisplay("400x300");
 
-  EXPECT_EQ(2, model_->item_count());
-
   AddButtonsUntilOverflow();
 
   // Show overflow bubble.
@@ -1775,17 +1766,11 @@ TEST_F(ShelfViewTest, CheckRipOffFromLeftShelfAlignmentWithMultiMonitor) {
   secondary_shelf->SetAlignment(SHELF_ALIGNMENT_LEFT);
   ASSERT_EQ(SHELF_ALIGNMENT_LEFT, secondary_shelf->alignment());
 
-  // Initially, app list and browser shortcut are added.
-  EXPECT_EQ(2, model_->item_count());
-  int browser_index = model_->GetItemIndexForType(TYPE_BROWSER_SHORTCUT);
-  EXPECT_GT(browser_index, 0);
-
   ShelfView* shelf_view_for_secondary =
       secondary_shelf->GetShelfViewForTesting();
 
   ShelfViewTestAPI test_api_for_secondary_shelf_view(shelf_view_for_secondary);
-  ShelfButton* button =
-      test_api_for_secondary_shelf_view.GetButton(browser_index);
+  ShelfButton* button = test_api_for_secondary_shelf_view.GetButton(1);
 
   // Fetch the start point of dragging.
   gfx::Point start_point = button->GetBoundsInScreen().CenterPoint();
@@ -1845,13 +1830,12 @@ TEST_F(ShelfViewTest,
 
   base::UserActionTester user_action_tester;
 
-  ShelfID browser_shelf_id = model_->items()[browser_index_].id;
   ShelfItemSelectionTracker* selection_tracker = new ShelfItemSelectionTracker;
   model_->SetShelfItemDelegate(
-      browser_shelf_id,
+      model_->items()[1].id,
       base::WrapUnique<ShelfItemSelectionTracker>(selection_tracker));
 
-  SimulateClick(browser_index_);
+  SimulateClick(1);
   EXPECT_EQ(1,
             user_action_tester.GetActionCount("Launcher_ButtonPressed_Mouse"));
 }
@@ -1865,14 +1849,13 @@ TEST_F(ShelfViewTest, Launcher_TaskUserActionsRecordedWhenItemSelected) {
 
   base::UserActionTester user_action_tester;
 
-  ShelfID browser_shelf_id = model_->items()[browser_index_].id;
   ShelfItemSelectionTracker* selection_tracker = new ShelfItemSelectionTracker;
   selection_tracker->set_item_selected_action(SHELF_ACTION_NEW_WINDOW_CREATED);
   model_->SetShelfItemDelegate(
-      browser_shelf_id,
+      model_->items()[1].id,
       base::WrapUnique<ShelfItemSelectionTracker>(selection_tracker));
 
-  SimulateClick(browser_index_);
+  SimulateClick(1);
   EXPECT_EQ(1, user_action_tester.GetActionCount("Launcher_LaunchTask"));
 }
 
@@ -1882,17 +1865,16 @@ TEST_F(ShelfViewTest,
        VerifyMetricsAreRecordedWhenAnItemIsMinimizedAndActivated) {
   base::HistogramTester histogram_tester;
 
-  ShelfID browser_shelf_id = model_->items()[browser_index_].id;
   ShelfItemSelectionTracker* selection_tracker = new ShelfItemSelectionTracker;
   model_->SetShelfItemDelegate(
-      browser_shelf_id,
+      model_->items()[1].id,
       base::WrapUnique<ShelfItemSelectionTracker>(selection_tracker));
 
   selection_tracker->set_item_selected_action(SHELF_ACTION_WINDOW_MINIMIZED);
-  SimulateClick(browser_index_);
+  SimulateClick(1);
 
   selection_tracker->set_item_selected_action(SHELF_ACTION_WINDOW_ACTIVATED);
-  SimulateClick(browser_index_);
+  SimulateClick(1);
 
   histogram_tester.ExpectTotalCount(
       kTimeBetweenWindowMinimizedAndActivatedActionsHistogramName, 1);
@@ -2135,7 +2117,7 @@ class ShelfViewInkDropTest : public ShelfViewTest {
   }
 
   void InitBrowserButtonInkDrop() {
-    browser_button_ = test_api_->GetButton(browser_index_);
+    browser_button_ = test_api_->GetButton(1);
 
     auto browser_button_ink_drop =
         base::MakeUnique<InkDropSpy>(base::MakeUnique<views::InkDropImpl>(
@@ -2536,8 +2518,7 @@ TEST_F(ShelfViewInkDropTest, ShelfButtonWithMenuPressRelease) {
   InitBrowserButtonInkDrop();
 
   // Set a delegate for the shelf item that returns an app list menu.
-  ShelfID browser_shelf_id = model_->items()[browser_index_].id;
-  model_->SetShelfItemDelegate(browser_shelf_id,
+  model_->SetShelfItemDelegate(model_->items()[1].id,
                                base::MakeUnique<ListMenuShelfItemDelegate>());
 
   views::CustomButton* button = browser_button_;

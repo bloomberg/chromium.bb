@@ -96,11 +96,10 @@ void ShelfController::AddObserver(
       const ShelfItem& item = model_.items()[i];
       observer_ptr->OnShelfItemAdded(i, item);
       ShelfItemDelegate* delegate = model_.GetShelfItemDelegate(item.id);
-      mojom::ShelfItemDelegatePtr delegate_ptr;
-      if (delegate)
-        delegate_ptr = delegate->CreateInterfacePtrAndBind();
-      observer_ptr->OnShelfItemDelegateChanged(item.id,
-                                               std::move(delegate_ptr));
+      if (delegate) {
+        observer_ptr->OnShelfItemDelegateChanged(
+            item.id, delegate->CreateInterfacePtrAndBind());
+      }
     }
   }
 
