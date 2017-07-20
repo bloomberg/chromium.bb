@@ -762,7 +762,7 @@ def UmountDir(path, lazy=True, sudo=True, cleanup=True):
   cmd = ['umount', '-d', path]
   if lazy:
     cmd += ['-l']
-  runcmd(cmd)
+  runcmd(cmd, print_cmd=False)
 
   if cleanup:
     # We will randomly get EBUSY here even when the umount worked.  Suspect
