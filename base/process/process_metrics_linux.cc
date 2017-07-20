@@ -164,6 +164,44 @@ int GetProcessCPU(pid_t pid) {
   return total_cpu;
 }
 
+#if defined(OS_CHROMEOS)
+// Report on Chrome OS GEM object graphics memory. /run/debugfs_gpu is a
+// bind mount into /sys/kernel/debug and synchronously reading the in-memory
+// files in /sys is fast.
+void ReadChromeOSGraphicsMemory(SystemMemoryInfoKB* meminfo) {
+#if defined(ARCH_CPU_ARM_FAMILY)
+  FilePath geminfo_file("/run/debugfs_gpu/exynos_gem_objects");
+#else
+  FilePath geminfo_file("/run/debugfs_gpu/i915_gem_objects");
+#endif
+  std::string geminfo_data;
+  meminfo->gem_objects = -1;
+  meminfo->gem_size = -1;
+  if (ReadFileToString(geminfo_file, &geminfo_data)) {
+    int gem_objects = -1;
+    long long gem_size = -1;
+    int num_res = sscanf(geminfo_data.c_str(), "%d objects, %lld bytes",
+                         &gem_objects, &gem_size);
+    if (num_res == 2) {
+      meminfo->gem_objects = gem_objects;
+      meminfo->gem_size = gem_size;
+    }
+  }
+
+#if defined(ARCH_CPU_ARM_FAMILY)
+  // Incorporate Mali graphics memory if present.
+  FilePath mali_memory_file("/sys/class/misc/mali0/device/memory");
+  std::string mali_memory_data;
+  if (ReadFileToString(mali_memory_file, &mali_memory_data)) {
+    long long mali_size = -1;
+    int num_res = sscanf(mali_memory_data.c_str(), "%lld bytes", &mali_size);
+    if (num_res == 1)
+      meminfo->gem_size += mali_size;
+  }
+#endif  // defined(ARCH_CPU_ARM_FAMILY)
+}
+#endif  // defined(OS_CHROMEOS)
+
 }  // namespace
 
 // static
@@ -670,6 +708,9 @@ bool ParseProcVmstat(StringPiece vmstat_data, SystemMemoryInfoKB* meminfo) {
   //
   // Iterate through the whole file because the position of the
   // fields are dependent on the kernel version and configuration.
+  bool has_pswpin = false;
+  bool has_pswpout = false;
+  bool has_pgmajfault = false;
   for (const StringPiece& line : SplitStringPiece(
            vmstat_data, "\n", KEEP_WHITESPACE, SPLIT_WANT_NONEMPTY)) {
     std::vector<StringPiece> tokens = SplitStringPiece(
@@ -683,14 +724,22 @@ bool ParseProcVmstat(StringPiece vmstat_data, SystemMemoryInfoKB* meminfo) {
 
     if (tokens[0] == "pswpin") {
       meminfo->pswpin = val;
+      DCHECK(!has_pswpin);
+      has_pswpin = true;
     } else if (tokens[0] == "pswpout") {
       meminfo->pswpout = val;
+      DCHECK(!has_pswpout);
+      has_pswpout = true;
     } else if (tokens[0] == "pgmajfault") {
       meminfo->pgmajfault = val;
+      DCHECK(!has_pgmajfault);
+      has_pgmajfault = true;
     }
+    if (has_pswpin && has_pswpout && has_pgmajfault)
+      return true;
   }
 
-  return true;
+  return false;
 }
 
 bool GetSystemMemoryInfo(SystemMemoryInfoKB* meminfo) {
@@ -711,41 +760,8 @@ bool GetSystemMemoryInfo(SystemMemoryInfoKB* meminfo) {
   }
 
 #if defined(OS_CHROMEOS)
-  // Report on Chrome OS GEM object graphics memory. /run/debugfs_gpu is a
-  // bind mount into /sys/kernel/debug and synchronously reading the in-memory
-  // files in /sys is fast.
-#if defined(ARCH_CPU_ARM_FAMILY)
-  FilePath geminfo_file("/run/debugfs_gpu/exynos_gem_objects");
-#else
-  FilePath geminfo_file("/run/debugfs_gpu/i915_gem_objects");
+  ReadChromeOSGraphicsMemory(meminfo);
 #endif
-  std::string geminfo_data;
-  meminfo->gem_objects = -1;
-  meminfo->gem_size = -1;
-  if (ReadFileToString(geminfo_file, &geminfo_data)) {
-    int gem_objects = -1;
-    long long gem_size = -1;
-    int num_res = sscanf(geminfo_data.c_str(),
-                         "%d objects, %lld bytes",
-                         &gem_objects, &gem_size);
-    if (num_res == 2) {
-      meminfo->gem_objects = gem_objects;
-      meminfo->gem_size = gem_size;
-    }
-  }
-
-#if defined(ARCH_CPU_ARM_FAMILY)
-  // Incorporate Mali graphics memory if present.
-  FilePath mali_memory_file("/sys/class/misc/mali0/device/memory");
-  std::string mali_memory_data;
-  if (ReadFileToString(mali_memory_file, &mali_memory_data)) {
-    long long mali_size = -1;
-    int num_res = sscanf(mali_memory_data.c_str(), "%lld bytes", &mali_size);
-    if (num_res == 1)
-      meminfo->gem_size += mali_size;
-  }
-#endif  // defined(ARCH_CPU_ARM_FAMILY)
-#endif  // defined(OS_CHROMEOS)
 
   FilePath vmstat_file("/proc/vmstat");
   std::string vmstat_data;
