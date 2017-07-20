@@ -144,9 +144,11 @@ bool ServerSharedBitmapManager::OnMemoryDump(
     auto guid = GetSharedBitmapGUIDForTracing(bitmap.first);
     base::UnguessableToken shared_memory_guid;
     if (bitmap.second->memory) {
-      shared_memory_guid = bitmap.second->memory->handle().GetGUID();
-      pmd->CreateSharedMemoryOwnershipEdge(
-          dump->guid(), guid, shared_memory_guid, 0 /* importance*/);
+      shared_memory_guid = bitmap.second->memory->mapped_id();
+      if (!shared_memory_guid.is_empty()) {
+        pmd->CreateSharedMemoryOwnershipEdge(
+            dump->guid(), guid, shared_memory_guid, 0 /* importance*/);
+      }
     } else {
       pmd->CreateSharedGlobalAllocatorDump(guid);
       pmd->AddOwnershipEdge(dump->guid(), guid);
