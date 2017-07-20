@@ -338,6 +338,11 @@ void SSLConfigServiceManagerPref::GetSSLConfigFromPrefs(
     config->tls13_variant = net::kTLS13VariantDraft;
   } else if (tls13_variant_str == switches::kTLS13VariantExperiment) {
     config->tls13_variant = net::kTLS13VariantExperiment;
+  } else if (tls13_variant_str == switches::kTLS13VariantRecordTypeExperiment) {
+    config->tls13_variant = net::kTLS13VariantRecordTypeExperiment;
+  } else if (tls13_variant_str ==
+             switches::kTLS13VariantNoSessionIDExperiment) {
+    config->tls13_variant = net::kTLS13VariantNoSessionIDExperiment;
   }
 
   config->disabled_cipher_suites = disabled_cipher_suites_;
