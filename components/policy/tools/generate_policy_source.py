@@ -87,6 +87,11 @@ class PolicyDetails:
       if self.is_device_only and platform != 'chrome_os':
         raise RuntimeError('is_device_only is only allowed for Chrome OS: "%s"'
                            % p)
+      if platform not in ['chrome_frame', 'chrome_os',
+                          'android', 'webview_android',
+                          'chrome.win', 'chrome.linux', 'chrome.mac',
+                          'chrome.*']:
+        raise RuntimeError('Platform "%s" is not supported' % platform)
 
       split_result = version_range.split('-')
       if len(split_result) != 2:

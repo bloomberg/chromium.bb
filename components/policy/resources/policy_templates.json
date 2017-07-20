@@ -94,7 +94,7 @@
 #   numbers can be any string that does not contain ':' or '-' characters.
 #
 #   Currently supported product names:
-#       'chrome_frame', 'chrome_os', 'android', 'ios', 'webview_android',
+#       'chrome_frame', 'chrome_os', 'android', 'webview_android',
 #       'chrome.win', 'chrome.linux', 'chrome.mac', 'chrome.*'
 #     For example if 'chrome.*:5-10' is specified for a policy, then it should
 #     be read as:
@@ -402,7 +402,6 @@
         'chrome.*:8-',
         'chrome_os:11-',
         'android:30-',
-        'ios:34-47',
       ],
       'features': {
         'can_be_recommended': True,
@@ -1322,7 +1321,6 @@
             'chrome.*:8-',
             'chrome_os:11-',
             'android:30-',
-            'ios:34-47',
           ],
           'features': {
             'can_be_recommended': True,
@@ -1373,7 +1371,6 @@
         'chrome.*:8-',
         'chrome_os:11-',
         'android:30-',
-        'ios:34-47',
       ],
       'features': {
         'can_be_recommended': True,
@@ -1921,7 +1918,6 @@
             'chrome.*:10-',
             'chrome_os:11-',
             'android:30-',
-            'ios:34-47',
           ],
           'features': {
             'dynamic_refresh': True,
@@ -1992,7 +1988,6 @@
             'chrome.*:8-',
             'chrome_os:11-',
             'android:30-',
-            'ios:34-47',
           ],
           'features': {
             'dynamic_refresh': True,
@@ -2029,7 +2024,6 @@
             'chrome.*:8-',
             'chrome_os:11-',
             'android:30-',
-            'ios:34-47',
           ],
           'features': {
             'dynamic_refresh': True,
@@ -2057,7 +2051,6 @@
             'chrome.*:8-',
             'chrome_os:11-',
             'android:30-',
-            'ios:34-47',
           ],
           'features': {
             'dynamic_refresh': True,
@@ -2085,7 +2078,6 @@
             'chrome.*:8-',
             'chrome_os:11-',
             'android:30-',
-            'ios:34-47',
           ],
           'features': {
             'dynamic_refresh': True,
@@ -2125,7 +2117,6 @@
         'chrome.*:18-',
         'chrome_os:18-',
         'android:30-',
-        'ios:34-47',
       ],
       'future': True,
       'features': {
@@ -2778,7 +2769,6 @@
             'chrome.*:8-',
             'chrome_os:11-',
             'android:30-',
-            'ios:34-47',
           ],
           'features': {
             'dynamic_refresh': True,
@@ -2811,7 +2801,6 @@
             'chrome.*:8-',
             'chrome_os:11-',
             'android:30-',
-            'ios:34-47',
           ],
           'features': {
             'dynamic_refresh': True,
@@ -2833,7 +2822,6 @@
             'chrome.*:8-',
             'chrome_os:11-',
             'android:30-',
-            'ios:34-47',
           ],
           'features': {
             'dynamic_refresh': True,
@@ -2857,7 +2845,6 @@
             'chrome.*:8-',
             'chrome_os:11-',
             'android:30-',
-            'ios:34-47',
           ],
           'features': {
             'dynamic_refresh': True,
@@ -3149,7 +3136,6 @@
             'chrome.*:10-',
             'chrome_os:11-',
             'android:30-',
-            'ios:34-47',
           ],
           'features': {
             'dynamic_refresh': True,
@@ -3290,7 +3276,6 @@
           'supported_on': [
             'chrome.*:10-',
             'chrome_os:11-',
-            'ios:34-47',
             'android:33-',
           ],
           'features': {
@@ -3510,7 +3495,6 @@
             'chrome.*:11-',
             'chrome_os:11-',
             'android:30-',
-            'ios:34-47',
           ],
           'features': {
             'dynamic_refresh': True,
@@ -3535,7 +3519,6 @@
             'chrome.*:11-',
             'chrome_os:11-',
             'android:30-',
-            'ios:34-47',
           ],
           'features': {
             'dynamic_refresh': True,
@@ -3560,7 +3543,6 @@
             'chrome.*:11-',
             'chrome_os:11-',
             'android:30-',
-            'ios:34-47',
           ],
           'features': {
             'dynamic_refresh': True,
@@ -3748,7 +3730,6 @@
           'supported_on': [
             'chrome.*:11-',
             'chrome_os:11-',
-            'ios:34-47',
             'android:34-',
           ],
           'features': {
@@ -3813,7 +3794,6 @@
           'supported_on': [
             'chrome.*:11-',
             'chrome_os:11-',
-            'ios:34-47',
             'android:34-',
           ],
           'features': {
@@ -4266,7 +4246,6 @@
         'chrome.*:12-',
         'chrome_os:12-',
         'android:30-',
-        'ios:34-47',
       ],
       'features': {
         'can_be_recommended': True,
@@ -4621,7 +4600,6 @@
         'chrome_os:15-',
         'android:30-',
         'webview_android:47-',
-        'ios:34-47',
       ],
       'features': {
         'dynamic_refresh': True,
@@ -4654,7 +4632,6 @@
         'chrome_os:15-',
         'android:30-',
         'webview_android:47-',
-        'ios:34-47',
       ],
       'features': {
         'dynamic_refresh': True,
@@ -7591,7 +7568,7 @@
       'name': 'VariationsRestrictParameter',
       'type': 'string',
       'schema': { 'type': 'string' },
-      'supported_on': ['chrome.*:27-', 'android:34-', 'ios:35-47'],
+      'supported_on': ['chrome.*:27-', 'android:34-'],
       'features': {
         'dynamic_refresh': False,
         'per_profile': False,
@@ -7899,7 +7876,6 @@
       },
       'supported_on': [
         'android:30-',
-        'ios:35-47',
         'chrome.*:37-',
         'chrome_os:37-',
       ],
@@ -8254,7 +8230,6 @@
         'chrome.*:39-43',
         'chrome_os:39-43',
         'android:39-43',
-        'ios:39-43',
       ],
       'features': {
         'dynamic_refresh': True,
@@ -8299,7 +8274,6 @@
         'chrome.*:50-52',
         'chrome_os:50-52',
         'android:50-52',
-        'ios:50-52',
       ],
       'features': {
         'dynamic_refresh': True,
@@ -8344,7 +8318,6 @@
         'chrome.*:58-',
         'chrome_os:58-',
         'android:58-',
-        'ios:58-',
       ],
       'features': {
         'dynamic_refresh': True,
@@ -8398,7 +8371,6 @@
         'chrome.*:48-52',
         'chrome_os:48-52',
         'android:48-52',
-        'ios:48-52',
       ],
       'features': {
         'dynamic_refresh': True,
@@ -8423,7 +8395,6 @@
         'chrome.*:53-57',
         'chrome_os:53-57',
         'android:53-57',
-        'ios:53-57',
       ],
       'features': {
         'dynamic_refresh': True,
