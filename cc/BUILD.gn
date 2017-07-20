@@ -193,8 +193,6 @@ cc_component("cc") {
     "output/overlay_strategy_underlay_cast.h",
     "output/program_binding.cc",
     "output/program_binding.h",
-    "output/renderer_settings.cc",
-    "output/renderer_settings.h",
     "output/shader.cc",
     "output/shader.h",
     "output/software_output_device.cc",

@@ -465,7 +465,7 @@ class LayerTreeHostTestHiddenSurfaceNotAllocatedForSubtreeCopyRequest
   }
 
   std::unique_ptr<viz::TestLayerTreeFrameSink> CreateLayerTreeFrameSink(
-      const RendererSettings& renderer_settings,
+      const viz::RendererSettings& renderer_settings,
       double refresh_rate,
       scoped_refptr<viz::ContextProvider> compositor_context_provider,
       scoped_refptr<viz::ContextProvider> worker_context_provider) override {

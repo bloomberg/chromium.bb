@@ -23,7 +23,7 @@ class TileDrawQuad;
 
 class CC_EXPORT SoftwareRenderer : public DirectRenderer {
  public:
-  SoftwareRenderer(const RendererSettings* settings,
+  SoftwareRenderer(const viz::RendererSettings* settings,
                    OutputSurface* output_surface,
                    ResourceProvider* resource_provider);
 

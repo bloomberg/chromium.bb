@@ -1991,7 +1991,7 @@ TEST_F(DCLayerOverlayTest, TransparentOnTop) {
 
 class OverlayInfoRendererGL : public GLRenderer {
  public:
-  OverlayInfoRendererGL(const RendererSettings* settings,
+  OverlayInfoRendererGL(const viz::RendererSettings* settings,
                         OutputSurface* output_surface,
                         ResourceProvider* resource_provider)
       : GLRenderer(settings, output_surface, resource_provider, NULL),
@@ -2084,7 +2084,7 @@ class GLRendererWithOverlaysTest : public testing::Test {
     renderer_->DidReceiveTextureInUseResponses(responses);
   }
 
-  RendererSettings settings_;
+  viz::RendererSettings settings_;
   FakeOutputSurfaceClient output_surface_client_;
   std::unique_ptr<OutputSurfaceType> output_surface_;
   std::unique_ptr<ResourceProvider> resource_provider_;

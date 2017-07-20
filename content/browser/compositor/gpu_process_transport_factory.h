@@ -16,7 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "build/build_config.h"
-#include "cc/output/renderer_settings.h"
+#include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/surfaces/frame_sink_id_allocator.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "content/browser/compositor/image_transport_factory.h"
@@ -125,7 +125,7 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
       PerCompositorDataMap;
   PerCompositorDataMap per_compositor_data_;
 
-  const cc::RendererSettings renderer_settings_;
+  const viz::RendererSettings renderer_settings_;
   scoped_refptr<ui::ContextProviderCommandBuffer> shared_main_thread_contexts_;
   std::unique_ptr<viz::GLHelper> gl_helper_;
   base::ObserverList<ui::ContextFactoryObserver> observer_list_;

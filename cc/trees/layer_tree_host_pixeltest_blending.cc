@@ -70,11 +70,11 @@ class LayerTreeHostBlendingPixelTest : public LayerTreeHostPixelResourceTest {
 
  protected:
   std::unique_ptr<viz::TestLayerTreeFrameSink> CreateLayerTreeFrameSink(
-      const RendererSettings& renderer_settings,
+      const viz::RendererSettings& renderer_settings,
       double refresh_rate,
       scoped_refptr<viz::ContextProvider> compositor_context_provider,
       scoped_refptr<viz::ContextProvider> worker_context_provider) override {
-    RendererSettings modified_renderer_settings = renderer_settings;
+    viz::RendererSettings modified_renderer_settings = renderer_settings;
     modified_renderer_settings.force_antialiasing = force_antialiasing_;
     modified_renderer_settings.force_blending_with_shaders =
         force_blending_with_shaders_;

@@ -862,7 +862,7 @@ void LayerTreeTest::RequestNewLayerTreeFrameSink() {
   scoped_refptr<TestContextProvider> worker_context_provider =
       TestContextProvider::CreateWorker();
 
-  RendererSettings renderer_settings;
+  viz::RendererSettings renderer_settings;
   // Spend less time waiting for BeginFrame because the output is
   // mocked out.
   constexpr double refresh_rate = 200.0;
@@ -877,7 +877,7 @@ void LayerTreeTest::RequestNewLayerTreeFrameSink() {
 
 std::unique_ptr<viz::TestLayerTreeFrameSink>
 LayerTreeTest::CreateLayerTreeFrameSink(
-    const RendererSettings& renderer_settings,
+    const viz::RendererSettings& renderer_settings,
     double refresh_rate,
     scoped_refptr<viz::ContextProvider> compositor_context_provider,
     scoped_refptr<viz::ContextProvider> worker_context_provider) {

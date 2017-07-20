@@ -55,7 +55,7 @@ class PixelTest : public testing::Test {
   }
 
   LayerTreeSettings settings_;
-  RendererSettings renderer_settings_;
+  viz::RendererSettings renderer_settings_;
   gfx::Size device_viewport_size_;
   bool disable_picture_quad_image_filtering_;
   std::unique_ptr<FakeOutputSurfaceClient> output_surface_client_;
@@ -99,7 +99,7 @@ class RendererPixelTest : public PixelTest {
 // have an externally determined size and offset.
 class GLRendererWithExpandedViewport : public GLRenderer {
  public:
-  GLRendererWithExpandedViewport(const RendererSettings* settings,
+  GLRendererWithExpandedViewport(const viz::RendererSettings* settings,
                                  OutputSurface* output_surface,
                                  ResourceProvider* resource_provider,
                                  TextureMailboxDeleter* texture_mailbox_deleter)
@@ -111,7 +111,7 @@ class GLRendererWithExpandedViewport : public GLRenderer {
 
 class SoftwareRendererWithExpandedViewport : public SoftwareRenderer {
  public:
-  SoftwareRendererWithExpandedViewport(const RendererSettings* settings,
+  SoftwareRendererWithExpandedViewport(const viz::RendererSettings* settings,
                                        OutputSurface* output_surface,
                                        ResourceProvider* resource_provider)
       : SoftwareRenderer(settings, output_surface, resource_provider) {}
@@ -119,7 +119,7 @@ class SoftwareRendererWithExpandedViewport : public SoftwareRenderer {
 
 class GLRendererWithFlippedSurface : public GLRenderer {
  public:
-  GLRendererWithFlippedSurface(const RendererSettings* settings,
+  GLRendererWithFlippedSurface(const viz::RendererSettings* settings,
                                OutputSurface* output_surface,
                                ResourceProvider* resource_provider,
                                TextureMailboxDeleter* texture_mailbox_deleter)

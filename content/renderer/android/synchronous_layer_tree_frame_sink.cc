@@ -17,11 +17,11 @@
 #include "cc/output/layer_tree_frame_sink_client.h"
 #include "cc/output/output_surface.h"
 #include "cc/output/output_surface_frame.h"
-#include "cc/output/renderer_settings.h"
 #include "cc/output/software_output_device.h"
 #include "cc/output/texture_mailbox_deleter.h"
 #include "cc/quads/render_pass.h"
 #include "cc/quads/surface_draw_quad.h"
+#include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "components/viz/service/display/display.h"
@@ -184,7 +184,7 @@ bool SynchronousLayerTreeFrameSink::BindToClient(
       this, frame_sink_manager_.get(), kChildFrameSinkId, child_support_is_root,
       handles_frame_sink_id_invalidation, needs_sync_points);
 
-  cc::RendererSettings software_renderer_settings;
+  viz::RendererSettings software_renderer_settings;
 
   auto output_surface = base::MakeUnique<SoftwareOutputSurface>(
       base::MakeUnique<SoftwareDevice>(&current_sw_canvas_));

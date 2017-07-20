@@ -17,9 +17,9 @@
 #include "cc/output/bsp_tree.h"
 #include "cc/output/bsp_walk_action.h"
 #include "cc/output/copy_output_request.h"
-#include "cc/output/renderer_settings.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/resources/scoped_resource.h"
+#include "components/viz/common/display/renderer_settings.h"
 #include "ui/gfx/geometry/quad_f.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/transform.h"
@@ -75,7 +75,7 @@ namespace cc {
 DirectRenderer::DrawingFrame::DrawingFrame() = default;
 DirectRenderer::DrawingFrame::~DrawingFrame() = default;
 
-DirectRenderer::DirectRenderer(const RendererSettings* settings,
+DirectRenderer::DirectRenderer(const viz::RendererSettings* settings,
                                OutputSurface* output_surface,
                                ResourceProvider* resource_provider)
     : settings_(settings),

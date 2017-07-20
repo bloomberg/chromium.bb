@@ -81,7 +81,7 @@ class SoftwareRendererTest : public testing::Test {
   }
 
  protected:
-  RendererSettings settings_;
+  viz::RendererSettings settings_;
   FakeOutputSurfaceClient output_surface_client_;
   std::unique_ptr<FakeOutputSurface> output_surface_;
   std::unique_ptr<viz::SharedBitmapManager> shared_bitmap_manager_;

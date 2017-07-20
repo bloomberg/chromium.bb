@@ -348,7 +348,7 @@ class LayoutTestDependenciesImpl : public LayoutTestDependencies,
     if (!task_runner)
       task_runner = base::ThreadTaskRunnerHandle::Get().get();
 
-    cc::RendererSettings renderer_settings;
+    viz::RendererSettings renderer_settings;
     base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
     renderer_settings.enable_color_correct_rendering =
         base::FeatureList::IsEnabled(features::kColorCorrectRendering);
