@@ -17,6 +17,7 @@
 #include "media/video/picture.h"
 #include "third_party/angle/include/EGL/egl.h"
 #include "third_party/angle/include/EGL/eglext.h"
+#include "ui/gl/gl_image.h"
 
 namespace media {
 class D3D11H264Accelerator;
@@ -38,6 +39,7 @@ class D3D11PictureBuffer {
   bool in_picture_use() const { return in_picture_use_; }
   void set_in_client_use(bool use) { in_client_use_ = use; }
   void set_in_picture_use(bool use) { in_picture_use_ = use; }
+  scoped_refptr<gl::GLImage> gl_image() const { return gl_image_; }
 
  private:
   friend class D3D11H264Accelerator;
@@ -49,6 +51,7 @@ class D3D11PictureBuffer {
   size_t level_;
   base::win::ScopedComPtr<ID3D11VideoDecoderOutputView> output_view_;
   EGLStreamKHR stream_;
+  scoped_refptr<gl::GLImage> gl_image_;
 
   DISALLOW_COPY_AND_ASSIGN(D3D11PictureBuffer);
 };

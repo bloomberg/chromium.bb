@@ -172,8 +172,8 @@ GpuVideoDecodeAcceleratorFactory::CreateD3D11VDA(
     return decoder;
   if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
     DVLOG(0) << "Initializing D3D11 HW decoder for windows.";
-    decoder.reset(new D3D11VideoDecodeAccelerator(get_gl_context_cb_,
-                                                  make_context_current_cb_));
+    decoder.reset(new D3D11VideoDecodeAccelerator(
+        get_gl_context_cb_, make_context_current_cb_, bind_image_cb_));
   }
   return decoder;
 }
