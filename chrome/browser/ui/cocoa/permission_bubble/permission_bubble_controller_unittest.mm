@@ -15,6 +15,7 @@
 #include "chrome/browser/permissions/mock_permission_request.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/bubble_anchor_util.h"
 #include "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_icon_decoration.h"
@@ -287,9 +288,6 @@ TEST_F(PermissionBubbleControllerTest, AnchorPositionWithLocationBar) {
 }
 
 TEST_F(PermissionBubbleControllerTest, AnchorPositionWithoutLocationBar) {
-  // See comment in bubble_anchor_helper.mm where this is defined.
-  const NSInteger kFullscreenLeftOffset = 40;
-
   base::mac::ScopedObjCClassSwizzler locationSwizzle(
       [PermissionBubbleController class], [MockBubbleNoLocationBar class],
       @selector(hasVisibleLocationBarForBrowser:));
@@ -299,8 +297,8 @@ TEST_F(PermissionBubbleControllerTest, AnchorPositionWithoutLocationBar) {
   // Expected anchor location will be top left when there's no location bar.
   NSWindow* window = browser()->window()->GetNativeWindow();
   NSRect frame = [[window contentView] frame];
-  NSPoint expected =
-      NSMakePoint(NSMinX(frame) + kFullscreenLeftOffset, NSMaxY(frame));
+  NSPoint expected = NSMakePoint(
+      NSMinX(frame) + bubble_anchor_util::kNoToolbarLeftOffset, NSMaxY(frame));
   expected = ui::ConvertPointFromWindowToScreen(window, expected);
   EXPECT_NSEQ(expected, anchor);
 }

@@ -7,6 +7,8 @@
 #include "chrome/browser/ui/bookmarks/bookmark_bubble_sign_in_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/bubble_anchor_util.h"
 #include "chrome/browser/ui/cocoa/browser_dialogs_views_mac.h"
 #include "chrome/browser/ui/cocoa/bubble_anchor_helper_views.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
@@ -26,13 +28,12 @@
 
 namespace chrome {
 
-void ShowPageInfoBubbleViewsAtPoint(
-    const gfx::Point& anchor_point,
+void ShowPageInfoBubbleViews(
+    gfx::NativeWindow browser_window,
     Profile* profile,
     content::WebContents* web_contents,
     const GURL& virtual_url,
-    const security_state::SecurityInfo& security_info,
-    LocationBarDecoration* decoration) {
+    const security_state::SecurityInfo& security_info) {
   // Don't show the bubble again if it's already showing. A second click on the
   // location icon in the omnibox will dismiss an open bubble. This behaviour is
   // consistent with the non-Mac views implementation.
@@ -45,10 +46,12 @@ void ShowPageInfoBubbleViewsAtPoint(
     return;
   }
 
-  views::BubbleDialogDelegateView* bubble = PageInfoBubbleView::ShowBubble(
-      nullptr, nullptr, gfx::Rect(anchor_point, gfx::Size()), profile,
-      web_contents, virtual_url, security_info);
-  KeepBubbleAnchored(bubble, decoration);
+  Browser* browser = chrome::FindBrowserWithWindow(browser_window);
+  const gfx::Rect anchor = bubble_anchor_util::GetPageInfoAnchorRect(browser);
+  views::BubbleDialogDelegateView* bubble =
+      PageInfoBubbleView::ShowBubble(nullptr, nullptr, anchor, profile,
+                                     web_contents, virtual_url, security_info);
+  KeepBubbleAnchored(bubble, GetPageInfoDecoration(browser_window));
 }
 
 void ShowBookmarkBubbleViewsAtPoint(const gfx::Point& anchor_point,

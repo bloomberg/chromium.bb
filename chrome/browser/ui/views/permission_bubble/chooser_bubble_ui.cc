@@ -4,25 +4,32 @@
 
 #include "chrome/browser/ui/views/permission_bubble/chooser_bubble_ui.h"
 
-#include <stddef.h>
-
-#include <memory>
-
-#include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/chooser_controller/chooser_controller.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/permission_bubble/chooser_bubble_delegate.h"
+#include "chrome/browser/ui/views/bubble_anchor_util_views.h"
 #include "chrome/browser/ui/views/device_chooser_content_view.h"
 #include "components/bubble/bubble_controller.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
-#include "ui/views/controls/link.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/controls/table/table_view_observer.h"
 #include "ui/views/window/dialog_client_view.h"
+
+namespace {
+
+constexpr views::BubbleBorder::Arrow kChooserAnchorArrow =
+    views::BubbleBorder::TOP_LEFT;
+
+views::View* GetChooserAnchorView(Browser* browser) {
+  return bubble_anchor_util::GetPageInfoAnchorView(browser);
+}
+
+gfx::Rect GetChooserAnchorRect(Browser* browser) {
+  return bubble_anchor_util::GetPageInfoAnchorRect(browser);
+}
+
+}  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
 // View implementation for the chooser bubble.
@@ -30,9 +37,7 @@ class ChooserBubbleUiViewDelegate : public views::BubbleDialogDelegateView,
                                     public views::TableViewObserver {
  public:
   ChooserBubbleUiViewDelegate(
-      views::View* anchor_view,
-      const gfx::Point& anchor_point,
-      views::BubbleBorder::Arrow anchor_arrow,
+      Browser* browser,
       std::unique_ptr<ChooserController> chooser_controller);
   ~ChooserBubbleUiViewDelegate() override;
 
@@ -57,8 +62,7 @@ class ChooserBubbleUiViewDelegate : public views::BubbleDialogDelegateView,
 
   // Updates the anchor's arrow and view. Also repositions the bubble so it's
   // displayed in the correct location.
-  void UpdateAnchor(views::View* anchor_view,
-                    views::BubbleBorder::Arrow anchor_arrow);
+  void UpdateAnchor(Browser* browser);
 
   void set_bubble_reference(BubbleReference bubble_reference);
   void UpdateTableView() const;
@@ -71,11 +75,10 @@ class ChooserBubbleUiViewDelegate : public views::BubbleDialogDelegateView,
 };
 
 ChooserBubbleUiViewDelegate::ChooserBubbleUiViewDelegate(
-    views::View* anchor_view,
-    const gfx::Point& anchor_point,
-    views::BubbleBorder::Arrow anchor_arrow,
+    Browser* browser,
     std::unique_ptr<ChooserController> chooser_controller)
-    : views::BubbleDialogDelegateView(anchor_view, anchor_arrow),
+    : views::BubbleDialogDelegateView(GetChooserAnchorView(browser),
+                                      kChooserAnchorArrow),
       device_chooser_content_view_(nullptr) {
   // ------------------------------------
   // | Chooser bubble title             |
@@ -94,8 +97,8 @@ ChooserBubbleUiViewDelegate::ChooserBubbleUiViewDelegate(
 
   device_chooser_content_view_ =
       new DeviceChooserContentView(this, std::move(chooser_controller));
-  if (!anchor_view)
-    SetAnchorRect(gfx::Rect(anchor_point, gfx::Size()));
+  if (!GetAnchorView())
+    SetAnchorRect(GetChooserAnchorRect(browser));
   chrome::RecordDialogCreation(chrome::DialogIdentifier::CHOOSER_UI);
 }
 
@@ -154,16 +157,11 @@ void ChooserBubbleUiViewDelegate::OnSelectionChanged() {
   GetDialogClientView()->UpdateDialogButtons();
 }
 
-void ChooserBubbleUiViewDelegate::UpdateAnchor(
-    views::View* anchor_view,
-    views::BubbleBorder::Arrow anchor_arrow) {
-  if (GetAnchorView() == anchor_view && arrow() == anchor_arrow)
-    return;
-
-  set_arrow(anchor_arrow);
-
-  // Reposition the bubble based on the updated arrow and view.
+void ChooserBubbleUiViewDelegate::UpdateAnchor(Browser* browser) {
+  views::View* anchor_view = GetChooserAnchorView(browser);
   SetAnchorView(anchor_view);
+  if (!anchor_view)
+    SetAnchorRect(GetChooserAnchorRect(browser));
 }
 
 void ChooserBubbleUiViewDelegate::set_bubble_reference(
@@ -184,9 +182,8 @@ ChooserBubbleUi::ChooserBubbleUi(
     : browser_(browser), chooser_bubble_ui_view_delegate_(nullptr) {
   DCHECK(browser_);
   DCHECK(chooser_controller);
-  chooser_bubble_ui_view_delegate_ = new ChooserBubbleUiViewDelegate(
-      GetAnchorView(), GetAnchorPoint(), GetAnchorArrow(),
-      std::move(chooser_controller));
+  chooser_bubble_ui_view_delegate_ =
+      new ChooserBubbleUiViewDelegate(browser, std::move(chooser_controller));
 }
 
 ChooserBubbleUi::~ChooserBubbleUi() {
@@ -211,10 +208,8 @@ void ChooserBubbleUi::Close() {
 }
 
 void ChooserBubbleUi::UpdateAnchorPosition() {
-  if (chooser_bubble_ui_view_delegate_) {
-    chooser_bubble_ui_view_delegate_->UpdateAnchor(GetAnchorView(),
-                                                   GetAnchorArrow());
-  }
+  if (chooser_bubble_ui_view_delegate_)
+    chooser_bubble_ui_view_delegate_->UpdateAnchor(browser_);
 }
 
 void ChooserBubbleUi::OnWidgetClosing(views::Widget* widget) {

@@ -31,14 +31,12 @@ struct SecurityInfo;
 
 namespace chrome {
 
-// Shows a Views page info bubble at the given anchor point.
-void ShowPageInfoBubbleViewsAtPoint(
-    const gfx::Point& anchor_point,
-    Profile* profile,
-    content::WebContents* web_contents,
-    const GURL& virtual_url,
-    const security_state::SecurityInfo& security_info,
-    LocationBarDecoration* decoration);
+// Shows a Views page info bubble on the given |browser_window|.
+void ShowPageInfoBubbleViews(gfx::NativeWindow browser_window,
+                             Profile* profile,
+                             content::WebContents* web_contents,
+                             const GURL& virtual_url,
+                             const security_state::SecurityInfo& security_info);
 
 // Show a Views bookmark bubble at the given point. This occurs when the
 // bookmark star is clicked or "Bookmark This Page..." is selected from a menu
