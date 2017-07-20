@@ -271,7 +271,7 @@ TEST_F(BaseFetchContextTest, RedirectChecksReportedAndEnforcedCSP) {
 
   ResourceLoaderOptions options;
 
-  EXPECT_EQ(ResourceRequestBlockedReason::CSP,
+  EXPECT_EQ(ResourceRequestBlockedReason::kCSP,
             fetch_context_->CanFollowRedirect(
                 Resource::kScript, resource_request, url, options,
                 SecurityViolationReportingPolicy::kReport,
@@ -298,7 +298,7 @@ TEST_F(BaseFetchContextTest, AllowResponseChecksReportedAndEnforcedCSP) {
 
   ResourceLoaderOptions options;
 
-  EXPECT_EQ(ResourceRequestBlockedReason::CSP,
+  EXPECT_EQ(ResourceRequestBlockedReason::kCSP,
             fetch_context_->AllowResponse(Resource::kScript, resource_request,
                                           url, options));
   EXPECT_EQ(2u, policy->violation_reports_sent_.size());

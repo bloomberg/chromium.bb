@@ -148,7 +148,7 @@ ResourceRequestBlockedReason BaseFetchContext::CheckCSPForRequest(
                                 options.integrity_metadata,
                                 options.parser_disposition, redirect_status,
                                 reporting_policy, check_header_type)) {
-    return ResourceRequestBlockedReason::CSP;
+    return ResourceRequestBlockedReason::kCSP;
   }
   return ResourceRequestBlockedReason::kNone;
 }
@@ -222,15 +222,15 @@ ResourceRequestBlockedReason BaseFetchContext::CanRequestInternal(
   if (CheckCSPForRequest(
           resource_request, url, options, reporting_policy, redirect_status,
           ContentSecurityPolicy::CheckHeaderType::kCheckEnforce) ==
-      ResourceRequestBlockedReason::CSP) {
-    return ResourceRequestBlockedReason::CSP;
+      ResourceRequestBlockedReason::kCSP) {
+    return ResourceRequestBlockedReason::kCSP;
   }
 
   if (type == Resource::kScript || type == Resource::kImportResource) {
     if (!AllowScriptFromSource(url)) {
       // TODO(estark): Use a different ResourceRequestBlockedReason here, since
       // this check has nothing to do with CSP. https://crbug.com/600795
-      return ResourceRequestBlockedReason::CSP;
+      return ResourceRequestBlockedReason::kCSP;
     }
   }
 
