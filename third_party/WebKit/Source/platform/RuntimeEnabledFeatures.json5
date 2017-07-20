@@ -364,7 +364,7 @@
     },
     {
       name: "DeviceMemoryHeader",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "DisplayList2dCanvas",
