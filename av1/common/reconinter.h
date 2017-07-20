@@ -490,7 +490,7 @@ void av1_make_masked_inter_predictor(const uint8_t *pre, int pre_stride,
                                      uint8_t *dst, int dst_stride,
                                      const int subpel_x, const int subpel_y,
                                      const struct scale_factors *sf, int w,
-                                     int h,
+                                     int h, ConvolveParams *conv_params,
 #if CONFIG_DUAL_FILTER
                                      const InterpFilter *interp_filter,
 #else

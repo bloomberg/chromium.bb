@@ -702,7 +702,7 @@ void av1_make_masked_inter_predictor(const uint8_t *pre, int pre_stride,
                                      uint8_t *dst, int dst_stride,
                                      const int subpel_x, const int subpel_y,
                                      const struct scale_factors *sf, int w,
-                                     int h,
+                                     int h, ConvolveParams *conv_params,
 #if CONFIG_DUAL_FILTER
                                      const InterpFilter *interp_filter,
 #else
@@ -731,10 +731,6 @@ void av1_make_masked_inter_predictor(const uint8_t *pre, int pre_stride,
 #endif  // CONFIG_COMPOUND_SEGMENT
     mi->mbmi.interinter_compound_type
   };
-#if !CONFIG_GLOBAL_MOTION && !CONFIG_WARPED_MOTION
-  int ref = 0;
-#endif  // !CONFIG_GLOBAL_MOTION && !CONFIG_WARPED_MOTION
-  ConvolveParams conv_params = get_conv_params(ref, 0, plane);
 
 #if CONFIG_HIGHBITDEPTH
   DECLARE_ALIGNED(16, uint8_t, tmp_dst_[2 * MAX_SB_SQUARE]);
@@ -742,7 +738,7 @@ void av1_make_masked_inter_predictor(const uint8_t *pre, int pre_stride,
                          ? CONVERT_TO_BYTEPTR(tmp_dst_)
                          : tmp_dst_;
   av1_make_inter_predictor(pre, pre_stride, tmp_dst, MAX_SB_SIZE, subpel_x,
-                           subpel_y, sf, w, h, &conv_params, interp_filter,
+                           subpel_y, sf, w, h, conv_params, interp_filter,
 #if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
                            warp_types, p_col, p_row, plane, ref,
 #endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
@@ -785,7 +781,7 @@ void av1_make_masked_inter_predictor(const uint8_t *pre, int pre_stride,
 #else  // CONFIG_HIGHBITDEPTH
   DECLARE_ALIGNED(16, uint8_t, tmp_dst[MAX_SB_SQUARE]);
   av1_make_inter_predictor(pre, pre_stride, tmp_dst, MAX_SB_SIZE, subpel_x,
-                           subpel_y, sf, w, h, &conv_params, interp_filter,
+                           subpel_y, sf, w, h, conv_params, interp_filter,
 #if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
                            warp_types, p_col, p_row, plane, ref,
 #endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
@@ -1025,7 +1021,6 @@ void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd, int plane,
           uint8_t *pre;
           int xs, ys, subpel_x, subpel_y;
           const int is_scaled = av1_is_scaled(sf);
-          ConvolveParams conv_params = get_conv_params(ref, ref, plane);
 #if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
           WarpTypesAllowed warp_types;
 #if CONFIG_GLOBAL_MOTION
@@ -1081,11 +1076,16 @@ void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd, int plane,
                   (x + (mv_q4.col >> SUBPEL_BITS));
           }
 
+          ConvolveParams conv_params = get_conv_params(ref, ref, plane);
 #if CONFIG_EXT_INTER
+          if (is_masked_compound_type(mi->mbmi.interinter_compound_type)) {
+            // masked compound type has its own average mechanism
+            conv_params = get_conv_params(ref, 0, plane);
+          }
           if (ref && is_masked_compound_type(mi->mbmi.interinter_compound_type))
             av1_make_masked_inter_predictor(
                 pre, pre_buf->stride, dst, dst_buf->stride, subpel_x, subpel_y,
-                sf, w, h, mi->mbmi.interp_filter, xs, ys,
+                sf, w, h, &conv_params, mi->mbmi.interp_filter, xs, ys,
 #if CONFIG_SUPERTX
                 wedge_offset_x, wedge_offset_y,
 #endif  // CONFIG_SUPERTX
@@ -1242,14 +1242,16 @@ void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd, int plane,
       conv_params.ref = ref;
       conv_params.do_average = ref;
 #if CONFIG_EXT_INTER
-      if (is_masked_compound_type(mi->mbmi.interinter_compound_type))
-        conv_params = get_conv_params(ref, ref, plane);
+      if (is_masked_compound_type(mi->mbmi.interinter_compound_type)) {
+        // masked compound type has its own average mechanism
+        conv_params = get_conv_params(ref, 0, plane);
+      }
 
       if (ref && is_masked_compound_type(mi->mbmi.interinter_compound_type))
         av1_make_masked_inter_predictor(
             pre[ref], pre_buf->stride, dst, dst_buf->stride,
             subpel_params[ref].subpel_x, subpel_params[ref].subpel_y, sf, w, h,
-            mi->mbmi.interp_filter, subpel_params[ref].xs,
+            &conv_params, mi->mbmi.interp_filter, subpel_params[ref].xs,
             subpel_params[ref].ys,
 #if CONFIG_SUPERTX
             wedge_offset_x, wedge_offset_y,
