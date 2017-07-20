@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "base/system_monitor/system_monitor.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -220,6 +221,25 @@ class TestObserver : public chromeos::CrasAudioHandler::AudioObserver {
   DISALLOW_COPY_AND_ASSIGN(TestObserver);
 };
 
+class SystemMonitorObserver
+    : public base::SystemMonitor::DevicesChangedObserver {
+ public:
+  SystemMonitorObserver() : device_changes_received_(0) {}
+  ~SystemMonitorObserver() override {}
+
+  void OnDevicesChanged(base::SystemMonitor::DeviceType device_type) override {
+    if (device_type == base::SystemMonitor::DeviceType::DEVTYPE_AUDIO)
+      device_changes_received_++;
+  }
+
+  int device_changes_received() const { return device_changes_received_; }
+
+  void reset_count() { device_changes_received_ = 0; }
+
+ private:
+  int device_changes_received_;
+};
+
 class FakeVideoCaptureManager {
  public:
   FakeVideoCaptureManager() {}
@@ -257,10 +277,12 @@ class CrasAudioHandlerTest : public testing::TestWithParam<int> {
   ~CrasAudioHandlerTest() override {}
 
   void SetUp() override {
+    system_monitor_.AddDevicesChangedObserver(&system_monitor_observer_);
     video_capture_manager_.reset(new FakeVideoCaptureManager);
   }
 
   void TearDown() override {
+    system_monitor_.RemoveDevicesChangedObserver(&system_monitor_observer_);
     cras_audio_handler_->RemoveAudioObserver(test_observer_.get());
     test_observer_.reset();
     video_capture_manager_->RemoveAllObservers();
@@ -343,8 +365,8 @@ class CrasAudioHandlerTest : public testing::TestWithParam<int> {
     fake_cras_audio_client_ = static_cast<FakeCrasAudioClient*>(
         DBusThreadManager::Get()->GetCrasAudioClient());
     fake_cras_audio_client_->SetAudioNodesForTesting(audio_nodes);
-    fake_cras_audio_client_->SetActiveOutputNode(primary_active_node.id),
-        audio_pref_handler_ = new AudioDevicesPrefHandlerStub();
+    fake_cras_audio_client_->SetActiveOutputNode(primary_active_node.id);
+    audio_pref_handler_ = new AudioDevicesPrefHandlerStub();
     CrasAudioHandler::Initialize(audio_pref_handler_);
     cras_audio_handler_ = CrasAudioHandler::Get();
     test_observer_.reset(new TestObserver);
@@ -356,6 +378,13 @@ class CrasAudioHandlerTest : public testing::TestWithParam<int> {
     fake_cras_audio_client_->SetAudioNodesAndNotifyObserversForTesting(
         audio_nodes);
     base::RunLoop().RunUntilIdle();
+  }
+
+  void VerifySystemMonitorWasCalled() {
+    // System monitor uses PostTask internally, so we have to process messages
+    // before verifying the expectation.
+    base::RunLoop().RunUntilIdle();
+    EXPECT_EQ(1, system_monitor_observer_.device_changes_received());
   }
 
   const AudioDevice* GetDeviceFromId(uint64_t id) {
@@ -412,6 +441,8 @@ class CrasAudioHandlerTest : public testing::TestWithParam<int> {
 
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::SystemMonitor system_monitor_;
+  SystemMonitorObserver system_monitor_observer_;
   CrasAudioHandler* cras_audio_handler_ = nullptr;         // Not owned.
   FakeCrasAudioClient* fake_cras_audio_client_ = nullptr;  // Not owned.
   std::unique_ptr<TestObserver> test_observer_;
@@ -463,7 +494,7 @@ class HDMIRediscoverWaiter {
 };
 
 INSTANTIATE_TEST_CASE_P(StableIdV1, CrasAudioHandlerTest, testing::Values(1));
-INSTANTIATE_TEST_CASE_P(StabelIdV2, CrasAudioHandlerTest, testing::Values(2));
+INSTANTIATE_TEST_CASE_P(StableIdV2, CrasAudioHandlerTest, testing::Values(2));
 
 TEST_P(CrasAudioHandlerTest, InitializeWithOnlyDefaultAudioDevices) {
   AudioNodeList audio_nodes =
@@ -602,6 +633,7 @@ TEST_P(CrasAudioHandlerTest, SwitchActiveOutputDevice) {
   AudioDeviceList audio_devices;
   cras_audio_handler_->GetAudioDevices(&audio_devices);
   EXPECT_EQ(audio_nodes.size(), audio_devices.size());
+  system_monitor_observer_.reset_count();
 
   // Verify the initial active output device is headphone.
   EXPECT_EQ(0, test_observer_->active_output_node_changed_count());
@@ -619,6 +651,7 @@ TEST_P(CrasAudioHandlerTest, SwitchActiveOutputDevice) {
   // Verify the active output is switched to internal speaker, and the
   // ActiveOutputNodeChanged event is fired.
   EXPECT_EQ(1, test_observer_->active_output_node_changed_count());
+  VerifySystemMonitorWasCalled();
   EXPECT_TRUE(
       cras_audio_handler_->GetPrimaryActiveOutputDevice(&active_output));
   EXPECT_EQ(kInternalSpeaker->id, active_output.id);
@@ -670,6 +703,7 @@ TEST_P(CrasAudioHandlerTest, PlugHeadphone) {
   EXPECT_EQ(kInternalSpeaker->id,
             cras_audio_handler_->GetPrimaryActiveOutputNode());
   EXPECT_FALSE(cras_audio_handler_->has_alternative_output());
+  system_monitor_observer_.reset_count();
 
   // Plug the headphone.
   audio_nodes.clear();
@@ -681,6 +715,7 @@ TEST_P(CrasAudioHandlerTest, PlugHeadphone) {
 
   // Verify the AudioNodesChanged event is fired and new audio device is added.
   EXPECT_EQ(1, test_observer_->audio_nodes_changed_count());
+  VerifySystemMonitorWasCalled();
   cras_audio_handler_->GetAudioDevices(&audio_devices);
   EXPECT_EQ(init_nodes_size + 1, audio_devices.size());
 
@@ -715,6 +750,7 @@ TEST_P(CrasAudioHandlerTest, UnplugHeadphone) {
   EXPECT_EQ(kHeadphone->id, active_output.id);
   EXPECT_EQ(kHeadphone->id, cras_audio_handler_->GetPrimaryActiveOutputNode());
   EXPECT_TRUE(cras_audio_handler_->has_alternative_output());
+  system_monitor_observer_.reset_count();
 
   // Unplug the headphone.
   audio_nodes.clear();
@@ -724,6 +760,7 @@ TEST_P(CrasAudioHandlerTest, UnplugHeadphone) {
   // Verify the AudioNodesChanged event is fired and one audio device is
   // removed.
   EXPECT_EQ(1, test_observer_->audio_nodes_changed_count());
+  VerifySystemMonitorWasCalled();
   cras_audio_handler_->GetAudioDevices(&audio_devices);
   EXPECT_EQ(init_nodes_size - 1, audio_devices.size());
 
@@ -784,6 +821,7 @@ TEST_P(CrasAudioHandlerTest, ConnectAndDisconnectBluetoothHeadset) {
 
   // Connect to bluetooth headset. Since it is plugged in later than
   // headphone, active output should be switched to it.
+  system_monitor_observer_.reset_count();
   audio_nodes.clear();
   audio_nodes.push_back(GenerateAudioNode(kInternalSpeaker));
   AudioNode headphone = GenerateAudioNode(kHeadphone);
@@ -797,6 +835,7 @@ TEST_P(CrasAudioHandlerTest, ConnectAndDisconnectBluetoothHeadset) {
 
   // Verify the AudioNodesChanged event is fired and new audio device is added.
   EXPECT_EQ(1, test_observer_->audio_nodes_changed_count());
+  VerifySystemMonitorWasCalled();
   cras_audio_handler_->GetAudioDevices(&audio_devices);
   EXPECT_EQ(init_nodes_size + 1, audio_devices.size());
 
@@ -811,6 +850,7 @@ TEST_P(CrasAudioHandlerTest, ConnectAndDisconnectBluetoothHeadset) {
   EXPECT_TRUE(cras_audio_handler_->has_alternative_output());
 
   // Disconnect bluetooth headset.
+  system_monitor_observer_.reset_count();
   audio_nodes.clear();
   audio_nodes.push_back(GenerateAudioNode(kInternalSpeaker));
   headphone.active = false;
@@ -820,6 +860,7 @@ TEST_P(CrasAudioHandlerTest, ConnectAndDisconnectBluetoothHeadset) {
   // Verify the AudioNodesChanged event is fired and one audio device is
   // removed.
   EXPECT_EQ(2, test_observer_->audio_nodes_changed_count());
+  VerifySystemMonitorWasCalled();
   cras_audio_handler_->GetAudioDevices(&audio_devices);
   EXPECT_EQ(init_nodes_size, audio_devices.size());
 
@@ -875,6 +916,7 @@ TEST_P(CrasAudioHandlerTest, ConnectAndDisconnectHDMIOutput) {
   EXPECT_EQ(kInternalSpeaker->id,
             cras_audio_handler_->GetPrimaryActiveOutputNode());
   EXPECT_FALSE(cras_audio_handler_->has_alternative_output());
+  system_monitor_observer_.reset_count();
 
   // Connect to HDMI output.
   audio_nodes.clear();
@@ -889,6 +931,7 @@ TEST_P(CrasAudioHandlerTest, ConnectAndDisconnectHDMIOutput) {
 
   // Verify the AudioNodesChanged event is fired and new audio device is added.
   EXPECT_EQ(1, test_observer_->audio_nodes_changed_count());
+  VerifySystemMonitorWasCalled();
   cras_audio_handler_->GetAudioDevices(&audio_devices);
   EXPECT_EQ(init_nodes_size + 1, audio_devices.size());
 
@@ -900,6 +943,7 @@ TEST_P(CrasAudioHandlerTest, ConnectAndDisconnectHDMIOutput) {
   EXPECT_EQ(kHDMIOutput->id, active_output.id);
   EXPECT_EQ(kHDMIOutput->id, cras_audio_handler_->GetPrimaryActiveOutputNode());
   EXPECT_TRUE(cras_audio_handler_->has_alternative_output());
+  system_monitor_observer_.reset_count();
 
   // Disconnect hdmi headset.
   audio_nodes.clear();
@@ -909,6 +953,7 @@ TEST_P(CrasAudioHandlerTest, ConnectAndDisconnectHDMIOutput) {
   // Verify the AudioNodesChanged event is fired and one audio device is
   // removed.
   EXPECT_EQ(2, test_observer_->audio_nodes_changed_count());
+  VerifySystemMonitorWasCalled();
   cras_audio_handler_->GetAudioDevices(&audio_devices);
   EXPECT_EQ(init_nodes_size, audio_devices.size());
 
@@ -1010,6 +1055,7 @@ TEST_P(CrasAudioHandlerTest, PlugAndUnplugUSBHeadphone) {
   EXPECT_EQ(kInternalSpeaker->id,
             cras_audio_handler_->GetPrimaryActiveOutputNode());
   EXPECT_FALSE(cras_audio_handler_->has_alternative_output());
+  system_monitor_observer_.reset_count();
 
   // Plug in usb headphone
   audio_nodes.clear();
@@ -1024,6 +1070,7 @@ TEST_P(CrasAudioHandlerTest, PlugAndUnplugUSBHeadphone) {
 
   // Verify the AudioNodesChanged event is fired and new audio device is added.
   EXPECT_EQ(1, test_observer_->audio_nodes_changed_count());
+  VerifySystemMonitorWasCalled();
   cras_audio_handler_->GetAudioDevices(&audio_devices);
   EXPECT_EQ(init_nodes_size + 1, audio_devices.size());
 
@@ -1036,6 +1083,7 @@ TEST_P(CrasAudioHandlerTest, PlugAndUnplugUSBHeadphone) {
   EXPECT_EQ(kUSBHeadphone1->id,
             cras_audio_handler_->GetPrimaryActiveOutputNode());
   EXPECT_TRUE(cras_audio_handler_->has_alternative_output());
+  system_monitor_observer_.reset_count();
 
   // Unplug usb headphone.
   audio_nodes.clear();
@@ -1045,6 +1093,7 @@ TEST_P(CrasAudioHandlerTest, PlugAndUnplugUSBHeadphone) {
   // Verify the AudioNodesChanged event is fired and one audio device is
   // removed.
   EXPECT_EQ(2, test_observer_->audio_nodes_changed_count());
+  VerifySystemMonitorWasCalled();
   cras_audio_handler_->GetAudioDevices(&audio_devices);
   EXPECT_EQ(init_nodes_size, audio_devices.size());
 
@@ -1327,6 +1376,7 @@ TEST_P(CrasAudioHandlerTest, PlugUSBMic) {
   EXPECT_EQ(0, test_observer_->active_input_node_changed_count());
   EXPECT_EQ(kInternalMic->id, cras_audio_handler_->GetPrimaryActiveInputNode());
   EXPECT_FALSE(cras_audio_handler_->has_alternative_input());
+  system_monitor_observer_.reset_count();
 
   // Plug the USB Mic.
   audio_nodes.clear();
@@ -1338,6 +1388,7 @@ TEST_P(CrasAudioHandlerTest, PlugUSBMic) {
 
   // Verify the AudioNodesChanged event is fired and new audio device is added.
   EXPECT_EQ(1, test_observer_->audio_nodes_changed_count());
+  VerifySystemMonitorWasCalled();
   cras_audio_handler_->GetAudioDevices(&audio_devices);
   EXPECT_EQ(init_nodes_size + 1, audio_devices.size());
 
@@ -1364,6 +1415,7 @@ TEST_P(CrasAudioHandlerTest, UnplugUSBMic) {
   EXPECT_EQ(0, test_observer_->active_input_node_changed_count());
   EXPECT_EQ(kUSBMicId, cras_audio_handler_->GetPrimaryActiveInputNode());
   EXPECT_TRUE(cras_audio_handler_->has_alternative_input());
+  system_monitor_observer_.reset_count();
 
   // Unplug the USB Mic.
   audio_nodes.clear();
@@ -1373,6 +1425,7 @@ TEST_P(CrasAudioHandlerTest, UnplugUSBMic) {
   // Verify the AudioNodesChanged event is fired, and one audio device is
   // removed.
   EXPECT_EQ(1, test_observer_->audio_nodes_changed_count());
+  VerifySystemMonitorWasCalled();
   cras_audio_handler_->GetAudioDevices(&audio_devices);
   EXPECT_EQ(init_nodes_size - 1, audio_devices.size());
 
