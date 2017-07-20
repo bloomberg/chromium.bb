@@ -302,6 +302,26 @@ class AutofillMetrics {
     NUM_INFO_BAR_METRICS,
   };
 
+  // Metric to measure if a submitted card's expiration date matches the same
+  // server card's expiration date (unmasked or not).  Cards are considered to
+  // be the same if they have the same card number (if unmasked) or if they have
+  // the same network and last four digits (if masked).
+  enum SubmittedServerCardExpirationStatusMetric {
+    // The submitted card and the unmasked server card had the same expiration
+    // date.
+    FULL_SERVER_CARD_EXPIRATION_DATE_MATCHED,
+    // The submitted card and the unmasked server card had different expiration
+    // dates.
+    FULL_SERVER_CARD_EXPIRATION_DATE_DID_NOT_MATCH,
+    // The submitted card and the masked server card had the same expiration
+    // date.
+    MASKED_SERVER_CARD_EXPIRATION_DATE_MATCHED,
+    // The submitted card and the masked server card had different expiration
+    // dates.
+    MASKED_SERVER_CARD_EXPIRATION_DATE_DID_NOT_MATCH,
+    NUM_SUBMITTED_SERVER_CARD_EXPIRATION_STATUS_METRICS,
+  };
+
   // Metrics to measure user interaction with the save credit card prompt.
   //
   // SAVE_CARD_PROMPT_DISMISS_FOCUS is not stored explicitly, but can be
@@ -771,6 +791,12 @@ class AutofillMetrics {
     FormInteractionsUkmLogger* const logger_;
     DISALLOW_IMPLICIT_CONSTRUCTORS(UkmTimestampPin);
   };
+
+  // If a credit card that matches a server card (unmasked or not) was submitted
+  // on a form, logs whether the submitted card's expiration date matched the
+  // server card's known expiration date.
+  static void LogSubmittedServerCardExpirationStatusMetric(
+      SubmittedServerCardExpirationStatusMetric metric);
 
   // |upload_decision_metrics| is a bitmask of |CardUploadDecisionMetric|.
   static void LogCardUploadDecisionMetrics(int upload_decision_metrics);
