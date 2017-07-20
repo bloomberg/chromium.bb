@@ -295,8 +295,9 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest,
 // attribute prompt screen. Verifies the attribute prompt screen is displayed.
 // Verifies that the data the user enters into the attribute prompt screen is
 // received by the enrollment helper.
+// Crashes on ChromeOS: http://crbug.com/746723.
 IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest,
-                       TestAttributePromptPageGetsLoaded) {
+                       DISABLED_TestAttributePromptPageGetsLoaded) {
   ShowEnrollmentScreen();
   ExpectAttributePromptUpdate();
   SubmitEnrollmentCredentials();
@@ -347,8 +348,9 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest,
 // Directory domain join screen. Verifies the domain join screen is displayed.
 // Submits Active Directory different incorrect credentials. Verifies that the
 // correct error is displayed.
+// Crashes on ChromeOS: http://crbug.com/746723.
 IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest,
-                       TestActiveDirectoryEnrollment_UIErrors) {
+                       DISABLED_TestActiveDirectoryEnrollment_UIErrors) {
   ShowEnrollmentScreen();
   SetupActiveDirectoryJoin();
   SubmitEnrollmentCredentials();
