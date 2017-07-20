@@ -19,6 +19,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
+import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionProxyUma;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
@@ -529,7 +530,8 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             final boolean isSearchByImageAvailable = isSrcDownloadableScheme
                     && templateUrlServiceInstance.isLoaded()
                     && templateUrlServiceInstance.isSearchByImageAvailable()
-                    && templateUrlServiceInstance.getDefaultSearchEngineTemplateUrl() != null;
+                    && templateUrlServiceInstance.getDefaultSearchEngineTemplateUrl() != null
+                    && !LocaleManager.getInstance().needToCheckForSearchEnginePromo();
 
             if (!isSearchByImageAvailable) {
                 disabledOptions.add(ChromeContextMenuItem.SEARCH_BY_IMAGE);
