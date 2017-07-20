@@ -113,7 +113,7 @@ class WebGLConformanceExpectations(GpuTestExpectations):
 
     # Don't run performance tests on debug builds
     self.Skip('conformance/rendering/texture-switch-performance.html',
-        ['debug'])
+        ['debug', 'debug_x64'], bug=735483)
 
     # Passthrough command decoder
     self.Fail('conformance/extensions/webgl-draw-buffers.html',
