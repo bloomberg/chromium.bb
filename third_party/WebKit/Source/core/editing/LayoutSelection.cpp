@@ -237,46 +237,6 @@ class SelectionMarkingRange {
   DISALLOW_NEW();
 
  public:
-  class Iterator
-      : public std::iterator<std::input_iterator_tag, LayoutObject*> {
-   public:
-    explicit Iterator(const SelectionMarkingRange* range) {
-      if (!range) {
-        current_ = nullptr;
-        return;
-      }
-      range_ = range;
-      current_ = range->StartLayoutObject();
-    }
-    Iterator(const Iterator&) = default;
-    bool operator==(const Iterator& other) const {
-      return current_ == other.current_;
-    }
-    bool operator!=(const Iterator& other) const { return !operator==(other); }
-    Iterator& operator++() {
-      DCHECK(current_);
-      for (current_ = current_->NextInPreOrder();
-           current_ && current_ != range_->traverse_stop_;
-           current_ = current_->NextInPreOrder()) {
-        if (current_->CanBeSelectionLeaf())
-          return *this;
-      }
-
-      current_ = nullptr;
-      return *this;
-    }
-    LayoutObject* operator*() const {
-      DCHECK(current_);
-      return current_;
-    }
-
-   private:
-    const SelectionMarkingRange* range_;
-    LayoutObject* current_;
-  };
-  Iterator begin() const { return Iterator(this); };
-  Iterator end() const { return Iterator(nullptr); };
-
   SelectionMarkingRange() = default;
   SelectionMarkingRange(LayoutObject* start_layout_object,
                         int start_offset,
@@ -288,9 +248,6 @@ class SelectionMarkingRange {
         end_offset_(end_offset) {
     DCHECK(start_layout_object_);
     DCHECK(end_layout_object_);
-    traverse_stop_ = end_layout_object_->ChildAt(end_offset);
-    if (!traverse_stop_)
-      traverse_stop_ = end_layout_object_->NextInPreOrderAfterChildren();
     if (start_layout_object_ != end_layout_object_)
       return;
     DCHECK_LT(start_offset_, end_offset_);
@@ -324,7 +281,6 @@ class SelectionMarkingRange {
   int start_offset_ = -1;
   LayoutObject* end_layout_object_ = nullptr;
   int end_offset_ = -1;
-  LayoutObject* traverse_stop_ = nullptr;
 };
 
 // Update the selection status of all LayoutObjects between |start| and |end|.
@@ -341,7 +297,7 @@ static void SetSelectionState(const SelectionMarkingRange& range) {
     range.EndLayoutObject()->SetSelectionStateIfNeeded(SelectionState::kEnd);
   }
 
-  for (LayoutObject* runner : range) {
+  for (LayoutObject* runner : range.ToPaintRange()) {
     if (runner != range.StartLayoutObject() &&
         runner != range.EndLayoutObject() && runner->CanBeSelectionLeaf())
       runner->SetSelectionStateIfNeeded(SelectionState::kInside);
