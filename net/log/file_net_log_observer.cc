@@ -5,6 +5,7 @@
 #include "net/log/file_net_log_observer.h"
 
 #include <algorithm>
+#include <limits>
 #include <memory>
 #include <queue>
 #include <string>
@@ -98,6 +99,8 @@ void AppendToFileThenDelete(const base::FilePath& source_path,
 }  // namespace
 
 namespace net {
+
+const size_t FileNetLogObserver::kNoLimit = std::numeric_limits<size_t>::max();
 
 // Used to store events to be written to file.
 using EventQueue = std::queue<std::unique_ptr<std::string>>;
