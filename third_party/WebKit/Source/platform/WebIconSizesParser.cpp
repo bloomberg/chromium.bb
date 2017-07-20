@@ -42,8 +42,8 @@ static inline int PartialStringToInt(const String& string,
                                      size_t start,
                                      size_t end) {
   if (string.Is8Bit())
-    return CharactersToInt(string.Characters8() + start, end - start);
-  return CharactersToInt(string.Characters16() + start, end - start);
+    return CharactersToInt(string.Characters8() + start, end - start, nullptr);
+  return CharactersToInt(string.Characters16() + start, end - start, nullptr);
 }
 
 }  // namespace

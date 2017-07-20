@@ -11,14 +11,11 @@
 namespace WTF {
 
 // string -> int.
-WTF_EXPORT int CharactersToIntStrict(const LChar*, size_t, bool* ok = 0);
-WTF_EXPORT int CharactersToIntStrict(const UChar*, size_t, bool* ok = 0);
-WTF_EXPORT int CharactersToInt(const LChar*,
-                               size_t,
-                               bool* ok = 0);  // ignores trailing garbage
-WTF_EXPORT int CharactersToInt(const UChar*,
-                               size_t,
-                               bool* ok = 0);  // ignores trailing garbage
+WTF_EXPORT int CharactersToIntStrict(const LChar*, size_t, bool* ok);
+WTF_EXPORT int CharactersToIntStrict(const UChar*, size_t, bool* ok);
+// The following two functions ignore trailing garbage.
+WTF_EXPORT int CharactersToInt(const LChar*, size_t, bool* ok);
+WTF_EXPORT int CharactersToInt(const UChar*, size_t, bool* ok);
 
 enum class NumberParsingState {
   kSuccess,
@@ -32,16 +29,13 @@ enum class NumberParsingState {
 
 // string -> unsigned.
 // These functions do not accept "-0".
-WTF_EXPORT unsigned CharactersToUIntStrict(const LChar*, size_t, bool* ok = 0);
-WTF_EXPORT unsigned CharactersToUIntStrict(const UChar*, size_t, bool* ok = 0);
+WTF_EXPORT unsigned CharactersToUIntStrict(const LChar*, size_t, bool* ok);
+WTF_EXPORT unsigned CharactersToUIntStrict(const UChar*, size_t, bool* ok);
 WTF_EXPORT unsigned HexCharactersToUIntStrict(const LChar*, size_t, bool* ok);
 WTF_EXPORT unsigned HexCharactersToUIntStrict(const UChar*, size_t, bool* ok);
-WTF_EXPORT unsigned CharactersToUInt(const LChar*,
-                                     size_t,
-                                     bool* ok = 0);  // ignores trailing garbage
-WTF_EXPORT unsigned CharactersToUInt(const UChar*,
-                                     size_t,
-                                     bool* ok = 0);  // ignores trailing garbage
+// The following two functions ignore trailing garbage.
+WTF_EXPORT unsigned CharactersToUInt(const LChar*, size_t, bool* ok);
+WTF_EXPORT unsigned CharactersToUInt(const UChar*, size_t, bool* ok);
 
 // NumberParsingState versions of CharactersToUIntStrict. They can detect
 // overflow. |NumberParsingState*| should not be nullptr;
@@ -53,31 +47,19 @@ WTF_EXPORT unsigned CharactersToUIntStrict(const UChar*,
                                            NumberParsingState*);
 
 // string -> int64_t.
-WTF_EXPORT int64_t CharactersToInt64Strict(const LChar*, size_t, bool* ok = 0);
-WTF_EXPORT int64_t CharactersToInt64Strict(const UChar*, size_t, bool* ok = 0);
-WTF_EXPORT int64_t CharactersToInt64(const LChar*,
-                                     size_t,
-                                     bool* ok = 0);  // ignores trailing garbage
-WTF_EXPORT int64_t CharactersToInt64(const UChar*,
-                                     size_t,
-                                     bool* ok = 0);  // ignores trailing garbage
+WTF_EXPORT int64_t CharactersToInt64Strict(const LChar*, size_t, bool* ok);
+WTF_EXPORT int64_t CharactersToInt64Strict(const UChar*, size_t, bool* ok);
+// The following two functions ignore trailing garbage.
+WTF_EXPORT int64_t CharactersToInt64(const LChar*, size_t, bool* ok);
+WTF_EXPORT int64_t CharactersToInt64(const UChar*, size_t, bool* ok);
 
 // string -> uint64_t.
 // These functions do not accept "-0".
-WTF_EXPORT uint64_t CharactersToUInt64Strict(const LChar*,
-                                             size_t,
-                                             bool* ok = 0);
-WTF_EXPORT uint64_t CharactersToUInt64Strict(const UChar*,
-                                             size_t,
-                                             bool* ok = 0);
-WTF_EXPORT uint64_t
-CharactersToUInt64(const LChar*,
-                   size_t,
-                   bool* ok = 0);  // ignores trailing garbage
-WTF_EXPORT uint64_t
-CharactersToUInt64(const UChar*,
-                   size_t,
-                   bool* ok = 0);  // ignores trailing garbage
+WTF_EXPORT uint64_t CharactersToUInt64Strict(const LChar*, size_t, bool* ok);
+WTF_EXPORT uint64_t CharactersToUInt64Strict(const UChar*, size_t, bool* ok);
+// The following two functions ignore trailing garbage.
+WTF_EXPORT uint64_t CharactersToUInt64(const LChar*, size_t, bool* ok);
+WTF_EXPORT uint64_t CharactersToUInt64(const UChar*, size_t, bool* ok);
 
 // FIXME: Like the strict functions above, these give false for "ok" when there
 // is trailing garbage.  Like the non-strict functions above, these return the
@@ -85,8 +67,8 @@ CharactersToUInt64(const UChar*,
 // consistent with the above functions instead.
 //
 // string -> double.
-WTF_EXPORT double CharactersToDouble(const LChar*, size_t, bool* ok = 0);
-WTF_EXPORT double CharactersToDouble(const UChar*, size_t, bool* ok = 0);
+WTF_EXPORT double CharactersToDouble(const LChar*, size_t, bool* ok);
+WTF_EXPORT double CharactersToDouble(const UChar*, size_t, bool* ok);
 WTF_EXPORT double CharactersToDouble(const LChar*,
                                      size_t,
                                      size_t& parsed_length);
@@ -95,8 +77,8 @@ WTF_EXPORT double CharactersToDouble(const UChar*,
                                      size_t& parsed_length);
 
 // string -> float.
-WTF_EXPORT float CharactersToFloat(const LChar*, size_t, bool* ok = 0);
-WTF_EXPORT float CharactersToFloat(const UChar*, size_t, bool* ok = 0);
+WTF_EXPORT float CharactersToFloat(const LChar*, size_t, bool* ok);
+WTF_EXPORT float CharactersToFloat(const UChar*, size_t, bool* ok);
 WTF_EXPORT float CharactersToFloat(const LChar*, size_t, size_t& parsed_length);
 WTF_EXPORT float CharactersToFloat(const UChar*, size_t, size_t& parsed_length);
 
