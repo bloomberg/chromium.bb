@@ -330,6 +330,7 @@ public abstract class CardViewHolder
             case ItemViewType.PROGRESS:
             case ItemViewType.FOOTER:
             case ItemViewType.ALL_DISMISSED:
+            case ItemViewType.CAROUSEL:
                 return false;
             default:
                 assert false;

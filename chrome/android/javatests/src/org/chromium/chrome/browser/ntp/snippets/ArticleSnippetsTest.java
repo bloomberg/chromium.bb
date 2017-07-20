@@ -134,7 +134,8 @@ public class ArticleSnippetsTest {
 
                 mAdapter = new NewTabPageAdapter(mUiDelegate, /* aboveTheFold = */ null, mUiConfig,
                         OfflinePageBridge.getForProfile(Profile.getLastUsedProfile()),
-                        /* contextMenuManager = */ null, /* tileGroupDelegate = */ null);
+                        /* contextMenuManager = */ null, /* tileGroupDelegate = */ null,
+                        /* suggestionsCarousel = */ null);
                 mAdapter.refreshSuggestions();
                 mRecyclerView.setAdapter(mAdapter);
             }

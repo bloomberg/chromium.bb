@@ -295,7 +295,8 @@ public class NewTabPageView extends FrameLayout implements TileGroup.Observer {
 
         // Set up snippets
         NewTabPageAdapter newTabPageAdapter = new NewTabPageAdapter(mManager, mNewTabPageLayout,
-                mUiConfig, offlinePageBridge, mContextMenuManager, /* tileGroupDelegate = */ null);
+                mUiConfig, offlinePageBridge, mContextMenuManager, /* tileGroupDelegate = */ null,
+                /* suggestionsCarousel = */ null);
         newTabPageAdapter.refreshSuggestions();
         mRecyclerView.setAdapter(newTabPageAdapter);
         mRecyclerView.getLinearLayoutManager().scrollToPosition(scrollPosition);
