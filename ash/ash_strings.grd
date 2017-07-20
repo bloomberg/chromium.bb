@@ -424,16 +424,16 @@ This file contains the strings for ash.
         Capture screen
       </message>
       <message name="IDS_ASH_STYLUS_TOOLS_CREATE_NOTE_ACTION" desc="Title of the capture screen action in the stylus tools (a pop-up panel next to the status tray). Clicking this opens up an application that the user can quickly jot a note down in.">
-        New note
+        Create note
       </message>
       <message name="IDS_ASH_STYLUS_TOOLS_LASER_POINTER_MODE" desc="Title of the laser pointer in the palette (a pop-up panel next to the status tray). Clicking this turns the mouse into a laser pointer. Additionally, the palette tray is closed.">
-        Laser pointer mode
+        Laser pointer
       </message>
       <message name="IDS_ASH_STYLUS_TOOLS_MAGNIFIER_MODE" desc="Title of the magnification mode in the stylus tools. Clicking this button opens up a magnifier. The magnifier remains active until the user turns it off by tapping the same button again.">
-        Magnifying glass mode
+        Magnifying glass
       </message>
       <message name="IDS_ASH_STYLUS_TOOLS_METALAYER_MODE" desc="Title of the metalayer mode in the stylus tools. Clicking this button opens up the voice interaction overlay. The overlay remains active until the user completes the interaction.">
-        Assistant mode
+        Assistant
       </message>
       <message name="IDS_ASH_STYLUS_TOOLS_TITLE" desc="The title of the stylus tools dialog in the ash shelf.">
         Stylus tools
