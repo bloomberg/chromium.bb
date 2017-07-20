@@ -19,6 +19,7 @@ import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -79,6 +80,24 @@ public class LauncherActivityTest extends ChromeActivityTestCaseBase<ChromeActiv
         final Intent activityIntent = startedActivity.getIntent();
         assertEquals("Data was not preserved", intent.getData(), activityIntent.getData());
         assertEquals("Action was not preserved", intent.getAction(), activityIntent.getAction());
+    }
+
+    @SmallTest
+    public void testDoesNotCrashWithNoUriInViewIntent() {
+        // Prepare intent
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setClassName(mContext.getPackageName(), ChromeLauncherActivity.class.getName());
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+        // Could crash after the activity is created, wait for the tab to stop loading.
+        final ChromeActivity activity = (ChromeActivity) tryLaunchingChrome(intent);
+        CriteriaHelper.pollUiThread(new Criteria("ChromeActivity does not have a tab.") {
+            @Override
+            public boolean isSatisfied() {
+                Tab tab = activity.getActivityTab();
+                return tab != null && !tab.isLoading();
+            }
+        }, DEVICE_STARTUP_TIMEOUT_MS, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
     }
 
     private Activity tryLaunchingChrome(final Intent intent) {
