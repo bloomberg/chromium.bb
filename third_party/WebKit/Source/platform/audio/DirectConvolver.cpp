@@ -75,8 +75,8 @@ void DirectConvolver::Process(AudioFloatArray* convolution_kernel,
 
 #if defined(OS_MACOSX)
 #if defined(ARCH_CPU_X86)
-  conv(inputP - kernelSize + 1, 1, kernelP + kernelSize - 1, -1, destP, 1,
-       framesToProcess, kernelSize);
+  conv(input_p - kernel_size + 1, 1, kernel_p + kernel_size - 1, -1, dest_p, 1,
+       frames_to_process, kernel_size);
 #else
   vDSP_conv(input_p - kernel_size + 1, 1, kernel_p + kernel_size - 1, -1,
             dest_p, 1, frames_to_process, kernel_size);
