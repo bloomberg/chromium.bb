@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 #include "ash/ash_export.h"
-#include "ash/shell_observer.h"
+#include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/macros.h"
 #include "ui/events/devices/input_device_event_observer.h"
 #include "ui/keyboard/keyboard_layout_delegate.h"
@@ -17,14 +17,14 @@ namespace ash {
 
 // This class observes input device changes for the virtual keyboard.
 class ASH_EXPORT VirtualKeyboardController
-    : public ShellObserver,
+    : public TabletModeObserver,
       public ui::InputDeviceEventObserver,
       public keyboard::KeyboardLayoutDelegate {
  public:
   VirtualKeyboardController();
   ~VirtualKeyboardController() override;
 
-  // ShellObserver:
+  // TabletModeObserver:
   // TODO(rsadam@): Remove when autovirtual keyboard flag is on by default.
   void OnTabletModeStarted() override;
   void OnTabletModeEnded() override;

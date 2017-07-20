@@ -11,6 +11,7 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/wm/tablet_mode/scoped_disable_internal_mouse_and_keyboard.h"
+#include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_manager.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -176,10 +177,10 @@ void TabletModeController::EnableTabletModeWindowManager(bool should_enable) {
 
   if (should_enable) {
     tablet_mode_window_manager_.reset(new TabletModeWindowManager());
-    // TODO(jonross): Move the tablet mode notifications from ShellObserver
-    // to TabletModeController::Observer
     Shell::Get()->metrics()->RecordUserMetricsAction(UMA_MAXIMIZE_MODE_ENABLED);
-    Shell::Get()->NotifyTabletModeStarted();
+    RecordTouchViewUsageInterval(TOUCH_VIEW_INTERVAL_INACTIVE);
+    for (auto& observer : tablet_mode_observers_)
+      observer.OnTabletModeStarted();
 
     observers_.ForAllPtrs([](mojom::TouchViewObserver* observer) {
       observer->OnTouchViewToggled(true);
@@ -187,11 +188,14 @@ void TabletModeController::EnableTabletModeWindowManager(bool should_enable) {
 
   } else {
     tablet_mode_window_manager_->SetIgnoreWmEventsForExit();
-    Shell::Get()->NotifyTabletModeEnding();
+    for (auto& observer : tablet_mode_observers_)
+      observer.OnTabletModeEnding();
     tablet_mode_window_manager_.reset();
     Shell::Get()->metrics()->RecordUserMetricsAction(
         UMA_MAXIMIZE_MODE_DISABLED);
-    Shell::Get()->NotifyTabletModeEnded();
+    RecordTouchViewUsageInterval(TOUCH_VIEW_INTERVAL_ACTIVE);
+    for (auto& observer : tablet_mode_observers_)
+      observer.OnTabletModeEnded();
 
     observers_.ForAllPtrs([](mojom::TouchViewObserver* observer) {
       observer->OnTouchViewToggled(false);
@@ -210,6 +214,14 @@ void TabletModeController::AddWindow(aura::Window* window) {
 
 void TabletModeController::BindRequest(mojom::TouchViewManagerRequest request) {
   bindings_.AddBinding(this, std::move(request));
+}
+
+void TabletModeController::AddObserver(TabletModeObserver* observer) {
+  tablet_mode_observers_.AddObserver(observer);
+}
+
+void TabletModeController::RemoveObserver(TabletModeObserver* observer) {
+  tablet_mode_observers_.RemoveObserver(observer);
 }
 
 void TabletModeController::OnAccelerometerUpdated(
@@ -381,17 +393,6 @@ void TabletModeController::LeaveTabletMode() {
   if (!IsTabletModeWindowManagerEnabled())
     return;
   EnableTabletModeWindowManager(false);
-}
-
-// Called after tablet mode has started, windows might still animate though.
-void TabletModeController::OnTabletModeStarted() {
-  RecordTouchViewUsageInterval(TOUCH_VIEW_INTERVAL_INACTIVE);
-}
-
-// Called after tablet mode has ended, windows might still be returning to
-// their original position.
-void TabletModeController::OnTabletModeEnded() {
-  RecordTouchViewUsageInterval(TOUCH_VIEW_INTERVAL_ACTIVE);
 }
 
 void TabletModeController::OnShellInitialized() {

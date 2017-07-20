@@ -6,8 +6,8 @@
 #define ASH_SYSTEM_ROTATION_TRAY_ROTATION_LOCK_H_
 
 #include "ash/display/screen_orientation_controller_chromeos.h"
-#include "ash/shell_observer.h"
 #include "ash/system/tray/tray_image_item.h"
+#include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/macros.h"
 
 namespace ash {
@@ -20,7 +20,7 @@ namespace ash {
 class ASH_EXPORT TrayRotationLock
     : public TrayImageItem,
       public ScreenOrientationController::Observer,
-      public ShellObserver {
+      public TabletModeObserver {
  public:
   explicit TrayRotationLock(SystemTray* system_tray);
   ~TrayRotationLock() override;
@@ -31,7 +31,7 @@ class ASH_EXPORT TrayRotationLock
   // SystemTrayItem:
   views::View* CreateDefaultView(LoginStatus status) override;
 
-  // ShellObserver:
+  // TabletModeObserver:
   void OnTabletModeStarted() override;
   void OnTabletModeEnded() override;
 

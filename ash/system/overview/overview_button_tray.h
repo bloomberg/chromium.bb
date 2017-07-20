@@ -9,6 +9,7 @@
 #include "ash/session/session_observer.h"
 #include "ash/shell_observer.h"
 #include "ash/system/tray/tray_background_view.h"
+#include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/macros.h"
 
 namespace views {
@@ -24,7 +25,8 @@ namespace ash {
 // provide any bubble view windows.
 class ASH_EXPORT OverviewButtonTray : public TrayBackgroundView,
                                       public SessionObserver,
-                                      public ShellObserver {
+                                      public ShellObserver,
+                                      public TabletModeObserver {
  public:
   explicit OverviewButtonTray(Shelf* shelf);
   ~OverviewButtonTray() override;
@@ -40,10 +42,12 @@ class ASH_EXPORT OverviewButtonTray : public TrayBackgroundView,
   void OnSessionStateChanged(session_manager::SessionState state) override;
 
   // ShellObserver:
-  void OnTabletModeStarted() override;
-  void OnTabletModeEnded() override;
   void OnOverviewModeStarting() override;
   void OnOverviewModeEnded() override;
+
+  // TabletModeObserver:
+  void OnTabletModeStarted() override;
+  void OnTabletModeEnded() override;
 
   // TrayBackgroundView:
   void ClickedOutsideBubble() override;

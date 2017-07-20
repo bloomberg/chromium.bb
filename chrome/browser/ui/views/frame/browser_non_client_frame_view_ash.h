@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "ash/shell_observer.h"
+#include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
@@ -22,6 +23,7 @@ class HeaderPainter;
 
 class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
                                      public ash::ShellObserver,
+                                     public ash::TabletModeObserver,
                                      public TabIconViewModel {
  public:
   BrowserNonClientFrameViewAsh(BrowserFrame* frame, BrowserView* browser_view);
@@ -58,6 +60,8 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
   // ash::ShellObserver:
   void OnOverviewModeStarting() override;
   void OnOverviewModeEnded() override;
+
+  // ash::TabletModeObserver:
   void OnTabletModeStarted() override;
   void OnTabletModeEnded() override;
 

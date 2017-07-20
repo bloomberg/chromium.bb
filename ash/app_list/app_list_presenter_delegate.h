@@ -9,6 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/shell_observer.h"
+#include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/macros.h"
 #include "ui/app_list/presenter/app_list_presenter_delegate.h"
 #include "ui/events/event_handler.h"
@@ -35,7 +36,8 @@ class ASH_EXPORT AppListPresenterDelegate
     : public app_list::AppListPresenterDelegate,
       public ui::EventHandler,
       public keyboard::KeyboardControllerObserver,
-      public ShellObserver {
+      public ShellObserver,
+      public TabletModeObserver {
  public:
   AppListPresenterDelegate(
       app_list::AppListPresenterImpl* presenter,
@@ -66,6 +68,8 @@ class ASH_EXPORT AppListPresenterDelegate
 
   // ShellObserver overrides:
   void OnOverviewModeStarting() override;
+
+  // TabletModeObserver:
   void OnTabletModeStarted() override;
   void OnTabletModeEnded() override;
 

@@ -8,13 +8,13 @@
 
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
-#include "ash/shell_observer.h"
 #include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/keyboard_brightness_control_delegate.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tri_view.h"
+#include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -54,14 +54,14 @@ class ReadOnlySlider : public views::Slider {
 
 }  // namespace
 
-class KeyboardBrightnessView : public ShellObserver, public views::View {
+class KeyboardBrightnessView : public TabletModeObserver, public views::View {
  public:
   explicit KeyboardBrightnessView(double initial_percent);
 
   // |percent| is in the range [0.0, 100.0].
   void SetKeyboardBrightnessPercent(double percent);
 
-  // ShellObserver:
+  // TabletModeObserver:
   void OnTabletModeStarted() override;
   void OnTabletModeEnded() override;
 

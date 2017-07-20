@@ -11,6 +11,7 @@
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_delegate.h"
 #include "ash/public/interfaces/window_style.mojom.h"
 #include "ash/shell_observer.h"
+#include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/macros.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/views/view.h"
@@ -33,7 +34,8 @@ class FrameCaptionButtonContainerView;
 // and on screen in immersive fullscreen.
 class ASH_EXPORT HeaderView : public views::View,
                               public ImmersiveFullscreenControllerDelegate,
-                              public ShellObserver {
+                              public ShellObserver,
+                              public TabletModeObserver {
  public:
   // |target_widget| is the widget that the caption buttons act on.
   // |target_widget| is not necessarily the same as the widget the header is
@@ -79,6 +81,8 @@ class ASH_EXPORT HeaderView : public views::View,
   // ShellObserver:
   void OnOverviewModeStarting() override;
   void OnOverviewModeEnded() override;
+
+  // TabletModeObserver:
   void OnTabletModeStarted() override;
   void OnTabletModeEnded() override;
 

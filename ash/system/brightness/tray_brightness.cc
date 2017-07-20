@@ -9,13 +9,13 @@
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
-#include "ash/shell_observer.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/brightness_control_delegate.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tri_view.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -43,7 +43,7 @@ const double kMinBrightnessPercent = 5.0;
 
 }  // namespace
 
-class BrightnessView : public ShellObserver,
+class BrightnessView : public TabletModeObserver,
                        public views::View,
                        public views::SliderListener {
  public:
@@ -55,7 +55,7 @@ class BrightnessView : public ShellObserver,
   // |percent| is in the range [0.0, 100.0].
   void SetBrightnessPercent(double percent);
 
-  // ShellObserver:
+  // TabletModeObserver:
   void OnTabletModeStarted() override;
   void OnTabletModeEnded() override;
 
@@ -112,7 +112,7 @@ BrightnessView::BrightnessView(bool default_view, double initial_percent)
   tri_view->AddView(TriView::Container::CENTER, slider_);
 
   if (is_default_view_) {
-    Shell::Get()->AddShellObserver(this);
+    Shell::Get()->tablet_mode_controller()->AddObserver(this);
     SetVisible(Shell::Get()
                    ->tablet_mode_controller()
                    ->IsTabletModeWindowManagerEnabled());
@@ -121,8 +121,8 @@ BrightnessView::BrightnessView(bool default_view, double initial_percent)
 }
 
 BrightnessView::~BrightnessView() {
-  if (is_default_view_)
-    Shell::Get()->RemoveShellObserver(this);
+  if (is_default_view_ && Shell::Get()->tablet_mode_controller())
+    Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
 }
 
 void BrightnessView::SetBrightnessPercent(double percent) {
