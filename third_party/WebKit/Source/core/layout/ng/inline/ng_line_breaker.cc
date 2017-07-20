@@ -640,6 +640,7 @@ void NGLineBreaker::SetCurrentStyle(const ComputedStyle& style) {
         break_iterator_.SetBreakType(LineBreakType::kKeepAll);
         break;
     }
+    break_iterator_.SetBreakAfterSpace(style.BreakOnlyAfterWhiteSpace());
   }
 
   spacing_.SetSpacing(style.GetFontDescription());

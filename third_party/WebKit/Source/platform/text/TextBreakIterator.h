@@ -210,6 +210,17 @@ class PLATFORM_EXPORT LazyLineBreakIterator final {
   LineBreakType BreakType() const { return break_type_; }
   void SetBreakType(LineBreakType break_type) { break_type_ = break_type; }
 
+  // By default, this class breaks before spaces. This is a specialized
+  // optimization for CSS, where leading/trailing spaces in each line are
+  // removed, and thus breaking before spaces can save computing hanging spaces.
+  //
+  // When 'white-space:pre-wrap', or when in editing, leaging/trailing spaces
+  // need to be preserved, and this optimization needs to be disabled. This mode
+  // is compatible with UAX#14/ICU. http://unicode.org/reports/tr14/
+  void SetBreakAfterSpace(bool break_after_space) {
+    break_after_space_ = break_after_space;
+  }
+
   inline bool IsBreakable(int pos,
                           int& next_breakable,
                           LineBreakType line_break_type) const {
@@ -243,6 +254,8 @@ class PLATFORM_EXPORT LazyLineBreakIterator final {
     cached_prior_context_length_ = 0;
   }
 
+  template <typename CharacterType, LineBreakType, bool>
+  int NextBreakablePosition(int pos, const CharacterType* str) const;
   template <typename CharacterType, LineBreakType>
   int NextBreakablePosition(int pos, const CharacterType* str) const;
   template <LineBreakType>
@@ -258,6 +271,7 @@ class PLATFORM_EXPORT LazyLineBreakIterator final {
   mutable const UChar* cached_prior_context_;
   mutable unsigned cached_prior_context_length_;
   LineBreakType break_type_;
+  bool break_after_space_ = false;
 };
 
 // Iterates over "extended grapheme clusters", as defined in UAX #29.
