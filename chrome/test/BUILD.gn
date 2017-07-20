@@ -3480,6 +3480,7 @@ test("unit_tests") {
     "//chrome:strings",
     "//chrome/browser/media/router:test_support",
     "//chrome/common:test_support",
+    "//chrome/profiling:unit_tests",
     "//components/autofill/content/renderer:test_support",
     "//components/browser_sync:test_support",
     "//components/component_updater:test_support",

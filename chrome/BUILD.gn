@@ -1414,7 +1414,6 @@ group("browser_dependencies") {
   public_deps = [
     "//chrome/browser",
     "//chrome/common",
-    "//chrome/profiling",
     "//components/sync",
   ]
   if (enable_plugins) {
@@ -1453,6 +1452,7 @@ group("child_dependencies") {
     "//chrome/child",
     "//chrome/common",
     "//chrome/gpu",
+    "//chrome/profiling",
     "//chrome/renderer",
     "//chrome/utility",
     "//components/sync",

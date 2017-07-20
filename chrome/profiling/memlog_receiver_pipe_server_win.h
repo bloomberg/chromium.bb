@@ -36,7 +36,6 @@ class MemlogReceiverPipeServer
   MemlogReceiverPipeServer(base::TaskRunner* io_runner,
                            const std::string& pipe_id,
                            NewConnectionCallback on_new_conn);
-  ~MemlogReceiverPipeServer();
 
   void set_on_new_connection(NewConnectionCallback on_new_connection) {
     on_new_connection_ = on_new_connection;
@@ -48,6 +47,9 @@ class MemlogReceiverPipeServer
   void OnNewPipe(base::ScopedPlatformFile pipe, int sender_pid);
 
  private:
+  friend class base::RefCountedThreadSafe<MemlogReceiverPipeServer>;
+  ~MemlogReceiverPipeServer();
+
   base::string16 GetPipeName() const;
 
   HANDLE CreatePipeInstance(bool first_instance) const;

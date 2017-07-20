@@ -5,10 +5,11 @@
 #ifndef CHROME_PROFILING_ALLOCATION_TRACKER_H_
 #define CHROME_PROFILING_ALLOCATION_TRACKER_H_
 
-#include <map>
+#include <set>
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "chrome/profiling/allocation_event.h"
 #include "chrome/profiling/backtrace_storage.h"
 #include "chrome/profiling/memlog_receiver.h"
 
@@ -32,19 +33,10 @@ class AllocationTracker : public MemlogReceiver {
  private:
   CompleteCallback complete_callback_;
 
-  struct Alloc {
-    Alloc(size_t sz, BacktraceStorage::Key key);
-    Alloc(const Alloc& other);
-    ~Alloc();
-
-    size_t size;
-    BacktraceStorage::Key backtrace_key;
-  };
-
   // Cached pointer to the global singleton.
   BacktraceStorage* backtrace_storage_;
 
-  std::map<Address, Alloc> live_allocs_;
+  AllocationEventSet live_allocs_;
 
   DISALLOW_COPY_AND_ASSIGN(AllocationTracker);
 };
