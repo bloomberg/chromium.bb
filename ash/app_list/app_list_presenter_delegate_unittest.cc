@@ -787,4 +787,32 @@ TEST_P(FullscreenAppListPresenterDelegateTest,
   EXPECT_EQ(view->app_list_state(), app_list::AppListView::FULLSCREEN_ALL_APPS);
 }
 
+// Tests that the search box is set active with a whitespace query and that the
+// app list state doesn't transition with a whitespace query.
+TEST_F(FullscreenAppListPresenterDelegateTest, WhitespaceQuery) {
+  app_list_presenter_impl()->Show(GetPrimaryDisplayId());
+  app_list::AppListView* view = app_list_presenter_impl()->GetView();
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  EXPECT_FALSE(view->search_box_view()->is_search_box_active());
+  EXPECT_EQ(view->app_list_state(), app_list::AppListView::PEEKING);
+
+  // Enter a whitespace query, the searchbox should activate but stay in peeking
+  // mode.
+  generator.PressKey(ui::VKEY_SPACE, 0);
+  EXPECT_TRUE(view->search_box_view()->is_search_box_active());
+  EXPECT_EQ(view->app_list_state(), app_list::AppListView::PEEKING);
+
+  // Enter a non-whitespace character, the Searchbox should stay active and go
+  // to HALF
+  generator.PressKey(ui::VKEY_0, 0);
+  EXPECT_TRUE(view->search_box_view()->is_search_box_active());
+  EXPECT_EQ(view->app_list_state(), app_list::AppListView::HALF);
+
+  // Delete the non whitespace character, the Searchbox should deactivate and go
+  // to PEEKING
+  generator.PressKey(ui::VKEY_BACK, 0);
+  EXPECT_FALSE(view->search_box_view()->is_search_box_active());
+  EXPECT_EQ(view->app_list_state(), app_list::AppListView::PEEKING);
+}
+
 }  // namespace ash

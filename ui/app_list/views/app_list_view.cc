@@ -904,6 +904,7 @@ void AppListView::SetState(AppListState new_state) {
           new_widget_bounds.set_y(peeking_app_list_y);
           app_list_main_view_->contents_view()->SetActiveState(
               AppListModel::STATE_START);
+          search_box_view()->ClearSearch();
           break;
         }
         case FULLSCREEN_SEARCH:
