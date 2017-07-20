@@ -122,6 +122,11 @@ const int kReorderDroppingCircleRadius = 35;
 // The padding around the outside of the apps grid (sides).
 const int kAppsGridPadding = 24;
 
+// The left and right side padding of the apps grid in fullscreen mode. The
+// space is used for page switcher on the right side. Left side should have the
+// same space to keep the apps grid horizontally centered.
+const int kAppsGridLeftRightPaddingFullscreen = 28;
+
 // The padding around the outside of the search box (top and sides).
 const int kSearchBoxPadding = 16;
 const int kSearchBoxTopPadding = 24;
