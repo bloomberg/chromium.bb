@@ -2532,12 +2532,6 @@
       field_group: "rare-inherited",
     },
     {
-      name: "text-decoration",
-      api_class: true,
-      longhands: ["text-decoration-line", "text-decoration-style", "text-decoration-color"],
-      use_handlers_for: "CSSPropertyTextDecorationLine",
-    },
-    {
       name: "text-decoration-color",
       api_class: true,
       api_methods: ["parseSingleValue"],
@@ -3705,6 +3699,8 @@
     {
       name: "border-bottom",
       longhands: ["border-bottom-width", "border-bottom-style", "border-bottom-color"],
+      api_class: true,
+      api_methods: ["parseShorthand"],
     },
     {
       name: "border-color",
@@ -3721,6 +3717,8 @@
     {
       name: "border-left",
       longhands: ["border-left-width", "border-left-style", "border-left-color"],
+      api_class: true,
+      api_methods: ["parseShorthand"],
     },
     {
       name: "border-radius",
@@ -3731,6 +3729,8 @@
     {
       name: "border-right",
       longhands: ["border-right-width", "border-right-style", "border-right-color"],
+      api_class: true,
+      api_methods: ["parseShorthand"],
     },
     {
       name: "border-spacing",
@@ -3749,6 +3749,8 @@
     {
       name: "border-top",
       longhands: ["border-top-width", "border-top-style", "border-top-color"],
+      api_class: true,
+      api_methods: ["parseShorthand"],
     },
     {
       name: "border-width",
@@ -3765,6 +3767,8 @@
     {
       name: "flex-flow",
       longhands: ["flex-direction", "flex-wrap"],
+      api_class: true,
+      api_methods: ["parseShorthand"],
     },
     {
       name: "font",
@@ -3827,6 +3831,8 @@
     {
       name: "list-style",
       longhands: ["list-style-type", "list-style-position", "list-style-image"],
+      api_class: true,
+      api_methods: ["parseShorthand"],
     },
     {
       name: "margin",
@@ -3922,6 +3928,13 @@
       runtime_flag: "CSSScrollSnapPoints",
     },
     {
+      name: "text-decoration",
+      longhands: ["text-decoration-line", "text-decoration-style", "text-decoration-color"],
+      api_class: true,
+      api_methods: ["parseShorthand"],
+      use_handlers_for: "CSSPropertyTextDecorationLine",
+    },
+    {
       name: "transition",
       longhands: ["transition-property", "transition-duration", "transition-timing-function", "transition-delay"],
       api_class: true,
@@ -3966,6 +3979,8 @@
     {
       name: "column-rule",
       longhands: ["column-rule-width", "column-rule-style", "column-rule-color"],
+      api_class: true,
+      api_methods: ["parseShorthand"],
     },
     {
       name: "columns",
