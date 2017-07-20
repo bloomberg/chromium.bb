@@ -816,7 +816,12 @@ bool DocumentLoader::MaybeCreateArchive() {
       kSandboxAll &
       ~(kSandboxPopups | kSandboxPropagatesToAuxiliaryBrowsingContexts));
 
-  CommitData(main_resource->Data()->Data(), main_resource->Data()->size());
+  RefPtr<SharedBuffer> data(main_resource->Data());
+  data->ForEachSegment(
+      [this](const char* segment, size_t segment_size, size_t segment_offset) {
+        CommitData(segment, segment_size);
+        return true;
+      });
   return true;
 }
 
