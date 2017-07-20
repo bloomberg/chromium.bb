@@ -127,5 +127,18 @@ suite('<bookmarks-toolbar>', function() {
 
     assertFalse(toolbar.canSortFolder_);
     assertTrue(toolbar.$$('#sortButton').disabled);
+
+    // Adding a bookmark should enable sorting.
+    store.setReducersEnabled(true);
+    var item = {
+      id: '51',
+      parentId: '5',
+      index: 0,
+      url: 'https://www.example.com',
+    };
+    store.dispatch(bookmarks.actions.createBookmark(
+        item.id, item));
+    assertTrue(toolbar.canSortFolder_);
+    assertFalse(toolbar.$$('#sortButton').disabled);
   });
 });
