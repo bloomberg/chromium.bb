@@ -124,6 +124,9 @@ const char kLastProfileResetTimestamp[] = "profile.last_reset_timestamp";
 const char kChromeCleanerResetPending[] = "chrome_cleaner.reset_pending";
 #endif
 
+// Used to determine if the New Tab in-product help has been shown or not.
+extern const char kNewTabInProductHelp[] = "newtab_in_product_help";
+
 // The URL to open the new tab page to. Only set by Group Policy.
 const char kNewTabPageLocationOverride[] = "newtab_page_location_override";
 
@@ -143,6 +146,9 @@ const char kSessionExitedCleanly[] = "profile.exited_cleanly";
 // one of |kPrefExitTypeNormal| or |kPrefExitTypeSessionEnded| during
 // shutdown. Used to determine the exit type the last time the profile was open.
 const char kSessionExitType[] = "profile.exit_type";
+
+// Stores the total amount of active session time for the user.
+const char kSessionTimeTotal[] = "profile.total_time";
 
 // The last time that the site engagement service recorded an engagement event
 // for this profile for any URL. Recorded only during shutdown. Used to prevent
