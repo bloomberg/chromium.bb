@@ -22,6 +22,7 @@
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/loader/stream_resource_handler.h"
+#include "content/common/loader_util.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_save_info.h"
@@ -194,7 +195,9 @@ void MimeSniffingResourceHandler::OnResponseStarted(
   // the response, and so must be skipped for 304 responses.
   if (!(response_->head.headers.get() &&
         response_->head.headers->response_code() == 304)) {
-    if (ShouldSniffContent()) {
+    // MIME sniffing should be disabled for a request initiated by fetch().
+    if (request_context_type_ != REQUEST_CONTEXT_TYPE_FETCH &&
+        ShouldSniffContent(request(), response_.get())) {
       controller->Resume();
       return;
     }
@@ -423,34 +426,6 @@ void MimeSniffingResourceHandler::ReplayReadCompleted() {
 
   next_handler_->OnReadCompleted(bytes_read,
                                  base::MakeUnique<Controller>(this));
-}
-
-bool MimeSniffingResourceHandler::ShouldSniffContent() {
-  if (request_context_type_ == REQUEST_CONTEXT_TYPE_FETCH) {
-    // MIME sniffing should be disabled for a request initiated by fetch().
-    return false;
-  }
-
-  const std::string& mime_type = response_->head.mime_type;
-
-  std::string content_type_options;
-  request()->GetResponseHeaderByName("x-content-type-options",
-                                     &content_type_options);
-
-  bool sniffing_blocked =
-      base::LowerCaseEqualsASCII(content_type_options, "nosniff");
-  bool we_would_like_to_sniff =
-      net::ShouldSniffMimeType(request()->url(), mime_type);
-
-  if (!sniffing_blocked && we_would_like_to_sniff) {
-    // We're going to look at the data before deciding what the content type
-    // is.  That means we need to delay sending the ResponseStarted message
-    // over the IPC channel.
-    VLOG(1) << "To buffer: " << request()->url().spec();
-    return true;
-  }
-
-  return false;
 }
 
 bool MimeSniffingResourceHandler::MaybeStartInterception() {

@@ -3,6 +3,7 @@ include_rules = [
   "+components/network_session_configurator",
   "-content",
   "+content/common/content_export.h",
+  "+content/common/loader_util.h",
   "+content/common/net_adapters.h",
   "+content/network",
   "+content/public/common/content_client.h",

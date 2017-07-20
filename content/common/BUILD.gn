@@ -207,6 +207,8 @@ source_set("common") {
     "inter_process_time_ticks_converter.h",
     "layer_tree_settings_factory.cc",
     "layer_tree_settings_factory.h",
+    "loader_util.cc",
+    "loader_util.h",
     "mac/app_nap_activity.h",
     "mac/app_nap_activity.mm",
     "mac/attributed_string_coder.h",

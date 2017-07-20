@@ -130,10 +130,6 @@ class CONTENT_EXPORT MimeSniffingResourceHandler
 
   // --------------------------------------------------------------------------
 
-  // Whether the response body should be sniffed in order to determine the MIME
-  // type of the response.
-  bool ShouldSniffContent();
-
   // Checks whether this request should be intercepted as a stream or a
   // download. If this is the case, sets up the new ResourceHandler that will be
   // used for interception.
