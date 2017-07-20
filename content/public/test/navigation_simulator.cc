@@ -328,8 +328,15 @@ void NavigationSimulator::Commit() {
   params.history_list_was_cleared = false;
   params.original_request_url = navigation_url_;
   params.was_within_same_document = false;
-  params.page_state =
-      PageState::CreateForTesting(navigation_url_, false, nullptr, nullptr);
+
+  // Simulate Blink assigning an item and document sequence number to the
+  // navigation.
+  params.item_sequence_number = base::Time::Now().ToDoubleT() * 1000000;
+  params.document_sequence_number = params.item_sequence_number + 1;
+
+  params.page_state = PageState::CreateForTestingWithSequenceNumbers(
+      navigation_url_, params.item_sequence_number,
+      params.document_sequence_number);
 
   render_frame_host_->SendNavigateWithParams(&params);
 
@@ -420,8 +427,16 @@ void NavigationSimulator::CommitErrorPage() {
   params.transition = transition_;
   params.was_within_same_document = false;
   params.url_is_unreachable = true;
-  params.page_state =
-      PageState::CreateForTesting(navigation_url_, false, nullptr, nullptr);
+
+  // Simulate Blink assigning an item and document sequence number to the
+  // navigation.
+  params.item_sequence_number = base::Time::Now().ToDoubleT() * 1000000;
+  params.document_sequence_number = params.item_sequence_number + 1;
+
+  params.page_state = PageState::CreateForTestingWithSequenceNumbers(
+      navigation_url_, params.item_sequence_number,
+      params.document_sequence_number);
+
   render_frame_host_->SendNavigateWithParams(&params);
 
   // Simulate the UnloadACK in the old RenderFrameHost if it was swapped out at
