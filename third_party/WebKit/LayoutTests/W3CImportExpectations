@@ -20,7 +20,7 @@
 ## Owners: paint-dev@chromium.org
 # external/wpt/2dcontext [ Pass ]
 ## Owners: garykac@chromium.org
-# external/wpt/clipboard-apis [Pass]
+# external/wpt/clipboard-apis [ Pass ]
 ## Owners: jsbell@chromium.org
 # external/wpt/FileAPI [ Pass ]
 ## Owners: jsbell@chromium.org
@@ -170,9 +170,9 @@ external/wpt/css/css-pseudo-4 [ Skip ]
 external/wpt/css/css-regions-1 [ Skip ]
 ## Owners: kojii@chromium.org
 # external/wpt/css/css-rhythm-1 [ Pass ]
+# external/wpt/css/css-scoping-1 [ Pass ]
 external/wpt/css/css-round-display-1 [ Skip ]
 external/wpt/css/css-ruby-1 [ Skip ]
-#external/wpt/css/css-scoping-1 [ Pass ]
 ## Owners: bjonesbe@adobe.com
 # external/wpt/css/css-shapes-1 [ Pass ]
 external/wpt/css/css-speech-1 [ Skip ]
