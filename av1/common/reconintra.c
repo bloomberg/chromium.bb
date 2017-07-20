@@ -2834,10 +2834,6 @@ void av1_predict_intra_block(const MACROBLOCKD *xd, int wpx, int hpx,
     assert((block_width == wpx && block_height == hpx) ||
            (block_width == (wpx >> 1) && block_height == hpx) ||
            (block_width == wpx && block_height == (hpx >> 1)));
-#if CONFIG_RECT_INTRA_PRED && CONFIG_RECT_TX && (CONFIG_VAR_TX || CONFIG_EXT_TX)
-    predict_intra_block_helper(xd, wpx, hpx, tx_size, mode, ref, ref_stride,
-                               dst, dst_stride, col_off, row_off, plane);
-#else
 #if CONFIG_HIGHBITDEPTH
     uint16_t tmp16[MAX_SB_SIZE];
 #endif  // CONFIG_HIGHBITDEPTH
@@ -2848,6 +2844,27 @@ void av1_predict_intra_block(const MACROBLOCKD *xd, int wpx, int hpx,
       // Predict the top square sub-block.
       predict_intra_block_helper(xd, wpx, hpx, tx_size, mode, ref, ref_stride,
                                  dst, dst_stride, col_off, row_off, plane);
+#if CONFIG_RECT_INTRA_PRED && CONFIG_RECT_TX && (CONFIG_VAR_TX || CONFIG_EXT_TX)
+      if (block_width == tx_size_wide[tx_size] &&
+          block_height == tx_size_high[tx_size]) {  // Most common case.
+        return;                                     // We are done.
+      } else {
+        // Can only happen for large rectangular block sizes as such large
+        // transform sizes aren't available.
+        assert(bsize == BLOCK_32X64
+#if CONFIG_EXT_PARTITION
+               || bsize == BLOCK_64X128
+#endif  // CONFIG_EXT_PARTITION
+               );
+        assert(tx_size == TX_32X32
+#if CONFIG_TX64X64
+               || tx_size == TX64X64
+#endif  // CONFIG_TX64X64
+               );
+        // In this case, we continue to the bottom square sub-block.
+      }
+#endif  // CONFIG_RECT_INTRA_PRED && CONFIG_RECT_TX && (CONFIG_VAR_TX ||
+      // CONFIG_EXT_TX)
       {
         const int half_block_height = block_height >> 1;
         const int half_block_height_unit =
@@ -2900,6 +2917,27 @@ void av1_predict_intra_block(const MACROBLOCKD *xd, int wpx, int hpx,
       // Predict the left square sub-block
       predict_intra_block_helper(xd, wpx, hpx, tx_size, mode, ref, ref_stride,
                                  dst, dst_stride, col_off, row_off, plane);
+#if CONFIG_RECT_INTRA_PRED && CONFIG_RECT_TX && (CONFIG_VAR_TX || CONFIG_EXT_TX)
+      if (block_width == tx_size_wide[tx_size] &&
+          block_height == tx_size_high[tx_size]) {  // Most common case.
+        return;                                     // We are done.
+      } else {
+        // Can only happen for large rectangular block sizes as such large
+        // transform sizes aren't available.
+        assert(bsize == BLOCK_64X32
+#if CONFIG_EXT_PARTITION
+               || bsize == BLOCK_128X64
+#endif  // CONFIG_EXT_PARTITION
+               );
+        assert(tx_size == TX_32X32
+#if CONFIG_TX64X64
+               || tx_size == TX64X64
+#endif  // CONFIG_TX64X64
+               );
+        // In this case, we continue to the right square sub-block.
+      }
+#endif  // CONFIG_RECT_INTRA_PRED && CONFIG_RECT_TX && (CONFIG_VAR_TX ||
+      // CONFIG_EXT_TX)
       {
         int i;
         const int half_block_width = block_width >> 1;
@@ -2954,8 +2992,6 @@ void av1_predict_intra_block(const MACROBLOCKD *xd, int wpx, int hpx,
         }
       }
     }
-#endif  // CONFIG_RECT_INTRA_PRED && CONFIG_RECT_TX && (CONFIG_VAR_TX ||
-        // CONFIG_EXT_TX)
 #else
     assert(0);
 #endif  // (CONFIG_RECT_TX && (CONFIG_VAR_TX || CONFIG_EXT_TX)) ||
