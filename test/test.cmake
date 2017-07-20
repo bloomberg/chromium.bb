@@ -137,10 +137,16 @@ if (NOT BUILD_SHARED_LIBS)
         "${AOM_ROOT}/test/simd_cmp_impl.h")
 
     if (CONFIG_CDEF)
-      set(AOM_UNIT_TEST_COMMON_SOURCES
-          ${AOM_UNIT_TEST_COMMON_SOURCES}
-          "${AOM_ROOT}/test/clpf_test.cc"
-          "${AOM_ROOT}/test/dering_test.cc")
+      if (CONFIG_CDEF_SINGLEPASS)
+        set(AOM_UNIT_TEST_COMMON_SOURCES
+            ${AOM_UNIT_TEST_COMMON_SOURCES}
+            "${AOM_ROOT}/test/cdef_test.cc")
+      else ()
+        set(AOM_UNIT_TEST_COMMON_SOURCES
+            ${AOM_UNIT_TEST_COMMON_SOURCES}
+            "${AOM_ROOT}/test/clpf_test.cc"
+            "${AOM_ROOT}/test/dering_test.cc")
+      endif ()
     endif ()
 
     # Omit 4-tap filter intra predictor test-- currently a 3-tap filter is in

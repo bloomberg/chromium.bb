@@ -244,6 +244,7 @@ HAVE_LIST="
 EXPERIMENT_LIST="
     fp_mb_stats
     cdef
+    cdef_singlepass
     var_tx
     rect_tx
     rect_tx_ext
@@ -561,6 +562,7 @@ post_process_cmdline() {
     enabled altref2 && enable_feature flex_refs
     enabled rect_tx_ext && enable_feature rect_tx
     enabled cfl && enable_feature smooth_hv
+    enabled cdef_singlepass && enable_feature cdef
 
     if ! enabled delta_q && enabled ext_delta_q; then
       log_echo "ext_delta_q requires delta_q, so disabling ext_delta_q"
