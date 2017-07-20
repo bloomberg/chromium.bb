@@ -345,7 +345,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      */
     set screenMode(value) {
       this.screenMode_ = value;
-      this.updateSigninFrameContainers_();
       switch (this.screenMode_) {
         case ScreenMode.DEFAULT:
           $('signin-frame-dialog').hidden = false;
@@ -376,6 +375,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
           $('offline-ad-auth').hidden = true;
           break;
       }
+      this.updateSigninFrameContainers_();
       chrome.send('updateOfflineLogin', [this.isOffline()]);
       this.updateControlsState();
     },
