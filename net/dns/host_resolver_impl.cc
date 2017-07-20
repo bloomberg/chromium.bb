@@ -1817,12 +1817,8 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
 
     bool did_complete = (entry.error() != ERR_NETWORK_CHANGED) &&
                         (entry.error() != ERR_HOST_RESOLVER_QUEUE_TOO_LARGE);
-    if (did_complete) {
+    if (did_complete)
       resolver_->CacheResult(key_, entry, ttl);
-      // Erase any previous cache hit callbacks, since a new DNS request went
-      // out since they were set.
-      resolver_->cache_hit_callbacks_.erase(key_);
-    }
 
     // Complete all of the requests that were attached to the job and
     // detach them.
@@ -1833,7 +1829,6 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
       // Update the net log and notify registered observers.
       LogFinishRequest(req->source_net_log(), req->info(), entry.error());
       if (did_complete) {
-        resolver_->MaybeAddCacheHitCallback(key_, req->info());
         // Record effective total time from creation to completion.
         RecordTotalTime(had_dns_config_, req->info().is_speculative(),
                         base::TimeTicks::Now() - req->request_time());
@@ -1967,9 +1962,6 @@ int HostResolverImpl::Resolve(const RequestInfo& info,
   Key key;
   int rv = ResolveHelper(info, false, nullptr, source_net_log, addresses, &key);
   if (rv != ERR_DNS_CACHE_MISS) {
-    // TODO(mmenke): Remove this code. Nothing's using it.
-    if (rv == OK)
-      MaybeAddCacheHitCallback(key, info);
     LogFinishRequest(source_net_log, info, rv);
     RecordTotalTime(HaveDnsConfig(), info.is_speculative(), base::TimeDelta());
     return rv;
@@ -2112,7 +2104,6 @@ int HostResolverImpl::ResolveHelper(const RequestInfo& info,
     source_net_log.AddEvent(NetLogEventType::HOST_RESOLVER_IMPL_CACHE_HIT,
                             addresses->CreateNetLogCallback());
     // |ServeFromCache()| will set |*stale_info| as needed.
-    RunCacheHitCallbacks(*key, info);
     return net_error;
   }
   // TODO(szym): Do not do this if nsswitch.conf instructs not to.
@@ -2507,10 +2498,8 @@ void HostResolverImpl::OnIPAddressChanged() {
   last_ipv6_probe_time_ = base::TimeTicks();
   // Abandon all ProbeJobs.
   probe_weak_ptr_factory_.InvalidateWeakPtrs();
-  if (cache_.get()) {
+  if (cache_.get())
     cache_->OnNetworkChange();
-    cache_hit_callbacks_.clear();
-  }
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
   RunLoopbackProbeJob();
 #endif
@@ -2568,10 +2557,8 @@ void HostResolverImpl::UpdateDNSConfig(bool config_changed) {
     // have to expire our internal cache :( Note that OS level DNS caches, such
     // as NSCD's cache should be dropped automatically by the OS when
     // resolv.conf changes so we don't need to do anything to clear that cache.
-    if (cache_.get()) {
+    if (cache_.get())
       cache_->OnNetworkChange();
-      cache_hit_callbacks_.clear();
-    }
 
     // Life check to bail once |this| is deleted.
     base::WeakPtr<HostResolverImpl> self = weak_ptr_factory_.GetWeakPtr();
@@ -2615,28 +2602,6 @@ void HostResolverImpl::OnDnsTaskResolve(int net_error) {
   UMA_HISTOGRAM_BOOLEAN("AsyncDNS.DnsClientEnabled", false);
   UMA_HISTOGRAM_SPARSE_SLOWLY("AsyncDNS.DnsClientDisabledReason",
                               std::abs(net_error));
-}
-
-void HostResolverImpl::OnCacheEntryEvicted(const HostCache::Key& key,
-                                           const HostCache::Entry& entry) {
-  cache_hit_callbacks_.erase(key);
-}
-
-void HostResolverImpl::MaybeAddCacheHitCallback(const HostCache::Key& key,
-                                                const RequestInfo& info) {
-  const RequestInfo::CacheHitCallback& callback = info.cache_hit_callback();
-  if (callback.is_null())
-    return;
-  cache_hit_callbacks_[key].push_back(callback);
-}
-
-void HostResolverImpl::RunCacheHitCallbacks(const HostCache::Key& key,
-                                            const RequestInfo& info) {
-  auto it = cache_hit_callbacks_.find(key);
-  if (it == cache_hit_callbacks_.end())
-    return;
-  for (auto& callback : it->second)
-    callback.Run(info);
 }
 
 void HostResolverImpl::SetDnsClient(std::unique_ptr<DnsClient> dns_client) {
