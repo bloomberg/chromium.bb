@@ -109,8 +109,6 @@
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/commands/open_url_command.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
-#import "ios/chrome/browser/ui/contextual_search/contextual_search_metrics.h"
-#import "ios/chrome/browser/ui/contextual_search/touch_to_search_permissions_mediator.h"
 #import "ios/chrome/browser/ui/downloads/download_manager_controller.h"
 #import "ios/chrome/browser/ui/first_run/first_run_util.h"
 #import "ios/chrome/browser/ui/first_run/welcome_to_chrome_view_controller.h"
@@ -384,8 +382,6 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 - (void)showSyncEncryptionPassphrase;
 // Shows the Clear Browsing Data Settings UI (part of Settings).
 - (void)showClearBrowsingDataSettingsController;
-// Shows the Contextual search UI (part of Settings).
-- (void)showContextualSearchSettingsController;
 // Shows the tab switcher UI.
 - (void)showTabSwitcher;
 // Starts a voice search on the current BVC.
@@ -757,17 +753,6 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
   search_engines::UpdateSearchEnginesIfNeeded(
       browserState->GetPrefs(),
       ios::TemplateURLServiceFactory::GetForBrowserState(browserState));
-
-  if ([TouchToSearchPermissionsMediator isTouchToSearchAvailableOnDevice]) {
-    TouchToSearchPermissionsMediator* touchToSearchPermissions =
-        [[TouchToSearchPermissionsMediator alloc]
-            initWithBrowserState:browserState];
-    if (experimental_flags::IsForceResetContextualSearchEnabled()) {
-      [touchToSearchPermissions setPreferenceState:TouchToSearch::UNDECIDED];
-    }
-    ContextualSearch::RecordPreferenceState(
-        [touchToSearchPermissions preferenceState]);
-  }
 }
 
 - (void)handleFirstRunUIWillFinish {
@@ -1468,9 +1453,6 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
     case IDC_SHOW_CLEAR_BROWSING_DATA_SETTINGS:
       [self showClearBrowsingDataSettingsController];
       break;
-    case IDC_SHOW_CONTEXTUAL_SEARCH_SETTINGS:
-      [self showContextualSearchSettingsController];
-      break;
     case IDC_CLOSE_MODALS:
       [self dismissModalDialogsWithCompletion:nil];
       break;
@@ -2011,18 +1993,6 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
   _settingsNavigationController = [SettingsNavigationController
       newClearBrowsingDataController:_mainBrowserState
                             delegate:self];
-  [[self topPresentedViewController]
-      presentViewController:_settingsNavigationController
-                   animated:YES
-                 completion:nil];
-}
-
-- (void)showContextualSearchSettingsController {
-  if (_settingsNavigationController)
-    return;
-  _settingsNavigationController = [SettingsNavigationController
-      newContextualSearchController:_mainBrowserState
-                           delegate:self];
   [[self topPresentedViewController]
       presentViewController:_settingsNavigationController
                    animated:YES

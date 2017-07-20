@@ -45,9 +45,6 @@ bool IsAlertOnBackgroundUploadEnabled();
 // Whether auto-reload is enabled.
 bool IsAutoReloadEnabled();
 
-// Whether contextual search must be reset to undecided state.
-bool IsForceResetContextualSearchEnabled();
-
 // Whether the lru snapshot cache experiment is enabled.
 bool IsLRUSnapshotCacheEnabled();
 

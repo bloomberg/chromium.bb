@@ -20,7 +20,6 @@
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/prefs/browser_prefs.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller_test.h"
-#import "ios/chrome/browser/ui/contextual_search/touch_to_search_permissions_mediator.h"
 #import "ios/chrome/browser/ui/settings/physical_web_collection_view_controller.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -106,8 +105,6 @@ TEST_F(PrivacyCollectionViewControllerTest, TestModel) {
   ++sectionIndex;
   NSInteger expectedRows = 2;
 
-  if ([TouchToSearchPermissionsMediator isTouchToSearchAvailableOnDevice])
-    expectedRows++;
   if (web::IsDoNotTrackSupported())
     expectedRows++;
   if (experimental_flags::IsPhysicalWebEnabled())
@@ -115,23 +112,10 @@ TEST_F(PrivacyCollectionViewControllerTest, TestModel) {
   EXPECT_EQ(expectedRows, NumberOfItemsInSection(sectionIndex));
 
   CheckSectionHeaderWithId(IDS_IOS_OPTIONS_WEB_SERVICES_LABEL, sectionIndex);
-  TouchToSearchPermissionsMediator* touchToSearchPermissions =
-      [[TouchToSearchPermissionsMediator alloc]
-          initWithBrowserState:chrome_browser_state_.get()];
-  NSString* contextualSearchSubtitle =
-      ([touchToSearchPermissions preferenceState] == TouchToSearch::DISABLED)
-          ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
-          : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
   int row = 0;
 
   CheckSwitchCellStateAndTitleWithId(
       YES, IDS_IOS_OPTIONS_SEARCH_URL_SUGGESTIONS, sectionIndex, row++);
-
-  if ([TouchToSearchPermissionsMediator isTouchToSearchAvailableOnDevice]) {
-    CheckTextCellTitleAndSubtitle(
-        l10n_util::GetNSString(IDS_IOS_CONTEXTUAL_SEARCH_TITLE),
-        contextualSearchSubtitle, sectionIndex, row++);
-  }
 
   CheckDetailItemTextWithIds(IDS_IOS_OPTIONS_SEND_USAGE_DATA,
                              IDS_IOS_OPTIONS_DATA_USAGE_NEVER, sectionIndex,

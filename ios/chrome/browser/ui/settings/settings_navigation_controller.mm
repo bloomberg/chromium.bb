@@ -21,7 +21,6 @@
 #import "ios/chrome/browser/ui/settings/accounts_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/autofill_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data_collection_view_controller.h"
-#import "ios/chrome/browser/ui/settings/contextual_search_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/import_data_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/save_passwords_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_collection_view_controller.h"
@@ -184,21 +183,6 @@ newClearBrowsingDataController:(ios::ChromeBrowserState*)browserState
                           (id<SettingsNavigationControllerDelegate>)delegate {
   UIViewController* controller =
       [[ClearBrowsingDataCollectionViewController alloc]
-          initWithBrowserState:browserState];
-  SettingsNavigationController* nc = [[SettingsNavigationController alloc]
-      initWithRootViewController:controller
-                    browserState:browserState
-                        delegate:delegate];
-  [controller navigationItem].rightBarButtonItem = [nc doneButton];
-  return nc;
-}
-
-+ (SettingsNavigationController*)
-newContextualSearchController:(ios::ChromeBrowserState*)browserState
-                     delegate:
-                         (id<SettingsNavigationControllerDelegate>)delegate {
-  UIViewController* controller =
-      [[ContextualSearchCollectionViewController alloc]
           initWithBrowserState:browserState];
   SettingsNavigationController* nc = [[SettingsNavigationController alloc]
       initWithRootViewController:controller

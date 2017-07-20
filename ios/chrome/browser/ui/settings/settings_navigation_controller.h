@@ -95,11 +95,6 @@ newClearBrowsingDataController:(ios::ChromeBrowserState*)browserState
                       delegate:
                           (id<SettingsNavigationControllerDelegate>)delegate;
 
-+ (SettingsNavigationController*)
-newContextualSearchController:(ios::ChromeBrowserState*)browserState
-                     delegate:
-                         (id<SettingsNavigationControllerDelegate>)delegate;
-
 // Creates a new SavePasswordsCollectionViewController and the chrome around it.
 // |browserState| is used to personalize some settings aspects and should not be
 // nil. |delegate| may be nil.

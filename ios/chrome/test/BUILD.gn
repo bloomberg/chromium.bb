@@ -172,6 +172,7 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/ui/content_suggestions/identifier:unit_tests",
     "//ios/chrome/browser/ui/context_menu:unit_tests",
     "//ios/chrome/browser/ui/contextual_search:unit_tests",
+    "//ios/chrome/browser/ui/contextual_search/settings:unit_tests",
     "//ios/chrome/browser/ui/dialogs:unit_tests",
     "//ios/chrome/browser/ui/dialogs:unit_tests_internal",
     "//ios/chrome/browser/ui/downloads:unit_tests",
