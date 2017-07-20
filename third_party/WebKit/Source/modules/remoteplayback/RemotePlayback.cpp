@@ -19,7 +19,6 @@
 #include "modules/presentation/PresentationController.h"
 #include "modules/remoteplayback/AvailabilityCallbackWrapper.h"
 #include "platform/MemoryCoordinator.h"
-#include "platform/json/JSONValues.h"
 #include "platform/wtf/text/Base64.h"
 #include "public/platform/modules/presentation/WebPresentationClient.h"
 
@@ -51,26 +50,18 @@ void RunNotifyInitialAvailabilityTask(ExecutionContext* context,
   (*task)();
 }
 
-WebURL GetAvailabilityUrl(const WebURL& source) {
-  if (source.IsEmpty() || !source.IsValid())
+WebURL GetAvailabilityUrl(const WebURL& source, bool is_source_supported) {
+  if (source.IsEmpty() || !source.IsValid() || !is_source_supported)
     return WebURL();
 
   // The URL for each media element's source looks like the following:
-  // chrome-media-source://<encoded-data> where |encoded-data| is base64 URL
-  // encoded string representation of a JSON structure with various information
-  // about the media element's source that looks like this:
-  // {
-  //   "sourceUrl": "<source url>",
-  // }
-  // TODO(avayvod): add and fill more info to the JSON structure, like the
-  // frame URL, audio/video codec info, the result of the CORS check, etc.
-  std::unique_ptr<JSONObject> source_info = JSONObject::Create();
-  source_info->SetString("sourceUrl", source.GetString());
-  CString json_source_info = source_info->ToJSONString().Utf8();
-  String encoded_source_info =
-      WTF::Base64URLEncode(json_source_info.data(), json_source_info.length());
+  // remote-playback://<encoded-data> where |encoded-data| is base64 URL
+  // encoded string representation of the source URL.
+  std::string source_string = source.GetString().Utf8();
+  String encoded_source =
+      WTF::Base64URLEncode(source_string.data(), source_string.length());
 
-  return KURL(kParsedURLString, "remote-playback://" + encoded_source_info);
+  return KURL(kParsedURLString, "remote-playback://" + encoded_source);
 }
 
 bool IsBackgroundAvailabilityMonitoringDisabled() {
@@ -357,7 +348,8 @@ void RemotePlayback::PromptCancelled() {
   prompt_promise_resolver_ = nullptr;
 }
 
-void RemotePlayback::SourceChanged(const WebURL& source) {
+void RemotePlayback::SourceChanged(const WebURL& source,
+                                   bool is_source_supported) {
   DCHECK(RuntimeEnabledFeatures::NewRemotePlaybackPipelineEnabled());
 
   if (IsBackgroundAvailabilityMonitoringDisabled())
@@ -365,7 +357,7 @@ void RemotePlayback::SourceChanged(const WebURL& source) {
 
   WebURL current_url =
       availability_urls_.IsEmpty() ? WebURL() : availability_urls_[0];
-  WebURL new_url = GetAvailabilityUrl(source);
+  WebURL new_url = GetAvailabilityUrl(source, is_source_supported);
 
   if (new_url == current_url)
     return;

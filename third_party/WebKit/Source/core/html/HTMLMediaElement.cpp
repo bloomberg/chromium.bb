@@ -1147,10 +1147,10 @@ void HTMLMediaElement::LoadResource(const WebMediaPlayerSource& source,
 
   if (audio_source_node_)
     audio_source_node_->OnCurrentSrcChanged(current_src_);
-  if (RuntimeEnabledFeatures::NewRemotePlaybackPipelineEnabled() &&
-      RemotePlaybackClient()) {
-    RemotePlaybackClient()->SourceChanged(current_src_);
-  }
+
+  // Update remote playback client with the new src and consider it incompatible
+  // until proved otherwise.
+  RemotePlaybackCompatibilityChanged(current_src_, false);
 
   BLINK_MEDIA_LOG << "loadResource(" << (void*)this << ") - current_src_ -> "
                   << UrlForLoggingMedia(current_src_);
@@ -3202,6 +3202,14 @@ void HTMLMediaElement::CancelledRemotePlaybackRequest() {
 void HTMLMediaElement::RemotePlaybackStarted() {
   if (RemotePlaybackClient())
     RemotePlaybackClient()->StateChanged(WebRemotePlaybackState::kConnected);
+}
+
+void HTMLMediaElement::RemotePlaybackCompatibilityChanged(const WebURL& url,
+                                                          bool is_compatible) {
+  if (RuntimeEnabledFeatures::NewRemotePlaybackPipelineEnabled() &&
+      RemotePlaybackClient()) {
+    RemotePlaybackClient()->SourceChanged(url, is_compatible);
+  }
 }
 
 bool HTMLMediaElement::HasSelectedVideoTrack() {

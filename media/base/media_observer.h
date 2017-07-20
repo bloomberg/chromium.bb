@@ -23,6 +23,10 @@ class MEDIA_EXPORT MediaObserverClient {
 
   // Requests to activate monitoring changes on viewport intersection.
   virtual void ActivateViewportIntersectionMonitoring(bool activate) = 0;
+
+  // Reports the latest compatibility state of the element's source for remote
+  // playback.
+  virtual void UpdateRemotePlaybackCompatibility(bool is_compatible) = 0;
 };
 
 // This class is an observer of media player events.
@@ -55,6 +59,9 @@ class MEDIA_EXPORT MediaObserver {
   // Called when the media is playing/paused.
   virtual void OnPlaying() = 0;
   virtual void OnPaused() = 0;
+
+  // Called when the data source is asynchronously initialized.
+  virtual void OnDataSourceInitialized(const GURL& url_after_redirects) = 0;
 
   // Set the MediaObserverClient.
   virtual void SetClient(MediaObserverClient* client) = 0;

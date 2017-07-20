@@ -39,6 +39,7 @@ namespace blink {
 class WebInbandTextTrack;
 class WebLayer;
 class WebMediaSource;
+class WebRemotePlaybackClient;
 
 enum class WebRemotePlaybackAvailability;
 
@@ -94,6 +95,8 @@ class BLINK_PLATFORM_EXPORT WebMediaPlayerClient {
   virtual void DisconnectedFromRemoteDevice() = 0;
   virtual void CancelledRemotePlaybackRequest() = 0;
   virtual void RemotePlaybackStarted() = 0;
+  virtual void RemotePlaybackCompatibilityChanged(const WebURL&,
+                                                  bool is_compatible) = 0;
 
   // Set the player as the persistent video. Persistent video should hide its
   // controls and go fullscreen.
@@ -123,6 +126,10 @@ class BLINK_PLATFORM_EXPORT WebMediaPlayerClient {
 
   // Returns the current display type of the media element.
   virtual WebMediaPlayer::DisplayType DisplayType() const = 0;
+
+  // Returns the remote playback client associated with the media element, if
+  // any.
+  virtual WebRemotePlaybackClient* RemotePlaybackClient() { return nullptr; };
 
  protected:
   ~WebMediaPlayerClient() = default;
