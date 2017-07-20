@@ -759,7 +759,9 @@ void FeatureInfo::InitializeFeatures() {
   // If neither is present, we expose texture storage.
   // When creating ES3 contexts, we do need to expose texture storage, so we
   // disable BGRA if we have to.
-  // When WebGL contexts, BRGA is not needed, because WebGL doesn't expose it.
+  // In WebGL contexts, BRGA is used for hardware overlay and WebGL 2.0 exposes
+  // glTexStorage2D. WebGL never uses both BGRA and glTexStorage2D together
+  // because WebGL API doesn't expose BGRA format. So allow both.
   bool has_apple_bgra = extensions.Contains("GL_APPLE_texture_format_BGRA8888");
   bool has_ext_bgra = extensions.Contains("GL_EXT_texture_format_BGRA8888");
   bool enable_texture_format_bgra8888 =
@@ -783,9 +785,10 @@ void FeatureInfo::InitializeFeatures() {
         enable_texture_storage = false;
         break;
       case CONTEXT_TYPE_OPENGLES3:
+        enable_texture_format_bgra8888 = false;
+        break;
       case CONTEXT_TYPE_WEBGL1:
       case CONTEXT_TYPE_WEBGL2:
-        enable_texture_format_bgra8888 = false;
         break;
     }
   }
