@@ -336,9 +336,6 @@ public class BidirectionalStreamQuicTest extends CronetTestBase {
                 || NetError.ERR_CONNECTION_REFUSED == networkError.getCronetInternalErrorCode());
         if (NetError.ERR_CONNECTION_REFUSED == networkError.getCronetInternalErrorCode()) return;
         assertTrue(callback.mError instanceof QuicException);
-        QuicException quicException = (QuicException) callback.mError;
-        // 16 is QUIC_PEER_GOING_AWAY
-        assertEquals(16, quicException.getQuicDetailedErrorCode());
     }
 
     @SmallTest
