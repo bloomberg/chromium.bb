@@ -28,20 +28,21 @@
 #define SelectionModifier_h
 
 #include "base/macros.h"
-#include "core/editing/FrameSelection.h"
+#include "core/editing/VisibleSelection.h"
 #include "platform/LayoutUnit.h"
 #include "platform/wtf/Allocator.h"
 
 namespace blink {
 
+class LocalFrame;
+
 enum class SelectionModifyAlteration { kMove, kExtend };
+enum class SelectionModifyVerticalDirection { kUp, kDown };
 
 class SelectionModifier {
   STACK_ALLOCATED();
 
  public:
-  using VerticalDirection = FrameSelection::VerticalDirection;
-
   // |frame| is used for providing settings.
   SelectionModifier(const LocalFrame& /* frame */,
                     const VisibleSelection&,
@@ -56,7 +57,7 @@ class SelectionModifier {
   bool Modify(SelectionModifyAlteration, SelectionDirection, TextGranularity);
   bool ModifyWithPageGranularity(SelectionModifyAlteration,
                                  unsigned vertical_distance,
-                                 VerticalDirection);
+                                 SelectionModifyVerticalDirection);
 
  private:
   LocalFrame* GetFrame() const { return frame_; }
