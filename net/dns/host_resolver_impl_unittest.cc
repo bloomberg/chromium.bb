@@ -1411,24 +1411,30 @@ TEST_F(HostResolverImplTest, ResolveFromCache) {
 
 TEST_F(HostResolverImplTest, ResolveFromCacheInvalidName) {
   proc_->AddRuleForAllFamilies("foo,bar.com", "192.168.1.42");
-  proc_->SignalMultiple(1u);  // Need only one.
 
   HostResolver::RequestInfo info(HostPortPair("foo,bar.com", 80));
 
-  // First query will miss the cache.
-  EXPECT_EQ(ERR_DNS_CACHE_MISS,
-            CreateRequest(info, DEFAULT_PRIORITY)->ResolveFromCache());
+  // Query should be rejected before it makes it to the cache.
+  EXPECT_THAT(CreateRequest(info, DEFAULT_PRIORITY)->ResolveFromCache(),
+              IsError(ERR_NAME_NOT_RESOLVED));
 
-  // This time, we fetch normally.
+  // Query should be rejected without attempting to resolve it.
   EXPECT_THAT(CreateRequest(info, DEFAULT_PRIORITY)->Resolve(),
               IsError(ERR_NAME_NOT_RESOLVED));
   EXPECT_THAT(requests_[1]->WaitForResult(), IsError(ERR_NAME_NOT_RESOLVED));
+}
 
-  // Expect a cache miss, since the query could not have succeeded the first
-  // time.
+TEST_F(HostResolverImplTest, ResolveFromCacheInvalidNameLocalhost) {
+  HostResolver::RequestInfo info(HostPortPair("foo,bar.localhost", 80));
+
+  // Query should be rejected before it makes it to the localhost check.
   EXPECT_THAT(CreateRequest(info, DEFAULT_PRIORITY)->ResolveFromCache(),
-              IsError(ERR_DNS_CACHE_MISS));
-  EXPECT_FALSE(requests_[2]->HasOneAddress("192.168.1.42", 80));
+              IsError(ERR_NAME_NOT_RESOLVED));
+
+  // Query should be rejected without attempting to resolve it.
+  EXPECT_THAT(CreateRequest(info, DEFAULT_PRIORITY)->Resolve(),
+              IsError(ERR_NAME_NOT_RESOLVED));
+  EXPECT_THAT(requests_[1]->WaitForResult(), IsError(ERR_NAME_NOT_RESOLVED));
 }
 
 TEST_F(HostResolverImplTest, ResolveStaleFromCache) {

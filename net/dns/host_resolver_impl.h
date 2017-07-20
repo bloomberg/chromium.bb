@@ -194,19 +194,23 @@ class NET_EXPORT HostResolverImpl
   // incompatible, ERR_DNS_CACHE_MISS if entry was not found in cache and
   // HOSTS and is not localhost.
   //
+  // On success, the resulting addresses are written to |addresses|.
+  //
+  // On ERR_DNS_CACHE_MISS and OK, the cache key for the request is written to
+  // |key|. On other errors, it may not be.
+  //
   // If |allow_stale| is true, then stale cache entries can be returned.
   // |stale_info| must be non-null, and will be filled in with details of the
   // entry's staleness (if an entry is returned).
   //
   // If |allow_stale| is false, then stale cache entries will not be returned,
   // and |stale_info| must be null.
-  int ResolveHelper(const Key& key,
-                    const RequestInfo& info,
-                    const IPAddress* ip_address,
-                    AddressList* addresses,
+  int ResolveHelper(const RequestInfo& info,
                     bool allow_stale,
                     HostCache::EntryStaleness* stale_info,
-                    const NetLogWithSource& request_net_log);
+                    const NetLogWithSource& request_net_log,
+                    AddressList* addresses,
+                    Key* key);
 
   // Tries to resolve |key| as an IP, returns true and sets |net_error| if
   // succeeds, returns false otherwise.

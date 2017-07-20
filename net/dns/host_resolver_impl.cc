@@ -1962,26 +1962,14 @@ int HostResolverImpl::Resolve(const RequestInfo& info,
   DCHECK_EQ(false, callback.is_null());
   DCHECK(out_req);
 
-  IPAddress ip_address;
-  IPAddress* ip_address_ptr = nullptr;
-  if (ip_address.AssignFromIPLiteral(info.hostname())) {
-    ip_address_ptr = &ip_address;
-  } else {
-    // Check that the caller supplied a valid hostname to resolve.
-    if (!IsValidDNSDomain(info.hostname()))
-      return ERR_NAME_NOT_RESOLVED;
-  }
-
   LogStartRequest(source_net_log, info);
 
-  // Build a key that identifies the request in the cache and in the
-  // outstanding jobs map.
-  Key key = GetEffectiveKeyForRequest(info, ip_address_ptr, source_net_log);
-
-  int rv = ResolveHelper(key, info, ip_address_ptr, addresses, false, nullptr,
-                         source_net_log);
+  Key key;
+  int rv = ResolveHelper(info, false, nullptr, source_net_log, addresses, &key);
   if (rv != ERR_DNS_CACHE_MISS) {
-    MaybeAddCacheHitCallback(key, info);
+    // TODO(mmenke): Remove this code. Nothing's using it.
+    if (rv == OK)
+      MaybeAddCacheHitCallback(key, info);
     LogFinishRequest(source_net_log, info, rv);
     RecordTotalTime(HaveDnsConfig(), info.is_speculative(), base::TimeDelta());
     return rv;
@@ -2085,13 +2073,26 @@ void HostResolverImpl::SetHaveOnlyLoopbackAddresses(bool result) {
   }
 }
 
-int HostResolverImpl::ResolveHelper(const Key& key,
-                                    const RequestInfo& info,
-                                    const IPAddress* ip_address,
-                                    AddressList* addresses,
+int HostResolverImpl::ResolveHelper(const RequestInfo& info,
                                     bool allow_stale,
                                     HostCache::EntryStaleness* stale_info,
-                                    const NetLogWithSource& source_net_log) {
+                                    const NetLogWithSource& source_net_log,
+                                    AddressList* addresses,
+                                    Key* key) {
+  IPAddress ip_address;
+  IPAddress* ip_address_ptr = nullptr;
+  if (ip_address.AssignFromIPLiteral(info.hostname())) {
+    ip_address_ptr = &ip_address;
+  } else {
+    // Check that the caller supplied a valid hostname to resolve.
+    if (!IsValidDNSDomain(info.hostname()))
+      return ERR_NAME_NOT_RESOLVED;
+  }
+
+  // Build a key that identifies the request in the cache and in the
+  // outstanding jobs map.
+  *key = GetEffectiveKeyForRequest(info, ip_address_ptr, source_net_log);
+
   DCHECK(allow_stale == !!stale_info);
   // The result of |getaddrinfo| for empty hosts is inconsistent across systems.
   // On Windows it gives the default interface's address, whereas on Linux it
@@ -2102,28 +2103,28 @@ int HostResolverImpl::ResolveHelper(const Key& key,
   }
 
   int net_error = ERR_UNEXPECTED;
-  if (ResolveAsIP(key, info, ip_address, &net_error, addresses)) {
+  if (ResolveAsIP(*key, info, ip_address_ptr, &net_error, addresses)) {
     MakeNotStale(stale_info);
     return net_error;
   }
-  if (ServeFromCache(key, info, &net_error, addresses, allow_stale,
+  if (ServeFromCache(*key, info, &net_error, addresses, allow_stale,
                      stale_info)) {
     source_net_log.AddEvent(NetLogEventType::HOST_RESOLVER_IMPL_CACHE_HIT,
                             addresses->CreateNetLogCallback());
     // |ServeFromCache()| will set |*stale_info| as needed.
-    RunCacheHitCallbacks(key, info);
+    RunCacheHitCallbacks(*key, info);
     return net_error;
   }
   // TODO(szym): Do not do this if nsswitch.conf instructs not to.
   // http://crbug.com/117655
-  if (ServeFromHosts(key, info, addresses)) {
+  if (ServeFromHosts(*key, info, addresses)) {
     source_net_log.AddEvent(NetLogEventType::HOST_RESOLVER_IMPL_HOSTS_HIT,
                             addresses->CreateNetLogCallback());
     MakeNotStale(stale_info);
     return OK;
   }
 
-  if (ServeLocalhost(key, info, addresses)) {
+  if (ServeLocalhost(*key, info, addresses)) {
     MakeNotStale(stale_info);
     return OK;
   }
@@ -2140,15 +2141,9 @@ int HostResolverImpl::ResolveFromCache(const RequestInfo& info,
   // Update the net log and notify registered observers.
   LogStartRequest(source_net_log, info);
 
-  IPAddress ip_address;
-  IPAddress* ip_address_ptr = nullptr;
-  if (ip_address.AssignFromIPLiteral(info.hostname()))
-    ip_address_ptr = &ip_address;
+  Key key;
+  int rv = ResolveHelper(info, false, nullptr, source_net_log, addresses, &key);
 
-  Key key = GetEffectiveKeyForRequest(info, ip_address_ptr, source_net_log);
-
-  int rv = ResolveHelper(key, info, ip_address_ptr, addresses, false, nullptr,
-                         source_net_log);
   LogFinishRequest(source_net_log, info, rv);
   return rv;
 }
@@ -2194,15 +2189,9 @@ int HostResolverImpl::ResolveStaleFromCache(
   // Update the net log and notify registered observers.
   LogStartRequest(source_net_log, info);
 
-  IPAddress ip_address;
-  IPAddress* ip_address_ptr = nullptr;
-  if (ip_address.AssignFromIPLiteral(info.hostname()))
-    ip_address_ptr = &ip_address;
-
-  Key key = GetEffectiveKeyForRequest(info, ip_address_ptr, source_net_log);
-
-  int rv = ResolveHelper(key, info, ip_address_ptr, addresses, true, stale_info,
-                         source_net_log);
+  Key key;
+  int rv =
+      ResolveHelper(info, true, stale_info, source_net_log, addresses, &key);
   LogFinishRequest(source_net_log, info, rv);
   return rv;
 }
