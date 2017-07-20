@@ -3305,18 +3305,18 @@ TEST_F(SearchProviderTest, CanSendURL) {
       metrics::OmniboxEventProto::OTHER, SearchTermsData(), &client));
 
   // Non-HTTP page URL on different domain.
-  EXPECT_FALSE(SearchProvider::CanSendURL(
+  EXPECT_TRUE(SearchProvider::CanSendURL(
       GURL("https://www.notgoogle.com/search"),
       GURL("https://www.google.com/complete/search"), &google_template_url,
       metrics::OmniboxEventProto::OTHER, SearchTermsData(), &client));
 
   // Non-HTTP page URL on different domain, yet with feature flag to allow
-  // this turned on.
+  // this turned off.
   {
     base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeature(
+    feature_list.InitAndDisableFeature(
         omnibox::kSearchProviderContextAllowHttpsUrls);
-    EXPECT_TRUE(SearchProvider::CanSendURL(
+    EXPECT_FALSE(SearchProvider::CanSendURL(
         GURL("https://www.notgoogle.com/search"),
         GURL("https://www.google.com/complete/search"), &google_template_url,
         metrics::OmniboxEventProto::OTHER, SearchTermsData(), &client));

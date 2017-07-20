@@ -89,7 +89,7 @@ const base::Feature kSearchProviderWarmUpOnFocus{
 // transmit URLs for context in the first place).
 const base::Feature kSearchProviderContextAllowHttpsUrls{
     "OmniboixSearchProviderContextAllowHttpsUrls",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Feature used for the Zero Suggest Redirect to Chrome Field Trial.
 const base::Feature kZeroSuggestRedirectToChrome{
