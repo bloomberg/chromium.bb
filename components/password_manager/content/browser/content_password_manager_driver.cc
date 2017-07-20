@@ -4,12 +4,13 @@
 
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 
+#include <utility>
+
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/content/browser/bad_message.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
-#include "components/password_manager/content/browser/visible_password_observer.h"
 #include "components/password_manager/core/browser/log_manager.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
@@ -42,10 +43,6 @@ ContentPasswordManagerDriver::ContentPasswordManagerDriver(
       is_main_frame_(render_frame_host->GetParent() == nullptr),
       password_manager_binding_(this),
       weak_factory_(this) {
-  // Does nothing if a VisiblePasswordObserver has already been created
-  // for this WebContents.
-  VisiblePasswordObserver::CreateForWebContents(
-      content::WebContents::FromRenderFrameHost(render_frame_host_));
 
   // For some frames |this| may be instantiated before log manager creation, so
   // here we can not send logging state to renderer process for them. For such
@@ -77,11 +74,6 @@ ContentPasswordManagerDriver::GetForRenderFrameHost(
 void ContentPasswordManagerDriver::BindRequest(
     autofill::mojom::PasswordManagerDriverRequest request) {
   password_manager_binding_.Bind(std::move(request));
-}
-
-void ContentPasswordManagerDriver::BindSensitiveInputVisibilityServiceRequest(
-    blink::mojom::SensitiveInputVisibilityServiceRequest request) {
-  sensitive_input_visibility_bindings_.AddBinding(this, std::move(request));
 }
 
 void ContentPasswordManagerDriver::FillPasswordForm(
@@ -224,19 +216,6 @@ void ContentPasswordManagerDriver::OnFocusedPasswordFormFound(
           BadMessageReason::CPMD_BAD_ORIGIN_FOCUSED_PASSWORD_FORM_FOUND))
     return;
   GetPasswordManager()->OnPasswordFormForceSaveRequested(this, password_form);
-}
-
-void ContentPasswordManagerDriver::PasswordFieldVisibleInInsecureContext() {
-  VisiblePasswordObserver* observer = VisiblePasswordObserver::FromWebContents(
-      content::WebContents::FromRenderFrameHost(render_frame_host_));
-  observer->RenderFrameHasVisiblePasswordField(render_frame_host_);
-}
-
-void ContentPasswordManagerDriver::
-    AllPasswordFieldsInInsecureContextInvisible() {
-  VisiblePasswordObserver* observer = VisiblePasswordObserver::FromWebContents(
-      content::WebContents::FromRenderFrameHost(render_frame_host_));
-  observer->RenderFrameHasNoVisiblePasswordFields(render_frame_host_);
 }
 
 void ContentPasswordManagerDriver::DidNavigateFrame(

@@ -134,6 +134,7 @@ include_rules = [
   "+third_party/WebKit/public/platform/modules/push_messaging/WebPushPermissionStatus.h",
   "+third_party/WebKit/public/platform/modules/remoteplayback/WebRemotePlaybackAvailability.h",
   "+third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationLockType.h",
+  "+third_party/WebKit/public/platform/modules/sensitive_input_visibility/sensitive_input_visibility_service.mojom.h",
   "+third_party/WebKit/public/platform/modules/webshare/webshare.mojom.h",
   "+third_party/WebKit/public/platform/site_engagement.mojom.h",
   "+third_party/WebKit/public/public_features.h",
