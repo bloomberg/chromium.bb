@@ -85,14 +85,14 @@ public class OfflinePageBridge {
         /**
          * Called when the native side of offline pages is changed due to adding, removing or
          * update an offline page.
-         * @param addedPage The in-memory representation of the page added to the offline database.
          */
         public void offlinePageAdded(OfflinePageItem addedPage) {}
 
         /**
          * Called when an offline page is deleted. This can be called as a result of
          * #checkOfflinePageMetadata().
-         * @param deletedPage Information regarding the deleted offline page.
+         * @param offlineId The offline ID of the deleted offline page.
+         * @param clientId The client supplied ID of the deleted offline page.
          */
         public void offlinePageDeleted(DeletedPageInfo deletedPage) {}
     }
