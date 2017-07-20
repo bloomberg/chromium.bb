@@ -81,12 +81,17 @@ class ShelfModelTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(ShelfModelTest);
 };
 
-TEST_F(ShelfModelTest, IntializesAppListItem) {
-  EXPECT_EQ(1, model_->item_count());
+TEST_F(ShelfModelTest, IntializesAppListAndBrowserShortcutItems) {
+  EXPECT_EQ(2, model_->item_count());
   EXPECT_EQ(kAppListId, model_->items()[0].id.app_id);
-  // The ShelfModel does not initialize the AppList's ShelfItemDelegate.
-  // ShelfController does that to prevent Chrome from creating its own delegate.
+  EXPECT_EQ(TYPE_APP_LIST, model_->items()[0].type);
+  const char kChromeAppId[] = "mgndgikekgjfcpckkfioiadnlibdjbkf";
+  EXPECT_EQ(kChromeAppId, model_->items()[1].id.app_id);
+  EXPECT_EQ(TYPE_BROWSER_SHORTCUT, model_->items()[1].type);
+  // The ShelfModel does not init either ShelfItemDelegate. ShelfController
+  // creates the app list delegate, and Chrome creates the browser delegate.
   EXPECT_FALSE(model_->GetShelfItemDelegate(ShelfID(kAppListId)));
+  EXPECT_FALSE(model_->GetShelfItemDelegate(ShelfID(kChromeAppId)));
 }
 
 TEST_F(ShelfModelTest, BasicAssertions) {
@@ -95,7 +100,7 @@ TEST_F(ShelfModelTest, BasicAssertions) {
   item1.id = ShelfID("item1");
   item1.type = TYPE_PINNED_APP;
   int index = model_->Add(item1);
-  EXPECT_EQ(2, model_->item_count());
+  EXPECT_EQ(3, model_->item_count());
   EXPECT_LE(0, model_->ItemIndexByID(item1.id));
   EXPECT_NE(model_->items().end(), model_->ItemByID(item1.id));
   EXPECT_EQ("added=1", observer_->StateStringAndClear());
@@ -111,7 +116,7 @@ TEST_F(ShelfModelTest, BasicAssertions) {
 
   // Remove the item.
   model_->RemoveItemAt(index);
-  EXPECT_EQ(1, model_->item_count());
+  EXPECT_EQ(2, model_->item_count());
   EXPECT_EQ(-1, model_->ItemIndexByID(item1.id));
   EXPECT_EQ(model_->items().end(), model_->ItemByID(item1.id));
   EXPECT_EQ("removed=1", observer_->StateStringAndClear());
@@ -121,7 +126,7 @@ TEST_F(ShelfModelTest, BasicAssertions) {
   item2.id = ShelfID("item2");
   item2.type = TYPE_PINNED_APP;
   index = model_->Add(item2);
-  EXPECT_EQ(2, model_->item_count());
+  EXPECT_EQ(3, model_->item_count());
   EXPECT_LE(0, model_->ItemIndexByID(item2.id));
   EXPECT_NE(model_->items().end(), model_->ItemByID(item2.id));
   EXPECT_EQ("added=1", observer_->StateStringAndClear());
@@ -139,7 +144,7 @@ TEST_F(ShelfModelTest, BasicAssertions) {
   item3.id = ShelfID("item3");
   item3.type = TYPE_PINNED_APP;
   model_->Add(item3);
-  EXPECT_EQ(3, model_->item_count());
+  EXPECT_EQ(4, model_->item_count());
   EXPECT_LE(0, model_->ItemIndexByID(item3.id));
   EXPECT_NE(model_->items().end(), model_->ItemByID(item3.id));
   EXPECT_EQ("added=1", observer_->StateStringAndClear());
@@ -161,13 +166,6 @@ TEST_F(ShelfModelTest, BasicAssertions) {
 
 // Assertions around where items are added.
 TEST_F(ShelfModelTest, AddIndices) {
-  // Insert browser short cut at index 1.
-  ShelfItem browser_shortcut;
-  browser_shortcut.id = ShelfID("browser");
-  browser_shortcut.type = TYPE_BROWSER_SHORTCUT;
-  int browser_shortcut_index = model_->Add(browser_shortcut);
-  EXPECT_EQ(1, browser_shortcut_index);
-
   // App items should be after the browser shortcut.
   ShelfItem item;
   item.type = TYPE_APP;
@@ -255,16 +253,13 @@ TEST_F(ShelfModelTest, AddIndices) {
 
 // Test that the indexes for the running applications are properly determined.
 TEST_F(ShelfModelTest, FirstRunningAppIndex) {
-  // Insert the browser shortcut at index 1 and check that the running
-  // application index would be behind it.
-  ShelfItem item;
-  item.id = ShelfID("browser");
-  item.type = TYPE_BROWSER_SHORTCUT;
-  EXPECT_EQ(1, model_->Add(item));
+  // Check that the running application index is after the browser shortcut.
+  EXPECT_EQ(TYPE_BROWSER_SHORTCUT, model_->items()[1].type);
   EXPECT_EQ(2, model_->FirstRunningAppIndex());
 
   // Insert a panel application at the end and check that the running
   // application index would be at / before the application panel.
+  ShelfItem item;
   item.type = TYPE_APP_PANEL;
   item.id = ShelfID("app panel");
   EXPECT_EQ(2, model_->Add(item));
@@ -290,31 +285,32 @@ TEST_F(ShelfModelTest, FirstRunningAppIndex) {
 // Test item reordering on type/weight (eg. pinning) changes. crbug.com/248769.
 TEST_F(ShelfModelTest, ReorderOnTypeChanges) {
   EXPECT_EQ(TYPE_APP_LIST, model_->items()[0].type);
+  EXPECT_EQ(TYPE_BROWSER_SHORTCUT, model_->items()[1].type);
 
   // Add three pinned items.
   ShelfItem item1;
   item1.type = TYPE_PINNED_APP;
   item1.id = ShelfID("id1");
   int app1_index = model_->Add(item1);
-  EXPECT_EQ(1, app1_index);
+  EXPECT_EQ(2, app1_index);
 
   ShelfItem item2;
   item2.type = TYPE_PINNED_APP;
   item2.id = ShelfID("id2");
   int app2_index = model_->Add(item2);
-  EXPECT_EQ(2, app2_index);
+  EXPECT_EQ(3, app2_index);
 
   ShelfItem item3;
   item3.type = TYPE_PINNED_APP;
   item3.id = ShelfID("id3");
   int app3_index = model_->Add(item3);
-  EXPECT_EQ(3, app3_index);
+  EXPECT_EQ(4, app3_index);
 
   // Unpinning an item moves it behind the shortcuts.
-  EXPECT_EQ(item3.id, model_->items()[3].id);
+  EXPECT_EQ(item3.id, model_->items()[4].id);
   item2.type = TYPE_APP;
   model_->Set(app2_index, item2);
-  EXPECT_EQ(item2.id, model_->items()[3].id);
+  EXPECT_EQ(item2.id, model_->items()[4].id);
 }
 
 // Test getting the index of ShelfIDs as a check for item presence.
@@ -352,31 +348,31 @@ TEST_F(ShelfModelTest, ClosedAppPinning) {
 
   // Check the initial state.
   EXPECT_FALSE(model_->IsAppPinned(app_id));
-  EXPECT_EQ(1, model_->item_count());
+  EXPECT_EQ(2, model_->item_count());
 
   // Pinning a previously unknown app should add an item.
   model_->PinAppWithID(app_id);
   EXPECT_TRUE(model_->IsAppPinned(app_id));
-  EXPECT_EQ(2, model_->item_count());
-  EXPECT_EQ(TYPE_PINNED_APP, model_->items()[1].type);
-  EXPECT_EQ(app_id, model_->items()[1].id.app_id);
+  EXPECT_EQ(3, model_->item_count());
+  EXPECT_EQ(TYPE_PINNED_APP, model_->items()[2].type);
+  EXPECT_EQ(app_id, model_->items()[2].id.app_id);
 
   // Pinning the same app id again should have no change.
   model_->PinAppWithID(app_id);
   EXPECT_TRUE(model_->IsAppPinned(app_id));
-  EXPECT_EQ(2, model_->item_count());
-  EXPECT_EQ(TYPE_PINNED_APP, model_->items()[1].type);
-  EXPECT_EQ(app_id, model_->items()[1].id.app_id);
+  EXPECT_EQ(3, model_->item_count());
+  EXPECT_EQ(TYPE_PINNED_APP, model_->items()[2].type);
+  EXPECT_EQ(app_id, model_->items()[2].id.app_id);
 
   // Unpinning the app should remove the item.
   model_->UnpinAppWithID(app_id);
   EXPECT_FALSE(model_->IsAppPinned(app_id));
-  EXPECT_EQ(1, model_->item_count());
+  EXPECT_EQ(2, model_->item_count());
 
   // Unpinning the same app id again should have no change.
   model_->UnpinAppWithID(app_id);
   EXPECT_FALSE(model_->IsAppPinned(app_id));
-  EXPECT_EQ(1, model_->item_count());
+  EXPECT_EQ(2, model_->item_count());
 }
 
 // Test pinning and unpinning a running app, and checking if it is pinned.
@@ -385,7 +381,7 @@ TEST_F(ShelfModelTest, RunningAppPinning) {
 
   // Check the initial state.
   EXPECT_FALSE(model_->IsAppPinned(app_id));
-  EXPECT_EQ(1, model_->item_count());
+  EXPECT_EQ(2, model_->item_count());
 
   // Add an example running app.
   ShelfItem item;
@@ -396,35 +392,35 @@ TEST_F(ShelfModelTest, RunningAppPinning) {
 
   // The item should be added but not pinned.
   EXPECT_FALSE(model_->IsAppPinned(app_id));
-  EXPECT_EQ(2, model_->item_count());
+  EXPECT_EQ(3, model_->item_count());
   EXPECT_EQ(TYPE_APP, model_->items()[index].type);
   EXPECT_EQ(item.id, model_->items()[index].id);
 
   // Pinning the item should just change its type.
   model_->PinAppWithID(app_id);
   EXPECT_TRUE(model_->IsAppPinned(app_id));
-  EXPECT_EQ(2, model_->item_count());
+  EXPECT_EQ(3, model_->item_count());
   EXPECT_EQ(TYPE_PINNED_APP, model_->items()[index].type);
   EXPECT_EQ(item.id, model_->items()[index].id);
 
   // Pinning the same app id again should have no change.
   model_->PinAppWithID(app_id);
   EXPECT_TRUE(model_->IsAppPinned(app_id));
-  EXPECT_EQ(2, model_->item_count());
+  EXPECT_EQ(3, model_->item_count());
   EXPECT_EQ(TYPE_PINNED_APP, model_->items()[index].type);
   EXPECT_EQ(item.id, model_->items()[index].id);
 
   // Unpinning the app should leave the item unpinnned but running.
   model_->UnpinAppWithID(app_id);
   EXPECT_FALSE(model_->IsAppPinned(app_id));
-  EXPECT_EQ(2, model_->item_count());
+  EXPECT_EQ(3, model_->item_count());
   EXPECT_EQ(TYPE_APP, model_->items()[index].type);
   EXPECT_EQ(item.id, model_->items()[index].id);
 
   // Unpinning the same app id again should have no change.
   model_->UnpinAppWithID(app_id);
   EXPECT_FALSE(model_->IsAppPinned(app_id));
-  EXPECT_EQ(2, model_->item_count());
+  EXPECT_EQ(3, model_->item_count());
   EXPECT_EQ(TYPE_APP, model_->items()[index].type);
   EXPECT_EQ(item.id, model_->items()[index].id);
 }
