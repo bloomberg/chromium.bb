@@ -121,7 +121,6 @@ void OverscrollWindowAnimation::OnOverscrollModeChange(
                                0);
   }
 
-  DCHECK_EQ(overscroll_source_, OverscrollSource::NONE);
   overscroll_source_ = source;
   slide_window_ = new_direction == SLIDE_FRONT
                       ? delegate_->CreateFrontWindow(slide_window_bounds)
