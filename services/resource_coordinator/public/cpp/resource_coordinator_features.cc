@@ -10,6 +10,10 @@ namespace features {
 const base::Feature kGlobalResourceCoordinator{
     "GlobalResourceCoordinator", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enable render process CPU profiling for GRC.
+const base::Feature kGRCRenderProcessCPUProfiling{
+    "GRCRenderProcessCPUProfiling", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 
 namespace resource_coordinator {
