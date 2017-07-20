@@ -829,9 +829,19 @@ bool OmniboxViewMac::OnDoCommandBySelector(SEL cmd) {
      (cmd == @selector(noop:) &&
       ([event type] == NSKeyDown || [event type] == NSKeyUp) &&
       [event keyCode] == kVK_Return)) {
+    // If the user hasn't entered any text in keyword search mode, we need to
+    // return early in order to avoid cancelling the search.
+    if (GetTextLength() == 0)
+      return true;
+
     WindowOpenDisposition disposition =
         ui::WindowOpenDispositionFromNSEvent(event);
     model()->AcceptInput(disposition, false);
+    // Opening a URL in a background tab should also revert the omnibox contents
+    // to their original state.  We cannot do a blanket revert in OpenURL()
+    // because middle-clicks also open in a new background tab, but those should
+    // not revert the omnibox text.
+    RevertAll();
     return true;
   }
 
