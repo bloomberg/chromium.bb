@@ -2244,6 +2244,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'daisy',
       'daisy_skate',
       'daisy_spring',
+      'edgar',
       'elm',
       'eve',
       'falco',
@@ -2270,6 +2271,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'poppy',
       'samus',
       'scarlet',
+      'sentry',
       'stout',
       'stumpy',
       'tidus',
@@ -2283,6 +2285,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'veyron_tiger',
       'whirlwind',
       'winky',
+      'wizpig',
       'wolf',
       'zoombini',
   ])
@@ -2296,13 +2299,10 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # from landing, a red paladin from a bad CL in the CQ is a working paladin.
   _paladin_new_boards = frozenset([
       'auron_paine',
-      'edgar',
       'hana',
       'kevin',
       'quawks',
       'reef',
-      'sentry',
-      'wizpig',
   ])
 
   # Paladin configs that exist and should stay as experimental until further
