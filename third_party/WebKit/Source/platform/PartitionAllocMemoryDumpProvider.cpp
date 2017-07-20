@@ -135,7 +135,17 @@ bool PartitionAllocMemoryDumpProvider::OnMemoryDump(
 
   MemoryDumpLevelOfDetail level_of_detail = args.level_of_detail;
   if (allocation_register_.is_enabled()) {
-    memory_dump->DumpHeapUsage(allocation_register_, kPartitionAllocDumpName);
+    // Overhead should always be reported, regardless of light vs. heavy.
+    base::trace_event::TraceEventMemoryOverhead overhead;
+    std::unordered_map<base::trace_event::AllocationContext,
+                       base::trace_event::AllocationMetrics>
+        metrics_by_context;
+    // Dump only the overhead estimation in non-detailed dumps.
+    if (level_of_detail == MemoryDumpLevelOfDetail::DETAILED) {
+      allocation_register_.UpdateAndReturnsMetrics(metrics_by_context);
+    }
+    allocation_register_.EstimateTraceMemoryOverhead(&overhead);
+    memory_dump->DumpHeapUsage(metrics_by_context, overhead, "partition_alloc");
   }
 
   PartitionStatsDumperImpl partition_stats_dumper(memory_dump, level_of_detail);

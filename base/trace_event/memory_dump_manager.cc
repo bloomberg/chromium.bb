@@ -23,7 +23,9 @@
 #include "base/trace_event/heap_profiler.h"
 #include "base/trace_event/heap_profiler_allocation_context_tracker.h"
 #include "base/trace_event/heap_profiler_event_filter.h"
-#include "base/trace_event/heap_profiler_event_writer.h"
+#include "base/trace_event/heap_profiler_serialization_state.h"
+#include "base/trace_event/heap_profiler_stack_frame_deduplicator.h"
+#include "base/trace_event/heap_profiler_type_name_deduplicator.h"
 #include "base/trace_event/malloc_dump_provider.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "base/trace_event/memory_dump_scheduler.h"
@@ -58,6 +60,37 @@ void DoGlobalDumpWithoutCallback(
   MemoryDumpRequestArgs args{0 /* dump_guid */, dump_type, level_of_detail};
   global_dump_fn.Run(args);
 }
+
+// Proxy class which wraps a ConvertableToTraceFormat owned by the
+// |heap_profiler_serialization_state| into a proxy object that can be added to
+// the trace event log. This is to solve the problem that the
+// HeapProfilerSerializationState is refcounted but the tracing subsystem wants
+// a std::unique_ptr<ConvertableToTraceFormat>.
+template <typename T>
+struct SessionStateConvertableProxy : public ConvertableToTraceFormat {
+  using GetterFunctPtr = T* (HeapProfilerSerializationState::*)() const;
+
+  SessionStateConvertableProxy(scoped_refptr<HeapProfilerSerializationState>
+                                   heap_profiler_serialization_state,
+                               GetterFunctPtr getter_function)
+      : heap_profiler_serialization_state(heap_profiler_serialization_state),
+        getter_function(getter_function) {}
+
+  void AppendAsTraceFormat(std::string* out) const override {
+    return (heap_profiler_serialization_state.get()->*getter_function)()
+        ->AppendAsTraceFormat(out);
+  }
+
+  void EstimateTraceMemoryOverhead(
+      TraceEventMemoryOverhead* overhead) override {
+    return (heap_profiler_serialization_state.get()->*getter_function)()
+        ->EstimateTraceMemoryOverhead(overhead);
+  }
+
+  scoped_refptr<HeapProfilerSerializationState>
+      heap_profiler_serialization_state;
+  GetterFunctPtr const getter_function;
+};
 
 }  // namespace
 
@@ -649,14 +682,28 @@ void MemoryDumpManager::SetupForTracing(
       ->set_heap_profiler_breakdown_threshold_bytes(
           memory_dump_config.heap_profiler_options.breakdown_threshold_bytes);
   if (heap_profiling_enabled_) {
-    heap_profiler_serialization_state->CreateDeduplicators();
-    // TODO(dskiba): support continuous mode (crbug.com/701052)
-    DLOG_IF(
-        ERROR,
-        TraceLog::GetInstance()->GetCurrentTraceConfig().GetTraceRecordMode() ==
-            RECORD_CONTINUOUSLY)
-        << "Heap profile format is incremental and doesn't yet fully support "
-        << "continuous mode.";
+    // If heap profiling is enabled, the stack frame deduplicator and type name
+    // deduplicator will be in use. Add a metadata events to write the frames
+    // and type IDs.
+    heap_profiler_serialization_state->SetStackFrameDeduplicator(
+        WrapUnique(new StackFrameDeduplicator));
+
+    heap_profiler_serialization_state->SetTypeNameDeduplicator(
+        WrapUnique(new TypeNameDeduplicator));
+
+    TRACE_EVENT_API_ADD_METADATA_EVENT(
+        TraceLog::GetCategoryGroupEnabled("__metadata"), "stackFrames",
+        "stackFrames",
+        MakeUnique<SessionStateConvertableProxy<StackFrameDeduplicator>>(
+            heap_profiler_serialization_state,
+            &HeapProfilerSerializationState::stack_frame_deduplicator));
+
+    TRACE_EVENT_API_ADD_METADATA_EVENT(
+        TraceLog::GetCategoryGroupEnabled("__metadata"), "typeNames",
+        "typeNames",
+        MakeUnique<SessionStateConvertableProxy<TypeNameDeduplicator>>(
+            heap_profiler_serialization_state,
+            &HeapProfilerSerializationState::type_name_deduplicator));
   }
 
   AutoLock lock(lock_);

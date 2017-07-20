@@ -13,7 +13,6 @@
 
 #include "base/hash.h"
 #include "base/strings/stringprintf.h"
-#include "base/trace_event/heap_profiler_string_deduplicator.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
@@ -46,13 +45,7 @@ size_t StackFrameDeduplicator::FrameNode::EstimateMemoryUsage() const {
   return base::trace_event::EstimateMemoryUsage(children);
 }
 
-StackFrameDeduplicator::StackFrameDeduplicator(
-    StringDeduplicator* string_deduplicator)
-    : string_deduplicator_(string_deduplicator), last_exported_index_(0) {
-  // Add implicit entry for id 0 (empty backtraces).
-  frames_.push_back(FrameNode(StackFrame::FromTraceEventName(nullptr),
-                              FrameNode::kInvalidFrameIndex));
-}
+StackFrameDeduplicator::StackFrameDeduplicator() {}
 StackFrameDeduplicator::~StackFrameDeduplicator() {}
 
 bool StackFrameDeduplicator::Match(int frame_index,
@@ -84,8 +77,7 @@ bool StackFrameDeduplicator::Match(int frame_index,
 int StackFrameDeduplicator::Insert(const StackFrame* begin_frame,
                                    const StackFrame* end_frame) {
   if (begin_frame == end_frame) {
-    // Empty backtraces are mapped to id 0.
-    return 0;
+    return FrameNode::kInvalidFrameIndex;
   }
 
   size_t backtrace_hash = HashBacktrace(begin_frame, end_frame);
@@ -136,45 +128,58 @@ int StackFrameDeduplicator::Insert(const StackFrame* begin_frame,
   return frame_index;
 }
 
-void StackFrameDeduplicator::SerializeIncrementally(TracedValue* traced_value) {
+void StackFrameDeduplicator::AppendAsTraceFormat(std::string* out) const {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("memory-infra"),
-               "StackFrameDeduplicator::SerializeIncrementally");
+               "StackFrameDeduplicator::AppendAsTraceFormat");
+  out->append("{");  // Begin the |stackFrames| dictionary.
+
+  int i = 0;
+  auto frame_node = begin();
+  auto it_end = end();
   std::string stringify_buffer;
 
-  for (; last_exported_index_ < frames_.size(); ++last_exported_index_) {
-    const auto& frame_node = frames_[last_exported_index_];
-    traced_value->BeginDictionary();
+  while (frame_node != it_end) {
+    // The |stackFrames| format is a dictionary, not an array, so the
+    // keys are stringified indices. Write the index manually, then use
+    // |TracedValue| to format the object. This is to avoid building the
+    // entire dictionary as a |TracedValue| in memory.
+    SStringPrintf(&stringify_buffer, "\"%d\":", i);
+    out->append(stringify_buffer);
 
-    traced_value->SetInteger("id", last_exported_index_);
-
-    int name_string_id = 0;
-    const StackFrame& frame = frame_node.frame;
+    std::unique_ptr<TracedValue> frame_node_value(new TracedValue);
+    const StackFrame& frame = frame_node->frame;
     switch (frame.type) {
       case StackFrame::Type::TRACE_EVENT_NAME:
-        name_string_id =
-            string_deduplicator_->Insert(static_cast<const char*>(frame.value));
+        frame_node_value->SetString("name",
+                                    static_cast<const char*>(frame.value));
         break;
       case StackFrame::Type::THREAD_NAME:
         SStringPrintf(&stringify_buffer,
                       "[Thread: %s]",
                       static_cast<const char*>(frame.value));
-        name_string_id = string_deduplicator_->Insert(stringify_buffer);
+        frame_node_value->SetString("name", stringify_buffer);
         break;
       case StackFrame::Type::PROGRAM_COUNTER:
         SStringPrintf(&stringify_buffer,
                       "pc:%" PRIxPTR,
                       reinterpret_cast<uintptr_t>(frame.value));
-        name_string_id = string_deduplicator_->Insert(stringify_buffer);
+        frame_node_value->SetString("name", stringify_buffer);
         break;
     }
-    traced_value->SetInteger("name_sid", name_string_id);
-
-    if (frame_node.parent_frame_index != FrameNode::kInvalidFrameIndex) {
-      traced_value->SetInteger("parent", frame_node.parent_frame_index);
+    if (frame_node->parent_frame_index != FrameNode::kInvalidFrameIndex) {
+      SStringPrintf(&stringify_buffer, "%d", frame_node->parent_frame_index);
+      frame_node_value->SetString("parent", stringify_buffer);
     }
+    frame_node_value->AppendAsTraceFormat(out);
 
-    traced_value->EndDictionary();
+    i++;
+    frame_node++;
+
+    if (frame_node != it_end)
+      out->append(",");
   }
+
+  out->append("}");  // End the |stackFrames| dictionary.
 }
 
 void StackFrameDeduplicator::EstimateTraceMemoryOverhead(
