@@ -459,6 +459,7 @@ void ArcSessionManager::Shutdown() {
     support_host_.reset();
   }
   context_.reset();
+  pai_starter_.reset();
   profile_ = nullptr;
   state_ = State::NOT_INITIALIZED;
   if (scoped_opt_in_tracker_) {

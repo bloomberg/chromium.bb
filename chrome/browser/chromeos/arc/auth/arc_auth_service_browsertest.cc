@@ -93,8 +93,7 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
         base::MakeUnique<chromeos::ScopedUserManagerEnabler>(
             new chromeos::FakeChromeUserManager());
     // Init ArcSessionManager for testing.
-    ArcServiceLauncher::Get()->Shutdown();
-    ArcServiceLauncher::Get()->Initialize();
+    ArcServiceLauncher::Get()->ResetForTesting();
     ArcSessionManager::DisableUIForTesting();
     ArcAuthNotification::DisableForTesting();
     ArcSessionManager::EnableCheckAndroidManagementForTesting();

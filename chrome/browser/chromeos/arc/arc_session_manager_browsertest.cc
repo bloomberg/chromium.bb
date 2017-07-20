@@ -125,8 +125,7 @@ class ArcSessionManagerTest : public InProcessBrowserTest {
     user_manager_enabler_.reset(new chromeos::ScopedUserManagerEnabler(
         new chromeos::FakeChromeUserManager));
     // Init ArcSessionManager for testing.
-    ArcServiceLauncher::Get()->Shutdown();
-    ArcServiceLauncher::Get()->Initialize();
+    ArcServiceLauncher::Get()->ResetForTesting();
     ArcSessionManager::DisableUIForTesting();
     ArcAuthNotification::DisableForTesting();
     ArcSessionManager::EnableCheckAndroidManagementForTesting();
@@ -183,6 +182,7 @@ class ArcSessionManagerTest : public InProcessBrowserTest {
     // TODO(hidehiko): Think about a way to test the code cleanly.
     ArcServiceLauncher::Get()->Shutdown();
     profile_.reset();
+    base::RunLoop().RunUntilIdle();
     user_manager_enabler_.reset();
     test_server_.reset();
     chromeos::ProfileHelper::SetAlwaysReturnPrimaryUserForTesting(false);
