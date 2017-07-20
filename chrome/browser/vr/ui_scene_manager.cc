@@ -97,14 +97,9 @@ static constexpr float kToastOffsetDMM = 0.004;
 static constexpr float kWebVrAngleRadians = 9.88 * M_PI / 180.0;
 static constexpr int kToastTimeoutSeconds = kTransientUrlBarTimeoutSeconds;
 
-static constexpr float kSplashScreenDistance = 1;
-static constexpr float kSplashScreenIconDMM = 0.12;
-static constexpr float kSplashScreenIconHeight =
-    kSplashScreenIconDMM * kSplashScreenDistance;
-static constexpr float kSplashScreenIconWidth =
-    kSplashScreenIconDMM * kSplashScreenDistance;
-static constexpr float kSplashScreenIconVerticalOffset =
-    -0.1 * kSplashScreenDistance;
+static constexpr float kSplashScreenDistance = 2.5;
+static constexpr float kSplashScreenIconSize = 0.405;
+static constexpr float kSplashScreenIconVerticalOffset = -0.18;
 
 static constexpr float kCloseButtonDistance = 2.4;
 static constexpr float kCloseButtonHeight =
@@ -304,7 +299,7 @@ void UiSceneManager::CreateSplashScreen() {
   icon->set_debug_id(kSplashScreenIcon);
   icon->set_id(AllocateId());
   icon->set_hit_testable(false);
-  icon->SetSize(kSplashScreenIconWidth, kSplashScreenIconHeight);
+  icon->SetSize(kSplashScreenIconSize, kSplashScreenIconSize);
   icon->SetTranslate(0, kSplashScreenIconVerticalOffset,
                      -kSplashScreenDistance);
   splash_screen_icon_ = icon.get();
