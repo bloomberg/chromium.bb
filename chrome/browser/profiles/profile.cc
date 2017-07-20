@@ -15,6 +15,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
@@ -68,6 +69,8 @@ Profile::Profile()
   base::AutoLock lock(g_instances_lock.Get());
   g_instances.Get().insert(this);
 #endif  // DCHECK_IS_ON()
+
+  BrowserContextDependencyManager::GetInstance()->MarkBrowserContextLive(this);
 }
 
 Profile::~Profile() {
