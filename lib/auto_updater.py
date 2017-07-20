@@ -910,9 +910,12 @@ class ChromiumOSFlashUpdater(BaseUpdater):
     """Stop the performance monitoring script and save results to file."""
     cmd = ['python', self.REMOTE_UPDATE_ENGINE_PERF_SCRIPT_PATH, '--stop-bg',
            pid]
-    perf_json_data = self.device.RunCommand(cmd).output.strip()
-    self.device.RunCommand(['echo', json.dumps(perf_json_data), '>',
-                            self.REMOTE_UPDATE_ENGINE_PERF_RESULTS_PATH])
+    try:
+      perf_json_data = self.device.RunCommand(cmd).output.strip()
+      self.device.RunCommand(['echo', json.dumps(perf_json_data), '>',
+                              self.REMOTE_UPDATE_ENGINE_PERF_RESULTS_PATH])
+    except cros_build_lib.RunCommandError as e:
+      logging.debug('Could not stop performance monitoring process: %s', e)
 
 class ChromiumOSUpdater(ChromiumOSFlashUpdater):
   """Used to auto-update Cros DUT with image.
