@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_AURA_SHELL_PORT_CLASSIC_H_
-#define ASH_AURA_SHELL_PORT_CLASSIC_H_
+#ifndef ASH_SHELL_PORT_CLASSIC_H_
+#define ASH_SHELL_PORT_CLASSIC_H_
 
 #include <memory>
 #include <vector>
@@ -14,8 +14,8 @@
 
 namespace ash {
 
-class AcceleratorControllerDelegateAura;
-class PointerWatcherAdapter;
+class AcceleratorControllerDelegateClassic;
+class PointerWatcherAdapterClassic;
 
 // Implementation of ShellPort for classic ash/aura. See ash/README.md for more
 // details.
@@ -26,7 +26,7 @@ class ASH_EXPORT ShellPortClassic : public ShellPort {
 
   static ShellPortClassic* Get();
 
-  AcceleratorControllerDelegateAura* accelerator_controller_delegate() {
+  AcceleratorControllerDelegateClassic* accelerator_controller_delegate() {
     return accelerator_controller_delegate_.get();
   }
 
@@ -72,9 +72,9 @@ class ASH_EXPORT ShellPortClassic : public ShellPort {
   std::unique_ptr<AcceleratorController> CreateAcceleratorController() override;
 
  private:
-  std::unique_ptr<PointerWatcherAdapter> pointer_watcher_adapter_;
+  std::unique_ptr<PointerWatcherAdapterClassic> pointer_watcher_adapter_;
 
-  std::unique_ptr<AcceleratorControllerDelegateAura>
+  std::unique_ptr<AcceleratorControllerDelegateClassic>
       accelerator_controller_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellPortClassic);
@@ -82,4 +82,4 @@ class ASH_EXPORT ShellPortClassic : public ShellPort {
 
 }  // namespace ash
 
-#endif  // ASH_AURA_SHELL_PORT_CLASSIC_H_
+#endif  // ASH_SHELL_PORT_CLASSIC_H_

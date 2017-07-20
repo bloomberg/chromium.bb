@@ -23,9 +23,9 @@ class PointerWatcherEventRouter;
 
 namespace ash {
 
-class AcceleratorControllerDelegateAura;
+class AcceleratorControllerDelegateClassic;
 class DisplaySynchronizer;
-class PointerWatcherAdapter;
+class PointerWatcherAdapterClassic;
 class RootWindowController;
 
 namespace mus {
@@ -47,7 +47,7 @@ class ShellPortMash : public ShellPort {
 
   ash::RootWindowController* GetRootWindowControllerWithDisplayId(int64_t id);
 
-  AcceleratorControllerDelegateAura* accelerator_controller_delegate_mus() {
+  AcceleratorControllerDelegateClassic* accelerator_controller_delegate_mus() {
     return mus_state_->accelerator_controller_delegate.get();
   }
 
@@ -115,8 +115,8 @@ class ShellPortMash : public ShellPort {
     MusSpecificState();
     ~MusSpecificState();
 
-    std::unique_ptr<PointerWatcherAdapter> pointer_watcher_adapter;
-    std::unique_ptr<AcceleratorControllerDelegateAura>
+    std::unique_ptr<PointerWatcherAdapterClassic> pointer_watcher_adapter;
+    std::unique_ptr<AcceleratorControllerDelegateClassic>
         accelerator_controller_delegate;
   };
 

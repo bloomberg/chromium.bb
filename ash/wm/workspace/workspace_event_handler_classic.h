@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_WORKSPACE_WORKSPACE_EVENT_HANDLER_AURA_H_
-#define ASH_WM_WORKSPACE_WORKSPACE_EVENT_HANDLER_AURA_H_
+#ifndef ASH_WM_WORKSPACE_WORKSPACE_EVENT_HANDLER_CLASSIC_H_
+#define ASH_WM_WORKSPACE_WORKSPACE_EVENT_HANDLER_CLASSIC_H_
 
 #include "ash/ash_export.h"
 #include "ash/wm/workspace/workspace_event_handler.h"
@@ -16,11 +16,11 @@ class Window;
 
 namespace ash {
 
-class ASH_EXPORT WorkspaceEventHandlerAura : public ui::EventHandler,
-                                             public WorkspaceEventHandler {
+class ASH_EXPORT WorkspaceEventHandlerClassic : public ui::EventHandler,
+                                                public WorkspaceEventHandler {
  public:
-  explicit WorkspaceEventHandlerAura(aura::Window* workspace_window);
-  ~WorkspaceEventHandlerAura() override;
+  explicit WorkspaceEventHandlerClassic(aura::Window* workspace_window);
+  ~WorkspaceEventHandlerClassic() override;
 
   // ui::EventHandler:
   void OnMouseEvent(ui::MouseEvent* event) override;
@@ -29,9 +29,9 @@ class ASH_EXPORT WorkspaceEventHandlerAura : public ui::EventHandler,
  private:
   aura::Window* workspace_window_;
 
-  DISALLOW_COPY_AND_ASSIGN(WorkspaceEventHandlerAura);
+  DISALLOW_COPY_AND_ASSIGN(WorkspaceEventHandlerClassic);
 };
 
 }  // namespace ash
 
-#endif  // ASH_WM_WORKSPACE_WORKSPACE_EVENT_HANDLER_AURA_H_
+#endif  // ASH_WM_WORKSPACE_WORKSPACE_EVENT_HANDLER_CLASSIC_H_

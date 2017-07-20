@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_ACCELERATORS_ACCELERATOR_COMMANDS_AURA_H_
-#define ASH_ACCELERATORS_ACCELERATOR_COMMANDS_AURA_H_
+#ifndef ASH_ACCELERATORS_ACCELERATOR_COMMANDS_CLASSIC_H_
+#define ASH_ACCELERATORS_ACCELERATOR_COMMANDS_CLASSIC_H_
 
 #include "ash/ash_export.h"
 
@@ -21,4 +21,4 @@ ASH_EXPORT void Unpin();
 }  // namespace accelerators
 }  // namespace ash
 
-#endif  // ASH_ACCELERATORS_ACCELERATOR_COMMANDS_AURA_H_
+#endif  // ASH_ACCELERATORS_ACCELERATOR_COMMANDS_CLASSIC_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_AURA_POINTER_WATCHER_ADAPTER_H_
-#define ASH_AURA_POINTER_WATCHER_ADAPTER_H_
+#ifndef ASH_POINTER_WATCHER_ADAPTER_CLASSIC_H_
+#define ASH_POINTER_WATCHER_ADAPTER_CLASSIC_H_
 
 #include "ash/ash_export.h"
 #include "base/macros.h"
@@ -18,21 +18,21 @@ class Point;
 namespace ui {
 class LocatedEvent;
 class PointerEvent;
-}
+}  // namespace ui
 
 namespace views {
 class PointerWatcher;
 enum class PointerWatcherEventTypes;
-}
+}  // namespace views
 
 namespace ash {
 
 // Support for PointerWatchers in non-mus ash, implemented with a pre-target
 // EventHandler on the Shell.
-class ASH_EXPORT PointerWatcherAdapter : public ui::EventHandler {
+class ASH_EXPORT PointerWatcherAdapterClassic : public ui::EventHandler {
  public:
-  PointerWatcherAdapter();
-  ~PointerWatcherAdapter() override;
+  PointerWatcherAdapterClassic();
+  ~PointerWatcherAdapterClassic() override;
 
   // See ShellPort::AddPointerWatcher() for details.
   void AddPointerWatcher(views::PointerWatcher* watcher,
@@ -62,9 +62,9 @@ class ASH_EXPORT PointerWatcherAdapter : public ui::EventHandler {
   base::ObserverList<views::PointerWatcher, true> move_watchers_;
   base::ObserverList<views::PointerWatcher, true> drag_watchers_;
 
-  DISALLOW_COPY_AND_ASSIGN(PointerWatcherAdapter);
+  DISALLOW_COPY_AND_ASSIGN(PointerWatcherAdapterClassic);
 };
 
 }  // namespace ash
 
-#endif  // ASH_AURA_POINTER_WATCHER_ADAPTER_H_
+#endif  // ASH_POINTER_WATCHER_ADAPTER_CLASSIC_H_

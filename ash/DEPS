@@ -59,6 +59,11 @@ specific_include_rules = {
   "shell.cc": [
     "+ash/host/ash_window_tree_host_init_params.h"
   ],
+  "shell_port_classic.cc": [
+    "+ash/host/ash_window_tree_host.h",
+    "+ash/host/ash_window_tree_host_init_params.h",
+    "+ui/ozone/public"
+  ],
   "touch_transformer_controller\.*": [
     "+ash/host"
   ],

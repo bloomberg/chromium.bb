@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_IMMERSIVE_GESTURE_HANDLER_AURA_H_
-#define ASH_WM_IMMERSIVE_GESTURE_HANDLER_AURA_H_
+#ifndef ASH_WM_IMMERSIVE_GESTURE_HANDLER_CLASSIC_H_
+#define ASH_WM_IMMERSIVE_GESTURE_HANDLER_CLASSIC_H_
 
 #include "ash/ash_export.h"
 #include "ash/public/cpp/immersive/immersive_gesture_handler.h"
@@ -15,12 +15,13 @@ class ImmersiveFullscreenController;
 
 // ImmersiveGestureHandler is responsible for calling
 // ImmersiveFullscreenController::OnGestureEvent() when a gesture is received.
-class ASH_EXPORT ImmersiveGestureHandlerAura : public ImmersiveGestureHandler,
-                                               public ui::EventHandler {
+class ASH_EXPORT ImmersiveGestureHandlerClassic
+    : public ImmersiveGestureHandler,
+      public ui::EventHandler {
  public:
-  explicit ImmersiveGestureHandlerAura(
+  explicit ImmersiveGestureHandlerClassic(
       ImmersiveFullscreenController* controller);
-  ~ImmersiveGestureHandlerAura() override;
+  ~ImmersiveGestureHandlerClassic() override;
 
   // ui::EventHandler overrides:
   void OnGestureEvent(ui::GestureEvent* event) override;
@@ -28,9 +29,9 @@ class ASH_EXPORT ImmersiveGestureHandlerAura : public ImmersiveGestureHandler,
  private:
   ImmersiveFullscreenController* immersive_fullscreen_controller_;
 
-  DISALLOW_COPY_AND_ASSIGN(ImmersiveGestureHandlerAura);
+  DISALLOW_COPY_AND_ASSIGN(ImmersiveGestureHandlerClassic);
 };
 
 }  // namespace ash
 
-#endif  // ASH_WM_IMMERSIVE_GESTURE_HANDLER_AURA_H_
+#endif  // ASH_WM_IMMERSIVE_GESTURE_HANDLER_CLASSIC_H_
